@@ -1,0 +1,301 @@
+/*BHEADER**********************************************************************
+ * (c) 1995   The Regents of the University of California
+ *
+ * See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+ * notice, contact person, and disclaimer.
+ *
+ * $Revision: 1.1.1.1 $
+ *********************************************************************EHEADER*/
+/******************************************************************************
+ *
+ * Matrix-vector multply routine.
+ * 
+ *****************************************************************************/
+
+#include "parflow.h"
+
+
+/*--------------------------------------------------------------------------
+ * Matvec
+ *--------------------------------------------------------------------------*/
+
+void            Matvec(alpha, A, x, beta, y)
+double          alpha;
+Matrix         *A;
+Vector         *x;
+double          beta;
+Vector         *y;
+{
+   CommHandle *handle;
+
+   Grid           *grid = MatrixGrid(A);
+   Subgrid        *subgrid;
+
+   SubregionArray *subregion_array;
+   Subregion      *subregion;
+
+   ComputePkg     *compute_pkg;
+
+   Region         *compute_reg;
+
+   Subvector      *y_sub;
+   Subvector      *x_sub;
+   Submatrix      *A_sub;
+
+   Stencil        *stencil;
+   int             stencil_size;
+   StencilElt     *s;
+
+   int             compute_i, sg, sra, sr, i, j, k;
+
+   double          temp;
+
+   double         *ap;
+   double         *xp;
+   double         *yp;
+
+   int             vi;
+
+   int             ix, iy, iz;
+   int             nx, ny, nz;
+
+   int             nx_v, ny_v, nz_v;
+
+   /* extra stuff for fortran call */
+   int             ilo[3], ihi[3], xylo[3], xyhi[3], alo[3], ahi[3];
+   int            *ds, ds_size, symmetric;
+
+   void	 matvecloop1_(int *ilo, int *ihi, double *xp, double *yp,
+		      int *xylo, int *xyhi,
+		      double *ap, int *ds, int *ds_size, int *symmetric,
+		      int *alo, int *ahi, double *alpha);
+
+   /*-----------------------------------------------------------------------
+    * Begin timing
+    *-----------------------------------------------------------------------*/
+
+
+   BeginTiming(MatvecTimingIndex);
+
+#ifdef VECTOR_UPDATE_TIMING
+   EventTiming[NumEvents][MatvecStart] = amps_Clock();
+#endif
+
+   /*-----------------------------------------------------------------------
+    * Do (alpha == 0.0) computation - RDF: USE MACHINE EPS
+    *-----------------------------------------------------------------------*/
+
+   if (alpha == 0.0)
+   {
+      ForSubgridI(sg, GridSubgrids(grid))
+      {
+	 subgrid = SubgridArraySubgrid(GridSubgrids(grid), sg);
+
+	 nx = SubgridNX(subgrid);
+	 ny = SubgridNY(subgrid);
+	 nz = SubgridNZ(subgrid);
+
+	 if (nx && ny && nz)
+	 {
+	    ix = SubgridIX(subgrid);
+	    iy = SubgridIY(subgrid);
+	    iz = SubgridIZ(subgrid);
+
+	    y_sub = VectorSubvector(y, sg);
+
+            nx_v = SubvectorNX(y_sub);
+            ny_v = SubvectorNY(y_sub);
+            nz_v = SubvectorNZ(y_sub);
+
+	    yp = SubvectorElt(y_sub, ix, iy, iz);
+
+	    vi = 0;
+	    BoxLoopI1(i,j,k,
+		      ix, iy, iz, nx, ny, nz,
+		      vi, nx_v, ny_v, nz_v, 1, 1, 1,
+		      {
+			 yp[vi] *= beta;
+		      });
+	 }
+      }
+
+      IncFLOPCount(VectorSize(x));
+      EndTiming(MatvecTimingIndex);
+
+      return;
+   }
+
+   /*-----------------------------------------------------------------------
+    * Do (alpha != 0.0) computation
+    *-----------------------------------------------------------------------*/
+
+   compute_pkg = GridComputePkg(grid, VectorUpdateAll);
+
+   for (compute_i = 0; compute_i < 2; compute_i++)
+   {
+      switch(compute_i)
+      {
+      case 0:
+
+#ifndef NO_VECTOR_UPDATE
+
+#ifdef VECTOR_UPDATE_TIMING
+	 BeginTiming(VectorUpdateTimingIndex);
+	 EventTiming[NumEvents][InitStart] = amps_Clock();
+#endif
+         handle = InitVectorUpdate(x, VectorUpdateAll);
+
+#ifdef VECTOR_UPDATE_TIMING
+	 EventTiming[NumEvents][InitEnd] = amps_Clock();
+	 EndTiming(VectorUpdateTimingIndex);
+#endif
+#endif
+
+         compute_reg = ComputePkgIndRegion(compute_pkg);
+
+	 /*-----------------------------------------------------------------
+	  * initialize y= (beta/alpha)*y
+	  *-----------------------------------------------------------------*/
+
+	 ForSubgridI(sg, GridSubgrids(grid))
+	 {
+	    subgrid = SubgridArraySubgrid(GridSubgrids(grid), sg);
+
+	    nx = SubgridNX(subgrid);
+	    ny = SubgridNY(subgrid);
+	    nz = SubgridNZ(subgrid);
+
+	    if (nx && ny && nz)
+	    {
+	       ix = SubgridIX(subgrid);
+	       iy = SubgridIY(subgrid);
+	       iz = SubgridIZ(subgrid);
+
+	       y_sub = VectorSubvector(y, sg);
+
+	       nx_v = SubvectorNX(y_sub);
+	       ny_v = SubvectorNY(y_sub);
+	       nz_v = SubvectorNZ(y_sub);
+
+	       temp = beta / alpha;
+
+	       if (temp != 1.0)
+	       {
+		  yp = SubvectorElt(y_sub, ix, iy, iz);
+
+		  vi = 0;
+		  if (temp == 0.0)
+		  {
+		     BoxLoopI1(i, j, k,
+			       ix, iy, iz, nx, ny, nz,
+			       vi, nx_v, ny_v, nz_v, 1, 1, 1,
+			       {
+				  yp[vi] = 0.0;
+			       });
+		  }
+		  else
+		  {
+		     BoxLoopI1(i, j, k,
+			       ix, iy, iz, nx, ny, nz,
+			       vi, nx_v, ny_v, nz_v, 1, 1, 1,
+			       {
+				  yp[vi] *= temp;
+			       });
+		  }
+	       }
+	    }
+	 }
+
+	 break;
+
+      case 1:
+
+#ifndef NO_VECTOR_UPDATE
+#ifdef VECTOR_UPDATE_TIMING
+	 BeginTiming(VectorUpdateTimingIndex);
+	 EventTiming[NumEvents][FinalizeStart] = amps_Clock();
+#endif
+         FinalizeVectorUpdate(handle);
+
+#ifdef VECTOR_UPDATE_TIMING
+	 EventTiming[NumEvents][FinalizeEnd] = amps_Clock();
+	 EndTiming(VectorUpdateTimingIndex);
+#endif
+#endif
+
+         compute_reg = ComputePkgDepRegion(compute_pkg);
+         break;
+      }
+
+      ForSubregionArrayI(sra, compute_reg)
+      {
+         subregion_array = RegionSubregionArray(compute_reg, sra);
+
+         if (SubregionArraySize(subregion_array))
+         {
+            y_sub = VectorSubvector(y, sra);
+            x_sub = VectorSubvector(x, sra);
+
+            A_sub = MatrixSubmatrix(A, sra);
+
+            xylo[0] = SubvectorIX(y_sub);
+            xylo[1] = SubvectorIY(y_sub);
+            xylo[2] = SubvectorIZ(y_sub);
+
+            xyhi[0] = xylo[0] + SubvectorNX(y_sub) - 1;
+            xyhi[1] = xylo[1] + SubvectorNY(y_sub) - 1;
+            xyhi[2] = xylo[2] + SubvectorNZ(y_sub) - 1;
+
+            alo[0] = SubmatrixIX(A_sub);
+            alo[1] = SubmatrixIY(A_sub);
+            alo[2] = SubmatrixIZ(A_sub);
+
+            ahi[0] = alo[0] + SubmatrixNX(A_sub) - 1;
+            ahi[1] = alo[1] + SubmatrixNY(A_sub) - 1;
+            ahi[2] = alo[2] + SubmatrixNZ(A_sub) - 1;
+         }
+
+	 /*-----------------------------------------------------------------
+	  * y += A*x
+	  *-----------------------------------------------------------------*/
+
+         ForSubregionI(sr, subregion_array)
+         {
+            subregion = SubregionArraySubregion(subregion_array, sr);
+
+            ilo[0] = SubregionIX(subregion);
+            ilo[1] = SubregionIY(subregion);
+            ilo[2] = SubregionIZ(subregion);
+
+            ihi[0] = ilo[0] + SubregionNX(subregion) - 1;
+            ihi[1] = ilo[1] + SubregionNY(subregion) - 1;
+            ihi[2] = ilo[2] + SubregionNZ(subregion) - 1;
+
+	    xp = SubvectorData(x_sub);
+	    yp = SubvectorData(y_sub);
+	    ap = SubmatrixData(A_sub);
+
+	    ds = MatrixDataStencil(A);
+	    ds_size = MatrixDataStencilSize(A);
+
+	    symmetric = MatrixSymmetric(A);
+
+	    matvecloop1_(ilo, ihi, xp, yp, xylo, xyhi,
+			 ap, ds, &ds_size, &symmetric, alo, ahi,
+			 &alpha);
+	 }
+      }
+   }
+
+   /*-----------------------------------------------------------------------
+    * End timing
+    *-----------------------------------------------------------------------*/
+
+   IncFLOPCount(2*(MatrixSize(A) + VectorSize(x)));
+   EndTiming(MatvecTimingIndex);
+
+#ifdef VECTOR_UPDATE_TIMING
+   EventTiming[NumEvents++][MatvecEnd] = amps_Clock();
+#endif
+
+}

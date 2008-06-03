@@ -1,0 +1,173 @@
+#! /bin/sh 
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+#=============================================================================
+#
+# This Script builds the parflow/avs module libraries and installs them.
+#
+#=============================================================================
+
+#=============================================================================
+#
+# Set up directory locations
+#
+#=============================================================================
+if [ -z "$PARFLOW_SRC" ]
+then
+        PARFLOW_SRC=$PARFLOW_DIR
+fi
+
+#=============================================================================
+#
+# Determine the arch that we are compiling on 
+#
+#=============================================================================
+. $PARFLOW_SRC/config/getarch
+
+#=============================================================================
+#
+# Parse the user arguments
+#
+#=============================================================================
+. $PARFLOW_SRC/config/parse_build_args.sh
+
+if [ -z "$PFEXPRESS_VXP" ]
+then
+	echo "Express not supported"
+	exit 0
+fi
+
+#=============================================================================
+#
+# If on a new arch then clean everything
+#
+#=============================================================================
+if [ "$PF_ARCH" != "$PF_OLD_ARCH" ]
+then
+    true 
+fi
+
+#=============================================================================
+#
+# Do the actual make 
+#
+#=============================================================================
+if [ "$PF_ALL_FLAG" ]
+then
+
+	#======================================================================
+	#
+	# Build the module library.
+	#
+	#======================================================================
+
+	echo "Building"
+	echo "  VXP:       $PFEXPRESS_VXP"
+	echo "  PF_ARCH:  $PF_ARCH"
+	echo ""
+
+	$PFEXPRESS_VXP
+fi
+
+
+
+
+#=============================================================================
+#
+# Do the install
+# 
+#=============================================================================
+if [ "$PF_INSTALL_FLAG" ] 
+then
+	PARFLOW_BIN=$PARFLOW_DIR/bin
+ 
+	if [ ! -d $PARFLOW_BIN ]
+ 	then
+	        mkdir $PARFLOW_BIN
+	fi
+
+	UTILITIES="pfvxp pfexpress"
+
+	(cd $PARFLOW_BIN
+	for i in $UTILITIES
+	do
+		rm -f $i
+		$PF_INSTALL $PARFLOW_SRC/express/$i $i
+	done)
+
+	#======================================================================
+	#
+	# Install the AVS executables
+	#
+	#======================================================================
+	if [ ! -d $PARFLOW_DIR/express ]
+	then
+		mkdir $PARFLOW_DIR/express
+	fi
+
+	if [ ! -d $PARFLOW_DIR/express/bin ]
+	then
+		mkdir $PARFLOW_DIR/express/bin
+	fi
+
+	UTILITIES="avsenv"
+	(cd $PARFLOW_DIR/express
+	for i in $UTILITIES
+	do
+	
+		rm -f $i
+		$PF_INSTALL $PARFLOW_SRC/express/$i.installed $i
+	done)
+
+	cp -rp $PARFLOW_SRC/express/bin $PARFLOW_DIR/express/
+
+	cp -rp $PARFLOW_SRC/express/v $PARFLOW_DIR/express/
+	chmod -R u+w $PARFLOW_DIR/express/bin $PARFLOW_DIR/express/v 
+	
+	#======================================================================
+	#
+	# Install the express applications
+	#
+	#======================================================================
+	if [ "$PARFLOW_DIR" != "$PARFLOW_SRC" ]
+	then
+		if [ ! -d $PARFLOW_DIR/express/applications ]
+		then
+			mkdir $PARFLOW_DIR/express/applications
+		fi
+
+		FILES=`(cd $PARFLOW_SRC/express/applications; ls *.v)`
+		(cd $PARFLOW_DIR/express/applications
+		for i in $FILES
+		do
+			rm -f $i
+			$PF_INSTALL $PARFLOW_SRC/express/applications/$i $i
+		done)
+	fi
+fi
+
+#=============================================================================
+#
+# Clean.
+#
+#=============================================================================
+if [ "$PF_CLEAN_FLAG" ]
+then
+    rm .current_arch
+#    $PFAVS_MAKE clean
+fi
+
+if [ "$PF_VERYCLEAN_FLAG" ]
+then
+    true
+fi
+
+
+

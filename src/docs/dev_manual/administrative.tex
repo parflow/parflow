@@ -1,0 +1,290 @@
+%=============================================================================
+% Chapter: Administrative
+%=============================================================================
+
+\chapter{Administrative}
+\label{Administrative}
+
+Since \parflow{} is continually evolving capability wise and
+simultaneously being used to demonstrate these capabilities,
+some global administrative issues need to be defined and followed
+whenever possible.  This gives developers a consistent framework
+to discuss current and future capabilities of \parflow{} and save
+important data produced by the various versions of \parflow{}.
+
+%=============================================================================
+% Section: Mail Aliases
+%=============================================================================
+
+\section{Mail Aliases}
+\label{Mail Aliases}
+
+Several \parflow{} mail aliases have been set up to facilitate
+communication with users and developers.  \file{pfdevs@zeus.llnl.gov}
+is the core development team.  This mail alias should be used for all
+mail regarding software development and other ``core'' activities.
+\file{pfusers@zeus.llnl.gov} is the core development team plus other users.
+This mail alias should be used for information that need to be communicated
+to all the users of \parflow{}.
+
+%=============================================================================
+% Section: Permissions
+%=============================================================================
+
+\section{Permissions}
+\label{Permissions}
+
+Since \parflow{} should be protected from preying eyes we need to set
+the permissions on the \parflow{} source tree to be readable only by
+members of the \file{parflow} group.  The \file{parflow} group
+contains only those developers who should have access to the source
+code and the ability to check files in and out.  Since UN*X has rather
+limited protection mechanisms there is no easy way to split the
+checkout and checkin capabilities so users who need the source code
+(but should not have the ability to checkin things) will have to go
+through members of the
+\file{parflow} group.
+
+Another group (\file{pfusers}) has been set up which contains \parflow{}
+users.  These are individuals who are running the code and may need
+access to datasets etc but should not be allowed to modify the
+repository.  The group \file{pfusers} should be used for data the you want
+restricted to only \parflow{} people.  Data from companies should be
+protected in this way from general view.
+
+All \parflow{} directories should NOT be world readable.
+
+Also be a little careful on remote machines; check to see what
+permissions are set up.  Since we do not have control over groups you
+may have to make this restricted to you only.  
+
+Remember, protecting proprietary data is part of your job.
+
+%=============================================================================
+% Section: Data Archiving
+%=============================================================================
+
+\section{Data Archiving}
+\label{Data Archiving}
+
+It is necessary to maintain archives of important simulations
+generated with \parflow{} -- where the output results are used in
+papers, on-line images and mpeg movies, or VHS videos.  A mechanism
+exists and procedures have been created to facilitate easy archiving
+of this important data.
+
+The mechanism for archiving data consists of :
+\begin{itemize}
+\item A file system organization for storing the data \S~\ref{Archive Organization}.
+\item An html file for recording information about the data \S~\ref{Archive Status}.
+\end{itemize}
+
+The procedures for archiving data are :
+\begin{itemize}
+\item Creating a data archive \S~\ref{Creating an Archive}.
+\item Backing up a data archive \S~\ref{Backing up an Archive}.
+\item Removing a data archive \S~\ref{Removing an Archive}.
+\item Restoring a data archive \S~\ref{Restoring an Archive}.
+\item Using a data archive \S~\ref{Using an Archive}.
+\end{itemize}
+
+
+\subsection{Archive Organization}
+\label{Archive Organization}
+
+The directory \file{~parflow/data} is mirrored in
+\file{/home/nyx0/parflow/data}.  It has two subdirectories:
+\begin{display}\begin{verbatim}
+input
+output
+\end{verbatim}\end{display}
+which contain the input and output for ParFlow runs.  These
+directories live on different machines.  The \file{input} directory is
+on helios because we want nightly backup protection for these files.
+The \file{output} directory is on nyx because we don't have the space on
+helios, and it is not necessary to have nightly backups for this data
+since it can be re-created from the input files.  You do not need
+to remember which directory is where because the ``other'' machine
+has a link to the correct place.  For example, \file{~parflow/data/output}
+is a link to \file{/home/nyx0/parflow/output}.
+
+
+\subsection{Archive Status}
+\label{Archive Status}
+
+The directory \file{~parflow/data} contains an html file \file{INFO.html}
+which serves as an on-line source for the states of archived data.  To
+access this source use the \kbd{pfhelp} command and access the file
+\file{INFO.html} through the ``Simulation Info'' link on the PFIX page.
+
+
+\subsection{Creating an Archive}
+\label{Creating an Archive}
+
+Suppose you have run a simulation, with the run-name ``xyzzy'', and have
+all the input and output files in some directory.
+To archive the run do the following :
+\begin{enumerate}
+\item As the user who ran the simulation :
+      \begin{enumerate}
+      \item Go to the directory with the ``xyzzy'' data.
+      \item Create a \file{README} file with information about :
+            \begin{itemize}
+            \item what the simulation is.
+            \item who did the simulation.
+            \item when the simulation was done.
+            \item where it was done and with what version of the code.
+            \item any other information needed for someone to recreate the data.
+            \end{itemize}
+      \item Make sure all data is readable by user {\it parflow}.
+      \end{enumerate}
+\item As user {\it parflow} :
+      \begin{enumerate}
+      \item Create \file{~parflow/data/input/xyzzy}.
+      \item Give \file{~parflow/data/input/xyzzy} permissions consistent
+            with the level of security needed for the input file directory
+            \S~\ref{Permissions}.
+      \item Copy to \file{~parflow/data/input/xyzzy} :
+            \begin{itemize}
+            \item all \file{xyzzy.in.*} files used in the simulation.
+            \item all geo-unit input files used in the simulation.
+            \item the \file{README} file.
+            \end{itemize}
+      \item Give all files in \file{~parflow/data/input/xyzzy} permissions
+            consistent with the level of security needed for the input files
+            themselves (including any special executables)
+            \S~\ref{Permissions}.
+      \item Create \file{~parflow/data/output/xyzzy}.
+      \item Give \file{~parflow/data/output/xyzzy} permissions consistent
+            with the level of security needed for the output file directory
+            \S~\ref{Permissions}.
+      \item Copy to \file{~parflow/data/output/xyzzy} :
+            \begin{itemize}
+            \item all \file{xyzzy.out.*} files from the simulation.
+            \end{itemize}
+      \item Give all files in \file{~parflow/data/output/xyzzy} permissions
+            consistent with the level of security needed for the output files
+            themselves (including any special executables)
+            \S~\ref{Permissions}.
+      \end{enumerate}
+\item As the user who ran the simulation :
+      \begin{enumerate}
+      \item Go to the directory \file{~parflow/data} and do the following :
+            \begin{enumerate}
+            \item Checkout (and lock) the file \file{INFO.html}.
+            \item Edit the file \file{INFO.html} adding lines for run
+                  ``xyzzy'' similar to the other entries (making sure to
+                  note that the data is not backed up at this time) and
+                  add a link to file \file{input/xyzzy/README} (your
+                  \file{README} file).
+            \item Checkin the file \file{INFO.html}.
+            \end{enumerate}
+      \end{enumerate}
+\end{enumerate}
+
+
+\subsection{Backing up an Archive}
+\label{Backing up an Archive}
+
+Suppose you wanted to backup to tape an archived simulation, with
+the run-name ``xyzzy''.  Do the following :
+\begin{enumerate}
+\item As user {\it parflow} :
+      \begin{enumerate}
+      \item Get and mount a tape on an appropriate machine.
+      \item Go to the directory \file{~parflow/data}.
+      \item Issue the command \code{tar -chvf TAPE_DEVICE_NAME ./*/xyzzy},
+            where ``TAPE\_DEVICE\_NAME'' is the name of the tape drive on
+            the particular system.
+      \end{enumerate}
+\item As the user performing the backup :
+      \begin{enumerate}
+      \item Make an entry in the system tape log book about the tape.
+      \item Checkout (and lock) the file \file{INFO.html}.
+      \item Make a note that you backed up the data at this day and time
+            in the file \file{INFO.html}.
+      \item Checkin the file \file{INFO.html}.
+      \end{enumerate}
+\end{enumerate}
+
+
+\subsection{Removing an Archive}
+\label{Removing an Archive}
+
+Before removing any data from \file{~parflow/data} be sure to check
+the status of the data.  If the data has not been backed up, do so using
+the back up procedure, \S~\ref{Backing up an Archive}, before deleting it.
+
+Suppose you wanted to remove an archived simulation, with the
+run-name ``xyzzy''.  Do the following :
+\begin{enumerate}
+\item As the user removing the archive :
+      \begin{enumerate}
+      \item Check the ``Simulation Info'' link to make sure ``xyzzy''
+            has been backed up -- if not do so now,
+            \S~\ref{Backing up an Archive}.
+      \end{enumerate}
+\item As user {\it parflow} :
+      \begin{enumerate}
+      \item Go to the directory \file{~parflow/data/output}.
+      \item Remove the the contents of directory \file{./xyzzy}.
+      \end{enumerate}
+\item As the user removing the archive :
+      \begin{enumerate}
+      \item Checkout (and lock) the file \file{INFO.html}.
+      \item Make a note that you removed the data at this day and
+            time in the file \file{INFO.html}.
+      \item Checkin the file \file{INFO.html}.
+      \end{enumerate}
+\end{enumerate}
+
+Normally the input data is left in place since it requires only
+a small amount of space.
+
+
+\subsection{Restoring an Archive}
+\label{Restoring an Archive}
+
+Suppose you wanted to restore a previously backed up and removed
+archive, with the run-name ``xyzzy''.  Do the following :
+\begin{enumerate}
+\item As the user restoring the archive :
+      \begin{enumerate}
+      \item Use the ``Simulation Info'' link and the system tape log
+            book to figure out what tape contains the ``xyzzy'' data.
+      \item Get and mount the tape on an appropriate machine.
+      \end{enumerate}
+\item As user {\it parflow} :
+      \begin{enumerate}
+      \item Go to the directory \file{~parflow/data}.
+      \item Issue the command \code{tar -xpvf TAPE_DEVICE_NAME ./*/xyzzy},
+            where ``TAPE\_DEVICE\_NAME'' is the name of the tape drive on
+            the particular system.
+      \end{enumerate}
+\item As the user restoring the archive :
+      \begin{enumerate}
+      \item Checkout (and lock) the file \file{INFO.html}.
+      \item Make a note that you have retrieved the data at this day
+            and time in the file \file{INFO.html}.
+      \item Checkin the file \file{INFO.html}.
+      \end{enumerate}
+\end{enumerate}
+
+
+\subsection{Using an Archive}
+\label{Using an Archive}
+
+In order to not corrupt data in the archive it is suggested that
+users only work with copies of the data rather than any data in
+\file{~parflow/data}.
+
+Suppose you wanted to use data from an archive, with the run-name ``xyzzy''.
+Do the following (as any user) :
+\begin{enumerate}
+\item Check the ``Simulation Info'' link to find the status of ``xyzzy''.
+\item If the data has not been removed, you can simply use it.
+\item If the data has been removed; you can either restore the data in
+      the archive (\S~\ref{Restoring an Archive}) or use the \file{README}
+      file to checkout the applicable version of the code and the input
+      files to rerun the simulation.
+\end{enumerate}

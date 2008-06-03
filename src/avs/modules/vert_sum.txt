@@ -1,0 +1,19 @@
+NAME
+	VertSum - sets the boundary of a 3D field to zero
+
+SUMMARY
+	Name	VertSum
+
+	Type	filter
+
+	Inputs	Field Input  -  field 3D scalar 3-coord uniform float
+
+	Outputs	Field Output -  field 2D scalar 2-coord uniform float
+
+	Parameters  Name		Type	Default	  Choices
+
+DESCRIPTION
+
+	Sums the values along the z-axis to produce a 2 field.
+
+

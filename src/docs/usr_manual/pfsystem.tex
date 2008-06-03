@@ -1,0 +1,665 @@
+%=============================================================================
+%=============================================================================
+
+\chapter{The ParFlow System}
+\label{The ParFlow System}
+
+The \parflow{} system is still evolving, but at present,
+it has three basic components.  GMS is used to create geometry input,
+\parflow{} is the simulator itself, and AVS (or AVS/Express) are used
+to visualize the results.  We discuss how to define the problem in
+\S~\ref{Defining the Problem}, how to run \parflow{} in
+\S~\ref{Running ParFlow}, and how to visualize the results in
+\S~\ref{Visualizing Output with AVS}.  There is also a utility providing a set
+of functions for manipulating \parflow{} data.  This utility is discussed in 
+\S~\ref{Manipulating Data}.  Lastly, \S~\ref{Test Directory} discusses the
+contents of a directory of test problems provided with \parflow{}.
+
+%=============================================================================
+%=============================================================================
+
+\section{Defining the Problem}
+\label{Defining the Problem}
+
+Defining the problem may involve several steps.
+One of these steps requires the use of
+GMS (Groundwater Modeling System) \cite{GMS94tut,GMS95ref}
+to define complicated geometries such as hydrostratigraphic layers.
+These geometries are then converted to the
+\file{.pfsol} file format (\S~\ref{ParFlow Solid Files (.pfsol)})
+using the appropriate \pftools{} conversion utility
+(\S~\ref{Manipulating Data}).
+
+The ``main'' \parflow{} input file is the \file{.pftcl} file.
+This input file is a TCL script with some special routines to
+create a database which is used as the input for \parflow{}.
+See \S~\ref{Main Input File (.pftcl)} for details on the format
+of this file.
+The input values into \parflow{} are defined by a key/value pair.  For
+each key you provide the associated value using the \code{pfset} command
+inside the input script.  To set the computational grid for the problem
+you would enter:
+
+\begin{display}\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Computational Grid
+#-----------------------------------------------------------------------------
+pfset ComputationalGrid.Lower.X                -10.0
+pfset ComputationalGrid.Lower.Y                 10.0
+pfset ComputationalGrid.Lower.Z                  1.0
+ 
+pfset ComputationalGrid.DX                       8.8888888888888893
+pfset ComputationalGrid.DY                      10.666666666666666
+pfset ComputationalGrid.DZ                       1.0
+ 
+pfset ComputationalGrid.NX                      18
+pfset ComputationalGrid.NY                      15
+pfset ComputationalGrid.NZ                       8
+
+\end{verbatim}\end{display}
+
+The value is normally a single string, double, or integer.  In some cases,
+in particular for a list of names, you need to supply a space seperated
+sequence.  This can be done using either a double quote or bracies.
+
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Patches "left right front back bottom top"
+
+pfset Geom.domain.Patches {left right front back bottom top}
+\end{verbatim}\end{display}
+
+For commands longer than a single line, the TCL continuation character can be
+used, 
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Patches "very_long_name_1 very_long_name_2 very_long_name_3 \
+                           very_long_name_4 very_long_name_5 very_long_name_6"
+\end{verbatim}\end{display}
+
+
+Since the input file is a TCL script you can use any feature of TCL to
+define the problem.  This manual will make no effort to teach TCL so
+refer to one of the available TCL manuals for more information
+(``Practical Programming in TCL and TK'' by Brent Welch \cite{welch.95} 
+is a good starting point).  
+This is NOT required, you can get along fine without understanding TCL/TK.
+
+Looking at the example programs in the \file{test} directory is one of
+the best ways to understand what a \parflow{} input file looks like. See
+\S~\ref{Test Directory}.  
+
+%=============================================================================
+%=============================================================================
+
+\section{Running ParFlow}
+\label{Running ParFlow}
+
+Once the problem input is defined, you need to add a few things to 
+the script to make it execute \parflow{}.  First you need to add
+the TCL commands to load the \parflow{} command package.
+
+\begin{display}\begin{verbatim}
+#
+# Import the ParFlow TCL package
+#
+lappend auto_path $env(PARFLOW_DIR)/bin 
+package require parflow
+namespace import Parflow::*
+\end{verbatim}\end{display}
+
+This loads the \code{pfset} and other \parflow{} commands into the
+TCL shell.
+
+Since this is a script you need to actually run \parflow{}. These are
+normally the last lines of the input script.
+
+\begin{display}\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Run and Unload the ParFlow output files
+#-----------------------------------------------------------------------------
+pfrun default_single
+pfundist default_single
+\end{verbatim}\end{display}
+
+
+The \code{pfrun} command runs \parflow{} with the database as it
+exists at that point in the file.  The argument is the name to give to
+the output files (which will normally be the same as the name of the
+script).  Advanced users can set up multiple problems within the input
+script by using different output names.  
+
+The \code{pfundist} command takes the output files from the \parflow{}
+run and undistributes them.  \parflow{} uses a virtual file system
+which allows files to be distributed across the processors.  The
+\code{pfundist} takes these files and collapses them into a single
+file.  On some machines if you don't do the \code{pfundist} you will
+see many files after the run.  Each of these contains the output from
+a single node; before attempting using them you should undistribute them.
+
+Since the input file is a TCL script run it using TCL:
+
+\begin{display}\begin{verbatim}
+tclsh runname.pftcl
+\end{verbatim}\end{display}
+
+NOTE: Make sure you are using TCL 8.0 or later.  The script will not
+work with earlier releases.
+
+For a network of workstations, you need to specify the computer
+systems that are going to be used in the virtual machine (VM).  To add
+a machine to the VM you should set the \code{Process.HostNames}
+variable to be a space separated list of the machine names.
+
+\begin{display}\begin{verbatim}
+pfset Process.Hostnames ``bert.llnl.gov ernie.llnl.gov bigbird.llnl.gov''
+\end{verbatim}\end{display}
+
+One output file of particular interest is the \file{<run
+name>.out.log} file.  This file contains information about the run
+such as number of processes used, convergence history of algorithms,
+timings and MFLOP rates.
+
+\section{Restarting a Run}
+\label{Restarting a Run}
+
+Occasionally a \parflow{} run may need to be restarted because either a
+system time limit has been reached and \parflow{} has been prematurely
+terminated or the user specifically sets up a problem to run in segments.
+In order to restart a run the user needs to know the conditions under which
+\parflow{} stopped.  If \parflow{} was prematurely terminated then the
+user must examine the output files from the last ``timed dump'' to see if
+they are complete.  If not then those data files should be discarded and the
+output files from the next to last ``timed dump'' will be used in the
+restarting procedure.  As an important note, if any set of ``timed dump''
+files are deleted remember to also delete corresponding lines in the well
+output file or recombining the well output files from the individual segments
+afterwards will be difficult.  It is not necessary to delete lines from
+the log file as you will only be noting information from it.  To summarize,
+make sure all the important output data files are complete, accurate and
+consistent with each other.
+
+Given a set of complete, consistent output files - to restart a run follow
+this procedure :
+
+\begin{enumerate}
+   \item Note the important information for restarting :
+   \begin{itemize}
+      \item Write down the dump sequence number for the last collection of
+           ``timed dump'' data.
+      \item Examine the log file to find out what real time that ``timed dump''
+            data was written out at and write it down.
+   \end{itemize}
+   \item Prepare input data files from output data files :
+   \begin{itemize}
+      \item Take all the concentration output files with the sequence number
+            from above and convert them from a ParFlow Scattered Binary File
+            \S~\ref{ParFlow Scattered Binary Files (.pfsb)} to a ParFlow
+            Binary File \S~\ref{ParFlow Binary Files (.pfb)} (including a
+            ``.dist'' file) using \pftools{} \S~\ref{Manipulating Data} and the
+            {\it pfdist} utility in the input script.
+   \end{itemize}
+   \item Change the Main Input File \S~\ref{Main Input File (.pftcl)} :
+   \begin{itemize}
+      \item Edit the .pftcl file (you may want to save the old one) and
+            utilize the read concentration input file option to specify
+            all of the input files you created above as initial conditions
+            for concentrations.
+   \end{itemize}
+   \item Restart the run :
+   \begin{itemize}
+      \item Utilizing an editor recreate all the input parameters used
+            in the run except for the following two items :
+            \begin{itemize}
+               \item Use the dump sequence number from step 1
+                     as the start\_count.
+               \item Use the real time that the dump occured at from step 1
+                     as the start\_time.
+            \end{itemize}
+   \end{itemize}
+\end{enumerate}
+
+%=============================================================================
+%=============================================================================
+
+\section{Visualizing Output with AVS}
+\label{Visualizing Output with AVS}
+
+We currently use AVS (Application Visualization System)
+\cite{AVS92dguide,AVS92uguide,AVS93ref} to visualize \parflow{}
+output.  AVS modules and networks are provided in directory
+\file{\$PARFLOW_DIR/avs} for this purpose.  To access these modules
+and networks within AVS, type
+\begin{display}\begin{verbatim}
+pfavs &
+\end{verbatim}\end{display}
+This will start AVS, load the \parflow{} module library, and set the default
+network directory to your \file{\$PARFLOW_DIR/avs/networks} directory.
+Click on \kbd{Network Editor} to open the network editor.
+Here, you will be able to load supplied \parflow{} networks
+(click on \kbd{Read Network}) and use \parflow{} modules to
+either construct new networks or modify old networks
+These provided networks may be used to visualize \parflow{} output.
+Documentation for \parflow{} modules is found online using the
+help capability provided with AVS.
+See the AVS documentation for details on how to use AVS.
+
+%=============================================================================
+%=============================================================================
+
+\section{Visualizing Output with AVS/Express}
+\label{Visualizing Output with AVS/Express}
+
+\subsection{Running and Interacting With AVS/Express}
+
+Before running AVS/Express you may need to set some environment variables.
+See the AVS/Express documentation for more information.
+
+A script is included for starting AVS/Express for the local Express
+installation.  This can be used as a template for other systems.  To
+start Express with the \parflow{} modules loaded:
+
+\begin{display}\begin{verbatim}
+pfexpress
+\end{verbatim}\end{display}
+
+\subsection{Using the AVS/Express Applications}
+
+First, some notes that apply to all of the applications.  A quick way to
+reload the file currently being viewed is to press return in the text area
+that contains the current file name.  To print the contents of a viewer
+window (or save it to a \file{.ps} or \file{.eps} file), use the \menu{Print}
+editor in the \menu{Editors} menu of the viewer.  To get to other user
+interfaces, such as those for the grid scaling and downsizing, use the module
+stack pulldown menu on the left side of the screen.
+
+\begin{description}
+
+\item[Animate]
+    In the file dialog brought up by the ``Select file in sequence...'' button,
+    the user should select one of the \file{.pfsb} files from the sequence
+    that will be animated.  The application will then load the first file in
+    the sequence and do the isosurface on it.  The desired isosurface level
+    should be selected at this point also.  Start, end, and stride are used
+    to select the files to include in the animation.  The indices in these
+    fields are from 0 to the number of \file{.pfsb} files in the series minus
+    one.  If cycle is checked, the animation will continuously cycle while
+    run is checked.  Checking reset will cause the display to be reset to the
+    start file.  Animate only works with \file{.pfsb} files.
+
+\item[Brick]
+    Everything here should be self-explanatory.  The dials or sliders control
+    the upper bounding planes of the box.  The dials have the immediate
+    toggle set, causing them to update the display as they are being
+    modified.  The sliders do not have this toggle set.
+
+\item[ExcavateBrick]
+    The ``opposite'' of Brick, but with the same user interface.
+ 
+\item[Isosurface]
+    Like Animate, but without the animation stuff and only allows you to view
+    one file at a time.  Also allows you to view \file{.pfb} files.
+ 
+\item[Orthograph]
+    Axis labels and names are now working, although they tend to get jumbled
+    together at the origin.  The Probe Value field in the user interface
+    gives the value of the current probe location in the plot.  You can probe
+    the value of an isoline by control-left mouse button clicking anywhere on
+    it.  You can also choose up to two isolines at specific locations by
+    modifying the sliders in the isoline user interface in the module stack.
+    If more precision is necessary for specifying these isolines values, a
+    new user interface can easily be added for it.
+ 
+    One note on a semi-bug: If the plot shrinks down to become very small,
+    try hitting the Normalize button.  If that doesn't get it back to normal,
+    flip between different axes a time or two, and hopefully that should
+    work.  As a last-ditch effort, delete and reload the application.  This
+    problem seems to be rare, but I have always been able to solve it without
+    having to reload the application.
+
+\item[Slice3]
+    The same user interface as Brick.
+
+\end{description}
+
+Of these applications, there is currently one known bug.  In Isosurface,
+loading a \file{.pfb} file after a \file{.pfsb} file causes minimum values in
+some places to become messed up, but the application is still usable.  The is
+due to an unfortunate ``feature'' in the AVS/Express UIdial module.  To avoid
+this, delete and reload the application when you want to visualize a
+\file{.pfb} file after a \file{.pfsb} file.
+
+%=============================================================================
+%=============================================================================
+
+\section{Manipulating Data}
+\label{Manipulating Data}
+
+\subsection{Introduction to the \parflow{} TCL commands (PFTCL) }
+
+Several tools for manipulating data are provided in PFTCL command set.
+In order to use them you need to load the \parflow{} package into
+the TCL shell.  If you are doing simple data manipulation the
+\file{xpftools} provides GUI access to most of these features.
+All of these tools are accessible inside of a \parflow{} input script.
+You can use them to do post and pre processing of datafiles each time
+you execute a run.
+
+\begin{display}\begin{verbatim}
+#
+# To Import the ParFlow TCL package
+#
+lappend auto_path $env(PARFLOW_DIR)/bin 
+package require parflow
+namespace import Parflow::*
+\end{verbatim}\end{display}
+
+Use \kbd{pfhelp} to get a list of commands.
+
+PFTCL assigns identifiers to each data set it stores.
+For example, if you read in a file called \file{foo.pfb},
+you get the following:
+\begin{display}\begin{verbatim}
+parflow> pfload foo.pfb
+dataset0
+\end{verbatim}\end{display}
+The first line is typed in by the user and the second line
+is printed out by PFTCL.
+It indicates that the data read from file \file{foo.pfb} is
+associated with the identifier \code{dataset0}.
+
+To exit use the standard TCL command \kbd{exit}.
+
+\subsection{PFTCL Commands}
+\label{PFTCL Commands}
+The following gives a list of \parflow{} commands and instructions for their use:
+Note that commands that perform operations on data sets will
+require an identifier for each data set it takes as input.
+
+\begin{description}
+
+\item{\begin{verbatim}pfaxpy alpha x y\end{verbatim}}
+This command computes y = alpha*x+y where alpha is a scalar and x and 
+y are identifiers representing data sets.  No data set identifier is
+returned upon successful completion since data set y is overwritten.
+
+\item{\begin{verbatim}pfcvel conductivity phead\end{verbatim}}
+This command computes the Darcy velocity in cells for the conductivity data set
+represented by the identifier `conductivity' and the pressure head
+data set represented by the identifier `phead'.  (note: This "cell"
+is not the same as the grid cells; its corners are defined by the
+grid vertices.)  The identifier of the data set created by this
+operation is returned upon successful completion.
+
+\item{\begin{verbatim}pfdelete dataset\end{verbatim}}
+This command deletes the data set represented by the identifier `dataset'.
+        
+\item{\begin{verbatim}pfdiffelt datasetp datasetq i j k digits [zero]\end{verbatim}}
+This command returns the difference of two corresponding coordinates
+from `datasetp' and `datasetq' if the number of digits in agreement
+(significant digits) differs by more than `digits' significant
+digits and the difference is greater than the absolute zero given     
+by `zero'.
+
+
+\item{\begin{verbatim}pfdist filename \end{verbatim}}
+Distribute the file onto the virtual file system.  This utility must
+be used to create files which \parflow{} can use as input.  \parflow{}
+uses a virtual file system which allows each node of the parallel
+machine to read from the input file independentaly.  The utility does
+the inverse of the pfundist command.  If you are using a \parflow{}
+binary file for input you should do a pfdist just before you do the
+pfrun.  This command requires that the processor topology and
+computational grid be set in the input file so that it knows how to
+distribute the data.
+
+\item{\begin{verbatim}pfflux conductivity hhead\end{verbatim}}
+This command computes the net Darcy flux at vertices for the
+conductivity data set `conductivity' and the hydraulic head data      
+set given by `hhead'.  An identifier representing the flux computed   
+will be returned upon successful completion.
+        
+\item{\begin{verbatim}pfgetelt dataset i j k\end{verbatim}}
+This command returns the value at element (i,j,k) in data set         
+`dataset'.  The i, j, and k above must range from 0 to (nx - 1), 0 to 
+(ny - 1), and 0 to (nz - 1) respectively.  The values nx, ny, and nz
+are the number of grid points along the x, y, and z axes respectively.
+The string `dataset' is an identifier representing the data set whose
+element is to be retrieved.
+        
+\item{\begin{verbatim}pfgetgrid dataset\end{verbatim}}
+This command returns a description of the grid which serves as the
+domain of data set `dataset'.  The format of the description is given 
+below.
+\begin{itemize}
+\item{\begin{verbatim}(nx, ny, nz)\end{verbatim}
+The number of coordinates in each direction.}
+\item{\begin{verbatim}(x, y, z)\end{verbatim}The origin of the grid.}
+\item{\begin{verbatim}(dx, dy, dz)\end{verbatim}The distance between each
+coordinate in each direction.}
+\end{itemize}
+The above information is returned in the following Tcl list format:
+{nx ny nz} {x y z} {dx dy dz}
+        
+\item{\begin{verbatim}pfgridtype gridtype\end{verbatim}}
+This command sets the grid type to either cell centered if `gridtype'
+is set to `cell' or vetex centered if `gridtype' is set to `vertex'.
+If no new value for `gridtype' is given, then the current value of
+`gridtype' is returned.  The value of `gridtype' will be returned upon
+successful completion of this command.
+
+\item{\begin{verbatim}pfhhead phead\end{verbatim}}
+This command computes the hydraulic head from the pressure head       
+represented by the identifier `phead'.  An identifier for the 
+hydraulic head computed is returned upon successful completion.
+
+\item{\begin{verbatim}pflistdata dataset\end{verbatim}}
+This command returns a list of pairs if no argument is given.  The
+first item in each pair will be an identifier representing the data   
+set and the second item will be that data set's label.  If a data     
+set's identifier is given as an argument, then just that data set's   
+name and label will be returned.
+       
+\item{\begin{verbatim}pfload [file format] filename\end{verbatim}}
+
+Loads a dataset into memory so it can be manipulated using the other
+utilities.  A file format may preceed the filename in order to
+indicate the file's format.  If no file type option is given, then the
+extension of the filename is used to determine the default file type.
+An identifier used to represent the data set will be returned upon
+successful completion.
+
+      File type options include:
+\begin{itemize}
+\item{\begin{verbatim}pfb\end{verbatim}} ParFlow binary format.  
+Default file type for files with a `.pfb' extension.
+\item{\begin{verbatim}pfsb\end{verbatim}}  ParFlow scattered binary format.
+Default file type for files with a `.pfsb' extension.
+\item{\begin{verbatim}sa\end{verbatim}}  ParFlow simple ASCII format.
+Default file type for files with a `.sa' extension.
+\item{\begin{verbatim}sb\end{verbatim}} ParFlow simple binary format.
+Default file type for files with a `.sb' extension.
+\item{\begin{verbatim}rsa\end{verbatim}} ParFlow real scattered ASCII format.
+Default file type for files with a `.rsa' extension
+\end{itemize}
+      
+\item{\begin{verbatim}pfloadsds filename dsnum\end{verbatim}}
+This command is used to load Scientific Data Sets from HDF files.    
+The SDS number `dsnum' will be used to find the SDS you wish to load
+from the HDF file `filename'.  The data set loaded into memory will
+be assigned an identifier which will be used to refer to the data set
+until it is deleted.  This identifier will be returned upon
+successful completion of the command.  
+        
+\item{\begin{verbatim}pfmdiff datasetp datasetq digits [zero]\end{verbatim}}
+If `digits' is greater than or equal to zero, then this command     
+computes the grid point at which the number of digits in agreement    
+(significant digits) is fewest and differs by more than `digits'    
+significant digits.  If `digits' is less than zero, then the point  
+at which the number of digits in agreement (significant digits) is    
+minimum is computed.  Finally, the maximum absolute difference is     
+computed.  The above information is returned in a Tcl list
+of the following form:
+{mi mj mk sd} adiff
+   
+Given the search criteria, (mi, mj, mk) is the coordinate where the
+minimum number of significant digits `sd' was found and `adiff' is
+the maximum absolute difference.        
+        
+        
+\item{\begin{verbatim}pfnewdata {nx ny nz} {x y z} {dx dy dz} label\end{verbatim}}
+This command creates a new data set whose dimension is described by
+the lists {nx ny nz}, {x y z}, and {dx dy dz}.  The first list,
+describes the dimensions, the second indicates the origin, and the
+third gives the length intervals between each coordinate along each
+axis.  The `label' argument will be the label of the data set that
+gets created.  This new data set that is created will have all of
+its data points set to zero automatically.  An identifier for the new
+data set will be returned upon successful completion.
+
+
+\item{\begin{verbatim}pfnewlabel dataset newlabel\end{verbatim}}
+This command changes the label of the data set `dataset' to
+`newlabel'.
+ 
+\item{\begin{verbatim}pfphead hhead\end{verbatim}}
+This command computes the pressure head from the hydraulic head   
+represented by the identifier `hhead'.  An identifier for the pressure
+head is returned upon successful completion.
+        
+\item{\begin{verbatim}pfsavediff datasetp datasetq digits [zero] -file filename
+\end{verbatim}}
+This command saves to a file the differences between the values
+of the data sets represented by `datasetp' and `datasetq' to file
+`filename'.  The data points whose values differ in more than         
+`digits' significant digits and whose differences are greater than  
+`zero' will be saved.  Also, given the above criteria, the
+minimum number of digits in agreement (significant digits) will be    
+saved.
+
+If `digits' is less than zero, then only the minimum number of
+significant digits and the coordinate where the minimum was
+computed will be saved.
+
+In each of the above cases, the maximum absolute difference given
+the criteria will also be saved.
+
+\item{\begin{verbatim}pfsave dataset -filetype filename\end{verbatim}}
+This command is used to save the data set given by the identifier
+`dataset' to a file `filename' of type `filetype' in one of the
+ParFlow formats below.
+
+File type options include:
+\begin{itemize}
+\item{pfb}  ParFlow binary format.
+\item{sa}  ParFlow simple ASCII format.
+\item{sb}  ParFlow simple binary format.
+\item{vis}  Vizamrai binary format.
+\end{itemize}
+
+\item{\begin{verbatim}pfsavesds dataset -filetype filename\end{verbatim}}
+This command is used to save the data set represented by the
+identifier `dataset' to the file `filename' in the format given by    
+`filetype'.  
+
+The possible HDF formats are:
+\begin{itemize}
+\item{-float32}
+\item{-float64}
+\item{-int8}
+\item{-uint8}
+\item{-int16}
+\item{-uint16}
+\item{-int32}
+\item{-uint32}
+\end{itemize}
+
+       
+\item{\begin{verbatim}pfstats dataset\end{verbatim}}
+This command prints various statistics for the data set represented by
+the identifier `dataset'.  The minimum, maximum, mean, sum, variance,
+and standard deviation are all computed.  The above values are
+returned in a list of the following form:
+{min max mean sum variance (standard deviation)}
+        
+        
+\item{\begin{verbatim}pfvmag datasetx datasety datasetz\end{verbatim}}
+This command computes the velocity magnitude when given three velocity
+components.  The three parameters are identifiers which represent
+the x, y, and z components respectively.  The identifier of the data
+set created by this operation is returned upon successful completion.
+
+
+\item{\begin{verbatim}pfvvel conductivity phead\end{verbatim}}
+This command computes the Darcy velocity in cells for the conductivity
+data set represented by the identifier `conductivity' and the pressure
+head data set represented by the identifier `phead'.  The identifier  
+of the data set created by this operation is returned upon successful 
+completion.  
+
+        
+\item{\begin{verbatim}pfprintdata dataset\end{verbatim}}
+This command executes `pfgetgrid' and `pfgetelt' in order to display
+all the elements in the data set represented by the identifier
+`dataset'.
+        
+        
+\item{\begin{verbatim}pfprintdiff datasetp datasetq digits [zero]\end{verbatim}}
+This command executes `pfdiffelt' and `pfmdiff' to print differences
+to standard output.  The differences are printed one per line along
+with the coordinates where they occur.  The last two lines displayed  
+will show the point at which there is a minimum number of significant 
+digits in the difference as well as the maximum absolute difference.
+        
+        
+\item{\begin{verbatim}pfprintgrid dataset\end{verbatim}}
+This command executes pfgetgrid and formats its output before printing
+it on the screen.  The triples (nx, ny, nz), (x, y, z), and
+(dx, dy, dz) are all printed on seperate lines along with labels
+describing each.
+        
+        
+\item{\begin{verbatim}pfprintlist [dataset]\end{verbatim}}
+This command executes pflistdata and formats the output of that
+command.  The formatted output is then printed on the screen.  The
+output consists of a list of data sets and their labels one per line
+if no argument was given or just one data set if an identifier was
+given.
+        
+        
+\item{\begin{verbatim}pfprintmdiff datasetp datasetq digits [zero]\end{verbatim}}
+This command executes `pfmdiff' and formats that command's output
+before displaying it on the screen.  Given the search criteria, a line
+displaying the point at which the difference has the least number of
+significant digits will be displayed.  Another line displaying the
+maximum absolute difference will also be displayed.
+ 
+        
+\item{\begin{verbatim}printstats dataset\end{verbatim}}
+This command executes `pfstats' and formats that command's output
+before printing it on the screen.  Each of the values mentioned in the
+description of `pfstats' will be displayed along with a label.
+
+
+\item{\begin{verbatim}pfundist filename, pfundist runname\end{verbatim}}
+
+The command undistributes a \parflow{} output file.  \parflow{} uses a
+distributed file system where each node can write to its own file.
+The pfundist command takes all of these individual files and collapses
+them into a single file.
+
+The arguments can be a runname or a filename.  If a runname is given
+then all of the output files associated with that run are
+undistributed.
+
+Normally this is done after every pfrun command.
+        
+\end{description}        
+
+%=============================================================================
+%=============================================================================
+
+\section{Directory of Test Cases}
+\label{Test Directory}
+
+\parflow{} comes with a directory containing a few simple input files for use
+as templates in making new files and for use in testing the code.  This section
+gives a brief descriptionn of the problems in this driectory.

@@ -1,0 +1,38 @@
+#!/bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.8 $
+#EHEADER***********************************************************************
+
+if [ -z "$PARFLOW_HELP" ]
+then
+	PARFLOW_HELP=$PARFLOW_DIR/docs
+fi
+
+if [ -z "$PARFLOW_HTML_VIEWER" ]
+then
+	PARFLOW_HTML_VIEWER=netscape
+fi
+
+if [ -f "$PARFLOW_HELP/usr_index.html" ]
+then
+	HELP_FILE=$PARFLOW_HELP/usr_index.html
+fi
+
+if [ -f "$PARFLOW_HELP/dev_index.html" ]
+then
+	HELP_FILE=$PARFLOW_HELP/dev_index.html
+fi
+
+if [ -z "$HELP_FILE" ] 
+then
+	echo "Can't find the help files in directory $PARFLOW_HELP"
+	exit 1
+fi
+
+$PARFLOW_HTML_VIEWER $HELP_FILE
+

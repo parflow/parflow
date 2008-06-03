@@ -1,0 +1,143 @@
+#!/usr/bin/avs -network
+version 5.02 (50.62 SunOS4)
+module downsize.user.0 -xy 349,97 -ex $Path/avs_library/mongo
+module statistics.user.1 -xy 133,145 -ex $Path/avs_library/mongo
+module "field to byte.user.2" -xy 349,177 -ex $Path/avs_library/mongo
+module "generate colormap.user.3" -xy 581,145
+module colorizer.user.4 -xy 581,297 -ex $Path/avs_library/mongo
+module "compute gradient.user.5" -xy 349,273 -ex $Path/avs_library/mongo
+module "gradient shade.user.6" -xy 349,353 -ex $Path/avs_library/mongo
+module "generate colormap.user.7" -xy 29,322
+module "color range.user.8" -xy 141,426 -ex $Path/avs_library/mongo
+module tracer.user.9 -xy 349,457 -ex $Path/avs_library/tracer
+module "display tracker.user.10" -xy 349,530 -ex $Path/avs_library/trackwin
+port_vis "display tracker.user.10":Transformation -on
+module "color range.user.11" -xy 581,217 -ex $Path/avs_library/mongo
+module "read parflow macro.user.16" -xy 349,33 -macro -type 1
+port_add -out "read parflow macro.user.16":"Uniform Output" "field 3D scalar 3-coord uniform float" -flags 0x2
+port_add -out "read parflow macro.user.16":"Scattered Output" "field 1D scalar 3-coord irregular float" -flags 0x2
+port_add -out "read parflow macro.user.16":"integer value" integer -flags 0x2
+module "animated integer.user.17" -xy 301,121 -ex $Path/avs_library/anim_int -parent "read parflow macro.user.16"
+module "integer to file.user.18" -xy 301,185 -ex /home/bacchus0/falgout/parflow/exe.SunOS/avs/mod_lib/pf_modules -parent "read parflow macro.user.16"
+module "read parflow.user.19" -xy 301,249 -ex /home/bacchus0/falgout/parflow/exe.SunOS/avs/mod_lib/pf_modules -parent "read parflow macro.user.16"
+port_vis "read parflow.user.19":"File Browser" -on
+port_connect downsize.user.0:0 "field to byte.user.2":0
+port_connect downsize.user.0:0 statistics.user.1:0
+port_connect "field to byte.user.2":0 "color range.user.8":0
+port_connect "field to byte.user.2":0 "compute gradient.user.5":0
+port_connect "field to byte.user.2":0 colorizer.user.4:0
+port_connect "field to byte.user.2":0 "color range.user.11":0
+port_connect "generate colormap.user.3":0 "color range.user.11":1
+port_connect colorizer.user.4:0 "gradient shade.user.6":0
+port_connect "compute gradient.user.5":0 "gradient shade.user.6":1
+port_connect "gradient shade.user.6":0 tracer.user.9:0
+port_connect "generate colormap.user.7":0 "color range.user.8":1
+port_connect "color range.user.8":0 tracer.user.9:2
+port_connect tracer.user.9:0 "display tracker.user.10":0
+port_connect "display tracker.user.10":0 "gradient shade.user.6":2
+port_connect "color range.user.11":0 colorizer.user.4:1
+port_connect "read parflow macro.user.16":0 downsize.user.0:0
+port_connect "animated integer.user.17":0 "OUT-> read parflow macro.user.16":2
+port_connect "animated integer.user.17":0 "integer to file.user.18":0
+port_connect "integer to file.user.18":0 "read parflow.user.19":0
+port_connect "read parflow.user.19":0 "OUT-> read parflow macro.user.16":0
+port_connect "read parflow.user.19":1 "OUT-> read parflow macro.user.16":1
+parm_set downsize.user.0:downsize 1
+parm_set "display tracker.user.10":Scale 8
+shell "ui" shell
+ panel Application -w app_panel -p ui -xy 0,0 -wh 259,1023
+  panel "Top Level Stack" -w master_stack -p Application -xy 2,100 -wh 256,832
+   panel downsize.user.0 -w panel -p "Top Level Stack" -xy 0,63 -wh 109,147
+    manipulator downsize.user.0:downsize -w idial -p downsize.user.0 \
+        -xy 9,9 -wh 90,129
+   panel statistics.user.1 -w panel -p "Top Level Stack" -xy 0,63 -wh 256,243
+    manipulator "statistics.user.1:Compute Median" -w toggle -p statistics.user.1 \
+        -xy 9,9 -wh 118,22
+    manipulator statistics.user.1:Statistics -w textblock -p statistics.user.1 \
+        -xy 9,29 -wh 237,201
+   panel "field to byte.user.2" -w panel -p "Top Level Stack" \
+       -xy 0,63 -wh 137,41
+    manipulator "field to byte.user.2:byte normalize" -w toggle -p "field to byte.user.2" \
+        -xy 9,9 -wh 118,22
+   panel "generate colormap.user.3" -w panel -p "Top Level Stack" \
+       -xy 0,63 -wh 252,567
+    manipulator "generate colormap.user.3:colormap" -w color_editor -p "generate colormap.user.3" \
+        -xy 9,9 -wh 235,422
+    manipulator "generate colormap.user.3:lo value" -w dial -p "generate colormap.user.3" \
+        -xy 9,429 -wh 90,129
+    manipulator "generate colormap.user.3:hi value" -w dial -p "generate colormap.user.3" \
+        -xy 99,429 -wh 90,129
+   panel "compute gradient.user.5" -w panel -p "Top Level Stack" \
+       -xy 0,63 -wh 227,147
+    manipulator "compute gradient.user.5:2D Height" -w dial -p "compute gradient.user.5" -hide \
+        -xy 9,9 -wh 90,129
+    manipulator "compute gradient.user.5:Flip" -w toggle -p "compute gradient.user.5" \
+        -xy 99,9 -wh 118,22
+   panel "gradient shade.user.6" -w panel -p "Top Level Stack" \
+       -xy 0,63 -wh 199,408
+    manipulator "gradient shade.user.6:ambient" -w dial -p "gradient shade.user.6" \
+        -xy 9,9 -wh 90,129
+    manipulator "gradient shade.user.6:diffuse" -w dial -p "gradient shade.user.6" \
+        -xy 99,9 -wh 90,129
+    manipulator "gradient shade.user.6:specular" -w dial -p "gradient shade.user.6" \
+        -xy 9,139 -wh 90,129
+    manipulator "gradient shade.user.6:gloss" -w dial -p "gradient shade.user.6" \
+        -xy 99,139 -wh 90,129
+    manipulator "gradient shade.user.6:lt theta" -w dial -p "gradient shade.user.6" \
+        -xy 9,265 -wh 90,129
+    manipulator "gradient shade.user.6:lt off-ctr" -w dial -p "gradient shade.user.6" \
+        -xy 99,265 -wh 90,129
+   panel "generate colormap.user.7" -w panel -p "Top Level Stack" \
+       -xy 0,63 -wh 252,567
+    manipulator "generate colormap.user.7:colormap" -w color_editor -p "generate colormap.user.7" \
+        -xy 9,9 -wh 235,422
+    manipulator "generate colormap.user.7:lo value" -w dial -p "generate colormap.user.7" \
+        -xy 9,429 -wh 90,129
+    manipulator "generate colormap.user.7:hi value" -w dial -p "generate colormap.user.7" \
+        -xy 99,429 -wh 90,129
+   panel tracer.user.9 -w panel -p "Top Level Stack" -xy 0,63 -wh 256,324
+    manipulator "tracer.user.9:alpha scale" -w dial -p tracer.user.9 \
+        -xy 9,9 -wh 90,129
+    manipulator tracer.user.9:perspective -w dial -p tracer.user.9 \
+        -xy 99,9 -wh 90,129
+    manipulator tracer.user.9:Width -w typein_integer -p tracer.user.9 \
+        -xy 9,139 -wh 118,22
+    manipulator tracer.user.9:Height -w typein_integer -p tracer.user.9 \
+        -xy 9,160 -wh 118,22
+    manipulator tracer.user.9:interpolate -w toggle -p tracer.user.9 \
+        -xy 9,184 -wh 118,22
+    manipulator "tracer.user.9:Performance Stats" -w textblock -p tracer.user.9 \
+        -xy 9,206 -wh 237,112
+   panel "display tracker.user.10" -w panel -p "Top Level Stack" \
+       -xy 0,243 -wh 227,147
+    manipulator "display tracker.user.10:Scale" -w idial -p "display tracker.user.10" \
+        -xy 9,9 -wh 90,129
+    manipulator "display tracker.user.10:Interpolate" -w toggle -p "display tracker.user.10" \
+        -xy 99,9 -wh 118,22
+   panel "read parflow macro.user.16" -w stack -p "Top Level Stack" \
+       -xy 0,265 -wh 256,394
+    panel "animated integer.user.17" -w panel -p "read parflow macro.user.16" \
+        -xy 0,63 -wh 256,173
+     manipulator "animated integer.user.17:min value" -w typein_integer -p "animated integer.user.17" \
+         -xy 9,9 -wh 237,22
+     manipulator "animated integer.user.17:max value" -w typein_integer -p "animated integer.user.17" \
+         -xy 9,29 -wh 237,22
+     manipulator "animated integer.user.17:steps" -w typein_integer -p "animated integer.user.17" \
+         -xy 9,54 -wh 118,22
+     manipulator "animated integer.user.17:sleep" -w toggle -p "animated integer.user.17" \
+         -xy 9,75 -wh 118,22
+     manipulator "animated integer.user.17:choice" -w radio_buttons -p "animated integer.user.17" \
+         -xy 9,99 -wh 118,67
+    panel "integer to file.user.18" -w panel -p "read parflow macro.user.16" \
+        -xy 0,63 -wh 256,239
+     manipulator "integer to file.user.18:File Prefix" -w browser -p "integer to file.user.18" \
+         -xy 9,9 -wh 237,199
+     manipulator "integer to file.user.18:Format" -w typein -p "integer to file.user.18" \
+         -xy 9,206 -wh 237,22
+    panel "read parflow.user.19" -w panel -p "read parflow macro.user.16" \
+        -xy 0,108 -wh 256,285
+     manipulator "read parflow.user.19:File Browser" -w browser -p "read parflow.user.19" \
+         -xy 9,9 -wh 237,199
+     manipulator "read parflow.user.19:Scan Files" -w radio_buttons -p "read parflow.user.19" \
+         -xy 9,206 -wh 118,67
+# End of file

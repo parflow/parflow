@@ -1,0 +1,69 @@
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+#
+#  Makefile for parflow tools.
+# 
+#  This file is machine independent.  Machine dependent information should
+#  be in the build script that invokes this makfile
+#
+
+PROJECT=parflow
+
+#
+# Clear default rules
+#
+.SUFFIXES:
+.SUFFIXES: .c .o
+
+all: $(PROJECT)$(PFTOOLS_SHLIB_SUFFIX)
+
+.c.o : 
+	$(PFTOOLS_CC) $(PFTOOLS_INCLUDE) -I. $(CFLAGS) $(PFTOOLS_SHLIB_CFLAGS) -c $<
+
+.o :
+
+#
+# For building parflow tcl/wish library package
+#
+TOOLS_HDRS = pftools.h printdatabox.h readdatabox.h databox.h error.h \
+        velocity.h head.h flux.h diff.h stats.h tools_io.h getsubbox.h \
+	enlargebox.h silo.h	
+
+TOOLS_OBJS = pftappinit.o  printdatabox.o readdatabox.o databox.o \
+        error.o velocity.o head.o flux.o diff.o stats.o tools_io.o axpy.o \
+        getsubbox.o enlargebox.o load.o usergrid.o grid.o region.o file.o \
+	pftools.o 
+
+$(PROJECT)$(PFTOOLS_SHLIB_SUFFIX): Makefile $(TOOLS_HDRS) $(TOOLS_OBJS)
+	@echo "Lib: $(PFTOOLS_SHLIB_LIBS)"
+	$(PFTOOLS_SHLIB_LD) $(PFTOOLS_LINK) -o $(PROJECT)$(PFTOOLS_SHLIB_SUFFIX) $(TOOLS_OBJS) $(PFTOOLS_SHLIB_LIBS) 
+
+LIB_FILES = $(PROJECT)$(PFTOOLS_SHLIB_SUFFIX) parflow.tcl
+
+#
+# Instead of using the pkgIndex utility manualy maintain the index file.
+# There seems to be no way to get the namespace import routine to 
+# work since namespace is not done until a command is invoked.  
+# By manually creating the index file we can cause the package to load
+# immediatly thus avoiding this problem (and namespace import can be
+# invoked directly after the package is required)
+#
+#pkgIndex.tcl: $(PROJECT)$(PFTOOLS_SHLIB_SUFFIX) Makefile.tcllib
+#	@echo 'pkg_mkIndex . $(LIB_FILES)' | tclsh8.0
+
+#
+# For cleaning
+#
+clean:
+	@rm -f *.o
+
+veryclean: clean
+	@rm -f $(PROJECT)$(PFTOOLS_SHLIB_SUFFIX)
+

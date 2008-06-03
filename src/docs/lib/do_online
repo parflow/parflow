@@ -1,0 +1,25 @@
+#!/bin/sh
+
+(
+cd $1
+
+grep 'name=PFAnchor' *.html |
+awk '
+  {
+    line = $0
+
+    i = index(line, ":")
+    file = substr(line,1,i-1)
+    line = substr(line,i)
+
+    i = index(line, "name=PFAnchor")
+    line = substr(line,i+13)
+
+    i = index(line, ">")
+    anchor = substr(line,1,i-1)
+
+    print "PFAnchor" anchor "  " file
+  }
+' |
+sort > pfanchors
+)

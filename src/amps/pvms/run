@@ -1,0 +1,65 @@
+#! /bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+PVM_ARCH="`$PVM_ROOT/lib/pvmgetarch`"
+
+#=============================================================================
+#
+# Loop to parse users arguments
+#
+#=============================================================================
+PROGRAM=""
+while getopts hp: c
+do
+	case $c in
+	hp) 
+		echo "usage: $0 run runname process_group"
+		echo "Runs parflow on the allocated cube."
+	        exit 0;;
+	p) 
+	       PROGRAM=$2
+	       shift 
+	       shift;;
+esac
+done
+
+if [ "$MALLOC_DEBUG" ]; then
+	rm -f malloc.log.????
+fi
+
+#
+# The following is a hack to deal with NFS temp mount problems
+#
+if [ -z "$AMPS_ROOT_DIR" ]; then
+	AMPS_ROOT_DIR=$HOME
+	export AMPS_ROOT_DIR
+fi
+
+real_home=`(cd $AMPS_ROOT_DIR; sh -c "pwd")`
+AMPS_EXE_DIR=`echo \`pwd\` | sed "s#$real_home#$AMPS_ROOT_DIR#"`
+export AMPS_EXE_DIR
+
+if [ -z "$PROGRAM" ]
+then
+	#
+	# The default is to run ParFlow
+	#
+	PROGRAM=parflow
+
+fi
+
+$PROGRAM -n `cat .amps.info.$2` $1
+
+if [ "$MALLOC_DEBUG" ]; then
+	grep "^known" malloc.log.* 
+fi
+
+
+

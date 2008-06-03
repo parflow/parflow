@@ -1,0 +1,19 @@
+#!/bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+FILES="amps_sfbcast.c amps_invoice.c amps_newpackage.c amps_ffopen.c \
+amps_io.c amps_clear.c amps_clock.c"
+for i in $FILES
+do
+    if [ ! -h "$i" ]; then
+	ln -s ../common/$i .
+    fi
+done
+

@@ -1,0 +1,404 @@
+#!/usr/bin/avs -network
+version 5.02 (50.62 sg2)
+module excavate.user.0 -xy 598,242 -ex $Path/avs_library/mongo
+port_vis excavate.user.0:X -on
+module downsize.user.1 -xy 388,52 -ex $Path/avs_library/mongo
+module "field to byte.user.3" -xy 598,192 -ex $Path/avs_library/mongo
+module "read parflow macro.user.4" -xy 388,12 -macro -type 1
+port_add -out "read parflow macro.user.4":"Uniform Output" "field 3D scalar 3-coord uniform float" -flags 0x2
+port_add -out "read parflow macro.user.4":"Scattered Output" "field 1D scalar 3-coord irregular float" -flags 0x2
+port_add -out "read parflow macro.user.4":"integer value" integer -flags 0x2
+module "animated integer.user.5" -xy 301,121 -ex $Path/avs_library/anim_int -parent "read parflow macro.user.4"
+module "integer to file.user.6" -xy 301,185 -ex /home/steve/ParFlow/exe.irix/avs/mod_lib/pf_modules -parent "read parflow macro.user.4"
+module "read parflow.user.7" -xy 301,249 -ex /home/steve/ParFlow/exe.irix/avs/mod_lib/pf_modules -parent "read parflow macro.user.4"
+port_vis "read parflow.user.7":"File Browser" -on
+module isosurface.user.8 -xy 608,302 -ex $Path/avs_library/tile
+module "WRITE ANY IMAGE.user.10" -xy 248,512 -ex /home/steve/ParFlow/exe.irix/avs/mod_lib/pf_modules
+port_vis "WRITE ANY IMAGE.user.10":"WRITE ANY IMAGE browser" -on
+module "integer to file.user.11" -xy 168,462 -ex /home/steve/ParFlow/exe.irix/avs/mod_lib/pf_modules
+module "animated integer.user.12" -xy 28,12 -ex $Path/avs_library/anim_int
+module "field math.user.13" -xy 608,142 -ex $Path/avs_library/mongo
+module threshold.user.14 -xy 608,92 -ex $Path/avs_library/mongo
+module excavate.user.15 -xy 423,237 -ex $Path/avs_library/mongo
+port_vis excavate.user.15:X -on
+module "field to byte.user.16" -xy 423,197 -ex $Path/avs_library/mongo
+module isosurface.user.17 -xy 423,277 -ex $Path/avs_library/tile
+module "field math.user.18" -xy 423,157 -ex $Path/avs_library/mongo
+module threshold.user.19 -xy 423,117 -ex $Path/avs_library/mongo
+module excavate.user.20 -xy 258,232 -ex $Path/avs_library/mongo
+port_vis excavate.user.20:X -on
+module "field to byte.user.21" -xy 258,192 -ex $Path/avs_library/mongo
+module isosurface.user.22 -xy 258,272 -ex $Path/avs_library/tile
+module "field math.user.23" -xy 258,152 -ex $Path/avs_library/mongo
+module threshold.user.24 -xy 268,122 -ex $Path/avs_library/mongo
+module "real math.user.25" -xy 678,162 -ex /home/steve/ParFlow/exe.irix/avs/mod_lib/pf_modules
+module "real to integer.user.26" -xy 668,222 -ex /home/steve/ParFlow/exe.irix/avs/mod_lib/pf_modules
+module "integer to real.user.27" -xy 178,52 -ex /home/steve/ParFlow/exe.irix/avs/mod_lib/pf_modules
+module float.user.28 -xy 668,22 -ex $Path/avs_library/mongo
+module "real to integer.user.29" -xy 418,172 -ex /home/steve/ParFlow/exe.irix/avs/mod_lib/pf_modules
+module "real math.user.30" -xy 418,132 -ex /home/steve/ParFlow/exe.irix/avs/mod_lib/pf_modules
+module float.user.31 -xy 558,52 -ex $Path/avs_library/mongo
+module "geometry viewer.user.32" -xy 358,462
+port_connect excavate.user.0:0 isosurface.user.8:0
+port_connect downsize.user.1:0 threshold.user.14:0
+port_connect downsize.user.1:0 threshold.user.24:0
+port_connect downsize.user.1:0 threshold.user.19:0
+port_connect "field to byte.user.3":0 excavate.user.0:0
+port_connect "read parflow macro.user.4":0 downsize.user.1:0
+port_connect "animated integer.user.5":0 "integer to file.user.6":0
+port_connect "animated integer.user.5":0 "OUT-> read parflow macro.user.4":2
+port_connect "integer to file.user.6":0 "read parflow.user.7":0
+port_connect "read parflow.user.7":0 "OUT-> read parflow macro.user.4":0
+port_connect "read parflow.user.7":1 "OUT-> read parflow macro.user.4":1
+port_connect isosurface.user.8:0 "geometry viewer.user.32":0
+port_connect "integer to file.user.11":0 "WRITE ANY IMAGE.user.10":1
+port_connect "animated integer.user.12":0 "integer to file.user.11":0
+port_connect "animated integer.user.12":0 "integer to real.user.27":0
+port_connect "animated integer.user.12":0 excavate.user.20:1
+port_connect "field math.user.13":0 "field to byte.user.3":0
+port_connect threshold.user.14:0 "field math.user.13":1
+port_connect threshold.user.14:0 "field math.user.13":0
+port_connect excavate.user.15:0 isosurface.user.17:0
+port_connect "field to byte.user.16":0 excavate.user.15:0
+port_connect isosurface.user.17:0 "geometry viewer.user.32":0
+port_connect "field math.user.18":0 "field to byte.user.16":0
+port_connect threshold.user.19:0 "field math.user.18":0
+port_connect threshold.user.19:0 "field math.user.18":1
+port_connect excavate.user.20:0 isosurface.user.22:0
+port_connect "field to byte.user.21":0 excavate.user.20:0
+port_connect isosurface.user.22:0 "geometry viewer.user.32":0
+port_connect "field math.user.23":0 "field to byte.user.21":0
+port_connect threshold.user.24:0 "field math.user.23":0
+port_connect threshold.user.24:0 "field math.user.23":1
+port_connect "real math.user.25":0 "real to integer.user.26":0
+port_connect "real to integer.user.26":0 excavate.user.0:1
+port_connect "integer to real.user.27":0 "real math.user.25":0
+port_connect "integer to real.user.27":0 "real math.user.30":0
+port_connect float.user.28:0 "real math.user.25":1
+port_connect "real to integer.user.29":0 excavate.user.15:1
+port_connect "real math.user.30":0 "real to integer.user.29":0
+port_connect float.user.31:0 "real math.user.30":1
+parm_set excavate.user.0:X 114 -range 0 300
+parm_set excavate.user.0:Y 1 -range 0 220
+parm_set excavate.user.0:Z 0 -range 0 100
+parm_set downsize.user.1:downsize 1
+parm_set "field to byte.user.3":"byte normalize" false
+parm_set "read parflow.user.7":"File Browser" /home/nyx1/pftemp1/baldwin/ocwd.out.perm.pfb
+parm_set isosurface.user.8:level 0.9998999834 -range 0 8
+parm_set "WRITE ANY IMAGE.user.10":"WRITE ANY IMAGE browser" /scratch/image.00340.gif
+parm_set "WRITE ANY IMAGE.user.10":"image type" gif
+parm_set "integer to file.user.11":"File Prefix" /scratch/image
+parm_set "integer to file.user.11":Format %s.%05d.gif
+parm_set "animated integer.user.12":"min value" 340
+parm_set "animated integer.user.12":steps 341
+parm_set "animated integer.user.12":sleep true
+parm_set threshold.user.14:thresh_min 4
+parm_set threshold.user.14:thresh_max 4
+parm_set excavate.user.15:X 152 -range 0 300
+parm_set excavate.user.15:Y 0 -range 0 220
+parm_set excavate.user.15:Z 0 -range 0 100
+parm_set "field to byte.user.16":"byte normalize" true
+parm_set isosurface.user.17:level 0.9990000129 -range 0 255
+parm_set "field math.user.18":choice /
+parm_set threshold.user.19:thresh_min 2
+parm_set threshold.user.19:thresh_max 2
+parm_set excavate.user.20:X 178 -range 0 300
+parm_set excavate.user.20:Y 0 -range 0 220
+parm_set excavate.user.20:Z 0 -range 0 100
+parm_set "field to byte.user.21":"byte normalize" false
+parm_set isosurface.user.22:level 0.9990000129 -range 0 2
+parm_set threshold.user.24:thresh_min 1
+parm_set threshold.user.24:thresh_max 1
+parm_set "real math.user.25":Ops -
+parm_set "real math.user.25":scale 4
+parm_set float.user.28:"float value" 40
+parm_set "real math.user.30":Ops -
+parm_set float.user.31:"float value" 20
+geom_set_scene -scene "geometry viewer.user.32"
+geom_set_camera_name "Camera 1"
+geom_resize_camera -view "Camera 1" 640 480
+#
+# State for view: Camera 1
+#
+geom_set_matrix -view "Camera 1" -mat \
+                  0.482974    -0.33168    0.813902    0 \
+                    0.878843    0.172561    -0.451188    0 \
+                    0.00917741    0.930551    0.373771    0 \
+                    0    0    0    1 
+geom_set_position -view "Camera 1" 0.0113261 -0.0647209 -12
+geom_set_view_modes -depth_cue 0 -view "Camera 1"
+geom_set_view_modes -polygonal_spheres 0 -view "Camera 1"
+geom_set_view_modes -stereo 0 -view "Camera 1"
+geom_set_view_modes -head_tracking 1 -view "Camera 1"
+geom_set_view_modes -z_buffer 1 -view "Camera 1"
+geom_set_view_modes -perspective 1 -view "Camera 1"
+geom_set_camera_params -view "Camera 1" -front 1 -back 112
+geom_set_depth_cue_params "Camera 1" -scale 0.1
+#
+# Light state
+#
+geom_set_light -light 1 -type directional -state 1
+geom_set_matrix -light 1 -mat \
+                  0.631792    0.507748    -0.585692    0 \
+                    0.0657795    0.717752    0.693188    0 \
+                    0.772346    -0.476477    0.420069    0 \
+                    0    0    0    1 
+geom_set_light -type ambient -state 1
+#
+# State for object: top
+#
+geom_set_cur_cli_obj top
+geom_set_matrix   -mat \
+                  0.0336709    0    0    0 \
+                    0    0.0336709    0    0 \
+                    0    0    0.0336709    0 \
+                    -5.00013    -3.85532    -1.5488    1 
+geom_set_position   1.43424e-07 7.63483e-06 3.86782e-06
+geom_set_obj_window 0 299 0 219 0 99
+#
+# State for object: isosurface
+#
+geom_set_cur_cli_obj -push
+geom_set_name_context isosurface.user.22
+geom_create_obj isosurface -mod isosurface.user.22
+geom_set_trans_mode parent
+geom_set_color 0.990 0.000 0.000
+geom_set_properties -amb 0.300 -diff 0.700 -spec 0.000 -exp 50.000 \
+ -trans 1.000 -spec_col 0.990 0.990 0.990
+geom_set_obj_window 0 299 0 219 0 99
+geom_set_name_context
+geom_set_cur_cli_obj -pop
+#
+# State for object: isosurface
+#
+geom_set_cur_cli_obj -push
+geom_set_name_context isosurface.user.17
+geom_create_obj isosurface -mod isosurface.user.17
+geom_set_trans_mode parent
+geom_set_color 0.000 0.990 0.000
+geom_set_properties -amb 0.300 -diff 0.700 -spec 0.000 -exp 50.000 \
+ -trans 1.000 -spec_col 0.990 0.990 0.990
+geom_set_obj_window 0 299 0 219 0 99
+geom_set_name_context
+geom_set_cur_cli_obj -pop
+#
+# State for object: bounds
+#
+geom_set_cur_cli_obj -push
+geom_set_name_context "volume bounds.user.2"
+geom_create_obj bounds -mod "volume bounds.user.2"
+geom_set_trans_mode parent
+geom_set_obj_window 0 299 0 219 0 99
+geom_set_name_context
+geom_set_cur_cli_obj -pop
+#
+# State for object: isosurface
+#
+geom_set_cur_cli_obj -push
+geom_set_name_context isosurface.user.8
+geom_create_obj isosurface -mod isosurface.user.8
+geom_set_trans_mode parent
+geom_set_color 0.233 0.274 0.990
+geom_set_properties -amb 0.300 -diff 0.700 -spec 0.000 -exp 50.000 \
+ -trans 1.000 -spec_col 0.990 0.990 0.990
+geom_set_obj_window 0 299 0 219 0 99
+geom_set_name_context
+geom_set_cur_cli_obj -pop
+shell "ui" shell
+ panel Application -w app_panel -p ui -xy 0,0 -wh 260,984
+  panel "Top Level Stack" -w master_stack -p Application -xy 2,100 -wh 256,1140
+   panel excavate.user.0 -w panel -p "Top Level Stack" -xy 0,570 -wh 226,323
+    manipulator excavate.user.0:X -w idial -p excavate.user.0 \
+        -xy 10,10 -wh 90,130
+    manipulator excavate.user.0:Y -w idial -p excavate.user.0 \
+        -xy 100,10 -wh 90,130
+    manipulator excavate.user.0:Z -w idial -p excavate.user.0 \
+        -xy 10,140 -wh 90,130
+    manipulator "excavate.user.0:flip X" -w toggle -p excavate.user.0 \
+        -xy 100,140 -wh 118,22
+    manipulator "excavate.user.0:flip Y" -w toggle -p excavate.user.0 \
+        -xy 10,270 -wh 118,22
+    manipulator "excavate.user.0:flip Z" -w toggle -p excavate.user.0 \
+        -xy 10,292 -wh 118,22
+   panel downsize.user.1 -w panel -p "Top Level Stack" -xy 0,592 -wh 110,150
+    manipulator downsize.user.1:downsize -w idial -p downsize.user.1 \
+        -xy 10,10 -wh 90,130
+   panel "field to byte.user.3" -w panel -p "Top Level Stack" \
+       -xy 0,570 -wh 137,42
+    manipulator "field to byte.user.3:byte normalize" -w toggle -p "field to byte.user.3" \
+        -xy 10,10 -wh 118,22
+   panel "read parflow macro.user.4" -w stack -p "Top Level Stack" \
+       -xy 0,592 -wh 256,392
+    panel "animated integer.user.5" -w panel -p "read parflow macro.user.4" \
+        -xy 0,64 -wh 255,173
+     manipulator "animated integer.user.5:min value" -w typein_integer -p "animated integer.user.5" \
+         -xy 8,8 -wh 236,22
+     manipulator "animated integer.user.5:max value" -w typein_integer -p "animated integer.user.5" \
+         -xy 8,28 -wh 236,22
+     manipulator "animated integer.user.5:steps" -w typein_integer -p "animated integer.user.5" \
+         -xy 8,54 -wh 118,22
+     manipulator "animated integer.user.5:sleep" -w toggle -p "animated integer.user.5" \
+         -xy 8,74 -wh 118,22
+     manipulator "animated integer.user.5:choice" -w radio_buttons -p "animated integer.user.5" \
+         -xy 8,98 -wh 118,66
+    panel "integer to file.user.6" -w panel -p "read parflow macro.user.4" \
+        -xy 0,64 -wh 255,239
+     manipulator "integer to file.user.6:File Prefix" -w browser -p "integer to file.user.6" \
+         -xy 8,8 -wh 236,194
+     manipulator "integer to file.user.6:Format" -w typein -p "integer to file.user.6" \
+         -xy 8,205 -wh 236,22
+    panel "read parflow.user.7" -w panel -p "read parflow macro.user.4" \
+        -xy 0,108 -wh 255,284
+     manipulator "read parflow.user.7:File Browser" -w browser -p "read parflow.user.7" \
+         -xy 8,8 -wh 236,194
+     manipulator "read parflow.user.7:Scan Files" -w radio_buttons -p "read parflow.user.7" \
+         -xy 8,205 -wh 118,66
+   panel isosurface.user.8 -w panel -p "Top Level Stack" -xy 0,592 -wh 228,216
+    manipulator isosurface.user.8:level -w dial -p isosurface.user.8 \
+        -xy 10,10 -wh 90,130
+    manipulator "isosurface.user.8:optimize surf" -w toggle -p isosurface.user.8 \
+        -xy 100,10 -wh 118,22
+    manipulator "isosurface.user.8:optimize wire" -w toggle -p isosurface.user.8 \
+        -xy 10,140 -wh 118,22
+    manipulator "isosurface.user.8:generate normals" -w toggle -p isosurface.user.8 \
+        -xy 10,162 -wh 118,22
+    manipulator "isosurface.user.8:flip normals" -w toggle -p isosurface.user.8 \
+        -xy 10,184 -wh 118,22
+   panel "WRITE ANY IMAGE.user.10" -w panel -p "Top Level Stack" \
+       -xy 0,592 -wh 256,522
+    manipulator "WRITE ANY IMAGE.user.10:WRITE ANY IMAGE browser" -w browser -p "WRITE ANY IMAGE.user.10" \
+        -xy 10,10 -wh 236,194
+    manipulator "WRITE ANY IMAGE.user.10:image type" -w radio_buttons -p "WRITE ANY IMAGE.user.10" \
+        -xy 10,204 -wh 236,308
+   panel "integer to file.user.11" -w panel -p "Top Level Stack" \
+       -xy 0,592 -wh 256,236
+    manipulator "integer to file.user.11:File Prefix" -w browser -p "integer to file.user.11" \
+        -xy 10,10 -wh 236,194
+    manipulator "integer to file.user.11:Format" -w typein -p "integer to file.user.11" \
+        -xy 10,204 -wh 236,22
+   panel "animated integer.user.12" -w panel -p "Top Level Stack" \
+       -xy 0,592 -wh 256,174
+    manipulator "animated integer.user.12:min value" -w typein_integer -p "animated integer.user.12" \
+        -xy 10,10 -wh 236,22
+    manipulator "animated integer.user.12:max value" -w typein_integer -p "animated integer.user.12" \
+        -xy 10,32 -wh 236,22
+    manipulator "animated integer.user.12:steps" -w typein_integer -p "animated integer.user.12" \
+        -xy 10,54 -wh 118,22
+    manipulator "animated integer.user.12:sleep" -w toggle -p "animated integer.user.12" \
+        -xy 10,76 -wh 118,22
+    manipulator "animated integer.user.12:choice" -w radio_buttons -p "animated integer.user.12" \
+        -xy 10,98 -wh 118,66
+   panel "field math.user.13" -w panel -p "Top Level Stack" -xy 0,592 -wh 138,350
+    manipulator "field math.user.13:choice" -w radio_buttons -p "field math.user.13" \
+        -xy 10,10 -wh 118,286
+    manipulator "field math.user.13:Normalize" -w toggle -p "field math.user.13" \
+        -xy 10,296 -wh 118,22
+    manipulator "field math.user.13:Constant" -w typein_real -p "field math.user.13" -hide \
+        -xy 10,318 -wh 118,22
+   panel threshold.user.14 -w panel -p "Top Level Stack" -xy 0,592 -wh 200,150
+    manipulator threshold.user.14:thresh_min -w dial -p threshold.user.14 \
+        -xy 10,10 -wh 90,130
+    manipulator threshold.user.14:thresh_max -w dial -p threshold.user.14 \
+        -xy 100,10 -wh 90,130
+   panel excavate.user.15 -w panel -p "Top Level Stack" -xy 0,570 -wh 226,323
+    manipulator excavate.user.15:X -w idial -p excavate.user.15 \
+        -xy 10,10 -wh 90,130
+    manipulator excavate.user.15:Y -w idial -p excavate.user.15 \
+        -xy 100,10 -wh 90,130
+    manipulator excavate.user.15:Z -w idial -p excavate.user.15 \
+        -xy 10,140 -wh 90,130
+    manipulator "excavate.user.15:flip X" -w toggle -p excavate.user.15 \
+        -xy 100,140 -wh 118,22
+    manipulator "excavate.user.15:flip Y" -w toggle -p excavate.user.15 \
+        -xy 10,270 -wh 118,22
+    manipulator "excavate.user.15:flip Z" -w toggle -p excavate.user.15 \
+        -xy 10,292 -wh 118,22
+   panel "field to byte.user.16" -w panel -p "Top Level Stack" \
+       -xy 0,592 -wh 137,42
+    manipulator "field to byte.user.16:byte normalize" -w toggle -p "field to byte.user.16" \
+        -xy 10,10 -wh 118,22
+   panel isosurface.user.17 -w panel -p "Top Level Stack" -xy 0,570 -wh 228,216
+    manipulator isosurface.user.17:level -w dial -p isosurface.user.17 \
+        -xy 10,10 -wh 90,130
+    manipulator "isosurface.user.17:optimize surf" -w toggle -p isosurface.user.17 \
+        -xy 100,10 -wh 118,22
+    manipulator "isosurface.user.17:optimize wire" -w toggle -p isosurface.user.17 \
+        -xy 10,140 -wh 118,22
+    manipulator "isosurface.user.17:generate normals" -w toggle -p isosurface.user.17 \
+        -xy 10,162 -wh 118,22
+    manipulator "isosurface.user.17:flip normals" -w toggle -p isosurface.user.17 \
+        -xy 10,184 -wh 118,22
+   panel "field math.user.18" -w panel -p "Top Level Stack" -xy 0,592 -wh 138,350
+    manipulator "field math.user.18:choice" -w radio_buttons -p "field math.user.18" \
+        -xy 10,10 -wh 118,286
+    manipulator "field math.user.18:Normalize" -w toggle -p "field math.user.18" \
+        -xy 10,296 -wh 118,22
+    manipulator "field math.user.18:Constant" -w typein_real -p "field math.user.18" -hide \
+        -xy 10,318 -wh 118,22
+   panel threshold.user.19 -w panel -p "Top Level Stack" -xy 0,592 -wh 200,150
+    manipulator threshold.user.19:thresh_min -w dial -p threshold.user.19 \
+        -xy 10,10 -wh 90,130
+    manipulator threshold.user.19:thresh_max -w dial -p threshold.user.19 \
+        -xy 100,10 -wh 90,130
+   panel excavate.user.20 -w panel -p "Top Level Stack" -xy 0,570 -wh 226,323
+    manipulator excavate.user.20:X -w idial -p excavate.user.20 \
+        -xy 10,10 -wh 90,130
+    manipulator excavate.user.20:Y -w idial -p excavate.user.20 \
+        -xy 100,10 -wh 90,130
+    manipulator excavate.user.20:Z -w idial -p excavate.user.20 \
+        -xy 10,140 -wh 90,130
+    manipulator "excavate.user.20:flip X" -w toggle -p excavate.user.20 \
+        -xy 100,140 -wh 118,22
+    manipulator "excavate.user.20:flip Y" -w toggle -p excavate.user.20 \
+        -xy 10,270 -wh 118,22
+    manipulator "excavate.user.20:flip Z" -w toggle -p excavate.user.20 \
+        -xy 10,292 -wh 118,22
+   panel "field to byte.user.21" -w panel -p "Top Level Stack" \
+       -xy 0,592 -wh 137,42
+    manipulator "field to byte.user.21:byte normalize" -w toggle -p "field to byte.user.21" \
+        -xy 10,10 -wh 118,22
+   panel isosurface.user.22 -w panel -p "Top Level Stack" -xy 0,592 -wh 228,216
+    manipulator isosurface.user.22:level -w dial -p isosurface.user.22 \
+        -xy 10,10 -wh 90,130
+    manipulator "isosurface.user.22:optimize surf" -w toggle -p isosurface.user.22 \
+        -xy 100,10 -wh 118,22
+    manipulator "isosurface.user.22:optimize wire" -w toggle -p isosurface.user.22 \
+        -xy 10,140 -wh 118,22
+    manipulator "isosurface.user.22:generate normals" -w toggle -p isosurface.user.22 \
+        -xy 10,162 -wh 118,22
+    manipulator "isosurface.user.22:flip normals" -w toggle -p isosurface.user.22 \
+        -xy 10,184 -wh 118,22
+   panel "field math.user.23" -w panel -p "Top Level Stack" -xy 0,592 -wh 138,350
+    manipulator "field math.user.23:choice" -w radio_buttons -p "field math.user.23" \
+        -xy 10,10 -wh 118,286
+    manipulator "field math.user.23:Normalize" -w toggle -p "field math.user.23" \
+        -xy 10,296 -wh 118,22
+    manipulator "field math.user.23:Constant" -w typein_real -p "field math.user.23" -hide \
+        -xy 10,318 -wh 118,22
+   panel threshold.user.24 -w panel -p "Top Level Stack" -xy 0,592 -wh 200,150
+    manipulator threshold.user.24:thresh_min -w dial -p threshold.user.24 \
+        -xy 10,10 -wh 90,130
+    manipulator threshold.user.24:thresh_max -w dial -p threshold.user.24 \
+        -xy 100,10 -wh 90,130
+   panel "real math.user.25" -w panel -p "Top Level Stack" -xy 0,592 -wh 138,196
+    manipulator "real math.user.25:Ops" -w radio_buttons -p "real math.user.25" \
+        -xy 10,10 -wh 118,154
+    manipulator "real math.user.25:scale" -w typein_real -p "real math.user.25" \
+        -xy 10,164 -wh 118,22
+   panel float.user.28 -w panel -p "Top Level Stack" -xy 0,592 -wh 110,150
+    manipulator "float.user.28:float value" -w dial -p float.user.28 \
+        -xy 10,10 -wh 90,130
+   panel "real math.user.30" -w panel -p "Top Level Stack" -xy 0,592 -wh 138,196
+    manipulator "real math.user.30:Ops" -w radio_buttons -p "real math.user.30" \
+        -xy 10,10 -wh 118,154
+    manipulator "real math.user.30:scale" -w typein_real -p "real math.user.30" \
+        -xy 10,164 -wh 118,22
+   panel float.user.31 -w panel -p "Top Level Stack" -xy 0,592 -wh 110,150
+    manipulator "float.user.31:float value" -w dial -p float.user.31 \
+        -xy 10,10 -wh 90,130
+ panel "geometry viewer.user.32!display" -w container -p ui -xy 435,29 -wh 680,552\
+   -P zoom_coords string "0 0 0 0 0 <$NULL> 0 0 0 0"
+manipulator "geometry viewer.user.32":object -w none
+manipulator "geometry viewer.user.32":"Update Always" -w none
+manipulator "geometry viewer.user.32":"Update Image" -w none
+# End of file

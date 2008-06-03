@@ -1,0 +1,19 @@
+NAME
+	zero_boundary - sets the boundary of a 3D field to zero
+
+SUMMARY
+	Name	zero_boundary
+
+	Type	filter
+
+	Inputs	Field Input  -  field 3D scalar 3-coord uniform float
+
+	Outputs	Field Output -  field 3D scalar 3-coord uniform float
+
+	Parameters  Name		Type	Default	  Choices
+
+DESCRIPTION
+
+	Sets the boundary of the inputed field to zero.
+
+

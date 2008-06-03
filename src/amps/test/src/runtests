@@ -1,0 +1,46 @@
+#!/bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+Num=$1
+shift
+if [ $1 = "all" ]
+then
+	tests="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16"
+else
+	tests=$*
+fi
+for s in $Num
+do
+	getmc $s
+	for i in $tests
+	do
+		if [ "$MALLOC_DEBUG" ]; then
+			rm malloc.log.????
+		fi
+		echo "==================== test$i ===================="
+		runt -p test$i 1
+#		sleep 5
+		runt -p test$i 5
+#		sleep 5
+		runt -p test$i 10
+#		sleep 5
+# 		runt -p test$i 100
+#		sleep 5
+		if [ "$MALLOC_DEBUG" ]; then
+			echo "================== Not freed info =============="
+			egrep -e "^known memory not freed" malloc.log.*
+			egrep -e "^unknown memory not freed" malloc.log.*
+			echo "================================================"
+			cat malloc.log.* >> malloc.log.total
+		fi
+	done
+	freemc
+done
+

@@ -1,0 +1,36 @@
+\begin{theindex}
+
+  \item \findex{AppendSubgridArray}, 78
+  \item \findex{AppendSubgrid}, 77
+  \item \findex{AppendSubregionArray}, 75
+  \item \findex{AppendSubregion}, 74
+  \item \findex{ConvertToSubgrid}, 80
+  \item \findex{ConvertToSubregion}, 79
+  \item \findex{DuplicateSubgrid}, 76
+  \item \findex{DuplicateSubregion}, 73
+  \item \findex{ExtractSubgrid}, 82
+  \item \findex{ForSubgridI}, 70
+  \item \findex{ForSubregionArrayI}, 69
+  \item \findex{ForSubregionI}, 68
+  \item \findex{FreeBackground}, 61
+  \item \findex{FreeGrid}, 67
+  \item \findex{FreeRegion}, 64
+  \item \findex{FreeSubgridArray}, 66
+  \item \findex{FreeSubgrid}, 65
+  \item \findex{FreeSubregionArray}, 63
+  \item \findex{FreeSubregion}, 62
+  \item \findex{IntersectSubgrids}, 83
+  \item \findex{NewGrid}, 60
+  \item \findex{NewRegion}, 57
+  \item \findex{NewSubgridArray}, 59
+  \item \findex{NewSubgrid}, 58
+  \item \findex{NewSubregionArray}, 56
+  \item \findex{NewSubregion}, 55
+  \item \findex{ProjectSubgrid}, 81
+  \item \findex{ReadBackground}, 54
+  \item \findex{SubgridXYZ}, 72
+  \item \findex{SubregionXYZ}, 71
+  \item \findex{SubtractSubgrids}, 84
+  \item \findex{UnionSubgridArray}, 85
+
+\end{theindex}

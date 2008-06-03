@@ -1,0 +1,48 @@
+NAME
+	geom parent - interactively reparent geometries within the geometry viewer subsystem
+
+SUMMARY
+	Name	geom parent
+	Type	Data Output
+	Inputs	non
+	Outputs	mesh - 	geom
+
+	Parameters
+	Name			Type	Default	Choices
+	Group Name		text	"Group"
+	Include Current Object	oneshot	
+
+DESCRIPTION
+	The geom parent module allows an interactive user to reparent
+	any and all objects in the geometry viewer system.  This is
+	useful if you want some objects to move together, but not all.
+	The "Group Name" parameter is used to define the group to add
+	objects to.  When the "Include Current Object" oneshot is pushed,
+	the current object selected within the geometry viewer is reparented
+	to the "Group Name". 
+
+	To reparent each object it is necessary for each object to:
+	  1. select the object as the current picked object in the
+	     geometry viewer.
+	  2. push the "Include Current Object" parameter in the
+	     geom parent module.
+	
+	This function can also be done from the cli.
+
+INPUTS
+
+PARAMETERS
+	Group Name
+		The name of the group that the current selected object
+		will be added to if the "Include Current Object" button
+		is pushed.
+	Include Current Object
+		A oneshot telling the module to reparent the current
+		object to the "Group Name".
+	
+OUTPUTS
+
+RELATED MODULES
+
+SEE ALSO
+

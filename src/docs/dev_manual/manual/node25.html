@@ -1,0 +1,461 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002-2-1 (1.70) JA patch-2.0
+patched version by:  Kenshi Muto, Debian Project.
+* modified by:  Shige TAKENO
+LaTeX2HTML 2002-2-1 (1.70),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>6.2 Transport Equations</TITLE>
+<META NAME="description" CONTENT="6.2 Transport Equations">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002-2-1 JA patch-2.0">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node26.html">
+<LINK REL="previous" HREF="node24.html">
+<LINK REL="up" HREF="node23.html">
+<LINK REL="next" HREF="node26.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html549"
+  HREF="node26.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html543"
+  HREF="node23.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html537"
+  HREF="node24.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html545"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html547"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html550"
+  HREF="node26.html">6.3 Notation and Units</A>
+<B> Up:</B> <A NAME="tex2html544"
+  HREF="node23.html">6. Equations</A>
+<B> Previous:</B> <A NAME="tex2html538"
+  HREF="node24.html">6.1 Multi-Phase Flow Equations</A>
+ &nbsp; <B>  <A NAME="tex2html546"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html548"
+  HREF="node92.html">Index</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00720000000000000000"></A>
+<A NAME="Transport_Equations"></A>
+<BR>
+6.2 Transport Equations
+</H1>
+
+<P>
+The transport equations in  are currently defined as follows:
+<BR>
+<DIV ALIGN="CENTER"><A NAME="eqn-transport"></A>
+<!-- MATH
+ \begin{eqnarray}
+\left ( \frac{\partial}{\partial t} (\phi c_{i,j}) ~+~ \lambda_j ~ \phi c_{i,j}\right ) & + & \nabla \cdot \left ( c_{i,j}{\vec V}_i\right ) \nonumber \\
+& = & \\
+-\left ( \frac{\partial}{\partial t} ((1 - \phi ) \rho_{s}F_{i,j}) ~+~  \lambda_j ~ (1 - \phi ) \rho_{s}F_{i,j}\right ) & + & \sum_{k}^{n_{I}} \gamma^{I;i}_{k}\chi_{\Omega^{I}_{k}} \left ( c_{i,j}- {\bar c}^{k}_{ij}\right ) ~-~ \sum_{k}^{n_{E}} \gamma^{E;i}_{k}\chi_{\Omega^{E}_{k}} c_{i,j}\nonumber
+\end{eqnarray}
+ -->
+<TABLE ALIGN="CENTER" CELLPADDING="0" WIDTH="100%">
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="184" HEIGHT="56" ALIGN="MIDDLE" BORDER="0"
+ SRC="img98.png"
+ ALT="$\displaystyle \left ( \frac{\partial}{\partial t} (\phi c_{i,j}) ~+~ \lambda_j ~ \phi c_{i,j}\right )$"></TD>
+<TD ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="18" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img99.png"
+ ALT="$\textstyle +$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="89" HEIGHT="46" ALIGN="MIDDLE" BORDER="0"
+ SRC="img100.png"
+ ALT="$\displaystyle \nabla \cdot \left ( c_{i,j}{\vec V}_i\right )$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+&nbsp;</TD></TR>
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT">&nbsp;</TD>
+<TD ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="18" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img45.png"
+ ALT="$\textstyle =$"></TD>
+<TD>&nbsp;</TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(6.13)</TD></TR>
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="327" HEIGHT="56" ALIGN="MIDDLE" BORDER="0"
+ SRC="img101.png"
+ ALT="$\displaystyle -\left ( \frac{\partial}{\partial t} ((1 - \phi ) \rho_{s}F_{i,j}) ~+~ \lambda_j ~ (1 - \phi ) \rho_{s}F_{i,j}\right )$"></TD>
+<TD ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="18" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img99.png"
+ ALT="$\textstyle +$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="319" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img102.png"
+ ALT="$\displaystyle \sum_{k}^{n_{I}} \gamma^{I;i}_{k}\chi_{\Omega^{I}_{k}} \left ( c_...
+...{ij}\right ) ~-~ \sum_{k}^{n_{E}} \gamma^{E;i}_{k}\chi_{\Omega^{E}_{k}} c_{i,j}$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+&nbsp;</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+where <!-- MATH
+ $i = 0, \ldots , n_p- 1$
+ -->
+<IMG
+ WIDTH="129" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img42.png"
+ ALT="$i = 0, \ldots , n_p- 1$"> <!-- MATH
+ $(n_p\in \{1,2,3\})$
+ -->
+<IMG
+ WIDTH="116" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img43.png"
+ ALT="$(n_p\in \{1,2,3\})$">
+is the number of phases,
+<!-- MATH
+ $j = 0, \ldots , n_c- 1$
+ -->
+<IMG
+ WIDTH="130" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img103.png"
+ ALT="$j = 0, \ldots , n_c- 1$"> is the number of contaminants, and where
+<IMG
+ WIDTH="27" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img104.png"
+ ALT="$c_{i,j}$"> is the concentration of contaminant <IMG
+ WIDTH="13" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img83.png"
+ ALT="$j$"> in phase <IMG
+ WIDTH="10" HEIGHT="16" ALIGN="BOTTOM" BORDER="0"
+ SRC="img71.png"
+ ALT="$i$">.  Recall also,
+that <IMG
+ WIDTH="26" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img105.png"
+ ALT="$\chi_A$"> is the characteristic function of set <IMG
+ WIDTH="17" HEIGHT="15" ALIGN="BOTTOM" BORDER="0"
+ SRC="img106.png"
+ ALT="$A$">, i.e. <IMG
+ WIDTH="82" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img107.png"
+ ALT="$\chi_A(x) = 1$">
+if <IMG
+ WIDTH="49" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img108.png"
+ ALT="$x \in A$"> and <IMG
+ WIDTH="82" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img109.png"
+ ALT="$\chi_A(x) = 0$"> if <IMG
+ WIDTH="49" HEIGHT="33" ALIGN="MIDDLE" BORDER="0"
+ SRC="img110.png"
+ ALT="$x \not\in A$">.
+Table <A HREF="#table-transport-units">6.2</A> defines the symbols in the above equation,
+and outlines the symbol dependencies and units.  The equation is basically
+a statement of mass conservation in a convective flow (no diffusion) with
+adsorption and degradation effects incorporated along with the addition of
+injection and extraction wells.
+<BR><P></P>
+<DIV ALIGN="CENTER">
+
+<P></P>
+<A NAME="1098"></A>
+<TABLE CELLPADDING=3 BORDER="1">
+<CAPTION><STRONG>Table 6.2:</STRONG>
+Notation and units for transport equation.</CAPTION>
+<TR><TD ALIGN="CENTER">symbol</TD>
+<TD ALIGN="CENTER">quantity</TD>
+<TD ALIGN="CENTER">units</TD>
+</TR>
+<TR><TD ALIGN="CENTER"><!-- MATH
+ $\phi ({\vec x})$
+ -->
+<IMG
+ WIDTH="38" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img111.png"
+ ALT="$\phi ({\vec x})$"></TD>
+<TD ALIGN="CENTER">porosity</TD>
+<TD ALIGN="CENTER">[]</TD>
+</TR>
+<TR><TD ALIGN="CENTER"><!-- MATH
+ $c_{i,j}({\vec x},t)$
+ -->
+<IMG
+ WIDTH="65" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img112.png"
+ ALT="$c_{i,j}({\vec x},t)$"></TD>
+<TD ALIGN="CENTER">concentration fraction</TD>
+<TD ALIGN="CENTER">[]</TD>
+</TR>
+<TR><TD ALIGN="CENTER"><!-- MATH
+ ${\vec V}_i({\vec x},t)$
+ -->
+<IMG
+ WIDTH="57" HEIGHT="42" ALIGN="MIDDLE" BORDER="0"
+ SRC="img51.png"
+ ALT="${\vec V}_i({\vec x},t)$"></TD>
+<TD ALIGN="CENTER">Darcy velocity vector</TD>
+<TD ALIGN="CENTER">[<IMG
+ WIDTH="47" HEIGHT="18" ALIGN="BOTTOM" BORDER="0"
+ SRC="img52.png"
+ ALT="$L T^{-1}$">]</TD>
+</TR>
+<TR><TD ALIGN="CENTER"><IMG
+ WIDTH="22" HEIGHT="33" ALIGN="MIDDLE" BORDER="0"
+ SRC="img113.png"
+ ALT="$\lambda_j $"></TD>
+<TD ALIGN="CENTER">degradation rate</TD>
+<TD ALIGN="CENTER">[<IMG
+ WIDTH="35" HEIGHT="18" ALIGN="BOTTOM" BORDER="0"
+ SRC="img54.png"
+ ALT="$T^{-1}$">]</TD>
+</TR>
+<TR><TD ALIGN="CENTER"><!-- MATH
+ $\rho_{s}({\vec x})$
+ -->
+<IMG
+ WIDTH="44" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img114.png"
+ ALT="$\rho_{s}({\vec x})$"></TD>
+<TD ALIGN="CENTER">density of the solid mass</TD>
+<TD ALIGN="CENTER">[<IMG
+ WIDTH="53" HEIGHT="18" ALIGN="BOTTOM" BORDER="0"
+ SRC="img60.png"
+ ALT="$M L^{-3}$">]]</TD>
+</TR>
+<TR><TD ALIGN="CENTER"><!-- MATH
+ $F_{i,j}({\vec x}, t)$
+ -->
+<IMG
+ WIDTH="68" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img115.png"
+ ALT="$F_{i,j}({\vec x}, t)$"></TD>
+<TD ALIGN="CENTER">mass concentration</TD>
+<TD ALIGN="CENTER">[<IMG
+ WIDTH="61" HEIGHT="18" ALIGN="BOTTOM" BORDER="0"
+ SRC="img116.png"
+ ALT="$L^{3} M^{-1}$">]</TD>
+</TR>
+<TR><TD ALIGN="CENTER"><IMG
+ WIDTH="22" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img117.png"
+ ALT="$n_{I}$"></TD>
+<TD ALIGN="CENTER">number of injection wells</TD>
+<TD ALIGN="CENTER">[]</TD>
+</TR>
+<TR><TD ALIGN="CENTER"><!-- MATH
+ $\gamma^{I;i}_{k}(t)$
+ -->
+<IMG
+ WIDTH="50" HEIGHT="43" ALIGN="MIDDLE" BORDER="0"
+ SRC="img118.png"
+ ALT="$\gamma^{I;i}_{k}(t)$"></TD>
+<TD ALIGN="CENTER">injection rate</TD>
+<TD ALIGN="CENTER">[<IMG
+ WIDTH="35" HEIGHT="18" ALIGN="BOTTOM" BORDER="0"
+ SRC="img54.png"
+ ALT="$T^{-1}$">]</TD>
+</TR>
+<TR><TD ALIGN="CENTER"><!-- MATH
+ $\Omega^{I}_{k}({\vec x})$
+ -->
+<IMG
+ WIDTH="49" HEIGHT="39" ALIGN="MIDDLE" BORDER="0"
+ SRC="img119.png"
+ ALT="$\Omega^{I}_{k}({\vec x})$"></TD>
+<TD ALIGN="CENTER">injection well region</TD>
+<TD ALIGN="CENTER">[]</TD>
+</TR>
+<TR><TD ALIGN="CENTER"><!-- MATH
+ ${\bar c}^{k}_{ij}()$
+ -->
+<IMG
+ WIDTH="37" HEIGHT="39" ALIGN="MIDDLE" BORDER="0"
+ SRC="img120.png"
+ ALT="${\bar c}^{k}_{ij}()$"></TD>
+<TD ALIGN="CENTER">injected concentration fraction</TD>
+<TD ALIGN="CENTER">[]</TD>
+</TR>
+<TR><TD ALIGN="CENTER"><IMG
+ WIDTH="26" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img121.png"
+ ALT="$n_{E}$"></TD>
+<TD ALIGN="CENTER">number of extraction wells</TD>
+<TD ALIGN="CENTER">[]</TD>
+</TR>
+<TR><TD ALIGN="CENTER"><!-- MATH
+ $\gamma^{E;i}_{k}(t)$
+ -->
+<IMG
+ WIDTH="54" HEIGHT="43" ALIGN="MIDDLE" BORDER="0"
+ SRC="img122.png"
+ ALT="$\gamma^{E;i}_{k}(t)$"></TD>
+<TD ALIGN="CENTER">extraction rate</TD>
+<TD ALIGN="CENTER">[<IMG
+ WIDTH="35" HEIGHT="18" ALIGN="BOTTOM" BORDER="0"
+ SRC="img54.png"
+ ALT="$T^{-1}$">]</TD>
+</TR>
+<TR><TD ALIGN="CENTER"><!-- MATH
+ $\Omega^{E}_{k}({\vec x})$
+ -->
+<IMG
+ WIDTH="52" HEIGHT="39" ALIGN="MIDDLE" BORDER="0"
+ SRC="img123.png"
+ ALT="$\Omega^{E}_{k}({\vec x})$"></TD>
+<TD ALIGN="CENTER">extraction well region</TD>
+<TD ALIGN="CENTER">[]</TD>
+</TR>
+</TABLE>
+<A NAME="table-transport-units"></A>
+</DIV>
+<BR>
+These equations will soon have to be generalized to include a diffusion term.
+At the present time, as an adsorption model, we take the mass concentration
+term (<IMG
+ WIDTH="31" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img124.png"
+ ALT="$F_{i,j}$">) to be instantaneous in time and a linear function of contaminant
+concentration :
+<BR>
+<DIV ALIGN="RIGHT">
+
+<!-- MATH
+ \begin{equation}
+F_{i,j}= K_{d;j}c_{i,j},
+\end{equation}
+ -->
+<TABLE WIDTH="100%" ALIGN="CENTER">
+<TR VALIGN="MIDDLE"><TD ALIGN="CENTER" NOWRAP><A NAME="eqn-linear-retardation"></A><IMG
+ WIDTH="110" HEIGHT="32" BORDER="0"
+ SRC="img125.png"
+ ALT="\begin{displaymath}
+F_{i,j}= K_{d;j}c_{i,j},
+\end{displaymath}"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(6.14)</TD></TR>
+</TABLE>
+<BR CLEAR="ALL"></DIV><P></P>
+where <IMG
+ WIDTH="37" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img126.png"
+ ALT="$K_{d;j}$"> is the distribution coefficient of the component
+([<IMG
+ WIDTH="61" HEIGHT="18" ALIGN="BOTTOM" BORDER="0"
+ SRC="img116.png"
+ ALT="$L^{3} M^{-1}$">]).
+If <A HREF="#eqn-linear-retardation">6.14</A> is substituted into <A HREF="#eqn-transport">6.13</A>
+the following equation results (which is the current model used in ) :
+<BR>
+<DIV ALIGN="CENTER"><A NAME="eqn-transport2"></A>
+<!-- MATH
+ \begin{eqnarray}
+(\phi + (1 - \phi ) \rho_{s}K_{d;j}) \frac{\partial}{\partial t} c_{i,j}& + & \nabla \cdot \left ( c_{i,j}{\vec V}_i\right ) \nonumber \\
+& = & \nonumber \\
+-~(\phi + (1 - \phi ) \rho_{s}K_{d;j}) \lambda_j c_{i,j}& + & \sum_{k}^{n_{I}} \gamma^{I;i}_{k}\chi_{\Omega^{I}_{k}} \left ( c_{i,j}- {\bar c}^{k}_{ij}\right ) ~-~ \sum_{k}^{n_{E}} \gamma^{E;i}_{k}\chi_{\Omega^{E}_{k}} c_{i,j}
+\end{eqnarray}
+ -->
+<TABLE ALIGN="CENTER" CELLPADDING="0" WIDTH="100%">
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="195" HEIGHT="56" ALIGN="MIDDLE" BORDER="0"
+ SRC="img127.png"
+ ALT="$\displaystyle (\phi + (1 - \phi ) \rho_{s}K_{d;j}) \frac{\partial}{\partial t} c_{i,j}$"></TD>
+<TD ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="18" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img99.png"
+ ALT="$\textstyle +$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="89" HEIGHT="46" ALIGN="MIDDLE" BORDER="0"
+ SRC="img100.png"
+ ALT="$\displaystyle \nabla \cdot \left ( c_{i,j}{\vec V}_i\right )$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+&nbsp;</TD></TR>
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT">&nbsp;</TD>
+<TD ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="18" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img45.png"
+ ALT="$\textstyle =$"></TD>
+<TD>&nbsp;</TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+&nbsp;</TD></TR>
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="212" HEIGHT="35" ALIGN="MIDDLE" BORDER="0"
+ SRC="img128.png"
+ ALT="$\displaystyle -~(\phi + (1 - \phi ) \rho_{s}K_{d;j}) \lambda_j c_{i,j}$"></TD>
+<TD ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="18" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img99.png"
+ ALT="$\textstyle +$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="319" HEIGHT="65" ALIGN="MIDDLE" BORDER="0"
+ SRC="img102.png"
+ ALT="$\displaystyle \sum_{k}^{n_{I}} \gamma^{I;i}_{k}\chi_{\Omega^{I}_{k}} \left ( c_...
+...{ij}\right ) ~-~ \sum_{k}^{n_{E}} \gamma^{E;i}_{k}\chi_{\Omega^{E}_{k}} c_{i,j}$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(6.15)</TD></TR>
+</TABLE></DIV>
+<BR CLEAR="ALL"><P></P>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html549"
+  HREF="node26.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html543"
+  HREF="node23.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html537"
+  HREF="node24.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html545"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html547"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html550"
+  HREF="node26.html">6.3 Notation and Units</A>
+<B> Up:</B> <A NAME="tex2html544"
+  HREF="node23.html">6. Equations</A>
+<B> Previous:</B> <A NAME="tex2html538"
+  HREF="node24.html">6.1 Multi-Phase Flow Equations</A>
+ &nbsp; <B>  <A NAME="tex2html546"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html548"
+  HREF="node92.html">Index</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Steve Smith
+2008-06-02
+</ADDRESS>
+</BODY>
+</HTML>

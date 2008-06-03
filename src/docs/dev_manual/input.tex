@@ -1,0 +1,113 @@
+%=============================================================================
+% Chapter: ParFlow Input
+%=============================================================================
+
+\chapter{ParFlow Input}
+\label{ParFlow Input}
+
+Input into \parflow{} is done using a TCL script and a simple 
+database system.  The database system is based on key/value pairs.
+The user sets values in the input file using
+the \code{pfset} command.  When the \code{pfrun} routine is executed
+it creates a \file{runname.pfidb} file which contains the key/value
+database.  Inside the \parflow{} code the database is read in using the
+\code{IDB_NewDB} command.  The database is then queried using a set
+of macros \code{GetType} and \code{GetTypeDefault} where \code{Type}
+is one of String, Int, or Double.  All of these routines take a key
+value as input.  The default versions also take a default value (of
+the appropriate type).
+
+\begin{display}\begin{verbatim}
+   char *geom_name;
+
+   geom_name = GetString("Domain.GeomName");
+
+   geom_name = GetStringDefault("Domain.GeomName", "DefaultGeom");
+
+\end{verbatim}\end{display}
+
+The input is divided into two logical sections.  The first is general
+global problem setup.  This contains items like the geounits.  The
+other section is used to set up the \parflow{} modules.  Each of the
+modules has a name which is based on the call tree.  It starts with
+``Solver'' and each module appends names to this.  In this way each module
+instance can have it's own input.  A module retrieves module specific
+values based on the name that is passed into the NewPublicXtra routine.
+
+\begin{display}\begin{verbatim}
+
+/* name is the name that this module was given by it's parent */
+PFModule   *FooNewPublicXtra(char *name)
+{
+   char key[IDB_MAX_KEY_LEN];   /* key name use to query DB */
+        
+
+   sprintf(key, "%s.MaxLevels", name); /* construct the key name from
+                                        the modules name and the value
+                                        we need */
+   public_xtra -> max_levels = GetIntDefault(key, 100);
+}
+\end{verbatim}\end{display}
+
+
+When a module instantiates a module which it is going to invoke it
+passes in it's module name with an addition name appended to.  The
+parent modules name their children.  For example an iterative solver
+would pass into a preconditioner MyName.Precond (where ``MyName''
+would be what this module was given as it's name).  This constructs a
+tree like nameing convention to ensure that each module instance has a
+unique name to use as a key for getting input that is specific to that
+module instance.
+
+In some cases you want to provide a choice on which module should be used.
+For example you might wish to let the user choose amoung several different
+preconditioners.  This is done by querying the database for the name
+of the preconditioner to invoke and using a standard switch statement to
+invoke the appropriate \code{NewModule} routine.
+
+\begin{display}\begin{verbatim}
+   char key[IDB_MAX_KEY_LEN];
+
+   char          *switch_name;
+   int            switch_value;
+
+   /* Name arrays are helper structures to parse space seperated strings */
+   /* A name array can convert from an index to name or from a name      */
+   /* to an index.                                                       */
+   NameArray      switch_na;
+
+	
+   /* Build the name array with two names:                               */
+   /*   0 = RedBlackGSPoint                                              */
+   /*   1 = WJacobi                                                      */
+   switch_na = NA_NewNameArray("RedBlackGSPoint WJacobi");
+
+   sprintf(key, "%s.Smoother", name);
+   switch_name = GetStringDefault(key,"RedBlackGSPoint");
+
+   /* Convert the name the user entered into an int to use in the switch */
+   /* -1 is returned if the name is not found in the name array          */
+   switch_value  = NA_NameToIndex(switch_na, switch_name);
+   switch (switch_value)
+   {
+      case 0:
+      {
+	 /* key has the name we want to give to this child */
+         public_xtra -> smooth = PFModuleNewModule(RedBlackGSPoint, (key));
+         break;
+      }
+      case 1:
+      {
+         public_xtra -> smooth = PFModuleNewModule(WJacobi, (key));
+         break;
+      }
+      default:
+      {
+         InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
+                     key);
+      }
+   }
+   NA_FreeNameArray(switch_na);
+
+}
+\end{verbatim}\end{display}

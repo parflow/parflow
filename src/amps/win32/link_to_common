@@ -1,0 +1,23 @@
+#!/bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+#
+# Since NTFS does not really support links do a copy instead
+#
+FILES="amps_clear.c amps_find_powers.c amps_invoice.c amps_newhandle.c \
+amps_sfbcast.c amps_sfclose.c amps_sfopen.c"
+
+for i in $FILES
+do
+    if [ ! -f "$i" ]; then
+	cp ../common/$i .
+    fi
+done
+

@@ -1,0 +1,79 @@
+ParFlow Modules
+
+NAME
+     read parflow - read in ParFlow field output files
+
+SUMMARY
+     Name          read parflow
+
+     Availability  ParFlow module library
+
+     Type          data input
+
+     Inputs        none
+
+     Outputs       field 3D scalar 3-coord uniform float
+                   field 1D scalar 3-coord irregular float
+
+     Parameters    Name          Type       Default       Min       Max
+                   File Browser  string     NULL
+                   Scan Files    choice     all
+
+DESCRIPTION
+     This module reads in parflow-binary (.pfb) and parflow-scattered-
+     binary (.pfsb) files based on their file name extensions.  If the
+     input file is a `.pfb' file, then the output is a 3D uniform field.
+     If the input file is a `.pfsb' file, then the output is both a 3D
+     uniform field and a 1D irregular field (scattered data).
+
+     Note: this module assumes that the underlying ParFlow grid is uniform
+     and exactly the dimensions of the background grid.
+
+INPUTS
+
+PARAMETERS
+
+     File Browser
+          A string specifying the file name to be read.  The browser
+          only displays files with the extensions indicated by the
+          "Scan Files" parameter below.  Note, the browser file list
+          is regenerated only after a directory change.
+
+     Scan Files
+          Radio buttons indicating which file extensions will be listed
+          in the "File Browser" above.  The current choices are "pfb"
+          (`.pfb' files), "pfsb" (`.pfsb files), and "all" (both `.pfb'
+          and `.pfsb' files).  Note, when this parameter is changed, the
+          file list in the "File Browser" widget above will not be
+          immediately updated; the current directory must first be changed.
+
+OUTPUTS
+
+     field 3D scalar 3-coord uniform float
+          This output is valid for both `.pfb' and `.pfsb' files.
+
+     field 1D scalar 3-coord irregular float
+          This output is valid only for `.pfsb' files.
+
+EXAMPLE 1
+
+                            read parflow
+                                     |
+                       orthogonal slicer
+                                     |
+                               graph viewer
+
+EXAMPLE 2
+
+                            read parflow
+                                  |
+                          field to float
+                                     |
+                            scatter dots
+                                     |
+                         geometry viewer
+
+RELATED MODULES
+
+SEE ALSO
+

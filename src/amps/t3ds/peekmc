@@ -1,0 +1,18 @@
+#! /bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+if [ $# -gt 0 ]
+then
+       echo "usage: $0"
+       echo "Returns information on current PVM machine"
+       exit 0
+fi
+
+ps -eflM

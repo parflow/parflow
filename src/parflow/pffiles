@@ -1,0 +1,32 @@
+#!/bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+###############################################################################
+#
+# Shell script that prints the list of ParFlow code files.
+#
+# (C) 1994 Regents of the University of California.
+#
+# $Revision: 1.1.1.1 $
+#
+#------------------------------------------------------------------------------
+#
+###############################################################################
+
+awk '
+
+  BEGIN {STR = " "}
+
+  /.*\.c|.*\.h|.*\.f|.*\.F/ {
+    STR = STR $0 " "
+    print $0
+  }
+
+' default_single.xpfc | sort -u

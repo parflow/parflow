@@ -1,0 +1,76 @@
+
+Guide for New ParFlow Users on the Workstation Cluster:
+============================================================
+
+
+Getting Started:
+----------------
+
+You should change your `.cshrc' file so that it sets  
+the environment variables needed to run the installed version of ParFlow
+on the workstation cluster.  They should be as follows:
+
+  setenv PARFLOW_DIR          /home/casc/parflow/exe.`uname`
+  setenv PARFLOW_HELP         /home/casc/parflow/docs
+  setenv PARFLOW_HTML_VIEWER  /usr/local/bin/netscape3
+  setenv XUSERFILESEARCHPATH  $PARFLOW_DIR/bin/%N
+
+It also puts `$PARFLOW_DIR/bin' in your path.  A description of
+each of these environment variables is in the User's Manual (see below).
+
+Once these variables are defined in you environment, you can get the
+online documentation for ParFlow by issuing the command:
+
+  pfhelp
+
+For this to work, you may need to set the `DISPLAY' environment variable
+on the remote machine and add the remote machine to your local machine's
+X access control list.  For example, if you are running X on machine
+`local.llnl.gov' (your local machine), and running `pfhelp' on machine
+`remote.llnl.gov', then on the remote machine, do
+
+  setenv DISPLAY local.llnl.gov:0.0
+
+and on your local machine, do
+
+  xhost +remote.llnl.gov
+
+Read the User's Manual to learn how to run the code (note: you may
+skip the sectin on installing the code since you will be running an
+already installed version).  This manual is still in it's infancy so
+we would appreciate any feedback you can give us.
+
+
+Disk Space:
+-----------
+
+Your account may not have much available disk space, especially
+for running large simulations (do a `df .' in your home directory
+to see how much is available).  There is additional space on Nyx
+(an SGI Onyx) which may be used for running large simulations.  Note,
+however, that this space is *not* backed up and should be treated
+as temporary.
+
+The disk space is writeable by all users in the `pfusers' group, and
+can be reached from any of the machines in the cluster.  The directory
+name is:
+
+  /net/nyx/export/home0/pftemp0
+
+To use this directorie, it is recommended that you create a subdirectory
+within them with your name on it.  Then, create soft links to it from your
+home directory.  For example, suppose you want to run a simulation that
+you are calling "sim1" and suppose you have already created the directories
+`/net/nyx/export/home0/pftemp0/myname' and `~/parflow'.  To do this, you 
+might do the following:
+
+  cd /net/nyx/export/home0/ftemp0/myname
+  mkdir sim1
+  cd ~/parflow
+  ln -s /net/nyx/export/home0/pftemp0/myname/sim1 .
+
+Now, if you run the simulation from within ~/parflow/sim1, all of the
+input and output will be written to the "big disk" on Nyx in directory
+`/hnet/nyx/export/home0/pftemp0/myname/sim1'.
+
+

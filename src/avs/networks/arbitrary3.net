@@ -1,0 +1,278 @@
+#!/usr/bin/avs -network
+version 5.02 (50.62 SunOS4)
+module downsize.user.0 -xy 341,73 -ex $Path/avs_library/mongo
+module statistics.user.1 -xy 141,137 -ex $Path/avs_library/mongo
+module "generate colormap.user.2" -xy 5,209
+module "color range.user.3" -xy 133,281 -ex $Path/avs_library/mongo
+module "color legend.user.4" -xy 133,353 -ex $Path/avs_library/mongo
+module "generate axes.user.5" -xy 5,353 -ex $Path/avs_library/mongo
+module "arbitrary slicer.user.6" -xy 261,353 -ex $Path/avs_library/mongo
+module "arbitrary slicer.user.7" -xy 389,353 -ex $Path/avs_library/mongo
+module "arbitrary slicer.user.8" -xy 517,353 -ex $Path/avs_library/mongo
+module "volume bounds.user.9" -xy 645,353 -ex $Path/avs_library/mongo
+module "geometry viewer.user.10" -xy 317,425
+module "image to postscript.user.11" -xy 317,473 -ex $Path/avs_library/mongo -off
+module "read parflow macro.user.16" -xy 341,17 -macro -type 1
+port_add -out "read parflow macro.user.16":"Uniform Output" "field 3D scalar 3-coord uniform float" -flags 0x2
+port_add -out "read parflow macro.user.16":"Scattered Output" "field 1D scalar 3-coord irregular float" -flags 0x2
+port_add -out "read parflow macro.user.16":"integer value" integer -flags 0x2
+module "animated integer.user.17" -xy 301,121 -ex $Path/avs_library/anim_int -parent "read parflow macro.user.16"
+module "integer to file.user.18" -xy 301,185 -ex /home/bacchus0/falgout/parflow/exe.SunOS/avs/mod_lib/pf_modules -parent "read parflow macro.user.16"
+module "read parflow.user.19" -xy 301,249 -ex /home/bacchus0/falgout/parflow/exe.SunOS/avs/mod_lib/pf_modules -parent "read parflow macro.user.16"
+port_vis "read parflow.user.19":"File Browser" -on
+port_connect downsize.user.0:0 "volume bounds.user.9":0
+port_connect downsize.user.0:0 "arbitrary slicer.user.8":0
+port_connect downsize.user.0:0 "arbitrary slicer.user.7":0
+port_connect downsize.user.0:0 "arbitrary slicer.user.6":0
+port_connect downsize.user.0:0 "color range.user.3":0
+port_connect downsize.user.0:0 statistics.user.1:0
+port_connect "generate colormap.user.2":0 "color range.user.3":1
+port_connect "color range.user.3":0 "color legend.user.4":0
+port_connect "color range.user.3":0 "arbitrary slicer.user.6":1
+port_connect "color range.user.3":0 "arbitrary slicer.user.7":1
+port_connect "color range.user.3":0 "arbitrary slicer.user.8":1
+port_connect "color legend.user.4":0 "geometry viewer.user.10":0
+port_connect "generate axes.user.5":0 "geometry viewer.user.10":0
+port_connect "arbitrary slicer.user.6":0 "geometry viewer.user.10":0
+port_connect "arbitrary slicer.user.7":0 "geometry viewer.user.10":0
+port_connect "arbitrary slicer.user.8":0 "geometry viewer.user.10":0
+port_connect "volume bounds.user.9":0 "geometry viewer.user.10":0
+port_connect "geometry viewer.user.10":0 "image to postscript.user.11":0
+port_connect "read parflow macro.user.16":0 downsize.user.0:0
+port_connect "animated integer.user.17":0 "OUT-> read parflow macro.user.16":2
+port_connect "animated integer.user.17":0 "integer to file.user.18":0
+port_connect "integer to file.user.18":0 "read parflow.user.19":0
+port_connect "read parflow.user.19":0 "OUT-> read parflow macro.user.16":0
+port_connect "read parflow.user.19":1 "OUT-> read parflow macro.user.16":1
+parm_set downsize.user.0:downsize 1
+parm_set "color legend.user.4":position horizontal
+parm_set "color legend.user.4":"Legend Outline" true
+parm_set "color legend.user.4":"X Position" -0.6502732038
+parm_set "color legend.user.4":"Y Position" -0.9016393423
+parm_set "color legend.user.4":Length 1.249672174
+parm_set "arbitrary slicer.user.6":"Y Rotation" 90
+parm_set "arbitrary slicer.user.7":"X Rotation" 90
+geom_set_scene -scene "geometry viewer.user.10"
+geom_set_camera_name "Camera 1"
+geom_resize_camera -view "Camera 1" 512 512
+#
+# State for view: Camera 1
+#
+geom_set_position -view "Camera 1" 0 0 -12
+geom_set_view_modes -depth_cue 0 -view "Camera 1"
+geom_set_view_modes -polygonal_spheres 0 -view "Camera 1"
+geom_set_view_modes -stereo 0 -view "Camera 1"
+geom_set_view_modes -head_tracking 1 -view "Camera 1"
+geom_set_view_modes -z_buffer 1 -view "Camera 1"
+geom_set_camera_params -view "Camera 1" -front -88 -back 112
+geom_set_depth_cue_params "Camera 1" -scale 0.1
+#
+# Light state
+#
+geom_set_light -light 1 -type directional -state 1
+geom_set_light -type ambient -state 1
+#
+# State for object: top
+#
+geom_set_cur_cli_obj top
+#
+# State for object: axes
+#
+geom_set_cur_cli_obj -push
+geom_set_name_context "generate axes.user.5"
+geom_create_obj axes -mod "generate axes.user.5"
+geom_set_trans_mode parent
+geom_set_name_context
+geom_set_cur_cli_obj -pop
+shell "ui" shell
+ panel Application -w app_panel -p ui -xy 0,0 -wh 259,1023
+  panel "Top Level Stack" -w master_stack -p Application -xy 2,100 -wh 256,698\
+   -P columns integer 1
+   panel statistics.user.1 -w panel -p "Top Level Stack" -xy 0,63 -wh 256,243
+    manipulator "statistics.user.1:Compute Median" -w toggle -p statistics.user.1 \
+        -xy 9,9 -wh 118,22
+    manipulator statistics.user.1:Statistics -w textblock -p statistics.user.1 \
+        -xy 9,29 -wh 237,201
+   panel "generate colormap.user.2" -w panel -p "Top Level Stack" \
+       -xy 0,63 -wh 252,567
+    manipulator "generate colormap.user.2:colormap" -w color_editor -p "generate colormap.user.2" \
+        -xy 9,9 -wh 235,422
+    manipulator "generate colormap.user.2:lo value" -w dial -p "generate colormap.user.2" \
+        -xy 9,429 -wh 90,129
+    manipulator "generate colormap.user.2:hi value" -w dial -p "generate colormap.user.2" \
+        -xy 99,429 -wh 90,129
+   panel "image to postscript.user.11" -w panel -p "Top Level Stack" \
+       -xy 0,108 -wh 256,173
+    manipulator "image to postscript.user.11:filename" -w typein -p "image to postscript.user.11" \
+        -xy 9,9 -wh 237,22
+    manipulator "image to postscript.user.11:mode" -w radio_buttons -p "image to postscript.user.11" \
+        -xy 9,29 -wh 118,44
+    manipulator "image to postscript.user.11:encapsulate" -w toggle -p "image to postscript.user.11" \
+        -xy 9,75 -wh 118,22
+    manipulator "image to postscript.user.11:landscape" -w toggle -p "image to postscript.user.11" \
+        -xy 9,99 -wh 118,22
+    manipulator "image to postscript.user.11:page size x" -w typein_real -p "image to postscript.user.11" \
+        -xy 9,121 -wh 237,22
+    manipulator "image to postscript.user.11:page size y" -w typein_real -p "image to postscript.user.11" \
+        -xy 9,141 -wh 237,22
+   panel "read parflow macro.user.16" -w stack -p "Top Level Stack" \
+       -xy 0,130 -wh 256,394
+    panel "animated integer.user.17" -w panel -p "read parflow macro.user.16" \
+        -xy 0,63 -wh 256,173
+     manipulator "animated integer.user.17:min value" -w typein_integer -p "animated integer.user.17" \
+         -xy 9,9 -wh 237,22
+     manipulator "animated integer.user.17:max value" -w typein_integer -p "animated integer.user.17" \
+         -xy 9,29 -wh 237,22
+     manipulator "animated integer.user.17:steps" -w typein_integer -p "animated integer.user.17" \
+         -xy 9,54 -wh 118,22
+     manipulator "animated integer.user.17:sleep" -w toggle -p "animated integer.user.17" \
+         -xy 9,75 -wh 118,22
+     manipulator "animated integer.user.17:choice" -w radio_buttons -p "animated integer.user.17" \
+         -xy 9,99 -wh 118,67
+    panel "integer to file.user.18" -w panel -p "read parflow macro.user.16" \
+        -xy 0,63 -wh 256,239
+     manipulator "integer to file.user.18:File Prefix" -w browser -p "integer to file.user.18" \
+         -xy 9,9 -wh 237,199
+     manipulator "integer to file.user.18:Format" -w typein -p "integer to file.user.18" \
+         -xy 9,206 -wh 237,22
+    panel "read parflow.user.19" -w panel -p "read parflow macro.user.16" \
+        -xy 0,108 -wh 256,285
+     manipulator "read parflow.user.19:File Browser" -w browser -p "read parflow.user.19" \
+         -xy 9,9 -wh 237,199
+     manipulator "read parflow.user.19:Scan Files" -w radio_buttons -p "read parflow.user.19" \
+         -xy 9,206 -wh 118,67
+ panel page.0 -w panel -p ui -xy 366,27 -wh 814,981
+  panel "geometry viewer.user.10!display" -w container -p page.0 \
+      -xy 9,9 -wh 649,678\
+   -P zoom_coords string "1 0 0 0 0 <page.0> 0 0 0 0"
+  panel page.1 -w panel -p page.0 -xy 9,699 -wh 207,265\
+   -P title string "I-Plane Controls"
+   manipulator "arbitrary slicer.user.6:Distance" -w dial -p page.1 \
+       -xy 8,36 -wh 90,129
+   manipulator "arbitrary slicer.user.6:Mesh Res" -w idial -p page.1 \
+       -xy 105,36 -wh 90,129
+   manipulator "arbitrary slicer.user.6:Sampling Style" -w text -p page.1 \
+       -xy 39,180 -wh 118,22
+   manipulator "arbitrary slicer.user.6:choice" -w radio_buttons -p page.1 \
+       -xy 39,207 -wh 118,44
+  panel page.2 -w panel -p page.0 -xy 231,699 -wh 207,265\
+   -P title string "J-Plane Controls"
+   manipulator "arbitrary slicer.user.7:Distance" -w dial -p page.2 \
+       -xy 8,36 -wh 90,129
+   manipulator "arbitrary slicer.user.7:Mesh Res" -w idial -p page.2 \
+       -xy 105,36 -wh 90,129
+   manipulator "arbitrary slicer.user.7:Sampling Style" -w text -p page.2 \
+       -xy 39,180 -wh 118,22
+   manipulator "arbitrary slicer.user.7:choice" -w radio_buttons -p page.2 \
+       -xy 39,207 -wh 118,44
+  panel page.3 -w panel -p page.0 -xy 451,699 -wh 207,265\
+   -P title string "K-Plane Controls"
+   manipulator "arbitrary slicer.user.8:Distance" -w dial -p page.3 \
+       -xy 8,36 -wh 90,129
+   manipulator "arbitrary slicer.user.8:Mesh Res" -w idial -p page.3 \
+       -xy 105,36 -wh 90,129
+   manipulator "arbitrary slicer.user.8:Sampling Style" -w text -p page.3 \
+       -xy 39,180 -wh 118,22
+   manipulator "arbitrary slicer.user.8:choice" -w radio_buttons -p page.3 \
+       -xy 39,207 -wh 118,44
+  panel page.4 -w panel -p page.0 -xy 666,836 -wh 136,127\
+   -P title string "Axes Controls"
+   manipulator "generate axes.user.5:Regenerate" -w oneshot -p page.4 \
+       -xy 9,42 -wh 118,22
+   manipulator "generate axes.user.5:Tick Marks" -w toggle -p page.4 \
+       -xy 9,68 -wh 118,22
+   manipulator "generate axes.user.5:Tick Labels" -w toggle -p page.4 \
+       -xy 9,95 -wh 118,22
+  panel downsize.user.0 -w panel -p page.0 -xy 679,679 -wh 109,147
+   manipulator downsize.user.0:downsize -w idial -p downsize.user.0 \
+       -xy 9,9 -wh 90,129
+manipulator page.1!title -w text -p page.1 -xy 40,8 -wh 118,22
+manipulator page.2!title -w text -p page.2 -xy 40,8 -wh 118,22
+manipulator page.3!title -w text -p page.3 -xy 40,8 -wh 118,22
+manipulator page.4!title -w text -p page.4 -xy 9,9 -wh 118,22
+manipulator "color legend.user.4":"legend control" -w none
+manipulator "color legend.user.4":position -w none
+manipulator "color legend.user.4":"Reverse Colors" -w none
+manipulator "color legend.user.4":"Legend Outline" -w none
+manipulator "color legend.user.4":"Outline Gray Scale" -w none
+manipulator "color legend.user.4":"Label Controls" -w none
+manipulator "color legend.user.4":Labels -w none
+manipulator "color legend.user.4":Ticks -w none
+manipulator "color legend.user.4":"Number of Ticks" -w none
+manipulator "color legend.user.4":"Label Height" -w none
+manipulator "color legend.user.4":"Decimal Precision" -w none
+manipulator "color legend.user.4":"Label Gray Scale" -w none
+manipulator "color legend.user.4":"Label Font" -w none
+manipulator "color legend.user.4":"Legend Position" -w none
+manipulator "color legend.user.4":"X Position" -w none
+manipulator "color legend.user.4":"Y Position" -w none
+manipulator "color legend.user.4":"Z Position" -w none
+manipulator "color legend.user.4":Thickness -w none
+manipulator "color legend.user.4":Length -w none
+manipulator "generate axes.user.5":"Colored Axes" -w none
+manipulator "generate axes.user.5":"center text" -w none
+manipulator "generate axes.user.5":center -w none
+manipulator "generate axes.user.5":"min text" -w none
+manipulator "generate axes.user.5":min -w none
+manipulator "generate axes.user.5":"max text" -w none
+manipulator "generate axes.user.5":max -w none
+manipulator "generate axes.user.5":axis -w none
+manipulator "generate axes.user.5":"Tick Spacing" -w none
+manipulator "generate axes.user.5":"Label Spacing" -w none
+manipulator "generate axes.user.5":"Tick Length" -w none
+manipulator "generate axes.user.5":"Tick Decimal Precision" -w none
+manipulator "generate axes.user.5":"Label Font" -w none
+manipulator "generate axes.user.5":"Label Height" -w none
+manipulator "generate axes.user.5":"Tick Label Font" -w none
+manipulator "generate axes.user.5":"Tick Label Height" -w none
+manipulator "generate axes.user.5":"X Tick Marks" -w none
+manipulator "generate axes.user.5":"X Tick Labels" -w none
+manipulator "generate axes.user.5":"X Tick Spacing" -w none
+manipulator "generate axes.user.5":"X Label Spacing" -w none
+manipulator "generate axes.user.5":"X Tick Length" -w none
+manipulator "generate axes.user.5":"X Tick Decimal Precision" -w none
+manipulator "generate axes.user.5":"X Label Font" -w none
+manipulator "generate axes.user.5":"X Label Height" -w none
+manipulator "generate axes.user.5":"X Tick Label Font" -w none
+manipulator "generate axes.user.5":"X Tick Label Height" -w none
+manipulator "generate axes.user.5":"X Label String" -w none
+manipulator "generate axes.user.5":"Y Tick Marks" -w none
+manipulator "generate axes.user.5":"Y Tick Labels" -w none
+manipulator "generate axes.user.5":"Y Tick Spacing" -w none
+manipulator "generate axes.user.5":"Y Label Spacing" -w none
+manipulator "generate axes.user.5":"Y Tick Length" -w none
+manipulator "generate axes.user.5":"Y Tick Decimal Precision" -w none
+manipulator "generate axes.user.5":"Y Label Font" -w none
+manipulator "generate axes.user.5":"Y Label Height" -w none
+manipulator "generate axes.user.5":"Y Tick Label Font" -w none
+manipulator "generate axes.user.5":"Y Tick Label Height" -w none
+manipulator "generate axes.user.5":"Y Label String" -w none
+manipulator "generate axes.user.5":"Z Tick Marks" -w none
+manipulator "generate axes.user.5":"Z Tick Labels" -w none
+manipulator "generate axes.user.5":"Z Tick Spacing" -w none
+manipulator "generate axes.user.5":"Z Label Spacing" -w none
+manipulator "generate axes.user.5":"Z Tick Length" -w none
+manipulator "generate axes.user.5":"Z Tick Decimal Precision" -w none
+manipulator "generate axes.user.5":"Z Label Font" -w none
+manipulator "generate axes.user.5":"Z Label Height" -w none
+manipulator "generate axes.user.5":"Z Tick Label Font" -w none
+manipulator "generate axes.user.5":"Z Tick Label Height" -w none
+manipulator "generate axes.user.5":"Z Label String" -w none
+manipulator "arbitrary slicer.user.6":"X Rotation" -w none
+manipulator "arbitrary slicer.user.6":"Y Rotation" -w none
+manipulator "arbitrary slicer.user.7":"X Rotation" -w none
+manipulator "arbitrary slicer.user.7":"Y Rotation" -w none
+manipulator "arbitrary slicer.user.8":"X Rotation" -w none
+manipulator "arbitrary slicer.user.8":"Y Rotation" -w none
+manipulator "volume bounds.user.9":Hull -w none
+manipulator "volume bounds.user.9":"Min I" -w none
+manipulator "volume bounds.user.9":"Max I" -w none
+manipulator "volume bounds.user.9":"Min J" -w none
+manipulator "volume bounds.user.9":"Max J" -w none
+manipulator "volume bounds.user.9":"Min K" -w none
+manipulator "volume bounds.user.9":"Max K" -w none
+manipulator "volume bounds.user.9":"Colored Bounds" -w none
+manipulator "geometry viewer.user.10":object -w none
+manipulator "geometry viewer.user.10":"Update Always" -w none
+manipulator "geometry viewer.user.10":"Update Image" -w none
+# End of file

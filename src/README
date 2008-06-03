@@ -1,0 +1,22 @@
+See the "User's Manual" for info on "Getting Started" in ParFlow.
+
+To build a linux version without MPI for sequential runs:
+
+./build -arch linux -comm seq install
+
+To build a Linux version with MPI for sequential runs:
+
+./build -arch linux -comm mpi1 install
+
+To build a Linux version for the CASC cluster (tcl is not in default location):
+
+./build -config $PARFLOW_SRC/config/linux.casc.config install
+
+To build on GPS
+
+./build install
+
+To build a version of parflow with Purify:
+
+build -arch purify -g  -config /home/ssmith/parflow/src/config/solaris.purify.config install
+

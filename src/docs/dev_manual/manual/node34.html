@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002-2-1 (1.70) JA patch-2.0
+patched version by:  Kenshi Muto, Debian Project.
+* modified by:  Shige TAKENO
+LaTeX2HTML 2002-2-1 (1.70),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>9.1.2 Writing AVS Coroutines</TITLE>
+<META NAME="description" CONTENT="9.1.2 Writing AVS Coroutines">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002-2-1 JA patch-2.0">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="previous" HREF="node33.html">
+<LINK REL="up" HREF="node32.html">
+<LINK REL="next" HREF="node35.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html685"
+  HREF="node35.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html679"
+  HREF="node32.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html675"
+  HREF="node33.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html681"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html683"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html686"
+  HREF="node35.html">9.2 AVS/Express</A>
+<B> Up:</B> <A NAME="tex2html680"
+  HREF="node32.html">9.1 AVS</A>
+<B> Previous:</B> <A NAME="tex2html676"
+  HREF="node33.html">9.1.1 Writing AVS Modules</A>
+ &nbsp; <B>  <A NAME="tex2html682"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html684"
+  HREF="node92.html">Index</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION001012000000000000000"></A>
+<A NAME="Writing_AVS_Coroutines"></A>
+<BR>
+9.1.2 Writing AVS Coroutines
+</H2>
+
+<P>
+Before continuing, see the note in &#167;&nbsp;<A HREF="node15.html#Writing_AVS_Module_Help">3.4</A>
+on naming conventions.
+Now suppose we want to create the coroutine ``foo&nbsp;bar''.
+We then do the following:
+
+<OL>
+<LI>In file foo_bar.c, write the function FooBar
+and a main routine.
+Use the examples in the avs/modules directory as a guide.
+
+<P>
+</LI>
+<LI>In Makefile, add foo_bar to the COROUTINES
+string definition, and define a rule for compiling foo_bar
+(use rotate_geom as an example).
+
+<P>
+</LI>
+<LI>In ParFlow_source, add the line
+<BR>
+<IMG
+ WIDTH="108" HEIGHT="13" ALIGN="BOTTOM" BORDER="0"
+ SRC="img202.png"
+ ALT="\begin{display}\begin{verbatim}file foo_bar\end{verbatim}\end{display}">
+<BR>
+
+<P>
+</LI>
+<LI>Type
+<BR>
+<IMG
+ WIDTH="118" HEIGHT="11" ALIGN="BOTTOM" BORDER="0"
+ SRC="img203.png"
+ ALT="\begin{display}\begin{verbatim}build install\end{verbatim}\end{display}">
+<BR>
+This installs the coroutine in the directory
+$PARFLOW_DIR/avs/mod_lib.
+
+<P>
+</LI>
+<LI>Test the coroutine by using the pfavs script.
+
+<P>
+</LI>
+</OL>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html685"
+  HREF="node35.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html679"
+  HREF="node32.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html675"
+  HREF="node33.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html681"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html683"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html686"
+  HREF="node35.html">9.2 AVS/Express</A>
+<B> Up:</B> <A NAME="tex2html680"
+  HREF="node32.html">9.1 AVS</A>
+<B> Previous:</B> <A NAME="tex2html676"
+  HREF="node33.html">9.1.1 Writing AVS Modules</A>
+ &nbsp; <B>  <A NAME="tex2html682"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html684"
+  HREF="node92.html">Index</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Steve Smith
+2008-06-02
+</ADDRESS>
+</BODY>
+</HTML>

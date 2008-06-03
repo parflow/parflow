@@ -1,0 +1,375 @@
+%=============================================================================
+% Chapter: ParFlow Modules
+%=============================================================================
+
+\chapter{ParFlow Modules}
+\label{ParFlow Modules}
+
+There are several reasons for writing \parflow{} modules:
+
+\begin{itemize}
+
+\item
+to provide a number of choices for a particular call-point in
+the code's execution graph,
+
+\item
+to store "static" data that can be set up once at some initialization
+stage to help optimize the execution of a function,
+
+\item
+to help minimize memory usage by using \parflow{}'s temporary
+data capability.
+
+\end{itemize}
+
+\noindent
+In the following sections, we describe how to use and write
+\parflow{} modules.
+
+%=============================================================================
+% Section: Using ParFlow Modules
+%=============================================================================
+
+\section{Using ParFlow Modules}
+\label{Using ParFlow Modules}
+
+The routines for using \parflow{} modules are as follows
+(note: these are actually macros which invoke the module
+functions outlined in \ref{Writing ParFlow Modules} below):
+
+\begin{display}\begin{verbatim}
+
+PFModule  *PFModuleNewModule(name, (... args ...))
+void       PFModuleFreeModule(module)
+PFModule  *PFModuleNewInstance(module, (... args ...))
+PFModule  *PFModuleReNewInstance(module_instance, (... args ...))
+void       PFModuleFreeInstance(module_instance)
+int        PFModuleSizeOfTempData(module_instance)
+type       PFModuleInvoke(type, module_instance, (... args ...))
+
+\end{verbatim}\end{display}
+
+The functions \code{PFModuleNewModule} and \code{PFModuleFreeModule}
+create and destroy modules, respectively.
+The argument \code{name} is the name of the module as described in
+\ref{Writing ParFlow Modules} below.
+
+The functions \code{PFModuleNewInstance} and \code{PFModuleFreeInstance}
+create and destroy module instances, respectively.
+The function \code{PFModuleReNewInstance} renews (or re-initializes) a
+module instance.
+Note that even though this routine has a return type of \code{(PFModule *)},
+it should be treated as if it were a \code{void} function (the returned
+module instance is the same as the argument \code{module_instance}).
+The argument lists for the \code{PFModuleNewInstance} and
+\code{PFModuleReNewInstance} are identical.
+A non-\code{NULL} argument indicates that this, and any module instance
+data associated with it, is to be modified.
+A \code{NULL} argument indicates that this instance data is not to be changed.
+
+The function \code{PFModuleSizeOfTempData} returns the number of
+contiguous doubles needed by the module instance as temporary data.
+This routine must be passed a module instance which has already
+had particular instance parameters initialized.
+Specifically which parameters is module dependent, but typically
+in \parflow{} they are \code{Grid} structures and the
+\code{Problem} structure.
+
+The function \code{PFModuleInvoke} is the function used to actually
+invoke a module instance.
+
+%=============================================================================
+% Section: Writing ParFlow Modules
+%=============================================================================
+
+\section{Writing ParFlow Modules}
+\label{Writing ParFlow Modules}
+
+A \parflow{} module consists of a single C-file containing
+two structures, \code{PublicXtra} and \code{InstanceXtra}, and
+six functions.
+If the module name is \code{Name}
+(the \code{name} argument passed into the \code{PFModuleNewModule}
+routine described in \ref{Using ParFlow Modules} above),
+then the six module functions that need to be written are given by:
+
+\begin{display}\begin{verbatim}
+
+type       Name(... args ...)
+PFModule  *NameInitInstanceXtra(... args ...)
+void       NameFreeInstanceXtra()
+PFModule  *NameNewPublicXtra(... args ...)
+void       NameFreePublicXtra()
+int        NameSizeOfTempData()
+
+\end{verbatim}\end{display}
+
+The function \code{Name} is the module's main routine, and is
+invoked by the \code{PFModuleInvoke} command.
+
+The function \code{NameInitInstanceXtra} and \code{NameFreeInstanceXtra}
+create/modify and destroy the \code{InstanceXtra} structure of a module.
+The \code{NameInitInstanceXtra} routine is invoked by both the
+\code{PFModuleNewInstance} and \code{PFModuleReNewInstance} commands,
+and the \code{NameFreeInstanceXtra} routine is invoked by the
+\code{PFModuleFreeInstance} command.
+
+The function \code{NameNewPublicXtra} and \code{NameFreePublicXtra}
+create and destroy the \code{PublicXtra} structure of a module.
+The \code{NameNewPublicXtra} routine is invoked by the
+\code{PFModuleNewModule} command, and the \code{NameFreePublicXtra}
+routine is invoked by the \code{PFModuleFreeModule} command.
+
+The function \code{NameSizeOfTempData} returns the number of
+contiguous doubles needed as temporary data, and is invoked by
+the \code{PFModuleSizeOfTempData} command.
+This routine assumes that the \code{InstanceXtra} structure has been
+created, and that particular instance parameters have been initialized.
+
+Notice that none of the above routines have modules or \code{Xtra}
+structures in their argument lists.
+This information is made available to each of the module functions
+by means of the global variable,
+
+\begin{display}\begin{verbatim}
+PFModule  *ThisPFModule
+\end{verbatim}\end{display}
+
+In any of the module functions above, the module assigned to
+\code{ThisPFModule} is \code{Name}.
+It is important to note that each time any of the routines listed in
+\ref{Using ParFlow Modules} is invoked, the value of \code{ThisPFModule}
+changes.
+Therefore, it is highly recommended that a local pointer to
+\code{ThisPFModule} be set at the beginning of each of the above
+module functions (see e.g. \ref{ParFlow Module Example}).
+
+%=============================================================================
+% Section: ParFlow Module Example
+%=============================================================================
+
+\section{ParFlow Module Example}
+\label{ParFlow Module Example}
+
+The following is an example (or template) of a \parflow{} module.
+By convention, the following code would be contained in the file
+\file{name.c}.
+
+\begin{verbatim}
+
+/******************************************************************************
+ *
+ *
+ *****************************************************************************/
+
+/*--------------------------------------------------------------------------
+ * Structures
+ *--------------------------------------------------------------------------*/
+
+typedef struct
+{
+   PFModule  *module;
+
+   /* data */
+
+} PublicXtra;
+
+typedef struct
+{
+   PFModule  *module;
+
+   /* InitInstanceXtra arguments */
+   Grid      *grid;
+   double    *temp_data;
+
+   /* instance data */
+   Vector    *temp_vector;
+
+} InstanceXtra;
+
+
+/*--------------------------------------------------------------------------
+ * Name
+ *--------------------------------------------------------------------------
+
+type  Name( ... args ... )
+{
+   PFModule      *this_module   = ThisPFModule;
+   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+
+
+   /* ... */
+}
+
+
+/*--------------------------------------------------------------------------
+ * NameInitInstanceXtra
+ *--------------------------------------------------------------------------*/
+
+PFModule  *NameInitInstanceXtra( grid, temp_data )
+Grid      *grid;
+double    *temp_data;
+{
+   PFModule      *this_module   = ThisPFModule;
+   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra;
+
+
+   if ( PFModuleInstanceXtra(this_module) == NULL )
+      instance_xtra = ctalloc(InstanceXtra, 1);
+   else
+      instance_xtra = PFModuleInstanceXtra(this_module);
+
+   /*-----------------------------------------------------------------------
+    * Initialize data associated with `grid'
+    *-----------------------------------------------------------------------*/
+
+   if ( grid != NULL )
+   {
+      /* free old data */
+      if ( (instance_xtra -> grid) != NULL )
+      {
+         FreeTempVector(instance_xtra -> temp_vector);
+      }
+
+      /* set new data */
+      (instance_xtra -> grid) = grid;
+
+      (instance_xtra -> temp_vector) = NewTempVector(grid, 1, 1);
+   }
+
+   /*-----------------------------------------------------------------------
+    * Initialize data associated with `temp_data'
+    *-----------------------------------------------------------------------*/
+
+   if ( temp_data != NULL )
+   {
+      (instance_xtra -> temp_data) = temp_data;
+
+      SetTempVectorData((instance_xtra -> temp_vector), temp_data);
+      temp_data += SizeOfVector(instance_xtra -> temp_vector);
+   }
+
+   /*-----------------------------------------------------------------------
+    * Initialize module instances
+    *-----------------------------------------------------------------------*/
+
+   if ( PFModuleInstanceXtra(this_module) == NULL )
+   {
+      (instance_xtra -> module) =
+         PFModuleNewInstance((public_xtra -> module), ( ... args ... ));
+   }
+   else
+   {
+      PFModuleReNewInstance((instance_xtra -> module),
+                            ( ... args ... ));
+   }
+
+   PFModuleInstanceXtra(this_module) = instance_xtra;
+   return this_module;
+}
+
+
+/*--------------------------------------------------------------------------
+ * NameFreeInstanceXtra
+ *--------------------------------------------------------------------------*/
+
+void  NameFreeInstanceXtra()
+{
+   PFModule      *this_module   = ThisPFModule;
+   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+
+
+   if(instance_xtra)
+   {
+      /* free InstanceXtra modules */
+      PFModuleFreeInstance(instance_xtra -> module);
+
+      /* free InstanceXtra data */
+      FreeTempVector(instance_xtra -> temp_vector);
+
+      tfree(instance_xtra);
+   }
+}
+
+
+/*--------------------------------------------------------------------------
+ * NameNewPublicXtra
+ *--------------------------------------------------------------------------*/
+
+PFModule   *NameNewPublicXtra(char *name, ... args ... )
+{
+   PFModule      *this_module   = ThisPFModule;
+   PublicXtra    *public_xtra;
+
+   amps_Invoice   invoice;
+
+
+   /* name is used to set up any modules that this module invokes */
+
+   public_xtra = ctalloc(PublicXtra, 1);
+
+   /* use args and input file to set up public_xtra */
+
+   PFModulePublicXtra(this_module) = public_xtra;
+   return this_module;
+}
+
+
+/*--------------------------------------------------------------------------
+ * NameFreePublicXtra
+ *--------------------------------------------------------------------------*/
+
+void  NameFreePublicXtra()
+{
+   PFModule    *this_module   = ThisPFModule;
+   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+
+
+   if(public_xtra)
+   {
+      /* free PublicXtra data */
+
+      tfree(public_xtra);
+   }
+}
+
+
+/*--------------------------------------------------------------------------
+ * NameSizeOfTempData
+ *--------------------------------------------------------------------------
+
+int  NameSizeOfTempData()
+{
+   PFModule      *this_module   = ThisPFModule;
+   InstanceXtra  *instance_xtra   = PFModuleInstanceXtra(this_module);
+
+   int  sz = 0;
+
+
+   /* set `sz' to max of each of the called modules */
+   sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> module));
+
+   /* add local TempData size to `sz' */
+   sz += SizeOfVector(instance_xtra -> temp_vector);
+
+   return sz;
+}
+
+\end{verbatim}
+
+%=============================================================================
+% Section: Adding ParFlow Modules
+%=============================================================================
+
+\section{Adding ParFlow Modules}
+\label{Adding ParFlow Modules}
+
+To incorporate the new module you have written into the \parflow{} code
+you need to add the source and header files to the Makefile in the
+\file{parflow/src} directory. The \code{PF_SRC} variable in the Makefile 
+controls which files are
+compiled into the executable.  Header files should go in the
+\code{PF_DEPEND} Makefile variable.

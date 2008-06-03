@@ -1,0 +1,40 @@
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+#
+#
+.SUFFIXES:
+.SUFFIXES: .c .F .o .smpi.paragon.o 
+
+INTERNAL_FLAGS=-DAMPS_NX_CLOCK -DAMPS_BYTE_SWAP
+
+INTERNAL_LIBS = $(PARFLOW_SRC)/lib/amps.smpi.paragon.a $(LIB_LIST) \
+	$(PARFLOW_SRC)/lib/kinsol.smpi.paragon.a $(LIB_LIST)
+
+NODE_OBJ1 = ${PF_SRC:.c=.smpi.paragon.o}
+NODE_OBJ = ${NODE_OBJ1:.F=.smpi.paragon.o}
+
+.c.smpi.paragon.o: $< $(PF_DEPEND)
+	@echo "Making (c) " $@
+	@/usr/home/stesmit/local/bin/cccp -I/opt/intel/tflop/TF98_2.2/tflops/include -I$(PARFLOW_SRC)/amps/smpi $(INTERNAL_FLAGS) $(CFLAGS) -P -C $< $<.tmp.c
+	@$(PF_NODE_CC) -I$(PARFLOW_SRC)/amps/smpi $(INTERNAL_FLAGS) $(CFLAGS) -o $@ -c $<.tmp.c
+	@rm $<.tmp.c
+
+.F.smpi.paragon.o:; @echo "Making (F) " $@
+	@$(PF_NODE_F77) -o $@ -c $(FFLAGS) $<
+
+$(PF_PROGRAM).$(PF_NODE_EXT): $(NODE_OBJ) $(XDIR) $(PF_DEPEND) \
+	$(PARFLOW_SRC)/lib/amps.smpi.paragon.a \
+	$(PARFLOW_SRC)/lib/kinsol.smpi.paragon.a 
+	@echo  "Linking" $(PF_PROGRAM)
+	@$(PF_NODE_LINK) $(LFLAGS) -o $(PF_PROGRAM).$(PF_NODE_EXT) $(NODE_OBJ) ${INTERNAL_LIBS}  ${PF_NODE_LIBS}
+
+$(PF_LIBNAME).a: $(NODE_OBJ) Makefile
+	@echo "Building $(PF_LIBNAME).a" 
+	@$(PF_NODE_AR) ru $(PF_LIBNAME).a $(NODE_OBJ)
+

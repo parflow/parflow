@@ -1,0 +1,95 @@
+#! /bin/sh
+#=============================================================================
+#
+#	This Script builds the User's Manual
+#
+#=============================================================================
+
+#=============================================================================
+#
+# Set up directory locations
+#
+#=============================================================================
+if [ -z "$PARFLOW_SRC" ]
+then
+        PARFLOW_SRC=$PARFLOW_DIR
+fi
+
+#=============================================================================
+#
+# Determine the arch that we are compiling on 
+#
+#=============================================================================
+. $PARFLOW_SRC/config/getarch
+
+#=============================================================================
+#
+# Parse the user arguments
+#
+#=============================================================================
+. $PARFLOW_SRC/config/parse_build_args.sh
+
+#=============================================================================
+#
+# If on a new arch then clean everything
+#
+#=============================================================================
+if [ "$PF_ARCH" != "$PF_OLD_ARCH" ]
+then
+	make veryclean
+fi
+
+#=============================================================================
+#
+# Do the actual make 
+#
+#=============================================================================
+if [ "$PF_ALL_FLAG" ]
+then
+	# Get the version number
+	rm -f version.tex
+	echo "\def\PFVersion{"`cut -d$ -f2 $PARFLOW_SRC/config/version.h`"}" > version.tex
+
+	make
+fi
+
+#=============================================================================
+#
+# Do the install
+# 
+#=============================================================================
+if [ "$PF_INSTALL_FLAG" ] 
+then
+	INSTALL_DIR=$PARFLOW_HELP/dev_manual
+
+	if [ ! -d $PARFLOW_HELP ]
+	then
+	        mkdir $PARFLOW_HELP
+
+	fi
+
+	if [ ! -d $INSTALL_DIR ] 
+	then
+	        mkdir $INSTALL_DIR	
+		chgrp parflow $INSTALL_DIR
+		chmod 775 $INSTALL_DIR
+	fi
+
+	make install
+fi
+
+#=============================================================================
+#
+# Clean the local directory
+#
+#=============================================================================
+if [ "$PF_CLEAN_FLAG" ]
+then
+	make clean
+fi
+
+if [ "$PF_VERYCLEAN_FLAG" ]
+then
+	make veryclean
+fi
+

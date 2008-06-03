@@ -1,0 +1,35 @@
+#!/bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.2 $
+#EHEADER***********************************************************************
+
+#-----------------------------------------------------------------------------
+#
+# Usage:  pfmvio <prefix1> <prefix2>
+#
+# Result: mv <prefix1>.in*  <prefix2>.in*
+#         mv <prefix1>.out* <prefix2>.out*
+#
+#=============================================================================
+
+if [ "$2" != "" ]; then
+
+for i in $1.in* $1.out*
+do
+  EXT=`echo $i $1 | awk '{print substr($1,length($2)+1)}'`
+  mv $i $2${EXT}
+done
+
+else
+
+  echo 'usage:  pfmvio <prefix1> <prefix2>'
+  echo 'result: mv <prefix1>.in*  <prefix2>.in*'
+  echo '        mv <prefix1>.out* <prefix2>.out*'
+
+fi
+

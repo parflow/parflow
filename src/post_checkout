@@ -1,0 +1,23 @@
+#!/bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+#===========================================================================
+# This script invokes the post checkout scripts in all subdirectories
+#===========================================================================
+
+DIRS=`find * -type d -print`
+
+for i in $DIRS
+do
+    if [ -f $i/post_checkout ]; then
+	echo "Invoking post checkout script in $i"
+	(cd $i; ./post_checkout)
+    fi
+done

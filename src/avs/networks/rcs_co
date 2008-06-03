@@ -1,0 +1,21 @@
+#!/bin/sh
+
+co $1 `cat <<@
+analysis.net
+arbitrary3.net
+brick.net
+brick.3slices.net
+isosurf_transport.net
+isosurf_transport_slim.net
+isosurface.net
+ortho_graph.net
+read_parflow_macro.net
+render.net
+slice3.net
+slice3_math.net
+transport_dot.net
+tracer.net
+tracer_tracker.net
+sliding.brick.new.domain.net
+three.layer.peel.net
+@`

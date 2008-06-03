@@ -1,0 +1,35 @@
+NAME
+	Zero_Outer
+
+SUMMARY
+	Name	Zero_Outer
+
+	Type	Filter
+
+	Inputs	PF_field_in 3D 3-space scalar rectilinear float REQUIRED
+		X_inter_by_yz 3D 3-space 2-vector rectilinear float REQUIRED 
+                Y_inter_by_zx 3D 3-space 2-vector rectilinear float REQUIRED
+                Z_inter_by_xy 3D 3-space 2-vector rectilinear float REQUIRED
+
+
+	Outputs	PF_field_out 3D 3-space scalar rectilinear float
+
+	Parameters  Solid_num integer
+                    Outer_val float
+                    Ghost_Points
+DESCRIPTION
+   Any function values at grid point in PF_field_in outside of the solid identified by Solid_num
+are set to Outer_val.
+   The "choice" Ghost_Points, which can be "No_Ghost_pt" or "Ghost_pt". When it is Ghost_pt,
+Zero_Outer sets the value of the points just outside the geo unit to the value just 
+inside.
+
+WARNING: The intersection data must connected to the module in the correct order.
+
+
+
+    _____(Z_Inter_by_xy)___(Y_Inter_by_zx)___(X_Inter_by_yz)___(PF_field_in)_____
+    |                                                                           |
+    |                        Zero_Outer                                         |
+    |                                                                           |
+    |___________________________________(PF_field_out )_________________________|

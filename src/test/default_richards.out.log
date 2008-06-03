@@ -1,0 +1,7 @@
+*****************************************************************************
+ParFlow Output Log
+		$Revision: 1.1.1.1 $ $Date: 2006/02/14 23:05:50 $
+	Compiled on    : Jun  3 2008 09:46:43
+	With C flags   : -DAMPS_BYTE_SWAP -DAMPS_MPICH -DAMPS_SPLIT_FFILE -DAMPS_MPI_SETHOME -I/nfs/apps/mpich/1.2.7p1/include -DAMPS_PRINT_HOSTNAME -I/home/smithsg/parflow/pfclm_ms/src/config
+	With F77 flags : 
+*****************************************************************************

@@ -1,0 +1,51 @@
+#! /bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+
+
+#=============================================================================
+#
+# Loop to parse users arguments
+#
+#=============================================================================
+PROGRAM=""
+while getopts hp: c
+do
+	case $c in
+	h) 
+		echo "usage: $0 run runname process_group"
+		echo "Runs parflow on the allocated cube."
+	        exit 0;;
+	p) 
+	       PROGRAM=$2
+	       shift 
+	       shift;;
+esac
+done
+
+if [ -z "$PROGRAM" ]
+then
+	#
+	# The default is to run ParFlow
+	#
+	PROGRAM=parflow
+fi
+
+if [ ! "$AMPS_SHMEM_SIZE" ]; then
+	AMPS_SHMEM_SIZE=41000000
+	export AMPS_SHMEM_SIZE
+fi
+
+if [ "`/bin/uname -m`" = "CRAY T3E" ]
+then
+    mpprun -n `cat .amps.info.$2` $PROGRAM $1
+else
+    $PROGRAM -npes `cat .amps.info.$2` $1
+fi

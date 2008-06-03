@@ -1,0 +1,21 @@
+In order to compile the Win32 version you need to run the 
+
+prepare.win32 
+
+script in the src directory on a system with a Bourne Shell (the
+Cygnus distribution of the GNU utils will work under NT or do it on
+a Unix machine before taring up the source).
+
+Execute the 
+
+build.bat
+
+script in the src directory to build and install the source.  You should
+have the PARFLOW_DIR and PARFLOW_SRC environment variables set.
+
+I compiled things with the TCL8.0p2 version of TCL.
+
+This compiles the parflow executable and the TCL library required for
+running.  I have not tested the latest versions for any of the other
+utilities (althought at one time most of the system was working).
+

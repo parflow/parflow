@@ -1,0 +1,28 @@
+#!/bin/sh
+# the next line restarts using wish \
+exec tclsh "$0" "$@"
+
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+#
+# Load in the required parflow packages 
+#
+lappend auto_path $env(PARFLOW_DIR)/bin/
+
+    
+if [catch { package require parflow } ] {
+    puts "Error: Could not find parflow TCL library"
+    exit
+}
+
+namespace import Parflow::*
+
+foreach i $argv {pfsave [pfload -pfb $i] -sa [file rootname $i].sa}
+exit

@@ -1,0 +1,27 @@
+#! /bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+if [ "AIX" = "`uname`" ]
+then
+    #
+    # IBM SP2
+    #
+    echo "#!/bin/sh\n"\
+    "PARFLOW_DIR=$PARFLOW_DIR\n"\
+    "cd $PARFLOW_DIR/default\n"\
+    "$PARFLOW_DIR/bin/getmc $1 $2\n"\
+    "$PARFLOW_DIR/bin/run $2 $2\n"\
+    "$PARFLOW_DIR/bin/freemc $2\n"\
+    | psub -ln $1
+
+    exit 0
+fi
+
+echo "batchmc not implemented"

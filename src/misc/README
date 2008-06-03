@@ -1,0 +1,18 @@
+
+The 'matvec*' files contain source for various versions of the ParFlow
+Matvec routine that were tested in an effort to create an optimized
+matvec routine that works on general stencils (not just 7-point).
+
+The following routines are C rewrites with the stencil loop on the
+inside and outside of the grid loop:
+
+  matvec.c.inside
+  matvec.c.outside
+
+The following routines are a C-Fortran rewrite with the stencil loop
+on the inside and outside of the grid loop:
+
+  matvec.c.kernels
+  matvec_kernels.F.inside
+  matvec_kernels.F.outside
+

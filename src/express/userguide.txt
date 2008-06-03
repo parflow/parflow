@@ -1,0 +1,329 @@
+Parflow AVS/Express User's Guide (sort of)
+Michael Wittman
+last revised 7/17/97
+
+
+General AVS/Express Info
+------------------------
+
+Before you run Express:
+The following environment variables may or may not need to be set (i.e. set
+them, or you may have a problem).
+
+MACHINE=s2 (on a Sparc) or MACHINE=sgi (on an SGI)
+XP_ROOT=/usr/local/express
+XP_FEATURE=VIZ_EXPRESS
+
+Optionally, you can set NE_NO_ERROR_DIALOG to get rid of those annoying error
+message dialog boxes and instead have Express print errors in the shell
+window you started it from.
+
+
+Running Express:
+The Express executable is located at /usr/local/express/bin/$MACHINE/vxp,
+where $MACHINE is the environment variable mentioned earlier.
+
+I normally run Express with the following command line, which should work
+fine for all Parflow users (except that the project directory may need to be
+changed):
+vxp -silent -novcp -project ~/express/parflow -ne & 
+
+The command line options that I have found most useful are as follows:
+
+-usage		displays all command line options for Express.
+-project <dir>	runs express using the project in dir.  To use the parflow
+		applications, this switch MUST be used, and dir must be the
+		Express parflow project directory or it will not be able to
+		find the necessary modules.
+-ne		run the Network Editor even when Express would not normally.
+		This is mainly useful when you want to run the network editor
+		on .v files you load from the command prompt.
+-none		Do not run the Network Editor, even when Express would
+		normally.
+-novcp		Do not run the V Command Processor.  The VCP is normally run
+		in the shell window in which you have run Express.  You
+		probably won't need the VCP, so I would recommend this
+		option.
+-silent		supresses a startup message telling you the Express version
+		number and project directory.
+<v-file>	a .v file containing an application.  Express will load the
+		application on startup.  The Network Editor is supressed when
+		you do so unless you use the -ne option.  Supressing the NE
+		may be desirable when giving a demo, for example.
+
+Once Express is running, applications can be created, loaded, saved, and
+deleted by using the options in the pulldown File menu.
+
+
+For a good introduction to AVS/Express, I recommend the _Getting Started_
+manual.  For a user, skimming the first chapter or two should be sufficient.
+For someone who will be creating or modifying applications, going through the
+whole manual (except for chapter 8) and doing the tasks therein should
+be helpful (it was for me).
+
+
+Further miscellaneous notes on AVS/Express:
+
+Documentation
+    Since AVS decided to use a proprietary help file format in Express, it is
+    impossible to create your own help files for the modules that you
+    create.  The built-in comment support is also virtually unusable.  For
+    that reason, this file is the sole documentation for the networks I have
+    written.
+
+Viewer mouse controls
+    - use the left mouse button to rotate the object in the view
+    - use Shift-middle mouse button to scale the object in the view
+    - use Control-middle mouse button to translate the object in the view
+    - use Control-left mouse button to pick an object in the view (only used
+      in Orthograph)
+
+
+Using the Parflow Applications in Express
+-----------------------------------------
+
+General notes:
+
+A quick way to reload the file currently being viewed is to press return in
+the text area that contains the current file name.
+
+To print the contents of a viewer window (or save it to a .ps or .eps file),
+use the Print editor in the Editors menu of the viewer.
+
+
+Notes on each application:
+
+Animate
+    In the file dialog brought up by the "Select file in sequence..." button,
+    the user should select one of the .pfsb files from the sequence that will
+    be animated.  The application will then load the first file in the
+    sequence and do the isosurface on it.  The desired isosurface level
+    should be selected at this point also.  Start, end, and stride are used
+    to select the files to include in the animation.  The indices in these
+    fields are from 0 to the number of .pfsb files in the series minus one.
+    If cycle is checked, the animation will continuously cycle while run is
+    checked.  Checking reset will cause the display to be reset to the start
+    file.  Animate only works with .pfsb files.
+
+Brick
+    Everything here should be self-explanatory.  The dials or sliders control
+    the upper bounding planes of the box.  The dials have the immediate
+    toggle set, causing them to update the display as they are being
+    modified.  The sliders do not have this toggle set.
+
+ExcavateBrick
+    The "opposite" of Brick, but with the same user interface.
+
+Isosurface
+    Like Animate, but without the animation stuff and only allows you to view
+    one file at a time.  Also allows you to view .pfb files.
+
+Orthograph
+    Axis labels and names are now working, although they tend to get jumbled
+    together at the origin.  The Probe Value field in the user interface
+    gives the value of the current probe location in the plot.  You can probe
+    the value of an isoline by control-left mouse button clicking anywhere on
+    it.  You can also choose up to two isolines at specific locations by
+    modifying the sliders in the isoline user interface in the module stack.
+    If more precision is necessary for specifying these isolines values, let
+    me know, and I will add a new user interface for it.
+
+    One note on a semi-bug: If the plot shrinks down to become very small,
+    try hitting the Normalize button.  If that doesn't get it back to normal,
+    flip between different axes a time or two, and hopefully that should
+    work.  As a last-ditch effort, delete and reload the application.  This
+    problem seems to be rare, but I have always been able to solve it without
+    having to reload the application.
+
+Slice3
+    The same user interface as Brick.
+
+
+Known Bugs:
+    In Isosurface, loading a .pfb file after a .pfsb file causes minimum
+    values in some places to become messed up, but the application is still
+    usable.  The is due to the "feature" in UIdial described later.  To avoid
+    this, delete and reload the application when you want to visualize a .pfb
+    file after a .pfsb file.
+
+
+Notes on Features Suggested by Parflow Users
+--------------------------------------------
+
+Animator
+    It appears that there is no built-in facility to do animation in
+    AVS/Express.  The _Visualizing Your Data with AVS/Express_ manual suggests
+    rotating your object in the viewer window or doing a frame-by-frame dump
+    to image files.
+
+Selecting values for isolines and labeling them in the Orthograph application
+    These are not directly supported, but you can do similar things in a more
+    difficult and roundabout way with modifications that I have made to the
+    application.  To "select" values for isolines, you are limited to using
+    the minimum and maximum isolevel sliders in the isoline user interface.
+    There is no way to label isolines, but it is possible to find the value of
+    an isoline by "probing".  See the instructions for Orthograph in the
+    previous section to find out how to do this.
+
+Downsize
+    The downsize module has been added to all of the Parflow Express
+    applications.  It is available through the module stack pulldown menu.
+
+Running on nyx
+    The Parflow modules now run on nyx, although compilation is a little bit
+    more difficult than on Solaris.  See the notes in the next section for
+    more info on compilation.
+
+
+Notes for Authors or Modifiers
+------------------------------
+
+Structure of applications
+
+    I have tried to write all the applications so that they are split up into
+    three separate macros; one for reading in the data, one for the main user
+    interface, and one for the display.  This seems to be an effective and
+    logical way to organize the complexity of the networks.  It should be
+    noted though that the macros for reading the data and displaying it
+    provide many of the auxiliary user interface panels under the module
+    stack.
+
+
+PF_Grid_from_File module
+
+    This module should work "out of the box" and not need to be modified in
+    any of the networks, other than to change the default grid scaling or
+    downsizing.  The "merge hack" and "Hack" groups in this module are
+    workarounds for bugs in the downsize module.  Without them, it is
+    impossible to get a field of type Field_Unif out of either the downsize or
+    scale_grid modules.  (The Field_Unif type is needed for input to many of
+    the modules in the applications).  This is an example of a solution to
+    part number 2 of "being unable to connect an output port to an input
+    port," mentioned below.
+
+    I should also note what is going on in this module for
+    .pfsb fields.  After being read into a structured field, they are
+    converted to a uniform field of the original grid size in the
+    sparse_to_unif module.  The ReadPFSB module has added an orig_dims array
+    variable to the structured field, so that the sparse_to_unif module knows
+    how big to make the uniform field.  If the orig_dims array is not present
+    in the structured field, sparse_to_unif prints a warning and assumes a
+    10x10x10 grid.  This new uniform field is an input to the Field Chooser
+    module which decides whether to output the .pfb or .pfsb field.
+
+
+User interface issues
+
+    AVS/Express seems to be much better suited to developing user interfaces
+    quickly than AVS5.  This adds a good amount of flexibilty to the design of
+    and experimentation with new modules.  The only drawback is that modifying
+    a user interface "online" in some situations can cause Express to crash.
+    See the bugs file (bugs.txt) for more info.
+
+
+Bugs and unhelpful features
+
+    See the file 'bugs.txt' for a partial list of the bugs I have found in
+    Express.  Express also has some "unhelpful features" which are not quite
+    bugs but act like them and can be annoying as all hell to try to find
+    (based on personal experience).  Here's a brief list of some of these
+    "features":
+
+    In the UIdial module is one annoying feature.  If the min variable
+    becomes greater than or equal to the max variable, UIdial resets one or
+    both variables (usually only min) to some outlandish value (like -99).
+    In doing so, it also breaks any connection that the initial min (and/or
+    max) variable upstream had.  This bites you when you have the min and max
+    values of the data from a field connected to the UIdial.  If the min and
+    max values get out of sync, UIdial winds up breaking connections in the
+    field which automatically calculate the min and max.  Once this is done,
+    min or max become set to -99 or something similar, and reloading the
+    Parflow file does not reset it to the correct value.  The net effect is
+    that your display, UIdial, and colorbar all get hosed.  The workaround:
+    use copy_on_change modules to protect the min and max values of the
+    field.  If you do it right, this protects everything but the UIdial from
+    getting hosed, and gives you some chance of correcting the problem by
+    reloading the Parflow file.  A better workaround: create a group wrapper
+    around the UIdial module, and write a method which ensures that the min
+    and max values being fed to the UIdial module are in sync. (I have not
+    done this, but it should not be that difficult).
+
+    Being unable to connect an output port to an input port that look like
+    they should be connected.  This is usually caused by one of two things;
+    either (1) that the input port already has a connection that is not
+    visible, or (2) that the output port type is not the same type or a
+    supertype of the input port type.  These are not really unhelpful
+    features so much as quirks of the AVS/Express design and interface.
+    Number 1 is easiest to correct; just open the input port's variable and
+    delete the contents, then try again to connect the two.  Number 2 is
+    generally more difficult.  First, try connecting the inputs of the
+    upstream module before connecting it to the downstream module.  Sometimes
+    this works when the output of the upstream module becomes the type of its
+    input.  If that doesn't work, you can sometimes hack something together
+    using the built-in merge operator to get the necessary components into
+    the upstream module output field.
+
+    See the Common Problems section, 6.2, in _Visualizing Your Data with
+    AVS/Express_ for other problems you have.  It's not great, but does give
+    some useful solutions.
+
+
+Compiling Applications
+   
+    To compile from within Express, click on the library version of a module
+    with source code, and select Compile from the Project pulldown menu.  To
+    compile from the command prompt, use
+    vxp -proj project_dir -compile -exit [-none]
+    Using -none keeps Express from popping up any windows (you still need a
+    valid DISPLAY variable set though!).
+
+    On Solaris
+	Compilation works as described above.
+
+    On an SGI
+	Compiling the modules for the SGI is somewhat more difficult than it
+	is for Solaris due to some apparent bugs.  First, you need to remove
+	all the -lsunmath occurrences in the v/templ.v file in the project
+	directory.  Tip: run 'perl -pi -e s/-lsunmath// v/templ.v' in the
+	project directory.  (This should be done BEFORE loading Express).
+	Then follow these steps:
+
+	To compile from within Express, use the Compile option from the
+	pulldown menu as described above.  This will bring up an error about
+	not being able to get a file for including.  Ignore this, and then
+	run "make -f user.mk" in the project directory.  This will give some
+	warnings, but will compile correctly.
+
+	To compile from the command line, run vxp as
+	vxp -path "proj_dir global_express_dir" -generate -exit [-none]
+	Then go into the project directory and run "make -f user.mk".  This
+	should compile successfully with a number of warnings.
+
+
+Tips and Tricks
+
+    If you are testing a module and it locks up Express, kill the 'user'
+    process first, and if that does not fix it, kill the 'express' process.
+    Often killing the user process will fix the situation and still leave
+    Express running, thus avoiding having to rerun it from the prompt.
+
+    To scroll the modules in the Network Editor, use shift-middle mouse
+    button.  Use control-middle mouse button to scale the modules.
+
+    If you are recompiling, and have not made major modifications to the
+    project (i.e. adding/deleting link files or source files, changing C
+    function names, etc.), you can save time by running "make -f user.mk" in
+    the project directory instead of using the Compile option under the
+    Project menu.
+
+
+Library modules
+
+    There may be modules in an application which look like they are defined
+    in a library, but are actually defined in the application's .v file.
+    This can cause problems when modifying the library module does not effect
+    a change in the application.  To tell where the module is defined, look
+    for it in the .v file.  If it is from a library, it will say something
+    like 'WORKSPACE_2.modulename modulename' whereas if defined in the file,
+    it will say 'module modulename' or 'group modulename'.  This is a
+    relatively minor point, but can trip you up sometimes.

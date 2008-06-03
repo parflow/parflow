@@ -1,0 +1,168 @@
+AVS Modules						        texture mesh
+Lawrence Berkeley Laboratory				       4 August 1992
+
+NAME
+     texture mesh - create quad mesh from 2d field; support for 
+	texture mapping
+
+SUMMARY
+     Name	   texture mesh
+
+     Type	   mapper
+
+     Inputs	   2D field scalar float, uniform | rectilinear | irregular
+                            (REQUIRED)
+		   2D image (scalar 4-vector byte)
+			    (OTIONAL)
+
+     Outputs	   Geometry - quad mesh
+
+     Parameters	   
+     Name               Type        Default       Min       Max
+     Texture Mapping Options
+			choice	    "dynamic"	 "dynamic","explicit"
+     Surface UV Coordinates Minimum
+			string	    "0. 0."	 none	    none
+     Surface UV Coordinates Maximum
+			string	    "1. 1."	 none	    none
+     Explicit Mapping Interpolation
+		    	choice	    "point"	 "point", "bilinear"
+
+DESCRIPTION
+
+	The texture mesh module serves two needs.  First, the need for
+ 	a robust module for mapping 2D data to quadrilateral meshes
+	is served.  The input 2D data may be a 2D uniform field, in
+	which case the x,y coordinates for the output mesh is derived
+	from the extents information (if present) or using a mapping
+	from indeces to space if no extents information is present.  The
+	z values are obtained from the data in the field.
+
+	In 2D rectilinear fields, the x,y coordinates are explicitly
+	provided.  The z values are obtained from the data.
+
+	In 2D, 3-space irregular fields, all coordinates are specified.
+	In 2D, 2-space irregular fields, the mapping is the same as
+	in rectilinear data.
+
+	The second need fulfilled by this module is support for texture
+	mapping.  Two types are supported.  The first, called "dynamic"
+	in AVS parlance, is the traditional type of texture mapping where
+	the coloring of the surface is postponed until rendering time.
+	The second type, called "explicit" here will color the vertices
+	of the field based upon the image on the second input port, along
+	with the uv coordinate ranges specified by the user.
+
+	Control over the uv coordinates is explicitly supported for this
+	module so that the user may move the texture around, or scale the
+	texture using the parameters provided.  Non-affine transformations
+	along with rotations (of textures on the surface) are not
+	supported.
+
+INPUTS
+
+	Field data; field 2D scalar float (REQUIRED): the field may be
+		one of the following:
+		1. 2D uniform, with or without extents
+		2. 2D rectilinear
+		3. 2D irregular, 3-space
+		4. 2D irregular, 2-space
+
+	Texture data (OPTIONAL) ; field 2D 4-vector byte
+
+PARAMETERS
+
+	Texture Mapping Options:
+		This set of radio buttons is used to select the type
+		of texture mapping.  With dynamic mapping, no data
+		is expected on the texture data input port of this 
+		module.  However, to get the texture to appear, there
+		must be some texture data provided to the geometry 
+		viewer, either through the input image port, or using
+		the texture editor to select an AVS image file.
+
+	Surface UV Coordinates
+		These strings define the placement of the texture on
+		the surface.  There is no practical restriction on the
+		range of U and V.  If the range of U and V does not 
+		include the interval (0..1), no texture will appear
+		on the image, regardless of the value of the 
+		"texture mapping options" (above).
+
+	Explicit Mapping Interpolation
+		The user may control the accuracy of the explicit texture
+		mapping operation.  "Point" runs more quickly, but
+		"bilinear" gives better results.  "Bilinear" is not
+		supported for irregular fields.
+
+OUTPUTS
+
+	Geometry 
+		A quadrilateral mesh is produced as output, possibly with
+		colors OR UV data (but not both).
+
+
+EXAMPLE 1.
+	The first example shows how to use this module to get the same
+	results as if using "field to mesh" supplied with AVS.  Note
+	that the texture mesh module DOES NOT provide a "z scale" dial.
+	This functionality can be achieved by using a field math module
+	if the z values are being obtained from data (and not coordinates).
+	
+
+        GENERATE COLORMAP			READ FIELD
+            |						|
+	    +   +---------------------------------------+
+	COLOR RANGE				        |
+	    |					        |
+            |    				ORTHOGONAL SLICER
+	    |   +---------------------------------------+
+	COLORIZER                                       |
+            |                                           |
+	FIELD TO BYTE                                 	|
+            +-------------------------------------+     |
+				                TEXTURE MESH
+						        |
+						GEOMETRY VIEWER
+	
+EXAMPLE 2.
+	The second example shows how to do implicit, or "dynamic" 
+	texture mapping.  In this case, we are mapping the mandrill
+	onto a slice of the hydrogen data.  Note that intervention is
+	required in the geometry viewer to get the attention of the
+	renderer.
+
+	                         READ FIELD  /* read in hydrogen.fld */ 
+	READ IMAGE /* mandrill.x */   |
+            |                  ORTHOGONAL SLICER
+            |                         |
+            |                   FIELD TO FLOAT
+            |                         |
+            +--------+      +---------+
+		  TEXTURE MESH
+			 |
+		  GEOMETRY VIEWER
+
+	After setting up this network and reading in the various
+	data, make the object "textured_mesh" the current object.
+	Then, click on "edit texture" in the geometry viewer.
+	Next, click on the "set dynamic texture" button.  This will
+	tell the renderer that the current object (textured mesh)
+	has a "dynamic" texture that needs attention.
+
+	Next, play around with the U and V coordinate min and max
+	to get a feel for how these dials work.  Add a field math
+	module along the read_field->ortho_slicer->field_to_float
+	leg of the network to scale Z values, if desired.
+
+RELATED	MODULES
+     field to mesh
+
+LIMITATIONS/KNOWN BUGS
+	1. Only float fields are allowed.
+	2. No bilinear texture interpolation is provided for
+	    irregular fields.
+
+
+AVS Modules						        texture mesh
+Lawrence Berkeley Laboratory				       4 August 1992

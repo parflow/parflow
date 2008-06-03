@@ -1,0 +1,64 @@
+NAME
+	Intersection
+
+SUMMARY
+	Name	Intersection
+
+	Type	Input
+
+        Input, triangle information is from a .pfsol file
+           (1) ParFlow_in, (3D 3-space scalar rectilinear float, REQUIRED)
+	       This input is needed only for the grid information.
+        Outputs, intersection data for 3 planes.
+           (1) X_Inter_by_yz, (3D 3-space 2-vector rectilinear float)
+	       Projection (X values) of yz grid on surfaces
+           (2) Y_Inter_by_zx, (3D 3-space 2-vector rectilinear float)
+	       Projection (Y values) of zx grid on surfaces
+           (3) Z_Inter_by_xy, (3D 3-space 2-vector rectilinear float)
+	       Projection (Z values) of xy grid on surfaces
+        Parameters  
+
+DESCRIPTION
+
+Form of intersection data;
+   The intersection data consist of three two component vector in 3D.
+   The indicies of the vectors have the flowing layout;
+
+    X_Inter_by_yz(number_of_intersect, y_grid_index, z_grid_index, 0-1)  
+    Y_Inter_by_zx(x_grid_index, number_of_intersect, z_grid_index, 0-1)  
+    Z_Inter_by_xy(x_grid_index, y_grid_index, number_of_intersect, 0-1)  
+
+     *_grid              -> index of the grid in the * direction.
+     number_of_intersect -> index of the intersections
+     0-1                 -> vector component, 0 -> solid number, 1 -> intersection value
+
+More details:
+  The two components contain the following data;
+
+   X_Inter_by_yz(0,j,k,0) -> total number of x intersections at j,k 
+   X_Inter_by_yz(n,j,k,0) -> the geounit index of the nth x intersections at j,k 
+	The sign of the about indicates the normal direction of the intersected triangle.
+   X_Inter_by_yz(n,j,k,1) -> the x value of the nth x intersections at j,k 
+
+   Y_Inter_by_zx(i,0,k,0) -> total number of y intersections at i,k 
+   Y_Inter_by_zx(i,n,k,0) -> the geounit index of the nth y intersections at i,k 
+	The sign of the about indicates the normal direction of the intersected triangle.
+   Y_Inter_by_zx(i,n,k,1) -> the y value of the nth y intersections at i,k 
+
+   Z_Inter_by_xy(i,j,0,0) -> total number of intersections z intersections at i,j 
+   Z_Inter_by_xy(i,j,n,0) -> the geounit index of the nth z intersections at i,j 
+	The sign of the about indicates the normal direction of the intersected triangle.
+   Z_Inter_by_xy(i,j,n,1) -> the z value of the nth x intersections at i,j 
+
+   N_solids_out -> total number of solids in .fpsol file.
+	Note: This is used by subsequent modules to set max on solid slection widgets.
+
+
+
+    _____________________________________(ParFlow_in)____________________________
+    |                                                                           |
+    |                     Intersection                                          |
+    |                                                                           |
+    |_____(N_solids_out)___(Z_Inter_by_xy)___(Y_Inter_by_zx)___(X_Inter_by_yz)__|
+
+

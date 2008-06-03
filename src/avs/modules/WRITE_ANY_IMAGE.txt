@@ -1,0 +1,84 @@
+MODULE NAME : WRITE ANY IMAGE
+
+OUTPUTS	    : image  2D 4-vector byte
+
+PARAMETERS  : filename		        file browser
+	      image file format 	choice
+
+MODULE DESCRIPTION : This module writes an image from an AVS Network
+                     in a variety of formats.  All formats which the
+		     San Diego Supercomputing Center's image tools support,
+		     this module supports.  With this module you can 
+		     write out an AVS image in MacPaint format for inclusion
+		     in a to-be published document !!
+
+
+Any of the following image file formats can be read in by this module :
+
+eps     Encapsulated PostScript file,
+gif     Compuserve Graphics image file,
+hdf     Hierarchical Data File,
+icon    Sun Icon and Cursor file,
+iff     Sun TAAC Image File Format,
+mpnt    Apple Macintosh MacPaint file,
+pbm     Portable Bit Map file,
+pcx     ZSoft IBM PC Paintbrush file,
+pgm     Portable Gray Map file,
+pic     PIXAR picture file,
+pict    Apple Macintosh QuickDraw/PICT file,
+pix     Alias image file,
+pnm     Portable aNy Map file,
+ppm     Portable Pixel Map file,
+ps      PostScript file,
+ras     Sun Rasterfile,
+rgb     SGI RGB image file,
+rla     Wavefront raster image file,
+rle     Utah Run length encoded image file,
+rpbm    Raw Portable Bit Map file,
+rpgm    Raw Portable Gray Map file,
+rpnm    Raw Portable aNy Map file,
+rppm    Raw Portable Pixel Map file,
+synu    Synu image file,
+tiff    Tagged image file,
+x       Stardent AVS X image file,
+xbm     X11 bitmap file,
+xwd     X Window System window dump image file.
+
+CREDITS
+-------
+
+MODULE AUTHOR:	Terry Myerson
+		International AVS Center
+		North Carolina Supercomputing Center
+		avs@ncsc.org
+
+This module is entirely based upon the San Diego Supercomputing Center's
+Image Tool library.  For more information, send email to info@sdsc.edu
+
+SDSC FILES YOU MAY NEED TO COMPILE THIS MODULE
+----------------------------------------------
+-rwxrwxr-x  1 avs      14852 Nov 23  1992 arg.h*
+-rwxrwxr-x  1 avs      11534 Nov 23  1992 bin.h*
+-rwxrwxr-x  1 avs      29938 Nov 23  1992 im.h*
+-rwxrwxr-x  1 avs    1047665 Nov 23  1992 libim.a*
+-rwxrwxr-x  1 avs      86592 Nov 23  1992 libsdsc.a*
+-rwxrwxr-x  1 avs       5295 Nov 23  1992 sdsc.h*
+-rwxrwxr-x  1 avs      14798 Nov 23  1992 sdscconfig.h*
+-rwxrwxr-x  1 avs       8231 Nov 23  1992 tag.h*
+
+You can get these via anonymous ftp to:
+
+ftp.sdsc.edu:/pub/sdsc/graphics/imtools/<PLATFORM>
+                (there are a bunch of diferent platforms supported)
+Name:    rosebud.sdsc.edu
+Address:  198.17.47.33
+Aliases:  ftp.sdsc.edu
+
+There's a couple of files out there under
+
+        /pub/sdsc/graphics/imtools/<PLATFORM>
+
+(there are a bunch of diferent platforms supported).  You will need to
+grab imtools_v2.1.tar.Z and libsdsc_v2.1.tar.Z, uncompress and untar them,
+and you will find the .h and other files in there.
+

@@ -1,0 +1,55 @@
+NAME
+	Downsize_Intsec
+
+SUMMARY
+	Name	Downsize_Intsec
+
+	Type	Filter
+
+	Inputs	
+        (1) PF_field_1, (3D 3-space scalar rectilinear float OPTIONAL)
+	  Optional ParFlow input, Vertical scale will be expanded.
+        (2) PF_field_2, (3D 3-space scalar rectilinear float OPTIONAL)
+	  Optional ParFlow input, Vertical scale will be expanded.
+        (3) X_Inter_by_yz, (3D 3-space 2-vector rectilinear float REQUIRED)
+	  Projection (X values) of yz grid on surfaces
+        (4) Y_Inter_by_zx, (3D 3-space 2-vector rectilinear float REQUIRED)
+	  Projection (Y values) of zx grid on surfaces
+        (5) Z_Inter_by_xy, (3D 3-space 2-vector rectilinear float REQUIRED)
+	  Projection (Z values) of xy grid on surfaces
+
+	Outputs	
+        (1) dn_PF_field_1, (3D 3-space scalar rectilinear float)
+	  Optional ParFlow output, downsized & vertically expanded. 
+        (2)dn_ PF_field_2, (3D 3-space scalar rectilinear float)
+	  Optional ParFlow output, downsized & vertically expanded.
+        (3) dn_X_Inter_by_yz, (3D 3-space 2-vector rectilinear float)
+	  Projection (X values) of yz grid on surfaces, Downsized & 
+          vertically expanded.
+        (4) dn_Y_Inter_by_zx, (3D 3-space 2-vector rectilinear float)
+	  Projection (Y values) of zx grid on surfaces, Downsized & 
+          vertically expanded.
+        (5) dn_Z_Inter_by_xy, (3D 3-space 2-vector rectilinear float)
+	  Projection (Z values) of xy grid on surfaces, Downsized & 
+          vertically expanded.
+
+        Parameters  
+         (1) Downsize, down size ratio.
+         (2) Z_expand, factor used to expand z grid and z intersections.
+
+DESCRIPTION
+	Downsizes the two coordinate dimensions of the three intesection data fields,
+        X_Inter_by_yz, Y_Inter_by_zx and Z_Inter_by_xy, (these fields are 3d, however,
+        only two dimensions are coordinates) also downsizes two
+        optional rectilinear ParFlow fields, PF_field_1 and PF_field_2
+        Module also does vertical expansion of all z coordinate values and z
+        intersection data.
+
+
+    _________________(Z_Inter_by_xy)_(Y_Inter_by_zx)_(X_Inter_by_yz)_(PF_field_2)_(PF_field_1)__
+    |                                                                                          |
+    |                                    Downsize_Intsec                                       |
+    |                                                                                          |
+    |_(dn_Z_Inter_by_xy)_(dn_Y_Inter_by_zx)_(dn_X_Inter_by_yz)_(dn_PF_field_2)_(dn_PF_field_1)_|
+
+

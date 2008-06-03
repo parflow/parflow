@@ -1,0 +1,24 @@
+#!/bin/sh
+#BHEADER***********************************************************************
+# (c) 1997   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+#===========================================================================
+# Create some softlinks
+#===========================================================================
+
+LINK_FILES="do_online inputps.tex\
+ html.sty html.perl parflow.sty parflow.perl parflow.bib"
+
+for i in $LINK_FILES
+do
+  if [ ! -h "$i" ]; then
+    ln -s ../lib/$i .
+  fi
+done
+

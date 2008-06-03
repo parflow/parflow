@@ -1,0 +1,493 @@
+#!/usr/bin/avs -network
+version 5.02 (50.62 sg2)
+module excavate.user.0 -xy 418,282 -ex $Path/avs_library/mongo
+port_vis excavate.user.0:X -on
+module "generate colormap.user.1" -xy 248,322
+module downsize.user.2 -xy 498,82 -ex $Path/avs_library/mongo
+module "volume bounds.user.3" -xy 628,382 -ex $Path/avs_library/mongo
+module "field to byte.user.4" -xy 498,42 -ex $Path/avs_library/mongo
+module "read parflow macro.user.5" -xy 498,2 -macro -type 1
+port_add -out "read parflow macro.user.5":"Uniform Output" "field 3D scalar 3-coord uniform float" -flags 0x2
+port_add -out "read parflow macro.user.5":"Scattered Output" "field 1D scalar 3-coord irregular float" -flags 0x2
+port_add -out "read parflow macro.user.5":"integer value" integer -flags 0x2
+module "animated integer.user.6" -xy 301,121 -ex $Path/avs_library/anim_int -parent "read parflow macro.user.5"
+module "integer to file.user.7" -xy 301,185 -ex /home/steve/ParFlow/exe.irix/avs/mod_lib/pf_modules -parent "read parflow macro.user.5"
+module "read parflow.user.8" -xy 301,249 -ex /home/steve/ParFlow/exe.irix/avs/mod_lib/pf_modules -parent "read parflow macro.user.5"
+port_vis "read parflow.user.8":"File Browser" -on
+module isosurface.user.9 -xy 328,372 -ex $Path/avs_library/tile
+module clamp.user.10 -xy 418,192 -ex $Path/avs_library/mongo
+module "geometry viewer.user.12" -xy 328,462
+module "WRITE ANY IMAGE.user.13" -xy 248,512 -ex /home/steve/ParFlow/exe.irix/avs/mod_lib/pf_modules -off
+port_vis "WRITE ANY IMAGE.user.13":"WRITE ANY IMAGE browser" -on
+module "integer to file.user.14" -xy 168,462 -ex /home/steve/ParFlow/exe.irix/avs/mod_lib/pf_modules
+module "animated integer.user.15" -xy 28,12 -ex $Path/avs_library/anim_int
+port_connect excavate.user.0:0 isosurface.user.9:0
+port_connect "generate colormap.user.1":0 isosurface.user.9:2
+port_connect downsize.user.2:0 isosurface.user.9:1
+port_connect downsize.user.2:0 "volume bounds.user.3":0
+port_connect downsize.user.2:0 clamp.user.10:0
+port_connect "volume bounds.user.3":0 "geometry viewer.user.12":0
+port_connect "field to byte.user.4":0 downsize.user.2:0
+port_connect "read parflow macro.user.5":0 "field to byte.user.4":0
+port_connect "animated integer.user.6":0 "integer to file.user.7":0
+port_connect "animated integer.user.6":0 "OUT-> read parflow macro.user.5":2
+port_connect "integer to file.user.7":0 "read parflow.user.8":0
+port_connect "read parflow.user.8":0 "OUT-> read parflow macro.user.5":0
+port_connect "read parflow.user.8":1 "OUT-> read parflow macro.user.5":1
+port_connect isosurface.user.9:0 "geometry viewer.user.12":0
+port_connect clamp.user.10:0 excavate.user.0:0
+port_connect "geometry viewer.user.12":0 "WRITE ANY IMAGE.user.13":0
+port_connect "integer to file.user.14":0 "WRITE ANY IMAGE.user.13":1
+port_connect "animated integer.user.15":0 excavate.user.0:1
+port_connect "animated integer.user.15":0 "integer to file.user.14":0
+parm_set excavate.user.0:X 0 -range 0 257
+parm_set excavate.user.0:Y 0 -range 0 257
+parm_set excavate.user.0:Z 0 -range 0 129
+parm_set excavate.user.0:"flip X" true
+parm_set "generate colormap.user.1":colormap "{ \
+{0.643333375,1,1,0}\
+{0.643333375,1,1,1.53787023e-05}\
+{0.643333375,1,1,6.15148092e-05}\
+{0.643333375,1,1,0.000138408315}\
+{0.643333375,1,1,0.000246059237}\
+{0.643333375,1,1,0.000384467538}\
+{0.643333375,1,1,0.000553633261}\
+{0.643333375,1,1,0.00075355632}\
+{0.643333375,1,1,0.000984236947}\
+{0.643333375,1,1,0.00124567491}\
+{0.643333375,1,1,0.00153787015}\
+{0.643333375,1,1,0.0018608229}\
+{0.643333375,1,1,0.00221453304}\
+{0.643333375,1,1,0.00259900047}\
+{0.643333375,1,1,0.00301422528}\
+{0.643333375,1,1,0.00346020772}\
+{0.643333375,1,1,0.00393694779}\
+{0.643333375,1,1,0.00444444502}\
+{0.643333375,1,1,0.00498269964}\
+{0.643333375,1,1,0.00555171119}\
+{0.643333375,1,1,0.0061514806}\
+{0.643333375,1,1,0.0067820074}\
+{0.643333375,1,1,0.0074432916}\
+{0.643333375,1,1,0.00813533273}\
+{0.643333375,1,1,0.00885813218}\
+{0.643333375,1,1,0.00961168855}\
+{0.643333375,1,1,0.0103960019}\
+{0.643333375,1,1,0.011211073}\
+{0.643333375,1,1,0.0120569011}\
+{0.643333375,1,1,0.0129334871}\
+{0.643333375,1,1,0.0138408309}\
+{0.643333375,1,1,0.0147789316}\
+{0.643333375,1,1,0.0157477912}\
+{0.643333375,1,1,0.0167474076}\
+{0.643333375,1,1,0.0177777801}\
+{0.643333375,1,1,0.0188389104}\
+{0.643333375,1,1,0.0199307986}\
+{0.643333375,1,1,0.0210534427}\
+{0.643333375,1,1,0.0222068448}\
+{0.643333375,1,1,0.0233910047}\
+{0.643333375,1,1,0.0246059224}\
+{0.643333375,1,1,0.025851598}\
+{0.643333375,1,1,0.0271280296}\
+{0.643333375,1,1,0.0284352191}\
+{0.643333375,1,1,0.0297731664}\
+{0.643333375,1,1,0.0311418697}\
+{0.643333375,1,1,0.0325413309}\
+{0.643333375,1,1,0.0339715518}\
+{0.640000045,1,1,0.0354325287}\
+{0.640000045,1,1,0.0369242616}\
+{0.640000045,1,1,0.0384467542}\
+{0.640000045,1,1,0.0400000028}\
+{0.640000045,1,1,0.0415840074}\
+{0.640000045,1,1,0.0431987718}\
+{0.640000045,1,1,0.0448442921}\
+{0.640000045,1,1,0.0465205684}\
+{0.640000045,1,1,0.0482276045}\
+{0.640000045,1,1,0.0499654002}\
+{0.640000045,1,1,0.0517339483}\
+{0.640000045,1,1,0.0535332561}\
+{0.640000045,1,1,0.0553633235}\
+{0.640000045,1,1,0.0572241433}\
+{0.640000045,1,1,0.0591157265}\
+{0.640000045,1,1,0.061038062}\
+{0.640000045,1,1,0.0629911646}\
+{0.640000045,1,1,0.0649750158}\
+{0.396666676,1,1,0.0669896305}\
+{0.393333346,1,1,0.0690349936}\
+{0.379999995,1,1,0.0711111203}\
+{0.366666675,1,1,0.0732180029}\
+{0.356666684,1,1,0.0753556415}\
+{0.346666694,1,1,0.0775240362}\
+{0.333333343,1,1,0.0797231942}\
+{0.323333353,1,1,0.0819531009}\
+{0.313333362,1,1,0.0842137709}\
+{0.306666672,1,1,0.086505197}\
+{0.296666682,1,1,0.088827379}\
+{0.290000021,1,1,0.0911803246}\
+{0.280000031,1,1,0.0935640186}\
+{0.273333371,1,1,0.0959784761}\
+{0.25999999,1,1,0.0984236896}\
+{0.25333333,1,1,0.100899659}\
+{0.24666667,1,1,0.103406392}\
+{0.233333349,1,1,0.105943874}\
+{0.226666659,1,1,0.108512118}\
+{0.219999999,1,1,0.111111119}\
+{0.210000008,1,1,0.113740876}\
+{0.200000018,1,1,0.116401389}\
+{0.190000027,1,1,0.119092666}\
+{0.183333322,1,1,0.121814691}\
+{0.176666662,1,1,0.124567479}\
+{0.166666672,1,1,0.127351031}\
+{0.163333341,1,1,0.130165324}\
+{0.156666681,1,1,0.133010387}\
+{0.153333351,1,1,0.135886207}\
+{0.150000021,1,1,0.138792783}\
+{0.146666691,1,1,0.141730115}\
+{0.143333316,1,1,0.144698203}\
+{0.139999986,1,1,0.147697046}\
+{0.133333325,1,1,0.150726646}\
+{0.129999995,1,1,0.153787017}\
+{0.126666665,1,1,0.156878129}\
+{0.123333335,1,1,0.160000011}\
+{0.120000005,1,1,0.163152635}\
+{0.120000005,1,1,0.16633603}\
+{0.116666675,1,1,0.16955018}\
+{0.113333344,1,1,0.172795087}\
+{0.110000014,1,1,0.17607075}\
+{0.106666684,1,1,0.179377168}\
+{0.0999999866,1,1,0.182714343}\
+{0.0966666564,1,1,0.186082274}\
+{0.0933333263,1,1,0.189480975}\
+{0.0899999961,1,1,0.192910418}\
+{0.086666666,1,1,0.196370631}\
+{0.0833333358,1,1,0.199861601}\
+{0.0800000057,1,1,0.203383312}\
+{0.0766666755,1,1,0.206935793}\
+{0.0733333454,1,1,0.210519031}\
+{0.066666685,1,1,0.214133024}\
+{0.066666685,1,1,0.217777774}\
+{0.066666685,1,1,0.221453294}\
+{0.0633333549,1,1,0.225159556}\
+{0.0633333549,1,1,0.228896573}\
+{0.0599999838,1,1,0.232664362}\
+{0.0599999838,1,1,0.236462906}\
+{0.0599999838,1,1,0.240292192}\
+{0.0566666536,1,1,0.244152248}\
+{0.0566666536,1,1,0.24804306}\
+{0.0533333234,1,1,0.251964658}\
+{0.0533333234,1,1,0.255916983}\
+{0.0533333234,1,1,0.259900063}\
+{0.0533333234,1,1,0.2639139}\
+{0.0499999933,1,1,0.267958522}\
+{0.0499999933,1,1,0.27203387}\
+{0.0499999933,1,1,0.276139975}\
+{0.0466666631,1,1,0.280276835}\
+{0.0466666631,1,1,0.284444481}\
+{0.0466666631,1,1,0.288642853}\
+{0.0466666631,1,1,0.292872012}\
+{0.0466666631,1,1,0.297131896}\
+{0.043333333,1,1,0.301422566}\
+{0.043333333,1,1,0.305743963}\
+{0.043333333,1,1,0.310096145}\
+{0.0400000028,1,1,0.314479083}\
+{0.0400000028,1,1,0.318892777}\
+{0.0400000028,1,1,0.323337197}\
+{0.0400000028,1,1,0.327812403}\
+{0.0400000028,1,1,0.332318366}\
+{0.0333333425,1,1,0.336855084}\
+{0.0333333425,1,1,0.341422558}\
+{0.0333333425,1,1,0.346020788}\
+{0.0300000124,1,1,0.350649774}\
+{0.0300000124,1,1,0.355309516}\
+{0.0300000124,1,1,0.360000014}\
+{0.0300000124,1,1,0.364721298}\
+{0.0283333473,1,1,0.369473308}\
+{0.0266666822,1,1,0.374256074}\
+{0.0266666822,1,1,0.379069626}\
+{0.0266666822,1,1,0.383913904}\
+{0.0266666822,1,1,0.388788968}\
+{0.0266666822,1,1,0.393694758}\
+{0.0266666822,1,1,0.398631334}\
+{0.0266666822,1,1,0.403598636}\
+{0.0266666822,1,1,0.408596724}\
+{0.0266666822,1,1,0.413625568}\
+{0.0266666822,1,1,0.418685138}\
+{0.0266666822,1,1,0.423775494}\
+{0.0266666822,1,1,0.428896606}\
+{0.0266666822,1,1,0.434048474}\
+{0.0266666822,1,1,0.439231098}\
+{0.0266666822,1,1,0.444444478}\
+{0.0266666822,1,1,0.449688613}\
+{0.0266666822,1,1,0.454963505}\
+{0.0266666822,1,1,0.460269153}\
+{0.0266666822,1,1,0.465605557}\
+{0.0250000171,1,1,0.470972717}\
+{0.0233333521,1,1,0.476370662}\
+{0.0233333521,1,1,0.481799334}\
+{0.0233333521,1,1,0.487258762}\
+{0.0233333521,1,1,0.492748976}\
+{0.0233333521,1,1,0.498269916}\
+{0.0233333521,1,1,0.503821611}\
+{0.0233333521,1,1,0.509404123}\
+{0.0233333521,1,1,0.515017331}\
+{0.0233333521,1,1,0.520661294}\
+{0.0233333521,1,1,0.526336074}\
+{0.0233333521,1,1,0.53204155}\
+{0.0233333521,1,1,0.537777781}\
+{0.0233333521,1,1,0.543544829}\
+{0.0233333521,1,1,0.549342573}\
+{0.0216666665,1,1,0.555171132}\
+{0.0199999809,1,1,0.561030388}\
+{0.0199999809,1,1,0.566920459}\
+{0.0199999809,1,1,0.572841227}\
+{0.0199999809,1,1,0.57879281}\
+{0.0199999809,1,1,0.58477509}\
+{0.0199999809,1,1,0.590788186}\
+{0.0199999809,1,1,0.596832037}\
+{0.0199999809,1,1,0.602906585}\
+{0.0183333158,1,1,0.609011948}\
+{0.0166666508,1,1,0.615148067}\
+{0.0166666508,1,1,0.621314883}\
+{0.0166666508,1,1,0.627512515}\
+{0.0166666508,1,1,0.633740902}\
+{0.0166666508,1,1,0.640000045}\
+{0.0166666508,1,1,0.646289885}\
+{0.0149999857,1,1,0.65261054}\
+{0.0133333206,1,1,0.658961952}\
+{0.0133333206,1,1,0.665344119}\
+{0.0133333206,1,1,0.671757042}\
+{0.0116666555,1,1,0.678200722}\
+{0.00999999046,1,1,0.684675157}\
+{0.00999999046,1,1,0.691180348}\
+{0.00999999046,1,1,0.697716296}\
+{0.00999999046,1,1,0.704282999}\
+{0.00999999046,1,1,0.710880458}\
+{0.00833332539,1,1,0.717508674}\
+{0.00666666031,1,1,0.724167645}\
+{0.00666666031,1,1,0.730857372}\
+{0.00666666031,1,1,0.737577856}\
+{0.00666666031,1,1,0.744329095}\
+{0.00333333015,1,1,0.75111115}\
+{0,1,1,0.757923901}\
+{0,1,1,0.764767408}\
+{0,1,1,0.771641672}\
+{0,1,1,0.778546751}\
+{0,1,1,0.785482526}\
+{0,1,1,0.792449057}\
+{0,1,1,0.799446404}\
+{0,1,1,0.806474447}\
+{0,1,1,0.813533247}\
+{0,1,1,0.820622861}\
+{0,1,1,0.827743173}\
+{0,1,1,0.8348943}\
+{0,1,1,0.842076123}\
+{0,1,1,0.849288762}\
+{0,1,1,0.856532097}\
+{0,1,1,0.863806248}\
+{0,1,1,0.871111095}\
+{0,1,1,0.878446758}\
+{0,1,1,0.885813177}\
+{0,1,1,0.893210292}\
+{0,1,1,0.900638223}\
+{0,1,1,0.90809691}\
+{0,1,1,0.915586293}\
+{0,1,1,0.923106492}\
+{0,1,1,0.930657446}\
+{0,1,1,0.938239157}\
+{0,1,1,0.945851624}\
+{0,1,1,0.953494787}\
+{0,1,1,0.961168766}\
+{0,1,1,0.968873501}\
+{0,1,1,0.976608992}\
+{0,1,1,0.984375238}\
+{0,1,1,0.992172241}\
+{0,1,1,1}\
+}"
+parm_set downsize.user.2:downsize 1
+parm_set "volume bounds.user.3":"Colored Bounds" false
+parm_set "read parflow.user.8":"File Browser" /home/nyx1/pftemp1/baldwin/llnl3.uni.out.perm.pfb
+parm_set isosurface.user.9:level 0.9998999834 -range 0 1
+parm_set clamp.user.10:clamp_max 1
+parm_set "WRITE ANY IMAGE.user.13":"WRITE ANY IMAGE browser" /scratch/llnl3.uni.3.00000.gif
+parm_set "WRITE ANY IMAGE.user.13":"image type" gif
+parm_set "integer to file.user.14":"File Prefix" /scratch/llnl3.uni.3
+parm_set "integer to file.user.14":Format %s.%05d.gif
+parm_set "animated integer.user.15":"min value" 0
+parm_set "animated integer.user.15":"max value" 257
+parm_set "animated integer.user.15":steps 258
+parm_set "animated integer.user.15":sleep true
+geom_set_scene -scene "geometry viewer.user.12"
+geom_set_camera_name "Camera 1"
+geom_resize_camera -view "Camera 1" 640 480
+#
+# State for view: Camera 1
+#
+geom_set_position -view "Camera 1" 0 0 -12
+geom_set_view_modes -depth_cue 0 -view "Camera 1"
+geom_set_view_modes -polygonal_spheres 0 -view "Camera 1"
+geom_set_view_modes -stereo 0 -view "Camera 1"
+geom_set_view_modes -head_tracking 1 -view "Camera 1"
+geom_set_view_modes -z_buffer 1 -view "Camera 1"
+geom_set_camera_params -view "Camera 1" -front -88 -back 112
+geom_set_depth_cue_params "Camera 1" -scale 0.1
+#
+# Light state
+#
+geom_set_light -light 1 -type directional -state 1
+geom_set_matrix -light 1 -mat \
+                  0.891292    0.20185    0.406025    0 \
+                    -0.0695939    0.945736    -0.317393    0 \
+                    -0.448058    0.254633    0.856974    0 \
+                    0    0    0    1 
+geom_set_light -type ambient -state 1
+#
+# State for object: top
+#
+geom_set_cur_cli_obj top
+geom_set_matrix   -mat \
+                  -0.00995131    0.00796471    -0.0255966    0 \
+                    -0.026807    -0.00300657    0.00948657    0 \
+                    -4.88867e-05    0.0272975    0.00851332    0 \
+                    4.7082    -2.38169    1.51723    1 
+geom_set_position   1.57207e-06 -1.01328e-06 1.49012e-06
+geom_set_obj_window 0 256 0 256 0 128
+#
+# State for object: bounds
+#
+geom_set_cur_cli_obj -push
+geom_set_name_context "volume bounds.user.3"
+geom_create_obj bounds -mod "volume bounds.user.3"
+geom_set_trans_mode parent
+geom_set_obj_window 0 256 0 256 0 128
+geom_set_name_context
+geom_set_cur_cli_obj -pop
+#
+# State for object: isosurface
+#
+geom_set_cur_cli_obj -push
+geom_set_name_context isosurface.user.9
+geom_create_obj isosurface -mod isosurface.user.9
+geom_set_trans_mode parent
+geom_set_obj_window 0 256 0 256 0 128
+geom_set_name_context
+geom_set_cur_cli_obj -pop
+shell "ui" shell
+ panel Application -w app_panel -p ui -xy 0,0 -wh 260,984
+  panel "Top Level Stack" -w master_stack -p Application -xy 2,100 -wh 256,852
+   panel excavate.user.0 -w panel -p "Top Level Stack" -xy 0,284 -wh 226,323
+    manipulator excavate.user.0:X -w idial -p excavate.user.0 \
+        -xy 10,10 -wh 90,130
+    manipulator excavate.user.0:Y -w idial -p excavate.user.0 \
+        -xy 100,10 -wh 90,130
+    manipulator excavate.user.0:Z -w idial -p excavate.user.0 \
+        -xy 10,140 -wh 90,130
+    manipulator "excavate.user.0:flip X" -w toggle -p excavate.user.0 \
+        -xy 100,140 -wh 118,22
+    manipulator "excavate.user.0:flip Y" -w toggle -p excavate.user.0 \
+        -xy 10,270 -wh 118,22
+    manipulator "excavate.user.0:flip Z" -w toggle -p excavate.user.0 \
+        -xy 10,292 -wh 118,22
+   panel "generate colormap.user.1" -w panel -p "Top Level Stack" \
+       -xy 0,64 -wh 254,568
+    manipulator "generate colormap.user.1:colormap" -w color_editor -p "generate colormap.user.1" \
+        -xy 10,10 -wh 236,416
+    manipulator "generate colormap.user.1:lo value" -w dial -p "generate colormap.user.1" \
+        -xy 10,428 -wh 90,130
+    manipulator "generate colormap.user.1:hi value" -w dial -p "generate colormap.user.1" \
+        -xy 100,428 -wh 90,130
+   panel downsize.user.2 -w panel -p "Top Level Stack" -xy 0,284 -wh 110,150
+    manipulator downsize.user.2:downsize -w idial -p downsize.user.2 \
+        -xy 10,10 -wh 90,130
+   panel "volume bounds.user.3" -w panel -p "Top Level Stack" \
+       -xy 0,306 -wh 136,196
+    manipulator "volume bounds.user.3:Hull" -w toggle -p "volume bounds.user.3" \
+        -xy 10,10 -wh 118,22
+    manipulator "volume bounds.user.3:Min I" -w toggle -p "volume bounds.user.3" \
+        -xy 10,32 -wh 118,22
+    manipulator "volume bounds.user.3:Max I" -w toggle -p "volume bounds.user.3" \
+        -xy 10,54 -wh 118,22
+    manipulator "volume bounds.user.3:Min J" -w toggle -p "volume bounds.user.3" \
+        -xy 10,75 -wh 118,22
+    manipulator "volume bounds.user.3:Max J" -w toggle -p "volume bounds.user.3" \
+        -xy 10,97 -wh 118,22
+    manipulator "volume bounds.user.3:Min K" -w toggle -p "volume bounds.user.3" \
+        -xy 10,121 -wh 118,22
+    manipulator "volume bounds.user.3:Max K" -w toggle -p "volume bounds.user.3" \
+        -xy 10,143 -wh 118,22
+    manipulator "volume bounds.user.3:Colored Bounds" -w toggle -p "volume bounds.user.3" \
+        -xy 10,164 -wh 118,22
+   panel "field to byte.user.4" -w panel -p "Top Level Stack" \
+       -xy 0,64 -wh 137,42
+    manipulator "field to byte.user.4:byte normalize" -w toggle -p "field to byte.user.4" \
+        -xy 10,10 -wh 118,22
+   panel "read parflow macro.user.5" -w stack -p "Top Level Stack" \
+       -xy 0,64 -wh 256,392
+    panel "animated integer.user.6" -w panel -p "read parflow macro.user.5" \
+        -xy 0,64 -wh 255,173
+     manipulator "animated integer.user.6:min value" -w typein_integer -p "animated integer.user.6" \
+         -xy 8,8 -wh 236,22
+     manipulator "animated integer.user.6:max value" -w typein_integer -p "animated integer.user.6" \
+         -xy 8,28 -wh 236,22
+     manipulator "animated integer.user.6:steps" -w typein_integer -p "animated integer.user.6" \
+         -xy 8,54 -wh 118,22
+     manipulator "animated integer.user.6:sleep" -w toggle -p "animated integer.user.6" \
+         -xy 8,74 -wh 118,22
+     manipulator "animated integer.user.6:choice" -w radio_buttons -p "animated integer.user.6" \
+         -xy 8,98 -wh 118,66
+    panel "integer to file.user.7" -w panel -p "read parflow macro.user.5" \
+        -xy 0,64 -wh 255,239
+     manipulator "integer to file.user.7:File Prefix" -w browser -p "integer to file.user.7" \
+         -xy 8,8 -wh 236,194
+     manipulator "integer to file.user.7:Format" -w typein -p "integer to file.user.7" \
+         -xy 8,205 -wh 236,22
+    panel "read parflow.user.8" -w panel -p "read parflow macro.user.5" \
+        -xy 0,108 -wh 255,284
+     manipulator "read parflow.user.8:File Browser" -w browser -p "read parflow.user.8" \
+         -xy 8,8 -wh 236,194
+     manipulator "read parflow.user.8:Scan Files" -w radio_buttons -p "read parflow.user.8" \
+         -xy 8,205 -wh 118,66
+   panel isosurface.user.9 -w panel -p "Top Level Stack" -xy 0,284 -wh 228,216
+    manipulator isosurface.user.9:level -w dial -p isosurface.user.9 \
+        -xy 10,10 -wh 90,130
+    manipulator "isosurface.user.9:optimize surf" -w toggle -p isosurface.user.9 \
+        -xy 100,10 -wh 118,22
+    manipulator "isosurface.user.9:optimize wire" -w toggle -p isosurface.user.9 \
+        -xy 10,140 -wh 118,22
+    manipulator "isosurface.user.9:generate normals" -w toggle -p isosurface.user.9 \
+        -xy 10,162 -wh 118,22
+    manipulator "isosurface.user.9:flip normals" -w toggle -p isosurface.user.9 \
+        -xy 10,184 -wh 118,22
+   panel clamp.user.10 -w panel -p "Top Level Stack" -xy 0,64 -wh 200,150
+    manipulator clamp.user.10:clamp_min -w dial -p clamp.user.10 \
+        -xy 10,10 -wh 90,130
+    manipulator clamp.user.10:clamp_max -w dial -p clamp.user.10 \
+        -xy 100,10 -wh 90,130
+   panel "WRITE ANY IMAGE.user.13" -w panel -p "Top Level Stack" \
+       -xy 0,306 -wh 256,522
+    manipulator "WRITE ANY IMAGE.user.13:WRITE ANY IMAGE browser" -w browser -p "WRITE ANY IMAGE.user.13" \
+        -xy 10,10 -wh 236,194
+    manipulator "WRITE ANY IMAGE.user.13:image type" -w radio_buttons -p "WRITE ANY IMAGE.user.13" \
+        -xy 10,204 -wh 236,308
+   panel "integer to file.user.14" -w panel -p "Top Level Stack" \
+       -xy 0,306 -wh 256,236
+    manipulator "integer to file.user.14:File Prefix" -w browser -p "integer to file.user.14" \
+        -xy 10,10 -wh 236,194
+    manipulator "integer to file.user.14:Format" -w typein -p "integer to file.user.14" \
+        -xy 10,204 -wh 236,22
+   panel "animated integer.user.15" -w panel -p "Top Level Stack" \
+       -xy 0,284 -wh 256,174
+    manipulator "animated integer.user.15:min value" -w typein_integer -p "animated integer.user.15" \
+        -xy 10,10 -wh 236,22
+    manipulator "animated integer.user.15:max value" -w typein_integer -p "animated integer.user.15" \
+        -xy 10,32 -wh 236,22
+    manipulator "animated integer.user.15:steps" -w typein_integer -p "animated integer.user.15" \
+        -xy 10,54 -wh 118,22
+    manipulator "animated integer.user.15:sleep" -w toggle -p "animated integer.user.15" \
+        -xy 10,76 -wh 118,22
+    manipulator "animated integer.user.15:choice" -w radio_buttons -p "animated integer.user.15" \
+        -xy 10,98 -wh 118,66
+ panel "geometry viewer.user.12!display" -w container -p ui -xy 311,171 -wh 680,552\
+   -P zoom_coords string "0 0 0 0 0 <$NULL> 0 0 0 0"
+manipulator "geometry viewer.user.12":object -w none
+manipulator "geometry viewer.user.12":"Update Always" -w none
+manipulator "geometry viewer.user.12":"Update Image" -w none
+# End of file

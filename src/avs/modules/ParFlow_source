@@ -1,0 +1,5 @@
+# AVS Module Library Version: 1
+file pf_modules
+file rotate_geometry
+file perspective_zoom
+

@@ -1,0 +1,28 @@
+#!/bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+# 
+#for i in 
+
+if [ $1 = "all" ]
+then
+	tests="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16"
+else
+	tests=$*
+fi
+
+for i in $tests
+do
+	echo "==================== test$i ===================="
+	rm -f parflow.c
+	cp test$i.c parflow.c
+	build -g -comm irixshmem install
+#	mv parflow.pvms.`tarch` test$i.pvms.`tarch`
+done

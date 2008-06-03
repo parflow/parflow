@@ -1,0 +1,235 @@
+#!/usr/bin/avs -network
+version 5.02 (50.62 SunOS4)
+module downsize.user.0 -xy 341,89 -ex $Path/avs_library/mongo
+module isosurface.user.1 -xy 333,257 -ex $Path/avs_library/tile
+module minmax.user.2 -xy 93,89 -ex $Path/avs_library/mongo
+module "generate colormap.user.3" -xy 13,169
+port_vis "generate colormap.user.3":"lo value" -on
+port_vis "generate colormap.user.3":"hi value" -on
+module statistics.user.4 -xy 597,89 -ex $Path/avs_library/mongo
+module "volume bounds.user.5" -xy 485,257 -ex $Path/avs_library/mongo
+module "geometry viewer.user.6" -xy 333,409
+module "color legend.user.7" -xy 141,321 -ex $Path/avs_library/mongo
+module "read parflow macro.user.12" -xy 341,33 -macro -type 1
+port_add -out "read parflow macro.user.12":"Uniform Output" "field 3D scalar 3-coord uniform float" -flags 0x2
+port_add -out "read parflow macro.user.12":"Scattered Output" "field 1D scalar 3-coord irregular float" -flags 0x2
+port_add -out "read parflow macro.user.12":"integer value" integer -flags 0x2
+module "animated integer.user.13" -xy 301,121 -ex $Path/avs_library/anim_int -parent "read parflow macro.user.12"
+module "integer to file.user.14" -xy 301,185 -ex /home/bacchus0/falgout/parflow/exe.SunOS/avs/mod_lib/pf_modules -parent "read parflow macro.user.12"
+module "read parflow.user.15" -xy 301,249 -ex /home/bacchus0/falgout/parflow/exe.SunOS/avs/mod_lib/pf_modules -parent "read parflow macro.user.12"
+port_vis "read parflow.user.15":"File Browser" -on
+port_connect downsize.user.0:0 minmax.user.2:0
+port_connect downsize.user.0:0 isosurface.user.1:0
+port_connect downsize.user.0:0 statistics.user.4:0
+port_connect downsize.user.0:0 "volume bounds.user.5":0
+port_connect isosurface.user.1:0 "geometry viewer.user.6":0
+port_connect minmax.user.2:0 isosurface.user.1:1
+port_connect minmax.user.2:1 "generate colormap.user.3":1
+port_connect minmax.user.2:2 "generate colormap.user.3":2
+port_connect "generate colormap.user.3":0 "color legend.user.7":0
+port_connect "generate colormap.user.3":0 isosurface.user.1:2
+port_connect "volume bounds.user.5":0 "geometry viewer.user.6":0
+port_connect "color legend.user.7":0 "geometry viewer.user.6":0
+port_connect "read parflow macro.user.12":0 downsize.user.0:0
+port_connect "animated integer.user.13":0 "OUT-> read parflow macro.user.12":2
+port_connect "animated integer.user.13":0 "integer to file.user.14":0
+port_connect "integer to file.user.14":0 "read parflow.user.15":0
+port_connect "read parflow.user.15":0 "OUT-> read parflow macro.user.12":0
+port_connect "read parflow.user.15":1 "OUT-> read parflow macro.user.12":1
+parm_set downsize.user.0:downsize 1
+parm_set isosurface.user.1:level 0.1076564789 -range -0.0009450464859 0.1076564789
+parm_set "generate colormap.user.3":"lo value" -0.0009450464859
+parm_set "generate colormap.user.3":"hi value" 0.1076564789
+parm_set "color legend.user.7":position horizontal
+parm_set "color legend.user.7":"X Position" -0.5300546288
+parm_set "color legend.user.7":"Y Position" -0.9016393423
+parm_set "color legend.user.7":"Z Position" 1
+parm_set "color legend.user.7":Length 1.249672174
+geom_set_scene -scene "geometry viewer.user.6"
+geom_set_camera_name "Camera 1"
+geom_resize_camera -view "Camera 1" 512 512
+#
+# State for view: Camera 1
+#
+geom_set_position -view "Camera 1" 0 0 -12
+geom_set_view_modes -depth_cue 0 -view "Camera 1"
+geom_set_view_modes -polygonal_spheres 0 -view "Camera 1"
+geom_set_view_modes -stereo 0 -view "Camera 1"
+geom_set_view_modes -head_tracking 1 -view "Camera 1"
+geom_set_view_modes -z_buffer 1 -view "Camera 1"
+geom_set_camera_params -view "Camera 1" -front -88 -back 112
+geom_set_depth_cue_params "Camera 1" -scale 0.1
+#
+# Light state
+#
+geom_set_light -light 1 -type directional -state 1
+geom_set_light -type ambient -state 1
+#
+# State for object: top
+#
+geom_set_cur_cli_obj top
+geom_set_matrix   -mat \
+                  0.0561657    0.00776756    -0.0319443    0 \
+                    0.000918527    0.0628413    0.0168954    0 \
+                    0.032862    -0.0150323    0.0541241    0 \
+                    -4.70497    -4.03793    -0.768843    1 
+geom_set_position   0 0 -1.19209e-07
+geom_set_render_mode gouraud
+geom_set_obj_window 0 128 0 128 0 64
+#
+# State for object: isosurface
+#
+geom_set_cur_cli_obj -push
+geom_set_name_context isosurface.user.1
+geom_create_obj isosurface -mod isosurface.user.1
+geom_set_trans_mode parent
+geom_set_color 0.990 0.990 0.990
+geom_set_properties -amb 0.923 -diff 0.459 -spec 0.000 -exp 5.000 \
+ -trans 1.0 -spec_col 0.990 0.990 0.990
+geom_set_render_mode gouraud
+geom_set_obj_window 0 128 0 128 0 64
+geom_set_name_context
+geom_set_cur_cli_obj -pop
+#
+# State for object: bounds
+#
+geom_set_cur_cli_obj -push
+geom_set_name_context "volume bounds.user.5"
+geom_create_obj bounds -mod "volume bounds.user.5"
+geom_set_trans_mode parent
+geom_set_obj_window 0 128 0 128 0 64
+geom_set_name_context
+geom_set_cur_cli_obj -pop
+#
+# State for object: "color legend"
+#
+geom_set_cur_cli_obj -push
+geom_set_name_context "color legend.user.7"
+geom_create_obj "color legend" -mod "color legend.user.7"
+geom_set_trans_mode locked
+geom_set_render_mode no_light
+geom_set_name_context
+#
+# State for object: "color boundary"
+#
+geom_set_cur_cli_obj -push
+geom_set_name_context "color legend.user.7"
+geom_create_obj "color boundary" -mod "color legend.user.7"
+geom_set_select_mode parent
+geom_set_name_context
+geom_set_cur_cli_obj -pop
+#
+# State for object: "legend labels"
+#
+geom_set_cur_cli_obj -push
+geom_set_name_context "color legend.user.7"
+geom_create_obj "legend labels" -mod "color legend.user.7"
+geom_set_select_mode parent
+geom_set_name_context
+geom_set_cur_cli_obj -pop
+#
+# State for object: "tick marks"
+#
+geom_set_cur_cli_obj -push
+geom_set_name_context "color legend.user.7"
+geom_create_obj "tick marks" -mod "color legend.user.7"
+geom_set_select_mode parent
+geom_set_name_context
+geom_set_cur_cli_obj -pop
+geom_set_cur_cli_obj -pop
+shell "ui" shell
+ panel Application -w app_panel -p ui -xy 0,0 -wh 259,1023
+  panel "Top Level Stack" -w master_stack -p Application -xy 2,100 -wh 256,675\
+   -P columns integer 1
+   panel "generate colormap.user.3" -w panel -p "Top Level Stack" \
+       -xy 0,63 -wh 252,567
+    manipulator "generate colormap.user.3:colormap" -w color_editor -p "generate colormap.user.3" \
+        -xy 9,9 -wh 235,422
+    manipulator "generate colormap.user.3:lo value" -w dial -p "generate colormap.user.3" \
+        -xy 9,429 -wh 90,129
+    manipulator "generate colormap.user.3:hi value" -w dial -p "generate colormap.user.3" \
+        -xy 99,429 -wh 90,129
+   panel statistics.user.4 -w panel -p "Top Level Stack" -xy 0,86 -wh 256,243
+    manipulator "statistics.user.4:Compute Median" -w toggle -p statistics.user.4 \
+        -xy 9,9 -wh 118,22
+    manipulator statistics.user.4:Statistics -w textblock -p statistics.user.4 \
+        -xy 9,29 -wh 237,201
+   panel "read parflow macro.user.12" -w stack -p "Top Level Stack" \
+       -xy 0,108 -wh 256,394
+    panel "animated integer.user.13" -w panel -p "read parflow macro.user.12" \
+        -xy 0,63 -wh 256,173
+     manipulator "animated integer.user.13:min value" -w typein_integer -p "animated integer.user.13" \
+         -xy 9,9 -wh 237,22
+     manipulator "animated integer.user.13:max value" -w typein_integer -p "animated integer.user.13" \
+         -xy 9,29 -wh 237,22
+     manipulator "animated integer.user.13:steps" -w typein_integer -p "animated integer.user.13" \
+         -xy 9,54 -wh 118,22
+     manipulator "animated integer.user.13:sleep" -w toggle -p "animated integer.user.13" \
+         -xy 9,75 -wh 118,22
+     manipulator "animated integer.user.13:choice" -w radio_buttons -p "animated integer.user.13" \
+         -xy 9,99 -wh 118,67
+    panel "integer to file.user.14" -w panel -p "read parflow macro.user.12" \
+        -xy 0,63 -wh 256,239
+     manipulator "integer to file.user.14:File Prefix" -w browser -p "integer to file.user.14" \
+         -xy 9,9 -wh 237,199
+     manipulator "integer to file.user.14:Format" -w typein -p "integer to file.user.14" \
+         -xy 9,206 -wh 237,22
+    panel "read parflow.user.15" -w panel -p "read parflow macro.user.12" \
+        -xy 0,108 -wh 256,285
+     manipulator "read parflow.user.15:File Browser" -w browser -p "read parflow.user.15" \
+         -xy 9,9 -wh 237,199
+     manipulator "read parflow.user.15:Scan Files" -w radio_buttons -p "read parflow.user.15" \
+         -xy 9,206 -wh 118,67
+ panel page.0 -w panel -p ui -xy 681,108 -wh 668,830
+  panel "geometry viewer.user.6!display" -w container -p page.0 \
+      -xy 8,7 -wh 649,678\
+   -P zoom_coords string "1 0 0 0 0 <page.0> 0 0 0 0"
+  manipulator isosurface.user.1:level -w dial -p page.0 -xy 143,692 -wh 90,129\
+   -P local_range real 1
+  manipulator "isosurface.user.1:optimize surf" -w toggle -p page.0 \
+      -xy 13,698 -wh 118,22
+  manipulator "isosurface.user.1:optimize wire" -w toggle -p page.0 \
+      -xy 13,730 -wh 118,22
+  manipulator "isosurface.user.1:generate normals" -w toggle -p page.0 \
+      -xy 13,758 -wh 118,22
+  manipulator "isosurface.user.1:flip normals" -w toggle -p page.0 \
+      -xy 13,790 -wh 118,22
+  panel minmax.user.2 -w panel -p page.0 -xy 399,692 -wh 252,67
+   manipulator minmax.user.2:channel -w idial -p minmax.user.2 -hide \
+       -xy 9,-102 -wh 90,129
+   manipulator minmax.user.2:min_value -w typein_real -p minmax.user.2 \
+       -xy 9,9 -wh 237,22
+   manipulator minmax.user.2:max_value -w typein_real -p minmax.user.2 \
+       -xy 9,34 -wh 237,22
+  manipulator downsize.user.0:downsize -w idial -p page.0 -xy 278,692 -wh 90,129
+manipulator "volume bounds.user.5":Hull -w none
+manipulator "volume bounds.user.5":"Min I" -w none
+manipulator "volume bounds.user.5":"Max I" -w none
+manipulator "volume bounds.user.5":"Min J" -w none
+manipulator "volume bounds.user.5":"Max J" -w none
+manipulator "volume bounds.user.5":"Min K" -w none
+manipulator "volume bounds.user.5":"Max K" -w none
+manipulator "volume bounds.user.5":"Colored Bounds" -w none
+manipulator "geometry viewer.user.6":object -w none
+manipulator "geometry viewer.user.6":"Update Always" -w none
+manipulator "geometry viewer.user.6":"Update Image" -w none
+manipulator "color legend.user.7":"legend control" -w none
+manipulator "color legend.user.7":position -w none
+manipulator "color legend.user.7":"Reverse Colors" -w none
+manipulator "color legend.user.7":"Legend Outline" -w none
+manipulator "color legend.user.7":"Outline Gray Scale" -w none
+manipulator "color legend.user.7":"Label Controls" -w none
+manipulator "color legend.user.7":Labels -w none
+manipulator "color legend.user.7":Ticks -w none
+manipulator "color legend.user.7":"Number of Ticks" -w none
+manipulator "color legend.user.7":"Label Height" -w none
+manipulator "color legend.user.7":"Decimal Precision" -w none
+manipulator "color legend.user.7":"Label Gray Scale" -w none
+manipulator "color legend.user.7":"Label Font" -w none
+manipulator "color legend.user.7":"Legend Position" -w none
+manipulator "color legend.user.7":"X Position" -w none
+manipulator "color legend.user.7":"Y Position" -w none
+manipulator "color legend.user.7":"Z Position" -w none
+manipulator "color legend.user.7":Thickness -w none
+manipulator "color legend.user.7":Length -w none
+# End of file

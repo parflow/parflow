@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002-2-1 (1.70) JA patch-2.0
+patched version by:  Kenshi Muto, Debian Project.
+* modified by:  Shige TAKENO
+LaTeX2HTML 2002-2-1 (1.70),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>3.4 Writing AVS Module Help</TITLE>
+<META NAME="description" CONTENT="3.4 Writing AVS Module Help">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002-2-1 JA patch-2.0">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node16.html">
+<LINK REL="previous" HREF="node14.html">
+<LINK REL="up" HREF="node9.html">
+<LINK REL="next" HREF="node16.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html406"
+  HREF="node16.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html400"
+  HREF="node9.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html394"
+  HREF="node14.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html402"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html404"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html407"
+  HREF="node16.html">3.5 (Not) Writing AVS/Express</A>
+<B> Up:</B> <A NAME="tex2html401"
+  HREF="node9.html">3. Documentation</A>
+<B> Previous:</B> <A NAME="tex2html395"
+  HREF="node14.html">3.3 Writing PFIX Files</A>
+ &nbsp; <B>  <A NAME="tex2html403"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html405"
+  HREF="node92.html">Index</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00440000000000000000"></A>
+<A NAME="Writing_AVS_Module_Help"></A>
+<BR>
+3.4 Writing AVS Module Help
+</H1>
+
+<P>
+This section describes how to write AVS module help.
+First, it is important that the names of module files be exactly the
+same as the module name, where in the file name we replace spaces by
+a _ character.
+This convention is used by AVS to find online help files.
+AVS suggests that these names be no longer than 14 characters
+for portability reasons.
+We have already violated this in many cases, but should probably
+attempt to do this from now on.
+
+<P>
+Assume we want to write online help for a module named ``foo&nbsp;bar''
+(the source for which should be in a file called foo_bar.c).
+We then do the following:
+
+<OL>
+<LI>Edit the file foo_bar.txt and type in the help info.
+We should try to propogate a standard format for these files,
+so use an existing file as a template.
+
+<P>
+</LI>
+<LI>Type
+<BR>
+<IMG
+ WIDTH="118" HEIGHT="11" ALIGN="BOTTOM" BORDER="0"
+ SRC="img33.png"
+ ALT="\begin{display}\begin{verbatim}build install\end{verbatim}\end{display}">
+<BR>
+This installs the online help in the directory
+$PARFLOW_DIR/avs/help.
+
+<P>
+</LI>
+<LI>For help to work, you must have either the environment variable
+AVS_HELP_PATH set appropriately (see &#167;&nbsp;<A HREF="node9.html#Documentation">3</A>),
+or you must have a HelpPath line set in your .avsrc file.
+The former is recommended since it may be set using the
+PARFLOW_DIR variable.
+
+<P>
+</LI>
+</OL>
+Of course, one should follow standard resource control system (CVS)
+procedures when updating or adding new help.
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html406"
+  HREF="node16.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html400"
+  HREF="node9.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html394"
+  HREF="node14.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html402"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html404"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html407"
+  HREF="node16.html">3.5 (Not) Writing AVS/Express</A>
+<B> Up:</B> <A NAME="tex2html401"
+  HREF="node9.html">3. Documentation</A>
+<B> Previous:</B> <A NAME="tex2html395"
+  HREF="node14.html">3.3 Writing PFIX Files</A>
+ &nbsp; <B>  <A NAME="tex2html403"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html405"
+  HREF="node92.html">Index</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Steve Smith
+2008-06-02
+</ADDRESS>
+</BODY>
+</HTML>

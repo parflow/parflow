@@ -1,0 +1,55 @@
+#! /bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+if [ ! "$PARFLOW_DIR" ]; then
+    OLDDIR=`pwd`
+    cd ..
+    PARFLOW_DIR=`pwd` 
+    export PARFLOW_DIR
+    cd $OLDDIR
+    if [ ! -f $PARFLOW_DIR/src/parflow.h ]
+    then
+	echo  "Error: setenv PARFLOW_DIR before running build"
+        exit 1
+    fi
+fi
+
+while [ "$*" != "" ]
+do
+case $1 in
+  -h|-help) 
+       echo "$0"
+       echo "Cleans parflow directorys"
+       echo "Defaults removes object files, -very options cleans"
+       echo "executables source."
+       exit 0;;
+  -very)
+       PF_VERY=1
+       shift;;
+  *)
+       echo "Illegal option"
+       exit 1;
+esac
+done
+echo "Cleaning"
+rm -f $PARFLOW_DIR/host/*.o
+rm -f $PARFLOW_DIR/node/*.o
+
+if [ "$PF_VERY" ]
+then
+    rm -f $PARFLOW_DIR/exe/parflow.gh
+    rm -f $PARFLOW_DIR/host/parflow.ht
+    rm -f $PARFLOW_DIR/exe/parflow
+    rm -f $PARFLOW_DIR/node/parflow.gh
+    rm -f $PARFLOW_DIR/src/*.pftemp.c
+fi
+echo "Done."
+exit 0
+

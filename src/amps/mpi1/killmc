@@ -1,0 +1,40 @@
+#! /bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+if [ $# -gt 1 ]
+then
+       echo "usage: $0"
+       echo "Kills the booted multicomputer."
+       exit 0
+fi
+
+if [ "AIX" = "`uname`" ]
+then
+    #
+    # IBM SP2
+    #
+  
+    exit 
+fi
+
+
+if [ "`mpirun 2> /dev/null`" = "Missing: program name" ] 
+then
+    #
+    # MPICH
+    # 
+    echo 
+else
+    #wipe -v .hostfile
+    echo 
+fi
+
+
+

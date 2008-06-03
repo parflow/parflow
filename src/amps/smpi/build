@@ -1,0 +1,73 @@
+#!/bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+#=============================================================================
+#
+# Set up directory locations
+#
+#=============================================================================
+if [ -z "$PARFLOW_SRC" ]
+then
+        PARFLOW_SRC=$PARFLOW_DIR
+fi
+
+MANUAL=amps_manual
+
+if [ "$PF_DOCS_FLAG" ]
+then
+    doc++ -d html $MANUAL.dxx
+    doc++ -t -o $MANUAL.tex $MANUAL.dxx
+    latex $MANUAL
+    bibtex $MANUAL
+    makeindex $MANUAL.idx
+    latex $MANUAL
+    latex $MANUAL
+    dvips -o $MANUAL.ps $MANUAL.dvi
+
+    if [ "$PF_INSTALL_FLAG" ] 
+    then
+	INSTALL_DIR=$PARFLOW_HELP/amps_manual
+
+	if [ ! -d $PARFLOW_HELP ]
+	then
+	        mkdir $PARFLOW_HELP
+	fi
+
+	if [ ! -d $INSTALL_DIR ] 
+	then
+	        mkdir $INSTALL_DIR	
+		chgrp parflow $INSTALL_DIR
+		chmod 775 $INSTALL_DIR
+	fi
+
+	/bin/rm -fr $INSTALL_DIR/$MANUAL_html
+	mkdir $INSTALL_DIR/$MANUAL_html
+	chgrp parflow $INSTALL_DIR/$MANUAL_html
+	chmod 775  $INSTALL_DIR/$MANUAL_html
+	cp html/* $INSTALL_DIR/$MANUAL_html
+	chgrp parflow $INSTALL_DIR/$MANUAL_html/*
+	chmod 664 $INSTALL_DIR/$MANUAL_html/*
+	/bin/rm -fr $INSTALL_DIR/$MANUAL.ps
+	cp $MANUAL.ps $INSTALL_DIR/$MANUAL.ps
+	chgrp parflow $INSTALL_DIR/$MANUAL.ps
+	chmod 664 $INSTALL_DIR/$MANUAL.ps
+    fi
+else
+    PARFLOW_LIB=$PARFLOW_SRC/lib
+    if [ ! -d $PARFLOW_LIB ]
+    then
+        mkdir $PARFLOW_LIB
+    fi
+
+    $PF_MAKE amps.smpi.$PF_ARCH.a
+    rm -f $PARFLOW_LIB/amps.smpi.$PF_ARCH.a
+    $PF_INSTALL $PARFLOW_SRC/amps/smpi/amps.smpi.$PF_ARCH.a $PARFLOW_LIB/amps.smpi.$PF_ARCH.a
+fi
+

@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002-2-1 (1.70) JA patch-2.0
+patched version by:  Kenshi Muto, Debian Project.
+* modified by:  Shige TAKENO
+LaTeX2HTML 2002-2-1 (1.70),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>9.2.2.2 Compiling AVS/Express Modules</TITLE>
+<META NAME="description" CONTENT="9.2.2.2 Compiling AVS/Express Modules">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002-2-1 JA patch-2.0">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node40.html">
+<LINK REL="previous" HREF="node38.html">
+<LINK REL="up" HREF="node37.html">
+<LINK REL="next" HREF="node40.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html763"
+  HREF="node40.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html757"
+  HREF="node37.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html751"
+  HREF="node38.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html759"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html761"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html764"
+  HREF="node40.html">9.2.2.3 Tips and Tricks</A>
+<B> Up:</B> <A NAME="tex2html758"
+  HREF="node37.html">9.2.2 Writing AVS/Express Modules</A>
+<B> Previous:</B> <A NAME="tex2html752"
+  HREF="node38.html">9.2.2.1 Writing the Modules</A>
+ &nbsp; <B>  <A NAME="tex2html760"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html762"
+  HREF="node92.html">Index</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION001022200000000000000"></A>
+<A NAME="Compiling_AVS_Express_Modules"></A>
+<BR>
+9.2.2.2 Compiling AVS/Express Modules
+</H3>
+
+<P>
+The compilation process in AVS/Express compiles all source code specified
+in the user library, so when you compile you are in effect compiling the
+entire user library.
+To compile from within Express, click on the library version of a module with
+source code, and select Compile from the Project pulldown
+menu.  (N.B. delete any active applications that contain your library modules
+before doing so, or you will likely get an error).
+To compile from the command prompt, use
+<BR>
+<IMG
+ WIDTH="397" HEIGHT="16" ALIGN="BOTTOM" BORDER="0"
+ SRC="img205.png"
+ ALT="\begin{display}\begin{verbatim}
+vxp -proj project_dir -compile -exit [-none]\end{verbatim}\end{display}">
+<BR>
+Using -none keeps Express from popping up any windows (you still need a
+valid DISPLAY variable set though!).
+
+<P>
+This seems to work fine on
+Solaris machines, but there seems to be bugs in the compilation process for
+SGI machines.
+
+<P>
+To compile on an SGI you need to follow these steps:
+
+<OL>
+<LI>Remove all the -lsunmath occurrences in the v/templ.v
+file in the project directory.  Tip: run
+<BR>
+<IMG
+ WIDTH="356" HEIGHT="16" ALIGN="BOTTOM" BORDER="0"
+ SRC="img206.png"
+ ALT="\begin{display}\begin{verbatim}
+perl -pi.bak -e s/-lsunmath// v/templ.v\end{verbatim}\end{display}">
+<BR>
+in the project directory.  (This should be done <EM>before</EM>
+loading Express).
+
+<P>
+</LI>
+<LI>Do one of the following.
+
+<P>
+
+<OL>
+<LI>Use the Compile option within Express as described above,
+	  ignoring the error message.
+</LI>
+<LI>From the command line run
+<BR>
+<IMG
+ WIDTH="571" HEIGHT="16" ALIGN="BOTTOM" BORDER="0"
+ SRC="img207.png"
+ ALT="\begin{display}\begin{verbatim}
+vxp -path ''proj_dir global_express_dir'' -generate -exit [-none]\end{verbatim}\end{display}">
+<BR>
+</LI>
+</OL>
+
+<P>
+</LI>
+<LI>In the project directory run make -f user.mk.  This should
+compile successfully despite a number of warnings.
+
+<P>
+</LI>
+</OL>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html763"
+  HREF="node40.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html757"
+  HREF="node37.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html751"
+  HREF="node38.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html759"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html761"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html764"
+  HREF="node40.html">9.2.2.3 Tips and Tricks</A>
+<B> Up:</B> <A NAME="tex2html758"
+  HREF="node37.html">9.2.2 Writing AVS/Express Modules</A>
+<B> Previous:</B> <A NAME="tex2html752"
+  HREF="node38.html">9.2.2.1 Writing the Modules</A>
+ &nbsp; <B>  <A NAME="tex2html760"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html762"
+  HREF="node92.html">Index</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Steve Smith
+2008-06-02
+</ADDRESS>
+</BODY>
+</HTML>

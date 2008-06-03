@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002-2-1 (1.70) JA patch-2.0
+patched version by:  Kenshi Muto, Debian Project.
+* modified by:  Shige TAKENO
+LaTeX2HTML 2002-2-1 (1.70),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>2.1 The Developer's Environment</TITLE>
+<META NAME="description" CONTENT="2.1 The Developer's Environment">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002-2-1 JA patch-2.0">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node5.html">
+<LINK REL="previous" HREF="node3.html">
+<LINK REL="up" HREF="node3.html">
+<LINK REL="next" HREF="node5.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html247"
+  HREF="node5.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html241"
+  HREF="node3.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html235"
+  HREF="node3.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html243"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html245"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html248"
+  HREF="node5.html">2.2 Building Code</A>
+<B> Up:</B> <A NAME="tex2html242"
+  HREF="node3.html">2. Code Organization</A>
+<B> Previous:</B> <A NAME="tex2html236"
+  HREF="node3.html">2. Code Organization</A>
+ &nbsp; <B>  <A NAME="tex2html244"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html246"
+  HREF="node92.html">Index</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00310000000000000000"></A>
+<A NAME="The_Developer_s_Environment"></A>
+<BR>
+2.1 The Developer's Environment
+</H1>
+
+<P>
+This section assumes that the developer is working on the workstation
+cluster at LLNL.  No procedures have yet been devised for developers
+working elsewhere (there currently are no such developers).
+
+<P>
+The  repository (central location for all of the 
+source) is located in /home/casc/repository/parflow.  Online
+documentation, WWW information, and data for many  runs, are
+all located in a parflow account (directory&nbsp;parflow) on
+the local workstation cluster.  Developers work on their own local
+versions of the code, which gets ``checked'' in and out of the
+repository as changes are made.  The source code control system that
+is being used is the CVS system.  The following steps describe how to
+check out a ``clean'' version of the code.
+
+<P>
+
+<OL>
+<LI>The following environment variables should be set up in your .profile
+file (or similar shell resource file):
+
+<P>
+<BR>
+<IMG
+ WIDTH="465" HEIGHT="102" ALIGN="BOTTOM" BORDER="0"
+ SRC="img3.png"
+ ALT="\begin{display}\begin{verbatim}CVSROOT=/home/casc/repository
+PARFLOW_SRC=~/par...
+...s
+export CVSROOT PARFLOW_SRC PARFLOW_DIR PARFLOW_HELP\end{verbatim}\end{display}">
+<BR>
+
+<P>
+You also need to add $PARFLOW_DIR/bin to your 
+$PATH environment variable.
+
+<P>
+The variable CVSROOT specifies the location of the parflow
+repository and other CVS repositories.
+The variable PARFLOW_DIR specifies the location of
+the installed version of .
+To allow more than one binary version of the code to be installed in
+your directory at a time, set
+<BR>
+<IMG
+ WIDTH="298" HEIGHT="16" ALIGN="BOTTOM" BORDER="0"
+ SRC="img4.png"
+ ALT="\begin{display}\begin{verbatim}PARFLOW_DIR=~/parflow/exe.\lq uname\lq \end{verbatim}\end{display}">
+<BR>
+This will, for example,
+install Sun binaries in&nbsp;/parflow/exe.SunOS
+and SGI binaries in&nbsp;/parflow/exe.IRIX.
+PARFLOW_SRC is the location of the source code for 
+and affiliated tools.
+PARFLOW_HELP is the location of the online help files.
+We will use the&nbsp;/parflow directory as the root directory for
+building  in this manual; you may use a different directory
+if you wish.
+
+<P>
+</LI>
+<LI>Get the source code out of the repository and run the post checkout
+script.
+
+<P>
+<BR>
+<IMG
+ WIDTH="290" HEIGHT="59" ALIGN="BOTTOM" BORDER="0"
+ SRC="img5.png"
+ ALT="\begin{display}\begin{verbatim}mkdir ~/parflow
+cvs checkout -P parflow
+(cd ~/parflow/; ./post_checkout)\end{verbatim}\end{display}">
+<BR>
+
+<P>
+This creates a local  directory tree from the sources in 
+the repository.
+
+<P>
+</LI>
+<LI>To build and run the code, refer to the <EM>ParFlow User's Manual</EM>.
+
+<P>
+</LI>
+</OL>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html247"
+  HREF="node5.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html241"
+  HREF="node3.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html235"
+  HREF="node3.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html243"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html245"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html248"
+  HREF="node5.html">2.2 Building Code</A>
+<B> Up:</B> <A NAME="tex2html242"
+  HREF="node3.html">2. Code Organization</A>
+<B> Previous:</B> <A NAME="tex2html236"
+  HREF="node3.html">2. Code Organization</A>
+ &nbsp; <B>  <A NAME="tex2html244"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html246"
+  HREF="node92.html">Index</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Steve Smith
+2008-06-02
+</ADDRESS>
+</BODY>
+</HTML>

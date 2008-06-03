@@ -1,0 +1,100 @@
+#!/usr/bin/avs -network
+version 5.02 (50.62 SunOS4)
+module downsize.user.0 -xy 341,97 -ex $Path/avs_library/mongo
+module statistics.user.1 -xy 117,89 -ex $Path/avs_library/mongo
+module "display image.user.2" -xy 341,345
+module "generate colormap.user.3" -xy 117,137
+module tracer.user.4 -xy 341,265 -ex $Path/avs_library/tracer
+module "field to byte.user.5" -xy 341,185 -ex $Path/avs_library/mongo
+module "color range.user.6" -xy 117,217 -ex $Path/avs_library/mongo
+module "read parflow macro.user.11" -xy 341,25 -macro -type 1
+port_add -out "read parflow macro.user.11":"Uniform Output" "field 3D scalar 3-coord uniform float" -flags 0x2
+port_add -out "read parflow macro.user.11":"Scattered Output" "field 1D scalar 3-coord irregular float" -flags 0x2
+port_add -out "read parflow macro.user.11":"integer value" integer -flags 0x2
+module "animated integer.user.12" -xy 301,121 -ex $Path/avs_library/anim_int -parent "read parflow macro.user.11"
+module "integer to file.user.13" -xy 301,185 -ex /home/bacchus0/falgout/parflow/exe.SunOS/avs/mod_lib/pf_modules -parent "read parflow macro.user.11"
+module "read parflow.user.14" -xy 301,249 -ex /home/bacchus0/falgout/parflow/exe.SunOS/avs/mod_lib/pf_modules -parent "read parflow macro.user.11"
+port_vis "read parflow.user.14":"File Browser" -on
+port_connect downsize.user.0:0 "color range.user.6":0
+port_connect downsize.user.0:0 "field to byte.user.5":0
+port_connect downsize.user.0:0 statistics.user.1:0
+port_connect "generate colormap.user.3":0 "color range.user.6":1
+port_connect tracer.user.4:0 "display image.user.2":0
+port_connect "field to byte.user.5":0 tracer.user.4:0
+port_connect "color range.user.6":0 tracer.user.4:2
+port_connect "read parflow macro.user.11":0 downsize.user.0:0
+port_connect "animated integer.user.12":0 "OUT-> read parflow macro.user.11":2
+port_connect "animated integer.user.12":0 "integer to file.user.13":0
+port_connect "integer to file.user.13":0 "read parflow.user.14":0
+port_connect "read parflow.user.14":0 "OUT-> read parflow macro.user.11":0
+port_connect "read parflow.user.14":1 "OUT-> read parflow macro.user.11":1
+parm_set downsize.user.0:downsize 1
+parm_set "display image.user.2":"approx technique" "floyd steinberg"
+parm_set tracer.user.4:"alpha scale" 0.75
+parm_set tracer.user.4:perspective 1
+parm_set tracer.user.4:interpolate true
+shell "ui" shell
+ panel Application -w app_panel -p ui -xy 0,0 -wh 259,1023
+  panel "Top Level Stack" -w master_stack -p Application -xy 2,100 -wh 256,675\
+   -P columns integer 1
+   panel statistics.user.1 -w panel -p "Top Level Stack" -xy 0,63 -wh 256,243
+    manipulator "statistics.user.1:Compute Median" -w toggle -p statistics.user.1 \
+        -xy 9,9 -wh 118,22
+    manipulator statistics.user.1:Statistics -w textblock -p statistics.user.1 \
+        -xy 9,29 -wh 237,201
+   panel "generate colormap.user.3" -w panel -p "Top Level Stack" \
+       -xy 0,86 -wh 252,567
+    manipulator "generate colormap.user.3:colormap" -w color_editor -p "generate colormap.user.3" \
+        -xy 9,9 -wh 235,422
+    manipulator "generate colormap.user.3:lo value" -w dial -p "generate colormap.user.3" \
+        -xy 9,429 -wh 90,129
+    manipulator "generate colormap.user.3:hi value" -w dial -p "generate colormap.user.3" \
+        -xy 99,429 -wh 90,129
+   panel "read parflow macro.user.11" -w stack -p "Top Level Stack" \
+       -xy 0,108 -wh 256,394
+    panel "animated integer.user.12" -w panel -p "read parflow macro.user.11" \
+        -xy 0,63 -wh 256,173
+     manipulator "animated integer.user.12:min value" -w typein_integer -p "animated integer.user.12" \
+         -xy 9,9 -wh 237,22
+     manipulator "animated integer.user.12:max value" -w typein_integer -p "animated integer.user.12" \
+         -xy 9,29 -wh 237,22
+     manipulator "animated integer.user.12:steps" -w typein_integer -p "animated integer.user.12" \
+         -xy 9,54 -wh 118,22
+     manipulator "animated integer.user.12:sleep" -w toggle -p "animated integer.user.12" \
+         -xy 9,75 -wh 118,22
+     manipulator "animated integer.user.12:choice" -w radio_buttons -p "animated integer.user.12" \
+         -xy 9,99 -wh 118,67
+    panel "integer to file.user.13" -w panel -p "read parflow macro.user.11" \
+        -xy 0,63 -wh 256,239
+     manipulator "integer to file.user.13:File Prefix" -w browser -p "integer to file.user.13" \
+         -xy 9,9 -wh 237,199
+     manipulator "integer to file.user.13:Format" -w typein -p "integer to file.user.13" \
+         -xy 9,206 -wh 237,22
+    panel "read parflow.user.14" -w panel -p "read parflow macro.user.11" \
+        -xy 0,108 -wh 256,285
+     manipulator "read parflow.user.14:File Browser" -w browser -p "read parflow.user.14" \
+         -xy 9,9 -wh 237,199
+     manipulator "read parflow.user.14:Scan Files" -w radio_buttons -p "read parflow.user.14" \
+         -xy 9,206 -wh 118,67
+ panel page.0 -w panel -p ui -xy 585,441 -wh 540,513
+  panel "display image.user.2!image" -w container -p page.0 -xy 9,7 -wh 328,357\
+   -P zoom_coords string "1 0 0 0 0 <page.0> 0 0 0 0"
+  manipulator "tracer.user.4:alpha scale" -w dial -p page.0 -xy 342,48 -wh 90,129
+  manipulator tracer.user.4:perspective -w dial -p page.0 -xy 443,48 -wh 90,129
+  manipulator tracer.user.4:Width -w typein_integer -p page.0 \
+      -xy 380,180 -wh 118,22
+  manipulator tracer.user.4:Height -w typein_integer -p page.0 \
+      -xy 380,206 -wh 118,22
+  manipulator tracer.user.4:interpolate -w toggle -p page.0 -xy 380,239 -wh 118,22
+  manipulator "tracer.user.4:Performance Stats" -w textblock -p page.0 \
+      -xy 8,383 -wh 237,112
+  manipulator "field to byte.user.5:byte normalize" -w toggle -p page.0 \
+      -xy 380,265 -wh 118,22
+  manipulator downsize.user.0:downsize -w idial -p page.0 -xy 250,370 -wh 90,129
+  panel "display image.user.2" -w panel -p page.0 -xy 374,370 -wh 136,127
+   manipulator "display image.user.2:approx technique" -w radio_buttons -p "display image.user.2" \
+       -xy 9,9 -wh 118,112
+manipulator "display image.user.2":Magnification -w none
+manipulator "display image.user.2":Automag_Size -w none
+manipulator "display image.user.2":"Maximum Image Dimension" -w none
+# End of file

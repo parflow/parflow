@@ -1,0 +1,154 @@
+#!/bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+#===========================================================================
+# This script builds various routines and sets up appropriate links to them.
+#===========================================================================
+
+EXIT="no"
+echo "We are building"
+
+if [ ! "$PARFLOW_DIR" ]; then
+  echo "Error: set the PARFLOW_DIR environment variable"
+  EXIT=yes
+fi
+
+if [ "$EXIT" = "yes" ]; then
+  exit 1
+fi
+
+#=============================================================================
+#
+# Set up directory locations
+#
+#=============================================================================
+if [ -z "$PARFLOW_SRC" ]
+then
+        PARFLOW_SRC=$PARFLOW_DIR
+fi
+
+#=============================================================================
+#
+# Attempt to determine the arch that we are compiling on.
+#
+#=============================================================================
+. $PARFLOW_SRC/config/getarch
+
+    
+
+args=$*
+
+#=============================================================================
+#
+# Parse the user arguments
+#
+#=============================================================================
+PF_OPTIMIZE_FLAG=""
+PF_DEBUG_FLAG=""
+PF_INSTALL_FLAG=""
+PF_CLEAN_FLAG=""
+PF_VERYCLEAN_FLAG=""
+PF_DOCS_FLAG=""
+. $PARFLOW_SRC/config/parse_build_args.sh
+
+#=============================================================================
+#
+# Do the installation
+#
+#=============================================================================
+if [ "$PF_INSTALL_FLAG" ]
+then
+	if [ ! -d $PARFLOW_DIR ]
+	then
+		$PF_MKDIR $PARFLOW_DIR
+	fi
+
+	PARFLOW_BIN=$PARFLOW_DIR/bin
+ 
+	if [ ! -d $PARFLOW_BIN ]
+	then
+	        $PF_MKDIR $PARFLOW_BIN
+	fi
+
+	rm -f  $PARFLOW_DIR/bin/build
+	$PF_INSTALL $PARFLOW_SRC/parflow/build $PARFLOW_DIR/bin/build
+
+	#=======================================================
+	# Set up the default problem
+	#=======================================================
+	if [ ! -d $PARFLOW_DIR/test ]
+	then
+		$PF_MKDIR $PARFLOW_DIR/test
+	fi
+
+	(cd $PARFLOW_DIR/test
+	for i in `cd $PARFLOW_SRC/test; ls *.pftcl`
+	do
+		rm -f $i
+		$PF_INSTALL $PARFLOW_SRC/test/$i .
+	done)
+
+	if [ "$PF_DOCS_FLAG" ]
+	then
+		(DOC_DIRS="docs/html docs/dev_manual docs/usr_manual"
+		for i in $DOC_DIRS
+		do
+			cd $PARFLOW_SRC/$i
+			./build $args 
+		done)
+		(DOC_DIRS="amps/mpi1"
+		for i in $DOC_DIRS
+		do
+			echo "Doing amps manual"
+			cd $PARFLOW_SRC/$i
+			 export PF_DOCS_FLAG PF_INSTALL_FLAG
+			./build $args
+		done)
+
+	fi
+fi
+
+#=============================================================================
+#
+# Build the TCL/TK tools and viz stuff
+#
+#=============================================================================
+DIRS="tools"
+echo $DIRS
+for i in $DIRS
+do
+ 	echo "Building $i"
+ 	(cd $PARFLOW_SRC/$i;./build $args)
+done
+
+
+#=============================================================================
+#
+# Build parflow
+#
+#=============================================================================
+echo "Building Parflow"
+(cd $PARFLOW_SRC/parflow;./build $args )
+
+#=============================================================================
+#
+# Clean the local directory
+#
+#=============================================================================
+if [ "$PF_CLEAN_FLAG" ]
+then
+	rm -f .current_arch
+fi
+
+
+
+
+
+

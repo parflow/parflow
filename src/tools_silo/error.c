@@ -1,0 +1,386 @@
+/*BHEADER**********************************************************************
+ * (c) 1995   The Regents of the University of California
+ *
+ * See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+ * notice, contact person, and disclaimer.
+ *
+ * $Revision: 1.1.1.1 $
+ *********************************************************************EHEADER*/
+/******************************************************************************
+ * Error
+ *
+ * (C) 1993 Regents of the University of California.
+ *
+ * see info_header.h for complete information
+ *
+ *                               History
+ *-----------------------------------------------------------------------------
+ $Log: error.c,v $
+ Revision 1.1.1.1  2006/02/14 23:05:52  kollet
+ CLM.PF_1.0
+
+ Revision 1.1.1.1  2006/02/14 18:51:22  kollet
+ CLM.PF_1.0
+
+ Revision 1.9  2002/01/09 23:08:05  smithsg
+ Added support for Vizamrai file conversion
+
+ Revision 1.8  1997/10/05 20:46:21  ssmith
+ Added support for reading and writing AVS Field types.  Written by
+ Mike Wittman, integrated by SGS.
+
+ Revision 1.7  1997/01/13 22:28:08  ssmith
+ Added more support for Win32 to the Tools directory
+
+ Revision 1.6  1996/08/10 06:35:26  mccombjr
+ *** empty log message ***
+
+ * Revision 1.5  1995/12/21  00:56:38  steve
+ * Added copyright
+ *
+ * Revision 1.4  1995/10/23  18:11:50  steve
+ * Added support for HDF
+ * Made varargs be ANSI
+ *
+ * Revision 1.3  1994/05/18  23:33:28  falgout
+ * Changed Error stuff, and print interactive message to stderr.
+ *
+ * Revision 1.2  1994/02/09  23:26:52  ssmith
+ * Cleaned up pftools and added pfload/pfunload
+ *
+ * Revision 1.1  1993/04/02  23:13:24  falgout
+ * Initial revision
+ *
+ *
+ *-----------------------------------------------------------------------------
+ *
+ *****************************************************************************/
+
+#include <string.h>
+
+#include "error.h"
+#include "databox.h"
+#include <tcl.h>
+
+/*-----------------------------------------------------------------------
+ * Error checking routines.
+ *-----------------------------------------------------------------------*/
+
+/*-----------------------------------------------------------------------
+ * Check that the grid dimensions are the same.
+ *-----------------------------------------------------------------------*/
+
+int      SameDimensions(databoxp, databoxq)
+Databox *databoxp;
+Databox *databoxq;
+{
+
+   if ((DataboxNx(databoxp) != DataboxNx(databoxq)) ||
+       (DataboxNy(databoxp) != DataboxNy(databoxq)) ||
+       (DataboxNz(databoxp) != DataboxNz(databoxq))) {
+      return 0;
+
+   }
+
+   return 1;
+
+}
+  
+
+/*-----------------------------------------------------------------------
+ * Make sure a coordinate is within the range of the grid
+ *-----------------------------------------------------------------------*/
+
+int     InRange(i, j, k, databox)
+int i, j, k;
+Databox *databox;
+{
+
+   if ((i < 0 || i >= DataboxNx(databox)) ||
+       (j < 0 || j >= DataboxNy(databox)) ||
+       (k < 0 || k >= DataboxNz(databox))) {
+
+      return 0;
+
+   }
+
+   return 1;
+
+}
+
+
+/* Function IsValidFileType - This function is used to make sure a given file */
+/* type is a valid one.                                                       */
+/*                                                                            */
+/* Parameters                                                                 */
+/* ----------                                                                 */
+/* char *option - The file type option to be validated                        */
+/*                                                                            */
+/* Return value - int - One if the file type option is valid and zero other-  */
+/*                      wise                                                  */
+
+int IsValidFileType (option)
+char *option;
+{
+   if (   strcmp(option, "pfb" ) == 0
+       || strcmp(option, "pfsb") == 0
+       || strcmp(option, "sa"  ) == 0
+       || strcmp(option, "sb"  ) == 0
+       || strcmp(option, "fld" ) == 0
+       || strcmp(option, "vis" ) == 0
+       || strcmp(option, "silo" ) == 0
+       || strcmp(option, "rsa" ) == 0 )
+      return (1);
+   else
+      return (0);
+}
+
+
+/* Function GetValidFileExtension - This function is used to determine the    */
+/* extension of any given file name and determine if it is valid.             */
+/*                                                                            */
+/* Parameters                                                                 */
+/* ----------                                                                 */
+/* char *filename - The filename whose extension will be determined           */
+/*                                                                            */
+/* Return value - char * - A valid file extension or null if the file's       */
+/*                         extension was invalid                              */
+
+char *GetValidFileExtension(filename)
+char *filename;
+{
+   char *extension;
+
+   /* Point the last character of the string */
+   extension = filename + (strlen(filename) - 1);
+  
+   while (*extension != '.' && extension != filename)
+      extension--;
+
+   extension++;
+  
+   if (IsValidFileType(extension))
+      return(extension);
+
+   else
+      return (NULL);
+}
+
+
+/*------------------------------------------------------------------------*/
+/* These functions append various error messages to the Tcl result.       */
+/*------------------------------------------------------------------------*/
+
+/*------------------------------------------------------------------------
+ * This function appends an invalid option error to the Tcl result.
+ *------------------------------------------------------------------------*/
+
+void        InvalidOptionError(interp, argnum, usage)
+Tcl_Interp *interp;
+int         argnum;
+char       *usage;
+{
+   char num[256];
+
+   sprintf(num, "%d", argnum);
+   Tcl_AppendResult(interp, "Error: Argument ", num, " is an invalid option\n", 
+                    usage, (char *) NULL);
+}
+
+
+/*------------------------------------------------------------------------
+ * This function appends an invalid argument error to the Tcl result.
+ *------------------------------------------------------------------------*/
+
+void        InvalidArgError(interp, argnum, usage)
+Tcl_Interp *interp;
+int         argnum;
+char       *usage;
+{
+   char     num[256];
+
+   sprintf(num, "%d", argnum);
+   Tcl_AppendResult(interp, "\nError: Argument ", num, " is not a valid argument\n",
+                    usage, (char *) NULL);
+}
+
+/*------------------------------------------------------------------------
+ * This function appends a wrong number of arguments error to the Tcl result.
+ *------------------------------------------------------------------------*/
+
+void        WrongNumArgsError(interp, usage)
+Tcl_Interp *interp;
+char       *usage;
+{
+   Tcl_AppendResult(interp, "\nError: Wrong number of arguments\n", usage,
+                            (char *) NULL);
+}
+
+
+/*------------------------------------------------------------------------
+ * Assign a missing option error message to the Tcl result             
+ *------------------------------------------------------------------------*/
+
+void        MissingOptionError(interp, argnum, usage)
+Tcl_Interp *interp;
+int         argnum;
+char       *usage;
+{
+   char num[256];
+
+   sprintf(num, "%d", argnum);
+   Tcl_AppendResult(interp, "\nError: Option missing at argument ", num,
+                    "\n", usage, (char *) NULL);
+}
+
+
+/*-----------------------------------------------------------------------
+ * Assign a missing filename error message to the Tcl result
+ *-----------------------------------------------------------------------*/
+
+void        MissingFilenameError(interp, argnum, usage)
+Tcl_Interp *interp;
+int         argnum;
+char       *usage;
+{
+   char num[256];
+
+   sprintf(num, "%d", argnum);
+   Tcl_AppendResult(interp, "\nError: Filename missing after argument ", num,
+                            "\n", usage, (char *) NULL);
+}
+
+
+/*-----------------------------------------------------------------------
+ * Assign an invalid file extension error message to the Tcl result
+ *-----------------------------------------------------------------------*/
+
+void        InvalidFileExtensionError(interp, argnum, usage)
+Tcl_Interp *interp;
+int         argnum;
+char       *usage;
+{
+   char num[256];
+   
+   sprintf(num, "%d", argnum);
+   Tcl_AppendResult(interp, "\nError: Argument ", num,
+                    " is a filename with an unknown extension\n", usage, 
+                    (char *) NULL); 
+}
+
+
+/*-----------------------------------------------------------------------
+ * Assign an invalid type error message to the Tcl result when an 
+ * argument passed to a function is not an integer when it should be. 
+ *-----------------------------------------------------------------------*/
+
+void        NotAnIntError(interp, argnum, usage)
+Tcl_Interp *interp;
+int         argnum;
+char       *usage;
+{
+
+   char num[256];
+
+   sprintf(num, "%d", argnum);
+   Tcl_ResetResult(interp);
+   Tcl_AppendResult(interp, "\nError: Integer missing at argument ", num, "\n",
+                            usage, (char *) NULL);
+}
+
+
+/*-----------------------------------------------------------------------
+ * Assign an invalid type error message to the Tcl result when an 
+ * argument passed to a function is not a double when it should be. 
+ *-----------------------------------------------------------------------*/
+
+void        NotADoubleError(interp, argnum, usage)
+Tcl_Interp *interp;
+int         argnum;
+char       *usage;
+{
+
+   char num[256];
+
+   sprintf(num, "%d", argnum);
+   Tcl_ResetResult(interp);
+   Tcl_AppendResult(interp, "\nError: Double floating point number missing at argument ", num, "\n", usage, (char *) NULL);
+}
+
+
+/*-----------------------------------------------------------------------
+ * Assign a negative number error to the tcl result
+ *-----------------------------------------------------------------------*/
+
+void        NumberNotPositiveError(interp, argnum)
+Tcl_Interp *interp;
+{
+   char num[256];
+   sprintf(num, "%d", argnum);
+   Tcl_AppendResult(interp, "\nError: Argument ", num, " must be greater than or equal to zero\n", (char *)NULL);
+}
+
+
+/*-----------------------------------------------------------------------
+ * Assign an out of memory error to the tcl result
+ *-----------------------------------------------------------------------*/
+
+void        MemoryError(interp)
+Tcl_Interp *interp;
+{
+   Tcl_SetResult(interp, "\nError: Memory could not be allocated to perform\n       the requested operation\n", TCL_STATIC);
+}
+
+
+
+/*-----------------------------------------------------------------------
+ * Assign an undefined dataset error to the tcl result
+ *-----------------------------------------------------------------------*/
+
+void        SetNonExistantError(interp, hashkey)
+Tcl_Interp *interp;
+char       *hashkey;
+{
+   Tcl_AppendResult(interp, "\nError: `", hashkey, 
+                            "' is not a valid set name\n", (char *) NULL);
+}
+
+
+/*-----------------------------------------------------------------------
+ * Assign an out of memory error to the tcl result
+ *-----------------------------------------------------------------------*/
+
+void        ReadWriteError(interp)
+Tcl_Interp *interp;
+{
+   Tcl_SetResult(interp, "\nError: The file could not be accesed or there is not enough memory available\n", TCL_STATIC);
+}
+
+
+/*-----------------------------------------------------------------------
+ * Assign an element out of range error to the TCL result
+ *-----------------------------------------------------------------------*/
+
+void        OutOfRangeError(interp, i, j, k)
+Tcl_Interp *interp;
+int         i;
+int         j;
+int         k;
+{
+   char message[256];
+   
+   sprintf(message, "\nError: Element (%d, %d, %d) is out of range\n", i, j, k);
+   Tcl_SetResult(interp, message, TCL_STATIC);
+}
+
+   
+/*-----------------------------------------------------------------------
+ * Assign an incompatible dimensions or out of memory error to the TCL
+ * result.
+ *-----------------------------------------------------------------------*/
+
+void        DimensionError(interp)
+Tcl_Interp *interp;
+{
+   Tcl_SetResult(interp, "\nError: The dimensions of the given data sets are not compatible\n", TCL_STATIC);
+}

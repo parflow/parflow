@@ -1,0 +1,31 @@
+#!/bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+#=============================================================================
+#
+# Set up directory locations
+#
+#=============================================================================
+if [ -z "$PARFLOW_SRC" ]
+then
+        PARFLOW_SRC=$PARFLOW_DIR
+fi
+
+PARFLOW_LIB=$PARFLOW_SRC/lib
+if [ ! -d $PARFLOW_LIB ]
+then
+        mkdir $PARFLOW_LIB
+fi
+
+$PF_MAKE amps.$PF_ARCH.pvm.a
+rm -f $PARFLOW_LIB/amps.$PF_ARCH.pvm.a
+$PF_INSTALL $PARFLOW_SRC/amps/pvms/amps.$PF_ARCH.pvm.a $PARFLOW_LIB/amps.$PF_ARCH.pvm.a
+
+

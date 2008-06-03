@@ -1,0 +1,117 @@
+%---------------------------------------------------------------------
+% Notation
+%---------------------------------------------------------------------
+
+\def\XDomain{\Omega}
+\def\XDomainBoundary{\Gamma}
+%\def\XDomainBoundary{{\partial \XDomain}}
+
+\def\XBound{{\cal B}}
+\def\XBCCoeffi{\eta}
+\def\XBCCoeffii{\zeta}
+\def\XBCCoeffiii{\psi}
+
+%------------------------------
+% continuous variables
+
+\def\Xpor{\phi}                  % porosity
+\def\Xden{\rho}                  % density
+\def\Xsolidden{\rho_{s}}         % solid density
+\def\Xvis{\mu}                   % viscosity
+\def\XS{S}                       % saturation
+\def\Xk{{\bar k}}                % intrinsic permeability tensor
+\def\Xkr{k_r}                    % relative permeability
+\def\Xp{p}                       % pressure
+\def\XQ{Q}                       % source term
+\def\Xh{h}                       % pressure head
+\def\XK{{\bar K}}                % hydraulic conductivity tensor
+\def\Xgravity{g}                 % gravity constant
+\def\Xg{{\vec g}}                % gravity vector
+\def\Xv{{\vec v}}                % velocity vector
+\def\XV{{\vec V}}                % Darcy velocity vector
+\def\Xgp{\bar{p}}                % gauge pressure
+\def\Xscale{\gamma}              % scale factor
+\def\Xq{{\vec q}}                % flux vector
+\def\Xn{{\vec n}}                % unit normal
+\def\Xmob{{\lambda}}             % mobility
+
+\def\Xc{c}                       % contaminant
+\def\XF{F}                       % mass concentraion
+
+%------------------------------
+% phase specific variables
+
+\def\Xdeni{\Xden_i}
+\def\Xvisi{\Xvis_i}
+\def\XSi{\XS_i}
+\def\Xkri{k_{ri}}
+\def\Xpi{\Xp_i}
+\def\XQi{\XQ_i}
+\def\Xhi{\Xh_i}
+\def\XKi{\XK_i}
+\def\Xvi{\Xv_i}
+\def\XVi{\XV_i}
+\def\Xqi{\Xq_i}
+\def\Xmobi{\Xmob_i}
+
+\def\XindIk{\Omega^{I}_{k}}         % injection well region
+\def\XindEk{\Omega^{E}_{k}}         % extraction well region
+
+\def\XwellrateIik{\gamma^{I;i}_{k}} % injection well rate
+\def\XwellrateEik{\gamma^{E;i}_{k}} % extraction well rate
+
+\def\Xdegj{\lambda_j}               % degradation rate
+
+\def\Xcij{\Xc_{i,j}}
+\def\XFij{\XF_{i,j}}
+\def\Xcbarkij{{\bar c}^{k}_{ij}}
+
+\def\XKdj{K_{d;j}}               % distribution coefficient
+
+\def\XKT{\XK_T}                  % total hydraulic conductivity
+\def\XmobT{\Xmob_T}              % total mobility
+\def\XVT{\XV_T}                  % total Darcy velocity
+
+%------------------------------
+% miscellaneous variables
+
+\def\Xgrad{\nabla}
+\def\Xx{{\vec x}}
+\def\Xdt{{\Delta t}}
+\def\Xdx{{\Delta x}}
+\def\Xdxx{{(\Xdx)^2}}
+\def\Xdy{{\Delta y}}
+\def\Xdyy{{(\Xdy)^2}}
+\def\Xdz{{\Delta z}}
+\def\Xdzz{{(\Xdz)^2}}
+
+\def\Xnphases{\nu}
+\def\Xnphases{n_p}
+\def\Xnc{n_c}
+\def\Xnx{n_x}
+\def\Xny{n_y}
+\def\Xnz{n_z}
+\def\XnI{n_{I}}
+\def\XnE{n_{E}}
+
+%---------------------------------------------------------------------
+% General
+%---------------------------------------------------------------------
+
+\def\slfrac#1#2#3{\mbox{#3\raisebox{0.2ex}{#1}\hspace{-0.13em}/%
+                        \hspace{-0.13em}\raisebox{-0.4ex}{#2}}   }
+\def\half{\mathchoice{\slfrac{1}{2}{\scriptsize}}%
+                     {\slfrac{1}{2}{\scriptsize}}%
+                     {\slfrac{1}{2}{\tiny}}%
+                     {\slfrac{1}{2}{\tiny}}       }
+\def\dvop{\nabla \cdot}
+
+%---------------------------------------------------------------------
+% Multigrid Definitions
+%---------------------------------------------------------------------
+
+\def\XG{{\cal G}}
+\def\XGc{\XG ^ {c}}
+
+\def\vhalf{\mbox{\Large $\frac{1}{2}$}}   % vertical 1/2
+

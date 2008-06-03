@@ -1,0 +1,95 @@
+#!/bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.3 $
+#EHEADER***********************************************************************
+
+#=============================================================================
+#
+# Usage:  extractlog <log_key> [-time] <log_files>
+#
+# This script extracts log file information from the files <log_files>
+# which begin and end with delimeters:
+#
+#    BEGIN Log Info (<log_key>)
+#      ...
+#    END Log Info
+#
+# If `-time' is used on the command line, the routine also prints out
+# timing info for the routine with timing key `<log_key>'.
+#
+#=============================================================================
+
+
+if [ $# -lt 1 ]; then
+  EXIT="yes"
+else
+  LOG_KEY=$1
+  shift
+fi
+
+if [ "$1" = "-time" ]; then
+  TIME_KEY="$LOG_KEY"
+  shift
+fi
+
+if [ $# -lt 1 ]; then
+  EXIT="yes"
+fi
+
+if [ "$EXIT" = "yes" ]; then
+  echo "usage: extractlog <log_key> [-time] <log_files>"
+  exit 1
+fi
+
+
+for i in $*
+do
+
+  echo
+  echo "****************************************************"
+  echo "         FILE: $i"
+  echo
+
+  awk '
+
+    /BEGIN Log Info/ {
+      if ( $4 == log_key ) {
+        print "=============================================="
+        print_log = 1
+      }
+    }
+
+    { if ( print_log > 0 )  print }
+
+    /END Log Info/ {
+      if ( print_log ) {
+        print "=============================================="
+        print_log = 0
+      }
+    }
+
+    /BEGIN Log Info \(Timing\)/ {
+      time_log = 1
+    }
+
+    {
+      if ( time_log > 0 ) {
+        if ( $1 == time_key ) {
+          print_time = 3
+        }
+      }
+    }
+
+    { if ( print_time > 0 )  print; print_time-- }
+
+  ' log_key="(${LOG_KEY})" time_key="${TIME_KEY}:" $i
+
+  echo
+
+done
+

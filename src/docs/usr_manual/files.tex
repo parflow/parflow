@@ -1,0 +1,3399 @@
+\newcommand{\pfkey}[4]{\vspace{0.15in} {\noindent{\normalsize {\sl #1} 
+\hspace{0.2in}{\bfseries #2}\hspace{0.2in}[#3]}} \newline \indent #4 \newline 
+Example Useage: \newline \vspace{-0.25in}}
+
+%=============================================================================
+%=============================================================================
+
+\chapter{ParFlow Files}
+\label{ParFlow Files}
+
+In this chapter, we discuss the various file formats used in \parflow{}.
+To help simplify the description of these formats, we use a pseudocode
+notation composed of {\em fields} and {\em control constructs}.
+
+A field is a piece of data having one of the {\em field types} listed
+in Table~\ref{table-field-types}
+(note that field types may have one meaning in ASCII files and
+another meaning in binary files).
+%
+\begin{table} \center
+\caption{Field types.}
+\smallskip
+\begin{tabular}{||c||c|c||}
+\hline
+field type & ASCII & binary \\
+\hline\hline
+\code{integer} & integer & XDR integer        \\ \hline
+\code{real}    & real    & -                  \\ \hline
+\code{string}  & string  & -                  \\ \hline
+\code{double}  & -       & IEEE 8 byte double \\ \hline
+\code{float}   & -       & IEEE 4 byte float   \\ \hline
+\end{tabular}
+\label{table-field-types}
+\end{table}
+%
+Fields are denoted by enclosing the field name with a \code{<} on the
+left and a \code{>} on the right.
+The field name is composed of alphanumeric characters and
+underscores (\code{_}).
+In the defining entry of a field, the field name is also prepended by
+its field type and a \code{:}.
+The control constructs used in our pseudocode have the keyword names
+\code{FOR}, \code{IF}, and \code{LINE},
+and the beginning and end of each of these constructs is delimited by the
+keywords \code{BEGIN} and \code{END}.
+
+The \code{FOR} construct is used to describe repeated input format patterns.
+For example, consider the following file format:
+\begin{display}\begin{verbatim}
+<integer : num_coordinates>
+FOR coordinate = 0 TO <num_coordinates> - 1
+BEGIN
+   <real : x>  <real : y>  <real : z>
+END
+\end{verbatim}\end{display}
+The field \code{<num_coordinates>} is an integer specifying the number
+of coordinates to follow.
+The \code{FOR} construct indicates that \code{<num_coordinates>} entries
+follow, and each entry is composed of the three real fields,
+\code{<x>}, \code{<y>}, and \code{<z>}.
+Here is an example of a file with this format:
+\begin{display}\begin{verbatim}
+3
+2.0 1.0 -3.5
+1.0 1.1 -3.1
+2.5 3.0 -3.7
+\end{verbatim}\end{display}
+
+The \code{IF} construct is actually an \code{IF}/\code{ELSE} construct,
+and is used to describe input format patterns that appear only under
+certain circumstances.
+For example, consider the following file format:
+\begin{display}\begin{verbatim}
+<integer : type>
+IF (<type> = 0)
+BEGIN
+   <real : x>  <real : y>  <real : z>
+END
+ELSE IF (<type> = 1)
+BEGIN
+   <integer : i>  <integer : j>  <integer : k>
+END
+\end{verbatim}\end{display}
+The field \code{<type>} is an integer specifying the ``type'' of
+input to follow.
+The \code{IF} construct indicates that if \code{<type>} has value 0,
+then the three real fields, \code{<x>}, \code{<y>}, and \code{<z>}, follow.
+If \code{<type>} has value 1, then the three integer fields,
+\code{<i>}, \code{<j>}, and \code{<k>}, follow.
+Here is an example of a file with this format:
+\begin{display}\begin{verbatim}
+0
+2.0 1.0 -3.5
+\end{verbatim}\end{display}
+
+The \code{LINE} construct indicates fields that are on the same line
+of a file.
+Since input files in \parflow{} are all in ``free format'', it is
+used only to describe some output file formats.
+For example, consider the following file format:
+\begin{display}\begin{verbatim}
+LINE
+BEGIN
+   <real : x>
+   <real : y>
+   <real : z>
+END
+\end{verbatim}\end{display}
+The \code{LINE} construct indicates that the three real fields,
+\code{<x>}, \code{<y>}, and \code{<z>}, are all on the same line.
+Here is an example of a file with this format:
+\begin{display}\begin{verbatim}
+2.0 1.0 -3.5
+\end{verbatim}\end{display}
+
+Comment lines may also appear in our file format pseudocode.
+All text following a \code{#} character is a comment,
+and is not part of the file format.
+
+%=============================================================================
+%=============================================================================
+
+\section{Main Input File (.pftcl)}
+\label{Main Input File (.pftcl)}
+
+The main \parflow{} input file is a TCL script.  This might seem
+overly combersome at first but the basic input file structure is not
+very complicated (although it is somewhat verbose).  For more advanced
+users, the TCL scripting means you can very easily create programs to
+run \parflow{}.  A simple example is creating a loop to run several
+hundred different simulations using different seeds to the random field
+generators.  This can be automated from within the \parflow{} input file.
+
+The basic idea behind \parflow{} input is a simple database.  The
+database contains entries which have a key and a value associated with
+that key.  This is very similiar in nature to the Windows 95/NT
+registry and several other systems.  When \parflow{} runs, it
+queries the database you have created by key names to get the values
+you have specified.
+
+The command \code{pfset} is used to create the database entries.  A
+simple \parflow{} input script contains a long list of
+\code{pfset} commands.
+
+It should be noted that the keys are ``dynamic'' in that many are
+built up from values of other keys.  For example if you have two wells
+named {\em northwell} and {\em southwell} then you will have to set some keys
+which specify the parameters for each well.  The keys are built up in
+a simple sort of heirarchy.
+
+The following sections contain a description of all of the keys used by
+\parflow{}.  For an example of input files you can look at the
+\file{test} subdirectory of the \parflow{} distribution.  Looking
+over some examples should give you a good feel for how the
+file scripts are put together.
+
+Each key's entry has the form:
+
+\pfkey{type}{KeyName}{default value}
+{Description}{}
+
+\vspace{0.25in}
+The ``type'' is one of integer, double, string, list.  Integer and double are
+IEEE numbers.  String is a text string (for example, a filename).
+Strings can contain spaces if you use the proper TCL syntax
+(i.e. using double quotes).  These types are standard TCL
+types.  Lists are strings but they indicate the names of a series of items.
+For example you might need to specify the names of the geometries. You
+would do this using space seperated names (what we are calling a list)
+``layer1 layer2 layer3''.
+
+The descriptions that follow are organized into functional areas.  An
+example for each database entry is given.
+
+Note that units used for each physical quantity specified in the input file
+must be consistent with units used for all other quantities.  The exact units
+used can be any consistent set as \parflow{} does not assume any specific set
+of units.  However, it is up to the user to make sure all specifications are
+indeed consistent.
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Input File Format Number}
+\label{Input File Format Number}
+
+\pfkey{integer}{FileVersion}{no default}
+{This gives the value of
+the input file version number that this file fits.}
+\begin{display}\begin{verbatim} 
+pfset FileVersion 4
+\end{verbatim}\end{display} 
+
+As development of the \parflow{} code continues, the input file format
+will vary.  We have thus included an input file format number as a way
+of verifying that the correct format type is being used.  The user can
+check in the \code{parflow/config/file_versions.h} file to verify that
+the format number specified in the input file matches the defined
+value of \kbd{PFIN_VERSION}. 
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Geometries}
+\label{Geometries}
+\pfaddanchor{pfinGeometries}
+
+Here we define all ``geometrical'' information needed by \parflow{}.
+For example, the domain (and patches on the domain where boundary
+conditions are to be imposed), lithology or hydrostratigraphic units,
+faults, initial plume shapes, and so on, are considered geometries.
+
+This input section is a little confusing.  Two items are being
+specified, geometry inputs and geometries.  A geometry input is a type
+of geometry input (for example a box or an input file).  A geometry input
+can contain more than one geometry.  A geometry input of type Box
+has a single geometry (the square box defined by the extants of the
+two points).  A SolidFile input type can contain several geometries.
+
+\pfkey{list}{GeomInput.Names}{no default}
+{
+This is a list of the geometry input names which define the containers
+for all of the geometries defined for this problem.
+}
+\begin{display}\begin{verbatim}
+pfset GeomInput.Names    "solidinput indinput boxinput"
+\end{verbatim}\end{display}
+
+\pfkey{string}{GeomInput.{\em geom\_input\_name}.InputType}{no default}
+{
+This defines the input type for the geometry input with
+{\em geom\_input\_name}.  
+This key must be one of: {\bf SolidFile, IndicatorField}, {\bf Box}.
+}
+\begin{display}\begin{verbatim}
+pfset GeomInput.solidinput.InputType  SolidFile
+\end{verbatim}\end{display}
+
+\pfkey{list}{GeomInput.{\em geom\_input\_name}.GeomNames}{no default}
+{
+This is a list of the names of the geometries defined by the geometry
+input.  For a geometry input type of Box, the list should contain a
+single geometry name.  For the SolidFile geometry type this should
+contain a list with the same number of gemetries as were defined
+using GMS.  The order of geometries in the SolidFile should match the
+names.  For IndicatorField types you need to specify the value in the
+input field which matches the name using
+GeomInput.{\em geom\_input\_name}.Value.
+}
+\begin{display}\begin{verbatim}
+pfset GeomInput.solidinput.GeomNames "domain bottomlayer \
+                                      middlelayer toplayer"
+\end{verbatim}\end{display}
+
+\pfkey{string}{GeomInput.{\em geom\_input\_name}.Filename}{no default}
+{
+For IndicatorField and SolidFile geometry inputs this key specifies
+the input filename which contains the field or solid information.
+}
+\begin{display}\begin{verbatim}
+pfset GeomInput.solidinput.FileName   ocwd.pfsol
+\end{verbatim}\end{display}
+
+
+\pfkey{integer}{GeomInput.{\em geometry\_input\_name}.Value}{no default}
+{
+For IndicatorField geometry inputs you need to specify the mapping between
+values in the input file and the geometry names.  The named geometry will
+be defined whereever the input file is equal to the specifed value.
+}
+\begin{display}\begin{verbatim}
+pfset GeomInput.sourceregion.Value   11
+\end{verbatim}\end{display}
+
+For box geometries you need to specify the location of the box.  This
+is done by defining two corners of the the box.
+
+\pfkey{double}{Geom.{\em box\_geom\_name}.Lower.X}{no  default}
+{This gives the lower X real space coordinate value
+of the previously specified box geometry of name {\em box\_geom\_name}.}
+\begin{display}\begin{verbatim}
+pfset Geom.background.Lower.X   -1.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em box\_geom\_name}.Lower.Y}{no default}
+{This gives the lower Y real space coordinate value
+of the previously specified box geometry of name {\em box\_geom\_name}.}
+\begin{display}\begin{verbatim}
+pfset Geom.background.Lower.Y   -1.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em box\_geom\_name}.Lower.Z}{no default}
+{This gives the lower Z real space coordinate value
+of the previously specified box geometry of name {\em box\_geom\_name}.}
+\begin{display}\begin{verbatim}
+pfset Geom.background.Lower.Z   -1.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em box\_geom\_name}.Upper.X}{no default}
+{This gives the upper X real space coordinate value
+of the previously specified box geometry of name {\em box\_geom\_name}.}
+\begin{display}\begin{verbatim}
+pfset Geom.background.Upper.X   151.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em box\_geom\_name}.Upper.Y}{no default}
+{This gives the upper Y real space coordinate value
+of the previously specified box geometry of name {\em box\_geom\_name}.}
+\begin{display}\begin{verbatim}
+pfset Geom.background.Upper.Y   171.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em box\_geom\_name}.Upper.Z}{no default}
+{This gives the upper Z real space coordinate value
+of the previously specified box geometry of name {\em box\_geom\_name}.}
+\begin{display}\begin{verbatim}
+pfset Geom.background.Upper.Z   11.0
+\end{verbatim}\end{display}
+
+\pfkey{list}{Geom.{\em geom\_name}.Patches}{no default}
+{
+Patches are defined on the surfaces of geometries.  Currently you can
+only define patches on Box geometries and on the the first geometry in a
+SolidFile.  For a Box the order is fixed (left right front back bottom
+top) but you can name the sides anything you want.
+
+For SolidFiles the order is printed by the conversion routine that
+converts GMS to SolidFile format.  
+}
+\begin{display}\begin{verbatim}
+pfset Geom.background.Patches   "left right front back bottom top"
+\end{verbatim}\end{display}
+
+Here is an example geometry input section which has three geometry inputs.
+
+\begin{display}\begin{verbatim}
+
+
+#---------------------------------------------------------
+# Geometries:
+#---------------------------------------------------------
+
+#
+# This defines the three geometry input names
+# 
+pfset GeomInput.Names   "solidinput indinput boxinput"
+
+#
+# For a solid file geometry input type you need to specify the names
+# of the gemetries and the filename
+# 
+pfset GeomInput.solidinput.InputType  SolidFile
+
+#
+# The names of the geometries contained in the solid file.  Order is
+# important and defines the mapping.  First geometry gets the first name.
+#
+pfset GeomInput.solidinput.GeomNames 
+                   "domain bottomlayer middlelayer toplayer"
+
+#
+# Filename that contains the geometry
+#
+pfset GeomInput.solidinput.FileName   ocwd.pfsol
+ 
+#
+# Order is important here, must match what is solid file, what is 
+# printed by the conversion routine.
+#
+pfset Geom.domain.Patches  "henry frank jane betsy al nellie"
+
+#
+# An indicator field is a 3D field of values.  The values within the
+# field can be mapped to ParFlow geometries
+# Indicator fields must match the computation grid exactly!  
+# 
+pfset GeomInput.indinput.InputType    IndicatorField
+pfset GeomInput.indinput.GeomNames    "sourceregion concenregion"
+pfset GeomInput.indinput.FileName     ocwd.pfb
+
+#
+# Here we set up the mapping between values in the field and
+# ParFlow geometries
+#
+pfset GeomInput.sourceregion.Value    11
+pfset GeomInput.concenregion.Value    21
+
+#
+# A box is just a box defined by two points.
+# 
+pfset GeomInput.boxinput.InputType    Box
+pfset GeomInput.boxinput.GeomName     background
+ 
+pfset Geom.background.Lower.X         -1.0
+pfset Geom.background.Lower.Y         -1.0
+pfset Geom.background.Lower.Z         -1.0
+pfset Geom.background.Upper.X         151.0
+pfset Geom.background.Upper.Y         171.0
+pfset Geom.background.Upper.Z         11.0
+
+# 
+# Order is fixed, but you can change the name 
+#
+pfset Geom.background.Patches         "left right front back bottom top"
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Timing Information}
+\label{Timing Information}
+\pfaddanchor{pfinTiming}
+
+The data given in the timing section describe all the ``temporal''
+information needed by \parflow{}.  The data items are used to
+describe time units for later sections, sequence iterations in time,
+indicate actual starting and stopping values and give instructions
+on when data is printed out.
+
+\pfkey{double}{TimingInfo.BaseUnit}{no default}
+{
+This key is used to indicate the smallest common unit of time for
+describing ``time cycling data'' in, currently, the well and boundary
+condition sections.  The lengths of the cycles in those sections will be
+integer multiples of this value, therefore it needs to be the smallest
+divisor which produces an integral result for every ``real time'' cycle
+interval length needed.
+}
+\begin{display}\begin{verbatim}
+pfset TimingInfo.BaseUnit      1.0
+\end{verbatim}\end{display}
+
+\pfkey{integer}{TimingInfo.StartCount}{no default}
+{
+This key is used to indicate the time step number that will be associated
+with the first advection cycle in a transient problem.  The value
+{\bf -1} indicates that advection is not to be done.  The value {\bf 0}
+indicates that advection should begin with the given initial conditions.
+Values greater than {\bf 0} are intended to mean ``restart'' from some
+previous ``checkpoint'' time-step, but this has not yet been implemented.
+}
+\begin{display}\begin{verbatim}
+pfset TimingInfo.StartCount    0
+\end{verbatim}\end{display}
+
+\pfkey{double}{TimingInfo.StartTime}{no default}
+{
+This key is used to indicate the starting time for the simulation.
+}
+\begin{display}\begin{verbatim}
+pfset TimingInfo.StartTime     0.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{TimingInfo.StopTime}{no default}
+{
+This key is used to indicate the stopping time for the simulation.
+}
+\begin{display}\begin{verbatim}
+pfset TimingInfo.StopTime      100.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{TimingInfo.DumpInterval}{no default}
+{
+This key is the real time interval at which time-dependent output should
+be written.  A value of {\bf 0} will produce undefined behavior.  If the
+value is negative, output will be dumped out every $n$ time steps, where $n$
+is the absolute value of the integer part of the value.
+}
+\begin{display}\begin{verbatim}
+pfset TimingInfo.DumpInterval  10.0
+\end{verbatim}\end{display}
+
+%=============================================================================
+\vspace{0.5in}
+
+For {\em Richards' equation cases only} input is collected for time step
+selection.  Input for this section is given as follows:
+
+\pfkey{list}{TimeStep.Type}{no default}
+{
+This key must be one of: {\bf Constant} or {\bf Growth}.  The value
+{\bf Constant} defines a constant time step.  The value {\bf Growth}
+defines a time step that starts as $dt_0$ and is defined for
+other steps as $dt^{new} = \gamma dt^{old}$ such that $dt^{new} \leq 
+dt_{max}$ and $dt^{new} \geq dt_{min}$.
+}
+\begin{display}\begin{verbatim}
+pfset TimeStep.Type      Constant
+\end{verbatim}\end{display}
+
+\pfkey{double}{TimeStep.Value}{no default}
+{
+This key is used only if a constant time step is selected and indicates
+the value of the time step for all steps taken.
+}
+\begin{display}\begin{verbatim}
+pfset TimeStep.Value      0.001
+\end{verbatim}\end{display}
+
+\pfkey{double}{TimeStep.InitialStep}{no default}
+{
+This key specifies the initial time step $dt_0$ if the {\bf Growth} type time
+step is selected. 
+}
+\begin{display}\begin{verbatim}
+pfset TimeStep.InitialStep    0.001
+\end{verbatim}\end{display}
+
+\pfkey{double}{TimeStep.GrowthFactor}{no default}
+{
+This key specifies the growth factor $\gamma$ by which a time step will be
+multiplied to get the new time step when the {\bf Growth} type time step is
+selected. 
+}
+\begin{display}\begin{verbatim}
+pfset TimeStep.GrowthFactor      1.5
+\end{verbatim}\end{display}
+
+\pfkey{double}{TimeStep.MaxStep}{no default}
+{
+This key specifies the maximum time step allowed, $dt_{max}$, when the {\bf
+Growth} type time step is selected.
+}
+\begin{display}\begin{verbatim}
+pfset TimeStep.MaxStep      86400
+\end{verbatim}\end{display}
+
+\pfkey{double}{TimeStep.MinStep}{no default}
+{
+This key specifies the minimum time step allowed, $dt_{min}$, when the {\bf
+Growth} type time step is selected.
+}
+\begin{display}\begin{verbatim}
+pfset TimeStep.MinStep      1.0e-3
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Domain}
+\label{Domain}
+\pfaddanchor{pfinDomain}
+
+The domain may be represented by any of the solid types in
+\S~\ref{Geometries} above that allow the definition of surface patches.
+These surface patches are used to define boundary conditions in
+\S~\ref{Boundary Conditions: Pressure} and
+\S~\ref{Boundary Conditions: Saturation} below.
+Subsequently, it is required that the union of the defined surface
+patches equal the entire domain surface.  NOTE: This requirement is NOT checked
+in the code.
+
+\pfkey{string}{Domain.GeomName}{no default}
+{
+This key specifies which of the named geometries is the problem domain.
+}
+\begin{display}\begin{verbatim}
+pfset Domain.GeomName    domain
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Phases and Contaminants}
+\label{Phases and Contaminants}
+
+\pfkey{list}{Phase.Names}{no default}
+{This specifies the names of phases to be modeled. 
+Currently only 1 or 2 phases may be modeled.}
+\begin{display}\begin{verbatim}
+pfset Phase.Names    "water"
+\end{verbatim}\end{display}
+
+\pfkey{list}{Contaminant.Names}{no default}
+{This specifies the names of contaminants to be advected.}
+\begin{display}\begin{verbatim}
+pfset Contaminants.Names   "tce"
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Gravity, Phase Density and Phase Viscosity}
+\label{Gravity, Phase Density and Phase Viscosity}
+\pfaddanchor{pfinGravityPhaseDensityPhaseViscosity}
+
+\pfkey{double}{Gravity}{no default}
+{Specifies the gravity constant to be used.}
+\begin{display}\begin{verbatim}
+pfset Gravity	1.0
+\end{verbatim}\end{display}
+
+\pfkey{string}{Phase.{\em phase\_name}.Density.Type}{no default}
+{This key specifies whether density will be a constant value or if 
+it will be given by an equation of state of the form $(rd)exp(cP)$, 
+where $P$ is pressure, $rd$ is
+the density at atmospheric pressure, and $c$ is the phase
+compressibility constant.
+This key must be either {\bf Constant} or {\bf EquationOfState}.
+}
+\begin{display}\begin{verbatim}
+pfset Phase.water.Density.Type	 Constant
+\end{verbatim}\end{display}
+
+\pfkey{double}{Phase.{\em phase\_name}.Density.Value}{no default}
+{This specifies the value of density if this phase was specified to have a
+constant density value for the phase {\em phase\_name}.}
+\begin{display}\begin{verbatim}
+pfset Phase.water.Density.Value   1.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Phase.{\em phase\_name}.Density.ReferenceDensity}{no default}
+{This key specifies the reference density if an equation of state density
+function is specified for the phase {\em phase\_name}.}
+\begin{display}\begin{verbatim}
+pfset Phase.water.Density.ReferenceDensity   1.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Phase.{\em phase\_name}.Density.CompressibilityConstant}
+{no default}
+{This key specifies the phase compressibility constant 
+if an equation of state density function is specified for the phase
+{\em phase|-name}.}
+\begin{display}\begin{verbatim}
+pfset Phase.water.Density.CompressibilityConstant   1.0
+\end{verbatim}\end{display}
+
+\pfkey{string}{Phase.{\em phase\_name}.Viscosity.Type}{Constant}
+{This key specifies whether viscosity will be a constant value.
+Currently, the only choice for this key is {\bf Constant}.}
+\begin{display}\begin{verbatim}
+pfset Phase.water.Viscosity.Type   Constant
+\end{verbatim}\end{display}
+
+\pfkey{double}{Phase.{\em phase\_name}.Viscosity.Value}{no default}
+{This specifies the value of viscosity if this phase was specified to have a
+constant viscosity value.}
+\begin{display}\begin{verbatim}
+pfset Phase.water.Viscosity.Value   1.0
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Chemical Reactions}
+\label{Chemical Reactions}
+\pfaddanchor{pfinChemicalReactions}
+
+\pfkey{double}{Contaminants.{\em contaminant\_name}.Degradation.Value}{no default}
+{
+This key specifies the half-life decay rate of the named contaminant,
+{\em contaminant\_name}.  At present only first order decay reactions
+are implemented and it is assumed that one contaminant cannot decay
+into another.
+}
+\begin{display}\begin{verbatim}
+pfset Contaminants.tce.Degradation.Value         0.0
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Permeability}
+\label{Permeability}
+\pfaddanchor{pfinPermeability}
+
+In this section, permeability property values are assigned to grid
+points within geometries (specified in \S~\ref{Geometries} above)
+using one of the methods described below.  Permeabilities are assumed to be a
+diagonal tensor with entries given as,
+\[ 
+\left( 
+\begin{array}{ccc}
+k_x({\bf x}) & 0 & 0 \\
+0 & k_y({\bf x}) & 0 \\
+0 & 0 & k_z({\bf x}) 
+\end{array} \right) 
+K({\bf x}),
+\]
+where $K({\bf x})$ is the permeability field given below.  Specification of the
+tensor entries ($k_x, k_y$ and $k_z$) will be given at the end of this section.
+
+The random field routines ({\em turning bands} and {\em pgs}) can use
+conditioning data if the user so desires.  It is not necessary to use
+conditioning as
+\parflow{} automatically defaults to not use conditioning data, but
+if conditioning is desired, the following key should be set:
+
+\pfkey{string}{Perm.Conditioning.FileName}{``NA''}
+{
+This key specifies the name of the file that contains the conditioning
+data.  The default string {\bf NA} indicates that conditioning data is
+not applicable.
+}
+\begin{display}\begin{verbatim}
+pfset Perm.Conditioning.FileName   "well_cond.txt"
+\end{verbatim}\end{display}
+
+The file that contains the conditioning data is a simple ascii file
+containing points and values. The format is:
+
+\begin{display}\begin{verbatim}
+nlines
+x1 y1 z1 value1
+x2 y2 z2 value2
+.  .  .    .
+.  .  .    .
+.  .  .    .
+xn yn zn valuen
+\end{verbatim}\end{display}
+
+The value of {\em nlines} is just the number
+of lines to follow in the file, which 
+is equal to the number of data points.
+
+The variables {\em xi,yi,zi} are the real space coordinates (in the
+units used for the given parflow run) of
+a point at which a fixed permeability value
+is to be assigned. The variable {\em valuei} is the actual permeability
+value that is known. 
+
+Note that the coordinates
+are not related to the grid in any way. Conditioning
+does not require that fixed values be on a 
+grid. The PGS algorithm
+will map the given value to the closest grid point
+and that will be fixed. This is done for speed reasons.
+The conditioned turning bands algorithm does not do
+this; conditioning is done for every grid point using
+the given conditioning data at the location given.
+Mapping to grid points for that algorithm does not give
+any speedup, so there is no need to do it.
+
+NOTE: The given values should be the actual measured
+values - adjustment in the conditioning for the lognormal
+distribution that is assumed is taken care of in the algorithms.
+
+The general format for the permeability input is as follows:
+
+\pfkey{list}{Geom.Perm.Names}{no default}
+{
+This key specifies all of the geometries to which a permeability field 
+will be assigned.  These geometries must cover the entire computational
+domain.
+}
+\begin{display}\begin{verbatim}
+pfset GeomInput.Names   "background domain concen_region"
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.{\rm geometry\_name}.Perm.Type}{no default}
+{
+This key specifies which method is to be used to assign permeability
+data to the named geometry, {\em geometry\_name}.  It must be either
+{\bf Constant}, {\bf TurnBands}, {\bf ParGuass}, or {\bf PFBFile}.  The
+{\bf Constant} value indicates that a constant is to be assigned to all
+grid cells within a geometry.  The {\bf TurnBand} value indicates that
+Tompson's Turning Bands method is to be used to assign permeability data
+to all grid cells within a geometry \cite{TAG89}.  
+The {\bf ParGauss} value indicates
+that a Parallel Gaussian Simulator method is to be used to assign
+permeability data to all grid cells within a geometry.  The
+{\bf PFBFile} value indicates that premeabilities are to be read from
+the ``ParFlow Binary'' file.  Both the Turning Bands and Parallel
+Gaussian Simulators generate a random field with correlation lengths
+in the $3$ spatial directions given by $\lambda_x$, $\lambda_y$, and
+$\lambda_z$ with the geometric mean of the log normal field given by
+$\mu$ and the standard deviation of the normal field given by $\sigma$.
+In generating the field both of these methods can be made to stratify
+the data, that is follow the top or bottom surface.  The generated field
+can also be made so that the data is normal or log normal, with or
+without bounds truncation.  Turning Bands uses a line process, the
+number of lines used and the resolution of the process can be changed as
+well as the maximum normalized frequency $K_{\rm max}$ and the normalized
+frequency increment $\delta K$.  The Parallel Gaussian Simulator uses
+a search neighborhood, the number of simulated points and the number of
+conditioning points can be changed.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.background.Perm.Type   Constant
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geometry\_name}.Perm.Value}{no default}
+{
+This key specifies the value assigned to all points in the named
+geometry, {\em geometry\_name}, if the type was set to constant.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.Value   1.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geometry\_name}.Perm.LambdaX}{no default}
+{
+This key specifies the x correlation length, $\lambda_x$, of the field
+generated for the named geometry, {\em geometry\_name},
+if either the Turning Bands or Parallel Gaussian Simulator are
+chosen.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.LambdaX   200.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geometry\_name}.Perm.LambdaY}{no default}
+{
+This key specifies the y correlation length, $\lambda_y$, of the field
+generated for the named geometry, {\em geometry\_name}, if either the
+Turning Bands or Parallel Gaussian Simulator are chosen.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.LambdaY   200.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geometry\_name}.Perm.LambdaZ}{no default}
+{
+This key specifies the z correlation length, $\lambda_z$, of the field
+generated for the named geometry, {\em geometry\_name}, if either the
+Turning Bands or Parallel Gaussian Simulator are chosen.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.LambdaZ   10.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geometry\_name}.Perm.GeomMean}{no default}
+{
+This key specifies the geometric mean, $\mu$, of the log normal field
+generated for the named geometry, {\em geometry\_name}, if either the
+Turning Bands or Parallel Gaussian Simulator are chosen.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.GeomMean   4.56
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geometry\_name}.Perm.Sigma}{no default}
+{
+This key specifies the standard deviation, $\sigma$, of the normal field
+generated for the named geometry, {\em geometry\_name}, if either the
+Turning Bands or Parallel Gaussian Simulator are chosen.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.Sigma   2.08
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Geom.{\em geometry\_name}.Perm.Seed}{1}
+{
+This key specifies the initial seed for the random number generator used
+to generate the field for the named geometry, {\em geometry\_name}, if
+either the Turning Bands or Parallel Gaussian Simulator are chosen.
+This number must be positive.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.Seed   1
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Geom.{\em geometry\_name}.Perm.NumLines}{100}
+{
+This key specifies the number of lines to be used in the Turning Bands
+algorithm for the named geometry, {\em geometry\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.NumLines   100
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geometry\_name}.Perm.RZeta}{5.0}
+{
+This key specifies the resolution of the line processes, in terms of the
+minimum grid spacing, to be used in the Turning Bands algorithm for the
+named geometry, {\em geometry\_name}.  Large values imply high resolution.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.RZeta   5.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geometry\_name}.Perm.KMax}{100.0}
+{
+This key specifies the the maximum normalized frequency, $K_{\rm max}$,
+to be used in the Turning Bands algorithm for the named geometry,
+{\em geometry\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.KMax   100.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geometry\_name}.Perm.DelK}{0.2}
+{
+This key specifies the normalized frequency increment, $\delta K$, to be
+used in the Turning Bands algorithm for the named geometry,
+{\em geometry\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.DelK   0.2
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Geom.{\em geometry\_name}.Perm.MaxNPts}{no default}
+{
+This key sets limits on the number of simulated points in the search
+neighborhood to be used in the Parallel Gaussian Simulator for the named
+geometry, {\em geometry\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.MaxNPts   5
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Geom.{\em geometry\_name}.Perm.MaxCpts}{no default}
+{
+This key sets limits on the number of external conditioning points in the
+search neighborhood to be used in the Parallel Gaussian Simulator for
+the named geometry, {\em geometry\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.MaxCpts   200
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.{\em geometry\_name}.Perm.LogNormal}{"LogTruncated"}
+{
+The key specifies when a normal, log normal, truncated normal or
+truncated log normal field is to be generated by the method for the
+named geometry, {\em geometry\_name}.  This value must be one of
+{\bf Normal}, {\bf Log}, {\bf NormalTruncated} or {\bf LogTruncate}
+and can be used with either Turning Bands or the Parallel Gaussian
+Simulator.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.LogNormal   "LogTruncated"
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.{\em geometry\_name}.Perm.StratType}{"Bottom"}
+{
+This key specifies the stratification of the permeability field
+generated by the method for the named geometry, {\em geometry\_name}.
+The value must be one of {\bf Horizontal}, {\bf Bottom} or {\bf Top} and
+can be used with either the Turning Bands or the Parallel Gaussian
+Simulator.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.StratType  "Bottom"
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geometry\_name}.Perm.LowCutoff}{no default}
+{
+This key specifies the low cutoff value for truncating the generated
+field for the named geometry, {\em geometry\_name}, when either the
+NormalTruncated or LogTruncated values are chosen.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.LowCutoff   0.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geometry\_name}.Perm.HighCutoff}{no default}
+{
+This key specifies the high cutoff value for truncating the generated
+field for the named geometry, {\em geometry\_name}, when either the
+NormalTruncated or LogTruncated values are chosen.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.HighCutoff   100.0
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.{\em geometry\_name}.Perm.FileName}{no default}
+{
+This key specifies that permeability values for the specified geometry,
+{\em geometry\_name}, are given according to a user-supplied description
+in the ``ParFlow Binary'' file whose filename is given as the value.
+For a description of the ParFlow Binary file format, see
+\S~\ref{ParFlow Binary Files (.pfb)}.  The ParFlow Binary file
+associated with the named geometry must contain a collection of
+permeability values corresponding in a one-to-one manner to the entire
+computational grid.  That is to say, when the contents of the file are
+read into the simulator, a complete permeability description for the
+entire domain is supplied.  Only those values associated with
+computational cells residing within the geometry (as it is represented
+on the computational grid) will be copied into data structures used
+during the course of a simulation.  Thus, the values associated with
+cells outside of the geounit are irrelevant.  For clarity, consider a
+couple of different scenarios.  For example, the user may create a file
+for each geometry such that appropriate permeability values are given
+for the geometry and ``garbage" values (e.g., some flag value) are given
+for the rest of the computational domain. In this case, a separate
+binary file is specified for each geometry.  Alternatively, one may
+place all values representing the permeability field on the union of the
+geometries into a single binary file.  Note that the permeability values
+must be represented in precisely the same configuration as the
+computational grid. Then, the same file could be specified for each
+geounit in the input file.  Or, the computational domain could be
+described as a single geouint (in the ParFlow input file) in which case
+the permeability values would be read in only once.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.FileName "domain_perm.pfb"
+\end{verbatim}\end{display}
+
+\pfkey{string}{Perm.TensorType}{no default}
+{
+This key specifies whether the permeability tensor entries $k_x, k_y$ and $k_z$
+will be specified as three constants within a set of regions covering the
+domain or whether the entries will be specified cell-wise by files.  
+The choices
+for this key are {\bf TensorByGeom} and {\bf TensorByFile}.  
+}
+\begin{display}\begin{verbatim}
+pfset Perm.TensorType     TensorByGeom
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.Perm.TensorByGeom.Names}{no default}
+{
+This key specifies all of the geometries to which permeability tensor entries
+will be assigned.  These geometries must cover the entire computational
+domain.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.Perm.TensorByGeom.Names   "background domain" 
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geometry\_name}.Perm.TensorValX}{no default}
+{
+This key specifies the value of $k_x$ for the geometry given by {\em
+geometry\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.TensorValX   1.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geometry\_name}.Perm.TensorValY}{no default}
+{
+This key specifies the value of $k_y$ for the geometry given by {\em
+geom\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.TensorValY   1.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geometry\_name}.Perm.TensorValZ}{no default}
+{
+This key specifies the value of $k_z$ for the geometry given by {\em
+geom\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.TensorValZ   1.0
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.{\em geometry\_name}.Perm.TensorFileX}{no default}
+{
+This key specifies that $k_x$ values for the specified geometry,
+{\em geometry\_name}, are given according to a user-supplied description
+in the ``ParFlow Binary'' file whose filename is given as the value.
+The only choice for the value of {\em geometry\_name} is ``domain''.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.TensorByFileX   "perm_x.pfb"
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.{\em geometry\_name}.Perm.TensorFileY}{no default}
+{
+This key specifies that $k_y$ values for the specified geometry,
+{\em geometry\_name}, are given according to a user-supplied description
+in the ``ParFlow Binary'' file whose filename is given as the value.
+The only choice for the value of {\em geometry\_name} is ``domain''.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.TensorByFileY   "perm_y.pfb"
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.{\em geometry\_name}.Perm.TensorFileZ}{no default}
+{
+This key specifies that $k_z$ values for the specified geometry,
+{\em geometry\_name}, are given according to a user-supplied description
+in the ``ParFlow Binary'' file whose filename is given as the value.
+The only choice for the value of {\em geometry\_name} is ``domain''.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Perm.TensorByFileZ   "perm_z.pfb"
+\end{verbatim}\end{display}
+
+%Here are examples of each of the above input types:
+%\begin{display}\begin{verbatim}
+%constant field:
+%  17 0
+%  0.83
+%turning bands:
+%  43 1
+%  1.0 1.0 1.0  2.8 1.0
+%  50 5.0 100.0 0.2 1 1
+%  1
+%parallel Gaussian simulator:
+%  43 2
+%  1.0 1.0 1.0  2.8 1.0
+%  1 200 5 1
+%  0
+%input field:
+%  15 3
+%  17 
+%  perm_geounit1.pfb
+%\end{verbatim}\end{display}
+
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Porosity}
+\label{Porosity}
+\pfaddanchor{pfinPorosity}
+
+Here, porosity values are assigned within geounits (specified in
+\S~\ref{Geometries} above) using one of the methods described below.
+
+The format for this section of input is:
+
+\pfkey{list}{Geom.Porosity.GeomNames}{no default}
+{
+This key specifies all of the geometries on which a porosity will be 
+assigned.  These geometries must cover the entire computational domain.
+}
+\begin{display}\begin{verbatim}
+pfset GeomInput.Names   "background"
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.{\em geometry\_name}.Porosity.Type}{no default}
+{
+This key specifies which method is to be used to assign porosity data
+to the named geometry, {\em geometry\_name}.  The only choice currently
+available is {\bf Constant} which indicates that a constant is to be
+assigned to all grid cells within a geometry.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.background.Porosity.Type   Constant
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geometry\_name}.Porosity.Value}{no default}
+{
+This key specifies the value assigned to all points in the named
+geometry, {\em geometry\_name}, if the type was set to constant.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Porosity.Value   1.0
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Retardation}
+\label{Retardation}
+\pfaddanchor{pfinRetardation}
+
+Here, retardation values are assigned for contaminants within
+geounits (specified in \S~\ref{Geometries} above) using one of
+the functions described below.  The format for this section of
+input is:
+
+\pfkey{list}{Geom.Retardation.GeomNames}{no default}
+{
+This key specifies all of the geometries to which the contaminants will
+have a retardation function applied.
+}
+\begin{display}\begin{verbatim}
+pfset GeomInput.Names   "background"
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.{\em geometry\_name}.{\em contaminant\_name}.Retardation.Type}{no default}
+{
+This key specifies which function is to be used to compute the
+retardation for the named contaminant, {\em contaminant\_name}, in the
+named geometry, {\em geometry\_name}.  The only choice currently
+available is {\bf Linear} which indicates that a simple linear
+retardation function is to be used to compute the retardation.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.background.tce.Retardation.Type   Linear
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geometry\_name}.{\em contaminant\_name}.Retardation.Value}{no default}
+{
+This key specifies the distribution coefficient for the linear function
+used to compute the retardation of the named contaminant,
+{\em contaminant\_name}, in the named geometry, {\em geometry\_name}.
+The value should be scaled by the density of the material in the
+geometry.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Retardation.Value   0.2
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Full Multiphase Mobilities}
+
+Here we define phase mobilities by specifying the
+relative permeability function.  Input is specified differently depending on
+what problem is being specified.  For full multi-phase problems, the following
+input keys are used.  See the next section for the correct Richards' equation 
+input format.
+
+\pfkey{string}{Phase.{\em phase\_name}.Mobility.Type}{no default}
+{
+This key specifies whether the mobility for {\em phase\_name} will be a given
+constant or a polynomial of the form,  
+$(S - S_0)^{a}$, where $S$ is saturation, $S_0$ is
+irreducible saturation, and $a$ is some exponent.
+The possibilities for this key are {\bf Constant} and {\bf Polynomial}.
+}
+\begin{display}\begin{verbatim}
+pfset Phase.water.Mobility.Type   Constant
+\end{verbatim}\end{display}
+
+\pfkey{double}{Phase.{\em phase\_name}.Mobility.Value}{no default}
+{
+This key specifies the constant mobility value for phase {\em phase\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Phase.water.Mobility.Value   1.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Phase.{\em phase\_name}.Mobility.Exponent}{2.0}
+{
+This key specifies the exponent used in a polynomial representation of the
+relative permeability.  Currently, only a value of $2.0$ is allowed for this
+key. 
+}
+\begin{display}\begin{verbatim}
+pfset Phase.water.Mobility.Exponent   2.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Phase.{\em phase\_name}.Mobility.IrreducibleSaturation}
+{0.0}
+{
+This key specifies the irreducible saturation 
+used in a polynomial representation of the relative permeability.
+Currently, only a value of 0.0 is allowed for this key.
+}
+\begin{display}\begin{verbatim}
+pfset Phase.water.Mobility.IrreducibleSaturation   0.0
+\end{verbatim}\end{display}
+
+
+\subsection{Richards' Equation Relative Permeabilities}
+
+The following keys are used to describe relative permeability input for the
+Richards' equation implementation.  They will be ignored if a full two-phase
+formulation is used.
+
+\pfkey{string}{Phase.RelPerm.Type}{no default}
+{
+This key specifies the type of relative permeability function that will be used
+on all specified geometries.  Note that only one type of relative permeability
+may be used for the entire problem.  However, parameters may be different for
+that type in different geometries.  For instance, if the problem consists of
+three geometries, then {\bf VanGenuchten} may be specified with three different
+sets of parameters for the three different goemetries.  However, once {\bf
+VanGenuchten} is specified, one geometry cannot later be specified to have {\bf
+Data} as its relative permeability.  The possible values for this key 
+are {\bf Constant, VanGenuchten, Haverkamp, Data,} and {\bf  Polynomial}.
+}
+\begin{display}\begin{verbatim}
+pfset Phase.RelPerm.Type   Constant
+\end{verbatim}\end{display}
+
+The various possible functions are defined as follows.
+The {\bf Constant} specification means that the relative permeability will be
+constant on the specified geounit.  The {\bf VanGenuchten} specification means
+that the relative permeability will be given as a Van Genuchten function
+\cite{VanGenuchten80} with the form,
+\begin{eqnarray}
+k_r(p) = \frac{(1 - \frac{(\alpha p)^{n-1}}{(1 + (\alpha p)^n)^m})^2}
+{(1 + (\alpha p)^n)^{m/2}},
+\end{eqnarray}
+where $\alpha$ and $n$ are soil parameters and $m = 1 - 1/n$, on each region.
+The {\bf Haverkamp} specification means that the relative permeability will be
+given in the following form \cite{Haverkamp-Vauclin81},
+\begin{eqnarray}
+k_r(p) = \frac{A}{A + p^{\gamma}},
+\end{eqnarray}
+where $A$ and $\gamma$ are soil parameters, on each region.
+The {\bf Data} specification is currently unsupported but will later mean that
+data points for the relative permeability curve will be given and \parflow{}
+will set up the proper interpolation coefficients to get values between the
+given data points.
+The {\bf Polynomial} specification
+defines a polynomial relative permeability function for each 
+region of the form,
+\begin{eqnarray}
+k_r(p) = \sum_{i=0}^{degree} c_ip^i.
+\end{eqnarray}
+
+\pfkey{list}{Phase.RelPerm.GeomNames}{no default}
+{This key specifies the geometries on which relative permeability will be
+given.  The union of these geometries must cover the entire computational
+domain.}
+\begin{display}\begin{verbatim}
+pfset Phase.RelPerm.Geonames   domain
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geom\_name}.RelPerm.Value}{no default}
+{This key specifies the constant relative permeability value on the specified
+geometry. }
+\begin{display}\begin{verbatim}
+pfset Geom.domain.RelPerm.Value    0.5
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Phase.RelPerm.VanGenuchten.File}{0}
+{This key specifies whether soil parameters for the VanGenuchten function are
+specified in a pfb file or by region.  The options are either 0 for
+specification by region, or 1 for specification in a file.  Note that either
+all parameters are specified in files (each has their own input file) or none
+are specified by files.  Parameters specified by files are: $\alpha$ and N.}
+\begin{display}\begin{verbatim}
+pfset Phase.RelPerm.VanGenuchten.File   1
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.{\em geom\_name}.RelPerm.Alpha.Filename}{no default}
+{This key specifies a pfb filename containing the alpha parameters for the
+VanGenuchten function cell-by-cell.  The ONLY option for {\em geom\_name} is
+``domain''.}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.RelPerm.Alpha.Filename   alphas.pfb
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.{\em geom\_name}.RelPerm.N.Filename}{no default}
+{This key specifies a pfb filename containing the N parameters for the
+VanGenuchten function cell-by-cell.  The ONLY option for {\em geom\_name} is
+``domain''.}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.RelPerm.N.Filename   Ns.pfb
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geom\_name}.RelPerm.Alpha}{no default}
+{This key specifies the $\alpha$ parameter for the Van Genuchten function
+specified on {\em geom\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.RelPerm.Alpha  0.005
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geom\_name}.RelPerm.N}{no default}
+{This key specifies the $N$ parameter for the Van Genuchten function specified
+on {\em geom\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.RelPerm.N   2.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geom\_name}.RelPerm.A}{no default}
+{This key specifies the $A$ parameter for the Haverkamp relative permeability
+on {\em geom\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.RelPerm.A  1.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geom\_name}.RelPerm.Gamma}{no default}
+{This key specifies the the $\gamma$ parameter for the Haverkamp relative
+permeability on {\em geom\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.RelPerm.Gamma  1.0
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Geom.{\em geom\_name}.RelPerm.Degree}{no default}
+{This key specifies the degree of the polynomial for the Polynomial relative
+permeability given on {\em geom\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.RelPerm.Degree  1
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geom\_name}.RelPerm.Coeff.{\em coeff\_number}}
+{no default}
+{This key specifies the {\em coeff\_number}th coefficient of the Polynomial
+relative permeability given on {\em geom\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.RelPerm.Coeff.0  0.5
+pfset Geom.domain.RelPerm.Coeff.1  1.0
+\end{verbatim}\end{display}
+
+NOTE: For all these cases, if only one region is to be used (the domain),
+the background region should NOT be set as that single region.  
+Using the background will prevent the
+upstream weighting from being correct near Dirichlet boundaries.
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Phase Sources}
+\label{Phase Sources}
+
+The following keys are used to specify phase source terms.
+The units of the source term are $1/T$.
+So, for example, to specify a region with constant flux rate of $L^3/T$,
+one must be careful to convert this rate to the proper units by
+dividing by the volume of the enclosing region.
+For {\em Richards' equation} input, the source term must be given as a flux
+multiplied by density.
+
+\pfkey{string}{PhaseSources.{\em phase\_name}.Type}
+{no default}
+{This key specifies the type of source to use for phase {\em phase\_name}.  
+Possible values for this key are {\bf Constant} and {\bf PredefinedFunction}.
+{\bf Constant} type phase sources specify a constant phase source 
+value for a given set of regions.  
+{\bf PredefinedFunction} type phase sources use a preset function
+(choices are listed below) to specify the source.  Note that the
+{\bf PredefinedFunction} type can only be used to set a single source 
+over the entire domain and not separate sources over different regions.
+}
+\begin{display}\begin{verbatim}
+pfset PhaseSources.water.Type   Constant
+\end{verbatim}\end{display}
+
+
+\pfkey{list}{PhaseSources.{\em phase\_name}.GeomNames}{no default}
+{This key specifies the names of the geometries on which source terms will be
+specified.  This is used only for {\bf Constant} type phase sources.
+Regions listed later ``overlay'' regions listed earlier.
+}
+\begin{display}\begin{verbatim}
+pfset PhaseSources.water.GeomNames   "bottomlayer middlelayer toplayer"
+\end{verbatim}\end{display}
+
+\pfkey{double}{PhaseSources.{\em phase\_name}.Geom.{\em geom\_name}.Value}
+{no default}
+{This key specifies the value of a constant source term applied to phase
+{\em phase \_name} on geometry {\em geom\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset PhaseSources.water.Geom.toplayer.Value   1.0
+\end{verbatim}\end{display}
+
+
+\pfkey{string}{PhaseSources.{\em phase\_name}.PredefinedFunction}{no default}
+{This key specifies which of the predefined functions will be used for the
+source.
+Possible values for this key are {\bf X, XPlusYPlusZ, X3Y2PlusSinXYPlus1,}
+\newline {\bf X3Y4PlusX2PlusSinXYCosYPlus1, XYZTPlus1} and {\bf
+XYZTPlus1PermTensor}.
+}
+\begin{display}\begin{verbatim}
+pfset PhaseSources.water.PredefinedFunction   XPlusYPlusZ
+\end{verbatim}\end{display}
+
+The choices for this key correspond to sources as follows:
+\begin{description}
+\item[{\bf X}: ] ${\rm source}\; = 0.0$
+
+\item[{\bf XPlusYPlusX}: ] ${\rm source}\; = 0.0$
+
+\item[{\bf X3Y2PlusSinXYPlus1}:]
+${\rm source}\; = -(3x^2 y^2 + y\cos(xy))^2 - (2x^3 y + x\cos(xy))^2 
+- (x^3 y^2 + \sin(xy) + 1) (6x y^2 + 2x^3 -(x^2 +y^2) \sin(xy))$ \\
+This function type specifies that the source applied over the entire domain is
+as noted above.  This corresponds to $p=x^{3}y^{2}+\sin(xy)+1$ in the problem 
+$-\nabla\cdot (p\nabla p)=f$.
+
+\item[{\bf X3Y4PlusX2PlusSinXYCosYPlus1}:] 
+${\rm source}\; = -(3x^22 y^4 + 2x + y\cos(xy)\cos(y))^2 
+- (4x^3 y^3 + x\cos(xy)\cos(y) - \sin(xy)\sin(y))^2 
+- (x^3 y^4 + x^2 + \sin(xy)\cos(y) + 1)
+(6xy^4 + 2 - (x^2 + y^2 + 1)\sin(xy)\cos(y) 
++ 12x^3 y^2 - 2x\cos(xy)\sin(y))$ \\
+This function type specifies that the source applied over the entire domain is
+as noted above.  This corresponds to $p=x^{3}y^{4}+x^{2}+\sin (xy)\cos(y) +1$ 
+in the problem $-\nabla\cdot (p\nabla p)=f$.
+
+\item[{\bf XYZTPlus1}: ]
+${\rm source}\; = xyz - t^2 (x^2 y^2 +x^2 z^2 +y^2 z^2)$ \\
+This function type specifies that the source applied over the entire domain is
+as noted above.  This corresponds to $p = xyzt + 1$ in the problem 
+$\frac{\partial p}{\partial t}-\nabla\cdot (p\nabla p)=f$.
+
+\item[{\bf XYZTPlus1PermTensor}: ]
+${\rm source}\; = xyz - t^2 (x^2 y^2 3 + x^2 z^2 2 + y^2 z^2)$ \\
+This function type specifies that the source applied over the entire domain is
+as noted above.  This corresponds to $p = xyzt + 1$ in the problem 
+$\frac{\partial p}{\partial t}-\nabla\cdot (Kp\nabla p)=f$, where 
+$K = diag(1 \;\; 2 \;\; 3)$.
+
+\end{description}
+
+%=============================================================================
+%=============================================================================
+\subsection{Capillary Pressures}
+\label{Capillary Pressures}
+\pfaddanchor{pfinCapillaryPressures}
+
+Here we define capillary pressure.
+Note: this section needs to be defined {\em only} for multi-phase flow
+and should not be defined for single phase and Richards' equation cases.
+The format for this section of input is:
+
+\pfkey{string}{CapPressure.{\em phase\_name}.Type}{"Constant"}
+{
+This key specifies the capillary pressure between phase $0$ and the named
+phase, {\em phase\_name}. The only choice available is {\bf Constant}
+which indicates that a constant capillary pressure exists between the
+phases.
+}
+\begin{display}\begin{verbatim}
+pfset CapPressure.water.Type   Constant
+\end{verbatim}\end{display}
+
+\pfkey{list}{CapPressure.{\em phase\_name}.GeomNames}{no default}
+{
+This key specifies the geometries that capillary pressures will be
+computed for in the named phase, {\em phase\_name}.  Regions listed
+later ``overlay'' regions listed earlier.  Any geometries not listed
+will be assigned $0.0$ capillary pressure by \parflow{}.
+}
+\begin{display}\begin{verbatim}
+pfset CapPressure.water.GeomNames   "domain"
+\end{verbatim}\end{display}
+
+
+\pfkey{double}{Geom.{\em geometry\_name}.CapPressure.{\em phase\_name}.Value}
+{0.0}
+{
+This key specifies the value of the capillary pressure in the named
+geometry, {\em geometry\_name}, for the named phase, {\em phase\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.CapPressure.water.Value   0.0
+\end{verbatim}\end{display}
+
+
+{\sl Important note}: the code currently works only for capillary
+pressure equal zero.
+
+%=============================================================================
+%=============================================================================
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Saturation}
+\label{Saturation}
+
+This section is {\em only} relevant to the Richards' equation cases.  All keys
+relating to this section will be ignored for other cases.
+The following keys are used to define the saturation-pressure curve.
+
+\pfkey{string}{Phase.Saturation.Type}{no default}
+{
+This key specifies the type of saturation function that will be used
+on all specified geometries.  Note that only one type of saturation
+may be used for the entire problem.  However, parameters may be different for
+that type in different geometries.  For instance, if the problem consists of
+three geometries, then {\bf VanGenuchten} may be specified with three different
+sets of parameters for the three different goemetries.  However, once {\bf
+VanGenuchten} is specified, one geometry cannot later be specified to have {\bf
+Data} as its saturation.  The possible values for this key 
+are {\bf Constant, VanGenuchten, Haverkamp, Data, Polynomial} and 
+{\bf PFBFile}.
+}
+\begin{display}\begin{verbatim}
+pfset Phase.Saturation.Type   Constant
+\end{verbatim}\end{display}
+
+The various possible functions are defined as follows.
+The {\bf Constant} specification means that the saturation will be
+constant on the specified geounit.  The {\bf VanGenuchten} specification means
+that the saturation will be given as a Van Genuchten function 
+\cite{VanGenuchten80} with the form,
+\begin{eqnarray}
+s(p) = \frac{s_{sat} - s_{res}}{(1 + (\alpha p)^n)^m} + s_{res},
+\end{eqnarray}
+where $s_{sat}$ is the saturation at saturated conditions, 
+$s_{res}$ is the residual saturation, and
+$\alpha$ and $n$ are soil parameters with $m = 1 - 1/n$, on each region.
+The {\bf Haverkamp} specification means that the saturation will be
+given in the following form \cite{Haverkamp-Vauclin81},
+\begin{eqnarray}
+s(p) = \frac{\alpha(s_{sat} - s_{res})}{A + p^{\gamma}} + s_{res},
+\end{eqnarray}
+where $A$ and $\gamma$ are soil parameters, on each region.
+The {\bf Data} specification is currently unsupported but will later mean that
+data points for the saturation curve will be given and \parflow{}
+will set up the proper interpolation coefficients to get values between the
+given data points.
+The {\bf Polynomial} specification
+defines a polynomial saturation function for each region of the form,
+\begin{eqnarray}
+s(p) = \sum_{i=0}^{degree} c_ip^i.
+\end{eqnarray}
+The {\bf PFBFile} specification means that the saturation will be taken as a
+spatially varying but constant in pressure function given by data in a
+\parflow{} binary (.pfb) file.  
+
+\pfkey{list}{Phase.Saturation.GeomNames}{no default}
+{This key specifies the geometries on which saturation will be given.
+The union of these geometries must cover the entire computational domain.}
+\begin{display}\begin{verbatim}
+pfset Phase.Saturation.Geonames   domain
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geom\_name}.Saturation.Value}{no default}
+{This key specifies the constant saturation value on the {\em geom\_name} 
+region. }
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Saturation.Value    0.5
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Phase.Saturation.VanGenuchten.File}{0}
+{This key specifies whether soil parameters for the VanGenuchten function are
+specified in a pfb file or by region.  The options are either 0 for
+specification by region, or 1 for specification in a file.  Note that either
+all parameters are specified in files (each has their own input file) or none
+are specified by files.  Parameters specified by files are $\alpha$, N, SRes,
+and SSat.}
+\begin{display}\begin{verbatim}
+pfset Phase.Saturation.VanGenuchten.File   1
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.{\em geom\_name}.Saturation.Alpha.Filename}{no default}
+{This key specifies a pfb filename containing the alpha parameters for the
+VanGenuchten function cell-by-cell.  The ONLY option for {\em geom\_name} is
+``domain''.}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Saturation.Filename   alphas.pfb
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.{\em geom\_name}.Saturation.N.Filename}{no default}
+{This key specifies a pfb filename containing the N parameters for the
+VanGenuchten function cell-by-cell.  The ONLY option for {\em geom\_name} is
+``domain''.}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Saturation.N.Filename   Ns.pfb
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.{\em geom\_name}.Saturation.SRes.Filename}{no default}
+{This key specifies a pfb filename containing the SRes parameters for the
+VanGenuchten function cell-by-cell.  The ONLY option for {\em geom\_name} is
+``domain''.}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Saturation.SRes.Filename   SRess.pfb
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.{\em geom\_name}.Saturation.SSat.Filename}{no default}
+{This key specifies a pfb filename containing the SSat parameters for the
+VanGenuchten function cell-by-cell.  The ONLY option for {\em geom\_name} is
+``domain''.}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Saturation.SSat.Filename   SSats.pfb
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geom\_name}.Saturation.Alpha}{no default}
+{This key specifies the $\alpha$ parameter for the Van Genuchten function
+specified on {\em geom\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Saturation.Alpha  0.005
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geom\_name}.Saturation.N}{no default}
+{This key specifies the $N$ parameter for the Van Genuchten function specified
+on {\em geom\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Saturation.N   2.0
+\end{verbatim}\end{display}
+
+Note that if both a Van Genuchten saturation and relative permeability are
+specified, then the soil parameters should be the same for each in order
+to have a consistent problem.
+
+\pfkey{double}{Geom.{\em geom\_name}.Saturation.SRes}{no default}
+{This key specifies the residual saturation on {\em geom\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Saturation.SRes   0.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geom\_name}.Saturation.SSat}{no default}
+{This key specifies the saturation at saturated conditions on {\em geom\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Saturation.SSat   1.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geom\_name}.Saturation.A}{no default}
+{This key specifies the $A$ parameter for the Haverkamp saturation
+on {\em geom\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Saturation.A   1.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geom\_name}.Saturation.Gamma}{no default}
+{This key specifies the the $\gamma$ parameter for the Haverkamp saturation 
+on {\em geom\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Saturation.Gamma   1.0
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Geom.{\em geom\_name}.Saturation.Degree}{no default}
+{This key specifies the degree of the polynomial for the Polynomial 
+saturation given on {\em geom\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Saturation.Degree   1
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geom\_name}.Saturation.Coeff.{\em coeff\_number}}
+{no default}
+{This key specifies the {\em coeff\_number}th coefficient of the Polynomial
+saturation given on {\em geom\_name}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Saturation.Coeff.0   0.5
+pfset Geom.domain.Saturation.Coeff.1   1.0
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.{\em geom\_name}.Saturation.FileName}{no default}
+{This key specifies the name of the file containing saturation values for the
+domain.  It is assumed that {\em geom\_name} is ``domain'' for this key.}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.Saturation.FileName  "domain_sats.pfb"
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Internal Boundary Conditions}
+\label{Internal Boundary Conditions}
+\pfaddanchor{pfinInternalBoundaryConditions}
+
+In this section, we define internal Dirichlet boundary conditions
+by setting the pressure at points in the domain.
+The format for this section of input is:
+
+\pfkey{string}{InternalBC.Names}{no default}
+{
+This key specifies the names for the internal boundary conditions.
+At each named point, ${\rm x}$, ${\rm y}$ and ${\rm z}$ will specify
+the coordinate locations and ${\rm h}$ will specify the hydraulic head
+value of the condition.  This real location is ``snapped'' to the
+nearest gridpoint in \parflow{}.
+
+NOTE: Currently, \parflow{} assumes that internal boundary conditions
+and pressure wells are separated by at least one cell from any external
+boundary.  The user should be careful of this when defining the input
+file and grid.
+}
+\begin{display}\begin{verbatim}
+pfset InternalBC.Names   "fixedvalue"
+\end{verbatim}\end{display}
+
+\pfkey{double}{InternalBC.{\em internal\_bc\_name}.X}{no default}
+{
+This key specifies the x-coordinate, ${\rm x}$, of the named,
+{\em internal\_bc\_name}, condition.
+}
+\begin{display}\begin{verbatim}
+pfset InternalBC.fixedheadvalue.X   40.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{InternalBC.{\em internal\_bc\_name}.Y}{no default}
+{
+This key specifies the y-coordinate, ${\rm y}$, of the named,
+{\em internal\_bc\_name}, condition.
+}
+\begin{display}\begin{verbatim}
+pfset InternalBC.fixedheadvalue.Y   65.2
+\end{verbatim}\end{display}
+
+\pfkey{double}{InternalBC.{\em internal\_bc\_name}.Z}{no default}
+{
+This key specifies the z-coordinate, ${\rm z}$, of the named,
+{\em internal\_bc\_name}, condition.
+}
+\begin{display}\begin{verbatim}
+pfset InternalBC.fixedheadvalue.Z   12.1
+\end{verbatim}\end{display}
+
+\pfkey{double}{InternalBC.{\em internal\_bc\_name}.Value}{no default}
+{
+This key specifies the value of the named,
+{\em internal\_bc\_name}, condition.
+}
+\begin{display}\begin{verbatim}
+pfset InternalBC.fixedheadvalue.Value   100.0
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Boundary Conditions: Pressure}
+\label{Boundary Conditions: Pressure}
+
+Here we define the pressure boundary conditions.
+The Dirichlet conditions below are hydrostatic conditions, and it
+is assumed that at each phase interface the pressure is constant.
+{\em It is also assumed here that all phases
+are distributed within the domain at all times such that the lighter phases 
+are vertically higher than the heavier phases.}
+
+Boundary condition input is associated with domain patches
+(see \S~\ref{Domain}).  Note that different patches may have different types of
+boundary conditions on them.
+
+
+\pfkey{list}{BCPressure.PatchNames}{no default}
+{This key specifies the names of patches on which pressure boundary conditions
+will be specified.  Note that these must all be patches on the external
+boundary of the domain and these patches must ``cover'' that external boundary.
+}
+\begin{display}\begin{verbatim}
+pfset BCPressure.PatchNames    "left right front back top bottom"
+\end{verbatim}\end{display}
+
+\pfkey{string}{Patch.{\em patch\_name}.BCPressure.Type}{no default}
+{This key specifies the type of boundary condition data given for patch 
+{\em patch\_name}.  Possible values for this key are {\bf DirEquilRefPatch, 
+DirEquilPLinear, FluxConst, FluxVolumetric, PressureFile, FluxFile} and 
+{\bf ExactSolution}.  The choice {\bf DirEquilRefPatch} specifies that the
+pressure on the specified patch will be in hydrostatic equilibrium with a
+constant reference pressure given on a reference patch.
+The choice {\bf DirEquilPLinear} specifies that the pressure on the specified
+patch will be in hydrostatic equilibrium with pressure given along a piecewise
+line at elevation $z=0$.  The choice {\bf FluxConst} defines a constant normal 
+flux boundary condition through the domain patch.  
+This flux must be specified in units of $[L]/[T]$.
+For {\em Richards' equation}, fluxes must be specified as a mass flux and given
+as the above flux multiplied by the density.  Thus, this choice of input type
+for a Richards' equation problem has units of $([L]/[T])([M]/[L]^3)$.
+The choice {\bf FluxVolumetric} defines a volumetric flux boundary condition
+through the domain patch.  The units should be consistent with all other
+user input for the problem.
+For {\em Richards' equation} fluxes must be specified as a mass flux and given
+as the above flux multiplied by the density.
+The choice {\bf PressureFile} defines a hydraulic head boundary condition that
+is read from a properly distributed .pfb file.  Only the values needed for the
+patch are used.
+The choice {\bf FluxFile} defines a flux boundary condition that is read form a
+properly distributed .pfb file defined on a grid consistent with the pressure
+field grid.  Only the values needed for the patch are used.
+The choice {\bf ExactSolution} specifies that an exact known solution 
+is to be applied as a
+Dirichlet boundary condition on the respective patch.  Note that this does not
+change according to any cycle.  Instead, time dependence is handled by
+evaluating at the time the boundary condition value is desired.  
+The solution is specified by using a predefined function (choices are described
+below).  NOTE: This type of boundary condition input is for 
+{\em Richards' equation cases only!} 
+}
+\begin{display}\begin{verbatim}
+pfset Patch.top.BCPressure.Type  DirEquilRefPatch
+\end{verbatim}\end{display}
+
+\pfkey{string}{Patch.{\em patch\_name}.BCPressure.Cycle}{no default}
+{This key specifies the time cycle to which boundary condition data for patch
+{\em patch\_name} corresponds. 
+}
+\begin{display}\begin{verbatim}
+pfset Patch.top.BCPressure.Cycle   Constant
+\end{verbatim}\end{display}
+
+\pfkey{string}{Patch.{\em patch\_name}.BCPressure.RefGeom}{no default}
+{This key specifies the name of the solid on which the reference patch for the
+{\bf DirEquilRefPatch} boundary condition data is given.
+Care should be taken to
+make sure the correct solid is specified in cases of layered domains.  
+}
+\begin{display}\begin{verbatim}
+pfset Patch.top.BCPressure.RefGeom   domain
+\end{verbatim}\end{display}
+
+\pfkey{string}{Patch.{\em patch\_name}.BCPressure.RefPatch}{no default}
+{This key specifies the reference patch on which the 
+{\bf DirEquilRefPatch} boundary condition data is given.  This patch must be on
+the reference solid specified by the Patch.{\em patch\_name}.BCPressure.RefGeom
+key.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.top.BCPressure.RefPatch    bottom
+\end{verbatim}\end{display}
+
+\pfkey{double}{Patch.{\em patch\_name}.BCPressure.{\em interval\_name}.Value}
+{no default}
+{This key specifies the reference pressure value for the 
+{\bf DirEquilRefPatch} boundary condition or the constant flux value for the
+{\bf FluxConst} boundary condition, or the constant volumetric flux for the
+{\bf FluxVolumetric} boundary condition.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.top.BCPressure.alltime.Value  -14.0
+\end{verbatim}\end{display}
+
+\pfkey{double}
+{Patch.{\em patch\_name}.BCPressure.{\em interval\_name}.{\em phase\_name}.IntValue}
+{no default}
+{Note that the reference conditions for types {\bf DirEquilPLinear} and 
+{\bf DirEquilRefPatch}
+boundary conditions are for phase 0 {\em only}.  
+This key specifies the constant pressure value
+along the interface with phase {\em phase\_name} for cases with two phases
+present.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.top.BCPressure.alltime.water.IntValue   -13.0
+\end{verbatim}\end{display}
+
+\pfkey{double}
+{Patch.{\em patch\_name}.BCPressure.{\em interval\_name}.XLower}
+{no default}
+{This key specifies the lower $x$ coordinate of a line in the xy-plane.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.top.BCPressure.alltime.XLower  0.0
+\end{verbatim}\end{display}
+
+\pfkey{double}
+{Patch.{\em patch\_name}.BCPressure.{\em interval\_name}.YLower}
+{no default}
+{This key specifies the lower $y$ coordinate of a line in the xy-plane.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.top.BCPressure.alltime.YLower  0.0
+\end{verbatim}\end{display}
+
+\pfkey{double}
+{Patch.{\em patch\_name}.BCPressure.{\em interval\_name}.XUpper}
+{no default}
+{This key specifies the upper $x$ coordinate of a line in the xy-plane.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.top.BCPressure.alltime.XUpper  1.0
+\end{verbatim}\end{display}
+
+\pfkey{double}
+{Patch.{\em patch\_name}.BCPressure.{\em interval\_name}.YUpper}
+{no default}
+{This key specifies the upper $y$ coordinate of a line in the xy-plane.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.top.BCPressure.alltime.YUpper  1.0
+\end{verbatim}\end{display}
+
+\pfkey{integer}
+{Patch.{\em patch\_name}.BCPressure.{\em interval\_name}.NumPoints}
+{no default}
+{This key specifies the number of points on which pressure data is given along
+the line used in the type {\bf DirEquilPLinear} boundary conditions.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.top.BCPressure.alltime.NumPoints   2
+\end{verbatim}\end{display}
+
+\pfkey{double}
+{Patch.{\em patch\_name}.BCPressure.{\em interval\_name}.{\em point\_number}.Location}
+{no default}
+{This key specifies a number between 0 and 1 which represents
+the location of a point on the line on which data is given for 
+type {\bf DirEquilPLinear} boundary conditions.
+Here 0 corresponds to the lower end of the line, and 1 corresponds to
+the upper end.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.top.BCPressure.alltime.0.Location   0.0
+\end{verbatim}\end{display}
+
+\pfkey{double}
+{Patch.{\em patch\_name}.BCPressure.{\em interval\_name}.{\em point\_number}.Value}
+{no default}
+{This key specifies the pressure value for phase 0 at point number 
+{\em point\_number} and $z=0$ for
+type {\bf DirEquilPLinear} boundary conditions.
+All pressure values on the patch are determined by first projecting the
+boundary condition coordinate onto the line, then linearly interpolating
+between the neighboring point pressure values on the line.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.top.BCPressure.alltime.0.Value   14.0
+\end{verbatim}\end{display}
+
+\pfkey{string}
+{Patch.{\em patch\_name}.BCPressure.{\em interval\_name}.FileName}
+{no default}
+{This key specifies the name of a properly distributed \code{.pfb} file 
+that contains boundary data to be read for types {\bf PressureFile} 
+and {\bf FluxFile}.  For flux data, the data must be defined over a grid 
+consistent with the pressure field.  In both cases, only the values needed 
+for the patch will be used.  The rest of the data is ignored.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.top.BCPressure.alltime.FileName   ocwd_bc.pfb
+\end{verbatim}\end{display}
+
+\pfkey{string}
+{Patch.{\em patch\_name}.BCPressure.{\em interval\_name}.PredefinedFunction}
+{no default}
+{This key specifies the predefined function that will be used to specify
+Dirichlet boundary conditions on patch {\em patch\_name}.
+Note that this does not change according to any cycle.
+Instead, time dependence is handled by
+evaluating at the time the boundary condition value is desired.
+Choices for this key include {\bf X, XPlusYPlusZ, X3Y2PlusSinXYPlus1, 
+X3Y4PlusX2PlusSinXYCosYPlus1, XYZTPlus1} and {\bf XYZTPlus1PermTensor}.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.top.BCPressure.alltime.PredefinedFunction  XPlusYPlusZ
+\end{verbatim}\end{display}
+The choices for this key correspond to pressures as follows.
+\begin{description}
+\item[{\bf X}: ] $p = x$
+\item[{\bf XPlusYPlusZ}: ] $p = x + y + z$
+\item[{\bf X3Y2PlusSinXYPlus1}: ] $p = x^3 y^2 + \sin(xy) + 1$
+\item[{\bf X3Y4PlusX2PlusSinXYCosYPlus1}: ] 
+$p = x^3 y^4 + x^2 + \sin(xy)\cos y + 1$
+\item[{\bf XYZTPlus1}: ] $p = xyzt + 1$
+\item[{\bf XYZTPlus1PermTensor}: ] $p = xyzt + 1$
+\end{description}
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Boundary Conditions: Saturation}
+\label{Boundary Conditions: Saturation}
+\pfaddanchor{pfinBoundaryConditionsSaturation}
+
+Note: this section needs to be defined {\em only} for multi-phase flow
+and should {\em not} be defined for the single phase and Richards'
+equation cases. 
+
+Here we define the boundary conditions for the saturations.  Boundary
+condition input is associated with domain patches (see \S~\ref{Domain}).
+Note that different patches may have different types of boundary
+conditions on them.
+
+\pfkey{list}{BCSaturation.PatchNames}{no default}
+{
+This key specifies the names of patches on which saturation boundary
+conditions will be specified.  Note that these must all be patches on
+the external boundary of the domain and these patches must ``cover''
+that external boundary.
+}
+\begin{display}\begin{verbatim}
+pfset BCSaturation.PatchNames    "left right front back top bottom"
+\end{verbatim}\end{display}
+
+\pfkey{string}{Patch.{\em patch\_name}.BCSaturation.{\em phase\_name}.Type}{no default}
+{
+This key specifies the type of boundary condition data given for the
+given phase, {\em phase\_name}, on the given patch {\em patch\_name}.
+Possible values for this key are {\bf DirConstant},
+{\bf ConstantWTHeight} and {\bf PLinearWTHeight}.  The choice
+{\bf DirConstant} specifies that the saturation is constant on the whole
+patch.  The choice {\bf ConstantWTHeight} specifies a constant height of
+the water-table on the whole patch.  The choice {\bf PLinearWTHeight}
+specifies that the height of the water-table on the patch will be given
+by a piecewise linear function.
+
+Note: the types {\bf ConstantWTHeight} and {\bf PLinearWTHeight} assume
+we are running a 2-phase problem where phase 0 is the water phase.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.left.BCSaturation.water.Type  ConstantWTHeight
+\end{verbatim}\end{display}
+
+\pfkey{double}{Patch.{\em patch\_name}.BCSaturation.{\em phase\_name}.Value}{no default}
+{
+This key specifies either the constant saturation value if
+{\bf DirConstant} is selected or the constant water-table height if
+{\bf ConstantWTHeight} is selected.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.top.BCSaturation.air.Value 1.0
+\end{verbatim}\end{display}
+
+
+\pfkey{double}{Patch.{\em patch\_name}.BCSaturation.{\em phase\_name}.XLower}{no default}
+{
+This key specifies the lower $x$ coordinate of a line in the xy-plane if
+type {\bf PLinearWTHeight} boundary conditions are specified.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.left.BCSaturation.water.XLower -10.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Patch.{\em patch\_name}.BCSaturation.{\em phase\_name}.YLower}{no default}
+{
+This key specifies the lower $y$ coordinate of a line in the xy-plane if
+type {\bf PLinearWTHeight} boundary conditions are specified.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.left.BCSaturation.water.YLower 5.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Patch.{\em patch\_name}.BCSaturation.{\em phase\_name}.XUpper}{no default}
+{
+This key specifies the upper $x$ coordinate of a line in the xy-plane if
+type {\bf PLinearWTHeight} boundary conditions are specified.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.left.BCSaturation.water.XUpper  125.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Patch.{\em patch\_name}.BCSaturation.{\em phase\_name}.YUpper}{no default}
+{
+This key specifies the upper $y$ coordinate of a line in the xy-plane if
+type {\bf PLinearWTHeight} boundary conditions are specified.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.left.BCSaturation.water.YUpper  82.0
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Patch.{\em patch\_name}.BCPressure.{\em phase\_name}.NumPoints}{no default}
+{
+This key specifies the number of points on which saturation data is
+given along the line used for type {\bf DirEquilPLinear} boundary
+conditions.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.left.BCPressure.water.NumPoints 2
+\end{verbatim}\end{display}
+
+\pfkey{double}{Patch.{\em patch\_name}.BCPressure.{\em phase\_name}.{\em point\_number}.Location}{no default}
+{
+This key specifies a number between 0 and 1 which represents the
+location of a point on the line for which data is given in type
+{\bf DirEquilPLinear} boundary conditions.  The line is parameterized
+so that  0 corresponds to the lower end of the line, and 1 corresponds
+to the upper end.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.left.BCPressure.water.0.Location 0.333
+\end{verbatim}\end{display}
+
+\pfkey{double}{Patch.{\em patch\_name}.BCPressure.{\em phase\_name}.{\em point\_number}.Value}{no default}
+{
+This key specifies the water-table height for the given point if type
+{\bf DirEquilPLinear} boundary conditions are selected.  All saturation
+values on the patch are determined by first projecting the water-table 
+height value onto the line, then linearly interpolating between the
+neighboring water-table height values onto the line.
+}
+\begin{display}\begin{verbatim}
+pfset Patch.left.BCPressure.water.0.Value  4.5
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Initial Conditions: Phase Saturations}
+\label{Initial Conditions: Phase Saturations}
+\pfaddanchor{pfinInitialConditionsPhaseSaturations}
+
+Note: this section needs to be defined {\em only} for multi-phase flow
+and should {\em not} be defined for single phase and Richards' equation cases.
+
+Here we define initial phase saturation conditions.
+The format for this section of input is:
+
+\pfkey{string}{ICSaturation.{\em phase\_name}.Type}{no default}
+{
+This key specifies the type of initial condition that will be applied
+to different geometries for given phase, {\em phase\_name}.  The only
+key currently available is {\bf Constant}.  The choice {\bf Constant}
+will apply constants values within geometries for the phase. 
+}
+\begin{display}\begin{verbatim}
+ICSaturation.water.Type Constant
+\end{verbatim}\end{display}
+
+\pfkey{string}{ICSaturation.{\em phase\_name}.GeomNames}{no default}
+{
+This key specifies the geometries on which an initial condition will be
+given if the type is set to {\bf Constant}.
+
+Note that geometries listed later ``overlay'' geometries listed earlier.
+}
+\begin{display}\begin{verbatim}
+ICSaturation.water.GeomNames "domain"
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geom\_input\_name}.ICSaturation.{\em phase\_name}.Value}{no default}
+{
+This key specifies the initial condition value assigned to all points in
+the named geometry, {\em geom\_input\_name}, if the type was set to
+{\bf Constant}.
+}
+\begin{display}\begin{verbatim}
+Geom.domain.ICSaturation.water.Value 1.0
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Initial Conditions: Pressure}
+\label{Initial Conditions: Pressure}
+
+The keys in this section are used to specify pressure initial conditions for 
+Richards' equation cases {\em only}.  These keys will be ignored if any other
+case is run.
+
+\pfkey{string}{ICPressure.Type}{no default}
+{This key specifies the type of initial condition given.  The choices for this
+key are {\bf Constant, HydroStaticDepth, HydroStaticPatch} and {\bf PFBFile}.
+The choice {\bf Constant} specifies that the initial pressure will be constant
+over the regions given.  The choice {\bf HydroStaticDepth} specifies that the
+initial pressure within a region 
+will be in hydrostatic equilibrium with a given pressure
+specified at a given depth.  The choice {\bf HydroStaticPatch} specifies that
+the initial pressure within a region 
+will be in hydrostatic equilibrium with a given pressure on a specified patch.
+Note that all regions must have the same type of initial data - different
+regions cannot have different types of initial data.  However, the parameters
+for the type may be different.
+The {\bf PFBFile} specification means that the initial pressure 
+will be taken as a spatially varying function given by data in a
+\parflow{} binary (.pfb) file.  
+}
+\begin{display}\begin{verbatim}
+pfset ICPressure.Type   Constant
+\end{verbatim}\end{display}
+
+\pfkey{list}{ICPressure.GeomNames}{no default}
+{This key specifies the geometry names on which the initial pressure data will
+be given.  These geometries must comprise the entire domain.
+Note that conditions for regions that overlap other regions will have
+unpredictable results.  The regions given must be disjoint.
+}
+\begin{display}\begin{verbatim}
+pfset ICPressure.GeomNames   "toplayer middlelayer bottomlayer"
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geom\_name}.ICPressure.Value}{no default}
+{This key specifies the initial pressure value for type {\bf Constant} initial
+pressures and the reference pressure value for types {\bf HydroStaticDepth} and
+{\bf HydroStaticPatch}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.toplayer.ICPressure.Value  -734.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geom\_name}.ICPressure.RefElevation}{no default}
+{This key specifies the reference elevation on which the reference pressure is
+given for type {\bf HydroStaticDepth} initial pressures.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.toplayer.ICPressure.RefElevation  0.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geom\_name}.ICPressure.RefGeom}{no default}
+{This key specifies the geometry on which the reference patch resides for type
+{\bf HydroStaticPatch} initial pressures.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.toplayer.ICPressure.RefGeom   bottomlayer
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geom\_name}.ICPressure.RefPatch}{no default}
+{This key specifies the patch on which the reference pressure is given for type
+{\bf HydorStaticPatch} initial pressures.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.toplayer.ICPressure.RefPatch   bottom
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.{\em geom\_name}.ICPressure.FileName}{no default}
+{This key specifies the name of the file containing pressure values for the
+domain.  It is assumed that {\em geom\_name} is ``domain'' for this key.}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.ICPressure.FileName  "ic_pressure.pfb"
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Initial Conditions: Phase Concentrations}
+\label{Initial Conditions: Phase Concentrations}
+\pfaddanchor{pfinInitialConditionsPhaseConcentrations}
+
+Here we define initial concentration conditions for contaminants.
+The format for this section of input is:
+
+\pfkey{string}{PhaseConcen.{\em phase\_name}.{\em contaminant\_name}.Type}{no default}
+{
+This key specifies the type of initial condition that will be applied
+to different geometries for given phase, {\em phase\_name}, and the
+given contaminant, {\em contaminant\_name}.  The choices for this key
+are {\bf Constant} or {\bf PFBFile}.  The choice {\bf Constant} will
+apply constants values to different geometries.  The choice
+{\bf PFBFile}  will read values from a ``ParFlow Binary'' file
+(see \S~\ref{ParFlow Binary Files (.pfb)}).
+}
+\begin{display}\begin{verbatim}
+PhaseConcen.water.tce.Type Constant
+\end{verbatim}\end{display}
+
+\pfkey{string}{PhaseConcen.{\em phase\_name}.GeomNames}{no default}
+{
+This key specifies the geometries on which an initial condition will be
+given, if the type was set to {\bf Constant}.
+
+Note that geometries listed later ``overlay'' geometries listed earlier.
+}
+\begin{display}\begin{verbatim}
+PhaseConcen.water.GeomNames "ic_concen_region"
+\end{verbatim}\end{display}
+
+\pfkey{double}{PhaseConcen.{\em phase\_name}.{\em contaminant\_name}.{\em geom\_input\_name}.Value}{no default}
+{
+This key specifies the initial condition value assigned to all points in
+the named geometry, {\em geom\_input\_name}, if the type was set to
+{\bf Constant}.
+}
+\begin{display}\begin{verbatim}
+PhaseConcen.water.tce.ic_concen_region.Value 0.001
+\end{verbatim}\end{display}
+
+\pfkey{string}{PhaseConcen.{\em phase\_name}.{\em contaminant\_name}.FileName}{no default}
+{
+This key specifies the name of the ``ParFlow Binary'' file which
+contains the initial condition values if the type was set to {\bf PFBFile}.
+}
+\begin{display}\begin{verbatim}
+PhaseConcen.water.tce.FileName "initial_concen_tce.pfb"
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Known Exact Solution}
+\label{ExactSolution}
+
+For {\em Richards equation cases only} we allow specification of an exact
+solution to be used for testing the code.  
+Only types that have been coded and predefined are allowed.
+Note that if this is speccified as something other than no known solution,
+corresponding boundary conditions and phase sources should also be specified.
+
+\pfkey{string}{KnownSolution}{no default}
+{This specifies the predefined function that will be used as the known
+solution.  Possible choices for this key are {\bf NoKnownSolution, Constant, 
+X, XPlusYPlusZ, X3Y2PlusSinXYPlus1, X3Y4PlusX2PlusSinXYCosYPlus1, XYZTPlus1}
+and {\bf XYZTPlus1PermTensor}.
+}
+\begin{display}\begin{verbatim}
+pfset KnownSolution  XPlusYPlusZ
+\end{verbatim}\end{display}
+Choices for this key correspond to solutions as follows.
+\begin{description}
+\item[{\bf NoKnownSolution}: ] No solution is known for this problem.
+\item[{\bf Constant}: ] $p = {\rm constant}$
+\item[{\bf X}: ] $p = x$
+\item[{\bf XPlusYPlusZ}: ] $p = x + y + z$
+\item[{\bf X3Y2PlusSinXYPlus1}: ] $p = x^3 y^2 + sin(xy) + 1$
+\item[{\bf X3Y4PlusX2PlusSinXYCosYPlus1}: ] 
+$p = x^3 y^4 + x^2 + \sin(xy)\cos y + 1$
+\item[{\bf XYZTPlus1}: ] $p = xyzt + 1$
+\item[{\bf XYZTPlus1}: ] $p = xyzt + 1$
+\end{description}
+
+\pfkey{double}{KnownSolution.Value}{no default}
+{This key specifies the constant value of the known solution for type 
+{\bf Constant} known solutions.
+}
+\begin{display}\begin{verbatim}
+pfset KnownSolution.Value  1.0
+\end{verbatim}\end{display}
+
+Only for known solution test cases will information on the $L^2$-norm
+of the pressure error be printed.
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Wells}
+\label{Wells}
+\pfaddanchor{pfinWells}
+
+Here we define wells for the model.  The format for this section of
+input is:
+
+\pfkey{string}{Wells.Names}{no default}
+{
+This key specifies the names of the wells for which input data will be
+given.
+}
+\begin{display}\begin{verbatim}
+Wells.Names "test_well inj_well ext_well"
+\end{verbatim}\end{display}
+
+\pfkey{string}{Wells.{\em well\_name}.InputType}{no default}
+{
+This key specifies the type of well to be defined for the given well, 
+{\em well\_name}.  This key can be either {\bf Vertical} or
+{\bf Recirc}.  The value {\bf Vertical} indicates that this is a
+single segmented well whose action will be specified by the user.
+The value {\bf Recirc} indicates that this is a dual segmented,
+recirculating, well with one segment being an extraction well and
+another being an injection well.  The extraction well filters out a
+specified fraction of each contaminant and recirculates the remainder
+to the injection well where the diluted fluid is injected back in.  The
+phase saturations at the extraction well are passed without modification
+to the injection well.
+
+Note with the recirculating well, several input options are not needed
+as the extraction well will provide these values to the injection well.
+}
+\begin{display}\begin{verbatim}
+Wells.test_well.InputType Vertical
+\end{verbatim}\end{display}
+
+\pfkey{string}{Wells.{\em well\_name}.Action}{no default}
+{
+This key specifies the pumping action of the well.  This key can be
+either {\bf Injection} or {\bf Extraction}.  A value of {\bf Injection}
+indicates that this is an injection well.  A value of {\bf Extraction}
+indicates that this is an extraction well.
+}
+\begin{display}\begin{verbatim}
+Wells.test_well.Action Injection
+\end{verbatim}\end{display}
+
+\pfkey{double}{Wells.{\em well\_name}.Type}{no default}
+{
+This key specfies the mechanism by which the well works (how \parflow{}
+works with the well data) if the input type key is set to {\bf Vectical}.
+This key can be either {\bf Pressure} or {\bf Flux}.  A value of
+{\bf Pressure} indicates that the data provided for the well is in terms
+of hydrostatic pressure and \parflow{} will ensure that the computed
+pressure field satisfies this condition in the computational cells which
+define the well.  A value of {\bf Flux} indicates that the data provided
+is in terms of volumetric flux rates and \parflow{} will ensure that the
+flux field satisfies this condition in the computational cells which
+define the well.
+}
+\begin{display}\begin{verbatim}
+Wells.test_well.Type Flux
+\end{verbatim}\end{display}
+
+\pfkey{string}{Wells.{\em well\_name}.ExtractionType}{no default}
+{
+This key specfies the mechanism by which the extraction well works (how
+\parflow{} works with the well data) if the input type key is set to
+{\bf Recirc}.  This key can be either {\bf Pressure} or {\bf Flux}.  A
+value of {\bf Pressure} indicates that the data provided for the well is
+in terms of hydrostatic pressure and \parflow{} will ensure that the
+computed pressure field satisfies this condition in the computational
+cells which define the well.  A value of {\bf Flux} indicates that the
+data provided is in terms of volumetric flux rates and \parflow{} will
+ensure that the flux field satisfies this condition in the computational
+cells which define the well.
+}
+\begin{display}\begin{verbatim}
+Wells.ext_well.ExtractionType Pressure
+\end{verbatim}\end{display}
+
+\pfkey{string}{Wells.{\em well\_name}.InjectionType}{no default}
+{
+This key specfies the mechanism by which the injection well works (how
+\parflow{} works with the well data) if the input type key is set to
+{\bf Recirc}.  This key can be either {\bf Pressure} or {\bf Flux}.  A
+value of {\bf Pressure} indicates that the data provided for the well is
+in terms of hydrostatic pressure and \parflow{} will ensure that the
+computed pressure field satisfies this condition in the computational
+cells which define the well.  A value of {\bf Flux} indicates that the
+data provided is in terms of volumetric flux rates and \parflow{} will
+ensure that the flux field satisfies this condition in the computational
+cells which define the well.
+}
+\begin{display}\begin{verbatim}
+Wells.inj_well.InjectionType Flux
+\end{verbatim}\end{display}
+
+\pfkey{double}{Wells.{\em well\_name}.X}{no default}
+{
+This key specifies the x location of the vectical well if the input
+type is set to {\bf Vectical} or of both the extraction and injection
+wells if the input type is set to {\bf Recirc}.
+}
+\begin{display}\begin{verbatim}
+Wells.test_well.X 20.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Wells.{\em well\_name}.Y}{no default}
+{
+This key specifies the y location of the vectical well if the input
+type is set to {\bf Vectical} or of both the extraction and injection
+wells if the input type is set  to {\bf Recirc}.
+}
+\begin{display}\begin{verbatim}
+Wells.test_well.Y 36.5
+\end{verbatim}\end{display}
+
+\pfkey{double}{Wells.{\em well\_name}.ZUpper}{no default}
+{
+This key specifies the z location of the upper extent of a vectical well
+if the input type is set to {\bf Vectical}.
+}
+\begin{display}\begin{verbatim}
+Wells.test_well.ZUpper 8.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Wells.{\em well\_name}.ExtractionZUpper}{no default}
+{
+This key specifies the z location of the upper extent of a extraction
+well if the input type is set to {\bf Recirc}.
+}
+\begin{display}\begin{verbatim}
+Wells.ext_well.ExtractionZUpper 3.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Wells.{\em well\_name}.InjectionZUpper}{no default}
+{
+This key specifies the z location of the upper extent of a injection
+well if the input type is set to {\bf Recirc}.
+}
+\begin{display}\begin{verbatim}
+Wells.inj_well.InjectionZUpper 6.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Wells.{\em well\_name}.ZLower}{no default}
+{
+This key specifies the z location of the lower extent of a vectical well
+if the input type is set to {\bf Vectical}.
+}
+\begin{display}\begin{verbatim}
+Wells.test_well.ZLower 2.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Wells.{\em well\_name}.ExtractionZLower}{no default}
+{
+This key specifies the z location of the lower extent of a extraction
+well if the input type is set to {\bf Recirc}.
+}
+\begin{display}\begin{verbatim}
+Wells.ext_well.ExtractionZLower 1.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Wells.{\em well\_name}.InjectionZLower}{no default}
+{
+This key specifies the z location of the lower extent of a injection
+well if the input type is set to {\bf Recirc}.
+}
+\begin{display}\begin{verbatim}
+Wells.inj_well.InjectionZLower 4.0
+\end{verbatim}\end{display}
+
+\pfkey{string}{Wells.{\em well\_name}.Method}{no default}
+{
+This key specifies a method by which pressure or flux for a vertical
+well will be weighted before assignment to computational cells.  This
+key can only be {\bf Standard} if the type key is set to {\bf Pressure};
+or this key can be either {\bf Standard}, {\bf Weighted} or
+{\bf Patterned} if the type key is set to {\bf Flux}.  A value of
+{\bf Standard} indicates that the pressure or flux data will be used as
+is.  A value of {\bf Weighted} indicates that the flux data is to be
+weighted by the cells permeability divided by the sum of all cell
+permeabilities which define the well.  The value of {\bf Patterned} is
+not implemented.
+}
+\begin{display}\begin{verbatim}
+Wells.test_well.Method Weighted
+\end{verbatim}\end{display}
+
+\pfkey{string}{Wells.{\em well\_name}.ExtractionMethod}{no default}
+{
+This key specifies a method by which pressure or flux for an extraction
+well will be weighted before assignment to computational cells.  This
+key can only be {\bf Standard} if the type key is set to {\bf Pressure};
+or this key can be either {\bf Standard}, {\bf Weighted} or
+{\bf Patterned} if the type key is set to {\bf Flux}.  A value of
+{\bf Standard} indicates that the pressure or flux data will be used as
+is.  A value of {\bf Weighted} indicates that the flux data is to be
+weighted by the cells permeability divided by the sum of all cell
+permeabilities which define the well.  The value of {\bf Patterned} is
+not implemented.
+}
+\begin{display}\begin{verbatim}
+Wells.ext_well.ExtractionMethod Standard
+\end{verbatim}\end{display}
+
+\pfkey{string}{Wells.{\em well\_name}.InjectionMethod}{no default}
+{
+This key specifies a method by which pressure or flux for an injection
+well will be weighted before assignment to computational cells.  This
+key can only be {\bf Standard} if the type key is set to {\bf Pressure};
+or this key can be either {\bf Standard}, {\bf Weighted} or
+{\bf Patterned} if the type key is set to {\bf Flux}.  A value of
+{\bf Standard} indicates that the pressure or flux data will be used as
+is.  A value of {\bf Weighted} indicates that the flux data is to be
+weighted by the cells permeability divided by the sum of all cell
+permeabilities which define the well.  The value of {\bf Patterned} is
+not implemented.
+}
+\begin{display}\begin{verbatim}
+Wells.inj_well.InjectionMethod Standard
+\end{verbatim}\end{display}
+
+\pfkey{string}{Wells.{\em well\_name}.Cycle}{no default}
+{
+This key specifies the time cycles to which data for the well
+{\em well\_name} corresponds. 
+}
+\begin{display}\begin{verbatim}
+Wells.test_well.Cycle "all_time"
+\end{verbatim}\end{display}
+
+\pfkey{double}{Wells.{\em well\_name}.{\em interval\_name}.Pressure.Value}{no default}
+{
+This key specifies the hydrostatic pressure value for a vectical well
+if the type key is set to {\bf Pressure}.
+
+Note This value gives the pressure of the primary phase (water) at
+$z=0$.  The other phase pressures (if any) are computed from the physical
+relationships that exist between the phases.
+}
+\begin{display}\begin{verbatim}
+Wells.test_well.all_time.Pressure.Value 6.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Wells.{\em well\_name}.{\em interval\_name}.Extraction.Pressure.Value}{no default}
+{
+This key specifies the hydrostatic pressure value for an extraction well
+if the extraction type key is set to {\bf Pressure}.
+
+Note This value gives the pressure of the primary phase (water) at
+$z=0$.  The other phase pressures (if any) are computed from the physical
+relationships that exist between the phases.
+}
+\begin{display}\begin{verbatim}
+Wells.ext_well.all_time.Extraction.Pressure.Value 4.5
+\end{verbatim}\end{display}
+
+\pfkey{double}{Wells.{\em well\_name}.{\em interval\_name}.Injection.Pressure.Value}{no default}
+{
+This key specifies the hydrostatic pressure value for an injection well
+if the injection type key is set to {\bf Pressure}.
+
+Note This value gives the pressure of the primary phase (water) at
+$z=0$.  The other phase pressures (if any) are computed from the physical
+relationships that exist between the phases.
+}
+\begin{display}\begin{verbatim}
+Wells.inj_well.all_time.Injection.Pressure.Value 10.2
+\end{verbatim}\end{display}
+
+\pfkey{double}{Wells.{\em well\_name}.{\em interval\_name}.Flux.{\em phase\_name}.Value}{no default}
+{
+This key specifies the volumetric flux for a vectical well if the type
+key is set to {\bf Flux}.
+
+Note only a positive number should be entered, \parflow{} assignes the
+correct sign based on the chosen action for the well.
+}
+\begin{display}\begin{verbatim}
+Wells.test_well.all_time.Flux.water.Value 250.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Wells.{\em well\_name}.{\em interval\_name}.Extraction.Flux.{\em phase\_name}.Value}{no default}
+{
+This key specifies the volumetric flux for an extraction well if the
+extraction type key is set to {\bf Flux}.
+
+Note only a positive number should be entered, \parflow{} assignes the
+correct sign based on the chosen action for the well.
+}
+\begin{display}\begin{verbatim}
+Wells.ext_well.all_time.Extraction.Flux.water.Value 125.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Wells.{\em well\_name}.{\em interval\_name}.Injection.Flux.{\em phase\_name}.Value}{no default}
+{
+This key specifies the volumetric flux for an injection well if the
+injection type key is set to {\bf Flux}.
+
+Note only a positive number should be entered, \parflow{} assignes the
+correct sign based on the chosen action for the well.
+}
+\begin{display}\begin{verbatim}
+Wells.inj_well.all_time.Injection.Flux.water.Value 80.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Wells.{\em well\_name}.{\em interval\_name}.Saturation.{\em phase\_name}.Value}{no default}
+{
+This key specifies the saturation value of a vertical well.
+}
+\begin{display}\begin{verbatim}
+Wells.test_well.all_time.Saturation.water.Value 1.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Wells.{\em well\_name}.{\em interval\_name}.Concentration.{\em phase\_name}.{\em contaminant\_name}.Value}{no default}
+{
+This key specifies the contaminant value of a vertical well.
+}
+\begin{display}\begin{verbatim}
+Wells.test_well.all_time.Concentration.water.tce.Value 0.0005
+\end{verbatim}\end{display}
+
+\pfkey{double}{Wells.{\em well\_name}.{\em interval\_name}.Injection.Concentration.{\em phase\_name}.{\em contaminant\_name}.Fraction}{no default}
+{
+This key specifies the fraction of the extracted contaminant which gets
+resupplied to the injection well.
+}
+\begin{display}\begin{verbatim}
+Wells.inj_well.all_time.Injection.Concentration.water.tce.Fraction 0.01
+\end{verbatim}\end{display}
+
+\noindent
+Multiple wells assigned to one grid location can occur in several
+instances.  The current actions taken by the code are as follows:
+
+\begin{itemize}
+\item If multiple pressure wells are assigned to one grid cell, the code
+      retains only the last set of overlapping well values entered.
+\item If multiple flux wells are assigned to one grid cell, the code sums the
+      contributions of all overlapping wells to get one effective well flux.
+\item If multiple pressure and flux wells are assigned to one grid cell, the
+      code retains the last set of overlapping hydrostatic pressure values
+      entered and sums all the overlapping flux well values to get an
+      effective pressure/flux well value.
+\end{itemize}
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Code Parameters}
+\label{Code Parameters}
+\pfaddanchor{pfinCodeParameters}
+
+In addition to input keys related to the physics capabilities
+and modeling specifics there are some key values used by various
+algorithms and general control flags for \parflow{}.  These
+are described next :
+
+\pfkey{integer}{Solver.SadvectOrder}{2}
+{
+This key controls the order of the explicit method used in
+advancing the saturations.  This value can be either 1 for
+a standard upwind first order or 2 for a second order
+Godunov method.
+}
+\begin{display}\begin{verbatim}
+Solver.SadvectOrder 1
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Solver.AdvectOrder}{2}
+{
+This key controls the order of the explicit method used in
+advancing the concentrations.  This value can be either 1 for
+a standard upwind first order or 2 for a second order
+Godunov method.
+}
+\begin{display}\begin{verbatim}
+Solver.AdvectOrder 2
+\end{verbatim}\end{display}
+
+\pfkey{double}{Solver.CFL}{0.7}
+{
+This key gives the value of the weight put on the computed
+CFL limit before computing a global timestep value.  Values
+greater than 1 are not suggested and in fact because this is
+an approximation, values slightly less than 1 can also produce
+instabilities.
+}
+\begin{display}\begin{verbatim}
+Solver.CFL 0.7
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Solver.MaxIter}{1000000}
+{
+This key gives the maximum number of iterations that will
+be allowed for time-stepping.  This is to prevent a run-away
+simulation.
+}
+\begin{display}\begin{verbatim}
+Solver.MaxIter 100
+\end{verbatim}\end{display}
+
+\pfkey{double}{Solver.RelTol}{1.0}
+{
+This value gives the relative tolerance for the linear
+solve algorithm.
+}
+\begin{display}\begin{verbatim}
+Solver.RelTol 1.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Solver.AbsTol}{1E-9}
+{
+This value gives the absolute tolerance for the linear
+solve algorithm.
+}
+\begin{display}\begin{verbatim}
+Solver.AbsTol 1E-8
+\end{verbatim}\end{display}
+
+\pfkey{double}{Solver.Drop}{1E-8}
+{
+This key gives a clipping value for data written to PFSB
+files.  Data values greater than the negative of this
+value and less than the value itself are treated as zero
+and not written to PFSB files.
+}
+\begin{display}\begin{verbatim}
+Solver.Drop 1E-6
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.PrintSubsurf}{True}
+{
+This key is used to turn on printing of the subsurface data,
+Permeability and Porosity.  The data is printed after it is
+generated and before the main time stepping loop - only once
+during the run.  The data is written as a PFB file.
+}
+\begin{display}\begin{verbatim}
+Solver.PrintSubsurf False
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.PrintPressure}{True}
+{
+This key is used to turn on printing of the pressure data.
+The printing of the data is controlled by values in the
+timing information section.  The data is written as a PFB
+file.
+}
+\begin{display}\begin{verbatim}
+Solver.PrintPressure False
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.PrintVelocities}{False}
+{
+This key is used to turn on printing of the x, y and z
+velocity data.  The printing of the data is controlled by
+values in the timing information section.  The data is
+written as a PFB file.
+}
+\begin{display}\begin{verbatim}
+Solver.PrintVelocities True
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.PrintSaturation}{True}
+{
+This key is used to turn on printing of the saturation data.
+The printing of the data is controlled by values in the
+timing information section.  The data is written as a PFB file.
+}
+\begin{display}\begin{verbatim}
+Solver.PrintSaturation False
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.PrintConcentration}{True}
+{
+This key is used to turn on printing of the concentration data.
+The printing of the data is controlled by values in the
+timing information section.  The data is written as a PFSB file.
+}
+\begin{display}\begin{verbatim}
+Solver.PrintConcentration False
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.PrintWells}{True}
+{
+This key is used to turn on collection and printing of the
+well data.  The data is collected at intervals given by values
+in the timing information section.  Printing occurs at the
+end of the run when all collected data is written. 
+}
+\begin{display}\begin{verbatim}
+Solver.PrintWells False
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Richards' Equation Solver Parameters}
+\label{RE Solver Parameters}
+
+The following keys are used to specify various parameters used by the linear
+and nonlinear solvers in the Richards' equation implementation.
+For information about these solvers, see 
+\cite{Woodward98} and \cite{Ashby-Falgout90}.
+
+\pfkey{double}{Solver.Nonlinear.ResidualTol}{1e-7}
+{This key specifies the tolerance that measures how much the relative 
+reduction in the nonlinear residual should be before nonlinear 
+iterations stop.  The magnitude of the residual is measured with 
+the $l^1$ (max) norm.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Nonlinear.ResidualTol   1e-4
+\end{verbatim}\end{display}
+
+\pfkey{double}{Solver.Nonlinear.StepTol}{1e-7}
+{This key specifies the tolerance that measures how small the 
+difference between two consecutive nonlinear steps can be before 
+nonlinear iterations stop.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Nonlinear.StepTol   1e-4
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Solver.Nonlinear.MaxIter}{15}
+{This key specifies the maximum number of nonlinear iterations allowed before
+iterations stop with a convergence failure.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Nonlinear.MaxIter   50
+\end{verbatim}\end{display}
+
+
+\pfkey{integer}{Solver.Linear.KrylovDimension}{10}
+{This key specifies the maximum number of vectors to be used in setting up the
+Krylov subspace in the GMRES iterative solver.  These vectors are of problem
+size and it should be noted that large increases in this parameter can limit
+problem sizes.  However, increasing this parameter can sometimes help nonlinear
+solver convergence.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Linear.KrylovDimension   15
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Solver.Linear.MaxRestarts}{0}
+{This key specifies the number of restarts allowed to the GMRES solver.
+Restarts start the development of the Krylov subspace over using the current
+iterate as the initial iterate for the next pass.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Linear.MaxRestarts   2
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.Nonlinear.PrintFlag}{HighVerbosity}
+{This key specifies the amount of informational data that is printed to the
+\code{*.out.kinsol.log} file.  Choices for this key are {\bf NoVerbosity, 
+LowVerbosity, NormalVerbosity} and {\bf  HighVerbosity}.  The choice 
+{\bf NoVerbosity} prints no statistics about the nonlinear convergence
+process.  The choice {\bf LowVerbosity} outputs the nonlinear iteration count, 
+the scaled norm of the nonlinear function, and the number of function calls.
+The choice {\bf NormalVerbosity} prints the same as for {\bf LowVerbosity} 
+and also the global strategy statistics.  The choice {\bf HighVerbosity} prints
+the same as for {\bf NormalVerbosity} with the addition of further Krylov 
+iteration statistics.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Nonlinear.PrintFlag   NormalVerbosity
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.Nonlinear.EtaChoice}{Walker2}
+{This key specifies how the linear system tolerance will be selected.  
+The linear system is solved until a relative residual reduction of $\eta$ 
+is achieved.  Linear residuall norms are measured in the $l^2$ norm.
+Choices for this key include {\bf EtaConstant, Walker1} and 
+{\bf Walker2}.  If the choice {\bf EtaConstant} is specified, then $\eta$ will
+be taken as constant.  The choices {\bf Walker1} and {\bf Walker2} specify
+choices for $\eta$ developed by Eisenstat and Walker \cite{EW96}.  The choice
+{\bf Walker1} specifies that $\eta$ will be given by
+$| \|F(u^k)\| - \|F(u^{k-1}) + J(u^{k-1})*p \|  |  / \|F(u^{k-1})\|$. The
+choice {\bf Walker2} specifies that $\eta$ will be given by
+$\gamma \|F(u^k)\| / \|F(u^{k-1})\|^{\alpha}$.  For both of the last two
+choices, $\eta$ is never allowed to be less than 1e-4.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Nonlinear.EtaChoice   EtaConstant
+\end{verbatim}\end{display}
+
+
+\pfkey{double}{Solver.Nonlinear.EtaValue}{1e-4}
+{This key specifies the constant value of $\eta$ for the EtaChoice key
+{\bf EtaConstant}.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Nonlinear.EtaValue   1e-7
+\end{verbatim}\end{display}
+
+\pfkey{double}{Solver.Nonlinear.EtaAlpha}{2.0}
+{This key specifies the value of $\alpha$ for the case of EtaChoice being 
+{\bf Walker2}. 
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Nonlinear.EtaAlpha   1.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{Solver.Nonlinear.EtaGamma}{0.9}
+{This key specifies the value of $\gamma$ for the case of EtaChoice being
+{\bf Walker2}.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Nonlinear.EtaGamma   0.7
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.Nonlinear.UseJacobian}{False}
+{This key specifies whether the Jacobian will be used in matrix-vector products
+or whether a matrix-free version of the code will run.  Choices for this key 
+are {\bf False} and {\bf True}.
+Using the Jacobian will most likely decrease the number of nonlinear iterations
+but require more memory to run.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Nonlinear.UseJacobian   True
+\end{verbatim}\end{display}
+
+\pfkey{double}{Solver.Nonlinear.DerivativeEpsilon}{1e-7}
+{This key specifies the value of $\epsilon$ used in approximating the action of
+the Jacobian on a vector with approximate directional derivatives of the
+nonlinear function.  This parameter is only used when the UseJacobian key is
+{\bf False}.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Nonlinear.DerivativeEpsilon   1e-8
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.Nonlinear.Globalization}{LineSearch}
+{This key specifies the type of global strategy to use.  Possible choices for
+this key are {\bf InexactNewton} and {\bf LineSearch}.  The choice {\bf
+InexactNewton} specifies no global strategy, and the choice {\bf LineSearch}
+specifies that a line search strategy should be used where the nonlinear step
+can be lengthened or decreased to satisfy certain criteria.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Nonlinear.Globalization   LineSearch
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.Linear.Preconditioner}{MGSemi}
+{This key specifies which preconditioner to use.  Currently, the three choices
+are {\bf NoPC, MGSemi} and {\bf SMG}.  The choice {\bf NoPC} specifies that no
+preconditioner should be used.  The choice {\bf MGSemi} specifies 
+a semi-coarsening multigrid algorithm which uses a point relaxation method. 
+The choice {\bf SMG} specifies a semi-coarsening multigrid algorithm which uses
+plane relaxations.  This method is more robust than {\bf MGSemi}, but generally
+requires more memory and compute time.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Linear.Preconditioner   MGSemi
+\end{verbatim}\end{display}
+
+
+\pfkey{string}{Solver.Linear.Preconditioner.SymmetricMat}{Symmetric}
+{This key specifies whether the preconditioning matrix is symmetric.
+Choices fo rthis key are {\bf Symmetric} and {\bf Nonsymmetric}.
+The choice {\bf Symmetric} specifies that the symmetric part of the Jacobian
+will be used as the preconditioning matrix.  The choice {\bf Nonsymmetric}
+specifies that the full Jacobian will be used as the preconditioning matrix.
+NOTE: ONLY {\bf Symmetric} CAN BE USED IF MGSemi IS THE SPECIFIED
+PRECONDITIONER! 
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Linear.Preconditioner.SymmetricMat     Symmetric
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Solver.Linear.Preconditioner.{\em precond\_method}.MaxIter}{1}
+{This key specifies the maximum number of iterations to take in solving the 
+preconditioner system with {\em precond\_method} solver.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Linear.Preconditioner.SMG.MaxIter    2
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Solver.Linear.Preconditioner.SMG.NumPreRelax}
+{1}
+{This key specifies the number of relaxations to take before coarsening in the
+specified preconditioner method.  Note that this key is only relevant to
+the SMG multigrid preconditioner.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Linear.Preconditioner.SMG.NumPreRelax    2
+\end{verbatim}\end{display}
+
+\pfkey{integer}
+{Solver.Linear.Preconditioner.SMG.NumPostRelax}{1}
+{This key specifies the number of relaxations to take after coarsening in the
+specified preconditioner method.  Note that this key is only relevant to
+the SMG multigrid preconditioner.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Linear.Preconditioner.SMG.NumPostRelax    0
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
+\section{ParFlow Binary Files (.pfb)}
+\label{ParFlow Binary Files (.pfb)}
+
+The \file{.pfb} file format is a binary file format which is used
+to store \parflow{} grid data.
+The format for the file is:
+
+\begin{display}\begin{verbatim}
+<double : X>    <double : Y>    <double : Z>
+<integer : NX>  <integer : NY>  <integer : NZ>
+<double : DX>   <double : DY>   <double : DZ>
+
+<integer : num_subgrids>
+FOR subgrid = 0 TO <num_subgrids> - 1
+BEGIN
+   <integer : ix>  <integer : iy>  <integer : iz>
+   <integer : nx>  <integer : ny>  <integer : nz>
+   <integer : rx>  <integer : ry>  <integer : rz>
+   FOR k = iz TO iz + <nz> - 1
+   BEGIN
+      FOR j = iy TO iy + <ny> - 1
+      BEGIN
+         FOR i = ix TO ix + <nx> - 1
+         BEGIN
+            <double : data_ijk>
+         END
+      END
+   END
+END
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
+\section{ParFlow Scattered Binary Files (.pfsb)}
+\label{ParFlow Scattered Binary Files (.pfsb)}
+
+The \file{.pfsb} file format is a binary file format which is used
+to store \parflow{} grid data.
+This format is used when the grid data is ``scattered'', that is,
+when most of the data is 0.
+For data of this type, the \file{.pfsb} file format can reduce
+storage requirements considerably.
+The format for the file is:
+
+\begin{display}\begin{verbatim}
+<double : X>    <double : Y>    <double : Z>
+<integer : NX>  <integer : NY>  <integer : NZ>
+<double : DX>   <double : DY>   <double : DZ>
+
+<integer : num_subgrids>
+FOR subgrid = 0 TO <num_subgrids> - 1
+BEGIN
+   <integer : ix>  <integer : iy>  <integer : iz>
+   <integer : nx>  <integer : ny>  <integer : nz>
+   <integer : rx>  <integer : ry>  <integer : rz>
+   <integer : num_nonzero_data>
+   FOR k = iz TO iz + <nz> - 1
+   BEGIN
+      FOR j = iy TO iy + <ny> - 1
+      BEGIN
+         FOR i = ix TO ix + <nx> - 1
+         BEGIN
+            IF (<data_ijk> > tolerance)
+            BEGIN
+               <integer : i>  <integer : j>  <integer : k>
+               <double : data_ijk>
+            END
+         END
+      END
+   END
+END
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
+\section{ParFlow Solid Files (.pfsol)}
+\label{ParFlow Solid Files (.pfsol)}
+
+The \file{.pfsol} file format is an ASCII file format which is
+used to define 3D solids.
+The solids are represented by closed triangulated surfaces,
+and surface ``patches'' may be associated with each solid.
+
+Note that unlike the user input files, the solid file cannot contain comment
+lines. 
+
+The format for the file is:
+
+\begin{display}\begin{verbatim}
+<integer : file_version_number>
+
+<integer : num_vertices>
+# Vertices
+FOR vertex = 0 TO <num_vertices> - 1
+BEGIN
+   <real : x>  <real : y>  <real : z>
+END
+
+# Solids
+<integer : num_solids>
+FOR solid = 0 TO <num_solids> - 1
+BEGIN
+   #Triangles
+   <integer : num_triangles>
+   FOR triangle = 0 TO <num_triangles> - 1
+   BEGIN
+      <integer : v0> <integer : v1> <integer : v2>
+   END
+
+   # Patches
+   <integer : num_patches>
+   FOR patch = 0 TO <num_patches> - 1
+   BEGIN
+      <integer : num_patch_triangles>
+      FOR patch_triangle = 0 TO <num_patch_triangles> - 1
+      BEGIN
+         <integer : t>
+      END
+   END
+END
+\end{verbatim}\end{display}
+
+\noindent
+The field \code{<file_version_number>} is used to make file format changes
+more manageable.
+The field \code{<num_vertices>} specifies the number of vertices to follow.
+The fields \code{<x>}, \code{<y>}, and \code{<z>} define the coordinate
+of a triangle vertex.
+The field \code{<num_solids>} specifies the number of solids to follow.
+The field \code{<num_triangles>} specifies the number of triangles to follow.
+The fields \code{<v0>}, \code{<v1>}, and \code{<v2>} are vertex indexes
+that specify the 3 vertices of a triangle.  Note that the vertices for each
+triangle MUST be specified in an order that makes the normal vector point
+outward from the domain.
+The field \code{<num_patches>} specifies the number of surface patches
+to follow.
+The field \code{num_patch_triangles} specifies the number of triangles
+indices to follow (these triangles make up the surface patch).
+The field \code{<t>} is an index of a triangle on the solid \code{solid}.
+
+\parflow{} \file{.pfsol} files can be created from GMS \file{.sol}
+files using the utility \kbd{gmssol2pfsol} located in the
+\file{\$PARFLOW_DIR/bin} directory.
+This conversion routine takes any number of GMS \file{.sol} files,
+concatenates the vertices of the solids defined in the files, throws
+away duplicate vertices, then prints out the \file{.pfsol} file.
+Information relating the solid index in the resulting \file{.pfsol}
+file with the GMS names and material IDs are printed to stdout.
+
+%=============================================================================
+%=============================================================================
+
+\section{ParFlow Well Output File (.wells)}
+\label{ParFlow Well Output File (.wells)}
+
+A well output file is produced by \parflow{} when wells are defined.
+The well output file contains information about the well data being
+used in the internal computations and accumulated statistics about
+the functioning of the wells.
+
+\noindent
+The header section has the following format:
+\begin{display}\begin{verbatim}
+LINE
+BEGIN
+   <real : BackgroundX>
+   <real : BackgroundY>
+   <real : BackgroundZ>
+   <integer : BackgroundNX>
+   <integer : BackgroundNY>
+   <integer : BackgroundNZ>
+   <real : BackgroundDX>
+   <real : BackgroundDY>
+   <real : BackgroundDZ>
+END
+
+LINE
+BEGIN
+   <integer : number_of_phases>
+   <integer : number_of_components>
+   <integer : number_of_wells>
+END
+
+FOR well = 0 TO <number_of_wells> - 1
+BEGIN
+   LINE
+   BEGIN
+      <integer : sequence_number>
+   END
+
+   LINE
+   BEGIN
+      <string : well_name>
+   END
+
+   LINE
+   BEGIN
+      <real : well_x_lower>
+      <real : well_y_lower>
+      <real : well_z_lower>
+      <real : well_x_upper>
+      <real : well_y_upper>
+      <real : well_z_upper>
+      <real : well_diameter>
+   END
+
+   LINE
+   BEGIN
+     <integer : well_type>
+     <integer : well_action>
+   END
+END
+\end{verbatim}\end{display}
+
+\noindent
+The data section has the following format:
+\begin{display}\begin{verbatim}
+FOR time = 1 TO <number_of_time_intervals>
+BEGIN
+   LINE
+   BEGIN
+      <real : time>
+   END
+
+   FOR well = 0 TO <number_of_wells> - 1
+   BEGIN
+      LINE
+      BEGIN
+         <integer : sequence_number>
+      END
+
+      LINE
+      BEGIN
+         <integer : SubgridIX>
+         <integer : SubgridIY>
+         <integer : SubgridIZ>
+         <integer : SubgridNX>
+         <integer : SubgridNY>
+         <integer : SubgridNZ>
+         <integer : SubgridRX>
+         <integer : SubgridRY>
+         <integer : SubgridRZ>
+      END
+
+      FOR well = 0 TO <number_of_wells> - 1
+      BEGIN
+         LINE
+         BEGIN
+            FOR phase = 0 TO <number_of_phases> - 1
+            BEGIN
+               <real : phase_value>
+            END
+         END
+
+         IF injection well
+         BEGIN
+            LINE
+            BEGIN
+               FOR phase = 0 TO <number_of_phases> - 1
+               BEGIN
+                  <real : saturation_value>
+               END
+            END
+
+            LINE
+            BEGIN
+               FOR phase = 0 TO <number_of_phases> - 1
+               BEGIN
+                  FOR component = 0 TO <number_of_components> - 1
+                  BEGIN
+                     <real : component_value>
+                  END
+               END
+            END
+         END
+
+         LINE
+         BEGIN
+            FOR phase = 0 TO <number_of_phases> - 1
+            BEGIN
+               FOR component = 0 TO <number_of_components> - 1
+               BEGIN
+                  <real : component_fraction>
+               END
+            END
+         END
+
+         LINE
+         BEGIN
+            FOR phase = 0 TO <number_of_phases> - 1
+            BEGIN
+               <real : phase_statistic>
+            END
+         END
+
+         LINE
+         BEGIN
+            FOR phase = 0 TO <number_of_phases> - 1
+            BEGIN
+               <real : saturation_statistic>
+            END
+         END
+
+         LINE
+         BEGIN
+            FOR phase = 0 TO <number_of_phases> - 1
+            BEGIN
+               FOR component = 0 TO <number_of_components> - 1
+               BEGIN
+                  <real : component_statistic>
+               END
+            END
+         END
+
+         LINE
+         BEGIN
+            FOR phase = 0 TO <number_of_phases> - 1
+            BEGIN
+               FOR component = 0 TO <number_of_components> - 1
+               BEGIN
+                  <real : concentration_data>
+               END
+            END
+         END
+      END
+   END
+END
+\end{verbatim}\end{display}

@@ -1,0 +1,146 @@
+#! /bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+
+#=============================================================================
+#
+# Loop to parse users arguments
+#
+#=============================================================================
+PROGRAM=""
+DEBUG=""
+while getopts hpg: c
+do
+	case $c in
+	hp) 
+		echo "usage: $0 run runname process_group"
+		echo "Runs parflow on the allocated cube."
+	        exit 0;;
+	p) 
+	       PROGRAM=$2
+	       shift 
+	       shift;;
+        g)    for i in $2
+	      do 
+		    DEBUG="$DEBUG -cegdb $i"
+	      done
+              shift
+	      shift;;
+esac
+done
+
+if [ "$MALLOC_DEBUG" ]; then
+	rm -f malloc.log.????
+fi
+
+HOST_FILE="./.hostfile"
+
+#
+# The following is a hack to deal with NFS temp mount problems
+#
+if [ -z "$AMPS_ROOT_DIR" ]; then
+	AMPS_ROOT_DIR=$HOME
+	export AMPS_ROOT_DIR
+fi
+
+real_home=`(cd $AMPS_ROOT_DIR; sh -c "pwd")`
+AMPS_EXE_DIR=`echo \`pwd\` | sed "s#$real_home#$AMPS_ROOT_DIR#"`
+export AMPS_EXE_DIR
+
+if [ -z "$PROGRAM" ]
+then
+	#
+	# The default is to run ParFlow
+	#
+	PROGRAM=parflow
+	pfstrip $1.in.solver $1.in.solver.strp
+	pfstrip $1.in.problem $1.in.problem.strp
+
+fi
+
+if [ -z "$DEBUG" ]
+then
+    DISPLAY_OPT=""
+else
+
+    if [ -z "$DISPLAY" ]
+    then
+	DEBUG_OPT="-display `hostname`:0.0"
+    else
+	DEBUG_OPT="-display $DISPLAY"
+    fi
+fi
+
+if [ "AIX" = "`uname`" ]
+then
+    #
+    # IBM SP2
+    #
+  
+    poe $PARFLOW_DIR/bin/$PROGRAM -procs `cat .amps.info.$2` $1 $DEBUG_OPT $DEBUG
+
+    rm -f $1.in.solver.strp $1.in.problem.strp
+
+    exit 0
+fi
+
+if [ "`mpirun 2> /dev/null`" = "Missing: program name" ] 
+then
+    #
+    # MPICH
+    #
+    mpirun -machinefile $HOST_FILE -np `cat .amps.info.$2` $PARFLOW_DIR/bin/$PROGRAM $1 $DEBUG_OPT $DEBUG
+else
+    #
+    # LAM
+    #
+
+    mpirun -w -c `cat .amps.info.$2` $PARFLOW_DIR/bin/$PROGRAM -- $1 $DEBUG_OPT $DEBUG
+fi
+
+
+
+rm -f $1.in.solver.strp $1.in.problem.strp
+
+if [ "$MALLOC_DEBUG" ]; then
+	grep "^known" malloc.log.* 
+fi
+
+
+exit 0
+
+#
+# Junk below here for keeping around
+#
+
+MACHINE_NUM=`cat .amps.info.$2`
+
+MACHINE_LIST=""
+while [ $MACHINE_NUM -gt 1 ]
+do
+	echo "hello"
+	for i in `cat $HOST_FILE`
+	do
+		echo "hello"
+		if [ $MACHINE_NUM -gt 1 ] 
+		then 
+			MACHINE_LIST="$MACHINE_LIST -np 1 -machine $i"
+		fi
+		MACHINE_NUM=`echo $MACHINE_NUM-1 | bc`
+	done
+done
+
+echo MachineList $MACHINE_LIST
+
+echo mpirun  $MACHINE_LIST $PARFLOW_DIR/bin/$PROGRAM $1
+
+
+
+

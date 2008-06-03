@@ -1,0 +1,96 @@
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+%
+% Another version of Peter's PrintGraph macro.
+%
+% The syntax is given by:
+%
+%    \InputPS{file.ps}(x_ll, y_ll)(x_ur, y_ur)(scale)
+%
+% where (x_ll, y_ll) and (x_ur, y_ur) are the coordinates of the lower left
+% and upper right corners of the Postscript image, respectively.
+% These coordinates are in Postscript coordinates (= 1/72 inches), and
+% can be taken directly from the `BoundingBox' line found in most Postscript
+% files (otherwise, you can measure the size in inches of the picture
+% produced by your printer, and multiply by 72).  `scale' is a decimal
+% number that indicates the amount by which to scale the image.
+%
+% The macro:
+%
+%    \InputPSFrame{file.ps}(x_ll, y_ll)(x_ur, y_ur)(scale)
+%
+% draws a `frame' where the picture would be, but does not include the
+% PostScript file.
+%
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+\def\InputPS#1(#2,#3)(#4,#5)(#6){%
+\dimendef\hsize=0
+\dimendef\vsize=1
+\dimendef\hoffset=2
+\dimendef\voffset=3
+\dimendef\scale=4
+\dimendef\one=5
+%
+\one = 1pt
+%
+\hsize = #4pt
+\advance\hsize by -#2pt
+\vsize = #5pt
+\advance\vsize by -#3pt
+%
+\hoffset = #2pt
+\hoffset = #6\hoffset
+\advance\hoffset by 0.5\one
+\divide\hoffset by \one
+%
+\voffset = #3pt
+\voffset = #6\voffset
+\advance\voffset by 0.5\one
+\divide\voffset by \one
+%
+\scale = #6pt
+\multiply\scale by 100
+\advance\scale by 0.5\one
+\divide\scale by \one
+%
+\raisebox{-#6\vsize}{%
+\SpecialPS{#1}{\number\hoffset}{\number\voffset}{\number\scale}%
+\rule{#6\hsize}{0pt}\rule{0pt}{#6\vsize}}%
+}
+%-----------------------
+\def\SpecialPS#1#2#3#4{%
+\special{psfile=#1 hoffset=-#2 voffset=-#3 vscale=#4 hscale=#4}}
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
+\def\InputPSFrame#1(#2,#3)(#4,#5)(#6){%
+\dimendef\hsize=0
+\dimendef\vsize=1
+%
+\hsize = #4pt
+\advance\hsize by -#2pt
+\vsize = #5pt
+\advance\vsize by -#3pt
+%
+\raisebox{-#6\vsize}{%
+\SpecialPSFrame{#2}{#3}{#4}{#5}{#6}%
+\frame{\rule{#6\hsize}{0pt}\rule{0pt}{#6\vsize}}}%
+}
+%-----------------------
+\def\SpecialPSFrame#1#2#3#4#5{%
+\special{"
+gsave
+newpath
+#5 #5 scale
+-#1 -#2 translate
+#1 #2 moveto
+#1 #4 lineto
+#3 #4 lineto
+#3 #2 lineto
+#1 #2 lineto
+closepath
+stroke
+grestore
+}}
+%-----------------------------------------------------------------------------
+%-----------------------------------------------------------------------------

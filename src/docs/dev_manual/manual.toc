@@ -1,0 +1,89 @@
+\contentsline {chapter}{\numberline {1}Introduction}{1}
+\contentsline {chapter}{\numberline {2}Code Organization}{3}
+\contentsline {section}{\numberline {2.1}The Developer's Environment}{3}
+\contentsline {section}{\numberline {2.2}Building Code}{4}
+\contentsline {section}{\numberline {2.3}Checking out code}{5}
+\contentsline {section}{\numberline {2.4}Checking in code}{5}
+\contentsline {section}{\numberline {2.5}Installing a new version of ParFlow}{5}
+\contentsline {chapter}{\numberline {3}Documentation}{7}
+\contentsline {section}{\numberline {3.1}Writing Manuals}{7}
+\contentsline {subsection}{\numberline {3.1.1}ParFlow Style Files}{8}
+\contentsline {subsection}{\numberline {3.1.2}Providing Online Help for GUIs}{11}
+\contentsline {section}{\numberline {3.2}Writing HTML Files}{11}
+\contentsline {section}{\numberline {3.3}Writing PFIX Files}{12}
+\contentsline {section}{\numberline {3.4}Writing AVS Module Help}{12}
+\contentsline {section}{\numberline {3.5}(Not) Writing AVS/Express Module Help}{13}
+\contentsline {chapter}{\numberline {4}ParFlow Modules}{15}
+\contentsline {section}{\numberline {4.1}Using ParFlow Modules}{15}
+\contentsline {section}{\numberline {4.2}Writing ParFlow Modules}{16}
+\contentsline {section}{\numberline {4.3}ParFlow Module Example}{17}
+\contentsline {section}{\numberline {4.4}Adding ParFlow Modules}{22}
+\contentsline {chapter}{\numberline {5}ParFlow Input}{23}
+\contentsline {chapter}{\numberline {6}Equations}{27}
+\contentsline {section}{\numberline {6.1}Multi-Phase Flow Equations}{27}
+\contentsline {section}{\numberline {6.2}Transport Equations}{29}
+\contentsline {section}{\numberline {6.3}Notation and Units}{30}
+\contentsline {chapter}{\numberline {7}Gridding}{33}
+\contentsline {section}{\numberline {7.1}Terminology}{33}
+\contentsline {section}{\numberline {7.2}Gridding Requirements}{34}
+\contentsline {chapter}{\numberline {8}Discretization}{35}
+\contentsline {chapter}{\numberline {9}Visualization}{37}
+\contentsline {section}{\numberline {9.1}AVS}{37}
+\contentsline {subsection}{\numberline {9.1.1}Writing AVS Modules}{37}
+\contentsline {subsection}{\numberline {9.1.2}Writing AVS Coroutines}{38}
+\contentsline {section}{\numberline {9.2}AVS/Express}{38}
+\contentsline {subsection}{\numberline {9.2.1}Existing AVS/Express Modules}{38}
+\contentsline {subsection}{\numberline {9.2.2}Writing AVS/Express Modules}{39}
+\contentsline {subsubsection}{Writing the Modules}{39}
+\contentsline {subsubsection}{Compiling AVS/Express Modules}{39}
+\contentsline {subsubsection}{Tips and Tricks}{40}
+\contentsline {subsubsection}{AVS/Express Bugs}{40}
+\contentsline {section}{\numberline {9.3}Explorer}{41}
+\contentsline {subsection}{\numberline {9.3.1}Writing Explorer Modules}{41}
+\contentsline {chapter}{\numberline {10}Administrative}{43}
+\contentsline {section}{\numberline {10.1}Mail Aliases}{43}
+\contentsline {section}{\numberline {10.2}Permissions}{43}
+\contentsline {section}{\numberline {10.3}Data Archiving}{44}
+\contentsline {subsection}{\numberline {10.3.1}Archive Organization}{44}
+\contentsline {subsection}{\numberline {10.3.2}Archive Status}{44}
+\contentsline {subsection}{\numberline {10.3.3}Creating an Archive}{45}
+\contentsline {subsection}{\numberline {10.3.4}Backing up an Archive}{46}
+\contentsline {subsection}{\numberline {10.3.5}Removing an Archive}{46}
+\contentsline {subsection}{\numberline {10.3.6}Restoring an Archive}{47}
+\contentsline {subsection}{\numberline {10.3.7}Using an Archive}{47}
+\contentsline {chapter}{\numberline {11}Reference Manual}{49}
+\contentsline {section}{\numberline {11.1}Grid Reference}{50}
+\contentsline {subsection}{\numberline {11.1.1}Grid Structures}{50}
+\contentsline {subsection}{\numberline {11.1.2}Grid Accessors}{51}
+\contentsline {subsection}{\numberline {11.1.3}ReadBackground}{54}
+\contentsline {subsection}{\numberline {11.1.4}NewSubregion}{55}
+\contentsline {subsection}{\numberline {11.1.5}NewSubregionArray}{56}
+\contentsline {subsection}{\numberline {11.1.6}NewRegion}{57}
+\contentsline {subsection}{\numberline {11.1.7}NewSubgrid}{58}
+\contentsline {subsection}{\numberline {11.1.8}NewSubgridArray}{59}
+\contentsline {subsection}{\numberline {11.1.9}NewGrid}{60}
+\contentsline {subsection}{\numberline {11.1.10}FreeBackground}{61}
+\contentsline {subsection}{\numberline {11.1.11}FreeSubregion}{62}
+\contentsline {subsection}{\numberline {11.1.12}FreeSubregionArray}{63}
+\contentsline {subsection}{\numberline {11.1.13}FreeRegion}{64}
+\contentsline {subsection}{\numberline {11.1.14}FreeSubgrid}{65}
+\contentsline {subsection}{\numberline {11.1.15}FreeSubgridArray}{66}
+\contentsline {subsection}{\numberline {11.1.16}FreeGrid}{67}
+\contentsline {subsection}{\numberline {11.1.17}ForSubregionI}{68}
+\contentsline {subsection}{\numberline {11.1.18}ForSubregionArrayI}{69}
+\contentsline {subsection}{\numberline {11.1.19}ForSubgridI}{70}
+\contentsline {subsection}{\numberline {11.1.20}SubregionXYZ}{71}
+\contentsline {subsection}{\numberline {11.1.21}SubgridXYZ}{72}
+\contentsline {subsection}{\numberline {11.1.22}DuplicateSubregion}{73}
+\contentsline {subsection}{\numberline {11.1.23}AppendSubregion}{74}
+\contentsline {subsection}{\numberline {11.1.24}AppendSubregionArray}{75}
+\contentsline {subsection}{\numberline {11.1.25}DuplicateSubgrid}{76}
+\contentsline {subsection}{\numberline {11.1.26}AppendSubgrid}{77}
+\contentsline {subsection}{\numberline {11.1.27}AppendSubgridArray}{78}
+\contentsline {subsection}{\numberline {11.1.28}ConvertToSubregion}{79}
+\contentsline {subsection}{\numberline {11.1.29}ConvertToSubgrid}{80}
+\contentsline {subsection}{\numberline {11.1.30}ProjectSubgrid}{81}
+\contentsline {subsection}{\numberline {11.1.31}ExtractSubgrid}{82}
+\contentsline {subsection}{\numberline {11.1.32}IntersectSubgrids}{83}
+\contentsline {subsection}{\numberline {11.1.33}SubtractSubgrids}{84}
+\contentsline {subsection}{\numberline {11.1.34}UnionSubgridArray}{85}

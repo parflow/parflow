@@ -1,0 +1,493 @@
+/*BHEADER**********************************************************************
+ * (c) 1995   The Regents of the University of California
+ *
+ * See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+ * notice, contact person, and disclaimer.
+ *
+ * $Revision: 1.1.1.1 $
+ *********************************************************************EHEADER*/
+/******************************************************************************
+ *
+ * Preconditioned conjugate gradient solver (Omin).
+ *
+ *****************************************************************************/
+
+#include "parflow.h"
+
+
+/*--------------------------------------------------------------------------
+ * Structures
+ *--------------------------------------------------------------------------*/
+
+typedef struct
+{
+   PFModule  *precond;
+
+   int        max_iter;
+   int        two_norm;
+
+   int        time_index;
+
+} PublicXtra;
+
+typedef struct
+{
+   PFModule  *precond;
+
+   /* InitInstanceXtra arguments */
+   Grid     *grid;
+   Matrix   *A;
+   double    *temp_data;
+
+   /* instance data */
+   Vector    *p;
+   Vector    *s;
+
+} InstanceXtra;
+
+
+/*--------------------------------------------------------------------------
+ * PCG
+ *--------------------------------------------------------------------------
+ *
+ * We use the following convergence test as the default (see Ashby, Holst,
+ * Manteuffel, and Saylor):
+ *
+ *       ||e||_A                           ||r||_C
+ *       -------  <=  [kappa_A(C*A)]^(1/2) -------  < tol
+ *       ||x||_A                           ||b||_C
+ *
+ * where we let (for the time being) kappa_A(CA) = 1.
+ * We implement the test as:
+ *
+ *       gamma = <C*r,r>  <  (tol^2)*<C*b,b> = eps
+ *
+ *--------------------------------------------------------------------------*/
+
+void     PCG(x, b, tol, zero)
+Vector  *x;
+Vector  *b;
+double  tol;
+int     zero;
+{
+   PFModule      *this_module   = ThisPFModule;
+   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+
+   int        max_iter     = (public_xtra -> max_iter);
+   int        two_norm     = (public_xtra -> two_norm);
+
+   PFModule  *precond      = (instance_xtra -> precond);
+
+   Matrix    *A            = (instance_xtra -> A);
+
+   Vector    *r;
+   Vector    *p            = (instance_xtra -> p);
+   Vector    *s            = (instance_xtra -> s);
+
+   double     alpha, beta;
+   double     gamma, gamma_old;
+   double     bi_prod, i_prod, eps;
+   
+   int        i = 0;
+	     
+   double    *norm_log;
+   double    *rel_norm_log;
+
+
+   /*-----------------------------------------------------------------------
+    * Initialize some logging variables
+    *-----------------------------------------------------------------------*/
+
+   IfLogging(1)
+   {
+      norm_log     = talloc(double, max_iter);
+      rel_norm_log = talloc(double, max_iter);
+   }
+
+   /*-----------------------------------------------------------------------
+    * Begin timing
+    *-----------------------------------------------------------------------*/
+
+   BeginTiming(public_xtra -> time_index);
+
+   /*-----------------------------------------------------------------------
+    * Start pcg solve
+    *-----------------------------------------------------------------------*/
+
+   if (zero)
+      InitVector(x, 0.0);
+
+   if (two_norm)
+   {
+      /* eps = (tol^2)*<b,b> */
+      bi_prod = InnerProd(b, b);
+      eps = (tol*tol)*bi_prod;
+   }
+   else
+   {
+      /* eps = (tol^2)*<C*b,b> */
+      PFModuleInvoke(void, precond, (p, b, 0.0, 1));
+      bi_prod = InnerProd(p, b);
+      eps = (tol*tol)*bi_prod;
+   }
+
+   /* r = b - Ax,  (overwrite b with r) */
+   Matvec(-1.0, A, x, 1.0, (r = b));
+
+   /* p = C*r */
+   PFModuleInvoke(void, precond, (p, r, 0.0, 1));
+
+   /* gamma = <r,p> */
+   gamma = InnerProd(r,p);
+
+   while (((i+1) <= max_iter) && (gamma > 0))
+   {
+      i++;
+
+      /* s = A*p */
+      Matvec(1.0, A, p, 0.0, s);
+
+      /* alpha = gamma / <s,p> */
+      alpha = gamma / InnerProd(s, p);
+
+      gamma_old = gamma;
+
+      /* x = x + alpha*p */
+      Axpy(alpha, p, x);
+
+      /* r = r - alpha*s */
+      Axpy(-alpha, s, r);
+	 
+      /* s = C*r */
+      PFModuleInvoke(void, precond, (s, r, 0.0, 1));
+
+      /* gamma = <r,s> */
+      gamma = InnerProd(r, s);
+
+      /* set i_prod for convergence test */
+      if (two_norm)
+	 i_prod = InnerProd(r,r);
+      else
+	 i_prod = gamma;
+
+#if 1
+      if(!amps_Rank(amps_CommWorld))
+      {
+	 if (two_norm)
+	    amps_Printf("Iter (%d): ||r||_2 = %e, ||r||_2/||b||_2 = %e\n",
+			i, sqrt(i_prod), (bi_prod ? sqrt(i_prod/bi_prod) : 0));
+	 else
+	    amps_Printf("Iter (%d): ||r||_C = %e, ||r||_C/||b||_C = %e\n",
+			i, sqrt(i_prod), (bi_prod ? sqrt(i_prod/bi_prod) : 0));
+
+	 fflush(NULL);
+      }
+#endif
+ 
+      /* log norm info */
+      IfLogging(1)
+      {
+	 norm_log[i-1]     = sqrt(i_prod);
+	 rel_norm_log[i-1] = bi_prod ? sqrt(i_prod/bi_prod) : 0;
+      }
+
+      /* check for convergence */
+      if (i_prod < eps)
+	 break;
+
+      /* beta = gamma / gamma_old */
+      beta = gamma / gamma_old;
+
+      /* p = s + beta p */
+      Scale(beta, p);   
+      Axpy(1.0, s, p);
+   }
+
+#if 1
+   if(!amps_Rank(amps_CommWorld))
+   {
+      if (two_norm)
+	 amps_Printf("Iterations = %d: ||r||_2 = %e, ||r||_2/||b||_2 = %e\n",
+		     i, sqrt(i_prod), (bi_prod ? sqrt(i_prod/bi_prod) : 0));
+      else
+	 amps_Printf("Iterations = %d: ||r||_C = %e, ||r||_C/||b||_C = %e\n",
+		     i, sqrt(i_prod), (bi_prod ? sqrt(i_prod/bi_prod) : 0));
+   }
+#endif
+
+   /*-----------------------------------------------------------------------
+    * End timing
+    *-----------------------------------------------------------------------*/
+
+   IncFLOPCount(i*2 - 1);
+   EndTiming(public_xtra -> time_index);
+
+   /*-----------------------------------------------------------------------
+    * Print log
+    *-----------------------------------------------------------------------*/
+
+   IfLogging(1)
+   {
+      FILE *log_file;
+      int        j;
+
+      log_file = OpenLogFile("PCG");
+
+      if (two_norm)
+      {
+	 fprintf(log_file, "Iters       ||r||_2    ||r||_2/||b||_2\n");
+	 fprintf(log_file, "-----    ------------    ------------\n");
+      }
+      else
+      {
+	 fprintf(log_file, "Iters       ||r||_C    ||r||_C/||b||_C\n");
+	 fprintf(log_file, "-----    ------------    ------------\n");
+      }
+
+      for (j = 0; j < i; j++)
+      {
+	 fprintf(log_file, "% 5d    %e    %e\n",
+		      (j+1), norm_log[j], rel_norm_log[j]);
+      }
+
+      CloseLogFile(log_file);
+
+      tfree(norm_log);
+      tfree(rel_norm_log);
+   }
+}
+
+
+/*--------------------------------------------------------------------------
+ * PCGInitInstanceXtra
+ *--------------------------------------------------------------------------*/
+
+PFModule  *PCGInitInstanceXtra(problem, grid, problem_data, A, temp_data)
+Problem      *problem;
+Grid         *grid;
+ProblemData  *problem_data;
+Matrix       *A;
+double       *temp_data;
+{
+   PFModule      *this_module   = ThisPFModule;
+   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra;
+
+
+   if ( PFModuleInstanceXtra(this_module) == NULL )
+      instance_xtra = ctalloc(InstanceXtra, 1);
+   else
+      instance_xtra = PFModuleInstanceXtra(this_module);
+
+   /*-----------------------------------------------------------------------
+    * Initialize data associated with argument `grid'
+    *-----------------------------------------------------------------------*/
+
+   if ( grid != NULL)
+   {
+      /* free old data */
+      if ( (instance_xtra -> grid) != NULL )
+      {
+	 FreeTempVector(instance_xtra -> s);
+	 FreeTempVector(instance_xtra -> p);
+      }
+
+      /* set new data */
+      (instance_xtra -> grid) = grid;
+
+      (instance_xtra -> p) = NewTempVector(grid, 1, 1);
+      (instance_xtra -> s) = NewTempVector(grid, 1, 1);
+   }
+
+   /*-----------------------------------------------------------------------
+    * Initialize data associated with argument `A'
+    *-----------------------------------------------------------------------*/
+
+   if ( A != NULL)
+      (instance_xtra -> A) = A;
+
+   /*-----------------------------------------------------------------------
+    * Initialize data associated with argument `temp_data'
+    *-----------------------------------------------------------------------*/
+
+   if ( temp_data != NULL )
+   {
+      (instance_xtra -> temp_data) = temp_data;
+
+      SetTempVectorData((instance_xtra -> p), temp_data);
+      temp_data += SizeOfVector(instance_xtra -> p);
+      SetTempVectorData((instance_xtra -> s), temp_data);
+      temp_data += SizeOfVector(instance_xtra -> s);
+   }
+
+   /*-----------------------------------------------------------------------
+    * Initialize module instances
+    *-----------------------------------------------------------------------*/
+
+   if ( PFModuleInstanceXtra(this_module) == NULL )
+   {
+      (instance_xtra -> precond) =
+         PFModuleNewInstance((public_xtra -> precond),
+			     (problem, grid, problem_data, A, temp_data));
+   }
+   else
+   {
+      PFModuleReNewInstance((instance_xtra -> precond),
+			    (problem, grid, problem_data, A, temp_data));
+   }
+
+   PFModuleInstanceXtra(this_module) = instance_xtra;
+   return this_module;
+}
+
+
+/*--------------------------------------------------------------------------
+ * PCGFreeInstanceXtra
+ *--------------------------------------------------------------------------*/
+
+void   PCGFreeInstanceXtra()
+{
+   PFModule      *this_module   = ThisPFModule;
+   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+
+
+   if(instance_xtra)
+   {
+      FreeTempVector(instance_xtra -> s);
+      FreeTempVector(instance_xtra -> p);
+
+      PFModuleFreeInstance(instance_xtra -> precond);
+
+      tfree(instance_xtra);
+   }
+}
+
+
+/*--------------------------------------------------------------------------
+ * PCGNewPublicXtra
+ *--------------------------------------------------------------------------*/
+
+PFModule   *PCGNewPublicXtra(char *name)
+{
+   PFModule      *this_module   = ThisPFModule;
+   PublicXtra    *public_xtra;
+
+   int two_norm;
+
+   char          *switch_name;
+   int            switch_value;
+   char          key[IDB_MAX_KEY_LEN];
+   NameArray       switch_na;
+
+   NameArray precond_na;
+
+   switch_na = NA_NewNameArray("True False");
+
+   public_xtra = ctalloc(PublicXtra, 1);
+
+   precond_na = NA_NewNameArray("MGSemi WJacobi");
+   sprintf(key, "%s.Preconditioner", name);
+   switch_name = GetStringDefault(key,"MGSemi");
+   switch_value  = NA_NameToIndex(precond_na, switch_name);
+   switch (switch_value)
+   {
+      case 0:
+      {
+	 public_xtra -> precond = PFModuleNewModule(MGSemi, (key));
+	 break;
+      }
+      case 1:
+      {
+	 public_xtra -> precond = PFModuleNewModule(WJacobi, (key));
+	 break;
+      }
+      default:
+      {
+	 InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
+		     key);
+      }
+   }
+   NA_FreeNameArray(precond_na);
+
+
+   sprintf(key, "%s.MaxIter", name);
+   public_xtra -> max_iter = GetIntDefault(key, 1000);
+
+   sprintf(key, "%s.TwoNorm", name);
+   switch_name = GetStringDefault(key, "False");
+
+   two_norm = NA_NameToIndex(switch_na, switch_name);
+
+   switch(two_norm)
+   {
+      /* True */
+      case 0:
+      {
+	 public_xtra -> two_norm = 1;
+	 break;
+      }
+
+      /* False */
+      case 1:
+      {
+	 public_xtra -> two_norm = 0;
+	 break;
+      }
+
+      default:
+      {
+	 InputError("Error: invalid two norm value <%s> for key <%s>\n",
+		     switch_name, key);
+	 break;
+      }
+   }
+
+   (public_xtra -> time_index) = RegisterTiming("PCG");
+
+   PFModulePublicXtra(this_module) = public_xtra;
+
+   NA_FreeNameArray(switch_na);
+   return this_module;
+}
+
+
+/*--------------------------------------------------------------------------
+ * PCGFreePublicXtra
+ *--------------------------------------------------------------------------*/
+
+void  PCGFreePublicXtra()
+{
+   PFModule    *this_module   = ThisPFModule;
+   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+
+
+   if(public_xtra)
+   {
+      PFModuleFreeModule(public_xtra -> precond);
+      tfree(public_xtra);
+   }
+}
+
+
+/*--------------------------------------------------------------------------
+ * PCGSizeOfTempData
+ *--------------------------------------------------------------------------*/
+
+int  PCGSizeOfTempData()
+{
+   PFModule      *this_module   = ThisPFModule;
+   InstanceXtra  *instance_xtra   = PFModuleInstanceXtra(this_module);
+
+   int  sz = 0;
+
+
+   /* set `sz' to max of each of the called modules */
+   sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> precond));
+
+   /* add local TempData size to `sz' */
+   sz += SizeOfVector(instance_xtra -> p);
+   sz += SizeOfVector(instance_xtra -> s);
+
+   return sz;
+}

@@ -1,0 +1,99 @@
+cBHEADER***********************************************************************
+c (c) 1997   The Regents of the University of California
+c
+c See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+c notice, contact person, and disclaimer.
+c
+c $$
+cEHEADER***********************************************************************
+
+c**********************************************************************
+c     matvec kernels
+c     
+c**********************************************************************
+
+
+#include "fortran_port.h"
+
+c----------------------------------------------------------------------
+c     matvecloop1:
+c----------------------------------------------------------------------
+
+      subroutine matvecloop1(ilo, ihi, x, y, xylo, xyhi,
+     $     a, ds, ds_size, symmetric, alo, ahi, alpha)
+      implicit none
+
+c     ::: argument declarations
+
+      integer ilo(3), ihi(3)
+      integer xylo(3), xyhi(3)
+      integer alo(3), ahi(3)
+      integer ds_size, symmetric
+
+      integer ds(3, ds_size)
+
+      real*8 x(xylo(1):xyhi(1), xylo(2):xyhi(2), xylo(3):xyhi(3)) 
+      real*8 y(xylo(1):xyhi(1), xylo(2):xyhi(2), xylo(3):xyhi(3)) 
+      real*8 a(alo(1):ahi(1), alo(2):ahi(2), alo(3):ahi(3), ds_size) 
+
+      real*8 alpha
+
+      integer i, j, k, s
+      integer io, jo, ko
+
+c----------------------------------------------------------
+c     y = A*x
+c----------------------------------------------------------
+
+c     ::: do stored coefficient computations
+
+      do s = 1, ds_size
+         io = ds(1,s)
+         jo = ds(2,s)
+         ko = ds(3,s)
+         do k = ilo(3), ihi(3)
+            do j = ilo(2), ihi(2)
+               do i = ilo(1), ihi(1)
+                  y(i,j,k) = y(i,j,k) + a(i,j,k,s) * x(i+io,j+jo,k+ko)
+               enddo
+            enddo
+         enddo
+      enddo
+
+c     ::: do symmetric computations
+
+      if (symmetric .eq. 1) then
+
+         do s = 2, ds_size
+            io = ds(1,s)
+            jo = ds(2,s)
+            ko = ds(3,s)
+            do k = ilo(3), ihi(3)
+               do j = ilo(2), ihi(2)
+                  do i = ilo(1), ihi(1)
+                     y(i,j,k) = y(i,j,k) +
+     $                    a(i-io,j-jo,k-ko,s) * x(i-io,j-jo,k-ko)
+                  enddo
+               enddo
+            enddo
+         enddo
+
+      endif
+
+c     ::: rescale y
+
+      if (alpha .ne. 1.0) then
+
+         do k = ilo(3), ihi(3)
+            do j = ilo(2), ihi(2)
+               do i = ilo(1), ihi(1)
+                  y(i,j,k) = alpha * y(i,j,k)
+               enddo
+            enddo
+         enddo
+
+      endif
+
+      return
+      end
+
