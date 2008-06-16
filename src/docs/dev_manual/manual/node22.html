@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002-2-1 (1.70) JA patch-2.0
+patched version by:  Kenshi Muto, Debian Project.
+* modified by:  Shige TAKENO
+LaTeX2HTML 2002-2-1 (1.70),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>5. ParFlow Input</TITLE>
+<META NAME="description" CONTENT="5. ParFlow Input">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002-2-1 JA patch-2.0">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node23.html">
+<LINK REL="previous" HREF="node17.html">
+<LINK REL="up" HREF="manual.html">
+<LINK REL="next" HREF="node23.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html504"
+  HREF="node23.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html498"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html492"
+  HREF="node21.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html500"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html502"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html505"
+  HREF="node23.html">6. Equations</A>
+<B> Up:</B> <A NAME="tex2html499"
+  HREF="manual.html">manual</A>
+<B> Previous:</B> <A NAME="tex2html493"
+  HREF="node21.html">4.4 Adding ParFlow Modules</A>
+ &nbsp; <B>  <A NAME="tex2html501"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html503"
+  HREF="node92.html">Index</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00600000000000000000"></A>
+<A NAME="ParFlow_Input"></A>
+<BR>
+5. ParFlow Input
+</H1>
+
+<P>
+Input into  is done using a TCL script and a simple 
+database system.  The database system is based on key/value pairs.
+The user sets values in the input file using
+the pfset command.  When the pfrun routine is executed
+it creates a runname.pfidb file which contains the key/value
+database.  Inside the  code the database is read in using the
+IDB_NewDB command.  The database is then queried using a set
+of macros GetType and GetTypeDefault where Type
+is one of String, Int, or Double.  All of these routines take a key
+value as input.  The default versions also take a default value (of
+the appropriate type).
+
+<P>
+<BR>
+<IMG
+ WIDTH="572" HEIGHT="101" ALIGN="BOTTOM" BORDER="0"
+ SRC="img37.png"
+ ALT="\begin{display}\begin{verbatim}char *geom_name;geom_name = GetString(''Dom...
+...tStringDefault(''Domain.GeomName'', ''DefaultGeom'');\end{verbatim}\end{display}">
+<BR>
+
+<P>
+The input is divided into two logical sections.  The first is general
+global problem setup.  This contains items like the geounits.  The
+other section is used to set up the  modules.  Each of the
+modules has a name which is based on the call tree.  It starts with
+``Solver'' and each module appends names to this.  In this way each module
+instance can have it's own input.  A module retrieves module specific
+values based on the name that is passed into the NewPublicXtra routine.
+
+<P>
+<BR>
+<IMG
+ WIDTH="639" HEIGHT="230" ALIGN="BOTTOM" BORDER="0"
+ SRC="img38.png"
+ ALT="\begin{display}\begin{verbatim}/* name is the name that this module was given ...
+...ublic_xtra -&gt; max_levels = GetIntDefault(key, 100);
+}\end{verbatim}\end{display}">
+<BR>
+
+<P>
+When a module instantiates a module which it is going to invoke it
+passes in it's module name with an addition name appended to.  The
+parent modules name their children.  For example an iterative solver
+would pass into a preconditioner MyName.Precond (where ``MyName''
+would be what this module was given as it's name).  This constructs a
+tree like nameing convention to ensure that each module instance has a
+unique name to use as a key for getting input that is specific to that
+module instance.
+
+<P>
+In some cases you want to provide a choice on which module should be used.
+For example you might wish to let the user choose amoung several different
+preconditioners.  This is done by querying the database for the name
+of the preconditioner to invoke and using a standard switch statement to
+invoke the appropriate NewModule routine.
+
+<P>
+<BR>
+<IMG
+ WIDTH="691" HEIGHT="944" ALIGN="BOTTOM" BORDER="0"
+ SRC="img39.png"
+ ALT="\begin{display}\begin{verbatim}char key[IDB_MAX_KEY_LEN];char *switch_name...
+...h_name,
+key);
+}
+}
+NA_FreeNameArray(switch_na);}\end{verbatim}\end{display}">
+<BR>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html504"
+  HREF="node23.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html498"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html492"
+  HREF="node21.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html500"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html502"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html505"
+  HREF="node23.html">6. Equations</A>
+<B> Up:</B> <A NAME="tex2html499"
+  HREF="manual.html">manual</A>
+<B> Previous:</B> <A NAME="tex2html493"
+  HREF="node21.html">4.4 Adding ParFlow Modules</A>
+ &nbsp; <B>  <A NAME="tex2html501"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html503"
+  HREF="node92.html">Index</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Steve Smith
+2008-06-02
+</ADDRESS>
+</BODY>
+</HTML>

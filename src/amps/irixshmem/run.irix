@@ -1,0 +1,74 @@
+#! /bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+#=============================================================================
+#
+# Loop to parse users arguments
+#
+#=============================================================================
+PROGRAM=""
+while getopts hp: c
+do
+	case $c in
+	h) 
+		echo "usage: $0 run runname process_group"
+		echo "Runs parflow on the allocated cube."
+	        exit 0;;
+	p) 
+	       PROGRAM=$2
+	       shift 
+	       shift;;
+esac
+done
+
+rm -f malloc.log.????
+
+if [ -z "$PROGRAM" ]
+then
+	#
+	# The default is to run ParFlow
+	#
+	PROGRAM=$PARFLOW_DIR/bin/parflow
+fi
+
+#
+# This specifies the location of the shared memory file, should be 
+# disk with plenty of free space (max size is specified below)
+#
+if [ ! "$AMPS_SHMEM_FILEDIR" ]; then
+	AMPS_SHMEM_FILEDIR=/usr/tmp
+	export AMPS_SHMEM_FILEDIR
+fi
+
+#
+# This specifies the maximum size of the shared memory file.  You
+# Must be able to allocate a file of this size; the file is 
+# grown so this much space may not be allocated.
+#
+# This must be enough space for all vectors and matrices.
+#
+
+if [ ! "$AMPS_SHMEM_SIZE" ]; then
+	AMPS_SHMEM_SIZE=100000000
+	export AMPS_SHMEM_SIZE
+fi
+
+echo $PROGRAM -n `cat .amps.info.$2` $1
+$PROGRAM -n `cat .amps.info.$2` $1
+
+if [ -f ./malloc.log.0000 ]
+then
+	echo "--------------- Malloc Information ---------------"
+	grep "^known" malloc.log.* 
+fi
+
+UID=`id | cut -f 2 -d = | cut -f 1 -d "("`
+rm -f $AMPS_SHMEM_FILEDIR/amps_shmem_$UID
+

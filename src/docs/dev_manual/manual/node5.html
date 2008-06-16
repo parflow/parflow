@@ -1,0 +1,190 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002-2-1 (1.70) JA patch-2.0
+patched version by:  Kenshi Muto, Debian Project.
+* modified by:  Shige TAKENO
+LaTeX2HTML 2002-2-1 (1.70),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>2.2 Building Code</TITLE>
+<META NAME="description" CONTENT="2.2 Building Code">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002-2-1 JA patch-2.0">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node6.html">
+<LINK REL="previous" HREF="node4.html">
+<LINK REL="up" HREF="node3.html">
+<LINK REL="next" HREF="node6.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html261"
+  HREF="node6.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html255"
+  HREF="node3.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html249"
+  HREF="node4.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html257"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html259"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html262"
+  HREF="node6.html">2.3 Checking out code</A>
+<B> Up:</B> <A NAME="tex2html256"
+  HREF="node3.html">2. Code Organization</A>
+<B> Previous:</B> <A NAME="tex2html250"
+  HREF="node4.html">2.1 The Developer's Environment</A>
+ &nbsp; <B>  <A NAME="tex2html258"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html260"
+  HREF="node92.html">Index</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00320000000000000000"></A>
+<A NAME="Building_Code"></A>
+<BR>
+2.2 Building Code
+</H1>
+
+<P>
+All code and documentation are ``built'' with a build script.
+When writing new build scripts, the following build
+command conventions should be followed:
+
+<P>
+
+<UL>
+<LI>build all -- builds things
+</LI>
+<LI>build install -- builds and installs exe's and support files.
+Installation usually involves copying of files into the
+$PARFLOW_DIR and $PARFLOW_HELP directories.
+However, in some cases, files are installed elsewhere.
+</LI>
+<LI>build clean -- clean object files (and some other temp stuff)
+</LI>
+<LI>build veryclean -- cleans object files and exe's within
+the $PARFLOW_SRC directory (i.e., does not remove ``installed''
+files).
+</LI>
+</UL>
+
+<P>
+This build technology contains some ``smarts''.
+For example, it detects when you change platforms (say you log into the
+SGI) and will delete object files and remake everything.
+
+<P>
+
+<B>Notes:</B>
+
+<P>
+
+<UL>
+<LI>Because code is ``copied'' when installed (as opposed to using
+soft links, for example), when changes are made to any source,
+help files, input files, etc., you <EM>must</EM> do a build install
+to update the changes in the ``install'' directory.
+
+<P>
+</LI>
+<LI>You can safely ignore this item if you run parflow out of your
+home directory.
+Also, I believe that this only impacts the Chameleon port so you
+can probably safely ignore all this.
+
+<P>
+Due to some NFS temp mount problems there are some limitations to how
+we can run things.
+The problem is attempting to get the ``virtual'' current directory
+rather than the ``real'' directory name.
+For example, if you do a pwd, you will sometimes see
+/home/mercury0/ssmith/blah/foo or
+/export/home/mercury0/ssmith/blah/foo
+(if you are on the machine where your home directory is),
+and other times you will see 
+/tmp_mnt/home/mercury0/ssmith/blah/foo
+(if you are on a remote machine).
+This is a problem when running some of the different
+models since they need to see the <EM>same</EM> directory
+(/home/mercury0/ssmith/blah/foo is the ``correct'' name).
+To handle this, everything is based off of the AMPS_ROOT_DIR
+environment variable.
+By default this is set to your home directory.
+If the directory that you are running from is in your $HOME
+directory, then you are fine.
+If you want to run from somewhere else (say /scratch/parflow/exe)
+you need to either put a softlink in your home directory or explicitly set
+AMPS_ROOT_DIR to /scratch.
+You do <EM>not</EM> have to worry about this if you run  out of
+your home directory.
+
+<P>
+</LI>
+</UL>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html261"
+  HREF="node6.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html255"
+  HREF="node3.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html249"
+  HREF="node4.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html257"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html259"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html262"
+  HREF="node6.html">2.3 Checking out code</A>
+<B> Up:</B> <A NAME="tex2html256"
+  HREF="node3.html">2. Code Organization</A>
+<B> Previous:</B> <A NAME="tex2html250"
+  HREF="node4.html">2.1 The Developer's Environment</A>
+ &nbsp; <B>  <A NAME="tex2html258"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html260"
+  HREF="node92.html">Index</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Steve Smith
+2008-06-02
+</ADDRESS>
+</BODY>
+</HTML>

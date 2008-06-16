@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002-2-1 (1.70) JA patch-2.0
+patched version by:  Kenshi Muto, Debian Project.
+* modified by:  Shige TAKENO
+LaTeX2HTML 2002-2-1 (1.70),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>4.2 Writing ParFlow Modules</TITLE>
+<META NAME="description" CONTENT="4.2 Writing ParFlow Modules">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002-2-1 JA patch-2.0">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node20.html">
+<LINK REL="previous" HREF="node18.html">
+<LINK REL="up" HREF="node17.html">
+<LINK REL="next" HREF="node20.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html464"
+  HREF="node20.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html458"
+  HREF="node17.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html452"
+  HREF="node18.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html460"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html462"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html465"
+  HREF="node20.html">4.3 ParFlow Module Example</A>
+<B> Up:</B> <A NAME="tex2html459"
+  HREF="node17.html">4. ParFlow Modules</A>
+<B> Previous:</B> <A NAME="tex2html453"
+  HREF="node18.html">4.1 Using ParFlow Modules</A>
+ &nbsp; <B>  <A NAME="tex2html461"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html463"
+  HREF="node92.html">Index</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00520000000000000000"></A>
+<A NAME="Writing_ParFlow_Modules"></A>
+<BR>
+4.2 Writing ParFlow Modules
+</H1>
+
+<P>
+A  module consists of a single C-file containing
+two structures, PublicXtra and InstanceXtra, and
+six functions.
+If the module name is Name
+(the name argument passed into the PFModuleNewModule
+routine described in <A HREF="node18.html#Using_ParFlow_Modules">4.1</A> above),
+then the six module functions that need to be written are given by:
+
+<P>
+<BR>
+<IMG
+ WIDTH="408" HEIGHT="124" ALIGN="BOTTOM" BORDER="0"
+ SRC="img35.png"
+ ALT="\begin{display}\begin{verbatim}type Name(... args ...)
+PFModule *NameInitInsta...
+....)
+void NameFreePublicXtra()
+int NameSizeOfTempData()\end{verbatim}\end{display}">
+<BR>
+
+<P>
+The function Name is the module's main routine, and is
+invoked by the PFModuleInvoke command.
+
+<P>
+The function NameInitInstanceXtra and NameFreeInstanceXtra
+create/modify and destroy the InstanceXtra structure of a module.
+The NameInitInstanceXtra routine is invoked by both the
+PFModuleNewInstance and PFModuleReNewInstance commands,
+and the NameFreeInstanceXtra routine is invoked by the
+PFModuleFreeInstance command.
+
+<P>
+The function NameNewPublicXtra and NameFreePublicXtra
+create and destroy the PublicXtra structure of a module.
+The NameNewPublicXtra routine is invoked by the
+PFModuleNewModule command, and the NameFreePublicXtra
+routine is invoked by the PFModuleFreeModule command.
+
+<P>
+The function NameSizeOfTempData returns the number of
+contiguous doubles needed as temporary data, and is invoked by
+the PFModuleSizeOfTempData command.
+This routine assumes that the InstanceXtra structure has been
+created, and that particular instance parameters have been initialized.
+
+<P>
+Notice that none of the above routines have modules or Xtra
+structures in their argument lists.
+This information is made available to each of the module functions
+by means of the global variable,
+
+<P>
+<BR>
+<IMG
+ WIDTH="209" HEIGHT="11" ALIGN="BOTTOM" BORDER="0"
+ SRC="img36.png"
+ ALT="\begin{display}\begin{verbatim}PFModule *ThisPFModule\end{verbatim}\end{display}">
+<BR>
+
+<P>
+In any of the module functions above, the module assigned to
+ThisPFModule is Name.
+It is important to note that each time any of the routines listed in
+<A HREF="node18.html#Using_ParFlow_Modules">4.1</A> is invoked, the value of ThisPFModule
+changes.
+Therefore, it is highly recommended that a local pointer to
+ThisPFModule be set at the beginning of each of the above
+module functions (see e.g. <A HREF="node20.html#ParFlow_Module_Example">4.3</A>).
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html464"
+  HREF="node20.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html458"
+  HREF="node17.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html452"
+  HREF="node18.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html460"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html462"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html465"
+  HREF="node20.html">4.3 ParFlow Module Example</A>
+<B> Up:</B> <A NAME="tex2html459"
+  HREF="node17.html">4. ParFlow Modules</A>
+<B> Previous:</B> <A NAME="tex2html453"
+  HREF="node18.html">4.1 Using ParFlow Modules</A>
+ &nbsp; <B>  <A NAME="tex2html461"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html463"
+  HREF="node92.html">Index</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Steve Smith
+2008-06-02
+</ADDRESS>
+</BODY>
+</HTML>

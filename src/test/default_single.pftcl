@@ -301,6 +301,7 @@ pfset Patch.top.BCTemperature.alltime.Value              0.0
 
 pfset PhaseSources.Type                         Constant
 pfset PhaseSources.GeomNames                    background
+#pfset PhaseSources.Geom.background.Value        0.0
 pfset PhaseSources.Geom.background.FluxValue               0.0
 pfset PhaseSources.Geom.background.TemperatureValue        0.0
 

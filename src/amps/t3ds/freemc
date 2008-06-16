@@ -1,0 +1,20 @@
+#! /bin/sh
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.1.1.1 $
+#EHEADER***********************************************************************
+
+if [ $# -gt 1 ]
+then
+       echo "usage: $0"
+       echo "Frees the previous node allocation."
+       echo "Not really needed"
+       exit 0
+fi
+
+rm -f .amps.info.$1
+

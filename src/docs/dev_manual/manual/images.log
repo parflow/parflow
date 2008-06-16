@@ -1,0 +1,2278 @@
+This is TeX, Version 3.14159 (Web2C 7.4.5) (format=latex 2007.11.15)  2 JUN 2008 16:03
+**./images.tex
+(./images.tex
+LaTeX2e <2001/06/01>
+Babel <v3.7h> and hyphenation patterns for american, french, german, ngerman, n
+ohyphenation, loaded.
+
+(/usr/share/texmf/tex/latex/base/latex209.def
+File: latex209.def 1998/05/13 v0.52 Standard LaTeX file
+
+          Entering LaTeX 2.09 COMPATIBILITY MODE
+ *************************************************************
+    !!WARNING!!    !!WARNING!!    !!WARNING!!    !!WARNING!!   
+ 
+ This mode attempts to provide an emulation of the LaTeX 2.09
+ author environment so that OLD documents can be successfully
+ processed. It should NOT be used for NEW documents!
+ 
+ New documents should use Standard LaTeX conventions and start
+ with the \documentclass command.
+ 
+ Compatibility mode is UNLIKELY TO WORK with LaTeX 2.09 style
+ files that change any internal macros, especially not with
+ those that change the FONT SELECTION or OUTPUT ROUTINES.
+ 
+ Therefore such style files MUST BE UPDATED to use
+          Current Standard LaTeX: LaTeX2e.
+ If you suspect that you may be using such a style file, which
+ is probably very, very old by now, then you should attempt to
+ get it updated by sending a copy of this error message to the
+ author of that file.
+ *************************************************************
+
+\footheight=\dimen102
+\@maxsep=\dimen103
+\@dblmaxsep=\dimen104
+\@cla=\count79
+\@clb=\count80
+\mscount=\count81
+(/usr/share/texmf/tex/latex/base/tracefnt.sty
+Package: tracefnt 1997/05/29 v3.0j Standard LaTeX package (font tracing)
+\tracingfonts=\count82
+LaTeX Info: Redefining \selectfont on input line 96.
+)
+\symbold=\mathgroup4
+\symsans=\mathgroup5
+\symtypewriter=\mathgroup6
+\symitalic=\mathgroup7
+\symsmallcaps=\mathgroup8
+\symslanted=\mathgroup9
+LaTeX Font Info:    Redeclaring math alphabet \mathbf on input line 288.
+LaTeX Font Info:    Redeclaring math alphabet \mathsf on input line 289.
+LaTeX Font Info:    Redeclaring math alphabet \mathtt on input line 290.
+LaTeX Font Info:    Redeclaring math alphabet \mathit on input line 296.
+LaTeX Info: Redefining \em on input line 306.
+(/usr/share/texmf/tex/latex/base/latexsym.sty
+Package: latexsym 1998/08/17 v2.2e Standard LaTeX package (lasy symbols)
+\symlasy=\mathgroup10
+LaTeX Font Info:    Overwriting symbol font `lasy' in version `bold'
+(Font)                  U/lasy/m/n --> U/lasy/b/n on input line 42.
+)
+LaTeX Font Info:    Redeclaring math delimiter \lgroup on input line 370.
+LaTeX Font Info:    Redeclaring math delimiter \rgroup on input line 372.
+LaTeX Font Info:    Redeclaring math delimiter \bracevert on input line 374.
+(/usr/share/texmf/tex/latex/config/latex209.cfg
+File: latex209.cfg 2001/06/05 v1.0 teTeX customized LaTeX 2.09 compatibility mo
+de setup
+) (/usr/share/texmf/tex/latex/tools/rawfonts.sty
+Package: rawfonts 1994/05/08 Low-level LaTeX 2.09 font compatibility
+(/usr/share/texmf/tex/latex/tools/somedefs.sty
+Package: somedefs 1994/06/01 Toolkit for optional definitions
+)
+LaTeX Font Info:    Try loading font information for U+lasy on input line 44.
+(/usr/share/texmf/tex/latex/base/ulasy.fd
+File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
+))) (/usr/share/texmf/tex/latex/base/book.cls
+Document Class: book 2001/04/21 v1.4e Standard LaTeX document class
+(/usr/share/texmf/tex/latex/base/bk11.clo
+File: bk11.clo 2001/04/21 v1.4e Standard LaTeX file (size option)
+)
+\c@part=\count83
+\c@chapter=\count84
+\c@section=\count85
+\c@subsection=\count86
+\c@subsubsection=\count87
+\c@paragraph=\count88
+\c@subparagraph=\count89
+\c@figure=\count90
+\c@table=\count91
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+Compatibility mode: definition of \rm ignored.
+Compatibility mode: definition of \sf ignored.
+Compatibility mode: definition of \tt ignored.
+Compatibility mode: definition of \bf ignored.
+Compatibility mode: definition of \it ignored.
+Compatibility mode: definition of \sl ignored.
+Compatibility mode: definition of \sc ignored.
+LaTeX Info: Redefining \cal on input line 587.
+LaTeX Info: Redefining \mit on input line 588.
+\bibindent=\dimen105
+) (/usr/share/texmf/tex/latex/base/makeidx.sty
+Package: makeidx 2000/03/29 v1.0m Standard LaTeX package
+) (/home/smithsg/parflow/pfclm_ms/src/docs/lib/parflow.sty) (/usr/share/texmf/t
+ex/latex/base/ifthen.sty
+Package: ifthen 2001/05/26 v1.1c Standard LaTeX ifthen package (DPC)
+)
+\@indexfile=\write3
+\openout3 = `images.idx'.
+
+Writing index file images.idx
+
+! LaTeX Error: LaTeX2e command \usepackage in LaTeX 2.09 document.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.84 \usepackage
+                [latin1]{inputenc}
+This is a LaTeX 2.09 document, but it contains \usepackage.
+If you want to use the new features of LaTeX2e, your document
+should begin with \documentclass rather than \documentstyle
+
+
+! LaTeX Error: \usepackage before \documentclass.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.84 \usepackage[latin1]{
+                         inputenc}
+\usepackage may only appear in the document preamble, i.e.,
+between \documentclass and \begin{document}.
+
+\sizebox=\box26
+\lthtmlwrite=\write4
+
+! LaTeX Error: Command \selectlanguage already defined.
+               Or name \end... illegal, see p.192 of the manual.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.179 \providecommand{\selectlanguage}[1]{}
+                                           %
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+(./images.aux)
+\openout1 = `images.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 183.
+LaTeX Font Info:    ... okay on input line 183.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 183.
+LaTeX Font Info:    ... okay on input line 183.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 183.
+LaTeX Font Info:    ... okay on input line 183.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 183.
+LaTeX Font Info:    ... okay on input line 183.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 183.
+LaTeX Font Info:    ... okay on input line 183.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 183.
+LaTeX Font Info:    ... okay on input line 183.
+(/home/smithsg/parflow/pfclm_ms/src/docs/dev_manual/manual.aux
+
+LaTeX Warning: Label `Introduction' multiply defined.
+
+
+LaTeX Warning: Label `Code Organization' multiply defined.
+
+
+LaTeX Warning: Label `The Developer's Environment' multiply defined.
+
+
+LaTeX Warning: Label `Building Code' multiply defined.
+
+
+LaTeX Warning: Label `Checking out code' multiply defined.
+
+
+LaTeX Warning: Label `Checking in code' multiply defined.
+
+
+LaTeX Warning: Label `Installing a new version of ParFlow' multiply defined.
+
+
+LaTeX Warning: Label `Documentation' multiply defined.
+
+
+LaTeX Warning: Label `Writing Manuals' multiply defined.
+
+
+LaTeX Warning: Label `ParFlow Style Files' multiply defined.
+
+
+LaTeX Warning: Label `Providing Online Help for GUIs' multiply defined.
+
+
+LaTeX Warning: Label `Writing HTML Files' multiply defined.
+
+
+LaTeX Warning: Label `Writing PFIX Files' multiply defined.
+
+
+LaTeX Warning: Label `Writing AVS Module Help' multiply defined.
+
+
+LaTeX Warning: Label `(Not) Writing AVS/Express Module Help' multiply defined.
+
+
+LaTeX Warning: Label `ParFlow Modules' multiply defined.
+
+
+LaTeX Warning: Label `Using ParFlow Modules' multiply defined.
+
+
+LaTeX Warning: Label `Writing ParFlow Modules' multiply defined.
+
+
+LaTeX Warning: Label `ParFlow Module Example' multiply defined.
+
+
+LaTeX Warning: Label `Adding ParFlow Modules' multiply defined.
+
+
+LaTeX Warning: Label `ParFlow Input' multiply defined.
+
+
+LaTeX Warning: Label `Equations' multiply defined.
+
+
+LaTeX Warning: Label `Multi-Phase Flow Equations' multiply defined.
+
+
+LaTeX Warning: Label `eqn-mass-balance' multiply defined.
+
+
+LaTeX Warning: Label `eqn-darcy' multiply defined.
+
+
+LaTeX Warning: Label `eqn-phase-mobility' multiply defined.
+
+
+LaTeX Warning: Label `eqn-Dvec-vs-vvec' multiply defined.
+
+
+LaTeX Warning: Label `eqn-constitutive-sum' multiply defined.
+
+
+LaTeX Warning: Label `table-flow-units' multiply defined.
+
+
+LaTeX Warning: Label `eqn-constitutive-capillary' multiply defined.
+
+
+LaTeX Warning: Label `eqn-total-mob' multiply defined.
+
+
+LaTeX Warning: Label `eqn-total-vel' multiply defined.
+
+
+LaTeX Warning: Label `eqn-pressure' multiply defined.
+
+
+LaTeX Warning: Label `eqn-saturation' multiply defined.
+
+
+LaTeX Warning: Label `eqn-derived-capillary' multiply defined.
+
+
+LaTeX Warning: Label `table-transport-units' multiply defined.
+
+
+LaTeX Warning: Label `Transport Equations' multiply defined.
+
+
+LaTeX Warning: Label `eqn-transport' multiply defined.
+
+
+LaTeX Warning: Label `eqn-linear-retardation' multiply defined.
+
+
+LaTeX Warning: Label `eqn-transport2' multiply defined.
+
+
+LaTeX Warning: Label `table-flow-units-b' multiply defined.
+
+
+LaTeX Warning: Label `Notation and Units' multiply defined.
+
+
+LaTeX Warning: Label `eqn-darcy-b' multiply defined.
+
+
+LaTeX Warning: Label `eqn-cond-phead' multiply defined.
+
+
+LaTeX Warning: Label `eqn-pressure-b' multiply defined.
+
+
+LaTeX Warning: Label `eqn-saturation-b' multiply defined.
+
+
+LaTeX Warning: Label `eqn-parflow-input' multiply defined.
+
+
+LaTeX Warning: Label `Gridding' multiply defined.
+
+
+LaTeX Warning: Label `Terminology' multiply defined.
+
+
+LaTeX Warning: Label `Gridding Requirements' multiply defined.
+
+
+LaTeX Warning: Label `Discretization' multiply defined.
+
+
+LaTeX Warning: Label `Visualization' multiply defined.
+
+
+LaTeX Warning: Label `AVS' multiply defined.
+
+
+LaTeX Warning: Label `Writing AVS Modules' multiply defined.
+
+
+LaTeX Warning: Label `Writing AVS Coroutines' multiply defined.
+
+
+LaTeX Warning: Label `AVS/Express' multiply defined.
+
+
+LaTeX Warning: Label `Existing AVS/Express Modules' multiply defined.
+
+
+LaTeX Warning: Label `Writing AVS/Express Modules' multiply defined.
+
+
+LaTeX Warning: Label `Writing the Modules' multiply defined.
+
+
+LaTeX Warning: Label `Compiling AVS/Express Modules' multiply defined.
+
+
+LaTeX Warning: Label `Tips and Tricks' multiply defined.
+
+
+LaTeX Warning: Label `AVS/Express Bugs' multiply defined.
+
+
+LaTeX Warning: Label `Explorer' multiply defined.
+
+
+LaTeX Warning: Label `Writing Explorer Modules' multiply defined.
+
+
+LaTeX Warning: Label `Administrative' multiply defined.
+
+
+LaTeX Warning: Label `Mail Aliases' multiply defined.
+
+
+LaTeX Warning: Label `Permissions' multiply defined.
+
+
+LaTeX Warning: Label `Data Archiving' multiply defined.
+
+
+LaTeX Warning: Label `Archive Organization' multiply defined.
+
+
+LaTeX Warning: Label `Archive Status' multiply defined.
+
+
+LaTeX Warning: Label `Creating an Archive' multiply defined.
+
+
+LaTeX Warning: Label `Backing up an Archive' multiply defined.
+
+
+LaTeX Warning: Label `Removing an Archive' multiply defined.
+
+
+LaTeX Warning: Label `Restoring an Archive' multiply defined.
+
+
+LaTeX Warning: Label `Using an Archive' multiply defined.
+
+
+LaTeX Warning: Label `Reference Manual' multiply defined.
+
+
+LaTeX Warning: Label `Grid Reference' multiply defined.
+
+
+LaTeX Warning: Label `Grid Structures' multiply defined.
+
+
+LaTeX Warning: Label `Grid Accessors' multiply defined.
+
+
+LaTeX Warning: Label `ReadBackground' multiply defined.
+
+
+LaTeX Warning: Label `NewSubregion' multiply defined.
+
+
+LaTeX Warning: Label `NewSubregionArray' multiply defined.
+
+
+LaTeX Warning: Label `NewRegion' multiply defined.
+
+
+LaTeX Warning: Label `NewSubgrid' multiply defined.
+
+
+LaTeX Warning: Label `NewSubgridArray' multiply defined.
+
+
+LaTeX Warning: Label `NewGrid' multiply defined.
+
+
+LaTeX Warning: Label `FreeBackground' multiply defined.
+
+
+LaTeX Warning: Label `FreeSubregion' multiply defined.
+
+
+LaTeX Warning: Label `FreeSubregionArray' multiply defined.
+
+
+LaTeX Warning: Label `FreeRegion' multiply defined.
+
+
+LaTeX Warning: Label `FreeSubgrid' multiply defined.
+
+
+LaTeX Warning: Label `FreeSubgridArray' multiply defined.
+
+
+LaTeX Warning: Label `FreeGrid' multiply defined.
+
+
+LaTeX Warning: Label `ForSubregionI' multiply defined.
+
+
+LaTeX Warning: Label `ForSubregionArrayI' multiply defined.
+
+
+LaTeX Warning: Label `ForSubgridI' multiply defined.
+
+
+LaTeX Warning: Label `SubregionXYZ' multiply defined.
+
+
+LaTeX Warning: Label `SubgridXYZ' multiply defined.
+
+
+LaTeX Warning: Label `DuplicateSubregion' multiply defined.
+
+
+LaTeX Warning: Label `AppendSubregion' multiply defined.
+
+
+LaTeX Warning: Label `AppendSubregionArray' multiply defined.
+
+
+LaTeX Warning: Label `DuplicateSubgrid' multiply defined.
+
+
+LaTeX Warning: Label `AppendSubgrid' multiply defined.
+
+
+LaTeX Warning: Label `AppendSubgridArray' multiply defined.
+
+
+LaTeX Warning: Label `ConvertToSubregion' multiply defined.
+
+
+LaTeX Warning: Label `ConvertToSubgrid' multiply defined.
+
+
+LaTeX Warning: Label `ProjectSubgrid' multiply defined.
+
+
+LaTeX Warning: Label `ExtractSubgrid' multiply defined.
+
+
+LaTeX Warning: Label `IntersectSubgrids' multiply defined.
+
+
+LaTeX Warning: Label `SubtractSubgrids' multiply defined.
+
+
+LaTeX Warning: Label `UnionSubgridArray' multiply defined.
+
+)
+
+latex2htmlLength hsize=349.0pt
+
+latex2htmlLength vsize=637.49673pt
+
+latex2htmlLength hoffset=0.0pt
+
+latex2htmlLength voffset=0.0pt
+
+latex2htmlLength topmargin=0.0pt
+
+latex2htmlLength topskip=0.00003pt
+
+latex2htmlLength headheight=0.0pt
+
+latex2htmlLength headsep=0.0pt
+
+latex2htmlLength parskip=0.0pt plus 1.0pt
+
+latex2htmlLength oddsidemargin=0.0pt
+
+latex2htmlLength evensidemargin=0.0pt
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 212--213
+
+ []
+
+l2hSize :TitlePage223:217.20503pt::0.0pt::349.0pt.
+[0
+
+
+
+
+]
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 223.
+
+(/usr/share/texmf/tex/latex/base/omscmr.fd
+File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10.95> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 223.
+l2hSize :CopyrightPage229:284.28922pt::0.0pt::349.0pt.
+[0
+
+
+
+]
+l2hSize :display295:94.43336pt::0.0pt::349.0pt.
+[1
+
+
+]
+l2hSize :display305:40.03334pt::0.0pt::349.0pt.
+[2
+
+
+]
+l2hSize :display316:67.23335pt::0.0pt::349.0pt.
+[3
+
+
+]
+l2hSize :display367:40.03334pt::0.0pt::349.0pt.
+[4
+
+
+]
+Overfull \hbox (80.7832pt too wide) in paragraph at lines 287--287
+ []\OT1/cmtt/m/n/10.95 (cd /home/casc/parflow/exe.`uname`/test/; tclsh default\
+_single.pftcl)[] 
+ []
+
+l2hSize :display371:40.03334pt::0.0pt::349.0pt.
+[5
+
+
+]
+l2hSize :display377:40.03334pt::0.0pt::349.0pt.
+[6
+
+
+]
+l2hSize :display381:40.03334pt::0.0pt::349.0pt.
+[7
+
+
+]
+Overfull \hbox (80.7832pt too wide) in paragraph at lines 314--314
+ []\OT1/cmtt/m/n/10.95 (cd /home/casc/parflow/exe.`uname`/test/; tclsh default\
+_single.pftcl)[] 
+ []
+
+l2hSize :display385:40.03334pt::0.0pt::349.0pt.
+[8
+
+
+]
+l2hSize :display479:38.64174pt::0.0pt::349.0pt.
+[9
+
+
+]
+l2hSize :display492:40.03334pt::0.0pt::349.0pt.
+[10
+
+
+]
+l2hSize :display499:40.03334pt::0.0pt::349.0pt.
+[11
+
+
+]
+l2hSize :display522:37.6pt::0.0pt::349.0pt.
+[12
+
+
+]
+l2hSize :display527:53.63335pt::0.0pt::349.0pt.
+[13
+
+
+]
+l2hSize :display531:40.03334pt::0.0pt::349.0pt.
+[14
+
+
+]
+l2hSize :display536:37.6pt::0.0pt::349.0pt.
+[15
+
+
+]
+l2hSize :display548:94.43336pt::0.0pt::349.0pt.
+[16
+
+
+]
+l2hSize :display552:38.64174pt::0.0pt::349.0pt.
+[17
+
+
+]
+l2hSize :display557:38.5125pt::0.0pt::349.0pt.
+[18
+
+
+]
+l2hSize :display561:53.63335pt::0.0pt::349.0pt.
+[19
+
+
+]
+Overfull \hbox (34.7937pt too wide) in paragraph at lines 435--435
+ []\OT1/cmtt/m/n/10.95 \deftypefn{<classification>}{<data-type>}{<name>}(<argum
+ents>)[] 
+ []
+
+l2hSize :display565:80.83336pt::0.0pt::349.0pt.
+[20
+
+
+]
+l2hSize :display570:79.31248pt::0.0pt::349.0pt.
+[21
+
+
+]
+Overfull \hbox (46.29108pt too wide) in paragraph at lines 471--471
+ []\OT1/cmtt/m/n/10.95 \begin{deftypefn}{Function}{Region *}{NewRegion}(int \va
+r{size})[] 
+ []
+
+
+Overfull \hbox (34.7937pt too wide) in paragraph at lines 471--471
+ []\OT1/cmtt/m/n/10.95 Creates and returns a pointer to a new \code{Region} str
+ucture[] 
+ []
+
+
+Overfull \hbox (86.53189pt too wide) in paragraph at lines 471--471
+ []\OT1/cmtt/m/n/10.95 containing \var{size} pointers to new \code{SubregionArr
+ay} structures.[] 
+ []
+
+l2hSize :display576:244.03343pt::0.0pt::349.0pt.
+[22
+
+
+]
+l2hSize :display580:38.51247pt::0.0pt::349.0pt.
+[23
+
+
+]
+l2hSize :display587:65.71248pt::0.0pt::349.0pt.
+[24
+
+
+]
+l2hSize :display594:108.03337pt::0.0pt::349.0pt.
+[25
+
+
+]
+l2hSize :display601:40.03334pt::0.0pt::349.0pt.
+[26
+
+
+]
+l2hSize :display608:67.23335pt::0.0pt::349.0pt.
+[27
+
+
+]
+l2hSize :display612:40.03334pt::0.0pt::349.0pt.
+[28
+
+
+]
+l2hSize :display621:40.03334pt::0.0pt::349.0pt.
+[29
+
+
+]
+l2hSize :display641:37.6pt::0.0pt::349.0pt.
+[30
+
+
+]
+l2hSize :display664:37.6pt::0.0pt::349.0pt.
+[31
+
+
+]
+Overfull \hbox (52.03976pt too wide) in paragraph at lines 583--583
+ []\OT1/cmtt/m/n/10.95 PFModule  *PFModuleReNewInstance(module_instance, (... a
+rgs ...))[] 
+ []
+
+
+Overfull \hbox (46.29108pt too wide) in paragraph at lines 583--583
+ []\OT1/cmtt/m/n/10.95 type       PFModuleInvoke(type, module_instance, (... ar
+gs ...))[] 
+ []
+
+l2hSize :display794:121.63338pt::0.0pt::349.0pt.
+[32
+
+
+]
+l2hSize :display826:108.03337pt::0.0pt::349.0pt.
+[33
+
+
+]
+l2hSize :display851:37.6pt::0.0pt::349.0pt.
+[34
+
+
+]
+Overfull \hbox (57.78845pt too wide) in paragraph at lines 623--623
+ []   \OT1/cmtt/m/n/10.95 geom_name = GetStringDefault("Domain.GeomName", "Defa
+ultGeom");[] 
+ []
+
+l2hSize :display944:94.43336pt::0.0pt::349.0pt.
+[35
+
+
+]
+Overfull \hbox (46.29108pt too wide) in paragraph at lines 642--642
+ []\OT1/cmtt/m/n/10.95 /* name is the name that this module was given by it's p
+arent */[] 
+ []
+
+
+Overfull \hbox (34.7937pt too wide) in paragraph at lines 642--642
+ []   \OT1/cmtt/m/n/10.95 char key[IDB_MAX_KEY_LEN];   /* key name use to query
+ DB */[] 
+ []
+
+
+Overfull \hbox (75.03452pt too wide) in paragraph at lines 642--642
+ []   \OT1/cmtt/m/n/10.95 sprintf(key, "%s.MaxLevels", name); /* construct the 
+key name from[] 
+ []
+
+
+Overfull \hbox (80.7832pt too wide) in paragraph at lines 642--642
+ []                                        \OT1/cmtt/m/n/10.95 the modules name
+ and the value[] 
+ []
+
+l2hSize :display949:174.51253pt::0.0pt::349.0pt.
+[36
+
+
+]
+Overfull \hbox (109.52664pt too wide) in paragraph at lines 694--694
+ []   \OT1/cmtt/m/n/10.95 /* Name arrays are helper structures to parse space s
+eperated strings */[] 
+ []
+
+
+Overfull \hbox (109.52664pt too wide) in paragraph at lines 694--694
+ []   \OT1/cmtt/m/n/10.95 /* A name array can convert from an index to name or 
+from a name      */[] 
+ []
+
+
+Overfull \hbox (109.52664pt too wide) in paragraph at lines 694--694
+ []   \OT1/cmtt/m/n/10.95 /* to an index.                                      
+                 */[] 
+ []
+
+
+Overfull \hbox (109.52664pt too wide) in paragraph at lines 694--694
+ []   \OT1/cmtt/m/n/10.95 /* Build the name array with two names:              
+                 */[] 
+ []
+
+
+Overfull \hbox (109.52664pt too wide) in paragraph at lines 694--694
+ []   \OT1/cmtt/m/n/10.95 /*   0 = RedBlackGSPoint                             
+                 */[] 
+ []
+
+
+Overfull \hbox (109.52664pt too wide) in paragraph at lines 694--694
+ []   \OT1/cmtt/m/n/10.95 /*   1 = WJacobi                                     
+                 */[] 
+ []
+
+
+Overfull \hbox (11.79895pt too wide) in paragraph at lines 694--694
+ []   \OT1/cmtt/m/n/10.95 switch_na = NA_NewNameArray("RedBlackGSPoint WJacobi"
+);[] 
+ []
+
+
+Overfull \hbox (6.05026pt too wide) in paragraph at lines 694--694
+ []   \OT1/cmtt/m/n/10.95 switch_name = GetStringDefault(key,"RedBlackGSPoint")
+;[] 
+ []
+
+
+Overfull \hbox (109.52664pt too wide) in paragraph at lines 694--694
+ []   \OT1/cmtt/m/n/10.95 /* Convert the name the user entered into an int to u
+se in the switch */[] 
+ []
+
+
+Overfull \hbox (109.52664pt too wide) in paragraph at lines 694--694
+ []   \OT1/cmtt/m/n/10.95 /* -1 is returned if the name is not found in the nam
+e array          */[] 
+ []
+
+
+Overfull \hbox (11.79895pt too wide) in paragraph at lines 694--694
+ []   \OT1/cmtt/m/n/10.95 switch_value  = NA_NameToIndex(switch_na, switch_name
+);[] 
+ []
+
+
+Overfull \hbox (109.52664pt too wide) in paragraph at lines 694--694
+ []         \OT1/cmtt/m/n/10.95 public_xtra -> smooth = PFModuleNewModule(RedBl
+ackGSPoint, (key));[] 
+ []
+
+
+Overfull \hbox (63.53714pt too wide) in paragraph at lines 694--694
+ []         \OT1/cmtt/m/n/10.95 public_xtra -> smooth = PFModuleNewModule(WJaco
+bi, (key));[] 
+ []
+
+
+Overfull \hbox (115.27533pt too wide) in paragraph at lines 694--694
+ []         \OT1/cmtt/m/n/10.95 InputError("Error: Invalid value <%s> for key <
+%s>\n", switch_name,[] 
+ []
+
+l2hSize :display954:623.31273pt::0.0pt::349.0pt.
+[37
+
+
+]
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <10.95> on input line 703.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 703.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 703.
+l2hSize :displaymath983:23.52306pt::0.0pt::349.0pt.
+[38
+
+
+]
+l2hSize :displaymath988:16.3375pt::0.0pt::349.0pt.
+[39
+
+
+]
+l2hSize :tex2html_wrap_inline1339:7.72179pt::7.72179pt::78.93767pt.
+[40
+
+
+]
+l2hSize :tex2html_wrap_inline1341:8.7125pt::8.7125pt::70.9071pt.
+[41
+
+
+]
+l2hSize :tex2html_wrap_indisplay4638:8.10416pt::8.10416pt::10.329pt.
+[42
+
+
+]
+l2hSize :tex2html_wrap_indisplay4639:7.57185pt::7.57185pt::9.06422pt.
+[43
+
+
+]
+l2hSize :tex2html_wrap_indisplay4640:17.01448pt::17.01448pt::25.20088pt.
+[44
+
+
+]
+l2hSize :tex2html_wrap_indisplay4641:8.32315pt::8.32315pt::6.1632pt.
+[45
+
+
+]
+l2hSize :tex2html_wrap_indisplay4643:10.48782pt::10.48782pt::51.11745pt.
+[46
+
+
+]
+l2hSize :tex2html_wrap_inline1343:8.7125pt::8.7125pt::30.66765pt.
+[47
+
+
+]
+l2hSize :tex2html_wrap_inline1345:8.7125pt::8.7125pt::34.2517pt.
+[48
+
+
+]
+l2hSize :tex2html_wrap_inline1347:11.09106pt::11.09106pt::33.92471pt.
+[49
+
+
+]
+l2hSize :tex2html_wrap_inline1349:9.12923pt::0.0pt::27.28064pt.
+[50
+
+
+]
+l2hSize :tex2html_wrap_inline1351:8.7125pt::8.7125pt::36.19379pt.
+[51
+
+
+]
+l2hSize :tex2html_wrap_inline1353:9.12923pt::0.0pt::19.82855pt.
+[52
+
+
+]
+l2hSize :tex2html_wrap_inline1355:8.10416pt::8.10416pt::10.329pt.
+[53
+
+
+]
+l2hSize :tex2html_wrap_inline1357:9.12923pt::0.0pt::43.84756pt.
+[54
+
+
+]
+l2hSize :tex2html_wrap_inline1359:8.7125pt::8.7125pt::33.04643pt.
+[55
+
+
+]
+l2hSize :tex2html_wrap_inline1361:9.12923pt::0.0pt::50.45877pt.
+[56
+
+
+]
+l2hSize :tex2html_wrap_inline1363:7.57185pt::7.57185pt::9.6028pt.
+[57
+
+
+]
+l2hSize :tex2html_wrap_inline1365:9.12923pt::0.0pt::31.17775pt.
+[58
+
+
+]
+l2hSize :tex2html_wrap_inline1367:8.32315pt::8.32315pt::6.1632pt.
+[59
+
+
+]
+l2hSize :tex2html_wrap_inline1369:9.12923pt::0.0pt::27.28064pt.
+[60
+
+
+]
+l2hSize :tex2html_wrap_inline1371:9.60674pt::9.60674pt::30.18858pt.
+[61
+
+
+]
+l2hSize :tex2html_wrap_inline1373:9.12923pt::0.0pt::12.74968pt.
+[62
+
+
+]
+l2hSize :tex2html_wrap_inline1375:8.7125pt::8.7125pt::37.30963pt.
+[63
+
+
+]
+l2hSize :tex2html_wrap_inline1377:7.57185pt::7.57185pt::10.5394pt.
+[64
+
+
+]
+l2hSize :tex2html_wrap_inline1379:9.12923pt::0.0pt::50.45877pt.
+[65
+
+
+]
+l2hSize :tex2html_wrap_inline1381:7.57185pt::7.57185pt::6.1632pt.
+[66
+
+
+]
+l2hSize :tex2html_wrap_inline1385:8.10416pt::8.10416pt::7.07191pt.
+[67
+
+
+]
+l2hSize :tex2html_wrap_inline1387:7.98248pt::7.98248pt::10.65596pt.
+[68
+
+
+]
+l2hSize :tex2html_wrap_inline1389:7.22179pt::0.0pt::4.31995pt.
+[69
+
+
+]
+l2hSize :tex2html_wrap_inline1391:8.10416pt::8.10416pt::47.22176pt.
+[70
+
+
+]
+l2hSize :tex2html_wrap_inline1393:7.98248pt::7.98248pt::50.8058pt.
+[71
+
+
+]
+l2hSize :tex2html_wrap_inline1395:9.10674pt::0.0pt::6.59285pt.
+[72
+
+
+]
+l2hSize :tex2html_wrap_inline1397:7.57185pt::7.57185pt::24.88081pt.
+[73
+
+
+]
+l2hSize :tex2html_wrap_inline1403:8.7125pt::8.7125pt::32.33902pt.
+[74
+
+
+]
+l2hSize :tex2html_wrap_inline1405:8.32315pt::8.32315pt::9.2492pt.
+[75
+
+
+]
+l2hSize :displaymath1018:15.72917pt::0.0pt::349.0pt.
+[76
+
+
+]
+l2hSize :tex2html_wrap_inline1407:7.57185pt::7.57185pt::11.89886pt.
+[77
+
+
+]
+l2hSize :displaymath1022:26.81793pt::0.0pt::349.0pt.
+[78
+
+
+]
+l2hSize :displaymath1025:16.79805pt::0.0pt::349.0pt.
+[79
+
+
+]
+l2hSize :tex2html_wrap_inline1409:7.57185pt::7.57185pt::60.14345pt.
+[80
+
+
+]
+l2hSize :tex2html_wrap_inline1413:7.72179pt::7.72179pt::5.68361pt.
+[81
+
+
+]
+l2hSize :tex2html_wrap_inline1415:7.57185pt::7.57185pt::17.37387pt.
+[82
+
+
+]
+l2hSize :tex2html_wrap_inline1419:11.09106pt::11.09106pt::25.30405pt.
+[83
+
+
+]
+l2hSize :tex2html_wrap_inline1421:7.57185pt::7.57185pt::9.4507pt.
+[84
+
+
+]
+l2hSize :tex2html_wrap_inline1423:8.10416pt::8.10416pt::13.5643pt.
+[85
+
+
+]
+l2hSize :tex2html_wrap_inline1425:11.09106pt::11.09106pt::13.56429pt.
+[86
+
+
+]
+l2hSize :tex2html_wrap_indisplay4732:13.71793pt::13.71793pt::66.38174pt.
+[87
+
+
+]
+l2hSize :tex2html_wrap_indisplay4733:13.71793pt::13.71793pt::66.38171pt.
+[88
+
+
+]
+l2hSize :tex2html_wrap_inline1427:7.57185pt::7.57185pt::10.80681pt.
+[89
+
+
+]
+l2hSize :displaymath1044:26.81793pt::0.0pt::349.0pt.
+[90
+
+
+]
+l2hSize :tex2html_wrap_inline1429:7.57185pt::7.57185pt::30.75714pt.
+[91
+
+
+]
+Overfull \hbox (12.5659pt too wide) detected at line 1062
+[]\OT1/cmr/m/n/10.95 (\OML/cmm/m/it/10.95 ^^^S[]\OT1/cmr/m/n/10.95 ) [] +  []\O
+MS/cmsy/m/n/10.95 r ^^A []  [] \OT1/cmr/m/n/10.95 +  [] [] \OMS/cmsy/m/n/10.95 
+r ^^A []r\OML/cmm/m/it/10.95 p[] [] \OMS/cmsy/m/n/10.95 ^^@  []\OML/cmm/m/it/10
+.95 Q[] [] \OT1/cmr/m/n/10.95 =  []0\OML/cmm/m/it/10.95 :
+ []
+
+l2hSize :displaymath1049:37.00034pt::0.0pt::349.0pt.
+[92
+
+
+]
+l2hSize :tex2html_wrap_inline1433:7.57185pt::7.57185pt::13.34929pt.
+[93
+
+
+]
+l2hSize :displaymath1066:16.79805pt::0.0pt::349.0pt.
+[94
+
+
+]
+l2hSize :tex2html_wrap_inline1435:7.57185pt::7.57185pt::32.41957pt.
+[95
+
+
+]
+l2hSize :tex2html_wrap_indisplay4748:15.5119pt::15.5119pt::113.51524pt.
+[96
+
+
+]
+l2hSize :tex2html_wrap_indisplay4749:7.57185pt::7.57185pt::9.06422pt.
+[97
+
+
+]
+l2hSize :tex2html_wrap_indisplay4750:12.23756pt::12.23756pt::53.69907pt.
+[98
+
+
+]
+l2hSize :tex2html_wrap_indisplay4752:15.5119pt::15.5119pt::203.39624pt.
+[99
+
+
+]
+l2hSize :tex2html_wrap_indisplay4754:18.13756pt::18.13756pt::198.23123pt.
+[100
+
+
+]
+l2hSize :tex2html_wrap_inline1449:7.72179pt::7.72179pt::79.7041pt.
+[101
+
+
+]
+l2hSize :tex2html_wrap_inline1451:7.57185pt::7.57185pt::14.9399pt.
+[102
+
+
+]
+l2hSize :tex2html_wrap_inline1457:7.57185pt::7.57185pt::14.26561pt.
+[103
+
+
+]
+l2hSize :tex2html_wrap_inline1459:7.48248pt::0.0pt::8.76004pt.
+[104
+
+
+]
+l2hSize :tex2html_wrap_inline1461:8.7125pt::8.7125pt::49.11545pt.
+[105
+
+
+]
+l2hSize :tex2html_wrap_inline1463:7.98248pt::7.98248pt::28.4015pt.
+[106
+
+
+]
+l2hSize :tex2html_wrap_inline1465:8.7125pt::8.7125pt::49.11545pt.
+[107
+
+
+]
+l2hSize :tex2html_wrap_inline1467:8.10416pt::8.10416pt::28.4015pt.
+[108
+
+
+]
+l2hSize :tex2html_wrap_inline1469:8.7125pt::8.7125pt::21.84683pt.
+[109
+
+
+]
+l2hSize :tex2html_wrap_inline1471:8.7125pt::8.7125pt::38.53563pt.
+[110
+
+
+]
+l2hSize :tex2html_wrap_inline1477:8.10416pt::8.10416pt::11.33363pt.
+[111
+
+
+]
+l2hSize :tex2html_wrap_inline1481:8.7125pt::8.7125pt::25.41437pt.
+[112
+
+
+]
+l2hSize :tex2html_wrap_inline1485:8.7125pt::8.7125pt::40.83841pt.
+[113
+
+
+]
+l2hSize :tex2html_wrap_inline1487:9.12923pt::0.0pt::35.92781pt.
+[114
+
+
+]
+l2hSize :tex2html_wrap_inline1489:7.57185pt::7.57185pt::11.92987pt.
+[115
+
+
+]
+l2hSize :tex2html_wrap_inline1491:11.29387pt::11.29387pt::29.36073pt.
+[116
+
+
+]
+l2hSize :tex2html_wrap_inline1495:9.94032pt::9.94032pt::28.36974pt.
+[117
+
+
+]
+l2hSize :tex2html_wrap_inline1497:10.02922pt::10.02922pt::21.09544pt.
+[118
+
+
+]
+l2hSize :tex2html_wrap_inline1499:7.57185pt::7.57185pt::14.29796pt.
+[119
+
+
+]
+l2hSize :tex2html_wrap_inline1501:11.29387pt::11.29387pt::31.72882pt.
+[120
+
+
+]
+l2hSize :tex2html_wrap_inline1505:9.94032pt::9.94032pt::30.40865pt.
+[121
+
+
+]
+l2hSize :tex2html_wrap_inline1507:7.98248pt::7.98248pt::17.24268pt.
+[122
+
+
+]
+l2hSize :displaymath1111:16.93947pt::0.0pt::349.0pt.
+[123
+
+
+]
+l2hSize :tex2html_wrap_inline1509:7.98248pt::7.98248pt::20.98082pt.
+[124
+
+
+]
+l2hSize :tex2html_wrap_indisplay4836:15.5119pt::15.5119pt::120.56468pt.
+[125
+
+
+]
+l2hSize :tex2html_wrap_indisplay4840:8.7125pt::8.7125pt::130.7416pt.
+[126
+
+
+]
+l2hSize :displaymath1134:23.24033pt::0.0pt::349.0pt.
+[127
+
+
+]
+l2hSize :tex2html_wrap_indisplay4846:9.48506pt::9.48506pt::13.24138pt.
+[128
+
+
+]
+l2hSize :tex2html_wrap_indisplay4848:8.10416pt::8.10416pt::19.64813pt.
+[129
+
+
+]
+l2hSize :tex2html_wrap_indisplay4849:8.10416pt::8.10416pt::10.25041pt.
+[130
+
+
+]
+l2hSize :tex2html_wrap_indisplay4851:8.7125pt::8.7125pt::58.95401pt.
+[131
+
+
+]
+l2hSize :tex2html_wrap_inline1513:11.09106pt::11.09106pt::10.32898pt.
+[132
+
+
+]
+l2hSize :tex2html_wrap_inline1517:9.48506pt::9.48506pt::13.24138pt.
+[133
+
+
+]
+l2hSize :tex2html_wrap_inline1521:8.10416pt::8.10416pt::10.25041pt.
+[134
+
+
+]
+l2hSize :tex2html_wrap_inline1523:7.48248pt::0.0pt::7.99962pt.
+[135
+
+
+]
+l2hSize :tex2html_wrap_inline1525:7.57185pt::7.57185pt::6.825pt.
+[136
+
+
+]
+l2hSize :tex2html_wrap_inline1527:9.12923pt::0.0pt::50.45877pt.
+[137
+
+
+]
+l2hSize :displaymath1157:28.95552pt::0.0pt::349.0pt.
+[138
+
+
+]
+Overfull \hbox (42.58305pt too wide) detected at line 1376
+[]\OT1/cmr/m/n/10.95 (\OML/cmm/m/it/10.95 ^^^S[]\OT1/cmr/m/n/10.95 ) [] +  []\O
+MS/cmsy/m/n/10.95 r ^^A []  [] \OT1/cmr/m/n/10.95 +  [] [] \OMS/cmsy/m/n/10.95 
+r ^^A []r\OML/cmm/m/it/10.95 h[] [] \OMS/cmsy/m/n/10.95 ^^@  []\OML/cmm/m/it/10
+.95 Q[] [] \OT1/cmr/m/n/10.95 =  []0\OML/cmm/m/it/10.95 :
+ []
+
+l2hSize :displaymath1164:37.00034pt::0.0pt::349.0pt.
+[139
+
+
+]
+l2hSize :tex2html_wrap_inline1535:8.7125pt::8.7125pt::14.73692pt.
+[140
+
+
+]
+l2hSize :tex2html_wrap_inline1537:7.57185pt::7.57185pt::37.45195pt.
+[141
+
+
+]
+l2hSize :tex2html_wrap_indisplay4889:9.60674pt::9.60674pt::20.78224pt.
+[142
+
+
+]
+l2hSize :tex2html_wrap_indisplay4891:9.60674pt::9.60674pt::32.73497pt.
+[143
+
+
+]
+l2hSize :tex2html_wrap_indisplay4892:8.7125pt::8.7125pt::24.72879pt.
+[144
+
+
+]
+l2hSize :tex2html_wrap_indisplay4894:8.7125pt::8.7125pt::30.40405pt.
+[145
+
+
+]
+l2hSize :tex2html_wrap_indisplay4895:8.7125pt::8.7125pt::23.64009pt.
+[146
+
+
+]
+l2hSize :tex2html_wrap_indisplay4897:8.10416pt::8.10416pt::13.29208pt.
+[147
+
+
+]
+l2hSize :tex2html_wrap_indisplay4898:8.7125pt::8.7125pt::23.79219pt.
+[148
+
+
+]
+l2hSize :tex2html_wrap_indisplay4900:8.7125pt::8.7125pt::28.53085pt.
+[149
+
+
+]
+l2hSize :tex2html_wrap_indisplay4901:8.7125pt::8.7125pt::20.35258pt.
+[150
+
+
+]
+l2hSize :tex2html_wrap_indisplay4903:7.57185pt::7.57185pt::9.06421pt.
+[151
+
+
+]
+l2hSize :tex2html_wrap_inline1539:9.60674pt::9.60674pt::20.78224pt.
+[152
+
+
+]
+l2hSize :tex2html_wrap_inline1541:9.48506pt::9.48506pt::14.59749pt.
+[153
+
+
+]
+l2hSize :tex2html_wrap_inline1543:8.10416pt::8.10416pt::35.14493pt.
+[154
+
+
+]
+l2hSize :tex2html_wrap_inline1676:7.57185pt::7.57185pt::11.55582pt.
+[155
+
+
+]
+l2hSize :tex2html_wrap_inline1678:7.57185pt::7.57185pt::10.66617pt.
+[156
+
+
+]
+l2hSize :tex2html_wrap_inline1680:7.57185pt::7.57185pt::10.38988pt.
+[157
+
+
+]
+l2hSize :tex2html_wrap_inline1682:7.98248pt::7.98248pt::14.63033pt.
+[158
+
+
+]
+l2hSize :tex2html_wrap_inline1684:7.98248pt::7.98248pt::14.33403pt.
+[159
+
+
+]
+l2hSize :tex2html_wrap_inline1686:7.98248pt::7.98248pt::14.13727pt.
+[160
+
+
+]
+l2hSize :tex2html_wrap_inline1688:7.48248pt::0.0pt::15.93077pt.
+[161
+
+
+]
+l2hSize :tex2html_wrap_inline1690:7.98248pt::7.98248pt::15.43399pt.
+[162
+
+
+]
+l2hSize :tex2html_wrap_inline1692:7.48248pt::0.0pt::15.24641pt.
+[163
+
+
+]
+l2hSize :tex2html_wrap_inline1694:7.60416pt::0.0pt::4.03026pt.
+[164
+
+
+]
+l2hSize :tex2html_wrap_inline1696:8.7125pt::8.7125pt::63.66234pt.
+[165
+
+
+]
+l2hSize :tex2html_wrap_inline1698:8.7125pt::8.7125pt::62.95515pt.
+[166
+
+
+]
+l2hSize :tex2html_wrap_inline1700:8.7125pt::8.7125pt::33.14297pt.
+[167
+
+
+]
+l2hSize :tex2html_wrap_indisplay4924:7.57185pt::7.57185pt::15.19281pt.
+[168
+
+
+]
+l2hSize :tex2html_wrap_indisplay4926:15.39023pt::15.39023pt::66.84442pt.
+[169
+
+
+]
+l2hSize :tex2html_wrap_indisplay4927:7.57185pt::7.57185pt::14.83557pt.
+[170
+
+
+]
+l2hSize :tex2html_wrap_indisplay4929:15.39023pt::15.39023pt::67.14482pt.
+[171
+
+
+]
+l2hSize :tex2html_wrap_indisplay4930:7.57185pt::7.57185pt::15.77187pt.
+[172
+
+
+]
+l2hSize :tex2html_wrap_indisplay4932:15.39023pt::15.39023pt::67.57637pt.
+[173
+
+
+]
+l2hSize :tex2html_wrap_inline1704:7.57185pt::7.57185pt::72.17891pt.
+[174
+
+
+]
+l2hSize :tex2html_wrap_inline1708:7.07185pt::0.0pt::10.16177pt.
+[175
+
+
+]
+l2hSize :tex2html_wrap_indisplay4937:7.57185pt::7.57185pt::15.7656pt.
+[176
+
+
+]
+l2hSize :tex2html_wrap_indisplay4938:7.57185pt::7.57185pt::17.58092pt.
+[177
+
+
+]
+l2hSize :tex2html_wrap_indisplay4939:7.57185pt::7.57185pt::23.69392pt.
+[178
+
+
+]
+l2hSize :tex2html_wrap_indisplay4940:7.57185pt::7.57185pt::15.4693pt.
+[179
+
+
+]
+l2hSize :tex2html_wrap_indisplay4942:7.57185pt::7.57185pt::23.39763pt.
+[180
+
+
+]
+l2hSize :tex2html_wrap_indisplay4943:7.57185pt::7.57185pt::15.27254pt.
+[181
+
+
+]
+l2hSize :tex2html_wrap_indisplay4945:7.57185pt::7.57185pt::23.20087pt.
+[182
+
+
+]
+l2hSize :tex2html_wrap_inline1712:7.72179pt::7.72179pt::14.59782pt.
+[183
+
+
+]
+l2hSize :tex2html_wrap_inline1714:7.72179pt::7.72179pt::14.30153pt.
+[184
+
+
+]
+l2hSize :tex2html_wrap_inline1716:7.72179pt::7.72179pt::14.10477pt.
+[185
+
+
+]
+l2hSize :tex2html_wrap_inline1718:7.57185pt::7.57185pt::17.39798pt.
+[186
+
+
+]
+l2hSize :tex2html_wrap_inline1720:7.57185pt::7.57185pt::17.10168pt.
+[187
+
+
+]
+l2hSize :tex2html_wrap_inline1722:7.57185pt::7.57185pt::16.90492pt.
+[188
+
+
+]
+l2hSize :tex2html_wrap_inline1724:7.57185pt::7.57185pt::15.9582pt.
+[189
+
+
+]
+l2hSize :tex2html_wrap_inline1726:7.57185pt::7.57185pt::15.66191pt.
+[190
+
+
+]
+l2hSize :tex2html_wrap_inline1728:7.57185pt::7.57185pt::15.46515pt.
+[191
+
+
+]
+l2hSize :tex2html_wrap_indisplay4957:8.7125pt::8.7125pt::178.50337pt.
+[192
+
+
+]
+l2hSize :tex2html_wrap_indisplay4958:8.7125pt::8.7125pt::177.61449pt.
+[193
+
+
+]
+l2hSize :tex2html_wrap_indisplay4959:8.7125pt::8.7125pt::171.54918pt.
+[194
+
+
+]
+l2hSize :tex2html_wrap_inline1730:8.10416pt::8.10416pt::24.10518pt.
+[195
+
+
+]
+l2hSize :tex2html_wrap_inline1732:7.48248pt::0.0pt::9.09842pt.
+[196
+
+
+]
+l2hSize :tex2html_wrap_inline1734:8.10416pt::8.10416pt::28.24442pt.
+[197
+
+
+]
+l2hSize :display1807:52.72083pt::0.0pt::349.0pt.
+[198
+
+
+]
+l2hSize :display1814:37.6pt::0.0pt::349.0pt.
+[199
+
+
+]
+l2hSize :display1835:38.64174pt::0.0pt::349.0pt.
+[200
+
+
+]
+l2hSize :display1839:37.6pt::0.0pt::349.0pt.
+[201
+
+
+]
+l2hSize :tex2html_wrap_inline1966:7.57185pt::7.57185pt::60.16411pt.
+[202
+
+
+]
+l2hSize :display1892:34.03749pt::0.0pt::349.0pt.
+[203
+
+
+]
+l2hSize :display1901:34.03749pt::0.0pt::349.0pt.
+[204
+
+
+]
+Overfull \hbox (40.54239pt too wide) in paragraph at lines 1803--1803
+ []\OT1/cmtt/m/n/10.95 vxp -path "proj_dir global_express_dir" -generate -exit 
+[-none][] 
+ []
+
+l2hSize :display1908:34.03749pt::0.0pt::349.0pt.
+[205
+
+
+]
+l2hSize :display2117:53.63335pt::0.0pt::349.0pt.
+[206
+
+
+]
+Overfull \hbox (80.7832pt too wide) in paragraph at lines 1846--1846
+ []   \OT1/cmtt/m/n/10.95 double   X,  Y,  Z;    /* Bottom-lower-left corner in
+ real-space */[] 
+ []
+
+
+Overfull \hbox (52.03976pt too wide) in paragraph at lines 1846--1846
+ []   \OT1/cmtt/m/n/10.95 int      NX, NY, NZ;   /* Size in each coordinate dir
+ection */[] 
+ []
+
+
+Overfull \hbox (69.28583pt too wide) in paragraph at lines 1846--1846
+ []   \OT1/cmtt/m/n/10.95 double   DX, DY, DZ;   /* Spacing in each coordinate 
+direction */[] 
+ []
+
+l2hSize :display2315:121.63338pt::0.0pt::349.0pt.
+[207
+
+
+]
+Overfull \hbox (80.7832pt too wide) in paragraph at lines 1865--1865
+ []   \OT1/cmtt/m/n/10.95 int  ix, iy, iz;      /* Bottom-lower-left corner in 
+index-space */[] 
+ []
+
+
+Overfull \hbox (57.78845pt too wide) in paragraph at lines 1865--1865
+ []   \OT1/cmtt/m/n/10.95 int  rx, ry, rz;      /* Refinement over the backgrou
+nd grid */[] 
+ []
+
+
+Overfull \hbox (34.7937pt too wide) in paragraph at lines 1865--1865
+ []   \OT1/cmtt/m/n/10.95 int  level;           /* Refinement level = rx + ry +
+ rz */[] 
+ []
+
+
+Overfull \hbox (34.7937pt too wide) in paragraph at lines 1865--1865
+ []   \OT1/cmtt/m/n/10.95 int  process;         /* Process containing this subg
+rid */[] 
+ []
+
+l2hSize :display2321:176.0334pt::0.0pt::349.0pt.
+[208
+
+
+]
+Overfull \hbox (63.53714pt too wide) in paragraph at lines 1879--1879
+ []   \OT1/cmtt/m/n/10.95 Subregion  **subregions;   /* Array of pointers to su
+bregions */[] 
+ []
+
+
+Overfull \hbox (23.29633pt too wide) in paragraph at lines 1879--1879
+ []   \OT1/cmtt/m/n/10.95 int          size;         /* Size of subgregion arra
+y */[] 
+ []
+
+l2hSize :display2327:108.03337pt::0.0pt::349.0pt.
+[209
+
+
+]
+Overfull \hbox (46.29108pt too wide) in paragraph at lines 1894--1894
+ []   \OT1/cmtt/m/n/10.95 SubregionArray  **subregion_arrays;   /* Array of poi
+nters to[] 
+ []
+
+
+Overfull \hbox (40.54239pt too wide) in paragraph at lines 1894--1894
+ []                                          \OT1/cmtt/m/n/10.95 * subregion ar
+rays */[] 
+ []
+
+
+Overfull \hbox (29.04501pt too wide) in paragraph at lines 1894--1894
+ []   \OT1/cmtt/m/n/10.95 int               size;               /* Size of regi
+on */[] 
+ []
+
+l2hSize :display2331:121.63338pt::0.0pt::349.0pt.
+[210
+
+
+]
+l2hSize :display2335:40.03334pt::0.0pt::349.0pt.
+[211
+
+
+]
+l2hSize :display2339:40.03334pt::0.0pt::349.0pt.
+[212
+
+
+]
+Overfull \hbox (86.53189pt too wide) in paragraph at lines 1931--1931
+ []   \OT1/cmtt/m/n/10.95 SubgridArray  *subgrids;     /* Array of subgrids in 
+this process */[] 
+ []
+
+
+Overfull \hbox (86.53189pt too wide) in paragraph at lines 1931--1931
+ []   \OT1/cmtt/m/n/10.95 SubgridArray  *all_subgrids; /* Array of all subgrids
+ in the grid */[] 
+ []
+
+
+Overfull \hbox (52.03976pt too wide) in paragraph at lines 1931--1931
+ []   \OT1/cmtt/m/n/10.95 int            size;         /* Total number of grid 
+points */[] 
+ []
+
+l2hSize :display2343:175.12088pt::0.0pt::349.0pt.
+[213
+
+
+]
+l2hSize :display2358:134.32086pt::0.0pt::349.0pt.
+[214
+
+
+]
+l2hSize :display2362:148.83339pt::0.0pt::349.0pt.
+[215
+
+
+]
+l2hSize :display2366:216.83342pt::0.0pt::349.0pt.
+[216
+
+
+]
+Overfull \hbox (121.02402pt too wide) in paragraph at lines 1997--1997
+ []\OT1/cmtt/m/n/10.95 SubregionArraySubregion(subregion_array, i)  subregion_a
+rray -> subregions[i][] 
+ []
+
+
+Overfull \hbox (69.28583pt too wide) in paragraph at lines 1997--1997
+ []\OT1/cmtt/m/n/10.95 SubregionArraySize(subregion_array)          subregion_a
+rray -> size[] 
+ []
+
+l2hSize :display2370:53.63335pt::0.0pt::349.0pt.
+[217
+
+
+]
+Overfull \hbox (34.7937pt too wide) in paragraph at lines 2007--2007
+ []\OT1/cmtt/m/n/10.95 RegionSubregionArray(region, i)  region -> subregion_arr
+ays[i][] 
+ []
+
+l2hSize :display2374:53.63335pt::0.0pt::349.0pt.
+[218
+
+
+]
+l2hSize :display2378:176.0334pt::0.0pt::349.0pt.
+[219
+
+
+]
+Overfull \hbox (138.27008pt too wide) in paragraph at lines 2036--2036
+ []\OT1/cmtt/m/n/10.95 SubgridArraySubgrid(subgrid_array, i)  SubregionArraySub
+region(subgrid_array, i)[] 
+ []
+
+
+Overfull \hbox (92.28058pt too wide) in paragraph at lines 2036--2036
+ []\OT1/cmtt/m/n/10.95 SubgridArraySize(subgrid_array)        SubregionArraySiz
+e(subgrid_array)[] 
+ []
+
+l2hSize :display2382:53.63335pt::0.0pt::349.0pt.
+[220
+
+
+]
+Overfull \hbox (63.53714pt too wide) in paragraph at lines 2051--2051
+ []\OT1/cmtt/m/n/10.95 GridSubgrid(grid, i)     SubgridArraySubgrid(GridSubgrid
+s(grid), i)[] 
+ []
+
+
+Overfull \hbox (29.04501pt too wide) in paragraph at lines 2051--2051
+ []\OT1/cmtt/m/n/10.95 GridNumSubgrids(grid)    SubgridArraySize(GridSubgrids(g
+rid))[] 
+ []
+
+l2hSize :display2386:121.63338pt::0.0pt::349.0pt.
+[221
+
+
+]
+l2hSize :deftypefn2393:178.92001pt::0.0pt::349.0pt.
+[222
+
+
+]
+Overfull \hbox (23.05382pt too wide) in paragraph at lines 2076--2077
+[]\OT1/cmr/m/n/10.95 (\OT1/cmtt/m/n/10.95 int [], int [], int [], int [], int [
+],
+ []
+
+
+Overfull \hbox (6.6899pt too wide) in paragraph at lines 2076--2077
+\OT1/cmtt/m/n/10.95 int [], int [], int [], int [], int [], int [], int [], int
+
+ []
+
+l2hSize :deftypefn2408:192.52002pt::0.0pt::349.0pt.
+[223
+
+
+]
+l2hSize :deftypefn2434:206.12003pt::0.0pt::349.0pt.
+[224
+
+
+]
+l2hSize :deftypefn2451:219.72003pt::0.0pt::349.0pt.
+[225
+
+
+]
+Overfull \hbox (3.4584pt too wide) in paragraph at lines 2133--2134
+[]\OT1/cmr/m/n/10.95 (\OT1/cmtt/m/n/10.95 int
+ []
+
+
+Overfull \hbox (5.62549pt too wide) in paragraph at lines 2133--2134
+[]\OT1/cmtt/m/n/10.95 , int [], int [], int [], int [], int [], int [], int [],
+
+ []
+
+l2hSize :deftypefn2473:236.95004pt::0.0pt::349.0pt.
+[226
+
+
+]
+l2hSize :deftypefn2497:206.12003pt::0.0pt::349.0pt.
+[227
+
+
+]
+Overfull \hbox (32.28107pt too wide) in paragraph at lines 2171--2172
+[]\OT1/cmr/m/n/10.95 (\OT1/cmtt/m/n/10.95 SubgridArray * [], SubgridArray * []\
+OT1/cmr/m/n/10.95 )
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2171--2172
+
+ []
+
+l2hSize :deftypefn2514:206.12003pt::0.0pt::349.0pt.
+[228
+
+
+]
+l2hSize :deftypefn2534:165.32pt::0.0pt::349.0pt.
+[229
+
+
+]
+l2hSize :deftypefn2549:165.32pt::0.0pt::349.0pt.
+[230
+
+
+]
+Overfull \hbox (26.81772pt too wide) in paragraph at lines 2223--2229
+\OT1/cmr/m/n/10.95 pointed to by it. Of-ten times one may want to free up the [
+]
+ []
+
+l2hSize :deftypefn2564:367.62009pt::0.0pt::349.0pt.
+[231
+
+
+]
+l2hSize :deftypefn2589:367.62009pt::0.0pt::349.0pt.
+[232
+
+
+]
+Overfull \hbox (6.46187pt too wide) in paragraph at lines 2289--2290
+[]\OT1/cmr/m/n/10.95 (\OT1/cmtt/m/n/10.95 Subgrid *
+ []
+
+l2hSize :deftypefn2614:223.35004pt::0.0pt::349.0pt.
+[233
+
+
+]
+Overfull \hbox (56.01784pt too wide) in paragraph at lines 2310--2311
+[]\OT1/cmr/m/n/10.95 (\OT1/cmtt/m/n/10.95 SubgridArray
+ []
+
+l2hSize :deftypefn2630:425.65012pt::0.0pt::349.0pt.
+[234
+
+
+]
+l2hSize :deftypefn2656:178.92001pt::0.0pt::349.0pt.
+[235
+
+
+]
+Overfull \hbox (41.63766pt too wide) in paragraph at lines 2382--2382
+ []   \OT1/cmtt/m/n/10.95 subregion = SubregionArraySubregion(subregion_array, 
+i);[] 
+ []
+
+l2hSize :defmac2673:381.2201pt::0.0pt::349.0pt.
+[236
+
+
+]
+Overfull \hbox (7.14554pt too wide) in paragraph at lines 2415--2415
+ []   \OT1/cmtt/m/n/10.95 subregion_array = RegionSubregionArray(region, i);[] 
+
+ []
+
+l2hSize :defmac2692:381.2201pt::0.0pt::349.0pt.
+[237
+
+
+]
+l2hSize :defmac2711:381.2201pt::0.0pt::349.0pt.
+[238
+
+
+]
+l2hSize :deftypefn2730:64.31998pt::0.0pt::349.0pt.
+[239
+
+
+]
+l2hSize :deftypefn2737:64.31998pt::0.0pt::349.0pt.
+[240
+
+
+]
+l2hSize :deftypefn2744:222.62003pt::0.0pt::349.0pt.
+[241
+
+
+]
+l2hSize :deftypefn2762:64.31998pt::0.0pt::349.0pt.
+[242
+
+
+]
+l2hSize :deftypefn2769:64.31998pt::0.0pt::349.0pt.
+[243
+
+
+]
+l2hSize :deftypefn2776:222.62003pt::0.0pt::349.0pt.
+[244
+
+
+]
+l2hSize :deftypefn2794:151.72pt::0.0pt::349.0pt.
+[245
+
+
+]
+Overfull \hbox (4.21086pt too wide) in paragraph at lines 2545--2546
+[]\OT1/cmr/m/n/10.95 (\OT1/cmtt/m/n/10.95 Subregion * [], SubregionArray *
+ []
+
+
+Overfull \hbox (5.05191pt too wide) in paragraph at lines 2550--2556
+\OT1/cmr/bx/n/10.95 Important: \OT1/cmr/m/n/10.95 No new [] struc-ture is cre-a
+ted; only the pointer
+ []
+
+l2hSize :deftypefn2807:236.22003pt::0.0pt::349.0pt.
+[246
+
+
+]
+Overfull \hbox (5.89806pt too wide) in paragraph at lines 2567--2568
+[]\OT1/cmr/m/n/10.95 (\OT1/cmtt/m/n/10.95 SubregionArray * [],
+ []
+
+l2hSize :deftypefn2827:236.22003pt::0.0pt::349.0pt.
+[247
+
+
+]
+Overfull \hbox (10.2641pt too wide) in paragraph at lines 2591--2592
+[]
+ []
+
+l2hSize :deftypefn2847:209.75003pt::0.0pt::349.0pt.
+[248
+
+
+]
+Overfull \hbox (14.98611pt too wide) in paragraph at lines 2611--2612
+[]\OT1/cmr/m/n/10.95 (\OT1/cmtt/m/n/10.95 Subgrid
+ []
+
+l2hSize :deftypefn2861:209.75003pt::0.0pt::349.0pt.
+[249
+
+
+]
+Overfull \hbox (2.79686pt too wide) in paragraph at lines 2631--2632
+[]
+ []
+
+
+Overfull \hbox (18.32211pt too wide) in paragraph at lines 2631--2632
+\OT1/cmr/m/n/10.95 (\OT1/cmtt/m/n/10.95 SubgridArray * [], SubgridArray * []\OT
+1/cmr/m/n/10.95 )
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2631--2632
+
+ []
+
+l2hSize :deftypefn2878:223.35004pt::0.0pt::349.0pt.
+[250
+
+
+]
+l2hSize :deftypefn2895:209.02002pt::0.0pt::349.0pt.
+[251
+
+
+]
+Overfull \hbox (14.86429pt too wide) in paragraph at lines 2670--2675
+\OT1/cmr/m/n/10.95 Converts [] to a [] if pos-si-ble, and re-turns it. []
+ []
+
+l2hSize :deftypefn2911:192.52002pt::0.0pt::349.0pt.
+[252
+
+
+]
+Overfull \hbox (22.27066pt too wide) in paragraph at lines 2687--2688
+[]\OT1/cmr/m/n/10.95 (\OT1/cmtt/m/n/10.95 Subgrid * [], int [], int [], int
+ []
+
+l2hSize :deftypefn2929:206.12003pt::0.0pt::349.0pt.
+[253
+
+
+]
+Overfull \hbox (30.58969pt too wide) in paragraph at lines 2707--2708
+[]\OT1/cmr/m/n/10.95 (\OT1/cmtt/m/n/10.95 int [], int [], int [], Subgrid * []\
+OT1/cmr/m/n/10.95 )
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2707--2708
+
+ []
+
+l2hSize :deftypefn2957:249.82004pt::0.0pt::349.0pt.
+[254
+
+
+]
+Overfull \hbox (10.7082pt too wide) in paragraph at lines 2731--2732
+[]
+ []
+
+l2hSize :deftypefn2979:223.35004pt::0.0pt::349.0pt.
+[255
+
+
+]
+Overfull \hbox (2.05276pt too wide) in paragraph at lines 2751--2752
+[]\OT1/cmr/m/n/10.95 (\OT1/cmtt/m/n/10.95 Subgrid * [], Subgrid *
+ []
+
+l2hSize :deftypefn2997:165.32pt::0.0pt::349.0pt.
+[256
+
+
+]
+Overfull \hbox (8.41931pt too wide) in paragraph at lines 2767--2768
+[]\OT1/cmr/m/n/10.95 (\OT1/cmtt/m/n/10.95 SubgridArray * []\OT1/cmr/m/n/10.95 )
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2767--2768
+
+ []
+
+l2hSize :deftypefn3014:263.42004pt::0.0pt::349.0pt.
+[257
+
+
+] (./images.aux)
+
+LaTeX Warning: There were multiply-defined labels.
+
+ ) 
+Here is how much of TeX's memory you used:
+ 823 strings out of 95847
+ 10144 string characters out of 1195947
+ 58302 words of memory out of 1000001
+ 3761 multiletter control sequences out of 10000+50000
+ 22500 words of font info for 84 fonts, out of 500000 for 1000
+ 14 hyphenation exceptions out of 1000
+ 25i,6n,22p,275b,375s stack positions out of 1500i,500n,5000p,200000b,5000s
+
+Output written on images.dvi (259 pages, 60396 bytes).

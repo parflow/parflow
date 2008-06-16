@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002-2-1 (1.70) JA patch-2.0
+patched version by:  Kenshi Muto, Debian Project.
+* modified by:  Shige TAKENO
+LaTeX2HTML 2002-2-1 (1.70),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>10.3.4 Backing up an Archive</TITLE>
+<META NAME="description" CONTENT="10.3.4 Backing up an Archive">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002-2-1 JA patch-2.0">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node52.html">
+<LINK REL="previous" HREF="node50.html">
+<LINK REL="up" HREF="node47.html">
+<LINK REL="next" HREF="node52.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html941"
+  HREF="node52.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html935"
+  HREF="node47.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html929"
+  HREF="node50.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html937"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html939"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html942"
+  HREF="node52.html">10.3.5 Removing an Archive</A>
+<B> Up:</B> <A NAME="tex2html936"
+  HREF="node47.html">10.3 Data Archiving</A>
+<B> Previous:</B> <A NAME="tex2html930"
+  HREF="node50.html">10.3.3 Creating an Archive</A>
+ &nbsp; <B>  <A NAME="tex2html938"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html940"
+  HREF="node92.html">Index</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION001134000000000000000"></A>
+<A NAME="Backing_up_an_Archive"></A>
+<BR>
+10.3.4 Backing up an Archive
+</H2>
+
+<P>
+Suppose you wanted to backup to tape an archived simulation, with
+the run-name ``xyzzy''.  Do the following :
+
+<OL>
+<LI>As user <I>parflow</I> :
+      
+<OL>
+<LI>Get and mount a tape on an appropriate machine.
+</LI>
+<LI>Go to the directory&nbsp;parflow/data.
+</LI>
+<LI>Issue the command tar -chvf TAPE_DEVICE_NAME ./*/xyzzy,
+            where ``TAPE_DEVICE_NAME'' is the name of the tape drive on
+            the particular system.
+      
+</LI>
+</OL>
+</LI>
+<LI>As the user performing the backup :
+      
+<OL>
+<LI>Make an entry in the system tape log book about the tape.
+</LI>
+<LI>Checkout (and lock) the file INFO.html.
+</LI>
+<LI>Make a note that you backed up the data at this day and time
+            in the file INFO.html.
+</LI>
+<LI>Checkin the file INFO.html.
+      
+</LI>
+</OL>
+</LI>
+</OL>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html941"
+  HREF="node52.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html935"
+  HREF="node47.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html929"
+  HREF="node50.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html937"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html939"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html942"
+  HREF="node52.html">10.3.5 Removing an Archive</A>
+<B> Up:</B> <A NAME="tex2html936"
+  HREF="node47.html">10.3 Data Archiving</A>
+<B> Previous:</B> <A NAME="tex2html930"
+  HREF="node50.html">10.3.3 Creating an Archive</A>
+ &nbsp; <B>  <A NAME="tex2html938"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html940"
+  HREF="node92.html">Index</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Steve Smith
+2008-06-02
+</ADDRESS>
+</BODY>
+</HTML>

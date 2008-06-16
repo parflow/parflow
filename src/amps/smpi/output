@@ -1,0 +1,32 @@
+amps_exchange.c:	MPI_Type_free(&(handle -> package -> recv_invoices[i] -> mpi_type));   
+amps_exchange.c:	MPI_Type_free(&handle -> package -> send_invoices[i] -> mpi_type);
+amps_exchange.c:      amps_create_mpi_type(MPI_COMM_WORLD, package -> recv_invoices[i]);
+amps_exchange.c:      MPI_Type_commit(&(package -> recv_invoices[i] -> mpi_type));
+amps_exchange.c:      MPI_Irecv(MPI_BOTTOM, 1, package -> recv_invoices[i] -> mpi_type, 
+amps_exchange.c:      amps_create_mpi_type(MPI_COMM_WORLD, package -> send_invoices[i]);
+amps_exchange.c:      MPI_Type_commit(&(package -> send_invoices[i] -> mpi_type));
+amps_exchange.c:      MPI_Isend(MPI_BOTTOM, 1, package -> send_invoices[i] -> mpi_type, 
+amps_invoice.c:    if( inv -> mpi_type != MPI_DATATYPE_NULL )
+amps_invoice.c:       MPI_Type_free(&inv->mpi_type);
+amps_invoice.c:   temp -> mpi_type = MPI_DATATYPE_NULL;
+amps_newpackage.c:	 amps_create_mpi_type(MPI_COMM_WORLD, recv_invoices[i]);
+amps_newpackage.c:	 MPI_Type_commit(&(recv_invoices[i] -> mpi_type));
+amps_newpackage.c:	 MPI_Recv_init(MPI_BOTTOM, 1, recv_invoices[i] -> mpi_type, 
+amps_newpackage.c:	 amps_create_mpi_type(comm, send_invoices[i]);
+amps_newpackage.c:	 MPI_Type_commit(&(send_invoices[i] -> mpi_type));
+amps_newpackage.c:	 MPI_Send_init(MPI_BOTTOM, 1, send_invoices[i] -> mpi_type, 
+amps_pack.c:void amps_create_mpi_type(comm, inv)
+amps_pack.c:   MPI_Datatype *mpi_types;
+amps_pack.c:   mpi_types = calloc(inv->num, sizeof(MPI_Datatype));
+amps_pack.c:			    &mpi_types[element]);
+amps_pack.c:			    &mpi_types[element]);
+amps_pack.c:			    &mpi_types[element]);
+amps_pack.c:			    &mpi_types[element]);
+amps_pack.c:			    &mpi_types[element]);
+amps_pack.c:			    &mpi_types[element]);
+amps_pack.c:	    base_type = &mpi_types[element];
+amps_pack.c:				*base_type, &mpi_types[element]);
+amps_pack.c:		   mpi_types, 
+amps_pack.c:		   &inv -> mpi_type);
+amps_pack.c:      MPI_Type_free(&mpi_types[element]);
+amps_pack.c:   free(mpi_types);

@@ -94,5 +94,4 @@ clean:
 
 veryclean: clean
 	@rm -f pfwell_cat pfwell_data gmstin2pfsrf gmssol2pfsol
-	@rm -f gmstinvertices projecttin gmstriangulate bgmsfem2pfsol
 

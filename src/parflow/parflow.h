@@ -4,7 +4,7 @@
  * See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
  * notice, contact person, and disclaimer.
  *
- * $Revision$
+ * $Revision: 1.1.1.1 $
  *********************************************************************EHEADER*/
 
 /******************************************************************************
@@ -24,8 +24,9 @@
 #include <stdio.h>
 #include <math.h>
 
-#include <limits.h>
-#include <float.h>
+#ifndef _WIN32
+#include <values.h>
+#endif
 
 #include <amps.h>
 

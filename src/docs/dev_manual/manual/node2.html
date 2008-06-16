@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002-2-1 (1.70) JA patch-2.0
+patched version by:  Kenshi Muto, Debian Project.
+* modified by:  Shige TAKENO
+LaTeX2HTML 2002-2-1 (1.70),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>1. Introduction</TITLE>
+<META NAME="description" CONTENT="1. Introduction">
+<META NAME="keywords" CONTENT="manual">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002-2-1 JA patch-2.0">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="manual.css">
+
+<LINK REL="next" HREF="node3.html">
+<LINK REL="previous" HREF="node1.html">
+<LINK REL="up" HREF="manual.html">
+<LINK REL="next" HREF="node3.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html214"
+  HREF="node3.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html208"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html202"
+  HREF="node1.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html210"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html212"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html215"
+  HREF="node3.html">2. Code Organization</A>
+<B> Up:</B> <A NAME="tex2html209"
+  HREF="manual.html">manual</A>
+<B> Previous:</B> <A NAME="tex2html203"
+  HREF="node1.html">Contents</A>
+ &nbsp; <B>  <A NAME="tex2html211"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html213"
+  HREF="node92.html">Index</A></B> 
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00200000000000000000"></A>
+<A NAME="Introduction"></A>
+<BR>
+1. Introduction
+</H1>
+
+<P>
+is a contaminant transport and groundwater flow model
+designed to run efficiently in a multi-processor computing environment
+on a variety of commercially-available machines.
+This has been designed by scientists in the Center for Computational
+Sciences and Engineering <EM>CCSE</EM> at Lawrence Livermore National
+Laboratory, with support from the Earth Science and Environmental
+Protection Departments.
+Because  is able to utilize the computing power that is
+available on today's supercomputers, it is able to more accurately model
+the effects of subsurface heterogeneity on fluid transport processes.
+Heterogeneity is present on many scales in the subsurface, ranging
+from the microscopic capillary processes to macroscopic variations in
+structure, such as fractures and faults.
+ attempts to account for heterogeneity and model its
+effects on contaminant flow.
+
+<P>
+is intended to be used as a tool for modeling
+environmental transport processes.
+A number of aspects of this problem are active areas of research:
+numerical algorithms in a parallel environment, geostatistical
+methods for characterizing porous media, and the fundamental
+physics of multiphase transport in heterogeneous porous media are
+some of the major research topics that will be addressed in
+constructing .
+In order to allow developers to easily reconfigure the 
+simulator to test new methods for approaching this complex problem,
+the software system has been designed in a modular fashion that allows
+alternative methods for accomplishing various tasks to be inserted
+into the system.
+The user has the freedom to choose from among the various options to
+configure the simulator and problem setup at run-time in order to
+easily compare alternatives.
+As additional capability is developed for the  simulator,
+it must conform to the design standards that have been chosen to allow
+seamless integration into the existing system.
+This manual is intended to describe the  software in sufficient
+detail to allow members of the  development team to
+gain a comprehensive understanding of the  system
+and some of the issues that have led to the design decisions that
+have been made.
+
+<P>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html214"
+  HREF="node3.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html208"
+  HREF="manual.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html202"
+  HREF="node1.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A> 
+<A NAME="tex2html210"
+  HREF="node1.html">
+<IMG WIDTH="65" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="contents"
+ SRC="file:/usr/share/latex2html/icons/contents.png"></A> 
+<A NAME="tex2html212"
+  HREF="node92.html">
+<IMG WIDTH="43" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="index"
+ SRC="file:/usr/share/latex2html/icons/index.png"></A> 
+<BR>
+<B> Next:</B> <A NAME="tex2html215"
+  HREF="node3.html">2. Code Organization</A>
+<B> Up:</B> <A NAME="tex2html209"
+  HREF="manual.html">manual</A>
+<B> Previous:</B> <A NAME="tex2html203"
+  HREF="node1.html">Contents</A>
+ &nbsp; <B>  <A NAME="tex2html211"
+  HREF="node1.html">Contents</A></B> 
+ &nbsp; <B>  <A NAME="tex2html213"
+  HREF="node92.html">Index</A></B> 
+<!--End of Navigation Panel-->
+<ADDRESS>
+Steve Smith
+2008-06-02
+</ADDRESS>
+</BODY>
+</HTML>

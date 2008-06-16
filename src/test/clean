@@ -1,3 +1,0 @@
-rm -f *pfb*
-rm -f *.txt
-rm -f *.log

@@ -1,0 +1,38 @@
+
+KINSOL starting step for time 0.001000
+scsteptol used:        1e-07 
+fnormtol  used:        1e-09 
+ KINInitialStop:scaled f norm (for stopping):       0.0192
+KINSolInit nni=    0  fnorm=         0.1707742908891384  nfe=     1 
+KINSpgmrSolve: nli_inc=4
+linear (Krylov step) residual norm     1.66e-06  eps     1.71e-06
+KINLineSearch -----
+  min_lam 1.9357e-07  f1norm 1.4582e-02  pnorm 6.9170e+00
+ scaled f norm (for stopping):     0.000489
+KINSol nni=    1 fnorm=       0.003364871798562824 nfe=     2
+KINSpgmrSolve: nli_inc=4
+linear (Krylov step) residual norm     1.92e-08  eps     3.36e-08
+KINLineSearch -----
+  min_lam 1.0521e-05  f1norm 5.6612e-06  pnorm 1.1586e-01
+ scaled f norm (for stopping):     1.94e-07
+KINSol nni=    2 fnorm=      1.130257214960861e-06 nfe=     3
+KINSpgmrSolve: nli_inc=4
+linear (Krylov step) residual norm     1.08e-11  eps     1.13e-11
+KINLineSearch -----
+  min_lam 3.7993e-02  f1norm 6.3874e-13  pnorm 3.6075e-05
+ scaled f norm (for stopping):     3.93e-12
+KINSol nni=    3 fnorm=      1.081299181834163e-11 nfe=     4
+KINSol return value 1
+---KINSOL_SUCCESS
+
+-------------------------------------------------- 
+                    Iteration             Total
+Nonlin. Its.:               3                 3
+Lin. Its.:                 12                12
+Func. Evals.:               4                 4
+PC Evals.:                  3                 3
+PC Solves:                 15                15
+Lin. Conv. Fails:           0                 0
+Beta Cond. Fails:           0                 0
+Backtracks:                 0                 0
+-------------------------------------------------- 
