@@ -144,3 +144,54 @@ int amps_Init(int *argc, char **argv[])
 }  
 
 
+/*===========================================================================*/
+/**
+
+Initialization when ParFlow is being invoked by another application.
+This must be done before any other {\em AMPS} calls.
+
+{\large Example:}
+\begin{verbatim}
+int main( int argc, char *argv)
+{
+   amps_EmbeddedInit();
+   
+   amps_Printf("Hello World");
+
+   amps_Finalize();
+}
+\end{verbatim}
+
+{\large Notes:}
+
+@memo Initialize AMPS
+@return 
+*/
+int amps_EmbeddedInit(void)
+{
+   MPI_Comm_size(MPI_COMM_WORLD, &amps_size);
+   MPI_Comm_rank(MPI_COMM_WORLD, &amps_rank);
+
+#ifdef AMPS_STDOUT_NOBUFF
+   setbuf (stdout, NULL);
+#endif
+
+#ifdef AMPS_BSD_TIME
+   amps_clock_init();
+#endif
+
+#ifdef AMPS_MALLOC_DEBUG
+    dmalloc_logpath = amps_malloclog;
+    sprintf(dmalloc_logpath, "malloc.log.%04d", amps_Rank(amps_CommWorld));
+#endif
+
+#ifdef TIMING
+#ifndef CRAY_TIME
+   AMPS_CPU_TICKS_PER_SEC = sysconf(_SC_CLK_TCK);
+#endif
+#endif
+
+   return 0;
+}  
+
+

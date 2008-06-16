@@ -24,12 +24,9 @@
 #
 # First try uname 
 #
-if [ -f /bin/uname ] 
-then
-	PF_OS="`/bin/uname -s`"
-	PF_OS_Release="`/bin/uname -r`"
-	PF_OS_Machine="`/bin/uname -m`"
-fi
+PF_OS="`uname -s`"
+PF_OS_Release="`uname -r`"
+PF_OS_Machine="`uname -m`"
 
 #
 # Based on what we found from system queries set PF_ARCH
@@ -37,33 +34,13 @@ fi
 if [ -z "$PF_ARCH" ]
 then
 	case "$PF_OS" in
-		SunOS) case "$PF_OS_Release" in	
-			4.*) PF_ARCH="sunos";;
-			5.*)   PF_ARCH="solaris";;
-		esac;;
 		Linux) 
                        PF_ARCH="linux"
                        SUNDIALS_ARCH=`uname -s`.`uname -m`;;
 		AIX)   PF_ARCH="sp2";;
-		sn*)   case "$PF_OS_Machine" in
-			*Y-MP*) PF_ARCH="t3d";;
-			*T3E*) PF_ARCH="t3e";;
-		esac;;
-		IRIX)	PF_ARCH="irix";;
-		IRIX64)	PF_ARCH="irix";;
-		OSF1)	PF_ARCH="alpha";;
-		"Paragon OSF/1")	PF_ARCH="paragon";;
+		Darwin)	PF_ARCH="darwin";;
 	esac
-	if [ -d /usr/ncube ]; then
-		PF_ARCH="ncube2"
-	fi
 fi
-
-if [ `hostname` = "sasn100" ]
-then
-    PF_ARCH="paragon"
-fi
-
 
 #
 # Default MP system for the architecture we determined above
@@ -71,16 +48,8 @@ fi
 if [ -z "$PF_COMM" ]
 then
 	case "$PF_ARCH" in
-		sunos) PF_COMM="cerk";;
-		solaris) PF_COMM="mpi1";;
 		linux) PF_COMM="mpi1";;
-		ncube2) PF_COMM="cerk";;
-		sp2) PF_COMM="mpi1";;
-		t3d) PF_COMM="t3ds";;
-		t3e) PF_COMM="t3ds";;
-		irix) PF_COMM="irixshmem";;
-		alpha) PF_COMM="mpi1";;
-		paragon) PF_COMM="smpi";;
+		darwin) PF_COMM="mpi1";;
 	esac
 fi
 

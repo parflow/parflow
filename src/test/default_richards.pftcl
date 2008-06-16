@@ -11,7 +11,7 @@ namespace import Parflow::*
 
 pfset FileVersion 4
 
-pfset Process.Topology.P 2
+pfset Process.Topology.P 1
 pfset Process.Topology.Q 1
 pfset Process.Topology.R 1
 
@@ -206,6 +206,16 @@ pfset Geom.domain.Saturation.N         2.0
 pfset Geom.domain.Saturation.SRes      0.2
 pfset Geom.domain.Saturation.SSat      0.99
 
+#-------------------------------------------------------
+# Thermal Conductivity
+#-------------------------------------------------------
+
+pfset Phase.ThermalConductivity.Type   Constant
+pfset Phase.ThermalConductivity.GeomNames "domain"
+pfset Geom.domain.ThermalConductivity.Value 2.0
+pfset Geom.domain.ThermalConductivity.KDry  1.8
+pfset Geom.domain.ThermalConductivity.KWet  2.2
+
 #-----------------------------------------------------------------------------
 # Wells
 #-----------------------------------------------------------------------------
@@ -249,7 +259,6 @@ pfset Patch.bottom.BCPressure.Cycle			"constant"
 pfset Patch.bottom.BCPressure.alltime.Value		0.0
 
 pfset Patch.top.BCPressure.Type			        FluxConst
-pfset Patch.top.BCPressure.Type			        OverlandFlow 
 pfset Patch.top.BCPressure.Cycle			"constant"
 pfset Patch.top.BCPressure.alltime.Value		0.0
 
@@ -265,13 +274,67 @@ pfset Geom.domain.ICPressure.RefGeom                    domain
 pfset Geom.domain.ICPressure.RefPatch                   bottom
 
 #-----------------------------------------------------------------------------
+# Boundary Conditions: Temperature 
+#-----------------------------------------------------------------------------
+pfset BCTemperature.PatchNames        "left right front back bottom top"
+ 
+pfset Patch.left.BCTemperature.Type                      FluxConst 
+pfset Patch.left.BCTemperature.Cycle                     "constant"
+pfset Patch.left.BCTemperature.alltime.Value             0.0
+ 
+pfset Patch.right.BCTemperature.Type                     FluxConst 
+pfset Patch.right.BCTemperature.Cycle                    "constant"
+pfset Patch.right.BCTemperature.alltime.Value            0.0
+ 
+pfset Patch.front.BCTemperature.Type                     FluxConst 
+pfset Patch.front.BCTemperature.Cycle                    "constant"
+pfset Patch.front.BCTemperature.alltime.Value            0.0 
+ 
+pfset Patch.back.BCTemperature.Type                      FluxConst 
+pfset Patch.back.BCTemperature.Cycle                     "constant"
+pfset Patch.back.BCTemperature.alltime.Value             0.0
+ 
+pfset Patch.bottom.BCTemperature.Type                    FluxConst 
+pfset Patch.bottom.BCTemperature.Cycle                   "constant"
+pfset Patch.bottom.BCTemperature.alltime.Value           0.0
+ 
+pfset Patch.top.BCTemperature.Type                       FluxConst 
+pfset Patch.top.BCTemperature.Cycle                      "constant"
+pfset Patch.top.BCTemperature.alltime.Value              0.0
+
+#---------------------------------------------------------
+# Initial conditions: water temperature
+#---------------------------------------------------------
+pfset ICTemperature.Type                                  Constant 
+pfset ICTemperature.GeomNames                              "domain"
+pfset Geom.domain.ICTemperature.Value                     288.15 
+
+pfset Geom.domain.ICTemperature.RefGeom                    domain
+pfset Geom.domain.ICTemperature.RefPatch                   bottom
+
+#-----------------------------------------------------------------------------
 # Phase sources:
 #-----------------------------------------------------------------------------
 
 pfset PhaseSources.Type                         Constant
 pfset PhaseSources.GeomNames                    background
-pfset PhaseSources.Geom.background.Value        0.0
+pfset PhaseSources.Geom.background.FluxValue               0.0
+pfset PhaseSources.Geom.background.TemperatureValue        0.0
 
+#-----------------------------------------------------------------------------
+# Temperature sources:
+#-----------------------------------------------------------------------------
+pfset TempSources.Type                         Constant
+pfset TempSources.GeomNames                   "background"
+pfset TempSources.Geom.background.Value        0.0
+
+#-----------------------------------------------------------------------------
+# Heat Capacity 
+#-----------------------------------------------------------------------------
+
+pfset Phase.water.HeatCapacity.Type                      Constant
+pfset Phase.water.HeatCapacity.GeomNames                 "background"
+pfset Phase.water.Geom.background.HeatCapacity.Value        4000. 
 
 #-----------------------------------------------------------------------------
 # Exact solution specification for error calculations
@@ -303,20 +366,16 @@ pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      100
 # Topo slopes in x-direction
 #---------------------------------------------------------
  
-pfset TopoSlopesX.Type "PFBFile"
 pfset TopoSlopesX.Type "Constant"
 pfset TopoSlopesX.GeomNames "domain"
-pfset TopoSlopesX.FileName lw.slope_x.pfb
 pfset TopoSlopesX.Geom.domain.Value 0.0005
  
 #---------------------------------------------------------
 # Topo slopes in y-direction
 #---------------------------------------------------------
  
-pfset TopoSlopesY.Type "PFBFile"
 pfset TopoSlopesY.Type "Constant"
 pfset TopoSlopesY.GeomNames "domain"
-pfset TopoSlopesY.FileName lw.slope_y.pfb
 pfset TopoSlopesY.Geom.domain.Value 0.0005
  
 #---------------------------------------------------------

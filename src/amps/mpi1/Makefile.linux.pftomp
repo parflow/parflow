@@ -11,33 +11,29 @@
 .SUFFIXES:
 .SUFFIXES: .c .F .F90 .o 
 
-INTERNAL_FLAGS = -DAMPS_F2CLIB_FIX -I/include -I$(PARFLOW_SRC)/amps/mpi1 -DAMPS_BSD_TIME -DAMPS_BYTE_SWAP -DAMPS_SPLIT_FFILE -DAMPS_PRINT_HOSTNAME -DAMPS_UNISTD
+INTERNAL_FLAGS = -I/include -I$(PARFLOW_SRC)/amps/mpi1 -I$(PARFLOW_SRC)/parflow_lib -DAMPS_BSD_TIME -DAMPS_BYTE_SWAP -DAMPS_SPLIT_FFILE -DAMPS_PRINT_HOSTNAME -DAMPS_UNISTD
 
-INTERNAL_LIBS = $(PARFLOW_SRC)/lib/amps.mpi1.linux.a \
-        $(SUNDIALS_LIBS)\
-	$(PARFLOW_SRC)/lib/clm.a \
-	-lm
+INTERNAL_LIBS = \
+	      $(PARFLOW_SRC)/lib/parflow.linux.a \
+	      $(PARFLOW_SRC)/lib/amps.mpi1.linux.a 
+
+# SGS CLM is not needed for this version of Parflow, the calls
+# have been commented out
+#	      $(PARFLOW_SRC)/lib/clm.a
 
 NODE_OBJ1 = ${PF_SRC:.c=.o}
 NODE_OBJ = ${NODE_OBJ1:.F=.o}
 
 .c.o: $< $(PF_DEPEND)
-	@echo "Making (c) " $@
-	@echo "-DRSL_SYNCIO $(INTERNAL_FLAGS) $(CFLAGS)  -I$(SUNDIALS_INC_DIR) -DCFLAGS="\"${CFLAGS}\"" -DFFLAGS="\"${FFLAGS}\"" -o $@ -c $<"
-	@$(PF_NODE_CC) -DRSL_SYNCIO $(INTERNAL_FLAGS) $(CFLAGS)  -I$(SUNDIALS_INC_DIR) -DCFLAGS="\"${CFLAGS}\"" -DFFLAGS="\"${FFLAGS}\"" -o $@ -c $<
+	$(PF_NODE_CC) -DRSL_SYNCIO $(INTERNAL_FLAGS) $(CFLAGS)  -I$(SUNDIALS_INC_DIR) -DCFLAGS="\"${CFLAGS}\"" -DFFLAGS="\"${FFLAGS}\"" -o $@ -c $<
 
-.F.o:; @echo "Making (F) " $@
-	@$(PF_NODE_F77) -o $@ -c $(FFLAGS) $<
-	@echo @$(PF_NODE_F77) -o $@ -c $(FFLAGS) $<
+.F.o:
+	$(PF_NODE_F77) -o $@ -c $(FFLAGS) $<
 
-$(PF_PROGRAM).$(PF_NODE_EXT): $(NODE_OBJ) $(XDIR) $(PF_DEPEND) \
-	$(PARFLOW_SRC)/lib/amps.mpi1.linux.a 
-	@echo  "Linking" $(PF_PROGRAM)
-	@echo "Sundials" $(SUNDIALS_LIBS)
-	@echo $(LFLAGS) -o $(PF_PROGRAM).$(PF_NODE_EXT) $(NODE_OBJ) ${INTERNAL_LIBS} ${PF_NODE_LIBS}  
-	@$(PF_NODE_CC) -DRSL_SYNCIO $(LFLAGS) -o $(PF_PROGRAM).$(PF_NODE_EXT) $(NODE_OBJ) -L$(SUNDIALS_LIB_DIR) ${INTERNAL_LIBS} ${PF_NODE_LIBS}  
+$(PF_PROGRAM).$(PF_NODE_EXT): $(NODE_OBJ) $(XDIR) $(PF_DEPEND) $(INTERNAL_LIBS)
+	$(PF_NODE_CC) -DRSL_SYNCIO $(LFLAGS) -o $(PF_PROGRAM).$(PF_NODE_EXT) $(NODE_OBJ) -L$(SUNDIALS_LIB_DIR) ${INTERNAL_LIBS} $(SUNDIALS_LIBS) \
+	${PF_NODE_LIBS}   -lm
 
 $(PF_LIBNAME).a: $(NODE_OBJ) Makefile
-	@echo "Building $(PF_LIBNAME).a" 
-	@$(AR) ru $(PF_LIBNAME).a $(NODE_OBJ)
-	@$(PF_NODE_RANLIB) $(PF_LIBNAME).a     
+	$(AR) ru $(PF_LIBNAME).a $(NODE_OBJ)
+	$(PF_NODE_RANLIB) $(PF_LIBNAME).a     

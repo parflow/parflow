@@ -27,7 +27,7 @@
 
 #include <string.h>
 #include <stdarg.h>
-#include <malloc.h>
+#include <stdlib.h>
 
 #include "general.h"
 
