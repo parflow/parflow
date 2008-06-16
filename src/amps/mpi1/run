@@ -113,22 +113,22 @@ then
     #
     # MPICH
     #
-##    mpirun -machinefile $HOST_FILE -np `cat .amps.info.$2` $PARFLOW_DIR/bin/$PROGRAM $1 $DEBUG_OPT $DEBUG
-if [ "$PBS_NODEFILE" = "" ]
+    if [ "$PBS_NODEFILE" = "" ]
+    then
+       mpirun -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1
+    else
+       mpirun -machinefile $PBS_NODEFILE -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 
+   fi
+elif mpirun  2>&1 | grep -q "Open MPI"
 then
-mpirun -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1
-###echo mpirun -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1
-else
-mpirun -machinefile $PBS_NODEFILE -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 
-###echo mpirun -machinefile $PBS_NODEFILE -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1
-fi
-
-else
     #
-    # LAM
+    # OpenMPI
     #
+    mpirun -np $2  $PARFLOW_DIR/bin/$PROGRAM $1
+else
+    echo "Unrecognized MPI implementation"
+    exit 1
 
-    mpirun -w -c `cat .amps.info.$2` $PARFLOW_DIR/bin/$PROGRAM -- $1 $DEBUG_OPT $DEBUG
 fi
 
 

@@ -15,7 +15,6 @@
 #ifdef AMPS_VMALLOC
 #include <vmalloc.h>
 #else
-#include <malloc.h>
 #include <stdlib.h>
 #endif
 #endif

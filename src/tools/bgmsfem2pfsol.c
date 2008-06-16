@@ -8,6 +8,8 @@
  *********************************************************************EHEADER*/
 
 #include <stdio.h>
+#include <stdlib.h>
+
 #include "file_versions.h"
 
 /* to work on

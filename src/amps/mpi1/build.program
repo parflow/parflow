@@ -60,14 +60,9 @@ fi
 #=============================================================================
 if [ "$PF_ALL_FLAG" ]
 then
-	(cd $PARFLOW_SRC/amps/$PF_COMM/
-	./build
-	cd $PARFLOW_SRC/sundials
-	./build
-	cd $PARFLOW_SRC/parflow
-	$PF_MAKE ${PF_PROGRAM}.${PF_NODE_EXT}
-	)
-
+	(cd $PARFLOW_SRC/amps/$PF_COMM/ && ./build)
+	(cd $PARFLOW_SRC/parflow_lib && $PF_MAKE)
+	(cd $PARFLOW_SRC/parflow && $PF_MAKE ${PF_PROGRAM}.${PF_NODE_EXT})
 fi
 
 
@@ -96,6 +91,8 @@ then
 
 fi
 
+
+
 #=============================================================================
 #
 # Clean the local directory
@@ -105,22 +102,21 @@ if [ "$PF_CLEAN_FLAG" ]
 then
 	(cd $PARFLOW_SRC/parflow/; rm -f *$PF_NODE_EXT.o)
 	(cd $PARFLOW_SRC/parflow/; rm -f *.o)
+	(cd $PARFLOW_SRC/parflow_lib/; rm -f *$PF_NODE_EXT.o)
+	(cd $PARFLOW_SRC/parflow_lib/; rm -f *.o)
 	(cd $PARFLOW_SRC/amps/$PF_COMM; rm -f *$PF_NODE_EXT.o)
 	(cd $PARFLOW_SRC/amps/$PF_COMM; rm -f *.o)
 	(cd $PARFLOW_SRC/amps/common; rm -f *$PF_NODE_EXT.o)
 	(cd $PARFLOW_SRC/amps/common; rm -f *.o)
-#	(cd $PARFLOW_SRC/kinsol; rm -f *$PF_NODE_EXT.o)
-#	(cd $PARFLOW_SRC/kinsol; rm -f *.o)
 fi
 
 if [ "$PF_VERYCLEAN_FLAG" ]
 then
-	(cd $PARFLOW_SRC/parflow/; rm -f $PF_PROGRAM$PF_NODE_EXT *$PF_NODE_EXT.a)
+	(cd $PARFLOW_SRC/parflow/; rm -f $PF_PROGRAM.$PF_NODE_EXT *$PF_NODE_EXT.a .current_arch)
+	(cd $PARFLOW_SRC/parflow_lib/; rm -f $PF_PROGRAM.$PF_NODE_EXT *$PF_NODE_EXT.a .current_arch)
 	(cd $PARFLOW_SRC/amps/$PF_COMM; rm -f *$PF_NODE_EXT.a)
 	(cd $PARFLOW_SRC/amps/common; rm -f *$PF_NODE_EXT.a)
-#	(cd $PARFLOW_SRC/kinsol; rm -f *$PF_NODE_EXT.a)
 	(cd $PARFLOW_LIB; rm -f *$PF_NODE_EXT.a)
-
 fi
 
 

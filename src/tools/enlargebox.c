@@ -6,7 +6,7 @@
  *
  * $Revision: 1.2 $
  *********************************************************************EHEADER*/
-#include <malloc.h>
+#include <stdlib.h>
 #include "enlargebox.h"
 
 
