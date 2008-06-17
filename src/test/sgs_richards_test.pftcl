@@ -349,8 +349,8 @@ pfset KnownSolution                                    NoKnownSolution
 pfset Solver                                             Richards
 pfset Solver.MaxIter                                     5
 
-pfset Solver.Nonlinear.MaxIter                           10
-pfset Solver.Nonlinear.ResidualTol                       1e-9
+pfset Solver.Nonlinear.MaxIter                           20
+pfset Solver.Nonlinear.ResidualTol                       1e-1
 pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaValue                          1e-5
 pfset Solver.Nonlinear.UseJacobian                       True
