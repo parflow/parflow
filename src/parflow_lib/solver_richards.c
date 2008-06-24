@@ -1515,3 +1515,21 @@ void      SolverRichards() {
    FreeVector(evap_trans );
 }
 
+
+/* 
+ * Getter/Setter methods
+ */
+ProblemData *GetProblemDataRichards(PFModule *this_module) {
+  InstanceXtra  *instance_xtra    = PFModuleInstanceXtra(this_module);
+  return (instance_xtra -> problem_data);
+}
+
+Problem *GetProblemRichards(PFModule *this_module) {
+  PublicXtra    *public_xtra      = PFModulePublicXtra(this_module);
+  return (public_xtra -> problem);
+}
+
+PFModule *GetICPhasePressureRichards(PFModule *this_module) {
+  InstanceXtra  *instance_xtra    = PFModuleInstanceXtra(this_module);
+  return (instance_xtra -> ic_phase_pressure);
+}

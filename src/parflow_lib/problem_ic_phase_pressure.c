@@ -1056,3 +1056,121 @@ int  ICPhasePressureSizeOfTempData()
 
    return sz;
 }
+
+/* 
+ * Setup array for storing the top of the domain.
+ *
+ * Computes and array that is NX * NY that contains the
+ * k-index into the supplied vector that is at the top 
+ * of the geometry.
+ *
+ * Only works with 1 subgrid per task.
+ *
+ * This assumes number of processors is 1 in Z; assumes
+ * that the entire Z column is on a single task.
+ * 
+ */
+int *ComputeTop(PFModule    *this_module,  /* The module */
+		Problem     *problem,      /* General problem information */
+		ProblemData *problem_data, /* Contains geometry information for the problem */
+		Vector      *vector        /* misc vector to use for loop */
+) {
+
+   PublicXtra    *public_xtra      = PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra    = PFModuleInstanceXtra(this_module);
+
+   int      ix, iy, iz;
+   int      nx, ny, nz;
+   int      r;
+   int      ir;
+   
+   int      is, i, j, k, ips, iel, ipicv;
+
+   int      num_regions;
+   int      *region_indices;
+
+   Type0         *dummy0;
+   Type1         *dummy1;
+   Type2         *dummy2;
+   Type3         *dummy3;
+
+   Grid          *grid = VectorGrid(vector);
+
+   SubgridArray  *subgrids = GridSubgrids(grid);
+
+   int           *top;
+
+   switch((public_xtra -> type))
+   {
+      case 0:  /* Assign constant values within regions. */
+      {
+	 dummy0 = (Type0 *)(public_xtra -> data);
+	 
+	 num_regions    = (dummy0 -> num_regions);
+	 region_indices = (dummy0 -> region_indices);
+	 
+	 break;
+      }
+      case 1:
+      {
+	 dummy1 = (Type1 *)(public_xtra -> data);
+
+	 num_regions          = (dummy1 -> num_regions);
+	 region_indices       = (dummy1 -> region_indices);
+	 break;
+      }
+
+      case 2:  /* Hydrostatic regions with a reference surface for each region */
+      {
+      
+	 dummy2 = (Type2 *)(public_xtra -> data);
+
+	 num_regions     = (dummy2 -> num_regions);
+	 region_indices  = (dummy2 -> region_indices);
+	 break;
+      }
+      default:
+      {
+	 fprintf(stderr, "Invalid type in compute top\n");
+      }
+   }
+
+   for (ir = 0; ir < num_regions; ir++)
+   {
+      GrGeomSolid   *gr_solid = ProblemDataGrSolid(problem_data, region_indices[ir]);
+      
+      ForSubgridI(is, subgrids)
+      {
+	 Subgrid       *subgrid   = SubgridArraySubgrid(subgrids, is);
+	 Subvector     *subvector = VectorSubvector(vector, is);
+
+	 ix = SubgridIX(subgrid);
+	 iy = SubgridIY(subgrid);
+	 iz = SubgridIZ(subgrid);
+	 
+	 nx = SubgridNX(subgrid);
+	 ny = SubgridNY(subgrid);
+	 nz = SubgridNZ(subgrid);
+	 
+	 r = SubgridRX(subgrid);
+
+	 top = malloc(sizeof(int) * nx * ny); 
+
+	 int index;
+	 for(index = 0; index < nx * ny; index++) {
+	    top[index] = -1;
+	 }
+	 
+	 GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+		      {
+			 index = (i-ix) + ((j-iy) * nx);
+			 if( top[index] < k ) {
+			       top[index] = k;
+			 }
+		      });
+      }     /* End of subgrid loop */
+   }        /* End of region loop */
+
+   return top;
+}
+

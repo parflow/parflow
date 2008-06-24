@@ -623,6 +623,10 @@ void ICPhasePressureFreeInstanceXtra P((void ));
 PFModule *ICPhasePressureNewPublicXtra P((void ));
 void ICPhasePressureFreePublicXtra P((void ));
 int ICPhasePressureSizeOfTempData P((void ));
+int *ComputeTop P((PFModule    *ic_phase_pressure,
+		   Problem     *problem,     
+		   ProblemData *problem_data,
+		   Vector      *vector));
 
 /* problem_ic_phase_temperature.c */
 void ICPhaseTemperature P((Vector *ic_temperature, ProblemData *problem_data , Problem *problem ));
@@ -889,7 +893,9 @@ void SolverRichardsFreeInstanceXtra P((void ));
 PFModule *SolverRichardsNewPublicXtra P((char *name ));
 void SolverRichardsFreePublicXtra P((void ));
 int SolverRichardsSizeOfTempData P((void ));
-
+ProblemData *GetProblemDataRichards P((PFModule *this_module));
+Problem  *GetProblemRichards P((PFModule *this_module));
+PFModule *GetICPhasePressureRichards P((PFModule *this_module));
 
 /* subsrf_sim.c */
 void SubsrfSim P((ProblemData *problem_data , Vector *perm_x , Vector *perm_y , Vector *perm_z , int num_geounits , GeomSolid **geounits , GrGeomSolid **gr_geounits ));
@@ -1030,5 +1036,21 @@ void WritePFBinary P((char *file_prefix , char *file_suffix , Vector *v ));
 long SizeofPFSBinarySubvector P((Subvector *subvector , Subgrid *subgrid , double drop_tolerance ));
 void WritePFSBinary_Subvector P((amps_File file , Subvector *subvector , Subgrid *subgrid , double drop_tolerance ));
 void WritePFSBinary P((char *file_prefix , char *file_suffix , Vector *v , double drop_tolerance ));
+
+/* wrf_parflow.c */
+void wrfparflowinit_ P(());
+void wrfparflowadvance_ P((float  *current_time, 
+			      float  *dt,
+			      double *wrf_flux,
+			      double *wrf_pressure,
+			      double *wrf_porosity,
+			      double *wrf_saturation));
+void WRF2PF P((double *wrf_array, int     wrf_depth, Vector *pf_vector,
+	       int *top));
+void PF2WRF P(( Vector *pf_vector,
+		 double *wrf_array,
+		 int     wrf_depth,
+		 int *top));
+
 
 #undef P
