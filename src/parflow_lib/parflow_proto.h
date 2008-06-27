@@ -1044,12 +1044,14 @@ void wrfparflowadvance_ P((float  *current_time,
 			      double *wrf_flux,
 			      double *wrf_pressure,
 			      double *wrf_porosity,
-			      double *wrf_saturation));
-void WRF2PF P((double *wrf_array, int     wrf_depth, Vector *pf_vector,
+                              double *wrf_saturation,
+                              int    *ghost_size));
+void WRF2PF P((double *wrf_array, int     wrf_depth, int ghost_size, Vector *pf_vector,
 	       int *top));
 void PF2WRF P(( Vector *pf_vector,
 		 double *wrf_array,
 		 int     wrf_depth,
+  		 int     ghost_size,
 		 int *top));
 
 

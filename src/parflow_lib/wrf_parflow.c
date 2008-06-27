@@ -106,7 +106,8 @@ void wrfparflowadvance_(float  *current_time,
                         double *wrf_flux,
                         double *wrf_pressure,
                         double *wrf_porosity,
-                        double *wrf_saturation)
+                        double *wrf_saturation,
+                        int    *ghost_size)
 {
    printf("WRFParflowAdvance: current_time = %f dt = %f\n", current_time, dt);
 
@@ -120,7 +121,7 @@ void wrfparflowadvance_(float  *current_time,
    // Use the provided dt with possible subcycling if it does not converge.
    int compute_time_step = 0; 
 
-   WRF2PF(wrf_flux, 5, amps_ThreadLocal(evap_trans), amps_ThreadLocal(top));
+   WRF2PF(wrf_flux, 5, *ghost_size, amps_ThreadLocal(evap_trans), amps_ThreadLocal(top));
    
    AdvanceRichards(amps_ThreadLocal(solver),
 		   *current_time, 
@@ -132,9 +133,9 @@ void wrfparflowadvance_(float  *current_time,
 		   &porosity_out,
 		   &saturation_out);
 
-   PF2WRF(pressure_out,   wrf_pressure,   5, amps_ThreadLocal(top));
-   PF2WRF(porosity_out,   wrf_porosity,   5, amps_ThreadLocal(top));
-   PF2WRF(saturation_out, wrf_saturation, 5, amps_ThreadLocal(top));
+   PF2WRF(pressure_out,   wrf_pressure,   5, *ghost_size, amps_ThreadLocal(top));
+   PF2WRF(porosity_out,   wrf_porosity,   5, *ghost_size, amps_ThreadLocal(top));
+   PF2WRF(saturation_out, wrf_saturation, 5, *ghost_size, amps_ThreadLocal(top));
 }
 
 
@@ -147,6 +148,7 @@ void WRF2PF(
    double *wrf_array,   /* WRF array */
    int     wrf_depth,   /* Depth (Z) of WRF array, X,Y are assumed 
 			   to be same as PF vector subgrid */
+   int     ghost_size,  /* Number of ghost cells */
    Vector *pf_vector,
    int *top) 
 {
@@ -165,6 +167,10 @@ void WRF2PF(
       int nx = SubgridNX(subgrid);
       int ny = SubgridNY(subgrid);
       int nz = SubgridNZ(subgrid);
+
+      int wrf_nx =  nx + 2 * ghost_size;
+      int wrf_ny =  ny + 2 * ghost_size;
+      int wrf_nz =  wrf_depth;
 
       Subvector *subvector = VectorSubvector(pf_vector, sg);
       
@@ -185,12 +191,14 @@ void WRF2PF(
 
 	    // SGS What to do if near bottom such that
 	    // there are not wrf_depth values?
-	    int iz = top[top_index] - wrf_depth;
+	    int iz = top[top_index] - (wrf_depth - 1);
 
 	    for (k = iz; k < iz + wrf_depth; k++)		
 	    {
 	       int pf_index = SubvectorEltIndex(subvector, i, j, k);
-	       int wrf_index = (i-ix) + ((j-iy) * nx) + ((k - iz) * nx * ny);
+	       int wrf_index = (i-ix + ghost_size) 
+		  + ((j-iy + ghost_size) * (wrf_nx) 
+		     + (wrf_depth - (k - iz) - 1 ) * wrf_nx * wrf_ny);
 	       subvector_data[pf_index] = wrf_array[wrf_index];
 	    }
 	 }
@@ -208,6 +216,7 @@ void PF2WRF(
    double *wrf_array,   /* WRF array */
    int     wrf_depth,   /* Depth (Z) of WRF array, X,Y are assumed 
 			   to be same as PF vector subgrid */
+   int     ghost_size,  /* Number of ghost cells */
    int *top) 
 {
 
@@ -225,6 +234,10 @@ void PF2WRF(
       int nx = SubgridNX(subgrid);
       int ny = SubgridNY(subgrid);
       int nz = SubgridNZ(subgrid);
+
+      int wrf_nx =  nx + 2 * ghost_size;
+      int wrf_ny =  ny + 2 * ghost_size;
+      int wrf_nz =  wrf_depth;
 
       Subvector *subvector = VectorSubvector(pf_vector, sg);
       
@@ -245,12 +258,14 @@ void PF2WRF(
 
 	    // SGS What to do if near bottom such that
 	    // there are not wrf_depth values?
-	    int iz = top[top_index] - wrf_depth;
+	    int iz = top[top_index] - (wrf_depth - 1);
 
 	    for (k = iz; k < iz + wrf_depth; k++)		
 	    {
 	       int pf_index = SubvectorEltIndex(subvector, i, j, k);
-	       int wrf_index = (i-ix) + ((j-iy) * nx) + ((k - iz) * nx * ny);
+	       int wrf_index = (i-ix + ghost_size) 
+		  + ((j-iy + ghost_size) * (wrf_nx) 
+		     + (wrf_depth - (k - iz) - 1 ) * wrf_nx * wrf_ny);
 	       wrf_array[wrf_index] = subvector_data[pf_index] ;
 	    }
 	 }
