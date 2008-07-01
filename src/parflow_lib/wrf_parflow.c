@@ -107,6 +107,7 @@ void wrfparflowadvance_(float  *current_time,
                         double *wrf_pressure,
                         double *wrf_porosity,
                         double *wrf_saturation,
+			int    *num_soil_layers,
                         int    *ghost_size)
 {
    printf("WRFParflowAdvance: current_time = %f dt = %f\n", current_time, dt);
@@ -121,7 +122,7 @@ void wrfparflowadvance_(float  *current_time,
    // Use the provided dt with possible subcycling if it does not converge.
    int compute_time_step = 0; 
 
-   WRF2PF(wrf_flux, 5, *ghost_size, amps_ThreadLocal(evap_trans), amps_ThreadLocal(top));
+   WRF2PF(wrf_flux, *num_soil_layers, *ghost_size, amps_ThreadLocal(evap_trans), amps_ThreadLocal(top));
    
    AdvanceRichards(amps_ThreadLocal(solver),
 		   *current_time, 
@@ -133,9 +134,9 @@ void wrfparflowadvance_(float  *current_time,
 		   &porosity_out,
 		   &saturation_out);
 
-   PF2WRF(pressure_out,   wrf_pressure,   5, *ghost_size, amps_ThreadLocal(top));
-   PF2WRF(porosity_out,   wrf_porosity,   5, *ghost_size, amps_ThreadLocal(top));
-   PF2WRF(saturation_out, wrf_saturation, 5, *ghost_size, amps_ThreadLocal(top));
+   PF2WRF(pressure_out,   wrf_pressure,   *num_soil_layers, *ghost_size, amps_ThreadLocal(top));
+   PF2WRF(porosity_out,   wrf_porosity,   *num_soil_layers, *ghost_size, amps_ThreadLocal(top));
+   PF2WRF(saturation_out, wrf_saturation, *num_soil_layers, *ghost_size, amps_ThreadLocal(top));
 }
 
 

@@ -1040,13 +1040,17 @@ void WritePFSBinary P((char *file_prefix , char *file_suffix , Vector *v , doubl
 /* wrf_parflow.c */
 void wrfparflowinit_ P(());
 void wrfparflowadvance_ P((float  *current_time, 
-			      float  *dt,
-			      double *wrf_flux,
-			      double *wrf_pressure,
-			      double *wrf_porosity,
-                              double *wrf_saturation,
-                              int    *ghost_size));
-void WRF2PF P((double *wrf_array, int     wrf_depth, int ghost_size, Vector *pf_vector,
+			   float  *dt,
+			   double *wrf_flux,
+			   double *wrf_pressure,
+			   double *wrf_porosity,
+			   double *wrf_saturation,
+			   int    *num_soil_layers,
+			   int    *ghost_size));
+void WRF2PF P((double *wrf_array, 
+	       int     wrf_depth, 
+	       int ghost_size, 
+	       Vector *pf_vector,
 	       int *top));
 void PF2WRF P(( Vector *pf_vector,
 		 double *wrf_array,
