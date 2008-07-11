@@ -1,0 +1,31 @@
+##
+## Copyright:	(c) 1997-2008 Lawrence Livermore National Security, LLC
+## Revision:	$LastChangedRevision: 2026 $
+## Modified:	$LastChangedDate: 2008-02-28 16:23:19 -0800 (Thu, 28 Feb 2008) $
+
+PARFLOW	      =	@top_srcdir@
+SRCDIR	      =	@srcdir@
+SUBDIR        = amps/$(AMPS)
+VPATH	      =	@srcdir@
+OBJECT        = ../..
+
+default: all
+
+include $(OBJECT)/config/Makefile.config
+
+OBJS = 
+
+all:
+
+clean:
+	@$(PARFLOW_CLEAN)
+
+veryclean: clean
+	@$(RM) Makefile
+
+
+
+
+
+
+

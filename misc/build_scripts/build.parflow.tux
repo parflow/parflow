@@ -1,0 +1,51 @@
+if [ ! -f parflow/configure ]
+then
+	echo "Not in correct directory"
+	exit 1 	
+fi
+
+if [ -z "$PARFLOW_DIR" ]
+then
+	echo "PARFLOW_DIR not set"
+	exit 1
+fi
+
+. /usr/casc/samrai/openmpi/openmpi-1.2.6/setup.sh
+
+#-----------------------------------------------------------------------------
+# Make sundials
+#-----------------------------------------------------------------------------
+DIR=sundials
+
+(cd $DIR; ./configure \
+                     --prefix=$PARFLOW_DIR)
+
+(cd $DIR; make -j 8 install)
+
+
+#-----------------------------------------------------------------------------
+# Make Parflow
+#-----------------------------------------------------------------------------
+DIR=parflow
+
+(cd $DIR; ./configure \
+                     --with-amps=mpi1 \
+		     --with-mpi=/usr/casc/samrai/openmpi/openmpi-1.2.6/ \
+		     --with-sundials=$PARFLOW_DIR \
+                     --prefix=$PARFLOW_DIR)
+
+(cd $DIR; make -j 8 install)
+
+#-----------------------------------------------------------------------------
+# Make pftools
+#-----------------------------------------------------------------------------
+
+DIR=pftools
+
+(cd $DIR; ./configure \
+	             --with-tcl=/usr/casc/eciton/tcl/tcl8.4.19 \
+                     --with-amps=mpi1 \
+                     --prefix=$PARFLOW_DIR)
+
+(cd $DIR; make -j 8 install)
+

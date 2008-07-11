@@ -1,0 +1,102 @@
+#BHEADER***********************************************************************
+# (c) 1995   The Regents of the University of California
+#
+# See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+# notice, contact person, and disclaimer.
+#
+# $Revision: 1.42 $
+#EHEADER***********************************************************************
+
+#
+#  Makefile for parflow tools.
+# 
+
+PROJECT       = parflow
+
+PARFLOW	      =	@top_srcdir@
+SRCDIR	      =	@srcdir@
+SUBDIR        = docs/dev_manual
+VPATH	      =	@srcdir@
+OBJECT        = ../..
+
+include $(OBJECT)/config/Makefile.config
+
+MANUAL=dev_manual
+INSTALL_DIR = $(PARFLOW_INSTALL_DIR)/docs/dev_manual
+
+LINK_FILES = do_online \
+	     inputps.tex \
+             html.sty \
+             html.perl \
+	     parflow.sty \
+             parflow.perl \
+             parflow.bib
+
+ONLINE_OPTS =\
+ -show_section_numbers\
+ -bottom_navigation
+
+FILES =\
+ manual.tex\
+ defs.tex\
+ intro.tex\
+ documentation.tex\
+ codeorg.tex\
+ modules.tex\
+ input.tex\
+ equations.tex\
+ grid.tex\
+ discretize.tex\
+ visualization.tex\
+ administrative.tex\
+ ref.tex\
+ ref.grid.tex
+
+all:
+
+doc:  manual.ps manual/manual.html
+
+version.tex : $(PARFLOW)/../parflow/parflow_lib/version.h
+	echo "\def\PFVersion{"`cut -d$ -f2 $(PARFLOW)/../parflow/parflow_lib/version.h`"}" > version.tex
+
+manual.ps: manual.dvi
+	@dvips -o manual.ps manual
+
+manual/manual.html: manual.dvi
+	@latex2html $(ONLINE_OPTS) manual.tex
+	@./do_online manual
+
+#	@bibtex manual
+manual.dvi: Makefile $(FILES)
+	@for i in ${LINK_FILES}; do     \
+	   if [ ! -h $$i ] ; then    \
+	     ln -s ../lib/$$i . ;\
+	   fi \
+	done 
+	@latex manual
+	@makeindex manual.idx
+	@latex manual
+	@latex manual
+
+install:
+
+doc_install:
+	@$(INSTALL) -d -m 755 $(INSTALL_DIR)/$(MANUAL)_html
+	@for i in manual/*; do				        \
+	   $(INSTALL) -c -m 644 $$i $(INSTALL_DIR)/$(MANUAL)_html; \
+	done
+	@$(INSTALL) -c -m 644 manual.ps $(INSTALL_DIR)/$(MANUAL).ps
+
+
+clean:
+	$(PARFLOW_CLEAN)
+
+veryclean: clean
+	@for i in ${LINK_FILES}; do     \
+	   if [ -h $$i ] ; then    \
+	    rm $$i ; \
+	   fi \
+	done 
+	@/bin/rm -f  manual.ps version.tex Makefile
+	@/bin/rm -fr manual
+

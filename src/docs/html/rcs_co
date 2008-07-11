@@ -1,8 +1,0 @@
-#!/bin/sh
-
-co $1 `cat <<@
-build
-dev_index.html
-usr_index.html
-@`
-

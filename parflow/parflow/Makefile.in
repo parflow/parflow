@@ -1,0 +1,35 @@
+##
+## Package:	Parflow
+## Copyright:	(c) 1997-2008 Lawrence Livermore National Security, LLC
+## Revision:	$LastChangedRevision: 2026 $
+## Modified:	$LastChangedDate: 2008-02-28 16:23:19 -0800 (Thu, 28 Feb 2008) $
+
+
+PARFLOW	      =	@top_srcdir@
+SRCDIR	      =	@srcdir@
+SUBDIR        = parflow_lib
+VPATH	      =	@srcdir@
+OBJECT        = ..
+
+include $(OBJECT)/config/Makefile.config
+
+default: all
+
+OBJS = \
+	parflow.o
+
+$(PARFLOW_BIN_DIR)/parflow: $(OBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) \
+			$(PARFLOW_LIBS) $(LDLIBS) -o $@
+
+all: $(PARFLOW_BIN_DIR)/parflow
+
+clean:
+	$(PARFLOW_CLEAN)
+	@$(RM) $(PARFLOW_BIN_DIR)/parflow
+
+veryclean:
+	@$(RM) Makefile
+
+include $(SRCDIR)/Makefile.depend
+

@@ -1,0 +1,173 @@
+##
+## File:	$URL$
+## Package:	Parflow
+## Copyright:	(c) 1997-2008 Lawrence Livermore National Security, LLC
+## Revision:	$LastChangedRevision: 2026 $
+## Modified:	$LastChangedDate: 2008-02-28 16:23:19 -0800 (Thu, 28 Feb 2008) $
+
+
+PARFLOW	      =	@top_srcdir@
+SRCDIR	      =	@srcdir@
+SUBDIR        = parflow_lib
+VPATH	      =	@srcdir@
+OBJECT        = ..
+
+default: all
+
+include $(OBJECT)/config/Makefile.config
+
+OBJS = \
+	advect.o\
+	advection_godunov.o\
+	axpy.o\
+	background.o\
+	bc_lb.o\
+	bc_pressure.o\
+	bc_pressure_package.o\
+	bc_temperature.o\
+	bc_temperature_package.o\
+	calc_elevations.o\
+	cghs.o\
+	char_vector.o\
+	chebyshev.o\
+	comm_pkg.o\
+	communication.o\
+	computation.o\
+	compute_maximums.o\
+	compute_total_concentration.o\
+	constantRF.o\
+	constant_porosity.o\
+	copy.o\
+	create_grid.o\
+	diag_scale.o\
+	diffuse_lb.o\
+	discretize_pressure.o\
+	distribute_usergrid.o\
+	dpofa.o\
+	dposl.o\
+	gauinv.o\
+	general.o\
+	geom_t_solid.o\
+	geometry.o\
+	globals.o\
+	grgeom_list.o\
+	grgeom_octree.o\
+	grgeometry.o\
+	grid.o\
+	hbt.o\
+	infinity_norm.o\
+	innerprod.o\
+	inputRF.o\
+	input_database.o\
+        nvector_parflow.o\
+	kinsol_function_eval.o\
+	kinsol_nonlin_solver.o\
+	kinsol_matvec.o\
+	kinsol_pc_pressure.o\
+	kinsol_pc_temperature.o\
+	l2_error_norm.o\
+	line_process.o\
+	logging.o\
+	matdiag_scale.o\
+	matrix.o\
+	matvec.o\
+	max_field_value.o\
+	mg_semi.o\
+	mg_semi_prolong.o\
+	mg_semi_restrict.o\
+	new_endpts.o\
+	nodiag_scale.o\
+	pcg.o\
+	permeability_face.o\
+	perturb_lb.o\
+	pf_module.o\
+	pfield.o\
+	pf_pfmg.o\
+	pf_smg.o\
+	pgsRF.o\
+	phase_velocity_face.o\
+	ppcg.o\
+	press_function_eval.o\
+	printgrid.o\
+	printmatrix.o\
+	printvector.o\
+	problem.o\
+	problem_bc.o\
+	problem_bc_internal.o\
+	problem_bc_phase_saturation.o\
+	problem_bc_pressure.o\
+	problem_bc_temperature.o\
+	problem_capillary_pressure.o\
+	problem_domain.o\
+	problem_eval.o\
+	problem_geometries.o\
+	problem_phase_heat_capacity.o\
+	problem_ic_phase_concen.o\
+	problem_ic_phase_pressure.o\
+	problem_ic_phase_temperature.o\
+	problem_ic_phase_satur.o\
+	problem_mannings.o\
+        problem_phase_density.o\
+        problem_phase_internal_energy.o\
+	problem_phase_mobility.o\
+	problem_phase_rel_perm.o\
+	problem_phase_source.o\
+	problem_temp_source.o\
+	problem_phase_viscosity.o\
+	problem_porosity.o\
+	problem_retardation.o\
+	problem_richards_bc_internal.o\
+	problem_saturation.o\
+	problem_thermal_conductivity.o\
+	problem_saturation_constitutive.o\
+        problem_spec_storage.o\
+        problem_toposlope_x.o\
+        problem_toposlope_y.o\
+	random.o\
+	ratqr.o\
+	rb_GS_point.o\
+	read_parflow_binary.o\
+	reg_from_stenc.o\
+	region.o\
+	richards_jacobian_eval.o\
+	sadvect.o\
+	sadvection_godunov.o\
+	scale.o\
+	select_time_step.o\
+	set_problem_data.o\
+	sim_shear.o\
+	solver.o\
+	solver_impes.o\
+	solver_lb.o\
+	solver_richards.o\
+	subsrf_sim.o\
+	temp_function_eval.o\
+	temperature_jacobian_eval.o\
+	time_cycle_data.o\
+	timing.o\
+	total_velocity_face.o\
+	turning_bandsRF.o\
+	usergrid_input.o\
+	vector.o\
+	vector_utilities.o\
+	w_jacobi.o\
+	well.o\
+	well_package.o\
+	wells_lb.o\
+	write_parflow_binary.o \
+	wrf_parflow.o
+
+$(PARFLOW_LIB_DIR)/$(PARFLOW_LIB): $(OBJS)
+	@AR@ ru $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB) $(OBJS)
+
+all: $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB)
+
+clean:
+	$(PARFLOW_CLEAN)
+
+veryclean: clean
+	@$(RM) Makefile
+
+include $(SRCDIR)/Makefile.depend
+
+

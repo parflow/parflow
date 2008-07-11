@@ -1,0 +1,84 @@
+-----------------------------------------------------------------------------
+Checking out Parflow from the SVN repository
+-----------------------------------------------------------------------------
+
+cd <somewhere>
+svn co svn+ssh://atlas/usr/gapps/thcs/subversion/parflow/trunk parflow
+
+
+-----------------------------------------------------------------------------
+Checking out WRF from the SVN repository
+-----------------------------------------------------------------------------
+
+cd <somewhere>
+svn co svn+ssh://atlas/usr/gapps/thcs/subversion/wrf/trunk wrf
+
+-----------------------------------------------------------------------------
+Compiling Parflow on Atlas
+-----------------------------------------------------------------------------
+
+cd <somewhere>/parflow
+. misc/build_scripts/build.parflow.atlas
+
+-----------------------------------------------------------------------------
+Compiling WRF on Atlas
+-----------------------------------------------------------------------------
+
+cd <somewhere>/wrf
+./configure
+
+	Select option 3 <PGI compiler with gcc (dmpar)>
+	Select option 1 <basic - the default>
+
+./compile wrf
+
+-----------------------------------------------------------------------------
+Runing WRF+PF test case on Atlas
+-----------------------------------------------------------------------------
+
+cd <somewhere>/wrf/parflow
+
+msub wrf_atlas.msub
+
+Will run 8 processor job.
+
+-----------------------------------------------------------------------------
+Compiling Parflow on CASC Tux Cluster
+-----------------------------------------------------------------------------
+
+The system MPI is not compiled for F90 so a different MPI is used that
+is compiled with F90 support.
+
+# Setup the MPI environment
+. /usr/casc/samrai/openmpi/openmpi-1.2.6/setup.sh
+
+cd <somewhere>/parflow
+. misc/build_scripts/build.parflow.tux
+
+-----------------------------------------------------------------------------
+Compiling WRF on CASC Tux cluster
+-----------------------------------------------------------------------------
+
+cd <somewhere>/wrf
+./configure
+
+	Select option 9 <gfortran compiler with gcc (dmpar)>
+	Select option 1 <basic - the default>
+
+./compile wrf
+
+-----------------------------------------------------------------------------
+Runing WRF+PF test case on CASC Tux cluster
+-----------------------------------------------------------------------------
+
+cd <somewhere>/wrf/parflow
+
+mpirun -np 8 wrf_atlas.msub
+
+NOTE: Need to run with the OpenMPI as above! Not MPICH in /usr/apps.
+
+
+
+
+
+

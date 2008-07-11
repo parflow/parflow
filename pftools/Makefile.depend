@@ -1,0 +1,50 @@
+axpy.o: axpy.c pftools.h databox.h readdatabox.h printdatabox.h \
+  velocity.h head.h flux.h stats.h diff.h error.h getsubbox.h \
+  enlargebox.h file.h load.h grid.h region.h usergrid.h general.h
+bgmsfem2pfsol.o: bgmsfem2pfsol.c ../parflow/parflow_lib/file_versions.h
+databox.o: databox.c databox.h
+diff.o: diff.c diff.h databox.h
+enlargebox.o: enlargebox.c enlargebox.h databox.h
+error.o: error.c error.h databox.h
+extrap_TIN.o: extrap_TIN.c ../parflow/parflow_lib/f2c.h
+file.o: file.c databox.h readdatabox.h file.h
+flux.o: flux.c flux.h databox.h
+geom_sort_vertices.o: geom_sort_vertices.c general.h geometry.h \
+  quicksort.c
+geom_sort_xy_vertices.o: geom_sort_xy_vertices.c general.h geometry.h \
+  quicksort.c
+getsubbox.o: getsubbox.c getsubbox.h databox.h
+gmsSOL2pfsol.o: gmsSOL2pfsol.c gms.h general.h geometry.h
+gmsTINvertices.o: gmsTINvertices.c gms.h general.h geometry.h
+gmsreadSOL.o: gmsreadSOL.c gms.h general.h geometry.h
+gmsreadTIN.o: gmsreadTIN.c gms.h general.h geometry.h
+gmstriangulate.o: gmstriangulate.c gms.h general.h geometry.h
+gmswriteTIN.o: gmswriteTIN.c gms.h general.h geometry.h
+grid.o: grid.c pfload_file.h general.h databox.h readdatabox.h file.h \
+  load.h grid.h region.h usergrid.h
+head.o: head.c head.h databox.h
+load.o: load.c pfload_file.h general.h databox.h readdatabox.h file.h \
+  load.h grid.h region.h usergrid.h tools_io.h
+pftappinit.o: pftappinit.c pftools.h databox.h readdatabox.h \
+  printdatabox.h velocity.h head.h flux.h stats.h diff.h error.h \
+  getsubbox.h enlargebox.h file.h load.h grid.h region.h usergrid.h \
+  general.h tools_io.h
+pftools.o: pftools.c pftools.h databox.h readdatabox.h printdatabox.h \
+  velocity.h head.h flux.h stats.h diff.h error.h getsubbox.h \
+  enlargebox.h file.h load.h grid.h region.h usergrid.h general.h
+pfwell_cat.o: pfwell_cat.c pfwell_cat.h general.h well.h
+pfwell_data.o: pfwell_data.c pfwell_data.h general.h well.h
+printdatabox.o: printdatabox.c printdatabox.h databox.h tools_io.h
+projecttin.o: projecttin.c gms.h general.h geometry.h
+quicksort.o: quicksort.c
+readdatabox.o: readdatabox.c readdatabox.h databox.h tools_io.h
+region.o: region.c pfload_file.h general.h databox.h readdatabox.h file.h \
+  load.h grid.h region.h usergrid.h
+slimtopfsb.o: slimtopfsb.c
+stats.o: stats.c stats.h databox.h
+tools_io.o: tools_io.c
+usergrid.o: usergrid.c pftools.h databox.h readdatabox.h printdatabox.h \
+  velocity.h head.h flux.h stats.h diff.h error.h getsubbox.h \
+  enlargebox.h file.h load.h grid.h region.h usergrid.h general.h
+velocity.o: velocity.c velocity.h databox.h
+well.o: well.c well.h general.h

@@ -1,0 +1,47 @@
+if [ ! -f parflow/configure ]
+then
+	echo "Not in correct directory"
+	exit 1 	
+fi
+
+if [ -z "$PARFLOW_DIR" ]
+then
+	echo "PARFLOW_DIR not set"
+	exit 1
+fi
+
+#-----------------------------------------------------------------------------
+# Make sundials
+#-----------------------------------------------------------------------------
+DIR=sundials
+(cd $DIR; ./configure \
+              --prefix=$PARFLOW_DIR)
+
+(cd $DIR; make -j 4 install)
+
+#-----------------------------------------------------------------------------
+# Make Parflow
+#-----------------------------------------------------------------------------
+DIR=parflow
+
+(cd $DIR; 
+./configure \
+	     --with-sundials=$PARFLOW_DIR \
+	     --with-amps=mpi1 \
+	     --prefix=$PARFLOW_DIR)
+
+(cd $DIR; make -j 4 install)
+
+#-----------------------------------------------------------------------------
+# Make pftools
+#-----------------------------------------------------------------------------
+
+DIR=pftools
+
+(cd $DIR; 
+./configure \
+	     --prefix=$PARFLOW_DIR \
+	     --with-amps=mpi1 )
+
+(cd $DIR; make -j 4 install)
+

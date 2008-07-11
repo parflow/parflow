@@ -1,3 +1,0 @@
-(cd $HOME/parflow/; rm -fr exe.Linux)
-(cd /home/smithsg/parflow/parflow/src/; ./build install)
-tclsh sgs_richards_test.pftcl

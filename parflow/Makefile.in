@@ -1,0 +1,48 @@
+##
+## Copyright:	(c) 1997-2008 Lawrence Livermore National Security, LLC
+## Revision:	$LastChangedRevision: 2219 $
+## Modified:	$LastChangedDate: 2008-06-12 13:14:48 -0700 (Thu, 12 Jun 2008) $
+##
+## Description:	makefile for the parflow library and executable
+##
+
+default: all
+
+include ./config/Makefile.config
+
+PARFLOW	      =	@top_srcdir@
+
+SUBDIR        = .
+SRCDIR        = @srcdir@
+OBJECT        = .
+
+SUBDIRS = amps parflow_lib parflow
+
+all:
+	( cd amps && $(MAKE) all) || exit 1
+	( cd parflow_lib && $(MAKE) all) || exit 1
+	( cd parflow && $(MAKE) all ) || exit 1
+
+clean:
+	@for DIR in $(SUBDIRS); do if test -d $$DIR; then (cd $$DIR && $(MAKE) $@) ; fi || exit 1; done
+	@$(PARFLOW_CLEAN)
+
+veryclean: clean
+	@for DIR in $(SUBDIRS); do if test -d $$DIR; then (cd $$DIR && $(MAKE) $@) ; fi || exit 1; done
+	@$(RM) -fr include  autom4te.cache bin lib
+	@$(RM) Makefile config/Makefile.config
+
+install: all
+	$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/lib
+	$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/bin
+	for i in lib/*; do				        \
+	   $(INSTALL) -c -m 644 $$i $(PARFLOW_INSTALL_DIR)/lib; \
+	done
+	for i in bin/*; do				        \
+	   $(INSTALL) -c -m 755 $$i $(PARFLOW_INSTALL_DIR)/bin; \
+	done
+	for i in batchmc bootmc freemc getmc killmc peekmc run; do           \
+	   $(INSTALL) -c -m 755 $(PARFLOW)/amps/$(AMPS)/$$i $(PARFLOW_INSTALL_DIR)/bin; \
+	done			
+
+

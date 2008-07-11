@@ -1,0 +1,1359 @@
+Header.o: Header.c
+Stefan_vector.o: Stefan_vector.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+advect.win32.o: advect.win32.c f2c.h
+advection_godunov.o: advection_godunov.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+axpy.o: axpy.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+background.o: background.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+bc_lb.o: bc_lb.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+bc_pressure.o: bc_pressure.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+bc_pressure_package.o: bc_pressure_package.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+bc_temperature.o: bc_temperature.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+bc_temperature_package.o: bc_temperature_package.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+calc_elevations.o: calc_elevations.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+cghs.o: cghs.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+char_vector.o: char_vector.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+chebyshev.o: chebyshev.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+comm_pkg.o: comm_pkg.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+communication.o: communication.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+computation.o: computation.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+compute_maximums.o: compute_maximums.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+compute_total_concentration.o: compute_total_concentration.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+constantRF.o: constantRF.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+constant_porosity.o: constant_porosity.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+copy.o: copy.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+create_grid.o: create_grid.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+diag_scale.o: diag_scale.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+diffuse_lb.o: diffuse_lb.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+discretize_pressure.o: discretize_pressure.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+distribute_usergrid.o: distribute_usergrid.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+dpofa.o: dpofa.c f2c.h
+dposl.o: dposl.c f2c.h
+gauinv.o: gauinv.c
+general.o: general.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+geom_t_solid.o: geom_t_solid.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+geometry.o: geometry.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+globals.o: globals.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+grgeom_list.o: grgeom_list.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+grgeom_octree.o: grgeom_octree.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+grgeom_octree_stefan.o: grgeom_octree_stefan.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+grgeometry.o: grgeometry.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+grid.o: grid.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+hbt.o: hbt.c hbt.h
+infinity_norm.o: infinity_norm.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+innerprod.o: innerprod.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+inputRF.o: inputRF.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+input_database.o: input_database.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+kinsol_function_eval.o: kinsol_function_eval.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+kinsol_matvec.o: kinsol_matvec.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+kinsol_nonlin_solver.o: kinsol_nonlin_solver.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h kinsol_dependences.h   \
+  
+kinsol_pc.o: kinsol_pc.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h kinsol_dependences.h   \
+  
+kinsol_pc_pressure.o: kinsol_pc_pressure.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h kinsol_dependences.h   \
+  
+kinsol_pc_temperature.o: kinsol_pc_temperature.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h kinsol_dependences.h   \
+  
+l2_error_norm.o: l2_error_norm.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+line_process.o: line_process.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+logging.o: logging.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h \
+  version.h
+matdiag_scale.o: matdiag_scale.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+matrix.o: matrix.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+matvec.o: matvec.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+max_field_value.o: max_field_value.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+mg_semi.o: mg_semi.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+mg_semi_prolong.o: mg_semi_prolong.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+mg_semi_restrict.o: mg_semi_restrict.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+new_endpts.o: new_endpts.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+nodiag_scale.o: nodiag_scale.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+nvector_parflow.o: nvector_parflow.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+parflow.o: parflow.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+pcg.o: pcg.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+permeability_face.o: permeability_face.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+perturb_lb.o: perturb_lb.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+pf_module.o: pf_module.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+pf_pfmg.o: pf_pfmg.c
+pf_smg.o: pf_smg.c
+pfield.o: pfield.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+pgsRF.o: pgsRF.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+phase_velocity_face.o: phase_velocity_face.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+ppcg.o: ppcg.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+press_function_eval.031407.o: press_function_eval.031407.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+press_function_eval.o: press_function_eval.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+printgrid.o: printgrid.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+printmatrix.o: printmatrix.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+printvector.o: printvector.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+problem.o: problem.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_bc.o: problem_bc.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+problem_bc_internal.o: problem_bc_internal.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+problem_bc_phase_saturation.o: problem_bc_phase_saturation.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_bc_pressure.o: problem_bc_pressure.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+problem_bc_temperature.o: problem_bc_temperature.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_capillary_pressure.o: problem_capillary_pressure.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_domain.o: problem_domain.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+problem_eval.o: problem_eval.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+problem_geometries.o: problem_geometries.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+problem_heat_capacity.o: problem_heat_capacity.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+problem_ic_phase_concen.o: problem_ic_phase_concen.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_ic_phase_pressure.o: problem_ic_phase_pressure.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_ic_phase_pressure.mask.o: problem_ic_phase_pressure.mask.c \
+  parflow.h info_header.h general.h file_versions.h input_database.h \
+  hbt.h logging.h timing.h loops.h background.h communication.h \
+  computation.h region.h grid.h matrix.h vector.h nvector_parflow.h \
+  pf_module.h geometry.h grgeometry.h grgeom_octree.h grgeom_list.h \
+  geostats.h lb.h char_vector.h globals.h time_cycle_data.h problem_bc.h \
+  problem_eval.h well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_ic_phase_pressure.org.o: problem_ic_phase_pressure.org.c \
+  parflow.h info_header.h general.h file_versions.h input_database.h \
+  hbt.h logging.h timing.h loops.h background.h communication.h \
+  computation.h region.h grid.h matrix.h vector.h nvector_parflow.h \
+  pf_module.h geometry.h grgeometry.h grgeom_octree.h grgeom_list.h \
+  geostats.h lb.h char_vector.h globals.h time_cycle_data.h problem_bc.h \
+  problem_eval.h well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_ic_phase_satur.o: problem_ic_phase_satur.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_ic_phase_temperature.o: problem_ic_phase_temperature.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_mannings.o: problem_mannings.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+problem_phase_density.o: problem_phase_density.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+problem_phase_heat_capacity.o: problem_phase_heat_capacity.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_phase_internal_energy.o: problem_phase_internal_energy.c \
+  parflow.h info_header.h general.h file_versions.h input_database.h \
+  hbt.h logging.h timing.h loops.h background.h communication.h \
+  computation.h region.h grid.h matrix.h vector.h nvector_parflow.h \
+  pf_module.h geometry.h grgeometry.h grgeom_octree.h grgeom_list.h \
+  geostats.h lb.h char_vector.h globals.h time_cycle_data.h problem_bc.h \
+  problem_eval.h well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_phase_mobility.o: problem_phase_mobility.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_phase_rel_perm.o: problem_phase_rel_perm.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_phase_source\ with\ intixtra.o:  \
+ problem_phase_source\ with\ intixtra.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+problem_phase_source.o: problem_phase_source.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+problem_phase_viscosity.o: problem_phase_viscosity.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_porosity.o: problem_porosity.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+problem_retardation.o: problem_retardation.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+problem_richards_bc_internal.o: problem_richards_bc_internal.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_saturation.o: problem_saturation.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+problem_saturation_constitutive.o: problem_saturation_constitutive.c \
+  parflow.h info_header.h general.h file_versions.h input_database.h \
+  hbt.h logging.h timing.h loops.h background.h communication.h \
+  computation.h region.h grid.h matrix.h vector.h nvector_parflow.h \
+  pf_module.h geometry.h grgeometry.h grgeom_octree.h grgeom_list.h \
+  geostats.h lb.h char_vector.h globals.h time_cycle_data.h problem_bc.h \
+  problem_eval.h well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_spec_storage.o: problem_spec_storage.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+problem_temp_source.o: problem_temp_source.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+problem_thermal_conductivity.o: problem_thermal_conductivity.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_thermal_conductivity_old.o: problem_thermal_conductivity_old.c \
+  parflow.h info_header.h general.h file_versions.h input_database.h \
+  hbt.h logging.h timing.h loops.h background.h communication.h \
+  computation.h region.h grid.h matrix.h vector.h nvector_parflow.h \
+  pf_module.h geometry.h grgeometry.h grgeom_octree.h grgeom_list.h \
+  geostats.h lb.h char_vector.h globals.h time_cycle_data.h problem_bc.h \
+  problem_eval.h well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+problem_toposlope_x.o: problem_toposlope_x.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+problem_toposlope_y.o: problem_toposlope_y.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+random.o: random.c $(AMPS_INCLUDE_DIR)/amps.h
+ratqr.o: ratqr.c f2c.h
+rb_GS_point.o: rb_GS_point.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+read_parflow_binary.o: read_parflow_binary.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+reg_from_stenc.o: reg_from_stenc.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+region.o: region.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+richards_jacobian_eval.o: richards_jacobian_eval.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+richards_jacobian_eval.mod.o: richards_jacobian_eval.mod.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h llnlmath.h llnltyps.h
+richards_jacobian_eval.org.o: richards_jacobian_eval.org.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h llnlmath.h llnltyps.h
+sadvect.win32.o: sadvect.win32.c f2c.h
+sadvection_godunov.o: sadvection_godunov.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+scale.o: scale.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+select_time_step.o: select_time_step.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+set_problem_data.o: set_problem_data.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+sim_shear.o: sim_shear.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+solver.o: solver.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+solver_impes.o: solver_impes.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+solver_lb.o: solver_lb.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+solver_richards.o: solver_richards.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h kinsol_dependences.h   \
+  
+solver_richards.org.o: solver_richards.org.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h kinsol_dependences.h  \
+  
+stefan_problem_phase_source.o: stefan_problem_phase_source.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+subsrf_sim.o: subsrf_sim.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+temp_function_eval.031407.o: temp_function_eval.031407.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+temp_function_eval.o: temp_function_eval.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+temp_function_eval.old.o: temp_function_eval.old.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+temp_function_eval_cd.o: temp_function_eval_cd.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+temp_function_eval_noconvection.o: temp_function_eval_noconvection.c \
+  parflow.h info_header.h general.h file_versions.h input_database.h \
+  hbt.h logging.h timing.h loops.h background.h communication.h \
+  computation.h region.h grid.h matrix.h vector.h nvector_parflow.h \
+  pf_module.h geometry.h grgeometry.h grgeom_octree.h grgeom_list.h \
+  geostats.h lb.h char_vector.h globals.h time_cycle_data.h problem_bc.h \
+  problem_eval.h well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+temp_function_eval_old.o: temp_function_eval_old.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+temp_function_eval_upwind.o: temp_function_eval_upwind.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+temperature_jacobian_eval.o: temperature_jacobian_eval.c parflow.h \
+  info_header.h general.h file_versions.h input_database.h hbt.h \
+  logging.h timing.h loops.h background.h communication.h computation.h \
+  region.h grid.h matrix.h vector.h nvector_parflow.h pf_module.h \
+  geometry.h grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
+  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
+  well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+temperature_jacobian_eval_old.o: temperature_jacobian_eval_old.c \
+  parflow.h info_header.h general.h file_versions.h input_database.h \
+  hbt.h logging.h timing.h loops.h background.h communication.h \
+  computation.h region.h grid.h matrix.h vector.h nvector_parflow.h \
+  pf_module.h geometry.h grgeometry.h grgeom_octree.h grgeom_list.h \
+  geostats.h lb.h char_vector.h globals.h time_cycle_data.h problem_bc.h \
+  problem_eval.h well.h bc_pressure.h bc_temperature.h problem.h solver.h \
+  press_temp_function_eval.h parflow_proto.h parflow_proto_f.h \
+  drv_module.h drv_gridmodule.h drv_tilemodule.h
+time_cycle_data.o: time_cycle_data.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+timing.o: timing.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+total_velocity_face.o: total_velocity_face.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+turning_bands.o: turning_bands.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+turning_bandsRF.o: turning_bandsRF.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+usergrid_input.o: usergrid_input.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+vector.o: vector.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+vector_utilities.o: vector_utilities.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+vector_utilities.old.o: vector_utilities.old.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+w_jacobi.o: w_jacobi.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+well.o: well.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+well_package.o: well_package.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+wells_lb.o: wells_lb.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  nvector_parflow.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h bc_temperature.h \
+  problem.h solver.h press_temp_function_eval.h parflow_proto.h \
+  parflow_proto_f.h drv_module.h drv_gridmodule.h drv_tilemodule.h
+wrf_parflow.o: wrf_parflow.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h
+write_parflow_binary.o: write_parflow_binary.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h nvector_parflow.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  bc_temperature.h problem.h solver.h press_temp_function_eval.h \
+  parflow_proto.h parflow_proto_f.h drv_module.h drv_gridmodule.h \
+  drv_tilemodule.h

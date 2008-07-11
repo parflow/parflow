@@ -1,0 +1,343 @@
+%=============================================================================
+%=============================================================================
+
+\chapter{Getting Started}
+\label{Getting Started}
+
+This chapter is an introduction to setting up and running \parflow{}.
+In \S~\ref{Installing ParFlow}, we describe how to install \parflow{}.
+In \S~\ref{Running the Sample Problem}, we lead the user through a
+simple groundwater problem, supplied with the \parflow{} distribution.
+
+%=============================================================================
+%=============================================================================
+
+\section{Installing ParFlow}
+\label{Installing ParFlow}
+
+\parflow{} requires a Standard ANSI C and Fortran 77 compiler (or f2c)
+to build code.  \parflow{} also requires \code{TCL/TK} version 8.0 (or
+higher).  \code{TCL/TK} can be obtained from:
+\\ \code{http://www.tcl.tk}.
+
+Note this version of \parflow{} uses a new configure/make system based on
+the standard GNU autoconf configure system.  This replaces the home
+grown set of scripts used in previous versions and should be more
+portable.
+
+The following steps are designed to take you through the steps of
+installing \parflow{} from a source distribution.  This assumes that 
+a configuration file exists for your system.  If one does not exist
+you will need to create a configuration file for your system in
+the \code{config} directory of the \parflow{} source tree.
+
+\begin{enumerate}
+
+\item
+The following environment variables should be set up in your \file{.profile}
+file (if you are using \code{bash} or a bourne syntax shell):
+
+\begin{display}\begin{verbatim}
+export PARFLOW_DIR=~/parflow/exe
+export PARFLOW_HTML_VIEWER=/usr/local/bin/netscape
+\end{verbatim}\end{display}
+
+If you are using a \code{csh} like shell you will need the following in your
+\file{.cshrc} file:
+
+\begin{display}\begin{verbatim}
+setenv PARFLOW_DIR ~/parflow/exe
+setenv PARFLOW_HTML_VIEWER /usr/local/bin/netscape
+\end{verbatim}\end{display}
+
+The \code{PARFLOW_HTML_VIEWER} variable should be set to a HTML
+browser of your choice.  This is used to choose the browser that will
+be used to view the online documentation.  The other variables point
+to where \parflow{} will be installed. This is where executables and
+support files will be placed.
+
+%------------------------------
+\item
+
+You should also add \code{\$PARFLOW_DIR/bin} to your 
+\code{PATH} environment variable.  
+If you are using \code{bash} or a bourne syntax shell):
+
+\begin{display}\begin{verbatim}
+PATH=$PATH:$PARFLOW_DIR/bin
+\end{verbatim}\end{display}
+
+If you are using a \code{csh} like shell:
+
+\begin{display}\begin{verbatim}
+set path=($path $PARFLOW_DIR/bin)
+\end{verbatim}\end{display}
+
+%------------------------------
+
+\item
+
+Extract the source files from the distribution compressed tar file.
+This example assumes the parflow.tar.Z file is in your home directory
+and you are building it in a directory ~/parflow.
+
+\begin{display}\begin{verbatim}
+mkdir ~/parflow
+cd ~/parflow
+zcat ../parflow.tar.Z | tar xf -
+\end{verbatim}\end{display}
+
+%------------------------------
+
+\item
+
+Since \parflow{} is composed of several different parts which might
+require different compilers (e.g. on some MPP architectures the
+front-end machine is different from the nodes) the build process
+involves compiling several different parts.
+
+The first thing that should be built is the Sundials solver library.
+
+This can be done with something as simple as:
+
+\begin{display}\begin{verbatim}
+cd sundials
+./configure --prefix=$PARFLOW_DIR
+make
+make install
+\end{verbatim}\end{display}
+
+See the Sundials documenation for further information.  Note the
+compiler choices for Sundials should probably also be used when
+building \parflow{}.
+
+\item
+
+Next build the \parflow{} library and executable.  The library is
+used when \parflow{} is used as a component of another simulation
+(e.g. WRF).  
+
+\begin{display}\begin{verbatim}
+cd parflow
+./configure --prefix=$PARFLOW_DIR --with-sundials=$PARFLOW_DIR --with-amps=mpi1
+make 
+make install
+\end{verbatim}\end{display}
+
+This will build a parallel version of \parflow{} using the MPI1
+libraries.
+
+You can control build options for \parflow{}, use
+
+\begin{display}\begin{verbatim}
+ ./configure --help 
+\end{verbatim}\end{display}
+
+to see other configure options.   
+
+Note that \parflow{} defaults to building a sequential version so
+\code{--with-amps} is needed when building for a parallel computer.  You
+can explicitly specify the path to the MPI to use with the
+\code{--with-mpi} option to configure.
+
+\item
+
+pftools is a package of utilities and a TCL library that is used to
+setup and postprocess \parflow{} files.  The input files to \parflow{} are
+TCL scripts so TCL must be installed on the system.
+
+The pftools directory also contains the documentation which can be
+installed using the \code{doc_install} target.
+
+A typical configure and build looks like:
+
+\begin{display}\begin{verbatim}
+cd pftools
+./configure --prefix=$PARFLOW_DIR --with-amps=mpi1
+make 
+make install
+make doc_install
+\end{verbatim}\end{display}
+
+Note that pftools is NOT parallel but some options for how files are
+written are based on the communication layer so pftools needs to know
+what what used to build the \parflow{} library.
+
+If TCL is not installed in the system locations (/usr or /usr/local) you need
+to specify the path with the \code{--with-tcl=<PATH>} configure option.
+
+See \code{./configure --help} for additional configure options for pftools.
+
+\end{enumerate}
+
+%=============================================================================
+%=============================================================================
+
+\section{Running the Sample Problem}
+\label{Running the Sample Problem}
+
+Here, we assume that \parflow{} is already built.
+The following steps will allow you to run a simple test
+problem supplied with the distribution.
+\begin{enumerate}
+
+\item
+We first create a directory in which to run the problem,
+then copy into it some supplied default input files.
+So, do the following anywhere in your \file{\$HOME} directory:
+\begin{display}\begin{verbatim}
+mkdir foo
+cd foo
+cp $PARFLOW_DIR/test/default_single.pftcl .
+chmod 640 *
+\end{verbatim}\end{display}
+We used the directory name \file{foo} above;
+you may use any name you wish.
+The last line changes the permissions of the files so that
+you may write to them.
+
+\item
+Run \parflow{} using the pftcl file as a TCL script
+\begin{display}\begin{verbatim}
+tclsh default_single.pftcl
+\end{verbatim}\end{display}
+
+\end{enumerate}
+You have now successfully run a simple \parflow{} problem.
+For more information on running \parflow{},
+see \S~\ref{Running ParFlow}.
+
+%==============================
+\subsection*{Visualizing the Permeability}
+
+Now suppose we want to visualize some of the output.
+In particular, let's look at the permeability field generated
+by \parflow{} in this run.
+Follow these steps:
+\begin{enumerate}
+
+\item
+Start avs using the \file{pfavs} command.
+This will start AVS (the visualization system we are currently
+using), load the \parflow{} module library, and set the default
+network directory to your installed \parflow{} network directory.
+
+\item
+Click on \menu{Network Editor}.
+Then from the \menu{AVS Network Editor}, click on \menu{Read Network},
+and select file \file{slice3.net}.
+This will read in the \file{slice3.net} network which we will
+use to look at 3 slice planes of the permeability data.
+
+\item
+The panel buttons \menu{read parflow macro} and \menu{read parflow}
+should already be selected (highlighted).
+From the \menu{File Browser}, select \file{default_single.out.perm.pfb}.
+A picture of the permeability field used in the problem should
+appear in the \menu{Geometry Viewer} window.
+
+\end{enumerate}
+For more information on visualizing \parflow{} output,
+see \S~\ref{Visualizing Output with AVS}.
+
+%==============================
+\subsection*{Adding a Pumping Well}
+
+Let us change the input problem by adding a pumping well:
+\begin{enumerate}
+
+\item
+Edit the file \file{default_single.pftcl} using your favorite text editor.
+
+\item 
+Add the following lines to the input file near where the existing
+well information is in the input file.  You need to replace
+the ``Wells.Names'' line with the one included here to get both
+wells activated (this value lists the names of the wells):
+
+\begin{display}\begin{verbatim}
+pfset Wells.Names {snoopy new_well}
+
+pfset Wells.new_well.InputType                Recirc
+
+pfset Wells.new_well.Cycle		    constant
+
+pfset Wells.new_well.ExtractionType	    Flux
+pfset Wells.new_well.InjectionType            Flux
+
+pfset Wells.new_well.X			    10.0 
+pfset Wells.new_well.Y			    10.0
+pfset Wells.new_well.ExtractionZLower	     5.0
+pfset Wells.new_well.ExtractionZUpper	     5.0
+pfset Wells.new_well.InjectionZLower	     2.0
+pfset Wells.new_well.InjectionZUpper	     2.0
+
+pfset Wells.new_well.ExtractionMethod	    Standard
+pfset Wells.new_well.InjectionMethod          Standard
+
+pfset Wells.new_well.alltime.Extraction.Flux.water.Value        	     5.0
+pfset Wells.new_well.alltime.Injection.Flux.water.Value		     7.5
+pfset Wells.new_well.alltime.Injection.Concentration.water.tce.Fraction 0.1
+
+\end{verbatim}\end{display}
+
+\end{enumerate}
+For more information on defining the problem,
+see \S~\ref{Defining the Problem}.
+
+%==============================
+\subsection*{Converting the Pressure Output}
+
+Next, let us convert the pressure output computed by \parflow{}
+to hydraulic head.
+Do the following:
+\begin{enumerate}
+
+\item
+Start the \file{xpftools} utility.
+This is a utility which is used to do file conversions and other simple
+operations on \parflow{} output files.
+
+\item
+To read in the data, use the \menu{Data} pulldown menu and select the
+\menu{Load} \menu{ParFlow Binary} option.  
+
+\item
+In the file browser select the \file{default_single.out.press.00000.pfb}
+file.
+
+\item
+
+Select the \menu{Compute Hydraulic Head} option from the \menu{Functions} 
+pulldown menu.
+
+\item 
+
+In the \menu{Compute Hydraulic Head} popup, us the selector error next to
+the \menu{Pressure Head} field to select \file{dataset0} (the
+\file{default_single.out.press.00000.pfb} file).
+
+\item 
+
+Press the \menu{Compute Function} button at the bottom of the panel.  This
+creates a new dataset labeled \file{dataset1}. 
+
+\item
+To save the hydraulic head data in a \parflow{} file,
+\menu{Close} the \menu{Hydraulic Head} panel and select 
+\menu{Save ParFlow Data}
+from the \menu{Dataset} pulldown menu.
+
+\item
+
+In the file selector box type the filename
+\file{default_single.out.hhead.00000.pfb} 
+and save the dataset.  
+
+You have now computed and created a new \parflow{} binary file with the
+hydraulic head.
+
+\end{enumerate}
+For more information on manipulating and analyzing \parflow{} data,
+see \S~\ref{Manipulating Data}.
+
