@@ -21,19 +21,20 @@
 #ifndef READDATABOX_HEADER
 #define READDATABOX_HEADER
 
-#ifdef PF_HAVE_HDF
+#include "parflow_config.h"
+
+#include <stdio.h>
+
+#ifdef HAVE_HDF4
 #include <hdf.h>
 #include <netcdf.h>
 #endif
 
 #include "databox.h"
 
-#include <stdio.h>
-
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-
 
 /*-----------------------------------------------------------------------
  * function prototypes

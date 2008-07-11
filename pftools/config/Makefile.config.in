@@ -67,7 +67,7 @@ LDLIBS        = $(LDLIBS_EXTRA) @LIB_NAME@
 
 PARFLOW_TOOLS_SHLIB_SUFFIX=@SHLIB_SUFFIX@
 PARFLOW_TOOLS_SHLIB_LD=@SHLIB_LD@
-PARFLOW_TOOLS_SHLIB_LIBS=@SH_LIB_PATH@ $(PARFLOW_TOOLS_LIBS) @SH_LIB_NAME@ -lc
+PARFLOW_TOOLS_SHLIB_LIBS=@SH_LIB_PATH@ $(PARFLOW_TOOLS_LIBS) @silo_LIBS@ @hdf5_LIBS@ @SH_LIB_NAME@ -lc
 
 ######################################################################
 # Rules used in all directories.

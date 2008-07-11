@@ -53,6 +53,9 @@ void tools_ReadDouble();
 #else
 #ifdef TOOLS_INTS_ARE_64
 
+#define tools_WriteFloat(file, ptr, len) \
+    fwrite( (ptr), sizeof(float), (len), (FILE *)(file) )
+
 #define tools_WriteDouble(file, ptr, len) \
     fwrite( (ptr), sizeof(double), (len), (FILE *)(file) )
 
@@ -67,6 +70,9 @@ void tools_ReadDouble();
  
 #define tools_WriteInt(file, ptr, len) \
     fwrite( (ptr), sizeof(int), (len), (FILE *)(file) )
+
+#define tools_WriteFloat(file, ptr, len) \
+    fwrite( (ptr), sizeof(float), (len), (FILE *)(file) )
  
 #define tools_WriteDouble(file, ptr, len) \
     fwrite( (ptr), sizeof(double), (len), (FILE *)(file) )

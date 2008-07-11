@@ -53,6 +53,7 @@
  * HDF5 common data format library
  */
 
+// HDF is not working
 #ifndef HAVE_HDF5
 #undef HAVE_HDF5
 #endif

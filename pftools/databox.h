@@ -21,7 +21,9 @@
 #ifndef DATABOX_HEADER
 #define DATABOX_HEADER
 
-#ifdef PF_HAVE_HDF
+#include "parflow_config.h"
+
+#ifdef HAVE_HDF
 #include <hdf.h>
 #endif
 

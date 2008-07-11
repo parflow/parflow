@@ -16,6 +16,13 @@
  *-----------------------------------------------------------------------------
  *
  *****************************************************************************/
+#include "parflow_config.h"
+
+#include <stdlib.h>
+
+#ifdef HAVE_SILO
+#include <silo.h>
+#endif
 
 #include "printdatabox.h"
 #include "tools_io.h"
@@ -168,7 +175,7 @@ Databox        *v;
 
 
 
-#ifdef PF_HAVE_HDF
+#ifdef HAVE_HDF4
 /*-----------------------------------------------------------------------
  * print a Databox in HDF SDS format
  *-----------------------------------------------------------------------*/
@@ -379,4 +386,204 @@ Databox         *v;
   return(1);
 }
 #endif
+
+/*-----------------------------------------------------------------------
+ * print a Databox in `vizamrai' format
+ *-----------------------------------------------------------------------*/
+
+void            PrintVizamrai(fp, v)
+FILE           *fp;
+Databox        *v;
+{
+   double  X  = DataboxX(v); 
+   double  Y  = DataboxY(v);
+   double  Z  = DataboxZ(v);
+   int     NX = DataboxNx(v);
+   int     NY = DataboxNy(v);
+   int     NZ = DataboxNz(v);
+   double  DX = DataboxDx(v);
+   double  DY = DataboxDy(v);
+   double  DZ = DataboxDz(v);
+
+   int     ns = 1;               /* num_subgrids */
+
+   int     x  = 0;
+   int     y  = 0;
+   int     z  = 0;
+   int     nx = NX;
+   int     ny = NY;
+   int     nz = NZ;
+   int     rx = 1;
+   int     ry = 1;
+   int     rz = 1;
+
+   int FileFormat = -5;
+
+   double dzero = 0.0;
+   double done = 1.0;
+
+   int izero = 0;
+   int ione = 1;
+
+   double temp;
+
+   int itemp;
+
+   int string_size = 8;
+   char *string = "variable";
+
+
+   tools_WriteInt(fp, &FileFormat, 1);             /* File Format */
+   tools_WriteDouble(fp, &dzero, 1);           /* Time stamp (we don't have this */
+
+   tools_WriteInt(fp, &ione, 1);              /* Number of patches */
+
+   tools_WriteInt(fp, &izero, 1);              /* Double format */
+
+   tools_WriteInt(fp, &ione, 1);              /* One variable */
+
+   tools_WriteInt(fp, &string_size, 1);
+   fwrite(string, sizeof(char), 8, fp);
+
+   tools_WriteInt(fp, &ione, 1);              /* Number Of Levels */
+
+   tools_WriteInt(fp, &ione, 1);              /* Number Of PatchBoundaries */
+
+   tools_WriteDouble(fp, &dzero, 1);           /* Lower corner patch bondary */
+   tools_WriteDouble(fp, &dzero, 1);           
+   tools_WriteDouble(fp, &dzero, 1);           
+
+   temp = DX * NX;
+   tools_WriteDouble(fp, &temp, 1);           /* upper corner patch boundary */
+
+   temp = DY * NY;
+   tools_WriteDouble(fp, &temp, 1);
+
+   temp = DZ * NZ;
+   tools_WriteDouble(fp, &temp, 1);
+
+   tools_WriteInt(fp, &izero, 1);                /* Patch level */
+
+   /* For each patch */
+   
+
+   tools_WriteInt(fp, &izero, 1);                /* Patch Level */
+
+   tools_WriteInt(fp, &izero, 1);                /* Lower Index Space */
+   tools_WriteInt(fp, &izero, 1);
+   tools_WriteInt(fp, &izero, 1);
+
+   
+   itemp= NX - 1;
+   tools_WriteInt(fp, &itemp, 1);                /* Upper Index Space */
+
+   itemp= NY - 1;
+   tools_WriteInt(fp, &itemp, 1);                /* Upper Index Space */
+
+   itemp= NZ - 1;
+   tools_WriteInt(fp, &itemp, 1);                /* Upper Index Space */
+
+   tools_WriteDouble(fp, &DX, 1);
+   tools_WriteDouble(fp, &DY, 1);
+   tools_WriteDouble(fp, &DZ, 1);
+
+   temp = DX / 2.0;
+   tools_WriteDouble(fp, &temp, 1);
+   temp = DY / 2.0;
+   tools_WriteDouble(fp, &temp, 1);
+   temp = DZ / 2.0;
+   tools_WriteDouble(fp, &temp, 1);
+
+   tools_WriteDouble(fp, DataboxCoeffs(v), nx*ny*nz);
+}
+
+/*-----------------------------------------------------------------------
+ * print a Databox in `silo' format
+ *-----------------------------------------------------------------------*/
+
+#ifdef HAVE_SILO
+void            PrintSilo(fp, v)
+FILE           *fp;
+Databox        *v;
+{
+   float   X; 
+   float   Y;
+   float   Z;
+   int     NX = DataboxNx(v);
+   int     NY = DataboxNy(v);
+   int     NZ = DataboxNz(v);
+   float  DX = DataboxDx(v);
+   float  DY = DataboxDy(v);
+   float  DZ = DataboxDz(v);
+
+   int     ns = 1;               /* num_subgrids */
+
+   int     nx = NX;
+   int     ny = NY;
+   int     nz = NZ;
+   int     rx = 1;
+   int     ry = 1;
+   int     rz = 1;
+
+   float  *x, *y, *z;
+   float *value;
+   float air;
+   float *coords[3];
+   DBfile *db;
+   int dims[3];
+   int ndims;
+   int i;
+
+    x = (float*) malloc(sizeof(float) * NX);
+    y = (float*) malloc(sizeof(float) * NY);
+    z = (float*) malloc(sizeof(float) * NZ);
+    value = (float*) malloc(sizeof(float) * NX*NY*NZ);
+    air  = -999999.0;
+    coords[0] = x;
+    coords[1] = y;
+    coords[2] = z;
+
+    for (i = 0 ; i < NX; i++)
+    {
+        X    = (float)(i)*DX;
+        x[i] = X;
+    }
+
+    for (i = 0 ; i < NY; i++)
+    {
+        Y    = (float)(i)*DY;
+        y[i] = Y;
+    }
+
+    for (i = 0 ; i < NZ; i++)
+    {
+        Z    = (float)(i)*DZ;
+        z[i] = Z;
+    }
+    
+    for (i = 0 ; i < (NX*NY*NZ); i++)
+    {
+          value[i] = (v -> coeffs[i]);
+          if ((v -> coeffs[i]) == 0.0) value[i] = air;
+    }
+    
+    dims[0] = NX;
+    dims[1] = NY;
+    dims[2] = NZ;
+    ndims = 3;
+
+    db = DBCreate("sgrid.silo", DB_CLOBBER, DB_LOCAL, "test file", DB_PDB);
+
+    DBPutQuadmesh(db, "mesh", NULL, coords, dims, ndims,
+                  DB_FLOAT, DB_COLLINEAR, NULL);
+
+    DBPutQuadvar1(db, "pressure", "mesh", value, dims, ndims, NULL,0,
+                  DB_FLOAT, DB_NODECENT, NULL);
+
+    DBClose(db);
+
+}
+#endif
+
+
 

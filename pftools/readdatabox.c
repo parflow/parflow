@@ -18,9 +18,13 @@
  *
  *****************************************************************************/
 
+#include "parflow_config.h"
+
+#include <stdlib.h>
+#include <string.h>
+
 #include "readdatabox.h"
 #include "tools_io.h"
-#include <string.h>
 
 /*-----------------------------------------------------------------------
  * read a binary `parflow' file
@@ -354,8 +358,8 @@ static int parse_fld_header(char *header, int *count,
       if (*ptr == '\n')
          newlines++;
  
-   *tokens = (char **)malloc(newlines*sizeof(char **));
-   *values = (char **)malloc(newlines*sizeof(char **));
+   *tokens = malloc(newlines*sizeof(char **));
+   *values = malloc(newlines*sizeof(char **));
  
    if ((ptr = strtok(header,"\n")) != NULL) {
       do {
@@ -671,7 +675,7 @@ char           *file_name;
 #undef HEADER_SIZE_INC
 
 
-#ifdef PF_HAVE_HDF
+#ifdef HAVE_HDF4
 /*-----------------------------------------------------------------------
  * read an HDF file
  *-----------------------------------------------------------------------*/

@@ -21,6 +21,14 @@ OBJECT        = .
 
 SUBDIRS       = docs
 
+SCRIPTS = \
+	pfhelp \
+	pfmvio \
+	pfbtosa \
+	pfbtovis \
+	pfsbtosa \
+	pfstrip 
+
 include $(OBJECT)/config/Makefile.config
 
 default: all
@@ -125,6 +133,9 @@ install: all
 	@for DIR in $(SUBDIRS); do if test -d $$DIR; then (cd $$DIR && $(MAKE) $@) ; fi || exit 1; done
 	$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/lib
 	$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/bin
+	for i in $(SCRIPTS); do				        \
+	   $(INSTALL) -c -m 755 $(SRCDIR)/$$i $(PARFLOW_INSTALL_DIR)/bin; \
+	done
 	for i in bin/*; do				        \
 	   $(INSTALL) -c -m 755 $$i $(PARFLOW_INSTALL_DIR)/bin; \
 	done
@@ -142,4 +153,6 @@ veryclean: clean
 	@rm -f gmstinvertices projecttin gmstriangulate bgmsfem2pfsol
 	@rm -f Makefile config/Makefile.config
 	@rm -rf include bin lib
+
+
 

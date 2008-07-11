@@ -18,6 +18,8 @@
  *
  *****************************************************************************/
 
+#include "parflow_config.h"
+
 #ifdef _WIN32
 #define strdup _strdup
 #endif
@@ -157,6 +159,8 @@ char          *argv[];
        
        FreeBackground(background);
        FreeGrid(user_grid);
+       FreeSubgridArray(all_subgrids);
+       FreeDatabox(inbox);
        
        return TCL_OK;
     }
@@ -943,8 +947,7 @@ char          *argv[];
 
 }
 
-#ifdef PF_HAVE_HDF
-
+#ifdef HAVE_HDF
 
 /*-----------------------------------------------------------------------
  * routine for `pfloadsds' command
@@ -1106,6 +1109,12 @@ char             *argv[];
       PrintSimpleB(fp, databox);
    else if (strcmp(filetype, "fld") == 0)
       PrintAVSField(fp, databox);
+   else if (strcmp(filetype, "vis") == 0)
+      PrintVizamrai(fp, databox);
+#ifdef HAVE_SILO
+   else if (strcmp(filetype, "silo") == 0)
+      PrintSilo(fp, databox);
+#endif
 
    fflush(fp);
    fclose(fp);
@@ -1114,7 +1123,7 @@ char             *argv[];
 }
 
 
-#ifdef PF_HAVE_HDF
+#ifdef HAVE_HDF4
 
 /*-----------------------------------------------------------------------
  * routine for `pfsavesds' command

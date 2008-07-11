@@ -16,6 +16,8 @@
  *
  */
 
+#include "parflow_config.h"
+
 #include <stdlib.h>
 
 #ifndef _WIN32
@@ -106,7 +108,7 @@ EXPORT(int,Parflow_Init)(Tcl_Interp *interp)
      pftools.tcl with the namespace export command 
      ***********************************************************************/
       
-#if PF_HAVE_HDF 
+#if HAVE_HDF
    Tcl_CreateCommand(interp, "Parflow::pfloadsds", (Tcl_CmdProc *)LoadSDSCommand,
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfsavesds", (Tcl_CmdProc *)SaveSDSCommand,

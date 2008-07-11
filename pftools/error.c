@@ -118,6 +118,10 @@ char *option;
        || strcmp(option, "sa"  ) == 0
        || strcmp(option, "sb"  ) == 0
        || strcmp(option, "fld" ) == 0
+       || strcmp(option, "vis" ) == 0
+#ifdef HAVE_SILO
+       || strcmp(option, "silo" ) == 0
+#endif
        || strcmp(option, "rsa" ) == 0 )
       return (1);
    else

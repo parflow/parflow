@@ -106,6 +106,32 @@ int len;
 
 #include <stdio.h>	
 
+void tools_WriteFloat(file, ptr, len) 
+FILE * file;
+float *ptr;
+int len;
+{ 
+   int i; 
+   float *data;
+   union
+   {
+      double number;
+      char buf[8];
+   } a, b;
+ 
+   /* write out each double with bytes swaped                               */
+   for(i=len, data=ptr; i--;) 
+   { 
+      a.number = *data++;
+      b.buf[0] = a.buf[3];
+      b.buf[1] = a.buf[2];
+      b.buf[2] = a.buf[1];
+      b.buf[3] = a.buf[0];
+ 
+      fwrite( &b.number, sizeof(float), 1, (FILE *)file ); 
+   } 
+} 
+
 void tools_WriteDouble(file, ptr, len) 
 FILE * file;
 double *ptr;

@@ -20,8 +20,9 @@
 #ifndef PRINTDATABOX_HEADER
 #define PRINTDATABOX_HEADER
 
+#include "parflow_config.h"
 
-#ifdef PF_HAVE_HDF
+#ifdef HAVE_HDF4
 #include <hdf.h>
 #endif
 
