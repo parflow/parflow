@@ -697,9 +697,11 @@ void AdvanceRichards(PFModule *this_module,
 		    po_dat = SubvectorData(po_sub);
 		    
 		    ip = SubvectorEltIndex(p_sub, ix, iy, iz);
+#ifdef HAVE_CLM
 		    // printf("Before %d %d %d \n",nx, ny,nz);
-		    // CALL_CLM_LSM(pp,sp,tp,et,es,ft,ms,po_dat,dt,t,dx,dy,dz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,p,q,r,rank);
+		    CALL_CLM_LSM(pp,sp,tp,et,es,ft,ms,po_dat,dt,t,dx,dy,dz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,p,q,r,rank);
 		    // printf("After\n");
+#endif
 		 }
 		 handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
 		 FinalizeVectorUpdate(handle);

@@ -19,12 +19,17 @@ AC_ARG_WITH(CC,
    [  --with-CC=ARG           manually set C compiler to ARG])
 AC_ARG_WITH(F77,
    [  --with-F77=ARG          manually set F77 to ARG])
+AC_ARG_WITH(F90,
+   [  --with-F90=ARG          manually set F90 to ARG])
 AC_ARG_WITH(AR,
    [  --with-AR=ARG           manually set AR to ARG])
+AC_ARG_WITH(clm,
+   [  --with-clm              build with CLM])
 
 dnl
 dnl Initialize common macros to empty strings
 dnl
+
 
 C_FLAGS="$CFLAGS"
 F77_FLAGS="$FFLAGS"
@@ -58,7 +63,6 @@ else
 fi
 
 AC_ISC_POSIX
-
 
 dnl
 dnl Find ar for archiving
@@ -131,10 +135,40 @@ if test -n "$debug_switches" ; then
 fi
 
 dnl
-dnl Set up the Fortran compiler.  Look for special Fortran compilers on
+dnl Fortran 90
+dnl
+echo "SGS $with_F90"
+if test -n "$with_F90"; then
+   dnl If user specifies full path then don't search in path
+   if test -f $with_F90; then
+      FC=$with_F90
+   else
+      AC_CHECK_PROGS(FC, $with_F90)
+   fi
+else
+   if test -z "$F90"; then
+      AC_PROG_FC(, Fortran 90)
+   else
+      dnl If F90 was specified then see if it is a full path
+      dnl or just the prog name in users PATH
+      if test -f $F90; then
+	FC=$F90
+      else
+	AC_CHECK_PROGS(FC, $F90)
+      fi
+   fi
+fi
+test -z "$FC" && AC_MSG_ERROR([no acceptable Fortran 90 found])
+AC_SUBST(FC)
+
+dnl SGS this should be done with a test
+FCFLAGS="-ffree-line-length-none"
+AC_SUBST(FCFLAGS)
+
+dnl
+dnl Set up the F77 compiler.  Look for special Fortran compilers on
 dnl AIX machines.
 dnl
-
 if test -n "$with_F77"; then
    dnl If user specifies full path then don't search in path
    if test -f $with_F77; then
@@ -156,7 +190,7 @@ else
    fi
 fi
 
-test -z "$F77" && AC_MSG_ERROR([no acceptable Fortran found in $PATH])
+test -z "$F77" && AC_MSG_ERROR([no acceptable Fortran77 found])
 
 if test "$ac_cv_prog_g77" = "yes"; then
    F77_FLAGS="-Wall -Wimplicit -Wunused $F77_FLAGS"
@@ -264,7 +298,7 @@ dnl Note:  I added CASC_FIND_MPI_ALPHA for special case with compass cluster.
 dnl For more information, see code comments for macro in casc_mpi.m4.  AMW 9/00
 dnl
 
-AC_ARG_WITH(mpi,[  --without-mpi	Compile without MPI library.])
+AC_ARG_WITH(mpi,[  --without-mpi	          Compile without MPI library.])
 if test "$with_mpi" = no; then
    AC_MSG_NOTICE([NOTIFICATION: Parflow configured without the MPI library])
    AC_DEFINE(LACKS_MPI)
@@ -301,6 +335,21 @@ CASC_CHECK_GETTIMEOFDAY
 CASC_CHECK_BIGENDIAN
 
 dnl
+dnl CLM Support
+dnl
+dnl CLM_DIR is empty when not building with CLM.  This will case the
+dnl directory to be skipped in the compilation.
+CLM_DIR=""
+CLM_LIBS=""
+if test "$with_clm" = "yes"; then
+   CLM_DIR="clm"
+   CLM_LIBS="-lclm"
+   AC_DEFINE(HAVE_CLM)	  
+fi
+AC_SUBST(CLM_DIR)
+AC_SUBST(CLM_LIBS)
+
+dnl
 dnl Silo support
 dnl
 CASC_SUPPORT_SILO
@@ -318,8 +367,8 @@ dnl If Sundials is requested, then set up the Sundials libraries and include pat
 dnl
 
 AC_ARG_WITH(sundials,
-[  --with-sundials=PATH	Use the Sundials solver package
-			and specify where it is.],
+[  --with-sundials=PATH	  Use the Sundials solver package
+			  and specify where it is.],
 ,with_sundials='no')
 
 if test "$with_sundials" = no; then

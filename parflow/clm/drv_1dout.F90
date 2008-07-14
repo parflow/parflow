@@ -182,8 +182,9 @@ subroutine drv_1dout (drv, tile, clm)
   evap_soi = drv_gridave (n,mask,tile%fgrd,clm%qflx_evap_soi*clm%dtime, drv)
   tran_veg = drv_gridave (n,mask,tile%fgrd,clm%qflx_tran_veg*clm%dtime, drv)
   ice_layer1 = drv_gridave (n,mask,tile%fgrd,clm%h2osoi_ice(1), drv)
-  write(2008,'(i5,1x,f,1x,12(e10.2,1x))') clm(1)%istep,drv%time,totsurf,topsoil,surface,evapor,infiltr,fraction,clm_error,evap_tot, &
-                                     evap_veg,evap_soi,tran_veg,ice_layer1
+! SGS FIXME gfortran was complaining about this line
+!  write(2008,'(i5,1x,f,1x,12(e10.2,1x))') clm(1)%istep,drv%time,totsurf,topsoil,surface,evapor,infiltr,fraction,clm_error,evap_tot, &
+!                                     evap_veg,evap_soi,tran_veg,ice_layer1
   
 end subroutine drv_1dout
 

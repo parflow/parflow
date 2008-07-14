@@ -16,12 +16,10 @@ SUBDIR        = .
 SRCDIR        = @srcdir@
 OBJECT        = .
 
-SUBDIRS = amps parflow_lib parflow
+SUBDIRS = amps $(CLM_DIR) parflow_lib parflow 
 
 all:
-	( cd amps && $(MAKE) all) || exit 1
-	( cd parflow_lib && $(MAKE) all) || exit 1
-	( cd parflow && $(MAKE) all ) || exit 1
+	@for DIR in $(SUBDIRS); do if test -d $$DIR; then (cd $$DIR && $(MAKE) $@) ; fi || exit 1; done
 
 clean:
 	@for DIR in $(SUBDIRS); do if test -d $$DIR; then (cd $$DIR && $(MAKE) $@) ; fi || exit 1; done

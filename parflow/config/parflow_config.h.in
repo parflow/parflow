@@ -60,6 +60,10 @@
 /* #undef FORTRAN_CAPS */
 /* #undef FORTRAN_NO_UNDERSCORE */
 
+#ifndef HAVE_CLM
+#undef HAVE_CLM
+#endif
+
 /*
  * HDF5 common data format library
  */

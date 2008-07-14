@@ -5,7 +5,8 @@ AC_DEFUN([CASC_SUPPORT_SILO],[
 # Begin CASC_SUPPORT_SILO
 # Defines silo_PREFIX silo_INCLUDES and silo_LIBS if with-silo is specified.
 AC_ARG_WITH(silo,
-[ --with-silo[=PATH]  Use SILO and optionally specify where SILO is installed.],
+[  --with-silo[=PATH]        Use SILO and optionally specify 
+                          where SILO is installed.],
 , with_silo=no)
 
 case "$with_silo" in
