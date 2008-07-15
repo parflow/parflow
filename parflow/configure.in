@@ -137,7 +137,6 @@ fi
 dnl
 dnl Fortran 90
 dnl
-echo "SGS $with_F90"
 if test -n "$with_F90"; then
    dnl If user specifies full path then don't search in path
    if test -f $with_F90; then
@@ -161,9 +160,18 @@ fi
 test -z "$FC" && AC_MSG_ERROR([no acceptable Fortran 90 found])
 AC_SUBST(FC)
 
-dnl SGS this should be done with a test
-FCFLAGS="-ffree-line-length-none"
+AC_FC_FREEFORM(,[AC_MSG_ERROR([free format in F90 compiler does not work])])
+
+case $FC in
+   gfortran) 
+      FCFLAGS="$FCFLAGS -ffree-line-length-none"
+      ;;
+esac
+
+AC_FC_LIBRARY_LDFLAGS
+
 AC_SUBST(FCFLAGS)
+AC_SUBST(FCLIBS)
 
 dnl
 dnl Set up the F77 compiler.  Look for special Fortran compilers on
