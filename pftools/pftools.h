@@ -81,9 +81,9 @@ typedef struct
 #define DataTotalMem(data)  ((data) -> total_members)
 #define DataNum(data)       ((data) -> num)
 #define DataMember(data, hashkey, entryPtr) \
-        ((int)(entryPtr = Tcl_FindHashEntry(&DataMembers(data), hashkey)) \
-        ? (Databox *)Tcl_GetHashValue(entryPtr) \
-        : (Databox *) NULL)
+   ( ((entryPtr = Tcl_FindHashEntry(&DataMembers(data), hashkey)) != 0)	\
+   ? (Databox *)Tcl_GetHashValue(entryPtr)				\
+   : (Databox *) NULL)
 #define FreeData(data) (free((Data *)data))
 
 

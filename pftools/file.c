@@ -6,10 +6,13 @@
  *
  * $Revision: 1.5 $
  *********************************************************************EHEADER*/
+#include <string.h>
+#include <stdlib.h>
+
 #include "databox.h"
 #include "readdatabox.h"
 #include "file.h"
-#include <string.h>
+
 
 int FileType(filename)
 char *filename;
