@@ -2,6 +2,13 @@
 Checking out Parflow from the SVN repository
 -----------------------------------------------------------------------------
 
+The environmental variable PARFLOW_DIR should be set to the place to
+install the parflow executables and libraries.  See README.
+
+-----------------------------------------------------------------------------
+Checking out Parflow from the SVN repository
+-----------------------------------------------------------------------------
+
 cd <somewhere>
 svn co svn+ssh://atlas/usr/gapps/thcs/subversion/parflow/trunk parflow
 
