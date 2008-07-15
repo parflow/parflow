@@ -197,14 +197,6 @@ case $ARCH in
 	     ;;
       esac
       ;;
-   LINUX)
-      CASC_FIND_F77LIBS
-      case $F77 in
-         *ifc*)
-	     F77LIBFLAGS="-lPEPCF90 $F77LIBFLAGS"
-	     ;;
-      esac
-      ;;
    *)
       CASC_FIND_F77LIBS
       ;;

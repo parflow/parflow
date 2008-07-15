@@ -135,6 +135,8 @@ int SaveDiffCommand P((ClientData clientData , Tcl_Interp *interp , int argc , c
 int DiffEltCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int DeleteCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 
+void Axpy(double alpha, Databox *X,  Databox *Y);
+
 #undef P
 
 #endif

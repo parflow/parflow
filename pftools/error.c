@@ -307,6 +307,7 @@ char       *usage;
 
 void        NumberNotPositiveError(interp, argnum)
 Tcl_Interp *interp;
+int argnum;
 {
    char num[256];
    sprintf(num, "%d", argnum);

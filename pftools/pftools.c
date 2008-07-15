@@ -20,6 +20,10 @@
 
 #include "parflow_config.h"
 
+#include <string.h>
+#include <unistd.h>
+#include <ctype.h>
+
 #ifdef _WIN32
 #define strdup _strdup
 #endif
@@ -29,7 +33,6 @@
 #include "usergrid.h"
 #include "file.h"
 
-#include <string.h>
 
 /*-----------------------------------------------------------------------
  * Load:

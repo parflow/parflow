@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "readdatabox.h"
 #include "tools_io.h"

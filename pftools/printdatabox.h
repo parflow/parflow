@@ -48,6 +48,7 @@ void PrintSimpleB P((FILE *fp , Databox *v ));
 void PrintParflowB P((FILE *fp , Databox *v ));
 void PrintAVSField P((FILE *fp , Databox *v ));
 int  PrintSDS P((char *filename , int type , Databox *v ));
+void PrintVizamrai P((FILE *fp , Databox *v ));
  
 #undef P
 

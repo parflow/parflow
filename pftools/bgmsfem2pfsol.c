@@ -9,8 +9,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "file_versions.h"
+
+
+int FaceExists(int node, int num_vertices, int *vertices);
 
 /* to work on
    keep track of counts while constructing in an array to save
@@ -366,7 +370,7 @@ int main (int argc, char **argv)
       /* A virtex (node) entry */
       if (!strncmp(line, "GN", 2))
       {
-         sscanf(line, "%s %d %lf %lf %lf",&string, &id, &x, &y, &z);
+         sscanf(line, "%s %d %lf %lf %lf",string, &id, &x, &y, &z);
 
 	 nodes[id].x = x;
 	 nodes[id].y = y;
