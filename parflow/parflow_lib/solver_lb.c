@@ -1320,7 +1320,7 @@ PFModule *SolverDiffusionInitInstanceXtra()
    Problem      *problem = (public_xtra -> problem);
 
    Grid         *grid;
-   Grid         *grid2d;
+   Grid         *grid2d = NULL;
    Grid         *x_grid;
    Grid         *y_grid;
    Grid         *z_grid;
