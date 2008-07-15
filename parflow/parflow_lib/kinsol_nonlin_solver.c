@@ -493,16 +493,23 @@ double      *temp_data;
       
      
       flag = KINMalloc(kin_mem,KINSolFunctionEval,uscalen);
-      if (flag == KIN_SUCCESS) printf("\nKINSOL ALLOCATED SUCCESSFULLY \n");
-      if (flag == KIN_MEM_NULL) {
+      if (flag == KIN_SUCCESS) 
+	 printf("\nKINSOL ALLOCATED SUCCESSFULLY \n");
+      if (flag == KIN_MEM_NULL) 
+      {
         printf("\nKINSOL COULD NOT ALLOCATE MEMORY \n");
-        return;}
-      if (flag == KIN_MEM_FAIL) {
+        return NULL;
+      }
+      if (flag == KIN_MEM_FAIL) 
+      {
         printf("\nMEMEORY ALLOCATION REQUEST FAILED\n");
-        return;}
-      if (flag == KIN_ILL_INPUT) {
+        return NULL;
+      }
+      if (flag == KIN_ILL_INPUT) 
+      {
         printf("\nINPUT ARGUMENT HAS ILLEGAL VALUE\n");
-        return;}
+        return NULL;
+      }
 
       /* Specifies pointer to user-defined memory */
       instance_xtra -> kin_mem = kin_mem;
