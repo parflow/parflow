@@ -9,7 +9,7 @@
 
 #include "parflow.h"
 
-
+#include "sundials_math.h"
 
 /*---------------------------------------------------------------------
  * Define module structures
@@ -224,14 +224,6 @@ Vector      *z_velocity;
    /*@ Why are the above things calculated here again; they were allready
        calculated in the driver solver_richards and passed further @*/
 
-#if 0
-   printf("Check 1 - before accumulation term.\n");
-  fflush(NULL);
-   malloc_verify(NULL);
-#endif
-
-#if 1
-
    /* Calculate accumulation terms for the function values */
 
    ForSubgridI(is, GridSubgrids(grid))
@@ -290,13 +282,10 @@ Vector      *z_velocity;
              fp[ip] = (sp[ip]*dp[ip] - osp[ip]*odp[ip])*pop[ipo]*vol;			 
 	     });
    }
-#endif
 
    /*@ Add in contributions from compressible storage */
 
-#if 1
-
-      ForSubgridI(is, GridSubgrids(grid))
+   ForSubgridI(is, GridSubgrids(grid))
    {
       subgrid = GridSubgrid(grid, is);
 	
@@ -348,8 +337,6 @@ Vector      *z_velocity;
                          //press[i][j][k]=pp[ip];
 	     });
    }
-#endif
-
 
    /* Add in contributions from source terms - user specified sources and
       flux wells.  Calculate phase source values overwriting current 
@@ -358,7 +345,6 @@ Vector      *z_velocity;
    PFModuleInvoke(void, phase_source, (qsource, tsource, problem, problem_data,
 				       time));
 
-#if 1
    ForSubgridI(is, GridSubgrids(grid))
    {
       subgrid = GridSubgrid(grid, is);
@@ -400,7 +386,6 @@ Vector      *z_velocity;
 	        fp[ip] -= vol * dt * dp[ip] * et[ip];
 	     });
    }
-#endif
 
    bc_struct = PFModuleInvoke(BCStruct *, bc_pressure, 
 			      (problem_data, grid, gr_domain, time));
@@ -467,7 +452,6 @@ Vector      *z_velocity;
 		  (rel_perm, pressure, density, gravity, problem_data, 
 		   CALCFCN));
 
-#if 1
    /* Calculate contributions from second order derivatives and gravity */
    ForSubgridI(is, GridSubgrids(grid))
    {
@@ -593,10 +577,7 @@ Vector      *z_velocity;
 	     });
    }
 
-#endif
-
    /*  Calculate correction for boundary conditions */
-#if 1   
    ForSubgridI(is, GridSubgrids(grid))
    {
       subgrid = GridSubgrid(grid, is);
@@ -1224,14 +1205,11 @@ Vector      *z_velocity;
 
 
 
-#endif
    FreeBCStruct(bc_struct);
-#if 1
+
    PFModuleInvoke( void, bc_internal, (problem, problem_data, fval, NULL, 
 				       time, pressure, CALCFCN));
-#endif
 
-#if 1
 
    /* Set pressures outside domain to zero.  
     * Recall: equation to solve is f = 0, so components of f outside 
@@ -1268,10 +1246,7 @@ Vector      *z_velocity;
 		      fp[ip] = pp[ip];
 		    });
    }
-#endif
 
-#if 1 
- 
    /* Set pressures outside domain to zero.  
     * Recall: equation to solve is f = 0, so components of f outside 
     * domain are set to the respective pressure value. 
@@ -1310,11 +1285,8 @@ Vector      *z_velocity;
                 ip, nx_p, ny_p, nz_p, 1, 1, 1, 
              {   
                       ip   = SubvectorEltIndex(f_sub, i, j, k);
-                      //printf("P %d %d %d %e %e %e %e\n",i,j,k,fp[ip],pp[ip],dp[ip],sp[ip]);
              });  
    }   
-#endif
-
 
    EndTiming(public_xtra -> time_index);
 
