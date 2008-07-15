@@ -110,8 +110,6 @@ void wrfparflowadvance_(float  *current_time,
 			int    *num_soil_layers,
                         int    *ghost_size)
 {
-   printf("WRFParflowAdvance: current_time = %f dt = %f\n", current_time, dt);
-
    double        stop_time           = *current_time + *dt;
    
    Vector       *pressure_out;
