@@ -9,6 +9,8 @@
 
 #include "parflow.h"
 
+#include "sundials_math.h"
+
 /*--------------------------------------------------------------------------
  * Static stencil-shape definition
  *--------------------------------------------------------------------------*/
@@ -197,12 +199,6 @@ int           symm_part;      /* Specifies whether to compute just the
    handle = InitVectorUpdate(permeability_z, VectorUpdateAll);
    FinalizeVectorUpdate(handle);*/
 
-#if 0
-   printf("Check 1 - before accumulation term.\n");
-   fflush(NULL);
-   malloc_verify(NULL);
-#endif
-
    /* Initialize matrix values to zero. */
    InitMatrix(J, 0.0);
 
@@ -221,71 +217,68 @@ int           symm_part;      /* Specifies whether to compute just the
 					    density, gravity, problem_data,
 					    CALCDER));
 
-#if 1
-
-      ForSubgridI(is, GridSubgrids(grid))
-      {
-	 subgrid = GridSubgrid(grid, is);
-
-	 J_sub  = MatrixSubmatrix(J, is);
-	 cp     = SubmatrixStencilData(J_sub, 0);
-	
-	 p_sub   = VectorSubvector(pressure, is);
-	 d_sub  = VectorSubvector(density, is);
-	 s_sub  = VectorSubvector(saturation, is);
-	 dd_sub = VectorSubvector(density_der, is);
-	 sd_sub = VectorSubvector(saturation_der, is);
-	 po_sub = VectorSubvector(porosity, is);
-	 ss_sub = VectorSubvector(sstorage, is);
-	 
-	 ix = SubgridIX(subgrid);
-	 iy = SubgridIY(subgrid);
-	 iz = SubgridIZ(subgrid);
-	 
-	 nx = SubgridNX(subgrid);
-	 ny = SubgridNY(subgrid);
-	 nz = SubgridNZ(subgrid);
-	 
-	 dx = SubgridDX(subgrid);
-	 dy = SubgridDY(subgrid);
-	 dz = SubgridDZ(subgrid);
-	 
-	 vol = dx*dy*dz;
-	 
-	 nx_v  = SubvectorNX(d_sub);
-	 ny_v  = SubvectorNY(d_sub);
-	 nz_v  = SubvectorNZ(d_sub);
-
-	 nx_po = SubvectorNX(po_sub);
-	 ny_po = SubvectorNY(po_sub);
-	 nz_po = SubvectorNZ(po_sub);
-
-	 nx_m  = SubmatrixNX(J_sub);
-	 ny_m  = SubmatrixNY(J_sub);
-	 nz_m  = SubmatrixNZ(J_sub);
-
-	 pp  = SubvectorData(p_sub);
-	 dp  = SubvectorData(d_sub);
-	 sp  = SubvectorData(s_sub);
-	 ddp = SubvectorData(dd_sub);
-	 sdp = SubvectorData(sd_sub);
-	 pop = SubvectorData(po_sub);
-	 ss  = SubvectorData(ss_sub);
+   ForSubgridI(is, GridSubgrids(grid))
+   {
+      subgrid = GridSubgrid(grid, is);
       
-	 im  = SubmatrixEltIndex(J_sub,  ix, iy, iz);
-	 ipo = SubvectorEltIndex(po_sub, ix, iy, iz);
-	 iv  = SubvectorEltIndex(d_sub,  ix, iy, iz);
+      J_sub  = MatrixSubmatrix(J, is);
+      cp     = SubmatrixStencilData(J_sub, 0);
+	
+      p_sub   = VectorSubvector(pressure, is);
+      d_sub  = VectorSubvector(density, is);
+      s_sub  = VectorSubvector(saturation, is);
+      dd_sub = VectorSubvector(density_der, is);
+      sd_sub = VectorSubvector(saturation_der, is);
+      po_sub = VectorSubvector(porosity, is);
+      ss_sub = VectorSubvector(sstorage, is);
+      
+      ix = SubgridIX(subgrid);
+      iy = SubgridIY(subgrid);
+      iz = SubgridIZ(subgrid);
+      
+      nx = SubgridNX(subgrid);
+      ny = SubgridNY(subgrid);
+      nz = SubgridNZ(subgrid);
+      
+      dx = SubgridDX(subgrid);
+      dy = SubgridDY(subgrid);
+      dz = SubgridDZ(subgrid);
+      
+      vol = dx*dy*dz;
+	 
+      nx_v  = SubvectorNX(d_sub);
+      ny_v  = SubvectorNY(d_sub);
+      nz_v  = SubvectorNZ(d_sub);
 
-	 BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
-		   im,  nx_m,  ny_m,  nz_m,  1, 1, 1,
-		   ipo, nx_po, ny_po, nz_po, 1, 1, 1,
-		   iv,  nx_v,  ny_v,  nz_v,  1, 1, 1,
-		   {
-			   cp[im] += (sdp[iv]*dp[iv] + sp[iv]*ddp[iv])
-			         *pop[ipo]*vol + (ss[iv]/gravity)*vol*(sdp[iv]*pp[iv]+sp[iv]); //sk start
-		   });
-      }   /* End subgrid loop */
-#endif
+      nx_po = SubvectorNX(po_sub);
+      ny_po = SubvectorNY(po_sub);
+      nz_po = SubvectorNZ(po_sub);
+
+      nx_m  = SubmatrixNX(J_sub);
+      ny_m  = SubmatrixNY(J_sub);
+      nz_m  = SubmatrixNZ(J_sub);
+
+      pp  = SubvectorData(p_sub);
+      dp  = SubvectorData(d_sub);
+      sp  = SubvectorData(s_sub);
+      ddp = SubvectorData(dd_sub);
+      sdp = SubvectorData(sd_sub);
+      pop = SubvectorData(po_sub);
+      ss  = SubvectorData(ss_sub);
+      
+      im  = SubmatrixEltIndex(J_sub,  ix, iy, iz);
+      ipo = SubvectorEltIndex(po_sub, ix, iy, iz);
+      iv  = SubvectorEltIndex(d_sub,  ix, iy, iz);
+
+      BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
+		im,  nx_m,  ny_m,  nz_m,  1, 1, 1,
+		ipo, nx_po, ny_po, nz_po, 1, 1, 1,
+		iv,  nx_v,  ny_v,  nz_v,  1, 1, 1,
+		{
+		   cp[im] += (sdp[iv]*dp[iv] + sp[iv]*ddp[iv])
+		      *pop[ipo]*vol + (ss[iv]/gravity)*vol*(sdp[iv]*pp[iv]+sp[iv]); //sk start
+		});
+   }   /* End subgrid loop */
 
 
    bc_struct = PFModuleInvoke(BCStruct *, bc_pressure, 
@@ -1131,16 +1124,11 @@ int           symm_part;      /* Specifies whether to compute just the
    }           /* End subgrid loop */
 #endif
 
-#if 0
-   PrintMatrix("matrix_dump2", J);
-#endif
 
    FreeBCStruct(bc_struct);
-#if 1
+
    PFModuleInvoke( void, bc_internal, (problem, problem_data, NULL, J, time,
 				       pressure, CALCDER));
-#endif
-#if 1
 
 
    /* Set pressures outside domain to zero.  
@@ -1188,7 +1176,6 @@ int           symm_part;      /* Specifies whether to compute just the
 		      up[im] = 0.0;
 		    });
    }
-#endif
 
    /*-----------------------------------------------------------------------
     * Update matrix ghost points
@@ -1201,11 +1188,6 @@ int           symm_part;      /* Specifies whether to compute just the
    }
 
    *ptr_to_J = J;
-
-#if 0
-   PrintMatrix("matrix_dump3", J);
-   exit(1);
-#endif
 
    //FreeVector(psi); //sk start
    FreeVector(KWD);
