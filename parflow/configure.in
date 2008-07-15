@@ -135,6 +135,21 @@ if test -n "$debug_switches" ; then
 fi
 
 dnl
+dnl CLM Support
+dnl
+dnl CLM_DIR is empty when not building with CLM.  This will case the
+dnl directory to be skipped in the compilation.
+CLM_DIR=""
+CLM_LIBS=""
+if test "$with_clm" = "yes"; then
+   CLM_DIR="clm"
+   CLM_LIBS="-lclm"
+   AC_DEFINE(HAVE_CLM)	  
+fi
+AC_SUBST(CLM_DIR)
+AC_SUBST(CLM_LIBS)
+
+dnl
 dnl Fortran 90
 dnl
 if test -n "$with_F90"; then
@@ -168,10 +183,17 @@ case $FC in
       ;;
 esac
 
-AC_FC_LIBRARY_LDFLAGS
+dnl Only set these if using CLM; otherwise F90 is not
+dnl needed
+if test "$with_clm" = "yes"; then
+   AC_FC_LIBRARY_LDFLAGS
+   CASC_SPLIT_LIBS_STRING(FCLIBS,FLIBS_PATH,FLIBS_NAME)
+   LIB_NAME="${LIB_NAME} ${FLIBS_NAME}"
+   LIB_PATH="${LIB_PATH} ${FLIBS_PATH}"
 
-AC_SUBST(FCFLAGS)
-AC_SUBST(FCLIBS)
+   AC_SUBST(FCFLAGS)
+   AC_SUBST(FCLIBS)
+fi
 
 dnl
 dnl Set up the F77 compiler.  Look for special Fortran compilers on
@@ -236,14 +258,6 @@ case $ARCH in
       case $F77 in
          *mpxlf*)
 	     F77LIBFLAGS="-lxlf90 -lessl $F77LIBFLAGS"
-	     ;;
-      esac
-      ;;
-   LINUX)
-      CASC_FIND_F77LIBS
-      case $F77 in
-         *ifc*)
-	     F77LIBFLAGS="-lPEPCF90 $F77LIBFLAGS"
 	     ;;
       esac
       ;;
@@ -342,20 +356,6 @@ CASC_CHECK_GETTIMEOFDAY
 
 CASC_CHECK_BIGENDIAN
 
-dnl
-dnl CLM Support
-dnl
-dnl CLM_DIR is empty when not building with CLM.  This will case the
-dnl directory to be skipped in the compilation.
-CLM_DIR=""
-CLM_LIBS=""
-if test "$with_clm" = "yes"; then
-   CLM_DIR="clm"
-   CLM_LIBS="-lclm"
-   AC_DEFINE(HAVE_CLM)	  
-fi
-AC_SUBST(CLM_DIR)
-AC_SUBST(CLM_LIBS)
 
 dnl
 dnl Silo support
