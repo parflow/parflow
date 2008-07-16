@@ -160,7 +160,8 @@ int           symm_part;      /* Specifies whether to compute just the
    BCStruct    *bc_struct, *temp_bc_struct;
    GrGeomSolid *gr_domain         = ProblemDataGrDomain(problem_data);
    double      *bc_patch_values, *temp_bc_patch_values;
-   double       value, den_d, dend_d;
+   double       value, dend_d;
+   double       den_d = 0.0;
    int         *fdir;
    int          ipatch, ival;
    
