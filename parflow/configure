@@ -700,6 +700,7 @@ MPILIBS
 MPIFLAGS
 AMPS
 AMPS_LIBS
+AMPS_LIB_DEPEND
 SUNDIALS_C_FILES
 INSTDIR
 M4
@@ -10760,7 +10761,7 @@ fi
 
 # Begin CASC_SUPPORT_AMPS
 # Determine which AMPS layer to support.
-# Defines AMPS and AMPS_SPLIT_FILE
+# Defines AMPS_LIBS, AMPS_LIB_DEPEND
 
 # Check whether --with-amps was given.
 if test "${with_amps+set}" = set; then
@@ -10796,15 +10797,18 @@ esac
 case $AMPS in
   seq)
     AMPS_LIBS="-lamps_common"
+    AMPS_LIB_DEPEND="\$(PARFLOW_LIB_DIR)/libamps_common.a"
   ;;
   *)
   # This is horrifically bad design but there are all kinds of
   # dependencies between amps and amps_common
     AMPS_LIBS="-lamps -lamps_common -lamps -lamps_common"
+    AMPS_LIB_DEPEND="\$(PARFLOW_LIB_DIR)/libamps_common.a \$(PARFLOW_LIB_DIR)/libamps.a"
   ;;
 esac
 { echo "$as_me:$LINENO: result: configuring AMPS $AMPS support" >&5
 echo "${ECHO_T}configuring AMPS $AMPS support" >&6; }
+
 
 
 
@@ -12074,6 +12078,7 @@ MPILIBS!$MPILIBS$ac_delim
 MPIFLAGS!$MPIFLAGS$ac_delim
 AMPS!$AMPS$ac_delim
 AMPS_LIBS!$AMPS_LIBS$ac_delim
+AMPS_LIB_DEPEND!$AMPS_LIB_DEPEND$ac_delim
 SUNDIALS_C_FILES!$SUNDIALS_C_FILES$ac_delim
 INSTDIR!$INSTDIR$ac_delim
 M4!$M4$ac_delim
@@ -12083,7 +12088,6 @@ C_FLAGS!$C_FLAGS$ac_delim
 LD_FLAGS!$LD_FLAGS$ac_delim
 LIB_SUFFIX!$LIB_SUFFIX$ac_delim
 SRCDIR_COMPILE_PREFIX!$SRCDIR_COMPILE_PREFIX$ac_delim
-INC_PATH!$INC_PATH$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -12125,13 +12129,14 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+INC_PATH!$INC_PATH$ac_delim
 LIB_PATH!$LIB_PATH$ac_delim
 LIB_NAME!$LIB_NAME$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 4; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 5; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

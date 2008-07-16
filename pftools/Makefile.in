@@ -102,7 +102,7 @@ TOOLS_OBJS = pftappinit.o  printdatabox.o readdatabox.o databox.o \
         getsubbox.o enlargebox.o load.o usergrid.o grid.o region.o file.o \
 	pftools.o 
 
-$(PARFLOW_TOOLS_BIN_DIR)/$(PROJECT)$(PARFLOW_TOOLS_SHLIB_SUFFIX): Makefile $(TOOLS_HDRS) $(TOOLS_OBJS)
+$(PARFLOW_TOOLS_BIN_DIR)/$(PROJECT)$(PARFLOW_TOOLS_SHLIB_SUFFIX): Makefile $(TOOLS_HDRS) $(TOOLS_OBJS) $(PARFLOW_LIB_DEPEND)
 	$(PARFLOW_TOOLS_SHLIB_LD) $(TOOLS_OBJS) \
 	-o $(PARFLOW_TOOLS_BIN_DIR)/$(PROJECT)$(PARFLOW_TOOLS_SHLIB_SUFFIX) $(PARFLOW_TOOLS_SHLIB_LIBS)
 

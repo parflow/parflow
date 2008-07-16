@@ -4,7 +4,7 @@ AC_DEFUN([CASC_SUPPORT_AMPS],[
 
 # Begin CASC_SUPPORT_AMPS
 # Determine which AMPS layer to support.
-# Defines AMPS and AMPS_SPLIT_FILE
+# Defines AMPS_LIBS, AMPS_LIB_DEPEND
 AC_ARG_WITH(amps,
 [  --with-amps=AMPS_TYPE   Set the version of AMPS to use: seq, mpi1, smpi, win32],
 , with_amps=seq)
@@ -33,16 +33,19 @@ esac
 case $AMPS in
   seq)
     AMPS_LIBS="-lamps_common"
+    AMPS_LIB_DEPEND="\$(PARFLOW_LIB_DIR)/libamps_common.a"
   ;;
   *) 
   # This is horrifically bad design but there are all kinds of 
   # dependencies between amps and amps_common
     AMPS_LIBS="-lamps -lamps_common -lamps -lamps_common"
+    AMPS_LIB_DEPEND="\$(PARFLOW_DIR)/libamps_common.a \$(PARFLOW_LIB_DIR)/libamps.a"
   ;;
 esac
 AC_MSG_RESULT([configuring AMPS $AMPS support])
 AC_SUBST(AMPS)
 AC_SUBST(AMPS_LIBS)
+AC_SUBST(AMPS_LIB_DEPEND)
 AC_DEFINE_UNQUOTED(AMPS,$AMPS,AMPS porting layer)
 
 AC_ARG_WITH(amps,

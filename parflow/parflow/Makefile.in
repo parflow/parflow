@@ -18,7 +18,7 @@ default: all
 OBJS = \
 	parflow.o
 
-$(PARFLOW_BIN_DIR)/parflow: $(OBJS)
+$(PARFLOW_BIN_DIR)/parflow: $(OBJS) $(AMPS_LIB_DEPEND) $(PARFLOW_LIB_DEPEND)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) \
 			$(PARFLOW_LIBS) $(LDLIBS) -o $@
 

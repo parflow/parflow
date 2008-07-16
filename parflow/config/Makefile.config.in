@@ -50,8 +50,10 @@ PARFLOW_LIB_DIR                 = $(OBJECT)/lib
 PARFLOW_BIN_DIR                 = $(OBJECT)/bin
 
 AMPS_LIBS                       = @AMPS_LIBS@
+AMPS_LIB_DEPEND                 = @AMPS_LIB_DEPEND@
 
 PARFLOW_LIBS = -L$(PARFLOW_LIB_DIR) -lparflow $(CLM_LIBS) $(AMPS_LIBS)
+PARFLOW_LIB_DEPEND = $(PARFLOW_LIB_DIR)/libparflow.a
 
 LIB_SUFFIX=@LIB_SUFFIX@
 

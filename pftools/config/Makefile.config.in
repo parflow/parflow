@@ -33,6 +33,8 @@ PARFLOW_TOOLS_BIN_DIR                 = $(OBJECT)/bin
 
 PARFLOW_TOOLS_LIBS = -L$(PARFLOW_LIB_DIR) -lparflow
 
+PARFLOW_LIB_DEPEND = $(PARFLOW_LIB_DIR)/libparflow.a
+
 PARFLOW_TOOLS_INCLUDE=-I/usr/X11R6/include/
 
 # Need to link to the tk/tcl libs
