@@ -157,7 +157,7 @@ OBJS = \
 	write_parflow_binary.o \
 	wrf_parflow.o
 
-$(PARFLOW_LIB_DIR)/$(PARFLOW_LIB): $(OBJS)
+$(PARFLOW_LIB_DIR)/$(PARFLOW_LIB): $(OBJS) $(AMPS_LIB_DEPEND)
 	@AR@ ru $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB) $(OBJS)
 
 all: $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB)
