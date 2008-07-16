@@ -1,7 +1,3 @@
-SGS
-
-Haven't tried adding optimization to compile flags....should try that.
-
 SGS  
 
 There were some compile problems with the CLM F90 and gfortran,
