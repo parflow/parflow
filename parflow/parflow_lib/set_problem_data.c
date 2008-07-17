@@ -225,6 +225,8 @@ void  SetProblemDataFreeInstanceXtra()
       PFModuleFreeInstance(instance_xtra -> y_slope);   //sk
       PFModuleFreeInstance(instance_xtra -> mann);   //sk
 
+      PFModuleFreeInstance(instance_xtra -> bc_pressure);
+
       tfree(instance_xtra);
    }
 }

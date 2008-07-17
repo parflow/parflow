@@ -27,6 +27,7 @@ Grid   *grid;
   {
     content->specie[i] = NewVector(grid,1,1);
   }
+  content -> nvector_allocated_pfvectors = TRUE;
 
   return(v);  
 
@@ -71,6 +72,7 @@ int nspecies;
 
   content = (N_VectorContent_Parflow) malloc(sizeof(struct _N_VectorContent_Parflow));
   content->specie = (Vector **) malloc(nspecies * sizeof(Vector *)); 
+  content->nvector_allocated_pfvectors = FALSE;
   
   content->num_species = nspecies;
 
@@ -195,6 +197,7 @@ N_Vector w;
  
   clone_content = (N_VectorContent_Parflow) malloc(sizeof(struct _N_VectorContent_Parflow)); 
   clone_content->specie = NULL;
+  clone_content -> nvector_allocated_pfvectors = FALSE;
 
   clone_content->num_species = nspecies;
 
@@ -229,6 +232,7 @@ N_Vector w;
   {
     clone_content->specie[i] = NewVector(grid,1,1);
   }
+  clone_content -> nvector_allocated_pfvectors = TRUE;
   
   //clone->content = clone_content;
 
@@ -246,15 +250,20 @@ N_Vector v;
   
   content = NV_CONTENT_PF(v);
   
-  nspecies = content->num_species;
-  for (i = 0; i < nspecies; i++) 
+  if (content -> nvector_allocated_pfvectors) 
   {
-    specie = content->specie[i];
-    FreeVector(specie);
+     nspecies = content->num_species;
+     for (i = 0; i < nspecies; i++) 
+     {
+	specie = content->specie[i];
+	FreeVector(specie);
+     }
   }
   free(content->specie);
  
   free(content);
+
+  free(v -> ops);
   free(v);
 }
  

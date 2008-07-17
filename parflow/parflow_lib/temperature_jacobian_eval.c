@@ -1282,7 +1282,7 @@ void  TemperatureJacobianEvalFreeInstanceXtra()
       PFModuleFreeInstance(instance_xtra -> bc_temperature);
       PFModuleFreeInstance(instance_xtra -> saturation_module);
       PFModuleFreeInstance(instance_xtra -> rel_perm_module);
-      //PFModuleFreeInstance(instance_xtra -> thermal_conductivity);
+      PFModuleFreeInstance(instance_xtra -> thermal_conductivity);
       PFModuleFreeInstance(instance_xtra -> bc_internal);
 
       FreeTempVector(instance_xtra -> density_der);

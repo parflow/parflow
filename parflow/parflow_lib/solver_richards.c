@@ -433,6 +433,7 @@ void TeardownRichards(PFModule *this_module) {
    FreeVector( instance_xtra -> old_pressure );
    FreeVector( instance_xtra -> old_temperature);
    FreeVector( instance_xtra -> old_viscosity );
+   FreeVector( instance_xtra -> old_density );
    FreeVector( instance_xtra -> pressure );
    FreeVector( instance_xtra -> temperature );
    FreeVector( instance_xtra -> clm_energy_source );
@@ -947,6 +948,9 @@ void AdvanceRichards(PFModule *this_module,
   *pressure_out = instance_xtra -> pressure;
   *porosity_out = ProblemDataPorosity(problem_data);
   *saturation_out = instance_xtra -> saturation;
+
+
+  N_VDestroy_Parflow(instance_xtra -> multispecies);
 }
 
 /*--------------------------------------------------------------------------
@@ -1117,8 +1121,6 @@ PFModule *SolverRichardsInitInstanceXtra()
 	PFModuleNewInstance(ProblemPhaseDensity(problem), ());
       (instance_xtra -> phase_heat_capacity) =
 	PFModuleNewInstance(ProblemPhaseHeatCapacity(problem), ());
-      /*(instance_xtra -> internal_energydensity) =
-	PFModuleNewInstance(ProblemInternalEnergyDensity(problem), ());*/
       (instance_xtra -> phase_viscosity) =
 	PFModuleNewInstance(ProblemPhaseViscosity(problem), ());
       (instance_xtra -> select_time_step) =
@@ -1151,11 +1153,10 @@ PFModule *SolverRichardsInitInstanceXtra()
 			    (problem, grid, NULL));
       PFModuleReNewInstance((instance_xtra -> ic_phase_temperature), 
 			    (problem, grid, NULL));
-     PFModuleReNewInstance((instance_xtra -> problem_saturation), 
+      PFModuleReNewInstance((instance_xtra -> problem_saturation), 
 			    (grid, NULL)); 
       PFModuleReNewInstance((instance_xtra -> phase_density), ()); 
       PFModuleReNewInstance((instance_xtra -> phase_heat_capacity), ()); 
-      //PFModuleReNewInstance((instance_xtra -> internal_energydensity), ()); 
       PFModuleReNewInstance((instance_xtra -> phase_viscosity), ()); 
       PFModuleReNewInstance((instance_xtra -> select_time_step), ()); 
       PFModuleReNewInstance((instance_xtra -> l2_error_norm), ()); 
@@ -1284,7 +1285,6 @@ void  SolverRichardsFreeInstanceXtra()
       PFModuleFreeInstance((instance_xtra -> phase_viscosity));
       PFModuleFreeInstance((instance_xtra -> phase_density));
       PFModuleFreeInstance((instance_xtra -> phase_heat_capacity));
-      //PFModuleFreeInstance((instance_xtra -> internal_energydensity));
       PFModuleFreeInstance((instance_xtra -> select_time_step));
       PFModuleFreeInstance((instance_xtra -> l2_error_norm));
       PFModuleFreeInstance((instance_xtra -> nonlin_solver));
@@ -1298,10 +1298,8 @@ void  SolverRichardsFreeInstanceXtra()
       FreeGrid((instance_xtra -> z_grid));
       FreeGrid((instance_xtra -> y_grid));
       FreeGrid((instance_xtra -> x_grid));
-      /*
       FreeGrid((instance_xtra -> grid2d));
       FreeGrid((instance_xtra -> grid));
-      */
 
       tfree(instance_xtra);
    }

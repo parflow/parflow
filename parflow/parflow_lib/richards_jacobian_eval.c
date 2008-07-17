@@ -1127,6 +1127,7 @@ int           symm_part;      /* Specifies whether to compute just the
 
 
    FreeBCStruct(bc_struct);
+   FreeBCStruct(temp_bc_struct);
 
    PFModuleInvoke( void, bc_internal, (problem, problem_data, NULL, J, time,
 				       pressure, CALCDER));

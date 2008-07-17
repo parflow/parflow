@@ -1107,8 +1107,9 @@ void  TempFunctionEvalFreeInstanceXtra()
    if(instance_xtra)
    {
       PFModuleFreeInstance(instance_xtra -> density_module);
+      PFModuleFreeInstance(instance_xtra -> heat_capacity_module);
       PFModuleFreeInstance(instance_xtra -> saturation_module);
-    //  PFModuleFreeInstance(instance_xtra -> thermal_conductivity);
+      PFModuleFreeInstance(instance_xtra -> thermal_conductivity);
       PFModuleFreeInstance(instance_xtra -> rel_perm_module);
       PFModuleFreeInstance(instance_xtra -> phase_source);
       PFModuleFreeInstance(instance_xtra -> temp_source);

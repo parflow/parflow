@@ -174,10 +174,11 @@ Grid      *grid;
    /*-----------------------------------------------------------------------
     * Initialize data associated with argument `temp_data'
     *-----------------------------------------------------------------------*/
-
+   if(instance_xtra -> temp_data == NULL) 
+   {
       (instance_xtra -> temp_data) = talloc(double, SizeOfVector((instance_xtra -> tmp_indicator_field)));
-
       SetTempVectorData((instance_xtra -> tmp_indicator_field), (instance_xtra -> temp_data));
+   }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
    return this_module;
@@ -197,6 +198,11 @@ void  GeometriesFreeInstanceXtra()
    if(instance_xtra)
    {
       FreeTempVector(instance_xtra -> tmp_indicator_field);
+
+      if(instance_xtra -> temp_data)
+      {
+	 tfree(instance_xtra -> temp_data);
+      }
 
       tfree(instance_xtra);
    }

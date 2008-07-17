@@ -17,6 +17,7 @@
 struct _N_VectorContent_Parflow {
   Vector **specie;
   int num_species;
+  int nvector_allocated_pfvectors;
 };
 
 typedef struct _N_VectorContent_Parflow *N_VectorContent_Parflow;

@@ -1206,6 +1206,7 @@ Vector      *z_velocity;
 
 
    FreeBCStruct(bc_struct);
+   FreeBCStruct(temp_bc_struct);
 
    PFModuleInvoke( void, bc_internal, (problem, problem_data, fval, NULL, 
 				       time, pressure, CALCFCN));

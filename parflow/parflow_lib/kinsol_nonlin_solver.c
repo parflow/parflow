@@ -561,18 +561,27 @@ void  KinsolNonlinSolverFreeInstanceXtra()
 
    if (instance_xtra)
    {
-      PFModuleFreeInstance((instance_xtra -> press_function_eval));
-      PFModuleFreeInstance((instance_xtra -> temp_function_eval));
+      PFModuleFreeInstance(instance_xtra -> press_function_eval);
+      PFModuleFreeInstance(instance_xtra -> temp_function_eval);
       if (instance_xtra -> richards_jacobian_eval != NULL)
       {
-         PFModuleFreeInstance((instance_xtra -> richards_jacobian_eval));
+         PFModuleFreeInstance(instance_xtra -> richards_jacobian_eval);
       }
 
       if (instance_xtra -> precond_pressure != NULL)
-         PFModuleFreeInstance((instance_xtra -> precond_pressure));
+      {
+         PFModuleFreeInstance(instance_xtra -> precond_pressure);
+      }
 
-      if (instance_xtra -> precond_temperature != NULL)
-         PFModuleFreeInstance((instance_xtra -> precond_temperature));
+      if (instance_xtra -> precond_temperature != NULL) 
+      {
+         PFModuleFreeInstance(instance_xtra -> precond_temperature);
+      }
+
+      if (instance_xtra -> temperature_jacobian_eval != NULL) 
+      {
+         PFModuleFreeInstance(instance_xtra -> temperature_jacobian_eval);
+      }
 
       N_VDestroy_Parflow(instance_xtra -> uscalen);
       N_VDestroy_Parflow(instance_xtra -> fscalen);
