@@ -75,8 +75,8 @@ else
     fi
 fi
 
-if [ "AIX" = "`uname`" ]
-then
+case `uname -a` in
+    *AIX*)
     #
     # IBM SP2
     #
@@ -84,30 +84,26 @@ then
     poe $PARFLOW_DIR/bin/$PROGRAM -procs `cat .amps.info.$2` $1 $DEBUG_OPT $DEBUG
 
     exit 0
-fi
+    ;;
+    *WildFire*)
+    #
+    # For Sun WildFire systems
+    #
+    tmrun -np `cat .amps.info.$2`  $PARFLOW_DIR/bin/$PROGRAM $1 $DEBUG_OPT $DEBUG 
+    exit 0
+    ;;
+    *chaos*)
+    #
+    # For LC chaos systems
+    #
+    srun -n $2 $PARFLOW_DIR/bin/$PROGRAM $1
+    exit 0
+    ;;
+esac
 
-# If we are on the WildFire system then we should use the 
-# SunHPC MPI tools
-if [ "SunOS" = "`uname`" ]
-then
-	if [ "SUNW,Ultra-WildFire" = "`uname -i`" ]
-	then
-	    tmrun -np `cat .amps.info.$2`  $PARFLOW_DIR/bin/$PROGRAM $1 $DEBUG_OPT $DEBUG 
-	    exit 0
-	fi	
-fi
-
-# if [ "OSF1" = "`uname`" ]
-# then
-#     #
-#     # DEC Alpha
-#     #
-  
-#     dmpirun -np `cat .amps.info.$2` $PARFLOW_DIR/bin/$PROGRAM $1
-
-#     exit 0
-# fi
-
+#
+# Assume MPICH or OpenMPI based cluster
+#
 if [ "`mpirun 2> /dev/null`" = "Missing: program name" ] 
 then
     #
