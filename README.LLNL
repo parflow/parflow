@@ -25,7 +25,7 @@ Compiling Parflow on Atlas
 -----------------------------------------------------------------------------
 
 cd <somewhere>/parflow
-. misc/build_scripts/build.parflow.atlas
+sh misc/build_scripts/build.parflow.atlas
 
 -----------------------------------------------------------------------------
 Compiling WRF on Atlas
@@ -60,7 +60,7 @@ is compiled with F90 support.
 . /usr/casc/samrai/openmpi/openmpi-1.2.6/setup.sh
 
 cd <somewhere>/parflow
-. misc/build_scripts/build.parflow.tux
+sh misc/build_scripts/build.parflow.tux
 
 -----------------------------------------------------------------------------
 Compiling WRF on CASC Tux cluster
