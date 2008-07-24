@@ -13,6 +13,7 @@ date
 cd $PARFLOW_DIR/../parflow/parflow/test
 AMPS_EXE_DIR=`pwd`
 export AMPS_EXE_DIR
-srun -n1 $PARFLOW_DIR/bin/parflow default_richards
+# srun -n1 $PARFLOW_DIR/bin/parflow default_richards
+tclsh sgs_richards_test.pftcl 
 
 echo 'Done'
