@@ -210,9 +210,8 @@ subroutine drv_clmini (drv, grid, tile, clm)
         clm%tkmg(j)   = tkm ** (1.- clm%watsat(j))
         clm%tksatu(j) = clm%tkmg(j)*0.57**clm%watsat(j)
         clm%tkdry(j)  = (0.135*bd + 64.7) / (2.7e3 - 0.947*bd)
-     !   clm%csol(j)   = (2.128*tile%sand(j)*100.0+2.385*tile%clay(j)*100.0)/ &
-     !                   (tile%sand(j)*100.0+tile%clay(j)*100.0)*1.e6     ! J/(m3 K)
-        clm%csol(j) = 1.932e+6
+        clm%csol(j)   = (2.128*tile%sand(j)*100.0+2.385*tile%clay(j)*100.0)/ &
+                        (tile%sand(j)*100.0+tile%clay(j)*100.0)*1.e6     ! J/(m3 K)
      enddo
 
   else                                ! ice/glacier, lakes, wetlands

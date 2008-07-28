@@ -74,10 +74,8 @@ double      dz;
    double  f_prime_max, h_prime_max;
    double  point, value, tmp, maximum;
    int     i;
-   // a = 1.0 / ProblemPhaseViscosity(problem,0);
-   a = 1.0 / 1.0; 
-   // b = 1.0 / ProblemPhaseViscosity(problem,1);
-   b = 1.0 / 1.0; 
+   a = 1.0 / ProblemPhaseViscosity(problem,0);
+   b = 1.0 / ProblemPhaseViscosity(problem,1);
 
    /* CSW  Hard-coded in an assumption here for constant density. 
     *      Use dtmp as dummy argument here. */

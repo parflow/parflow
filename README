@@ -27,24 +27,7 @@ or for bash users:
 export PARFLOW_DIR=/home/snoopy/parflow
 
 -----------------------------------------------------------------------------
-Step 2: Build and install Sundials
------------------------------------------------------------------------------
-
-The first thing that should be built is the Sundials solver library.
-
-This can be done with something as simple as:
-
-cd sundials
-./configure --prefix=$PARFLOW_DIR
-make
-make install
-
-See the Sundials documenation for further information.  Note the
-compiler choices for Sundials should probably also be used when
-building Parflow.
-
------------------------------------------------------------------------------
-Step 3: Build and install Parflow
+Step 2: Build and install Parflow
 -----------------------------------------------------------------------------
 
 This step builds the Parflow library and executable.  The library is
@@ -52,7 +35,7 @@ used when Parflow is used as a component of another simulation
 (e.g. WRF).  
 
 cd parflow
-./configure --prefix=$PARFLOW_DIR --with-sundials=$PARFLOW_DIR --with-amps=mpi1
+./configure --prefix=$PARFLOW_DIR --with-amps=mpi1
 make 
 make install
 
@@ -96,7 +79,7 @@ to specify the path with the "--with-tcl=<PATH> configure option.
 See "./configure --help" for additional configure options for pftools.
 
 -----------------------------------------------------------------------------
-Step 3: Running a sample problem
+Step 4: Running a sample problem
 -----------------------------------------------------------------------------
 
 If all went well a sample Parflow problem can be run using:

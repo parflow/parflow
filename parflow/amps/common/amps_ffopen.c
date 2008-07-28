@@ -85,7 +85,7 @@ amps_File amps_FFopen(amps_Comm comm, char *filename, char *type, long size)
    char dist_filename[MAXPATHLEN];
    long start;
 
-#ifndef AMPS_SPLIT_FFILE
+#ifndef AMPS_SPLIT_FILE
    int p;
    long total;
    FILE *dfile;
@@ -103,7 +103,7 @@ amps_File amps_FFopen(amps_Comm comm, char *filename, char *type, long size)
      /* open file for writing */
      if(amps_Rank(comm))
        {
-#ifdef AMPS_SPLIT_FFILE
+#ifdef AMPS_SPLIT_FILE
 	 file = fopen(temp_filename, type);
 #else
 	 start = size;
@@ -129,7 +129,7 @@ amps_File amps_FFopen(amps_Comm comm, char *filename, char *type, long size)
 	 unlink(filename);
 	 /* Node 0 always starts at byte 0 */
 
-#ifdef AMPS_SPLIT_FFILE
+#ifdef AMPS_SPLIT_FILE
 	 file = fopen(temp_filename, type);
 #else
 	 file = fopen(filename, type);
@@ -161,7 +161,7 @@ amps_File amps_FFopen(amps_Comm comm, char *filename, char *type, long size)
    else
       if(amps_Rank(comm))
       {
-#ifdef AMPS_SPLIT_FFILE
+#ifdef AMPS_SPLIT_FILE
 	 file = fopen(temp_filename, type);
 #else
 	 amps_Recv(comm, 0, invoice);
@@ -171,7 +171,7 @@ amps_File amps_FFopen(amps_Comm comm, char *filename, char *type, long size)
       }
       else
       {
-#ifdef AMPS_SPLIT_FFILE
+#ifdef AMPS_SPLIT_FILE
 	 file = fopen(temp_filename, type);
 #else
 	 /* Open the  dist file and send the size information to each node */

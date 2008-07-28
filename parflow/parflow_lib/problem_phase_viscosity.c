@@ -82,7 +82,6 @@ int     fcn;             /* Flag determining what to calculate
    PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
 
    Type0         *dummy0;
-   Type1         *dummy1;
 
    Grid          *grid;
 
@@ -102,8 +101,6 @@ int     fcn;             /* Flag determining what to calculate
    int            i, j, k, ip, id;
 
    double ex=0.0;
-   double phi=0.0;
-   double am=0.0;
    double gravity = 9.81;
 
    switch((public_xtra -> type[phase]))
@@ -282,7 +279,6 @@ int        num_phases;
    PublicXtra    *public_xtra;
 
    Type0            *dummy0;
-   Type1            *dummy1;
 
    char          *switch_name;
    NameArray       switch_na;
@@ -356,7 +352,6 @@ void  PhaseViscosityFreePublicXtra()
    PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
 
    Type0        *dummy0;
-   Type1        *dummy1;
 
    int           i;
 

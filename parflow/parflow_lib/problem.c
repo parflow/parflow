@@ -114,11 +114,14 @@ int	   solver;   /* Designates the solver from which this routine is
    ProblemPhaseDensity(problem) = 
       PFModuleNewModule(PhaseDensity, (num_phases));
 
-   /*ProblemInternalEnergyDensity(problem) = 
-      PFModuleNewModule(InternalEnergyDensity, (num_phases));*/
-
-   ProblemPhaseViscosity(problem) = 
-      PFModuleNewModule(PhaseViscosity, (num_phases));
+   problem -> phase_viscosity = ctalloc(double, num_phases);
+   for(i = 0; i < num_phases; i++)
+   {
+      /* SGS need to add switch on type */
+      sprintf(key, "Phase.%s.Viscosity.Value", 
+	      NA_IndexToName(GlobalsPhaseNames, i));
+      problem -> phase_viscosity[i] = GetDouble(key);
+   }
 
    (problem -> contaminant_degradation) = ctalloc(double, num_contaminants);
 
@@ -154,14 +157,8 @@ int	   solver;   /* Designates the solver from which this routine is
    ProblemPhaseSource(problem) =
       PFModuleNewModule(PhaseSource, ());
 
-   ProblemTempSource(problem) =
-      PFModuleNewModule(TempSource, ());
-
    ProblemSpecStorage(problem) =
       PFModuleNewModule(SpecStorage, ()); //sk
-
-   ProblemPhaseHeatCapacity(problem) =
-      PFModuleNewModule(PhaseHeatCapacity, (num_phases)); //sk
 
    ProblemXSlope(problem) =
       PFModuleNewModule(XSlope, ()); //sk
@@ -181,8 +178,6 @@ int	   solver;   /* Designates the solver from which this routine is
    {  
       ProblemSaturation(problem) = 
         PFModuleNewModule(Saturation, ());
-      ProblemThermalConductivity(problem) = 
-        PFModuleNewModule(ThermalConductivity, ());
    }
 
    /*-----------------------------------------------------------------------
@@ -201,13 +196,9 @@ int	   solver;   /* Designates the solver from which this routine is
 
    ProblemBCPressure(problem) =
       PFModuleNewModule(BCPressure, (num_phases));
+
    ProblemBCPressurePackage(problem) =
       PFModuleNewModule(BCPressurePackage, (num_phases));
-
-   ProblemBCTemperature(problem) =
-      PFModuleNewModule(BCTemperature, (num_phases));
-   ProblemBCTemperaturePackage(problem) =
-      PFModuleNewModule(BCTemperaturePackage, (num_phases));
 
 
    if ( solver != RichardsSolve )
@@ -230,8 +221,6 @@ int	   solver;   /* Designates the solver from which this routine is
    {
       ProblemICPhasePressure(problem) = 
          PFModuleNewModule(ICPhasePressure, ());
-      ProblemICPhaseTemperature(problem) = 
-         PFModuleNewModule(ICPhaseTemperature, ());
    }
 
    ProblemICPhaseConcen(problem) =
@@ -294,9 +283,7 @@ int       solver;
    else
    {
       PFModuleFreeModule(ProblemSaturation(problem));
-      PFModuleFreeModule(ProblemThermalConductivity(problem));
       PFModuleFreeModule(ProblemICPhasePressure(problem));
-      PFModuleFreeModule(ProblemICPhaseTemperature(problem));
       PFModuleFreeModule(ProblemPhaseRelPerm(problem));
       PFModuleFreeModule(ProblemSelectTimeStep(problem));
       PFModuleFreeModule(ProblemL2ErrorNorm(problem));
@@ -304,21 +291,16 @@ int       solver;
    PFModuleFreeModule(ProblemICPhaseConcen(problem));
    PFModuleFreeModule(ProblemBCPressurePackage(problem));
    PFModuleFreeModule(ProblemBCPressure(problem));
-   PFModuleFreeModule(ProblemBCTemperaturePackage(problem));
-   PFModuleFreeModule(ProblemBCTemperature(problem));
    PFModuleFreeModule(ProblemBCInternal(problem));
 
    PFModuleFreeModule(ProblemPhaseSource(problem));
-   PFModuleFreeModule(ProblemTempSource(problem));
    PFModuleFreeModule(ProblemRetardation(problem));
    PFModuleFreeModule(ProblemPorosity(problem));
    PFModuleFreeModule(ProblemPermeability(problem));
    tfree(problem -> contaminant_degradation);
    PFModuleFreeModule(ProblemPhaseDensity(problem));
-   //PFModuleFreeModule(ProblemInternalEnergyDensity(problem));
-   PFModuleFreeModule(ProblemPhaseViscosity(problem));
+   tfree(problem -> phase_viscosity);
    PFModuleFreeModule(ProblemSpecStorage(problem)); //sk
-   PFModuleFreeModule(ProblemPhaseHeatCapacity(problem)); //sk
    PFModuleFreeModule(ProblemXSlope(problem)); //sk
    PFModuleFreeModule(ProblemYSlope(problem));
    PFModuleFreeModule(ProblemMannings(problem));
@@ -357,7 +339,6 @@ Grid          *grid2d;
    ProblemDataPorosity(problem_data) = NewVector(grid, 1, 1);
 
    ProblemDataBCPressureData(problem_data) = NewBCPressureData();
-   ProblemDataBCTemperatureData(problem_data) = NewBCTemperatureData();
 
    ProblemDataWellData(problem_data) = NewWellData();
 
@@ -388,7 +369,6 @@ ProblemData  *problem_data;
 
       FreeWellData(ProblemDataWellData(problem_data));
       FreeBCPressureData(ProblemDataBCPressureData(problem_data));
-      FreeBCTemperatureData(ProblemDataBCTemperatureData(problem_data));
       FreeVector(ProblemDataPorosity(problem_data));
       FreeVector(ProblemDataPermeabilityX(problem_data));
       FreeVector(ProblemDataPermeabilityY(problem_data));

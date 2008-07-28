@@ -8,29 +8,8 @@
  *********************************************************************EHEADER*/
 
 #include "parflow.h"
-
-#include "sundials_math.h"
-
-/*--------------------------------------------------------------------------
- * Static stencil-shape definition
- *--------------------------------------------------------------------------*/
- 
-int           jacobian_stencil_shape_richards[7][3] = {{ 0,  0,  0},
-                                                       {-1,  0,  0},
-                                                       { 1,  0,  0},
-                                                       { 0, -1,  0},
-                                                       { 0,  1,  0},
-                                                       { 0,  0, -1},
-                                                       { 0,  0,  1}};
- 
- 
-/*---------------------------------------------------------------------
- * Define macros for jacobian evaluation
- *---------------------------------------------------------------------*/
- 
-#define PMean(a, b, c, d)    HarmonicMean(c, d)
-#define RPMean(a, b, c, d)   UpstreamMean(a, b, c, d)
- 
+#include "llnlmath.h"
+#include "llnltyps.h"
 
 /*---------------------------------------------------------------------
  * Define module structures
@@ -43,17 +22,13 @@ typedef struct
    Problem      *problem;
 
    PFModule     *density_module;
-   PFModule     *viscosity_module;
    PFModule     *saturation_module;
    PFModule     *rel_perm_module;
    PFModule     *bc_pressure;
-   PFModule     *bc_temperature;
    PFModule     *bc_internal;
 
    Vector       *density_der;
    Vector       *saturation_der;
-   Vector       *rel_perm_der;
-   Vector       *rel_perm;
 
    Matrix       *J;
 
@@ -62,18 +37,67 @@ typedef struct
 
 } InstanceXtra;
 
+/*--------------------------------------------------------------------------
+ * Static stencil-shape definition
+ *--------------------------------------------------------------------------*/
+
+int           jacobian_stencil_shape[7][3] = {{ 0,  0,  0},
+					      {-1,  0,  0},
+					      { 1,  0,  0},
+					      { 0, -1,  0},
+					      { 0,  1,  0},
+					      { 0,  0, -1},
+					      { 0,  0,  1}};
+
+
+/*---------------------------------------------------------------------
+ * Define macros for jacobian evaluation
+ *---------------------------------------------------------------------*/
+
+#define PMean(a, b, c, d)    HarmonicMean(c, d)
+#define RPMean(a, b, c, d)   UpstreamMean(a, b, c, d)
+
+/*  This routine provides the interface between KINSOL and ParFlow
+    for richards' equation jacobian evaluations and matrix-vector multiplies.*/
+
+int       KINSolMatVec(current_state, x, y, recompute, pressure)
+void     *current_state;
+N_Vector  x;
+N_Vector  y;
+int      *recompute;
+N_Vector  pressure;
+{
+   PFModule    *richards_jacobian_eval = StateJacEval(((State*)current_state));
+   Matrix      *J                = StateJac(         ((State*)current_state) );
+   Vector      *saturation       = StateSaturation(  ((State*)current_state) );
+   Vector      *density          = StateDensity(     ((State*)current_state) );
+   ProblemData *problem_data     = StateProblemData( ((State*)current_state) );
+   double       dt               = StateDt(          ((State*)current_state) );
+   double       time             = StateTime(        ((State*)current_state) );
+
+   if ( *recompute )
+   { 
+      PFModuleInvoke(void, richards_jacobian_eval, 
+		     (pressure, &J, saturation, density, problem_data,
+		      dt, time, 0));
+   }
+
+   Matvec(1.0, J, x, 0.0, y);
+
+   return(0);
+}
+
+
 /*  This routine evaluates the Richards jacobian based on the current 
     pressure values.  */
 
-void    RichardsJacobianEval(pressure, ptr_to_J, temperature, saturation, density, viscosity, 
+void    RichardsJacobianEval(pressure, ptr_to_J, saturation, density, 
 			     problem_data, dt, time, symm_part)
 Vector       *pressure;       /* Current pressure values */
 Matrix      **ptr_to_J;       /* Pointer to the J pointer - this will be set
 		                 to instance_xtra pointer at end */
-Vector       *temperature;     
 Vector       *saturation;     /* Saturation / work vector */
 Vector       *density;        /* Density vector */
-Vector       *viscosity;        /* Viscosity vector */
 ProblemData  *problem_data;   /* Geometry data for problem */
 double        dt;             /* Time step size */
 double        time;           /* New time value */
@@ -87,19 +111,19 @@ int           symm_part;      /* Specifies whether to compute just the
    Problem     *problem           = (instance_xtra -> problem);
 
    PFModule    *density_module    = (instance_xtra -> density_module);
-   PFModule    *viscosity_module  = (instance_xtra -> viscosity_module);
    PFModule    *saturation_module = (instance_xtra -> saturation_module);
    PFModule    *rel_perm_module   = (instance_xtra -> rel_perm_module);
    PFModule    *bc_pressure       = (instance_xtra -> bc_pressure);
-   PFModule    *bc_temperature    = (instance_xtra -> bc_temperature);
    PFModule    *bc_internal       = (instance_xtra -> bc_internal);
 
    Matrix      *J                 = (instance_xtra -> J);
 
    Vector      *density_der       = (instance_xtra -> density_der);
    Vector      *saturation_der    = (instance_xtra -> saturation_der);
-   Vector      *rel_perm          = (instance_xtra -> rel_perm);
-   Vector      *rel_perm_der      = (instance_xtra -> rel_perm_der);
+
+   /* Re-use vectors to save memory */
+   Vector      *rel_perm          = saturation;
+   Vector      *rel_perm_der      = saturation_der;
 
    /* NEW vectors for overland flow */
    Vector      *KWD, *KED, *KND, *KSD;
@@ -114,27 +138,28 @@ int           symm_part;      /* Specifies whether to compute just the
   //double      press[58][30][360],pressbc[58][30],xslope[58][30],yslope[58][30],mans[58][30];
 
    Vector      *porosity          = ProblemDataPorosity(problem_data);
-   Vector      *permeability_x  = ProblemDataPermeabilityX(problem_data);
-   Vector      *permeability_y  = ProblemDataPermeabilityY(problem_data);
-   Vector      *permeability_z  = ProblemDataPermeabilityZ(problem_data);
+   Vector      *permeability_x    = ProblemDataPermeabilityX(problem_data);
+   Vector      *permeability_y    = ProblemDataPermeabilityY(problem_data);
+   Vector      *permeability_z    = ProblemDataPermeabilityZ(problem_data);
    Vector      *sstorage          = ProblemDataSpecificStorage(problem_data); //sk
    Vector      *x_sl              = ProblemDataTSlopeX(problem_data); //sk
    Vector      *y_sl              = ProblemDataTSlopeY(problem_data); //sk
    Vector      *man               = ProblemDataMannings(problem_data); //sk
 
    double       gravity           = ProblemGravity(problem);
+   double       viscosity         = ProblemPhaseViscosity(problem, 0);
 
    Subgrid     *subgrid;
 
-   Subvector   *p_sub, *t_sub, *d_sub, *v_sub, *s_sub, *po_sub, *rp_sub, *ss_sub;
-   Subvector   *permx_sub, *permy_sub, *permz_sub, *permx25_sub, *permy25_sub, *permz25_sub, *dd_sub, *dv_sub, *sd_sub, *rpd_sub;
+   Subvector   *p_sub, *d_sub, *s_sub, *po_sub, *rp_sub, *ss_sub;
+   Subvector   *permx_sub, *permy_sub, *permz_sub, *dd_sub, *sd_sub, *rpd_sub;
    Submatrix   *J_sub;
 
    Grid        *grid              = VectorGrid(pressure);
    Grid        *grid2d            = VectorGrid(x_sl);
 
-   double      *pp, *tp, *sp, *sdp, *pop, *dp, *ddp, *vp, *dvp, *rpp, *rpdp;
-   double      *permxp, *permyp, *permzp, *permx25p, *permy25p, *permz25p;
+   double      *pp, *sp, *sdp, *pop, *dp, *ddp, *rpp, *rpdp;
+   double      *permxp, *permyp, *permzp;
    double      *cp, *wp, *ep, *sop, *np, *lp, *up, *op, *ss;
 
    int          i, j, k, r, is;
@@ -157,11 +182,10 @@ int           symm_part;      /* Specifies whether to compute just the
    double       sym_lower_temp, sym_upper_temp;
    double       lower_cond, upper_cond;
 
-   BCStruct    *bc_struct, *temp_bc_struct;
+   BCStruct    *bc_struct;
    GrGeomSolid *gr_domain         = ProblemDataGrDomain(problem_data);
-   double      *bc_patch_values, *temp_bc_patch_values;
-   double       value, dend_d;
-   double       den_d = 0.0;
+   double      *bc_patch_values;
+   double       value, den_d, dend_d;
    int         *fdir;
    int          ipatch, ival;
    
@@ -200,17 +224,21 @@ int           symm_part;      /* Specifies whether to compute just the
    handle = InitVectorUpdate(permeability_z, VectorUpdateAll);
    FinalizeVectorUpdate(handle);*/
 
+#if 0
+   printf("Check 1 - before accumulation term.\n");
+   fflush(NULL);
+   malloc_verify(NULL);
+#endif
+
    /* Initialize matrix values to zero. */
    InitMatrix(J, 0.0);
 
    /* Calculate time term contributions. */
 
-   PFModuleInvoke(void, density_module, (0, pressure, temperature, density, &dtmp, &dtmp, 
+   PFModuleInvoke(void, density_module, (0, pressure, density, &dtmp, &dtmp, 
 					 CALCFCN));
-   PFModuleInvoke(void, density_module, (0, pressure, temperature, density_der, &dtmp, 
-					 &dtmp, CALCDER_P));
-   PFModuleInvoke(void, viscosity_module, (0, pressure, temperature, viscosity, 
-					 CALCFCN));
+   PFModuleInvoke(void, density_module, (0, pressure, density_der, &dtmp, 
+					 &dtmp, CALCDER));
    PFModuleInvoke(void, saturation_module, (saturation, pressure, 
 					    density, gravity, problem_data, 
 					    CALCFCN));
@@ -218,73 +246,74 @@ int           symm_part;      /* Specifies whether to compute just the
 					    density, gravity, problem_data,
 					    CALCDER));
 
-   ForSubgridI(is, GridSubgrids(grid))
-   {
-      subgrid = GridSubgrid(grid, is);
-      
-      J_sub  = MatrixSubmatrix(J, is);
-      cp     = SubmatrixStencilData(J_sub, 0);
+#if 1
+
+      ForSubgridI(is, GridSubgrids(grid))
+      {
+	 subgrid = GridSubgrid(grid, is);
+
+	 J_sub  = MatrixSubmatrix(J, is);
+	 cp     = SubmatrixStencilData(J_sub, 0);
 	
-      p_sub   = VectorSubvector(pressure, is);
-      d_sub  = VectorSubvector(density, is);
-      s_sub  = VectorSubvector(saturation, is);
-      dd_sub = VectorSubvector(density_der, is);
-      sd_sub = VectorSubvector(saturation_der, is);
-      po_sub = VectorSubvector(porosity, is);
-      ss_sub = VectorSubvector(sstorage, is);
-      
-      ix = SubgridIX(subgrid);
-      iy = SubgridIY(subgrid);
-      iz = SubgridIZ(subgrid);
-      
-      nx = SubgridNX(subgrid);
-      ny = SubgridNY(subgrid);
-      nz = SubgridNZ(subgrid);
-      
-      dx = SubgridDX(subgrid);
-      dy = SubgridDY(subgrid);
-      dz = SubgridDZ(subgrid);
-      
-      vol = dx*dy*dz;
+	 p_sub   = VectorSubvector(pressure, is);
+	 d_sub  = VectorSubvector(density, is);
+	 s_sub  = VectorSubvector(saturation, is);
+	 dd_sub = VectorSubvector(density_der, is);
+	 sd_sub = VectorSubvector(saturation_der, is);
+	 po_sub = VectorSubvector(porosity, is);
+	 ss_sub = VectorSubvector(sstorage, is);
 	 
-      nx_v  = SubvectorNX(d_sub);
-      ny_v  = SubvectorNY(d_sub);
-      nz_v  = SubvectorNZ(d_sub);
+	 ix = SubgridIX(subgrid);
+	 iy = SubgridIY(subgrid);
+	 iz = SubgridIZ(subgrid);
+	 
+	 nx = SubgridNX(subgrid);
+	 ny = SubgridNY(subgrid);
+	 nz = SubgridNZ(subgrid);
+	 
+	 dx = SubgridDX(subgrid);
+	 dy = SubgridDY(subgrid);
+	 dz = SubgridDZ(subgrid);
+	 
+	 vol = dx*dy*dz;
+	 
+	 nx_v  = SubvectorNX(d_sub);
+	 ny_v  = SubvectorNY(d_sub);
+	 nz_v  = SubvectorNZ(d_sub);
 
-      nx_po = SubvectorNX(po_sub);
-      ny_po = SubvectorNY(po_sub);
-      nz_po = SubvectorNZ(po_sub);
+	 nx_po = SubvectorNX(po_sub);
+	 ny_po = SubvectorNY(po_sub);
+	 nz_po = SubvectorNZ(po_sub);
 
-      nx_m  = SubmatrixNX(J_sub);
-      ny_m  = SubmatrixNY(J_sub);
-      nz_m  = SubmatrixNZ(J_sub);
+	 nx_m  = SubmatrixNX(J_sub);
+	 ny_m  = SubmatrixNY(J_sub);
+	 nz_m  = SubmatrixNZ(J_sub);
 
-      pp  = SubvectorData(p_sub);
-      dp  = SubvectorData(d_sub);
-      sp  = SubvectorData(s_sub);
-      ddp = SubvectorData(dd_sub);
-      sdp = SubvectorData(sd_sub);
-      pop = SubvectorData(po_sub);
-      ss  = SubvectorData(ss_sub);
+	 pp  = SubvectorData(p_sub);
+	 dp  = SubvectorData(d_sub);
+	 sp  = SubvectorData(s_sub);
+	 ddp = SubvectorData(dd_sub);
+	 sdp = SubvectorData(sd_sub);
+	 pop = SubvectorData(po_sub);
+	 ss  = SubvectorData(ss_sub);
       
-      im  = SubmatrixEltIndex(J_sub,  ix, iy, iz);
-      ipo = SubvectorEltIndex(po_sub, ix, iy, iz);
-      iv  = SubvectorEltIndex(d_sub,  ix, iy, iz);
+	 im  = SubmatrixEltIndex(J_sub,  ix, iy, iz);
+	 ipo = SubvectorEltIndex(po_sub, ix, iy, iz);
+	 iv  = SubvectorEltIndex(d_sub,  ix, iy, iz);
 
-      BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
-		im,  nx_m,  ny_m,  nz_m,  1, 1, 1,
-		ipo, nx_po, ny_po, nz_po, 1, 1, 1,
-		iv,  nx_v,  ny_v,  nz_v,  1, 1, 1,
-		{
-		   cp[im] += (sdp[iv]*dp[iv] + sp[iv]*ddp[iv])
-		      *pop[ipo]*vol + (ss[iv]/gravity)*vol*(sdp[iv]*pp[iv]+sp[iv]); //sk start
-		});
-   }   /* End subgrid loop */
+	 BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
+		   im,  nx_m,  ny_m,  nz_m,  1, 1, 1,
+		   ipo, nx_po, ny_po, nz_po, 1, 1, 1,
+		   iv,  nx_v,  ny_v,  nz_v,  1, 1, 1,
+		   {
+			   cp[im] += (sdp[iv]*dp[iv] + sp[iv]*ddp[iv])
+			         *pop[ipo]*vol + ss[iv]*vol*(sdp[iv]*dp[iv]*pp[iv]+sp[iv]*ddp[iv]*pp[iv]+sp[iv]*dp[iv]); //sk start
+		   });
+      }   /* End subgrid loop */
+#endif
 
 
    bc_struct = PFModuleInvoke(BCStruct *, bc_pressure, 
-			      (problem_data, grid, gr_domain, time));
-   temp_bc_struct = PFModuleInvoke(BCStruct *, bc_temperature, 
 			      (problem_data, grid, gr_domain, time));
 
    /* Get boundary pressure values for Dirichlet boundaries.   */
@@ -296,7 +325,6 @@ int           symm_part;      /* Specifies whether to compute just the
       subgrid = GridSubgrid(grid, is);
 	 
       p_sub = VectorSubvector(pressure, is);
-      t_sub = VectorSubvector(temperature, is);
 
       nx_v = SubvectorNX(p_sub);
       ny_v = SubvectorNY(p_sub);
@@ -306,12 +334,10 @@ int           symm_part;      /* Specifies whether to compute just the
       sz_v = ny_v * nx_v;
 
       pp = SubvectorData(p_sub);
-      tp = SubvectorData(t_sub);
 
       for (ipatch = 0; ipatch < BCStructNumPatches(bc_struct); ipatch++)
       {
 	 bc_patch_values = BCStructPatchValues(bc_struct, ipatch, is);
-	 temp_bc_patch_values = BCStructPatchValues(temp_bc_struct, ipatch, is);
 
 	 switch(BCStructBCType(bc_struct, ipatch))
 	 {
@@ -323,8 +349,6 @@ int           symm_part;      /* Specifies whether to compute just the
 	       ip   = SubvectorEltIndex(p_sub, i, j, k);
 	       value =  bc_patch_values[ival];
 	       pp[ip + fdir[0]*1 + fdir[1]*sy_v + fdir[2]*sz_v] = value;
-	       value =  temp_bc_patch_values[ival];
-	       tp[ip + fdir[0]*1 + fdir[1]*sy_v + fdir[2]*sz_v] = value;
 	       
 	    });
 	    break;
@@ -336,13 +360,10 @@ int           symm_part;      /* Specifies whether to compute just the
 
    /* Calculate rel_perm and rel_perm_der */
 
-   PFModuleInvoke(void, density_module, (0, pressure, temperature, density, &dtmp, &dtmp, 
-					 CALCFCN));
-   PFModuleInvoke(void, density_module, (0, pressure, temperature, density_der, &dtmp, 
-					 &dtmp, CALCDER_P));
    PFModuleInvoke(void, rel_perm_module, 
 		  (rel_perm, pressure, density, gravity, problem_data, 
 		   CALCFCN));
+
    PFModuleInvoke(void, rel_perm_module, 
 		  (rel_perm_der, pressure, density, gravity, problem_data, 
 		   CALCDER));
@@ -355,7 +376,6 @@ int           symm_part;      /* Specifies whether to compute just the
 	
       p_sub    = VectorSubvector(pressure, is);
       d_sub    = VectorSubvector(density, is);
-      v_sub    = VectorSubvector(viscosity, is);
       rp_sub   = VectorSubvector(rel_perm, is);
       dd_sub   = VectorSubvector(density_der, is);
       rpd_sub  = VectorSubvector(rel_perm_der, is);
@@ -403,7 +423,6 @@ int           symm_part;      /* Specifies whether to compute just the
 
       pp     = SubvectorData(p_sub);
       dp     = SubvectorData(d_sub);
-      vp     = SubvectorData(v_sub);
       rpp    = SubvectorData(rp_sub);
       ddp    = SubvectorData(dd_sub);
       rpdp   = SubvectorData(rpd_sub);
@@ -418,25 +437,26 @@ int           symm_part;      /* Specifies whether to compute just the
 		ip, nx_v, ny_v, nz_v, 1, 1, 1,
 		im, nx_m, ny_m, nz_m, 1, 1, 1,
 	     {
-	        prod        = rpp[ip] * dp[ip] / vp[ip];
-		prod_der    = rpdp[ip] * dp[ip] / vp[ip] + rpp[ip] * ddp[ip] / vp[ip];
+	        prod        = rpp[ip] * dp[ip];
+		prod_der    = rpdp[ip] * dp[ip] + rpp[ip] * ddp[ip];
 
-	        prod_rt     = rpp[ip+1] * dp[ip+1] / vp[ip+1];
-		prod_rt_der = rpdp[ip+1] * dp[ip+1] / vp[ip+1] + rpp[ip+1] * ddp[ip+1] / vp[ip+1];
+	        prod_rt     = rpp[ip+1] * dp[ip+1];
+		prod_rt_der = rpdp[ip+1] * dp[ip+1] + rpp[ip+1] * ddp[ip+1];
 
-	        prod_no     = rpp[ip+sy_v] * dp[ip+sy_v] / vp[ip+sy_v];
-		prod_no_der = rpdp[ip+sy_v] * dp[ip+sy_v] / vp[ip+sy_v] 
-		              + rpp[ip+sy_v] * ddp[ip+sy_v] / vp[ip+sy_v];
+	        prod_no     = rpp[ip+sy_v] * dp[ip+sy_v];
+		prod_no_der = rpdp[ip+sy_v] * dp[ip+sy_v] 
+		              + rpp[ip+sy_v] * ddp[ip+sy_v];
 
-	        prod_up     = rpp[ip+sz_v] * dp[ip+sz_v] / vp[ip+sz_v];
-		prod_up_der = rpdp[ip+sz_v] * dp[ip+sz_v] / vp[ip+sz_v] 
-		              + rpp[ip+sz_v] * ddp[ip+sz_v] / vp[ip+sz_v];
+	        prod_up     = rpp[ip+sz_v] * dp[ip+sz_v];
+		prod_up_der = rpdp[ip+sz_v] * dp[ip+sz_v] 
+		              + rpp[ip+sz_v] * ddp[ip+sz_v];
 
 	        /* diff >= 0 implies flow goes left to right */
 	        diff = pp[ip] - pp[ip+1];
 
 		x_coeff = dt * ffx * (1.0/dx) 
-	             * PMean(pp[ip], pp[ip+1], permxp[ip], permxp[ip+1]); 
+	             * PMean(pp[ip], pp[ip+1], permxp[ip], permxp[ip+1]) 
+		     / viscosity;
 
 		sym_west_temp = - x_coeff 
 		                  * RPMean(pp[ip], pp[ip+1], prod, prod_rt);
@@ -456,7 +476,8 @@ int           symm_part;      /* Specifies whether to compute just the
 	        diff = pp[ip] - pp[ip+sy_v];
 
 		y_coeff = dt * ffy * (1.0/dy) 
-	             * PMean(pp[ip], pp[ip+sy_v], permyp[ip], permyp[ip+sy_v]); 
+	             * PMean(pp[ip], pp[ip+sy_v], permyp[ip], permyp[ip+sy_v]) 
+		     / viscosity;
 
 		sym_south_temp = - y_coeff
                                    *RPMean(pp[ip], pp[ip+sy_v], prod, prod_no);
@@ -480,7 +501,8 @@ int           symm_part;      /* Specifies whether to compute just the
 
 		z_coeff = dt * ffz * (1.0 / dz) 
                     * PMean(lower_cond, upper_cond, 
-			    permzp[ip], permzp[ip+sz_v]); 
+			    permzp[ip], permzp[ip+sz_v]) 
+		      / viscosity;
 
 		sym_lower_temp = - z_coeff
                                    * RPMean(lower_cond, upper_cond, prod, 
@@ -572,7 +594,6 @@ int           symm_part;      /* Specifies whether to compute just the
 	    dd_sub    = VectorSubvector(density_der, is);
 	    rpd_sub   = VectorSubvector(rel_perm_der, is);
 	    d_sub     = VectorSubvector(density, is);
-	    v_sub     = VectorSubvector(viscosity, is);
 	    rp_sub    = VectorSubvector(rel_perm, is);
 	    permx_sub = VectorSubvector(permeability_x, is);
 	    permy_sub = VectorSubvector(permeability_y, is);
@@ -606,7 +627,6 @@ int           symm_part;      /* Specifies whether to compute just the
 	    ddp    = SubvectorData(dd_sub);
 	    rpdp   = SubvectorData(rpd_sub);
 	    dp     = SubvectorData(d_sub);
-	    vp     = SubvectorData(v_sub);
 	    rpp    = SubvectorData(rp_sub);
 	    permxp = SubvectorData(permx_sub);
 	    permyp = SubvectorData(permy_sub);
@@ -626,9 +646,10 @@ int           symm_part;      /* Specifies whether to compute just the
 		     case -1:
 		     {
 		        diff = pp[ip-1] - pp[ip];
-			prod_der = rpdp[ip-1]*dp[ip-1]/vp[ip-1] + rpp[ip-1]*ddp[ip-1]/vp[ip-1];
+			prod_der = rpdp[ip-1]*dp[ip-1] + rpp[ip-1]*ddp[ip-1];
 		        coeff = dt * ffx * (1.0/dx) 
-			   * PMean(pp[ip-1], pp[ip], permxp[ip-1], permxp[ip]); 
+			   * PMean(pp[ip-1], pp[ip], permxp[ip-1], permxp[ip]) 
+			   / viscosity;
 		        wp[im] = - coeff * diff
 			   * RPMean(pp[ip-1], pp[ip], prod_der, 0.0);      
 			break;
@@ -636,9 +657,10 @@ int           symm_part;      /* Specifies whether to compute just the
 		     case 1:
 		     {
 		        diff = pp[ip] - pp[ip+1];
-			prod_der = rpdp[ip+1]*dp[ip+1]/vp[ip+1] + rpp[ip+1]*ddp[ip+1]/vp[ip+1];
+			prod_der = rpdp[ip+1]*dp[ip+1] + rpp[ip+1]*ddp[ip+1];
 		        coeff = dt * ffx * (1.0/dx) 
-			   * PMean(pp[ip], pp[ip+1], permxp[ip], permxp[ip+1]); 
+			   * PMean(pp[ip], pp[ip+1], permxp[ip], permxp[ip+1]) 
+			   / viscosity;
 		        ep[im] = coeff * diff
 			   * RPMean(pp[ip], pp[ip+1], 0.0, prod_der);      
 			break;
@@ -654,11 +676,12 @@ int           symm_part;      /* Specifies whether to compute just the
 		     case -1:
 		     {
 		        diff = pp[ip-sy_v] - pp[ip];
-			prod_der = rpdp[ip-sy_v] * dp[ip-sy_v]/vp[ip-sy_v] 
-			           + rpp[ip-sy_v] * ddp[ip-sy_v]/vp[ip-sy_v];
+			prod_der = rpdp[ip-sy_v] * dp[ip-sy_v] 
+			           + rpp[ip-sy_v] * ddp[ip-sy_v];
 		        coeff = dt * ffy * (1.0/dy) 
 			   * PMean(pp[ip-sy_v], pp[ip], 
-				   permyp[ip-sy_v], permyp[ip]); 
+				   permyp[ip-sy_v], permyp[ip]) 
+			   / viscosity;
 		        sop[im] = - coeff * diff
 			   * RPMean(pp[ip-sy_v], pp[ip], prod_der, 0.0);      
 			break;
@@ -666,11 +689,12 @@ int           symm_part;      /* Specifies whether to compute just the
 		     case 1:
 		     {
 		        diff = pp[ip] - pp[ip+sy_v];
-			prod_der = rpdp[ip+sy_v] * dp[ip+sy_v]/vp[ip+sy_v] 
-			           + rpp[ip+sy_v] * ddp[ip+sy_v]/vp[ip+sy_v];
+			prod_der = rpdp[ip+sy_v] * dp[ip+sy_v] 
+			           + rpp[ip+sy_v] * ddp[ip+sy_v];
 		        coeff = dt * ffy * (1.0/dy) 
 			   * PMean(pp[ip], pp[ip+sy_v], 
-				   permyp[ip], permyp[ip+sy_v]); 
+				   permyp[ip], permyp[ip+sy_v]) 
+			   / viscosity;
 		        np[im] = - coeff * diff
 			   * RPMean(pp[ip], pp[ip+sy_v], 0.0, prod_der);      
 			break;
@@ -689,12 +713,13 @@ int           symm_part;      /* Specifies whether to compute just the
 			             - 0.5 * dz * dp[ip-sz_v] * gravity;
 			upper_cond = (pp[ip] ) + 0.5 * dz * dp[ip] * gravity;
 		        diff = lower_cond - upper_cond;
-			prod_der = rpdp[ip-sz_v] * dp[ip-sz_v]/vp[ip-sz_v] 
-			           + rpp[ip-sz_v] * ddp[ip-sz_v]/vp[ip-sz_v];
-			prod_lo = rpp[ip-sz_v] * dp[ip-sz_v]/vp[ip-sz_v];
+			prod_der = rpdp[ip-sz_v] * dp[ip-sz_v] 
+			           + rpp[ip-sz_v] * ddp[ip-sz_v];
+			prod_lo = rpp[ip-sz_v] * dp[ip-sz_v];
 		        coeff = dt * ffz * (1.0/dz) 
 			   * PMean(pp[ip-sz_v], pp[ip], 
-				   permzp[ip-sz_v], permzp[ip]); 
+				   permzp[ip-sz_v], permzp[ip]) 
+			   / viscosity;
 		        lp[im] = - coeff * 
 			   ( diff * RPMean(lower_cond, upper_cond, 
 					   prod_der, 0.0)
@@ -708,12 +733,13 @@ int           symm_part;      /* Specifies whether to compute just the
 			upper_cond = (pp[ip+sz_v] ) 
 			             + 0.5 * dz * dp[ip+sz_v] * gravity;
 		        diff = lower_cond - upper_cond;
-			prod_der = rpdp[ip+sz_v] * dp[ip+sz_v]/vp[ip+sz_v] 
-			           + rpp[ip+sz_v] * ddp[ip+sz_v]/vp[ip+sz_v];
-			prod_up = rpp[ip+sz_v] * dp[ip+sz_v]/vp[ip+sz_v];
+			prod_der = rpdp[ip+sz_v] * dp[ip+sz_v] 
+			           + rpp[ip+sz_v] * ddp[ip+sz_v];
+			prod_up = rpp[ip+sz_v] * dp[ip+sz_v];
 		        coeff = dt * ffz * (1.0/dz) 
 			   * PMean(lower_cond, upper_cond, 
-				   permzp[ip], permzp[ip+sz_v]); 
+				   permzp[ip], permzp[ip+sz_v]) 
+			   / viscosity;
 		        up[im] = - coeff * 
 			   ( diff * RPMean(lower_cond, upper_cond, 
 					   0.0, prod_der)
@@ -742,7 +768,6 @@ int           symm_part;      /* Specifies whether to compute just the
       dd_sub    = VectorSubvector(density_der, is);
       rpd_sub   = VectorSubvector(rel_perm_der, is);
       d_sub     = VectorSubvector(density, is);
-      v_sub     = VectorSubvector(viscosity, is);
       rp_sub    = VectorSubvector(rel_perm, is);
       permx_sub = VectorSubvector(permeability_x, is);
       permy_sub = VectorSubvector(permeability_y, is);
@@ -792,7 +817,6 @@ int           symm_part;      /* Specifies whether to compute just the
       ddp    = SubvectorData(dd_sub);
       rpdp   = SubvectorData(rpd_sub);
       dp     = SubvectorData(d_sub);
-      vp     = SubvectorData(v_sub);
       rpp    = SubvectorData(rp_sub);
       permxp = SubvectorData(permx_sub);
       permyp = SubvectorData(permy_sub);
@@ -825,20 +849,20 @@ int           symm_part;      /* Specifies whether to compute just the
 
 	       value =  bc_patch_values[ival];
 
-	       /*PFModuleInvoke( void, density_module, 
-			       (0, NULL, NULL, NULL, &value, &den_d, CALCFCN));
 	       PFModuleInvoke( void, density_module, 
-			       (0, NULL, NULL, NULL, &value, &dend_d, CALCDER_P));*/
+			       (0, NULL, NULL, &value, &den_d, CALCFCN));
+	       PFModuleInvoke( void, density_module, 
+			       (0, NULL, NULL, &value, &dend_d, CALCDER));
 
 	       ip = SubvectorEltIndex(p_sub, i, j, k);
 	       im = SubmatrixEltIndex(J_sub, i, j, k);
 
-	       prod        = rpp[ip] * dp[ip]/vp[ip];
-	       prod_der    = rpdp[ip] * dp[ip]/vp[ip] + rpp[ip] * ddp[ip]/vp[ip];
+	       prod        = rpp[ip] * dp[ip];
+	       prod_der    = rpdp[ip] * dp[ip] + rpp[ip] * ddp[ip];
 
 	       if (fdir[0])
 	       {
-		  coeff = dt * ffx * (2.0/dx) * permxp[ip] ;
+		  coeff = dt * ffx * (2.0/dx) * permxp[ip] / viscosity;
 
 		  switch(fdir[0])
 		  {
@@ -868,7 +892,7 @@ int           symm_part;      /* Specifies whether to compute just the
 
 	       else if (fdir[1])
 	       {
-		  coeff = dt * ffy * (2.0/dy) * permyp[ip] ;
+		  coeff = dt * ffy * (2.0/dy) * permyp[ip] / viscosity;
 
 		  switch(fdir[1])
 		  {
@@ -898,7 +922,7 @@ int           symm_part;      /* Specifies whether to compute just the
 
 	       else if (fdir[2])
 	       {
-		  coeff = dt * ffz * (2.0/dz) * permzp[ip] ;
+		  coeff = dt * ffz * (2.0/dz) * permzp[ip] / viscosity;
 
 		  switch(fdir[2])
 		  {
@@ -1125,12 +1149,16 @@ int           symm_part;      /* Specifies whether to compute just the
    }           /* End subgrid loop */
 #endif
 
+#if 0
+   PrintMatrix("matrix_dump2", J);
+#endif
 
    FreeBCStruct(bc_struct);
-   FreeBCStruct(temp_bc_struct);
-
+#if 1
    PFModuleInvoke( void, bc_internal, (problem, problem_data, NULL, J, time,
 				       pressure, CALCDER));
+#endif
+#if 1
 
 
    /* Set pressures outside domain to zero.  
@@ -1178,6 +1206,7 @@ int           symm_part;      /* Specifies whether to compute just the
 		      up[im] = 0.0;
 		    });
    }
+#endif
 
    /*-----------------------------------------------------------------------
     * Update matrix ghost points
@@ -1190,6 +1219,11 @@ int           symm_part;      /* Specifies whether to compute just the
    }
 
    *ptr_to_J = J;
+
+#if 0
+   PrintMatrix("matrix_dump3", J);
+   exit(1);
+#endif
 
    //FreeVector(psi); //sk start
    FreeVector(KWD);
@@ -1232,15 +1266,13 @@ int          symmetric_jac;
 	 FreeMatrix(instance_xtra -> J);
          FreeTempVector(instance_xtra -> density_der);
          FreeTempVector(instance_xtra -> saturation_der);
-         FreeVector(instance_xtra -> rel_perm);
-         FreeVector(instance_xtra -> rel_perm_der);
       }
 
       /* set new data */
       (instance_xtra -> grid) = grid;
 
       /* set up jacobian matrix */
-      stencil = NewStencil(jacobian_stencil_shape_richards, 7);
+      stencil = NewStencil(jacobian_stencil_shape, 7);
 
       if (symmetric_jac)
 	 (instance_xtra -> J) = NewMatrix(grid, NULL, stencil, ON, stencil);
@@ -1249,8 +1281,6 @@ int          symmetric_jac;
 
       (instance_xtra -> density_der)     = NewTempVector(grid, 1, 1);
       (instance_xtra -> saturation_der)  = NewTempVector(grid, 1, 1);
-      (instance_xtra -> rel_perm_der)    = NewVector(grid, 1, 1);
-      (instance_xtra -> rel_perm)        = NewVector(grid, 1, 1);
    }
 
    if ( temp_data != NULL )
@@ -1271,12 +1301,8 @@ int          symmetric_jac;
    {
       (instance_xtra -> density_module) =
          PFModuleNewInstance(ProblemPhaseDensity(problem), () );
-      (instance_xtra -> viscosity_module) =
-         PFModuleNewInstance(ProblemPhaseViscosity(problem), () );
       (instance_xtra -> bc_pressure) =
         PFModuleNewInstance(ProblemBCPressure(problem), (problem) );
-      (instance_xtra -> bc_temperature) =
-        PFModuleNewInstance(ProblemBCTemperature(problem), (problem) );
       (instance_xtra -> saturation_module) =
          PFModuleNewInstance(ProblemSaturation(problem), (NULL, NULL) );
       (instance_xtra -> rel_perm_module) =
@@ -1288,9 +1314,7 @@ int          symmetric_jac;
    else
    {
       PFModuleReNewInstance((instance_xtra -> density_module), ());
-      PFModuleReNewInstance((instance_xtra -> viscosity_module), ());
       PFModuleReNewInstance((instance_xtra -> bc_pressure), (problem));
-      PFModuleReNewInstance((instance_xtra -> bc_temperature), (problem));
       PFModuleReNewInstance((instance_xtra -> saturation_module), 
 			    (NULL, NULL));
       PFModuleReNewInstance((instance_xtra -> rel_perm_module), 
@@ -1316,17 +1340,13 @@ void  RichardsJacobianEvalFreeInstanceXtra()
    if(instance_xtra)
    {
       PFModuleFreeInstance(instance_xtra -> density_module);
-      PFModuleFreeInstance(instance_xtra -> viscosity_module);
       PFModuleFreeInstance(instance_xtra -> bc_pressure);
-      PFModuleFreeInstance(instance_xtra -> bc_temperature);
       PFModuleFreeInstance(instance_xtra -> saturation_module);
       PFModuleFreeInstance(instance_xtra -> rel_perm_module);
       PFModuleFreeInstance(instance_xtra -> bc_internal);
 
       FreeTempVector(instance_xtra -> density_der);
       FreeTempVector(instance_xtra -> saturation_der);
-      FreeVector(instance_xtra -> rel_perm_der);
-      FreeVector(instance_xtra -> rel_perm);
       
       FreeMatrix(instance_xtra -> J);
 

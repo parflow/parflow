@@ -34,10 +34,8 @@ Problem   *problem;
 
    eval_struct = ctalloc(EvalStruct, 1);
 
-   //a = 1.0 / ProblemPhaseViscosity(problem, 0);
-   a = 1.0 / 1.0;
-   //b = 1.0 / ProblemPhaseViscosity(problem, 1);
-   b = 1.0 / 1.0;
+   a = 1.0 / ProblemPhaseViscosity(problem, 0);
+   b = 1.0 / ProblemPhaseViscosity(problem, 1);
 
    /***************************************************/
    /*                                                 */ 

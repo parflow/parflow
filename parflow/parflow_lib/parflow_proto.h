@@ -31,11 +31,6 @@ BCPressureData *NewBCPressureData P((void ));
 void FreeBCPressureData P((BCPressureData *bc_pressure_data ));
 void PrintBCPressureData P((BCPressureData *bc_pressure_data ));
 
-/* bc_temperature.c */
-BCTemperatureData *NewBCTemperatureData P((void ));
-void FreeBCTemperatureData P((BCTemperatureData *bc_temperature_data ));
-void PrintBCTemperatureData P((BCTemperatureData *bc_temperature_data ));
-
 /* bc_pressure_package.c */
 void BCPressurePackage P((ProblemData *problem_data ));
 PFModule *BCPressurePackageInitInstanceXtra P((Problem *problem ));
@@ -43,14 +38,6 @@ void BCPressurePackageFreeInstanceXtra P((void ));
 PFModule *BCPressurePackageNewPublicXtra P((int num_phases ));
 void BCPressurePackageFreePublicXtra P((void ));
 int BCPressurePackageSizeOfTempData P((void ));
-
-/* bc_temperature_package.c */
-void BCTemperaturePackage P((ProblemData *problem_data ));
-PFModule *BCTemperaturePackageInitInstanceXtra P((Problem *problem ));
-void BCTemperaturePackageFreeInstanceXtra P((void ));
-PFModule *BCTemperaturePackageNewPublicXtra P((int num_phases ));
-void BCTemperaturePackageFreePublicXtra P((void ));
-int BCTemperaturePackageSizeOfTempData P((void ));
 
 /* calc_elevations.c */
 double **CalcElevations P((GeomSolid *geom_solid , int ref_patch , SubgridArray *subgrids ));
@@ -290,38 +277,24 @@ char *NA_IndexToName P((NameArray name_array , int index ));
 int NA_Sizeof P((NameArray name_array ));
 void InputError P((char *format , char *s1 , char *s2 ));
 
-/*kinsol_function_eval.c*/
-int KINSolFunctionEval P((N_Vector multispecies, N_Vector fval , void *current_state ));
-
 /* kinsol_nonlin_solver.c */
-int KINSolInitPC P((N_Vector multispecies, N_Vector uscale , N_Vector fval , N_Vector fscale , void *current_state, N_Vector vtemp1 , N_Vector vtemp2 ));
-int KINSolCallPC P((N_Vector multispecies, N_Vector uscale , N_Vector fval , N_Vector fscale , N_Vector vtem , void *current_state, N_Vector ftem ));
-void PrintFinalStats P((FILE *out_file ));
-int KinsolNonlinSolver P((N_Vector multispecies, Vector *density , Vector *old_density , Vector *heat_capacity_water, Vector *heat_capacity_rock, Vector *viscosity, Vector *old_viscosity, Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, Vector *old_temperature, double *outflow, Vector *evap_trans, Vector *clm_energy_source, Vector *forc_t, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity ));
+int KINSolInitPC P((int neq , N_Vector pressure , N_Vector uscale , N_Vector fval , N_Vector fscale , N_Vector vtemp1 , N_Vector vtemp2 , void *nl_function , double uround , long int *nfePtr , void *current_state ));
+int KINSolCallPC P((int neq , N_Vector pressure , N_Vector uscale , N_Vector fval , N_Vector fscale , N_Vector vtem , N_Vector ftem , void *nl_function , double uround , long int *nfePtr , void *current_state ));
+void PrintFinalStats P((FILE *out_file , long int *integer_outputs_now , long int *integer_outputs_total ));
+int KinsolNonlinSolver P((Vector *pressure , Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, double *outflow, Vector *evap_trans, Vector *ovrl_bc_flx ));
 PFModule *KinsolNonlinSolverInitInstanceXtra P((Problem *problem , Grid *grid , ProblemData *problem_data , double *temp_data ));
 void KinsolNonlinSolverFreeInstanceXtra P((void ));
 PFModule *KinsolNonlinSolverNewPublicXtra P((void ));
 void KinsolNonlinSolverFreePublicXtra P((void ));
 int KinsolNonlinSolverSizeOfTempData P((void ));
 
-/* kinsol_matvec.c */
-int KINSolMatVec P((N_Vector x , N_Vector y , N_Vector multispecies, booleantype *recompute , void *current_state ));
-
-/* kinsol_pc_pressure.c */
-void KinsolPCPressure P((Vector *rhs ));
-PFModule *KinsolPCPressureInitInstanceXtra P((Problem *problem , Grid *grid , ProblemData *problem_data , double *temp_data , Vector *pressure , Vector *temperature, Vector *saturation , Vector *density , Vector *viscosity, double dt , double time));
-void KinsolPCPressureFreeInstanceXtra P((void ));
-PFModule *KinsolPCPressureNewPublicXtra P((char *name , char *pc_name ));
-void KinsolPCPressureFreePublicXtra P((void ));
-int KinsolPCPressureSizeOfTempData P((void ));
-
-/* kinsol_pc_temperature.c */
-void KinsolPCTemperature P((Vector *rhs ));
-PFModule *KinsolPCTemperatureInitInstanceXtra P((Problem *problem , Grid *grid , ProblemData *problem_data , double *temp_data , Vector *pressure , Vector *temperature, Vector *saturation , Vector *density , Vector *heat_capacity_water, Vector *heat_capacity_rock, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, double dt , double time));
-void KinsolPCTemperatureFreeInstanceXtra P((void ));
-PFModule *KinsolPCTemperatureNewPublicXtra P((char *name , char *pc_name ));
-void KinsolPCTemperatureFreePublicXtra P((void ));
-int KinsolPCTemperatureSizeOfTempData P((void ));
+/* kinsol_pc.c */
+void KinsolPC P((Vector *rhs ));
+PFModule *KinsolPCInitInstanceXtra P((Problem *problem , Grid *grid , ProblemData *problem_data , double *temp_data , Vector *pressure , Vector *saturation , Vector *density , double dt , double time ));
+void KinsolPCFreeInstanceXtra P((void ));
+PFModule *KinsolPCNewPublicXtra P((char *name , char *pc_name ));
+void KinsolPCFreePublicXtra P((void ));
+int KinsolPCSizeOfTempData P((void ));
 
 /* l2_error_norm.c */
 void L2ErrorNorm P((double time , Vector *pressure , ProblemData *problem_data , double *l2_error_norm ));
@@ -383,56 +356,22 @@ ComputePkg *NewMGSemiProlongComputePkg P((Grid *grid , Stencil *stencil , int sx
 void MGSemiRestrict P((Matrix *A_f , Vector *r_f , Vector *r_c , Matrix *P , SubregionArray *f_sr_array , SubregionArray *c_sr_array , ComputePkg *compute_pkg , CommPkg *r_f_comm_pkg ));
 ComputePkg *NewMGSemiRestrictComputePkg P((Grid *grid , Stencil *stencil , int sx , int sy , int sz , int c_index , int f_index ));
 
-/* nvector_parflow.c */
-N_Vector N_VNew_Parflow P((Grid *grid));
-N_Vector N_VNewEmpty_Parflow P((int nspecies));
-void N_VPrint P((N_Vector x));
-N_Vector N_VCloneEmpty_Parflow(N_Vector w);
-N_Vector N_VClone_Parflow(N_Vector w);
-void N_VDestroy_Parflow(N_Vector v);
-void N_VSpace_Parflow(N_Vector v, long int *lrw, long int *liw);
-realtype *N_VGetArrayPointer_Parflow(N_Vector v);
-void N_VSetArrayPointer_Parflow(realtype *v_data, N_Vector v);
-void N_VLinearSum_Parflow(realtype a, N_Vector x, realtype b, N_Vector y, N_Vector z);
-void N_VConst_Parflow(realtype c, N_Vector z);
-void N_VProd_Parflow(N_Vector x, N_Vector y, N_Vector z);
-void N_VDiv_Parflow(N_Vector x, N_Vector y, N_Vector z);
-void N_VScale_Parflow(realtype c, N_Vector x, N_Vector z);
-void N_VAbs_Parflow(N_Vector x, N_Vector y);
-void N_VInv_Parflow(N_Vector x, N_Vector y);
-void N_VAddConst_Parflow(N_Vector x, realtype b, N_Vector z);
-realtype N_VDotProd_Parflow(N_Vector x, N_Vector y);
-realtype N_VMaxNorm_Parflow(N_Vector x);
-realtype N_VWrmsNorm_Parflow(N_Vector x, N_Vector w);
-realtype N_VWrmsNormMask_Parflow(N_Vector x, N_Vector w, N_Vector id);
-realtype N_VMin_Parflow(N_Vector x);
-realtype N_VWL2Norm_Parflow(N_Vector x, N_Vector w);
-realtype N_VL1Norm_Parflow(N_Vector x);
-void N_VCompare_Parflow(realtype c, N_Vector x, N_Vector z);
-booleantype N_VInvTest_Parflow(N_Vector x, N_Vector z);
-booleantype N_VConstrMask_Parflow(N_Vector c, N_Vector x, N_Vector m);
-realtype N_VMinQuotient_Parflow(N_Vector num, N_Vector denom);
-void N_VVector_Parflow(N_Vector templ, Vector *pressure, Vector *temperature);
-N_Vector N_VMake_Parflow(Vector *pressure, Vector *temperature);
+/* n_vector.c */
+void SetPf2KinsolData P((Grid *grid , int num_ghost ));
+N_Vector N_VNew P((int N , void *machEnv ));
+void N_VPrint P((N_Vector x ));
 
 /* new_endpts.c */
 void NewEndpts P((double *alpha , double *beta , double *pp , int *size_ptr , int n , double *a_ptr , double *b_ptr , double *cond_ptr , double ereps ));
 
-/* press_function_eval.c */
-void PressFunctionEval P((Vector *pressure, Vector *fval , ProblemData *problem_data, Vector *temperature, Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density, Vector *viscosity, double dt , double time, Vector *old_pressure, double *outflow , Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity));
-PFModule *PressFunctionEvalInitInstanceXtra P((Problem *problem , Grid *grid , double *temp_data ));
-void PressFunctionEvalFreeInstanceXtra P((void ));
-PFModule *PressFunctionEvalNewPublicXtra P((void ));
-void PressFunctionEvalFreePublicXtra P((void ));
-int PressFunctionEvalSizeOfTempData P((void ));
-
-/* temp_function_eval.c */
-void TempFunctionEval P((Vector *temperature, Vector *fval , ProblemData *problem_data , Vector *pressure, Vector *old_pressure, Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , Vector *heat_capacity_water, Vector *heat_capacity_rock, Vector *viscosity, double dt , double time, Vector *old_temperature, Vector *evap_trans, Vector *energy_source, Vector *forc_t, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity));
-PFModule *TempFunctionEvalInitInstanceXtra P((Problem *problem , Grid *grid , double *temp_data ));
-void TempFunctionEvalFreeInstanceXtra P((void ));
-PFModule *TempFunctionEvalNewPublicXtra P((void ));
-void TempFunctionEvalFreePublicXtra P((void ));
-int TempFunctionEvalSizeOfTempData P((void ));
+/* nl_function_eval.c */
+void KINSolFunctionEval P((int size , N_Vector pressure , N_Vector fval , void *current_state ));
+void NlFunctionEval P((Vector *pressure , Vector *fval , ProblemData *problem_data , Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , double dt , double time, Vector *old_pressure, double *outflow , Vector *evap_trans, Vector *ovrl_bc_flx));
+PFModule *NlFunctionEvalInitInstanceXtra P((Problem *problem , Grid *grid , double *temp_data ));
+void NlFunctionEvalFreeInstanceXtra P((void ));
+PFModule *NlFunctionEvalNewPublicXtra P((void ));
+void NlFunctionEvalFreePublicXtra P((void ));
+int NlFunctionEvalSizeOfTempData P((void ));
 
 /* nodiag_scale.c */
 void NoDiagScale P((Vector *x , Matrix *A , Vector *b , int flag ));
@@ -562,14 +501,6 @@ PFModule *BCPressureNewPublicXtra P((int num_phases ));
 void BCPressureFreePublicXtra P((void ));
 int BCPressureSizeOfTempData P((void ));
 
-/* problem_bc_temperature.c */
-BCStruct *BCTemperature P((ProblemData *problem_data , Grid *grid , GrGeomSolid *gr_domain , double time ));
-PFModule *BCTemperatureInitInstanceXtra P((Problem *problem ));
-void BCTemperatureFreeInstanceXtra P((void ));
-PFModule *BCTemperatureNewPublicXtra P((int num_phases ));
-void BCTemperatureFreePublicXtra P((void ));
-int BCTemperatureSizeOfTempData P((void ));
-
 /* problem_capillary_pressure.c */
 void CapillaryPressure P((Vector *capillary_pressure , int phase_i , int phase_j , ProblemData *problem_data , Vector *phase_saturation ));
 PFModule *CapillaryPressureInitInstanceXtra P((void ));
@@ -598,16 +529,6 @@ PFModule *GeometriesNewPublicXtra P((void ));
 void GeometriesFreePublicXtra P((void ));
 int GeometriesSizeOfTempData P((void ));
 
-/* problem_phase_heat_capacity.c */
-PFModule *PhaseHeatCapacityInitInstanceXtra P((void ));
-/* void PhaseHeatCapacity P((int phase, Vector *heat_capacity, Vector *heat_capacity_rock, ProblemData *problem_data));
-*/
-void PhaseHeatCapacity P((int phase, Vector *heat_capacity, ProblemData *problem_data));
-void PhaseHeatCapacityFreeInstanceXtra P((void ));
-PFModule *PhaseHeatCapacityNewPublicXtra P((int num_phases));
-void PhaseHeatCapacityFreePublicXtra P((void ));
-int PhaseHeatCapacitySizeOfTempData P((void ));
-
 /* problem_ic_phase_concen.c */
 void ICPhaseConcen P((Vector *ic_phase_concen , int phase , int contaminant , ProblemData *problem_data ));
 PFModule *ICPhaseConcenInitInstanceXtra P((void ));
@@ -617,7 +538,7 @@ void ICPhaseConcenFreePublicXtra P((void ));
 int ICPhaseConcenSizeOfTempData P((void ));
 
 /* problem_ic_phase_pressure.c */
-void ICPhasePressure P((Vector *ic_pressure , Vector *ic_temperature, Vector *mask, ProblemData *problem_data , Problem *problem ));
+void ICPhasePressure P((Vector *ic_pressure , Vector *mask, ProblemData *problem_data , Problem *problem ));
 PFModule *ICPhasePressureInitInstanceXtra P((Problem *problem , Grid *grid , double *temp_data ));
 void ICPhasePressureFreeInstanceXtra P((void ));
 PFModule *ICPhasePressureNewPublicXtra P((void ));
@@ -628,16 +549,8 @@ int *ComputeTop P((PFModule    *ic_phase_pressure,
 		   ProblemData *problem_data,
 		   Vector      *vector));
 
-/* problem_ic_phase_temperature.c */
-void ICPhaseTemperature P((Vector *ic_temperature, ProblemData *problem_data , Problem *problem ));
-PFModule *ICPhaseTemperatureInitInstanceXtra P((Problem *problem , Grid *grid , double *temp_data ));
-void ICPhaseTemperatureFreeInstanceXtra P((void ));
-PFModule *ICPhaseTemperatureNewPublicXtra P((void ));
-void ICPhaseTemperatureFreePublicXtra P((void ));
-int ICPhaseTemperatureSizeOfTempData P((void ));
-
 /* problem_mannings.c */
-void Mannings P((ProblemData *problem_data, Vector *mann));
+void Mannings P((ProblemData *problem_data, Vector *mann, Vector *dummy));
 PFModule *ManningsInitInstanceXtra P((Grid *grid));
 void ManningsFreeInstanceXtra P((void ));
 PFModule *ManningsNewPublicXtra P((void));
@@ -661,20 +574,12 @@ void ICPhaseSaturFreePublicXtra P((void ));
 int ICPhaseSaturSizeOfTempData P((void ));
 
 /* problem_phase_density.c */
-void PhaseDensity P((int phase , Vector *phase_pressure , Vector *temperature, Vector *density_v , double *pressure_d , double *density_d , int fcn ));
+void PhaseDensity P((int phase , Vector *phase_pressure , Vector *density_v , double *pressure_d , double *density_d , int fcn ));
 PFModule *PhaseDensityInitInstanceXtra P((void ));
 void PhaseDensityFreeInstanceXtra P((void ));
 PFModule *PhaseDensityNewPublicXtra P((int num_phases ));
 void PhaseDensityFreePublicXtra P((void ));
 int PhaseDensitySizeOfTempData P((void ));
-
-/* problem_phase_internal_energy.c */
-void InternalEnergyDensity P((int phase, Vector *pressure, Vector *temperature, Vector *energy, Vector *density, int fcn ));
-PFModule *InternalEnergyDensityInitInstanceXtra P((void ));
-void InternalEnergyDensityFreeInstanceXtra P((void ));
-PFModule *InternalEnergyDensityNewPublicXtra P((int num_phases ));
-void InternalEnergyDensityFreePublicXtra P((void ));
-int InternalEnergyDensitySizeOfTempData P((void ));
 
 /* problem_phase_mobility.c */
 void PhaseMobility P((Vector *phase_mobility_x , Vector *phase_mobility_y , Vector *phase_mobility_z , Vector *perm_x , Vector *perm_y , Vector *perm_z , int phase , Vector *phase_saturation , double phase_viscosity ));
@@ -693,28 +598,12 @@ void PhaseRelPermFreePublicXtra P((void ));
 int PhaseRelPermSizeOfTempData P((void ));
 
 /* problem_phase_source.c */
-void PhaseSource P((Vector *phase_source , Vector *phase_temperature, Problem *problem , ProblemData *problem_data , double time ));
+void PhaseSource P((Vector *phase_source , Problem *problem , ProblemData *problem_data , double time ));
 PFModule *PhaseSourceInitInstanceXtra P((Grid *grid));
 void PhaseSourceFreeInstanceXtra P((void ));
 PFModule *PhaseSourceNewPublicXtra P((void));
 void PhaseSourceFreePublicXtra P((void ));
 int PhaseSourceSizeOfTempData P((void ));
-
-/* problem_temp_source.c */
-void TempSource P((Vector *temp_source , Problem *problem , ProblemData *problem_data , double time ));
-PFModule *TempSourceInitInstanceXtra P((Grid *grid));
-void TempSourceFreeInstanceXtra P((void ));
-PFModule *TempSourceNewPublicXtra P((void));
-void TempSourceFreePublicXtra P((void ));
-int TempSourceSizeOfTempData P((void ));
-
-/* problem_phase_viscosity.c */
-void PhaseViscosity P((int phase , Vector *pressure , Vector *temperature , Vector *viscosity, int fcn ));
-PFModule *PhaseViscosityInitInstanceXtra P((void ));
-void PhaseViscosityFreeInstanceXtra P((void ));
-PFModule *PhaseViscosityNewPublicXtra P((int num_phases ));
-void PhaseViscosityFreePublicXtra P((void ));
-int PhaseViscositySizeOfTempData P((void ));
 
 /* problem_porosity.c */
 void Porosity P((ProblemData *problem_data , Vector *porosity , int num_geounits , GeomSolid **geounits , GrGeomSolid **gr_geounits ));
@@ -756,16 +645,8 @@ PFModule *SaturationConstitutiveNewPublicXtra P((int num_phases ));
 void SaturationConstitutiveFreePublicXtra P((void ));
 int SaturationConstitutiveSizeOfTempData P((void ));
 
-/* problem_thermal_conductivity.c */
-void ThermalConductivity P((Vector *phase_thermalconductivity, Vector *phase_pressure, Vector *phase_saturation, double gravity, ProblemData *problem_data, int fcn ));
-PFModule *ThermalConductivityInitInstanceXtra P((Grid *grid ));
-void ThermalConductivityFreeInstanceXtra P((void ));
-PFModule *ThermalConductivityNewPublicXtra P((void ));
-void ThermalConductivityFreePublicXtra P((void ));
-int ThermalConductivitySizeOfTempData P((void ));
-
 /* problem_toposlope_x.c */
-void XSlope P((ProblemData *problem_data, Vector *x_sl ));
+void XSlope P((ProblemData *problem_data, Vector *x_sl, Vector *dummy ));
 PFModule *XSlopeInitInstanceXtra P((Grid *grid));
 void XSlopeFreeInstanceXtra P((void ));
 PFModule *XSlopeNewPublicXtra P((void));
@@ -773,7 +654,7 @@ void XSlopeFreePublicXtra P((void ));
 int XSlopeSizeOfTempData P((void ));
 
 /* problem_toposlope_y.c */
-void YSlope P((ProblemData *problem_data, Vector *y_slope));
+void YSlope P((ProblemData *problem_data, Vector *y_slope, Vector *dummy ));
 PFModule *YSlopeInitInstanceXtra P((Grid *grid));
 void YSlopeFreeInstanceXtra P((void ));
 PFModule *YSlopeNewPublicXtra P((void));
@@ -820,20 +701,13 @@ void DeleteSubregion P((SubregionArray *sr_array , int index ));
 void AppendSubregionArray P((SubregionArray *sr_array_0 , SubregionArray *sr_array_1 ));
 
 /* richards_jacobian_eval.c */
-void RichardsJacobianEval P((Vector *pressure, Matrix **ptr_to_J , Vector *temperature, Vector *saturation , Vector *density , Vector *viscosity, ProblemData *problem_data , double dt , double time , int symm_part));
+int KINSolMatVec P((void *current_state , N_Vector x , N_Vector y , int *recompute , N_Vector pressure ));
+void RichardsJacobianEval P((Vector *pressure , Matrix **ptr_to_J , Vector *saturation , Vector *density , ProblemData *problem_data , double dt , double time , int symm_part ));
 PFModule *RichardsJacobianEvalInitInstanceXtra P((Problem *problem , Grid *grid , double *temp_data , int symmetric_jac ));
 void RichardsJacobianEvalFreeInstanceXtra P((void ));
 PFModule *RichardsJacobianEvalNewPublicXtra P((void ));
 void RichardsJacobianEvalFreePublicXtra P((void ));
 int RichardsJacobianEvalSizeOfTempData P((void ));
-
-/* temperature_jacobian_eval.c */
-void TemperatureJacobianEval P((Vector *temperature, Matrix **ptr_to_J , Vector *pressure, Vector *saturation , Vector *density , Vector *heat_capacity_water, Vector *heat_capacity_rock, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity, ProblemData *problem_data , double dt , double time , int symm_part));
-PFModule *TemperatureJacobianEvalInitInstanceXtra P((Problem *problem , Grid *grid , double *temp_data , int symmetric_jac ));
-void TemperatureJacobianEvalFreeInstanceXtra P((void ));
-PFModule *TemperatureJacobianEvalNewPublicXtra P((void ));
-void TemperatureJacobianEvalFreePublicXtra P((void ));
-int TemperatureJacobianEvalSizeOfTempData P((void ));
 
 /* sadvection_godunov.c */
 void SatGodunov P((ProblemData *problem_data , int phase , Vector *old_saturation , Vector *new_saturation , Vector *x_velocity , Vector *y_velocity , Vector *z_velocity , Vector *z_permeability , Vector *solid_mass_factor , double *viscosity , double *density , double gravity , double time , double deltat , int order ));
@@ -896,14 +770,6 @@ int SolverRichardsSizeOfTempData P((void ));
 ProblemData *GetProblemDataRichards P((PFModule *this_module));
 Problem  *GetProblemRichards P((PFModule *this_module));
 PFModule *GetICPhasePressureRichards P((PFModule *this_module));
-
-/* subsrf_sim.c */
-void SubsrfSim P((ProblemData *problem_data , Vector *perm_x , Vector *perm_y , Vector *perm_z , int num_geounits , GeomSolid **geounits , GrGeomSolid **gr_geounits ));
-PFModule *SubsrfSimInitInstanceXtra P((Grid *grid , double *temp_data ));
-void SubsrfSimFreeInstanceXtra P((void ));
-PFModule *SubsrfSimNewPublicXtra P((void ));
-void SubsrfSimFreePublicXtra P((void ));
-int SubsrfSimSizeOfTempData P((void ));
 void AdvanceRichards P((PFModule *this_module, 
 		       double start_time,      
 		       double stop_time,       
@@ -914,6 +780,15 @@ void AdvanceRichards P((PFModule *this_module,
 		       Vector **porosity_out,
 			Vector **saturation_out));
 void SetupRichards P((PFModule *this_module));
+
+
+/* subsrf_sim.c */
+void SubsrfSim P((ProblemData *problem_data , Vector *perm_x , Vector *perm_y , Vector *perm_z , int num_geounits , GeomSolid **geounits , GrGeomSolid **gr_geounits ));
+PFModule *SubsrfSimInitInstanceXtra P((Grid *grid , double *temp_data ));
+void SubsrfSimFreeInstanceXtra P((void ));
+PFModule *SubsrfSimNewPublicXtra P((void ));
+void SubsrfSimFreePublicXtra P((void ));
+int SubsrfSimSizeOfTempData P((void ));
 
 /* time_cycle_data.c */
 TimeCycleData *NewTimeCycleData P((int number_of_cycles , int *number_of_intervals ));
@@ -1000,9 +875,6 @@ void PFVLin1 P((double a , Vector *x , Vector *y , Vector *z ));
 void PFVLin2 P((double a , Vector *x , Vector *y , Vector *z ));
 void PFVAxpy P((double a , Vector *x , Vector *y ));
 void PFVScaleBy P((double a , Vector *x ));
-int PFVConstrMask P((Vector *c, Vector *x, Vector *m));
-double PFVMinQuotient P((Vector *num, Vector *denom));
-void PFVVector P((Vector *specie, Vector *v));
 
 /* w_jacobi.c */
 void WJacobi P((Vector *x , Vector *b , double tol , int zero ));
@@ -1057,6 +929,5 @@ void PF2WRF P(( Vector *pf_vector,
 		 int     wrf_depth,
   		 int     ghost_size,
 		 int *top));
-
 
 #undef P

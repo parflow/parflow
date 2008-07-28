@@ -228,7 +228,7 @@ proc Parflow::pfrun { runname args } {
     # Not all of the run scripts currently understand the arg change and even the ones that do are broken.
     #
     ##puts [eval exec $Parflow::PARFLOW_DIR/bin/run $run_args $runname]
-    puts [eval exec $Parflow::PARFLOW_DIR/bin/run  $runname $NumProcs $NumNodes  > pfout.txt]
+    puts [eval exec $Parflow::PARFLOW_DIR/bin/run  $runname $NumProcs $NumNodes]
     puts [exec $Parflow::PARFLOW_DIR/bin/freemc]
     puts [exec $Parflow::PARFLOW_DIR/bin/killmc]
     

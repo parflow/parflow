@@ -105,8 +105,6 @@
 
 #define CALCFCN 0
 #define CALCDER 1
-#define CALCDER_P 2
-#define CALCDER_T 3
 
 #define GetInt(key) IDB_GetInt(amps_ThreadLocal(input_database), (key))
 #define GetDouble(key) IDB_GetDouble(amps_ThreadLocal(input_database), (key))

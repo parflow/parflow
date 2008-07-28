@@ -403,13 +403,17 @@ subroutine clm_thermal (clm)
      if (clm%topo_mask(k) > 0) then
         i = clm%topo_mask(k)
         if(clm%h2osoi_liq(i) > 0.0) then
-           temp = min( max(clm%h2osoi_liq(i)/(clm%dz(i)*denh2o) - clm%watdry(i) ,0.) /  &
-                      (clm%watopt(i)-clm%watdry(i)) ,1.) 
+!           temp = min( max(clm%h2osoi_liq(i)/(clm%dz(i)*denh2o) - clm%watdry(i) ,0.) /  &
+!                      (clm%watopt(i)-clm%watdry(i)) ,1.) 
+        temp = ((-150000 - clm%pf_press(k))/(-150000) )
+            if (temp < 0.) temp = 0.
+            if (temp > 1.) temp = 1.
+            !if (clm%pf_press(k) < -150000.0d0) temp = 0.0d0
+            !write(*,*) 'trans ',k,clm%pf_press(k),temp
            temp = temp ** clm%vw
         else
            temp = 0.01d0
         endif
-         ! if (clm%pf_press(k) < -100000.0d0) temp = 0.0d0
         clm%btran = clm%btran + clm%rootfr(i)*temp
      endif
      enddo
@@ -432,7 +436,6 @@ subroutine clm_thermal (clm)
   hs    = clm%sabg + dlrad &
        + (1-clm%frac_veg_nosno)*emg*clm%forc_lwrad - emg*sb*tg**4 &
        - (clm%eflx_sh_grnd+clm%qflx_evap_soi*htvp) 
-  clm%pf_lh = hs ! assign energy flux to be passed to ParFlow
 
   dhsdT = - cgrnd - 4.*emg * sb * tg**3
 
@@ -480,8 +483,7 @@ subroutine clm_thermal (clm)
 ! 4.4 Solve for t_soisno
 
   i = size(at)
-! sjk: commented out because of couping with ParFlow
-  !call clm_tridia (i ,at ,bt ,ct ,rt ,clm%t_soisno(clm%snl+1:nlevsoi))
+  call clm_tridia (i ,at ,bt ,ct ,rt ,clm%t_soisno(clm%snl+1:nlevsoi))
 !print *,i,at(1),bt(1),ct(1),rt(1),clm%t_soisno(1)
 
 !=========================================================================

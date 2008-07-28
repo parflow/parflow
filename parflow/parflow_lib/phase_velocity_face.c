@@ -139,8 +139,7 @@ int           phase;
 		   ProblemDataPermeabilityY(problem_data),
 		   ProblemDataPermeabilityZ(problem_data),
                    phase, saturations[phase],
-                   //ProblemPhaseViscosity(problem,phase)));
-                   1.0 ));
+                   ProblemPhaseViscosity(problem,phase)));
 
    /*----------------------------------------------------------------------
     * exchange boundary data for mobility values

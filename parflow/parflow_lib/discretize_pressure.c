@@ -211,8 +211,7 @@ Vector      **phase_saturations;
 		      ProblemDataPermeabilityY(problem_data),
 		      ProblemDataPermeabilityZ(problem_data),
 		      phase, phase_saturations[phase],
-		      //ProblemPhaseViscosity(problem,phase)));
-		      1.0 ));
+		      ProblemPhaseViscosity(problem,phase)));
       
       PFModuleInvoke(void, capillary_pressure,
 		     (tcapillary[phase], phase, 0,

@@ -188,7 +188,6 @@ Vector *z;
 	       i_z, nx_z, ny_z, nz_z, 1, 1, 1,
 	       {
 		  zp[i_z] = a * xp[i_x] + b * yp[i_y];
-                  //printf("LinearSum %e %e %e %e %e\n",zp[i_z],a,xp[i_x],b,yp[i_y]);
 	       });
   }
   IncFLOPCount( 3 * VectorSize(z) );
@@ -237,7 +236,6 @@ Vector *z;
 	       i_z, nx_z, ny_z, nz_z, 1, 1, 1,
 	       {
 		  zp[i_z] = c;
-                  //printf("ConstInit %e %e \n",zp[i_z],c);
 	       });
   }
 }
@@ -307,7 +305,6 @@ Vector *z;
 	       i_z, nx_z, ny_z, nz_z, 1, 1, 1,
 	       {
 		  zp[i_z] = xp[i_x] * yp[i_y];
-                  //printf("Prod %e %e %e\n",zp[i_z],xp[i_x],yp[i_y]);
 	       });
   }
   IncFLOPCount( VectorSize(x) );
@@ -452,7 +449,6 @@ Vector *z;
 		  i_z, nx_z, ny_z, nz_z, 1, 1, 1,
 		  {
 		     zp[i_z] = c * xp[i_x];
-                     //printf("Scale %e %e %e \n",zp[i_z],c,xp[i_x]);
 		  });
      }
   }
@@ -653,7 +649,7 @@ Vector *y;
   int         nx_y, ny_y, nz_y;
 
   int         sg, i, j, k, i_x, i_y;
-  
+
   amps_Invoice   result_invoice;
 
   ForSubgridI(sg, GridSubgrids(grid))
@@ -882,7 +878,6 @@ Vector *w;
 	       {
                   prod = xp[i_x] * wp[i_w];
 		  sum += prod * prod;
-                  //printf("WL2Norm %e %e %e \n",sum,xp[i_x],wp[i_w]);
 	       });
   }
 
@@ -892,9 +887,7 @@ Vector *w;
 
   IncFLOPCount( 3 * VectorSize(x) );
 
-  /*return(sqrt(sum));*/
-  /*The modified multi species version only returns the sum, NOT sqrt(sum) */
-  return(sum);
+  return(sqrt(sum));
 }
 
 double PFVL1Norm(x)
@@ -1353,7 +1346,6 @@ Vector *y;
                 i_y, nx_y, ny_y, nz_y, 1, 1, 1,
                 {
                    yp[i_y] = xp[i_x];
-                   //printf("Copy %e %e \n",yp[i_y],xp[i_x]);
                 });
    }
 }
@@ -1551,7 +1543,6 @@ Vector *z;
                 i_z, nx_z, ny_z, nz_z, 1, 1, 1,
                 {
                    zp[i_z] = -xp[i_x];
-                   //printf("Neg %e %e \n",zp[i_z],xp[i_x]);
                 });
    }
 }
@@ -1944,237 +1935,8 @@ Vector *x;
                 i_x, nx_x, ny_x, nz_x, 1, 1, 1,
                 {
                    xp[i_x] = xp[i_x] * a;
-                   //printf("ScaleBy %e %e \n",xp[i_x],a);
                 });
    }
   IncFLOPCount( VectorSize(x) );
 }
 
-int PFVConstrMask(c,x,m)
-Vector *c, *x, *m;
-{
-  Grid       *grid     = VectorGrid(x);
-  Subgrid    *subgrid;
- 
-  Subvector  *c_sub;
-  Subvector  *x_sub;
-  Subvector  *m_sub;
-
-  double     *cp, *xp, *mp;
-
-  int         ix,   iy,   iz;
-  int         nx,   ny,   nz;
-  int         nx_c, ny_c, nz_c;
-  int         nx_x, ny_x, nz_x;
-  int         nx_m, ny_m, nz_m;
-
-  int         sg, i, j, k, i_c, i_x, i_m;
-
-  int        test = 1;
-
-  amps_Invoice    result_invoice;
-
-  ForSubgridI(sg, GridSubgrids(grid))
-  {
-     subgrid = GridSubgrid(grid, sg);
-     
-     ix = SubgridIX(subgrid);
-     iy = SubgridIY(subgrid);
-     iz = SubgridIZ(subgrid);
-     
-     nx = SubgridNX(subgrid);
-     ny = SubgridNY(subgrid);
-     nz = SubgridNZ(subgrid);
-     
-     c_sub = VectorSubvector(c, sg);
-     x_sub = VectorSubvector(x, sg);
-     m_sub = VectorSubvector(m, sg);
-     
-     nx_c = SubvectorNX(c_sub);
-     ny_c = SubvectorNY(c_sub);
-     nz_c = SubvectorNZ(c_sub);
-     
-     nx_x = SubvectorNX(x_sub);
-     ny_x = SubvectorNY(x_sub);
-     nz_x = SubvectorNZ(x_sub);
-     
-     nx_m = SubvectorNX(m_sub);
-     ny_m = SubvectorNY(m_sub);
-     nz_m = SubvectorNZ(m_sub);
-     
-     cp = SubvectorElt(c_sub, ix, iy, iz);
-     xp = SubvectorElt(x_sub, ix, iy, iz);
-     mp = SubvectorElt(m_sub, ix, iy, iz);
-        
-     i_c = 0;
-     i_x = 0;
-     i_m = 0;
-
-
-     /* The implementation of this operation needs to be re-visited;
-        it is different in the manual compared to the nvector_parallel.c
-        implementation; I used the nvector_parallel version here. */
-
-     BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
-               i_c, nx_c, ny_c, nz_c, 1, 1, 1,
-               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-               i_m, nx_m, ny_m, nz_m, 1, 1, 1,
-               {
-                 mp[i_m] = 0.0;
-                 if (cp[i_c] == 0.0) continue;
-                 if (cp[i_c] > 1.5 || cp[i_c] < -1.5) 
-                 {
-                   if (xp[i_x] * cp[i_c] <= 0.0) {test = 0; mp[i_m] = 1.0; }
-                   continue;
-                 } 
-                 if (cp[i_c] > 0.5 || cp[i_c] < -0.5)
-                 {
-                   if (xp[i_x] * cp[i_c] <  0.0) {test = 0; mp[i_m] = 1.0;}
-                 }
-               });
-   }
-
-   result_invoice = amps_NewInvoice("%i", &test);
-   amps_AllReduce(amps_CommWorld, result_invoice, amps_Min);
-   amps_FreeInvoice(result_invoice);
-
-   return(test);
-}
-
-/* This routine returns the minimum of the quotients obtained by
-   termwise dividing num by denom; zero elements in denom are skippe;
-   if no quotients are found, then BIG_REAL in sundialstypes.h
-   is resurned */
-
-double PFVMinQuotient(num, denom)
-Vector *num, *denom;
-{
-  Grid       *grid     = VectorGrid(num);
-  Subgrid    *subgrid;
- 
-  Subvector  *x_sub;
-  Subvector  *z_sub;
-
-  double      min = BIG_REAL;
-  booleantype notEvenOnce;
-
-  double     *xp, *zp;
-  int         val;
-
-  int         ix,   iy,   iz;
-  int         nx,   ny,   nz;
-  int         nx_x, ny_x, nz_x;
-  int         nx_z, ny_z, nz_z;
-  
-  int         sg, i, j, k, i_x, i_z;
-
-  amps_Invoice    result_invoice;
-
-  ForSubgridI(sg, GridSubgrids(grid))
-  {
-     subgrid = GridSubgrid(grid, sg);
-
-     z_sub = VectorSubvector(denom, sg);
-     x_sub = VectorSubvector(num, sg);
-
-     ix = SubgridIX(subgrid);
-     iy = SubgridIY(subgrid);
-     iz = SubgridIZ(subgrid);
-
-     nx = SubgridNX(subgrid);
-     ny = SubgridNY(subgrid);
-     nz = SubgridNZ(subgrid);
-
-     nx_x = SubvectorNX(x_sub);
-     ny_x = SubvectorNY(x_sub);
-     nz_x = SubvectorNZ(x_sub);
-
-     nx_z = SubvectorNX(z_sub);
-     ny_z = SubvectorNY(z_sub);
-     nz_z = SubvectorNZ(z_sub);
-
-     zp = SubvectorElt(z_sub, ix, iy, iz);
-     xp = SubvectorElt(x_sub, ix, iy, iz);
-
-     i_x = 0;
-     i_z = 0;
-     val = 1;
-     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-	       i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-	       i_z, nx_z, ny_z, nz_z, 1, 1, 1,
-                {if (zp[iz] == 0.0) continue;
-                 else
-                 {
-                   if (!notEvenOnce) min = MIN(min,xp[i_x]/zp[i_z]);
-                   else
-                   {
-                     min = xp[i_x]/zp[i_z];
-                     notEvenOnce = FALSE;
-                   }
-                 }
-               });
-  }
-  
-  result_invoice = amps_NewInvoice("%i", &min);
-  amps_AllReduce(amps_CommWorld, result_invoice, amps_Min);
-  amps_FreeInvoice(result_invoice);
-
-  return(min);
-}    
-
-void PFVVector(specie,v)
-Vector *specie;
-Vector *v;
-{
-   Grid       *grid     = VectorGrid(v);
-   Subgrid    *subgrid;
- 
-   Subvector  *s_sub;
-   Subvector  *v_sub;
-
-   double     *sp, *vp;
-
-   int         ix,   iy,   iz;
-   int         nx,   ny,   nz;
-   int         nx_s, ny_s, nz_s;
-   int         nx_v, ny_v, nz_v;
-
-   int         sg, i, j, k, i_s, i_v;
-
-
-   ForSubgridI(sg, GridSubgrids(grid))
-   {
-      subgrid = GridSubgrid(grid, sg);
-      
-      ix = SubgridIX(subgrid);
-      iy = SubgridIY(subgrid);
-      iz = SubgridIZ(subgrid);
-      
-      nx = SubgridNX(subgrid);
-      ny = SubgridNY(subgrid);
-      nz = SubgridNZ(subgrid);
-      
-      s_sub = VectorSubvector(specie, sg);
-      v_sub = VectorSubvector(v, sg);
-      
-      nx_s = SubvectorNX(s_sub);
-      ny_s = SubvectorNY(s_sub);
-      nz_s = SubvectorNZ(s_sub);
-      
-      nx_v = SubvectorNX(v_sub);
-      ny_v = SubvectorNY(v_sub);
-      nz_v = SubvectorNZ(v_sub);
-      
-      sp = SubvectorElt(s_sub, ix, iy, iz);
-      vp = SubvectorElt(v_sub, ix, iy, iz);
-         
-      i_s = 0;
-      i_v = 0;
-      BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                i_s, nx_s, ny_s, nz_s, 1, 1, 1,
-                i_v, nx_v, ny_v, nz_v, 1, 1, 1,
-                {
-		   sp[i_s] = vp[i_v];
-                });
-   }
-}

@@ -824,7 +824,7 @@ int           write_header;
 
                fprintf(file, "%2d\n", WellDataPhysicalNumber(well_data_physical));
 
-               fprintf(file, "%d\n", strlen(WellDataPhysicalName(well_data_physical)));
+               fprintf(file, "%d\n", (int)strlen(WellDataPhysicalName(well_data_physical)));
                fprintf(file, "%s\n", WellDataPhysicalName(well_data_physical));
 
                fprintf(file, "%f %f %f %f %f %f %f\n",
@@ -845,7 +845,7 @@ int           write_header;
 
                fprintf(file, "%2d\n", WellDataPhysicalNumber(well_data_physical));
 
-               fprintf(file, "%d\n", strlen(WellDataPhysicalName(well_data_physical)));
+               fprintf(file, "%d\n", (int)strlen(WellDataPhysicalName(well_data_physical)));
                fprintf(file, "%s\n", WellDataPhysicalName(well_data_physical));
 
                fprintf(file, "%f %f %f %f %f %f %f\n",

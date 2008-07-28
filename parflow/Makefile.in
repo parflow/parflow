@@ -16,7 +16,7 @@ SUBDIR        = .
 SRCDIR        = @srcdir@
 OBJECT        = .
 
-SUBDIRS = amps $(CLM_DIR) parflow_lib parflow 
+SUBDIRS = amps $(CLM_DIR) kinsol parflow_lib parflow 
 
 all:
 	@for DIR in $(SUBDIRS); do if test -d $$DIR; then (cd $$DIR && $(MAKE) $@) ; fi || exit 1; done

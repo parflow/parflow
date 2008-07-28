@@ -11,9 +11,9 @@ character*40 filename
 !
 filename = trim(filename)
 ! SGS FIXME : gfortran complained about this open statement
-! open(15,file=filename,form='unformatted',&
-! recordtype='stream',convert='BIG_ENDIAN')
-open(15,file=filename,FORM='unformatted', access='stream',convert='BIG_ENDIAN')
+ open(15,file=filename,form='unformatted',&
+ recordtype='stream',convert='BIG_ENDIAN')
+!open(15,file=filename,FORM='unformatted', access='stream',convert='BIG_ENDIAN')
 !
 ! Calc domain bounds
 !

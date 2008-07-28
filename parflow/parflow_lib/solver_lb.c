@@ -573,8 +573,7 @@ void      SolverDiffusion()
                          ProblemDataPermeabilityZ(problem_data),
                          0,
                          saturations[0],
-                         //ProblemPhaseViscosity(problem, 0)));
-                         1.0 ));
+                         ProblemPhaseViscosity(problem, 0)));
 
          for(phase = 1; phase < ProblemNumPhases(problem); phase++)
          {
@@ -588,8 +587,7 @@ void      SolverDiffusion()
                             ProblemDataPermeabilityZ(problem_data),
                             phase,
                             saturations[phase],
-                            //ProblemPhaseViscosity(problem, phase)));
-                            1.0 ));
+                            ProblemPhaseViscosity(problem, phase)));
 
             Axpy(1.0, temp_mobility_x, total_mobility_x);
             Axpy(1.0, temp_mobility_y, total_mobility_y);
@@ -650,8 +648,7 @@ void      SolverDiffusion()
    (lattice->beta_pore) 	= (public_xtra -> beta_pore);
    (lattice->beta_fracture) 	= (public_xtra -> beta_fracture);
    (lattice->beta_fluid) 	= (public_xtra -> beta_fluid);
-   // (lattice->viscosity) 	= ProblemPhaseViscosity(problem, 0);
-   (lattice->viscosity) 	= 1.0;
+   (lattice->viscosity) 	= ProblemPhaseViscosity(problem, 0);
    (lattice->comp_compress_flag)= (public_xtra -> comp_compress_flag);
    (lattice->t)			= 0.0;
    (lattice->start)		= start_time;
@@ -1062,8 +1059,7 @@ void      SolverDiffusion()
 				  total_z_velocity, 
 				  z_permeability,
 				  ProblemDataPorosity(problem_data),
-				  // ProblemPhaseViscosities(problem),
-				  1.0,
+				  ProblemPhaseViscosities(problem),
 				  phase_densities,
 				  ProblemGravity(problem),
 				  t, dt, sadvect_order));

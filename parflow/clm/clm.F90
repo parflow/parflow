@@ -1,7 +1,6 @@
 !#include <misc.h>
 
- subroutine clm_lsm(pressure,saturation,temperature,evap_trans,latent_heat,forc_t,topo,porosity, &
-                    dt,time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,npp,npq,npr,rank)
+ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,npp,npq,npr,rank)
 
 !=========================================================================
 !
@@ -40,10 +39,8 @@
   integer :: timeroute     !@ counter of sub-timesteps for overland routing
   
   integer :: nx,ny,nz,nx_f,ny_f,nz_f,steps
-  real(r8) :: pressure_data(nx,ny,nz),saturation_data(nx,ny,nz),evap_trans_data(nx,ny,nz),mask_data(nx,ny,nz),porosity_data(nx,ny,nz)
-  real(r8) :: temperature_data(nx,ny,nz),latent_heat_data(nx,ny,nz),forc_t_data(nx,ny,nz)
+  real(r8),allocatable :: pressure_data(:,:,:),saturation_data(:,:,:),evap_trans_data(:,:,:),mask_data(:,:,:),porosity_data(:,:,:)
   real(r8) :: pressure((nx+2)*(ny+2)*(nz+2)),saturation((nx+2)*(ny+2)*(nz+2)),evap_trans((nx+2)*(ny+2)*(nz+2)),topo((nx+2)*(ny+2)*(nz+2))
-  real(r8) :: temperature((nx+2)*(ny+2)*(nz+2)),latent_heat((nx+2)*(ny+2)*(nz+2)),forc_t((nx+2)*(ny+2)*(nz+2))
   real(r8) :: porosity((nx+2)*(ny+2)*(nz+2))
   real(r8) :: dt,time,otime,pdx,pdy,pdz
   integer  :: i,j,k,j_incr,k_incr,ip,ix,iy
@@ -52,8 +49,8 @@
   integer  :: counter(nx,ny) 
   character*100 :: RI
 
-!allocate (pressure_data(nx,ny,nz),saturation_data(nx,ny,nz),evap_trans_data(nx,ny,nz),mask_data(nx,ny,nz),porosity_data(nx,ny,nz))
 
+allocate (pressure_data(nx,ny,nz),saturation_data(nx,ny,nz),evap_trans_data(nx,ny,nz),mask_data(nx,ny,nz),porosity_data(nx,ny,nz))
 !=== End Variable List ===================================================
 ix = ix + 1 !Correction for CLM/Fortran space
 iy = iy + 1 !Correction for CLM/Fortran space
@@ -70,7 +67,6 @@ do k=1,nz ! PF loop over z
      saturation_data(i,j,k) = saturation(l)
      evap_trans_data(i,j,k) = evap_trans(l)
      pressure_data(i,j,k) = pressure(l)
-     temperature_data(i,j,k) = temperature(l)
      mask_data(i,j,k) = topo(l)
      porosity_data(i,j,k) = porosity(l)
     enddo
@@ -94,7 +90,7 @@ drv%nt = 18
 write(RI,*) rank
 
 if (time == 0.0d0) then ! Check if initialization necessary 
-! print *,"INITIALIZATION"
+ print *,"INITIALIZATION"
 
 !  open(10,file='drv_clmin.dat.'//trim(adjustl(RI)),form='formatted',status='old',action='read')
 
@@ -180,7 +176,7 @@ if (time == 0.0d0) then ! Check if initialization necessary
   call drv_readvegpf (drv, grid, tile, clm)  
 
 !=== Initialize CLM and DIAG variables
-!print *,"Initialize CLM and DIAG variables"
+print *,"Initialize CLM and DIAG variables"
   do t=1,drv%nch 
      clm%kpatch = t
      call drv_clmini (drv, grid, tile(t), clm(t))           !Initialize CLM Variables
@@ -190,12 +186,12 @@ if (time == 0.0d0) then ! Check if initialization necessary
   !call topomask(clm,drv)
 
 !@ Call to subroutine that reads in 2D array(s) of input data (e.g. hksat)
-!print *,"Call to subroutine that reads in 2D array(s) of input data (e.g. porosity)"
+print *,"Call to subroutine that reads in 2D array(s) of input data (e.g. porosity)"
   call read_array(drv,clm,rank)
 
 !@ Initialize the CLM topography mask
-!print *,"Initialize the CLM topography mask"
-!print *,"DIMENSIONS",nx,nx_f,drv%nc,drv%nr,drv%nch
+print *,"Initialize the CLM topography mask"
+print *,"DIMENSIONS",nx,nx_f,drv%nc,drv%nr,drv%nch
 counter = 0
 do t=1,drv%nch
 i=tile(t)%col
@@ -213,7 +209,7 @@ j=tile(t)%row
 enddo
 
 !@ Call to subroutine to open (2D-) output files
-!print *,"Open (2D-) output files"
+print *,"Open (2D-) output files"
   call open_files(clm,drv,rank,ix,iy) 
 
 !=== Read restart file or set initial conditions
@@ -221,7 +217,7 @@ enddo
 !call drv_date2time(otime,drv%doy,drv%day,drv%gmt, &
 !             drv%syr,drv%smo,drv%sda,drv%shr,drv%smn,drv%sss)
 
-!print *,"Read restart file"
+print *,"Read restart file"
   call drv_restart(1,drv,tile,clm,rank)  !(1=read,2=write)
 
 !call MPI_BCAST(clm,drv%nch,clm1d,0,MPI_COMM_WORLD,error)
@@ -237,11 +233,12 @@ endif !======= End of the initialization ================
 !if (dt /= 0.0d0) drv%ts = dt * 3600.0d0
 !clm%dtime = dble(drv%ts)
 
+print*, "implied array copy of clm%qlux/old/veg"
  clm%qflx_infl_old = clm%qflx_infl
  clm%qflx_tran_veg_old = clm%qflx_tran_veg
 
-!print *,"Call the Readout"
- call pfreadout(clm,drv,tile,saturation_data,pressure_data,temperature_data,rank,ix,iy) 
+print *,"Call the Readout"
+ call pfreadout(clm,drv,tile,saturation_data,pressure_data,rank,ix,iy) 
 
 !=========================================================================
 !=== Time looping
@@ -272,7 +269,7 @@ drv%endtime = 0
 !     if (drv%gmt==0..or.drv%endtime==1) call drv_restart(2,drv,tile,clm,rank)
      call drv_restart(2,drv,tile,clm,rank)
      
-     call pf_couple(drv,clm,tile,evap_trans_data,latent_heat_data,forc_t_data)   
+     call pf_couple(drv,clm,tile,evap_trans_data)   
 
 l = ip 
 do k=1,nz ! PF loop over z
@@ -282,8 +279,6 @@ t = 0
     t = t + 1
     l = l + 1
     evap_trans(l) = evap_trans_data(i,j,k)
-    latent_heat(l) = latent_heat_data(i,j,k)
-    forc_t(l) = forc_t_data(i,j,k)
     enddo
   l = l + j_incr
   enddo

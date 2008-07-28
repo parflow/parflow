@@ -32,41 +32,37 @@ typedef struct
    double    eta_gamma;
    double    derivative_epsilon;
    
-   PFModule *precond_pressure;
-   PFModule *precond_temperature;
-   PFModule *press_function_eval;
-   PFModule *temp_function_eval;
+   PFModule *precond;
+   PFModule *nl_function_eval;
    PFModule *richards_jacobian_eval;
-   PFModule *temperature_jacobian_eval;
 
-//   KINSpgmruserAtimesFn   matvec;
-   KINSpilsJacTimesVecFn   matvec;
-//   KINSpgmrPrecondFn      pcinit;
-   KINSpilsPrecSetupFn      pcinit;
-//   KINSpgmrPrecondSolveFn pcsolve;
-   KINSpilsPrecSolveFn pcsolve;
+   KINSpgmruserAtimesFn   matvec;
+   KINSpgmrPrecondFn      pcinit;
+   KINSpgmrPrecondSolveFn pcsolve;
 
 } PublicXtra;
 
 typedef struct
 {
-   PFModule  *precond_pressure;
-   PFModule  *precond_temperature;
-   PFModule  *press_function_eval;
-   PFModule  *temp_function_eval;
+   PFModule  *precond;
+   PFModule  *nl_function_eval;
    PFModule  *richards_jacobian_eval;
-   PFModule  *temperature_jacobian_eval;
 
-   N_Vector  uscalen;
-   N_Vector  fscalen;
+   Vector   *uscale;
+   Vector   *fscale;
 
-   Matrix   *jacobian_matrix_press;
-   Matrix   *jacobian_matrix_temp;
+   Matrix   *jacobian_matrix;
+
+   long int  integer_outputs[OPT_SIZE];
+
+   long int  int_optional_input[OPT_SIZE];
+   double    real_optional_input[OPT_SIZE];
 
    State    *current_state;
 
-   void     *kin_mem;
+   KINMem    kin_mem;
    FILE     *kinsol_file;
+   SysFn     feval;
 
 } InstanceXtra;
 
@@ -78,58 +74,32 @@ typedef struct
 /*--------------------------------------------------------------------------
  * KINSolInitPC
  *--------------------------------------------------------------------------*/
-int  KINSolInitPC(multispecies, uscale, fval, fscale, current_state, vtemp1, vtemp2)
-N_Vector  multispecies;
+int  KINSolInitPC(neq, pressure, uscale, fval, fscale, vtemp1, 
+		  vtemp2, nl_function, uround, nfePtr, current_state)
+int       neq;
+N_Vector  pressure;
 N_Vector  uscale;
 N_Vector  fval;
 N_Vector  fscale;
-void     *current_state;
 N_Vector  vtemp1;
 N_Vector  vtemp2;
+void     *nl_function;
+double    uround;
+long int *nfePtr;
+void     *current_state;
 {
-   PFModule    *precond_pressure    = StatePrecondPressure(    ((State*)current_state) );
-   PFModule    *precond_temperature = StatePrecondTemperature( ((State*)current_state) );
-   ProblemData *problem_data        = StateProblemData(        ((State*)current_state) );
-   Vector      *saturation          = StateSaturation(         ((State*)current_state) );
-   Vector      *density             = StateDensity(            ((State*)current_state) );
-   Vector      *heat_capacity_water = StateHeatCapacityWater(  ((State*)current_state) );
-   Vector      *heat_capacity_rock  = StateHeatCapacityRock(   ((State*)current_state) );
-   Vector      *viscosity           = StateViscosity(          ((State*)current_state) );
-   Vector      *x_velocity          = StateXVelocity(          ((State*)current_state) );
-   Vector      *y_velocity          = StateYVelocity(          ((State*)current_state) );
-   Vector      *z_velocity          = StateZVelocity(          ((State*)current_state) );
-   double       dt                  = StateDt(                 ((State*)current_state) );
-   double       time                = StateTime(               ((State*)current_state) );
+   PFModule    *precond      = StatePrecond( ((State*)current_state) );
+   ProblemData *problem_data = StateProblemData( ((State*)current_state) );
+   Vector      *saturation   = StateSaturation( ((State*)current_state) );
+   Vector      *density      = StateDensity( ((State*)current_state) );
+   double       dt           = StateDt( ((State*)current_state) );
+   double       time         = StateTime( ((State*)current_state) );
 
-   Vector      *pressure;
-   Vector      *temperature;
+   /* The preconditioner module initialized here is the KinsolPC module
+      itself */
 
-   N_VectorContent_Parflow  content;
-   int          n, nspecies;
-   
-   content = NV_CONTENT_PF(multispecies);
-   nspecies = content->num_species;
-
-   pressure = content->specie[0];
-   temperature = content->specie[1];
-
-   for (n = 0; n < nspecies; n++)
-   {
-     /* The preconditioner module initialized here is the KinsolPC module
-        itself */
-     if (n == 0)
-     {
-       PFModuleReNewInstance(precond_pressure, (NULL, NULL, problem_data, NULL, 
-				     pressure, temperature, saturation, density, viscosity, dt, time));
-     } 
-     else if (n == (nspecies-1))
-     {
-       PFModuleReNewInstance(precond_temperature, (NULL, NULL, problem_data, NULL, 
-				     temperature, pressure, saturation, density, heat_capacity_water, heat_capacity_rock, 
-                                     x_velocity, y_velocity, z_velocity, dt, time));
-     }
-
-   }
+   PFModuleReNewInstance(precond, (NULL, NULL, problem_data, NULL, 
+				   pressure, saturation, density, dt, time));
    return(0);
 }
 
@@ -137,48 +107,38 @@ N_Vector  vtemp2;
 /*--------------------------------------------------------------------------
  * KINSolCallPC
  *--------------------------------------------------------------------------*/
-int   KINSolCallPC(multispecies, uscale, fval, fscale, vtem, current_state, ftem)
-N_Vector  multispecies;
+int   KINSolCallPC(neq, pressure, uscale, fval, fscale, vtem, ftem, 
+		   nl_function, uround, nfePtr, current_state)
+int       neq;	
+N_Vector  pressure;
 N_Vector  uscale;
 N_Vector  fval;
 N_Vector  fscale;
 N_Vector  vtem;
-void     *current_state;
 N_Vector  ftem;
+void     *nl_function;
+double    uround;
+long int *nfePtr;
+void     *current_state;
 {
-   PFModule *precond_pressure    = StatePrecondPressure( (State*)current_state );
-   PFModule *precond_temperature = StatePrecondTemperature( (State*)current_state );
-   N_VectorContent_Parflow content;
-   Vector   *vtem_specie;
-   int i, j, nspecies;
-   
-   content = NV_CONTENT_PF(vtem);
-   nspecies = content->num_species;
+   PFModule *precond = StatePrecond( (State*)current_state );
 
-   for (i = 0; i < nspecies; i++)
-   {
-     vtem_specie = content->specie[i];
-   
-     /* The preconditioner module invoked here is the KinsolPC module
-        itself */
+   /* The preconditioner module invoked here is the KinsolPC module
+      itself */
 
-     if (i == 0)
-       PFModuleInvoke(void, precond_pressure, (vtem_specie));
-     else if (i == (nspecies-1))
-       PFModuleInvoke(void, precond_temperature, (vtem_specie));
-
-    }
+   PFModuleInvoke(void, precond, (vtem));
 
    return(0);
 }
 
-void PrintFinalStats(out_file)
+void PrintFinalStats(out_file, integer_outputs_now, integer_outputs_total)
 FILE       *out_file;
+long int   *integer_outputs_now;
+long int   *integer_outputs_total;
 {
   fprintf(out_file, "\n-------------------------------------------------- \n");
   fprintf(out_file, "                    Iteration             Total\n");
-  
-/*  fprintf(out_file, "Nonlin. Its.:           %5ld             %5ld\n", 
+  fprintf(out_file, "Nonlin. Its.:           %5ld             %5ld\n", 
 	  integer_outputs_now[NNI], integer_outputs_total[NNI]);
   fprintf(out_file, "Lin. Its.:              %5ld             %5ld\n", 
 	  integer_outputs_now[SPGMR_NLI], integer_outputs_total[SPGMR_NLI]);
@@ -194,54 +154,40 @@ FILE       *out_file;
 	  integer_outputs_now[NBCF], integer_outputs_total[NBCF]);
   fprintf(out_file, "Backtracks:             %5ld             %5ld\n", 
 	  integer_outputs_now[NBKTRK], integer_outputs_total[NBKTRK]);
-  fprintf(out_file,   "-------------------------------------------------- \n"); */
+  fprintf(out_file,   "-------------------------------------------------- \n");
 }
 
 /*--------------------------------------------------------------------------
  * KinsolNonlinSolver
  *--------------------------------------------------------------------------*/
 
-int          KinsolNonlinSolver(multispecies, density, old_density, heat_capacity_water, heat_capacity_rock, viscosity, old_viscosity, saturation, 
+int          KinsolNonlinSolver(pressure, density, old_density, saturation, 
 				old_saturation, t, dt, problem_data, old_pressure, 
-                                old_temperature,outflow,evap_trans,clm_energy_source,forc_t,ovrl_bc_flx,x_velocity,y_velocity,z_velocity)
-N_Vector    multispecies;
+                                outflow,evap_trans,ovrl_bc_flx)
+Vector      *pressure;
+Vector      *old_pressure;
 Vector      *density;
 Vector      *old_density;
-Vector      *heat_capacity_water;
-Vector      *heat_capacity_rock;
-Vector      *viscosity;
-Vector      *old_viscosity;
 Vector      *saturation;
 Vector      *old_saturation;
+Vector      *evap_trans;
+Vector      *ovrl_bc_flx;
 double       t;
 double       dt;
-ProblemData *problem_data;
-Vector      *old_pressure;
-Vector      *old_temperature;
 double       *outflow; //sk
-Vector      *evap_trans;
-Vector      *clm_energy_source;
-Vector      *forc_t;
-Vector      *ovrl_bc_flx;
-Vector      *x_velocity;
-Vector      *y_velocity;
-Vector      *z_velocity;
+ProblemData *problem_data;
 {
    PFModule     *this_module      = ThisPFModule;
    PublicXtra   *public_xtra      = PFModulePublicXtra(this_module);
    InstanceXtra *instance_xtra    = PFModuleInstanceXtra(this_module);
 
-   Matrix       *jacobian_matrix_press  = (instance_xtra -> jacobian_matrix_press);
-   Matrix       *jacobian_matrix_temp   = (instance_xtra -> jacobian_matrix_temp);
-   N_Vector      uscale           = (instance_xtra -> uscalen);
-   N_Vector      fscale           = (instance_xtra -> fscalen);
+   Matrix       *jacobian_matrix  = (instance_xtra -> jacobian_matrix);
+   Vector       *uscale           = (instance_xtra -> uscale);
+   Vector       *fscale           = (instance_xtra -> fscale);
 
-   PFModule  *press_function_eval       = instance_xtra -> press_function_eval;
-   PFModule  *temp_function_eval        = instance_xtra -> temp_function_eval;
-   PFModule  *richards_jacobian_eval    = instance_xtra -> richards_jacobian_eval;
-   PFModule  *temperature_jacobian_eval = instance_xtra -> temperature_jacobian_eval;
-   PFModule  *precond_pressure          = instance_xtra -> precond_pressure;
-   PFModule  *precond_temperature       = instance_xtra -> precond_temperature;
+   PFModule  *nl_function_eval       = instance_xtra -> nl_function_eval;
+   PFModule  *richards_jacobian_eval = instance_xtra -> richards_jacobian_eval;
+   PFModule  *precond                = instance_xtra -> precond;
 
    State        *current_state    = (instance_xtra -> current_state);
 
@@ -251,64 +197,68 @@ Vector      *z_velocity;
    double        residual_tol     = (public_xtra -> residual_tol);
    double        step_tol         = (public_xtra -> step_tol);
 
-   void         *kin_mem          = (instance_xtra -> kin_mem);
+   SysFn         feval            = (instance_xtra -> feval);
+   KINMem        kin_mem          = (instance_xtra -> kin_mem);
    FILE         *kinsol_file      = (instance_xtra -> kinsol_file);
 
-   int           ret              = 0;
-   
-   N_VectorContent_Parflow content= NV_CONTENT_PF(multispecies);
+   long int     *integer_outputs  = (instance_xtra -> integer_outputs);
+   long int     *iopt             = (instance_xtra -> int_optional_input);
+   double       *ropt             = (instance_xtra -> real_optional_input);
 
-   StateFuncPress(current_state)          = press_function_eval;
-   StateFuncTemp(current_state)           = temp_function_eval;
-   StateProblemData(current_state)        = problem_data;
-   StateTime(current_state)               = t;
-   StateDt(current_state)                 = dt;
-   StateDensity(current_state)            = density;
-   StateOldDensity(current_state)         = old_density;
-   StateHeatCapacityWater(current_state)  = heat_capacity_water;
-   StateHeatCapacityRock(current_state)   = heat_capacity_rock;
-   StateViscosity(current_state)          = viscosity;
-   StateOldViscosity(current_state)       = old_viscosity;
-   StateOldPressure(current_state)        = old_pressure;
-   StateOldTemperature(current_state)     = old_temperature;
-   StateSaturation(current_state)         = saturation;
-   StateOldSaturation(current_state)      = old_saturation;
-   StateJacEvalPressure(current_state)    = richards_jacobian_eval;
-   StateJacEvalTemperature(current_state) = temperature_jacobian_eval;
-   StateJacPressure(current_state)        = jacobian_matrix_press;
-   StateJacTemperature(current_state)     = jacobian_matrix_temp;
-   StatePrecondPressure(current_state)    = precond_pressure;
-   StatePrecondTemperature(current_state) = precond_temperature;
-   StateOutflow(current_state)            = outflow; /*sk*/
-   StateEvapTrans(current_state)          = evap_trans; /*sk*/
-   StateClmEnergySource(current_state)    = clm_energy_source; /*sk*/
-   StateForcT(current_state)              = forc_t; /*sk*/
-   StateOvrlBcFlx(current_state)          = ovrl_bc_flx; /*sk*/
-   StateXVelocity(current_state)          = x_velocity; /*sk*/
-   StateYVelocity(current_state)          = y_velocity; /*sk*/
-   StateZVelocity(current_state)          = z_velocity; /*sk*/
+   int           ret              = 0;
+
+   StateFunc(current_state)          = nl_function_eval;
+   StateProblemData(current_state)   = problem_data;
+   StateTime(current_state)          = t;
+   StateDt(current_state)            = dt;
+   StateOldDensity(current_state)    = old_density;
+   StateOldPressure(current_state)   = old_pressure;
+   StateOldSaturation(current_state) = old_saturation;
+   StateDensity(current_state)       = density;
+   StateSaturation(current_state)    = saturation;
+   StateJacEval(current_state)       = richards_jacobian_eval;
+   StateJac(current_state)           = jacobian_matrix;
+   StatePrecond(current_state)       = precond;
+   StateOutflow(current_state)       = outflow; /*sk*/
+   StateEvapTrans(current_state)     = evap_trans; /*sk*/
+   StateOvrlBcFlx(current_state)     = ovrl_bc_flx; /*sk*/
 
    if (!amps_Rank(amps_CommWorld))
       fprintf(kinsol_file,"\nKINSOL starting step for time %f\n",t);
 
    BeginTiming(public_xtra -> time_index);
 
-   /* Specfies pointer to specie vector */
-   content = NV_CONTENT_PF(multispecies);
    ret = KINSol( (void*)kin_mem,        /* Memory allocated above */
-	         multispecies,          /* Initial guess @ this was "pressure before" */
+	         neq,                   /* Dummy variable here */
+	         pressure,               /* Initial guess @ this was "pressure before" */
+	         feval,                 /* Nonlinear function */
 	         globalization,         /* Globalization method */
 	         uscale,                /* Scalings for the variable */
-	         fscale                /* Scalings for the function */
+	         fscale,                /* Scalings for the function */
+	         residual_tol,          /* Stopping tolerance on func */
+	         step_tol,              /* Stop tol. for sucessive steps */
+	         NULL,                  /* Constraints */
+	         TRUE,                  /* Optional inputs */
+	         iopt,                  /* Opt. integer inputs */
+	         ropt,                  /* Opt. double inputs */
+	         current_state          /* User-supplied input */
 	       );
 
    EndTiming(public_xtra -> time_index);
 
+   integer_outputs[NNI]        += iopt[NNI];
+   integer_outputs[NFE]        += iopt[NFE];
+   integer_outputs[NBCF]       += iopt[NBCF];
+   integer_outputs[NBKTRK]     += iopt[NBKTRK];
+   integer_outputs[SPGMR_NLI]  += iopt[SPGMR_NLI];
+   integer_outputs[SPGMR_NPE]  += iopt[SPGMR_NPE];
+   integer_outputs[SPGMR_NPS]  += iopt[SPGMR_NPS];
+   integer_outputs[SPGMR_NCFL] += iopt[SPGMR_NCFL];
 
    if (!amps_Rank(amps_CommWorld))
-      PrintFinalStats(kinsol_file);
+      PrintFinalStats(kinsol_file, iopt, integer_outputs);
 
-   if ( ret == KIN_SUCCESS || ret == KIN_INITIAL_GUESS_OK ) 
+   if ( ret == KINSOL_SUCCESS || ret == KINSOL_INITIAL_GUESS_OK ) 
    {
       ret = 0;
    }
@@ -339,37 +289,28 @@ double      *temp_data;
    int           print_flag          = public_xtra -> print_flag;
    int           eta_choice          = public_xtra -> eta_choice;
 
+   long int     *iopt;
+   double       *ropt;
+
    double        eta_value           = public_xtra -> eta_value;
    double        eta_alpha           = public_xtra -> eta_alpha;
    double        eta_gamma           = public_xtra -> eta_gamma;
    double        derivative_epsilon  = public_xtra -> derivative_epsilon;
-   double        residual_tol        = public_xtra -> residual_tol;
-   double        step_tol            = public_xtra -> step_tol;
-   
 
-   N_Vector     templ;
-   N_Vector     fscalen, uscalen;
-   N_VectorContent_Parflow content;
-   Vector       *template;
    Vector       *fscale;
    Vector       *uscale;
-   int          flag;
 
    State        *current_state;
 
-   //KINSpgmruserAtimesFn   matvec      = public_xtra -> matvec;
-   KINSpilsJacTimesVecFn    matvec      = public_xtra -> matvec;
-   //KINSpgmrPrecondFn      pcinit      = public_xtra -> pcinit;
-   KINSpilsPrecSetupFn      pcinit      = public_xtra -> pcinit;
-   //KINSpgmrPrecondSolveFn pcsolve     = public_xtra -> pcsolve;
-   KINSpilsPrecSolveFn      pcsolve     = public_xtra -> pcsolve;
+   KINSpgmruserAtimesFn   matvec      = public_xtra -> matvec;
+   KINSpgmrPrecondFn      pcinit      = public_xtra -> pcinit;
+   KINSpgmrPrecondSolveFn pcsolve     = public_xtra -> pcsolve;
 
-   void                  *kin_mem = NULL;
+   KINMem                 kin_mem;
    FILE                  *kinsol_file;
    char                   filename[255];
 
    int                    i;
-
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
@@ -382,28 +323,16 @@ double      *temp_data;
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
    {
-      if (public_xtra -> precond_pressure != NULL)
-	 instance_xtra -> precond_pressure =
-	    PFModuleNewInstance(public_xtra -> precond_pressure,
+      if (public_xtra -> precond != NULL)
+	 instance_xtra -> precond =
+	    PFModuleNewInstance(public_xtra -> precond,
 				(problem, grid, problem_data, temp_data,
 				 NULL, NULL, NULL, NULL, NULL));
       else
-	 instance_xtra -> precond_pressure = NULL;
+	 instance_xtra -> precond = NULL;
 
-      if (public_xtra -> precond_temperature != NULL)
-         instance_xtra -> precond_temperature =
-            PFModuleNewInstance(public_xtra -> precond_temperature,
-                                (problem, grid, problem_data, temp_data,
-                                 NULL, NULL, NULL, NULL, NULL));
-      else
-         instance_xtra -> precond_temperature = NULL;
-
-      instance_xtra -> press_function_eval = 
-	 PFModuleNewInstance(public_xtra -> press_function_eval, 
-			     (problem, grid, temp_data));
-
-      instance_xtra -> temp_function_eval = 
-	 PFModuleNewInstance(public_xtra -> temp_function_eval, 
+      instance_xtra -> nl_function_eval = 
+	 PFModuleNewInstance(public_xtra -> nl_function_eval, 
 			     (problem, grid, temp_data));
 
       if (public_xtra -> richards_jacobian_eval != NULL)
@@ -413,40 +342,19 @@ double      *temp_data;
 				(problem, grid, temp_data, 0));
       else
 	 instance_xtra -> richards_jacobian_eval = NULL;
-
-      if (public_xtra -> temperature_jacobian_eval != NULL)
-         /* Initialize instance for nonsymmetric matrix */
-         instance_xtra -> temperature_jacobian_eval =
-            PFModuleNewInstance(public_xtra -> temperature_jacobian_eval,
-                                (problem, grid, temp_data, 0));
-      else
-         instance_xtra -> temperature_jacobian_eval = NULL;
-
    }
    else
    {
-      if (instance_xtra -> precond_pressure != NULL)
-	 PFModuleReNewInstance(instance_xtra -> precond_pressure,
+      if (instance_xtra -> precond != NULL)
+	 PFModuleReNewInstance(instance_xtra -> precond,
 			        (problem, grid, problem_data, temp_data,
 				 NULL, NULL, NULL, NULL, NULL));
 
-      if (instance_xtra -> precond_temperature != NULL)
-         PFModuleReNewInstance(instance_xtra -> precond_temperature,
-                                (problem, grid, problem_data, temp_data,
-                                 NULL, NULL, NULL, NULL, NULL));
-
-      PFModuleReNewInstance(instance_xtra -> press_function_eval, 
-			    (problem, grid, temp_data));
-
-      PFModuleReNewInstance(instance_xtra -> temp_function_eval, 
+      PFModuleReNewInstance(instance_xtra -> nl_function_eval, 
 			    (problem, grid, temp_data));
 
       if (instance_xtra -> richards_jacobian_eval != NULL)
 	 PFModuleReNewInstance(instance_xtra -> richards_jacobian_eval, 
-			       (problem, grid, temp_data, 0));
-
-      if (instance_xtra -> temperature_jacobian_eval != NULL)
-	 PFModuleReNewInstance(instance_xtra -> temperature_jacobian_eval, 
 			       (problem, grid, temp_data, 0));
    }
 
@@ -458,6 +366,9 @@ double      *temp_data;
    {
       current_state = ctalloc( State, 1 );
 
+      /* Set up the grid data for the kinsol stuff */
+      SetPf2KinsolData(grid, 1);
+
       /* Initialize KINSol parameters */
       sprintf(filename, "%s.%s", GlobalsOutFileName, "kinsol.log");
       if (!amps_Rank(amps_CommWorld))
@@ -466,80 +377,61 @@ double      *temp_data;
 	 kinsol_file = NULL;
       instance_xtra -> kinsol_file = kinsol_file;
 
-      /* Scaling vectors*/
-      uscalen = N_VNew_Parflow(grid); 
-      N_VConst_Parflow(1.0,uscalen);
-      instance_xtra -> uscalen = uscalen;
-      content = NV_CONTENT_PF(uscalen);
-
-      fscalen = N_VNew_Parflow(grid); 
-      N_VConst_Parflow(1.0,fscalen);
-      instance_xtra -> fscalen = fscalen;
-
       /* Initialize KINSol memory */
-      kin_mem = KINCreate();
-      if (kin_mem == NULL) printf ("\n KINSOL COULD NOT CREATE MEMORY BLOCK \n");
-
-      flag = KINSetInfoFile(kin_mem, kinsol_file);
-      flag = KINSetErrFile(kin_mem, kinsol_file);
-      flag = KINSetPrintLevel(kin_mem, 0);
-      if (!amps_Rank(amps_CommWorld))
-        flag = KINSetPrintLevel(kin_mem, print_flag);
-
-      flag = KINSetNumMaxIters(kin_mem, max_iter);
-      flag = KINSetEtaForm(kin_mem, eta_choice);
-      if (eta_choice == KIN_ETACONSTANT) flag = KINSetEtaConstValue(kin_mem, eta_value);
-      if (eta_choice == KIN_ETACHOICE2)  flag = KINSetEtaParams(kin_mem, eta_gamma, eta_alpha);
-      
-     
-      flag = KINMalloc(kin_mem,KINSolFunctionEval,uscalen);
-      if (flag == KIN_SUCCESS) 
-	 printf("\nKINSOL ALLOCATED SUCCESSFULLY \n");
-      if (flag == KIN_MEM_NULL) 
-      {
-        printf("\nKINSOL COULD NOT ALLOCATE MEMORY \n");
-        return NULL;
-      }
-      if (flag == KIN_MEM_FAIL) 
-      {
-        printf("\nMEMEORY ALLOCATION REQUEST FAILED\n");
-        return NULL;
-      }
-      if (flag == KIN_ILL_INPUT) 
-      {
-        printf("\nINPUT ARGUMENT HAS ILLEGAL VALUE\n");
-        return NULL;
-      }
-
-      /* Specifies pointer to user-defined memory */
-      instance_xtra -> kin_mem = kin_mem;
-      instance_xtra -> current_state = current_state;
-
-      flag = KINSetFdata(kin_mem, instance_xtra->current_state);
- 
-      flag = KINSetFuncNormTol(kin_mem,residual_tol);
-      flag = KINSetScaledStepTol(kin_mem, step_tol);
-
-      /*Initialize Preconditioner */
-      
+      kin_mem = (KINMem)KINMalloc(neq, kinsol_file, NULL);
 
       /* Initialize the gmres linear solver in KINSol */
-      flag = KINSpgmr(kin_mem,        /* Memory allocated above */
-		krylov_dimension      /* Max. Krylov dimension */
+      KINSpgmr( (void*)kin_mem,        /* Memory allocated above */
+		krylov_dimension,      /* Max. Krylov dimension */
+		max_restarts,          /* Max. no. of restarts - 0 is none */
+		1,                     /* Max. calls to PC Solve w/o PC Set */
+		pcinit,                /* PC Set function */
+		pcsolve,               /* PC Solve function */
+		matvec,                /* ATimes routine */
+		current_state          /* User data for PC stuff */
 		);
-      if (flag < 0) printf("\n LINEAR SOLVER COULD NOT ALLOCATE MEMORY \n");
 
       /* Initialize optional arguments for KINSol */
-      if (public_xtra->precond_pressure != NULL) {
-        flag = KINSpilsSetPreconditioner(kin_mem, pcinit, pcsolve, current_state);
-        flag = KINSpilsSetJacTimesVecFn(kin_mem, matvec, current_state);
-      } 
+      iopt = instance_xtra -> int_optional_input;
+      ropt = instance_xtra -> real_optional_input;
 
+      iopt[PRINTFL]         = print_flag;
+      iopt[MXITER]          = max_iter;
+      iopt[PRECOND_NO_INIT] = 0;
+      iopt[NNI]             = 0;
+      iopt[NFE]             = 0;
+      iopt[NBCF]            = 0;
+      iopt[NBKTRK]          = 0;
+      iopt[ETACHOICE]       = eta_choice;
+      iopt[NO_MIN_EPS]      = 0;
+
+      ropt[MXNEWTSTEP]      = 0.0;
+      ropt[RELFUNC]         = derivative_epsilon;
+      ropt[RELU]            = 0.0;
+      ropt[FNORM]           = 0.0;
+      ropt[STEPL]           = 0.0;
+      ropt[ETACONST]        = eta_value;
+      ropt[ETAALPHA]        = eta_alpha;
       /* Put in conditional assignment of eta_gamma since KINSOL aliases */
       /* ETAGAMMA and ETACONST */
+      if (eta_value == 0.0) ropt[ETAGAMMA]        = eta_gamma;
 
       /* Initialize iteration counts */
+      for (i=0; i< OPT_SIZE; i++)
+	 instance_xtra->integer_outputs[i] = 0;
 
+      /* Scaling vectors*/
+      uscale = NewVector(grid, 1, 1);
+      InitVectorAll(uscale, 1.0);
+      instance_xtra -> uscale = uscale;
+
+      fscale = NewVector(grid, 1, 1);
+      InitVectorAll(fscale, 1.0);
+      instance_xtra -> fscale = fscale;
+
+      instance_xtra -> feval = KINSolFunctionEval;
+      instance_xtra -> kin_mem = kin_mem;
+      instance_xtra -> current_state = current_state;
    }
 
 
@@ -556,40 +448,26 @@ void  KinsolNonlinSolverFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
-   void *kin_mem;
 
 
    if (instance_xtra)
    {
-      PFModuleFreeInstance(instance_xtra -> press_function_eval);
-      PFModuleFreeInstance(instance_xtra -> temp_function_eval);
+      PFModuleFreeInstance((instance_xtra -> nl_function_eval));
       if (instance_xtra -> richards_jacobian_eval != NULL)
       {
-         PFModuleFreeInstance(instance_xtra -> richards_jacobian_eval);
+         PFModuleFreeInstance((instance_xtra -> richards_jacobian_eval));
       }
-
-      if (instance_xtra -> precond_pressure != NULL)
+      if (instance_xtra -> precond != NULL)
       {
-         PFModuleFreeInstance(instance_xtra -> precond_pressure);
+         PFModuleFreeInstance((instance_xtra -> precond));
       }
 
-      if (instance_xtra -> precond_temperature != NULL) 
-      {
-         PFModuleFreeInstance(instance_xtra -> precond_temperature);
-      }
-
-      if (instance_xtra -> temperature_jacobian_eval != NULL) 
-      {
-         PFModuleFreeInstance(instance_xtra -> temperature_jacobian_eval);
-      }
-
-      N_VDestroy_Parflow(instance_xtra -> uscalen);
-      N_VDestroy_Parflow(instance_xtra -> fscalen);
+      FreeVector(instance_xtra -> uscale);
+      FreeVector(instance_xtra -> fscale);
 
       tfree(instance_xtra -> current_state);
 
-      kin_mem = (instance_xtra -> kin_mem);
-      KINFree(&kin_mem);
+      KINFree((instance_xtra -> kin_mem));
 
       if (instance_xtra->kinsol_file) 
 	 fclose((instance_xtra -> kinsol_file));
@@ -647,7 +525,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
    {
       case 0:
       {
-	 public_xtra -> eta_choice = KIN_ETACONSTANT;
+	 public_xtra -> eta_choice = ETACONSTANT;
 	 public_xtra -> eta_value  
 	                 = GetDoubleDefault("Solver.Nonlinear.EtaValue", 1e-4);
 	 public_xtra -> eta_alpha = 0.0;
@@ -656,14 +534,14 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
       }
       case 1:
       {
-	 public_xtra -> eta_choice = KIN_ETACHOICE1;
+	 public_xtra -> eta_choice = ETACHOICE1;
 	 public_xtra -> eta_alpha = 0.0;
 	 public_xtra -> eta_gamma = 0.0;
 	 break;
       }
       case 2:
       {
-	 public_xtra -> eta_choice = KIN_ETACHOICE2;
+	 public_xtra -> eta_choice = ETACHOICE2;
 	 public_xtra -> eta_alpha 
                          = GetDoubleDefault("Solver.Nonlinear.EtaAlpha", 2.0);
 	 public_xtra -> eta_gamma 
@@ -714,12 +592,12 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
    {
       case 0:
       {
-	 (public_xtra -> globalization) = KIN_NONE;
+	 (public_xtra -> globalization) = INEXACT_NEWTON;
 	 break;
       }
       case 1:
       {
-	 (public_xtra -> globalization) = KIN_LINESEARCH;
+	 (public_xtra -> globalization) = LINESEARCH;
 	 break;
       }
       default:
@@ -736,19 +614,16 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
    switch_value = NA_NameToIndex(precond_switch_na, switch_name);
    if (switch_value == 0)
    {
-      (public_xtra -> precond_pressure) = NULL;
-      (public_xtra -> precond_temperature) = NULL;
+      (public_xtra -> precond) = NULL;
       (public_xtra -> pcinit)  = NULL;
       (public_xtra -> pcsolve) = NULL;
    }
    else if ( switch_value > 0 )
    {
-      (public_xtra -> precond_pressure) = PFModuleNewModule(KinsolPCPressure, 
+      (public_xtra -> precond) = PFModuleNewModule(KinsolPC, 
 						   (key, switch_name));
-      (public_xtra -> precond_temperature) = PFModuleNewModule(KinsolPCTemperature, 
-						   (key, switch_name));
-      (public_xtra -> pcinit)  = (KINSpilsPrecSetupFn)KINSolInitPC;
-      (public_xtra -> pcsolve) = (KINSpilsPrecSolveFn)KINSolCallPC;
+      (public_xtra -> pcinit)  = (KINSpgmrPrecondFn)KINSolInitPC;
+      (public_xtra -> pcsolve) = (KINSpgmrPrecondSolveFn)KINSolCallPC;
    }
    else
    {
@@ -757,21 +632,15 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
    }
    NA_FreeNameArray(precond_switch_na);
 
-   public_xtra -> press_function_eval = PFModuleNewModule(PressFunctionEval, ());
-   public_xtra -> temp_function_eval = PFModuleNewModule(TempFunctionEval, ());
+   public_xtra -> nl_function_eval = PFModuleNewModule(NlFunctionEval, ());
    public_xtra -> neq = ((public_xtra -> max_restarts)+1)
                            *(public_xtra -> krylov_dimension);
 
    if (public_xtra -> matvec != NULL)
-   {
       public_xtra -> richards_jacobian_eval = 
                                  PFModuleNewModule(RichardsJacobianEval, ());
-      public_xtra -> temperature_jacobian_eval = 
-                                 PFModuleNewModule(TemperatureJacobianEval, ());
-   } else {
+   else 
       public_xtra -> richards_jacobian_eval = NULL;
-      public_xtra -> temperature_jacobian_eval = NULL;
-   }
 
    (public_xtra -> time_index) = RegisterTiming("KINSol");
    
@@ -792,19 +661,14 @@ void  KinsolNonlinSolverFreePublicXtra()
    if ( public_xtra )
    {
       if (public_xtra -> richards_jacobian_eval != NULL)
+      {
          PFModuleFreeModule(public_xtra -> richards_jacobian_eval);
-
-      if (public_xtra -> temperature_jacobian_eval != NULL)
-         PFModuleFreeModule(public_xtra -> temperature_jacobian_eval);
-
-      if (public_xtra -> precond_pressure != NULL)
-         PFModuleFreeModule(public_xtra -> precond_pressure);
-
-      if (public_xtra -> precond_temperature!= NULL)
-         PFModuleFreeModule(public_xtra -> precond_temperature);
-
-      PFModuleFreeModule(public_xtra -> press_function_eval);
-      PFModuleFreeModule(public_xtra -> temp_function_eval);
+      }
+      if (public_xtra -> precond != NULL)
+      {
+         PFModuleFreeModule(public_xtra -> precond);
+      }
+      PFModuleFreeModule(public_xtra -> nl_function_eval);
 
       tfree(public_xtra);
    }
@@ -819,24 +683,20 @@ int  KinsolNonlinSolverSizeOfTempData()
    PFModule             *this_module   = ThisPFModule;
    InstanceXtra         *instance_xtra = PFModuleInstanceXtra(this_module);
 
-   PFModule             *precond_pressure          = (instance_xtra -> precond_pressure);
-   PFModule             *precond_temperature       = (instance_xtra -> precond_temperature);
-   PFModule             *pressure_jacobian_eval    = (instance_xtra -> richards_jacobian_eval);
-   PFModule             *temperature_jacobian_eval = (instance_xtra -> temperature_jacobian_eval);
+   PFModule             *precond       = (instance_xtra -> precond);
+   PFModule             *jacobian_eval = (instance_xtra -> 
+					  richards_jacobian_eval);
 
    int sz = 0;
    
-   if (pressure_jacobian_eval != NULL)
-      sz += PFModuleSizeOfTempData(pressure_jacobian_eval);
-
-   if (temperature_jacobian_eval != NULL)
-      sz += PFModuleSizeOfTempData(temperature_jacobian_eval);
-
-   if (precond_pressure != NULL)
-      sz += PFModuleSizeOfTempData(precond_pressure);
-
-   if (precond_temperature != NULL)
-      sz += PFModuleSizeOfTempData(precond_temperature);
+   if (jacobian_eval != NULL)
+   {
+      sz += PFModuleSizeOfTempData(jacobian_eval);
+   }
+   if (precond != NULL)
+   {
+      sz += PFModuleSizeOfTempData(precond);
+   }
 
    return sz;
 }

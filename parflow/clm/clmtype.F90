@@ -212,11 +212,10 @@ module clmtype
 
      real(r8) :: h2osoi_vol(nlevsoi)     ! volumetric soil water (0<=h2osoi_vol<=watsat) [m3/m3]
      real(r8) :: eff_porosity(nlevsoi)   ! effective porosity = porosity - vol_ice
-     real(r8) :: pf_flux(nlevsoi)        !@ sink/source flux for Parlfow couple for each CLM soil layer
-     real(r8) :: pf_vol_liq(parfl_nlevsoi)    !@ partial volume of liquid water in layer from Parflow over entire domain (Parflow and CLM)	 
-     real(r8) :: pf_press(parfl_nlevsoi) !@ old pressure values from parflow    
-     real(r8) :: pf_press_o(parfl_nlevsoi) !@ old pressure values from parflow    
-     real(r8) :: pf_lh                   ! sjk: latent heat flux to be passed to parflow
+	 real(r8) :: pf_flux(nlevsoi)        !@ sink/source flux for Parlfow couple for each CLM soil layer
+	 real(r8) :: pf_vol_liq(parfl_nlevsoi)    !@ partial volume of liquid water in layer from Parflow over entire domain (Parflow and CLM)	 real(r8) :: pf_press(parfl_nlevsoi)  !@ pressure values from parflow
+	 real(r8) :: pf_press(parfl_nlevsoi) !@ old pressure values from parflow    
+ 	 real(r8) :: pf_press_o(parfl_nlevsoi) !@ old pressure values from parflow    
 
      real(r8) :: qflx_infl      ! infiltration (mm H2O /s) 
      real(r8) :: qflx_infl_old

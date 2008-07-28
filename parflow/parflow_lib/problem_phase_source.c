@@ -34,8 +34,7 @@ typedef struct
 
 
    int     *region_indices;
-   double  *qvalues;
-   double  *tempvalues;
+   double  *values;
 
 } Type0;                       /* constant regions */
 
@@ -55,9 +54,8 @@ typedef struct
  * PhaseSource
  *--------------------------------------------------------------------------*/
 
-void         PhaseSource(phase_source, phase_temperature, problem, problem_data, time)
+void         PhaseSource(phase_source, problem, problem_data, time)
 Vector      *phase_source;
-Vector      *phase_temperature;
 Problem     *problem;
 ProblemData *problem_data;
 double       time;
@@ -76,10 +74,10 @@ double       time;
    SubgridArray     *subgrids = GridSubgrids(grid);
 
    Subgrid          *subgrid;
-   Subvector        *ps_sub, *pt_sub;
+   Subvector        *ps_sub;
    Subvector        *sc_values_sub;
 
-   double           *data, *qdata, *tempdata;
+   double           *data;
    double           *psdat, *sc_values_dat;
 
    int               ix, iy, iz;
@@ -94,7 +92,6 @@ double       time;
     *-----------------------------------------------------------------------*/
 
    InitVector(phase_source, 0.0);
-   InitVector(phase_temperature, 0.0);
 
    switch((public_xtra -> type))
    {
@@ -102,31 +99,26 @@ double       time;
    {
       int      num_regions;
       int     *region_indices;
-      double  *qvalues;
-      double  *tempvalues;
+      double  *values;
 
-      double        qvalue;
-      double        tempvalue;
+      double        value;
       int           ir;
 
 	  dummy0 = (Type0 *)(public_xtra -> data);
 
       num_regions    = (dummy0 -> num_regions);
       region_indices = (dummy0 -> region_indices);
-      qvalues        = (dummy0 -> qvalues);
-      tempvalues     = (dummy0 -> tempvalues);
+      values         = (dummy0 -> values);
 
       for (ir = 0; ir < num_regions; ir++)
       {
      gr_solid = ProblemDataGrSolid(problem_data, region_indices[ir]);
-     qvalue    = qvalues[ir];
-     tempvalue    = tempvalues[ir];
+     value    = values[ir];
 
 	 ForSubgridI(is, subgrids)
 	 {
             subgrid = SubgridArraySubgrid(subgrids, is);
             ps_sub  = VectorSubvector(phase_source, is);
-            pt_sub  = VectorSubvector(phase_temperature, is);
 	    
 	    ix = SubgridIX(subgrid);
 	    iy = SubgridIY(subgrid);
@@ -139,14 +131,12 @@ double       time;
 	    /* RDF: assume resolution is the same in all 3 directions */
 	    r = SubgridRX(subgrid);
 	    
-	    qdata = SubvectorData(ps_sub);
-	    tempdata = SubvectorData(pt_sub);
+	    data = SubvectorData(ps_sub);
 	    GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
 	       ips = SubvectorEltIndex(ps_sub, i, j, k);
 
-	       qdata[ips] = qvalue;
-	       tempdata[ips] = tempvalue;
+	       data[ips] = value;
 	    });
 	 }
       }
@@ -437,9 +427,8 @@ PFModule  *PhaseSourceNewPublicXtra()
 	    
 	    num_regions = (dummy0 -> num_regions) = NA_Sizeof(dummy0 -> regions);
 	    
-	    (dummy0 -> region_indices) = (int *)calloc((unsigned int)(num_regions), (unsigned int)sizeof(int)); 
-	    (dummy0 -> qvalues)         = ctalloc(double, num_regions);
-	    (dummy0 -> tempvalues)      = ctalloc(double, num_regions);
+	    (dummy0 -> region_indices) = ctalloc(unsigned int, num_regions);
+	    (dummy0 -> values)         = ctalloc(double, num_regions);
 	    
 	    for (ir = 0; ir < num_regions; ir++)
 	    {
@@ -448,10 +437,8 @@ PFModule  *PhaseSourceNewPublicXtra()
 		  NA_NameToIndex(GlobalsGeomNames,
 				 NA_IndexToName(dummy0 -> regions, ir));
 	       
-	       sprintf(key, "PhaseSources.Geom.%s.FluxValue", NA_IndexToName(dummy0 -> regions, ir));
-	       dummy0 -> qvalues[ir] = GetDouble(key);
-	       sprintf(key, "PhaseSources.Geom.%s.TemperatureValue", NA_IndexToName(dummy0 -> regions, ir));
-	       dummy0 -> tempvalues[ir] = GetDouble(key);
+	       sprintf(key, "PhaseSources.Geom.%s.Value", NA_IndexToName(dummy0 -> regions, ir));
+	       dummy0 -> values[ir] = GetDouble(key);
 	    }
 	    
 	    (public_xtra -> data) = (void *) dummy0;
@@ -528,8 +515,7 @@ void  PhaseSourceFreePublicXtra()
 	    NA_FreeNameArray(dummy0 -> regions);
 
 	    tfree(dummy0 -> region_indices);
-	    tfree(dummy0 -> qvalues);
-	    tfree(dummy0 -> tempvalues);
+	    tfree(dummy0 -> values);
             tfree(dummy0);
             break;
          }

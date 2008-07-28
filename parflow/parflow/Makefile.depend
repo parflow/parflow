@@ -1,21 +1,18 @@
-parflow.o: parflow.c $(PARFLOW_INCLUDE_DIR)/parflow.h \
-  $(PARFLOW_INCLUDE_DIR)/info_header.h $(PARFLOW_INCLUDE_DIR)/general.h \
-  $(PARFLOW_INCLUDE_DIR)/file_versions.h $(PARFLOW_INCLUDE_DIR)/input_database.h \
-  $(PARFLOW_INCLUDE_DIR)/hbt.h $(PARFLOW_INCLUDE_DIR)/logging.h $(PARFLOW_INCLUDE_DIR)/timing.h \
-  $(PARFLOW_INCLUDE_DIR)/loops.h $(PARFLOW_INCLUDE_DIR)/background.h \
-  $(PARFLOW_INCLUDE_DIR)/communication.h $(PARFLOW_INCLUDE_DIR)/computation.h \
-  $(PARFLOW_INCLUDE_DIR)/region.h $(PARFLOW_INCLUDE_DIR)/grid.h $(PARFLOW_INCLUDE_DIR)/matrix.h \
-  $(PARFLOW_INCLUDE_DIR)/vector.h $(PARFLOW_INCLUDE_DIR)/nvector_parflow.h \
-  $(PARFLOW_INCLUDE_DIR)/parflow.h $(PARFLOW_INCLUDE_DIR)/pf_module.h \
-  $(PARFLOW_INCLUDE_DIR)/geometry.h $(PARFLOW_INCLUDE_DIR)/grgeometry.h \
-  $(PARFLOW_INCLUDE_DIR)/grgeom_octree.h $(PARFLOW_INCLUDE_DIR)/grgeom_list.h \
-  $(PARFLOW_INCLUDE_DIR)/geostats.h $(PARFLOW_INCLUDE_DIR)/lb.h \
-  $(PARFLOW_INCLUDE_DIR)/char_vector.h $(PARFLOW_INCLUDE_DIR)/globals.h \
-  $(PARFLOW_INCLUDE_DIR)/time_cycle_data.h $(PARFLOW_INCLUDE_DIR)/problem_bc.h \
-  $(PARFLOW_INCLUDE_DIR)/problem_eval.h $(PARFLOW_INCLUDE_DIR)/well.h \
-  $(PARFLOW_INCLUDE_DIR)/bc_pressure.h $(PARFLOW_INCLUDE_DIR)/bc_temperature.h \
-  $(PARFLOW_INCLUDE_DIR)/problem.h $(PARFLOW_INCLUDE_DIR)/solver.h \
-  $(PARFLOW_INCLUDE_DIR)/press_temp_function_eval.h \
-  $(PARFLOW_INCLUDE_DIR)/parflow_proto.h $(PARFLOW_INCLUDE_DIR)/parflow_proto_f.h \
-  $(PARFLOW_INCLUDE_DIR)/drv_module.h $(PARFLOW_INCLUDE_DIR)/drv_gridmodule.h \
-  $(PARFLOW_INCLUDE_DIR)/drv_tilemodule.h
+parflow.o: parflow.c ../parflow_lib/parflow.h \
+  ../parflow_lib/info_header.h ../parflow_lib/general.h \
+  ../parflow_lib/file_versions.h ../parflow_lib/input_database.h \
+  ../parflow_lib/hbt.h ../parflow_lib/logging.h ../parflow_lib/timing.h \
+  ../parflow_lib/loops.h ../parflow_lib/background.h \
+  ../parflow_lib/communication.h ../parflow_lib/computation.h \
+  ../parflow_lib/region.h ../parflow_lib/grid.h ../parflow_lib/matrix.h \
+  ../parflow_lib/vector.h ../parflow_lib/n_vector.h \
+  ../parflow_lib/parflow.h ../parflow_lib/pf_module.h \
+  ../parflow_lib/geometry.h ../parflow_lib/grgeometry.h \
+  ../parflow_lib/grgeom_octree.h ../parflow_lib/grgeom_list.h \
+  ../parflow_lib/geostats.h ../parflow_lib/lb.h \
+  ../parflow_lib/char_vector.h ../parflow_lib/globals.h \
+  ../parflow_lib/time_cycle_data.h ../parflow_lib/problem_bc.h \
+  ../parflow_lib/problem_eval.h ../parflow_lib/well.h \
+  ../parflow_lib/bc_pressure.h ../parflow_lib/problem.h \
+  ../parflow_lib/solver.h ../parflow_lib/nl_function_eval.h \
+  ../parflow_lib/parflow_proto.h ../parflow_lib/parflow_proto_f.h

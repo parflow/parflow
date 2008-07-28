@@ -7,7 +7,7 @@
  * $Revision: 1.1.1.1 $
  *********************************************************************EHEADER*/
 
-#include "kinsol.h"
-#include "kinsol_spils.h"
-#include "kinsol_spgmr.h"
-#include "kinsol_spils.h"
+#include "../kinsol/kinsol.h"
+#include "../kinsol/iterativ.h"
+#include "../kinsol/kinspgmr.h"
+#include "../kinsol/spgmr.h"

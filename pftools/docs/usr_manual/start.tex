@@ -96,30 +96,15 @@ require different compilers (e.g. on some MPP architectures the
 front-end machine is different from the nodes) the build process
 involves compiling several different parts.
 
-The first thing that should be built is the Sundials solver library.
-
-This can be done with something as simple as:
-
-\begin{display}\begin{verbatim}
-cd sundials
-./configure --prefix=$PARFLOW_DIR
-make
-make install
-\end{verbatim}\end{display}
-
-See the Sundials documenation for further information.  Note the
-compiler choices for Sundials should probably also be used when
-building \parflow{}.
-
 \item
 
-Next build the \parflow{} library and executable.  The library is
+First build the \parflow{} library and executable.  The library is
 used when \parflow{} is used as a component of another simulation
 (e.g. WRF).  
 
 \begin{display}\begin{verbatim}
 cd parflow
-./configure --prefix=$PARFLOW_DIR --with-sundials=$PARFLOW_DIR --with-amps=mpi1
+./configure --prefix=$PARFLOW_DIR --with-amps=mpi1
 make 
 make install
 \end{verbatim}\end{display}

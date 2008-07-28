@@ -62,7 +62,7 @@ Databox       *databox;
 
       process = SubgridProcess(subgrid);
 
-#ifdef AMPS_SPLIT_FFILE
+#ifdef AMPS_SPLIT_FILE
       sprintf(output_name, "%s.%05d", filename, process);
       remove(output_name);
 #endif
@@ -76,7 +76,7 @@ Databox       *databox;
     * Load the data
     *--------------------------------------------------------------------*/
 
-#ifndef AMPS_SPLIT_FFILE
+#ifndef AMPS_SPLIT_FILE
    if ((file = fopen(filename, "wb")) == NULL)
    {
       printf("Unable to open outputfile <%s>\n", output_name);
@@ -108,7 +108,7 @@ Databox       *databox;
 	 if(process == p)
 	 {
 
-#ifdef AMPS_SPLIT_FFILE
+#ifdef AMPS_SPLIT_FILE
 	    sprintf(output_name, "%s.%05d", filename, process);
 	    
  	    if ((file = fopen(output_name, "a+")) == NULL)
@@ -166,7 +166,7 @@ Databox       *databox;
 	    
 	    file_pos += 9*tools_SizeofInt + (nx*ny*nz) * tools_SizeofDouble;
 
-#ifdef AMPS_SPLIT_FFILE
+#ifdef AMPS_SPLIT_FILE
 	    fclose(file);
 #else
 	    fprintf(dist_file, "%ld\n", file_pos);
@@ -176,7 +176,7 @@ Databox       *databox;
       }
    }
 
-#ifndef AMPS_SPLIT_FFILE
+#ifndef AMPS_SPLIT_FILE
    fclose(file);
    fclose(dist_file);
 #endif

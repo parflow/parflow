@@ -146,7 +146,6 @@ void      SolverImpes()
    ProblemData  *problem_data        = (instance_xtra -> problem_data);
 
    Grid         *grid                = (instance_xtra -> grid);
-   Grid         *grid2d              = (instance_xtra -> grid2d);
    Grid         *x_grid              = (instance_xtra -> x_grid);
    Grid         *y_grid              = (instance_xtra -> y_grid);
    Grid         *z_grid              = (instance_xtra -> z_grid);
@@ -558,8 +557,7 @@ void      SolverImpes()
                          ProblemDataPermeabilityZ(problem_data),
                          0,
                          saturations[0],
-                         //ProblemPhaseViscosity(problem, 0)));
-                         1.0 ));
+                         ProblemPhaseViscosity(problem, 0)));
 
          for(phase = 1; phase < ProblemNumPhases(problem); phase++)
          {
@@ -573,8 +571,7 @@ void      SolverImpes()
                             ProblemDataPermeabilityZ(problem_data),
                             phase,
                             saturations[phase],
-                            // ProblemPhaseViscosity(problem, phase)));
-                            1.0 ));
+                            ProblemPhaseViscosity(problem, phase)));
 
             Axpy(1.0, temp_mobility_x, total_mobility_x);
             Axpy(1.0, temp_mobility_y, total_mobility_y);
@@ -946,8 +943,7 @@ void      SolverImpes()
 				  total_z_velocity, 
 				  z_permeability,
 				  ProblemDataPorosity(problem_data),
-				  //ProblemPhaseViscosities(problem),
-				  1.0,
+				  ProblemPhaseViscosities(problem),
 				  phase_densities,
 				  ProblemGravity(problem),
 				  t, dt, sadvect_order));

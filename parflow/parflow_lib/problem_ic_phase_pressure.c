@@ -94,10 +94,9 @@ typedef struct
  *    This routine returns a Vector of pressures at the initial time.
  *--------------------------------------------------------------------------*/
 
-void         ICPhasePressure(ic_pressure, ic_temperature, mask, problem_data, problem)
+void         ICPhasePressure(ic_pressure, mask, problem_data, problem)
 
 Vector      *ic_pressure;  /* Return values of intial condition */
-Vector      *ic_temperature;
 Vector      *mask;         /* Mask of active cells needed by the LSM */
 ProblemData *problem_data; /* Contains geometry information for the problem */
 Problem     *problem;      /* General problem information */
@@ -260,7 +259,7 @@ Problem     *problem;      /* General problem information */
 	/* Get derivative of density at new pressures. */
 	 if (iterations > -1)
 	 {
-	    PFModuleInvoke(void, phase_density, (0, ic_pressure, ic_temperature, 
+	    PFModuleInvoke(void, phase_density, (0, ic_pressure, 
 						 temp_new_density_der, &dtmp, 
 						 &dtmp, CALCDER));
 	 }
@@ -344,7 +343,7 @@ Problem     *problem;      /* General problem information */
 	 }        /* End of region loop */
 	 
 	 /* Get density values at new pressure values. */
-	 PFModuleInvoke(void, phase_density, (0, ic_pressure,ic_temperature, 
+	 PFModuleInvoke(void, phase_density, (0, ic_pressure, 
 					      temp_new_density, &dtmp, 
 					      &dtmp, CALCFCN));
 
@@ -512,7 +511,7 @@ Problem     *problem;      /* General problem information */
 	 {
 
 	   /* Get derivative of density at new pressures. */
-	    PFModuleInvoke(void, phase_density, (0, ic_pressure, ic_temperature, 
+	    PFModuleInvoke(void, phase_density, (0, ic_pressure, 
 						 temp_new_density_der, &dtmp, 
 						 &dtmp, CALCDER));
 	 }
@@ -567,7 +566,7 @@ Problem     *problem;      /* General problem information */
 	 }        /* End of region loop */
 	 
          /* Get density values at new pressure values. */
-	 PFModuleInvoke(void, phase_density, (0, ic_pressure, ic_temperature, 
+	 PFModuleInvoke(void, phase_density, (0, ic_pressure, 
 					      temp_new_density, &dtmp, 
 					      &dtmp, CALCFCN));
          /* Calculate nonlinear residual and value of the nonlinear function
@@ -1077,14 +1076,13 @@ int *ComputeTop(PFModule    *this_module,  /* The module */
 ) {
 
    PublicXtra    *public_xtra      = PFModulePublicXtra(this_module);
-   InstanceXtra  *instance_xtra    = PFModuleInstanceXtra(this_module);
 
    int      ix, iy, iz;
    int      nx, ny, nz;
    int      r;
    int      ir;
    
-   int      is, i, j, k, ips, iel, ipicv;
+   int      is, i, j, k;
 
    int      num_regions;
    int      *region_indices;
@@ -1092,7 +1090,6 @@ int *ComputeTop(PFModule    *this_module,  /* The module */
    Type0         *dummy0;
    Type1         *dummy1;
    Type2         *dummy2;
-   Type3         *dummy3;
 
    Grid          *grid = VectorGrid(vector);
 
@@ -1142,7 +1139,6 @@ int *ComputeTop(PFModule    *this_module,  /* The module */
       ForSubgridI(is, subgrids)
       {
 	 Subgrid       *subgrid   = SubgridArraySubgrid(subgrids, is);
-	 Subvector     *subvector = VectorSubvector(vector, is);
 
 	 ix = SubgridIX(subgrid);
 	 iy = SubgridIY(subgrid);

@@ -49,13 +49,13 @@
 #include "grid.h"
 #include "matrix.h"
 #include "vector.h"
-#include "sundials_nvector.h"
-#include "nvector_parflow.h"
 #include "pf_module.h"
 #include "geometry.h"
 #include "grgeometry.h"
 #include "geostats.h"
 #include "lb.h"
+
+
 
 #include "globals.h"
 
@@ -63,18 +63,17 @@
 
 #include "problem_bc.h"
 #include "problem_eval.h"
+
 #include "well.h"
 #include "bc_pressure.h"
-#include "bc_temperature.h"
 
 #include "problem.h"
 
 #include "solver.h"
 
-#include "press_temp_function_eval.h"
+#include "nl_function_eval.h"
 
 #include "parflow_proto.h"
 #include "parflow_proto_f.h"
-
 
 #endif

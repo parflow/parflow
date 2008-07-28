@@ -112,7 +112,7 @@ subroutine drv_restart (rw, drv, tile, clm, rank)
 
 !=== End Variable Definition =============================================
   write(RI,*) rank
-
+print*, "in drv_restart routine"
 !=== Read Active Archive File ============================================
 
   if((rw.eq.1.and.drv%clm_ic.eq.1).or.(rw.eq.1.and.drv%startcode.eq.1))then

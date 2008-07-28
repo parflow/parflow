@@ -588,10 +588,16 @@ amps_Invoice amps_NewInvoice(const char *fmt0, ...)
 
         /* if user had an extra we already have grabbed the data pointer */
 	if(!ptr_data && !ignore)
+        {
 	    if(ptr_data_type == AMPS_INVOICE_POINTER)
+            {
 		ptr_data = va_arg(ap, void  **);
+            }
 	    else
+            {
 		ptr_data = va_arg(ap, void *);
+            }
+        }
 
         amps_add_invoice(&inv, ignore, type, 
 			 len_type, len, ptr_len,

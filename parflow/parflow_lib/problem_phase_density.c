@@ -62,12 +62,11 @@ typedef struct
  * PhaseDensity
  *-------------------------------------------------------------------------*/
 
-void    PhaseDensity(phase, phase_pressure, temperature, density_v, pressure_d, 
+void    PhaseDensity(phase, phase_pressure, density_v, pressure_d, 
 		     density_d, fcn)
 
 int     phase;           /* Phase */
 Vector *phase_pressure;  /* Vector of phase pressures at each block */
-Vector *temperature;  
 Vector *density_v;       /* Vector of return densities at each block */
 double *pressure_d;      /* Double array of pressures */
 double *density_d;       /* Double array return density */
@@ -91,10 +90,10 @@ int     fcn;             /* Flag determining what to calculate
 
    Grid          *grid;
 
-   Subvector     *p_sub, *t_sub;
+   Subvector     *p_sub;
    Subvector     *d_sub;
 
-   double        *pp, *tp; 
+   double        *pp; 
    double        *dp; 
 
    Subgrid       *subgrid;
@@ -178,7 +177,7 @@ int     fcn;             /* Flag determining what to calculate
 
    case 1:
    {
-      double  ref, comp, temper;
+      double  ref, comp;
       dummy1 = (Type1 *)(public_xtra -> data[phase]);
       ref  = (dummy1 -> reference_density);
       comp = (dummy1 -> compressibility_constant);
@@ -192,7 +191,6 @@ int     fcn;             /* Flag determining what to calculate
 		 subgrid = GridSubgrid(grid, sg);
 
 		 p_sub  = VectorSubvector(phase_pressure, sg);
-		 t_sub  = VectorSubvector(temperature, sg);
 		 d_sub = VectorSubvector(density_v,   sg);
 
 		 ix = SubgridIX(subgrid) - 1;
@@ -212,7 +210,6 @@ int     fcn;             /* Flag determining what to calculate
 		 nz_d = SubvectorNZ(d_sub);
 
 		 pp = SubvectorElt(p_sub, ix, iy, iz);
-		 tp = SubvectorElt(t_sub, ix, iy, iz);
 		 dp = SubvectorElt(d_sub, ix, iy, iz);
 
 		 ip = 0;
@@ -224,48 +221,29 @@ int     fcn;             /* Flag determining what to calculate
 			      ip, nx_p, ny_p, nz_p, 1, 1, 1,
 			      id, nx_d, ny_d, nz_d, 1, 1, 1,
 			      {
-                                 temper = tp[ip] - 273.0;
-                                 if(temper<0.0) temper = 0.0;
-                                 if(temper>80.0) temper = 80.0;
-			         //dp[id] = ref * exp(pp[ip] * comp);
-                                 dp[ip] = -6.0e-3 * temper*temper + 4.06e-2 * temper + 999.86;
-                                 //printf("%d %d %d %e %e \n",i,j,k,dp[ip],tp[ip]);
+			         dp[id] = ref * exp(pp[ip] * comp);
 			      });
 		 }
-		 else if (fcn == CALCDER_T)   /* fcn = CALCDER for temperature*/
+		 else   /* fcn = CALCDER */
 		 {
 		    BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
 			      ip, nx_p, ny_p, nz_p, 1, 1, 1,
 			      id, nx_d, ny_d, nz_d, 1, 1, 1,
 			      {
-                                 temper = tp[ip] - 273.0;
-                                 if(temper<0.0) temper = 0.0;
-                                 if(temper>80.0) temper = 80.0;
-			         //dp[id] = comp * ref * exp(pp[ip] * comp);
-                                 dp[ip] = 2.0 * -6.0e-3 * temper + 4.06e-2;
+			         dp[id] = comp * ref * exp(pp[ip] * comp);
 			      });
 		 }
-                 else if (fcn == CALCDER_P)   /* fcn = CALCDER for temperature*/
-                 {
-                    BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                              ip, nx_p, ny_p, nz_p, 1, 1, 1,
-                              id, nx_d, ny_d, nz_d, 1, 1, 1,
-                              {
-                                 dp[ip] = 0.0;
-                              });
-                 }
-
 	      }
 	}
       else
 	{
 	   if ( fcn == CALCFCN )
 	   {
-	      (*density_d) = 9.98494e+2; 
+	      (*density_d) =  ref * exp( (*pressure_d) * comp);
 	   }
 	   else
 	   {
-	      (*density_d) = 0.0; 
+	      (*density_d) =  comp * ref * exp( (*pressure_d) * comp);
 	   }
 	}
 

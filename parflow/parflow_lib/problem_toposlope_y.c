@@ -54,14 +54,15 @@ typedef struct
  * YSlope 
  *--------------------------------------------------------------------------*/
 
-void         YSlope(problem_data,y_sl)
-Vector      *y_sl;
+void         YSlope(problem_data,y_sl,dummy)
 ProblemData *problem_data;
+Vector      *y_sl;
+Vector      *dummy;
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
 
-   Grid             *grid = VectorGrid(y_sl);
+   Grid             *grid = VectorGrid(dummy);
 
    GrGeomSolid      *gr_solid, *gr_domain;
 
@@ -136,7 +137,7 @@ ProblemData *problem_data;
 	    data = SubvectorData(ps_sub);
 	    GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-	       ips = SubvectorEltIndex(ps_sub, i, j, k);
+	       ips = SubvectorEltIndex(ps_sub, i, j, 0);
 
 	       data[ips] = value;
 	    });
@@ -303,7 +304,7 @@ ProblemData *problem_data;
 
 		   GrGeomInLoop(i,j,k,gr_domain,r,ix,iy,iz,nx,ny,nz,
 		   {
-			   ips = SubvectorEltIndex(ps_sub,i,j,k);
+			   ips = SubvectorEltIndex(ps_sub,i,j,0);
 			   ipicv = SubvectorEltIndex(sy_values_sub,i,j,k);
 
 			   psdat[ips] = sy_values_dat[ipicv];
@@ -458,7 +459,7 @@ PFModule  *YSlopeNewPublicXtra()
 	    
 	    num_regions = (dummy0 -> num_regions) = NA_Sizeof(dummy0 -> regions);
 	    
-	    (dummy0 -> region_indices) = (int *)calloc((unsigned int)(num_regions), (unsigned int)sizeof(int)); 
+	    (dummy0 -> region_indices) = ctalloc(unsigned int, num_regions);
 	    (dummy0 -> values)         = ctalloc(double, num_regions);
 	    
 	    for (ir = 0; ir < num_regions; ir++)

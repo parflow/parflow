@@ -39,16 +39,6 @@ int    line;
 
       if (ptr == NULL)
 	 amps_Printf("Error: out of memory in %s at line %d\n", file, line);
-
-#if 0
-      if (size > MEM_CHECK_SIZE)
-	 amps_Printf("In %s at line %d, memory alloc = %d\n",
-		     file, line, size);
-
-      if ((!strcmp(file, "region.c")) && size > 4000)
-	 amps_Printf("In %s at line %d, memory alloc = %d\n",
-		     file, line, size);
-#endif
    }
    else
    {
@@ -79,16 +69,6 @@ int    line;
 
       if (ptr == NULL)
 	 amps_Printf("Error: out of memory in %s at line %d\n", file, line);
-
-#if 0
-      if (size > MEM_CHECK_SIZE)
-	 amps_Printf("In %s at line %d, memory alloc = %d\n",
-		     file, line, size);
-
-      if ((!strcmp(file, "region.c")) && size > 4000)
-	 amps_Printf("In %s at line %d, memory alloc = %d\n",
-		     file, line, size);
-#endif
    }
    else
    {

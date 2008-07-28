@@ -24,8 +24,6 @@ OBJS = \
 	bc_lb.o\
 	bc_pressure.o\
 	bc_pressure_package.o\
-	bc_temperature.o\
-	bc_temperature_package.o\
 	calc_elevations.o\
 	cghs.o\
 	char_vector.o\
@@ -59,12 +57,8 @@ OBJS = \
 	innerprod.o\
 	inputRF.o\
 	input_database.o\
-        nvector_parflow.o\
-	kinsol_function_eval.o\
 	kinsol_nonlin_solver.o\
-	kinsol_matvec.o\
-	kinsol_pc_pressure.o\
-	kinsol_pc_temperature.o\
+	kinsol_pc.o\
 	l2_error_norm.o\
 	line_process.o\
 	logging.o\
@@ -87,7 +81,7 @@ OBJS = \
 	pgsRF.o\
 	phase_velocity_face.o\
 	ppcg.o\
-	press_function_eval.o\
+	nl_function_eval.o\
 	printgrid.o\
 	printmatrix.o\
 	printvector.o\
@@ -96,7 +90,6 @@ OBJS = \
 	problem_bc_internal.o\
 	problem_bc_phase_saturation.o\
 	problem_bc_pressure.o\
-	problem_bc_temperature.o\
 	problem_capillary_pressure.o\
 	problem_domain.o\
 	problem_eval.o\
@@ -104,7 +97,6 @@ OBJS = \
 	problem_phase_heat_capacity.o\
 	problem_ic_phase_concen.o\
 	problem_ic_phase_pressure.o\
-	problem_ic_phase_temperature.o\
 	problem_ic_phase_satur.o\
 	problem_mannings.o\
         problem_phase_density.o\
@@ -112,7 +104,6 @@ OBJS = \
 	problem_phase_mobility.o\
 	problem_phase_rel_perm.o\
 	problem_phase_source.o\
-	problem_temp_source.o\
 	problem_phase_viscosity.o\
 	problem_porosity.o\
 	problem_retardation.o\
@@ -141,8 +132,6 @@ OBJS = \
 	solver_lb.o\
 	solver_richards.o\
 	subsrf_sim.o\
-	temp_function_eval.o\
-	temperature_jacobian_eval.o\
 	time_cycle_data.o\
 	timing.o\
 	total_velocity_face.o\
@@ -155,7 +144,9 @@ OBJS = \
 	well_package.o\
 	wells_lb.o\
 	write_parflow_binary.o \
-	wrf_parflow.o
+	wrf_parflow.o \
+	n_vector.o \
+	nl_function_eval.o 
 
 $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB): $(OBJS) $(AMPS_LIB_DEPEND)
 	@AR@ ru $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB) $(OBJS)

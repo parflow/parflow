@@ -1,4 +1,4 @@
-subroutine pfreadout(clm,drv,tile,saturation_data,pressure_data,temperature_data,rank,ix,iy)
+subroutine pfreadout(clm,drv,tile,saturation_data,pressure_data,rank,ix,iy)
 
   use drv_module          ! 1-D Land Model Driver variables
   !use dfport
@@ -13,7 +13,6 @@ subroutine pfreadout(clm,drv,tile,saturation_data,pressure_data,temperature_data
   type (tiledec) :: tile(drv%nch)
   type (clm1d), intent(inout) :: clm(drv%nch)	 !CLM 1-D Module
   real(r8) saturation_data(drv%nc,drv%nr,parfl_nlevsoi),pressure_data(drv%nc,drv%nr,parfl_nlevsoi)
-  real(r8) temperature_data(drv%nc,drv%nr,parfl_nlevsoi)
   real(r8) flowd(drv%nc,drv%nr)
   real(r8) frac
 								
@@ -40,7 +39,7 @@ subroutine pfreadout(clm,drv,tile,saturation_data,pressure_data,temperature_data
     j=tile(t)%row
     if(clm(t)%planar_mask == 1) then
       clm(t)%pf_vol_liq(k) = saturation_data(i,j,parfl_nlevsoi-k+1) * clm(t)%watsat(k)
-      clm(t)%pf_press(k) = pressure_data(i,j,parfl_nlevsoi-k+1) * 1000.0d0 !/ (1000.0d0 * 9.81)
+      clm(t)%pf_press(k) = pressure_data(i,j,parfl_nlevsoi-k+1) * 1000.d0
       if (clm(t)%topo_mask(k) >= 1) then
         counter(i,j)  = counter(i,j) + 1
         if (clm(t)%pf_press(k) < -100000.0d0) then 
@@ -54,7 +53,6 @@ subroutine pfreadout(clm,drv,tile,saturation_data,pressure_data,temperature_data
         endif
                
         clm(t)%h2osoi_liq(counter(i,j)) = clm(t)%pf_vol_liq(k)*clm(t)%dz(1)*denh2o
-        clm(t)%t_soisno(counter(i,j)) = temperature_data(i,j,parfl_nlevsoi-k+1)
       endif
     endif 
 !if (i == 10 .and. j == 10) write(*,'(3i,f,i,f)')i,j,k,(clm(t)%pf_press(k)/1000.0d0),clm(t)%topo_mask(k),clm(t)%pf_vol_liq(k)

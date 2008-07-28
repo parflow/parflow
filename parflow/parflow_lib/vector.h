@@ -16,6 +16,7 @@
 #define _VECTOR_HEADER
 
 #include "grid.h"
+#include "n_vector.h"
 
 /*--------------------------------------------------------------------------
  * Subvector
@@ -56,10 +57,9 @@ typedef struct _Vector
 
 } Vector;
 
-typedef struct _Multispecies
-{
-  Vector **specie;              /* Array of pointers to vectors */
-} Multispecies;
+
+typedef Vector *N_Vector;
+
 
 /*--------------------------------------------------------------------------
  * Accessor functions for the Subvector structure

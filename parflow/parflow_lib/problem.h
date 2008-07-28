@@ -35,10 +35,9 @@ typedef struct
 					   SolverRichards */
    /* PDE coefficients */
    double      gravity;
+   double     *phase_viscosity;         /* array of size num_phases */
    double     *contaminant_degradation; /* array of size num_contaminants */
    PFModule   *phase_density; 
-   PFModule   *internal_energydensity; 
-   PFModule   *phase_viscosity; 
    PFModule   *permeability;
    PFModule   *porosity;
    PFModule   *retardation;
@@ -46,28 +45,22 @@ typedef struct
    PFModule   *phase_rel_perm;          /* relative permeability used in 
                                            SolverRichards */
    PFModule   *phase_source;
-   PFModule   *temp_source;
    PFModule   *specific_storage;        //sk
    PFModule   *capillary_pressure;
-   PFModule   *saturation;              /* saturation function used in SolverRichards */
-
-   /* Thermal coefficients */
-   PFModule   *thermal_conductivity;
-   PFModule   *phase_heat_capacity;
+   PFModule   *saturation;              /* saturation function used in 
+                                           SolverRichards */
 
    /* boundary conditions */
    PFModule   *bc_internal;
    PFModule   *bc_pressure;
    PFModule   *bc_pressure_package;
-   PFModule   *bc_temperature;
-   PFModule   *bc_temperature_package;
    PFModule   *bc_phase_saturation;     /* RDF assume Dirichlet from IC */
 
    /* initial conditions */
    PFModule   *ic_phase_concen;
    PFModule   *ic_phase_satur;
-   PFModule   *ic_phase_pressure;       /* Pressure initial cond. used by SolverRichards */
-   PFModule   *ic_phase_temperature;       /* Temperature initial cond. */
+   PFModule   *ic_phase_pressure;       /* Pressure initial cond. used by
+					   SolverRichards */
 
    /* error calculations */             
    PFModule  *l2_error_norm;            /* Error calculation used for known
@@ -106,7 +99,6 @@ typedef struct
 
    WellData       *well_data;
    BCPressureData *bc_pressure_data;
-   BCTemperatureData *bc_temperature_data;
    
    /*sk  overland flow*/
    Vector *x_slope;
@@ -146,8 +138,8 @@ typedef struct
 /* PDE accessors */
 #define ProblemGravity(problem)                   ((problem) -> gravity)
 #define ProblemPhaseDensity(problem)              ((problem) -> phase_density)
-#define ProblemInternalEnergyDensity(problem)     ((problem) -> internal_energydensity)
-#define ProblemPhaseViscosity(problem)            ((problem) -> phase_viscosity)
+#define ProblemPhaseViscosities(problem)          ((problem) -> phase_viscosity)
+#define ProblemPhaseViscosity(problem, i)         ((problem) -> phase_viscosity[i])
 #define ProblemContaminantDegradations(problem)   ((problem) -> contaminant_degradation)
 #define ProblemContaminantDegradation(problem, i) ((problem) -> contaminant_degradation[i])
 #define ProblemPermeability(problem)              ((problem) -> permeability)
@@ -156,11 +148,8 @@ typedef struct
 #define ProblemPhaseMobility(problem)             ((problem) -> phase_mobility)
 #define ProblemPhaseRelPerm(problem)              ((problem) -> phase_rel_perm)
 #define ProblemPhaseSource(problem)               ((problem) -> phase_source)
-#define ProblemTempSource(problem)                ((problem) -> temp_source)
 #define ProblemCapillaryPressure(problem)         ((problem) -> capillary_pressure)
 #define ProblemSaturation(problem)                ((problem) -> saturation)
-#define ProblemThermalConductivity(problem)       ((problem) -> thermal_conductivity)
-#define ProblemPhaseHeatCapacity(problem)         ((problem) -> phase_heat_capacity)
 #define ProblemBCInternal(problem)                ((problem) -> bc_internal)
 #define ProblemSpecStorage(problem)               ((problem) -> specific_storage) //sk
 #define ProblemXSlope(problem)                    ((problem) -> x_slope) //sk
@@ -170,15 +159,12 @@ typedef struct
 /* boundary condition accessors */
 #define ProblemBCPressure(problem)                ((problem) -> bc_pressure)
 #define ProblemBCPressurePackage(problem)         ((problem) -> bc_pressure_package)
-#define ProblemBCTemperature(problem)             ((problem) -> bc_temperature)
-#define ProblemBCTemperaturePackage(problem)      ((problem) -> bc_temperature_package)
 #define ProblemBCPhaseSaturation(problem)         ((problem) -> bc_phase_saturation)
 
 /* initial condition accessors */
 #define ProblemICPhaseConcen(problem)             ((problem) -> ic_phase_concen)
 #define ProblemICPhaseSatur(problem)              ((problem) -> ic_phase_satur)
 #define ProblemICPhasePressure(problem)           ((problem) -> ic_phase_pressure)
-#define ProblemICPhaseTemperature(problem)        ((problem) -> ic_phase_temperature)
 
 /* constitutive relations */
 #define ProblemSaturationConstitutive(problem)    ((problem) -> constitutive)
@@ -208,7 +194,6 @@ typedef struct
 #define ProblemDataPorosity(problem_data)       ((problem_data) -> porosity)
 #define ProblemDataWellData(problem_data)       ((problem_data) -> well_data)
 #define ProblemDataBCPressureData(problem_data) ((problem_data) -> bc_pressure_data)
-#define ProblemDataBCTemperatureData(problem_data) ((problem_data) -> bc_temperature_data)
 #define ProblemDataSpecificStorage(problem_data)((problem_data) -> specific_storage) //sk
 #define ProblemDataTSlopeX(problem_data)        ((problem_data) -> x_slope) //sk
 #define ProblemDataTSlopeY(problem_data)        ((problem_data) -> y_slope) //sk

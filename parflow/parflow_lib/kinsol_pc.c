@@ -65,22 +65,17 @@ Vector      *rhs;
  *--------------------------------------------------------------------------*/
 
 PFModule  *KinsolPCInitInstanceXtra(problem, grid, problem_data,  
-				    temp_data, specie, pressure, temperature, saturation, 
-				    density, viscosity, dt, time, n, nspecies)
+				    temp_data, pressure, saturation, 
+				    density, dt, time)
 Problem      *problem;
 Grid         *grid;
 ProblemData  *problem_data;
 double       *temp_data;
-Vector       *specie;
 Vector       *pressure;
-Vector       *temperature;
 Vector       *saturation;
 Vector       *density;
-Vector       *viscosity;
 double        dt;
 double        time;
-int           n;
-int           nspecies;
 {
    PFModule      *this_module        = ThisPFModule;
    PublicXtra    *public_xtra        = PFModulePublicXtra(this_module);
@@ -127,23 +122,23 @@ int           nspecies;
    {
       (instance_xtra -> discretization) = 
 	 PFModuleNewInstance(discretization, (problem, grid, temp_data, 
-					      pc_matrix_type, n, nspecies));
+					      pc_matrix_type));
       (instance_xtra -> precond) =
          PFModuleNewInstance(precond,(problem, grid, problem_data, NULL, 
 				      temp_data));
    }
-   else if (specie!= NULL)
+   else if (pressure != NULL)
    {
       PFModuleInvoke(void, (instance_xtra -> discretization),
-		  (specie, &PC, pressure, temperature, saturation, density, viscosity, problem_data, dt, 
-		   time, pc_matrix_type, n, nspecies));
+		  (pressure, &PC, saturation, density, problem_data, dt, 
+		   time, pc_matrix_type));
       PFModuleReNewInstance((instance_xtra -> precond),
 			    (NULL, NULL, problem_data, PC, temp_data));
    }
    else
    {
       PFModuleReNewInstance((instance_xtra -> discretization), 
-			    (problem, grid, temp_data, pc_matrix_type, n, nspecies));
+			    (problem, grid, temp_data, pc_matrix_type));
       PFModuleReNewInstance((instance_xtra -> precond),
 			    (NULL, NULL, problem_data, NULL, temp_data));
    }

@@ -52,7 +52,8 @@ subroutine drv_readvegpf (drv,grid,tile,clm)
 !=== End Variable List ===================================================
 
 ! Open and read 1-D  CLM input file
-
+print*, "Open and read 1-D  CLM input file"
+print*, drv%vegpf
   open(9, file=drv%vegpf, form='formatted', status = 'old',action='read')
 
   ioval=0

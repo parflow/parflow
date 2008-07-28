@@ -32,7 +32,6 @@ typedef struct
    PFModule  *porosity;
    PFModule  *wells;
    PFModule  *bc_pressure;
-   PFModule  *bc_temperature;
    PFModule  *specific_storage; //sk
    PFModule  *x_slope; //sk
    PFModule  *y_slope; //sk
@@ -57,17 +56,16 @@ ProblemData  *problem_data;
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
 
-   PFModule      *geometries       = (instance_xtra -> geometries);
-   PFModule      *domain           = (instance_xtra -> domain);
-   PFModule      *permeability     = (instance_xtra -> permeability);
-   PFModule      *porosity         = (instance_xtra -> porosity);
-   PFModule      *wells            = (instance_xtra -> wells);
-   PFModule      *bc_pressure      = (instance_xtra -> bc_pressure);
-   PFModule      *bc_temperature   = (instance_xtra -> bc_temperature);
+   PFModule      *geometries   = (instance_xtra -> geometries);
+   PFModule      *domain       = (instance_xtra -> domain);
+   PFModule      *permeability = (instance_xtra -> permeability);
+   PFModule      *porosity     = (instance_xtra -> porosity);
+   PFModule      *wells        = (instance_xtra -> wells);
+   PFModule      *bc_pressure  = (instance_xtra -> bc_pressure);
    PFModule      *specific_storage = (instance_xtra -> specific_storage); //sk
-   PFModule      *x_slope          = (instance_xtra -> x_slope); //sk
-   PFModule      *y_slope          = (instance_xtra -> y_slope); //sk
-   PFModule      *mann             = (instance_xtra -> mann); //sk
+   PFModule      *x_slope      = (instance_xtra -> x_slope); //sk
+   PFModule      *y_slope      = (instance_xtra -> y_slope); //sk
+   PFModule      *mann         = (instance_xtra -> mann); //sk
 
    /* Note: the order in which these modules are called is important */
    PFModuleInvoke(void, wells, (problem_data));
@@ -94,17 +92,19 @@ ProblemData  *problem_data;
 		      ProblemDataSpecificStorage(problem_data)));
       PFModuleInvoke(void, x_slope,                 //sk
 		     (problem_data,
-		      ProblemDataTSlopeX(problem_data)));
+		      ProblemDataTSlopeX(problem_data),
+                      ProblemDataPorosity(problem_data)));
       PFModuleInvoke(void, y_slope,                 //sk
 		     (problem_data,
-		      ProblemDataTSlopeY(problem_data)));
+		      ProblemDataTSlopeY(problem_data),
+                      ProblemDataPorosity(problem_data)));
       PFModuleInvoke(void, mann,                 //sk
 		     (problem_data,
-		      ProblemDataMannings(problem_data)));
+		      ProblemDataMannings(problem_data),
+                      ProblemDataPorosity(problem_data)));
       (instance_xtra -> site_data_not_formed) = 0;
    }
    PFModuleInvoke(void, bc_pressure, (problem_data));
-   PFModuleInvoke(void, bc_temperature, (problem_data));
 }
 
 
@@ -171,13 +171,12 @@ double    *temp_data;
 	     PFModuleNewInstance(ProblemMannings(problem), (grid));
 
       (instance_xtra -> site_data_not_formed) = 1;
+
       (instance_xtra -> wells) =
           PFModuleNewInstance(ProblemWellPackage(problem), ());
 
       (instance_xtra -> bc_pressure) =
           PFModuleNewInstance(ProblemBCPressurePackage(problem), (problem));
-      (instance_xtra -> bc_temperature) =
-          PFModuleNewInstance(ProblemBCTemperaturePackage(problem), (problem));
 
    }
    else
@@ -193,7 +192,7 @@ double    *temp_data;
       PFModuleReNewInstance((instance_xtra -> y_slope), (grid));    //sk
       PFModuleReNewInstance((instance_xtra -> mann), (grid));    //sk
       PFModuleReNewInstance((instance_xtra -> wells), ());
-      PFModuleReNewInstance((instance_xtra -> bc_temperature), (problem));
+      PFModuleReNewInstance((instance_xtra -> bc_pressure), (problem));
    }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -213,7 +212,7 @@ void  SetProblemDataFreeInstanceXtra()
 
    if(instance_xtra)
    {
-      PFModuleFreeInstance(instance_xtra -> bc_temperature);
+      PFModuleFreeInstance(instance_xtra -> bc_pressure);
       PFModuleFreeInstance(instance_xtra -> wells);
 
       PFModuleFreeInstance(instance_xtra -> geometries);
@@ -224,8 +223,6 @@ void  SetProblemDataFreeInstanceXtra()
       PFModuleFreeInstance(instance_xtra -> x_slope);   //sk
       PFModuleFreeInstance(instance_xtra -> y_slope);   //sk
       PFModuleFreeInstance(instance_xtra -> mann);   //sk
-
-      PFModuleFreeInstance(instance_xtra -> bc_pressure);
 
       tfree(instance_xtra);
    }

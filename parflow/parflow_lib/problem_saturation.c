@@ -271,12 +271,10 @@ int          fcn;               /* Flag determining what to calculate
 		     psdat[ips] = s_dif + s_res;
 		  else
 		  {
-		     //head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-		     head     = fabs(ppdat[ipp]);
+		     head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 		     psdat[ips] = s_dif / pow(1.0 + pow((alpha*head),n),m)
 		                  + s_res;
 		  }
-                  //printf("%e %e \n",ppdat[ipp],psdat[ips]);
 	       });
 	    }    /* End if clause */
 	    else /* fcn = CALCDER */
@@ -297,8 +295,7 @@ int          fcn;               /* Flag determining what to calculate
 		     psdat[ips] = 0.0;
 		  else
 		  {
-		     //head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-		     head     = fabs(ppdat[ipp]);
+		     head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 		     psdat[ips] = (m*n*alpha*pow(alpha*head,(n-1)))*s_dif
 				        /(pow(1.0 + pow(alpha*head,n),m+1));
 		  }
@@ -369,8 +366,7 @@ int          fcn;               /* Flag determining what to calculate
 		     psdat[ips] = s_sat;
 		  else
 		  {
-		     //head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-		     head     = fabs(ppdat[ipp]);
+		     head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 		     psdat[ips] = (s_sat - s_res) / 
 		                  pow(1.0 + pow((alpha*head),n),m)
 		                  + s_res;
@@ -401,8 +397,7 @@ int          fcn;               /* Flag determining what to calculate
 		     psdat[ips] = 0.0;
 		  else
 		  {
-		     //head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-		     head     = fabs(ppdat[ipp]);
+		     head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 		     psdat[ips] = (m*n*alpha*pow(alpha*head,(n-1)))*s_dif
 				        /(pow(1.0 + pow(alpha*head,n),m+1));
 		  }
@@ -469,8 +464,7 @@ int          fcn;               /* Flag determining what to calculate
 		     psdat[ips] = s_dif + s_res;
 		  else
 		  {
-		     //head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-		     head     = fabs(ppdat[ipp]);
+		     head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 		     psdat[ips] = alpha * s_dif / ( alpha + pow(head, beta) )
 		                  + s_res;
 		  }
@@ -493,8 +487,7 @@ int          fcn;               /* Flag determining what to calculate
 		     psdat[ips] = 0.0;
 		  else
 		  {
-		     //head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-		     head     = fabs(ppdat[ipp]);
+		     head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 		     psdat[ips] = alpha * s_dif * beta * pow( head , beta-1 )
 		                  / pow( ( alpha + pow(head, beta) ), 2 );
 		  }

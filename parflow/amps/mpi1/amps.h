@@ -473,13 +473,19 @@ extern amps_Buffer *amps_BufferFreeList;
 { \
     char *ptr_src, *ptr_dest; \
     if((src) != (dest)) \
+    { \
 	if((stride) == 1) \
+        { \
 	    bcopy((src), (dest), (len)*sizeof(type)); \
+        } \
 	else \
+        { \
 	    for(ptr_src = (char*)(src), (ptr_dest) = (char *)(dest); \
 		(ptr_dest) < (char *)(dest) + (len)*(stride)*sizeof(type);\
 		(ptr_src) += sizeof(type), (ptr_dest) += sizeof(type)*(stride)) \
 	    bcopy((ptr_src), (ptr_dest), sizeof(type)); \
+        } \
+    } \
 } 
 
 #define AMPS_CALL_CHAR_IN(_comm, _src, _dest, _len, _stride) \

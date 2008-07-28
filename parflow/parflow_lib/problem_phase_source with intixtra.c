@@ -454,7 +454,7 @@ PFModule  *PhaseSourceNewPublicXtra()
 	    
 	    num_regions = (dummy0 -> num_regions) = NA_Sizeof(dummy0 -> regions);
 	    
-	    (dummy0 -> region_indices) = (int *)calloc((unsigned int)(num_regions), (unsigned int)sizeof(int)); 
+	    (dummy0 -> region_indices) = ctalloc(unsigned int, num_regions);
 	    (dummy0 -> values)         = ctalloc(double, num_regions);
 	    
 	    for (ir = 0; ir < num_regions; ir++)

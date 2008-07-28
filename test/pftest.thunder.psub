@@ -1,0 +1,11 @@
+#!/bin/sh
+##### These lines are for Moab
+#PSUB -tW 30
+#PSUB -pool pbatch
+
+##### These are shell commands
+date
+cd $PARFLOW_DIR/../parflow/test
+make check
+
+echo 'Done'

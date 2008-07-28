@@ -77,7 +77,7 @@ int          fcn;               /* Flag determining what to calculate
 
    Grid          *grid             = VectorGrid(phase_thermalconductivity);
 
-   GrGeomSolid   *gr_solid, *gr_domain;
+   GrGeomSolid   *gr_solid;
 
    Subvector     *pt_sub;
    Subvector     *pp_sub;
@@ -97,7 +97,7 @@ int          fcn;               /* Flag determining what to calculate
    int            ix,   iy,   iz, r;
    int            nx,   ny,   nz;
 
-   int            i, j, k, ipt, ips, ipp, ipd, ipRF;
+   int            i, j, k, ipt, ips, ipp;
 
    int            cwet_index, cdry_index;
 
@@ -166,7 +166,7 @@ int          fcn;               /* Flag determining what to calculate
    {
       int     data_from_file;
       double *cdrys, *cwets;
-      double  head, cdry, cwet;
+      double  cdry, cwet;
 
       Vector *cwet_values, *cdry_values;
 
@@ -427,7 +427,7 @@ PFModule   *ThermalConductivityNewPublicXtra()
    Type0         *dummy0;
    Type1         *dummy1;
 
-   int            num_regions, ir, ic;
+   int            num_regions, ir;
 
    char *switch_name;
    char *region;
@@ -553,8 +553,6 @@ void  ThermalConductivityFreePublicXtra()
 
    Type0       *dummy0;
    Type1       *dummy1;
-
-   int   num_regions, ir;
 
    if (public_xtra )
    {

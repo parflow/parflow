@@ -96,7 +96,7 @@ case `uname -a` in
     #
     # For LC chaos systems
     #
-    srun -n $2 $PARFLOW_DIR/bin/$PROGRAM $1
+    srun -n $2 $PARFLOW_RUN_OPTS $PARFLOW_DIR/bin/$PROGRAM $1
     exit 0
     ;;
 esac

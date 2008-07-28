@@ -384,7 +384,7 @@ char     *hashkey;
    /* Truncate the label if it is too large */
 
    if ((strlen(label) + 1) > MAX_LABEL_SIZE)
-      label[MAX_LABEL_SIZE - 1] = (char)NULL; 
+      label[MAX_LABEL_SIZE - 1] = 0; 
       
    strcpy(DataboxLabel(databox), label);
    Tcl_SetHashValue(entryPtr, databox);
@@ -2352,7 +2352,7 @@ char              *argv[];
    /* Truncate the new label if it is too long */
 
    if ((strlen(newlabel) + 1) > MAX_LABEL_SIZE)
-      newlabel[MAX_LABEL_SIZE - 1] = (char)NULL;
+      newlabel[MAX_LABEL_SIZE - 1] = 0;
 
    strcpy(DataboxLabel(databox), newlabel);
 

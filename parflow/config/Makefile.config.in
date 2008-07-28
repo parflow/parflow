@@ -36,6 +36,7 @@ AMPS_FLAGS = -DAMPS_PRINT_HOSTNAME
 AMPS_LIB                        = libamps.a
 AMPS_COMMON_LIB                 = libamps_common.a
 PARFLOW_LIB                     = libparflow.a
+KINSOL_LIB                      = libkinsol.a
 
 #
 # These are controlled by the --with-clm flag to configure
@@ -52,8 +53,8 @@ PARFLOW_BIN_DIR                 = $(OBJECT)/bin
 AMPS_LIBS                       = @AMPS_LIBS@
 AMPS_LIB_DEPEND                 = @AMPS_LIB_DEPEND@
 
-PARFLOW_LIBS = -L$(PARFLOW_LIB_DIR) -lparflow $(CLM_LIBS) $(AMPS_LIBS)
-PARFLOW_LIB_DEPEND = $(PARFLOW_LIB_DIR)/libparflow.a
+PARFLOW_LIBS = -L$(PARFLOW_LIB_DIR) -lparflow $(CLM_LIBS) $(AMPS_LIBS) -lkinsol
+PARFLOW_LIB_DEPEND = $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB) $(PARFLOW_LIB_DIR)/$(KINSOL_LIB)
 
 LIB_SUFFIX=@LIB_SUFFIX@
 

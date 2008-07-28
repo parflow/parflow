@@ -72,7 +72,7 @@ subroutine drv_readclmin(drv,grid,rank)
 
 !===  (1) Open and read domain info into drv_module from clm_in input file
 
-  open(10, file='drv_clmin.dat', form='formatted', status = 'old',action='read')
+  open(10, file='drv_clmin.dat.'//trim(adjustl(RI)), form='formatted', status = 'old',action='read')
 
   ioval=0
   do while(IOVAL == 0)
@@ -131,7 +131,7 @@ subroutine drv_readclmin(drv,grid,rank)
 write(RI,*) rank
 !=== Open and read 1-D  CLM input file
 
-  open(10, file='drv_clmin.dat', form='formatted', status = 'old',action='read')
+  open(10, file='drv_clmin.dat.'//trim(adjustl(RI)), form='formatted', status = 'old',action='read')
 
   ioval=0
   do while (ioval == 0)
@@ -178,7 +178,7 @@ write(RI,*) rank
   close(10)
 
 !=== Open Files (to be read in later)
-  open(11,file=drv%metf1d, form='formatted',action='read')  !Meteorological Input
+  open(11,file=trim(adjustl(drv%metf1d))//'.'//trim(adjustl(RI)), form='formatted',action='read')  !Meteorological Input
 
 ! If restarting from a restart file then assume append to old output file
 !@ These statements should be placed into "open_files.f90"

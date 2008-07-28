@@ -89,7 +89,7 @@ int     fcn;             /* Flag determining what to calculate
 
    Grid          *grid;
 
-   Subvector     *p_sub, *u_sub, *d_sub, *t_sub;
+   Subvector     *u_sub, *d_sub, *t_sub;
 
    double        *pt, *pp, *pu, *pd;
 
@@ -99,14 +99,13 @@ int     fcn;             /* Flag determining what to calculate
 
    int            ix,   iy,   iz;
    int            nx,   ny,   nz;
-   int            nx_p, ny_p, nz_p;
    int            nx_d, ny_d, nz_d;
 
-   int            i, j, k, ip, id;
+   int            i, j, k, ip;
    
    const double  a1=6.824687741E3;
    const double  a2=-5.422063673E2;
-   const double  a3=-2.096666205E4;
+//   const double  a3=-2.096666205E4;
    const double  a4=3.941286787E4;
    const double  a5=-13.466555478E4;
    const double  a6=29.707143084E4;
@@ -147,7 +146,7 @@ int     fcn;             /* Flag determining what to calculate
    double y,zp,z,cz,aa1;
    double par1,par2,par3,par4,par5;
    double cc1,cc2,cc4,cc8,cc10;
-   double dd1,dd2,dd3,dd4;
+   double dd1,dd2,dd4;
    double vmkr,v,yd,snum;
    double prt1,prt2,prt3,prt4,prt5;
    double bb1,bb2,ee1,ee3,entr,h;

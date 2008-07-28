@@ -74,7 +74,7 @@ IDB_Entry *IDB_NewEntry(char *key, char *value)
 {
    IDB_Entry *a;
 
-   a = (IDB_Entry *)calloc(sizeof(IDB_Entry), 1);
+   a = ctalloc(IDB_Entry, 1);
 
    a -> key = strdup(key);
    a -> value =strdup(value);
@@ -461,7 +461,7 @@ NameArray NA_NewNameArray(char *string)
    char *lasts = NULL;
 #endif
 
-   name_array = (NameArray)calloc(1, sizeof(NameArrayStruct));
+   name_array = ctalloc(NameArrayStruct,1);
 
    /* parse the string and put into the string */
 
@@ -486,17 +486,17 @@ NameArray NA_NewNameArray(char *string)
 
    new_string = strdup(string);
 
-   name_array -> names = (char **)malloc(sizeof(char *) * size);
+   name_array -> names = talloc(char *, size);
    name_array -> num = size;
    name_array -> tok_string = new_string;
    name_array -> string = strdup(string);
 
    ptr = strtok(new_string, WHITE);
    size = 0;
-   name_array->names[size++]=ptr;
+   name_array->names[size++]=strdup(ptr);
 
    while( (ptr = strtok(NULL, WHITE)) != NULL)
-      name_array->names[size++] = ptr;
+      name_array->names[size++] = strdup(ptr);
 
 #endif
 
@@ -506,13 +506,14 @@ NameArray NA_NewNameArray(char *string)
 int NA_AppendToArray(NameArray name_array, char *string)
 {
    int size;
+   int i;
   
    char *ptr;
 
    char *both_string;
    char *temp_string;
 
-   both_string = (char *)malloc(sizeof(char)*(strlen(string)+strlen(name_array->string)+2));
+   both_string = talloc(char, strlen(string)+strlen(name_array->string)+2);
 
    sprintf(both_string,"%s %s", name_array -> string, string);
 
@@ -538,20 +539,25 @@ int NA_AppendToArray(NameArray name_array, char *string)
 	   free(name_array -> string);
    if(name_array -> tok_string)
 	   free(name_array -> tok_string);
+
+   for(i = 0; i < name_array -> num; i++) 
+   {
+      free(name_array -> names[i]);
+   }
    if(name_array -> names)
 	   free(name_array -> names);
 
-   name_array -> names = (char **)malloc(sizeof(char *) * size);
+   name_array -> names = talloc(char *, size);
    name_array -> num = size;
    name_array -> string = strdup(both_string);
    name_array -> tok_string = both_string;
 
    ptr = strtok(both_string, WHITE);
    size = 0;
-   name_array->names[size++]=ptr;
+   name_array->names[size++]=strdup(ptr);
 
    while( (ptr = strtok(NULL, WHITE)) != NULL)
-      name_array->names[size++] = ptr;
+      name_array->names[size++] = strdup(ptr);
    
    return 0;
 }
@@ -559,16 +565,22 @@ int NA_AppendToArray(NameArray name_array, char *string)
 
 void NA_FreeNameArray(NameArray name_array)
 {
-	if(name_array)
-	{
-		if(name_array -> string)
-			free(name_array -> string);
-		if(name_array -> tok_string)
-			free(name_array -> tok_string);
-		if(name_array -> names)
-			free(name_array -> names);
-		free(name_array);
-	}
+   int i;
+
+   if(name_array)
+   {
+      if(name_array -> string)
+	 free(name_array -> string);
+      if(name_array -> tok_string)
+	 free(name_array -> tok_string);
+      for(i = 0; i < name_array -> num; i++) 
+      {
+	 free(name_array -> names[i]);
+      }
+      if(name_array -> names)
+	 free(name_array -> names);
+      free(name_array);
+   }
 }
 
 int NA_NameToIndex(NameArray name_array, char *name)

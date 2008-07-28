@@ -1140,9 +1140,13 @@ double       *temp_data;
    }
 
    if ( grid == NULL)
+   {
       tfree(grid_l);
+   }
    if ( A == NULL)
+   {
       tfree(A_l);
+   }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
    return this_module;

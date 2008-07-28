@@ -102,8 +102,6 @@ subroutine clm_thermalk (tk, cv, clm)
      tk(i) = thk(i)*thk(i+1)*(clm%z(i+1)-clm%z(i)) &
           /(thk(i)*(clm%z(i+1)-clm%zi(i))+thk(i+1)*(clm%zi(i)-clm%z(i)))
   enddo
-! sjk: set tk constant to make consitent with ParFlow
-  tk = 2.0d0
   tk(nlevsoi) = 0.
 
 ! Heat capacity

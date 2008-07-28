@@ -300,8 +300,7 @@ int          fcn;            /* Flag determining what to calculate
 		     n          = ns[ir];
 		     m          = 1.0e0 - (1.0e0/n);
 
-		     //head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-		     head       = fabs(ppdat[ipp]);
+		     head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 		     opahn      = 1.0 + pow(alpha*head,n);
 		     ahnm1      = pow(alpha*head,n-1);
 		     prdat[ipr] = pow(1.0 - ahnm1/(pow(opahn,m)),2)
@@ -329,8 +328,7 @@ int          fcn;            /* Flag determining what to calculate
 		     n        = ns[ir];
 		     m        = 1.0e0 - (1.0e0/n);
 
-		     //head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-		     head     = fabs(ppdat[ipp]);
+		     head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 		     opahn    = 1.0 + pow(alpha*head,n);
 		     ahnm1    = pow(alpha*head,n-1);
 		     coeff    = 1.0 - ahnm1*pow(opahn,-m);
@@ -405,8 +403,7 @@ int          fcn;            /* Flag determining what to calculate
 		     n          = n_values_dat[n_index];
 		     m          = 1.0e0 - (1.0e0/n);
 
-		     //head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-		     head       = fabs(ppdat[ipp]);
+		     head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 		     opahn      = 1.0 + pow(alpha*head,n);
 		     ahnm1      = pow(alpha*head,n-1);
 		     prdat[ipr] = pow(1.0 - ahnm1/(pow(opahn,m)),2)
@@ -437,8 +434,7 @@ int          fcn;            /* Flag determining what to calculate
 		     n        = n_values_dat[n_index];
 		     m        = 1.0e0 - (1.0e0/n);
 
-		     //head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-		     head     = fabs(ppdat[ipp]);
+		     head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 		     opahn    = 1.0 + pow(alpha*head,n);
 		     ahnm1    = pow(alpha*head,n-1);
 		     coeff    = 1.0 - ahnm1*pow(opahn,-m);
@@ -500,8 +496,7 @@ int          fcn;            /* Flag determining what to calculate
 		     n          = ns[ir];
 		     m          = 1.0e0 - (1.0e0/n);
 
-		     //head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-		     head       = fabs(ppdat[ipp]);
+		     head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 		     opahn      = 1.0 + pow(alpha*head,n);
 		     ahnm1      = pow(alpha*head,n-1);
 		     prdat[ipr] = pow(1.0 - ahnm1/(pow(opahn,m)),2)
@@ -525,8 +520,7 @@ int          fcn;            /* Flag determining what to calculate
 		     n        = ns[ir];
 		     m        = 1.0e0 - (1.0e0/n);
 
-		     //head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-		     head     = fabs(ppdat[ipp]);
+		     head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 		     opahn    = 1.0 + pow(alpha*head,n);
 		     ahnm1    = pow(alpha*head,n-1);
 		     coeff    = 1.0 - ahnm1*pow(opahn,-m);
@@ -596,8 +590,7 @@ int          fcn;            /* Flag determining what to calculate
 		     n          = n_values_dat[n_index];
 		     m          = 1.0e0 - (1.0e0/n);
 
-		     //head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-		     head       = fabs(ppdat[ipp]);
+		     head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 		     opahn      = 1.0 + pow(alpha*head,n);
 		     ahnm1      = pow(alpha*head,n-1);
 		     prdat[ipr] = pow(1.0 - ahnm1/(pow(opahn,m)),2)
@@ -624,8 +617,7 @@ int          fcn;            /* Flag determining what to calculate
 		     n        = n_values_dat[n_index];
 		     m        = 1.0e0 - (1.0e0/n);
 
-		     //head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-		     head     = fabs(ppdat[ipp]);
+		     head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 		     opahn    = 1.0 + pow(alpha*head,n);
 		     ahnm1    = pow(alpha*head,n-1);
 		     coeff    = 1.0 - ahnm1*pow(opahn,-m);
@@ -698,8 +690,7 @@ int          fcn;            /* Flag determining what to calculate
 		     prdat[ipr] = 1.0;
 		  else
 		  {
-                     //head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-                     head       = fabs(ppdat[ipp]);
+                     head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 		     tmp        = As[ir] + pow(head, gammas[ir]);
                      prdat[ipr] = As[ir] / tmp;
                   }
@@ -721,8 +712,7 @@ int          fcn;            /* Flag determining what to calculate
                      prdat[ipr] = 0.0;
                   else
                   {
-                     //head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-                     head       = fabs(ppdat[ipp]);
+                     head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 		     tmp        = pow(head, gammas[ir]);
                      prdat[ipr] = As[ir] * gammas[ir] 
 		                  * pow(head, gammas[ir]-1) / pow(tmp, 2);
@@ -771,8 +761,7 @@ int          fcn;            /* Flag determining what to calculate
                      prdat[ipr] = 1.0;
                   else
                   {
-                     //head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-                     head       = fabs(ppdat[ipp]);
+                     head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 		     tmp        = As[ir] + pow(head, gammas[ir]);
                      prdat[ipr] = As[ir] / tmp;
                   }
@@ -790,8 +779,7 @@ int          fcn;            /* Flag determining what to calculate
                      prdat[ipr] = 0.0;
                   else
                   {
-                     //head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-                     head       = fabs(ppdat[ipp]);
+                     head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 		     tmp        = pow(head, gammas[ir]);
                      prdat[ipr] = As[ir] * gammas[ir] 
 		                  * pow(head, gammas[ir]-1) / pow(tmp, 2);
