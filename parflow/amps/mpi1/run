@@ -81,7 +81,7 @@ case `uname -a` in
     # IBM SP2
     #
   
-    poe $PARFLOW_DIR/bin/$PROGRAM -procs `cat .amps.info.$2` $1 $DEBUG_OPT $DEBUG
+    poe $PARFLOW_DIR/bin/$PROGRAM -procs `cat .amps.info.$2` $1 $DEBUG_OPT $DEBUG > $1.out.txt
 
     exit 0
     ;;
@@ -89,14 +89,14 @@ case `uname -a` in
     #
     # For Sun WildFire systems
     #
-    tmrun -np `cat .amps.info.$2`  $PARFLOW_DIR/bin/$PROGRAM $1 $DEBUG_OPT $DEBUG 
+    tmrun -np `cat .amps.info.$2`  $PARFLOW_DIR/bin/$PROGRAM $1 $DEBUG_OPT $DEBUG > $1.out.txt
     exit 0
     ;;
     *chaos*)
     #
     # For LC chaos systems
     #
-    srun -n $2 $PARFLOW_RUN_OPTS $PARFLOW_DIR/bin/$PROGRAM $1
+    srun -n $2 $PARFLOW_RUN_OPTS $PARFLOW_DIR/bin/$PROGRAM $1 > $1.out.txt
     exit 0
     ;;
 esac
@@ -111,16 +111,16 @@ then
     #
     if [ "$PBS_NODEFILE" = "" ]
     then
-       mpirun -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1
+       mpirun -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 > $1.out.txt
     else
-       mpirun -machinefile $PBS_NODEFILE -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 
+       mpirun -machinefile $PBS_NODEFILE -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 > $1.out.txt
    fi
 elif mpirun  2>&1 | grep -q "Open MPI"
 then
     #
     # OpenMPI
     #
-    mpirun -np $2  $PARFLOW_DIR/bin/$PROGRAM $1
+    mpirun -np $2  $PARFLOW_DIR/bin/$PROGRAM $1 > $1.out.txt
 else
     echo "Unrecognized MPI implementation"
     exit 1
@@ -159,7 +159,7 @@ done
 
 echo MachineList $MACHINE_LIST
 
-echo mpirun  $MACHINE_LIST $PARFLOW_DIR/bin/$PROGRAM $1
+echo mpirun  $MACHINE_LIST $PARFLOW_DIR/bin/$PROGRAM $1 > $1.out.txt
 
 
 

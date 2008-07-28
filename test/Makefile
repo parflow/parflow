@@ -24,10 +24,10 @@ check:
 clean:
 	@rm -f *.pfb*
 	@rm -f *.pfsb*
-	@rm -f pfout.txt
 	@rm -f *.log
 	@rm -f .hostfile
 	@rm -f .amps.*
 	@rm -f *.out.pftcl
 	@rm -f *.pfidb
+	@rm -f *.out.txt
 
