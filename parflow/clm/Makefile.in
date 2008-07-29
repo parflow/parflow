@@ -16,15 +16,16 @@ default: all
 
 include $(OBJECT)/config/Makefile.config
 
+# Order is important due to .mod file creation
 OBJS = \
 	precision.o\
+	infnan.o\
 	clm_varpar.o\
 	clmtype.o\
 	drv_module.o\
 	clm_varcon.o\
 	drv_tilemodule.o\
 	drv_gridmodule.o\
-	infnan.o\
 	clm_typini.o\
 	pf_readout.o\
 	close_files.o\
@@ -90,6 +91,7 @@ all: $(PARFLOW_LIB_DIR)/$(CLM_LIB)
 
 clean:
 	$(PARFLOW_CLEAN)
+	@rm -f *.mod
 
 veryclean: clean
 	@$(RM) Makefile

@@ -6,15 +6,24 @@
 ## Description:	makefile for the parflow library and executable
 ##
 
+include $(PARFLOW_DIR)/config/Makefile.config
+
 default: all
 
-TESTS= \
+TESTS := \
+	test_X.tcl \
 	default_single.tcl \
 	default_richards.tcl \
 	forsyth2.tcl \
 	harvey.flow.tcl \
 	default_overland.tcl \
 	crater2D.tcl
+
+
+
+ifeq (${PARFLOW_HAVE_CLM},yes)
+TESTS += clm.tcl
+endif
 
 check:
 	@-for i in $(TESTS); \

@@ -29,6 +29,7 @@ typedef struct
    PFModule          *advect_concen;
    PFModule          *set_problem_data;
    PFModule          *nonlin_solver;
+   int                lsm;                   /* land surface model */
 
    Problem           *problem;
 
@@ -42,7 +43,6 @@ typedef struct
    int                print_satur;           /* print saturations? */
    int                print_concen;          /* print concentrations? */
    int                print_wells;           /* print well data? */
-
 } PublicXtra; 
 
 typedef struct
@@ -404,13 +404,6 @@ void AdvanceRichards(PFModule *this_module,
    PublicXtra    *public_xtra      = PFModulePublicXtra(this_module);
    InstanceXtra  *instance_xtra    = PFModuleInstanceXtra(this_module);
 
-#ifdef HAVE_CLM
-//  sk: For the couple with CLM 
-   int p = GetInt("Process.Topology.P");
-   int q = GetInt("Process.Topology.Q");
-   int r = GetInt("Process.Topology.R");
-#endif
-
    Problem      *problem           = (public_xtra -> problem);
 
    int           max_iterations      = (public_xtra -> max_iterations);
@@ -503,13 +496,16 @@ void AdvanceRichards(PFModule *this_module,
 
    do  /* while take_more_time_steps */
    {
-     
       /* sk: call to the land surface model/subroutine*/
       if (t == ct){ 
-
+	 //  sk: For the couple with CLM 
+	 int p = GetInt("Process.Topology.P");
+	 int q = GetInt("Process.Topology.Q");
+	 int r = GetInt("Process.Topology.R");
+	 
 	 ct += cdt;
 	 dt = cdt;
-
+	 
 	 ForSubgridI(is, GridSubgrids(grid))
 	 {
 	    subgrid = GridSubgrid(grid, is);
@@ -518,38 +514,58 @@ void AdvanceRichards(PFModule *this_module,
 	    et_sub = VectorSubvector(evap_trans, is);
 	    m_sub = VectorSubvector(instance_xtra -> mask, is);
 	    po_sub = VectorSubvector(porosity, is);
- 
+	    
 	    nx = SubgridNX(subgrid);
 	    ny = SubgridNY(subgrid);
 	    nz = SubgridNZ(subgrid);
- 
+	    
 	    ix = SubgridIX(subgrid);
 	    iy = SubgridIY(subgrid);
 	    iz = SubgridIZ(subgrid);
- 
+	    
 	    dx = SubgridDX(subgrid);
 	    dy = SubgridDY(subgrid);
 	    dz = SubgridDZ(subgrid);
- 
+	    
 	    nx_f = SubvectorNX(et_sub);
 	    ny_f = SubvectorNY(et_sub);
 	    nz_f = SubvectorNZ(et_sub);
- 
+	    
 	    sp  = SubvectorData(s_sub);
 	    pp = SubvectorData(p_sub);
 	    et = SubvectorData(et_sub);
 	    ms = SubvectorData(m_sub);
 	    po_dat = SubvectorData(po_sub);
- 
+	    
 	    ip = SubvectorEltIndex(p_sub, ix, iy, iz);
-#ifdef HAVE_CLM 
-	    CALL_CLM_LSM(pp,sp,et,ms,po_dat,dt,t,dx,dy,dz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,p,q,r,rank);
+	    
+	    switch (public_xtra -> lsm)
+	    {
+	       case 0:
+	       {
+		  // No LSM
+		  break;
+	       }
+	       case 1:
+	       {
+#ifdef HAVE_CLM      
+		  CALL_CLM_LSM(pp,sp,et,ms,po_dat,dt,t,dx,dy,dz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,p,q,r,rank);
+#else
+		  printf("Error calling CLM but it is not compiled into this version of Parflow");
 #endif
+		  break;		  
+	       }
+	       default:
+	       {
+		  printf("Calling unknown LSM model");
+	       }
+	    } /* switch on LSM */
+	    
 	 }
 	 handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
 	 FinalizeVectorUpdate(handle); 
       } //Endif to check whether an entire dt is complete
-                                                                                                     
+
       converged = 1;
       conv_failures = 0;
 
@@ -715,6 +731,7 @@ void AdvanceRichards(PFModule *this_module,
       if( (!amps_Rank(amps_CommWorld)) && (err_norm >= 0.0) )
       {
 	 printf("l2-error in pressure: %20.8e\n", err_norm);
+	 printf("tcl: set pressure_l2_error(%d) %20.8e\n", instance_xtra -> iteration_number, err_norm);
 	 fflush(NULL);
       }
 
@@ -1197,6 +1214,7 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    int            switch_value;
    NameArray      switch_na;
    NameArray      nonlin_switch_na;
+   NameArray      lsm_switch_na;
    switch_na = NA_NewNameArray("False True");
 
    public_xtra = ctalloc(PublicXtra, 1);
@@ -1232,6 +1250,35 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
       }
    }
    NA_FreeNameArray(nonlin_switch_na);
+
+   lsm_switch_na = NA_NewNameArray("none CLM");
+   sprintf(key, "%s.LSM", name);
+   switch_name = GetStringDefault(key, "none");
+   switch_value = NA_NameToIndex(lsm_switch_na, switch_name);
+   switch (switch_value)
+   {
+      case 0:
+      {
+	 public_xtra -> lsm = 0;
+	 break;
+      }
+      case 1:
+      {
+#ifdef HAVE_CLM
+	 public_xtra -> lsm = 1;
+#else
+         InputError("Error: <%s> used for key <%s> but this version of Parflow is compiled without CLM\n", switch_name, 
+	 key);
+#endif
+	 break;
+      }
+      default:
+      {
+         InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
+	 key);
+      }
+   }
+   NA_FreeNameArray(lsm_switch_na);
 
    sprintf(key, "%s.MaxIter", name);
    public_xtra -> max_iterations = GetIntDefault(key, 1000000);

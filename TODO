@@ -4,3 +4,7 @@ There were some compile problems with the CLM F90 and gfortran,
 flagged with "SGS" in the CLM directory.  All had to do with file
 open/write statements. A couple of the write statements were simply
 commented out to get things to compile.
+
+SGS
+
+The CLM test is currently broken as it is just a copy of default_richards.

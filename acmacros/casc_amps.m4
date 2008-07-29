@@ -39,7 +39,7 @@ case $AMPS in
   # This is horrifically bad design but there are all kinds of 
   # dependencies between amps and amps_common
     AMPS_LIBS="-lamps -lamps_common -lamps -lamps_common"
-    AMPS_LIB_DEPEND="\$(PARFLOW_DIR)/libamps_common.a \$(PARFLOW_LIB_DIR)/libamps.a"
+    AMPS_LIB_DEPEND="\$(PARFLOW_LIB_DIR)/libamps_common.a \$(PARFLOW_LIB_DIR)/libamps.a"
   ;;
 esac
 AC_MSG_RESULT([configuring AMPS $AMPS support])

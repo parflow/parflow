@@ -427,7 +427,7 @@ PFModule  *ManningsNewPublicXtra()
       {
 	 case 0:
 	 {
-		 dummy0 = ctalloc(Type0, 1);
+	    dummy0 = ctalloc(Type0, 1);
 	    
 	    switch_name = GetString("Mannings.GeomNames");
 	    
@@ -435,7 +435,7 @@ PFModule  *ManningsNewPublicXtra()
 	    
 	    num_regions = (dummy0 -> num_regions) = NA_Sizeof(dummy0 -> regions);
 
-	    (dummy0 -> region_indices) = ctalloc(unsigned int, num_regions); 
+	    (dummy0 -> region_indices) = ctalloc(int, num_regions); 
 	    (dummy0 -> values)         = ctalloc(double, num_regions);
 	    
 	    for (ir = 0; ir < num_regions; ir++)

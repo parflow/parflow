@@ -363,5 +363,23 @@ pfrun test_X
 # pfrun test_X -g {0}
 pfundist test_X
 
+#-----------------------------------------------------------------------------
+# Tests
+#-----------------------------------------------------------------------------
+source pftest.tcl
 
 
+# Expects setting of pressure_l2_error(1) is in output
+pftestParseAndEvaluateOutputForTCL test_X.out.txt
+
+set passed 1
+
+if ![pftestIsEqual $pressure_l2_error(1) 5.84881366e-05 "Max difference in Pressure" ] {
+    set passed 0
+}
+
+if $passed {
+    puts "test_X : PASSED"
+} {
+    puts "test_X : FAILED"
+}

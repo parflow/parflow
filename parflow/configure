@@ -676,6 +676,7 @@ INSTALL_SCRIPT
 INSTALL_DATA
 CLM_DIR
 CLM_LIBS
+PARFLOW_HAVE_CLM
 FC
 FCFLAGS
 ac_ct_FC
@@ -3272,7 +3273,9 @@ fi
 
 CLM_DIR=""
 CLM_LIBS=""
+PARFLOW_HAVE_CLM="no"
 if test "$with_clm" = "yes"; then
+   PARFLOW_HAVE_CLM="yes"
    CLM_DIR="clm"
    CLM_LIBS="-lclm"
    cat >>confdefs.h <<\_ACEOF
@@ -3280,6 +3283,7 @@ if test "$with_clm" = "yes"; then
 _ACEOF
 
 fi
+
 
 
 
@@ -12054,6 +12058,7 @@ INSTALL_SCRIPT!$INSTALL_SCRIPT$ac_delim
 INSTALL_DATA!$INSTALL_DATA$ac_delim
 CLM_DIR!$CLM_DIR$ac_delim
 CLM_LIBS!$CLM_LIBS$ac_delim
+PARFLOW_HAVE_CLM!$PARFLOW_HAVE_CLM$ac_delim
 FC!$FC$ac_delim
 FCFLAGS!$FCFLAGS$ac_delim
 ac_ct_FC!$ac_ct_FC$ac_delim
@@ -12087,7 +12092,6 @@ F77_FLAGS!$F77_FLAGS$ac_delim
 C_FLAGS!$C_FLAGS$ac_delim
 LD_FLAGS!$LD_FLAGS$ac_delim
 LIB_SUFFIX!$LIB_SUFFIX$ac_delim
-SRCDIR_COMPILE_PREFIX!$SRCDIR_COMPILE_PREFIX$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -12129,6 +12133,7 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+SRCDIR_COMPILE_PREFIX!$SRCDIR_COMPILE_PREFIX$ac_delim
 INC_PATH!$INC_PATH$ac_delim
 LIB_PATH!$LIB_PATH$ac_delim
 LIB_NAME!$LIB_NAME$ac_delim
@@ -12136,7 +12141,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 5; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 6; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
