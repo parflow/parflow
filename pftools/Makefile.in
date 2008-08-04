@@ -41,8 +41,8 @@ all: $(PARFLOW_TOOLS_BIN_DIR)/pfwell_cat $(PARFLOW_TOOLS_BIN_DIR)/pfwell_data gm
 PFWELL_CAT_HDRS = pfwell_cat.h well.h
 PFWELL_CAT_OBJS = pfwell_cat.o well.o
 $(PARFLOW_TOOLS_BIN_DIR)/pfwell_cat: Makefile $(PFWELL_CAT_HDRS) $(PFWELL_CAT_OBJS)
-	@$(CC) $(CFLAGS) -o $(PARFLOW_TOOLS_BIN_DIR)/pfwell_cat $(PFWELL_CAT_OBJS) \
-		 $(LDLIBS)
+	$(CC) $(CFLAGS) -o $(PARFLOW_TOOLS_BIN_DIR)/pfwell_cat $(PFWELL_CAT_OBJS) \
+		 $(LDFLAGS) $(LDLIBS)
 
 #
 # For building pfwell_data
@@ -51,7 +51,7 @@ PFWELL_DATA_HDRS = pfwell_data.h well.h
 PFWELL_DATA_OBJS = pfwell_data.o well.o
 $(PARFLOW_TOOLS_BIN_DIR)/pfwell_data: Makefile $(PFWELL_DATA_HDRS) $(PFWELL_DATA_OBJS)
 	$(CC) $(CFLAGS) -o $(PARFLOW_TOOLS_BIN_DIR)/pfwell_data $(PFWELL_DATA_OBJS) \
-		 $(LDLIBS)
+		 $(LDFLAGS) $(LDLIBS)
 
 #
 # GMS programs
