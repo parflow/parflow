@@ -680,6 +680,8 @@ PARFLOW_HAVE_CLM
 FC
 FCFLAGS
 ac_ct_FC
+PARFLOW_FC_ACCESS
+PARFLOW_FC_FORM
 FCLIBS
 F77
 FFLAGS
@@ -3728,6 +3730,174 @@ case $FC in
       FCFLAGS="$FCFLAGS -ffree-line-length-none"
       ;;
 esac
+
+
+
+   { echo "$as_me:$LINENO: checking whether ${FC} supports access=\"stream\"" >&5
+echo $ECHO_N "checking whether ${FC} supports access=\"stream\"... $ECHO_C" >&6; }
+
+   if test "${casc_cv_fc_access_stream+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+      ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+      cat >conftest.$ac_ext <<_ACEOF
+
+program freeform
+  open(10, file='test.bin', access='stream', form='unformatted', status='replace')
+  write(10) "first"
+  write(10) "second"
+  close(UNIT=10)
+end program freeform
+
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_compile") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_fc_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext; then
+  casc_cv_fc_access_stream=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	casc_cv_fc_access_stream=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+   { echo "$as_me:$LINENO: result: $casc_cv_fc_access_stream" >&5
+echo "${ECHO_T}$casc_cv_fc_access_stream" >&6; }
+
+   if test "$casc_cv_fc_access_stream" = yes; then
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_FC_ACCESS_STREAM 1
+_ACEOF
+
+   else
+      cat >>confdefs.h <<\_ACEOF
+#define LACKS_FC_ACCESS_STREAM 1
+_ACEOF
+
+   fi
+
+
+
+
+   { echo "$as_me:$LINENO: checking whether ${FC} supports access=\"sequential\"" >&5
+echo $ECHO_N "checking whether ${FC} supports access=\"sequential\"... $ECHO_C" >&6; }
+
+   if test "${casc_cv_fc_access_sequential+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+      ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+      cat >conftest.$ac_ext <<_ACEOF
+
+program freeform
+  open(10, file='test.bin', access='sequential', form='binary', status='replace')
+  write(10) "first"
+  write(10) "second"
+  close(UNIT=10)
+end program freeform
+
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_compile") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_fc_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext; then
+  casc_cv_fc_access_sequential=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	casc_cv_fc_access_sequential=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+   { echo "$as_me:$LINENO: result: $casc_cv_fc_access_sequential" >&5
+echo "${ECHO_T}$casc_cv_fc_access_sequential" >&6; }
+
+   if test "$casc_cv_fc_access_sequential" = yes; then
+      cat >>confdefs.h <<\_ACEOF
+#define HAVE_FC_ACCESS_SEQUENTIAL 1
+_ACEOF
+
+   else
+      cat >>confdefs.h <<\_ACEOF
+#define LACKS_FC_ACCESS_SEQUENTIAL 1
+_ACEOF
+
+   fi
+
+
+if test "$casc_cv_fc_access_stream" = "yes"; then
+   PARFLOW_FC_ACCESS=stream
+
+   PARFLOW_FC_FORM=unformatted
+
+else
+   if test "$casc_cv_fc_access_sequential" = "yes"; then
+      PARFLOW_FC_ACCESS="sequential"
+
+      PARFLOW_FC_FORM="binary"
+
+   else
+   { { echo "$as_me:$LINENO: error: Unable to determine syntax to use for Fortran binary files" >&5
+echo "$as_me: error: Unable to determine syntax to use for Fortran binary files" >&2;}
+   { (exit 1); exit 1; }; }
+   fi
+fi
 
 if test "$with_clm" = "yes"; then
    ac_ext=${ac_fc_srcext-f}
@@ -11351,7 +11521,7 @@ $MKDIR_P $subdirs
 $MKDIR_P lib
 $MKDIR_P bin
 
-ac_config_files="$ac_config_files Makefile config/Makefile.config ${makefiles}"
+ac_config_files="$ac_config_files Makefile config/Makefile.config clm/parflow_config.F90 ${makefiles}"
 
 ac_config_commands="$ac_config_commands default"
 
@@ -11931,6 +12101,7 @@ do
     "include/parflow_config.h") CONFIG_HEADERS="$CONFIG_HEADERS include/parflow_config.h:config/parflow_config.h.in" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "config/Makefile.config") CONFIG_FILES="$CONFIG_FILES config/Makefile.config" ;;
+    "clm/parflow_config.F90") CONFIG_FILES="$CONFIG_FILES clm/parflow_config.F90" ;;
     "${makefiles}") CONFIG_FILES="$CONFIG_FILES ${makefiles}" ;;
     "default") CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
 
@@ -12062,6 +12233,8 @@ PARFLOW_HAVE_CLM!$PARFLOW_HAVE_CLM$ac_delim
 FC!$FC$ac_delim
 FCFLAGS!$FCFLAGS$ac_delim
 ac_ct_FC!$ac_ct_FC$ac_delim
+PARFLOW_FC_ACCESS!$PARFLOW_FC_ACCESS$ac_delim
+PARFLOW_FC_FORM!$PARFLOW_FC_FORM$ac_delim
 FCLIBS!$FCLIBS$ac_delim
 F77!$F77$ac_delim
 FFLAGS!$FFLAGS$ac_delim
@@ -12090,8 +12263,6 @@ M4!$M4$ac_delim
 XARGS!$XARGS$ac_delim
 F77_FLAGS!$F77_FLAGS$ac_delim
 C_FLAGS!$C_FLAGS$ac_delim
-LD_FLAGS!$LD_FLAGS$ac_delim
-LIB_SUFFIX!$LIB_SUFFIX$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -12133,6 +12304,8 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+LD_FLAGS!$LD_FLAGS$ac_delim
+LIB_SUFFIX!$LIB_SUFFIX$ac_delim
 SRCDIR_COMPILE_PREFIX!$SRCDIR_COMPILE_PREFIX$ac_delim
 INC_PATH!$INC_PATH$ac_delim
 LIB_PATH!$LIB_PATH$ac_delim
@@ -12141,7 +12314,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 6; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 8; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

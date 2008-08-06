@@ -186,6 +186,22 @@ case $FC in
       ;;
 esac
 
+CASC_FC_ACCESS_STREAM
+
+CASC_FC_ACCESS_SEQUENTIAL
+
+if test "$casc_cv_fc_access_stream" = "yes"; then
+   AC_SUBST(PARFLOW_FC_ACCESS,stream)
+   AC_SUBST(PARFLOW_FC_FORM,unformatted)
+else
+   if test "$casc_cv_fc_access_sequential" = "yes"; then
+      AC_SUBST(PARFLOW_FC_ACCESS,["sequential"])
+      AC_SUBST(PARFLOW_FC_FORM,["binary"])
+   else
+   AC_MSG_ERROR([Unable to determine syntax to use for Fortran binary files])
+   fi
+fi
+
 dnl Only set these if using CLM; otherwise F90 is not
 dnl needed
 if test "$with_clm" = "yes"; then
@@ -457,6 +473,7 @@ $MKDIR_P bin
 AC_OUTPUT([
 Makefile
 config/Makefile.config 
+clm/parflow_config.F90
 ${makefiles}
 ],[
 dnl These are the commands that will execute after the file generations.

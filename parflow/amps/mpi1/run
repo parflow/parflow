@@ -111,16 +111,17 @@ then
     #
     if [ "$PBS_NODEFILE" = "" ]
     then
-       mpirun -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 > $1.out.txt
+       mpirun -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 >& $1.out.txt
     else
-       mpirun -machinefile $PBS_NODEFILE -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 > $1.out.txt
+       mpirun -machinefile $PBS_NODEFILE -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 >& $1.out.txt
    fi
 elif mpirun  2>&1 | grep -q "Open MPI"
 then
     #
     # OpenMPI
     #
-    mpirun -np $2  $PARFLOW_DIR/bin/$PROGRAM $1 > $1.out.txt
+    mpirun -np $2  $PARFLOW_DIR/bin/$PROGRAM $1 >& $1.out.txt
+    exit 0
 else
     echo "Unrecognized MPI implementation"
     exit 1
@@ -159,7 +160,7 @@ done
 
 echo MachineList $MACHINE_LIST
 
-echo mpirun  $MACHINE_LIST $PARFLOW_DIR/bin/$PROGRAM $1 > $1.out.txt
+echo mpirun  $MACHINE_LIST $PARFLOW_DIR/bin/$PROGRAM $1 >& $1.out.txt
 
 
 

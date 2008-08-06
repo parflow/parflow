@@ -633,3 +633,70 @@ AC_DEFUN([LF_FLIBS],[
 dnl  AC_SUBST(FLIBS)
 ])dnl
 
+
+dnl
+dnl Check whether the Fortran compiler supports the access="stream" open syntax
+dnl
+dnl Variable:	casc_cv_fc_access_stream = (yes|no)
+dnl Defines:	(HAVE|LACKS)_FC_ACCESS_STREAM
+dnl
+AC_DEFUN([CASC_FC_ACCESS_STREAM], [
+   AC_REQUIRE([AC_PROG_FC])
+   AC_MSG_CHECKING(whether ${FC} supports access="stream")
+
+   AC_CACHE_VAL(casc_cv_fc_access_stream, [
+      AC_LANG_PUSH(Fortran)
+      AC_COMPILE_IFELSE([
+program freeform
+  open(10, file='test.bin', access='stream', form='unformatted', status='replace')
+  write(10) "first"
+  write(10) "second"
+  close(UNIT=10)
+end program freeform
+         ],
+         casc_cv_fc_access_stream=yes,
+         casc_cv_fc_access_stream=no)
+      AC_LANG_POP
+   ])
+   AC_MSG_RESULT($casc_cv_fc_access_stream)
+
+   if test "$casc_cv_fc_access_stream" = yes; then
+      AC_DEFINE(HAVE_FC_ACCESS_STREAM)
+   else
+      AC_DEFINE(LACKS_FC_ACCESS_STREAM)
+   fi
+])
+
+
+dnl
+dnl Check whether the Fortran compiler supports the access="stream" open syntax
+dnl
+dnl Variable:	casc_cv_fc_access_sequential = (yes|no)
+dnl Defines:	(HAVE|LACKS)_FC_ACCESS_SEQUENTIAL
+dnl
+AC_DEFUN([CASC_FC_ACCESS_SEQUENTIAL], [
+   AC_REQUIRE([AC_PROG_FC])
+   AC_MSG_CHECKING(whether ${FC} supports access="sequential")
+
+   AC_CACHE_VAL(casc_cv_fc_access_sequential, [
+      AC_LANG_PUSH(Fortran)
+      AC_COMPILE_IFELSE([
+program freeform
+  open(10, file='test.bin', access='sequential', form='binary', status='replace')
+  write(10) "first"
+  write(10) "second"
+  close(UNIT=10)
+end program freeform
+         ],
+         casc_cv_fc_access_sequential=yes,
+         casc_cv_fc_access_sequential=no)
+      AC_LANG_POP
+   ])
+   AC_MSG_RESULT($casc_cv_fc_access_sequential)
+
+   if test "$casc_cv_fc_access_sequential" = yes; then
+      AC_DEFINE(HAVE_FC_ACCESS_SEQUENTIAL)
+   else
+      AC_DEFINE(LACKS_FC_ACCESS_SEQUENTIAL)
+   fi
+])

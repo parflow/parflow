@@ -19,6 +19,8 @@ AC_ARG_WITH(CC,
    [  --with-CC=ARG           manually set C compiler to ARG])
 AC_ARG_WITH(F77,
    [  --with-F77=ARG          manually set F77 to ARG])
+AC_ARG_WITH(F90,
+   [  --with-F90=ARG          manually set F90 to ARG])
 AC_ARG_WITH(AR,
    [  --with-AR=ARG           manually set AR to ARG])
 
@@ -202,6 +204,56 @@ case $ARCH in
       ;;
 esac
 LIB_NAME="$F77LIBFLAGS $LIB_NAME"
+
+dnl
+dnl Fortran 90
+dnl
+if test -n "$with_F90"; then
+   dnl If user specifies full path then don't search in path
+   if test -f $with_F90; then
+      FC=$with_F90
+   else
+      AC_CHECK_PROGS(FC, $with_F90)
+   fi
+else
+   if test -z "$F90"; then
+      AC_PROG_FC(, Fortran 90)
+   else
+      dnl If F90 was specified then see if it is a full path
+      dnl or just the prog name in users PATH
+      if test -f $F90; then
+	FC=$F90
+      else
+	AC_CHECK_PROGS(FC, $F90)
+      fi
+   fi
+fi
+test -z "$FC" && AC_MSG_ERROR([no acceptable Fortran 90 found])
+AC_SUBST(FC)
+
+AC_FC_FREEFORM(,[AC_MSG_ERROR([free format in F90 compiler does not work])])
+
+case $FC in
+   gfortran) 
+      FCFLAGS="$FCFLAGS -ffree-line-length-none"
+      ;;
+esac
+
+CASC_FC_ACCESS_STREAM
+
+CASC_FC_ACCESS_SEQUENTIAL
+
+if test "$casc_cv_fc_access_stream" = "yes"; then
+   AC_SUBST(PARFLOW_FC_ACCESS,stream)
+   AC_SUBST(PARFLOW_FC_FORM,unformatted)
+else
+   if test "$casc_cv_fc_access_sequential" = "yes"; then
+      AC_SUBST(PARFLOW_FC_ACCESS,["sequential"])
+      AC_SUBST(PARFLOW_FC_FORM,["binary"])
+   else
+   AC_MSG_ERROR([Unable to determine syntax to use for Fortran binary files])
+   fi
+fi
 
 dnl
 dnl Find the X11 include directory, library directory, and associated

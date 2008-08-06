@@ -18,6 +18,7 @@ include $(OBJECT)/config/Makefile.config
 
 # Order is important due to .mod file creation
 OBJS = \
+	parflow_config.o\
 	precision.o\
 	infnan.o\
 	clm_varpar.o\

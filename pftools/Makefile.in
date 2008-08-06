@@ -34,6 +34,8 @@ include $(OBJECT)/config/Makefile.config
 default: all
 
 all: $(PARFLOW_TOOLS_BIN_DIR)/pfwell_cat $(PARFLOW_TOOLS_BIN_DIR)/pfwell_data gms_tools $(PARFLOW_TOOLS_BIN_DIR)/$(PROJECT)$(PARFLOW_TOOLS_SHLIB_SUFFIX)
+	@for DIR in $(SUBDIRS); do if test -d $$DIR; then (cd $$DIR && $(MAKE) $@) ; fi || exit 1; done
+
 
 #
 # For building pfwell_cat

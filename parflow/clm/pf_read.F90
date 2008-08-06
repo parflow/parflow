@@ -1,4 +1,7 @@
 subroutine pf_read(x,filename,ixlim,iylim,izlim)
+
+use parflow_config
+
 Real*8 x(ixlim,iylim,izlim),  ri, rj, rk1, rk2, headsum,    &
 rsum, junk,                                           &   
 ksum, kavg,f, dx, dy, dz, x1, y1, z1
@@ -10,10 +13,8 @@ character*40 filename
 !	Open File
 !
 filename = trim(filename)
-! SGS FIXME : gfortran complained about this open statement
- open(15,file=filename,form='unformatted',&
- recordtype='stream',convert='BIG_ENDIAN')
-!open(15,file=filename,FORM='unformatted', access='stream',convert='BIG_ENDIAN')
+open(15,file=filename, access=ACCESS, form=FORM, convert='BIG_ENDIAN')
+
 !
 ! Calc domain bounds
 !

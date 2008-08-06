@@ -81,7 +81,7 @@ then
     # IBM SP2
     #
   
-    poe $PARFLOW_DIR/bin/$PROGRAM -procs `cat .amps.info.$2` $1 $DEBUG_OPT $DEBUG > $1.out.txt
+    poe $PARFLOW_DIR/bin/$PROGRAM -procs `cat .amps.info.$2` $1 $DEBUG_OPT $DEBUG >& $1.out.txt
 
     exit 0
 fi
@@ -93,16 +93,16 @@ then
     #
     if [ "$PBS_NODEFILE" = "" ]
     then
-       mpirun -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 > $1.out.txt
+       mpirun -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 >& $1.out.txt
     else
-       mpirun -machinefile $PBS_NODEFILE -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 > $1.out.txt
+       mpirun -machinefile $PBS_NODEFILE -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 >& $1.out.txt
    fi
 elif mpirun  2>&1 | grep -q "Open MPI"
 then
     #
     # OpenMPI
     #
-    mpirun -np $2  $PARFLOW_DIR/bin/$PROGRAM $1 > $1.out.txt
+    mpirun -np $2  $PARFLOW_DIR/bin/$PROGRAM $1 >& $1.out.txt
 else
     echo "Unrecognized MPI implementation"
     exit 1

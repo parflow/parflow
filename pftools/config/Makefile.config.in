@@ -8,8 +8,10 @@
 ##
 
 .SUFFIXES:
-.SUFFIXES: .o .F .f .c .C .cc
+.SUFFIXES: .o .F .f .c .C .cc .F90
 
+.F90.o:
+	$(FC) $(FCFLAGS) -c @SRCDIR_COMPILE_PREFIX@$< -o $@
 .F.o:
 	$(F77) $(FFLAGS) -c @SRCDIR_COMPILE_PREFIX@$< -o $@
 .f.o:
@@ -51,6 +53,9 @@ XARGS	      = @XARGS@
 
 F77           = @F77@
 FFLAGS        = @F77_FLAGS@ $(FFLAGS_EXTRA)
+
+FC            = @FC@
+FCFLAGS       = @FCFLAGS@
 
 CC            = @CC@
 CFLAGS        = @C_FLAGS@ $(CFLAGS_EXTRA) @SHLIB_CFLAGS@

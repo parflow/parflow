@@ -40,7 +40,7 @@ then
 	PROGRAM=parflow
 fi
 
-$PARFLOW_DIR/bin/$PROGRAM $1 > $1.out.txt
+$PARFLOW_DIR/bin/$PROGRAM $1 >& $1.out.txt
 echo done
 if [ -f ./malloc.log.0000 ]; then
 	grep "^known" malloc.log.* 
