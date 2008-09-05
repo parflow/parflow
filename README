@@ -90,3 +90,16 @@ tclsh default_single.pftcl
 Note that PAFLOW_DIR must be set for this to work and it assume tclsh
 is in your path.  Make sure to use the same TCL as was used in the
 pftools configure.
+
+----------------------------------------------------------------------------
+Notes: RMM
+----------------------------------------------------------------------------
+To compile with CLM add
+--with-clm
+to the configure line
+
+To change compilers, set the CC, CF and F77 variables. For example:
+setenv CC icc
+setenv FC ifort
+setenv F77 ifort
+
