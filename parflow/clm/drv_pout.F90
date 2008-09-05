@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine drv_pout (drv, tile, clm)
+subroutine drv_pout (drv, tile, clm,rank)
 
 !=========================================================================
 !
@@ -39,9 +39,11 @@ subroutine drv_pout (drv, tile, clm)
 
   integer  :: t,n,l         !Tile and grid space counters
   integer  :: nch           !Temporary counters
+  integer  :: rank           !processor rank -- added RMM 8-08
   integer  :: mask(drv%nch) !Water mask
   real(r8) :: drv_gridave   !Spatial Averaging Function
   real(r8) :: temp(drv%nch) !Temporary for converting integer->real arrays
+  character*10 RI           ! character for rank for parallel file output
 
 !=== End Variable List ===================================================
 
@@ -59,7 +61,11 @@ subroutine drv_pout (drv, tile, clm)
 
 ! 
   n=5
-  open(n,file=drv%poutf1d,form='formatted')
+!! @== RMM 8-08 added parallel IO to parameter output file to fix possible atlas bug
+  write(RI,'(i10)') rank
+  print*, 'rank ',ri, rank
+  !!open(n,file=trim(drv%poutf1d)//trim(adjustl(RI)),form='formatted')
+  open(n,file=trim(adjustl(drv%poutf1d))//'.'//trim(adjustl(RI)),form='formatted')
 
 
 ! Write out 1-D parameters

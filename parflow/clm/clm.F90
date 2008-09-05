@@ -89,6 +89,7 @@ drv%nt = 18
 
 write(RI,*) rank
 
+
 if (time == 0.0d0) then ! Check if initialization necessary 
  print *,"INITIALIZATION"
 
@@ -208,9 +209,6 @@ j=tile(t)%row
   enddo
 enddo
 
-!@ Call to subroutine to open (2D-) output files
-print *,"Open (2D-) output files"
-  call open_files(clm,drv,rank,ix,iy) 
 
 !=== Read restart file or set initial conditions
 !@ But first, get the original start time from drv_clmin.dat
@@ -228,6 +226,13 @@ do i = 1, clm(1)%istep
 enddo
 
 endif !======= End of the initialization ================
+
+
+! @ RMM 9-08 move file open to outside initialization loop
+! @ RMM  this is now done every timestep
+!@ Call to subroutine to open (2D-) output files
+print *,"Open (2D-) output files"
+  call open_files(clm,drv,rank,ix,iy,clm(1)%istep) 
 
 !=== Assign Parflow timestep in case it was cut ===
 !if (dt /= 0.0d0) drv%ts = dt * 3600.0d0
@@ -308,7 +313,10 @@ enddo
 ! enddo ! End the time loop for the model time steps
  
 !@==  Call to subroutine to close (2D-) output files
-if (drv%endtime /= 0)  call close_files(clm,drv,rank)
+!@==  RMM modified to open/close files (but to include istep) every 
+!@== time step 
+!!if (drv%endtime /= 0)  call close_files(clm,drv,rank)
+ call close_files(clm,drv,rank)
 
 if (rank == 0) then
   open (1234,file="global_nt.scr",action='write')
