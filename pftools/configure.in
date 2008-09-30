@@ -23,6 +23,8 @@ AC_ARG_WITH(F90,
    [  --with-F90=ARG          manually set F90 to ARG])
 AC_ARG_WITH(AR,
    [  --with-AR=ARG           manually set AR to ARG])
+AC_ARG_WITH(chunk,
+   [  --with-chunk            build with Chunk])
 
 dnl
 dnl Initialize common macros to empty strings
@@ -351,6 +353,22 @@ if test "${hdf5_PREFIX+set}" = set; then
 fi
 AC_SUBST(hdf5_LIBS)
 
+
+dnl
+dnl Chunk Support
+dnl
+dnl CHUNK_DIR is empty when not building with Chunk.  This will case the
+dnl directory to be skipped in the compilation.
+CHUNK_DIR=""
+PARFLOW_HAVE_CHUNK="no"
+if test "$with_chunk" = "yes"; then
+   PARFLOW_HAVE_CHUNK="yes"
+   CHUNK_DIR="chunk"
+   AC_DEFINE(HAVE_CHUNK)	  
+fi
+AC_SUBST(CHUNK_DIR)
+AC_SUBST(PARFLOW_HAVE_CHUNK)
+
 debug_ext=debug
 if test "$enable_opt" = "yes"; then
    if test "$enable_debug" = "yes"; then
@@ -440,6 +458,7 @@ $MKDIR_P bin
 AC_OUTPUT([
 Makefile
 config/Makefile.config 
+chunk/code/chunk.f
 ${makefiles}
 ],[
 dnl These are the commands that will execute after the file generations.

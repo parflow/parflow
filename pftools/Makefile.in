@@ -11,6 +11,8 @@
 #  Makefile for parflow tools.
 # 
 
+include ./config/Makefile.config
+
 PROJECT       = parflow
 
 PARFLOW	      =	@top_srcdir@
@@ -19,7 +21,7 @@ SUBDIR        = .
 VPATH	      =	@srcdir@
 OBJECT        = .
 
-SUBDIRS       = docs
+SUBDIRS       = $(CHUNK_DIR) docs
 
 SCRIPTS = \
 	pfhelp \
@@ -28,8 +30,6 @@ SCRIPTS = \
 	pfbtovis \
 	pfsbtosa \
 	pfstrip 
-
-include $(OBJECT)/config/Makefile.config
 
 default: all
 

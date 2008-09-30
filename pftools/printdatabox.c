@@ -502,8 +502,8 @@ Databox        *v;
  *-----------------------------------------------------------------------*/
 
 #ifdef HAVE_SILO
-void            PrintSilo(fp, v)
-FILE           *fp;
+void            PrintSilo(filename, v)
+char           *filename;
 Databox        *v;
 {
    float   X; 
@@ -572,12 +572,12 @@ Databox        *v;
     dims[2] = NZ;
     ndims = 3;
 
-    db = DBCreate("sgrid.silo", DB_CLOBBER, DB_LOCAL, "test file", DB_PDB);
+    db = DBCreate(filename, DB_CLOBBER, DB_LOCAL, filename, DB_PDB);
 
     DBPutQuadmesh(db, "mesh", NULL, coords, dims, ndims,
                   DB_FLOAT, DB_COLLINEAR, NULL);
 
-    DBPutQuadvar1(db, "pressure", "mesh", value, dims, ndims, NULL,0,
+    DBPutQuadvar1(db, "variable", "mesh", value, dims, ndims, NULL,0,
                   DB_FLOAT, DB_NODECENT, NULL);
 
     DBClose(db);

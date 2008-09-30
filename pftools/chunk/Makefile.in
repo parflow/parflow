@@ -1,0 +1,47 @@
+##
+## Copyright:	(c) 1997-2008 Lawrence Livermore National Security, LLC
+## Revision:	$LastChangedRevision: 2219 $
+## Modified:	$LastChangedDate: 2008-06-12 13:14:48 -0700 (Thu, 12 Jun 2008) $
+##
+## Description:	makefile for the parflow library and executable
+##
+
+default: all
+
+PARFLOW	      =	@top_srcdir@
+SUBDIR        = chunk
+SRCDIR        = @srcdir@
+OBJECT        = ..
+
+include $(OBJECT)/config/Makefile.config
+
+SUBDIRS = code ctb ps src tcl
+
+all:
+	@for DIR in $(SUBDIRS); do if test -d $$DIR; then (cd $$DIR && $(MAKE) $@) ; fi || exit 1; done
+
+clean:
+	@for DIR in $(SUBDIRS); do if test -d $$DIR; then (cd $$DIR && $(MAKE) $@) ; fi || exit 1; done
+	@$(PARFLOW_CLEAN)
+
+veryclean: clean
+	@for DIR in $(SUBDIRS); do if test -d $$DIR; then (cd $$DIR && $(MAKE) $@) ; fi || exit 1; done
+
+install: all
+	$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/bin
+	for i in $(SRCDIR)/code/*.par; do	        \
+	   $(INSTALL) -c -m 644 $$i $(PARFLOW_INSTALL_DIR)/bin; \
+	done
+	for i in $(SRCDIR)/src/*.tcl; do	        \
+	   $(INSTALL) -c -m 644 $$i $(PARFLOW_INSTALL_DIR)/bin; \
+	done
+	for i in $(SRCDIR)/tcl/chunk_input.tcl; do              \
+	   $(INSTALL) -c -m 644 $$i $(PARFLOW_INSTALL_DIR)/bin; \
+	done
+	$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/ctb
+	for i in $(SRCDIR)/ctb/*.ctb; do		        \
+	   $(INSTALL) -c -m 644 $$i $(PARFLOW_INSTALL_DIR)/ctb; \
+	done
+	@for DIR in $(SUBDIRS); do if test -d $$DIR; then (cd $$DIR && $(MAKE) $@) ; fi || exit 1; done
+
+

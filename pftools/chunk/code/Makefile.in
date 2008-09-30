@@ -1,0 +1,40 @@
+##
+## File:	$URL$
+## Package:	Parflow
+## Copyright:	(c) 1997-2008 Lawrence Livermore National Security, LLC
+## Revision:	$LastChangedRevision: 2026 $
+## Modified:	$LastChangedDate: 2008-02-28 16:23:19 -0800 (Thu, 28 Feb 2008) $
+
+
+PARFLOW	      =	@top_srcdir@
+SRCDIR	      =	@srcdir@
+SUBDIR        = chunk/code
+VPATH	      =	@srcdir@
+OBJECT        = ../..
+
+default: all
+
+include $(OBJECT)/config/Makefile.config
+
+# Order is important due to .mod file creation
+OBJS = \
+	chunk.o
+
+$(PARFLOW_TOOLS_BIN_DIR)/chunk: Makefile $(OBJS)
+	$(F77) $(FFLAGS) -o $(PARFLOW_TOOLS_BIN_DIR)/chunk  $(OBJS)
+
+all: $(PARFLOW_TOOLS_BIN_DIR)/chunk
+
+clean:
+	$(PARFLOW_CLEAN)
+
+veryclean: clean
+	@$(RM) Makefile
+
+install: all
+
+include $(SRCDIR)/Makefile.depend
+
+
+
+

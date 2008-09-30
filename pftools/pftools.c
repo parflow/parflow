@@ -1094,34 +1094,67 @@ char             *argv[];
 
    filename = argv[3];
 
-   /* Make sure the file could be opened */
-
-   if ((fp = fopen(filename, "wb")) == NULL)
-   {
-      ReadWriteError(interp);
-      return TCL_ERROR;
-   }
-
    /* Execute the appropriate file printing routine */
-
-   if (strcmp(filetype, "pfb") == 0)
+   if (strcmp(filetype, "pfb") == 0) {
+      /* Make sure the file could be opened */
+      if ((fp = fopen(filename, "wb")) == NULL)
+      {
+	 ReadWriteError(interp);
+	 return TCL_ERROR;
+      }
+      
       PrintParflowB(fp, databox);
-   else if (strcmp(filetype, "sa") == 0)
+   }
+   else if (strcmp(filetype, "sa") == 0) {
+      /* Make sure the file could be opened */
+      if ((fp = fopen(filename, "wb")) == NULL)
+      {
+	 ReadWriteError(interp);
+	 return TCL_ERROR;
+      }
+      
       PrintSimpleA(fp, databox);
-   else if (strcmp(filetype, "sb") == 0)
+   }
+   else if (strcmp(filetype, "sb") == 0) {
+      /* Make sure the file could be opened */
+      if ((fp = fopen(filename, "wb")) == NULL)
+      {
+	 ReadWriteError(interp);
+	 return TCL_ERROR;
+      }
+      
       PrintSimpleB(fp, databox);
-   else if (strcmp(filetype, "fld") == 0)
+   }
+   else if (strcmp(filetype, "fld") == 0) {
+      /* Make sure the file could be opened */
+      if ((fp = fopen(filename, "wb")) == NULL)
+      {
+	 ReadWriteError(interp);
+	 return TCL_ERROR;
+      }
+      
       PrintAVSField(fp, databox);
-   else if (strcmp(filetype, "vis") == 0)
+   }
+   else if (strcmp(filetype, "vis") == 0) {
+      /* Make sure the file could be opened */
+      if ((fp = fopen(filename, "wb")) == NULL)
+      {
+	 ReadWriteError(interp);
+	 return TCL_ERROR;
+      }
+      
       PrintVizamrai(fp, databox);
+   }
 #ifdef HAVE_SILO
-   else if (strcmp(filetype, "silo") == 0)
-      PrintSilo(fp, databox);
+   else if (strcmp(filetype, "silo") == 0) {
+      PrintSilo(filename, databox);
+   }
 #endif
 
-   fflush(fp);
-   fclose(fp);
-
+   /* Close the file, if opened */
+   if(fp) {
+      fclose(fp);
+   }
    return TCL_OK;
 }
 

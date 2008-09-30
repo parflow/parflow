@@ -700,6 +700,8 @@ CXX
 CXXFLAGS
 ac_ct_CXX
 hdf5_LIBS
+CHUNK_DIR
+PARFLOW_HAVE_CHUNK
 SHLIB_SUFFIX
 SHLIB_LD
 SED
@@ -1325,6 +1327,7 @@ Optional Packages:
   --with-F77=ARG          manually set F77 to ARG
   --with-F90=ARG          manually set F90 to ARG
   --with-AR=ARG           manually set AR to ARG
+  --with-chunk            build with Chunk
   --with-x                use the X Window System
   --with-amps=AMPS_TYPE   Set the version of AMPS to use: seq, mpi1, smpi, win32
   --with-amps-sequential-io  Use AMPS sequentail I/O
@@ -1957,6 +1960,12 @@ fi
 # Check whether --with-AR was given.
 if test "${with_AR+set}" = set; then
   withval=$with_AR;
+fi
+
+
+# Check whether --with-chunk was given.
+if test "${with_chunk+set}" = set; then
+  withval=$with_chunk;
 fi
 
 
@@ -9963,6 +9972,20 @@ _ACEOF
 fi
 
 
+
+CHUNK_DIR=""
+PARFLOW_HAVE_CHUNK="no"
+if test "$with_chunk" = "yes"; then
+   PARFLOW_HAVE_CHUNK="yes"
+   CHUNK_DIR="chunk"
+   cat >>confdefs.h <<\_ACEOF
+#define HAVE_CHUNK 1
+_ACEOF
+
+fi
+
+
+
 debug_ext=debug
 if test "$enable_opt" = "yes"; then
    if test "$enable_debug" = "yes"; then
@@ -10218,7 +10241,7 @@ $MKDIR_P $subdirs
 $MKDIR_P lib
 $MKDIR_P bin
 
-ac_config_files="$ac_config_files Makefile config/Makefile.config ${makefiles}"
+ac_config_files="$ac_config_files Makefile config/Makefile.config chunk/code/chunk.f ${makefiles}"
 
 ac_config_commands="$ac_config_commands default"
 
@@ -10798,6 +10821,7 @@ do
     "include/parflow_config.h") CONFIG_HEADERS="$CONFIG_HEADERS include/parflow_config.h:config/parflow_config.h.in" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "config/Makefile.config") CONFIG_FILES="$CONFIG_FILES config/Makefile.config" ;;
+    "chunk/code/chunk.f") CONFIG_FILES="$CONFIG_FILES chunk/code/chunk.f" ;;
     "${makefiles}") CONFIG_FILES="$CONFIG_FILES ${makefiles}" ;;
     "default") CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
 
@@ -10949,6 +10973,8 @@ CXX!$CXX$ac_delim
 CXXFLAGS!$CXXFLAGS$ac_delim
 ac_ct_CXX!$ac_ct_CXX$ac_delim
 hdf5_LIBS!$hdf5_LIBS$ac_delim
+CHUNK_DIR!$CHUNK_DIR$ac_delim
+PARFLOW_HAVE_CHUNK!$PARFLOW_HAVE_CHUNK$ac_delim
 SHLIB_SUFFIX!$SHLIB_SUFFIX$ac_delim
 SHLIB_LD!$SHLIB_LD$ac_delim
 SED!$SED$ac_delim
@@ -10957,8 +10983,6 @@ INSTDIR!$INSTDIR$ac_delim
 M4!$M4$ac_delim
 XARGS!$XARGS$ac_delim
 F77_FLAGS!$F77_FLAGS$ac_delim
-C_FLAGS!$C_FLAGS$ac_delim
-LD_FLAGS!$LD_FLAGS$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -11000,6 +11024,8 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+C_FLAGS!$C_FLAGS$ac_delim
+LD_FLAGS!$LD_FLAGS$ac_delim
 LIB_SUFFIX!$LIB_SUFFIX$ac_delim
 SRCDIR_COMPILE_PREFIX!$SRCDIR_COMPILE_PREFIX$ac_delim
 INC_PATH!$INC_PATH$ac_delim
@@ -11012,7 +11038,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 10; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 12; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

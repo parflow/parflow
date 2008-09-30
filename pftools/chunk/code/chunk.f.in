@@ -1,0 +1,4354 @@
+       program chunk 
+cc      implicit none
+C   this program plots a 3-D perspective view  
+C   of grid data 
+c
+c   10/04 Distinguish arrow format
+c
+c   08/04  Same as 0704, but make NUFT z up (instead of down)
+c
+c   07/01 adapt RGB for Chunk_4.0 interface
+c         Use pts for translation units
+c
+c   02/01 fix legend for multiple surfaces
+c
+c   01/01 make x-y plots if given only 1 0 0 1 concat
+c
+c   04/00 allow for irregular NUFT grid
+c
+c   03/00 add .cnb fields
+c   
+c   10/99 fix corner plotting
+c
+c   9/99 makes EPS
+c
+c   7/99
+c   reads NUFT format fields 
+c
+c   2/99
+c   plots surfaces
+c
+c   3/98 
+c   plots lines 
+c 
+c
+c   8/98 plots dots at ends of lines
+c
+
+       CHARACTER (LEN=50) :: ACCESS='@PARFLOW_FC_ACCESS@'
+       CHARACTER (LEN=50) :: FORM='@PARFLOW_FC_FORM@'
+       character filnam*220
+	 character*220 infile
+       character*220 parfil,linfil,cat(256),concfil
+       character*120 xtitl,ytitl,ztitl,legnam
+       character*120 titl1,titl2,clrfil
+       character*3 order
+       real xx(100),yy(100),gcut(0:10000)
+       real lw1,lw2
+       real dxn(1000),dyn(1000),dzn(1000)
+       real concrgbi1(20,3,3),concrgbi2(20,3,3)
+       real concrgbo1(20,3,3),concrgbo2(20,3,3)
+       real concrgbe1(20,3,3),concrgbe2(20,3,3)
+       real concmin(20),concmax(20)
+       real tin(20), tedge(20), tout(20),xp(2),yp(2)
+       integer*4 i_trans_dia(20)
+       integer*4 rgb(0:10000,3),ichunkcr(100), hcon, ixlim, iylim, izlim
+       real*8	ddx, ddy, ddz
+       integer*4 idim(3),idimc(3)
+       integer ieo1(20),ieo2(20),ieo3(20)
+       integer ts
+       logical plot,plotch,testfl,plot_edge,plot_edge2
+       logical plot_edge3, plot_edge4
+       real*4, allocatable::val1(:)
+       logical*1, allocatable::ival1(:)
+       real brgb(3),trgb(3),argb(3)
+       common /psdata/ lpsout
+       common /colors/ brgb,trgb,argb,icolor 
+       common /orient/ iland,xc,yc
+C  assign plotting parameters
+       lpsout=2
+c
+c   get parameter file   
+c
+       print*,'Name of parameter file:' 
+       read(5,105) parfil
+       open(7,file=parfil,status='old')
+c   portrait or landscape?
+       print*,'Portrait (0) or Landscape (1)'
+       read(7,*) iland
+c   get translations
+       print*,'X,Y plot translations (pt)'
+       read(7,*) xpt,ypt
+       print*,'text size'
+       read(7,*) text_size
+c   get input colors 
+       print*,'background, title, axis colors:'
+       read(7,*) (brgb(i),i=1,3),(trgb(i),i=1,3),(argb(i),i=1,3)
+       do 970 i=1,3
+          brgb(i)=brgb(i)/65535.0
+          trgb(i)=trgb(i)/65535.0
+ 970      argb(i)=argb(i)/65535.0
+c
+c   get chunk dimensions
+c       
+       print*,'# of x,y,z chunks:'
+       read(7,*) nxchunk,nychunk,nzchunk
+       print*,'x,y,z spacing between chunks'
+       read(7,*) dxchunk,dychunk,dzchunk
+       print*,'# of chunks to crop :'
+       read(7,*) ncrop  
+       print*,'chunk#s'
+       if(ncrop.eq.0)then
+         read(7,*) 
+       else
+         read(7,*) (ichunkcr(i), i=1,ncrop) 
+       endif
+c   get output file
+       print*,'Name of output POSTSCRIPT file:'
+       read(7,105) filnam
+       open(2,file=filnam,status='unknown')
+c   PS or EPS ?
+       print*,'Postscript or Encapsulated Postscript? (EPS=1)'
+       read(7,*) ieps
+       if(ieps.eq.1)call ps2eps(filnam)
+c   get block sizes range
+       print*,'Xmin,Ymin,Zmin of realization'
+       read(7,*) xmin,ymin,zmin
+       print*, xmin,ymin,zmin
+       print*,'dX, dY, dZ'
+       read(7,*) dx,dy,dz 
+       print*, dx,dy,dz 
+c   get cropping parameters
+       print*,'Cropping:' 
+       read(7,*) ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr
+       print*, ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr
+c   get scaling parameters
+       print*,'X, Y, Z scales: (units per inch)'
+       read(7,*)  xscl,yscl,zscl 
+       print*,  xscl,yscl,zscl 
+c   get label increments
+       print*,'X, Y, Z Label increment:'
+       read(7,*) xlbinc,ylbinc,zlbinc 
+       print*, xlbinc,ylbinc,zlbinc 
+c   get decimal places & tics
+       print*,'X, Y, Z decimal places:'
+       read(7,*) ndecx,ndecy,ndecz 
+       print*, ndecx,ndecy,ndecz 
+       print*,'X, Y, Z tics/label:'
+       read(7,*) nxtics,nytics,nztics 
+       print*, nxtics,nytics,nztics 
+c   get axes titles
+       print*,'X title:'
+       read(7,105) xtitl
+       print 105, xtitl
+       print*,'Y title:'
+       read(7,105) ytitl
+       print 105, ytitl
+       print*,'Z title:'
+       read(7,105) ztitl
+       print 105, ztitl
+c  get plot titles
+       print*,'Plot Title, line 1:'
+       read(7,105) titl1 
+       print 105, titl1 
+       print*,'Plot Title, line 2:'
+       read(7,105) titl2 
+       print 105, titl2 
+       print*,'Title translation x,y:'
+       read(7,*) title_x,title_y
+       print*, title_x,title_y
+       print*,'Title justification:'
+       read(7,*) i_just
+C
+C   write postscript header and set definitions
+        if(ieps.ne.1)write(lpsout,*) '%!PS'
+        write(lpsout,998)
+ 998    format('/m {moveto} def',/,
+     +         '/l {lineto} def',/,'/r {rlineto} def',/,
+     +         '/s {stroke} def',/,'/n {newpath} def',/,
+     +         '/c {closepath} def',/,'1 setlinejoin ',/,
+     +         '/rtext{ dup stringwidth pop -1 div 0 ',
+     +         ' rmoveto show } def',/,'/ltext{show} def',/,
+     +         '/ctext{ dup stringwidth pop -2 div 0 ',
+     +         ' rmoveto show } def',/,
+     +         '/bul{ 1 0 360 arc c fill } def',/,
+     +         '/cir{ 0.1 0 360 arc c stroke } def',/,
+     +         '/bulbig{ 2 0 360 arc c fill } def',/,
+     +         '/arrow { m -10 5 r 3 -5 r -3 -5 r c fill} def',/,
+     +         '/arwh { -1 1 r 2 -1 r -2 -1 r c fill} def',/,
+     +         '/rgb {setrgbcolor} def',/,
+     +         '/lw {setlinewidth} def')
+C
+C   make background color
+c
+c     check if background is white
+c
+       iwhite=0
+       if(brgb(1).eq.1..and.brgb(2).eq.1..and.brgb(3).eq.1.)iwhite=1
+       iwhite = 1
+	 if(iwhite.eq.0)then
+         write(lpsout,924) (brgb(i),i=1,3) 
+ 924     format(3f8.3,' rgb')
+         call rectfill(lpsout,0.,0.,612.,792.) 
+       endif
+c
+c     rotate and translate plot if landscape is used 
+c
+       if(iland.eq.1) write(lpsout,*) '90 rotate 0 -612 translate'
+c
+c   translate plot
+c
+       write(lpsout,973) xpt,ypt
+ 973   format(2f10.2,' translate') 
+c
+c  establish center of page
+c
+       xc=4.5
+       yc=5.5
+       if(iland.eq.1)then
+         xc=5.75
+         yc=4.5
+       endif
+       xc=xc*72.
+       yc=yc*72.
+c
+c  establish scales and transformation coefficients 
+c
+       xscl=72./xscl
+       yscl=72./yscl
+       zscl=72./zscl
+       print*,'concat parameters'
+       read(7,*) ccxx,ccxy,ccyx,ccyy
+       ixyplot=0
+       iyzplot=0
+       ixzplot=0
+       if(ccxx.eq.1.0 .and. ccxy.eq.0.0 .and. ccyx.eq.0.0 .and.
+     &     ccyy.eq.1.0) ixyplot=1
+       if(ccxx.eq.0.0 .and. ccxy.eq.0.0 .and. ccyx.eq.1.0 .and.
+     &     ccyy.eq.0.0) iyzplot=1
+       if(ccxx.eq.1.0 .and. ccxy.eq.0.0 .and. ccyx.eq.0.0 .and.
+     &     ccyy.eq.0.0) ixzplot=1
+       if(ixyplot.eq.1)zscl=0.0
+       print*,'concat:',ccxx,ccxy,ccyx,ccyy
+       axy=ccxx
+       bxy=ccxy
+       cxy=ccyx
+       dxy=ccyy
+       axz=ccxx
+       bxz=ccxy
+       cxz=0.0
+       dxz=1.0
+       ayz=ccyx
+       byz=ccyy
+       cyz=0.0
+       dyz=1.0
+c
+c  FIELD parameters
+c
+c   get input file
+c
+       print*,'plot a field? (1=yes)'
+       read(7,*) i_field
+       print*,'field file format: (1=pfb, 2=hdf, 3=ascii,' 
+       print*,'                    4=hdf_int1, 5=bgr_int1,'
+       print*,'                    6=nuft, 7=cnb)'
+       read(7,*) ifmt
+       if(ifmt.eq.6)then
+         print*,'  timestep:'
+         read(7,*) ts
+       endif
+       print*,'Name of field file:'
+       read(7,106) infile
+ 105   format(a80)
+ 106	format(a220)
+c
+c   get data dimensions and data in .pfb format
+c
+       if(ifmt.eq.1)then
+         call pf_read_head(infile,idim(1),idim(2),idim(3))
+         nxyz=idim(1)*idim(2)*idim(3)
+         allocate (val1(nxyz))
+         call pf_read_array(val1,idim(1),idim(2),idim(3))
+         nxyz=idim(1)*idim(2)*idim(3)
+       elseif(ifmt.eq.2)then
+c         iret=dsgdims(infile,irank,idim,3)
+c         allocate (val1(nxyz))
+c         iret=dsgdata(infile,irank,idim,val1)
+         print*,'idim=',idim(1),idim(2),idim(3)
+         nxyz=idim(1)*idim(2)*idim(3)
+       elseif(ifmt.eq.3)then
+         open(15,file=infile,status='old')
+         read(15,*,err=971) idim(1),idim(2),idim(3)
+         nxyz=idim(1)*idim(2)*idim(3)
+         allocate (val1(nxyz))
+         do 671 i=1,nxyz
+ 671       read(15,*,err=971) val1(i)
+         go to 972
+ 971     rewind(15)
+         read(15,*) ndim
+         read(15,*) idim(1),idim(2),idim(3)
+         nxyz=idim(1)*idim(2)*idim(3)
+         deallocate (val1)
+         allocate (val1(nxyz))
+         do 691 i=1,nxyz
+ 691       read(15,*,err=971) val1(i)
+ 972     continue
+         close(15)
+       elseif(ifmt.eq.4)then
+C         iret=dsgdims(infile,irank,idim,3)
+C          print*,'idim=',idim(1),idim(2),idim(3)
+C          nxyz=idim(1)*idim(2)*idim(3)
+C         allocate (ival1(nxyz))
+C         allocate (val1(nxyz))
+C         iret=dsgdata(infile,irank,idim,ival1)
+         do 976 i=1,nxyz
+C 976       val1(i)=1.0*ival1(i)
+C 976        if( ival(i) ) val1(i) = 1.0 
+            if( ival1(i) ) then
+               val1(i) = 1.0 
+            else
+               val1(i) = 0.0 
+            endif
+ 976        continue
+       elseif(ifmt.eq.5)then
+         open(15,file=infile,status='old',access=ACCESS
+	1   ,form=FORM)
+         read(15) ndim
+         read(15) (idim(i),i=1,ndim)
+         nxyz=idim(1)*idim(2)*idim(3)
+         allocate (ival1(nxyz))
+         allocate (val1(nxyz))
+         read(15) (ival1(i),i=1,nxyz)
+         do 974 i=1,nxyz
+            if( ival1(i) ) then
+               val1(i) = 1.0 
+            else
+               val1(i) = 0.0 
+            endif
+ 974        continue
+         close(15)
+       elseif(ifmt.eq.8)then
+         call nuftread_head(infile,idim(1),idim(2),idim(3))
+         nxyz=idim(1)*idim(2)*idim(3)
+         if (.not.allocated(val1)) allocate (val1(nxyz))
+	 call nuftread(val1,infile,idim(1),idim(2),idim(3),
+     &                 dxn,dyn,dzn,time,ts)
+         print*,'  time=',time
+       elseif(ifmt.eq.7)then
+         call con_read_head(infile,idim(1),idim(2),idim(3),ddx,ddy,ddz)
+         nxyz=idim(1)*idim(2)*idim(3)
+         if (.not.allocated(val1)) allocate (val1(nxyz))
+         call con_read_array(val1,nxyz)
+       elseif(ifmt.eq.6)then
+         call nuftread_head(infile,nxn,nyn,nzn)
+	 call nuft_head2(idim(1),idim(2),idim(3),nxn,nyn,nzn,
+     &                        dx,dy,dz,dxn,dyn,dzn,order,
+     &                   ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr)
+         nxyz=idim(1)*idim(2)*idim(3)
+         if (.not.allocated(val1)) allocate (val1(nxyz))
+	 call nuftread2(val1,idim(1),idim(2),idim(3),nxn,nyn,nzn,
+     &                 dx,dy,dz,time,ts,dxn,dyn,dzn,order,
+     &                 ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr)
+         print*,'  time=',time
+       endif
+       nxyz=idim(1)*idim(2)*idim(3)
+       print*,'dimensions=',(idim(i),i=1,3)
+c
+c  if plotting a field, get field parameters
+c
+       if(i_field.eq.1)then
+c   get bit detail
+         print*,'4-bit or 8-bit: (4 or 8); color or bw: (1=color)'
+         read(7,*) nbit,icolor
+c  get category colors
+         print*,'Number of cutoffs:'
+         read(7,*) ncut
+         if(ncut.eq.0)then
+c   get min and max values 
+           print*,'minimum, maximum values'
+           read(7,*) gmin,gmax 
+           print*,'Name of color table'
+           read(7,105) clrfil
+           open(3,file=clrfil,status='old')
+           read(3,*) ncol
+           ncut=ncol
+           do 797 icut=1,ncut
+             if(icolor.eq.0) read(3,*,end=99) rgb(icut,1)
+             if(icolor.eq.1) read(3,*,end=99) (rgb(icut,i),i=1,3)
+ 797         continue
+ 99        continue
+           close(3)
+           rgb(0,1)=rgb(1,1)
+           rgb(0,2)=rgb(1,2)
+           rgb(0,3)=rgb(1,3)
+           rgb(ncut+1,1)=rgb(ncut,1)
+           rgb(ncut+1,2)=rgb(ncut,2)
+           rgb(ncut+1,3)=rgb(ncut,3)
+           dg=(gmax-gmin)/(ncut*1.)
+           do 798 icut=0,ncut
+ 798         gcut(icut)=gmin+icut*dg
+         else
+           do 904 icut=1,ncut
+           if(icolor.eq.1)then
+             read(7,*) gcut(icut),(rgb(icut,irgb),irgb=1,3)
+           else
+             read(7,*) gcut(icut),rgb(icut,1)
+           endif
+           do 909 irgb=1,3
+ 909         rgb(icut,irgb)=1+nint((1*nbit**2-1)*
+     &                     (1.0*rgb(icut,irgb))/65535.)
+ 904       continue 
+           gmin=gcut(1)
+           gmax=gcut(ncut)
+           gcut(0)=gmin
+           nlevel=ncut+1
+           do 941 irgb=1,3
+             rgb(nlevel,irgb)=rgb(ncut,irgb)
+ 941         rgb(0,irgb)=rgb(1,irgb)
+         endif
+c
+c   get shading  options
+c
+         print*,'XY, XZ, YZ shading options' 
+         read(7,*) sxy,sxz,syz
+         nshade=2**nbit
+         ixy=nint(sxy*nshade)/16
+         ixz=nint(sxz*nshade)/16
+         iyz=nint(syz*nshade)/16
+         print*, ixy,ixz,iyz
+         print*,'corner brightening width'
+         read(7,*) bright
+         print*,'log10 transform?'
+         read(7,*) log_trans
+         if(log_trans.eq.1)then
+           do 1074 i=1,nxyz
+             if(val1(i).gt.0.)then
+               val1(i)=alog10(val1(i))
+             else
+               val1(i)=-99.
+             endif
+ 1074      continue
+         endif
+       endif
+c   revise xmax,ymax, and zmax based on cropping and chunk sizes
+       xmax=xmin+idim(1)*dx-ixcrr*dx
+       ymax=ymin+idim(2)*dy-iycrr*dy
+       zmax=zmin+idim(3)*dz-izcrr*dz
+       xmin=xmin+ixcrl*dx
+       ymin=ymin+iycrl*dy
+       zmin=zmin+izcrl*dz
+       idx=(idim(1)-ixcrl-ixcrr)/nxchunk
+       idy=(idim(2)-iycrl-iycrr)/nychunk
+       idz=(idim(3)-izcrl-izcrr)/nzchunk
+c
+c  establish plot size and origin  
+c
+       xwidth=(xmax-xmin)+(nxchunk-1)*dxchunk
+       ywidth=(ymax-ymin)+(nychunk-1)*dychunk
+       zwidth=(zmax-zmin)+(nzchunk-1)*dzchunk
+       xpw=xwidth*xscl+ywidth*yscl*ayz
+       ypw=zwidth*zscl+ywidth*yscl*dxy
+c      dxch=(xmax-xmin)/(1.0*nxchunk)
+c      dych=(ymax-ymin)/(1.0*nychunk)
+c      dzch=(zmax-zmin)/(1.0*nzchunk)
+       dxch=idx*dx
+       dych=idy*dy
+       dzch=idz*dz
+       xstep=(dxch+dxchunk)*xscl
+       ystep=(dych+dychunk)*yscl
+       zstep=(dzch+dzchunk)*zscl
+       xo=xc-xpw/2.0
+       yo=yc-ypw/2.0
+       print*,'xo,yo set at ',xo,yo
+c
+c   plot chunks 
+c
+       nchunk=nxchunk*nychunk*nzchunk
+       ichunk=0
+       do 500 izch=1,nzchunk
+         do 500 iych=nychunk,1,-1
+           do 500 ixch=1,nxchunk
+             ichunk=ichunk+1
+             plotch=.true.
+             do 502 icrop=1,ncrop
+ 502            if(ichunk.eq.ichunkcr(icrop))plotch=.false. 
+             if(ichunk.gt.nchunk)go to 995
+            xch=xo+(ixch-1)*xstep*axy+(iych-1)*ystep*cxy
+            ych=yo+(izch-1)*zstep+(iych-1)*ystep*dxy+(ixch-1)*xstep*bxy 
+       ixp1=ixcrl+(ixch-1)*idx
+       iyp1=iycrl+(iych-1)*idy
+       izp1=izcrl+(izch-1)*idz
+       ixp2=idim(1)-ixp1-idx
+       iyp2=idim(2)-iyp1-idy
+       izp2=idim(3)-izp1-idz
+       x1=xmin+(ixch-1)*dxch
+       x2=x1+dxch
+       y1=ymin+(iych-1)*dych
+       y2=y1+dych
+       z1=zmin+(izch-1)*dzch
+       z2=z1+dzch
+       if(ixch.eq.nxchunk)then
+         ixp2=ixcrr
+         x2=xmax
+       endif
+       if(iych.eq.nychunk)then
+         iyp2=iycrr
+         y2=ymax
+       endif
+       if(izch.eq.nzchunk)then
+         izp2=izcrr
+         z2=zmax
+       endif
+       if(i_field.eq.1)then
+c
+c  plot connecting lines
+c
+        write(lpsout,924) (argb(i),i=1,3) 
+        if(izch.gt.1.and.plotch.eqv..true.)then
+         write(lpsout,*) 'gsave'
+         write(2,*) '1.5 setlinewidth [5 5] 0 setdash' 
+         xx(1)=xch
+         xx(2)=xch
+         yy(1)=ych
+         yy(2)=yy(1)-dzchunk*zscl
+         call psline(2,xx,yy,1.5,5,0)
+         xx(1)=xch+axy*(x2-x1)*xscl
+         yy(1)=ych+(x2-x1)*bxy*xscl
+         xx(2)=xx(1)
+         yy(2)=yy(1)-dzchunk*zscl
+         call psline(2,xx,yy,1.5,5,0)
+         xx(1)=xx(1)+(y2-y1)*yscl*cxy
+         yy(1)=yy(1)+(y2-y1)*dxy*yscl
+         xx(2)=xx(1)
+         yy(2)=yy(1)-dzchunk*zscl
+         call psline(2,xx,yy,1.5,5,0)
+         write(lpsout,*) 'grestore'
+        endif
+       endif 
+c
+c  plot xy plane
+c
+       yoxy=ych+dzch*zscl
+       izp=izcrl+izch*idz
+       if(izch.eq.nzchunk)then
+         izp=idim(3)-izcrr
+         yoxy=ych+dz*(idim(3)-izp1-izp2)*zscl
+       endif
+c
+c  check if plotting is necessary
+c
+       plot=.true.
+       if(dzchunk.eq.0..and.izch.lt.nzchunk)then
+         plot=.false.
+         inext=ichunk+nxchunk*nychunk
+         do 984 icrop=1,ncrop
+           if(inext.eq.ichunkcr(icrop))plot=.true.
+ 984     continue
+       endif
+       if(ixzplot.eq.1.or.iyzplot.eq.1)plot=.false.
+       if(plot .eqv. .true..and.plotch.eqv..true.)then
+         if(i_field.eq.1)call hdfmap(val1,1,izp,gcut,ncut,rgb,nbit,
+     &              icolor,xch,yoxy,axy,bxy,cxy,dxy,
+     &              ixp1,ixp2,iyp1,iyp2,izp1,izp2,
+     &              x1,x2,y1,y2,xscl,yscl,idim,ixy)
+       endif
+       write(lpsout,924) (argb(i),i=1,3) 
+       if(izch.eq.nzchunk.and.ixch.eq.1.and.plot.eqv..true.)then
+           ititl=0
+           jtitl=0
+           if(iych.eq.1)jtitl=1
+           write(lpsout,*) '1.0 setlinewidth'
+           print*,'x1,x2,y1,y2=',x1,x2,y1,y2
+           call axes(text_size,xch,yoxy,axy,bxy,cxy,dxy,
+     &           x1,x1,y1,y2,xscl,yscl,
+     &           xlbinc,ylbinc,nxtics,nytics,ndecx,ndecy,
+     &           xtitl,ytitl,ititl,jtitl,xwidth*xscl,ywidth*yscl)
+       endif
+       if(izch.eq.nzchunk.and.iych.eq.1.and.plot.eqv..true.)then
+             ititl=0
+             jtitl=0
+             if(ixyplot.eq.1.and.iych.eq.1)then
+                 ititl=0
+                 if(ixch.eq.1)ititl=1
+                 call axes(text_size,xch,yoxy,axy,bxy,cxy,dxy,
+     &           x1,x2,y1,y1,xscl,yscl,
+     &           xlbinc,ylbinc,nxtics,nytics,ndecx,ndecy,
+     &           xtitl,ytitl,ititl,jtitl,xwidth*xscl,ywidth*yscl)
+             endif
+       endif
+c
+c  plot xz plane
+c
+       iyp=iycrl+(iych-1)*idy+1
+c
+c  check if plotting is necessary
+c
+       plot=.true.
+       plot_edge=.false.
+       plot_edge2=.false.
+       if(dychunk.eq.0.)then
+         if(iych.gt.1)then
+           plot=.false.
+           plot_edge2=.true.
+         endif
+         inext=ichunk+nxchunk
+         ifront=ichunk+nxchunk-nxchunk*nychunk
+         do 982 icrop=1,ncrop
+           if(iych.gt.1.and.inext.eq.ichunkcr(icrop))plot=.true.
+           if(ifront.eq.ichunkcr(icrop))plot_edge2=.false.
+ 982     continue
+       endif
+       itop=ichunk+nxchunk*nychunk
+       do 1082 icrop=1,ncrop
+         itop=ichunk+nxchunk*nychunk
+         if(itop.eq.ichunkcr(icrop))plot_edge=.true.
+ 1082  continue 
+       print*,'before xz; ixyplot=',ixyplot,' iyzplot=',iyzplot
+       if(ixyplot.eq.1.or.iyzplot.eq.1)plot=.false.
+       if(plot .eqv. .true..and.plotch.eqv..true.)then
+         if(i_field.eq.1)call hdfmap(val1,2,iyp,gcut,ncut,rgb,nbit,
+     &              icolor,xch,ych,axz,bxz,cxz,dxz,
+     &              ixp1,ixp2,iyp1,iyp2,izp1,izp2,
+     &              x1,x2,z1,z2,xscl,zscl,idim,ixz)
+c
+c  plot x edge
+c
+         if(bright.gt.0.)then
+          if(dzchunk.gt.0.)plot_edge=.true.
+          if(izch.eq.nzchunk)plot_edge=.true.
+          if(plot_edge.eqv..true.)then
+           write(lpsout,*) 'gsave'
+           write(lpsout,*) '1.0 setgray'
+           write(lpsout,979) axz,bxz,cxz,dxz,xch,ych
+ 979       format('[',6f10.3,'] concat')
+           xp(1)=0.0
+           yp(1)=(z2-z1)*zscl
+           xp(2)=(x2-x1)*xscl
+           yp(2)=yp(1)
+           call psline(2,xp,yp,bright,0,0)
+           write(lpsout,*) 'grestore'
+          endif
+          if(plot_edge2.eqv..true.)then
+           write(lpsout,*) 'gsave'
+           write(lpsout,*) '0.0 setgray'
+           write(lpsout,979) axz,bxz,cxz,dxz,xch,ych
+           xp(1)=0.0
+           yp(1)=0.0
+           xp(2)=(x2-x1)*xscl
+           yp(2)=0.0
+           call psline(2,xp,yp,bright,0,0)
+           write(lpsout,*) 'grestore'
+          endif
+         endif
+       endif
+       write(lpsout,924) (argb(i),i=1,3) 
+       if(ixch.eq.1.and.iych.eq.1.and.plot.eqv..true.)then
+         ititl=0
+         jtitl=0
+         if(izch.eq.1)jtitl=1
+         write(lpsout,*) '1.0 setlinewidth'
+         if(ixzplot.eq.1)ititl=1
+         call axes(text_size,xch,ych,axz,bxz,cxz,dxz,
+     &           x1,x1,z1,z2,xscl,zscl,
+     &           xlbinc,zlbinc,nxtics,nztics,ndecx,ndecz,
+     &           xtitl,ztitl,ititl,jtitl,xwidth*xscl,zwidth*zscl)
+       endif
+       if(izch.eq.1.and.iych.eq.1.and.plot.eqv..true.)then
+         ititl=0
+         jtitl=0
+         if(ixch.eq.1)ititl=1
+         write(lpsout,*) '1.0 setlinewidth'
+         call axes(text_size,xch,ych,axz,bxz,cxz,dxz,
+     &           x1,x2,z1,z1,xscl,zscl,
+     &           xlbinc,zlbinc,nxtics,nztics,ndecx,ndecz,
+     &           xtitl,ztitl,ititl,jtitl,xwidth*xscl,zwidth*zscl)
+       endif
+c
+c  plot yz plane
+c
+       ixp=ixcrl+ixch*idx
+       dxch2=dxch
+       if(ixch.eq.nxchunk)then
+         ixp=idim(1)-ixcrr
+         dxch2=dx*(idim(1)-ixp1-ixp2)
+       endif
+       xoyz=xch+dxch2*xscl*axz
+       yoyz=ych+bxz*dxch2*xscl
+       print*,'slice# = ',ixp
+       print*,'x,y,z cropping =  ',ixp1,ixp2,iyp1,iyp2,izp1,izp2
+c
+c  check if plotting is necessary
+c
+       plot=.true.
+       plot_edge=.false.
+       plot_edge2=.false.
+       plot_edge3=.false.
+       plot_edge4=.false.
+       if(dxchunk.eq.0.)then
+         if(ixch.lt.nxchunk)then
+           plot=.false.
+           plot_edge2=.true.
+           if(dychunk.eq.0.)plot_edge4=.true.
+         endif
+         inext=ichunk+1
+         itop=ichunk+nxchunk*nychunk
+         ifront=ichunk+1-nxchunk*nychunk
+         iadjacent=inext-nxchunk
+         iinfront=ichunk+nxchunk
+         do 983 icrop=1,ncrop
+           if(ixch.lt.nxchunk.and.inext.eq.ichunkcr(icrop))plot=.true.
+           if(ifront.eq.ichunkcr(icrop))plot_edge2=.false.
+           if(iadjacent.eq.ichunkcr(icrop))plot_edge4=.false.
+ 983     continue
+         do 504 icrop=1,ncrop
+ 504       if(inext.eq.ichunkcr(icrop))plot=.true. 
+       endif
+       itop=ichunk+nxchunk*nychunk
+       iinfront=ichunk+nxchunk
+       do 1083 icrop=1,ncrop
+         if(itop.eq.ichunkcr(icrop))plot_edge=.true.
+         if(iinfront.eq.ichunkcr(icrop))plot_edge3=.true.
+ 1083  continue
+       if(ixyplot.eq.1.or.ixzplot.eq.1)plot=.false.
+       print*,'before yz: ixyplot=',ixyplot,' ixzplot=',ixzplot
+       if(plot .eqv. .true..and. plotch .eqv..true.)then
+         if(i_field.eq.1)call hdfmap(val1,3,ixp,gcut,ncut,rgb,nbit,
+     &              icolor,xoyz,yoyz,ayz,byz,cyz,dyz,
+     &              ixp1,ixp2,iyp1,iyp2,izp1,izp2,
+     &              y1,y2,z1,z2,yscl,zscl,idim,iyz)
+c
+c  plot y edge
+c
+         if(iyzplot.eq.1.and.iych.eq.1.and.ixch.eq.nxchunk)then
+           write(lpsout,*) '1.0 setlinewidth'
+           jtitl=0
+           if(izch.eq.1)jtitl=1
+           call axes(text_size,xoyz,yoyz,ayz,byz,cyz,dyz,
+     &           y1,y1,z1,z2,yscl,zscl,
+     &           ylbinc,zlbinc,nytics,nztics,ndecy,ndecz,
+     &           ytitl,ztitl,0,jtitl,ywidth*yscl,zwidth*zscl)
+         endif
+         if(iyzplot.eq.1.and.izch.eq.1.and.ixch.eq.nxchunk)then
+           ititl=0
+           if(iych.eq.1)ititl=1
+           call axes(text_size,xoyz,yoyz,ayz,byz,cyz,dyz,
+     &           y1,y2,z1,z1,yscl,zscl,
+     &           ylbinc,zlbinc,nytics,nztics,ndecy,ndecz,
+     &           ytitl,ztitl,ititl,0,ywidth*yscl,zwidth*zscl)
+         endif
+         if(bright.gt.0.)then
+          if(dzchunk.gt.0.)plot_edge=.true.
+          if(izch.eq.nzchunk)plot_edge=.true.
+c    light outer edge
+          if(plot_edge.eqv..true.)then
+           write(lpsout,*) 'gsave'
+           write(lpsout,*) '1.0 setgray'
+           write(lpsout,979) ayz,byz,cyz,dyz,xoyz,yoyz
+           xp(1)=0.0
+           yp(1)=(z2-z1)*zscl
+           xp(2)=(y2-y1)*yscl
+           yp(2)=yp(1)
+           call psline(2,xp,yp,bright,0,0)
+           write(lpsout,*) 'grestore'
+          endif
+c    dark inner edge
+          if(plot_edge2.eqv..true.)then
+           write(lpsout,*) 'gsave'
+           write(lpsout,*) '0.0 setgray'
+           write(lpsout,979) ayz,byz,cyz,dyz,xoyz,yoyz
+           xp(1)=0.0
+           yp(1)=0.0
+           xp(2)=(y2-y1)*yscl
+           yp(2)=0.0
+           call psline(2,xp,yp,bright,0,0)
+           write(lpsout,*) 'grestore'
+          endif
+c
+c  plot z edge
+c
+          if(dychunk.gt.0)plot_edge3=.true.
+          if(iych.eq.1)plot_edge3=.true.
+c    light outer edge
+          if(plot_edge3.eqv..true.)then
+           write(lpsout,*) 'gsave'
+           write(lpsout,*) '1.0 setgray'
+           write(lpsout,979) ayz,byz,cyz,dyz,xoyz,yoyz
+           xp(1)=0.0
+           yp(1)=(z2-z1)*zscl
+           xp(2)=0.0
+           yp(2)=0.0
+           call psline(2,xp,yp,bright,0,0)
+           write(lpsout,*) 'grestore'
+          endif
+c    dark inner edge
+          if(plot_edge4.eqv..true.)then
+           write(lpsout,*) 'gsave'
+           write(lpsout,*) '0.0 setgray'
+           write(lpsout,979) ayz,byz,cyz,dyz,xoyz,yoyz
+           xp(1)=(y2-y1)*yscl
+           yp(1)=(z2-z1)*zscl
+           xp(2)=xp(1)
+           yp(2)=0.0
+           call psline(2,xp,yp,bright,0,0)
+           write(lpsout,*) 'grestore'
+          endif
+         endif
+       endif
+       write(lpsout,924) (argb(i),i=1,3) 
+ 901   continue
+ 500   continue
+ 995   continue
+c
+c  write title
+       text_size_title=text_size*1.8
+       write(lpsout,924) (trgb(i),i=1,3) 
+       x=xc+title_x
+       y=yc+ypw/2.0+72.+title_y
+       call pstext(x,y,100,titl1,text_size_title,2,0.,i_just)
+       y=y-1.2*text_size_title
+       call pstext(x,y,100,titl2,text_size_title,2,0.,i_just)
+c
+c   draw legend
+c
+       if(i_field.eq.1)then
+       print*,'Plot a legend? (1=yes); orient? (1=up); log scale?'
+       read(7,*) leg
+       print*,'Plotting a legend of type', leg
+c
+c  translate legend 
+c
+       if(leg.eq.1.or.leg.eq.2)then
+          write(lpsout,*) 'gsave'
+       endif
+c
+c    plot legend for continuous variables
+c
+       if(leg.eq.1)then
+         print*,'X,Y legend translations (inches)'
+         read(7,*) xlt,ylt
+         write(lpsout,973) xlt,ylt
+         print*,'Orientation (1=up); log scale (1=yes)'
+         read(7,*) lego,ilog
+         print*,'min, max for legend'
+         read(7,*) xlmin,xlmax
+         print*,'Height, width of legend:'
+         read(7,*) hleg,wleg
+         print*,'Label increment, number of decimals, tics:'
+         read(7,*) dleglab,ndecl,ntics
+         print*,'Name of legend: (data)'
+         read(7,105) legnam
+         print*,'ncut before legend=',ncut
+         call legend(text_size,
+     &      lpsout,xpw,ypw,hleg,wleg,gmin,gmax,xlmin,xlmax,
+     &      dleglab,ntics,ndecl,legnam,gcut,ncut,rgb,lego,ilog,nbit)
+         write(lpsout,*) 'grestore'
+       endif
+c
+c  plot legend for categorical variables
+c
+       if(leg.eq.2)then
+         print*,'X,Y legend translations (inches)'
+         read(7,*) xlt,ylt
+         write(lpsout,*) '[] 0 setdash    '
+         print*,'# of legend categories,nrow,ncol'
+         read(7,*) nlegc,nrow,ncol
+         print*,'height, width of legend'
+         read(7,*) hleg,wleg
+         xtrans=xlt+xc-wleg*72./2.
+         ytrans=ylt+yc-ypw/2.-72*1.75
+         iscat=1
+         irow=1
+         icol=1
+         dowhile(iscat.le.nlegc)
+c  establish x,y location
+           icol=mod(iscat,ncol)
+           if(icol.eq.0)icol=ncol
+           icol=icol-1
+           irow=(iscat-1)/ncol 
+           xtrans=xlt+xc-wleg*72./2.+icol*wleg*72./float(ncol)
+           ytrans=ylt+yc-ypw/2.-72*1.75-irow*hleg*72./float(nrow)
+c  get category info & set color
+           print*,'Data category for legend entry ',iscat,':'
+           read(7,*) icat
+           print*,'Name of legend entry ',iscat,':'
+           read(7,'(a100)') cat(iscat)
+           if(icolor.eq.1)write(lpsout,'(3f7.2,'' setrgbcolor'')')
+     &     ((rgb(icat,j)-1)/float(2**nbit-1),j=1,3)
+           if(icolor.ne.1)write(lpsout,'(1f7.3,'' setgray'')')
+     &     (rgb(icat,1)-1)/float(2**nbit-1)
+C  draw box
+           size=1.5*text_size
+           call rectfill(lpsout,xtrans,ytrans,size,size)
+           write(lpsout,'(3f7.2,'' setrgbcolor'')') (argb(i),i=1,3)
+           write(lpsout,*)  '1 setlinewidth'
+           call rectstroke(lpsout,xtrans,ytrans,size,size)
+C  write category name
+           xcat=xtrans+24.
+           ycat=ytrans+0.15*size
+           write(lpsout,'(3f7.2,'' setrgbcolor'')') (argb(i),i=1,3)
+           call pstext(xcat,ycat,40,cat(iscat),size,2,0.0,0)
+           iscat=iscat+1
+         enddo
+         write(lpsout,*) 'grestore'
+       endif
+       endif
+c
+c   plot concentrations
+c
+       ifmt_field=ifmt
+       print*,'# of concentration files:'
+       read(7,*,end=199) nconcfil
+       print*,'# of concentration files =',nconcfil
+       if(nconcfil.ge.1)then
+         print*,'bottom and top cells'
+         read(7,*) kbot,ktop
+         write(2,*) '0.0 setlinewidth'
+         write(2,*) 'gsave'
+         do 735 ifil=1,nconcfil
+           print*,'Format of concentration file:'
+           read(7,*) ifmt
+           if(ifmt.eq.6)then
+             print*,'  timestep:'
+             read(7,*) ts
+           endif
+           print*,'Name of concentration file'
+           read(7,106) concfil 
+           print 106, concfil
+           if(ifmt.eq.1)then
+             call pf_read_head(concfil,idim(1),idim(2),idim(3))
+             nxyz=idim(1)*idim(2)*idim(3)
+             if (.not.allocated(val1)) allocate (val1(nxyz))
+             call pf_read_array(val1,idim(1),idim(2),idim(3))
+           elseif(ifmt.eq.2)then
+c             iret=dsgdims(concfil,irank,idim,3)
+              nxyz=idim(1)*idim(2)*idim(3)
+              if (.not.allocated(val1)) allocate (val1(nxyz))
+c             iret=dsgdata(concfil,irank,idim,val1)
+             print*,'idim=',idim(1),idim(2),idim(3)
+           elseif(ifmt.eq.3)then
+             open(15,file=concfil,status='old')
+             read(15,*) idim(1),idim(2),idim(3)
+             nxyz=idim(1)*idim(2)*idim(3)
+             if (.not.allocated(val1)) allocate (val1(nxyz))
+             do 672 i=1,nxyz
+ 672           read(15,*) val1(i)
+             close(15)
+           elseif(ifmt.eq.4)then
+c             iret=dsgdims(infile,irank,idim,3)
+             print*,'idim=',idim(1),idim(2),idim(3)
+             nxyz=idim(1)*idim(2)*idim(3)
+             if (.not.allocated(val1)) allocate (val1(nxyz))
+c             iret=dsgdata(infile,irank,idim,ival1)
+             do 1076 i=1,nxyz
+                if( ival1(i) ) then
+                   val1(i) = 1.0 
+                else
+                   val1(i) = 0.0 
+                endif
+ 1076        continue
+           elseif(ifmt.eq.5)then
+             open(15,file=concfil,status='old',form='unformatted')
+             read(15) ndim
+             read(15) (idim(i),i=1,ndim)
+             nxyz=idim(1)*idim(2)*idim(3)
+             if (.not.allocated(ival1)) allocate (ival1(nxyz))
+             if (.not.allocated(val1)) allocate (val1(nxyz))
+             read(15) (ival1(i),i=1,nxyz)
+             do 772 i=1,nxyz
+                if( ival1(i) ) then
+                   val1(i) = 1.0 
+                else
+                   val1(i) = 0.0 
+                endif
+ 772         continue
+             close(15)
+           elseif(ifmt.eq.7)then
+             if(ifmt_field.eq.6)then
+               call con_read_head(concfil,nxn,nyn,nzn,ddx,ddy,ddz)
+               nxyzn=nxn*nyn*nzn
+               call con_read_array_nuft(val1,nxn,nyn,nzn,dxn,dyn,dzn,
+     &             idim(1),idim(2),idim(3),dx,dy,dz,nxyz)
+             else 
+               call con_read_head(concfil,idim(1),idim(2),idim(3),
+     &                            ddx,ddy,ddz)
+               nxyz=idim(1)*idim(2)*idim(3)
+               if (.not.allocated(val1)) allocate (val1(nxyz))
+               call con_read_array(val1,nxyz)
+             endif
+           elseif(ifmt.eq.8)then
+             call nuftread_head(concfil,idim(1),idim(2),idim(3))
+             nxyz=idim(1)*idim(2)*idim(3)
+             if (.not.allocated(val1)) allocate (val1(nxyz))
+             call nuftread(val1,concfil,idim(1),idim(2),idim(3),
+     &                 dxn,dyn,dzn,time,ts)
+             print*,'  time=',time
+           elseif(ifmt.eq.6)then
+             call nuftread_head(concfil,nxn,nyn,nzn)
+	     call nuft_head2(idim(1),idim(2),idim(3),nxn,nyn,nzn,
+     &                        dx,dy,dz,dxn,dyn,dzn,order)
+             nxyz=idim(1)*idim(2)*idim(3)
+             if (.not.allocated(val1)) allocate (val1(nxyz))
+	     call nuftread2(val1,idim(1),idim(2),idim(3),nxn,nyn,nzn,
+     &                 dx,dy,dz,time,ts,dxn,dyn,dzn,order)
+             print*,'  time=',time
+           endif
+
+           print*,'Number of concentration cutoffs'
+           read(7,*) nconc
+           do 745 iconc=1,nconc
+             read(7,*) concmin(iconc),concmax(iconc)
+             print*,'out,in,edge flags'
+             read(7,*)  ieo3(iconc),ieo1(iconc),ieo2(iconc) 
+             read(7,*)  tout(iconc), tin(iconc),tedge(iconc)
+             read(7,*)  i_trans_dia(iconc)
+             print*,'ieo3,ieo1,ieo2=',ieo3(iconc),ieo1(iconc),
+     &                                ieo2(iconc)
+             print*,'conc min, conc max=',concmin(iconc),
+     &              concmax(iconc)
+             read(7,*) ((concrgbo1(iconc,i,j),j=1,3),i=1,3)
+             read(7,*) ((concrgbo2(iconc,i,j),j=1,3),i=1,3)
+             read(7,*) ((concrgbi1(iconc,i,j),j=1,3),i=1,3)
+             read(7,*) ((concrgbi2(iconc,i,j),j=1,3),i=1,3)
+             read(7,*) ((concrgbe1(iconc,i,j),j=1,3),i=1,3)
+             read(7,*) ((concrgbe2(iconc,i,j),j=1,3),i=1,3)
+ 745       continue
+           do 755 iconc=1,nconc
+            if(ieo1(iconc).eq.1.or.ieo2(iconc).eq.1
+     &                   .or.ieo3(iconc).eq.1)then
+             ieo1t=0
+             if(ieo1(iconc).eq.1)ieo1t=1
+             ieo2t=0
+             if(ieo2(iconc).eq.1)ieo2t=1
+             ieo3t=0
+             if(ieo3(iconc).eq.1)ieo3t=1
+             call concplotin(val1,xo,yo,idim,dx,dy,dz,
+     &                     ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr,
+     &                     axy,bxy,cxy,dxy,
+     &                     axz,bxz,cxz,dxz,
+     &                     ayz,byz,cyz,dyz,
+     &                     iconc,concmin,concmax,
+     &                     xscl,yscl,zscl,
+     &                     idx,idy,idz,
+     &                     dxchunk,dychunk,dzchunk,
+     &                     nxchunk,nychunk,nzchunk,
+     &                     ncrop,ichunkcr,
+     &                     concrgbi1,concrgbi2,
+     &                     concrgbo1,concrgbo2,
+     &                     concrgbe1,concrgbe2,
+     &                     kbot,ktop,
+     &                     tin(iconc),tout(iconc),tedge(iconc),
+     &                     ieo1t,ieo2t,ieo3t,
+     &                     ixyplot,ixzplot,iyzplot,i_trans_dia(iconc))
+             if(iconc.eq.nconc .and. nchunk.gt.1)
+     &                   call corner(nxchunk,nychunk,nzchunk,xo,yo,
+     &                   xstep,ystep,zstep,axy,bxy,cxy,dxy,
+     &                   axz,bxz,cxz,dxz,ayz,byz,cyz,dyz,
+     &                   idim,xmin,ymin,zmin,xmax,ymax,zmax,
+     &                   dxch,dych,dzch,
+     &                   ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr,
+     &                   ichunkcr,argb,dx,dy,dz,xscl,yscl,zscl,
+     &                   dxchunk,dychunk,dzchunk,lpsout,i_field,
+     &                   idx,idy,idz,ncrop,bright)
+            endif
+ 755       continue
+           do 855 iconc=1,nconc
+            if(ieo1(iconc).eq.-1)then
+             call concplotin(val1,xo,yo,idim,dx,dy,dz,
+     &                     ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr,
+     &                     axy,bxy,cxy,dxy,
+     &                     axz,bxz,cxz,dxz,
+     &                     ayz,byz,cyz,dyz,
+     &                     iconc,concmin,concmax,
+     &                     xscl,yscl,zscl,
+     &                     idx,idy,idz,
+     &                     dxchunk,dychunk,dzchunk,
+     &                     nxchunk,nychunk,nzchunk,
+     &                     ncrop,ichunkcr,
+     &                     concrgbi1,concrgbi2,
+     &                     concrgbo1,concrgbo2,
+     &                     concrgbe1,concrgbe2,
+     &                     kbot,ktop,
+     &                     tin(iconc),tout(iconc),tedge(iconc),
+     &                     1,0,0,
+     &                     ixyplot,ixzplot,iyzplot,i_trans_dia(iconc))
+            endif
+ 855       continue
+           do 856 iconc=1,nconc
+            if(ieo2(iconc).eq.-1)then
+             call concplotin(val1,xo,yo,idim,dx,dy,dz,
+     &                     ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr,
+     &                     axy,bxy,cxy,dxy,
+     &                     axz,bxz,cxz,dxz,
+     &                     ayz,byz,cyz,dyz,
+     &                     iconc,concmin,concmax,
+     &                     xscl,yscl,zscl,
+     &                     idx,idy,idz,
+     &                     dxchunk,dychunk,dzchunk,
+     &                     nxchunk,nychunk,nzchunk,
+     &                     ncrop,ichunkcr,
+     &                     concrgbi1,concrgbi2,
+     &                     concrgbo1,concrgbo2,
+     &                     concrgbe1,concrgbe2,
+     &                     kbot,ktop,
+     &                     tin(iconc),tout(iconc),tedge(iconc),
+     &                     0,1,0,
+     &                     ixyplot,ixzplot,iyzplot,i_trans_dia(iconc))
+            endif
+ 856       continue
+           if(ieo1(nconc).eq.-1.and.nchunk.gt.1)then
+             print*,'Calling corner'
+             call corner(nxchunk,nychunk,nzchunk,xo,yo,
+     &                   xstep,ystep,zstep,axy,bxy,cxy,dxy,
+     &                   axz,bxz,cxz,dxz,ayz,byz,cyz,dyz,
+     &                   idim,xmin,ymin,zmin,xmax,ymax,zmax,
+     &                   dxch,dych,dzch,
+     &                   ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr,
+     &                   ichunkcr,argb,dx,dy,dz,xscl,yscl,zscl,
+     &                   dxchunk,dychunk,dzchunk,lpsout,i_field,
+     &                   idx,idy,idz,ncrop,bright)
+           endif
+           do 857 iconc=1,nconc
+            if(ieo3(iconc).eq.-1)then
+             call concplotin(val1,xo,yo,idim,dx,dy,dz,
+     &                     ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr,
+     &                     axy,bxy,cxy,dxy,
+     &                     axz,bxz,cxz,dxz,
+     &                     ayz,byz,cyz,dyz,
+     &                     iconc,concmin,concmax,
+     &                     xscl,yscl,zscl,
+     &                     idx,idy,idz,
+     &                     dxchunk,dychunk,dzchunk,
+     &                     nxchunk,nychunk,nzchunk,
+     &                     ncrop,ichunkcr,
+     &                     concrgbi1,concrgbi2,
+     &                     concrgbo1,concrgbo2,
+     &                     concrgbe1,concrgbe2,
+     &                     kbot,ktop,
+     &                     tin(iconc),tout(iconc),tedge(iconc),
+     &                     0,0,1,
+     &                     ixyplot,ixzplot,iyzplot,i_trans_dia(iconc))
+            endif
+ 857       continue
+c
+c  plot legend for categorical variables
+c
+           read(7,*) leg
+           if(leg.ne.0)then
+             read(7,*) xtr,ytr
+             write(lpsout,*) '[] 0 setdash    '
+             nlegc=nconc
+             ncol=1
+             nrow=nconc
+             xtrans=xc+xtr
+             ytrans=yc-ypw/2.-72*1.75+ytr
+             iscat=1
+             irow=1
+             icol=1
+             size=1.5*text_size
+             dowhile(iscat.le.nlegc)
+               iconc=iscat
+               print*,'Name of legend entry ',iscat,':'
+               read(7,'(a100)') cat(iscat)
+               if(ieo2(iconc).ne.0)then
+                 write(lpsout,'(3f9.3,'' setrgbcolor'')')
+     &           (0.5*concrgbe1(iconc,1,j)
+     &           +0.5*concrgbe2(iconc,1,j),j=1,3)
+               else
+                 if(ieo3(iconc).ne.0)then
+                   write(lpsout,'(3f9.3,'' setrgbcolor'')')
+     &             (0.5*concrgbo1(iconc,1,j)
+     &             +0.5*concrgbo2(iconc,1,j),j=1,3)
+                 else
+                   write(lpsout,'(3f9.3,'' setrgbcolor'')')
+     &             (0.5*concrgbi1(iconc,1,j)
+     &             +0.5*concrgbi2(iconc,1,j),j=1,3)
+                 endif
+               endif
+C  draw box
+               call rectfill(lpsout,xtrans,ytrans,size,size)
+               write(lpsout,'(3f7.2,'' setrgbcolor'')') (argb(i),i=1,3)
+               write(lpsout,*)  '1 setlinewidth'
+               call rectstroke(lpsout,xtrans,ytrans,size,size)
+C  write category name
+               xcat=xtrans+2.0*text_size
+               ycat=ytrans+0.20*text_size
+               write(lpsout,'(3f7.2,'' setrgbcolor'')') (argb(i),i=1,3)
+               call pstext(xcat,ycat,40,cat(iscat),size,2,0.0,0)
+               ytrans=ytrans-1.5*size
+               irow=irow+1
+               iscat=iscat+1
+             enddo
+           endif
+ 735     continue
+         write(lpsout,*) 'grestore'
+       endif
+c
+c   get lines
+c
+       print*,'xmin,ymin,zmin=',xmin,ymin,zmin
+       print*,'xmax,ymax,zmax=',xmax,ymax,zmax
+       print*,'# of line files:'
+       read(7,*,end=199) nlinfil
+       if(nlinfil.ge.1)then
+         do 935 ifil=1,nlinfil
+           print*,'Line format:'
+           read(7,*) lin_form
+           print*,'Name of line file'
+           read(7,105) linfil
+           print*,'minimum & maximum values'
+           read(7,*) vlmin,vlmax
+           iflag=0
+           if(vlmin.eq.vlmax)then
+             read(7,*) rlin,glin,blin
+             rlin=rlin/65535.
+             glin=glin/65535.
+             blin=blin/65535.
+             iflag=1
+           else
+             print*,'Name of color table for point data'
+             read(7,105) clrfil  
+           endif
+           read(7,*) xol,yol,zol
+           read(7,*) iwinnow, scalef
+           read(7,*) lw1,idash1,imark1,wmin1
+           read(7,*) lw2,idash2,imark2,wmin2
+           read(7,*) ileg
+           if(ileg.ne.0)then
+             read(7,*) xlt,ylt
+             read(7,*) hleg,wleg
+             read(7,105) legnam
+             read(7,*) dleglab,ndecl,ntics
+           else
+             hleg=1.
+             wleg=1.
+             legnam='blank'
+             dleglab=1000.
+             ndecl=0
+             ntics=10
+           endif
+c
+c  plot lines 
+c
+           call lineplot(linfil,scalef,text_size,
+     &              xo,yo,ccxx,ccxy,ccyx,ccyy,
+     &              xmin,xmax,ymin,ymax,zmin,zmax,xscl,yscl,zscl,
+     &              nxchunk,nychunk,nzchunk,
+     &              dxchunk,dychunk,dzchunk,
+     &              dxch,dych,dzch,
+     &              dx,dy,dz,
+     &              clrfil,vlmin,vlmax,
+     &              ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr,
+     &              ichunkcr,ncrop,
+     &              rlin,glin,blin,iflag,
+     &              iwinnow,lw1,idash1,wmin1,
+     &              lw2,idash2,wmin2,
+     &              ileg,hleg,wleg,xlt,ylt,legnam,dleglab,ndecl,ntics,
+     &              xol,yol,zol,imark1,imark2,lin_form)
+ 935     continue
+       endif
+ 199   continue
+c
+c   get dots 
+c
+       print*,'# of dot files:'
+       read(7,*,end=299) ndotfil
+       if(ndotfil.ge.1)then
+         do 985 ifil=1,ndotfil
+           print*,'Name of dot file'
+           read(7,105) linfil
+           print*,'minimum & maximum values'
+           read(7,*) vlmin,vlmax
+           iflag=0
+           if(vlmin.eq.vlmax)then
+             read(7,*) rlin,glin,blin
+             rlin=rlin/65535.
+             glin=glin/65535.
+             blin=blin/65535.
+             iflag=1
+           else
+             print*,'Name of color table for point data'
+             read(7,105) clrfil  
+           endif
+           read(7,*) xol,yol,zol
+           read(7,*) iwinnow, scalef
+           read(7,*) lw1,imark1,dsmin1
+           read(7,*) lw2,imark2,dsmin2
+           read(7,*) ileg
+           if(ileg.ne.0)then
+             read(7,*) xlt,ylt
+             read(7,*) hleg,wleg
+             read(7,105) legnam
+             read(7,*) dleglab,ndecl,ntics
+           else
+             hleg=1.
+             wleg=1.
+             legnam='blank'
+             dleglab=1000.
+             ndecl=0
+             ntics=10
+           endif
+           call dotplot(linfil,scalef,text_size,
+     &                xo,yo,ccxx,ccxy,ccyx,ccyy,
+     &                xmin,xmax,ymin,ymax,zmin,zmax,
+     &                xscl,yscl,zscl,
+     &                nxchunk,nychunk,nzchunk,
+     &                dxchunk,dychunk,dzchunk,
+     &                dxch,dych,dzch, 
+     &                dx,dy,dz, 
+     &                clrfil,vlmin,vlmax,
+     &                ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr,
+     &                ichunkcr,ncrop,
+     &                iwinnow,lw1,imark1,lw2,imark2,iflag,
+     &                ileg,hleg,wleg,xlt,ylt,legnam,dleglab,ndecl,ntics,
+     &                xol,yol,zol,dsmin1,dsmin2,
+     &                rlin,glin,blin)
+c
+c  finish plot
+c
+ 985     continue
+       endif
+ 299   continue
+       close (7) 
+       write(lpsout,*) 'showpage'
+       if(ieps.eq.1)then
+         write(2,119)
+ 119     format('%%EOF')
+       endif
+       end
+
+       subroutine rectfill(lpsout,x0,y0,width,height)
+       write(lpsout,*) 'n'
+       write(lpsout,'(2f18.3,'' m'')') x0,y0
+       write(lpsout,'(2f18.3,'' l'')') x0+width,y0
+       write(lpsout,'(2f18.3,'' l'')') x0+width,y0+height
+       write(lpsout,'(2f18.3,'' l closepath fill'')') x0,y0+height
+       return 
+       end 
+
+       subroutine rectstroke(lpsout,x0,y0,width,height)
+       write(lpsout,*) 'n'
+       write(lpsout,'(2f18.4,'' m'')') x0,y0
+       write(lpsout,'(2f18.4,'' l'')') x0+width,y0
+       write(lpsout,'(2f18.4,'' l'')') x0+width,y0+height
+       write(lpsout,'(2f18.4,'' l closepath stroke'')') x0,y0+height
+       return 
+       end 
+
+        subroutine legend(text_size,lpsout,xpw,ypw,hleg,
+     &       wleg,gmin,gmax,
+     &       xlmin,xlmax,
+     &       dleglab,ntics,ndec,legnam,gcut,ncut,rgb,lego,
+     &       ilog,nbit)
+        real x(5),y(5),gcut(0:10000)
+        real brgb(3),trgb(3),argb(3)
+        integer rgb(0:10000,3)
+        character*100 legnam
+        common /colors/ brgb,trgb,argb,icolor 
+        common /orient/ iland,xc,yc
+ 101    format(2f8.2,' translate')
+        tic=0.3*text_size
+        if(lego.eq.1) write(lpsout,*) '90 rotate'
+        if(ilog.eq.1)ntics=10
+c 
+c   draw each grayshade
+        print*,'gmin,gmax=',gmin,gmax
+        xscale=wleg*72./(gmax-gmin)
+        print*,'xscale=',xscale
+        dy=hleg*72.
+        cutold=gmin
+        x1=0.
+        gcut(ncut+1)=gmax
+        denom=15.
+        if(nbit.eq.8)denom=255.
+        print*,'ncut=',ncut
+        do 10 icut=1,ncut
+          dx=(gcut(icut)-cutold)*xscale
+c     draw gray
+          if(icolor.eq.1)then
+            red=real(rgb(icut,1)-1)/denom
+            green=real(rgb(icut,2)-1)/denom
+            blue=real(rgb(icut,3)-1)/denom
+            write(lpsout,102) red,green,blue
+            call rectfill(lpsout,x1,0.,dx,dy) 
+          else
+            rgray=real(rgb(icut,1)-1)/denom
+            write(lpsout,202) rgray
+            call rectfill(lpsout,x1,0.,dx,dy) 
+          endif
+          x1=x1+dx
+          cutold=gcut(icut)
+ 10     continue
+ 102    format(3f7.2,' rgb') 
+ 202    format(1f7.3,' setgray')
+        write(lpsout,*) '1.0 setgray'
+c 
+c   draw tics and labels
+c
+        write(lpsout,924) (argb(i),i=1,3)
+ 924    format(3f8.3,' rgb')
+        print*,'ntics=',ntics
+        print*,'dleglab=',dleglab
+        print*,'xlmin,xlmax=',xlmin,xlmax
+        dgtic=dleglab/real(ntics)
+        gticmin=dgtic*nint(xlmin/dgtic) 
+        if(gticmin.lt.xlmin)gticmin=gticmin+dgtic
+        glegmin=dleglab*nint(xlmin/dleglab) 
+        if(glegmin.lt.xlmin)glegmin=glegmin+dleglab
+	print*, glegmin, xlmin, dleglab, ilog
+c
+c  draw tics 
+c
+c    draw small tics
+c
+        gtic=gticmin
+        xscale=wleg*72./(xlmax-xlmin)
+        do while(gtic .le. xlmax)
+          itic=mod(nint((gtic-glegmin)/dgtic),ntics)
+          x(1)=(gtic-xlmin)*xscale
+          y(1)=0.
+          if(lego.eq.1)y(1)=dy
+          x(2)=x(1)
+          y(2)=-tic
+          if(ntics.eq.6.and.itic.eq.3)y(2)=-1.6*tic
+          if(ntics.eq.8.and.itic.eq.4)y(2)=-1.6*tic
+          if(ntics.eq.10.and.itic.eq.5)y(2)=-1.6*tic
+          if(ntics.eq.12.and.itic.eq.6)y(2)=-1.6*tic
+          if(ntics.eq.20.and.itic.eq.10)y(2)=-1.6*tic
+          if(ntics.eq.9.and.itic.eq.3)y(2)=-1.6*tic
+          if(ntics.eq.9.and.itic.eq.6)y(2)=-1.6*tic
+          if(ntics.eq.15.and.itic.eq.5)y(2)=-1.6*tic
+          if(ntics.eq.15.and.itic.eq.10)y(2)=-1.6*tic
+          if(lego.eq.1)y(2)=dy+tic
+          if(ilog.ne.1)call psline(2,x,y,1.,0,0)
+          gtic=gtic+dgtic
+        end do
+c     draw big tics and labels
+        gleg=glegmin
+        do while(gleg .le. xlmax)
+          x(1)=(gleg-xlmin)*xscale
+          y(1)=0.
+          if(lego.eq.1)y(1)=dy
+          x(2)=x(1)
+          y(2)=-2.*tic
+          if(lego.eq.1)y(2)=dy+2.*tic
+          call psline(2,x,y,1.,0,0)
+c     write label
+          xt=x(1)
+          if(lego.eq.1)xt=xt-tic
+          yt=y(2)-text_size
+          if(lego.eq.1)yt=y(2)+tic*1.3
+         if(ilog.ne.1)then
+	print*, lego, gleg, xt, yt
+          if(lego.ne.1)call num2text(gleg,xt,yt,text_size,2,0.,1,ndec) 
+          if(lego.eq.1)call num2text(gleg,xt,yt,text_size,2,-90.,2,ndec) 
+         else
+          rnum=10.**gleg
+          ndec=0
+          if(gleg.lt.0)ndec=int(-gleg)
+          if(lego.ne.1)call num2text(rnum,xt,yt,text_size,2,0.,1,ndec) 
+          if(lego.eq.1)call num2text(rnum,xt,yt,text_size,2,-90.,2,ndec) 
+         endif
+c
+c  write tics for log scale
+c
+         if(ilog.eq. 1 .and. gleg .lt. xlmax)then
+           x2=10.**(gleg+dleglab)
+           xtinc=x2/10.
+           do 15 itic=2,9
+             y(1)=0.
+             y(2)=-tic
+             if(itic.eq.5) y(2)=-1.6*tic
+             xx=xtinc*itic
+             x(1)=(alog10(xx)-xlmin)*xscale
+             x(2)=x(1)
+             print*,'x,y=',x(1),y(2)
+ 15          call psline(2,x,y,1.0,0,0)
+         endif
+         gleg=gleg+dleglab
+        end do
+c    draw frame
+        x(1)=0.
+        y(1)=0.
+        x(2)=wleg*72.
+        y(2)=0.
+        x(3)=x(2)
+        y(3)=hleg*72.
+        x(4)=x(1)
+        y(4)=y(3)
+        x(5)=x(1)
+        y(5)=y(1)
+        call psline(5,x,y,1.,0,0)
+c    draw legend name
+        xl=wleg*36.
+        yl=-3.*text_size
+        write(lpsout,924) (argb(i),i=1,3)
+        call pstext(xl,yl,40,legnam,1.3*text_size,2,0.,1)
+        return
+        end
+
+
+        subroutine psline(np,x,y,lwidt,idsh,imark)
+
+c-----------------------------------------------------------------------
+c
+c              Write Postscript line commands to a file
+c              ****************************************
+c
+c
+c CALLING ARGUMENTS:
+c
+c  np           the number of points in the x and y array to join
+c  x()          array of x values in the range xmin to xmax
+c  y()          array of y values in the range ymin to ymax
+c  lwidt        The width of the line (1.0 = dark, 0.5 = light)         
+c  idsh         Dashing Index
+c
+c NOTES:
+c
+c
+c  2. If "idsh" is zero then no dashing is performed
+c
+c
+c AUTHOR: C. Deutsch                                 DATE: November 1988
+c-----------------------------------------------------------------------
+C  Modified by SFC 12/92
+        real      x(*),y(*),lwidt 
+        character dash(0:10)*24
+        save oldlw,idshold 
+c
+c Common Block for Postscript Output Unit and Scaling:
+c
+       common /psdata/ lpsout
+c
+c Dash Patterns:
+c
+        data dash/'[] 0 setdash         ',
+     +            '[1 2] 0 setdash         ',
+     +            '[2 2] 0 setdash         ',
+     +            '[3 3] 0 setdash         ',
+     +            '[4 4] 0 setdash         ',
+     +            '[5 5] 0 setdash         ',
+     +            '[15 5] 0 setdash        ',
+     +            '[15 5 1 5] 0 setdash    ',
+     +            '[15 5 5 5] 0 setdash    ',
+     +            '[15 5 10 5] 0 setdash   ',
+     +            '[15 10] 0 setdash       '/
+        if(idsh.lt.0)  idsh=0
+        if(idsh.gt.10)   idsh = 10
+c
+c Start a new path and loop through the points:
+c
+        if(imark .ge. 0)then
+c
+c Set the line width
+          if(lwidt.ne.oldlw)write(lpsout,100) lwidt
+ 100      format(f7.2,' lw')
+c
+c Set dash pattern
+          if(idsh.ne.idshold) write(lpsout,'(a24)') dash(idsh)
+c
+c Draw line
+          do 1 i=1,np
+                xx=x(i)
+                yy=y(i)
+                if(i.eq.1) then
+                   write(lpsout,102) xx,yy
+ 102               format('n',2f7.2,' m')
+                elseif(i.gt.1.and.i.lt.np)then
+                   write(lpsout,103) xx,yy
+ 103               format(2f7.2,' l')
+                elseif(i.eq.np)then
+                   write(lpsout,104) xx,yy
+ 104               format(2f7.2,' l s')
+                endif
+ 1        continue        
+        endif
+C  draw markers if requested
+        if(imark .ne. 0)then
+          imark2=iabs(imark)
+          do 2 i=1,np
+            call marker(imark2,x(i),y(i),lwidt)
+ 2        continue
+        endif
+c
+c Finished - Return to calling program:
+c
+        oldlw=lwidt
+        idshold=idsh
+        return
+        end
+
+        subroutine arrowhead(np,x,y,lwidt,dxyzi)
+
+c-----------------------------------------------------------------------
+c
+c CALLING ARGUMENTS:
+c
+c  np           the number of points in the x and y array to join
+c  x()          array of x values in the range xmin to xmax
+c  y()          array of y values in the range ymin to ymax
+c  lwidt        The width of the line (1.0 = dark, 0.5 = light)         
+c  dxyzi        The length of the arrow in 3-D
+c
+        real      x(*),y(*),lwidt 
+c
+c Common Block for Postscript Output Unit and Scaling:
+c
+       common /psdata/ lpsout
+       xx=0.5*(x(1)+x(2))
+       yy=0.5*(y(1)+y(2))
+       dx=x(2)-x(1)
+       dy=y(2)-y(1)
+       dist=sqrt(dx**2+dy**2)
+       scale2=0.5*dxyzi*lwidt
+       scale1=0.5*dist*lwidt
+       if(dx.ne.0)then
+         angle=atan(dy/dx)*180.0/3.14159
+         if(dx.lt.0.)angle=angle+180.
+       else
+         angle=90.0
+         if(dy.lt.0.)angle=270.
+       endif
+       write(lpsout,500) xx,yy,angle,scale1,scale2 
+ 500   format('gsave n',2f7.2,' m',f8.2,
+     &        ' rotate',2f7.2,' scale arwh grestore')
+       return
+       end
+
+        subroutine pstext(xs,ys,lostr,str,tsiz,ifont,rot,iadj)
+c-----------------------------------------------------------------------
+c
+c              Write Postscript Text commands to a file
+c              ****************************************
+c
+c
+c CALLING ARGUMENTS:
+c
+c  xs           starting value of x in the range xmin to xmax
+c  ys           starting value of y in the range ymin to ymax
+c  lostr        number of characters in str to print
+c  str          the character string
+c  tsiz         Text size in 1/72 of an inch
+c  ifont        Font Number: See font number below
+c  rot          Rotation Angle to post the text (default to 0.0)
+c  iadj         Adjustment: 0=left adjusted, 1=centre, 2=right
+c
+c
+c AUTHOR: C. Deutsch                                 DATE: November 1988
+c-----------------------------------------------------------------------
+        character str*100,fnnt(10)*32,line*132,size*4,part1*1,part2*7
+c
+c Common Block for Postscript Output Unit and Scaling:
+c
+       common /psdata/ lpsout
+        save      fnnt,ifold,tsold
+c
+c Preset 10 different fonts:
+c
+        data fnnt/'/Helvetica             findfont ',
+     +            '/Helvetica-Bold        findfont ',
+     +            '/Helvetica-BoldOblique findfont ',
+     +            '/Times-Roman           findfont ',
+     +            '/Times-Bold            findfont ',
+     +            '/Times-Italic          findfont ',
+     +            '/Times-BoldItalic      findfont ',
+     +            '/Courier               findfont ',
+     +            '/Courier-Bold          findfont ',
+     +            '/Courier-BoldOblique   findfont '/
+        data ifold/0/,tsold/0.0/
+        part1 = '('
+        part2 = ')  text'
+c
+c Remove leading and trailing blanks:
+c
+        lost = lostr
+        do 1 i=1,lostr
+                if(str(1:1).eq.' ') then
+                        lost = lost - 1
+                        do 2 j=1,lost
+                                k = j + 1
+                                str(j:j) = str(k:k)
+ 2                      continue
+                else
+                        go to 3
+                endif
+ 1      continue
+ 3      continue
+        k = lost
+        do 4 i=1,k
+                ix = k - i + 1
+                if(str(ix:ix).ne.' ') go to 5
+                lost = lost - 1
+ 4      continue
+ 5      if(lost.le.0) return
+c
+c Create line to set the text size and type:
+c
+                isiz=nint(tsiz)
+                write(size,'(i4)') isiz
+                line=fnnt(ifont)//size//' scalefont setfont'    
+                write(lpsout,'(a)')line(1:54)
+                ifold = ifont
+                tsold = tsiz
+c
+c Set the correct adjustment:
+c
+        part2(3:3) = 'l'
+        if(iadj.eq.1) part2(3:3) = 'c'
+        if(iadj.eq.2) part2(3:3) = 'r'
+c
+c Write the lines and position to the Postscript file:
+c                       
+        x=xs
+        y=ys
+c
+c       set gray shade, if necessary
+c 
+        write(lpsout,*) 'gsave'
+c
+c       Rotate if Necessary:
+c
+        line = part1//str(1:lost)//part2
+        if(rot.ne.0.0) then
+                write(lpsout,*) 'gsave'
+                write(lpsout,102) x,y
+                write(lpsout,100) 0.,0.
+                write(lpsout,103) rot
+                write(lpsout,'(a)')line(1:lost+8)
+                write(lpsout,*) 'grestore'
+        else
+c
+c       Just write out the text if no rotation:
+c
+                write(lpsout,100)x,y
+                write(lpsout,'(a)')line(1:lost+8)
+        endif
+        write(lpsout,*) 'grestore'
+ 100    format(2f10.2,1x,'m')
+ 102    format(2f10.2,1x,'translate')
+ 103    format(f10.1,1x,'rotate')
+c
+c Finished - Return to calling program:
+c
+        return
+        end
+
+       subroutine num2text(val,xs,ys,fsiz,ifont,rot,iform,ndec)
+C   this program posts .eas format data by creating a postscript file
+       character cval*8,cnum(0:12)*1
+       data cnum/'0','1','2','3','4','5','6','7','8','9',' ','-','.'/
+       ibeg=1 
+       cval='        '
+c  check if negative
+       if(val.lt.0.0)then
+         cval(1:1)='-'
+       endif
+c  check if fraction
+       if(val.gt.-1.0.and.val.lt.1.0)then
+         ibeg=ibeg+1
+         cval(ibeg:ibeg)='0'
+       endif
+c  find power
+       vabs=abs(val)
+       if(vabs.ne.0.)iordr=int(alog10(vabs))
+       if(vabs.eq.0.)iordr=-1
+c  do higher order numbers
+       if(vabs.ge.1.)then
+         do 10 i=iordr,0,-1
+           ibeg=ibeg+1
+           ival=int(vabs/(10.**i))
+           cval(ibeg:ibeg)=cnum(ival)
+           vabs=vabs-ival*(10.**i)
+ 10      continue
+       endif
+c  do decimal places
+       if(ndec.gt.0)then
+         ibeg=ibeg+1
+         cval(ibeg:ibeg)='.'
+         do 20 idec=-1,-ndec,-1
+	print*, vrem, vabs, 10.**float(idec), idec, val
+	vrem = 0.
+	!if (10.**float(idec) /= 0.)  
+	          vrem=amod(vabs,10.**float(idec))
+           ival=nint((vabs-vrem)*10.**(-idec))
+           if(idec.eq.-ndec)ival=nint(vabs*10.**float(-idec))
+           ibeg=ibeg+1
+           cval(ibeg:ibeg)=cnum(ival)
+           vabs=vrem
+ 20      continue
+       endif
+c   write text
+       call pstext(xs,ys,8,cval,fsiz,ifont,rot,iform)
+       return
+       end
+
+       subroutine axes(text_size,xo,yo,a,b,c,d,
+     &                 xmin,xmax,ymin,ymax,xscl,yscl,
+     &                 xlbinc,ylbinc,nxtics,nytics,ndecx,ndecy,
+     &                 xlab,ylab,ititl,jtitl,xw,yw)
+       common /psdata/ lpsout
+       real x(2),y(2)
+       character*100 xlab,ylab
+c
+c  transform coordinate system
+       write(lpsout,*) 'gsave'
+       write(lpsout,979) a,b,c,d,xo,yo
+ 979   format('[',6f10.3,']  concat')
+C  do axes
+       tic=0.3*text_size
+       fsiz= text_size
+       ifont=3
+C  do x axis
+       if(xmax.gt.xmin)then
+       rot=0.0
+       iform=1 
+c
+c  write line from xmin to xmax
+c
+       y(1)=0.
+       y(2)=0.
+       x(1)=0.
+       x(2)=(xmax-xmin)*xscl
+       call psline(2,x,y,1.,0,0)
+c 
+c  determine starting labels and tic increments
+       xtinc=xlbinc/real(nxtics)
+       xstart=int(xmin/xtinc)*xtinc
+       if(xstart.lt.xmin)xstart=xstart+xtinc
+       ntics=int((xmax-xstart)/xtinc)
+c
+c  draw tics and labels
+       y(1)=0.
+       do 984 ixtic=0,ntics
+         xtic=xstart+ixtic*xtinc
+         x(1)=(xtic-xmin)*xscl
+         x(2)=x(1)
+         y(2)=-tic
+         if(amod(xtic,xlbinc).eq.0.)then
+           y(2)=-2.*tic
+           ylb=-(2.*tic+fsiz)
+           call num2text(xtic,x(1),ylb,fsiz,2,rot,iform,ndecx)
+         elseif(amod(xtic*2.,xlbinc).eq.0.)then
+            if(nxtics.ge.6.and.mod(nxtics,2).eq.0)y(2)=-1.6*tic
+         elseif(amod(xtic*3.,xlbinc).eq.0.)then
+            if(nxtics.ge.9.and.mod(nxtics,3).eq.0)y(2)=-1.6*tic
+         endif
+         call psline(2,x,y,1.,0,0)
+ 984   continue
+c
+c  draw x label
+       xt=xw*0.5
+       yt=-3.0*text_size
+       if(ititl.eq.1)call pstext(xt,yt,40,xlab,1.2*fsiz,3,0.,1)
+       endif
+C
+C  do y axis
+c
+       if(ymax.gt.ymin)then
+       iform=2 
+       rot=0.0
+c
+c  write line from ymin to ymax
+c
+       y(1)=0.
+       x(2)=0.
+       y(2)=(ymax-ymin)*yscl
+       x(1)=0.
+       call psline(2,x,y,1.,0,0)
+c 
+c  determine starting labels and tic increments
+       ytinc=ylbinc/real(nytics)
+       ystart=int(ymin/ytinc)*ytinc
+       if(ystart.lt.ymin)ystart=ystart+ytinc
+       ntics=int((ymax-ystart)/ytinc)
+c
+c  draw tics and labels
+       x(1)=0.
+       do 985 iytic=0,ntics
+         ytic=ystart+iytic*ytinc
+         y(1)=(ytic-ymin)*yscl
+         y(2)=y(1)
+         x(2)=-tic
+         if(amod(ytic,ylbinc).eq.0.)then
+           x(2)=-2.*tic
+           xlb=-2.6*tic
+           ylb=y(1)-fsiz*0.5
+           call num2text(ytic,xlb,ylb,fsiz,2,rot,iform,ndecy)
+         elseif(amod(ytic*2.,ylbinc).eq.0.)then
+            if(nytics.ge.6.and.mod(nytics,2).eq.0)x(2)=-1.6*tic
+         elseif(amod(ytic*3.,ylbinc).eq.0.)then
+            if(nytics.ge.9.and.mod(nytics,3).eq.0)x(2)=-1.6*tic
+         endif
+         call psline(2,x,y,1.,0,0)
+ 985   continue
+c
+c  draw label
+c
+c  adjust for leading decimals
+       nxjump=1
+       bigtrue=ymax
+       big=abs(ymax)
+       big2=abs(ymin)
+       if(big2.gt.big)then
+         big=big2
+         bigtrue=ymin
+       endif
+       nxjump=1+int(alog10(big))
+       if(nxjump.lt.1)nxjump=1
+c  adjust for negative ymax
+       if(bigtrue.lt.0.)nxjump=nxjump+1
+c  adjust for decimal place
+       if(ndecy.gt.0)nxjump=nxjump+ndecy+1
+       xt=-1.5*fsiz-nxjump*0.6*fsiz
+       yt=yw*0.5
+       if(jtitl.eq.1)call pstext(xt,yt,40,ylab,1.2*fsiz,3,90.,1)
+       endif
+       write(lpsout,*) 'grestore'
+       return
+       end
+
+        subroutine hdfmap(val1,islice,iz,gcut,ncut,rgb,
+     &                    nbit,icolor,
+     &                    xo,yo,a,b,c,d,
+     &                    ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr,
+     &                    xmin,xmax,ymin,ymax,xscl,yscl,
+     &                    idim,ishade)
+       common /psdata/ lpsout
+c  plots a slice of an .hdf file
+        character*1 hexa,cval(1024)
+        character*2 hexa2,cval2(512)
+        real       gcut(0:10000)
+	  integer    idim(3),rgb(0:10000,3),ist(3),isl(3)
+        real  val1(*),val(1024)
+        real xl(5), yl(5)
+        logical even
+        write(lpsout,*) 'gsave'
+        write(lpsout,979) a,b,c,d,xo,yo
+ 979    format('[',6f10.3,'] concat')
+        xgmax=(xmax-xmin)*xscl
+        ygmax=(ymax-ymin)*yscl
+        nx=idim(1)
+        nxy=idim(1)*idim(2)
+c
+c  get slice parameters
+c
+        if(islice.eq.1)then
+          ist(1)=1+ixcrl
+          ist(2)=1+iycrl
+          ist(3)=iz
+          isl(1)=idim(1)-ixcrl-ixcrr
+          isl(2)=idim(2)-iycrl-iycrr
+          isl(3)=1
+          n1=idim(1)-ixcrl-ixcrr
+          n2=idim(2)-iycrl-iycrr
+        elseif(islice.eq.2)then
+          ist(1)=1+ixcrl
+          ist(2)=iz
+          ist(3)=1+izcrl
+          isl(1)=idim(1)-ixcrl-ixcrr
+          isl(2)=1
+          isl(3)=idim(3)-izcrl-izcrr
+          n1=idim(1)-ixcrl-ixcrr
+          n2=idim(3)-izcrl-izcrr
+        elseif(islice.eq.3)then
+          ist(1)=iz
+          ist(2)=1+iycrl
+          ist(3)=1+izcrl
+          isl(2)=idim(2)-iycrl-iycrr
+          isl(3)=idim(3)-izcrl-izcrr
+          isl(1)=1
+          n1=idim(2)-iycrl-iycrr
+          n2=idim(3)-izcrl-izcrr
+        endif
+c
+c Prepare the output file:
+c
+        write(lpsout,100)
+ 100    format('%',/,'% START OF GRAY SCALE: ',/,'%')
+c
+c Go ahead and establish colors for each pixel:
+c
+c RED = 1, GREEN = 2, BLUE = 3:
+        index0=ist(1)+(ist(2)-1)*nx+(ist(3)-1)*nxy
+        incr1=1
+        if(islice.eq.3)incr1=nx 
+        incr2=nxy
+        if(islice.eq.1)incr2=nx
+        index0=index0-incr1-incr2
+c  depending on slice is gray or color
+        even=.false.
+        if(mod(n1,2).eq.0)even=.true.
+        if (icolor .eq. 1)then
+          do 700 icol=1,3
+            index=index0
+            if(icol.eq.1) write(lpsout,*) '/rcl{<'
+            if(icol.eq.2) write(lpsout,*) '/gcl{<'
+            if(icol.eq.3) write(lpsout,*) '/bcl{<'
+            do 20 i2=1,n2
+               index=index+incr2
+               indexx=index
+               do 765 ix=1,n1
+                 indexx=indexx+incr1
+ 765             val(ix)=val1(indexx)*1.0
+               ixstep=1
+               if(nbit.eq.2)ixstep=2
+               ix2=0
+               do 23 ix=1,n1,ixstep
+                 ix2=ix2+1
+                 icat=0 
+                 icat2=0
+                 do 923 icut=0,ncut
+                   if(val(ix).gt.gcut(icut))icat=icut+1
+                   if(nbit.eq.2.and.ix.lt.n1)then
+                     if(val(ix+1).gt.gcut(icut))icat2=icut+1
+                   endif
+ 923             continue
+                 if(icat.gt.ncut)icat=ncut
+                 ic1=rgb(icat,icol)
+                 ic2=0
+                 if(icat2.gt.0)ic2=rgb(icat2,icol)
+                 if(nbit.eq.2)then
+                   ic1=ic1+ishade
+                   ic2=ic2+ishade
+                   if(ic1.gt.4)ic1=4
+                   if(ic1.lt.1)ic1=1
+                   if(ic2.gt.4)ic2=4
+                   if(ic2.lt.1)ic2=1
+                   ic1=4*(ic1-1)+ic2
+                   cval(ix2)=hexa(ic1)
+                 endif 
+                 if(nbit.eq.4) cval(ix)=hexa(ic1+ishade)
+                 if(nbit.eq.8) cval2(ix)=hexa2(ic1+ishade)
+                 iodd=0
+ 23            continue
+               if(nbit.eq.8)write(lpsout,323) (cval2(i1),i1=1,n1)
+               if(nbit.eq.4)then
+                 if(even)then
+                   write(lpsout,324) (cval(i1),i1=1,n1)
+                 else
+                   cval(n1+1)='0'
+                   write(lpsout,324) (cval(i1),i1=1,n1+1) 
+                 endif
+               endif
+               if(nbit.eq.2)then
+                 even=.false.
+                 if(mod(ix2,2).eq.0)even=.true.
+                 if(even)then
+                   write(lpsout,324) (cval(i1),i1=1,ix2)
+                 else
+                   cval(ix2+1)='0'
+                   write(lpsout,324) (cval(i1),i1=1,ix2+1)
+                 endif
+                endif  
+ 323           format(' ',512a2)
+ 324           format(' ',1024a1)
+ 20         continue
+            write(lpsout,*) '>} def'
+ 700      continue
+          write(lpsout,104) xgmax,ygmax
+          write(lpsout,405) n1,n2,nbit,n1,n2
+ 405      format(3i4,' [',i4,' 0 0 ',i4,' 0 0] {rcl} {gcl} {bcl}
+     &    true 3 colorimage grestore')
+ 104      format(2f10.4,'  scale')
+        else
+c   IF PLOTTING A GRAYSCALE MAP
+          write(lpsout,*) '/gsmap{<'
+          index=index0
+          do 220 i2=1,n2
+            index=index+incr2
+            indexx=index
+            do 965 ix=1,n1
+              indexx=indexx+incr1
+ 965          val(ix)=val1(indexx)*1.0
+            do 223 ix=1,n1
+              icat=0 
+              do 924 icut=0,ncut
+                if(val(ix).gt.gcut(icut))icat=icut+1
+ 924          continue
+              if(icat.gt.ncut)icat=ncut
+              ic1=rgb(icat,1)
+              if(nbit.eq.4) cval(ix)=hexa(ic1+ishade)
+              if(nbit.eq.8) cval2(ix)=hexa2(ic1+ishade)
+ 223        continue
+            if(nbit.eq.8)write(lpsout,323) (cval2(i1),i1=1,n1)
+            if(nbit.eq.4)then
+              if(even)then
+                write(lpsout,324) (cval(i1),i1=1,n1)
+              else
+                cval(n1+1)='0'
+                write(lpsout,324) (cval(i1),i1=1,n1+1) 
+              endif
+            endif
+ 220      continue
+          write(lpsout,*) '>} def'
+          write(lpsout,104) xgmax,ygmax
+          write(lpsout,605) n1,n2,nbit,n1,n2
+ 605      format(3i4,' [',i4,' 0 0 ',i4,' 0 0] {gsmap}
+     &    image grestore')
+        endif 
+        return
+        end
+
+        character*1 function hexa(level)
+c-----------------------------------------------------------------------
+c
+c Hexadecimal representation
+c
+c-----------------------------------------------------------------------
+        character*1 hex(16)
+        data hex    /'0','1','2','3','4','5','6','7','8',
+     +  '9','A','B','C','D','E','F'/
+        if(level.gt.16)level=16
+        if(level.lt.1)level=1
+        hexa=hex(level)
+        return
+        end
+        character*2 function hexa2(level)
+c-----------------------------------------------------------------------
+c
+c Hexadecimal representation
+c
+c-----------------------------------------------------------------------
+        character*1 hex(16)
+        data hex    /'0','1','2','3','4','5','6','7','8',
+     +  '9','A','B','C','D','E','F'/
+        if(level.gt.256)level=256
+        if(level.lt.1)level=1
+        level1=int((level-1)/16)+1
+        level2=mod(level-1,16)+1
+        hexa2(1:1)=hex(level1)
+        hexa2(2:2)=hex(level2)
+        return
+        end
+
+       subroutine lineplot(linfil,scalef,text_size,
+     &                xo,yo,a,b,c,d,
+     &                xmin,xmax,ymin,ymax,zmin,zmax,
+     &                xscl,yscl,zscl,
+     &                nxchunk,nychunk,nzchunk,
+     &                dxchunk,dychunk,dzchunk,
+     &                dxch,dych,dzch, 
+     &                dx,dy,dz, 
+     &                clrfil,valumin,valumax,
+     &                ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr,
+     &                ichunkcr,ncrop,
+     &                rlin,glin,blin,iflag,
+     &                iwinnow,lw1,idash1,wmin1,
+     &                lw2,idash2,wmin2,
+     &                ileg,hleg,wleg,xlt,ylt,legnam,dleglab,
+     &                ndecl,ntics,xol,yol,zol,imark1,imark2,
+     &                lin_form)
+c      plots particle locations as a function of age
+       character*220 linfil,clrfil,legnam
+       character*80 txt
+       common /psdata/ lpsout
+       real rgb(0:10000,3)
+       real gcut(0:10000)
+       real xi(100000),yi(100000),zi(100000),wi(100000),vi(100000)
+       real x(100000),y(100000)
+       real lw,lw1,lw2
+       integer ichunkcr(100)
+       integer  irgb(0:257,3)
+c
+c   set initial color flag
+c
+       init_color=0
+c
+c   open line file
+c
+       open(15,file=trim(linfil),status='unknown')
+       print*,'xmin,ymin,zmin in lineplot=',xmin,ymin,zmin
+       print*,'xmax,ymax,zmax in lineplot=',xmax,ymax,zmax
+       print*,'iflag=',iflag
+C      valumin=scalef*valumin
+C      valumax=scalef*valumax
+       nxychunk=nxchunk*nychunk
+c
+c  set colors
+c
+       if(iflag.eq.1)then
+         nclr=1
+         rgb(1,1)=rlin
+         rgb(1,2)=glin
+         rgb(1,3)=blin
+         write(lpsout,300)(rgb(1,k),k=1,3)
+         icolor=1
+       else
+         open(16,file=clrfil,status='unknown')
+         read(16,*) nclr
+         do 1 i=1,nclr
+           read(16,*) (irgb(i,j),j=1,3)
+             do 1 j=1,3
+ 1           rgb(i,j)=(1.0*(irgb(i,j))-1.0)/15.0
+         irgb(0,1)=irgb(1,1)
+         irgb(0,2)=irgb(1,2)
+         irgb(0,3)=irgb(1,3)
+       endif
+	 close(16)
+c
+c  Read header of .eas format
+c
+       if(lin_form.eq.4)then
+         read(15,'(a80)') txt
+         read(15,*) nvar
+         do 751 i=1,nvar
+ 751       read(15,'(a80)') txt
+       endif
+c
+c  set min and maximum line locations
+c
+       xminpart=xmin
+       yminpart=ymin
+       zminpart=zmin
+       xmaxpart=xminpart+xmax-xmin
+       ymaxpart=yminpart+ymax-ymin
+       zmaxpart=zminpart+zmax-zmin
+       print*,'xmin,ymin,zmin=',xminpart,yminpart,zminpart
+       denom=valumax-valumin
+       icolor=0
+       if(iflag.eq.1)icolor=1
+       iline=1
+       if(lin_form.eq.1.or.lin_form.eq.3) then 
+          read(15,*) xi(1),yi(1),zi(1),wi(1),vi(1)
+	print*, xi(1),yi(1),zi(1),wi(1),vi(1)
+       endif
+       if(lin_form.eq.4)then
+          read(15,*) xi(1),yi(1),zi(1)
+          wi(1)=1.0
+          vi(1)=1.0
+       endif
+
+       vi(1)=vi(1)*scalef
+       j=1
+       iend=0
+       do 10 i=1,10000000
+c
+c  find number of points in line
+c
+       if(lin_form.eq.1) then
+        xi(1)=xi(j)
+        yi(1)=yi(j)
+        zi(1)=zi(j)
+        wi(1)=wi(j)
+        vi(1)=vi(j)
+        do 950 j=2,100000
+          read(15,*,end=969) xi(j),yi(j),zi(j),wi(j),vi(j)
+
+
+          vi(j)=vi(j)*scalef
+          if(vi(j).eq.0.000) go to 959
+ 950    continue
+ 969    continue
+        iend=1
+ 959    continue
+        npoints=j-1
+       elseif(lin_form.eq.2.or.lin_form.eq.5)then
+         read(15,*,end=99) npoints
+         init_color=0
+         do 951 j=1,npoints
+           read(15,*,end=99) xi(j),yi(j),zi(j),wi(j),vi(j)
+	
+           vi(j)=vi(j)*scalef
+ 951     continue
+       elseif(lin_form.eq.3)then
+         xi(1)=xi(j)
+         yi(1)=yi(j)
+         zi(1)=zi(j)
+         wi(1)=wi(j)
+         vi(1)=vi(j)
+         do 952 j=2,100000
+           read(15,*,end=989) xi(j),yi(j),zi(j),wi(j),vi(j)
+	
+           if(wi(j).ne.wi(j-1)) go to 979
+           vi(j)=vi(j)*scalef
+ 952     continue
+ 989     continue
+         iend=1
+ 979     continue
+         npoints=j-1
+       elseif(lin_form.eq.4)then
+         xi(1)=xi(j)
+         yi(1)=yi(j)
+         zi(1)=zi(j)
+         wi(1)=wi(j)
+         vi(1)=vi(j)
+         do 752 j=2,100000
+           read(15,*,end=759) xi(j),yi(j),zi(j)
+           if(xi(j).ne.xi(j-1).or.yi(j).ne.yi(j-1)) go to 769
+           wi(j)=1.0
+           vi(j)=scalef
+ 752     continue
+ 759     continue
+         iend=1
+ 769     continue
+         npoints=j-1
+       endif
+c
+c  write initial color
+c
+       if(init_color.eq.0)then
+         dvalu=vi(1)-valumin
+         if(iflag.ne.1)then
+           if(denom.eq.0.)then
+             icolor=1
+           else
+             icolor=int((nclr*dvalu)/denom+1.0)
+           endif
+           if(icolor.lt.1)icolor=1
+           if(icolor.gt.nclr)icolor=nclr
+           write(lpsout,300)(rgb(icolor,k),k=1,3)
+         endif
+       endif
+       init_color=1
+c
+c  check if line should be plotted
+c
+        irem=mod(i,iwinnow)
+        if(irem.ne.0)then
+          go to 89
+        endif
+c
+c  initialize flags & counters
+c
+        idomainold=0
+        insideold=0
+        npts=0
+        do 9 ip=1,npoints
+         x2=xi(ip)-ixcrl*dx-xol
+         y2=yi(ip)-iycrl*dy-yol
+         z2=zi(ip)-izcrl*dz-zol
+        ! print*,'x2,y2,z2 for line=',x2,y2,z2
+         valu=vi(ip)
+         weight=wi(ip)
+         if(lin_form.eq.3)weight=1.0
+C        valu=valu*scalef
+         x2max=xmaxpart-xminpart
+         y2max=ymaxpart-yminpart
+         z2max=zmaxpart-zminpart
+         idomain=0
+c
+c  plot only those points within the domain
+c
+c        i_end=0
+c        j_end=0
+c        k_end=0
+         if(x2.ge.0.and.x2.le.x2max)then
+           if(y2.ge.0.and.y2.le.y2max)then
+             if(z2.ge.0.and.z2.le.z2max)then
+               ichunk=int(x2/dxch)
+               jchunk=int(y2/dych)
+               kchunk=int(z2/dzch)
+               if(ichunk.ge.nxchunk)then
+                 ichunk=nxchunk-1
+c                i_end=1
+               endif
+               if(jchunk.ge.nychunk)then
+                 jchunk=nychunk-1
+c                j_end=1
+               endif
+               if(kchunk.ge.nzchunk)then
+                 kchunk=nzchunk-1
+c                k_end=1
+               endif
+               dx2=(x2+ichunk*dxchunk)*xscl
+               dy2=(y2+jchunk*dychunk)*yscl
+               dz2=(z2+kchunk*dzchunk)*zscl
+               xp2=a*dx2+c*dy2+xo
+               yp2=b*dx2+d*dy2+yo+dz2
+               nchunk=ichunk+1+(nychunk-jchunk-1)*nxchunk+kchunk*
+     &                                         nxychunk
+               idomain=1
+c
+c   check if inside a block and set chunk locations
+c
+               inside=1
+               do 289 icrop=1,ncrop
+                 if(nchunk.eq.ichunkcr(icrop))inside=0
+ 289           continue
+c              if(i_end.eq.1)inside=0
+c              if(j_end.eq.1)inside=0
+c              if(k_end.eq.1)inside=0
+               if(npts.eq.0)then
+                 insideold=inside
+                 ichunk_old=ichunk
+                 jchunk_old=jchunk
+                 kchunk_old=kchunk
+               endif
+c
+c  add a point if going into or out of a chunk
+c
+               if(ichunk.ne.ichunk_old.or.jchunk.ne.jchunk_old.or.
+     &            kchunk.ne.kchunk_old)then
+                 if(ichunk.lt.ichunk_old)then
+                   x_edge=dxch*ichunk_old
+                   fac=(x_edge-x1)/(x2-x1)
+                   y_edge=y1+(y2-y1)*fac
+                   z_edge=z1+(z2-z1)*fac
+                 elseif(ichunk.gt.ichunk_old)then
+                   x_edge=dxch*ichunk
+                   fac=(x_edge-x1)/(x2-x1)
+                   y_edge=y1+(y2-y1)*fac
+                   z_edge=z1+(z2-z1)*fac
+                 elseif(jchunk.lt.jchunk_old)then
+                   y_edge=dych*jchunk_old
+                   fac=(y_edge-y1)/(y2-y1)
+                   x_edge=x1+(x2-x1)*fac
+                   z_edge=z1+(z2-z1)*fac
+                 elseif(jchunk.gt.jchunk_old)then
+                   y_edge=dych*jchunk
+                   fac=(y_edge-y1)/(y2-y1)
+                   x_edge=x1+(x2-x1)*fac
+                   z_edge=z1+(z2-z1)*fac
+                 elseif(kchunk.lt.kchunk_old)then
+                   z_edge=dzch*kchunk_old
+                   fac=(z_edge-z1)/(z2-z1)
+                   x_edge=x1+(x2-x1)*fac
+                   y_edge=y1+(y2-y1)*fac
+                 elseif(kchunk.gt.kchunk_old)then
+                   z_edge=dzch*kchunk
+                   fac=(z_edge-z1)/(z2-z1)
+                   x_edge=x1+(x2-x1)*fac
+                   y_edge=y1+(y2-y1)*fac
+                 endif
+                 x_edge1=(x_edge+ichunk_old*dxchunk)*xscl
+                 x_edge2=(x_edge+ichunk*dxchunk)*xscl
+                 y_edge1=(y_edge+jchunk_old*dychunk)*yscl
+                 y_edge2=(y_edge+jchunk*dychunk)*yscl
+                 z_edge1=(z_edge+kchunk_old*dzchunk)*zscl
+                 z_edge2=(z_edge+kchunk*dzchunk)*zscl
+                 xp_edge1=a*x_edge1+c*y_edge1+xo
+                 yp_edge1=b*x_edge1+d*y_edge1+yo+z_edge1
+                 xp_edge2=a*x_edge2+c*y_edge2+xo
+                 yp_edge2=b*x_edge2+d*y_edge2+yo+z_edge2
+c
+c   check inside or outside
+c
+                 idsh=idash1
+                 lw=lw1 
+                 imark=0
+                 wmin=wmin1
+                 imark=imark1
+                 if(insideold.eq.1)then
+                   idsh=idash2
+                   lw=lw2
+                   wmin=wmin2
+                   imark=imark2
+                 endif
+                 width=weight
+                 if(width.le.0.)then
+                   width=wmin
+                 else
+                   width=lw+alog10(width)
+                   if(width.lt.wmin)width=wmin
+                 endif 
+                 if(imark.eq.0)then
+                   npts=npts+1
+                   x(npts)=xp_edge1
+                   y(npts)=yp_edge1
+                 endif
+                 call psline(npts,x,y,width,idsh,imark)
+                 npts=0
+                 if(imark.eq.0)then
+                   npts=1
+                   x(npts)=xp_edge2
+                   y(npts)=yp_edge2
+                 endif
+               endif
+c
+c  get color
+c
+               dvalu=valu-valumin
+               if(iflag.ne.1)then
+                 if(denom.eq.0.)then
+                   icolor=1
+                 else
+                   icolor=int((nclr*dvalu)/denom+1.0)
+                 endif
+                 if(icolor.lt.1)icolor=1
+                 if(icolor.gt.nclr)icolor=nclr
+c                if(npts.eq.0)then
+c                  icolorold=icolor
+c                  write(lpsout,300)(rgb(icolor,k),k=1,3)
+c                endif
+c
+c  plot line if color changes
+c
+                 if(icolor.ne.icolorold.and.npts.ge.1)then
+                  if(lin_form.ne.2.and.lin_form.ne.5)then
+                   fac=0.5
+                   npts=npts+1
+                   x(npts)=x(npts-1)+fac*(xp2-x(npts-1))
+                   y(npts)=y(npts-1)+fac*(yp2-y(npts-1))
+                   idsh=idash1
+                   lw=lw1 
+                   imark=0
+                   wmin=wmin1
+                   imark=imark1
+                   if(insideold.eq.1)then
+                     idsh=idash2
+                     lw=lw2
+                     wmin=wmin2
+                     imark=imark2
+                   endif
+
+                   width=weight
+                   if(width.le.wmin)then
+                     width=wmin
+                   else
+                     width=lw*width
+                     if(width.lt.wmin)width=wmin
+                   endif 
+                   call psline(npts,x,y,width,idsh,imark)
+                   x(1)=x(npts) 
+                   y(1)=y(npts) 
+                   npts=1
+                   write(lpsout,300)(rgb(icolor,k),k=1,3)
+                   icolorold=icolor
+                  endif
+                 endif
+               endif
+c
+c  add point
+c
+               npts=npts+1
+               x(npts)=xp2
+               y(npts)=yp2
+               insideold=inside
+               ichunk_old=ichunk
+               jchunk_old=jchunk
+               kchunk_old=kchunk
+               dx1=dx2
+               dy1=dy2
+               dz1=dz2
+               x1=x2
+               y1=y2
+               z1=z2
+             endif
+           endif
+         endif
+c
+c  plot if end of line 
+c
+         if(ip.eq.npoints.and.npts.ge.1)then
+           idsh=idash1
+           lw=lw1 
+           imark=imark1
+           wmin=wmin1
+           if(inside.eq.1)then
+             idsh=idash2
+             lw=lw2
+             wmin=wmin2
+             imark=imark2
+           endif
+           if(icolor.ne.icolorold)then
+              write(lpsout,300)(rgb(icolor,k),k=1,3)
+              icolorold=icolor
+           endif 
+           width=weight
+           if(width.le.0.)then
+             width=wmin
+           else
+             width=lw+alog10(width)
+             if(width.lt.wmin)width=wmin
+           endif 
+           if(npts.gt.1.or.imark.ne.0)then
+             if(lin_form.eq.5)then
+               dxi=(xi(2)-xi(1))*xscl
+               dyi=(yi(2)-yi(1))*yscl
+               dzi=(zi(2)-zi(1))*zscl
+               dxyzi=sqrt(dxi**2+dyi**2+dzi**2)
+               call arrowhead(npts,x,y,weight,dxyzi)
+             else
+               call psline(npts,x,y,width,idsh,imark)
+             endif
+           endif
+         endif
+c
+c  plot if going out of domain 
+c
+         if(npts.ge.1.and.idomain.eq.0.and.idomainold.eq.1)then
+           if(npts.eq.1)then
+             npts=npts+1
+             x(2)=x(1)
+             y(2)=y(1)
+           endif
+           idsh=idash1
+           lw=lw1 
+           imark=imark1
+           wmin=wmin1
+           if(inside.eq.1)then
+             idsh=idash2
+             lw=lw2
+             wmin=wmin2
+             imark=imark2
+           endif
+           if(icolor.ne.icolorold)then
+              write(lpsout,300)(rgb(icolor,k),k=1,3)
+              icolorold=icolor
+           endif 
+           width=weight
+           if(width.le.0.)then
+             width=wmin
+           else
+             width=lw+alog10(width)
+             if(width.lt.wmin)width=wmin
+           endif 
+           call psline(npts,x,y,width,idsh,imark)
+           npts=0
+         endif
+         idomainold=idomain
+  9     continue
+ 89     continue
+        if(iend.eq.1) go to 99
+ 10    continue
+ 300   format(3f5.2,' rgb')
+ 99    continue
+c
+c    plot legend for continuous variables
+c
+       if(ileg.eq.1)then
+         gmin=0.
+         gmax=nclr*1.
+         dvalu=(gmax-gmin)/(1.0*nclr)
+         do 135 iclr=1,nclr
+ 135       gcut(iclr)=iclr*dvalu
+         lego=0
+         ilog=0
+         nbit=4
+         xpw=0.
+         ypw=0.
+         write(lpsout,*) 'gsave'
+         write(lpsout,971) xlt,ylt
+         if(valumax.gt.valumin)call legend(text_size,
+     &      lpsout,xpw,ypw,hleg,wleg,gmin,gmax,valumin,valumax,
+     &      dleglab,ntics,ndecl,legnam,gcut,nclr,irgb,lego,
+     &      ilog,nbit)
+         write(lpsout,*) 'grestore'
+       endif
+ 971   format(2f10.2,' translate')
+       close(15)
+       close(16)
+       return
+       end
+
+
+       subroutine dotplot(linfil,scalef,text_size,
+     &                xo,yo,a,b,c,d,
+     &                xmin,xmax,ymin,ymax,zmin,zmax,
+     &                xscl,yscl,zscl,
+     &                nxchunk,nychunk,nzchunk,
+     &                dxchunk,dychunk,dzchunk,
+     &                dxch,dych,dzch, 
+     &                dx,dy,dz, 
+     &                clrfil,valumin,valumax,
+     &                ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr,
+     &                ichunkcr,ncrop,
+     &                iwinnow,lw1,imark1,lw2,imark2,iflag,
+     &                ileg,hleg,wleg,xlt,ylt,legnam,dleglab,ndecl,ntics,
+     &                xol,yol,zol,dsmin1,dsmin2,
+     &                rlin,glin,blin)
+c      plots line ends as a function of age
+       character*220 linfil,clrfil,legnam
+       character*20 str
+       common /psdata/ lpsout
+       real rgb(0:10000,3)
+       real gcut(0:10000)
+       real lw,lw1,lw2
+       integer ichunkcr(100)
+       integer  irgb(0:257,3)
+       open(15,file=trim(linfil),status='unknown')
+       nxychunk=nxchunk*nychunk
+ 300   format(3f7.3,' rgb')
+       write(lpsout,*) '[] 0 setdash    '
+       if(iflag.eq.1)then
+         write(lpsout,300) rlin,glin,blin
+       else
+         open(16,file=clrfil,status='unknown')
+         read(16,*) nclr
+         do 1 i=1,nclr
+           read(16,*) (irgb(i,j),j=1,3)
+             do 1 j=1,3
+ 1           rgb(i,j)=(1.0*(irgb(i,j))-1.0)/15.0
+         irgb(0,1)=irgb(1,1)
+         irgb(0,2)=irgb(1,2)
+         irgb(0,3)=irgb(1,3)
+       endif
+	 close(16)
+c      xminpart=xmin+ixcrl*dx
+c      yminpart=ymin+iycrl*dy
+c      zminpart=zmin+izcrl*dz
+       xminpart=xmin
+       yminpart=ymin
+       zminpart=zmin
+       xmaxpart=xminpart+xmax-xmin
+       ymaxpart=yminpart+ymax-ymin
+       zmaxpart=zminpart+zmax-zmin
+       valumin=valumin*scalef
+       valumax=valumax*scalef
+       denom=valumax-valumin
+       icolor=0
+       iline=1
+       iend=0
+       do 10 i=1,10000000
+        read(15,'(a20)',end=89) str
+        read(15,*,end=89) xi,yi,zi,wi,vi
+        irem=mod(i,iwinnow)
+        if(irem.eq.0)then
+          idomainold=0
+          x2=xi-ixcrl*dx-xol
+          y2=yi-iycrl*dy-yol
+          z2=zi-izcrl*dz-zol
+          valu=vi*scalef
+          weight=wi
+          ichunk=int(x2/dxch)
+          jchunk=int(y2/dych)
+          kchunk=int(z2/dzch)
+          if(ichunk.ge.nxchunk)then
+             ichunk=nxchunk-1
+          endif
+          if(jchunk.ge.nychunk)then
+            jchunk=nychunk-1
+          endif
+          if(kchunk.ge.nzchunk)then
+            kchunk=nzchunk-1
+          endif
+
+          nchunk=ichunk+1+(nychunk-jchunk-1)*nxchunk+kchunk*
+     &                                         nxychunk
+          dx2=(x2+ichunk*dxchunk)*xscl
+          dy2=(y2+jchunk*dychunk)*yscl
+          dz2=(z2+kchunk*dzchunk)*zscl
+          xp2=a*dx2+c*dy2+xo
+          yp2=b*dx2+d*dy2+yo+dz2
+          idomain=0
+          if(xi.ge.xminpart.and.xi.le.xmaxpart)then
+            if(yi.ge.yminpart.and.yi.le.ymaxpart)then
+              if(zi.ge.zminpart.and.zi.le.zmaxpart)then
+                idomain=1
+                i2=int((x2-xminpart)/dx)
+                j2=int((y2-yminpart)/dy)
+                k2=int((z2-zminpart)/dz)
+c
+c   check if inside a block
+c
+                inside=1
+                do 289 icrop=1,ncrop
+                  if(nchunk.eq.ichunkcr(icrop))inside=0
+ 289            continue
+c
+c  get color
+c
+                dvalu=valu-valumin
+                if(denom.gt.0.)then
+                  icolor=int((nclr*dvalu)/denom+1.0)
+                  if(icolor.lt.1)icolor=1
+                  if(icolor.gt.nclr)icolor=nclr
+                  write(lpsout,300)(rgb(icolor,k),k=1,3)
+                endif
+c
+c  plot dot 
+c 
+                if(inside.eq.0)then
+                  dsmin=dsmin1
+                  lw=lw1
+                  imark=imark1
+                else
+                  dsmin=dsmin2
+                  lw=lw2
+                  imark=imark2 
+                endif
+                width=weight*lw
+                if(width.le.dsmin)then
+                  width=dsmin
+                endif
+                xp3=xp2+(a+c)*width*3.*0.714
+                yp3=yp2+(d-b)*width*3.*0.714
+                yp3=yp2+(d-b)*width*3.*1.0
+                call pstext(xp2,yp3,20,str,0.8*text_size,1,0.0,1)
+                write(lpsout,979) a,b,c,d,xp2,yp2
+ 979            format('gsave [',6f10.3,'] concat')
+                call marker(imark,0.,0.,width)
+                write(lpsout,*) 'grestore'
+              endif
+            endif
+          endif
+        endif
+ 10   continue
+ 89   continue
+      close(15)
+      close(16)
+c
+c    plot legend for continuous variables
+c
+       if(ileg.eq.1)then
+         gmin=0.
+         gmax=nclr*1.
+         dvalu=(gmax-gmin)/(1.0*nclr)
+         do 135 iclr=1,nclr
+ 135       gcut(iclr)=iclr*dvalu
+         lego=0
+         ilog=0
+         nbit=4
+         xpw=0.
+         ypw=0.
+         write(lpsout,*) 'gsave'
+         write(lpsout,971) xlt,ylt
+         write(lpsout,*) '[] 0 setdash    '
+         call legend(text_size,
+     &      lpsout,xpw,ypw,hleg,wleg,gmin,gmax,valumin,valumax,
+     &      dleglab,ntics,ndecl,legnam,gcut,nclr,irgb,lego,
+     &      ilog,nbit)
+         write(lpsout,*) 'grestore'
+       endif
+ 971   format(2f10.2,' translate')
+
+      return
+      end
+ 
+                   
+        subroutine pf_read_head(filename,nx,ny,nz)
+        real*8 value,dx,dy,dz,x1,y1,z1
+        integer*4 nx,ny,nz,i,j,k
+	integer*4 namelength
+        character*220 filename
+
+       CHARACTER (LEN=50) :: ACCESS='@PARFLOW_FC_ACCESS@'
+       CHARACTER (LEN=50) :: FORM='@PARFLOW_FC_FORM@'
+CC
+CC      Open File
+CC
+        open(15,file=trim(filename),form=FORM,
+     + access=ACCESS,convert='BIG_ENDIAN',status='unknown')
+c       open(15,file=filename(:namelength),form='unformatted',
+c    + status='unknown')
+CC
+CC      Read in header info
+CC
+        read(15) x1
+        read(15) y1
+        read(15) z1
+        read(15) nx
+        read(15) ny
+        read(15) nz
+        read(15) dx
+        read(15) dy
+        read(15) dz
+        print*, 'header for file:', filename
+        print*, 'X0, Y0, Z0: ', x1, y1, z1
+        print*, 'nx, ny, nz: ', nx, ny, nz
+        print*, 'dx, dy, dz: ', dx, dy, dz
+        return
+        end
+
+        subroutine pf_read_array(val1,nx,ny,nz)
+        real*4 val1(*)
+        real*8 value
+        integer*4 nx,ny,nz,nxy,ix,iy,iz,nnx,nny,nnz,rx,ry,rz
+        integer*4 i,j,k,ijkyz,ijk
+        nxy=nx*ny
+        nxyz=nxy*nz
+        read(15) ns
+        print*, 'number of subgrids: ', ns
+        do 99 is = 0, (ns-1)
+        read(15) ix
+        read(15) iy
+        read(15) iz
+        read(15) nnx
+        read(15) nny
+        read(15) nnz
+        read(15) rx
+        read(15) ry
+        read(15) rz
+        print*, 'subgrid:' ,is
+        print*, 'ix, iy, iz: ',ix, iy, iz
+        print*, 'nnx, nny, nnz: ',nnx, nny, nnz
+        print*, 'rx, ry, rz: ',rx, ry, rz
+        do 90 k=iz +1 , iz + nnz
+          do 90 j=iy +1 , iy + nny
+   	    ijkyz = (j-1)*nx + (k-1)*nxy
+            do 90 i=ix +1 , ix + nnx
+CC	convert x,y,z to xyz
+	      ijk = i + ijkyz
+              read(15) value 
+	      val1(ijk) = sngl(value)
+ 90     continue
+ 99     continue
+        close(15)
+        return
+	end
+
+
+        subroutine marker(imark,x,y,lwidt)
+        real lwidt
+        common /psdata/ lpsout
+c   start new path
+        rad=3.*lwidt
+        if(imark.ne.12)write(lpsout,*) 'n'
+        if(imark.ne.12)write(lpsout,910) lwidt
+ 910    format(f7.2,' lw')
+c   determine coordinates
+        xx=x
+        yy=y
+c   draw circle
+        if (imark .eq. 1)then
+          write(lpsout,901) xx,yy,rad
+          write(lpsout,*) 'grestore gsave 0.0 setgray stroke grestore'
+c   draw cross
+        elseif(imark .eq. 2)then
+          write(lpsout,902) xx-rad,yy
+          write(lpsout,903) xx+rad,yy
+          write(lpsout,902) xx,yy-rad
+          write(lpsout,904) xx,yy+rad
+c   draw x
+        elseif(imark .eq. 3)then
+          write(lpsout,902) xx-rad,yy-rad
+          write(lpsout,903) xx+rad,yy+rad
+          write(lpsout,902) xx-rad,yy+rad
+          write(lpsout,904) xx+rad,yy-rad
+c   draw box
+        elseif(imark .eq. 4)then
+          write(lpsout,902) xx-rad,yy-rad
+          write(lpsout,903) xx+rad,yy-rad
+          write(lpsout,903) xx+rad,yy+rad
+          write(lpsout,903) xx-rad,yy+rad
+          write(lpsout,904) xx-rad,yy-rad
+c   draw diamond
+        elseif(imark .eq. 5)then
+          write(lpsout,902) xx-rad,yy
+          write(lpsout,903) xx,yy+rad
+          write(lpsout,903) xx+rad,yy
+          write(lpsout,903) xx,yy-rad
+          write(lpsout,903) xx-rad,yy
+          write(lpsout,904) xx,yy+rad
+c   draw triangle
+        elseif(imark .eq. 6)then
+          write(lpsout,902) xx,yy+4*rad/3.
+          write(lpsout,903) xx-3.46*rad/3.,yy-2.*rad/3.
+          write(lpsout,903) xx+3.46*rad/3.,yy-2.*rad/3.
+          write(lpsout,903) xx,yy+4*rad/3.
+          write(lpsout,904) xx-3.46*rad/3.,yy-2.*rad/3.
+c   draw 3 pt star
+        elseif(imark .eq. 7)then
+          write(lpsout,902) xx,yy
+          write(lpsout,903) xx,yy+rad*4./3.
+          write(lpsout,902) xx,yy
+          write(lpsout,903) xx-rad*3.46/3.,yy-2.*rad/3.
+          write(lpsout,902) xx,yy
+          write(lpsout,904) xx+3.46*rad/3.,yy-2.*rad/3.
+c   draw 5 pt star
+        elseif(imark .eq. 8)then
+          write(lpsout,902) xx,yy
+          write(lpsout,903) xx,yy+rad
+          write(lpsout,902) xx,yy
+          write(lpsout,903) xx+2.85*rad/3.,yy+0.93*rad/3.
+          write(lpsout,902) xx,yy
+          write(lpsout,903) xx+1.76*rad/3.,yy-2.43*rad/3.
+          write(lpsout,902) xx,yy
+          write(lpsout,903) xx-1.76*rad/3.,yy-2.43*rad/3.
+          write(lpsout,902) xx,yy
+          write(lpsout,904) xx-2.85*rad/3.,yy+0.93*rad/3.
+c  draw pentagon
+        elseif(imark .eq. 9)then
+          write(lpsout,902) xx,yy+rad
+          write(lpsout,903) xx+2.85*rad/3.,yy+0.93*rad/3.
+          write(lpsout,903) xx+1.76*rad/3.,yy-2.43*rad/3.
+          write(lpsout,903) xx-1.76*rad/3.,yy-2.43*rad/3.
+          write(lpsout,903) xx-2.85*rad/3.,yy+0.93*rad/3.
+          write(lpsout,903) xx,yy+rad
+          write(lpsout,904) xx+2.85*rad/3.,yy+0.93*rad/3.
+c  draw 6 pt star
+        elseif(imark .eq. 10)then
+          write(lpsout,902) xx,yy-rad
+          write(lpsout,903) xx,yy+rad
+          write(lpsout,902) xx-rad/2.,yy-2.6*rad/3.
+          write(lpsout,903) xx+rad/2.,yy-2.6*rad/3.
+          write(lpsout,902) xx+rad/2.,yy+2.6*rad/3.
+          write(lpsout,904) xx-rad/2.,yy-2.6*rad/3.
+c   draw sphere
+        elseif (imark .eq. 11)then
+          write(lpsout,*) 'gsave'
+          write(lpsout,906) 0.0,xx,yy,rad
+          write(lpsout,906) 0.3,xx,yy,rad*0.9
+          write(lpsout,906) 0.6,xx,yy,rad*0.7
+          write(lpsout,906) 0.9,xx,yy,rad*0.45
+          write(lpsout,906) 1.0,xx,yy,rad*0.2
+          write(lpsout,*) 'grestore'
+c   draw filled circle
+        elseif (imark .eq. 12)then
+          write(lpsout,905) xx,yy,rad
+        endif
+ 901    format(3f7.2,' 0 360 arc closepath gsave fill ')
+ 902    format(2f7.2,' moveto')
+ 903    format(2f7.2,' lineto')
+ 904    format(2f7.2,' lineto stroke')
+ 905    format('n', 3f7.2,'  0 360 arc closepath fill')
+ 906    format(1f6.2,' setgray ',3f7.2,' 0 360 arc closepath fill ')
+        return
+        end
+
+
+        subroutine concdef(dx,dy,dz,
+     &                     axy,bxy,cxy,dxy,
+     &                     axz,bxz,cxz,dxz,
+     &                     ayz,byz,cyz,dyz,
+     &                     xscl,yscl,zscl,
+     &                     iconc,
+     &                     concrgbi,concrgbo,concrgbe,
+     &                     tin,tout,tedge,i_trans_dia)
+        real concrgbi(20,3,3)
+        real concrgbo(20,3,3)
+        real concrgbe(20,3,3)
+c
+c   define pattern for inside
+c 
+        if(tin.le.0.0)tin=0.01
+        if(tin.lt.1.0)then
+        write(2,*) '<<'
+        write(2,*) ' /PaintType 2 /PatternType 1 /TilingType 3'
+        write(2,212) i_trans_dia, i_trans_dia
+        write(2,213) i_trans_dia, i_trans_dia
+ 212    format(' /BBox [0 0',2i2,']')
+ 213    format(' /XStep',i2,' /YStep',i2)
+        write(2,*) ' /PaintProc {'
+        write(2,*) '  pop'
+        d=0.5*i_trans_dia
+        r=tin*d
+        write(2,290) d,d,r  
+        write(2,*) '  }'
+        write(2,*) '>>'
+        write(2,*) 'matrix'
+        write(2,*) 'makepattern'
+        write(2,*) '/Doti exch def'
+        write(2,*) '[/Pattern /DeviceRGB] setcolorspace'
+        endif
+c
+c   define pattern for outside
+c
+        if(tout.le.0.0)tout=0.01
+        if(tout.lt.1.0)then
+        write(2,*) '<<'
+        write(2,*) ' /PaintType 2 /PatternType 1 /TilingType 3'
+        write(2,212) i_trans_dia, i_trans_dia
+        write(2,213) i_trans_dia, i_trans_dia
+        write(2,*) ' /PaintProc {'
+        write(2,*) '  pop'
+        r=tout*d
+        write(2,290) d,d,r  
+ 290    format(3f7.3,' 0 360 arc closepath fill')
+        write(2,*) '  }'
+        write(2,*) '>>'
+        write(2,*) 'matrix'
+        write(2,*) 'makepattern'
+        write(2,*) '/Doto exch def'
+        write(2,*) '[/Pattern /DeviceRGB] setcolorspace'
+        endif
+c
+c   define pattern for edge
+c
+        if(tedge.le.0.0)tedge=0.01
+        if(tedge.lt.1.0)then
+        write(2,*) '<<'
+        write(2,*) ' /PaintType 2 /PatternType 1 /TilingType 3'
+        write(2,212) i_trans_dia, i_trans_dia
+        write(2,213) i_trans_dia, i_trans_dia
+        write(2,*) ' /PaintProc {'
+        write(2,*) '  pop'
+        r=tedge*d
+        write(2,290) d,d,r  
+        write(2,*) '  }'
+        write(2,*) '>>'
+        write(2,*) 'matrix'
+        write(2,*) 'makepattern'
+        write(2,*) '/Dote exch def'
+        write(2,*) '[/Pattern /DeviceRGB] setcolorspace'
+        endif
+c
+c   make definitions for xy,xz, and yz planes 
+c
+        x2=dx*axy*xscl
+        y2=dx*bxy*xscl
+        x3=dy*cxy*yscl
+        y3=dy*dxy*yscl
+        x4=-dx*axy*xscl
+        y4=-dx*bxy*xscl
+        write(2,201) x2,y2,x3,y3,x4,y4
+ 201    format('/xy { m',2f8.3,' r',2f8.3,' r',
+     &          2f8.3,' r fill } def')        
+        if(tin.lt.1.0)then
+          write(2,204) (concrgbi(iconc,1,i),i=1,3)
+        else
+          write(2,304) (concrgbi(iconc,1,i),i=1,3)
+        endif
+        if(tedge.lt.1.0)then
+          write(2,404) (concrgbe(iconc,1,i),i=1,3)
+        else
+          write(2,504) (concrgbe(iconc,1,i),i=1,3)
+        endif
+        if(tout.lt.1.0)then
+          write(2,604) (concrgbo(iconc,1,i),i=1,3)
+        else
+          write(2,704) (concrgbo(iconc,1,i),i=1,3)
+        endif
+ 204    format('/c1 {',3f5.2,' Doti setpattern } def')
+ 304    format('/c1 {',3f5.2,' rgb } def')
+ 404    format('/c4 {',3f5.2,' Dote setpattern } def')
+ 504    format('/c4 {',3f5.2,' rgb } def')
+ 604    format('/c7 {',3f5.2,' Doto setpattern } def')
+ 704    format('/c7 {',3f5.2,' rgb } def')
+c
+c    xz
+        x2=dx*axz*xscl
+        y2=dx*bxz*xscl
+        x3=dz*cxz*zscl
+        y3=dz*dxz*zscl
+        x4=-dx*axz*xscl
+        y4=-dx*bxz*xscl
+        write(2,202) x2,y2,x3,y3,x4,y4
+ 202    format('/xz { m',2f8.3,' r',2f8.3,' r',
+     &          2f8.3,' r fill } def')        
+        if(tin.lt.1.0)then
+          write(2,205) (concrgbi(iconc,2,i),i=1,3)
+        else
+          write(2,305) (concrgbi(iconc,2,i),i=1,3)
+        endif
+        if(tedge.lt.1.0)then
+          write(2,405) (concrgbe(iconc,2,i),i=1,3)
+        else
+          write(2,505) (concrgbe(iconc,2,i),i=1,3)
+        endif
+        if(tout.lt.1.0)then
+          write(2,605) (concrgbo(iconc,2,i),i=1,3)
+        else
+          write(2,705) (concrgbo(iconc,2,i),i=1,3)
+        endif
+ 205    format('/c2 {',3f5.2,' Doti setpattern } def')
+ 305    format('/c2 {',3f5.2,' rgb } def')
+ 405    format('/c5 {',3f5.2,' Dote setpattern } def')
+ 505    format('/c5 {',3f5.2,' rgb } def')
+ 605    format('/c8 {',3f5.2,' Doto setpattern } def')
+ 705    format('/c8 {',3f5.2,' rgb } def')
+c
+c    yz
+        x2=dy*ayz*xscl
+        y2=dy*byz*xscl
+        x3=dz*cyz*zscl
+        y3=dz*dyz*zscl
+        x4=-dy*ayz*xscl
+        y4=-dy*byz*xscl
+        write(2,203) x2,y2,x3,y3,x4,y4
+ 203    format('/yz { m',2f8.3,' r',2f8.3,' r',
+     &          2f8.3,' r fill } def')        
+        if(tin.lt.1.0)then
+          write(2,206) (concrgbi(iconc,3,i),i=1,3)
+        else
+          write(2,306) (concrgbi(iconc,3,i),i=1,3)
+        endif
+        if(tedge.lt.1.0)then
+          write(2,406) (concrgbe(iconc,3,i),i=1,3)
+        else
+          write(2,506) (concrgbe(iconc,3,i),i=1,3)
+        endif
+        if(tout.lt.1.0)then
+          write(2,606) (concrgbo(iconc,3,i),i=1,3)
+        else
+          write(2,706) (concrgbo(iconc,3,i),i=1,3)
+        endif
+ 206    format('/c3 {',3f5.2,' Doti setpattern } def')
+ 306    format('/c3 {',3f5.2,' rgb } def')
+ 406    format('/c6 {',3f5.2,' Dote setpattern } def')
+ 506    format('/c6 {',3f5.2,' rgb } def')
+ 606    format('/c9 {',3f5.2,' Doto setpattern } def')
+ 706    format('/c9 {',3f5.2,' rgb } def')
+        return
+        end
+
+
+
+
+        subroutine concplotin(val1,xo,yo,idim,dx,dy,dz,
+     &                     ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr,
+     &                     axy,bxy,cxy,dxy,
+     &                     axz,bxz,cxz,dxz,
+     &                     ayz,byz,cyz,dyz,
+     &                     iconc,concmin,concmax,
+     &                     xscl,yscl,zscl,
+     &                     idx,idy,idz,
+     &                     dxchunk,dychunk,dzchunk,
+     &                     nxchunk,nychunk,nzchunk,
+     &                     ncrop,ichunkcr,
+     &                     concrgbi1,concrgbi2,
+     &                     concrgbo1,concrgbo2,
+     &                     concrgbe1,concrgbe2,
+     &                     kbot,ktop,
+     &                     tin,tout,tedge,
+     &                     ieo1,ieo2,ieo3,
+     &                     ixyplot,ixzplot,iyzplot,i_trans_dia)
+        real val1(*)
+        integer idim(3),ichunkcr(100),ichflag(1000)
+        real concmin(20),concmax(20)
+        real concrgbi1(20,3,3),concrgbi2(20,3,3)
+        real concrgbo1(20,3,3),concrgbo2(20,3,3)
+        real concrgbe1(20,3,3),concrgbe2(20,3,3)
+        real concrgbi(20,3,3)
+        real concrgbo(20,3,3)
+        real concrgbe(20,3,3)
+c
+c  set up in out flag for chunks
+c
+        icount=0
+        do 500 kchunk=1,nzchunk
+          do 500 jchunk=1,nychunk
+            do 500 ichunk=1,nxchunk
+              icount=icount+1
+              ichflag(icount)=1
+              ijkchunk=ichunk+nxchunk*(nychunk-jchunk)
+     &                       +nxchunk*nychunk*(kchunk-1)
+              do 501 icrop=1,ncrop
+                if(ijkchunk.eq.ichunkcr(icrop))ichflag(icount)=0
+ 501          continue
+ 500    continue
+        nx=idim(1)
+        ny=idim(2)
+        nz=idim(3)
+c
+c  cycle through concentration grid and plot colors
+c
+        k1=1+izcrl
+        k2=nz-izcrr
+        j1=1+iycrl
+        j2=ny-iycrr
+        i1=1+ixcrl
+        i2=nx-ixcrr
+        nxy=nx*ny
+        do 100 k=k1,k2
+c
+c  set colors
+c
+          frac=0.
+          if(ktop.gt.kbot)frac=(1.0*(k-kbot))/(1.0*(ktop-kbot))
+          if(frac.lt.0.)frac=0.
+          if(frac.gt.1.)frac=1.
+          iflag=0
+          do 966 ic1=1,3
+            do 966 ic2=1,3
+              if(concrgbi1(iconc,ic1,ic2).ne.concrgbi2(iconc,ic1,ic2))
+     &          iflag=1
+              concrgbi(iconc,ic1,ic2)=
+     &          (1.0-frac)*concrgbi1(iconc,ic1,ic2)+
+     &        frac*concrgbi2(iconc,ic1,ic2)
+              if(concrgbo1(iconc,ic1,ic2).ne.concrgbo2(iconc,ic1,ic2))
+     &          iflag=1
+              concrgbo(iconc,ic1,ic2)=
+     &          (1.0-frac)*concrgbo1(iconc,ic1,ic2)+
+     &        frac*concrgbo2(iconc,ic1,ic2)
+              if(concrgbe1(iconc,ic1,ic2).ne.concrgbe2(iconc,ic1,ic2))
+     &          iflag=1
+              concrgbe(iconc,ic1,ic2)=
+     &          (1.0-frac)*concrgbe1(iconc,ic1,ic2)+
+     &        frac*concrgbe2(iconc,ic1,ic2)
+ 966      continue
+          if(k.eq.k1.or.iflag.eq.1)then
+            call concdef(dx,dy,dz,
+     &                     axy,bxy,cxy,dxy,
+     &                     axz,bxz,cxz,dxz,
+     &                     ayz,byz,cyz,dyz,
+     &                     xscl,yscl,zscl,
+     &                     iconc,
+     &                     concrgbi,concrgbo,concrgbe,
+     &                     tin,tout,tedge,i_trans_dia)
+          endif 
+c
+c  find chunk location
+c
+          kchunk=(k-k1)/idz
+          if(kchunk.ge.nzchunk)kchunk=nzchunk-1
+          krem=k-k1-kchunk*idz+1
+          zadd=kchunk*dzchunk*zscl
+          do 100 j=j2,j1,-1
+            jchunk=(j-j1)/idy
+            if(jchunk.ge.nychunk)jchunk=nychunk-1
+            jrem=j-j1-jchunk*idy+1
+            yadd=jchunk*dychunk*yscl
+            do 100 i=i1,i2
+              ichunk=(i-i1)/idx
+              if(ichunk.ge.nxchunk)ichunk=nxchunk-1
+              irem=i-i1-ichunk*idx+1
+              xadd=ichunk*dxchunk*xscl
+c
+c  check to see if we're in or out of a chunk
+c             
+              ijkchunk=1+ichunk+nxchunk*jchunk
+     &                  +nxchunk*nychunk*kchunk
+              in=ichflag(ijkchunk)
+c
+c find index 
+c
+              ixyz=i+(j-1)*nx+(k-1)*nxy 
+              v=val1(ixyz)
+c
+c  if we're in a chunk, check if we're on an exposed edge
+c
+              ixplot=0
+              iyplot=0
+              izplot=0
+              iskip=0
+              if(irem.eq.idx.and.ichunk.lt.(nxchunk-1))then
+                if(ichflag(ijkchunk+1).eq.0.and.ieo3.eq.0 
+     &            .and.in.eq.1)ixplot=1
+                if(dxchunk.gt.0.)ixplot=1
+                if(ieo2.eq.0)iskip=1
+              endif
+              if(i.eq.i2)then
+                ixplot=1
+                if(ieo2.eq.0)iskip=1
+              endif
+              if(jrem.eq.1.and.jchunk.lt.nychunk)then
+                if(ichflag(ijkchunk-nxchunk).eq.0 
+     &            .and.ieo3.eq.0.and.in.eq.1)iyplot=1
+                if(dychunk.gt.0.)iyplot=1
+                if(ieo2.eq.0)iskip=1
+              endif
+              if(j.eq.j1)then
+                iyplot=1
+                if(ieo2.eq.0)iskip=1
+              endif
+              if(krem.eq.idz.and.kchunk.lt.(nzchunk-1))then
+                ijkchunk2=ijkchunk+nxchunk*nychunk
+                if(ichflag(ijkchunk2).eq.0.and.ieo3.eq.0
+     &            .and.in.eq.1)izplot=1
+                if(dzchunk.gt.0.)izplot=1
+                if(ieo2.eq.0)iskip=1
+              endif
+              if(k.eq.k2)then
+                izplot=1
+                if(ieo2.eq.0)iskip=1
+              endif
+              iflag=0
+              if(v.ge.concmin(iconc).and.v.lt.concmax(iconc))iflag=1
+              if(concmin(iconc).eq.concmax(iconc))then
+                  if(v.lt.concmax(iconc))iflag=2
+                  if(v.ge.concmax(iconc))iflag=3
+              endif
+              if(iflag.ge.2.and.iskip.eq.1)iflag=0
+              if(iflag.ne.0)then
+c
+c  xy plane
+                ixyz2=ixyz+nxy 
+                if(ixzplot.eq.1.or.iyzplot.eq.1)go to 699
+                if(izplot.eq.1)then
+                  x=xo+(i-i1)*dx*xscl*axy+(j-j1)*dy*yscl*cxy
+     &                +xadd*axy+yadd*cxy
+                  y=yo+(i-i1)*dx*xscl*bxy+(j-j1)*dy*yscl*dxy
+     &                +(k-izcrl)*dz*zscl
+     &                +xadd*bxy+yadd*dxy+zadd
+                  if(ieo1.eq.1.and.in.eq.1)write(2,211) x,y
+                  if(ieo3.eq.1.and.in.eq.0)write(2,411) x,y
+                  if(ieo2.eq.1.and.in.eq.1)write(2,311) x,y
+                else
+                  if(val1(ixyz2).lt.concmin(iconc).or.
+     &               val1(ixyz2).ge.concmax(iconc))then
+                    x=xo+(i-i1)*dx*xscl*axy+(j-j1)*dy*yscl*cxy
+     &                +xadd*axy+yadd*cxy
+                    y=yo+(i-i1)*dx*xscl*bxy+(j-j1)*dy*yscl*dxy
+     &                +(k-izcrl)*dz*zscl
+     &                +xadd*bxy+yadd*dxy+zadd
+                    if(ieo1.eq.1.and.in.eq.1)then
+                     if(iflag.eq.2)then
+                       if(val1(ixyz2).ge.concmax(iconc))write(2,411) x,y
+                     elseif(iflag.eq.3)then
+                      if(val1(ixyz2).lt.concmin(iconc))write(2,211) x,y
+                     else
+                       write(2,211) x,y
+                     endif 
+                    endif
+                    if(ieo3.eq.1.and.in.eq.0)then
+                     if(iflag.eq.2)then
+                      if(val1(ixyz2).ge.concmax(iconc))write(2,411) x,y
+                     elseif(iflag.eq.3)then
+                      if(val1(ixyz2).lt.concmin(iconc))write(2,211) x,y
+                     else
+                      write(2,411) x,y
+                     endif
+                    endif
+                  endif
+                endif
+ 699            continue
+ 211            format('c1',2f7.2,' xy')
+ 311            format('c4',2f7.2,' xy')
+ 411            format('c7',2f7.2,' xy')
+c
+c  xz plane
+                ixyz2=ixyz-nx 
+                if(ixyplot.eq.1.or.iyzplot.eq.1)go to 799
+                if(iyplot.eq.1)then
+                  x=xo+(i-i1)*dx*xscl*axy+(j-j1)*dy*yscl*cxy
+     &                +xadd*axy+yadd*cxy
+                  y=yo+(i-i1)*dx*xscl*bxy+(j-j1)*dy*yscl*dxy
+     &                +(k-k1)*dz*zscl
+     &                +xadd*bxy+yadd*dxy+zadd
+                  if(ieo1.eq.1.and.in.eq.1)write(2,212) x,y
+                  if(ieo3.eq.1.and.in.eq.0)write(2,412) x,y
+                  if(ieo2.eq.1.and.in.eq.1)write(2,312) x,y
+                else
+                  if(val1(ixyz2).lt.concmin(iconc).or.
+     &               val1(ixyz2).ge.concmax(iconc))then
+                    x=xo+(i-i1)*dx*xscl*axy+(j-j1)*dy*yscl*cxy
+     &                +xadd*axy+yadd*cxy
+                    y=yo+(i-i1)*dx*xscl*bxy+(j-j1)*dy*yscl*dxy
+     &                +(k-k1)*dz*zscl
+     &                +xadd*bxy+yadd*dxy+zadd
+                    if(ieo1.eq.1.and.in.eq.1)then
+                     if(iflag.eq.2)then
+                      if(val1(ixyz2).ge.concmax(iconc))write(2,412) x,y
+                     elseif(iflag.eq.3)then
+                      if(val1(ixyz2).lt.concmin(iconc))write(2,212) x,y
+                     else
+                       write(2,212) x,y
+                     endif 
+                    endif
+                    if(ieo3.eq.1.and.in.eq.0)then
+                     if(iflag.eq.2)then
+                      if(val1(ixyz2).ge.concmax(iconc))write(2,412) x,y
+                     elseif(iflag.eq.3)then
+                      if(val1(ixyz2).lt.concmin(iconc))write(2,212) x,y
+                     else
+                      write(2,412) x,y
+                     endif
+                    endif
+                  endif
+                endif
+ 799            continue
+ 212            format('c2',2f7.2,' xz')
+ 312            format('c5',2f7.2,' xz')
+ 412            format('c8',2f7.2,' xz')
+c
+c  yz plane
+                ixyz2=ixyz+1 
+                if(ixyplot.eq.1.or.ixzplot.eq.1)go to 899
+                if(ixplot.eq.1)then
+                  x=xo+(i-ixcrl)*dx*xscl*axy+(j-j1)*dy*yscl*cxy
+     &                +xadd*axy+yadd*cxy
+                  y=yo+(i-ixcrl)*dx*xscl*bxy+(j-j1)*dy*yscl*dxy
+     &                +(k-k1)*dz*zscl
+     &                +xadd*bxy+yadd*dxy+zadd
+                  if(ieo1.eq.1.and.in.eq.1)write(2,213) x,y
+                  if(ieo3.eq.1.and.in.eq.0)write(2,413) x,y
+                  if(ieo2.eq.1.and.in.eq.1)write(2,313) x,y
+                else
+                  if(val1(ixyz2).lt.concmin(iconc).or.
+     &               val1(ixyz2).ge.concmax(iconc))then
+                    x=xo+(i-ixcrl)*dx*xscl*axy+(j-j1)*dy*yscl*cxy
+     &                +xadd*axy+yadd*cxy
+                    y=yo+(i-ixcrl)*dx*xscl*bxy+(j-j1)*dy*yscl*dxy
+     &                +(k-k1)*dz*zscl
+     &                +xadd*bxy+yadd*dxy+zadd
+                    if(ieo1.eq.1.and.in.eq.1)then
+                     if(iflag.eq.2)then
+                      if(val1(ixyz2).ge.concmax(iconc))write(2,413) x,y
+                     elseif(iflag.eq.3)then
+                      if(val1(ixyz2).lt.concmin(iconc))write(2,213) x,y
+                     else
+                      write(2,213) x,y
+                     endif 
+                    endif
+                    if(ieo3.eq.1.and.in.eq.0)then
+                     if(iflag.eq.2)then
+                      if(val1(ixyz2).ge.concmax(iconc))write(2,413) x,y
+                     elseif(iflag.eq.3)then
+                      if(val1(ixyz2).lt.concmin(iconc))write(2,213) x,y
+                     else
+                      write(2,413) x,y
+                     endif
+                    endif
+                  endif
+                endif
+ 899            continue
+ 213            format('c3',2f7.2,' yz')
+ 313            format('c6',2f7.2,' yz')
+ 413            format('c9',2f7.2,' yz')
+              endif
+ 999          continue
+ 100    continue
+        return
+        end
+
+
+        subroutine con_read_head(filename,ixlim,iylim,izlim,dx,dy,dz)
+        real  dx, dy, dz
+        integer ijk,  ixlim, iylim, izlim
+        character*100 filename
+       CHARACTER (LEN=50) :: ACCESS='@PARFLOW_FC_ACCESS@'
+       CHARACTER (LEN=50) :: FORM='@PARFLOW_FC_FORM@'
+
+CC
+CC      Open File
+CC
+        filename = (filename)
+        open(15,file=filename,form=FORM,
+     + access=ACCESS,convert='BIG_ENDIAN',status='unknown')
+c       open(15,file=filename,form='unformatted',status='unknown')
+CC
+CC      Calc domain bounds
+CC
+
+
+CC
+CC      Write header info
+CC
+
+        read(15) ixlim
+        read(15) iylim
+        read(15) izlim
+        print*,'nx,ny,nz in cnb=',ixlim,iylim,izlim
+
+        read(15) dx
+        read(15) dy
+        read(15) dz
+        return
+        end
+
+        subroutine con_read_array(val1,nxyz)
+        real*4 val1(*)
+        real value
+       
+        do ijk=1,nxyz
+          val1(ijk) = 0.0
+        end do
+
+        do 91 i=1,nxyz
+          read(15,end=99) ijk, val1(ijk)
+ 91     continue
+
+ 99     continue
+        close(15)
+        return 
+        end
+c
+c  
+c
+        subroutine con_read_array_nuft(val1,nxn,nyn,nzn,
+     &             dxn,dyn,dzn,nx,ny,nz,dx,dy,dz,nxyz)
+        real dxn(*),dyn(*),dzn(*),val1(*)
+        real xn(1000),yn(1000),zn(1000)
+        real value
+        print*,'nxn,nyn,nzn=',nxn,nyn,nzn
+        print*,'nx,ny,nz=',nx,ny,nz
+        print*,'dx,dy,dz=',dx,dy,dz
+        nxy=nx*ny
+        nxyn=nxn*nyn
+        xtot=0.0
+        do 10 i=1,nxn
+          xtot=xtot+dxn(i)
+ 10       xn(i)=xtot-(dxn(i)*0.5)
+        ytot=0.0
+        do 11 i=1,nyn
+          ytot=ytot+dyn(i)
+ 11       yn(i)=ytot-(dyn(i)*0.5)
+        ztot=0.0
+        do 12 i=1,nzn
+          ztot=ztot+dzn(i)
+ 12       zn(i)=ztot-(dzn(i)*0.5)
+        do ijk=1,nxyz
+          val1(ijk) = 0.0
+        end do
+        nxyn=nxn*nyn
+        nxyzn=nxn*nyn*nzn
+        do 91 ixyzn=1,nxyzn
+          read(15,end=99) ijk, value
+          print*,'ijk,value',ijk, value
+          kn=int((ijk-1)/nxyn)+1
+          jn=int((ijk-(kn-1)*nxyn-1)/nxn)+1
+          in=ijk-(kn-1)*nxyn-(jn-1)*nxn 
+          print*,'in,jn,kn=',in,jn,kn
+          x1=xn(in)-0.5*dxn(in)
+          x2=x1+dxn(in)
+          y1=yn(jn)-0.5*dyn(jn)
+          y2=y1+dyn(jn)
+          z1=zn(kn)-0.5*dzn(kn)
+          z2=z1+dzn(kn)
+          i1=int(x1/dx)+1
+          i2=int(x2/dx)
+          j1=int(y1/dy)+1
+          j2=int(y2/dy)
+          k1=int(z1/dz)+1
+          k2=int(z2/dz)
+          print*,'i1,i2,j1,j2,k1,k2=',i1,i2,j1,j2,k1,k2
+          do 95 k=k1,k2
+            do 95 j=j1,j2
+              do 95 i=i1,i2 
+                ijk_new=i+(j-1)*nx+(k-1)*nxy
+                val1(ijk_new)=value
+ 95       continue
+ 91     continue
+ 99     continue
+        close(15)
+        return
+        end
+
+
+C       subroutine plotedgesout(xo,yo,idim,dx,dy,dz,
+C    &                     ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr,
+C    &                     axy,bxy,cxy,dxy,
+C    &                     axz,bxz,cxz,dxz,
+C    &                     ayz,byz,cyz,dyz,
+C    &                     xscl,yscl,zscl,
+C    &                     idx,idy,idz,
+C    &                     dxchunk,dychunk,dzchunk,
+C    &                     nxchunk,nychunk,nzchunk,
+C    &                     ncrop,ichunkcr)
+C       integer idim(3),ichunkcr(100)
+c
+c  set up in out flag for chunks
+c
+C       nx=idim(1)
+C       ny=idim(2)
+C       nz=idim(3)
+c
+c  cycle through concentration grid and plot colors
+c
+C       k1=1+izcrl
+C       k2=nz-izcrr
+C       j1=1+iycrl
+C       j2=ny-iycrr
+C       i1=1+ixcrl
+C       i2=nx-ixcrr
+C       nxy=nx*ny
+C       do 100 k=1,nzchunk
+C         do 100 j=nychunk,1,-1
+C           do 100 i=1,nxchunk
+C             ichflag=0
+C             ijkchunk=i+nxchunk*(nychunk-j)
+C    &                       +nxchunk*nychunk*(k-1)
+C             do 501 icrop=1,ncrop
+C               if(ijkchunk.eq.ichunkcr(icrop))ichflag=1
+C501          continue
+C
+c  plot edge lines
+c
+C             if(ichflag.eq.1)then
+C                xoch=xo+((i-1)*(idx*dx+dxchunk)*xscl*axy+
+C    &                  +((j-1)*(idy*dy+dychunk)*yscl*cxy
+C                yoch=yo+((i-1)*(idx*dx+dxchunk)*xscl*bxy+
+C    &                  +((j-1)*(idy*dy+dychunk)*yscl*cxy
+C    &                  +((k-1)*(idz*dx+dzchunk)*zscl
+c
+c   lines
+c
+C                if(dxchunk.eq.0..or.dy)goto 199
+                 
+
+	subroutine nuftread_head(filename,nx,ny,nz)
+        integer*4 namelength
+        character*100 filename
+	character*4 strip 
+        character*1 junk
+        
+        do 397 i = 1, 100
+       if (filename(i:i+1).eq.' ') goto 398
+ 397     continue
+
+ 398    continue
+        namelength = i -1
+CC
+CC      Open File
+CC
+        open(15,file=filename(:namelength),status='unknown')
+        print*,'opened NUFT file'
+CC
+CC      Read in header info
+CC
+	do ii = 1, 20 
+	  read(15,'(a1,a4)') junk,strip 
+          if(strip.eq.'gdef')go to 29 
+	end do
+ 29     continue
+        read(15,*)
+
+        read(15,'(a4,i12)') strip,nx
+        read(15,'(a4,i12)') strip,ny
+        read(15,'(a4,i12)') strip,nz
+        print*,'NUFT nx,ny,nz=',nx,ny,nz
+        return
+        end
+
+	subroutine nuftread(val1,filename,nx,ny,nz,dx,dy,dz,time,ts)
+        real  dx, dy, dz
+        real*8 value
+        real*4 val1(*)
+        real  time, ksum, kavg, f
+        integer*4 i,j,k, ii,jj,kk,ts
+        integer*4 ijk, namelength, xtent,ytent,ztent
+        character*120 filename
+	character*4 strip
+        character*3 order
+        integer hconv
+        hconv = 0
+	read(15,*)
+        print*,'Read in header'
+C    
+C      read in ordering
+C
+        read(15,195) order
+ 195    format(7x,a3)
+
+CC	read in grid dimensions, no variable dx(i) yet
+CC
+C	in x
+	read(15,*)
+	do i = 1, nx
+        read(15,*) dx
+	end do
+
+C	in y
+	read(15,*)
+	do i = 1, ny
+        read(15,*) dy
+	end do
+
+C	in z
+	read(15,*)
+	do i = 1, nz
+        read(15,*) dz
+	end do
+        print*,'read in grid dimensions'
+CC	
+CC	skip ts number of timesteps
+CC
+	do kk = 1, ts
+	read(15,*) 
+	read(15,*)
+	read(15,*) 
+	read(15,*)
+	read(15,*)
+        do  k=nz  , 1, -1
+		do  j=1  , ny
+	        do  i=1  , nx
+				read(15,*)
+			end do !i
+		end do !j
+	end do !k
+	read(15,*)
+	end do  !	number of ts to skip
+        print*,'skipped timesteps'
+CC
+CC	read in that timestep's information
+CC
+CC	get time info
+	read(15,'(a4)') strip
+	if (strip.ne.'$tim') then 
+           write(*,*)'strip! ',strip
+CC	should do more error checking here later
+	end if
+	read(15,*)
+	read(15,*) time
+	read(15,*)
+	read(15,*)
+        print*,'read in timestep info'
+CC	
+CC	read in that timestep's data
+CC 
+        if(order.eq.'xyz')then
+          do 90 k=nz  , 1, -1
+            do 90 j=1  , ny
+              do 90 i=1  , nx
+                ijk = i +(j-1)*nx + (k-1)*nx*ny
+                read(15,*) value
+                val1(ijk) = sngl(value)
+ 90       continue
+        elseif(order.eq.'xzy')then
+          do 91 j=1  , ny
+            do 91 k=nz  , 1, -1
+              do 91 i=1  , nx
+                ijk = i +(j-1)*nx + (k-1)*nx*ny
+                read(15,*) value
+                val1(ijk) = sngl(value)
+ 91       continue
+        elseif(order.eq.'yxz')then
+          do 92 k=nz  , 1, -1
+            do 92 i=1  , nx
+              do 92 j=1  , ny
+                ijk = i +(j-1)*nx + (k-1)*nx*ny
+                read(15,*) value
+                val1(ijk) = sngl(value)
+ 92       continue
+        elseif(order.eq.'yzx')then
+          do 93 i=1  , nx
+            do 93 k=nz  , 1, -1
+              do 93 j=1  , ny
+                ijk = i +(j-1)*nx + (k-1)*nx*ny
+                read(15,*) value
+                val1(ijk) = sngl(value)
+ 93       continue
+        elseif(order.eq.'zxy')then
+          do 94 j=1  , ny
+            do 94 i=1  , nx
+              do 94 k=nz  , 1, -1
+                ijk = i +(j-1)*nx + (k-1)*nx*ny
+                read(15,*) value
+                val1(ijk) = sngl(value)
+ 94       continue
+        elseif(order.eq.'zyx')then
+          do 95 i=1  , nx
+            do 95 j=1  , ny
+              do 95 k=nz  , 1, -1
+                ijk = i +(j-1)*nx + (k-1)*nx*ny
+                read(15,*) value
+                val1(ijk) = sngl(value)
+ 95       continue
+        endif
+ 99     continue
+	
+	ts = ts +1
+
+        close(15)
+        return
+        end
+
+
+	subroutine nuft_head2(nx,ny,nz,nxn,nyn,nzn,
+     &                        dx,dy,dz,dxn,dyn,dzn,order,
+     &               ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr)
+        real  dx, dy, dz
+        real dxn(1000),dyn(1000),dzn(1000)
+        character*3 order
+
+	read(15,195) order
+        print*,'order=',order
+ 195    format(7x,a3)
+CC	
+CC	read in grid dimensions, no variable dx(i) yet
+CC
+C	in x
+	read(15,*)
+        xtot=0.
+        nxncr=nxn-ixcrr
+	do i = 1, nxn
+          read(15,*) dxn(i)
+          if(i.gt.ixcrl.and.i.le.nxncr)then
+            xtot=xtot+dxn(i)
+          endif
+	end do
+
+C	in y
+	read(15,*)
+        ytot=0.
+        nyncr=nyn-iycrr
+	do i = 1, nyn
+          read(15,*) dyn(i)
+          if(i.gt.iycrl.and.i.le.nyncr)then
+            ytot=ytot+dyn(i)
+          endif
+	end do
+
+C	in z
+	read(15,*)
+        ztot=0. 
+        nzncr=nzn-izcrr
+c       do k = nzn, 1 , -1
+        do k = 1,nzn 
+          read(15,*) dzn(k)
+          if(k.gt.izcrl.and.k.le.nzncr)then
+            ztot=ztot+dzn(k)
+          endif
+	end do
+        print*,'read in grid dimensions'
+c
+c  convert irregular grid to regular grid
+c
+        if(dx.gt.xtot)dx=xtot
+        if(dy.gt.ytot)dy=ytot
+        if(dz.gt.ztot)dz=ztot
+        nx=int(xtot/dx)
+        ny=int(ytot/dy)
+        nz=int(ztot/dz)
+        print*,'CHUNK nx,ny,nz=',nx,ny,nz
+        return
+        end
+
+	subroutine nuftread2(val1,nx,ny,nz,nxn,nyn,nzn,
+     &                       dx,dy,dz,time,ts,dxn,dyn,dzn,order,
+     &               ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr)
+        real  dx, dy, dz
+        real dxn(1000),dyn(1000),dzn(1000)
+        real*8 value
+        real*4 val1(*)
+        real*4, allocatable::x(:)
+        real ksum, kavg, f
+        integer*4 i,j,k, ii,jj,kk,ts
+        integer*4 ijk, namelength, xtent,ytent,ztent
+        character*3 order
+        character*4 strip
+CC	
+CC	skip ts number of timesteps
+CC
+        print*,'CHUNK nx,ny,nz=',nx,ny,nz
+        print*,'NUFT nxn,nyn,nzn=',nxn,nyn,nzn
+	do kk = 1, ts
+	read(15,*) 
+	read(15,*)
+	read(15,*) 
+	read(15,*)
+	read(15,*)
+c       do  k=nzn  , 1, -1
+        do  k=1,nzn
+		do  j=1  , nyn
+	        do  i=1  , nxn
+				read(15,*)
+			end do !i
+		end do !j
+	end do !k
+	read(15,*)
+	end do  !	number of ts to skip
+        print*,'skipped timesteps'
+CC
+CC	read in that timestep's information
+CC
+CC	get time info
+	read(15,'(a4)') strip
+	if (strip.ne.'$tim') then 
+	write(*,*)'strip! ',strip
+CC	should do more error checking here later
+	end if
+	read(15,*)
+	read(15,*) time
+	read(15,*)
+	read(15,*)
+        print*,'read in timestep info'
+CC	
+CC	read in that timestep's data
+CC
+        nxyzn=nxn*nyn*nzn
+        if (.not. allocated(x)) allocate (x(nxyzn))
+CC	
+CC	read in that timestep's data
+CC 
+        nxyn=nxn*nyn
+        if(order.eq.'xyz')then
+c         do 90 k=nzn  , 1, -1
+          do 90 k=1,nzn
+            do 90 j=1  , nyn
+              do 90 i=1  , nxn
+                ijk = i +(j-1)*nxn + (k-1)*nxyn
+                read(15,*) value
+                x(ijk) = sngl(value)
+ 90       continue
+        elseif(order.eq.'xzy')then
+          do 91 j=1  , nyn
+c           do 91 k=nzn  , 1, -1
+            do 91 k=1,nzn 
+              do 91 i=1  , nxn
+                ijk = i +(j-1)*nxn + (k-1)*nxyn
+                read(15,*) value
+                x(ijk) = sngl(value)
+ 91       continue
+        elseif(order.eq.'yxz')then
+c         do 92 k=nzn  , 1, -1
+          do 92 k=1,nzn
+            do 92 i=1  , nxn
+              do 92 j=1  , nyn
+                ijk = i +(j-1)*nxn + (k-1)*nxyn
+                read(15,*) value
+                x(ijk) = sngl(value)
+ 92       continue
+        elseif(order.eq.'yzx')then
+          do 93 i=1  , nxn
+c           do 93 k=nzn  , 1, -1
+            do 93 k=1,nzn
+              do 93 j=1  , nyn
+                ijk = i +(j-1)*nxn + (k-1)*nxyn
+                read(15,*) value
+                x(ijk) = sngl(value)
+ 93       continue
+        elseif(order.eq.'zxy')then
+          do 94 j=1  , nyn
+            do 94 i=1  , nxn
+c             do 94 k=nzn  , 1, -1
+              do 94 k=1,nzn
+                ijk = i +(j-1)*nxn + (k-1)*nxyn
+                read(15,*) value
+                x(ijk) = sngl(value)
+ 94       continue
+        elseif(order.eq.'zyx')then
+          do 95 i=1  , nxn
+            do 95 j=1  , nyn
+c             do 95 k=nzn  , 1, -1
+              do 95 k=1,nzn
+                ijk = i +(j-1)*nxn + (k-1)*nxyn
+                read(15,*) value
+                x(ijk) = sngl(value)
+ 95       continue
+        endif
+ 99     continue
+	
+	ts = ts +1
+
+      close(15)
+
+        ind=0
+        z2=0.
+        k2=0
+        nxy=nx*ny
+        do 500 k=1+izcrl,nzn-izcrr
+          z1=z2
+          z2=z1+dzn(k)
+          k1=int(z1/dz+1)
+          k2=int(z2/dz)
+          if(k2.lt.k1)k2=k1
+          y2=0.
+          j2=0
+          do 500 j=1+iycrl,nyn-iycrr
+            y1=y2
+            y2=y1+dyn(j)
+            j1=int(y1/dy)+1
+            j2=int(y2/dy)
+            if(j2.lt.j1)j2=j1
+            x2=0.
+            i2=0
+            do 500 i=1+ixcrl,nxn-ixcrr
+              x1=x2
+              x2=x1+dxn(i)
+              i1=int(x1/dx)+1 
+              i2=int(x2/dx) 
+              if(i2.lt.i1)i2=i1
+              ind=i+(j-1)*nxn+(k-1)*nxyn
+              do 600 kk=k1,k2
+                do 601 jj=j1,j2
+                  if(jj.gt.ny)print*,'jj gt ny!'
+                  if(jj.lt.1)print*,'jj lt 1!'
+                  do 602 ii=i1,i2
+                      ind2=ii+(jj-1)*nx+(kk-1)*nxy
+                      val1(ind2)=x(ind)
+ 602              continue
+ 601            continue
+ 600          continue
+ 500    continue
+        ixcrl=0
+        ixcrr=0
+        iycrl=0
+        iycrr=0
+        izcrl=0
+        izcrr=0
+        return
+        end
+
+
+       subroutine ps2eps(epsfil)
+c
+c  converts postscript (.ps) format to encapsulated postscript format (.eps)
+c
+       character*1 creator(10)
+       character*100 day,clock
+       character*100 epsfil
+c
+c  read parameter file
+c  
+       print*,'Bounding Box (in 72nds of an inch) xmin,ymin,xmax,ymax:'
+       read(7,*) xmin,ymin,xmax,ymax
+       ixmin=nint(xmin)
+       iymin=nint(ymin)
+       ixmax=nint(xmax)
+       iymax=nint(ymax)
+       print*,'Creator:'
+       read(7,500) (creator(i),i=1,100) 
+ 500   format(100a1)
+       do 1 i=100,1,-1
+         if(creator(i).ne.' ')then
+           ncreator=i
+           go to 91
+         endif
+ 1     continue
+ 91    continue
+       print*,'Creation Date:'
+       read(7,105) day
+ 105   format(a80)
+       do 2 i=100,1,-1
+         if(day(i:i).ne.' ')then
+           nday=i
+           go to 92
+         endif
+ 2     continue
+ 92    continue
+       print*,'Creation Time:'
+       read(7,105) clock
+       do 3 i=100,1,-1
+         if(clock(i:i).ne.' ')then
+           nclock=i
+           go to 93
+         endif
+ 3     continue
+ 93    continue
+c
+c  write eps file header
+c
+       write(2,89)
+ 89    format('%!PS-Adobe-3.0 EPSF-3.0')
+       write(2,100) ixmin,iymin,ixmax,iymax
+ 100   format('%%BoundingBox: ',4i6)
+       write(2,200) (creator(i),i=1,ncreator)
+ 200   format('%%Creator: ',100a1)
+c
+c  covert eps file name to title and write to header
+c       
+       do 10 i=100,1,-1
+         if(epsfil(i:i).ne.' ')then
+           nchar=i
+           go to 11
+         endif
+ 10    continue
+ 11    continue
+       epsfil(nchar+1:nchar+1)=')'
+       write(2,300) (epsfil(i:i),i=1,nchar+1)
+ 300   format('%%Title: (',100a1)
+c
+c   write day and clock
+c
+       day(nday+1:nday+2)=')('
+       day(nday+3:nday+2+nclock)=clock(1:nclock)
+       day(nday+3+nclock:nday+3+nclock)=')'
+       write(2,400) (day(i:i),i=1,nday+3+nclock)
+ 400   format('%%CreationDate:(',100a1)
+       write(2,109)
+ 109   format('%%EndComments')
+       return
+       end
+     
+       subroutine corner(nxchunk,nychunk,nzchunk,xo,yo,
+     &                   xstep,ystep,zstep,axy,bxy,cxy,dxy,
+     &                   axz,bxz,cxz,dxz,ayz,byz,cyz,dyz,
+     &                   idim,xmin,ymin,zmin,xmax,ymax,zmax,
+     &                   dxch,dych,dzch,
+     &                   ixcrl,ixcrr,iycrl,iycrr,izcrl,izcrr,
+     &                   ichunkcr,argb,dx,dy,dz,xscl,yscl,zscl,
+     &                   dxchunk,dychunk,dzchunk,lpsout,i_field,
+     &                   idx,idy,idz,ncrop,bright)
+       real xp(2),yp(2),xx(2),yy(2),argb(3)
+       integer idim(3),ichunkcr(100)
+       logical plot,plotch,plot_edge,plot_edge2
+       logical plot_edge3, plot_edge4
+       print*,'in corner'
+       print*,'dxchunk,dychunk,dzchunk=',dxchunk,dychunk,dzchunk
+c
+c   plot chunks 
+c
+       nchunk=nxchunk*nychunk*nzchunk
+       ichunk=0
+       do 500 izch=1,nzchunk
+         do 500 iych=nychunk,1,-1
+           do 500 ixch=1,nxchunk
+             ichunk=ichunk+1
+             plotch=.true.
+             do 502 icrop=1,ncrop
+ 502            if(ichunk.eq.ichunkcr(icrop))plotch=.false. 
+             if(ichunk.gt.nchunk)go to 995
+            xch=xo+(ixch-1)*xstep*axy+(iych-1)*ystep*cxy
+            ych=yo+(izch-1)*zstep+(iych-1)*ystep*dxy+(ixch-1)*xstep*bxy 
+       ixp1=ixcrl+(ixch-1)*idx
+       iyp1=iycrl+(iych-1)*idy
+       izp1=izcrl+(izch-1)*idz
+       ixp2=idim(1)-ixp1-idx
+       iyp2=idim(2)-iyp1-idy
+       izp2=idim(3)-izp1-idz
+       x1=xmin+(ixch-1)*dxch
+       x2=x1+dxch
+       y1=ymin+(iych-1)*dych
+       y2=y1+dych
+       z1=zmin+(izch-1)*dzch
+       z2=z1+dzch
+       if(ixch.eq.nxchunk)then
+         ixp2=ixcrr
+         x2=xmax
+       endif
+       if(iych.eq.nychunk)then
+         iyp2=iycrr
+         y2=ymax
+       endif
+       if(izch.eq.nzchunk)then
+         izp2=izcrr
+         z2=zmax
+       endif
+c
+c  plot xz plane
+c
+       iyp=iycrl+(iych-1)*idy+1
+c
+c  check if plotting is necessary
+c
+       plot=.true.
+       plot_edge=.false.
+       plot_edge2=.false.
+       if(dychunk.eq.0.)then
+         if(iych.gt.1)then
+           plot=.false.
+           plot_edge2=.true.
+         endif
+         inext=ichunk+nxchunk
+         ifront=ichunk+nxchunk-nxchunk*nychunk
+         do 982 icrop=1,ncrop
+           if(iych.gt.1.and.inext.eq.ichunkcr(icrop))plot=.true.
+           if(ifront.eq.ichunkcr(icrop))plot_edge2=.false.
+ 982     continue
+       endif
+       itop=ichunk+nxchunk*nychunk
+       do 1082 icrop=1,ncrop
+         itop=ichunk+nxchunk*nychunk
+         if(itop.eq.ichunkcr(icrop))plot_edge=.true.
+ 1082  continue
+       if(i_field.ne.1)plot=.false.
+       if(plot .eqv. .true..and.plotch.eqv..true.)then
+c
+c  plot x edge
+c
+         print*,'plot and plotch = true'
+         if(bright.gt.0.)then
+          if(dzchunk.gt.0.)plot_edge=.true.
+          if(izch.eq.nzchunk)plot_edge=.true.
+          if(plot_edge.eqv..true.)then
+           print*,'  plot = true'
+           write(lpsout,*) 'gsave'
+           write(lpsout,*) '1.0 setgray'
+           write(lpsout,979) axz,bxz,cxz,dxz,xch,ych
+ 979       format('[',6f10.3,'] concat')
+           xp(1)=0.0
+           yp(1)=(z2-z1)*zscl
+           xp(2)=(x2-x1)*xscl
+           yp(2)=yp(1)
+           write(lpsout,579) bright
+ 579       format(f7.3,' lw')
+           call psline(2,xp,yp,bright,0,0)
+           write(lpsout,*) 'grestore'
+          endif
+          if(dychunk.eq.0..and.plot_edge2 .eqv. .true.)then
+           print*,'dychunk=',dychunk
+           print*,'plot_edge2 = true and dychunk=0.' 
+           write(lpsout,*) 'gsave'
+           write(lpsout,*) '0.0 setgray'
+           write(lpsout,979) axz,bxz,cxz,dxz,xch,ych
+           xp(1)=0.0
+           yp(1)=0.0
+           xp(2)=(x2-x1)*xscl
+           yp(2)=0.0
+           write(lpsout,579) bright
+           call psline(2,xp,yp,bright,0,0)
+           write(lpsout,*) 'grestore'
+          endif
+         endif
+       endif
+c
+c  plot yz plane
+c
+       ixp=ixcrl+ixch*idx
+       dxch2=dxch
+       if(ixch.eq.nxchunk)then
+         ixp=idim(1)-ixcrr
+         dxch2=dx*(idim(1)-ixp1-ixp2)
+       endif
+       xoyz=xch+dxch2*xscl*axz
+       yoyz=ych+bxz*dxch2*xscl
+       print*,'slice# = ',ixp
+       print*,'x,y,z cropping =  ',ixp1,ixp2,iyp1,iyp2,izp1,izp2
+c
+c  check if plotting is necessary
+c
+       plot=.true.
+       plot_edge=.false.
+       plot_edge2=.false.
+       plot_edge3=.false.
+       plot_edge4=.false.
+       if(dxchunk.eq.0.)then
+         if(ixch.lt.nxchunk)then
+           plot=.false.
+           plot_edge2=.true.
+           plot_edge4=.true.
+         endif
+         inext=ichunk+1
+         itop=ichunk+nxchunk*nychunk
+         ifront=ichunk+1-nxchunk*nychunk
+         iadjacent=inext-nxchunk
+         do 983 icrop=1,ncrop
+           if(ixch.lt.nxchunk.and.inext.eq.ichunkcr(icrop))plot=.true.
+           if(itop.eq.ichunkcr(icrop))plot_edge=.true.
+           if(ifront.eq.ichunkcr(icrop))plot_edge2=.false.
+           if(iadjacent.eq.ichunkcr(icrop))plot_edge4=.false.
+ 983     continue
+         do 504 icrop=1,ncrop
+ 504       if(inext.eq.ichunkcr(icrop))plot=.true. 
+       endif
+       itop=ichunk+nxchunk*nychunk
+       iinfront=ichunk+nxchunk
+       do 1083 icrop=1,ncrop
+         if(itop.eq.ichunkcr(icrop))plot_edge=.true.
+         if(iinfront.eq.ichunkcr(icrop))plot_edge3=.true.
+ 1083  continue
+       if(i_field.ne.1)plot=.false.
+       if(plot .eqv. .true..and. plotch .eqv..true.)then
+c
+c  plot y edge
+c
+         if(bright.gt.0.)then
+          if(dzchunk.gt.0.)plot_edge=.true.
+          if(izch.eq.nzchunk)plot_edge=.true.
+c    light outer edge
+          if(plot_edge.eqv..true.)then
+           print*,'yz plot_edge = true'
+           write(lpsout,*) 'gsave'
+           write(lpsout,*) '1.0 setgray'
+           write(lpsout,979) ayz,byz,cyz,dyz,xoyz,yoyz
+           xp(1)=0.0
+           yp(1)=(z2-z1)*zscl
+           xp(2)=(y2-y1)*yscl
+           yp(2)=yp(1)
+           write(lpsout,579) bright
+           call psline(2,xp,yp,bright,0,0)
+           write(lpsout,*) 'grestore'
+          endif
+c    dark inner edge
+          if(plot_edge2.eqv..true.)then
+           write(lpsout,*) 'gsave'
+           write(lpsout,*) '0.0 setgray'
+           write(lpsout,979) ayz,byz,cyz,dyz,xoyz,yoyz
+           xp(1)=0.0
+           yp(1)=0.0
+           xp(2)=(y2-y1)*yscl
+           yp(2)=0.0
+           write(lpsout,579) bright
+           call psline(2,xp,yp,bright,0,0)
+           write(lpsout,*) 'grestore'
+          endif
+c
+c  plot z edge
+c
+          if(dychunk.gt.0)plot_edge3=.true.
+          if(iych.eq.1)plot_edge3=.true.
+c    light outer edge
+          if(plot_edge3.eqv..true.)then
+           write(lpsout,*) 'gsave'
+           write(lpsout,*) '1.0 setgray'
+           write(lpsout,979) ayz,byz,cyz,dyz,xoyz,yoyz
+           xp(1)=0.0
+           yp(1)=(z2-z1)*zscl
+           xp(2)=0.0
+           yp(2)=0.0
+           write(lpsout,579) bright
+           call psline(2,xp,yp,bright,0,0)
+           write(lpsout,*) 'grestore'
+          endif
+c    dark inner edge
+          if(plot_edge4.eqv..true.)then
+           write(lpsout,*) 'gsave'
+           write(lpsout,*) '0.0 setgray'
+           write(lpsout,979) ayz,byz,cyz,dyz,xoyz,yoyz
+           xp(1)=(y2-y1)*yscl
+           yp(1)=(z2-z1)*zscl
+           xp(2)=xp(1)
+           yp(2)=0.0
+           write(lpsout,579) bright
+           call psline(2,xp,yp,bright,0,0)
+           write(lpsout,*) 'grestore'
+          endif
+         endif
+       endif
+ 901   continue
+ 500   continue
+ 995   continue
+       return
+       end

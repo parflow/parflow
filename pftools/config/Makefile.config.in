@@ -39,6 +39,8 @@ PARFLOW_LIB_DEPEND = $(PARFLOW_LIB_DIR)/libparflow.a
 
 PARFLOW_TOOLS_INCLUDE=-I/usr/X11R6/include/
 
+CHUNK_DIR=@CHUNK_DIR@
+
 # Need to link to the tk/tcl libs
 # tk/tcl libs need X11 and dynamic link stuff in dl
 #
