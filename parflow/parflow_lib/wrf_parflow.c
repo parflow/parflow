@@ -211,7 +211,7 @@ void WRF2PF(
 		  + ((j-iy + ghost_size) * (wrf_nx) 
 		     + (wrf_depth - (k - iz) - 1 ) * wrf_nx * wrf_ny);
 	       subvector_data[pf_index] = wrf_array[wrf_index];
-               if ( i == 10) {
+             /*  if ( i == 10) {
                 if (j == 10) {
                   // printf("pdata: %lf %d \n", subvector_data[pf_index],k);
                   // printf("wdata: %lf %d \n", wrf_array[wrf_index],k);
@@ -219,7 +219,7 @@ void WRF2PF(
                                       }
                                       }
 	    }
-	 }
+	 } */
       }
    }
 
@@ -286,7 +286,7 @@ void PF2WRF(
 		  + ((j-iy + ghost_size) * (wrf_nx) 
 		     + (wrf_depth - (k - iz) - 1 ) * wrf_nx * wrf_ny);
 	       wrf_array[wrf_index] = subvector_data[pf_index] ;
-               if ( i == 10) {
+    /*           if ( i == 10) {
                 if (j == 10) {
                    //printf("pdata: %lf %d \n", subvector_data[pf_index],k);
                    //printf("wdata: %lf %d \n", wrf_array[wrf_index],k);
@@ -294,7 +294,7 @@ void PF2WRF(
                                       }
                                       }
 	    }
-	 }
+	 }i */
       }
    }
 
