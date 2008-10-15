@@ -911,8 +911,8 @@ void WritePFSBinary P((char *file_prefix , char *file_suffix , Vector *v , doubl
 
 /* wrf_parflow.c */
 void wrfparflowinit_ P(());
-void wrfparflowadvance_ P((float  *current_time, 
-			   float  *dt,
+void wrfparflowadvance_ P((double *current_time, 
+			   double *dt,
 			   double *wrf_flux,
 			   double *wrf_pressure,
 			   double *wrf_porosity,

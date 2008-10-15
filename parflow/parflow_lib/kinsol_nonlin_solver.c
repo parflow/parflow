@@ -155,6 +155,7 @@ long int   *integer_outputs_total;
   fprintf(out_file, "Backtracks:             %5ld             %5ld\n", 
 	  integer_outputs_now[NBKTRK], integer_outputs_total[NBKTRK]);
   fprintf(out_file,   "-------------------------------------------------- \n");
+  fflush(out_file);
 }
 
 /*--------------------------------------------------------------------------

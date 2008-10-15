@@ -465,6 +465,9 @@ void AdvanceRichards(PFModule *this_module,
    /*                                                                     */
    /***********************************************************************/
 
+// initialize ct in either case
+//
+        ct = start_time;
    if(compute_time_step) {
       PFModuleInvoke(void, select_time_step, (&cdt, &dt_info, ct, problem,
       problem_data) );
@@ -473,9 +476,15 @@ void AdvanceRichards(PFModule *this_module,
    {
       // Simply use DT provided; don't use select_time_step module.
       // Note DT will still be reduced if solution does not converge.
+	cdt = dt;
    }
 
    rank = amps_Rank(amps_CommWorld);
+
+   //printf("StartTime: %lf \n", start_time);
+   //printf("StopTime: %lf \n", stop_time);
+   //printf("dT: %lf \n",  dt);
+   //printf("computets: %d \n",  compute_time_step);
 
    /* Check to see if pressure solves are requested */
    /* start_count < 0 implies that subsurface data ONLY is requested */
@@ -502,9 +511,10 @@ void AdvanceRichards(PFModule *this_module,
 	 int p = GetInt("Process.Topology.P");
 	 int q = GetInt("Process.Topology.Q");
 	 int r = GetInt("Process.Topology.R");
-	 
+//printf("dT1: %lf \n",  dt);	 
 	 ct += cdt;
 	 dt = cdt;
+//printf("dT2: %lf \n",  dt);
 	 
 	 ForSubgridI(is, GridSubgrids(grid))
 	 {
@@ -650,7 +660,7 @@ void AdvanceRichards(PFModule *this_module,
 	 (instance_xtra -> pressure, instance_xtra -> density, instance_xtra -> old_density, instance_xtra -> saturation, 
 	 instance_xtra -> old_saturation, t, dt, problem_data, instance_xtra -> old_pressure, 
 	 &outflow, evap_trans, instance_xtra -> ovrl_bc_flx));
-	 printf("Outflow , %e\n",outflow);
+	// printf("Outflow r , %e\n",outflow);
 
 	 if (retval != 0)
 	 {
@@ -688,6 +698,7 @@ void AdvanceRichards(PFModule *this_module,
 
       any_file_dumped = 0;
 
+    // printf("print press and sat \n");
       /***************************************************************/
       /*                 Print the pressure and saturation           */
       /***************************************************************/
@@ -722,6 +733,7 @@ void AdvanceRichards(PFModule *this_module,
 	 any_file_dumped = 1;
       }
 
+    // printf("l2 norm \n");
       /***************************************************************/
       /*             Compute the l2 error                            */
       /***************************************************************/
@@ -735,6 +747,7 @@ void AdvanceRichards(PFModule *this_module,
 	 fflush(NULL);
       }
 
+    // printf("well data \n");
       /*******************************************************************/
       /*                   Print the Well Data                           */
       /*******************************************************************/
@@ -751,6 +764,7 @@ void AdvanceRichards(PFModule *this_module,
       /*-----------------------------------------------------------------
        * Log this step
        *-----------------------------------------------------------------*/
+    // printf("log \n");
 
       IfLogging(1)
       {
@@ -775,6 +789,11 @@ void AdvanceRichards(PFModule *this_module,
 
    }   /* ends do for time loop */
    while( take_more_time_steps );
+
+
+   *pressure_out =   instance_xtra -> pressure;
+   *porosity_out =   porosity;
+   *saturation_out = instance_xtra -> saturation;
 }
 
 
@@ -862,6 +881,7 @@ void TeardownRichards(PFModule *this_module) {
       tfree(instance_xtra -> recomp_log);
       tfree(instance_xtra -> outflow_log);
    }
+
 }
 
 /*--------------------------------------------------------------------------
