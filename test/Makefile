@@ -32,6 +32,7 @@ check:
 	done
 clean:
 	@rm -f *.pfb*
+	@rm -f *.silo*
 	@rm -f *.pfsb*
 	@rm -f *.log
 	@rm -f .hostfile
@@ -39,4 +40,5 @@ clean:
 	@rm -f *.out.pftcl
 	@rm -f *.pfidb
 	@rm -f *.out.txt
+	@rm -fr default_richards.out
 

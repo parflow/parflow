@@ -2859,6 +2859,41 @@ end of the run when all collected data is written.
 Solver.PrintWells False
 \end{verbatim}\end{display}
 
+\pfkey{string}{Solver.WriteSiloPressure}{False}
+{
+This key is used to turn on pressure data to a SILO formatted file.
+The printing of the data is controlled by values in the
+timing information section.
+}
+\begin{display}\begin{verbatim}
+Solver.WriteSiloPressure False
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.WriteSiloVelocities}{False} { This key is used
+  to turn on writing of the x, y and z velocity data to a SILO
+  formatted file.  The printing of the data is controlled by values in
+  the timing information section.
+}
+\begin{display}\begin{verbatim}
+Solver.WriteSiloVelocities False
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.WriteSiloSaturation}{False} { This key is used
+ to turn on writing of the saturation data to a SILO formatted file.
+  The printing of the data is controlled by values in the timing
+ information section. }
+\begin{display}\begin{verbatim}
+Solver.WriteSiloSaturation False
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.WriteSiloConcentration}{False} { This key is
+  used to turn on writing of the concentration data to a SILO
+  formatted file.  The printing of the data is controlled by values in
+  the timing information section.  }
+\begin{display}\begin{verbatim}
+Solver.WriteSiloConcentration False
+\end{verbatim}\end{display}
+
 %=============================================================================
 %=============================================================================
 

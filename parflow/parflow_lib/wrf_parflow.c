@@ -115,19 +115,13 @@ void wrfparflowadvance_(double *current_time,
    Vector       *pressure_out;
    Vector       *porosity_out;
    Vector       *saturation_out;
-  // RMM debugging stuff here to check timesteps
-   
-   //printf("cT: %lf \n", *current_time);
-   //printf("dT: %lf \n",  *dt);
-   //printf("eT: %lf \n", stop_time);
-   //printf("GN: %d \n", *ghost_size);
-   //printf("WRF FLUX: %lf \n", wrf_flux[0]);
 
    // AdvanceRichards should not use select_time_step module to compute dt.
    // Use the provided dt with possible subcycling if it does not converge.
    int compute_time_step = 0; 
 
-   WRF2PF(wrf_flux, *num_soil_layers, *ghost_size, amps_ThreadLocal(evap_trans), amps_ThreadLocal(top));
+   WRF2PF(wrf_flux, *num_soil_layers, *ghost_size, amps_ThreadLocal(evap_trans), 
+          amps_ThreadLocal(top));
    
    AdvanceRichards(amps_ThreadLocal(solver),
 		   *current_time, 
@@ -139,11 +133,10 @@ void wrfparflowadvance_(double *current_time,
 		   &porosity_out,
 		   &saturation_out);
 
-   //printf("calling pf2wrf press \n");
    PF2WRF(pressure_out,   wrf_pressure,   *num_soil_layers, *ghost_size, amps_ThreadLocal(top));
-   //printf("calling pf2wrf poro \n");
+
    PF2WRF(porosity_out,   wrf_porosity,   *num_soil_layers, *ghost_size, amps_ThreadLocal(top));
-   //printf("calling pf2wrf sat \n");
+
    PF2WRF(saturation_out, wrf_saturation, *num_soil_layers, *ghost_size, amps_ThreadLocal(top));  
    printf("done \n");
 }
@@ -172,7 +165,6 @@ void WRF2PF(
       
       int ix = SubgridIX(subgrid);
       int iy = SubgridIY(subgrid);
-      // int iz = SubgridIZ(subgrid);
 
       int nx = SubgridNX(subgrid);
       int ny = SubgridNY(subgrid);
@@ -182,14 +174,10 @@ void WRF2PF(
 
       Subvector *subvector = VectorSubvector(pf_vector, sg);
       
-      //      double *subvector_data = SubvectorElt(subvector, ix, iy, SubgridIZ(subgrid));
       double *subvector_data = SubvectorData(subvector);
 
       int i, j, k;
  
-// printf("wnx, wny, wrf_depth: %d %d %d \n", wrf_nx, wrf_ny, wrf_depth);
-// printf("nx, ny : %d %d  \n", nx, ny );
-
       for (i = ix; i < ix + nx; i++)
       {					       
 	 for (j = iy; j < iy + ny; j++)		
@@ -199,11 +187,6 @@ void WRF2PF(
 	    // SGS What to do if near bottom such that
 	    // there are not wrf_depth values?
 	    int iz = top[top_index] - (wrf_depth - 1);
-                if ( i == 10) {
-                if (j == 10) {
-                //printf(" iz: %d  top: %d  wrf_depth: %d \n",iz, top[top_index], wrf_depth);
-                           }
-                            }
 	    for (k = iz; k < iz + wrf_depth; k++)		
 	    {
 	       int pf_index = SubvectorEltIndex(subvector, i, j, k);
@@ -211,18 +194,10 @@ void WRF2PF(
 		  + ((j-iy + ghost_size) * (wrf_nx) 
 		     + (wrf_depth - (k - iz) - 1 ) * wrf_nx * wrf_ny);
 	       subvector_data[pf_index] = wrf_array[wrf_index];
-             /*  if ( i == 10) {
-                if (j == 10) {
-                  // printf("pdata: %lf %d \n", subvector_data[pf_index],k);
-                  // printf("wdata: %lf %d \n", wrf_array[wrf_index],k);
-                   //printf("i,j,k: %d %d %d \n", i,j,k);
-                                      }
-                                      }
 	    }
-	 } */
+	 }
       }
    }
-
 }
 
 /* 
@@ -260,42 +235,29 @@ void PF2WRF(
 
       Subvector *subvector = VectorSubvector(pf_vector, sg);
       
-      //      double *subvector_data = SubvectorElt(subvector, ix, iy, SubgridIZ(subgrid));
       double *subvector_data = SubvectorData(subvector);
 
       int i, j, k;
 
-
-   //printf("nx,ny: %d %d \n", nx,ny);
       for (i = ix; i < ix + nx; i++)
       {					       
 	 for (j = iy; j < iy + ny; j++)		
 	 {
 	    int top_index = (i-ix) + ((j-iy) * nx);
 
-   //printf("top index: %d \n", top_index);
 	    // SGS What to do if near bottom such that
 	    // there are not wrf_depth values?
 	    int iz = top[top_index] - (wrf_depth - 1);
 
 	    for (k = iz; k < iz + wrf_depth; k++)		
 	    {
-   //printf("i,j,k: %d %d %d \n", i,j,k);
 	       int pf_index = SubvectorEltIndex(subvector, i, j, k);
 	       int wrf_index = (i-ix + ghost_size) 
 		  + ((j-iy + ghost_size) * (wrf_nx) 
 		     + (wrf_depth - (k - iz) - 1 ) * wrf_nx * wrf_ny);
 	       wrf_array[wrf_index] = subvector_data[pf_index] ;
-    /*           if ( i == 10) {
-                if (j == 10) {
-                   //printf("pdata: %lf %d \n", subvector_data[pf_index],k);
-                   //printf("wdata: %lf %d \n", wrf_array[wrf_index],k);
-                   //printf("i,j,k: %d %d %d \n", i,j,k);
-                                      }
-                                      }
 	    }
-	 }i */
+	 }
       }
    }
-
 }

@@ -43,6 +43,13 @@ typedef struct
    int                print_satur;           /* print saturations? */
    int                print_concen;          /* print concentrations? */
    int                print_wells;           /* print well data? */
+
+   int                write_silo_subsurf_data;    /* write permeability/porosity? */
+   int                write_silo_press;           /* write pressures? */
+   int                write_silo_velocities;      /* write velocities? */
+   int                write_silo_satur;           /* write saturations? */
+   int                write_silo_concen;          /* write concentrations? */
+
 } PublicXtra; 
 
 typedef struct
@@ -184,6 +191,31 @@ void SetupRichards(PFModule *this_module) {
       sprintf(file_postfix, "porosity");
       WritePFBinary(file_prefix, file_postfix, 
       ProblemDataPorosity(problem_data));
+
+      sprintf(file_postfix, "porosity");
+      WritePFBinary(file_prefix, file_postfix, ProblemDataPorosity(problem_data));
+   }
+
+   if ( public_xtra -> write_silo_subsurf_data )
+   {
+      sprintf(file_postfix, "perm_x");
+      WriteSilo(file_prefix, file_postfix, 
+      ProblemDataPermeabilityX(problem_data));
+
+      sprintf(file_postfix, "perm_y");
+      WriteSilo(file_prefix, file_postfix, 
+      ProblemDataPermeabilityY(problem_data));
+
+      sprintf(file_postfix, "perm_z");
+      WriteSilo(file_prefix, file_postfix, 
+      ProblemDataPermeabilityZ(problem_data));
+
+      sprintf(file_postfix, "porosity");
+      WriteSilo(file_prefix, file_postfix, 
+      ProblemDataPorosity(problem_data));
+
+      sprintf(file_postfix, "porosity");
+      WriteSilo(file_prefix, file_postfix, ProblemDataPorosity(problem_data));
    }
 
    if(!amps_Rank(amps_CommWorld))
@@ -331,6 +363,13 @@ void SetupRichards(PFModule *this_module) {
 	 any_file_dumped = 1;
       }
 
+      if ( public_xtra -> write_silo_press )
+      {
+	 sprintf(file_postfix, "press.%05d", instance_xtra -> file_number );
+	 WriteSilo(file_prefix, file_postfix, instance_xtra -> pressure );
+	 any_file_dumped = 1;
+      }
+
       /*-----------------------------------------------------------------
        * Print out the initial saturations?
        *-----------------------------------------------------------------*/
@@ -342,6 +381,13 @@ void SetupRichards(PFModule *this_module) {
 	 any_file_dumped = 1;
       }
 
+      if ( public_xtra -> write_silo_satur )
+      {
+	 sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
+	 WriteSilo(file_prefix, file_postfix, instance_xtra -> saturation );
+	 any_file_dumped = 1;
+      }
+
       /*-----------------------------------------------------------------
        * Print out mask?
        *-----------------------------------------------------------------*/
@@ -350,6 +396,14 @@ void SetupRichards(PFModule *this_module) {
       {
 	 sprintf(file_postfix, "mask.%05d", instance_xtra -> file_number );
 	 WritePFBinary(file_prefix, file_postfix, instance_xtra -> mask );
+	 any_file_dumped = 1;
+      }
+
+
+      if ( public_xtra -> write_silo_satur )
+      {
+	 sprintf(file_postfix, "mask.%05d", instance_xtra -> file_number );
+	 WriteSilo(file_prefix, file_postfix, instance_xtra -> mask );
 	 any_file_dumped = 1;
       }
 
@@ -465,31 +519,30 @@ void AdvanceRichards(PFModule *this_module,
    /*                                                                     */
    /***********************************************************************/
 
-// initialize ct in either case
-//
-        ct = start_time;
+
+   // Initialize ct in either case
+   ct = start_time;
    if(compute_time_step) {
       PFModuleInvoke(void, select_time_step, (&cdt, &dt_info, ct, problem,
       problem_data) );
    }
    else  // Do not compute timestep
    {
-      // Simply use DT provided; don't use select_time_step module.
-      // Note DT will still be reduced if solution does not converge.
+      /* 
+	 Simply use DT provided; don't use select_time_step module.
+	 Note DT will still be reduced if solution does not converge.
+      */
 	cdt = dt;
    }
 
    rank = amps_Rank(amps_CommWorld);
 
-   //printf("StartTime: %lf \n", start_time);
-   //printf("StopTime: %lf \n", stop_time);
-   //printf("dT: %lf \n",  dt);
-   //printf("computets: %d \n",  compute_time_step);
-
-   /* Check to see if pressure solves are requested */
-   /* start_count < 0 implies that subsurface data ONLY is requested */
-   /*    Thus, we do not want to allocate memory or initialize storage for */
-   /*    other variables.  */
+   /* 
+      Check to see if pressure solves are requested 
+      start_count < 0 implies that subsurface data ONLY is requested 
+      Thus, we do not want to allocate memory or initialize storage for 
+      other variables.
+   */
    if ( start_count < 0 )
    {
       take_more_time_steps = 0;
@@ -511,11 +564,10 @@ void AdvanceRichards(PFModule *this_module,
 	 int p = GetInt("Process.Topology.P");
 	 int q = GetInt("Process.Topology.Q");
 	 int r = GetInt("Process.Topology.R");
-//printf("dT1: %lf \n",  dt);	 
+
 	 ct += cdt;
 	 dt = cdt;
-//printf("dT2: %lf \n",  dt);
-	 
+
 	 ForSubgridI(is, GridSubgrids(grid))
 	 {
 	    subgrid = GridSubgrid(grid, is);
@@ -598,7 +650,6 @@ void AdvanceRichards(PFModule *this_module,
 	    PFVCopy(instance_xtra -> old_density,    instance_xtra -> density);
 	    PFVCopy(instance_xtra -> old_saturation, instance_xtra -> saturation);
 	    PFVCopy(instance_xtra -> old_pressure,   instance_xtra -> pressure);
-	    //if(!amps_Rank(amps_CommWorld)) printf("Decreasing step size for step taken at time %12.4e.\n",t);
 	 }
          
 	 /*--------------------------------------------------------------
@@ -614,7 +665,6 @@ void AdvanceRichards(PFModule *this_module,
 	 t += dt;
  
 
-	 //printf("Current time step size  %12.4e.\n",dt); 
 	 /*--------------------------------------------------------------
 	  * If we are printing out results, then determine if we need
 	  * to print them after this time step.
@@ -657,10 +707,12 @@ void AdvanceRichards(PFModule *this_module,
 	 /*******************************************************************/
 	  
 	 retval = PFModuleInvoke(int, nonlin_solver, 
-	 (instance_xtra -> pressure, instance_xtra -> density, instance_xtra -> old_density, instance_xtra -> saturation, 
-	 instance_xtra -> old_saturation, t, dt, problem_data, instance_xtra -> old_pressure, 
+	                         (instance_xtra -> pressure, instance_xtra -> density, 
+				 instance_xtra -> old_density, 
+				 instance_xtra -> saturation, 
+				 instance_xtra -> old_saturation, t, dt, 
+				 problem_data, instance_xtra -> old_pressure, 
 	 &outflow, evap_trans, instance_xtra -> ovrl_bc_flx));
-	// printf("Outflow r , %e\n",outflow);
 
 	 if (retval != 0)
 	 {
@@ -693,15 +745,21 @@ void AdvanceRichards(PFModule *this_module,
       FinalizeVectorUpdate(handle);
 
       PFModuleInvoke(void, problem_saturation, 
-      (instance_xtra -> saturation, instance_xtra -> pressure, instance_xtra -> density, gravity, problem_data,
-      CALCFCN));
+                     (instance_xtra -> saturation, instance_xtra -> pressure, 
+		     instance_xtra -> density, gravity, problem_data,
+		     CALCFCN));
 
       any_file_dumped = 0;
 
-    // printf("print press and sat \n");
       /***************************************************************/
       /*                 Print the pressure and saturation           */
       /***************************************************************/
+
+
+      /* TODO SGS This logic seems to have gotten messed up
+	 looks like it writing is not controlled by 
+	 input controls anymore?
+      */
 
       /* Dump the pressure values at this time-step */
       /*if ( ( print_press ) && ( dump_files ) )*/
@@ -711,8 +769,13 @@ void AdvanceRichards(PFModule *this_module,
 	 sprintf(file_postfix, "press.%05d", instance_xtra -> file_number);
 	 WritePFBinary(file_prefix, file_postfix, instance_xtra -> pressure);
 
+	 if(public_xtra -> write_silo_press) 
+	 {
+	    WriteSilo(file_prefix, file_postfix, instance_xtra -> pressure);
+	 }
+
 	 any_file_dumped = 1;
-	  instance_xtra -> dump_index++;
+	 instance_xtra -> dump_index++;
       }
 
       /*if ( ( print_satur ) && ( dump_files ) )*/
@@ -721,6 +784,11 @@ void AdvanceRichards(PFModule *this_module,
       {
 	 sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
 	 WritePFBinary(file_prefix, file_postfix, instance_xtra -> saturation );
+
+	 if(public_xtra -> write_silo_satur) 
+	 {
+	    WriteSilo(file_prefix, file_postfix, instance_xtra -> saturation );
+	 }
 
 	 /*sk Print the sink terms from the land surface model*/
 	 sprintf(file_postfix, "et.%05d", instance_xtra -> file_number );
@@ -733,7 +801,6 @@ void AdvanceRichards(PFModule *this_module,
 	 any_file_dumped = 1;
       }
 
-    // printf("l2 norm \n");
       /***************************************************************/
       /*             Compute the l2 error                            */
       /***************************************************************/
@@ -743,11 +810,11 @@ void AdvanceRichards(PFModule *this_module,
       if( (!amps_Rank(amps_CommWorld)) && (err_norm >= 0.0) )
       {
 	 printf("l2-error in pressure: %20.8e\n", err_norm);
-	 printf("tcl: set pressure_l2_error(%d) %20.8e\n", instance_xtra -> iteration_number, err_norm);
+	 printf("tcl: set pressure_l2_error(%d) %20.8e\n", 
+                     instance_xtra -> iteration_number, err_norm);
 	 fflush(NULL);
       }
 
-    // printf("well data \n");
       /*******************************************************************/
       /*                   Print the Well Data                           */
       /*******************************************************************/
@@ -764,7 +831,6 @@ void AdvanceRichards(PFModule *this_module,
       /*-----------------------------------------------------------------
        * Log this step
        *-----------------------------------------------------------------*/
-    // printf("log \n");
 
       IfLogging(1)
       {
@@ -1019,11 +1085,11 @@ PFModule *SolverRichardsInitInstanceXtra()
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
    {
-      (instance_xtra -> phase_velocity_face) =
+      (instance_xtra -> phase_velocity_face) = NULL;
 	 /*	 PFModuleNewInstance((public_xtra -> phase_velocity_face),
                  (problem, grid, x_grid, y_grid, z_grid, NULL));
 	 */
-	 NULL;  /* Need to change for rel. perm. and not mobility */
+	 /* Need to change for rel. perm. and not mobility */
       (instance_xtra -> advect_concen) =
 	 PFModuleNewInstance((public_xtra -> advect_concen),
 	 (problem, grid, NULL));
@@ -1241,10 +1307,11 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    
    (public_xtra -> permeability_face) = 
       PFModuleNewModule(PermeabilityFace, ());
-   (public_xtra -> phase_velocity_face) = 
-      /*     PFModuleNewModule(PhaseVelocityFace, ());
-       */
-      NULL; /* Need to account for rel. perm. and not mobility */
+   (public_xtra -> phase_velocity_face) = NULL;
+   /*     
+	  PFModuleNewModule(PhaseVelocityFace, ());
+    */
+   /* Need to account for rel. perm. and not mobility */
 
    (public_xtra -> advect_concen) = PFModuleNewModule(Godunov, ());
    (public_xtra -> set_problem_data) = PFModuleNewModule(SetProblemData, ());
@@ -1368,6 +1435,66 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
       switch_name, key);
    }
    public_xtra -> print_wells = switch_value;
+
+   /* Silo file writing control */
+   sprintf(key, "%s.WriteSiloSubsurfData", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+      switch_name, key);
+   }
+   public_xtra -> write_silo_subsurf_data = switch_value;
+
+   sprintf(key, "%s.WriteSiloPressure", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+      switch_name, key );
+   }
+   public_xtra -> write_silo_press = switch_value;
+
+   sprintf(key, "%s.WriteSiloVelocities", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+      switch_name, key );
+   }
+   public_xtra -> write_silo_velocities = switch_value;
+
+   sprintf(key, "%s.WriteSiloSaturation", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+      switch_name, key);
+   }
+   public_xtra -> write_silo_satur = switch_value;
+
+   sprintf(key, "%s.WriteSiloConcentration", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+      switch_name, key );
+   }
+   public_xtra -> write_silo_concen = switch_value;
+
+   if( public_xtra -> write_silo_subsurf_data || 
+       public_xtra -> write_silo_press  ||
+       public_xtra -> write_silo_velocities ||
+       public_xtra -> write_silo_satur ||
+       public_xtra -> write_silo_concen
+      ) {
+      WriteSiloInit(GlobalsOutFileName);
+   }
 
    NA_FreeNameArray(switch_na);
    

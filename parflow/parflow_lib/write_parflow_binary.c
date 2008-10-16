@@ -270,7 +270,6 @@ double     drop_tolerance;
 	     });
 }
 
-
 void     WritePFSBinary(file_prefix, file_suffix, v, drop_tolerance)
 char    *file_prefix;
 char    *file_suffix;

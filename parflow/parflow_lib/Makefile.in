@@ -144,6 +144,7 @@ OBJS = \
 	well_package.o\
 	wells_lb.o\
 	write_parflow_binary.o \
+	write_parflow_silo.o \
 	wrf_parflow.o \
 	n_vector.o \
 	nl_function_eval.o 
