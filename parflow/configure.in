@@ -58,9 +58,9 @@ dnl
 
 if test -n "$with_CC"; then
    CC=$with_CC
-else
-   AC_PROG_CC
 fi
+
+AC_PROG_CC
 
 AC_ISC_POSIX
 
@@ -152,31 +152,15 @@ AC_SUBST(CLM_DIR)
 AC_SUBST(CLM_LIBS)
 AC_SUBST(PARFLOW_HAVE_CLM)
 
+
+
 dnl
 dnl Fortran 90
 dnl
 if test -n "$with_F90"; then
-   dnl If user specifies full path then don't search in path
-   if test -f $with_F90; then
-      FC=$with_F90
-   else
-      AC_CHECK_PROGS(FC, $with_F90)
-   fi
-else
-   if test -z "$F90"; then
-      AC_PROG_FC(, Fortran 90)
-   else
-      dnl If F90 was specified then see if it is a full path
-      dnl or just the prog name in users PATH
-      if test -f $F90; then
-	FC=$F90
-      else
-	AC_CHECK_PROGS(FC, $F90)
-      fi
-   fi
+   FC=$with_F90
 fi
-test -z "$FC" && AC_MSG_ERROR([no acceptable Fortran 90 found])
-AC_SUBST(FC)
+AC_PROG_FC
 
 AC_FC_FREEFORM(,[AC_MSG_ERROR([free format in F90 compiler does not work])])
 
@@ -219,71 +203,19 @@ dnl Set up the F77 compiler.  Look for special Fortran compilers on
 dnl AIX machines.
 dnl
 if test -n "$with_F77"; then
-   dnl If user specifies full path then don't search in path
-   if test -f $with_F77; then
       F77=$with_F77
-   else
-      AC_CHECK_PROGS(F77, $with_F77)
-   fi
-else
-   if test -z "$F77"; then
-      AC_CHECK_PROGS(F77, gfortran g77 F77 f77 xlf f2c)
-   else
-      dnl If F77 was specified then see if it is a full path
-      dnl or just the prog name in users PATH
-      if test -f $F77; then
-	F77=$F77
-      else
-	AC_CHECK_PROGS(F77, $F77)
-      fi
-   fi
 fi
-
-test -z "$F77" && AC_MSG_ERROR([no acceptable Fortran77 found])
+AC_PROG_F77
 
 if test "$ac_cv_prog_g77" = "yes"; then
    F77_FLAGS="-Wall -Wimplicit -Wunused $F77_FLAGS"
-else
-   case $ARCH in
-      sun4 | solaris)
-         F77_FLAGS="-u $F77_FLAGS"
-         ;;
-      rs6000)
-         F77_FLAGS="-u -qextname $F77_FLAGS"
-         ;;
-      IRIX64)
-         F77_FLAGS="-64 $F77_FLAGS"
-         ;;
-   esac
 fi
 
 dnl
 dnl Set up the Fortran libraries.
 dnl
 
-case $ARCH in
-   IRIX64)
-      SAVE_F77="$F77"
-      F77="$F77 -64"
-      CASC_FIND_F77LIBS
-      F77="$SAVE_F77"
-      ;;
-   ipsc2)
-      dnl Manually set stuff for ASCI Red.  This is a hack here
-      dnl but did not want to waste more time on a singleton machine
-      F77LIBFLAGS="-lpgftnrtl_cgr -lcmplx -lrpc"
-      ;;
-   rs6000)
-      case $F77 in
-         *mpxlf*)
-	     F77LIBFLAGS="-lxlf90 -lessl $F77LIBFLAGS"
-	     ;;
-      esac
-      ;;
-   *)
-      CASC_FIND_F77LIBS
-      ;;
-esac
+CASC_FIND_F77LIBS
 LIB_NAME="$F77LIBFLAGS $LIB_NAME"
 
 dnl
