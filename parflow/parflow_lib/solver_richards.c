@@ -177,45 +177,37 @@ void SetupRichards(PFModule *this_module) {
    if ( print_subsurf_data )
    {
       sprintf(file_postfix, "perm_x");
-      WritePFBinary(file_prefix, file_postfix, 
-      ProblemDataPermeabilityX(problem_data));
+      WritePFBinary(file_prefix, file_postfix, ProblemDataPermeabilityX(problem_data));
 
       sprintf(file_postfix, "perm_y");
-      WritePFBinary(file_prefix, file_postfix, 
-      ProblemDataPermeabilityY(problem_data));
+      WritePFBinary(file_prefix, file_postfix, ProblemDataPermeabilityY(problem_data));
 
       sprintf(file_postfix, "perm_z");
-      WritePFBinary(file_prefix, file_postfix, 
-      ProblemDataPermeabilityZ(problem_data));
-
-      sprintf(file_postfix, "porosity");
-      WritePFBinary(file_prefix, file_postfix, 
-      ProblemDataPorosity(problem_data));
+      WritePFBinary(file_prefix, file_postfix, ProblemDataPermeabilityZ(problem_data));
 
       sprintf(file_postfix, "porosity");
       WritePFBinary(file_prefix, file_postfix, ProblemDataPorosity(problem_data));
+
    }
 
    if ( public_xtra -> write_silo_subsurf_data )
    {
       sprintf(file_postfix, "perm_x");
-      WriteSilo(file_prefix, file_postfix, 
-      ProblemDataPermeabilityX(problem_data));
+      WriteSilo(file_prefix, file_postfix, ProblemDataPermeabilityX(problem_data),
+                t, 0, "PermeabilityX");
 
       sprintf(file_postfix, "perm_y");
-      WriteSilo(file_prefix, file_postfix, 
-      ProblemDataPermeabilityY(problem_data));
+      WriteSilo(file_prefix, file_postfix, ProblemDataPermeabilityY(problem_data),
+                t, 0, "PermeabilityY");
 
       sprintf(file_postfix, "perm_z");
-      WriteSilo(file_prefix, file_postfix, 
-      ProblemDataPermeabilityZ(problem_data));
+      WriteSilo(file_prefix, file_postfix, ProblemDataPermeabilityZ(problem_data),
+                t, 0, "PermeabilityZ");
 
       sprintf(file_postfix, "porosity");
-      WriteSilo(file_prefix, file_postfix, 
-      ProblemDataPorosity(problem_data));
+      WriteSilo(file_prefix, file_postfix, ProblemDataPorosity(problem_data),
+	        t, 0, "Porosity");
 
-      sprintf(file_postfix, "porosity");
-      WriteSilo(file_prefix, file_postfix, ProblemDataPorosity(problem_data));
    }
 
    if(!amps_Rank(amps_CommWorld))
@@ -366,7 +358,8 @@ void SetupRichards(PFModule *this_module) {
       if ( public_xtra -> write_silo_press )
       {
 	 sprintf(file_postfix, "press.%05d", instance_xtra -> file_number );
-	 WriteSilo(file_prefix, file_postfix, instance_xtra -> pressure );
+	 WriteSilo(file_prefix, file_postfix, instance_xtra -> pressure,
+                   t, instance_xtra -> file_number, "Pressure");
 	 any_file_dumped = 1;
       }
 
@@ -384,7 +377,8 @@ void SetupRichards(PFModule *this_module) {
       if ( public_xtra -> write_silo_satur )
       {
 	 sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
-	 WriteSilo(file_prefix, file_postfix, instance_xtra -> saturation );
+	 WriteSilo(file_prefix, file_postfix, instance_xtra -> saturation, 
+                   t, instance_xtra -> file_number, "Saturation");
 	 any_file_dumped = 1;
       }
 
@@ -403,7 +397,8 @@ void SetupRichards(PFModule *this_module) {
       if ( public_xtra -> write_silo_satur )
       {
 	 sprintf(file_postfix, "mask.%05d", instance_xtra -> file_number );
-	 WriteSilo(file_prefix, file_postfix, instance_xtra -> mask );
+	 WriteSilo(file_prefix, file_postfix, instance_xtra -> mask, 
+                   t, instance_xtra -> file_number, "Mask");
 	 any_file_dumped = 1;
       }
 
@@ -771,7 +766,8 @@ void AdvanceRichards(PFModule *this_module,
 
 	 if(public_xtra -> write_silo_press) 
 	 {
-	    WriteSilo(file_prefix, file_postfix, instance_xtra -> pressure);
+	    WriteSilo(file_prefix, file_postfix, instance_xtra -> pressure,
+                      t, instance_xtra -> file_number, "Pressure");
 	 }
 
 	 any_file_dumped = 1;
@@ -787,7 +783,8 @@ void AdvanceRichards(PFModule *this_module,
 
 	 if(public_xtra -> write_silo_satur) 
 	 {
-	    WriteSilo(file_prefix, file_postfix, instance_xtra -> saturation );
+	    WriteSilo(file_prefix, file_postfix, instance_xtra -> saturation, 
+                      t, instance_xtra -> file_number, "Saturation");
 	 }
 
 	 /*sk Print the sink terms from the land surface model*/

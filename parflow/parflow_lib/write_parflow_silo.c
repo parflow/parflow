@@ -25,7 +25,8 @@
 #include "parflow.h"
 
 #ifdef HAVE_SILO
-void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   *subgrid)
+void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   *subgrid, 
+                               char *variable_name)
 {
    int             ix = SubgridIX(subgrid);
    int             iy = SubgridIY(subgrid);
@@ -102,7 +103,7 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
    dims[1] = ny;
    dims[2] = nz;
 
-   sprintf(varname, "%s_%06u", "variable", p);
+   sprintf(varname, "%s_%06u", variable_name, p);
    err = DBPutQuadvar1(db_file, varname, meshname, 
                        array, dims, 3,
                        NULL, 0, DB_FLOAT, 
@@ -157,7 +158,8 @@ void     WriteSiloInit(char    *file_prefix)
   Silo files can store additinal metadata such as name of variable,
   simulation time etc.  These should be added.
  */
-void     WriteSilo(char    *file_prefix, char    *file_suffix, Vector  *v)
+void     WriteSilo(char    *file_prefix, char    *file_suffix, Vector  *v, 
+double time, int step, char *variable_name)
 {
    Grid           *grid     = VectorGrid(v);
    SubgridArray   *subgrids = GridSubgrids(grid);
@@ -193,6 +195,8 @@ void     WriteSilo(char    *file_prefix, char    *file_suffix, Vector  *v)
       char **varnames;
       int   *vartypes;
 
+      DBoptlist *optlist;
+
       meshnames = malloc(sizeof(char *) * P);
       meshtypes = malloc(sizeof(int) * P);
 
@@ -206,7 +210,8 @@ void     WriteSilo(char    *file_prefix, char    *file_suffix, Vector  *v)
 	 meshtypes[i] = DB_QUADMESH;
 
 	 name = malloc(sizeof(char) * 512);
-	 sprintf(name, "%s/%s.%06u.%s:variable_%06u", file_prefix, file_suffix, i, file_extn, i);
+	 sprintf(name, "%s/%s.%06u.%s:%s_%06u", file_prefix, file_suffix, i, file_extn, 
+	         variable_name,i);
 	 varnames[i] = name;
 	 vartypes[i] = DB_QUADVAR;
       }
@@ -221,18 +226,30 @@ void     WriteSilo(char    *file_prefix, char    *file_suffix, Vector  *v)
 	 amps_Printf("Error: can't open silo file %s\n", filename);
 	 exit(1);
       }
-      
-      err = DBPutMultimesh(db_file, "mesh", P, meshnames, meshtypes, NULL);
+
+      optlist = DBMakeOptlist(2);
+      DBAddOption(optlist, DBOPT_CYCLE, &step);
+      DBAddOption(optlist, DBOPT_DTIME, &time);
+
+      err = DBPutMultimesh(db_file, "mesh", P, meshnames, meshtypes, optlist);
       if ( err < 0 ) {      
 	 amps_Printf("Error: Silo put multimesh failed %s\n", filename);
 	 exit(1);
       }
 
-      err = DBPutMultivar(db_file, "variable", P, varnames, vartypes, NULL);
+      DBFreeOptlist(optlist);
+
+      optlist = DBMakeOptlist(2);
+      DBAddOption(optlist, DBOPT_CYCLE, &step);
+      DBAddOption(optlist, DBOPT_DTIME, &time);
+
+      err = DBPutMultivar(db_file, variable_name, P, varnames, vartypes, optlist);
       if ( err < 0 ) {      
 	 amps_Printf("Error: Silo put multivar failed %s\n", filename);
 	 exit(1);
       }
+      
+      DBFreeOptlist(optlist);
 
       err = DBClose(db_file);
       if ( err < 0 ) {      
@@ -261,7 +278,7 @@ void     WriteSilo(char    *file_prefix, char    *file_suffix, Vector  *v)
       subgrid   = SubgridArraySubgrid(subgrids, g);
       subvector = VectorSubvector(v, g);
       
-      WriteSilo_Subvector(db_file, subvector, subgrid);
+      WriteSilo_Subvector(db_file, subvector, subgrid, variable_name);
    }
 
    DBClose(db_file);

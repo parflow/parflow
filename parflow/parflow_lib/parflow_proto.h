@@ -910,7 +910,8 @@ void WritePFSBinary_Subvector P((amps_File file , Subvector *subvector , Subgrid
 void WritePFSBinary P((char *file_prefix , char *file_suffix , Vector *v , double drop_tolerance ));
 
 /* write_parflow_silo.c */
-void     WriteSilo(char    *file_prefix, char    *file_suffix, Vector  *v);
+void     WriteSilo(char    *file_prefix, char    *file_suffix, Vector  *v, 
+                   double time, int step, char *variable_name);
 
 /* wrf_parflow.c */
 void wrfparflowinit_ P(());
