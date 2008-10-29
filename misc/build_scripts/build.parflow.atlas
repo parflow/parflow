@@ -10,16 +10,11 @@ then
 	exit 1
 fi
 
-#-----------------------------------------------------------------------------
-# Make sundials
-#-----------------------------------------------------------------------------
-DIR=sundials
+CC=gcc
+F90=gfortran
+F77=gfortran
 
-(cd $DIR; ./configure \
-                     --prefix=$PARFLOW_DIR)
-
-(cd $DIR; make -j 8 install)
-
+export CC F90 F77
 
 #-----------------------------------------------------------------------------
 # Make Parflow
@@ -28,7 +23,6 @@ DIR=parflow
 
 (cd $DIR; ./configure \
                      --with-amps=mpi1 \
-		     --with-sundials=$PARFLOW_DIR \
                      --prefix=$PARFLOW_DIR)
 
 (cd $DIR; make -j 8 install)
@@ -41,6 +35,7 @@ DIR=pftools
 
 (cd $DIR; ./configure \
                      --with-amps=mpi1 \
+		     --with-silo=/usr/gapps/silo/4.6.1/chaos_4_x86_64 \
                      --prefix=$PARFLOW_DIR)
 
 (cd $DIR; make -j 8 install)
