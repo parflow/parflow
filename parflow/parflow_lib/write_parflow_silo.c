@@ -220,7 +220,7 @@ double time, int step, char *variable_name)
       sprintf(filename, "%s.%s.%s", file_prefix, file_suffix, file_extn);
       
       /* TODO SGS what type? HDF PDB? */
-      db_file = DBCreate(filename, DB_CLOBBER, DB_LOCAL, NULL, DB_HDF5);
+      db_file = DBCreate(filename, DB_CLOBBER, DB_LOCAL, NULL, DB_PDB);
       
       if (db_file == NULL) {
 	 amps_Printf("Error: can't open silo file %s\n", filename);
@@ -267,7 +267,7 @@ double time, int step, char *variable_name)
 
    sprintf(filename, "%s/%s.%06u.%s", file_prefix, file_suffix, p, file_extn);
    /* TODO SGS what type? HDF PDB? */
-   db_file = DBCreate(filename, DB_CLOBBER, DB_LOCAL, NULL, DB_HDF5);
+   db_file = DBCreate(filename, DB_CLOBBER, DB_LOCAL, NULL, DB_PDB);
    if ( err < 0 ) {      
       amps_Printf("Error: can't close silo file %s\n", filename);
       exit(1);
