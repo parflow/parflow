@@ -43,6 +43,7 @@ typedef struct
    int                print_satur;           /* print saturations? */
    int                print_concen;          /* print concentrations? */
    int                print_wells;           /* print well data? */
+   int                print_lsm_sink;        /* print LSM sink term? */
 
    int                write_silo_subsurf_data;    /* write permeability/porosity? */
    int                write_silo_press;           /* write pressures? */
@@ -236,7 +237,7 @@ void SetupRichards(PFModule *this_module) {
    instance_xtra -> dump_index = 1.0;
 
    if ( ( (t >= stop_time) || (instance_xtra -> iteration_number > public_xtra -> max_iterations) ) 
-   && ( take_more_time_steps == 1) )
+	&& ( take_more_time_steps == 1) )
    {
       take_more_time_steps = 0;
 
@@ -245,7 +246,7 @@ void SetupRichards(PFModule *this_module) {
       print_wells           = 0;
    }
          
-   if (take_more_time_steps ==1 )
+   if (take_more_time_steps)
    {
       /*-------------------------------------------------------------------
        * Allocate and set up initial values
@@ -671,29 +672,25 @@ void AdvanceRichards(PFModule *this_module,
 	  * this iteration.
 	  *--------------------------------------------------------------*/
 	  
-	 if ( print_press || print_velocities || print_satur || print_wells )
+	 dump_files = 0;
+	 if ( dump_interval > 0 )
 	 {
-	    dump_files = 0;
+	    print_dt = start_time +  instance_xtra -> dump_index*dump_interval - t;
 
-	    if ( dump_interval > 0 )
+	    //      if ( dt >= print_dt )
+	    if ( t == ( instance_xtra -> dump_index*dump_interval) )
 	    {
-	       print_dt = start_time +  instance_xtra -> dump_index*dump_interval - t;
-
-	       //      if ( dt >= print_dt )
-	       if ( t == ( instance_xtra -> dump_index*dump_interval) )
-	       {
-		  // dt = print_dt;
-		  dt_info = 'p';
-		  dump_files = 1;
-		  // dump_index++;
-	       }
+	       // dt = print_dt;
+	       dt_info = 'p';
+	       dump_files = 1;
+	       // dump_index++;
 	    }
-	    else
+	 }
+	 else
+	 {
+	    if ( (instance_xtra -> iteration_number % (-(int)dump_interval)) == 0 )
 	    {
-	       if ( (instance_xtra -> iteration_number % (-(int)dump_interval)) == 0 )
-	       {
-		  dump_files = 1;
-	       }
+	       dump_files = 1;
 	    }
 	 }
 
@@ -751,51 +748,62 @@ void AdvanceRichards(PFModule *this_module,
       /***************************************************************/
 
 
-      /* TODO SGS This logic seems to have gotten messed up
-	 looks like it writing is not controlled by 
-	 input controls anymore?
-      */
-
       /* Dump the pressure values at this time-step */
-      /*if ( ( print_press ) && ( dump_files ) )*/
-      //if ( (t >= stop_time) || ( print_satur ) && ( dump_files ) )
-      if ( (t >= stop_time) || ( dump_files ) )
+      if ( (t >= stop_time) || dump_files )
       {
-	 sprintf(file_postfix, "press.%05d", instance_xtra -> file_number);
-	 WritePFBinary(file_prefix, file_postfix, instance_xtra -> pressure);
+
+
+	 if(public_xtra -> print_press) {
+	    sprintf(file_postfix, "press.%05d", instance_xtra -> file_number);
+	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> pressure);
+	    any_file_dumped = 1;
+	 }
 
 	 if(public_xtra -> write_silo_press) 
 	 {
+	    sprintf(file_postfix, "press.%05d", instance_xtra -> file_number);
 	    WriteSilo(file_prefix, file_postfix, instance_xtra -> pressure,
                       t, instance_xtra -> file_number, "Pressure");
+	    any_file_dumped = 1;
 	 }
 
-	 any_file_dumped = 1;
+	 // TODO SGS 
+	 // This was moved by someone and most
+	 // certainly does not belong at the point in the code.
+	 // What were they trying to fix?
 	 instance_xtra -> dump_index++;
       }
 
-      /*if ( ( print_satur ) && ( dump_files ) )*/
-      //if ( (t >= stop_time) || ( print_satur ) && ( dump_files ) )
-      if ( (t >= stop_time) || ( dump_files ) )
+      if ( (t >= stop_time) || dump_files )
       {
-	 sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
-	 WritePFBinary(file_prefix, file_postfix, instance_xtra -> saturation );
+
+	 if( print_satur ) {
+	    sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
+	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> saturation );
+	    any_file_dumped = 1;
+	 }
 
 	 if(public_xtra -> write_silo_satur) 
 	 {
+	    sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
 	    WriteSilo(file_prefix, file_postfix, instance_xtra -> saturation, 
                       t, instance_xtra -> file_number, "Saturation");
+	    any_file_dumped = 1;
 	 }
 
-	 /*sk Print the sink terms from the land surface model*/
-	 sprintf(file_postfix, "et.%05d", instance_xtra -> file_number );
-	 WritePFBinary(file_prefix, file_postfix, evap_trans);
+	 if(public_xtra -> print_lsm_sink) 
+	 {
+	    /*sk Print the sink terms from the land surface model*/
+	    sprintf(file_postfix, "et.%05d", instance_xtra -> file_number );
+	    WritePFBinary(file_prefix, file_postfix, evap_trans);
 
-	 /*sk Print the sink terms from the land surface model*/
-	 sprintf(file_postfix, "obf.%05d", instance_xtra -> file_number );
-	 WritePFBinary(file_prefix, file_postfix, instance_xtra -> ovrl_bc_flx);
+	    /*sk Print the sink terms from the land surface model*/
+	    sprintf(file_postfix, "obf.%05d", instance_xtra -> file_number );
+	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> ovrl_bc_flx);
 
-	 any_file_dumped = 1;
+	    any_file_dumped = 1;
+	 }
+
       }
 
       /***************************************************************/
@@ -844,11 +852,13 @@ void AdvanceRichards(PFModule *this_module,
 	 instance_xtra -> number_logged++;
       }
 
-      if ( any_file_dumped ) instance_xtra -> file_number++;
+      if ( any_file_dumped ) 
+	 instance_xtra -> file_number++;
 
-      if (take_more_time_steps == 1)
-	 take_more_time_steps = (    (instance_xtra -> iteration_number < max_iterations) 
-	 && (t < stop_time) );
+      if (take_more_time_steps) {
+	 take_more_time_steps = (instance_xtra -> iteration_number < max_iterations) &&
+	    (t < stop_time);
+      }
 
    }   /* ends do for time loop */
    while( take_more_time_steps );
@@ -1432,6 +1442,18 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
       switch_name, key);
    }
    public_xtra -> print_wells = switch_value;
+
+   // SGS TODO
+   // Need to add this to the user manual, this is new for LSM stuff that was added.
+   sprintf(key, "%s.PrintLSMSink", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid print switch value <%s> for key <%s>\n",
+      switch_name, key);
+   }
+   public_xtra -> print_lsm_sink = switch_value;
 
    /* Silo file writing control */
    sprintf(key, "%s.WriteSiloSubsurfData", name);
