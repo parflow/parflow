@@ -56,6 +56,19 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
    dims[1] = ny+1;
    dims[2] = nz+1;
 
+   /* Write the origin information */
+   int origin_dims[1];
+   origin_dims[0] = 3;
+
+   int origin[3];
+   origin[0] = ix;
+   origin[1] = iy;
+   origin[2] = iz;
+   err = DBWrite(db_file, "index_origin", origin, origin_dims, 1, DB_INT);
+   if(err < 0) {
+      amps_Printf("Error: Silo failed on DBWrite\n");
+   } 
+
    // Loops to set coords
    coords[0] = malloc(sizeof(float)*dims[0]);
    for(i = 0; i < dims[0]; i++) {
@@ -227,6 +240,7 @@ double time, int step, char *variable_name)
 	 exit(1);
       }
 
+      /* Multimesh information; one file per processor */
       optlist = DBMakeOptlist(2);
       DBAddOption(optlist, DBOPT_CYCLE, &step);
       DBAddOption(optlist, DBOPT_DTIME, &time);
@@ -243,6 +257,7 @@ double time, int step, char *variable_name)
       DBAddOption(optlist, DBOPT_CYCLE, &step);
       DBAddOption(optlist, DBOPT_DTIME, &time);
 
+      /* Multimesh information; one file per processor */
       err = DBPutMultivar(db_file, variable_name, P, varnames, vartypes, optlist);
       if ( err < 0 ) {      
 	 amps_Printf("Error: Silo put multivar failed %s\n", filename);
@@ -251,12 +266,48 @@ double time, int step, char *variable_name)
       
       DBFreeOptlist(optlist);
 
+      /* Write out some meta information for pftools */
+
+      /* Write the origin information */
+      int dims[1];
+      dims[0] = 3;
+
+      double origin[3];
+      origin[0] = SubgridX(GridSubgrid(GlobalsUserGrid, 0));
+      origin[1] = SubgridY(GridSubgrid(GlobalsUserGrid, 0));
+      origin[2] = SubgridZ(GridSubgrid(GlobalsUserGrid, 0));
+      err = DBWrite(db_file, "origin", origin, dims, 1, DB_DOUBLE);
+      if(err < 0) {
+	 amps_Printf("Error: Silo failed on DBWrite\n");
+      } 
+
+      /* Write the size information */
+      int size[3];
+      size[0] = SubgridNX(GridSubgrid(GlobalsUserGrid, 0));
+      size[1] = SubgridNY(GridSubgrid(GlobalsUserGrid, 0));
+      size[2] = SubgridNZ(GridSubgrid(GlobalsUserGrid, 0));
+      err = DBWrite(db_file, "size", size, dims, 1, DB_INT);
+      if(err < 0) {
+	 amps_Printf("Error: Silo failed on DBWrite\n");
+      } 
+
+      /* Write the delta information */
+      double delta[3];
+      delta[0] = SubgridDX(GridSubgrid(GlobalsUserGrid, 0));
+      delta[1] = SubgridDY(GridSubgrid(GlobalsUserGrid, 0));
+      delta[2] = SubgridDZ(GridSubgrid(GlobalsUserGrid, 0));
+      err = DBWrite(db_file, "delta", delta, dims, 1, DB_DOUBLE);
+      if(err < 0) {
+	 amps_Printf("Error: Silo failed on DBWrite\n");
+      } 
+
       err = DBClose(db_file);
       if ( err < 0 ) {      
 	 amps_Printf("Error: can't close silo file %s\n", filename);
 	 exit(1);
       }
 
+      /* Free up allocated variables */
       for(i = 0; i < p; i++) {
 	 free(meshnames[i]);
 	 free(varnames[i]);

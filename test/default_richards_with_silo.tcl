@@ -361,9 +361,20 @@ foreach i "00000 00001 00002 00003 00004 00005" {
 }
 }
 
+#
+# Check if silo output matches pfb output
+#
+set silo [pfload default_richards.out.press.00000.silo]
+set pfb  [pfload default_richards.out.press.00000.pfb]
+set diff [pfmdiff $silo $pfb 12]
+if {[string length $diff] != 0 } {
+    puts "FAILED : Silo output does not match PFB output"
+    set passed 0
+} 
 
 if $passed {
     puts "default_richards : PASSED"
 } {
     puts "default_richards : FAILED"
 }
+

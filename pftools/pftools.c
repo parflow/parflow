@@ -827,6 +827,8 @@ char          *argv[];
       databox = ReadSimpleA(filename);
    else if (strcmp(filetype, "sb") == 0)
       databox = ReadSimpleB(filename);
+   else if (strcmp(filetype, "silo") == 0)
+      databox = ReadSilo(filename);
    else
       databox = ReadRealSA(filename);
 
@@ -923,6 +925,8 @@ char          *argv[];
       databox = ReadSimpleB(filename);
    else if (strcmp(filetype, "fld") == 0)
       databox = ReadAVSField(filename);
+   else if (strcmp(filetype, "silo") == 0)
+      databox = ReadSilo(filename);
    else
       databox = ReadRealSA(filename);
 

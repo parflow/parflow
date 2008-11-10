@@ -501,11 +501,12 @@ Databox        *v;
  * print a Databox in `silo' format
  *-----------------------------------------------------------------------*/
 
-#ifdef HAVE_SILO
+
 void            PrintSilo(filename, v)
 char           *filename;
 Databox        *v;
 {
+#ifdef HAVE_SILO
    float   X; 
    float   Y;
    float   Z;
@@ -581,9 +582,9 @@ Databox        *v;
                   DB_FLOAT, DB_NODECENT, NULL);
 
     DBClose(db);
-
-}
 #endif
+}
+
 
 
 

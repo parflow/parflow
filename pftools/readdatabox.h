@@ -55,6 +55,7 @@ Databox *ReadRealSA P((char *file_name ));
 Databox *ReadSimpleB P((char *file_name ));
 Databox *ReadAVSField P((char *filename ));
 Databox *ReadSDS P((char *filename , int ds_num ));
+Databox *ReadSilo P((char *filename ));
 
 #undef P
 

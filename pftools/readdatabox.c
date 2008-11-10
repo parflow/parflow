@@ -20,12 +20,189 @@
 
 #include "parflow_config.h"
 
+#include "readdatabox.h"
+#include "tools_io.h"
+
+#ifdef HAVE_SILO
+#include "silo.h"
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
-#include "readdatabox.h"
-#include "tools_io.h"
+/*-----------------------------------------------------------------------
+ * read a SILO file
+ *-----------------------------------------------------------------------*/
+
+Databox         *ReadSilo(char *filename)
+{
+#ifdef HAVE_SILO
+   Databox         *v;
+
+   FILE           *fp;
+
+   double          X,  Y,  Z;
+   int             NX, NY, NZ;
+   double          DX, DY, DZ;
+   int             num_subgrids;
+
+   int             x,  y,  z;
+   int             nx, ny, nz;
+   int             rx, ry, rz;
+
+   int             nsg, j, k;
+
+   double         *ptr;
+   
+   int             err;
+
+   DBfile         *db;
+
+   db = DBOpen(filename, DB_PDB, DB_READ);
+   if(db == NULL)
+   {
+      printf("Failed to open SILO file %s\n", filename);
+      return NULL;
+   }
+
+   double origin[3];
+   err = DBReadVar(db, "origin", &origin);
+   if(err < 0) {
+      printf("Failed to read meta data\n");
+      return NULL;
+   } 
+   X = origin[0];
+   Y = origin[1];
+   Z = origin[2];
+
+   int size[3];
+   err = DBReadVar(db, "size", &size);
+   if(err < 0) {
+      printf("Failed to read meta data\n");
+      return NULL;
+   } 
+   NX = size[0];
+   NY = size[1];
+   NZ = size[2];
+
+   double delta[3];
+   err = DBReadVar(db, "delta", &delta);
+   if(err < 0) {
+      printf("Failed to read meta data\n");
+      return NULL;
+   } 
+   DX = delta[0];
+   DY = delta[1];
+   DZ = delta[2];
+
+   /* create the new databox structure */
+   if ((v = NewDatabox(NX, NY, NZ, X, Y, Z, DX, DY, DZ)) == NULL)
+   {
+      fclose(fp);
+      return((Databox *)NULL);
+   }
+
+   DBtoc *toc = DBGetToc(db);
+   if ( toc == NULL ) {      
+      printf("Error: Silo get get TOC failed for %s\n", filename);
+      return NULL;
+   }
+
+   char **multivar_names = toc -> multivar_names;
+   int    nmultivar      = toc -> nmultivar;
+
+   if(nmultivar != 1) 
+   {
+      printf("Error: Silo file does %s not contain a single multivar\n", filename);
+      return NULL;
+   }
+
+   DBmultivar *multivar = DBGetMultivar(db, multivar_names[0]);
+   if ( multivar == NULL ) {      
+      printf("Error: Silo get multivar failed for %s\n", multivar_names[0]);
+      return NULL;
+   }
+
+
+   int    nvars         = multivar -> nvars;  
+   char **varnames      = multivar -> varnames;
+
+   int i;
+   for(i = 0; i < nvars; i++) 
+   {
+      char *proc_filename;
+      char *seperator = ":";
+
+      proc_filename = strtok(varnames[i], seperator);
+      char *proc_varname;
+      proc_varname = strtok(NULL, seperator);
+
+      if(proc_filename == NULL)
+      {
+	 printf("Error malformed multivar name in SILO file \n", varnames[i]);
+	 return NULL;
+      }
+      
+      DBfile *proc_db;
+      proc_db = DBOpen(proc_filename, DB_PDB, DB_READ);
+      if(db == NULL)
+      {
+	 printf("Failed to open SILO file %s\n", filename);
+	 return NULL;
+      }
+      
+      if(proc_varname == NULL)
+      {
+	 printf("Error malformed multivar name in SILO file \n", varnames[i]);
+	 return NULL;
+      }
+
+      DBquadvar  *var = DBGetQuadvar(proc_db, proc_varname);
+      if(var == NULL) 
+      {
+	 printf("Error: Silo failed to get quadvar %s \n", varnames[i]);
+	 return NULL;
+      }
+
+      nx = var -> dims[0];
+      ny = var -> dims[1];
+      nz = var -> dims[2];
+      
+      int index_origin[3];
+      err = DBReadVar(proc_db, "index_origin", &index_origin);
+      if(err < 0) {
+	 printf("Failed to read meta data\n");
+	 return NULL;
+      } 
+      x = index_origin[0];
+      y = index_origin[1];
+      z = index_origin[2];
+
+      int index = 0;
+      for (k = 0; k < nz; k++) {
+	 for (j = 0; j < ny; j++) {
+	    for (i = 0; i < nx; i++) {
+	       ptr = DataboxCoeff(v, x + i, y + j, z + k);
+	       *ptr = var -> vals[0][index];
+	       index++;
+	    }
+	 }
+      }
+
+      DBClose(proc_db);
+      
+   }
+
+
+   DBClose(db);
+
+   return v;
+#else
+
+#endif
+
+}
 
 /*-----------------------------------------------------------------------
  * read a binary `parflow' file
@@ -92,6 +269,8 @@ char           *file_name;
       tools_ReadInt(fp, &rx,  1);
       tools_ReadInt(fp, &ry,  1);
       tools_ReadInt(fp, &rz,  1);
+
+
 
       for (k = 0; k < nz; k++)
 	 for (j = 0; j < ny; j++)
