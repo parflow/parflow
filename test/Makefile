@@ -25,6 +25,10 @@ ifeq (${PARFLOW_HAVE_CLM},yes)
 TESTS += clm.tcl
 endif
 
+ifeq (${PARFLOW_HAVE_SILO},yes)
+TESTS += default_richards_with_silo.tcl
+endif
+
 check:
 	@-for i in $(TESTS); \
 	do \

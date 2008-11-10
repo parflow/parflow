@@ -112,86 +112,96 @@ Databox         *ReadSilo(char *filename)
    char **multivar_names = toc -> multivar_names;
    int    nmultivar      = toc -> nmultivar;
 
-   if(nmultivar != 1) 
+   /* Check to see if file has a multivar in it to determine file format being used */
+   if(nmultivar == 0) 
    {
-      printf("Error: Silo file does %s not contain a single multivar\n", filename);
-      return NULL;
-   }
-
-   DBmultivar *multivar = DBGetMultivar(db, multivar_names[0]);
-   if ( multivar == NULL ) {      
-      printf("Error: Silo get multivar failed for %s\n", multivar_names[0]);
-      return NULL;
-   }
-
-
-   int    nvars         = multivar -> nvars;  
-   char **varnames      = multivar -> varnames;
-
-   int i;
-   for(i = 0; i < nvars; i++) 
-   {
-      char *proc_filename;
-      char *seperator = ":";
-
-      proc_filename = strtok(varnames[i], seperator);
-      char *proc_varname;
-      proc_varname = strtok(NULL, seperator);
-
-      if(proc_filename == NULL)
-      {
-	 printf("Error malformed multivar name in SILO file \n", varnames[i]);
-	 return NULL;
-      }
-      
-      DBfile *proc_db;
-      proc_db = DBOpen(proc_filename, DB_PDB, DB_READ);
-      if(db == NULL)
-      {
-	 printf("Failed to open SILO file %s\n", filename);
-	 return NULL;
-      }
-      
-      if(proc_varname == NULL)
-      {
-	 printf("Error malformed multivar name in SILO file \n", varnames[i]);
-	 return NULL;
-      }
-
-      DBquadvar  *var = DBGetQuadvar(proc_db, proc_varname);
+      DBquadvar  *var = DBGetQuadvar(db, "variable");
       if(var == NULL) 
       {
-	 printf("Error: Silo failed to get quadvar %s \n", varnames[i]);
+	 printf("Error: Silo failed to get quadvar %s \n", "variable");
 	 return NULL;
       }
 
-      nx = var -> dims[0];
-      ny = var -> dims[1];
-      nz = var -> dims[2];
-      
-      int index_origin[3];
-      err = DBReadVar(proc_db, "index_origin", &index_origin);
-      if(err < 0) {
-	 printf("Failed to read meta data\n");
-	 return NULL;
-      } 
-      x = index_origin[0];
-      y = index_origin[1];
-      z = index_origin[2];
+      memcpy(DataboxCoeff(v, 0, 0, 0), var -> vals[0], NX*NY*NZ * sizeof(double));
 
-      int index = 0;
-      for (k = 0; k < nz; k++) {
-	 for (j = 0; j < ny; j++) {
-	    for (i = 0; i < nx; i++) {
-	       ptr = DataboxCoeff(v, x + i, y + j, z + k);
-	       *ptr = var -> vals[0][index];
-	       index++;
+   } else {
+
+      DBmultivar *multivar = DBGetMultivar(db, multivar_names[0]);
+      if ( multivar == NULL ) {      
+	 printf("Error: Silo get multivar failed for %s\n", multivar_names[0]);
+	 return NULL;
+      }
+      
+      
+      int    nvars         = multivar -> nvars;  
+      char **varnames      = multivar -> varnames;
+      
+      int i;
+      for(i = 0; i < nvars; i++) 
+      {
+	 char *proc_filename;
+	 char *seperator = ":";
+      
+	 proc_filename = strtok(varnames[i], seperator);
+	 char *proc_varname;
+	 proc_varname = strtok(NULL, seperator);
+
+	 if(proc_filename == NULL)
+	 {
+	    printf("Error malformed multivar name in SILO file \n", varnames[i]);
+	    return NULL;
+	 }
+      
+	 DBfile *proc_db;
+	 proc_db = DBOpen(proc_filename, DB_PDB, DB_READ);
+	 if(db == NULL)
+	 {
+	    printf("Failed to open SILO file %s\n", filename);
+	    return NULL;
+	 }
+      
+	 if(proc_varname == NULL)
+	 {
+	    printf("Error malformed multivar name in SILO file \n", varnames[i]);
+	    return NULL;
+	 }
+
+	 DBquadvar  *var = DBGetQuadvar(proc_db, proc_varname);
+	 if(var == NULL) 
+	 {
+	    printf("Error: Silo failed to get quadvar %s \n", varnames[i]);
+	    return NULL;
+	 }
+
+	 nx = var -> dims[0];
+	 ny = var -> dims[1];
+	 nz = var -> dims[2];
+      
+	 int index_origin[3];
+	 err = DBReadVar(proc_db, "index_origin", &index_origin);
+	 if(err < 0) {
+	    printf("Failed to read meta data\n");
+	    return NULL;
+	 } 
+	 x = index_origin[0];
+	 y = index_origin[1];
+	 z = index_origin[2];
+
+	 int index = 0;
+	 double *vals =  var -> vals[0];
+	 for (k = 0; k < nz; k++) {
+	    for (j = 0; j < ny; j++) {
+	       for (i = 0; i < nx; i++) {
+		  ptr = DataboxCoeff(v, x + i, y + j, z + k);
+		  *ptr = vals[index];
+		  index++;
+	       }
 	    }
 	 }
-      }
 
-      DBClose(proc_db);
+	 DBClose(proc_db);
       
+      }
    }
 
 

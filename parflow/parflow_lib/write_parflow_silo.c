@@ -98,11 +98,11 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
 	 
    /* SGS Note:
       this is way to slow we need better boxloops that operate
-      on arrays */
+      on arrays.
+      Can this be some kind of copy?  Array ordering, ghost layers?
+   */
 
-   float *array = malloc(sizeof(float) * nx * ny * nz);
-
-
+   double *array = malloc(sizeof(double) * nx * ny * nz);
    int array_index = 0;
    ai = 0;
    BoxLoopI1(i,j,k,
@@ -119,7 +119,7 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
    sprintf(varname, "%s_%06u", variable_name, p);
    err = DBPutQuadvar1(db_file, varname, meshname, 
                        array, dims, 3,
-                       NULL, 0, DB_FLOAT, 
+                       NULL, 0, DB_DOUBLE, 
                        DB_ZONECENT, NULL);
    if ( err < 0 ) {      
       amps_Printf("Error: Silo put quadvar1 failed %s\n", varname);

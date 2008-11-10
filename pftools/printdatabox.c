@@ -507,15 +507,15 @@ char           *filename;
 Databox        *v;
 {
 #ifdef HAVE_SILO
-   float   X; 
-   float   Y;
-   float   Z;
+   double   X = DataboxX(v);
+   double   Y = DataboxY(v);
+   double   Z = DataboxZ(v);
    int     NX = DataboxNx(v);
    int     NY = DataboxNy(v);
    int     NZ = DataboxNz(v);
-   float  DX = DataboxDx(v);
-   float  DY = DataboxDy(v);
-   float  DZ = DataboxDz(v);
+   double  DX = DataboxDx(v);
+   double  DY = DataboxDy(v);
+   double  DZ = DataboxDz(v);
 
    int     ns = 1;               /* num_subgrids */
 
@@ -526,46 +526,35 @@ Databox        *v;
    int     ry = 1;
    int     rz = 1;
 
-   float  *x, *y, *z;
-   float *value;
-   float air;
-   float *coords[3];
+   double  *x, *y, *z;
+   double *coords[3];
    DBfile *db;
    int dims[3];
    int ndims;
    int i;
+   
+   int err;
 
-    x = (float*) malloc(sizeof(float) * NX);
-    y = (float*) malloc(sizeof(float) * NY);
-    z = (float*) malloc(sizeof(float) * NZ);
-    value = (float*) malloc(sizeof(float) * NX*NY*NZ);
-    air  = -999999.0;
+    x = (double*) malloc(sizeof(double) * NX);
+    y = (double*) malloc(sizeof(double) * NY);
+    z = (double*) malloc(sizeof(double) * NZ);
     coords[0] = x;
     coords[1] = y;
     coords[2] = z;
 
     for (i = 0 ; i < NX; i++)
     {
-        X    = (float)(i)*DX;
-        x[i] = X;
+        x[i] = X + (double)(i)*DX;;
     }
 
     for (i = 0 ; i < NY; i++)
     {
-        Y    = (float)(i)*DY;
-        y[i] = Y;
+        y[i] = Y + (double)(i)*DY;;
     }
 
     for (i = 0 ; i < NZ; i++)
     {
-        Z    = (float)(i)*DZ;
-        z[i] = Z;
-    }
-    
-    for (i = 0 ; i < (NX*NY*NZ); i++)
-    {
-          value[i] = (v -> coeffs[i]);
-          if ((v -> coeffs[i]) == 0.0) value[i] = air;
+        z[i] = Z + (double)(i)*DZ;;
     }
     
     dims[0] = NX;
@@ -575,11 +564,43 @@ Databox        *v;
 
     db = DBCreate(filename, DB_CLOBBER, DB_LOCAL, filename, DB_PDB);
 
-    DBPutQuadmesh(db, "mesh", NULL, coords, dims, ndims,
-                  DB_FLOAT, DB_COLLINEAR, NULL);
+    /* Write the origin information */
+    int db_dims[1];
+    db_dims[0] = 3;
 
-    DBPutQuadvar1(db, "variable", "mesh", value, dims, ndims, NULL,0,
-                  DB_FLOAT, DB_NODECENT, NULL);
+    double origin[3];
+    origin[0] = X;
+    origin[1] = Y;
+    origin[2] = Z;
+    err = DBWrite(db, "origin", origin, db_dims, 1, DB_DOUBLE);
+    if(err < 0) {
+       printf("Error: Silo failed on DBWrite\n");
+    } 
+    
+    /* Write the size information */
+    int size[3];
+    size[0] = NX;
+    size[1] = NY;
+    size[2] = NZ;
+    err = DBWrite(db, "size", size, db_dims, 1, DB_INT);
+    if(err < 0) {
+       printf("Error: Silo failed on DBWrite\n");
+    } 
+    
+    /* Write the delta information */
+    double delta[3];
+    delta[0] = DX;
+    delta[1] = DY;
+    delta[2] = DZ;
+    err = DBWrite(db, "delta", delta, db_dims, 1, DB_DOUBLE);
+    if(err < 0) {
+       printf("Error: Silo failed on DBWrite\n");
+    } 
+    
+    DBPutQuadmesh(db, "mesh", NULL, (float **)coords, dims, ndims, DB_DOUBLE, DB_COLLINEAR, NULL);
+
+    DBPutQuadvar1(db, "variable", "mesh", (float *)DataboxCoeff(v, 0, 0, 0), dims, ndims, NULL,0,
+                  DB_DOUBLE, DB_NODECENT, NULL);
 
     DBClose(db);
 #endif

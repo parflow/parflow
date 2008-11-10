@@ -696,6 +696,7 @@ AMPS
 AMPS_LIBS
 AMPS_LIB_DEPEND
 silo_LIBS
+PARFLOW_HAVE_SILO
 CXX
 CXXFLAGS
 ac_ct_CXX
@@ -9329,6 +9330,7 @@ _ACEOF
 
 fi
 
+PARFLOW_HAVE_SILO="no"
 
 
 # Begin CASC_SUPPORT_SILO
@@ -9429,6 +9431,7 @@ cat >>confdefs.h <<\_ACEOF
 #define HAVE_SILO 1
 _ACEOF
 
+  PARFLOW_HAVE_SILO="yes"
 fi
 
 
@@ -10969,6 +10972,7 @@ AMPS!$AMPS$ac_delim
 AMPS_LIBS!$AMPS_LIBS$ac_delim
 AMPS_LIB_DEPEND!$AMPS_LIB_DEPEND$ac_delim
 silo_LIBS!$silo_LIBS$ac_delim
+PARFLOW_HAVE_SILO!$PARFLOW_HAVE_SILO$ac_delim
 CXX!$CXX$ac_delim
 CXXFLAGS!$CXXFLAGS$ac_delim
 ac_ct_CXX!$ac_ct_CXX$ac_delim
@@ -10982,7 +10986,6 @@ SHLIB_CFLAGS!$SHLIB_CFLAGS$ac_delim
 INSTDIR!$INSTDIR$ac_delim
 M4!$M4$ac_delim
 XARGS!$XARGS$ac_delim
-F77_FLAGS!$F77_FLAGS$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -11024,6 +11027,7 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+F77_FLAGS!$F77_FLAGS$ac_delim
 C_FLAGS!$C_FLAGS$ac_delim
 LD_FLAGS!$LD_FLAGS$ac_delim
 LIB_SUFFIX!$LIB_SUFFIX$ac_delim
@@ -11038,7 +11042,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 12; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 13; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

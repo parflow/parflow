@@ -704,6 +704,7 @@ MPIFLAGS
 AMPS
 AMPS_LIBS
 AMPS_LIB_DEPEND
+PARFLOW_HAVE_SILO
 CXX
 CXXFLAGS
 ac_ct_CXX
@@ -4421,18 +4422,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 if test "$ac_cv_f77_compiler_gnu" = "yes"; then
    F77_FLAGS="-Wall -Wimplicit -Wunused $F77_FLAGS"
-else
-   case $ARCH in
-      sun4 | solaris)
-         F77_FLAGS="-u $F77_FLAGS"
-         ;;
-      rs6000)
-         F77_FLAGS="-u -qextname $F77_FLAGS"
-         ;;
-      IRIX64)
-         F77_FLAGS="-64 $F77_FLAGS"
-         ;;
-   esac
 fi
 
 
@@ -10133,6 +10122,7 @@ _ACEOF
 
 
 
+PARFLOW_HAVE_SILO="no"
 
 
 # Begin CASC_SUPPORT_SILO
@@ -10233,7 +10223,9 @@ cat >>confdefs.h <<\_ACEOF
 #define HAVE_SILO 1
 _ACEOF
 
+  PARFLOW_HAVE_SILO="yes"
 fi
+
 
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -11595,12 +11587,12 @@ MPIFLAGS!$MPIFLAGS$ac_delim
 AMPS!$AMPS$ac_delim
 AMPS_LIBS!$AMPS_LIBS$ac_delim
 AMPS_LIB_DEPEND!$AMPS_LIB_DEPEND$ac_delim
+PARFLOW_HAVE_SILO!$PARFLOW_HAVE_SILO$ac_delim
 CXX!$CXX$ac_delim
 CXXFLAGS!$CXXFLAGS$ac_delim
 ac_ct_CXX!$ac_ct_CXX$ac_delim
 hdf5_LIBS!$hdf5_LIBS$ac_delim
 SUNDIALS_C_FILES!$SUNDIALS_C_FILES$ac_delim
-INSTDIR!$INSTDIR$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -11642,6 +11634,7 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+INSTDIR!$INSTDIR$ac_delim
 M4!$M4$ac_delim
 XARGS!$XARGS$ac_delim
 F77_FLAGS!$F77_FLAGS$ac_delim
@@ -11656,7 +11649,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 12; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 13; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

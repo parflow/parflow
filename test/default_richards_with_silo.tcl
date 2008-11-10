@@ -369,12 +369,22 @@ set pfb  [pfload default_richards.out.press.00000.pfb]
 set diff [pfmdiff $silo $pfb 12]
 if {[string length $diff] != 0 } {
     puts "FAILED : Silo output does not match PFB output"
+    puts $diff
+    set passed 0
+} 
+
+pfsave $silo -silo "single_block.silo"
+set silo_single_block [pfload "single_block.silo"]
+set diff [pfmdiff $silo $silo_single_block 12]
+if {[string length $diff] != 0 } {
+    puts "FAILED : Silo MP format does not match Silo single block format"
+    puts $diff
     set passed 0
 } 
 
 if $passed {
-    puts "default_richards : PASSED"
+    puts "default_richards_with_silo : PASSED"
 } {
-    puts "default_richards : FAILED"
+    puts "default_richards_with_silo : FAILED"
 }
 

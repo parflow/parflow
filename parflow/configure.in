@@ -311,6 +311,7 @@ CASC_CHECK_BIGENDIAN
 dnl
 dnl Silo support
 dnl
+PARFLOW_HAVE_SILO="no"
 CASC_SUPPORT_SILO
 if test "${silo_PREFIX+set}" = set; then
   LIBS="$silo_LIBS $LIBS"
@@ -319,7 +320,9 @@ if test "${silo_PREFIX+set}" = set; then
   LIB_NAME="$silo_LIB_NAME $LIB_NAME"
   INC_PATH="$silo_INCLUDES $INC_PATH"
   AC_DEFINE(HAVE_SILO,1,SILO library is available so use it)
+  PARFLOW_HAVE_SILO="yes"
 fi
+AC_SUBST(PARFLOW_HAVE_SILO)
 
 dnl
 dnl Set variables for hdf5 support
