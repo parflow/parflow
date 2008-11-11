@@ -506,6 +506,7 @@ void            PrintSilo(filename, v)
 char           *filename;
 Databox        *v;
 {
+
 #ifdef HAVE_SILO
    double   X = DataboxX(v);
    double   Y = DataboxY(v);
@@ -576,7 +577,7 @@ Databox        *v;
     if(err < 0) {
        printf("Error: Silo failed on DBWrite\n");
     } 
-    
+
     /* Write the size information */
     int size[3];
     size[0] = NX;
@@ -596,7 +597,7 @@ Databox        *v;
     if(err < 0) {
        printf("Error: Silo failed on DBWrite\n");
     } 
-    
+
     DBPutQuadmesh(db, "mesh", NULL, (float **)coords, dims, ndims, DB_DOUBLE, DB_COLLINEAR, NULL);
 
     DBPutQuadvar1(db, "variable", "mesh", (float *)DataboxCoeff(v, 0, 0, 0), dims, ndims, NULL,0,

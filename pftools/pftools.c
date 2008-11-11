@@ -1053,7 +1053,7 @@ char             *argv[];
    Data          *data = (Data *)clientData;
 
    char          *filetype, *filename;
-   FILE          *fp;
+   FILE          *fp = NULL;
 
    char          *hashkey;
    Tcl_HashEntry *entryPtr; 
