@@ -55,7 +55,7 @@ Databox         *ReadSilo(char *filename)
 
    double         *ptr;
    
-   int             err;
+   int             err = -1;
 
    DBfile         *db;
 
@@ -137,18 +137,20 @@ Databox         *ReadSilo(char *filename)
       char **varnames      = multivar -> varnames;
       
       int i;
-      for(i = 0; i < nvars; i++) 
+
+      int m;
+      for(m = 0; m < nvars; m++) 
       {
 	 char *proc_filename;
 	 char *seperator = ":";
       
-	 proc_filename = strtok(varnames[i], seperator);
+	 proc_filename = strtok(varnames[m], seperator);
 	 char *proc_varname;
 	 proc_varname = strtok(NULL, seperator);
 
 	 if(proc_filename == NULL)
 	 {
-	    printf("Error malformed multivar name in SILO file \n", varnames[i]);
+	    printf("Error malformed multivar name in SILO file \n", varnames[m]);
 	    return NULL;
 	 }
       
@@ -162,21 +164,21 @@ Databox         *ReadSilo(char *filename)
       
 	 if(proc_varname == NULL)
 	 {
-	    printf("Error malformed multivar name in SILO file \n", varnames[i]);
+	    printf("Error malformed multivar name in SILO file \n", varnames[m]);
 	    return NULL;
 	 }
 
 	 DBquadvar  *var = DBGetQuadvar(proc_db, proc_varname);
 	 if(var == NULL) 
 	 {
-	    printf("Error: Silo failed to get quadvar %s \n", varnames[i]);
+	    printf("Error: Silo failed to get quadvar %s \n", varnames[m]);
 	    return NULL;
 	 }
 
 	 nx = var -> dims[0];
 	 ny = var -> dims[1];
 	 nz = var -> dims[2];
-      
+
 	 int index_origin[3];
 	 err = DBReadVar(proc_db, "index_origin", &index_origin);
 	 if(err < 0) {
@@ -188,7 +190,7 @@ Databox         *ReadSilo(char *filename)
 	 z = index_origin[2];
 
 	 int index = 0;
-	 double *vals =  var -> vals[0];
+	 double *vals =  (double *)var -> vals[0];
 	 for (k = 0; k < nz; k++) {
 	    for (j = 0; j < ny; j++) {
 	       for (i = 0; i < nx; i++) {
@@ -200,7 +202,6 @@ Databox         *ReadSilo(char *filename)
 	 }
 
 	 DBClose(proc_db);
-      
       }
    }
 

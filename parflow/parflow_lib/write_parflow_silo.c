@@ -118,7 +118,7 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
 
    sprintf(varname, "%s_%06u", variable_name, p);
    err = DBPutQuadvar1(db_file, varname, meshname, 
-                       array, dims, 3,
+                       (float*)array, dims, 3,
                        NULL, 0, DB_DOUBLE, 
                        DB_ZONECENT, NULL);
    if ( err < 0 ) {      
@@ -304,7 +304,6 @@ double time, int step, char *variable_name)
       err = DBClose(db_file);
       if ( err < 0 ) {      
 	 amps_Printf("Error: can't close silo file %s\n", filename);
-	 exit(1);
       }
 
       /* Free up allocated variables */
@@ -319,9 +318,8 @@ double time, int step, char *variable_name)
    sprintf(filename, "%s/%s.%06u.%s", file_prefix, file_suffix, p, file_extn);
    /* TODO SGS what type? HDF PDB? */
    db_file = DBCreate(filename, DB_CLOBBER, DB_LOCAL, NULL, DB_PDB);
-   if ( err < 0 ) {      
-      amps_Printf("Error: can't close silo file %s\n", filename);
-      exit(1);
+   if ( db_file == NULL ) {      
+      amps_Printf("Error: can't open silo file %s\n", filename);
    }
 
    ForSubgridI(g, subgrids)
@@ -332,10 +330,9 @@ double time, int step, char *variable_name)
       WriteSilo_Subvector(db_file, subvector, subgrid, variable_name);
    }
 
-   DBClose(db_file);
+   err = DBClose(db_file);
    if ( err < 0 ) {      
       amps_Printf("Error: can't close silo file %s\n", filename);
-      exit(1);
    }
 #else
    amps_Printf("Parflow not compiled with SILO, can't create SILO file\n");
