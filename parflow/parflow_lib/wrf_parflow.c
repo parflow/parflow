@@ -20,31 +20,25 @@ amps_ThreadLocalDcl(PFModule *, solver);
 amps_ThreadLocalDcl(Vector   *, evap_trans);
 amps_ThreadLocalDcl(int      *, top);
 
-void wrfparflowinit_() {
-   // SGS this needs to come from somewhere
-   char *input_file = "sgs_richards_test";
-
+void wrfparflowinit_(char *input_file) {
    Grid         *grid;
-
-   //printf("Hello from WRFParflowInit\n");
-
-   /* Begin of main includes */
+   char *seperators = " \n";
+   /* Fortran char array is not NULL terminated */
+   char *filename = strtok(input_file, seperators);
 
    /*-----------------------------------------------------------------------
-    * Initialize AMPS 
+    * Initialize AMPS from existing MPI state 
     *-----------------------------------------------------------------------*/
-   
-   // SGS this is wrong; need initialize from existing MPI state.
    if (amps_EmbeddedInit())
    {
-      amps_Printf("Error: initalization failed\n");
+      amps_Printf("Error: amps_EmbeddedInit initalization failed\n");
       exit(1);
    }
    
    /*-----------------------------------------------------------------------
     * Set up globals structure
     *-----------------------------------------------------------------------*/
-   NewGlobals(input_file);
+   NewGlobals(filename);
    
    /*-----------------------------------------------------------------------
     * Read the Users Input Deck
