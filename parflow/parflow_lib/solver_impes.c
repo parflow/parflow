@@ -54,6 +54,12 @@ typedef struct
    int                print_concen;          /* print concentrations? */
    int                print_wells;           /* print well data? */
 
+   int                write_silo_subsurf_data;    /* print perm./porosity? */
+   int                write_silo_press;           /* print pressures? */
+   int                write_silo_velocities;      /* print velocities? */
+   int                write_silo_satur;           /* print saturations? */
+   int                write_silo_concen;          /* print concentrations? */
+
 } PublicXtra;
 
 typedef struct
@@ -246,6 +252,26 @@ void      SolverImpes()
       sprintf(file_postfix, "porosity");
       WritePFBinary(file_prefix, file_postfix, 
 		    ProblemDataPorosity(problem_data));
+   }
+
+   if ( public_xtra -> write_silo_subsurf_data )
+   {
+      sprintf(file_postfix, "perm_x");
+      WriteSilo(file_prefix, file_postfix, ProblemDataPermeabilityX(problem_data),
+                t, 0, "PermeabilityX");
+
+      sprintf(file_postfix, "perm_y");
+      WriteSilo(file_prefix, file_postfix, ProblemDataPermeabilityY(problem_data),
+                t, 0, "PermeabilityY");
+
+      sprintf(file_postfix, "perm_z");
+      WriteSilo(file_prefix, file_postfix, ProblemDataPermeabilityZ(problem_data),
+                t, 0, "PermeabilityZ");
+
+      sprintf(file_postfix, "porosity");
+      WriteSilo(file_prefix, file_postfix, ProblemDataPorosity(problem_data),
+	        t, 0, "Porosity");
+
    }
 
    if(!amps_Rank(amps_CommWorld))
@@ -442,21 +468,31 @@ void      SolverImpes()
           * Print out the initial saturations?
           *----------------------------------------------------------------*/
 
-         if ( print_satur && dump_files && is_multiphase )
-         {
-            for(phase = 0; phase < ProblemNumPhases(problem); phase++)
-            {
-               sprintf(file_postfix, "satur.%01d.%05d", phase, file_number );
-               WritePFBinary(file_prefix, file_postfix, saturations[phase] );
-            }
-            any_file_dumped = 1;
-         }
+         if ( dump_files && is_multiphase ) 
+	 {
+	    for(phase = 0; phase < ProblemNumPhases(problem); phase++)
+	    {
+	       sprintf(file_postfix, "satur.%01d.%05d", phase, file_number );
+	       if ( print_satur )
+	       {
+		  WritePFBinary(file_prefix, file_postfix, saturations[phase] );
+		  any_file_dumped = 1;
+	       }
 
+	       if ( public_xtra -> write_silo_satur )
+	       {
+		  WriteSilo(file_prefix, file_postfix, saturations[phase], 
+			    t, file_number, "Saturation");
+		  any_file_dumped = 1;
+	       }
+	    }
+	 }
+	 
          /*----------------------------------------------------------------
           * Print out the initial concentrations?
           *----------------------------------------------------------------*/
 
-         if ( print_concen && dump_files )
+         if ( dump_files )
          {
             if ( ProblemNumContaminants(problem) > 0 )
             {
@@ -465,14 +501,27 @@ void      SolverImpes()
                {
                   for(concen = 0; concen < ProblemNumContaminants(problem); concen++)
                   {
-                     sprintf(file_postfix, "concen.%01d.%02d.%05d", phase, concen, file_number);
-                     WritePFSBinary(file_prefix, file_postfix, 
-                                    concentrations[indx], drop_tol);
-                     indx++;
-                  }
-               }
+
+		     sprintf(file_postfix, "concen.%01d.%02d.%05d", phase, concen, file_number);
+		     if ( print_concen ) 
+		     {
+			WritePFSBinary(file_prefix, file_postfix, 
+				       concentrations[indx], drop_tol);
+
+			any_file_dumped = 1;
+		     }
+
+		     if ( public_xtra -> write_silo_concen ) 
+		     {
+			WriteSilo(file_prefix, file_postfix, concentrations[indx],
+				  t, file_number, "Concentration");
+			any_file_dumped = 1;
+		     }
+		  
+		     indx++;		     
+		  }
+	       }
             }
-            any_file_dumped = 1;
          }
 
          /*----------------------------------------------------------------
@@ -686,6 +735,15 @@ void      SolverImpes()
                WritePFBinary(file_prefix, file_postfix, pressure);
             }
 
+	    if(public_xtra -> write_silo_press) 
+	    {
+	       sprintf(file_postfix, "press.%05d", file_number - 1);
+	       WriteSilo(file_prefix, file_postfix, pressure,
+			 t, file_number - 1, "Pressure");
+	       any_file_dumped = 1;
+	    }
+
+
             if ( print_velocities )
             {
                for(phase = 0; phase < ProblemNumPhases(problem); phase++)
@@ -885,14 +943,17 @@ void      SolverImpes()
                      dump_index++;
                   }
                }
-               else
+               else if ( dump_interval < 0)
                {
                   if ( (iteration_number % (-(int)dump_interval)) == 0 )
                   {
                      dump_files = 1;
                   }
                }
-
+	       else
+	       {
+		  dump_files = 0;
+	       }
             }
 
             /*-------------------------------------------------------------
@@ -957,16 +1018,28 @@ void      SolverImpes()
 	       FinalizeVectorUpdate(handle);
 
 	       /* Print the saturation values at this time-step? */
-	       if ( print_satur && dump_files )
+	       if ( dump_files )
                {
                   for(phase = 0; phase < ProblemNumPhases(problem); phase++)
                   {
-                     sprintf(file_postfix, "satur.%01d.%05d", phase, 
+		     sprintf(file_postfix, "satur.%01d.%05d", phase, 
 			     file_number );
-                     WritePFBinary(file_prefix, file_postfix,
-				   saturations[phase] );
-                  }
-                  any_file_dumped = 1;
+
+		     if ( print_satur )
+		     {
+			WritePFBinary(file_prefix, file_postfix,
+				      saturations[phase] );
+			any_file_dumped = 1;
+		     }
+
+		     if( public_xtra -> write_silo_satur )
+		     {
+			WriteSilo(file_prefix, file_postfix, saturations[phase], 
+				  t, file_number, "Saturation");
+			any_file_dumped = 1;
+		     }
+		     
+		  }
                }
             }
 	 }
@@ -1010,7 +1083,7 @@ void      SolverImpes()
             }
 
             /* Print the concentration values at this time-step? */
-            if ( print_concen && dump_files )
+            if ( dump_files )
             {
                if ( ProblemNumContaminants(problem) > 0 )
                {
@@ -1020,13 +1093,24 @@ void      SolverImpes()
                      for(concen = 0; concen < ProblemNumContaminants(problem); concen++)
                      {
                         sprintf(file_postfix, "concen.%01d.%02d.%05d", phase, concen, file_number);
-                        WritePFSBinary(file_prefix, file_postfix, 
-                                       concentrations[indx], drop_tol);
+			if ( print_concen ) { 
+			   WritePFSBinary(file_prefix, file_postfix, 
+					  concentrations[indx], drop_tol);
+			   any_file_dumped = 1;
+			}
+
+			if ( public_xtra -> write_silo_concen )
+			{
+			   WriteSilo(file_prefix, file_postfix, concentrations[indx], 
+				     t, file_number, "Concentration");
+			   any_file_dumped = 1;
+			}
+
                         indx++;
                      }
                   }
                }
-               any_file_dumped = 1;
+
             }
          }
 
@@ -1079,11 +1163,85 @@ void      SolverImpes()
             WritePFBinary(file_prefix, file_postfix, pressure);
          }
 
+	 if(public_xtra -> write_silo_press) 
+	 {
+            sprintf(file_postfix, "press" );
+	    WriteSilo(file_prefix, file_postfix, pressure,
+		      t, file_number, "Pressure");
+	 }
+      }
+   }
+   while(still_evolving);
+
+   /***************************************************************/
+   /*                 Print the pressure and saturation           */
+   /***************************************************************/
+
+   /* Dump the pressure values at end if requested */
+   if( ProblemDumpAtEnd(problem) )
+   {
+      if(public_xtra -> print_press) {
+	 sprintf(file_postfix, "press.%05d", file_number);
+	 WritePFBinary(file_prefix, file_postfix, pressure);
+	 any_file_dumped = 1;
+      }
+      
+      if(public_xtra -> write_silo_press) 
+      {
+	 sprintf(file_postfix, "press.%05d", file_number);
+	 WriteSilo(file_prefix, file_postfix, pressure,
+		   t, file_number, "Pressure");
+	 any_file_dumped = 1;
+      }
+
+      for(phase = 0; phase < ProblemNumPhases(problem); phase++)
+      {
+	 sprintf(file_postfix, "satur.%01d.%05d", phase, file_number );
+	 if ( print_satur )
+	 {
+	    WritePFBinary(file_prefix, file_postfix, saturations[phase] );
+		  any_file_dumped = 1;
+	 }
+
+	 if ( public_xtra -> write_silo_satur )
+	 {
+	    WriteSilo(file_prefix, file_postfix, saturations[phase], 
+		      t, file_number, "Saturation");
+	    any_file_dumped = 1;
+	 }
+      }
+
+
+      if ( ProblemNumContaminants(problem) > 0 )
+      {
+	 indx = 0;
+	 for(phase = 0; phase < ProblemNumPhases(problem); phase++)
+	 {
+	    for(concen = 0; concen < ProblemNumContaminants(problem); concen++)
+	    {
+	       
+	       sprintf(file_postfix, "concen.%01d.%02d.%05d", phase, concen, file_number);
+	       if ( print_concen ) 
+	       {
+		  WritePFSBinary(file_prefix, file_postfix, 
+				 concentrations[indx], drop_tol);
+		  
+		  any_file_dumped = 1;
+	       }
+	       
+	       if ( public_xtra -> write_silo_concen ) 
+	       {
+		  WriteSilo(file_prefix, file_postfix, concentrations[indx],
+			    t, file_number, "Concentration");
+		  any_file_dumped = 1;
+	       }
+	       
+	       indx++;		     
+	    }
+	 }
       }
    }
  
-   while( still_evolving );
-
    if ( transient )
    {
       free(phase_dt);
@@ -1796,6 +1954,66 @@ PFModule   *SolverImpesNewPublicXtra(char *name)
 		     switch_name, key);
    }
    public_xtra -> print_wells = switch_value;
+
+   /* Silo file writing control */
+   sprintf(key, "%s.WriteSiloSubsurfData", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+      switch_name, key);
+   }
+   public_xtra -> write_silo_subsurf_data = switch_value;
+
+   sprintf(key, "%s.WriteSiloPressure", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+      switch_name, key );
+   }
+   public_xtra -> write_silo_press = switch_value;
+
+   sprintf(key, "%s.WriteSiloVelocities", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+      switch_name, key );
+   }
+   public_xtra -> write_silo_velocities = switch_value;
+
+   sprintf(key, "%s.WriteSiloSaturation", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+      switch_name, key);
+   }
+   public_xtra -> write_silo_satur = switch_value;
+
+   sprintf(key, "%s.WriteSiloConcentration", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+      switch_name, key );
+   }
+   public_xtra -> write_silo_concen = switch_value;
+
+   if( public_xtra -> write_silo_subsurf_data || 
+       public_xtra -> write_silo_press  ||
+       public_xtra -> write_silo_velocities ||
+       public_xtra -> write_silo_satur ||
+       public_xtra -> write_silo_concen
+      ) {
+      WriteSiloInit(GlobalsOutFileName);
+   }
 
    NA_FreeNameArray(switch_na);
 

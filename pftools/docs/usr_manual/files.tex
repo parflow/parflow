@@ -459,13 +459,17 @@ This key is used to indicate the stopping time for the simulation.
 pfset TimingInfo.StopTime      100.0
 \end{verbatim}\end{display}
 
-\pfkey{double}{TimingInfo.DumpInterval}{no default}
-{
-This key is the real time interval at which time-dependent output should
-be written.  A value of {\bf 0} will produce undefined behavior.  If the
-value is negative, output will be dumped out every $n$ time steps, where $n$
-is the absolute value of the integer part of the value.
-}
+\pfkey{double}{TimingInfo.DumpInterval}{no default} { Controls when
+  time dependent output is written to files.  If the value is
+  positive, output will written at the specified simulation time
+  intervals.  Note that that this output method will force a solution
+  to be computed at the output times.  If the value is negative,
+  output will be dumped out every $n$ time steps, where $n$ is the
+  absolute value of the integer part of the value specified.  Note
+  that the simulation time intervals between dumps may vary in this
+  case.  If the value is 0, output will not be generated during the
+  run.  A value of ``0'' can be used with the DumpAtEnd flag if only
+  the final output is desired.}
 \begin{display}\begin{verbatim}
 pfset TimingInfo.DumpInterval  10.0
 \end{verbatim}\end{display}
@@ -475,6 +479,18 @@ pfset TimingInfo.DumpInterval  10.0
 
 For {\em Richards' equation cases only} input is collected for time step
 selection.  Input for this section is given as follows:
+
+\pfkey{string}{TimingInfo.DumpAtEnd}{False}
+{
+This key is used to force writing of time dependent output files at the end of the
+simulation.   This is in addition to any output caused by the value of TimingInfo.DumpInterval
+and may be used to ensure that the final result is written.  Note that if used the final 
+output may be at a timestep that is not divisible by the DumpInterval value.
+}
+\begin{display}\begin{verbatim}
+pfset TimingInfo.DumpAtEnd      true
+\end{verbatim}\end{display}
+
 
 \pfkey{list}{TimeStep.Type}{no default}
 {

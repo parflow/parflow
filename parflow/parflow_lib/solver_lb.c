@@ -1003,14 +1003,17 @@ void      SolverDiffusion()
                      dump_index++;
                   }
                }
-               else
+               else if( dump_interval < 0 )
                {
                   if ( (iteration_number % (-(int)dump_interval)) == 0 )
                   {
                      dump_files = 1;
                   }
-               }
-
+               } 
+	       else 
+	       {
+		  dump_files = 0;
+	       }
             }
 
             /*--------------------------------------------------------------

@@ -30,6 +30,8 @@ typedef struct
    double      stop_time;
    double      dump_interval;
 
+   int         dump_at_end;             /* write out files at end of simulation */
+
    /* Time step info */
    PFModule   *select_time_step;        /* Selects time steps used in
 					   SolverRichards */
@@ -133,6 +135,7 @@ typedef struct
 #define ProblemStartTime(problem)                 ((problem) -> start_time)
 #define ProblemStopTime(problem)                  ((problem) -> stop_time)
 #define ProblemDumpInterval(problem)              ((problem) -> dump_interval)
+#define ProblemDumpAtEnd(problem)                 ((problem) -> dump_at_end)
 #define ProblemSelectTimeStep(problem)            ((problem) -> select_time_step)
 				       
 /* PDE accessors */

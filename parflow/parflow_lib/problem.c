@@ -73,6 +73,15 @@ int	   solver;   /* Designates the solver from which this routine is
    ProblemStopTime(problem)     = GetDouble("TimingInfo.StopTime");
    ProblemDumpInterval(problem) = GetDouble("TimingInfo.DumpInterval");
 
+   NameArray      switch_na = NA_NewNameArray("False True");
+   char *switch_name = GetStringDefault("TimingInfo.DumpAtEnd", "False");
+   int switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid print switch value <%s> for key <%s>\n",
+      switch_name, key);
+   }
+   ProblemDumpAtEnd(problem) = switch_value;
 
    /*-----------------------------------------------------------------------
     * Read in the cycle data

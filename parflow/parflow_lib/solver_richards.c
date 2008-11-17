@@ -550,8 +550,6 @@ void AdvanceRichards(PFModule *this_module,
 
    t = start_time;
 
-   instance_xtra -> dump_index = 1.0;
-
    do  /* while take_more_time_steps */
    {
       /* sk: call to the land surface model/subroutine*/
@@ -649,19 +647,6 @@ void AdvanceRichards(PFModule *this_module,
 	 }
          
 	 /*--------------------------------------------------------------
-	  * If this is the last iteration, set appropriate variables. 
-	  *--------------------------------------------------------------*/
-         
-	 if ( (t + dt) >= stop_time )
-	 {   
-	    dt = stop_time - t;
-	    dt_info = 'f';
-	 }
-         
-	 t += dt;
- 
-
-	 /*--------------------------------------------------------------
 	  * If we are printing out results, then determine if we need
 	  * to print them after this time step.
 	  *
@@ -671,28 +656,45 @@ void AdvanceRichards(PFModule *this_module,
 	  * to indicate that the dump interval decided the time step for
 	  * this iteration.
 	  *--------------------------------------------------------------*/
-	  
+
 	 dump_files = 0;
 	 if ( dump_interval > 0 )
 	 {
 	    print_dt = start_time +  instance_xtra -> dump_index*dump_interval - t;
 
-	    //      if ( dt >= print_dt )
-	    if ( t == ( instance_xtra -> dump_index*dump_interval) )
+	    if ( dt >= print_dt )
 	    {
-	       // dt = print_dt;
+	       dt = print_dt;
 	       dt_info = 'p';
+
+	       instance_xtra -> dump_index++;
+
 	       dump_files = 1;
-	       // dump_index++;
 	    }
 	 }
-	 else
+	 else if (dump_interval < 0)
 	 {
 	    if ( (instance_xtra -> iteration_number % (-(int)dump_interval)) == 0 )
 	    {
 	       dump_files = 1;
 	    }
+	 } 
+	 else 
+	 {
+	    dump_files = 0;
 	 }
+
+
+	 /*--------------------------------------------------------------
+	  * If this is the last iteration, set appropriate variables. 
+	  *--------------------------------------------------------------*/
+	 if ( (t + dt) >= stop_time )
+	 {   
+	    dt = stop_time - t;
+	    dt_info = 'f';
+	 }
+         
+	 t += dt;
 
 	 /*******************************************************************/
 	 /*          Solve the nonlinear system for this time step          */
@@ -732,7 +734,8 @@ void AdvanceRichards(PFModule *this_module,
      
       /* Calculate densities and saturations for the new pressure. */
       PFModuleInvoke(void, phase_density, 
-      (0, instance_xtra -> pressure, instance_xtra -> density, &dtmp, &dtmp, CALCFCN));
+		     (0, instance_xtra -> pressure, instance_xtra -> density, 
+		      &dtmp, &dtmp, CALCFCN));
       handle = InitVectorUpdate(instance_xtra -> density, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
 
@@ -747,12 +750,9 @@ void AdvanceRichards(PFModule *this_module,
       /*                 Print the pressure and saturation           */
       /***************************************************************/
 
-
       /* Dump the pressure values at this time-step */
-      if ( (t >= stop_time) || dump_files )
+      if ( dump_files )
       {
-
-
 	 if(public_xtra -> print_press) {
 	    sprintf(file_postfix, "press.%05d", instance_xtra -> file_number);
 	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> pressure);
@@ -766,17 +766,7 @@ void AdvanceRichards(PFModule *this_module,
                       t, instance_xtra -> file_number, "Pressure");
 	    any_file_dumped = 1;
 	 }
-
-	 // TODO SGS 
-	 // This was moved by someone and most
-	 // certainly does not belong at the point in the code.
-	 // What were they trying to fix?
-	 instance_xtra -> dump_index++;
-      }
-
-      if ( (t >= stop_time) || dump_files )
-      {
-
+ 	
 	 if( print_satur ) {
 	    sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
 	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> saturation );
@@ -863,6 +853,54 @@ void AdvanceRichards(PFModule *this_module,
    }   /* ends do for time loop */
    while( take_more_time_steps );
 
+   /***************************************************************/
+   /*                 Print the pressure and saturation           */
+   /***************************************************************/
+
+   /* Dump the pressure values at end if requested */
+   if( ProblemDumpAtEnd(problem) )
+   {
+      if(public_xtra -> print_press) {
+	 sprintf(file_postfix, "press.%05d", instance_xtra -> file_number);
+	 WritePFBinary(file_prefix, file_postfix, instance_xtra -> pressure);
+	 any_file_dumped = 1;
+      }
+      
+      if(public_xtra -> write_silo_press) 
+      {
+	 sprintf(file_postfix, "press.%05d", instance_xtra -> file_number);
+	 WriteSilo(file_prefix, file_postfix, instance_xtra -> pressure,
+		   t, instance_xtra -> file_number, "Pressure");
+	 any_file_dumped = 1;
+      }
+      
+      if( print_satur ) {
+	 sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
+	 WritePFBinary(file_prefix, file_postfix, instance_xtra -> saturation );
+	 any_file_dumped = 1;
+      }
+      
+      if(public_xtra -> write_silo_satur) 
+      {
+	 sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
+	 WriteSilo(file_prefix, file_postfix, instance_xtra -> saturation, 
+		   t, instance_xtra -> file_number, "Saturation");
+	 any_file_dumped = 1;
+      }
+      
+      if(public_xtra -> print_lsm_sink) 
+      {
+	 /*sk Print the sink terms from the land surface model*/
+	 sprintf(file_postfix, "et.%05d", instance_xtra -> file_number );
+	 WritePFBinary(file_prefix, file_postfix, evap_trans);
+	 
+	 /*sk Print the sink terms from the land surface model*/
+	 sprintf(file_postfix, "obf.%05d", instance_xtra -> file_number );
+	 WritePFBinary(file_prefix, file_postfix, instance_xtra -> ovrl_bc_flx);
+	 
+	 any_file_dumped = 1;
+      }
+   }
 
    *pressure_out =   instance_xtra -> pressure;
    *porosity_out =   porosity;
