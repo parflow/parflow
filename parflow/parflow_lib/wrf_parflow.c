@@ -97,12 +97,13 @@ void wrfparflowinit_(char *input_file) {
 
 void wrfparflowadvance_(double *current_time, 
 			double *dt,
-                        double *wrf_flux,
-                        double *wrf_pressure,
-                        double *wrf_porosity,
-                        double *wrf_saturation,
+                        float *wrf_flux,
+                        float *wrf_pressure,
+                        float *wrf_porosity,
+                        float *wrf_saturation,
 			int    *num_soil_layers,
-                        int    *ghost_size)
+                        int    *ghost_size_i,
+                        int    *ghost_size_j)
 {
    double        stop_time           = *current_time + *dt;
    
@@ -114,7 +115,7 @@ void wrfparflowadvance_(double *current_time,
    // Use the provided dt with possible subcycling if it does not converge.
    int compute_time_step = 0; 
 
-   WRF2PF(wrf_flux, *num_soil_layers, *ghost_size, amps_ThreadLocal(evap_trans), 
+   WRF2PF(wrf_flux, *num_soil_layers, *ghost_size_i, *ghost_size_j, amps_ThreadLocal(evap_trans), 
           amps_ThreadLocal(top));
    
    AdvanceRichards(amps_ThreadLocal(solver),
@@ -127,11 +128,14 @@ void wrfparflowadvance_(double *current_time,
 		   &porosity_out,
 		   &saturation_out);
 
-   PF2WRF(pressure_out,   wrf_pressure,   *num_soil_layers, *ghost_size, amps_ThreadLocal(top));
+   PF2WRF(pressure_out,   wrf_pressure,   *num_soil_layers, *ghost_size_i, *ghost_size_j, 
+	  amps_ThreadLocal(top));
 
-   PF2WRF(porosity_out,   wrf_porosity,   *num_soil_layers, *ghost_size, amps_ThreadLocal(top));
+   PF2WRF(porosity_out,   wrf_porosity,   *num_soil_layers, *ghost_size_i, *ghost_size_j, 
+	  amps_ThreadLocal(top));
 
-   PF2WRF(saturation_out, wrf_saturation, *num_soil_layers, *ghost_size, amps_ThreadLocal(top));  
+   PF2WRF(saturation_out, wrf_saturation, *num_soil_layers, *ghost_size_i, *ghost_size_j, 
+	  amps_ThreadLocal(top));  
    printf("done \n");
 }
 
@@ -142,10 +146,11 @@ void wrfparflowadvance_(double *current_time,
  * k-index data for the top of the domain.
  */
 void WRF2PF(
-   double *wrf_array,   /* WRF array */
+   float  *wrf_array,   /* WRF array */
    int     wrf_depth,   /* Depth (Z) of WRF array, X,Y are assumed 
 			   to be same as PF vector subgrid */
-   int     ghost_size,  /* Number of ghost cells */
+   int     ghost_size_i,  /* Number of ghost cells */
+   int     ghost_size_j,  /* Number of ghost cells */
    Vector *pf_vector,
    int *top) 
 {
@@ -163,8 +168,9 @@ void WRF2PF(
       int nx = SubgridNX(subgrid);
       int ny = SubgridNY(subgrid);
 
-      int wrf_nx =  nx + 2 * ghost_size;
-      int wrf_ny =  ny + 2 * ghost_size;
+      // Ghost layer is one larger on one side in WRF.
+      int wrf_nx =  nx + 2 * ghost_size_i + 1;
+      int wrf_ny =  ny + 2 * ghost_size_j + 1;
 
       Subvector *subvector = VectorSubvector(pf_vector, sg);
       
@@ -184,10 +190,10 @@ void WRF2PF(
 	    for (k = iz; k < iz + wrf_depth; k++)		
 	    {
 	       int pf_index = SubvectorEltIndex(subvector, i, j, k);
-	       int wrf_index = (i-ix + ghost_size) 
-		  + ((j-iy + ghost_size) * (wrf_nx) 
-		     + (wrf_depth - (k - iz) - 1 ) * wrf_nx * wrf_ny);
-	       subvector_data[pf_index] = wrf_array[wrf_index];
+	       int wrf_index = (i-ix + ghost_size_i) +
+		  ( (wrf_depth - (k - iz) - 1 ) * wrf_nx ) +
+		  ( (j-iy + ghost_size_j) * (wrf_nx * wrf_depth) );
+	       subvector_data[pf_index] = (double)(wrf_array[wrf_index]);
 	    }
 	 }
       }
@@ -200,10 +206,11 @@ void WRF2PF(
  */
 void PF2WRF(
    Vector *pf_vector,
-   double *wrf_array,   /* WRF array */
+   float  *wrf_array,   /* WRF array */
    int     wrf_depth,   /* Depth (Z) of WRF array, X,Y are assumed 
 			   to be same as PF vector subgrid */
-   int     ghost_size,  /* Number of ghost cells */
+   int     ghost_size_i,  /* Number of ghost cells */
+   int     ghost_size_j,  /* Number of ghost cells */
    int *top) 
 {
 
@@ -224,8 +231,8 @@ void PF2WRF(
       int nx = SubgridNX(subgrid);
       int ny = SubgridNY(subgrid);
 
-      int wrf_nx =  nx + 2 * ghost_size;
-      int wrf_ny =  ny + 2 * ghost_size;
+      int wrf_nx =  nx + 2 * ghost_size_i + 1;
+      int wrf_ny =  ny + 2 * ghost_size_j + 1;
 
       Subvector *subvector = VectorSubvector(pf_vector, sg);
       
@@ -246,10 +253,11 @@ void PF2WRF(
 	    for (k = iz; k < iz + wrf_depth; k++)		
 	    {
 	       int pf_index = SubvectorEltIndex(subvector, i, j, k);
-	       int wrf_index = (i-ix + ghost_size) 
-		  + ((j-iy + ghost_size) * (wrf_nx) 
-		     + (wrf_depth - (k - iz) - 1 ) * wrf_nx * wrf_ny);
-	       wrf_array[wrf_index] = subvector_data[pf_index] ;
+
+	       int wrf_index = (i-ix + ghost_size_i) +
+		  ( (wrf_depth - (k - iz) - 1 ) * wrf_nx ) +
+		  ( (j-iy + ghost_size_j) * (wrf_nx * wrf_depth) );
+	       wrf_array[wrf_index] = (float)(subvector_data[pf_index]);
 	    }
 	 }
       }

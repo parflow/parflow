@@ -8,6 +8,9 @@
  *********************************************************************EHEADER*/
 #include "parflow_config.h"
 
+#ifndef amps_include
+#define amps_include 
+
 #ifdef AMPS_MALLOC_DEBUG
 #include <dmalloc.h>
 #else
@@ -1030,5 +1033,5 @@ allocated by \Ref{amps_TAlloc} or \Ref{amps_CTAlloc}.
 #define AMPS_NEWPACKAGE_SPECIALIZED 1
 
 
-
+#endif
 
