@@ -1320,6 +1320,7 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-opt=STRING  Set compiler optimization switches.
   --enable-debug=STRING  Set compiler debug switches.
+  --enable-profiling=STRING  Set compiler profiling switches.
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -2047,6 +2048,66 @@ echo "${ECHO_T}$ARCH" >&6; }
 
 if test -n "$with_CC"; then
    CC=$with_CC
+fi
+
+
+# Check whether --enable-opt was given.
+if test "${enable_opt+set}" = set; then
+  enableval=$enable_opt; case "$enable_opt" in
+   no) opt_switches="" ;;
+   yes) opt_switches="-O" ;;
+   *) opt_switches="$enable_opt" ;;
+esac
+else
+  opt_switches=
+
+fi
+
+
+
+if test -n "$opt_switches" ; then
+   C_FLAGS="$opt_switches $C_FLAGS"
+   F77_FLAGS="$opt_switches $F77_FLAGS"
+fi
+
+# Check whether --enable-debug was given.
+if test "${enable_debug+set}" = set; then
+  enableval=$enable_debug; case "$enable_debug" in
+   no) debug_switches= ;;
+   yes) debug_switches="-g" ;;
+   *) debug_switches="$enable_debug" ;;
+esac
+
+else
+  debug_switches=-g
+fi
+
+
+if test -n "$debug_switches" ; then
+   C_FLAGS="$debug_switches $C_FLAGS"
+   F77_FLAGS="$debug_switches $F77_FLAGS"
+fi
+
+#
+# Profiling support
+#
+
+# Check whether --enable-profiling was given.
+if test "${enable_profiling+set}" = set; then
+  enableval=$enable_profiling; case "$enable_profiling" in
+   no) profiling_switches="" ;;
+   yes) profiling_switches="-pg" ;;
+   *) profiling_switches="$enable_profiling" ;;
+esac
+else
+  profiling_switches=
+
+fi
+
+
+if test -n "$profiling_switches" ; then
+   C_FLAGS="$profiling_switches $C_FLAGS"
+   F77_FLAGS="$profiling_switches $F77_FLAGS"
 fi
 
 ac_ext=c
@@ -3245,44 +3306,6 @@ case $CC in
             LIB_NAME="$LIB_NAME -Zsl"
             ;;
 esac
-
-
-# Check whether --enable-opt was given.
-if test "${enable_opt+set}" = set; then
-  enableval=$enable_opt; case "$enable_opt" in
-   no) opt_switches="" ;;
-   yes) opt_switches="-O" ;;
-   *) opt_switches="$enable_opt" ;;
-esac
-else
-  opt_switches=
-
-fi
-
-
-
-if test -n "$opt_switches" ; then
-   C_FLAGS="$opt_switches $C_FLAGS"
-   F77_FLAGS="$opt_switches $F77_FLAGS"
-fi
-
-# Check whether --enable-debug was given.
-if test "${enable_debug+set}" = set; then
-  enableval=$enable_debug; case "$enable_debug" in
-   no) debug_switches= ;;
-   yes) debug_switches="-g" ;;
-   *) debug_switches="$enable_debug" ;;
-esac
-
-else
-  debug_switches=-g
-fi
-
-
-if test -n "$debug_switches" ; then
-   C_FLAGS="$debug_switches $C_FLAGS"
-   F77_FLAGS="$debug_switches $F77_FLAGS"
-fi
 
 CLM_DIR=""
 CLM_LIBS=""
