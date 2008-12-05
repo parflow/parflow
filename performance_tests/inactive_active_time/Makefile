@@ -10,6 +10,20 @@ PARFLOW=$(PARFLOW_DIR)/bin/parflow
 
 default: 
 
+scaling:
+	@for s in `seq 8`; do                                  \
+	   echo $${s};                                         \
+	   name=scaling.$${s};                                 \
+	   tclsh scaling.tcl $${s} $${name};                   \
+	   mv gmon.out $${name}.sum;                           \
+	   for i in `seq 3` ; do	                       \
+	       echo $${i};                                     \
+               parflow $${name};                               \
+	       gprof -s $(PARFLOW) gmon.out $${name}.sum;      \
+	   done;                                               \
+	   gprof $(PARFLOW) $${name}.sum > $${name}.gprof.txt; \
+	done
+
 small:
 	@tclsh small_domain.tcl
 	@mv gmon.out gmon.sum

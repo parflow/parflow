@@ -1,0 +1,7 @@
+echo "Current ========================================"
+grep main *gprof.txt | grep 100.0
+#echo "NoLoops ========================================"
+#grep results.noboxloop/*gprof.txt | grep 100.0
+echo "Orig ==========================================="
+grep main results.orig/*gprof.txt | grep 100.0
+
