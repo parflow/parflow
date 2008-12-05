@@ -377,6 +377,14 @@ GrGeomOctreeCellIs(octree, GrGeomOctreeCellLeaf)
  *   Macro for looping over cell faces.
  *--------------------------------------------------------------------------*/
 
+
+// SGS 12/3/2008 TODO: can optimize fdir by using 1 assignment to static.  Should
+// elimiate 2 assignment statements and switch and replace with table:
+// fdir = FDIR[PV_f] type of thing.
+//
+
+// SGS 12/3/2008 TODO:  How about storing if a node has a face rather than 
+// looping over all 6 faces to figure that out?
 #define GrGeomOctreeFaceLoop(i, j, k, fdir, node, octree, level,\
 			     ix, iy, iz, nx, ny, nz, body)\
 {\

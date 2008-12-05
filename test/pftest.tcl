@@ -23,7 +23,7 @@ proc pftestFile {file message sig_digits} {
 	}
     } {
 	puts "FAILED : output file <$file> not created"
-	return 1
+	return 0
     }
 }
 

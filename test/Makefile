@@ -17,8 +17,8 @@ TESTS := \
 	forsyth2.tcl \
 	harvey.flow.tcl \
 	default_overland.tcl \
-	crater2D.tcl
-
+	crater2D.tcl \
+	small_domain.tcl \
 
 
 ifeq (${PARFLOW_HAVE_CLM},yes)
