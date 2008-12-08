@@ -522,6 +522,7 @@ PFModule  *SMGNewPublicXtra(char *name)
 
 void  SMGFreePublicXtra()
 {
+#ifdef HAVE_HYPRE
    PFModule    *this_module   = ThisPFModule;
    PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
 
@@ -529,6 +530,7 @@ void  SMGFreePublicXtra()
    {
       tfree(public_xtra);
    }
+#endif
 }
 
 /*--------------------------------------------------------------------------
