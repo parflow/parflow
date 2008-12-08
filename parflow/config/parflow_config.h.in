@@ -81,6 +81,14 @@
 #endif
 
 /*
+ * Hypre 
+ */
+
+#ifndef HAVE_HYPRE
+#undef HAVE_HYPRE
+#endif
+
+/*
  * Building with XDR
  */
 #ifndef HAVE_XDR

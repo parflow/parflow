@@ -18,11 +18,14 @@ TESTS := \
 	harvey.flow.tcl \
 	default_overland.tcl \
 	crater2D.tcl \
-	small_domain.tcl \
-
+	small_domain.tcl
 
 ifeq (${PARFLOW_HAVE_CLM},yes)
 TESTS += clm.tcl
+endif
+
+ifeq (${PARFLOW_HAVE_HYPRE},yes)
+TESTS += pfmg.tcl smg.tcl
 endif
 
 ifeq (${PARFLOW_HAVE_SILO},yes)

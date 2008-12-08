@@ -383,6 +383,42 @@ else
 fi
 AC_SUBST(SUNDIALS_C_FILES)
 
+dnl
+dnl Set variables for hypre support.
+dnl
+CASC_SUPPORT_HYPRE
+if test "${hypre_PREFIX+set}" = set; then
+  LIBS="$hypre_LIBS $LIBS"
+  CASC_SPLIT_LIBS_STRING(hypre_LIBS,hypre_LIB_PATH,hypre_LIB_NAME)
+  LIB_PATH="$hypre_LIB_PATH $LIB_PATH"
+  LIB_NAME="$hypre_LIB_NAME $LIB_NAME"
+  INC_PATH="$hypre_INCLUDES $INC_PATH"
+
+  AC_MSG_CHECKING(whether HYPRE was compiled with MPI)
+  if test "$hypre_MPI" = yes ; then
+     AC_DEFINE([HYPRE_MPI],[1],[Hypre library is configured with MPI])
+     AC_MSG_RESULT(yes)
+     if test "$with_mpi" = no ; then
+        AC_MSG_ERROR(sequential Parflow cannot call HYPRE compiled with MPI)
+     fi
+     AC_DEFINE(HAVE_HYPRE,1,HYPRE library is available so use it)
+     PARFLOW_HAVE_HYPRE="yes"
+  elif test "$hypre_MPI" = 'yes'; then
+     AC_MSG_RESULT(no)
+     if test "$with_mpi" != no ; then
+        AC_MSG_ERROR(parallel Parflow cannot call HYPRE compiled without MPI)
+     fi
+     AC_DEFINE(HAVE_HYPRE,1,HYPRE library is available so use it)
+     PARFLOW_HAVE_HYPRE="yes"
+  else
+     AC_MSG_WARN(Cannot determine if hypre was compiled with MPI)
+  fi
+else
+  AC_MSG_NOTICE([NOTIFICATION: Parflow configured without the HYPRE library])
+  AC_DEFINE([LACKS_HYPRE],[1],[Hypre library is missing])
+fi
+AC_SUBST(PARFLOW_HAVE_HYPRE)
+
 debug_ext=debug
 if test "$enable_opt" = "yes"; then
    if test "$enable_debug" = "yes"; then

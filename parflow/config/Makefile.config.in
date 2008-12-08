@@ -82,8 +82,9 @@ AR	      = @AR@
 LDFLAGS       = @LD_FLAGS@ -L$(PARFLOW_LIB_DIR) @LIB_PATH@ $(LDFLAGS_EXTRA)
 LDLIBS        = $(LDLIBS_EXTRA) @LIB_NAME@
 
-PARFLOW_HAVE_CLM      = @PARFLOW_HAVE_CLM@
-PARFLOW_HAVE_SILO     = @PARFLOW_HAVE_SILO@
+PARFLOW_HAVE_CLM       = @PARFLOW_HAVE_CLM@
+PARFLOW_HAVE_SILO      = @PARFLOW_HAVE_SILO@
+PARFLOW_HAVE_HYPRE     = @PARFLOW_HAVE_HYPRE@
 
 ######################################################################
 # Rules used in all directories.

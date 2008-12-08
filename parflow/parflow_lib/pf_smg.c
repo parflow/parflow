@@ -7,9 +7,10 @@
  * $Revision: 1.1.1.1 $
  *********************************************************************EHEADER*/
 
-#ifdef PARFLOW_USE_HYPRE
-
 #include "parflow.h"
+
+#ifdef HAVE_HYPRE
+
 #include "hypre_dependences.h"
 
 /*--------------------------------------------------------------------------
@@ -40,6 +41,7 @@ typedef struct
 
 } InstanceXtra;
 
+#endif
 
 /*--------------------------------------------------------------------------
  * SMG
@@ -51,6 +53,7 @@ Vector      *rhs;
 double       tol;
 int          zero;
 {
+#ifdef HAVE_HYPRE
    PFModule           *this_module    = ThisPFModule;
    InstanceXtra       *instance_xtra  = PFModuleInstanceXtra(this_module);
    PublicXtra         *public_xtra    = PFModulePublicXtra(this_module);
@@ -133,11 +136,6 @@ int          zero;
    HYPRE_StructSMGSetZeroGuess(hypre_smg_data);
    HYPRE_StructSMGSetTol(hypre_smg_data, tol);
 
-#if 0
-   HYPRE_StructVectorPrint("hypre_b", hypre_b, 0);
-   PrintVector("parflow_b", rhs);
-#endif
-
    BeginTiming(public_xtra->time_index_smg);
 
    HYPRE_StructSMGSolve(hypre_smg_data, hypre_mat, hypre_b, hypre_x);
@@ -198,11 +196,8 @@ int          zero;
    }
    EndTiming(public_xtra->time_index_copy_hypre);
 
-#if 0
-   HYPRE_StructVectorPrint("hypre_x", hypre_x, 0);
-   PrintVector("parflow_x", soln);
-   exit(1);
 #endif
+
 }
 
 /*--------------------------------------------------------------------------
@@ -217,6 +212,7 @@ ProblemData  *problem_data;
 Matrix       *pf_matrix;
 double       *temp_data;
 {
+#ifdef HAVE_HYPRE
    PFModule      *this_module        = ThisPFModule;
    PublicXtra    *public_xtra        = PFModulePublicXtra(this_module);
    InstanceXtra  *instance_xtra;
@@ -427,11 +423,6 @@ double       *temp_data;
 
       EndTiming(public_xtra->time_index_copy_hypre);
 
-#if 0
-      PrintMatrix("parflow_matrix", pf_matrix);
-      HYPRE_StructMatrixPrint("hypre_mat", instance_xtra->hypre_mat, 0);
-#endif
-
       /* Set up the SMG preconditioner */
       HYPRE_StructSMGCreate(MPI_COMM_WORLD,
 				&(instance_xtra->hypre_smg_data) );
@@ -454,6 +445,10 @@ double       *temp_data;
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
    return this_module;
+
+#else
+   return NULL;
+#endif
 }
 
 
@@ -463,6 +458,7 @@ double       *temp_data;
 
 void  SMGFreeInstanceXtra()
 {
+#ifdef HAVE_HYPRE
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
 
@@ -483,6 +479,7 @@ void  SMGFreeInstanceXtra()
 
       tfree(instance_xtra);
    }
+#endif
 }
 
 /*--------------------------------------------------------------------------
@@ -491,6 +488,7 @@ void  SMGFreeInstanceXtra()
 
 PFModule  *SMGNewPublicXtra(char *name)
 {
+#ifdef HAVE_HYPRE
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;
 
@@ -513,6 +511,9 @@ PFModule  *SMGNewPublicXtra(char *name)
    PFModulePublicXtra(this_module) = public_xtra;
 
    return this_module;
+#else
+   return NULL;
+#endif
 }
 
 /*-------------------------------------------------------------------------
@@ -536,9 +537,6 @@ void  SMGFreePublicXtra()
 
 int  SMGSizeOfTempData()
 {
-   int sz = 0;
-
-   return sz;
+   return  0;
 }
 
-#endif

@@ -710,6 +710,7 @@ CXXFLAGS
 ac_ct_CXX
 hdf5_LIBS
 SUNDIALS_C_FILES
+PARFLOW_HAVE_HYPRE
 INSTDIR
 M4
 XARGS
@@ -1351,6 +1352,8 @@ Optional Packages:
  --with-hdf5=PATH  Use HDF5 and optionally specify where HDF5 is installed.
   --with-sundials=PATH	  Use the Sundials solver package
 			  and specify where it is.
+  --with-hypre=PATH       Use HYPRE and optionally specify
+                          where HYPRE is installed.
 
 Some influential environment variables:
   CC          C compiler command
@@ -10825,6 +10828,290 @@ _ACEOF
 fi
 
 
+
+
+# Begin CASC_SUPPORT_SILO
+# Defines hypre_PREFIX hypre_INCLUDES and hypre_LIBS if with-hypre is specified.
+
+# Check whether --with-hypre was given.
+if test "${with_hypre+set}" = set; then
+  withval=$with_hypre;
+else
+  with_hypre=no
+fi
+
+
+case "$with_hypre" in
+  no)
+    { echo "$as_me:$LINENO: configuring without HYPRE support" >&5
+echo "$as_me: configuring without HYPRE support" >&6;}
+    : Do nothing
+  ;;
+  yes)
+    # HYPRE install path was not specified.
+    # Look in a couple of standard locations to probe if
+    # HYPRE header files are there.
+    { echo "$as_me:$LINENO: checking for HYPRE installation" >&5
+echo $ECHO_N "checking for HYPRE installation... $ECHO_C" >&6; }
+    for dir in /usr /usr/local; do
+      if test -f ${dir}/include/HYPRE.h; then
+        hypre_PREFIX=${dir}
+        break
+      fi
+    done
+    { echo "$as_me:$LINENO: result: $hypre_PREFIX" >&5
+echo "${ECHO_T}$hypre_PREFIX" >&6; }
+  ;;
+  *)
+    # HYPRE install path was specified.
+    { echo "$as_me:$LINENO: checking for HYPRE installation" >&5
+echo $ECHO_N "checking for HYPRE installation... $ECHO_C" >&6; }
+    hypre_PREFIX=$with_hypre
+    hypre_INCLUDES="-I${hypre_PREFIX}/include"
+    hypre_LIBS="-L${hypre_PREFIX}/lib -lHYPRE"
+
+    save_cppflags=$CPPFLAGS
+    # Add hypre include flags to cpp so we can examine its header file.
+    CPPFLAGS="$hypre_INCLUDES $CPPFLAGS"
+
+    # Check if HYPRE header is ok.
+    if test "${ac_cv_header_HYPRE_config_h+set}" = set; then
+  { echo "$as_me:$LINENO: checking for HYPRE_config.h" >&5
+echo $ECHO_N "checking for HYPRE_config.h... $ECHO_C" >&6; }
+if test "${ac_cv_header_HYPRE_config_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_header_HYPRE_config_h" >&5
+echo "${ECHO_T}$ac_cv_header_HYPRE_config_h" >&6; }
+else
+  # Is the header compilable?
+{ echo "$as_me:$LINENO: checking HYPRE_config.h usability" >&5
+echo $ECHO_N "checking HYPRE_config.h usability... $ECHO_C" >&6; }
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <HYPRE_config.h>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_compile") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_header_compiler=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+{ echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6; }
+
+# Is the header present?
+{ echo "$as_me:$LINENO: checking HYPRE_config.h presence" >&5
+echo $ECHO_N "checking HYPRE_config.h presence... $ECHO_C" >&6; }
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <HYPRE_config.h>
+_ACEOF
+if { (ac_try="$ac_cpp conftest.$ac_ext"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_cpp conftest.$ac_ext") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null && {
+	 test -z "$ac_c_preproc_warn_flag$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       }; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+
+rm -f conftest.err conftest.$ac_ext
+{ echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6; }
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
+  yes:no: )
+    { echo "$as_me:$LINENO: WARNING: HYPRE_config.h: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: HYPRE_config.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: HYPRE_config.h: proceeding with the compiler's result" >&5
+echo "$as_me: WARNING: HYPRE_config.h: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { echo "$as_me:$LINENO: WARNING: HYPRE_config.h: present but cannot be compiled" >&5
+echo "$as_me: WARNING: HYPRE_config.h: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: HYPRE_config.h:     check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: HYPRE_config.h:     check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: HYPRE_config.h: see the Autoconf documentation" >&5
+echo "$as_me: WARNING: HYPRE_config.h: see the Autoconf documentation" >&2;}
+    { echo "$as_me:$LINENO: WARNING: HYPRE_config.h:     section \"Present But Cannot Be Compiled\"" >&5
+echo "$as_me: WARNING: HYPRE_config.h:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { echo "$as_me:$LINENO: WARNING: HYPRE_config.h: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: HYPRE_config.h: proceeding with the preprocessor's result" >&2;}
+    { echo "$as_me:$LINENO: WARNING: HYPRE_config.h: in the future, the compiler will take precedence" >&5
+echo "$as_me: WARNING: HYPRE_config.h: in the future, the compiler will take precedence" >&2;}
+
+    ;;
+esac
+{ echo "$as_me:$LINENO: checking for HYPRE_config.h" >&5
+echo $ECHO_N "checking for HYPRE_config.h... $ECHO_C" >&6; }
+if test "${ac_cv_header_HYPRE_config_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_cv_header_HYPRE_config_h=$ac_header_preproc
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_header_HYPRE_config_h" >&5
+echo "${ECHO_T}$ac_cv_header_HYPRE_config_h" >&6; }
+
+fi
+if test $ac_cv_header_HYPRE_config_h = yes; then
+  :
+else
+  { { echo "$as_me:$LINENO: error: HYPRE not found in $with_hypre" >&5
+echo "$as_me: error: HYPRE not found in $with_hypre" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+
+
+    # Check if HYPRE was compiled with parallelism.
+    { echo "$as_me:$LINENO: checking if hypre is serial or parallel" >&5
+echo $ECHO_N "checking if hypre is serial or parallel... $ECHO_C" >&6; }
+    cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+#include <HYPRE_config.h>
+#ifdef HYPRE_SEQUENTIAL
+HYPRE_SEQUENTIAL_IS_DEFINED
+#endif
+
+_ACEOF
+if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
+  $EGREP "^HYPRE_SEQUENTIAL_IS_DEFINED$" >/dev/null 2>&1; then
+  hypre_MPI=no
+else
+  hypre_MPI=yes
+fi
+rm -f conftest*
+
+
+    { echo "$as_me:$LINENO: result: $hypre_MPI" >&5
+echo "${ECHO_T}$hypre_MPI" >&6; }
+
+    # Reset cpp after checking hypre header file.
+    CPPFLAGS=$save_cppflags
+  ;;
+esac
+
+# End macro
+
+if test "${hypre_PREFIX+set}" = set; then
+  LIBS="$hypre_LIBS $LIBS"
+
+# Split hypre_LIBS into the LIB_PATH part (hypre_LIB_PATH) and the LIB_NAME part (hypre_LIB_NAME)
+if test -n "${hypre_LIBS}"; then
+  for i in ${hypre_LIBS}; do
+    case "$i" in
+    -L*) hypre_LIB_PATH="${hypre_LIB_PATH} $i" ;;
+    *) hypre_LIB_NAME="${hypre_LIB_NAME} $i" ;;
+    esac
+  done
+fi
+
+  LIB_PATH="$hypre_LIB_PATH $LIB_PATH"
+  LIB_NAME="$hypre_LIB_NAME $LIB_NAME"
+  INC_PATH="$hypre_INCLUDES $INC_PATH"
+
+  { echo "$as_me:$LINENO: checking whether HYPRE was compiled with MPI" >&5
+echo $ECHO_N "checking whether HYPRE was compiled with MPI... $ECHO_C" >&6; }
+  if test "$hypre_MPI" = yes ; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HYPRE_MPI 1
+_ACEOF
+
+     { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; }
+     if test "$with_mpi" = no ; then
+        { { echo "$as_me:$LINENO: error: sequential Parflow cannot call HYPRE compiled with MPI" >&5
+echo "$as_me: error: sequential Parflow cannot call HYPRE compiled with MPI" >&2;}
+   { (exit 1); exit 1; }; }
+     fi
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_HYPRE 1
+_ACEOF
+
+     PARFLOW_HAVE_HYPRE="yes"
+  elif test "$hypre_MPI" = 'yes'; then
+     { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+     if test "$with_mpi" != no ; then
+        { { echo "$as_me:$LINENO: error: parallel Parflow cannot call HYPRE compiled without MPI" >&5
+echo "$as_me: error: parallel Parflow cannot call HYPRE compiled without MPI" >&2;}
+   { (exit 1); exit 1; }; }
+     fi
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_HYPRE 1
+_ACEOF
+
+     PARFLOW_HAVE_HYPRE="yes"
+  else
+     { echo "$as_me:$LINENO: WARNING: Cannot determine if hypre was compiled with MPI" >&5
+echo "$as_me: WARNING: Cannot determine if hypre was compiled with MPI" >&2;}
+  fi
+else
+  { echo "$as_me:$LINENO: NOTIFICATION: Parflow configured without the HYPRE library" >&5
+echo "$as_me: NOTIFICATION: Parflow configured without the HYPRE library" >&6;}
+
+cat >>confdefs.h <<\_ACEOF
+#define LACKS_HYPRE 1
+_ACEOF
+
+fi
+
+
 debug_ext=debug
 if test "$enable_opt" = "yes"; then
    if test "$enable_debug" = "yes"; then
@@ -11657,6 +11944,7 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+PARFLOW_HAVE_HYPRE!$PARFLOW_HAVE_HYPRE$ac_delim
 INSTDIR!$INSTDIR$ac_delim
 M4!$M4$ac_delim
 XARGS!$XARGS$ac_delim
@@ -11672,7 +11960,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 13; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 14; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

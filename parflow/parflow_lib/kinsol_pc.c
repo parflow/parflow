@@ -237,7 +237,7 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
       }
       case 2:
       {
-#ifdef PARFLOW_USE_HYPRE
+#ifdef HAVE_HYPRE
 	 public_xtra -> precond = PFModuleNewModule(SMG, (key));
 #else
 	 InputError("Error: Invalid value <%s> for key <%s>.\n"
@@ -247,7 +247,7 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
       }
       case 3:
       {
-#ifdef PARFLOW_USE_HYPRE
+#ifdef HAVE_HYPRE
 	 public_xtra -> precond = PFModuleNewModule(PFMG, (key));
 #else
 	 InputError("Error: Invalid value <%s> for key <%s>.\n"

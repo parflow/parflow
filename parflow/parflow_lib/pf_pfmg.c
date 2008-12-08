@@ -7,14 +7,14 @@
  * $Revision: 1.1.1.1 $
  *********************************************************************EHEADER*/
 
-#ifdef PARFLOW_USE_HYPRE
-
 #include "parflow.h"
-#include "hypre_dependences.h"
 
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
+
+#ifdef HAVE_HYPRE
+#include "hypre_dependences.h"
 
 typedef struct
 {
@@ -42,6 +42,8 @@ typedef struct
 
 } InstanceXtra;
 
+#endif
+
 
 /*--------------------------------------------------------------------------
  * PFMG
@@ -53,6 +55,7 @@ Vector      *rhs;
 double       tol;
 int          zero;
 {
+#ifdef HAVE_HYPRE
    PFModule           *this_module    = ThisPFModule;
    InstanceXtra       *instance_xtra  = PFModuleInstanceXtra(this_module);
    PublicXtra         *public_xtra    = PFModulePublicXtra(this_module);
@@ -135,11 +138,6 @@ int          zero;
    HYPRE_StructPFMGSetZeroGuess(hypre_pfmg_data);
    HYPRE_StructPFMGSetTol(hypre_pfmg_data, tol);
 
-#if 0
-   HYPRE_StructVectorPrint("hypre_b", hypre_b, 0);
-   PrintVector("parflow_b", rhs);
-#endif
-
    BeginTiming(public_xtra->time_index_pfmg);
 
    HYPRE_StructPFMGSolve(hypre_pfmg_data, hypre_mat, hypre_b, hypre_x);
@@ -200,10 +198,8 @@ int          zero;
    }
    EndTiming(public_xtra->time_index_copy_hypre);
 
-#if 0
-   HYPRE_StructVectorPrint("hypre_x", hypre_x, 0);
-   PrintVector("parflow_x", soln);
-   exit(1);
+#else
+   amps_Printf("Error: Parflow not compiled with hypre, can't use pfmg\n");   
 #endif
 }
 
@@ -219,6 +215,8 @@ ProblemData  *problem_data;
 Matrix       *pf_matrix;
 double       *temp_data;
 {
+
+#ifdef HAVE_HYPRE
    PFModule      *this_module        = ThisPFModule;
    PublicXtra    *public_xtra        = PFModulePublicXtra(this_module);
    InstanceXtra  *instance_xtra;
@@ -435,11 +433,6 @@ double       *temp_data;
 
       EndTiming(public_xtra->time_index_copy_hypre);
 
-#if 0
-      PrintMatrix("parflow_matrix", pf_matrix);
-      HYPRE_StructMatrixPrint("hypre_mat", instance_xtra->hypre_mat, 0);
-#endif
-
       /* Set up the PFMG preconditioner */
       HYPRE_StructPFMGCreate(MPI_COMM_WORLD,
 				&(instance_xtra->hypre_pfmg_data) );
@@ -463,6 +456,10 @@ double       *temp_data;
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
    return this_module;
+
+#else
+   return NULL;
+#endif
 }
 
 
@@ -472,6 +469,7 @@ double       *temp_data;
 
 void  PFMGFreeInstanceXtra()
 {
+#ifdef HAVE_HYPRE
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
 
@@ -492,6 +490,7 @@ void  PFMGFreeInstanceXtra()
 
       tfree(instance_xtra);
    }
+#endif
 }
 
 /*--------------------------------------------------------------------------
@@ -500,6 +499,9 @@ void  PFMGFreeInstanceXtra()
 
 PFModule  *PFMGNewPublicXtra(char *name)
 {
+
+#ifdef HAVE_HYPRE
+
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;
 
@@ -544,6 +546,10 @@ PFModule  *PFMGNewPublicXtra(char *name)
    PFModulePublicXtra(this_module) = public_xtra;
 
    return this_module;
+#else
+   amps_Printf("Error: Parflow not compiled with hypre, can't use pfmg\n");   
+   return NULL;
+#endif
 }
 
 /*-------------------------------------------------------------------------
@@ -552,6 +558,7 @@ PFModule  *PFMGNewPublicXtra(char *name)
 
 void  PFMGFreePublicXtra()
 {
+#ifdef HAVE_HYPRE
    PFModule    *this_module   = ThisPFModule;
    PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
 
@@ -559,6 +566,7 @@ void  PFMGFreePublicXtra()
    {
       tfree(public_xtra);
    }
+#endif
 }
 
 /*--------------------------------------------------------------------------
@@ -567,9 +575,6 @@ void  PFMGFreePublicXtra()
 
 int  PFMGSizeOfTempData()
 {
-   int sz = 0;
-
-   return sz;
+   return 0;
 }
 
-#endif
