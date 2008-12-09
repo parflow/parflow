@@ -136,8 +136,11 @@ pfset TimingInfo.StartCount		0
 pfset TimingInfo.StartTime		0.0
 pfset TimingInfo.StopTime               [expr 30.0*1]
 pfset TimingInfo.DumpInterval	        0 
+pfset TimingInfo.DumpInterval	        0 
+pfset TimingInfo.DumpAtEnd              True
 pfset TimeStep.Type                     Constant
 pfset TimeStep.Value                    10.0
+
 
 #-----------------------------------------------------------------------------
 # Porosity
