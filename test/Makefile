@@ -8,7 +8,7 @@
 
 include $(PARFLOW_DIR)/config/Makefile.config
 
-default: all
+default: check
 
 TESTS := \
 	test_X.tcl \
