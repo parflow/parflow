@@ -538,10 +538,6 @@ void ICPhasePressureFreeInstanceXtra (void );
 PFModule *ICPhasePressureNewPublicXtra (void );
 void ICPhasePressureFreePublicXtra (void );
 int ICPhasePressureSizeOfTempData (void );
-int *ComputeTop (PFModule    *ic_phase_pressure,
-		   Problem     *problem,     
-		   ProblemData *problem_data,
-		   Vector      *vector);
 
 /* problem_mannings.c */
 void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy);
@@ -934,4 +930,9 @@ void PF2WRF ( Vector *pf_vector,
 	      int     ghost_size_i,
 	      int     ghost_size_j,
 	      int    *top);
+
+int *ComputeTop (  Problem     *problem,     
+		   ProblemData *problem_data,
+		   Vector      *vector);
+
 

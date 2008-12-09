@@ -92,7 +92,7 @@ void wrfparflowinit_(char *input_file) {
    Problem     *problem           = GetProblemRichards(amps_ThreadLocal(solver));
    PFModule    *ic_phase_pressure = GetICPhasePressureRichards(amps_ThreadLocal(solver));
 
-   amps_ThreadLocal(top)          = ComputeTop(ic_phase_pressure, problem, problem_data, amps_ThreadLocal(evap_trans));
+   amps_ThreadLocal(top)          = ComputeTop(problem, problem_data, amps_ThreadLocal(evap_trans));
 }
 
 void wrfparflowadvance_(double *current_time, 
@@ -262,4 +262,74 @@ void PF2WRF(
 	 }
       }
    }
+}
+
+/* 
+ * Setup array for storing the top of the domain.
+ *
+ * Computes and array that is NX * NY that contains the
+ * k-index into the supplied vector that is at the top 
+ * of the geometry.
+ *
+ * Only works with 1 subgrid per task.
+ *
+ * This assumes number of processors is 1 in Z; assumes
+ * that the entire Z column is on a single task.
+ * 
+ */
+int *ComputeTop(Problem     *problem,      /* General problem information */
+		ProblemData *problem_data, /* Contains geometry information for the problem */
+		Vector      *vector        /* misc vector to use for loop */
+) {
+
+   int      ix, iy, iz;
+   int      nx, ny, nz;
+   int      r;
+   int      ir;
+   
+   int      is, i, j, k;
+
+
+   Grid          *grid = VectorGrid(vector);
+
+   SubgridArray  *subgrids = GridSubgrids(grid);
+
+   int           *top;
+
+   for (ir = 0; ir < ProblemDataNumSolids(problem_data); ir++)
+   {
+      GrGeomSolid   *gr_solid = ProblemDataGrSolid(problem_data, ir);
+      
+      ForSubgridI(is, subgrids)
+      {
+	 Subgrid       *subgrid   = SubgridArraySubgrid(subgrids, is);
+
+	 ix = SubgridIX(subgrid);
+	 iy = SubgridIY(subgrid);
+	 iz = SubgridIZ(subgrid);
+	 
+	 nx = SubgridNX(subgrid);
+	 ny = SubgridNY(subgrid);
+	 nz = SubgridNZ(subgrid);
+	 
+	 r = SubgridRX(subgrid);
+
+	 top = malloc(sizeof(int) * nx * ny); 
+
+	 int index;
+	 for(index = 0; index < nx * ny; index++) {
+	    top[index] = -1;
+	 }
+	 
+	 GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+		      {
+			 index = (i-ix) + ((j-iy) * nx);
+			 if( top[index] < k ) {
+			       top[index] = k;
+			 }
+		      });
+      }     /* End of subgrid loop */
+   }        /* End of region loop */
+
+   return top;
 }
