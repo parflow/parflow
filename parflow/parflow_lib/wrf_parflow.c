@@ -285,7 +285,6 @@ int *ComputeTop(Problem     *problem,      /* General problem information */
    int      ix, iy, iz;
    int      nx, ny, nz;
    int      r;
-   int      ir;
    
    int      is, i, j, k;
 
@@ -296,40 +295,37 @@ int *ComputeTop(Problem     *problem,      /* General problem information */
 
    int           *top;
 
-   for (ir = 0; ir < ProblemDataNumSolids(problem_data); ir++)
-   {
-      GrGeomSolid   *gr_solid = ProblemDataGrSolid(problem_data, ir);
+   GrGeomSolid   *gr_solid = ProblemDataGrDomain(problem_data);
       
-      ForSubgridI(is, subgrids)
-      {
-	 Subgrid       *subgrid   = SubgridArraySubgrid(subgrids, is);
+   ForSubgridI(is, subgrids)
+   {
+      Subgrid       *subgrid   = SubgridArraySubgrid(subgrids, is);
 
-	 ix = SubgridIX(subgrid);
-	 iy = SubgridIY(subgrid);
-	 iz = SubgridIZ(subgrid);
-	 
-	 nx = SubgridNX(subgrid);
-	 ny = SubgridNY(subgrid);
-	 nz = SubgridNZ(subgrid);
-	 
-	 r = SubgridRX(subgrid);
-
-	 top = malloc(sizeof(int) * nx * ny); 
-
-	 int index;
-	 for(index = 0; index < nx * ny; index++) {
-	    top[index] = -1;
-	 }
-	 
-	 GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-		      {
-			 index = (i-ix) + ((j-iy) * nx);
-			 if( top[index] < k ) {
-			       top[index] = k;
-			 }
-		      });
-      }     /* End of subgrid loop */
-   }        /* End of region loop */
+      ix = SubgridIX(subgrid);
+      iy = SubgridIY(subgrid);
+      iz = SubgridIZ(subgrid);
+      
+      nx = SubgridNX(subgrid);
+      ny = SubgridNY(subgrid);
+      nz = SubgridNZ(subgrid);
+      
+      r = SubgridRX(subgrid);
+      
+      top = malloc(sizeof(int) * nx * ny); 
+      
+      int index;
+      for(index = 0; index < nx * ny; index++) {
+	 top[index] = -1;
+      }
+      
+      GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+		   {
+		      index = (i-ix) + ((j-iy) * nx);
+		      if( top[index] < k ) {
+			 top[index] = k;
+		      }
+		   });
+   }     /* End of subgrid loop */
 
    return top;
 }
