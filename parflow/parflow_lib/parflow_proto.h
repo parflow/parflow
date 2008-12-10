@@ -914,21 +914,27 @@ void wrfparflowadvance_(double *current_time,
                         float *wrf_porosity,
                         float *wrf_saturation,
 			int    *num_soil_layers,
-                        int    *ghost_size_i,
-                        int    *ghost_size_j);
+			int    *ghost_size_i_lower,  /* Number of ghost cells */
+			int    *ghost_size_j_lower,
+			int    *ghost_size_i_upper,
+			int    *ghost_size_j_upper);
 
 void WRF2PF(float  *wrf_array, 
 	    int     wrf_depth, 
-	    int     ghost_size_i, 
-	    int     ghost_size_j, 
+	    int     ghost_size_i_lower,  /* Number of ghost cells */
+	    int     ghost_size_j_lower,
+	    int     ghost_size_i_upper,
+	    int     ghost_size_j_upper,
 	    Vector *pf_vector,
 	    int    *top);
 
 void PF2WRF ( Vector *pf_vector,
 	      float  *wrf_array,
 	      int     wrf_depth,
-	      int     ghost_size_i,
-	      int     ghost_size_j,
+	      int     ghost_size_i_lower,  /* Number of ghost cells */
+	      int     ghost_size_j_lower,
+	      int     ghost_size_i_upper,
+	      int     ghost_size_j_upper,
 	      int    *top);
 
 int *ComputeTop (  Problem     *problem,     
