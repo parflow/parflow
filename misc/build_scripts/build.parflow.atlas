@@ -23,7 +23,8 @@ DIR=parflow
 
 (cd $DIR; ./configure \
                      --with-amps=mpi1 \
-		     --with-silo=/usr/gapps/silo/4.6.1/chaos_4_x86_64 \
+		     --with-silo=$SILO_DIR \
+		     --with-hypre=$HYPRE_DIR \
                      --prefix=$PARFLOW_DIR)
 
 (cd $DIR; make -j 8 install)
@@ -36,7 +37,7 @@ DIR=pftools
 
 (cd $DIR; ./configure \
                      --with-amps=mpi1 \
-		     --with-silo=/usr/gapps/silo/4.6.1/chaos_4_x86_64 \
+		     --with-silo=$SILO_DIR \
                      --prefix=$PARFLOW_DIR)
 
 (cd $DIR; make -j 8 install)

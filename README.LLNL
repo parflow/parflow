@@ -21,11 +21,44 @@ cd <somewhere>
 svn co svn+ssh://atlas/usr/gapps/thcs/subversion/wrf/trunk wrf
 
 -----------------------------------------------------------------------------
+Environmental variables
+-----------------------------------------------------------------------------
+
+SILO_DIR=/usr/gapps/silo/4.6.1/chaos_4_x86_64
+HYPRE_DIR=/usr/casc/samrai/hypre/hypre-2.4.0b-atlas-gcc/
+export SILO_DIR HYPRE_DIR
+
+or use setenv if using csh/tcsh
+
+setenv SILO_DIR /usr/gapps/silo/4.6.1/chaos_4_x86_64
+setenv HYPRE_DIR /usr/casc/samrai/hypre/hypre-2.4.0b-atlas-gcc/
+
+-----------------------------------------------------------------------------
 Compiling Parflow on Atlas
 -----------------------------------------------------------------------------
 
-cd <somewhere>/parflow
-sh misc/build_scripts/build.parflow.atlas
+CC=gcc
+F90=gfortran
+F77=gfortran
+export CC F90 F77
+
+# Make Parflow
+DIR=parflow
+./configure \
+                     --with-amps=mpi1 \
+		     --with-silo=$SILO_DIR \
+		     --with-hypre=$HYPRE_DIR \
+                     --prefix=$PARFLOW_DIR
+make -j 8 install
+
+# Make pftools
+DIR=pftools
+./configure \
+                     --with-amps=mpi1 \
+		     --with-silo=$SILO_DIR \
+                     --prefix=$PARFLOW_DIR
+
+make -j 8 install
 
 -----------------------------------------------------------------------------
 Compiling WRF on Atlas
@@ -34,20 +67,10 @@ Compiling WRF on Atlas
 cd <somewhere>/wrf
 ./configure
 
-	Select option 7 <GNU compilers (dmpar)>
+	Select option 3           PGI with GNU
 	Select option 1 <basic - the default>
 
 ./compile wrf
-
------------------------------------------------------------------------------
-Runing WRF+PF test case on Atlas
------------------------------------------------------------------------------
-
-cd <somewhere>/wrf/parflow
-
-msub wrf_atlas.msub
-
-Will run 8 processor job.
 
 -----------------------------------------------------------------------------
 Compiling Parflow on CASC Tux Cluster
