@@ -128,21 +128,11 @@ int           symm_part;      /* Specifies whether to compute just the
    Vector      *rel_perm          = saturation;
    Vector      *rel_perm_der      = saturation_der;
 
-   Subvector   *x_sl_sub, *y_sl_sub, *mann_sub;
-   double      dir_x, dir_y;
-   double      *x_sl_dat, *y_sl_dat, *mann_dat;
-   double      cx, cy;
-
-   //double      press[58][30][360],pressbc[58][30],xslope[58][30],yslope[58][30],mans[58][30];
-
    Vector      *porosity          = ProblemDataPorosity(problem_data);
    Vector      *permeability_x    = ProblemDataPermeabilityX(problem_data);
    Vector      *permeability_y    = ProblemDataPermeabilityY(problem_data);
    Vector      *permeability_z    = ProblemDataPermeabilityZ(problem_data);
    Vector      *sstorage          = ProblemDataSpecificStorage(problem_data); //sk
-   Vector      *x_sl              = ProblemDataTSlopeX(problem_data); //sk
-   Vector      *y_sl              = ProblemDataTSlopeY(problem_data); //sk
-   Vector      *man               = ProblemDataMannings(problem_data); //sk
 
    double       gravity           = ProblemGravity(problem);
    double       viscosity         = ProblemPhaseViscosity(problem, 0);
@@ -154,7 +144,6 @@ int           symm_part;      /* Specifies whether to compute just the
    Submatrix   *J_sub;
 
    Grid        *grid              = VectorGrid(pressure);
-   Grid        *grid2d            = VectorGrid(x_sl);
 
    double      *pp, *sp, *sdp, *pop, *dp, *ddp, *rpp, *rpdp;
    double      *permxp, *permyp, *permzp;
@@ -219,8 +208,6 @@ int           symm_part;      /* Specifies whether to compute just the
    PFModuleInvoke(void, saturation_module, (saturation_der, pressure, 
    density, gravity, problem_data,
    CALCDER));
-
-
 
    ForSubgridI(is, GridSubgrids(grid))
    {
@@ -751,10 +738,6 @@ int           symm_part;      /* Specifies whether to compute just the
       permz_sub = VectorSubvector(permeability_z, is);
       J_sub     = MatrixSubmatrix(J, is);
 
-      x_sl_sub = VectorSubvector(x_sl, is);
-      y_sl_sub = VectorSubvector(y_sl, is);
-      mann_sub = VectorSubvector(man, is);
-
       dx = SubgridDX(subgrid);
       dy = SubgridDY(subgrid);
       dz = SubgridDZ(subgrid);
@@ -772,8 +755,6 @@ int           symm_part;      /* Specifies whether to compute just the
 	 
       sy_v = nx_v;
       sz_v = ny_v * nx_v;
-      cx = (dt * vol / (dz * dx)); //sk
-      cy = (dt * vol / (dz * dy)); //sk
 
       cp    = SubmatrixStencilData(J_sub, 0);
       wp    = SubmatrixStencilData(J_sub, 1);
@@ -792,11 +773,6 @@ int           symm_part;      /* Specifies whether to compute just the
       permxp = SubvectorData(permx_sub);
       permyp = SubvectorData(permy_sub);
       permzp = SubvectorData(permz_sub);
-
-      x_sl_dat = SubvectorData(x_sl_sub);
-      y_sl_dat = SubvectorData(y_sl_sub);
-      mann_dat = SubvectorData(mann_sub);
-
 
       for (ipatch = 0; ipatch < BCStructNumPatches(bc_struct); ipatch++)
       {
