@@ -412,6 +412,15 @@ void SetupRichards(PFModule *this_module) {
       IfLogging(1)
       {
 	 double        outflow = 0.0;
+
+	 /*
+	  * SGS Better error handing should be added 
+	  */
+	 if(instance_xtra -> number_logged > public_xtra -> max_iterations + 1) {
+	    printf("Error: max_iterations reached, can't log anymore data\n");
+	    exit(1);
+	 }
+
 	 instance_xtra -> seq_log[instance_xtra -> number_logged]       = instance_xtra -> iteration_number;
 	 instance_xtra -> time_log[instance_xtra -> number_logged]      = t;
 	 instance_xtra -> dt_log[instance_xtra -> number_logged]        = dt;
@@ -841,6 +850,14 @@ void AdvanceRichards(PFModule *this_module,
 
       IfLogging(1)
       {
+	 /*
+	  * SGS Better error handing should be added 
+	  */
+	 if(instance_xtra -> number_logged > public_xtra -> max_iterations + 1) {
+	    printf("Error: max_iterations reached, can't log anymore data\n");
+	    exit(1);
+	 }
+
 	 instance_xtra -> seq_log[instance_xtra -> number_logged]       = instance_xtra -> iteration_number;
 	 instance_xtra -> time_log[instance_xtra -> number_logged]      = t;
 	 instance_xtra -> dt_log[instance_xtra -> number_logged]        = dt;
