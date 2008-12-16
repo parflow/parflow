@@ -23,8 +23,8 @@ typedef struct
 
 typedef struct
 {
-	Grid   *grid;
-	double *temp_data;
+   Grid   *grid;
+   double *temp_data;
 } InstanceXtra;
 
 typedef struct
@@ -45,8 +45,8 @@ typedef struct
 
 typedef struct
 {
-	char  *filename;
-	Vector *sx_values;
+   char  *filename;
+   Vector *sx_values;
 } Type2;                       /* .pfb file */
 
 
@@ -98,30 +98,80 @@ Vector      *dummy;
 
    switch((public_xtra -> type))
    {
-   case 0:
-   {
-      int      num_regions;
-      int     *region_indices;
-      double  *values;
-
-      double        value;
-      int           ir;
-
-	  dummy0 = (Type0 *)(public_xtra -> data);
-
-      num_regions    = (dummy0 -> num_regions);
-      region_indices = (dummy0 -> region_indices);
-      values         = (dummy0 -> values);
-
-      for (ir = 0; ir < num_regions; ir++)
+      case 0:
       {
-     gr_solid = ProblemDataGrSolid(problem_data, region_indices[ir]);
-     value    = values[ir];
+	 int      num_regions;
+	 int     *region_indices;
+	 double  *values;
+
+	 double        value;
+	 int           ir;
+
+	 dummy0 = (Type0 *)(public_xtra -> data);
+
+	 num_regions    = (dummy0 -> num_regions);
+	 region_indices = (dummy0 -> region_indices);
+	 values         = (dummy0 -> values);
+
+	 for (ir = 0; ir < num_regions; ir++)
+	 {
+	    gr_solid = ProblemDataGrSolid(problem_data, region_indices[ir]);
+	    value    = values[ir];
+
+	    ForSubgridI(is, subgrids)
+	    {
+	       subgrid = SubgridArraySubgrid(subgrids, is);
+	       ps_sub  = VectorSubvector(x_slope, is);
+	    
+	       ix = SubgridIX(subgrid);
+	       iy = SubgridIY(subgrid);
+	       iz = SubgridIZ(subgrid);
+	    
+	       nx = SubgridNX(subgrid);
+	       ny = SubgridNY(subgrid);
+	       nz = SubgridNZ(subgrid);
+	    
+	       /* RDF: assume resolution is the same in all 3 directions */
+	       r = SubgridRX(subgrid);
+	    
+	       /*
+		* TODO
+		* SGS this does not match the loop in nl_function_eval.  That
+		* loop is going over more than the inner geom locations.  Is that
+		* important?  Originally the x_slope array was not being allocated
+		* by ctalloc, just alloc and unitialized memory reads were being
+		* caused.   Switched that to be ctalloc to init to 0 to "hack" a 
+		* fix but is this really a sign of deeper indexing problems?
+		*/
+	       data = SubvectorData(ps_sub);
+	       GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+			    {
+			       ips = SubvectorEltIndex(ps_sub, i, j, 0);
+
+			       data[ips] = value;
+			    });
+	    }
+	 }
+      
+	 break;
+      }   /* End case 0 */
+
+      case 1:
+      {
+	 GrGeomSolid  *gr_domain;
+	 double        x, y, z;
+	 int           function_type;
+
+	 dummy1 = (Type1 *)(public_xtra -> data);
+
+	 function_type    = (dummy1 -> function_type);
+
+	 gr_domain = ProblemDataGrDomain(problem_data);
 
 	 ForSubgridI(is, subgrids)
 	 {
-            subgrid = SubgridArraySubgrid(subgrids, is);
-            ps_sub  = VectorSubvector(x_slope, is);
+	    subgrid = SubgridArraySubgrid(subgrids, is);
+	    ps_sub  = VectorSubvector(x_slope, is);
 	    
 	    ix = SubgridIX(subgrid);
 	    iy = SubgridIY(subgrid);
@@ -135,184 +185,143 @@ Vector      *dummy;
 	    r = SubgridRX(subgrid);
 	    
 	    data = SubvectorData(ps_sub);
-	    GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-            {
-	       ips = SubvectorEltIndex(ps_sub, i, j, 0);
 
-	       data[ips] = value;
-	    });
-	 }
-      }
-      
-      break;
-   }   /* End case 0 */
+	    switch(function_type)
+	    {	
+	       case 1:  /* p= x */
+	       {
+		  GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+			       {
+				  ips = SubvectorEltIndex(ps_sub, i, j, k);
+				  x = RealSpaceX(i, SubgridRX(subgrid));
+				  /* nonlinear case -div(p grad p) = f */
+				  data[ips] = -1.0;
+			       });
+		  break;
 
-   case 1:
-   {
-      GrGeomSolid  *gr_domain;
-      double        x, y, z;
-      int           function_type;
+	       }   /* End case 1 */
 
-      dummy1 = (Type1 *)(public_xtra -> data);
+	       case 2:  /* p= x+y+z */
+	       {
+		  GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+			       {
+				  ips = SubvectorEltIndex(ps_sub, i, j, k);
+				  /* nonlinear case -div(p grad p) = f */
+				  data[ips] = -3.0;
+			       });
+		  break;
 
-      function_type    = (dummy1 -> function_type);
+	       }   /* End case 2 */
 
-      gr_domain = ProblemDataGrDomain(problem_data);
+	       case 3:  /* p= x^3y^2 + sinxy + 1 */
+	       {
+		  GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+			       {
+				  ips = SubvectorEltIndex(ps_sub, i, j, k);
+				  x = RealSpaceX(i, SubgridRX(subgrid));
+				  y = RealSpaceY(j, SubgridRY(subgrid));
+				  /* nonlinear case -div(p grad p) = f */
+				  data[ips] = -pow((3*x*x*y*y + y*cos(x*y)), 2) - pow((2*x*x*x*y + x*cos(x*y)),2) - (x*x*x*y*y + sin(x*y) + 1)*(6*x*y*y + 2*x*x*x - (x*x + y*y)*sin(x*y)); 
+			       });
+		  break;
 
-      ForSubgridI(is, subgrids)
-      {
-	subgrid = SubgridArraySubgrid(subgrids, is);
-	ps_sub  = VectorSubvector(x_slope, is);
-	    
-	ix = SubgridIX(subgrid);
-	iy = SubgridIY(subgrid);
-	iz = SubgridIZ(subgrid);
-	    
-	nx = SubgridNX(subgrid);
-	ny = SubgridNY(subgrid);
-	nz = SubgridNZ(subgrid);
-	    
-	/* RDF: assume resolution is the same in all 3 directions */
-	r = SubgridRX(subgrid);
-	    
-	data = SubvectorData(ps_sub);
+	       }   /* End case 3 */
 
-	switch(function_type)
-	{	
-	case 1:  /* p= x */
-	{
-	   GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-	   {
-	      ips = SubvectorEltIndex(ps_sub, i, j, k);
-	      x = RealSpaceX(i, SubgridRX(subgrid));
-		/* nonlinear case -div(p grad p) = f */
-	      data[ips] = -1.0;
-	   });
-	   break;
-
-	}   /* End case 1 */
-
-	case 2:  /* p= x+y+z */
-	{
-	   GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-	   {
-	      ips = SubvectorEltIndex(ps_sub, i, j, k);
-		/* nonlinear case -div(p grad p) = f */
-	      data[ips] = -3.0;
-	   });
-	   break;
-
-	}   /* End case 2 */
-
-	case 3:  /* p= x^3y^2 + sinxy + 1 */
-	{
-	   GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-	   {
-	      ips = SubvectorEltIndex(ps_sub, i, j, k);
-	      x = RealSpaceX(i, SubgridRX(subgrid));
-	      y = RealSpaceY(j, SubgridRY(subgrid));
-		/* nonlinear case -div(p grad p) = f */
-	      data[ips] = -pow((3*x*x*y*y + y*cos(x*y)), 2) - pow((2*x*x*x*y + x*cos(x*y)),2) - (x*x*x*y*y + sin(x*y) + 1)*(6*x*y*y + 2*x*x*x - (x*x + y*y)*sin(x*y)); 
-	   });
-	   break;
-
-	}   /* End case 3 */
-
-	case 4:  /* f for p = x^3y^4 + x^2 + sinxy cosy + 1 */
-	{
-	   GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-	   {
-	      ips = SubvectorEltIndex(ps_sub, i, j, k);
-	      x = RealSpaceX(i, SubgridRX(subgrid));
-	      y = RealSpaceY(j, SubgridRY(subgrid));
-	      z = RealSpaceZ(k, SubgridRZ(subgrid));
+	       case 4:  /* f for p = x^3y^4 + x^2 + sinxy cosy + 1 */
+	       {
+		  GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+			       {
+				  ips = SubvectorEltIndex(ps_sub, i, j, k);
+				  x = RealSpaceX(i, SubgridRX(subgrid));
+				  y = RealSpaceY(j, SubgridRY(subgrid));
+				  z = RealSpaceZ(k, SubgridRZ(subgrid));
 	      
-	      data[ips] = -pow(3*x*x*pow(y,4) + 2*x + y*cos(x*y)*cos(y),2) - pow(4*x*x*x*y*y*y + x*cos(x*y)*cos(y) - sin(x*y)*sin(y),2) - (x*x*x*pow(y,4) + x*x + sin(x*y)*cos(y) + 1)*(6*x*pow(y,4) + 2 - (x*x + y*y + 1)*sin(x*y)*cos(y) + 12*x*x*x*y*y - 2*x*cos(x*y)*sin(y));
+				  data[ips] = -pow(3*x*x*pow(y,4) + 2*x + y*cos(x*y)*cos(y),2) - pow(4*x*x*x*y*y*y + x*cos(x*y)*cos(y) - sin(x*y)*sin(y),2) - (x*x*x*pow(y,4) + x*x + sin(x*y)*cos(y) + 1)*(6*x*pow(y,4) + 2 - (x*x + y*y + 1)*sin(x*y)*cos(y) + 12*x*x*x*y*y - 2*x*cos(x*y)*sin(y));
 
-	   });
-	   break;
+			       });
+		  break;
 
-	}   /* End case 4 */
+	       }   /* End case 4 */
 
-	case 5:  /* f = xyz-y^2z^2t^2-x^2z^2t^2-x^2y^2t^2 (p=xyzt+1)*/
-	{
-	   GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-	   {
-	      ips = SubvectorEltIndex(ps_sub, i, j, k);
-	      x = RealSpaceX(i, SubgridRX(subgrid));
-	      y = RealSpaceY(j, SubgridRY(subgrid));
-	      z = RealSpaceZ(k, SubgridRZ(subgrid));
+	       case 5:  /* f = xyz-y^2z^2t^2-x^2z^2t^2-x^2y^2t^2 (p=xyzt+1)*/
+	       {
+		  GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+			       {
+				  ips = SubvectorEltIndex(ps_sub, i, j, k);
+				  x = RealSpaceX(i, SubgridRX(subgrid));
+				  y = RealSpaceY(j, SubgridRY(subgrid));
+				  z = RealSpaceZ(k, SubgridRZ(subgrid));
 
-	      data[ips] = x*y*z - time*time*(y*y*z*z + x*x*z*z + x*x*y*y);
-	   });
-	   break;
+				  data[ips] = x*y*z - time*time*(y*y*z*z + x*x*z*z + x*x*y*y);
+			       });
+		  break;
 
-	}   /* End case 5 */
+	       }   /* End case 5 */
 
-	case 6:  /* f = xyz-y^2z^2t^2-2x^2z^2t^2-3x^2y^2t^2 (p=xyzt+1, 
-		                                             K=(1; 2; 3) )*/
-	{
-	   GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-	   {
-	      ips = SubvectorEltIndex(ps_sub, i, j, k);
-	      x = RealSpaceX(i, SubgridRX(subgrid));
-	      y = RealSpaceY(j, SubgridRY(subgrid));
-	      z = RealSpaceZ(k, SubgridRZ(subgrid));
+	       case 6:  /* f = xyz-y^2z^2t^2-2x^2z^2t^2-3x^2y^2t^2 (p=xyzt+1, 
+			   K=(1; 2; 3) )*/
+	       {
+		  GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+			       {
+				  ips = SubvectorEltIndex(ps_sub, i, j, k);
+				  x = RealSpaceX(i, SubgridRX(subgrid));
+				  y = RealSpaceY(j, SubgridRY(subgrid));
+				  z = RealSpaceZ(k, SubgridRZ(subgrid));
 
-	      data[ips] = x*y*z 
-		          - time*time*(y*y*z*z + x*x*z*z*2.0 + x*x*y*y*3.0);
-	   });
-	   break;
+				  data[ips] = x*y*z 
+				     - time*time*(y*y*z*z + x*x*z*z*2.0 + x*x*y*y*3.0);
+			       });
+		  break;
 
-	}   /* End case 6 */
+	       }   /* End case 6 */
 
-	}   /* End switch statement on function_types */
+	    }   /* End switch statement on function_types */
 
-      }     /* End subgrid loop */
+	 }     /* End subgrid loop */
    
-      break;
-   }   /* End case 1 for input types */
+	 break;
+      }   /* End case 1 for input types */
 
-   case 2:
-   {
-	   Vector *sx_val;
+      case 2:
+      {
+	 Vector *sx_val;
 
-	   dummy2 = (Type2 *)(public_xtra -> data);
+	 dummy2 = (Type2 *)(public_xtra -> data);
 
-	   sx_val= dummy2 -> sx_values;
+	 sx_val= dummy2 -> sx_values;
 
-	   gr_domain = ProblemDataGrDomain(problem_data);
+	 gr_domain = ProblemDataGrDomain(problem_data);
 
-	   ForSubgridI(is, subgrids)
-	   {
-		   subgrid = SubgridArraySubgrid(subgrids, is);
-		   ps_sub = VectorSubvector(x_slope, is);
-		   sx_values_sub = VectorSubvector(sx_val, is);
+	 ForSubgridI(is, subgrids)
+	 {
+	    subgrid = SubgridArraySubgrid(subgrids, is);
+	    ps_sub = VectorSubvector(x_slope, is);
+	    sx_values_sub = VectorSubvector(sx_val, is);
 
-		   ix = SubgridIX(subgrid);
-		   iy = SubgridIY(subgrid);
-		   iz = SubgridIZ(subgrid);
+	    ix = SubgridIX(subgrid);
+	    iy = SubgridIY(subgrid);
+	    iz = SubgridIZ(subgrid);
 
-		   nx = SubgridNX(subgrid);
-		   ny = SubgridNY(subgrid);
-		   nz = SubgridNZ(subgrid);
+	    nx = SubgridNX(subgrid);
+	    ny = SubgridNY(subgrid);
+	    nz = SubgridNZ(subgrid);
 
-		   r = SubgridRX(subgrid);
+	    r = SubgridRX(subgrid);
 
-		   psdat  = SubvectorData(ps_sub);
-		   sx_values_dat = SubvectorData(sx_values_sub);
+	    psdat  = SubvectorData(ps_sub);
+	    sx_values_dat = SubvectorData(sx_values_sub);
 
-		   GrGeomInLoop(i,j,k,gr_domain,r,ix,iy,iz,nx,ny,nz,
-		   {
-			   ips = SubvectorEltIndex(ps_sub,i,j,0);
-			   ipicv = SubvectorEltIndex(sx_values_sub,i,j,k);
+	    GrGeomInLoop(i,j,k,gr_domain,r,ix,iy,iz,nx,ny,nz,
+			 {
+			    ips = SubvectorEltIndex(ps_sub,i,j,0);
+			    ipicv = SubvectorEltIndex(sx_values_sub,i,j,k);
 
-			   psdat[ips] = sx_values_dat[ipicv];
-		   });
-	   } /* End subgrid loop */
+			    psdat[ips] = sx_values_dat[ipicv];
+			 });
+	 } /* End subgrid loop */
 
-	   break;
-   }
+	 break;
+      }
 
    }   /* End switch statement for input types */
    
@@ -343,19 +352,19 @@ Grid    *grid;
 
    if (grid != NULL)
    {
-	   (instance_xtra -> grid) = grid;
+      (instance_xtra -> grid) = grid;
 
-   if (public_xtra -> type == 2)
-   {
-	   dummy2 = (Type2 *)(public_xtra -> data);
+      if (public_xtra -> type == 2)
+      {
+	 dummy2 = (Type2 *)(public_xtra -> data);
 
-	   dummy2 -> sx_values = NewTempVector(grid, 1, 1);
-	   (instance_xtra -> temp_data) = talloc(double, SizeOfVector(dummy2 -> sx_values));
-	   SetTempVectorData((dummy2 -> sx_values),  (instance_xtra -> temp_data));
+	 dummy2 -> sx_values = NewTempVector(grid, 1, 1);
+	 (instance_xtra -> temp_data) = ctalloc(double, SizeOfVector(dummy2 -> sx_values));
+	 SetTempVectorData((dummy2 -> sx_values),  (instance_xtra -> temp_data));
 
-	   ReadPFBinary((dummy2 -> filename),(dummy2 -> sx_values));
+	 ReadPFBinary((dummy2 -> filename),(dummy2 -> sx_values));
    
-   }
+      }
    }
 
    
@@ -376,17 +385,17 @@ void  XSlopeFreeInstanceXtra()
 
    Type2  *dummy2;
 
-    if ( public_xtra -> type ==2)
-	{
-	             dummy2 = (Type2 *)(public_xtra -> data);
-				 FreeTempVector(dummy2 -> sx_values);
-
-				 tfree(instance_xtra -> temp_data);
-	}
-
-	 if (instance_xtra)
+   if ( public_xtra -> type ==2)
    {
-	   free(instance_xtra);
+      dummy2 = (Type2 *)(public_xtra -> data);
+      FreeTempVector(dummy2 -> sx_values);
+
+      tfree(instance_xtra -> temp_data);
+   }
+
+   if (instance_xtra)
+   {
+      free(instance_xtra);
    }
 }
 
@@ -419,77 +428,77 @@ PFModule  *XSlopeNewPublicXtra()
                                        XYZTPlus1 XYZTPlus1PermTensor");
    public_xtra = ctalloc(PublicXtra, 1);
          
-      switch_name = GetString("TopoSlopesX.Type");
+   switch_name = GetString("TopoSlopesX.Type");
       
-      public_xtra -> type = NA_NameToIndex(type_na, switch_name);
+   public_xtra -> type = NA_NameToIndex(type_na, switch_name);
       
-      switch((public_xtra -> type))
+   switch((public_xtra -> type))
+   {
+      case 0:
       {
-	 case 0:
+	 dummy0 = ctalloc(Type0, 1);
+	    
+	 switch_name = GetString("TopoSlopesX.GeomNames");
+	    
+	 dummy0 -> regions = NA_NewNameArray(switch_name);
+	    
+	 num_regions = (dummy0 -> num_regions) = NA_Sizeof(dummy0 -> regions);
+	    
+	 (dummy0 -> region_indices) = ctalloc(int, num_regions);
+	 (dummy0 -> values)         = ctalloc(double, num_regions);
+	    
+	 for (ir = 0; ir < num_regions; ir++)
 	 {
-		 dummy0 = ctalloc(Type0, 1);
-	    
-	    switch_name = GetString("TopoSlopesX.GeomNames");
-	    
-	    dummy0 -> regions = NA_NewNameArray(switch_name);
-	    
-	    num_regions = (dummy0 -> num_regions) = NA_Sizeof(dummy0 -> regions);
-	    
-	    (dummy0 -> region_indices) = ctalloc(int, num_regions);
-	    (dummy0 -> values)         = ctalloc(double, num_regions);
-	    
-	    for (ir = 0; ir < num_regions; ir++)
-	    {
 	       
-	       dummy0 -> region_indices[ir] = 
-		  NA_NameToIndex(GlobalsGeomNames,
-				 NA_IndexToName(dummy0 -> regions, ir));
+	    dummy0 -> region_indices[ir] = 
+	       NA_NameToIndex(GlobalsGeomNames,
+			      NA_IndexToName(dummy0 -> regions, ir));
 	       
-	       sprintf(key, "TopoSlopesX.Geom.%s.Value", NA_IndexToName(dummy0 -> regions, ir));
-	       dummy0 -> values[ir] = GetDouble(key);
-	    }
+	    sprintf(key, "TopoSlopesX.Geom.%s.Value", NA_IndexToName(dummy0 -> regions, ir));
+	    dummy0 -> values[ir] = GetDouble(key);
+	 }
 	    
-	    (public_xtra -> data) = (void *) dummy0;
+	 (public_xtra -> data) = (void *) dummy0;
 
-	    break;
-	 }   /* End case 0 */
+	 break;
+      }   /* End case 0 */
 	 
-	 case 1:
+      case 1:
+      {
+	 dummy1 = ctalloc(Type1, 1);
+	    
+	 switch_name = GetString("PhaseSources.PredefinedFunction");
+	    
+	 dummy1 -> function_type = 
+	    NA_NameToIndex(function_type_na, switch_name);
+
+	 if(dummy1 -> function_type < 0)
 	 {
-	    dummy1 = ctalloc(Type1, 1);
-	    
-	    switch_name = GetString("PhaseSources.PredefinedFunction");
-	    
-	    dummy1 -> function_type = 
-	       NA_NameToIndex(function_type_na, switch_name);
-
-	    if(dummy1 -> function_type < 0)
-	    {
-	       InputError("Error: invalid function <%s> for key <%s>\n",
-			  switch_name, key);
-	    }
-	    
-	    (public_xtra -> data) = (void *) dummy1;
-	    
-	    break;
-	 }   /* End case 1 */
-
-	 case 2:
-		 {
-			 dummy2 = ctalloc(Type2, 1);
-             
-			 dummy2 -> filename = GetString("TopoSlopesX.FileName");
-			 
-			 (public_xtra -> data) = (void *) dummy2;
-			 break;
-		 }
-
-	 default:
-	 {
-	    InputError("Error: invalid type <%s> for key <%s>\n",
+	    InputError("Error: invalid function <%s> for key <%s>\n",
 		       switch_name, key);
 	 }
-      }   /* End case statement */
+	    
+	 (public_xtra -> data) = (void *) dummy1;
+	    
+	 break;
+      }   /* End case 1 */
+
+      case 2:
+      {
+	 dummy2 = ctalloc(Type2, 1);
+             
+	 dummy2 -> filename = GetString("TopoSlopesX.FileName");
+			 
+	 (public_xtra -> data) = (void *) dummy2;
+	 break;
+      }
+
+      default:
+      {
+	 InputError("Error: invalid type <%s> for key <%s>\n",
+		    switch_name, key);
+      }
+   }   /* End case statement */
    
    
    NA_FreeNameArray(type_na);
@@ -514,11 +523,11 @@ void  XSlopeFreePublicXtra()
 
    if ( public_xtra )
    {
-         switch((public_xtra -> type))
-         {
+      switch((public_xtra -> type))
+      {
          case 0:
          {
-			 dummy0 = (Type0 *)(public_xtra -> data);
+	    dummy0 = (Type0 *)(public_xtra -> data);
 
 	    NA_FreeNameArray(dummy0 -> regions);
 
@@ -534,7 +543,7 @@ void  XSlopeFreePublicXtra()
             tfree(dummy1);
             break;
          }
-		 }
+      }
       
       tfree(public_xtra);
    }
