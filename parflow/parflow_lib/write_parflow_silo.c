@@ -307,12 +307,14 @@ double time, int step, char *variable_name)
       }
 
       /* Free up allocated variables */
-      for(i = 0; i < p; i++) {
+      for(i = 0; i < P; i++) {
 	 free(meshnames[i]);
 	 free(varnames[i]);
       }
       free(meshnames);
       free(meshtypes);
+      free(varnames);
+      free(vartypes);
    }
 
    sprintf(filename, "%s/%s.%06u.%s", file_prefix, file_suffix, p, file_extn);
