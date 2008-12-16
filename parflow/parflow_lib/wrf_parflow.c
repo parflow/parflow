@@ -88,9 +88,8 @@ void wrfparflowinit_(char *input_file) {
    amps_ThreadLocal(evap_trans) = NewVector( grid, 1, 1 );
    InitVectorAll(amps_ThreadLocal(evap_trans), 0.0);
 
-   ProblemData *problem_data      = GetProblemDataRichards(amps_ThreadLocal(solver));
    Problem     *problem           = GetProblemRichards(amps_ThreadLocal(solver));
-   PFModule    *ic_phase_pressure = GetICPhasePressureRichards(amps_ThreadLocal(solver));
+   ProblemData *problem_data      = GetProblemDataRichards(amps_ThreadLocal(solver));
 
    amps_ThreadLocal(top)          = ComputeTop(problem, problem_data, amps_ThreadLocal(evap_trans));
 }
@@ -114,6 +113,8 @@ void wrfparflowadvance_(double *current_time,
    Vector       *porosity_out;
    Vector       *saturation_out;
 
+   CommHandle   *handle;
+
    // AdvanceRichards should not use select_time_step module to compute dt.
    // Use the provided dt with possible subcycling if it does not converge.
    int compute_time_step = 0; 
@@ -123,6 +124,12 @@ void wrfparflowadvance_(double *current_time,
 	  *ghost_size_i_upper, *ghost_size_j_upper,
 	  amps_ThreadLocal(evap_trans), 
           amps_ThreadLocal(top));
+
+   /*
+    * Exchange ghost layer data for the newly set fluxes
+    */
+   handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
+   FinalizeVectorUpdate(handle); 
    
    AdvanceRichards(amps_ThreadLocal(solver),
 		   *current_time, 
@@ -133,6 +140,17 @@ void wrfparflowadvance_(double *current_time,
 		   &pressure_out, 
 		   &porosity_out,
 		   &saturation_out);
+
+   /* TODO: SGS 
+      Are these needed here?  Decided to put them in just be safe but
+      they could be unnecessary.
+   */
+   handle = InitVectorUpdate(pressure_out, VectorUpdateAll);
+   FinalizeVectorUpdate(handle); 
+   handle = InitVectorUpdate(porosity_out, VectorUpdateAll);
+   FinalizeVectorUpdate(handle); 
+   handle = InitVectorUpdate(saturation_out, VectorUpdateAll);
+   FinalizeVectorUpdate(handle); 
 
    PF2WRF(pressure_out,   wrf_pressure,   *num_soil_layers, 
 	  *ghost_size_i_lower, *ghost_size_j_lower, 
@@ -148,7 +166,7 @@ void wrfparflowadvance_(double *current_time,
 	  *ghost_size_i_lower, *ghost_size_j_lower, 
 	  *ghost_size_i_upper, *ghost_size_j_upper,
 	  amps_ThreadLocal(top));  
-   printf("done \n");
+
 }
 
 
@@ -232,8 +250,6 @@ void PF2WRF(
    Grid       *grid     = VectorGrid(pf_vector);
    int sg;
 
-
-    //printf("in pf2wrf \n");
 
    ForSubgridI(sg, GridSubgrids(grid))
    {
