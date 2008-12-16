@@ -843,7 +843,13 @@ PFModule   *SaturationNewPublicXtra()
 	    
 	    dummy0 -> region_indices[ir] = 
 	       NA_NameToIndex(GlobalsGeomNames, region);
-	    
+
+	    if( dummy0 -> region_indices[ir] < 0 )
+	    {
+	       InputError("Error: invalid geometry name <%s> for key <%s>\n",
+	                  region, "Phase.Saturation.GeomNames");
+	    }
+
 	    sprintf(key, "Geom.%s.Saturation.Value", region);
 	    dummy0 -> values[ir] = GetDouble(key);
 	 }
@@ -878,6 +884,13 @@ PFModule   *SaturationNewPublicXtra()
 	    
 	       dummy1 -> region_indices[ir] = 
 	          NA_NameToIndex(GlobalsGeomNames, region);
+
+	       if( dummy1 -> region_indices[ir] < 0 )
+	       {
+		  InputError("Error: invalid geometry name <%s> for key <%s>\n",
+		             region, "Phase.Saturation.GeomNames");
+	       }
+
 	    
 	       sprintf(key, "Geom.%s.Saturation.Alpha", region);
 	       dummy1 -> alphas[ir] = GetDouble(key);
