@@ -18,6 +18,8 @@
 #include "parflow.h"
 #include "kinsol_dependences.h"
 
+#define EPSILON 0.00000000001
+
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -530,6 +532,7 @@ void AdvanceRichards(PFModule *this_module,
       */
 	cdt = dt;
    }
+   dt = cdt;
 
    rank = amps_Rank(amps_CommWorld);
 
@@ -552,6 +555,8 @@ void AdvanceRichards(PFModule *this_module,
 
    do  /* while take_more_time_steps */
    {
+
+#ifdef HAVE_CLM      
       /* sk: call to the land surface model/subroutine*/
       if (t == ct){ 
 	 //  sk: For the couple with CLM 
@@ -560,7 +565,6 @@ void AdvanceRichards(PFModule *this_module,
 	 int r = GetInt("Process.Topology.R");
 
 	 ct += cdt;
-	 dt = cdt;
 
 	 ForSubgridI(is, GridSubgrids(grid))
 	 {
@@ -604,11 +608,7 @@ void AdvanceRichards(PFModule *this_module,
 	       }
 	       case 1:
 	       {
-#ifdef HAVE_CLM      
 		  CALL_CLM_LSM(pp,sp,et,ms,po_dat,dt,t,dx,dy,dz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,p,q,r,rank);
-#else
-		  printf("Error calling CLM but it is not compiled into this version of Parflow");
-#endif
 		  break;		  
 	       }
 	       default:
@@ -621,6 +621,7 @@ void AdvanceRichards(PFModule *this_module,
 	 handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
 	 FinalizeVectorUpdate(handle); 
       } //Endif to check whether an entire dt is complete
+#endif
 
       converged = 1;
       conv_failures = 0;
@@ -660,11 +661,19 @@ void AdvanceRichards(PFModule *this_module,
 	 dump_files = 0;
 	 if ( dump_interval > 0 )
 	 {
-	    print_dt = start_time +  instance_xtra -> dump_index*dump_interval - t;
+	    print_dt = ProblemStartTime(problem) +  instance_xtra -> dump_index*dump_interval - t;
 
-	    if ( dt >= print_dt )
+	    if ( (dt + EPSILON) > print_dt )
 	    {
-	       dt = print_dt;
+	       /*
+		* if the difference is small don't try to compute
+		* at print_dt, just use dt.  This will
+		* output slightly in time but avoids
+		* extremely small dt values.
+		*/
+	       if( fabs(dt - print_dt) > EPSILON) {
+		  dt = print_dt;
+	       }
 	       dt_info = 'p';
 
 	       instance_xtra -> dump_index++;
@@ -701,12 +710,15 @@ void AdvanceRichards(PFModule *this_module,
 	 /*******************************************************************/
 	  
 	 retval = PFModuleInvoke(int, nonlin_solver, 
-	                         (instance_xtra -> pressure, instance_xtra -> density, 
+	                         (instance_xtra -> pressure, 
+				 instance_xtra -> density, 
 				 instance_xtra -> old_density, 
 				 instance_xtra -> saturation, 
-				 instance_xtra -> old_saturation, t, dt, 
+				 instance_xtra -> old_saturation, 
+				 t, dt, 
 				 problem_data, instance_xtra -> old_pressure, 
-	 &outflow, evap_trans, instance_xtra -> ovrl_bc_flx));
+				 &outflow, evap_trans, 
+				 instance_xtra -> ovrl_bc_flx));
 
 	 if (retval != 0)
 	 {
@@ -1051,7 +1063,7 @@ PFModule *SolverRichardsInitInstanceXtra()
    new_subgrids  = GetGridSubgrids(new_all_subgrids);
    grid2d        = NewGrid(new_subgrids, new_all_subgrids);
    CreateComputePkgs(grid2d);
- 
+
    /* Create the x velocity grid */
 
    all_subgrids = GridAllSubgrids(grid);
@@ -1325,6 +1337,8 @@ void  SolverRichardsFreeInstanceXtra()
       FreeGrid((instance_xtra -> z_grid));
       FreeGrid((instance_xtra -> y_grid));
       FreeGrid((instance_xtra -> x_grid));
+      FreeGrid((instance_xtra -> grid2d));
+      FreeGrid((instance_xtra -> grid));
 
       tfree(instance_xtra);
    }
