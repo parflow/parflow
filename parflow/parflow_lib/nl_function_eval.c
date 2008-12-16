@@ -996,7 +996,6 @@ Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/
 			case 1:
 			   io   = SubvectorEltIndex(p_sub, i, j, 0);
 			   ip   = SubvectorEltIndex(p_sub, i, j, k);
-			   io   = SubvectorEltIndex(p_sub, i, j, 0);
 
 			   dir_x = 0.0;
 			   dir_y = 0.0;
