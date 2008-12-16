@@ -82,6 +82,7 @@ int	   solver;   /* Designates the solver from which this routine is
       switch_name, key);
    }
    ProblemDumpAtEnd(problem) = switch_value;
+   NA_FreeNameArray(switch_na);
 
    /*-----------------------------------------------------------------------
     * Read in the cycle data
