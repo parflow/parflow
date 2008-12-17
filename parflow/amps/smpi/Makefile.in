@@ -34,7 +34,7 @@ OBJS = \
 	amps_vector.o 
 
 $(PARFLOW_LIB_DIR)/$(AMPS_LIB): $(OBJS)
-	@AR@ ru $(PARFLOW_LIB_DIR)/$(AMPS_LIB) $(OBJS)
+	@AR@ rus $(PARFLOW_LIB_DIR)/$(AMPS_LIB) $(OBJS)
 
 all: $(PARFLOW_LIB_DIR)/$(AMPS_LIB)
 

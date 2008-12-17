@@ -25,6 +25,8 @@ clean:
 	@for DIR in $(SUBDIRS); do if test -d $$DIR; then (cd $$DIR && $(MAKE) $@) ; fi || exit 1; done
 	@$(PARFLOW_CLEAN)
 
+distclean: veryclean
+
 veryclean: clean
 	@for DIR in $(SUBDIRS); do if test -d $$DIR; then (cd $$DIR && $(MAKE) $@) ; fi || exit 1; done
 	@$(RM) -fr include  autom4te.cache bin lib
