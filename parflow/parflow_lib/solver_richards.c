@@ -564,16 +564,21 @@ void AdvanceRichards(PFModule *this_module,
 
    do  /* while take_more_time_steps */
    {
+      if (t == ct)
+      { 
+
+	 /*
+	  * TODO SGS is this correct?  This will reset the dt to initial value.
+	  */
+	 ct += cdt;
+	 dt = cdt;
 
 #ifdef HAVE_CLM      
       /* sk: call to the land surface model/subroutine*/
-      if (t == ct){ 
 	 //  sk: For the couple with CLM 
 	 int p = GetInt("Process.Topology.P");
 	 int q = GetInt("Process.Topology.Q");
 	 int r = GetInt("Process.Topology.R");
-
-	 ct += cdt;
 
 	 ForSubgridI(is, GridSubgrids(grid))
 	 {
@@ -629,8 +634,8 @@ void AdvanceRichards(PFModule *this_module,
 	 }
 	 handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
 	 FinalizeVectorUpdate(handle); 
-      } //Endif to check whether an entire dt is complete
 #endif
+      } //Endif to check whether an entire dt is complete
 
       converged = 1;
       conv_failures = 0;
