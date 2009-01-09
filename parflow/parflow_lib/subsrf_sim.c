@@ -687,7 +687,7 @@ PFModule   *SubsrfSimNewPublicXtra()
    (public_xtra -> geo_indexes)      = ctalloc(int, num_geo_indexes);
    (public_xtra -> KFieldSimulators) = ctalloc(PFModule*, num_geo_indexes);
 
-   switch_na = NA_NewNameArray("Constant TurnBands ParGuass PFBFile");
+   switch_na = NA_NewNameArray("Constant TurnBands ParGauss PFBFile");
 
    for (i = 0; i < num_geo_indexes; i++)
    {

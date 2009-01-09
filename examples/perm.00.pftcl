@@ -6,7 +6,7 @@ package require parflow
 namespace import Parflow::*
 
 # This test input is based on the llnl problem
-# This tests the Parallel Guassian Simulator and input from a file
+# This tests the Parallel Gaussian Simulator and input from a file
 # You need to run llnl problem first since this reads in the 
 # perm output from that run
 
@@ -121,7 +121,7 @@ pfset ComputationalGrid.NZ                      17
 pfset Geom.background.Perm.Type PFBFile
 pfset Geom.background.Perm.FileName llnl.out.perm_x.pfb
 
-pfset Geom.layer1b.Perm.Type "ParGuass"
+pfset Geom.layer1b.Perm.Type "ParGauss"
 pfset Geom.layer1b.Perm.LambdaX 200.0
 pfset Geom.layer1b.Perm.LambdaY 200.0
 pfset Geom.layer1b.Perm.LambdaZ 10.0

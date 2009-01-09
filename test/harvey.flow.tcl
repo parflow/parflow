@@ -150,14 +150,14 @@ pfset Geom.lower_aquifer.Perm.StratType Bottom
 # uncomment the lines below to run parallel gaussian instead
 # of parallel turning bands
 
-#pfset Geom.upper_aquifer.Perm.Type "ParGuass"
+#pfset Geom.upper_aquifer.Perm.Type "ParGauss"
 
 #pfset Geom.upper_aquifer.Perm.Seed 1
 #pfset Geom.upper_aquifer.Perm.MaxNPts 70.0
 #pfset Geom.upper_aquifer.Perm.MaxCpts 20
 
 
-#pfset Geom.lower_aquifer.Perm.Type "ParGuass"
+#pfset Geom.lower_aquifer.Perm.Type "ParGauss"
 
 #pfset Geom.lower_aquifer.Perm.Seed 1
 #pfset Geom.lower_aquifer.Perm.MaxNPts 70.0
