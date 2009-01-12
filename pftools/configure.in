@@ -389,6 +389,10 @@ fi
 
 INSTDIR=$prefix
 
+AX_C_CHECK_FLAG(-shared,,,
+	CC_HAS_SHARED="yes";CC_SHARED_FLAG="-shared",
+	CC_HAS_SHARED="no";CC_SHARED_FLAC="")	
+
 # SGS This could be done better but just test on OS for now
 case "$host_os" in
   darwin*)
@@ -397,7 +401,11 @@ case "$host_os" in
     ;;
   *) 
     SHLIB_SUFFIX=".so"
-    SHLIB_LD="ld -shared"
+    if test "$CC_HAS_SHARED" = "yes"; then
+        SHLIB_LD="$CC -shared"
+    else
+        SHLIB_LD="ld -shared"
+    fi
     ;;
 esac
 
