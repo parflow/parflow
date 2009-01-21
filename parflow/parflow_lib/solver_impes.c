@@ -2054,5 +2054,8 @@ void   SolverImpesFreePublicXtra()
 
 int  SolverImpesSizeOfTempData()
 {
+
+   /* SGS temp data */
+
    return 0;
 }

@@ -260,8 +260,11 @@ double       *temp_data;
    if ( grid != NULL )
    {
       /* Free the HYPRE grid */
-      if (instance_xtra -> hypre_grid)
+      if (instance_xtra -> hypre_grid) 
+      {
 	 HYPRE_StructGridDestroy(instance_xtra->hypre_grid);
+	 instance_xtra->hypre_grid = NULL;
+      }
 
       /* Set the HYPRE grid */
       HYPRE_StructGridCreate(MPI_COMM_WORLD, 3, &(instance_xtra->hypre_grid) );
@@ -292,9 +295,11 @@ double       *temp_data;
    {
       /* Free old solver data because HYPRE requires a new solver if 
          matrix values change */
-      if (instance_xtra->hypre_pfmg_data)
+      if (instance_xtra->hypre_pfmg_data) {
 	 HYPRE_StructPFMGDestroy(instance_xtra->hypre_pfmg_data);
-
+	 instance_xtra->hypre_pfmg_data = NULL;
+      }
+      
       /* For remainder of routine, assume matrix is structured the same for
 	 entire nonlinear solve process */
       /* Set stencil parameters */
@@ -539,6 +544,7 @@ PFModule  *PFMGNewPublicXtra(char *name)
       InputError("Error: Invalid value <%s> for key <%s>.\n", 
 		 smoother_name, key);
    }
+   NA_FreeNameArray(smoother_switch_na);
 
    public_xtra -> time_index_pfmg = RegisterTiming("PFMG");
    public_xtra -> time_index_copy_hypre = RegisterTiming("HYPRE_Copies");

@@ -233,7 +233,7 @@ GrGeomSolid  **gr_geounits;
 	       perm_z_dat[ipz] = tmp_perm_dat[itp] * kz_values[ir];
 	    });
 
-		GrGeomOutLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+	    GrGeomOutLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
 	    {
 	       ipx = SubvectorEltIndex(perm_x_sub, i, j, k);
 	       ipy = SubvectorEltIndex(perm_y_sub, i, j, k);
@@ -254,6 +254,7 @@ GrGeomSolid  **gr_geounits;
    /* sk: I replaced the function/macro PFVPROD(), which didn't work, with the common loop over
           the subgrids and geometries 01/20/2005*/
    {
+
       Vector  *kx_values, *ky_values, *kz_values;
 
       dummy1 = (Type1 *)(public_xtra -> data);
@@ -314,7 +315,10 @@ GrGeomSolid  **gr_geounits;
 		   });
 	   } /* End subgrid loop */
       break;
+
    }         /* End case 1 */
+
+
    
    }         /* End switch statement */
 
@@ -877,5 +881,18 @@ void  SubsrfSimFreePublicXtra()
 
 int  SubsrfSimSizeOfTempData()
 {
-   return 0;
+   PFModule      *this_module   = ThisPFModule;
+   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+
+   int  sz = 0;
+
+   int  n;
+
+   /* set `sz' to max of each of the called modules */
+   for (n = 0; n < (public_xtra -> num_geo_indexes); n++)
+      sz = max(sz,
+	       PFModuleSizeOfTempData((instance_xtra -> KFieldSimulators)[n]));
+
+   return sz;
 }

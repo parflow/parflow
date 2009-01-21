@@ -895,8 +895,10 @@ double    *temp_data;
     *-----------------------------------------------------------------------*/
    if (temp_data != NULL)
    {
-      (instance_xtra -> temp_data) = temp_data;
-      SetTempVectorData((instance_xtra->tmpRF), temp_data);
+      if(instance_xtra -> temp_data == NULL) {
+	 (instance_xtra -> temp_data) = ctalloc(double, SizeOfVector(instance_xtra->tmpRF));
+	 SetTempVectorData((instance_xtra->tmpRF), (instance_xtra -> temp_data));
+      }
    }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -916,6 +918,9 @@ void  PGSRFFreeInstanceXtra()
 
    if(instance_xtra)
    {
+      if(instance_xtra -> temp_data) {
+	 tfree(instance_xtra -> temp_data);
+      }
       FreeTempVector(instance_xtra -> tmpRF);
       tfree(instance_xtra);
    }

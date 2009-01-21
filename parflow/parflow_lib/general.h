@@ -43,10 +43,10 @@
 #else
 
 #define talloc(type, count) \
-((count) ? (type *) malloc((unsigned int)(sizeof(type) * (count))) : NULL)
+   ((count) ? (type *) malloc((unsigned int)(sizeof(type) * (count))) : NULL)
 
 #define ctalloc(type, count) \
-((count) ? (type *) calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
+   ((count) ? (type *) calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
 
 /* note: the `else' is required to guarantee termination of the `if' */
 #define tfree(ptr) if (ptr) free(ptr); else

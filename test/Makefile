@@ -16,6 +16,7 @@ TESTS := \
 	default_richards.tcl \
 	forsyth2.tcl \
 	harvey.flow.tcl \
+	harvey_flow_pgs.tcl \
 	default_overland.tcl \
 	crater2D.tcl \
 	small_domain.tcl

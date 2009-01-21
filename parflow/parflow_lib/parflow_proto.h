@@ -147,6 +147,9 @@ int gauinv_ (double *p , double *xp , int *ierr );
 char *malloc_chk (int size , char *file , int line );
 char *calloc_chk (int count , int elt_size , char *file , int line );
 int Exp2 (int p );
+void printMemoryInfo(FILE *log_file);
+void recordMemoryInfo();
+void printMaxMemory(FILE *log_file);
 
 /* geom_t_solid.c */
 GeomTSolid *GeomNewTSolid (GeomTIN *surface , int **patches , int num_patches , int *num_patch_triangles );

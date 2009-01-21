@@ -689,6 +689,8 @@ int  KinsolNonlinSolverSizeOfTempData()
 					  richards_jacobian_eval);
 
    int sz = 0;
+
+   /* SGS temp data */
    
    if (jacobian_eval != NULL)
    {

@@ -111,4 +111,11 @@
 #undef HAVE_SUNDIALS
 #endif
 
+/* HAVE_MALLOC_H */
+#undef HAVE_MALLOC_H
+
+/* Define if you have the 'mallinfo' function. */
+#undef HAVE_MALLINFO
+
+
 #endif

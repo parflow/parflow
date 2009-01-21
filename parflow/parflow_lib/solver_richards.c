@@ -643,6 +643,11 @@ void AdvanceRichards(PFModule *this_module,
       do  /* while not converged */
       {
 
+	 /*
+	   Record amount of memory in use.
+	 */
+	 recordMemoryInfo();
+
 	 /*******************************************************************/
 	 /*                  Compute time step                              */
 	 /*******************************************************************/
@@ -1624,6 +1629,8 @@ void   SolverRichardsFreePublicXtra()
 
 int  SolverRichardsSizeOfTempData()
 {
+   /* SGS temp data */
+
    return 0;
 }
 
@@ -1671,6 +1678,11 @@ void      SolverRichards() {
 		   &pressure_out, 
                    &porosity_out,
                    &saturation_out);
+
+   /*
+     Record amount of memory in use.
+   */
+   recordMemoryInfo();
    
    TeardownRichards(this_module);
 

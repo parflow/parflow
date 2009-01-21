@@ -16,6 +16,9 @@
 #include <math.h>
 #include "parflow.h"
 
+#include <malloc.h>
+
+amps_ThreadLocalDcl(int, s_max_memory);
 
 #ifdef PF_MEMORY_ALLOC_CHECK
 
@@ -108,3 +111,136 @@ int  p;
 }
 
 
+
+/*
+ *************************************************************************
+ *                                                                       
+ * Records memory usage
+ *                                                                       
+ *************************************************************************
+*/
+
+void recordMemoryInfo() 
+{
+#ifdef HAVE_MALLINFO
+   /*
+    * Access information from mallinfo
+    */   
+   struct mallinfo my_mallinfo = mallinfo();
+
+   /* Get all the memory currently allocated to user by malloc, etc. */
+   int used_mem = my_mallinfo.uordblks;
+
+   /* Record high-water mark for memory used. */
+   if(amps_ThreadLocal(s_max_memory) < used_mem) 
+   {
+      amps_ThreadLocal(s_max_memory) = used_mem;
+   }
+#endif
+}
+
+
+/*
+*************************************************************************
+*                                                                       *
+* Prints maximum memory used (i.e. high-water mark).  The max is        *
+* determined each time the "printMemoryInfo" or "recordMemoryInfo"      *
+* functions are called.                                                 *
+*                                                                       *
+*************************************************************************
+*/
+void printMaxMemory(FILE *log_file)  
+{
+#ifdef HAVE_MALLINFO
+
+   int p;
+
+   /*
+    * Step through all nodes (>0) and send max memory to processor 0,
+    * which subsequently writes it out.
+    */
+   int maxmem = 0;
+
+   recordMemoryInfo();
+
+   amps_Invoice invoice = amps_NewInvoice("%i", &maxmem);
+
+   for (p = 0; p < amps_Size(amps_CommWorld); p++) {
+      if (amps_Rank(amps_CommWorld) == p) {
+         maxmem = (int)amps_ThreadLocal(s_max_memory);
+	 amps_Send(amps_CommWorld, 0, invoice);
+      }
+      
+      if (amps_Rank(amps_CommWorld) == 0) {
+	 amps_Recv(amps_CommWorld, p, invoice);
+	 fprintf(log_file, 
+		 "Maximum memory used on processor %d : %d MB\n", 
+		 p, 
+		 maxmem/(1024*1024) );
+      }
+   }
+   
+   amps_FreeInvoice(invoice);
+
+#endif
+}
+
+
+/*
+ *************************************************************************
+ *                                                                       *
+ * Prints memory usage to specified output stream.  Each time this       *
+ * method is called, it prints in the format:                            *
+ *                                                                       *
+ *    253.0MB (265334688) in 615 allocs, 253.9MB reserved (871952 unused)*
+ *                                                                       *
+ * where                                                                 *
+ *                                                                       *
+ *    253.0MB is how many megabytes your current allocation has malloced.* 
+ *    2653346688 is the precise size (in bytes) of your current alloc.   *
+ *    615 is the number of items allocated with malloc.                  *
+ *    253.9MB is the current memory reserved by the system for mallocs.  *
+ *    871952 is the bytes currently not used in this reserved memory.    *
+ *                                                                       *
+ *************************************************************************
+*/
+void printMemoryInfo(FILE *log_file) 
+{
+   
+#ifdef HAVE_MALLINFO
+
+   /* Get malloc info structure */
+   struct mallinfo my_mallinfo = mallinfo();
+   
+   /* Get total memory reserved by the system for malloc currently*/
+   int reserved_mem = my_mallinfo.arena;
+   
+   /* Get all the memory currently allocated to user by malloc, etc. */
+#if 0
+   int used_mem = my_mallinfo.hblkhd + my_mallinfo.usmblks +
+      my_mallinfo.uordblks;
+#endif
+   int used_mem = my_mallinfo.uordblks;
+   
+   /* Get memory not currently allocated to user but malloc controls */
+   int free_mem = my_mallinfo.fsmblks + my_mallinfo.fordblks;
+   
+   /* Get number of items currently allocated */
+   int number_allocated = my_mallinfo.ordblks + my_mallinfo.smblks;
+
+   
+   /* Record high-water mark for memory used. */
+   if(amps_ThreadLocal(s_max_memory) < used_mem) 
+   {
+      amps_ThreadLocal(s_max_memory) = used_mem;
+   }
+   
+   /* Print out concise malloc info line */
+   fprintf(log_file, 
+	   "Memory in use : %d MB in %d allocs, %d MB reserved ( %d unused)\n",
+	   used_mem/(1024*1024), 
+	   number_allocated, 
+	   reserved_mem/(1024*1024), 
+	   free_mem/(1024*1024));
+#endif
+}

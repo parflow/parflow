@@ -243,7 +243,7 @@ int  InputRFSizeOfTempData()
    InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
    int           size; 
 
-/* Set size equal to local TempData size */
+   /* Set size equal to local TempData size */
    size = SizeOfVector(instance_xtra -> tmpRF);
 
    return (size);

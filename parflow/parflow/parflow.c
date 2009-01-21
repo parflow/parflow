@@ -24,7 +24,9 @@ int             main(argc,argv)
 char *argv[];
 int  argc;
 {
-   FILE *file;
+   FILE *file = NULL;
+
+   FILE *log_file = NULL;
       
    char filename[MAXPATHLEN];
 
@@ -102,19 +104,31 @@ int  argc;
 
    wall_clock_time = amps_Clock() - wall_clock_time;
 
-   if(!amps_Rank(amps_CommWorld))
-      IfLogging(0) 
-      {
-	 
-	 FILE *log_file;
 
+   IfLogging(0) 
+   {
+      if(!amps_Rank(amps_CommWorld)) {
 	 log_file = OpenLogFile("ParFlow Total Time");
-	 
-	 fprintf(log_file, "Total Run Time: %f seconds\n", 
+
+	 fprintf(log_file, "Total Run Time: %f seconds\n\n", 
 		      (double)wall_clock_time/(double)AMPS_TICKS_PER_SEC);
-	 
+      }
+   }
+
+   printMaxMemory(log_file);
+
+   fprintf(log_file, "\n");
+
+   IfLogging(0) 	 
+   {
+      if(!amps_Rank(amps_CommWorld))
+      {
+	 printMemoryInfo(log_file);
+	 fprintf(log_file, "\n");
+
 	 CloseLogFile(log_file);
       }
+   }
 
    if(!amps_Rank(amps_CommWorld))
    {

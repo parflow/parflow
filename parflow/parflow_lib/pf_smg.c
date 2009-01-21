@@ -256,7 +256,10 @@ double       *temp_data;
    {
       /* Free the HYPRE grid */
       if (instance_xtra -> hypre_grid)
+      {
 	 HYPRE_StructGridDestroy(instance_xtra->hypre_grid);
+	 instance_xtra->hypre_grid = NULL;
+      }
 
       /* Set the HYPRE grid */
       HYPRE_StructGridCreate(MPI_COMM_WORLD, 3, &(instance_xtra->hypre_grid) );
@@ -282,8 +285,12 @@ double       *temp_data;
    {
       /* Free old solver data because HYPRE requires a new solver if 
          matrix values change */
-      if (instance_xtra->hypre_smg_data)
+      if (instance_xtra->hypre_smg_data) 
+      {
 	 HYPRE_StructSMGDestroy(instance_xtra->hypre_smg_data);
+	 instance_xtra->hypre_smg_data = NULL;
+      }
+
 
       /* For remainder of routine, assume matrix is structured the same for
 	 entire nonlinear solve process */
@@ -464,7 +471,7 @@ void  SMGFreeInstanceXtra()
 
    if (instance_xtra)
    {
-      if (instance_xtra->hypre_smg_data)
+      if (instance_xtra->hypre_smg_data) 
 	 HYPRE_StructSMGDestroy(instance_xtra->hypre_smg_data);
       if (instance_xtra->hypre_mat)
 	 HYPRE_StructMatrixDestroy(instance_xtra->hypre_mat);

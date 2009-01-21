@@ -1063,10 +1063,6 @@ PFModule   *DiscretizePressureNewPublicXtra()
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;
 
-
-#if 0
-   public_xtra = ctalloc(PublicXtra, 1);
-#endif
    public_xtra = NULL;
 
    PFModulePublicXtra(this_module) = public_xtra;

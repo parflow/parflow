@@ -1852,5 +1852,6 @@ void   SolverDiffusionFreePublicXtra()
 
 int  SolverDiffusionSizeOfTempData()
 {
+   /* SGS temp data */
    return 0;
 }

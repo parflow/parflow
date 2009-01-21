@@ -295,6 +295,8 @@ int  KinsolPCSizeOfTempData()
 
    int sz = 0;
 
+   /* SGS temp data */
+
    sz += PFModuleSizeOfTempData(precond);
    sz += SizeOfVector(instance_xtra -> soln);
    
