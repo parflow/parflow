@@ -166,17 +166,22 @@ void printMaxMemory(FILE *log_file)
    amps_Invoice invoice = amps_NewInvoice("%i", &maxmem);
 
    for (p = 0; p < amps_Size(amps_CommWorld); p++) {
-      if (amps_Rank(amps_CommWorld) == p) {
+      if (amps_Rank(amps_CommWorld) == p && p != 0) {
          maxmem = (int)amps_ThreadLocal(s_max_memory);
 	 amps_Send(amps_CommWorld, 0, invoice);
       }
       
-      if (amps_Rank(amps_CommWorld) == 0) {
+      if (amps_Rank(amps_CommWorld) == 0 && p != 0) {
 	 amps_Recv(amps_CommWorld, p, invoice);
 	 fprintf(log_file, 
 		 "Maximum memory used on processor %d : %d MB\n", 
 		 p, 
 		 maxmem/(1024*1024) );
+      } else if ( p == 0 ) {
+	 fprintf(log_file, 
+		 "Maximum memory used on processor %d : %d MB\n", 
+		 p, 
+		 s_max_memory/(1024*1024) );
       }
    }
    
