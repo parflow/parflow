@@ -42,9 +42,6 @@ typedef struct
    Grid   *grid;
    double *temp_data;
 
-   /* Instance data */
-   Vector *tmpRF;
-
 } InstanceXtra;
 
 
@@ -65,7 +62,7 @@ RFCondData   *cdata;
    PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
    InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
 
-   Vector    *tmpRF         = (instance_xtra -> tmpRF);
+   Vector    *tmpRF         = NULL;
 
    /* Grid parameters */
    Grid           *grid = (instance_xtra -> grid);
@@ -83,6 +80,11 @@ RFCondData   *cdata;
    int             nx, ny, nz;
    int             r;
    int             indexfp,indextp;
+
+   /*-----------------------------------------------------------------------
+    * Allocate temp vectors
+    *-----------------------------------------------------------------------*/
+   tmpRF = NewVector(grid, 1, 1);
   
    ReadPFBinary((public_xtra -> filename),tmpRF);
 
@@ -117,6 +119,11 @@ RFCondData   *cdata;
 	 fieldp[indexfp] = tmpRFp[indextp];
       });
    }
+
+   /*-----------------------------------------------------------------------
+    * Free temp vectors
+    *-----------------------------------------------------------------------*/
+   FreeVector(tmpRF);
 }
 
 
@@ -143,18 +150,9 @@ double    *temp_data;
 
    if ( grid != NULL)
    {
-      /* free old data */
-      if ( (instance_xtra -> grid) != NULL )
-      {
-         FreeTempVector(instance_xtra -> tmpRF);
-      }
-
       /* set new data */
       (instance_xtra -> grid) = grid;
-
-      (instance_xtra -> tmpRF)        = NewTempVector(grid, 1, 1);
    }
-
 
    /*-----------------------------------------------------------------------
     * Initialize data associated with argument `temp_data'
@@ -163,10 +161,6 @@ double    *temp_data;
    if ( temp_data != NULL )
    {
       (instance_xtra -> temp_data) = temp_data;
-
-      SetTempVectorData((instance_xtra -> tmpRF), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> tmpRF);
-
    }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -186,7 +180,6 @@ void  InputRFFreeInstanceXtra()
 
    if (instance_xtra)
    {
-      FreeTempVector(instance_xtra -> tmpRF);
       tfree(instance_xtra);
    }
 }
@@ -242,9 +235,6 @@ int  InputRFSizeOfTempData()
    PFModule      *this_module = ThisPFModule;
    InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
    int           size; 
-
-   /* Set size equal to local TempData size */
-   size = SizeOfVector(instance_xtra -> tmpRF);
 
    return (size);
 }

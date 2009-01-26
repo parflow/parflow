@@ -489,9 +489,7 @@ double *temp_data;
       {
 	 dummy1 = (Type1 *)(public_xtra -> data);
 
-	 dummy1 -> kx_values = NewTempVector(grid, 1, 1);
-	 (instance_xtra -> temp_data1) = talloc(double, SizeOfVector(dummy1 -> kx_values));
-	 SetTempVectorData((dummy1 -> kx_values), (instance_xtra -> temp_data1));
+	 dummy1 -> kx_values = NewVector(grid, 1, 1);
 	 
 	 ReadPFBinary((dummy1 ->kx_file_name), 
 		      (dummy1 ->kx_values));
@@ -506,9 +504,7 @@ double *temp_data;
       {
 	 dummy1 = (Type1 *)(public_xtra -> data);
 	 
-	 dummy1 -> ky_values = NewTempVector(grid, 1, 1);
-	 (instance_xtra -> temp_data1) = talloc(double, SizeOfVector(dummy1 -> ky_values));
-	 SetTempVectorData((dummy1 -> ky_values), (instance_xtra -> temp_data1));
+	 dummy1 -> ky_values = NewVector(grid, 1, 1);
 
 	 ReadPFBinary((dummy1 ->ky_file_name), 
 		      (dummy1 ->ky_values));
@@ -524,9 +520,7 @@ double *temp_data;
       {
 	 dummy1 = (Type1 *)(public_xtra -> data);
 
-	 dummy1 -> kz_values = NewTempVector(grid, 1, 1);
-	 (instance_xtra -> temp_data1) = talloc(double, SizeOfVector(dummy1 -> kz_values));
-	 SetTempVectorData((dummy1 -> kz_values), (instance_xtra -> temp_data1));
+	 dummy1 -> kz_values = NewVector(grid, 1, 1);
 
 	 ReadPFBinary((dummy1 ->kz_file_name), 
 		      (dummy1 ->kz_values));
@@ -573,16 +567,14 @@ void  SubsrfSimFreeInstanceXtra()
    int i;
  
    if ( public_xtra -> type ==1)
-	{
-	             dummy1 = (Type1 *)(public_xtra -> data);
-				 FreeTempVector(dummy1 -> kx_values);
-				 FreeTempVector(dummy1 -> ky_values);
-				 FreeTempVector(dummy1 -> kz_values);
-
-				 tfree(instance_xtra -> temp_data1);
-	}
-
-
+   {
+	   dummy1 = (Type1 *)(public_xtra -> data);
+	   FreeVector(dummy1 -> kx_values);
+	   FreeVector(dummy1 -> ky_values);
+	   FreeVector(dummy1 -> kz_values);
+   }
+   
+   
    if(instance_xtra)
    {
       for (i = 0; i < (public_xtra -> num_geo_indexes); i++) 

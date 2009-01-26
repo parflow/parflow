@@ -53,16 +53,8 @@ typedef struct
    ComputePkg      **restrict_compute_pkg_l;
    ComputePkg      **prolong_compute_pkg_l;
 
-   CommPkg         **restrict_comm_pkg_l;
-   CommPkg         **prolong_comm_pkg_l;
-
    Matrix          **A_l;
    Matrix          **P_l;
-
-   /* temp data */
-   Vector          **x_l;
-   Vector          **b_l;
-   Vector          **temp_vec_l;
 
 } InstanceXtra;
 
@@ -109,18 +101,16 @@ int      zero;
    ComputePkg      **prolong_compute_pkg_l  =
       (instance_xtra -> prolong_compute_pkg_l);
 
-   CommPkg         **restrict_comm_pkg_l    =
-      (instance_xtra -> restrict_comm_pkg_l);
-   CommPkg         **prolong_comm_pkg_l     =
-      (instance_xtra -> prolong_comm_pkg_l);
+   CommPkg         **restrict_comm_pkg_l    = NULL;
+   CommPkg         **prolong_comm_pkg_l     = NULL;
 	           		
    Matrix          **A_l        = (instance_xtra -> A_l);
-   Vector          **x_l        = (instance_xtra -> x_l);
-   Vector          **b_l        = (instance_xtra -> b_l);
+   Vector          **x_l        = NULL;
+   Vector          **b_l        = NULL;
 	           		
    Matrix          **P_l        = (instance_xtra -> P_l);
 	           
-   Vector          **temp_vec_l = (instance_xtra -> temp_vec_l);
+   Vector          **temp_vec_l = NULL;
 	           
    Matrix           *A          = A_l[0];
 
@@ -149,6 +139,38 @@ int      zero;
     *-----------------------------------------------------------------------*/
 
    BeginTiming(public_xtra -> time_index);
+
+
+   /*-----------------------------------------------------------------------
+    * Allocate temp vectors
+    *-----------------------------------------------------------------------*/
+   x_l        = talloc(Vector *, num_levels);
+   b_l        = talloc(Vector *, num_levels);
+   temp_vec_l = talloc(Vector *, num_levels);
+
+   restrict_comm_pkg_l    = talloc(CommPkg *, (num_levels - 1));
+   prolong_comm_pkg_l     = talloc(CommPkg *, (num_levels - 1));
+
+   temp_vec_l[0] = NewVector(instance_xtra -> grid_l[0], 1, 1);
+   for (l = 0; l < (num_levels - 1); l++)   
+   {
+      /*-----------------------------------------------------------------
+       * Set up temporary vectors: x_l, b_l, temp_vec_l
+       *-----------------------------------------------------------------*/
+      x_l[l+1]        = NewVector(instance_xtra -> grid_l[l+1], 1, 1);
+      b_l[l+1]        = NewVector(instance_xtra -> grid_l[l+1], 1, 1);
+      temp_vec_l[l+1] = NewVector(instance_xtra -> grid_l[l+1], 1, 1);
+
+      /* Set up comm_pkg's */
+
+      /* SGS not done */
+      restrict_comm_pkg_l[l] =
+	 NewVectorCommPkg(temp_vec_l[l],
+			  (instance_xtra -> restrict_compute_pkg_l[l]));
+      prolong_comm_pkg_l[l] =
+	 NewVectorCommPkg(temp_vec_l[l],
+			  (instance_xtra -> prolong_compute_pkg_l[l]));
+   }
 
    /*-----------------------------------------------------------------------
     * Do V-cycles:
@@ -326,6 +348,28 @@ int      zero;
       amps_Printf("Iterations = %d, ||r||_2 = %e, ||r||_2/||b||_2 = %e\n",
 		  i, sqrt(r_dot_r), (b_dot_b ? sqrt(r_dot_r/b_dot_b) : 0.0));
    }
+
+   /*-----------------------------------------------------------------------
+    * Free temp vectors
+    *-----------------------------------------------------------------------*/
+
+   FreeVector(temp_vec_l[0]);
+   for (l = 0; l < (num_levels - 1); l++)   
+   {
+      FreeVector(x_l[l+1]);
+      FreeVector(b_l[l+1]);
+      FreeVector(temp_vec_l[l+1]);
+
+      FreeCommPkg(restrict_comm_pkg_l[l]);
+      FreeCommPkg(prolong_comm_pkg_l[l]);
+   }
+
+   tfree(temp_vec_l);
+   tfree(b_l);
+   tfree(x_l);
+
+   tfree(prolong_comm_pkg_l);
+   tfree(restrict_comm_pkg_l);
 
    /*-----------------------------------------------------------------------
     * End timing
@@ -729,17 +773,10 @@ double       *temp_data;
    ComputePkg     **restrict_compute_pkg_l;
    ComputePkg     **prolong_compute_pkg_l;
 
-   CommPkg        **restrict_comm_pkg_l;
-   CommPkg        **prolong_comm_pkg_l;
-
    Matrix          **A_l;
-   Vector          **x_l;
-   Vector          **b_l;
 	          
    Matrix          **P_l;
 	          
-   Vector          **temp_vec_l;
-
    SubgridArray    *all_subgrids;
    SubgridArray    *subgrids;
 
@@ -908,16 +945,9 @@ double       *temp_data;
       restrict_compute_pkg_l = talloc(ComputePkg *, (num_levels - 1));
       prolong_compute_pkg_l  = talloc(ComputePkg *, (num_levels - 1));
 
-      restrict_comm_pkg_l    = talloc(CommPkg *, (num_levels - 1));
-      prolong_comm_pkg_l     = talloc(CommPkg *, (num_levels - 1));
 
       A_l = talloc(Matrix *, num_levels);
       P_l = talloc(Matrix *, num_levels - 1);
-
-      x_l        = talloc(Vector *, num_levels);
-      b_l        = talloc(Vector *, num_levels);
-      temp_vec_l = talloc(Vector *, num_levels);
-      temp_vec_l[0] = NewTempVector(grid_l[0], 1, 1);
 
       for (l = 0; l < (num_levels - 1); l++)
       {
@@ -1020,13 +1050,6 @@ double       *temp_data;
 	 P_l[l] = NewMatrix(grid_l[l], f_sra_l[l], transfer_stencil,
 			    OFF, transfer_stencil);
 
-	 /*-----------------------------------------------------------------
-	  * Set up temporary vectors: x_l, b_l, temp_vec_l
-	  *-----------------------------------------------------------------*/
-   
-	 x_l[l+1] = NewTempVector(grid_l[l+1], 1, 1);
-	 b_l[l+1] = NewTempVector(grid_l[l+1], 1, 1);
-	 temp_vec_l[l+1] = NewTempVector(grid_l[l+1], 1, 1);
       }
       
       (instance_xtra -> grid_l)     = grid_l;
@@ -1037,15 +1060,8 @@ double       *temp_data;
       (instance_xtra -> restrict_compute_pkg_l) = restrict_compute_pkg_l;
       (instance_xtra -> prolong_compute_pkg_l)  = prolong_compute_pkg_l;
 
-      (instance_xtra -> restrict_comm_pkg_l)    = restrict_comm_pkg_l;
-      (instance_xtra -> prolong_comm_pkg_l)     = prolong_comm_pkg_l;
-
       (instance_xtra -> A_l) = A_l;
       (instance_xtra -> P_l) = P_l;
-
-      (instance_xtra -> x_l)        = x_l;
-      (instance_xtra -> b_l)        = b_l;
-      (instance_xtra -> temp_vec_l) = temp_vec_l;
    }
 
    /*-----------------------------------------------------------------------
@@ -1070,28 +1086,6 @@ double       *temp_data;
    {
       (instance_xtra -> temp_data) = temp_data;
 
-      for (l = 0; l < (instance_xtra -> num_levels); l++)
-	 SetTempVectorData((instance_xtra -> temp_vec_l[l]), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> temp_vec_l[0]);
-
-      for (l = 1; l < (instance_xtra -> num_levels); l++)
-      {
-	 SetTempVectorData((instance_xtra -> x_l[l]), temp_data);
-	 temp_data += SizeOfVector(instance_xtra -> x_l[l]);
-	 SetTempVectorData((instance_xtra -> b_l[l]), temp_data);
-	 temp_data += SizeOfVector(instance_xtra -> b_l[l]);
-      }
-
-      /* Set up comm_pkg's */
-      for (l = 0; l < (instance_xtra -> num_levels) - 1; l++)
-      {
-	 (instance_xtra -> restrict_comm_pkg_l[l]) =
-	    NewVectorCommPkg((instance_xtra -> temp_vec_l[l]),
-			     (instance_xtra -> restrict_compute_pkg_l[l]));
-	 (instance_xtra -> prolong_comm_pkg_l[l]) =
-	    NewVectorCommPkg((instance_xtra -> temp_vec_l[l]),
-			     (instance_xtra -> prolong_compute_pkg_l[l]));
-      }
    }
 
    /*-----------------------------------------------------------------------
@@ -1172,14 +1166,6 @@ void   MGSemiFreeInstanceXtra()
 	 PFModuleFreeInstance(instance_xtra -> smooth_l[l]);
       tfree(instance_xtra -> smooth_l);
 
-      FreeTempVector((instance_xtra -> temp_vec_l[0]));
-      for (l = 1; l < (instance_xtra -> num_levels); l++)
-      {
-	 FreeTempVector((instance_xtra -> temp_vec_l[l]));
-	 FreeTempVector((instance_xtra -> b_l[l]));
-	 FreeTempVector((instance_xtra -> x_l[l]));
-      }
-
       for (l = 0; l < ((instance_xtra -> num_levels) - 1); l++)
 	 FreeMatrix((instance_xtra -> P_l[l]));
 
@@ -1188,8 +1174,6 @@ void   MGSemiFreeInstanceXtra()
 
       for (l = 0; l < ((instance_xtra -> num_levels) - 1); l++)
       {
-	 FreeCommPkg((instance_xtra -> prolong_comm_pkg_l[l]));
-	 FreeCommPkg((instance_xtra -> restrict_comm_pkg_l[l]));
 
 	 FreeComputePkg((instance_xtra -> prolong_compute_pkg_l[l]));
 	 FreeComputePkg((instance_xtra -> restrict_compute_pkg_l[l]));
@@ -1204,14 +1188,9 @@ void   MGSemiFreeInstanceXtra()
 	 FreeSubregionArray((instance_xtra -> f_sra_l[l]));
       }
 
-      tfree(instance_xtra -> temp_vec_l);
-      tfree(instance_xtra -> b_l);
-      tfree(instance_xtra -> x_l);
       tfree(instance_xtra -> P_l);
       tfree(instance_xtra -> A_l);
 
-      tfree(instance_xtra -> prolong_comm_pkg_l);
-      tfree(instance_xtra -> restrict_comm_pkg_l);
       tfree(instance_xtra -> prolong_compute_pkg_l);
       tfree(instance_xtra -> restrict_compute_pkg_l);
 
@@ -1361,14 +1340,6 @@ int  MGSemiSizeOfTempData()
       sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> smooth_l[l]));
 
    sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> solve));
-
-   /* add local TempData size to `sz' */
-   sz += SizeOfVector(instance_xtra -> temp_vec_l[0]);
-   for (l = 1; l < (instance_xtra -> num_levels); l++)
-   {
-      sz += SizeOfVector(instance_xtra -> x_l[l]);
-      sz += SizeOfVector(instance_xtra -> b_l[l]);
-   }
 
    return sz;
 }

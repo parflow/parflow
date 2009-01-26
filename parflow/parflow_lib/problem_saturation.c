@@ -686,16 +686,16 @@ double    *temp_data;
 	    dummy1 = (Type1 *)(public_xtra -> data);
 	    if ( (dummy1->data_from_file) == 1 )
 	    {
-	       FreeTempVector(dummy1 -> n_values);
-	       FreeTempVector(dummy1 -> alpha_values);
-	       FreeTempVector(dummy1 -> s_res_values);
-	       FreeTempVector(dummy1 -> s_sat_values);
+	       FreeVector(dummy1 -> n_values);
+	       FreeVector(dummy1 -> alpha_values);
+	       FreeVector(dummy1 -> s_res_values);
+	       FreeVector(dummy1 -> s_sat_values);
 	    }
 	 }
 	 if (public_xtra -> type == 5)
          {
 	    dummy5 = (Type5 *)(public_xtra -> data);
-	    FreeTempVector(dummy5 -> satRF);
+	    FreeVector(dummy5 -> satRF);
 	 }
       }
 
@@ -708,16 +708,16 @@ double    *temp_data;
 	 dummy1 = (Type1 *)(public_xtra -> data);
 	 if ( (dummy1->data_from_file) == 1 )
 	 {
-	    dummy1 -> n_values = NewTempVector(grid, 1, 1);
-	    dummy1 -> alpha_values = NewTempVector(grid, 1, 1);
-	    dummy1 -> s_res_values = NewTempVector(grid, 1, 1);
-	    dummy1 -> s_sat_values = NewTempVector(grid, 1, 1);
+	    dummy1 -> n_values     = NewVector(grid, 1, 1);
+	    dummy1 -> alpha_values = NewVector(grid, 1, 1);
+	    dummy1 -> s_res_values = NewVector(grid, 1, 1);
+	    dummy1 -> s_sat_values = NewVector(grid, 1, 1);
 	 }
       }
       if (public_xtra -> type == 5)  
       {
 	 dummy5 = (Type5 *)(public_xtra -> data);
-         (dummy5 -> satRF) = NewTempVector(grid, 1, 1);
+         (dummy5 -> satRF) = NewVector(grid, 1, 1);
       }
    }
 
@@ -736,15 +736,6 @@ double    *temp_data;
 	 dummy1 = (Type1 *)(public_xtra -> data);
 	 if ( (dummy1->data_from_file) == 1)
 	 {
-            SetTempVectorData((dummy1 -> n_values), temp_data);
-            temp_data += SizeOfVector(dummy1 ->n_values);
-            SetTempVectorData((dummy1 -> alpha_values), temp_data);
-            temp_data += SizeOfVector(dummy1 ->alpha_values);
-            SetTempVectorData((dummy1 -> s_res_values), temp_data);
-            temp_data += SizeOfVector(dummy1 ->s_res_values);
-            SetTempVectorData((dummy1 -> s_sat_values), temp_data);
-            temp_data += SizeOfVector(dummy1 ->s_sat_values);
-
             ReadPFBinary((dummy1 ->alpha_file), 
 			 (dummy1 ->alpha_values));
 	    ReadPFBinary((dummy1 ->n_file), 
@@ -759,8 +750,6 @@ double    *temp_data;
       if (public_xtra -> type == 5)  
       {
 	 dummy5 = (Type5 *)(public_xtra -> data);
-         SetTempVectorData((dummy5 -> satRF), temp_data);
-         temp_data += SizeOfVector(dummy5 -> satRF);
 
          ReadPFBinary((dummy5 -> filename), 
 		      (dummy5 -> satRF));
@@ -1105,10 +1094,10 @@ void  SaturationFreePublicXtra()
 
 	if (dummy1->data_from_file == 1)
 	{
-	   FreeTempVector(dummy1->alpha_values);
-	   FreeTempVector(dummy1->n_values);
-	   FreeTempVector(dummy1->s_res_values);
-	   FreeTempVector(dummy1->s_sat_values);
+	   FreeVector(dummy1->alpha_values);
+	   FreeVector(dummy1->n_values);
+	   FreeVector(dummy1->s_res_values);
+	   FreeVector(dummy1->s_sat_values);
 	}
 
 	tfree(dummy1 -> region_indices);
@@ -1168,7 +1157,7 @@ void  SaturationFreePublicXtra()
      {
         dummy5 = (Type5 *)(public_xtra -> data);
 
-	FreeTempVector(dummy5 -> satRF);
+	FreeVector(dummy5 -> satRF);
 
 	tfree(dummy5);
 

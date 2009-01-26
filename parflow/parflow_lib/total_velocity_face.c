@@ -81,10 +81,10 @@ Vector      **saturations;
    Grid           *y_grid    = (instance_xtra -> y_grid);
    Grid           *z_grid    = (instance_xtra -> z_grid);
 
-   Vector         *temp_mobility_x = (instance_xtra -> temp_mobility_x);
-   Vector         *temp_mobility_y = (instance_xtra -> temp_mobility_y);
-   Vector         *temp_mobility_z = (instance_xtra -> temp_mobility_z);
-   Vector         *temp_pressure = (instance_xtra -> temp_pressure);
+   Vector         *temp_mobility_x = NULL;
+   Vector         *temp_mobility_y = NULL;
+   Vector         *temp_mobility_z = NULL;
+   Vector         *temp_pressure   = NULL;
 
    GrGeomSolid    *gr_domain     = ProblemDataGrDomain(problem_data);
 
@@ -132,6 +132,11 @@ Vector      **saturations;
     *----------------------------------------------------------------------*/
 
    BeginTiming(public_xtra -> time_index);
+
+   temp_mobility_x = NewVector(instance_xtra -> grid, 1, 1);
+   temp_mobility_y = NewVector(instance_xtra -> grid, 1, 1);
+   temp_mobility_z = NewVector(instance_xtra -> grid, 1, 1);
+   temp_pressure   = NewVector(instance_xtra -> grid, 1, 1);
 
    /************************************************************************
     *      First do the computations with the total mobility               *
@@ -714,6 +719,14 @@ Vector      **saturations;
    handle = InitVectorUpdate(zvel, VectorUpdateVelZ);
    FinalizeVectorUpdate(handle);
 
+   /*----------------------------------------------------------------------
+    * Free temp vectors 
+    *----------------------------------------------------------------------*/
+   FreeVector(temp_mobility_x);
+   FreeVector(temp_mobility_y);
+   FreeVector(temp_mobility_z);
+   FreeVector(temp_pressure);
+
    /*-----------------------------------------------------------------------
     * End timing
     *----------------------------------------------------------------------*/
@@ -757,19 +770,9 @@ double   *temp_data;
       /* free old data */
       if ( (instance_xtra -> grid) != NULL )
       {
-         FreeTempVector(instance_xtra -> temp_mobility_x);
-         FreeTempVector(instance_xtra -> temp_mobility_y);
-         FreeTempVector(instance_xtra -> temp_mobility_z);
-         FreeTempVector(instance_xtra -> temp_pressure);
       }
 
       /* set new data */
-      (instance_xtra -> grid) = grid;
-
-      (instance_xtra -> temp_mobility_x) = NewTempVector(grid, 1, 1);
-      (instance_xtra -> temp_mobility_y) = NewTempVector(grid, 1, 1);
-      (instance_xtra -> temp_mobility_z) = NewTempVector(grid, 1, 1);
-      (instance_xtra -> temp_pressure) = NewTempVector(grid, 1, 1);
    }
 
    if ( x_grid != NULL )
@@ -790,16 +793,6 @@ double   *temp_data;
    if ( temp_data != NULL )
    {
       (instance_xtra -> temp_data) = temp_data;
-
-      SetTempVectorData((instance_xtra -> temp_mobility_x), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> temp_mobility_x);
-      SetTempVectorData((instance_xtra -> temp_mobility_y), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> temp_mobility_y);
-      SetTempVectorData((instance_xtra -> temp_mobility_z), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> temp_mobility_z);
-
-      SetTempVectorData((instance_xtra -> temp_pressure), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> temp_pressure);
    }
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
@@ -837,11 +830,6 @@ void  TotalVelocityFaceFreeInstanceXtra()
       PFModuleFreeInstance(instance_xtra -> phase_mobility);
       PFModuleFreeInstance(instance_xtra -> capillary_pressure);
       PFModuleFreeInstance(instance_xtra -> phase_density);
-
-      FreeTempVector(instance_xtra -> temp_mobility_x);
-      FreeTempVector(instance_xtra -> temp_mobility_y);
-      FreeTempVector(instance_xtra -> temp_mobility_z);
-      FreeTempVector(instance_xtra -> temp_pressure);
 
       free( instance_xtra );
    }
@@ -903,12 +891,6 @@ int  TotalVelocityFaceSizeOfTempData()
    InstanceXtra  *instance_xtra   = PFModuleInstanceXtra(this_module);
 
    int  sz = 0;
-
-   /* add local TempData size to `sz' */
-   sz += SizeOfVector(instance_xtra -> temp_mobility_x);
-   sz += SizeOfVector(instance_xtra -> temp_mobility_y);
-   sz += SizeOfVector(instance_xtra -> temp_mobility_z);
-   sz += SizeOfVector(instance_xtra -> temp_pressure);
 
    return sz;
 }

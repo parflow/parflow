@@ -29,10 +29,6 @@ typedef struct
    Matrix   *A;
    double    *temp_data;
 
-   /* instance data */
-   Vector   *r;
-   Vector   *del;
-
 } InstanceXtra;
 
 
@@ -55,8 +51,8 @@ int    	 num_iter;
 
    Matrix    *A         = (instance_xtra -> A);
 
-   Vector *r   = (instance_xtra -> r);
-   Vector *del = (instance_xtra -> del);
+   Vector *r   = NULL;
+   Vector *del = NULL;
 
    double  d, c22;
    double  alpha, beta;
@@ -67,6 +63,12 @@ int    	 num_iter;
    /*-----------------------------------------------------------------------
     * Begin timing
     *-----------------------------------------------------------------------*/
+
+   /*-----------------------------------------------------------------------
+    * Allocate temp vectors
+    *-----------------------------------------------------------------------*/
+   r   = NewVector(instance_xtra -> grid, 1, 1);
+   del = NewVector(instance_xtra -> grid, 1, 1);
 
    /*-----------------------------------------------------------------------
     * Start Chebyshev
@@ -123,6 +125,12 @@ int    	 num_iter;
    }
 
    /*-----------------------------------------------------------------------
+    * Free temp vectors
+    *-----------------------------------------------------------------------*/
+   FreeVector(del);
+   FreeVector(r);
+
+   /*-----------------------------------------------------------------------
     * end Chebyshev
     *-----------------------------------------------------------------------*/
 
@@ -161,18 +169,8 @@ double       *temp_data;
 
    if ( grid != NULL)
    {
-      /* free old data */
-      if ( (instance_xtra -> grid) != NULL )
-      {
-         FreeTempVector(instance_xtra -> del);
-         FreeTempVector(instance_xtra -> r);
-      }
-
       /* set new data */
       (instance_xtra -> grid) = grid;
-
-      (instance_xtra -> r)   = NewTempVector(grid, 1, 1);
-      (instance_xtra -> del) = NewTempVector(grid, 1, 1);
    }
 
    /*-----------------------------------------------------------------------
@@ -189,11 +187,6 @@ double       *temp_data;
    if ( temp_data != NULL )
    {
       (instance_xtra -> temp_data) = temp_data;
-
-      SetTempVectorData((instance_xtra -> r), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> r);
-      SetTempVectorData((instance_xtra -> del), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> del);
    }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -213,9 +206,6 @@ void  ChebyshevFreeInstanceXtra()
 
    if(instance_xtra)
    {
-      FreeTempVector((instance_xtra -> del));
-      FreeTempVector((instance_xtra -> r));
-
       tfree(instance_xtra);
    }
 }
@@ -263,11 +253,6 @@ int  ChebyshevSizeOfTempData()
    InstanceXtra  *instance_xtra   = PFModuleInstanceXtra(this_module);
 
    int  sz = 0;
-
-
-   /* add local TempData size to `sz' */
-   sz += SizeOfVector(instance_xtra -> r);
-   sz += SizeOfVector(instance_xtra -> del);
 
    return sz;
 }

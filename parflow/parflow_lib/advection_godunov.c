@@ -38,9 +38,6 @@ typedef struct
    int     max_ny;
    int     max_nz;
 
-   Vector *scale;
-   Vector *right_hand_side;
-
    double *slx;
    double *sly;
    double *slz;
@@ -88,8 +85,8 @@ int          order;
     Problem    *problem         = (instance_xtra -> problem);
     Grid       *grid            = (instance_xtra -> grid);
 
-    Vector     *scale           = (instance_xtra -> scale);
-    Vector     *right_hand_side = (instance_xtra -> right_hand_side);
+    Vector     *scale           = NULL;
+    Vector     *right_hand_side = NULL;
 
     double     *slx             = (instance_xtra -> slx);
     double     *sly             = (instance_xtra -> sly);
@@ -180,6 +177,11 @@ int          order;
 
     BeginTiming(public_xtra -> time_index);
 
+   /*-----------------------------------------------------------------------
+    * Allocate temp vectors
+    *-----------------------------------------------------------------------*/
+    scale           = NewVector(instance_xtra -> grid, 1, 2);
+    right_hand_side = NewVector(instance_xtra -> grid, 1, 2);
 
    /*-----------------------------------------------------------------------
     * Initialize some data
@@ -940,6 +942,12 @@ int          order;
 
 
    /*-----------------------------------------------------------------------
+    * Free temp vectors
+    *-----------------------------------------------------------------------*/
+    FreeVector(right_hand_side);
+    FreeVector(scale);
+
+   /*-----------------------------------------------------------------------
     * End timing
     *-----------------------------------------------------------------------*/
 
@@ -988,8 +996,6 @@ double    *temp_data;
       /* free old data */
       if ( (instance_xtra -> grid) != NULL )
       {
-         FreeTempVector(instance_xtra -> right_hand_side);
-         FreeTempVector(instance_xtra -> scale);
       }
 
       /* set new data */
@@ -1018,8 +1024,6 @@ double    *temp_data;
       (instance_xtra -> max_ny) = max_ny;
       (instance_xtra -> max_nz) = max_nz;
 
-      (instance_xtra -> scale) = NewTempVector(grid, 1, 2);
-      (instance_xtra -> right_hand_side) = NewTempVector(grid, 1, 2);
    }
 
    /*-----------------------------------------------------------------------
@@ -1034,11 +1038,6 @@ double    *temp_data;
       max_ny = (instance_xtra -> max_ny);
       max_nz = (instance_xtra -> max_nz);
 
-      SetTempVectorData((instance_xtra -> scale), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> scale);
-      SetTempVectorData((instance_xtra -> right_hand_side), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> right_hand_side);
-      
       /*** set temp data pointers ***/
       (instance_xtra -> slx) = temp_data;
       temp_data += (max_nx + 2 + 2) * (max_ny + 2 + 2);
@@ -1088,9 +1087,6 @@ void  GodunovFreeInstanceXtra()
 
    if ( instance_xtra )
    {
-      FreeTempVector(instance_xtra -> right_hand_side);
-      FreeTempVector(instance_xtra -> scale);
-
       tfree( instance_xtra );
    }
 
@@ -1145,9 +1141,6 @@ int  GodunovSizeOfTempData()
    int  sz = 0;
 
    /* add local TempData size to `sz' */
-   sz += SizeOfVector(instance_xtra -> scale);
-   sz += SizeOfVector(instance_xtra -> right_hand_side);
-
    sz += (max_nx + 2 + 2) * (max_ny + 2 + 2);
    sz += (max_nx + 2 + 2) * (max_ny + 2 + 2);
    sz += (max_nx + 2 + 2) * (max_ny + 2 + 2) * 3;

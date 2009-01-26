@@ -342,9 +342,7 @@ Grid    *grid;
    {
 	   dummy2 = (Type2 *)(public_xtra -> data);
 
-	   dummy2 -> sc_values = NewTempVector(grid, 1, 1);
-	   (instance_xtra -> temp_data) = talloc(double, SizeOfVector(dummy2 -> sc_values));
-	   SetTempVectorData((dummy2 -> sc_values),  (instance_xtra -> temp_data));
+	   dummy2 -> sc_values = NewVector(grid, 1, 1);
 
 	   ReadPFBinary((dummy2 -> filename),(dummy2 -> sc_values));
    }
@@ -367,18 +365,16 @@ void  PhaseSourceFreeInstanceXtra()
    InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
 
    Type2  *dummy2;
-
-    if ( public_xtra -> type ==2)
-	{
-	             dummy2 = (Type2 *)(public_xtra -> data);
-				 FreeTempVector(dummy2 -> sc_values);
-
-				 tfree(instance_xtra -> temp_data);
-	}
-
-	 if (instance_xtra)
+   
+   if ( public_xtra -> type ==2)
    {
-	   free(instance_xtra);
+      dummy2 = (Type2 *)(public_xtra -> data);
+      FreeVector(dummy2 -> sc_values);
+   }
+   
+   if (instance_xtra)
+   {
+      free(instance_xtra);
    }
 }
 

@@ -43,11 +43,6 @@ typedef struct
 {
    /* InitInstanceXtra arguments */
    Grid	  *grid;
-   double *temp_data;
-
-   /* Instance data */
-   Vector *tmpRF;
-
 } InstanceXtra;
 
 
@@ -81,7 +76,7 @@ RFCondData   *cdata;
    int       max_search_rad = (public_xtra -> max_search_rad);
    int       max_npts  	    = (public_xtra -> max_npts);
    int       max_cpts  	    = (public_xtra -> max_cpts);
-   Vector    *tmpRF 	    = (instance_xtra -> tmpRF);
+   Vector    *tmpRF 	    = NULL;
 
    /* Conditioning data */
    int       nc  = (cdata -> nc);
@@ -162,6 +157,11 @@ RFCondData   *cdata;
    double    cx, cy, cz;
    double    sum;
    double    Tiny = 1.0e-12;
+
+   /*-----------------------------------------------------------------------
+    * Allocate temp vectors
+    *-----------------------------------------------------------------------*/
+   tmpRF = NewVector(instance_xtra -> grid, 1, max_search_rad);
 
    /*-----------------------------------------------------------------------
     * Start sequential Gaussian simulator algorithm
@@ -845,6 +845,11 @@ RFCondData   *cdata;
    }
    tfree(marker - iLx);
 
+   /*-----------------------------------------------------------------------
+    * Free temp vectors
+    *-----------------------------------------------------------------------*/
+   FreeVector(tmpRF);
+
    /* End timing */
    EndTiming(public_xtra -> time_index);
 
@@ -874,32 +879,10 @@ double    *temp_data;
     *-----------------------------------------------------------------------*/
    if ( grid != NULL)
    {
-      /* free old data */
-      if ( (instance_xtra -> grid) != NULL )
-      {
-	 FreeTempVector(instance_xtra -> tmpRF);
-      }
-
       /* set new data */
       (instance_xtra -> grid) = grid;
-
-      /*--------------------------------------------------------------
-       * Determine size of ghost layer
-       *--------------------------------------------------------------*/
-      (instance_xtra -> tmpRF) = NewTempVector(grid, 1, max_search_rad);
    }
 
-
-   /*-----------------------------------------------------------------------
-    * Initialize data associated with temp_data
-    *-----------------------------------------------------------------------*/
-   if (temp_data != NULL)
-   {
-      if(instance_xtra -> temp_data == NULL) {
-	 (instance_xtra -> temp_data) = ctalloc(double, SizeOfVector(instance_xtra->tmpRF));
-	 SetTempVectorData((instance_xtra->tmpRF), (instance_xtra -> temp_data));
-      }
-   }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
    return this_module;
@@ -918,10 +901,6 @@ void  PGSRFFreeInstanceXtra()
 
    if(instance_xtra)
    {
-      if(instance_xtra -> temp_data) {
-	 tfree(instance_xtra -> temp_data);
-      }
-      FreeTempVector(instance_xtra -> tmpRF);
       tfree(instance_xtra);
    }
 }
@@ -1033,9 +1012,6 @@ int  PGSRFSizeOfTempData()
    PFModule	 *this_module = ThisPFModule;
    InstanceXtra	 *instance_xtra = PFModuleInstanceXtra(this_module);
    int		 size;
-
-   /* Set size equal to local TempData size */
-   size = SizeOfVector(instance_xtra -> tmpRF);
 
    return (size);
 }

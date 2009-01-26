@@ -48,9 +48,6 @@ typedef struct
    Grid     *grid;
    double   *temp_data;
 
-   /* instance data */
-   Vector   *tmp_indicator_field;
-
 } InstanceXtra;
 
 
@@ -70,7 +67,7 @@ ProblemData   *problem_data;
    IndicatorData      *indicator_data      = (public_xtra -> indicator_data);
 
    Grid               *grid                = (instance_xtra -> grid);
-   Vector             *tmp_indicator_field = (instance_xtra -> tmp_indicator_field);
+   Vector             *tmp_indicator_field = NULL;
 	            
    GrGeomSolid       **gr_solids;
 
@@ -83,6 +80,11 @@ ProblemData   *problem_data;
    int                 i, k;
 
    BeginTiming(public_xtra -> time_index);
+
+   /*-----------------------------------------------------------------------
+    * Allocate temp vectors
+    *-----------------------------------------------------------------------*/
+   tmp_indicator_field = NewVector(instance_xtra -> grid, 1, 1);
 
    gr_solids = ctalloc(GrGeomSolid *, num_solids);
 
@@ -132,6 +134,11 @@ ProblemData   *problem_data;
    ProblemDataSolids(problem_data)    = solids;   
    ProblemDataGrSolids(problem_data)  = gr_solids;
 
+   /*-----------------------------------------------------------------------
+    * Free temp vectors
+    *-----------------------------------------------------------------------*/
+   FreeVector(tmp_indicator_field);
+
    return;
 }
 
@@ -158,26 +165,8 @@ Grid      *grid;
 
    if ( grid != NULL)
    {
-      /* free old data */
-      if ( (instance_xtra -> grid) != NULL )
-      {
-	 FreeTempVector(instance_xtra -> tmp_indicator_field);
-      }
-
       /* set new data */
       (instance_xtra -> grid) = grid;
-
-      /* temp_data */
-      (instance_xtra -> tmp_indicator_field) = NewTempVector(grid, 1, 1);
-   }
-
-   /*-----------------------------------------------------------------------
-    * Initialize data associated with argument `temp_data'
-    *-----------------------------------------------------------------------*/
-   if(instance_xtra -> temp_data == NULL) 
-   {
-      (instance_xtra -> temp_data) = talloc(double, SizeOfVector((instance_xtra -> tmp_indicator_field)));
-      SetTempVectorData((instance_xtra -> tmp_indicator_field), (instance_xtra -> temp_data));
    }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -197,13 +186,6 @@ void  GeometriesFreeInstanceXtra()
 
    if(instance_xtra)
    {
-      FreeTempVector(instance_xtra -> tmp_indicator_field);
-
-      if(instance_xtra -> temp_data)
-      {
-	 tfree(instance_xtra -> temp_data);
-      }
-
       tfree(instance_xtra);
    }
 }  
@@ -511,10 +493,6 @@ int  GeometriesSizeOfTempData()
    InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
 
    int  sz = 0;
-
-
-   /* add local TempData size to `sz' */
-   sz += SizeOfVector(instance_xtra -> tmp_indicator_field);
 
    return sz;
 }

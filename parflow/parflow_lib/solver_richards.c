@@ -82,8 +82,6 @@ typedef struct
 
    double            *temp_data;
 
-   Vector            *ctemp;
-
    /*****************************************************************************
     * Local variables that need to be kept around 
     *****************************************************************************/
@@ -1161,7 +1159,7 @@ PFModule *SolverRichardsInitInstanceXtra()
     * Set up temporary vectors
     *-------------------------------------------------------------------*/
 
-   (instance_xtra -> ctemp)           = NewTempVector(grid, 1, 3);
+   // (instance_xtra -> ctemp)           = NewTempVector(grid, 1, 3);
 
    /*-------------------------------------------------------------------
     * Initialize module instances
@@ -1252,7 +1250,6 @@ PFModule *SolverRichardsInitInstanceXtra()
    sz = 0;
    sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> retardation));
    sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> advect_concen));
-   sz += SizeOfVector(instance_xtra -> ctemp);
    concen_sz = sz;
 
    /* compute size for pressure initial condition */
@@ -1315,8 +1312,6 @@ PFModule *SolverRichardsInitInstanceXtra()
    PFModuleSizeOfTempData(
       instance_xtra -> advect_concen));
    /* set temporary vector data used for advection */
-   SetTempVectorData((instance_xtra -> ctemp), temp_data_placeholder);
-   /*   temp_data += SizeOfVector(instance_xtra -> ctemp);  */
 
    temp_data += temp_data_size;
 
@@ -1356,8 +1351,6 @@ void  SolverRichardsFreeInstanceXtra()
       PFModuleFreeInstance((instance_xtra -> nonlin_solver));
 
       PFModuleFreeInstance((instance_xtra -> permeability_face));
-
-      FreeTempVector((instance_xtra -> ctemp));
 
       FreeProblemData((instance_xtra -> problem_data));
 

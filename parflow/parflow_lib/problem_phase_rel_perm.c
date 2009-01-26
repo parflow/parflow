@@ -991,8 +991,13 @@ double *temp_data;
 	 dummy1 = (Type1 *)(public_xtra -> data);
          if ((dummy1->data_from_file) == 1)
 	 {
-	    (dummy1 -> n_values) = NewTempVector(grid, 1, 1);
-	    (dummy1 -> alpha_values) = NewTempVector(grid, 1, 1);
+	    (dummy1 -> n_values) = NewVector(grid, 1, 1);
+	    (dummy1 -> alpha_values) = NewVector(grid, 1, 1);
+
+	    ReadPFBinary((dummy1 ->alpha_file), 
+			 (dummy1 ->alpha_values));
+	    ReadPFBinary((dummy1 ->n_file), 
+			 (dummy1 ->n_values));
 	 }
       }
 
@@ -1001,24 +1006,6 @@ double *temp_data;
    if ( temp_data != NULL )
    {
       (instance_xtra->temp_data) = temp_data;
-
-      /* Uses a spatially varying field */
-      if (public_xtra ->type == 1)  
-      {
-	 dummy1 = (Type1 *)(public_xtra -> data);
-	 if ( (dummy1->data_from_file) == 1)
-	 {
-	    SetTempVectorData((dummy1 -> n_values), temp_data);
-	    temp_data += SizeOfVector(dummy1 ->n_values);
-	    SetTempVectorData((dummy1 -> alpha_values), temp_data);
-	    temp_data += SizeOfVector(dummy1 ->alpha_values);
-
-	    ReadPFBinary((dummy1 ->alpha_file), 
-			 (dummy1 ->alpha_values));
-	    ReadPFBinary((dummy1 ->n_file), 
-			 (dummy1 ->n_values));
-	 }
-      }
    }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -1301,8 +1288,8 @@ void  PhaseRelPermFreePublicXtra()
 
 	if (dummy1->data_from_file == 1)
 	{
-	   FreeTempVector(dummy1->alpha_values);
-	   FreeTempVector(dummy1->n_values);
+	   FreeVector(dummy1->alpha_values);
+	   FreeVector(dummy1->n_values);
 	}
 
 	tfree(dummy1 -> region_indices);

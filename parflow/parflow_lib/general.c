@@ -16,7 +16,9 @@
 #include <math.h>
 #include "parflow.h"
 
+#ifdef HAVE_MALLOC_H
 #include <malloc.h>
+#endif
 
 amps_ThreadLocalDcl(int, s_max_memory);
 

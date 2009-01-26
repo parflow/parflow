@@ -35,10 +35,6 @@ typedef struct
    Matrix   *A;
    double   *temp_data;
 
-   /* instance data */
-   Vector   *p;
-   Vector   *s;
-
 } InstanceXtra;
 
 
@@ -75,8 +71,8 @@ int    	 zero;
    Matrix    *A         = (instance_xtra -> A);
 
    Vector    *r;
-   Vector    *p         = (instance_xtra -> p);
-   Vector    *s         = (instance_xtra -> s);
+   Vector    *p;
+   Vector    *s;
 
    double     alpha, beta;
    double     gamma, gamma_old;
@@ -105,6 +101,9 @@ int    	 zero;
     *-----------------------------------------------------------------------*/
 
    BeginTiming(public_xtra -> time_index);
+
+   p = NewVector(instance_xtra -> grid, 1, 1);
+   s = NewVector(instance_xtra -> grid, 1, 1);
 
    /*-----------------------------------------------------------------------
     * Start cghs solve
@@ -208,6 +207,9 @@ int    	 zero;
       tfree(norm_log);
       tfree(rel_norm_log);
    }
+   
+   FreeVector(s);
+   FreeVector(p);
 }
 
 
@@ -237,18 +239,8 @@ double       *temp_data;
 
    if ( grid != NULL)
    {
-      /* free old data */
-      if ( (instance_xtra -> grid) != NULL )
-      {
-         FreeTempVector(instance_xtra -> s);
-         FreeTempVector(instance_xtra -> p);
-      }
-
       /* set new data */
       (instance_xtra -> grid) = grid;
-
-      (instance_xtra -> p) = NewTempVector(grid, 1, 1);
-      (instance_xtra -> s) = NewTempVector(grid, 1, 1);
    }
 
    /*-----------------------------------------------------------------------
@@ -265,11 +257,6 @@ double       *temp_data;
    if ( temp_data != NULL )
    {
       (instance_xtra -> temp_data) = temp_data;
-
-      SetTempVectorData((instance_xtra -> p), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> p);
-      SetTempVectorData((instance_xtra -> s), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> s);
    }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -289,9 +276,6 @@ void   CGHSFreeInstanceXtra()
 
    if(instance_xtra)
    {
-      FreeTempVector(instance_xtra -> s);
-      FreeTempVector(instance_xtra -> p);
-
       tfree(instance_xtra);
    }
 }
@@ -348,11 +332,6 @@ int  CGHSSizeOfTempData()
    InstanceXtra  *instance_xtra   = PFModuleInstanceXtra(this_module);
 
    int  sz = 0;
-
-
-   /* add local TempData size to `sz' */
-   sz += SizeOfVector(instance_xtra -> p);
-   sz += SizeOfVector(instance_xtra -> s);
 
    return sz;
 }

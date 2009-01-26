@@ -40,10 +40,6 @@ typedef struct
 
    double   *temp_data;
 
-   Vector   *temp_new_density;
-   Vector   *temp_new_density_der;
-   Vector   *temp_fcn;
-
 } InstanceXtra;
 
 typedef struct
@@ -121,10 +117,10 @@ Problem     *problem;      /* General problem information */
 
    Subgrid       *subgrid;
 
-   Vector        *temp_new_density     = (instance_xtra -> temp_new_density);
-   Vector        *temp_new_density_der = 
-                                       (instance_xtra -> temp_new_density_der);
-   Vector        *temp_fcn             = (instance_xtra -> temp_fcn);
+   Vector        *temp_new_density     = NULL;
+   Vector        *temp_new_density_der = NULL;
+
+   Vector        *temp_fcn             = NULL;
 
    Subvector     *ps_sub;
    Subvector     *tf_sub;
@@ -151,6 +147,14 @@ Problem     *problem;      /* General problem information */
    int            is, i, j, k, ips, iel, ipicv;
 
    amps_Invoice   result_invoice;
+
+   /*-----------------------------------------------------------------------
+    * Allocate temp vectors
+    *-----------------------------------------------------------------------*/
+
+   temp_new_density     = NewVector(instance_xtra -> grid, 1, 1);
+   temp_new_density_der = NewVector(instance_xtra -> grid, 1, 1);
+   temp_fcn             = NewVector(instance_xtra -> grid, 1, 1);
 
    /*-----------------------------------------------------------------------
     * Initial pressure conditions
@@ -650,11 +654,11 @@ Problem     *problem;      /* General problem information */
    }           /* End of case 2 */
    case 3:  /* ParFlow binary file with spatially varying pressure values */
    {
-      Vector *ic_values;
+
       
       dummy3 = (Type3 *)(public_xtra -> data);
 
-      ic_values = dummy3 -> ic_values;
+      Vector *ic_values = dummy3 -> ic_values;
 
       gr_domain = ProblemDataGrDomain(problem_data);
 
@@ -690,9 +694,19 @@ Problem     *problem;      /* General problem information */
             m_dat[ips] = 1.0;
 	 });
       }        /* End subgrid loop */
+
       break;
    }           /* End case 3 */
    }           /* End of switch statement */
+
+
+   /*-----------------------------------------------------------------------
+    * Free temp vectors
+    *-----------------------------------------------------------------------*/
+   FreeVector(temp_new_density);
+   FreeVector(temp_new_density_der);
+   FreeVector(temp_fcn);
+
 }
 
 
@@ -722,23 +736,23 @@ double    *temp_data;
       /* free old data */
       if ( (instance_xtra -> grid) != NULL )
       {
-         FreeTempVector(instance_xtra -> temp_new_density);
-         FreeTempVector(instance_xtra -> temp_new_density_der);
-         FreeTempVector(instance_xtra -> temp_fcn);
       }
 
       /* set new data */
       (instance_xtra -> grid) = grid;
 
-      (instance_xtra -> temp_new_density)     = NewTempVector(grid, 1, 1);
-      (instance_xtra -> temp_new_density_der) = NewTempVector(grid, 1, 1);
-      (instance_xtra -> temp_fcn)             = NewTempVector(grid, 1, 1);
 
       /* Uses a spatially varying field */
       if (public_xtra -> type == 3)  
       {
 	 dummy3 = (Type3 *)(public_xtra -> data);
-         (dummy3 -> ic_values) = NewTempVector(grid, 1, 1);
+
+	 /* Allocate temp vector */
+	 dummy3 -> ic_values = NewVector(grid, 1, 1);
+
+         ReadPFBinary((dummy3 -> filename), 
+		      (dummy3 -> ic_values));
+
       }
 
    }
@@ -746,23 +760,6 @@ double    *temp_data;
    if ( temp_data != NULL )
    {
       (instance_xtra -> temp_data) = temp_data;
-      SetTempVectorData((instance_xtra -> temp_new_density), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> temp_new_density);
-      SetTempVectorData((instance_xtra -> temp_new_density_der), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> temp_new_density_der);
-      SetTempVectorData((instance_xtra -> temp_fcn), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> temp_fcn);
-
-      /* Uses a spatially varying field */
-      if (public_xtra -> type == 3)  
-      {
-	 dummy3 = (Type3 *)(public_xtra -> data);
-         SetTempVectorData((dummy3 -> ic_values), temp_data);
-         temp_data += SizeOfVector(dummy3 -> ic_values);
-
-         ReadPFBinary((dummy3 -> filename), 
-		      (dummy3 -> ic_values));
-      }
    }
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
@@ -794,10 +791,6 @@ void  ICPhasePressureFreeInstanceXtra()
    {
       PFModuleFreeInstance(instance_xtra -> phase_density);
       
-      FreeTempVector(instance_xtra -> temp_new_density);
-      FreeTempVector(instance_xtra -> temp_new_density_der);
-      FreeTempVector(instance_xtra -> temp_fcn);
-
       free(instance_xtra);
    }
 }
@@ -947,23 +940,23 @@ PFModule   *ICPhasePressureNewPublicXtra()
 	 break;
       }
       
-   case 3:
-   {
-      dummy3 = ctalloc(Type3, 1);
-
-      sprintf(key, "Geom.%s.ICPressure.FileName", "domain");
-      dummy3 -> filename = GetString(key);
-
-      public_xtra -> data = (void *) dummy3;
+      case 3:
+      {
+	 dummy3 = ctalloc(Type3, 1);
+	 
+	 sprintf(key, "Geom.%s.ICPressure.FileName", "domain");
+	 dummy3 -> filename = GetString(key);
+	 
+	 public_xtra -> data = (void *) dummy3;
+	 
+	 break;
+      }
       
-      break;
-   }
-
-   default:
-   {
-      InputError("Error: invalid type <%s> for key <%s>\n",
-		 switch_name, key);
-   }
+      default:
+      {
+	 InputError("Error: invalid type <%s> for key <%s>\n",
+		    switch_name, key);
+      }
    }
    
    NA_FreeNameArray(type_na);
@@ -985,6 +978,7 @@ void  ICPhasePressureFreePublicXtra()
    Type0       *dummy0;
    Type1       *dummy1;
    Type2       *dummy2;
+   Type3       *dummy3;
    
    if ( public_xtra )
    {
@@ -1010,6 +1004,7 @@ void  ICPhasePressureFreePublicXtra()
 	    tfree(dummy1 -> reference_elevations);
 	    tfree(dummy1 -> pressure_values);
 	    tfree(dummy1);
+	    break;
 	 }
 	 case 2:
 	 {
@@ -1020,7 +1015,18 @@ void  ICPhasePressureFreePublicXtra()
 	    tfree(dummy2 -> geom_indices);
 	    tfree(dummy2 -> pressure_values);
 	    tfree(dummy2);
+	    break;
 	 }
+
+	 case 3:
+	 {
+	    dummy3 = (Type3 *)(public_xtra -> data);
+	    
+	    FreeVector(dummy3 -> ic_values);
+	    
+	    break;
+	 }
+
       }
       
       tfree(public_xtra);
@@ -1041,17 +1047,6 @@ int  ICPhasePressureSizeOfTempData()
    Type3         *dummy3;
 
    int  sz = 0;
-
-   /* add local TempData size to `sz' */
-   sz += SizeOfVector(instance_xtra -> temp_new_density);
-   sz += SizeOfVector(instance_xtra -> temp_new_density_der);
-   sz += SizeOfVector(instance_xtra -> temp_fcn);
-
-   if (public_xtra->type == 3)
-   {
-      dummy3 = (Type3 *)(public_xtra->data);
-      sz += SizeOfVector(dummy3->ic_values);
-   }
 
    return sz;
 }

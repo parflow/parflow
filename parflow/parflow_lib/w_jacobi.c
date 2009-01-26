@@ -33,9 +33,6 @@ typedef struct
    Matrix    *A;
    double    *temp_data;
 
-   /* instance data */
-   Vector    *t;
-
 } InstanceXtra;
 
 
@@ -59,7 +56,7 @@ int    	 zero;
 
    Matrix         *A        = (instance_xtra -> A);
 	       	
-   Vector      	  *t        = (instance_xtra -> t);
+   Vector      	  *t        = NULL;
 
    SubregionArray *subregion_array;
    Subregion      *subregion;
@@ -98,6 +95,11 @@ int    	 zero;
    /*-----------------------------------------------------------------------
     * Begin timing
     *-----------------------------------------------------------------------*/
+
+   /*-----------------------------------------------------------------------
+    * Allocate temp vectors
+    *-----------------------------------------------------------------------*/
+   t = NewVector(instance_xtra -> grid, 1, 1);
 
    /*-----------------------------------------------------------------------
     * Start WJacobi
@@ -276,6 +278,11 @@ int    	 zero;
    }
 
    /*-----------------------------------------------------------------------
+    * Feee temp vectors
+    *-----------------------------------------------------------------------*/
+   FreeVector(t);
+
+   /*-----------------------------------------------------------------------
     * end timing
     *-----------------------------------------------------------------------*/
 
@@ -310,16 +317,8 @@ double       *temp_data;
 
    if ( grid != NULL)
    {
-      /* free old data */
-      if ( (instance_xtra -> grid) != NULL )
-      {
-         FreeTempVector(instance_xtra -> t);
-      }
-
       /* set new data */
       (instance_xtra -> grid) = grid;
-
-      (instance_xtra -> t) = NewTempVector(grid, 1, 1);
    }
 
    /*-----------------------------------------------------------------------
@@ -336,9 +335,6 @@ double       *temp_data;
    if ( temp_data != NULL )
    {
       (instance_xtra -> temp_data) = temp_data;
-
-      SetTempVectorData((instance_xtra -> t), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> t);
    }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -358,8 +354,6 @@ void  WJacobiFreeInstanceXtra()
 
    if(instance_xtra)
    {
-      FreeTempVector((instance_xtra -> t));
-
       tfree(instance_xtra);
    }
 }
@@ -416,10 +410,6 @@ int  WJacobiSizeOfTempData()
    InstanceXtra  *instance_xtra   = PFModuleInstanceXtra(this_module);
 
    int  sz = 0;
-
-
-   /* add local TempData size to `sz' */
-   sz += SizeOfVector(instance_xtra -> t);
 
    return sz;
 }

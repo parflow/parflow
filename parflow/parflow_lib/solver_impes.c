@@ -92,12 +92,6 @@ typedef struct
 
    double            *temp_data;
 
-   Vector            *temp_mobility_x;
-   Vector            *temp_mobility_y;
-   Vector            *temp_mobility_z;
-   Vector            *stemp;
-   Vector            *ctemp;
-
 } InstanceXtra;
 
 
@@ -156,11 +150,11 @@ void      SolverImpes()
    Grid         *y_grid              = (instance_xtra -> y_grid);
    Grid         *z_grid              = (instance_xtra -> z_grid);
 				     
-   Vector       *temp_mobility_x     = (instance_xtra -> temp_mobility_x);
-   Vector       *temp_mobility_y     = (instance_xtra -> temp_mobility_y);
-   Vector       *temp_mobility_z     = (instance_xtra -> temp_mobility_z);
-   Vector       *stemp               = (instance_xtra -> stemp);
-   Vector       *ctemp               = (instance_xtra -> ctemp);
+   Vector       *temp_mobility_x     = NULL;
+   Vector       *temp_mobility_y     = NULL;
+   Vector       *temp_mobility_z     = NULL;
+   Vector       *stemp               = NULL;
+   Vector       *ctemp               = NULL;
 
    int           start_count         = ProblemStartCount(problem);
    double        start_time          = ProblemStartTime(problem);
@@ -208,6 +202,19 @@ void      SolverImpes()
    char         *recomp_log, *dt_info_log;
 
    is_multiphase = ProblemNumPhases(problem) > 1;
+
+   /*-------------------------------------------------------------------
+    * Allocate temp vectors
+    *-------------------------------------------------------------------*/
+   if ( is_multiphase )
+   {
+      temp_mobility_x = NewVector(instance_xtra -> grid, 1, 1);
+      temp_mobility_y = NewVector(instance_xtra -> grid, 1, 1);
+      temp_mobility_z = NewVector(instance_xtra -> grid, 1, 1);
+      stemp           = NewVector(instance_xtra -> grid, 1, 3);
+   }
+   ctemp              = NewVector(instance_xtra -> grid, 1, 3);
+
 
    IfLogging(1)
    {
@@ -1303,6 +1310,19 @@ void      SolverImpes()
    tfree( saturations );
    tfree(phase_densities);
 
+
+   /*-------------------------------------------------------------------
+    * Free temp vectors
+    *-------------------------------------------------------------------*/
+   if ( is_multiphase )
+   {
+      FreeVector(stemp);
+      FreeVector(temp_mobility_x);
+      FreeVector(temp_mobility_y);
+      FreeVector(temp_mobility_z);
+   }
+   FreeVector(ctemp);
+
    FreeVector( total_mobility_x );
    FreeVector( total_mobility_y );
    FreeVector( total_mobility_z );
@@ -1487,17 +1507,6 @@ PFModule *SolverImpesInitInstanceXtra()
 
    (instance_xtra -> problem_data) = NewProblemData(grid,grid2d);
    
-   /*-------------------------------------------------------------------
-    * Set up temporary vectors
-    *-------------------------------------------------------------------*/
-   if ( is_multiphase )
-   {
-      (instance_xtra -> temp_mobility_x) = NewTempVector(grid, 1, 1);
-      (instance_xtra -> temp_mobility_y) = NewTempVector(grid, 1, 1);
-      (instance_xtra -> temp_mobility_z) = NewTempVector(grid, 1, 1);
-      (instance_xtra -> stemp)           = NewTempVector(grid, 1, 3);
-   }
-   (instance_xtra -> ctemp)              = NewTempVector(grid, 1, 3);
 
    /*-------------------------------------------------------------------
     * Initialize module instances
@@ -1600,15 +1609,10 @@ PFModule *SolverImpesInitInstanceXtra()
 
       /* compute size for total mobility computation */
      sz = 0;
-     sz += SizeOfVector(instance_xtra -> temp_mobility_x);
-     sz += SizeOfVector(instance_xtra -> temp_mobility_y);
-     sz += SizeOfVector(instance_xtra -> temp_mobility_z);
-     total_mobility_sz = sz;
 
      /* compute size for saturation advection */
      sz = 0;
      sz += PFModuleSizeOfTempData(instance_xtra -> advect_satur);
-     sz += SizeOfVector(instance_xtra -> stemp);
      satur_sz = sz;
    }
 
@@ -1634,7 +1638,6 @@ PFModule *SolverImpesInitInstanceXtra()
    sz = 0;
    sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> retardation));
    sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> advect_concen));
-   sz += SizeOfVector(instance_xtra -> ctemp);
    concen_sz = sz;
 
    /* set temp_data size to max of pressure_sz, satur_sz, and concen_sz*/
@@ -1649,17 +1652,6 @@ PFModule *SolverImpesInitInstanceXtra()
    /* allocate temporary data */
    temp_data = NewTempData(temp_data_size);
    (instance_xtra -> temp_data) = temp_data;
-
-   /* set temporary vector data used for total mobility computation */
-   if ( is_multiphase )
-   {
-      SetTempVectorData((instance_xtra -> temp_mobility_x), temp_data);
-      SetTempVectorData((instance_xtra -> temp_mobility_y), temp_data);
-      SetTempVectorData((instance_xtra -> temp_mobility_z), temp_data);
-   }
-   /*   temp_data += SizeOfVector(instance_xtra -> temp_mobility_x);  */
-   /*   temp_data += SizeOfVector(instance_xtra -> temp_mobility_y);  */
-   /*   temp_data += SizeOfVector(instance_xtra -> temp_mobility_z);  */
 
    /* renew set_problem_data module */
    PFModuleReNewInstance((instance_xtra -> set_problem_data),
@@ -1690,9 +1682,6 @@ PFModule *SolverImpesInitInstanceXtra()
 			    (NULL, NULL, temp_data_placeholder));
       temp_data_placeholder += 
 	PFModuleSizeOfTempData(instance_xtra -> advect_satur);
-      /* set temporary vector data used for advection */
-      SetTempVectorData((instance_xtra -> stemp), temp_data_placeholder);
-      /*   temp_data += SizeOfVector(instance_xtra -> stemp); */
    }
 
    /* renew concentration advection modules that take temporary data */
@@ -1706,8 +1695,6 @@ PFModule *SolverImpesInitInstanceXtra()
                      PFModuleSizeOfTempData(instance_xtra -> advect_concen)
                                );
    /* set temporary vector data used for advection */
-   SetTempVectorData((instance_xtra -> ctemp), temp_data_placeholder);
-/*   temp_data += SizeOfVector(instance_xtra -> ctemp);  */
 
    temp_data += temp_data_size;
 
@@ -1755,14 +1742,7 @@ void  SolverImpesFreeInstanceXtra()
 	 PFModuleFreeInstance((instance_xtra -> advect_satur));
 	 PFModuleFreeInstance((instance_xtra -> total_velocity_face));
 	 PFModuleFreeInstance((instance_xtra -> permeability_face));
-         
-	 FreeTempVector((instance_xtra -> stemp));
-	 FreeTempVector((instance_xtra -> temp_mobility_x));
-	 FreeTempVector((instance_xtra -> temp_mobility_y));
-	 FreeTempVector((instance_xtra -> temp_mobility_z));
       }
-
-      FreeTempVector((instance_xtra -> ctemp));
 
       FreeProblemData((instance_xtra -> problem_data));
 

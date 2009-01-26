@@ -80,7 +80,7 @@ CommHandle  *handle;
  * NewTempVector
  *--------------------------------------------------------------------------*/
 
-Vector  *NewTempVector(grid, nc, num_ghost)
+static Vector  *NewTempVector(grid, nc, num_ghost)
 Grid    *grid;
 int      nc;
 int      num_ghost;
@@ -144,7 +144,7 @@ int      num_ghost;
  * SetTempVectorData
  *--------------------------------------------------------------------------*/
 
-void     SetTempVectorData(vector, data)
+static void     SetTempVectorData(vector, data)
 Vector  *vector;
 double  *data;
 { 
@@ -203,7 +203,7 @@ int      num_ghost;
  * FreeTempVector
  *--------------------------------------------------------------------------*/
 
-void FreeTempVector(vector)
+static void FreeTempVector(vector)
 Vector *vector;
 {
    int i;

@@ -30,8 +30,6 @@ typedef struct
 
    Matrix    *PC;
 
-   Vector    *soln;
-
    Grid      *grid;
 
    double    *temp_data;
@@ -49,15 +47,21 @@ Vector      *rhs;
    InstanceXtra *instance_xtra    = PFModuleInstanceXtra(this_module);
 
    PFModule     *precond          = instance_xtra -> precond;
-   Vector       *soln             = instance_xtra -> soln;
+   Vector       *soln             = NULL;
    double        tol              = 0.0;
    int           zero             = 1;
+
+   /* Allocate temp vector */
+   soln = NewVector(instance_xtra -> grid, 1, 1);
      
    /* Invoke the preconditioner using a zero initial guess */
    PFModuleInvoke(void, precond, (soln, rhs, tol, zero));
 
    /* Copy solution from soln to the rhs vector. */
    PFVCopy(soln, rhs);
+
+   /* Free temp vector */
+   FreeVector(soln);
 }
 
 /*--------------------------------------------------------------------------
@@ -95,23 +99,13 @@ double        time;
 
    if ( grid != NULL )
    {
-      /* free old data */
-      if ( (instance_xtra -> grid) != NULL )
-      {
-         FreeTempVector(instance_xtra -> soln);
-      }
-
       /* set new data */
       instance_xtra -> grid = grid;
-
-      instance_xtra -> soln     = NewTempVector(grid, 1, 1);
    }
 
    if ( temp_data != NULL )
    {
       (instance_xtra -> temp_data) = temp_data;
-      SetTempVectorData((instance_xtra -> soln), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> soln);
    }
 
    /*-----------------------------------------------------------------------
@@ -162,8 +156,6 @@ void  KinsolPCFreeInstanceXtra()
    {
       PFModuleFreeInstance((instance_xtra -> precond));
       PFModuleFreeInstance((instance_xtra -> discretization));
-
-      FreeTempVector(instance_xtra -> soln);
 
       tfree(instance_xtra);
    }
@@ -295,10 +287,7 @@ int  KinsolPCSizeOfTempData()
 
    int sz = 0;
 
-   /* SGS temp data */
-
    sz += PFModuleSizeOfTempData(precond);
-   sz += SizeOfVector(instance_xtra -> soln);
-   
+
    return sz;
 }

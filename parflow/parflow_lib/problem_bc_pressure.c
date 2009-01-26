@@ -658,9 +658,7 @@ double       time;          /* Current time - needed to determine where on
 	       patch_values = ctalloc(double, patch_values_size);
 	       values[ipatch][is] = patch_values;
 
-               tmp_vector = NewTempVector(grid, 1, 0);
-               data = ctalloc(double, SizeOfVector(tmp_vector));
-               SetTempVectorData(tmp_vector, data);
+               tmp_vector = NewVector(grid, 1, 0);
 
                filename = BCPressureType4FileName(bc_pressure_type4);
                ReadPFBinary(filename, tmp_vector);
@@ -678,8 +676,7 @@ double       time;          /* Current time - needed to determine where on
 
                });
 
-               tfree(VectorData(tmp_vector));
-               FreeTempVector(tmp_vector);
+               FreeVector(tmp_vector);
 
 	    }           /* End subgrid loop */
 	    break;
@@ -711,9 +708,7 @@ double       time;          /* Current time - needed to determine where on
 	       patch_values = ctalloc(double, patch_values_size);
 	       values[ipatch][is] = patch_values;
 
-               tmp_vector = NewTempVector(grid, 1, 0);
-               data = ctalloc(double, SizeOfVector(tmp_vector));
-               SetTempVectorData(tmp_vector, data);
+               tmp_vector = NewVector(grid, 1, 0);
 
                filename = BCPressureType5FileName(bc_pressure_type5);
                ReadPFBinary(filename, tmp_vector);
@@ -728,8 +723,7 @@ double       time;          /* Current time - needed to determine where on
                   patch_values[ival] = tmpp[itmp];
                });
 
-               tfree(VectorData(tmp_vector));
-               FreeTempVector(tmp_vector);
+               FreeVector(tmp_vector);
 	    }       /* End subgrid loop */
 	    break;
 	 }

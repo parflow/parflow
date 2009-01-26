@@ -12,8 +12,6 @@
 #include "llnlmath.h"
 #include "llnltyps.h"
 
-// #define USE_BOXLOOP
-
 /*---------------------------------------------------------------------
  * Define module structures
  *---------------------------------------------------------------------*/
@@ -29,9 +27,6 @@ typedef struct
    PFModule     *rel_perm_module;
    PFModule     *bc_pressure;
    PFModule     *bc_internal;
-
-   Vector       *density_der;
-   Vector       *saturation_der;
 
    Matrix       *J;
 
@@ -121,12 +116,12 @@ int           symm_part;      /* Specifies whether to compute just the
 
    Matrix      *J                 = (instance_xtra -> J);
 
-   Vector      *density_der       = (instance_xtra -> density_der);
-   Vector      *saturation_der    = (instance_xtra -> saturation_der);
+   Vector      *density_der       = NULL;
+   Vector      *saturation_der    = NULL;
 
    /* Re-use vectors to save memory */
-   Vector      *rel_perm          = saturation;
-   Vector      *rel_perm_der      = saturation_der;
+   Vector      *rel_perm          = NULL;
+   Vector      *rel_perm_der      = NULL;
 
    Vector      *porosity          = ProblemDataPorosity(problem_data);
    Vector      *permeability_x    = ProblemDataPermeabilityX(problem_data);
@@ -178,6 +173,19 @@ int           symm_part;      /* Specifies whether to compute just the
    
    CommHandle  *handle;
 
+
+   /*-----------------------------------------------------------------------
+    * Free temp vectors
+    *-----------------------------------------------------------------------*/
+   density_der     = NewVector(grid, 1, 1);
+   saturation_der  = NewVector(grid, 1, 1);
+
+   /*-----------------------------------------------------------------------
+    * reuse the temp vectors for both saturation and rel_perm calculations.
+    *-----------------------------------------------------------------------*/
+   rel_perm          = saturation;
+   rel_perm_der      = saturation_der;
+
    /* Pass pressure values to neighbors.  */
    handle = InitVectorUpdate(pressure, VectorUpdateAll);
    FinalizeVectorUpdate(handle);
@@ -199,15 +207,15 @@ int           symm_part;      /* Specifies whether to compute just the
    /* Calculate time term contributions. */
 
    PFModuleInvoke(void, density_module, (0, pressure, density, &dtmp, &dtmp, 
-   CALCFCN));
+					 CALCFCN));
    PFModuleInvoke(void, density_module, (0, pressure, density_der, &dtmp, 
-   &dtmp, CALCDER));
+					 &dtmp, CALCDER));
    PFModuleInvoke(void, saturation_module, (saturation, pressure, 
-   density, gravity, problem_data, 
-   CALCFCN));
+					    density, gravity, problem_data, 
+					    CALCFCN));
    PFModuleInvoke(void, saturation_module, (saturation_der, pressure, 
-   density, gravity, problem_data,
-   CALCDER));
+					    density, gravity, problem_data,
+					    CALCDER));
 
    ForSubgridI(is, GridSubgrids(grid))
    {
@@ -1039,6 +1047,12 @@ int           symm_part;      /* Specifies whether to compute just the
 
    *ptr_to_J = J;
 
+   /*-----------------------------------------------------------------------
+    * Free temp vectors
+    *-----------------------------------------------------------------------*/
+   FreeVector(density_der);
+   FreeVector(saturation_der);
+
    return;
 }
 
@@ -1070,8 +1084,6 @@ int          symmetric_jac;
       if ( (instance_xtra -> grid) != NULL )
       {
 	 FreeMatrix(instance_xtra -> J);
-         FreeTempVector(instance_xtra -> density_der);
-         FreeTempVector(instance_xtra -> saturation_der);
       }
 
       /* set new data */
@@ -1085,17 +1097,11 @@ int          symmetric_jac;
       else
 	 (instance_xtra -> J) = NewMatrix(grid, NULL, stencil, OFF, stencil);
 
-      (instance_xtra -> density_der)     = NewTempVector(grid, 1, 1);
-      (instance_xtra -> saturation_der)  = NewTempVector(grid, 1, 1);
    }
 
    if ( temp_data != NULL )
    {
       (instance_xtra -> temp_data) = temp_data;
-      SetTempVectorData((instance_xtra -> density_der), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> density_der);
-      SetTempVectorData((instance_xtra -> saturation_der), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> saturation_der);
    }
 
    if ( problem != NULL)
@@ -1151,9 +1157,6 @@ void  RichardsJacobianEvalFreeInstanceXtra()
       PFModuleFreeInstance(instance_xtra -> rel_perm_module);
       PFModuleFreeInstance(instance_xtra -> bc_internal);
 
-      FreeTempVector(instance_xtra -> density_der);
-      FreeTempVector(instance_xtra -> saturation_der);
-      
       FreeMatrix(instance_xtra -> J);
 
       tfree(instance_xtra);
@@ -1205,10 +1208,6 @@ int  RichardsJacobianEvalSizeOfTempData()
    InstanceXtra  *instance_xtra   = PFModuleInstanceXtra(this_module);
 
    int  sz = 0;
-
-   /* add local TempData size to `sz' */
-   sz += SizeOfVector(instance_xtra -> density_der);
-   sz += SizeOfVector(instance_xtra -> saturation_der);
 
    return sz;
 }

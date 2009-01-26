@@ -41,13 +41,6 @@ typedef struct
    Matrix   *A;
    Vector   *f;
 
-   /* temp data */
-   Vector  **tmobility_x;
-   Vector  **tmobility_y;
-   Vector  **tmobility_z;
-   Vector  **tcapillary;
-   Vector   *tvector;
-
 } InstanceXtra;
 
 
@@ -112,11 +105,11 @@ Vector      **phase_saturations;
    Matrix         *A                    = (instance_xtra -> A);
    Vector         *f                    = (instance_xtra -> f);
 
-   Vector        **tmobility_x          = (instance_xtra -> tmobility_x);
-   Vector        **tmobility_y          = (instance_xtra -> tmobility_y);
-   Vector        **tmobility_z          = (instance_xtra -> tmobility_z);
-   Vector        **tcapillary           = (instance_xtra -> tcapillary);
-   Vector         *tvector              = (instance_xtra -> tvector);
+   Vector        **tmobility_x          = NULL;
+   Vector        **tmobility_y          = NULL;
+   Vector        **tmobility_z          = NULL;
+   Vector        **tcapillary           = NULL;
+   Vector         *tvector              = NULL;
 
    int             num_phases           = ProblemNumPhases(problem);
 
@@ -171,6 +164,23 @@ Vector      **phase_saturations;
 #ifdef SHMEM_OBJECTS
    int p;
 #endif
+
+   /*-----------------------------------------------------------------------
+    * Allocate temp vectors
+    *-----------------------------------------------------------------------*/
+   tmobility_x  = ctalloc(Vector *, ProblemNumPhases(problem));
+   tmobility_y  = ctalloc(Vector *, ProblemNumPhases(problem));
+   tmobility_z  = ctalloc(Vector *, ProblemNumPhases(problem));
+   tcapillary   = ctalloc(Vector *, ProblemNumPhases(problem));
+
+   for (phase = 0; phase < num_phases; phase++)
+   {
+      tmobility_x[phase]  = NewVector(instance_xtra -> grid, 1, 1);
+      tmobility_y[phase]  = NewVector(instance_xtra -> grid, 1, 1);
+      tmobility_z[phase]  = NewVector(instance_xtra -> grid, 1, 1);
+      tcapillary[phase]   = NewVector(instance_xtra -> grid, 1, 1);
+   }
+   tvector                = NewVector(instance_xtra -> grid, 1, 1);
 
    /*-----------------------------------------------------------------------
     * Initialize and set some things
@@ -872,6 +882,24 @@ Vector      **phase_saturations;
 
    *ptr_to_A = A;
    *ptr_to_f = f;
+
+
+   /*-----------------------------------------------------------------------
+    * Free temp vectors
+    *-----------------------------------------------------------------------*/
+   FreeVector(tvector);
+   for (phase = 0; phase < num_phases; phase++)
+   {
+      FreeVector(tcapillary[phase]);
+      FreeVector(tmobility_x[phase]);
+      FreeVector(tmobility_y[phase]);
+      FreeVector(tmobility_z[phase]);
+   }
+   tfree(tcapillary);
+   tfree(tmobility_x);
+   tfree(tmobility_y);
+   tfree(tmobility_z);
+
 }
 
 
@@ -903,14 +931,6 @@ double      *temp_data;
    {
       (instance_xtra -> problem) = problem;
 
-      (instance_xtra -> tmobility_x)  =
-	 ctalloc(Vector *, ProblemNumPhases(problem));
-      (instance_xtra -> tmobility_y)  =
-	 ctalloc(Vector *, ProblemNumPhases(problem));
-      (instance_xtra -> tmobility_z)  =
-	 ctalloc(Vector *, ProblemNumPhases(problem));
-      (instance_xtra -> tcapillary) =
-	 ctalloc(Vector *, ProblemNumPhases(problem));
    }
 
    num_phases = ProblemNumPhases(instance_xtra -> problem);
@@ -927,19 +947,9 @@ double      *temp_data;
       /* free old data */
       if ( (instance_xtra -> grid) != NULL )
       {
-	 FreeTempVector(instance_xtra -> tvector);
-	 for (phase = 0; phase < num_phases; phase++)
-	 {
-	    FreeTempVector(instance_xtra -> tcapillary[phase]);
-	    FreeTempVector(instance_xtra -> tmobility_x[phase]);
-	    FreeTempVector(instance_xtra -> tmobility_y[phase]);
-	    FreeTempVector(instance_xtra -> tmobility_z[phase]);
-	 }
-
 	 FreeVector(instance_xtra -> f);
 	 FreeMatrix(instance_xtra -> A);
       }
-
 
       /* set new data */
       (instance_xtra -> grid) = grid;
@@ -949,15 +959,6 @@ double      *temp_data;
       (instance_xtra -> A) = NewMatrix(grid, NULL, stencil, ON, stencil);
       (instance_xtra -> f) = NewVector(grid, 1, 1);
 
-      /* temp data */
-      for (phase = 0; phase < num_phases; phase++)
-      {
-	 (instance_xtra -> tmobility_x[phase])  = NewTempVector(grid, 1, 1);
-	 (instance_xtra -> tmobility_y[phase])  = NewTempVector(grid, 1, 1);
-	 (instance_xtra -> tmobility_z[phase])  = NewTempVector(grid, 1, 1);
-	 (instance_xtra -> tcapillary[phase]) = NewTempVector(grid, 1, 1);
-      }
-      (instance_xtra -> tvector)        = NewTempVector(grid, 1, 1);
    }
 
    /*-----------------------------------------------------------------------
@@ -967,21 +968,6 @@ double      *temp_data;
    if ( temp_data != NULL )
    {
       (instance_xtra -> temp_data) = temp_data;
-
-      for (phase = 0; phase < num_phases; phase++)
-      {
-	 SetTempVectorData((instance_xtra -> tmobility_x[phase]), temp_data);
-	 temp_data += SizeOfVector(instance_xtra -> tmobility_x[phase]);
-	 SetTempVectorData((instance_xtra -> tmobility_y[phase]), temp_data);
-	 temp_data += SizeOfVector(instance_xtra -> tmobility_y[phase]);
-	 SetTempVectorData((instance_xtra -> tmobility_z[phase]), temp_data);
-	 temp_data += SizeOfVector(instance_xtra -> tmobility_z[phase]);
-
-	 SetTempVectorData((instance_xtra -> tcapillary[phase]), temp_data);
-	 temp_data += SizeOfVector(instance_xtra -> tcapillary[phase]);
-      }
-      SetTempVectorData((instance_xtra -> tvector), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> tvector);
    }
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
@@ -1032,19 +1018,6 @@ void  DiscretizePressureFreeInstanceXtra()
       PFModuleFreeInstance(instance_xtra -> phase_density_module);
       PFModuleFreeInstance(instance_xtra -> capillary_pressure);
       PFModuleFreeInstance(instance_xtra -> phase_source);
-
-      FreeTempVector(instance_xtra -> tvector);
-      for (phase = 0; phase < num_phases; phase++)
-      {
-	 FreeTempVector(instance_xtra -> tcapillary[phase]);
-	 FreeTempVector(instance_xtra -> tmobility_x[phase]);
-	 FreeTempVector(instance_xtra -> tmobility_y[phase]);
-	 FreeTempVector(instance_xtra -> tmobility_z[phase]);
-      }
-      tfree(instance_xtra -> tcapillary);
-      tfree(instance_xtra -> tmobility_x);
-      tfree(instance_xtra -> tmobility_y);
-      tfree(instance_xtra -> tmobility_z);
 
       FreeVector(instance_xtra -> f);
       FreeMatrix(instance_xtra -> A);
@@ -1099,18 +1072,7 @@ int  DiscretizePressureSizeOfTempData()
    int  phase, num_phases;
    int  sz = 0;
 
-
    num_phases = ProblemNumPhases(instance_xtra -> problem);
-
-   /* add local TempData size to `sz' */
-   for (phase = 0; phase < num_phases; phase++)
-   {
-      sz += SizeOfVector(instance_xtra -> tmobility_x[phase]);
-      sz += SizeOfVector(instance_xtra -> tmobility_y[phase]);
-      sz += SizeOfVector(instance_xtra -> tmobility_z[phase]);
-      sz += SizeOfVector(instance_xtra -> tcapillary[phase]);
-   }
-   sz += SizeOfVector(instance_xtra -> tvector);
 
    return sz;
 }

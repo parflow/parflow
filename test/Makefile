@@ -36,6 +36,7 @@ endif
 check:
 	@-for i in $(TESTS); \
 	do \
+	        make clean; \
 		tclsh $$i; \
 	done
 clean:

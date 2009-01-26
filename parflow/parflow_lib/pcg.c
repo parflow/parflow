@@ -39,10 +39,6 @@ typedef struct
    Matrix   *A;
    double    *temp_data;
 
-   /* instance data */
-   Vector    *p;
-   Vector    *s;
-
 } InstanceXtra;
 
 
@@ -82,8 +78,8 @@ int     zero;
    Matrix    *A            = (instance_xtra -> A);
 
    Vector    *r;
-   Vector    *p            = (instance_xtra -> p);
-   Vector    *s            = (instance_xtra -> s);
+   Vector    *p            = NULL;
+   Vector    *s            = NULL;
 
    double     alpha, beta;
    double     gamma, gamma_old;
@@ -110,6 +106,12 @@ int     zero;
     *-----------------------------------------------------------------------*/
 
    BeginTiming(public_xtra -> time_index);
+
+   /*-----------------------------------------------------------------------
+    * Allocate temp vectors
+    *-----------------------------------------------------------------------*/
+   p = NewVector(instance_xtra -> grid, 1, 1);
+   s = NewVector(instance_xtra -> grid, 1, 1);
 
    /*-----------------------------------------------------------------------
     * Start pcg solve
@@ -217,6 +219,12 @@ int     zero;
 #endif
 
    /*-----------------------------------------------------------------------
+    * Free temp vectors
+    *-----------------------------------------------------------------------*/
+   FreeVector(s);
+   FreeVector(p);
+
+   /*-----------------------------------------------------------------------
     * End timing
     *-----------------------------------------------------------------------*/
 
@@ -289,15 +297,11 @@ double       *temp_data;
       /* free old data */
       if ( (instance_xtra -> grid) != NULL )
       {
-	 FreeTempVector(instance_xtra -> s);
-	 FreeTempVector(instance_xtra -> p);
       }
 
       /* set new data */
       (instance_xtra -> grid) = grid;
 
-      (instance_xtra -> p) = NewTempVector(grid, 1, 1);
-      (instance_xtra -> s) = NewTempVector(grid, 1, 1);
    }
 
    /*-----------------------------------------------------------------------
@@ -314,11 +318,6 @@ double       *temp_data;
    if ( temp_data != NULL )
    {
       (instance_xtra -> temp_data) = temp_data;
-
-      SetTempVectorData((instance_xtra -> p), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> p);
-      SetTempVectorData((instance_xtra -> s), temp_data);
-      temp_data += SizeOfVector(instance_xtra -> s);
    }
 
    /*-----------------------------------------------------------------------
@@ -354,9 +353,6 @@ void   PCGFreeInstanceXtra()
 
    if(instance_xtra)
    {
-      FreeTempVector(instance_xtra -> s);
-      FreeTempVector(instance_xtra -> p);
-
       PFModuleFreeInstance(instance_xtra -> precond);
 
       tfree(instance_xtra);
@@ -485,9 +481,6 @@ int  PCGSizeOfTempData()
    /* set `sz' to max of each of the called modules */
    sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> precond));
 
-   /* add local TempData size to `sz' */
-   sz += SizeOfVector(instance_xtra -> p);
-   sz += SizeOfVector(instance_xtra -> s);
 
    return sz;
 }

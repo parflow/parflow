@@ -24,7 +24,6 @@ typedef struct
 typedef struct
 {
    Grid   *grid;
-   double *temp_data;
 } InstanceXtra;
 
 typedef struct
@@ -357,10 +356,7 @@ Grid    *grid;
       {
 	 dummy2 = (Type2 *)(public_xtra -> data);
 
-	 dummy2 -> sy_values = NewTempVector(grid, 1, 1);
-	 (instance_xtra -> temp_data) = ctalloc(double, SizeOfVector(dummy2 -> sy_values));
-	 SetTempVectorData((dummy2 -> sy_values),  (instance_xtra -> temp_data));
-
+	 dummy2 -> sy_values = NewVector(grid, 1, 1);
 	 ReadPFBinary((dummy2 -> filename),(dummy2 -> sy_values));
       }
    }
@@ -386,9 +382,7 @@ void  YSlopeFreeInstanceXtra()
    if ( public_xtra -> type ==2)
    {
       dummy2 = (Type2 *)(public_xtra -> data);
-      FreeTempVector(dummy2 -> sy_values);
-
-      tfree(instance_xtra -> temp_data);
+      FreeVector(dummy2 -> sy_values);
    }
 
    if (instance_xtra)

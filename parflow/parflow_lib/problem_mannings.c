@@ -349,9 +349,7 @@ Grid    *grid;
    {
 	   dummy2 = (Type2 *)(public_xtra -> data);
 
-	   dummy2 -> m_values = NewTempVector(grid, 1, 1);
-	   (instance_xtra -> temp_data) = talloc(double, SizeOfVector(dummy2 -> m_values));
-	   SetTempVectorData((dummy2 -> m_values),  (instance_xtra -> temp_data));
+	   dummy2 -> m_values = NewVector(grid, 1, 1);
 
 	   ReadPFBinary((dummy2 -> filename),(dummy2 -> m_values));
    
@@ -377,17 +375,15 @@ void  ManningsFreeInstanceXtra()
    Type2  *dummy2;
 
     if ( public_xtra -> type ==2)
-	{
-	             dummy2 = (Type2 *)(public_xtra -> data);
-				 FreeTempVector(dummy2 -> m_values);
+    {
+       dummy2 = (Type2 *)(public_xtra -> data);
+       FreeVector(dummy2 -> m_values);
+    }
 
-				 tfree(instance_xtra -> temp_data);
-	}
-
-	 if (instance_xtra)
-   {
-	   free(instance_xtra);
-   }
+    if (instance_xtra)
+    {
+       free(instance_xtra);
+    }
 }
 
 /*--------------------------------------------------------------------------

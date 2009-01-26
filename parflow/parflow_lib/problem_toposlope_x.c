@@ -358,15 +358,10 @@ Grid    *grid;
       {
 	 dummy2 = (Type2 *)(public_xtra -> data);
 
-	 dummy2 -> sx_values = NewTempVector(grid, 1, 1);
-	 (instance_xtra -> temp_data) = ctalloc(double, SizeOfVector(dummy2 -> sx_values));
-	 SetTempVectorData((dummy2 -> sx_values),  (instance_xtra -> temp_data));
-
+	 dummy2 -> sx_values = NewVector(grid, 1, 1);
 	 ReadPFBinary((dummy2 -> filename),(dummy2 -> sx_values));
-   
       }
    }
-
    
    PFModuleInstanceXtra(this_module) = instance_xtra;
    return this_module;
@@ -388,9 +383,7 @@ void  XSlopeFreeInstanceXtra()
    if ( public_xtra -> type ==2)
    {
       dummy2 = (Type2 *)(public_xtra -> data);
-      FreeTempVector(dummy2 -> sx_values);
-
-      tfree(instance_xtra -> temp_data);
+      FreeVector(dummy2 -> sx_values);
    }
 
    if (instance_xtra)
