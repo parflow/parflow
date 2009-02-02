@@ -1322,6 +1322,7 @@ Optional Features:
   --enable-opt=STRING  Set compiler optimization switches.
   --enable-debug=STRING  Set compiler debug switches.
   --enable-profiling=STRING  Set compiler profiling switches.
+  --enable-timing   Enable parflow module timing.
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -2112,6 +2113,17 @@ if test -n "$profiling_switches" ; then
    C_FLAGS="$profiling_switches $C_FLAGS"
    F77_FLAGS="$profiling_switches $F77_FLAGS"
 fi
+
+# Check whether --enable-timing was given.
+if test "${enable_timing+set}" = set; then
+  enableval=$enable_timing; cat >>confdefs.h <<\_ACEOF
+#define PF_TIMING 1
+_ACEOF
+
+fi
+
+
+
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'

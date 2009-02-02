@@ -31,6 +31,10 @@
 #undef AMPS_SPLIT_FILE
 #endif
 
+#ifndef PF_TIMING
+#undef PF_TIMING
+#endif
+
 /*
  * Misc machine config options
  */
