@@ -117,10 +117,9 @@ int  argc;
 
    printMaxMemory(log_file);
 
-   fprintf(log_file, "\n");
+   IfLogging(0) {
+      fprintf(log_file, "\n");
 
-   IfLogging(0) 	 
-   {
       if(!amps_Rank(amps_CommWorld))
       {
 	 printMemoryInfo(log_file);
