@@ -20,8 +20,13 @@ Checking out WRF from the SVN repository
 cd <somewhere>
 svn co svn+ssh://atlas/usr/gapps/thcs/subversion/wrf/trunk wrf
 
+
+*****************************************************************************
+ATLAS Build instructions
+*****************************************************************************
+
 -----------------------------------------------------------------------------
-Environmental variables
+Environmental variables on Atlas
 -----------------------------------------------------------------------------
 
 SILO_DIR=/usr/gapps/silo/4.6.1/chaos_4_x86_64
@@ -72,6 +77,10 @@ cd <somewhere>/wrf
 
 ./compile wrf
 
+*****************************************************************************
+CASC Tux Cluster Build Instructions
+*****************************************************************************
+
 -----------------------------------------------------------------------------
 Compiling Parflow on CASC Tux Cluster
 -----------------------------------------------------------------------------
@@ -97,18 +106,66 @@ cd <somewhere>/wrf
 
 ./compile wrf
 
+
+*****************************************************************************
+RA.MINES.EDU Build Instructions
+*****************************************************************************
+
 -----------------------------------------------------------------------------
-Runing WRF+PF test case on CASC Tux cluster
+Environmental variables on RA
 -----------------------------------------------------------------------------
 
-cd <somewhere>/wrf/parflow
+If using bash:
 
-mpirun -np 8 wrf_atlas.msub
+export NETCDF=/usr/local/
+export HYPRE_DIR=/lustre/scratch/projects/parflow/local/hypre/2.4.0b
+export SILO_DIR=/lustre/scratch/projects/parflow/local/silo/4.6.1
 
-NOTE: Need to run with the OpenMPI as above! Not MPICH in /usr/apps.
+PARFLOWD_DIR should be set to where you want to install PF at:
 
+export PARFLOW_DIR=$HOME/parflow/exe.ra
 
+or use setenv if using csh/tcsh:
 
+setenv NETCDF /usr/local/
+setenv SILO_DIR /lustre/scratch/projects/parflow/local/silo/4.6.1
+setenv HYPRE_DIR /lustre/scratch/projects/parflow/local/hypre/2.4.0b
 
+setenv PARFLOW_DIR $HOME/parflow/exe.ra
 
+-----------------------------------------------------------------------------
+Compiling Parflow on RA
+-----------------------------------------------------------------------------
 
+cd to the parflow src directory:
+
+export CC=mpicc
+export CXX=mpiCC
+export F77=mpif77
+ ./configure \
+        --with-amps=mpi1 \
+        --prefix=$PARFLOW_DIR \
+        --with-silo=$SILO_DIR \
+        --with-hypre=$HYPRE_DIR 
+  
+cd to the pftools src directory:
+
+export CC=icc
+../parflow/pftools/configure \
+		     --prefix=$PARFLOW_DIR \
+	             --with-silo=$SILO_DIR \
+		     --with-amps=mpi1
+
+-----------------------------------------------------------------------------
+Compiling WRF on RA
+-----------------------------------------------------------------------------
+
+cd <somewhere>/wrf
+./configure
+
+	Select option 31 <RA intel compile with dmpar>
+	Select option 1 <basic - the default>
+
+./compile wrf
+
+<be prepared to wait a long time>
