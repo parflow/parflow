@@ -111,6 +111,30 @@ cd <somewhere>/wrf
 RA.MINES.EDU Build Instructions
 *****************************************************************************
 
+IMPORTANT NOTE:
+
+Compiling with INTEL Compiler suite yielded an executable that
+produced incorrect results.  To use the GNU compiler suite follow the
+instructions from Timothy Kaiser:
+
+The way to switch mpi compilers is to
+do
+
+mpi-selector --list
+
+then pick which one you want, most likely
+
+openmpi_gcc-1.2.5
+
+Then
+
+mpi-selector --set  openmpi_gcc-1.2.5
+
+
+You must log out and log back in for this
+to take effect.  Sourcing your environment
+will not do it.
+
 -----------------------------------------------------------------------------
 Environmental variables on RA
 -----------------------------------------------------------------------------
@@ -121,7 +145,7 @@ export NETCDF=/usr/local/
 export HYPRE_DIR=/lustre/scratch/projects/parflow/local/hypre/2.4.0b
 export SILO_DIR=/lustre/scratch/projects/parflow/local/silo/4.6.1
 
-PARFLOWD_DIR should be set to where you want to install PF at:
+PARFLOW_DIR should be set to where you want to install PF at:
 
 export PARFLOW_DIR=$HOME/parflow/exe.ra
 
@@ -151,10 +175,10 @@ export F77=mpif77
 cd to the pftools src directory:
 
 export CC=icc
-../parflow/pftools/configure \
-		     --prefix=$PARFLOW_DIR \
-	             --with-silo=$SILO_DIR \
-		     --with-amps=mpi1
+./configure \
+     --prefix=$PARFLOW_DIR \
+     --with-silo=$SILO_DIR \
+     --with-amps=mpi1
 
 -----------------------------------------------------------------------------
 Compiling WRF on RA
@@ -163,7 +187,7 @@ Compiling WRF on RA
 cd <somewhere>/wrf
 ./configure
 
-	Select option 31 <RA intel compile with dmpar>
+	Select option 31 <RA GNU compile with dmpar>
 	Select option 1 <basic - the default>
 
 ./compile wrf
