@@ -3237,7 +3237,7 @@ esac
 if test "${enable_opt+set}" = set; then
   enableval=$enable_opt; case "$enable_opt" in
    no) opt_switches="" ;;
-   yes) opt_switches="-O" ;;
+   yes) opt_switches="-O2" ;;
    *) opt_switches="$enable_opt" ;;
 esac
 else

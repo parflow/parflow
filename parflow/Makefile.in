@@ -6,7 +6,7 @@
 ## Description:	makefile for the parflow library and executable
 ##
 
-default: all
+default: install 
 
 include ./config/Makefile.config
 
