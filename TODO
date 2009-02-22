@@ -1,3 +1,7 @@
+SGS
+
+Update manual to reflect the change to the makefile.   "make install" is now the default behavior.
+
 SGS  
 
 There were some compile problems with the CLM F90 and gfortran,
