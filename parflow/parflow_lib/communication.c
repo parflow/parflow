@@ -350,6 +350,8 @@ CommPkg *pkg;
 {
    int                i;
 
+   amps_FreePackage(pkg -> package);
+
    for(i = pkg -> num_send_invoices; i--;)
       amps_FreeInvoice(pkg -> send_invoices[i]);
    for(i = pkg -> num_recv_invoices; i--;)
@@ -362,8 +364,6 @@ CommPkg *pkg;
    tfree(pkg -> recv_ranks);					     
 
    tfree(pkg -> loop_array);
-
-   amps_FreePackage(pkg -> package);
 
    tfree(pkg);
 }

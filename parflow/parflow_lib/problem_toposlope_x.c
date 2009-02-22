@@ -536,6 +536,15 @@ void  XSlopeFreePublicXtra()
             tfree(dummy1);
             break;
          }
+
+	 case 2:
+	 {
+	    Type2 * dummy2;
+            dummy2 = (Type2 *)(public_xtra -> data);
+
+	    tfree(dummy2);
+	    break;
+	 }
       }
       
       tfree(public_xtra);

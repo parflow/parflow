@@ -269,27 +269,12 @@ int           symm_part;      /* Specifies whether to compute just the
       pop = SubvectorData(po_sub);
       ss  = SubvectorData(ss_sub);
 
-#ifdef USE_BOXLOOP      
-
-      im  = SubmatrixEltIndex(J_sub,  ix, iy, iz);
-      ipo = SubvectorEltIndex(po_sub, ix, iy, iz);
-      iv  = SubvectorEltIndex(d_sub,  ix, iy, iz);
-
-      BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
-                im,  nx_m,  ny_m,  nz_m,  1, 1, 1,
-                ipo, nx_po, ny_po, nz_po, 1, 1, 1,
-                iv,  nx_v,  ny_v,  nz_v,  1, 1, 1,
-      {
-
-#else
-
       GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
       {
 
 	 im  = SubmatrixEltIndex(J_sub, i, j, k);
 	 ipo = SubvectorEltIndex(po_sub, i, j, k);
 	 iv  = SubvectorEltIndex(d_sub,  i, j, k);
-#endif
 
 	 cp[im] += (sdp[iv]*dp[iv] + sp[iv]*ddp[iv])
 	    *pop[ipo]*vol + ss[iv]*vol*(sdp[iv]*dp[iv]*pp[iv]+sp[iv]*ddp[iv]*pp[iv]+sp[iv]*dp[iv]); //sk start
@@ -413,24 +398,12 @@ int           symm_part;      /* Specifies whether to compute just the
       permyp = SubvectorData(permy_sub);
       permzp = SubvectorData(permz_sub);
 
-#ifdef USE_BOXLOOP
-      
-      ip = SubvectorEltIndex(p_sub, ix, iy, iz);
-      im = SubmatrixEltIndex(J_sub, ix, iy, iz);
-
-      BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-      ip, nx_v, ny_v, nz_v, 1, 1, 1,
-      im, nx_m, ny_m, nz_m, 1, 1, 1,
-      {
-
-#else
       GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
       {
 
 	 ip = SubvectorEltIndex(p_sub, i, j, k);
 	 im = SubmatrixEltIndex(J_sub, i, j, k);
 
-#endif
 	 prod        = rpp[ip] * dp[ip];
 	 prod_der    = rpdp[ip] * dp[ip] + rpp[ip] * ddp[ip];
 

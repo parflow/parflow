@@ -280,11 +280,6 @@ int    	 zero;
 
 	       s = StencilShape(MatrixStencil(A));
 
-#if DEC_ALPHA_COMPILER_HACK
-               if(ix < 0)   
-                 printf("hello");
-#endif
-
 	       a0 = SubmatrixElt(A_sub, 0, ix, iy, iz);
 	       a1 = SubmatrixElt(A_sub, 1, ix, iy, iz);
 	       a2 = SubmatrixElt(A_sub, 2, ix, iy, iz);

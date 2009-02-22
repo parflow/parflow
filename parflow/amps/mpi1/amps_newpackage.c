@@ -43,12 +43,12 @@ amps_Package amps_NewPackage(amps_Comm comm,
 
 void amps_FreePackage(amps_Package package)
 {
-  if(package -> num_recv + package -> num_send)
-  {
-     free(package -> requests);
-  }
+   if(package -> num_recv + package -> num_send)
+   {
+      free(package -> requests);
+   }
 
-  free(package);
+   free(package);
 }
 
 #else
@@ -78,14 +78,44 @@ amps_Package amps_NewPackage(amps_Comm comm,
 
 void amps_FreePackage(amps_Package package)
 {
-   if((package -> num_send + package -> num_recv) &&
-      package -> commited)
-   {
-      free(package -> recv_requests);
-      free(package -> status);
-   }
+   int i;
 
-   free(package);
+   if(package) 
+   {
+      if(package -> commited) 
+      {
+	 for(i = 0; i < package -> num_recv; i++)
+	 {
+	    if(package -> recv_invoices[i] -> mpi_type != MPI_DATATYPE_NULL )
+	    {
+	       MPI_Type_free(&(package -> recv_invoices[i] -> mpi_type));   
+	    }
+
+    
+	    MPI_Request_free(&package -> recv_requests[i]);
+	 }
+    
+	 for(i = 0; i < package -> num_send; i++)
+	 {
+	    if(package -> send_invoices[i] -> mpi_type != MPI_DATATYPE_NULL ) 
+	    {
+	       MPI_Type_free(&package -> send_invoices[i] -> mpi_type);
+	    }
+
+	    MPI_Request_free(&package -> send_requests[i]);
+	 }
+	 
+	 if(package -> num_send + package -> num_recv) 
+	 {
+	    free(package -> recv_requests);
+	    free(package -> status);
+	 }
+	 
+	 package -> commited = FALSE;
+      }
+	 
+      free(package);
+   }
 }
 
 #endif

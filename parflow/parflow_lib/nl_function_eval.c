@@ -263,20 +263,10 @@ Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/
       pop = SubvectorData(po_sub);
       fp  = SubvectorData(f_sub);
 
-#ifdef USE_BOXLOOP      
-      ip  = SubvectorEltIndex(f_sub,   ix, iy, iz);
-      ipo = SubvectorEltIndex(po_sub,  ix, iy, iz);
-
-      BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-      ip, nx_f, ny_f, nz_f, 1, 1, 1,
-      ipo, nx_po, ny_po, nz_po, 1, 1, 1,
-      { 
-#else
       GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
       {
 	 ip  = SubvectorEltIndex(f_sub,   i, j, k);
 	 ipo = SubvectorEltIndex(po_sub,  i, j, k);
-#endif
 	 fp[ip] = (sp[ip]*dp[ip] - osp[ip]*odp[ip])*pop[ipo]*vol;			 
       });
    }
@@ -329,17 +319,9 @@ Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/
       fp  = SubvectorData(f_sub);
 
 
-#ifdef USE_BOXLOOP      
-      ip = SubvectorEltIndex(f_sub, ix, iy, iz);
- 
-      BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-      ip, nx_f, ny_f, nz_f, 1, 1, 1,
-      {
-#else
       GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
       {
 	 ip = SubvectorEltIndex(f_sub, i, j, k);
-#endif
 	 fp[ip] += ss[ip]*vol*(pp[ip]*sp[ip]*dp[ip] - opp[ip]*osp[ip]*odp[ip]);
       });
    }
@@ -383,18 +365,10 @@ Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/
       fp = SubvectorData(f_sub);
       et = SubvectorData(et_sub);
 
-#ifdef USE_BOXLOOP      
-      ip = SubvectorEltIndex(f_sub, ix, iy, iz);
-
-      BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-      ip, nx_f, ny_f, nz_f, 1, 1, 1,
-      {
-#else
       GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
       {
 
 	 ip = SubvectorEltIndex(f_sub, i, j, k);
-#endif
 	 fp[ip] -= vol * dt * (sp[ip] + et[ip]);
       });
    }
@@ -499,17 +473,9 @@ Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/
       permyp = SubvectorData(permy_sub);
       permzp = SubvectorData(permz_sub);
 
-#ifdef USE_BOXLOOP      
-      ip = SubvectorEltIndex(p_sub, ix, iy, iz);
-
-      BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-      ip, nx_p, ny_p, nz_p, 1, 1, 1,
-      {
-#else
       GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
       {
 	 ip = SubvectorEltIndex(p_sub, i, j, k);
-#endif
 
 	 /* Calculate right face velocity.
 	    diff >= 0 implies flow goes left to right */

@@ -784,11 +784,21 @@ double    *temp_data;
 void  ICPhasePressureFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
+   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
    InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
-
 
    if (instance_xtra)
    {
+      Type3         *dummy3;
+
+      /* Uses a spatially varying field */
+      if (public_xtra -> type == 3)  
+      {
+	 dummy3 = (Type3 *)(public_xtra -> data);
+
+	 FreeVector(dummy3 -> ic_values);
+      }
+
       PFModuleFreeInstance(instance_xtra -> phase_density);
       
       free(instance_xtra);
@@ -1021,9 +1031,7 @@ void  ICPhasePressureFreePublicXtra()
 	 case 3:
 	 {
 	    dummy3 = (Type3 *)(public_xtra -> data);
-	    
-	    FreeVector(dummy3 -> ic_values);
-	    
+	    tfree(dummy3);
 	    break;
 	 }
 

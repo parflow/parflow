@@ -31,12 +31,22 @@ void _amps_wait_exchange(amps_Handle handle)
 
      for(i = 0; i < handle -> package -> num_recv; i++)
      {
-	MPI_Type_free(&(handle -> package -> recv_invoices[i] -> mpi_type));   
+	if( handle -> package -> recv_invoices[i] -> mpi_type != MPI_DATATYPE_NULL )
+	{
+	   MPI_Type_free(&(handle -> package -> recv_invoices[i] -> mpi_type));   
+	}
+
+	MPI_Request_free(&handle -> package -> recv_requests[i]);
      }
      
      for(i = 0; i < handle -> package -> num_send; i++)
      {
-	MPI_Type_free(&handle -> package -> send_invoices[i] -> mpi_type);
+	if( handle -> package -> send_invoices[i] -> mpi_type != MPI_DATATYPE_NULL ) 
+	{
+	   MPI_Type_free(&handle -> package -> send_invoices[i] -> mpi_type);
+	}
+
+	MPI_Request_free(&handle -> package -> send_requests[i]);
      }
   }
 }
@@ -103,6 +113,7 @@ void _amps_wait_exchange(amps_Handle handle)
   }
 
 #ifdef AMPS_MPI_PACKAGE_LOWSTORAGE
+
   /* Needed by the DEC's; need better memory allocation strategy */
   /* Need to uncommit packages when not in use */
   /* amps_Commit followed by amps_UnCommit ????? */
@@ -110,23 +121,34 @@ void _amps_wait_exchange(amps_Handle handle)
   {
      for(i = 0; i < handle -> package -> num_recv; i++)
      {
-	MPI_Type_free(&handle -> package -> recv_invoices[i] 
-		      -> mpi_type);
+	if( handle -> package -> recv_invoices[i] -> mpi_type != MPI_DATATYPE_NULL )
+	{
+	   MPI_Type_free(&(handle -> package -> recv_invoices[i] -> mpi_type));   
+	}
     
 	MPI_Request_free(&handle -> package -> recv_requests[i]);
      }
     
      for(i = 0; i < handle -> package -> num_send; i++)
      {
-	MPI_Type_free(&handle -> package -> send_invoices[i] 
-		      -> mpi_type);
+	if( handle -> package -> send_invoices[i] -> mpi_type != MPI_DATATYPE_NULL ) 
+	{
+	   MPI_Type_free(&handle -> package -> send_invoices[i] -> mpi_type);
+	}
+
 	MPI_Request_free(&handle -> package -> send_requests[i]);
      }
     
      if(handle -> package -> recv_requests)
+     {
 	free(handle -> package -> recv_requests);
-     if(handle -> package -> status)
+	handle -> package -> recv_requests = NULL;
+     }
+     if(handle -> package -> status) 
+     {
 	free(handle -> package -> status);
+	handle -> package -> status = NULL;
+     }
     
      handle -> package -> commited = FALSE;
   }
