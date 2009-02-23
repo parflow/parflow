@@ -124,12 +124,11 @@ mpi-selector --list
 
 then pick which one you want, most likely
 
-openmpi_gcc-1.2.5
+openmpi_intel-1.2.5
 
 Then
 
-mpi-selector --set  openmpi_gcc-1.2.5
-
+mpi-selector --set  openmpi_intel-1.2.5
 
 You must log out and log back in for this
 to take effect.  Sourcing your environment
@@ -187,7 +186,7 @@ Compiling WRF on RA
 cd <somewhere>/wrf
 ./configure
 
-	Select option 31 <RA GNU compile with dmpar>
+	Select option 31 <RA Intel compile with dmpar>
 	Select option 1 <basic - the default>
 
 ./compile wrf
