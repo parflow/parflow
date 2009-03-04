@@ -333,6 +333,22 @@ CASC_CHECK_GETTIMEOFDAY
 
 CASC_CHECK_BIGENDIAN
 
+dnl
+dnl Cegdb support
+dnl
+PARFLOW_HAVE_CEGDB="no"
+CASC_SUPPORT_CEGDB
+if test "${cegdb_PREFIX+set}" = set; then
+  LIBS="$cegdb_LIBS $LIBS"
+  CASC_SPLIT_LIBS_STRING(cegdb_LIBS,cegdb_LIB_PATH,cegdb_LIB_NAME)
+  LIB_PATH="$cegdb_LIB_PATH $LIB_PATH"
+  LIB_NAME="$cegdb_LIB_NAME $LIB_NAME"
+  INC_PATH="$cegdb_INCLUDES $INC_PATH"
+  AC_DEFINE(HAVE_CEGDB,1,CEGDB library is available so use it)
+  PARFLOW_HAVE_CEGDB="yes"
+fi
+AC_SUBST(PARFLOW_HAVE_CEGDB)
+
 
 dnl
 dnl Silo support

@@ -704,6 +704,7 @@ MPIFLAGS
 AMPS
 AMPS_LIBS
 AMPS_LIB_DEPEND
+PARFLOW_HAVE_CEGDB
 PARFLOW_HAVE_SILO
 CXX
 CXXFLAGS
@@ -1348,6 +1349,8 @@ Optional Packages:
                           needed for MPI, e.g. \"nsl socket mpi\"
   --with-amps=AMPS_TYPE   Set the version of AMPS to use: seq, mpi1, smpi, win32
   --with-amps-sequential-io  Use AMPS sequentail I/O
+  --with-cegdb=PATH        Use CEGDB and optionally specify
+                          where CEGDB is installed.
   --with-silo=PATH        Use SILO and optionally specify
                           where SILO is installed.
  --with-hdf5=PATH  Use HDF5 and optionally specify where HDF5 is installed.
@@ -10159,6 +10162,107 @@ _ACEOF
   fi
 
 
+PARFLOW_HAVE_CEGDB="no"
+
+
+# Begin CASC_SUPPORT_CEGDB
+# Defines cegdb_PREFIX cegdb_INCLUDES and cegdb_LIBS if with-cegdb is specified.
+
+# Check whether --with-cegdb was given.
+if test "${with_cegdb+set}" = set; then
+  withval=$with_cegdb;
+else
+  with_cegdb=no
+fi
+
+
+case "$with_cegdb" in
+  no)
+    { echo "$as_me:$LINENO: configuring without CEGDB support" >&5
+echo "$as_me: configuring without CEGDB support" >&6;}
+    : Do nothing
+  ;;
+  yes)
+    # CEGDB install path was not specified.
+    # Look in a couple of standard locations to probe if
+    # CEGDB header files are there.
+    { echo "$as_me:$LINENO: checking for CEGDB installation" >&5
+echo $ECHO_N "checking for CEGDB installation... $ECHO_C" >&6; }
+    for dir in /usr /usr/local; do
+      if test -f ${dir}/include/cegdb.h; then
+        cegdb_PREFIX=${dir}
+        break
+      fi
+    done
+    { echo "$as_me:$LINENO: result: $cegdb_PREFIX" >&5
+echo "${ECHO_T}$cegdb_PREFIX" >&6; }
+  ;;
+  *)
+    # CEGDB install path was specified.
+    { echo "$as_me:$LINENO: checking for CEGDB installation" >&5
+echo $ECHO_N "checking for CEGDB installation... $ECHO_C" >&6; }
+    cegdb_PREFIX=$with_cegdb
+    cegdb_INCLUDES="-I${cegdb_PREFIX}/include"
+    if test -f ${cegdb_PREFIX}/include/cegdb.h; then
+        { echo "$as_me:$LINENO: result: $cegdb_PREFIX" >&5
+echo "${ECHO_T}$cegdb_PREFIX" >&6; }
+    else
+        { echo "$as_me:$LINENO: result: $cegdb_PREFIX" >&5
+echo "${ECHO_T}$cegdb_PREFIX" >&6; }
+        { { echo "$as_me:$LINENO: error: CEGDB not found in $with_cegdb" >&5
+echo "$as_me: error: CEGDB not found in $with_cegdb" >&2;}
+   { (exit 1); exit 1; }; }
+    fi
+  ;;
+esac
+
+# Determine which CEGDB library is built
+if test "${cegdb_PREFIX+set}" = set; then
+   { echo "$as_me:$LINENO: checking for CEGDB library" >&5
+echo $ECHO_N "checking for CEGDB library... $ECHO_C" >&6; }
+   if test -f ${cegdb_PREFIX}/lib/libcegdb.a; then
+      cegdb_LIBS='-lcegdb'
+      { echo "$as_me:$LINENO: result: using $cegdb_LIBS" >&5
+echo "${ECHO_T}using $cegdb_LIBS" >&6; }
+   else
+      { echo "$as_me:$LINENO: result: using $cegdb_LIBS" >&5
+echo "${ECHO_T}using $cegdb_LIBS" >&6; }
+      { { echo "$as_me:$LINENO: error: Could not fine cegdb library in $cegdb_PREFIX" >&5
+echo "$as_me: error: Could not fine cegdb library in $cegdb_PREFIX" >&2;}
+   { (exit 1); exit 1; }; }
+   fi
+
+   cegdb_LIBS="-L${cegdb_PREFIX}/lib ${cegdb_LIBS}"
+fi
+
+# END CASC_SUPPORT_CEGDB
+
+
+if test "${cegdb_PREFIX+set}" = set; then
+  LIBS="$cegdb_LIBS $LIBS"
+
+# Split cegdb_LIBS into the LIB_PATH part (cegdb_LIB_PATH) and the LIB_NAME part (cegdb_LIB_NAME)
+if test -n "${cegdb_LIBS}"; then
+  for i in ${cegdb_LIBS}; do
+    case "$i" in
+    -L*) cegdb_LIB_PATH="${cegdb_LIB_PATH} $i" ;;
+    *) cegdb_LIB_NAME="${cegdb_LIB_NAME} $i" ;;
+    esac
+  done
+fi
+
+  LIB_PATH="$cegdb_LIB_PATH $LIB_PATH"
+  LIB_NAME="$cegdb_LIB_NAME $LIB_NAME"
+  INC_PATH="$cegdb_INCLUDES $INC_PATH"
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_CEGDB 1
+_ACEOF
+
+  PARFLOW_HAVE_CEGDB="yes"
+fi
+
+
 
 PARFLOW_HAVE_SILO="no"
 
@@ -11909,12 +12013,12 @@ MPIFLAGS!$MPIFLAGS$ac_delim
 AMPS!$AMPS$ac_delim
 AMPS_LIBS!$AMPS_LIBS$ac_delim
 AMPS_LIB_DEPEND!$AMPS_LIB_DEPEND$ac_delim
+PARFLOW_HAVE_CEGDB!$PARFLOW_HAVE_CEGDB$ac_delim
 PARFLOW_HAVE_SILO!$PARFLOW_HAVE_SILO$ac_delim
 CXX!$CXX$ac_delim
 CXXFLAGS!$CXXFLAGS$ac_delim
 ac_ct_CXX!$ac_ct_CXX$ac_delim
 hdf5_LIBS!$hdf5_LIBS$ac_delim
-SUNDIALS_C_FILES!$SUNDIALS_C_FILES$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -11956,6 +12060,7 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+SUNDIALS_C_FILES!$SUNDIALS_C_FILES$ac_delim
 PARFLOW_HAVE_HYPRE!$PARFLOW_HAVE_HYPRE$ac_delim
 INSTDIR!$INSTDIR$ac_delim
 M4!$M4$ac_delim
@@ -11972,7 +12077,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 14; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 15; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

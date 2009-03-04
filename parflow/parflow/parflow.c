@@ -33,10 +33,8 @@
 
 #include "parflow.h"
 
-#ifdef CEGDB
-
+#ifdef HAVE_CEGDB
 #include <cegdb.h>
-
 #endif
 
 int             main(argc,argv)
@@ -60,7 +58,7 @@ int  argc;
       exit(1);
    }
 
-#ifdef CEGDB
+#ifdef HAVE_CEGDB
    cegdb(&argc, &argv, amps_Rank(MPI_CommWorld));
 #endif
    

@@ -77,6 +77,15 @@
 #endif
 
 /*
+ * cegdb
+ */
+
+#ifndef HAVE_CEGDB
+#undef HAVE_CEGDB
+#endif
+
+
+/*
  * Silo 
  */
 
