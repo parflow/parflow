@@ -32,8 +32,6 @@ OBJS = \
 	close_files.o\
 	open_files.o\
 	pf_couple.o\
-	read_array.o\
-	pf_read.o\
 	clm_balchk.o\
 	clm_lake.o\
 	clm_subdiv.o\

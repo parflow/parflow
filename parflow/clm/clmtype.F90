@@ -85,9 +85,9 @@ module clmtype
 
 ! Soil physical parameters
 
-      real(r8) :: bsw   (nlevsoi) ! Clapp and Hornberger "b"
-      real(r8) :: watsat(parfl_nlevsoi) !@ volumetric soil water at saturation (porosity) over entire domain (Parflow and CLM)
-      real(r8) :: hksat (nlevsoi) ! hydraulic conductivity at saturation (mm H2O /s)
+      real(r8) :: bsw   (nlevsoi) ! Clapp and Hornberger "b"  --- NOT USED in PF.CLM COUPLE  @RMM
+      real(r8) :: watsat(nlevsoi) !@ volumetric soil water at saturation (porosity) over intersection between domians (Parflow and CLM)  -- PASSED in FROM PF @RMM
+      real(r8) :: hksat (nlevsoi) ! hydraulic conductivity at saturation (mm H2O /s)  --- NOT USED IN PF.CLM COUPLE @RMM
       real(r8) :: sucsat(nlevsoi) ! minimum soil suction (mm)
       real(r8) :: watdry(nlevsoi) ! water content when evapotranspiration stops (new)
       real(r8) :: watopt(nlevsoi) ! optimal water content for evapotranspiration (new)
@@ -210,12 +210,11 @@ module clmtype
 
 !hydrology
 
-     real(r8) :: h2osoi_vol(nlevsoi)     ! volumetric soil water (0<=h2osoi_vol<=watsat) [m3/m3]
-     real(r8) :: eff_porosity(nlevsoi)   ! effective porosity = porosity - vol_ice
+     real(r8) :: h2osoi_vol(nlevsoi)     ! volumetric soil water (0<=h2osoi_vol<=watsat) [m3/m3]  -- PASSED IN FROM PF @RMM
+     real(r8) :: eff_porosity(nlevsoi)   ! effective porosity = porosity - vol_ice   --- P
 	 real(r8) :: pf_flux(nlevsoi)        !@ sink/source flux for Parlfow couple for each CLM soil layer
-	 real(r8) :: pf_vol_liq(parfl_nlevsoi)    !@ partial volume of liquid water in layer from Parflow over entire domain (Parflow and CLM)	 real(r8) :: pf_press(parfl_nlevsoi)  !@ pressure values from parflow
-	 real(r8) :: pf_press(parfl_nlevsoi) !@ old pressure values from parflow    
- 	 real(r8) :: pf_press_o(parfl_nlevsoi) !@ old pressure values from parflow    
+	 real(r8) :: pf_vol_liq(nlevsoi)    !@ partial volume of liquid water in layer from Parflow over entire domain (Parflow and CLM)	 real(r8) :: pf_press(parfl_nlevsoi)  !@ pressure values from parflow
+	 real(r8) :: pf_press(nlevsoi) !@ old pressure values from parflow    
 
      real(r8) :: qflx_infl      ! infiltration (mm H2O /s) 
      real(r8) :: qflx_infl_old
@@ -293,9 +292,18 @@ module clmtype
      real(r8) :: tot_surf                  !total water velocity applied at the ground surface
      integer  :: pond_flag
      
-!@ Variables needed for use of topographic information
-     integer  :: topo_mask(parfl_nlevsoi) !info of which cells are "inactive" (topo_mask = 0) due to topography
-     integer  :: planar_mask              !planar info of which cells are "inactive" (0) due to topography
+!@ Variables needed for use of topographic information and the parflow-clm couple
+     integer  :: topo_mask(3) !info of which cells are "inactive" (topo_mask = 0) due to topography, (1) is top of active zone, (2) is bottom of clm grid (1)-10, (3) is bottom of pf domain
+     integer  :: planar_mask   !planar info of which cells are "inactive" (0) due to topography
+
+
+!@ Inermediate variables used in ParFlow - CLM couple, pass from parflow to CLM or passed back from CLM to ParFlow
+
+     real(r8) :: saturation_data(1:nlevsoi)  ! saturation (-) over top-10 layers in parflow mapped to CLM grid (1-nlevsoi)
+     real(r8) :: pressure_data(1:nlevsoi)    ! pressure-head (m) over top-10 layers in parflow mapped to CLM grid (1-nlevsoi)
+	 real(r8) :: evap_trans_data(1:nlevsoi)  ! ET-Flux over top-10 layers in CLM grid (1-nlevsoi) to be mapped back to ParFlow (m/d)
+     real(r8) :: porosity_data(1:nlevsoi)    ! porosity (-) over top-10 layers in parflow mapped to CLM grid (1-nlevsoi) - only done during init routine
+
 
 !=== End Variable List ===================================================
 

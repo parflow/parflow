@@ -72,7 +72,7 @@ subroutine clm_thermal (clm)
   use clmtype
   use clm_varcon, only : denh2o, denice, roverg, hvap, hsub, &
                         rair, cpair, grav, vkc, tfrz, sb, istice, istwet 
-  use clm_varpar, only : parfl_nlevsoi,nlevsoi
+  use clm_varpar, only : nlevsoi
   implicit none
 
 !=== Arguments  =====================================================
@@ -222,12 +222,9 @@ subroutine clm_thermal (clm)
      psit = -clm%sucsat(1) * fac ** (- clm%bsw(1))
      psit = max(clm%smpmin, psit)
 !@ Stefan: replace original psit with values from Parflow
-     do i=1,parfl_nlevsoi
-     if (clm%pf_press(i) >= 0.0d0 .and. clm%topo_mask(i)==1) then
-      psit = 0.0d0
-     else if (clm%pf_press(i) < 0.0d0 .and. clm%topo_mask(i)==1) then
-      psit = clm%pf_press(i)
-     endif
+     do i=1,nlevsoi
+     if (clm%pf_press(i)>= 0.0d0)  psit = 0.0d0
+     if (clm%pf_press(i) < 0.0d0)   psit = clm%pf_press(i)
      enddo  
      hr   = exp(psit/roverg/tg)
      qred = (1.-clm%frac_sno)*hr + clm%frac_sno
@@ -399,23 +396,16 @@ subroutine clm_thermal (clm)
   else    
 
      clm%btran = 0
-     do k = 1,parfl_nlevsoi
-     if (clm%topo_mask(k) > 0) then
-        i = clm%topo_mask(k)
+     do k = 1, nlevsoi
         if(clm%h2osoi_liq(i) > 0.0) then
-!           temp = min( max(clm%h2osoi_liq(i)/(clm%dz(i)*denh2o) - clm%watdry(i) ,0.) /  &
-!                      (clm%watopt(i)-clm%watdry(i)) ,1.) 
         temp = ((-150000 - clm%pf_press(k))/(-150000) )
             if (temp < 0.) temp = 0.
             if (temp > 1.) temp = 1.
-            !if (clm%pf_press(k) < -150000.0d0) temp = 0.0d0
-            !write(*,*) 'trans ',k,clm%pf_press(k),temp
            temp = temp ** clm%vw
         else
            temp = 0.01d0
         endif
         clm%btran = clm%btran + clm%rootfr(i)*temp
-     endif
      enddo
 
      call clm_leaftem(z0mv,z0hv,z0qv,thm,th,thv,tg,qg,dqgdT,htvp,sfacx,     &

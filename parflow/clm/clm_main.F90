@@ -162,7 +162,7 @@ subroutine clm_main (clm, day)
   use precision
   use clmtype
   use clm_varcon, only : tfrz, istsoil, istwet, istice, denice, denh2o
-  use clm_varpar, only : nlevsoi ! Stefan: added because of flux array that is passed
+ ! use clm_varpar, only : nlevsoi ! Stefan: added because of flux array that is passed
   implicit none
 
 ! ------------------- arguments -----------------------------------
@@ -229,11 +229,11 @@ subroutine clm_main (clm, day)
  !@ Lets do it my way
  !@ Here we add the total water mass of the layers from Parflow to close water balance
  !@ We can use clm(1)%dz(1) because the grids are equidistant and congruent
-   clm%begwb = 0.0d0 !@only interested in wb below surface
-   do j = 1, parfl_nlevsoi
-      clm%begwb =  clm%begwb + clm%pf_vol_liq(j) * clm%dz(1) * 1000.0d0
-      clm%begwb = clm%begwb + clm%pf_vol_liq(j)/clm%watsat(j) * 0.0001*0.5d0 * clm%pf_press(j)    
-   enddo
+!   clm%begwb = 0.0d0 !@only interested in wb below surface
+!   do j = 1, parfl_nlevsoi
+!      clm%begwb =  clm%begwb + clm%pf_vol_liq(j) * clm%dz(1) * 1000.0d0
+!      clm%begwb = clm%begwb + clm%pf_vol_liq(j)/clm%watsat(j) * 0.0001*0.5d0 * clm%pf_press(j)    
+!   enddo
   !@ Why is it handled this way and not as follows: clm%begwb = clm%endwb ????
 
   clm%begwb = clm%endwb

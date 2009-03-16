@@ -13,7 +13,7 @@ subroutine open_files (clm,drv,rank,ix,iy,ifstep)
  character*5 cistep      ! character for istep to include in file names
  integer :: nz,iz
 
- nz = 1.0d0
+ nz = 1
  iz = 1
 
  ! write processor rank and timestep to character for inclusion in FN
@@ -21,11 +21,12 @@ subroutine open_files (clm,drv,rank,ix,iy,ifstep)
  write(cistep,'(i5.5)') ifstep
 
  print*, "open files" 
- open (6,file='clm_elog.'//cistep//'.txt.'//trim(adjustl(RI)),status='unknown')
+ open (166,file='clm_elog.'//cistep//'.txt.'//trim(adjustl(RI)),status='unknown')
 
  open (199,file='balance.'//cistep//'.txt.'//trim(adjustl(RI)))
  write(199,'(a59)') "istep error(%) tot_infl_mm tot_tran_veg_mm begwatb endwatb"
 
+print *, "balance file"
  open(1995,file='qflx_top_soil.'//cistep//'.bin.'//trim(adjustl(RI)), access=ACCESS, form=FORM)  ! @ 2D output file     
  write(1995)ix,iy,iz,drv%nc,drv%nr,nz
 

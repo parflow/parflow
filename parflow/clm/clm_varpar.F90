@@ -24,7 +24,5 @@ module clm_varpar
 
   integer, parameter :: numrad      =   2   !number of solar radiation bands: vis, nir
   integer, parameter :: numcol      =   8   !number of soil color types
-  integer, parameter :: parfl_nlevsoi = 390 !@number of layers in Parflow
-!  integer, parameter :: parfl_nlevsoi = 3250 !@number of layers in Parflow
 
 end module clm_varpar

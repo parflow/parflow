@@ -1,10 +1,10 @@
-subroutine pf_couple(drv,clm,tile,evap_trans_data)
+subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,ny,nz,j_incr, k_incr,ip)
 
   use drv_module          ! 1-D Land Model Driver variables
   use precision
   use clmtype
   use drv_tilemodule      ! Tile-space variables
-  use clm_varpar, only : nlevsoi,parfl_nlevsoi
+  use clm_varpar, only : nlevsoi
   use clm_varcon, only : denh2o, denice, istwet, istice
   implicit none
 
@@ -12,49 +12,46 @@ subroutine pf_couple(drv,clm,tile,evap_trans_data)
   type (clm1d) :: clm(drv%nch)	 !CLM 1-D Module
   type (tiledec) :: tile(drv%nch)
 
-  integer i,j,k,c,r,l,t
+  integer i,j,k,c,r,l,t, ip
   integer width_step,I_err
   integer r_len, c_len, j_len, flag
   integer counter(drv%nc,drv%nr)
+  integer nx,ny,nz, j_incr, k_incr
   real(r8) begwatb,endwatb !@ beginning and ending water balance over ENTIRE domain
   real(r8) tot_infl_mm,tot_tran_veg_mm,tot_drain_mm !@ total mm of h2o from infiltration and transpiration
   real(r8) error !@ mass balance error over entire domain
-  real(r8) evap_trans_data(drv%nc,drv%nr,parfl_nlevsoi),press
+  real(r8) evap_trans((nx+2)*(ny+2)*(nz+2)),press
+  real(r8) saturation((nx+2)*(ny+2)*(nz+2)),pressure((nx+2)*(ny+2)*(nz+2))
+  real(r8) porosity((nx+2)*(ny+2)*(nz+2))
+
   
 !@ Variable declarations: write *.pfb file
   real(r8) value
   
 ! End of variable declaration 
 
-  Write(*,*)"========== start the loop over the flux ============="
+ ! Write(*,*)"========== start the loop over the flux ============="
  
-! also: arbitrary cutoff value for evap rate (if rate is too small problems with Parflow solver)
+! @RMM Copy fluxes back into 
+!print*, ' in pf_couple'
+!print*,  ip, j_incr, k_incr
   do t=1,drv%nch     !rows (y)
-    do l = 1, nlevsoi
-    if (l == 1) then
-      clm(t)%pf_flux(l)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(l)) + clm(t)%qflx_infl
+    i=tile(t)%col
+    j=tile(t)%row
+    do k = 1, nlevsoi
+	l = ip+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k-1)
+    if (k == 1) then
+      clm(t)%pf_flux(k)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)) + clm(t)%qflx_infl
     else  
-      clm(t)%pf_flux(l) = - clm(t)%qflx_tran_veg*clm(t)%rootfr(l)
+      clm(t)%pf_flux(k) = - clm(t)%qflx_tran_veg*clm(t)%rootfr(k)
     endif
+! copy back to pf, assumes timing for pf is hours	
+      evap_trans(l) = clm(t)%pf_flux(k)*3.6d0/drv%dz
+!	  print*, i,j,k,l,evap_trans(l),clm(t)%pf_flux(k),t
     enddo
   enddo
 
-  counter = 0
-  do  k=1, parfl_nlevsoi ! PF loop over z
-    do  t=1, drv%nch
-    i=tile(t)%col
-    j=tile(t)%row
-    if (clm(t)%topo_mask(parfl_nlevsoi-k+1) == 0) then
-      value = 0.0d0                              
-      evap_trans_data(i,j,k) = value
-    elseif(clm(t)%topo_mask(parfl_nlevsoi-k+1) >= 1) then 
-      value = clm(t)%pf_flux(nlevsoi-counter(i,j))*3.6d0/drv%dz 
-      evap_trans_data(i,j,k) = value
-      counter(i,j) = counter(i,j) + 1
-    endif 
-    end do
-  end do
-  
+
 
 !@ Start: Here we do the mass balance: We look at every tile/cell individually!
 !@ Determine volumetric soil water
@@ -74,19 +71,24 @@ subroutine pf_couple(drv,clm,tile,evap_trans_data)
                            + clm(t)%h2osoi_ice(l)/(clm(t)%dz(l)*denice)
     enddo
       
-    !@ Let's do it my way
-    !@ Here we add the total water mass of the layers below CLM soil layers from Parflow to close water balance
-    !@ We can use clm(1)%dz(1) because the grids are equidistant and congruent
-     clm(t)%endwb=0.0d0 !@only interested in wb below surface
+    !@sjk Let's do it my way
+    !@sjk Here we add the total water mass of the layers below CLM soil layers from Parflow to close water balance
+    !@sjk We can use clm(1)%dz(1) because the grids are equidistant and congruent
+     clm(t)%endwb=0.0d0 !@sjk only interested in wb below surface
     
-     do l = 1, parfl_nlevsoi ! CLM loop over z
-       if (clm(t)%pf_press(l) > 0.0d0 .and. clm(t)%topo_mask(l)==1 ) then
-         clm(t)%endwb = clm(t)%endwb + clm(t)%pf_press(l)
-       endif
-       clm(t)%endwb = clm(t)%endwb + clm(t)%pf_vol_liq(l) * clm(1)%dz(1) * 1000.0d0
-       clm(t)%endwb = clm(t)%endwb + clm(t)%pf_vol_liq(l)/clm(t)%watsat(l) * 0.0001*clm(1)%dz(1) * clm(t)%pf_press(l)    
+     do k = clm(t)%topo_mask(3), clm(t)%topo_mask(1) ! CLM loop over z, starting at bottom of pf domains topo_mask(3)
+	 	l = ip+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k-1)
+! first we add direct amount of water: S*phi
+       clm(t)%endwb = clm(t)%endwb + saturation(l)*porosity(l) * clm(1)%dz(1) * 1000.0d0
+! then we add the compressible storage component, note the Ss is hard-wired here at 0.0001 should really be done in PF w/ real values
+       clm(t)%endwb = clm(t)%endwb + saturation(l) * 0.0001*clm(1)%dz(1) * pressure(l)    
      enddo
-      
+
+! add hight of ponded water at surface (ie pressure head at upper pf bddy if > 0) 	 
+       if (pressure(l) > 0.d0 ) then
+         clm(t)%endwb = clm(t)%endwb + pressure(l)
+       endif
+
     !@ Water balance over the entire domain
      begwatb = begwatb + clm(t)%begwb
      endwatb = endwatb + clm(t)%endwb
@@ -95,7 +97,7 @@ subroutine pf_couple(drv,clm,tile,evap_trans_data)
 
    ! Determine wetland and land ice hydrology (must be placed here since need snow 
    ! updated from clm_combin) and ending water balance
-   !@ Does my new way of doing the wb influence this?! 05/26/2004
+   !@sjk Does my new way of doing the wb influence this?! 05/26/2004
 
      if (clm(t)%itypwat==istwet .or. clm(t)%itypwat==istice) call clm_hydro_wetice (clm(t))
 
@@ -126,7 +128,7 @@ subroutine pf_couple(drv,clm,tile,evap_trans_data)
                                                !@ energy balances are still calculated
 
   endif !@ mask statement
-  enddo !@ End: Loop over domain  
+  enddo !@ End: Loop over domain, t
 
   
   error = 0.0d0

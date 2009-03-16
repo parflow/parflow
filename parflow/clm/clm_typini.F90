@@ -230,8 +230,7 @@ subroutine clm_typini (ntiles, clm)
      clm(k)%h2osoi_vol(:)   = NaN ! volumetric soil water (0<=h2osoi_vol<=watsat) [m3/m3]
      clm(k)%eff_porosity(:) = NaN ! effective porosity = porosity - vol_ice
 	 clm(k)%pf_flux(:)      = 0.0d0 !@ Stefan: sink/source flux Parflow initialized as zero
-	 clm(k)%pf_press(:)     = 0.0d0 !@ Stefan: pressure values from Parflow initilazied as zero
-	 clm(k)%pf_press_o(:)   = 0.0d0 !@ Stefan: pressure values from Parflow initilazied as zero
+!	 clm(k)%pf_press(:)     = 0.0d0 !@ Stefan: pressure values from Parflow initilazied as zero
 	 clm(k)%pf_vol_liq(:)   = 0.0d0 !@ Stefan: partial volume of liquid water initialized as zero
 
      clm(k)%qflx_infl       = NaN  ! infiltration (mm H2O /s) 
@@ -308,7 +307,8 @@ subroutine clm_typini (ntiles, clm)
 
      clm(k)%frac           = NaN  ! fraction of water becoming surface runoff after some TOPMODEL approach
      
-!@ topomasks
+!@ topomasks - parflow-clm couple parameters
+
      clm(k)%topo_mask(:)   = NaN  
      clm(k)%planar_mask    = NaN         
 

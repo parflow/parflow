@@ -17,7 +17,9 @@
   use drv_tilemodule      ! Tile-space variables
   use drv_gridmodule      ! Grid-space variables
   use clmtype             ! CLM tile variables
-  use clm_varpar, only : nlevsoi ! Stefan: added because of flux array that is passed
+!  use clm_varpar, only : nlevsoi ! Stefan: added because of flux array that is passed
+  use clm_varpar
+
   implicit none
 !  include 'mpif.h'
 
@@ -25,7 +27,11 @@
   type (tiledec),pointer :: tile(:)
   type (griddec),pointer :: grid(:,:)   
   type (clm1d),pointer :: clm(:)
-
+  
+!  type (tiledec), allocatable :: tile(:)
+!  type (griddec),allocatable :: grid(:,:)   
+!  type (clm1d),allocatable :: clm(:)
+  
 !=== Local Variables =====================================================
 
   integer :: t,m           ! tile space counter
@@ -35,51 +41,45 @@
   character(15) :: vname   ! variable name read from clm_in.dat
   integer :: ioval         ! Read error code
   integer :: I_err
-  integer :: ntroute       !@ number of sub-timesteps for overland routing
-  integer :: timeroute     !@ counter of sub-timesteps for overland routing
+
   
   integer :: nx,ny,nz,nx_f,ny_f,nz_f,steps
-  real(r8),allocatable :: pressure_data(:,:,:),saturation_data(:,:,:),evap_trans_data(:,:,:),mask_data(:,:,:),porosity_data(:,:,:)
-  real(r8) :: pressure((nx+2)*(ny+2)*(nz+2)),saturation((nx+2)*(ny+2)*(nz+2)),evap_trans((nx+2)*(ny+2)*(nz+2)),topo((nx+2)*(ny+2)*(nz+2))
-  real(r8) :: porosity((nx+2)*(ny+2)*(nz+2))
-  real(r8) :: dt,time,otime,pdx,pdy,pdz
-  integer  :: i,j,k,j_incr,k_incr,ip,ix,iy
-  integer  :: npp,npq,npr !@ number of processors in x,y,z
-  integer  :: rank,error
-  integer  :: counter(nx,ny) 
+!  real(r8),allocatable :: pressure_data(:,:,:)   ! pressure on CLM grid (nx,ny,1:nlevsoi)
+!  real(r8),allocatable :: saturation_data(:,:,:) ! saturation on CLM grid (ny,ny,1:nlevsoi)
+!  real(r8),allocatable :: evap_trans_data(:,:,:) ! ET flux (combined) on CLM grid (nx,ny,1:nlevsoi)! 
+!  real(r8),allocatable :: porosity_data(:,:,:)
+  real(r8) :: pressure((nx+2)*(ny+2)*(nz+2))     ! pressure head, from parflow on grid w/ ghost nodes for current proc
+  real(r8) :: saturation((nx+2)*(ny+2)*(nz+2))   ! saturation from parflow, on grid w/ ghost nodes for current proc
+  real(r8) :: evap_trans((nx+2)*(ny+2)*(nz+2))   ! ET flux from CLM to ParFlow on grid w/ ghost nodes for current proc
+  real(r8) :: topo((nx+2)*(ny+2)*(nz+2))         ! mask from ParFlow 0 for inactive, 1 for active, on grid w/ ghost nodes for current proc
+  real(r8) :: porosity((nx+2)*(ny+2)*(nz+2))     ! porosity from ParFlow, on grid w/ ghost nodes for current proc
+  real(r8) :: dt                                 ! parflow dt in parflow time units not CLM time units
+  real(r8) :: time                               ! parflow time in parflow units
+  real(r8) :: otime               
+  real(r8) :: pdx,pdy,pdz                        ! parflow DX, DY and DZ in parflow units
+  integer  :: ix                                 ! parflow ix, starting point for local grid on global grid
+  integer  :: iy                                 ! parflow iy, starting point for local grid on global grid
+  integer  :: ip                               
+  integer  :: npp,npq,npr                        !@ number of processors in x,y,z
+  integer  :: rank		                         ! processor rank, from ParFlow
+  integer  :: error
+
+  integer  :: j_incr,k_incr                      ! increment for j and k to convert 1D vector to 3D i,j,k array
+
+  integer  :: i,j,k
+  integer, allocatable  :: counter(:,:) 
   character*100 :: RI
 
+save
 
-allocate (pressure_data(nx,ny,nz),saturation_data(nx,ny,nz),evap_trans_data(nx,ny,nz),mask_data(nx,ny,nz),porosity_data(nx,ny,nz))
 !=== End Variable List ===================================================
-ix = ix + 1 !Correction for CLM/Fortran space
-iy = iy + 1 !Correction for CLM/Fortran space
-!call MPI_COMM_RANK(MPI_COMM_WORLD, rank, error)
-j_incr = nx_f - nx
-k_incr = (nx_f * ny_f) - (ny * nx_f)
-t = 0
-l = ip
-do k=1,nz ! PF loop over z
-  do j=1,ny
-    do i=1,nx
-    t = t + 1
-    l = l + 1
-     saturation_data(i,j,k) = saturation(l)
-     evap_trans_data(i,j,k) = evap_trans(l)
-     pressure_data(i,j,k) = pressure(l)
-     mask_data(i,j,k) = topo(l)
-     porosity_data(i,j,k) = porosity(l)
-    enddo
-  l = l + j_incr
-  enddo
-l = l + k_incr
-enddo
+
 
 !=========================================================================
 !=== Initialize CLM
 !=========================================================================
 
-!=== Read in grid size domain
+!=== Read in grid size domain from PF
 drv%dx = pdx
 drv%dy = pdy
 drv%dz = pdz
@@ -87,29 +87,15 @@ drv%nc = nx
 drv%nr = ny
 drv%nt = 18
 
+
 write(RI,*) rank
 
 
 if (time == 0.0d0) then ! Check if initialization necessary 
+!open(6,file='clm.out.txt')
  print *,"INITIALIZATION"
+allocate( counter(nx,ny))
 
-!  open(10,file='drv_clmin.dat.'//trim(adjustl(RI)),form='formatted',status='old',action='read')
-
-!  ioval=0
-!  do while(ioval==0)
-!     vname='!'
-!     read(10,'(a15)',iostat=ioval)vname
-!     if (vname == 'nc') call drv_get1divar(drv%nc)  
-!     if (vname == 'nr') call drv_get1divar(drv%nr)  
-!     if (vname == 'nt') call drv_get1divar(drv%nt)  
-!  enddo
-!  close(10)
-
-!==== Adjust array size with respect to processor topology in x and y 
-!==== This is done only if nx, ny are read in from a file 
-!==== I assume that domain is NOT split in the z-direction
-!drv%nc = drv%nc / npp
-!drv%nr = drv%nr / npq
 
 
 !=== Allocate Memory for Grid Module
@@ -145,6 +131,9 @@ if (time == 0.0d0) then ! Check if initialization necessary
   deallocate (tile,clm)                      !Save memory
   allocate (tile(drv%nch), stat=ierr); call drv_astp(ierr) 
   allocate (clm (drv%nch), stat=ierr); call drv_astp(ierr)
+! @RMM
+! since we've moved the PF-CLM temp vars into the clmtype struture they are allocated in the above statements, prev alloc below
+!allocate (pressure_data(nx,ny,nlevsoi),saturation_data(nx,ny,nlevsoi),evap_trans_data(nx,ny,nlevsoi),porosity_data(nx,ny,nlevsoi))
 
 !=== Set clm diagnostic indices and allocate space
 
@@ -187,28 +176,78 @@ print *,"Initialize CLM and DIAG variables"
   !call topomask(clm,drv)
 
 !@ Call to subroutine that reads in 2D array(s) of input data (e.g. hksat)
-print *,"Call to subroutine that reads in 2D array(s) of input data (e.g. porosity)"
-  call read_array(drv,clm,rank)
+!print *,"Call to subroutine that reads in 2D array(s) of input data (e.g. porosity)"
+!  call read_array(drv,clm,rank)
 
-!@ Initialize the CLM topography mask
+!@ Initialize the CLM topography mask 
+!@ RMM this is two components: 1) a x-y mask of 0 o 1 for active inactive and 
+!@ RMM  2) a z/k mask that takes three values (1)= top of LS/PF domain (2)= top-nlevsoi and
+!@ RMM  (3) the bottom of the LS/PF domain.
 print *,"Initialize the CLM topography mask"
-print *,"DIMENSIONS",nx,nx_f,drv%nc,drv%nr,drv%nch
-counter = 0
+print *,"DIMENSIONS",nx,nx_f,drv%nc,drv%nr,drv%nch,ny,ny_f, nz, nz_f, ip
+
+j_incr = nx_f 
+k_incr = (nx_f * ny_f)
+print*, j_incr,k_incr
 do t=1,drv%nch
 i=tile(t)%col
 j=tile(t)%row
+counter(i,j) = 0
+  clm(t)%topo_mask(3) = 1
+!  print*, t, i, j 
   do k = nz, 1, -1 ! PF loop over z
-   if (mask_data(i,j,k) == 1 .and. counter(i,j) < 10) then
+   l = ip+i + j_incr*(j-1) + k_incr*(k-1)
+!   print*, l, i,j,k, topo(l), clm(t)%topo_mask(1)
+   if (topo(l) == 1) then
      counter(i,j) = counter(i,j) + 1
-     clm(t)%topo_mask(nz-k+1) = counter(i,j)
+     if (counter(i,j) == 1) then 
+	 clm(t)%topo_mask(1) = k
      clm(t)%planar_mask = 1
-   else
-     clm(t)%topo_mask(nz-k+1) = 0
+	 end if
+   !else
+   !  clm(t)%topo_mask(nz-k+1) = 0
    endif
-  clm(t)%watsat(nz-k+1)=porosity_data(i,j,k)
+   if (topo(l) == 0 .and. topo(l+k_incr) == 1) clm(t)%topo_mask(3) = k+1
+!     print*, clm(t)%topo_mask(1), clm(t)%topo_mask(2), clm(t)%topo_mask(3)
   enddo
+  clm(t)%topo_mask(2) = clm(t)%topo_mask(1)-nlevsoi
+!  print*, clm(t)%topo_mask(1), clm(t)%topo_mask(2), clm(t)%topo_mask(3)
+   
 enddo
 
+
+!set up watsat
+ix = ix + 1 !Correction for CLM/Fortran space
+iy = iy + 1 !Correction for CLM/Fortran space
+j_incr = nx_f 
+k_incr = (nx_f * ny_f)
+do t=1,drv%nch
+i=tile(t)%col
+j=tile(t)%row
+  do k = 1, nlevsoi
+  l = ip+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k-1)
+  clm(t)%watsat(k)=porosity(l)
+  end do !k
+end do !t
+
+
+!t = 0
+!l = ip
+!do k=1,nz ! PF loop over z
+!  do j=1,ny
+!    do i=1,nx
+!    t = t + 1
+!    l = l + 1
+!     saturation_data(i,j,k) = saturation(l)
+!     evap_trans_data(i,j,k) = evap_trans(l)
+!     pressure_data(i,j,k) = pressure(l)
+!     mask_data(i,j,k) = topo(l)
+!     porosity_data(i,j,k) = porosity(l)
+!    enddo
+!  l = l + j_incr
+!  enddo
+!l = l + k_incr
+!enddo
 
 !=== Read restart file or set initial conditions
 !@ But first, get the original start time from drv_clmin.dat
@@ -227,11 +266,17 @@ enddo
 
 endif !======= End of the initialization ================
 
+j_incr = nx_f 
+k_incr = (nx_f * ny_f)
 
 ! @ RMM 9-08 move file open to outside initialization loop
 ! @ RMM  this is now done every timestep
 !@ Call to subroutine to open (2D-) output files
 print *,"Open (2D-) output files"
+!print*, pressure(111),saturation(111),evap_trans(111),topo(111),vname,ierr,drv%dx,drv%nc,drv%nr
+!print*, clm(1)
+!print *,clm(1)%istep
+
   call open_files(clm,drv,rank,ix,iy,clm(1)%istep) 
 
 !=== Assign Parflow timestep in case it was cut ===
@@ -243,7 +288,9 @@ print*, "implied array copy of clm%qlux/old/veg"
  clm%qflx_tran_veg_old = clm%qflx_tran_veg
 
 print *,"Call the Readout"
- call pfreadout(clm,drv,tile,saturation_data,pressure_data,rank,ix,iy) 
+! call ParFlow --> CLM couple code
+! maps ParFlow space to CLM space @RMM
+ call pfreadout(clm,drv,tile,saturation,pressure,rank,ix,iy,nx,ny,nz,j_incr, k_incr, ip) 
 
 !=========================================================================
 !=== Time looping
@@ -273,50 +320,28 @@ drv%endtime = 0
 
 !     if (drv%gmt==0..or.drv%endtime==1) call drv_restart(2,drv,tile,clm,rank)
      call drv_restart(2,drv,tile,clm,rank)
-     
-     call pf_couple(drv,clm,tile,evap_trans_data)   
+ 
+! call PF couple, this transfers ET from CLM to ParFlow 
+! as evap_trans flux	     
+     call pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,ny,nz,j_incr, k_incr,ip)   
 
-l = ip 
-do k=1,nz ! PF loop over z
-t = 0
-  do j=1,ny
-    do i=1,nx
-    t = t + 1
-    l = l + 1
-    evap_trans(l) = evap_trans_data(i,j,k)
-    enddo
-  l = l + j_incr
-  enddo
-l = l + k_incr
-enddo
-
-!@Infrastructure to write and test the mask, et, and topography
-!do t=1,drv%nch
-!i=tile(t)%col
-!j=tile(t)%row
-!  do k=1,nz
-!    if (i == 400 .and. j == 1 .and. rank == 0)then
-!         write(777,'(3i,f,i2,2f,i)')i,j,k,(clm(t)%pf_press(nz-k+1)/1000.0d0),clm(t)%topo_mask(nz-k+1),clm(t)%pf_vol_liq(nz-k+1), &
-!                                                  evap_trans_data(i,j,k),tile(t)%vegt
-!    endif
-!  enddo
-!enddo
 
      !=== Return required surface fields to atmospheric model (return to grid space)
-
+print*, "drv_clm2g"
      call drv_clm2g (drv, grid, tile, clm)
 
      !=== Write spatially-averaged BC's and IC's to file for user
-
-     if (clm(1)%istep==1) call drv_pout(drv,tile,clm,rank)
-     
+print*, "drv_pout"
+!     if (clm(1)%istep==1) call drv_pout(drv,tile,clm,rank)
+print*, "drv pout"     
 ! enddo ! End the time loop for the model time steps
  
 !@==  Call to subroutine to close (2D-) output files
 !@==  RMM modified to open/close files (but to include istep) every 
 !@== time step 
 !!if (drv%endtime /= 0)  call close_files(clm,drv,rank)
- call close_files(clm,drv,rank)
+!print*, "close files"
+call close_files(clm,drv,rank)
 
 if (rank == 0) then
   open (1234,file="global_nt.scr",action='write')
@@ -324,5 +349,7 @@ if (rank == 0) then
   write(1234,*)"set endt =",drv%endtime
   close (1234)
 endif
+
+print*, 'return'
 
 end subroutine clm_lsm 
