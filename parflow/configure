@@ -683,6 +683,7 @@ ac_ct_FC
 PARFLOW_FC_ACCESS
 PARFLOW_FC_FORM
 FCLIBS
+FC_FLAGS
 F77
 FFLAGS
 ac_ct_F77
@@ -1350,7 +1351,7 @@ Optional Packages:
   --with-amps=AMPS_TYPE   Set the version of AMPS to use: seq, mpi1, smpi, win32
   --with-amps-sequential-io  Use AMPS sequentail I/O
   --with-cegdb=PATH        Use CEGDB and optionally specify
-                          where CEGDB is installed.
+                            where CEGDB is installed.
   --with-silo=PATH        Use SILO and optionally specify
                           where SILO is installed.
  --with-hdf5=PATH  Use HDF5 and optionally specify where HDF5 is installed.
@@ -1996,6 +1997,7 @@ fi
 
 C_FLAGS="$CFLAGS"
 F77_FLAGS="$FFLAGS"
+FC_FLAGS="$FCFLAGS"
 LD_FLAGS="$LDFLAGS"
 CPP_FLAGS="$CPPFLAGS"
 
@@ -2057,7 +2059,6 @@ if test -n "$with_CC"; then
    CC=$with_CC
 fi
 
-
 # Check whether --enable-opt was given.
 if test "${enable_opt+set}" = set; then
   enableval=$enable_opt; case "$enable_opt" in
@@ -2066,7 +2067,7 @@ if test "${enable_opt+set}" = set; then
    *) opt_switches="$enable_opt" ;;
 esac
 else
-  opt_switches=
+  opt_switches="-O2"
 
 fi
 
@@ -2075,6 +2076,7 @@ fi
 if test -n "$opt_switches" ; then
    C_FLAGS="$opt_switches $C_FLAGS"
    F77_FLAGS="$opt_switches $F77_FLAGS"
+   FC_FLAGS="$opt_switches $FC_FLAGS"
 fi
 
 # Check whether --enable-debug was given.
@@ -2086,13 +2088,14 @@ if test "${enable_debug+set}" = set; then
 esac
 
 else
-  debug_switches=-g
+  debug_switches=""
 fi
 
 
 if test -n "$debug_switches" ; then
    C_FLAGS="$debug_switches $C_FLAGS"
    F77_FLAGS="$debug_switches $F77_FLAGS"
+   FC_FLAGS="$debug_switches $FC_FLAGS"
 fi
 
 #
@@ -2115,6 +2118,7 @@ fi
 if test -n "$profiling_switches" ; then
    C_FLAGS="$profiling_switches $C_FLAGS"
    F77_FLAGS="$profiling_switches $F77_FLAGS"
+   FC_FLAGS="$profiling_switches $FC_FLAGS"
 fi
 
 # Check whether --enable-timing was given.
@@ -3341,8 +3345,6 @@ fi
 
 
 
-
-
 if test -n "$with_F90"; then
    FC=$with_F90
 fi
@@ -3606,6 +3608,8 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+FCFLAGS=""
+
 
 ac_ext=${ac_fc_srcext-f}
 ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
@@ -3682,7 +3686,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 case $FC in
    gfortran)
-      FCFLAGS="$FCFLAGS -ffree-line-length-none"
+      FC_FLAGS="$FC_FLAGS $FCFLAGS -ffree-line-length-none"
       ;;
 esac
 
@@ -10263,7 +10267,6 @@ _ACEOF
 fi
 
 
-
 PARFLOW_HAVE_SILO="no"
 
 
@@ -10367,6 +10370,8 @@ _ACEOF
 
   PARFLOW_HAVE_SILO="yes"
 fi
+
+
 
 
 ac_ext=cpp
@@ -11992,6 +11997,7 @@ ac_ct_FC!$ac_ct_FC$ac_delim
 PARFLOW_FC_ACCESS!$PARFLOW_FC_ACCESS$ac_delim
 PARFLOW_FC_FORM!$PARFLOW_FC_FORM$ac_delim
 FCLIBS!$FCLIBS$ac_delim
+FC_FLAGS!$FC_FLAGS$ac_delim
 F77!$F77$ac_delim
 FFLAGS!$FFLAGS$ac_delim
 ac_ct_F77!$ac_ct_F77$ac_delim
@@ -12018,7 +12024,6 @@ PARFLOW_HAVE_SILO!$PARFLOW_HAVE_SILO$ac_delim
 CXX!$CXX$ac_delim
 CXXFLAGS!$CXXFLAGS$ac_delim
 ac_ct_CXX!$ac_ct_CXX$ac_delim
-hdf5_LIBS!$hdf5_LIBS$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -12060,6 +12065,7 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+hdf5_LIBS!$hdf5_LIBS$ac_delim
 SUNDIALS_C_FILES!$SUNDIALS_C_FILES$ac_delim
 PARFLOW_HAVE_HYPRE!$PARFLOW_HAVE_HYPRE$ac_delim
 INSTDIR!$INSTDIR$ac_delim
@@ -12077,7 +12083,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 15; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 16; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

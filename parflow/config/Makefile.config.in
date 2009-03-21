@@ -67,7 +67,7 @@ F77           = @F77@
 FFLAGS        = @F77_FLAGS@ $(FFLAGS_EXTRA)
 
 FC            = @FC@
-FCFLAGS       = @FCFLAGS@
+FCFLAGS       = @FC_FLAGS@
 
 CC            = @CC@
 CFLAGS        = @C_FLAGS@ $(CFLAGS_EXTRA) $(AMPS_FLAGS)

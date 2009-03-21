@@ -33,6 +33,7 @@ dnl
 
 C_FLAGS="$CFLAGS"
 F77_FLAGS="$FFLAGS"
+FC_FLAGS="$FCFLAGS"
 LD_FLAGS="$LDFLAGS"
 CPP_FLAGS="$CPPFLAGS"
 
@@ -62,9 +63,8 @@ fi
 
 dnl
 dnl Define optimize and debug switches.
-dnl By default, set no optimization switches and set -g for debug switches.
+dnl By default, set optimization switches and set no debug switches.
 dnl
-
 AC_ARG_ENABLE(opt,
 [  --enable-opt=STRING  Set compiler optimization switches.],
 [case "$enable_opt" in
@@ -72,13 +72,14 @@ AC_ARG_ENABLE(opt,
    yes) opt_switches="-O2" ;;
    *) opt_switches="$enable_opt" ;;
 esac],
-opt_switches=
+opt_switches="-O2"
 )
 
 
 if test -n "$opt_switches" ; then
    C_FLAGS="$opt_switches $C_FLAGS"
    F77_FLAGS="$opt_switches $F77_FLAGS"
+   FC_FLAGS="$opt_switches $FC_FLAGS"
 fi
 
 AC_ARG_ENABLE(debug,
@@ -89,11 +90,12 @@ AC_ARG_ENABLE(debug,
    *) debug_switches="$enable_debug" ;;
 esac
 ],
-debug_switches=-g)
+debug_switches="")
 
 if test -n "$debug_switches" ; then
    C_FLAGS="$debug_switches $C_FLAGS"
    F77_FLAGS="$debug_switches $F77_FLAGS"
+   FC_FLAGS="$debug_switches $FC_FLAGS"
 fi
 
 #
@@ -113,6 +115,7 @@ profiling_switches=
 if test -n "$profiling_switches" ; then
    C_FLAGS="$profiling_switches $C_FLAGS"
    F77_FLAGS="$profiling_switches $F77_FLAGS"
+   FC_FLAGS="$profiling_switches $FC_FLAGS"
 fi
 
 AC_ARG_ENABLE(timing,
@@ -178,8 +181,6 @@ AC_SUBST(CLM_DIR)
 AC_SUBST(CLM_LIBS)
 AC_SUBST(PARFLOW_HAVE_CLM)
 
-
-
 dnl
 dnl Fortran 90
 dnl
@@ -188,11 +189,14 @@ if test -n "$with_F90"; then
 fi
 AC_PROG_FC
 
+dnl Not sure why AC_PROG_FC is setting "-g"
+FCFLAGS=""
+
 AC_FC_FREEFORM(,[AC_MSG_ERROR([free format in F90 compiler does not work])])
 
 case $FC in
    gfortran) 
-      FCFLAGS="$FCFLAGS -ffree-line-length-none"
+      FC_FLAGS="$FC_FLAGS $FCFLAGS -ffree-line-length-none"
       ;;
 esac
 
@@ -220,7 +224,7 @@ if test "$with_clm" = "yes"; then
    LIB_NAME="${LIB_NAME} ${FLIBS_NAME}"
    LIB_PATH="${LIB_PATH} ${FLIBS_PATH}"
 
-   AC_SUBST(FCFLAGS)
+   AC_SUBST(FC_FLAGS)
    AC_SUBST(FCLIBS)
 fi
 
@@ -349,7 +353,6 @@ if test "${cegdb_PREFIX+set}" = set; then
 fi
 AC_SUBST(PARFLOW_HAVE_CEGDB)
 
-
 dnl
 dnl Silo support
 dnl
@@ -365,6 +368,8 @@ if test "${silo_PREFIX+set}" = set; then
   PARFLOW_HAVE_SILO="yes"
 fi
 AC_SUBST(PARFLOW_HAVE_SILO)
+
+
 
 dnl
 dnl Set variables for hdf5 support
