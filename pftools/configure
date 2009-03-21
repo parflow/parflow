@@ -1973,6 +1973,7 @@ fi
 
 C_FLAGS="$CFLAGS"
 F77_FLAGS="$FFLAGS"
+FC_FLAGS="$FCFLAGS"
 LD_FLAGS="$LDFLAGS"
 CPP_FLAGS="$CPPFLAGS"
 
@@ -3241,15 +3242,15 @@ if test "${enable_opt+set}" = set; then
    *) opt_switches="$enable_opt" ;;
 esac
 else
-  opt_switches=
+  opt_switches="-O2"
 
 fi
-
 
 
 if test -n "$opt_switches" ; then
    C_FLAGS="$opt_switches $C_FLAGS"
    F77_FLAGS="$opt_switches $F77_FLAGS"
+   FC_FLAGS="$opt_switches $FC_FLAGS"
 fi
 
 # Check whether --enable-debug was given.
@@ -3261,13 +3262,14 @@ if test "${enable_debug+set}" = set; then
 esac
 
 else
-  debug_switches=-g
+  debug_switches=""
 fi
 
 
 if test -n "$debug_switches" ; then
    C_FLAGS="$debug_switches $C_FLAGS"
    F77_FLAGS="$debug_switches $F77_FLAGS"
+   FC_FLAGS="$debug_switches $FC_FLAGS"
 fi
 
 
@@ -5945,7 +5947,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 case $FC in
    gfortran)
-      FCFLAGS="$FCFLAGS -ffree-line-length-none"
+      FC_FLAGS="$FC_FLAGS $FCFLAGS -ffree-line-length-none"
       ;;
 esac
 

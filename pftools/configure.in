@@ -32,6 +32,7 @@ dnl
 
 C_FLAGS="$CFLAGS"
 F77_FLAGS="$FFLAGS"
+FC_FLAGS="$FCFLAGS"
 LD_FLAGS="$LDFLAGS"
 CPP_FLAGS="$CPPFLAGS"
 
@@ -110,13 +111,13 @@ AC_ARG_ENABLE(opt,
    yes) opt_switches="-O2" ;;
    *) opt_switches="$enable_opt" ;;
 esac],
-opt_switches=
+opt_switches="-O2"
 )
-
 
 if test -n "$opt_switches" ; then
    C_FLAGS="$opt_switches $C_FLAGS"
    F77_FLAGS="$opt_switches $F77_FLAGS"
+   FC_FLAGS="$opt_switches $FC_FLAGS"
 fi
 
 AC_ARG_ENABLE(debug,
@@ -127,11 +128,12 @@ AC_ARG_ENABLE(debug,
    *) debug_switches="$enable_debug" ;;
 esac
 ],
-debug_switches=-g)
+debug_switches="")
 
 if test -n "$debug_switches" ; then
    C_FLAGS="$debug_switches $C_FLAGS"
    F77_FLAGS="$debug_switches $F77_FLAGS"
+   FC_FLAGS="$debug_switches $FC_FLAGS"
 fi
 
 dnl
@@ -237,7 +239,7 @@ AC_FC_FREEFORM(,[AC_MSG_ERROR([free format in F90 compiler does not work])])
 
 case $FC in
    gfortran) 
-      FCFLAGS="$FCFLAGS -ffree-line-length-none"
+      FC_FLAGS="$FC_FLAGS $FCFLAGS -ffree-line-length-none"
       ;;
 esac
 
