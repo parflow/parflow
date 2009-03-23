@@ -93,10 +93,10 @@ void SADVECT(double *s, double *sn,
 #define CLM_LSM clm_lsm_
 
 #define CALL_CLM_LSM(pressure_data,saturation_data,evap_trans_data,mask,porosity_data, \
-                     dt, t, dx, dy, dz, ix, iy, nx, ny, nz, nx_f, ny_f, nz_f, ip, p, q, r, rank) \
+                     dt, t, dx, dy, dz, ix, iy, nx, ny, nz, nx_f, ny_f, nz_f, ip, p, q, r, rank, clm_dump_interval, clm_1d_out, clm_file_dir , clm_file_dir_length, clm_bin_out_dir) \
 	CLM_LSM(pressure_data, saturation_data,evap_trans_data,mask,porosity_data, \
-                &dt, &t, &dx, &dy, &dz, &ix, &iy, &nx, &ny, &nz, &nx_f, &ny_f, &nz_f, &ip, &p, &q, &r, &rank);
+                &dt, &t, &dx, &dy, &dz, &ix, &iy, &nx, &ny, &nz, &nx_f, &ny_f, &nz_f, &ip, &p, &q, &r, &rank, &clm_dump_interval, &clm_1d_out, clm_file_dir, &clm_file_dir_length, &clm_bin_out_dir);
 
 void CLM_LSM( double *pressure_data, double *saturation_data, double *evap_trans_data, double *mask, double *porosity_data, 
               double *dt, double *t, double *dx, double *dy, double *dz, int *ix, int *iy, int *nx, int *ny, int *nz, 
-              int *nx_f, int *ny_f, int *nz_f, int *ip, int *p, int *q, int *r, int *rank);
+              int *nx_f, int *ny_f, int *nz_f, int *ip, int *p, int *q, int *r, int *rank, int *clm_dump_interval, int *clm_1d_out, char *clm_file_dir, int *clm_file_dir_length, int *clm_bin_out_dir);

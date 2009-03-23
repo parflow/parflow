@@ -51,6 +51,11 @@ typedef struct
    PFModule          *set_problem_data;
    PFModule          *nonlin_solver;
    int                lsm;                   /* land surface model */
+	int               clm_dump_interval;     /* time interval, integer, for CLM output */
+	int               clm_1d_out;     /* boolean 0-1, integer, for CLM 1-d output */
+	int               clm_bin_out_dir; /* boolean 0-1, integer, for sep dirs for each clm binary output */
+	char              *clm_file_dir;      /* directory location for CLM files */
+	
 
    Problem           *problem;
 
@@ -520,6 +525,7 @@ void AdvanceRichards(PFModule *this_module,
    int           take_more_time_steps;
    int           conv_failures;
    int           max_failures = 60;
+	int            clm_file_dir_length=64; 
 
    double        t;
    double        ct = 0.0;
@@ -533,7 +539,7 @@ void AdvanceRichards(PFModule *this_module,
    CommHandle   *handle;
 
    char          dt_info;
-   char          file_prefix[64], file_postfix[64];
+   char          file_prefix[64], file_postfix[64], clm_file_dir_local[64];
 
    sprintf(file_prefix, GlobalsOutFileName);
 
@@ -627,8 +633,9 @@ void AdvanceRichards(PFModule *this_module,
 	    et = SubvectorData(et_sub);
 	    ms = SubvectorData(m_sub);
 	    po_dat = SubvectorData(po_sub);
-	    
-	    ip = SubvectorEltIndex(p_sub, ix, iy, iz);
+	//	 clm_dump_sub = SubvectorData(public_xtra -> clm_dump_interval);
+	//	 clm_file_dir_local = SubvectorData((&public_xtra -> clm_file_dir));
+		 ip = SubvectorEltIndex(p_sub, ix, iy, iz);
 	    
 	    switch (public_xtra -> lsm)
 	    {
@@ -639,8 +646,12 @@ void AdvanceRichards(PFModule *this_module,
 	       }
 	       case 1:
 	       {
-		  CALL_CLM_LSM(pp,sp,et,ms,po_dat,dt,t,dx,dy,dz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,p,q,r,rank);
-		  break;		  
+			   printf("%s \n",public_xtra -> clm_file_dir);
+			   clm_file_dir_length=strlen(public_xtra -> clm_file_dir);
+			 //  printf("%s \n",clm_file_dir_local);
+			//   printf("%i \n",clm_file_dir_length);
+		  CALL_CLM_LSM(pp,sp,et,ms,po_dat,dt,t,dx,dy,dz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,p,q,r,rank,public_xtra -> clm_dump_interval, public_xtra -> clm_1d_out, public_xtra -> clm_file_dir, clm_file_dir_length, public_xtra -> clm_bin_out_dir);
+			    break;		  
 	       }
 	       default:
 	       {
@@ -1435,7 +1446,7 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
       }
    }
    NA_FreeNameArray(nonlin_switch_na);
-
+   
    lsm_switch_na = NA_NewNameArray("none CLM");
    sprintf(key, "%s.LSM", name);
    switch_name = GetStringDefault(key, "none");
@@ -1464,7 +1475,33 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
       }
    }
    NA_FreeNameArray(lsm_switch_na);
+   
+	sprintf(key, "%s.CLM.CLMDumpInterval", name);
+	public_xtra -> clm_dump_interval = GetIntDefault(key,1);
 
+	sprintf(key, "%s.CLM.Print1dOut", name);
+	switch_name = GetStringDefault(key, "False");
+	switch_value = NA_NameToIndex(switch_na, switch_name);
+	if(switch_value < 0)
+	{
+		InputError("Error: invalid print switch value <%s> for key <%s>\n",
+				   switch_name, key );
+	}
+	public_xtra -> clm_1d_out = switch_value;
+
+	sprintf(key, "%s.CLM.BinaryOutDir", name);
+	switch_name = GetStringDefault(key, "True");
+	switch_value = NA_NameToIndex(switch_na, switch_name);
+	if(switch_value < 0)
+	{
+		InputError("Error: invalid print switch value <%s> for key <%s>\n",
+				   switch_name, key );
+	}
+	public_xtra -> clm_bin_out_dir = switch_value;
+	
+	sprintf(key, "%s.CLM.CLMFileDir", name);
+	public_xtra -> clm_file_dir = GetStringDefault(key,"");
+	
    sprintf(key, "%s.MaxIter", name);
    public_xtra -> max_iterations = GetIntDefault(key, 1000000);
    sprintf(key, "%s.AdvectOrder", name);

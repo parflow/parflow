@@ -8,8 +8,8 @@ subroutine close_files (clm,drv)
  type (clm1d) :: clm(nlevsoi)
  type (drvdec):: drv              
 
- close(166)
- close(199)
+! close(166)
+! close(199)
   close(1995)
  close(1996) 
  close(1997)
@@ -21,6 +21,7 @@ subroutine close_files (clm,drv)
  close(2004)
  close(2005)
  close(2006)
+ close(2007)
  close(2008)
   
  end subroutine close_files	     

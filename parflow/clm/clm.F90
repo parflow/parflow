@@ -1,6 +1,6 @@
 !#include <misc.h>
 
- subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,npp,npq,npr,rank)
+ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,npp,npq,npr,rank,clm_dump_interval,clm_1d_out, clm_output_dir, clm_output_dir_length,clm_bin_output_dir)
 
 !=========================================================================
 !
@@ -62,6 +62,11 @@
   integer  :: ip                               
   integer  :: npp,npq,npr                        !@ number of processors in x,y,z
   integer  :: rank		                         ! processor rank, from ParFlow
+  integer  :: clm_dump_interval                  ! dump inteval for CLM output, passed from PF, always in interval of CLM timestep, not time
+  integer  :: clm_1d_out                         ! whether to dump 1d output 0=no, 1=yes
+  character (LEN=clm_output_dir_length) :: clm_output_dir                ! output dir location
+  integer :: clm_output_dir_length
+  integer :: clm_bin_output_dir
   integer  :: error
 
   integer  :: j_incr,k_incr                      ! increment for j and k to convert 1D vector to 3D i,j,k array
@@ -87,9 +92,14 @@ drv%nc = nx
 drv%nr = ny
 drv%nt = 18
 
+!clm_1d_out = 0
 
 write(RI,*) rank
 
+print*, 'clm dump interval', clm_dump_interval
+print*, 'clm dump dir:', clm_output_dir
+print*, 'clm 1d:',clm_1d_out
+print*, 'clm dump lgnth: ', clm_output_dir_length
 
 if (time == 0.0d0) then ! Check if initialization necessary 
 !open(6,file='clm.out.txt')
@@ -131,6 +141,14 @@ allocate( counter(nx,ny))
   deallocate (tile,clm)                      !Save memory
   allocate (tile(drv%nch), stat=ierr); call drv_astp(ierr) 
   allocate (clm (drv%nch), stat=ierr); call drv_astp(ierr)
+  
+! @RMM open balance and log files- don't write these at every timestep
+! print*, "open files" 
+ open (166,file='clm_elog.txt.'//trim(adjustl(RI)))
+
+ open (199,file='balance.txt.'//trim(adjustl(RI)))
+ write(199,'(a59)') "istep error(%) tot_infl_mm tot_tran_veg_mm begwatb endwatb"
+   
 ! @RMM
 ! since we've moved the PF-CLM temp vars into the clmtype struture they are allocated in the above statements, prev alloc below
 !allocate (pressure_data(nx,ny,nlevsoi),saturation_data(nx,ny,nlevsoi),evap_trans_data(nx,ny,nlevsoi),porosity_data(nx,ny,nlevsoi))
@@ -269,16 +287,6 @@ endif !======= End of the initialization ================
 j_incr = nx_f 
 k_incr = (nx_f * ny_f)
 
-! @ RMM 9-08 move file open to outside initialization loop
-! @ RMM  this is now done every timestep
-!@ Call to subroutine to open (2D-) output files
-print *,"Open (2D-) output files"
-!print*, pressure(111),saturation(111),evap_trans(111),topo(111),vname,ierr,drv%dx,drv%nc,drv%nr
-!print*, clm(1)
-!print *,clm(1)%istep
-
-  call open_files(clm,drv,rank,ix,iy,clm(1)%istep) 
-
 !=== Assign Parflow timestep in case it was cut ===
 !if (dt /= 0.0d0) drv%ts = dt * 3600.0d0
 !clm%dtime = dble(drv%ts)
@@ -311,15 +319,35 @@ drv%endtime = 0
      !=== note that drv_almaout needs to be completed
 
 !    call drv_almaout (drv, tile, clm) !@ This routine was already inactivated in the original tar file 
+	if (clm_1d_out == 1) &
      call drv_1dout (drv, tile,clm,rank)
 
 !@== Stefan: call 2D output routine
-     call drv_2dout (drv,grid,clm,rank)
+! @RMM now we only call for every clm_dump_interval steps (not 
+! time units, integer units)
+print*, clm(1)%istep, clm_dump_interval, mod(clm(1)%istep,clm_dump_interval)
+     if (mod(clm(1)%istep,clm_dump_interval)==0)  then
+! @ RMM 9-08 move file open to outside initialization loop
+! @ RMM  this is now done every timestep specified by pf input file
+!@ Call to subroutine to open (2D-) output files
+!print *,"Open (2D-) output files"
+!print*, pressure(111),saturation(111),evap_trans(111),topo(111),vname,ierr,drv%dx,drv%nc,drv%nr
+!print*, clm(1)
+!print *,clm(1)%istep
+  call open_files(clm,drv,rank,ix,iy,clm(1)%istep,clm_output_dir, clm_output_dir_length,clm_bin_output_dir) 
+  call drv_2dout (drv,grid,clm,rank)
+!@==  Call to subroutine to close (2D-) output files
+!@==  RMM modified to open/close files (but to include istep) every 
+!@== time step 
+!!if (drv%endtime /= 0)  call close_files(clm,drv,rank)
+ !print*, "close files"
+  call close_files(clm,drv,rank)
+end if  ! mod of istep and dump_interval
 
      !=== Write Daily Restarts
 
-!     if (drv%gmt==0..or.drv%endtime==1) call drv_restart(2,drv,tile,clm,rank)
-     call drv_restart(2,drv,tile,clm,rank)
+     if (drv%gmt==0..or.drv%endtime==1) call drv_restart(2,drv,tile,clm,rank)
+!     call drv_restart(2,drv,tile,clm,rank)
  
 ! call PF couple, this transfers ET from CLM to ParFlow 
 ! as evap_trans flux	     
@@ -332,16 +360,10 @@ print*, "drv_clm2g"
 
      !=== Write spatially-averaged BC's and IC's to file for user
 print*, "drv_pout"
-!     if (clm(1)%istep==1) call drv_pout(drv,tile,clm,rank)
+     if (clm(1)%istep==1) call drv_pout(drv,tile,clm,rank)
 print*, "drv pout"     
 ! enddo ! End the time loop for the model time steps
  
-!@==  Call to subroutine to close (2D-) output files
-!@==  RMM modified to open/close files (but to include istep) every 
-!@== time step 
-!!if (drv%endtime /= 0)  call close_files(clm,drv,rank)
-!print*, "close files"
-call close_files(clm,drv,rank)
 
 if (rank == 0) then
   open (1234,file="global_nt.scr",action='write')
@@ -350,6 +372,11 @@ if (rank == 0) then
   close (1234)
 endif
 
+!@RMM if at end of simulation, close all files
+     if (drv%endtime==1) then
+	 close(166)
+	 close(199)
+	 end if
 print*, 'return'
 
 end subroutine clm_lsm 

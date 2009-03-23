@@ -62,6 +62,7 @@ subroutine drv_2dout (drv, grid, clm)
       write(2004) clm(grid(i,j)%tilei)%qflx_evap_soi
       write(2005) clm(grid(i,j)%tilei)%qflx_tran_veg
       write(2006) clm(grid(i,j)%tilei)%eflx_lwrad_out
+	  write(2007) clm(grid(i,j)%tilei)%h2osno  !MHD/RMM
      endif
      enddo
    enddo
