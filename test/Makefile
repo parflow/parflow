@@ -34,18 +34,21 @@ endif
 check:
 	@-for i in $(TESTS); \
 	do \
-	        make clean; \
+	        make --no-print-directory testclean; \
 		tclsh $$i; \
 	done
-	@-for i in $(SUBDIRS) \
+	@-for i in $(SUBDIRS); \
 	do \
-	        (cd $$i; make)
+	        (cd $$i; make); \
 	done 
-clean:
-	@-for i in $(SUBDIRS) \
+
+clean: testclean
+	@-for i in $(SUBDIRS); \
 	do \
-	        (cd $$i; make)
+	        (cd $$i; make --no-print-directory clean); \
 	done 
+
+testclean:
 	@rm -f *.pfb*
 	@rm -f *.silo*
 	@rm -f *.pfsb*

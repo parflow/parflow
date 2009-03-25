@@ -20,10 +20,13 @@ endif
 check:
 	@-for i in $(TESTS); \
 	do \
-	        make clean; \
+	        make --no-print-directory testclean; \
 		tclsh $$i; \
 	done
-clean:
+
+clean: testclean
+
+testclean:
 	@rm -f global_nt.scr
 	@rm -f clm_elog.txt.0
 	@rm -f washita.para.out.dat.0
