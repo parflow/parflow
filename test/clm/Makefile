@@ -8,28 +8,14 @@
 
 include $(PARFLOW_DIR)/config/Makefile.config
 
-SUBDIRS = clm
-
 default: check
 
 TESTS := \
-	test_X.tcl \
-	default_single.tcl \
-	default_richards.tcl \
-	forsyth2.tcl \
-	harvey.flow.tcl \
-	harvey_flow_pgs.tcl \
-	default_overland.tcl \
-	crater2D.tcl \
-	small_domain.tcl
 
-ifeq (${PARFLOW_HAVE_HYPRE},yes)
-TESTS += pfmg.tcl smg.tcl
+ifeq (${PARFLOW_HAVE_CLM},yes)
+TESTS += clm.tcl
 endif
 
-ifeq (${PARFLOW_HAVE_SILO},yes)
-TESTS += default_richards_with_silo.tcl
-endif
 
 check:
 	@-for i in $(TESTS); \
@@ -37,15 +23,26 @@ check:
 	        make clean; \
 		tclsh $$i; \
 	done
-	@-for i in $(SUBDIRS) \
-	do \
-	        (cd $$i; make)
-	done 
 clean:
-	@-for i in $(SUBDIRS) \
-	do \
-	        (cd $$i; make)
-	done 
+	@rm -f global_nt.scr
+	@rm -f clm_elog.txt.0
+	@rm -f washita.para.out.dat.0
+	@rm -f balance.txt.0
+	@rm -f alma_washita.output.txt.0
+	@rm -f washita.output.txt.0
+	@rm -f qflx_infl/*.bin.0
+	@rm -f clm.out.pftcl
+	@rm -f qflx_top_soil/*.bin.0
+	@rm -f swe_out/*.bin.0
+	@rm -f qflx_evap_veg/*.bin.0
+	@rm -f diag_out/*.dat.0
+	@rm -f eflx_soil_grnd/*.bin.0
+	@rm -f qflx_evap_soi/*.bin.0
+	@rm -f qflx_tran_veg/*.bin.0
+	@rm -f qflx_evap_tot/*.bin.0
+	@rm -f t_grnd/*.bin.0
+	@rm -f eflx_lwrad_out/*.bin.0
+	@rm -f eflx_sh_tot/*.bin.0
 	@rm -f *.pfb*
 	@rm -f *.silo*
 	@rm -f *.pfsb*
