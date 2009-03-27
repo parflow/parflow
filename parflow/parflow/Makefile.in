@@ -15,8 +15,10 @@ include $(OBJECT)/config/Makefile.config
 
 default: all
 
-OBJS = \
-	parflow.o
+SRCS = \
+	parflow.c
+
+OBJS = $(SRCS:.c=.o)
 
 $(PARFLOW_BIN_DIR)/parflow: $(OBJS) $(AMPS_LIB_DEPEND) $(PARFLOW_LIB_DEPEND)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) \

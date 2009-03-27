@@ -18,6 +18,12 @@ OBJECT        = .
 
 SUBDIRS = amps $(CLM_DIR) kinsol parflow_lib parflow 
 
+# This should be done before a release to set the version # and build.  
+# Also should run a commit to update the repository version number.
+#	svn commit -m "Updated version number" @srcdir@/parflow_lib/version.h
+version:
+	@echo "static char ParFlowRevision[] = \""`cat $(PARFLOW)/../VERSION`"."`svnversion -n @srcdir@`"\";" > @srcdir@/parflow_lib/version.h
+
 all:
 	@for DIR in $(SUBDIRS); do if test -d $$DIR; then (cd $$DIR && $(MAKE) $@) ; fi || exit 1; done
 
@@ -33,19 +39,19 @@ veryclean: clean
 	@$(RM) Makefile config/Makefile.config
 
 install: all
-	$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/lib
-	$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/bin
-	$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/config
-	for i in lib/*; do				        \
+	@$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/lib
+	@$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/bin
+	@$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/config
+	@for i in lib/*; do				        \
 	   $(INSTALL) -c -m 644 $$i $(PARFLOW_INSTALL_DIR)/lib; \
 	done
-	for i in bin/*; do				        \
+	@for i in bin/*; do				        \
 	   $(INSTALL) -c -m 755 $$i $(PARFLOW_INSTALL_DIR)/bin; \
 	done
-	for i in config/*; do				        \
+	@for i in config/*; do				        \
 	   $(INSTALL) -c -m 644 $$i $(PARFLOW_INSTALL_DIR)/config; \
 	done
-	for i in batchmc bootmc freemc getmc killmc peekmc run; do           \
+	@for i in batchmc bootmc freemc getmc killmc peekmc run; do           \
 	   $(INSTALL) -c -m 755 $(PARFLOW)/amps/$(AMPS)/$$i $(PARFLOW_INSTALL_DIR)/bin; \
 	done			
 
