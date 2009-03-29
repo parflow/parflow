@@ -186,6 +186,10 @@ EXPORT(int,Parflow_Init)(Tcl_Interp *interp)
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfdelete", (Tcl_CmdProc *)DeleteCommand,
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfcomputetop", (Tcl_CmdProc *)ComputeTopCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfextracttop", (Tcl_CmdProc *)ExtractTopCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
 
 #ifdef SGS
    Tcl_CreateExitHandler((Tcl_ExitProc *)PFTExitProc, (ClientData) data);

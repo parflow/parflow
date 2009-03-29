@@ -321,9 +321,35 @@ for {set i 0} { $i <= 20 } {incr i} {
     }
 }
 
+set mask [pfload clm.out.mask.00000.pfb]
+set top [Parflow::pfcomputetop $mask]
+
+pfsave $top -pfb "clm.out.top_index.pfb"
+
+set data [pfload clm.out.press.00000.pfb]
+set top_data [Parflow::pfextracttop $top $data]
+
+pfsave $data -pfb "clm.out.press.00000.pfb"
+pfsave $top_data -pfb "clm.out.top.press.00000.pfb"
+
+pfdelete $mask
+pfdelete $top
+pfdelete $data
+pfdelete $top_data
+
+if ![pftestFile clm.out.top_index.pfb "Max difference in top_index" $sig_digits] {
+    set passed 0
+}
+
+if ![pftestFile clm.out.top.press.00000.pfb "Max difference in top_clm.out.press.00000.pfb" $sig_digits] {
+    set passed 0
+}
+
+
 
 if $passed {
     puts "clm : PASSED"
 } {
     puts "clm : FAILED"
 }
+

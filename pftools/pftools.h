@@ -67,6 +67,7 @@
 #include "enlargebox.h"
 #include "file.h"
 #include "load.h"
+#include "top.h"
 
 #include "region.h"
 #include "grid.h"
@@ -153,6 +154,8 @@ int MDiffCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char
 int SaveDiffCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int DiffEltCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int DeleteCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int ComputeTopCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int ExtractTopCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 
 void Axpy(double alpha, Databox *X,  Databox *Y);
 

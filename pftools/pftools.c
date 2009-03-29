@@ -3027,3 +3027,164 @@ char             *argv[];
 
    return TCL_OK;
 }
+
+/*-----------------------------------------------------------------------
+ * routine for `pfcomputetop' command
+ * Description: One argument of a Databox containing the mask is required.
+ * 
+ * Cmd. syntax: pfcomputetop databox
+ *-----------------------------------------------------------------------*/
+int            ComputeTopCommand(clientData, interp, argc, argv)
+ClientData     clientData;
+Tcl_Interp    *interp;
+int            argc;
+char          *argv[];
+{
+   Tcl_HashEntry *entryPtr;  /* Points to new hash table entry         */
+   Data       *data = (Data *)clientData;
+
+   Databox    *mask;
+   Databox    *top;
+
+   char       *filename = "top";
+   char       *mask_hashkey;
+
+   char        newhashkey[MAX_KEY_SIZE];
+
+   /* Check and see if there is at least one argument following  */
+   /* the command.                                               */
+   if (argc == 1)
+   {
+      WrongNumArgsError(interp, LOADPFUSAGE);
+      return TCL_ERROR;
+   }
+
+   mask_hashkey = argv[1];
+
+   if ((mask = DataMember(data, mask_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, mask_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx = DataboxNx(mask);
+      int ny = DataboxNy(mask);
+
+      double x = DataboxX(mask);
+      double y = DataboxY(mask);
+      double z = DataboxZ(mask);
+      
+      double dx = DataboxDx(mask);
+      double dy = DataboxDy(mask);
+      double dz = DataboxDz(mask);
+
+      /* create the new databox structure for top */
+      if ( (top = NewDatabox(nx, ny, 1, x, y, z, dx, dy, dz)) )
+      {
+	 /* Make sure the data set pointer was added to */
+	 /* the hash table successfully.                */
+
+	 if (!AddData(data, top, filename, newhashkey))
+	    FreeDatabox(top); 
+	 else
+	 {
+	    Tcl_AppendElement(interp, newhashkey); 
+	 } 
+
+	 ComputeTop(mask, top);
+      }
+      else
+      {
+	 ReadWriteError(interp);
+	 return TCL_ERROR;
+      }
+   }
+
+   return TCL_OK;
+}
+
+/*-----------------------------------------------------------------------
+ * routine for `pfextracttop' command
+ * Description: Extract the top cells of a dataset.
+ * 
+ * Cmd. syntax: pfcomputetop top data
+ *-----------------------------------------------------------------------*/
+int            ExtractTopCommand(clientData, interp, argc, argv)
+ClientData     clientData;
+Tcl_Interp    *interp;
+int            argc;
+char          *argv[];
+{
+   Tcl_HashEntry *entryPtr;  /* Points to new hash table entry         */
+   Data       *data = (Data *)clientData;
+
+   Databox    *top;
+   Databox    *databox;
+   Databox    *top_values;
+
+   char       *filename = "top values";
+   char       *top_hashkey;
+   char       *data_hashkey;
+
+   char        newhashkey[MAX_KEY_SIZE];
+
+   /* Check and see if there is at least one argument following  */
+   /* the command.                                               */
+   if (argc == 2)
+   {
+      WrongNumArgsError(interp, LOADPFUSAGE);
+      return TCL_ERROR;
+   }
+
+   top_hashkey = argv[1];
+   data_hashkey = argv[2];
+
+   if ((top = DataMember(data, top_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, top_hashkey);
+      return TCL_ERROR;
+   }
+
+   if ((databox = DataMember(data, data_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, data_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx = DataboxNx(databox);
+      int ny = DataboxNy(databox);
+
+      double x = DataboxX(databox);
+      double y = DataboxY(databox);
+      double z = DataboxZ(databox);
+      
+      double dx = DataboxDx(databox);
+      double dy = DataboxDy(databox);
+      double dz = DataboxDz(databox);
+
+      /* create the new databox structure for top */
+      if ( (top_values = NewDatabox(nx, ny, 1, x, y, z, dx, dy, dz)) )
+      {
+	 /* Make sure the data set pointer was added to */
+	 /* the hash table successfully.                */
+
+	 if (!AddData(data, top_values, filename, newhashkey))
+	    FreeDatabox(top); 
+	 else
+	 {
+	    Tcl_AppendElement(interp, newhashkey); 
+	 } 
+
+	 ExtractTop(top, databox, top_values);
+      }
+      else
+      {
+	 ReadWriteError(interp);
+	 return TCL_ERROR;
+      }
+   }
+
+   return TCL_OK;
+}
