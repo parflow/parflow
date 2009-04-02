@@ -47,6 +47,7 @@ testclean:
 	@rm -f eflx_lwrad_out/*.bin.0
 	@rm -f eflx_sh_tot/*.bin.0
 	@rm -f eflx_lh_tot/*.bin.0
+	@rm -f qflx_evap_grnd/*.bin.0
 	@rm -f *.pfb*
 	@rm -f *.silo*
 	@rm -f *.pfsb*
