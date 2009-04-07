@@ -176,13 +176,13 @@ int          fcn;            /* Flag determining what to calculate
 	    subgrid = SubgridArraySubgrid(subgrids, sg);
 	    pr_sub = VectorSubvector(phase_rel_perm,sg);
 
-	    ix = SubgridIX(subgrid) - 1;
-	    iy = SubgridIY(subgrid) - 1;
-	    iz = SubgridIZ(subgrid) - 1;
+	    ix = SubgridIX(subgrid);
+	    iy = SubgridIY(subgrid);
+	    iz = SubgridIZ(subgrid);
 
-	    nx = SubgridNX(subgrid) + 2;
-	    ny = SubgridNY(subgrid) + 2;
-	    nz = SubgridNZ(subgrid) + 2;
+	    nx = SubgridNX(subgrid);
+	    ny = SubgridNY(subgrid);
+	    nz = SubgridNZ(subgrid);
 
 	    r = SubgridRX(subgrid);
 
@@ -285,13 +285,13 @@ int          fcn;            /* Flag determining what to calculate
 	    pp_sub = VectorSubvector(phase_pressure, sg);
 	    pd_sub = VectorSubvector(phase_density,  sg);
 
-	    ix = SubgridIX(subgrid) - 1;
-	    iy = SubgridIY(subgrid) - 1;
-	    iz = SubgridIZ(subgrid) - 1;
+	    ix = SubgridIX(subgrid);
+	    iy = SubgridIY(subgrid);
+	    iz = SubgridIZ(subgrid);
 
-	    nx = SubgridNX(subgrid) + 2;
-	    ny = SubgridNY(subgrid) + 2;
-	    nz = SubgridNZ(subgrid) + 2;
+	    nx = SubgridNX(subgrid);
+	    ny = SubgridNY(subgrid);
+	    nz = SubgridNZ(subgrid);
 
 	    r = SubgridRX(subgrid);
 
@@ -382,13 +382,13 @@ int          fcn;            /* Flag determining what to calculate
 	    n_values_sub = VectorSubvector(n_values, sg);
 	    alpha_values_sub = VectorSubvector(alpha_values, sg);
 
-	    ix = SubgridIX(subgrid) - 1;
-	    iy = SubgridIY(subgrid) - 1;
-	    iz = SubgridIZ(subgrid) - 1;
+	    ix = SubgridIX(subgrid);
+	    iy = SubgridIY(subgrid);
+	    iz = SubgridIZ(subgrid);
 
-	    nx = SubgridNX(subgrid) + 2;
-	    ny = SubgridNY(subgrid) + 2;
-	    nz = SubgridNZ(subgrid) + 2;
+	    nx = SubgridNX(subgrid);
+	    ny = SubgridNY(subgrid);
+	    nz = SubgridNZ(subgrid);
 
 	    r = SubgridRX(subgrid);
 
@@ -679,13 +679,13 @@ int          fcn;            /* Flag determining what to calculate
             pp_sub = VectorSubvector(phase_pressure, sg);
             pd_sub = VectorSubvector(phase_density,  sg);
 
-	    ix = SubgridIX(subgrid) - 1;
-	    iy = SubgridIY(subgrid) - 1;
-	    iz = SubgridIZ(subgrid) - 1;
+	    ix = SubgridIX(subgrid);
+	    iy = SubgridIY(subgrid);
+	    iz = SubgridIZ(subgrid);
 
-	    nx = SubgridNX(subgrid) + 2;
-	    ny = SubgridNY(subgrid) + 2;
-	    nz = SubgridNZ(subgrid) + 2;
+	    nx = SubgridNX(subgrid);
+	    ny = SubgridNY(subgrid);
+	    nz = SubgridNZ(subgrid);
 
             r = SubgridRX(subgrid);
 
@@ -845,13 +845,13 @@ int          fcn;            /* Flag determining what to calculate
             pr_sub = VectorSubvector(phase_rel_perm, sg);
             pp_sub = VectorSubvector(phase_pressure, sg);
 
-	    ix = SubgridIX(subgrid) - 1;
-	    iy = SubgridIY(subgrid) - 1;
-	    iz = SubgridIZ(subgrid) - 1;
+	    ix = SubgridIX(subgrid);
+	    iy = SubgridIY(subgrid);
+	    iz = SubgridIZ(subgrid);
 
-	    nx = SubgridNX(subgrid) + 2;
-	    ny = SubgridNY(subgrid) + 2;
-	    nz = SubgridNZ(subgrid) + 2;
+	    nx = SubgridNX(subgrid);
+	    ny = SubgridNY(subgrid);
+	    nz = SubgridNZ(subgrid);
 
             r = SubgridRX(subgrid);
 
@@ -977,6 +977,15 @@ int          fcn;            /* Flag determining what to calculate
       
    }         /* End switch */
 
+   /* 
+    * SGS this was added as the SurfLoop is not working correctly 
+    * for ghost layers when geom is created from a indicator field.
+    */
+   {      
+      CommHandle  *handle;
+      handle = InitVectorUpdate(phase_rel_perm, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+   }
 }
 
 /*--------------------------------------------------------------------------
