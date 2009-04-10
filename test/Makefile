@@ -29,6 +29,7 @@ endif
 
 ifeq (${PARFLOW_HAVE_SILO},yes)
 TESTS += default_richards_with_silo.tcl
+TESTS += indicator_field.tcl
 endif
 
 check:
@@ -58,5 +59,5 @@ testclean:
 	@rm -f *.out.pftcl
 	@rm -f *.pfidb
 	@rm -f *.out.txt
-	@rm -fr default_richards.out
+	@rm -fr default_richards.out indicator_field.out
 
