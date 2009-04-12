@@ -10,8 +10,8 @@ subroutine open_files (clm,drv,rank,ix,iy,ifstep,clm_output_dir,clm_output_dir_l
  type (drvdec):: drv              
  integer :: rank,ix,iy,ifstep  ! RMM added, to include time step for file name
  character*100 RI
- character (LEN=clm_output_dir_length) :: clm_output_dir  ! character location subdir for all output
  integer :: clm_output_dir_length  ! length of above character string, used in C-Fortran interop
+ character (LEN=clm_output_dir_length) :: clm_output_dir  ! character location subdir for all output
  integer :: clm_bin_out_dir       ! boolean if clm binary output goes in dir for each file
  character*5 cistep      ! character for istep to include in file names
  integer :: nz,iz

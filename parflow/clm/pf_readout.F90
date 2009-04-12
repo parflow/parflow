@@ -34,8 +34,7 @@ subroutine pfreadout(clm,drv,tile,saturation,pressure,rank,ix,iy,nx,ny,nz, j_inc
   !print*, "+++++++++++++++ about to loop and copy sats back ino CLM ++++++++++++++"
   ! Start: assign saturation data from PF to tiles/layers of CLM
 
-!ix = ix + 1 !Correction for CLM/Fortran space
-!iy = iy + 1 !Correction for CLM/Fortran space
+
 !j_incr = nx_f - nx
 !k_incr = (nx_f * ny_f) - (ny * nx_f)
 !print*, ' in readout'
@@ -44,26 +43,23 @@ do t=1,drv%nch
 i=tile(t)%col
 j=tile(t)%row
   do k = 1, nlevsoi
-  l = ip+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k-1)
+  	 l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))  ! updated indexing @RMM
+  !l = 1+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k)
     if(clm(t)%planar_mask == 1) then
       clm(t)%pf_vol_liq(k) = saturation(l) * clm(t)%watsat(k)
       clm(t)%pf_press(k) = pressure(l) * 1000.d0
-        clm(t)%h2osoi_liq(k) = saturation(l) * clm(t)%watsat(k)*clm(t)%dz(1)*denh2o
+!        clm(t)%h2osoi_liq(k) = saturation(l) * clm(t)%watsat(k)*clm(t)%dz(1)*denh2o
+        clm(t)%h2osoi_liq(k) = clm(t)%pf_vol_liq(k)*clm(t)%dz(1)*denh2o
+!		print*, t,i,j,k,clm(t)%h2osoi_liq(k),clm(t)%pf_vol_liq(k),clm(t)%pf_press(k)
+!		print*,i,j,k,l
+!		print*, clm(t)%pf_vol_liq(k),saturation(l),clm(t)%watsat(k)
+!		print*,clm(t)%pf_press(k),pressure(l)
+!		print*,clm(t)%h2osoi_liq(k)
       endif
   end do !k
   
 end do !t
 
-    !if (sat_flag == 1) print *,"OVERLAND FLOW AT TSTEP:",clm(1)%istep
-  
-!  dummy=1
-  !write(777)ix,iy,dummy,drv%nc,drv%nr,dummy
-  !do j=1,drv%nr
-  !do i=1,drv%nc 
-  !  write(777) flowd(i,j)
-  !enddo
-  !enddo
-  !close(777)
 
 ! Asign root fractions based on something like a wilting point
 !  do t=1,drv%nch

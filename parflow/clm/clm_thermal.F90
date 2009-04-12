@@ -396,9 +396,9 @@ subroutine clm_thermal (clm)
   else    
 
      clm%btran = 0
-     do k = 1, nlevsoi
+     do i = 1, nlevsoi
         if(clm%h2osoi_liq(i) > 0.0) then
-        temp = ((-150000 - clm%pf_press(k))/(-150000) )
+        temp = ((-150000 - clm%pf_press(i))/(-150000) )
             if (temp < 0.) temp = 0.
             if (temp > 1.) temp = 1.
            temp = temp ** clm%vw

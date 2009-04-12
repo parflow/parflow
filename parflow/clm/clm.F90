@@ -64,14 +64,14 @@
   integer  :: rank		                         ! processor rank, from ParFlow
   integer  :: clm_dump_interval                  ! dump inteval for CLM output, passed from PF, always in interval of CLM timestep, not time
   integer  :: clm_1d_out                         ! whether to dump 1d output 0=no, 1=yes
-  character (LEN=clm_output_dir_length) :: clm_output_dir                ! output dir location
   integer :: clm_output_dir_length
+  character (LEN=clm_output_dir_length) :: clm_output_dir                ! output dir location
   integer :: clm_bin_output_dir
   integer  :: error
-
+real elapsed(2)
   integer  :: j_incr,k_incr                      ! increment for j and k to convert 1D vector to 3D i,j,k array
 
-  integer  :: i,j,k
+  integer  :: i,j,k,ll,tt
   integer, allocatable  :: counter(:,:) 
   character*100 :: RI
 
@@ -206,15 +206,15 @@ print *,"DIMENSIONS",nx,nx_f,drv%nc,drv%nr,drv%nch,ny,ny_f, nz, nz_f, ip
 
 j_incr = nx_f 
 k_incr = (nx_f * ny_f)
-print*, j_incr,k_incr
+!print*, j_incr,k_incr
 do t=1,drv%nch
 i=tile(t)%col
 j=tile(t)%row
 counter(i,j) = 0
   clm(t)%topo_mask(3) = 1
-!  print*, t, i, j 
+!  print*, t, i, j,ip 
   do k = nz, 1, -1 ! PF loop over z
-   l = ip+i + j_incr*(j-1) + k_incr*(k-1)
+   l = 1+i + j_incr*(j) + k_incr*(k)
 !   print*, l, i,j,k, topo(l), clm(t)%topo_mask(1)
    if (topo(l) == 1) then
      counter(i,j) = counter(i,j) + 1
@@ -235,36 +235,54 @@ enddo
 
 
 !set up watsat
-ix = ix + 1 !Correction for CLM/Fortran space
-iy = iy + 1 !Correction for CLM/Fortran space
 j_incr = nx_f 
 k_incr = (nx_f * ny_f)
-do t=1,drv%nch
+do t=1,drv%nch  ! loop over clm tile space
+!convert t to i,j index
 i=tile(t)%col
 j=tile(t)%row
+! loop from 1, number of soil layers (in CLM)
   do k = 1, nlevsoi
-  l = ip+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k-1)
+! convert clm space to parflow space, note that PF space has ghost nodes
+  l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
+  	! 	l = 1+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k)
   clm(t)%watsat(k)=porosity(l)
+!  print*, i,j,k,t,l,clm(t)%topo_mask(1),porosity(l),clm(t)%watsat(k)
+
   end do !k
 end do !t
 
-
+!! below is for debugging.
+!! it allows a check of old CLM mapping from PF->CLM and 
+!! compares to new CLM mapping
+!
 !t = 0
-!l = ip
+l = ip
+!print*,ip
 !do k=1,nz ! PF loop over z
 !  do j=1,ny
 !    do i=1,nx
 !    t = t + 1
+! find t from i,j
+!do tt = 1, drv%nch
+!if ( (i==tile(tt)%col).and.(j==tile(tt)%row) ) t = tt
+!end do !  tt
 !    l = l + 1
+!	   ll = 1+i + j_incr*(j) + k_incr*(k)
+!if (k==clm(t)%topo_mask(1)) then
+!print*, k,ll,l,clm(t)%topo_mask(1)
+!print*, clm(t)%watsat(1),porosity(l)
+!end if
+!	print*,i,j,k,l,ll,topo(l),porosity(l)
 !     saturation_data(i,j,k) = saturation(l)
 !     evap_trans_data(i,j,k) = evap_trans(l)
 !     pressure_data(i,j,k) = pressure(l)
 !     mask_data(i,j,k) = topo(l)
 !     porosity_data(i,j,k) = porosity(l)
 !    enddo
-!  l = l + j_incr
+!  l = l +  nx_f - nx
 !  enddo
-!l = l + k_incr
+!l = l + (nx_f * ny_f) - (ny * nx_f)
 !enddo
 
 !=== Read restart file or set initial conditions
@@ -272,7 +290,7 @@ end do !t
 !call drv_date2time(otime,drv%doy,drv%day,drv%gmt, &
 !             drv%syr,drv%smo,drv%sda,drv%shr,drv%smn,drv%sss)
 
-print *,"Read restart file"
+print *,"Read restart file",etime(elapsed)
   call drv_restart(1,drv,tile,clm,rank)  !(1=read,2=write)
 
 !call MPI_BCAST(clm,drv%nch,clm1d,0,MPI_COMM_WORLD,error)
@@ -291,9 +309,9 @@ k_incr = (nx_f * ny_f)
 !if (dt /= 0.0d0) drv%ts = dt * 3600.0d0
 !clm%dtime = dble(drv%ts)
 
-print*, "implied array copy of clm%qlux/old/veg"
- clm%qflx_infl_old = clm%qflx_infl
- clm%qflx_tran_veg_old = clm%qflx_tran_veg
+!print*, "implied array copy of clm%qlux/old/veg"
+! clm%qflx_infl_old = clm%qflx_infl
+! clm%qflx_tran_veg_old = clm%qflx_tran_veg
 
 print *,"Call the Readout"
 ! call ParFlow --> CLM couple code
@@ -312,6 +330,8 @@ drv%endtime = 0
      call drv_getforce(drv,tile,clm)
 
      do t = 1, drv%nch     !Tile loop
+	  clm(t)%qflx_infl_old = clm(t)%qflx_infl
+      clm(t)%qflx_tran_veg_old = clm(t)%qflx_tran_veg
        if(clm(t)%planar_mask == 1) call clm_main (clm(t), drv%day) !@ only call if there is an active CLM cell
      enddo ! End of the space vector loop 
            
@@ -325,7 +345,7 @@ drv%endtime = 0
 !@== Stefan: call 2D output routine
 ! @RMM now we only call for every clm_dump_interval steps (not 
 ! time units, integer units)
-print*, clm(1)%istep, clm_dump_interval, mod(clm(1)%istep,clm_dump_interval)
+!print*, clm(1)%istep, clm_dump_interval, mod(clm(1)%istep,clm_dump_interval)
      if (mod(clm(1)%istep,clm_dump_interval)==0)  then
 ! @ RMM 9-08 move file open to outside initialization loop
 ! @ RMM  this is now done every timestep specified by pf input file

@@ -39,7 +39,8 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,
     i=tile(t)%col
     j=tile(t)%row
     do k = 1, nlevsoi
-	l = ip+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k-1)
+    l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))  ! updated indexing @RMM 4-12-09
+	!l = ip+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k-1)
     if (k == 1) then
       clm(t)%pf_flux(k)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)) + clm(t)%qflx_infl
     else  
@@ -47,6 +48,7 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,
     endif
 ! copy back to pf, assumes timing for pf is hours	
       evap_trans(l) = clm(t)%pf_flux(k)*3.6d0/drv%dz
+!	  print*, l,i,j,k, evap_trans(l)
 !	  print*, i,j,k,l,evap_trans(l),clm(t)%pf_flux(k),t
     enddo
   enddo
@@ -77,7 +79,8 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,
      clm(t)%endwb=0.0d0 !@sjk only interested in wb below surface
     
      do k = clm(t)%topo_mask(3), clm(t)%topo_mask(1) ! CLM loop over z, starting at bottom of pf domains topo_mask(3)
-	 	l = ip+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k-1)
+	 l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))  ! updated indexing @RMM 4-12-09
+	! 	l = 1+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k)
 ! first we add direct amount of water: S*phi
        clm(t)%endwb = clm(t)%endwb + saturation(l)*porosity(l) * clm(1)%dz(1) * 1000.0d0
 ! then we add the compressible storage component, note the Ss is hard-wired here at 0.0001 should really be done in PF w/ real values
