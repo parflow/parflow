@@ -80,7 +80,7 @@ Vector  *v;
    Grid *grid;
 
 
-   if ((file = amps_Fopen(filename, "a")) == NULL)
+   if ((file = amps_Fopen(filename, "w")) == NULL)
    {
       amps_Printf("Error: can't open output file %s\n", filename);
       exit(1);
@@ -151,7 +151,7 @@ Vector  *v;
    Grid *grid;
 
 
-   if ((file = amps_Fopen(filename, "a")) == NULL)
+   if ((file = amps_Fopen(filename, "w")) == NULL)
    {
       amps_Printf("Error: can't open output file %s\n", filename);
       exit(1);

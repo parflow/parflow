@@ -1763,25 +1763,33 @@ int             octree_iz;
             inc = Pow2(l);
 
             /* Find the beginning and ending indices - accounting for bounds */
+#if 1
+            i_begin = IndexSpaceX(max(RealSpaceX(ix_all, rx), xlower), rx);
+            i_end   = IndexSpaceX(min(RealSpaceX((ix_all + (nx_all - 1)), rx), xupper), rx);
+            j_begin = IndexSpaceY(max(RealSpaceY(iy_all, ry), ylower), ry);
+            j_end   = IndexSpaceY(min(RealSpaceY((iy_all + (ny_all - 1)), ry), yupper), ry);
+            k_begin = IndexSpaceZ(max(RealSpaceZ(iz_all, rz), zlower), rz);
+            k_end   = IndexSpaceZ(min(RealSpaceZ((iz_all + (nz_all - 1)), rz), zupper), rz);
+#else
             i_begin = IndexSpaceX(max(RealSpaceX(ix, rx), xlower), rx);
             i_end   = IndexSpaceX(min(RealSpaceX((ix + (nx - 1)), rx), xupper), rx);
             j_begin = IndexSpaceY(max(RealSpaceY(iy, ry), ylower), ry);
             j_end   = IndexSpaceY(min(RealSpaceY((iy + (ny - 1)), ry), yupper), ry);
             k_begin = IndexSpaceZ(max(RealSpaceZ(iz, rz), zlower), rz);
             k_end   = IndexSpaceZ(min(RealSpaceZ((iz + (nz - 1)), rz), zupper), rz);
+#endif
 
             /*-------------------------------------------------------
              * Add Inside and Outside nodes in z
              *-------------------------------------------------------*/
 
-            edge_tag = ctalloc(int, (nz + 1));
+            edge_tag = ctalloc(int, (nz_all));
             for(j = j_begin; j <= j_end; j++)
             {
                for(i = i_begin; i <= i_end; i++)
                {
                   iprime = i - ix_all;
                   jprime = j - iy_all;
-
                   index = nx_all * (ny_all * 0 + jprime) + iprime;
                   prev_state = ind[index];
 
@@ -1812,14 +1820,32 @@ int             octree_iz;
                   for(k = 0; k < (nz + 1); k++)
                   {
                      if (edge_tag[k] != 0)
+
                      {
+#if 0
                         GrGeomOctreeAddFace(solid_octree, ZDIRECTION,
                                             (i - ((int) (octree_ix / inc))),
                                             (j - ((int) (octree_iy / inc))),
-                                            ((k_begin + k) - ((int) (octree_iz / inc))),
+                                            (k - ((int) (octree_iz / inc))),
                                             k_begin, k_end,
                                             level,
                                             edge_tag[k]);
+#else
+			printf("AddFace K : (%d %d) %d %d\n", 
+                                            (i - ((int) (octree_ix / inc))),
+                                            (j - ((int) (octree_iy / inc))),
+                                            ((k_begin + k + 1) - ((int) (octree_iz / inc))),
+                                            edge_tag[k]);
+
+                        GrGeomOctreeAddFace(solid_octree, ZDIRECTION,
+                                            (i - ((int) (octree_ix / inc))),
+                                            (j - ((int) (octree_iy / inc))),
+                                            ((k_begin + k + 1) - ((int) (octree_iz / inc))),
+                                            k_begin, k_end,
+                                            level,
+                                            edge_tag[k]);
+#endif
+
                      }
                   }
                }
@@ -1830,7 +1856,7 @@ int             octree_iz;
              * Add Inside and Outside nodes in y
              *-------------------------------------------------------*/
 
-            edge_tag = ctalloc(int, (ny + 1));
+            edge_tag = ctalloc(int, ny_all);
             for(k = k_begin; k <= k_end; k++)
             {
                for(i = i_begin; i <= i_end; i++)
@@ -1872,7 +1898,7 @@ int             octree_iz;
                         GrGeomOctreeAddFace(solid_octree, YDIRECTION,
                                             (i - ((int) (octree_ix / inc))),
                                             (k - ((int) (octree_iz / inc))),
-                                            ((j_begin + j) - ((int) (octree_iy / inc))),
+                                            (j_begin + j + 1 - ((int) (octree_iy / inc))),
                                             j_begin, j_end,
                                             level,
                                             edge_tag[j]);
@@ -1886,7 +1912,7 @@ int             octree_iz;
              * Add Inside and Outside nodes in x
              *-------------------------------------------------------*/
 
-            edge_tag = ctalloc(int, (nx + 1));
+            edge_tag = ctalloc(int, nx_all);
             for(k = k_begin; k <= k_end; k++)
             {
                for(j = j_begin; j <= j_end; j++)
@@ -1928,7 +1954,7 @@ int             octree_iz;
                         GrGeomOctreeAddFace(solid_octree, XDIRECTION,
                                             (j - ((int) (octree_iy / inc))),
                                             (k - ((int) (octree_iz / inc))),
-                                            ((i_begin + i) - ((int) (octree_ix / inc))),
+                                            (i_begin + i + 1 - ((int) (octree_ix / inc))),
                                             i_begin, i_end,
                                             level,
                                             edge_tag[i]);
@@ -1942,8 +1968,8 @@ int             octree_iz;
              * Add `Fill' nodes to solid_octree (in z)
              *-------------------------------------------------------*/
 
-            interior_tag   = ctalloc(unsigned char, nz);
-            edge_tag       = ctalloc(int, (nz + 1));
+            interior_tag   = ctalloc(unsigned char, nz_all);
+            edge_tag       = ctalloc(int, nz_all);
             for(j = j_begin; j <= j_end; j++)
             {
                for(i = i_begin; i <= i_end; i++)
@@ -2079,16 +2105,45 @@ GrGeomOctree *grgeom_octree;
 
    if  ( grgeom_octree != NULL )
    {
-      amps_Fprintf(file, " %3u;", GrGeomOctreeCell(grgeom_octree));
-      amps_Fprintf(file, " ");
+//      amps_Fprintf(file, " %3u;", GrGeomOctreeCell(octree));
+      if( GrGeomOctreeCellIsEmpty(grgeom_octree) ) {
+	 amps_Fprintf(file, " E ");
+      } else {
+	 amps_Fprintf(file, " - ");
+      }
+
+      if( GrGeomOctreeCellIsOutside(grgeom_octree) ) {
+	 amps_Fprintf(file, " O ");
+      } else {
+	 amps_Fprintf(file, " - ");
+      }
+
+
+      if( GrGeomOctreeCellIsInside(grgeom_octree) ) {
+	 amps_Fprintf(file, " I ");
+      } else {
+	 amps_Fprintf(file, " - ");
+      }
+
+      if( GrGeomOctreeCellIsFull(grgeom_octree) ) {
+	 amps_Fprintf(file, " F ");
+      } else {
+	 amps_Fprintf(file, " - ");
+      }
+
+      if( GrGeomOctreeCellIsLeaf(grgeom_octree) ) {
+	 amps_Fprintf(file, " L ");
+      } else {
+	 amps_Fprintf(file, " - ");
+      }
 
       if ( GrGeomOctreeParent(grgeom_octree) != NULL )
       {
-         amps_Fprintf(file, "Y;");
+         amps_Fprintf(file, "P;");
       }
       else
       {
-         amps_Fprintf(file, "N;");
+         amps_Fprintf(file, "-;");
       }
       amps_Fprintf(file, " ");
 
@@ -2135,7 +2190,7 @@ GrGeomOctree *grgeom_octree;
             amps_Fprintf(file,  "0,");
          }
       }
-      if (GrGeomOctreeHasFace(grgeom_octree,GrGeomOctreeNumFaces))
+      if (GrGeomOctreeHasFace(grgeom_octree,GrGeomOctreeNumFaces-1))
       {
          amps_Fprintf(file,  "1\n");
       }
@@ -2200,7 +2255,7 @@ GrGeomOctree *grgeom_octree_root;
    int  still_more_levels = TRUE;
 
 
-   if ((file = amps_Fopen(filename, "a")) == NULL)
+   if ((file = amps_Fopen(filename, "w")) == NULL)
       InputError("Error: can't open output file %s\n\n", filename, "");
 
    level = 0;
@@ -2234,7 +2289,7 @@ int           last_level;
    int           level, i, j, k, l, cell;
 
 
-   if ((file = amps_Fopen(filename, "a")) == NULL)
+   if ((file = amps_Fopen(filename, "w")) == NULL)
       InputError("Error: can't open output file %s%s\n", filename, "");
 
    for (level = 0; level <= last_level; level++)

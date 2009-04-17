@@ -117,6 +117,10 @@ ProblemData   *problem_data;
       if (solids[i])
       {
          GrGeomSolidFromGeom(&gr_solids[i], solids[i], extent_array);
+
+#ifdef SGS_DEBUG
+	 GrGeomPrintOctree("solid_geometry", gr_solids[i] -> data);
+#endif
       }
    }
    GrGeomFreeExtentArray(extent_array);
@@ -142,6 +146,10 @@ ProblemData   *problem_data;
             i++;
          }
          GrGeomSolidFromInd(&gr_solids[i], tmp_indicator_field, (current_indicator_data -> indicators)[k]);
+
+#ifdef SGS_DEBUG
+	 GrGeomPrintOctree("indicator_geometry", gr_solids[i] -> data);
+#endif
       }
 
       current_indicator_data = (current_indicator_data -> next_indicator_data);
