@@ -103,7 +103,7 @@ ProblemData   *problem_data;
    /*-----------------------------------------------------------------------
     * Allocate temp vectors
     *-----------------------------------------------------------------------*/
-   tmp_indicator_field = NewVector(instance_xtra -> grid, 1, 1);
+   tmp_indicator_field = NewVector(instance_xtra -> grid, 1, 2);
 
    gr_solids = ctalloc(GrGeomSolid *, num_solids);
 

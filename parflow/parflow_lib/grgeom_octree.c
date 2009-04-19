@@ -617,10 +617,6 @@ int                  max_level;
    int           *edge_tag, *triangle_tag;
    unsigned char *interior_tag;
 
-#if 0
-   int             len;
-#endif
-
    /*-------------------------------------------------------------
     * Make sure extent_array is inside the octree index space
     *-------------------------------------------------------------*/
@@ -894,52 +890,6 @@ int                  max_level;
       }
    }
 
-#if 0
-   for(ie = 0; ie < ea_size; ie++)
-   {
-      index = 0;
-      for(j = 0; j < ny_lines[ie]; j++)
-      {
-         for(i = 0; i < nx_lines[ie]; i++)
-         {
-            len = ListLength(xy_lines[ie][index]);
-            if (len % 2)
-            {
-               amps_Printf("Z Line : (%d,%d) has length %d [%d]\n", i, j, len, index);
-               ListPrint(xy_lines[ie][index]);
-            }
-            index++;
-         }
-      }
-      index = 0;
-      for(k = 0; k < nz_lines[ie]; k++)
-      {
-         for(i = 0; i < nx_lines[ie]; i++)
-         {
-            len = ListLength(xz_lines[ie][index]);
-            if (len % 2)
-            {
-               amps_Printf("Y Line : (%d,%d) has length %d [%d]\n", i, k, len, index);
-            }
-            index++;
-         }
-      }
-      index = 0;
-      for(k = 0; k < nz_lines[ie]; k++)
-      {
-         for(j = 0; j < ny_lines[ie]; j++)
-         {
-            len = ListLength(yz_lines[ie][index]);
-            if (len % 2)
-            {
-               amps_Printf("X Line : (%d,%d) has length %d [%d]\n", j, k, len, index);
-            }
-            index++;
-         }
-      }
-   }
-#endif
-
    /*-------------------------------------------------------------
     * Create the octree, by first adding the boundary faces
     *-------------------------------------------------------------*/
@@ -1061,6 +1011,15 @@ int                  max_level;
                {
                   if (edge_tag[k] != 0)
                   {
+
+#ifdef SGS_DEBUG
+		     amps_Printf("Solid AddFace K : (%d %d) %d %d\n", 
+			    i,
+			    j,
+			    k,
+			    edge_tag[k]);
+#endif
+
                      GrGeomOctreeAddFace(solid_octree, ZDIRECTION,
                                          i, j, k, iz_lower, iz_upper, level,
                                          edge_tag[k]);
@@ -1169,6 +1128,14 @@ int                  max_level;
                {
                   if (edge_tag[j] != 0)
                   {
+#ifdef SGS_DEBUG
+		     amps_Printf("Solid AddFace J : (%d %d) %d %d\n", 
+			    i,
+			    k,
+			    j,
+			    edge_tag[j]);
+#endif
+
                      GrGeomOctreeAddFace(solid_octree, YDIRECTION,
                                          i, k, j, iy_lower, iy_upper, level,
                                          edge_tag[j]);
@@ -1277,6 +1244,14 @@ int                  max_level;
                {
                   if (edge_tag[i] != 0)
                   {
+#ifdef SGS_DEBUG
+		     amps_Printf("Solid AddFace I : (%d %d) %d %d\n", 
+			    j,
+			    k,
+			    j,
+			    edge_tag[i]);
+#endif
+
                      GrGeomOctreeAddFace(solid_octree, XDIRECTION,
                                          j, k, i, ix_lower, ix_upper, level,
                                          edge_tag[i]);
@@ -1429,21 +1404,6 @@ int                  max_level;
                  }
                }
 
-#if 0
-               /* Find initial state (inside/outside) of geometry */
-               start_state = OUTSIDE;
-               for(k = iz_lower+1; k <= iz_upper+1;  k++)
-               {
-                  if (edge_tag[k] != 0)
-                  {
-                     if (edge_tag[k] < 0)
-                        start_state = OUTSIDE;
-                     else
-                        start_state = INSIDE;
-                     break;
-                  }
-               }
-#endif
                /* Fill in the interior info using the edge crossing info */
                state = start_state;
                for(k = iz_lower; k <= iz_upper;  k++)
@@ -1717,13 +1677,14 @@ int             octree_iz;
             rz = SubgridRZ(subgrid);
 
             /* Compute information about the subgrid and ghost layer */
-            ix_all = ix - 1;
-            iy_all = iy - 1;
-            iz_all = iz - 1;
+            ix_all = ix - 2;
+            iy_all = iy - 2;
+            iz_all = iz - 2;
 
-            nx_all = nx + 2;
-            ny_all = ny + 2;
-            nz_all = nz + 2;
+            nx_all = nx + 4;
+            ny_all = ny + 4;
+            nz_all = nz + 4;
+
 
             /* Get information about this subvector */
             subvector = VectorSubvector(indicator_field, sg);
@@ -1763,22 +1724,19 @@ int             octree_iz;
             inc = Pow2(l);
 
             /* Find the beginning and ending indices - accounting for bounds */
-#if 1
             i_begin = IndexSpaceX(max(RealSpaceX(ix_all, rx), xlower), rx);
             i_end   = IndexSpaceX(min(RealSpaceX((ix_all + (nx_all - 1)), rx), xupper), rx);
             j_begin = IndexSpaceY(max(RealSpaceY(iy_all, ry), ylower), ry);
             j_end   = IndexSpaceY(min(RealSpaceY((iy_all + (ny_all - 1)), ry), yupper), ry);
             k_begin = IndexSpaceZ(max(RealSpaceZ(iz_all, rz), zlower), rz);
             k_end   = IndexSpaceZ(min(RealSpaceZ((iz_all + (nz_all - 1)), rz), zupper), rz);
-#else
-            i_begin = IndexSpaceX(max(RealSpaceX(ix, rx), xlower), rx);
-            i_end   = IndexSpaceX(min(RealSpaceX((ix + (nx - 1)), rx), xupper), rx);
-            j_begin = IndexSpaceY(max(RealSpaceY(iy, ry), ylower), ry);
-            j_end   = IndexSpaceY(min(RealSpaceY((iy + (ny - 1)), ry), yupper), ry);
-            k_begin = IndexSpaceZ(max(RealSpaceZ(iz, rz), zlower), rz);
-            k_end   = IndexSpaceZ(min(RealSpaceZ((iz + (nz - 1)), rz), zupper), rz);
-#endif
 
+#ifdef SGS_DEBUG
+	    amps_Printf("k_begin comp %g, %g : (%d, %d)\n", RealSpaceZ(iz_all, rz), zlower, 
+			IndexSpaceZ(RealSpaceZ(iz_all, rz), rz),
+			IndexSpaceZ(zlower, rz));
+#endif
+			
             /*-------------------------------------------------------
              * Add Inside and Outside nodes in z
              *-------------------------------------------------------*/
@@ -1794,7 +1752,7 @@ int             octree_iz;
                   prev_state = ind[index];
 
                   /* Fill in the edge crossing info */
-                  for(k = 0; k <= nz;  k++)
+                  for(k = 0; k < nz_all - 2;  k++)
                   {
                      index = nx_all * (ny_all * (k + 1) + jprime) + iprime;
                      edge_tag[k] = 0;
@@ -1817,34 +1775,26 @@ int             octree_iz;
                   }
 
                   /* Add faces using the edge crossing info */
-                  for(k = 0; k < (nz + 1); k++)
+                  for(k = 0; k < nz_all - 2; k++)
                   {
                      if (edge_tag[k] != 0)
 
                      {
-#if 0
-                        GrGeomOctreeAddFace(solid_octree, ZDIRECTION,
+#ifdef SGS_DEBUG
+			amps_Printf("AddFace K : (%d %d) %d %d\n", 
                                             (i - ((int) (octree_ix / inc))),
                                             (j - ((int) (octree_iy / inc))),
-                                            (k - ((int) (octree_iz / inc))),
-                                            k_begin, k_end,
-                                            level,
+                                            ((iz_all + k + 1) - ((int) (octree_iz / inc))),
                                             edge_tag[k]);
-#else
-			printf("AddFace K : (%d %d) %d %d\n", 
-                                            (i - ((int) (octree_ix / inc))),
-                                            (j - ((int) (octree_iy / inc))),
-                                            ((k_begin + k + 1) - ((int) (octree_iz / inc))),
-                                            edge_tag[k]);
+#endif
 
                         GrGeomOctreeAddFace(solid_octree, ZDIRECTION,
                                             (i - ((int) (octree_ix / inc))),
                                             (j - ((int) (octree_iy / inc))),
-                                            ((k_begin + k + 1) - ((int) (octree_iz / inc))),
+                                            ((iz_all + k + 1) - ((int) (octree_iz / inc))),
                                             k_begin, k_end,
                                             level,
                                             edge_tag[k]);
-#endif
 
                      }
                   }
@@ -1868,7 +1818,7 @@ int             octree_iz;
                   prev_state = ind[index];
 
                   /* Fill in the edge crossing info */
-                  for(j = 0; j <= ny;  j++)
+                  for(j = 0; j < ny_all - 2;  j++)
                   {
                      index = nx_all * (ny_all * kprime + (j + 1)) + iprime;
                      edge_tag[j] = 0;
@@ -1891,14 +1841,22 @@ int             octree_iz;
                   }
 
                   /* Add faces using the edge crossing info */
-                  for(j = 0; j < (ny + 1); j++)
+                  for(j = 0; j < ny_all - 2; j++)
                   {
                      if (edge_tag[j] != 0)
                      {
+#ifdef SGS_DEBUG
+			amps_Printf("AddFace J : (%d %d) %d %d\n", 
+                                            (i - ((int) (octree_ix / inc))),
+                                            (k - ((int) (octree_iz / inc))),
+                                            (iy_all + j + 1- ((int) (octree_iy / inc))),
+                                            edge_tag[j]);
+#endif
+
                         GrGeomOctreeAddFace(solid_octree, YDIRECTION,
                                             (i - ((int) (octree_ix / inc))),
                                             (k - ((int) (octree_iz / inc))),
-                                            (j_begin + j + 1 - ((int) (octree_iy / inc))),
+                                            (iy_all + j + 1 - ((int) (octree_iy / inc))),
                                             j_begin, j_end,
                                             level,
                                             edge_tag[j]);
@@ -1924,7 +1882,7 @@ int             octree_iz;
                   prev_state = ind[index];
 
                   /* Fill in the edge crossing info */
-                  for(i = 0; i <= nx;  i++)
+                  for(i = 0; i < nx_all - 2;  i++)
                   {
                      index = nx_all * (ny_all * kprime + jprime) + (i + 1);
                      edge_tag[i] = 0;
@@ -1947,14 +1905,23 @@ int             octree_iz;
                   }
 
                   /* Add faces using the edge crossing info */
-                  for(i = 0; i < (nx + 1); i++)
+                  for(i = 0; i < nx_all - 2; i++)
                   {
                      if (edge_tag[i] != 0)
                      {
+
+#ifdef SGS_DEBUG
+			amps_Printf("AddFace I : (%d %d) %d %d\n", 
+                                            (j - ((int) (octree_iy / inc))),
+                                            (k - ((int) (octree_iz / inc))),
+                                            (ix_all + i + 1 - ((int) (octree_ix / inc))),
+                                            edge_tag[i]);
+#endif
+
                         GrGeomOctreeAddFace(solid_octree, XDIRECTION,
                                             (j - ((int) (octree_iy / inc))),
                                             (k - ((int) (octree_iz / inc))),
-                                            (i_begin + i + 1 - ((int) (octree_ix / inc))),
+                                            (ix_all + i + 1 - ((int) (octree_ix / inc))),
                                             i_begin, i_end,
                                             level,
                                             edge_tag[i]);

@@ -977,6 +977,7 @@ int          fcn;            /* Flag determining what to calculate
       
    }         /* End switch */
 
+#if 0
    /* 
     * SGS this was added as the SurfLoop is not working correctly 
     * for ghost layers when geom is created from a indicator field.
@@ -986,6 +987,7 @@ int          fcn;            /* Flag determining what to calculate
       handle = InitVectorUpdate(phase_rel_perm, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
    }
+#endif
 }
 
 /*--------------------------------------------------------------------------
