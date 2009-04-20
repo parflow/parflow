@@ -17,7 +17,7 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,
   integer r_len, c_len, j_len, flag
   integer counter(drv%nc,drv%nr)
   integer nx,ny,nz, j_incr, k_incr
-  real(r8) begwatb,endwatb !@ beginning and ending water balance over ENTIRE domain
+ ! real(r8) begwatb,endwatb !@ beginning and ending water balance over ENTIRE domain
   real(r8) tot_infl_mm,tot_tran_veg_mm,tot_drain_mm !@ total mm of h2o from infiltration and transpiration
   real(r8) error !@ mass balance error over entire domain
   real(r8) evap_trans((nx+2)*(ny+2)*(nz+2)),press
@@ -46,8 +46,9 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,
     else  
       clm(t)%pf_flux(k) = - clm(t)%qflx_tran_veg*clm(t)%rootfr(k)
     endif
-! copy back to pf, assumes timing for pf is hours	
+! copy back to pf, assumes timing for pf is hours and timing for clm is seconds
       evap_trans(l) = clm(t)%pf_flux(k)*3.6d0/drv%dz
+!	  print*, k, l, clm(t)%pf_flux(k), evap_trans(l)
 !	  print*, l,i,j,k, evap_trans(l)
 !	  print*, i,j,k,l,evap_trans(l),clm(t)%pf_flux(k),t
     enddo
@@ -57,8 +58,8 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,
 
 !@ Start: Here we do the mass balance: We look at every tile/cell individually!
 !@ Determine volumetric soil water
-  begwatb = 0.0d0
-  endwatb = 0.0d0
+  !begwatb = 0.0d0
+  drv%endwatb = 0.0d0
   tot_infl_mm = 0.0d0
   tot_tran_veg_mm = 0.0d0
   tot_drain_mm = 0.0d0
@@ -77,24 +78,29 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,
     !@sjk Here we add the total water mass of the layers below CLM soil layers from Parflow to close water balance
     !@sjk We can use clm(1)%dz(1) because the grids are equidistant and congruent
      clm(t)%endwb=0.0d0 !@sjk only interested in wb below surface
-    
+ !   print*, clm(t)%topo_mask(3), clm(t)%topo_mask(1)
      do k = clm(t)%topo_mask(3), clm(t)%topo_mask(1) ! CLM loop over z, starting at bottom of pf domains topo_mask(3)
-	 l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))  ! updated indexing @RMM 4-12-09
+	
+	 l = 1+i + j_incr*(j) + k_incr*(k)  ! updated indexing @RMM b/c we are looping from k3 to k1
+	!  print*, k, l
 	! 	l = 1+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k)
 ! first we add direct amount of water: S*phi
        clm(t)%endwb = clm(t)%endwb + saturation(l)*porosity(l) * clm(1)%dz(1) * 1000.0d0
 ! then we add the compressible storage component, note the Ss is hard-wired here at 0.0001 should really be done in PF w/ real values
-       clm(t)%endwb = clm(t)%endwb + saturation(l) * 0.0001*clm(1)%dz(1) * pressure(l)    
+       clm(t)%endwb = clm(t)%endwb + saturation(l) * 0.0001*clm(1)%dz(1) * pressure(l) *1000.d0    
+!	          print*, k, l, pressure(l), saturation(l),porosity(l), clm(t)%endwb
      enddo
 
 ! add hight of ponded water at surface (ie pressure head at upper pf bddy if > 0) 	 
+l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1))
        if (pressure(l) > 0.d0 ) then
-         clm(t)%endwb = clm(t)%endwb + pressure(l)
+         clm(t)%endwb = clm(t)%endwb + pressure(l) * 1000.0d0
        endif
 
+     
     !@ Water balance over the entire domain
-     begwatb = begwatb + clm(t)%begwb
-     endwatb = endwatb + clm(t)%endwb
+  !   begwatb =endwatb  ! begwatb + clm(t)%begwb
+     drv%endwatb = drv%endwatb + clm(t)%endwb
      tot_infl_mm = tot_infl_mm + clm(t)%qflx_infl_old * clm(1)%dtime
      tot_tran_veg_mm = tot_tran_veg_mm + clm(t)%qflx_tran_veg_old * clm(1)%dtime
 
@@ -134,11 +140,13 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,
   enddo !@ End: Loop over domain, t
 
   
+  
   error = 0.0d0
-  error = endwatb - begwatb - (tot_infl_mm - tot_tran_veg_mm) ! + tot_drain_mm
+  error = drv%endwatb - drv%begwatb - (tot_infl_mm - tot_tran_veg_mm) ! + tot_drain_mm
  
 ! SGS according to standard "f" must have fw.d format, changed f -> f20.8, i -> i5 and e -> e10.2
-  write(199,'(1i5,1x,f20.8,1x,5e10.2)') clm(1)%istep,drv%time,error,tot_infl_mm,tot_tran_veg_mm,begwatb,endwatb
+  write(199,'(1i5,1x,f20.8,1x,5e13.5)') clm(1)%istep,drv%time,error,tot_infl_mm,tot_tran_veg_mm,drv%begwatb,drv%endwatb
+   drv%begwatb =drv%endwatb
   !print *,""
   !print *,"Error (%):",error
 !@ End: mass balance  
