@@ -290,7 +290,7 @@ l = ip
 !call drv_date2time(otime,drv%doy,drv%day,drv%gmt, &
 !             drv%syr,drv%smo,drv%sda,drv%shr,drv%smn,drv%sss)
 
-print *,"Read restart file",etime(elapsed)
+!print *,"Read restart file",etime(elapsed)
   call drv_restart(1,drv,tile,clm,rank)  !(1=read,2=write)
 
 !call MPI_BCAST(clm,drv%nch,clm1d,0,MPI_COMM_WORLD,error)
