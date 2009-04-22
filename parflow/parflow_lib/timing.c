@@ -56,6 +56,7 @@ void  NewTiming()
    RegisterTiming("Matvec");
    RegisterTiming("PFSB I/O");
    RegisterTiming("PFB I/O");
+   RegisterTiming("CLM");
 #ifdef VECTOR_UPDATE_TIMING
    RegisterTiming("VectorUpdate");
 #endif

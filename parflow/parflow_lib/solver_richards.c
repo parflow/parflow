@@ -50,11 +50,12 @@ typedef struct
    PFModule          *advect_concen;
    PFModule          *set_problem_data;
    PFModule          *nonlin_solver;
-   int                lsm;                   /* land surface model */
-	int               clm_dump_interval;     /* time interval, integer, for CLM output */
-	int               clm_1d_out;     /* boolean 0-1, integer, for CLM 1-d output */
-	int               clm_bin_out_dir; /* boolean 0-1, integer, for sep dirs for each clm binary output */
-	char              *clm_file_dir;      /* directory location for CLM files */
+   int                lsm;                /* land surface model */
+   int                clm_dump_interval;  /* time interval, integer, for CLM output */
+   int                clm_1d_out;         /* boolean 0-1, integer, for CLM 1-d output */
+   int                clm_bin_out_dir;    /* boolean 0-1, integer, for sep dirs for each 
+					     clm binary output */
+   char              *clm_file_dir;       /* directory location for CLM files */
 	
 
    Problem           *problem;
@@ -525,7 +526,7 @@ void AdvanceRichards(PFModule *this_module,
    int           take_more_time_steps;
    int           conv_failures;
    int           max_failures = 60;
-	int            clm_file_dir_length=64; 
+   int           clm_file_dir_length=64; 
 
    double        t;
    double        ct = 0.0;
@@ -597,6 +598,9 @@ void AdvanceRichards(PFModule *this_module,
 	 dt = cdt;
 
 #ifdef HAVE_CLM      
+
+	 BeginTiming(CLMTimingIndex);
+
       /* sk: call to the land surface model/subroutine*/
 	 //  sk: For the couple with CLM 
 	 int p = GetInt("Process.Topology.P");
@@ -662,6 +666,8 @@ void AdvanceRichards(PFModule *this_module,
 	 }
 	 handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
 	 FinalizeVectorUpdate(handle); 
+
+	 EndTiming(CLMTimingIndex);
 #endif
       } //Endif to check whether an entire dt is complete
 

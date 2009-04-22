@@ -45,8 +45,9 @@
 #define MatvecTimingIndex  3
 #define PFSBTimingIndex  4
 #define PFBTimingIndex  5
+#define CLMTimingIndex  6
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  6
+#define VectorUpdateTimingIndex  7
 #endif
 
 
