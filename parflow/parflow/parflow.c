@@ -64,6 +64,12 @@ int  argc;
    
    wall_clock_time = amps_Clock();
 
+   if(argc != 2) {
+      amps_Printf("Error: invalid number of arguments.\n");
+      amps_Printf("       Invoke as parflow <pfidb file>.\n");
+      exit(1);
+   }
+
    /*-----------------------------------------------------------------------
     * Set up globals structure
     *-----------------------------------------------------------------------*/
