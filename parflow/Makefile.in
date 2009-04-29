@@ -39,6 +39,7 @@ veryclean: clean
 	@$(RM) Makefile config/Makefile.config
 
 install: all
+	@echo "Installing parflow to $(PARFLOW_INSTALL_DIR)"
 	@$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/lib
 	@$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/bin
 	@$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/config

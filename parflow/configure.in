@@ -170,15 +170,18 @@ dnl CLM_DIR is empty when not building with CLM.  This will case the
 dnl directory to be skipped in the compilation.
 CLM_DIR=""
 CLM_LIBS=""
+CLM_LIB_DEPEND=""
 PARFLOW_HAVE_CLM="no"
 if test "$with_clm" = "yes"; then
    PARFLOW_HAVE_CLM="yes"
    CLM_DIR="clm"
    CLM_LIBS="-lclm"
+   CLM_LIB_DEPEND="\$(PARFLOW_LIB_DIR)/libclm.a"
    AC_DEFINE(HAVE_CLM)	  
 fi
 AC_SUBST(CLM_DIR)
 AC_SUBST(CLM_LIBS)
+AC_SUBST(CLM_LIB_DEPEND)
 AC_SUBST(PARFLOW_HAVE_CLM)
 
 dnl

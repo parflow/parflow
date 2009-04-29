@@ -44,6 +44,7 @@ KINSOL_LIB                      = libkinsol.a
 CLM_LIB				= libclm.a
 CLM_LIBS                        = @CLM_LIBS@
 CLM_DIR                         = @CLM_DIR@
+CLM_LIB_DEPEND                  = @CLM_LIB_DEPEND@
 
 PARFLOW_INCLUDE_DIR             = $(PARFLOW)/parflow_lib
 PARFLOW_CONFIGURE_INCLUDE_DIR   = $(OBJECT)/include
