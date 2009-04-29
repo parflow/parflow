@@ -195,7 +195,7 @@ FCFLAGS=""
 AC_FC_FREEFORM(,[AC_MSG_ERROR([free format in F90 compiler does not work])])
 
 case $FC in
-   gfortran) 
+   gfortran*) 
       FC_FLAGS="$FC_FLAGS $FCFLAGS -ffree-line-length-none"
       ;;
 esac

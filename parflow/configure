@@ -3685,7 +3685,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 case $FC in
-   gfortran)
+   gfortran*)
       FC_FLAGS="$FC_FLAGS $FCFLAGS -ffree-line-length-none"
       ;;
 esac
