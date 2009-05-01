@@ -52,23 +52,6 @@
 #define VectorUpdatePGS4     9
 
 /*--------------------------------------------------------------------------
- * InitCommunication:
- *--------------------------------------------------------------------------*/
-
-#define InitCommunication(comm_pkg) \
-   (CommHandle *)amps_IExchangePackage((comm_pkg) -> package);
-
-
-
-/*--------------------------------------------------------------------------
- * FinalizeCommunication:
- *--------------------------------------------------------------------------*/
-
-#define  FinalizeCommunication(handle) amps_Wait((amps_Handle)(handle))
-
-
-
-/*--------------------------------------------------------------------------
  * CommPkg:
  *   Structure containing information for communicating subregions of
  *   vector data.

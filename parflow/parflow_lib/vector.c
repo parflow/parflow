@@ -222,8 +222,7 @@ int      num_ghost;
  * FreeTempVector
  *--------------------------------------------------------------------------*/
 
-static void FreeTempVector(vector)
-Vector *vector;
+void FreeTempVector(Vector *vector)
 {
    int i;
 

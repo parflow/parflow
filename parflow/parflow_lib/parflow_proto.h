@@ -75,8 +75,8 @@ int NewCommPkgInfo (Subregion *data_sr , Subregion *comm_sr , int index , int nu
 CommPkg *NewCommPkg (Region *send_region , Region *recv_region , SubregionArray *data_space , int num_vars , double *data );
 void FreeCommPkg (CommPkg *pkg );
 // SGS what's up with this?
-// CommHandle *InitCommunication (CommPkg *comm_pkg );
-// void FinalizeCommunication (CommHandle *handle );
+CommHandle *InitCommunication (CommPkg *comm_pkg );
+void FinalizeCommunication (CommHandle *handle );
 
 /* computation.c */
 ComputePkg *NewComputePkg (Region *send_reg , Region *recv_reg , Region *dep_reg , Region *ind_reg );
@@ -357,6 +357,7 @@ ComputePkg *NewMGSemiRestrictComputePkg (Grid *grid , Stencil *stencil , int sx 
 void SetPf2KinsolData (Grid *grid , int num_ghost );
 N_Vector N_VNew (int N , void *machEnv );
 void N_VPrint (N_Vector x );
+void FreeTempVector(Vector *vector);
 
 /* new_endpts.c */
 void NewEndpts (double *alpha , double *beta , double *pp , int *size_ptr , int n , double *a_ptr , double *b_ptr , double *cond_ptr , double ereps );
@@ -904,6 +905,7 @@ void WritePFSBinary (char *file_prefix , char *file_suffix , Vector *v , double 
 /* write_parflow_silo.c */
 void     WriteSilo(char    *file_prefix, char    *file_suffix, Vector  *v, 
                    double time, int step, char *variable_name);
+void     WriteSiloInit(char    *file_prefix);
 
 /* wrf_parflow.c */
 void wrfparflowinit_ ();

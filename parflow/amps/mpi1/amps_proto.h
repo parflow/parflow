@@ -121,4 +121,5 @@ void handler_overflow (void );
 void handler_invalid (void );
 void Fsignal (void );
 
-#undef P
+int amps_Wait(amps_Handle handle);
+

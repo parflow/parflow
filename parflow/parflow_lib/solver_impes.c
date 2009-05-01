@@ -222,6 +222,8 @@ void      SolverImpes()
 
    is_multiphase = ProblemNumPhases(problem) > 1;
 
+   t = start_time;
+
    /*-------------------------------------------------------------------
     * Allocate temp vectors
     *-------------------------------------------------------------------*/
@@ -323,8 +325,6 @@ void      SolverImpes()
       evolve_saturations    = 1;
       evolve_concentrations = 1;
    }
-
-   t = start_time;
 
    pressure = NewVector( grid, 1, 1 );
    InitVectorAll(pressure, 0.0);
@@ -1423,7 +1423,9 @@ PFModule *SolverImpesInitInstanceXtra()
    Subgrid      *subgrid, *new_subgrid;
 
    double       *temp_data, *temp_data_placeholder;
-   int           total_mobility_sz, pressure_sz, velocity_sz, satur_sz, 
+   // SGS TODO total_mobility_sz is not being set anywhere so initialized to 0 here.
+   int           total_mobility_sz = 0;
+   int           pressure_sz, velocity_sz, satur_sz, 
                  concen_sz, temp_data_size, sz;
    int           is_multiphase;
 

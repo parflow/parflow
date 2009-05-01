@@ -1030,7 +1030,7 @@ int  PGSRFSizeOfTempData()
 {
    PFModule	 *this_module = ThisPFModule;
    InstanceXtra	 *instance_xtra = PFModuleInstanceXtra(this_module);
-   int		 size;
+   int		 size = 0;
 
    return (size);
 }

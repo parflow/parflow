@@ -32,7 +32,7 @@
 #include <math.h>
 
 #include "parflow.h"
-
+#include "amps.h"
 #include "communication.h"
 
 
@@ -388,7 +388,6 @@ CommPkg *pkg;
 }
 
 
-#if 0
 /*--------------------------------------------------------------------------
  * InitCommunication:
  *--------------------------------------------------------------------------*/
@@ -397,7 +396,6 @@ CommHandle  *InitCommunication(comm_pkg)
 CommPkg     *comm_pkg;
 {
    int i;
-
 
    return (CommHandle *)amps_IExchangePackage(comm_pkg -> package);
 }
@@ -412,6 +410,6 @@ CommHandle  *handle;
 {
    amps_Wait((amps_Handle)handle);
 }
-#endif
+
 
 

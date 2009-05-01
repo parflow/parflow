@@ -181,6 +181,9 @@ void SetupRichards(PFModule *this_module) {
 
    int           any_file_dumped;
 
+   t = start_time;
+   dt = 0.0e0;
+
    IfLogging(1)
    {
       int max_iterations           = (public_xtra -> max_iterations);
@@ -255,8 +258,6 @@ void SetupRichards(PFModule *this_module) {
       take_more_time_steps = 1;
    }
 
-   t = start_time;
-   dt = 0.0e0;
 
    instance_xtra -> iteration_number = instance_xtra -> file_number = start_count;
    instance_xtra -> dump_index = 1.0;
