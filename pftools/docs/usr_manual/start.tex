@@ -15,20 +15,24 @@ simple groundwater problem, supplied with the \parflow{} distribution.
 \section{Installing ParFlow}
 \label{Installing ParFlow}
 
-\parflow{} now uses a new configure/make system based on
-the standard \code{GNU autoconf} configure system.  This replaces the home
-grown set of scripts used in previous versions and is much more
-portable to a range of machines.
+\parflow{} uses a configure/make system based on the standard
+\code{GNU autoconf} configure system.  This replaces the home grown
+set of scripts used in previous versions and is much more portable to
+a range of machines.
 
-Since \parflow{} is composed of several different parts which might
-require different compilers (\emph{e.g.} on some MPP architectures the
-front-end machine is different from the nodes) the build process
-involves compiling several different parts.
+For greater portability the \parflow{} build process seperates
+configuration and compilation of the simulator and associated tools.
+This seperation allows easier porting to platforms where the
+architecture is different on the nodes and the front-end.
 
-These instructions are for building \parflow{} on a range of serial and parallel linux, unix and OSX machines, including stand-alone single and multi-core to large parallel clusters.  These instructions do \emph{NOT} include compilation on Windows machines.
+These instructions are for building \parflow{} on a range of serial
+and parallel linux, unix and OSX machines, including stand-alone
+single and multi-core to large parallel clusters.  These instructions
+do \emph{NOT} include compilation on Windows machines.
 
-\parflow{} requires a Standard \emph{ANSI C} and \emph{FORTRAN 90/95} compiler
-to build code.  \code{GCC} and \code{gFortran}, available for free on almost every platform, are good options and may be found at:
+\parflow{} requires a Standard \emph{ANSI C} and \emph{FORTRAN 90/95}
+compiler to build code.  \code{GCC} and \code{gFortran}, available for
+free on almost every platform, are good options and may be found at:
 \begin{center}
 \code{http://gcc.gnu.org/}  
 \end{center}
@@ -40,13 +44,19 @@ and
 \begin{center}
 \code{http://www.tcl.tk/}
 \end{center}
-These three packages are often pre-installed on most computers and generally do not need to be installed by the user.
-The following steps are designed to take you through the process of
-installing \parflow{} from a source distribution.  \parflow{} uses the \code{gnu} package \code{autoconf} to create a configuration file for building and installing the \parflow{} program.  
+These three packages are often pre-installed on most computers and
+generally do not need to be installed by the user.  The following
+steps are designed to take you through the process of installing
+\parflow{} from a source distribution.  \parflow{} uses the \code{gnu}
+package \code{autoconf} to create a configuration file for building
+and installing the \parflow{} program.
 
 \begin{enumerate}
-\item {\bf Setup} \\
-Decide where you wish to install Parflow and associated libraries. The following environment variable should be set up in your \file{.profile}, \file{.cshrc}, or other file. Set the environment variable \code{PARFLOW_DIR} to your chosen location (if you are using \code{bash} or a bourne syntax shell):
+\item {\bf Setup} \\ Decide where you wish to install Parflow and
+  associated libraries. The following environment variable should be
+  set up in your \file{.profile}, \file{.cshrc}, or other file. Set
+  the environment variable \code{PARFLOW_DIR} to your chosen location
+  (if you are using \code{bash} or a bourne syntax shell):
 \begin{display}\begin{verbatim}
 export PARFLOW_DIR=~/parflow
 \end{verbatim}\end{display}
@@ -56,16 +66,14 @@ If you are using a \code{csh} like shell you will need the following in your
 setenv PARFLOW_DIR ~/parflow
 \end{verbatim}\end{display}
 
-The variable
-\code{PARFLOW_DIR} specifies the location of the installed version of
-\parflow{}  This is where executables and support files will be placed.
-If you have a directory which is shared on multiple architectures you
-can set different \code{PARFLOW_DIR}s on the different machines (for
-example
-\code{~/parflow-foo} and \code{~/parflow-bar}). 
-We will use the \file{~/parflow} directory as the root directory for
-building \parflow{} in this user manual; you can use a different
-directory if you wish.
+The variable \code{PARFLOW_DIR} specifies the location of the
+installed version of \parflow{}. This is where executables and support
+files will be placed.  If you have a directory which is shared on
+multiple architectures you can set different \code{PARFLOW_DIR}s on
+the different machines (for example \code{~/parflow-arch1} and
+\code{~/parflow-arch2}).  We will use the \file{~/parflow} directory as
+the root directory for building \parflow{} in this user manual; you
+can use a different directory if you wish.
 
 
 %------------------------------
@@ -102,19 +110,23 @@ This will build a parallel version of /parflow{} using the MPI1 libraries. You c
 \begin{display}\begin{verbatim}
 ./configure --help 
 \end{verbatim}\end{display} to see other configure options.  Note that \parflow{} defaults to building a sequential version so
-\code{--with-amps} is needed when building for a parallel computer.  You
-can explicitly specify the path to the MPI to use with the
-\code{--with-mpi} option to configure.  This controls \emph{AMPS} which stands for \emph{A}nother \emph{M}essage \emph{P}assing \emph{S}ytem.  \emph{AMPS} is a very flexible message-passing layer within \parflow{} that allows a common code core to be quickly and easily adapted to many different parallel environments.
+\code{--with-amps} is needed when building for a parallel computer.
+  You can explicitly specify the path to the MPI to use with the
+ \code{--with-mpi} option to configure.  This controls \emph{AMPS}
+ which stands for \emph{A}nother \emph{M}essage \emph{P}assing
+ \emph{S}ytem.  \emph{AMPS} is a flexible message-passing layer within
+ \parflow{} that allows a common code core to be quickly and easily
+ adapted to different parallel environments.
 
-\item {\bf Build and install pftools}\\
-\code{pftools} is a package of utilities and a \code{TCL} library that is used to
-setup and postprocess Parflow files.  The input files to \parflow{} are
-\code{TCL} scripts so \code{TCL} must be installed on the system.
+\item {\bf Build and install pftools}\\ \code{pftools} is a package of
+ utilities and a \code{TCL} library that is used to setup and
+ postprocess Parflow files.  The input files to \parflow{} are
+ \code{TCL} scripts so \code{TCL} must be installed on the system.
 
 The first command will build \parflow{} and the bundled tools and
-install them in the \code{\$PARFLOW_DIR} directory.  The second
-command will build and install the documentation.
-A typical configure and build looks like:
+ install them in the \code{\$PARFLOW_DIR} directory.  The second
+ command will build and install the documentation.  A typical
+ configure and build looks like:
 
 \begin{display}\begin{verbatim}
 cd $PARFLOW_DIR
@@ -125,17 +137,23 @@ make install
 make doc_install
 \end{verbatim}\end{display}
 
-Note that \code{pftools} is \emph{NOT} parallel but some options for how files are
-written are based on the communication layer so pftools needs to know
-what what used to build the \parflow{} library.
+Note that \code{pftools} is \emph{NOT} parallel but some options for
+how files are written are based on the communication layer so pftools
+needs to have the same options that were used to build the \parflow{}
+library.
 
-If \code{TCL} is not installed in the system locations (\code{/usr} or \code{/usr/local}) you need
-to specify the path with the \code{--with-tcl=<PATH>} configure option.
+If \code{TCL} is not installed in the system locations (\code{/usr} or
+\code{/usr/local}) you need to specify the path with the
+\code{--with-tcl=<PATH>} configure option.
 
 See \file{./configure --help} for additional configure options for \code{pftools}.
 
-\item {\bf Running a sample problem}\\
-There is a test directory that contains not only example scripts of \parflow{} problems but the correct output for these scripts as well.  This may be used to test the compilation process and verify that \parflow{} is installed correctly.  If all went well a sample \parflow{} problem can be run using:
+\item {\bf Running a sample problem}\\ There is a test directory that
+  contains not only example scripts of \parflow{} problems but the
+  correct output for these scripts as well.  This may be used to test
+  the compilation process and verify that \parflow{} is installed
+  correctly.  If all went well a sample \parflow{} problem can be run
+  using:
 
 \begin{display}\begin{verbatim}
 cd $PARFLOW_DIR
@@ -149,16 +167,28 @@ is in your path.  Make sure to use the same \code{TCL} as was used in the
 \begin{display}\begin{verbatim}
 cd $PARFLOW_DIR
 cd test
-make test
+make check
 \end{verbatim}\end{display}
 
-\item {\bf Notes and other options:}\\
-\parflow{} may be compiled with a number of options using the configure script.  Some common options are compiling \code{CLM} as in \cite{MM05,KM08a} to compile with timing and optimization or to use a compiler other than \code{gcc}.  To compile with \code{CLM} add \code{--with-clm} to the configure line such as:
+\item {\bf Notes and other options:}\\ \parflow{} may be compiled with
+ a number of options using the configure script.  Some common options
+ are compiling \code{CLM} as in \cite{MM05,KM08a} to compile with
+ timing and optimization or to use a compiler other than \code{gcc}.
+  To compile with \code{CLM} add \code{--with-clm} to the configure
+ line such as:
 \begin{display}\begin{verbatim}
 ./configure --prefix=$PARFLOW_DIR --with-amps=mpi1 --with-clm
 \end{verbatim}\end{display}
 
-To enable detailed timing of the performance of several different components within \parflow{} use the \code{--enable-timing} option.  To use compiler optimizations use the \code{--enable-opt=STRING} where the \code{=STRING} is an optional flag to specify the level and type of optimization.
+To enable detailed timing of the performance of several different
+components within \parflow{} use the \code{--enable-timing} option.
+To use compiler optimizations use the \code{--enable-opt=STRING} where
+the \code{=STRING} is an optional flag to specify the level and type
+of optimization.
+
+IMPORTANT NOTE: Optimization and debugging are controlled independent of one
+another.  So to compile with optimization and no debugging you need to
+specify both \code{--enable-opt=STRING} AND \code{--disable-debug}.
 
 It is often desirable to use different C and F90/95 compilers (such as \emph{Intel} or \emph{Porland Group}) to match hardware specifics, for performance reasons or simply personal preference.  To change compilers, set the \code{CC}, \code{FC} and \code{F77} variables (these may include a path too). For example to change to the \emph{Intel} compilers in c-shell:
 \begin{display}\begin{verbatim}
@@ -177,9 +207,9 @@ setenv F77 ifort
 \section{Running the Sample Problem}
 \label{Running the Sample Problem}
 
-Here, we assume that \parflow{} is already built.
-The following steps will allow you to run a simple test
-problem supplied with the distribution.
+Here, we assume that \parflow{} is already built.  The following steps
+ will allow you to run a simple test problem supplied with the
+ distribution.
 \begin{enumerate}
 
 \item
