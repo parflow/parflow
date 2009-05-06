@@ -5,22 +5,20 @@
 \chapter{Introduction}
 \label{Introduction}
 
-\parflow{} is a groundwater flow and contaminant transport simulation code
-designed to run efficiently in a multi-processor computing environment
-on a variety of available machines.  This simulator is being built by
-scientists from the Center for Applied Scientific Computing (CASC),
-Environmental Programs, and the Environmental Protection Department.
-\parflow{} is able to utilize the computing power that is
-available on today's supercomputers, enabling it to more accurately model
-the effects of subsurface heterogeneity on fluid transport processes.
-Heterogeneity is present on many scales in the subsurface, ranging
-from the microscopic capillary processes to macroscopic variations in
-structure, such as fractures and faults.
-\parflow{} attempts to account for heterogeneity and model its
-effects on contaminant flow.
+\parflow{} \cite{Ashby-Falgout90, Jones-Woodward01, KM06} is a parallel simulation platform that operates in three modes:\begin{enumerate}
+\item
+steady-state saturated; 
+\item
+variably saturated; 
+\item
+and integrated-watershed flow.
+\end{enumerate}
+\parflow{} is especially suitable for large scale problems on a range of single and multi-processor computing platforms. \parflow{} simulates the three-dimensional saturated and variably saturated subsurface flow in heterogeneous porous media in three spatial dimensions using a mulitgrid-preconditioned conjugate gradient solver \cite{Ashby-Falgout90} and a Newton-Krylov nonlinear solver \cite{Jones-Woodward01}. \parflow{} has recently been extended to coupled surface-subsurface flow to enable the simulation of hillslope runoff and channel routing in a truly integrated fashion \cite{KM06}. \parflow{} is also fully-coupled with the land surface model \code{CLM} \cite{Dai03} as described in \cite{MM05,KM08a}.  The development and application of \parflow{} has been on-going for more than 10 years \cite{MK08b, KM08b, KM08a, MK08a, MCT08,MCK07,MWH07,  KM06, MM05, TMCZPS05, MWT03, Teal02, WGM02, Jones-Woodward01, MCT00, TCRM99, TBP99, TFSBA98, Ashby-Falgout90} and resulted in some of the most advanced numerical solvers and multigrid preconditioners for massively parallel computer environments that are available today. Many of the numerical tools developed within the \parflow{} platform have been turned into or are from libraries that are now distributed and maintained at LLNL ({\em Hypre} and {\em SUNDIALS}, for example).   An additional advantage of \parflow{} is the use of a sophisticated octree-space partitioning algorithm to depict complex structures in three-space, such as topography, different hydrologic facies, and watershed boundaries. All these components implemented into \parflow{} enable large scale, high resolution watershed simulations. \parflow{} simulates the three-dimensional variably saturated subsurface flow in strongly heterogeneous porous media in three spatial dimensions.
+
+\parflow{} is primarily written in \emph{ANSI C}, follow an object-oriented structure and contains a flexible communications sub-layer to handle parallel process interaction on a range of platforms.  \code{CLM} is fully-integrated into \parflow{} as a module and has been parallelized (including I/O) and is written in \emph{FORTRAN 90/95}.  \parflow{} is organized into a main executable \file{\emph{pfdir}/parflow/parflow} and a source library \file{\emph{pfdir}/parflow/parflow_lib} (where \file{\emph{pfdir}} is the main directory location) and is comprised of more than 190 separate source files.  There is also a directory structure for the message-passing sublayer \file{\emph{pfdir}/parflow/amps} for the associated tools \file{\emph{pfdir}/pftools} for \code{CLM} \file{\emph{pfdir}/parflow/clm} and a directory of test cases \file{\emph{pfdir}/test}.
 
 This manual describes how to use \parflow{}, and is intended for
-geoscientists and environmental scientists and engineers.  In
+hydrologists, geoscientists, environmental scientists and engineers.  In
 Chapter~\ref{Getting Started}, we describe how to install \parflow{}.
 Then, we lead the user through a simple \parflow{} run.  In
 Chapter~\ref{The ParFlow System}, we describe the \parflow{} system in

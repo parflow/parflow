@@ -4,13 +4,10 @@
 \chapter{The ParFlow System}
 \label{The ParFlow System}
 
-The \parflow{} system is still evolving, but at present,
-it has three basic components.  GMS is used to create geometry input,
-\parflow{} is the simulator itself, and AVS (or AVS/Express) are used
-to visualize the results.  We discuss how to define the problem in
+The \parflow{} system is still evolving, but here we discuss how to define the problem in
 \S~\ref{Defining the Problem}, how to run \parflow{} in
-\S~\ref{Running ParFlow}, and how to visualize the results in
-\S~\ref{Visualizing Output with AVS}.  There is also a utility providing a set
+\S~\ref{Running ParFlow}, and options for to visualizing the results in
+\S~\ref{Visualizing Output}.  There is also a utility providing a set
 of functions for manipulating \parflow{} data.  This utility is discussed in 
 \S~\ref{Manipulating Data}.  Lastly, \S~\ref{Test Directory} discusses the
 contents of a directory of test problems provided with \parflow{}.
@@ -22,15 +19,13 @@ contents of a directory of test problems provided with \parflow{}.
 \label{Defining the Problem}
 
 Defining the problem may involve several steps.
-One of these steps requires the use of
-GMS (Groundwater Modeling System) \cite{GMS94tut,GMS95ref}
-to define complicated geometries such as hydrostratigraphic layers.
+One of these steps may require definition complicated geometries such as hydrostratigraphic layers.
 These geometries are then converted to the
 \file{.pfsol} file format (\S~\ref{ParFlow Solid Files (.pfsol)})
 using the appropriate \pftools{} conversion utility
 (\S~\ref{Manipulating Data}).
 
-The ``main'' \parflow{} input file is the \file{.pftcl} file.
+The "main" \parflow{} input file is the \file{.tcl} file.
 This input file is a TCL script with some special routines to
 create a database which is used as the input for \parflow{}.
 See \S~\ref{Main Input File (.pftcl)} for details on the format
@@ -60,7 +55,7 @@ pfset ComputationalGrid.NZ                       8
 
 The value is normally a single string, double, or integer.  In some cases,
 in particular for a list of names, you need to supply a space seperated
-sequence.  This can be done using either a double quote or bracies.
+sequence.  This can be done using either a double quote or braces.
 
 \begin{display}\begin{verbatim}
 pfset Geom.domain.Patches "left right front back bottom top"
@@ -138,38 +133,31 @@ a single node; before attempting using them you should undistribute them.
 Since the input file is a TCL script run it using TCL:
 
 \begin{display}\begin{verbatim}
-tclsh runname.pftcl
+tclsh runname.tcl
 \end{verbatim}\end{display}
 
 NOTE: Make sure you are using TCL 8.0 or later.  The script will not
 work with earlier releases.
 
-For a network of workstations, you need to specify the computer
-systems that are going to be used in the virtual machine (VM).  To add
-a machine to the VM you should set the \code{Process.HostNames}
-variable to be a space separated list of the machine names.
-
-\begin{display}\begin{verbatim}
-pfset Process.Hostnames ``bert.llnl.gov ernie.llnl.gov bigbird.llnl.gov''
-\end{verbatim}\end{display}
-
 One output file of particular interest is the \file{<run
 name>.out.log} file.  This file contains information about the run
 such as number of processes used, convergence history of algorithms,
-timings and MFLOP rates.
+timings and MFLOP rates.  For Richards' equation problems (including overland flow) the \file{<run
+name>.out.kinsol.log} file contains the nonlinear convergence information for each timestep.  Additionally, the \file{<run
+name>.out.tx} contains all information routed to \file{standard out} of the machine you are running on and often contains error messages and other control information.
 
 \section{Restarting a Run}
 \label{Restarting a Run}
 
-Occasionally a \parflow{} run may need to be restarted because either a
-system time limit has been reached and \parflow{} has been prematurely
+A \parflow{} run may need to be restarted because either a
+system time limit has been reached, \parflow{} has been prematurely
 terminated or the user specifically sets up a problem to run in segments.
 In order to restart a run the user needs to know the conditions under which
 \parflow{} stopped.  If \parflow{} was prematurely terminated then the
-user must examine the output files from the last ``timed dump'' to see if
+user must examine the output files from the last "timed dump" to see if
 they are complete.  If not then those data files should be discarded and the
-output files from the next to last ``timed dump'' will be used in the
-restarting procedure.  As an important note, if any set of ``timed dump''
+output files from the next to last "timed dump" will be used in the
+restarting procedure.  As an important note, if any set of "timed dump"
 files are deleted remember to also delete corresponding lines in the well
 output file or recombining the well output files from the individual segments
 afterwards will be difficult.  It is not necessary to delete lines from
@@ -185,23 +173,19 @@ this procedure :
    \begin{itemize}
       \item Write down the dump sequence number for the last collection of
            ``timed dump'' data.
-      \item Examine the log file to find out what real time that ``timed dump''
+      \item Examine the log file to find out what real time that "timed dump"
             data was written out at and write it down.
    \end{itemize}
    \item Prepare input data files from output data files :
    \begin{itemize}
-      \item Take all the concentration output files with the sequence number
-            from above and convert them from a ParFlow Scattered Binary File
-            \S~\ref{ParFlow Scattered Binary Files (.pfsb)} to a ParFlow
-            Binary File \S~\ref{ParFlow Binary Files (.pfb)} (including a
-            ``.dist'' file) using \pftools{} \S~\ref{Manipulating Data} and the
-            {\it pfdist} utility in the input script.
+      \item Take the last pressure output file before the restart with the sequence number
+            from above and format them for regular input using the keys detailed in \S~\ref{Initial Conditions: Pressure} and possibly the \code{pfdist} utility in the input script.
    \end{itemize}
    \item Change the Main Input File \S~\ref{Main Input File (.pftcl)} :
    \begin{itemize}
-      \item Edit the .pftcl file (you may want to save the old one) and
-            utilize the read concentration input file option to specify
-            all of the input files you created above as initial conditions
+      \item Edit the .tcl file (you may want to save the old one) and
+            utilize the pressure initial condition input file option (as referenced above) to specify
+             the input files you created above as initial conditions
             for concentrations.
    \end{itemize}
    \item Restart the run :
@@ -220,113 +204,14 @@ this procedure :
 %=============================================================================
 %=============================================================================
 
-\section{Visualizing Output with AVS}
-\label{Visualizing Output with AVS}
+\section{Visualizing Output}
+\label{Visualizing Output}
 
-We currently use AVS (Application Visualization System)
-\cite{AVS92dguide,AVS92uguide,AVS93ref} to visualize \parflow{}
-output.  AVS modules and networks are provided in directory
-\file{\$PARFLOW_DIR/avs} for this purpose.  To access these modules
-and networks within AVS, type
+While \parflow{} does not have any visualization capabilities built-in, there are a number flexible, free options.  Probably the best option is to use \emph{VisIt}. \emph{VisIt} is a powerful, free, open-source, rendering environment.  It is multiplatform and may be downloaded directly from:
 \begin{display}\begin{verbatim}
-pfavs &
+https://wci.llnl.gov/codes/visit/
 \end{verbatim}\end{display}
-This will start AVS, load the \parflow{} module library, and set the default
-network directory to your \file{\$PARFLOW_DIR/avs/networks} directory.
-Click on \kbd{Network Editor} to open the network editor.
-Here, you will be able to load supplied \parflow{} networks
-(click on \kbd{Read Network}) and use \parflow{} modules to
-either construct new networks or modify old networks
-These provided networks may be used to visualize \parflow{} output.
-Documentation for \parflow{} modules is found online using the
-help capability provided with AVS.
-See the AVS documentation for details on how to use AVS.
-
-%=============================================================================
-%=============================================================================
-
-\section{Visualizing Output with AVS/Express}
-\label{Visualizing Output with AVS/Express}
-
-\subsection{Running and Interacting With AVS/Express}
-
-Before running AVS/Express you may need to set some environment variables.
-See the AVS/Express documentation for more information.
-
-A script is included for starting AVS/Express for the local Express
-installation.  This can be used as a template for other systems.  To
-start Express with the \parflow{} modules loaded:
-
-\begin{display}\begin{verbatim}
-pfexpress
-\end{verbatim}\end{display}
-
-\subsection{Using the AVS/Express Applications}
-
-First, some notes that apply to all of the applications.  A quick way to
-reload the file currently being viewed is to press return in the text area
-that contains the current file name.  To print the contents of a viewer
-window (or save it to a \file{.ps} or \file{.eps} file), use the \menu{Print}
-editor in the \menu{Editors} menu of the viewer.  To get to other user
-interfaces, such as those for the grid scaling and downsizing, use the module
-stack pulldown menu on the left side of the screen.
-
-\begin{description}
-
-\item[Animate]
-    In the file dialog brought up by the ``Select file in sequence...'' button,
-    the user should select one of the \file{.pfsb} files from the sequence
-    that will be animated.  The application will then load the first file in
-    the sequence and do the isosurface on it.  The desired isosurface level
-    should be selected at this point also.  Start, end, and stride are used
-    to select the files to include in the animation.  The indices in these
-    fields are from 0 to the number of \file{.pfsb} files in the series minus
-    one.  If cycle is checked, the animation will continuously cycle while
-    run is checked.  Checking reset will cause the display to be reset to the
-    start file.  Animate only works with \file{.pfsb} files.
-
-\item[Brick]
-    Everything here should be self-explanatory.  The dials or sliders control
-    the upper bounding planes of the box.  The dials have the immediate
-    toggle set, causing them to update the display as they are being
-    modified.  The sliders do not have this toggle set.
-
-\item[ExcavateBrick]
-    The ``opposite'' of Brick, but with the same user interface.
- 
-\item[Isosurface]
-    Like Animate, but without the animation stuff and only allows you to view
-    one file at a time.  Also allows you to view \file{.pfb} files.
- 
-\item[Orthograph]
-    Axis labels and names are now working, although they tend to get jumbled
-    together at the origin.  The Probe Value field in the user interface
-    gives the value of the current probe location in the plot.  You can probe
-    the value of an isoline by control-left mouse button clicking anywhere on
-    it.  You can also choose up to two isolines at specific locations by
-    modifying the sliders in the isoline user interface in the module stack.
-    If more precision is necessary for specifying these isolines values, a
-    new user interface can easily be added for it.
- 
-    One note on a semi-bug: If the plot shrinks down to become very small,
-    try hitting the Normalize button.  If that doesn't get it back to normal,
-    flip between different axes a time or two, and hopefully that should
-    work.  As a last-ditch effort, delete and reload the application.  This
-    problem seems to be rare, but I have always been able to solve it without
-    having to reload the application.
-
-\item[Slice3]
-    The same user interface as Brick.
-
-\end{description}
-
-Of these applications, there is currently one known bug.  In Isosurface,
-loading a \file{.pfb} file after a \file{.pfsb} file causes minimum values in
-some places to become messed up, but the application is still usable.  The is
-due to an unfortunate ``feature'' in the AVS/Express UIdial module.  To avoid
-this, delete and reload the application when you want to visualize a
-\file{.pfb} file after a \file{.pfsb} file.
-
+The most flexible option for using \emph{VisIt} to view \parflow{} output is to write files using the \emph{SILO} format, which is available either as a direct output option or a conversion option using pftools.  Many other output conversion options exist as described in \S~\ref{Manipulating Data} and this allows \parflow{} output to be converted into formats used by almost all visualization software.
 %=============================================================================
 %=============================================================================
 
@@ -662,4 +547,612 @@ Normally this is done after every pfrun command.
 
 \parflow{} comes with a directory containing a few simple input files for use
 as templates in making new files and for use in testing the code.  This section
-gives a brief descriptionn of the problems in this driectory.
+gives a brief description of the problems in this directory.
+
+\begin{description}
+
+\item{\file{crater2D.tcl} An example of a two-dimensional, variably-saturated crater infiltration prblem with time-varying boundary conditions.  It uses the solid file \file{crater2D.pfsol.}}
+
+\item{\file{default_richards.tcl} The default variably-saturated Richards’ Equation simulation test script.}
+
+\item{\file{default_single.tcl} The default parflow, single-processor, fully-saturated test script.}
+
+\item{\file{forsyth2.tcl} An example two-dimensional, variably-saturated infiltration problem with layers of different hydraulic properties.  It uses the solid file \file{fors2_hf.pfsol}.}
+
+\item{\file{harvey.flow.tcl} An example from \cite{MWH07} for the Cape Cod bacterial injection site.  This example is a three-dimensional, fully-saturated flow problem with spatially heterogeneous media (using a correlated, random field approach).  It also provides examples of how tcl/tk scripts may be used in conjunction with ParFlow to loop iteratively or to run other scripts or programs.  It uses the input text file \file{stats4.txt}. This input script is fully detailed in \S~\ref{Tutorial}}
+
+\item{\file{default_overland.tcl} An overland flow boundary condition test and example script based loosely on the V-catchment problem in \cite{KM06}.  There are options provided to expand this problem into other overland flow-type, transient boundary-type problems included in the file as well.}
+
+\end{description}
+
+%=============================================================================
+%=============================================================================
+
+\section{Annotated Input Script}
+\label{Tutorial}
+
+This tutorial matches the \file{harvey_flow.tcl} file found in the \file{/test} directory.  This example is directly from \cite{MWH07}.  This example demonstrates how to set up and run a fully saturated flow problem with heterogeneous hydraulic conductivity.  Given statistical parameters describing the geology of your site, this script can be easily modified to make as many realizations of the subsurface as you like, each different and yet having the same statistical parameters, useful for a Monte Carlo simulation.
+
+To run \parflow{}, you use a script written in Tcl/TK.  This script has a lot of flexibility, as it is somewhere in between a program and a user interface.  The tcl script gives \parflow{} the data it requires (or tells \parflow{} where to find or read in that data) and also tells \parflow{} to run.
+
+As stated above, the tcl script for the Cape Cod simulation is called \file{harvey.flow.tcl}
+
+When the script runs, it creates a new directory named \file{/flow} right in the directory where the tcl script is stored.  \parflow{} then puts all its output in \file{/flow}.  Of course, you can change the name and location of this output directory by modifying the tcl script that runs \parflow{}.
+
+To run the simulation:
+\begin{enumerate}
+\item{make any modifications to the tcl input script (and give a new name, if you want to)}
+\item{save the tcl script}
+\item{For Windows: double click on it to run \parflow{}}
+\item{For Linux/Unix/OSX: invoke the script from the command line using the tcl-shell, this looks like: \file{>tclsh harvey_flow.tcl}}
+\item{Wait patiently for a small empty square window to appear (Windows) or the command prompt to return (Linux/Unix/OSX) indicating that \parflow{} has finished.  Intermediate files are written as the simulation runs, however there is no other indication that \parflow{} is running.}
+\end{enumerate}
+
+To modify a tcl script, you right-click and select “edit” from the menu.  If you select “open,” you will run the script.
+
+{\bf Note:}  The units for {\bf K} (\i{m/d}, usually) are critical to the entire construction.  These length and time units for {\bf K} set the units for all other variables (input or generated, throughout the entire simulation) in the simulation.  \parflow{} can set to solve using hydraulic conductivity by literally setting density, viscosity and gravity to one (as is done in the script below).  This means the pressure units are in length (meters), so pressure is now so-called pressure-head.
+
+Now for the tcl script:
+
+\begin{verbatim}
+#
+# Import the ParFlow TCL package
+#
+\end{verbatim}
+
+These first three lines are what link Parflow and the tcl script, thus allowing you to use a set of commands seen later, such as “pfset,” etc.
+
+\begin{verbatim}
+lappend auto_path $env(PARFLOW_DIR)/bin 
+package require parflow
+namespace import Parflow::*
+
+#-----------------------------------------------------------------------------
+# File input version number
+#-----------------------------------------------------------------------------
+pfset FileVersion 4
+\end{verbatim}
+
+These next lines set the parallel process topology.  The domain is divided in x,y and z by P, Q and R.  The total number of processors is P*Q*R.
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Process Topology
+#----------------------------------------------------------------------------
+
+pfset Process.Topology.P     1
+pfset Process.Topology.Q     1
+pfset Process.Topology.R     1
+\end{verbatim}
+
+Next we set up the computational grid (\emph{see} \S~\ref{Defining the Problem}).
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Computational Grid
+#----------------------------------------------------------------------------
+\end{verbatim}
+
+Locate the origin in the domain.
+
+\begin{verbatim}
+pfset ComputationalGrid.Lower.X    0.0
+pfset ComputationalGrid.Lower.Y    0.0
+pfset ComputationalGrid.Lower.Z    0.0
+\end{verbatim}
+
+Define the size of the domain grid block.  Length units, same as those on hydraulic conductivity.
+
+\begin{verbatim}
+pfset ComputationalGrid.DX     0.34
+pfset ComputationalGrid.DY     0.34
+pfset ComputationalGrid.DZ     0.038
+\end{verbatim}
+
+Define the number of grid blocks in the domain.
+
+\begin{verbatim}
+pfset ComputationalGrid.NX      50
+pfset ComputationalGrid.NY      30
+pfset ComputationalGrid.NZ      100
+\end{verbatim}
+
+This next piece is comparable to a pre-declaration of variables.  These will be areas in our domain geometry.  The regions themselves will be defined later.  You must always have one that is the name of your entire domain.  If you want subsections within your domain, you may declare these as well.  For Cape Cod, we have the entire domain, and also the 2 (upper and lower) permeability zones in the aquifer.
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# The Names of the GeomInputs
+#----------------------------------------------------------------------------
+pfset GeomInput.Names "domain_input upper_aquifer_input lower_aquifer_input"
+\end{verbatim}
+
+Now you characterize your domain that you just pre-declared to be a “box” – (\emph{see} \S~\ref{Geometries}), and you also give it a name, “domain.”
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Domain Geometry Input
+#----------------------------------------------------------------------------
+pfset GeomInput.domain_input.InputType       Box
+pfset GeomInput.domain_input.GeomName   domain
+\end{verbatim}
+
+Here, you set the limits in space for your entire domain.  The span from \file{Lower.X} to \file{Upper.X} will be equal to the product of \file{ComputationalGrid.DX} times \file{ComputationalGrid.NX}.  Same for {\em Y} and {\em Z} (i.e. the number of grid elements times size of the grid element has to equal the size of the grid in each dimension).   The “Patches” command assigns names to the outside edges, because the domain is the limit of the problem in space.
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Domain Geometry
+#----------------------------------------------------------------------------
+pfset Geom.domain.Lower.X       0.0 
+pfset Geom.domain.Lower.Y       0.0
+pfset Geom.domain.Lower.Z       0.0
+
+pfset Geom.domain.Upper.X       17.0
+pfset Geom.domain.Upper.Y       10.2
+pfset Geom.domain.Upper.Z       3.8
+
+pfset Geom.domain.Patches "left right front back bottom top"
+\end{verbatim}
+
+Just like domain geometry, you also set the limits in space for the individual components (upper and lower, as defined in the Names of GeomInputs pre-declaration).  There are no patches for these geometries as they are internal to the domain.
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Upper Aquifer Geometry Input
+#----------------------------------------------------------------------------
+pfset GeomInput.upper_aquifer_input.InputType        Box
+pfset GeomInput.upper_aquifer_input.GeomName   upper_aquifer
+
+#----------------------------------------------------------------------------
+# Upper Aquifer Geometry
+#----------------------------------------------------------------------------
+pfset Geom.upper_aquifer.Lower.X                        0.0 
+pfset Geom.upper_aquifer.Lower.Y                        0.0
+pfset Geom.upper_aquifer.Lower.Z                        1.5
+
+pfset Geom.upper_aquifer.Upper.X                        17.0
+pfset Geom.upper_aquifer.Upper.Y                        10.2
+pfset Geom.upper_aquifer.Upper.Z                        1.5
+
+#----------------------------------------------------------------------------
+# Lower Aquifer Geometry Input
+#----------------------------------------------------------------------------
+pfset GeomInput.lower_aquifer_input.InputType       Box
+pfset GeomInput.lower_aquifer_input.GeomName   lower_aquifer
+
+#----------------------------------------------------------------------------
+# Lower Aquifer Geometry
+#----------------------------------------------------------------------------
+pfset Geom.lower_aquifer.Lower.X      0.0 
+pfset Geom.lower_aquifer.Lower.Y      0.0
+pfset Geom.lower_aquifer.Lower.Z      0.0
+
+pfset Geom.lower_aquifer.Upper.X     17.0
+pfset Geom.lower_aquifer.Upper.Y     10.2
+pfset Geom.lower_aquifer.Upper.Z      1.5
+\end{verbatim}
+
+Now you add permeability data to the domain sections defined above (\S~\ref{Permeability}).  You can reassign values simply by re-stating them -- there is no need to comment out or delete the previous version -- the final statement is the only one that counts.
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Perm
+#----------------------------------------------------------------------------
+\end{verbatim}
+
+Name the permeability regions you will describe.
+
+\begin{verbatim}
+pfset Geom.Perm.Names "upper_aquifer lower_aquifer"
+\end{verbatim}
+
+You can set, for example homogeneous, constant permeability, or you can generate a random field that meets your statistical requirements.  To define a constant permeability for the entire domain:
+
+\begin{verbatim}
+#pfset Geom.domain.Perm.Type     Constant
+#pfset Geom.domain.Perm.Value    4.0
+\end{verbatim}
+
+However, for Cape Cod, we didn’t want a constant permeability field, so we instead generated a random permeability field meeting our statistical parameters for each the upper and lower zones.  Third from the bottom is the “Seed.”  This is a random starting point to generate the K field.  Pick any large {\em ODD} number.  First we do something tricky with { \file Tcl/TK}.  We use the native commands within tcl to open a text file and read in locally set variables.  Note we use set here and not pfset.  One is a native tcl command, the other a \parflow{}-specific command.  For this problem, we are linking the parameter estimation code, PEST to \parflow{}.  PEST writes out the ascii file stats4.txt (also located in the /test directory) as the result of a calibration run.  Since we are not coupled to PEST in this example, we just read in the file and use the values to assign statistical properties.
+
+\begin{verbatim}
+# we open a file, in this case from PEST to set upper and lower # kg and sigma
+#
+set fileId [open stats4.txt r 0600]
+set kgu [gets $fileId]
+set varu [gets $fileId]
+set kgl [gets $fileId]
+set varl [gets $fileId]
+close $fileId
+\end{verbatim}
+
+Now we set the heterogeneous parameters for the Upper and Lower aquifers (\emph{see} \S~\ref{Permeability}).  Note the special section at the very end of this block where we reset the geometric mean and standard deviation to our values we read in from a file.  {\bf Note:} \parflow{} uses {\em Standard Deviation} not {\em Variance}.
+
+\begin{verbatim}
+pfset Geom.upper_aquifer.Perm.Type "TurnBands"
+pfset Geom.upper_aquifer.Perm.LambdaX  3.60
+pfset Geom.upper_aquifer.Perm.LambdaY  3.60
+pfset Geom.upper_aquifer.Perm.LambdaZ  0.19
+pfset Geom.upper_aquifer.Perm.GeomMean  112.00
+
+pfset Geom.upper_aquifer.Perm.Sigma   1.0
+pfset Geom.upper_aquifer.Perm.Sigma   0.48989794
+pfset Geom.upper_aquifer.Perm.NumLines 150
+pfset Geom.upper_aquifer.Perm.RZeta  5.0
+pfset Geom.upper_aquifer.Perm.KMax  100.0
+pfset Geom.upper_aquifer.Perm.DelK  0.2
+pfset Geom.upper_aquifer.Perm.Seed  33333
+pfset Geom.upper_aquifer.Perm.LogNormal Log
+pfset Geom.upper_aquifer.Perm.StratType Bottom
+pfset Geom.lower_aquifer.Perm.Type "TurnBands"
+pfset Geom.lower_aquifer.Perm.LambdaX  3.60
+pfset Geom.lower_aquifer.Perm.LambdaY  3.60
+pfset Geom.lower_aquifer.Perm.LambdaZ  0.19
+
+pfset Geom.lower_aquifer.Perm.GeomMean  77.0
+pfset Geom.lower_aquifer.Perm.Sigma   1.0
+pfset Geom.lower_aquifer.Perm.Sigma   0.48989794
+pfset Geom.lower_aquifer.Perm.NumLines 150
+pfset Geom.lower_aquifer.Perm.RZeta  5.0
+pfset Geom.lower_aquifer.Perm.KMax  100.0
+pfset Geom.lower_aquifer.Perm.DelK  0.2
+pfset Geom.lower_aquifer.Perm.Seed  33333
+pfset Geom.lower_aquifer.Perm.LogNormal Log
+pfset Geom.lower_aquifer.Perm.StratType Bottom
+
+#pfset lower aqu and upper aq stats to pest/read in values
+
+pfset Geom.upper_aquifer.Perm.GeomMean  $kgu
+pfset Geom.upper_aquifer.Perm.Sigma  $varu
+
+pfset Geom.lower_aquifer.Perm.GeomMean  $kgl
+pfset Geom.lower_aquifer.Perm.Sigma  $varl
+\end{verbatim}
+
+The following section allows you to specify the permeability tensor.  In the case below, permeability is symmetric in all directions (x, y, and z) and therefore each is set to 1.0.
+
+\begin{verbatim}
+pfset Perm.TensorType               TensorByGeom
+
+pfset Geom.Perm.TensorByGeom.Names  "domain"
+
+pfset Geom.domain.Perm.TensorValX  1.0
+pfset Geom.domain.Perm.TensorValY  1.0
+pfset Geom.domain.Perm.TensorValZ  1.0
+\end{verbatim}
+
+Next we set the specific storage, though this is not used in the IMPES/steady-state calculation.
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Specific Storage
+#----------------------------------------------------------------------------
+# specific storage does not figure into the impes (fully sat) 
+# case but we still need a key for it
+
+pfset SpecificStorage.Type            Constant
+pfset SpecificStorage.GeomNames       ""
+pfset Geom.domain.SpecificStorage.Value 1.0e-4
+\end{verbatim}
+
+\parflow{} has the capability to deal with a multiphase system, but we only have one (water) at Cape Cod.  As we stated earlier, we set density and viscosity artificially (and later gravity) both to 1.0.  Again, this is merely a trick to solve for hydraulic conductivity and pressure head.  If you were to set density and viscosity to their true values, the code would calculate {\bf k} (permeability).  By using the “normalized” values instead, you effectively imbed the conversion of {\bf k} to {\bf K} (hydraulic conductivity).  So this way, we get hydraulic conductivity, which is what we want for this problem.
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Phases
+#----------------------------------------------------------------------------
+
+pfset Phase.Names "water"
+
+pfset Phase.water.Density.Type	Constant
+pfset Phase.water.Density.Value	1.0
+
+pfset Phase.water.Viscosity.Type	Constant
+pfset Phase.water.Viscosity.Value	1.0
+\end{verbatim}
+
+We will not use the \parflow{} grid based transport scheme.  We will then leave contaminants blank because we will use a different code for to model (virus, tracer) contamination.
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Contaminants
+#----------------------------------------------------------------------------
+pfset Contaminants.Names			""
+\end{verbatim}
+
+As with density and viscosity, gravity is normalized here.  If we used the true value (in the \emph{[L]} and \emph{[T]} units of hydraulic conductivity) the code would be calculating permeability.  Instead, we normalize so that the code calculates hydraulic conductivity.
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Gravity
+#----------------------------------------------------------------------------
+
+pfset Gravity				1.0
+
+#----------------------------------------------------------------------------
+# Setup timing info
+#----------------------------------------------------------------------------
+\end{verbatim}
+
+This basic time unit of 1.0 is used for transient boundary and well conditions.  We are not using those features in this example.
+
+\begin{verbatim} 
+pfset TimingInfo.BaseUnit		1.0
+\end{verbatim}
+
+Cape Cod is a steady state problem, so these timing features are again unused, but need to be included.
+
+\begin{verbatim}
+pfset TimingInfo.StartCount   -1
+pfset TimingInfo.StartTime     0.0
+pfset TimingInfo.StopTime     0.0
+\end{verbatim}
+
+Set the “dump interval” to -1 to report info at the end of every calculation, which in this case is only when steady state has been reached.
+
+\begin{verbatim}
+pfset TimingInfo.DumpInterval	       -1
+\end{verbatim}
+
+Next, we assign the porosity (\emph{see} \S~\ref{Porosity}).  For the Cape Cod, the porosity is 0.39.  
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Porosity
+#----------------------------------------------------------------------------
+
+pfset Geom.Porosity.GeomNames          domain
+
+pfset Geom.domain.Porosity.Type    Constant
+pfset Geom.domain.Porosity.Value   0.390
+\end{verbatim}
+
+Having defined the geometry of our problem before and named it “domain”, we’re now ready to report/upload that problem, which we do here.
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Domain
+#----------------------------------------------------------------------------
+pfset Domain.GeomName domain
+\end{verbatim}
+
+Mobility between phases is set to 1.0 because we only have one phase (water).
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Mobility
+#----------------------------------------------------------------------------
+pfset Phase.water.Mobility.Type        Constant
+pfset Phase.water.Mobility.Value       1.0
+\end{verbatim}
+
+Again, \parflow{} has more capabilities that we are using for Cape Cod.  We will deal with our monitoring wells in a separate code as we assume the do not remove a significant amount of water from the domain.  Note that since there are no well names listed here, \parflow{} assumes we have no wells.  If we had pumping wells, we would have to include them here, because they would affect the head distribution throughout our domain.
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Wells
+#----------------------------------------------------------------------------
+pfset Wells.Names ""
+\end{verbatim}
+
+You can give certain periods of time names if you want to (ie. Pre-injection, post-injection, etc).  Here, however we do not have multiple time intervals and are simulating in steady state, so time cycle keys are simple.  We have only one time cycle and it’s constant for the duration of the simulation.  We accomplish this by giving it a repeat value of -1, which repeats indefinitely.  The length of the cycle is the length specified below (an integer) multiplied by the base unit value we specified earlier.
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Time Cycles
+#----------------------------------------------------------------------------
+pfset Cycle.Names constant
+pfset Cycle.constant.Names		"alltime"
+pfset Cycle.constant.alltime.Length	 1
+pfset Cycle.constant.Repeat		-1
+\end{verbatim}
+
+Now, we assign Boundary Conditions for each face (each of the Patches in the domain defined before).  Recall the previously stated Patches and associate them with the boundary conditions that follow.
+
+\begin{verbatim}
+pfset BCPressure.PatchNames "left right front back bottom top"
+\end{verbatim}
+
+These are Dirichelet BCs (i.e. constant head over cell so the pressure head is set to hydrostatic-- \emph{see} \S~\ref{Boundary Conditions: Pressure}).  There is no time dependence, so use the “constant” time cycle we defined previously.  “RefGeom” links this to the established domain geometry and tells ParFlow what to use for a datum when calculating hydrostatic head conditions.
+
+\begin{verbatim}
+pfset Patch.left.BCPressure.Type          DirEquilRefPatch
+pfset Patch.left.BCPressure.Cycle        "constant"
+pfset Patch.left.BCPressure.RefGeom domain
+\end{verbatim}
+
+Reference the current (left) patch to the bottom to define the line of intersection between the two.
+
+\begin{verbatim}
+pfset Patch.left.BCPressure.RefPatch  bottom
+\end{verbatim}
+
+Set the head permanently to 10.0m.  Pressure-head will of course vary top to bottom because of hydrostatics, but head potential will be constant.
+
+\begin{verbatim}
+pfset Patch.left.BCPressure.alltime.Value  10.0
+\end{verbatim}
+
+Repeat the declarations for the rest of the faces of the domain.  The left to right (\emph{X}) dimension is aligned with the hydraulic gradient.  The difference between the values assigned to right and left divided by the length of the domain corresponds to the correct hydraulic gradient.
+
+\begin{verbatim}
+pfset Patch.right.BCPressure.Type               DirEquilRefPatch
+pfset Patch.right.BCPressure.Cycle              "constant"
+pfset Patch.right.BCPressure.RefGeom       domain
+pfset Patch.right.BCPressure.RefPatch       bottom
+pfset Patch.right.BCPressure.alltime.Value 9.97501
+
+pfset Patch.front.BCPressure.Type                FluxConst
+pfset Patch.front.BCPressure.Cycle              "constant"
+pfset Patch.front.BCPressure.alltime.Value 0.0
+
+pfset Patch.back.BCPressure.Type               FluxConst
+pfset Patch.back.BCPressure.Cycle              "constant"
+pfset Patch.back.BCPressure.alltime.Value 0.0
+
+pfset Patch.bottom.BCPressure.Type               FluxConst
+pfset Patch.bottom.BCPressure.Cycle              "constant"
+pfset Patch.bottom.BCPressure.alltime.Value 0.0
+
+pfset Patch.top.BCPressure.Type			FluxConst
+pfset Patch.top.BCPressure.Cycle			"constant"
+pfset Patch.top.BCPressure.alltime.Value		0.0
+\end{verbatim}
+
+Next we define topographic slopes and Mannings \emph{n} values.  These are not used, since we do not solve for overland flow.  However, the keys still need to appear in the input script.
+
+\begin{verbatim}
+#---------------------------------------------------------
+# Topo slopes in x-direction
+#---------------------------------------------------------
+# topo slopes do not figure into the impes (fully sat) case but we still
+# need keys for them
+
+pfset TopoSlopesX.Type "Constant"
+pfset TopoSlopesX.GeomNames ""
+
+pfset TopoSlopesX.Geom.domain.Value 0.0
+
+#---------------------------------------------------------
+# Topo slopes in y-direction
+#---------------------------------------------------------
+
+pfset TopoSlopesY.Type "Constant"
+pfset TopoSlopesY.GeomNames ""
+
+pfset TopoSlopesY.Geom.domain.Value 0.0
+
+#---------------------------------------------------------
+# Mannings coefficient 
+#---------------------------------------------------------
+# mannings roughnesses do not figure into the impes (fully sat) case but we still
+# need a key for them
+
+pfset Mannings.Type "Constant"
+pfset Mannings.GeomNames ""
+pfset Mannings.Geom.domain.Value 0.
+\end{verbatim}
+
+Phase sources allows you to add sources other than wells and boundaries, but we do not have any so this key is constant, 0.0 over entire domain.
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Phase sources:
+#----------------------------------------------------------------------------
+
+pfset PhaseSources.water.Type                         Constant
+pfset PhaseSources.water.GeomNames                    domain
+pfset PhaseSources.water.Geom.domain.Value        0.0
+\end{verbatim}
+
+Next we define solver parameters for IMPES.  Since this is the default solver, we do not need a solver key.
+
+\begin{verbatim}
+#---------------------------------------------------------
+#  Solver Impes  
+#---------------------------------------------------------
+\end{verbatim}
+
+We allow up to 50 iterations of the linear solver before it quits or converges.
+
+\begin{verbatim}
+pfset Solver.MaxIter 50
+\end{verbatim}
+
+The solution must be accurate to this level 
+
+\begin{verbatim}
+pfset Solver.AbsTol  1E-10
+\end{verbatim}
+
+We drop significant digits beyond E-15
+
+\begin{verbatim}
+pfset Solver.Drop   1E-15
+
+#--------------------------------------------------------
+# Run and Unload the ParFlow output files
+#---------------------------------------------------------
+\end{verbatim}
+
+Here you set the number of realizations again using a local tcl variable.  We have set only one run but by setting the \file{n_runs} variable to something else we can run more than one realization of hydraulic conductivity. 
+
+\begin{verbatim}
+# this script is setup to run 100 realizations, for testing we just run one
+###set n_runs 100
+set n_runs 1
+\end{verbatim}
+
+Here is where you tell \parflow{} where to put the output.  In this case, it’s a directory called flow.  Then you cd (change directory) into that new directory.  If you wanted to put an entire path rather than just a name, you would have more control over where your output file goes.  For example, you would put \file{file mkdir "C:/cape_cod/revised_statistics/flow"} and then change into that directory.  Note that for Windows you must use a DOUBLE backslash in the file path; the single backslash is a control character.
+
+\begin{verbatim}
+file mkdir "flow"
+cd "flow"
+\end{verbatim}
+
+Now we loop through the realizations, again using tcl.  \file{k} is the integer counter that is incremented for each realization.  When you use a variable (rather than define it), you precede it with\verb+$+.  The hanging character \verb+{+ opens the do loop for \file{k}.
+
+\begin{verbatim}
+#
+#  Loop through runs
+#
+for {set k 1} {$k <= $n_runs} {incr k 1} {
+\end{verbatim}
+
+The following expressions sets the variable “seed” equal to the expression in brackets, which increments with each turn of the do loop and each seed will produce a different random field of {\bf K}.  You set upper and lower aquifer, because in the Cape Cod site, these are the two subsets of the domain.  Note the seed starts at a different point to allow for different random field generation for the upper and lower zones.
+
+\begin{verbatim}
+#
+# set the random seed to be different for every run
+#
+pfset Geom.upper_aquifer.Perm.Seed  [ expr 33333+2*$k ] 
+pfset Geom.lower_aquifer.Perm.Seed  [ expr 31313+2*$k ]
+\end{verbatim}
+
+The following command runs ParFlow and gives you a suite of output files for each realization.  The file names will begin \file{harvey_flow.1.xxxxx}, \file{harvey_flow.2.xxxx}, etc up to as many realizations as you run.  The “.xxxxx” part will designate x, y, and z permeability, etc. Recall that in this case, since we normalized gravity, viscosity, and density, remember that we’re really getting hydraulic conductivity.
+
+\begin{verbatim}
+pfrun harvey_flow.$k
+\end{verbatim}
+
+This command removes a large number of superfluous dummy files.
+
+\begin{verbatim}
+pfundist harvey_flow.$k
+\end{verbatim}
+
+The following commands take advantage of PFTools (\emph{see} \S~\ref{PFTCL Commands}) and load pressure head output of the Parflow model into a pressure matrix.
+
+\begin{verbatim}
+# we use pf tools to convert from pressure to head
+# we could do a number of other things here like copy files to different
+# format
+set press [pfload harvey_flow.$k.out.press.pfb]
+\end{verbatim}
+
+The next command takes the pressures that were just loaded and converts it to head and loads them into a head matrix tcl variable.
+
+\begin{verbatim}
+set head [pfhhead $press]
+\end{verbatim}
+
+Finally, the head matrix is saved as a ParFlow binary file (.pfb) and the k do loop is closed by the \verb+}+ character.  The we move up to the root directory when we are finished
+
+\begin{verbatim}
+ pfsave $head -pfb harvey_flow.$k.head.pfb
+}
+
+cd ".."
+\end{verbatim}
+
+Once you have modified the tcl input script (if necessary) and run \parflow{}, you will have as many realizations of your subsurface as you specified.  Each of these realizations will be used as input for a particle or streamline calculation in the future.  We can see below, that since we have a tcl script as input, we can do a lot of different operations, for example, we might run a particle tracking transport code simulation using the results of the \parflow{} runs.  This actually corresponds to the example presented in the  user’s manual.
+
+\begin{verbatim}
+# this could run other tcl scripts now an example is below
+#puts stdout "running SLIM"
+#source bromide_trans.sm.tcl
+\end{verbatim}
+
+We could also visualize the results of the \parflow{} simulations, using a number of codes.  For example, if we used chunk to create visual representations of your results, the file \file{harvey_flow.#.out.perm_x.pfb} (where \file{#} is the realization number) will be the “field” of your domain, showing the variation in x-permeability in 3-D space.  You can also generate representations of head or pressure (or y or z permeability) throughout your domain using parflow output files.  See the section on visualization for more details.
+
+%============
+%============

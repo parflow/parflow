@@ -133,7 +133,7 @@ generators.  This can be automated from within the \parflow{} input file.
 
 The basic idea behind \parflow{} input is a simple database.  The
 database contains entries which have a key and a value associated with
-that key.  This is very similiar in nature to the Windows 95/NT
+that key.  This is very similiar in nature to the Windows XP/Vista
 registry and several other systems.  When \parflow{} runs, it
 queries the database you have created by key names to get the values
 you have specified.
@@ -459,17 +459,13 @@ This key is used to indicate the stopping time for the simulation.
 pfset TimingInfo.StopTime      100.0
 \end{verbatim}\end{display}
 
-\pfkey{double}{TimingInfo.DumpInterval}{no default} { Controls when
-  time dependent output is written to files.  If the value is
-  positive, output will written at the specified simulation time
-  intervals.  Note that that this output method will force a solution
-  to be computed at the output times.  If the value is negative,
-  output will be dumped out every $n$ time steps, where $n$ is the
-  absolute value of the integer part of the value specified.  Note
-  that the simulation time intervals between dumps may vary in this
-  case.  If the value is 0, output will not be generated during the
-  run.  A value of ``0'' can be used with the DumpAtEnd flag if only
-  the final output is desired.}
+\pfkey{double}{TimingInfo.DumpInterval}{no default}
+{
+This key is the real time interval at which time-dependent output should
+be written.  A value of {\bf 0} will produce undefined behavior.  If the
+value is negative, output will be dumped out every $n$ time steps, where $n$
+is the absolute value of the integer part of the value.
+}
 \begin{display}\begin{verbatim}
 pfset TimingInfo.DumpInterval  10.0
 \end{verbatim}\end{display}
@@ -479,18 +475,6 @@ pfset TimingInfo.DumpInterval  10.0
 
 For {\em Richards' equation cases only} input is collected for time step
 selection.  Input for this section is given as follows:
-
-\pfkey{string}{TimingInfo.DumpAtEnd}{False}
-{
-This key is used to force writing of time dependent output files at the end of the
-simulation.   This is in addition to any output caused by the value of TimingInfo.DumpInterval
-and may be used to ensure that the final result is written.  Note that if used the final 
-output may be at a timestep that is not divisible by the DumpInterval value.
-}
-\begin{display}\begin{verbatim}
-pfset TimingInfo.DumpAtEnd      true
-\end{verbatim}\end{display}
-
 
 \pfkey{list}{TimeStep.Type}{no default}
 {
@@ -767,7 +751,7 @@ pfset GeomInput.Names   "background domain concen_region"
 {
 This key specifies which method is to be used to assign permeability
 data to the named geometry, {\em geometry\_name}.  It must be either
-{\bf Constant}, {\bf TurnBands}, {\bf ParGauss}, or {\bf PFBFile}.  The
+{\bf Constant}, {\bf TurnBands}, {\bf ParGuass}, or {\bf PFBFile}.  The
 {\bf Constant} value indicates that a constant is to be assigned to all
 grid cells within a geometry.  The {\bf TurnBand} value indicates that
 Tompson's Turning Bands method is to be used to assign permeability data
@@ -1125,7 +1109,7 @@ This key specifies all of the geometries on which a porosity will be
 assigned.  These geometries must cover the entire computational domain.
 }
 \begin{display}\begin{verbatim}
-pfset GeomInput.Names   "background"
+pfset Geom.Porosity.GeomNames   "background"
 \end{verbatim}\end{display}
 
 \pfkey{string}{Geom.{\em geometry\_name}.Porosity.Type}{no default}
@@ -1146,6 +1130,182 @@ geometry, {\em geometry\_name}, if the type was set to constant.
 }
 \begin{display}\begin{verbatim}
 pfset Geom.domain.Porosity.Value   1.0
+\end{verbatim}\end{display}
+
+\subsection{Specific Storage}
+\label{Specific Storage}
+\pfaddanchor{pfinPorosity}
+
+Here, specific storage ($S_s$ in Equation \ref{eq:richard}) values are assigned within geounits (specified in
+\S~\ref{Geometries} above) using one of the methods described below.
+
+The format for this section of input is:
+
+\pfkey{list}{Specific Storage.GeomNames}{no default}
+{
+This key specifies all of the geometries on which a different specific storage value will be 
+assigned.  These geometries must cover the entire computational domain.
+}
+\begin{display}\begin{verbatim}
+pfset SpecificStorage.GeomNames       "domain"
+\end{verbatim}\end{display}
+
+\pfkey{string}{SpecificStorage.Type}{no default}
+{
+This key specifies which method is to be used to assign specific storage data.  The only choice currently
+available is {\bf Constant} which indicates that a constant is to be
+assigned to all grid cells within a geometry.
+}
+\begin{display}\begin{verbatim}
+pfset SpecificStorage.Type            Constant
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geometry\_name}.SpecificStorage.Value}{no default}
+{
+This key specifies the value assigned to all points in the named
+geometry, {\em geometry\_name}, if the type was set to constant.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.SpecificStorage.Value 1.0e-4
+\end{verbatim}\end{display}
+%%
+%% == mannings roughness
+%%
+\subsection{Manning's Roughness Values}
+\label{Manning's Roughness Values}
+\pfaddanchor{pfinMannings}
+
+Here, Manning's roughness values ($n$ in Equations \ref{eq:manningsx} and \ref{eq:manningsy}) are assigned to the upper boundary of the domain using one of the methods described below.
+
+The format for this section of input is:
+
+\pfkey{list}{Mannings.GeomNames}{no default}
+{
+This key specifies all of the geometries on which a different Mannings roughness value will be 
+assigned.  Mannings values may be assigned by {\bf PFBFile} or as {\bf Constant} by geometry.  These geometries must cover the entire upper surface of the computational domain.
+}
+\begin{display}\begin{verbatim}
+pfset Mannings.GeomNames       "domain"
+\end{verbatim}\end{display}
+
+\pfkey{string}{Mannings.Type}{no default}
+{
+This key specifies which method is to be used to assign Mannings roughness data.  The choices currently
+available are {\bf Constant} which indicates that a constant is to be
+assigned to all grid cells within a geometry and {\bf PFBFile} which indicates that all values are read in from a distributed, grid-based \parflow{} binary file.
+}
+\begin{display}\begin{verbatim}
+pfset Mannings.Type "Constant"
+\end{verbatim}\end{display}
+
+\pfkey{double}{Mannings.Geom.{\em geometry\_name}.Value}{no default}
+{
+This key specifies the value assigned to all points in the named
+geometry, {\em geometry\_name}, if the type was set to constant.
+}
+\begin{display}\begin{verbatim}
+pfset Mannings.Geom.domain.Value 5.52e-6
+\end{verbatim}\end{display}
+
+\pfkey{double}{Mannings.FileName}{no default}
+{
+This key specifies the value assigned to all points be read in from a \parflow{} binary file.
+}
+\begin{display}\begin{verbatim}
+pfset Mannings.FileName roughness.pfb
+\end{verbatim}\end{display}
+
+Complete example of setting Mannings roughness $n$ values by geometry:
+\begin{display}\begin{verbatim}
+pfset Mannings.Type "Constant"
+pfset Mannings.GeomNames "domain"
+pfset Mannings.Geom.domain.Value 5.52e-6
+\end{verbatim}\end{display}
+
+%%==
+%%==
+%%==
+\subsection{Topographical Slopes}
+\label{Topographical Slopes}
+\pfaddanchor{pfintoposlopes}
+
+Here, topographical slope values ($S_{f,x}$ and $S_{f,y}$ in Equations \ref{eq:manningsx} and \ref{eq:manningsy}) are assigned to the upper boundary of the domain using one of the methods described below.
+
+The format for this section of input is:
+
+\pfkey{list}{ToposlopesX.GeomNames}{no default}
+{
+This key specifies all of the geometries on which a different $x$ topographic slope values will be 
+assigned.  Topographic slopes may be assigned by {\bf PFBFile} or as {\bf Constant} by geometry.  These geometries must cover the entire upper surface of the computational domain.
+}
+\begin{display}\begin{verbatim}
+pfset ToposlopesX.GeomNames       "domain"
+\end{verbatim}\end{display}
+
+\pfkey{list}{ToposlopesY.GeomNames}{no default}
+{
+This key specifies all of the geometries on which a different $y$ topographic slope values will be 
+assigned.  Topographic slopes may be assigned by {\bf PFBFile} or as {\bf Constant} by geometry.  These geometries must cover the entire upper surface of the computational domain.
+}
+\begin{display}\begin{verbatim}
+pfset ToposlopesY.GeomNames       "domain"
+\end{verbatim}\end{display}
+
+\pfkey{string}{ToposlopesX.Type}{no default}
+{
+This key specifies which method is to be used to assign topographic slopes.  The choices currently
+available are {\bf Constant} which indicates that a constant is to be
+assigned to all grid cells within a geometry and {\bf PFBFile} which indicates that all values are read in from a distributed, grid-based \parflow{} binary file.
+}
+\begin{display}\begin{verbatim}
+pfset ToposlopesX.Type "Constant"
+\end{verbatim}\end{display}
+
+\pfkey{double}{ToposlopeX.Geom.{\em geometry\_name}.Value}{no default}
+{
+This key specifies the value assigned to all points in the named
+geometry, {\em geometry\_name}, if the type was set to constant.
+}
+\begin{display}\begin{verbatim}
+pfset ToposlopeX.Geom.domain.Value 0.001
+\end{verbatim}\end{display}
+
+\pfkey{double}{ToposlopesX.FileName}{no default}
+{
+This key specifies the value assigned to all points be read in from a \parflow{} binary file.
+}
+\begin{display}\begin{verbatim}
+pfset TopoSlopesX.FileName lw.1km.slope_x.pfb
+\end{verbatim}\end{display}
+
+\pfkey{double}{ToposlopesY.FileName}{no default}
+{
+This key specifies the value assigned to all points be read in from a \parflow{} binary file.
+}
+\begin{display}\begin{verbatim}
+pfset TopoSlopesY.FileName lw.1km.slope_y.pfb
+\end{verbatim}\end{display}
+
+Example of setting $x$ and $y$ slopes by geometry:
+\begin{display}\begin{verbatim}
+pfset TopoSlopesX.Type "Constant"
+pfset TopoSlopesX.GeomNames "domain"
+pfset TopoSlopesX.Geom.domain.Value 0.001
+
+pfset TopoSlopesY.Type "Constant"
+pfset TopoSlopesY.GeomNames "domain"
+pfset TopoSlopesY.Geom.domain.Value -0.001
+\end{verbatim}\end{display}
+
+Example of setting $x$ and $y$ slopes by file:
+\begin{display}\begin{verbatim}
+pfset TopoSlopesX.Type "PFBFile"
+pfset TopoSlopesX.GeomNames "domain"
+pfset TopoSlopesX.FileName lw.1km.slope_x.pfb
+
+pfset TopoSlopesY.Type "PFBFile"
+pfset TopoSlopesY.GeomNames "domain"
+pfset TopoSlopesY.FileName lw.1km.slope_y.pfb
 \end{verbatim}\end{display}
 
 %=============================================================================
@@ -1823,7 +1983,7 @@ pfset BCPressure.PatchNames    "left right front back top bottom"
 \pfkey{string}{Patch.{\em patch\_name}.BCPressure.Type}{no default}
 {This key specifies the type of boundary condition data given for patch 
 {\em patch\_name}.  Possible values for this key are {\bf DirEquilRefPatch, 
-DirEquilPLinear, FluxConst, FluxVolumetric, PressureFile, FluxFile} and 
+DirEquilPLinear, FluxConst, FluxVolumetric, PressureFile, FluxFile, OverlandFow, OverlandFlowPFB} and 
 {\bf ExactSolution}.  The choice {\bf DirEquilRefPatch} specifies that the
 pressure on the specified patch will be in hydrostatic equilibrium with a
 constant reference pressure given on a reference patch.
@@ -1846,13 +2006,14 @@ patch are used.
 The choice {\bf FluxFile} defines a flux boundary condition that is read form a
 properly distributed .pfb file defined on a grid consistent with the pressure
 field grid.  Only the values needed for the patch are used.
+The choices {\bf OverlandFlow} and {\bf OverlandFlowPFB} both turn on fully-coupled overland flow routing as described in \cite{KM06} and in \S~\ref{Overland Flow}.  The key {\bf OverlandFlow} corresponds to a {\bf Value} key with a positive or negative value, to indicate uniform fluxes (such as rainfall or evapotranspiration) over the entire domain while the key {\bf OverlandFlowPFB} allows a \code{.pfb} file to contain grid-based, spatially-variable fluxes.
 The choice {\bf ExactSolution} specifies that an exact known solution 
 is to be applied as a
 Dirichlet boundary condition on the respective patch.  Note that this does not
 change according to any cycle.  Instead, time dependence is handled by
 evaluating at the time the boundary condition value is desired.  
 The solution is specified by using a predefined function (choices are described
-below).  NOTE: This type of boundary condition input is for 
+below).  NOTE: These last three types of boundary condition input is for 
 {\em Richards' equation cases only!} 
 }
 \begin{display}\begin{verbatim}
@@ -1997,6 +2158,8 @@ for the patch will be used.  The rest of the data is ignored.
 \begin{display}\begin{verbatim}
 pfset Patch.top.BCPressure.alltime.FileName   ocwd_bc.pfb
 \end{verbatim}\end{display}
+
+
 
 \pfkey{string}
 {Patch.{\em patch\_name}.BCPressure.{\em interval\_name}.PredefinedFunction}
@@ -2738,6 +2901,16 @@ and modeling specifics there are some key values used by various
 algorithms and general control flags for \parflow{}.  These
 are described next :
 
+\pfkey{string}{Solver.Linear}{PCG}
+{This key specifies the linear solver used for solver {\bf IMPES}.  Choices for this key are {\bf MGSemi, PPCG, PCG} and {\bf   CGHS}.  The choice
+%% == we need to check the solvers used here to match the descriptions
+{\bf MGSemi} is a mulitgrid linear solver (not a preconditioned conjugate gradient).  The choice {\bf PPCG} is a preconditioned conjugate gradient solver.
+The choice {\bf PCG} is a conjugate gradient solver with a multigrid preconditioner.  The choice {\bf CGHS} is a conjugate gradient solver.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Linear   MGSemi
+\end{verbatim}\end{display}
+
 \pfkey{integer}{Solver.SadvectOrder}{2}
 {
 This key controls the order of the explicit method used in
@@ -2746,7 +2919,7 @@ a standard upwind first order or 2 for a second order
 Godunov method.
 }
 \begin{display}\begin{verbatim}
-Solver.SadvectOrder 1
+pfset Solver.SadvectOrder 1
 \end{verbatim}\end{display}
 
 \pfkey{integer}{Solver.AdvectOrder}{2}
@@ -2757,7 +2930,7 @@ a standard upwind first order or 2 for a second order
 Godunov method.
 }
 \begin{display}\begin{verbatim}
-Solver.AdvectOrder 2
+pfset Solver.AdvectOrder 2
 \end{verbatim}\end{display}
 
 \pfkey{double}{Solver.CFL}{0.7}
@@ -2769,7 +2942,7 @@ an approximation, values slightly less than 1 can also produce
 instabilities.
 }
 \begin{display}\begin{verbatim}
-Solver.CFL 0.7
+pfset Solver.CFL 0.7
 \end{verbatim}\end{display}
 
 \pfkey{integer}{Solver.MaxIter}{1000000}
@@ -2779,7 +2952,7 @@ be allowed for time-stepping.  This is to prevent a run-away
 simulation.
 }
 \begin{display}\begin{verbatim}
-Solver.MaxIter 100
+pfset Solver.MaxIter 100
 \end{verbatim}\end{display}
 
 \pfkey{double}{Solver.RelTol}{1.0}
@@ -2788,7 +2961,7 @@ This value gives the relative tolerance for the linear
 solve algorithm.
 }
 \begin{display}\begin{verbatim}
-Solver.RelTol 1.0
+pfset Solver.RelTol 1.0
 \end{verbatim}\end{display}
 
 \pfkey{double}{Solver.AbsTol}{1E-9}
@@ -2797,7 +2970,7 @@ This value gives the absolute tolerance for the linear
 solve algorithm.
 }
 \begin{display}\begin{verbatim}
-Solver.AbsTol 1E-8
+pfset Solver.AbsTol 1E-8
 \end{verbatim}\end{display}
 
 \pfkey{double}{Solver.Drop}{1E-8}
@@ -2808,7 +2981,7 @@ value and less than the value itself are treated as zero
 and not written to PFSB files.
 }
 \begin{display}\begin{verbatim}
-Solver.Drop 1E-6
+pfset Solver.Drop 1E-6
 \end{verbatim}\end{display}
 
 \pfkey{string}{Solver.PrintSubsurf}{True}
@@ -2819,7 +2992,7 @@ generated and before the main time stepping loop - only once
 during the run.  The data is written as a PFB file.
 }
 \begin{display}\begin{verbatim}
-Solver.PrintSubsurf False
+pfset Solver.PrintSubsurf False
 \end{verbatim}\end{display}
 
 \pfkey{string}{Solver.PrintPressure}{True}
@@ -2830,7 +3003,7 @@ timing information section.  The data is written as a PFB
 file.
 }
 \begin{display}\begin{verbatim}
-Solver.PrintPressure False
+pfset Solver.PrintPressure False
 \end{verbatim}\end{display}
 
 \pfkey{string}{Solver.PrintVelocities}{False}
@@ -2841,7 +3014,7 @@ values in the timing information section.  The data is
 written as a PFB file.
 }
 \begin{display}\begin{verbatim}
-Solver.PrintVelocities True
+pfset Solver.PrintVelocities True
 \end{verbatim}\end{display}
 
 \pfkey{string}{Solver.PrintSaturation}{True}
@@ -2851,7 +3024,7 @@ The printing of the data is controlled by values in the
 timing information section.  The data is written as a PFB file.
 }
 \begin{display}\begin{verbatim}
-Solver.PrintSaturation False
+pfset Solver.PrintSaturation False
 \end{verbatim}\end{display}
 
 \pfkey{string}{Solver.PrintConcentration}{True}
@@ -2861,7 +3034,7 @@ The printing of the data is controlled by values in the
 timing information section.  The data is written as a PFSB file.
 }
 \begin{display}\begin{verbatim}
-Solver.PrintConcentration False
+pfset Solver.PrintConcentration False
 \end{verbatim}\end{display}
 
 \pfkey{string}{Solver.PrintWells}{True}
@@ -2872,44 +3045,68 @@ in the timing information section.  Printing occurs at the
 end of the run when all collected data is written. 
 }
 \begin{display}\begin{verbatim}
-Solver.PrintWells False
+pfset Solver.PrintWells False
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.PrintLSMSink}{False}
+{
+This key is used to turn on printing of the
+flux array passed from \code{CLM} to \parflow{}.   Printing occurs at each {\bf DumpInterval} time. 
+}
+\begin{display}\begin{verbatim}
+pfset Solver.PrintLSMSink True
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.WriteSiloSubsurfData}{False}
+{
+This key is used to specify printing of the subsurface data,
+Permeability and Porosity in silo binary file format.  The data is printed after it is
+generated and before the main time stepping loop - only once
+during the run.  This data may be read in by VisIT and other visualization packages.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.WriteSiloSubsurfData True
 \end{verbatim}\end{display}
 
 \pfkey{string}{Solver.WriteSiloPressure}{False}
 {
-This key is used to turn on pressure data to a SILO formatted file.
+This key is used to specify printing of the saturation data in silo binary format.
+The printing of the data is controlled by values in the
+timing information section. This data may be read in by VisIT and other visualization packages.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.WriteSiloPressure True
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.WriteSiloSaturation}{False}
+{
+This key is used to specify printing of the saturation data using silo binary format.
+The printing of the data is controlled by values in the
+timing information section.  
+}
+\begin{display}\begin{verbatim}
+pfset Solver.WriteSiloSaturation True
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.WriteSiloConcentration}{False}
+{
+This key is used to specify printing of the concentration data in silo binary format.
 The printing of the data is controlled by values in the
 timing information section.
 }
 \begin{display}\begin{verbatim}
-Solver.WriteSiloPressure False
+pfset Solver.WriteSiloConcentration True
 \end{verbatim}\end{display}
 
-\pfkey{string}{Solver.WriteSiloVelocities}{False} { This key is used
-  to turn on writing of the x, y and z velocity data to a SILO
-  formatted file.  The printing of the data is controlled by values in
-  the timing information section.
+\pfkey{string}{Solver.WriteSiloVelocities}{False}
+{
+This key is used to specify printing of the x, y and z
+velocity data in silo binary format.  The printing of the data is controlled by
+values in the timing information section.
 }
 \begin{display}\begin{verbatim}
-Solver.WriteSiloVelocities False
+pfset Solver.WriteSiloVelocities True
 \end{verbatim}\end{display}
-
-\pfkey{string}{Solver.WriteSiloSaturation}{False} { This key is used
- to turn on writing of the saturation data to a SILO formatted file.
-  The printing of the data is controlled by values in the timing
- information section. }
-\begin{display}\begin{verbatim}
-Solver.WriteSiloSaturation False
-\end{verbatim}\end{display}
-
-\pfkey{string}{Solver.WriteSiloConcentration}{False} { This key is
-  used to turn on writing of the concentration data to a SILO
-  formatted file.  The printing of the data is controlled by values in
-  the timing information section.  }
-\begin{display}\begin{verbatim}
-Solver.WriteSiloConcentration False
-\end{verbatim}\end{display}
-
 %=============================================================================
 %=============================================================================
 
@@ -3115,6 +3312,58 @@ the SMG multigrid preconditioner.
 pfset Solver.Linear.Preconditioner.SMG.NumPostRelax    0
 \end{verbatim}\end{display}
 
+\pfkey{string}{Solver.LSM}{none}
+{This key specifies whether a land surface model, such as \code{CLM}, will be called each solver timestep.
+Choices for this key include {\bf none} and {\bf CLM}. Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.LSM CLM
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.CLM.Print1dOut}{False}
+{This key specifies whether the \code{CLM} one dimensional (averaged over each processor) output file is written or not.
+Choices for this key include {\bf True} and {\bf False}. Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.Print1dOut   False
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.BinaryOutDir}{True}
+{This key specifies whether the \code{CLM} writes each set of two dimensional binary output files to a corresponding directory.  
+These directories my be created before \parflow{} is run (using the tcl script, for example).  Choices for this key include {\bf True} and {\bf False}. Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.BinaryOutDir True
+\end{verbatim}\end{display}
+These directories are: 
+\file{/qflx_top_soil} for soil flux;
+\file{/qflx_infl} for infiltration; 
+\file{/qflx_evap_grnd} for ground evaporation;
+\file{/eflx_soil_grnd} for ground heat flux;
+\file{/qflx_evap_veg} for vegetation evaporation;
+\file{/eflx_sh_tot} for sensible heat flux;
+\file{/eflx_lh_tot} for latent heat flux; 
+\file{/qflx_evap_tot} for total evaporation; 
+\file{/t_grnd} for ground surface temperature; 
+\file{/qflx_evap_soi} for soil evaporation; 
+\file{/qflx_tran_veg} for vegetation transpiration; 
+\file{/eflx_lwrad_out} for outgoing long-wave radiation;
+\file{/swe_out} for snow water equivalent; and
+\file{/diag_out} for diagnostics. 
+
+\pfkey{string}{Solver.CLM.CLMFileDir}{no default}
+{This key specifies what directory all output from the \code{CLM} is written to.  This key may be set to \file{"./"} or \file{""} to write output to the \parflow{} run directory.  This directory must be created before \parflow{} is run. Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.CLMFileDir "CLM_Output/"
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Solver.CLM.CLMDumpInterval}{1}
+{This key specifies how often output from the \code{CLM} is written.  This key is in integer multipliers of the \code{CLM} timestep. Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.CLMDumpInterval 2
+\end{verbatim}\end{display}
 %=============================================================================
 %=============================================================================
 

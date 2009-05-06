@@ -8,10 +8,10 @@
 In this chapter, we discuss the model equations used by \parflow{} for both its
 multiphase flow and transport model and the variably saturated flow model.
 In section \ref{Multi-Phase Flow Equations} we describe the multi-phase
-flow equations, and in section \ref{Transport Equations} we describe
-the transport equations.  Lastly, section \ref{Richards' Equation} 
-describes the Richards' equation model for variably saturated flow as 
-implemented in \parflow{}.  
+flow equations (specified by solver {\bf IMPES}), and in section \ref{Transport Equations} we describe
+the transport equations.  Next we describe how the multiphase flow equations may be reduced to solve for steady-state, saturated groundwater flow.  Then, section \ref{Richards' Equation} 
+describes the Richards' equation model (specified by solver {\bf RICHARDS}) for variably saturated flow as 
+implemented in \parflow{}.  Lastly, the overland flow equations are presented.
 
 \section{Multi-Phase Flow Equations}
 \label{Multi-Phase Flow Equations}
@@ -278,21 +278,34 @@ g (I)      & = & 1 .
 \end{eqnarray}
 By doing this, $\Xk (I)$ represents hydraulic conductivity of the base
 phase $\XK_0$ (e.g. water) under saturated conditions (i.e. $k_{r0} = 1$).
-Though \parflow{} input has been defined this way in the past, this is not
-the recommended procedure since it may lead to confusion and mistakes.
+
+\section{Steady-State, Saturated Groundwater Flow}
+\label{Steady-State, Saturated Groundwater Flow}
+Many groundwater problems are solved assuming steady-state, fully-saturated groundwater flow.  This follows the form often written as:
+\begin{eqnarray}
+\dvop \textbf{q} = Q(x)
+\label{eq:ssgw}
+\end{eqnarray}
+where $Q$ is the spatially-variable source-sink term (to represent wells, etc) and $\textbf{q}$ is the Darcy flux $[L^{2}T^{-1}]$ which is commonly written as:
+\begin{eqnarray}
+\textbf{q}=- \textbf{K} \Xgrad H
+\label{eq:Darcy}
+\end{eqnarray}
+where $\textbf{K}$ is the saturated, hydraulic conductivity tensor $[LT^{-1}]$ and $H$ $[L]$ is the head-potential.  Inspection of \ref{eqn-mass-balance} and \ref{eqn-darcy} show that these equations agree with the above formulation for a single-phase ($i=1$), fully-satured ($S_i=S=1$), problem where the mobility, $\Xmobi$, is set to the saturated hydraulic conductivity, $\textbf{K}$, above.  This is accomplished by setting the relative permeability and viscosity terms to unity in \ref{eqn-phase-mobility} as well as the gravity and density terms in \ref{eqn-darcy}.  This is shown in the example in \S~\ref{Tutorial}, but please note that the resulting solution is in pressure-head, $h$, not head potential, $H$, and will still contain a hydrostatic pressure gradient in the $z$ direction.
 
 \section{Richards' Equation}
 \label{Richards' Equation}
 
 The form of Richards' equation implemented in \parflow{} is given as,
 \begin{eqnarray}
+S(p)S_s\frac{\partial p}{\partial t} -
 \frac{\partial (S(p)\rho(p)\phi)}{\partial t} 
-- \dvop (K(p)\rho(p)(\nabla p - \rho(p) \Xg)) = Q, \;  {\rm in} \; \Omega, 
+- \dvop (\textbf{K}(p)\rho(p)(\nabla p - \rho(p) \Xg)) = Q, \;  {\rm in} \; \Omega, 
 \label{eq:richard}
 \end{eqnarray}
-where $\Omega$ is the flow domain, $p$ is the water pressure, $S$ is the water
-saturation, $\phi$ is the porosity of the medium, $K(p)$ is the hydraulic
-conductivity  and $Q$ is the water source/sink term (includes wells).
+where $\Omega$ is the flow domain, $p$ is the pressure-head of water $[L]$, $S$ is the water
+saturation, $S_s$ is the specific storage coefficient $[L^{-1}]$, $\phi$ is the porosity of the medium, $\textbf{K}(p)$ is the hydraulic
+conductivity tensor $[LT^{-1}]$, and $Q$ is the water source/sink term $[L^{3}T^{-1}]$ (includes wells and surface fluxes).
 The hydraulic conductivity can be written as,
 \begin{eqnarray}
 K(p) =  \frac{\Xk k_r(p)}{\mu}
@@ -314,3 +327,27 @@ An initial condition,
 p = p^0(x), \; t = 0,
 \end{eqnarray}
 completes the specification of the problem.
+\section{Overland Flow}
+\label{Overland Flow}
+As detailed in \cite{KM06}, \parflow{} may simulate fully-coupled surface and subsurface flow via an overland flow boundary condition.  While complete details of this approach are given in that paper, a brief summary of the equations solved are presented here.  Shallow overland flow is now represented in \parflow{} by the kimematic wave equation.   In two spatial dimensions, the continuity equation can be written as:
+\begin{eqnarray}
+\frac{\partial \psi_s}{\partial t} =
+\dvop (\Xv\psi_s) + q_r(x)
+\label{eq:kinematic}
+\end{eqnarray}
+where $\Xv$ is the depth averaged velocity vector $[LT^{-1}]$; $\psi_s$ is the surface ponding depth $[L]$ and $q_r(x)$ is the a general source/sink (e.g. rainfall) rate $[LT^{-1}]$. If diffusion terms are neglected the momentum equation can be written as:
+\begin{eqnarray}
+S_{f,i} = S_{o,i}
+\label{eq:ovmom}
+\end{eqnarray}
+which is commonly referred to as the kinematic wave approximation. In Equation \ref{eq:ovmom} $S_{o,i}$ is the bed slope (gravity forcing term) $[-]$, which is equal to the friction slope $S_{f,i}$ $[L]$; $i$ stands for the $x$- and $y$-direction. Manning’s equation is used to establish a flow depth-discharge relationship:
+\begin{eqnarray}
+v_x=- \frac{\sqrt{S_{f,x}}}{n}\psi_{s}^{2/3}
+\label{eq:manningsx}
+\end{eqnarray}
+and
+\begin{eqnarray}
+v_y=- \frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{2/3}
+\label{eq:manningsy}
+\end{eqnarray}
+where $n$ $[TL^{-2/3}]$ is the Manning’s coefficient. 

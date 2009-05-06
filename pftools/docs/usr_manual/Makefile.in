@@ -18,6 +18,7 @@ SRCDIR	      =	@srcdir@
 SUBDIR        = docs/usr_manual
 VPATH	      =	@srcdir@
 OBJECT        = ../..
+TEXLIBDIR    = @srcdir@/../lib/
 
 include $(OBJECT)/config/Makefile.config
 
@@ -44,7 +45,8 @@ FILES =\
  models.tex \
  pfsystem.tex\
  start.tex \
- version.tex
+ version.tex \
+ fdl.tex
 
 all:
 
@@ -58,13 +60,18 @@ manual.ps: manual.dvi
 
 manual/manual.html: manual.dvi
 	@latex2html $(ONLINE_OPTS) manual.tex
-	@../lib/do_online manual
+	@$(TEXLIBDIR)/do_online manual
 
 #	bibtex manual
 manual.dvi: Makefile $(FILES)
 	@for i in ${LINK_FILES}; do     \
 	   if [ ! -h $$i ] ; then    \
-	     ln -s ../lib/$$i . ;\
+	     ln -s $(TEXLIBDIR)/$$i . ;\
+	   fi \
+	done 
+	@for i in ${FILES}; do     \
+	   if [ ! -h $$i ] ; then    \
+	     ln -s $(SRCDIR)/$$i . ;\
 	   fi \
 	done 
 	@latex manual
@@ -91,5 +98,5 @@ veryclean: clean
 	    rm $$i ; \
 	   fi \
 	done 
-	@/bin/rm -f  manual.ps version.tex Makefile
+	@/bin/rm -f  manual.ps version.tex
 	@/bin/rm -fr manual

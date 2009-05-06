@@ -5,10 +5,8 @@
 %=============================================================================
 
 % set margins
-\setlength{\oddsidemargin}{0in}
-\setlength{\evensidemargin}{0in}
-\setlength{\textwidth}{6.5in}
-\setlength{\topmargin}{0in}
+\setlength{\oddsidemargin}{0in} \setlength{\evensidemargin}{0in}
+\setlength{\textwidth}{6.50in} \setlength{\topmargin}{0in}
 \setlength{\textheight}{8.0in}
 
 % define various commands and macros
@@ -31,11 +29,17 @@
 
 \begin{TitlePage}
 
-\Title{ParFlow User's Manual: Draft}
-\SubTitle{Software \PFVersion}
-\SubTitle{\today}
-\Author{Steven Ashby, Chuck Baldwin, Bill Bosl, Robert Falgout,
-Richard Hornung, Steven Smith, Carol Woodward}
+\Title{\parflow{} User's Manual} \SubTitle{Software \PFVersion}
+\SubTitle{April, 2009} \Author{ 
+Reed M. Maxwell\footnote{ \large {\em Department of Geology and Geologic Engineering, Colorado School of Mines, Golden, CO, USA.} \textsf{rmaxwell@mines.edu}}, 
+Stefan J. Kollet\footnote{\large {\em Meteorological Institute, Bonn University, Bonn, Germany.} \textsf{stefan.kollet@uni-bonn.de }}, 
+Steven G. Smith\footnote{\large {\em Center for Applied Scientific Computing, Lawrence Livermore National Laboratory, Livermore, CA. USA.} \textsf{sgsmith@llnl.gov} }, 
+Carol S. Woodward\footnote{\large {\em Center for Applied Scientific Computing, Lawrence Livermore National Laboratory, Livermore, CA, USA.} \textsf{cswoodward@llnl.gov}}, 
+Robert D. Falgout\footnote{\large {\em Center for Applied Scientific Computing, Lawrence Livermore National Laboratory, Livermore, CA, USA.}},  
+Chuck Baldwin, 
+William J. Bosl \footnote{\large {\em Children's Hospital Informatics Program, Harvard Medical School, Boston, MA, USA.}}, Richard Hornung\footnote{\large {\em Center for Applied Scientific Computing, Lawrence Livermore National Laboratory, Livermore, CA, USA.}}, 
+Steven Ashby\footnote{\large {\em Pacific Northwest National Laboratory, Richland, WA, USA.}}
+}
 
 
 \end{TitlePage}
@@ -43,17 +47,18 @@ Richard Hornung, Steven Smith, Carol Woodward}
 %=============== Copyright Page
 
 \begin{CopyrightPage}
-
-\noindent
-Copyright \copyright{} 1995 The Regents of the University of California.
-
-\vspace{1em}\noindent
+\noindent ParFlow is released under the GNU LPGL License \newline
+\noindent Version 1.3, 3 November 2008 \newline
+\noindent Copyright \copyright{} 2000, 2001, 2002, 2007, 2008  Free Software Foundation, Inc.\newline
+\code{http://fsf.org/}\\
+This manual is licensed under the GNU Free Documentation License.\newline\vspace{1em}
+Copyright \copyright{} 2009  Reed M. Maxwell, Stefan J. Kollet, Steven G. Smith, Carol S. Woodward. 
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3
+or any later version published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A copy of the license is included in the section entitled "GNU Free Documentation License".\newline\vspace{1em}
 Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
-preserved on all copies.
-
-\vspace{1em}
-
+preserved on all copies.\newline\vspace{0.1em}
 This computer software and documentation was prepared as an account of
 work sponsored by an agency of the United  States Government.  Neither
 the United States Government nor the  University of California nor any
@@ -69,7 +74,6 @@ University of California.  The views and opinions of authors expressed
 herein do not necessarily state or reflect those  of the United States
 Government or the University of California, and shall  not be used for
 advertising or product endorsement purposes.
-
 \end{CopyrightPage}
 
 %=============== Table of Contents
@@ -86,10 +90,11 @@ advertising or product endorsement purposes.
 \input{pfsystem}
 \input{models}
 \input{files}
+\input{fdl}
 
 %=============== Include Other
 
-% \input{glossary}
+ %\input{glossary}
 
 %=============== Print the References here
 
@@ -101,5 +106,3 @@ advertising or product endorsement purposes.
 \printindex
 
 \end{document}
-
-
