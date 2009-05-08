@@ -24,12 +24,16 @@ TESTS := \
 	small_domain.tcl
 
 ifeq (${PARFLOW_HAVE_HYPRE},yes)
-TESTS += pfmg.tcl smg.tcl
+TESTS += \
+	pfmg.tcl \
+	smg.tcl \
+	pfmg_octree.tcl
 endif
 
 ifeq (${PARFLOW_HAVE_SILO},yes)
-TESTS += default_richards_with_silo.tcl
-TESTS += indicator_field.tcl
+TESTS += \
+	default_richards_with_silo.tcl \
+	indicator_field.tcl
 endif
 
 check:
