@@ -231,7 +231,7 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
    }
    NA_FreeNameArray(precond_na);
 
-   precond_switch_na = NA_NewNameArray("NoPC MGSemi SMG PFMG");
+   precond_switch_na = NA_NewNameArray("NoPC MGSemi SMG PFMG PFMGOctree");
    switch_value = NA_NameToIndex(precond_switch_na, pc_name);
    sprintf(key, "%s.%s", name, pc_name);
    switch (switch_value)
@@ -262,10 +262,21 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
 	 public_xtra -> precond = PFModuleNewModule(PFMG, (key));
 #else
 	 InputError("Error: Invalid value <%s> for key <%s>.\n"
-		    "PFMG code not compiled in.\n", switch_name, key);
+		    "Hypre PFMG code not compiled in.\n", switch_name, key);
 #endif
 	 break;
       }
+      case 4:
+      {
+#ifdef HAVE_HYPRE
+	 public_xtra -> precond = PFModuleNewModule(PFMGOctree, (key));
+#else
+	 InputError("Error: Invalid value <%s> for key <%s>.\n"
+		    "Hypre PFMG code not compiled in.\n", switch_name, key);
+#endif
+	 break;
+      }
+
    }
    NA_FreeNameArray(precond_switch_na);
 

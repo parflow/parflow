@@ -628,7 +628,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
    }
    NA_FreeNameArray(globalization_switch_na);
  
-   precond_switch_na = NA_NewNameArray("NoPC MGSemi SMG PFMG");
+   precond_switch_na = NA_NewNameArray("NoPC MGSemi SMG PFMG PFMGOctree");
    sprintf(key, "Solver.Linear.Preconditioner");
    switch_name = GetStringDefault(key, "MGSemi");
    switch_value = NA_NameToIndex(precond_switch_na, switch_name);

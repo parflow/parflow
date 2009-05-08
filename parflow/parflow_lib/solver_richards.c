@@ -1240,7 +1240,7 @@ PFModule *SolverRichardsInitInstanceXtra()
 	 PFModuleNewInstance(ProblemL2ErrorNorm(problem), ());
       (instance_xtra -> nonlin_solver) =
 	 PFModuleNewInstance(public_xtra -> nonlin_solver, 
-	 (problem, grid, NULL, NULL));
+	 (problem, grid, instance_xtra -> problem_data, NULL));
 
    }
    else
@@ -1313,24 +1313,24 @@ PFModule *SolverRichardsInitInstanceXtra()
    (instance_xtra -> temp_data) = temp_data;
 
    PFModuleReNewInstance((instance_xtra -> problem_saturation),
-   (NULL, temp_data));
+			 (NULL, temp_data));
    temp_data += PFModuleSizeOfTempData(instance_xtra->problem_saturation);
 
    PFModuleReNewInstance((instance_xtra -> phase_rel_perm),
-   (NULL, temp_data));
+			 (NULL, temp_data));
    temp_data += PFModuleSizeOfTempData(instance_xtra->phase_rel_perm);
 
    /* renew ic_phase_pressure module */
    PFModuleReNewInstance((instance_xtra -> ic_phase_pressure),
-   (NULL, NULL, temp_data));
+			 (NULL, NULL, temp_data));
 
    /* renew nonlinear solver module */
    PFModuleReNewInstance((instance_xtra -> nonlin_solver),
-   (NULL, NULL, NULL, temp_data));
+			 (NULL, NULL, instance_xtra -> problem_data, temp_data));
 
    /* renew set_problem_data module */
    PFModuleReNewInstance((instance_xtra -> set_problem_data),
-   (NULL, NULL, NULL, temp_data));
+			 (NULL, NULL, NULL, temp_data));
 
    /* renew velocity computation modules that take temporary data */
    /*   PFModuleReNewInstance((instance_xtra -> phase_velocity_face),

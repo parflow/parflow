@@ -449,4 +449,141 @@ GrGeomOctreeCellIs(octree, GrGeomOctreeCellLeaf)
 /*==========================================================================
  *==========================================================================*/
 
+/*
+  Geometry Loop over boxes.
+  i,j,k are starting indexes of the found box.
+  num_i, num_j, num_k are number of cells in found box.
+ */
+
+#define GrGeomOctreeBoxLoop(i, j, k, l, node,				\
+			    octree, levels_in_octree,			\
+			    level_of_interest,				\
+			    value_test,					\
+			    level_body, leaf_body)			\
+   {									\
+      unsigned int   PV_inc;						\
+      int           *PV_visiting;					\
+      int            PV_visit_child;					\
+									\
+      node  = octree;							\
+      l = 0;								\
+									\
+      PV_inc = 1 << (levels_in_octree);					\
+      PV_visiting = ctalloc(int, (levels_in_octree)+2);			\
+      PV_visiting++;							\
+      PV_visiting[0] = 0;						\
+      									\
+      while (l >= 0)							\
+      {									\
+	 /* if at the level of interest */				\
+	 if (l == (level_of_interest) )					\
+	 {								\
+	    if (value_test)						\
+	       level_body;						\
+									\
+	    PV_visit_child = FALSE;					\
+	 }								\
+									\
+	 /* if this is a leaf node */					\
+	 else if (GrGeomOctreeCellIsLeaf(node))				\
+	 {								\
+	    if (value_test)						\
+	       leaf_body;						\
+									\
+	    PV_visit_child = FALSE;					\
+	 }								\
+									\
+	 /* have I visited all of the children? */			\
+	 else if (PV_visiting[l] < GrGeomOctreeNumChildren)		\
+	    PV_visit_child = TRUE;					\
+	 else								\
+	    PV_visit_child = FALSE;					\
+									\
+	 /* visit either a child or the parent node */			\
+	 if (PV_visit_child)						\
+	 {								\
+	    node = GrGeomOctreeChild(node, PV_visiting[l]);		\
+	    PV_inc = PV_inc >> 1;					\
+	    i += PV_inc * ((PV_visiting[l] & 1) ? 1 : 0);		\
+	    j += PV_inc * ((PV_visiting[l] & 2) ? 1 : 0);		\
+	    k += PV_inc * ((PV_visiting[l] & 4) ? 1 : 0);		\
+	    l++;							\
+	    PV_visiting[l] = 0;						\
+	 }								\
+	 else								\
+	 {								\
+	    l--;							\
+	    i -= PV_inc * ((PV_visiting[l] & 1) ? 1 : 0);		\
+	    j -= PV_inc * ((PV_visiting[l] & 2) ? 1 : 0);		\
+	    k -= PV_inc * ((PV_visiting[l] & 4) ? 1 : 0);		\
+	    PV_inc = PV_inc << 1;					\
+	    node = GrGeomOctreeParent(node);				\
+	    PV_visiting[l]++;						\
+	 }								\
+      }									\
+									\
+      tfree(PV_visiting-1);						\
+   }
+
+
+#define GrGeomOctreeNodeBoxLoop(i, j, k,				\
+				num_i, num_j, num_k,			\
+				node, octree,				\
+				levels_in_octree,			\
+				level_of_interest,			\
+				ix, iy, iz, nx, ny, nz, value_test,	\
+				body)					\
+   {									\
+      int  PV_i, PV_j, PV_k, PV_l;					\
+      int  PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;		\
+      									\
+      									\
+      PV_i = i;								\
+      PV_j = j;								\
+      PV_k = k;								\
+									\
+      GrGeomOctreeBoxLoop(PV_i, PV_j, PV_k, PV_l,			\
+	      node, octree, levels_in_octree,				\
+	      level_of_interest, value_test,				\
+		       {						\
+			  /* find octree and region intersection */	\
+			  PV_ixl = max(ix, PV_i);			\
+			  PV_iyl = max(iy, PV_j);			\
+			  PV_izl = max(iz, PV_k);			\
+			  PV_ixu = min((ix + nx), (PV_i + (int)PV_inc)); \
+			  PV_iyu = min((iy + ny), (PV_j + (int)PV_inc)); \
+			  PV_izu = min((iz + nz), (PV_k + (int)PV_inc)); \
+			  						\
+			  i = PV_ixl;					\
+			  j = PV_iyl;					\
+			  k = PV_izl;					\
+			  num_i = PV_ixu - PV_ixl;			\
+			  num_j = PV_iyu - PV_iyl;			\
+			  num_k = PV_izu - PV_izl;			\
+			  if( num_i > 0 && num_j > 0 && num_k > 0) {	\
+			     body;					\
+			  }						\
+		       },						\
+		       {						\
+			  /* find octree and region intersection */	\
+			  PV_ixl = max(ix, PV_i);			\
+			  PV_iyl = max(iy, PV_j);			\
+			  PV_izl = max(iz, PV_k);			\
+			  PV_ixu = min((ix + nx), (PV_i + (int)PV_inc)); \
+			  PV_iyu = min((iy + ny), (PV_j + (int)PV_inc)); \
+			  PV_izu = min((iz + nz), (PV_k + (int)PV_inc)); \
+			  						\
+			  i = PV_ixl;					\
+			  j = PV_iyl;					\
+			  k = PV_izl;					\
+			  num_i = PV_ixu - PV_ixl;			\
+			  num_j = PV_iyu - PV_iyl;			\
+			  num_k = PV_izu - PV_izl;			\
+			  if( num_i > 0 && num_j > 0 && num_k > 0) {	\
+			     body;					\
+			  }						\
+		       })						\
+	 }
+
+
 #endif

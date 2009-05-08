@@ -26,6 +26,9 @@
   USA
 **********************************************************************EHEADER*/
 
+#ifndef amps_include
+#define amps_include 
+
 #include "parflow_config.h"
 
 #include <stdio.h>
@@ -417,7 +420,4 @@ typedef amps_HandleObject *amps_Handle;
 
 #include "amps_proto.h"
 
-
-
-
-
+#endif

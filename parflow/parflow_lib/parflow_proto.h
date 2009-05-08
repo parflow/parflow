@@ -414,6 +414,14 @@ PFModule *PFMGNewPublicXtra (char *name );
 void PFMGFreePublicXtra (void );
 int PFMGSizeOfTempData (void );
 
+/* pf_pfmg_octree.c */
+void PFMGOctree (Vector *soln , Vector *rhs , double tol , int zero );
+PFModule *PFMGOctreeInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *pf_matrix , double *temp_data );
+void PFMGOctreeFreeInstanceXtra (void );
+PFModule *PFMGOctreeNewPublicXtra (char *name );
+void PFMGOctreeFreePublicXtra (void );
+int PFMGOctreeSizeOfTempData (void );
+
 /* pf_smg.c */
 void SMG (Vector *soln , Vector *rhs , double tol , int zero );
 PFModule *SMGInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *pf_matrix , double *temp_data );

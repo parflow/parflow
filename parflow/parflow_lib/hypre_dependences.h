@@ -28,3 +28,7 @@
 
 #include <HYPRE_struct_mv.h>
 #include <HYPRE_struct_ls.h>
+
+#ifdef HYPRE_SEQUENTIAL
+#define MPI_COMM_WORLD 0
+#endif

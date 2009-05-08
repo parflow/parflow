@@ -413,8 +413,27 @@ pf_module.o: pf_module.c parflow.h info_header.h general.h \
   grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
   problem_bc.h problem_eval.h well.h bc_pressure.h problem.h solver.h \
   nl_function_eval.h parflow_proto.h parflow_proto_f.h
-pf_pfmg.o: pf_pfmg.c
-pf_smg.o: pf_smg.c
+pf_pfmg.o: pf_pfmg.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  n_vector.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h problem.h solver.h \
+  nl_function_eval.h parflow_proto.h parflow_proto_f.h
+pf_pfmg_octree.o: pf_pfmg_octree.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h n_vector.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h problem.h solver.h \
+  nl_function_eval.h parflow_proto.h parflow_proto_f.h
+pf_smg.o: pf_smg.c parflow.h info_header.h general.h file_versions.h \
+  input_database.h hbt.h logging.h timing.h loops.h background.h \
+  communication.h computation.h region.h grid.h matrix.h vector.h \
+  n_vector.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h problem.h solver.h \
+  nl_function_eval.h parflow_proto.h parflow_proto_f.h
 pfield.o: pfield.c parflow.h info_header.h general.h file_versions.h \
   input_database.h hbt.h logging.h timing.h loops.h background.h \
   communication.h computation.h region.h grid.h matrix.h vector.h \
@@ -508,14 +527,6 @@ problem_bc_pressure.o: problem_bc_pressure.c parflow.h info_header.h \
   grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
   time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
   problem.h solver.h nl_function_eval.h parflow_proto.h parflow_proto_f.h
-problem_bc_temperature.o: problem_bc_temperature.c parflow.h \
-  info_header.h general.h file_versions.h input_database.h hbt.h \
-  logging.h timing.h loops.h background.h communication.h computation.h \
-  region.h grid.h matrix.h vector.h n_vector.h pf_module.h geometry.h \
-  grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
-  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
-  well.h bc_pressure.h problem.h solver.h nl_function_eval.h \
-  parflow_proto.h parflow_proto_f.h
 problem_capillary_pressure.o: problem_capillary_pressure.c parflow.h \
   info_header.h general.h file_versions.h input_database.h hbt.h \
   logging.h timing.h loops.h background.h communication.h computation.h \
@@ -585,14 +596,6 @@ problem_ic_phase_pressure.org.o: problem_ic_phase_pressure.org.c \
   well.h bc_pressure.h problem.h solver.h nl_function_eval.h \
   parflow_proto.h parflow_proto_f.h
 problem_ic_phase_satur.o: problem_ic_phase_satur.c parflow.h \
-  info_header.h general.h file_versions.h input_database.h hbt.h \
-  logging.h timing.h loops.h background.h communication.h computation.h \
-  region.h grid.h matrix.h vector.h n_vector.h pf_module.h geometry.h \
-  grgeometry.h grgeom_octree.h grgeom_list.h geostats.h lb.h \
-  char_vector.h globals.h time_cycle_data.h problem_bc.h problem_eval.h \
-  well.h bc_pressure.h problem.h solver.h nl_function_eval.h \
-  parflow_proto.h parflow_proto_f.h
-problem_ic_phase_temperature.o: problem_ic_phase_temperature.c parflow.h \
   info_header.h general.h file_versions.h input_database.h hbt.h \
   logging.h timing.h loops.h background.h communication.h computation.h \
   region.h grid.h matrix.h vector.h n_vector.h pf_module.h geometry.h \
@@ -707,13 +710,6 @@ problem_saturation_constitutive.o: problem_saturation_constitutive.c \
   well.h bc_pressure.h problem.h solver.h nl_function_eval.h \
   parflow_proto.h parflow_proto_f.h
 problem_spec_storage.o: problem_spec_storage.c parflow.h info_header.h \
-  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
-  loops.h background.h communication.h computation.h region.h grid.h \
-  matrix.h vector.h n_vector.h pf_module.h geometry.h grgeometry.h \
-  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
-  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
-  problem.h solver.h nl_function_eval.h parflow_proto.h parflow_proto_f.h
-problem_temp_source.o: problem_temp_source.c parflow.h info_header.h \
   general.h file_versions.h input_database.h hbt.h logging.h timing.h \
   loops.h background.h communication.h computation.h region.h grid.h \
   matrix.h vector.h n_vector.h pf_module.h geometry.h grgeometry.h \
@@ -872,17 +868,6 @@ solver_richards.o: solver_richards.c parflow.h info_header.h general.h \
   ../kinsol/vector.h ../kinsol/../parflow_lib/n_vector.h \
   ../kinsol/iterativ.h ../kinsol/kinspgmr.h ../kinsol/kinsol.h \
   ../kinsol/spgmr.h ../kinsol/iterativ.h ../kinsol/spgmr.h
-solver_richards.org.o: solver_richards.org.c parflow.h info_header.h \
-  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
-  loops.h background.h communication.h computation.h region.h grid.h \
-  matrix.h vector.h n_vector.h pf_module.h geometry.h grgeometry.h \
-  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
-  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
-  problem.h solver.h nl_function_eval.h parflow_proto.h parflow_proto_f.h \
-  kinsol_dependences.h ../kinsol/kinsol.h ../kinsol/llnltyps.h \
-  ../kinsol/vector.h ../kinsol/../parflow_lib/n_vector.h \
-  ../kinsol/iterativ.h ../kinsol/kinspgmr.h ../kinsol/kinsol.h \
-  ../kinsol/spgmr.h ../kinsol/iterativ.h ../kinsol/spgmr.h
 stefan_problem_phase_source.o: stefan_problem_phase_source.c parflow.h \
   info_header.h general.h file_versions.h input_database.h hbt.h \
   logging.h timing.h loops.h background.h communication.h computation.h \
@@ -990,6 +975,13 @@ wrf_parflow.o: wrf_parflow.c parflow.h info_header.h general.h \
   problem_bc.h problem_eval.h well.h bc_pressure.h problem.h solver.h \
   nl_function_eval.h parflow_proto.h parflow_proto_f.h
 write_parflow_binary.o: write_parflow_binary.c parflow.h info_header.h \
+  general.h file_versions.h input_database.h hbt.h logging.h timing.h \
+  loops.h background.h communication.h computation.h region.h grid.h \
+  matrix.h vector.h n_vector.h pf_module.h geometry.h grgeometry.h \
+  grgeom_octree.h grgeom_list.h geostats.h lb.h char_vector.h globals.h \
+  time_cycle_data.h problem_bc.h problem_eval.h well.h bc_pressure.h \
+  problem.h solver.h nl_function_eval.h parflow_proto.h parflow_proto_f.h
+write_parflow_silo.o: write_parflow_silo.c parflow.h info_header.h \
   general.h file_versions.h input_database.h hbt.h logging.h timing.h \
   loops.h background.h communication.h computation.h region.h grid.h \
   matrix.h vector.h n_vector.h pf_module.h geometry.h grgeometry.h \

@@ -25,10 +25,10 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
   USA
 **********************************************************************EHEADER*/
-#include "parflow_config.h"
-
 #ifndef amps_include
 #define amps_include 
+
+#include "parflow_config.h"
 
 #ifdef AMPS_MALLOC_DEBUG
 #include <dmalloc.h>
@@ -1050,7 +1050,6 @@ allocated by \Ref{amps_TAlloc} or \Ref{amps_CTAlloc}.
 
 #define AMPS_EXCHANGE_SPECIALIZED 1
 #define AMPS_NEWPACKAGE_SPECIALIZED 1
-
 
 #endif
 

@@ -126,7 +126,7 @@ typedef struct
  *   Macro for looping over the inside of a solid with non-unitary strides.
  *--------------------------------------------------------------------------*/
 
-#define GrGeomInLoop2(i, j, k, grgeom,\
+#define GrGeomInLoop2(i, j, k, grgeom,					\
 		      r, ix, iy, iz, nx, ny, nz, sx, sy, sz, body)\
 {\
    GrGeomOctree  *PV_node;\
@@ -234,6 +234,70 @@ typedef struct
 			GrGeomSolidOctreeBGLevel(grgeom) + r,\
 			ix, iy, iz, nx, ny, nz, body);\
 }
+
+
+/*--------------------------------------------------------------------------
+ * GrGeomSolid looping macro:
+ * Macro for looping over the inside of a solid as a set of boxes.
+ * This will pick both active and inactive cells along the boundary but 
+ * will avoid regions that are totally inactive.    
+ *
+ * This may be used in place of the GrGeomInLoop macro if computing in
+ * the inactive region is OK but not desired.  The advantage over the
+ * GrGeomInLoop is this may be more computationally efficient as it is
+ * looping over box (patch/block) of data rather than potentially
+ * looping over individual elements.
+ *
+ * int i,j,k                     the starting index values for each box.
+ * int num_i, num_j, num_k	 the number of points in each box.
+ * grgeom                        GrGeomSolid to loop over.
+ * box_size_power                Smallest size of box to loop over as a power of 2.
+ *                               The boxes will be 2^box_size_power cubed.
+ *                               Boxes may be larger than this for interior regions.
+ *                               Boxes may be smaller than this near boundaries.
+ *                               Power of 2 restriction is imposed by the octree
+ *                               representation.
+ *--------------------------------------------------------------------------*/
+
+// Note that IsInside is here to make sure everything is 
+// included.   If IsInside is actually true then that means single
+// cells are being looped over which would be really bad for 
+// performance reasons.
+
+#define GrGeomInBoxLoop(						\
+   i, j, k,								\
+   num_i, num_j, num_k,							\
+   grgeom, box_size_power,						\
+   ix, iy, iz, nx, ny, nz,						\
+   body)								\
+   {									\
+      GrGeomOctree  *PV_node;						\
+   int PV_level_of_interest;						\
+   PV_level_of_interest = GrGeomSolidOctreeBGLevel(grgeom) -		\
+      box_size_power - 1;						\
+   PV_level_of_interest = max(0, PV_level_of_interest);			\
+                                                                        \
+   i = GrGeomSolidOctreeIX(grgeom);					\
+   j = GrGeomSolidOctreeIY(grgeom);					\
+   k = GrGeomSolidOctreeIZ(grgeom);					\
+   								        \
+   GrGeomPrintOctree("domain", gr_domain -> data);			\
+   									\
+   GrGeomOctreeNodeBoxLoop(i, j, k,					\
+			   num_i, num_j, num_k,				\
+			   PV_node,					\
+			   GrGeomSolidData(grgeom),			\
+			   GrGeomSolidOctreeBGLevel(grgeom),		\
+			   PV_level_of_interest,			\
+			   ix, iy, iz, nx, ny, nz,			\
+			   (GrGeomOctreeHasChildren(PV_node) ||		\
+			    GrGeomOctreeCellIsInside(PV_node) ||	\
+			    GrGeomOctreeCellIsFull(PV_node)),		\
+			   {						\
+			      body;					\
+			   });						\
+   }
+
 
 
 #endif

@@ -37,11 +37,12 @@
 
 typedef struct
 {
-
    int  max_iter;
    int  num_pre_relax;
    int  num_post_relax;
    int  smoother;
+   
+   int  box_size_power;
 
    int  time_index_pfmg;
    int  time_index_copy_hypre;
@@ -50,6 +51,9 @@ typedef struct
 
 typedef struct
 {
+   ProblemData         *problem_data;
+   Grid                *grid;
+   
    double               dxyz[3];
 
    HYPRE_StructGrid     hypre_grid;
@@ -65,10 +69,10 @@ typedef struct
 
 
 /*--------------------------------------------------------------------------
- * PFMG
+ * PFMGOctree
  *--------------------------------------------------------------------------*/
 
-void         PFMG(soln, rhs, tol, zero)
+void         PFMGOctree(soln, rhs, tol, zero)
 Vector      *soln;
 Vector      *rhs;
 double       tol;
@@ -102,10 +106,16 @@ int          zero;
    int                 nx,   ny,   nz;
    int                 nx_v, ny_v, nz_v;
    int                 i, j, k;
+   int                 q_i,   q_j,   q_k;
+   int                 num_i, num_j, num_k;
    int                 iv;
 
    int                 num_iterations;
    double              rel_norm;
+
+   int                 box_size_power = public_xtra -> box_size_power;
+
+   GrGeomSolid        *gr_domain = ProblemDataGrDomain(instance_xtra -> problem_data);
 
    /* Copy rhs to hypre_b vector. */
    BeginTiming(public_xtra->time_index_copy_hypre);
@@ -129,8 +139,29 @@ int          zero;
       ny_v = SubvectorNY(rhs_sub);
       nz_v = SubvectorNZ(rhs_sub);
 
-      iv  = SubvectorEltIndex(rhs_sub, ix, iy, iz);
+      GrGeomInBoxLoop(i, j, k, 
+		      num_i, num_j, num_k,
+		      gr_domain, box_size_power,
+		      ix, iy, iz, nx, ny, nz, 
+		      {
+			 for(q_i = i; q_i < i + num_i; ++q_i) {
+			    for(q_j = j; q_j < j + num_j; ++q_j) {
+			       for(q_k = k; q_k < k + num_k; ++q_k) {
+				  iv  = SubvectorEltIndex(rhs_sub, q_i, q_j, q_k);
+				  
+				  index[0] = q_i;
+				  index[1] = q_j;
+				  index[2] = q_k;
+			 
+				  HYPRE_StructVectorSetValues(hypre_b, index, rhs_ptr[iv]);
+			       }
+			    }
+			 
+			 }
+		      });
 
+
+#if 0
       BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
 		iv,  nx_v,  ny_v,  nz_v,  1, 1, 1,
 		{
@@ -140,6 +171,7 @@ int          zero;
 
 		   HYPRE_StructVectorSetValues(hypre_b, index, rhs_ptr[iv]);
 		});
+#endif
    }
    HYPRE_StructVectorAssemble(hypre_b);
 
@@ -173,7 +205,7 @@ int          zero;
 						     &rel_norm);
 
 	 log_file = OpenLogFile("PFMG");
-	 fprintf(log_file, "PFMG num. its: %i  PFMG Final norm: %12.4e\n", 
+	 fprintf(log_file, "PFMGOctree num. its: %i  PFMGOctree Final norm: %12.4e\n", 
 		 num_iterations, rel_norm);
 	 CloseLogFile(log_file);
       }
@@ -203,6 +235,31 @@ int          zero;
 
       iv  = SubvectorEltIndex(soln_sub, ix, iy, iz);
 
+      GrGeomInBoxLoop(i, j, k, 
+		      num_i, num_j, num_k,
+		      gr_domain, box_size_power,
+		      ix, iy, iz, nx, ny, nz, 
+		      {
+
+			 for(q_i = i; q_i < i + num_i; ++q_i) {
+			    for(q_j = j; q_j < j + num_j; ++q_j) {
+			       for(q_k = k; q_k < k + num_k; ++q_k) {
+				  iv  = SubvectorEltIndex(rhs_sub, q_i, q_j, q_k);
+				  
+				  index[0] = q_i;
+				  index[1] = q_j;
+				  index[2] = q_k;
+
+				  HYPRE_StructVectorGetValues(hypre_x, index, &value);
+				  soln_ptr[iv] = value;
+			       }
+			    }
+			 
+			 }
+
+		      });
+
+#if 0
       BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
 		iv, nx_v, ny_v, nz_v, 1, 1, 1,
 		{
@@ -213,6 +270,7 @@ int          zero;
 		   HYPRE_StructVectorGetValues(hypre_x, index, &value);
 		   soln_ptr[iv] = value;
 		});
+#endif
    }
    EndTiming(public_xtra->time_index_copy_hypre);
 
@@ -222,10 +280,10 @@ int          zero;
 }
 
 /*--------------------------------------------------------------------------
- * PFMGInitInstanceXtra
+ * PFMGOctreeInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *PFMGInitInstanceXtra(problem, grid, problem_data,  
+PFModule  *PFMGOctreeInitInstanceXtra(problem, grid, problem_data,  
 				 pf_matrix, temp_data)
 Problem      *problem;
 Grid         *grid;
@@ -255,6 +313,8 @@ double       *temp_data;
    double              coeffs_symm[4];
    
    int                 i, j, k;
+   int                 num_i, num_j, num_k;
+   int                 q_i,   q_j,   q_k;
    int                 ix, iy, iz;
    int                 nx, ny, nz;
    int                 nx_m, ny_m, nz_m;
@@ -269,13 +329,28 @@ double       *temp_data;
    int                 index[3];
    int                 ilo[3];
    int                 ihi[3];
+   
+   int                 r;
+
+   int                 box_size_power = public_xtra -> box_size_power;
+
+   GrGeomSolid        *gr_domain = ProblemDataGrDomain(problem_data);
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
       instance_xtra = PFModuleInstanceXtra(this_module);
 
+   instance_xtra -> problem_data = problem_data;
+
+#if 1
    if ( grid != NULL )
+   {
+      instance_xtra -> problem_data = problem_data;
+      instance_xtra -> grid         = grid;
+   }
+
+   if(gr_domain != NULL) 
    {
       /* Free the HYPRE grid */
       if (instance_xtra -> hypre_grid) 
@@ -287,25 +362,57 @@ double       *temp_data;
       /* Set the HYPRE grid */
       HYPRE_StructGridCreate(MPI_COMM_WORLD, 3, &(instance_xtra->hypre_grid) );
 
-      /* Set local grid extents as global grid values */
+
+      grid         = instance_xtra -> grid;
+      
+	 /* Set local grid extents as global grid values */
       ForSubgridI(sg, GridSubgrids(grid))
       {
 	 subgrid = GridSubgrid(grid, sg);
+	 	 
+	 ix = SubgridIX(subgrid);
+	 iy = SubgridIY(subgrid);
+	 iz = SubgridIZ(subgrid);
 
-	 ilo[0] = SubgridIX(subgrid);
-	 ilo[1] = SubgridIY(subgrid);
-	 ilo[2] = SubgridIZ(subgrid);
-	 ihi[0] = ilo[0] + SubgridNX(subgrid) - 1;
-	 ihi[1] = ilo[1] + SubgridNY(subgrid) - 1;
-	 ihi[2] = ilo[2] + SubgridNZ(subgrid) - 1;
+	 nx = SubgridNX(subgrid);
+	 ny = SubgridNY(subgrid);
+	 nz = SubgridNZ(subgrid);
+
+	 r = SubgridRX(subgrid);
 
 	 instance_xtra->dxyz[0] = SubgridDX(subgrid);
 	 instance_xtra->dxyz[1] = SubgridDY(subgrid);
 	 instance_xtra->dxyz[2] = SubgridDZ(subgrid);
-      }		
-      HYPRE_StructGridSetExtents(instance_xtra->hypre_grid, ilo, ihi); 
+
+
+#if 0	 
+	 GrGeomPrintOctree("domain", gr_domain -> data);
+	 amps_Printf("box_size_power = %d\n", box_size_power);
+#endif
+	 
+	 GrGeomInBoxLoop(i, j, k, 
+			 num_i, num_j, num_k,
+			 gr_domain, box_size_power,
+			 ix, iy, iz, nx, ny, nz, 
+			 {
+			    ilo[0] = i;
+			    ilo[1] = j;
+			    ilo[2] = k;
+			    ihi[0] = ilo[0] + num_i - 1;
+			    ihi[1] = ilo[1] + num_j - 1;
+			    ihi[2] = ilo[2] + num_k - 1;
+#if 1
+			    amps_Printf("hypre box : %d (%d, %d, %d) (%d, %d, %d)\n", PV_l,
+					ilo[0], ilo[1], ilo[2], ihi[0], ihi[1], ihi[2]);
+#endif
+			    
+			    HYPRE_StructGridSetExtents(instance_xtra->hypre_grid, ilo, ihi); 
+			 });
+      }
+
       HYPRE_StructGridAssemble(instance_xtra->hypre_grid);
    }
+#endif
 
    /* Reset the HYPRE solver for each recompute of the PC matrix.  
       This reset will require a matrix copy from PF format to HYPRE format. */
@@ -432,6 +539,40 @@ double       *temp_data;
 	 }
 	 else
 	 {
+	    GrGeomInBoxLoop(i, j, k, 
+			    num_i, num_j, num_k,
+			    gr_domain, box_size_power,
+			    ix, iy, iz, nx, ny, nz, 
+			    {
+
+			       for(q_i = i; q_i < i + num_i; ++q_i) {
+				  for(q_j = j; q_j < j + num_j; ++q_j) {
+				     for(q_k = k; q_k < k + num_k; ++q_k) {
+
+					im  = SubmatrixEltIndex(pf_sub, q_i, q_j, q_k);
+				  
+					index[0] = q_i;
+					index[1] = q_j;
+					index[2] = q_k;
+
+					coeffs[0] = cp[im];
+					coeffs[1] = wp[im];
+					coeffs[2] = ep[im];
+					coeffs[3] = sop[im];
+					coeffs[4] = np[im];
+					coeffs[5] = lp[im];
+					coeffs[6] = up[im];
+					HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat, 
+								    index, 
+								    stencil_size, 
+								    stencil_indices, coeffs);
+				     }
+				  }
+			       }
+			       
+			    });
+
+#if 0
             BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
 		      im,  nx_m,  ny_m,  nz_m,  1, 1, 1,
 		      {
@@ -450,6 +591,7 @@ double       *temp_data;
 						     stencil_size, 
 						     stencil_indices, coeffs);
 		      });
+#endif
 	 }
       }   /* End subgrid loop */
       HYPRE_StructMatrixAssemble(instance_xtra->hypre_mat);
@@ -493,10 +635,10 @@ double       *temp_data;
 
 
 /*--------------------------------------------------------------------------
- * PFMGFreeInstanceXtra
+ * PFMGOctreeFreeInstanceXtra
  *--------------------------------------------------------------------------*/
 
-void  PFMGFreeInstanceXtra()
+void  PFMGOctreeFreeInstanceXtra()
 {
 #ifdef HAVE_HYPRE
    PFModule      *this_module   = ThisPFModule;
@@ -523,10 +665,10 @@ void  PFMGFreeInstanceXtra()
 }
 
 /*--------------------------------------------------------------------------
- * PFMGNewPublicXtra
+ * PFMGOctreeNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *PFMGNewPublicXtra(char *name)
+PFModule  *PFMGOctreeNewPublicXtra(char *name)
 {
 
 #ifdef HAVE_HYPRE
@@ -552,6 +694,9 @@ PFModule  *PFMGNewPublicXtra(char *name)
    sprintf(key, "%s.NumPostRelax", name);
    public_xtra -> num_post_relax = GetIntDefault(key, 0);
 
+   sprintf(key, "%s.BoxSizePowerOf2", name);
+   public_xtra -> box_size_power = GetIntDefault(key, 4);
+
    /* Use a dummy place holder so that cardinalities match 
       with what HYPRE expects */
    smoother_switch_na = NA_NewNameArray("Dummy Jacobi WJacobi RBGaussSeidelSymmetric RBGaussSeidelNonSymmetric");
@@ -570,7 +715,7 @@ PFModule  *PFMGNewPublicXtra(char *name)
    }
    NA_FreeNameArray(smoother_switch_na);
 
-   public_xtra -> time_index_pfmg = RegisterTiming("PFMG");
+   public_xtra -> time_index_pfmg = RegisterTiming("PFMGOctree");
    public_xtra -> time_index_copy_hypre = RegisterTiming("HYPRE_Copies");
 
    PFModulePublicXtra(this_module) = public_xtra;
@@ -583,10 +728,10 @@ PFModule  *PFMGNewPublicXtra(char *name)
 }
 
 /*-------------------------------------------------------------------------
- * PFMGFreePublicXtra
+ * PFMGOctreeFreePublicXtra
  *-------------------------------------------------------------------------*/
 
-void  PFMGFreePublicXtra()
+void  PFMGOctreeFreePublicXtra()
 {
 #ifdef HAVE_HYPRE
    PFModule    *this_module   = ThisPFModule;
@@ -600,10 +745,10 @@ void  PFMGFreePublicXtra()
 }
 
 /*--------------------------------------------------------------------------
- * PFMGSizeOfTempData
+ * PFMGOctreeSizeOfTempData
  *--------------------------------------------------------------------------*/
 
-int  PFMGSizeOfTempData()
+int  PFMGOctreeSizeOfTempData()
 {
    return 0;
 }
