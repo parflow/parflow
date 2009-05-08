@@ -222,10 +222,12 @@ subroutine clm_thermal (clm)
      psit = -clm%sucsat(1) * fac ** (- clm%bsw(1))
      psit = max(clm%smpmin, psit)
 !@ Stefan: replace original psit with values from Parflow
-     do i=1,nlevsoi
-     if (clm%pf_press(i)>= 0.0d0)  psit = 0.0d0
-     if (clm%pf_press(i) < 0.0d0)   psit = clm%pf_press(i)
-     enddo  
+ !    do i=1,nlevsoi
+! @RMM this need no-longer be a loop, since psit is just set to the top
+! soil layer
+     if (clm%pf_press(1)>= 0.0d0)  psit = 0.0d0
+     if (clm%pf_press(1) < 0.0d0)   psit = clm%pf_press(1)
+	!     enddo  
      hr   = exp(psit/roverg/tg)
      qred = (1.-clm%frac_sno)*hr + clm%frac_sno
   endif
@@ -248,7 +250,6 @@ subroutine clm_thermal (clm)
      sfacx = 0.
      dqgmax = 0.
   endif
-
 
 !=========================================================================
 ! [3] Leaf and ground surface temperature and fluxes
@@ -372,6 +373,7 @@ subroutine clm_thermal (clm)
      clm%tauy   = -(1-clm%frac_veg_nosno)*clm%forc_rho*clm%forc_v/ram
      clm%eflx_sh_grnd  = -raih*dth
      clm%qflx_evap_soi  = -raiw*dqh
+
      clm%eflx_sh_tot  = clm%eflx_sh_grnd
      clm%qflx_evap_tot  = clm%qflx_evap_soi
 
@@ -408,6 +410,8 @@ subroutine clm_thermal (clm)
         clm%btran = clm%btran + clm%rootfr(i)*temp
      enddo
 
+
+
      call clm_leaftem(z0mv,z0hv,z0qv,thm,th,thv,tg,qg,dqgdT,htvp,sfacx,     &
           dqgmax,emv,emg,dlrad,ulrad,cgrnds,cgrndl,cgrnd,clm)
 
@@ -418,9 +422,7 @@ subroutine clm_thermal (clm)
 !=======================================================================
 
 ! 4.1 Thermal conductivity and Heat capacity
-
   call clm_thermalk(tk,cv,clm)
-
 ! 4.2 Net ground heat flux into the surface and its temperature derivative
 
   hs    = clm%sabg + dlrad &
@@ -495,16 +497,17 @@ subroutine clm_thermal (clm)
        tssbef(clm%snl+1),xmf, clm)
 
   tg = clm%t_soisno(clm%snl+1)
-
+	
 
 !=========================================================================
 ! [6] Correct fluxes to present soil temperature
 !========================================================================= 
 
   tinc = clm%t_soisno(clm%snl+1) - tssbef(clm%snl+1)
+  
   clm%eflx_sh_grnd =  clm%eflx_sh_grnd + tinc*cgrnds 
   clm%qflx_evap_soi =  clm%qflx_evap_soi + tinc*cgrndl
-
+	 
 ! Calculation of evaporative potential; flux in kg m**-2 s-1.  
 ! egidif holds the excess energy if all water is evaporated
 ! during the timestep.  This energy is later added to the
@@ -515,7 +518,6 @@ subroutine clm_thermal (clm)
   egidif = max( 0., clm%qflx_evap_soi - egsmax )
   clm%qflx_evap_soi = min ( clm%qflx_evap_soi, egsmax )
   clm%eflx_sh_grnd = clm%eflx_sh_grnd + htvp*egidif
-
 ! Ground heat flux
 
   clm%eflx_soil_grnd = clm%sabg + dlrad + (1-clm%frac_veg_nosno)*emg*clm%forc_lwrad &

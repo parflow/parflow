@@ -153,10 +153,15 @@ subroutine clm_hydro_soil (clm)
      wmean = wmean + s(i) * clm%dz(i)                 
   enddo
   wmean = wmean / zmean
-  
  clm%qflx_surf = 0.0d0
  clm%qflx_infl = clm%qflx_top_soil - clm%qflx_evap_grnd
-                   
+ !@RMM debug
+! print*, clm%qflx_infl, clm%qflx_top_soil, clm%qflx_evap_grnd
+ 
+! limit ground ET based on water availability
+if (clm%h2osoi_liq(1) <= 1.E-3) clm%qflx_infl = clm%qflx_top_soil
+ 
+				                    
 ! Add in hillslope runoff
 ! qflx_surf = qflx_surf+ max(0.,clm%qflx_top_soil*fcov)                            
 ! Infiltration into surface soil layer (minus the evaporation)

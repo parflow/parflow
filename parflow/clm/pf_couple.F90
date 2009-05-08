@@ -50,7 +50,7 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,
       evap_trans(l) = clm(t)%pf_flux(k)*3.6d0/drv%dz
 !	  print*, k, l, clm(t)%pf_flux(k), evap_trans(l)
 !	  print*, l,i,j,k, evap_trans(l)
-!	  print*, i,j,k,l,evap_trans(l),clm(t)%pf_flux(k),t
+!	  print*, k,evap_trans(l),clm(t)%pf_flux(k),clm(t)%qflx_infl,clm(t)%rootfr(k),clm(t)%qflx_tran_veg
     enddo
   enddo
 

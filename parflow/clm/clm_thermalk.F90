@@ -65,8 +65,10 @@ subroutine clm_thermalk (tk, cv, clm)
   do i = 1, nlevsoi
      if (clm%itypwat/=istwet .AND. clm%itypwat/=istice) then  ! NOT glacier and wetland
         satw = (clm%h2osoi_liq(i)/denh2o+  &
-             clm%h2osoi_ice(i)/denice)/(clm%dz(i)*clm%watsat(i))
+             clm%h2osoi_ice(i)/denice)/(clm%dz(i)*1.d0*clm%watsat(i))
         satw = min(1., satw)
+
+
         if (satw > .1e-6) then          
            fl = clm%h2osoi_liq(i)/(clm%h2osoi_ice(i)+clm%h2osoi_liq(i))
            if(clm%t_soisno(i) >= tfrz) then       ! Unfrozen soil

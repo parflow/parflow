@@ -247,7 +247,7 @@ j=tile(t)%row
   l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
   	! 	l = 1+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k)
   clm(t)%watsat(k)=porosity(l)
-!  print*, i,j,k,t,l,clm(t)%topo_mask(1),porosity(l),clm(t)%watsat(k)
+ ! print*, i,j,k,t,l,clm(t)%topo_mask(1),porosity(l),clm(t)%watsat(k)
 
   end do !k
 end do !t
