@@ -501,7 +501,7 @@ int BCPhaseSaturationSizeOfTempData (void );
 
 /* problem_bc_pressure.c */
 BCStruct *BCPressure (ProblemData *problem_data , Grid *grid , GrGeomSolid *gr_domain , double time );
-PFModule *BCPressureInitInstanceXtra (Problem *problem );
+PFModule *BCPressureInitInstanceXtra (Problem *problem);
 void BCPressureFreeInstanceXtra (void );
 PFModule *BCPressureNewPublicXtra (int num_phases );
 void BCPressureFreePublicXtra (void );

@@ -926,10 +926,10 @@ Vector      **phase_saturations;
  * DiscretizePressureInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule    *DiscretizePressureInitInstanceXtra(problem, grid, temp_data)
-Problem     *problem;
-Grid        *grid;
-double      *temp_data;
+PFModule    *DiscretizePressureInitInstanceXtra(
+   Problem     *problem,
+   Grid        *grid,
+   double      *temp_data)
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
@@ -992,7 +992,7 @@ double      *temp_data;
    if ( PFModuleInstanceXtra(this_module) == NULL )
    {
       (instance_xtra -> bc_pressure) =
-	 PFModuleNewInstance(ProblemBCPressure(problem), (problem));
+	 PFModuleNewInstance(ProblemBCPressure(problem), (problem) );
       (instance_xtra -> phase_mobility) =
 	 PFModuleNewInstance(ProblemPhaseMobility(problem), ());
       (instance_xtra -> phase_density_module) =

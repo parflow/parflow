@@ -1053,12 +1053,11 @@ int           symm_part;      /* Specifies whether to compute just the
  * RichardsJacobianEvalInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule    *RichardsJacobianEvalInitInstanceXtra(problem, grid, temp_data,
-symmetric_jac)
-Problem     *problem;
-Grid        *grid;
-double      *temp_data;
-int          symmetric_jac;
+PFModule    *RichardsJacobianEvalInitInstanceXtra(
+   Problem     *problem,
+   Grid        *grid,
+   double      *temp_data,
+   int          symmetric_jac)
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;

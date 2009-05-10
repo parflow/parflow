@@ -47,6 +47,9 @@ typedef struct
    Problem  *problem;
    PFModule *phase_density;
 
+   double     ***elevations;
+   ProblemData  *problem_data;
+   Grid         *grid;
 } InstanceXtra;
 
 /*--------------------------------------------------------------------------
@@ -142,7 +145,6 @@ double       time;          /* Current time - needed to determine where on
 
 	    GeomSolid       *ref_solid;
 
-	    double         **elevations;
 	    double           z, dz2, dtmp;
 	    double           offset, interface_press, interface_den;
 	    double           ref_den, ref_press, nonlin_resid;
@@ -154,16 +156,27 @@ double       time;          /* Current time - needed to determine where on
 	    int              max_its = 10;
 	    int              iterations;
 	    int	             ix, iy, iz, nx, ny, nz, r, iel;
+
+	    double         **elevations;
 	   
-	    bc_pressure_type0 = BCPressureDataIntervalValue(
-		                    bc_pressure_data,ipatch,interval_number);
+	    bc_pressure_type0 = BCPressureDataIntervalValue(bc_pressure_data,ipatch, interval_number);
 
-	    ref_solid = ProblemDataSolid(problem_data, 
-			     BCPressureType0RefSolid(bc_pressure_type0));
-	    ref_patch = BCPressureType0RefPatch(bc_pressure_type0);
+	    if(instance_xtra -> elevations == NULL) {
+	       instance_xtra -> elevations = ctalloc(double **, num_patches);
+	       instance_xtra -> problem_data = problem_data;
+	       instance_xtra -> grid = grid;
+	    }
 
-	    /* Calculate elevations at (x,y) points on reference patch. */
-	    elevations = CalcElevations(ref_solid, ref_patch, subgrids);
+	    if(instance_xtra -> elevations[ipatch] == NULL) {
+	       ref_solid = ProblemDataSolid(problem_data, 
+					    BCPressureType0RefSolid(bc_pressure_type0));
+	       ref_patch = BCPressureType0RefPatch(bc_pressure_type0);
+
+	       /* Calculate elevations at (x,y) points on reference patch. */
+	       instance_xtra -> elevations[ipatch] = CalcElevations(ref_solid, ref_patch, subgrids);
+	    }
+
+	    elevations = instance_xtra -> elevations[ipatch];
 
 	    ForSubgridI(is, subgrids)
 	    {
@@ -325,10 +338,10 @@ double       time;          /* Current time - needed to determine where on
 
 	       });               /* End BCStructPatchLoop body */
 	       
-	       tfree(elevations[is]);
+
 
 	    }                    /* End subgrid loop */
-	    tfree(elevations);
+
 
 	    break;    
 	 }                       /* End case 0 */
@@ -917,8 +930,7 @@ double       time;          /* Current time - needed to determine where on
  * BCPressureInitInstanceXtra 
  *--------------------------------------------------------------------------*/
 
-PFModule *BCPressureInitInstanceXtra(problem)
-Problem *problem;
+PFModule *BCPressureInitInstanceXtra(Problem *problem)
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
@@ -935,7 +947,7 @@ Problem *problem;
 
    if ( problem != NULL)
    {
-      (instance_xtra -> problem) = problem;
+      instance_xtra -> problem = problem;
    }
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
@@ -963,8 +975,34 @@ void BCPressureFreeInstanceXtra()
 
    if (instance_xtra)
    {
-      PFModuleFreeInstance(instance_xtra -> phase_density);
+      if(instance_xtra -> elevations) {
+	 ProblemData *problem_data        = instance_xtra -> problem_data;
+	 BCPressureData *bc_pressure_data = ProblemDataBCPressureData(problem_data);
+	 Problem *problem                 = instance_xtra -> problem;
+	 int  num_patches;      
+	 SubgridArray   *subgrids         = GridSubgrids(instance_xtra -> grid);
+	 int ipatch;
+	 int is;
 
+	 num_patches = BCPressureDataNumPatches(bc_pressure_data);
+
+	 for (ipatch = 0; ipatch < num_patches; ipatch++) {
+
+	    if(instance_xtra -> elevations[ipatch]) {
+	       ForSubgridI(is, subgrids)
+	       {
+		  if(instance_xtra -> elevations[ipatch][is]) {
+		     tfree(instance_xtra -> elevations[ipatch][is]);
+		  }
+	       }
+	    
+	       tfree(instance_xtra -> elevations[ipatch]);
+	    }
+	 }
+
+	 tfree(instance_xtra -> elevations);
+      }
+      PFModuleFreeInstance(instance_xtra -> phase_density);
       tfree(instance_xtra);
    }
 }

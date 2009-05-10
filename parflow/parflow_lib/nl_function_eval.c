@@ -1130,10 +1130,10 @@ Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/
  * NlFunctionEvalInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule    *NlFunctionEvalInitInstanceXtra(problem, grid, temp_data)
-Problem     *problem;
-Grid        *grid;
-double      *temp_data;
+PFModule    *NlFunctionEvalInitInstanceXtra(Problem     *problem,
+					    Grid        *grid,
+					    double      *temp_data)
+					    
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
@@ -1159,7 +1159,7 @@ double      *temp_data;
       (instance_xtra -> phase_source) =
          PFModuleNewInstance(ProblemPhaseSource(problem), (grid));
       (instance_xtra -> bc_pressure) =
-         PFModuleNewInstance(ProblemBCPressure(problem), (problem));
+         PFModuleNewInstance(ProblemBCPressure(problem), (problem) );
       (instance_xtra -> bc_internal) =
          PFModuleNewInstance(ProblemBCInternal(problem), () );
 
