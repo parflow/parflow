@@ -322,7 +322,8 @@ pfset Solver.Linear.KrylovDimension                      10
 
 pfset Solver.Linear.Preconditioner                       PFMGOctree
 
-pfset Solver.Linear.Preconditioner.PFMGOctree.BoxSizePowerOf2 3                      
+#pfset Solver.Linear.Preconditioner.PFMGOctree.BoxSizePowerOf2 3                      
+pfset Solver.Linear.Preconditioner.PFMGOctree.BoxSizePowerOf2 2
 
 #pfset Solver.Linear.Preconditioner.PFMG.MaxIter          1
 #pfset Solver.Linear.Preconditioner.PFMG.NumPreRelax      100
