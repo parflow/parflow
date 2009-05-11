@@ -281,8 +281,6 @@ typedef struct
    j = GrGeomSolidOctreeIY(grgeom);					\
    k = GrGeomSolidOctreeIZ(grgeom);					\
    								        \
-   GrGeomPrintOctree("domain", gr_domain -> data);			\
-   									\
    GrGeomOctreeNodeBoxLoop(i, j, k,					\
 			   num_i, num_j, num_k,				\
 			   PV_node,					\

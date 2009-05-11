@@ -29,6 +29,11 @@
 #include <HYPRE_struct_mv.h>
 #include <HYPRE_struct_ls.h>
 
+/* Note we are using internal hypre methods */
+#include "_hypre_struct_mv.h"
+
 #ifdef HYPRE_SEQUENTIAL
+#ifndef MPI_COMM_WORLD
 #define MPI_COMM_WORLD 0
+#endif
 #endif

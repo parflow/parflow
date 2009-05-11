@@ -65,9 +65,6 @@ typedef struct
 
 } InstanceXtra;
 
-#endif
-
-
 /*--------------------------------------------------------------------------
  * PFMGOctree
  *--------------------------------------------------------------------------*/
@@ -78,7 +75,6 @@ Vector      *rhs;
 double       tol;
 int          zero;
 {
-#ifdef HAVE_HYPRE
    PFModule           *this_module    = ThisPFModule;
    InstanceXtra       *instance_xtra  = PFModuleInstanceXtra(this_module);
    PublicXtra         *public_xtra    = PFModulePublicXtra(this_module);
@@ -122,6 +118,15 @@ int          zero;
 
    ForSubgridI(sg, GridSubgrids(grid))
    {
+      int outside = 0;
+      int boxnum  = -1;
+      int action  = 0; // set values
+
+      hypre_Box          *set_box;
+      hypre_Box          *value_box;
+      int                 ilo[3];
+      int                 ihi[3];
+
       subgrid = SubgridArraySubgrid(GridSubgrids(grid), sg);
       rhs_sub = VectorSubvector(rhs, sg);
 
@@ -139,39 +144,44 @@ int          zero;
       ny_v = SubvectorNY(rhs_sub);
       nz_v = SubvectorNZ(rhs_sub);
 
+
+      ilo[0] = SubvectorIX(rhs_sub);
+      ilo[1] = SubvectorIY(rhs_sub);
+      ilo[2] = SubvectorIZ(rhs_sub);
+      ihi[0] = ilo[0] + nx_v - 1;
+      ihi[1] = ilo[1] + ny_v - 1;
+      ihi[2] = ilo[2] + nz_v - 1;
+
+      value_box = hypre_BoxCreate();
+      hypre_BoxSetExtents(value_box, ilo, ihi); 
+
       GrGeomInBoxLoop(i, j, k, 
 		      num_i, num_j, num_k,
 		      gr_domain, box_size_power,
 		      ix, iy, iz, nx, ny, nz, 
 		      {
-			 for(q_i = i; q_i < i + num_i; ++q_i) {
-			    for(q_j = j; q_j < j + num_j; ++q_j) {
-			       for(q_k = k; q_k < k + num_k; ++q_k) {
-				  iv  = SubvectorEltIndex(rhs_sub, q_i, q_j, q_k);
-				  
-				  index[0] = q_i;
-				  index[1] = q_j;
-				  index[2] = q_k;
+			 ilo[0] = i;
+			 ilo[1] = j;
+			 ilo[2] = k;
+			 ihi[0] = ilo[0] + num_i - 1;
+			 ihi[1] = ilo[1] + num_j - 1;
+			 ihi[2] = ilo[2] + num_k - 1;
 			 
-				  HYPRE_StructVectorSetValues(hypre_b, index, rhs_ptr[iv]);
-			       }
-			    }
+			 set_box = hypre_BoxCreate();
+			 hypre_BoxSetExtents(set_box, ilo, ihi); 
+
+			 hypre_StructVectorSetBoxValues ( hypre_b,
+							  set_box, 
+							  value_box, 
+							  rhs_ptr, 
+							  action, 
+							  boxnum,
+							  outside );
+			 hypre_BoxDestroy(set_box);
 			 
-			 }
 		      });
 
-
-#if 0
-      BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-		iv,  nx_v,  ny_v,  nz_v,  1, 1, 1,
-		{
-		   index[0] = i;
-		   index[1] = j;
-		   index[2] = k;
-
-		   HYPRE_StructVectorSetValues(hypre_b, index, rhs_ptr[iv]);
-		});
-#endif
+      hypre_BoxDestroy(value_box);
    }
    HYPRE_StructVectorAssemble(hypre_b);
 
@@ -216,6 +226,15 @@ int          zero;
 
    ForSubgridI(sg, GridSubgrids(grid))
    {
+      int outside = 0;
+      int boxnum  = -1;
+      int action  = -1; // get values
+
+      hypre_Box          *set_box;
+      hypre_Box          *value_box;
+      int                 ilo[3];
+      int                 ihi[3];
+
       subgrid = SubgridArraySubgrid(GridSubgrids(grid), sg);
       soln_sub = VectorSubvector(soln, sg);
 
@@ -235,48 +254,46 @@ int          zero;
 
       iv  = SubvectorEltIndex(soln_sub, ix, iy, iz);
 
+      ilo[0] = SubvectorIX(soln_sub);
+      ilo[1] = SubvectorIY(soln_sub);
+      ilo[2] = SubvectorIZ(soln_sub);
+      ihi[0] = ilo[0] + nx_v - 1;
+      ihi[1] = ilo[1] + ny_v - 1;
+      ihi[2] = ilo[2] + nz_v - 1;
+
+      value_box = hypre_BoxCreate();
+      hypre_BoxSetExtents(value_box, ilo, ihi); 
+
       GrGeomInBoxLoop(i, j, k, 
 		      num_i, num_j, num_k,
 		      gr_domain, box_size_power,
 		      ix, iy, iz, nx, ny, nz, 
 		      {
-
-			 for(q_i = i; q_i < i + num_i; ++q_i) {
-			    for(q_j = j; q_j < j + num_j; ++q_j) {
-			       for(q_k = k; q_k < k + num_k; ++q_k) {
-				  iv  = SubvectorEltIndex(rhs_sub, q_i, q_j, q_k);
-				  
-				  index[0] = q_i;
-				  index[1] = q_j;
-				  index[2] = q_k;
-
-				  HYPRE_StructVectorGetValues(hypre_x, index, &value);
-				  soln_ptr[iv] = value;
-			       }
-			    }
+			 ilo[0] = i;
+			 ilo[1] = j;
+			 ilo[2] = k;
+			 ihi[0] = ilo[0] + num_i - 1;
+			 ihi[1] = ilo[1] + num_j - 1;
+			 ihi[2] = ilo[2] + num_k - 1;
 			 
-			 }
+			 set_box = hypre_BoxCreate();
+			 hypre_BoxSetExtents(set_box, ilo, ihi); 
 
+			 hypre_StructVectorSetBoxValues ( hypre_x,
+							  set_box, 
+							  value_box, 
+							  soln_ptr, 
+							  action, 
+							  boxnum,
+							  outside );
+			 hypre_BoxDestroy(set_box);
+			 
 		      });
 
-#if 0
-      BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-		iv, nx_v, ny_v, nz_v, 1, 1, 1,
-		{
-		   index[0] = i;
-		   index[1] = j;
-		   index[2] = k;
-
-		   HYPRE_StructVectorGetValues(hypre_x, index, &value);
-		   soln_ptr[iv] = value;
-		});
-#endif
+      hypre_BoxDestroy(value_box);
    }
    EndTiming(public_xtra->time_index_copy_hypre);
 
-#else
-   amps_Printf("Error: Parflow not compiled with hypre, can't use pfmg\n");   
-#endif
 }
 
 /*--------------------------------------------------------------------------
@@ -291,8 +308,6 @@ ProblemData  *problem_data;
 Matrix       *pf_matrix;
 double       *temp_data;
 {
-
-#ifdef HAVE_HYPRE
    PFModule      *this_module        = ThisPFModule;
    PublicXtra    *public_xtra        = PFModulePublicXtra(this_module);
    InstanceXtra  *instance_xtra;
@@ -343,7 +358,6 @@ double       *temp_data;
 
    instance_xtra -> problem_data = problem_data;
 
-#if 1
    if ( grid != NULL )
    {
       instance_xtra -> problem_data = problem_data;
@@ -384,12 +398,6 @@ double       *temp_data;
 	 instance_xtra->dxyz[1] = SubgridDY(subgrid);
 	 instance_xtra->dxyz[2] = SubgridDZ(subgrid);
 
-
-#if 0	 
-	 GrGeomPrintOctree("domain", gr_domain -> data);
-	 amps_Printf("box_size_power = %d\n", box_size_power);
-#endif
-	 
 	 GrGeomInBoxLoop(i, j, k, 
 			 num_i, num_j, num_k,
 			 gr_domain, box_size_power,
@@ -401,18 +409,13 @@ double       *temp_data;
 			    ihi[0] = ilo[0] + num_i - 1;
 			    ihi[1] = ilo[1] + num_j - 1;
 			    ihi[2] = ilo[2] + num_k - 1;
-#if 1
-			    amps_Printf("hypre box : %d (%d, %d, %d) (%d, %d, %d)\n", PV_l,
-					ilo[0], ilo[1], ilo[2], ihi[0], ihi[1], ihi[2]);
-#endif
-			    
+
 			    HYPRE_StructGridSetExtents(instance_xtra->hypre_grid, ilo, ihi); 
 			 });
       }
 
       HYPRE_StructGridAssemble(instance_xtra->hypre_grid);
    }
-#endif
 
    /* Reset the HYPRE solver for each recompute of the PC matrix.  
       This reset will require a matrix copy from PF format to HYPRE format. */
@@ -520,78 +523,135 @@ double       *temp_data;
 
 	 if (symmetric)
 	 {
-            BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-		      im,  nx_m,  ny_m,  nz_m,  1, 1, 1,
-		      {
-		         coeffs_symm[0] = cp[im];
-			 coeffs_symm[1] = ep[im];
-			 coeffs_symm[2] = np[im];
-			 coeffs_symm[3] = up[im];
-			 index[0] = i;
-			 index[1] = j;
-			 index[2] = k;
-			 HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat, 
-						     index, 
-						     stencil_size, 
-						     stencil_indices_symm, 
-						     coeffs_symm);
-		      });
-	 }
-	 else
-	 {
+	    int outside = 0;
+	    int boxnum  = -1;
+	    int action  = 0; // set values
+	    int stencil;
+
+	    hypre_Box          *set_box;
+	    hypre_Box          *value_box;
+
+	    ilo[0] = SubmatrixIX(pf_sub);
+	    ilo[1] = SubmatrixIY(pf_sub);
+	    ilo[2] = SubmatrixIZ(pf_sub);
+	    ihi[0] = ilo[0] + nx_m - 1;
+	    ihi[1] = ilo[1] + ny_m - 1;
+	    ihi[2] = ilo[2] + nz_m - 1;
+
+	    value_box = hypre_BoxCreate();
+	    hypre_BoxSetExtents(value_box, ilo, ihi); 
+
 	    GrGeomInBoxLoop(i, j, k, 
 			    num_i, num_j, num_k,
 			    gr_domain, box_size_power,
 			    ix, iy, iz, nx, ny, nz, 
 			    {
-
-			       for(q_i = i; q_i < i + num_i; ++q_i) {
-				  for(q_j = j; q_j < j + num_j; ++q_j) {
-				     for(q_k = k; q_k < k + num_k; ++q_k) {
-
-					im  = SubmatrixEltIndex(pf_sub, q_i, q_j, q_k);
+			       
+			       ilo[0] = i;
+			       ilo[1] = j;
+			       ilo[2] = k;
+			       ihi[0] = ilo[0] + num_i - 1;
+			       ihi[1] = ilo[1] + num_j - 1;
+			       ihi[2] = ilo[2] + num_k - 1;
+			       
+			       set_box = hypre_BoxCreate();
+			       hypre_BoxSetExtents(set_box, ilo, ihi); 
+			       
+			       amps_Printf("hypre symm matrix value box : %d (%d, %d, %d) (%d, %d, %d)\n", PV_l,
+					   ilo[0], ilo[1], ilo[2], ihi[0], ihi[1], ihi[2]);
+			       
+			       /*
+				 Note that loop over stencil's is necessary due to hypre
+				 interface wanting stencil values to be contiguous.
+				 FORTRAN ordering of (stencil, i, j, k).  PF stores as
+				 (i, j, k, stencil)
+			       */
+			       for(stencil = 0; stencil < stencil_size; ++stencil) {
 				  
-					index[0] = q_i;
-					index[1] = q_j;
-					index[2] = q_k;
-
-					coeffs[0] = cp[im];
-					coeffs[1] = wp[im];
-					coeffs[2] = ep[im];
-					coeffs[3] = sop[im];
-					coeffs[4] = np[im];
-					coeffs[5] = lp[im];
-					coeffs[6] = up[im];
-					HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat, 
-								    index, 
-								    stencil_size, 
-								    stencil_indices, coeffs);
-				     }
-				  }
+				  /* 
+				     symmetric stencil values are at 0, 2, 4, 6
+				  */
+				  double *values = SubmatrixStencilData(pf_sub, stencil*2);
+				  
+				  hypre_StructMatrixSetBoxValues( instance_xtra->hypre_mat,
+								  set_box,
+								  value_box,
+								  1, 
+								  &stencil_indices_symm[stencil], 
+								  values,
+								  action,
+								  boxnum,
+								  outside );
 			       }
 			       
+			       hypre_BoxDestroy(set_box);
+			    });
+	    
+	    hypre_BoxDestroy(value_box);
+
+	 }
+	 else
+	 {
+	    int outside = 0;
+	    int boxnum  = -1;
+	    int action  = 0; // set values
+	    int stencil;
+
+	    double *values = SubmatrixStencilData(pf_sub, 0);
+
+	    hypre_Box          *set_box;
+	    hypre_Box          *value_box;
+
+	    ilo[0] = ix;
+	    ilo[1] = iy;
+	    ilo[2] = iz;
+	    ihi[0] = ilo[0] + nx - 1;
+	    ihi[1] = ilo[1] + ny - 1;
+	    ihi[2] = ilo[2] + nz - 1;
+
+	    value_box = hypre_BoxCreate();
+	    hypre_BoxSetExtents(value_box, ilo, ihi); 
+
+	    GrGeomInBoxLoop(i, j, k, 
+			    num_i, num_j, num_k,
+			    gr_domain, box_size_power,
+			    ix, iy, iz, nx, ny, nz, 
+			    {
+			       ilo[0] = i;
+			       ilo[1] = j;
+			       ilo[2] = k;
+			       ihi[0] = ilo[0] + num_i - 1;
+			       ihi[1] = ilo[1] + num_j - 1;
+			       ihi[2] = ilo[2] + num_k - 1;
+
+			       set_box = hypre_BoxCreate();
+			       hypre_BoxSetExtents(set_box, ilo, ihi); 
+
+			       /*
+				 Note that loop over stencil's is necessary due to hypre
+				 interface wanting stencil values to be contiguous.
+				 FORTRAN ordering of (stencil, i, j, k).  PF stores as
+				 (i, j, k, stencil)
+			       */
+			       for(stencil = 0; stencil < stencil_size; ++stencil) {
+				  
+				  double *values = SubmatrixStencilData(pf_sub, stencil);
+				  
+				  hypre_StructMatrixSetBoxValues( instance_xtra->hypre_mat,
+								  set_box,
+								  value_box,
+								  1, 
+								  &stencil_indices[stencil], 
+								  values,
+								  action,
+								  boxnum,
+								  outside );
+			       }
+
+			       hypre_BoxDestroy(set_box);
 			    });
 
-#if 0
-            BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-		      im,  nx_m,  ny_m,  nz_m,  1, 1, 1,
-		      {
-		         coeffs[0] = cp[im];
-			 coeffs[1] = wp[im];
-			 coeffs[2] = ep[im];
-			 coeffs[3] = sop[im];
-			 coeffs[4] = np[im];
-			 coeffs[5] = lp[im];
-			 coeffs[6] = up[im];
-			 index[0] = i;
-			 index[1] = j;
-			 index[2] = k;
-			 HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat, 
-						     index, 
-						     stencil_size, 
-						     stencil_indices, coeffs);
-		      });
-#endif
+	    hypre_BoxDestroy(value_box);
 	 }
       }   /* End subgrid loop */
       HYPRE_StructMatrixAssemble(instance_xtra->hypre_mat);
@@ -627,10 +687,6 @@ double       *temp_data;
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
    return this_module;
-
-#else
-   return NULL;
-#endif
 }
 
 
@@ -640,7 +696,6 @@ double       *temp_data;
 
 void  PFMGOctreeFreeInstanceXtra()
 {
-#ifdef HAVE_HYPRE
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
 
@@ -661,7 +716,6 @@ void  PFMGOctreeFreeInstanceXtra()
 
       tfree(instance_xtra);
    }
-#endif
 }
 
 /*--------------------------------------------------------------------------
@@ -670,9 +724,6 @@ void  PFMGOctreeFreeInstanceXtra()
 
 PFModule  *PFMGOctreeNewPublicXtra(char *name)
 {
-
-#ifdef HAVE_HYPRE
-
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;
 
@@ -692,7 +743,7 @@ PFModule  *PFMGOctreeNewPublicXtra(char *name)
    public_xtra -> num_pre_relax = GetIntDefault(key, 1);
 
    sprintf(key, "%s.NumPostRelax", name);
-   public_xtra -> num_post_relax = GetIntDefault(key, 0);
+   public_xtra -> num_post_relax = GetIntDefault(key, 1);
 
    sprintf(key, "%s.BoxSizePowerOf2", name);
    public_xtra -> box_size_power = GetIntDefault(key, 4);
@@ -701,7 +752,7 @@ PFModule  *PFMGOctreeNewPublicXtra(char *name)
       with what HYPRE expects */
    smoother_switch_na = NA_NewNameArray("Dummy Jacobi WJacobi RBGaussSeidelSymmetric RBGaussSeidelNonSymmetric");
    sprintf(key, "%s.Smoother", name);
-   smoother_name = GetStringDefault(key, "WJacobi");
+   smoother_name = GetStringDefault(key, "RBGaussSeidelNonSymmetric");
    smoother = NA_NameToIndex(smoother_switch_na, smoother_name);
    if (smoother != 0)
    {
@@ -721,10 +772,6 @@ PFModule  *PFMGOctreeNewPublicXtra(char *name)
    PFModulePublicXtra(this_module) = public_xtra;
 
    return this_module;
-#else
-   amps_Printf("Error: Parflow not compiled with hypre, can't use pfmg\n");   
-   return NULL;
-#endif
 }
 
 /*-------------------------------------------------------------------------
@@ -733,7 +780,6 @@ PFModule  *PFMGOctreeNewPublicXtra(char *name)
 
 void  PFMGOctreeFreePublicXtra()
 {
-#ifdef HAVE_HYPRE
    PFModule    *this_module   = ThisPFModule;
    PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
 
@@ -741,7 +787,6 @@ void  PFMGOctreeFreePublicXtra()
    {
       tfree(public_xtra);
    }
-#endif
 }
 
 /*--------------------------------------------------------------------------
@@ -752,4 +797,61 @@ int  PFMGOctreeSizeOfTempData()
 {
    return 0;
 }
+
+#else 
+
+/*
+ Hyper is not available.   
+*/
+
+void         PFMGOctree(soln, rhs, tol, zero)
+Vector      *soln;
+Vector      *rhs;
+double       tol;
+int          zero;
+{
+   amps_Printf("Error: Parflow not compiled with hypre, can't use pfmg\n");   
+   exit(1);
+}
+
+PFModule  *PFMGOctreeInitInstanceXtra(problem, grid, problem_data,  
+				      pf_matrix, temp_data)
+Problem      *problem;
+Grid         *grid;
+ProblemData  *problem_data;
+Matrix       *pf_matrix;
+double       *temp_data;
+{
+   amps_Printf("Error: Parflow not compiled with hypre, can't use pfmg\n");   
+   exit(1);
+   return NULL;
+}
+
+void  PFMGOctreeFreeInstanceXtra()
+{
+   amps_Printf("Error: Parflow not compiled with hypre, can't use pfmg\n");   
+   exit(1);
+}
+
+PFModule  *PFMGOctreeNewPublicXtra(char *name)
+{
+   amps_Printf("Error: Parflow not compiled with hypre, can't use pfmg\n");   
+   exit(1);
+   return NULL;
+}
+
+void  PFMGOctreeFreePublicXtra()
+{
+   amps_Printf("Error: Parflow not compiled with hypre, can't use pfmg\n");   
+   exit(1);
+}
+
+int  PFMGOctreeSizeOfTempData()
+{
+   amps_Printf("Error: Parflow not compiled with hypre, can't use pfmg\n");   
+   exit(1);
+   return 0;
+}
+
+#endif
 
