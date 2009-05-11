@@ -199,10 +199,10 @@ pfset Gravity				1.0
 #-----------------------------------------------------------------------------
 
 # 
-pfset TimingInfo.BaseUnit        1.0
+pfset TimingInfo.BaseUnit        0.1
 pfset TimingInfo.StartCount      0
 pfset TimingInfo.StartTime       0.0
-pfset TimingInfo.StopTime        2.0
+pfset TimingInfo.StopTime        0.4
 pfset TimingInfo.DumpInterval    -1
 pfset TimeStep.Type              Constant
 pfset TimeStep.Value             0.1
@@ -417,7 +417,7 @@ if ![pftestFile default_over.out.perm_z.pfb "Max difference in perm_z" $sig_digi
     set passed 0
 }
 
-foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010 00011 00012 00013 00014 00015 00016 00017 00018 00019 00020" {
+foreach i "00000 00001 00002 00003 00004" {
     if ![pftestFile default_over.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
 	set passed 0
     }

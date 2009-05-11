@@ -1,5 +1,4 @@
-# this runs the Cape Cod site flow case for the Harvey and Garabedian bacterial 
-# injection experiment from Maxwell, et al, 2007.
+# this runs CLM test case
 
 #
 # Import the ParFlow TCL package
@@ -120,7 +119,7 @@ pfset Gravity				1.0
 pfset TimingInfo.BaseUnit        1.0
 pfset TimingInfo.StartCount      0
 pfset TimingInfo.StartTime       0.0
-pfset TimingInfo.StopTime        20
+pfset TimingInfo.StopTime        5
 pfset TimingInfo.DumpInterval    -1
 pfset TimeStep.Type              Constant
 pfset TimeStep.Value             1.0
@@ -311,7 +310,7 @@ if ![pftestFile clm.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
     set passed 0
 }
 
-for {set i 0} { $i <= 20 } {incr i} {
+for {set i 0} { $i <= 5 } {incr i} {
     set i_string [format "%05d" $i]
     if ![pftestFile clm.out.press.$i_string.pfb "Max difference in Pressure for timestep $i_string" $sig_digits] {
     set passed 0
