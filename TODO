@@ -12,8 +12,18 @@ commented out to get things to compile.
 SGS
 
 The CLM test is currently broken as it is just a copy of default_richards.
+RMM
+CLM test is fixed (thanks more to SGS than RMM) and RMM changed output to reflect new version
 
 SGS
 
 The PFMG and SMG solvers should be updated to use the setbox hypre
 methods for copying data.   Should speed things up a bit.
+
+RMM
+Manual: Transient BC time cycle stuff not in user man
+Manual: all new test cases (e.g. CLM) not in manual
+Manual: all new keys for pftools (top bddy, conversions, silo) not in manual
+Manual: new keys for solver PFMG.octree not in manual
+Manual: would be nice to have a short section mentioning silo libs and hypre libs
+
