@@ -72,6 +72,9 @@ if (clm_bin_out_dir == 0) then
 open(2007,file=clm_output_dir//'swe_out.'//cistep//'.bin.'//trim(adjustl(RI)), access=ACCESS, form=FORM) ! @ 2D output file 
  write(2007)ix,iy,iz,drv%nc,drv%nr,nz
 
+open(2009,file=clm_output_dir//'tsoil.'//cistep//'.bin.'//trim(adjustl(RI)), access=ACCESS, form=FORM) ! @ 2D output file 
+write(2009)ix,iy,iz,drv%nc,drv%nr,nz
+  
  open(2008,file=clm_output_dir//'diagnostics.'//cistep//'.dat.'//trim(adjustl(RI)),form='formatted') ! @ diagnostics 1D averaged
  write(2008,'(A112)') "clm%istep topsurf topsoil surface evapor infiltr fraction error evapo_tot evap_veg evap_soi tran_veg ice_layer1"
  else
@@ -113,6 +116,9 @@ open(2007,file=clm_output_dir//'swe_out.'//cistep//'.bin.'//trim(adjustl(RI)), a
 
 open(2007,file=clm_output_dir//'swe_out/swe_out.'//cistep//'.bin.'//trim(adjustl(RI)), access=ACCESS, form=FORM) ! @ 2D output file 
  write(2007)ix,iy,iz,drv%nc,drv%nr,nz
+
+open(2009,file=clm_output_dir//'t_grnd/tsoil.'//cistep//'.bin.'//trim(adjustl(RI)), access=ACCESS, form=FORM) ! @ 2D output file 
+write(2009)ix,iy,iz,drv%nc,drv%nr,nz
 
  open(2008,file=clm_output_dir//'diag_out/diagnostics.'//cistep//'.dat.'//trim(adjustl(RI)),form='formatted') ! @ diagnostics 1D averaged
  write(2008,'(A112)') "clm%istep topsurf topsoil surface evapor infiltr fraction error evapo_tot evap_veg evap_soi tran_veg ice_layer1"
