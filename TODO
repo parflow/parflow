@@ -12,3 +12,8 @@ commented out to get things to compile.
 SGS
 
 The CLM test is currently broken as it is just a copy of default_richards.
+
+SGS
+
+The PFMG and SMG solvers should be updated to use the setbox hypre
+methods for copying data.   Should speed things up a bit.
