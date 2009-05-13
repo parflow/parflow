@@ -45,7 +45,7 @@ proc getFiles_ui {root args} {
      
         button $base.buttonSaveTcl \
                 -background "#ff8" \
-                -command "source $tcl_dir/save_tcl_file.tcl" \
+                -command "source save_tcl_file.tcl" \
                 -borderwidth 4 \
                 -text "Save" -font {times 12 bold} 
 

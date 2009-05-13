@@ -82,7 +82,7 @@ proc getField_ui {root args} {
     button $base.buttonFieldFile \
 	-background "#e8e" -borderwidth 4 -text "File:" \
 	-command "OpenFieldFile .get_Field"  -font {times 12 bold}
-    source $tcl_dir/getFieldCutoffs.ui.tcl
+    source getFieldCutoffs.ui.tcl
     button $base.buttonFieldCutoffs \
 	-background "#e8e" -borderwidth 4 -text "Cutoffs" \
 	-font {times 12 bold} \
@@ -168,8 +168,8 @@ proc getField_ui {root args} {
     #
     #  Legend Button
     #
-    source $tcl_dir/getFieldLegendContinuous.ui.tcl
-    source $tcl_dir/getFieldLegendCategorical.ui.tcl
+    source getFieldLegendContinuous.ui.tcl
+    source getFieldLegendCategorical.ui.tcl
     button $base.fieldLegend \
 	-background #e8e -borderwidth 4 \
 	-text Legend?  -font {times 12 bold} \

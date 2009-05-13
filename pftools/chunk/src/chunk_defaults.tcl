@@ -1,12 +1,12 @@
 #
 # Chunk file locations
 #
-set exe_file "$home_dir/bin/chunk"
-set par_file "$home_dir/bin/chunk.par" 
-set tcl_file "$home_dir/bin/chunk_input.tcl"
-set chunk_run_file "$home_dir/bin/chunk_run_0701.tcl"
+set exe_file "$home_dir/code/chunk.o"
+set par_file "$home_dir/code/chunk.par" 
+set tcl_file "$home_dir/tcl/chunk_input.tcl"
+set chunk_run_file "$home_dir/src/chunk_run_0701.tcl"
 set ps_file "chunk.ps"
-set global_file "$home_dir/bin/chunk_global.tcl" 
+set global_file "$home_dir/src/chunk_global.tcl" 
 set color_table_dir "$home_dir/ctb"
 #
 # Input file defaults

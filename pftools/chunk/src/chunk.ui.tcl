@@ -4,13 +4,14 @@
 #
 #  Initialize home directory and defaults
 #
-set home_dir $env(PARFLOW_DIR)
-set src_dir $home_dir/bin
-set tcl_dir $home_dir/bin
-set code_dir $home_dir/bin
+source $env(PARFLOW_DIR)pftools/chunk/src/chunk_global.tcl
+set home_dir $env(PARFLOW_DIR)pftools/chunk
+set src_dir $home_dir/src
+set tcl_dir $home_dir/tcl
+set code_dir $home_dir/code
+cd $src_dir
 
-source $tcl_dir/chunk_global.tcl
-source $tcl_dir/chunk_defaults.tcl
+source "chunk_defaults.tcl"
 
 proc chunk_ui {root args } {
     global tcl_dir
@@ -20,16 +21,16 @@ proc chunk_ui {root args } {
 #
 #  Source sub-window processes
 #
-        source $tcl_dir/chunk_global.tcl
-        source $tcl_dir/getFiles.ui.tcl
-        source $tcl_dir/getPlot.ui.tcl
-        source $tcl_dir/getCoord.ui.tcl
-        source $tcl_dir/getField.ui.tcl
-        source $tcl_dir/getChunk.ui.tcl
-        source $tcl_dir/getSurfaces.ui.tcl
-        source $tcl_dir/getLines.ui.tcl
-        source $tcl_dir/getDots.ui.tcl
-        source $tcl_dir/getEPS.ui.tcl
+        source chunk_global.tcl
+        source getFiles.ui.tcl
+        source getPlot.ui.tcl
+        source getCoord.ui.tcl
+        source getField.ui.tcl
+        source getChunk.ui.tcl
+        source getSurfaces.ui.tcl
+        source getLines.ui.tcl
+        source getDots.ui.tcl
+        source getEPS.ui.tcl
 #
 #  Define Labels
 #
@@ -181,7 +182,7 @@ proc chunk_ui {root args } {
             -borderwidth 4 \
             -background "#e8e"
         grid .plotNSurfaceFiles -in .surfaces -row 2 -column 0
-        source $tcl_dir/getSurfaceFiles.ui.tcl
+        source getSurfaceFiles.ui.tcl
 
         scale $base.scaleNSurfaceFiles -from 0 -to 4 -length 60 \
             -variable surface_n_files -orient horizontal \
@@ -205,7 +206,7 @@ proc chunk_ui {root args } {
             -variable line_n_files -orient horizontal \
             -tickinterval 4 -showvalue true -sliderlength 16
       pack .scaleNLineFiles -in .lines -side top 
-      source $tcl_dir/getLines.ui.tcl
+      source getLines.ui.tcl
 #
 # Dots Frame
 #
@@ -221,7 +222,7 @@ proc chunk_ui {root args } {
             -variable dots_n_files -orient horizontal \
             -tickinterval 4 -showvalue true -sliderlength 16
       pack .scaleNDotsFiles -in .dots -side top
-      source $tcl_dir/getDots.ui.tcl 
+      source getDots.ui.tcl 
 }
 
 wm title . "Chunk - Version 4.0 - All Rights Reserved"

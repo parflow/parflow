@@ -1,6 +1,6 @@
 proc getCoord_ui {root args} {
     global tcl_dir
-        source $tcl_dir/chunk_global.tcl
+        source chunk_global.tcl
         global base
 
 	# this treats "." as a special case

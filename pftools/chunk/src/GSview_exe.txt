@@ -1,1 +1,1 @@
-C:\Program Files\Ghostgum\gsview\gsview32.exe
+/usr/bin/ggv

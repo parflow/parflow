@@ -1,7 +1,7 @@
 
 proc getFieldLegendCategorical_ui {root args} {
     global tcl_dir
-    source $tcl_dir/chunk_global.tcl
+    source chunk_global.tcl
 
 
     # this treats "." as a special case

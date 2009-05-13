@@ -207,7 +207,7 @@ proc getDots_ui {root args }  {
 	    return
 	}
 
-	source $tcl_dir/getDotsColorScale.ui.tcl
+	source getDotsColorScale.ui.tcl
 	button $base.scalecolor$i -text "Color Scale" -background "#e8e" \
 	    -borderwidth 4 -font {times 12 bold} \
 	    -command "toplevel .getDotsColorScale; \

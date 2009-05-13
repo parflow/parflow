@@ -1,6 +1,6 @@
 proc getChunk_ui {root args} {
     global tcl_dir
-    source $tcl_dir/chunk_global.tcl
+    source chunk_global.tcl
     global base
     # this treats "." as a special case
         
@@ -40,7 +40,7 @@ proc getChunk_ui {root args} {
     label $base.chunkCropMax -text "Crop Max" -font {times 12 bold}
     #        label $base.chunkNumberErase -text "Number of chunks to erase:" -font {times 12 bold}
     label $base.chunkListErase -text "List of chunks to erase:" -font {times 12 bold}
-    source $tcl_dir/getChunkErase.ui.tcl
+    source getChunkErase.ui.tcl
     button $base.chunkNumberErase -text "Chunks to Erase" \
 	-font {times 12 bold} -borderwidth 4 -background "#e8e" \
 	-command "toplevel .getChunkErase; focus .getChunkErase; \
