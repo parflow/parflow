@@ -25,7 +25,7 @@ INSTALL	    = sh $(PARFLOW)/config/install-sh
 INSTDIR	    = @INSTDIR@
 
 PARFLOW_INSTALL_DIR	        = @INSTDIR@
-PARFLOW_INCLUDE_DIR             = $(PARFLOW)/../parflow/parflow_lib
+PARFLOW_INCLUDE_DIR             = $(PARFLOW)/../pfsimulator/parflow_lib
 PARFLOW_LIB_DIR                 = $(PARFLOW_INSTALL_DIR)/lib
 
 PARFLOW_TOOLS_INCLUDE_DIR             = $(PARFLOW)

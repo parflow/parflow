@@ -92,15 +92,15 @@ tar -xvf ../parflow.tar
 
 %------------------------------
 
-\item {\bf Build and install \parflow{}}\\
-This step builds the \parflow{} library and executable.  The library is
-used when \parflow{} is used as a component of another simulation
-(\emph{e.g.} WRF).  Next, we need to build the parflow and other tools which make up the
-\parflow{} suite.  
+\item {\bf Build and install \parflow{}}\\ 
+This step builds the \parflow{} library and executable that runs on
+ the nodes of the parallel machine.  The library is used when
+ \parflow{} is used as a component of another simulation (\emph{e.g.}
+ WRF).  
 
 \begin{display}\begin{verbatim}
 cd $PARFLOW_DIR
-cd parflow
+cd pfsimulator
 ./configure --prefix=$PARFLOW_DIR --with-amps=mpi1
 make 
 make install
@@ -118,10 +118,11 @@ This will build a parallel version of /parflow{} using the MPI1 libraries. You c
  \parflow{} that allows a common code core to be quickly and easily
  adapted to different parallel environments.
 
-\item {\bf Build and install pftools}\\ \code{pftools} is a package of
- utilities and a \code{TCL} library that is used to setup and
- postprocess Parflow files.  The input files to \parflow{} are
- \code{TCL} scripts so \code{TCL} must be installed on the system.
+\item {\bf Build and install pftools}\\ 
+\code{pftools} is a package of utilities and a \code{TCL} library that
+ is used to setup and postprocess Parflow files.  The input files to
+ \parflow{} are \code{TCL} scripts so \code{TCL} must be installed on
+ the system.
 
 The first command will build \parflow{} and the bundled tools and
  install them in the \code{\$PARFLOW_DIR} directory.  The second
