@@ -537,6 +537,47 @@ pfset TimeStep.MinStep      1.0e-3
 %=============================================================================
 %=============================================================================
 
+\subsection{Time Cycles}
+\label{Time Cycles}
+\pfaddanchor{pfinTimeCycles}
+
+The data given in the time cycle section describe how time intervals are created and named to be used for time-dependent boundary and well information needed by \parflow{}.  All the time cycles are synched to the {\bf TimingInfo.BaseUnit} key described above and are {\em integer multipliers} of that value.
+
+\pfkey{list}{CycleNames}{no default}
+{
+This key is used to specify the named time cycles to be used in a simulation.  It is a list of names and each name defines a time cycle and the number of items determines the total number of time cycles specified.  Each named cycle is described using a number of keys defined below.
+}
+\begin{display}\begin{verbatim}
+pfset Cycle.Names constant onoff
+\end{verbatim}\end{display}
+
+\pfkey{list}{Cycle.{\em cycle\_name}.Names}{no default}
+{
+This key is used to specify the named time intervals for each cycle.  It is a list of names and each name defines a time interval when a specific boundary condition is applied and the number of items determines the total number of intervals in that time cycle. 
+}
+\begin{display}\begin{verbatim}
+pfset Cycle.onoff.Names "on off"
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Cycle.{\em cycle\_name.interval\_name}.Length}{no default}
+{
+This key is used to specify the length of a named time intervals.  It is an {\em integer multiplier} of the value set for the {\bf TimingInfo.BaseUnit} key described above. The total length of a given time cycle is the sum of all the intervals multiplied by the base unit.
+}
+\begin{display}\begin{verbatim}
+pfset Cycle.onoff.on.Length             10
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Cycle.{\em cycle\_name}.Repeat}{no default}
+{
+This key is used to specify the how many times a named time interval repeats.  A positive value specifies a number of repeat cycles a value of -1 specifies that the cycle repeat for the entire simulation.
+}
+\begin{display}\begin{verbatim}
+pfset Cycle.onoff.Repeat               -1
+\end{verbatim}\end{display}
+
+%=============================================================================
+%=============================================================================
+
 \subsection{Domain}
 \label{Domain}
 \pfaddanchor{pfinDomain}
@@ -2904,7 +2945,7 @@ are described next :
 \pfkey{string}{Solver.Linear}{PCG}
 {This key specifies the linear solver used for solver {\bf IMPES}.  Choices for this key are {\bf MGSemi, PPCG, PCG} and {\bf   CGHS}.  The choice
 %% == we need to check the solvers used here to match the descriptions
-{\bf MGSemi} is a mulitgrid linear solver (not a preconditioned conjugate gradient).  The choice {\bf PPCG} is a preconditioned conjugate gradient solver.
+{\bf MGSemi} is an algebraic mulitgrid linear solver (not a preconditioned conjugate gradient) which may be less robust than {\bf PCG} as described in \cite{Ashby-Falgout90}.  The choice {\bf PPCG} is a preconditioned conjugate gradient solver.
 The choice {\bf PCG} is a conjugate gradient solver with a multigrid preconditioner.  The choice {\bf CGHS} is a conjugate gradient solver.
 }
 \begin{display}\begin{verbatim}
@@ -3259,12 +3300,12 @@ pfset Solver.Nonlinear.Globalization   LineSearch
 
 \pfkey{string}{Solver.Linear.Preconditioner}{MGSemi}
 {This key specifies which preconditioner to use.  Currently, the three choices
-are {\bf NoPC, MGSemi} and {\bf SMG}.  The choice {\bf NoPC} specifies that no
+are {\bf NoPC, MGSemi, PFMGOctree} and {\bf SMG}.  The choice {\bf NoPC} specifies that no
 preconditioner should be used.  The choice {\bf MGSemi} specifies 
 a semi-coarsening multigrid algorithm which uses a point relaxation method. 
 The choice {\bf SMG} specifies a semi-coarsening multigrid algorithm which uses
 plane relaxations.  This method is more robust than {\bf MGSemi}, but generally
-requires more memory and compute time.
+requires more memory and compute time. The choice {\bf PFMGOctree} can be more efficient for problems with large numbers of inactive cells.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.Linear.Preconditioner   MGSemi
