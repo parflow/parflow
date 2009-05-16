@@ -53,8 +53,8 @@ all:
 
 doc:  manual.ps manual/manual.html
 
-version.tex : $(PARFLOW)/../parflow/parflow_lib/version.h
-	echo "\def\PFVersion{"`cut -d$ -f2 $(PARFLOW)/../parflow/parflow_lib/version.h`"}" > version.tex
+version.tex : $(PARFLOW)/../pfsimulator/parflow_lib/version.h
+	echo "\def\PFVersion{"`cut -d$ -f2 $(PARFLOW)/../pfsimulator/parflow_lib/version.h`"}" > version.tex
 
 manual.ps: manual.dvi
 	@dvips -o manual.ps manual
