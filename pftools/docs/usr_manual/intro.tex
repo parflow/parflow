@@ -25,7 +25,7 @@ runoff and channel routing in a truly integrated fashion
 \cite{KM06}. \parflow{} is also fully-coupled with the land surface
 model \code{CLM} \cite{Dai03} as described in \cite{MM05,KM08a}.  The
 development and application of \parflow{} has been on-going for more
-than 10 years \cite{MK08b, KM08b, KM08a, MK08a, MCT08,MCK07,MWH07,
+than 10 years \cite{MTK09, dBRM08, MK08b, KM08b, KM08a, MK08a, MCT08,MCK07,MWH07,
   KM06, MM05, TMCZPS05, MWT03, Teal02, WGM02, Jones-Woodward01, MCT00,
   TCRM99, TBP99, TFSBA98, Ashby-Falgout90} and resulted in some of the
 most advanced numerical solvers and multigrid preconditioners for
@@ -48,15 +48,15 @@ encapsolate parallel process interaction on a range of platforms.
 \code{CLM} is fully-integrated into \parflow{} as a module and has
 been parallelized (including I/O) and is written in \emph{FORTRAN
   90/95}.  \parflow{} is organized into a main executable
-\file{\emph{pfdir}/parflow/parflow} and a library
-\file{\emph{pfdir}/parflow/parflow\_lib} (where \file{\emph{pfdir}} is
+\file{\emph{pfdir}/pfsimulator/parflow_exe} and a library
+\file{\emph{pfdir}/pfsimulator/parflow\_lib} (where \file{\emph{pfdir}} is
 the main directory location) and is comprised of more than 190
 separate source files.  \parflow{} is structured to allow it to be
 called from within another application (\emph{e.g.} WRF) or as a
 stand-alone application.  There is also a directory structure for the
-message-passing layer \file{\emph{pfdir}/parflow/amps} for the
+message-passing layer \file{\emph{pfdir}/pfsimulator/amps} for the
 associated tools \file{\emph{pfdir}/pftools} for \code{CLM}
-\file{\emph{pfdir}/parflow/clm} and a directory of test cases
+\file{\emph{pfdir}/pfsimulator/clm} and a directory of test cases
 \file{\emph{pfdir}/test}.
 
 This manual describes how to use \parflow{}, and is intended for
