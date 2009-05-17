@@ -27,14 +27,25 @@ or for bash users:
 export PARFLOW_DIR=/home/snoopy/parflow
 
 -----------------------------------------------------------------------------
-Step 2: Build and install Parflow
+Step 2: Extract the Source
+-----------------------------------------------------------------------------
+Extract the source files from the compressed tar file.
+
+mkdir ~/parflow 
+cd ~/parflow 
+gunzip ../parflow.tar.Z 
+tar -xvf ../parflow.tar
+
+-----------------------------------------------------------------------------
+Step 3: Build and install Parflow
 -----------------------------------------------------------------------------
 
 This step builds the Parflow library and executable.  The library is
 used when Parflow is used as a component of another simulation
 (e.g. WRF).  
 
-cd parflow
+cd $PARFLOW_DIR
+cd pfsimulator
 ./configure --prefix=$PARFLOW_DIR --with-amps=mpi1
 make 
 make install
@@ -54,7 +65,7 @@ can explicitly specify the path to the MPI to use with the
 "--with-mpi" option to configure.
 
 -----------------------------------------------------------------------------
-Step 3: Build and install pftools
+Step 4: Build and install pftools
 -----------------------------------------------------------------------------
 
 pftools is a package of utilities and a TCL library that is used to
@@ -79,7 +90,7 @@ to specify the path with the "--with-tcl=<PATH> configure option.
 See "./configure --help" for additional configure options for pftools.
 
 -----------------------------------------------------------------------------
-Step 4: Running a sample problem
+Step 5: Running a sample problem
 -----------------------------------------------------------------------------
 
 If all went well a sample Parflow problem can be run using:
