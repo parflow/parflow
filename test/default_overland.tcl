@@ -376,6 +376,10 @@ pfset Solver.PrintSubsurf				False
 pfset  Solver.Drop                                      1E-20
 pfset Solver.AbsTol                                     1E-12
  
+pfset Solver.WriteSiloSubsurfData True
+pfset Solver.WriteSiloPressure True
+pfset Solver.WriteSiloSaturation True
+pfset Solver.WriteSiloConcentration True
 
 #---------------------------------------------------------
 # Initial conditions: water pressure
