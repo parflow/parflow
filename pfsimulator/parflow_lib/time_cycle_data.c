@@ -147,6 +147,8 @@ TimeCycleData *time_cycle_data;
  * TimeCycleDataComputeIntervalNumber
  *--------------------------------------------------------------------------*/
 
+#define TIME_CYCLE_SUBDIVISIONS 100
+
 int TimeCycleDataComputeIntervalNumber(problem, time, time_cycle_data, cycle_number)
 Problem       *problem;
 double         time;
@@ -173,11 +175,14 @@ int            cycle_number;
 	 int discretized_time;
 	 int discretized_start_time;
 
-	 // This discretizes time to base_time_unit units.
-	 discretized_time = round(time / base_time_unit);
-	 discretized_start_time = round( start_time / base_time_unit);
+	 // This discretizes time to small intervals based on base_time_unit units to avoid fp 
+	 // roundoff issues.
+	 discretized_time = round(time / (base_time_unit / TIME_CYCLE_SUBDIVISIONS) );
+	 discretized_start_time = round( start_time / (base_time_unit / TIME_CYCLE_SUBDIVISIONS));
 
-         intervals_completed = discretized_time % cycle_length;
+	 // Determine the intervals completed in this cycle.  NOTE that discretized times are in
+	 // need to be converted back to base_time_unit values
+	 intervals_completed = ((discretized_time - discretized_start_time) / TIME_CYCLE_SUBDIVISIONS) % cycle_length; 
          interval_number = 0;
          total = TimeCycleDataInterval(time_cycle_data, cycle_number, interval_number);
          while(intervals_completed >= total)
