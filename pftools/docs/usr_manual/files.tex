@@ -417,26 +417,14 @@ describe time units for later sections, sequence iterations in time,
 indicate actual starting and stopping values and give instructions
 on when data is printed out.
 
-\pfkey{double}{TimingInfo.BaseUnit}{no default} { This key is used to
-  indicate the base unit of time for entering time values.  All time
-  should be expressed as a multiple of this value.  This should be set
-  to the smallest interval of time to be used in the problem.  For
-  example, a base unit of ``1'' means that all times will be integer
-  valued.  A base unit of ``0.5'' would allow integers and fractions
-  of 0.5 to be used for time input values.
-
-  The rational behind this restriction is to allow time to be
-  discretized on some interval to enable integer arithmetic to be used
-  when computing/comparing times.  This avoids the problems associated
-  with real value comparisons which can lead to events occurring at
-  different timesteps on different architectures or compilers.
-
-  This values is also used when describing ``time cycling data'' in,
-  currently, the well and boundary condition sections.  The lengths of
-  the cycles in those sections will be integer multiples of this
-  value, therefore it needs to be the smallest divisor which produces
-  an integral result for every ``real time'' cycle interval length
-  needed.  
+\pfkey{double}{TimingInfo.BaseUnit}{no default}
+{
+This key is used to indicate the smallest common unit of time for
+describing ``time cycling data'' in, currently, the well and boundary
+condition sections.  The lengths of the cycles in those sections will be
+integer multiples of this value, therefore it needs to be the smallest
+divisor which produces an integral result for every ``real time'' cycle
+interval length needed.
 }
 \begin{display}\begin{verbatim}
 pfset TimingInfo.BaseUnit      1.0

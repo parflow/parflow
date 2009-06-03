@@ -199,13 +199,13 @@ pfset Gravity				1.0
 #-----------------------------------------------------------------------------
 
 # 
-pfset TimingInfo.BaseUnit        1.0
+pfset TimingInfo.BaseUnit        0.1
 pfset TimingInfo.StartCount      0
 pfset TimingInfo.StartTime       0.0
-pfset TimingInfo.StopTime        5.0
+pfset TimingInfo.StopTime        0.4
 pfset TimingInfo.DumpInterval    -1
 pfset TimeStep.Type              Constant
-pfset TimeStep.Value             1.0
+pfset TimeStep.Value             0.1
  
 #-----------------------------------------------------------------------------
 # Porosity
@@ -269,9 +269,9 @@ pfset Cycle.constant.Repeat             -1
 # rain for 1 hour, recession for 2 hours
 
 pfset Cycle.rainrec.Names                 "rain rec"
-pfset Cycle.rainrec.rain.Length           2
-pfset Cycle.rainrec.rec.Length            1
-pfset Cycle.rainrec.Repeat               -1
+pfset Cycle.rainrec.rain.Length           1
+pfset Cycle.rainrec.rec.Length            2
+pfset Cycle.rainrec.Repeat                -1
  
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure

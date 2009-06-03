@@ -951,5 +951,4 @@ int *ComputeTop (  Problem     *problem,
 		   ProblemData *problem_data,
 		   Vector      *vector);
 
-int CheckTime(Problem *problem, char *key, double time);
 
