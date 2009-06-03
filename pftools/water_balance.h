@@ -30,15 +30,30 @@
 
 #include "databox.h"
 
-#include <stdio.h>
-#include <math.h>
-
 /*-----------------------------------------------------------------------
  * function prototypes
  *-----------------------------------------------------------------------*/
 
-void ComputeTop(Databox  *mask, Databox  *top);
-void ExtractTop(Databox *v1 , Databox *v2, Databox *v3);
+void ComputeSurfaceStorage(
+   Databox *top,
+   Databox *pressure, 
+   Databox *surface_storage);
+
+void ComputeSubsurfaceStorage(
+   Databox *mask,
+   Databox *porosity, 
+   Databox *pressure, 
+   Databox *saturation,
+   Databox *specific_storage,
+   Databox *subsurface_storage);
+
+void ComputeSurfaceRunoff(
+   Databox *top,
+   Databox *slope_x, 
+   Databox *slope_y, 
+   Databox *mannings, 
+   Databox *pressure, 
+   Databox *surface_runoff);
 
 #endif
 

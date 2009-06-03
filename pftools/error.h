@@ -123,12 +123,18 @@ static char *HHEADUSAGE    = "Usage: pfhhead dataset\n";
 static char *PHEADUSAGE    = "Usage: pfphead dataset\n";
 static char *FLUXUSAGE     = "Usage: pfflux conductivity hhead\n";
 static char *AXPYUSAGE     = "Usage: pfaxpy alpha datasetx datasety\n";
+static char *SUMUSAGE      = "Usage: pfsum datasetx\n";
 static char *GETSTATSUSAGE = "Usage: pfstats dataset\n";
 static char *MDIFFUSAGE    = "Usage: pfmdiff datasetp datasetq sig_digs [abs_zero]\n";
 static char *SAVEDIFFUSAGE = "Usage: pfsavediff datasetp datasetq sig_digs [abs_zero] -file filename\n";
 static char *DIFFELTUSAGE  = "Usage: pfdiffelt datasetp datasetq i j k sig_digs [abs_zero]\n";
 static char *NEWGRIDUSAGE  = "Usage: pfnewgrid {nx ny nz} {x y z} {dx dy dz} label\n       Types: int nx, ny, nz;  double x, y, z, dx, dy, dz;\n";
 static char *NEWLABELUSAGE = "Usage: pfnewlabel dataset newlabel\n";
+static char *PFCOMPUTETOPUSAGE   = "Usage: pfcomputetop mask\n";
+static char *PFEXTRACTTOPUSAGE   = "Usage: pfextracttop top dataset\n";
+static char *PFSURFACESTORAGEUSAGE   = "Usage: pfsuracestorge top pressure\n";
+static char *PFSUBSURFACESTORAGEUSAGE   = "Usage: pfsubsuracestorge mask porosity pressure saturation specific_storage\n";
+static char *PFSURFACERUNOFFUSAGE   = "Usage: pfsuracerunoff top slope_x slope_y mannings pressure\n";
 static char *DELETEUSAGE   = "Usage: pfdelete dataset\n";
 
 /*-----------------------------------------------------------------------

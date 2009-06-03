@@ -99,7 +99,6 @@ Vector      *dummy;
 
    double           *data;
    double           *psdat, *m_values_dat;
-  // double            mannings[60][32][392];
 
    int               ix, iy, iz;
    int               nx, ny, nz;

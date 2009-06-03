@@ -2492,6 +2492,56 @@ char             *argv[];
 
 }
 
+/*-----------------------------------------------------------------------
+ * routine for `pfsum' command
+ * Description: The arguments are data set hash key.  The operation:
+ *              sum = sum of all elements of datasetx is perfomed.  
+ *
+ * Cmd. Syntax: pfsum datasetx 
+ *-----------------------------------------------------------------------*/
+
+int               SumCommand(clientData, interp, argc, argv)
+ClientData        clientData;
+Tcl_Interp       *interp;
+int               argc;
+char             *argv[];
+{
+   Data          *data = (Data *)clientData;
+
+   char          *hashkeyx;
+   Tcl_HashEntry *entryPtr;
+   Databox       *databoxx;
+   double         sum;
+
+   char           result[128];
+   
+   /* Three arguments are needed */
+
+   if (argc != 2)
+   {
+      WrongNumArgsError(interp, SUMUSAGE);
+      return TCL_ERROR;
+   }
+
+   /* The first argument should be a double */
+
+   hashkeyx = argv[1];
+
+   /* Make sure the sets exist */
+
+   if ((databoxx = DataMember(data, hashkeyx, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, hashkeyx);
+      return TCL_ERROR;
+   }
+
+   Sum(databoxx, &sum);
+
+   sprintf(result, "%e", sum);
+   Tcl_AppendElement(interp, result);
+   return TCL_OK;
+}
+
 
 /*-----------------------------------------------------------------------
  * routine for `pfstats' command
@@ -3055,7 +3105,7 @@ char          *argv[];
    /* the command.                                               */
    if (argc == 1)
    {
-      WrongNumArgsError(interp, LOADPFUSAGE);
+      WrongNumArgsError(interp, PFCOMPUTETOPUSAGE);
       return TCL_ERROR;
    }
 
@@ -3133,7 +3183,7 @@ char          *argv[];
    /* the command.                                               */
    if (argc == 2)
    {
-      WrongNumArgsError(interp, LOADPFUSAGE);
+      WrongNumArgsError(interp, PFEXTRACTTOPUSAGE);
       return TCL_ERROR;
    }
 
@@ -3178,6 +3228,322 @@ char          *argv[];
 	 } 
 
 	 ExtractTop(top, databox, top_values);
+      }
+      else
+      {
+	 ReadWriteError(interp);
+	 return TCL_ERROR;
+      }
+   }
+
+   return TCL_OK;
+}
+
+/*-----------------------------------------------------------------------
+ * routine for `pfsurfacestorage' command
+ * Description: Compute the surface storage 
+ * 
+ * Cmd. syntax: pfsufacestorage top pressure
+ *-----------------------------------------------------------------------*/
+int            SurfaceStorageCommand(clientData, interp, argc, argv)
+ClientData     clientData;
+Tcl_Interp    *interp;
+int            argc;
+char          *argv[];
+{
+   Tcl_HashEntry *entryPtr;  /* Points to new hash table entry         */
+   Data       *data = (Data *)clientData;
+
+   Databox    *top;
+   Databox    *pressure;
+   Databox    *surface_storage;
+
+   char       *filename = "surface storage";
+   char       *top_hashkey;
+   char       *pressure_hashkey;
+
+   char        surface_storage_hashkey[MAX_KEY_SIZE];
+
+   /* Check and see if there is at least one argument following  */
+   /* the command.                                               */
+   if (argc == 2)
+   {
+      WrongNumArgsError(interp, PFSURFACESTORAGEUSAGE);
+      return TCL_ERROR;
+   }
+
+   top_hashkey = argv[1];
+   pressure_hashkey = argv[2];
+
+   if ((top = DataMember(data, top_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, top_hashkey);
+      return TCL_ERROR;
+   }
+
+   if ((pressure = DataMember(data, pressure_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, pressure_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx = DataboxNx(pressure);
+      int ny = DataboxNy(pressure);
+
+      double x = DataboxX(pressure);
+      double y = DataboxY(pressure);
+      double z = DataboxZ(pressure);
+      
+      double dx = DataboxDx(pressure);
+      double dy = DataboxDy(pressure);
+      double dz = DataboxDz(pressure);
+
+      /* create the new databox structure for surface storage  */
+      if ( (surface_storage = NewDatabox(nx, ny, 1, x, y, z, dx, dy, dz)) )
+      {
+	 /* Make sure the data set pointer was added to */
+	 /* the hash table successfully.                */
+
+	 if (!AddData(data, surface_storage, filename, surface_storage_hashkey))
+	    FreeDatabox(surface_storage); 
+	 else
+	 {
+	    Tcl_AppendElement(interp, surface_storage_hashkey); 
+	 } 
+
+	 ComputeSurfaceStorage(top, pressure, surface_storage);
+      }
+      else
+      {
+	 ReadWriteError(interp);
+	 return TCL_ERROR;
+      }
+   }
+
+   return TCL_OK;
+}
+
+/*-----------------------------------------------------------------------
+ * routine for `pfsubsurfacestorage' command
+ * Description: Compute the subsurface storage 
+ * 
+ * Cmd. syntax: pfsubsurfacestorage 
+ *-----------------------------------------------------------------------*/
+int            SubsurfaceStorageCommand(clientData, interp, argc, argv)
+ClientData     clientData;
+Tcl_Interp    *interp;
+int            argc;
+char          *argv[];
+{
+   Tcl_HashEntry *entryPtr;  /* Points to new hash table entry         */
+   Data       *data = (Data *)clientData;
+
+   Databox    *mask;
+   Databox    *porosity;
+   Databox    *saturation;
+   Databox    *pressure;
+   Databox    *specific_storage;
+   Databox    *subsurface_storage;
+
+   char    *mask_hashkey;
+   char    *porosity_hashkey;
+   char    *saturation_hashkey;
+   char    *pressure_hashkey;
+   char    *specific_storage_hashkey;
+   char     subsurface_storage_hashkey[MAX_KEY_SIZE];
+
+   char       *filename = "subsurface storage";
+
+   /* Check and see if there is at least one argument following  */
+   /* the command.                                               */
+   if (argc == 5)
+   {
+      WrongNumArgsError(interp, PFSUBSURFACESTORAGEUSAGE);
+      return TCL_ERROR;
+   }
+
+   mask_hashkey                 = argv[1];
+   porosity_hashkey             = argv[2];
+   pressure_hashkey             = argv[3];
+   saturation_hashkey           = argv[4];
+   specific_storage_hashkey     = argv[5];
+
+   if ((mask = DataMember(data, mask_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, mask_hashkey);
+      return TCL_ERROR;
+   }
+   if ((porosity = DataMember(data, porosity_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, porosity_hashkey);
+      return TCL_ERROR;
+   }
+
+   if ((pressure = DataMember(data, pressure_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, pressure_hashkey);
+      return TCL_ERROR;
+   }
+
+   if ((saturation = DataMember(data, saturation_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, saturation_hashkey);
+      return TCL_ERROR;
+   }
+
+   if ((specific_storage = DataMember(data, specific_storage_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, specific_storage_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx = DataboxNx(pressure);
+      int ny = DataboxNy(pressure);
+      int nz = DataboxNy(pressure);
+
+      double x = DataboxX(pressure);
+      double y = DataboxY(pressure);
+      double z = DataboxZ(pressure);
+      
+      double dx = DataboxDx(pressure);
+      double dy = DataboxDy(pressure);
+      double dz = DataboxDz(pressure);
+
+      /* create the new databox structure for surface storage  */
+      if ( (subsurface_storage = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+	 /* Make sure the data set pointer was added to */
+	 /* the hash table successfully.                */
+
+	 if (!AddData(data, subsurface_storage, filename, subsurface_storage_hashkey))
+	    FreeDatabox(subsurface_storage); 
+	 else
+	 {
+	    Tcl_AppendElement(interp, subsurface_storage_hashkey); 
+	 } 
+
+	 ComputeSubsurfaceStorage(mask, porosity, pressure, saturation, specific_storage, subsurface_storage);
+      }
+      else
+      {
+	 ReadWriteError(interp);
+	 return TCL_ERROR;
+      }
+   }
+
+   return TCL_OK;
+}
+
+/*-----------------------------------------------------------------------
+ * routine for `pfsubsurfacestorage' command
+ * Description: Compute the subsurface storage 
+ * 
+ * Cmd. syntax: pfsubsurfacestorage 
+ *-----------------------------------------------------------------------*/
+int            SurfaceRunoffCommand(clientData, interp, argc, argv)
+ClientData     clientData;
+Tcl_Interp    *interp;
+int            argc;
+char          *argv[];
+{
+   Tcl_HashEntry *entryPtr;  /* Points to new hash table entry         */
+   Data       *data = (Data *)clientData;
+
+   Databox    *top;
+   Databox    *slope_x;
+   Databox    *slope_y;
+   Databox    *mannings;
+   Databox    *pressure;
+   Databox    *surface_runoff;
+
+   char    *top_hashkey;
+   char    *slope_x_hashkey;
+   char    *slope_y_hashkey;
+   char    *mannings_hashkey;
+   char    *pressure_hashkey;
+   char     surface_runoff_hashkey[MAX_KEY_SIZE];
+
+   char       *filename = "surface runoff";
+
+   /* Check and see if there is at least one argument following  */
+   /* the command.                                               */
+   if (argc == 5)
+   {
+      WrongNumArgsError(interp, PFSURFACERUNOFFUSAGE);
+      return TCL_ERROR;
+   }
+
+   top_hashkey                 = argv[1];
+   slope_x_hashkey             = argv[2];
+   slope_y_hashkey             = argv[3];
+   mannings_hashkey            = argv[4];
+   pressure_hashkey            = argv[5];
+
+   if ((top = DataMember(data, top_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, top_hashkey);
+      return TCL_ERROR;
+   }
+
+   if ((slope_x = DataMember(data, slope_x_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, slope_x_hashkey);
+      return TCL_ERROR;
+   }
+
+   if ((slope_y = DataMember(data, slope_y_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, slope_y_hashkey);
+      return TCL_ERROR;
+   }
+
+   if ((mannings = DataMember(data, mannings_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, mannings_hashkey);
+      return TCL_ERROR;
+   }
+
+   if ((pressure = DataMember(data, pressure_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, pressure_hashkey);
+      return TCL_ERROR;
+   }
+
+
+   {
+      int nx = DataboxNx(pressure);
+      int ny = DataboxNy(pressure);
+      int nz = DataboxNy(pressure);
+
+      double x = DataboxX(pressure);
+      double y = DataboxY(pressure);
+      double z = DataboxZ(pressure);
+      
+      double dx = DataboxDx(pressure);
+      double dy = DataboxDy(pressure);
+      double dz = DataboxDz(pressure);
+
+      /* create the new databox structure for surface storage  */
+      if ( (surface_runoff = NewDatabox(nx, ny, 1, x, y, z, dx, dy, dz)) )
+      {
+	 /* Make sure the data set pointer was added to */
+	 /* the hash table successfully.                */
+
+	 if (!AddData(data, surface_runoff, filename, surface_runoff_hashkey))
+	    FreeDatabox(surface_runoff); 
+	 else
+	 {
+	    Tcl_AppendElement(interp, surface_runoff_hashkey); 
+	 } 
+
+	 ComputeSurfaceRunoff(top, 
+			      slope_x,
+			      slope_y,
+			      mannings,
+			      pressure,
+			      surface_runoff);
       }
       else
       {

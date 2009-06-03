@@ -320,7 +320,7 @@ for {set i 0} { $i <= 5 } {incr i} {
     }
 }
 
-set mask [pfload clm.out.mask.00000.pfb]
+set mask [pfload clm.out.mask.pfb]
 set top [Parflow::pfcomputetop $mask]
 
 pfsave $top -pfb "clm.out.top_index.pfb"

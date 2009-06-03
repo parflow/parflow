@@ -25,20 +25,37 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
   USA
 **********************************************************************EHEADER*/
-#ifndef TOP_HEADER
-#define TOP_HEADER
+/******************************************************************************
+ * Sum
+ *
+ *****************************************************************************/
 
-#include "databox.h"
-
-#include <stdio.h>
-#include <math.h>
+#include "pftools.h"
 
 /*-----------------------------------------------------------------------
- * function prototypes
+ * Compute x = Sum of all elements of X
  *-----------------------------------------------------------------------*/
 
-void ComputeTop(Databox  *mask, Databox  *top);
-void ExtractTop(Databox *v1 , Databox *v2, Databox *v3);
+void       Sum(Databox *X,  double *sum)
+{
+   int             nx, ny, nz;
+   double         *xp;
+   int             m;
 
-#endif
+   nx = DataboxNx(X);
+   ny = DataboxNy(X);
+   nz = DataboxNz(X);
+
+   xp  = DataboxCoeffs(X);
+
+   m = 0;
+
+   *sum = 0;
+
+   for (m = 0; m < (nx*ny*nz); m++)
+   {
+      *sum += xp[m];
+   }
+}
+
 

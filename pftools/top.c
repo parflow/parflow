@@ -34,7 +34,8 @@
  * the mask values.  * Mask has values 0 outside of domain so first
  * non-zero entry is the top.  
  *
- * Returns a new Databox with top (z) indices for each i,j location.
+ * Returns a top Databox with (z) indices of the top surface for each
+ * i,j location.
  *
  *-----------------------------------------------------------------------*/
 
@@ -75,7 +76,7 @@ void ComputeTop(Databox  *mask, Databox  *top)
  * Extracts the top values of a dataset based on a top dataset (which contains the 
  * z indices that define the top of the domain).
  *
- * Returns a new Databox with top values for each i,j location.
+ * Returns a Databox with top values extracted for each i,j location.
  *
  *-----------------------------------------------------------------------*/
 

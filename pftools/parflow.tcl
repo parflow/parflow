@@ -86,6 +86,7 @@ namespace eval Parflow {
     namespace export pfflux
     namespace export pfnewlabel
     namespace export pfaxpy
+    namespace export pfsum
     namespace export pfgetstats
     namespace export pfmdiff
     namespace export pfdiffelt
@@ -94,6 +95,11 @@ namespace eval Parflow {
     namespace export pfnewgrid
     namespace export pfnewlabel
     namespace export pfdelete
+    namespace export pfcomputetop
+    namespace export pfextracttop
+    namespace export pfsurfacestorage
+    namespace export pfsubsurfacestorage
+    namespace export pfsurfacerunoff
 
     namespace export pfprintdata
     namespace export pfprintdiff
@@ -304,6 +310,7 @@ proc Parflow::pfundist { runname } {
 	append filelist [glob -nocomplain $root.et.?????.*$postfix] " "
 	append filelist [glob -nocomplain $root.obf.?????.*$postfix] " "
 	append filelist [glob -nocomplain $root.mask.?????.*$postfix] " "
+	append filelist [glob -nocomplain $root.mask.*$postfix] " "
     }
 
     foreach i $filelist {

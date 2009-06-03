@@ -77,6 +77,11 @@ typedef struct
    int                write_silo_velocities;      /* write velocities? */
    int                write_silo_satur;           /* write saturations? */
    int                write_silo_concen;          /* write concentrations? */
+   int                write_silo_mask;            /* write mask? */
+   int                write_silo_evaptrans;       /* write evaptrans? */
+   int                write_silo_slopes;          /* write slopes? */
+   int                write_silo_mannings;        /* write mannings? */
+   int                write_silo_specific_storage;/* write specific storage */
 
 } PublicXtra; 
 
@@ -236,6 +241,33 @@ void SetupRichards(PFModule *this_module) {
       sprintf(file_postfix, "porosity");
       WriteSilo(file_prefix, file_postfix, ProblemDataPorosity(problem_data),
 	        t, 0, "Porosity");
+
+   }
+
+   if ( public_xtra -> write_silo_slopes )
+   {
+      sprintf(file_postfix, "slope_x");
+      WriteSilo(file_prefix, file_postfix, ProblemDataTSlopeX(problem_data),
+                t, 0, "SlopeX");
+
+      sprintf(file_postfix, "slope_y");
+      WriteSilo(file_prefix, file_postfix, ProblemDataTSlopeY(problem_data),
+                t, 0, "SlopeY");
+   }
+
+   if ( public_xtra -> write_silo_mannings )
+   {
+      sprintf(file_postfix, "mannings");
+      WriteSilo(file_prefix, file_postfix, ProblemDataMannings(problem_data),
+                t, 0, "Mannings");
+
+   }
+
+   if ( public_xtra -> write_silo_specific_storage )
+   {
+      sprintf(file_postfix, "specific_storage");
+      WriteSilo(file_prefix, file_postfix, ProblemDataSpecificStorage(problem_data),
+                t, 0, "SpecificStorage");
 
    }
 
@@ -415,15 +447,15 @@ void SetupRichards(PFModule *this_module) {
  
       if ( print_satur )
       {
-	 sprintf(file_postfix, "mask.%05d", instance_xtra -> file_number );
+	 sprintf(file_postfix, "mask");
 	 WritePFBinary(file_prefix, file_postfix, instance_xtra -> mask );
 	 any_file_dumped = 1;
       }
 
 
-      if ( public_xtra -> write_silo_satur )
+      if ( public_xtra -> write_silo_mask )
       {
-	 sprintf(file_postfix, "mask.%05d", instance_xtra -> file_number );
+	 sprintf(file_postfix, "mask");
 	 WriteSilo(file_prefix, file_postfix, instance_xtra -> mask, 
                    t, instance_xtra -> file_number, "Mask");
 	 any_file_dumped = 1;
@@ -847,6 +879,13 @@ void AdvanceRichards(PFModule *this_module,
 	    any_file_dumped = 1;
 	 }
 
+	 if(public_xtra -> write_silo_evaptrans) {
+	    sprintf(file_postfix, "evaptrans.%05d", instance_xtra -> file_number );
+	    WriteSilo(file_prefix, file_postfix, evap_trans, 
+		      t, instance_xtra -> file_number, "EvapTrans");
+	    any_file_dumped = 1;
+	 }
+
 	 if(public_xtra -> print_lsm_sink) 
 	 {
 	    /*sk Print the sink terms from the land surface model*/
@@ -961,7 +1000,14 @@ void AdvanceRichards(PFModule *this_module,
 		   t, instance_xtra -> file_number, "Saturation");
 	 any_file_dumped = 1;
       }
-      
+
+      if(public_xtra -> write_silo_evaptrans) {
+	 sprintf(file_postfix, "evaptrans.%05d", instance_xtra -> file_number );
+	 WriteSilo(file_prefix, file_postfix, evap_trans, 
+		   t, instance_xtra -> file_number, "EvapTrans");
+	 any_file_dumped = 1;
+      }
+
       if(public_xtra -> print_lsm_sink) 
       {
 	 /*sk Print the sink terms from the land surface model*/
@@ -1631,6 +1677,16 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    }
    public_xtra -> write_silo_satur = switch_value;
 
+   sprintf(key, "%s.WriteSiloEvapTrans", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+      switch_name, key);
+   }
+   public_xtra -> write_silo_evaptrans = switch_value;
+
    sprintf(key, "%s.WriteSiloConcentration", name);
    switch_name = GetStringDefault(key, "False");
    switch_value = NA_NameToIndex(switch_na, switch_name);
@@ -1641,11 +1697,56 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    }
    public_xtra -> write_silo_concen = switch_value;
 
+   sprintf(key, "%s.WriteSiloMask", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+      switch_name, key);
+   }
+   public_xtra -> write_silo_mask = switch_value;
+
+
+   sprintf(key, "%s.WriteSiloSlopes", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+      switch_name, key );
+   }
+   public_xtra -> write_silo_slopes = switch_value;
+
+   sprintf(key, "%s.WriteSiloMannings", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+      switch_name, key );
+   }
+   public_xtra -> write_silo_mannings = switch_value;
+
+   sprintf(key, "%s.WriteSiloSpecificStorage", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+      switch_name, key );
+   }
+   public_xtra -> write_silo_specific_storage = switch_value;
+
    if( public_xtra -> write_silo_subsurf_data || 
        public_xtra -> write_silo_press  ||
        public_xtra -> write_silo_velocities ||
        public_xtra -> write_silo_satur ||
-       public_xtra -> write_silo_concen
+       public_xtra -> write_silo_concen ||
+       public_xtra -> write_silo_specific_storage ||
+       public_xtra -> write_silo_slopes ||
+       public_xtra -> write_silo_evaptrans ||
+       public_xtra -> write_silo_mannings
       ) {
       WriteSiloInit(GlobalsOutFileName);
    }

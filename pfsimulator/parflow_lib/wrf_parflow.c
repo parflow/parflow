@@ -149,7 +149,7 @@ void wrfparflowadvance_(double *current_time,
     */
    handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
    FinalizeVectorUpdate(handle); 
-   
+
    AdvanceRichards(amps_ThreadLocal(solver),
 		   *current_time, 
 		   stop_time, 
