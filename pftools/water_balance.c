@@ -85,11 +85,11 @@ void ComputeSubsurfaceStorage(Databox *mask,
 {
    int m;
 
-   double *mask_coeff        = DataboxCoeffs(mask);
-   double *porosity_coeff    = DataboxCoeffs(porosity);
-   double *pressure_coeff    = DataboxCoeffs(pressure);
-   double *saturation_coeff  = DataboxCoeffs(saturation);
-   double *specific_storage_coeff  = DataboxCoeffs(saturation);
+   double *mask_coeff                = DataboxCoeffs(mask);
+   double *porosity_coeff            = DataboxCoeffs(porosity);
+   double *pressure_coeff            = DataboxCoeffs(pressure);
+   double *saturation_coeff          = DataboxCoeffs(saturation);
+   double *specific_storage_coeff    = DataboxCoeffs(specific_storage);
    double *subsurface_storage_coeff  = DataboxCoeffs(subsurface_storage);
 
    int nx = DataboxNx(pressure);
@@ -105,22 +105,11 @@ void ComputeSubsurfaceStorage(Databox *mask,
       if( mask_coeff[m] > 0 ) 
       {
 
-#if 0
-	 subsurface_storage_coeff[m] = saturation_coeff[m] * porosity_coeff[m] * dx * dy * dz;
+	 subsurface_storage_coeff[m] =  saturation_coeff[m] * porosity_coeff[m] * dx * dy * dz;
 	 
 	 if ( pressure_coeff[m] > 0 ) {
-	    printf(">0");
 	    subsurface_storage_coeff[m] += pressure_coeff[m] * specific_storage_coeff[m] * saturation_coeff[m] * porosity_coeff[m] * dx * dy * dz;
-	 }
-#endif
-	 subsurface_storage_coeff[m] =  1;
-	 
-	 if ( pressure_coeff[m] > 0 ) {
-	    subsurface_storage_coeff[m] += pressure_coeff[m] * specific_storage_coeff[m];
-	 }
-
-	 subsurface_storage_coeff[m] *= saturation_coeff[m] * porosity_coeff[m] * dx * dy * dz;
-
+	 } 
       }
    }
 }
@@ -192,7 +181,7 @@ void ComputeSurfaceRunoff(Databox *top,
       }
    }
 
-   for (j = 0; j < nx; j++)
+   for (j = 0; j < ny; j++)
    {
       for (i = 0; i < nx; i++)
       {
