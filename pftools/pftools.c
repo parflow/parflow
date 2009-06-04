@@ -1418,11 +1418,11 @@ char             *argv[];
 
    int            i, j, k;
    char          *hashkey;
-   char           result[128];
 
    Tcl_HashEntry *entryPtr;
    Databox       *databox;
    
+   Tcl_Obj       *result;
 
    hashkey = argv[1];
    
@@ -1470,8 +1470,9 @@ char             *argv[];
       return TCL_ERROR;
    }
 
-   sprintf(result, "%e", *DataboxCoeff(databox, i, j, k));
-   Tcl_AppendElement(interp, result);
+   result = Tcl_NewDoubleObj(*DataboxCoeff(databox, i, j, k));
+   Tcl_SetObjResult(interp, result);
+
    return TCL_OK;
    
 }
@@ -2513,7 +2514,7 @@ char             *argv[];
    Databox       *databoxx;
    double         sum;
 
-   char           result[128];
+   Tcl_Obj       *result;
    
    /* Three arguments are needed */
 
@@ -2537,8 +2538,8 @@ char             *argv[];
 
    Sum(databoxx, &sum);
 
-   sprintf(result, "%e", sum);
-   Tcl_AppendElement(interp, result);
+   result = Tcl_NewDoubleObj(sum);
+   Tcl_SetObjResult(interp, result);
    return TCL_OK;
 }
 
@@ -2588,6 +2589,7 @@ char             *argv[];
 
    Stats(databox, &min, &max, &mean, &sum, &variance, &stdev);
 
+// sgs
    sprintf(num, "%e", min);
    Tcl_AppendElement(interp, num);
    sprintf(num, "%e", max);
@@ -2912,7 +2914,8 @@ char             *argv[];
    char           diff_str[64];
 
    double         abs_zero;
-   
+
+   Tcl_Obj       *result;   
    
    /* Four, five or seven arguments may be given */
 
@@ -3027,12 +3030,11 @@ char             *argv[];
 
    if (diff >= 0.0)
    {
-      sprintf(diff_str, "%e", diff);
-      Tcl_AppendElement(interp, diff_str);
+      result = Tcl_NewDoubleObj(diff);
+      Tcl_SetObjResult(interp, result);
    }
 
    return TCL_OK;
-
 }
 
 

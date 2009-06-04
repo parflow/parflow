@@ -1,19 +1,44 @@
 #  This runs the tilted-v catchment problem
 #  similar to that in Kollet and Maxwell (2006) AWR
 
-set tcl_precision 17
+set tcl_precision 16
 
-set runname default_overland
+#---------------------------------------------------------
+# Some controls for the test
+#---------------------------------------------------------
 
-#
+#---------------------------------------------------------
+# Control slopes 
+# 0 = flat top (no overland flow)
+# 1 = slopped surface
+#---------------------------------------------------------
+set use_slopes 0
+
+#---------------------------------------------------------
+# Flux on the top surface
+#---------------------------------------------------------
+#set rain_flux -0.05
+#set rain_flux 0.000001
+set rain_flux -0.05
+set rec_flux  0.0
+
+#---------------------------------------------------------
 # Import the ParFlow TCL package
-#
+#---------------------------------------------------------
 lappend auto_path $env(PARFLOW_DIR)/bin 
 package require parflow
 namespace import Parflow::*
 
+#---------------------------------------------------------
+# Name of the run
+#---------------------------------------------------------
+set runname water_balance
+
 pfset FileVersion 4
 
+#---------------------------------------------------------
+# Processor topology
+#---------------------------------------------------------
 pfset Process.Topology.P 1
 pfset Process.Topology.Q 1
 pfset Process.Topology.R 1
@@ -167,8 +192,6 @@ pfset Geom.domain.Perm.TensorValZ  1.0d0
 pfset SpecificStorage.Type            Constant
 pfset SpecificStorage.GeomNames       "domain"
 pfset Geom.domain.SpecificStorage.Value 1.0e-4
-#pfset Geom.domain.SpecificStorage.Value 1.0e-6
-#pfset Geom.domain.SpecificStorage.Value 1.0e-5
 
 #-----------------------------------------------------------------------------
 # Phases
@@ -204,7 +227,6 @@ pfset Gravity				1.0
 # Setup timing info
 #-----------------------------------------------------------------------------
 
-# 
 pfset TimingInfo.BaseUnit        0.1
 pfset TimingInfo.StartCount      0
 pfset TimingInfo.StartTime       0.0
@@ -274,10 +296,16 @@ pfset Cycle.constant.Repeat             -1
 # rainfall and recession time periods are defined here
 # rain for 1 hour, recession for 2 hours
 
-pfset Cycle.rainrec.Names                 "rain rec"
-pfset Cycle.rainrec.rain.Length           1
-pfset Cycle.rainrec.rec.Length            2
-pfset Cycle.rainrec.Repeat                -1
+pfset Cycle.rainrec.Names                 "0 1 2 3 4 5 6"
+pfset Cycle.rainrec.0.Length           1
+pfset Cycle.rainrec.1.Length           1
+pfset Cycle.rainrec.2.Length           1
+pfset Cycle.rainrec.3.Length           1
+pfset Cycle.rainrec.4.Length           1
+pfset Cycle.rainrec.5.Length           1
+pfset Cycle.rainrec.6.Length           1
+
+pfset Cycle.rainrec.Repeat             1
  
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
@@ -304,18 +332,16 @@ pfset Patch.y-upper.BCPressure.Type		      FluxConst
 pfset Patch.y-upper.BCPressure.Cycle		      "constant"
 pfset Patch.y-upper.BCPressure.alltime.Value	      0.0
 
-## overland flow boundary condition with very heavy rainfall then slight ET
+
 pfset Patch.z-upper.BCPressure.Type		      OverlandFlow
-#pfset Patch.z-upper.BCPressure.Cycle		      "rainrec"
-#pfset Patch.z-upper.BCPressure.rain.Value	      -0.05
-#pfset Patch.z-upper.BCPressure.rec.Value	      0.000001
-#pfset Patch.z-upper.BCPressure.rec.Value	      -0.05
-
-pfset Patch.z-upper.BCPressure.Cycle		      "constant"
-#pfset Patch.z-upper.BCPressure.alltime.Value	      0.000001
-#pfset Patch.z-upper.BCPressure.alltime.Value	      -0.000001
-pfset Patch.z-upper.BCPressure.alltime.Value	      -0.001
-
+pfset Patch.z-upper.BCPressure.Cycle	              "rainrec"
+pfset Patch.z-upper.BCPressure.0.Value	              $rec_flux
+pfset Patch.z-upper.BCPressure.1.Value	              $rec_flux
+pfset Patch.z-upper.BCPressure.2.Value	              $rain_flux
+pfset Patch.z-upper.BCPressure.3.Value	              $rain_flux
+pfset Patch.z-upper.BCPressure.4.Value	              $rec_flux
+pfset Patch.z-upper.BCPressure.5.Value	              $rec_flux
+pfset Patch.z-upper.BCPressure.6.Value	              $rec_flux
 
 #---------------------------------------------------------
 # Topo slopes in x-direction
@@ -323,11 +349,15 @@ pfset Patch.z-upper.BCPressure.alltime.Value	      -0.001
 
 pfset TopoSlopesX.Type "Constant"
 pfset TopoSlopesX.GeomNames "left right channel"
-#pfset TopoSlopesX.Geom.left.Value -0.005
-#pfset TopoSlopesX.Geom.right.Value 0.005
-pfset TopoSlopesX.Geom.left.Value 0.0
-pfset TopoSlopesX.Geom.right.Value 0.0
-pfset TopoSlopesX.Geom.channel.Value 0.00
+if $use_slopes {
+    pfset TopoSlopesX.Geom.left.Value -0.005
+    pfset TopoSlopesX.Geom.right.Value 0.005
+    pfset TopoSlopesX.Geom.channel.Value 0.00
+} {
+    pfset TopoSlopesX.Geom.left.Value    0.00
+    pfset TopoSlopesX.Geom.right.Value   0.00
+    pfset TopoSlopesX.Geom.channel.Value 0.00
+}
 
 #---------------------------------------------------------
 # Topo slopes in y-direction
@@ -336,14 +366,15 @@ pfset TopoSlopesX.Geom.channel.Value 0.00
 
 pfset TopoSlopesY.Type "Constant"
 pfset TopoSlopesY.GeomNames "left right channel"
-#pfset TopoSlopesY.Geom.left.Value 0.001
-#pfset TopoSlopesY.Geom.right.Value 0.001
-#pfset TopoSlopesY.Geom.channel.Value 0.001
-
-pfset TopoSlopesY.Geom.left.Value 0.00
-pfset TopoSlopesY.Geom.right.Value 0.00
-pfset TopoSlopesY.Geom.channel.Value 0.00
-
+if $use_slopes {
+    pfset TopoSlopesY.Geom.left.Value 0.001
+    pfset TopoSlopesY.Geom.right.Value 0.001
+    pfset TopoSlopesY.Geom.channel.Value 0.001
+} {
+    pfset TopoSlopesY.Geom.left.Value    0.000
+    pfset TopoSlopesY.Geom.right.Value   0.000
+    pfset TopoSlopesY.Geom.channel.Value 0.000
+}
 
 #---------------------------------------------------------
 # Mannings coefficient 
@@ -377,13 +408,17 @@ pfset KnownSolution                                    NoKnownSolution
 pfset Solver                                             Richards
 pfset Solver.MaxIter                                     2500
 
-pfset Solver.Nonlinear.MaxIter                           10
-pfset Solver.Nonlinear.ResidualTol                       1e-12
+pfset Solver.Nonlinear.MaxIter                           300
+pfset Solver.Nonlinear.ResidualTol                       1e-9
+pfset Solver.Nonlinear.EtaChoice                         Walker1 
 pfset Solver.Nonlinear.EtaChoice                         EtaConstant
-pfset Solver.Nonlinear.EtaValue                          1e-5
-pfset Solver.Nonlinear.UseJacobian                       True
-pfset Solver.Nonlinear.DerivativeEpsilon                 1e-2
-pfset Solver.Linear.KrylovDimension                      10
+pfset Solver.Nonlinear.EtaValue                          0.001
+pfset Solver.Nonlinear.UseJacobian                       False
+pfset Solver.Nonlinear.DerivativeEpsilon                 1e-16
+pfset Solver.Nonlinear.StepTol				 1e-10
+pfset Solver.Nonlinear.Globalization                     LineSearch
+pfset Solver.Linear.KrylovDimension                      20
+pfset Solver.Linear.MaxRestart                           2
 
 pfset Solver.Linear.Preconditioner                       PFMG
 pfset Solver.Linear.Preconditioner.PFMG.MaxIter           1
@@ -409,7 +444,8 @@ pfset Solver.WriteSiloSpecificStorage                   True
 # set water table to be at the bottom of the domain, the top layer is initially dry
 pfset ICPressure.Type                                   HydroStaticPatch
 pfset ICPressure.GeomNames                              domain
-pfset Geom.domain.ICPressure.Value                      -3.0
+
+pfset Geom.domain.ICPressure.Value                      -3.0    
 
 pfset Geom.domain.ICPressure.RefGeom                    domain
 pfset Geom.domain.ICPressure.RefPatch                   z-upper
@@ -427,111 +463,82 @@ pfundist $runname
 source pftest.tcl
 set passed 1
 
-#
-# SGS this test fails with 6 sigdigits
-#
-set sig_digits 5
-
-if ![pftestFile $runname.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
-    set passed 0
-}
-if ![pftestFile $runname.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
-    set passed 0
-}
-if ![pftestFile $runname.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
-    set passed 0
-}
-
-foreach i "00000 00001 00002 00003 00004" {
-    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-	set passed 0
-    }
-    if ![pftestFile $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-	set passed 0
-    }
-}
-
-set slope_x [pfload $runname.out.slope_x.silo]
-set slope_y [pfload $runname.out.slope_y.silo]
-set mannings [pfload $runname.out.mannings.silo]
+set slope_x          [pfload $runname.out.slope_x.silo]
+set slope_y          [pfload $runname.out.slope_y.silo]
+set mannings         [pfload $runname.out.mannings.silo]
 set specific_storage [pfload $runname.out.specific_storage.silo]
-set porosity [pfload $runname.out.porosity.silo]
+set porosity         [pfload $runname.out.porosity.silo]
 
-set mask [pfload default_overland.out.mask.silo]
-set top [pfcomputetop $mask]
+set mask             [pfload $runname.out.mask.silo]
+set top              [pfcomputetop $mask]
 
 set surface_area_of_domain [expr [pfget ComputationalGrid.DX] * [pfget ComputationalGrid.DY] * [pfget ComputationalGrid.NX] * [pfget ComputationalGrid.NY]]
 
-# running sum of all runoff over all time
-set sum_surface_runoff 0.0
-
 set prev_total_water_balance 0.0
+
 for {set i 0} {$i <= 19} {incr i} {
     puts "======================================================"
     puts "Timestep $i"
     puts "======================================================"
-    set total_water_balance 0.0
+    set total_water_in_domain 0.0
 
     set filename [format "%s.out.press.%05d.pfb" $runname $i]
     set pressure [pfload $filename]
     set surface_storage [pfsurfacestorage $top $pressure]
     pfsave $surface_storage -silo "surface_storage.$i.silo"
     set total_surface_storage [pfsum $surface_storage]
-    puts "Surface storage\t\t\t\t\t\t : $total_surface_storage"
-    set total_water_balance [expr $total_water_balance + $total_surface_storage]
+    puts [format "Surface storage\t\t\t\t\t\t : %e" $total_surface_storage]
+    set total_water_in_domain [expr $total_water_in_domain + $total_surface_storage]
 
     set filename [format "%s.out.satur.%05d.pfb" $runname $i]
     set saturation [pfload $filename]
 
     set subsurface_storage [pfsubsurfacestorage $mask $porosity $pressure $saturation $specific_storage]
+    pfsave $subsurface_storage -silo "subsurface_storage.$i.silo"
     set total_subsurface_storage [pfsum $subsurface_storage]
-    puts "Subsurface storage\t\t\t\t\t : $total_subsurface_storage"
-    set total_water_balance [expr $total_water_balance + $total_subsurface_storage]
+    puts [format "Subsurface storage\t\t\t\t\t : %e" $total_subsurface_storage]
+    set total_water_in_domain [expr $total_water_in_domain + $total_subsurface_storage]
 
     set surface_runoff [pfsurfacerunoff $top $slope_x $slope_y $mannings $pressure]
     pfsave $surface_runoff -silo "surface_runoff.$i.silo"
-    set total_surface_runoff [pfsum $surface_runoff]
-    puts "Surface runoff\t\t\t\t\t\t : $total_surface_runoff"
-    set sum_surface_runoff [expr $sum_surface_runoff + $total_surface_runoff]
-    set total_water_balance [expr $total_water_balance + $sum_surface_runoff]
+    set total_surface_runoff [expr [pfsum $surface_runoff] * [pfget TimeStep.Value]]
+    puts [format "Surface runoff\t\t\t\t\t\t : %e" $total_surface_runoff]
 
-
-
-    if { $i > 0 } {
-	set filename [format "%s.out.evaptrans.%05d.silo" $runname $i]
-	set evaptrans [pfload $filename]
-	set total_evaptrans [pfsum $evaptrans]
-	puts "EvapTrans\t\t\t\t\t\t : $total_evaptrans"
-	set total_water_balance [expr $total_water_balance + $total_evaptrans]
+    if [expr $i < 7] {
+	set bc_flux [pfget Patch.z-upper.BCPressure.$i.Value]
+    } {
+	set bc_flux [pfget Patch.z-upper.BCPressure.6.Value]
     }
+    set boundary_flux [expr $bc_flux * $surface_area_of_domain * [pfget TimeStep.Value]]
+    puts [format "Boundary flux\t\t\t\t\t\t : %e" $boundary_flux]
 
-#    puts [format "Rain flux %f" [expr [pfget Patch.z-upper.BCPressure.rain.Value] * $surface_area_of_domain * [pfget TimeStep.Value]]]
-#    puts [format "Rec flux %f" [expr [pfget Patch.z-upper.BCPressure.rec.Value] * $surface_area_of_domain * [pfget TimeStep.Value]]]
+    puts [format "Total water in domain\t\t\t\t\t : %e" $total_water_in_domain]
 
-    set boundary_flux [expr [pfget Patch.z-upper.BCPressure.alltime.Value] * $surface_area_of_domain * [pfget TimeStep.Value]]
-    puts [format "Boundary flux\t\t\t\t\t\t : %f" $boundary_flux]
-
-    puts "Total water balance\t\t\t\t\t : $total_water_balance"
+    # Note flow into domain is negative
+    set expected_difference [expr $boundary_flux + $total_surface_runoff]
+    puts [format "Total Flux\t\t\t\t\t\t : %e" $expected_difference]
 
     if { $i > 0 } {
-	puts [format "\tdiff from prev\t\t\t\t\t : %f" [expr $total_water_balance - $prev_total_water_balance]]
+	puts [format "\tdiff from prev\t\t\t\t\t : %e" [expr $total_water_in_domain - $prev_total_water_balance]]
 
-	set percent_diff [expr (abs(($prev_total_water_balance - $total_water_balance) - $boundary_flux)) / abs($boundary_flux) * 100]
-	puts [format "\tpercent diff from expected difference\t\t : %f" $percent_diff]
+	if [expr $expected_difference != 0.0] {
+	    set percent_diff [expr (abs(($prev_total_water_balance - $total_water_in_domain) - $expected_difference)) / abs($expected_difference) * 100]
+	    puts [format "\tpercent diff from expected difference\t\t : %.10f" $percent_diff]
+	}
 
-	set expected_water_balance [expr $prev_total_water_balance - $boundary_flux]
-	set percent_diff [expr abs(($total_water_balance - $expected_water_balance)) / $expected_water_balance * 100]
-	puts [format "\tpercent diff from expected total water sum\t : %f" $percent_diff]
+	set expected_water_balance [expr $prev_total_water_balance - $expected_difference]
+	set percent_diff [expr abs(($total_water_in_domain - $expected_water_balance)) / $expected_water_balance * 100]
+	puts [format "\tpercent diff from expected total water sum\t : %.10f" $percent_diff]
 
     }
 
-    set prev_total_water_balance [expr $total_water_balance]
+    set prev_total_water_balance [expr $total_water_in_domain]
 }
 
 
-if $passed {
-    puts "$runname : PASSED"
-} {
-    puts "$runname : FAILED"
-}
+# if $passed {
+#     puts "$runname : PASSED"
+# } {
+#     puts "$runname : FAILED"
+# }
 
