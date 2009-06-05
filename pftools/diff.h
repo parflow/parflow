@@ -45,24 +45,10 @@
 #include <stdio.h>
 #include <math.h>
 
-
-/*-----------------------------------------------------------------------
- * function prototypes
- *-----------------------------------------------------------------------*/
-
-#ifdef __STDC__
-# define        ANSI_PROTO(s) s
-#else
-# define ANSI_PROTO(s) ()
-#endif
-
-
 /* diff.c */
-void SigDiff ANSI_PROTO((Databox *v1 , Databox *v2 , int m , double absolute_zero, Tcl_DString *result, FILE *fp ));
-double DiffElt ANSI_PROTO((Databox *v1 , Databox *v2 , int i, int j, int k, int m , double absolute_zero));
-void MSigDiff ANSI_PROTO((Databox *v1 , Databox *v2 , int m, double absolute_zero, Tcl_DString *result));
-
-#undef ANSI_PROTO
+void SigDiff(Databox *v1 , Databox *v2 , int m , double absolute_zero, FILE *fp);
+double DiffElt(Databox *v1 , Databox *v2 , int i, int j, int k, int m , double absolute_zero);
+void MSigDiff(Databox *v1 , Databox *v2 , int m, double absolute_zero, Tcl_Obj *result);
 
 #endif
 

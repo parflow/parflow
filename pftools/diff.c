@@ -79,12 +79,11 @@
  *   treated as if it were exactly 0.
  *-----------------------------------------------------------------------*/
 
-void      SigDiff(v1, v2, m, absolute_zero, result, fp)
+void      SigDiff(v1, v2, m, absolute_zero, fp)
 Databox  *v1;
 Databox  *v2;
 int       m;
 double    absolute_zero;
-Tcl_DString *result;
 FILE     *fp;
 {
    double         *v1_p, *v2_p;
@@ -190,7 +189,7 @@ Databox     *v1;
 Databox     *v2;
 int          m;
 double       absolute_zero;
-Tcl_DString *result;
+Tcl_Obj     *result;
 {
    double         *v1_p, *v2_p;
 
@@ -207,13 +206,9 @@ Tcl_DString *result;
 
    char            coord[256], num[256];
 
-
-   Tcl_DStringInit(result);
-
    /*-----------------------------------------------------------------------
     * check that dimensions are the same
     *-----------------------------------------------------------------------*/
-
    nx = DataboxNx(v1);
    ny = DataboxNy(v1);
    nz = DataboxNz(v1);
@@ -221,7 +216,6 @@ Tcl_DString *result;
    /*-----------------------------------------------------------------------
     * diff the values and print the results
     *-----------------------------------------------------------------------*/
-
    if (m >= 0)
       sig_dig_rhs = 0.5 / pow(10.0, ((double) m));
    else
@@ -275,6 +269,9 @@ Tcl_DString *result;
 
    if (!m_sig_digs_everywhere)
    {
+      Tcl_Obj     *double_obj;
+      Tcl_Obj     *int_obj;
+      
       /* compute min number of sig digs */
       sig_digs = 0;
       sdiff = max_sdiff;
@@ -287,11 +284,21 @@ Tcl_DString *result;
       /* Create a Tcl list of the form: {{mi mj mk sig_digs} max_adiff} */
       /* and append it to the result string.                            */
 
-      sprintf(coord, "%d %d %d %d", mi, mj, mk, sig_digs);
-      Tcl_DStringAppendElement(result, coord);
-      sprintf(num, "%e", max_adiff);
-      Tcl_DStringAppendElement(result, num);
-         
+
+      int_obj = Tcl_NewIntObj(mi);
+      Tcl_AppendObjToObj(result, int_obj);
+
+      int_obj = Tcl_NewIntObj(mj);
+      Tcl_AppendObjToObj(result, int_obj);
+
+      int_obj = Tcl_NewIntObj(mk);
+      Tcl_AppendObjToObj(result, int_obj);
+
+      int_obj = Tcl_NewIntObj(sig_digs);
+      Tcl_AppendObjToObj(result, int_obj);
+
+      double_obj = Tcl_NewDoubleObj(max_adiff);
+      Tcl_AppendObjToObj(result, double_obj);
    }
 
 }
@@ -336,9 +343,7 @@ double    absolute_zero;
 
    if (m_sig_digs)
    {
-
       return -1;
-
    }
 
    return adiff;

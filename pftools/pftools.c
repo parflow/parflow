@@ -2567,7 +2567,11 @@ char             *argv[];
    Databox       *databox;
    
    double         min, max, mean, sum, variance, stdev;
-   char           num[32];
+
+   Tcl_Obj     *result = Tcl_GetObjResult(interp);
+   Tcl_Obj     *double_obj;
+   Tcl_Obj     *int_obj;
+
 
    /* One argument must be given */
 
@@ -2589,19 +2593,23 @@ char             *argv[];
 
    Stats(databox, &min, &max, &mean, &sum, &variance, &stdev);
 
-// sgs
-   sprintf(num, "%e", min);
-   Tcl_AppendElement(interp, num);
-   sprintf(num, "%e", max);
-   Tcl_AppendElement(interp, num);
-   sprintf(num, "%e", mean);
-   Tcl_AppendElement(interp, num);
-   sprintf(num, "%e", sum);
-   Tcl_AppendElement(interp, num);
-   sprintf(num, "%e", variance);
-   Tcl_AppendElement(interp, num);
-   sprintf(num, "%e", stdev);
-   Tcl_AppendElement(interp, num);
+   int_obj = Tcl_NewIntObj(min);
+   Tcl_AppendObjToObj(result, int_obj);
+
+   int_obj = Tcl_NewIntObj(max);
+   Tcl_AppendObjToObj(result, int_obj);
+
+   int_obj = Tcl_NewIntObj(mean);
+   Tcl_AppendObjToObj(result, int_obj);
+
+   int_obj = Tcl_NewIntObj(sum);
+   Tcl_AppendObjToObj(result, int_obj);
+
+   int_obj = Tcl_NewIntObj(variance);
+   Tcl_AppendObjToObj(result, int_obj);
+
+   int_obj = Tcl_NewIntObj(stdev);
+   Tcl_AppendObjToObj(result, int_obj);
 
    return TCL_OK;
 }
@@ -2647,8 +2655,7 @@ char             *argv[];
    int            sd;
    double         abs_zero;
 
-   Tcl_DString    result;
-
+   Tcl_Obj       *result;
    
    /* Three or four arguments may be given */
    
@@ -2716,9 +2723,10 @@ char             *argv[];
 
    /* The data sets should be compatible */
 
-   MSigDiff(databoxp, databoxq, sd, abs_zero, &result);
+   result = Tcl_GetObjResult(interp);
 
-   Tcl_DStringResult(interp, &result);
+   MSigDiff(databoxp, databoxq, sd, abs_zero, result);
+
    return TCL_OK;
       
 }
@@ -2750,8 +2758,6 @@ char             *argv[];
 
    int            sd;
    FILE           *fp = NULL;
-
-   Tcl_DString    result;
 
    int            filearg;
    double         abs_zero = 0.0;
@@ -2874,7 +2880,7 @@ char             *argv[];
          
    }
    
-   SigDiff(databoxp, databoxq, sd, abs_zero, &result, fp);
+   SigDiff(databoxp, databoxq, sd, abs_zero, fp);
 
    fflush(fp);
    fclose(fp);

@@ -73,7 +73,6 @@ void ComputeSurfaceStorage(
 	 }
       }
    }
-
 }
 
 void ComputeSubsurfaceStorage(Databox *mask,
@@ -113,6 +112,13 @@ void ComputeSubsurfaceStorage(Databox *mask,
       }
    }
 }
+
+
+/*
+
+  This is from nl_function_eval for comparison.
+			   qx_[io] = dir_x * (RPowerR(fabs(x_sl_dat[io]),0.5) / mann_dat[io]) * RPowerR(max((pp[ip]),0.0),(5.0/3.0));
+*/
 
 void ComputeSurfaceRunoff(Databox *top,
 			  Databox *slope_x, 
