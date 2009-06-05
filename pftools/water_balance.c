@@ -157,7 +157,7 @@ void ComputeSurfaceRunoff(Databox *top,
 	    {
 	       if(*DataboxCoeff(pressure, i, j, k) > 0) {
 		  *DataboxCoeff(surface_runoff, i, j, 0) = 
-		     (sqrt(*DataboxCoeff(slope_y, i, j, 0)) / *DataboxCoeff(mannings, i, j, 0)) *
+		     (sqrt( fabs(*DataboxCoeff(slope_y, i, j, 0)) ) / *DataboxCoeff(mannings, i, j, 0)) *
 		     pow(*DataboxCoeff(pressure, i, j, k), 5.0 / 3.0) * dx;
 	       }
 	    }
@@ -179,13 +179,14 @@ void ComputeSurfaceRunoff(Databox *top,
 	       if(*DataboxCoeff(pressure, i, j, k) > 0) {
 
 		  *DataboxCoeff(surface_runoff, i, j, 0) = 
-		     (sqrt(*DataboxCoeff(slope_y, i, j, 0)) / *DataboxCoeff(mannings, i, j, 0)) *
+		     (sqrt( fabs(*DataboxCoeff(slope_y, i, j, 0)) ) / *DataboxCoeff(mannings, i, j, 0)) *
 		     pow(*DataboxCoeff(pressure, i, j, k), 5.0 / 3.0) * dx;
 	       }
 	    }
 	 }
       }
    }
+
 
    for (j = 0; j < ny; j++)
    {
@@ -205,7 +206,7 @@ void ComputeSurfaceRunoff(Databox *top,
 	    {
 	       if(*DataboxCoeff(pressure, i, j, k) > 0) {
 		  *DataboxCoeff(surface_runoff, i, j, 0) = 
-		     (sqrt(*DataboxCoeff(slope_y, i, j, 0)) / *DataboxCoeff(mannings, i, j, 0)) *
+		     (sqrt( fabs(*DataboxCoeff(slope_x, i, j, 0)) ) / *DataboxCoeff(mannings, i, j, 0)) *
 		     pow(*DataboxCoeff(pressure, i, j, k), 5.0 / 3.0) * dy;
 	       }
 	    }
@@ -227,7 +228,7 @@ void ComputeSurfaceRunoff(Databox *top,
 	       if(*DataboxCoeff(pressure, i, j, k) > 0) {
 
 		  *DataboxCoeff(surface_runoff, i, j, 0) = 
-		     (sqrt(*DataboxCoeff(slope_y, i, j, 0)) / *DataboxCoeff(mannings, i, j, 0)) *
+		     (sqrt( fabs(*DataboxCoeff(slope_x, i, j, 0)) ) / *DataboxCoeff(mannings, i, j, 0)) *
 		     pow(*DataboxCoeff(pressure, i, j, k), 5.0 / 3.0) * dy;
 	       }
 	    }

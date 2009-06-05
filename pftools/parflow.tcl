@@ -100,6 +100,7 @@ namespace eval Parflow {
     namespace export pfsurfacestorage
     namespace export pfsubsurfacestorage
     namespace export pfsurfacerunoff
+    namespace export pfwritedb
 
     namespace export pfprintdata
     namespace export pfprintdiff
@@ -135,7 +136,7 @@ proc Parflow::PFWriteArray {file name} {
 #
 # Save the current state to file
 #
-proc Parflow::PFWriteDB {name} {
+proc Parflow::pfwritedb {name} {
 
     #
     # SGS: if file exists we should probably prompt to overwrite
@@ -149,6 +150,7 @@ proc Parflow::PFWriteDB {name} {
 
     close $file
 }
+
 
 #
 # Sets a value in the database
@@ -206,7 +208,7 @@ proc Parflow::pfrun { runname args } {
     # Write out the current state of the database
     # 
     
-    PFWriteDB $runname
+    pfwritedb $runname
 
     #
     # If user does not set the hostname then use this machine
