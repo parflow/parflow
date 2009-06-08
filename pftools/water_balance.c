@@ -105,10 +105,10 @@ void ComputeSubsurfaceStorage(Databox *mask,
       {
 
 	 subsurface_storage_coeff[m] =  saturation_coeff[m] * porosity_coeff[m] * dx * dy * dz;
-	 
-	 if ( pressure_coeff[m] > 0 ) {
+
+//	 if ( pressure_coeff[m] > 0 ) {
 	    subsurface_storage_coeff[m] += pressure_coeff[m] * specific_storage_coeff[m] * saturation_coeff[m] * porosity_coeff[m] * dx * dy * dz;
-	 } 
+//	 }
       }
    }
 }
