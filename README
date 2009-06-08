@@ -1,6 +1,5 @@
 See the "User's Manual" for info on "Getting Started" in ParFlow.
 
-
 Note this version of Parflow uses a new configure/make system based on
 the standard GNU autoconf configure system.  This replaces the home
 grown set of scripts used in previous versions and should be more

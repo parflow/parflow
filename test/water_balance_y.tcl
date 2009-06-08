@@ -13,7 +13,7 @@ set tcl_precision 16
 # 0 = flat top (no overland flow)
 # 1 = slope to upper-y 
 #---------------------------------------------------------
-set use_slopes 0 
+set use_slopes -1
 
 #---------------------------------------------------------
 # Flux on the top surface
@@ -410,7 +410,7 @@ pfset Solver                                             Richards
 pfset Solver.MaxIter                                     2500
 
 pfset Solver.Nonlinear.MaxIter                           300
-pfset Solver.Nonlinear.ResidualTol                       1e-12
+pfset Solver.Nonlinear.ResidualTol                       1e-9
 pfset Solver.Nonlinear.EtaChoice                         Walker1 
 pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaValue                          0.001

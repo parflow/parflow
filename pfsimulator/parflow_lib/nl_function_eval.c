@@ -764,8 +764,7 @@ Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/
 	    }
 
 	    case FluxBC:
-            {
-	       double sgs_sum = 0;
+	    {
 	       BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
 	       {
 		  ip   = SubvectorEltIndex(p_sub, i, j, k);
@@ -862,10 +861,8 @@ Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/
 		  /* Add the correct boundary term */
 		  u_new = u_new * bc_patch_values[ival];
 		  fp[ip] += dt * dir * u_new;
-		  sgs_sum += dt * dir * u_new;
 	       });
 
-	       printf("SGS : %f %.16e\n", time, sgs_sum);
 	       break;
 	    }     /* End fluxbc case */
 
