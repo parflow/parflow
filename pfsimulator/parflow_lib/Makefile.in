@@ -148,7 +148,8 @@ OBJS = \
 	write_parflow_silo.o \
 	wrf_parflow.o \
 	n_vector.o \
-	nl_function_eval.o 
+	nl_function_eval.o \
+	evaptranssum.o 
 
 $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB): $(OBJS) $(AMPS_LIB_DEPEND)
 	@AR@ rus $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB) $(OBJS)

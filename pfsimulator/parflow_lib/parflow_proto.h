@@ -952,3 +952,5 @@ int *ComputeTop (  Problem     *problem,
 		   Vector      *vector);
 
 
+/* evaptranssum.c */
+void EvapTransSum(ProblemData *problem_data, double dt, Vector *evap_trans_sum, Vector *evap_trans);

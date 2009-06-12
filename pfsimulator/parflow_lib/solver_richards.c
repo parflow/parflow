@@ -79,6 +79,7 @@ typedef struct
    int                write_silo_concen;          /* write concentrations? */
    int                write_silo_mask;            /* write mask? */
    int                write_silo_evaptrans;       /* write evaptrans? */
+   int                write_silo_evaptrans_sum;   /* write evaptrans sum? */
    int                write_silo_slopes;          /* write slopes? */
    int                write_silo_mannings;        /* write mannings? */
    int                write_silo_specific_storage;/* write specific storage */
@@ -122,6 +123,11 @@ typedef struct
    Vector       *old_saturation;
    Vector       *old_pressure;
    Vector       *mask;
+
+   /* 
+    * Running sum of evaporation and transpiration.
+    */
+   Vector       *evap_trans_sum;
 
    /* 
     * sk: Vector that contains the outflow at the boundary 
@@ -336,6 +342,9 @@ void SetupRichards(PFModule *this_module) {
       instance_xtra -> mask = NewVector( grid, 1, 1 );
       InitVectorAll(instance_xtra -> mask, 0.0);
 
+      instance_xtra -> evap_trans_sum = NewVector( grid, 1, 0 );
+      InitVectorAll(instance_xtra -> evap_trans_sum, 0.0);
+
       /* Set initial pressures and pass around ghost data to start */
       PFModuleInvoke(void, ic_phase_pressure, 
       (instance_xtra -> pressure, instance_xtra -> mask, problem_data, problem));
@@ -542,7 +551,8 @@ void AdvanceRichards(PFModule *this_module,
    int           start_count         = ProblemStartCount(problem);
    double        dump_interval       = ProblemDumpInterval(problem);
 
-  Vector *porosity  = ProblemDataPorosity(problem_data);
+  Vector *porosity                   = ProblemDataPorosity(problem_data);
+  Vector *evap_trans_sum             = instance_xtra -> evap_trans_sum;
 
 /* sk: Vector that contains the outflow at the boundary*/
    Subgrid      *subgrid;
@@ -844,6 +854,13 @@ void AdvanceRichards(PFModule *this_module,
 
       any_file_dumped = 0;
 
+      /***************************************************************
+       * Compute running sum of evap trans for water balance 
+       **************************************************************/
+      if(public_xtra -> write_silo_evaptrans_sum) {
+	 EvapTransSum(problem_data, dt, evap_trans_sum, evap_trans);
+      }
+
       /***************************************************************/
       /*                 Print the pressure and saturation           */
       /***************************************************************/
@@ -884,6 +901,16 @@ void AdvanceRichards(PFModule *this_module,
 	    WriteSilo(file_prefix, file_postfix, evap_trans, 
 		      t, instance_xtra -> file_number, "EvapTrans");
 	    any_file_dumped = 1;
+	 }
+
+	 if(public_xtra -> write_silo_evaptrans_sum) {
+	    sprintf(file_postfix, "evaptranssum.%05d", instance_xtra -> file_number );
+	    WriteSilo(file_prefix, file_postfix, evap_trans_sum, 
+		      t, instance_xtra -> file_number, "EvapTransSum");
+	    any_file_dumped = 1;
+	    
+	    /* reset sum after output */
+	    PFVConstInit(0.0, evap_trans_sum);
 	 }
 
 	 if(public_xtra -> print_lsm_sink) 
@@ -1008,6 +1035,15 @@ void AdvanceRichards(PFModule *this_module,
 	 any_file_dumped = 1;
       }
 
+      if(public_xtra -> write_silo_evaptrans_sum) {
+	 sprintf(file_postfix, "evaptranssum.%05d", instance_xtra -> file_number );
+	 WriteSilo(file_prefix, file_postfix, evap_trans_sum, 
+		   t, instance_xtra -> file_number, "EvapTransSum");
+	 any_file_dumped = 1;
+	 /* reset sum after output */
+	 PFVConstInit(0.0, evap_trans_sum);
+      }
+      
       if(public_xtra -> print_lsm_sink) 
       {
 	 /*sk Print the sink terms from the land surface model*/
@@ -1687,6 +1723,16 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    }
    public_xtra -> write_silo_evaptrans = switch_value;
 
+   sprintf(key, "%s.WriteSiloEvapTransSum", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+      switch_name, key);
+   }
+   public_xtra -> write_silo_evaptrans_sum = switch_value;
+
    sprintf(key, "%s.WriteSiloConcentration", name);
    switch_name = GetStringDefault(key, "False");
    switch_value = NA_NameToIndex(switch_na, switch_name);
@@ -1746,6 +1792,7 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
        public_xtra -> write_silo_specific_storage ||
        public_xtra -> write_silo_slopes ||
        public_xtra -> write_silo_evaptrans ||
+       public_xtra -> write_silo_evaptrans_sum ||
        public_xtra -> write_silo_mannings
       ) {
       WriteSiloInit(GlobalsOutFileName);
