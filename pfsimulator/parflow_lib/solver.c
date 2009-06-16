@@ -42,8 +42,7 @@ amps_ThreadLocalDcl(PFModule *, Solver_module);
  * Solve
  *--------------------------------------------------------------------------*/
 
-void
-                Solve()
+void Solve()
 {
    PFModule       *solver;
    

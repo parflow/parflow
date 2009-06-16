@@ -884,8 +884,6 @@ Grid      *grid;
 double    *temp_data;
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
-   int	         max_search_rad  = (public_xtra -> max_search_rad);
    InstanceXtra  *instance_xtra;
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
@@ -1028,10 +1026,7 @@ void  PGSRFFreePublicXtra()
 
 int  PGSRFSizeOfTempData()
 {
-   PFModule	 *this_module = ThisPFModule;
-   InstanceXtra	 *instance_xtra = PFModuleInstanceXtra(this_module);
    int		 size = 0;
-
    return (size);
 }
 

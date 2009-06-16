@@ -156,6 +156,13 @@ if test -z "$MKDIR_P"; then
    AC_MSG_ERROR([mkdir not found])
 fi
 
+# Some additional compiler flags
+case $CC in
+   gcc*)
+      C_FLAGS="-Wall $C_FLAGS"
+      ;;
+esac
+
 # For insure add -Zsl option for linking
 case $CC in 
    *insure*)

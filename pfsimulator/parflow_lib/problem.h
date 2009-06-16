@@ -110,6 +110,14 @@ typedef struct
    GeomSolid      *domain;
    GrGeomSolid    *gr_domain;
 
+   /* 
+      This is a NX * NY vector of Z indices to the top
+      of the domain.
+      
+      -1 means domain is not present at that i,j index.
+   */
+   Vector         *index_of_domain_top;
+
    Vector         *permeability_x;
    Vector         *permeability_y;
    Vector         *permeability_z;
@@ -209,6 +217,8 @@ typedef struct
 
 #define ProblemDataDomain(problem_data)         ((problem_data) -> domain)
 #define ProblemDataGrDomain(problem_data)       ((problem_data) -> gr_domain)
+
+#define ProblemDataIndexOfDomainTop(problem_data)  ((problem_data) -> index_of_domain_top)
 
 #define ProblemDataPermeabilityX(problem_data)  ((problem_data) -> permeability_x)
 #define ProblemDataPermeabilityY(problem_data)  ((problem_data) -> permeability_y)

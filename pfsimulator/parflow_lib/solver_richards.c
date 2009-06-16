@@ -82,7 +82,8 @@ typedef struct
    int                write_silo_evaptrans_sum;   /* write evaptrans sum? */
    int                write_silo_slopes;          /* write slopes? */
    int                write_silo_mannings;        /* write mannings? */
-   int                write_silo_specific_storage;/* write specific storage */
+   int                write_silo_specific_storage;/* write specific storage? */
+   int                write_silo_overland_sum;    /* write sum of overland outflow? */
 
 } PublicXtra; 
 
@@ -128,6 +129,7 @@ typedef struct
     * Running sum of evaporation and transpiration.
     */
    Vector       *evap_trans_sum;
+   Vector       *overland_sum;
 
    /* 
     * sk: Vector that contains the outflow at the boundary 
@@ -212,6 +214,8 @@ void SetupRichards(PFModule *this_module) {
 
    /* do turning bands (and other stuff maybe) */
    PFModuleInvoke(void, set_problem_data, (problem_data));
+   ComputeTop(problem, problem_data);
+
    gr_domain = ProblemDataGrDomain(problem_data);
 
    if ( print_subsurf_data )
@@ -344,6 +348,11 @@ void SetupRichards(PFModule *this_module) {
 
       instance_xtra -> evap_trans_sum = NewVector( grid, 1, 0 );
       InitVectorAll(instance_xtra -> evap_trans_sum, 0.0);
+
+      if(public_xtra -> write_silo_overland_sum) {
+	 instance_xtra -> overland_sum = NewVector( grid2d, 1, 1 );
+	 InitVectorAll(instance_xtra -> overland_sum, 0.0);
+      }
 
       /* Set initial pressures and pass around ghost data to start */
       PFModuleInvoke(void, ic_phase_pressure, 
@@ -533,8 +542,6 @@ void AdvanceRichards(PFModule *this_module,
    Problem      *problem           = (public_xtra -> problem);
 
    int           max_iterations      = (public_xtra -> max_iterations);
-   int           print_press         = (public_xtra -> print_press);
-   int           print_velocities    = (public_xtra -> print_velocities);
    int           print_satur         = (public_xtra -> print_satur);
    int           print_wells         = (public_xtra -> print_wells);
 
@@ -553,6 +560,7 @@ void AdvanceRichards(PFModule *this_module,
 
   Vector *porosity                   = ProblemDataPorosity(problem_data);
   Vector *evap_trans_sum             = instance_xtra -> evap_trans_sum;
+  Vector *overland_sum               = instance_xtra -> overland_sum;
 
 /* sk: Vector that contains the outflow at the boundary*/
    Subgrid      *subgrid;
@@ -583,7 +591,7 @@ void AdvanceRichards(PFModule *this_module,
    CommHandle   *handle;
 
    char          dt_info;
-   char          file_prefix[64], file_postfix[64], clm_file_dir_local[64];
+   char          file_prefix[64], file_postfix[64];
 
    sprintf(file_prefix, GlobalsOutFileName);
 
@@ -820,6 +828,15 @@ void AdvanceRichards(PFModule *this_module,
 	 {
 	    converged = 0;
 	    conv_failures++;
+
+	    /* 
+	       SGSOFS:
+	       if converged do addition of overland flow sum here.
+	    */
+	    OverlandSum(problem_data, 
+			instance_xtra -> pressure,
+			dt, 
+			instance_xtra -> overland_sum);
 	 }
 	 else 
 	    converged = 1;
@@ -859,6 +876,17 @@ void AdvanceRichards(PFModule *this_module,
        **************************************************************/
       if(public_xtra -> write_silo_evaptrans_sum) {
 	 EvapTransSum(problem_data, dt, evap_trans_sum, evap_trans);
+      }
+
+
+      /***************************************************************
+       * Compute running sum of overland outflow for water balance 
+       **************************************************************/
+      if(public_xtra -> write_silo_overland_sum) {
+	    OverlandSum(problem_data, 
+			instance_xtra -> pressure,
+			dt, 
+			instance_xtra -> overland_sum);
       }
 
       /***************************************************************/
@@ -912,6 +940,17 @@ void AdvanceRichards(PFModule *this_module,
 	    /* reset sum after output */
 	    PFVConstInit(0.0, evap_trans_sum);
 	 }
+
+	 if(public_xtra -> write_silo_overland_sum) {
+	    sprintf(file_postfix, "overlandsum.%05d", instance_xtra -> file_number );
+	    WriteSilo(file_prefix, file_postfix, overland_sum, 
+		      t, instance_xtra -> file_number, "OverlandSum");
+	    any_file_dumped = 1;
+	    
+	    /* reset sum after output */
+	    PFVConstInit(0.0, overland_sum);
+	 }
+
 
 	 if(public_xtra -> print_lsm_sink) 
 	 {
@@ -1042,6 +1081,16 @@ void AdvanceRichards(PFModule *this_module,
 	 any_file_dumped = 1;
 	 /* reset sum after output */
 	 PFVConstInit(0.0, evap_trans_sum);
+      }
+
+      if(public_xtra -> write_silo_overland_sum) {
+	 sprintf(file_postfix, "overlandsum.%05d", instance_xtra -> file_number );
+	 WriteSilo(file_prefix, file_postfix, overland_sum, 
+		   t, instance_xtra -> file_number, "OverlandSum");
+	 any_file_dumped = 1;
+	 
+	 /* reset sum after output */
+	 PFVConstInit(0.0, overland_sum);
       }
       
       if(public_xtra -> print_lsm_sink) 
@@ -1274,12 +1323,6 @@ PFModule *SolverRichardsInitInstanceXtra()
 
    (instance_xtra -> problem_data) = NewProblemData(grid,grid2d);
    
-   /*-------------------------------------------------------------------
-    * Set up temporary vectors
-    *-------------------------------------------------------------------*/
-
-   // (instance_xtra -> ctemp)           = NewTempVector(grid, 1, 3);
-
    /*-------------------------------------------------------------------
     * Initialize module instances
     *-------------------------------------------------------------------*/
@@ -1732,6 +1775,16 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
       switch_name, key);
    }
    public_xtra -> write_silo_evaptrans_sum = switch_value;
+
+   sprintf(key, "%s.WriteSiloOverlandSum", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+      switch_name, key);
+   }
+   public_xtra -> write_silo_overland_sum = switch_value;
 
    sprintf(key, "%s.WriteSiloConcentration", name);
    switch_name = GetStringDefault(key, "False");

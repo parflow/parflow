@@ -1422,7 +1422,7 @@ PFModule *SolverDiffusionInitInstanceXtra()
     *-------------------------------------------------------------------*/
 
    (instance_xtra -> problem_data) = NewProblemData(grid,grid2d);
-   
+
    /*-------------------------------------------------------------------
     * Initialize module instances
     *-------------------------------------------------------------------*/

@@ -657,7 +657,6 @@ double       time;          /* Current time - needed to determine where on
 	    BCPressureType4 *bc_pressure_type4;
 	    Vector          *tmp_vector;
 	    Subvector       *subvector;
-	    double          *data;
 	    char            *filename;
 	    double          *tmpp;
 	    int              itmp;
@@ -720,7 +719,6 @@ double       time;          /* Current time - needed to determine where on
 	    BCPressureType5 *bc_pressure_type5;
 	    Vector          *tmp_vector;
 	    Subvector       *subvector;
-	    double          *data;
 	    char            *filename;
 	    double          *tmpp;
 	    int              itmp;
@@ -978,7 +976,6 @@ void BCPressureFreeInstanceXtra()
       if(instance_xtra -> elevations) {
 	 ProblemData *problem_data        = instance_xtra -> problem_data;
 	 BCPressureData *bc_pressure_data = ProblemDataBCPressureData(problem_data);
-	 Problem *problem                 = instance_xtra -> problem;
 	 int  num_patches;      
 	 SubgridArray   *subgrids         = GridSubgrids(instance_xtra -> grid);
 	 int ipatch;

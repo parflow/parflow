@@ -94,15 +94,11 @@ int          zero;
 
    double             *rhs_ptr;
    double             *soln_ptr;
-   double              value;
-
-   int                 index[3];
 
    int                 ix,   iy,   iz;
    int                 nx,   ny,   nz;
    int                 nx_v, ny_v, nz_v;
    int                 i, j, k;
-   int                 q_i,   q_j,   q_k;
    int                 num_i, num_j, num_k;
    int                 iv;
 
@@ -324,12 +320,8 @@ double       *temp_data;
    Submatrix          *pf_sub;
    double             *cp, *wp, *ep, *sop, *np, *lp, *up;
 
-   double              coeffs[7];
-   double              coeffs_symm[4];
-   
    int                 i, j, k;
    int                 num_i, num_j, num_k;
-   int                 q_i,   q_j,   q_k;
    int                 ix, iy, iz;
    int                 nx, ny, nz;
    int                 nx_m, ny_m, nz_m;
@@ -341,7 +333,6 @@ double       *temp_data;
    int                 no_ghosts[6]            = {0, 0, 0, 0, 0, 0};
    int                 stencil_indices[7]      = {0, 1, 2, 3, 4, 5, 6};
    int                 stencil_indices_symm[4] = {0, 1, 2, 3};
-   int                 index[3];
    int                 ilo[3];
    int                 ihi[3];
    
@@ -596,8 +587,6 @@ double       *temp_data;
 	    int boxnum  = -1;
 	    int action  = 0; // set values
 	    int stencil;
-
-	    double *values = SubmatrixStencilData(pf_sub, 0);
 
 	    hypre_Box          *set_box;
 	    hypre_Box          *value_box;

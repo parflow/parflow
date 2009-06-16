@@ -172,10 +172,11 @@ void ComputeSurfaceRunoff(Databox *top,
 	       Found either domain boundary or outside of active area.
 	       Compute runnoff if slope is running off of active region.
 	    */
+
+	    k = *(DataboxCoeff(top, i, j, 0));
 	    if( *DataboxCoeff(slope_y, i, j, 0) < 0 ) 
 	    {
 	       if(*DataboxCoeff(pressure, i, j, k) > 0) {
-
 		  *DataboxCoeff(surface_runoff, i, j, 0) = 
 		     (sqrt( fabs(*DataboxCoeff(slope_y, i, j, 0)) ) / *DataboxCoeff(mannings, i, j, 0)) *
 		     pow(*DataboxCoeff(pressure, i, j, k), 5.0 / 3.0) * dx;
@@ -221,6 +222,7 @@ void ComputeSurfaceRunoff(Databox *top,
 	       Found either domain boundary or outside of active area.
 	       Compute runnoff if slope is running off of active region.
 	    */
+	    k = *(DataboxCoeff(top, i, j, 0));
 	    if( *DataboxCoeff(slope_x, i, j, 0) < 0 ) 
 	    {
 	       if(*DataboxCoeff(pressure, i, j, k) > 0) {

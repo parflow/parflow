@@ -425,10 +425,6 @@ void  WJacobiFreePublicXtra()
 
 int  WJacobiSizeOfTempData()
 {
-   PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra   = PFModuleInstanceXtra(this_module);
-
    int  sz = 0;
-
    return sz;
 }

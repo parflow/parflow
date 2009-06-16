@@ -934,7 +934,7 @@ PFModule    *DiscretizePressureInitInstanceXtra(
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
 
-   int            phase, num_phases;
+   int            num_phases;
 
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
@@ -1025,7 +1025,7 @@ void  DiscretizePressureFreeInstanceXtra()
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
 
-   int  phase, num_phases;
+   int  num_phases;
 
 
    if(instance_xtra)
@@ -1085,13 +1085,6 @@ void  DiscretizePressureFreePublicXtra()
 
 int  DiscretizePressureSizeOfTempData()
 {
-   PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra   = PFModuleInstanceXtra(this_module);
-
-   int  phase, num_phases;
    int  sz = 0;
-
-   num_phases = ProblemNumPhases(instance_xtra -> problem);
-
    return sz;
 }

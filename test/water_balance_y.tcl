@@ -3,6 +3,8 @@
 
 set tcl_precision 16
 
+set verbose 0
+
 #---------------------------------------------------------
 # Some controls for the test
 #---------------------------------------------------------
@@ -18,8 +20,6 @@ set use_slopes -1
 #---------------------------------------------------------
 # Flux on the top surface
 #---------------------------------------------------------
-#set rain_flux -0.05
-#set rain_flux 0.000001
 set rain_flux -0.05
 set rec_flux  0.0
 
@@ -435,6 +435,8 @@ pfset Solver.WriteSiloConcentration                     True
 pfset Solver.WriteSiloSlopes                            True
 pfset Solver.WriteSiloMask                              True
 pfset Solver.WriteSiloEvapTrans                         True
+pfset Solver.WriteSiloEvapTransSum                      True
+pfset Solver.WriteSiloOverlandSum                       True
 pfset Solver.WriteSiloMannings                          True
 pfset Solver.WriteSiloSpecificStorage                   True
 
@@ -478,9 +480,11 @@ set surface_area_of_domain [expr [pfget ComputationalGrid.DX] * [pfget Computati
 set prev_total_water_balance 0.0
 
 for {set i 0} {$i <= 19} {incr i} {
-    puts "======================================================"
-    puts "Timestep $i"
-    puts "======================================================"
+    if $verbose {
+	puts "======================================================"
+	puts "Timestep $i"
+	puts "======================================================"
+    }
     set total_water_in_domain 0.0
 
     set filename [format "%s.out.press.%05d.pfb" $runname $i]
@@ -488,7 +492,9 @@ for {set i 0} {$i <= 19} {incr i} {
     set surface_storage [pfsurfacestorage $top $pressure]
     pfsave $surface_storage -silo "surface_storage.$i.silo"
     set total_surface_storage [pfsum $surface_storage]
-    puts [format "Surface storage\t\t\t\t\t : %.16e" $total_surface_storage]
+    if $verbose {
+	puts [format "Surface storage\t\t\t\t\t : %.16e" $total_surface_storage]
+    }
     set total_water_in_domain [expr $total_water_in_domain + $total_surface_storage]
 
     set filename [format "%s.out.satur.%05d.pfb" $runname $i]
@@ -497,41 +503,73 @@ for {set i 0} {$i <= 19} {incr i} {
     set subsurface_storage [pfsubsurfacestorage $mask $porosity $pressure $saturation $specific_storage]
     pfsave $subsurface_storage -silo "subsurface_storage.$i.silo"
     set total_subsurface_storage [pfsum $subsurface_storage]
-    puts [format "Subsurface storage\t\t\t\t : %.16e" $total_subsurface_storage]
+    if $verbose {
+	puts [format "Subsurface storage\t\t\t\t : %.16e" $total_subsurface_storage]
+    }
     set total_water_in_domain [expr $total_water_in_domain + $total_subsurface_storage]
 
-    puts [format "Total water in domain\t\t\t\t : %.16e" $total_water_in_domain]
-    puts ""
+    if $verbose {
+	puts [format "Total water in domain\t\t\t\t : %.16e" $total_water_in_domain]
+	puts ""
+    }
 
-    set surface_runoff [pfsurfacerunoff $top $slope_x $slope_y $mannings $pressure]
-    pfsave $surface_runoff -silo "surface_runoff.$i.silo"
-    set total_surface_runoff [expr [pfsum $surface_runoff] * [pfget TimeStep.Value]]
-    puts [format "Surface runoff\t\t\t\t\t : %.16e" $total_surface_runoff]
+    set total_surface_runoff 0.0
+    if { $i > 0} {
+	set surface_runoff [pfsurfacerunoff $top $slope_x $slope_y $mannings $pressure]
+	pfsave $surface_runoff -silo "surface_runoff.$i.silo"
+	set total_surface_runoff [expr [pfsum $surface_runoff] * [pfget TimeStep.Value]]
+	if $verbose {
+	    puts [format "Surface runoff from pftools\t\t\t : %.16e" $total_surface_runoff]
+	}
+
+	set filename [format "%s.out.overlandsum.%05d.silo" $runname $i]
+	set surface_runoff2 [pfload $filename]
+	set total_surface_runoff2 [pfsum $surface_runoff2]
+	if $verbose {
+	    puts [format "Surface runoff from pfsimulator\t\t\t : %.16e" $total_surface_runoff2]
+	}
+	
+	if ![pftestIsEqual $total_surface_runoff $total_surface_runoff2 "Surface runoff comparison" ] {
+	    set passed 0
+	}
+    }
 
     if [expr $i < 7] {
 	set bc_flux [pfget Patch.z-upper.BCPressure.$i.Value]
     } {
 	set bc_flux [pfget Patch.z-upper.BCPressure.6.Value]
     }
+
     set boundary_flux [expr $bc_flux * $surface_area_of_domain * [pfget TimeStep.Value]]
-    puts [format "BC flux\t\t\t\t\t\t : %.16e" $boundary_flux]
+    if $verbose {
+	puts [format "BC flux\t\t\t\t\t\t : %.16e" $boundary_flux]
+    }
 
     # Note flow into domain is negative
     set expected_difference [expr $boundary_flux + $total_surface_runoff]
-    puts [format "Total Flux\t\t\t\t\t : %.16e" $expected_difference]
+    if $verbose {
+	puts [format "Total Flux\t\t\t\t\t : %.16e" $expected_difference]
+    }
 
     if { $i > 0 } {
-	puts ""
-	puts [format "Diff from prev total\t\t\t\t : %.16e" [expr $total_water_in_domain - $prev_total_water_balance]]
+
+	if $verbose {
+	    puts ""
+	    puts [format "Diff from prev total\t\t\t\t : %.16e" [expr $total_water_in_domain - $prev_total_water_balance]]
+	}
 
 	if [expr $expected_difference != 0.0] {
 	    set percent_diff [expr (abs(($prev_total_water_balance - $total_water_in_domain) - $expected_difference)) / abs($expected_difference) * 100]
-	    puts [format "Percent diff from expected difference\t\t : %.10f" $percent_diff]
+	    if $verbose {
+		puts [format "Percent diff from expected difference\t\t : %.10f" $percent_diff]
+	    }
 	}
 
 	set expected_water_balance [expr $prev_total_water_balance - $expected_difference]
 	set percent_diff [expr abs(($total_water_in_domain - $expected_water_balance)) / $expected_water_balance * 100]
-	puts [format "Percent diff from expected total water sum\t : %.10f" $percent_diff]
+	if $verbose {
+	    puts [format "Percent diff from expected total water sum\t : %.10f" $percent_diff]
+	}
 
 	if [expr $percent_diff > 0.005] {
 	    puts "Error: Water balance is not correct"
@@ -543,7 +581,9 @@ for {set i 0} {$i <= 19} {incr i} {
     set prev_total_water_balance [expr $total_water_in_domain]
 }
 
-puts "\n\n"
+if $verbose {
+    puts "\n\n"
+}
 
 if $passed {
     puts "$runname : PASSED"

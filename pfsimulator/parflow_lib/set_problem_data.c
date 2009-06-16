@@ -92,6 +92,7 @@ ProblemData  *problem_data;
    {
       PFModuleInvoke(void, geometries, (problem_data));
       PFModuleInvoke(void, domain, (problem_data));
+
       PFModuleInvoke(void, permeability,
 		     (problem_data,
 		      ProblemDataPermeabilityX(problem_data),

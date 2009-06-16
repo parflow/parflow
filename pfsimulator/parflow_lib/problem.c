@@ -282,7 +282,8 @@ int	   solver;   /* Designates the solver from which this routine is
 
    ProblemWellPackage(problem) =
       PFModuleNewModule(WellPackage, (num_phases, num_contaminants));
- 
+
+
    return problem;
 }
 
@@ -364,6 +365,8 @@ Grid          *grid2d;
    ProblemDataTSlopeX(problem_data) = NewVector(grid2d, 1, 1); //sk
    ProblemDataTSlopeY(problem_data) = NewVector(grid2d, 1, 1); //sk
    ProblemDataMannings(problem_data) = NewVector(grid2d, 1, 1); //sk
+
+   ProblemDataIndexOfDomainTop(problem_data) = NewVector(grid2d, 1, 1); 
 
    ProblemDataPorosity(problem_data) = NewVector(grid, 1, 1);
 

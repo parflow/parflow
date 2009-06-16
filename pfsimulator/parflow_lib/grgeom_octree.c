@@ -2157,7 +2157,7 @@ GrGeomOctree *grgeom_octree;
             amps_Fprintf(file,  "0,");
          }
       }
-      if (GrGeomOctreeHasFace(grgeom_octree,GrGeomOctreeNumFaces-1))
+      if (GrGeomOctreeHasFace(grgeom_octree,(GrGeomOctreeNumFaces-1)))
       {
          amps_Fprintf(file,  "1\n");
       }

@@ -162,7 +162,6 @@ void     WriteSiloInit(char    *file_prefix)
 
 #ifdef HAVE_SILO
    int p = amps_Rank(amps_CommWorld);
-   int P = amps_Size(amps_CommWorld);
    if ( p == 0 )
    {
       sprintf(filename, "%s", file_prefix);
@@ -200,8 +199,6 @@ double time, int step, char *variable_name)
 
    int             g;
    int             p, P;
-
-   long            size;
 
    char            file_extn[7] = "silo";
    char            filename[512];

@@ -393,8 +393,7 @@ Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/
    }
 
    bc_struct = PFModuleInvoke(BCStruct *, bc_pressure, 
-   (problem_data, grid, gr_domain, time));
-
+			      (problem_data, grid, gr_domain, time));
 
    /* Get boundary pressure values for Dirichlet boundaries.   */
    /* These are needed for upstream weighting in mobilities - need boundary */

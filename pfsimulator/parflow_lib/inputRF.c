@@ -251,9 +251,6 @@ void  InputRFFreePublicXtra()
 
 int  InputRFSizeOfTempData()
 {
-   PFModule      *this_module = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
    int           size = 0; 
-
-   return (size);
+   return size;
 }

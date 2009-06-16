@@ -37,7 +37,6 @@
 amps_ThreadLocalDcl(PFModule *, Solver_module);
 amps_ThreadLocalDcl(PFModule *, solver);
 amps_ThreadLocalDcl(Vector   *, evap_trans);
-amps_ThreadLocalDcl(int      *, top);
 
 void wrfparflowinit_(char *input_file) {
    Grid         *grid;
@@ -107,10 +106,6 @@ void wrfparflowinit_(char *input_file) {
    amps_ThreadLocal(evap_trans) = NewVector( grid, 1, 1 );
    InitVectorAll(amps_ThreadLocal(evap_trans), 0.0);
 
-   Problem     *problem           = GetProblemRichards(amps_ThreadLocal(solver));
-   ProblemData *problem_data      = GetProblemDataRichards(amps_ThreadLocal(solver));
-
-   amps_ThreadLocal(top)          = ComputeTop(problem, problem_data, amps_ThreadLocal(evap_trans));
 }
 
 void wrfparflowadvance_(double *current_time, 
@@ -126,6 +121,8 @@ void wrfparflowadvance_(double *current_time,
                         int    *ghost_size_j_upper)
 
 {
+   ProblemData *problem_data      = GetProblemDataRichards(amps_ThreadLocal(solver));
+
    double        stop_time           = *current_time + *dt;
    
    Vector       *pressure_out;
@@ -142,7 +139,7 @@ void wrfparflowadvance_(double *current_time,
 	  *ghost_size_i_lower, *ghost_size_j_lower, 
 	  *ghost_size_i_upper, *ghost_size_j_upper,
 	  amps_ThreadLocal(evap_trans), 
-          amps_ThreadLocal(top));
+          ProblemDataIndexOfDomainTop(problem_data));
 
    /*
     * Exchange ghost layer data for the newly set fluxes
@@ -174,17 +171,17 @@ void wrfparflowadvance_(double *current_time,
    PF2WRF(pressure_out,   wrf_pressure,   *num_soil_layers, 
 	  *ghost_size_i_lower, *ghost_size_j_lower, 
 	  *ghost_size_i_upper, *ghost_size_j_upper,
-	  amps_ThreadLocal(top));
+	  ProblemDataIndexOfDomainTop(problem_data));
 
    PF2WRF(porosity_out,   wrf_porosity,   *num_soil_layers,
 	  *ghost_size_i_lower, *ghost_size_j_lower, 
 	  *ghost_size_i_upper, *ghost_size_j_upper,
-	  amps_ThreadLocal(top));
+	  ProblemDataIndexOfDomainTop(problem_data));
 
    PF2WRF(saturation_out, wrf_saturation, *num_soil_layers,
 	  *ghost_size_i_lower, *ghost_size_j_lower, 
 	  *ghost_size_i_upper, *ghost_size_j_upper,
-	  amps_ThreadLocal(top));  
+	  ProblemDataIndexOfDomainTop(problem_data));  
 
 }
 
@@ -203,7 +200,7 @@ void WRF2PF(
    int     ghost_size_i_upper,
    int     ghost_size_j_upper,
    Vector *pf_vector,
-   int *top) 
+   Vector *top) 
 {
 
    Grid       *grid     = VectorGrid(pf_vector);
@@ -220,11 +217,13 @@ void WRF2PF(
       int ny = SubgridNY(subgrid);
 
       int wrf_nx =  nx + ghost_size_i_lower + ghost_size_i_upper;
-      int wrf_ny =  ny + ghost_size_j_lower + ghost_size_j_upper;
+//      int wrf_ny =  ny + ghost_size_j_lower + ghost_size_j_upper;
 
       Subvector *subvector = VectorSubvector(pf_vector, sg);
-      
       double *subvector_data = SubvectorData(subvector);
+
+      Subvector *top_subvector = VectorSubvector(top, sg);
+      double    *top_data      = SubvectorData(top_subvector);
 
       int i, j, k;
  
@@ -232,11 +231,11 @@ void WRF2PF(
       {					       
 	 for (j = iy; j < iy + ny; j++)		
 	 {
-	    int top_index = (i-ix) + ((j-iy) * nx);
+	    int top_index = SubvectorEltIndex(top_subvector, i, j, 0);
 
 	    // SGS What to do if near bottom such that
 	    // there are not wrf_depth values?
-	    int iz = top[top_index] - (wrf_depth - 1);
+	    int iz = top_data[top_index] - (wrf_depth - 1);
 	    for (k = iz; k < iz + wrf_depth; k++)		
 	    {
 	       int pf_index = SubvectorEltIndex(subvector, i, j, k);
@@ -263,12 +262,11 @@ void PF2WRF(
    int     ghost_size_j_lower,
    int     ghost_size_i_upper,
    int     ghost_size_j_upper,
-   int *top) 
+   Vector *top) 
 {
 
    Grid       *grid     = VectorGrid(pf_vector);
    int sg;
-
 
    ForSubgridI(sg, GridSubgrids(grid))
    {
@@ -282,11 +280,13 @@ void PF2WRF(
       int ny = SubgridNY(subgrid);
 
       int wrf_nx =  nx + ghost_size_i_lower + ghost_size_i_upper;
-      int wrf_ny =  ny + ghost_size_j_lower + ghost_size_j_upper;
+//      int wrf_ny =  ny + ghost_size_j_lower + ghost_size_j_upper;
 
       Subvector *subvector = VectorSubvector(pf_vector, sg);
-      
       double *subvector_data = SubvectorData(subvector);
+
+      Subvector *top_subvector = VectorSubvector(top, sg);
+      double    *top_data      = SubvectorData(top_subvector);
 
       int i, j, k;
 
@@ -294,11 +294,11 @@ void PF2WRF(
       {					       
 	 for (j = iy; j < iy + ny; j++)		
 	 {
-	    int top_index = (i-ix) + ((j-iy) * nx);
+	    int top_index = SubvectorEltIndex(top_subvector, i, j, 0);
 
 	    // SGS What to do if near bottom such that
 	    // there are not wrf_depth values?
-	    int iz = top[top_index] - (wrf_depth - 1);
+	    int iz = top_data[top_index] - (wrf_depth - 1);
 
 	    for (k = iz; k < iz + wrf_depth; k++)		
 	    {
@@ -313,67 +313,3 @@ void PF2WRF(
    }
 }
 
-/* 
- * Setup array for storing the top of the domain.
- *
- * Computes and array that is NX * NY that contains the
- * k-index into the supplied vector that is at the top 
- * of the geometry.
- *
- * Only works with 1 subgrid per task.
- *
- * This assumes number of processors is 1 in Z; assumes
- * that the entire Z column is on a single task.
- * 
- */
-int *ComputeTop(Problem     *problem,      /* General problem information */
-		ProblemData *problem_data, /* Contains geometry information for the problem */
-		Vector      *vector        /* misc vector to use for loop */
-) {
-
-   int      ix, iy, iz;
-   int      nx, ny, nz;
-   int      r;
-   
-   int      is, i, j, k;
-
-   Grid          *grid = VectorGrid(vector);
-
-   SubgridArray  *subgrids = GridSubgrids(grid);
-
-   int           *top;
-
-   GrGeomSolid   *gr_solid = ProblemDataGrDomain(problem_data);
-      
-   ForSubgridI(is, subgrids)
-   {
-      Subgrid       *subgrid   = SubgridArraySubgrid(subgrids, is);
-
-      ix = SubgridIX(subgrid);
-      iy = SubgridIY(subgrid);
-      iz = SubgridIZ(subgrid);
-      
-      nx = SubgridNX(subgrid);
-      ny = SubgridNY(subgrid);
-      nz = SubgridNZ(subgrid);
-      
-      r = SubgridRX(subgrid);
-      
-      top = malloc(sizeof(int) * nx * ny); 
-      
-      int index;
-      for(index = 0; index < nx * ny; index++) {
-	 top[index] = -1;
-      }
-      
-      GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-		   {
-		      index = (i-ix) + ((j-iy) * nx);
-		      if( top[index] < k ) {
-			 top[index] = k;
-		      }
-		   });
-   }     /* End of subgrid loop */
-
-   return top;
-}

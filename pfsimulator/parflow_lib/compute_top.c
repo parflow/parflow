@@ -26,67 +26,71 @@
   USA
 **********************************************************************EHEADER*/
 
+/* 
+ * Setup array for storing the top of the domain.
+ *
+ * Computes and array that is NX * NY that contains the
+ * k-index into the supplied vector that is at the top 
+ * of the geometry.
+ *
+ * Only works with 1 subgrid per task.
+ *
+ * This assumes number of processors is 1 in Z; assumes
+ * that the entire Z column is on a single task.
+ * 
+ */
+
 #include "parflow.h"
 
-void EvapTransSum(ProblemData *problem_data, double dt, Vector *evap_trans_sum, Vector *evap_trans) 
+void ComputeTop(Problem     *problem,      /* General problem information */
+		ProblemData *problem_data  /* Contains geometry information for the problem */
+   ) 
 {
-   GrGeomSolid *gr_domain         = ProblemDataGrDomain(problem_data);
+   GrGeomSolid   *gr_solid = ProblemDataGrDomain(problem_data);
+   Vector        *top      = ProblemDataIndexOfDomainTop(problem_data);
+   Vector        *perm_x   = ProblemDataPermeabilityX(problem_data);
 
-   double       dx, dy, dz;
-   int          i, j, k, r, is;
-   int          ix, iy, iz;
-   int          nx, ny, nz;
+   /* use perm grid as top is 2D and want to loop over Z */
+   Grid          *grid     = VectorGrid(perm_x);
 
-   Subgrid     *subgrid;
-   Grid        *grid              = VectorGrid(evap_trans_sum);
+   SubgridArray  *subgrids = GridSubgrids(grid);
 
-   Subvector   *evap_trans_sum_subvector;
-   Subvector   *evap_trans_subvector;
+   int      ix, iy, iz;
+   int      nx, ny, nz;
+   int      r;
    
-   double vol_time;
+   int      is, i, j, k;
 
-   int index_evap_trans_sum;
-   int index_evap_trans;
+   double *top_data;
+   int index;
 
-   double *evap_trans_sum_ptr;
-   double *evap_trans_ptr;
-
-   ForSubgridI(is, GridSubgrids(grid))
+   PFVConstInit(-1, top);
+      
+   ForSubgridI(is, subgrids)
    {
-      subgrid = GridSubgrid(grid, is);
+      Subgrid       *subgrid          = SubgridArraySubgrid(subgrids, is);
 
-      evap_trans_sum_subvector = VectorSubvector(evap_trans_sum, is);
-      evap_trans_subvector     = VectorSubvector(evap_trans, is);
-      
-      dx = SubgridDX(subgrid);
-      dy = SubgridDY(subgrid);
-      dz = SubgridDZ(subgrid);
-      
-      r = SubgridRX(subgrid);
+      Subvector     *top_subvector    = VectorSubvector(top, is);
 
       ix = SubgridIX(subgrid);
       iy = SubgridIY(subgrid);
       iz = SubgridIZ(subgrid);
-	 
+      
       nx = SubgridNX(subgrid);
       ny = SubgridNY(subgrid);
       nz = SubgridNZ(subgrid);
-	 
-      dx = SubgridDX(subgrid);
-      dy = SubgridDY(subgrid);
-      dz = SubgridDZ(subgrid);
-	 
-      vol_time = dx*dy*dz*dt;
+      
+      r = SubgridRX(subgrid);
 
-      evap_trans_sum_ptr = SubvectorData(evap_trans_sum_subvector);
-      evap_trans_ptr     = SubvectorData(evap_trans_subvector);
-
-      GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+      top_data = SubvectorData(top_subvector);
+      
+      GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
       {
-	 index_evap_trans_sum  = SubvectorEltIndex(evap_trans_sum_subvector,  i, j, k);
-	 index_evap_trans      = SubvectorEltIndex(evap_trans_subvector, i, j, k);
-
-	 evap_trans_sum_ptr[index_evap_trans_sum] += evap_trans_ptr[index_evap_trans] * vol_time;
+	 index = SubvectorEltIndex(top_subvector, i, j, 0);
+	 
+	 if( top_data[index] < k ) {
+	    top_data[index] = k;
+	 }
       });
-   }
+   }     /* End of subgrid loop */
 }

@@ -1067,14 +1067,7 @@ void  ICPhasePressureFreePublicXtra()
 
 int  ICPhasePressureSizeOfTempData()
 {
-   PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
-
-   Type3         *dummy3;
-
    int  sz = 0;
-
    return sz;
 }
 

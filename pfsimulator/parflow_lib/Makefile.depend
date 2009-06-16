@@ -105,6 +105,7 @@ compute_maximums.o: compute_maximums.c parflow.h info_header.h general.h \
   grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
   problem_bc.h problem_eval.h well.h bc_pressure.h problem.h solver.h \
   nl_function_eval.h parflow_proto.h parflow_proto_f.h
+compute_top.o: compute_top.c
 compute_total_concentration.o: compute_total_concentration.c parflow.h \
   info_header.h general.h file_versions.h input_database.h hbt.h \
   logging.h timing.h loops.h background.h communication.h computation.h \
@@ -171,6 +172,13 @@ distribute_usergrid.o: distribute_usergrid.c parflow.h info_header.h \
   problem.h solver.h nl_function_eval.h parflow_proto.h parflow_proto_f.h
 dpofa.o: dpofa.c f2c.h
 dposl.o: dposl.c f2c.h
+evaptranssum.o: evaptranssum.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h n_vector.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h problem.h solver.h \
+  nl_function_eval.h parflow_proto.h parflow_proto_f.h
 gauinv.o: gauinv.c
 general.o: general.c parflow.h info_header.h general.h file_versions.h \
   input_database.h hbt.h logging.h timing.h loops.h background.h \
@@ -379,6 +387,13 @@ nl_function_eval.o: nl_function_eval.c parflow.h info_header.h general.h \
   nl_function_eval.h parflow_proto.h parflow_proto_f.h llnlmath.h \
   llnltyps.h
 nodiag_scale.o: nodiag_scale.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h n_vector.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h problem.h solver.h \
+  nl_function_eval.h parflow_proto.h parflow_proto_f.h
+overlandsum.o: overlandsum.c parflow.h info_header.h general.h \
   file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
   background.h communication.h computation.h region.h grid.h matrix.h \
   vector.h n_vector.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \

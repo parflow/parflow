@@ -71,5 +71,8 @@ testclean:
 	@rm -f *.out.pftcl
 	@rm -f *.pfidb
 	@rm -f *.out.txt
-	@rm -fr default_richards.out indicator_field.out
+	@rm -fr default_richards.out 
+	@rm -fr indicator_field.out
+	@rm -fr water_balance.out
+	@rm -fr default_overland.out
 
