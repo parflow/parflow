@@ -66,11 +66,10 @@
  *
  *****************************************************************************/
 
-#include <string.h>
-
-#include "error.h"
 #include "databox.h"
+
 #include <tcl.h>
+#include <string.h>
 
 /*-----------------------------------------------------------------------
  * Error checking routines.

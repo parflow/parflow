@@ -366,8 +366,8 @@ GrGeomExtentArray  *extent_array;
 
    GrGeomOctree   *solid_octree;
    GrGeomOctree  **patch_octrees;
-   int             num_patches;
-   int             octree_bg_level, ix, iy, iz;
+   int             num_patches = 0;
+   int             octree_bg_level = 0, ix, iy, iz;
 
 
    /*------------------------------------------------------
@@ -376,35 +376,33 @@ GrGeomExtentArray  *extent_array;
 
    switch(GeomSolidType(geom_solid))
    {
-
-   case GeomTSolidType:
-   {
-      GeomTSolid  *solid_data = GeomSolidData(geom_solid);
-
-      GeomTIN     *surface;
-      int        **patches;
-      int         *num_patch_triangles;
-
-      double       xl, yl, zl, xu, yu, zu;
-
-
-      surface             = (solid_data -> surface);
-      patches             = (solid_data -> patches);            
-      num_patches	  = (solid_data -> num_patches);        
-      num_patch_triangles = (solid_data -> num_patch_triangles);
-
-      octree_bg_level = GrGeomGetOctreeInfo(&xl, &yl, &zl, &xu, &yu, &zu,
-					    &ix, &iy, &iz);
-
-      GrGeomOctreeFromTIN(&solid_octree, &patch_octrees,
-			  surface, patches, num_patches, num_patch_triangles,
-			  extent_array, xl, yl, zl, xu, yu, zu,
-			  octree_bg_level,
-			  octree_bg_level + GlobalsMaxRefLevel);
-
-      break;
-   }
-
+      case GeomTSolidType:
+      {
+	 GeomTSolid  *solid_data = GeomSolidData(geom_solid);
+	 
+	 GeomTIN     *surface;
+	 int        **patches;
+	 int         *num_patch_triangles;
+	 
+	 double       xl, yl, zl, xu, yu, zu;
+	 
+	 
+	 surface             = (solid_data -> surface);
+	 patches             = (solid_data -> patches);            
+	 num_patches	  = (solid_data -> num_patches);        
+	 num_patch_triangles = (solid_data -> num_patch_triangles);
+	 
+	 octree_bg_level = GrGeomGetOctreeInfo(&xl, &yl, &zl, &xu, &yu, &zu,
+					       &ix, &iy, &iz);
+	 
+	 GrGeomOctreeFromTIN(&solid_octree, &patch_octrees,
+			     surface, patches, num_patches, num_patch_triangles,
+			     extent_array, xl, yl, zl, xu, yu, zu,
+			     octree_bg_level,
+			     octree_bg_level + GlobalsMaxRefLevel);
+	 
+	 break;
+      }
    }
 
    solid = GrGeomNewSolid(solid_octree, patch_octrees, num_patches,

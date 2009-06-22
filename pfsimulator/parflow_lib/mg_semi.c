@@ -133,15 +133,15 @@ int      zero;
 	           
    Matrix           *A          = A_l[0];
 
-   double            eps;
-   double            b_dot_b, r_dot_r;
+   double            eps = 0.0;
+   double            b_dot_b = 0.0, r_dot_r = 0.0;
    int               almost_converged = 0;
 	           
    int               l;
    int               i = 0;
 
-   double           *norm_log;
-   double           *rel_norm_log;
+   double           *norm_log     = NULL;
+   double           *rel_norm_log = NULL;
 
 
    if (tol > 0.0)
@@ -466,8 +466,8 @@ SubregionArray  **c_sra_l;
    int             ix, iy, iz;
    int             sx, sy, sz;
 
-   int             iP, iP1, iP2, dP12;
-   int             iA, iA1, iA2, dA12;
+   int             iP, iP1, iP2, dP12 = 0;
+   int             iA, iA1, iA2, dA12 = 0;
    int             iAc;
 
    int             l, i, j, k;
@@ -806,7 +806,7 @@ double       *temp_data;
 
    int              c_index = 0;
    int              f_index = 1;
-   int              sx, sy, sz;
+   int              sx = 0, sy = 0, sz = 0;
 
    double           DX, DY, DZ;
    int              NX, NY, NZ;
@@ -831,7 +831,7 @@ double       *temp_data;
 	        			     { 0,  0,  1}};
 
    Stencil         *coarse_op_stencil;
-   Stencil         *transfer_stencil;
+   Stencil         *transfer_stencil = NULL;
 
 
    if ( PFModuleInstanceXtra(this_module) == NULL )

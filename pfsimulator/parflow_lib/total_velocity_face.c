@@ -143,7 +143,7 @@ Vector      **saturations;
                   *vel_tmp;
    double          ds[3];
    double          h0, h1, h2, base_constant;
-   int             dir0, dir1, dir2, alpha;
+   int             dir0 = 0, dir1, dir2, alpha;
    int             dir[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
 
    /*-----------------------------------------------------------------------

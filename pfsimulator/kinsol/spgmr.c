@@ -154,9 +154,9 @@ int SpgmrSolve(SpgmrMem mem, void *A_data, N_Vector x, N_Vector b,
 {
   N_Vector *V, xcor, vtemp;
   real **Hes, *givens, *yg;
-  real beta, rotation_product, r_norm, s_product, rho;
+  real beta, rotation_product, r_norm, s_product, rho = 0;
   boole preOnLeft, preOnRight, scale2, scale1, converged;
-  int i, j, k, l, l_plus_1, l_max, krydim, ier, ntries;
+  int i, j, k, l, l_plus_1, l_max, krydim = 0, ier, ntries;
 
   if (mem == NULL) return(SPGMR_MEM_NULL);
 

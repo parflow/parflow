@@ -57,10 +57,13 @@
 #define min(a,b)  (((a)<(b)) ? (a) : (b))
 #endif
 
-#ifndef round
-#define round(x)  ( ((x) < 0.0) ? ((int)(x - 0.5)) : ((int)(x + 0.5)) )
-#endif
-
+/* 
+   round is defined in math.h and it may not be a macro so this does not work 
+   #ifndef round
+   #define round(x)  ( ((x) < 0.0) ? ((int)(x - 0.5)) : ((int)(x + 0.5)) )
+   #endif
+   #endif
+*/
 
 /*--------------------------------------------------------------------------
  * Define various flags

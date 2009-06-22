@@ -75,8 +75,8 @@ void         SetBackgroundBounds(background, grid)
 Background  *background;
 Grid        *grid;
 {
-   int       ix_lower, iy_lower, iz_lower;
-   int       ix_upper, iy_upper, iz_upper;
+   int       ix_lower = 0, iy_lower = 0, iz_lower = 0;
+   int       ix_upper = 0, iy_upper = 0, iz_upper = 0;
 
    Subgrid  *subgrid;
    int       is;

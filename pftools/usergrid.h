@@ -29,6 +29,9 @@
 #ifndef _USERGRID_HEADER
 #define _USERGRID_HEADER
 
+#include <tcl.h>
+#include "grid.h"
+
 /*--------------------------------------------------------------------------
  * Background:
  *   Structure describing a uniform grid in real-space.

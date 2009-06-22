@@ -48,9 +48,36 @@
 #endif
 
 #include "pftools.h"
+
 #include "grid.h"
 #include "usergrid.h"
 #include "file.h"
+#include "water_balance.h"
+
+#include <tk.h>
+
+
+#include "readdatabox.h"
+#include "printdatabox.h"
+#include "velocity.h"
+#include "head.h"
+#include "flux.h"
+#include "stats.h"
+#include "diff.h"
+#include "error.h"
+#include "getsubbox.h"
+#include "enlargebox.h"
+#include "file.h"
+#include "load.h"
+#include "top.h"
+#include "water_balance.h"
+
+#include "region.h"
+#include "grid.h"
+#include "usergrid.h"
+
+#include "general.h"
+
 
 
 /*-----------------------------------------------------------------------
@@ -1337,7 +1364,7 @@ char              *argv[];
          databox = (Databox *)Tcl_GetHashValue(entryPtr);
          hashkey = Tcl_GetHashKey(&DataMembers(data), entryPtr);
 
-         (void *) Tcl_DStringAppendElement(&dspair, hashkey);
+         Tcl_DStringAppendElement(&dspair, hashkey);
 
          list[i] = (char *)calloc(MAX_LABEL_SIZE, sizeof(char));
          strcpy(list[i], Tcl_DStringAppendElement(&dspair,
@@ -1353,7 +1380,7 @@ char              *argv[];
 
       for (i = 0; i < DataTotalMem(data); i++)
       {
-         (void *) Tcl_DStringAppendElement(&result, list[i]); 
+         Tcl_DStringAppendElement(&result, list[i]); 
          free((char *) list[i]);
       }
 
@@ -2569,7 +2596,6 @@ char             *argv[];
    double         min, max, mean, sum, variance, stdev;
 
    Tcl_Obj     *result = Tcl_GetObjResult(interp);
-   Tcl_Obj     *double_obj;
    Tcl_Obj     *int_obj;
 
 
@@ -2917,8 +2943,6 @@ char             *argv[];
    int            sd;
    int            i, j, k;
    double         diff;
-   char           diff_str[64];
-
    double         abs_zero;
 
    Tcl_Obj       *result;   
@@ -3523,7 +3547,6 @@ char          *argv[];
    {
       int nx = DataboxNx(pressure);
       int ny = DataboxNy(pressure);
-      int nz = DataboxNy(pressure);
 
       double x = DataboxX(pressure);
       double y = DataboxY(pressure);

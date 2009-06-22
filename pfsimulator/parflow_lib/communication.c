@@ -166,8 +166,8 @@ double          *data;
 
    int  *loop_array;
 
-   int  *send_proc_array;
-   int  *recv_proc_array;
+   int  *send_proc_array = NULL;
+   int  *recv_proc_array = NULL;
 
    int   num_send_subregions;
    int   num_recv_subregions;

@@ -227,19 +227,19 @@ Region  **recv_region_ptr;
 Grid     *grid;
 Stencil  *stencil;
 {
-   Region        *send_region;
-   Region        *recv_region;
+   Region        *send_region = NULL;
+   Region        *recv_region = NULL;
 
    SubgridArray  *subgrids  = GridSubgrids(grid);
    SubgridArray  *neighbors;
 
-   Region        *subgrid_region;
-   Region        *neighbor_region;
+   Region        *subgrid_region = NULL;
+   Region        *neighbor_region = NULL;
 
    Region        *region0;
    Region        *region1;
 
-   SubgridArray  *sa0;
+   SubgridArray  *sa0 = NULL;
    SubgridArray  *sa1;
    SubgridArray  *sa2;
    SubgridArray  *sa3;

@@ -53,7 +53,7 @@ CommPkg         *e_f_comm_pkg;
 
    Subregion      *subregion;
 
-   Region         *compute_reg;
+   Region         *compute_reg = NULL;
 
    Subvector      *e_f_sub;
    Subvector      *e_c_sub;
@@ -76,7 +76,7 @@ CommPkg         *e_f_comm_pkg;
    int             compute_i, i, j, ii, jj, kk;
    int             stride;
 
-   CommHandle     *handle;
+   CommHandle     *handle = NULL;
 
 
    /*--------------------------------------------------------------------

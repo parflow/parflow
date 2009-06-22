@@ -35,7 +35,7 @@ char *argv[];
    WellListMember   *head;
    WellListMember   *member,
                     *new_member,
-                    *old_member;
+                    *old_member = NULL;
 
    Background       *background;
    ProblemData      *problem_data;

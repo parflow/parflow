@@ -578,7 +578,7 @@ SubgridArray  *subgrids;
 
    int            join;
 
-   int            i_tmp0, i_tmp1;
+   int            i_tmp0 = 0, i_tmp1 = 0;
    double         d_tmp;
 
 

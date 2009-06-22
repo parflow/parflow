@@ -27,6 +27,10 @@
 **********************************************************************EHEADER*/
 #include "top.h"
 
+#include <stdio.h>
+#include <math.h>
+
+
 /*-----------------------------------------------------------------------
  * ComputeTop: 
  *
@@ -42,7 +46,6 @@
 void ComputeTop(Databox  *mask, Databox  *top)
 {
    int             i,  j,  k;
-   int             mi, mj, mk;
    int             nx, ny, nz;
 
    nx = DataboxNx(mask);
@@ -82,7 +85,7 @@ void ComputeTop(Databox  *mask, Databox  *top)
 
 void ExtractTop(Databox  *top, Databox  *data, Databox *top_values_of_data)
 {
-   int             i,  j,  k;
+   int             i,  j;
    int             nx, ny, nz;
 
    nx = DataboxNx(data);

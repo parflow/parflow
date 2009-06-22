@@ -237,7 +237,7 @@ int FaceExists(int node, int num_vertices, int *vertices)
    int i, j, k;
 
    int found_face;
-   int found_node;
+   int found_node = 0;
 
    /* For each face this node belongs to */
    found_face = 0;

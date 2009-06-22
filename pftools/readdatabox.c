@@ -59,18 +59,14 @@ Databox         *ReadSilo(char *filename)
 #ifdef HAVE_SILO
    Databox         *v;
 
-   FILE           *fp;
-
    double          X,  Y,  Z;
    int             NX, NY, NZ;
    double          DX, DY, DZ;
-   int             num_subgrids;
 
    int             x,  y,  z;
    int             nx, ny, nz;
-   int             rx, ry, rz;
 
-   int             nsg, j, k;
+   int             j, k;
 
    double         *ptr;
    
@@ -118,7 +114,6 @@ Databox         *ReadSilo(char *filename)
    /* create the new databox structure */
    if ((v = NewDatabox(NX, NY, NZ, X, Y, Z, DX, DY, DZ)) == NULL)
    {
-      fclose(fp);
       return((Databox *)NULL);
    }
 
@@ -169,7 +164,7 @@ Databox         *ReadSilo(char *filename)
 
 	 if(proc_filename == NULL)
 	 {
-	    printf("Error malformed multivar name in SILO file \n", varnames[m]);
+	    printf("Error malformed multivar name %s in SILO file \n", varnames[m]);
 	    return NULL;
 	 }
       
@@ -183,7 +178,7 @@ Databox         *ReadSilo(char *filename)
       
 	 if(proc_varname == NULL)
 	 {
-	    printf("Error malformed multivar name in SILO file \n", varnames[m]);
+	    printf("Error malformed multivar name %s in SILO file \n", varnames[m]);
 	    return NULL;
 	 }
 
@@ -772,8 +767,6 @@ char           *file_name;
       int *iarray;
       float *farray;
       double *darray;
-
-      int component = (COMPONENT < veclen ? COMPONENT : veclen-1);
 
       barray = (char   *)malloc(veclen);
       iarray = (int    *)malloc(veclen*sizeof(int));

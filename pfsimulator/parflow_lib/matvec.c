@@ -45,7 +45,7 @@ Vector         *x;
 double          beta;
 Vector         *y;
 {
-   CommHandle *handle;
+   CommHandle *handle = NULL;
 
    Grid           *grid = MatrixGrid(A);
    Subgrid        *subgrid;
@@ -55,7 +55,7 @@ Vector         *y;
 
    ComputePkg     *compute_pkg;
 
-   Region         *compute_reg;
+   Region         *compute_reg = NULL;
 
    Subvector      *y_sub;
    Subvector      *x_sub;

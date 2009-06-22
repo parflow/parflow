@@ -52,30 +52,8 @@
 #endif
 
 #include <tcl.h>
-#include <tk.h>
 
 #include "databox.h"
-#include "readdatabox.h"
-#include "printdatabox.h"
-#include "velocity.h"
-#include "head.h"
-#include "flux.h"
-#include "stats.h"
-#include "diff.h"
-#include "error.h"
-#include "getsubbox.h"
-#include "enlargebox.h"
-#include "file.h"
-#include "load.h"
-#include "top.h"
-#include "water_balance.h"
-
-#include "region.h"
-#include "grid.h"
-#include "usergrid.h"
-
-#include "general.h"
-
 
 #ifndef NULL
 #define NULL ((void *)0)

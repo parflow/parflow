@@ -161,7 +161,7 @@ int           symm_part;      /* Specifies whether to compute just the
 
    double      *pp, *sp, *sdp, *pop, *dp, *ddp, *rpp, *rpdp;
    double      *permxp, *permyp, *permzp;
-   double      *cp, *wp, *ep, *sop, *np, *lp, *up, *op, *ss;
+   double      *cp, *wp, *ep, *sop, *np, *lp, *up, *op = NULL, *ss;
 
    int          i, j, k, r, is;
    int          ix, iy, iz;
@@ -178,7 +178,7 @@ int           symm_part;      /* Specifies whether to compute just the
    double       prod, prod_rt, prod_no, prod_up, prod_val, prod_lo;
    double       prod_der, prod_rt_der, prod_no_der, prod_up_der;
    double       west_temp, east_temp, north_temp, south_temp;
-   double       lower_temp, upper_temp, o_temp;
+   double       lower_temp, upper_temp, o_temp = 0.0;
    double       sym_west_temp, sym_east_temp, sym_south_temp, sym_north_temp;
    double       sym_lower_temp, sym_upper_temp;
    double       lower_cond, upper_cond;
@@ -370,6 +370,9 @@ int           symm_part;      /* Specifies whether to compute just the
       permy_sub = VectorSubvector(permeability_y, is);
       permz_sub = VectorSubvector(permeability_z, is);
       J_sub    = MatrixSubmatrix(J, is);
+
+
+      r = SubgridRX(subgrid);
 	 
       ix = SubgridIX(subgrid) - 1;
       iy = SubgridIY(subgrid) - 1;
@@ -604,6 +607,9 @@ int           symm_part;      /* Specifies whether to compute just the
 	       ip = SubvectorEltIndex(p_sub, i, j, k);
 	       im = SubmatrixEltIndex(J_sub, i, j, k);
 
+	       // SGS added this as prod was not being set to anything. Check with carol.
+	       prod        = rpp[ip] * dp[ip];
+
 	       if (fdir[0])
 	       {
 		  switch(fdir[0])
@@ -741,6 +747,8 @@ int           symm_part;      /* Specifies whether to compute just the
       dx = SubgridDX(subgrid);
       dy = SubgridDY(subgrid);
       dz = SubgridDZ(subgrid);
+
+      vol = dx*dy*dz;
       
       ix = SubgridIX(subgrid);
       iy = SubgridIY(subgrid);
@@ -1013,8 +1021,7 @@ int           symm_part;      /* Specifies whether to compute just the
       lp = SubmatrixStencilData(J_sub, 5);
       up = SubmatrixStencilData(J_sub, 6);
 
-      GrGeomOutLoop(i, j, k, gr_domain,
-      r, ix, iy, iz, nx, ny, nz,
+      GrGeomOutLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
       {
 	 im   = SubmatrixEltIndex(J_sub, i, j, k);
 	 cp[im] = 1.0;

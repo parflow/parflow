@@ -41,7 +41,7 @@ char **argv;
 {
    FILE	        *outfile;
 
-   gms_Solid   **solids;
+   gms_Solid   **solids = NULL;
    gms_Solid   **new_solids;
    gms_Solid   **tmp_solids;
    int      	 nsolids;

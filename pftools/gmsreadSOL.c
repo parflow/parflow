@@ -43,7 +43,7 @@ char          *filename;
    FILE	        *file;
    gms_CardType  card_type;
 
-   gms_Solid   **solids;
+   gms_Solid   **solids = NULL;
    gms_Solid   **tmp_solids;
    int      	 nsolids;
 	    

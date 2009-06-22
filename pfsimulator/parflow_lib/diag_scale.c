@@ -63,10 +63,10 @@ Vector	*d;
    Grid           *grid = MatrixGrid(A);
    Subgrid        *subgrid;
 
-   CommHandle     *handle;
+   CommHandle     *handle = NULL;
 
    ComputePkg     *compute_pkg;
-   Region         *compute_reg;
+   Region         *compute_reg = NULL;
    SubregionArray *subregion_array;
    Subregion      *subregion;
 
@@ -85,7 +85,7 @@ Vector	*d;
 
    int             s_y, s_z;
 
-   int             compute_i, i_sa, i_s, i, j, k, iv, im;
+   int             compute_i, i_sa, i_s, i, j, k, iv = 0, im;
 
 
    /*-----------------------------------------------------------------------

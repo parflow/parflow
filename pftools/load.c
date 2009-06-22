@@ -49,7 +49,6 @@ Databox       *databox;
 {
    char      output_name[MAXPATHLEN];
    FILE     *file;
-   FILE     *dist_file;
 
    Subgrid  *subgrid;
 

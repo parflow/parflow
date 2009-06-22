@@ -90,10 +90,10 @@ FILE     *fp;
 
    double          sig_dig_rhs;
    double          adiff, amax, sdiff;
-   double          max_adiff, max_sdiff;
+   double          max_adiff = 0.0, max_sdiff;
 
    int             i,  j,  k;
-   int             mi, mj, mk;
+   int             mi = 0, mj = 0, mk = 0;
    int             nx, ny, nz;
 
    int             sig_digs;
@@ -195,16 +195,14 @@ Tcl_Obj     *result;
 
    double          sig_dig_rhs;
    double          adiff, amax, sdiff;
-   double          max_adiff, max_sdiff;
+   double          max_adiff = 0.0, max_sdiff;
 
    int             i,  j,  k;
-   int             mi, mj, mk;
+   int             mi = 0, mj = 0, mk = 0;
    int             nx, ny, nz;
 
    int             sig_digs;
    int             m_sig_digs, m_sig_digs_everywhere;
-
-   char            coord[256], num[256];
 
    /*-----------------------------------------------------------------------
     * check that dimensions are the same

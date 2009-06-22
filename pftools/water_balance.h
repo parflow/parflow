@@ -25,8 +25,8 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
   USA
 **********************************************************************EHEADER*/
-#ifndef TOP_HEADER
-#define TOP_HEADER
+#ifndef TOP_WATER_BALANCE
+#define TOP_WATER_BALANCE
 
 #include "databox.h"
 

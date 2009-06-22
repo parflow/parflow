@@ -56,7 +56,7 @@ int     dir;
    int           nx,   ny,   nz;
    int           nx_f, ny_f, nz_f;
    int           nx_p, ny_p, nz_p;
-   int           stx,  sty,  stz;
+   int           stx = 0, sty = 0, stz = 0;
 
    int           i_s, i, j, k, fi, pi;
 
@@ -162,12 +162,12 @@ Vector *phi;
    Subvector    *v_sub;
    Subvector    *p_sub;
 
-   Vector       *velocity;
+   Vector       *velocity = NULL;
 
    double       *vp;
    double       *plp, *prp;
 
-   double        max_field_value, psi_max, ds;
+   double        max_field_value, psi_max, ds = 0.0;
    double        max_xdir_value, max_ydir_value, max_zdir_value;
    double        tmp_max;
 
@@ -175,7 +175,7 @@ Vector *phi;
    int           nx,   ny,   nz;
    int           nx_v, ny_v, nz_v;
    int           nx_p, ny_p, nz_p;
-   int           stx,  sty,  stz;
+   int           stx = 0, sty = 0, stz = 0;
 
    int           i_s, dir, i, j, k, vi, pi;
 
@@ -344,23 +344,23 @@ Vector     *phi;
 
    Subvector    *v_sub;
    Subvector    *s_sub;
-   Subvector    *b_sub;
+   Subvector    *b_sub = NULL;
    Subvector    *p_sub;
 
-   Vector       *velocity;
+   Vector       *velocity = NULL;
 
    PFModule     *phase_density       = ProblemPhaseDensity(problem);
 
-   double       *vp, *bp;
+   double       *vp, *bp = NULL;
    double       *slp, *srp, *plp, *prp;
 
    double        point, value;
    double        s_lower, s_upper;
-   double        f_prime_max, h_prime_max;
-   double        max_field_value, psi_max, ds;
+   double        f_prime_max, h_prime_max = 0.0;
+   double        max_field_value, psi_max, ds = 0.0;
    double        max_xdir_value, max_ydir_value, max_zdir_value,
                  max_total_value, max_gravity_value;
-   double        tmp, tmp_max, tmp_total, tmp_gravity;
+   double        tmp, tmp_max, tmp_total = 0.0, tmp_gravity = 0.0;
 
    double        a, b, den0, den1, dtmp, g, constant;
 
@@ -370,7 +370,7 @@ Vector     *phi;
    int           nx_s, ny_s, nz_s;
    int           nx_b, ny_b, nz_b;
    int           nx_p, ny_p, nz_p;
-   int           stx,  sty,  stz;
+   int           stx = 0, sty = 0 , stz = 0;
 
    int           dir, i_s, i, j, k, pnt, vi, si, pi;
 

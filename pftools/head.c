@@ -76,7 +76,7 @@ GridType        grid_type;
 
    int             ji, k;
 
-   double          zz, dz2;
+   double          zz, dz2 = 0.0;
 
 
    nx = DataboxNx(h);
@@ -136,7 +136,7 @@ GridType       grid_type;
 
    int             ji, k;
 
-   double          zz, dz2;
+   double          zz, dz2 = 0.0;
 
 
    nx = DataboxNx(h);

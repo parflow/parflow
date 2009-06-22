@@ -102,12 +102,12 @@ int     zero;
 
    double     alpha, beta;
    double     gamma, gamma_old;
-   double     bi_prod, i_prod, eps;
+   double     bi_prod, i_prod = 0.0, eps;
    
    int        i = 0;
 	     
-   double    *norm_log;
-   double    *rel_norm_log;
+   double    *norm_log     = NULL;
+   double    *rel_norm_log = NULL;
 
 
    /*-----------------------------------------------------------------------

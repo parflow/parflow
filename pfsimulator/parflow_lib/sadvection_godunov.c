@@ -135,7 +135,7 @@ int          order;
 
     TimeCycleData    *time_cycle_data;
 
-    CommHandle       *handle;
+    CommHandle       *handle = NULL;
 
     SubgridArray     *subgrids;
     SubregionArray   *subregion_array;
@@ -152,7 +152,7 @@ int          order;
                      *subvector_zvel;
 
     ComputePkg       *compute_pkg;
-    Region           *compute_reg;
+    Region           *compute_reg = NULL;
 
     int               compute_i, sr, sg, well;
     int               ix, iy, iz;

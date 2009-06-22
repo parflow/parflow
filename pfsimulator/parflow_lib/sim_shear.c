@@ -56,7 +56,7 @@ int              type;
    double             *shear_min;
    double             *shear_max;
 
-   GrGeomExtentArray  *extent_array;
+   GrGeomExtentArray  *extent_array = NULL;
 
    Background         *bg = GlobalsBackground;
 
@@ -64,13 +64,13 @@ int              type;
 		  
    double            **shear_arrays;
    double             *shear_array;
-   double              z, dz2, zupper, zlower, zinit;
+   double              z, dz2, zupper, zlower, zinit = 0.0;
 		  
    int	               ix, iy, iz;
    int	               nx, ny, nz;
    int	               rz;
 		  
-   int                *fdir, dir;
+   int                *fdir, dir = 0;
 		  
    int	               is, i,  j,  k, ishear;
 	           

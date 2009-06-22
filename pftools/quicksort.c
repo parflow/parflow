@@ -66,7 +66,7 @@ EltType  *array;
 int      *permute;
 {
    EltType  tmp_vert;
-   int      tmp_index;
+   int      tmp_index = 0;
 
    int      i, j, compare_result;
 

@@ -75,7 +75,7 @@ double      *l2_error_norm;
    double           *data;
    double            err, soln;
    double            x, y, z;
-   double            dx, dy, dz, vol;
+   double            dx, dy, dz, vol = 0.0;
 
    int               ix, iy, iz;
    int               nx, ny, nz;

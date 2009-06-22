@@ -136,6 +136,13 @@ if test -n "$debug_switches" ; then
    FC_FLAGS="$debug_switches $FC_FLAGS"
 fi
 
+# Some additional compiler flags
+case $CC in
+   *gcc*)
+      C_FLAGS="-Wall $C_FLAGS"
+      ;;
+esac
+
 dnl
 dnl Set up the Fortran compiler.  Look for special Fortran compilers on
 dnl AIX machines.

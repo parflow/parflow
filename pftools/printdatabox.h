@@ -52,23 +52,17 @@
 /*-----------------------------------------------------------------------
  * function prototypes
  *-----------------------------------------------------------------------*/
-
-
-#ifdef __STDC__
-# define        P(s) s
-#else
-# define P(s) ()
-#endif
- 
  
 /* printdatabox.c */
-void PrintSimpleA P((FILE *fp , Databox *v ));
-void PrintSimpleB P((FILE *fp , Databox *v ));
-void PrintParflowB P((FILE *fp , Databox *v ));
-void PrintAVSField P((FILE *fp , Databox *v ));
-int  PrintSDS P((char *filename , int type , Databox *v ));
-void PrintVizamrai P((FILE *fp , Databox *v ));
- 
-#undef P
+void PrintSimpleA(FILE *fp , Databox *v );
+void PrintSimpleB(FILE *fp , Databox *v );
+void PrintParflowB(FILE *fp , Databox *v );
+void PrintAVSField(FILE *fp , Databox *v );
+int  PrintSDS(char *filename , int type , Databox *v );
+void PrintVizamrai(FILE *fp , Databox *v );
+void            PrintSilo(
+   char           *filename,
+   Databox        *v);
+
 
 #endif

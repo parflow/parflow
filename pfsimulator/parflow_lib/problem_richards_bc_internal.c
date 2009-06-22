@@ -91,7 +91,7 @@ int          fcn;
 
    Grid             *grid = VectorGrid(pressure);
 
-   SubgridArray     *internal_bc_subgrids;
+   SubgridArray     *internal_bc_subgrids = NULL;
 
    Subgrid          *subgrid, *subgrid_ind, *new_subgrid;
 
@@ -100,7 +100,7 @@ int          fcn;
 
    double           *cp, *wp, *ep, *sp, *np, *lp, *up;
    double           *fp, *pp;
-   double           *internal_bc_conditions;
+   double           *internal_bc_conditions = NULL;
 
    double            dx, dy, dz;
    double            value;

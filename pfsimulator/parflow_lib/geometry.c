@@ -177,15 +177,14 @@ int           type;
 
    void       **solids_data;
 
-   int          i, nsolids;
+   int          i, nsolids = 0;
 
 
    switch(type)
    {
-   case GeomTSolidType:
-      nsolids = GeomReadTSolids((GeomTSolid ***)&solids_data, geom_input_name);
-      break;
-
+      case GeomTSolidType:
+	 nsolids = GeomReadTSolids((GeomTSolid ***)&solids_data, geom_input_name);
+	 break;
    }
 
    solids = ctalloc(GeomSolid *, nsolids);
@@ -215,15 +214,14 @@ int         type;
 {
    GeomSolid   *solid;
 
-   void        *solid_data;
+   void        *solid_data = NULL;
 
 
    switch(type)
    {
-   case GeomTSolidType:
-      solid_data = (void *)GeomTSolidFromBox(xl, yl, zl, xu, yu, zu);
-      break;
-
+      case GeomTSolidType:
+	 solid_data = (void *)GeomTSolidFromBox(xl, yl, zl, xu, yu, zu);
+	 break;
    }
 
    solid = GeomNewSolid(solid_data, type);
@@ -276,11 +274,11 @@ int          *normal_component;
    double      p1_x, p1_y, p1_z;
    double      p0, p1, q0, q1;                               /* real new, CHB */
    double      dx, dy, dz;
-   double      a, b, coord, differential;
+   double      a = 0.0, b = 0.0, coord = 0.0, differential = 0.0;
    int         sign_holder, next_sign_holder, prev_sign_holder;
    int         n_crossings;
    int         edge_inter, vertex_inter;
-   int         edge_number, vertex_number;
+   int         edge_number = 0, vertex_number = 0;
    int	       k, kp1;
 
    /*---------------------------------------------------

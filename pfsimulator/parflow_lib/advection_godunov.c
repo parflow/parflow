@@ -134,7 +134,7 @@ int          order;
     Vector           *perm_y    = ProblemDataPermeabilityY(problem_data); 
     Vector           *perm_z    = ProblemDataPermeabilityZ(problem_data); 
 
-    CommHandle       *handle;
+    CommHandle       *handle = NULL;
 
     SubgridArray     *subgrids;
     SubregionArray   *subregion_array;
@@ -155,7 +155,7 @@ int          order;
                      *pz_sub;
 
     ComputePkg       *compute_pkg;
-    Region           *compute_reg;
+    Region           *compute_reg = NULL;
 
     int               compute_i, sr, sg, well;
     int               ix, iy, iz;
@@ -185,7 +185,7 @@ int          order;
     int               fstord;
     double            cell_volume, field_sum, total_volume, cell_change, 
                       well_stat, contaminant_stat;
-    double            well_value, input_c, volume, flux, scaled_flux, weight;
+    double            well_value, input_c, volume, flux, scaled_flux, weight = 0;
     double            avg_x, avg_y, avg_z, area_x, area_y, area_z, area_sum;
 
     amps_Invoice      result_invoice;
@@ -653,7 +653,9 @@ int          order;
 				   == FLUX_PATTERNED )
                          {
                             weight = 0.0;
-                         }
+                         } else {
+			    weight = 0.0;
+			 }
 
                          scal[wi] += dt * weight * scaled_flux;
                          rhs[wi] -= dt * weight * scaled_flux * input_c;

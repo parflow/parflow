@@ -77,7 +77,7 @@ int    	 zero;
    Subregion      *subregion;
 
    ComputePkg     *compute_pkg;
-   Region         *compute_reg;
+   Region         *compute_reg = NULL;
 
    Submatrix      *A_sub;
    Subvector      *x_sub;
@@ -104,7 +104,7 @@ int    	 zero;
    int             rb   = 0;
    int             iter = 0;
 
-   CommHandle     *handle;
+   CommHandle     *handle = NULL;
 
    int             vector_update_mode;
 

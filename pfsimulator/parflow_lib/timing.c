@@ -113,7 +113,7 @@ char  *name;
 
 void  PrintTiming()
 {
-   amps_File     file;
+   amps_File     file = NULL;
    amps_Invoice  max_invoice;
 
    double time_ticks;

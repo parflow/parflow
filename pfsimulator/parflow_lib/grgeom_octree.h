@@ -439,6 +439,9 @@ GrGeomOctreeCellIs(octree, GrGeomOctreeCellLeaf)
 			      case GrGeomOctreeFaceF:\
 				 fdir[0] =  0; fdir[1] =  0; fdir[2] =  1;\
 				 break;\
+                              default: \
+				 fdir[0] =  -9999; fdir[1] =  -9999; fdir[2] =  -99999;\
+				 break;\
 			      }\
 \
 			      body;\

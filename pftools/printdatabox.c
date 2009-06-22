@@ -414,9 +414,6 @@ void            PrintVizamrai(fp, v)
 FILE           *fp;
 Databox        *v;
 {
-   double  X  = DataboxX(v); 
-   double  Y  = DataboxY(v);
-   double  Z  = DataboxZ(v);
    int     NX = DataboxNx(v);
    int     NY = DataboxNy(v);
    int     NZ = DataboxNz(v);
@@ -424,22 +421,13 @@ Databox        *v;
    double  DY = DataboxDy(v);
    double  DZ = DataboxDz(v);
 
-   int     ns = 1;               /* num_subgrids */
-
-   int     x  = 0;
-   int     y  = 0;
-   int     z  = 0;
    int     nx = NX;
    int     ny = NY;
    int     nz = NZ;
-   int     rx = 1;
-   int     ry = 1;
-   int     rz = 1;
 
    int FileFormat = -5;
 
    double dzero = 0.0;
-   double done = 1.0;
 
    int izero = 0;
    int ione = 1;
@@ -521,9 +509,9 @@ Databox        *v;
  *-----------------------------------------------------------------------*/
 
 
-void            PrintSilo(filename, v)
-char           *filename;
-Databox        *v;
+void            PrintSilo(
+   char           *filename,
+   Databox        *v)
 {
 
 #ifdef HAVE_SILO
@@ -536,15 +524,6 @@ Databox        *v;
    double  DX = DataboxDx(v);
    double  DY = DataboxDy(v);
    double  DZ = DataboxDz(v);
-
-   int     ns = 1;               /* num_subgrids */
-
-   int     nx = NX;
-   int     ny = NY;
-   int     nz = NZ;
-   int     rx = 1;
-   int     ry = 1;
-   int     rz = 1;
 
    double  *x, *y, *z;
    double *coords[3];

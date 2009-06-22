@@ -114,9 +114,6 @@ EXPORT(int,Parflow_Init)(Tcl_Interp *interp)
 {
    Data *data;
 
-   char *pf_dir;
-   char temp_path[MAXPATHLEN];
- 
    if ((data = InitPFToolsData()) == NULL) {
       Tcl_SetResult(interp, "Error: Could not initialize data structures for PFTools", TCL_STATIC);
       return TCL_ERROR;

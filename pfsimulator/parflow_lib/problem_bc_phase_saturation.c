@@ -384,7 +384,7 @@ int        num_phases;
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;
 
-   int            num_patches;
+   int            num_patches = 0;
 
    Type0          *dummy0;
    Type1          *dummy1;
@@ -531,8 +531,8 @@ int        num_phases;
 		  dummy2 -> height[k] = GetDouble(key);
                }
 
-               (dummy1 -> lower) = 1.0;
-               (dummy1 -> upper) = 0.0;
+               (dummy2 -> lower) = 1.0;
+               (dummy2 -> upper) = 0.0;
 
                (public_xtra -> data[indx]) = (void *) dummy2;
                break;

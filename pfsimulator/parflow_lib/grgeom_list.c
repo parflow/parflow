@@ -73,7 +73,7 @@ void ListInsert(head, member)
 ListMember **head;
 ListMember  *member;
 {
-   ListMember *previous_member, *current_member, *next_member;
+   ListMember *previous_member, *current_member, *next_member = NULL;
    int         not_eol, searching;
 
    not_eol = TRUE;

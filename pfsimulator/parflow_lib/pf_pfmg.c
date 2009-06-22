@@ -249,7 +249,7 @@ double       *temp_data;
    int                 sg;
 
    Submatrix          *pf_sub;
-   double             *cp, *wp, *ep, *sop, *np, *lp, *up;
+   double             *cp, *wp = NULL, *ep, *sop = NULL, *np, *lp = NULL, *up = NULL;
 
    double              coeffs[7];
    double              coeffs_symm[4];

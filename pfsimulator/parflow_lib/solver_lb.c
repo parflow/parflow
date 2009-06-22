@@ -195,9 +195,9 @@ void      SolverDiffusion()
    char          dt_info;
    char          file_prefix[64], file_postfix[64];
 
-   double       *time_log, *dt_log;
-   int          *seq_log,  *dumped_log;
-   char         *recomp_log, *dt_info_log;
+   double       *time_log = NULL, *dt_log = NULL;
+   int          *seq_log = NULL,  *dumped_log = NULL;
+   char         *recomp_log = NULL, *dt_info_log = NULL;
 
    /* New variables added by B. Bosl */
    Lattice	*lattice;
@@ -1337,7 +1337,7 @@ PFModule *SolverDiffusionInitInstanceXtra()
    Subgrid      *subgrid, *new_subgrid;
 
    double       *temp_data, *temp_data_placeholder;
-   int           total_mobility_sz, pressure_sz, velocity_sz, satur_sz, 
+   int           total_mobility_sz, pressure_sz, velocity_sz, satur_sz = 0, 
                  concen_sz, temp_data_size, sz;
    int           is_multiphase;
 

@@ -26,8 +26,11 @@
   USA
 **********************************************************************EHEADER*/
 
-#include <math.h>
 #include "pftools.h"
+#include "general.h"
+#include "usergrid.h"
+
+#include <math.h>
 
 /*--------------------------------------------------------------------------
  * ReadBackground

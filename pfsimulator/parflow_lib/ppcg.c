@@ -128,7 +128,7 @@ int    	 zero;
 	      
    double     alpha, beta;
    double     gamma, gamma_old;
-   double     i_prod, eps;
+   double     i_prod = 0.0, eps;
    double     cond=1.0;
    	      
    int        size;
@@ -142,10 +142,10 @@ int    	 zero;
 	      
    int        i = 0;
 	      
-   double    *norm_log;
-   double    *rel_norm_log;
-   double    *cond_log;
-   int       *restart_log;
+   double    *norm_log = NULL;
+   double    *rel_norm_log = NULL;
+   double    *cond_log = NULL;
+   int       *restart_log = NULL;
 
 
    /*-----------------------------------------------------------------------

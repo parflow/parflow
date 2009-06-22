@@ -116,7 +116,7 @@ ProblemData *problem_data;
    WellData         *well_data = ProblemDataWellData(problem_data);
    WellDataPhysical *well_data_physical;
    WellDataValue    *well_data_value;
-   WellDataStat     *well_data_stat;
+   WellDataStat     *well_data_stat = NULL;
 
    int               i, sequence_number, phase, contaminant, indx, press_well, flux_well;
 

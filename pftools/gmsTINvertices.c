@@ -38,7 +38,7 @@ int main (argc, argv)
 int argc;
 char **argv;
 {
-   gms_TIN     **TINs;
+   gms_TIN     **TINs = NULL;
    gms_TIN     **new_TINs;
    gms_TIN     **tmp_TINs;
    int      	 nTINs;

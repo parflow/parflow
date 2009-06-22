@@ -110,6 +110,8 @@ int     fcn;             /* Flag determining what to calculate
 
    Subvector     *u_sub, *d_sub, *t_sub;
 
+   // SGS 
+   // This code can't possibly be correct, pt is never set to point to any vector!
    double        *pt, *pp, *pu, *pd;
 
    Subgrid       *subgrid;
@@ -173,22 +175,22 @@ int     fcn;             /* Flag determining what to calculate
    switch((public_xtra -> type_density[phase]))
    {
 
-   case 0:
-   {
-      double  constant_energy, constant_density;
-      dummy_density0 = (TypeDensity0 *)(public_xtra -> data_density[phase]);
-      constant_density = (dummy_density0 -> constant_density);
-      dummy_energy0 = (TypeEnergy0 *)(public_xtra -> data_energy[phase]);
-      constant_energy = (dummy_energy0 -> constant_energy);
-
-         grid = VectorGrid(energy);
+      case 0:
+      {
+	 double  constant_energy, constant_density;
+	 dummy_density0 = (TypeDensity0 *)(public_xtra -> data_density[phase]);
+	 constant_density = (dummy_density0 -> constant_density);
+	 dummy_energy0 = (TypeEnergy0 *)(public_xtra -> data_energy[phase]);
+	 constant_energy = (dummy_energy0 -> constant_energy);
+	 
+	 grid = VectorGrid(energy);
 	 ForSubgridI(sg, GridSubgrids(grid))
 	 {
 	    subgrid = GridSubgrid(grid, sg);
 
 	    u_sub = VectorSubvector(energy,  sg);
 	    d_sub = VectorSubvector(density,  sg);
-
+	    
 	    ix = SubgridIX(subgrid) - 1;
 	    iy = SubgridIY(subgrid) - 1;
 	    iz = SubgridIZ(subgrid) - 1;
@@ -230,7 +232,8 @@ int     fcn;             /* Flag determining what to calculate
    }         /* End case 0 */
    case 1:
    {
-     ForSubgridI(sg, GridSubgrids(grid))
+      grid = VectorGrid(energy);
+      ForSubgridI(sg, GridSubgrids(grid))
      {
        subgrid = GridSubgrid(grid, sg);
  

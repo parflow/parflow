@@ -185,20 +185,20 @@ void      SolverImpes()
    Vector       *pressure;
    Vector       *total_mobility_x, *total_mobility_y, *total_mobility_z;
    Vector      **saturations;
-   Vector      **concentrations;
+   Vector      **concentrations = NULL;
 
-   Vector      **phase_x_velocity, **phase_y_velocity, **phase_z_velocity;
-   Vector       *total_x_velocity,  *total_y_velocity,  *total_z_velocity;
-   Vector       *z_permeability;
+   Vector      **phase_x_velocity = NULL, **phase_y_velocity = NULL, **phase_z_velocity = NULL;
+   Vector       *total_x_velocity = NULL,  *total_y_velocity = NULL,  *total_z_velocity = NULL;
+   Vector       *z_permeability = NULL;
 
-   Vector       *solidmassfactor;
+   Vector       *solidmassfactor = NULL;
 
    Matrix       *A;
    Vector       *f;
 
-   EvalStruct   *eval_struct;
+   EvalStruct   *eval_struct = NULL;
 
-   int           iteration_number, number_logged, file_number, dump_index;
+   int           iteration_number = 0, number_logged, file_number, dump_index;
    int           indx, phase, concen;
    int           transient, recompute_pressure, still_evolving, 
                  any_file_dumped;
@@ -207,7 +207,7 @@ void      SolverImpes()
 
    double        t;
    double        dt;
-   double       *phase_dt, min_phase_dt, total_dt, print_dt, well_dt, bc_dt;
+   double       *phase_dt = NULL, min_phase_dt = 0.0, total_dt = 0.0, print_dt, well_dt, bc_dt;
    double        phase_maximum, total_maximum;
    double        dtmp, *phase_densities;
 
@@ -216,9 +216,9 @@ void      SolverImpes()
    char          dt_info;
    char          file_prefix[64], file_postfix[64];
 
-   double       *time_log, *dt_log;
-   int          *seq_log,  *dumped_log;
-   char         *recomp_log, *dt_info_log;
+   double       *time_log = NULL, *dt_log = NULL;
+   int          *seq_log = NULL,  *dumped_log = NULL;
+   char         *recomp_log = NULL, *dt_info_log = NULL;
 
    is_multiphase = ProblemNumPhases(problem) > 1;
 
@@ -1425,7 +1425,7 @@ PFModule *SolverImpesInitInstanceXtra()
    double       *temp_data, *temp_data_placeholder;
    // SGS TODO total_mobility_sz is not being set anywhere so initialized to 0 here.
    int           total_mobility_sz = 0;
-   int           pressure_sz, velocity_sz, satur_sz, 
+   int           pressure_sz, velocity_sz, satur_sz = 0, 
                  concen_sz, temp_data_size, sz;
    int           is_multiphase;
 

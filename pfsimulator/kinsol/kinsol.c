@@ -644,9 +644,9 @@ static int KINSolInit(void *kinmem, integer Neq,
                    real fnormtol, real scsteptol, N_Vector constraints, 
                    boole optIn, long int iopt[], real ropt[], void *f_data)
 {
-  real fnormp, f1normp, epsmin;
-  int  ret, globalstratret;
-  boole maxStepTaken, noMinEps;
+  real fnormp = 0.0 , f1normp = 0.0, epsmin = 0.0;
+  int  ret, globalstratret = 0;
+  boole maxStepTaken = 0, noMinEps;
   N_Vector bb, xx;
 
  

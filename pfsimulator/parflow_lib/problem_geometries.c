@@ -235,7 +235,7 @@ PFModule   *GeometriesNewPublicXtra()
 
    GeomSolid     **tmp_solids;
 
-   IndicatorData  *indicator_data, *new_indicator_data, *current_indicator_data;
+   IndicatorData  *indicator_data, *new_indicator_data, *current_indicator_data = NULL;
 
    int             i, g, intype, num_intypes;
 
