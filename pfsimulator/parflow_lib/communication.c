@@ -407,7 +407,7 @@ CommPkg     *comm_pkg;
 void         FinalizeCommunication(handle)
 CommHandle  *handle;
 {
-   amps_Wait((amps_Handle)handle);
+   (void)amps_Wait((amps_Handle)handle);
 }
 
 

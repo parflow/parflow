@@ -105,7 +105,7 @@ typedef FILE *amps_File;
 
 #define amps_IExchangePackage(package) 0
 
-#define amps_Wait(handle) 1
+#define amps_Wait(handle) 0
 
 /*---------------------------------------------------------------------------*/
 /* Macros for all commands that have no function in sequentail code.         */

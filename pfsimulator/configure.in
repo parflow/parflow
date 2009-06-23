@@ -248,7 +248,7 @@ fi
 AC_PROG_F77
 
 if test "$ac_cv_prog_g77" = "yes"; then
-   F77_FLAGS="-Wall -Wimplicit -Wunused $F77_FLAGS"
+   F77_FLAGS="-Wall -Wunused -fimplicit-none $F77_FLAGS"
 fi
 
 dnl

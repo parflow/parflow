@@ -921,6 +921,9 @@ c     ::::: SLOPES in the Z direction
 
       subroutine rpsolv(wl,wr,alpha,beta,visc0,visc1,jmax,wc,wrp)
       implicit real*8(a-h,o-z)
+      integer jmax
+      integer j
+      integer k
       dimension visc0(jmax),visc1(jmax),alpha(jmax),beta(jmax)
       dimension wl(jmax),wr(jmax),wc(jmax),wrp(jmax)
 

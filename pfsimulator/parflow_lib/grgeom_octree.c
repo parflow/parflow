@@ -911,6 +911,8 @@ int                  max_level;
          dy = (yupper - ylower) / ny;
          dz = (zupper - zlower) / nz;
 
+	 amps_Printf("SGS 1st loop dz = %f \n", dz);
+
          inc = Pow2(max_level - level);
 
          ix_lower = GrGeomExtentsIXLower(ea_extents[ie]) / inc;
@@ -1289,6 +1291,9 @@ int                  max_level;
    {
       for(level = min_level; level <= max_level; level++)
       {
+         nz = Pow2(level);
+         dz = (zupper - zlower) / nz;
+
          inc = Pow2(max_level - level);
 
          ix_lower = GrGeomExtentsIXLower(ea_extents[ie]) / inc;
@@ -1317,6 +1322,8 @@ int                  max_level;
                {
                   component = ListMemberNormalComponent(current_member);
                }
+
+	       amps_Printf("SGS dz = %f \n", dz);
 
                z_lower  = zlower + ((double) iz_lower) * dz;
 
