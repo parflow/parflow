@@ -105,8 +105,11 @@ void ComputeSubsurfaceStorage(Databox *mask,
       {
 
 	 subsurface_storage_coeff[m] =  saturation_coeff[m] * porosity_coeff[m] * dx * dy * dz;
-
-	 subsurface_storage_coeff[m] += pressure_coeff[m] * specific_storage_coeff[m] * saturation_coeff[m] * porosity_coeff[m] * dx * dy * dz;
+/* @RMM mod to remove porosity from subsurface storage */
+	/* OLD way 
+	 subsurface_storage_coeff[m] += pressure_coeff[m] * specific_storage_coeff[m] * saturation_coeff[m] * porosity_coeff[m] * dx * dy * dz; 
+	 */
+	subsurface_storage_coeff[m] += pressure_coeff[m] * specific_storage_coeff[m] * saturation_coeff[m] * dx * dy * dz;
       }
    }
 }
