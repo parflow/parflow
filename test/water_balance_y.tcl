@@ -3,7 +3,7 @@
 
 set tcl_precision 16
 
-set verbose 0
+set verbose 1
 
 #---------------------------------------------------------
 # Some controls for the test
@@ -409,8 +409,9 @@ pfset KnownSolution                                    NoKnownSolution
 pfset Solver                                             Richards
 pfset Solver.MaxIter                                     2500
 
+pfset Solver.AbsTol                                      1E-12
 pfset Solver.Nonlinear.MaxIter                           300
-pfset Solver.Nonlinear.ResidualTol                       1e-9
+pfset Solver.Nonlinear.ResidualTol                       1e-12
 pfset Solver.Nonlinear.EtaChoice                         Walker1 
 pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaValue                          0.001
@@ -561,14 +562,14 @@ for {set i 0} {$i <= 19} {incr i} {
 	if [expr $expected_difference != 0.0] {
 	    set percent_diff [expr (abs(($prev_total_water_balance - $total_water_in_domain) - $expected_difference)) / abs($expected_difference) * 100]
 	    if $verbose {
-		puts [format "Percent diff from expected difference\t\t : %.10f" $percent_diff]
+		puts [format "Percent diff from expected difference\t\t : %.12e" $percent_diff]
 	    }
 	}
 
 	set expected_water_balance [expr $prev_total_water_balance - $expected_difference]
 	set percent_diff [expr abs(($total_water_in_domain - $expected_water_balance)) / $expected_water_balance * 100]
 	if $verbose {
-	    puts [format "Percent diff from expected total water sum\t : %.10f" $percent_diff]
+	    puts [format "Percent diff from expected total water sum\t : %.12e" $percent_diff]
 	}
 
 	if [expr $percent_diff > 0.005] {
