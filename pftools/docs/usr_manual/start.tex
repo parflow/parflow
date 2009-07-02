@@ -199,9 +199,17 @@ setenv F77 ifort
 \end{verbatim}\end{display}
 \end{enumerate}
 
+Many of the features of \parflow{} use a file structure called Silo.  Silo is a free, open-source, format detailed at:
+\begin{center}
+\code{https://wci.llnl.gov/codes/silo/}
+\end{center}
+Support for Silo is integrated into \parflow{} but the Silo libraries must be built separately and then linked into \parflow{} during the build and configure process.   This may be done using the \code{--with-silo=PATH} where the \code{PATH} is the location of the Silo libraries.
 
-%% NOTE: we should add stuff about SILO support, Hypre support and other things as needed.
-
+Some features of \parflow{} need to call the solver package \emph{Hypre} externally.  These include the command options  {\bf SMG} and  {\bf PFMGOctree}. \emph{Hypre} is a free, open-source, library detailed at:
+\begin{center}
+\code{https://computation.llnl.gov/casc/hypre/software.html}
+\end{center}
+Support for \emph{Hypre} 2.4.0b or later is integrated into \parflow{} but the libraries must be built separately and then linked into \parflow{} during the build and configure process.   This may be done using the \code{--with-hypre=PATH} where the \code{PATH} is the location of the \emph{Hypre} libraries.
 %=============================================================================
 %=============================================================================
 

@@ -1270,7 +1270,7 @@ pfset Mannings.Geom.domain.Value 5.52e-6
 \label{Topographical Slopes}
 \pfaddanchor{pfintoposlopes}
 
-Here, topographical slope values ($S_{f,x}$ and $S_{f,y}$ in Equations \ref{eq:manningsx} and \ref{eq:manningsy}) are assigned to the upper boundary of the domain using one of the methods described below.
+Here, topographical slope values ($S_{f,x}$ and $S_{f,y}$ in Equations \ref{eq:manningsx} and \ref{eq:manningsy}) are assigned to the upper boundary of the domain using one of the methods described below. Note that due to the negative sign in these equations $S_{f,x}$ and $S_{f,y}$ take a sign in the direction \emph{opposite} of the direction of the slope.  That is, negative slopes point "downhill" and positive slopes "uphill".
 
 The format for this section of input is:
 
@@ -3148,6 +3148,78 @@ values in the timing information section.
 \begin{display}\begin{verbatim}
 pfset Solver.WriteSiloVelocities True
 \end{verbatim}\end{display}
+
+\pfkey{string}{Solver.WriteSiloSlopes}{False}
+{
+This key is used to specify printing of the x and y slope data using silo binary format.
+The printing of the data is controlled by values in the
+timing information section.  
+}
+\begin{display}\begin{verbatim}
+pfset Solver.WriteSiloSlopes  True
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.WriteSiloMannings}{False}
+{
+This key is used to specify printing of the Manning's roughness data in silo binary format.
+The printing of the data is controlled by values in the
+timing information section.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.WriteSiloMannings True
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.WriteSiloSpecificStorage}{False}
+{
+This key is used to specify printing of the specific storage data in silo binary format.
+The printing of the data is controlled by values in the
+timing information section.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.WriteSiloSpecificStorage True
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.WriteSiloMask}{False}
+{
+This key is used to specify printing of the mask data using silo binary format.  The mask contains values equal to one for active cells and zero for inactive cells. 
+The printing of the data is controlled by values in the
+timing information section.  
+}
+\begin{display}\begin{verbatim}
+pfset Solver.WriteSiloMask  True
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.WriteSiloEvapTrans}{False}
+{
+This key is used to specify printing of the evaporation and rainfall flux data using silo binary format.  This data comes from either \code{clm} or from external calls to \parflow{} such as \emph{WRF}.  This data is in units of $[L^3 T^-1]$.
+The printing of the data is controlled by values in the
+timing information section.  
+}
+\begin{display}\begin{verbatim}
+pfset Solver.WriteSiloEvapTrans  True
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.WriteSiloEvapTransSum}{False}
+{
+This key is used to specify printing of the evaporation and rainfall flux data using silo binary format as a running, cumulative amount.  This data comes from either \code{clm} or from external calls to \parflow{} such as \emph{WRF}.  This data is in units of $[L^3]$.
+The printing of the data is controlled by values in the
+timing information section.  
+}
+\begin{display}\begin{verbatim}
+pfset Solver.WriteSiloEvapTransSum  True
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.WriteSiloOverlandSum}{False}
+{
+This key is used to specify calculation and printing of the total overland outflow from the domain using silo binary format as a running cumulative amount.   This is integrated along all domain boundaries and is calculated any location that slopes at the edge of the domain point outward. This data is in units of $[L^3]$.
+The printing of the data is controlled by values in the
+timing information section.  
+}
+\begin{display}\begin{verbatim}
+pfset Solver.WriteSiloOverlandSum  True
+\end{verbatim}\end{display}
+
+
 %=============================================================================
 %=============================================================================
 

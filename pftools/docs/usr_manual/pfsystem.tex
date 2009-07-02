@@ -211,7 +211,7 @@ While \parflow{} does not have any visualization capabilities built-in, there ar
 \begin{display}\begin{verbatim}
 https://wci.llnl.gov/codes/visit/
 \end{verbatim}\end{display}
-The most flexible option for using \emph{VisIt} to view \parflow{} output is to write files using the \emph{SILO} format, which is available either as a direct output option or a conversion option using pftools.  Many other output conversion options exist as described in \S~\ref{Manipulating Data} and this allows \parflow{} output to be converted into formats used by almost all visualization software.
+The most flexible option for using \emph{VisIt} to view \parflow{} output is to write files using the \emph{SILO} format, which is available either as a direct output option (described in \S~\ref{Code Parameters}) or a conversion option using pftools.  Many other output conversion options exist as described in \S~\ref{Manipulating Data} and this allows \parflow{} output to be converted into formats used by almost all visualization software.
 %=============================================================================
 %=============================================================================
 
@@ -266,6 +266,10 @@ This command computes y = alpha*x+y where alpha is a scalar and x and
 y are identifiers representing data sets.  No data set identifier is
 returned upon successful completion since data set y is overwritten.
 
+\item{\begin{verbatim}pfcomputetop mask\end{verbatim}}
+This command computes the the top of the domain based on the mask of active and inactive zones.  This is the land-surface in \code{clm} or overland flow simulations.  The identifier of the data set created by this
+operation is returned upon successful completion.
+
 \item{\begin{verbatim}pfcvel conductivity phead\end{verbatim}}
 This command computes the Darcy velocity in cells for the conductivity data set
 represented by the identifier `conductivity' and the pressure head
@@ -301,6 +305,11 @@ This command computes the net Darcy flux at vertices for the
 conductivity data set `conductivity' and the hydraulic head data      
 set given by `hhead'.  An identifier representing the flux computed   
 will be returned upon successful completion.
+
+\item{\begin{verbatim}pfextracttop top data\end{verbatim}}
+This command computes the the top of the domain based on the top of the domain and another dataset.  The identifier of the data set created by this
+operation is returned upon successful completion.
+
         
 \item{\begin{verbatim}pfgetelt dataset i j k\end{verbatim}}
 This command returns the value at element (i,j,k) in data set         
@@ -362,6 +371,8 @@ Default file type for files with a `.pfsb' extension.
 Default file type for files with a `.sa' extension.
 \item{\begin{verbatim}sb\end{verbatim}} ParFlow simple binary format.
 Default file type for files with a `.sb' extension.
+\item{\begin{verbatim}silo\end{verbatim}} Silo binary format.
+Default file type for files with a `.silo' extension.
 \item{\begin{verbatim}rsa\end{verbatim}} ParFlow real scattered ASCII format.
 Default file type for files with a `.rsa' extension
 \end{itemize}
@@ -437,6 +448,7 @@ File type options include:
 \item{pfb}  ParFlow binary format.
 \item{sa}  ParFlow simple ASCII format.
 \item{sb}  ParFlow simple binary format.
+\item{silo} Silo binary format.
 \item{vis}  Vizamrai binary format.
 \end{itemize}
 
@@ -464,8 +476,25 @@ the identifier `dataset'.  The minimum, maximum, mean, sum, variance,
 and standard deviation are all computed.  The above values are
 returned in a list of the following form:
 {min max mean sum variance (standard deviation)}
+
+\item{\begin{verbatim}pfsubsurfacestorage mask porosity pressure saturation specific_storage\end{verbatim}}
+This command computes the sub-surface water storage (compressible and incompressible components) based on mask, porosity, saturation, storativity and pressure fields. The identifier  
+of the data set created by this operation is returned upon successful 
+completion.  
+
+\item{\begin{verbatim}pfsum dataset\end{verbatim}}
+This command computes the sum over the domain of the dataset.
+
+\item{\begin{verbatim}pfsurfacerunoff top slope_x slope_y  mannings pressure\end{verbatim}}
+This command computes the surface water runoff (out of the domain) based on a computed top, pressure field, slopes and mannings roughness values. This is integrated along all domain boundaries and is calculated any location that slopes at the edge of the domain point outward.  This data is in units of $[L^3 T^-1]$. The identifier  
+of the data set created by this operation is returned upon successful 
+completion.  
         
-        
+\item{\begin{verbatim}pfsurfacestorage top pressure\end{verbatim}}
+This command computes the surface water storage (ponded water on top of the domain) based on a computed top and pressure field. The identifier  
+of the data set created by this operation is returned upon successful 
+completion.  
+
 \item{\begin{verbatim}pfvmag datasetx datasety datasetz\end{verbatim}}
 This command computes the velocity magnitude when given three velocity
 components.  The three parameters are identifiers which represent
@@ -536,8 +565,77 @@ then all of the output files associated with that run are
 undistributed.
 
 Normally this is done after every pfrun command.
+
         
 \end{description}        
+
+\subsection{Common examples using \parflow{} TCL commands (PFTCL) }
+This section contains some brief examples of how to use the pftools commands (along with standard \emph{TCL} commands) to postprocess data.
+
+Load a file as one format and write as another format.
+\begin{verbatim}
+set press [pfload harvey_flow.out.press.pfb]
+pfsave $press -sa harvey_flow.out.sa
+\end{verbatim}
+
+Load pressure-head output from a file, convert to head-potential and write out as a new file.
+\begin{verbatim}
+set press [pfload harvey_flow.out.press.pfb]
+set head [pfhhead $press]
+pfsave $head -pfb harvey_flow.head.pfb
+\end{verbatim}
+
+Use the mask to calculate the top of the domain, save the top of the domain as a file, apply it to the pressure output and write out as a new file.
+\begin{verbatim}
+set mask [pfload clm.out.mask.pfb]
+set top [Parflow::pfcomputetop $mask]
+
+pfsave $top -pfb "clm.out.top_index.pfb"
+
+set data [pfload clm.out.press.00000.pfb]
+set top_data [Parflow::pfextracttop $top $data]
+
+pfsave $top_data -pfb "clm.out.top.press.00000.pfb"
+
+\end{verbatim}
+
+Calculate and output the subsurface storage in the domain at a point in time.
+\begin{verbatim}
+set saturation [pfload runname.out.satur.00001.silo]
+set pressure [pfload runname.out.press.00001.silo]
+set specific_storage [pfload runname.out.specific_storage.silo]
+set porosity         [pfload runname.out.porosity.silo]
+set mask             [pfload runname.out.mask.silo]
+
+set subsurface_storage [pfsubsurfacestorage $mask $porosity \
+     $pressure $saturation $specific_storage]
+set total_subsurface_storage [pfsum $subsurface_storage]
+puts [format "Subsurface storage\t\t\t\t : %.16e" $total_subsurface_storage]
+\end{verbatim}
+
+Calculate and output the surface storage in the domain at a point in time.
+\begin{verbatim}
+set pressure [pfload runname.out.press.00001.silo]
+set mask             [pfload runname.out.mask.silo]
+set top              [pfcomputetop $mask]
+set surface_storage [pfsurfacestorage $top $pressure]
+set total_surface_storage [pfsum $surface_storage]
+puts [format "Surface storage\t\t\t\t : %.16e" $total_surface_storage]
+\end{verbatim}
+
+Calculate and output the runoff out of the domain over a timestep.
+\begin{verbatim}
+set pressure   [pfload runname.out.press.00001.silo]
+set slope_x     [pfload runname.out.slope_x.silo]
+set slope_y    [pfload runname.out.slope_y.silo]
+set mannings  [pfload runname.out.mannings.silo]
+set mask     [pfload runname.out.mask.silo]
+set top       [pfcomputetop $mask]
+
+set surface_runoff [pfsurfacerunoff $top $slope_x $slope_y $mannings $pressure]
+set total_surface_runoff [expr [pfsum $surface_runoff] * [pfget TimeStep.Value]]
+puts [format "Surface runoff from pftools\t\t\t : %.16e" $total_surface_runoff]
+\end{verbatim}
 
 %=============================================================================
 %=============================================================================
@@ -546,8 +644,7 @@ Normally this is done after every pfrun command.
 \label{Test Directory}
 
 \parflow{} comes with a directory containing a few simple input files for use
-as templates in making new files and for use in testing the code.  This section
-gives a brief description of the problems in this directory.
+as templates in making new files and for use in testing the code.  These files sit in the \file{/test} directory described earlier. This section gives a brief description of the problems in this directory.
 
 \begin{description}
 
@@ -557,11 +654,21 @@ gives a brief description of the problems in this directory.
 
 \item{\file{default_single.tcl} The default parflow, single-processor, fully-saturated test script.}
 
-\item{\file{forsyth2.tcl} An example two-dimensional, variably-saturated infiltration problem with layers of different hydraulic properties.  It uses the solid file \file{fors2_hf.pfsol}.}
+\item{\file{forsyth2.tcl} An example two-dimensional, variably-saturated infiltration problem with layers of different hydraulic properties. It runs problem 2 in \cite{FWP95} and uses the solid file \file{fors2_hf.pfsol}.}
 
 \item{\file{harvey.flow.tcl} An example from \cite{MWH07} for the Cape Cod bacterial injection site.  This example is a three-dimensional, fully-saturated flow problem with spatially heterogeneous media (using a correlated, random field approach).  It also provides examples of how tcl/tk scripts may be used in conjunction with ParFlow to loop iteratively or to run other scripts or programs.  It uses the input text file \file{stats4.txt}. This input script is fully detailed in \S~\ref{Tutorial}}
 
 \item{\file{default_overland.tcl} An overland flow boundary condition test and example script based loosely on the V-catchment problem in \cite{KM06}.  There are options provided to expand this problem into other overland flow-type, transient boundary-type problems included in the file as well.}
+
+\item{\file{/clm/clm.tcl} An example of how to use \parflow{} coupled to {\file{clm}}.  This directory also includes {\file{clm}}-specific input. Note: this problem will only run if {\file{--with-clm}} flag is used during the configure and build process.}
+
+\item{\file{water_balance_x.tcl} and {\file{water_balance_y.tcl}}. An overland flow example script that uses the water-balance routines integrated into {\file{pftools}}.  These two problems are based on simple overland flow conditions with slopes primarily in the x or y-directions.  Note: this problem only will run if the Silo file capability is used, that is a {\file{--with-silo=PATH}} flag is used during the configure and build process.}
+
+\item{\file{pfmg.tcl} and \file{pfmg_octree.tcl}. Tests of the external \emph{Hypre} preconditioner options.  Note: this problem only will run if the \emph{Hypre} capability is used, that is a {\file{--with-hypre=PATH}} flag is used during the configure and build process.}
+
+\item{\file{pfmg.tcl} and \file{pfmg_octree.tcl}. Tests of the external \emph{Hypre} preconditioner options.  Note: this problem only will run if the \emph{Hypre} capability is used, that is a {\file{--with-hypre=PATH}} flag is used during the configure and build process.}
+
+\item{\file{test_x.tcl} A test problem for the Richards' solver that compares output to an analytical solution.}
 
 \end{description}
 
