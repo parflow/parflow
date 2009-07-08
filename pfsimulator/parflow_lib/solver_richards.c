@@ -830,13 +830,14 @@ void AdvanceRichards(PFModule *this_module,
 	    conv_failures++;
 
 	    /* 
-	       SGSOFS:
-	       if converged do addition of overland flow sum here.
+	       If converged do addition of overland flow sum here.
 	    */
-	    OverlandSum(problem_data, 
-			instance_xtra -> pressure,
-			dt, 
-			instance_xtra -> overland_sum);
+	    if(public_xtra -> write_silo_overland_sum) {
+	       OverlandSum(problem_data, 
+			   instance_xtra -> pressure,
+			   dt, 
+			   instance_xtra -> overland_sum);
+	    }
 	 }
 	 else 
 	    converged = 1;
