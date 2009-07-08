@@ -41,7 +41,7 @@ region.o: region.c pfload_file.h general.h databox.h parflow_config.h \
   readdatabox.h file.h load.h grid.h region.h usergrid.h
 slimtopfsb.o: slimtopfsb.c
 stats.o: stats.c stats.h databox.h parflow_config.h
-sum.o: sum.c Databox.h parflow_config.h
+sum.o: sum.c databox.h parflow_config.h
 tools_io.o: tools_io.c
 top.o: top.c top.h databox.h parflow_config.h
 usergrid.o: usergrid.c pftools.h parflow_config.h databox.h general.h \
