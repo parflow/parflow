@@ -1132,6 +1132,14 @@ void TeardownRichards(PFModule *this_module) {
    FreeVector( instance_xtra -> ovrl_bc_flx );
    FreeVector( instance_xtra -> mask );
 
+   if(instance_xtra -> evap_trans_sum) {
+      FreeVector( instance_xtra -> evap_trans_sum);
+   }
+
+   if(instance_xtra -> overland_sum) {
+      FreeVector(instance_xtra -> overland_sum);
+   }
+
    if(!amps_Rank(amps_CommWorld))
    {
       PrintWellData(ProblemDataWellData(problem_data), (WELLDATA_PRINTSTATS));

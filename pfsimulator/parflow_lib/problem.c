@@ -410,6 +410,8 @@ ProblemData  *problem_data;
       FreeVector(ProblemDataTSlopeY(problem_data)); //sk
       FreeVector(ProblemDataMannings(problem_data)); //sk
 
+      FreeVector(ProblemDataIndexOfDomainTop(problem_data));
+
       tfree(problem_data);
    }
 }

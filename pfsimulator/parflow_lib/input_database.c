@@ -493,7 +493,7 @@ NameArray NA_NewNameArray(char *string)
    /* SGS Warning this is NOT thread safe */
    if(strtok(new_string, WHITE) == NULL)
    {
-	   free(new_string);
+      free(new_string);
       return name_array;
    }
 
