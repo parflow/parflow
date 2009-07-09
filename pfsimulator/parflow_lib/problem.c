@@ -87,10 +87,17 @@ int	   solver;   /* Designates the solver from which this routine is
     *-----------------------------------------------------------------------*/
 
    ProblemBaseTimeUnit(problem) = GetDouble("TimingInfo.BaseUnit");
+
    ProblemStartCount(problem)   = GetInt("TimingInfo.StartCount");
+
    ProblemStartTime(problem)    = GetDouble("TimingInfo.StartTime");
+   CheckTime(problem, "TimingInfo.StartTime", ProblemStartTime(problem));
+
    ProblemStopTime(problem)     = GetDouble("TimingInfo.StopTime");
+   CheckTime(problem, "TimingInfo.StopTime", ProblemStopTime(problem));
+
    ProblemDumpInterval(problem) = GetDouble("TimingInfo.DumpInterval");
+   CheckTime(problem, "TimingInfo.DumpInterval", ProblemDumpInterval(problem));
 
    NameArray      switch_na = NA_NewNameArray("False True");
    char *switch_name = GetStringDefault("TimingInfo.DumpAtEnd", "False");
@@ -98,7 +105,7 @@ int	   solver;   /* Designates the solver from which this routine is
    if(switch_value < 0)
    {
       InputError("Error: invalid print switch value <%s> for key <%s>\n",
-      switch_name, key);
+		 switch_name, key);
    }
    ProblemDumpAtEnd(problem) = switch_value;
    NA_FreeNameArray(switch_na);

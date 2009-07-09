@@ -951,6 +951,7 @@ void ComputeTop (  Problem     *problem,
 		   ProblemData *problem_data
 		   );
 
+int CheckTime(Problem *problem, char *key, double time);
 
 /* evaptranssum.c */
 void EvapTransSum(ProblemData *problem_data, double dt, Vector *evap_trans_sum, Vector *evap_trans);

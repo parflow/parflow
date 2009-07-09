@@ -265,6 +265,13 @@ inputRF.o: inputRF.c parflow.h info_header.h general.h file_versions.h \
   grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
   problem_bc.h problem_eval.h well.h bc_pressure.h problem.h solver.h \
   nl_function_eval.h parflow_proto.h parflow_proto_f.h
+input_checks.o: input_checks.c parflow.h info_header.h general.h \
+  file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
+  background.h communication.h computation.h region.h grid.h matrix.h \
+  vector.h n_vector.h pf_module.h geometry.h grgeometry.h grgeom_octree.h \
+  grgeom_list.h geostats.h lb.h char_vector.h globals.h time_cycle_data.h \
+  problem_bc.h problem_eval.h well.h bc_pressure.h problem.h solver.h \
+  nl_function_eval.h parflow_proto.h parflow_proto_f.h
 input_database.o: input_database.c parflow.h info_header.h general.h \
   file_versions.h input_database.h hbt.h logging.h timing.h loops.h \
   background.h communication.h computation.h region.h grid.h matrix.h \

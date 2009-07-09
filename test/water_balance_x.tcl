@@ -534,11 +534,14 @@ for {set i 0} {$i <= 19} {incr i} {
 	}
     }
 
-    if [expr $i < 7] {
-	set bc_flux [pfget Patch.z-upper.BCPressure.$i.Value]
+    if [expr $i < 1] {
+	set bc_index 0
+    } elseif [expr $i > 0 && $i < 7] {
+	set bc_index [expr $i - 1]
     } {
-	set bc_flux [pfget Patch.z-upper.BCPressure.6.Value]
+	set bc_index 6
     }
+    set bc_flux [pfget Patch.z-upper.BCPressure.$bc_index.Value]
 
     set boundary_flux [expr $bc_flux * $surface_area_of_domain * [pfget TimeStep.Value]]
     if $verbose {

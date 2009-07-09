@@ -772,15 +772,13 @@ void AdvanceRichards(PFModule *this_module,
 	       /*
 		* if the difference is small don't try to compute
 		* at print_dt, just use dt.  This will
-		* output slightly in time but avoids
+		* output slightly off in time but avoids
 		* extremely small dt values.
 		*/
 	       if( fabs(dt - print_dt) > EPSILON) {
 		  dt = print_dt;
 	       }
 	       dt_info = 'p';
-
-	       instance_xtra -> dump_index++;
 
 	       dump_files = 1;
 	    }
@@ -830,6 +828,10 @@ void AdvanceRichards(PFModule *this_module,
 	    conv_failures++;
 
 	    /* 
+	     SGS Why is this here?   This doe not seem correct.
+	    */
+
+	    /* 
 	       If converged do addition of overland flow sum here.
 	    */
 	    if(public_xtra -> write_silo_overland_sum) {
@@ -840,7 +842,10 @@ void AdvanceRichards(PFModule *this_module,
 	    }
 	 }
 	 else 
+	 {
 	    converged = 1;
+
+	 }
 
 	 if (conv_failures == max_failures)
 	 {
@@ -897,6 +902,8 @@ void AdvanceRichards(PFModule *this_module,
       /* Dump the pressure values at this time-step */
       if ( dump_files )
       {
+	 instance_xtra -> dump_index++;
+
 	 if(public_xtra -> print_press) {
 	    sprintf(file_postfix, "press.%05d", instance_xtra -> file_number);
 	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> pressure);
