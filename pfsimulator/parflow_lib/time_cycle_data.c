@@ -147,7 +147,7 @@ TimeCycleData *time_cycle_data;
  * TimeCycleDataComputeIntervalNumber
  *--------------------------------------------------------------------------*/
 
-#define TIME_CYCLE_SUBDIVISIONS 100
+#define TIME_CYCLE_SUBDIVISIONS 1000
 
 int TimeCycleDataComputeIntervalNumber(problem, time, time_cycle_data, cycle_number)
 Problem       *problem;
