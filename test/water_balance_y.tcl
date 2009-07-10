@@ -3,7 +3,7 @@
 
 set tcl_precision 16
 
-set verbose 1
+set verbose 0
 
 #---------------------------------------------------------
 # Some controls for the test
