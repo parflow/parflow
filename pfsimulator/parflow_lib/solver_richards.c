@@ -826,25 +826,10 @@ void AdvanceRichards(PFModule *this_module,
 	 {
 	    converged = 0;
 	    conv_failures++;
-
-	    /* 
-	     SGS Why is this here?   This doe not seem correct.
-	    */
-
-	    /* 
-	       If converged do addition of overland flow sum here.
-	    */
-	    if(public_xtra -> write_silo_overland_sum) {
-	       OverlandSum(problem_data, 
-			   instance_xtra -> pressure,
-			   dt, 
-			   instance_xtra -> overland_sum);
-	    }
 	 }
 	 else 
 	 {
 	    converged = 1;
-
 	 }
 
 	 if (conv_failures == max_failures)
@@ -883,7 +868,6 @@ void AdvanceRichards(PFModule *this_module,
       if(public_xtra -> write_silo_evaptrans_sum) {
 	 EvapTransSum(problem_data, dt, evap_trans_sum, evap_trans);
       }
-
 
       /***************************************************************
        * Compute running sum of overland outflow for water balance 
