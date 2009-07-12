@@ -351,3 +351,32 @@ v_y=- \frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{2/3}
 \label{eq:manningsy}
 \end{eqnarray}
 where $n$ $[TL^{-2/3}]$ is the Manning’s coefficient. 
+%%================
+%% @RMM: I want to add just a brief description of the overland flow BC here with more on how/where applied.
+%%================
+
+\section{Water Balance}
+\label{Water Balance}
+\parflow{} can calculate a water balance for the Richards' equation, overland flow and \code{clm} capabilities.  This water balance is computes using \code{pftools} commands as described in \S~\ref{Manipulating Data}.  There are two water balance storage components, subsurface and surface, and two flux calculations, overland flow and evapotranspiration.  The storage components have units $[L^3]$ while the fluxes may be instantaneous and have units $[L^3T^{-1}]$ or cumulative over an output interval with units $[L^3]$.  Examples of water balance calculations and errors are given in the scripts \code{water_balance_x.tcl} and \code{water_balance_y.tcl}.  The size of water balance errors depend on solver settings and tolerances but are typically very small, $<10^{-10} [-]$.\newline
+The water balance takes the form:
+\begin{eqnarray}
+Vol_{subsurface} + Vol_{surface} = \sum[Q_{overland} + Q_{evapotranspiration} + Q_{source sink}]\Delta t
+\label{eq:balance}
+\end{eqnarray}
+where $Vol_{subsurface}$ is the subsurface storage $[L^3]$; $Vol_{surface}$ is the surface storage $[L^3]$; $Q_{overland}$ is the overland flux $[L^3 T^{-1}]$; $Q_{evapotranspiration}$ is the evapotranspiration flux passed from \code{clm} or other LSM, etc, $[L^3 T^{-1}]$; and $Q_{source sink}$ are any other source/sink fluxes specified in the simulation $[L^3 T^{-1}]$. The surface and subsurface storage routines are calculated using the \parflow{} toolset commands \code{pfsurfacestorage} and \code{pfsubsurfacestorage} respectively.  Overland flow out of the domain is calculated by \code{pfsurfacerunoff}.  Details for the use of these commands are given in \S~\ref{PFTCL Commands} and \S~\ref{common_pftcl}. $Q_{evapotranspiration}$ must be written out by \parflow{} as a variable (as shown in \S~ref{Code Parameters}) and only contains the external fluxes passed from a module such as \code{clm} or \emph{WRF}. Note that these volume and flux quantities are calculated spatially over the domain and are returned as array values, just like any other quantity in \parflow{}.  The tools command \code{pfsum} will sum these arrays into a single value for the enrite domain. All other fluxes must be determined by the user.\newline
+The subsurface storage is calculated over all active cells in the domain, $\Omega$, and contains both compressible and incompressible parts based on Equation \ref{eq:richard}. This is computed on a cell-by-cell basis (with the result being an array of balances over the domain) as follows:
+\begin{eqnarray}
+Vol_{subsurface} = \sum_\Omega [ S(\psi)S_s \psi \Delta x \Delta y \Delta z +
+S(\psi)\rho(\psi)\phi \Delta x \Delta y \Delta z]
+\label{eq:sub_store}
+\end{eqnarray}
+The surface storage is calculated over the upper surface boundary cells in the domain, $\Gamma$, as computed by the mask and contains based on Equation \ref{eq:kinematic}. This is again computed on a cell-by-cell basis (with the result being an array of balances over the domain) as follows:
+\begin{eqnarray}
+Vol_{surface} =  \sum_\Gamma \psi \Delta x \Delta y  
+\label{eq:surf_store}
+\end{eqnarray}
+For the overland flow outflow from the domain, any cell at the top boundary that has a slope that points out of the domain and is ponded will remove water from the domain.  This is calculated, for example in the y-direction, as the multiple of Equation \ref{eq:manningsy} and the area: 
+\begin{eqnarray}
+Q_{overland}=vA= -\frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{2/3}\psi \Delta x=- \frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{5/3}\Delta x
+\label{eq:outflow}
+\end{eqnarray}

@@ -478,7 +478,7 @@ returned in a list of the following form:
 {min max mean sum variance (standard deviation)}
 
 \item{\begin{verbatim}pfsubsurfacestorage mask porosity pressure saturation specific_storage\end{verbatim}}
-This command computes the sub-surface water storage (compressible and incompressible components) based on mask, porosity, saturation, storativity and pressure fields. The identifier  
+This command computes the sub-surface water storage (compressible and incompressible components) based on mask, porosity, saturation, storativity and pressure fields. The equations used to calculate this quantity are given in \S~\ref{Water Balance}. The identifier  
 of the data set created by this operation is returned upon successful 
 completion.  
 
@@ -486,12 +486,12 @@ completion.
 This command computes the sum over the domain of the dataset.
 
 \item{\begin{verbatim}pfsurfacerunoff top slope_x slope_y  mannings pressure\end{verbatim}}
-This command computes the surface water runoff (out of the domain) based on a computed top, pressure field, slopes and mannings roughness values. This is integrated along all domain boundaries and is calculated any location that slopes at the edge of the domain point outward.  This data is in units of $[L^3 T^-1]$. The identifier  
+This command computes the surface water runoff (out of the domain) based on a computed top, pressure field, slopes and mannings roughness values. This is integrated along all domain boundaries and is calculated any location that slopes at the edge of the domain point outward.  This data is in units of $[L^3 T^{-1}]$ and the equations used to calculate this quantity are given in \S~\ref{Water Balance}. The identifier  
 of the data set created by this operation is returned upon successful 
 completion.  
         
 \item{\begin{verbatim}pfsurfacestorage top pressure\end{verbatim}}
-This command computes the surface water storage (ponded water on top of the domain) based on a computed top and pressure field. The identifier  
+This command computes the surface water storage (ponded water on top of the domain) based on a computed top and pressure field. The equations used to calculate this quantity are given in \S~\ref{Water Balance}. The identifier  
 of the data set created by this operation is returned upon successful 
 completion.  
 
@@ -570,6 +570,7 @@ Normally this is done after every pfrun command.
 \end{description}        
 
 \subsection{Common examples using \parflow{} TCL commands (PFTCL) }
+\label{common_pftcl}
 This section contains some brief examples of how to use the pftools commands (along with standard \emph{TCL} commands) to postprocess data.
 
 Load a file as one format and write as another format.
