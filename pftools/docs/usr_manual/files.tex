@@ -3496,7 +3496,7 @@ pfset Solver.CLM.CLMDumpInterval 2
 \label{ParFlow Binary Files (.pfb)}
 
 The \file{.pfb} file format is a binary file format which is used
-to store \parflow{} grid data.
+to store \parflow{} grid data.  It is written as BIG ENDIAN binary bit ordering \cite{endian}.
 The format for the file is:
 
 \begin{display}\begin{verbatim}
@@ -3822,3 +3822,29 @@ BEGIN
    END
 END
 \end{verbatim}\end{display}
+%=============================================================================
+%=============================================================================
+
+\section{ParFlow Simple ASCII  and Simple Binary Files (.sa and .sb)}
+\label{ParFlow Simple ASCII Files (.sa and .sb)}
+
+The simple binary,\file{.sa}, file format is an ASCII file format which is used by \code{pftools}
+to write out \parflow{} grid data.  The simple binary,\code{.sb}, file format is exactly the same, just written as BIG ENDIAN binary bit ordering \cite{endian}.
+The format for the file is:
+
+\begin{display}\begin{verbatim}
+<integer : NX>  <integer : NY>  <integer : NZ>
+
+   FOR k = 0 TO  <nz> - 1
+   BEGIN
+      FOR j = 0 TO  <ny> - 1
+      BEGIN
+         FOR i = 0 TO  <nx> - 1
+         BEGIN
+            <double : data_ijk>
+         END
+      END
+   END
+\end{verbatim}\end{display}
+
+
