@@ -4743,16 +4743,24 @@ ac_compiler_gnu=$ac_cv_fc_compiler_gnu
     LIBS="conftest_cmain.$ac_objext $LIBS"
     acx_save_FCFLAGS=$FCFLAGS
 
-    for acx_flag in -implicitnone -fimplicit-none -u -Wimplicit none; do
-	case $acx_flag in
-	    none) FCFLAGS=$acx_save_FCFLAGS ;;
-	    *)    FCFLAGS="$acx_save_FCFLAGS $acx_flag" ;;
-	esac
-        cat >conftest.$ac_ext <<_ACEOF
+    echo "SGS FC = $FC"
 
-    	   subroutine foobar()
-           return
-           end
+    # SGS
+    # There are problems with GCC and Intel not stopping on bad command line flags
+    # so change order of options in hopes of stopping bad options from being
+    # seleted
+    case $FC in
+        *ifort*)
+	    for acx_flag in -implicitnone -fimplicit-none -u -Wimplicit none; do
+	    	case $acx_flag in
+		    none) FCFLAGS=$acx_save_FCFLAGS ;;
+	    	    *)    FCFLAGS="$acx_save_FCFLAGS $acx_flag" ;;
+	    	esac
+                cat >conftest.$ac_ext <<_ACEOF
+
+    	            subroutine foobar()
+                    return
+                    end
 
 _ACEOF
 rm -f conftest.$ac_objext
@@ -4782,7 +4790,52 @@ sed 's/^/| /' conftest.$ac_ext >&5
 fi
 
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext;
-    done
+            done
+	    ;;
+    	*)
+	    for acx_flag in -fimplicit-none -u -implicitnone -Wimplicit none; do
+	    	case $acx_flag in
+		    none) FCFLAGS=$acx_save_FCFLAGS ;;
+	    	    *)    FCFLAGS="$acx_save_FCFLAGS $acx_flag" ;;
+	    	esac
+                cat >conftest.$ac_ext <<_ACEOF
+
+    	            subroutine foobar()
+                    return
+                    end
+
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_compile") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_fc_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext; then
+  casc_cv_fortran_implicit_none_fcflags=$acx_flag; break
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext;
+            done
+	    ;;
+    esac
+
     FCFLAGS=$acx_save_FCFLAGS
     LIBS=$acx_save_LIBS
     ac_ext=c

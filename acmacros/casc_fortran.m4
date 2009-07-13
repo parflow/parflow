@@ -726,17 +726,41 @@ if test "x$casc_cv_fortran_implicit_none_fcflags" != xerror; then
     LIBS="conftest_cmain.$ac_objext $LIBS" 
     acx_save_FCFLAGS=$FCFLAGS
 
-    for acx_flag in -implicitnone -fimplicit-none -u -Wimplicit none; do
-	case $acx_flag in
-	    none) FCFLAGS=$acx_save_FCFLAGS ;;
-	    *)    FCFLAGS="$acx_save_FCFLAGS $acx_flag" ;; 
-	esac
-        AC_COMPILE_IFELSE([
-    	   subroutine foobar()
-           return
-           end
-        ], [casc_cv_fortran_implicit_none_fcflags=$acx_flag; break]);
-    done
+    echo "SGS FC = $FC"
+
+    # SGS
+    # There are problems with GCC and Intel not stopping on bad command line flags
+    # so change order of options in hopes of stopping bad options from being 
+    # seleted
+    case $FC in 
+        *ifort*)
+	    for acx_flag in -implicitnone -fimplicit-none -u -Wimplicit none; do
+	    	case $acx_flag in
+		    none) FCFLAGS=$acx_save_FCFLAGS ;;
+	    	    *)    FCFLAGS="$acx_save_FCFLAGS $acx_flag" ;; 
+	    	esac
+                AC_COMPILE_IFELSE([
+    	            subroutine foobar()
+                    return
+                    end
+                    ], [casc_cv_fortran_implicit_none_fcflags=$acx_flag; break]);
+            done
+	    ;;
+    	*)
+	    for acx_flag in -fimplicit-none -u -implicitnone -Wimplicit none; do
+	    	case $acx_flag in
+		    none) FCFLAGS=$acx_save_FCFLAGS ;;
+	    	    *)    FCFLAGS="$acx_save_FCFLAGS $acx_flag" ;; 
+	    	esac
+                AC_COMPILE_IFELSE([
+    	            subroutine foobar()
+                    return
+                    end
+                    ], [casc_cv_fortran_implicit_none_fcflags=$acx_flag; break]);
+            done
+	    ;;
+    esac
+
     FCFLAGS=$acx_save_FCFLAGS
     LIBS=$acx_save_LIBS
     AC_LANG_POP([Fortran])
