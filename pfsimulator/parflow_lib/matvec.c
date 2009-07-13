@@ -57,9 +57,9 @@ Vector         *y;
 
    Region         *compute_reg = NULL;
 
-   Subvector      *y_sub;
-   Subvector      *x_sub;
-   Submatrix      *A_sub;
+   Subvector      *y_sub = NULL;
+   Subvector      *x_sub = NULL;
+   Submatrix      *A_sub = NULL;
 
    Stencil        *stencil;
    int             stencil_size;
@@ -79,8 +79,8 @@ Vector         *y;
    int             nx, ny, nz;
    int             sx, sy, sz;
 
-   int             nx_v, ny_v, nz_v;
-   int             nx_m, ny_m, nz_m;
+   int             nx_v = 0, ny_v = 0, nz_v = 0;
+   int             nx_m = 0, ny_m = 0, nz_m = 0;
 
    /*-----------------------------------------------------------------------
     * Begin timing

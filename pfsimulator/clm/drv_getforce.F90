@@ -45,7 +45,7 @@ subroutine drv_getforce (drv,tile,clm)
 
   real(r8) solar     ! incident solar radiation [w/m2]
   real(r8) prcp      ! precipitation [mm/s]
-  integer t,i          ! Tile looping variable
+  integer  t         ! Tile looping variable
 
 !=== End Variable List ===================================================
 !=== Increment Time Step Counter

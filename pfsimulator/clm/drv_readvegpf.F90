@@ -2,31 +2,31 @@
 
 subroutine drv_readvegpf (drv,grid,tile,clm)
 
-!=========================================================================
-!
-!  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely  
-!  L                        M  available land surface process model.  
-!  M --COMMON LAND MODEL--  C  
-!  C                        L  CLM WEB INFO: http://www.clm.org?
-!  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List: 
-!
-!=========================================================================
-! DESCRIPTION:	  
-!   Read in vegetation class paramters from input file and assign to
-!   CLM variables.
-!
-! INPUT DATA FORMAT:
-!  FORTRAN PARAMETER NAME, description (not read in)
-!  values (number of types in vegetation classification)
-!  
-!  This is free format, in any order.  drv_readvegp.f skips any comment lines
-!
-! REVISION HISTORY:
-!  6 May 1999: Paul Houser; initial code
-!  15 Jan 2000: Paul Houser; revised for F90
-!=========================================================================
-! $Id: drv_readvegpf.F90,v 1.1.1.1 2006/02/14 23:05:52 kollet Exp $
-!=========================================================================
+  !=========================================================================
+  !
+  !  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely  
+  !  L                        M  available land surface process model.  
+  !  M --COMMON LAND MODEL--  C  
+  !  C                        L  CLM WEB INFO: http://www.clm.org?
+  !  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List: 
+  !
+  !=========================================================================
+  ! DESCRIPTION:	  
+  !   Read in vegetation class paramters from input file and assign to
+  !   CLM variables.
+  !
+  ! INPUT DATA FORMAT:
+  !  FORTRAN PARAMETER NAME, description (not read in)
+  !  values (number of types in vegetation classification)
+  !  
+  !  This is free format, in any order.  drv_readvegp.f skips any comment lines
+  !
+  ! REVISION HISTORY:
+  !  6 May 1999: Paul Houser; initial code
+  !  15 Jan 2000: Paul Houser; revised for F90
+  !=========================================================================
+  ! $Id: drv_readvegpf.F90,v 1.1.1.1 2006/02/14 23:05:52 kollet Exp $
+  !=========================================================================
 
   use precision
   use drv_module          ! 1-D Land Model Driver variables
@@ -36,24 +36,23 @@ subroutine drv_readvegpf (drv,grid,tile,clm)
   use clm_varcon, only : istwet, istice, istdlak , istslak
   implicit none
 
-!=== Arguments ===========================================================
+  !=== Arguments ===========================================================
 
   type (drvdec)  :: drv              
   type (griddec) :: grid(drv%nc,drv%nr)
   type (tiledec) :: tile(drv%nch)
   type (clm1d)   :: clm (drv%nch)
 
-!=== Local Variables =====================================================
+  !=== Local Variables =====================================================
 
   character(15) :: vname   ! variable name read from clm_in.dat
   integer :: ioval,t       ! Read error code; tile space counter
-  integer :: tmp           ! temporary for soil type determination
 
-!=== End Variable List ===================================================
+  !=== End Variable List ===================================================
 
-! Open and read 1-D  CLM input file
-print*, "Open and read 1-D  CLM input file"
-print*, drv%vegpf
+  ! Open and read 1-D  CLM input file
+  print*, "Open and read 1-D  CLM input file"
+  print*, drv%vegpf
   open(9, file=drv%vegpf, form='formatted', status = 'old',action='read')
 
   ioval=0
@@ -82,7 +81,7 @@ print*, drv%vegpf
      if (vname == 'xl')        call drv_vpr(drv,tile,clm%xl)
      if (vname == 'vw')        call drv_vpr(drv,tile,clm%vw)
 
-! initialize lakpoi from itypwat variable
+     ! initialize lakpoi from itypwat variable
 
      do t=1,drv%nch 
 
@@ -128,7 +127,7 @@ end subroutine drv_readvegpf
 
 subroutine drv_vpi(drv,tile,clmvar)  
 
-! Declare Modules and data structures
+  ! Declare Modules and data structures
   use drv_module          ! 1-D Land Model Driver variables
   use drv_tilemodule      ! Tile-space variables
   implicit none
@@ -144,12 +143,12 @@ subroutine drv_vpi(drv,tile,clmvar)
      clmvar(t)=ivar(tile(t)%vegt)
   enddo
 
-end subroutine drv_vpi      
+end subroutine drv_vpi
 
 
 subroutine drv_vpr(drv,tile,clmvar)  
 
-! Declare Modules and data structures
+  ! Declare Modules and data structures
   use drv_module          ! 1-D Land Model Driver variables
   use drv_tilemodule      ! Tile-space variables
   implicit none
@@ -165,12 +164,4 @@ subroutine drv_vpr(drv,tile,clmvar)
      clmvar(t)=rvar(tile(t)%vegt)
   enddo
 
-end subroutine drv_vpr      
-
-
-
-
-
-
-
-
+end subroutine drv_vpr

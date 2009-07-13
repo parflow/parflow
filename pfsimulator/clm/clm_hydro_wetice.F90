@@ -2,37 +2,37 @@
 
 subroutine clm_hydro_wetice (clm)
 
-!=========================================================================
-!
-!  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely   
-!  L                        M  available land surface process model.  
-!  M --COMMON LAND MODEL--  C  
-!  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
-!  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List: 
-!
-!=========================================================================
-! DESCRIPTION:
-!  Calculate hydrology for ice and wetland
-!
-! REVISION HISTORY:
-!  7 November 2000: Mariana Vertenstein; Initial code
-!
-!=========================================================================
-! $Id: clm_hydro_wetice.F90,v 1.1.1.1 2006/02/14 23:05:52 kollet Exp $
-!=========================================================================
+  !=========================================================================
+  !
+  !  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely   
+  !  L                        M  available land surface process model.  
+  !  M --COMMON LAND MODEL--  C  
+  !  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
+  !  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List: 
+  !
+  !=========================================================================
+  ! DESCRIPTION:
+  !  Calculate hydrology for ice and wetland
+  !
+  ! REVISION HISTORY:
+  !  7 November 2000: Mariana Vertenstein; Initial code
+  !
+  !=========================================================================
+  ! $Id: clm_hydro_wetice.F90,v 1.1.1.1 2006/02/14 23:05:52 kollet Exp $
+  !=========================================================================
 
   use precision
   use clmtype
   use clm_varcon, only : istwet, istice
   implicit none
 
-!=== Arguments ===========================================================
+  !=== Arguments ===========================================================
 
-  type (clm1d), intent(inout) :: clm	 !CLM 1-D Module
+  type (clm1d), intent(inout) :: clm !CLM 1-D Module
 
-!=========================================================================
+  !=========================================================================
 
-! Wetland and land ice runoff
+  ! Wetland and land ice runoff
 
   clm%qflx_drain  = 0. 
   clm%qflx_surf   = 0.

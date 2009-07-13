@@ -2,39 +2,39 @@
 
 subroutine clm_compact(clm)
 
-!=========================================================================
-!
-!  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely   
-!  L                        M  available land surface process model.  
-!  M --COMMON LAND MODEL--  C  
-!  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
-!  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List: 
-!
-!=========================================================================
-! DESCRIPTION:
-!  Three metamorphisms of changing snow characteristics are implemented, 
-!  i.e., destructive, overburden, and melt. The treatments of the former 
-!  two are from SNTHERM.89 and SNTHERM.99 (1991, 1999). The contribution 
-!  due to melt metamorphism is simply taken as a ratio of snow ice 
-!  fraction after the melting versus before the melting. 
-!
-! REVISION HISTORY:
-!  15 September 1999: Yongjiu Dai; Initial code
-!  15 December 1999:  Paul Houser and Jon Radakovich; F90 Revision 
-!=========================================================================
-! $Id: clm_compact.F90,v 1.1.1.1 2006/02/14 23:05:52 kollet Exp $
-!=========================================================================
+  !=========================================================================
+  !
+  !  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely   
+  !  L                        M  available land surface process model.  
+  !  M --COMMON LAND MODEL--  C  
+  !  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
+  !  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List: 
+  !
+  !=========================================================================
+  ! DESCRIPTION:
+  !  Three metamorphisms of changing snow characteristics are implemented, 
+  !  i.e., destructive, overburden, and melt. The treatments of the former 
+  !  two are from SNTHERM.89 and SNTHERM.99 (1991, 1999). The contribution 
+  !  due to melt metamorphism is simply taken as a ratio of snow ice 
+  !  fraction after the melting versus before the melting. 
+  !
+  ! REVISION HISTORY:
+  !  15 September 1999: Yongjiu Dai; Initial code
+  !  15 December 1999:  Paul Houser and Jon Radakovich; F90 Revision 
+  !=========================================================================
+  ! $Id: clm_compact.F90,v 1.1.1.1 2006/02/14 23:05:52 kollet Exp $
+  !=========================================================================
 
   use precision
   use clmtype
   use clm_varcon, only : denice, denh2o, tfrz
   implicit none
 
-!=== Arguments ===========================================================
+  !=== Arguments ===========================================================
 
-  type (clm1d), intent(inout) :: clm	 !CLM 1-D Module
+  type (clm1d), intent(inout) :: clm  !CLM 1-D Module
 
-!=== Local Variables =====================================================
+  !=== Local Variables =====================================================
 
   real(r8) c2,           & ! = 21e-3 [m3/kg]
        c3,               & ! = 2.777e-6 [1/s]
@@ -61,7 +61,7 @@ subroutine clm_compact(clm)
   data dm/100./         
   data eta0/9.e5/      
 
-!=== End Variable List ===================================================
+  !=== End Variable List ===================================================
 
   burden = 0.0
 
@@ -70,7 +70,7 @@ subroutine clm_compact(clm)
      wx = clm%h2osoi_ice(i) + clm%h2osoi_liq(i)
      void=1.-(clm%h2osoi_ice(i)/denice+clm%h2osoi_liq(i)/denh2o)/clm%dz(i)
 
-! Disallow compaction for water saturated node and lower ice lens node.
+     ! Disallow compaction for water saturated node and lower ice lens node.
 
      if(void <= 0.001 .or. clm%h2osoi_ice(i) <= .1)then
         burden = burden+wx
@@ -82,20 +82,20 @@ subroutine clm_compact(clm)
      td = tfrz-clm%t_soisno(i)
      dexpf = exp(-c4*td)
 
-! Settling as a result of destructive metamorphism
+     ! Settling as a result of destructive metamorphism
 
      ddz1 = -c3*dexpf
      if(bi > dm) ddz1 = ddz1*exp(-46.0e-3*(bi-dm))
 
-! Liquid water term
+     ! Liquid water term
 
      if(clm%h2osoi_liq(i) > 0.01*clm%dz(i)) ddz1=ddz1*c5
 
-! Compaction due to overburden
+     ! Compaction due to overburden
 
      ddz2 = -burden*exp(-0.08*td - c2*bi)/eta0
 
-! Compaction occurring during melt
+     ! Compaction occurring during melt
 
      if(clm%imelt(i) == 1)then
         ddz3 = - 1./clm%dtime * max(0.,(clm%frac_iceold(i) - fi)/clm%frac_iceold(i))
@@ -103,15 +103,15 @@ subroutine clm_compact(clm)
         ddz3 = 0.
      endif
 
-! Time rate of fractional change in dz (units of s-1)
+     ! Time rate of fractional change in dz (units of s-1)
 
      pdzdtc = ddz1+ddz2+ddz3
 
-! The change in dz due to compaction
+     ! The change in dz due to compaction
 
      clm%dz(i) = clm%dz(i)*(1.+pdzdtc*clm%dtime)
 
-! Pressure of overlying snow
+     ! Pressure of overlying snow
 
      burden = burden+wx
 

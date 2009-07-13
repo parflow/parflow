@@ -204,11 +204,7 @@ FCFLAGS=""
 
 AC_FC_FREEFORM(,[AC_MSG_ERROR([free format in F90 compiler does not work])])
 
-case $FC in
-   gfortran*) 
-      FC_FLAGS="$FC_FLAGS $FCFLAGS -ffree-line-length-none"
-      ;;
-esac
+CASC_FORTRAN_LONGLINES(FC_FLAGS="$CASC_FORTRAN_LONGLINES_FCFLAGS $FC_FLAGS", FC_FLAGS="$FC_FLAGS" )
 
 CASC_FC_ACCESS_STREAM
 
@@ -247,9 +243,8 @@ if test -n "$with_F77"; then
 fi
 AC_PROG_F77
 
-if test "$ac_cv_prog_g77" = "yes"; then
-   F77_FLAGS="-Wall -Wunused -fimplicit-none $F77_FLAGS"
-fi
+CASC_FORTRAN_IMPLICIT_NONE(FC_FLAGS="$CASC_FORTRAN_IMPLICIT_NONE_FCFLAGS $FC_FLAGS", FC_FLAGS="$FC_FLAGS" )
+CASC_FORTRAN_WARNING(FC_FLAGS="$CASC_FORTRAN_WARNING_FCFLAGS $FC_FLAGS", FC_FLAGS="$FC_FLAGS" )
 
 dnl
 dnl Set up the Fortran libraries.

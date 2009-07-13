@@ -2,31 +2,31 @@
 
 subroutine drv_restart (rw, drv, tile, clm, rank)
 
-!=========================================================================
-!
-!  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely   
-!  L                        M  available land surface process model.  
-!  M --COMMON LAND MODEL--  C  	
-!  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
-!  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List: 
-!
-!=========================================================================
-! DESCRIPTION:
-!  This program reads and writes restart files for CLM.  This
-!   includes all relevant water/energy storages, tile information,
-!   and time information.  It also rectifies changes in the tile space.  
-!
-! REVISION HISTORY:
-!  22  Oct 1999: Jon Radakovich and Paul Houser; Initial code
-!=========================================================================
-! RESTART FILE FORMAT(fortran sequential binary):
-!  yr,mo,da,hr,mn,ss,vclass,nch !Restart time,Veg class,no.tiles, no.soil lay 
-!  tile(nch)%col        !Grid Col of Tile   
-!  tile(nch)%row        !Grid Row of Tile
-!  tile(nch)%fgrd       !Fraction of Grid covered by tile
-!  tile(nch)%vegt       !Vegetation Type of Tile
-!  clm(nch)%states      !Model States in Tile Space
-!=========================================================================
+  !=========================================================================
+  !
+  !  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely   
+  !  L                        M  available land surface process model.  
+  !  M --COMMON LAND MODEL--  C  	
+  !  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
+  !  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List: 
+  !
+  !=========================================================================
+  ! DESCRIPTION:
+  !  This program reads and writes restart files for CLM.  This
+  !   includes all relevant water/energy storages, tile information,
+  !   and time information.  It also rectifies changes in the tile space.  
+  !
+  ! REVISION HISTORY:
+  !  22  Oct 1999: Jon Radakovich and Paul Houser; Initial code
+  !=========================================================================
+  ! RESTART FILE FORMAT(fortran sequential binary):
+  !  yr,mo,da,hr,mn,ss,vclass,nch !Restart time,Veg class,no.tiles, no.soil lay 
+  !  tile(nch)%col        !Grid Col of Tile   
+  !  tile(nch)%row        !Grid Row of Tile
+  !  tile(nch)%fgrd       !Fraction of Grid covered by tile
+  !  tile(nch)%vegt       !Vegetation Type of Tile
+  !  clm(nch)%states      !Model States in Tile Space
+  !=========================================================================
 
   use precision
   use drv_module          ! 1-D Land Model Driver variables
@@ -36,19 +36,19 @@ subroutine drv_restart (rw, drv, tile, clm, rank)
   use clm_varcon, only : denh2o, denice
   implicit none
 
-!=== Arguments ===========================================================  
+  !=== Arguments ===========================================================  
 
   integer, intent(in) :: rw   ! 1=read restart, 2=write restart
   type (drvdec)  :: drv              
   type (tiledec) :: tile(drv%nch)
   type (clm1d)   :: clm (drv%nch)
 
-!=== Local Variables =====================================================
+  !=== Local Variables =====================================================
 
   integer :: c,t,l,n       ! Loop counters
   integer :: found         ! Counting variable
 
-!=== Temporary tile space transfer files (different than in DRV_module)
+  !=== Temporary tile space transfer files (different than in DRV_module)
 
   integer :: yr,mo,da,hr,mn,ss        ! Time variables
   integer :: vclass,nc,nr,nch
@@ -82,13 +82,10 @@ subroutine drv_restart (rw, drv, tile, clm, rank)
   real(r8), pointer :: tmptileot(:) ! Temporary Transfer Array   
   real(r8), pointer :: tmptileow(:) ! Temporary Transfer Array 
   real(r8), pointer :: tmptileoi(:) ! Temporary Transfer Array
-  real(r8), pointer :: tmptileor(:) ! Temporary Transfer Array
   real(r8), pointer :: tmptileoa(:) ! Temporary Transfer Array
   real(r8) :: tmptilent(drv%nch)    ! Temporary Transfer Array   
   real(r8) :: tmptilenw(drv%nch)    ! Temporary Transfer Array
   real(r8) :: tmptileni(drv%nch)    ! Temporary Transfer Array
-  real(r8) :: tmptilenr(drv%nch)    ! Temporary Transfer Array
-  real(r8) :: tmptilena(drv%nch)    ! Temporary Transfer Array
 
   real(r8) :: g_t_grnd(drv%nc,drv%nr)         ! CLM Soil Surface Temperature [K]
   real(r8) :: g_t_veg(drv%nc,drv%nr)          ! CLM Leaf Temperature [K] 
@@ -110,10 +107,10 @@ subroutine drv_restart (rw, drv, tile, clm, rank)
   integer :: rank
   character*100 RI
 
-!=== End Variable Definition =============================================
+  !=== End Variable Definition =============================================
   write(RI,*) rank
-print*, "in drv_restart routine"
-!=== Read Active Archive File ============================================
+  print*, "in drv_restart routine"
+  !=== Read Active Archive File ============================================
 
   if((rw.eq.1.and.drv%clm_ic.eq.1).or.(rw.eq.1.and.drv%startcode.eq.1))then
 
@@ -124,17 +121,17 @@ print*, "in drv_restart routine"
 
      allocate (col(nch),row(nch),fgrd(nch),vegt(nch))
      allocate (t_grnd(nch),t_veg(nch),h2osno(nch),snowage(nch),         &
-               snowdp(nch),h2ocan(nch),frac_sno(nch))
+          snowdp(nch),h2ocan(nch),frac_sno(nch))
      allocate (elai(nch), esai(nch), snl(nch),xerr(nch),zerr(nch))
      allocate (dz(nch,-nlevsno+1:nlevsoi),        &
-               z(nch,-nlevsno+1:nlevsoi),         &
-               zi(nch,-nlevsno:nlevsoi),          &           
-               t_soisno(nch,-nlevsno+1:nlevsoi),  &
-               tmptileot(nch),                    &
-               h2osoi_liq(nch,-nlevsno+1:nlevsoi),&
-               tmptileow(nch),                    &
-               h2osoi_ice(nch,-nlevsno+1:nlevsoi),&
-               tmptileoi(nch),tmptileoa(nch))
+          z(nch,-nlevsno+1:nlevsoi),         &
+          zi(nch,-nlevsno:nlevsoi),          &           
+          t_soisno(nch,-nlevsno+1:nlevsoi),  &
+          tmptileot(nch),                    &
+          h2osoi_liq(nch,-nlevsno+1:nlevsoi),&
+          tmptileow(nch),                    &
+          h2osoi_ice(nch,-nlevsno+1:nlevsoi),&
+          tmptileoi(nch),tmptileoa(nch))
 
      read(40) col                  !Grid Col of Tile   
      print *, col                  !Grid Col of Tile   
@@ -170,7 +167,7 @@ print*, "in drv_restart routine"
      print *, zerr                 !CLM Accumulation of energy balnce error
      read(40) istep                !CLM Number of time step
      print *, istep                !CLM Number of time step
-     
+
      do l = -nlevsno+1,nlevsoi
         read(40) tmptileoa  !CLM Layer Depth [m]
         do t = 1,drv%nch
@@ -212,7 +209,7 @@ print*, "in drv_restart routine"
      close(40)
      write(*,*)'CLM Restart File Read: ',drv%rstf
 
-!=== Establish Model Restart Time  
+     !=== Establish Model Restart Time  
 
      if(drv%startcode.eq.1)then
         drv%yr = yr
@@ -226,30 +223,30 @@ print*, "in drv_restart routine"
         write(*,*)'CLM Restart File Time Used: ',drv%rstf
      endif
 
-!=== Rectify Restart Tile Space to DRV Tile Space =====================
+     !=== Rectify Restart Tile Space to DRV Tile Space =====================
 
      if(drv%clm_ic.eq.1)then
 
-! Check for Vegetation Class Conflict 
+        ! Check for Vegetation Class Conflict 
 
         if(vclass.ne.drv%vclass)then
            write(*,*)drv%rstf,' Vegetation class conflict - CLM HALTED'
            stop
         endif
 
-! Check for Grid Space Conflict 
+        ! Check for Grid Space Conflict 
 
         if(nc.ne.drv%nc.or.nr.ne.drv%nr)then
            write(*,*)drv%rstf,'Grid space mismatch - CLM HALTED'
            stop
         endif
 
-! Transfer Restart tile space to DRV tile space
+        ! Transfer Restart tile space to DRV tile space
 
         if(nch.ne.drv%nch)then
            write(*,*)'Restart Tile Space Mismatch-Transfer in Progress'
 
-!  Start by finding grid averages
+           !  Start by finding grid averages
 
            call drv_t2gr(t_grnd         ,g_t_grnd         ,drv%nc,drv%nr,nch,fgrd,col,row)
            call drv_t2gr(t_veg          ,g_t_veg          ,drv%nc,drv%nr,nch,fgrd,col,row)
@@ -283,7 +280,7 @@ print*, "in drv_restart routine"
               call drv_t2gr(h2osoi_ice(:,l),g_h2osoi_ice(:,:,l),drv%nc,drv%nr,nch,fgrd,col,row)
            enddo
 
-! Perform state transfer
+           ! Perform state transfer
 
            c = 0
            do 555 t = 1,drv%nch 
@@ -371,7 +368,7 @@ print*, "in drv_restart routine"
 
               clm%istep=istep
               print *,"CLM_ISTEP FROM RESTART",istep
-          
+
               do t = 1,drv%nch
                  clm(t)%t_grnd = t_grnd(t)
                  clm(t)%t_veg = t_veg(t)
@@ -410,16 +407,16 @@ print*, "in drv_restart routine"
 
         endif
 
-! Determine h2osoi_vol(1) - needed for soil albedo calculation
+        ! Determine h2osoi_vol(1) - needed for soil albedo calculation
 
         do t = 1,drv%nch
            clm(t)%h2osoi_vol(1) = clm(t)%h2osoi_liq(1)/(clm(t)%dz(1)*denh2o) &
-                                + clm(t)%h2osoi_ice(1)/(clm(t)%dz(1)*denice)
+                + clm(t)%h2osoi_ice(1)/(clm(t)%dz(1)*denice)
         end do
 
      endif !RW option 1
 
-! === Set starttime to CLMin Stime when STARTCODE = 2 
+     ! === Set starttime to CLMin Stime when STARTCODE = 2 
      if(rw.eq.1.and.drv%startcode.eq.2)then 
         drv%yr = drv%syr
         drv%mo = drv%smo 
@@ -437,13 +434,13 @@ print*, "in drv_restart routine"
         write(*,*)
      endif
 
-!=== Restart Writing (2 file are written - active and archive)
+     !=== Restart Writing (2 file are written - active and archive)
 
      if(rw.eq.2)then
 
         open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(RI)),form='unformatted') !Active archive restart
 
-        write(40) drv%yr,drv%mo,drv%da,drv%hr,drv%mn,drv%ss,	&
+        write(40) drv%yr,drv%mo,drv%da,drv%hr,drv%mn,drv%ss,&
              drv%vclass,drv%nc,drv%nr,drv%nch  !Veg class, no tiles       
         write(40) tile%col                  !Grid Col of Tile   
         write(40) tile%row                  !Grid Row of Tile

@@ -35,7 +35,7 @@ subroutine drv_almaout (drv,tile,clm)
   type (clm1d)        :: clm(drv%nch)
 
 !=== Local Variables =====================================================
-  integer :: n,t,m,i,count      ! Tile space counter
+  integer :: n,t,i,count      ! Tile space counter
   integer :: mask(drv%nch)      ! Water mask
   real(r8) &
        qg(drv%nch),             & !Ground heat flux Qg [W/m2]

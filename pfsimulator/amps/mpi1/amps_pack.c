@@ -56,7 +56,7 @@ amps_Invoice inv;
 
    MPI_Datatype *base_type;
    MPI_Datatype *temp_type;
-   MPI_Datatype *new_type;
+   MPI_Datatype *new_type = NULL;
 
    mpi_types = calloc(inv->num, sizeof(MPI_Datatype));
    mpi_block_len = malloc(sizeof(int)*inv->num);
@@ -231,7 +231,7 @@ amps_Invoice inv;
 {
    amps_InvoiceEntry *ptr;
    char *data;
-   int element_size;
+   int element_size = 0;
    int stride;
    int len;
    int dim;

@@ -1,26 +1,26 @@
 !#include <misc.h>
 
 subroutine clm_twoStream (clm, ib , ic , coszen, vai, &
-                          rho, tau, fab, fre   , ftd, &
-                          fti, gdir)
-       
-!----------------------------------------------------------------------- 
-! 
-! Purpose: 
-! two-stream fluxes for canopy radiative transfer
-! 
-! Method: 
-! Use two-stream approximation of Dickinson (1983) Adv Geophysics
-! 25:305-353 and Sellers (1985) Int J Remote Sensing 6:1335-1372
-! to calculate fluxes absorbed by vegetation, reflected by vegetation,
-! and transmitted through vegetation for unit incoming direct or diffuse 
-! flux given an underlying surface with known albedo.
-! 
-! Author: Gordon Bonan
-! 
-!-----------------------------------------------------------------------
-! $Id: clm_twostream.F90,v 1.1.1.1 2006/02/14 23:05:52 kollet Exp $
-!-----------------------------------------------------------------------
+     rho, tau, fab, fre   , ftd, &
+     fti, gdir)
+
+  !----------------------------------------------------------------------- 
+  ! 
+  ! Purpose: 
+  ! two-stream fluxes for canopy radiative transfer
+  ! 
+  ! Method: 
+  ! Use two-stream approximation of Dickinson (1983) Adv Geophysics
+  ! 25:305-353 and Sellers (1985) Int J Remote Sensing 6:1335-1372
+  ! to calculate fluxes absorbed by vegetation, reflected by vegetation,
+  ! and transmitted through vegetation for unit incoming direct or diffuse 
+  ! flux given an underlying surface with known albedo.
+  ! 
+  ! Author: Gordon Bonan
+  ! 
+  !-----------------------------------------------------------------------
+  ! $Id: clm_twostream.F90,v 1.1.1.1 2006/02/14 23:05:52 kollet Exp $
+  !-----------------------------------------------------------------------
 
   use precision
   use clmtype
@@ -28,7 +28,7 @@ subroutine clm_twoStream (clm, ib , ic , coszen, vai, &
   use clm_varcon, only : omegas, tfrz, betads, betais
   implicit none
 
-! ------------------------ arguments ------------------------------
+  ! ------------------------ arguments ------------------------------
   type (clm1d), intent(inout) :: clm   !CLM 1-D Module
   integer , intent(in)  :: ib          !waveband number 
   integer , intent(in)  :: ic          !0=unit incoming direct; 1=unit incoming diffuse
@@ -41,11 +41,9 @@ subroutine clm_twoStream (clm, ib , ic , coszen, vai, &
   real(r8), intent(out) :: ftd(numrad) !down dir flux below veg layer (per unit in flux) 
   real(r8), intent(out) :: fti(numrad) !down dif flux below veg layer (per unit in flux) 
   real(r8), intent(out) :: gdir        !aver projected leaf/stem area in solar direction
-! -----------------------------------------------------------------
+  ! -----------------------------------------------------------------
 
-! ------------------------ local variables ------------------------
-  integer j               !array index
-  integer i               !array index 
+  ! ------------------------ local variables ------------------------
   real(r8) cosz        !0.001 <= coszen <= 1.000
   real(r8) asu         !single scattering albedo
   real(r8) chil        ! -0.4 <= xl <= 0.6
@@ -62,16 +60,16 @@ subroutine clm_twoStream (clm, ib , ic , coszen, vai, &
   real(r8) betail   !betai for leaves
   real(r8) betad    !upscatter parameter for direct beam radiation 
   real(r8) betadl   !betad for leaves
-! -----------------------------------------------------------------
+  ! -----------------------------------------------------------------
 
-! -----------------------------------------------------------------
-! Calculate two-stream parameters omega, betad, betai, avmu, gdir, twostext.
-! Omega, betad, betai are adjusted for snow. Values for omega*betad 
-! and omega*betai are calculated and then divided by the new omega
-! because the product omega*betai, omega*betad is used in solution. 
-! Also, the transmittances and reflectances (tau, rho) are linear 
-! weights of leaf and stem values.
-! -----------------------------------------------------------------
+  ! -----------------------------------------------------------------
+  ! Calculate two-stream parameters omega, betad, betai, avmu, gdir, twostext.
+  ! Omega, betad, betai are adjusted for snow. Values for omega*betad 
+  ! and omega*betai are calculated and then divided by the new omega
+  ! because the product omega*betai, omega*betad is used in solution. 
+  ! Also, the transmittances and reflectances (tau, rho) are linear 
+  ! weights of leaf and stem values.
+  ! -----------------------------------------------------------------
 
   cosz = max(0.001, coszen)
   chil = min( max(clm%xl, -0.4), 0.6 )
@@ -88,7 +86,7 @@ subroutine clm_twoStream (clm, ib , ic , coszen, vai, &
   betadl = (1.+avmu*twostext)/(omegal*avmu*twostext)*asu
   betail = 0.5 * ((rho(ib)+tau(ib)) + (rho(ib)-tau(ib)) * ((1.+chil)/2.)**2) / omegal
 
-! Adjust omega, betad, and betai for intercepted snow
+  ! Adjust omega, betad, and betai for intercepted snow
 
   if (clm%t_veg > tfrz) then                             !no snow
      tmp0 = omegal           
@@ -103,9 +101,9 @@ subroutine clm_twoStream (clm, ib , ic , coszen, vai, &
   betad = tmp1 
   betai = tmp2  
 
-! -----------------------------------------------------------------
-! Absorbed, reflected, transmitted fluxes per unit incoming radiation
-! -----------------------------------------------------------------
+  ! -----------------------------------------------------------------
+  ! Absorbed, reflected, transmitted fluxes per unit incoming radiation
+  ! -----------------------------------------------------------------
 
   b = 1. - omega + omega*betai
   c = omega*betai
@@ -151,7 +149,7 @@ subroutine clm_twoStream (clm, ib , ic , coszen, vai, &
   h9 = tmp4 / (d2*s1)
   h10 = (-tmp5*s1) / d2
 
-! Downward direct and diffuse fluxes below vegetation
+  ! Downward direct and diffuse fluxes below vegetation
 
   if (ic == 0) then
      ftds = s2
@@ -163,7 +161,7 @@ subroutine clm_twoStream (clm, ib , ic , coszen, vai, &
   ftd(ib) = ftds
   fti(ib) = ftis
 
-! Flux reflected by vegetation
+  ! Flux reflected by vegetation
 
   if (ic == 0) then
      fres = h1/sigma + h2 + h3
@@ -171,8 +169,8 @@ subroutine clm_twoStream (clm, ib , ic , coszen, vai, &
      fres = h7 + h8
   end if
   fre(ib) = fres
-  
-! Flux absorbed by vegetation
+
+  ! Flux absorbed by vegetation
 
   fab(ib) = 1. - fre(ib) - (1.-clm%albgrd(ib))*ftd(ib) - (1.-clm%albgri(ib))*fti(ib)
 

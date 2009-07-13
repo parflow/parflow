@@ -36,7 +36,7 @@ subroutine clm_obult (displa,  z0m,      z0h,    z0q,    obu,  &
 
 !=== Arguments ===========================================================
 
-  type (clm1d), intent(inout) :: clm	 !CLM 1-D Module
+  type (clm1d), intent(inout) :: clm   !CLM 1-D Module
   real(r8), intent(in) :: &
        displa,       & ! displacement height [m]
        z0m,          & ! roughness length, momentum [m]

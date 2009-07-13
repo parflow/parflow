@@ -700,3 +700,184 @@ end program freeform
       AC_DEFINE(LACKS_FC_ACCESS_SEQUENTIAL)
    fi
 ])
+
+#
+# SYNOPSIS
+#
+#   CASC_FORTRAN_IMPLICIT_NONE([ACTION-IF-SUCCEED], [ACTION-IF-FAIL])
+#
+# DESCRIPTION
+#
+#   This macro figures out extra Fortran compiler flags that are required in
+#   order to use force no implicit variables in Fortran.   If that fails
+#   it tries to find flags to warn about implicit variables.
+#
+#   Runs ACTION-IF-SUCCEED if successful, and ACTION-IF-FAIL if not. Defines
+#   the output variable CASC_FORTRAN_IMPLICIT_NONE_FCFLAGS to any discovered flags. (If
+#   ACTION-IF-FAIL is not specified, defaults to halting with an error.)
+#
+AC_DEFUN([CASC_FORTRAN_IMPLICIT_NONE],
+[AC_CACHE_CHECK([for fortran flags to force or warn about implicit none], casc_cv_fortran_implicit_none_fcflags,
+[
+casc_cv_fortran_implicit_none_fcflags="unknown"
+if test "x$casc_cv_fortran_implicit_none_fcflags" != xerror; then
+    AC_LANG_PUSH([Fortran])
+    acx_save_LIBS=$LIBS
+    LIBS="conftest_cmain.$ac_objext $LIBS" 
+    acx_save_FCFLAGS=$FCFLAGS
+
+    for acx_flag in -implicitnone -fimplicit-none -u -Wimplicit none; do
+	case $acx_flag in
+	    none) FCFLAGS=$acx_save_FCFLAGS ;;
+	    *)    FCFLAGS="$acx_save_FCFLAGS $acx_flag" ;; 
+	esac
+        AC_COMPILE_IFELSE([
+    	   subroutine foobar()
+           return
+           end
+        ], [casc_cv_fortran_implicit_none_fcflags=$acx_flag; break]);
+    done
+    FCFLAGS=$acx_save_FCFLAGS
+    LIBS=$acx_save_LIBS
+    AC_LANG_POP([Fortran])
+fi
+]
+)
+case $casc_cv_fortran_implicit_none_fcflags in
+     error|unknown)
+         CASC_FORTRAN_IMPLICIT_NONE_FCFLAGS=""
+	 ifelse([$2],,[AC_ERROR([cannot find implicit none flag for Fortran])],[$2])
+         ;;
+     *)
+         if test "x$casc_cv_fortran_implicit_none_fcflags" = xnone; then
+	    CASC_FORTRAN_IMPLICIT_NONE_FCFLAGS=""
+         else
+	    CASC_FORTRAN_IMPLICIT_NONE_FCFLAGS="$casc_cv_fortran_implicit_none_fcflags"
+         fi
+         $1
+         ;;
+esac
+AC_SUBST(CASC_FORTRAN_IMPLICIT_NONE_FCFLAGS)
+]
+)
+
+#
+# SYNOPSIS
+#
+#   CASC_FORTRAN_WARNING([ACTION-IF-SUCCEED], [ACTION-IF-FAIL])
+#
+# DESCRIPTION
+#
+#   This macro figures out extra Fortran compiler flags that will
+#   issue warnings.
+#
+#   Runs ACTION-IF-SUCCEED if successful, and ACTION-IF-FAIL if not. Defines
+#   the output variable CASC_FORTRAN_WARNING_FCFLAGS to any discovered flags. (If
+#   ACTION-IF-FAIL is not specified, defaults to halting with an error.)
+#
+AC_DEFUN([CASC_FORTRAN_WARNING],
+[AC_CACHE_CHECK([for fortran flags to issues extra compiler warnings], casc_cv_fortran_warning_fcflags,
+[
+casc_cv_fortran_warning_fcflags="unknown"
+if test "x$casc_cv_fortran_warning_fcflags" != xerror; then
+    AC_LANG_PUSH([Fortran])
+    acx_save_LIBS=$LIBS
+    LIBS="conftest_cmain.$ac_objext $LIBS" 
+    acx_save_FCFLAGS=$FCFLAGS
+    for acx_flag in "-warn all" "-Wall -Wunused" "-Wall" none; do
+	case $acx_flag in
+	    none) FCFLAGS=$acx_save_FCFLAGS ;;
+	    *)    FCFLAGS="$acx_save_FCFLAGS $acx_flag" ;; 
+	esac
+        AC_COMPILE_IFELSE([
+    	   subroutine foobar()
+           return
+           end
+        ], [casc_cv_fortran_warning_fcflags=$acx_flag; break]);
+    done
+    FCFLAGS=$acx_save_FCFLAGS
+    LIBS=$acx_save_LIBS
+    AC_LANG_POP([Fortran])
+fi
+]
+)
+case $casc_cv_fortran_warning_fcflags in
+     error|unknown)
+         CASC_FORTRAN_WARNING_FCFLAGS=""
+	 ifelse([$2],,[AC_ERROR([cannot find extra warning flags for Fortran])],[$2])
+         ;;
+     *)
+         if test "x$casc_cv_fortran_warning_fcflags" = xnone; then
+	    CASC_FORTRAN_WARNING_FCFLAGS=""
+         else
+	    CASC_FORTRAN_WARNING_FCFLAGS="$casc_cv_fortran_warning_fcflags"
+         fi
+         $1
+         ;;
+esac
+AC_SUBST(CASC_FORTRAN_WARNING_FCFLAGS)
+]
+)
+
+
+#
+# SYNOPSIS
+#
+#   CASC_FORTRAN_LONGLINES([ACTION-IF-SUCCEED], [ACTION-IF-FAIL])
+#
+# DESCRIPTION
+#
+#   This macro figures out extra Fortran compiler flags that will
+#   allow long line lengths.
+#
+#   Runs ACTION-IF-SUCCEED if successful, and ACTION-IF-FAIL if not. Defines
+#   the output variable CASC_FORTRAN_LONGLINES_FCFLAGS to any discovered flags. (If
+#   ACTION-IF-FAIL is not specified, defaults to halting with an error.)
+#
+AC_DEFUN([CASC_FORTRAN_LONGLINES],
+[AC_CACHE_CHECK([for fortran flags to allow long line lengths], casc_cv_fortran_longlines_fcflags,
+[
+casc_cv_fortran_longlines_fcflags="unknown"
+if test "x$casc_cv_fortran_longlines_fcflags" != xerror; then
+    AC_LANG_PUSH([Fortran])
+    acx_save_LIBS=$LIBS
+    LIBS="conftest_cmain.$ac_objext $LIBS" 
+    acx_save_FCFLAGS=$FCFLAGS
+    for acx_flag in "-extend_source 132" "-ffree-line-length-none" none; do
+	case $acx_flag in
+	    none) FCFLAGS=$acx_save_FCFLAGS ;;
+	    *)    FCFLAGS="$acx_save_FCFLAGS $acx_flag" ;; 
+	esac
+        AC_COMPILE_IFELSE([
+    	   subroutine foobar()
+           return
+           end
+        ], [casc_cv_fortran_longlines_fcflags=$acx_flag; break]);
+    done
+    FCFLAGS=$acx_save_FCFLAGS
+    LIBS=$acx_save_LIBS
+    AC_LANG_POP([Fortran])
+fi
+]
+)
+case $casc_cv_fortran_longlines_fcflags in
+     error|unknown)
+         CASC_FORTRAN_LONGLINES_FCFLAGS=""
+	 ifelse([$2],,[AC_ERROR([cannot find long line length flag for Fortran])],[$2])
+         ;;
+     *)
+         if test "x$casc_cv_fortran_longlines_fcflags" = xnone; then
+	    CASC_FORTRAN_LONGLINES_FCFLAGS=""
+         else
+	    CASC_FORTRAN_LONGLINES_FCFLAGS="$casc_cv_fortran_longlines_fcflags"
+         fi
+         $1
+         ;;
+esac
+AC_SUBST(CASC_FORTRAN_LONGLINES_FCFLAGS)
+]
+)
+
+
+
+

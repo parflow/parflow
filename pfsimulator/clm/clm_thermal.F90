@@ -2,86 +2,86 @@
 
 subroutine clm_thermal (clm)
 
-!=========================================================================
-!
-!  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely   
-!  L                        M  available land surface process model.  
-!  M --COMMON LAND MODEL--  C  
-!  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
-!  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List: 
-!
-!=========================================================================
-! DESCRIPTION:
-!  This is the main subroutine to execute the calculation of thermal 
-!  processes and surface fluxes.
-!  (1) Leaf temperature
-!      Foliage energy conservation is given by the foliage energy budget 
-!      equation:
-!                     Rnet - Hf - LEf = 0 
-!      The equation is solved by Newton-Raphson iteration, in which this 
-!      iteration includes the calculation of the photosynthesis and 
-!      stomatal resistance, and the integration of turbulent flux profiles. 
-!      The sensible and latent heat transfer between foliage and atmosphere 
-!      and ground is linked by the equations:  
-!                     Ha = Hf + Hg and Ea = Ef + Eg
-!
-!  (2) Snow and soil temperatures
-!      o The volumetric heat capacity is calculated as a linear combination 
-!        in terms of the volumetric fraction of the constituent phases. 
-!      o The thermal conductivity of soil is computed from 
-!        the algorithm of Johansen (as reported by Farouki 1981), and the 
-!        conductivity of snow is from the formulation used in
-!        SNTHERM (Jordan 1991).
-!      o Boundary conditions:  
-!        F = Rnet - Hg - LEg (top),  F= 0 (base of the soil column).
-!      o Soil / snow temperature is predicted from heat conduction 
-!        in 10 soil layers and up to 5 snow layers. 
-!        The thermal conductivities at the interfaces between two 
-!        neighboring layers (j, j+1) are derived from an assumption that 
-!        the flux across the interface is equal to that from the node j 
-!        to the interface and the flux from the interface to the node j+1. 
-!        The equation is solved using the Crank-Nicholson method and 
-!        results in a tridiagonal system equation.
-!
-!  (3) Phase change (see clm_meltfreeze.F90)
-!
-!  FLOW DIAGRAM FOR clm_thermal.F90
-!
-!  thermal ===> clm_qsadv
-!               clm_obuini
-!               clm_obult
-!               clm_leaftem  
-!                  ===> clm_qsadv    
-!                       clm_obuini  
-!                       clm_obult   
-!                       clm_stomata 
-!                       clm_condch  
-!                       clm_condcq  
-!               clm_thermalk          
-!               clm_tridia            
-!               clm_meltfreeze        
-!
-! REVISION HISTORY:
-!  15 September 1999: Yongjiu Dai; Initial code
-!  15 December 1999:  Paul Houser and Jon Radakovich; F90 Revision 
-!=========================================================================
-! $Id: clm_thermal.F90,v 1.1.1.1 2006/02/14 23:05:52 kollet Exp $
-!=========================================================================
+  !=========================================================================
+  !
+  !  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely   
+  !  L                        M  available land surface process model.  
+  !  M --COMMON LAND MODEL--  C  
+  !  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
+  !  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List: 
+  !
+  !=========================================================================
+  ! DESCRIPTION:
+  !  This is the main subroutine to execute the calculation of thermal 
+  !  processes and surface fluxes.
+  !  (1) Leaf temperature
+  !      Foliage energy conservation is given by the foliage energy budget 
+  !      equation:
+  !                     Rnet - Hf - LEf = 0 
+  !      The equation is solved by Newton-Raphson iteration, in which this 
+  !      iteration includes the calculation of the photosynthesis and 
+  !      stomatal resistance, and the integration of turbulent flux profiles. 
+  !      The sensible and latent heat transfer between foliage and atmosphere 
+  !      and ground is linked by the equations:  
+  !                     Ha = Hf + Hg and Ea = Ef + Eg
+  !
+  !  (2) Snow and soil temperatures
+  !      o The volumetric heat capacity is calculated as a linear combination 
+  !        in terms of the volumetric fraction of the constituent phases. 
+  !      o The thermal conductivity of soil is computed from 
+  !        the algorithm of Johansen (as reported by Farouki 1981), and the 
+  !        conductivity of snow is from the formulation used in
+  !        SNTHERM (Jordan 1991).
+  !      o Boundary conditions:  
+  !        F = Rnet - Hg - LEg (top),  F= 0 (base of the soil column).
+  !      o Soil / snow temperature is predicted from heat conduction 
+  !        in 10 soil layers and up to 5 snow layers. 
+  !        The thermal conductivities at the interfaces between two 
+  !        neighboring layers (j, j+1) are derived from an assumption that 
+  !        the flux across the interface is equal to that from the node j 
+  !        to the interface and the flux from the interface to the node j+1. 
+  !        The equation is solved using the Crank-Nicholson method and 
+  !        results in a tridiagonal system equation.
+  !
+  !  (3) Phase change (see clm_meltfreeze.F90)
+  !
+  !  FLOW DIAGRAM FOR clm_thermal.F90
+  !
+  !  thermal ===> clm_qsadv
+  !               clm_obuini
+  !               clm_obult
+  !               clm_leaftem  
+  !                  ===> clm_qsadv    
+  !                       clm_obuini  
+  !                       clm_obult   
+  !                       clm_stomata 
+  !                       clm_condch  
+  !                       clm_condcq  
+  !               clm_thermalk          
+  !               clm_tridia            
+  !               clm_meltfreeze        
+  !
+  ! REVISION HISTORY:
+  !  15 September 1999: Yongjiu Dai; Initial code
+  !  15 December 1999:  Paul Houser and Jon Radakovich; F90 Revision 
+  !=========================================================================
+  ! $Id: clm_thermal.F90,v 1.1.1.1 2006/02/14 23:05:52 kollet Exp $
+  !=========================================================================
 
   use precision
   use clmtype
   use clm_varcon, only : denh2o, denice, roverg, hvap, hsub, &
-                        rair, cpair, grav, vkc, tfrz, sb, istice, istwet 
+       rair, cpair, grav, vkc, tfrz, sb, istice, istwet 
   use clm_varpar, only : nlevsoi
   implicit none
 
-!=== Arguments  =====================================================
+  !=== Arguments  =====================================================
 
-  type (clm1d), intent(inout)  :: clm	 !CLM 1-D Module
+  type (clm1d), intent(inout)  :: clm  !CLM 1-D Module
 
-!=== Local Variables =====================================================
+  !=== Local Variables =====================================================
 
-  integer i,j,k
+  integer i,j
 
   real(r8)  &
        at(clm%snl+1 : nlevsoi),    & ! "a" vector for tridiagonal matrix
@@ -173,13 +173,13 @@ subroutine clm_thermal (clm)
   real(r8) temp                      !temporary variable                                      
   real(r8) cf                        !s m**2/umol -> s/m
 
-!=== End Variable List ===================================================
+  !=== End Variable List ===================================================
 
-!=========================================================================
-! [1] Initial set 
-!=========================================================================
+  !=========================================================================
+  ! [1] Initial set 
+  !=========================================================================
 
-! Fluxes 
+  ! Fluxes 
 
   clm%taux     = 0.
   clm%tauy     = 0.
@@ -200,7 +200,7 @@ subroutine clm_thermal (clm)
   clm%sfactmax = 0.
   clm%t_ref2m     = 0.
 
-!Temperature and water mass from previous time step
+  !Temperature and water mass from previous time step
 
   tg = clm%t_soisno(clm%snl+1)
   do i = clm%snl+1, nlevsoi
@@ -210,9 +210,9 @@ subroutine clm_thermal (clm)
   enddo
 
 
-!=========================================================================
-! [2] Specific humidity and its derivative at ground surface
-!=========================================================================
+  !=========================================================================
+  ! [2] Specific humidity and its derivative at ground surface
+  !=========================================================================
 
   qred = 1.
   if (clm%itypwat/=istwet .AND. clm%itypwat/=istice) then ! NOT wetland and ice land
@@ -221,15 +221,17 @@ subroutine clm_thermal (clm)
      fac  = max( fac, 0.01 )
      psit = -clm%sucsat(1) * fac ** (- clm%bsw(1))
      psit = max(clm%smpmin, psit)
-!@ Stefan: replace original psit with values from Parflow
- !    do i=1,nlevsoi
-! @RMM this need no-longer be a loop, since psit is just set to the top
-! soil layer
+     !@ Stefan: replace original psit with values from Parflow
+     !    do i=1,nlevsoi
+     ! @RMM this need no-longer be a loop, since psit is just set to the top
+     ! soil layer
      if (clm%pf_press(1)>= 0.0d0)  psit = 0.0d0
      if (clm%pf_press(1) < 0.0d0)   psit = clm%pf_press(1)
-	!     enddo  
+     !     enddo  
      hr   = exp(psit/roverg/tg)
      qred = (1.-clm%frac_sno)*hr + clm%frac_sno
+  else
+     hr   = 0.
   endif
 
   call clm_qsadv(tg,clm%forc_pbot,eg,degdT,qsatg,qsatgdT)
@@ -251,13 +253,13 @@ subroutine clm_thermal (clm)
      dqgmax = 0.
   endif
 
-!=========================================================================
-! [3] Leaf and ground surface temperature and fluxes
-!=========================================================================
+  !=========================================================================
+  ! [3] Leaf and ground surface temperature and fluxes
+  !=========================================================================
 
-! 3.1 Propositional variables
+  ! 3.1 Propositional variables
 
-! Emissivity
+  ! Emissivity
 
   if (clm%h2osno>0. .OR.clm%itypwat==istice) then
      emg = 0.97
@@ -267,13 +269,13 @@ subroutine clm_thermal (clm)
   avmuir=1.
   emv=1.-exp(-(clm%elai+clm%esai)/avmuir)
 
-! Latent heat, we arbitrarily assume that the sublimation occurs 
-! only as h2osoi_liq = 0
+  ! Latent heat, we arbitrarily assume that the sublimation occurs 
+  ! only as h2osoi_liq = 0
 
   htvp = hvap
   if (clm%h2osoi_liq(clm%snl+1) <= 0. .AND. clm%h2osoi_ice(clm%snl+1) > 0.) htvp = hsub
 
-! Roughness length
+  ! Roughness length
 
   if (clm%frac_sno > 0.) then
      z0mg = clm%zsno
@@ -289,7 +291,7 @@ subroutine clm_thermal (clm)
   z0hv = z0mv
   z0qv = z0mv
 
-! Potential temperature at the reference height
+  ! Potential temperature at the reference height
 
   beta=1.        ! -  (in computing W_*)
   zii = 1000.    ! m  (pbl height)
@@ -298,16 +300,16 @@ subroutine clm_thermal (clm)
   thv = th*(1.+0.61*clm%forc_q)                          ! virtual potential T
   ur = max(1.0,sqrt(clm%forc_u*clm%forc_u+clm%forc_v*clm%forc_v))    ! limit must set to 1.0, otherwise,
 
-! 3.2 BARE PART
-! Ground fluxes and temperatures
-! NOTE: in the current scheme clm%frac_veg_nosno is EITHER 1 or 0
+  ! 3.2 BARE PART
+  ! Ground fluxes and temperatures
+  ! NOTE: in the current scheme clm%frac_veg_nosno is EITHER 1 or 0
 
-! Compute sensible and latent fluxes and their derivatives with repect 
-! to ground temperature using ground temperatures from previous time step.
+  ! Compute sensible and latent fluxes and their derivatives with repect 
+  ! to ground temperature using ground temperatures from previous time step.
 
   if (clm%frac_veg_nosno == 0) then  
 
-! Initialization variables
+     ! Initialization variables
 
      nmozsgn = 0
      obuold = 0.
@@ -317,7 +319,7 @@ subroutine clm_thermal (clm)
      zldis = clm%forc_hgt_u-0.
      call clm_obuini(ur,thv,dthv,zldis,z0mg,um,obu)
 
-! Evaluated stability-dependent variables using moz from prior iteration
+     ! Evaluated stability-dependent variables using moz from prior iteration
 
      niters=3
      do iter = 1, niters         ! begin stability iteration
@@ -350,7 +352,7 @@ subroutine clm_thermal (clm)
         obuold = obu
      enddo                       ! end stability iteration
 
-! Get derivative of fluxes with repect to ground temperature
+     ! Get derivative of fluxes with repect to ground temperature
 
      clm%acond = ustar*ustar/um ! Add-in for ALMA output
 
@@ -366,8 +368,8 @@ subroutine clm_thermal (clm)
      if (dqh >= 0.) clm%sfact = 0.
      clm%sfactmax = raiw*dqgmax
 
-! Surface fluxes of momentum, sensible and latent heat
-! using ground temperatures from previous time step
+     ! Surface fluxes of momentum, sensible and latent heat
+     ! using ground temperatures from previous time step
 
      clm%taux   = -(1-clm%frac_veg_nosno)*clm%forc_rho*clm%forc_u/ram        
      clm%tauy   = -(1-clm%frac_veg_nosno)*clm%forc_rho*clm%forc_v/ram
@@ -377,12 +379,12 @@ subroutine clm_thermal (clm)
      clm%eflx_sh_tot  = clm%eflx_sh_grnd
      clm%qflx_evap_tot  = clm%qflx_evap_soi
 
-! 2 m height air temperature
+     ! 2 m height air temperature
 
      clm%t_ref2m=(1-clm%frac_veg_nosno)*(tg+temp1*dth * 1./vkc *log((2.+z0hg)/z0hg))
 
-! Equate canopy temperature to air over bareland.
-! Needed as frac_veg_nosno=0 carried over to next time step
+     ! Equate canopy temperature to air over bareland.
+     ! Needed as frac_veg_nosno=0 carried over to next time step
 
      clm%t_veg = clm%forc_t
 
@@ -391,18 +393,18 @@ subroutine clm_thermal (clm)
      clm%rssun = 1./clm%bp * cf
      clm%rssha = 1./clm%bp * cf
 
-! 3.3 VEGETATED PART
-! Calculate canopy temperature, latent and sensible fluxes from the canopy,
-! and leaf water change by evapotranspiration 
+     ! 3.3 VEGETATED PART
+     ! Calculate canopy temperature, latent and sensible fluxes from the canopy,
+     ! and leaf water change by evapotranspiration 
 
   else    
 
      clm%btran = 0
      do i = 1, nlevsoi
         if(clm%h2osoi_liq(i) > 0.0) then
-        temp = ((-150000 - clm%pf_press(i))/(-150000) )
-            if (temp < 0.) temp = 0.
-            if (temp > 1.) temp = 1.
+           temp = ((-150000 - clm%pf_press(i))/(-150000) )
+           if (temp < 0.) temp = 0.
+           if (temp > 1.) temp = 1.
            temp = temp ** clm%vw
         else
            temp = 0.01d0
@@ -417,13 +419,13 @@ subroutine clm_thermal (clm)
 
   endif
 
-!=========================================================================
-! [4] Ground temperature
-!=======================================================================
+  !=========================================================================
+  ! [4] Ground temperature
+  !=======================================================================
 
-! 4.1 Thermal conductivity and Heat capacity
+  ! 4.1 Thermal conductivity and Heat capacity
   call clm_thermalk(tk,cv,clm)
-! 4.2 Net ground heat flux into the surface and its temperature derivative
+  ! 4.2 Net ground heat flux into the surface and its temperature derivative
 
   hs    = clm%sabg + dlrad &
        + (1-clm%frac_veg_nosno)*emg*clm%forc_lwrad - emg*sb*tg**4 &
@@ -444,7 +446,7 @@ subroutine clm_thermal (clm)
   enddo
   fn(nlevsoi) = 0.
 
-! 4.3 Set up vector r and vectors a, b, c that define tridiagonal matrix
+  ! 4.3 Set up vector r and vectors a, b, c that define tridiagonal matrix
 
   j     = clm%snl+1
   dzp   = clm%z(j+1)-clm%z(j)
@@ -472,15 +474,15 @@ subroutine clm_thermal (clm)
   rt(j) = clm%t_soisno(j) - clm%cnfac*fact(j)*fn(j-1)
 
 
-! 4.4 Solve for t_soisno
+  ! 4.4 Solve for t_soisno
 
   i = size(at)
   call clm_tridia (i ,at ,bt ,ct ,rt ,clm%t_soisno(clm%snl+1:nlevsoi))
-!print *,i,at(1),bt(1),ct(1),rt(1),clm%t_soisno(1)
+  !print *,i,at(1),bt(1),ct(1),rt(1),clm%t_soisno(1)
 
-!=========================================================================
-! [5] Melting or Freezing 
-!=========================================================================
+  !=========================================================================
+  ! [5] Melting or Freezing 
+  !=========================================================================
   do j = clm%snl+1, nlevsoi - 1
      fn1(j) = tk(j)*(clm%t_soisno(j+1)-clm%t_soisno(j))/(clm%z(j+1)-clm%z(j))
   enddo
@@ -497,28 +499,28 @@ subroutine clm_thermal (clm)
        tssbef(clm%snl+1),xmf, clm)
 
   tg = clm%t_soisno(clm%snl+1)
-	
 
-!=========================================================================
-! [6] Correct fluxes to present soil temperature
-!========================================================================= 
+
+  !=========================================================================
+  ! [6] Correct fluxes to present soil temperature
+  !========================================================================= 
 
   tinc = clm%t_soisno(clm%snl+1) - tssbef(clm%snl+1)
-  
+
   clm%eflx_sh_grnd =  clm%eflx_sh_grnd + tinc*cgrnds 
   clm%qflx_evap_soi =  clm%qflx_evap_soi + tinc*cgrndl
-	 
-! Calculation of evaporative potential; flux in kg m**-2 s-1.  
-! egidif holds the excess energy if all water is evaporated
-! during the timestep.  This energy is later added to the
-! sensible heat flux.
+
+  ! Calculation of evaporative potential; flux in kg m**-2 s-1.  
+  ! egidif holds the excess energy if all water is evaporated
+  ! during the timestep.  This energy is later added to the
+  ! sensible heat flux.
 
   egsmax = (clm%h2osoi_ice(clm%snl+1)+clm%h2osoi_liq(clm%snl+1)) / clm%dtime
 
   egidif = max( 0., clm%qflx_evap_soi - egsmax )
   clm%qflx_evap_soi = min ( clm%qflx_evap_soi, egsmax )
   clm%eflx_sh_grnd = clm%eflx_sh_grnd + htvp*egidif
-! Ground heat flux
+  ! Ground heat flux
 
   clm%eflx_soil_grnd = clm%sabg + dlrad + (1-clm%frac_veg_nosno)*emg*clm%forc_lwrad &
        - emg*sb*tssbef(clm%snl+1)**3*(tssbef(clm%snl+1) + 4.*tinc) &
@@ -545,21 +547,21 @@ subroutine clm_thermal (clm)
      endif
   endif
 
-! Outgoing long-wave radiation from canopy + ground
+  ! Outgoing long-wave radiation from canopy + ground
 
   clm%eflx_lwrad_out = ulrad &
        + (1-clm%frac_veg_nosno)*(1.-emg)*clm%forc_lwrad &
        + (1-clm%frac_veg_nosno)*emg*sb * tssbef(clm%snl+1)**4 &
-       ! For conservation we put the increase of ground longwave to outgoing
-  + 4.*emg*sb*tssbef(clm%snl+1)**3*tinc
+                                ! For conservation we put the increase of ground longwave to outgoing
+       + 4.*emg*sb*tssbef(clm%snl+1)**3*tinc
 
-! Radiative temperature
+  ! Radiative temperature
 
   clm%t_rad = (clm%eflx_lwrad_out/sb)**0.25
 
-!=========================================================================
-![7] Soil Energy balance check
-!=========================================================================
+  !=========================================================================
+  ![7] Soil Energy balance check
+  !=========================================================================
 
   clm%errsoi = 0. 
   do j = clm%snl+1, nlevsoi
@@ -567,25 +569,14 @@ subroutine clm_thermal (clm)
   enddo
   clm%errsoi = clm%errsoi + clm%eflx_soil_grnd - xmf
 
-!=========================================================================
-![8] Variables needed by history tap
-!=========================================================================
+  !=========================================================================
+  ![8] Variables needed by history tap
+  !=========================================================================
 
- clm%dt_grnd        = tinc
- clm%eflx_lh_vege   = (clm%qflx_evap_veg - clm%qflx_tran_veg) * hvap
- clm%eflx_lh_vegt   = clm%qflx_tran_veg * hvap       
- clm%eflx_lh_grnd   = clm%qflx_evap_soi * htvp
- clm%eflx_lwrad_net = clm%eflx_lwrad_out -  clm%forc_lwrad  
+  clm%dt_grnd        = tinc
+  clm%eflx_lh_vege   = (clm%qflx_evap_veg - clm%qflx_tran_veg) * hvap
+  clm%eflx_lh_vegt   = clm%qflx_tran_veg * hvap       
+  clm%eflx_lh_grnd   = clm%qflx_evap_soi * htvp
+  clm%eflx_lwrad_net = clm%eflx_lwrad_out -  clm%forc_lwrad  
 
 end subroutine clm_thermal
-
-
-
-
-
-
-
-
-
-
-

@@ -2,23 +2,23 @@
 
 subroutine drv_readvegtf (drv,grid,tile,clm,rank)
 
-!=========================================================================
-!
-!  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely   
-!  L                        M  available land surface process model.  
-!  M --COMMON LAND MODEL--  C  
-!  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
-!  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List: 
-!
-!=========================================================================
-! DESCRIPTION:
-!  This primary goal of this routine is to determine tile space.
-!
-! REVISION HISTORY:
-!  15 Jan 2000: Paul Houser; Initial code
-!=========================================================================      
-! $Id: drv_readvegtf.F90,v 1.1.1.1 2006/02/14 23:05:52 kollet Exp $
-!=========================================================================
+  !=========================================================================
+  !
+  !  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely   
+  !  L                        M  available land surface process model.  
+  !  M --COMMON LAND MODEL--  C  
+  !  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
+  !  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List: 
+  !
+  !=========================================================================
+  ! DESCRIPTION:
+  !  This primary goal of this routine is to determine tile space.
+  !
+  ! REVISION HISTORY:
+  !  15 Jan 2000: Paul Houser; Initial code
+  !=========================================================================      
+  ! $Id: drv_readvegtf.F90,v 1.1.1.1 2006/02/14 23:05:52 kollet Exp $
+  !=========================================================================
 
   use precision
   use drv_module          ! 1-D Land Model Driver variables
@@ -27,14 +27,14 @@ subroutine drv_readvegtf (drv,grid,tile,clm,rank)
   use drv_gridmodule      ! Grid-space variables
   implicit none
 
-!=== Arguments ===========================================================
+  !=== Arguments ===========================================================
 
   type (drvdec)  :: drv              
   type (tiledec) :: tile(drv%nch)
   type (clm1d)   :: clm (drv%nch)
   type (griddec) :: grid(drv%nc,drv%nr)   
 
-!=== Local Variables =====================================================
+  !=== Local Variables =====================================================
 
   integer  :: c,r,t,i,j     !Loop counters
   real(r8) :: rsum          !Temporary vegetation processing variable
@@ -43,16 +43,16 @@ subroutine drv_readvegtf (drv,grid,tile,clm,rank)
   integer  :: nchp          !Number of tiles use for array size
   real(r8) :: sand          !temporary value of input sand
   real(r8) :: clay          !temporary value of input clay
- 
+
   integer  :: rank
   character*100 :: RI
 
-!=== End Variable Definition =============================================
+  !=== End Variable Definition =============================================
   nchp = drv%nch
   write(RI,*)rank
 
-!=== Read in Vegetation Data
-!  open(2,file=drv%vegtf,form='formatted',action='read')
+  !=== Read in Vegetation Data
+  !  open(2,file=drv%vegtf,form='formatted',action='read')
   open(2,file=trim(adjustl(drv%vegtf))//'.'//trim(adjustl(RI)),form='formatted',action='read')
 
   read(2,*)  !skip header
@@ -66,7 +66,7 @@ subroutine drv_readvegtf (drv,grid,tile,clm,rank)
              sand,              &
              clay,              &
              grid(c,r)%isoicol, &
-            (grid(c,r)%fgrd(t),t=1,drv%nt)
+             (grid(c,r)%fgrd(t),t=1,drv%nt)
 
         grid(c,r)%sand(:) = sand
         grid(c,r)%clay(:) = clay
@@ -84,8 +84,8 @@ subroutine drv_readvegtf (drv,grid,tile,clm,rank)
      enddo       !C 
   enddo          !R 
 
-!=== Exclude tiles with MINA (minimum tile grid area),  
-!===   normalize remaining tiles to 100%
+  !=== Exclude tiles with MINA (minimum tile grid area),  
+  !===   normalize remaining tiles to 100%
 
   do r=1,drv%nr  !rows
      do c=1,drv%nc  !columns         
@@ -105,10 +105,10 @@ subroutine drv_readvegtf (drv,grid,tile,clm,rank)
      enddo
   enddo
 
-!=== Exclude tiles with MAXT (Maximum Tiles per grid), 
-!===   normalize remaining tiles to 100%
-!=== Determine the grid predominance order of the tiles
-!===   PVEG(NT) will contain the predominance order of tiles
+  !=== Exclude tiles with MAXT (Maximum Tiles per grid), 
+  !===   normalize remaining tiles to 100%
+  !=== Determine the grid predominance order of the tiles
+  !===   PVEG(NT) will contain the predominance order of tiles
 
   do r=1,drv%nr  !rows
      do c=1,drv%nc  !columns
@@ -136,7 +136,7 @@ subroutine drv_readvegtf (drv,grid,tile,clm,rank)
      enddo !IR
   enddo !IC 
 
-!=== Impose MAXT Cutoff
+  !=== Impose MAXT Cutoff
 
   do r=1,drv%nr  !rows
      do c=1,drv%nc  !columns         
@@ -162,7 +162,7 @@ subroutine drv_readvegtf (drv,grid,tile,clm,rank)
      enddo
   enddo
 
-!=== Make Tile Space
+  !=== Make Tile Space
 
   drv%nch=0
   do t=1,drv%nt                                              !loop through each tile type
@@ -181,7 +181,7 @@ subroutine drv_readvegtf (drv,grid,tile,clm,rank)
                  tile(drv%nch)%clay(:) = grid(c,r)%clay(:)   !Percent clay in soil
                  clm(drv%nch)%londeg   = grid(c,r)%londeg    !Longitude of tile (degrees)
                  clm(drv%nch)%latdeg   = grid(c,r)%latdeg    !Latitude of tile (degrees)
-	             clm(drv%nch)%isoicol  = grid(c,r)%isoicol   !Soil color 
+                 clm(drv%nch)%isoicol  = grid(c,r)%isoicol   !Soil color 
                  clm(drv%nch)%lat = clm(drv%nch)%latdeg*4.*atan(1.)/180. !tile latitude  (radians)
                  clm(drv%nch)%lon = clm(drv%nch)%londeg*4.*atan(1.)/180. !tile longitude (radians)
               endif

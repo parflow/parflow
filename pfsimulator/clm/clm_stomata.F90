@@ -37,7 +37,7 @@ subroutine clm_stomata(mpe,       apar,     ei,        ea,      &
 
 !=== Arguments ===========================================================
 
-  type (clm1d), intent(inout) :: clm	 !CLM 1-D Module
+  type (clm1d), intent(inout) :: clm !CLM 1-D Module
 
   real(r8), intent(in) :: &
        mpe,               & ! prevents division by zero errors

@@ -97,7 +97,7 @@ module drv_module
 !@== CLM.PF varibales
      integer  :: sat_flag     ! 0: enough storage in the domain; 1: too little storage in the domain, full saturation
      real(r8) :: dx,dy,dz                   
-	 real(r8) :: begwatb, endwatb   ! beg and end water balance over domain      
+     real(r8) :: begwatb, endwatb   ! beg and end water balance over domain      
      
 !=== End Variable List ===================================================
   end type drvdec

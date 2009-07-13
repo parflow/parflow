@@ -1,38 +1,38 @@
 !#include <misc.h>
 
 subroutine clm_condcq (raw,        rbw,      rdw,               &   
-                       rpp,        wtaq,     wtlq,              &
-                       wtgq,       wtaq0,    wtlq0,    wtgq0,   &
-                       wtalq,      wtgaq,    wtglq,     clm     )
+     rpp,        wtaq,     wtlq,              &
+     wtgq,       wtaq0,    wtlq0,    wtgq0,   &
+     wtalq,      wtgaq,    wtglq,     clm     )
 
-!=========================================================================
-!
-!  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely   
-!  L                        M  available land surface process model.  
-!  M --COMMON LAND MODEL--  C  
-!  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
-!  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List: 
-!
-!=========================================================================
-! DESCRIPTION:
-!  Provides dimensional and non-dimensional latent heat 
-!  conductances for canopy and soil flux calculations.  Latent fluxes 
-!  differs from the sensible heat flux due to stomatal resistance.
-!
-! REVISION HISTORY:
-!  15 September 1999: Yongjiu Dai; Initial code
-!  15 December 1999:  Paul Houser and Jon Radakovich; F90 Revision 
-!=========================================================================
+  !=========================================================================
+  !
+  !  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely   
+  !  L                        M  available land surface process model.  
+  !  M --COMMON LAND MODEL--  C  
+  !  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
+  !  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List: 
+  !
+  !=========================================================================
+  ! DESCRIPTION:
+  !  Provides dimensional and non-dimensional latent heat 
+  !  conductances for canopy and soil flux calculations.  Latent fluxes 
+  !  differs from the sensible heat flux due to stomatal resistance.
+  !
+  ! REVISION HISTORY:
+  !  15 September 1999: Yongjiu Dai; Initial code
+  !  15 December 1999:  Paul Houser and Jon Radakovich; F90 Revision 
+  !=========================================================================
 
-! Declare Modules and data structures
+  ! Declare Modules and data structures
 
   use precision
   use clmtype
   implicit none
 
-!=== Arguments ===========================================================
+  !=== Arguments ===========================================================
 
-  type (clm1d), intent(inout) :: clm	 !CLM 1-D Module
+  type (clm1d), intent(inout) :: clm  !CLM 1-D Module
 
   real(r8), intent(in) ::  &
        raw,             & ! aerodynamical resistance [s/m]
@@ -51,11 +51,11 @@ subroutine clm_condcq (raw,        rbw,      rdw,               &
        wtglq,           & ! normalized latent heat cond. for leaf and ground [-]
        wtgaq              ! normalized latent heat cond. for air and ground [-]
 
-!=== Local Variables =====================================================
+  !=== Local Variables =====================================================
 
   real(r8)  wtsqi            ! latent heat resistance for air, grd and leaf [-]
 
-!=== End Variable List ===================================================
+  !=== End Variable List ===================================================
 
   wtaq  = clm%frac_veg_nosno/raw                                ! air
   wtlq  = clm%frac_veg_nosno*(clm%elai+clm%esai)/rbw * rpp      ! leaf

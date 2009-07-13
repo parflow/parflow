@@ -51,7 +51,7 @@ int buf_size;
    MPI_Datatype *new_type;
    MPI_Datatype *temp_type;
 
-   int element_size;
+   int element_size = 0;
    int position;
 
    int base_size;

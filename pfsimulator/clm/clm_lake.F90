@@ -2,78 +2,78 @@
 
 subroutine clm_lake (clm) 
 
-!=========================================================================
-!
-!  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely   
-!  L                        M  available land surface process model.  
-!  M --COMMON LAND MODEL--  C  
-!  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
-!  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List: 
-!
-!=========================================================================
-! DESCRIPTION:
-!  Calculates lake temperatures from a one-dimensional thermal
-!  stratification model based on eddy diffusion concepts to 
-!  represent vertical mixing of heat.
-!
-!  d ts    d            d ts     1 ds
-!  ---- = -- [(km + ke) ----] + -- --
-!   dt    dz             dz     cw dz   
-!
-!  where: ts = temperature (kelvin)
-!          t = time (s)
-!          z = depth (m)
-!         km = molecular diffusion coefficient (m**2/s)
-!         ke = eddy diffusion coefficient (m**2/s)
-!         cw = heat capacity (j/m**3/kelvin)
-!          s = heat source term (w/m**2)
-!
-! There are two types of lakes: 
-!    Deep lakes are 50 m. 
-!    Shallow lakes are 10 m deep.
-!
-!    For unfrozen deep lakes:    ke > 0 and    convective mixing
-!    For unfrozen shallow lakes: ke = 0 and no convective mixing
-!
-! Use the Crank-Nicholson method to set up tridiagonal system of equations to
-! solve for ts at time n+1, where the temperature equation for layer i is
-! r_i = a_i [ts_i-1] n+1 + b_i [ts_i] n+1 + c_i [ts_i+1] n+1
-!
-! The solution conserves energy as:
-!
-! cw*([ts(      1)] n+1 - [ts(      1)] n)*dz(      1)/dt + ... +
-! cw*([ts(nlevlak)] n+1 - [ts(nlevlak)] n)*dz(nlevlak)/dt = fin
-!
-! where:
-! [ts] n   = old temperature (kelvin)
-! [ts] n+1 = new temperature (kelvin)
-! fin      = heat flux into lake (w/m**2)
-!          = beta*sabg + forc_lwrad - eflx_lwrad_out - eflx_sh_tot - eflx_lh_tot - hm + phi(1) + ... + phi(nlevlak) 
-!
-! AUTHOR:
-!  Gordon Bonan
-!
-! REVISION HISTORY:
-!  15 September 1999: Yongjiu Dai; Initial code
-!  15 December 1999:  Paul Houser and Jon Radakovich; F90 Revision 
-!=========================================================================
-! $Id: clm_lake.F90,v 1.1.1.1 2006/02/14 23:05:52 kollet Exp $
-!=========================================================================
+  !=========================================================================
+  !
+  !  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely   
+  !  L                        M  available land surface process model.  
+  !  M --COMMON LAND MODEL--  C  
+  !  C                        L  CLM WEB INFO: http://clm.gsfc.nasa.gov
+  !  LMCLMCLMCLMCLMCLMCLMCLMCLM  CLM ListServ/Mailing List: 
+  !
+  !=========================================================================
+  ! DESCRIPTION:
+  !  Calculates lake temperatures from a one-dimensional thermal
+  !  stratification model based on eddy diffusion concepts to 
+  !  represent vertical mixing of heat.
+  !
+  !  d ts    d            d ts     1 ds
+  !  ---- = -- [(km + ke) ----] + -- --
+  !   dt    dz             dz     cw dz   
+  !
+  !  where: ts = temperature (kelvin)
+  !          t = time (s)
+  !          z = depth (m)
+  !         km = molecular diffusion coefficient (m**2/s)
+  !         ke = eddy diffusion coefficient (m**2/s)
+  !         cw = heat capacity (j/m**3/kelvin)
+  !          s = heat source term (w/m**2)
+  !
+  ! There are two types of lakes: 
+  !    Deep lakes are 50 m. 
+  !    Shallow lakes are 10 m deep.
+  !
+  !    For unfrozen deep lakes:    ke > 0 and    convective mixing
+  !    For unfrozen shallow lakes: ke = 0 and no convective mixing
+  !
+  ! Use the Crank-Nicholson method to set up tridiagonal system of equations to
+  ! solve for ts at time n+1, where the temperature equation for layer i is
+  ! r_i = a_i [ts_i-1] n+1 + b_i [ts_i] n+1 + c_i [ts_i+1] n+1
+  !
+  ! The solution conserves energy as:
+  !
+  ! cw*([ts(      1)] n+1 - [ts(      1)] n)*dz(      1)/dt + ... +
+  ! cw*([ts(nlevlak)] n+1 - [ts(nlevlak)] n)*dz(nlevlak)/dt = fin
+  !
+  ! where:
+  ! [ts] n   = old temperature (kelvin)
+  ! [ts] n+1 = new temperature (kelvin)
+  ! fin      = heat flux into lake (w/m**2)
+  !          = beta*sabg + forc_lwrad - eflx_lwrad_out - eflx_sh_tot - eflx_lh_tot - hm + phi(1) + ... + phi(nlevlak) 
+  !
+  ! AUTHOR:
+  !  Gordon Bonan
+  !
+  ! REVISION HISTORY:
+  !  15 September 1999: Yongjiu Dai; Initial code
+  !  15 December 1999:  Paul Houser and Jon Radakovich; F90 Revision 
+  !=========================================================================
+  ! $Id: clm_lake.F90,v 1.1.1.1 2006/02/14 23:05:52 kollet Exp $
+  !=========================================================================
 
-! Declare Modules and data structures
+  ! Declare Modules and data structures
 
   use precision
   use clmtype
   use clm_varpar, only : nlevlak, nlevsno, nlevsoi
   use clm_varcon, only : hvap, hfus, rair, cpair, cpliq, tkwat, tkice, &
-                        sb, vkc, grav, denh2o, tfrz
+       sb, vkc, grav, denh2o, tfrz
   implicit none
 
-!=== Arguments ===========================================================
+  !=== Arguments ===========================================================
 
   type (clm1d), intent(inout) :: clm      ! CLM 1-D Module
 
-!=== Local Variables =====================================================
+  !=== Local Variables =====================================================
 
   integer :: idlak = 1     ! index of lake, 1 = deep lake, 2 = shallow lake
 
@@ -171,26 +171,26 @@ subroutine clm_lake (clm)
 
   integer i,j              ! do loop or array index
 
-!=== End Variable List ===================================================
+  !=== End Variable List ===================================================
 
-! ========================================================================
-! determine beginning water balance for lake points
-! ========================================================================
+  ! ========================================================================
+  ! determine beginning water balance for lake points
+  ! ========================================================================
 
   clm%begwb = clm%h2osno  
 
-! ========================================================================
-!*[1] constants and model parameters
-! ========================================================================
+  ! ========================================================================
+  !*[1] constants and model parameters
+  ! ========================================================================
 
-! Constants for lake temperature model
+  ! Constants for lake temperature model
 
   beta = (/0.4, 0.4/)                              ! (deep lake, shallow lake)
   za   = (/0.6, 0.5/)    
   eta  = (/0.1, 0.5/)  
   p0   = 1.  
 
-! Aerodynamical roughness 
+  ! Aerodynamical roughness 
 
   if (clm%t_grnd >= tfrz)then                    ! for unfrozen lake
      z0mg = 0.01
@@ -200,27 +200,27 @@ subroutine clm_lake (clm)
   z0hg = z0mg
   z0qg = z0mg
 
-! Latent heat 
+  ! Latent heat 
 
   if (clm%forc_t > tfrz) then
      htvp = hvap
-  else			
+  else
      htvp = hfus
   endif
 
-! surface emissivity
+  ! surface emissivity
 
   emg = 0.97
 
-! ========================================================================
-!*[2] SURFACE TEMPERATURE and FLUXES
-! ========================================================================
+  ! ========================================================================
+  !*[2] SURFACE TEMPERATURE and FLUXES
+  ! ========================================================================
 
   dzsur = clm%dz(1) + clm%snowdp
 
   call clm_qsadv(clm%t_grnd,clm%forc_pbot,eg,degdT,qsatg,qsatgdT)
 
-! Potential temperature at the reference height
+  ! Potential temperature at the reference height
 
   beta1=1.       ! -  (in computing W_*)
   zii = 1000.    ! m  (pbl height)
@@ -230,7 +230,7 @@ subroutine clm_lake (clm)
   thv = th*(1.+0.61*clm%forc_q)             ! virtual potential T
   ur = max(1.0,sqrt(clm%forc_u*clm%forc_u+clm%forc_v*clm%forc_v))    ! limit must set to 1  , otherwise,
 
-! Initialization variables
+  ! Initialization variables
 
   nmozsgn = 0
   obuold = 0.
@@ -252,12 +252,12 @@ subroutine clm_lake (clm)
         tksur = tkice
      endif
 
-! Evaluated stability-dependent variables using moz from prior iteration
+     ! Evaluated stability-dependent variables using moz from prior iteration
 
      call clm_obult (0., z0mg, z0hg, z0qg, obu, um, ustar, temp1, temp2, clm)
      obuold = obu
 
-! Get derivative of fluxes with repect to ground temperature
+     ! Get derivative of fluxes with repect to ground temperature
 
      ram    = 1./(ustar*ustar/um)
      rah    = 1./(temp1*ustar)
@@ -275,8 +275,8 @@ subroutine clm_lake (clm)
 
      clm%t_grnd = ax/bx
 
-! Surface fluxes of momentum, sensible and latent heat
-! using ground temperatures from previous time step
+     ! Surface fluxes of momentum, sensible and latent heat
+     ! using ground temperatures from previous time step
 
      clm%eflx_sh_grnd = clm%forc_rho*cpair*(clm%t_grnd-thm)/rah
      clm%qflx_evap_soi = clm%forc_rho*(qsatg+qsatgdT*(clm%t_grnd-tgbef)-clm%forc_q)/raw
@@ -311,28 +311,28 @@ subroutine clm_lake (clm)
 
   enddo
 
-! If there is snow on the ground and t_grnd > tfrz: reset t_grnd = tfrz.  Reevaluate ground fluxes.
-! Energy inbalance used to melt snow.  h2osno > 0.5 prevents spurious fluxes
+  ! If there is snow on the ground and t_grnd > tfrz: reset t_grnd = tfrz.  Reevaluate ground fluxes.
+  ! Energy inbalance used to melt snow.  h2osno > 0.5 prevents spurious fluxes
 
   if (clm%h2osno > 0.5 .AND. clm%t_grnd > tfrz) then
      clm%t_grnd = tfrz
      clm%eflx_sh_grnd = clm%forc_rho*cpair*(clm%t_grnd-thm)/rah
      clm%qflx_evap_soi = clm%forc_rho*(qsatg+qsatgdT*(clm%t_grnd-tgbef) & 
-                       - clm%forc_q)/raw    !note that qsatg and qsatgdT should be f(tgbef)
+          - clm%forc_q)/raw    !note that qsatg and qsatgdT should be f(tgbef)
   endif
 
-! Net longwave from ground to atmosphere
+  ! Net longwave from ground to atmosphere
 
   clm%eflx_lwrad_out = (1.-emg)*clm%forc_lwrad + stftg3*(-3.*tgbef+4.*clm%t_grnd)
 
-! Radiative temperature
+  ! Radiative temperature
 
   clm%t_rad = (clm%eflx_lwrad_out/sb)**0.25
 
-! Ground heat flux
+  ! Ground heat flux
 
   clm%eflx_soil_grnd = clm%sabg + clm%forc_lwrad - clm%eflx_lwrad_out - &
-                       clm%eflx_sh_grnd - htvp*clm%qflx_evap_soi
+       clm%eflx_sh_grnd - htvp*clm%qflx_evap_soi
 
   clm%taux   = -clm%forc_rho*clm%forc_u/ram
   clm%tauy   = -clm%forc_rho*clm%forc_v/ram
@@ -342,12 +342,12 @@ subroutine clm_lake (clm)
   clm%eflx_lh_tot   = htvp*clm%qflx_evap_soi
   clm%eflx_lh_grnd  = htvp*clm%qflx_evap_soi
 
-! 2 m height air temperature
+  ! 2 m height air temperature
 
   clm%t_ref2m   = (clm%t_grnd + temp1*dth * 1./ &
-                  vkc *log((2.+z0hg)/z0hg))
+       vkc *log((2.+z0hg)/z0hg))
 
-! Energy residual for snow melting
+  ! Energy residual for snow melting
 
   if (clm%h2osno > 0. .AND. clm%t_grnd >= tfrz) then
      hm = min( clm%h2osno*hfus/clm%dtime, max(clm%eflx_soil_grnd,0.) )
@@ -356,18 +356,18 @@ subroutine clm_lake (clm)
   endif
   qmelt = hm/hfus             ! snow melt (mm/s)
 
-! ========================================================================
-!*[3] LAKE LAYER TEMPERATURE
-! ========================================================================
+  ! ========================================================================
+  !*[3] LAKE LAYER TEMPERATURE
+  ! ========================================================================
 
-! Lake density
+  ! Lake density
 
   do j = 1, nlevlak
      rhow(j) = 1000.*( 1.0 - 1.9549e-05*(abs(clm%t_soisno(j)-277.))**1.68 )
   enddo
 
-! Eddy diffusion +  molecular diffusion coefficient:
-! eddy diffusion coefficient used for unfrozen deep lakes only
+  ! Eddy diffusion +  molecular diffusion coefficient:
+  ! eddy diffusion coefficient used for unfrozen deep lakes only
 
   cwat = cpliq*denh2o
   km = tkwat/cwat
@@ -394,7 +394,7 @@ subroutine clm_lake (clm)
 
   kme(nlevlak) = kme(nlevlak-1)
 
-! Heat source term: unfrozen lakes only
+  ! Heat source term: unfrozen lakes only
 
   do j = 1, nlevlak
      zin  = clm%z(j) - 0.5*clm%dz(j)
@@ -414,14 +414,14 @@ subroutine clm_lake (clm)
      phi(j) = phidum
   enddo
 
-! Sum cwat*t_soisno*dz for energy check
+  ! Sum cwat*t_soisno*dz for energy check
 
   ocvts = 0.
   do j = 1, nlevlak
      ocvts = ocvts + cwat*clm%t_soisno(j)*clm%dz(j) 
   enddo
 
-! Set up vector r and vectors a, b, c that define tridiagonal matrix
+  ! Set up vector r and vectors a, b, c that define tridiagonal matrix
 
   j = 1
   m2 = clm%dz(j)/kme(j) + clm%dz(j+1)/kme(j+1)
@@ -451,11 +451,11 @@ subroutine clm_lake (clm)
      c(j) = -m3/m2
   enddo
 
-! Solve for t_soisno: a, b, c, r, u 
+  ! Solve for t_soisno: a, b, c, r, u 
 
   call clm_tridia (nlevlak ,a ,b ,c ,r ,clm%t_soisno(1:nlevlak)) 
 
-! Convective mixing: make sure cwat*dz*ts is conserved.  Mixing
+  ! Convective mixing: make sure cwat*dz*ts is conserved.  Mixing
 
   if (idlak == 1 .AND. clm%t_grnd > tfrz) then
      do j = 1, nlevlak-1
@@ -475,7 +475,7 @@ subroutine clm_lake (clm)
      enddo
   endif
 
-! Sum cwat*t_soisno*dz and total energy into lake for energy check
+  ! Sum cwat*t_soisno*dz and total energy into lake for energy check
 
   ncvts = 0.
   do j = 1, nlevlak
@@ -485,9 +485,9 @@ subroutine clm_lake (clm)
 
   clm%errsoi = (ncvts-ocvts) / clm%dtime - fin
 
-! ========================================================================
-! [4] snow on the lake ice 
-! ========================================================================
+  ! ========================================================================
+  ! [4] snow on the lake ice 
+  ! ========================================================================
 
   qflx_evap_grnd = 0.
   qflx_sub_snow = 0.
@@ -496,8 +496,8 @@ subroutine clm_lake (clm)
 
   if (clm%qflx_evap_soi >= 0.) then
 
-! Sublimation: do not allow for more sublimation than there is snow
-! after melt.  Remaining surface evaporation used for infiltration.
+     ! Sublimation: do not allow for more sublimation than there is snow
+     ! after melt.  Remaining surface evaporation used for infiltration.
 
      qflx_sub_snow = min( clm%qflx_evap_soi, clm%h2osno/clm%dtime-qmelt )
      qflx_evap_grnd = clm%qflx_evap_soi - qflx_sub_snow
@@ -512,32 +512,32 @@ subroutine clm_lake (clm)
 
   endif
 
-! Update snow pack
+  ! Update snow pack
 
   clm%h2osno = clm%h2osno + (clm%forc_snow-qmelt-qflx_sub_snow+qflx_dew_snow)*clm%dtime
   clm%h2osno = max( clm%h2osno, 0. )
 
-! No snow if lake unfrozen
+  ! No snow if lake unfrozen
 
   if (clm%t_grnd > tfrz) clm%h2osno = 0.
 
-! Snow height and fractional coverage
+  ! Snow height and fractional coverage
 
   clm%snowdp = clm%h2osno/250.       !assumed a constant snow bulk density = 250.
 
-! ========================================================================
-! determine ending water balance for lake points
-! ========================================================================
-  
+  ! ========================================================================
+  ! determine ending water balance for lake points
+  ! ========================================================================
+
   clm%endwb = clm%h2osno
 
-! ========================================================================
-! [5] set other clm values for lake points
-! ========================================================================
+  ! ========================================================================
+  ! [5] set other clm values for lake points
+  ! ========================================================================
 
-! the following are needed for global average on history tape 
-! note time invariant variables set in initialization phase:
-!    z, dz, snl, h2osoi_liq, and h2osoi_ice 
+  ! the following are needed for global average on history tape 
+  ! note time invariant variables set in initialization phase:
+  !    z, dz, snl, h2osoi_liq, and h2osoi_ice 
 
   clm%t_veg = clm%forc_t  ! to be consistent with treatment of t_veg for bare soil points
 
@@ -561,8 +561,8 @@ subroutine clm_lake (clm)
   clm%qflx_prec_intr  = 0.
 
   clm%btran           = 0.     
-   
-! put in for consistency with LSM
+
+  ! put in for consistency with LSM
 
   cf = clm%forc_pbot/(8.314*thm)*1.e06 
   clm%rssun = 1./clm%bp * cf

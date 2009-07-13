@@ -266,7 +266,8 @@ int          *intersects;
 double       *point;
 int          *normal_component;
 {
-   double      p[3], q[3];
+   double      p[3];
+   double      q[3] = {0,0,0};
    double      A, B, C, D;
    double      u_0, v_0, w_0;
    double      u_1, v_1, w_1;

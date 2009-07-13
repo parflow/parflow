@@ -126,7 +126,7 @@ char **data;
 int *len;
 int *stride;
 {
-   int align;
+   int align = 0;
    switch(type)
    {
    case AMPS_INVOICE_CHAR_CTYPE:
@@ -166,7 +166,7 @@ char **data;
 int *len;
 int *stride;
 {
-   int size;
+   int size = 0;
    int i;
 
    switch(type)

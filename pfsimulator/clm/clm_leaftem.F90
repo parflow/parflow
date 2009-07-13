@@ -60,7 +60,7 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
 
 !=== Arguments ===========================================================
 
-  type (clm1d), intent(inout) :: clm	 !CLM 1-D Module
+  type (clm1d), intent(inout) :: clm !CLM 1-D Module
 
   real(r8), intent(in) :: &
        htvp              ! latent heat of evaporation (/sublimation) [J/kg]
@@ -192,10 +192,6 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
   real(r8) svpts               ! saturation vapor pressure at t_veg (pa)
   real(r8) eah                 ! canopy air vapor pressure (pa)
   real(r8) foln                ! foliage nitrogen (%)
-
-  real(r8) gdir                ! relative projected leaf+stem area in solar direction
-  real(r8) ext                 ! optical depth of direct beam per unit leaf area
-  real(r8) wl                  ! fraction of lai+sai that is lai
 
   real(r8) :: mpe = 1.e-6      ! prevents overflow error if division by zero
 

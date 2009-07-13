@@ -37,7 +37,7 @@ subroutine drv_g2clm(u,drv,grid,tile,clm)
 
 !=== Local Variables =====================================================
 
-  integer  :: j,c,r     ! Loop counters
+  integer  :: r,c       ! Loop counters
   real(r8) :: u         ! Tempoary UNDEF Variable  
 
 !=== End Variable Definition =============================================

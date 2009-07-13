@@ -212,9 +212,9 @@ module clmtype
 
      real(r8) :: h2osoi_vol(nlevsoi)     ! volumetric soil water (0<=h2osoi_vol<=watsat) [m3/m3]  -- PASSED IN FROM PF @RMM
      real(r8) :: eff_porosity(nlevsoi)   ! effective porosity = porosity - vol_ice   --- P
-	 real(r8) :: pf_flux(nlevsoi)        !@ sink/source flux for Parlfow couple for each CLM soil layer
-	 real(r8) :: pf_vol_liq(nlevsoi)    !@ partial volume of liquid water in layer from Parflow over entire domain (Parflow and CLM)	 real(r8) :: pf_press(parfl_nlevsoi)  !@ pressure values from parflow
-	 real(r8) :: pf_press(nlevsoi) !@ old pressure values from parflow    
+     real(r8) :: pf_flux(nlevsoi)        !@ sink/source flux for Parlfow couple for each CLM soil layer
+     real(r8) :: pf_vol_liq(nlevsoi)    !@ partial volume of liquid water in layer from Parflow over entire domain (Parflow and CLM)	 real(r8) :: pf_press(parfl_nlevsoi)  !@ pressure values from parflow
+     real(r8) :: pf_press(nlevsoi) !@ old pressure values from parflow    
 
      real(r8) :: qflx_infl      ! infiltration (mm H2O /s) 
      real(r8) :: qflx_infl_old
@@ -301,7 +301,7 @@ module clmtype
 
      real(r8) :: saturation_data(1:nlevsoi)  ! saturation (-) over top-10 layers in parflow mapped to CLM grid (1-nlevsoi)
      real(r8) :: pressure_data(1:nlevsoi)    ! pressure-head (m) over top-10 layers in parflow mapped to CLM grid (1-nlevsoi)
-	 real(r8) :: evap_trans_data(1:nlevsoi)  ! ET-Flux over top-10 layers in CLM grid (1-nlevsoi) to be mapped back to ParFlow (m/d)
+     real(r8) :: evap_trans_data(1:nlevsoi)  ! ET-Flux over top-10 layers in CLM grid (1-nlevsoi) to be mapped back to ParFlow (m/d)
      real(r8) :: porosity_data(1:nlevsoi)    ! porosity (-) over top-10 layers in parflow mapped to CLM grid (1-nlevsoi) - only done during init routine
 
 

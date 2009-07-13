@@ -74,8 +74,8 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
    char *ptr_src;
    char *ptr_dest;
 
-   MPI_Datatype mpi_type;
-   int element_size;
+   MPI_Datatype mpi_type = MPI_CHAR;
+   int element_size = 0;
 
    ptr = invoice -> list;
 

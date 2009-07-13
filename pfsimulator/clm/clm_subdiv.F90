@@ -28,7 +28,7 @@ subroutine clm_subdiv (clm)
 
 !=== Arguments ===========================================================
 
-  type (clm1d), intent(inout) :: clm	 !CLM 1-D Module
+  type (clm1d), intent(inout) :: clm !CLM 1-D Module
 
 !=== Local Variables =====================================================
 

@@ -11,16 +11,14 @@ subroutine pfreadout(clm,drv,tile,saturation,pressure,rank,ix,iy,nx,ny,nz, j_inc
 
   type (drvdec) ,intent(inout) :: drv
   type (tiledec) :: tile(drv%nch)
-  type (clm1d), intent(inout) :: clm(drv%nch)	 !CLM 1-D Module
+  type (clm1d), intent(inout) :: clm(drv%nch)   !CLM 1-D Module
   integer nx, ny, nz
   real(r8) saturation((nx+2)*(ny+2)*(nz+2)),pressure((nx+2)*(ny+2)*(nz+2))
-  real(r8) flowd(drv%nc,drv%nr)
-  real(r8) frac
 								
   integer i,j,k,rank,ix,iy, j_incr,k_incr,ip
-  integer dummy,wiltcounter(drv%nc,drv%nr),wilt(drv%nc,drv%nr,nlevsoi)
-  integer t, counter(drv%nc,drv%nr),l,sat_flag
-  character*100 RI,ISTEP
+  integer t, l
+!  character*100 RI
+!  character*100 ISTEP
 
 !  flowd=0.0d0
 !  wiltcounter = 0 
@@ -43,9 +41,9 @@ do t=1,drv%nch
 i=tile(t)%col
 j=tile(t)%row
   do k = 1, nlevsoi
-  	 l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))  ! updated indexing @RMM
-  !l = 1+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k)
-    if(clm(t)%planar_mask == 1) then
+     l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))  ! updated indexing @RMM
+!    l = 1+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k)
+     if(clm(t)%planar_mask == 1) then
       clm(t)%pf_vol_liq(k) = saturation(l) * clm(t)%watsat(k)
       clm(t)%pf_press(k) = pressure(l) * 1000.d0
 !        clm(t)%h2osoi_liq(k) = saturation(l) * clm(t)%watsat(k)*clm(t)%dz(1)*denh2o

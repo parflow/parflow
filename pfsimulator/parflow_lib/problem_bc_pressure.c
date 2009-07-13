@@ -126,16 +126,6 @@ double       time;          /* Current time - needed to determine where on
       {
          values[ipatch]  = ctalloc(double *, SubgridArraySize(subgrids));
 
-	 // SGS
-	 if(BCPressureDataType(bc_pressure_data,ipatch) == 7)
-	 {
-	    if(time > 199) {
-	       int a;
-	       a++;
-	       a++;
-	    }
-	 }
-
          cycle_number    = BCPressureDataCycleNumber(bc_pressure_data,ipatch);
          interval_number = TimeCycleDataComputeIntervalNumber(
 			       problem, time, time_cycle_data, cycle_number);
@@ -903,6 +893,7 @@ double       time;          /* Current time - needed to determine where on
 				    bc_pressure_data,ipatch,interval_number);
 
 	    flux = BCPressureType7Value(bc_pressure_type7);
+	    amps_Printf("Default Overland %f, %d, %f\n", time, interval_number, flux);
 	    ForSubgridI(is, subgrids)
 	    {
 	       subgrid = SubgridArraySubgrid(subgrids, is);

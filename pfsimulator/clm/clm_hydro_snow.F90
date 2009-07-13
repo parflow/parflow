@@ -36,7 +36,7 @@ subroutine clm_hydro_snow(clm)
 
 !=== Arguments ===========================================================  
 
-  type (clm1d), intent(inout) :: clm	 !CLM 1-D Module
+  type (clm1d), intent(inout) :: clm !CLM 1-D Module
 
 !=== Local Variables =====================================================
 
@@ -51,6 +51,8 @@ subroutine clm_hydro_snow(clm)
        qout_snowb                    ! rate of water out of snow bottom (mm/s)
 
 !=== End Variable List ===================================================
+
+  qout = 0.
 
   if (clm%snl+1 >=1) then
 

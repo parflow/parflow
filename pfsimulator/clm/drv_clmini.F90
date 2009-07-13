@@ -68,13 +68,11 @@ subroutine drv_clmini (drv, grid, tile, clm)
 
 !=== Local Variables =====================================================
 
-  integer  i, j, L,t          !loop indices
+  integer  i, j, L           !loop indices
   real(r8) bd                !bulk density of dry soil material [kg/m^3]
-  real(r8) dmvol             !fractional volume of dry soil material
   real(r8) tkm               !mineral conductivity
   real(r8) zlak(1:nlevlak)   !temporary z
   real(r8) dzlak(1:nlevlak)  !temporary dz
-  real(r8) pi                !3.14159...
   real(r8) xksat
 
 !=== End Variable List ===================================================
@@ -142,7 +140,7 @@ subroutine drv_clmini (drv, grid, tile, clm)
      do j = 1, nlevsoi
 !        clm%z(j) = tile%scalez*(exp(0.5*(j-0.5))-1.)     !node depths
 		!@ new node depths, dz = 0.1 evenly w/ depth
-		clm%z(j) = drv%dz*(dble(j)-.5d0)
+        clm%z(j) = drv%dz*(dble(j)-.5d0)
      enddo
 
      
@@ -260,7 +258,7 @@ subroutine drv_clmini (drv, grid, tile, clm)
 
   clm%h2ocan  = 0.
   clm%snowage = 0. 
-  clm%h2osno  = drv%h2osno_ini	  
+  clm%h2osno  = drv%h2osno_ini
   clm%snowdp  = drv%h2osno_ini/250.  !the arbitary snow density = 250 kg/m3
   clm%t_veg   = drv%t_ini
   clm%t_grnd  = drv%t_ini
