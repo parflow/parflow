@@ -3008,6 +3008,8 @@ simulation.
 pfset Solver.MaxIter 100
 \end{verbatim}\end{display}
 
+
+
 \pfkey{double}{Solver.RelTol}{1.0}
 {
 This value gives the relative tolerance for the linear
@@ -3289,6 +3291,26 @@ iterate as the initial iterate for the next pass.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.Linear.MaxRestarts   2
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Solver.MaxConvergencFailures}{3}
+{This key gives the maximum number of convergence failures
+allowed.   Each convergence failure cuts the timestep 
+in half and the solver tries to advance the solution with the reduced
+timestep.
+
+The default value is 3.   
+
+Note that setting this value to a value greater than 9 may result in
+errors in how time cycles are calculated.  Time is discretized in
+terms of the base time unit and if the solver begins to take very
+small timesteps \(smaller than base time unit \/ 1000\) the values based
+on time cycles will be change at slightly incorrect times. If the
+problem is failing converge so poorly that a large number of restarts are
+required, consider setting the timestep to a smaller value.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.MaxConvergenceFailures 4
 \end{verbatim}\end{display}
 
 \pfkey{string}{Solver.Nonlinear.PrintFlag}{HighVerbosity}
