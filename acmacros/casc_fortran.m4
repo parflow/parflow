@@ -726,12 +726,9 @@ if test "x$casc_cv_fortran_implicit_none_fcflags" != xerror; then
     LIBS="conftest_cmain.$ac_objext $LIBS" 
     acx_save_FCFLAGS=$FCFLAGS
 
-    echo "SGS FC = $FC"
-
-    # SGS
-    # There are problems with GCC and Intel not stopping on bad command line flags
-    # so change order of options in hopes of stopping bad options from being 
-    # seleted
+    # There are problems with GCC and Intel not stopping on bad
+    # command line flags so change order of options in hopes of
+    # stopping bad options from being seleted
     case $FC in 
         *ifort*)
 	    for acx_flag in -implicitnone -fimplicit-none -u -Wimplicit none; do
