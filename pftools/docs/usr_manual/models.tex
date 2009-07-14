@@ -350,11 +350,31 @@ and
 v_y=- \frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{2/3}
 \label{eq:manningsy}
 \end{eqnarray}
-where $n$ $[TL^{-2/3}]$ is the Manning’s coefficient. 
-%%================
-%% @RMM: I want to add just a brief description of the overland flow BC here with more on how/where applied.
-%%================
-
+where $n$ $[TL^{-1/3}]$ is the Manning’s coefficient.\newline
+Though complete details of the coupled approach are given in \cite{KM06}, brief details of the approach are presented here.  The coupled approach takes Equation \ref{eq:kinematic} and adds a flux for subsurface exchanges, $q_e(x)$.
+\begin{eqnarray}
+\frac{\partial \psi_s}{\partial t} =
+\dvop (\Xv\psi_s) + q_r(x) + q_e(x)
+\label{eq:kinematic_ex}
+\end{eqnarray}
+We then assign a continuity of pressure at the top cell of the boundary between the surface and subsurface systems by setting pressure-head, $p$ in \ref{eq:richard} equal to the vertically-averaged surface pressure, $\psi_s$ as follows:
+\begin{eqnarray}
+p = \psi_s = \psi
+\label{eq:press_cont}
+\end{eqnarray}
+If we substitute this relationship back into Equation \ref{eq:kinematic_ex} as follows:
+\begin{eqnarray}
+\frac{\partial \parallel\psi,0\parallel}{\partial t} =
+\dvop (\Xv \parallel\psi,0\parallel) + q_r(x) + q_e(x)
+\label{eq:kinematic_ex}
+\end{eqnarray}
+Where the $\parallel\psi,0\parallel$ operator chooses the greater of the two quantities, $\psi$ and $0$.  We may now solve this term for the flux $q_e(x)$ which we may set equal to flux boundary condition shown in Equation \ref{eq:bcn}.  This yields the following equation, which is referred to as the overland flow boundary condition \cite{KM06}:
+\begin{eqnarray}
+-K(\psi)\nabla \psi \cdot {\bf n}  = \frac{\partial \parallel\psi,0\parallel}{\partial t} -
+\dvop (\Xv \parallel\psi,0\parallel) - q_r(x)
+\label{eq:overland_bc}
+\end{eqnarray}
+This results a version of the kinematic wave equation that is only active when the pressure at the top cell of the subsurface domain has a ponded depth and is thus greater than zero.  This method solves both systems, where active in the domain, over common grids in a fully-integrated, fully-mass conservative manner.
 \section{Water Balance}
 \label{Water Balance}
 \parflow{} can calculate a water balance for the Richards' equation, overland flow and \code{clm} capabilities.  This water balance is computes using \code{pftools} commands as described in \S~\ref{Manipulating Data}.  There are two water balance storage components, subsurface and surface, and two flux calculations, overland flow and evapotranspiration.  The storage components have units $[L^3]$ while the fluxes may be instantaneous and have units $[L^3T^{-1}]$ or cumulative over an output interval with units $[L^3]$.  Examples of water balance calculations and errors are given in the scripts \code{water_balance_x.tcl} and \code{water_balance_y.tcl}.  The size of water balance errors depend on solver settings and tolerances but are typically very small, $<10^{-10} [-]$.\newline
