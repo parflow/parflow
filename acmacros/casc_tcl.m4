@@ -17,7 +17,18 @@ case "$with_tcl" in
     for dir in /usr /usr/local; do
       if test -f ${dir}/include/tcl.h; then
         tcl_PREFIX=${dir}
+	tcl_INCLUDES="-I${tcl_PREFIX}/include"
         break
+      elif test -f ${dir}/include/tcl8.4/tcl.h; then
+        tcl_PREFIX=${dir}
+	tcl_INCLUDES="-I${tcl_PREFIX}/include/tcl8.4"
+        break
+      elif test -f ${dir}/include/tcl8.5/tcl.h; then
+        tcl_PREFIX=${dir}
+	tcl_INCLUDES="-I${tcl_PREFIX}/include/tcl8.5"
+        break
+      else
+        AC_MSG_ERROR([TCL not found in /usr or /usr/local])
       fi
     done
     AC_MSG_RESULT([$tcl_PREFIX])
@@ -25,14 +36,24 @@ case "$with_tcl" in
   *)
     # TCL install path was specified.
     AC_MSG_CHECKING([for TCL installation])
-    tcl_PREFIX=$with_tcl
-    tcl_INCLUDES="-I${tcl_PREFIX}/include"
-    if test -f ${tcl_PREFIX}/include/tcl.h; then
-        AC_MSG_RESULT([$tcl_PREFIX])
-    else
+    for dir in $with_tcl; do
+      if test -f ${dir}/include/tcl.h; then
+        tcl_PREFIX=${dir}
+	tcl_INCLUDES="-I${tcl_PREFIX}/include"
+        break
+      elif test -f ${dir}/include/tcl8.4/tcl.h; then
+        tcl_PREFIX=${dir}
+	tcl_INCLUDES="-I${tcl_PREFIX}/include/tcl8.4"
+        break
+      elif test -f ${dir}/include/tcl8.5/tcl.h; then
+        tcl_PREFIX=${dir}
+	tcl_INCLUDES="-I${tcl_PREFIX}/include/tcl8.5"
+        break
+      else
         AC_MSG_RESULT([$tcl_PREFIX])
         AC_MSG_ERROR([TCL not found in $with_tcl])
-    fi
+      fi
+    done
   ;;
 esac
 
