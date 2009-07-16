@@ -55,7 +55,6 @@
 #include "water_balance.h"
 
 #include <tcl.h>
-#include <tk.h>
 
 #include "readdatabox.h"
 #include "printdatabox.h"
