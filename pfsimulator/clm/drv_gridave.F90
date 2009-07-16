@@ -56,7 +56,7 @@ function drv_gridave (nch, mask, fgr, var, drv)
 
 end function drv_gridave
 
-real(r8) function variance(nch,var)
+real*8 function variance(nch,var)
   !=========================================================================
   !
   !  CLMCLMCLMCLMCLMCLMCLMCLMCL  A community developed and sponsored, freely  
