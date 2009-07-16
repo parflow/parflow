@@ -103,7 +103,6 @@ void ComputeSubsurfaceStorage(Databox *mask,
    {
       if( mask_coeff[m] > 0 ) 
       {
-
 	 subsurface_storage_coeff[m] =  saturation_coeff[m] * porosity_coeff[m] * dx * dy * dz;
 /* @RMM mod to remove porosity from subsurface storage */
 	/* OLD way 

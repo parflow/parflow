@@ -184,7 +184,8 @@ FILE     *fp;
 }
 
 
-void         MSigDiff(v1, v2, m, absolute_zero, result)
+void         MSigDiff(interp, v1, v2, m, absolute_zero, result)
+Tcl_Interp  *interp;
 Databox     *v1;
 Databox     *v2;
 int          m;
@@ -269,6 +270,7 @@ Tcl_Obj     *result;
    {
       Tcl_Obj     *double_obj;
       Tcl_Obj     *int_obj;
+      Tcl_Obj     *list_obj;
       
       /* compute min number of sig digs */
       sig_digs = 0;
@@ -282,21 +284,24 @@ Tcl_Obj     *result;
       /* Create a Tcl list of the form: {{mi mj mk sig_digs} max_adiff} */
       /* and append it to the result string.                            */
 
+      list_obj = Tcl_NewListObj(0, NULL);
 
       int_obj = Tcl_NewIntObj(mi);
-      Tcl_AppendObjToObj(result, int_obj);
+      Tcl_ListObjAppendElement(interp, list_obj, int_obj);
 
       int_obj = Tcl_NewIntObj(mj);
-      Tcl_AppendObjToObj(result, int_obj);
+      Tcl_ListObjAppendElement(interp, list_obj, int_obj);
 
       int_obj = Tcl_NewIntObj(mk);
-      Tcl_AppendObjToObj(result, int_obj);
+      Tcl_ListObjAppendElement(interp, list_obj, int_obj);
 
       int_obj = Tcl_NewIntObj(sig_digs);
-      Tcl_AppendObjToObj(result, int_obj);
+      Tcl_ListObjAppendElement(interp, list_obj, int_obj);
+
+      Tcl_ListObjAppendElement(interp, result, list_obj);
 
       double_obj = Tcl_NewDoubleObj(max_adiff);
-      Tcl_AppendObjToObj(result, double_obj);
+      Tcl_ListObjAppendElement(interp, result, double_obj);
    }
 
 }

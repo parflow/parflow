@@ -81,33 +81,45 @@ Databox        *databox;
    Tcl_Obj     *result = Tcl_GetObjResult(interp);
    Tcl_Obj     *double_obj;
    Tcl_Obj     *int_obj;
+   Tcl_Obj     *list_obj;
+
+   list_obj = Tcl_NewListObj(0, NULL);
 
    int_obj = Tcl_NewIntObj(DataboxNx(databox));
-   Tcl_AppendObjToObj(result, int_obj);
+   Tcl_ListObjAppendElement(interp, list_obj, int_obj);
 
    int_obj = Tcl_NewIntObj(DataboxNy(databox));
-   Tcl_AppendObjToObj(result, int_obj);
+   Tcl_ListObjAppendElement(interp, list_obj, int_obj);
 
    int_obj = Tcl_NewIntObj(DataboxNz(databox));
-   Tcl_AppendObjToObj(result, int_obj);
+   Tcl_ListObjAppendElement(interp, list_obj, int_obj);
+
+   Tcl_ListObjAppendElement(interp, result, list_obj);
+   list_obj = Tcl_NewListObj(0, NULL);
 
    double_obj = Tcl_NewDoubleObj(DataboxX(databox));
-   Tcl_AppendObjToObj(result, double_obj);
+   Tcl_ListObjAppendElement(interp, list_obj, double_obj);
 
    double_obj = Tcl_NewDoubleObj(DataboxY(databox));
-   Tcl_AppendObjToObj(result, double_obj);
+   Tcl_ListObjAppendElement(interp, list_obj, double_obj);
 
    double_obj = Tcl_NewDoubleObj(DataboxZ(databox));
-   Tcl_AppendObjToObj(result, double_obj);
+   Tcl_ListObjAppendElement(interp, list_obj, double_obj);
+
+   Tcl_ListObjAppendElement(interp, result, list_obj);
+   list_obj = Tcl_NewListObj(0, NULL);
 
    double_obj = Tcl_NewDoubleObj(DataboxDx(databox));
-   Tcl_AppendObjToObj(result, double_obj);
+   Tcl_ListObjAppendElement(interp, list_obj, double_obj);
 
    double_obj = Tcl_NewDoubleObj(DataboxDy(databox));
-   Tcl_AppendObjToObj(result, double_obj);
+   Tcl_ListObjAppendElement(interp, list_obj, double_obj);
 
    double_obj = Tcl_NewDoubleObj(DataboxDz(databox));
-   Tcl_AppendObjToObj(result, double_obj);
+   Tcl_ListObjAppendElement(interp, list_obj, double_obj);
+
+   Tcl_ListObjAppendElement(interp, result, list_obj);
+
 }
 
 /*-----------------------------------------------------------------------

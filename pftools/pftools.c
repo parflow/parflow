@@ -54,8 +54,8 @@
 #include "file.h"
 #include "water_balance.h"
 
+#include <tcl.h>
 #include <tk.h>
-
 
 #include "readdatabox.h"
 #include "printdatabox.h"
@@ -2598,7 +2598,6 @@ char             *argv[];
    Tcl_Obj     *result = Tcl_GetObjResult(interp);
    Tcl_Obj     *int_obj;
 
-
    /* One argument must be given */
 
    if (argc != 2)
@@ -2620,22 +2619,22 @@ char             *argv[];
    Stats(databox, &min, &max, &mean, &sum, &variance, &stdev);
 
    int_obj = Tcl_NewIntObj(min);
-   Tcl_AppendObjToObj(result, int_obj);
+   Tcl_ListObjAppendElement(interp, result, int_obj);
 
    int_obj = Tcl_NewIntObj(max);
-   Tcl_AppendObjToObj(result, int_obj);
+   Tcl_ListObjAppendElement(interp, result, int_obj);
 
    int_obj = Tcl_NewIntObj(mean);
-   Tcl_AppendObjToObj(result, int_obj);
+   Tcl_ListObjAppendElement(interp, result, int_obj);
 
    int_obj = Tcl_NewIntObj(sum);
-   Tcl_AppendObjToObj(result, int_obj);
+   Tcl_ListObjAppendElement(interp, result, int_obj);
 
    int_obj = Tcl_NewIntObj(variance);
-   Tcl_AppendObjToObj(result, int_obj);
+   Tcl_ListObjAppendElement(interp, result, int_obj);
 
    int_obj = Tcl_NewIntObj(stdev);
-   Tcl_AppendObjToObj(result, int_obj);
+   Tcl_ListObjAppendElement(interp, result, int_obj);
 
    return TCL_OK;
 }
@@ -2751,7 +2750,7 @@ char             *argv[];
 
    result = Tcl_GetObjResult(interp);
 
-   MSigDiff(databoxp, databoxq, sd, abs_zero, result);
+   MSigDiff(interp, databoxp, databoxq, sd, abs_zero, result);
 
    return TCL_OK;
       
@@ -3433,7 +3432,7 @@ char          *argv[];
    {
       int nx = DataboxNx(pressure);
       int ny = DataboxNy(pressure);
-      int nz = DataboxNy(pressure);
+      int nz = DataboxNz(pressure);
 
       double x = DataboxX(pressure);
       double y = DataboxY(pressure);
