@@ -132,16 +132,17 @@ clean:
 	@$(PARFLOW_CLEAN) 
 
 install: all
+	@echo "Installing parflow to $(PARFLOW_INSTALL_DIR)"
 	@for DIR in $(SUBDIRS); do if test -d $$DIR; then (cd $$DIR && $(MAKE) $@) ; fi || exit 1; done
-	$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/lib
-	$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/bin
-	for i in $(SCRIPTS); do				        \
+	@$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/lib
+	@$(INSTALL) -d -m 755 $(PARFLOW_INSTALL_DIR)/bin
+	@for i in $(SCRIPTS); do				        \
 	   $(INSTALL) -c -m 755 $(SRCDIR)/$$i $(PARFLOW_INSTALL_DIR)/bin; \
 	done
-	for i in bin/*; do				        \
+	@for i in bin/*; do				        \
 	   $(INSTALL) -c -m 755 $$i $(PARFLOW_INSTALL_DIR)/bin; \
 	done
-	for i in $(PARFLOW)/*.tcl; do				        \
+	@for i in $(PARFLOW)/*.tcl; do				        \
 	   $(INSTALL) -c -m 644 $$i $(PARFLOW_INSTALL_DIR)/bin; \
 	done
 
