@@ -25,7 +25,7 @@ pfset ComputationalGrid.Lower.Z           0.0
 
 pfset ComputationalGrid.NX                96
 pfset ComputationalGrid.NY                1
-pfset ComputationalGrid.NZ                65
+pfset ComputationalGrid.NZ                67
 
 set   UpperX                              800.0
 set   UpperY                              1.0
