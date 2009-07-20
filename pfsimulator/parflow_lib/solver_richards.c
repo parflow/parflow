@@ -712,7 +712,7 @@ void AdvanceRichards(PFModule *this_module,
 	       }
 	       default:
 	       {
-		  printf("Calling unknown LSM model");
+		  amps_Printf("Calling unknown LSM model");
 	       }
 	    } /* switch on LSM */
 	    
@@ -841,8 +841,8 @@ void AdvanceRichards(PFModule *this_module,
 	    take_more_time_steps = 0;
 	    if(!amps_Rank(amps_CommWorld))
 	    { 
-	       printf("Time step failed for time %12.4e.\n", t);
-	       printf("Shutting down.\n");
+	       amps_Printf("Error: Time step failed for time %12.4e.\n", t);
+	       amps_Printf("Shutting down.\n");
 	    }
 	 }
 
@@ -971,9 +971,9 @@ void AdvanceRichards(PFModule *this_module,
 		     (t, instance_xtra -> pressure, problem_data, &err_norm));
       if( (!amps_Rank(amps_CommWorld)) && (err_norm >= 0.0) )
       {
-	 printf("l2-error in pressure: %20.8e\n", err_norm);
-	 printf("tcl: set pressure_l2_error(%d) %20.8e\n", 
-		instance_xtra -> iteration_number, err_norm);
+	 amps_Printf("l2-error in pressure: %20.8e\n", err_norm);
+	 amps_Printf("tcl: set pressure_l2_error(%d) %20.8e\n", 
+		     instance_xtra -> iteration_number, err_norm);
 	 fflush(NULL);
       }
 
@@ -1000,7 +1000,7 @@ void AdvanceRichards(PFModule *this_module,
 	  * SGS Better error handing should be added 
 	  */
 	 if(instance_xtra -> number_logged > public_xtra -> max_iterations + 1) {
-	    printf("Error: max_iterations reached, can't log anymore data\n");
+	    amps_Printf("Error: max_iterations reached, can't log anymore data\n");
 	    exit(1);
 	 }
 

@@ -1108,7 +1108,8 @@ Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/
       r, ix, iy, iz, nx, ny, nz,
       {
 	 ip   = SubvectorEltIndex(f_sub, i, j, k);
-	 fp[ip] = pp[ip];
+//	 fp[ip] = pp[ip];
+	 fp[ip] = 0;
       });
    }
 
