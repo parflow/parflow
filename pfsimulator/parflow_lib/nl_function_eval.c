@@ -395,9 +395,32 @@ Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/
    bc_struct = PFModuleInvoke(BCStruct *, bc_pressure, 
 			      (problem_data, grid, gr_domain, time));
 
-   /* Get boundary pressure values for Dirichlet boundaries.   */
-   /* These are needed for upstream weighting in mobilities - need boundary */
-   /* values for rel perms and densities. */
+   /* 
+      Temporarily insert boundary pressure values for Dirichlet
+      boundaries into cells that are in the inactive region but next
+      to a Dirichlet boundary condition.  These values are required
+      for use in the rel_perm_module to compute rel_perm values for
+      these cells. They needed for upstream weighting in mobilities.
+
+      NOTES:
+
+      These values must be later removed from the pressure field and
+      fval needs to be adjusted for these cells to make the inactive 
+      region problem decoupled from the active region cells for the 
+      solver.
+
+      Densities are currently defined everywhere so should be valid for 
+      these boundary cells.
+
+      This is a little hacky in the sense that we are inserting values
+      and then need to overwrite them again.  It might be more clean
+      to rewrite the Dirichlet boundary condition code to not require
+      the values be in the pressure field for these cells but instead
+      grab the values out of the BCStructPatchValues as was done here.
+      In other words use bc_patch_values[ival] in rel_perm_module code
+      and remove this loop.  SGS not sure if that will work or not so 
+      left it here for later exploration.
+   */
 
    ForSubgridI(is, GridSubgrids(grid))
    {
@@ -1070,47 +1093,57 @@ Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/
    }           /* End subgrid loop */
    
    
+   /*
+     Reset values inserted for the DirichletBC back to the decoupled
+     problem used in the inactive cells.
+
+     See comments above on why this is needed.
+   */
+   ForSubgridI(is, GridSubgrids(grid))
+   {
+      subgrid = GridSubgrid(grid, is);
+	 
+      p_sub   = VectorSubvector(pressure, is);
+
+      nx_p = SubvectorNX(p_sub);
+      ny_p = SubvectorNY(p_sub);
+      nz_p = SubvectorNZ(p_sub);
+	 
+      sy_p = nx_p;
+      sz_p = ny_p * nx_p;
+
+      pp = SubvectorData(p_sub);
+
+      for (ipatch = 0; ipatch < BCStructNumPatches(bc_struct); ipatch++)
+      {
+	 bc_patch_values = BCStructPatchValues(bc_struct, ipatch, is);
+
+	 switch(BCStructBCType(bc_struct, ipatch))
+	 {
+
+	    case DirichletBC:
+	    {
+	       BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+               {
+		  ip   = SubvectorEltIndex(p_sub, i, j, k);
+		  value =  bc_patch_values[ival];
+		  
+		  pp[ip + fdir[0]*1 + fdir[1]*sy_p + fdir[2]*sz_p] = 0;
+		  fp[ip + fdir[0]*1 + fdir[1]*sy_p + fdir[2]*sz_p] = 0;
+		  
+	       });
+	       break;
+	    }
+
+	 }     /* End switch BCtype */
+      }        /* End ipatch loop */
+   }           /* End subgrid loop */
+
 
    FreeBCStruct(bc_struct);
 
    PFModuleInvoke( void, bc_internal, (problem, problem_data, fval, NULL, 
    time, pressure, CALCFCN));
-
-   /* Set pressures outside domain to zero.  
-    * Recall: equation to solve is f = 0, so components of f outside 
-    * domain are set to the respective pressure value.
-    *
-    * Should change this to set pressures to scaling value.
-    * CSW: Should I set this to pressure * vol * dt ??? */
-
-   ForSubgridI(is, GridSubgrids(grid))
-   {
-      subgrid = GridSubgrid(grid, is);
-	 
-      p_sub = VectorSubvector(pressure, is);
-      f_sub = VectorSubvector(fval, is);
-
-      /* RDF: assumes resolutions are the same in all 3 directions */
-      r = SubgridRX(subgrid);
-
-      ix = SubgridIX(subgrid);
-      iy = SubgridIY(subgrid);
-      iz = SubgridIZ(subgrid);
-	 
-      nx = SubgridNX(subgrid);
-      ny = SubgridNY(subgrid);
-      nz = SubgridNZ(subgrid);
-	 
-      pp = SubvectorData(p_sub);
-      fp = SubvectorData(f_sub);
-
-      GrGeomOutLoop(i, j, k, gr_domain,
-      r, ix, iy, iz, nx, ny, nz,
-      {
-	 ip   = SubvectorEltIndex(f_sub, i, j, k);
-	 fp[ip] = pp[ip];
-      });
-   }
 
    EndTiming(public_xtra -> time_index);
 

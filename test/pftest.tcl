@@ -16,7 +16,22 @@ proc pftestFile {file message sig_digits} {
 	set new     [pfload                $file]
 	set diff [pfmdiff $new $correct $sig_digits]
 	if {[string length $diff] != 0 } {
-	    puts "FAILED : $message $diff"
+	    puts "FAILED : $message"
+
+	    set mSigDigs [lindex $diff 0]
+	    set maxAbsDiff [lindex $diff 1]
+
+	    set i [lindex $mSigDigs 0]
+	    set j [lindex $mSigDigs 1]
+	    set k [lindex $mSigDigs 2] 
+	    puts [format "\tMinimum significant digits at (% 3d, % 3d, % 3d) = %2d"\
+		      $i $j $k [lindex $mSigDigs 3]]
+
+	    puts [format "\tMaximum absolute difference = %e" $maxAbsDiff]
+	    
+	    puts [format "\tCorrect value %e" [pfgetelt $correct $i $j $k]]
+	    puts [format "\tComputed value %e" [pfgetelt $new $i $j $k]]
+
 	    return 0
 	} {
 	    return 1

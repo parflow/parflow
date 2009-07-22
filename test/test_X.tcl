@@ -374,7 +374,7 @@ pftestParseAndEvaluateOutputForTCL test_X.out.txt
 
 set passed 1
 
-if ![pftestIsEqual $pressure_l2_error(1) 5.84881366e-05 "Max difference in Pressure" ] {
+if ![pftestIsEqual $pressure_l2_error(1) 5.84881366e-05 "Pressure l2_error is not corrrect" ] {
     set passed 0
 }
 
