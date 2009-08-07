@@ -158,7 +158,7 @@ fi
 
 # Some additional compiler flags
 case $CC in
-   *gcc*)
+   gcc*)
       C_FLAGS="-Wall $C_FLAGS"
       ;;
 esac
