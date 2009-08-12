@@ -138,6 +138,8 @@ Databox         *ReadSilo(char *filename)
 
       memcpy(DataboxCoeff(v, 0, 0, 0), var -> vals[0], NX*NY*NZ * sizeof(double));
 
+      DBFreeQuadvar(var);
+
    } else {
 
       DBmultivar *multivar = DBGetMultivar(db, multivar_names[0]);
@@ -215,8 +217,12 @@ Databox         *ReadSilo(char *filename)
 	    }
 	 }
 
+	 DBFreeQuadvar(var);
+
 	 DBClose(proc_db);
       }
+
+      DBFreeMultivar(multivar);
    }
 
 

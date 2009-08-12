@@ -141,7 +141,7 @@ void ComputeSurfaceRunoff(Databox *top,
 
    for (i = 0; i < nx; i++)
    {
-      for (j = 0; j < nx; j++)
+      for (j = 0; j < ny; j++)
       {
 	 int k = *(DataboxCoeff(top, i, j, 0));
 
@@ -191,7 +191,7 @@ void ComputeSurfaceRunoff(Databox *top,
 
    for (j = 0; j < ny; j++)
    {
-      for (i = 0; i < nx; i++)
+      for (i = 0; i < ny; i++)
       {
 	 int k = *(DataboxCoeff(top, i, j, 0));
 
