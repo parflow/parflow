@@ -26,9 +26,9 @@ load.o: load.c pfload_file.h general.h databox.h parflow_config.h \
 pftappinit.o: pftappinit.c parflow_config.h pftools.h databox.h \
   tools_io.h
 pftools.o: pftools.c parflow_config.h pftools.h databox.h grid.h region.h \
-  usergrid.h file.h water_balance.h readdatabox.h printdatabox.h \
-  velocity.h head.h flux.h stats.h diff.h error.h getsubbox.h \
-  enlargebox.h load.h top.h general.h
+  usergrid.h file.h water_balance.h water_table.h readdatabox.h \
+  printdatabox.h velocity.h head.h flux.h stats.h diff.h error.h \
+  getsubbox.h enlargebox.h load.h top.h general.h
 pfwell_cat.o: pfwell_cat.c pfwell_cat.h general.h well.h
 pfwell_data.o: pfwell_data.c pfwell_data.h general.h well.h
 printdatabox.o: printdatabox.c parflow_config.h printdatabox.h databox.h \
@@ -49,4 +49,5 @@ usergrid.o: usergrid.c pftools.h parflow_config.h databox.h general.h \
 velocity.o: velocity.c velocity.h databox.h parflow_config.h
 water_balance.o: water_balance.c water_balance.h databox.h \
   parflow_config.h
+water_table.o: water_table.c water_table.h databox.h parflow_config.h
 well.o: well.c well.h general.h

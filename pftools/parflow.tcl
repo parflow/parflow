@@ -100,6 +100,7 @@ namespace eval Parflow {
     namespace export pfsurfacestorage
     namespace export pfsubsurfacestorage
     namespace export pfsurfacerunoff
+    namespace export pfwatertabledepth
     namespace export pfwritedb
 
     namespace export pfprintdata

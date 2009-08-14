@@ -500,6 +500,9 @@ for {set i 0} {$i <= 19} {incr i} {
     set filename [format "%s.out.satur.%05d.pfb" $runname $i]
     set saturation [pfload $filename]
 
+    set water_table_depth [pfwatertabledepth $top $saturation]
+    pfsave $water_table_depth -silo "water_table_depth.$i.silo"
+
     set subsurface_storage [pfsubsurfacestorage $mask $porosity $pressure $saturation $specific_storage]
     pfsave $subsurface_storage -silo "subsurface_storage.$i.silo"
     set total_subsurface_storage [pfsum $subsurface_storage]

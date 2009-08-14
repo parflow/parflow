@@ -97,12 +97,12 @@ $(PARFLOW_TOOLS_BIN_DIR)/slimtopfsb:slimtopfsb.o slimtopfsb_io.o
 #
 TOOLS_HDRS = pftools.h printdatabox.h readdatabox.h databox.h error.h \
         velocity.h head.h flux.h diff.h stats.h tools_io.h getsubbox.h \
-	enlargebox.h top.h water_balance.h
+	enlargebox.h top.h water_balance.h water_table.h
 
 TOOLS_OBJS = pftappinit.o  printdatabox.o readdatabox.o databox.o \
         error.o velocity.o head.o flux.o diff.o stats.o tools_io.o axpy.o \
         getsubbox.o enlargebox.o load.o usergrid.o grid.o region.o file.o \
-	pftools.o top.o water_balance.o sum.o
+	pftools.o top.o water_balance.o water_table.o sum.o
 
 $(PARFLOW_TOOLS_BIN_DIR)/$(PROJECT)$(PARFLOW_TOOLS_SHLIB_SUFFIX): Makefile $(TOOLS_HDRS) $(TOOLS_OBJS) $(PARFLOW_LIB_DEPEND)
 	$(PARFLOW_TOOLS_SHLIB_LD) $(TOOLS_OBJS) \

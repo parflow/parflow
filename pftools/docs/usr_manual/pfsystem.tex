@@ -266,9 +266,17 @@ This command computes y = alpha*x+y where alpha is a scalar and x and
 y are identifiers representing data sets.  No data set identifier is
 returned upon successful completion since data set y is overwritten.
 
-\item{\begin{verbatim}pfcomputetop mask\end{verbatim}}
-This command computes the the top of the domain based on the mask of active and inactive zones.  This is the land-surface in \code{clm} or overland flow simulations.  The identifier of the data set created by this
-operation is returned upon successful completion.
+\item{\begin{verbatim}pfcomputetop mask\end{verbatim}} 
+This command computes the the top of the domain based on the mask of
+ active and inactive zones.  This is the land-surface in \code{clm} or
+ overland flow simulations.  The identifier of the data set created by
+ this operation is returned upon successful completion.
+
+\item{\begin{verbatim}pfwatertabledepth top saturation \end{verbatim}}
+ This command computes the the water table depth (distance from top to
+ first cell with saturation = 1).  The identifier of the data set
+ created by this operation is returned upon successful completion.
+
 
 \item{\begin{verbatim}pfcvel conductivity phead\end{verbatim}}
 This command computes the Darcy velocity in cells for the conductivity data set
@@ -306,9 +314,10 @@ conductivity data set `conductivity' and the hydraulic head data
 set given by `hhead'.  An identifier representing the flux computed   
 will be returned upon successful completion.
 
-\item{\begin{verbatim}pfextracttop top data\end{verbatim}}
-This command computes the the top of the domain based on the top of the domain and another dataset.  The identifier of the data set created by this
-operation is returned upon successful completion.
+\item{\begin{verbatim}pfextracttop top data\end{verbatim}} 
+This command computes the the top of the domain based on the top of the
+ domain and another dataset.  The identifier of the data set created
+ by this operation is returned upon successful completion.
 
         
 \item{\begin{verbatim}pfgetelt dataset i j k\end{verbatim}}

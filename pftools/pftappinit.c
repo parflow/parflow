@@ -195,6 +195,8 @@ EXPORT(int,Parflow_Init)(Tcl_Interp *interp)
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfsurfacerunoff", (Tcl_CmdProc *)SurfaceRunoffCommand,
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfwatertabledepth", (Tcl_CmdProc *)WaterTableDepthCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
 
 #ifdef SGS
    Tcl_CreateExitHandler((Tcl_ExitProc *)PFTExitProc, (ClientData) data);

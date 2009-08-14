@@ -135,6 +135,7 @@ static char *PFEXTRACTTOPUSAGE   = "Usage: pfextracttop top dataset\n";
 static char *PFSURFACESTORAGEUSAGE   = "Usage: pfsuracestorge top pressure\n";
 static char *PFSUBSURFACESTORAGEUSAGE   = "Usage: pfsubsuracestorge mask porosity pressure saturation specific_storage\n";
 static char *PFSURFACERUNOFFUSAGE   = "Usage: pfsuracerunoff top slope_x slope_y mannings pressure\n";
+static char *PFWATERTABLEDEPTHUSAGE   = "Usage: pfwatertabledepth top saturation\n";
 static char *DELETEUSAGE   = "Usage: pfdelete dataset\n";
 
 /*-----------------------------------------------------------------------

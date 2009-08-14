@@ -508,6 +508,7 @@ void SetupRichards(PFModule *this_module) {
 	 } else
 	 {
 	    instance_xtra -> dumped_log[instance_xtra -> number_logged] = -1;
+
 	 }
 	 instance_xtra -> recomp_log[instance_xtra -> number_logged]   = 'n';
 	 instance_xtra -> number_logged++;

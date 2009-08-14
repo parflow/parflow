@@ -53,6 +53,7 @@
 #include "usergrid.h"
 #include "file.h"
 #include "water_balance.h"
+#include "water_table.h"
 
 #include <tcl.h>
 
@@ -76,7 +77,6 @@
 #include "usergrid.h"
 
 #include "general.h"
-
 
 
 /*-----------------------------------------------------------------------
@@ -3584,3 +3584,89 @@ char          *argv[];
 
    return TCL_OK;
 }
+
+/*-----------------------------------------------------------------------
+ * routine for `pfwatertabledepth' command
+ * Description: Compute the water depth
+ * 
+ * Cmd. syntax: pfwatertabledepth top pressure
+ *-----------------------------------------------------------------------*/
+int            WaterTableDepthCommand(clientData, interp, argc, argv)
+ClientData     clientData;
+Tcl_Interp    *interp;
+int            argc;
+char          *argv[];
+{
+   Tcl_HashEntry *entryPtr;  /* Points to new hash table entry         */
+   Data       *data = (Data *)clientData;
+
+   Databox    *top;
+   Databox    *saturation;
+   Databox    *water_table_depth;
+
+   char       *filename = "water table depth";
+   char       *top_hashkey;
+   char       *saturation_hashkey;
+
+   char        water_table_depth_hashkey[MAX_KEY_SIZE];
+
+   /* Check and see if there is at least one argument following  */
+   /* the command.                                               */
+   if (argc == 2)
+   {
+      WrongNumArgsError(interp, PFWATERTABLEDEPTHUSAGE);
+      return TCL_ERROR;
+   }
+
+   top_hashkey = argv[1];
+   saturation_hashkey = argv[2];
+
+   if ((top = DataMember(data, top_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, top_hashkey);
+      return TCL_ERROR;
+   }
+
+   if ((saturation = DataMember(data, saturation_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, saturation_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx = DataboxNx(saturation);
+      int ny = DataboxNy(saturation);
+      int nz = 1;
+
+      double x = DataboxX(saturation);
+      double y = DataboxY(saturation);
+      double z = DataboxZ(saturation);
+      
+      double dx = DataboxDx(saturation);
+      double dy = DataboxDy(saturation);
+      double dz = DataboxDz(saturation);
+
+      /* create the new databox structure for the water table depth  */
+      if ( (water_table_depth = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+	 /* Make sure the data set pointer was added to */
+	 /* the hash table successfully.                */
+	 if (!AddData(data, water_table_depth, filename, water_table_depth_hashkey))
+	    FreeDatabox(water_table_depth); 
+	 else
+	 {
+	    Tcl_AppendElement(interp, water_table_depth_hashkey); 
+	 } 
+
+	 ComputeWaterTableDepth(top, saturation, water_table_depth);
+      }
+      else
+      {
+	 ReadWriteError(interp);
+	 return TCL_ERROR;
+      }
+   }
+
+   return TCL_OK;
+}
+

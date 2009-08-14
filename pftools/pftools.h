@@ -139,6 +139,7 @@ int ExtractTopCommand P((ClientData clientData , Tcl_Interp *interp , int argc ,
 int SurfaceStorageCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int SubsurfaceStorageCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int SurfaceRunoffCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int WaterTableDepthCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 
 void Axpy(double alpha, Databox *X,  Databox *Y);
 void Sum(Databox *X,  double *sum);
