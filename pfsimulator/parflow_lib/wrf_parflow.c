@@ -217,7 +217,6 @@ void WRF2PF(
       int ny = SubgridNY(subgrid);
 
       int wrf_nx =  nx + ghost_size_i_lower + ghost_size_i_upper;
-//      int wrf_ny =  ny + ghost_size_j_lower + ghost_size_j_upper;
 
       Subvector *subvector = VectorSubvector(pf_vector, sg);
       double *subvector_data = SubvectorData(subvector);
@@ -274,13 +273,11 @@ void PF2WRF(
       
       int ix = SubgridIX(subgrid);
       int iy = SubgridIY(subgrid);
-      // int iz = SubgridIZ(subgrid);
 
       int nx = SubgridNX(subgrid);
       int ny = SubgridNY(subgrid);
 
       int wrf_nx =  nx + ghost_size_i_lower + ghost_size_i_upper;
-//      int wrf_ny =  ny + ghost_size_j_lower + ghost_size_j_upper;
 
       Subvector *subvector = VectorSubvector(pf_vector, sg);
       double *subvector_data = SubvectorData(subvector);
