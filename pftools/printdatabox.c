@@ -46,6 +46,9 @@
 #include "printdatabox.h"
 #include "tools_io.h"
 
+#include "string.h"
+#include "unistd.h"
+
 /*-----------------------------------------------------------------------
  * print a Databox in `simple' ascii format
  *-----------------------------------------------------------------------*/
@@ -534,6 +537,25 @@ void            PrintSilo(
    
    int err;
 
+   char *current_path = NULL;
+   char *path = NULL;
+   char *slash = strchr(filename, '/');
+
+   if(slash) {
+      path = malloc(MAXPATHLEN);
+      strncpy(path, filename, slash - filename);
+      path[slash - filename] = 0;
+      filename = strdup(slash + 1);
+   } else {
+      filename = strdup(filename);
+   }
+
+   if(path) { 	
+      current_path = malloc(MAXPATHLEN);
+      getwd(current_path);
+      chdir(path);
+   }
+
     x = (double*) malloc(sizeof(double) * NX);
     y = (double*) malloc(sizeof(double) * NY);
     z = (double*) malloc(sizeof(double) * NZ);
@@ -602,6 +624,18 @@ void            PrintSilo(
                   DB_DOUBLE, DB_NODECENT, NULL);
 
     DBClose(db);
+
+   if(path) { 	
+      free(path);
+   }
+
+   if(current_path) { 	
+      chdir(current_path);
+      free(current_path);
+   }
+
+   free(filename);
+
 #endif
 }
 

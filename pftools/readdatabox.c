@@ -49,6 +49,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
 
 /*-----------------------------------------------------------------------
  * read a SILO file
@@ -73,6 +74,28 @@ Databox         *ReadSilo(char *filename)
    int             err = -1;
 
    DBfile         *db;
+
+   char *current_path = NULL;
+   char *path = NULL;
+   char *slash = strchr(filename, '/');
+
+   if(slash) {
+      path = malloc(MAXPATHLEN);
+      strncpy(path, filename, slash - filename);
+      path[slash - filename] = 0;
+      filename = strdup(slash + 1);
+   } else {
+      filename = strdup(filename);
+   }
+
+   printf("path = %s\n", path);
+   printf("filename = %s\n", filename);
+
+   if(path) { 	
+      current_path = malloc(MAXPATHLEN);
+      getwd(current_path);
+      chdir(path);
+   }
 
    db = DBOpen(filename, DB_PDB, DB_READ);
    if(db == NULL)
@@ -227,6 +250,18 @@ Databox         *ReadSilo(char *filename)
 
 
    DBClose(db);
+
+
+   if(path) { 	
+      free(path);
+   }
+
+   if(current_path) { 	
+      chdir(current_path);
+      free(current_path);
+   }
+
+   free(filename);
 
    return v;
 #else
