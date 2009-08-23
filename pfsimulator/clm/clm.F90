@@ -84,7 +84,10 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
   drv%nc = nx
   drv%nr = ny
   drv%nt = 18
-
+  drv%ts = dt*3600.d0    !  assume PF in hours, CLM in seconds
+  
+  
+  
   !clm_1d_out = 0
 
   write(RI,*) rank
@@ -93,7 +96,19 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
   print*, 'clm dump dir:', clm_output_dir
   print*, 'clm 1d:',clm_1d_out
   print*, 'clm dump lgnth: ', clm_output_dir_length
-
+  print*, 'dx:',drv%dx, pdx
+  print*, 'dy:',drv%dy, pdy
+  print*, 'dz:',drv%dz, pdz
+  print*, 'nr:',drv%nr, nx
+  print*, 'nc:',drv%nc, ny
+  print*, 'dt:',drv%ts, dt
+  print*, 'time:',time
+  i=3
+  j=3
+  k=10
+  l = 1+i + (nx+2)*(j) + (nx+2)*(ny+2)*(k)
+  print*, 'press(l):',pressure(l)
+   
   if (time == 0.0d0) then ! Check if initialization necessary 
      !open(6,file='clm.out.txt')
      print *,"INITIALIZATION"
@@ -197,8 +212,8 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
      print *,"Initialize the CLM topography mask"
      print *,"DIMENSIONS",nx,nx_f,drv%nc,drv%nr,drv%nch,ny,ny_f, nz, nz_f, ip
 
-     j_incr = nx_f 
-     k_incr = (nx_f * ny_f)
+     j_incr = (nx+2) 
+     k_incr = (nx+2) * (ny+2)
      !print*, j_incr,k_incr
      do t=1,drv%nch
         i=tile(t)%col
@@ -207,8 +222,8 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
         clm(t)%topo_mask(3) = 1
         !  print*, t, i, j,ip 
         do k = nz, 1, -1 ! PF loop over z
-           l = 1+i + j_incr*(j) + k_incr*(k)
-           !   print*, l, i,j,k, topo(l), clm(t)%topo_mask(1)
+           l = 1+i + (nx+2)*(j) + (nx+2)*(ny+2)*(k)
+            
            if (topo(l) == 1) then
               counter(i,j) = counter(i,j) + 1
               if (counter(i,j) == 1) then 
@@ -218,8 +233,9 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
               !else
               !  clm(t)%topo_mask(nz-k+1) = 0
            endif
+		    ! print*, l, i,j,k, topo(l), clm(t)%topo_mask(1)
            if (topo(l) == 0 .and. topo(l+k_incr) == 1) clm(t)%topo_mask(3) = k+1
-           !     print*, clm(t)%topo_mask(1), clm(t)%topo_mask(2), clm(t)%topo_mask(3)
+           !    print*, clm(t)%topo_mask(1), clm(t)%topo_mask(2), clm(t)%topo_mask(3)
         enddo
         clm(t)%topo_mask(2) = clm(t)%topo_mask(1)-nlevsoi
         !  print*, clm(t)%topo_mask(1), clm(t)%topo_mask(2), clm(t)%topo_mask(3)
@@ -287,14 +303,23 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
      call drv_restart(1,drv,tile,clm,rank)  !(1=read,2=write)
 
      !call MPI_BCAST(clm,drv%nch,clm1d,0,MPI_COMM_WORLD,error)
-
      !@ Jump to correct line in forcing file
-     do i = 1, clm(1)%istep
+!     clm(1)%istep = 1440
+	 print*, clm(1)%istep
+     do i = 1, clm(1)%istep-1
         read(11,*)
      enddo
 
-  endif !======= End of the initialization ================
 
+  endif !======= End of the initialization ================
+! open forcing file
+!    open(11,file=trim(adjustl(drv%metf1d))//'.'//trim(adjustl(RI)),action='read')  !Meteorological Input
+
+     !@ Jump to correct line in forcing file
+!	 print*, clm(1)%istep
+!     do i = 1, clm(1)%istep-1
+!        read(11,*)
+!     enddo
   j_incr = nx_f 
   k_incr = (nx_f * ny_f)
 
@@ -391,5 +416,5 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
      close(199)
   end if
   print*, 'return'
-
+!  close(11)
 end subroutine clm_lsm

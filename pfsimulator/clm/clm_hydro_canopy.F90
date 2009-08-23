@@ -136,6 +136,7 @@ subroutine clm_hydro_canopy (clm)
      flfall = 1.                              ! fraction of liquid water within falling precip.
      clm%qflx_snow_grnd = 0.                  ! ice onto ground (mm/s)
      clm%qflx_rain_grnd = clm%qflx_prec_grnd  ! liquid water onto ground (mm/s)
+!	 print*, clm%qflx_prec_grnd
      dz_snowf = 0.                            ! rate of snowfall, snow depth/s (m/s)
   else
      if (clm%forc_t <= tfrz) then

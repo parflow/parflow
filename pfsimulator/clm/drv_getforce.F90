@@ -56,7 +56,8 @@ subroutine drv_getforce (drv,tile,clm)
 
   read (11,*) solar, clm(1)%forc_lwrad, prcp, clm(1)%forc_t, clm(1)%forc_u, &
               clm(1)%forc_v, clm(1)%forc_pbot, clm(1)%forc_q
-
+  print*, solar, clm(1)%forc_lwrad, prcp, clm(1)%forc_t, clm(1)%forc_u, &
+              clm(1)%forc_v, clm(1)%forc_pbot, clm(1)%forc_q
   clm(1)%forc_rho   = clm(1)%forc_pbot/(clm(1)%forc_t*2.8704e2)
 
   clm(1)%forc_solad(1) = solar*35./100.    !forc_sols

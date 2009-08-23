@@ -179,6 +179,7 @@ write(RI,*) rank
 
 !=== Open Files (to be read in later)
   open(11,file=trim(adjustl(drv%metf1d))//'.'//trim(adjustl(RI)), form='formatted',action='read')  !Meteorological Input
+!  open(11,file=trim(adjustl(drv%metf1d))//'.'//trim(adjustl(RI)),action='read')  !Meteorological Input
 
 ! If restarting from a restart file then assume append to old output file
 !@ These statements should be placed into "open_files.f90"

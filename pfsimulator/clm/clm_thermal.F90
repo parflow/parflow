@@ -170,7 +170,7 @@ subroutine clm_thermal (clm)
        tinc,                       & ! temperature difference of two time step
        obuold                        ! monin-obukhov length from previous iteration
 
-  real(r8) temp                      !temporary variable                                      
+  real(r8) temp, temp_alpha, temp_rz                      !temporary variable                                      
   real(r8) cf                        !s m**2/umol -> s/m
 
   !=== End Variable List ===================================================
@@ -228,7 +228,20 @@ subroutine clm_thermal (clm)
      if (clm%pf_press(1)>= 0.0d0)  psit = 0.0d0
      if (clm%pf_press(1) < 0.0d0)   psit = clm%pf_press(1)
      !     enddo  
-     hr   = exp(psit/roverg/tg)
+	 temp_alpha = ((-150000.0d0 - clm%pf_press(1))/(-150000.0d0) )
+!	 temp_alpha =   (clm%pf_vol_liq(1) / clm%watsat(1) ) - 0.25d0
+           if (temp_alpha < 0.0) temp_alpha = 0.00d0
+           if (temp_alpha > 1.) temp_alpha = 1.d0
+
+!temp_alpha = 1.d0
+hr   = temp_alpha*dexp(psit/roverg/tg)
+!if (clm%pf_press(1) < -150000.d0) hr = 0.0d0
+!print*, hr, temp_alpha, psit, roverg, tg, clm%pf_vol_liq(1),clm%watsat(1), clm%pf_press(1)
+
+	 ! cutoff ET at -150m
+!write(88,*) clm%istep, psit, clm%pf_press(1), hr, temp
+!if (clm%pf_press(1)<=-150000.0d0) hr = 0.d0
+!write(88,*) hr, temp
      qred = (1.-clm%frac_sno)*hr + clm%frac_sno
   else
      hr   = 0.
@@ -375,7 +388,7 @@ subroutine clm_thermal (clm)
      clm%tauy   = -(1-clm%frac_veg_nosno)*clm%forc_rho*clm%forc_v/ram
      clm%eflx_sh_grnd  = -raih*dth
      clm%qflx_evap_soi  = -raiw*dqh
-
+!write(88,*) clm%qflx_evap_soi, raiw, dqh
      clm%eflx_sh_tot  = clm%eflx_sh_grnd
      clm%qflx_evap_tot  = clm%qflx_evap_soi
 
@@ -400,16 +413,20 @@ subroutine clm_thermal (clm)
   else    
 
      clm%btran = 0
+	 temp_rz = 0.
      do i = 1, nlevsoi
         if(clm%h2osoi_liq(i) > 0.0) then
-           temp = ((-150000 - clm%pf_press(i))/(-150000) )
+           temp = ((-150000.0d0 - clm%pf_press(i))/(-150000.0d0) )
            if (temp < 0.) temp = 0.
            if (temp > 1.) temp = 1.
-           temp = temp ** clm%vw
+           temp_rz = temp_rz + temp ** clm%vw
+!		   temp_rz =  temp ** clm%vw
         else
-           temp = 0.01d0
+           temp2 = 0.01d0
         endif
-        clm%btran = clm%btran + clm%rootfr(i)*temp
+		   temp_rz = temp_rz / float(nlevsoi)
+		   if (clm%pf_press(1)<-150000.0d0) temp_rz = 0.0d0
+        clm%btran = clm%btran + clm%rootfr(i)*temp_rz
      enddo
 
 
@@ -537,8 +554,11 @@ subroutine clm_thermal (clm)
 
   if (clm%qflx_evap_soi >= 0.) then
      ! Do not allow for sublimation in melting (melting ==> evap. ==> sublimation)
-     clm%qflx_evap_grnd = min(clm%h2osoi_liq(clm%snl+1)/clm%dtime, clm%qflx_evap_soi)
+ !    clm%qflx_evap_grnd = min(clm%h2osoi_liq(clm%snl+1)/clm%dtime, clm%qflx_evap_soi)
+       clm%qflx_evap_grnd = clm%qflx_evap_soi    
      clm%qflx_sub_snow = clm%qflx_evap_soi - clm%qflx_evap_grnd
+!	 write(88,*) 'qflx_evap_grnd, qflx_evap_soi'
+!	 write(88,*) clm%qflx_evap_grnd, clm%h2osoi_liq(clm%snl+1)/clm%dtime, clm%qflx_evap_soi
   else
      if (tg < tfrz) then
         clm%qflx_dew_snow = abs(clm%qflx_evap_soi)

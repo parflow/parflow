@@ -31,7 +31,8 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,
   ! @RMM Copy fluxes back into 
   !print*, ' in pf_couple'
   !print*,  ip, j_incr, k_incr
-  do t=1,drv%nch     !rows (y)
+! evap_trans = 0.d0
+   do t=1,drv%nch     !rows (y)
      i=tile(t)%col
      j=tile(t)%row
      do k = 1, nlevsoi
@@ -44,9 +45,12 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,
         endif
         ! copy back to pf, assumes timing for pf is hours and timing for clm is seconds
         evap_trans(l) = clm(t)%pf_flux(k)*3.6d0/drv%dz
+!		evap_trans(l) = 0.0d0
+!		if (k==1) evap_trans(l) = 0.001d0/drv%dz
         !	  print*, k, l, clm(t)%pf_flux(k), evap_trans(l)
         !	  print*, l,i,j,k, evap_trans(l)
         !	  print*, k,evap_trans(l),clm(t)%pf_flux(k),clm(t)%qflx_infl,clm(t)%rootfr(k),clm(t)%qflx_tran_veg
+	!	print*, j_incr, k_incr
      enddo
   enddo
 
@@ -74,11 +78,11 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,
         !@sjk Here we add the total water mass of the layers below CLM soil layers from Parflow to close water balance
         !@sjk We can use clm(1)%dz(1) because the grids are equidistant and congruent
         clm(t)%endwb=0.0d0 !@sjk only interested in wb below surface
-        !   print*, clm(t)%topo_mask(3), clm(t)%topo_mask(1)
+    !       print*, clm(t)%topo_mask(3), clm(t)%topo_mask(1)
         do k = clm(t)%topo_mask(3), clm(t)%topo_mask(1) ! CLM loop over z, starting at bottom of pf domains topo_mask(3)
 
            l = 1+i + j_incr*(j) + k_incr*(k)  ! updated indexing @RMM b/c we are looping from k3 to k1
-           !  print*, k, l
+          !   print*, k, l
            ! 	l = 1+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k)
            ! first we add direct amount of water: S*phi
            clm(t)%endwb = clm(t)%endwb + saturation(l)*porosity(l) * clm(1)%dz(1) * 1000.0d0

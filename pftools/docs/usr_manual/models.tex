@@ -387,7 +387,7 @@ where $Vol_{subsurface}$ is the subsurface storage $[L^3]$; $Vol_{surface}$ is t
 The subsurface storage is calculated over all active cells in the domain, $\Omega$, and contains both compressible and incompressible parts based on Equation \ref{eq:richard}. This is computed on a cell-by-cell basis (with the result being an array of balances over the domain) as follows:
 \begin{eqnarray}
 Vol_{subsurface} = \sum_\Omega [ S(\psi)S_s \psi \Delta x \Delta y \Delta z +
-S(\psi)\rho(\psi)\phi \Delta x \Delta y \Delta z]
+S(\psi)(\psi)\phi \Delta x \Delta y \Delta z]
 \label{eq:sub_store}
 \end{eqnarray}
 The surface storage is calculated over the upper surface boundary cells in the domain, $\Gamma$, as computed by the mask and contains based on Equation \ref{eq:kinematic}. This is again computed on a cell-by-cell basis (with the result being an array of balances over the domain) as follows:

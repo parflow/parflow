@@ -57,7 +57,7 @@ subroutine clm_hydro_snow(clm)
   if (clm%snl+1 >=1) then
 
      clm%qflx_top_soil = clm%qflx_rain_grnd + clm%qflx_snomelt
-
+!	 print*, clm%qflx_rain_grnd
   else
 
      ! Renew the mass of ice lens (h2osoi_ice) and liquid (h2osoi_liq) in the

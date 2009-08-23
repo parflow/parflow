@@ -107,6 +107,7 @@ subroutine clm_hydro_soil (clm)
      vol_ice(i) = min(clm%watsat(i), clm%h2osoi_ice(i)/(clm%dz(i)*denice))
      clm%eff_porosity(i) = clm%watsat(i)-vol_ice(i)
      vol_liq(i) = min(clm%eff_porosity(i), clm%h2osoi_liq(i)/(clm%dz(i)*denh2o))
+!	 print*, vol_liq(i), i, clm%eff_porosity(i)
   enddo
 
   ! Calculate wetness of soil
@@ -142,11 +143,12 @@ subroutine clm_hydro_soil (clm)
   wmean = wmean / zmean
   clm%qflx_surf = 0.0d0
   clm%qflx_infl = clm%qflx_top_soil - clm%qflx_evap_grnd
+!  write(*,*) clm%qflx_infl,  clm%qflx_evap_grnd, clm%qflx_top_soil
   !@RMM debug
   ! print*, clm%qflx_infl, clm%qflx_top_soil, clm%qflx_evap_grnd
 
   ! limit ground ET based on water availability
-  if (clm%h2osoi_liq(1) <= 1.E-3) clm%qflx_infl = clm%qflx_top_soil
+ ! if (clm%h2osoi_liq(1) <= 1.E-3) clm%qflx_infl = clm%qflx_top_soil
 
 
   ! Add in hillslope runoff
