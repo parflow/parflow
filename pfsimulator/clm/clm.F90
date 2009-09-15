@@ -256,6 +256,7 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
            l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
            ! 	l = 1+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k)
            clm(t)%watsat(k)=porosity(l)
+           clm(t)%tksatu(k)=clm(t)%tkmg(k)*0.57**clm(t)%watsat(k)               !@IMF as per RMM's email 
            ! print*, i,j,k,t,l,clm(t)%topo_mask(1),porosity(l),clm(t)%watsat(k)
 
         end do !k
