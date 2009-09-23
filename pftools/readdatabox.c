@@ -88,9 +88,6 @@ Databox         *ReadSilo(char *filename)
       filename = strdup(filename);
    }
 
-   printf("path = %s\n", path);
-   printf("filename = %s\n", filename);
-
    if(path) { 	
       current_path = malloc(MAXPATHLEN);
       getwd(current_path);
