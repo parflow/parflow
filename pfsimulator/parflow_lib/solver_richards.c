@@ -55,24 +55,24 @@ typedef struct
    int                clm_1d_out;         /* boolean 0-1, integer, for CLM 1-d output */
    int                clm_bin_out_dir;    /* boolean 0-1, integer, for sep dirs for each 
 					     clm binary output */
+   int                clm_dump_files;     /* boolean 0-1, integer, for write CLM output from PF */
    char              *clm_file_dir;       /* directory location for CLM files */
 	
-
    Problem           *problem;
 
    int                advect_order;
    double             CFL;
    int                max_iterations;
-   int                max_convergence_failures; /* maximum number of convergence 
+   int                max_convergence_failures;   /* maximum number of convergence 
 						   failures that are allowed */
-   double             drop_tol;              /* drop tolerance */
-   int                print_subsurf_data;    /* print permeability/porosity? */
-   int                print_press;           /* print pressures? */
-   int                print_velocities;      /* print velocities? */
-   int                print_satur;           /* print saturations? */
-   int                print_concen;          /* print concentrations? */
-   int                print_wells;           /* print well data? */
-   int                print_lsm_sink;        /* print LSM sink term? */
+   double             drop_tol;                   /* drop tolerance */
+   int                print_subsurf_data;         /* print permeability/porosity? */
+   int                print_press;                /* print pressures? */
+   int                print_velocities;           /* print velocities? */
+   int                print_satur;                /* print saturations? */
+   int                print_concen;               /* print concentrations? */
+   int                print_wells;                /* print well data? */
+   int                print_lsm_sink;             /* print LSM sink term? */
 
    int                write_silo_subsurf_data;    /* write permeability/porosity? */
    int                write_silo_press;           /* write pressures? */
@@ -86,6 +86,8 @@ typedef struct
    int                write_silo_mannings;        /* write mannings? */
    int                write_silo_specific_storage;/* write specific storage? */
    int                write_silo_overland_sum;    /* write sum of overland outflow? */
+   int                write_silo_CLM;             /* write CLM output as silo? */
+   int                write_CLM_binary;           /* write binary output (**default**)? */
 
 } PublicXtra; 
 
@@ -119,38 +121,52 @@ typedef struct
    /*****************************************************************************
     * Local variables that need to be kept around 
     *****************************************************************************/
-   Vector       *pressure;
-   Vector       *saturation;
-   Vector       *density;
-   Vector       *old_density;
-   Vector       *old_saturation;
-   Vector       *old_pressure;
-   Vector       *mask;
+   Vector      *pressure;
+   Vector      *saturation;
+   Vector      *density;
+   Vector      *old_density;
+   Vector      *old_saturation;
+   Vector      *old_pressure;
+   Vector      *mask;
 
    /* 
     * Running sum of evaporation and transpiration.
     */
-   Vector       *evap_trans_sum;
-   Vector       *overland_sum;
+   Vector      *evap_trans_sum;
+   Vector      *overland_sum;
 
    /* 
     * sk: Vector that contains the outflow at the boundary 
     */
-   Vector       *ovrl_bc_flx;
+   Vector      *ovrl_bc_flx;
 
-   double       *time_log;
-   double       *dt_log;
-   double        *outflow_log;
-   int          *seq_log;
-   int          *dumped_log;
-   char         *recomp_log; 
-   char         *dt_info_log;
+   /*
+    * RM: vars for pf printing of clm output
+    */
+   Vector      *eflx_lh_tot;
+   Vector      *eflx_lwrad_out;
+   Vector      *eflx_sh_tot;
+   Vector      *eflx_soil_grnd;
+   Vector      *qflx_evap_tot;
+   Vector      *qflx_evap_grnd;
+   Vector      *qflx_evap_soi;
+   Vector      *qflx_evap_veg;
+   Vector      *qflx_tran_veg;
+   Vector      *qflx_infl;
+   Vector      *swe_out;
+   Vector      *t_grnd;
+	
+   double      *time_log;
+   double      *dt_log;
+   double      *outflow_log;
+   int         *seq_log;
+   int         *dumped_log;
+   char        *recomp_log; 
+   char        *dt_info_log;
 
    int file_number;
    int number_logged;
-
    int iteration_number;
-
    double dump_index;
 
 } InstanceXtra; 
@@ -201,7 +217,7 @@ void SetupRichards(PFModule *this_module) {
 
    IfLogging(1)
    {
-      int max_iterations           = (public_xtra -> max_iterations);
+      int max_iterations            = (public_xtra -> max_iterations);
       instance_xtra -> seq_log      = talloc(int,    max_iterations + 1);
       instance_xtra -> time_log     = talloc(double, max_iterations + 1);
       instance_xtra -> dt_log       = talloc(double, max_iterations + 1);
@@ -233,7 +249,6 @@ void SetupRichards(PFModule *this_module) {
 
       sprintf(file_postfix, "porosity");
       WritePFBinary(file_prefix, file_postfix, ProblemDataPorosity(problem_data));
-
    }
 
    if ( public_xtra -> write_silo_subsurf_data )
@@ -253,7 +268,6 @@ void SetupRichards(PFModule *this_module) {
       sprintf(file_postfix, "porosity");
       WriteSilo(file_prefix, file_postfix, ProblemDataPorosity(problem_data),
 	        t, 0, "Porosity");
-
    }
 
    if ( public_xtra -> write_silo_slopes )
@@ -272,7 +286,6 @@ void SetupRichards(PFModule *this_module) {
       sprintf(file_postfix, "mannings");
       WriteSilo(file_prefix, file_postfix, ProblemDataMannings(problem_data),
                 t, 0, "Mannings");
-
    }
 
    if ( public_xtra -> write_silo_specific_storage )
@@ -280,7 +293,6 @@ void SetupRichards(PFModule *this_module) {
       sprintf(file_postfix, "specific_storage");
       WriteSilo(file_prefix, file_postfix, ProblemDataSpecificStorage(problem_data),
                 t, 0, "SpecificStorage");
-
    }
 
    if(!amps_Rank(amps_CommWorld))
@@ -301,7 +313,6 @@ void SetupRichards(PFModule *this_module) {
    {
       take_more_time_steps = 1;
    }
-
 
    instance_xtra -> iteration_number = instance_xtra -> file_number = start_count;
    instance_xtra -> dump_index = 1.0;
@@ -344,6 +355,11 @@ void SetupRichards(PFModule *this_module) {
       instance_xtra -> ovrl_bc_flx = NewVector( grid2d, 1, 1 );
       InitVectorAll(instance_xtra -> ovrl_bc_flx, 0.0);
 
+      if(public_xtra -> write_silo_overland_sum) {
+			instance_xtra -> overland_sum = NewVector( grid2d, 1, 1 );
+			InitVectorAll(instance_xtra -> overland_sum, 0.0);
+      }
+		
       /*sk Initialize LSM mask */
       instance_xtra -> mask = NewVector( grid, 1, 1 );
       InitVectorAll(instance_xtra -> mask, 0.0);
@@ -351,17 +367,50 @@ void SetupRichards(PFModule *this_module) {
       instance_xtra -> evap_trans_sum = NewVector( grid, 1, 0 );
       InitVectorAll(instance_xtra -> evap_trans_sum, 0.0);
 
-      if(public_xtra -> write_silo_overland_sum) {
-	 instance_xtra -> overland_sum = NewVector( grid2d, 1, 1 );
-	 InitVectorAll(instance_xtra -> overland_sum, 0.0);
-      }
+      /*rm variables for printing CLM output*/
+      instance_xtra -> eflx_lh_tot = NewVector( grid2d, 1, 1 );
+      InitVectorAll(instance_xtra -> eflx_lh_tot, 0.0);
+	   
+      /*imf remaining variables for printing CLM output*/
+      instance_xtra -> eflx_lwrad_out = NewVector( grid2d, 1, 1 );
+      InitVectorAll(instance_xtra -> eflx_lwrad_out, 0.0);		
+	
+      instance_xtra -> eflx_sh_tot = NewVector( grid2d, 1, 1 );
+      InitVectorAll(instance_xtra -> eflx_sh_tot, 0.0);
+	
+      instance_xtra -> eflx_soil_grnd = NewVector( grid2d, 1, 1 );
+      InitVectorAll(instance_xtra -> eflx_soil_grnd, 0.0);
+		
+      instance_xtra -> qflx_evap_tot = NewVector( grid2d, 1, 1 );
+      InitVectorAll(instance_xtra -> qflx_evap_tot, 0.0);
+	
+      instance_xtra -> qflx_evap_grnd = NewVector( grid2d, 1, 1 );
+      InitVectorAll(instance_xtra -> qflx_evap_grnd, 0.0);
 
+      instance_xtra -> qflx_evap_soi = NewVector( grid2d, 1, 1 );
+      InitVectorAll(instance_xtra -> qflx_evap_soi, 0.0);
+		
+      instance_xtra -> qflx_evap_veg = NewVector( grid2d, 1, 1 );
+      InitVectorAll(instance_xtra -> qflx_evap_veg, 0.0);		
+		
+      instance_xtra -> qflx_tran_veg = NewVector( grid2d, 1, 1 );
+      InitVectorAll(instance_xtra -> qflx_tran_veg, 0.0);
+		
+      instance_xtra -> qflx_infl = NewVector( grid2d, 1, 1 );
+      InitVectorAll(instance_xtra -> qflx_infl, 0.0);
+		
+      instance_xtra -> swe_out = NewVector( grid2d, 1, 1 );
+      InitVectorAll(instance_xtra -> swe_out, 0.0);
+		
+      instance_xtra -> t_grnd = NewVector( grid2d, 1, 1 );
+      InitVectorAll(instance_xtra -> t_grnd, 0.0);
+			
       /* Set initial pressures and pass around ghost data to start */
       PFModuleInvoke(void, ic_phase_pressure, 
-		     (instance_xtra -> pressure, instance_xtra -> mask, problem_data, problem));
-	 
+                    (instance_xtra -> pressure, instance_xtra -> mask, problem_data, problem));
+
       handle = InitVectorUpdate(instance_xtra -> pressure, VectorUpdateAll);
-      FinalizeVectorUpdate(handle);
+      FinalizeVectorUpdate(handle); 
 
       /* Set initial densities and pass around ghost data to start */
       PFModuleInvoke(void, phase_density, 
@@ -372,7 +421,7 @@ void SetupRichards(PFModule *this_module) {
 
       /* Set initial saturations */
       PFModuleInvoke(void, problem_saturation, 
-		     (instance_xtra -> saturation, instance_xtra -> pressure, instance_xtra -> density, gravity, problem_data, 
+		    (instance_xtra -> saturation, instance_xtra -> pressure, instance_xtra -> density, gravity, problem_data, 
 		      CALCFCN));
 
       handle = InitVectorUpdate(instance_xtra -> pressure, VectorUpdateAll);
@@ -492,6 +541,7 @@ void SetupRichards(PFModule *this_module) {
 	 /*
 	  * SGS Better error handing should be added 
 	  */
+
 	 if(instance_xtra -> number_logged > public_xtra -> max_iterations + 1) {
 	    printf("Error: max_iterations reached, can't log anymore data\n");
 	    exit(1);
@@ -539,10 +589,10 @@ void AdvanceRichards(PFModule *this_module,
    ) 
 {
 
-   PublicXtra    *public_xtra      = PFModulePublicXtra(this_module);
-   InstanceXtra  *instance_xtra    = PFModuleInstanceXtra(this_module);
+   PublicXtra    *public_xtra        = PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra      = PFModuleInstanceXtra(this_module);
 
-   Problem      *problem           = (public_xtra -> problem);
+   Problem       *problem            = (public_xtra -> problem);
 
    int           max_iterations      = (public_xtra -> max_iterations);
    int           print_satur         = (public_xtra -> print_satur);
@@ -561,17 +611,25 @@ void AdvanceRichards(PFModule *this_module,
    int           start_count         = ProblemStartCount(problem);
    double        dump_interval       = ProblemDumpInterval(problem);
 
-   Vector *porosity                   = ProblemDataPorosity(problem_data);
-   Vector *evap_trans_sum             = instance_xtra -> evap_trans_sum;
-   Vector *overland_sum               = instance_xtra -> overland_sum;
+   Vector *porosity                  = ProblemDataPorosity(problem_data);
+   Vector *evap_trans_sum            = instance_xtra -> evap_trans_sum;
+   Vector *overland_sum              = instance_xtra -> overland_sum;
 
 /* sk: Vector that contains the outflow at the boundary*/
+/* IMF: Added for CLM 2D fluxes, SWE, and t_grnd*/
    Subgrid      *subgrid;
    Subvector    *p_sub, *s_sub, *et_sub, *m_sub, *po_sub;
-   double       *pp,*sp, *et, *ms, *po_dat;
-   int          is,nx,ny,nz,nx_f,ny_f,nz_f,ip,ix,iy,iz; 
-   double       dx,dy,dz;
-   int          rank;
+   Subvector    *eflx_lh_tot_sub, *eflx_lwrad_out_sub, *eflx_sh_tot_sub, *eflx_soil_grnd_sub;
+   Subvector    *qflx_evap_tot_sub, *qflx_evap_grnd_sub, *qflx_evap_soi_sub, *qflx_evap_veg_sub, *qflx_tran_veg_sub;
+   Subvector    *qflx_infl_sub, *swe_out_sub, *t_grnd_sub;
+   double       *pp,*sp, *et, *ms, *po_dat;	
+   double       *eflx_lh, *eflx_lwrad, *eflx_sh, *eflx_grnd;
+   double       *qflx_tot, *qflx_grnd, *qflx_soi, *qflx_eveg, *qflx_tveg; 
+   double       *qflx_in, *swe, *t_g;
+
+   int           is,nx,ny,nz,nx_f,ny_f,nz_f,ip,ix,iy,iz; 
+   double        dx,dy,dz;
+   int           rank;
 
    int           any_file_dumped;
    int           dump_files;
@@ -629,6 +687,7 @@ void AdvanceRichards(PFModule *this_module,
       Thus, we do not want to allocate memory or initialize storage for 
       other variables.
    */
+
    if ( start_count < 0 )
    {
       take_more_time_steps = 0;
@@ -653,10 +712,10 @@ void AdvanceRichards(PFModule *this_module,
 
 #ifdef HAVE_CLM      
 
-	 BeginTiming(CLMTimingIndex);
+         BeginTiming(CLMTimingIndex);
 
 	 /* sk: call to the land surface model/subroutine*/
-	 //  sk: For the couple with CLM 
+	 /* sk: For the couple with CLM*/
 	 int p = GetInt("Process.Topology.P");
 	 int q = GetInt("Process.Topology.Q");
 	 int r = GetInt("Process.Topology.R");
@@ -669,7 +728,21 @@ void AdvanceRichards(PFModule *this_module,
 	    et_sub = VectorSubvector(evap_trans, is);
 	    m_sub = VectorSubvector(instance_xtra -> mask, is);
 	    po_sub = VectorSubvector(porosity, is);
-	    
+
+            /*IMF: CLM surface fluxes, SWE, t_grnd*/
+	    eflx_lh_tot_sub    = VectorSubvector(instance_xtra -> eflx_lh_tot,is);
+	    eflx_lwrad_out_sub = VectorSubvector(instance_xtra -> eflx_lwrad_out,is);
+	    eflx_sh_tot_sub    = VectorSubvector(instance_xtra -> eflx_sh_tot,is);
+	    eflx_soil_grnd_sub = VectorSubvector(instance_xtra -> eflx_soil_grnd,is);
+	    qflx_evap_tot_sub  = VectorSubvector(instance_xtra -> qflx_evap_tot,is);
+	    qflx_evap_grnd_sub = VectorSubvector(instance_xtra -> qflx_evap_grnd,is);
+	    qflx_evap_soi_sub  = VectorSubvector(instance_xtra -> qflx_evap_soi,is);
+	    qflx_evap_veg_sub  = VectorSubvector(instance_xtra -> qflx_evap_veg,is);
+	    qflx_tran_veg_sub  = VectorSubvector(instance_xtra -> qflx_tran_veg,is);
+	    qflx_infl_sub      = VectorSubvector(instance_xtra -> qflx_infl,is);
+	    swe_out_sub        = VectorSubvector(instance_xtra -> swe_out,is);
+	    t_grnd_sub         = VectorSubvector(instance_xtra -> t_grnd,is);
+		 
 	    nx = SubgridNX(subgrid);
 	    ny = SubgridNY(subgrid);
 	    nz = SubgridNZ(subgrid);
@@ -691,6 +764,21 @@ void AdvanceRichards(PFModule *this_module,
 	    et = SubvectorData(et_sub);
 	    ms = SubvectorData(m_sub);
 	    po_dat = SubvectorData(po_sub);
+
+            /*IMF: CLM surface fluxes, SWE, t_grnd*/
+	    eflx_lh        = SubvectorData(eflx_lh_tot_sub);
+	    eflx_lwrad     = SubvectorData(eflx_lwrad_out_sub);
+	    eflx_sh        = SubvectorData(eflx_sh_tot_sub);
+	    eflx_grnd      = SubvectorData(eflx_soil_grnd_sub);
+	    qflx_tot       = SubvectorData(qflx_evap_tot_sub);
+	    qflx_grnd      = SubvectorData(qflx_evap_grnd_sub);
+	    qflx_soi       = SubvectorData(qflx_evap_soi_sub);
+	    qflx_eveg      = SubvectorData(qflx_evap_veg_sub);
+	    qflx_tveg      = SubvectorData(qflx_tran_veg_sub);
+	    qflx_in        = SubvectorData(qflx_infl_sub);
+	    swe            = SubvectorData(swe_out_sub);
+	    t_g            = SubvectorData(t_grnd_sub);
+		 
 	    //	 clm_dump_sub = SubvectorData(public_xtra -> clm_dump_interval);
 	    //	 clm_file_dir_local = SubvectorData((&public_xtra -> clm_file_dir));
 	    ip = SubvectorEltIndex(p_sub, ix, iy, iz);
@@ -705,10 +793,77 @@ void AdvanceRichards(PFModule *this_module,
 	       case 1:
 	       {
 		  clm_file_dir_length=strlen(public_xtra -> clm_file_dir);
-		  CALL_CLM_LSM(pp,sp,et,ms,po_dat,dt,t,dx,dy,dz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,
-			       ip,p,q,r,rank,public_xtra -> clm_dump_interval, 
-			       public_xtra -> clm_1d_out, public_xtra -> clm_file_dir, 
-			       clm_file_dir_length, public_xtra -> clm_bin_out_dir);
+		  CALL_CLM_LSM(pp,sp,et,ms,po_dat,dt,t,dx,dy,dz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,p,q,r,rank,
+                               eflx_lh,eflx_lwrad,eflx_sh,eflx_grnd,qflx_tot,qflx_grnd,qflx_soi,qflx_eveg,qflx_tveg,qflx_in,swe,t_g,
+                               public_xtra -> clm_dump_interval, 
+                               public_xtra -> clm_1d_out, 
+                               public_xtra -> clm_file_dir, 
+                               clm_file_dir_length, 
+                               public_xtra -> clm_bin_out_dir, 
+                               public_xtra -> write_CLM_binary);
+
+
+                  /* IMF Write CLM? */
+                  if ( (instance_xtra -> iteration_number % (-(int)public_xtra -> clm_dump_interval)) == 0 )
+		     {
+		        public_xtra -> clm_dump_files = 1;
+		     }
+		  else 
+		     {
+		        public_xtra -> clm_dump_files = 0;
+                     } 
+
+                  /* IMF Write as silo? */
+                  if ( public_xtra -> clm_dump_files && public_xtra -> write_silo_CLM )
+                     {
+                       sprintf(file_postfix, "eflx_lh_tot.%05d", instance_xtra -> file_number );
+                       WriteSilo( file_prefix, file_postfix, instance_xtra -> eflx_lh_tot, 
+                                 t, instance_xtra -> file_number, "LatentHeat");
+			   
+                       sprintf(file_postfix, "eflx_lwrad_out.%05d", instance_xtra -> file_number );
+                       WriteSilo(file_prefix, file_postfix, instance_xtra -> eflx_lwrad_out, 
+                                 t, instance_xtra -> file_number, "LongWave");
+			   
+                       sprintf(file_postfix, "eflx_sh_tot.%05d", instance_xtra -> file_number );
+                       WriteSilo(file_prefix, file_postfix, instance_xtra -> eflx_sh_tot, 
+                                 t, instance_xtra -> file_number, "SensibleHeat");
+			   
+                       sprintf(file_postfix, "eflx_soil_grnd.%05d", instance_xtra -> file_number );
+                       WriteSilo(file_prefix, file_postfix, instance_xtra -> eflx_soil_grnd, 
+                                 t, instance_xtra -> file_number, "GroundHeat");
+			   
+                       sprintf(file_postfix, "qflx_evap_tot.%05d", instance_xtra -> file_number );
+                       WriteSilo(file_prefix, file_postfix, instance_xtra -> qflx_evap_tot, 
+                                 t, instance_xtra -> file_number, "EvaporationTotal");
+			   
+                       sprintf(file_postfix, "qflx_evap_grnd.%05d", instance_xtra -> file_number );
+                       WriteSilo(file_prefix, file_postfix, instance_xtra -> qflx_evap_grnd, 
+                                 t, instance_xtra -> file_number, "EvaporationGroundNoSublimation");
+			   
+                       sprintf(file_postfix, "qflx_evap_soi.%05d", instance_xtra -> file_number );
+                       WriteSilo(file_prefix, file_postfix, instance_xtra -> qflx_evap_soi, 
+                                 t, instance_xtra -> file_number, "EvaporationGround");
+			   
+                       sprintf(file_postfix, "qflx_evap_veg.%05d", instance_xtra -> file_number );
+                       WriteSilo(file_prefix, file_postfix, instance_xtra -> qflx_evap_veg, 
+                                 t, instance_xtra -> file_number, "EvaporationCanopy");
+			   
+                       sprintf(file_postfix, "qflx_tran_veg.%05d", instance_xtra -> file_number );
+                       WriteSilo(file_prefix, file_postfix, instance_xtra -> qflx_tran_veg, 
+                                 t, instance_xtra -> file_number, "Transpiration");
+			   
+                       sprintf(file_postfix, "qflx_infl.%05d", instance_xtra -> file_number );
+                       WriteSilo(file_prefix, file_postfix, instance_xtra -> qflx_infl, 
+                                 t, instance_xtra -> file_number, "Infiltration");
+			   
+                       sprintf(file_postfix, "swe_out.%05d", instance_xtra -> file_number );
+                       WriteSilo(file_prefix, file_postfix, instance_xtra -> swe_out, 
+                                 t, instance_xtra -> file_number, "SWE");
+			   
+                       sprintf(file_postfix, "t_grnd.%05d", instance_xtra -> file_number );
+                       WriteSilo(file_prefix, file_postfix, instance_xtra -> t_grnd, 
+                                 t, instance_xtra -> file_number, "TemperatureGround");
+                     } // end of write silo 
 		  break;		  
 	       }
 	       default:
@@ -731,11 +886,10 @@ void AdvanceRichards(PFModule *this_module,
       do  /* while not converged */
       {
 
-
-
 	 /*
 	   Record amount of memory in use.
 	 */
+
 	 recordMemoryInfo();
 
 	 /*******************************************************************/
@@ -800,7 +954,6 @@ void AdvanceRichards(PFModule *this_module,
 	    dump_files = 0;
 	 }
 
-
 	 /*--------------------------------------------------------------
 	  * If this is the last iteration, set appropriate variables. 
 	  *--------------------------------------------------------------*/
@@ -851,7 +1004,6 @@ void AdvanceRichards(PFModule *this_module,
       while ( (!converged) && (conv_failures < max_failures) );
 
       instance_xtra -> iteration_number++;
-
      
       /* Calculate densities and saturations for the new pressure. */
       PFModuleInvoke(void, phase_density, 
@@ -889,10 +1041,12 @@ void AdvanceRichards(PFModule *this_module,
       /***************************************************************/
 
       /* Dump the pressure values at this time-step */
+      /* IMF: added dump CLM fluxes*/
+		
       if ( dump_files )
       {
 	 instance_xtra -> dump_index++;
-
+			
 	 if(public_xtra -> print_press) {
 	    sprintf(file_postfix, "press.%05d", instance_xtra -> file_number);
 	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> pressure);
@@ -933,7 +1087,7 @@ void AdvanceRichards(PFModule *this_module,
 	    WriteSilo(file_prefix, file_postfix, evap_trans_sum, 
 		      t, instance_xtra -> file_number, "EvapTransSum");
 	    any_file_dumped = 1;
-	    
+    
 	    /* reset sum after output */
 	    PFVConstInit(0.0, evap_trans_sum);
 	 }
@@ -948,7 +1102,6 @@ void AdvanceRichards(PFModule *this_module,
 	    PFVConstInit(0.0, overland_sum);
 	 }
 
-
 	 if(public_xtra -> print_lsm_sink) 
 	 {
 	    /*sk Print the sink terms from the land surface model*/
@@ -958,10 +1111,8 @@ void AdvanceRichards(PFModule *this_module,
 	    /*sk Print the sink terms from the land surface model*/
 	    sprintf(file_postfix, "obf.%05d", instance_xtra -> file_number );
 	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> ovrl_bc_flx);
-
 	    any_file_dumped = 1;
 	 }
-
       }
 
       /***************************************************************/
@@ -1855,7 +2006,29 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
       InputError("Error: invalid value <%s> for key <%s>\n",
 		 switch_name, key );
    }
-   public_xtra -> write_silo_specific_storage = switch_value;
+	public_xtra -> write_silo_specific_storage = switch_value;
+
+   /* IMF Write CLM as Silo (default=False) */
+   sprintf(key, "%s.WriteSiloCLM", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+                  switch_name, key );
+   }
+   public_xtra -> write_silo_CLM = switch_value;
+
+   /* IMF Write CLM Binary (default=True) */
+   sprintf(key, "%s.WriteCLMBinary", name);
+   switch_name = GetStringDefault(key, "True");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+                 switch_name, key );
+   }
+   public_xtra -> write_CLM_binary = switch_value;
 
    if( public_xtra -> write_silo_subsurf_data || 
        public_xtra -> write_silo_press  ||
@@ -1866,15 +2039,17 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
        public_xtra -> write_silo_slopes ||
        public_xtra -> write_silo_evaptrans ||
        public_xtra -> write_silo_evaptrans_sum ||
-       public_xtra -> write_silo_mannings
-      ) {
-      WriteSiloInit(GlobalsOutFileName);
+       public_xtra -> write_silo_mannings  ||
+       public_xtra -> write_silo_CLM
+     ) {
+
+	   WriteSiloInit(GlobalsOutFileName);
    }
 
    NA_FreeNameArray(switch_na);
-   
    PFModulePublicXtra(this_module) = public_xtra;
    return this_module;
+
 }
 
 /*--------------------------------------------------------------------------
@@ -1939,6 +2114,10 @@ void      SolverRichards() {
     * sk: Vector that contains the sink terms from the land surface model 
     */ 
    Vector       *evap_trans;
+   /*
+	* RM: vectors for LSM output
+	*/
+//	Vector		*eflx_lh_tot;
    
    SetupRichards(this_module);
    
@@ -1946,6 +2125,12 @@ void      SolverRichards() {
    evap_trans = NewVector( grid, 1, 1 );
    InitVectorAll(evap_trans, 0.0);
 
+	/*
+	 * RM: Init LSM output vectors
+	 */
+//	eflx_lh_tot = NewVector(grid2d, 1, 1);
+//	InitVectorAll(eflx_lh_tot, 0.0);
+	
    AdvanceRichards(this_module, 
 		   start_time, 
 		   stop_time, 
@@ -1966,10 +2151,10 @@ void      SolverRichards() {
    FreeVector(evap_trans );
 }
 
-
 /* 
  * Getter/Setter methods
  */
+
 ProblemData *GetProblemDataRichards(PFModule *this_module) {
    InstanceXtra  *instance_xtra    = PFModuleInstanceXtra(this_module);
    return (instance_xtra -> problem_data);

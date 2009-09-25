@@ -76,7 +76,7 @@ do hr = 1, 24
   avg(1,i,j) = avg(1,i,j) + value(i,j,counter)
   enddo ! i
  enddo ! j
-  counter = counter + 1
+ counter = counter + 1
 end do ! hour
 avg(1,:,:) = avg(1,:,:) / 24.d0
 write(cmo,'(i2.2)') mo

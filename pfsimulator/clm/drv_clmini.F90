@@ -139,7 +139,7 @@ subroutine drv_clmini (drv, grid, tile, clm)
      
      do j = 1, nlevsoi
 !        clm%z(j) = tile%scalez*(exp(0.5*(j-0.5))-1.)     !node depths
-		!@ new node depths, dz = 0.1 evenly w/ depth
+        !@ new node depths, dz = 0.1 evenly w/ depth
         clm%z(j) = drv%dz*(dble(j)-.5d0)
      enddo
 
@@ -194,7 +194,7 @@ subroutine drv_clmini (drv, grid, tile, clm)
      do j = 1, nlevsoi
         clm%bsw(j)    = 2.91 + 0.159*tile%clay(j)*100.0
 !@      clm%watsat(j) = 0.489 - 0.00126*tile%sand(j)*100.0 Stefan: followed Reed to make it consistent with PILPS
-	clm%watsat(j) = 0.401d0  !@This varaible is now read in directly in read_array.f90 !@IMF: uncommented b/c used later...must be defined.
+        clm%watsat(j) = 0.401d0  !@This varaible is now read in directly in read_array.f90 !@IMF: uncommented b/c used later...must be defined.
         xksat         = 0.0070556 *( 10.**(-0.884+0.0153*tile%sand(j)*100.0)) 
 
 !@== clm%hksat(j)  = xksat * exp(-clm%zi(j)/tile%hkdepth) This is now read in from drv_main from an array in read_array.f90

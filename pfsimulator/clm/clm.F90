@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,npp,npq,npr,rank,clm_dump_interval,clm_1d_out, clm_output_dir, clm_output_dir_length,clm_bin_output_dir)
+subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,npp,npq,npr,rank,eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,qflx_tot_pf,qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf,clm_dump_interval,clm_1d_out, clm_output_dir, clm_output_dir_length,clm_bin_output_dir,write_CLM_binary)
 
   !=========================================================================
   !
@@ -57,13 +57,30 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
   integer  :: ip                               
   integer  :: npp,npq,npr                        !@ number of processors in x,y,z
   integer  :: rank                               ! processor rank, from ParFlow
+  
+  !  surface fluxes form CLM
+  !  eflx_lh added by RMM, copied for other CLM fluxes...
+  real(r8) :: eflx_lh_pf((nx+2)*(ny+2)*3)        ! e_flux   (lh)    output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
+  real(r8) :: eflx_lwrad_pf((nx+2)*(ny+2)*3)     ! e_flux   (lw)    output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
+  real(r8) :: eflx_sh_pf((nx+2)*(ny+2)*3)        ! e_flux   (sens)  output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
+  real(r8) :: eflx_grnd_pf((nx+2)*(ny+2)*3)      ! e_flux   (grnd)  output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
+  real(r8) :: qflx_tot_pf((nx+2)*(ny+2)*3)       ! h2o_flux (total) output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
+  real(r8) :: qflx_grnd_pf((nx+2)*(ny+2)*3)      ! h2o_flux (grnd)  output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
+  real(r8) :: qflx_soi_pf((nx+2)*(ny+2)*3)       ! h2o_flux (soil)  output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
+  real(r8) :: qflx_eveg_pf((nx+2)*(ny+2)*3)      ! h2o_flux (veg-e) output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
+  real(r8) :: qflx_tveg_pf((nx+2)*(ny+2)*3)      ! h2o_flux (veg-t) output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
+  real(r8) :: qflx_in_pf((nx+2)*(ny+2)*3)        ! h2o_flux (infil) output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
+  real(r8) :: swe_pf((nx+2)*(ny+2)*3)            ! swe              output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
+  real(r8) :: t_g_pf((nx+2)*(ny+2)*3)            ! t_grnd           output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
+  
   integer  :: clm_dump_interval                  ! dump inteval for CLM output, passed from PF, always in interval of CLM timestep, not time
   integer  :: clm_1d_out                         ! whether to dump 1d output 0=no, 1=yes
-  integer :: clm_output_dir_length
+  integer  :: clm_output_dir_length
   character (LEN=clm_output_dir_length) :: clm_output_dir                ! output dir location
-  integer :: clm_bin_output_dir
-  integer  :: j_incr,k_incr                      ! increment for j and k to convert 1D vector to 3D i,j,k array
+  integer  :: clm_bin_output_dir
+  integer  :: write_CLM_binary                   ! whether to write CLM output as binary 
 
+  integer  :: j_incr,k_incr                      ! increment for j and k to convert 1D vector to 3D i,j,k array
   integer  :: i,j,k
   integer, allocatable  :: counter(:,:) 
   character*100 :: RI
@@ -256,9 +273,8 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
            l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
            ! 	l = 1+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k)
            clm(t)%watsat(k)=porosity(l)
-           clm(t)%tksatu(k)=clm(t)%tkmg(k)*0.57**clm(t)%watsat(k)               !@IMF as per RMM's email 
+           clm(t)%tksatu(k)=clm(t)%tkmg(k)*0.57**clm(t)%watsat(k)
            ! print*, i,j,k,t,l,clm(t)%topo_mask(1),porosity(l),clm(t)%watsat(k)
-
         end do !k
      end do !t
 
@@ -306,7 +322,7 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
      !call MPI_BCAST(clm,drv%nch,clm1d,0,MPI_COMM_WORLD,error)
      !@ Jump to correct line in forcing file
 !     clm(1)%istep = 1440
-	 print*, clm(1)%istep
+     print*, clm(1)%istep
      do i = 1, clm(1)%istep-1
         read(11,*)
      enddo
@@ -366,22 +382,49 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
   ! time units, integer units)
   !print*, clm(1)%istep, clm_dump_interval, mod(clm(1)%istep,clm_dump_interval)
   if (mod(clm(1)%istep,clm_dump_interval)==0)  then
-     ! @ RMM 9-08 move file open to outside initialization loop
-     ! @ RMM  this is now done every timestep specified by pf input file
-     !@ Call to subroutine to open (2D-) output files
-     !print *,"Open (2D-) output files"
-     !print*, pressure(111),saturation(111),evap_trans(111),topo(111),vname,ierr,drv%dx,drv%nc,drv%nr
-     !print*, clm(1)
-     !print *,clm(1)%istep
-     call open_files(clm,drv,rank,ix,iy,clm(1)%istep,clm_output_dir, clm_output_dir_length,clm_bin_output_dir) 
-     call drv_2dout (drv,grid,clm,rank)
-     !@==  Call to subroutine to close (2D-) output files
-     !@==  RMM modified to open/close files (but to include istep) every 
-     !@== time step 
-     !!if (drv%endtime /= 0)  call close_files(clm,drv,rank)
-     !print*, "close files"
-     call close_files(clm,drv,rank)
+     
+     !IMF only call if write_CLM_binary==True 
+     if (write_CLM_binary==1) then
+
+        ! @ RMM 9-08 move file open to outside initialization loop
+        ! @ RMM  this is now done every timestep specified by pf input file
+        !@ Call to subroutine to open (2D-) output files
+        !print *,"Open (2D-) output files"
+        !print*, pressure(111),saturation(111),evap_trans(111),topo(111),vname,ierr,drv%dx,drv%nc,drv%nr
+        !print*, clm(1)
+        !print *,clm(1)%istep
+        call open_files(clm,drv,rank,ix,iy,clm(1)%istep,clm_output_dir, clm_output_dir_length,clm_bin_output_dir) 
+        call drv_2dout (drv,grid,clm,rank)
+        !@==  Call to subroutine to close (2D-) output files
+        !@==  RMM modified to open/close files (but to include istep) every 
+        !@== time step 
+        !!if (drv%endtime /= 0)  call close_files(clm,drv,rank)
+        !print*, "close files"
+        call close_files(clm,drv,rank)
+     end if ! write_CLM_binary
   end if  ! mod of istep and dump_interval
+
+!=== copy arrays from clm-to-pf for printing in pf as pfb or silo
+     j_incr = (nx+2) 
+     do t=1,drv%nch
+        i=tile(t)%col
+        j=tile(t)%row
+        l = 1+i + (nx+2)*(j) + (nx+2)*(ny+2) 
+        eflx_lh_pf(l)=clm(t)%eflx_lh_tot
+        eflx_lwrad_pf(l)=clm(t)%eflx_lwrad_out
+        eflx_sh_pf(l)=clm(t)%eflx_sh_tot
+        eflx_grnd_pf(l)=clm(t)%eflx_soil_grnd
+        qflx_tot_pf(l)=clm(t)%qflx_evap_tot
+        qflx_grnd_pf(l)=clm(t)%qflx_evap_grnd
+        qflx_soi_pf(l)=clm(t)%qflx_evap_soi
+        qflx_eveg_pf(l)=clm(t)%qflx_evap_veg 
+        qflx_tveg_pf(l)=clm(t)%qflx_tran_veg
+        qflx_in_pf(l)=clm(t)%qflx_infl 
+        swe_pf(l)=clm(t)%h2osno 
+        t_g_pf(l)=clm(t)%t_grnd
+        print*, i,j,l,t, eflx_lh_pf(l),clm(t)%eflx_lh_tot 
+     enddo
+
 
   !=== Write Daily Restarts
 

@@ -228,8 +228,8 @@ subroutine clm_thermal (clm)
      if (clm%pf_press(1)>= 0.0d0)  psit = 0.0d0
      if (clm%pf_press(1) < 0.0d0)   psit = clm%pf_press(1)
      !     enddo  
-	 temp_alpha = ((-150000.0d0 - clm%pf_press(1))/(-150000.0d0) )
-!	 temp_alpha =   (clm%pf_vol_liq(1) / clm%watsat(1) ) - 0.25d0
+     temp_alpha = ((-150000.0d0 - clm%pf_press(1))/(-150000.0d0) )
+!    temp_alpha =   (clm%pf_vol_liq(1) / clm%watsat(1) ) - 0.25d0
            if (temp_alpha < 0.0) temp_alpha = 0.00d0
            if (temp_alpha > 1.) temp_alpha = 1.d0
 
@@ -238,7 +238,7 @@ hr   = temp_alpha*dexp(psit/roverg/tg)
 !if (clm%pf_press(1) < -150000.d0) hr = 0.0d0
 !print*, hr, temp_alpha, psit, roverg, tg, clm%pf_vol_liq(1),clm%watsat(1), clm%pf_press(1)
 
-	 ! cutoff ET at -150m
+     ! cutoff ET at -150m
 !write(88,*) clm%istep, psit, clm%pf_press(1), hr, temp
 !if (clm%pf_press(1)<=-150000.0d0) hr = 0.d0
 !write(88,*) hr, temp
@@ -413,21 +413,21 @@ hr   = temp_alpha*dexp(psit/roverg/tg)
   else    
 
      clm%btran = 0
-	 temp_rz = 0.
+     temp_rz = 0.
      do i = 1, nlevsoi
         if(clm%h2osoi_liq(i) > 0.0) then
            temp = ((-150000.0d0 - clm%pf_press(i))/(-150000.0d0) )
            if (temp < 0.) temp = 0.
            if (temp > 1.) temp = 1.
            temp_rz = temp_rz + temp ** clm%vw
-!		   temp_rz =  temp ** clm%vw
+!          temp_rz =  temp ** clm%vw
         else
            temp2 = 0.01d0
         endif
-		   temp_rz = temp_rz / float(nlevsoi)
-		   if (clm%pf_press(1)<-150000.0d0) temp_rz = 0.0d0
-        clm%btran = clm%btran + clm%rootfr(i)*temp_rz
-     enddo
+           temp_rz = temp_rz / float(nlevsoi)
+        if (clm%pf_press(1)<-150000.0d0) temp_rz = 0.0d0
+           clm%btran = clm%btran + clm%rootfr(i)*temp_rz
+        enddo
 
 
 
@@ -557,8 +557,8 @@ hr   = temp_alpha*dexp(psit/roverg/tg)
  !    clm%qflx_evap_grnd = min(clm%h2osoi_liq(clm%snl+1)/clm%dtime, clm%qflx_evap_soi)
        clm%qflx_evap_grnd = clm%qflx_evap_soi    
      clm%qflx_sub_snow = clm%qflx_evap_soi - clm%qflx_evap_grnd
-!	 write(88,*) 'qflx_evap_grnd, qflx_evap_soi'
-!	 write(88,*) clm%qflx_evap_grnd, clm%h2osoi_liq(clm%snl+1)/clm%dtime, clm%qflx_evap_soi
+!    write(88,*) 'qflx_evap_grnd, qflx_evap_soi'
+!    write(88,*) clm%qflx_evap_grnd, clm%h2osoi_liq(clm%snl+1)/clm%dtime, clm%qflx_evap_soi
   else
      if (tg < tfrz) then
         clm%qflx_dew_snow = abs(clm%qflx_evap_soi)
