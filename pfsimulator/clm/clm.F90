@@ -109,22 +109,22 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
 
   write(RI,*) rank
 
-  print*, 'clm dump interval', clm_dump_interval
-  print*, 'clm dump dir:', clm_output_dir
-  print*, 'clm 1d:',clm_1d_out
-  print*, 'clm dump lgnth: ', clm_output_dir_length
-  print*, 'dx:',drv%dx, pdx
-  print*, 'dy:',drv%dy, pdy
-  print*, 'dz:',drv%dz, pdz
-  print*, 'nr:',drv%nr, nx
-  print*, 'nc:',drv%nc, ny
-  print*, 'dt:',drv%ts, dt
-  print*, 'time:',time
-  i=3
-  j=3
-  k=10
-  l = 1+i + (nx+2)*(j) + (nx+2)*(ny+2)*(k)
-  print*, 'press(l):',pressure(l)
+!  print*, 'clm dump interval', clm_dump_interval
+!  print*, 'clm dump dir:', clm_output_dir
+!  print*, 'clm 1d:',clm_1d_out
+!  print*, 'clm dump lgnth: ', clm_output_dir_length
+!  print*, 'dx:',drv%dx, pdx
+!  print*, 'dy:',drv%dy, pdy
+!  print*, 'dz:',drv%dz, pdz
+!  print*, 'nr:',drv%nr, nx
+!  print*, 'nc:',drv%nc, ny
+!  print*, 'dt:',drv%ts, dt
+!  print*, 'time:',time
+!  i=3
+!  j=3
+!  k=10
+!  l = 1+i + (nx+2)*(j) + (nx+2)*(ny+2)*(k)
+!  print*, 'press(l):',pressure(l)
    
   if (time == 0.0d0) then ! Check if initialization necessary 
      !open(6,file='clm.out.txt')
@@ -348,7 +348,7 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
   ! clm%qflx_infl_old = clm%qflx_infl
   ! clm%qflx_tran_veg_old = clm%qflx_tran_veg
 
-  print *,"Call the Readout"
+!  print *,"Call the Readout"
   ! call ParFlow --> CLM couple code
   ! maps ParFlow space to CLM space @RMM
   call pfreadout(clm,drv,tile,saturation,pressure,rank,ix,iy,nx,ny,nz,j_incr, k_incr, ip) 
@@ -422,7 +422,7 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
         qflx_in_pf(l)=clm(t)%qflx_infl 
         swe_pf(l)=clm(t)%h2osno 
         t_g_pf(l)=clm(t)%t_grnd
-        print*, i,j,l,t, eflx_lh_pf(l),clm(t)%eflx_lh_tot 
+ !       print*, i,j,l,t, eflx_lh_pf(l),clm(t)%eflx_lh_tot 
      enddo
 
 
@@ -437,13 +437,13 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
 
 
   !=== Return required surface fields to atmospheric model (return to grid space)
-  print*, "drv_clm2g"
+!  print*, "drv_clm2g"
   call drv_clm2g (drv, grid, tile, clm)
 
   !=== Write spatially-averaged BC's and IC's to file for user
-  print*, "drv_pout"
+!  print*, "drv_pout"
   if (clm(1)%istep==1) call drv_pout(drv,tile,clm,rank)
-  print*, "drv pout"     
+!  print*, "drv pout"     
   ! enddo ! End the time loop for the model time steps
 
 
@@ -459,6 +459,6 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
      close(166)
      close(199)
   end if
-  print*, 'return'
+!  print*, 'return'
 !  close(11)
 end subroutine clm_lsm

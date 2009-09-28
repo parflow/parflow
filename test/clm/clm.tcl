@@ -34,7 +34,7 @@ pfset ComputationalGrid.DZ	                 0.5
 
 pfset ComputationalGrid.NX                      5
 pfset ComputationalGrid.NY                      5
-pfset ComputationalGrid.NZ                     390 
+pfset ComputationalGrid.NZ                     10 
 
 #-----------------------------------------------------------------------------
 # The Names of the GeomInputs
@@ -57,7 +57,7 @@ pfset Geom.domain.Lower.Z                          0.0
 
 pfset Geom.domain.Upper.X                        5000.
 pfset Geom.domain.Upper.Y                        5000.
-pfset Geom.domain.Upper.Z                       195. 
+pfset Geom.domain.Upper.Z                       5. 
 
 pfset Geom.domain.Patches  "x-lower x-upper y-lower y-upper z-lower z-upper"
 
@@ -86,7 +86,7 @@ pfset Geom.domain.Perm.TensorValZ  1.0
 
 pfset SpecificStorage.Type            Constant
 pfset SpecificStorage.GeomNames       "domain"
-pfset Geom.domain.SpecificStorage.Value 1.0e-4
+pfset Geom.domain.SpecificStorage.Value 1.0e-6
 
 #-----------------------------------------------------------------------------
 # Phases
@@ -164,7 +164,7 @@ pfset Phase.Saturation.GeomNames         "domain"
  
 pfset Geom.domain.Saturation.Alpha        3.5
 pfset Geom.domain.Saturation.N            2.
-pfset Geom.domain.Saturation.SRes         0.2
+pfset Geom.domain.Saturation.SRes         0.01
 pfset Geom.domain.Saturation.SSat         1.0
 
 #-----------------------------------------------------------------------------
@@ -257,7 +257,7 @@ pfset Solver                                             Richards
 pfset Solver.MaxIter                                     3500
  
 pfset Solver.Nonlinear.MaxIter                           300
-pfset Solver.Nonlinear.ResidualTol                       1e-4
+pfset Solver.Nonlinear.ResidualTol                       1e-6
 pfset Solver.Nonlinear.EtaChoice                         Walker1
 pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaValue                          0.001

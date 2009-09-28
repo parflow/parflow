@@ -228,13 +228,17 @@ subroutine clm_thermal (clm)
      if (clm%pf_press(1)>= 0.0d0)  psit = 0.0d0
      if (clm%pf_press(1) < 0.0d0)   psit = clm%pf_press(1)
      !     enddo  
-     temp_alpha = ((-150000.0d0 - clm%pf_press(1))/(-150000.0d0) )
-!    temp_alpha =   (clm%pf_vol_liq(1) / clm%watsat(1) ) - 0.25d0
+!     temp_alpha = ((-150000.0d0 - clm%pf_press(1))/(-150000.0d0) )
+!@RMM
+! added beta-type formulation depending on soil moisture, the lower value is hard-wired
+! to 0.1, this should either be set to the residual saturation for that layer
+! or made a user input via PF
+    temp_alpha =   (clm%pf_vol_liq(1) - .1d0) /(clm%watsat(1) - 0.1d0)
            if (temp_alpha < 0.0) temp_alpha = 0.00d0
            if (temp_alpha > 1.) temp_alpha = 1.d0
 
 !temp_alpha = 1.d0
-hr   = temp_alpha*dexp(psit/roverg/tg)
+hr   = dexp(psit/roverg/tg)
 !if (clm%pf_press(1) < -150000.d0) hr = 0.0d0
 !print*, hr, temp_alpha, psit, roverg, tg, clm%pf_vol_liq(1),clm%watsat(1), clm%pf_press(1)
 
@@ -375,7 +379,11 @@ hr   = temp_alpha*dexp(psit/roverg/tg)
      raih   = (1-clm%frac_veg_nosno)*clm%forc_rho*cpair/rah
      raiw   = (1-clm%frac_veg_nosno)*clm%forc_rho/raw          
      cgrnds = raih
-     cgrndl = raiw*dqgdT
+!@RMM
+! apply beta (confusingly called temp_alpha) 
+! to derivative of soil temp
+!
+     cgrndl = temp_alpha*raiw*dqgdT
      cgrnd  = cgrnds + htvp*cgrndl
      clm%sfact  = raiw*sfacx
      if (dqh >= 0.) clm%sfact = 0.
@@ -386,8 +394,12 @@ hr   = temp_alpha*dexp(psit/roverg/tg)
 
      clm%taux   = -(1-clm%frac_veg_nosno)*clm%forc_rho*clm%forc_u/ram        
      clm%tauy   = -(1-clm%frac_veg_nosno)*clm%forc_rho*clm%forc_v/ram
-     clm%eflx_sh_grnd  = -raih*dth
-     clm%qflx_evap_soi  = -raiw*dqh
+!@RMM
+! apply beta (confusingly called temp_alpha) 
+! to evaporation
+!
+     clm%eflx_sh_grnd  = raih*dth
+     clm%qflx_evap_soi  = temp_alpha*raiw*dqh
 !write(88,*) clm%qflx_evap_soi, raiw, dqh
      clm%eflx_sh_tot  = clm%eflx_sh_grnd
      clm%qflx_evap_tot  = clm%qflx_evap_soi
@@ -416,7 +428,13 @@ hr   = temp_alpha*dexp(psit/roverg/tg)
      temp_rz = 0.
      do i = 1, nlevsoi
         if(clm%h2osoi_liq(i) > 0.0) then
-           temp = ((-150000.0d0 - clm%pf_press(i))/(-150000.0d0) )
+!           temp = ((-150000.0d0 - clm%pf_press(i))/(-150000.0d0) )
+!@RMM
+! added beta-type formulation depending on soil moisture, the lower value is hard-wired
+! to 0.1, this should either be set to the residual saturation for that layer
+! or made a user input via PF
+! a root zone average is taken here
+		   temp = (clm%pf_vol_liq(i) - .1d0) /(clm%watsat(i) - 0.1d0)
            if (temp < 0.) temp = 0.
            if (temp > 1.) temp = 1.
            temp_rz = temp_rz + temp ** clm%vw
@@ -424,8 +442,12 @@ hr   = temp_alpha*dexp(psit/roverg/tg)
         else
            temp2 = 0.01d0
         endif
+!@RMM
+! added a transpiration cutoff depending on soil moisture, the value is hard-wired
+! to 0.1, this should either be set to the residual saturation for that layer
+! or made a user input via PF
            temp_rz = temp_rz / float(nlevsoi)
-        if (clm%pf_press(1)<-150000.0d0) temp_rz = 0.0d0
+        if ((clm%pf_press(1)<-150000.0d0).or.(clm%watsat(1)<0.1d0)) temp_rz = 0.0d0
            clm%btran = clm%btran + clm%rootfr(i)*temp_rz
         enddo
 

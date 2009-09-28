@@ -38,7 +38,7 @@ subroutine drv_tick (drv)
   drv%pda=drv%da  !used to determine end-of-day restart writes
 
   drv%ss=drv%ss+drv%ts
-  write(*,*) "Seconds", drv%ss
+!  write(*,*) "Seconds", drv%ss
 
   do while(drv%ss.gt.59)
      drv%ss=drv%ss-60
@@ -54,7 +54,7 @@ subroutine drv_tick (drv)
      drv%hr=drv%hr-24
      drv%da=drv%da+1
   enddo
-  write(*,*)"hours:",drv%hr
+!  write(*,*)"hours:",drv%hr
 
   if ((mod(drv%yr,4).eq.0.AND.mod(drv%yr,100).ne.0)  & !correct for leap year
        .OR.(mod(drv%yr,400).eq.0))then                  !correct for Y2K
@@ -77,8 +77,8 @@ subroutine drv_tick (drv)
 
   call drv_date2time(drv%time,drv%doy,drv%day,drv%gmt, &
                      drv%yr,drv%mo,drv%da,drv%hr,drv%mn,drv%ss)
-  write(*,24)'CLM-DRV Time: ',drv%mo,'/',drv%da,'/', &
-       drv%yr,drv%hr,':',drv%mn,':',drv%ss
+!  write(*,24)'CLM-DRV Time: ',drv%mo,'/',drv%da,'/', &
+!       drv%yr,drv%hr,':',drv%mn,':',drv%ss
 
 24 format(a15,i2,a1,i2,a1,i4,1x,i2,a1,i2,a1,i2)
 
