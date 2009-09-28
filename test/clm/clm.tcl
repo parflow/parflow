@@ -257,12 +257,12 @@ pfset Solver                                             Richards
 pfset Solver.MaxIter                                     3500
  
 pfset Solver.Nonlinear.MaxIter                           300
-pfset Solver.Nonlinear.ResidualTol                       1e-6
+pfset Solver.Nonlinear.ResidualTol                       1e-9
 pfset Solver.Nonlinear.EtaChoice                         Walker1
-pfset Solver.Nonlinear.EtaChoice                         EtaConstant
+#pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaValue                          0.001
 pfset Solver.Nonlinear.UseJacobian                       False
-pfset Solver.Nonlinear.DerivativeEpsilon                 1e-17
+pfset Solver.Nonlinear.DerivativeEpsilon                 1e-15
 pfset Solver.Nonlinear.StepTol                           1e-10
 pfset Solver.Nonlinear.Globalization                     LineSearch
 pfset Solver.Linear.KrylovDimension                      40
