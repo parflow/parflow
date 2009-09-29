@@ -2025,7 +2025,7 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
 
     /* RMM added beta input function for clm */
     beta_switch_na = NA_NewNameArray("none Linear Cosine");
-    sprintf(key, "%s.LSM.EvapBeta", name);
+    sprintf(key, "%s.CLM.EvapBeta", name);
     switch_name = GetStringDefault(key, "Linear");
     switch_value = NA_NameToIndex(beta_switch_na, switch_name);
     switch (switch_value)
@@ -2053,12 +2053,12 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
     }
     NA_FreeNameArray(vegtype_switch_na);
 
-    sprintf(key, "%s.LSM.ResSat", name);
+    sprintf(key, "%s.CLM.ResSat", name);
     public_xtra -> clm_res_sat = GetDoubleDefault(key, 0.1);
     
     /* RMM added veg sm stress input function for clm */
     vegtype_switch_na = NA_NewNameArray("none Pressure Saturation");
-    sprintf(key, "%s.LSM.VegWaterStress", name);
+    sprintf(key, "%s.CLM.VegWaterStress", name);
     switch_name = GetStringDefault(key, "Saturation");
     switch_value = NA_NameToIndex(vegtype_switch_na, switch_name);
     switch (switch_value)
@@ -2086,11 +2086,11 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
     }
     NA_FreeNameArray(vegtype_switch_na);
     
-    sprintf(key, "%s.LSM.WiltingPoint", name);
-    public_xtra -> clm_veg_wilting = GetDoubleDefault(key, -150.0);
+    sprintf(key, "%s.CLM.WiltingPoint", name);
+    public_xtra -> clm_veg_wilting = GetDoubleDefault(key, 0.1);
 
-    sprintf(key, "%s.LSM.FieldCapacity", name);
-    public_xtra -> clm_veg_fieldc = GetDoubleDefault(key, 0.0);
+    sprintf(key, "%s.CLM.FieldCapacity", name);
+    public_xtra -> clm_veg_fieldc = GetDoubleDefault(key, 1.0);
     
    /* IMF Write CLM as Silo (default=False) */
    sprintf(key, "%s.WriteSiloCLM", name);
