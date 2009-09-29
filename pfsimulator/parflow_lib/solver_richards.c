@@ -56,6 +56,12 @@ typedef struct
    int                clm_bin_out_dir;    /* boolean 0-1, integer, for sep dirs for each 
 					     clm binary output */
    int                clm_dump_files;     /* boolean 0-1, integer, for write CLM output from PF */
+   int                clm_beta_function;     /* CLM evap function for var sat 0=none, 1=linear, 2=cos */
+   double             clm_res_sat;     /* CLM residual saturation in soil sat units [-] */
+
+   int                clm_veg_function;     /* CLM veg function for water stress 0=none, 1=press, 2=sat */
+   double             clm_veg_wilting;     /* CLM veg function wilting point in meters or soil moisture */
+   double             clm_veg_fieldc;     /* CLM veg function field capacity in meters or soil moisture */
    char              *clm_file_dir;       /* directory location for CLM files */
 	
    Problem           *problem;
@@ -727,6 +733,7 @@ void AdvanceRichards(PFModule *this_module,
 	    s_sub  = VectorSubvector(instance_xtra -> saturation, is);
 	    et_sub = VectorSubvector(evap_trans, is);
 	    m_sub = VectorSubvector(instance_xtra -> mask, is);
+//         sres_sub = VectorSubvector(instance_xtra ->  , is);
 	    po_sub = VectorSubvector(porosity, is);
 
             /*IMF: CLM surface fluxes, SWE, t_grnd*/
@@ -763,6 +770,7 @@ void AdvanceRichards(PFModule *this_module,
 	    pp = SubvectorData(p_sub);
 	    et = SubvectorData(et_sub);
 	    ms = SubvectorData(m_sub);
+//         res_sat = SubvectorData(sres_sub);
 	    po_dat = SubvectorData(po_sub);
 
             /*IMF: CLM surface fluxes, SWE, t_grnd*/
@@ -800,7 +808,12 @@ void AdvanceRichards(PFModule *this_module,
                                public_xtra -> clm_file_dir, 
                                clm_file_dir_length, 
                                public_xtra -> clm_bin_out_dir, 
-                               public_xtra -> write_CLM_binary);
+                               public_xtra -> write_CLM_binary,
+                               public_xtra -> clm_beta_function,
+                               public_xtra -> clm_veg_function,
+                               public_xtra -> clm_veg_wilting,
+                               public_xtra -> clm_veg_fieldc,
+                               public_xtra -> clm_res_sat);
 
 
                   /* IMF Write CLM? */
@@ -1698,6 +1711,8 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    NameArray      switch_na;
    NameArray      nonlin_switch_na;
    NameArray      lsm_switch_na;
+    NameArray      beta_switch_na;
+    NameArray      vegtype_switch_na;
    switch_na = NA_NewNameArray("False True");
 
    public_xtra = ctalloc(PublicXtra, 1);
@@ -2008,6 +2023,75 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    }
 	public_xtra -> write_silo_specific_storage = switch_value;
 
+    /* RMM added beta input function for clm */
+    beta_switch_na = NA_NewNameArray("none Linear Cosine");
+    sprintf(key, "%s.LSM.EvapBeta", name);
+    switch_name = GetStringDefault(key, "Linear");
+    switch_value = NA_NameToIndex(beta_switch_na, switch_name);
+    switch (switch_value)
+    {
+        case 0:
+        {
+            public_xtra -> clm_beta_function = 0;
+            break;
+        }
+        case 1:
+        {
+            public_xtra -> clm_beta_function = 1;
+            break;
+        }
+        case 2:
+        {
+            public_xtra -> clm_beta_function = 2;
+            break;
+        }
+        default:
+        {
+            InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
+                       key);
+        }
+    }
+    NA_FreeNameArray(vegtype_switch_na);
+
+    sprintf(key, "%s.LSM.ResSat", name);
+    public_xtra -> clm_res_sat = GetDoubleDefault(key, 0.1);
+    
+    /* RMM added veg sm stress input function for clm */
+    vegtype_switch_na = NA_NewNameArray("none Pressure Saturation");
+    sprintf(key, "%s.LSM.VegWaterStress", name);
+    switch_name = GetStringDefault(key, "Saturation");
+    switch_value = NA_NameToIndex(vegtype_switch_na, switch_name);
+    switch (switch_value)
+    {
+        case 0:
+        {
+            public_xtra -> clm_veg_function = 0;
+            break;
+        }
+        case 1:
+        {
+            public_xtra -> clm_veg_function = 1;
+            break;
+        }
+        case 2:
+        {
+            public_xtra -> clm_veg_function = 2;
+            break;
+        }
+        default:
+        {
+            InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
+                       key);
+        }
+    }
+    NA_FreeNameArray(vegtype_switch_na);
+    
+    sprintf(key, "%s.LSM.WiltingPoint", name);
+    public_xtra -> clm_veg_wilting = GetDoubleDefault(key, -150.0);
+
+    sprintf(key, "%s.LSM.FieldCapacity", name);
+    public_xtra -> clm_veg_fieldc = GetDoubleDefault(key, 0.0);
+    
    /* IMF Write CLM as Silo (default=False) */
    sprintf(key, "%s.WriteSiloCLM", name);
    switch_name = GetStringDefault(key, "False");

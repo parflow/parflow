@@ -96,16 +96,23 @@ void SADVECT(double *s, double *sn,
                      eflx_lh_tot_data, eflx_lwrad_out_data, eflx_sh_tot_data, eflx_soil_grnd_data, \
                      qflx_evap_tot_data, qflx_evap_grnd_data, qflx_evap_soi_data, qflx_evap_veg_data, qflx_tran_veg_data, \
                      qflx_infl_data, swe_out_data, t_grnd_data, \
-                     clm_dump_interval, clm_1d_out, clm_file_dir , clm_file_dir_length, clm_bin_out_dir, write_CLM_binary) \
+                     clm_dump_interval, clm_1d_out, clm_file_dir , clm_file_dir_length, clm_bin_out_dir, write_CLM_binary,  \
+                      clm_beta_function, clm_veg_function, clm_veg_wilting,clm_veg_fieldc, clm_res_sat) \
         CLM_LSM(pressure_data, saturation_data,evap_trans_data,mask,porosity_data, \
                      &dt, &t, &dx, &dy, &dz, &ix, &iy, &nx, &ny, &nz, &nx_f, &ny_f, &nz_f, &ip, &p, &q, &r, &rank, \
                      eflx_lh_tot_data, eflx_lwrad_out_data, eflx_sh_tot_data, eflx_soil_grnd_data, \
                      qflx_evap_tot_data, qflx_evap_grnd_data, qflx_evap_soi_data, qflx_evap_veg_data, qflx_tran_veg_data, \
                      qflx_infl_data, swe_out_data, t_grnd_data, \
-                     &clm_dump_interval, &clm_1d_out, clm_file_dir, &clm_file_dir_length, &clm_bin_out_dir, &write_CLM_binary);
+                     &clm_dump_interval, &clm_1d_out, clm_file_dir, &clm_file_dir_length, &clm_bin_out_dir, &write_CLM_binary, \
+                     &clm_beta_function, &clm_veg_function, &clm_veg_wilting, &clm_veg_fieldc, &clm_res_sat );
 
 void CLM_LSM( double *pressure_data, double *saturation_data, double *evap_trans_data, double *mask, double *porosity_data, 
               double *dt, double *t, double *dx, double *dy, double *dz, int *ix, int *iy, int *nx, int *ny, int *nz, 
-              int *nx_f, int *ny_f, int *nz_f, int *ip, int *p, int *q, int *r, int *rank, double *eflx_lh_tot_data, double *eflx_lwrad_out_data, double *eflx_sh_tot_data, double *eflx_soil_grnd_data, double *qflx_eval_tot_data, double *qflx_evap_grnd_data, double *qflx_evap_soi_data, double *qflx_evap_veg_data, double *qflx_tran_veg_data, double *qflx_infl_data, double *swe_out_data, double *t_grnd_data, int *clm_dump_interval, int *clm_1d_out, char *clm_file_dir, int *clm_file_dir_length, int *clm_bin_out_dir, int *write_CLM_binary);
+              int *nx_f, int *ny_f, int *nz_f, int *ip, int *p, int *q, int *r, int *rank, double *eflx_lh_tot_data, 
+             double *eflx_lwrad_out_data, double *eflx_sh_tot_data, double *eflx_soil_grnd_data, double *qflx_eval_tot_data, 
+             double *qflx_evap_grnd_data, double *qflx_evap_soi_data, double *qflx_evap_veg_data, double *qflx_tran_veg_data, 
+             double *qflx_infl_data, double *swe_out_data, double *t_grnd_data, int *clm_dump_interval, int *clm_1d_out, 
+             char *clm_file_dir, int *clm_file_dir_length, int *clm_bin_out_dir, int *write_CLM_binary, int *clm_beta_function, 
+             int *clm_veg_function, double *clm_veg_wilting, double *clm_veg_fieldc, double *clm_res_sat);
 
 

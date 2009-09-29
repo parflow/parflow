@@ -1,6 +1,11 @@
 !#include <misc.h>
 
-subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,npp,npq,npr,rank,eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,qflx_tot_pf,qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf,clm_dump_interval,clm_1d_out, clm_output_dir, clm_output_dir_length,clm_bin_output_dir,write_CLM_binary)
+subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,              &
+pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,npp,npq,npr,rank,eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,    &
+eflx_grnd_pf,qflx_tot_pf,qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,       &
+swe_pf,t_g_pf,clm_dump_interval,clm_1d_out, clm_output_dir, clm_output_dir_length,            &
+clm_bin_output_dir,write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,      &
+field_capacitypf, res_satpf)
 
   !=========================================================================
   !
@@ -49,6 +54,7 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
   real(r8) :: evap_trans((nx+2)*(ny+2)*(nz+2))   ! ET flux from CLM to ParFlow on grid w/ ghost nodes for current proc
   real(r8) :: topo((nx+2)*(ny+2)*(nz+2))         ! mask from ParFlow 0 for inactive, 1 for active, on grid w/ ghost nodes for current proc
   real(r8) :: porosity((nx+2)*(ny+2)*(nz+2))     ! porosity from ParFlow, on grid w/ ghost nodes for current proc
+!  real(r8) :: res_sat((nx+2)*(ny+2)*(nz+2))      ! residual saturation from ParFlow, on grid w/ ghost nodes for current proc
   real(r8) :: dt                                 ! parflow dt in parflow time units not CLM time units
   real(r8) :: time                               ! parflow time in parflow units
   real(r8) :: pdx,pdy,pdz                        ! parflow DX, DY and DZ in parflow units
@@ -79,7 +85,11 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
   character (LEN=clm_output_dir_length) :: clm_output_dir                ! output dir location
   integer  :: clm_bin_output_dir
   integer  :: write_CLM_binary                   ! whether to write CLM output as binary 
-
+  integer  :: beta_typepf                          ! beta formulation for bare soil Evap 0=none, 1=linear, 2=cos
+  integer  :: veg_water_stress_typepf              ! veg transpiration water stress formulation 0=none, 1=press, 2=sm
+  real(r8) :: wilting_pointpf                      ! wilting point in m if press-type, in saturation if soil moisture type
+  real(r8) :: field_capacitypf                     ! field capacity for water stress same as units above
+  real(r8) :: res_satpf                            ! residual saturation from ParFlow
   integer  :: j_incr,k_incr                      ! increment for j and k to convert 1D vector to 3D i,j,k array
   integer  :: i,j,k
   integer, allocatable  :: counter(:,:) 
@@ -259,12 +269,21 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
 
      enddo
 
+!print*, beta_typepf,veg_water_stress_typepf,wilting_pointpf,            &
+!        field_capacitypf, res_satpf
 
-     !set up watsat
+     !set up watsat and residual sat
      j_incr = nx_f 
      k_incr = (nx_f * ny_f)
      do t=1,drv%nch  ! loop over clm tile space
         !convert t to i,j index
+             ! set up veg and beta types along w/ assoc params
+     clm(t)%beta_type = beta_typepf
+     clm(t)%vegwaterstresstype = veg_water_stress_typepf
+     clm(t)%wilting_point = wilting_pointpf
+     clm(t)%field_capacity = field_capacitypf
+     clm(t)%res_sat = res_satpf
+!     print*, t, clm(t)%beta_type, clm(t)%vegwaterstresstype, clm(t)%wilting_point, clm(t)%field_capacity, clm(t)%res_sat
         i=tile(t)%col
         j=tile(t)%row
         ! loop from 1, number of soil layers (in CLM)
@@ -273,6 +292,7 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,
            l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
            ! 	l = 1+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k)
            clm(t)%watsat(k)=porosity(l)
+!           if (k==1) clm(t)%res_sat = res_sat(l)
            clm(t)%tksatu(k)=clm(t)%tkmg(k)*0.57**clm(t)%watsat(k)
            ! print*, i,j,k,t,l,clm(t)%topo_mask(1),porosity(l),clm(t)%watsat(k)
         end do !k

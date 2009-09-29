@@ -102,6 +102,11 @@ subroutine clm_typini (ntiles, clm)
      clm(k)%tksatu(:) = NaN   ! thermal conductivity, saturated soil [W/m-K]  
      clm(k)%rootfr(:) = NaN   ! fraction of roots in each soil layer
 !	 clm(k)%xksat     = NaN   !@ sat hydraulic cond
+     clm(k)%wilting_point = NaN  
+     clm(k)%field_capacity = NaN  
+     clm(k)%res_sat = NaN  
+     clm(k)%vegwaterstresstype = NaN  
+     clm(k)%beta_type = Nan  
 
 ! Forcing
 

@@ -23,9 +23,9 @@ subroutine open_files (clm,drv,rank,ix,iy,ifstep,clm_output_dir,clm_output_dir_l
   write(RI,*) rank
   write(cistep,'(i5.5)') ifstep
 
-  print*, "open files" 
-  print*, clm_output_dir
-  print*, clm_bin_out_dir
+!  print*, "open files" 
+!  print*, clm_output_dir
+!  print*, clm_bin_out_dir
   ! open (166,file=clm_output_dir//'clm_elog.'//cistep//'.txt.'//trim(adjustl(RI)))
 
   ! open (199,file=clm_output_dir//'balance.'//cistep//'.txt.'//trim(adjustl(RI)))

@@ -225,8 +225,13 @@ module clmtype
      real(r8) :: qflx_qirr      ! qflx_surf directed to irrig (mm H2O/s)
      real(r8) :: qflx_qrgwl     ! qflx_surf at glaciers, wetlands, lakes
      real(r8) :: btran          ! transpiration wetness factor (0 to 1) 
-     real(r8) :: smpmax         ! wilting point potential in mm (new)
-
+     real(r8) :: smpmax         ! !@RMM not used, replaced below: wilting point potential in mm (new)
+     real(r8) :: wilting_point  ! wilting point from PF in m or [-] depending @RMM
+     real(r8) :: field_capacity ! field capacity from PF in m or [-] depending @RMM
+     integer  :: vegwaterstresstype ! water stress formution type from PF @RMM
+     integer  :: beta_type      ! evap/beta formution type from PF @RMM
+     real(r8) :: res_sat        ! residual saturation from PF [-] for use in beta @RMM
+     
      real(r8) :: eflx_snomelt   ! added to be consistent with lsm hybrid code
      real(r8) :: eflx_impsoil   ! implicit evaporation for soil temperature equation (W/m**2)
      real(r8) :: eflx_lh_vege   ! veg evaporation heat flux (W/m**2) [+ to atm]
@@ -297,7 +302,7 @@ module clmtype
      integer  :: planar_mask   !planar info of which cells are "inactive" (0) due to topography
 
 
-!@ Inermediate variables used in ParFlow - CLM couple, pass from parflow to CLM or passed back from CLM to ParFlow
+!@ Intermediate variables used in ParFlow - CLM couple, pass from parflow to CLM or passed back from CLM to ParFlow
 
      real(r8) :: saturation_data(1:nlevsoi)  ! saturation (-) over top-10 layers in parflow mapped to CLM grid (1-nlevsoi)
      real(r8) :: pressure_data(1:nlevsoi)    ! pressure-head (m) over top-10 layers in parflow mapped to CLM grid (1-nlevsoi)
