@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine drv_getforce (drv,tile,clm)
+subroutine drv_getforce (drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf)
 
 !=========================================================================
 !
@@ -45,64 +45,97 @@ subroutine drv_getforce (drv,tile,clm)
 
   real(r8) solar     ! incident solar radiation [w/m2]
   real(r8) prcp      ! precipitation [mm/s]
-  integer  t         ! Tile looping variable
+  integer t,i,j,k,l  ! Looping indices
+  integer j_incr     ! Increment for j to convert 1D vector to 3D array
+  integer nx,ny      ! Array sizes
+  real(r8) :: sw_pf((nx+2)*(ny+2)*3)             ! SW rad, passed from PF
+  real(r8) :: lw_pf((nx+2)*(ny+2)*3)             ! LW rad, passed from PF
+  real(r8) :: prcp_pf((nx+2)*(ny+2)*3)           ! Precip, passed from PF
+  real(r8) :: tas_pf((nx+2)*(ny+2)*3)            ! Air temp, passed from PF
+  real(r8) :: u_pf((nx+2)*(ny+2)*3)              ! u-wind, passed from PF
+  real(r8) :: v_pf((nx+2)*(ny+2)*3)              ! v-wind, passed from PF
+  real(r8) :: patm_pf((nx+2)*(ny+2)*3)           ! air pressure, passed from PF
+  real(r8) :: qatm_pf((nx+2)*(ny+2)*3)           ! air specific humidity, passed from PF
 
 !=== End Variable List ===================================================
 !=== Increment Time Step Counter
 
-  clm%istep=clm%istep+1 
+! IMF: istep now incremented in PF, passed to CLM
+! clm%istep=clm%istep+1 
 
 ! Valdai - 1D Met data
 
-  read (11,*) solar, clm(1)%forc_lwrad, prcp, clm(1)%forc_t, clm(1)%forc_u, &
-              clm(1)%forc_v, clm(1)%forc_pbot, clm(1)%forc_q
+! IMF: removed read 1D forcing -- passed from solver_richards.c -> clm.F90
+!  read (11,*) solar, clm(1)%forc_lwrad, prcp, clm(1)%forc_t, clm(1)%forc_u, &
+!              clm(1)%forc_v, clm(1)%forc_pbot, clm(1)%forc_q
 !  print*, solar, clm(1)%forc_lwrad, prcp, clm(1)%forc_t, clm(1)%forc_u, &
 !              clm(1)%forc_v, clm(1)%forc_pbot, clm(1)%forc_q
-  clm(1)%forc_rho   = clm(1)%forc_pbot/(clm(1)%forc_t*2.8704e2)
 
-  clm(1)%forc_solad(1) = solar*35./100.    !forc_sols
-  clm(1)%forc_solad(2) = solar*35./100.    !forc_soll
-  clm(1)%forc_solai(1) = solar*15./100.    !forc_solsd
-  clm(1)%forc_solai(2) = solar*15./100.    !forc_solad
+  ! IMF: modified for 2D
+  ! Loop over tile space (convert from pf-to-clm)
+  j_incr = (nx+2)
+  do t = 1,drv%nch
 
-! Next set upper limit of air temperature for snowfall at 275.65K.
-! This cut-off was selected based on Fig. 1, Plate 3-1, of Snow
-! Hydrology (1956).
+     i = tile(t)%col
+     j = tile(t)%row
+     l = (1+i) + (nx+2)*(j) + (nx+2)*(ny+2)
+     solar                  = sw_pf(l)
+     clm(t)%forc_lwrad      = lw_pf(l)
+     prcp                   = prcp_pf(l)
+     clm(t)%forc_t          = tas_pf(l)
+     clm(t)%forc_u          = u_pf(l)
+     clm(t)%forc_v          = v_pf(l)
+     clm(t)%forc_pbot       = patm_pf(l)
+     clm(t)%forc_q          = qatm_pf(l)
 
-  if (prcp > 0.) then
-     if(clm(1)%forc_t > (tfrz + tcrit))then
-        clm(1)%itypprc = 1
-        clm(1)%forc_rain = prcp
-        clm(1)%forc_snow = 0.
+     !Treat air density
+     clm(t)%forc_rho        = clm(t)%forc_pbot/(clm(t)%forc_t*2.8704e2)
+
+     !Treat solar (SW)
+     clm(t)%forc_solad(1)   = solar*35./100.   !forc_sols
+     clm(t)%forc_solad(2)   = solar*35./100.   !forc_soll
+     clm(t)%forc_solai(1)   = solar*15./100.   !forc_solsd
+     clm(t)%forc_solai(2)   = solar*15./100.   !forc_solad
+     
+     !Treat precip
+     !(Set upper limit of air temperature for snowfall at 275.65K.
+     ! This cut-off was selected based on Fig. 1, Plate 3-1, of Snow
+     ! Hydrology (1956)).
+     if (prcp > 0.) then
+        if(clm(t)%forc_t > (tfrz + tcrit))then
+           clm(t)%itypprc   = 1
+           clm(t)%forc_rain = prcp
+           clm(t)%forc_snow = 0.
+        else
+           clm(t)%itypprc   = 2
+           clm(t)%forc_rain = 0.
+           clm(t)%forc_snow = prcp
+        endif
      else
-        clm(1)%itypprc = 2
-        clm(1)%forc_rain = 0.
-        clm(1)%forc_snow = prcp
+        clm(t)%itypprc      = 0
+        clm(t)%forc_rain    = 0.
+        clm(t)%forc_snow    = 0
      endif
-  else
-     clm(1)%itypprc = 0
-     clm(1)%forc_rain = 0.
-     clm(1)%forc_snow = 0
-  endif
+  enddo
 
+! IMF: Obselete 
 !=== Extend forcing to entire CLM tile space uniformly
 !=== This should be modified for spatially variable forcing
-
-  do t=2,drv%nch
-     clm(t)%itypprc       = clm(1)%itypprc
-     clm(t)%forc_rain     = clm(1)%forc_rain
-     clm(t)%forc_snow     = clm(1)%forc_snow
-     clm(t)%forc_lwrad    = clm(1)%forc_lwrad
-     clm(t)%forc_t        = clm(1)%forc_t
-     clm(t)%forc_u        = clm(1)%forc_u
-     clm(t)%forc_v        = clm(1)%forc_v
-     clm(t)%forc_pbot     = clm(1)%forc_pbot
-     clm(t)%forc_q        = clm(1)%forc_q
-     clm(t)%forc_rho      = clm(1)%forc_rho
-     clm(t)%forc_solad(1) = clm(1)%forc_solad(1) 
-     clm(t)%forc_solad(2) = clm(1)%forc_solad(2) 
-     clm(t)%forc_solai(1) = clm(1)%forc_solai(1) 
-     clm(t)%forc_solai(2) = clm(1)%forc_solai(2) 
-  enddo
+!  do t=2,drv%nch
+!     clm(t)%itypprc       = clm(1)%itypprc
+!     clm(t)%forc_rain     = clm(1)%forc_rain
+!     clm(t)%forc_snow     = clm(1)%forc_snow
+!     clm(t)%forc_lwrad    = clm(1)%forc_lwrad
+!     clm(t)%forc_t        = clm(1)%forc_t
+!     clm(t)%forc_u        = clm(1)%forc_u
+!     clm(t)%forc_v        = clm(1)%forc_v
+!     clm(t)%forc_pbot     = clm(1)%forc_pbot
+!     clm(t)%forc_q        = clm(1)%forc_q
+!     clm(t)%forc_rho      = clm(1)%forc_rho
+!     clm(t)%forc_solad(1) = clm(1)%forc_solad(1) 
+!     clm(t)%forc_solad(2) = clm(1)%forc_solad(2) 
+!     clm(t)%forc_solai(1) = clm(1)%forc_solai(1) 
+!     clm(t)%forc_solai(2) = clm(1)%forc_solai(2) 
+!  enddo
 
 end subroutine drv_getforce

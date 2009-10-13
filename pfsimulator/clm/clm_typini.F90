@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine clm_typini (ntiles, clm)
+subroutine clm_typini (ntiles, clm, istep_pf)
 
 !=========================================================================
 !
@@ -31,6 +31,7 @@ subroutine clm_typini (ntiles, clm)
 
   integer, intent(in)         :: ntiles     !number of tiles
   type (clm1d), intent(inout) :: clm(ntiles)
+  integer, intent(in)         :: istep_pf 
 
 !=== Local Variables =====================================================
 
@@ -46,9 +47,9 @@ subroutine clm_typini (ntiles, clm)
      clm(k)%latdeg = NaN       ! latitude (degrees)
      clm(k)%londeg = NaN       ! longitude (degrees)
                    
-     clm(k)%dtime = NaN       ! model time step [second]
+     clm(k)%dtime = NaN        ! model time step [second]
      clm(k)%dtime_old = NaN 
-     clm(k)%istep = 0         ! number of time step
+     clm(k)%istep = istep_pf   ! number of time step
 
 ! Leaf constants (read into 2-D grid module variables)
 

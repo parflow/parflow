@@ -37,7 +37,7 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,
      j=tile(t)%row
      do k = 1, nlevsoi
         l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))  ! updated indexing @RMM 4-12-09
-	!l = ip+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k-1)
+        !l = ip+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k-1)
         if (k == 1) then
            clm(t)%pf_flux(k)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)) + clm(t)%qflx_infl
         else  
@@ -45,12 +45,12 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,
         endif
         ! copy back to pf, assumes timing for pf is hours and timing for clm is seconds
         evap_trans(l) = clm(t)%pf_flux(k)*3.6d0/drv%dz
-!		evap_trans(l) = 0.0d0
-!		if (k==1) evap_trans(l) = 0.001d0/drv%dz
+        ! 	  evap_trans(l) = 0.0d0
+        !	  if (k==1) evap_trans(l) = 0.001d0/drv%dz
         !	  print*, k, l, clm(t)%pf_flux(k), evap_trans(l)
         !	  print*, l,i,j,k, evap_trans(l)
         !	  print*, k,evap_trans(l),clm(t)%pf_flux(k),clm(t)%qflx_infl,clm(t)%rootfr(k),clm(t)%qflx_tran_veg
-	!	print*, j_incr, k_incr
+        !         print*, j_incr, k_incr
      enddo
   enddo
 

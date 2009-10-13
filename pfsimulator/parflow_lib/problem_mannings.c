@@ -42,16 +42,14 @@ typedef struct
 
 typedef struct
 {
-	Grid   *grid;
-	double *temp_data;
+   Grid   *grid;
+   double *temp_data;
 } InstanceXtra;
 
 typedef struct
 {
    NameArray regions;
    int      num_regions;
-
-
    int     *region_indices;
    double  *values;
 
@@ -132,8 +130,9 @@ Vector      *dummy;
 
       for (ir = 0; ir < num_regions; ir++)
       {
-     gr_solid = ProblemDataGrSolid(problem_data, region_indices[ir]);
-     value    = values[ir];
+
+         gr_solid = ProblemDataGrSolid(problem_data, region_indices[ir]);
+         value    = values[ir];
 
 	 ForSubgridI(is, subgrids)
 	 {

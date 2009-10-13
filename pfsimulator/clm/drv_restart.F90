@@ -366,8 +366,17 @@ subroutine drv_restart (rw, drv, tile, clm, rank)
 
            else  !The number of tiles is a match
 
-              clm%istep=istep
-              print *,"CLM_ISTEP FROM RESTART",istep
+! IMF...istep now passed from PF (istep_pf)
+!       test if istep_pf == istep from restart file
+!       (print results, don't break)
+!             clm%istep=istep
+!             print *,"CLM_ISTEP FROM RESTART",istep
+!
+!             if ( clm(1)%istep == istep ) then
+!                print *, "ISTEP from ParFlow == ISTEP from restart" 
+!             else
+!                print *, "*****ERROR: ISTEP from ParFlow NOT EQUAL ISTEP from restart*****"
+!             endif
 
               do t = 1,drv%nch
                  clm(t)%t_grnd = t_grnd(t)

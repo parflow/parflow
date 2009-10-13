@@ -247,7 +247,7 @@ pfset PhaseSources.Geom.domain.Value        0.0
 # Exact solution specification for error calculations
 #-----------------------------------------------------------------------------
  
-pfset KnownSolution                                    NoKnownSolution
+pfset KnownSolution                                      NoKnownSolution
 
 #-----------------------------------------------------------------------------
 # Set solver parameters
@@ -274,8 +274,8 @@ pfset Solver.Drop                                        1E-20
 pfset Solver.AbsTol                                      1E-11
  
 pfset Solver.LSM                                         CLM
+pfset Solver.WriteSiloCLM                                True
 
-#---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
  

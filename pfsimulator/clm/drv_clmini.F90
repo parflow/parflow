@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine drv_clmini (drv, grid, tile, clm)
+subroutine drv_clmini (drv, grid, tile, clm, istep_pf)
 
 !=========================================================================
 !
@@ -65,6 +65,7 @@ subroutine drv_clmini (drv, grid, tile, clm)
   type (griddec) :: grid(drv%nc,drv%nr)   
   type (tiledec) :: tile
   type (clm1d)   :: clm  
+  integer        :: istep_pf
 
 !=== Local Variables =====================================================
 
@@ -81,7 +82,7 @@ subroutine drv_clmini (drv, grid, tile, clm)
 ! Initialize Time Parameters - additional init done in drv_tick 
 ! ========================================================================
 
-  clm%istep = 0
+  clm%istep = istep_pf
   clm%dtime = drv%ts
 
 ! ========================================================================

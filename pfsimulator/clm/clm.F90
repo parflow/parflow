@@ -1,11 +1,11 @@
 !#include <misc.h>
 
-subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,dt,time,pdx,pdy,              &
-pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,npp,npq,npr,rank,eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,    &
-eflx_grnd_pf,qflx_tot_pf,qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,       &
-swe_pf,t_g_pf,clm_dump_interval,clm_1d_out, clm_output_dir, clm_output_dir_length,            &
-clm_bin_output_dir,write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,      &
-field_capacitypf, res_satpf)
+subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,istep_pf,dt,time,pdx,pdy,     &
+pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,npp,npq,npr,rank,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,        &
+v_pf,patm_pf,qatm_pf,eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,qflx_tot_pf,            &
+qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf, t_soi_pf,        &
+clm_dump_interval,clm_1d_out,clm_output_dir, clm_output_dir_length,clm_bin_output_dir,        &
+write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,res_satpf)
 
   !=========================================================================
   !
@@ -58,6 +58,7 @@ field_capacitypf, res_satpf)
   real(r8) :: dt                                 ! parflow dt in parflow time units not CLM time units
   real(r8) :: time                               ! parflow time in parflow units
   real(r8) :: pdx,pdy,pdz                        ! parflow DX, DY and DZ in parflow units
+  integer  :: istep_pf                           ! istep, now passed from PF
   integer  :: ix                                 ! parflow ix, starting point for local grid on global grid
   integer  :: iy                                 ! parflow iy, starting point for local grid on global grid
   integer  :: ip                               
@@ -78,7 +79,16 @@ field_capacitypf, res_satpf)
   real(r8) :: qflx_in_pf((nx+2)*(ny+2)*3)        ! h2o_flux (infil) output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
   real(r8) :: swe_pf((nx+2)*(ny+2)*3)            ! swe              output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
   real(r8) :: t_g_pf((nx+2)*(ny+2)*3)            ! t_grnd           output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
-  
+  real(r8) :: t_soi_pf((nx+2)*(ny+2)*(nlevsoi+2))!tsoil             output var to send to ParFlow, on grid w/ ghost nodes for current proc, but nz=10 (3D)
+  real(r8) :: sw_pf((nx+2)*(ny+2)*3)             ! SW rad, passed from PF
+  real(r8) :: lw_pf((nx+2)*(ny+2)*3)             ! LW rad, passed from PF
+  real(r8) :: prcp_pf((nx+2)*(ny+2)*3)           ! Precip, passed from PF
+  real(r8) :: tas_pf((nx+2)*(ny+2)*3)            ! Air temp, passed from PF
+  real(r8) :: u_pf((nx+2)*(ny+2)*3)              ! u-wind, passed from PF
+  real(r8) :: v_pf((nx+2)*(ny+2)*3)              ! v-wind, passed from PF
+  real(r8) :: patm_pf((nx+2)*(ny+2)*3)           ! air pressure, passed from PF
+  real(r8) :: qatm_pf((nx+2)*(ny+2)*3)           ! air specific humidity, passed from PF
+   
   integer  :: clm_dump_interval                  ! dump inteval for CLM output, passed from PF, always in interval of CLM timestep, not time
   integer  :: clm_1d_out                         ! whether to dump 1d output 0=no, 1=yes
   integer  :: clm_output_dir_length
@@ -113,8 +123,6 @@ field_capacitypf, res_satpf)
   drv%nt = 18
   drv%ts = dt*3600.d0    !  assume PF in hours, CLM in seconds
   
-  
-  
   !clm_1d_out = 0
 
   write(RI,*) rank
@@ -140,8 +148,6 @@ field_capacitypf, res_satpf)
      !open(6,file='clm.out.txt')
      print *,"INITIALIZATION"
      allocate( counter(nx,ny))
-
-
 
      !=== Allocate Memory for Grid Module
      !print *,"Allocate Memory for Grid Module"
@@ -186,7 +192,7 @@ field_capacitypf, res_satpf)
 
      ! @RMM
      ! since we've moved the PF-CLM temp vars into the clmtype struture they are allocated in the above statements, prev alloc below
-     !allocate (pressure_data(nx,ny,nlevsoi),saturation_data(nx,ny,nlevsoi),evap_trans_data(nx,ny,nlevsoi),porosity_data(nx,ny,nlevsoi))
+     ! allocate (pressure_data(nx,ny,nlevsoi),saturation_data(nx,ny,nlevsoi),evap_trans_data(nx,ny,nlevsoi),porosity_data(nx,ny,nlevsoi))
 
      !=== Set clm diagnostic indices and allocate space
 
@@ -202,7 +208,7 @@ field_capacitypf, res_satpf)
 
      !=== Initialize clm derived type components
      write(*,*)"Call clm_typini"
-     call clm_typini(drv%nch, clm)
+     call clm_typini(drv%nch,clm,istep_pf)
 
      !=== Read in vegetation data and set tile information accordingly
      write(*,*)"Read in vegetation data and set tile information accordingly"
@@ -219,10 +225,15 @@ field_capacitypf, res_satpf)
      call drv_readvegpf (drv, grid, tile, clm)  
 
      !=== Initialize CLM and DIAG variables
+     ! IMF: set clm(t)%istep = istep_pf
+     ! (istep is initalized in clm_typini, set to zero in drv_clmini...
+     !  previously, reset to value in restart file in drv_restart and incremented in drv_getforce
+     !  now, reset here to value passed from PF, checked against restart in drv_restart, incremented in PF
      print *,"Initialize CLM and DIAG variables"
      do t=1,drv%nch 
         clm%kpatch = t
-        call drv_clmini (drv, grid, tile(t), clm(t))           !Initialize CLM Variables
+        call drv_clmini (drv, grid, tile(t), clm(t), istep_pf) !Initialize CLM Variables
+        clm(t)%istep = istep_pf
      enddo
 
      !@ Call to subroutine that reads in information on which cells are (in-)active due to topo
@@ -230,7 +241,7 @@ field_capacitypf, res_satpf)
 
      !@ Call to subroutine that reads in 2D array(s) of input data (e.g. hksat)
      !print *,"Call to subroutine that reads in 2D array(s) of input data (e.g. porosity)"
-     !  call read_array(drv,clm,rank)
+     !call read_array(drv,clm,rank)
 
      !@ Initialize the CLM topography mask 
      !@ RMM this is two components: 1) a x-y mask of 0 o 1 for active inactive and 
@@ -260,7 +271,7 @@ field_capacitypf, res_satpf)
               !else
               !  clm(t)%topo_mask(nz-k+1) = 0
            endif
-		    ! print*, l, i,j,k, topo(l), clm(t)%topo_mask(1)
+           !    print*, l, i,j,k, topo(l), clm(t)%topo_mask(1)
            if (topo(l) == 0 .and. topo(l+k_incr) == 1) clm(t)%topo_mask(3) = k+1
            !    print*, clm(t)%topo_mask(1), clm(t)%topo_mask(2), clm(t)%topo_mask(3)
         enddo
@@ -341,22 +352,14 @@ field_capacitypf, res_satpf)
 
      !call MPI_BCAST(clm,drv%nch,clm1d,0,MPI_COMM_WORLD,error)
      !@ Jump to correct line in forcing file
-!     clm(1)%istep = 1440
-     print*, clm(1)%istep
-     do i = 1, clm(1)%istep-1
-        read(11,*)
-     enddo
-
-
+     !IMF: forcing I/O now handled in PF, passed to CLM
+     !clm(1)%istep = 1440
+     !print*, clm(1)%istep
+     !do i = 1, clm(1)%istep-1
+     !   read(11,*)
+     !enddo
   endif !======= End of the initialization ================
-! open forcing file
-!    open(11,file=trim(adjustl(drv%metf1d))//'.'//trim(adjustl(RI)),action='read')  !Meteorological Input
 
-     !@ Jump to correct line in forcing file
-!	 print*, clm(1)%istep
-!     do i = 1, clm(1)%istep-1
-!        read(11,*)
-!     enddo
   j_incr = nx_f 
   k_incr = (nx_f * ny_f)
 
@@ -365,12 +368,12 @@ field_capacitypf, res_satpf)
   !clm%dtime = dble(drv%ts)
 
   !print*, "implied array copy of clm%qlux/old/veg"
-  ! clm%qflx_infl_old = clm%qflx_infl
-  ! clm%qflx_tran_veg_old = clm%qflx_tran_veg
+  !clm%qflx_infl_old = clm%qflx_infl
+  !clm%qflx_tran_veg_old = clm%qflx_tran_veg
 
-!  print *,"Call the Readout"
-  ! call ParFlow --> CLM couple code
-  ! maps ParFlow space to CLM space @RMM
+  !print *,"Call the Readout"
+  !call ParFlow --> CLM couple code
+  !maps ParFlow space to CLM space @RMM
   call pfreadout(clm,drv,tile,saturation,pressure,rank,ix,iy,nx,ny,nz,j_incr, k_incr, ip) 
 
   !=========================================================================
@@ -380,9 +383,11 @@ field_capacitypf, res_satpf)
 
   call drv_tick(drv)
 
+  ! IMF: forcing arrays passed to drv_getforce, forcing no longer read in drv_getforce
   !=== Read in the atmospheric forcing for off-line run
   !print *," Read in the atmospheric forcing for off-line run"
-  call drv_getforce(drv,tile,clm)
+  !call drv_getforce(drv,tile,clm)
+  call drv_getforce(drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf)
 
   do t = 1, drv%nch     !Tile loop
      clm(t)%qflx_infl_old = clm(t)%qflx_infl
@@ -424,61 +429,65 @@ field_capacitypf, res_satpf)
      end if ! write_CLM_binary
   end if  ! mod of istep and dump_interval
 
-!=== copy arrays from clm-to-pf for printing in pf as pfb or silo
-     j_incr = (nx+2) 
-     do t=1,drv%nch
-        i=tile(t)%col
-        j=tile(t)%row
-        l = 1+i + (nx+2)*(j) + (nx+2)*(ny+2) 
-        eflx_lh_pf(l)=clm(t)%eflx_lh_tot
-        eflx_lwrad_pf(l)=clm(t)%eflx_lwrad_out
-        eflx_sh_pf(l)=clm(t)%eflx_sh_tot
-        eflx_grnd_pf(l)=clm(t)%eflx_soil_grnd
-        qflx_tot_pf(l)=clm(t)%qflx_evap_tot
-        qflx_grnd_pf(l)=clm(t)%qflx_evap_grnd
-        qflx_soi_pf(l)=clm(t)%qflx_evap_soi
-        qflx_eveg_pf(l)=clm(t)%qflx_evap_veg 
-        qflx_tveg_pf(l)=clm(t)%qflx_tran_veg
-        qflx_in_pf(l)=clm(t)%qflx_infl 
-        swe_pf(l)=clm(t)%h2osno 
-        t_g_pf(l)=clm(t)%t_grnd
- !       print*, i,j,l,t, eflx_lh_pf(l),clm(t)%eflx_lh_tot 
-     enddo
+  !=== copy arrays from clm-to-pf for printing in pf as pfb or silo
+  j_incr = (nx+2) 
+  do t=1,drv%nch
+     i=tile(t)%col
+     j=tile(t)%row
+     l = 1+i + (nx+2)*(j) + (nx+2)*(ny+2) 
+     eflx_lh_pf(l)=clm(t)%eflx_lh_tot
+     eflx_lwrad_pf(l)=clm(t)%eflx_lwrad_out
+     eflx_sh_pf(l)=clm(t)%eflx_sh_tot
+     eflx_grnd_pf(l)=clm(t)%eflx_soil_grnd
+     qflx_tot_pf(l)=clm(t)%qflx_evap_tot
+     qflx_grnd_pf(l)=clm(t)%qflx_evap_grnd
+     qflx_soi_pf(l)=clm(t)%qflx_evap_soi
+     qflx_eveg_pf(l)=clm(t)%qflx_evap_veg 
+     qflx_tveg_pf(l)=clm(t)%qflx_tran_veg
+     qflx_in_pf(l)=clm(t)%qflx_infl 
+     swe_pf(l)=clm(t)%h2osno 
+     t_g_pf(l)=clm(t)%t_grnd
+  enddo
 
+  !3D arrays (tsoil)
+  j_incr = (nx+2)
+  k_incr = (nx+2) * (ny+2)
+  do t=1,drv%nch            ! Loop over CLM tile space
+     i=tile(t)%col
+     j=tile(t)%row
+     do k = 1,nlevsoi       ! Loop from 1 -> number of soil layers (in CLM)
+        l = 1+i + j_incr*(j) + k_incr*(nlevsoi-(k-1))
+        t_soi_pf(l)=clm(t)%t_soisno(k)
+     enddo
+  enddo
 
   !=== Write Daily Restarts
-
   if (drv%gmt==0..or.drv%endtime==1) call drv_restart(2,drv,tile,clm,rank)
-  !     call drv_restart(2,drv,tile,clm,rank)
-
+  ! call drv_restart(2,drv,tile,clm,rank)
   ! call PF couple, this transfers ET from CLM to ParFlow 
   ! as evap_trans flux	     
   call pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,ny,nz,j_incr, k_incr,ip)   
 
-
   !=== Return required surface fields to atmospheric model (return to grid space)
-!  print*, "drv_clm2g"
   call drv_clm2g (drv, grid, tile, clm)
 
   !=== Write spatially-averaged BC's and IC's to file for user
-!  print*, "drv_pout"
   if (clm(1)%istep==1) call drv_pout(drv,tile,clm,rank)
-!  print*, "drv pout"     
-  ! enddo ! End the time loop for the model time steps
 
-
-  if (rank == 0) then
-     open (1234,file="global_nt.scr",action='write')
-     write(1234,*)"set i =",clm(1)%istep
-     write(1234,*)"set endt =",drv%endtime
-     close (1234)
-  endif
+! IMF istep is passed from PF to CLM, this is no longer needed
+!  if (rank == 0) then
+!     open (1234,file="global_nt.scr",action='write')
+!     write(1234,*)"set i =",clm(1)%istep
+!     write(1234,*)"set endt =",drv%endtime
+!     close (1234)
+!  endif
 
   !@RMM if at end of simulation, close all files
   if (drv%endtime==1) then
      close(166)
      close(199)
   end if
-!  print*, 'return'
-!  close(11)
+! print*, 'return'
+! close(11)
+
 end subroutine clm_lsm
