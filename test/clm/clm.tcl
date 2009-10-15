@@ -275,6 +275,9 @@ pfset Solver.AbsTol                                      1E-11
  
 pfset Solver.LSM                                         CLM
 pfset Solver.WriteSiloCLM                                True
+pfset Solver.CLM.MetForcing                              1D
+pfset Solver.CLM.MetFileName                             narr_1hr.sc3.txt.0
+pfset Solver.CLM.MetFilePath                             /code/parflow.imf/test/clm/
 
 # Initial conditions: water pressure
 #---------------------------------------------------------

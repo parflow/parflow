@@ -472,6 +472,7 @@ void SetupRichards(PFModule *this_module) {
       {
          // Set filename for 1D forcing file
          sprintf(filename, "%s/%s", public_xtra -> clm_metpath, public_xtra -> clm_metfile);
+         printf( filename );
          // Open file, count number of lines
          if ( (metf_temp = fopen(filename,"r")) == NULL )
          {
@@ -513,7 +514,8 @@ void SetupRichards(PFModule *this_module) {
          }
          amps_FreeInvoice( invoice );
          amps_SFclose( metf1d );
-      }   
+      } 
+
 #endif
 
       /* Set initial pressures and pass around ghost data to start */
@@ -1980,12 +1982,12 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
       }
       case 1:
       {
-#ifdef HAVE_CLM
+//#ifdef HAVE_CLM
 	 public_xtra -> lsm = 1;
-#else
-         InputError("Error: <%s> used for key <%s> but this version of Parflow is compiled without CLM\n", switch_name, 
-		    key);
-#endif
+//#else
+//         InputError("Error: <%s> used for key <%s> but this version of Parflow is compiled without CLM\n", switch_name, 
+//		    key);
+//#endif
 	 break;
       }
       default:
@@ -2123,34 +2125,43 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
       for 1D forcing, is complete file name
       for 2D forcing, is base file name */
    sprintf(key, "%s.CLM.MetFileName", name);
-   public_xtra -> clm_metfile = GetStringDefault(key, "narr_1hr.dat");
+   public_xtra -> clm_metfile = GetStringDefault(key, "narr_1hr.sc3.txt");
 
    /* IMF Key for CLM istep (default=0) */
    sprintf(key, "%s.CLM.IstepStart", name);
    public_xtra -> clm_istep = GetIntDefault(key, 1);
 
    /* IMF Switch for 1D (uniform) vs. 2D (distributed) met forcings */
-   metforce_switch_na = NA_NewNameArray("1D 2D");
+   metforce_switch_na = NA_NewNameArray("none 1D 2D");
    sprintf(key, "%s.CLM.MetForcing", name);
-   switch_name = GetStringDefault(key, "1D");
+   switch_name = GetStringDefault(key, "none");
    switch_value = NA_NameToIndex(metforce_switch_na, switch_name);
    switch (switch_value)
    {
         case 0:
         {
-            public_xtra -> clm_metforce = 1;
- 
+            public_xtra -> clm_metforce = 0;
+
             // IMF testing...
-            printf("public_xtra -> clm_metforce = 1  --> 1D forcing\n");
- 
+            printf("public_xtra -> clm_metforce = 0 --> NO FORCING\n");
+
            break;
         }
         case 1:
         {
+            public_xtra -> clm_metforce = 1;
+ 
+            // IMF testing...
+            printf("public_xtra -> clm_metforce = 1 --> 1D forcing\n");
+ 
+           break;
+        }
+        case 2:
+        {
             public_xtra -> clm_metforce = 2;
 
             // IMF testing...
-            printf("public_xtra -> clm_metforce = 2  --> 2D forcing\n");
+            printf("public_xtra -> clm_metforce = 2 --> 2D forcing\n");
             
             break;
         }
