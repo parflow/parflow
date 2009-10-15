@@ -141,6 +141,13 @@ then
     #
     mpirun -np $2  $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
     exit 0
+elif mpirun  2>&1 | grep -q "mpirun"
+then
+    #
+    # Other MPI
+    #
+    mpirun -np $2  $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
+    exit 0
 else
     echo "Unrecognized MPI implementation"
     exit 1
