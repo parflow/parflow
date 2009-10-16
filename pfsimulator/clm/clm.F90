@@ -95,11 +95,11 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
   character (LEN=clm_output_dir_length) :: clm_output_dir                ! output dir location
   integer  :: clm_bin_output_dir
   integer  :: write_CLM_binary                   ! whether to write CLM output as binary 
-  integer  :: beta_typepf                          ! beta formulation for bare soil Evap 0=none, 1=linear, 2=cos
-  integer  :: veg_water_stress_typepf              ! veg transpiration water stress formulation 0=none, 1=press, 2=sm
-  real(r8) :: wilting_pointpf                      ! wilting point in m if press-type, in saturation if soil moisture type
-  real(r8) :: field_capacitypf                     ! field capacity for water stress same as units above
-  real(r8) :: res_satpf                            ! residual saturation from ParFlow
+  integer  :: beta_typepf                        ! beta formulation for bare soil Evap 0=none, 1=linear, 2=cos
+  integer  :: veg_water_stress_typepf            ! veg transpiration water stress formulation 0=none, 1=press, 2=sm
+  real(r8) :: wilting_pointpf                    ! wilting point in m if press-type, in saturation if soil moisture type
+  real(r8) :: field_capacitypf                   ! field capacity for water stress same as units above
+  real(r8) :: res_satpf                          ! residual saturation from ParFlow
   integer  :: j_incr,k_incr                      ! increment for j and k to convert 1D vector to 3D i,j,k array
   integer  :: i,j,k
   integer, allocatable  :: counter(:,:) 
@@ -252,7 +252,6 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
 
      j_incr = (nx+2) 
      k_incr = (nx+2) * (ny+2)
-     !print*, j_incr,k_incr
      do t=1,drv%nch
         i=tile(t)%col
         j=tile(t)%row
@@ -348,7 +347,7 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
      !             drv%syr,drv%smo,drv%sda,drv%shr,drv%smn,drv%sss)
 
      !print *,"Read restart file",etime(elapsed)
-     call drv_restart(1,drv,tile,clm,rank)  !(1=read,2=write)
+     call drv_restart(1,drv,tile,clm,rank,istep_pf)  !(1=read,2=write)
 
      !call MPI_BCAST(clm,drv%nch,clm1d,0,MPI_COMM_WORLD,error)
      !@ Jump to correct line in forcing file
@@ -406,7 +405,7 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
   ! @RMM now we only call for every clm_dump_interval steps (not 
   ! time units, integer units)
   !print*, clm(1)%istep, clm_dump_interval, mod(clm(1)%istep,clm_dump_interval)
-  if (mod(clm(1)%istep,clm_dump_interval)==0)  then
+  if (mod(istep_pf,clm_dump_interval)==0)  then
      
      !IMF only call if write_CLM_binary==True 
      if (write_CLM_binary==1) then
@@ -418,7 +417,7 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
         !print*, pressure(111),saturation(111),evap_trans(111),topo(111),vname,ierr,drv%dx,drv%nc,drv%nr
         !print*, clm(1)
         !print *,clm(1)%istep
-        call open_files(clm,drv,rank,ix,iy,clm(1)%istep,clm_output_dir, clm_output_dir_length,clm_bin_output_dir) 
+        call open_files(clm,drv,rank,ix,iy,istep_pf,clm_output_dir, clm_output_dir_length,clm_bin_output_dir) 
         call drv_2dout (drv,grid,clm,rank)
         !@==  Call to subroutine to close (2D-) output files
         !@==  RMM modified to open/close files (but to include istep) every 
@@ -472,7 +471,7 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
   call drv_clm2g (drv, grid, tile, clm)
 
   !=== Write spatially-averaged BC's and IC's to file for user
-  if (clm(1)%istep==1) call drv_pout(drv,tile,clm,rank)
+  if (istep_pf==1) call drv_pout(drv,tile,clm,rank)
 
 ! IMF istep is passed from PF to CLM, this is no longer needed
 !  if (rank == 0) then

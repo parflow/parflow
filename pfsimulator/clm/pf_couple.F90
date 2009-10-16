@@ -1,4 +1,4 @@
-subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,ny,nz,j_incr, k_incr,ip)
+subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,nz,j_incr,k_incr,ip,istep_pf)
 
   use drv_module          ! 1-D Land Model Driver variables
   use precision
@@ -20,7 +20,7 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,
   real(r8) evap_trans((nx+2)*(ny+2)*(nz+2))
   real(r8) saturation((nx+2)*(ny+2)*(nz+2)),pressure((nx+2)*(ny+2)*(nz+2))
   real(r8) porosity((nx+2)*(ny+2)*(nz+2))
-
+  integer,intent(in) :: istep_pf
 
   !@ Variable declarations: write *.pfb file
 
@@ -133,7 +133,8 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,
         ! Check the energy and water balance
         ! -----------------------------------------------------------------
 
-        call clm_balchk (clm(t), clm(t)%istep) !@ Stefan: in terms of wb, this call is obsolete;
+        !call clm_balchk (clm(t), clm(t)%istep) !@ Stefan: in terms of wb, this call is obsolete;
+        call clm_balchk (clm(t), istep_pf) !@ Stefan: in terms of wb, this call is obsolete;
         !@ energy balances are still calculated
 
      endif !@ mask statement
@@ -145,7 +146,8 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,
   error = drv%endwatb - drv%begwatb - (tot_infl_mm - tot_tran_veg_mm) ! + tot_drain_mm
 
   ! SGS according to standard "f" must have fw.d format, changed f -> f20.8, i -> i5 and e -> e10.2
-  write(199,'(1i5,1x,f20.8,1x,5e13.5)') clm(1)%istep,drv%time,error,tot_infl_mm,tot_tran_veg_mm,drv%begwatb,drv%endwatb
+  ! write(199,'(1i5,1x,f20.8,1x,5e13.5)') clm(1)%istep,drv%time,error,tot_infl_mm,tot_tran_veg_mm,drv%begwatb,drv%endwatb
+  write(199,'(1i5,1x,f20.8,1x,5e13.5)') istep_pf,drv%time,error,tot_infl_mm,tot_tran_veg_mm,drv%begwatb,drv%endwatb
   drv%begwatb =drv%endwatb
   !print *,""
   !print *,"Error (%):",error

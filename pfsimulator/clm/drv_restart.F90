@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine drv_restart (rw, drv, tile, clm, rank)
+subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
 
   !=========================================================================
   !
@@ -38,7 +38,8 @@ subroutine drv_restart (rw, drv, tile, clm, rank)
 
   !=== Arguments ===========================================================  
 
-  integer, intent(in) :: rw   ! 1=read restart, 2=write restart
+  integer, intent(in)    :: rw         ! 1=read restart, 2=write restart
+  integer, intent(inout) :: istep_pf   ! istep counter, incremented in PF
   type (drvdec)  :: drv              
   type (tiledec) :: tile(drv%nch)
   type (clm1d)   :: clm (drv%nch)
@@ -447,6 +448,8 @@ subroutine drv_restart (rw, drv, tile, clm, rank)
 
      if(rw.eq.2)then
 
+        write(*,*)'Write CLM Active Restart: istep_pf = ',istep_pf
+
         open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(RI)),form='unformatted') !Active archive restart
 
         write(40) drv%yr,drv%mo,drv%da,drv%hr,drv%mn,drv%ss,&
@@ -467,7 +470,7 @@ subroutine drv_restart (rw, drv, tile, clm, rank)
         write(40) clm%snl                   !CLM Actual number of snow layers
         write(40) clm%acc_errh2o            !CLM Accumulation of water balance error
         write(40) clm%acc_errseb            !CLM Accumulation of energy balance error
-        write(40) clm%istep
+        write(40) istep_pf
 
         do l = -nlevsno+1,nlevsoi
            do t = 1,drv%nch
