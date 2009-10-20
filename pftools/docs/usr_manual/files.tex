@@ -3511,6 +3511,51 @@ pfset Solver.CLM.CLMFileDir "CLM_Output/"
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.CLMDumpInterval 2
 \end{verbatim}\end{display}
+
+\pfkey{string}{Solver.CLM.EvapBeta}{Linear}
+{This key specifies the form of the bare soil evaporation $\beta$ parameter in \code{CLM}.   The valid types for this key are {\bf None, Linear, Cosine}. \begin{description}
+\item[{\bf None}: ] No beta formulation, $\beta=1$.
+\item[{\bf Linear}: ] $\beta=\frac{\phi S-\phi S_{res}}{\phi-\phi S_{res}}$
+\item[{\bf Cosine}: ] $\beta=\frac{1}{2}(1-\cos(\frac{(\phi -\phi S_{res})}{(\phi S-\phi S_{res})}\pi)$
+\end{description}
+Note that $S_{res}$ is specified by the key \code{Solver.CLM.ResSat} below, that $\beta$ is limited between zero and one and also that \code{CLM} must be compiled and linked at runtime for this option to be active.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.EvapBeta Linear
+\end{verbatim}\end{display}
+
+\pfkey{double}{Solver.CLM.ResSat}{0.1}
+{This key specifies the residual saturation for the $\beta$ function in \code{CLM} specified above.  Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.ResSat  0.15
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.CLM.VegWaterStress}{Saturation}
+{This key specifies the form of the plant water stress function $\beta_t$ parameter in \code{CLM}.   The valid types for this key are {\bf None, Saturation, Pressure}. \begin{description}
+\item[{\bf None}: ] No transpiration water stress formulation, $\beta_t=1$.
+\item[{\bf Saturation}: ] $\beta_t=\frac{\phi S -\phi S_{wp}}{\phi S_{fc}-\phi S_{wp}}$
+\item[{\bf Pressure}: ] $\beta_t=\frac{P - P_{wp}}{P_{fc}-P_{wp}}$
+\end{description}
+Note that the wilting point, $S_{wp}$ or $p_{wp}$, is specified by the key \code{Solver.CLM.WiltingPoint} below, that the field capacity, $S_{fc}$ or $p_{fc}$, is specified by the key \code{Solver.CLM.FieldCapacity} below, that $\beta_t$ is limited between zero and one and also that \code{CLM} must be compiled and linked at runtime for this option to be active.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.VegWaterStress  Pressure
+\end{verbatim}\end{display}
+
+\pfkey{double}{Solver.CLM.WiltingPoint}{0.1}
+{This key specifies the wilting point for the $\beta_t$ function in \code{CLM} specified above. Note that the units for this function are pressure $[m]$ for a {\bf Pressure} formulation and saturation $[-]$ for a {\bf Saturation} formulation. Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.WiltingPoint  0.15
+\end{verbatim}\end{display}
+
+\pfkey{double}{Solver.CLM.FieldCapacity}{1.0}
+{This key specifies the field capacity for the $\beta_t$ function in \code{CLM} specified above. Note that the units for this function are pressure $[m]$ for a {\bf Pressure} formulation and saturation $[-]$ for a {\bf Saturation} formulation. Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.FieldCapacity  0.95
+\end{verbatim}\end{display}
 %=============================================================================
 %=============================================================================
 
