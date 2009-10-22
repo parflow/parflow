@@ -109,10 +109,11 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
 
   !=== End Variable List ===================================================
 
-
   !=========================================================================
   !=== Initialize CLM
   !=========================================================================
+
+  print*, "clm.F90: istep =", istep_pf
 
   !=== Read in grid size domain from PF
   drv%dx = pdx
@@ -225,15 +226,10 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
      call drv_readvegpf (drv, grid, tile, clm)  
 
      !=== Initialize CLM and DIAG variables
-     ! IMF: set clm(t)%istep = istep_pf
-     ! (istep is initalized in clm_typini, set to zero in drv_clmini...
-     !  previously, reset to value in restart file in drv_restart and incremented in drv_getforce
-     !  now, reset here to value passed from PF, checked against restart in drv_restart, incremented in PF
      print *,"Initialize CLM and DIAG variables"
      do t=1,drv%nch 
         clm%kpatch = t
         call drv_clmini (drv, grid, tile(t), clm(t), istep_pf) !Initialize CLM Variables
-        clm(t)%istep = istep_pf
      enddo
 
      !@ Call to subroutine that reads in information on which cells are (in-)active due to topo
@@ -386,7 +382,7 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
   !=== Read in the atmospheric forcing for off-line run
   !print *," Read in the atmospheric forcing for off-line run"
   !call drv_getforce(drv,tile,clm)
-  call drv_getforce(drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf)
+  call drv_getforce(drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf,istep_pf)
 
   do t = 1, drv%nch     !Tile loop
      clm(t)%qflx_infl_old = clm(t)%qflx_infl
@@ -461,11 +457,11 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
   enddo
 
   !=== Write Daily Restarts
-  if (drv%gmt==0..or.drv%endtime==1) call drv_restart(2,drv,tile,clm,rank)
+  if (drv%gmt==0..or.drv%endtime==1) call drv_restart(2,drv,tile,clm,rank,istep_pf)
   ! call drv_restart(2,drv,tile,clm,rank)
   ! call PF couple, this transfers ET from CLM to ParFlow 
   ! as evap_trans flux	     
-  call pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,ny,nz,j_incr, k_incr,ip)   
+  call pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,ny,nz,j_incr, k_incr,ip,istep_pf)   
 
   !=== Return required surface fields to atmospheric model (return to grid space)
   call drv_clm2g (drv, grid, tile, clm)

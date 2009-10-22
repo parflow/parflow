@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine drv_getforce (drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf)
+subroutine drv_getforce (drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf,istep_pf)
 
 !=========================================================================
 !
@@ -40,6 +40,16 @@ subroutine drv_getforce (drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf
   type (drvdec) ,intent(inout) :: drv              
   type (tiledec),intent(inout) :: tile(drv%nch)
   type (clm1d)  ,intent(inout) :: clm (drv%nch)
+  integer,intent(in)  :: istep_pf,nx,ny
+  real(r8),intent(in) :: sw_pf((nx+2)*(ny+2)*3)             ! SW rad, passed from PF
+  real(r8),intent(in) :: lw_pf((nx+2)*(ny+2)*3)             ! LW rad, passed from PF
+  real(r8),intent(in) :: prcp_pf((nx+2)*(ny+2)*3)           ! Precip, passed from PF
+  real(r8),intent(in) :: tas_pf((nx+2)*(ny+2)*3)            ! Air temp, passed from PF
+  real(r8),intent(in) :: u_pf((nx+2)*(ny+2)*3)              ! u-wind, passed from PF
+  real(r8),intent(in) :: v_pf((nx+2)*(ny+2)*3)              ! v-wind, passed from PF
+  real(r8),intent(in) :: patm_pf((nx+2)*(ny+2)*3)           ! air pressure, passed from PF
+  real(r8),intent(in) :: qatm_pf((nx+2)*(ny+2)*3)           ! air specific humidity, passed from PF
+
 
 !=== Local Variables =====================================================
 
@@ -47,21 +57,13 @@ subroutine drv_getforce (drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf
   real(r8) prcp      ! precipitation [mm/s]
   integer t,i,j,k,l  ! Looping indices
   integer j_incr     ! Increment for j to convert 1D vector to 3D array
-  integer nx,ny      ! Array sizes
-  real(r8) :: sw_pf((nx+2)*(ny+2)*3)             ! SW rad, passed from PF
-  real(r8) :: lw_pf((nx+2)*(ny+2)*3)             ! LW rad, passed from PF
-  real(r8) :: prcp_pf((nx+2)*(ny+2)*3)           ! Precip, passed from PF
-  real(r8) :: tas_pf((nx+2)*(ny+2)*3)            ! Air temp, passed from PF
-  real(r8) :: u_pf((nx+2)*(ny+2)*3)              ! u-wind, passed from PF
-  real(r8) :: v_pf((nx+2)*(ny+2)*3)              ! v-wind, passed from PF
-  real(r8) :: patm_pf((nx+2)*(ny+2)*3)           ! air pressure, passed from PF
-  real(r8) :: qatm_pf((nx+2)*(ny+2)*3)           ! air specific humidity, passed from PF
-
+!  integer nx,ny      ! Array sizes
+  
 !=== End Variable List ===================================================
 !=== Increment Time Step Counter
 
-! IMF: istep now incremented in PF, passed to CLM
 ! clm%istep=clm%istep+1 
+  clm%istep=istep_pf
 
 ! Valdai - 1D Met data
 

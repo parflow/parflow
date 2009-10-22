@@ -11,6 +11,7 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
   type (drvdec):: drv
   type (clm1d) :: clm(drv%nch)     ! CLM 1-D Module
   type (tiledec) :: tile(drv%nch)
+  integer,intent(in) :: istep_pf 
 
   integer i,j,k,l,t,ip
   integer nx,ny,nz, j_incr, k_incr
@@ -20,7 +21,6 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
   real(r8) evap_trans((nx+2)*(ny+2)*(nz+2))
   real(r8) saturation((nx+2)*(ny+2)*(nz+2)),pressure((nx+2)*(ny+2)*(nz+2))
   real(r8) porosity((nx+2)*(ny+2)*(nz+2))
-  integer,intent(in) :: istep_pf
 
   !@ Variable declarations: write *.pfb file
 
