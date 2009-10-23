@@ -408,9 +408,8 @@ hr   = dexp(psit/roverg/tg)
 ! apply beta (confusingly called temp_alpha) 
 ! to evaporation
 !
-     clm%eflx_sh_grnd  = raih*dth
-     clm%qflx_evap_soi  = temp_alpha*raiw*dqh
-!write(88,*) clm%qflx_evap_soi, raiw, dqh
+     clm%eflx_sh_grnd  = -raih*dth
+     clm%qflx_evap_soi  = -temp_alpha*raiw*dqh
      clm%eflx_sh_tot  = clm%eflx_sh_grnd
      clm%qflx_evap_tot  = clm%qflx_evap_soi
 
