@@ -4,8 +4,8 @@
 #
 #  Initialize home directory and defaults
 #
-source $env(PARFLOW_DIR)pftools/chunk/src/chunk_global.tcl
-set home_dir $env(PARFLOW_DIR)pftools/chunk
+source $env(PARFLOW_DIR)/pftools/chunk/src/chunk_global.tcl
+set home_dir $env(PARFLOW_DIR)/pftools/chunk
 set src_dir $home_dir/src
 set tcl_dir $home_dir/tcl
 set code_dir $home_dir/code
