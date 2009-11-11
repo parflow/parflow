@@ -50,7 +50,7 @@ proc pftestParseAndEvaluateOutputForTCL {file} {
 	    puts "FAILED : output file <$file> could not be read"
 	} { 	
 	    while { [gets $fileID line] >= 0} {
-		if [regexp {^tcl:\s*(.*)} $line match tcl_statement] {
+		if [regexp {(.*)tcl:\s*(.*)} $line match header tcl_statement] {
 		    uplevel $tcl_statement
 		}
 	    }
