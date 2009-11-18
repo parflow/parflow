@@ -28,6 +28,8 @@
 
 #include "parflow.h"
 
+#include "float.h"
+
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -168,8 +170,8 @@ int          fcn;               /* Flag determining what to calculate
 
    int            *region_indices, num_regions, ir;
 
-   /* Initialize saturations to 0.0 */
-   InitVectorAll(phase_saturation,0.0);
+   /* Initialize saturations */
+  InitVectorAll(phase_saturation, -FLT_MAX);
 
    switch((public_xtra -> type))
    {

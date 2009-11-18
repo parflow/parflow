@@ -112,7 +112,7 @@ int     fcn;             /* Flag determining what to calculate
 
    // SGS 
    // This code can't possibly be correct, pt is never set to point to any vector!
-   double        *pt, *pp, *pu, *pd;
+   double        *pt = NULL, *pp = NULL, *pu = NULL, *pd = NULL;
 
    Subgrid       *subgrid;
 
@@ -254,6 +254,7 @@ int     fcn;             /* Flag determining what to calculate
              
        pu = SubvectorData(u_sub);
              
+       ip = 0;
        if ( fcn == CALCFCN )
        {
          BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
@@ -326,16 +327,17 @@ int     fcn;             /* Flag determining what to calculate
        } 
        else /* fcn = CALCDER */
        {   
-        BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                  ip, nx_d, ny_d, nz_d, 1, 1, 1,
-                  {   
-                   pu[ip] = 0.0;
-                   pd[ip] = 0.0;
-                  }); 
+	  ip = 0;
+	  BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+		    ip, nx_d, ny_d, nz_d, 1, 1, 1,
+		    {   
+		       pu[ip] = 0.0;
+		       pd[ip] = 0.0;
+		    }); 
        } /* End if fcn */
-              
+       
      }   /* End subgrid loop */ 
-    
+      
     break;
    }  /*End case 1 */
    }         /* End switch */

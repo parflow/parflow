@@ -533,9 +533,9 @@ void            PrintSilo(
    DBfile *db;
    int dims[3];
    int ndims;
-   int i;
-   
    int err;
+
+   int i;
 
    char *current_path = NULL;
    char *path = NULL;
@@ -556,32 +556,33 @@ void            PrintSilo(
       chdir(path);
    }
 
-    x = (double*) malloc(sizeof(double) * NX);
-    y = (double*) malloc(sizeof(double) * NY);
-    z = (double*) malloc(sizeof(double) * NZ);
+    dims[0] = NX+1;
+    dims[1] = NY+1;
+    dims[2] = NZ+1;
+    ndims = 3;
+
+    x = (double*) malloc(sizeof(double) * dims[0]);
+    y = (double*) malloc(sizeof(double) * dims[1]);
+    z = (double*) malloc(sizeof(double) * dims[2]);
     coords[0] = x;
     coords[1] = y;
     coords[2] = z;
 
-    for (i = 0 ; i < NX; i++)
+    for (i = 0 ; i < dims[0]; i++)
     {
-        x[i] = X + (double)(i)*DX;;
+       x[i] = X + ((double)(i) - 0.5)*DX;
     }
 
-    for (i = 0 ; i < NY; i++)
+    for (i = 0 ; i < dims[1]; i++)
     {
-        y[i] = Y + (double)(i)*DY;;
+       y[i] = Y + ((double)(i) - 0.5)*DY;
     }
 
-    for (i = 0 ; i < NZ; i++)
+    for (i = 0 ; i < dims[2]; i++)
     {
-        z[i] = Z + (double)(i)*DZ;;
+       z[i] = Z + ((double)(i) - 0.5)*DZ;
     }
     
-    dims[0] = NX;
-    dims[1] = NY;
-    dims[2] = NZ;
-    ndims = 3;
 
     db = DBCreate(filename, DB_CLOBBER, DB_LOCAL, filename, DB_PDB);
 
@@ -593,6 +594,7 @@ void            PrintSilo(
     origin[0] = X;
     origin[1] = Y;
     origin[2] = Z;
+
     err = DBWrite(db, "origin", origin, db_dims, 1, DB_DOUBLE);
     if(err < 0) {
        printf("Error: Silo failed on DBWrite\n");
@@ -620,8 +622,8 @@ void            PrintSilo(
 
     DBPutQuadmesh(db, "mesh", NULL, (float **)coords, dims, ndims, DB_DOUBLE, DB_COLLINEAR, NULL);
 
-    DBPutQuadvar1(db, "variable", "mesh", (float *)DataboxCoeff(v, 0, 0, 0), dims, ndims, NULL,0,
-                  DB_DOUBLE, DB_NODECENT, NULL);
+    DBPutQuadvar1(db, "variable", "mesh", (float *)DataboxCoeff(v, 0, 0, 0), size, ndims, NULL,0,
+                  DB_DOUBLE, DB_ZONECENT, NULL);
 
     DBClose(db);
 

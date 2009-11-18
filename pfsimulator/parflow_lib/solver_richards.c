@@ -98,11 +98,12 @@ typedef struct
    int                clm_veg_function;   /* CLM veg function for water stress 0=none, 1=press, 2=sat */
    double             clm_veg_wilting;    /* CLM veg function wilting point in meters or soil moisture */
    double             clm_veg_fieldc;     /* CLM veg function field capacity in meters or soil moisture */
+#endif
  
    int                print_lsm_sink;     /* print LSM sink term? */
    int                write_silo_CLM;     /* write CLM output as silo? */
    int                write_CLM_binary;   /* write binary output (**default**)? */
-#endif
+
 
 } PublicXtra; 
 
@@ -214,8 +215,6 @@ void SetupRichards(PFModule *this_module) {
 
    char          file_prefix[64], file_postfix[64];
 
-   GrGeomSolid  *gr_domain;
-
    int           take_more_time_steps;
 
    double        t;
@@ -262,8 +261,6 @@ void SetupRichards(PFModule *this_module) {
    /* Do turning bands (and other stuff maybe) */
    PFModuleInvoke(void, set_problem_data, (problem_data));
    ComputeTop(problem, problem_data);
-
-   gr_domain = ProblemDataGrDomain(problem_data);
 
    /* Write subsurface data */
    if ( print_subsurf_data )
@@ -714,7 +711,6 @@ void AdvanceRichards(PFModule *this_module,
    PFModule     *nonlin_solver       = (instance_xtra -> nonlin_solver);
 
    ProblemData  *problem_data        = (instance_xtra -> problem_data);
-   Grid         *grid                = (instance_xtra -> grid);
 
    int           start_count         = ProblemStartCount(problem);
    double        dump_interval       = ProblemDumpInterval(problem);
@@ -725,6 +721,8 @@ void AdvanceRichards(PFModule *this_module,
 
 /* IMF: The following are only used w/ CLM */
 #ifdef HAVE_CLM
+   Grid         *grid                = (instance_xtra -> grid);
+
    Subgrid      *subgrid;
    Subvector    *p_sub, *s_sub, *et_sub, *m_sub, *po_sub;
    double       *pp,*sp, *et, *ms, *po_dat;     
@@ -738,7 +736,7 @@ void AdvanceRichards(PFModule *this_module,
    char          filename[128];                // IMF: 1D input file name *or* 2D input file base name
    Subvector    *sw_forc_sub, *lw_forc_sub, *prcp_forc_sub, *tas_forc_sub, 
                 *u_forc_sub, *v_forc_sub, *patm_forc_sub, *qatm_forc_sub;
-   GrGeomSolid  *gr_domain;
+
 
    /* IMF: For writing CLM output */ 
    Subvector    *eflx_lh_tot_sub, *eflx_lwrad_out_sub, *eflx_sh_tot_sub, *eflx_soil_grnd_sub,
@@ -749,8 +747,6 @@ void AdvanceRichards(PFModule *this_module,
    int           clm_file_dir_length;
 #endif
 
-   int           is,nx,ny,nz,nx_f,ny_f,nz_f,ip,ix,iy,iz; 
-   double        dx,dy,dz;
    int           rank;
 
    int           any_file_dumped;
@@ -800,7 +796,6 @@ void AdvanceRichards(PFModule *this_module,
    dt = cdt;
 
    rank = amps_Rank(amps_CommWorld);
-   gr_domain = ProblemDataGrDomain(problem_data);
 
    /* 
       Check to see if pressure solves are requested 
@@ -819,7 +814,9 @@ void AdvanceRichards(PFModule *this_module,
    }
 
    t     = start_time;
+#ifdef HAVE_CLM
    istep = public_xtra -> clm_istep;         // IMF: time counter for CLM (not needed unless CLM writing binary output)
+#endif
 
    do  /* while take_more_time_steps */
    {
@@ -837,11 +834,16 @@ void AdvanceRichards(PFModule *this_module,
 
          BeginTiming(CLMTimingIndex);
 
+
+	 // SGS FIXME this should not be here, should not be reading input at this point
+	 // Should get these values from somewhere else.
 	 /* sk: call to the land surface model/subroutine*/
 	 /* sk: For the couple with CLM*/
 	 int p = GetInt("Process.Topology.P");
 	 int q = GetInt("Process.Topology.Q");
 	 int r = GetInt("Process.Topology.R");
+
+	 int is;
 
          /* IMF: If 1D met forcing */ 
          if (public_xtra -> clm_metforce == 1)
@@ -854,7 +856,21 @@ void AdvanceRichards(PFModule *this_module,
             v    = (public_xtra -> v1d)[istep-1];
             patm = (public_xtra -> patm1d)[istep-1];
             qatm = (public_xtra -> qatm1d)[istep-1];
-         }          //end if (clm_metforce==1)
+         } //end if (clm_metforce==1)
+	 else
+	 {
+	    /*
+	      Initialize unused variables to something 
+	    */
+            sw   = 0.0;
+            lw   = 0.0;
+            prcp = 0.0;
+            tas  = 0.0;
+            u    = 0.0;
+            v    = 0.0;
+            patm = 0.0;
+            qatm = 0.0;
+	 }
 
          /* IMF: If 2D met forcing...
                  Read input files...   */
@@ -881,6 +897,9 @@ void AdvanceRichards(PFModule *this_module,
  
 	 ForSubgridI(is, GridSubgrids(grid))
 	 {
+	    double        dx,dy,dz;
+	    int           nx,ny,nz,nx_f,ny_f,nz_f,ip,ix,iy,iz; 
+
 	    subgrid = GridSubgrid(grid, is);
 	    p_sub = VectorSubvector(instance_xtra -> pressure, is);
 	    s_sub  = VectorSubvector(instance_xtra -> saturation, is);
@@ -1448,7 +1467,7 @@ void AdvanceRichards(PFModule *this_module,
 	 /* reset sum after output */
 	 PFVConstInit(0.0, overland_sum);
       }
-      
+
       if(public_xtra -> print_lsm_sink) 
       {
 	 /*sk Print the sink terms from the land surface model*/
@@ -1928,10 +1947,13 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    NameArray      switch_na;
    NameArray      nonlin_switch_na;
    NameArray      lsm_switch_na;
+
+#ifdef HAVE_CLM
    NameArray      beta_switch_na;
    NameArray      vegtype_switch_na;
-   NameArray      clmforc_switch_na;
    NameArray      metforce_switch_na;
+#endif
+
    switch_na = NA_NewNameArray("False True");
 
    public_xtra = ctalloc(PublicXtra, 1);
@@ -1982,12 +2004,12 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
       }
       case 1:
       {
-//#ifdef HAVE_CLM
+#ifdef HAVE_CLM
 	 public_xtra -> lsm = 1;
-//#else
-//         InputError("Error: <%s> used for key <%s> but this version of Parflow is compiled without CLM\n", switch_name, 
-//		    key);
-//#endif
+#else
+         InputError("Error: <%s> used for key <%s> but this version of Parflow is compiled without CLM\n", switch_name, 
+		    key);
+#endif
 	 break;
       }
       default:
@@ -2269,6 +2291,13 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
 		 switch_name, key);
    }
    public_xtra -> print_lsm_sink = switch_value;
+
+#ifndef HAVE_CLM
+   if(public_xtra -> print_lsm_sink) 
+   {
+      InputError("Error: setting PrintLSMSink but do not have CLM\n", switch_name, key);
+   }
+#endif
 
    /* Silo file writing control */
    sprintf(key, "%s.WriteSiloSubsurfData", name);
