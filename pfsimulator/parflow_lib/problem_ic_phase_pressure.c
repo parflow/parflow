@@ -179,7 +179,9 @@ Problem     *problem;      /* General problem information */
     * Initial pressure conditions
     *-----------------------------------------------------------------------*/
 
-   InitVector(ic_pressure, 0.0);
+   /* SGS Some of this initialization is being done multiple places. Why is that?*/
+   InitVector(ic_pressure, -FLT_MAX);
+//   InitVector(ic_pressure, 0.0);
    InitVector(temp_new_density, 0.0);
    InitVector(temp_new_density_der, 0.0);
    InitVector(temp_fcn, 0.0);
@@ -475,36 +477,36 @@ Problem     *problem;      /* General problem information */
       result_invoice  = amps_NewInvoice("%d", &nonlin_resid);
 
       /* Get mask values. */ 
-         for (ir = 0; ir < num_regions; ir++)
-         {
-            gr_solid    = ProblemDataGrSolid(problem_data, region_indices[ir]);
+      for (ir = 0; ir < num_regions; ir++)
+      {
+	 gr_solid    = ProblemDataGrSolid(problem_data, region_indices[ir]);
+	 
+	 ForSubgridI(is, subgrids)
+	 {  
+	    subgrid             = SubgridArraySubgrid(subgrids, is);
+	    m_sub               = VectorSubvector(mask, is);
+	    m_dat               = SubvectorData(m_sub);
        
-            ForSubgridI(is, subgrids)
-            {  
-               subgrid             = SubgridArraySubgrid(subgrids, is);
-               m_sub               = VectorSubvector(mask, is);
-               m_dat               = SubvectorData(m_sub);
-       
-               ix = SubgridIX(subgrid);
-               iy = SubgridIY(subgrid);
-               iz = SubgridIZ(subgrid);
-       
-               nx = SubgridNX(subgrid);
-               ny = SubgridNY(subgrid);  
-               nz = SubgridNZ(subgrid);  
-       
-               /* RDF: assume resolution is the same in all 3 directions */
-               r = SubgridRX(subgrid);
-       
-                  GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                  { 
-                     ips = SubvectorEltIndex(m_sub, i, j, k);
-                     m_dat[ips] = 1.0;  
-                  });  
-         
-            }     /* End of subgrid loop */ 
-         }        /* End of region loop */
- 
+	    ix = SubgridIX(subgrid);
+	    iy = SubgridIY(subgrid);
+	    iz = SubgridIZ(subgrid);
+	    
+	    nx = SubgridNX(subgrid);
+	    ny = SubgridNY(subgrid);  
+	    nz = SubgridNZ(subgrid);  
+	    
+	    /* RDF: assume resolution is the same in all 3 directions */
+	    r = SubgridRX(subgrid);
+	    
+	    GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+			 { 
+			    ips = SubvectorEltIndex(m_sub, i, j, k);
+			    m_dat[ips] = 1.0;  
+			 });  
+	    
+	 }     /* End of subgrid loop */ 
+      }        /* End of region loop */
+      
 
       /* Calculate array of elevations on reference surface. */
       for (ir = 0; ir < num_regions; ir++)
@@ -512,33 +514,33 @@ Problem     *problem;      /* General problem information */
 	 ref_solid = ProblemDataSolid(problem_data, geom_indices[ir]);
 	 elevations[ir] = CalcElevations(ref_solid, patch_indices[ir], 
 					 subgrids);
-
+	 
       }        /* End of region loop */
-
+      
       /* Solve a nonlinear problem for hydrostatic pressure
          at points in region given pressure at reference elevation.
          Note that the problem is only nonlinear if 
          density depends on pressure. 
-
+	 
          The nonlinear problem to solve is:
          F(p) = 0
          F(p) = P - P_ref - 0.5*(rho(P) + rho(P_ref))*gravity*(z - z_ref)
-
+	 
          Newton's method is used to find a solution. */
-
+      
       nonlin_resid = 1.0;
       iterations = -1;
       while ((nonlin_resid > 1.0E-6) && (iterations < max_its))
       {
 	 if (iterations > -1)
 	 {
-
-	   /* Get derivative of density at new pressures. */
+	    
+	    /* Get derivative of density at new pressures. */
 	    PFModuleInvoke(void, phase_density, (0, ic_pressure, 
 						 temp_new_density_der, &dtmp, 
 						 &dtmp, CALCDER));
 	 }
-
+	 
 	 /* Get new pressure values. */
          for (ir = 0; ir < num_regions; ir++)
          {

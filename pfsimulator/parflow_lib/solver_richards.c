@@ -37,6 +37,8 @@
 #include "parflow.h"
 #include "kinsol_dependences.h"
 
+#include <float.h>
+
 #define EPSILON 0.00000000001
 
 /*--------------------------------------------------------------------------
@@ -361,10 +363,11 @@ void SetupRichards(PFModule *this_module) {
        *-------------------------------------------------------------------*/
 
       instance_xtra -> pressure = NewVector( grid, 1, 1 );
-      InitVectorAll(instance_xtra -> pressure, 0.0);
+      InitVectorAll(instance_xtra -> pressure, -FLT_MAX);
+//      InitVectorAll(instance_xtra -> pressure, 0.0);
 
       instance_xtra -> saturation = NewVector( grid, 1, 1 );
-      InitVectorAll(instance_xtra -> saturation, 0.0);
+      InitVectorAll(instance_xtra -> saturation, -FLT_MAX);
 
       instance_xtra -> density = NewVector( grid, 1, 1 );
       InitVectorAll(instance_xtra -> density, 0.0);

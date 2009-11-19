@@ -1128,8 +1128,9 @@ Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/
 		  ip   = SubvectorEltIndex(p_sub, i, j, k);
 		  value =  bc_patch_values[ival];
 		  
-		  pp[ip + fdir[0]*1 + fdir[1]*sy_p + fdir[2]*sz_p] = 0;
-		  fp[ip + fdir[0]*1 + fdir[1]*sy_p + fdir[2]*sz_p] = 0;
+		  pp[ip + fdir[0]*1 + fdir[1]*sy_p + fdir[2]*sz_p] = -FLT_MAX;
+//		  fp[ip + fdir[0]*1 + fdir[1]*sy_p + fdir[2]*sz_p] = -FLT_MAX;
+		  fp[ip + fdir[0]*1 + fdir[1]*sy_p + fdir[2]*sz_p] = 0.0;
 		  
 	       });
 	       break;
