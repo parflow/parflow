@@ -58,4 +58,5 @@ testclean:
 	@rm -f *.pfidb
 	@rm -f *.out.txt
 	@rm -fr default_richards.out
+	@rm -fr clm.out
 
