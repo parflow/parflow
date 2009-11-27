@@ -600,10 +600,10 @@ void PhaseRelPermFreePublicXtra (void );
 int PhaseRelPermSizeOfTempData (void );
 
 /* problem_phase_source.c */
-void PhaseSource (Vector *phase_source , Problem *problem , ProblemData *problem_data , double time );
-PFModule *PhaseSourceInitInstanceXtra (Grid *grid);
+void PhaseSource (Vector *phase_source , int phase, Problem *problem , ProblemData *problem_data , double time );
+PFModule *PhaseSourceInitInstanceXtra (void );
 void PhaseSourceFreeInstanceXtra (void );
-PFModule *PhaseSourceNewPublicXtra (void);
+PFModule *PhaseSourceNewPublicXtra (int num_phases);
 void PhaseSourceFreePublicXtra (void );
 int PhaseSourceSizeOfTempData (void );
 

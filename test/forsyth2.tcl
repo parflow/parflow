@@ -426,9 +426,9 @@ pfset Geom.domain.ICPressure.Value                      -734.0
 # Phase sources:
 #-----------------------------------------------------------------------------
 
-pfset PhaseSources.Type                         Constant
-pfset PhaseSources.GeomNames                    background
-pfset PhaseSources.Geom.background.Value        0.0
+pfset PhaseSources.water.Type                         Constant
+pfset PhaseSources.water.GeomNames                    background
+pfset PhaseSources.water.Geom.background.Value        0.0
 
 
 #-----------------------------------------------------------------------------

@@ -301,9 +301,9 @@ pfset Mannings.Geom.domain.Value 0.
 # Phase sources:
 #-----------------------------------------------------------------------------
 
-pfset PhaseSources.Type                         Constant
-pfset PhaseSources.GeomNames                    background
-pfset PhaseSources.Geom.background.Value        0.0
+pfset PhaseSources.water.Type                         Constant
+pfset PhaseSources.water.GeomNames                    background
+pfset PhaseSources.water.Geom.background.Value        0.0
 
 pfset PhaseConcen.water.tce.Type                      Constant
 pfset PhaseConcen.water.tce.GeomNames                 concen_region

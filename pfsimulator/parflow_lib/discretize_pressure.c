@@ -268,7 +268,7 @@ Vector      **phase_saturations;
    for (phase = 0; phase < num_phases; phase++)
    {
       /* get phase_source */
-      PFModuleInvoke(void, phase_source, (tvector, problem, 
+      PFModuleInvoke(void, phase_source, (tvector, phase, problem, 
 					  problem_data, time));
    
       ForSubgridI(is, GridSubgrids(grid))

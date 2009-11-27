@@ -327,9 +327,9 @@ pfset Mannings.Geom.domain.Value 0.
 # Phase sources:
 #-----------------------------------------------------------------------------
 
-pfset PhaseSources.Type                         Constant
-pfset PhaseSources.GeomNames                    domain
-pfset PhaseSources.Geom.domain.Value        0.0
+pfset PhaseSources.water.Type                         Constant
+pfset PhaseSources.water.GeomNames                    domain
+pfset PhaseSources.water.Geom.domain.Value        0.0
 
 #-----------------------------------------------------------------------------
 #  Solver Impes  

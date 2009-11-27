@@ -280,8 +280,8 @@ pfset Geom.domain.ICTemperature.RefPatch                   bottom
 # Phase sources:
 #-----------------------------------------------------------------------------
 
-pfset PhaseSources.Type                         PredefinedFunction
-pfset PhaseSources.PredefinedFunction           $TestName
+pfset PhaseSources.water.Type                         PredefinedFunction
+pfset PhaseSources.water.PredefinedFunction           $TestName
 
 #-----------------------------------------------------------------------------
 # Temperature sources:

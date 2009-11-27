@@ -191,7 +191,7 @@ int	   solver;   /* Designates the solver from which this routine is
    }
 
    ProblemPhaseSource(problem) =
-      PFModuleNewModule(PhaseSource, ());
+      PFModuleNewModule(PhaseSource, (num_phases));
 
    ProblemSpecStorage(problem) =
       PFModuleNewModule(SpecStorage, ()); //sk
