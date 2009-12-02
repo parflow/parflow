@@ -239,8 +239,8 @@ ProblemData *problem_data;
    StateJacEval(current_state)       = richards_jacobian_eval;
    StateJac(current_state)           = jacobian_matrix;
    StatePrecond(current_state)       = precond;
-   StateOutflow(current_state)       = outflow; /*sk*/
-   StateEvapTrans(current_state)     = evap_trans; /*sk*/
+   StateOutflow(current_state)       = outflow;     /*sk*/
+   StateEvapTrans(current_state)     = evap_trans;  /*sk*/
    StateOvrlBcFlx(current_state)     = ovrl_bc_flx; /*sk*/
 
    if (!amps_Rank(amps_CommWorld))
@@ -250,7 +250,7 @@ ProblemData *problem_data;
 
    ret = KINSol( (void*)kin_mem,        /* Memory allocated above */
 	         neq,                   /* Dummy variable here */
-	         pressure,               /* Initial guess @ this was "pressure before" */
+	         pressure,              /* Initial guess @ this was "pressure before" */
 	         feval,                 /* Nonlinear function */
 	         globalization,         /* Globalization method */
 	         uscale,                /* Scalings for the variable */

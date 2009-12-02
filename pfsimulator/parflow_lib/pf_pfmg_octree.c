@@ -548,9 +548,11 @@ double       *temp_data;
 			       set_box = hypre_BoxCreate();
 			       hypre_BoxSetExtents(set_box, ilo, ihi); 
 			       
+                               /* IMF: commented print statement
 			       amps_Printf("hypre symm matrix value box : %d (%d, %d, %d) (%d, %d, %d)\n", PV_l,
 					   ilo[0], ilo[1], ilo[2], ihi[0], ihi[1], ihi[2]);
-			       
+			       */
+                               
 			       /*
 				 Note that loop over stencil's is necessary due to hypre
 				 interface wanting stencil values to be contiguous.

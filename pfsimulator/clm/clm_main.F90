@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine clm_main (clm, day)
+subroutine clm_main (clm,day,gmt)
 
   ! CLM Model/Science PHILOSOPHY:
   !   The Common Land Model (CLM) is being developed by a
@@ -101,10 +101,6 @@ subroutine clm_main (clm, day)
   !      -> clm_balchk
   !      -> clm_hydro_soil
 
-  !
-  !
-
-
   ! CLM_MAIN INPUTS (through clm module)
   !   istep,dtime,latdeg 
   !
@@ -167,7 +163,8 @@ subroutine clm_main (clm, day)
 
   ! ------------------- arguments -----------------------------------
   type (clm1d), intent(inout) :: clm    !CLM 1-D Module
-  real(r8)    , intent(in) :: day       !needed for zenith angle calc
+  real(r8)    , intent(in)    :: day    !needed for zenith angle calc
+  real(r8)    , intent(in)    :: gmt    !needed for irrigation schedule @IMF
   ! -----------------------------------------------------------------
 
   ! ------------------- local ---------------------------------------
@@ -184,9 +181,9 @@ subroutine clm_main (clm, day)
   ! Albedos 
   ! -----------------------------------------------------------------
 
-  call clm_coszen (clm, day, coszen)
+  call clm_coszen (clm,day,coszen)
 
-  call clm_surfalb (clm, coszen)
+  call clm_surfalb (clm,coszen)
 
   ! -----------------------------------------------------------------
   ! Surface Radiation
@@ -236,6 +233,18 @@ subroutine clm_main (clm, day)
      !@ Why is it handled this way and not as follows: clm%begwb = clm%endwb ????
 
      clm%begwb = clm%endwb
+
+     ! Apply irrigation
+     ! IMF @ NOTE: 
+     ! New irrigation scheme gives three options: Spray, Drip, Instant
+     ! Irrigation is not applied *before* clm_hydro_canopy to allow intercpetion of spray irrigation
+     ! clm_hydro_irrig determines whether to irrigate and how much
+     ! ...spray and drip irrigation are then applied in clm_hydro_canopy by adding 
+     !    qflx_qirr to the rain rate or throughfall, respectively.
+     ! ...instant irrigation (i.e., artificial inflation of soil moisture) is applied 
+     !    in ParFlow at the next dt by adding qflx_qirr_inst to pf_flux
+
+     call clm_hydro_irrig (clm,gmt)
 
      ! Determine canopy interception and precipitation onto ground surface.
      ! Determine the fraction of foliage covered by water and the fraction
@@ -291,8 +300,9 @@ subroutine clm_main (clm, day)
      clm%t_grnd = clm%t_soisno(clm%snl+1)
 
      ! Irrigate crops if necessary
-
-     if (clm%itypwat == istsoil) call clm_hydro_irrig (clm)
+     ! IMF @ 
+     ! Irrigation now called above, before clm_hydro_canopy, to allow intercpetion of spray irrigation 
+     ! if (clm%itypwat == istsoil) call clm_hydro_irrig (clm)
 
      !@Stefan: Major parts below have been moved to pf_couple.f90 to calculated the mass balance
      !@ Determine volumetric soil water

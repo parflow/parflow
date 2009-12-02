@@ -85,6 +85,7 @@ subroutine drv_readclmin(drv,grid,rank)
      if (vname == 'mina')        call drv_get1drvar(drv%mina)  
      if (vname == 'udef')        call drv_get1drvar(drv%udef)  
      if (vname == 'vclass')      call drv_get1divar(drv%vclass)  
+
 ! CLM files
 
      if (vname == 'vegtf')       call drv_get1dcvar(drv%vegtf)  

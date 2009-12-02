@@ -223,11 +223,10 @@ subroutine clm_thermal (clm)
      psit = max(clm%smpmin, psit)
      !@ Stefan: replace original psit with values from Parflow
      !    do i=1,nlevsoi
-     ! @RMM this need no-longer be a loop, since psit is just set to the top
-     ! soil layer
+     !@ RMM this need no-longer be a loop, since psit is just set to the top soil layer
      if (clm%pf_press(1)>= 0.0d0)  psit = 0.0d0
-     if (clm%pf_press(1) < 0.0d0)   psit = clm%pf_press(1)
-     !     enddo  
+     if (clm%pf_press(1) < 0.0d0)  psit = clm%pf_press(1)
+     !    enddo  
 !@RMM
 ! added beta-type formulation depending on soil moisture, the lower value is hard-wired
 ! to 0.1, this should either be set to the residual saturation for that layer
@@ -236,26 +235,19 @@ subroutine clm_thermal (clm)
      case (0)    ! none
      temp_alpha = 1.0d0
      case (1)    ! linear
-    temp_alpha =   (clm%pf_vol_liq(1) - clm%res_sat*clm%watsat(1)) /(clm%watsat(1) - clm%res_sat*clm%watsat(1))
-!print*, temp_alpha, clm%pf_vol_liq(1)
-
+     temp_alpha = (clm%pf_vol_liq(1) - clm%res_sat*clm%watsat(1)) /(clm%watsat(1) - clm%res_sat*clm%watsat(1))
      case (2)    ! cosine, like ISBA
-    temp_alpha =   0.5d0*(1.0d0 - cos(((clm%pf_vol_liq(1) - clm%res_sat*clm%watsat(1)) /(clm%watsat(1) - clm%res_sat*clm%watsat(1)))*3.141d0))     
+     temp_alpha = 0.5d0*(1.0d0 - cos(((clm%pf_vol_liq(1) - clm%res_sat*clm%watsat(1)) /(clm%watsat(1) - clm%res_sat*clm%watsat(1)))*3.141d0))     
      end select
      
-    if (temp_alpha < 0.0) temp_alpha = 0.00d0
-    if (temp_alpha > 1.) temp_alpha = 1.d0
+     if (temp_alpha < 0.0) temp_alpha = 0.00d0
+     if (temp_alpha > 1.) temp_alpha = 1.d0
 
-!print*, temp_alpha
-
-hr   = dexp(psit/roverg/tg)
-!if (clm%pf_press(1) < -150000.d0) hr = 0.0d0
-!print*, hr, temp_alpha, psit, roverg, tg, clm%pf_vol_liq(1),clm%watsat(1), clm%pf_press(1)
-
+     hr   = dexp(psit/roverg/tg)
+     ! if (clm%pf_press(1) < -150000.d0) hr = 0.0d0
+     ! print*, hr, temp_alpha, psit, roverg, tg, clm%pf_vol_liq(1),clm%watsat(1), clm%pf_press(1)
      ! cutoff ET at -150m
-!write(88,*) clm%istep, psit, clm%pf_press(1), hr, temp
-!if (clm%pf_press(1)<=-150000.0d0) hr = 0.d0
-!write(88,*) hr, temp
+     ! if (clm%pf_press(1)<=-150000.0d0) hr = 0.d0
      qred = (1.-clm%frac_sno)*hr + clm%frac_sno
   else
      hr   = 0.
@@ -443,34 +435,30 @@ hr   = dexp(psit/roverg/tg)
 ! to 0.1, this should either be set to the residual saturation for that layer
 ! or made a user input via PF
 ! a root zone average is taken here
-     select case (clm%vegwaterstresstype)
-     case (0)     ! none
-     temp = 1.0d0
-     case (1)     ! pressure type
-     temp = ((clm%wilting_point*1000.d0 - clm%pf_press(i))/(clm%wilting_point*1000.d0 - clm%field_capacity*1000.d0) )
-     case (2)     ! SM type
-     temp = (clm%pf_vol_liq(i) - clm%wilting_point*clm%watsat(i)) /(clm%field_capacity*clm%watsat(i) - clm%wilting_point*clm%watsat(i))
-     end select
-     if (temp < 0.) temp = 0.
-     if (temp > 1.) temp = 1.
-     temp_rz = temp ** clm%vw
-!          temp_rz =  temp ** clm%vw
+           select case (clm%vegwaterstresstype)
+           case (0)     ! none
+           temp = 1.0d0
+           case (1)     ! pressure type
+           temp = ((clm%wilting_point*1000.d0 - clm%pf_press(i))/(clm%wilting_point*1000.d0 - clm%field_capacity*1000.d0) )
+           case (2)     ! SM type
+           temp = (clm%pf_vol_liq(i) - clm%wilting_point*clm%watsat(i)) /(clm%field_capacity*clm%watsat(i) - clm%wilting_point*clm%watsat(i))
+           end select
+           if (temp < 0.) temp = 0.
+           if (temp > 1.) temp = 1.
+           temp_rz = temp ** clm%vw
         else
            temp2 = 0.01d0
         endif
-
-!           temp_rz = temp_rz / float(nlevsoi)
-           clm%btran = clm%btran + clm%rootfr(i)*temp_rz
-        enddo
+!       temp_rz = temp_rz / float(nlevsoi)
+        clm%btran = clm%btran + clm%rootfr(i)*temp_rz
+     enddo
 
 !@RMM
 ! added a transpiration cutoff depending on soil moisture, the value is hard-wired
 ! to 0.1, this should either be set to the residual saturation for that layer
 ! or made a user input via PF
-        if ( (clm%vegwaterstresstype == 1).and.(clm%pf_press(1)<=clm%wilting_point) ) clm%btran = 0.0d0
-        if ( (clm%vegwaterstresstype == 2).and.(clm%pf_vol_liq(1)<=clm%wilting_point*clm%watsat(1)) ) clm%btran = 0.0d0
-
-
+     if ( (clm%vegwaterstresstype == 1).and.(clm%pf_press(1)<=clm%wilting_point) ) clm%btran = 0.0d0
+     if ( (clm%vegwaterstresstype == 2).and.(clm%pf_vol_liq(1)<=clm%wilting_point*clm%watsat(1)) ) clm%btran = 0.0d0
 
      call clm_leaftem(z0mv,z0hv,z0qv,thm,th,thv,tg,qg,dqgdT,htvp,sfacx,     &
           dqgmax,emv,emg,dlrad,ulrad,cgrnds,cgrndl,cgrnd,clm)
@@ -595,11 +583,9 @@ hr   = dexp(psit/roverg/tg)
 
   if (clm%qflx_evap_soi >= 0.) then
      ! Do not allow for sublimation in melting (melting ==> evap. ==> sublimation)
- !    clm%qflx_evap_grnd = min(clm%h2osoi_liq(clm%snl+1)/clm%dtime, clm%qflx_evap_soi)
-       clm%qflx_evap_grnd = clm%qflx_evap_soi    
+     ! clm%qflx_evap_grnd = min(clm%h2osoi_liq(clm%snl+1)/clm%dtime, clm%qflx_evap_soi)
+     clm%qflx_evap_grnd = clm%qflx_evap_soi    
      clm%qflx_sub_snow = clm%qflx_evap_soi - clm%qflx_evap_grnd
-!    write(88,*) 'qflx_evap_grnd, qflx_evap_soi'
-!    write(88,*) clm%qflx_evap_grnd, clm%h2osoi_liq(clm%snl+1)/clm%dtime, clm%qflx_evap_soi
   else
      if (tg < tfrz) then
         clm%qflx_dew_snow = abs(clm%qflx_evap_soi)
@@ -613,7 +599,7 @@ hr   = dexp(psit/roverg/tg)
   clm%eflx_lwrad_out = ulrad &
        + (1-clm%frac_veg_nosno)*(1.-emg)*clm%forc_lwrad &
        + (1-clm%frac_veg_nosno)*emg*sb * tssbef(clm%snl+1)**4 &
-                                ! For conservation we put the increase of ground longwave to outgoing
+       ! For conservation we put the increase of ground longwave to outgoing
        + 4.*emg*sb*tssbef(clm%snl+1)**3*tinc
 
   ! Radiative temperature

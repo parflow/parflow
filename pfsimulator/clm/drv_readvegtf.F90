@@ -153,7 +153,7 @@ subroutine drv_readvegtf (drv,grid,tile,clm,rank)
            rsum=rsum+grid(c,r)%fgrd(t)
         enddo
 
-        if (rsum > 0.0) then  ! Renormalize veg fractions within a grid to 1
+        if (rsum > 0.0) then   ! Renormalize veg fractions within a grid to 1
            do t=1,drv%nt       ! Renormalize SUMT back to 1.0
               if (rsum > 0.0)grid(c,r)%fgrd(t)=grid(c,r)%fgrd(t)/rsum
            enddo
@@ -193,7 +193,7 @@ subroutine drv_readvegtf (drv,grid,tile,clm,rank)
   write(*,*) 'Size of Tile-Space Dimension:',nchp
   write(*,*) 'Actual Number of Tiles:',drv%nch,drv%nt
   write(*,*)
-
   close(2)
   return
+
 end subroutine drv_readvegtf

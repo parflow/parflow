@@ -26,11 +26,11 @@ character*40 dem_filename, pfsol_filename
 ! input block, should be read in and made more general
 
 nx_dem = 128   ! num dem pnts in x
-ny_dem = 88   ! num dem pnts in y
-x0 = 0.0    ! origin coord, y
-y0 = 0.0    ! origin coord, x
-dx = 1000.0   ! dx
-dy = 1000.0   ! dy
+ny_dem = 88    ! num dem pnts in y
+x0 = 0.0       ! origin coord, y
+y0 = 0.0       ! origin coord, x
+dx = 1000.0    ! dx
+dy = 1000.0    ! dy
 xmax = float(nx_dem)*dx + x0
 ymax = float(ny_dem)*dy + y0
 
@@ -48,7 +48,7 @@ allocate(DEM(nx_dem,ny_dem),points(num_points,3),triangles(num_triangles,3),  &
 patches(num_patches,num_triangles),num_tri_patches(num_triangles),bottom_elev(nx_dem,ny_dem) )
 
 bottom_elev = 250.  ! elevation of the bottom of the domain, init to 0.
-dem = 0.  ! elevation of the top of the domain, init to 0.
+dem = 0.            ! elevation of the top of the domain, init to 0.
 
 dem_filename = 'corr.lw.1km.dem.txt'
 
@@ -66,8 +66,6 @@ read(10,*) dem(i,j)
 end do
 end do
 close(10)
- 
-   
 
 !constant bottom, dem can be read from file
 !open(10,file=trim(dem_filename))

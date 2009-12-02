@@ -36,7 +36,8 @@ module clmtype
      integer :: itypwat    ! water type
      logical :: lakpoi     ! true => lake point
      logical :: baresoil   ! true => bare soil  
-     logical :: irrig      ! true => for irrigated soil
+     ! logical :: irrig      ! true => for irrigated soil
+     integer :: irrig      ! 0 = no irrigation (false); 1 = irrigation (true)
      integer :: itypprc    ! precipitation type (from met data) 1= rain 2 =snow
      integer :: isoicol    ! color classes for soil albedos
      real(r8):: latdeg     ! latitude  (degrees)
@@ -222,15 +223,24 @@ module clmtype
      real(r8) :: qflx_top_soil  ! net water input into soil from top (mm/s)
      real(r8) :: qflx_prec_intr ! interception of precipitation [mm/s]
      real(r8) :: qflx_prec_grnd ! water onto ground including canopy runoff [kg/(m2 s)]
-     real(r8) :: qflx_qirr      ! qflx_surf directed to irrig (mm H2O/s)
+     real(r8) :: qflx_qirr      ! qflx_surf directed to irrig (mm H2O/s)    **IMF irrigation applied at surface [mm/s] (added to rain or throughfall, depending)
+     real(r8) :: qflx_qirr_inst(nlevsoi)   ! new                            **IMF irrigation applied by 'instant' method [mm/s] (added to pf_flux)
      real(r8) :: qflx_qrgwl     ! qflx_surf at glaciers, wetlands, lakes
      real(r8) :: btran          ! transpiration wetness factor (0 to 1) 
      real(r8) :: smpmax         ! !@RMM not used, replaced below: wilting point potential in mm (new)
+
      real(r8) :: wilting_point  ! wilting point from PF in m or [-] depending @RMM
      real(r8) :: field_capacity ! field capacity from PF in m or [-] depending @RMM
      integer  :: vegwaterstresstype ! water stress formution type from PF @RMM
      integer  :: beta_type      ! evap/beta formution type from PF @RMM
      real(r8) :: res_sat        ! residual saturation from PF [-] for use in beta @RMM
+
+     integer  :: irr_type       ! irrigation type (none,spray,drip,instant) @IMF
+     integer  :: irr_cycle      ! irrigation cycle (constant, deficit) @IMF
+     real(r8) :: irr_rate       ! irrigation application rate for spray/drip irrig. (mm/s) @IMF
+     real(r8) :: irr_start      ! irrigation daily start time for constant cycle (GMT) @IMF
+     real(r8) :: irr_stop       ! irrigation daily stop time for constant cycle (GMT) @IMF
+     real(r8) :: irr_threshold  ! irrigation soil moisture threshold for deficit cycle @IMF
      
      real(r8) :: eflx_snomelt   ! added to be consistent with lsm hybrid code
      real(r8) :: eflx_impsoil   ! implicit evaporation for soil temperature equation (W/m**2)
@@ -251,7 +261,7 @@ module clmtype
      real(r8) :: acc_errseb            !accumulation of surface energy balance error
      real(r8) :: acc_errh2o            !accumulation of water balance error
 
-!forcing
+! forcing
 
      real(r8) :: forc_solad(numrad)    !direct beam radiation (vis=forc_sols , nir=forc_soll )
      real(r8) :: forc_solai(numrad)    !diffuse radiation     (vis=forc_solsd, nir=forc_solld)

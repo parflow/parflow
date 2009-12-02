@@ -7,7 +7,7 @@ subroutine read_array(drv,clm,rank)
   implicit none
 
   type (drvdec):: drv
-  type (clm1d) :: clm(drv%nch)	 !CLM 1-D Module
+  type (clm1d) :: clm(drv%nch)   !CLM 1-D Module
 
   integer i,j,k,t,rank
   real(r8) hcond(drv%nc,drv%nr,nlevsoi)

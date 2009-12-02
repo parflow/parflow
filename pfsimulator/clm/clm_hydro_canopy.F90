@@ -65,6 +65,13 @@ subroutine clm_hydro_canopy (clm)
   ! [1] Canopy interception and precipitation onto ground surface
   ! ========================================================================
 
+  ! IMF -- Add spray irrigation to rain rate
+  !        (NOTE: Add directly to clm%forc_rain, not prcp)
+  !        (NOTE: qflx_qirr is set to 0. UNLESS cycle,time,veg-type match up...see clm_hydro_irrig)
+  if ( (clm%irrig==1) .and. (clm%irr_type==1) ) then
+     clm%forc_rain = clm%forc_rain + clm%qflx_qirr              ! spray added to rain rate (above canopy)
+  endif   
+
   ! 1.1 Add precipitation to leaf water 
 
   if (clm%itypwat==istsoil .OR. clm%itypwat==istwet) then       ! soil or wetland point
@@ -73,7 +80,8 @@ subroutine clm_hydro_canopy (clm)
      qflx_through = 0.                 ! precipitation direct through canopy
      clm%qflx_prec_intr = 0.           ! intercepted precipitation  
 
-     prcp = clm%forc_rain + clm%forc_snow  ! total precipitation
+     ! IMF: prcp is now total water applied to canopy -- rain + snow + spray irrig.
+     prcp = clm%forc_rain + clm%forc_snow    ! total precipitation 
 
      if (clm%frac_veg_nosno == 1 .AND. prcp > 0.) then
 
@@ -107,7 +115,7 @@ subroutine clm_hydro_canopy (clm)
 
         if (xrun > 0.) then
            qflx_candrip = xrun
-           clm%h2ocan = h2ocanmx
+           clm%h2ocan   = h2ocanmx
         endif
 
      endif
@@ -115,18 +123,25 @@ subroutine clm_hydro_canopy (clm)
   else if (clm%itypwat == istice) then  !land ice
 
      clm%qflx_prec_intr = 0.
-     clm%h2ocan = 0.
+     clm%h2ocan   = 0.
      qflx_candrip = 0.
      qflx_through = 0.  
 
   endif
 
+  ! IMF -- Add drip irrigation to throughfall
+  !        (NOTE: Add directly to throughfall, bypassing canopy)
+  !        (NOTE: qflx_qirr is set to 0. UNLESS cycle,time,veg-type match up...see clm_hydro_irrig)
+  if ( (clm%irrig==1) .and. (clm%irr_type==2) ) then
+     qflx_through = qflx_through + clm%qflx_qirr             ! Drip irrigation added to throughfall, below canopy 
+  endif
+
   ! 1.2 Precipitation onto ground (kg/(m2 s))
 
   if (clm%frac_veg_nosno == 0) then
-     clm%qflx_prec_grnd = clm%forc_rain + clm%forc_snow
+     clm%qflx_prec_grnd   = clm%forc_rain + clm%forc_snow
   else
-     clm%qflx_prec_grnd = qflx_through + qflx_candrip  
+     clm%qflx_prec_grnd   = qflx_through  + qflx_candrip  
   endif
 
   ! 1.3 The percentage of liquid water by mass, which is arbitrarily set to 
@@ -136,7 +151,6 @@ subroutine clm_hydro_canopy (clm)
      flfall = 1.                              ! fraction of liquid water within falling precip.
      clm%qflx_snow_grnd = 0.                  ! ice onto ground (mm/s)
      clm%qflx_rain_grnd = clm%qflx_prec_grnd  ! liquid water onto ground (mm/s)
-!	 print*, clm%qflx_prec_grnd
      dz_snowf = 0.                            ! rate of snowfall, snow depth/s (m/s)
   else
      if (clm%forc_t <= tfrz) then
@@ -187,7 +201,7 @@ subroutine clm_hydro_canopy (clm)
      vegt     = clm%frac_veg_nosno*(clm%elai + clm%esai)
      dewmxi   = 1.0/clm%dewmx
      clm%fwet = ((dewmxi/vegt)*clm%h2ocan)**.666666666666
-     clm%fwet = min (clm%fwet,1.0)     ! Check for maximum limit of fwet
+     clm%fwet = min(clm%fwet,1.0)     ! Check for maximum limit of fwet
      clm%fdry = (1.-clm%fwet)*clm%elai/(clm%elai+clm%esai)
   else
      clm%fwet = 0.

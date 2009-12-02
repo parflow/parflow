@@ -56,12 +56,11 @@ subroutine drv_getforce (drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf
   real(r8) solar     ! incident solar radiation [w/m2]
   real(r8) prcp      ! precipitation [mm/s]
   integer t,i,j,k,l  ! Looping indices
-  integer j_incr     ! Increment for j to convert 1D vector to 3D array
-!  integer nx,ny      ! Array sizes
+! integer nx,ny      ! Array sizes
   
 !=== End Variable List ===================================================
-!=== Increment Time Step Counter
 
+!=== Increment Time Step Counter
 ! clm%istep=clm%istep+1 
   clm%istep=istep_pf
 
@@ -75,7 +74,6 @@ subroutine drv_getforce (drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf
 
   ! IMF: modified for 2D
   ! Loop over tile space (convert from pf-to-clm)
-  j_incr = (nx+2)
   do t = 1,drv%nch
 
      i = tile(t)%col

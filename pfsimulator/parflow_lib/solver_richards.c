@@ -100,8 +100,16 @@ typedef struct
    int                clm_veg_function;   /* CLM veg function for water stress 0=none, 1=press, 2=sat */
    double             clm_veg_wilting;    /* CLM veg function wilting point in meters or soil moisture */
    double             clm_veg_fieldc;     /* CLM veg function field capacity in meters or soil moisture */
+
+   int                clm_irr_type;       /* CLM irrigation type flag -- 0=none, 1=Spray, 2=Drip, 3=Instant */
+   int                clm_irr_cycle;      /* CLM irrigation cycle flag -- 0=Constant, 1=Deficit */
+   double             clm_irr_rate;       /* CLM irrigation application rate [mm/s] */
+   double             clm_irr_start;      /* CLM irrigation schedule -- start time of constant cycle [GMT] */
+   double             clm_irr_stop;       /* CLM irrigation schedule -- stop time of constant cyle [GMT] */
+   double             clm_irr_threshold;  /* CLM irrigation schedule -- soil moisture threshold for deficit cycle */
+
 #endif
- 
+
    int                print_lsm_sink;     /* print LSM sink term? */
    int                write_silo_CLM;     /* write CLM output as silo? */
    int                write_CLM_binary;   /* write binary output (**default**)? */
@@ -167,13 +175,18 @@ typedef struct
    Vector      *t_grnd;               /* CLM soil surface temperature [K] */
    Vector      *tsoil;                /* CLM soil temp, all 10 layers [K] */
    Grid        *gridTs;               /* New grid fro tsoi (nx*ny*10) */
+
+   /* IMF: vars for printing clm irrigation output */
+   Vector      *qflx_qirr;            /* Irrigation applied at surface -- spray or drip */
+   Vector      *qflx_qirr_inst;       /* Irrigation applied by inflating soil moisture -- "instant" */
+
    /* IMF: vars for distributed met focing */
    Vector      *sw_forc;                /* shortwave radiation forcing [W/m^2] */  
    Vector      *lw_forc;                /* longwave radiation forcing [W/m^2] */
    Vector      *prcp_forc;              /* precipitation [mm/s] */
    Vector      *tas_forc;               /* air temp [K] @ ref height (hgt set in drv_clmin.dat, currently 2m) */
-   Vector      *u_forc;                 /* wind in x-dir (east-west) [m/s] @ ref height (hgt set in drv_clmin.dat, currently 10m) */
-   Vector      *v_forc;                 /* wind in y-dir (south-north) [m/s] @ ref height (hgt set in drv_clmin.dat, currently 10m)*/
+   Vector      *u_forc;                 /* east-west wind [m/s] @ ref height (hgt set in drv_clmin.dat, currently 10m) */
+   Vector      *v_forc;                 /* south-north wind [m/s] @ ref height (hgt set in drv_clmin.dat, currently 10m)*/
    Vector      *patm_forc;              /* surface air pressure [Pa] */
    Vector      *qatm_forc;              /* surface air humidity [kg/kg] @ ref height (hgt set in drv_clmin.dat, currently 2m) */ 
 #endif
@@ -364,10 +377,11 @@ void SetupRichards(PFModule *this_module) {
 
       instance_xtra -> pressure = NewVector( grid, 1, 1 );
       InitVectorAll(instance_xtra -> pressure, -FLT_MAX);
-//      InitVectorAll(instance_xtra -> pressure, 0.0);
+      // InitVectorAll(instance_xtra -> pressure, 0.0);      
 
       instance_xtra -> saturation = NewVector( grid, 1, 1 );
       InitVectorAll(instance_xtra -> saturation, -FLT_MAX);
+      // InitVectorAll(instance_xtra -> saturation, 0.0);
 
       instance_xtra -> density = NewVector( grid, 1, 1 );
       InitVectorAll(instance_xtra -> density, 0.0);
@@ -441,6 +455,13 @@ void SetupRichards(PFModule *this_module) {
       instance_xtra -> tsoil = NewVector( gridTs, 1, 1);
       InitVectorAll(instance_xtra -> tsoil, 0.0);
 
+      /*IMF Initialize variables for CLM irrigation output */
+      instance_xtra -> qflx_qirr = NewVector( grid2d, 1, 1 );
+      InitVectorAll(instance_xtra -> qflx_qirr, 0.0);
+
+      instance_xtra -> qflx_qirr_inst = NewVector( gridTs, 1, 1);
+      InitVectorAll(instance_xtra -> qflx_qirr_inst, 0.0);
+
       /*IMF Initialize variables for CLM forcing fields
             SW rad, LW rad, precip, T(air), U, V, P(air), q(air) */
       instance_xtra -> sw_forc = NewVector( grid2d, 1, 1 );
@@ -472,7 +493,7 @@ void SetupRichards(PFModule *this_module) {
       {
          // Set filename for 1D forcing file
          sprintf(filename, "%s/%s", public_xtra -> clm_metpath, public_xtra -> clm_metfile);
-         printf( filename );
+
          // Open file, count number of lines
          if ( (metf_temp = fopen(filename,"r")) == NULL )
          {
@@ -732,7 +753,7 @@ void AdvanceRichards(PFModule *this_module,
 
    /* IMF: For CLM met forcing (local to AdvanceRichards) */
    int           istep;                        // IMF: counter for clm output times
-   int           n;                            // IMF: index vars for looping over subgrid data
+   int           i,j,n;                        // IMF: index vars for looping over subgrid data
    double        sw,lw,prcp,tas,u,v,patm,qatm; // IMF: 1D forcing vars (local to AdvanceRichards) 
    double       *sw_data,*lw_data,*prcp_data,  // IMF: 2D forcing vars (SubvectorData) (local to AdvanceRichards)
                 *tas_data,*u_data,*v_data,*patm_data,*qatm_data;
@@ -744,9 +765,10 @@ void AdvanceRichards(PFModule *this_module,
    /* IMF: For writing CLM output */ 
    Subvector    *eflx_lh_tot_sub, *eflx_lwrad_out_sub, *eflx_sh_tot_sub, *eflx_soil_grnd_sub,
                 *qflx_evap_tot_sub, *qflx_evap_grnd_sub, *qflx_evap_soi_sub, *qflx_evap_veg_sub, 
-                *qflx_tran_veg_sub, *qflx_infl_sub, *swe_out_sub, *t_grnd_sub, *tsoil_sub;
+                *qflx_tran_veg_sub, *qflx_infl_sub, *swe_out_sub, *t_grnd_sub, *tsoil_sub, 
+                *qflx_qirr_sub, *qflx_qirr_inst_sub;
    double       *eflx_lh, *eflx_lwrad, *eflx_sh, *eflx_grnd, *qflx_tot, *qflx_grnd, *qflx_soi, 
-                *qflx_eveg, *qflx_tveg, *qflx_in, *swe, *t_g, *t_soi;
+                *qflx_eveg, *qflx_tveg, *qflx_in, *swe, *t_g, *t_soi, *qirr, *qirr_inst;
    int           clm_file_dir_length;
 #endif
 
@@ -781,7 +803,7 @@ void AdvanceRichards(PFModule *this_module,
    /*                Begin the main computational section                 */
    /*                                                                     */
    /***********************************************************************/
-
+ 
    // Initialize ct in either case
    ct = start_time;
    if(compute_time_step) {
@@ -817,6 +839,7 @@ void AdvanceRichards(PFModule *this_module,
    }
 
    t     = start_time;
+
 #ifdef HAVE_CLM
    istep = public_xtra -> clm_istep;         // IMF: time counter for CLM (not needed unless CLM writing binary output)
 #endif
@@ -837,7 +860,6 @@ void AdvanceRichards(PFModule *this_module,
 
          BeginTiming(CLMTimingIndex);
 
-
 	 // SGS FIXME this should not be here, should not be reading input at this point
 	 // Should get these values from somewhere else.
 	 /* sk: call to the land surface model/subroutine*/
@@ -845,7 +867,6 @@ void AdvanceRichards(PFModule *this_module,
 	 int p = GetInt("Process.Topology.P");
 	 int q = GetInt("Process.Topology.Q");
 	 int r = GetInt("Process.Topology.R");
-
 	 int is;
 
          /* IMF: If 1D met forcing */ 
@@ -924,6 +945,8 @@ void AdvanceRichards(PFModule *this_module,
 	    swe_out_sub        = VectorSubvector(instance_xtra -> swe_out,is);
 	    t_grnd_sub         = VectorSubvector(instance_xtra -> t_grnd,is);
             tsoil_sub          = VectorSubvector(instance_xtra -> tsoil,is);
+            qflx_qirr_sub      = VectorSubvector(instance_xtra -> qflx_qirr,is);
+            qflx_qirr_inst_sub = VectorSubvector(instance_xtra -> qflx_qirr_inst,is);
 
             /* IMF: Subvectors -- CLM met forcings */	 
             sw_forc_sub        = VectorSubvector(instance_xtra -> sw_forc,is);
@@ -971,6 +994,8 @@ void AdvanceRichards(PFModule *this_module,
 	    swe            = SubvectorData(swe_out_sub);
 	    t_g            = SubvectorData(t_grnd_sub);
             t_soi          = SubvectorData(tsoil_sub);
+            qirr           = SubvectorData(qflx_qirr_sub);
+            qirr_inst      = SubvectorData(qflx_qirr_inst_sub);
  
             /* IMF: Subvector Data -- CLM met forcings */
             sw_data        = SubvectorData(sw_forc_sub);
@@ -997,7 +1022,6 @@ void AdvanceRichards(PFModule *this_module,
                   patm_data[n] = patm;
                   qatm_data[n] = qatm;
                }
-
             }     
             
 	    ip = SubvectorEltIndex(p_sub, ix, iy, iz);
@@ -1024,7 +1048,14 @@ void AdvanceRichards(PFModule *this_module,
                                public_xtra -> clm_veg_function,
                                public_xtra -> clm_veg_wilting,
                                public_xtra -> clm_veg_fieldc,
-                               public_xtra -> clm_res_sat);
+                               public_xtra -> clm_res_sat, 
+                               public_xtra -> clm_irr_type, 
+                               public_xtra -> clm_irr_cycle,
+                               public_xtra -> clm_irr_rate, 
+                               public_xtra -> clm_irr_start,
+                               public_xtra -> clm_irr_stop, 
+                               public_xtra -> clm_irr_threshold,
+                               qirr, qirr_inst);
 
                   /* IMF Write CLM? */
                   if ( (instance_xtra -> iteration_number % (-(int)public_xtra -> clm_dump_interval)) == 0 )
@@ -1090,6 +1121,27 @@ void AdvanceRichards(PFModule *this_module,
                        sprintf(file_postfix, "t_soil.%05d", instance_xtra -> file_number );
                        WriteSilo(file_prefix, file_postfix, instance_xtra -> tsoil,
                                  t, instance_xtra -> file_number, "TemperatureSoil");
+
+                       // IMF -- TEST
+                       // sprintf(file_postfix, "prec_test.%05d", instance_xtra -> file_number );
+                       //WriteSilo(file_prefix, file_postfix, instance_xtra -> prcp_forc,
+                       //          t, instance_xtra -> file_number, "Precipitation");
+ 
+                       // IMF: irrigation applied to surface -- spray or drip
+                       if ( public_xtra -> clm_irr_type == 1 || public_xtra -> clm_irr_type == 2 )
+                          {
+                            sprintf(file_postfix, "qflx_qirr.%05d" ,instance_xtra -> file_number );
+                            WriteSilo(file_prefix, file_postfix, instance_xtra -> qflx_qirr, 
+                            t, instance_xtra -> file_number, "IrrigationSurface");
+                          }
+                       
+                       // IMF: irrigation applied directly as soil moisture flux -- "instant"
+                       if ( public_xtra -> clm_irr_type == 3 )
+                          {
+                            sprintf(file_postfix, "qflx_qirr_inst.%05d" ,instance_xtra -> file_number );
+                            WriteSilo(file_prefix, file_postfix, instance_xtra -> qflx_qirr_inst,
+                            t, instance_xtra -> file_number, "IrrigationInstant");
+                          }
 
                      } // end of write silo 
 		  break;		  
@@ -1955,6 +2007,8 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    NameArray      beta_switch_na;
    NameArray      vegtype_switch_na;
    NameArray      metforce_switch_na;
+   NameArray      irrtype_switch_na;
+   NameArray      irrcycle_switch_na;
 #endif
 
    switch_na = NA_NewNameArray("False True");
@@ -2166,28 +2220,16 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
         case 0:
         {
             public_xtra -> clm_metforce = 0;
-
-            // IMF testing...
-            printf("public_xtra -> clm_metforce = 0 --> NO FORCING\n");
-
-           break;
+            break;
         }
         case 1:
         {
             public_xtra -> clm_metforce = 1;
- 
-            // IMF testing...
-            printf("public_xtra -> clm_metforce = 1 --> 1D forcing\n");
- 
-           break;
+            break;
         }
         case 2:
         {
             public_xtra -> clm_metforce = 2;
-
-            // IMF testing...
-            printf("public_xtra -> clm_metforce = 2 --> 2D forcing\n");
-            
             break;
         }
         default:
@@ -2197,6 +2239,88 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
         }
    }
    NA_FreeNameArray(metforce_switch_na);
+
+   /* IMF added irrigation type, rate, value keys for irrigating in CLM */
+   /* IrrigationType -- none, Drip, Spray, Instant (default == none) */
+   irrtype_switch_na = NA_NewNameArray("none Spray Drip Instant");
+   sprintf(key, "%s.CLM.IrrigationType", name);
+   switch_name = GetStringDefault(key, "none");
+   switch_value = NA_NameToIndex(irrtype_switch_na, switch_name);
+   switch (switch_value)
+   {
+        case 0:     // None
+        {
+            public_xtra -> clm_irr_type = 0;
+            break;
+        }
+        case 1:     // Spray
+        {
+            public_xtra -> clm_irr_type = 1;
+            break;
+        }
+        case 2:     // Drip
+        {
+            public_xtra -> clm_irr_type = 2;
+            break;
+        }
+        case 3:     // Instant
+        {
+            public_xtra -> clm_irr_type = 3;
+            break;
+        }
+        default:
+        {
+            InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
+                       key);
+        }
+   }
+   NA_FreeNameArray(irrtype_switch_na);
+
+   /* IrrigationCycle -- Constant, Deficit (default == Deficit) */
+   /* (Constant = irrigate based on specified time cycle [IrrigationStartTime,IrrigationEndTime]; 
+       Deficit  = irrigate based on soil moisture criteria [IrrigationDeficit]) */
+   irrcycle_switch_na = NA_NewNameArray("Constant Deficit");
+   sprintf(key, "%s.CLM.IrrigationCycle", name);
+   switch_name = GetStringDefault(key, "Constant");
+   switch_value = NA_NameToIndex(irrcycle_switch_na, switch_name);
+   switch (switch_value)
+   {
+        case 0:
+        {
+            public_xtra -> clm_irr_cycle = 0;
+            break;
+        }
+        case 1:
+        {
+            public_xtra -> clm_irr_cycle = 1;
+            break;
+        }
+        default:
+        {
+            InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
+                       key);
+        }
+   }
+   NA_FreeNameArray(irrcycle_switch_na);
+
+   /* IrrigationValue -- Application rate for Drip or Spray irrigation */ 
+   sprintf(key, "%s.CLM.IrrigationRate", name);
+   public_xtra -> clm_irr_rate = GetDoubleDefault(key,0.0);
+
+   /* IrrigationStartTime -- Start time of daily irrigation if IrrigationCycle == Constant */
+   /* IrrigationStopTime  -- Stop time of daily irrigation if IrrigationCycle == Constant  */
+   /* Default == start @ 12:00gmt (7am in central US), end @ 20:00gmt (3pm in central US)  */
+   /* NOTE: Times in GMT */
+   sprintf(key, "%s.CLM.IrrigationStartTime", name);
+   public_xtra -> clm_irr_start = GetDoubleDefault(key,12.0);
+   sprintf(key, "%s.IrrigationStopTime", name);
+   public_xtra -> clm_irr_stop = GetDoubleDefault(key,20.0);
+
+   /* IrrigationThreshold -- Soil moisture threshold for irrigation if IrrigationCycle == Deficit */
+   /* CLM applies irrigation whenever soil moisture < threshold */
+   sprintf(key, "%s.CLM.IrrigationThreshold", name);
+   public_xtra -> clm_irr_threshold = GetDoubleDefault(key,0.5);
+
 #endif
 
    sprintf(key, "%s.MaxIter", name);

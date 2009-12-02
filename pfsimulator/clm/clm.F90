@@ -5,7 +5,9 @@ pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,npp,npq,npr,rank,sw_pf,lw_pf,prcp_pf,tas_pf
 v_pf,patm_pf,qatm_pf,eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,qflx_tot_pf,            &
 qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf, t_soi_pf,        &
 clm_dump_interval,clm_1d_out,clm_output_dir, clm_output_dir_length,clm_bin_output_dir,        &
-write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,res_satpf)
+write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,        &
+res_satpf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,      &
+qirr_pf,qirr_inst_pf)
 
   !=========================================================================
   !
@@ -54,7 +56,7 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
   real(r8) :: evap_trans((nx+2)*(ny+2)*(nz+2))   ! ET flux from CLM to ParFlow on grid w/ ghost nodes for current proc
   real(r8) :: topo((nx+2)*(ny+2)*(nz+2))         ! mask from ParFlow 0 for inactive, 1 for active, on grid w/ ghost nodes for current proc
   real(r8) :: porosity((nx+2)*(ny+2)*(nz+2))     ! porosity from ParFlow, on grid w/ ghost nodes for current proc
-!  real(r8) :: res_sat((nx+2)*(ny+2)*(nz+2))      ! residual saturation from ParFlow, on grid w/ ghost nodes for current proc
+  !  real(r8) :: res_sat((nx+2)*(ny+2)*(nz+2))      ! residual saturation from ParFlow, on grid w/ ghost nodes for current proc
   real(r8) :: dt                                 ! parflow dt in parflow time units not CLM time units
   real(r8) :: time                               ! parflow time in parflow units
   real(r8) :: pdx,pdy,pdz                        ! parflow DX, DY and DZ in parflow units
@@ -88,18 +90,31 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
   real(r8) :: v_pf((nx+2)*(ny+2)*3)              ! v-wind, passed from PF
   real(r8) :: patm_pf((nx+2)*(ny+2)*3)           ! air pressure, passed from PF
   real(r8) :: qatm_pf((nx+2)*(ny+2)*3)           ! air specific humidity, passed from PF
-   
+
+  ! IMF -- For passing irrigation amounts to write as silo in PF
+  real(r8) :: qirr_pf((nx+2)*(ny+2)*3)           ! irrigation applied above ground -- spray or drip (2D)
+  real(r8) :: qirr_inst_pf((nx+2)*(ny+2)*(nlevsoi+2))! irrigation applied below ground -- 'instant' (3D)
+
   integer  :: clm_dump_interval                  ! dump inteval for CLM output, passed from PF, always in interval of CLM timestep, not time
   integer  :: clm_1d_out                         ! whether to dump 1d output 0=no, 1=yes
   integer  :: clm_output_dir_length
   character (LEN=clm_output_dir_length) :: clm_output_dir                ! output dir location
   integer  :: clm_bin_output_dir
   integer  :: write_CLM_binary                   ! whether to write CLM output as binary 
+
   integer  :: beta_typepf                        ! beta formulation for bare soil Evap 0=none, 1=linear, 2=cos
   integer  :: veg_water_stress_typepf            ! veg transpiration water stress formulation 0=none, 1=press, 2=sm
   real(r8) :: wilting_pointpf                    ! wilting point in m if press-type, in saturation if soil moisture type
   real(r8) :: field_capacitypf                   ! field capacity for water stress same as units above
   real(r8) :: res_satpf                          ! residual saturation from ParFlow
+
+  integer  :: irr_typepf                         ! irrigation type flag (0=none,1=spray,2=drip,3=instant)
+  integer  :: irr_cyclepf                        ! irrigation cycle flag (0=constant,1=deficit)
+  real(r8) :: irr_ratepf                         ! irrigation application rate for spray and drip [mm/s]
+  real(r8) :: irr_startpf                        ! irrigation daily start time for constant cycle
+  real(r8) :: irr_stoppf                         ! irrigation daily stop tie for constant cycle
+  real(r8) :: irr_thresholdpf                    ! irrigation threshold criteria for deficit cycle (units of soil moisture content)
+
   integer  :: j_incr,k_incr                      ! increment for j and k to convert 1D vector to 3D i,j,k array
   integer  :: i,j,k
   integer, allocatable  :: counter(:,:) 
@@ -113,7 +128,8 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
   !=== Initialize CLM
   !=========================================================================
 
-  print*, "clm.F90: istep =", istep_pf
+  print*, "clm.F90: rank =", rank, "   istep =", istep_pf
+  write(RI,*) rank
 
   !=== Read in grid size domain from PF
   drv%dx = pdx
@@ -124,10 +140,7 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
   drv%nt = 18
   drv%ts = dt*3600.d0    !  assume PF in hours, CLM in seconds
   
-  !clm_1d_out = 0
-
-  write(RI,*) rank
-
+!  clm_1d_out = 0
 !  print*, 'clm dump interval', clm_dump_interval
 !  print*, 'clm dump dir:', clm_output_dir
 !  print*, 'clm 1d:',clm_1d_out
@@ -164,7 +177,7 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
      !=== Read in the clm input file (drv_clmin.dat)
      !print *,"Read in the clm input file (drv_clmin.dat)"
 
-     call drv_readclmin (drv, grid,rank)  
+     call drv_readclmin (drv,grid,rank)  
 
      !=== Allocate memory for subgrid tile space
      !=== This is done twice, because tile space size is initially unknown        
@@ -172,22 +185,25 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
 
      !@ Stefan: I change the size of drv%nch right at the beginning, because we have 1 tile per grid cell
      !print *,"Allocate memory"
-     drv%nch = drv%nr*drv%nc*drv%nt
-     allocate (tile(drv%nch),stat=ierr); call drv_astp(ierr) 
-     allocate (clm (drv%nch),stat=ierr); call drv_astp(ierr)
+     ! drv%nch = drv%nr*drv%nc*drv%nt
+     ! allocate (tile(drv%nch),stat=ierr); call drv_astp(ierr) 
+     ! allocate (clm (drv%nch),stat=ierr); call drv_astp(ierr)
 
-     write(*,*)"Call vegetation-data-read"
-     call drv_readvegtf (drv, grid, tile, clm, rank)  !Determine actual NCH
+     ! write(*,*)"Call vegetation-data-read"
+     ! call drv_readvegtf (drv, grid, tile, clm, rank)  !Determine actual NCH
+     ! deallocate (tile,clm)                      !Save memory
 
+     ! IMF: Because we only use one tile per grid cell, we don't need to call readvegtf to determine actual nch
+     !      nch is just equal to number of cells (nr*nc)
+     !      (revert to previous setup if we ever implement multiple tiles/cell in PF.CLM)
+     drv%nch = drv%nr*drv%nc
      write(*,*)"Allocate Arrays", drv%nch
-     deallocate (tile,clm)                      !Save memory
      allocate (tile(drv%nch), stat=ierr); call drv_astp(ierr) 
      allocate (clm (drv%nch), stat=ierr); call drv_astp(ierr)
 
      ! @RMM open balance and log files- don't write these at every timestep
      ! print*, "open files" 
      open (166,file='clm_elog.txt.'//trim(adjustl(RI)))
-
      open (199,file='balance.txt.'//trim(adjustl(RI)))
      write(199,'(a59)') "istep error(%) tot_infl_mm tot_tran_veg_mm begwatb endwatb"
 
@@ -275,30 +291,38 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
 
      enddo
 
-!print*, beta_typepf,veg_water_stress_typepf,wilting_pointpf,            &
-!        field_capacitypf, res_satpf
-
-     !set up watsat and residual sat
+     ! loop over clm tile space 
+     ! set up watsat and residual sat  (RMM)
+     ! set irrigation flags (type, cycle, rate, start, stop, threshold)  (IMF)
      j_incr = nx_f 
      k_incr = (nx_f * ny_f)
      do t=1,drv%nch  ! loop over clm tile space
-        !convert t to i,j index
-             ! set up veg and beta types along w/ assoc params
-     clm(t)%beta_type = beta_typepf
-     clm(t)%vegwaterstresstype = veg_water_stress_typepf
-     clm(t)%wilting_point = wilting_pointpf
-     clm(t)%field_capacity = field_capacitypf
-     clm(t)%res_sat = res_satpf
-!     print*, t, clm(t)%beta_type, clm(t)%vegwaterstresstype, clm(t)%wilting_point, clm(t)%field_capacity, clm(t)%res_sat
-        i=tile(t)%col
+
+        ! for beta and veg stress formulations
+        clm(t)%beta_type = beta_typepf
+        clm(t)%vegwaterstresstype = veg_water_stress_typepf
+        clm(t)%wilting_point = wilting_pointpf
+        clm(t)%field_capacity = field_capacitypf
+        clm(t)%res_sat = res_satpf
+
+        ! for irrigation
+        clm(t)%irr_type  = irr_typepf
+        clm(t)%irr_cycle = irr_cyclepf
+        clm(t)%irr_rate  = irr_ratepf
+        clm(t)%irr_start = irr_startpf
+        clm(t)%irr_stop  = irr_stoppf
+        clm(t)%irr_threshold = irr_thresholdpf     
+
+        ! set clm watsat, tksatu from PF porosity
+        ! convert t to i,j index
+        i=tile(t)%col        
         j=tile(t)%row
-        ! loop from 1, number of soil layers (in CLM)
-        do k = 1, nlevsoi
+        do k = 1, nlevsoi ! loop over clm soil layers (1->nlevsoi)
            ! convert clm space to parflow space, note that PF space has ghost nodes
            l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
-           ! 	l = 1+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k)
+           ! l = 1+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k)
            clm(t)%watsat(k)=porosity(l)
-!           if (k==1) clm(t)%res_sat = res_sat(l)
+           ! if (k==1) clm(t)%res_sat = res_sat(l)
            clm(t)%tksatu(k)=clm(t)%tkmg(k)*0.57**clm(t)%watsat(k)
            ! print*, i,j,k,t,l,clm(t)%topo_mask(1),porosity(l),clm(t)%watsat(k)
         end do !k
@@ -386,9 +410,9 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
 
   do t = 1, drv%nch     !Tile loop
      clm(t)%qflx_infl_old = clm(t)%qflx_infl
-     clm(t)%qflx_tran_veg_old = clm(t)%qflx_tran_veg
-     if(clm(t)%planar_mask == 1) call clm_main (clm(t), drv%day) !@ only call if there is an active CLM cell
-  enddo ! End of the space vector loop 
+     clm(t)%qflx_tran_veg_old = clm(t)%qflx_tran_veg                    ! IMF: added gmt to next line for irrig schedule 
+     if(clm(t)%planar_mask == 1) call clm_main (clm(t),drv%day,drv%gmt) ! @ only call if there is an active CLM cell
+  enddo ! End of the space vector loop
 
   !=== Write CLM Output (timeseries model results)
   !=== note that drv_almaout needs to be completed
@@ -442,6 +466,7 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
      qflx_in_pf(l)=clm(t)%qflx_infl 
      swe_pf(l)=clm(t)%h2osno 
      t_g_pf(l)=clm(t)%t_grnd
+     qirr_pf(l)=clm(t)%qflx_qirr
   enddo
 
   !3D arrays (tsoil)
@@ -453,6 +478,7 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
      do k = 1,nlevsoi       ! Loop from 1 -> number of soil layers (in CLM)
         l = 1+i + j_incr*(j) + k_incr*(nlevsoi-(k-1))
         t_soi_pf(l)=clm(t)%t_soisno(k)
+        qirr_inst_pf(l)=clm(t)%qflx_qirr_inst(k)
      enddo
   enddo
 
@@ -461,7 +487,7 @@ write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capac
   ! call drv_restart(2,drv,tile,clm,rank)
   ! call PF couple, this transfers ET from CLM to ParFlow 
   ! as evap_trans flux	     
-  call pf_couple(drv,clm,tile,evap_trans,saturation, pressure, porosity, nx,ny,nz,j_incr, k_incr,ip,istep_pf)   
+  call pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,nz,j_incr,k_incr,ip,istep_pf)   
 
   !=== Return required surface fields to atmospheric model (return to grid space)
   call drv_clm2g (drv, grid, tile, clm)

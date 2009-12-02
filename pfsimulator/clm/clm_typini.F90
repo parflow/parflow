@@ -107,7 +107,13 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      clm(k)%field_capacity = NaN  
      clm(k)%res_sat = NaN  
      clm(k)%vegwaterstresstype = NaN  
-     clm(k)%beta_type = Nan  
+     clm(k)%beta_type = NaN  
+     clm(k)%irr_type  = NaN
+     clm(k)%irr_cycle = NaN
+     clm(k)%irr_rate = NaN
+     clm(k)%irr_start = NaN
+     clm(k)%irr_stop  = NaN
+     clm(k)%irr_threshold = NaN
 
 ! Forcing
 
@@ -245,7 +251,8 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      clm(k)%qflx_top_soil   = NaN  ! net water input into soil from top (mm/s)
      clm(k)%qflx_prec_intr  = NaN  ! interception of precipitation [mm/s]
      clm(k)%qflx_prec_grnd  = NaN  ! water onto ground including canopy runoff [kg/(m2 s)]
-     clm(k)%qflx_qirr       = NaN  ! qflx_surf directed to irrig (mm H2O/s)
+     clm(k)%qflx_qirr       = 0.0d0! qflx_surf directed to irrig (mm H2O/s)  **IMF irrigation applied at surface [mm/s] (added to rain or throughfall, depending) @IMF
+     clm(k)%qflx_qirr_inst(:) = 0.0d0 ! new                                  **IMF irrigation applied by 'instant' method [mm/s] (added to pf_flux) @IMF
      clm(k)%qflx_qrgwl      = NaN  ! qflx_surf at glaciers, wetlands, lakes
      clm(k)%btran           = NaN  ! transpiration wetness factor (0 to 1) 
      clm(k)%smpmax          = NaN  !wilting point potential in mm (new)

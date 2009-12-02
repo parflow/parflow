@@ -28,21 +28,29 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
 
   ! Write(*,*)"========== start the loop over the flux ============="
 
-  ! @RMM Copy fluxes back into 
-  !print*, ' in pf_couple'
-  !print*,  ip, j_incr, k_incr
-! evap_trans = 0.d0
-   do t=1,drv%nch     !rows (y)
+  ! @RMM Copy fluxes back into ParFlow
+  ! print*, ' in pf_couple'
+  ! print*,  ip, j_incr, k_incr
+  ! evap_trans = 0.d0
+   do t=1,drv%nch     
      i=tile(t)%col
      j=tile(t)%row
      do k = 1, nlevsoi
-        l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))  ! updated indexing @RMM 4-12-09
-        !l = ip+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k-1)
+
+        l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))    ! updated indexing @RMM 4-12-09
+        ! l = ip+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k-1)
+
         if (k == 1) then
-           clm(t)%pf_flux(k)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)) + clm(t)%qflx_infl
+           clm(t)%pf_flux(k)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)) + clm(t)%qflx_infl + clm(t)%qflx_qirr_inst(k)
         else  
-           clm(t)%pf_flux(k) = - clm(t)%qflx_tran_veg*clm(t)%rootfr(k)
+           clm(t)%pf_flux(k)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)) + clm(t)%qflx_qirr_inst(k)
         endif
+        
+        ! IMF: Add "instant" irrigation to pf_flux(k) 
+!       if ( (clm(t)%irrig==1) .and. (clm(t)%irr_type==3) ) then
+!          clm(t)%pf_flux(k) = clm(t)%pf_flux(k) + clm(t)%qflx_qirr_inst(k)
+!       endif
+
         ! copy back to pf, assumes timing for pf is hours and timing for clm is seconds
         evap_trans(l) = clm(t)%pf_flux(k)*3.6d0/drv%dz
         ! 	  evap_trans(l) = 0.0d0
@@ -54,8 +62,6 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
      enddo
   enddo
 
-
-
   !@ Start: Here we do the mass balance: We look at every tile/cell individually!
   !@ Determine volumetric soil water
   !begwatb = 0.0d0
@@ -64,21 +70,21 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
   tot_tran_veg_mm = 0.0d0
   tot_drain_mm = 0.0d0
 
-  do t=1,drv%nch  !@ Start: Loop over domain 
+  do t=1,drv%nch   !@ Start: Loop over domain 
      i=tile(t)%col
      j=tile(t)%row
      if (clm(t)%planar_mask == 1) then !@ do only if we are in active domain   
 
         do l = 1, nlevsoi
            clm(t)%h2osoi_vol(l) = clm(t)%h2osoi_liq(l)/(clm(t)%dz(l)*denh2o) &
-                + clm(t)%h2osoi_ice(l)/(clm(t)%dz(l)*denice)
+                                  + clm(t)%h2osoi_ice(l)/(clm(t)%dz(l)*denice)
         enddo
 
-        !@sjk Let's do it my way
-        !@sjk Here we add the total water mass of the layers below CLM soil layers from Parflow to close water balance
-        !@sjk We can use clm(1)%dz(1) because the grids are equidistant and congruent
+        ! @sjk Let's do it my way
+        ! @sjk Here we add the total water mass of the layers below CLM soil layers from Parflow to close water balance
+        ! @sjk We can use clm(1)%dz(1) because the grids are equidistant and congruent
         clm(t)%endwb=0.0d0 !@sjk only interested in wb below surface
-    !       print*, clm(t)%topo_mask(3), clm(t)%topo_mask(1)
+        ! print*, clm(t)%topo_mask(3), clm(t)%topo_mask(1)
         do k = clm(t)%topo_mask(3), clm(t)%topo_mask(1) ! CLM loop over z, starting at bottom of pf domains topo_mask(3)
 
            l = 1+i + j_incr*(j) + k_incr*(k)  ! updated indexing @RMM b/c we are looping from k3 to k1

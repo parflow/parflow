@@ -80,6 +80,7 @@ subroutine drv_readvegpf (drv,grid,tile,clm)
      if (vname == 'taus_nir')  call drv_vpr(drv,tile,clm%taus(2))
      if (vname == 'xl')        call drv_vpr(drv,tile,clm%xl)
      if (vname == 'vw')        call drv_vpr(drv,tile,clm%vw)
+     if (vname == 'irrig')     call drv_vpi(drv,tile,clm%irrig)    ! @IMF
 
      ! initialize lakpoi from itypwat variable
 
@@ -97,7 +98,10 @@ subroutine drv_readvegpf (drv,grid,tile,clm)
            clm(t)%baresoil = .false.
         endif
 
-        clm(t)%irrig = .false.  !for now - no irrigation 
+        ! IMF: Irrigation flag for each veg type added to drv_vegp.dat,  
+        !      read from file in above routine)
+        !      (irrig=0 -> no irrigation, irrig=1 -> irrigate)
+        ! clm(t)%irrig = .false.  !for now - no irrigation 
 
      end do
 
