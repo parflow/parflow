@@ -391,11 +391,6 @@ pfset Mannings.Geom.channel.Value 1.e-6
 # Phase sources:
 #-----------------------------------------------------------------------------
 
-#IMF CHANGED
-#pfset PhaseSources.Type                     Constant
-#pfset PhaseSources.GeomNames                domain
-#pfset PhaseSources.Geom.domain.Value        0.0
-
 pfset PhaseSources.water.Type                     Constant
 pfset PhaseSources.water.GeomNames                domain
 pfset PhaseSources.water.Geom.domain.Value        0.0
