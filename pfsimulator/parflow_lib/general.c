@@ -150,7 +150,8 @@ void recordMemoryInfo()
    struct mallinfo my_mallinfo = mallinfo();
 
    /* Get all the memory currently allocated to user by malloc, etc. */
-   int used_mem = my_mallinfo.uordblks;
+   int used_mem = my_mallinfo.hblkhd + my_mallinfo.usmblks
+      + my_mallinfo.uordblks;
 
    /* Record high-water mark for memory used. */
    if(amps_ThreadLocal(s_max_memory) < used_mem) 
@@ -248,11 +249,8 @@ void printMemoryInfo(FILE *log_file)
    int reserved_mem = my_mallinfo.arena;
    
    /* Get all the memory currently allocated to user by malloc, etc. */
-#if 0
    int used_mem = my_mallinfo.hblkhd + my_mallinfo.usmblks +
       my_mallinfo.uordblks;
-#endif
-   int used_mem = my_mallinfo.uordblks;
    
    /* Get memory not currently allocated to user but malloc controls */
    int free_mem = my_mallinfo.fsmblks + my_mallinfo.fordblks;
