@@ -3637,6 +3637,51 @@ pfset Solver.CLM.WiltingPoint  0.15
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.FieldCapacity  0.95
 \end{verbatim}\end{display}
+%====
+% @RMM Irrigation Keys here
+%=====
+\pfkey{string}{Solver.CLM.IrrigationTypes}{none}
+{This key specifies the form of the irrigation in \code{CLM}.  The valid types for this key are {\bf none, Spray, Drip, Instant}.
+} 
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.IrrigationTypes Drip
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.CLM.IrrigationCycle}{Constant}
+{This key specifies the cycle of the irrigation in \code{CLM}.  The valid types for this key are {\bf Constant, Deficit}. Note only {\bf Constant} is currently implemented.  Constant cycle applies irrigation each day from IrrigationStartTime to IrrigationStopTime in GMT.
+} 
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.IrrigationCycle Constant
+\end{verbatim}\end{display}
+
+\pfkey{double}{Solver.CLM.IrrigationRate}{no default}
+{This key specifies the rate of the irrigation in \code{CLM} in [mm/s].  
+} 
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.IrrigationRate 10.
+\end{verbatim}\end{display}
+
+\pfkey{double}{Solver.CLM.IrrigationStartTime}{no default}
+{This key specifies the start time of the irrigation in \code{CLM} GMT.  
+} 
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.IrrigationStartTime 0800
+\end{verbatim}\end{display}
+
+\pfkey{double}{Solver.CLM.IrrigationStopTime}{no default}
+{This key specifies the stop time of the irrigation in \code{CLM} GMT.  
+} 
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.IrrigationStopTime 1200
+\end{verbatim}\end{display}
+
+\pfkey{double}{Solver.CLM.IrrigationThreshold}{0.5}
+{This key specifies the threshold value for the irrigation in \code{CLM} [-].  
+} 
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.IrrigationThreshold 0.2
+\end{verbatim}\end{display}
+
 %=============================================================================
 %=============================================================================
 
