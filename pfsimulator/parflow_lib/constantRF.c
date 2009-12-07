@@ -74,18 +74,18 @@ typedef struct
  * ConstantRF
  *--------------------------------------------------------------------------*/
 
-void    ConstantRF(geounit, gr_geounit, field, cdata)
-GeomSolid    *geounit;
-GrGeomSolid  *gr_geounit;
-Vector       *field;
-RFCondData   *cdata;
+void    ConstantRF(
+   GeomSolid    *geounit,
+   GrGeomSolid  *gr_geounit,
+   Vector       *field,
+   RFCondData   *cdata)
 {
    /*-----------------------------------------------------------------------
     * Local variables 
     *-----------------------------------------------------------------------*/
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra    *)PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    double	   value = (public_xtra -> field_value);
 
@@ -144,18 +144,17 @@ RFCondData   *cdata;
  * ConstantRFInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *ConstantRFInitInstanceXtra(grid, temp_data)
-Grid      *grid;
-double    *temp_data;
+PFModule  *ConstantRFInitInstanceXtra(Grid      *grid,
+				      double    *temp_data)
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
 
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
-      instance_xtra = ctalloc(InstanceXtra, 1);
+      instance_xtra = (InstanceXtra  *)ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    /*-----------------------------------------------------------------------
     * Initialize data associated with argument `grid'
@@ -190,7 +189,7 @@ double    *temp_data;
 void  ConstantRFFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
 
    if (instance_xtra)
@@ -230,7 +229,7 @@ PFModule   *ConstantRFNewPublicXtra(char *geom_name)
 void  ConstantRFFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra  *public_xtra   = (PublicXtra  *)PFModulePublicXtra(this_module);
 
 
    if (public_xtra)

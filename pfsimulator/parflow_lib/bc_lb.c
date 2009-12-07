@@ -34,10 +34,10 @@
  *   and what the boundary conditions are.
  *--------------------------------------------------------------------------*/
 
-void LBInitializeBC(lattice, problem, problem_data)
-  Lattice *lattice;
-  Problem  *problem;
-  ProblemData  *problem_data;
+void LBInitializeBC(
+   Lattice *lattice,
+   Problem  *problem,
+   ProblemData  *problem_data)
 {
 
    /*------------------------------------------------------------*
@@ -119,7 +119,7 @@ void LBInitializeBC(lattice, problem, problem_data)
 	    double         **elevations;
 	    int              ref_patch, iel;
 
-	    bc_pressure_type0 = BCPressureDataIntervalValue(
+	    bc_pressure_type0 = (BCPressureType0 *)BCPressureDataIntervalValue(
                                    bc_pressure_data,ipatch,interval_number);
 	    ref_solid = ProblemDataSolid(problem_data, 
 			     BCPressureType0RefSolid(bc_pressure_type0));
@@ -187,7 +187,7 @@ void LBInitializeBC(lattice, problem, problem_data)
 	    double           unitx, unity, line_min, line_length, xy, slope;
 	    int              ip;
 
-	    bc_pressure_type1 = BCPressureDataIntervalValue(bc_pressure_data,ipatch,interval_number);
+	    bc_pressure_type1 = (BCPressureType1 *)BCPressureDataIntervalValue(bc_pressure_data,ipatch,interval_number);
 
 	    ForSubgridI(is, subgrids)
 	    {
@@ -272,7 +272,7 @@ void LBInitializeBC(lattice, problem, problem_data)
 	 case 2:
          {
             BCPressureType2 *bc_pressure_type2;
-	    bc_pressure_type2 = BCPressureDataIntervalValue(bc_pressure_data,ipatch,interval_number);
+	    bc_pressure_type2 = (BCPressureType2 *)BCPressureDataIntervalValue(bc_pressure_data,ipatch,interval_number);
 
 	    ForSubgridI(is, subgrids)
 	    {

@@ -94,7 +94,7 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
       if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	 data = *((char **)(ptr -> data));
       else
-	 data = ptr -> data;
+	 data = (char *)ptr -> data;
       
       
       switch(ptr->type)
@@ -127,8 +127,8 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
 	 printf("AMPS Operation not supported\n");
       }
       
-      in_buffer = malloc(element_size*len);
-      out_buffer = malloc(element_size*len);
+      in_buffer = (char*)malloc(element_size*len);
+      out_buffer = (char*)malloc(element_size*len);
 
       /* Copy into a contigous buffer */
       if(stride == 1) 

@@ -52,9 +52,9 @@ void SetTempCharVectorData (CharVector *charvector , char *data );
 CharVector *NewCharVector (Grid *grid , int nc , int num_ghost );
 void FreeTempCharVector (CharVector *charvector );
 void FreeCharVector (CharVector *charvector );
-void InitCharVector (CharVector *v , int value );
-void InitCharVectorAll (CharVector *v , int value );
-void InitCharVectorInc (CharVector *v , int value , int inc );
+void InitCharVector (CharVector *v , char value );
+void InitCharVectorAll (CharVector *v , char value );
+void InitCharVectorInc (CharVector *v , char value , int inc );
 
 /* chebyshev.c */
 void Chebyshev (Vector *x , Vector *b , double tol , int zero , double ia , double ib , int num_iter );

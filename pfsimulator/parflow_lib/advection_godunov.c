@@ -80,26 +80,23 @@ typedef struct
  * Godunov
  *--------------------------------------------------------------------------*/
 
-void     Godunov( problem_data, phase, concentration,
-                 old_concentration, new_concentration,
-                 x_velocity, y_velocity, z_velocity,
-                 solid_mass_factor, time, deltat, order)
-ProblemData *problem_data;
-int          phase;
-int          concentration;
-Vector      *old_concentration;
-Vector      *new_concentration;
-Vector      *x_velocity;
-Vector      *y_velocity;
-Vector      *z_velocity;
-Vector      *solid_mass_factor;
-double       time;
-double       deltat;
-int          order;
+void     Godunov(
+   ProblemData *problem_data,
+   int          phase,
+   int          concentration,
+   Vector      *old_concentration,
+   Vector      *new_concentration,
+   Vector      *x_velocity,
+   Vector      *y_velocity,
+   Vector      *z_velocity,
+   Vector      *solid_mass_factor,
+   double       time,
+   double       deltat,
+   int          order)
 {
     PFModule     *this_module   = ThisPFModule;
-    InstanceXtra *instance_xtra = PFModuleInstanceXtra(this_module);
-    PublicXtra   *public_xtra   = PFModulePublicXtra(this_module);
+    InstanceXtra *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
+    PublicXtra   *public_xtra   = (PublicXtra   *)PFModulePublicXtra(this_module);
 
     Problem    *problem         = (instance_xtra -> problem);
     Grid       *grid            = (instance_xtra -> grid);
@@ -980,10 +977,10 @@ int          order;
  * GodunovInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *GodunovInitInstanceXtra(problem, grid, temp_data)
-Problem   *problem;
-Grid      *grid;
-double    *temp_data;
+PFModule  *GodunovInitInstanceXtra(
+   Problem   *problem,
+   Grid      *grid,
+   double    *temp_data)
 {
    PFModule     *this_module  = ThisPFModule;
    InstanceXtra *instance_xtra;
@@ -999,7 +996,7 @@ double    *temp_data;
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    /*-----------------------------------------------------------------------
     * Initialize data associated with argument `problem'
@@ -1104,7 +1101,7 @@ double    *temp_data;
 void  GodunovFreeInstanceXtra()
 {
    PFModule     *this_module   = ThisPFModule;
-   InstanceXtra *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    if ( instance_xtra )
    {
@@ -1138,7 +1135,7 @@ PFModule  *GodunovNewPublicXtra()
 void GodunovFreePublicXtra()
 {
    PFModule     *this_module  = ThisPFModule;
-   PublicXtra   *public_xtra  = PFModulePublicXtra(this_module);
+   PublicXtra   *public_xtra  = (PublicXtra   *)PFModulePublicXtra(this_module);
 
    if ( public_xtra )
    {
@@ -1154,7 +1151,7 @@ void GodunovFreePublicXtra()
 int  GodunovSizeOfTempData()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra   = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra   = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    int  max_nx = (instance_xtra -> max_nx);
    int  max_ny = (instance_xtra -> max_ny);

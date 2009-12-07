@@ -44,8 +44,8 @@
  *     The `subgrids' array points to subgrids in `all_subgrids'.
  *--------------------------------------------------------------------------*/
 
-SubgridArray  *GetGridSubgrids(all_subgrids)
-SubgridArray  *all_subgrids;
+SubgridArray  *GetGridSubgrids(
+   SubgridArray  *all_subgrids)
 {
    SubgridArray  *subgrids;
 
@@ -74,8 +74,8 @@ SubgridArray  *all_subgrids;
  *   We currently assume that the user's grid consists of 1 subgrid only.
  *--------------------------------------------------------------------------*/
 
-Grid           *CreateGrid(user_grid)
-Grid           *user_grid;
+Grid           *CreateGrid(
+   Grid           *user_grid)
 {
    Grid        *grid;
 

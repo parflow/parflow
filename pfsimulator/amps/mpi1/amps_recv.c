@@ -28,9 +28,9 @@
 
 #include "amps.h"
 
-char *amps_recvb(src, size)
-int src;
-int *size;
+char *amps_recvb(
+   int src,
+   int *size)
 {
     char *buf;
 
@@ -40,7 +40,7 @@ int *size;
 
     MPI_Get_count(&status, MPI_BYTE, size);
 
-    buf = malloc(*size);
+    buf = (char *)malloc(*size);
 
     MPI_Recv(buf, *size, MPI_BYTE, src, 0, MPI_COMM_WORLD, &status);
 
@@ -95,7 +95,7 @@ int amps_Recv(amps_Comm comm, int source, amps_Invoice invoice)
 
    MPI_Get_count(&status, MPI_BYTE, &size);
 
-   buffer = malloc(size);
+   buffer = (char*)malloc(size);
 
    MPI_Recv(buffer, size, MPI_BYTE, source, 0, MPI_COMM_WORLD, &status);
 

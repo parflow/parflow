@@ -45,12 +45,12 @@
  *   the same index space.
  *--------------------------------------------------------------------------*/
 
-int  NewCommPkgInfo(data_sr, comm_sr, index, num_vars, loop_array)
-Subregion    *data_sr;
-Subregion    *comm_sr;
-int           index;             
-int           num_vars;          /* number of variables in the vector */
-int          *loop_array;
+int  NewCommPkgInfo(
+   Subregion    *data_sr,
+   Subregion    *comm_sr,
+   int           index,             
+   int           num_vars,          /* number of variables in the vector */
+   int          *loop_array)
 {
    int    *offset       = loop_array;
    int    *len_array    = loop_array + 1;
@@ -147,13 +147,12 @@ int          *loop_array;
  *   `send_region' and `recv_region' are "regions" of `grid'.
  *--------------------------------------------------------------------------*/
 
-CommPkg         *NewCommPkg(send_region, recv_region, data_space, num_vars,
-			    data)
-Region          *send_region;
-Region          *recv_region;
-SubregionArray  *data_space;
-int              num_vars;           /* number of variables in the vector */
-double          *data;
+CommPkg         *NewCommPkg(
+   Region          *send_region,
+   Region          *recv_region,
+   SubregionArray  *data_space,
+   int              num_vars,           /* number of variables in the vector */
+   double          *data)
 {
    CommPkg         *new_comm_pkg;
 
@@ -365,8 +364,8 @@ double          *data;
  * FreeCommPkg:
  *--------------------------------------------------------------------------*/
 
-void FreeCommPkg(pkg)
-CommPkg *pkg;
+void FreeCommPkg(
+   CommPkg *pkg)
 {
    int                i;
 
@@ -393,8 +392,8 @@ CommPkg *pkg;
  * InitCommunication:
  *--------------------------------------------------------------------------*/
 
-CommHandle  *InitCommunication(comm_pkg)
-CommPkg     *comm_pkg;
+CommHandle  *InitCommunication(
+   CommPkg     *comm_pkg)
 {
    return (CommHandle *)amps_IExchangePackage(comm_pkg -> package);
 }
@@ -404,8 +403,8 @@ CommPkg     *comm_pkg;
  * FinalizeCommunication:
  *--------------------------------------------------------------------------*/
 
-void         FinalizeCommunication(handle)
-CommHandle  *handle;
+void         FinalizeCommunication(
+   CommHandle  *handle)
 {
    (void)amps_Wait((amps_Handle)handle);
 }

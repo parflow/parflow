@@ -50,16 +50,16 @@ typedef struct
  * ConstantPorosity
  *--------------------------------------------------------------------------*/
 
-void    ConstantPorosity(geounit, gr_geounit, field)
-GeomSolid    *geounit;
-GrGeomSolid  *gr_geounit;
-Vector       *field;
+void    ConstantPorosity(
+   GeomSolid    *geounit,
+   GrGeomSolid  *gr_geounit,
+   Vector       *field)
 {
    /*-----------------------------------------------------------------------
     * Local variables 
     *-----------------------------------------------------------------------*/
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra    *)PFModulePublicXtra(this_module);
    InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
 
    double	   field_value = (public_xtra -> field_value);

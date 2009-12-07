@@ -41,10 +41,14 @@
  *   IntersectSubregions, ...
  *--------------------------------------------------------------------------*/
 
-void     ProjectRegion(region, sx, sy, sz, ix, iy, iz)
-Region  *region;
-int      sx, sy, sz;
-int      ix, iy, iz;
+void     ProjectRegion(
+   Region  *region,
+   int      sx, 
+   int      sy, 
+   int      sz,
+   int      ix, 
+   int      iy, 
+   int      iz)
 {
    SubregionArray  *sr_array;
 
@@ -77,18 +81,18 @@ int      ix, iy, iz;
  *   IntersectSubregions, ...
  *--------------------------------------------------------------------------*/
 
-Region  *ProjectRBPoint(region, rb)
-Region  *region;
-int      rb[4][3];
+Region  *ProjectRBPoint(
+   Region  *region,
+   int      rb[4][3])
 {
-   Region          *new;
+   Region          *new_region;
 
    Region          *tmp_reg;
 
    int              i, j;
 
    
-   new = NewRegion(RegionSize(region));
+   new_region = NewRegion(RegionSize(region));
 
    for (i = 0; i < 4; i++)
    {
@@ -97,21 +101,21 @@ int      rb[4][3];
       ForSubregionArrayI(j, tmp_reg)
       {
 	 AppendSubregionArray(RegionSubregionArray(tmp_reg, j),
-			      RegionSubregionArray(new, j));
+			      RegionSubregionArray(new_region, j));
 	 SubregionArraySize(RegionSubregionArray(tmp_reg, j)) = 0;
       }
       FreeRegion(tmp_reg);
    }
    
-   return new;
+   return new_region;
 }
 
 /*--------------------------------------------------------------------------
  * CreateComputePkgs
  *--------------------------------------------------------------------------*/
 
-void  CreateComputePkgs(grid)
-Grid  *grid;
+void  CreateComputePkgs(
+   Grid  *grid)
 {
    SubgridArray  *subgrids = GridSubgrids(grid);
 
@@ -446,8 +450,8 @@ Grid  *grid;
  * FreeComputePkgs
  *--------------------------------------------------------------------------*/
 
-void  FreeComputePkgs(grid)
-Grid  *grid;
+void  FreeComputePkgs(
+   Grid  *grid)
 {
    int i;
 

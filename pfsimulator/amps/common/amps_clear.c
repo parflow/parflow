@@ -30,8 +30,7 @@
 
 #include "amps.h"
 
-void amps_ClearInvoice(inv)
-amps_Invoice inv;
+void amps_ClearInvoice(amps_Invoice inv)
 {
    amps_InvoiceEntry *ptr;
    int stride;

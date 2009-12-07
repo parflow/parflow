@@ -39,13 +39,13 @@
  * compute_phase_maximum
  *-------------------------------------------------------------------------*/
 
-double  ComputePhaseMaximum(phase_u_max,dx,phase_v_max,dy,phase_w_max,dz)
-double  phase_u_max;
-double  dx;
-double  phase_v_max;
-double  dy;
-double  phase_w_max;
-double  dz;
+double  ComputePhaseMaximum(
+   double  phase_u_max,
+   double  dx,
+   double  phase_v_max,
+   double  dy,
+   double  phase_w_max,
+   double  dz)
 {
    double  maximum, tmp;
 
@@ -69,21 +69,18 @@ double  dz;
  * compute_total_maximum
  *-------------------------------------------------------------------------*/
 
-double  ComputeTotalMaximum(problem,eval_struct,s_lower,s_upper,
-                            total_u_max,dx,
-                            total_v_max,dy,
-                            total_w_max,beta_max,dz)
-Problem    *problem;
-EvalStruct *eval_struct;
-double      s_lower;
-double      s_upper;
-double      total_u_max;
-double      dx;
-double      total_v_max;
-double      dy;
-double      total_w_max;
-double      beta_max;
-double      dz;
+double  ComputeTotalMaximum(
+   Problem    *problem,
+   EvalStruct *eval_struct,
+   double      s_lower,
+   double      s_upper,
+   double      total_u_max,
+   double      dx,
+   double      total_v_max,
+   double      dy,
+   double      total_w_max,
+   double      beta_max,
+   double      dz)
 {
 
    PFModule     *phase_density       = ProblemPhaseDensity(problem);

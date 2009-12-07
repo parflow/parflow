@@ -42,10 +42,10 @@
  * conditions relative to a reference patch on a reference solid.
  *--------------------------------------------------------------------------*/
 
-double         **CalcElevations(geom_solid, ref_patch, subgrids)
-GeomSolid       *geom_solid;
-int              ref_patch;
-SubgridArray    *subgrids;
+double         **CalcElevations(
+   GeomSolid       *geom_solid,
+   int              ref_patch,
+   SubgridArray    *subgrids)
 {
    GrGeomSolid        *grgeom_solid;
 

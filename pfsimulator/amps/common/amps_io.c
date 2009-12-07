@@ -28,11 +28,11 @@
 
 #include "amps.h"
 
-void amps_ScanChar(file, data, len, stride)
-amps_File file;
-char *data;
-int len;
-int stride;
+void amps_ScanChar(
+   amps_File file,
+   char *data,
+   int len,
+   int stride)
 {
    char *ptr;
    char *end_ptr;
@@ -43,11 +43,11 @@ int stride;
 
 }
 
-void amps_ScanShort(file, data, len, stride)
-amps_File file;
-short *data;
-int len;
-int stride;
+void amps_ScanShort(
+   amps_File file,
+   short *data,
+   int len,
+   int stride)
 {
    short *ptr;
    short *end_ptr;
@@ -58,11 +58,11 @@ int stride;
 
 }
 
-void amps_ScanInt(file, data, len, stride)
-amps_File file;
-int *data;
-int len;
-int stride;
+void amps_ScanInt(
+   amps_File file,
+   int *data,
+   int len,
+   int stride)
 {
    int *ptr;
    int *end_ptr;
@@ -73,11 +73,11 @@ int stride;
 
 }
 
-void amps_ScanLong(file, data, len, stride)
-amps_File file;
-long *data;
-int len;
-int stride;
+void amps_ScanLong(
+   amps_File file,
+   long *data,
+   int len,
+   int stride)
 {
    long *ptr;
    long *end_ptr;
@@ -88,11 +88,11 @@ int stride;
 
 }
 
-void amps_ScanFloat(file, data, len, stride)
-amps_File file;
-float *data;
-int len;
-int stride;
+void amps_ScanFloat(
+   amps_File file,
+   float *data,
+   int len,
+   int stride)
 {
    float *ptr;
    float *end_ptr;
@@ -103,11 +103,11 @@ int stride;
 
 }
 
-void amps_ScanDouble(file, data, len, stride)
-amps_File file;
-double *data;
-int len;
-int stride;
+void amps_ScanDouble(
+   amps_File file,
+   double *data,
+   int len,
+   int stride)
 {
    double *ptr;
    double *end_ptr;

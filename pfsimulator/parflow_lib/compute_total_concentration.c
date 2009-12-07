@@ -39,10 +39,10 @@
  * false 
  *--------------------------------------------------------------------------*/
 
-double       ComputeTotalConcen(gr_domain, grid, substance)
-GrGeomSolid *gr_domain;
-Grid        *grid;
-Vector      *substance;
+double       ComputeTotalConcen(
+   GrGeomSolid *gr_domain,
+   Grid        *grid,
+   Vector      *substance)
 {
    Subgrid        *subgrid;
    double          cell_volume, field_sum;

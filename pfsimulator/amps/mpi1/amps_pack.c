@@ -31,9 +31,9 @@
 
 #include "amps.h"
 
-int amps_create_mpi_cont_send_type(comm, inv)
-amps_Comm comm;
-amps_Invoice inv;
+int amps_create_mpi_cont_send_type(
+   amps_Comm comm,
+   amps_Invoice inv)
 {
    amps_InvoiceEntry *ptr;
    char *cur_pos;
@@ -58,10 +58,10 @@ amps_Invoice inv;
    MPI_Datatype *temp_type;
    MPI_Datatype *new_type = NULL;
 
-   mpi_types = calloc(inv->num, sizeof(MPI_Datatype));
-   mpi_block_len = malloc(sizeof(int)*inv->num);
+   mpi_types = (MPI_Datatype *)calloc(inv->num, sizeof(MPI_Datatype));
+   mpi_block_len = (int *)malloc(sizeof(int)*inv->num);
 
-   mpi_displacements = calloc(inv->num, sizeof(MPI_Aint));
+   mpi_displacements = (MPI_Aint *)calloc(inv->num, sizeof(MPI_Aint));
 
    /* for each entry in the invoice pack that entry into the letter         */
    ptr = inv -> list;
@@ -122,8 +122,8 @@ amps_Invoice inv;
 	 /* Temporary datatypes for constructing vectors */
 	 if(dim > 1)
 	 {
-	    base_type = calloc(1, sizeof(MPI_Datatype));
-	    new_type = calloc(1, sizeof(MPI_Datatype));
+	    base_type = (MPI_Datatype *)calloc(1, sizeof(MPI_Datatype));
+	    new_type = (MPI_Datatype *)calloc(1, sizeof(MPI_Datatype));
 	 }
 	 else
 	    base_type = &mpi_types[element];
@@ -225,9 +225,9 @@ amps_Invoice inv;
    return size;
 }
 
-void amps_create_mpi_type(comm, inv)
-amps_Comm comm;
-amps_Invoice inv;
+void amps_create_mpi_type(
+   amps_Comm comm,
+   amps_Invoice inv)
 {
    amps_InvoiceEntry *ptr;
    char *data;
@@ -251,9 +251,9 @@ amps_Invoice inv;
    MPI_Datatype *new_type;
 
 
-   mpi_types = calloc(inv->num, sizeof(MPI_Datatype));
-   mpi_block_len = malloc(sizeof(int)*inv->num);
-   mpi_displacements = calloc(inv->num, sizeof(MPI_Aint));
+   mpi_types = (MPI_Datatype *)calloc(inv->num, sizeof(MPI_Datatype));
+   mpi_block_len = (int *)malloc(sizeof(int)*inv->num);
+   mpi_displacements = (MPI_Aint *)calloc(inv->num, sizeof(MPI_Aint));
 
    /* for each entry in the invoice pack that entry into the letter         */
 
@@ -277,7 +277,7 @@ amps_Invoice inv;
       if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	 data = *((char **)(ptr -> data));
       else
-	  data = ptr -> data;
+	 data = (char *)ptr -> data;
  
       switch(ptr->type)
       {
@@ -329,11 +329,11 @@ amps_Invoice inv;
 
 	 /* Temporary datatypes for constructing vectors */
 	 if(dim > 1)
-	    base_type = calloc(1, sizeof(MPI_Datatype));
+	    base_type = (MPI_Datatype *)calloc(1, sizeof(MPI_Datatype));
 	 else
 	    base_type = &mpi_types[element];
 
-	 new_type = calloc(1, sizeof(MPI_Datatype));
+	 new_type = (MPI_Datatype *)calloc(1, sizeof(MPI_Datatype));
 
 	 len = ptr -> ptr_len[0];
 	 stride = ptr -> ptr_stride[0];

@@ -51,13 +51,14 @@ product endorsement purposes.
 /******************* BEGIN Imports **************************/
 /************************************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
 #include "llnltyps.h"
 #include "vector.h"
 #include "llnlmath.h"
 #include "kinsol.h"
 #include "kinspgmr.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 /************************************************************/
 /******************** END Imports ***************************/
@@ -746,7 +747,7 @@ static int KINSolInit(void *kinmem, integer Neq,
     bb = unew;  xx = pp;
 
 
-    ret = KINLinSolDrv( kinmem, bb, xx );
+    ret = KINLinSolDrv( (struct KINMemRec *)kinmem, bb, xx );
 
     /* evaluate the return code from KINLinSolDrv  */
 
@@ -757,10 +758,10 @@ static int KINSolInit(void *kinmem, integer Neq,
 
     if(globalstrategy==INEXACT_NEWTON)
       globalstratret = 
-	KINInexactNewton(kinmem, &fnormp, &f1normp, &maxStepTaken);
+	KINInexactNewton( (struct KINMemRec *)kinmem, &fnormp, &f1normp, &maxStepTaken);
     else if(globalstrategy==LINESEARCH)
       globalstratret = 
-	KINLineSearch(kinmem, &fnormp, &f1normp, &maxStepTaken);
+	KINLineSearch( (struct KINMemRec *)kinmem, &fnormp, &f1normp, &maxStepTaken);
 
     /* if too many beta condition failures, stop iteration  */
 
@@ -772,13 +773,13 @@ static int KINSolInit(void *kinmem, integer Neq,
 
     /* Evaluate eta by calling the forcing term routine */
 
-    if(callForcingTerm) KINForcingTerm(kinmem, fnormp);
+    if(callForcingTerm) KINForcingTerm( (struct KINMemRec *)kinmem, fnormp);
 
     /*  call KINStop to check if tolerances are met at this iteration  */
 
     fnorm = fnormp;
 
-    ret=KINStop(kinmem, maxStepTaken, globalstratret); 
+    ret=KINStop((struct KINMemRec *)kinmem, maxStepTaken, globalstratret); 
 
     /* update uu after the iteration  */
     N_VScale(ONE, unew, uu);

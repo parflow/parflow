@@ -32,9 +32,11 @@
 #define AMPS_HIGHEST_LONG_LOG 31
 
 
-void amps_FindPowers(N, log, Nnext, Nprev)
-int N;
-int *log, *Nnext, *Nprev;
+void amps_FindPowers(
+   int N,
+   int *log, 
+   int *Nnext, 
+   int *Nprev)
 {
     long high, high_log, low, low_log;
 

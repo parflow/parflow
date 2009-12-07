@@ -32,11 +32,11 @@
 #include "amps.h"
 
 	
-int amps_unpack(comm, inv, buffer, buf_size)
-amps_Comm comm;
-amps_Invoice inv;
-char *buffer;
-int buf_size;
+int amps_unpack(
+   amps_Comm comm,
+   amps_Invoice inv,
+   char *buffer,
+   int buf_size)
 {
    amps_InvoiceEntry *ptr;
    int len, stride;
@@ -258,10 +258,10 @@ int buf_size;
 	 if( ptr -> data_type == AMPS_INVOICE_POINTER )
 	    data = *(char **)(ptr -> data) = (char *)malloc(size);
 	 else 
-	    data = ptr -> data;
+	    data = (char *)ptr -> data;
 
-	 base_type = calloc(1, sizeof(MPI_Datatype));
-	 new_type = calloc(1, sizeof(MPI_Datatype));
+	 base_type = (MPI_Datatype *)calloc(1, sizeof(MPI_Datatype));
+	 new_type = (MPI_Datatype *)calloc(1, sizeof(MPI_Datatype));
 
 	 len = ptr -> ptr_len[0];
 	 stride = ptr -> ptr_stride[0];

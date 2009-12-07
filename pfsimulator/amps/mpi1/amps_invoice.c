@@ -96,20 +96,7 @@ int amps_FreeInvoice(amps_Invoice inv)
     return 0;
 }
 
-int amps_add_invoice(inv, ignore, type,  
-		     len_type, len, ptr_len, 
-		     stride_type, stride, ptr_stride, 
-		     dim_type, dim, ptr_dim,
-		     data_type, data)
-amps_Invoice *inv;
-int ignore;
-int type, len_type, stride_type;
-int len, *ptr_len;
-int stride, *ptr_stride;
-int data_type;
-void *data;
-int dim_type;
-int dim, *ptr_dim;
+int amps_add_invoice (amps_Invoice *inv , int ignore , int type , int len_type , int len , int *ptr_len , int stride_type , int stride , int *ptr_stride , int dim_type , int dim , int *ptr_dim , int data_type , void *data )
 {
    amps_InvoiceEntry *ptr, *new_entry;
 

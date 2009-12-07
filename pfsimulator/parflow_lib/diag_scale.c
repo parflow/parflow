@@ -54,11 +54,11 @@
  * DiagScale
  *--------------------------------------------------------------------------*/
 
-void     DiagScale(x, A, b, d)
-Vector  *x;
-Matrix  *A;
-Vector  *b;
-Vector	*d;
+void     DiagScale(
+   Vector  *x,
+   Matrix  *A,
+   Vector  *b,
+   Vector  *d)
 {
    Grid           *grid = MatrixGrid(A);
    Subgrid        *subgrid;

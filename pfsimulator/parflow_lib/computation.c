@@ -37,24 +37,24 @@
  * NewComputePkg
  *--------------------------------------------------------------------------*/
 
-ComputePkg  *NewComputePkg(send_reg, recv_reg, dep_reg, ind_reg)
-Region      *send_reg;
-Region      *recv_reg;
-Region      *dep_reg;
-Region      *ind_reg;
+ComputePkg  *NewComputePkg(
+   Region      *send_reg,
+   Region      *recv_reg,
+   Region      *dep_reg,
+   Region      *ind_reg)
 {
-   ComputePkg      *new;
+   ComputePkg      *new_compute_pkg;
 
 
-   new = talloc(ComputePkg, 1);
+   new_compute_pkg = talloc(ComputePkg, 1);
 
-   ComputePkgSendRegion(new) = send_reg;
-   ComputePkgRecvRegion(new) = recv_reg;
+   ComputePkgSendRegion(new_compute_pkg) = send_reg;
+   ComputePkgRecvRegion(new_compute_pkg) = recv_reg;
 
-   ComputePkgDepRegion(new) = dep_reg;
-   ComputePkgIndRegion(new) = ind_reg;
+   ComputePkgDepRegion(new_compute_pkg) = dep_reg;
+   ComputePkgIndRegion(new_compute_pkg) = ind_reg;
 
-   return new;
+   return new_compute_pkg;
 }
 
 
@@ -62,8 +62,8 @@ Region      *ind_reg;
  * FreeComputePkg
  *--------------------------------------------------------------------------*/
 
-void         FreeComputePkg(compute_pkg)
-ComputePkg  *compute_pkg;
+void         FreeComputePkg(
+   ComputePkg  *compute_pkg)
 {
    if (ComputePkgSendRegion(compute_pkg))
       FreeRegion(ComputePkgSendRegion(compute_pkg));

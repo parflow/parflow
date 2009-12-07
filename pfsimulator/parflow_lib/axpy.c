@@ -31,10 +31,10 @@
 
 #include "parflow.h"
 
-void     Axpy(alpha, x, y)
-double   alpha;
-Vector  *x;
-Vector  *y;
+void     Axpy(
+   double   alpha,
+   Vector  *x,
+   Vector  *y)
 {
    Grid       *grid    = VectorGrid(x);
    Subgrid    *subgrid;

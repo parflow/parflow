@@ -99,65 +99,65 @@ int amps_SFBCast(amps_Comm comm, amps_File file, amps_Invoice invoice)
 	    if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    {
 	       *( (void **)(ptr -> data)) = (void *)malloc(sizeof(char)*len*stride);
-	       amps_ScanChar(file, *( void **)(ptr -> data), len, stride);
+	       amps_ScanChar(file, *( char **)(ptr -> data), len, stride);
 	       malloced = TRUE;
 	    }
 	    else
-	       amps_ScanChar(file, ptr -> data, len, stride);
+	       amps_ScanChar(file, (char *)ptr -> data, len, stride);
 	    break;
 	 case AMPS_INVOICE_SHORT_CTYPE:
 	    if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    {
 	       *( (void **)(ptr -> data)) = (void *)malloc(sizeof(short)*len*stride);
-	       amps_ScanShort(file, *( void **)(ptr -> data), len, stride);
+	       amps_ScanShort(file, *( short **)(ptr -> data), len, stride);
 	       malloced = TRUE;
 	    }
 	    else
-	       amps_ScanShort(file, ptr -> data, len, stride);
+	       amps_ScanShort(file, (short*)ptr -> data, len, stride);
 	    
 	    break;
 	 case AMPS_INVOICE_INT_CTYPE:
 	    if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    {
 	       *( (void **)(ptr -> data)) = (void *)malloc(sizeof(int)*len*stride);
-	       amps_ScanInt(file, *( void **)(ptr -> data), len, stride);
+	       amps_ScanInt(file, *( int **)(ptr -> data), len, stride);
 	       malloced = TRUE;
 	    }
 	    else
-	       amps_ScanInt(file, ptr -> data, len, stride);
+	       amps_ScanInt(file, (int *)ptr -> data, len, stride);
 	    
 	    break;
 	 case AMPS_INVOICE_LONG_CTYPE:
 	    if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    {
 	       *( (void **)(ptr -> data)) = (void *)malloc(sizeof(long)*len*stride);
-	       amps_ScanLong(file, *( void **)(ptr -> data), len, stride);
+	       amps_ScanLong(file, *( long **)(ptr -> data), len, stride);
 	       malloced = TRUE;
 	    }
 	    else
-	       amps_ScanLong(file, ptr -> data, len, stride);
+	       amps_ScanLong(file, (long *)ptr -> data, len, stride);
 	    
 	    break;
 	 case AMPS_INVOICE_FLOAT_CTYPE:
 	    if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    {
 	       *( (void **)(ptr -> data)) = (void *)malloc(sizeof(float)*len*stride);
-	       amps_ScanFloat(file, *( void **)(ptr -> data), len, stride);
+	       amps_ScanFloat(file, *( float **)(ptr -> data), len, stride);
 	       malloced = TRUE;
 	    }
 	    else
-	       amps_ScanFloat(file, ptr -> data, len, stride);
+	       amps_ScanFloat(file, (float *)ptr -> data, len, stride);
 	    
 	    break;
 	 case AMPS_INVOICE_DOUBLE_CTYPE:
 	    if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    {
 	       *( (void **)(ptr -> data)) = (void *)malloc(sizeof(double)*len*stride);
-	       amps_ScanDouble(file, *( void **)(ptr -> data), len, stride);
+	       amps_ScanDouble(file, *( double **)(ptr -> data), len, stride);
 	       malloced = TRUE;
 	    }
 	    else
-	       amps_ScanDouble(file, ptr -> data, len, stride);
+	       amps_ScanDouble(file, (double *)ptr -> data, len, stride);
 	    
 	    break;
 	 }

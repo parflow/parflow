@@ -76,8 +76,8 @@ BCPressureData *NewBCPressureData()
  * FreeBCPressureData
  *--------------------------------------------------------------------------*/
 
-void FreeBCPressureData(bc_pressure_data)
-BCPressureData *bc_pressure_data;
+void FreeBCPressureData(
+   BCPressureData *bc_pressure_data)
 {
    int            i, cycle_number, interval_division, interval_number;
 
@@ -108,7 +108,7 @@ BCPressureData *bc_pressure_data;
                      {
                         BCPressureType0 *bc_pressure_type0;
 
-                        bc_pressure_type0 = BCPressureDataIntervalValue(
+                        bc_pressure_type0 = (BCPressureType0 *)BCPressureDataIntervalValue(
                                            bc_pressure_data,i,interval_number);
                         if (BCPressureType0ValueAtInterfaces(
                             bc_pressure_type0))
@@ -122,7 +122,7 @@ BCPressureData *bc_pressure_data;
                      {
                         BCPressureType1 *bc_pressure_type1;
 
-                        bc_pressure_type1 = BCPressureDataIntervalValue(
+                        bc_pressure_type1 = (BCPressureType1 *)BCPressureDataIntervalValue(
                                            bc_pressure_data,i,interval_number);
                         if (BCPressureType1Points(bc_pressure_type1))
                         {
@@ -144,7 +144,7 @@ BCPressureData *bc_pressure_data;
                      {
                         BCPressureType2 *bc_pressure_type2;
 
-                        bc_pressure_type2 = BCPressureDataIntervalValue(
+                        bc_pressure_type2 = (BCPressureType2 *)BCPressureDataIntervalValue(
                                            bc_pressure_data,i,interval_number);
 
                         break;
@@ -153,7 +153,7 @@ BCPressureData *bc_pressure_data;
                      {
                         BCPressureType3 *bc_pressure_type3;
 
-                        bc_pressure_type3 = BCPressureDataIntervalValue(
+                        bc_pressure_type3 = (BCPressureType3 *)BCPressureDataIntervalValue(
                                            bc_pressure_data,i,interval_number);
 
                         break;
@@ -162,7 +162,7 @@ BCPressureData *bc_pressure_data;
                      {
                         BCPressureType4 *bc_pressure_type4;
 
-                        bc_pressure_type4 = BCPressureDataIntervalValue(
+                        bc_pressure_type4 = (BCPressureType4 *)BCPressureDataIntervalValue(
                                            bc_pressure_data,i,interval_number);
                         if (BCPressureType4FileName(bc_pressure_type4))
                         {
@@ -174,7 +174,7 @@ BCPressureData *bc_pressure_data;
                      {
                         BCPressureType5 *bc_pressure_type5;
 
-                        bc_pressure_type5 = BCPressureDataIntervalValue(
+                        bc_pressure_type5 = (BCPressureType5 *)BCPressureDataIntervalValue(
                                            bc_pressure_data,i,interval_number);
                         if (BCPressureType5FileName(bc_pressure_type5))
                         {
@@ -224,8 +224,8 @@ BCPressureData *bc_pressure_data;
  * PrintBCPressureData
  *--------------------------------------------------------------------------*/
 
-void PrintBCPressureData(bc_pressure_data)
-BCPressureData *bc_pressure_data;
+void PrintBCPressureData(
+   BCPressureData *bc_pressure_data)
 {
    amps_Printf("Pressure BC Information\n");
    if ( BCPressureDataNumPatches(bc_pressure_data) == -1 )

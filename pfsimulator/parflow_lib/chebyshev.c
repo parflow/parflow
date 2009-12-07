@@ -57,16 +57,17 @@ typedef struct
  *   RDF Assumes initial guess of 0.
  *--------------------------------------------------------------------------*/
 
-void   	 Chebyshev(x, b, tol, zero, ia, ib, num_iter)
-Vector 	*x;
-Vector 	*b;
-double 	 tol;
-int    	 zero;
-double 	 ia, ib;
-int    	 num_iter;
+void   	 Chebyshev(
+   Vector 	*x,
+   Vector 	*b,
+   double 	 tol,
+   int    	 zero,
+   double 	 ia, 
+   double        ib,
+   int    	 num_iter)
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    Matrix    *A         = (instance_xtra -> A);
 
@@ -165,13 +166,12 @@ int    	 num_iter;
  * ChebyshevInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule     *ChebyshevInitInstanceXtra(problem, grid, problem_data, A,
-					temp_data)
-Problem      *problem;
-Grid         *grid;
-ProblemData  *problem_data;
-Matrix       *A;
-double       *temp_data;
+PFModule     *ChebyshevInitInstanceXtra(
+   Problem      *problem,
+   Grid         *grid,
+   ProblemData  *problem_data,
+   Matrix       *A,
+   double       *temp_data)
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
@@ -180,7 +180,7 @@ double       *temp_data;
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    /*-----------------------------------------------------------------------
     * Initialize data associated with argument `grid'
@@ -220,7 +220,7 @@ double       *temp_data;
 void  ChebyshevFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
 
    if(instance_xtra)

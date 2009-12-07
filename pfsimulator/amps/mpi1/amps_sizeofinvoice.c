@@ -28,9 +28,9 @@
 
 #include "amps.h"
 
-long amps_sizeof_invoice(comm, inv)
-amps_Comm comm;
-amps_Invoice inv;
+long amps_sizeof_invoice(
+   amps_Comm comm,
+   amps_Invoice inv)
 {
     amps_InvoiceEntry *ptr;
     char *cur_pos = 0;
@@ -55,7 +55,7 @@ amps_Invoice inv;
 	if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    data = *((char **)(ptr -> data));
 	else
-	    data = ptr -> data;
+	   data = (char *)ptr -> data;
 
 	switch(ptr->type)
 	{

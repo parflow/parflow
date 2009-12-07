@@ -35,9 +35,9 @@
 #include "parflow.h"
 
 
-void     Copy(x, y)
-Vector  *x;
-Vector  *y;
+void     Copy(
+   Vector  *x,
+   Vector  *y)
 {
    Grid       *grid     = VectorGrid(x);
    Subgrid    *subgrid;

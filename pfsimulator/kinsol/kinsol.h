@@ -47,7 +47,7 @@ product endorsement purposes.
 
 ......................................................................*/
 
-
+#include "vector.h"
 
 #ifdef __cplusplus     /* wrapper to enable C++ usage */
 extern "C" {
@@ -58,8 +58,6 @@ extern "C" {
 
 #include <stdio.h>
 #include "llnltyps.h"
-#include "vector.h"
-
  
 /******************************************************************
  *                                                                *

@@ -44,32 +44,32 @@
 
  *--------------------------------------------------------------------------*/
 
-CommPkg  *NewCharVectorUpdatePkg(charvector, update_mode)
-CharVector   *charvector;
-int       update_mode;
+CommPkg  *NewCharVectorUpdatePkg(
+   CharVector   *charvector,
+   int       update_mode)
 {
-   CommPkg     *new;
+   CommPkg     *new_comm_pkg;
    ComputePkg  *compute_pkg;
 
 
    compute_pkg = GridComputePkg(CharVectorGrid(charvector), update_mode);
 
-   new = NewCommPkg(ComputePkgSendRegion(compute_pkg),
+   new_comm_pkg = NewCommPkg(ComputePkgSendRegion(compute_pkg),
 		    ComputePkgRecvRegion(compute_pkg),
 		    CharVectorDataSpace(charvector),
 		    CharVectorNC(charvector),
 		    (double*) CharVectorData(charvector)); 
 
-   return new;
+   return new_comm_pkg;
 }
 
 /*--------------------------------------------------------------------------
  * InitCharVectorUpdate
  *--------------------------------------------------------------------------*/
 
-CommHandle  *InitCharVectorUpdate(charvector, update_mode)
-CharVector      *charvector;
-int          update_mode;
+CommHandle  *InitCharVectorUpdate(
+   CharVector      *charvector,
+   int          update_mode)
 {
    return  InitCommunication(CharVectorCommPkg(charvector, update_mode));
 }
@@ -79,8 +79,7 @@ int          update_mode;
  * FinalizeCharVectorUpdate
  *--------------------------------------------------------------------------*/
 
-void         FinalizeCharVectorUpdate(handle)
-CommHandle  *handle;
+void         FinalizeCharVectorUpdate(CommHandle  *handle)
 {
    FinalizeCommunication(handle);
 }
@@ -90,12 +89,12 @@ CommHandle  *handle;
  * NewTempCharVector
  *--------------------------------------------------------------------------*/
 
-CharVector  *NewTempCharVector(grid, nc, num_ghost)
-Grid    *grid;
-int      nc;
-int      num_ghost;
+CharVector  *NewTempCharVector(
+   Grid    *grid,
+   int      nc,
+   int      num_ghost)
 {
-   CharVector    *new;
+   CharVector    *new_char_vector;
    Subcharvector *new_sub;
 
    Subgrid   *subgrid;
@@ -104,12 +103,12 @@ int      num_ghost;
    int        i, j, n;
 
 
-   new = ctalloc(CharVector, 1);
+   new_char_vector = ctalloc(CharVector, 1);
 
-   (new -> subcharvectors) = ctalloc(Subcharvector *, GridNumSubgrids(grid));
+   (new_char_vector -> subcharvectors) = ctalloc(Subcharvector *, GridNumSubgrids(grid));
 
    data_size = 0;
-   CharVectorDataSpace(new) = NewSubgridArray();
+   CharVectorDataSpace(new_char_vector) = NewSubgridArray();
    ForSubgridI(i, GridSubgrids(grid))
    {
       new_sub = ctalloc(Subcharvector, 1);
@@ -130,7 +129,7 @@ int      num_ghost;
 		    SubgridRZ(subgrid),
 		    SubgridProcess(subgrid));
       AppendSubgrid(SubcharvectorDataSpace(new_sub),
-		    CharVectorDataSpace(new));
+		    CharVectorDataSpace(new_char_vector));
 
       SubcharvectorNC(new_sub) = nc;
        
@@ -142,18 +141,18 @@ int      num_ghost;
 	 data_size += n;
       }
 
-      CharVectorSubcharvector(new, i) = new_sub;
+      CharVectorSubcharvector(new_char_vector, i) = new_sub;
    }
 
-   (new -> data_size) = data_size;
+   (new_char_vector -> data_size) = data_size;
 
-   CharVectorGrid(new) = grid;
+   CharVectorGrid(new_char_vector) = grid;
 
-   CharVectorNC(new) = nc;
+   CharVectorNC(new_char_vector) = nc;
 
-   CharVectorSize(new) = GridSize(grid) * nc;
+   CharVectorSize(new_char_vector) = GridSize(grid) * nc;
 
-   return new;
+   return new_char_vector;
 }
 
 
@@ -161,9 +160,9 @@ int      num_ghost;
  * SetTempCharVectorData
  *--------------------------------------------------------------------------*/
 
-void     SetTempCharVectorData(charvector, data)
-CharVector  *charvector;
-char  *data;
+void     SetTempCharVectorData(
+   CharVector  *charvector,
+   char  *data)
 {
    Grid       *grid = CharVectorGrid(charvector);
 
@@ -189,20 +188,20 @@ char  *data;
  * NewCharVector
  *--------------------------------------------------------------------------*/
 
-CharVector  *NewCharVector(grid, nc, num_ghost)
-Grid    *grid;
-int      nc;
-int      num_ghost;
+CharVector  *NewCharVector(
+   Grid    *grid,
+   int      nc,
+   int      num_ghost)
 {
-    CharVector  *new;
+    CharVector  *new_char_vector;
     char  *data;
 
 
-    new = NewTempCharVector(grid, nc, num_ghost);
-    data = amps_CTAlloc(char, SizeOfCharVector(new));
-    SetTempCharVectorData(new, data);
+    new_char_vector = NewTempCharVector(grid, nc, num_ghost);
+    data = amps_CTAlloc(char, SizeOfCharVector(new_char_vector));
+    SetTempCharVectorData(new_char_vector, data);
 
-    return new;
+    return new_char_vector;
 }
 
 
@@ -210,8 +209,8 @@ int      num_ghost;
  * FreeTempCharVector
  *--------------------------------------------------------------------------*/
 
-void FreeTempCharVector(charvector)
-CharVector *charvector;
+void FreeTempCharVector(
+   CharVector *charvector)
 {
    int i;
 
@@ -236,8 +235,8 @@ CharVector *charvector;
  * FreeCharVector
  *--------------------------------------------------------------------------*/
 
-void     FreeCharVector(charvector)
-CharVector  *charvector;
+void     FreeCharVector(
+   CharVector  *charvector)
 {
    amps_TFree(CharVectorData(charvector));
    FreeTempCharVector(charvector);
@@ -248,9 +247,7 @@ CharVector  *charvector;
  * InitCharVector
  *--------------------------------------------------------------------------*/
 
-void    InitCharVector(v, value)
-CharVector *v;
-char  value;
+void InitCharVector (CharVector *v , char value )
 {
    Grid       *grid = CharVectorGrid(v);
 
@@ -303,9 +300,7 @@ char  value;
  * InitCharVectorAll
  *--------------------------------------------------------------------------*/
 
-void    InitCharVectorAll(v, value)
-CharVector *v;
-char  value;
+void InitCharVectorAll (CharVector *v , char value )
 {
    Grid       *grid = CharVectorGrid(v);
 
@@ -355,10 +350,7 @@ char  value;
  *--------------------------------------------------------------------------*/
 
 
-void    InitCharVectorInc(v, value, inc)
-CharVector *v;
-char  value;
-char  inc;
+void InitCharVectorInc (CharVector *v , char value , int inc )
 {
    Grid       *grid = CharVectorGrid(v);
 

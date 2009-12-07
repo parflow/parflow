@@ -60,7 +60,9 @@ int amps_CreateInvoice(amps_Comm comm, amps_Invoice inv)
    /* if allocated then we deallocate                                       */
    amps_ClearInvoice(inv);
    
-   cur_pos = inv -> combuf = amps_new(mlr, size);
+   inv -> combuf = amps_new(mlr, size);
+
+   cur_pos = (char *)inv -> combuf;
    
    /* set flag indicateing we have allocated the space                      */
    inv -> combuf_flags |= AMPS_INVOICE_ALLOCATED;

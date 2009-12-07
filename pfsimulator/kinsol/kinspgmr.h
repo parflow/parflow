@@ -12,6 +12,8 @@
  *                                                                *
  ******************************************************************/
 
+#include "vector.h"
+
 #ifdef __cplusplus     /* wrapper to enable C++ usage */
 extern "C" {
 #endif
@@ -23,7 +25,6 @@ extern "C" {
 #include "kinsol.h"   /*  for KINSOL_IOPT_SIZE, etc.  */
 #include "spgmr.h"
 #include "llnltyps.h"
-#include "vector.h"
 
  
 /******************************************************************

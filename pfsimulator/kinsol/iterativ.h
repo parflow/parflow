@@ -15,15 +15,16 @@
  *                                                                * 
  ******************************************************************/
 
+
+
+#include "llnltyps.h"
+#include "vector.h"
+
 #ifdef __cplusplus     /* wrapper to enable C++ usage */
 extern "C" {
 #endif
 #ifndef _iterativ_h
 #define _iterativ_h
-
-
-#include "llnltyps.h"
-#include "vector.h"
 
 
 /******************************************************************
