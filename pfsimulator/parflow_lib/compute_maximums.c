@@ -95,8 +95,13 @@ double  ComputeTotalMaximum(
 
    /* CSW  Hard-coded in an assumption here for constant density. 
     *      Use dtmp as dummy argument here. */
-   PFModuleInvoke(void, phase_density, (0, NULL, NULL, &dtmp, &den0, CALCFCN));
-   PFModuleInvoke(void, phase_density, (1, NULL, NULL, &dtmp, &den1, CALCFCN));
+
+// Solution using a typedef: Define a pointer to a function which is taking
+// two floats and returns a float
+   typedef float(*pt2Func)(float, float);
+
+   PFModuleInvokeType(PhaseDensityInvoke, phase_density, (0, NULL, NULL, &dtmp, &den0, CALCFCN));
+   PFModuleInvokeType(PhaseDensityInvoke, phase_density, (1, NULL, NULL, &dtmp, &den1, CALCFCN));
 
    g = -ProblemGravity(problem);
 

@@ -90,24 +90,18 @@ int        seven_pt_shape[7][3] = {{ 0,  0,  0},
  * DiscretizePressure
  *--------------------------------------------------------------------------*/
 
-void          DiscretizePressure(ptr_to_A, ptr_to_f,
-                                 problem_data,
-                                 time, 
-				 total_mobility_x, 
-				 total_mobility_y, 
-				 total_mobility_z, 
-				 phase_saturations)
-Matrix      **ptr_to_A;
-Vector      **ptr_to_f;
-ProblemData  *problem_data;
-double        time;
-Vector       *total_mobility_x;
-Vector       *total_mobility_y;
-Vector       *total_mobility_z;
-Vector      **phase_saturations;
+void          DiscretizePressure(
+   Matrix      **ptr_to_A,
+   Vector      **ptr_to_f,
+   ProblemData  *problem_data,
+   double        time,
+   Vector       *total_mobility_x,
+   Vector       *total_mobility_y,
+   Vector       *total_mobility_z,
+   Vector      **phase_saturations)
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    PFModule       *bc_pressure          = (instance_xtra -> bc_pressure);
    PFModule       *phase_mobility       = (instance_xtra -> phase_mobility);
@@ -229,11 +223,11 @@ Vector      **phase_saturations;
    for (phase = 0; phase < num_phases; phase++)
    {
       /* Assume constant density here.  Use dtmp as dummy argument. */
-      PFModuleInvoke(void, phase_density_module,
+      PFModuleInvokeType(PhaseDensityInvoke, phase_density_module,
                      (phase, NULL, NULL, &dtmp, &phase_density[phase], 
 		      CALCFCN));
 
-      PFModuleInvoke(void, phase_mobility,
+      PFModuleInvokeType(PhaseMobilityInvoke, phase_mobility,
 		     (tmobility_x[phase], tmobility_y[phase], 
 		      tmobility_z[phase], 
 		      ProblemDataPermeabilityX(problem_data),
@@ -242,7 +236,7 @@ Vector      **phase_saturations;
 		      phase, phase_saturations[phase],
 		      ProblemPhaseViscosity(problem,phase)));
       
-      PFModuleInvoke(void, capillary_pressure,
+      PFModuleInvokeType(CapillaryPressureInvoke, capillary_pressure,
 		     (tcapillary[phase], phase, 0,
 		      problem_data, phase_saturations[0]));
       
@@ -268,7 +262,7 @@ Vector      **phase_saturations;
    for (phase = 0; phase < num_phases; phase++)
    {
       /* get phase_source */
-      PFModuleInvoke(void, phase_source, (tvector, phase, problem, 
+      PFModuleInvokeType(PhaseSourceInvoke, phase_source, (tvector, phase, problem, 
 					  problem_data, time));
    
       ForSubgridI(is, GridSubgrids(grid))
@@ -703,8 +697,8 @@ Vector      **phase_saturations;
     * Impose boundary conditions:
     *-----------------------------------------------------------------------*/
 
-   bc_struct = PFModuleInvoke(BCStruct *, bc_pressure, (problem_data, grid, 
-							gr_domain, time));
+   bc_struct = PFModuleInvokeType(BCPressureInvoke, bc_pressure, (problem_data, grid, 
+								  gr_domain, time));
 
    ForSubgridI(is, GridSubgrids(grid))
    {
@@ -832,7 +826,7 @@ Vector      **phase_saturations;
     * Impose internal boundary conditions
     *-----------------------------------------------------------------------*/
 
-   PFModuleInvoke(void, ProblemBCInternal(problem),
+   PFModuleInvokeType(BCInternalInvoke, ProblemBCInternal(problem),
 		  (problem, problem_data, A, f, time));
 
    /*-----------------------------------------------------------------------
@@ -948,7 +942,7 @@ PFModule    *DiscretizePressureInitInstanceXtra(
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    /*-----------------------------------------------------------------------
     * Initialize data associated with argument `problem'
@@ -1000,7 +994,7 @@ PFModule    *DiscretizePressureInitInstanceXtra(
    if ( PFModuleInstanceXtra(this_module) == NULL )
    {
       (instance_xtra -> bc_pressure) =
-	 PFModuleNewInstance(ProblemBCPressure(problem), (problem) );
+	 PFModuleNewInstanceType(BCPressurePackageInitInstanceXtraInvoke, ProblemBCPressure(problem), (problem) );
       (instance_xtra -> phase_mobility) =
 	 PFModuleNewInstance(ProblemPhaseMobility(problem), ());
       (instance_xtra -> phase_density_module) =
@@ -1008,11 +1002,11 @@ PFModule    *DiscretizePressureInitInstanceXtra(
       (instance_xtra -> capillary_pressure) =
 	 PFModuleNewInstance(ProblemCapillaryPressure(problem), ());
       (instance_xtra -> phase_source) =
-	 PFModuleNewInstance(ProblemPhaseSource(problem), (grid));
+	 PFModuleNewInstance(ProblemPhaseSource(problem), ());
    }
    else
    {
-      PFModuleReNewInstance((instance_xtra -> bc_pressure), (problem));
+      PFModuleReNewInstanceType(BCPressurePackageInitInstanceXtraInvoke, (instance_xtra -> bc_pressure), (problem));
       PFModuleReNewInstance((instance_xtra -> phase_mobility), ());
       PFModuleReNewInstance((instance_xtra -> phase_density_module), ());
       PFModuleReNewInstance((instance_xtra -> capillary_pressure), ());
@@ -1031,7 +1025,7 @@ PFModule    *DiscretizePressureInitInstanceXtra(
 void  DiscretizePressureFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    int  num_phases;
 

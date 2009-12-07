@@ -33,10 +33,12 @@
 /* -----------------------------------------------------------------------
  */
 
-/* Subroutine */ int gauinv_(p, xp, ierr)
-double *p;
-double *xp;
-int *ierr;
+#include <math.h>
+
+/* Subroutine */ int gauinv_(
+   double *p,
+   double *xp,
+   int *ierr)
 {
     /* Initialized data */
 
@@ -51,9 +53,6 @@ int *ierr;
     static double q2 = .531103462366;
     static double q3 = .10353775285;
     static double q4 = .0038560700634;
-
-    /* Builtin functions */
-    double log(), sqrt();
 
     /* Local variables */
     static double y, pp;

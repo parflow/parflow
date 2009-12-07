@@ -4,23 +4,31 @@
 */
 
 #include "f2c.h"
+#include "math.h"
 
 /* Table of constant values */
 
 static int c__1 = 1;
 
-/* Subroutine */ int dpofa_(a, lda, n, info)
-double *a;
-int *lda, *n, *info;
+/* Subroutine */ int dpofa_(
+   double *a,
+   int *lda, 
+   int *n, 
+   int *info)
 {
     /* System generated locals */
     int a_dim1, a_offset, i__1, i__2, i__3;
 
     /* Builtin functions */
-    double sqrt();
+//    double sqrt();
 
     /* Local variables */
-    extern double ddot_();
+    extern double ddot_(
+       int *n,
+       double *dx,
+       int *incx,
+       double *dy,
+       int *incy);
     static int j, k;
     static double s, t;
     static int jm1;
@@ -109,12 +117,12 @@ L40:
     return 0;
 } /* dpofa_ */
 
-double ddot_(n, dx, incx, dy, incy)
-int *n;
-double *dx;
-int *incx;
-double *dy;
-int *incy;
+double ddot_(
+   int *n,
+   double *dx,
+   int *incx,
+   double *dy,
+   int *incy)
 {
     /* System generated locals */
     int i__1;

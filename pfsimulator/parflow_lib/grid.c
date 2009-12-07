@@ -40,21 +40,21 @@
  * NewGrid
  *--------------------------------------------------------------------------*/
 
-Grid  *NewGrid(subgrids, all_subgrids)
-SubgridArray  *subgrids;
-SubgridArray  *all_subgrids;
+Grid  *NewGrid(
+   SubgridArray  *subgrids,
+   SubgridArray  *all_subgrids)
 {
-   Grid    *new;
+   Grid    *new_grid;
 
    Subgrid *s;
 
    int      i, size;
 
 
-   new = talloc(Grid, 1);
+   new_grid = talloc(Grid, 1);
 
-   (new -> subgrids)      = subgrids;
-   (new -> all_subgrids)  = all_subgrids;
+   (new_grid -> subgrids)      = subgrids;
+   (new_grid -> all_subgrids)  = all_subgrids;
 
    size = 0;
    for (i = 0; i < SubgridArraySize(all_subgrids); i++)
@@ -62,11 +62,11 @@ SubgridArray  *all_subgrids;
       s = SubgridArraySubgrid(all_subgrids, i);
       size += (s -> nx)*(s -> ny)*(s -> nz);
    }
-   (new -> size) = size;
+   (new_grid -> size) = size;
 
-   (new -> compute_pkgs) = NULL;
+   (new_grid -> compute_pkgs) = NULL;
 
-   return new;
+   return new_grid;
 }
 
 
@@ -74,8 +74,8 @@ SubgridArray  *all_subgrids;
  * FreeGrid
  *--------------------------------------------------------------------------*/
 
-void  FreeGrid(grid)
-Grid  *grid;
+void  FreeGrid(
+   Grid  *grid)
 {
    FreeSubgridArray(GridAllSubgrids(grid));
 
@@ -100,10 +100,14 @@ Grid  *grid;
  *   Returns 0 for an empty projection, and 1 for a nonempty projection.
  *--------------------------------------------------------------------------*/
 
-int         ProjectSubgrid(subgrid, sx, sy, sz, ix, iy, iz)
-Subgrid    *subgrid;
-int         sx, sy, sz;
-int         ix, iy, iz;
+int         ProjectSubgrid(
+   Subgrid    *subgrid,
+   int sx, 
+   int sy, 
+   int sz,
+   int ix, 
+   int iy, 
+   int iz)
 {
    int         il, iu;
 
@@ -183,8 +187,8 @@ int         ix, iy, iz;
  *   Note: The subregion passed in is modified.
  *--------------------------------------------------------------------------*/
 
-Subgrid    *ConvertToSubgrid(subregion)
-Subregion  *subregion;
+Subgrid    *ConvertToSubgrid(
+   Subregion  *subregion)
 {
    int  sx, sy, sz;
    int  ex, ey, ez;
@@ -231,11 +235,13 @@ Subregion  *subregion;
  *   Assumes that (rx, ry, rz) are not finer than subgrid's resolution.
  *--------------------------------------------------------------------------*/
 
-Subgrid  *ExtractSubgrid(rx, ry, rz, subgrid)
-int       rx, ry, rz;
-Subgrid  *subgrid;
+Subgrid  *ExtractSubgrid(
+   int       rx, 
+   int ry, 
+   int rz,
+   Subgrid  *subgrid)
 {
-   Subgrid  *new;
+   Subgrid  *new_subgrid;
 
    int       ix, iy, iz;
    int       nx, ny, nz;
@@ -291,10 +297,10 @@ Subgrid  *subgrid;
       nz    = SubgridNZ(subgrid);
    }
 
-   new = NewSubgrid(ix, iy, iz, nx, ny, nz, rx, ry, rz,
+   new_subgrid = NewSubgrid(ix, iy, iz, nx, ny, nz, rx, ry, rz,
 		    SubgridProcess(subgrid));
 
-   return new;
+   return new_subgrid;
 }
 
 
@@ -312,17 +318,17 @@ Subgrid  *subgrid;
  *   three directions).
  *--------------------------------------------------------------------------*/
 
-Subgrid  *IntersectSubgrids(subgrid1, subgrid2)
-Subgrid  *subgrid1;
-Subgrid  *subgrid2;
+Subgrid  *IntersectSubgrids(
+   Subgrid  *subgrid1,
+   Subgrid  *subgrid2)
 {
-   Subgrid  *new, *old;
+   Subgrid  *new_subgrid, *old;
 
 
    if (SubgridLevel(subgrid2) > SubgridLevel(subgrid1))
    {
       old = subgrid1;
-      new = ExtractSubgrid(SubgridRX(subgrid1),
+      new_subgrid = ExtractSubgrid(SubgridRX(subgrid1),
 			   SubgridRY(subgrid1),
 			   SubgridRZ(subgrid1),
 			   subgrid2);
@@ -330,44 +336,44 @@ Subgrid  *subgrid2;
    else
    {
       old = subgrid2;
-      new = ExtractSubgrid(SubgridRX(subgrid2),
+      new_subgrid = ExtractSubgrid(SubgridRX(subgrid2),
 			   SubgridRY(subgrid2),
 			   SubgridRZ(subgrid2),
 			   subgrid1);
    }
 
    /* find x bounds */
-   SubgridNX(new) = min(SubgridIX(new) + SubgridNX(new),
+   SubgridNX(new_subgrid) = min(SubgridIX(new_subgrid) + SubgridNX(new_subgrid),
 			SubgridIX(old) + SubgridNX(old));
-   SubgridIX(new)  = max(SubgridIX(new), SubgridIX(old));
-   if (SubgridNX(new) > SubgridIX(new))
-      SubgridNX(new) -= SubgridIX(new);
+   SubgridIX(new_subgrid)  = max(SubgridIX(new_subgrid), SubgridIX(old));
+   if (SubgridNX(new_subgrid) > SubgridIX(new_subgrid))
+      SubgridNX(new_subgrid) -= SubgridIX(new_subgrid);
    else
       goto empty;
 
    /* find y bounds */
-   SubgridNY(new) = min(SubgridIY(new) + SubgridNY(new),
+   SubgridNY(new_subgrid) = min(SubgridIY(new_subgrid) + SubgridNY(new_subgrid),
 			SubgridIY(old) + SubgridNY(old));
-   SubgridIY(new)  = max(SubgridIY(new), SubgridIY(old));
-   if (SubgridNY(new) > SubgridIY(new))
-      SubgridNY(new) -= SubgridIY(new);
+   SubgridIY(new_subgrid)  = max(SubgridIY(new_subgrid), SubgridIY(old));
+   if (SubgridNY(new_subgrid) > SubgridIY(new_subgrid))
+      SubgridNY(new_subgrid) -= SubgridIY(new_subgrid);
    else
       goto empty;
 
    /* find z bounds */
-   SubgridNZ(new) = min(SubgridIZ(new) + SubgridNZ(new),
+   SubgridNZ(new_subgrid) = min(SubgridIZ(new_subgrid) + SubgridNZ(new_subgrid),
 			SubgridIZ(old) + SubgridNZ(old));
-   SubgridIZ(new)  = max(SubgridIZ(new), SubgridIZ(old));
-   if (SubgridNZ(new) > SubgridIZ(new))
-      SubgridNZ(new) -= SubgridIZ(new);
+   SubgridIZ(new_subgrid)  = max(SubgridIZ(new_subgrid), SubgridIZ(old));
+   if (SubgridNZ(new_subgrid) > SubgridIZ(new_subgrid))
+      SubgridNZ(new_subgrid) -= SubgridIZ(new_subgrid);
    else
       goto empty;
 
    /* return intersection */
-   return new;
+   return new_subgrid;
 
  empty:
-   FreeSubgrid(new);
+   FreeSubgrid(new_subgrid);
    return NULL;
 }
 
@@ -381,9 +387,9 @@ Subgrid  *subgrid2;
  *   three directions).
  *--------------------------------------------------------------------------*/
 
-SubgridArray  *SubtractSubgrids(subgrid1, subgrid2)
-Subgrid       *subgrid1;
-Subgrid       *subgrid2;
+SubgridArray  *SubtractSubgrids(
+   Subgrid       *subgrid1,
+   Subgrid       *subgrid2)
 {
    SubgridArray  *new_a;
 
@@ -552,8 +558,8 @@ Subgrid       *subgrid2;
  * the resulting union are currently set to 0.
  *--------------------------------------------------------------------------*/
 
-SubgridArray  *UnionSubgridArray(subgrids)
-SubgridArray  *subgrids;
+SubgridArray  *UnionSubgridArray(
+   SubgridArray  *subgrids)
 {
    SubgridArray  *new_sa;
    SubgridArray  *old_sa;

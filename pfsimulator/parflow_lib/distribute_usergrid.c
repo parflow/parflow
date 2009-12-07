@@ -54,8 +54,8 @@
  *   We currently assume that the user's grid consists of 1 subgrid only.
  *--------------------------------------------------------------------------*/
 
-SubgridArray   *DistributeUserGrid(user_grid)
-Grid           *user_grid;
+SubgridArray   *DistributeUserGrid(
+   Grid           *user_grid)
 {
    Subgrid     *user_subgrid = GridSubgrid(user_grid, 0);
 

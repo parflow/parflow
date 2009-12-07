@@ -38,10 +38,10 @@
  * NewListMember
  *--------------------------------------------------------------------------*/
 
-ListMember *NewListMember(value, normal_component,triangle_id)
-double value;
-int    normal_component;
-int    triangle_id;
+ListMember *NewListMember(
+double value,
+int    normal_component,
+int    triangle_id)
 {
    ListMember *new_member;
 
@@ -59,8 +59,8 @@ int    triangle_id;
  * FreeListMember
  *--------------------------------------------------------------------------*/
 
-void FreeListMember(member)
-ListMember *member;
+void FreeListMember(
+   ListMember *member)
 {
    tfree(member);
 }
@@ -69,9 +69,9 @@ ListMember *member;
  * ListInsert
  *--------------------------------------------------------------------------*/
 
-void ListInsert(head, member)
-ListMember **head;
-ListMember  *member;
+void ListInsert(
+   ListMember **head,
+   ListMember  *member)
 {
    ListMember *previous_member, *current_member, *next_member = NULL;
    int         not_eol, searching;
@@ -131,9 +131,9 @@ ListMember  *member;
  * ListDelete
  *--------------------------------------------------------------------------*/
 
-int ListDelete(head, member)
-ListMember **head;
-ListMember  *member;
+int ListDelete(
+   ListMember **head,
+   ListMember  *member)
 {
    ListMember *previous_member, *current_member;
    int         deleted, not_eol, searching;
@@ -187,11 +187,11 @@ ListMember  *member;
  * ListSearch
  *--------------------------------------------------------------------------*/
 
-ListMember *ListSearch(head, value, normal_component, triangle_id)
-ListMember *head;
-double      value;
-int         normal_component;
-int         triangle_id;
+ListMember *ListSearch(
+   ListMember *head,
+   double      value,
+   int         normal_component,
+   int         triangle_id)
 {
    ListMember *list_member, *current_member;
    int         not_eol, searching;
@@ -234,9 +234,9 @@ int         triangle_id;
  * ListValueSearch
  *--------------------------------------------------------------------------*/
 
-ListMember *ListValueSearch(head, value)
-ListMember *head;
-double      value;
+ListMember *ListValueSearch(
+   ListMember *head,
+   double      value)
 {
    ListMember *list_member, *current_member;
    int         not_eol, searching;
@@ -277,10 +277,10 @@ double      value;
  * ListValueNormalComponentSearch
  *--------------------------------------------------------------------------*/
 
-ListMember *ListValueNormalComponentSearch(head, value, normal_component)
-ListMember *head;
-double      value;
-int         normal_component;
+ListMember *ListValueNormalComponentSearch(
+   ListMember *head,
+   double      value,
+   int         normal_component)
 {
    ListMember *list_member, *current_member;
    int         not_eol, searching;
@@ -322,9 +322,9 @@ int         normal_component;
  * ListTriangleIDSearch
  *--------------------------------------------------------------------------*/
 
-ListMember *ListTriangleIDSearch(head, triangle_id)
-ListMember *head;
-int         triangle_id;
+ListMember *ListTriangleIDSearch(
+   ListMember *head,
+   int         triangle_id)
 {
    ListMember *list_member, *current_member;
    int         not_eol, searching;
@@ -366,8 +366,8 @@ int         triangle_id;
  * ListFree
  *--------------------------------------------------------------------------*/
 
-void ListFree(head)
-ListMember **head;
+void ListFree(
+   ListMember **head)
 {
    ListMember *current_member, *next_member;
    int         not_eol;
@@ -394,8 +394,8 @@ ListMember **head;
  * ListLength
  *--------------------------------------------------------------------------*/
 
-int ListLength(head)
-ListMember *head;
+int ListLength(
+   ListMember *head)
 {
    ListMember *current_member;
    int         not_eol;
@@ -424,8 +424,8 @@ ListMember *head;
  * ListPrint
  *--------------------------------------------------------------------------*/
 
-void ListPrint(head)
-ListMember *head;
+void ListPrint(
+   ListMember *head)
 {
    ListMember *current_member;
    int         not_eol;

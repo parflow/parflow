@@ -21,11 +21,11 @@
 /**************************************************************************
  * Lattice Boltzmann diffusion function
  **************************************************************************/
-void DiffuseLB (lattice, problem, max_iterations, file_prefix)
-  Lattice *lattice;
-  Problem *problem;
-  int     max_iterations;
-  char    *file_prefix;
+void DiffuseLB (
+   Lattice *lattice,
+   Problem *problem,
+   int     max_iterations,
+   char    *file_prefix)
 {
    /*------------------------------------------------------------*
     * Local variables 
@@ -270,9 +270,9 @@ void DiffuseLB (lattice, problem, max_iterations, file_prefix)
 /**************************************************************************
  * LatticeFlowInit function
  **************************************************************************/
-void LatticeFlowInit ( lattice, problem ) 
-  Lattice  *lattice;
-  Problem  *problem;
+void LatticeFlowInit (
+   Lattice  *lattice,
+   Problem  *problem)
 {
    /*------------------------------------------------------------*
     * Local variables 
@@ -473,8 +473,8 @@ void LatticeFlowInit ( lattice, problem )
  * MaxVectorValue
  *--------------------------------------------------------------------------*/
 
-double  MaxVectorValue(field)
-Vector *field;
+double  MaxVectorValue(
+   Vector *field)
 {
 
    /*-----------------------
@@ -549,8 +549,9 @@ Vector *field;
  * MaxVectorDividend
  *--------------------------------------------------------------------------*/
 
-double  MaxVectorDividend(field1, field2)
-Vector *field1, *field2;
+double  MaxVectorDividend(
+   Vector *field1, 
+   Vector *field2)
 {
 
    /*-----------------------

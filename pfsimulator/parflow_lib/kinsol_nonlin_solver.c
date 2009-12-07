@@ -93,19 +93,18 @@ typedef struct
 /*--------------------------------------------------------------------------
  * KINSolInitPC
  *--------------------------------------------------------------------------*/
-int  KINSolInitPC(neq, pressure, uscale, fval, fscale, vtemp1, 
-		  vtemp2, nl_function, uround, nfePtr, current_state)
-int       neq;
-N_Vector  pressure;
-N_Vector  uscale;
-N_Vector  fval;
-N_Vector  fscale;
-N_Vector  vtemp1;
-N_Vector  vtemp2;
-void     *nl_function;
-double    uround;
-long int *nfePtr;
-void     *current_state;
+int  KINSolInitPC(
+int       neq,
+N_Vector  pressure,
+N_Vector  uscale,
+N_Vector  fval,
+N_Vector  fscale,
+N_Vector  vtemp1,
+N_Vector  vtemp2,
+void     *nl_function,
+double    uround,
+long int *nfePtr,
+void     *current_state)
 {
    PFModule    *precond      = StatePrecond( ((State*)current_state) );
    ProblemData *problem_data = StateProblemData( ((State*)current_state) );
@@ -117,8 +116,8 @@ void     *current_state;
    /* The preconditioner module initialized here is the KinsolPC module
       itself */
 
-   PFModuleReNewInstance(precond, (NULL, NULL, problem_data, NULL, 
-				   pressure, saturation, density, dt, time));
+   PFModuleReNewInstanceType(KinsolPCInitInstanceXtraInvoke, precond, (NULL, NULL, problem_data, NULL, 
+								       pressure, saturation, density, dt, time));
    return(0);
 }
 
@@ -126,34 +125,33 @@ void     *current_state;
 /*--------------------------------------------------------------------------
  * KINSolCallPC
  *--------------------------------------------------------------------------*/
-int   KINSolCallPC(neq, pressure, uscale, fval, fscale, vtem, ftem, 
-		   nl_function, uround, nfePtr, current_state)
-int       neq;	
-N_Vector  pressure;
-N_Vector  uscale;
-N_Vector  fval;
-N_Vector  fscale;
-N_Vector  vtem;
-N_Vector  ftem;
-void     *nl_function;
-double    uround;
-long int *nfePtr;
-void     *current_state;
+int   KINSolCallPC(
+int       neq,	
+N_Vector  pressure,
+N_Vector  uscale,
+N_Vector  fval,
+N_Vector  fscale,
+N_Vector  vtem,
+N_Vector  ftem,
+void     *nl_function,
+double    uround,
+long int *nfePtr,
+void     *current_state)
 {
    PFModule *precond = StatePrecond( (State*)current_state );
 
    /* The preconditioner module invoked here is the KinsolPC module
       itself */
 
-   PFModuleInvoke(void, precond, (vtem));
+   PFModuleInvokeType(KinsolPCInvoke, precond, (vtem));
 
    return(0);
 }
 
-void PrintFinalStats(out_file, integer_outputs_now, integer_outputs_total)
-FILE       *out_file;
-long int   *integer_outputs_now;
-long int   *integer_outputs_total;
+void PrintFinalStats(
+   FILE       *out_file,
+   long int   *integer_outputs_now,
+   long int   *integer_outputs_total)
 {
   fprintf(out_file, "\n-------------------------------------------------- \n");
   fprintf(out_file, "                    Iteration             Total\n");
@@ -181,25 +179,11 @@ long int   *integer_outputs_total;
  * KinsolNonlinSolver
  *--------------------------------------------------------------------------*/
 
-int          KinsolNonlinSolver(pressure, density, old_density, saturation, 
-				old_saturation, t, dt, problem_data, old_pressure, 
-                                outflow,evap_trans,ovrl_bc_flx)
-Vector      *pressure;
-Vector      *old_pressure;
-Vector      *density;
-Vector      *old_density;
-Vector      *saturation;
-Vector      *old_saturation;
-Vector      *evap_trans;
-Vector      *ovrl_bc_flx;
-double       t;
-double       dt;
-double       *outflow; //sk
-ProblemData *problem_data;
+int KinsolNonlinSolver (Vector *pressure , Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, double *outflow, Vector *evap_trans, Vector *ovrl_bc_flx )
 {
    PFModule     *this_module      = ThisPFModule;
-   PublicXtra   *public_xtra      = PFModulePublicXtra(this_module);
-   InstanceXtra *instance_xtra    = PFModuleInstanceXtra(this_module);
+   PublicXtra   *public_xtra      = (PublicXtra   *)PFModulePublicXtra(this_module);
+   InstanceXtra *instance_xtra    = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    Matrix       *jacobian_matrix  = (instance_xtra -> jacobian_matrix);
    Vector       *uscale           = (instance_xtra -> uscale);
@@ -291,15 +275,14 @@ ProblemData *problem_data;
  * KinsolNonlinSolverInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *KinsolNonlinSolverInitInstanceXtra(problem, grid, problem_data, 
-					      temp_data)
-Problem     *problem;
-Grid        *grid;
-ProblemData *problem_data;
-double      *temp_data;
+PFModule  *KinsolNonlinSolverInitInstanceXtra(
+Problem     *problem,
+Grid        *grid,
+ProblemData *problem_data,
+double      *temp_data)
 {
    PFModule      *this_module        = ThisPFModule;
-   PublicXtra    *public_xtra        = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra        = (PublicXtra    *)PFModulePublicXtra(this_module);
    InstanceXtra  *instance_xtra;
 
    int           neq                 = public_xtra -> neq;
@@ -335,7 +318,7 @@ double      *temp_data;
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    /*-----------------------------------------------------------------------
     * Initialize module instances
@@ -345,20 +328,20 @@ double      *temp_data;
    {
       if (public_xtra -> precond != NULL)
 	 instance_xtra -> precond =
-	    PFModuleNewInstance(public_xtra -> precond,
-				(problem, grid, problem_data, temp_data,
-				 NULL, NULL, NULL, NULL, NULL));
+	    PFModuleNewInstanceType(KinsolPCInitInstanceXtraInvoke, public_xtra -> precond,
+				    (problem, grid, problem_data, temp_data,
+				     NULL, NULL, NULL, 0, 0));
       else
 	 instance_xtra -> precond = NULL;
 
       instance_xtra -> nl_function_eval = 
-	 PFModuleNewInstance(public_xtra -> nl_function_eval, 
-			     (problem, grid, temp_data));
+	 PFModuleNewInstanceType(NlFunctionEvalInitInstanceXtraInvoke, public_xtra -> nl_function_eval, 
+				 (problem, grid, temp_data));
 
       if (public_xtra -> richards_jacobian_eval != NULL)
 	 /* Initialize instance for nonsymmetric matrix */
 	 instance_xtra -> richards_jacobian_eval = 
-	    PFModuleNewInstance(public_xtra -> richards_jacobian_eval, 
+	    PFModuleNewInstanceType(RichardsJacobianEvalInitInstanceXtraInvoke, public_xtra -> richards_jacobian_eval, 
 				(problem, grid, temp_data, 0));
       else
 	 instance_xtra -> richards_jacobian_eval = NULL;
@@ -366,15 +349,16 @@ double      *temp_data;
    else
    {
       if (instance_xtra -> precond != NULL)
-	 PFModuleReNewInstance(instance_xtra -> precond,
+	 PFModuleReNewInstanceType(KinsolPCInitInstanceXtraInvoke,
+			       instance_xtra -> precond,
 			        (problem, grid, problem_data, temp_data,
-				 NULL, NULL, NULL, NULL, NULL));
+				 NULL, NULL, NULL, 0, 0));
 
-      PFModuleReNewInstance(instance_xtra -> nl_function_eval, 
+      PFModuleReNewInstanceType(NlFunctionEvalInitInstanceXtraInvoke, instance_xtra -> nl_function_eval, 
 			    (problem, grid, temp_data));
 
       if (instance_xtra -> richards_jacobian_eval != NULL)
-	 PFModuleReNewInstance(instance_xtra -> richards_jacobian_eval, 
+	 PFModuleReNewInstanceType(RichardsJacobianEvalInitInstanceXtraInvoke, instance_xtra -> richards_jacobian_eval, 
 			       (problem, grid, temp_data, 0));
    }
 
@@ -467,7 +451,7 @@ double      *temp_data;
 void  KinsolNonlinSolverFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
 
    if (instance_xtra)
@@ -640,8 +624,10 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
    }
    else if ( switch_value > 0 )
    {
-      (public_xtra -> precond) = PFModuleNewModule(KinsolPC, 
-						   (key, switch_name));
+      (public_xtra -> precond) = PFModuleNewModuleType(
+	 KinsolPCNewPublicXtraInvoke,
+	 KinsolPC, 
+	 (key, switch_name));
       (public_xtra -> pcinit)  = (KINSpgmrPrecondFn)KINSolInitPC;
       (public_xtra -> pcsolve) = (KINSpgmrPrecondSolveFn)KINSolCallPC;
    }
@@ -676,7 +662,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
 void  KinsolNonlinSolverFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra  *public_xtra   = (PublicXtra  *)PFModulePublicXtra(this_module);
 
    if ( public_xtra )
    {
@@ -701,7 +687,7 @@ void  KinsolNonlinSolverFreePublicXtra()
 int  KinsolNonlinSolverSizeOfTempData()
 {
    PFModule             *this_module   = ThisPFModule;
-   InstanceXtra         *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra         *instance_xtra = (InstanceXtra         *)PFModuleInstanceXtra(this_module);
 
    PFModule             *precond       = (instance_xtra -> precond);
    PFModule             *jacobian_eval = (instance_xtra -> 

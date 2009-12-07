@@ -39,20 +39,20 @@
  * GeomNewVertexArray
  *--------------------------------------------------------------------------*/
 
-GeomVertexArray  *GeomNewVertexArray(vertices, nV)
-GeomVertex      **vertices;
-int               nV;
+GeomVertexArray  *GeomNewVertexArray(
+   GeomVertex      **vertices,
+   int               nV)
 {
-    GeomVertexArray   *new;
+    GeomVertexArray   *new_geom_vertex_array;
 
 
-    new = talloc(GeomVertexArray, 1);
+    new_geom_vertex_array = talloc(GeomVertexArray, 1);
 
-    (new -> vertices)    = vertices;
-    (new -> nV)          = nV;
-    (new -> num_ptrs_to) = 0;
+    (new_geom_vertex_array -> vertices)    = vertices;
+    (new_geom_vertex_array -> nV)          = nV;
+    (new_geom_vertex_array -> num_ptrs_to) = 0;
 
-    return new;
+    return new_geom_vertex_array;
 }
 
 
@@ -60,8 +60,8 @@ int               nV;
  * GeomFreeVertexArray
  *--------------------------------------------------------------------------*/
 
-void              GeomFreeVertexArray(vertex_array)
-GeomVertexArray  *vertex_array;
+void              GeomFreeVertexArray(
+   GeomVertexArray  *vertex_array)
 {
    int  v;
 
@@ -83,22 +83,22 @@ GeomVertexArray  *vertex_array;
  * GeomNewTIN
  *--------------------------------------------------------------------------*/
 
-GeomTIN          *GeomNewTIN(vertex_array, triangles, nT)
-GeomVertexArray  *vertex_array;
-GeomTriangle    **triangles;
-int               nT;
+GeomTIN          *GeomNewTIN(
+   GeomVertexArray  *vertex_array,
+   GeomTriangle    **triangles,
+   int               nT)
 {
-    GeomTIN   *new;
+    GeomTIN   *new_geom_tin;
 
 
-    new = ctalloc(GeomTIN, 1);
+    new_geom_tin = ctalloc(GeomTIN, 1);
 
-    (new -> vertex_array) = vertex_array;
-    (new -> vertex_array -> num_ptrs_to)++;
-    (new -> triangles)    = triangles;
-    (new -> nT)           = nT;
+    (new_geom_tin -> vertex_array) = vertex_array;
+    (new_geom_tin -> vertex_array -> num_ptrs_to)++;
+    (new_geom_tin -> triangles)    = triangles;
+    (new_geom_tin -> nT)           = nT;
 
-    return new;
+    return new_geom_tin;
 }
 
 
@@ -106,8 +106,7 @@ int               nT;
  * GeomFreeTIN
  *--------------------------------------------------------------------------*/
 
-void      GeomFreeTIN(surface)
-GeomTIN  *surface;
+void      GeomFreeTIN(GeomTIN  *surface)
 {
    int  t;
 
@@ -124,20 +123,20 @@ GeomTIN  *surface;
  * GeomNewSolid
  *--------------------------------------------------------------------------*/
 
-GeomSolid  *GeomNewSolid(data, type)
-void       *data;
-int         type;
+GeomSolid  *GeomNewSolid(
+   void       *data,
+   int         type)
 {
-    GeomSolid   *new;
+    GeomSolid   *new_geom_solid;
 
 
-    new = talloc(GeomSolid, 1);
+    new_geom_solid = talloc(GeomSolid, 1);
 
-    (new -> data) = data;
-    (new -> type) = type;
-    (new -> patches) = NULL;
+    (new_geom_solid -> data) = data;
+    (new_geom_solid -> type) = type;
+    (new_geom_solid -> patches) = NULL;
 
-    return new;
+    return new_geom_solid;
 }
 
 
@@ -145,8 +144,8 @@ int         type;
  * GeomFreeSolid
  *--------------------------------------------------------------------------*/
 
-void        GeomFreeSolid(solid)
-GeomSolid  *solid;
+void        GeomFreeSolid(
+   GeomSolid  *solid)
 {
 
 
@@ -168,10 +167,10 @@ GeomSolid  *solid;
  * GeomReadSolids
  *--------------------------------------------------------------------------*/
 
-int           GeomReadSolids(solids_ptr, geom_input_name, type)
-GeomSolid  ***solids_ptr;
-char         *geom_input_name;
-int           type;
+int           GeomReadSolids(
+   GeomSolid  ***solids_ptr,
+   char         *geom_input_name,
+   int           type)
 {
    GeomSolid  **solids;
 
@@ -203,14 +202,14 @@ int           type;
  * GeomSolidFromBox
  *--------------------------------------------------------------------------*/
 
-GeomSolid  *GeomSolidFromBox(xl, yl, zl, xu, yu, zu, type)
-double      xl;
-double      yl;
-double      zl;
-double      xu;
-double      yu;
-double      zu;
-int         type;
+GeomSolid  *GeomSolidFromBox(
+   double      xl,
+   double      yl,
+   double      zl,
+   double      xu,
+   double      yu,
+   double      zu,
+   int         type)
 {
    GeomSolid   *solid;
 
@@ -249,22 +248,22 @@ int         type;
  *
  *--------------------------------------------------------------------------*/
 
-void IntersectLineWithTriangle(line_direction, coord_0, coord_1, v0_x, v0_y, v0_z, v1_x, v1_y, v1_z, v2_x, v2_y, v2_z, intersects, point, normal_component)
-unsigned int  line_direction;
-double        coord_0;
-double        coord_1;
-double        v0_x;
-double        v0_y;
-double        v0_z;
-double        v1_x;
-double        v1_y;
-double        v1_z;
-double        v2_x;
-double        v2_y;
-double        v2_z;
-int          *intersects;
-double       *point;
-int          *normal_component;
+void IntersectLineWithTriangle(
+unsigned int  line_direction,
+double        coord_0,
+double        coord_1,
+double        v0_x,
+double        v0_y,
+double        v0_z,
+double        v1_x,
+double        v1_y,
+double        v1_z,
+double        v2_x,
+double        v2_y,
+double        v2_z,
+int          *intersects,
+double       *point,
+int          *normal_component)
 {
    double      p[3];
    double      q[3] = {0,0,0};

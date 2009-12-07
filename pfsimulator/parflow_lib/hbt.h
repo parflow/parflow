@@ -63,20 +63,19 @@ typedef struct _HBT_element
 /*===========================================================================*/
 typedef struct _HBT
 {
-
-  unsigned int height;
-  unsigned int num;
-  
-  HBT_element *root;
-
-
-  int (*compare)();
-  void (*free)();
-  void (*printf)();
-  int  (*scanf)();
-
-  int malloc_flag;
-  
+   unsigned int height;
+   unsigned int num;
+   
+   HBT_element *root;
+   
+   
+   int (*compare)(void *, void *);
+   void (*free)(void *);
+   void (*printf)(FILE *file, void *);
+   int  (*scanf)(FILE *file, void **);
+   
+   int malloc_flag;
+   
 } HBT;
 
 #endif

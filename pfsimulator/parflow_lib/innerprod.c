@@ -33,9 +33,9 @@
 #include "parflow.h"
 
 
-double   InnerProd(x, y)
-Vector  *x;
-Vector  *y;
+double   InnerProd(
+   Vector  *x,
+   Vector  *y)
 {
    Grid         *grid = VectorGrid(x);
    Subgrid      *subgrid;

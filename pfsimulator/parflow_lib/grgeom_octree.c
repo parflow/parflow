@@ -39,8 +39,8 @@
  * "Isolated" cells have a boundary patch on every side
  *--------------------------------------------------------------------------*/
 
-int GrGeomCheckOctree(grgeom_octree)
-GrGeomOctree *grgeom_octree;
+int GrGeomCheckOctree(
+   GrGeomOctree *grgeom_octree)
 {
    int  i;
    int result = 0;
@@ -67,13 +67,12 @@ GrGeomOctree *grgeom_octree;
  * Fix the octree by removing interior faces that may be present
  *--------------------------------------------------------------------------*/
 
-void  GrGeomFixOctree(grgeom_octree, patch_octrees, num_patches,
-		      level, num_indices)
-GrGeomOctree  *grgeom_octree;
-GrGeomOctree **patch_octrees;
-int            num_patches;
-int            level;
-int            num_indices;
+void  GrGeomFixOctree(
+   GrGeomOctree  *grgeom_octree,
+   GrGeomOctree **patch_octrees,
+   int            num_patches,
+   int            level,
+   int            num_indices)
 {
    GrGeomOctree   *node, *neighbor_node, *patch_node;
    int            *fdir;
@@ -145,8 +144,8 @@ GrGeomOctree *GrGeomNewOctree()
  * GrGeomNewOctreeChildren
  *--------------------------------------------------------------------------*/
 
-void GrGeomNewOctreeChildren(grgeom_octree)
-GrGeomOctree *grgeom_octree;
+void GrGeomNewOctreeChildren(
+   GrGeomOctree *grgeom_octree)
 {
    int i;
 
@@ -171,8 +170,8 @@ GrGeomOctree *grgeom_octree;
  *   Frees the octree node passed in and everything below it.
  *--------------------------------------------------------------------------*/
 
-void GrGeomFreeOctree(grgeom_octree)
-GrGeomOctree *grgeom_octree;
+void GrGeomFreeOctree(
+   GrGeomOctree *grgeom_octree)
 {
    int  ic;
 
@@ -196,14 +195,13 @@ GrGeomOctree *grgeom_octree;
  * GrGeomOctreeFind
  *--------------------------------------------------------------------------*/
 
-GrGeomOctree   *GrGeomOctreeFind(new_level,
-				 grgeom_octree_root, ix, iy, iz, level)
-int            *new_level;
-GrGeomOctree   *grgeom_octree_root;
-int             ix;
-int             iy;
-int             iz;
-int             level;
+GrGeomOctree   *GrGeomOctreeFind(
+int            *new_level,
+GrGeomOctree   *grgeom_octree_root,
+int             ix,
+int             iy,
+int             iz,
+int             level)
 {
    GrGeomOctree *new_node;
    unsigned int  xbits, ybits, zbits;
@@ -323,14 +321,13 @@ int             level;
  * GrGeomOctreeAddCell
  *--------------------------------------------------------------------------*/
 
-GrGeomOctree   *GrGeomOctreeAddCell(grgeom_octree_root, cell,
-				    ix, iy, iz, level)
-GrGeomOctree   *grgeom_octree_root;
-unsigned int    cell;
-int             ix;
-int             iy;
-int             iz;
-int             level;
+GrGeomOctree   *GrGeomOctreeAddCell(
+GrGeomOctree   *grgeom_octree_root,
+unsigned int    cell,
+int             ix,
+int             iy,
+int             iz,
+int             level)
 {
    GrGeomOctree *current_node;
    unsigned int  xbits, ybits, zbits;
@@ -439,20 +436,16 @@ int             level;
  * GrGeomOctreeAddFace
  *--------------------------------------------------------------------------*/
 
-GrGeomOctree   *GrGeomOctreeAddFace(grgeom_octree_root,
-                                    line_direction,
-                                    cell_index0, cell_index1, face_index,
-                                    extent_lower, extent_upper, level,
-                                    normal_in_direction)
-GrGeomOctree   *grgeom_octree_root;
-int             line_direction;
-int             cell_index0;
-int             cell_index1;
-int             face_index;
-int             extent_lower;
-int             extent_upper;
-int             level;
-int             normal_in_direction;
+GrGeomOctree   *GrGeomOctreeAddFace(
+GrGeomOctree   *grgeom_octree_root,
+int             line_direction,
+int             cell_index0,
+int             cell_index1,
+int             face_index,
+int             extent_lower,
+int             extent_upper,
+int             level,
+int             normal_in_direction)
 {
    GrGeomOctree *current_node=NULL;
    int           ix = 0, iy = 0 , iz = 0, cell_index;
@@ -545,26 +538,22 @@ int             normal_in_direction;
  * GrGeomOctreeFromTIN
  *--------------------------------------------------------------------------*/
 
-void GrGeomOctreeFromTIN(solid_octree_ptr, patch_octrees_ptr,
-			 solid, patches, num_patches, num_patch_triangles,
-			 extent_array,
-			 xlower, ylower, zlower, xupper, yupper, zupper,
-			 min_level, max_level)
-GrGeomOctree       **solid_octree_ptr;
-GrGeomOctree      ***patch_octrees_ptr;
-GeomTIN             *solid;
-int                **patches;
-int                  num_patches;
-int                 *num_patch_triangles;
-GrGeomExtentArray   *extent_array;
-double               xlower;
-double               ylower;
-double               zlower;
-double               xupper;
-double               yupper;
-double               zupper;
-int                  min_level;
-int                  max_level;
+void GrGeomOctreeFromTIN(
+GrGeomOctree       **solid_octree_ptr,
+GrGeomOctree      ***patch_octrees_ptr,
+GeomTIN             *solid,
+int                **patches,
+int                  num_patches,
+int                 *num_patch_triangles,
+GrGeomExtentArray   *extent_array,
+double               xlower,
+double               ylower,
+double               zlower,
+double               xupper,
+double               yupper,
+double               zupper,
+int                  min_level,
+int                  max_level)
 {
    GrGeomOctree  *solid_octree;
    GrGeomOctree **patch_octrees;
@@ -1564,23 +1553,20 @@ int                  max_level;
  * GrGeomOctreeFromInd
  *--------------------------------------------------------------------------*/
  
-void    GrGeomOctreeFromInd(solid_octree_ptr,
-                            indicator_field, indicator,
-                            xlower, ylower, zlower, xupper, yupper, zupper,
-                            octree_bg_level, octree_ix, octree_iy, octree_iz)
-GrGeomOctree  **solid_octree_ptr;
-Vector         *indicator_field;
-int             indicator;
-double          xlower;
-double          ylower;
-double          zlower;
-double          xupper;
-double          yupper;
-double          zupper;
-int             octree_bg_level;
-int             octree_ix;
-int             octree_iy;
-int             octree_iz;
+void    GrGeomOctreeFromInd(
+GrGeomOctree  **solid_octree_ptr,
+Vector         *indicator_field,
+int             indicator,
+double          xlower,
+double          ylower,
+double          zlower,
+double          xupper,
+double          yupper,
+double          zupper,
+int             octree_bg_level,
+int             octree_ix,
+int             octree_iy,
+int             octree_iz)
 {
    Grid           *grid = VectorGrid(indicator_field);
 
@@ -2067,9 +2053,9 @@ int             octree_iz;
  * GrGeomPrintOctreeStruc
  *--------------------------------------------------------------------------*/
 
-void          GrGeomPrintOctreeStruc(file, grgeom_octree)
-amps_File     file;
-GrGeomOctree *grgeom_octree;
+void          GrGeomPrintOctreeStruc(
+   amps_File     file,
+   GrGeomOctree *grgeom_octree)
 {
    int i;
 
@@ -2176,12 +2162,11 @@ GrGeomOctree *grgeom_octree;
  * GrGeomPrintOctreeLevel
  *--------------------------------------------------------------------------*/
 
-int           GrGeomPrintOctreeLevel(file, grgeom_octree,
-				     level, current_level)
-amps_File     file;
-GrGeomOctree *grgeom_octree;
-int           level;
-int           current_level;
+int           GrGeomPrintOctreeLevel(
+amps_File     file,
+GrGeomOctree *grgeom_octree,
+int           level,
+int           current_level)
 {
    int  i;
 
@@ -2214,9 +2199,9 @@ int           current_level;
  * GrGeomPrintOctree
  *--------------------------------------------------------------------------*/
 
-void          GrGeomPrintOctree(filename, grgeom_octree_root)
-char         *filename;
-GrGeomOctree *grgeom_octree_root;
+void          GrGeomPrintOctree(
+char         *filename,
+GrGeomOctree *grgeom_octree_root)
 {
    amps_File     file;
 
@@ -2248,10 +2233,10 @@ GrGeomOctree *grgeom_octree_root;
  *   Prints out octree cell info for all levels up to `last_level'.
  *--------------------------------------------------------------------------*/
 
-void          GrGeomPrintOctreeCells(filename, octree, last_level)
-char         *filename;
-GrGeomOctree *octree;
-int           last_level;
+void          GrGeomPrintOctreeCells(
+char         *filename,
+GrGeomOctree *octree,
+int           last_level)
 {
    amps_File     file;
 
@@ -2321,8 +2306,7 @@ int           last_level;
  * GrGeomOctreeFree
  *--------------------------------------------------------------------------*/
 
-void GrGeomOctreeFree(grgeom_octree_root)
-GrGeomOctree *grgeom_octree_root;
+void GrGeomOctreeFree(GrGeomOctree *grgeom_octree_root)
 {
    int i;
 

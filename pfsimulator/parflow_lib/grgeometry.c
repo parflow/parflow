@@ -41,17 +41,16 @@
  *   an octree with the background.
  *--------------------------------------------------------------------------*/
 
-int      GrGeomGetOctreeInfo(xlp, ylp, zlp, xup, yup, zup,
-			     ixp, iyp, izp)
-double  *xlp;
-double  *ylp;
-double  *zlp;
-double  *xup;
-double  *yup;
-double  *zup;
-int     *ixp;
-int     *iyp;
-int     *izp;
+int      GrGeomGetOctreeInfo(
+double  *xlp,
+double  *ylp,
+double  *zlp,
+double  *xup,
+double  *yup,
+double  *zup,
+int     *ixp,
+int     *iyp,
+int     *izp)
 {
    Background  *bg = GlobalsBackground;
    double       dtmp;
@@ -87,19 +86,19 @@ int     *izp;
  * GrGeomNewExtentArray
  *--------------------------------------------------------------------------*/
 
-GrGeomExtentArray  *GrGeomNewExtentArray(extents, size)
-GrGeomExtents      *extents;
-int                 size;
+GrGeomExtentArray  *GrGeomNewExtentArray(
+GrGeomExtents      *extents,
+int                 size)
 {
-    GrGeomExtentArray   *new;
+    GrGeomExtentArray   *new_grgeom_extent_array;
 
 
-    new = talloc(GrGeomExtentArray, 1);
+    new_grgeom_extent_array = talloc(GrGeomExtentArray, 1);
 
-    (new -> extents) = extents;
-    (new -> size)    = size;
+    (new_grgeom_extent_array -> extents) = extents;
+    (new_grgeom_extent_array -> size)    = size;
 
-    return new;
+    return new_grgeom_extent_array;
 }
 
 
@@ -107,8 +106,8 @@ int                 size;
  * GrGeomFreeExtentArray
  *--------------------------------------------------------------------------*/
 
-void                GrGeomFreeExtentArray(extent_array)
-GrGeomExtentArray  *extent_array;
+void                GrGeomFreeExtentArray(
+   GrGeomExtentArray  *extent_array)
 {
    tfree(GrGeomExtentArrayExtents(extent_array));
 
@@ -131,17 +130,14 @@ GrGeomExtentArray  *extent_array;
  *   the octree correctly.  This routine insures this.
  *--------------------------------------------------------------------------*/
 
-GrGeomExtentArray  *GrGeomCreateExtentArray(subgrids,
-					    xl_ghost, xu_ghost,
-					    yl_ghost, yu_ghost,
-					    zl_ghost, zu_ghost)
-SubgridArray       *subgrids;
-int                 xl_ghost;
-int                 xu_ghost;
-int                 yl_ghost;
-int                 yu_ghost;
-int                 zl_ghost;
-int                 zu_ghost;
+GrGeomExtentArray  *GrGeomCreateExtentArray(
+SubgridArray       *subgrids,
+int                 xl_ghost,
+int                 xu_ghost,
+int                 yl_ghost,
+int                 yu_ghost,
+int                 zl_ghost,
+int                 zu_ghost)
 {
    Background         *bg = GlobalsBackground;
 
@@ -277,30 +273,29 @@ int                 zu_ghost;
  * GrGeomNewSolid
  *--------------------------------------------------------------------------*/
 
-GrGeomSolid   *GrGeomNewSolid(data, patches, num_patches,
-			      octree_bg_level, octree_ix, octree_iy, octree_iz)
-GrGeomOctree  *data;
-GrGeomOctree **patches;
-int            num_patches;
-int            octree_bg_level;
-int            octree_ix;
-int            octree_iy;
-int            octree_iz;
+GrGeomSolid   *GrGeomNewSolid(
+GrGeomOctree  *data,
+GrGeomOctree **patches,
+int            num_patches,
+int            octree_bg_level,
+int            octree_ix,
+int            octree_iy,
+int            octree_iz)
 {
-    GrGeomSolid   *new;
+    GrGeomSolid   *new_grgeomsolid;
 
 
-    new = talloc(GrGeomSolid, 1);
+    new_grgeomsolid = talloc(GrGeomSolid, 1);
 
-    (new -> data)            = data;
-    (new -> patches)         = patches;
-    (new -> num_patches)     = num_patches;
-    (new -> octree_bg_level) = octree_bg_level;
-    (new -> octree_ix)       = octree_ix;
-    (new -> octree_iy)       = octree_iy;
-    (new -> octree_iz)       = octree_iz;
+    (new_grgeomsolid -> data)            = data;
+    (new_grgeomsolid -> patches)         = patches;
+    (new_grgeomsolid -> num_patches)     = num_patches;
+    (new_grgeomsolid -> octree_bg_level) = octree_bg_level;
+    (new_grgeomsolid -> octree_ix)       = octree_ix;
+    (new_grgeomsolid -> octree_iy)       = octree_iy;
+    (new_grgeomsolid -> octree_iz)       = octree_iz;
 
-    return new;
+    return new_grgeomsolid;
 }
 
 
@@ -308,8 +303,8 @@ int            octree_iz;
  * GrGeomFreeSolid
  *--------------------------------------------------------------------------*/
 
-void          GrGeomFreeSolid(solid)
-GrGeomSolid  *solid;
+void          GrGeomFreeSolid(
+   GrGeomSolid  *solid)
 {
    int  i;
 
@@ -326,10 +321,10 @@ GrGeomSolid  *solid;
  * GrGeomSolidFromInd
  *--------------------------------------------------------------------------*/
 
-void             GrGeomSolidFromInd(solid_ptr, indicator_field, indicator)
-GrGeomSolid    **solid_ptr;
-Vector          *indicator_field;
-int              indicator;
+void             GrGeomSolidFromInd(
+   GrGeomSolid    **solid_ptr,
+   Vector          *indicator_field,
+   int              indicator)
 {
    GrGeomOctree *solid_octree;
 
@@ -357,10 +352,10 @@ int              indicator;
  * GrGeomSolidFromGeom
  *--------------------------------------------------------------------------*/
 
-void                GrGeomSolidFromGeom(solid_ptr, geom_solid, extent_array)
-GrGeomSolid       **solid_ptr;
-GeomSolid          *geom_solid;
-GrGeomExtentArray  *extent_array;
+void                GrGeomSolidFromGeom(
+   GrGeomSolid       **solid_ptr,
+   GeomSolid          *geom_solid,
+   GrGeomExtentArray  *extent_array)
 {
    GrGeomSolid    *solid;
 
@@ -378,7 +373,7 @@ GrGeomExtentArray  *extent_array;
    {
       case GeomTSolidType:
       {
-	 GeomTSolid  *solid_data = GeomSolidData(geom_solid);
+	 GeomTSolid  *solid_data = (GeomTSolid  *)GeomSolidData(geom_solid);
 	 
 	 GeomTIN     *surface;
 	 int        **patches;

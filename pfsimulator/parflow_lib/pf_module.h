@@ -84,16 +84,34 @@ amps_ThreadLocalDcl(extern PFModule *, global_ptr_this_pf_module);
  (*(type (*)())(ThisPFModule -> call)) args\
 )
 
+#define PFModuleInvokeType(type, pf_module, args)\
+(\
+ ThisPFModule = pf_module,\
+ (*(type)(ThisPFModule -> call)) args\
+)
+
 #define PFModuleNewInstance(pf_module, args)\
 (\
  ThisPFModule = DupPFModule(pf_module),\
  (*(PFModule * (*)())(ThisPFModule -> init_instance_xtra)) args\
 )
 
+#define PFModuleNewInstanceType(type, pf_module, args)	\
+(\
+ ThisPFModule = DupPFModule(pf_module),\
+ (*(type)(ThisPFModule -> init_instance_xtra)) args\
+)
+
 #define PFModuleReNewInstance(pf_module, args)\
 (\
  ThisPFModule = pf_module,\
  (*(PFModule * (*)())(ThisPFModule -> init_instance_xtra)) args\
+)
+
+#define PFModuleReNewInstanceType(type, pf_module, args)	\
+(\
+ ThisPFModule = pf_module,\
+ (*(type)(ThisPFModule -> init_instance_xtra)) args\
 )
 
 #define PFModuleFreeInstance(pf_module)\
@@ -113,6 +131,18 @@ amps_ThreadLocalDcl(extern PFModule *, global_ptr_this_pf_module);
 			    (void *)name##SizeOfTempData,\
 			    NULL, NULL),\
  (*(PFModule * (*)())(ThisPFModule -> new_public_xtra)) args\
+)
+
+#define PFModuleNewModuleType(type, name, args)	\
+(\
+ ThisPFModule = NewPFModule((void *)name,\
+			    (void *)name##InitInstanceXtra,\
+			    (void *)name##FreeInstanceXtra,\
+			    (void *)name##NewPublicXtra,\
+			    (void *)name##FreePublicXtra,\
+			    (void *)name##SizeOfTempData,\
+			    NULL, NULL),\
+ (*(type)(ThisPFModule -> new_public_xtra)) args\
 )
 
 #define PFModuleFreeModule(pf_module)\

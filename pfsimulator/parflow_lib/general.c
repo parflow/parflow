@@ -111,8 +111,7 @@ int    line;
  *   If no such integer e exists, return -1.
  *--------------------------------------------------------------------------*/
 
-int  Exp2(p)
-int  p;
+int  Exp2(int  p)
 {
    int  e = 0;
 

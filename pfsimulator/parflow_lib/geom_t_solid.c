@@ -39,23 +39,23 @@
  * GeomNewTSolid
  *--------------------------------------------------------------------------*/
 
-GeomTSolid  *GeomNewTSolid(surface, patches, num_patches, num_patch_triangles)
-GeomTIN     *surface;
-int        **patches;              /* arrays of surface triangle indices */
-int          num_patches;
-int         *num_patch_triangles;
+GeomTSolid  *GeomNewTSolid(
+   GeomTIN     *surface,
+   int        **patches,              /* arrays of surface triangle indices */
+   int          num_patches,
+   int         *num_patch_triangles)
 {
-    GeomTSolid   *new;
+    GeomTSolid   *new_geomtsolid;
 
 
-    new = talloc(GeomTSolid, 1);
+    new_geomtsolid = talloc(GeomTSolid, 1);
 
-    (new -> surface)             = surface;
-    (new -> patches)             = patches;
-    (new -> num_patches)         = num_patches;
-    (new -> num_patch_triangles) = num_patch_triangles;
+    (new_geomtsolid -> surface)             = surface;
+    (new_geomtsolid -> patches)             = patches;
+    (new_geomtsolid -> num_patches)         = num_patches;
+    (new_geomtsolid -> num_patch_triangles) = num_patch_triangles;
 
-    return new;
+    return new_geomtsolid;
 }
 
 
@@ -63,8 +63,8 @@ int         *num_patch_triangles;
  * GeomFreeTSolid
  *--------------------------------------------------------------------------*/
 
-void         GeomFreeTSolid(solid)
-GeomTSolid  *solid;
+void         GeomFreeTSolid(
+   GeomTSolid  *solid)
 {
    int  p;
 
@@ -83,9 +83,9 @@ GeomTSolid  *solid;
  * GeomReadTSolids
  *--------------------------------------------------------------------------*/
 
-int            GeomReadTSolids(solids_data_ptr, geom_input_name)
-GeomTSolid  ***solids_data_ptr;
-char *geom_input_name;
+int            GeomReadTSolids(
+   GeomTSolid  ***solids_data_ptr,
+   char *geom_input_name)
 {
    GeomTSolid      **solids_data = NULL;
 
@@ -239,13 +239,13 @@ char *geom_input_name;
  * GeomTSolidFromBox
  *--------------------------------------------------------------------------*/
 
-GeomTSolid  *GeomTSolidFromBox(xl, yl, zl, xu, yu, zu)
-double       xl;
-double       yl;
-double       zl;
-double       xu;
-double       yu;
-double       zu;
+GeomTSolid  *GeomTSolidFromBox(
+   double       xl,
+   double       yl,
+   double       zl,
+   double       xu,
+   double       yu,
+   double       zu)
 {
    GeomTSolid       *solid_data;
 

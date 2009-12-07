@@ -41,8 +41,7 @@
  * NewGlobals
  *--------------------------------------------------------------------------*/
 
-void   NewGlobals(run_name)
-char  *run_name;
+void   NewGlobals(char  *run_name)
 {
    globals = ctalloc(Globals, 1);
 

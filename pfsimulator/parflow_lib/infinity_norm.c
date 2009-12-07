@@ -37,8 +37,8 @@
  * InfinityNorm
  *--------------------------------------------------------------------------*/
 
-double  InfinityNorm(x)
-Vector *x;
+double  InfinityNorm(
+   Vector *x)
 {
    Grid        	*grid     = VectorGrid(x);
    Subgrid     	*subgrid;

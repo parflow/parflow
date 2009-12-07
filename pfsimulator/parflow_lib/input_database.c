@@ -39,8 +39,10 @@ it is flagged as being unused.
 @param entry The entry to pring
 @return void
 */
-void IDB_Print(FILE *file, IDB_Entry *entry)
+void IDB_Print(FILE *file, void *obj)
 {
+   IDB_Entry *entry = (IDB_Entry *)obj;
+
    if(!entry -> used)
       fprintf(file, "# Not used\n");
    
@@ -60,8 +62,12 @@ else return 0 (a -> key == b -> key)
 @param b Second entry to compare
 @return comparsion value of the keys 
 */
-int IDB_Compare(IDB_Entry *a, IDB_Entry *b)
+int IDB_Compare(void *obj_a, void* obj_b)
 {
+   
+   IDB_Entry *a = (IDB_Entry *)obj_a;
+   IDB_Entry *b = (IDB_Entry *)obj_b;
+
    return strcmp(a -> key, b -> key);
 }
 
@@ -72,8 +78,10 @@ Free an IDB_Entry.  Free's up the character space for the key and value.
 @param a Entry to free
 @return N/A
 */
-void IDB_Free(IDB_Entry *a)
+void IDB_Free(void *obj)
 {
+   IDB_Entry *a = (IDB_Entry *)obj;
+
    free(a -> key);
    free(a -> value);
    free(a);
@@ -217,7 +225,7 @@ char *IDB_GetString(IDB *database, char *key)
 
    lookup_entry.key = key;
 
-   result = HBT_lookup(database, &lookup_entry);
+   result = (IDB_Entry *)HBT_lookup(database, &lookup_entry);
 
    if (result)
    {
@@ -254,7 +262,7 @@ char *IDB_GetStringDefault(IDB *database,
 
    lookup_entry.key = key;
 
-   result = HBT_lookup(database, &lookup_entry);
+   result = (IDB_Entry *)HBT_lookup(database, &lookup_entry);
 
    if (result)
    {
@@ -296,7 +304,7 @@ double IDB_GetDoubleDefault(IDB *database,
 
    lookup_entry.key = key;
 
-   result = HBT_lookup(database, &lookup_entry);
+   result = (IDB_Entry *)HBT_lookup(database, &lookup_entry);
 
    if (result)
    {
@@ -346,7 +354,7 @@ double IDB_GetDouble(IDB *database, char *key)
 
    lookup_entry.key = key;
 
-   result = HBT_lookup(database, &lookup_entry);
+   result = (IDB_Entry *)HBT_lookup(database, &lookup_entry);
 
    if (result)
    {
@@ -389,7 +397,7 @@ int IDB_GetIntDefault(IDB *database,
 
    lookup_entry.key = key;
 
-   result = HBT_lookup(database, &lookup_entry);
+   result = (IDB_Entry *)HBT_lookup(database, &lookup_entry);
 
    if (result)
    {
@@ -440,7 +448,7 @@ int IDB_GetInt(IDB *database, char *key)
 
    lookup_entry.key = key;
 
-   result = HBT_lookup(database, &lookup_entry);
+   result = (IDB_Entry *)HBT_lookup(database, &lookup_entry);
 
    if (result)
    {
