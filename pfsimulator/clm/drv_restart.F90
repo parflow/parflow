@@ -109,15 +109,17 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
   character*100 RI,TS
 
   !=== End Variable Definition =============================================
+
   write(RI,*) rank
   write(TS,'(I5.5)') istep_pf
   print*, "in drv_restart routine"
+
   !=== Read Active Archive File ============================================
 
   if((rw.eq.1.and.drv%clm_ic.eq.1).or.(rw.eq.1.and.drv%startcode.eq.1))then
 
-     open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(TS))//'.'//trim(adjustl(RI)),form='unformatted')
-     ! open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(RI)),form='unformatted')
+     ! open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(TS))//'.'//trim(adjustl(RI)),form='unformatted')
+     open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(RI)),form='unformatted')
 
      read(40) yr,mo,da,hr,mn,ss,vclass,nc,nr,nch  !Time, veg class, no. tiles
      print *, yr,mo,da,hr,mn,ss,vclass,nc,nr,nch  !Time, veg class, no. tiles
@@ -440,8 +442,8 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
 
         write(*,*)'Write CLM Active Restart: istep_pf = ',istep_pf
 
-        open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(TS))//'.'//trim(adjustl(RI)),form='unformatted')
-        !open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(RI)),form='unformatted') !Active archive restart
+        ! open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(TS))//'.'//trim(adjustl(RI)),form='unformatted')
+        open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(RI)),form='unformatted') !Active archive restart
 
         write(40) drv%yr,drv%mo,drv%da,drv%hr,drv%mn,drv%ss,&
              drv%vclass,drv%nc,drv%nr,drv%nch  !Veg class, no tiles       
