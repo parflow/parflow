@@ -4,7 +4,7 @@ subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,istep_pf,dt,time
 pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,npp,npq,npr,rank,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,        &
 v_pf,patm_pf,qatm_pf,eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,qflx_tot_pf,            &
 qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf, t_soi_pf,        &
-clm_dump_interval,clm_1d_out,clm_output_dir, clm_output_dir_length,clm_bin_output_dir,        &
+clm_dump_interval,clm_1d_out,clm_output_dir,clm_output_dir_length,clm_bin_output_dir,         &
 write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,        &
 res_satpf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,      &
 qirr_pf,qirr_inst_pf)

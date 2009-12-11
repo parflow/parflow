@@ -465,28 +465,28 @@ void SetupRichards(PFModule *this_module) {
       /*IMF Initialize variables for CLM forcing fields
             SW rad, LW rad, precip, T(air), U, V, P(air), q(air) */
       instance_xtra -> sw_forc = NewVector( grid2d, 1, 1 );
-      InitVectorAll(instance_xtra -> sw_forc, 0.0);
+      InitVectorAll(instance_xtra -> sw_forc, 100.0);
 
       instance_xtra -> lw_forc = NewVector( grid2d, 1, 1 );
-      InitVectorAll(instance_xtra -> lw_forc, 0.0);
+      InitVectorAll(instance_xtra -> lw_forc, 100.0);
 
       instance_xtra -> prcp_forc = NewVector( grid2d, 1, 1 );
-      InitVectorAll(instance_xtra -> prcp_forc, 0.0);
+      InitVectorAll(instance_xtra -> prcp_forc, 100.0);
 
       instance_xtra -> tas_forc = NewVector( grid2d, 1, 1 );
-      InitVectorAll(instance_xtra -> tas_forc, 0.0);
+      InitVectorAll(instance_xtra -> tas_forc, 100.0);
 
       instance_xtra -> u_forc = NewVector( grid2d, 1, 1 );
-      InitVectorAll(instance_xtra -> u_forc, 0.0);
+      InitVectorAll(instance_xtra -> u_forc, 100.0);
 
       instance_xtra -> v_forc = NewVector( grid2d, 1, 1 );
-      InitVectorAll(instance_xtra -> v_forc, 0.0);
+      InitVectorAll(instance_xtra -> v_forc, 100.0);
 
       instance_xtra -> patm_forc = NewVector( grid2d, 1, 1 );
-      InitVectorAll(instance_xtra -> patm_forc, 0.0);
+      InitVectorAll(instance_xtra -> patm_forc, 100.0);
 
       instance_xtra -> qatm_forc = NewVector( grid2d, 1, 1 );
-      InitVectorAll(instance_xtra -> qatm_forc, 0.0); 
+      InitVectorAll(instance_xtra -> qatm_forc, 100.0); 
 
       /*IMF If 1D met forcing, read forcing vars to arrays */
       if (public_xtra -> clm_metforce == 1)
@@ -902,7 +902,7 @@ void AdvanceRichards(PFModule *this_module,
          {
             //Define file name, read file
             sprintf(filename, "%s/%s.%s.%06d.pfb", public_xtra -> clm_metpath, public_xtra -> clm_metfile, "DSWR", istep);
-            ReadPFBinary( filename, instance_xtra -> sw_forc );   
+            ReadPFBinary( filename, instance_xtra -> sw_forc );  
             sprintf(filename, "%s/%s.%s.%06d.pfb", public_xtra -> clm_metpath, public_xtra -> clm_metfile, "DLWR", istep);
             ReadPFBinary( filename, instance_xtra -> lw_forc );
             sprintf(filename, "%s/%s.%s.%06d.pfb", public_xtra -> clm_metpath, public_xtra -> clm_metfile, "APCP", istep);
@@ -918,7 +918,7 @@ void AdvanceRichards(PFModule *this_module,
             sprintf(filename, "%s/%s.%s.%06d.pfb", public_xtra -> clm_metpath, public_xtra -> clm_metfile, "SPFH", istep);
             ReadPFBinary( filename, instance_xtra -> qatm_forc );
          }          //end if (clm_metforce==2)         
- 
+
 	 ForSubgridI(is, GridSubgrids(grid))
 	 {
 	    double        dx,dy,dz;
@@ -1023,7 +1023,7 @@ void AdvanceRichards(PFModule *this_module,
                   qatm_data[n] = qatm;
                }
             }     
-            
+          
 	    ip = SubvectorEltIndex(p_sub, ix, iy, iz);
 	    switch (public_xtra -> lsm)
 	    {
@@ -1034,6 +1034,7 @@ void AdvanceRichards(PFModule *this_module,
 	       }
 	       case 1:
 	       {
+
 		  clm_file_dir_length=strlen(public_xtra -> clm_file_dir);
 		  CALL_CLM_LSM(pp,sp,et,ms,po_dat,istep,dt,t,dx,dy,dz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,p,q,r,rank,
                                sw_data,lw_data,prcp_data,tas_data,u_data,v_data,patm_data,qatm_data,
@@ -1122,11 +1123,6 @@ void AdvanceRichards(PFModule *this_module,
                        WriteSilo(file_prefix, file_postfix, instance_xtra -> tsoil,
                                  t, instance_xtra -> file_number, "TemperatureSoil");
 
-                       // IMF -- TEST
-                       // sprintf(file_postfix, "prec_test.%05d", instance_xtra -> file_number );
-                       //WriteSilo(file_prefix, file_postfix, instance_xtra -> prcp_forc,
-                       //          t, instance_xtra -> file_number, "Precipitation");
- 
                        // IMF: irrigation applied to surface -- spray or drip
                        if ( public_xtra -> clm_irr_type == 1 || public_xtra -> clm_irr_type == 2 )
                           {
@@ -2220,16 +2216,19 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
         case 0:
         {
             public_xtra -> clm_metforce = 0;
+            printf("TEST: clm_metforce = 0 (%d) \n", public_xtra -> clm_metforce );
             break;
         }
         case 1:
         {
             public_xtra -> clm_metforce = 1;
+            printf("TEST: clm_metforce = 1 (%d) \n", public_xtra -> clm_metforce );
             break;
         }
         case 2:
         {
             public_xtra -> clm_metforce = 2;
+            printf("TEST: clm_metforce = 2 (%d) \n", public_xtra -> clm_metforce );
             break;
         }
         default:
