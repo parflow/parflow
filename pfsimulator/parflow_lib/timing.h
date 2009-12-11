@@ -46,8 +46,9 @@
 #define PFSBTimingIndex  4
 #define PFBTimingIndex  5
 #define CLMTimingIndex  6
+#define PFSOLReadTimingIndex  7
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  7
+#define VectorUpdateTimingIndex  8
 #endif
 
 

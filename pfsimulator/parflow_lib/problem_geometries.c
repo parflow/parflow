@@ -54,6 +54,7 @@ typedef struct
    IndicatorData  *indicator_data;
 
    int             time_index;
+   int             pfsol_time_index;
 
    /* Geometry input names are for each "type" of geometry
       the user is inputing */
@@ -358,6 +359,7 @@ PFModule   *GeometriesNewPublicXtra()
 	 
 	 case 1: /* `.pfsol' file */
 	 {
+	    BeginTiming(PFSOLReadTimingIndex);
 	    num_new_solids = GeomReadSolids(&new_solids, 
 					    NA_IndexToName(geom_input_na,i),
 					    GeomTSolidType);
@@ -378,6 +380,8 @@ PFModule   *GeometriesNewPublicXtra()
 		    NA_IndexToName(GlobalsGeomNames, num_solids));
 	    patch_names = GetString(key);
 	    new_solids[0] -> patches = NA_NewNameArray(patch_names);
+
+	    EndTiming(PFSOLReadTimingIndex);
 	    
 	    break;
 	 }

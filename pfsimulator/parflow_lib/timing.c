@@ -57,6 +57,7 @@ void  NewTiming()
    RegisterTiming("PFSB I/O");
    RegisterTiming("PFB I/O");
    RegisterTiming("CLM");
+   RegisterTiming("PFSOL Read");
 #ifdef VECTOR_UPDATE_TIMING
    RegisterTiming("VectorUpdate");
 #endif
