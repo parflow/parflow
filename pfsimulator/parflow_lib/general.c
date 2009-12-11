@@ -39,6 +39,9 @@
 #include <malloc.h>
 #endif
 
+#include <unistd.h>
+#include <sys/stat.h>
+
 amps_ThreadLocalDcl(int, s_max_memory);
 
 #ifdef PF_MEMORY_ALLOC_CHECK
@@ -215,6 +218,34 @@ void printMaxMemory(FILE *log_file)
    amps_FreeInvoice(invoice);
 
 #endif
+
+   /*
+    * Print out info from Linux proc file.
+    */
+
+   if (!amps_Rank(amps_CommWorld)) {
+      char procfilename[2056];
+
+      sprintf(procfilename, "/proc/%d/status", getpid());
+
+      fprintf(log_file, "\n\nBEGIN(Contents of %s)\n", procfilename); 
+
+      struct stat stats;
+      if(!stat(procfilename, &stats)) {
+	 FILE *file;
+	 int c;
+
+	 file = fopen(procfilename, "r");
+      
+	 while((c = fgetc(file)) != EOF) {
+	    fputc(c, log_file);
+	 }
+      
+	 fclose(file);
+
+	 fprintf(log_file, "\n\nEND(Contents of %s)\n", procfilename); 
+      }
+   }
 }
 
 
@@ -238,9 +269,7 @@ void printMaxMemory(FILE *log_file)
 */
 void printMemoryInfo(FILE *log_file) 
 {
-   
 #ifdef HAVE_MALLINFO
-
    /* Get malloc info structure */
    struct mallinfo my_mallinfo = mallinfo();
    
