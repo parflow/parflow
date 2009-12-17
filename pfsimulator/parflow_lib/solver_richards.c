@@ -408,12 +408,15 @@ void SetupRichards(PFModule *this_module) {
 /* IMF: the following are only used w/ CLM */
 #ifdef HAVE_CLM 
 
+      /* SGS FIXME should only init these if we are actually running with CLM */
+
       /*sk Initialize LSM mask */
       instance_xtra -> mask = NewVector( grid, 1, 1 );
       InitVectorAll(instance_xtra -> mask, 0.0);
 
       instance_xtra -> evap_trans_sum = NewVector( grid, 1, 0 );
       InitVectorAll(instance_xtra -> evap_trans_sum, 0.0);
+
 
       /*IMF Initialize variables for printing CLM output*/
       instance_xtra -> eflx_lh_tot = NewVector( grid2d, 1, 1 );
@@ -753,7 +756,7 @@ void AdvanceRichards(PFModule *this_module,
 
    /* IMF: For CLM met forcing (local to AdvanceRichards) */
    int           istep;                        // IMF: counter for clm output times
-   int           i,j,n;                        // IMF: index vars for looping over subgrid data
+   int           n;                           // IMF: index vars for looping over subgrid data
    double        sw,lw,prcp,tas,u,v,patm,qatm; // IMF: 1D forcing vars (local to AdvanceRichards) 
    double       *sw_data,*lw_data,*prcp_data,  // IMF: 2D forcing vars (SubvectorData) (local to AdvanceRichards)
                 *tas_data,*u_data,*v_data,*patm_data,*qatm_data;
@@ -1564,6 +1567,37 @@ void TeardownRichards(PFModule *this_module) {
 
    if(instance_xtra -> overland_sum) {
       FreeVector(instance_xtra -> overland_sum);
+   }
+
+   
+   if(instance_xtra -> eflx_lh_tot) {
+      FreeVector(instance_xtra -> eflx_lh_tot);
+      FreeVector(instance_xtra -> eflx_lwrad_out);
+      FreeVector(instance_xtra -> eflx_sh_tot);
+      FreeVector(instance_xtra -> eflx_soil_grnd);
+      FreeVector(instance_xtra -> qflx_evap_tot);
+      FreeVector(instance_xtra -> qflx_evap_grnd);
+      FreeVector(instance_xtra -> qflx_evap_soi);
+      FreeVector(instance_xtra -> qflx_evap_veg);
+      FreeVector(instance_xtra -> qflx_tran_veg);
+      FreeVector(instance_xtra -> qflx_infl);
+      FreeVector(instance_xtra -> swe_out);
+      FreeVector(instance_xtra -> t_grnd);
+      FreeVector(instance_xtra -> tsoil);
+
+      /*IMF Initialize variables for CLM irrigation output */
+      FreeVector(instance_xtra -> qflx_qirr);
+      FreeVector(instance_xtra -> qflx_qirr_inst);
+      /*IMF Initialize variables for CLM forcing fields
+            SW rad, LW rad, precip, T(air), U, V, P(air), q(air) */
+      FreeVector(instance_xtra -> sw_forc);
+      FreeVector(instance_xtra -> lw_forc);
+      FreeVector(instance_xtra -> prcp_forc);
+      FreeVector(instance_xtra -> tas_forc);
+      FreeVector(instance_xtra -> u_forc);
+      FreeVector(instance_xtra -> v_forc);
+      FreeVector(instance_xtra -> patm_forc);
+      FreeVector(instance_xtra -> qatm_forc);
    }
 
    if(!amps_Rank(amps_CommWorld))
