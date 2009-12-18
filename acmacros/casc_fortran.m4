@@ -864,7 +864,7 @@ if test "x$casc_cv_fortran_longlines_fcflags" != xerror; then
     acx_save_LIBS=$LIBS
     LIBS="conftest_cmain.$ac_objext $LIBS" 
     acx_save_FCFLAGS=$FCFLAGS
-    for acx_flag in "-extend_source 132" "-ffree-line-length-none" none; do
+    for acx_flag in "-free" "-ffree-line-length-none" "-extend_source 132"  none; do
 	case $acx_flag in
 	    none) FCFLAGS=$acx_save_FCFLAGS ;;
 	    *)    FCFLAGS="$acx_save_FCFLAGS $acx_flag" ;; 
