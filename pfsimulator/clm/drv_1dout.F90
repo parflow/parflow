@@ -129,7 +129,8 @@ subroutine drv_1dout (drv, tile, clm)
 !  write(20) (drv_gridave (n,mask,tile%fgrd,h2osoi_ice(:,i)), i=1,nlevsoi)   ! [42] millimeter NOTE:This statement assumes spatially uniform layering
 
   write(20,*)  drv%time, drv%ss, drv%mn, drv%hr, drv%da, drv%mo, drv%yr, " [1]"                          ! [1] Time
-  write(20,*)  drv_gridave (n,mask,tile%fgrd,clm%forc_solad(1)+clm%forc_solad(2)+clm%forc_solai(1)+clm%forc_solai(2), drv), " [2]"  ! [2]  W/m2
+  write(20,*)  drv_gridave (n,mask,tile%fgrd,clm%forc_solad(1)+clm%forc_solad(2)+clm%forc_solai(1)+clm%forc_solai(2), drv), &
+	" [2]"  ! [2]  W/m2
   write(20,*)  drv_gridave (n,mask,tile%fgrd,clm%sabv, drv), " [3]"                                           ! [3]  W/m2
   write(20,*)  drv_gridave (n,mask,tile%fgrd,clm%sabg, drv), " [4]"                                           ! [4]  W/m2
   write(20,*)  drv_gridave (n,mask,tile%fgrd,clm%forc_lwrad, drv), " [5]"                                     ! [5]  W/m2
@@ -183,8 +184,9 @@ subroutine drv_1dout (drv, tile, clm)
   tran_veg = drv_gridave (n,mask,tile%fgrd,clm%qflx_tran_veg*clm%dtime, drv)
   ice_layer1 = drv_gridave (n,mask,tile%fgrd,clm%h2osoi_ice(1), drv)
 ! SGS according to standard "f" must have fw.d format, changed f -> f20.8
-  write(2008,'(i5,1x,f20.8,1x,12(e10.2,1x))') clm(1)%istep,drv%time,totsurf,topsoil,surface,evapor,infiltr,fraction,clm_error,evap_tot, &
-                                     evap_veg,evap_soi,tran_veg,ice_layer1
+  write(2008,'(i5,1x,f20.8,1x,12(e10.2,1x))') &
+	clm(1)%istep,drv%time,totsurf,topsoil,surface,evapor,infiltr,fraction,clm_error,evap_tot, &
+        evap_veg,evap_soi,tran_veg,ice_layer1
   
 end subroutine drv_1dout
 

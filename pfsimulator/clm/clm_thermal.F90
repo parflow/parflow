@@ -237,7 +237,8 @@ subroutine clm_thermal (clm)
      case (1)    ! linear
      temp_alpha = (clm%pf_vol_liq(1) - clm%res_sat*clm%watsat(1)) /(clm%watsat(1) - clm%res_sat*clm%watsat(1))
      case (2)    ! cosine, like ISBA
-     temp_alpha = 0.5d0*(1.0d0 - cos(((clm%pf_vol_liq(1) - clm%res_sat*clm%watsat(1)) /(clm%watsat(1) - clm%res_sat*clm%watsat(1)))*3.141d0))     
+     temp_alpha = 0.5d0*(1.0d0 - cos(((clm%pf_vol_liq(1) - clm%res_sat*clm%watsat(1)) / & 
+	(clm%watsat(1) - clm%res_sat*clm%watsat(1)))*3.141d0))     
      end select
      
      if (temp_alpha < 0.0) temp_alpha = 0.00d0
@@ -441,7 +442,8 @@ subroutine clm_thermal (clm)
            case (1)     ! pressure type
            temp = ((clm%wilting_point*1000.d0 - clm%pf_press(i))/(clm%wilting_point*1000.d0 - clm%field_capacity*1000.d0) )
            case (2)     ! SM type
-           temp = (clm%pf_vol_liq(i) - clm%wilting_point*clm%watsat(i)) /(clm%field_capacity*clm%watsat(i) - clm%wilting_point*clm%watsat(i))
+           temp = (clm%pf_vol_liq(i) - clm%wilting_point*clm%watsat(i)) / &
+	            (clm%field_capacity*clm%watsat(i) - clm%wilting_point*clm%watsat(i))
            end select
            if (temp < 0.) temp = 0.
            if (temp > 1.) temp = 1.
