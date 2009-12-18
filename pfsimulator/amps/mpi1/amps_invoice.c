@@ -192,7 +192,7 @@ void amps_AppendInvoice(amps_Invoice *invoice, amps_Invoice append_invoice)
 
 amps_Invoice amps_new_empty_invoice()
 {
-   amps_Invoice temp;
+   amps_Invoice temp = NULL;
 
    if( (temp = (amps_Invoice)calloc(1, sizeof(amps_InvoiceStruct))) == NULL)
       amps_Error("zip_new_empty_invoice", OUT_OF_MEMORY, "", HALT);
