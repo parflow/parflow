@@ -87,8 +87,7 @@ void   FreeLogging()
  * OpenLogFile
  *--------------------------------------------------------------------------*/
 
-FILE *OpenLogFile(module_name)
-char       *module_name;
+FILE *OpenLogFile(char       *module_name)
 {
    FILE *log_file;
 
@@ -116,8 +115,7 @@ char       *module_name;
  * CloseLogFile
  *--------------------------------------------------------------------------*/
 
-int  CloseLogFile(log_file)
-FILE *log_file;
+int  CloseLogFile(FILE *log_file)
 {
    if(!amps_Rank(amps_CommWorld))
    {

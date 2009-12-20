@@ -59,11 +59,10 @@ typedef struct
  * KinsolPC
  *--------------------------------------------------------------------------*/
 
-void         KinsolPC(rhs)
-Vector      *rhs;
+void         KinsolPC(Vector      *rhs)
 {
    PFModule     *this_module      = ThisPFModule;
-   InstanceXtra *instance_xtra    = PFModuleInstanceXtra(this_module);
+   InstanceXtra *instance_xtra    = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    PFModule     *precond          = instance_xtra -> precond;
    Vector       *soln             = NULL;
@@ -74,7 +73,7 @@ Vector      *rhs;
    soln = NewVector(instance_xtra -> grid, 1, 1);
      
    /* Invoke the preconditioner using a zero initial guess */
-   PFModuleInvoke(void, precond, (soln, rhs, tol, zero));
+   PFModuleInvokeType(PrecondInvoke, precond, (soln, rhs, tol, zero));
 
    /* Copy solution from soln to the rhs vector. */
    PFVCopy(soln, rhs);
@@ -87,21 +86,19 @@ Vector      *rhs;
  * KinsolPCInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *KinsolPCInitInstanceXtra(problem, grid, problem_data,  
-				    temp_data, pressure, saturation, 
-				    density, dt, time)
-Problem      *problem;
-Grid         *grid;
-ProblemData  *problem_data;
-double       *temp_data;
-Vector       *pressure;
-Vector       *saturation;
-Vector       *density;
-double        dt;
-double        time;
+PFModule  *KinsolPCInitInstanceXtra(
+Problem      *problem,
+Grid         *grid,
+ProblemData  *problem_data,
+double       *temp_data,
+Vector       *pressure,
+Vector       *saturation,
+Vector       *density,
+double        dt,
+double        time)
 {
    PFModule      *this_module        = ThisPFModule;
-   PublicXtra    *public_xtra        = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra        = (PublicXtra    *)PFModulePublicXtra(this_module);
    InstanceXtra  *instance_xtra;
 
    int            pc_matrix_type     = public_xtra -> pc_matrix_type;
@@ -114,7 +111,7 @@ double        time;
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    if ( grid != NULL )
    {
@@ -134,25 +131,31 @@ double        time;
    if ( PFModuleInstanceXtra(this_module) == NULL )
    {
       (instance_xtra -> discretization) = 
-	 PFModuleNewInstance(discretization, (problem, grid, temp_data, 
-					      pc_matrix_type));
+	 PFModuleNewInstanceType(
+	    RichardsJacobianEvalInitInstanceXtraInvoke,
+	    discretization, (problem, grid, temp_data, 
+			     pc_matrix_type));
       (instance_xtra -> precond) =
-         PFModuleNewInstance(precond,(problem, grid, problem_data, NULL, 
-				      temp_data));
+         PFModuleNewInstanceType(PrecondInitInstanceXtraInvoke, 
+				 precond,(problem, grid, problem_data, NULL, 
+					  temp_data));
    }
    else if (pressure != NULL)
    {
-      PFModuleInvoke(void, (instance_xtra -> discretization),
-		  (pressure, &PC, saturation, density, problem_data, dt, 
-		   time, pc_matrix_type));
-      PFModuleReNewInstance((instance_xtra -> precond),
-			    (NULL, NULL, problem_data, PC, temp_data));
+      PFModuleInvokeType(RichardsJacobianEvalInvoke, (instance_xtra -> discretization),
+			 (pressure, &PC, saturation, density, problem_data, dt, 
+			  time, pc_matrix_type));
+      PFModuleReNewInstanceType(PrecondInitInstanceXtraInvoke, 
+				(instance_xtra -> precond),
+				(NULL, NULL, problem_data, PC, temp_data));
    }
    else
    {
-      PFModuleReNewInstance((instance_xtra -> discretization), 
+      PFModuleReNewInstanceType(RichardsJacobianEvalInitInstanceXtraInvoke,
+			    (instance_xtra -> discretization), 
 			    (problem, grid, temp_data, pc_matrix_type));
-      PFModuleReNewInstance((instance_xtra -> precond),
+      PFModuleReNewInstanceType(PrecondInitInstanceXtraInvoke, 
+			    (instance_xtra -> precond),
 			    (NULL, NULL, problem_data, NULL, temp_data));
    }
 
@@ -168,8 +171,7 @@ double        time;
 void  KinsolPCFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
-
+   InstanceXtra  *instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    if (instance_xtra)
    {
@@ -196,8 +198,7 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
 
    public_xtra = ctalloc(PublicXtra, 1);
 
-   precond_na = NA_NewNameArray("FullJacobian PFSymmetric SymmetricPart Picard"
-				);
+   precond_na = NA_NewNameArray("FullJacobian PFSymmetric SymmetricPart Picard");
    sprintf(key, "%s.PCMatrixType", name);
    switch_name = GetStringDefault(key,"PFSymmetric");
    switch_value  = NA_NameToIndex(precond_na, switch_name);
@@ -243,13 +244,16 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
       }
       case 1:
       {
-	 public_xtra -> precond = PFModuleNewModule(MGSemi, (key));
+	 public_xtra -> precond = PFModuleNewModuleType(
+	    LinearSolverNewPublicXtraInvoke,
+	    MGSemi, (key));
 	 break;
       }
       case 2:
       {
 #ifdef HAVE_HYPRE
-	 public_xtra -> precond = PFModuleNewModule(SMG, (key));
+	 public_xtra -> precond = PFModuleNewModuleType(
+	    LinearSolverNewPublicXtraInvoke, SMG, (key));
 #else
 	 InputError("Error: Invalid value <%s> for key <%s>.\n"
 		   "SMG code not compiled in.\n", switch_name, key);
@@ -259,7 +263,8 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
       case 3:
       {
 #ifdef HAVE_HYPRE
-	 public_xtra -> precond = PFModuleNewModule(PFMG, (key));
+	 public_xtra -> precond = PFModuleNewModuleType(
+	    LinearSolverNewPublicXtraInvoke, PFMG, (key));
 #else
 	 InputError("Error: Invalid value <%s> for key <%s>.\n"
 		    "Hypre PFMG code not compiled in.\n", switch_name, key);
@@ -269,7 +274,8 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
       case 4:
       {
 #ifdef HAVE_HYPRE
-	 public_xtra -> precond = PFModuleNewModule(PFMGOctree, (key));
+	 public_xtra -> precond = PFModuleNewModuleType(
+	    LinearSolverNewPublicXtraInvoke, PFMGOctree, (key));
 #else
 	 InputError("Error: Invalid value <%s> for key <%s>.\n"
 		    "Hypre PFMG code not compiled in.\n", switch_name, key);
@@ -280,7 +286,8 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
    }
    NA_FreeNameArray(precond_switch_na);
 
-   public_xtra -> discretization = PFModuleNewModule(RichardsJacobianEval, ());
+   public_xtra -> discretization = PFModuleNewModuleType(
+      RichardsJacobianEvalNewPublicXtraInvoke, RichardsJacobianEval, ());
 
    PFModulePublicXtra(this_module) = public_xtra;
 
@@ -294,7 +301,7 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
 void  KinsolPCFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra  *public_xtra   = (PublicXtra  *)PFModulePublicXtra(this_module);
 
    if ( public_xtra )
    {
@@ -312,7 +319,7 @@ void  KinsolPCFreePublicXtra()
 int  KinsolPCSizeOfTempData()
 {
    PFModule             *this_module   = ThisPFModule;
-   InstanceXtra         *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra         *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
    PFModule             *precond       = (instance_xtra -> precond);
 
    int sz = 0;

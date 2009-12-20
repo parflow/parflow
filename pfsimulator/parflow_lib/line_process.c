@@ -38,15 +38,15 @@
  * LineProc
  *--------------------------------------------------------------------------*/
 
-void  LineProc(Z, phi, theta, dzeta, izeta, nzeta, Kmax, dK)
-double  *Z;
-double   phi;
-double   theta;
-double   dzeta;
-int      izeta;
-int      nzeta;
-double   Kmax;
-double   dK;
+void  LineProc(
+double  *Z,
+double   phi,
+double   theta,
+double   dzeta,
+int      izeta,
+int      nzeta,
+double   Kmax,
+double   dK)
 {
    double   pi = acos(-1.0);
 

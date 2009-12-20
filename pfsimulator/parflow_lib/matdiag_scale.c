@@ -75,14 +75,10 @@ typedef struct
  * MatDiagScale
  *--------------------------------------------------------------------------*/
 
-void     MatDiagScale(x, A, b, flag)
-Matrix  *A;
-Vector  *x;
-Vector  *b;
-int	 flag;
+void MatDiagScale (Vector *x , Matrix *A , Vector *b , int flag )
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    Vector	  *d = (instance_xtra -> d);
 
@@ -193,8 +189,8 @@ int	 flag;
  * MatDiagScaleInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *MatDiagScaleInitInstanceXtra(grid)
-Grid      *grid;
+PFModule  *MatDiagScaleInitInstanceXtra(
+   Grid      *grid)
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
@@ -203,7 +199,7 @@ Grid      *grid;
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    /*-----------------------------------------------------------------------
     * Initialize data associated with argument `grid'
@@ -235,8 +231,7 @@ Grid      *grid;
 void  MatDiagScaleFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
-
+   InstanceXtra  *instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    if(instance_xtra)
    {

@@ -95,15 +95,15 @@ typedef struct
  *
  *--------------------------------------------------------------------------*/
 
-void     MGSemi(x, b, tol, zero)
-Vector  *x;
-Vector  *b;
-double   tol;
-int      zero;
+void     MGSemi(
+Vector  *x,
+Vector  *b,
+double   tol,
+int      zero)
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra    *)PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    int               max_iter   = (public_xtra -> max_iter);
 	           
@@ -211,7 +211,7 @@ int      zero;
    }
 
    /* smooth (use `zero' to determine initial x) */
-   PFModuleInvoke(void, smooth_l[0], (x, b, 0.0, zero));
+   PFModuleInvokeType(LinearSolverInvoke, smooth_l[0], (x, b, 0.0, zero));
 
    while (++i)
    {
@@ -255,7 +255,7 @@ int      zero;
       for (l = 1; l <= (num_levels - 2); l++)
       {
 	 /* smooth (zero initial x) */
-	 PFModuleInvoke(void, smooth_l[l], (x_l[l], b_l[l], 0.0, 1));
+	 PFModuleInvokeType(LinearSolverInvoke, smooth_l[l], (x_l[l], b_l[l], 0.0, 1));
 
 	 /* compute residual (b - Ax) */
 	 Copy(b_l[l], temp_vec_l[l]);
@@ -281,7 +281,7 @@ int      zero;
        *--------------------------------------------------------------------*/
 
       /* solve the coarse system */
-      PFModuleInvoke(void, solve, (x_l[l], b_l[l], 1.0e-9, 1));
+      PFModuleInvokeType(LinearSolverInvoke, solve, (x_l[l], b_l[l], 1.0e-9, 1));
 
       /*--------------------------------------------------------------------
        * Up cycle
@@ -307,7 +307,7 @@ int      zero;
 	 Axpy(1.0, temp_vec_l[l], x_l[l]);
 
 	 /* smooth (non-zero initial x) */
-	 PFModuleInvoke(void, smooth_l[l], (x_l[l], b_l[l], 0.0, 0));
+	 PFModuleInvokeType(LinearSolverInvoke, smooth_l[l], (x_l[l], b_l[l], 0.0, 0));
       }
 
       /* prolong error */
@@ -323,7 +323,7 @@ int      zero;
       Axpy(1.0, temp_vec_l[0], x);
 
       /* smooth (non-zero initial x) */
-      PFModuleInvoke(void, smooth_l[0], (x, b, 0.0, 0));
+      PFModuleInvokeType(LinearSolverInvoke, smooth_l[0], (x, b, 0.0, 0));
 
       /*--------------------------------------------------------------------
        * Test for convergence or max_iter
@@ -358,7 +358,7 @@ int      zero;
 	 break;
 
       /* smooth (non-zero initial x) */
-      PFModuleInvoke(void, smooth_l[0], (x, b, 0.0, 0));
+      PFModuleInvokeType(LinearSolverInvoke, smooth_l[0], (x, b, 0.0, 0));
    }
 
    if (tol > 0.0)
@@ -432,12 +432,12 @@ int      zero;
  * SetupCoarseOps
  *--------------------------------------------------------------------------*/
 
-void              SetupCoarseOps(A_l, P_l, num_levels, f_sra_l, c_sra_l)
-Matrix          **A_l;
-Matrix          **P_l;
-int               num_levels;
-SubregionArray  **f_sra_l;
-SubregionArray  **c_sra_l;
+void              SetupCoarseOps(
+Matrix          **A_l,
+Matrix          **P_l,
+int               num_levels,
+SubregionArray  **f_sra_l,
+SubregionArray  **c_sra_l)
 {
    SubregionArray *subregion_array;
 
@@ -764,15 +764,15 @@ SubregionArray  **c_sra_l;
  * MGSemiInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule     *MGSemiInitInstanceXtra(problem, grid, problem_data, A, temp_data)
-Problem      *problem;
-Grid         *grid;
-ProblemData  *problem_data;
-Matrix       *A;
-double       *temp_data;
+PFModule     *MGSemiInitInstanceXtra(
+Problem      *problem,
+Grid         *grid,
+ProblemData  *problem_data,
+Matrix       *A,
+double       *temp_data)
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra    *)PFModulePublicXtra(this_module);
    InstanceXtra  *instance_xtra;
 
    int              max_levels = (public_xtra -> max_levels);
@@ -837,7 +837,7 @@ double       *temp_data;
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    /*-----------------------------------------------------------------------
     * Initialize data associated with argument `grid'
@@ -1130,12 +1130,14 @@ double       *temp_data;
       for (l = 0; l < ((instance_xtra -> num_levels) - 1); l++)
       {
 	 (instance_xtra -> smooth_l[l])  =
-	    PFModuleNewInstance((public_xtra -> smooth),
-				(problem, grid_l[l], problem_data, A_l[l],
-				 temp_data));
+	    PFModuleNewInstanceType(LinearSolverInitInstanceXtraInvoke,
+				    (public_xtra -> smooth),
+				    (problem, grid_l[l], problem_data, A_l[l],
+				     temp_data));
       }
       (instance_xtra -> solve)   =
-	 PFModuleNewInstance((public_xtra -> solve),
+	 PFModuleNewInstanceType(LinearSolverInitInstanceXtraInvoke,
+			     (public_xtra -> solve),
 			     (problem, grid_l[l], problem_data, A_l[l],
 			      temp_data));
    }
@@ -1143,11 +1145,13 @@ double       *temp_data;
    {
       for (l = 0; l < ((instance_xtra -> num_levels) - 1); l++)
       {
-	 PFModuleReNewInstance((instance_xtra -> smooth_l[l]),
+	 PFModuleReNewInstanceType(LinearSolverInitInstanceXtraInvoke,
+			       (instance_xtra -> smooth_l[l]),
 			       (problem, grid_l[l], problem_data, A_l[l],
 				temp_data));
       }
-      PFModuleReNewInstance((instance_xtra -> solve),
+      PFModuleReNewInstanceType(LinearSolverInitInstanceXtraInvoke,
+			    (instance_xtra -> solve),
 			    (problem, grid_l[l], problem_data, A_l[l],
 			     temp_data));
    }
@@ -1173,7 +1177,7 @@ double       *temp_data;
 void   MGSemiFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    int  l;
 
@@ -1253,12 +1257,12 @@ PFModule   *MGSemiNewPublicXtra(char *name)
    {
       case 0:
       {
-	 public_xtra -> smooth = PFModuleNewModule(RedBlackGSPoint, (key));
+	 public_xtra -> smooth = PFModuleNewModuleType(LinearSolverNewPublicXtraInvoke, RedBlackGSPoint, (key));
 	 break;
       }
       case 1:
       {
-	 public_xtra -> smooth = PFModuleNewModule(WJacobi, (key));
+	 public_xtra -> smooth = PFModuleNewModuleType(LinearSolverNewPublicXtraInvoke, WJacobi, (key));
 	 break;
       }
       default:
@@ -1277,17 +1281,17 @@ PFModule   *MGSemiNewPublicXtra(char *name)
    {
       case 0:
       {
-	 public_xtra -> solve = PFModuleNewModule(CGHS, (key));
+	 public_xtra -> solve = PFModuleNewModuleType(LinearSolverNewPublicXtraInvoke, CGHS, (key));
 	 break;
       }
       case 1:
       {
-	 public_xtra -> solve = PFModuleNewModule(RedBlackGSPoint, (key));
+	 public_xtra -> solve = PFModuleNewModuleType(LinearSolverNewPublicXtraInvoke, RedBlackGSPoint, (key));
 	 break;
       }
       case 2:
       {
-	 public_xtra -> solve = PFModuleNewModule(WJacobi, (key));
+	 public_xtra -> solve = PFModuleNewModuleType(LinearSolverNewPublicXtraInvoke, WJacobi, (key));
 	 break;
       }
       default:
@@ -1327,8 +1331,7 @@ PFModule   *MGSemiNewPublicXtra(char *name)
 void   MGSemiFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
-
+   PublicXtra  *public_xtra   = (PublicXtra  *)PFModulePublicXtra(this_module);
 
    if(public_xtra)
    {
@@ -1347,7 +1350,7 @@ void   MGSemiFreePublicXtra()
 int  MGSemiSizeOfTempData()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra   = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra   = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    int  sz = 0;
 

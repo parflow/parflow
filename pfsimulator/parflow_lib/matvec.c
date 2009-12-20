@@ -38,12 +38,12 @@
  * Matvec
  *--------------------------------------------------------------------------*/
 
-void            Matvec(alpha, A, x, beta, y)
-double          alpha;
-Matrix         *A;
-Vector         *x;
-double          beta;
-Vector         *y;
+void            Matvec(
+double          alpha,
+Matrix         *A,
+Vector         *x,
+double          beta,
+Vector         *y)
 {
    CommHandle *handle = NULL;
 

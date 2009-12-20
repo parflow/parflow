@@ -36,10 +36,10 @@
  * MaxFieldValue
  *--------------------------------------------------------------------------*/
 
-double  MaxFieldValue(field, phi, dir)
-Vector *field;
-Vector *phi;
-int     dir;
+double  MaxFieldValue(
+Vector *field,
+Vector *phi,
+int     dir)
 {
    Grid         *grid;
    Subgrid      *subgrid;
@@ -150,11 +150,11 @@ int     dir;
  * MaxPhaseFieldValue
  *--------------------------------------------------------------------------*/
 
-double  MaxPhaseFieldValue(x_velocity, y_velocity, z_velocity, phi)
-Vector *x_velocity;
-Vector *y_velocity;
-Vector *z_velocity;
-Vector *phi;
+double  MaxPhaseFieldValue(
+Vector *x_velocity,
+Vector *y_velocity,
+Vector *z_velocity,
+Vector *phi)
 {
    Grid         *grid;
    Subgrid      *subgrid;
@@ -326,18 +326,15 @@ Vector *phi;
  * MaxTotalFieldValue
  *--------------------------------------------------------------------------*/
 
-double  MaxTotalFieldValue(problem, eval_struct,
-                           saturation,
-                           x_velocity, y_velocity, z_velocity, beta,
-                           phi)
-Problem    *problem;
-EvalStruct *eval_struct;
-Vector     *x_velocity;
-Vector     *y_velocity;
-Vector     *z_velocity;
-Vector     *saturation;
-Vector     *beta;
-Vector     *phi;
+double  MaxTotalFieldValue(
+Problem    *problem,
+EvalStruct *eval_struct,
+Vector     *x_velocity,
+Vector     *y_velocity,
+Vector     *z_velocity,
+Vector     *saturation,
+Vector     *beta,
+Vector     *phi)
 {
    Grid         *grid;
    Subgrid      *subgrid;
@@ -381,8 +378,8 @@ Vector     *phi;
 
    /* CSW  Hard-coded in an assumption here for constant density. 
     *      Use dtmp as dummy argument.  */
-   PFModuleInvoke(void, phase_density, (0, NULL, NULL, &dtmp, &den0, CALCFCN));
-   PFModuleInvoke(void, phase_density, (1, NULL, NULL, &dtmp, &den1, CALCFCN));
+   PFModuleInvokeType(PhaseDensityInvoke, phase_density, (0, NULL, NULL, &dtmp, &den0, CALCFCN));
+   PFModuleInvokeType(PhaseDensityInvoke, phase_density, (1, NULL, NULL, &dtmp, &den1, CALCFCN));
 
    g = -ProblemGravity(problem);
 

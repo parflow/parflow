@@ -43,9 +43,9 @@ int BCPressurePackageSizeOfTempData (void );
 /* calc_elevations.c */
 double **CalcElevations (GeomSolid *geom_solid , int ref_patch , SubgridArray *subgrids );
 
-
 typedef void (*LinearSolverInvoke) (Vector *x , Vector *b , double tol , int zero );
-typedef PFModule *(*LinearSolverIniitInstanceXtraInvoke) (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *A , double *temp_data );
+typedef PFModule *(*LinearSolverInitInstanceXtraInvoke) (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *A , double *temp_data );
+typedef PFModule *(*LinearSolverNewPublicXtraInvoke) (char *name );
 
 /* cghs.c */
 void CGHS (Vector *x , Vector *b , double tol , int zero );
@@ -140,9 +140,11 @@ void LatticeFlowInit (Lattice *lattice , Problem *problem );
 double MaxVectorValue (Vector *field );
 double MaxVectorDividend (Vector *field1 , Vector *field2 );
 
+typedef void (*DiscretizePressureInvoke) (Matrix **ptr_to_A , Vector **ptr_to_f , ProblemData *problem_data , double time , Vector *total_mobility_x , Vector *total_mobility_y , Vector *total_mobility_z , Vector **phase_saturations );
+typedef PFModule *(*DiscretizePressureInitInstanceXtraInvoke) (Problem *problem , Grid *grid , double *temp_data );
 /* discretize_pressure.c */
 void DiscretizePressure (Matrix **ptr_to_A , Vector **ptr_to_f , ProblemData *problem_data , double time , Vector *total_mobility_x , Vector *total_mobility_y , Vector *total_mobility_z , Vector **phase_saturations );
-typedef void (*DiscretizePressureInvoke) (Matrix **ptr_to_A , Vector **ptr_to_f , ProblemData *problem_data , double time , Vector *total_mobility_x , Vector *total_mobility_y , Vector *total_mobility_z , Vector **phase_saturations );
+
 PFModule *DiscretizePressureInitInstanceXtra (Problem *problem , Grid *grid , double *temp_data );
 void DiscretizePressureFreeInstanceXtra (void );
 PFModule *DiscretizePressureNewPublicXtra (void );
@@ -631,9 +633,9 @@ int ICPhaseSaturSizeOfTempData (void );
 
 /* problem_phase_density.c */
 
-void PhaseDensity (int phase , Vector *phase_pressure , Vector *density_v , double *pressure_d , double *density_d , int fcn );
 typedef void (*PhaseDensityInvoke) (int phase , Vector *phase_pressure , Vector *density_v , double *pressure_d , double *density_d , int fcn );
 
+void PhaseDensity (int phase , Vector *phase_pressure , Vector *density_v , double *pressure_d , double *density_d , int fcn );
 PFModule *PhaseDensityInitInstanceXtra (void );
 void PhaseDensityFreeInstanceXtra (void );
 PFModule *PhaseDensityNewPublicXtra (int num_phases );
@@ -739,6 +741,7 @@ double Rand (void );
 int ratqr_ (int *n , double *eps1 , double *d , double *e , double *e2 , int *m , double *w , int *ind , double *bd , int *type , int *idef , int *ierr );
 double epslon_ (double *x );
 
+
 /* rb_GS_point.c */
 void RedBlackGSPoint (Vector *x , Vector *b , double tol , int zero );
 PFModule *RedBlackGSPointInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *A , double *temp_data );
@@ -773,7 +776,7 @@ void AppendSubregionArray (SubregionArray *sr_array_0 , SubregionArray *sr_array
 
 typedef void (*RichardsJacobianEvalInvoke) (Vector *pressure , Matrix **ptr_to_J , Vector *saturation , Vector *density , ProblemData *problem_data , double dt , double time , int symm_part );
 typedef PFModule *(*RichardsJacobianEvalInitInstanceXtraInvoke) (Problem *problem , Grid *grid , double *temp_data , int symmetric_jac );
-
+typedef PFModule *(*RichardsJacobianEvalNewPublicXtraInvoke) (void );
 /* richards_jacobian_eval.c */
 int KINSolMatVec (void *current_state , N_Vector x , N_Vector y , int *recompute , N_Vector pressure );
 void RichardsJacobianEval (Vector *pressure , Matrix **ptr_to_J , Vector *saturation , Vector *density , ProblemData *problem_data , double dt , double time , int symm_part );

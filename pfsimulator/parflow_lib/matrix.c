@@ -40,27 +40,27 @@
  * NewStencil
  *--------------------------------------------------------------------------*/
 
-Stencil  *NewStencil(shape, sz)
-int  shape[][3];
-int  sz;
+Stencil  *NewStencil(
+   int  shape[][3],
+   int  sz)
 {
-   Stencil     *new;
+   Stencil     *new_stencil;
    StencilElt  *new_shape;
 
    int          i, j;
 
 
-   new = talloc(Stencil, 1);
-   StencilShape(new) = talloc(StencilElt, sz);
+   new_stencil = talloc(Stencil, 1);
+   StencilShape(new_stencil) = talloc(StencilElt, sz);
 
-   new_shape = StencilShape(new);
+   new_shape = StencilShape(new_stencil);
    for (i = 0; i < sz; i++)
       for (j = 0; j < 3; j++)
          new_shape[i][j] = shape[i][j];
 
-   StencilSize(new) = sz;
+   StencilSize(new_stencil) = sz;
 
-   return new;
+   return new_stencil;
 }
 
 /*--------------------------------------------------------------------------
@@ -68,11 +68,11 @@ int  sz;
  *   RDF hack
  *--------------------------------------------------------------------------*/
 
-CommPkg   *NewMatrixUpdatePkg(matrix, ghost)
-Matrix    *matrix;
-Stencil   *ghost;
+CommPkg   *NewMatrixUpdatePkg(
+   Matrix    *matrix,
+   Stencil   *ghost)
 {
-   CommPkg     *new;
+   CommPkg     *new_commpkg;
 
    Submatrix   *submatrix;
 
@@ -100,13 +100,13 @@ Stencil   *ghost;
    CommRegFromStencil(&send_reg, &recv_reg, MatrixGrid(matrix), ghost);
    ProjectRegion(send_reg, sx, sy, sz, ix, iy, iz);
    ProjectRegion(recv_reg, sx, sy, sz, ix, iy, iz);
-   new = NewCommPkg(send_reg, recv_reg,
+   new_commpkg = NewCommPkg(send_reg, recv_reg,
 		    MatrixDataSpace(matrix), n, MatrixData(matrix));
 
    FreeRegion(send_reg);
    FreeRegion(recv_reg);
 
-   return new;
+   return new_commpkg;
 }
 
 
@@ -114,8 +114,8 @@ Stencil   *ghost;
  * InitMatrixUpdate
  *--------------------------------------------------------------------------*/
 
-CommHandle  *InitMatrixUpdate(matrix)
-Matrix      *matrix;
+CommHandle  *InitMatrixUpdate(
+   Matrix      *matrix)
 {
    return  InitCommunication(MatrixCommPkg(matrix));
 }
@@ -125,8 +125,8 @@ Matrix      *matrix;
  * FinalizeMatrixUpdate
  *--------------------------------------------------------------------------*/
 
-void         FinalizeMatrixUpdate(handle)
-CommHandle  *handle;
+void         FinalizeMatrixUpdate(
+   CommHandle  *handle)
 {
    FinalizeCommunication(handle);
 }
@@ -136,14 +136,14 @@ CommHandle  *handle;
  * NewMatrix
  *--------------------------------------------------------------------------*/
 
-Matrix          *NewMatrix(grid, range, stencil, symmetry, ghost)
-Grid            *grid;
-SubregionArray  *range;
-Stencil         *stencil;
-int              symmetry;
-Stencil         *ghost;
+Matrix          *NewMatrix(
+Grid            *grid,
+SubregionArray  *range,
+Stencil         *stencil,
+int              symmetry,
+Stencil         *ghost)
 {
-   Matrix         *new;
+   Matrix         *new_matrix;
    Submatrix      *new_sub;
 
    StencilElt     *shape;
@@ -271,12 +271,12 @@ Stencil         *ghost;
     * Set up Matrix shell
     *-----------------------------------------------------------------------*/
 
-   new = ctalloc(Matrix, 1);
+   new_matrix = ctalloc(Matrix, 1);
 
-   (new -> submatrices) = ctalloc(Submatrix *, GridNumSubgrids(grid));
+   (new_matrix -> submatrices) = ctalloc(Submatrix *, GridNumSubgrids(grid));
 
    data_size = 0;
-   MatrixDataSpace(new) = NewSubregionArray();
+   MatrixDataSpace(new_matrix) = NewSubregionArray();
    ForSubgridI(i, GridSubgrids(grid))
    {
       new_sub = ctalloc(Submatrix, 1);
@@ -306,7 +306,7 @@ Stencil         *ghost;
 			SubregionIZ(subregion));
       }
       SubmatrixDataSpace(new_sub) = new_subregion;
-      AppendSubregion(new_subregion, MatrixDataSpace(new));
+      AppendSubregion(new_subregion, MatrixDataSpace(new_matrix));
 
       /*--------------------------------------------------------------------
        * Compute data_index array
@@ -337,36 +337,36 @@ Stencil         *ghost;
 
       (new_sub -> data_index) = data_index;
 
-      MatrixSubmatrix(new, i) = new_sub;
+      MatrixSubmatrix(new_matrix, i) = new_sub;
    }
 
-   (new -> data_size) = data_size;
+   (new_matrix -> data_size) = data_size;
 
-   MatrixGrid(new)  = grid;
-   MatrixRange(new) = range;
+   MatrixGrid(new_matrix)  = grid;
+   MatrixRange(new_matrix) = range;
 
-   MatrixStencil(new) = stencil;
-   MatrixDataStencil(new) = data_stencil;
-   MatrixDataStencilSize(new) = data_stencil_size;
-   MatrixSymmetric(new) = symmetry;
+   MatrixStencil(new_matrix) = stencil;
+   MatrixDataStencil(new_matrix) = data_stencil;
+   MatrixDataStencilSize(new_matrix) = data_stencil_size;
+   MatrixSymmetric(new_matrix) = symmetry;
 
    /* Compute total number of coefficients in matrix */
-   MatrixSize(new) = GridSize(grid) * StencilSize(stencil);
+   MatrixSize(new_matrix) = GridSize(grid) * StencilSize(stencil);
 
    /*-----------------------------------------------------------------------
     * Set up Matrix data
     *-----------------------------------------------------------------------*/
 
    data = amps_CTAlloc(double, (data_size));
-   MatrixData(new) = data;
+   MatrixData(new_matrix) = data;
    
    for (i = 0; i < GridNumSubgrids(grid); i++)
-      SubmatrixData(MatrixSubmatrix(new, i)) = data;
+      SubmatrixData(MatrixSubmatrix(new_matrix, i)) = data;
 
    if (ghost)
-      MatrixCommPkg(new) = NewMatrixUpdatePkg(new, ghost);
+      MatrixCommPkg(new_matrix) = NewMatrixUpdatePkg(new_matrix, ghost);
    else
-      MatrixCommPkg(new) = NULL;
+      MatrixCommPkg(new_matrix) = NULL;
 
    /*-----------------------------------------------------------------------
     * Free up memory and return
@@ -374,7 +374,7 @@ Stencil         *ghost;
 
    tfree(symmetric_coeff);
 
-   return new;
+   return new_matrix;
 }
 
 
@@ -382,8 +382,8 @@ Stencil         *ghost;
  * FreeStencil
  *--------------------------------------------------------------------------*/
 
-void      FreeStencil(stencil)
-Stencil  *stencil;
+void      FreeStencil(
+   Stencil  *stencil)
 {
    if (stencil)
    {
@@ -396,8 +396,8 @@ Stencil  *stencil;
  * FreeMatrix
  *--------------------------------------------------------------------------*/
 
-void FreeMatrix(matrix)
-Matrix *matrix;
+void FreeMatrix(
+   Matrix *matrix)
 {
    Submatrix  *submatrix;
 
@@ -431,9 +431,9 @@ Matrix *matrix;
  * InitMatrix
  *--------------------------------------------------------------------------*/
 
-void    InitMatrix(A, value)
-Matrix *A;
-double  value;
+void    InitMatrix(
+   Matrix *A,
+   double  value)
 {
    Grid       *grid = MatrixGrid(A);
 
