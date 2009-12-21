@@ -89,7 +89,7 @@ int          fcn;               /* Flag determining what to calculate
                                  *                  derivative */
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    Type0         *dummy0;
    Type1         *dummy1;
@@ -338,7 +338,7 @@ PFModule  *ThermalConductivityInitInstanceXtra(grid)
 Grid      *grid;
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
    InstanceXtra  *instance_xtra;
 
    Type1         *dummy1;
@@ -346,7 +346,7 @@ Grid      *grid;
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    /*-----------------------------------------------------------------------
     * Initialize data associated with argument `grid'
@@ -415,8 +415,8 @@ Grid      *grid;
 void  ThermalConductivityFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    Type1   *dummy1;
 
@@ -568,7 +568,7 @@ PFModule   *ThermalConductivityNewPublicXtra()
 void  ThermalConductivityFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra  *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    Type0       *dummy0;
    Type1       *dummy1;
@@ -622,7 +622,7 @@ void  ThermalConductivityFreePublicXtra()
 int  ThermalConductivitySizeOfTempData()
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    Type1         *dummy1;
 

@@ -69,15 +69,15 @@ typedef struct
  * PFMGOctree
  *--------------------------------------------------------------------------*/
 
-void         PFMGOctree(soln, rhs, tol, zero)
-Vector      *soln;
-Vector      *rhs;
-double       tol;
-int          zero;
+void         PFMGOctree(
+Vector      *soln,
+Vector      *rhs,
+double       tol,
+int          zero)
 {
    PFModule           *this_module    = ThisPFModule;
-   InstanceXtra       *instance_xtra  = PFModuleInstanceXtra(this_module);
-   PublicXtra         *public_xtra    = PFModulePublicXtra(this_module);
+   InstanceXtra       *instance_xtra  = (InstanceXtra *)PFModuleInstanceXtra(this_module);
+   PublicXtra         *public_xtra    = (PublicXtra *)PFModulePublicXtra(this_module);
 
    HYPRE_StructMatrix  hypre_mat      = instance_xtra -> hypre_mat;
    HYPRE_StructVector  hypre_b        = instance_xtra -> hypre_b;
@@ -296,16 +296,15 @@ int          zero;
  * PFMGOctreeInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *PFMGOctreeInitInstanceXtra(problem, grid, problem_data,  
-				 pf_matrix, temp_data)
-Problem      *problem;
-Grid         *grid;
-ProblemData  *problem_data;
-Matrix       *pf_matrix;
-double       *temp_data;
+PFModule  *PFMGOctreeInitInstanceXtra(
+Problem      *problem,
+Grid         *grid,
+ProblemData  *problem_data,
+Matrix       *pf_matrix,
+double       *temp_data)
 {
    PFModule      *this_module        = ThisPFModule;
-   PublicXtra    *public_xtra        = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra        = (PublicXtra *)PFModulePublicXtra(this_module);
    InstanceXtra  *instance_xtra;
 
    int                 max_iter      = public_xtra -> max_iter;
@@ -345,7 +344,7 @@ double       *temp_data;
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    instance_xtra -> problem_data = problem_data;
 
@@ -688,7 +687,7 @@ double       *temp_data;
 void  PFMGOctreeFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    if (instance_xtra)
    {
@@ -772,7 +771,7 @@ PFModule  *PFMGOctreeNewPublicXtra(char *name)
 void  PFMGOctreeFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra  *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    if ( public_xtra )
    {

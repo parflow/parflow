@@ -62,11 +62,11 @@ typedef struct
 /*  This routine provides the interface between KINSOL and ParFlow
     for function evaluations.  */
 
-void     KINSolFunctionEval(size, pressure, fval, current_state)
-int      size;
-N_Vector pressure;
-N_Vector fval;
-void    *current_state;
+void     KINSolFunctionEval(
+int      size,
+N_Vector pressure,
+N_Vector fval,
+void    *current_state)
 {
    PFModule  *nl_function_eval = StateFunc(        ((State*)current_state) );
    ProblemData *problem_data   = StateProblemData( ((State*)current_state) );
@@ -82,10 +82,10 @@ void    *current_state;
    Vector       *ovrl_bc_flx   = StateOvrlBcFlx(   ((State*)current_state) );
  
  
-   PFModuleInvoke(void, nl_function_eval, 
-   (pressure, fval, problem_data, saturation, old_saturation, 
-   density, old_density, dt, time, old_pressure, outflow, evap_trans,
-   ovrl_bc_flx) );
+   PFModuleInvokeType(NlFunctionEvalInvoke, nl_function_eval, 
+		  (pressure, fval, problem_data, saturation, old_saturation, 
+		   density, old_density, dt, time, old_pressure, outflow, evap_trans,
+		   ovrl_bc_flx) );
  
    return;
 }
@@ -95,28 +95,23 @@ void    *current_state;
     pressure values.  This evaluation is basically an application
     of the stencil to the pressure array. */
 
-void    NlFunctionEval(pressure, fval, problem_data, saturation, 
-old_saturation, density, old_density, dt, 
-time, old_pressure, outflow, evap_trans, ovrl_bc_flx)
-
-Vector      *pressure;       /* Current pressure values */
-Vector      *fval;           /* Return values of the nonlinear function */
-ProblemData *problem_data;   /* Geometry data for problem */
-Vector      *old_pressure;
-Vector      *saturation;     /* Saturation / work vector */
-Vector      *old_saturation; /* Saturation values at previous time step */
-Vector      *density;        /* Density vector */
-Vector      *old_density;    /* Density values at previous time step */
-double       dt;             /* Time step size */
-double       time;           /* New time value */
-double      *outflow;       /*sk Outflow due to overland flow*/
-Vector      *evap_trans;     /*sk sink term from land surface model*/
-Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/ 
-
+void NlFunctionEval (Vector *pressure,  /* Current pressure values */
+		     Vector *fval, /* Return values of the nonlinear function */
+		     ProblemData *problem_data, /* Geometry data for problem */
+		     Vector *saturation ,  /* Saturation / work vector */
+		     Vector *old_saturation,  /* Saturation values at previous time step */
+		     Vector *density, /* Density vector */
+		     Vector *old_density,   /* Density values at previous time step */
+		     double dt,   /* Time step size */
+		     double time,     /* New time value */
+		     Vector *old_pressure,  
+		     double *outflow,  /*sk Outflow due to overland flow*/
+		     Vector *evap_trans,   /*sk sink term from land surface model*/
+		     Vector *ovrl_bc_flx)  /*sk overland flow boundary fluxes*/ 
 {
    PFModule      *this_module     = ThisPFModule;
-   InstanceXtra  *instance_xtra   = PFModuleInstanceXtra(this_module);
-   PublicXtra    *public_xtra     = PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra   = (InstanceXtra *)PFModuleInstanceXtra(this_module);
+   PublicXtra    *public_xtra     = (PublicXtra *)PFModulePublicXtra(this_module);
 
    Problem     *problem           = (instance_xtra -> problem);
 
@@ -221,10 +216,10 @@ Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/
 
    /* Calculate pressure dependent properties: density and saturation */
 
-   PFModuleInvoke(void, density_module, (0, pressure, density, &dtmp, &dtmp, 
-   CALCFCN));
+   PFModuleInvokeType(PhaseDensityInvoke, density_module, (0, pressure, density, &dtmp, &dtmp, 
+					 CALCFCN));
 
-   PFModuleInvoke(void, saturation_module, (saturation, pressure, density, 
+   PFModuleInvokeType(SaturationInvoke, saturation_module, (saturation, pressure, density, 
    gravity, problem_data, CALCFCN));
 
    /* bc_struct = PFModuleInvoke(BCStruct *, bc_pressure, 
@@ -348,8 +343,8 @@ Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/
    /* Add in contributions from source terms - user specified sources and
       flux wells.  Calculate phase source values overwriting current 
       saturation vector */
-   PFModuleInvoke(void, phase_source, (source, 0, problem, problem_data,
-   time));
+   PFModuleInvokeType(PhaseSourceInvoke, phase_source, (source, 0, problem, problem_data,
+							time));
 
    ForSubgridI(is, GridSubgrids(grid))
    {
@@ -392,7 +387,7 @@ Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/
       });
    }
 
-   bc_struct = PFModuleInvoke(BCStruct *, bc_pressure, 
+   bc_struct = PFModuleInvokeType(BCPressureInvoke, bc_pressure, 
 			      (problem_data, grid, gr_domain, time));
 
    /* 
@@ -463,9 +458,9 @@ Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/
    /* Calculate relative permeability values overwriting current 
       phase source values */
 
-   PFModuleInvoke(void, rel_perm_module, 
-   (rel_perm, pressure, density, gravity, problem_data, 
-   CALCFCN));
+   PFModuleInvokeType(PhaseRelPermInvoke, rel_perm_module, 
+		  (rel_perm, pressure, density, gravity, problem_data, 
+		   CALCFCN));
 
    /* Calculate contributions from second order derivatives and gravity */
    ForSubgridI(is, GridSubgrids(grid))
@@ -1143,8 +1138,8 @@ Vector      *ovrl_bc_flx;     /*sk overland flow boundary fluxes*/
 
    FreeBCStruct(bc_struct);
 
-   PFModuleInvoke( void, bc_internal, (problem, problem_data, fval, NULL, 
-   time, pressure, CALCFCN));
+   PFModuleInvokeType(RichardsBCInternalInvoke, bc_internal, (problem, problem_data, fval, NULL, 
+						      time, pressure, CALCFCN));
 
    EndTiming(public_xtra -> time_index);
 
@@ -1174,7 +1169,7 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem     *problem,
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    if ( problem != NULL)
    {
@@ -1186,13 +1181,16 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem     *problem,
       (instance_xtra -> density_module) =
          PFModuleNewInstance(ProblemPhaseDensity(problem), () );
       (instance_xtra -> saturation_module) =
-         PFModuleNewInstance(ProblemSaturation(problem), (NULL, NULL) );
+         PFModuleNewInstanceType(SaturationInitInstanceXtraInvoke,
+				 ProblemSaturation(problem), (NULL, NULL) );
       (instance_xtra -> rel_perm_module) =
-         PFModuleNewInstance(ProblemPhaseRelPerm(problem), (NULL, NULL) );
+         PFModuleNewInstanceType(PhaseRelPermInitInstanceXtraInvoke,
+				 ProblemPhaseRelPerm(problem), (NULL, NULL) );
       (instance_xtra -> phase_source) =
          PFModuleNewInstance(ProblemPhaseSource(problem), () );
       (instance_xtra -> bc_pressure) =
-         PFModuleNewInstance(ProblemBCPressure(problem), (problem) );
+         PFModuleNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
+			     ProblemBCPressure(problem), (problem) );
       (instance_xtra -> bc_internal) =
          PFModuleNewInstance(ProblemBCInternal(problem), () );
 
@@ -1200,12 +1198,16 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem     *problem,
    else
    {
       PFModuleReNewInstance((instance_xtra -> density_module), ());
-      PFModuleReNewInstance((instance_xtra -> saturation_module), 
-      (NULL, NULL));
-      PFModuleReNewInstance((instance_xtra -> rel_perm_module), 
-      (NULL, NULL));
-      PFModuleReNewInstance((instance_xtra -> phase_source), (NULL));
-      PFModuleReNewInstance((instance_xtra -> bc_pressure), (problem));
+      PFModuleReNewInstanceType(SaturationInitInstanceXtraInvoke,
+				(instance_xtra -> saturation_module), 
+				(NULL, NULL));
+      PFModuleReNewInstanceType(PhaseRelPermInitInstanceXtraInvoke,
+				(instance_xtra -> rel_perm_module), 
+				(NULL, NULL));
+      PFModuleReNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
+			    (instance_xtra -> phase_source), (NULL));
+      PFModuleReNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
+				(instance_xtra -> bc_pressure), (problem));
       PFModuleReNewInstance((instance_xtra -> bc_internal), ());
    }
 
@@ -1221,7 +1223,7 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem     *problem,
 void  NlFunctionEvalFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    if(instance_xtra)
    {
@@ -1264,7 +1266,7 @@ PFModule   *NlFunctionEvalNewPublicXtra()
 void  NlFunctionEvalFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra  *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
 
    if (public_xtra)

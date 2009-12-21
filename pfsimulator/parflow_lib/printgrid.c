@@ -38,9 +38,9 @@
  * PrintGrid
  *--------------------------------------------------------------------------*/
 
-void   PrintGrid(filename, grid)
-char  *filename;
-Grid  *grid;
+void   PrintGrid(
+char  *filename,
+Grid  *grid)
 {
    amps_File  file;
 

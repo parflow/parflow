@@ -38,9 +38,9 @@
  * PrintSubvectorAll
  *--------------------------------------------------------------------------*/
 
-void        PrintSubvectorAll(file, subvector)
-amps_File   file;
-Subvector  *subvector;
+void        PrintSubvectorAll(
+   amps_File   file,
+   Subvector  *subvector)
 {
    int  ix, iy, iz;
    int  nx, ny, nz;
@@ -70,9 +70,9 @@ Subvector  *subvector;
  * PrintVectorAll
  *--------------------------------------------------------------------------*/
 
-void     PrintVectorAll(filename, v)
-char    *filename;
-Vector  *v;
+void     PrintVectorAll(
+   char    *filename,
+   Vector  *v)
 {
    amps_File  file;
 
@@ -108,10 +108,10 @@ Vector  *v;
  * PrintSubvector
  *--------------------------------------------------------------------------*/
 
-void        PrintSubvector(file, subvector, subgrid)
-amps_File   file;
-Subvector  *subvector;
-Subgrid    *subgrid;
+void        PrintSubvector(
+   amps_File   file,
+   Subvector  *subvector,
+   Subgrid    *subgrid)
 {
    int  ix, iy, iz;
    int  nx, ny, nz;
@@ -141,9 +141,9 @@ Subgrid    *subgrid;
  * PrintVector
  *--------------------------------------------------------------------------*/
 
-void     PrintVector(filename, v)
-char    *filename;
-Vector  *v;
+void     PrintVector(
+   char    *filename,
+   Vector  *v)
 {
    amps_File  file;
 

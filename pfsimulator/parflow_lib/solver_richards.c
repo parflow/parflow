@@ -207,8 +207,8 @@ typedef struct
 } InstanceXtra; 
 
 void SetupRichards(PFModule *this_module) {
-   PublicXtra   *public_xtra         = PFModulePublicXtra(this_module);
-   InstanceXtra *instance_xtra       = PFModuleInstanceXtra(this_module);
+   PublicXtra   *public_xtra         = (PublicXtra *)PFModulePublicXtra(this_module);
+   InstanceXtra *instance_xtra       = (InstanceXtra *)PFModuleInstanceXtra(this_module);
    Problem      *problem             = (public_xtra -> problem);
    PFModule     *ic_phase_pressure   = (instance_xtra -> ic_phase_pressure);
    PFModule     *phase_density       = (instance_xtra -> phase_density);
@@ -723,8 +723,8 @@ void AdvanceRichards(PFModule *this_module,
    ) 
 {
 
-   PublicXtra   *public_xtra        = PFModulePublicXtra(this_module);
-   InstanceXtra *instance_xtra      = PFModuleInstanceXtra(this_module);
+   PublicXtra   *public_xtra        = (PublicXtra *)PFModulePublicXtra(this_module);
+   InstanceXtra *instance_xtra      = (InstanceXtra *)PFModuleInstanceXtra(this_module);
    Problem      *problem            = (public_xtra -> problem);
 
    int           max_iterations      = (public_xtra -> max_iterations);
@@ -1543,8 +1543,8 @@ void AdvanceRichards(PFModule *this_module,
 
 
 void TeardownRichards(PFModule *this_module) {
-   PublicXtra    *public_xtra      = PFModulePublicXtra(this_module);
-   InstanceXtra  *instance_xtra    = PFModuleInstanceXtra(this_module);
+   PublicXtra    *public_xtra      = (PublicXtra *)PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra    = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    Problem      *problem             = (public_xtra -> problem);
    ProblemData  *problem_data        = (instance_xtra -> problem_data);
@@ -1675,7 +1675,7 @@ void TeardownRichards(PFModule *this_module) {
 PFModule *SolverRichardsInitInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
    InstanceXtra  *instance_xtra;
 
    Problem      *problem = (public_xtra -> problem);
@@ -1700,7 +1700,7 @@ PFModule *SolverRichardsInitInstanceXtra()
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    /*-------------------------------------------------------------------
     * Create the grids
@@ -1975,7 +1975,7 @@ PFModule *SolverRichardsInitInstanceXtra()
 void  SolverRichardsFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    if ( instance_xtra )
    {
@@ -2611,7 +2611,7 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
 void   SolverRichardsFreePublicXtra()
 {
    PFModule      *this_module = ThisPFModule;
-   PublicXtra    *public_xtra = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra = (PublicXtra *)PFModulePublicXtra(this_module);
 
    if ( public_xtra )
    {
@@ -2644,8 +2644,8 @@ int  SolverRichardsSizeOfTempData()
 void      SolverRichards() {
 
    PFModule      *this_module      = ThisPFModule;
-   PublicXtra    *public_xtra      = PFModulePublicXtra(this_module);
-   InstanceXtra  *instance_xtra    = PFModuleInstanceXtra(this_module);
+   PublicXtra    *public_xtra      = (PublicXtra *)PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra    = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    Problem      *problem           = (public_xtra -> problem);
    
@@ -2697,16 +2697,16 @@ void      SolverRichards() {
  */
 
 ProblemData *GetProblemDataRichards(PFModule *this_module) {
-   InstanceXtra  *instance_xtra    = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra    = (InstanceXtra *)PFModuleInstanceXtra(this_module);
    return (instance_xtra -> problem_data);
 }
 
 Problem *GetProblemRichards(PFModule *this_module) {
-   PublicXtra    *public_xtra      = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra      = (PublicXtra *)PFModulePublicXtra(this_module);
    return (public_xtra -> problem);
 }
 
 PFModule *GetICPhasePressureRichards(PFModule *this_module) {
-   InstanceXtra  *instance_xtra    = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra    = (InstanceXtra *)PFModuleInstanceXtra(this_module);
    return (instance_xtra -> ic_phase_pressure);
 }

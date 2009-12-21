@@ -52,14 +52,13 @@ typedef struct
  * PermeabilityFace
  *--------------------------------------------------------------------------*/
 
-void    PermeabilityFace(zperm, permeability)
-Vector *zperm;
-Vector *permeability;
+void    PermeabilityFace(
+   Vector *zperm,
+   Vector *permeability)
 {
    PFModule      *this_module      = ThisPFModule;
-   InstanceXtra  *instance_xtra    = PFModuleInstanceXtra(this_module);
-   PublicXtra   *public_xtra   = PFModulePublicXtra(this_module);
-
+   InstanceXtra  *instance_xtra    = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
+   PublicXtra   *public_xtra       = (PublicXtra   *)PFModulePublicXtra(this_module);
 
    Grid         *z_grid   = (instance_xtra -> z_grid);
 
@@ -168,8 +167,7 @@ Vector *permeability;
  * PermeabilityFaceInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule *PermeabilityFaceInitInstanceXtra(z_grid)
-Grid     *z_grid;
+PFModule *PermeabilityFaceInitInstanceXtra(Grid     *z_grid)
 {
    PFModule     *this_module  = ThisPFModule;
    InstanceXtra *instance_xtra;
@@ -177,7 +175,7 @@ Grid     *z_grid;
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    /*-----------------------------------------------------------------------
     * Setup the InstanceXtra structure
@@ -200,7 +198,7 @@ Grid     *z_grid;
 void  PermeabilityFaceFreeInstanceXtra()
 {
    PFModule     *this_module   = ThisPFModule;
-   InstanceXtra *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    if ( instance_xtra )
    {
@@ -244,7 +242,7 @@ PFModule  *PermeabilityFaceNewPublicXtra()
 void PermeabilityFaceFreePublicXtra()
 {
    PFModule     *this_module  = ThisPFModule;
-   PublicXtra   *public_xtra  = PFModulePublicXtra(this_module);
+   PublicXtra   *public_xtra  = (PublicXtra   *)PFModulePublicXtra(this_module);
 
    if ( public_xtra )
    {

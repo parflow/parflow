@@ -22,9 +22,9 @@
 /**************************************************************************
  * Perturbation function for lattice Boltzmann solver.
  **************************************************************************/
-void PerturbSystem (lattice, problem ) 
-  Lattice  *lattice;
-  Problem  *problem;
+void PerturbSystem (
+   Lattice  *lattice,
+   Problem  *problem)
 {
    /*------------------------------------------------------------*
     * Local variables 

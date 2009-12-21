@@ -122,8 +122,8 @@ Problem     *problem;      /* General problem information */
 
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    PFModule      *phase_density = (instance_xtra -> phase_density);
 
@@ -722,7 +722,7 @@ Grid      *grid;
 double    *temp_data;
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
    InstanceXtra  *instance_xtra;
 
    Type3         *dummy3;
@@ -730,7 +730,7 @@ double    *temp_data;
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    if ( grid != NULL )
    {
@@ -802,7 +802,7 @@ double    *temp_data;
 void  ICPhasePressureFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
 
    if (instance_xtra)
@@ -994,7 +994,7 @@ PFModule   *ICPhasePressureNewPublicXtra()
 void  ICPhasePressureFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra  *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
    
    
    Type0       *dummy0;
@@ -1050,8 +1050,8 @@ void  ICPhasePressureFreePublicXtra()
 int  ICPhasePressureSizeOfTempData()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    Type3         *dummy3;
 

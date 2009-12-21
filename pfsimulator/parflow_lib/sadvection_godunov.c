@@ -103,8 +103,8 @@ double       deltat;
 int          order;
 {
     PFModule     *this_module   = ThisPFModule;
-    InstanceXtra *instance_xtra = PFModuleInstanceXtra(this_module);
-    PublicXtra   *public_xtra   = PFModulePublicXtra(this_module);
+    InstanceXtra *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
+    PublicXtra   *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
     Problem   *problem         = (instance_xtra -> problem);
     Grid      *grid            = (instance_xtra -> grid);
@@ -778,7 +778,7 @@ double    *temp_data;
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    /*-----------------------------------------------------------------------
     * Initialize data associated with argument `problem'
@@ -883,7 +883,7 @@ double    *temp_data;
 void  SatGodunovFreeInstanceXtra()
 {
    PFModule     *this_module   = ThisPFModule;
-   InstanceXtra *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    if ( instance_xtra )
    {
@@ -919,7 +919,7 @@ PFModule  *SatGodunovNewPublicXtra()
 void SatGodunovFreePublicXtra()
 {
    PFModule     *this_module  = ThisPFModule;
-   PublicXtra   *public_xtra  = PFModulePublicXtra(this_module);
+   PublicXtra   *public_xtra  = (PublicXtra *)PFModulePublicXtra(this_module);
 
    if ( public_xtra )
    {
@@ -936,7 +936,7 @@ void SatGodunovFreePublicXtra()
 int  SatGodunovSizeOfTempData()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra   = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra   = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    int  max_nx = (instance_xtra -> max_nx);
    int  max_ny = (instance_xtra -> max_ny);

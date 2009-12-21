@@ -98,7 +98,7 @@ int     fcn;             /* Flag determining what to calculate
  */
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    Type0         *dummy0;
 
@@ -261,7 +261,7 @@ PFModule  *PhaseViscosityInitInstanceXtra()
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 #endif
    instance_xtra = NULL;
 
@@ -277,7 +277,7 @@ PFModule  *PhaseViscosityInitInstanceXtra()
 void  PhaseViscosityFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    if (instance_xtra)
    {
@@ -368,7 +368,7 @@ int        num_phases;
 void  PhaseViscosityFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra  *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    Type0        *dummy0;
 

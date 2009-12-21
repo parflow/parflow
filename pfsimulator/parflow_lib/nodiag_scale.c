@@ -50,11 +50,7 @@
  * NoDiagScale
  *--------------------------------------------------------------------------*/
 
-void         NoDiagScale(x, A, b, flag)
-Matrix      *A;
-Vector      *x;
-Vector      *b;
-int	     flag;
+void NoDiagScale (Vector *x , Matrix *A , Vector *b , int flag )
 {
   return;
 }
@@ -63,8 +59,7 @@ int	     flag;
  * NoDiagScaleInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *NoDiagScaleInitInstanceXtra(grid)
-Grid      *grid;
+PFModule  *NoDiagScaleInitInstanceXtra(Grid      *grid)
 {
    return ThisPFModule;
 }

@@ -79,15 +79,15 @@ typedef struct
  *
  *--------------------------------------------------------------------------*/
 
-void     PCG(x, b, tol, zero)
-Vector  *x;
-Vector  *b;
-double  tol;
-int     zero;
+void     PCG(
+Vector  *x,
+Vector  *b,
+double  tol,
+int     zero)
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra    *)PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    int        max_iter     = (public_xtra -> max_iter);
    int        two_norm     = (public_xtra -> two_norm);
@@ -148,7 +148,7 @@ int     zero;
    else
    {
       /* eps = (tol^2)*<C*b,b> */
-      PFModuleInvoke(void, precond, (p, b, 0.0, 1));
+      PFModuleInvokeType(PrecondInvoke, precond, (p, b, 0.0, 1));
       bi_prod = InnerProd(p, b);
       eps = (tol*tol)*bi_prod;
    }
@@ -157,7 +157,7 @@ int     zero;
    Matvec(-1.0, A, x, 1.0, (r = b));
 
    /* p = C*r */
-   PFModuleInvoke(void, precond, (p, r, 0.0, 1));
+   PFModuleInvokeType(PrecondInvoke, precond, (p, r, 0.0, 1));
 
    /* gamma = <r,p> */
    gamma = InnerProd(r,p);
@@ -181,7 +181,7 @@ int     zero;
       Axpy(-alpha, s, r);
 	 
       /* s = C*r */
-      PFModuleInvoke(void, precond, (s, r, 0.0, 1));
+      PFModuleInvokeType(PrecondInvoke, precond, (s, r, 0.0, 1));
 
       /* gamma = <r,s> */
       gamma = InnerProd(r, s);
@@ -290,22 +290,22 @@ int     zero;
  * PCGInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *PCGInitInstanceXtra(problem, grid, problem_data, A, temp_data)
-Problem      *problem;
-Grid         *grid;
-ProblemData  *problem_data;
-Matrix       *A;
-double       *temp_data;
+PFModule  *PCGInitInstanceXtra(
+Problem      *problem,
+Grid         *grid,
+ProblemData  *problem_data,
+Matrix       *A,
+double       *temp_data)
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra    *)PFModulePublicXtra(this_module);
    InstanceXtra  *instance_xtra;
 
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    /*-----------------------------------------------------------------------
     * Initialize data associated with argument `grid'
@@ -346,13 +346,15 @@ double       *temp_data;
    if ( PFModuleInstanceXtra(this_module) == NULL )
    {
       (instance_xtra -> precond) =
-         PFModuleNewInstance((public_xtra -> precond),
-			     (problem, grid, problem_data, A, temp_data));
+         PFModuleNewInstanceType(PrecondInitInstanceXtraInvoke, 
+				 (public_xtra -> precond),
+				 (problem, grid, problem_data, A, temp_data));
    }
    else
    {
-      PFModuleReNewInstance((instance_xtra -> precond),
-			    (problem, grid, problem_data, A, temp_data));
+      PFModuleReNewInstanceType(PrecondInitInstanceXtraInvoke, 
+				(instance_xtra -> precond),
+				(problem, grid, problem_data, A, temp_data));
    }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -367,7 +369,7 @@ double       *temp_data;
 void   PCGFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
 
    if(instance_xtra)
@@ -409,12 +411,12 @@ PFModule   *PCGNewPublicXtra(char *name)
    {
       case 0:
       {
-	 public_xtra -> precond = PFModuleNewModule(MGSemi, (key));
+	 public_xtra -> precond = PFModuleNewModuleType(PrecondNewPublicXtra, MGSemi, (key));
 	 break;
       }
       case 1:
       {
-	 public_xtra -> precond = PFModuleNewModule(WJacobi, (key));
+	 public_xtra -> precond = PFModuleNewModuleType(PrecondNewPublicXtra, WJacobi, (key));
 	 break;
       }
       default:
@@ -474,7 +476,7 @@ PFModule   *PCGNewPublicXtra(char *name)
 void  PCGFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra  *public_xtra   = (PublicXtra  *)PFModulePublicXtra(this_module);
 
 
    if(public_xtra)
@@ -492,7 +494,7 @@ void  PCGFreePublicXtra()
 int  PCGSizeOfTempData()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra   = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra   = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
 
    int  sz = 0;
 

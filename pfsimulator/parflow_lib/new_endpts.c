@@ -61,12 +61,16 @@
 #include "parflow.h"
 #include <math.h>
 
-void NewEndpts ( alpha,beta,pp,size_ptr,n,a_ptr,b_ptr,cond_ptr,ereps )
-  double *alpha, *beta, *pp;
-  int *size_ptr,n;
-  double *a_ptr, *b_ptr;
-  double *cond_ptr;
-  double ereps;
+void NewEndpts ( 
+  double *alpha, 
+  double *beta, 
+  double *pp,
+  int *size_ptr,
+  int n,
+  double *a_ptr, 
+  double *b_ptr,
+  double *cond_ptr,
+  double ereps)
 {
     /* Local variables */
     int	        i, size = *size_ptr;

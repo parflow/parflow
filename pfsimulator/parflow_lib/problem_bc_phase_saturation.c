@@ -91,7 +91,7 @@ int           phase;
 GrGeomSolid  *gr_domain;
 {
    PFModule       *this_module   = ThisPFModule;
-   PublicXtra     *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra     *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    Type0          *dummy0;
    Type1          *dummy1;
@@ -350,7 +350,7 @@ PFModule *BCPhaseSaturationInitInstanceXtra()
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 #endif
    instance_xtra = NULL;
 
@@ -365,7 +365,7 @@ PFModule *BCPhaseSaturationInitInstanceXtra()
 void BCPhaseSaturationFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
 
    if (instance_xtra)
@@ -562,7 +562,7 @@ int        num_phases;
 void  BCPhaseSaturationFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra  *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    int     num_phases = (public_xtra -> num_phases);
 

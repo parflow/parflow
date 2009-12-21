@@ -79,8 +79,8 @@ void           Geometries(problem_data)
 ProblemData   *problem_data;
 {
    PFModule           *this_module   = ThisPFModule;
-   PublicXtra         *public_xtra   = PFModulePublicXtra(this_module);
-   InstanceXtra       *instance_xtra = PFModuleInstanceXtra(this_module);
+   PublicXtra         *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
+   InstanceXtra       *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 	            
    GeomSolid         **solids              = (public_xtra -> solids);
    int                 num_solids          = (public_xtra -> num_solids);
@@ -185,7 +185,7 @@ Grid      *grid;
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    /*-----------------------------------------------------------------------
     * Initialize data associated with argument `grid'
@@ -209,7 +209,7 @@ Grid      *grid;
 void  GeometriesFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
 
    if(instance_xtra)
@@ -478,7 +478,7 @@ PFModule   *GeometriesNewPublicXtra()
 void  GeometriesFreePublicXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    IndicatorData *current_indicator_data, *tmp_indicator_data;
 

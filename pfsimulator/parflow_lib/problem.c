@@ -42,11 +42,9 @@
  * NewProblem
  *--------------------------------------------------------------------------*/
   
-Problem   *NewProblem(solver)
-
-int	   solver;   /* Designates the solver from which this routine is 
+Problem   *NewProblem(
+   int	   solver)   /* Designates the solver from which this routine is 
 			called.  Values defined in problem.h. */
-
 {
    Problem      *problem;
 
@@ -148,7 +146,8 @@ int	   solver;   /* Designates the solver from which this routine is
    ProblemGravity(problem) = GetDouble("Gravity");
 
    ProblemPhaseDensity(problem) = 
-      PFModuleNewModule(PhaseDensity, (num_phases));
+      PFModuleNewModuleType(PhaseDensityNewPublicXtraInvoke, 
+			    PhaseDensity, (num_phases));
 
    problem -> phase_viscosity = ctalloc(double, num_phases);
    for(i = 0; i < num_phases; i++)
@@ -178,12 +177,14 @@ int	   solver;   /* Designates the solver from which this routine is
       PFModuleNewModule(Porosity, ());
 
    ProblemRetardation(problem) =
-      PFModuleNewModule(Retardation, (num_contaminants));
+      PFModuleNewModuleType(RetardationNewPublicXtraInvoke, 
+			    Retardation, (num_contaminants));
 
    if ( solver != RichardsSolve )
    {
       ProblemPhaseMobility(problem) =
-         PFModuleNewModule(PhaseMobility, (num_phases));
+         PFModuleNewModuleType(PhaseMobilityNewPublicXtraInvoke,
+			       PhaseMobility, (num_phases));
    }
    else /* Richards case */
    {  
@@ -191,7 +192,8 @@ int	   solver;   /* Designates the solver from which this routine is
    }
 
    ProblemPhaseSource(problem) =
-      PFModuleNewModule(PhaseSource, (num_phases));
+      PFModuleNewModuleType(PhaseSourceNewPublicXtraInvoke,
+			    PhaseSource, (num_phases));
 
    ProblemSpecStorage(problem) =
       PFModuleNewModule(SpecStorage, ()); //sk
@@ -208,7 +210,8 @@ int	   solver;   /* Designates the solver from which this routine is
    if ( solver != RichardsSolve )
    {
    ProblemCapillaryPressure(problem) =
-      PFModuleNewModule(CapillaryPressure, (num_phases));
+      PFModuleNewModuleType(CapillaryPressureNewPublicXtraInvoke,
+			    CapillaryPressure, (num_phases));
    }
    else /* Richards case */
    {  
@@ -231,16 +234,18 @@ int	   solver;   /* Designates the solver from which this routine is
    }
 
    ProblemBCPressure(problem) =
-      PFModuleNewModule(BCPressure, (num_phases));
+      PFModuleNewModuleType(BCPressureNewPublicXtraInvoke,
+			    BCPressure, (num_phases));
 
    ProblemBCPressurePackage(problem) =
-      PFModuleNewModule(BCPressurePackage, (num_phases));
-
+      PFModuleNewModuleType(BCPressurePackageNewPublicXtraInvoke,
+			    BCPressurePackage, (num_phases));
 
    if ( solver != RichardsSolve )
    {
       ProblemBCPhaseSaturation(problem) =
-         PFModuleNewModule(BCPhaseSaturation, (num_phases));
+         PFModuleNewModuleType(BCPhaseSaturationNewPublicXtraInvoke,
+			       BCPhaseSaturation, (num_phases));
    }
 
    /*-----------------------------------------------------------------------
@@ -249,9 +254,9 @@ int	   solver;   /* Designates the solver from which this routine is
 
    if ( solver != RichardsSolve )
    {
-      
-	   ProblemICPhaseSatur(problem) =
-         PFModuleNewModule(ICPhaseSatur, (num_phases));
+      ProblemICPhaseSatur(problem) =
+         PFModuleNewModuleType(ICPhaseSaturNewPublicXtraInvoke,
+			       ICPhaseSatur, (num_phases));
    }
    else
    {
@@ -260,7 +265,8 @@ int	   solver;   /* Designates the solver from which this routine is
    }
 
    ProblemICPhaseConcen(problem) =
-      PFModuleNewModule(ICPhaseConcen, (num_phases, num_contaminants));
+      PFModuleNewModuleType(ICPhaseConcenNewPublicXtraInvoke,
+			    ICPhaseConcen, (num_phases, num_contaminants));
 
    /*-----------------------------------------------------------------------
     * If know exact solution for Richards' case, get data for which 
@@ -280,7 +286,8 @@ int	   solver;   /* Designates the solver from which this routine is
    if ( solver != RichardsSolve )
    {
       ProblemSaturationConstitutive(problem) =
-         PFModuleNewModule(SaturationConstitutive, (num_phases));
+         PFModuleNewModuleType(SaturationConstitutiveNewPublicXtraInvoke,
+			       SaturationConstitutive, (num_phases));
    }
 
    /*----------------------------------------------------------------------
@@ -288,7 +295,8 @@ int	   solver;   /* Designates the solver from which this routine is
     *-----------------------------------------------------------------------*/
 
    ProblemWellPackage(problem) =
-      PFModuleNewModule(WellPackage, (num_phases, num_contaminants));
+      PFModuleNewModuleType(WellPackageNewPublicXtraInvoke,
+			    WellPackage, (num_phases, num_contaminants));
 
 
    return problem;
@@ -299,9 +307,9 @@ int	   solver;   /* Designates the solver from which this routine is
  * FreeProblem
  *--------------------------------------------------------------------------*/
 
-void      FreeProblem(problem, solver)
-Problem  *problem;
-int       solver;
+void      FreeProblem(
+   Problem  *problem,
+   int       solver)
 {
    PFModuleFreeModule(ProblemWellPackage(problem));
 
@@ -356,9 +364,9 @@ int       solver;
  * NewProblemData
  *--------------------------------------------------------------------------*/
   
-ProblemData   *NewProblemData(grid,grid2d)
-Grid          *grid;
-Grid          *grid2d;
+ProblemData   *NewProblemData(
+   Grid          *grid,
+   Grid          *grid2d)
 {
    ProblemData  *problem_data;
 
@@ -389,8 +397,8 @@ Grid          *grid2d;
  * FreeProblemData
  *--------------------------------------------------------------------------*/
 
-void          FreeProblemData(problem_data)  
-ProblemData  *problem_data;
+void          FreeProblemData(
+   ProblemData  *problem_data)
 {
    int  i;
 

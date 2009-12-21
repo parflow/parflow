@@ -38,10 +38,10 @@
  * PrintSubmatrixAll
  *--------------------------------------------------------------------------*/
 
-void        PrintSubmatrixAll(file, submatrix, stencil)
-amps_File   file;
-Submatrix  *submatrix;
-Stencil    *stencil;
+void        PrintSubmatrixAll(
+amps_File   file,
+Submatrix  *submatrix,
+Stencil    *stencil)
 {
    int  ix, iy, iz;
    int  nx, ny, nz;
@@ -85,9 +85,9 @@ Stencil    *stencil;
  * PrintMatrixAll
  *--------------------------------------------------------------------------*/
 
-void     PrintMatrixAll(filename, A)
-char    *filename;
-Matrix  *A;
+void     PrintMatrixAll(
+   char    *filename,
+   Matrix  *A)
 {
    amps_File  file;
 
@@ -122,11 +122,11 @@ Matrix  *A;
  * PrintSubmatrix
  *--------------------------------------------------------------------------*/
 
-void        PrintSubmatrix(file, submatrix, subregion, stencil)
-amps_File   file;
-Submatrix  *submatrix;
-Subregion  *subregion;
-Stencil    *stencil;
+void        PrintSubmatrix(
+amps_File   file,
+Submatrix  *submatrix,
+Subregion  *subregion,
+Stencil    *stencil)
 {
    int  ix, iy, iz;
    int  nx, ny, nz;
@@ -170,9 +170,9 @@ Stencil    *stencil;
  * PrintMatrix
  *--------------------------------------------------------------------------*/
 
-void     PrintMatrix(filename, A)
-char    *filename;
-Matrix  *A;
+void     PrintMatrix(
+   char    *filename,
+   Matrix  *A)
 {
    amps_File  file;
 
@@ -210,10 +210,10 @@ Matrix  *A;
  * PrintSortMatrix
  *--------------------------------------------------------------------------*/
 
-void     PrintSortMatrix(filename, A, all)
-char    *filename;
-Matrix  *A;
-int      all;
+void     PrintSortMatrix(
+   char    *filename,
+   Matrix  *A,
+   int      all)
 {
    amps_File        file;
    amps_Invoice     add_invoice;

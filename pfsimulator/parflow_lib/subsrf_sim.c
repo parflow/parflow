@@ -110,8 +110,8 @@ GeomSolid    **geounits;
 GrGeomSolid  **gr_geounits;
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    Type0         *dummy0;
    Type1         *dummy1;
@@ -481,7 +481,7 @@ Grid      *grid;
 double *temp_data;
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
    InstanceXtra  *instance_xtra;
 
    Type1     *dummy1;
@@ -493,7 +493,7 @@ double *temp_data;
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    /*-----------------------------------------------------------------------
     * Initialize data associated with argument `grid'
@@ -579,8 +579,8 @@ double *temp_data;
 void  SubsrfSimFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    Type1 *dummy1;
    int i;
@@ -838,7 +838,7 @@ PFModule   *SubsrfSimNewPublicXtra()
 void  SubsrfSimFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra  *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    Type0       *dummy0;
    Type1       *dummy1;
@@ -893,8 +893,8 @@ void  SubsrfSimFreePublicXtra()
 int  SubsrfSimSizeOfTempData()
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    int  sz = 0;
 

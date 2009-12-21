@@ -123,7 +123,7 @@ int           symm_part;      /* Specifies whether to compute just the
 				 full Jacobian */
 {
    PFModule      *this_module     = ThisPFModule;
-   InstanceXtra  *instance_xtra   = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra   = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    Problem     *problem           = (instance_xtra -> problem);
 
@@ -1074,7 +1074,7 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    if ( grid != NULL )
    {
@@ -1145,7 +1145,7 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
 void  RichardsJacobianEvalFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    if(instance_xtra)
    {
@@ -1186,7 +1186,7 @@ PFModule   *RichardsJacobianEvalNewPublicXtra()
 void  RichardsJacobianEvalFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra  *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
 
    if (public_xtra)

@@ -73,7 +73,7 @@ void          SetProblemData(problem_data)
 ProblemData  *problem_data;
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    PFModule      *geometries   = (instance_xtra -> geometries);
    PFModule      *domain       = (instance_xtra -> domain);
@@ -144,7 +144,7 @@ double    *temp_data;
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    /*-----------------------------------------------------------------------
     * Initialize data associated with `problem'
@@ -227,7 +227,7 @@ double    *temp_data;
 void  SetProblemDataFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
 
    if(instance_xtra)
@@ -276,7 +276,7 @@ PFModule   *SetProblemDataNewPublicXtra()
 void  SetProblemDataFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra  *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
 
    if(public_xtra)
@@ -293,7 +293,7 @@ void  SetProblemDataFreePublicXtra()
 int       SetProblemDataSizeOfTempData()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra   = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra   = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    int  sz = 0;
 

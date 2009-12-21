@@ -76,7 +76,7 @@ Vector      *pressure;
 int          fcn;
 {
    PFModule      *this_module    = ThisPFModule;
-   PublicXtra    *public_xtra    = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra    = (PublicXtra *)PFModulePublicXtra(this_module);
 
    WellData         *well_data = ProblemDataWellData(problem_data);
    WellDataPhysical *well_data_physical;
@@ -280,7 +280,7 @@ PFModule  *RichardsBCInternalInitInstanceXtra()
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 #endif
    instance_xtra = NULL;
 
@@ -296,7 +296,7 @@ PFModule  *RichardsBCInternalInitInstanceXtra()
 void   RichardsBCInternalFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
 
    if (instance_xtra)
@@ -393,7 +393,7 @@ PFModule  *RichardsBCInternalNewPublicXtra()
 void  RichardsBCInternalFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra  *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    Type0         *dummy0;
 

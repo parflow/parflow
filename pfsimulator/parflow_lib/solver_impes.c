@@ -121,8 +121,8 @@ typedef struct
 void      SolverImpes()
 {
    PFModule      *this_module      = ThisPFModule;
-   PublicXtra    *public_xtra      = PFModulePublicXtra(this_module);
-   InstanceXtra  *instance_xtra    = PFModuleInstanceXtra(this_module);
+   PublicXtra    *public_xtra      = (PublicXtra *)PFModulePublicXtra(this_module);
+   InstanceXtra  *instance_xtra    = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    Problem      *problem           = (public_xtra -> problem);
 
@@ -1406,7 +1406,7 @@ void      SolverImpes()
 PFModule *SolverImpesInitInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
    InstanceXtra  *instance_xtra;
 
    Problem      *problem = (public_xtra -> problem);
@@ -1437,7 +1437,7 @@ PFModule *SolverImpesInitInstanceXtra()
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    /*-------------------------------------------------------------------
     * Create the grids
@@ -1729,9 +1729,9 @@ PFModule *SolverImpesInitInstanceXtra()
 void  SolverImpesFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
    Problem       *problem       = (public_xtra -> problem);
    int           is_multiphase;
 
@@ -2028,7 +2028,7 @@ PFModule   *SolverImpesNewPublicXtra(char *name)
 void   SolverImpesFreePublicXtra()
 {
    PFModule      *this_module = ThisPFModule;
-   PublicXtra    *public_xtra = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra = (PublicXtra *)PFModulePublicXtra(this_module);
 
    if ( public_xtra )
    {

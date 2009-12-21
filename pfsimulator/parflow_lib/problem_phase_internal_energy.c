@@ -101,7 +101,7 @@ int     fcn;             /* Flag determining what to calculate
  */
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    TypeDensity0         *dummy_density0;
    TypeEnergy0         *dummy_energy0;
@@ -356,7 +356,7 @@ PFModule  *InternalEnergyDensityInitInstanceXtra()
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 #endif
    instance_xtra = NULL;
 
@@ -372,7 +372,7 @@ PFModule  *InternalEnergyDensityInitInstanceXtra()
 void  InternalEnergyDensityFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    if (instance_xtra)
    {
@@ -504,7 +504,7 @@ int        num_phases;
 void  InternalEnergyDensityFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra  *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    TypeEnergy0        *dummy_energy0;
    TypeDensity0       *dummy_density0;

@@ -60,7 +60,7 @@ Vector      *specific_storage;
 ProblemData *problem_data;
 {
    PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    Grid          *grid = VectorGrid(specific_storage);
 
@@ -155,7 +155,7 @@ PFModule  *SpecStorageInitInstanceXtra()
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 #endif
    instance_xtra = NULL;
 
@@ -171,7 +171,7 @@ PFModule  *SpecStorageInitInstanceXtra()
 void  SpecStorageFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
 
    if (instance_xtra)
@@ -262,7 +262,7 @@ PFModule   *SpecStorageNewPublicXtra()
 void  SpecStorageFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra  *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    Type0       *dummy0;
 

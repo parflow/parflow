@@ -64,19 +64,18 @@ typedef struct
  * PhaseVelocityFace
  *--------------------------------------------------------------------------*/
 
-void          PhaseVelocityFace(xvel, yvel, zvel, problem_data,
-				pressure, saturations, phase)
-Vector       *xvel;
-Vector       *yvel;
-Vector       *zvel;
-ProblemData  *problem_data;
-Vector       *pressure;
-Vector      **saturations;
-int           phase;
+void          PhaseVelocityFace(
+Vector       *xvel,
+Vector       *yvel,
+Vector       *zvel,
+ProblemData  *problem_data,
+Vector       *pressure,
+Vector      **saturations,
+int           phase)
 {
    PFModule       *this_module   = ThisPFModule;
-   InstanceXtra   *instance_xtra = PFModuleInstanceXtra(this_module);
-   PublicXtra     *public_xtra   = PFModulePublicXtra(this_module);
+   InstanceXtra   *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
+   PublicXtra     *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    PFModule       *phase_mobility      = (instance_xtra -> phase_mobility);
    PFModule       *phase_density       = (instance_xtra -> phase_density);
@@ -155,14 +154,14 @@ int           phase;
     * compute the mobility values for this phase
     *----------------------------------------------------------------------*/
 
-   PFModuleInvoke(void, phase_mobility,
-                  (temp_mobility_x, temp_mobility_y, temp_mobility_z, 
-		   ProblemDataPermeabilityX(problem_data),
-		   ProblemDataPermeabilityY(problem_data),
-		   ProblemDataPermeabilityZ(problem_data),
-                   phase, saturations[phase],
-                   ProblemPhaseViscosity(problem,phase)));
-
+    PFModuleInvokeType(PhaseMobilityInvoke, phase_mobility,
+		       (temp_mobility_x, temp_mobility_y, temp_mobility_z, 
+			ProblemDataPermeabilityX(problem_data),
+			ProblemDataPermeabilityY(problem_data),
+			ProblemDataPermeabilityZ(problem_data),
+			phase, saturations[phase],
+			ProblemPhaseViscosity(problem,phase)));
+    
    /*----------------------------------------------------------------------
     * exchange boundary data for mobility values
     *----------------------------------------------------------------------*/
@@ -184,7 +183,7 @@ int           phase;
    }
    else
    {
-      PFModuleInvoke(void, capillary_pressure,
+      PFModuleInvokeType(CapillaryPressureInvoke, capillary_pressure,
                      (temp_pressure, phase, 0,
 		      problem_data, saturations[0]));
 
@@ -206,9 +205,9 @@ int           phase;
     * compute the density values for this phase
     *----------------------------------------------------------------------*/
 
-   PFModuleInvoke(void, phase_density,
-                  (phase, pressure_vector, temp_density, &dummy_density, 
-		   &dummy_density, CALCFCN));
+   PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+		      (phase, pressure_vector, temp_density, &dummy_density, 
+		       &dummy_density, CALCFCN));
 
    /*-----------------------------------------------------------------------
     * exchange boundary data for density values
@@ -571,14 +570,13 @@ int           phase;
  * PhaseVelocityFaceInitInstanceXtra
  *-------------------------------------------------------------------------*/
 
-PFModule *PhaseVelocityFaceInitInstanceXtra(problem, grid, x_grid, 
-					    y_grid, z_grid, temp_data)
-Problem  *problem;
-Grid     *grid;
-Grid     *x_grid;
-Grid     *y_grid;
-Grid     *z_grid;
-double   *temp_data;
+PFModule *PhaseVelocityFaceInitInstanceXtra(
+Problem  *problem,
+Grid     *grid,
+Grid     *x_grid,
+Grid     *y_grid,
+Grid     *z_grid,
+double   *temp_data)
 {
    PFModule     *this_module  = ThisPFModule;
    InstanceXtra *instance_xtra;
@@ -586,7 +584,7 @@ double   *temp_data;
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    /*----------------------------------------------------------------------
     * Setup the InstanceXtra structure
@@ -651,7 +649,7 @@ double   *temp_data;
 void  PhaseVelocityFaceFreeInstanceXtra()
 {
    PFModule     *this_module   = ThisPFModule;
-   InstanceXtra *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    if ( instance_xtra )
    {
@@ -699,7 +697,7 @@ PFModule  *PhaseVelocityFaceNewPublicXtra()
 void PhaseVelocityFaceFreePublicXtra()
 {
    PFModule     *this_module  = ThisPFModule;
-   PublicXtra   *public_xtra  = PFModulePublicXtra(this_module);
+   PublicXtra   *public_xtra  = (PublicXtra *)PFModulePublicXtra(this_module);
 
    if ( public_xtra )
    {

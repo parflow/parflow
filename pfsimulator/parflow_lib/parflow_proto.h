@@ -30,10 +30,10 @@ void PrintBCPressureData (BCPressureData *bc_pressure_data );
 
 typedef void (*BCPressurePackageInvoke) (ProblemData *problem_data );
 typedef PFModule *(*BCPressurePackageInitInstanceXtraInvoke) (Problem *problem );
+typedef PFModule *(*BCPressurePackageNewPublicXtraInvoke) (int num_phases );
 
 /* bc_pressure_package.c */
 void BCPressurePackage (ProblemData *problem_data );
-
 PFModule *BCPressurePackageInitInstanceXtra (Problem *problem );
 void BCPressurePackageFreeInstanceXtra (void );
 PFModule *BCPressurePackageNewPublicXtra (int num_phases );
@@ -70,6 +70,8 @@ void InitCharVectorInc (CharVector *v , char value , int inc );
 
 typedef void (*ChebyshevInvoke) (Vector *x , Vector *b , double tol , int zero , double ia , double ib , int num_iter );
 typedef PFModule *(*ChebyshevInitInstanceXtraInvoke) (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *A , double *temp_data );
+typedef PFModule *(*ChebyshevNewPublicXtraInvoke) (char *name );
+
 /* chebyshev.c */
 void Chebyshev (Vector *x , Vector *b , double tol , int zero , double ia , double ib , int num_iter );
 PFModule *ChebyshevInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *A , double *temp_data );
@@ -370,6 +372,7 @@ double MaxTotalFieldValue (Problem *problem , EvalStruct *eval_struct , Vector *
 
 typedef void (*PrecondInvoke) (Vector *x , Vector *b , double tol , int zero );
 typedef PFModule * (*PrecondInitInstanceXtraInvoke) (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *A , double *temp_data );
+typedef PFModule *(*PrecondNewPublicXtra) (char *name );
 
 /* mg_semi.c */
 void MGSemi (Vector *x , Vector *b , double tol , int zero );
@@ -535,29 +538,34 @@ PFModule *BCInternalNewPublicXtra (void );
 void BCInternalFreePublicXtra (void );
 int BCInternalSizeOfTempData (void );
 
+typedef void (*BCPhaseSaturationInvoke) (Vector *saturation , int phase , GrGeomSolid *gr_domain );
+typedef PFModule *(*BCPhaseSaturationNewPublicXtraInvoke) (int num_phases );
+
 /* problem_bc_phase_saturation.c */
 void BCPhaseSaturation (Vector *saturation , int phase , GrGeomSolid *gr_domain );
-typedef void (*BCPhaseSaturationInvoke) (Vector *saturation , int phase , GrGeomSolid *gr_domain );
 PFModule *BCPhaseSaturationInitInstanceXtra (void );
 void BCPhaseSaturationFreeInstanceXtra (void );
 PFModule *BCPhaseSaturationNewPublicXtra (int num_phases );
 void BCPhaseSaturationFreePublicXtra (void );
 int BCPhaseSaturationSizeOfTempData (void );
 
+typedef BCStruct *(*BCPressureInvoke) (ProblemData *problem_data , Grid *grid , GrGeomSolid *gr_domain , double time );
+typedef PFModule *(*BCPressureInitInstanceXtraInvoke) (Problem *problem);
+typedef PFModule *(*BCPressureNewPublicXtraInvoke) (int num_phases );
+
 /* problem_bc_pressure.c */
 BCStruct *BCPressure (ProblemData *problem_data , Grid *grid , GrGeomSolid *gr_domain , double time );
-typedef BCStruct *(*BCPressureInvoke) (ProblemData *problem_data , Grid *grid , GrGeomSolid *gr_domain , double time );
 PFModule *BCPressureInitInstanceXtra (Problem *problem);
 void BCPressureFreeInstanceXtra (void );
 PFModule *BCPressureNewPublicXtra (int num_phases );
 void BCPressureFreePublicXtra (void );
 int BCPressureSizeOfTempData (void );
 
+typedef void (*CapillaryPressureInvoke) (Vector *capillary_pressure , int phase_i , int phase_j , ProblemData *problem_data , Vector *phase_saturation );
+typedef PFModule *(*CapillaryPressureNewPublicXtraInvoke) (int num_phases );
+
 /* problem_capillary_pressure.c */
 void CapillaryPressure (Vector *capillary_pressure , int phase_i , int phase_j , ProblemData *problem_data , Vector *phase_saturation );
-
-typedef void (*CapillaryPressureInvoke) (Vector *capillary_pressure , int phase_i , int phase_j , ProblemData *problem_data , Vector *phase_saturation );
-
 PFModule *CapillaryPressureInitInstanceXtra (void );
 void CapillaryPressureFreeInstanceXtra (void );
 PFModule *CapillaryPressureNewPublicXtra (int num_phases );
@@ -586,9 +594,11 @@ PFModule *GeometriesNewPublicXtra (void );
 void GeometriesFreePublicXtra (void );
 int GeometriesSizeOfTempData (void );
 
+typedef void (*ICPhaseConcenInvoke) (Vector *ic_phase_concen , int phase , int contaminant , ProblemData *problem_data );
+typedef PFModule *(*ICPhaseConcenNewPublicXtraInvoke) (int num_phases , int num_contaminants );
+
 /* problem_ic_phase_concen.c */
 void ICPhaseConcen (Vector *ic_phase_concen , int phase , int contaminant , ProblemData *problem_data );
-typedef void (*ICPhaseConcenInvoke) (Vector *ic_phase_concen , int phase , int contaminant , ProblemData *problem_data );
 PFModule *ICPhaseConcenInitInstanceXtra (void );
 void ICPhaseConcenFreeInstanceXtra (void );
 PFModule *ICPhaseConcenNewPublicXtra (int num_phases , int num_contaminants );
@@ -622,9 +632,11 @@ PFModule *SpecStorageNewPublicXtra (void );
 void SpecStorageFreePublicXtra (void );
 int SpecStorageSizeOfTempData (void );
 
+typedef void (*ICPhaseSaturInvoke) (Vector *ic_phase_satur , int phase , ProblemData *problem_data );
+typedef PFModule *(*ICPhaseSaturNewPublicXtraInvoke) (int num_phases );
+
 /* problem_ic_phase_satur.c */
 void ICPhaseSatur (Vector *ic_phase_satur , int phase , ProblemData *problem_data );
-typedef void (*ICPhaseSaturInvoke) (Vector *ic_phase_satur , int phase , ProblemData *problem_data );
 PFModule *ICPhaseSaturInitInstanceXtra (void );
 void ICPhaseSaturFreeInstanceXtra (void );
 PFModule *ICPhaseSaturNewPublicXtra (int num_phases );
@@ -634,6 +646,7 @@ int ICPhaseSaturSizeOfTempData (void );
 /* problem_phase_density.c */
 
 typedef void (*PhaseDensityInvoke) (int phase , Vector *phase_pressure , Vector *density_v , double *pressure_d , double *density_d , int fcn );
+typedef PFModule *(*PhaseDensityNewPublicXtraInvoke) (int num_phases );
 
 void PhaseDensity (int phase , Vector *phase_pressure , Vector *density_v , double *pressure_d , double *density_d , int fcn );
 PFModule *PhaseDensityInitInstanceXtra (void );
@@ -642,29 +655,33 @@ PFModule *PhaseDensityNewPublicXtra (int num_phases );
 void PhaseDensityFreePublicXtra (void );
 int PhaseDensitySizeOfTempData (void );
 
+typedef void (*PhaseMobilityInvoke) (Vector *phase_mobility_x , Vector *phase_mobility_y , Vector *phase_mobility_z , Vector *perm_x , Vector *perm_y , Vector *perm_z , int phase , Vector *phase_saturation , double phase_viscosity );
+typedef PFModule *(*PhaseMobilityNewPublicXtraInvoke) (int num_phases );
+
 /* problem_phase_mobility.c */
 void PhaseMobility (Vector *phase_mobility_x , Vector *phase_mobility_y , Vector *phase_mobility_z , Vector *perm_x , Vector *perm_y , Vector *perm_z , int phase , Vector *phase_saturation , double phase_viscosity );
-typedef void (*PhaseMobilityInvoke) (Vector *phase_mobility_x , Vector *phase_mobility_y , Vector *phase_mobility_z , Vector *perm_x , Vector *perm_y , Vector *perm_z , int phase , Vector *phase_saturation , double phase_viscosity );
 PFModule *PhaseMobilityInitInstanceXtra (void );
 void PhaseMobilityFreeInstanceXtra (void );
 PFModule *PhaseMobilityNewPublicXtra (int num_phases );
 void PhaseMobilityFreePublicXtra (void );
 int PhaseMobilitySizeOfTempData (void );
 
+typedef void (*PhaseRelPermInvoke) (Vector *phase_rel_perm , Vector *phase_pressure , Vector *phase_density , double gravity , ProblemData *problem_data , int fcn );
+typedef PFModule *(*PhaseRelPermInitInstanceXtraInvoke) (Grid *grid , double *temp_data );
+
 /* problem_phase_rel_perm.c */
 void PhaseRelPerm (Vector *phase_rel_perm , Vector *phase_pressure , Vector *phase_density , double gravity , ProblemData *problem_data , int fcn );
-typedef void (*PhaseRelPermInvoke) (Vector *phase_rel_perm , Vector *phase_pressure , Vector *phase_density , double gravity , ProblemData *problem_data , int fcn );
 PFModule *PhaseRelPermInitInstanceXtra (Grid *grid , double *temp_data );
 void PhaseRelPermFreeInstanceXtra (void );
 PFModule *PhaseRelPermNewPublicXtra (void );
 void PhaseRelPermFreePublicXtra (void );
 int PhaseRelPermSizeOfTempData (void );
 
+typedef void (*PhaseSourceInvoke) (Vector *phase_source , int phase, Problem *problem , ProblemData *problem_data , double time );
+typedef PFModule *(*PhaseSourceNewPublicXtraInvoke) (int num_phases);
+
 /* problem_phase_source.c */
 void PhaseSource (Vector *phase_source , int phase, Problem *problem , ProblemData *problem_data , double time );
-
-typedef void (*PhaseSourceInvoke) (Vector *phase_source , int phase, Problem *problem , ProblemData *problem_data , double time );
-
 PFModule *PhaseSourceInitInstanceXtra (void );
 void PhaseSourceFreeInstanceXtra (void );
 PFModule *PhaseSourceNewPublicXtra (int num_phases);
@@ -680,14 +697,21 @@ PFModule *PorosityNewPublicXtra (void );
 void PorosityFreePublicXtra (void );
 int PorositySizeOfTempData (void );
 
+typedef void (*RetardationInvoke) (Vector *solidmassfactor , int contaminant , ProblemData *problem_data );
+typedef PFModule *(*RetardationInitInstanceXtraInvoke) (double *temp_data );
+typedef PFModule *(*RetardationNewPublicXtraInvoke) (int num_contaminants );
+
 /* problem_retardation.c */
 void Retardation (Vector *solidmassfactor , int contaminant , ProblemData *problem_data );
-typedef void (*RetardationInvoke) (Vector *solidmassfactor , int contaminant , ProblemData *problem_data );
+
 PFModule *RetardationInitInstanceXtra (double *temp_data );
 void RetardationFreeInstanceXtra (void );
 PFModule *RetardationNewPublicXtra (int num_contaminants );
 void RetardationFreePublicXtra (void );
 int RetardationSizeOfTempData (void );
+
+
+typedef void (*RichardsBCInternalInvoke) (Problem *problem , ProblemData *problem_data , Vector *f , Matrix *A , double time , Vector *pressure , int fcn );
 
 /* problem_richards_bc_internal.c */
 void RichardsBCInternal (Problem *problem , ProblemData *problem_data , Vector *f , Matrix *A , double time , Vector *pressure , int fcn );
@@ -697,18 +721,22 @@ PFModule *RichardsBCInternalNewPublicXtra (void );
 void RichardsBCInternalFreePublicXtra (void );
 int RichardsBCInternalSizeOfTempData (void );
 
+typedef void (*SaturationInvoke) (Vector *phase_saturation , Vector *phase_pressure , Vector *phase_density , double gravity , ProblemData *problem_data , int fcn );
+typedef PFModule *(*SaturationInitInstanceXtraInvoke) (Grid *grid , double *temp_data );
+
 /* problem_saturation.c */
 void Saturation (Vector *phase_saturation , Vector *phase_pressure , Vector *phase_density , double gravity , ProblemData *problem_data , int fcn );
-typedef void (*SaturationInvoke) (Vector *phase_saturation , Vector *phase_pressure , Vector *phase_density , double gravity , ProblemData *problem_data , int fcn );
 PFModule *SaturationInitInstanceXtra (Grid *grid , double *temp_data );
 void SaturationFreeInstanceXtra (void );
 PFModule *SaturationNewPublicXtra (void );
 void SaturationFreePublicXtra (void );
 int SaturationSizeOfTempData (void );
 
+typedef void (*SaturationConstitutiveInvoke) (Vector **phase_saturations );
+typedef PFModule *(*SaturationConstitutiveInitInstanceXtraInvoke) (Grid *grid );
+typedef PFModule *(*SaturationConstitutiveNewPublicXtraInvoke) (int num_phases );
 /* problem_saturation_constitutive.c */
 void SaturationConstitutive (Vector **phase_saturations );
-typedef void (*SaturationConstitutiveInvoke) (Vector **phase_saturations );
 PFModule *SaturationConstitutiveInitInstanceXtra (Grid *grid );
 void SaturationConstitutiveFreeInstanceXtra (void );
 PFModule *SaturationConstitutiveNewPublicXtra (int num_phases );
@@ -987,11 +1015,11 @@ void FreeWellData (WellData *well_data );
 void PrintWellData (WellData *well_data , unsigned int print_mask );
 void WriteWells (char *file_prefix , Problem *problem , WellData *well_data , double time , int write_header );
 
+typedef void (*WellPackageInvoke) (ProblemData *problem_data );
+typedef PFModule *(*WellPackageNewPublicXtraInvoke) (int num_phases , int num_contaminants );
+
 /* well_package.c */
 void WellPackage (ProblemData *problem_data );
-
-typedef void (*WellPackageInvoke) (ProblemData *problem_data );
-
 PFModule *WellPackageInitInstanceXtra (void );
 void WellPackageFreeInstanceXtra (void );
 PFModule *WellPackageNewPublicXtra (int num_phases , int num_contaminants );

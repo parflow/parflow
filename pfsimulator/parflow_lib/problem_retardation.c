@@ -66,7 +66,7 @@ int          contaminant;
 ProblemData *problem_data;
 {
    PFModule   *this_module   = ThisPFModule;
-   PublicXtra *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    GrGeomSolid **gr_solids = ProblemDataGrSolids(problem_data);
 
@@ -163,7 +163,7 @@ double *temp_data;
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    /*-----------------------------------------------------------------------
     * Initialize data associated with argument `temp_data'
@@ -186,7 +186,7 @@ double *temp_data;
 void  RetardationFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
 
    if (instance_xtra)
@@ -312,7 +312,7 @@ int        num_contaminants;
 void  RetardationFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = PFModulePublicXtra(this_module);
+   PublicXtra  *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    Type0       *dummy0;
 
