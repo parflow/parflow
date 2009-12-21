@@ -71,10 +71,7 @@ typedef struct
  * Mannings
  *--------------------------------------------------------------------------*/
 
-void         Mannings(problem_data, mann, dummy)
-Vector      *mann;
-ProblemData *problem_data;
-Vector      *dummy;
+void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
@@ -344,8 +341,8 @@ Vector      *dummy;
  * ManningsInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *ManningsInitInstanceXtra(grid)
-Grid    *grid;
+PFModule  *ManningsInitInstanceXtra(
+   Grid    *grid)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);

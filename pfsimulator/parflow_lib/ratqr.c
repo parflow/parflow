@@ -5,16 +5,21 @@
 
 #include "f2c.h"
 
-/* Subroutine */ int ratqr_(n, eps1, d, e, e2, m, w, ind, bd, type, idef, 
-	ierr)
-int *n;
-double *eps1, *d, *e, *e2;
-int *m;
-double *w;
-int *ind;
-double *bd;
-int *type;
-int *idef, *ierr;
+extern double epslon_(double *x);
+
+/* Subroutine */ int ratqr_(
+int *n,
+double *eps1, 
+double *d, 
+double *e, 
+double *e2,
+int *m,
+double *w,
+int *ind,
+double *bd,
+int *type,
+int *idef, 
+int *ierr)
 {
     /* System generated locals */
     integer i__1, i__2;
@@ -27,7 +32,6 @@ int *idef, *ierr;
     doublereal p, q, r, s, delta;
     integer k1, ii, jj;
     doublereal ep, qp;
-    extern doublereal epslon_();
     doublereal err, tot;
 
 
@@ -350,8 +354,7 @@ L1001:
     return 0;
 } /* ratqr_ */
 
-double epslon_(x)
-double *x;
+double epslon_(double *x)
 {
     /* System generated locals */
     doublereal ret_val, d__1;

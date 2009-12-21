@@ -116,7 +116,9 @@ PFModule *ConstantRFNewPublicXtra (char *geom_name );
 void ConstantRFFreePublicXtra (void );
 int ConstantRFSizeOfTempData (void );
 
-typedef void (*ConstantPorosityInvoke) (GeomSolid *geounit , GrGeomSolid *gr_geounit , Vector *field );
+typedef void (*PorosityFieldInvoke) (GeomSolid *geounit , GrGeomSolid *gr_geounit , Vector *field );
+typedef PFModule *(*PorosityFieldInitInstanceXtraInvoke) (Grid *grid , double *temp_data );
+typedef PFModule *(*PorosityFieldNewPublicXtraInvoke) (char *geom_name );
 
 /* constant_porosity.c */
 void ConstantPorosity (GeomSolid *geounit , GrGeomSolid *gr_geounit , Vector *field );
@@ -688,9 +690,11 @@ PFModule *PhaseSourceNewPublicXtra (int num_phases);
 void PhaseSourceFreePublicXtra (void );
 int PhaseSourceSizeOfTempData (void );
 
+typedef void (*PorosityInvoke) (ProblemData *problem_data , Vector *porosity , int num_geounits , GeomSolid **geounits , GrGeomSolid **gr_geounits );
+typedef PFModule *(*PorosityInitInstanceXtraInvoke) (Grid *grid , double *temp_data );
+
 /* problem_porosity.c */
 void Porosity (ProblemData *problem_data , Vector *porosity , int num_geounits , GeomSolid **geounits , GrGeomSolid **gr_geounits );
-typedef void (*PorosityInvoke) (ProblemData *problem_data , Vector *porosity , int num_geounits , GeomSolid **geounits , GrGeomSolid **gr_geounits );
 PFModule *PorosityInitInstanceXtra (Grid *grid , double *temp_data );
 void PorosityFreeInstanceXtra (void );
 PFModule *PorosityNewPublicXtra (void );

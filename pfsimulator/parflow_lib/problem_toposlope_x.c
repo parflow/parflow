@@ -73,10 +73,10 @@ typedef struct
  * XSlope 
  *--------------------------------------------------------------------------*/
 
-void         XSlope(problem_data,x_slope,dummy)
-ProblemData *problem_data;
-Vector      *x_slope;
-Vector      *dummy;
+void         XSlope(
+   ProblemData *problem_data,
+   Vector      *x_slope,
+   Vector      *dummy)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
@@ -354,8 +354,8 @@ Vector      *dummy;
  * XSlopeInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *XSlopeInitInstanceXtra(grid)
-Grid    *grid;
+PFModule  *XSlopeInitInstanceXtra(
+   Grid    *grid)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);

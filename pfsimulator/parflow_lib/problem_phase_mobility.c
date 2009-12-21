@@ -62,18 +62,16 @@ typedef struct
  * PhaseMobility
  *--------------------------------------------------------------------------*/
 
-void    PhaseMobility(phase_mobility_x, phase_mobility_y, phase_mobility_z,
-		      perm_x, perm_y, perm_z, phase, phase_saturation, 
-		      phase_viscosity)
-Vector *phase_mobility_x;
-Vector *phase_mobility_y;
-Vector *phase_mobility_z;
-Vector *perm_x;
-Vector *perm_y;
-Vector *perm_z;
-int     phase;
-Vector *phase_saturation;
-double  phase_viscosity;
+void    PhaseMobility(
+Vector *phase_mobility_x,
+Vector *phase_mobility_y,
+Vector *phase_mobility_z,
+Vector *perm_x,
+Vector *perm_y,
+Vector *perm_z,
+int     phase,
+Vector *phase_saturation,
+double  phase_viscosity)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
@@ -285,8 +283,8 @@ void  PhaseMobilityFreeInstanceXtra()
  * PhaseMobilityNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *PhaseMobilityNewPublicXtra(num_phases)
-int        num_phases;
+PFModule  *PhaseMobilityNewPublicXtra(
+   int        num_phases)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;

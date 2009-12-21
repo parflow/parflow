@@ -85,10 +85,10 @@ typedef struct
  *   outside of the boundary.
  *--------------------------------------------------------------------------*/
 
-void          BCPhaseSaturation(saturation, phase, gr_domain)
-Vector       *saturation;
-int           phase;
-GrGeomSolid  *gr_domain;
+void          BCPhaseSaturation(
+Vector       *saturation,
+int           phase,
+GrGeomSolid  *gr_domain)
 {
    PFModule       *this_module   = ThisPFModule;
    PublicXtra     *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
@@ -378,8 +378,8 @@ void BCPhaseSaturationFreeInstanceXtra()
  * BCPhaseSaturationNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *BCPhaseSaturationNewPublicXtra(num_phases)
-int        num_phases;
+PFModule  *BCPhaseSaturationNewPublicXtra(
+   int        num_phases)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;

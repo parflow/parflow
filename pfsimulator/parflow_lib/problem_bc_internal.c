@@ -65,12 +65,12 @@ typedef void InstanceXtra;
  *   Add interior boundary conditions.
  *--------------------------------------------------------------------------*/
 
-void BCInternal(problem, problem_data, A, f, time)
-Problem     *problem;
-ProblemData *problem_data;
-Matrix      *A;
-Vector      *f;
-double       time;
+void BCInternal(
+Problem     *problem,
+ProblemData *problem_data,
+Matrix      *A,
+Vector      *f,
+double       time)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
@@ -123,7 +123,7 @@ double       time;
    /***** Some constants for the routine *****/
 
    /* Hard-coded assumption for constant density. */
-   PFModuleInvoke(void, phase_density, (0, NULL, NULL, &ptmp, &dtmp, CALCFCN));
+   PFModuleInvokeType(PhaseDensityInvoke, phase_density, (0, NULL, NULL, &ptmp, &dtmp, CALCFCN));
    dtmp = ProblemGravity(problem) * dtmp;
 
    /*--------------------------------------------------------------------

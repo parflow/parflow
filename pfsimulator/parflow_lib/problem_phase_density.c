@@ -313,8 +313,8 @@ void  PhaseDensityFreeInstanceXtra()
  * PhaseDensityNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *PhaseDensityNewPublicXtra(num_phases)
-int        num_phases;
+PFModule  *PhaseDensityNewPublicXtra(
+   int        num_phases)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;

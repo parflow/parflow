@@ -50,8 +50,8 @@ typedef struct
  * SaturationConstitutive
  *--------------------------------------------------------------------------*/
 
-void     SaturationConstitutive( phase_saturations )
-Vector **phase_saturations;
+void     SaturationConstitutive(
+   Vector **phase_saturations)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
@@ -151,8 +151,8 @@ Vector **phase_saturations;
  * SaturationConstitutiveInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *SaturationConstitutiveInitInstanceXtra(grid)
-Grid *grid;
+PFModule  *SaturationConstitutiveInitInstanceXtra(
+   Grid *grid)
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
@@ -194,8 +194,8 @@ void  SaturationConstitutiveFreeInstanceXtra()
  * SaturationConstitutiveNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *SaturationConstitutiveNewPublicXtra(num_phases)
-int        num_phases;
+PFModule  *SaturationConstitutiveNewPublicXtra(
+   int        num_phases)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;

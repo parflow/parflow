@@ -48,12 +48,12 @@ typedef struct
  * PhaseSource
  *--------------------------------------------------------------------------*/
 
-void         PhaseSource(phase_source, phase, problem, problem_data, time)
-Vector      *phase_source;
-int          phase;
-Problem     *problem;
-ProblemData *problem_data;
-double       time;
+void         PhaseSource(
+Vector      *phase_source,
+int          phase,
+Problem     *problem,
+ProblemData *problem_data,
+double       time)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
@@ -445,8 +445,8 @@ void  PhaseSourceFreeInstanceXtra()
  * PhaseSourceNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *PhaseSourceNewPublicXtra(num_phases)
-int        num_phases;
+PFModule  *PhaseSourceNewPublicXtra(
+   int        num_phases)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;

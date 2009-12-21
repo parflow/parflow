@@ -74,15 +74,13 @@ typedef struct
  *    This routine returns a Vector of thermalconductivities based on saturations.
  *--------------------------------------------------------------------------*/
 
-void	 ThermalConductivity(phase_thermalconductivity, phase_pressure, phase_saturation, 
-		    gravity, problem_data, fcn)
-
-Vector      *phase_thermalconductivity;  /* Vector of return thermal conductivities */
-Vector      *phase_pressure;    /* Vector of pressures */
-Vector      *phase_saturation;     /* Vector of saturations*/
-double       gravity;           /* Magnitude of gravity in neg. z direction */
-ProblemData *problem_data;      /* Contaicwets geometry info. for the problem */
-int          fcn;               /* Flag determining what to calculate 
+void	 ThermalConductivity(
+Vector      *phase_thermalconductivity,  /* Vector of return thermal conductivities */
+Vector      *phase_pressure,    /* Vector of pressures */
+Vector      *phase_saturation,     /* Vector of saturations*/
+double       gravity,           /* Magnitude of gravity in neg. z direction */
+ProblemData *problem_data,      /* Contaicwets geometry info. for the problem */
+int          fcn)               /* Flag determining what to calculate 
                                  * fcn = CALCFCN => calculate the function
 				 *                  value
                                  * fcn = CALCDER => calculate the function 
@@ -334,8 +332,8 @@ int          fcn;               /* Flag determining what to calculate
  * ThermalConductivityInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *ThermalConductivityInitInstanceXtra(grid)
-Grid      *grid;
+PFModule  *ThermalConductivityInitInstanceXtra(
+   Grid      *grid)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);

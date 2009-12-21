@@ -77,12 +77,12 @@ int           jacobian_stencil_shape[7][3] = {{ 0,  0,  0},
 /*  This routine provides the interface between KINSOL and ParFlow
     for richards' equation jacobian evaluations and matrix-vector multiplies.*/
 
-int       KINSolMatVec(current_state, x, y, recompute, pressure)
-void     *current_state;
-N_Vector  x;
-N_Vector  y;
-int      *recompute;
-N_Vector  pressure;
+int       KINSolMatVec(
+void     *current_state,
+N_Vector  x,
+N_Vector  y,
+int      *recompute,
+N_Vector  pressure)
 {
    PFModule    *richards_jacobian_eval = StateJacEval(((State*)current_state));
    Matrix      *J                = StateJac(         ((State*)current_state) );
@@ -94,7 +94,7 @@ N_Vector  pressure;
 
    if ( *recompute )
    { 
-      PFModuleInvoke(void, richards_jacobian_eval, 
+      PFModuleInvokeType(RichardsJacobianEvalInvoke, richards_jacobian_eval, 
       (pressure, &J, saturation, density, problem_data,
       dt, time, 0));
    }
@@ -108,17 +108,16 @@ N_Vector  pressure;
 /*  This routine evaluates the Richards jacobian based on the current 
     pressure values.  */
 
-void    RichardsJacobianEval(pressure, ptr_to_J, saturation, density, 
-problem_data, dt, time, symm_part)
-Vector       *pressure;       /* Current pressure values */
-Matrix      **ptr_to_J;       /* Pointer to the J pointer - this will be set
+void    RichardsJacobianEval(
+Vector       *pressure,       /* Current pressure values */
+Matrix      **ptr_to_J,       /* Pointer to the J pointer - this will be set
 		                 to instance_xtra pointer at end */
-Vector       *saturation;     /* Saturation / work vector */
-Vector       *density;        /* Density vector */
-ProblemData  *problem_data;   /* Geometry data for problem */
-double        dt;             /* Time step size */
-double        time;           /* New time value */
-int           symm_part;      /* Specifies whether to compute just the
+Vector       *saturation,     /* Saturation / work vector */
+Vector       *density,        /* Density vector */
+ProblemData  *problem_data,   /* Geometry data for problem */
+double        dt,             /* Time step size */
+double        time,           /* New time value */
+int           symm_part)      /* Specifies whether to compute just the
                                  symmetric part of the Jacobian (1), or the
 				 full Jacobian */
 {
@@ -225,14 +224,14 @@ int           symm_part;      /* Specifies whether to compute just the
 
    /* Calculate time term contributions. */
 
-   PFModuleInvoke(void, density_module, (0, pressure, density, &dtmp, &dtmp, 
+   PFModuleInvokeType(PhaseDensityInvoke, density_module, (0, pressure, density, &dtmp, &dtmp, 
 					 CALCFCN));
-   PFModuleInvoke(void, density_module, (0, pressure, density_der, &dtmp, 
+   PFModuleInvokeType(PhaseDensityInvoke, density_module, (0, pressure, density_der, &dtmp, 
 					 &dtmp, CALCDER));
-   PFModuleInvoke(void, saturation_module, (saturation, pressure, 
+   PFModuleInvokeType(SaturationInvoke, saturation_module, (saturation, pressure, 
 					    density, gravity, problem_data, 
 					    CALCFCN));
-   PFModuleInvoke(void, saturation_module, (saturation_der, pressure, 
+   PFModuleInvokeType(SaturationInvoke, saturation_module, (saturation_der, pressure, 
 					    density, gravity, problem_data,
 					    CALCDER));
 
@@ -301,8 +300,8 @@ int           symm_part;      /* Specifies whether to compute just the
 
    }   /* End subgrid loop */
 
-   bc_struct = PFModuleInvoke(BCStruct *, bc_pressure, 
-   (problem_data, grid, gr_domain, time));
+   bc_struct = PFModuleInvokeType(BCPressureInvoke, bc_pressure, 
+				  (problem_data, grid, gr_domain, time));
 
    /* Get boundary pressure values for Dirichlet boundaries.   */
    /* These are needed for upstream weighting in mobilities - need boundary */
@@ -348,13 +347,13 @@ int           symm_part;      /* Specifies whether to compute just the
 
    /* Calculate rel_perm and rel_perm_der */
 
-   PFModuleInvoke(void, rel_perm_module, 
-   (rel_perm, pressure, density, gravity, problem_data, 
-   CALCFCN));
+   PFModuleInvokeType(PhaseRelPermInvoke, rel_perm_module, 
+		      (rel_perm, pressure, density, gravity, problem_data, 
+		       CALCFCN));
 
-   PFModuleInvoke(void, rel_perm_module, 
-   (rel_perm_der, pressure, density, gravity, problem_data, 
-   CALCDER));
+   PFModuleInvokeType(PhaseRelPermInvoke, rel_perm_module, 
+		  (rel_perm_der, pressure, density, gravity, problem_data, 
+		   CALCDER));
 
    /* Calculate contributions from second order derivatives and gravity */
    ForSubgridI(is, GridSubgrids(grid))
@@ -797,10 +796,10 @@ int           symm_part;      /* Specifies whether to compute just the
 
 		  value =  bc_patch_values[ival];
 
-		  PFModuleInvoke( void, density_module, 
-		  (0, NULL, NULL, &value, &den_d, CALCFCN));
-		  PFModuleInvoke( void, density_module, 
-		  (0, NULL, NULL, &value, &dend_d, CALCDER));
+		  PFModuleInvokeType(PhaseDensityInvoke, density_module, 
+				     (0, NULL, NULL, &value, &den_d, CALCFCN));
+		  PFModuleInvokeType(PhaseDensityInvoke, density_module, 
+				  (0, NULL, NULL, &value, &dend_d, CALCDER));
 
 		  ip = SubvectorEltIndex(p_sub, i, j, k);
 		  im = SubmatrixEltIndex(J_sub, i, j, k);
@@ -985,9 +984,8 @@ int           symm_part;      /* Specifies whether to compute just the
 
    FreeBCStruct(bc_struct);
 
-   PFModuleInvoke( void, bc_internal, (problem, problem_data, NULL, J, time,
-   pressure, CALCDER));
-
+   PFModuleInvokeType(RichardsBCInternalInvoke, bc_internal, (problem, problem_data, NULL, J, time,
+							      pressure, CALCDER));
 
    /* Set pressures outside domain to zero.  
     * Recall: equation to solve is f = 0, so components of f outside 
@@ -1112,25 +1110,22 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
       (instance_xtra -> density_module) =
          PFModuleNewInstance(ProblemPhaseDensity(problem), () );
       (instance_xtra -> bc_pressure) =
-	 PFModuleNewInstance(ProblemBCPressure(problem), (problem) );
+	 PFModuleNewInstanceType(BCPressureInitInstanceXtraInvoke, ProblemBCPressure(problem), (problem) );
       (instance_xtra -> saturation_module) =
-         PFModuleNewInstance(ProblemSaturation(problem), (NULL, NULL) );
+         PFModuleNewInstanceType(SaturationInitInstanceXtraInvoke, ProblemSaturation(problem), (NULL, NULL) );
       (instance_xtra -> rel_perm_module) =
-         PFModuleNewInstance(ProblemPhaseRelPerm(problem), (NULL, NULL) );
+         PFModuleNewInstanceType(PhaseRelPermInitInstanceXtraInvoke, ProblemPhaseRelPerm(problem), (NULL, NULL) );
       (instance_xtra -> bc_internal) =
          PFModuleNewInstance(ProblemBCInternal(problem), () );
-
    }
-   else
-   {
+   else {
       PFModuleReNewInstance((instance_xtra -> density_module), ());
-      PFModuleReNewInstance((instance_xtra -> bc_pressure), (problem));
-      PFModuleReNewInstance((instance_xtra -> saturation_module), 
-      (NULL, NULL));
-      PFModuleReNewInstance((instance_xtra -> rel_perm_module), 
-      (NULL, NULL));
+      PFModuleReNewInstanceType(BCPressureInitInstanceXtraInvoke, (instance_xtra -> bc_pressure), (problem));
+      PFModuleReNewInstanceType(SaturationInitInstanceXtraInvoke, (instance_xtra -> saturation_module), 
+				 (NULL, NULL));
+      PFModuleReNewInstanceType(PhaseRelPermInitInstanceXtraInvoke, (instance_xtra -> rel_perm_module), 
+				(NULL, NULL));
       PFModuleReNewInstance((instance_xtra -> bc_internal), ());
-
    }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;

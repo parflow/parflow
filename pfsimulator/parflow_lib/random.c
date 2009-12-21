@@ -53,8 +53,8 @@ amps_ThreadLocalDcl(static int, Seed);
  *   to (2*input_seed - 1);
  *--------------------------------------------------------------------------*/
 
-void  SeedRand(seed)
-int   seed;
+void  SeedRand(
+   int   seed)
 {
    amps_ThreadLocal(Seed) = (2*seed - 1) % M;
 }

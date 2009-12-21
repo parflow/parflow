@@ -69,8 +69,8 @@ typedef struct
  * SetProblemData
  *--------------------------------------------------------------------------*/
 
-void          SetProblemData(problem_data)
-ProblemData  *problem_data;
+void          SetProblemData(
+   ProblemData  *problem_data)
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);

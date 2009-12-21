@@ -34,9 +34,9 @@
 #include "parflow.h"
 
 
-void     Scale(alpha, y)
-double   alpha;
-Vector  *y;
+void     Scale(
+   double   alpha,
+   Vector  *y)
 {
    Grid       *grid     = VectorGrid(y);
    Subgrid    *subgrid;

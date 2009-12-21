@@ -38,8 +38,8 @@
  * NewEvalStruct
  *--------------------------------------------------------------------------*/
 
-EvalStruct *NewEvalStruct(problem)
-Problem   *problem;
+EvalStruct *NewEvalStruct(
+   Problem   *problem)
 {
    EvalStruct    *eval_struct;
 
@@ -212,8 +212,8 @@ Problem   *problem;
  * FreeEvalStruct
  *--------------------------------------------------------------------------*/
 
-void     FreeEvalStruct(eval_struct)
-EvalStruct *eval_struct;
+void     FreeEvalStruct(
+   EvalStruct *eval_struct)
 {
 
    if ( EvalNumHPoints(eval_struct) > 0 )

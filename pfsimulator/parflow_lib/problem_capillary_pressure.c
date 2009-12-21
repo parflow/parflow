@@ -58,13 +58,12 @@ typedef struct
  * CapillaryPressure
  *--------------------------------------------------------------------------*/
 
-void         CapillaryPressure(capillary_pressure, phase_i, phase_j,
-			       problem_data, phase_saturation)
-Vector      *capillary_pressure;
-int          phase_i;
-int          phase_j;
-ProblemData *problem_data;
-Vector      *phase_saturation;
+void         CapillaryPressure(
+Vector      *capillary_pressure,
+int          phase_i,
+int          phase_j,
+ProblemData *problem_data,
+Vector      *phase_saturation)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
@@ -196,8 +195,8 @@ void  CapillaryPressureFreeInstanceXtra()
  * CapillaryPressureNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *CapillaryPressureNewPublicXtra(num_phases)
-int        num_phases;
+PFModule  *CapillaryPressureNewPublicXtra(
+   int        num_phases)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;

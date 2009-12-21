@@ -62,14 +62,14 @@ typedef struct
  *    This routine returns a time step size.
  *--------------------------------------------------------------------------*/
 
-void     SelectTimeStep(dt, dt_info, time, problem, problem_data)
+void     SelectTimeStep(
 
-double      *dt;          /* Time step size */
-char        *dt_info;     /* Character flag indicating what requirement 
+double      *dt,          /* Time step size */
+char        *dt_info,     /* Character flag indicating what requirement 
 			     chose the time step */
-double       time;
-Problem     *problem;
-ProblemData *problem_data;
+double       time,
+Problem     *problem,
+ProblemData *problem_data)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);

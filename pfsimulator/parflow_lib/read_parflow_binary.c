@@ -36,10 +36,10 @@
 
 #include "parflow.h"
 
-void ReadPFBinary_Subvector(file, subvector, subgrid)
-amps_File       file;
-Subvector      *subvector;
-Subgrid        *subgrid;
+void ReadPFBinary_Subvector(
+amps_File       file,
+Subvector      *subvector,
+Subgrid        *subgrid)
 {
    int             ix, iy, iz;
    int             nx, ny, nz;
@@ -75,9 +75,9 @@ Subgrid        *subgrid;
 }
 
 
-void ReadPFBinary(filename, v)
-char           *filename;
-Vector         *v;
+void ReadPFBinary(
+char           *filename,
+Vector         *v)
 {
    Grid           *grid     = VectorGrid(v);
    SubgridArray   *subgrids = GridSubgrids(grid);

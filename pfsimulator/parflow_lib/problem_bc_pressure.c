@@ -58,13 +58,13 @@ typedef struct
  *   and what the boundary conditions are.
  *--------------------------------------------------------------------------*/
 
-BCStruct    *BCPressure(problem_data, grid, gr_domain, time)
+BCStruct    *BCPressure(
 
-ProblemData *problem_data;  /* Contains BC info transferred by the 
+   ProblemData *problem_data,  /* Contains BC info transferred by the 
 			       BCPressurePackage function */
-Grid        *grid;          /* Grid data */
-GrGeomSolid *gr_domain;     /* Gridded domain solid */
-double       time;          /* Current time - needed to determine where on
+   Grid        *grid,          /* Grid data */
+   GrGeomSolid *gr_domain,     /* Gridded domain solid */
+   double       time)          /* Current time - needed to determine where on
 			       the boundary time cycle we are */
 {
    PFModule       *this_module   = ThisPFModule;
@@ -159,7 +159,7 @@ double       time;          /* Current time - needed to determine where on
 
 	    double         **elevations;
 	   
-	    bc_pressure_type0 = BCPressureDataIntervalValue(bc_pressure_data,ipatch, interval_number);
+	    bc_pressure_type0 = (BCPressureType0*)BCPressureDataIntervalValue(bc_pressure_data,ipatch, interval_number);
 
 	    if(instance_xtra -> elevations == NULL) {
 	       instance_xtra -> elevations = ctalloc(double **, num_patches);
@@ -209,7 +209,7 @@ double       time;          /* Current time - needed to determine where on
 				 ipatch, is, 
                {
                   ref_press = BCPressureType0Value(bc_pressure_type0);
-		  PFModuleInvoke(void, phase_density,
+		  PFModuleInvokeType(PhaseDensityInvoke, phase_density,
 				 (0, NULL, NULL, &ref_press, &ref_den, 
 				  CALCFCN));
 
@@ -235,7 +235,7 @@ double       time;          /* Current time - needed to determine where on
                   {
 	             if (iterations > -1)
 	             {
-                        PFModuleInvoke(void, phase_density, 
+                        PFModuleInvokeType(PhaseDensityInvoke, phase_density, 
 				       (0, NULL, NULL, &patch_values[ival], 
 					&density_der, CALCDER));
 			dtmp = 1.0 - 0.5*density_der*gravity
@@ -246,7 +246,7 @@ double       time;          /* Current time - needed to determine where on
 	             {
 		        patch_values[ival] = ref_press;
 		     }
-		     PFModuleInvoke(void, phase_density, 
+		     PFModuleInvokeType(PhaseDensityInvoke, phase_density, 
 				    (0, NULL, NULL, &patch_values[ival], 
 				     &density, CALCFCN));
 
@@ -278,13 +278,13 @@ double       time;          /* Current time - needed to determine where on
 	          {
 		     interface_press = BCPressureType0ValueAtInterface(
 			         		bc_pressure_type0,phase);
-		     PFModuleInvoke(void, phase_density,
+		     PFModuleInvokeType(PhaseDensityInvoke, phase_density,
 				    (phase-1, NULL, NULL, &interface_press, 
 				     &interface_den, CALCFCN));
 		     offset = (interface_press - ref_press)
 		               / (0.5*(interface_den + ref_den)*gravity);
 		     ref_press = interface_press;
-		     PFModuleInvoke(void, phase_density, 
+		     PFModuleInvokeType(PhaseDensityInvoke, phase_density, 
 				    (phase, NULL, NULL, &ref_press, &ref_den,
 				     CALCFCN));
 
@@ -304,7 +304,7 @@ double       time;          /* Current time - needed to determine where on
                         {
 	                   if (iterations > -1)
 	                   {
-                              PFModuleInvoke(void, phase_density, 
+                              PFModuleInvokeType(PhaseDensityInvoke, phase_density, 
 				    (phase, NULL, NULL, &patch_values[ival], 
 				     &density_der, CALCDER));
 
@@ -319,7 +319,7 @@ double       time;          /* Current time - needed to determine where on
 			      patch_values[ival] = ref_press;
 			   }
 	 
-			   PFModuleInvoke(void, phase_density, 
+			   PFModuleInvokeType(PhaseDensityInvoke, phase_density, 
 					  (phase, NULL, NULL, 
 					   &patch_values[ival], &density, 
 					   CALCFCN));
@@ -372,7 +372,7 @@ double       time;          /* Current time - needed to determine where on
 	    int              max_its = 10;
 	    int              iterations;
 
-	    bc_pressure_type1 = BCPressureDataIntervalValue(
+	    bc_pressure_type1 = (BCPressureType1*)BCPressureDataIntervalValue(
                                       bc_pressure_data,ipatch,interval_number);
 
 	    ForSubgridI(is, subgrids)
@@ -430,7 +430,7 @@ double       time;          /* Current time - needed to determine where on
 
 		  ref_press = BCPressureType1Value(bc_pressure_type1,ip-1)
                    + slope*(xy - BCPressureType1Point(bc_pressure_type1,ip-1));
-		  PFModuleInvoke(void, phase_density,
+		  PFModuleInvokeType(PhaseDensityInvoke, phase_density,
 				 (0, NULL, NULL, &ref_press, &ref_den, 
 				  CALCFCN));
 		  fcn_val = 0.0;
@@ -453,7 +453,7 @@ double       time;          /* Current time - needed to determine where on
                   {
 	             if (iterations > -1)
 	             {
-                        PFModuleInvoke(void, phase_density, 
+                        PFModuleInvokeType(PhaseDensityInvoke, phase_density, 
 				       (0, NULL, NULL, &patch_values[ival], 
 					&density_der, CALCDER));
 			dtmp = 1.0 - 0.5*density_der*gravity*z;
@@ -463,7 +463,7 @@ double       time;          /* Current time - needed to determine where on
 	             {
 		        patch_values[ival] = ref_press;
 		     }
-		     PFModuleInvoke(void, phase_density, 
+		     PFModuleInvokeType(PhaseDensityInvoke, phase_density, 
 				    (0, NULL, NULL, &patch_values[ival], 
 				     &density, CALCFCN));
 
@@ -493,13 +493,13 @@ double       time;          /* Current time - needed to determine where on
 	          {
 		     interface_press = BCPressureType1ValueAtInterface(
 			         		bc_pressure_type1,phase);
-		     PFModuleInvoke(void, phase_density,
+		     PFModuleInvokeType(PhaseDensityInvoke, phase_density,
 				    (phase-1, NULL, NULL, &interface_press, 
 				     &interface_den, CALCFCN));
 		     offset = (interface_press - ref_press)
 		               / (0.5*(interface_den + ref_den)*gravity);
 		     ref_press = interface_press;
-		     PFModuleInvoke(void, phase_density, 
+		     PFModuleInvokeType(PhaseDensityInvoke, phase_density, 
 				    (phase, NULL, NULL, &ref_press, &ref_den,
 				     CALCFCN));
 
@@ -519,7 +519,7 @@ double       time;          /* Current time - needed to determine where on
                         {
 	                   if (iterations > -1)
 	                   {
-                              PFModuleInvoke(void, phase_density, 
+                              PFModuleInvokeType(PhaseDensityInvoke, phase_density, 
 				    (phase, NULL, NULL, &patch_values[ival], 
 				     &density_der, CALCDER));
 
@@ -533,7 +533,7 @@ double       time;          /* Current time - needed to determine where on
 			      patch_values[ival] = ref_press;
 			   }
 	 
-			   PFModuleInvoke(void, phase_density, 
+			   PFModuleInvokeType(PhaseDensityInvoke, phase_density, 
 					  (phase, NULL, NULL, 
 					   &patch_values[ival], &density, 
 					   CALCFCN));
@@ -561,7 +561,7 @@ double       time;          /* Current time - needed to determine where on
 	    BCPressureType2 *bc_pressure_type2;
 	    double           flux;
 
-	    bc_pressure_type2 = BCPressureDataIntervalValue(
+	    bc_pressure_type2 = (BCPressureType2*)BCPressureDataIntervalValue(
 				    bc_pressure_data,ipatch,interval_number);
 
 	    flux = BCPressureType2Value(bc_pressure_type2);
@@ -594,7 +594,7 @@ double       time;          /* Current time - needed to determine where on
 	    double           dx, dy, dz;
 	    double           area, volumetric_flux;
 
-	    bc_pressure_type3 = BCPressureDataIntervalValue(
+	    bc_pressure_type3 = (BCPressureType3*)BCPressureDataIntervalValue(
                                       bc_pressure_data,ipatch,interval_number);
 
 	    ForSubgridI(is, subgrids)
@@ -667,10 +667,10 @@ double       time;          /* Current time - needed to determine where on
 
 	    /* Calculate density using dtmp as dummy argument. */
 	    dtmp = 0.0;
-	    PFModuleInvoke(void, phase_density,
+	    PFModuleInvokeType(PhaseDensityInvoke, phase_density,
 			   (0, NULL, NULL, &dtmp, &density, CALCFCN));
 
-	    bc_pressure_type4 = BCPressureDataIntervalValue(
+	    bc_pressure_type4 = (BCPressureType4*)BCPressureDataIntervalValue(
                                    bc_pressure_data,ipatch,interval_number);
 
 	    ForSubgridI(is, subgrids)
@@ -723,7 +723,7 @@ double       time;          /* Current time - needed to determine where on
 	    double          *tmpp;
 	    int              itmp;
 	    
-	    bc_pressure_type5 = BCPressureDataIntervalValue(
+	    bc_pressure_type5 = (BCPressureType5*)BCPressureDataIntervalValue(
                                    bc_pressure_data,ipatch,interval_number);
 
 	    ForSubgridI(is, subgrids)
@@ -765,7 +765,7 @@ double       time;          /* Current time - needed to determine where on
 	    double           x, y, z, dx2, dy2, dz2;
 	    int              fcn_type;
 	    
-	    bc_pressure_type6 = BCPressureDataIntervalValue(
+	    bc_pressure_type6 = (BCPressureType6*)BCPressureDataIntervalValue(
                                    bc_pressure_data,ipatch,interval_number);
 
 	    ForSubgridI(is, subgrids)
@@ -889,7 +889,7 @@ double       time;          /* Current time - needed to determine where on
 	    BCPressureType7 *bc_pressure_type7;
 	    double           flux;
 
-	    bc_pressure_type7 = BCPressureDataIntervalValue(
+	    bc_pressure_type7 = (BCPressureType7*)BCPressureDataIntervalValue(
 				    bc_pressure_data,ipatch,interval_number);
 
 	    flux = BCPressureType7Value(bc_pressure_type7);
@@ -1008,8 +1008,8 @@ void BCPressureFreeInstanceXtra()
  * BCPressureNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *BCPressureNewPublicXtra(num_phases)
-int        num_phases;
+PFModule  *BCPressureNewPublicXtra(
+   int        num_phases)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;

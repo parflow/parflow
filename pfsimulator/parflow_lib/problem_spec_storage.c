@@ -55,9 +55,7 @@ typedef struct
 /*--------------------------------------------------------------------------
  * SpecStorage
  *--------------------------------------------------------------------------*/
-void         SpecStorage(problem_data,specific_storage)
-Vector      *specific_storage;
-ProblemData *problem_data;
+void SpecStorage (ProblemData *problem_data, Vector *specific_storage )
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);

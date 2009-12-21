@@ -81,14 +81,13 @@ typedef struct
  * PhaseDensity
  *-------------------------------------------------------------------------*/
 
-void    InternalEnergyDensity(phase, pressure, temperature, energy, density, 
-		              fcn)
-int     phase;           /* Phase */
-Vector *pressure;  /* Vector of phase pressures at each block */
-Vector *temperature;  /* Vector of phase temperature at each block */
-Vector *energy;       /* Vector of return densities at each block */
-Vector *density;       /* Double array return density */
-int     fcn;             /* Flag determining what to calculate 
+void    InternalEnergyDensity(
+int     phase,           /* Phase */
+Vector *pressure,  /* Vector of phase pressures at each block */
+Vector *temperature,  /* Vector of phase temperature at each block */
+Vector *energy,       /* Vector of return densities at each block */
+Vector *density,       /* Double array return density */
+int     fcn)             /* Flag determining what to calculate 
                           * fcn = CALCFCN => calculate the function value
 			  * fcn = CALCDER => calculate the function 
 			  *                  derivative */
@@ -386,8 +385,8 @@ void  InternalEnergyDensityFreeInstanceXtra()
  * InternalEnergyDensityNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *InternalEnergyDensityNewPublicXtra(num_phases)
-int        num_phases;
+PFModule  *InternalEnergyDensityNewPublicXtra(
+   int        num_phases)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;

@@ -65,11 +65,11 @@ typedef struct
  * ICPhaseConcen
  *--------------------------------------------------------------------------*/
 
-void         ICPhaseConcen(ic_phase_concen, phase, contaminant, problem_data)
-Vector      *ic_phase_concen;
-int          phase;
-int          contaminant;
-ProblemData *problem_data;
+void         ICPhaseConcen(
+Vector      *ic_phase_concen,
+int          phase,
+int          contaminant,
+ProblemData *problem_data)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
@@ -229,9 +229,9 @@ void  ICPhaseConcenFreeInstanceXtra()
  * ICPhaseConcenNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule   *ICPhaseConcenNewPublicXtra(num_phases, num_contaminants)
-int        num_phases;
-int        num_contaminants;
+PFModule   *ICPhaseConcenNewPublicXtra(
+   int        num_phases,
+   int        num_contaminants)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;

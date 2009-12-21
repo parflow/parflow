@@ -75,8 +75,8 @@ typedef struct
  * Geometries
  *--------------------------------------------------------------------------*/
 
-void           Geometries(problem_data)
-ProblemData   *problem_data;
+void           Geometries(
+   ProblemData   *problem_data)
 {
    PFModule           *this_module   = ThisPFModule;
    PublicXtra         *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
@@ -175,8 +175,8 @@ ProblemData   *problem_data;
  * GeometriesInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *GeometriesInitInstanceXtra(grid)
-Grid      *grid;
+PFModule  *GeometriesInitInstanceXtra(
+   Grid      *grid)
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;

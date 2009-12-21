@@ -109,12 +109,12 @@ typedef struct
  *    This routine returns a Vector of pressures at the initial time.
  *--------------------------------------------------------------------------*/
 
-void         ICPhasePressure(ic_pressure, mask, problem_data, problem)
+void         ICPhasePressure(
 
-Vector      *ic_pressure;  /* Return values of intial condition */
-Vector      *mask;         /* Mask of active cells needed by the LSM */
-ProblemData *problem_data; /* Contains geometry information for the problem */
-Problem     *problem;      /* General problem information */
+Vector      *ic_pressure,  /* Return values of intial condition */
+Vector      *mask,         /* Mask of active cells needed by the LSM */
+ProblemData *problem_data, /* Contains geometry information for the problem */
+Problem     *problem)      /* General problem information */
 
 {
    PFModule      *this_module   = ThisPFModule;
@@ -284,7 +284,7 @@ Problem     *problem;      /* General problem information */
 	/* Get derivative of density at new pressures. */
 	 if (iterations > -1)
 	 {
-	    PFModuleInvoke(void, phase_density, (0, ic_pressure, 
+	    PFModuleInvokeType(PhaseDensityInvoke, phase_density, (0, ic_pressure, 
 						 temp_new_density_der, &dtmp, 
 						 &dtmp, CALCDER));
 	 }
@@ -368,7 +368,7 @@ Problem     *problem;      /* General problem information */
 	 }        /* End of region loop */
 	 
 	 /* Get density values at new pressure values. */
-	 PFModuleInvoke(void, phase_density, (0, ic_pressure, 
+	 PFModuleInvokeType(PhaseDensityInvoke, phase_density, (0, ic_pressure, 
 					      temp_new_density, &dtmp, 
 					      &dtmp, CALCFCN));
 
@@ -536,7 +536,7 @@ Problem     *problem;      /* General problem information */
 	 {
 	    
 	    /* Get derivative of density at new pressures. */
-	    PFModuleInvoke(void, phase_density, (0, ic_pressure, 
+	    PFModuleInvokeType(PhaseDensityInvoke, phase_density, (0, ic_pressure, 
 						 temp_new_density_der, &dtmp, 
 						 &dtmp, CALCDER));
 	 }
@@ -591,7 +591,7 @@ Problem     *problem;      /* General problem information */
 	 }        /* End of region loop */
 	 
          /* Get density values at new pressure values. */
-	 PFModuleInvoke(void, phase_density, (0, ic_pressure, 
+	 PFModuleInvokeType(PhaseDensityInvoke, phase_density, (0, ic_pressure, 
 					      temp_new_density, &dtmp, 
 					      &dtmp, CALCFCN));
          /* Calculate nonlinear residual and value of the nonlinear function
@@ -735,11 +735,10 @@ Problem     *problem;      /* General problem information */
  * ICPhasePressureInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *ICPhasePressureInitInstanceXtra(problem, grid, temp_data)
-
-Problem   *problem;
-Grid      *grid;
-double    *temp_data;
+PFModule  *ICPhasePressureInitInstanceXtra(
+   Problem   *problem,
+   Grid      *grid,
+   double    *temp_data)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);

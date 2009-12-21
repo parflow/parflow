@@ -60,10 +60,10 @@ typedef struct
  * Retardation
  *--------------------------------------------------------------------------*/
 
-void         Retardation(solidmassfactor, contaminant, problem_data)
-Vector      *solidmassfactor;
-int          contaminant;
-ProblemData *problem_data;
+void         Retardation(
+   Vector      *solidmassfactor,
+   int          contaminant,
+   ProblemData *problem_data)
 {
    PFModule   *this_module   = ThisPFModule;
    PublicXtra *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
@@ -153,8 +153,8 @@ ProblemData *problem_data;
  * RetardationInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *RetardationInitInstanceXtra(temp_data)
-double *temp_data;
+PFModule  *RetardationInitInstanceXtra(
+   double *temp_data)
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
@@ -200,8 +200,8 @@ void  RetardationFreeInstanceXtra()
  * RetardationNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *RetardationNewPublicXtra(num_contaminants)
-int        num_contaminants;
+PFModule  *RetardationNewPublicXtra(
+   int        num_contaminants)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;

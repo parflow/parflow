@@ -42,36 +42,34 @@
  * NewBCStruct
  *--------------------------------------------------------------------------*/
 
-BCStruct *NewBCStruct(subgrids, gr_domain,
-		      num_patches, patch_indexes, bc_types, values)
-SubgridArray *subgrids;
-GrGeomSolid  *gr_domain;
-int           num_patches;
-int          *patch_indexes;
-int          *bc_types;
-double     ***values;
+BCStruct *NewBCStruct(
+SubgridArray *subgrids,
+GrGeomSolid  *gr_domain,
+int           num_patches,
+int          *patch_indexes,
+int          *bc_types,
+double     ***values)
 {
-   BCStruct       *new;
+   BCStruct       *new_bcstruct;
 
 
-   new = talloc(BCStruct, 1);
+   new_bcstruct = talloc(BCStruct, 1);
 
-   (new -> subgrids)      = subgrids;
-   (new -> gr_domain)     = gr_domain;
-   (new -> num_patches)   = num_patches;
-   (new -> patch_indexes) = patch_indexes;
-   (new -> bc_types)      = bc_types;
-   (new -> values)        = values;
+   (new_bcstruct -> subgrids)      = subgrids;
+   (new_bcstruct -> gr_domain)     = gr_domain;
+   (new_bcstruct -> num_patches)   = num_patches;
+   (new_bcstruct -> patch_indexes) = patch_indexes;
+   (new_bcstruct -> bc_types)      = bc_types;
+   (new_bcstruct -> values)        = values;
 
-   return new;
+   return new_bcstruct;
 }
 
 /*--------------------------------------------------------------------------
  * FreeBCStruct
  *--------------------------------------------------------------------------*/
 
-void      FreeBCStruct(bc_struct)
-BCStruct *bc_struct;
+void      FreeBCStruct(BCStruct *bc_struct)
 {
    double  ***values;
 

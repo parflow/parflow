@@ -58,11 +58,11 @@ typedef struct
  * RedBlackGSPoint:
  *--------------------------------------------------------------------------*/
 
-void     RedBlackGSPoint(x, b, tol, zero)
-Vector 	*x;
-Vector 	*b;
-double 	 tol;
-int    	 zero;
+void     RedBlackGSPoint(
+Vector 	*x,
+Vector 	*b,
+double 	 tol,
+int    	 zero)
 {
    PFModule       *this_module   = ThisPFModule;
    PublicXtra     *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
@@ -369,13 +369,12 @@ int    	 zero;
  * RedBlackGSPointInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule     *RedBlackGSPointInitInstanceXtra(problem, grid, problem_data, A,
-					      temp_data)
-Problem      *problem;
-Grid         *grid;
-ProblemData  *problem_data;
-Matrix       *A;
-double       *temp_data;
+PFModule     *RedBlackGSPointInitInstanceXtra(
+Problem      *problem,
+Grid         *grid,
+ProblemData  *problem_data,
+Matrix       *A,
+double       *temp_data)
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;

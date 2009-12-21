@@ -81,26 +81,22 @@ typedef struct
  * SatGodunov
  *--------------------------------------------------------------------------*/
 
-void     SatGodunov(problem_data, phase,
-                    old_saturation, new_saturation,
-                    x_velocity, y_velocity, z_velocity, z_permeability,
-                    solid_mass_factor, viscosity, density, gravity,
-                    time, deltat, order)
-ProblemData *problem_data;
-int          phase;
-Vector      *old_saturation;
-Vector      *new_saturation;
-Vector      *x_velocity;
-Vector      *y_velocity;
-Vector      *z_velocity;
-Vector      *z_permeability;
-Vector      *solid_mass_factor;
-double      *viscosity;
-double      *density;
-double       gravity;
-double       time;
-double       deltat;
-int          order;
+void     SatGodunov(
+ProblemData *problem_data,
+int          phase,
+Vector      *old_saturation,
+Vector      *new_saturation,
+Vector      *x_velocity,
+Vector      *y_velocity,
+Vector      *z_velocity,
+Vector      *z_permeability,
+Vector      *solid_mass_factor,
+double      *viscosity,
+double      *density,
+double       gravity,
+double       time,
+double       deltat,
+int          order)
 {
     PFModule     *this_module   = ThisPFModule;
     InstanceXtra *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
@@ -759,10 +755,10 @@ int          order;
  * SatGodunovInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *SatGodunovInitInstanceXtra(problem, grid, temp_data)
-Problem   *problem;
-Grid      *grid;
-double    *temp_data;
+PFModule  *SatGodunovInitInstanceXtra(
+   Problem   *problem,
+   Grid      *grid,
+   double    *temp_data)
 {
    PFModule     *this_module  = ThisPFModule;
    InstanceXtra *instance_xtra;

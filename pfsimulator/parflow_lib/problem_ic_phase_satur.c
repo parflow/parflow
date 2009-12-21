@@ -57,10 +57,10 @@ typedef struct
  * ICPhaseSatur
  *--------------------------------------------------------------------------*/
 
-void         ICPhaseSatur(ic_phase_satur, phase, problem_data)
-Vector      *ic_phase_satur;
-int          phase;
-ProblemData *problem_data;
+void         ICPhaseSatur(
+Vector      *ic_phase_satur,
+int          phase,
+ProblemData *problem_data)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
@@ -207,8 +207,8 @@ void  ICPhaseSaturFreeInstanceXtra()
  * ICPhaseSaturNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule   *ICPhaseSaturNewPublicXtra(num_phases)
-int        num_phases;
+PFModule   *ICPhaseSaturNewPublicXtra(
+   int        num_phases)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;

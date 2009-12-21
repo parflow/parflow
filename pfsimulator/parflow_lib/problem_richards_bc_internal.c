@@ -66,14 +66,14 @@ typedef void InstanceXtra;
  *   Add interior boundary conditions.
  *--------------------------------------------------------------------------*/
 
-void RichardsBCInternal(problem, problem_data, f, A, time, pressure, fcn)
-Problem     *problem;
-ProblemData *problem_data;
-Vector      *f;
-Matrix      *A;
-double       time;
-Vector      *pressure;
-int          fcn;
+void RichardsBCInternal(
+Problem     *problem,
+ProblemData *problem_data,
+Vector      *f,
+Matrix      *A,
+double       time,
+Vector      *pressure,
+int          fcn)
 {
    PFModule      *this_module    = ThisPFModule;
    PublicXtra    *public_xtra    = (PublicXtra *)PFModulePublicXtra(this_module);

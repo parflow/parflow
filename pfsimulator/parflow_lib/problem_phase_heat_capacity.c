@@ -56,10 +56,10 @@ typedef struct
 /*--------------------------------------------------------------------------
  * PhaseHeatCapacity 
  *--------------------------------------------------------------------------*/
-void         PhaseHeatCapacity(phase,heat_capacity,problem_data)
-int          phase;
-Vector      *heat_capacity;
-ProblemData *problem_data;
+void         PhaseHeatCapacity(
+int          phase,
+Vector      *heat_capacity,
+ProblemData *problem_data)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
@@ -186,8 +186,8 @@ void  PhaseHeatCapacityFreeInstanceXtra()
  * PhaseHeatCapacityNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule   *PhaseHeatCapacityNewPublicXtra(num_phases)
-int    num_phases;
+PFModule   *PhaseHeatCapacityNewPublicXtra(
+   int    num_phases)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;
