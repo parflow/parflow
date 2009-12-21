@@ -428,8 +428,10 @@ dnl shared library building package but don't
 dnl have time just yet.
 dnl
 
-AX_C_CHECK_FLAG(-fpic,,,SHLIB_CFLAGS="-fpic",)	
-
+AX_C_CHECK_FLAG(-fPIC,,,SHLIB_CFLAGS="-fPIC",)	
+if test "$SHLIB_CFLAGS" = ""; then 
+   AX_C_CHECK_FLAG(-fpic,,,SHLIB_CFLAGS="-fpic",)	
+fi
 AC_SUBST(SHLIB_CFLAGS)
 
 dnl
