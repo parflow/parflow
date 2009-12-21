@@ -251,14 +251,14 @@ void      SolverImpes()
    sprintf(file_prefix, GlobalsOutFileName);
 
    /* do turning bands (and other stuff maybe) */
-   PFModuleInvoke(void, set_problem_data, (problem_data));
+   PFModuleInvokeType(SetProblemDataInvoke, set_problem_data, (problem_data));
    gr_domain = ProblemDataGrDomain(problem_data);
 
    phase_densities = talloc(double, ProblemNumPhases(problem));
 
    for(phase = 0; phase < ProblemNumPhases(problem)-1; phase++)
       {
-	 PFModuleInvoke(void, phase_density, 
+	 PFModuleInvokeType(PhaseDensityInvoke, phase_density, 
 			(phase, NULL, NULL, &dtmp, &phase_densities[phase], 
 			 CALCFCN));
       }
@@ -351,10 +351,10 @@ void      SolverImpes()
          saturations[phase] = NewVector( grid, 1, 3 );
          InitVectorAll(saturations[phase], 0.0);
 
-         PFModuleInvoke(void, ic_phase_satur,
-		        (saturations[phase], phase, problem_data));
-         PFModuleInvoke(void, bc_phase_saturation,
-                        (saturations[phase], phase, gr_domain));
+         PFModuleInvokeType(ICPhaseSaturInvoke, ic_phase_satur,
+			    (saturations[phase], phase, problem_data));
+         PFModuleInvokeType(BCPhaseSaturationInvoke, bc_phase_saturation,
+			    (saturations[phase], phase, gr_domain));
 
          handle = InitVectorUpdate(saturations[phase], VectorUpdateGodunov);
          FinalizeVectorUpdate(handle);
@@ -363,7 +363,7 @@ void      SolverImpes()
       saturations[ProblemNumPhases(problem)-1] = NewVector( grid, 1, 3 );
       InitVectorAll(saturations[ProblemNumPhases(problem)-1], 0.0);
 
-      PFModuleInvoke(void, constitutive, (saturations));
+      PFModuleInvokeType(SaturationConstitutiveInvoke, constitutive, (saturations));
 
       handle = InitVectorUpdate(saturations[ProblemNumPhases(problem)-1], 
 				VectorUpdateGodunov);
@@ -424,8 +424,8 @@ void      SolverImpes()
                   concentrations[indx] = NewVector( grid, 1, 3 );
                   InitVectorAll(concentrations[indx], 0.0);
 
-                  PFModuleInvoke(void, ic_phase_concen,
-                                 (concentrations[indx], phase, concen, problem_data));
+                  PFModuleInvokeType(ICPhaseConcenInvoke, ic_phase_concen,
+				     (concentrations[indx], phase, concen, problem_data));
 
                   handle = InitVectorUpdate(concentrations[indx], VectorUpdateGodunov);
                   FinalizeVectorUpdate(handle);
@@ -478,7 +478,7 @@ void      SolverImpes()
             z_permeability = NewVector( z_grid, 1, 2 );
             InitVectorAll(z_permeability, 0.0);
 
-            PFModuleInvoke(void, permeability_face,
+            PFModuleInvokeType(PermeabilityFaceInvoke, permeability_face,
 			   (z_permeability, 
 			    ProblemDataPermeabilityZ(problem_data)));
 
@@ -623,7 +623,7 @@ void      SolverImpes()
          InitVectorAll(total_mobility_y, 0.0);
          InitVectorAll(total_mobility_z, 0.0);
 
-         PFModuleInvoke(void, phase_mobility,
+         PFModuleInvokeType(PhaseMobilityInvoke, phase_mobility,
                         (total_mobility_x,
 			 total_mobility_y,
 			 total_mobility_z,
@@ -637,7 +637,7 @@ void      SolverImpes()
          for(phase = 1; phase < ProblemNumPhases(problem); phase++)
          {
             /* Get the mobility of this phase */
-            PFModuleInvoke(void, phase_mobility,
+            PFModuleInvokeType(PhaseMobilityInvoke, phase_mobility,
                            (temp_mobility_x,
 			    temp_mobility_y,
 			    temp_mobility_z,
@@ -666,16 +666,17 @@ void      SolverImpes()
          /*                  Solve for the base pressure                   */
          /******************************************************************/
          /* Discretize and solve the pressure equation */
-         PFModuleInvoke(void, discretize_pressure, (&A, &f, problem_data, 
-						    t, total_mobility_x,
-						    total_mobility_y,
-						    total_mobility_z,
-						    saturations));
-         PFModuleInvoke(void, diag_scale, (pressure, A, f, DO));
-         PFModuleReNewInstance(linear_solver, (NULL, NULL, problem_data, A, 
-					       NULL));
-         PFModuleInvoke(void, linear_solver, (pressure, f, abs_tol, 0));
-         PFModuleInvoke(void, diag_scale, (pressure, A, f, UNDO));
+         PFModuleInvokeType(DiscretizePressureInvoke, discretize_pressure, (&A, &f, problem_data, 
+									    t, total_mobility_x,
+									    total_mobility_y,
+									    total_mobility_z,
+									    saturations));
+         PFModuleInvokeType(MatrixDiagScaleInvoke, diag_scale, (pressure, A, f, DO));
+         PFModuleReNewInstanceType(LinearSolverInitInstanceXtraInvoke,
+				   linear_solver, (NULL, NULL, problem_data, A, 
+						   NULL));
+         PFModuleInvokeType(LinearSolverInvoke, linear_solver, (pressure, f, abs_tol, 0));
+         PFModuleInvokeType(MatrixDiagScaleInvoke, diag_scale, (pressure, A, f, UNDO));
 
          if ( transient )
          {
@@ -685,15 +686,16 @@ void      SolverImpes()
             for(phase = 0; phase < ProblemNumPhases(problem); phase++)
             {
                /* Compute the velocity for this phase */
-               PFModuleInvoke(void, phase_velocity_face,
-                              (phase_x_velocity[phase],
-                               phase_y_velocity[phase],
-                               phase_z_velocity[phase],
-                               problem_data,
-                               pressure,
-                               saturations,
-                               phase));
-
+               PFModuleInvokeType(PhaseVelocityFaceInvoke, 
+				  phase_velocity_face,
+				  (phase_x_velocity[phase],
+				   phase_y_velocity[phase],
+				   phase_z_velocity[phase],
+				   problem_data,
+				   pressure,
+				   saturations,
+				   phase));
+	       
                phase_maximum = MaxPhaseFieldValue(phase_x_velocity[phase],
                                                   phase_y_velocity[phase],
                                                   phase_z_velocity[phase],
@@ -723,17 +725,17 @@ void      SolverImpes()
             /* Compute the total velocity */
 	    if ( is_multiphase )
 	    {
-               PFModuleInvoke(void, total_velocity_face,
-			      (total_x_velocity,
-			       total_y_velocity,
-			       total_z_velocity,
-			       problem_data,
-			       total_mobility_x,
-			       total_mobility_y,
-			       total_mobility_z,
-			       pressure,
-			       saturations));
-
+               PFModuleInvokeType(TotalVelocityFaceInvoke, total_velocity_face,
+				  (total_x_velocity,
+				   total_y_velocity,
+				   total_z_velocity,
+				   problem_data,
+				   total_mobility_x,
+				   total_mobility_y,
+				   total_mobility_z,
+				   pressure,
+				   saturations));
+	       
                total_maximum = MaxTotalFieldValue(problem, eval_struct,
 						  saturations[0],
 						  total_x_velocity,
@@ -1017,26 +1019,26 @@ void      SolverImpes()
                {
                   InitVectorAll(stemp, 0.0);
 		  Copy(saturations[phase], stemp);
-		  PFModuleInvoke(void, bc_phase_saturation,
-				 (stemp, phase, gr_domain));
+		  PFModuleInvokeType(BCPhaseSaturationInvoke, bc_phase_saturation,
+				     (stemp, phase, gr_domain));
 
 
 		  /* Evolve to the new time */
-		  PFModuleInvoke(void, advect_satur,
-				 (problem_data, phase,
-				  stemp, saturations[phase],
-				  total_x_velocity, 
-				  total_y_velocity, 
-				  total_z_velocity, 
-				  z_permeability,
-				  ProblemDataPorosity(problem_data),
-				  ProblemPhaseViscosities(problem),
-				  phase_densities,
-				  ProblemGravity(problem),
-				  t, dt, sadvect_order));
+		  PFModuleInvokeType(AdvectionSaturationInvoke, advect_satur,
+				     (problem_data, phase,
+				      stemp, saturations[phase],
+				      total_x_velocity, 
+				      total_y_velocity, 
+				      total_z_velocity, 
+				      z_permeability,
+				      ProblemDataPorosity(problem_data),
+				      ProblemPhaseViscosities(problem),
+				      phase_densities,
+				      ProblemGravity(problem),
+				      t, dt, sadvect_order));
                }
 	       InitVectorAll(saturations[ProblemNumPhases(problem)-1], 0.0);
-	       PFModuleInvoke(void, constitutive, (saturations));
+	       PFModuleInvokeType(SaturationConstitutiveInvoke, constitutive, (saturations));
 
 	       handle = InitVectorUpdate(saturations[
 					 ProblemNumPhases(problem)-1], 
@@ -1084,7 +1086,7 @@ void      SolverImpes()
                {
                   for(concen = 0; concen < ProblemNumContaminants(problem); concen++)
                   {
-                     PFModuleInvoke(void, retardation,
+                     PFModuleInvokeType(RetardationInvoke, retardation,
                                     (solidmassfactor,
                                      concen,
                                      problem_data));
@@ -1094,14 +1096,14 @@ void      SolverImpes()
                      InitVectorAll(ctemp, 0.0);
                      Copy(concentrations[indx], ctemp);
 
-                     PFModuleInvoke(void, advect_concen,
-                                    (problem_data, phase, concen,
-                                     ctemp, concentrations[indx],
-                                     phase_x_velocity[phase], 
-                                     phase_y_velocity[phase], 
-                                     phase_z_velocity[phase],
-                                     solidmassfactor,
-                                     t, dt, advect_order));
+                     PFModuleInvokeType(AdvectionConcentrationInvoke, advect_concen,
+					(problem_data, phase, concen,
+					 ctemp, concentrations[indx],
+					 phase_x_velocity[phase], 
+					 phase_y_velocity[phase], 
+					 phase_z_velocity[phase],
+					 solidmassfactor,
+					 t, dt, advect_order));
                      indx++;
 
                   }
@@ -1535,26 +1537,33 @@ PFModule *SolverImpesInitInstanceXtra()
    if ( PFModuleInstanceXtra(this_module) == NULL )
    {
       (instance_xtra -> discretize_pressure) =
-	 PFModuleNewInstance((public_xtra -> discretize_pressure),
-			     (problem, grid, NULL));
+	 PFModuleNewInstanceType(DiscretizePressureInitInstanceXtraInvoke,
+				 (public_xtra -> discretize_pressure),
+				 (problem, grid, NULL));
       (instance_xtra -> diag_scale) =
-	 PFModuleNewInstance((public_xtra -> diag_scale),
-                 (grid));
+	 PFModuleNewInstanceType(MatrixDiagScaleInitInstanceXtraInvoke,
+			     (public_xtra -> diag_scale),
+			     (grid));
       (instance_xtra -> linear_solver) =
-	 PFModuleNewInstance((public_xtra -> linear_solver),
-			     (problem, grid, NULL, NULL, NULL));
+	 PFModuleNewInstanceType(LinearSolverInitInstanceXtraInvoke,
+				 (public_xtra -> linear_solver),
+				 (problem, grid, NULL, NULL, NULL));
       (instance_xtra -> phase_velocity_face) =
-	 PFModuleNewInstance((public_xtra -> phase_velocity_face),
-                 (problem, grid, x_grid, y_grid, z_grid, NULL));
+	 PFModuleNewInstanceType(PhaseVelocityFaceInitInstanceXtraInvoke,
+				 (public_xtra -> phase_velocity_face),
+				 (problem, grid, x_grid, y_grid, z_grid, NULL));
       (instance_xtra -> advect_concen) =
-	 PFModuleNewInstance((public_xtra -> advect_concen),
-                 (problem, grid, NULL));
+	 PFModuleNewInstanceType(AdvectionConcentrationInitInstanceXtraType,
+				 (public_xtra -> advect_concen),
+				 (problem, grid, NULL));
       (instance_xtra -> set_problem_data) =
-	 PFModuleNewInstance((public_xtra -> set_problem_data),
-			     (problem, grid, NULL));
+	 PFModuleNewInstanceType(SetProblemDataInitInstanceXtraInvoke,
+				 (public_xtra -> set_problem_data),
+				 (problem, grid, NULL, NULL));
 
       (instance_xtra -> retardation) =
-	 PFModuleNewInstance(ProblemRetardation(problem), (NULL));
+	 PFModuleNewInstanceType(RetardationInitInstanceXtraInvoke,
+				 ProblemRetardation(problem), (NULL));
       (instance_xtra -> phase_mobility) =
 	 PFModuleNewInstance(ProblemPhaseMobility(problem), ());
       (instance_xtra -> ic_phase_concen) =
@@ -1566,57 +1575,72 @@ PFModule *SolverImpesInitInstanceXtra()
       if ( is_multiphase )
       {
          (instance_xtra -> permeability_face) =
-	   PFModuleNewInstance((public_xtra -> permeability_face),
-			       (z_grid));
+	    PFModuleNewInstanceType(PermeabilityFaceInitInstanceXtraInvoke,
+				(public_xtra -> permeability_face),
+				(z_grid));
 	 (instance_xtra -> total_velocity_face) =
-	   PFModuleNewInstance((public_xtra -> total_velocity_face),
-			       (problem, grid, x_grid, y_grid, z_grid, 
-				NULL));
+	    PFModuleNewInstanceType(TotalVelocityFaceInitInstanceXtraInvoke,
+				    public_xtra -> total_velocity_face,
+				    (problem, grid, x_grid, y_grid, z_grid, 
+				     NULL));
 	 (instance_xtra -> advect_satur) =
-	   PFModuleNewInstance((public_xtra -> advect_satur),
-			       (problem, grid, NULL));
+	    PFModuleNewInstanceType(AdvectionSaturationInitInstanceXtraInvoke,
+				    (public_xtra -> advect_satur),
+				    (problem, grid, NULL));
 
 	 (instance_xtra -> ic_phase_satur) =
 	   PFModuleNewInstance(ProblemICPhaseSatur(problem), ());
 	 (instance_xtra -> bc_phase_saturation) =
 	   PFModuleNewInstance(ProblemBCPhaseSaturation(problem), ());
 	 (instance_xtra -> constitutive) =
-	   PFModuleNewInstance(ProblemSaturationConstitutive(problem), 
-			       (grid));
+	    PFModuleNewInstanceType(SaturationConstitutiveInitInstanceXtraInvoke,
+				    ProblemSaturationConstitutive(problem), 
+				    (grid));
       }         
    }
    else
    {
-      PFModuleReNewInstance((instance_xtra -> discretize_pressure),
-			    (problem, grid, NULL));
-      PFModuleReNewInstance((instance_xtra -> diag_scale),
+      PFModuleReNewInstanceType(DiscretizePressureInitInstanceXtraInvoke,
+				(instance_xtra -> discretize_pressure),
+				(problem, grid, NULL));
+      PFModuleReNewInstanceType(MatrixDiagScaleInitInstanceXtraInvoke,
+			    (instance_xtra -> diag_scale),
 			    (grid));
-      PFModuleReNewInstance((instance_xtra -> linear_solver),
-			    (problem, grid, NULL, NULL, NULL));
-      PFModuleReNewInstance((instance_xtra -> phase_velocity_face),
-                (problem, grid, x_grid, y_grid, z_grid, NULL));
-      PFModuleReNewInstance((instance_xtra -> advect_concen),
-                (problem, grid, NULL));
-      PFModuleReNewInstance((instance_xtra -> set_problem_data),
+      PFModuleReNewInstanceType(LinearSolverInitInstanceXtraInvoke,
+				(instance_xtra -> linear_solver),
+				(problem, grid, NULL, NULL, NULL));
+      PFModuleReNewInstanceType(PhaseVelocityFaceInitInstanceXtraInvoke,
+				(instance_xtra -> phase_velocity_face),
+				(problem, grid, x_grid, y_grid, z_grid, NULL));
+      PFModuleReNewInstanceType(AdvectionConcentrationInitInstanceXtraType,
+			    (instance_xtra -> advect_concen),
 			    (problem, grid, NULL));
+      PFModuleReNewInstanceType(SetProblemDataInitInstanceXtraInvoke,
+				(instance_xtra -> set_problem_data),
+				(problem, grid, NULL, NULL));
 
-      PFModuleReNewInstance((instance_xtra -> retardation), (NULL));
+      PFModuleReNewInstanceType(RetardationInitInstanceXtraInvoke,
+				(instance_xtra -> retardation), (NULL));
       PFModuleReNewInstance((instance_xtra -> phase_mobility), ());
       PFModuleReNewInstance((instance_xtra -> ic_phase_concen), ());
       PFModuleReNewInstance((instance_xtra -> phase_density), ());
 
       if ( is_multiphase )
       {
-         PFModuleReNewInstance((instance_xtra -> permeability_face),
+         PFModuleReNewInstanceType(PermeabilityFaceInitInstanceXtraInvoke,
+			       (instance_xtra -> permeability_face),
 			       (z_grid));
-	 PFModuleReNewInstance((instance_xtra -> total_velocity_face),
-			       (problem, grid, x_grid, y_grid, z_grid, 
-				NULL));
-	 PFModuleReNewInstance((instance_xtra -> advect_satur),
-			       (problem, grid, NULL));
+	 PFModuleReNewInstanceType(TotalVelocityFaceInitInstanceXtraInvoke,
+				   (instance_xtra -> total_velocity_face),
+				   (problem, grid, x_grid, y_grid, z_grid, 
+				    NULL));
+	 PFModuleReNewInstanceType(AdvectionSaturationInitInstanceXtraInvoke,
+				   (instance_xtra -> advect_satur),
+				   (problem, grid, NULL));
 	 PFModuleReNewInstance((instance_xtra -> ic_phase_satur), ());
 	 PFModuleReNewInstance((instance_xtra -> bc_phase_saturation), ());
-	 PFModuleReNewInstance((instance_xtra -> constitutive), (grid));
+	 PFModuleReNewInstanceType(SaturationConstitutiveInitInstanceXtraInvoke,
+				   (instance_xtra -> constitutive), (grid));
       }         
    }
 
@@ -1674,31 +1698,37 @@ PFModule *SolverImpesInitInstanceXtra()
    (instance_xtra -> temp_data) = temp_data;
 
    /* renew set_problem_data module */
-   PFModuleReNewInstance((instance_xtra -> set_problem_data),
-                         (NULL, NULL, temp_data));
+   PFModuleReNewInstanceType(SetProblemDataInitInstanceXtraInvoke,
+			     (instance_xtra -> set_problem_data),
+			     (NULL, NULL, NULL, temp_data));
 
    /* renew pressure solve modules that take temporary data */
-   PFModuleReNewInstance((instance_xtra -> discretize_pressure),
-			 (NULL, NULL, temp_data));
+   PFModuleReNewInstanceType(DiscretizePressureInitInstanceXtraInvoke,
+			     (instance_xtra -> discretize_pressure),
+			     (NULL, NULL, temp_data));
 /*   temp_data += 
             PFModuleSizeOfTempData(instance_xtra -> discretize_pressure);  */
-   PFModuleReNewInstance((instance_xtra -> linear_solver),
+   PFModuleReNewInstanceType(LinearSolverInitInstanceXtraInvoke,
+			 (instance_xtra -> linear_solver),
 			 (NULL, NULL, NULL, NULL, temp_data));
 /*   temp_data += PFModuleSizeOfTempData(instance_xtra -> linear_solver);  */
 
    /* renew velocity computation modules that take temporary data */
-   PFModuleReNewInstance((instance_xtra -> phase_velocity_face),
-             (NULL, NULL, NULL, NULL, NULL, temp_data));
+   PFModuleReNewInstanceType(PhaseVelocityFaceInitInstanceXtraInvoke,
+			     (instance_xtra -> phase_velocity_face),
+			     (NULL, NULL, NULL, NULL, NULL, temp_data));
    if ( is_multiphase )
    {
-     PFModuleReNewInstance((instance_xtra -> total_velocity_face),
-			   (NULL, NULL, NULL, NULL, NULL, temp_data));
+      PFModuleReNewInstanceType(TotalVelocityFaceInitInstanceXtraInvoke,
+				(instance_xtra -> total_velocity_face),
+				(NULL, NULL, NULL, NULL, NULL, temp_data));
      /* temp_data += PFModuleSizeOfTempData(instance_xtra -> 
       *   	                            total_velocity_face);  */
 
       /* renew saturation advection modules that take temporary data */
       temp_data_placeholder = temp_data;
-      PFModuleReNewInstance((instance_xtra -> advect_satur),
+      PFModuleReNewInstanceType(AdvectionSaturationInitInstanceXtraInvoke,
+			    (instance_xtra -> advect_satur),
 			    (NULL, NULL, temp_data_placeholder));
       temp_data_placeholder += 
 	PFModuleSizeOfTempData(instance_xtra -> advect_satur);
@@ -1706,10 +1736,12 @@ PFModule *SolverImpesInitInstanceXtra()
 
    /* renew concentration advection modules that take temporary data */
    temp_data_placeholder = temp_data;
-   PFModuleReNewInstance((instance_xtra -> retardation),
-             (temp_data_placeholder));
-   PFModuleReNewInstance((instance_xtra -> advect_concen),
-             (NULL, NULL, temp_data_placeholder));
+   PFModuleReNewInstanceType(RetardationInitInstanceXtraInvoke,
+			     (instance_xtra -> retardation),
+			     (temp_data_placeholder));
+   PFModuleReNewInstanceType(AdvectionConcentrationInitInstanceXtraType,
+			     (instance_xtra -> advect_concen),
+			     (NULL, NULL, temp_data_placeholder));
    temp_data_placeholder += max(
 		     PFModuleSizeOfTempData(instance_xtra -> retardation),
                      PFModuleSizeOfTempData(instance_xtra -> advect_concen)
@@ -1806,12 +1838,14 @@ PFModule   *SolverImpesNewPublicXtra(char *name)
    {
       case 0:
       {
-	 (public_xtra -> diag_scale) = PFModuleNewModule(NoDiagScale, (key));
+	 (public_xtra -> diag_scale) = PFModuleNewModuleType(MatrixDiagScaleNewPublicXtraInvoke, 
+							     NoDiagScale, (key));
 	 break;
       }
       case 1:
       {
-	 (public_xtra -> diag_scale) = PFModuleNewModule(MatDiagScale, (key));
+	 (public_xtra -> diag_scale) = PFModuleNewModuleType(MatrixDiagScaleNewPublicXtraInvoke, 
+							     MatDiagScale, (key));
 	 break;
       }
       default:
@@ -1830,24 +1864,28 @@ PFModule   *SolverImpesNewPublicXtra(char *name)
    {
       case 0:
       {
-	 (public_xtra -> linear_solver) = PFModuleNewModule(MGSemi, (key));
+	 (public_xtra -> linear_solver) = PFModuleNewModuleType(LinearSolverNewPublicXtraInvoke, 
+								MGSemi, (key));
 	 break;
       }
       case 1:
       {
-	 (public_xtra -> linear_solver) = PFModuleNewModule(PPCG, (key));
+	 (public_xtra -> linear_solver) = PFModuleNewModuleType(LinearSolverNewPublicXtraInvoke,
+								PPCG, (key));
 	 break;
       }
 
       case 2:
       {
-	 (public_xtra -> linear_solver) = PFModuleNewModule(PCG, (key));
+	 (public_xtra -> linear_solver) = PFModuleNewModuleType(LinearSolverNewPublicXtraInvoke,
+								PCG, (key));
 	 break;
       }
 
       case 3:
       {
-	 (public_xtra -> linear_solver) = PFModuleNewModule(CGHS, (key));
+	 (public_xtra -> linear_solver) = PFModuleNewModuleType(LinearSolverNewPublicXtraInvoke,
+								CGHS, (key));
 	 break;
       }
       default:
@@ -1865,8 +1903,10 @@ PFModule   *SolverImpesNewPublicXtra(char *name)
 							  ());
    (public_xtra -> phase_velocity_face) = PFModuleNewModule(
 						      PhaseVelocityFace, ());
-   (public_xtra -> total_velocity_face) = PFModuleNewModule(
-						      TotalVelocityFace, ());
+   (public_xtra -> total_velocity_face) = PFModuleNewModuleType(TotalVelocityFaceInitInstanceXtraInvoke,
+								TotalVelocityFace,
+								(NULL, NULL, NULL, NULL, NULL, NULL));
+
    (public_xtra -> advect_satur) = PFModuleNewModule(SatGodunov, ());
    (public_xtra -> advect_concen) = PFModuleNewModule(Godunov, ());
    (public_xtra -> set_problem_data) = PFModuleNewModule(SetProblemData, ());

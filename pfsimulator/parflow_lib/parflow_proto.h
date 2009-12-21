@@ -1,8 +1,8 @@
 /* Header.c */
 
 
-typedef void (*GodunovInvoke) (ProblemData *problem_data , int phase , int concentration , Vector *old_concentration , Vector *new_concentration , Vector *x_velocity , Vector *y_velocity , Vector *z_velocity , Vector *solid_mass_factor , double time , double deltat , int order );
-typedef PFModule * (GodunovInitInstanceXtraInvoke) (Problem *problem , Grid *grid , double *temp_data );
+typedef void (*AdvectionConcentrationInvoke) (ProblemData *problem_data , int phase , int concentration , Vector *old_concentration , Vector *new_concentration , Vector *x_velocity , Vector *y_velocity , Vector *z_velocity , Vector *solid_mass_factor , double time , double deltat , int order );
+typedef PFModule *(*AdvectionConcentrationInitInstanceXtraType) (Problem *problem , Grid *grid , double *temp_data );
 
 /* advection_godunov.c */
 void Godunov (ProblemData *problem_data , int phase , int concentration , Vector *old_concentration , Vector *new_concentration , Vector *x_velocity , Vector *y_velocity , Vector *z_velocity , Vector *solid_mass_factor , double time , double deltat , int order );
@@ -134,6 +134,8 @@ void Copy (Vector *x , Vector *y );
 /* create_grid.c */
 SubgridArray *GetGridSubgrids (SubgridArray *all_subgrids );
 Grid *CreateGrid (Grid *user_grid );
+
+typedef void (*DiagScaleInvoke) (Vector *x , Matrix *A , Vector *b , Vector *d );
 
 /* diag_scale.c */
 void DiagScale (Vector *x , Matrix *A , Vector *b , Vector *d );
@@ -345,6 +347,10 @@ void FreeLogging (void );
 FILE *OpenLogFile (char *module_name );
 int CloseLogFile (FILE *log_file );
 
+typedef void (*MatrixDiagScaleInvoke) (Vector *x , Matrix *A , Vector *b , int flag );
+typedef PFModule *(*MatrixDiagScaleInitInstanceXtraInvoke) (Grid *grid );
+typedef PFModule *(*MatrixDiagScaleNewPublicXtraInvoke) (char *name );
+
 /* matdiag_scale.c */
 void MatDiagScale (Vector *x , Matrix *A , Vector *b , int flag );
 PFModule *MatDiagScaleInitInstanceXtra (Grid *grid );
@@ -433,6 +439,9 @@ PFModule *PCGNewPublicXtra (char *name );
 void PCGFreePublicXtra (void );
 int PCGSizeOfTempData (void );
 
+typedef void (*PermeabilityFaceInvoke) (Vector *zperm , Vector *permeability );
+typedef PFModule *(*PermeabilityFaceInitInstanceXtraInvoke) (Grid *z_grid );
+
 /* permeability_face.c */
 void PermeabilityFace (Vector *zperm , Vector *permeability );
 PFModule *PermeabilityFaceInitInstanceXtra (Grid *z_grid );
@@ -484,11 +493,11 @@ PFModule *PGSRFNewPublicXtra (char *geom_name );
 void PGSRFFreePublicXtra (void );
 int PGSRFSizeOfTempData (void );
 
+typedef void (*PhaseVelocityFaceInvoke) (Vector *xvel , Vector *yvel , Vector *zvel , ProblemData *problem_data , Vector *pressure , Vector **saturations , int phase );
+typedef PFModule *(*PhaseVelocityFaceInitInstanceXtraInvoke) (Problem *problem , Grid *grid , Grid *x_grid , Grid *y_grid , Grid *z_grid , double *temp_data );
+
 /* phase_velocity_face.c */
 void PhaseVelocityFace (Vector *xvel , Vector *yvel , Vector *zvel , ProblemData *problem_data , Vector *pressure , Vector **saturations , int phase );
-
-typedef void (*PhaseVelocityFaceInvoke) (Vector *xvel , Vector *yvel , Vector *zvel , ProblemData *problem_data , Vector *pressure , Vector **saturations , int phase );
-
 PFModule *PhaseVelocityFaceInitInstanceXtra (Problem *problem , Grid *grid , Grid *x_grid , Grid *y_grid , Grid *z_grid , double *temp_data );
 void PhaseVelocityFaceFreeInstanceXtra (void );
 PFModule *PhaseVelocityFaceNewPublicXtra (void );
@@ -574,9 +583,10 @@ PFModule *CapillaryPressureNewPublicXtra (int num_phases );
 void CapillaryPressureFreePublicXtra (void );
 int CapillaryPressureSizeOfTempData (void );
 
+typedef void (*DomainInvoke) (ProblemData *problem_data );
+typedef PFModule *(*DomainInitInstanceXtraInvoke) (Grid *grid );
 /* problem_domain.c */
 void Domain (ProblemData *problem_data );
-typedef void (*DomainInvoke) (ProblemData *problem_data );
 PFModule *DomainInitInstanceXtra (Grid *grid );
 void DomainFreeInstanceXtra (void );
 PFModule *DomainNewPublicXtra (void );
@@ -587,9 +597,11 @@ int DomainSizeOfTempData (void );
 EvalStruct *NewEvalStruct (Problem *problem );
 void FreeEvalStruct (EvalStruct *eval_struct );
 
+typedef void (*GeometriesInvoke) (ProblemData *problem_data );
+typedef PFModule *(*GeometriesInitInstanceXtraInvoke) (Grid *grid);
 /* problem_geometries.c */
 void Geometries (ProblemData *problem_data );
-typedef void (*GeometriesInvoke) (ProblemData *problem_data );
+
 PFModule *GeometriesInitInstanceXtra (Grid *grid);
 void GeometriesFreeInstanceXtra (void );
 PFModule *GeometriesNewPublicXtra (void );
@@ -616,18 +628,21 @@ PFModule *ICPhasePressureNewPublicXtra (void );
 void ICPhasePressureFreePublicXtra (void );
 int ICPhasePressureSizeOfTempData (void );
 
+typedef void (*ManningsInvoke) (ProblemData *problem_data, Vector *mann, Vector *dummy);
+typedef PFModule *(*ManningsInitInstanceXtraInvoke) (Grid *grid);
+
 /* problem_mannings.c */
 void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy);
-typedef void (*ManningsInvoke) (ProblemData *problem_data, Vector *mann, Vector *dummy);
 PFModule *ManningsInitInstanceXtra (Grid *grid);
 void ManningsFreeInstanceXtra (void );
 PFModule *ManningsNewPublicXtra (void);
 void ManningsFreePublicXtra (void );
 int ManningsSizeOfTempData (void );
 
+typedef void (*SpecStorageInvoke) (ProblemData *problem_data, Vector *specific_storage );
+
 /* problem_spec_storage.c */
 void SpecStorage (ProblemData *problem_data, Vector *specific_storage );
-typedef void (*SpecStorageInvoke) (ProblemData *problem_data, Vector *specific_storage );
 PFModule *SpecStorageInitInstanceXtra (void );
 void SpecStorageFreeInstanceXtra (void );
 PFModule *SpecStorageNewPublicXtra (void );
@@ -747,9 +762,10 @@ PFModule *SaturationConstitutiveNewPublicXtra (int num_phases );
 void SaturationConstitutiveFreePublicXtra (void );
 int SaturationConstitutiveSizeOfTempData (void );
 
+typedef void (*SlopeInvoke) (ProblemData *problem_data, Vector *x_sl, Vector *dummy );
+typedef PFModule *(*SlopeInitInstanceXtraInvoke) (Grid *grid);
 /* problem_toposlope_x.c */
 void XSlope (ProblemData *problem_data, Vector *x_sl, Vector *dummy );
-typedef void (*XSlopeInvoke) (ProblemData *problem_data, Vector *x_sl, Vector *dummy );
 PFModule *XSlopeInitInstanceXtra (Grid *grid);
 void XSlopeFreeInstanceXtra (void );
 PFModule *XSlopeNewPublicXtra (void);
@@ -758,7 +774,6 @@ int XSlopeSizeOfTempData (void );
 
 /* problem_toposlope_y.c */
 void YSlope (ProblemData *problem_data, Vector *y_slope, Vector *dummy );
-typedef void (*YSlopeInvoke) (ProblemData *problem_data, Vector *y_slope, Vector *dummy );
 PFModule *YSlopeInitInstanceXtra (Grid *grid);
 void YSlopeFreeInstanceXtra (void );
 PFModule *YSlopeNewPublicXtra (void);
@@ -818,11 +833,11 @@ PFModule *RichardsJacobianEvalNewPublicXtra (void );
 void RichardsJacobianEvalFreePublicXtra (void );
 int RichardsJacobianEvalSizeOfTempData (void );
 
+typedef void (*AdvectionSaturationInvoke) (ProblemData *problem_data , int phase , Vector *old_saturation , Vector *new_saturation , Vector *x_velocity , Vector *y_velocity , Vector *z_velocity , Vector *z_permeability , Vector *solid_mass_factor , double *viscosity , double *density , double gravity , double time , double deltat , int order );
+typedef PFModule *(*AdvectionSaturationInitInstanceXtraInvoke) (Problem *problem , Grid *grid , double *temp_data );
+
 /* sadvection_godunov.c */
 void SatGodunov (ProblemData *problem_data , int phase , Vector *old_saturation , Vector *new_saturation , Vector *x_velocity , Vector *y_velocity , Vector *z_velocity , Vector *z_permeability , Vector *solid_mass_factor , double *viscosity , double *density , double gravity , double time , double deltat , int order );
-
-typedef void (*SatGodunovInvoke) (ProblemData *problem_data , int phase , Vector *old_saturation , Vector *new_saturation , Vector *x_velocity , Vector *y_velocity , Vector *z_velocity , Vector *z_permeability , Vector *solid_mass_factor , double *viscosity , double *density , double gravity , double time , double deltat , int order );
-
 PFModule *SatGodunovInitInstanceXtra (Problem *problem , Grid *grid , double *temp_data );
 void SatGodunovFreeInstanceXtra (void );
 PFModule *SatGodunovNewPublicXtra (void );
@@ -843,11 +858,11 @@ PFModule *SelectTimeStepNewPublicXtra (void );
 void SelectTimeStepFreePublicXtra (void );
 int SelectTimeStepSizeOfTempData (void );
 
+typedef void (*SetProblemDataInvoke) (ProblemData *problem_data );
+typedef PFModule *(*SetProblemDataInitInstanceXtraInvoke) (Problem *problem , Grid *grid , Grid *grid2d, double *temp_data );
+
 /* set_problem_data.c */
 void SetProblemData (ProblemData *problem_data );
-
-typedef void (*SetProblemDataInvoke) (ProblemData *problem_data );
-
 PFModule *SetProblemDataInitInstanceXtra (Problem *problem , Grid *grid , Grid *grid2d, double *temp_data );
 void SetProblemDataFreeInstanceXtra (void );
 PFModule *SetProblemDataNewPublicXtra (void );
@@ -880,6 +895,8 @@ PFModule *SolverDiffusionNewPublicXtra (char *name );
 void SolverDiffusionFreePublicXtra (void );
 int SolverDiffusionSizeOfTempData (void );
 
+typedef PFModule *(*SolverNewPublicXtraInvoke) (char *name );
+
 /* solver_richards.c */
 void SolverRichards (void );
 PFModule *SolverRichardsInitInstanceXtra (void );
@@ -902,11 +919,11 @@ void AdvanceRichards (PFModule *this_module,
 void SetupRichards (PFModule *this_module);
 
 
+typedef void (*SubsrfSimInvoke) (ProblemData *problem_data , Vector *perm_x , Vector *perm_y , Vector *perm_z , int num_geounits , GeomSolid **geounits , GrGeomSolid **gr_geounits );
+typedef PFModule *(*SubsrfSimInitInstanceXtraInvoke) (Grid *grid , double *temp_data );
+
 /* subsrf_sim.c */
 void SubsrfSim (ProblemData *problem_data , Vector *perm_x , Vector *perm_y , Vector *perm_z , int num_geounits , GeomSolid **geounits , GrGeomSolid **gr_geounits );
-
-typedef void (*SubsrfSimInvoke) (ProblemData *problem_data , Vector *perm_x , Vector *perm_y , Vector *perm_z , int num_geounits , GeomSolid **geounits , GrGeomSolid **gr_geounits );
-
 PFModule *SubsrfSimInitInstanceXtra (Grid *grid , double *temp_data );
 void SubsrfSimFreeInstanceXtra (void );
 PFModule *SubsrfSimNewPublicXtra (void );
@@ -930,11 +947,11 @@ void PrintTiming (void );
 void FreeTiming (void );
 #endif
 
+typedef void (*TotalVelocityFaceInvoke) (Vector *xvel , Vector *yvel , Vector *zvel , ProblemData *problem_data , Vector *total_mobility_x , Vector *total_mobility_y , Vector *total_mobility_z , Vector *pressure , Vector **saturations );
+typedef PFModule *(*TotalVelocityFaceInitInstanceXtraInvoke) (Problem *problem , Grid *grid , Grid *x_grid , Grid *y_grid , Grid *z_grid , double *temp_data );
+
 /* total_velocity_face.c */
 void TotalVelocityFace (Vector *xvel , Vector *yvel , Vector *zvel , ProblemData *problem_data , Vector *total_mobility_x , Vector *total_mobility_y , Vector *total_mobility_z , Vector *pressure , Vector **saturations );
-
-typedef void (*TotalVelocityFaceInvoke) (Vector *xvel , Vector *yvel , Vector *zvel , ProblemData *problem_data , Vector *total_mobility_x , Vector *total_mobility_y , Vector *total_mobility_z , Vector *pressure , Vector **saturations );
-
 PFModule *TotalVelocityFaceInitInstanceXtra (Problem *problem , Grid *grid , Grid *x_grid , Grid *y_grid , Grid *z_grid , double *temp_data );
 void TotalVelocityFaceFreeInstanceXtra (void );
 PFModule *TotalVelocityFaceNewPublicXtra (void );

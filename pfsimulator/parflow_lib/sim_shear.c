@@ -44,13 +44,12 @@
  * more complex subsurface stratification (non-horizontal).
  *--------------------------------------------------------------------------*/
 
-double         **SimShear(shear_min_ptr, shear_max_ptr,
-			  geom_solid, subgrids, type)
-double         **shear_min_ptr;
-double         **shear_max_ptr;
-GeomSolid       *geom_solid;
-SubgridArray    *subgrids;
-int              type;
+double         **SimShear(
+double         **shear_min_ptr,
+double         **shear_max_ptr,
+GeomSolid       *geom_solid,
+SubgridArray    *subgrids,
+int              type)
 {
    GrGeomSolid        *grgeom_solid;
    double             *shear_min;

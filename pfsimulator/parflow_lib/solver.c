@@ -105,17 +105,17 @@ void
    {
       case 0: 
       {
-	 amps_ThreadLocal(Solver_module) = PFModuleNewModule(SolverRichards, ("Solver"));
+	 amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverNewPublicXtraInvoke, SolverRichards, ("Solver"));
 	 break;
       }
       case 1:
       {
-	 amps_ThreadLocal(Solver_module) = PFModuleNewModule(SolverDiffusion, ("Solver"));
+	 amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverNewPublicXtraInvoke, SolverDiffusion, ("Solver"));
 	 break;
       }
       case 2:
       {
-	 amps_ThreadLocal(Solver_module) = PFModuleNewModule(SolverImpes, ("Solver"));
+	 amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverNewPublicXtraInvoke, SolverImpes, ("Solver"));
 	 break;
       }
       default:
