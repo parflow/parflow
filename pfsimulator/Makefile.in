@@ -22,7 +22,7 @@ SUBDIRS = amps $(CLM_DIR) kinsol parflow_lib parflow_exe
 # Also should run a commit to update the repository version number.
 #	svn commit -m "Updated version number" @srcdir@/parflow_lib/version.h
 version:
-	@echo "static char ParFlowRevision[] = \""`cat $(PARFLOW)/../VERSION`"."`svnversion -n @srcdir@ | sed -s s/M//`"\";" > @srcdir@/parflow_lib/version.h
+	@echo "static char ParFlowRevision[] = \""`cat $(PARFLOW)/../VERSION`"."`svnversion -n @srcdir@ | sed -e s/M//`"\";" > @srcdir@/parflow_lib/version.h
 
 all:
 	@for DIR in $(SUBDIRS); do if test -d $$DIR; then (cd $$DIR && $(MAKE) $@) ; fi || exit 1; done
