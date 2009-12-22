@@ -105,6 +105,8 @@ int          zero)
    int                 num_iterations;
    double              rel_norm;
 
+   (void) zero;
+
    /* Copy rhs to hypre_b vector. */
    BeginTiming(public_xtra->time_index_copy_hypre);
 
@@ -264,6 +266,10 @@ double       *temp_data)
    int                 index[3];
    int                 ilo[3];
    int                 ihi[3];
+
+   (void) problem;
+   (void) problem_data;
+   (void) temp_data;
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);

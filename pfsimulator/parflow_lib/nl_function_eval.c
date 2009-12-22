@@ -80,7 +80,8 @@ void    *current_state)
    double       *outflow       = StateOutflow(     ((State*)current_state) );
    Vector       *evap_trans    = StateEvapTrans(   ((State*)current_state) );
    Vector       *ovrl_bc_flx   = StateOvrlBcFlx(   ((State*)current_state) );
- 
+
+   (void) size;
  
    PFModuleInvokeType(NlFunctionEvalInvoke, nl_function_eval, 
 		  (pressure, fval, problem_data, saturation, old_saturation, 
@@ -1165,6 +1166,9 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem     *problem,
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
+   
+   (void) grid;
+   (void) temp_data;
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);

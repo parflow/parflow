@@ -49,6 +49,9 @@ N_Vector N_VNew(
    Grid    *grid;
    int      num_ghost;
 
+   (void) N;
+   (void) machEnv;
+
    grid      = pf2kinsol_data.grid;
    num_ghost = pf2kinsol_data.num_ghost;
    return(NewVector(grid, 1, num_ghost));

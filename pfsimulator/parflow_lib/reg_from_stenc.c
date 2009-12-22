@@ -59,6 +59,8 @@ Stencil         *stencil)
 
    int              i, j, k;
 
+   (void)recv_reg;
+   (void)stencil;
 
    /*-----------------------------------------------------------------------
     * Set up the dependent region

@@ -269,6 +269,8 @@ void printMaxMemory(FILE *log_file)
 */
 void printMemoryInfo(FILE *log_file) 
 {
+   (void) log_file;
+
 #ifdef HAVE_MALLINFO
    /* Get malloc info structure */
    struct mallinfo my_mallinfo = mallinfo();
@@ -286,6 +288,7 @@ void printMemoryInfo(FILE *log_file)
    /* Get number of items currently allocated */
    int number_allocated = my_mallinfo.ordblks + my_mallinfo.smblks;
 
+   (void) log_file;
    
    /* Record high-water mark for memory used. */
    if(amps_ThreadLocal(s_max_memory) < used_mem) 

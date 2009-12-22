@@ -114,6 +114,7 @@ static Vector  *NewTempVector(
    int        data_size;
    int        i, n;
 
+   (void) nc;
 
    new_vector = ctalloc(Vector, 1); /*address of storage is assigned to the ptr "new_" of type Vector, which is also 
 							    the return value of this function */

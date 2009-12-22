@@ -79,6 +79,8 @@ void   	 Chebyshev(
 
    int     i = 0;
 
+   (void) tol;
+   (void) zero;
 
    /*-----------------------------------------------------------------------
     * Begin timing
@@ -176,6 +178,8 @@ PFModule     *ChebyshevInitInstanceXtra(
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
 
+   (void) problem;
+   (void) problem_data;
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
@@ -238,6 +242,8 @@ PFModule   *ChebyshevNewPublicXtra(char *name)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;
+
+   (void) name;
 
    public_xtra = NULL;
 

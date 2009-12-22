@@ -160,6 +160,8 @@ GrGeomSolid  **gr_geounits)
 
    amps_Invoice      result_invoice;
 
+   (void) num_geounits;
+
    BeginTiming(public_xtra -> time_index);
 
    /* Transfer conditioning data from the public_xtra structure to a local

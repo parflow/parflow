@@ -177,6 +177,8 @@ RFCondData   *cdata)
    double    sum;
    double    Tiny = 1.0e-12;
 
+   (void) geounit;
+
    /*-----------------------------------------------------------------------
     * Allocate temp vectors
     *-----------------------------------------------------------------------*/
@@ -885,6 +887,8 @@ PFModule  *PGSRFInitInstanceXtra(
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
+
+   (void) temp_data;
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);

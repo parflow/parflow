@@ -82,6 +82,8 @@ amps_Package amps_NewPackage(amps_Comm comm,
 {
    amps_Package package;
 
+   (void)comm;
+
    package = (amps_Package)calloc(1, sizeof(amps_PackageStruct));
 
    package -> num_recv = num_recv;

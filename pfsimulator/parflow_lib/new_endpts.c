@@ -94,6 +94,8 @@ void NewEndpts (
     int		*ind;
     double	*w, *bd;
 
+    (void) pp;
+
     /* Allocate memory for local variable-size arrays */
     diag    = (double*) malloc(size*sizeof(double));
     e	    = (double*) malloc(size*sizeof(double));

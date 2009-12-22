@@ -51,6 +51,8 @@ Subgrid        *subgrid)
    int             i, j, k, ai;
    double         *data;
 
+   (void)subgrid;
+
    amps_ReadInt(file, &ix, 1);
    amps_ReadInt(file, &iy, 1);
    amps_ReadInt(file, &iz, 1);

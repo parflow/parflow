@@ -56,6 +56,8 @@ double   dK)
 
    int      i, j;
 
+   (void) phi;
+   (void) theta;
 
    /* compute M and dk */
    M  = (int)(Kmax / dK);

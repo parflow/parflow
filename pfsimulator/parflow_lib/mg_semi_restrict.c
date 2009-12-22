@@ -80,6 +80,9 @@ CommPkg         *r_f_comm_pkg)
 
    CommHandle     *handle = NULL;
 
+   (void) A_f;
+   (void) f_sr_array;
+   (void) c_sr_array;
 
    /*--------------------------------------------------------------------
     * Compute r_c in c_sr_array

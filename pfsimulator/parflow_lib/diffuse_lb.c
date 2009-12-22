@@ -91,6 +91,8 @@ void DiffuseLB (
    /* Communications */
    CommHandle *handle;
 
+   (void) problem;
+
    /*------------------------------------------------------------*
     * Initialize some control parameters
     *------------------------------------------------------------*/

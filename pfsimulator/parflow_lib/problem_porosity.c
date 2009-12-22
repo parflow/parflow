@@ -96,6 +96,8 @@ GrGeomSolid  **gr_geounits)
    int               i, j, k, pi, sg, well;
 
    double           *phi;
+   
+   (void)num_geounits;
 
    BeginTiming(public_xtra -> time_index);
 

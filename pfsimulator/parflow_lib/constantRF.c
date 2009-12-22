@@ -102,6 +102,9 @@ void    ConstantRF(
    int             r;
    int             index;
 
+   (void) geounit;
+   (void) cdata;
+
    /*
     * Note: the cdata argument is not used here.
     * It's there only for consistency with the other

@@ -171,6 +171,8 @@ int     fcn)             /* Flag determining what to calculate
    double prt1,prt2,prt3,prt4,prt5;
    double bb1,bb2,ee1,ee3,entr,h;
 
+   (void)pressure;
+
    switch((public_xtra -> type_density[phase]))
    {
 

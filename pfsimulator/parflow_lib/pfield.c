@@ -110,6 +110,8 @@ Statistics   *stats)
 
    /* Conditioning data variables */
    int       *ci, *cj, *ck;	/* Indices for conditioning data points */
+
+   (void) geounit;
    
    /*-----------------------------------------------------------------------
     * Start p-field algorithm

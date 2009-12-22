@@ -74,6 +74,8 @@ Vector      *rhs,
 double       tol,
 int          zero)
 {
+   (void) zero;
+
 #ifdef HAVE_HYPRE
    PFModule           *this_module    = ThisPFModule;
    InstanceXtra       *instance_xtra  = (InstanceXtra *)PFModuleInstanceXtra(this_module);
@@ -268,6 +270,10 @@ double       *temp_data)
    int                 index[3];
    int                 ilo[3];
    int                 ihi[3];
+
+   (void) problem;
+   (void) problem_data;
+   (void) temp_data;
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);

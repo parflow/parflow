@@ -77,6 +77,8 @@ void   		 MGSemiProlong(
 
    CommHandle     *handle = NULL;
 
+   (void) A_f;
+   (void) f_sr_array;
 
    /*--------------------------------------------------------------------
     * Compute e_f in c_sr_array

@@ -205,6 +205,8 @@ void WRF2PF(
 
    Grid       *grid     = VectorGrid(pf_vector);
    int sg;
+   
+   (void)ghost_size_j_upper;
 
    ForSubgridI(sg, GridSubgrids(grid))
    {
@@ -234,7 +236,7 @@ void WRF2PF(
 
 	    // SGS What to do if near bottom such that
 	    // there are not wrf_depth values?
-	    int iz = top_data[top_index] - (wrf_depth - 1);
+	    int iz = (int)top_data[top_index] - (wrf_depth - 1);
 	    for (k = iz; k < iz + wrf_depth; k++)		
 	    {
 	       int pf_index = SubvectorEltIndex(subvector, i, j, k);
@@ -267,6 +269,8 @@ void PF2WRF(
    Grid       *grid     = VectorGrid(pf_vector);
    int sg;
 
+   (void) ghost_size_j_upper;
+
    ForSubgridI(sg, GridSubgrids(grid))
    {
       Subgrid *subgrid = GridSubgrid(grid, sg);
@@ -295,7 +299,7 @@ void PF2WRF(
 
 	    // SGS What to do if near bottom such that
 	    // there are not wrf_depth values?
-	    int iz = top_data[top_index] - (wrf_depth - 1);
+	    int iz = (int)top_data[top_index] - (wrf_depth - 1);
 
 	    for (k = iz; k < iz + wrf_depth; k++)		
 	    {

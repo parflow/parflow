@@ -250,6 +250,8 @@ PFModule   *MatDiagScaleNewPublicXtra(char *name)
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;
 
+   (void) name;
+
    public_xtra = NULL;
 
    PFModulePublicXtra(this_module) = public_xtra;

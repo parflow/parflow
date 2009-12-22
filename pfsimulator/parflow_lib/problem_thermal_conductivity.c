@@ -120,6 +120,8 @@ int          fcn)               /* Flag determining what to calculate
 
    int            *region_indices, num_regions, ir;
 
+   (void) gravity;
+
    /* Initialize thermal conductivity to 0.0 */
    InitVectorAll(phase_thermalconductivity,0.0);
 

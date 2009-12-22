@@ -528,6 +528,8 @@ static int KINSpgmrPSolve(void *kinsol_mem, N_Vector r, N_Vector z,
   KINSpgmrMem kinspgmr_mem;
   int ret;
 
+  (void) lrdummy;
+
   kin_mem = (KINMem) kinsol_mem;
   kinspgmr_mem = (KINSpgmrMem)lmem;
 

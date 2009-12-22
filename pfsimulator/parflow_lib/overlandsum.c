@@ -131,7 +131,7 @@ void OverlandSum(ProblemData *problem_data,
 		     {
 			index_top             = SubvectorEltIndex(top_subvector, i, j, 0);
 
-			int k = top_ptr[index_top];
+			int k = (int)top_ptr[index_top];
 			if ( !(k < 0)) 
 			{
 			   /*
@@ -167,7 +167,7 @@ void OverlandSum(ProblemData *problem_data,
 			   */
 
 			   index_top             = SubvectorEltIndex(top_subvector, i, j, 0);
-			   k = top_ptr[index_top];
+			   k = (int)top_ptr[index_top];
 			   index_overland_sum    = SubvectorEltIndex(overland_sum_subvector,  i, j, 0);
 			   index_slope_x         = SubvectorEltIndex(slope_x_subvector, i, j, 0);
 			   index_slope_y         = SubvectorEltIndex(slope_y_subvector, i, j, 0);
@@ -196,7 +196,7 @@ void OverlandSum(ProblemData *problem_data,
 			
 			index_top             = SubvectorEltIndex(top_subvector, i, j, 0);
 
-			int k = top_ptr[index_top];
+			int k = (int)top_ptr[index_top];
 			if ( !(k < 0)) 
 			{
 
@@ -232,7 +232,7 @@ void OverlandSum(ProblemData *problem_data,
 			      Compute runnoff if slope is running off of active region.
 			   */
 			   index_top             = SubvectorEltIndex(top_subvector, i, j, 0);
-			   k = top_ptr[index_top];
+			   k = (int)top_ptr[index_top];
 			   index_overland_sum    = SubvectorEltIndex(overland_sum_subvector,  i, j, 0);
 			   index_slope_x         = SubvectorEltIndex(slope_x_subvector, i, j, 0);
 			   index_slope_y         = SubvectorEltIndex(slope_y_subvector, i, j, 0);

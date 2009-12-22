@@ -113,6 +113,16 @@ void     *current_state)
    double       dt           = StateDt( ((State*)current_state) );
    double       time         = StateTime( ((State*)current_state) );
 
+   (void) neq;
+   (void) uscale;
+   (void) fval;
+   (void) fscale;
+   (void) vtemp1;
+   (void) vtemp2;
+   (void) nl_function;
+   (void) uround;
+   (void) nfePtr;
+
    /* The preconditioner module initialized here is the KinsolPC module
       itself */
 
@@ -139,6 +149,16 @@ long int *nfePtr,
 void     *current_state)
 {
    PFModule *precond = StatePrecond( (State*)current_state );
+
+   (void) neq;
+   (void) pressure;
+   (void) uscale;
+   (void) fval;
+   (void) fscale;
+   (void) ftem;
+   (void) nl_function;
+   (void) uround;
+   (void) nfePtr;
 
    /* The preconditioner module invoked here is the KinsolPC module
       itself */

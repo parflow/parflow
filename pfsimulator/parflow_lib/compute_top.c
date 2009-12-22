@@ -64,6 +64,8 @@ void ComputeTop(Problem     *problem,      /* General problem information */
    double *top_data;
    int index;
 
+   (void) problem;
+
    PFVConstInit(-1, top);
       
    ForSubgridI(is, subgrids)

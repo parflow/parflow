@@ -245,6 +245,8 @@ void *HBT_replace(
     HBT_element *temp;
     HBT_element *father_temp;
 
+    (void) sizeof_obj;
+
     father_temp = NULL;
     temp = tree->root;
 

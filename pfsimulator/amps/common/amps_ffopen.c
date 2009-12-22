@@ -114,6 +114,9 @@ amps_File amps_FFopen(amps_Comm comm, char *filename, char *type, long size)
 
    char temp_filename[MAXPATHLEN];
 
+   (void)comm;
+   (void)size;
+
    sprintf(temp_filename, "%s.%05d", filename, amps_Rank(amps_CommWorld));
 
    invoice = amps_NewInvoice("%l", &start);

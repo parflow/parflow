@@ -109,6 +109,8 @@ int          zero)
 
    GrGeomSolid        *gr_domain = ProblemDataGrDomain(instance_xtra -> problem_data);
 
+   (void) zero;
+
    /* Copy rhs to hypre_b vector. */
    BeginTiming(public_xtra->time_index_copy_hypre);
 
@@ -340,6 +342,9 @@ double       *temp_data)
    int                 box_size_power = public_xtra -> box_size_power;
 
    GrGeomSolid        *gr_domain = ProblemDataGrDomain(problem_data);
+
+   (void) problem;
+   (void) temp_data;
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);

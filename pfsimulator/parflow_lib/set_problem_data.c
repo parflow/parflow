@@ -142,6 +142,7 @@ PFModule  *SetProblemDataInitInstanceXtra(
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
 
+   (void) grid2d;
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);

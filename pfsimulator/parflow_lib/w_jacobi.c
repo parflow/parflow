@@ -110,6 +110,7 @@ int    	 zero)
 
    CommHandle     *handle = NULL;
 
+   (void) tol;
 
    /*-----------------------------------------------------------------------
     * Begin timing
@@ -323,6 +324,8 @@ double       *temp_data)
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
 
+   (void) problem;
+   (void) problem_data;
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);

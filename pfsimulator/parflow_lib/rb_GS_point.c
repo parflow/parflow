@@ -108,6 +108,7 @@ int    	 zero)
 
    int             vector_update_mode;
 
+   (void)tol;
 
    /*-----------------------------------------------------------------------
     * Begin timing
@@ -379,6 +380,10 @@ double       *temp_data)
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
 
+   (void)problem;
+   (void)grid;
+   (void)problem_data;
+   (void)temp_data;
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
