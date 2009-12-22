@@ -274,7 +274,7 @@ void SetupRichards(PFModule *this_module) {
    sprintf(file_prefix, GlobalsOutFileName);
 
    /* Do turning bands (and other stuff maybe) */
-   PFModuleInvoke(void, set_problem_data, (problem_data));
+   PFModuleInvokeType(SetProblemDataInvoke, set_problem_data, (problem_data));
    ComputeTop(problem, problem_data);
 
    /* Write subsurface data */
@@ -543,21 +543,23 @@ void SetupRichards(PFModule *this_module) {
 #endif
 
       /* Set initial pressures and pass around ghost data to start */
-      PFModuleInvoke(void, ic_phase_pressure, 
-                    (instance_xtra -> pressure, instance_xtra -> mask, problem_data, problem));
+      PFModuleInvokeType(ICPhasePressureInvoke, 
+			 ic_phase_pressure, 
+			 (instance_xtra -> pressure, instance_xtra -> mask, problem_data, problem));
 
       handle = InitVectorUpdate(instance_xtra -> pressure, VectorUpdateAll);
       FinalizeVectorUpdate(handle); 
 
       /* Set initial densities and pass around ghost data to start */
-      PFModuleInvoke(void, phase_density, 
-		     (0, instance_xtra -> pressure, instance_xtra -> density, &dtmp, &dtmp, CALCFCN));
+      PFModuleInvokeType(PhaseDensityInvoke,  
+			 phase_density, 
+			 (0, instance_xtra -> pressure, instance_xtra -> density, &dtmp, &dtmp, CALCFCN));
 
       handle = InitVectorUpdate(instance_xtra -> density, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
 
       /* Set initial saturations */
-      PFModuleInvoke(void, problem_saturation, 
+      PFModuleInvokeType(SaturationInvoke, problem_saturation, 
 		    (instance_xtra -> saturation, instance_xtra -> pressure, instance_xtra -> density, gravity, problem_data, 
 		      CALCFCN));
 
@@ -810,8 +812,8 @@ void AdvanceRichards(PFModule *this_module,
    // Initialize ct in either case
    ct = start_time;
    if(compute_time_step) {
-      PFModuleInvoke(void, select_time_step, (&cdt, &dt_info, ct, problem,
-					      problem_data) );
+      PFModuleInvokeType(SelectTimeStepInvoke, select_time_step, (&cdt, &dt_info, ct, problem,
+								  problem_data) );
    }
    else  // Do not compute timestep
    {
@@ -1252,16 +1254,16 @@ void AdvanceRichards(PFModule *this_module,
 	 /*          Solve the nonlinear system for this time step          */
 	 /*******************************************************************/
 	  
-	 retval = PFModuleInvoke(int, nonlin_solver, 
-	                         (instance_xtra -> pressure, 
-				  instance_xtra -> density, 
-				  instance_xtra -> old_density, 
-				  instance_xtra -> saturation, 
-				  instance_xtra -> old_saturation, 
-				  t, dt, 
-				  problem_data, instance_xtra -> old_pressure, 
-				  &outflow, evap_trans, 
-				  instance_xtra -> ovrl_bc_flx));
+	 retval = PFModuleInvokeType(NonlinSolverInvoke, nonlin_solver, 
+				     (instance_xtra -> pressure, 
+				      instance_xtra -> density, 
+				      instance_xtra -> old_density, 
+				      instance_xtra -> saturation, 
+				      instance_xtra -> old_saturation, 
+				      t, dt, 
+				      problem_data, instance_xtra -> old_pressure, 
+				      &outflow, evap_trans, 
+				      instance_xtra -> ovrl_bc_flx));
 
 	 if (retval != 0)
 	 {
@@ -1289,13 +1291,13 @@ void AdvanceRichards(PFModule *this_module,
       instance_xtra -> iteration_number++;
      
       /* Calculate densities and saturations for the new pressure. */
-      PFModuleInvoke(void, phase_density, 
+      PFModuleInvokeType(PhaseDensityInvoke,  phase_density, 
 		     (0, instance_xtra -> pressure, instance_xtra -> density, 
 		      &dtmp, &dtmp, CALCFCN));
       handle = InitVectorUpdate(instance_xtra -> density, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
 
-      PFModuleInvoke(void, problem_saturation, 
+      PFModuleInvokeType(SaturationInvoke, problem_saturation, 
                      (instance_xtra -> saturation, instance_xtra -> pressure, 
 		      instance_xtra -> density, gravity, problem_data,
 		      CALCFCN));
@@ -1400,7 +1402,7 @@ void AdvanceRichards(PFModule *this_module,
       /*             Compute the l2 error                            */
       /***************************************************************/
 
-      PFModuleInvoke(void, l2_error_norm,
+      PFModuleInvokeType(L2ErrorNormInvoke, l2_error_norm,
 		     (t, instance_xtra -> pressure, problem_data, &err_norm));
       if( (!amps_Rank(amps_CommWorld)) && (err_norm >= 0.0) )
       {
@@ -1821,28 +1823,35 @@ PFModule *SolverRichardsInitInstanceXtra()
       */
       /* Need to change for rel. perm. and not mobility */
       (instance_xtra -> advect_concen) =
-	 PFModuleNewInstance((public_xtra -> advect_concen),
-			     (problem, grid, NULL));
+	 PFModuleNewInstanceType(AdvectionConcentrationInitInstanceXtraType,
+				 (public_xtra -> advect_concen),
+				 (problem, grid, NULL));
       (instance_xtra -> set_problem_data) =
-	 PFModuleNewInstance((public_xtra -> set_problem_data),
-			     (problem, grid, grid2d, NULL));
+	 PFModuleNewInstanceType(SetProblemDataInitInstanceXtraInvoke,
+				 (public_xtra -> set_problem_data),
+				 (problem, grid, grid2d, NULL));
 
       (instance_xtra -> retardation) =
-	 PFModuleNewInstance(ProblemRetardation(problem), (NULL));
+	 PFModuleNewInstanceType(RetardationInitInstanceXtraInvoke,
+				 ProblemRetardation(problem), (NULL));
       (instance_xtra -> phase_rel_perm) =
-	 PFModuleNewInstance(ProblemPhaseRelPerm(problem), (grid, NULL));
+	 PFModuleNewInstanceType(PhaseRelPermInitInstanceXtraInvoke,
+				 ProblemPhaseRelPerm(problem), (grid, NULL));
       (instance_xtra -> ic_phase_concen) =
 	 PFModuleNewInstance(ProblemICPhaseConcen(problem), ());
 
       (instance_xtra -> permeability_face) =
-	 PFModuleNewInstance((public_xtra -> permeability_face),
-			     (z_grid));
+	 PFModuleNewInstanceType(PermeabilityFaceInitInstanceXtraInvoke,
+				 (public_xtra -> permeability_face),
+				 (z_grid));
 	
       (instance_xtra -> ic_phase_pressure) =
-	 PFModuleNewInstance(ProblemICPhasePressure(problem), 
-			     (problem, grid, NULL));
+	 PFModuleNewInstanceType(ICPhasePressureInitInstanceXtraInvoke,
+				 ProblemICPhasePressure(problem), 
+				 (problem, grid, NULL));
       (instance_xtra -> problem_saturation) =
-	 PFModuleNewInstance(ProblemSaturation(problem), (grid, NULL));
+	 PFModuleNewInstanceType(SaturationInitInstanceXtraInvoke,
+				 ProblemSaturation(problem), (grid, NULL));
       (instance_xtra -> phase_density) =
 	 PFModuleNewInstance(ProblemPhaseDensity(problem), ());
       (instance_xtra -> select_time_step) =
@@ -1850,37 +1859,46 @@ PFModule *SolverRichardsInitInstanceXtra()
       (instance_xtra -> l2_error_norm) =
 	 PFModuleNewInstance(ProblemL2ErrorNorm(problem), ());
       (instance_xtra -> nonlin_solver) =
-	 PFModuleNewInstance(public_xtra -> nonlin_solver, 
-			     (problem, grid, instance_xtra -> problem_data, NULL));
-
+	 PFModuleNewInstanceType(NonlinSolverInitInstanceXtraInvoke,
+				 public_xtra -> nonlin_solver, 
+				 (problem, grid, instance_xtra -> problem_data, NULL));
+      
    }
    else
    {
-      PFModuleReNewInstance((instance_xtra -> phase_velocity_face),
-			    (problem, grid, x_grid, y_grid, z_grid, NULL));
-      PFModuleReNewInstance((instance_xtra -> advect_concen),
-			    (problem, grid, NULL));
-      PFModuleReNewInstance((instance_xtra -> set_problem_data),
-			    (problem, grid, grid2d, NULL));
-
-      PFModuleReNewInstance((instance_xtra -> retardation), (NULL));
-
-      PFModuleReNewInstance((instance_xtra -> phase_rel_perm), (grid, NULL));
+      PFModuleReNewInstanceType(PhaseVelocityFaceInitInstanceXtraInvoke,
+				(instance_xtra -> phase_velocity_face),
+				(problem, grid, x_grid, y_grid, z_grid, NULL));
+      PFModuleReNewInstanceType(AdvectionConcentrationInitInstanceXtraType,
+				(instance_xtra -> advect_concen),
+				(problem, grid, NULL));
+      PFModuleReNewInstanceType(SetProblemDataInitInstanceXtraInvoke,
+				(instance_xtra -> set_problem_data),
+				(problem, grid, grid2d, NULL));
+      
+      PFModuleReNewInstanceType(RetardationInitInstanceXtraInvoke,
+				(instance_xtra -> retardation), (NULL));
+      
+      PFModuleReNewInstanceType(PhaseRelPermInitInstanceXtraInvoke,
+				(instance_xtra -> phase_rel_perm), (grid, NULL));
       PFModuleReNewInstance((instance_xtra -> ic_phase_concen), ());
-
-      PFModuleReNewInstance((instance_xtra -> permeability_face),
-			    (z_grid));
-
-      PFModuleReNewInstance((instance_xtra -> ic_phase_pressure), 
-			    (problem, grid, NULL));
-      PFModuleReNewInstance((instance_xtra -> problem_saturation), 
-			    (grid, NULL)); 
+      
+      PFModuleReNewInstanceType(PermeabilityFaceInitInstanceXtraInvoke,
+				(instance_xtra -> permeability_face),
+				(z_grid));
+      
+      PFModuleReNewInstanceType(ICPhasePressureInitInstanceXtraInvoke,
+				(instance_xtra -> ic_phase_pressure), 
+				(problem, grid, NULL));
+      PFModuleReNewInstanceType(SaturationInitInstanceXtraInvoke,
+				(instance_xtra -> problem_saturation), 
+				(grid, NULL)); 
       PFModuleReNewInstance((instance_xtra -> phase_density), ()); 
       PFModuleReNewInstance((instance_xtra -> select_time_step), ()); 
       PFModuleReNewInstance((instance_xtra -> l2_error_norm), ()); 
       PFModuleReNewInstance((instance_xtra -> nonlin_solver), ()); 
    }
-
+   
    /*-------------------------------------------------------------------
     * Set up temporary data
     *-------------------------------------------------------------------*/
@@ -1923,25 +1941,30 @@ PFModule *SolverRichardsInitInstanceXtra()
    temp_data = NewTempData(temp_data_size);
    (instance_xtra -> temp_data) = temp_data;
 
-   PFModuleReNewInstance((instance_xtra -> problem_saturation),
-			 (NULL, temp_data));
+   PFModuleReNewInstanceType(SaturationInitInstanceXtraInvoke,
+			     (instance_xtra -> problem_saturation),
+			     (NULL, temp_data));
    temp_data += PFModuleSizeOfTempData(instance_xtra->problem_saturation);
 
-   PFModuleReNewInstance((instance_xtra -> phase_rel_perm),
-			 (NULL, temp_data));
+   PFModuleReNewInstanceType(PhaseRelPermInitInstanceXtraInvoke,
+			     (instance_xtra -> phase_rel_perm),
+			     (NULL, temp_data));
    temp_data += PFModuleSizeOfTempData(instance_xtra->phase_rel_perm);
 
    /* renew ic_phase_pressure module */
-   PFModuleReNewInstance((instance_xtra -> ic_phase_pressure),
-			 (NULL, NULL, temp_data));
+   PFModuleReNewInstanceType(ICPhasePressureInitInstanceXtraInvoke,
+			     (instance_xtra -> ic_phase_pressure),
+			     (NULL, NULL, temp_data));
 
    /* renew nonlinear solver module */
-   PFModuleReNewInstance((instance_xtra -> nonlin_solver),
-			 (NULL, NULL, instance_xtra -> problem_data, temp_data));
+   PFModuleReNewInstanceType(NonlinSolverInitInstanceXtraInvoke,
+			     (instance_xtra -> nonlin_solver),
+			     (NULL, NULL, instance_xtra -> problem_data, temp_data));
 
    /* renew set_problem_data module */
-   PFModuleReNewInstance((instance_xtra -> set_problem_data),
-			 (NULL, NULL, NULL, temp_data));
+   PFModuleReNewInstanceType(SetProblemDataInitInstanceXtraInvoke,
+			     (instance_xtra -> set_problem_data),
+			     (NULL, NULL, NULL, temp_data));
 
    /* renew velocity computation modules that take temporary data */
    /*   PFModuleReNewInstance((instance_xtra -> phase_velocity_face),
@@ -1950,10 +1973,12 @@ PFModule *SolverRichardsInitInstanceXtra()
 
    /* renew concentration advection modules that take temporary data */
    temp_data_placeholder = temp_data;
-   PFModuleReNewInstance((instance_xtra -> retardation),
-			 (temp_data_placeholder));
-   PFModuleReNewInstance((instance_xtra -> advect_concen),
-			 (NULL, NULL, temp_data_placeholder));
+   PFModuleReNewInstanceType(RetardationInitInstanceXtraInvoke,
+			     (instance_xtra -> retardation),
+			     (temp_data_placeholder));
+   PFModuleReNewInstanceType(AdvectionConcentrationInitInstanceXtraType,
+			     (instance_xtra -> advect_concen),
+			     (NULL, NULL, temp_data_placeholder));
 
    temp_data_placeholder += max(PFModuleSizeOfTempData(
 				   instance_xtra -> retardation),

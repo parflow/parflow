@@ -35,32 +35,34 @@
 #include "parflow.h"
 #include "vector.h"
 
+#include <stdlib.h>
+
 
 /*--------------------------------------------------------------------------
  * NewVectorCommPkg:
  *--------------------------------------------------------------------------*/
 
-CommPkg  *NewVectorCommPkg(vector, compute_pkg)
-Vector   *vector;
-ComputePkg  *compute_pkg;
+CommPkg  *NewVectorCommPkg(
+   Vector   *vector,
+   ComputePkg  *compute_pkg)
 {
-   CommPkg     *new;
+   CommPkg     *new_commpkg;
 
 
-   new = NewCommPkg(ComputePkgSendRegion(compute_pkg),
+   new_commpkg = NewCommPkg(ComputePkgSendRegion(compute_pkg),
 		    ComputePkgRecvRegion(compute_pkg),
 		    VectorDataSpace(vector), 1, VectorData(vector));
 
-   return new;
+   return new_commpkg;
 }
 
 /*--------------------------------------------------------------------------
  * InitVectorUpdate
  *--------------------------------------------------------------------------*/
 
-CommHandle  *InitVectorUpdate(vector, update_mode)
-Vector      *vector;
-int          update_mode;
+CommHandle  *InitVectorUpdate(
+   Vector      *vector,
+   int          update_mode)
 {
 #ifdef SHMEM_OBJECTS
    return (void *)1;
@@ -80,8 +82,8 @@ int          update_mode;
  * FinalizeVectorUpdate
  *--------------------------------------------------------------------------*/
 
-void         FinalizeVectorUpdate(handle)
-CommHandle  *handle;
+void         FinalizeVectorUpdate(
+   CommHandle  *handle)
 {
 #ifdef SHMEM_OBJECTS
    amps_Sync(amps_CommWorld);
@@ -99,12 +101,12 @@ CommHandle  *handle;
  * NewTempVector
  *--------------------------------------------------------------------------*/
 
-static Vector  *NewTempVector(grid, nc, num_ghost)
-Grid    *grid;
-int      nc;
-int      num_ghost;
+static Vector  *NewTempVector(
+   Grid    *grid,
+   int      nc,
+   int      num_ghost)
 {
-   Vector    *new_;
+   Vector    *new_vector;
    Subvector *new_sub;
 
    Subgrid   *subgrid;
@@ -113,15 +115,15 @@ int      num_ghost;
    int        i, n;
 
 
-   new_ = ctalloc(Vector, 1); /*address of storage is assigned to the ptr "new_" of type Vector, which is also 
+   new_vector = ctalloc(Vector, 1); /*address of storage is assigned to the ptr "new_" of type Vector, which is also 
 							    the return value of this function */
 
-   (new_ -> subvectors) = ctalloc(Subvector *, GridNumSubgrids(grid)); /* 1st arg.: variable type;
+   (new_vector -> subvectors) = ctalloc(Subvector *, GridNumSubgrids(grid)); /* 1st arg.: variable type;
 																	      2nd arg.: # of elements to be allocated*/
 
    data_size = 0;
 
-   VectorDataSpace(new_) = NewSubgridArray();
+   VectorDataSpace(new_vector) = NewSubgridArray();
    ForSubgridI(i, GridSubgrids(grid))
    {
       new_sub = ctalloc(Subvector, 1);
@@ -140,22 +142,22 @@ int      num_ghost;
 		    SubgridRZ(subgrid),
 		    SubgridProcess(subgrid));
       AppendSubgrid(SubvectorDataSpace(new_sub),
-		    VectorDataSpace(new_));
+		    VectorDataSpace(new_vector));
 
       n = SubvectorNX(new_sub) * SubvectorNY(new_sub) * SubvectorNZ(new_sub);
 
       data_size = n;
 
-      VectorSubvector(new_, i) = new_sub;
+      VectorSubvector(new_vector, i) = new_sub;
    }
 
-   (new_ -> data_size) = data_size; /* data_size is sie of data inclduing ghost points */
+   (new_vector -> data_size) = data_size; /* data_size is sie of data inclduing ghost points */
 
-   VectorGrid(new_) = grid; /* Grid that this vector is on */
+   VectorGrid(new_vector) = grid; /* Grid that this vector is on */
 
-   VectorSize(new_) = GridSize(grid); /* VectorSize(vector) is vector->size, which is the total number of coefficients */
+   VectorSize(new_vector) = GridSize(grid); /* VectorSize(vector) is vector->size, which is the total number of coefficients */
 
-   return new_;
+   return new_vector;
 }
 
 
@@ -163,9 +165,9 @@ int      num_ghost;
  * SetTempVectorData
  *--------------------------------------------------------------------------*/
 
-static void     SetTempVectorData(vector, data)
-Vector  *vector;
-double  *data;
+static void     SetTempVectorData(
+   Vector  *vector,
+   double  *data)
 { 
    Grid       *grid = VectorGrid(vector);
 
@@ -194,27 +196,27 @@ double  *data;
  * NewVector
  *--------------------------------------------------------------------------*/
 
-Vector  *NewVector(grid, nc, num_ghost)
-Grid    *grid;
-int      nc;
-int      num_ghost;
+Vector  *NewVector(
+   Grid    *grid,
+   int      nc,
+   int      num_ghost)
 {
-    Vector  *new;
+    Vector  *new_vector;
     double  *data;
 
-    new = NewTempVector(grid, nc, num_ghost);
+    new_vector = NewTempVector(grid, nc, num_ghost);
 
 #ifdef SHMEM_OBJECTS
     /* Node 0 allocates */
     if(!amps_Rank(amps_CommWorld))
-       data = amps_CTAlloc(double, SizeOfVector(new));
+       data = amps_CTAlloc(double, SizeOfVector(new_vector));
 #else
-    data = amps_CTAlloc(double, SizeOfVector(new));
+    data = amps_CTAlloc(double, SizeOfVector(new_vector));
 #endif
 
-    SetTempVectorData(new, data);
+    SetTempVectorData(new_vector, data);
 
-    return new;
+    return new_vector;
 }
 
 
@@ -246,8 +248,8 @@ void FreeTempVector(Vector *vector)
  * FreeVector
  *--------------------------------------------------------------------------*/
 
-void     FreeVector(vector)
-Vector  *vector;
+void     FreeVector(
+   Vector  *vector)
 {
 #ifndef SHMEM_OBJECTS
     amps_TFree(VectorData(vector));
@@ -261,9 +263,9 @@ Vector  *vector;
  * InitVector
  *--------------------------------------------------------------------------*/
 
-void    InitVector(v, value)
-Vector *v;
-double  value;
+void    InitVector(
+   Vector *v,
+   double  value)
 {
    Grid       *grid = VectorGrid(v);
 
@@ -313,9 +315,9 @@ double  value;
  * InitVectorAll
  *--------------------------------------------------------------------------*/
 
-void    InitVectorAll(v, value)
-Vector *v;
-double  value;
+void    InitVectorAll(
+   Vector *v,
+   double  value)
 {
    Grid       *grid = VectorGrid(v);
 
@@ -366,10 +368,10 @@ double  value;
  *--------------------------------------------------------------------------*/
 
 
-void    InitVectorInc(v, value, inc)
-Vector *v;
-double  value;
-double  inc;
+void    InitVectorInc(
+   Vector *v,
+   double  value,
+   double  inc)
 {
    Grid       *grid = VectorGrid(v);
 
@@ -421,9 +423,9 @@ double  inc;
  * InitVectorRandom
  *--------------------------------------------------------------------------*/
 
-void    InitVectorRandom(v, seed)
-Vector *v;
-long    seed;
+void    InitVectorRandom(
+   Vector *v,
+   long    seed)
 {
    Grid       *grid = VectorGrid(v);
 
@@ -438,10 +440,6 @@ long    seed;
 
    int         i_s;
    int         i, j, k, iv;
-
-   void   srand48();
-   double drand48();
-
 
    srand48(seed);
 

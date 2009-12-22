@@ -83,11 +83,11 @@ typedef struct
  *   code will generate.
  *--------------------------------------------------------------------------*/
 
-void          TurningBandsRF(geounit, gr_geounit, field, cdata)
-GeomSolid    *geounit;
-GrGeomSolid  *gr_geounit;
-Vector       *field;
-RFCondData   *cdata;
+void          TurningBandsRF(
+GeomSolid    *geounit,
+GrGeomSolid  *gr_geounit,
+Vector       *field,
+RFCondData   *cdata)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
@@ -414,9 +414,9 @@ RFCondData   *cdata;
  * TurningBandsRFInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *TurningBandsRFInitInstanceXtra(grid, temp_data)
-Grid      *grid;
-double    *temp_data;
+PFModule  *TurningBandsRFInitInstanceXtra(
+   Grid      *grid,
+   double    *temp_data)
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;

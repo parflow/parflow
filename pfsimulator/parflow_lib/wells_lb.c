@@ -39,10 +39,10 @@
 #define PRESSURE_WELL   0
 #define FLUX_WELL       1
 
-void LBWells(lattice, problem, problem_data)
-  Lattice *lattice;
-  Problem  *problem;
-  ProblemData  *problem_data;
+void LBWells(
+   Lattice *lattice,
+   Problem  *problem,
+   ProblemData  *problem_data)
 {
    /*--------------------------
     * Local variables 

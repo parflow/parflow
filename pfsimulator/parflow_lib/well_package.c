@@ -100,8 +100,8 @@ typedef struct
  * WellPackage
  *--------------------------------------------------------------------------*/
 
-void         WellPackage(problem_data)
-ProblemData *problem_data;
+void         WellPackage(
+   ProblemData *problem_data)
 {
    PFModule         *this_module   = ThisPFModule;
    PublicXtra       *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
@@ -823,9 +823,9 @@ void  WellPackageFreeInstanceXtra()
  * WellPackageNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *WellPackageNewPublicXtra(num_phases, num_contaminants)
-int        num_phases;
-int        num_contaminants;
+PFModule  *WellPackageNewPublicXtra(
+   int        num_phases,
+   int        num_contaminants)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;

@@ -42,7 +42,7 @@
 
 Subgrid    *ReadUserSubgrid()
 {
-    Subgrid  *new;
+    Subgrid  *new_subgrid;
 
     int       ix, iy, iz;
     int       nx, ny, nz;
@@ -60,9 +60,9 @@ Subgrid    *ReadUserSubgrid()
     ny = GetInt("ComputationalGrid.NY");
     nz = GetInt("ComputationalGrid.NZ");
 
-    new = NewSubgrid(ix, iy, iz, nx, ny, nz, rx, ry, rz, -1);
+    new_subgrid = NewSubgrid(ix, iy, iz, nx, ny, nz, rx, ry, rz, -1);
 
-    return new;
+    return new_subgrid;
 }
 
 /*--------------------------------------------------------------------------
@@ -103,8 +103,8 @@ Grid      *ReadUserGrid()
  * FreeUserGrid
  *--------------------------------------------------------------------------*/
 
-void  FreeUserGrid(user_grid)
-Grid  *user_grid;
+void  FreeUserGrid(
+   Grid  *user_grid)
 {
    FreeGrid(user_grid);
 }

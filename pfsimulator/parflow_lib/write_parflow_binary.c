@@ -35,9 +35,9 @@
 
 #include "parflow.h"
 
-long SizeofPFBinarySubvector(subvector, subgrid)
-Subvector *subvector;
-Subgrid   *subgrid;
+long SizeofPFBinarySubvector(
+   Subvector *subvector,
+   Subgrid   *subgrid)
 {
    int ix = SubgridIX(subgrid);
    int iy = SubgridIY(subgrid);
@@ -68,10 +68,10 @@ Subgrid   *subgrid;
 }
 
 
-void       WritePFBinary_Subvector(file, subvector, subgrid)
-amps_File  file;
-Subvector *subvector;
-Subgrid   *subgrid;
+void       WritePFBinary_Subvector(
+amps_File  file,
+Subvector *subvector,
+Subgrid   *subgrid)
 {
    int             ix = SubgridIX(subgrid);
    int             iy = SubgridIY(subgrid);
@@ -115,10 +115,10 @@ Subgrid   *subgrid;
 }
 
 
-void     WritePFBinary(file_prefix, file_suffix, v)
-char    *file_prefix;
-char    *file_suffix;
-Vector  *v;
+void     WritePFBinary(
+char    *file_prefix,
+char    *file_suffix,
+Vector  *v)
 {
    Grid           *grid     = VectorGrid(v);
    SubgridArray   *subgrids = GridSubgrids(grid);
@@ -191,10 +191,10 @@ Vector  *v;
    EndTiming(PFBTimingIndex);
 }
 
-long SizeofPFSBinarySubvector(subvector, subgrid, drop_tolerance)
-Subvector *subvector;
-Subgrid   *subgrid;
-double     drop_tolerance;
+long SizeofPFSBinarySubvector(
+Subvector *subvector,
+Subgrid   *subgrid,
+double     drop_tolerance)
 {
    int             ix = SubgridIX(subgrid);
    int             iy = SubgridIY(subgrid);
@@ -230,11 +230,11 @@ double     drop_tolerance;
 }
 
 
-void       WritePFSBinary_Subvector(file, subvector, subgrid, drop_tolerance)
-amps_File  file;
-Subvector *subvector;
-Subgrid   *subgrid;
-double     drop_tolerance;
+void       WritePFSBinary_Subvector(
+amps_File  file,
+Subvector *subvector,
+Subgrid   *subgrid,
+double     drop_tolerance)
 {
    int             ix = SubgridIX(subgrid);
    int             iy = SubgridIY(subgrid);
@@ -289,11 +289,11 @@ double     drop_tolerance;
 	     });
 }
 
-void     WritePFSBinary(file_prefix, file_suffix, v, drop_tolerance)
-char    *file_prefix;
-char    *file_suffix;
-Vector  *v;
-double   drop_tolerance;
+void     WritePFSBinary(
+char    *file_prefix,
+char    *file_suffix,
+Vector  *v,
+double   drop_tolerance)
 {
    Grid           *grid     = VectorGrid(v);
    SubgridArray   *subgrids = GridSubgrids(grid);

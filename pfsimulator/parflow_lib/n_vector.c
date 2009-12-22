@@ -34,17 +34,17 @@ static struct {
 } pf2kinsol_data;
 
 
-void SetPf2KinsolData(grid, num_ghost)
-Grid        *grid;
-int          num_ghost;
+void SetPf2KinsolData(
+   Grid        *grid,
+   int          num_ghost)
 {
    pf2kinsol_data.grid = grid;
    pf2kinsol_data.num_ghost = num_ghost;
 }
 
-N_Vector N_VNew(N, machEnv)
-int    N;
-void  *machEnv;
+N_Vector N_VNew(
+   int    N,
+   void  *machEnv)
 {
    Grid    *grid;
    int      num_ghost;
@@ -54,8 +54,8 @@ void  *machEnv;
    return(NewVector(grid, 1, num_ghost));
 }
 
-void N_VPrint(x)
-N_Vector x;
+void N_VPrint(
+   N_Vector x)
 {
   Grid       *grid     = VectorGrid(x);
   Subgrid    *subgrid;

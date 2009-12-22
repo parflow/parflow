@@ -89,17 +89,17 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
    } 
 
    // Loops to set coords
-   coords[0] = malloc(sizeof(float)*dims[0]);
+   coords[0] = ctalloc(float, dims[0]);
    for(i = 0; i < dims[0]; i++) {
       coords[0][i] =    SubgridX(subgrid) + SubgridDX(subgrid) * ((float)i - 0.5);
    }
 
-   coords[1] = malloc(sizeof(float)*dims[1]);
+   coords[1] = ctalloc(float, dims[1]);
    for(j = 0; j < dims[1]; j++) {
       coords[1][j] =    SubgridY(subgrid) + SubgridDY(subgrid) * ((float)j - 0.5);
    }
 
-   coords[2] = malloc(sizeof(float)*dims[2]);
+   coords[2] = ctalloc(float, dims[2]);
    for(k = 0; k < dims[2]; k++) {
       coords[2][k] =    SubgridZ(subgrid) + SubgridDZ(subgrid) * ((float)k - 0.5);
    }
@@ -121,7 +121,7 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
       Can this be some kind of copy?  Array ordering, ghost layers?
    */
 
-   double *array = malloc(sizeof(double) * nx * ny * nz);
+   double *array = ctalloc(double, nx * ny * nz);
    int array_index = 0;
    ai = 0;
    BoxLoopI1(i,j,k,
@@ -226,19 +226,19 @@ double time, int step, char *variable_name)
 
       DBoptlist *optlist;
 
-      meshnames = malloc(sizeof(char *) * P);
-      meshtypes = malloc(sizeof(int) * P);
+      meshnames = ctalloc(char *, P);
+      meshtypes = ctalloc(int, P);
 
-      varnames = malloc(sizeof(char *) * P);
-      vartypes = malloc(sizeof(int) * P);
+      varnames = ctalloc(char *, P);
+      vartypes = ctalloc(int, P);
       
       for(i = 0; i < P; i++) {
-	 char *name = malloc(sizeof(char) * 512);
+	 char *name = ctalloc(char, 512);
 	 sprintf(name, "%s/%s.%06u.%s:mesh_%06u", file_prefix, file_suffix, i, file_extn, i);
 	 meshnames[i] = name;
 	 meshtypes[i] = DB_QUADMESH;
 
-	 name = malloc(sizeof(char) * 512);
+	 name = ctalloc(char, 512);
 	 sprintf(name, "%s/%s.%06u.%s:%s_%06u", file_prefix, file_suffix, i, file_extn, 
 	         variable_name,i);
 	 varnames[i] = name;

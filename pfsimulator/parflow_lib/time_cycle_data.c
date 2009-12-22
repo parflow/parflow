@@ -41,9 +41,9 @@
  * NewTimeCycleData
  *--------------------------------------------------------------------------*/
 
-TimeCycleData *NewTimeCycleData(number_of_cycles, number_of_intervals)
-int  number_of_cycles;
-int *number_of_intervals;
+TimeCycleData *NewTimeCycleData(
+   int  number_of_cycles,
+   int *number_of_intervals)
 {
    TimeCycleData *time_cycle_data;
    int            cycle_number;
@@ -74,8 +74,8 @@ int *number_of_intervals;
  * FreeTimeCycleData
  *--------------------------------------------------------------------------*/
 
-void FreeTimeCycleData(time_cycle_data)
-TimeCycleData *time_cycle_data;
+void FreeTimeCycleData(
+   TimeCycleData *time_cycle_data)
 {
    int               cycle_number;
 
@@ -105,8 +105,8 @@ TimeCycleData *time_cycle_data;
  * PrintTimeCycleData
  *--------------------------------------------------------------------------*/
 
-void PrintTimeCycleData(time_cycle_data)
-TimeCycleData *time_cycle_data;
+void PrintTimeCycleData(
+   TimeCycleData *time_cycle_data)
 {
    int  cycle_number, interval_number;
 
@@ -149,11 +149,11 @@ TimeCycleData *time_cycle_data;
 
 #define TIME_CYCLE_SUBDIVISIONS 1000
 
-int TimeCycleDataComputeIntervalNumber(problem, time, time_cycle_data, cycle_number)
-Problem       *problem;
-double         time;
-TimeCycleData *time_cycle_data;
-int            cycle_number;
+int TimeCycleDataComputeIntervalNumber(
+Problem       *problem,
+double         time,
+TimeCycleData *time_cycle_data,
+int            cycle_number)
 {
    double   base_time_unit = ProblemBaseTimeUnit(problem);
    double   start_time     = ProblemStartTime(problem);
@@ -203,10 +203,10 @@ int            cycle_number;
  * TimeCycleDataComputeNextTransition
  *--------------------------------------------------------------------------*/
 
-double TimeCycleDataComputeNextTransition(problem, time, time_cycle_data)
-Problem       *problem;
-double         time;
-TimeCycleData *time_cycle_data;
+double TimeCycleDataComputeNextTransition(
+Problem       *problem,
+double         time,
+TimeCycleData *time_cycle_data)
 {
    double   base_time_unit = ProblemBaseTimeUnit(problem);
    double   start_time     = ProblemStartTime(problem);

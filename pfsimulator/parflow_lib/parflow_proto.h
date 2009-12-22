@@ -307,6 +307,9 @@ char *NA_IndexToName (NameArray name_array , int index );
 int NA_Sizeof (NameArray name_array );
 void InputError (char *format , char *s1 , char *s2 );
 
+typedef int (*NonlinSolverInvoke) (Vector *pressure , Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, double *outflow, Vector *evap_trans, Vector *ovrl_bc_flx );
+typedef PFModule *(*NonlinSolverInitInstanceXtraInvoke) (Problem *problem , Grid *grid , ProblemData *problem_data , double *temp_data );
+
 /* kinsol_nonlin_solver.c */
 int KINSolInitPC (int neq , N_Vector pressure , N_Vector uscale , N_Vector fval , N_Vector fscale , N_Vector vtemp1 , N_Vector vtemp2 , void *nl_function , double uround , long int *nfePtr , void *current_state );
 int KINSolCallPC (int neq , N_Vector pressure , N_Vector uscale , N_Vector fval , N_Vector fscale , N_Vector vtem , N_Vector ftem , void *nl_function , double uround , long int *nfePtr , void *current_state );
@@ -329,6 +332,9 @@ void KinsolPCFreeInstanceXtra (void );
 PFModule *KinsolPCNewPublicXtra (char *name , char *pc_name );
 void KinsolPCFreePublicXtra (void );
 int KinsolPCSizeOfTempData (void );
+
+
+typedef void (*L2ErrorNormInvoke) (double time , Vector *pressure , ProblemData *problem_data , double *l2_error_norm );
 
 /* l2_error_norm.c */
 void L2ErrorNorm (double time , Vector *pressure , ProblemData *problem_data , double *l2_error_norm );
@@ -619,9 +625,11 @@ PFModule *ICPhaseConcenNewPublicXtra (int num_phases , int num_contaminants );
 void ICPhaseConcenFreePublicXtra (void );
 int ICPhaseConcenSizeOfTempData (void );
 
+typedef void (*ICPhasePressureInvoke) (Vector *ic_pressure , Vector *mask, ProblemData *problem_data , Problem *problem );
+typedef PFModule *(*ICPhasePressureInitInstanceXtraInvoke) (Problem *problem , Grid *grid , double *temp_data );
+
 /* problem_ic_phase_pressure.c */
 void ICPhasePressure (Vector *ic_pressure , Vector *mask, ProblemData *problem_data , Problem *problem );
-typedef void (*ICPhasePressureInvoke) (Vector *ic_pressure , Vector *mask, ProblemData *problem_data , Problem *problem );
 PFModule *ICPhasePressureInitInstanceXtra (Problem *problem , Grid *grid , double *temp_data );
 void ICPhasePressureFreeInstanceXtra (void );
 PFModule *ICPhasePressureNewPublicXtra (void );
@@ -847,11 +855,10 @@ int SatGodunovSizeOfTempData (void );
 /* scale.c */
 void Scale (double alpha , Vector *y );
 
-/* select_time_step.c */
-void SelectTimeStep (double *dt , char *dt_info , double time , Problem *problem , ProblemData *problem_data );
-
 typedef void (*SelectTimeStepInvoke) (double *dt , char *dt_info , double time , Problem *problem , ProblemData *problem_data );
 
+/* select_time_step.c */
+void SelectTimeStep (double *dt , char *dt_info , double time , Problem *problem , ProblemData *problem_data );
 PFModule *SelectTimeStepInitInstanceXtra (void );
 void SelectTimeStepFreeInstanceXtra (void );
 PFModule *SelectTimeStepNewPublicXtra (void );
@@ -878,6 +885,7 @@ void NewSolver (void );
 void FreeSolver (void );
 
 typedef void (*SolverInvoke)(void );
+typedef PFModule *(*SolverImpesNewPublicXtraInvoke) (char *name );
 
 /* solver_impes.c */
 void SolverImpes (void );
@@ -965,11 +973,12 @@ int InitTurn (void );
 void *NewTurn (char *geom_name );
 void FreeTurn (void *xtra );
 
+typedef void (*KFieldSimulatorInvoke) (GeomSolid *geounit , GrGeomSolid *gr_geounit , Vector *field , RFCondData *cdata );
+typedef PFModule *(*KFieldSimulatorInitInstanceXtraInvoke) (Grid *grid , double *temp_data );
+typedef PFModule *(*KFieldSimulatorNewPublicXtra) (char *geom_name );
+
 /* turning_bandsRF.c */
 void TurningBandsRF (GeomSolid *geounit , GrGeomSolid *gr_geounit , Vector *field , RFCondData *cdata );
-
-typedef void (*TurningBandsRFInvoke) (GeomSolid *geounit , GrGeomSolid *gr_geounit , Vector *field , RFCondData *cdata );
-
 PFModule *TurningBandsRFInitInstanceXtra (Grid *grid , double *temp_data );
 void TurningBandsRFFreeInstanceXtra (void );
 PFModule *TurningBandsRFNewPublicXtra (char *geom_name );

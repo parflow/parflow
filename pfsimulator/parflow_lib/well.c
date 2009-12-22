@@ -80,8 +80,8 @@ WellData *NewWellData()
  * FreeWellData
  *--------------------------------------------------------------------------*/
 
-void FreeWellData(well_data)
-WellData *well_data;
+void FreeWellData(
+   WellData *well_data)
 {
    WellDataPhysical *well_data_physical;
    WellDataValue    *well_data_value;
@@ -292,9 +292,9 @@ WellData *well_data;
  * PrintWellData
  *--------------------------------------------------------------------------*/
 
-void PrintWellData(well_data, print_mask)
-WellData     *well_data;
-unsigned int  print_mask;
+void PrintWellData(
+   WellData     *well_data,
+   unsigned int  print_mask)
 {
    TimeCycleData    *time_cycle_data;
 
@@ -769,12 +769,12 @@ unsigned int  print_mask;
  * WriteWells
  *--------------------------------------------------------------------------*/
 
-void WriteWells(file_prefix, problem, well_data, time, write_header)
-char         *file_prefix;
-Problem      *problem;
-WellData     *well_data;
-double        time;
-int           write_header;
+void WriteWells(
+char         *file_prefix,
+Problem      *problem,
+WellData     *well_data,
+double        time,
+int           write_header)
 {
    TimeCycleData    *time_cycle_data;
    WellDataPhysical *well_data_physical;

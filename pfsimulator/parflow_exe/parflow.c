@@ -37,9 +37,7 @@
 #include <cegdb.h>
 #endif
 
-int             main(argc,argv)
-char *argv[];
-int  argc;
+int main (int argc , char *argv [])
 {
    FILE *file = NULL;
 

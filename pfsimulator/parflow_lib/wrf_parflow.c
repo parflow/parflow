@@ -91,7 +91,7 @@ void wrfparflowinit_(char *input_file) {
    
    GlobalsMaxRefLevel = 0;
    
-   amps_ThreadLocal(Solver_module) = PFModuleNewModule(SolverRichards, ("Solver"));
+   amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverImpesNewPublicXtraInvoke, SolverRichards, ("Solver"));
    
    amps_ThreadLocal(solver) = PFModuleNewInstance(amps_ThreadLocal(Solver_module), ());
    

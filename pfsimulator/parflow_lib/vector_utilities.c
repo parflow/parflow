@@ -69,13 +69,13 @@
 #define ZERO 0.0
 #define ONE  1.0
 
-void PFVLinearSum(a, x, b, y, z)
+void PFVLinearSum(
 /* LinearSum : z = a * x + b * y              */
-double  a;
-Vector *x;
-double  b;
-Vector *y;
-Vector *z;
+double  a,
+Vector *x,
+double  b,
+Vector *y,
+Vector *z)
 
 {
   double c;
@@ -212,10 +212,10 @@ Vector *z;
   IncFLOPCount( 3 * VectorSize(z) );
 }
 
-void PFVConstInit(c, z)
+void PFVConstInit(
 /* ConstInit : z = c   */
-double  c;
-Vector *z;
+   double  c,
+   Vector *z)
 {
   Grid       *grid     = VectorGrid(z);
   Subgrid    *subgrid;
@@ -259,11 +259,11 @@ Vector *z;
   }
 }
 
-void PFVProd(x, y, z)
+void PFVProd(
 /* Prod : z_i = x_i * y_i   */
-Vector *x;
-Vector *y;
-Vector *z;
+   Vector *x,
+   Vector *y,
+   Vector *z)
 {
   Grid       *grid     = VectorGrid(x);
   Subgrid    *subgrid;
@@ -329,11 +329,11 @@ Vector *z;
   IncFLOPCount( VectorSize(x) );
 }
 
-void PFVDiv(x, y, z)
+void PFVDiv(
 /* Div : z_i = x_i / y_i   */
-Vector *x;
-Vector *y;
-Vector *z;
+Vector *x,
+Vector *y,
+Vector *z)
 {
   Grid       *grid     = VectorGrid(x);
   Subgrid    *subgrid;
@@ -398,11 +398,11 @@ Vector *z;
   IncFLOPCount( VectorSize(x) );
 }
 
-void PFVScale(c, x, z)
+void PFVScale(
 /* Scale : z = c * x   */
-double  c;
-Vector *x;
-Vector *z;
+   double  c,
+   Vector *x,
+   Vector *z)
 {
   Grid       *grid     = VectorGrid(x);
   Subgrid    *subgrid;
@@ -474,10 +474,10 @@ Vector *z;
   IncFLOPCount( VectorSize(x) );
 }
 
-void PFVAbs(x, z)
+void PFVAbs(
 /* Abs : z_i = |x_i|   */
-Vector *x;
-Vector *z;
+   Vector *x,
+   Vector *z)
 {
   Grid       *grid     = VectorGrid(x);
   Subgrid    *subgrid;
@@ -531,10 +531,10 @@ Vector *z;
   }
 }
 
-void PFVInv(x, z)
+void PFVInv(
 /* Inv : z_i = 1 / x_i    */
-Vector *x;
-Vector *z;
+   Vector *x,
+   Vector *z)
 {
   Grid       *grid     = VectorGrid(x);
   Subgrid    *subgrid;
@@ -589,11 +589,11 @@ Vector *z;
   IncFLOPCount( VectorSize(x) );
 }
 
-void PFVAddConst(x, b, z)
+void PFVAddConst(
 /* AddConst : z_i = x_i + b  */
-Vector *x;
-double  b;
-Vector *z;
+   Vector *x,
+   double  b,
+   Vector *z)
 {
   Grid       *grid     = VectorGrid(x);
   Subgrid    *subgrid;
@@ -648,10 +648,10 @@ Vector *z;
   IncFLOPCount( VectorSize(x) );
 }
 
-double PFVDotProd(x, y)
+double PFVDotProd(
 /* DotProd = x dot y   */
-Vector *x;
-Vector *y;
+   Vector *x,
+   Vector *y)
 {
   Grid       *grid     = VectorGrid(x);
   Subgrid    *subgrid;
@@ -716,9 +716,9 @@ Vector *y;
   return(sum);
 }
 
-double PFVMaxNorm(x)
+double PFVMaxNorm(
 /* MaxNorm = || x ||_{max}   */
-Vector *x;
+   Vector *x)
 {
   Grid       *grid     = VectorGrid(x);
   Subgrid    *subgrid;
@@ -771,10 +771,10 @@ Vector *x;
   return(max_val);
 }
 
-double PFVWrmsNorm(x, w)
+double PFVWrmsNorm(
 /* WrmsNorm = sqrt((sum_i (x_i * w_i)^2)/length)  */
-Vector *x;
-Vector *w;
+   Vector *x,
+   Vector *w)
 {
   Grid       *grid     = VectorGrid(x);
   Subgrid    *subgrid;
@@ -840,10 +840,10 @@ Vector *w;
   return( sqrt( sum / (x -> size) ) );
 }
 
-double PFVWL2Norm(x, w)
+double PFVWL2Norm(
 /* WL2Norm = sqrt(sum_i (x_i * w_i)^2)  */
-Vector *x;
-Vector *w;
+   Vector *x,
+   Vector *w)
 {
   Grid       *grid     = VectorGrid(x);
   Subgrid    *subgrid;
@@ -909,9 +909,9 @@ Vector *w;
   return(sqrt(sum));
 }
 
-double PFVL1Norm(x)
+double PFVL1Norm(
 /* L1Norm = sum_i |x_i|  */
-Vector *x;
+   Vector *x)
 {
   Grid       *grid     = VectorGrid(x);
   Subgrid    *subgrid;
@@ -964,9 +964,9 @@ Vector *x;
   return(sum);
 }
 
-double PFVMin(x)
+double PFVMin(
 /* Min = min_i(x_i)   */
-Vector *x;
+   Vector *x)
 {
   Grid       *grid     = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1033,9 +1033,9 @@ Vector *x;
   return(min_val);
 }
 
-double PFVMax(x)
+double PFVMax(
 /* Max = max_i(x_i)   */
-Vector *x;
+   Vector *x)
 {
   Grid       *grid     = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1099,11 +1099,11 @@ Vector *x;
   return(max_val);
 }
 
-int PFVConstrProdPos(c, x)
+int PFVConstrProdPos(
 /* ConstrProdPos: Returns a boolean FALSE if some c[i]!=0.0  */
 /*                and x[i]*c[i]<=0.0 */
-Vector *c;
-Vector *x;
+   Vector *c,
+   Vector *x)
 {
   Grid       *grid     = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1175,11 +1175,11 @@ Vector *x;
      return(TRUE);
 } 
 
-void PFVCompare(c, x, z)
+void PFVCompare(
 /* Compare : z_i = (x_i > c)  */
-double  c;
-Vector *x;
-Vector *z;
+   double  c,
+   Vector *x,
+   Vector *z)
 {
   Grid       *grid     = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1234,10 +1234,10 @@ Vector *z;
 }
 
 
-int PFVInvTest(x, z)
+int PFVInvTest(
 /* InvTest = (x_i != 0 forall i), z_i = 1 / x_i  */
-Vector *x;
-Vector *z;
+   Vector *x,
+   Vector *z)
 {
   Grid       *grid     = VectorGrid(x);
   Subgrid    *subgrid;
@@ -1311,10 +1311,10 @@ Vector *z;
  
 /***************** Private Helper Functions **********************/
 
-void PFVCopy(x, y)
+void PFVCopy(
 /* Copy : y = x   */
-Vector *x;
-Vector *y;
+   Vector *x,
+   Vector *y)
 {
    Grid       *grid     = VectorGrid(x);
    Subgrid    *subgrid;
@@ -1369,11 +1369,11 @@ Vector *y;
    }
 }
 
-void PFVSum(x, y, z)
+void PFVSum(
 /* Sum : z = x + y   */
-Vector *x;
-Vector *y;
-Vector *z;
+   Vector *x,
+   Vector *y,
+   Vector *z)
 {
    Grid       *grid     = VectorGrid(x);
    Subgrid    *subgrid;
@@ -1438,11 +1438,11 @@ Vector *z;
   IncFLOPCount( VectorSize(x) );
 }
 
-void PFVDiff(x, y, z)
+void PFVDiff(
 /* Diff : z = x - y  */
-Vector *x;
-Vector *y;
-Vector *z;
+   Vector *x,
+   Vector *y,
+   Vector *z)
 {
    Grid       *grid     = VectorGrid(x);
    Subgrid    *subgrid;
@@ -1508,10 +1508,10 @@ Vector *z;
   IncFLOPCount( VectorSize(x) );
 }
 
-void PFVNeg(x, z)
+void PFVNeg(
 /* Neg : z = - x   */
-Vector *x;
-Vector *z;
+   Vector *x,
+   Vector *z)
 {
    Grid       *grid     = VectorGrid(x);
    Subgrid    *subgrid;
@@ -1566,12 +1566,12 @@ Vector *z;
    }
 }
 
-void PFVScaleSum(c, x, y, z)
+void PFVScaleSum(
 /* ScaleSum : z = c * x + y   */
-double  c;
-Vector *x;
-Vector *y;
-Vector *z;
+   double  c,
+   Vector *x,
+   Vector *y,
+   Vector *z)
 {
    Grid       *grid     = VectorGrid(x);
    Subgrid    *subgrid;
@@ -1637,12 +1637,12 @@ Vector *z;
   IncFLOPCount( 2 * VectorSize(x) );
 }
 
-void PFVScaleDiff(c, x, y, z)
+void PFVScaleDiff(
 /* ScaleDiff : z = c * x - y   */
-double  c;
-Vector *x;
-Vector *y;
-Vector *z;
+double  c,
+Vector *x,
+Vector *y,
+Vector *z)
 {
    Grid       *grid     = VectorGrid(x);
    Subgrid    *subgrid;
@@ -1708,12 +1708,12 @@ Vector *z;
   IncFLOPCount( 2 * VectorSize(x) );
 }
 
-void PFVLin1(a, x, y, z)
+void PFVLin1(
 /* Lin1 : z = a * x + y   */
-double  a;
-Vector *x;
-Vector *y;
-Vector *z;
+double  a,
+Vector *x,
+Vector *y,
+Vector *z)
 {
    Grid       *grid     = VectorGrid(x);
    Subgrid    *subgrid;
@@ -1779,12 +1779,12 @@ Vector *z;
   IncFLOPCount( 2 * VectorSize(x) );
 }
 
-void PFVLin2(a, x, y, z)
+void PFVLin2(
 /* Lin2 : z = a * x - y   */
-double  a;
-Vector *x;
-Vector *y;
-Vector *z;
+double  a,
+Vector *x,
+Vector *y,
+   Vector *z)
 {
    Grid       *grid     = VectorGrid(x);
    Subgrid    *subgrid;
@@ -1850,11 +1850,11 @@ Vector *z;
   IncFLOPCount( 2 * VectorSize(x) );
 }
 
-void PFVAxpy (a, x, y)
+void PFVAxpy (
 /* axpy : y = y + a * x   */
-double  a;
-Vector *x;
-Vector *y;
+double  a,
+Vector *x,
+Vector *y)
 {
    Grid       *grid     = VectorGrid(x);
    Subgrid    *subgrid;
@@ -1910,10 +1910,10 @@ Vector *y;
   IncFLOPCount( 2 * VectorSize(x) );
 }
 
-void PFVScaleBy(a, x)
+void PFVScaleBy(
 /* ScaleBy : x = x * a   */
-double  a;
-Vector *x;
+   double  a,
+   Vector *x)
 {
    Grid       *grid     = VectorGrid(x);
    Subgrid    *subgrid;

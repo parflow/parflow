@@ -73,18 +73,16 @@ typedef struct
  *                         TotalVelocityFace                                *
  *--------------------------------------------------------------------------*/
 
-void    TotalVelocityFace(xvel, yvel, zvel, problem_data,
-			  total_mobility_x, total_mobility_y, 
-			  total_mobility_z, pressure, saturations)
-Vector       *xvel;
-Vector       *yvel;
-Vector       *zvel;
-ProblemData  *problem_data;
-Vector       *total_mobility_x;
-Vector       *total_mobility_y;
-Vector       *total_mobility_z;
-Vector       *pressure;
-Vector      **saturations;
+void    TotalVelocityFace(
+Vector       *xvel,
+Vector       *yvel,
+Vector       *zvel,
+ProblemData  *problem_data,
+Vector       *total_mobility_x,
+Vector       *total_mobility_y,
+Vector       *total_mobility_z,
+Vector       *pressure,
+Vector      **saturations)
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
@@ -373,7 +371,7 @@ Vector      **saturations;
 
    for(phase = 0; phase < ProblemNumPhases(problem); phase++)
    {
-      PFModuleInvoke(void, phase_mobility,
+      PFModuleInvokeType(PhaseMobilityInvoke, phase_mobility,
                      (temp_mobility_x, temp_mobility_y, temp_mobility_z,
 		      ProblemDataPermeabilityX(problem_data),
 		      ProblemDataPermeabilityY(problem_data),
@@ -388,8 +386,8 @@ Vector      **saturations;
       handle = InitVectorUpdate(temp_mobility_z, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
       
-      PFModuleInvoke(void, capillary_pressure,
-                     (temp_pressure, phase, 0, problem_data, saturations[0]));
+      PFModuleInvokeType(CapillaryPressureInvoke, capillary_pressure,
+			 (temp_pressure, phase, 0, problem_data, saturations[0]));
 
       handle = InitVectorUpdate(temp_pressure, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
@@ -532,8 +530,8 @@ Vector      **saturations;
        * add contributions to the z-face total velocities for each subgrid
        *-------------------------------------------------------------------*/
 
-      PFModuleInvoke(void, phase_density,
-		     (phase, pressure, NULL, &dtmp, &temp_density, CALCFCN));
+      PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+			 (phase, pressure, NULL, &dtmp, &temp_density, CALCFCN));
 
       base_constant = temp_density * ProblemGravity(problem);
 
@@ -758,14 +756,13 @@ Vector      **saturations;
  * TotalVelocityFaceInitInstanceXtra
  *-------------------------------------------------------------------------*/
 
-PFModule *TotalVelocityFaceInitInstanceXtra(problem, grid, x_grid, 
-					    y_grid, z_grid, temp_data)
-Problem  *problem;
-Grid     *grid;
-Grid     *x_grid;
-Grid     *y_grid;
-Grid     *z_grid;
-double   *temp_data;
+PFModule *TotalVelocityFaceInitInstanceXtra(
+Problem  *problem,
+Grid     *grid,
+Grid     *x_grid,
+Grid     *y_grid,
+Grid     *z_grid,
+double   *temp_data)
 {
    PFModule     *this_module  = ThisPFModule;
    InstanceXtra *instance_xtra;

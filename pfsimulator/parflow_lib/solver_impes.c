@@ -258,9 +258,10 @@ void      SolverImpes()
 
    for(phase = 0; phase < ProblemNumPhases(problem)-1; phase++)
       {
-	 PFModuleInvokeType(PhaseDensityInvoke, phase_density, 
-			(phase, NULL, NULL, &dtmp, &phase_densities[phase], 
-			 CALCFCN));
+	 PFModuleInvokeType(PhaseDensityInvoke, 
+			    phase_density, 
+			    (phase, NULL, NULL, &dtmp, &phase_densities[phase], 
+			     CALCFCN));
       }
 
    if ( print_subsurf_data )
@@ -666,11 +667,12 @@ void      SolverImpes()
          /*                  Solve for the base pressure                   */
          /******************************************************************/
          /* Discretize and solve the pressure equation */
-         PFModuleInvokeType(DiscretizePressureInvoke, discretize_pressure, (&A, &f, problem_data, 
-									    t, total_mobility_x,
-									    total_mobility_y,
-									    total_mobility_z,
-									    saturations));
+         PFModuleInvokeType(DiscretizePressureInvoke, 
+			    discretize_pressure, (&A, &f, problem_data, 
+						  t, total_mobility_x,
+						  total_mobility_y,
+						  total_mobility_z,
+						  saturations));
          PFModuleInvokeType(MatrixDiagScaleInvoke, diag_scale, (pressure, A, f, DO));
          PFModuleReNewInstanceType(LinearSolverInitInstanceXtraInvoke,
 				   linear_solver, (NULL, NULL, problem_data, A, 
@@ -725,7 +727,8 @@ void      SolverImpes()
             /* Compute the total velocity */
 	    if ( is_multiphase )
 	    {
-               PFModuleInvokeType(TotalVelocityFaceInvoke, total_velocity_face,
+               PFModuleInvokeType(TotalVelocityFaceInvoke, 
+				  total_velocity_face,
 				  (total_x_velocity,
 				   total_y_velocity,
 				   total_z_velocity,
@@ -1618,7 +1621,6 @@ PFModule *SolverImpesInitInstanceXtra()
       PFModuleReNewInstanceType(SetProblemDataInitInstanceXtraInvoke,
 				(instance_xtra -> set_problem_data),
 				(problem, grid, NULL, NULL));
-
       PFModuleReNewInstanceType(RetardationInitInstanceXtraInvoke,
 				(instance_xtra -> retardation), (NULL));
       PFModuleReNewInstance((instance_xtra -> phase_mobility), ());
