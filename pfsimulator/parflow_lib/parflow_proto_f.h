@@ -31,6 +31,11 @@
  *
  *****************************************************************************/
 
+#ifdef __cplusplus     /* wrapper to enable C++ usage */
+extern "C" {
+#endif
+
+
 /* advect.f */
 #if defined(_CRAYMPP) 
 #define ADVECT ADVECT
@@ -125,3 +130,6 @@ void CLM_LSM( double *pressure_data, double *saturation_data, double *evap_trans
               double *clm_irr_threshold, double *qirr, double *qirr_inst );
 
 
+#ifdef __cplusplus     /* wrapper to enable C++ usage */
+}
+#endif

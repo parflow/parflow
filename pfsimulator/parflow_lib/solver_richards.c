@@ -35,7 +35,6 @@
  *****************************************************************************/
 
 #include "parflow.h"
-#include "kinsol_dependences.h"
 
 #include <float.h>
 
