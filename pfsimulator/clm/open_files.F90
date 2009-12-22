@@ -78,7 +78,7 @@ subroutine open_files (clm,drv,rank,ix,iy,ifstep,clm_output_dir,clm_output_dir_l
      open(2008,file=clm_output_dir//'diagnostics.'//cistep//'.dat.'//trim(adjustl(RI)),form='formatted') ! @ diagnostics 1D averaged
 
      write(2008,'(A112)') &
-	"clm%istep topsurf topsoil surface evapor infiltr fraction error evapo_tot evap_veg evap_soi tran_veg ice_layer1"
+          "clm%istep topsurf topsoil surface evapor infiltr fraction error evapo_tot evap_veg evap_soi tran_veg ice_layer1"
 
   else
      open(1995,file=clm_output_dir//'qflx_top_soil/qflx_top_soil.'//cistep//'.bin.'//trim(adjustl(RI)), access=ACCESS, form=FORM)  ! @ 2D output file     
@@ -104,7 +104,7 @@ access=ACCESS, form=FORM)  ! @ 2D output file
      write(2001) ix,iy,iz,drv%nc,drv%nr,nz
 
      open(2002,file=clm_output_dir//'qflx_evap_tot/qflx_evap_tot.'//cistep//'.bin.'//trim(adjustl(RI)), &
-	access=ACCESS, form=FORM)   ! @ 2D output file     
+          access=ACCESS, form=FORM)   ! @ 2D output file     
      write(2002) ix,iy,iz,drv%nc,drv%nr,nz
 
      open(2003,file=clm_output_dir//'t_grnd/t_grnd.'//cistep//'.bin.'//trim(adjustl(RI)), access=ACCESS, form=FORM) ! @ 2D output file
@@ -117,7 +117,7 @@ access=ACCESS, form=FORM)  ! @ 2D output file
      write(2005) ix,iy,iz,drv%nc,drv%nr,nz
 
      open(2006,file=clm_output_dir//'eflx_lwrad_out/eflx_lwrad_out.'//cistep//'.bin.'//trim(adjustl(RI)), &
-	access=ACCESS, form=FORM) ! @ 2D output file 
+          access=ACCESS, form=FORM) ! @ 2D output file 
      write(2006) ix,iy,iz,drv%nc,drv%nr,nz
 
      open(2007,file=clm_output_dir//'swe_out/swe_out.'//cistep//'.bin.'//trim(adjustl(RI)), access=ACCESS, form=FORM) ! @ 2D output file 
@@ -128,7 +128,7 @@ access=ACCESS, form=FORM)  ! @ 2D output file
 
      open(2008,file=clm_output_dir//'diag_out/diagnostics.'//cistep//'.dat.'//trim(adjustl(RI)),form='formatted') ! @ diagnostics 1D averaged
      write(2008,'(A112)') &
-	"clm%istep topsurf topsoil surface evapor infiltr fraction error evapo_tot evap_veg evap_soi tran_veg ice_layer1"
+          "clm%istep topsurf topsoil surface evapor infiltr fraction error evapo_tot evap_veg evap_soi tran_veg ice_layer1"
 
   end if
 

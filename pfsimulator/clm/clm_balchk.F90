@@ -116,7 +116,7 @@ subroutine clm_balchk (clm, nstep)
   clm%acc_errseb = clm%acc_errseb + clm%errseb
 
 100 format (1x,a14,' nstep =',i10,' point =',i6,' imbalance =',f8.2,' W/m2')
-200 format (1x,a14,' nstep =',i10,' point =',i6,' imbalance =',f8.2,' mm')
+!200 format (1x,a14,' nstep =',i10,' point =',i6,' imbalance =',f8.2,' mm')
 300 format(' ','absorbed solar= ',d13.5,&
          ' longwave net= ',d13.5,&
          ' sensible flux= ',d13.5,&

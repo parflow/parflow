@@ -348,7 +348,7 @@ dnl
 CASC_SUPPORT_SAMRAI
 if test "${samrai_PREFIX+set}" = set; then
   LIBS="$samrai_LIBS $LIBS"
-  CASC_SPLIT_LIBS_STRING(samria_LIBS,samrai_LIB_PATH,samrai_LIB_NAME)
+  CASC_SPLIT_LIBS_STRING(samrai_LIBS,samrai_LIB_PATH,samrai_LIB_NAME)
   LIB_PATH="$samrai_LIB_PATH $LIB_PATH"
   LIB_NAME="$samrai_LIB_NAME $LIB_NAME"
   INC_PATH="$samrai_INCLUDES $INC_PATH"
@@ -357,6 +357,7 @@ else
   AC_DEFINE([LACKS_SAMRAI],[1],[SAMRAI library is missing])
 fi
 AC_SUBST(PARFLOW_HAVE_SAMRAI)
+
 
 dnl
 dnl Check if BSD gettimeofday is present

@@ -8939,7 +8939,7 @@ fi
 
 # Begin macro CASC_SUPPORT_SAMRAI
 
-# Set SAMRAI_PREFIX to the SAMRAI install directory.
+# Set samrai_PREFIX to the SAMRAI install directory.
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for compiled SAMRAI library" >&5
 $as_echo_n "checking for compiled SAMRAI library... " >&6; }
@@ -8951,18 +8951,18 @@ if test "${with_samrai+set}" = set; then :
   as_fn_error "SAMRAI install directory omitted.
 Please specify using --with-samrai=STRING" "$LINENO" 5
 elif test "${with_samrai_install}" = no; then
-  unset SAMRAI_PREFIX
+  unset samrai_PREFIX
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 else
-  SAMRAI_PREFIX=$with_samrai
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $SAMRAI_PREFIX" >&5
-$as_echo "$SAMRAI_PREFIX" >&6; }
+  samrai_PREFIX=$with_samrai
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $samrai_PREFIX" >&5
+$as_echo "$samrai_PREFIX" >&6; }
 fi
 else
-  if test "${SAMRAI_PREFIX+yes}" = yes; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $SAMRAI_PREFIX" >&5
-$as_echo "$SAMRAI_PREFIX" >&6; }
+  if test "${samrai_PREFIX+yes}" = yes; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $samrai_PREFIX" >&5
+$as_echo "$samrai_PREFIX" >&6; }
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -8971,14 +8971,14 @@ $as_echo "no" >&6; }
 fi
 
 
-# SAMRAI_PREFIX should be set to where SAMRAI is installed.
+# samrai_PREFIX should be set to where SAMRAI is installed.
 # If it is set to blank, we expect that the preprocessor -I flag
 # and the load -L flag are not needed, but we still issue the
 # load -l flag.
 
-if test "${SAMRAI_PREFIX+yes}" = yes; then
+if test "${samrai_PREFIX+yes}" = yes; then
 
-if test -z "${SAMRAI_PREFIX}"; then
+if test -z "${samrai_PREFIX}"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: SAMRAI install directory omitted.
 I will expect that the SAMRAI library has been installed
 where the compiler will automatically look for it." >&5
@@ -8988,34 +8988,34 @@ where the compiler will automatically look for it." >&2;}
 fi
 
 # If user specified the SAMRAI prefix, sanity check it.
-if test -n "$SAMRAI_PREFIX"; then
-  if test ! -d "$SAMRAI_PREFIX"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: SAMRAI installation directory ($SAMRAI_PREFIX) is not a directory." >&5
-$as_echo "$as_me: WARNING: SAMRAI installation directory ($SAMRAI_PREFIX) is not a directory." >&2;}
+if test -n "$samrai_PREFIX"; then
+  if test ! -d "$samrai_PREFIX"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: SAMRAI installation directory ($samrai_PREFIX) is not a directory." >&5
+$as_echo "$as_me: WARNING: SAMRAI installation directory ($samrai_PREFIX) is not a directory." >&2;}
   fi
-  if test ! -d "$SAMRAI_PREFIX/include"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: SAMRAI installation directory ($SAMRAI_PREFIX/include) is not a directory." >&5
-$as_echo "$as_me: WARNING: SAMRAI installation directory ($SAMRAI_PREFIX/include) is not a directory." >&2;}
+  if test ! -d "$samrai_PREFIX/include"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: SAMRAI installation directory ($samrai_PREFIX/include) is not a directory." >&5
+$as_echo "$as_me: WARNING: SAMRAI installation directory ($samrai_PREFIX/include) is not a directory." >&2;}
   fi
-  if test ! -d "$SAMRAI_PREFIX/lib"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: SAMRAI installation directory ($SAMRAI_PREFIX/lib) is not a directory." >&5
-$as_echo "$as_me: WARNING: SAMRAI installation directory ($SAMRAI_PREFIX/lib) is not a directory." >&2;}
+  if test ! -d "$samrai_PREFIX/lib"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: SAMRAI installation directory ($samrai_PREFIX/lib) is not a directory." >&5
+$as_echo "$as_me: WARNING: SAMRAI installation directory ($samrai_PREFIX/lib) is not a directory." >&2;}
   fi
 fi
 
-if test "${SAMRAI_PREFIX+yes}" = yes; then
+if test "${samrai_PREFIX+yes}" = yes; then
 
 $as_echo "#define HAVE_SAMRAI 1" >>confdefs.h
 
 fi
 
-if test -n "$SAMRAI_PREFIX"; then
-   samrai_INCLUDES="-I$SAMRAI_PREFIX/include"
+if test -n "$samrai_PREFIX"; then
+   samrai_INCLUDES="-I$samrai_PREFIX/include"
 fi
 
 # Determine the samrai library names.
-if test -n "$SAMRAI_PREFIX"; then
-   samrai_libs_ls=" `cd $SAMRAI_PREFIX/lib && echo libSAMRAI*.*` "
+if test -n "$samrai_PREFIX"; then
+   samrai_libs_ls=" `cd $samrai_PREFIX/lib && echo libSAMRAI*.*` "
 fi
 if test -z "$samrai_libs_ls" || test "$samrai_libs_ls" = 'libSAMRAI*.*'; then
   samrai_libs_ls=' libSAMRAI_appu.a libSAMRAI_algs.a libSAMRAI_solv.a libSAMRAI_geom.a libSAMRAI_mesh.a libSAMRAI_math.a libSAMRAI_pdat.a libSAMRAI_xfer.a libSAMRAI_hier.a libSAMRAI_tbox.a '
@@ -9028,11 +9028,11 @@ if test -n "$samrai_libs_ls"; then
     samrai_LIBS="$samrai_LIBS -l$j"
   done
 fi
-if test -n "$SAMRAI_PREFIX"; then
-   samrai_LIBS="-L${SAMRAI_PREFIX}/lib ${samrai_LIBS}"
+if test -n "$samrai_PREFIX"; then
+   samrai_LIBS="-L${samrai_PREFIX}/lib ${samrai_LIBS}"
 fi
 
-fi # SAMRAI_PREFIX
+fi # samrai_PREFIX
 
 
 # End macro CASC_SUPPORT_SAMRAI
@@ -9040,9 +9040,9 @@ fi # SAMRAI_PREFIX
 if test "${samrai_PREFIX+set}" = set; then
   LIBS="$samrai_LIBS $LIBS"
 
-# Split samria_LIBS into the LIB_PATH part (samrai_LIB_PATH) and the LIB_NAME part (samrai_LIB_NAME)
-if test -n "${samria_LIBS}"; then
-  for i in ${samria_LIBS}; do
+# Split samrai_LIBS into the LIB_PATH part (samrai_LIB_PATH) and the LIB_NAME part (samrai_LIB_NAME)
+if test -n "${samrai_LIBS}"; then
+  for i in ${samrai_LIBS}; do
     case "$i" in
     -L*) samrai_LIB_PATH="${samrai_LIB_PATH} $i" ;;
     *) samrai_LIB_NAME="${samrai_LIB_NAME} $i" ;;
@@ -9060,6 +9060,7 @@ $as_echo "$as_me: NOTIFICATION: Parflow configured without the SAMRAI library" >
 $as_echo "#define LACKS_SAMRAI 1" >>confdefs.h
 
 fi
+
 
 
 
