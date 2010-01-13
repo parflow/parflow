@@ -407,11 +407,7 @@ void SetupRichards(PFModule *this_module) {
 			InitVectorAll(instance_xtra -> overland_sum, 0.0);
       }
 
-/* IMF: the following are only used w/ CLM */
-#ifdef HAVE_CLM 
-
-      /* SGS FIXME should only init these if we are actually running with CLM */
-
+      /*IMF these need to be outside of ifdef or won't run w/o CLM */
       /*sk Initialize LSM mask */
       instance_xtra -> mask = NewVector( grid, 1, 1 );
       InitVectorAll(instance_xtra -> mask, 0.0);
@@ -419,6 +415,16 @@ void SetupRichards(PFModule *this_module) {
       instance_xtra -> evap_trans_sum = NewVector( grid, 1, 0 );
       InitVectorAll(instance_xtra -> evap_trans_sum, 0.0);
 
+/* IMF: the following are only used w/ CLM */
+#ifdef HAVE_CLM 
+
+      /* SGS FIXME should only init these if we are actually running with CLM */
+      /*sk Initialize LSM mask */
+      //instance_xtra -> mask = NewVector( grid, 1, 1 );
+      //InitVectorAll(instance_xtra -> mask, 0.0);
+      //
+      //instance_xtra -> evap_trans_sum = NewVector( grid, 1, 0 );
+      //InitVectorAll(instance_xtra -> evap_trans_sum, 0.0);
 
       /*IMF Initialize variables for printing CLM output*/
       instance_xtra -> eflx_lh_tot = NewVector( grid2d, 1, 1 );
