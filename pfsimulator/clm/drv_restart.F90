@@ -106,20 +106,27 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
   real(r8) :: g_h2osoi_ice(drv%nc,drv%nr,-nlevsno+1:nlevsoi) ! CLM Average Ice Content [kg/m2]
 
   integer :: rank
-  character*100 RI,TS
+  character*100 RI
+  
+  ! IMF -- for adding time stamp to restart files
+  integer :: tstamp
+  character*100 TS
 
   !=== End Variable Definition =============================================
 
   write(RI,*) rank
-  write(TS,'(I5.5)') istep_pf
   print*, "in drv_restart routine"
 
   !=== Read Active Archive File ============================================
 
   if((rw.eq.1.and.drv%clm_ic.eq.1).or.(rw.eq.1.and.drv%startcode.eq.1))then
 
-     ! open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(TS))//'.'//trim(adjustl(RI)),form='unformatted')
-     open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(RI)),form='unformatted')
+     ! IMF -- Read restart from PREVIOUS timestep 
+     !        (i.e., start from end point of previous timestep)
+     tstamp = istep_pf - 1
+     write(TS,'(I5.5)') tstamp
+     open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(TS))//'.'//trim(adjustl(RI)),form='unformatted')
+     ! open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(RI)),form='unformatted')
 
      read(40) yr,mo,da,hr,mn,ss,vclass,nc,nr,nch  !Time, veg class, no. tiles
      print *, yr,mo,da,hr,mn,ss,vclass,nc,nr,nch  !Time, veg class, no. tiles
@@ -436,14 +443,21 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
         write(*,*)
      endif
 
+
+
      !=== Restart Writing (2 file are written - active and archive)
 
      if(rw.eq.2)then
 
         write(*,*)'Write CLM Active Restart: istep_pf = ',istep_pf
 
-        ! open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(TS))//'.'//trim(adjustl(RI)),form='unformatted')
-        open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(RI)),form='unformatted') !Active archive restart
+        ! IMF -- add time stamp (istep) to restart file
+        !        NOTE: READ from istep-1 (previous time)
+        !              WRITE to istep (current time)
+        tstamp = istep_pf 
+        write(TS,'(I5.5)') tstamp
+        open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(TS))//'.'//trim(adjustl(RI)),form='unformatted')
+        !open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(RI)),form='unformatted') !Active archive restart
 
         write(40) drv%yr,drv%mo,drv%da,drv%hr,drv%mn,drv%ss,&
              drv%vclass,drv%nc,drv%nr,drv%nch  !Veg class, no tiles       

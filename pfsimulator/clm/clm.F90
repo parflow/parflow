@@ -483,6 +483,7 @@ qirr_pf,qirr_inst_pf)
   enddo
 
   !=== Write Daily Restarts
+  print*, 'time =', time, 'gmt =', drv%gmt, 'endtime =', drv%endtime
   if (drv%gmt==0..or.drv%endtime==1) call drv_restart(2,drv,tile,clm,rank,istep_pf)
   ! call drv_restart(2,drv,tile,clm,rank)
   ! call PF couple, this transfers ET from CLM to ParFlow 
