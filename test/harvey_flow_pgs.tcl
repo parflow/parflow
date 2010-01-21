@@ -125,6 +125,7 @@ pfset Geom.upper_aquifer.Perm.GeomMean  112.00
 pfset Geom.upper_aquifer.Perm.Sigma   1.0
 pfset Geom.upper_aquifer.Perm.Sigma   0.48989794
 pfset Geom.upper_aquifer.Perm.NumLines 150
+pfset Geom.upper_aquifer.Perm.MaxSearchRad  4
 pfset Geom.upper_aquifer.Perm.RZeta  5.0
 pfset Geom.upper_aquifer.Perm.KMax  100.0000001
 pfset Geom.upper_aquifer.Perm.DelK  0.2
@@ -139,6 +140,7 @@ pfset Geom.lower_aquifer.Perm.LambdaZ  0.19
 pfset Geom.lower_aquifer.Perm.GeomMean  77.0
 pfset Geom.lower_aquifer.Perm.Sigma   1.0
 pfset Geom.lower_aquifer.Perm.Sigma   0.48989794
+pfset Geom.lower_aquifer.Perm.MaxSearchRad 4
 pfset Geom.lower_aquifer.Perm.NumLines 150
 pfset Geom.lower_aquifer.Perm.RZeta  5.0
 pfset Geom.lower_aquifer.Perm.KMax  100.0000001
