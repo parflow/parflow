@@ -1000,7 +1000,12 @@ PFModule   *PGSRFNewPublicXtra(char *geom_name)
    /* The maximum search radius is currently limited
    by the PGSRF routine. It is set here to allow 
    possible user control in the future. */
-   (public_xtra -> max_search_rad) = 4;
+   /*(public_xtra -> max_search_rad) = 4;
+    added max search rad as a key to improve correlation structure of
+    RF in testing
+    */
+    sprintf(key, "Geom.%s.Perm.MaxSearchRad", geom_name);
+    public_xtra -> max_search_rad = GetInt(key);
 
    (public_xtra -> time_index) = RegisterTiming("PGS RF");
 
