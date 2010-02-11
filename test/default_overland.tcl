@@ -361,14 +361,13 @@ pfset KnownSolution                                    NoKnownSolution
 pfset Solver                                             Richards
 pfset Solver.MaxIter                                     2500
 
-pfset Solver.Nonlinear.MaxIter                           300
+pfset Solver.Nonlinear.MaxIter                           20
 pfset Solver.Nonlinear.ResidualTol                       1e-9
-pfset Solver.Nonlinear.EtaChoice                         Walker1 
 pfset Solver.Nonlinear.EtaChoice                         EtaConstant
-pfset Solver.Nonlinear.EtaValue                          0.001
+pfset Solver.Nonlinear.EtaValue                          0.01
 pfset Solver.Nonlinear.UseJacobian                       False
-pfset Solver.Nonlinear.DerivativeEpsilon                 1e-16
-pfset Solver.Nonlinear.StepTol				 1e-10
+pfset Solver.Nonlinear.DerivativeEpsilon                 1e-8
+pfset Solver.Nonlinear.StepTol				 1e-20
 pfset Solver.Nonlinear.Globalization                     LineSearch
 pfset Solver.Linear.KrylovDimension                      20
 pfset Solver.Linear.MaxRestart                           2
@@ -378,7 +377,7 @@ pfset Solver.Linear.Preconditioner.MGSemi.MaxIter        1
 pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      10
 pfset Solver.PrintSubsurf				False
 pfset  Solver.Drop                                      1E-20
-pfset Solver.AbsTol                                     1E-12
+pfset Solver.AbsTol                                     1E-9
  
 pfset Solver.WriteSiloSubsurfData True
 pfset Solver.WriteSiloPressure True
