@@ -264,8 +264,8 @@ pfset Domain.GeomName domain
 pfset Phase.RelPerm.Type               VanGenuchten
 pfset Phase.RelPerm.GeomNames          "domain"
 
-pfset Geom.domain.RelPerm.Alpha         6.0
-pfset Geom.domain.RelPerm.N             2. 
+pfset Geom.domain.RelPerm.Alpha         0.5
+pfset Geom.domain.RelPerm.N             3. 
 
 #---------------------------------------------------------
 # Saturation
@@ -274,8 +274,8 @@ pfset Geom.domain.RelPerm.N             2.
 pfset Phase.Saturation.Type              VanGenuchten
 pfset Phase.Saturation.GeomNames         "domain"
 
-pfset Geom.domain.Saturation.Alpha        6.0
-pfset Geom.domain.Saturation.N            2.
+pfset Geom.domain.Saturation.Alpha        0.5
+pfset Geom.domain.Saturation.N            3.
 pfset Geom.domain.Saturation.SRes         0.2
 pfset Geom.domain.Saturation.SSat         1.0
 
@@ -408,14 +408,14 @@ pfset KnownSolution                                    NoKnownSolution
 pfset Solver                                             Richards
 pfset Solver.MaxIter                                     2500
 
-pfset Solver.AbsTol                                      1E-12
-pfset Solver.Nonlinear.MaxIter                           300
-pfset Solver.Nonlinear.ResidualTol                       1e-12
+pfset Solver.AbsTol                                      1E-10
+pfset Solver.Nonlinear.MaxIter                           20
+pfset Solver.Nonlinear.ResidualTol                       1e-9
 pfset Solver.Nonlinear.EtaChoice                         Walker1 
 pfset Solver.Nonlinear.EtaChoice                         EtaConstant
-pfset Solver.Nonlinear.EtaValue                          0.001
+pfset Solver.Nonlinear.EtaValue                          0.01
 pfset Solver.Nonlinear.UseJacobian                       False
-pfset Solver.Nonlinear.DerivativeEpsilon                 1e-16
+pfset Solver.Nonlinear.DerivativeEpsilon                 1e-8
 pfset Solver.Nonlinear.StepTol				 1e-30
 pfset Solver.Nonlinear.Globalization                     LineSearch
 pfset Solver.Linear.KrylovDimension                      20
