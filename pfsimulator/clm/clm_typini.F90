@@ -102,45 +102,50 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      clm(k)%tkdry (:) = NaN   ! thermal conductivity, dry soil       (W/m/Kelvin)
      clm(k)%tksatu(:) = NaN   ! thermal conductivity, saturated soil [W/m-K]  
      clm(k)%rootfr(:) = NaN   ! fraction of roots in each soil layer
-!	 clm(k)%xksat     = NaN   !@ sat hydraulic cond
+!     clm(k)%xksat     = NaN   !@ sat hydraulic cond
      clm(k)%wilting_point = NaN  
      clm(k)%field_capacity = NaN  
      clm(k)%res_sat = NaN  
      clm(k)%vegwaterstresstype = NaN  
      clm(k)%beta_type = NaN  
+
+! Irrigation parameters
+
      clm(k)%irr_type  = NaN
      clm(k)%irr_cycle = NaN
      clm(k)%irr_rate = NaN
      clm(k)%irr_start = NaN
      clm(k)%irr_stop  = NaN
      clm(k)%irr_threshold = NaN
+     clm(k)%threshold_type = NaN
+     clm(k)%irr_flag  = 0.d0       ! initialize irrigation flag to zero 
 
 ! Forcing
 
-     clm(k)%forc_u     = NaN  ! wind speed in eastward direction [m/s]
-     clm(k)%forc_v     = NaN  ! wind speed in northward direction [m/s]
-     clm(k)%forc_t     = NaN  ! temperature at agcm reference height [kelvin]
-     clm(k)%forc_q     = NaN  ! specific humidity at agcm reference height [kg/kg]
-     clm(k)%forc_rain  = NaN  ! rain rate [mm/s]
-     clm(k)%forc_snow  = NaN  ! snow rate [mm/s]
-     clm(k)%forc_pbot  = NaN  ! atmosphere pressure at the surface [pa]
-     clm(k)%forc_rho   = NaN  ! density air [kg/m3]
-     clm(k)%forc_hgt_u = NaN  ! observational height of wind [m]
-     clm(k)%forc_hgt_t = NaN  ! observational height of temperature [m]
-     clm(k)%forc_hgt_q = NaN  ! observational height of humidity [m]
-     clm(k)%forc_lwrad = NaN  ! atmospheric infrared (longwave) radiation [W/m2]
+     clm(k)%forc_u         = NaN   ! wind speed in eastward direction [m/s]
+     clm(k)%forc_v         = NaN   ! wind speed in northward direction [m/s]
+     clm(k)%forc_t         = NaN   ! temperature at agcm reference height [kelvin]
+     clm(k)%forc_q         = NaN   ! specific humidity at agcm reference height [kg/kg]
+     clm(k)%forc_rain      = NaN   ! rain rate [mm/s]
+     clm(k)%forc_snow      = NaN   ! snow rate [mm/s]
+     clm(k)%forc_pbot      = NaN   ! atmosphere pressure at the surface [pa]
+     clm(k)%forc_rho       = NaN   ! density air [kg/m3]
+     clm(k)%forc_hgt_u     = NaN   ! observational height of wind [m]
+     clm(k)%forc_hgt_t     = NaN   ! observational height of temperature [m]
+     clm(k)%forc_hgt_q     = NaN   ! observational height of humidity [m]
+     clm(k)%forc_lwrad     = NaN   ! atmospheric infrared (longwave) radiation [W/m2]
 
 ! Main variables needed for restart
 
-     clm(k)%snl = bigint              ! number of snow layers
-     clm(k)%frac_veg_nosno = bigint   ! fraction of veg cover, excluding snow-covered veg (now 0 OR 1) [-]
+     clm(k)%snl            = bigint! number of snow layers
+     clm(k)%frac_veg_nosno = bigint! fraction of veg cover, excluding snow-covered veg (now 0 OR 1) [-]
 
-     clm(k)%zi(:)         = NaN   ! interface level below a "z" level (m)
-     clm(k)%dz(:)         = NaN   ! layer depth (m)
-     clm(k)%z(:)          = NaN   ! layer thickness (m)
-     clm(k)%t_soisno(:)   = NaN   ! soil + snow layer temperature [K]
-     clm(k)%h2osoi_liq(:) = NaN   ! liquid water (kg/m2)
-     clm(k)%h2osoi_ice(:) = NaN   ! ice lens (kg/m2)
+     clm(k)%zi(:)          = NaN   ! interface level below a "z" level (m)
+     clm(k)%dz(:)          = NaN   ! layer depth (m)
+     clm(k)%z(:)           = NaN   ! layer thickness (m)
+     clm(k)%t_soisno(:)    = NaN   ! soil + snow layer temperature [K]
+     clm(k)%h2osoi_liq(:)  = NaN   ! liquid water (kg/m2)
+     clm(k)%h2osoi_ice(:)  = NaN   ! ice lens (kg/m2)
 
      clm(k)%frac_sno       = NaN   ! fractional snow cover
      clm(k)%t_veg          = NaN   ! leaf temperature [K]

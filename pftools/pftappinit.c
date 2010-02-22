@@ -169,6 +169,22 @@ EXPORT(int,Parflow_Init)(Tcl_Interp *interp)
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfsum", (Tcl_CmdProc *)SumCommand,
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfcellsum", (Tcl_CmdProc *)CellSumCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfcelldiff", (Tcl_CmdProc *)CellDiffCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfcellmult", (Tcl_CmdProc *)CellMultCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfcelldiv", (Tcl_CmdProc *)CellDivCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfcellsumconst", (Tcl_CmdProc *)CellSumConstCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfcelldiffconst", (Tcl_CmdProc *)CellDiffConstCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfcellmultconst", (Tcl_CmdProc *)CellMultConstCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfcelldivconst", (Tcl_CmdProc *)CellDivConstCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfgetstats", (Tcl_CmdProc *)GetStatsCommand,
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfmdiff", (Tcl_CmdProc *)MDiffCommand,
@@ -192,6 +208,8 @@ EXPORT(int,Parflow_Init)(Tcl_Interp *interp)
    Tcl_CreateCommand(interp, "Parflow::pfsurfacestorage", (Tcl_CmdProc *)SurfaceStorageCommand,
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfsubsurfacestorage", (Tcl_CmdProc *)SubsurfaceStorageCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfgwstorage", (Tcl_CmdProc *)GWStorageCommand,
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfsurfacerunoff", (Tcl_CmdProc *)SurfaceRunoffCommand,
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);

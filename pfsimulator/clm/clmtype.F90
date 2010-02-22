@@ -241,6 +241,8 @@ module clmtype
      real(r8) :: irr_start      ! irrigation daily start time for constant cycle (GMT) @IMF
      real(r8) :: irr_stop       ! irrigation daily stop time for constant cycle (GMT) @IMF
      real(r8) :: irr_threshold  ! irrigation soil moisture threshold for deficit cycle @IMF
+     integer  :: threshold_type ! irrigation threshold type -- top layer, bottom layer, column avg.
+     real(r8) :: irr_flag       ! flag for irrigation or non-irrigation for a given day (based on threshold)
      
      real(r8) :: eflx_snomelt   ! added to be consistent with lsm hybrid code
      real(r8) :: eflx_impsoil   ! implicit evaporation for soil temperature equation (W/m**2)

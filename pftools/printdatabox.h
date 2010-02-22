@@ -55,6 +55,7 @@
  
 /* printdatabox.c */
 void PrintSimpleA(FILE *fp , Databox *v );
+void PrintSimpleA2D(FILE *fp , Databox *v );        // Added @ IMF
 void PrintSimpleB(FILE *fp , Databox *v );
 void PrintParflowB(FILE *fp , Databox *v );
 void PrintAVSField(FILE *fp , Databox *v );

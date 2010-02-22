@@ -134,6 +134,7 @@ char *option;
    if (   strcmp(option, "pfb" ) == 0
        || strcmp(option, "pfsb") == 0
        || strcmp(option, "sa"  ) == 0
+       || strcmp(option, "sa2d") == 0    // Added @ IMF
        || strcmp(option, "sb"  ) == 0
        || strcmp(option, "fld" ) == 0
        || strcmp(option, "vis" ) == 0

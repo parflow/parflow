@@ -87,6 +87,14 @@ namespace eval Parflow {
     namespace export pfnewlabel
     namespace export pfaxpy
     namespace export pfsum
+    namespace export pfcellsum
+    namespace export pfcelldiff
+    namespace export pfcellmult
+    namespace export pfcelldiv
+    namespace export pfcellsumconst
+    namespace export pfcelldiffconst
+    namespace export pfcellmultconst
+    namespace export pfcelldivconst
     namespace export pfgetstats
     namespace export pfmdiff
     namespace export pfdiffelt
@@ -99,6 +107,7 @@ namespace eval Parflow {
     namespace export pfextracttop
     namespace export pfsurfacestorage
     namespace export pfsubsurfacestorage
+    namespace export pfgwstorage
     namespace export pfsurfacerunoff
     namespace export pfwatertabledepth
     namespace export pfwritedb

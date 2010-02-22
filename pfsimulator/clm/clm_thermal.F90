@@ -238,7 +238,7 @@ subroutine clm_thermal (clm)
      temp_alpha = (clm%pf_vol_liq(1) - clm%res_sat*clm%watsat(1)) /(clm%watsat(1) - clm%res_sat*clm%watsat(1))
      case (2)    ! cosine, like ISBA
      temp_alpha = 0.5d0*(1.0d0 - cos(((clm%pf_vol_liq(1) - clm%res_sat*clm%watsat(1)) / & 
-	(clm%watsat(1) - clm%res_sat*clm%watsat(1)))*3.141d0))     
+                  (clm%watsat(1) - clm%res_sat*clm%watsat(1)))*3.141d0))     
      end select
      
      if (temp_alpha < 0.0) temp_alpha = 0.00d0

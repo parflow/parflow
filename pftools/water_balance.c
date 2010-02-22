@@ -103,19 +103,54 @@ void ComputeSubsurfaceStorage(Databox *mask,
    {
       if( mask_coeff[m] > 0 ) 
       {
-	 subsurface_storage_coeff[m] =  saturation_coeff[m] * porosity_coeff[m] * dx * dy * dz;
-/* @RMM mod to remove porosity from subsurface storage */
+	subsurface_storage_coeff[m]  =  saturation_coeff[m] * porosity_coeff[m] * dx * dy * dz;
+        /* @RMM mod to remove porosity from subsurface storage */
 	/* OLD way 
 	 subsurface_storage_coeff[m] += pressure_coeff[m] * specific_storage_coeff[m] * saturation_coeff[m] * porosity_coeff[m] * dx * dy * dz; 
-	 */
+	*/
 	subsurface_storage_coeff[m] += pressure_coeff[m] * specific_storage_coeff[m] * saturation_coeff[m] * dx * dy * dz;
       }
    }
 }
 
 
-/*
+void ComputeGWStorage(Databox *mask,
+                              Databox *porosity,
+                              Databox *pressure,
+                              Databox *saturation,
+                              Databox *specific_storage,
+                              Databox *gw_storage)
+{
+   int m;
 
+   double *mask_coeff                = DataboxCoeffs(mask);
+   double *porosity_coeff            = DataboxCoeffs(porosity);
+   double *pressure_coeff            = DataboxCoeffs(pressure);
+   double *saturation_coeff          = DataboxCoeffs(saturation);
+   double *specific_storage_coeff    = DataboxCoeffs(specific_storage);
+   double *gw_storage_coeff  = DataboxCoeffs(gw_storage);
+
+   int nx = DataboxNx(pressure);
+   int ny = DataboxNy(pressure);
+   int nz = DataboxNz(pressure);
+
+   double dx = DataboxDx(pressure);
+   double dy = DataboxDy(pressure);
+   double dz = DataboxDz(pressure);
+
+   for (m = 0; m < (nx*ny*nz); m++)
+   {
+      if( mask_coeff[m] > 0  &&  saturation_coeff[m] == 1.0 )
+      {
+        /* IMF -- Same as above, except only sums over saturated cells */
+        gw_storage_coeff[m]  = saturation_coeff[m] * porosity_coeff[m] * dx * dy * dz;
+        gw_storage_coeff[m] += pressure_coeff[m] * specific_storage_coeff[m] * saturation_coeff[m] * dx * dy * dz;
+      }
+   }
+}
+
+
+/*
   This is from nl_function_eval for comparison.
 			   qx_[io] = dir_x * (RPowerR(fabs(x_sl_dat[io]),0.5) / mann_dat[io]) * RPowerR(max((pp[ip]),0.0),(5.0/3.0));
 */

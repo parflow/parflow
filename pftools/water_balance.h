@@ -47,6 +47,14 @@ void ComputeSubsurfaceStorage(
    Databox *specific_storage,
    Databox *subsurface_storage);
 
+void ComputeGWStorage(
+   Databox *mask,
+   Databox *porosity,
+   Databox *pressure,
+   Databox *saturation,
+   Databox *specific_storage,
+   Databox *gw_storage);
+
 void ComputeSurfaceRunoff(
    Databox *top,
    Databox *slope_x, 

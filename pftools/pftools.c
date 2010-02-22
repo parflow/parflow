@@ -1164,6 +1164,21 @@ char             *argv[];
       
       PrintSimpleA(fp, databox);
    }
+
+
+   // IMF: Added for copying 2D flux fields from silo -> sa
+   else if (strcmp(filetype, "sa2d") == 0) {
+      /* Make sure the file could be opened */
+      if ((fp = fopen(filename, "wb")) == NULL)
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+
+      PrintSimpleA2D(fp, databox);
+   }   
+
+
    else if (strcmp(filetype, "sb") == 0) {
       /* Make sure the file could be opened */
       if ((fp = fopen(filename, "wb")) == NULL)
@@ -2569,6 +2584,781 @@ char             *argv[];
    return TCL_OK;
 }
 
+/*-----------------------------------------------------------------------
+ * routine for `pfcellsum' command
+ * Description: The arguments are data set hash key.  The operation:
+ *              sum = sum of elements of datasetx and datasety.  
+ *
+ * Cmd. Syntax: pfcellsum datasetx datasety mask
+ *-----------------------------------------------------------------------*/
+
+int               CellSumCommand(clientData, interp, argc, argv)
+ClientData        clientData;
+Tcl_Interp       *interp;
+int               argc;
+char             *argv[];
+{
+   Tcl_HashEntry *entryPtr;
+   Data          *data = (Data *)clientData;
+   Databox       *databoxx, *databoxy, *mask;
+   Databox       *cellsum;
+   char          *hashkeyx, *hashkeyy, *mask_hashkey;
+   char           cellsum_hashkey[MAX_KEY_SIZE];
+   char          *filename = "cellwise sum";
+
+   /* Check that three arguments are given */
+   if (argc == 3)
+   {
+      WrongNumArgsError(interp, CELLSUMUSAGE);
+      return TCL_ERROR;
+   }
+
+   /* Get arguments -- datax, datay, mask */
+   hashkeyx      = argv[1];
+   hashkeyy      = argv[2];
+   mask_hashkey  = argv[3];
+
+   /* Make sure the datasets exist */
+   if ((databoxx = DataMember(data, hashkeyx, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, hashkeyx);
+      return TCL_ERROR;
+   }
+
+   if ((databoxy = DataMember(data, hashkeyy, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, hashkeyy);
+      return TCL_ERROR;
+   }
+
+   if ((mask = DataMember(data, mask_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, mask_hashkey);
+      return TCL_ERROR;
+   }
+
+   /* Datasets must belong to grids of the same dimensions */
+   if (!SameDimensions(databoxx, databoxy)) 
+   {
+      DimensionError(interp);
+      return TCL_ERROR;
+   }
+
+   {
+      /* Read array size/shape */
+      int    nx = DataboxNx(databoxx);
+      int    ny = DataboxNy(databoxx);
+      int    nz = DataboxNz(databoxx);
+
+      double x  = DataboxX(databoxx);
+      double y  = DataboxY(databoxx);
+      double z  = DataboxZ(databoxx);
+
+      double dx = DataboxDx(databoxx);
+      double dy = DataboxDy(databoxx);
+      double dz = DataboxDz(databoxx);
+
+      /* create the new databox structure for surface storage  */
+      if ( (cellsum = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+
+         /* Make sure data set pointer was added to hash table successfully */
+         if (!AddData(data, cellsum, filename, cellsum_hashkey) )
+            FreeDatabox(cellsum);
+         else
+         {
+            Tcl_AppendElement(interp, cellsum_hashkey);
+         }
+
+         CellSum( databoxx, databoxy, mask, cellsum);
+
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+
+   return TCL_OK;
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pfcelldiff' command
+ * Description: The arguments are data set hash key.  The operation:
+ *              diff = difference of elements of datasetx and datasety.  
+ *
+ * Cmd. Syntax: pfcelldiff datasetx datasety mask
+ *-----------------------------------------------------------------------*/
+
+int               CellDiffCommand(clientData, interp, argc, argv)
+ClientData        clientData;
+Tcl_Interp       *interp;
+int               argc;
+char             *argv[];
+{
+   Tcl_HashEntry *entryPtr;
+   Data          *data = (Data *)clientData;
+   Databox       *databoxx, *databoxy, *mask;
+   Databox       *celldiff;
+   char          *hashkeyx, *hashkeyy, *mask_hashkey;
+   char           celldiff_hashkey[MAX_KEY_SIZE];
+   char          *filename = "cellwise difference";
+
+   /* Check that three arguments are given */
+   if (argc == 3)
+   {
+      WrongNumArgsError(interp, CELLDIFFUSAGE);
+      return TCL_ERROR;
+   }
+
+   /* Get arguments -- datax, datay, mask */
+   hashkeyx      = argv[1];
+   hashkeyy      = argv[2];
+   mask_hashkey  = argv[3];
+
+   /* Make sure the datasets exist */
+   if ((databoxx = DataMember(data, hashkeyx, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, hashkeyx);
+      return TCL_ERROR;
+   }
+
+   if ((databoxy = DataMember(data, hashkeyy, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, hashkeyy);
+      return TCL_ERROR;
+   }
+
+   if ((mask = DataMember(data, mask_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, mask_hashkey);
+      return TCL_ERROR;
+   }
+
+   /* Datasets must belong to grids of the same dimensions */
+   if (!SameDimensions(databoxx, databoxy))
+   {
+      DimensionError(interp);
+      return TCL_ERROR;
+   }
+
+   {
+      /* Read array size/shape */
+      int    nx = DataboxNx(databoxx);
+      int    ny = DataboxNy(databoxx);
+      int    nz = DataboxNz(databoxx);
+
+      double x  = DataboxX(databoxx);
+      double y  = DataboxY(databoxx);
+      double z  = DataboxZ(databoxx);
+
+      double dx = DataboxDx(databoxx);
+      double dy = DataboxDy(databoxx);
+      double dz = DataboxDz(databoxx);
+
+      /* create the new databox structure for surface storage  */
+      if ( (celldiff = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+
+         /* Make sure data set pointer was added to hash table successfully */
+         if (!AddData(data, celldiff, filename, celldiff_hashkey) )
+            FreeDatabox(celldiff);
+         else
+         {
+            Tcl_AppendElement(interp, celldiff_hashkey);
+         }
+
+         CellDiff( databoxx, databoxy, mask, celldiff);
+
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+
+   return TCL_OK;
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pfcellmult' command
+ * Description: The arguments are data set hash key.  The operation:
+ *              prod = product of elements of datasetx and datasety.  
+ *
+ * Cmd. Syntax: pfcellmult datasetx datasety mask
+ *-----------------------------------------------------------------------*/
+
+int               CellMultCommand(clientData, interp, argc, argv)
+ClientData        clientData;
+Tcl_Interp       *interp;
+int               argc;
+char             *argv[];
+{
+   Tcl_HashEntry *entryPtr;
+   Data          *data = (Data *)clientData;
+   Databox       *databoxx, *databoxy, *mask;
+   Databox       *cellmult;
+   char          *hashkeyx, *hashkeyy, *mask_hashkey;
+   char           cellmult_hashkey[MAX_KEY_SIZE];
+   char          *filename = "cellwise product";
+
+   /* Check that three arguments are given */
+   if (argc == 3)
+   {
+      WrongNumArgsError(interp, CELLMULTUSAGE);
+      return TCL_ERROR;
+   }
+
+   /* Get arguments -- datax, datay, mask */
+   hashkeyx      = argv[1];
+   hashkeyy      = argv[2];
+   mask_hashkey  = argv[3];
+
+   /* Make sure the datasets exist */
+   if ((databoxx = DataMember(data, hashkeyx, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, hashkeyx);
+      return TCL_ERROR;
+   }
+
+   if ((databoxy = DataMember(data, hashkeyy, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, hashkeyy);
+      return TCL_ERROR;
+   }
+
+   if ((mask = DataMember(data, mask_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, mask_hashkey);
+      return TCL_ERROR;
+   }
+
+   /* Datasets must belong to grids of the same dimensions */
+   if (!SameDimensions(databoxx, databoxy))
+   {
+      DimensionError(interp);
+      return TCL_ERROR;
+   }
+
+   {
+      /* Read array size/shape */
+      int    nx = DataboxNx(databoxx);
+      int    ny = DataboxNy(databoxx);
+      int    nz = DataboxNz(databoxx);
+
+      double x  = DataboxX(databoxx);
+      double y  = DataboxY(databoxx);
+      double z  = DataboxZ(databoxx);
+
+      double dx = DataboxDx(databoxx);
+      double dy = DataboxDy(databoxx);
+      double dz = DataboxDz(databoxx);
+
+      /* create the new databox structure for surface storage  */
+      if ( (cellmult = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+
+         /* Make sure data set pointer was added to hash table successfully */
+         if (!AddData(data, cellmult, filename, cellmult_hashkey) )
+            FreeDatabox(cellmult);
+         else
+         {
+            Tcl_AppendElement(interp, cellmult_hashkey);
+         }
+
+         CellMult( databoxx, databoxy, mask, cellmult);
+
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+
+   return TCL_OK;
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pfcelldiv' command
+ * Description: The arguments are data set hash key.  The operation:
+ *              div = quotient of elements of datasetx divided by datasety.  
+ *
+ * Cmd. Syntax: pfcelldiv datasetx datasety mask
+ *-----------------------------------------------------------------------*/
+
+int               CellDivCommand(clientData, interp, argc, argv)
+ClientData        clientData;
+Tcl_Interp       *interp;
+int               argc;
+char             *argv[];
+{
+   Tcl_HashEntry *entryPtr;
+   Data          *data = (Data *)clientData;
+   Databox       *databoxx, *databoxy, *mask;
+   Databox       *celldiv;
+   char          *hashkeyx, *hashkeyy, *mask_hashkey;
+   char           celldiv_hashkey[MAX_KEY_SIZE];
+   char          *filename = "cellwise quotient";
+
+   /* Check that three arguments are given */
+   if (argc == 3)
+   {
+      WrongNumArgsError(interp, CELLDIFFUSAGE);
+      return TCL_ERROR;
+   }
+
+   /* Get arguments -- datax, datay, mask */
+   hashkeyx      = argv[1];
+   hashkeyy      = argv[2];
+   mask_hashkey  = argv[3];
+
+   /* Make sure the datasets exist */
+   if ((databoxx = DataMember(data, hashkeyx, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, hashkeyx);
+      return TCL_ERROR;
+   }
+
+   if ((databoxy = DataMember(data, hashkeyy, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, hashkeyy);
+      return TCL_ERROR;
+   }
+
+   if ((mask = DataMember(data, mask_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, mask_hashkey);
+      return TCL_ERROR;
+   }
+
+   /* Datasets must belong to grids of the same dimensions */
+   if (!SameDimensions(databoxx, databoxy))
+   {
+      DimensionError(interp);
+      return TCL_ERROR;
+   }
+
+   {
+      /* Read array size/shape */
+      int    nx = DataboxNx(databoxx);
+      int    ny = DataboxNy(databoxx);
+      int    nz = DataboxNz(databoxx);
+
+      double x  = DataboxX(databoxx);
+      double y  = DataboxY(databoxx);
+      double z  = DataboxZ(databoxx);
+
+      double dx = DataboxDx(databoxx);
+      double dy = DataboxDy(databoxx);
+      double dz = DataboxDz(databoxx);
+
+      /* create the new databox structure for surface storage  */
+      if ( (celldiv = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+
+         /* Make sure data set pointer was added to hash table successfully */
+         if (!AddData(data, celldiv, filename, celldiv_hashkey) )
+            FreeDatabox(celldiv);
+         else
+         {
+            Tcl_AppendElement(interp, celldiv_hashkey);
+         }
+
+         CellDiv( databoxx, databoxy, mask, celldiv);
+
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+
+   return TCL_OK;
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pfcellsumconst' command
+ * Description: The arguments are data set hash key.  The operation:
+ *              sum = sum of all elements of datasetx is perfomed.  
+ *
+ * Cmd. Syntax: pfcellsumconst datasetx const mask
+ *-----------------------------------------------------------------------*/
+
+int               CellSumConstCommand(clientData, interp, argc, argv)
+ClientData        clientData;
+Tcl_Interp       *interp;
+int               argc;
+char             *argv[];
+{
+   Tcl_HashEntry *entryPtr;
+   Data          *data = (Data *)clientData;
+   Databox       *databoxx, *mask;
+   Databox       *cellsum;
+   double         val;
+   char          *hashkeyx, *mask_hashkey;
+   char           cellsum_hashkey[MAX_KEY_SIZE];
+   char          *filename = "cellwise sum";
+   
+   /* Check that three arguments are given */
+   if (argc == 3)
+   {
+      WrongNumArgsError(interp, CELLSUMCONSTUSAGE);
+      return TCL_ERROR;
+   }
+   
+   /* Get arguments -- datax, mask */
+   hashkeyx      = argv[1];
+   if (Tcl_GetDouble(interp, argv[2], &val) == TCL_ERROR)
+   {
+      NotADoubleError(interp, 1, CELLSUMCONSTUSAGE);
+      return TCL_ERROR;
+   }
+   mask_hashkey  = argv[3];
+
+   /* Make sure the datasets exist */
+   if ((databoxx = DataMember(data, hashkeyx, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, hashkeyx);
+      return TCL_ERROR;
+   }
+
+   if ((mask = DataMember(data, mask_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, mask_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      /* Read array size/shape */
+      int    nx = DataboxNx(databoxx);
+      int    ny = DataboxNy(databoxx);
+      int    nz = DataboxNz(databoxx);
+
+      double x  = DataboxX(databoxx);
+      double y  = DataboxY(databoxx);
+      double z  = DataboxZ(databoxx);
+
+      double dx = DataboxDx(databoxx);
+      double dy = DataboxDy(databoxx);
+      double dz = DataboxDz(databoxx);
+
+      /* create the new databox structure for surface storage  */
+      if ( (cellsum = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+
+         /* Make sure data set pointer was added to hash table successfully */
+         if (!AddData(data, cellsum, filename, cellsum_hashkey) )
+            FreeDatabox(cellsum);
+         else
+         {
+            Tcl_AppendElement(interp, cellsum_hashkey);
+         }
+
+         CellSumConst( databoxx, val, mask, cellsum);
+
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+
+   return TCL_OK;
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pfcelldiffconst' command
+ * Description: The arguments are data set hash key.  The operation:
+ *              diff = diff of elements of datasetx and <constant>.  
+ *
+ * Cmd. Syntax: pfcelldiffconst datasetx const mask
+ *-----------------------------------------------------------------------*/
+
+int               CellDiffConstCommand(clientData, interp, argc, argv)
+ClientData        clientData;
+Tcl_Interp       *interp;
+int               argc;
+char             *argv[];
+{
+   Tcl_HashEntry *entryPtr;
+   Data          *data = (Data *)clientData;
+   Databox       *databoxx, *mask;
+   Databox       *celldiff;
+   double         val;
+   char          *hashkeyx, *mask_hashkey;
+   char           celldiff_hashkey[MAX_KEY_SIZE];
+   char          *filename = "cellwise difference";
+
+   /* Check that three arguments are given */
+   if (argc == 3)
+   {
+      WrongNumArgsError(interp, CELLSUMCONSTUSAGE);
+      return TCL_ERROR;
+   }
+
+   /* Get arguments -- datax, mask */
+   hashkeyx      = argv[1];
+   if (Tcl_GetDouble(interp, argv[2], &val) == TCL_ERROR)
+   {
+      NotADoubleError(interp, 1, CELLSUMCONSTUSAGE);
+      return TCL_ERROR;
+   }
+   mask_hashkey  = argv[3];
+
+   /* Make sure the datasets exist */
+   if ((databoxx = DataMember(data, hashkeyx, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, hashkeyx);
+      return TCL_ERROR;
+   }
+
+   if ((mask = DataMember(data, mask_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, mask_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      /* Read array size/shape */
+      int    nx = DataboxNx(databoxx);
+      int    ny = DataboxNy(databoxx);
+      int    nz = DataboxNz(databoxx);
+
+      double x  = DataboxX(databoxx);
+      double y  = DataboxY(databoxx);
+      double z  = DataboxZ(databoxx);
+
+      double dx = DataboxDx(databoxx);
+      double dy = DataboxDy(databoxx);
+      double dz = DataboxDz(databoxx);
+
+      /* create the new databox structure for surface storage  */
+      if ( (celldiff = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+
+         /* Make sure data set pointer was added to hash table successfully */
+         if (!AddData(data, celldiff, filename, celldiff_hashkey) )
+            FreeDatabox(celldiff);
+         else
+         {
+            Tcl_AppendElement(interp, celldiff_hashkey);
+         }
+
+         CellDiffConst( databoxx, val, mask, celldiff);
+
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+
+   return TCL_OK;
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pfcellmultconst' command
+ * Description: The arguments are data set hash key.  The operation:
+ *              mult = product of elements of datasetx and <constant>.  
+ *
+ * Cmd. Syntax: pfcellmultconst datasetx const mask
+ *-----------------------------------------------------------------------*/
+   
+int               CellMultConstCommand(clientData, interp, argc, argv)
+ClientData        clientData;
+Tcl_Interp       *interp;
+int               argc;
+char             *argv[];
+{
+   Tcl_HashEntry *entryPtr;
+   Data          *data = (Data *)clientData;
+   Databox       *databoxx, *mask;
+   Databox       *cellmult;
+   double         val;
+   char          *hashkeyx, *mask_hashkey;
+   char           cellmult_hashkey[MAX_KEY_SIZE];
+   char          *filename = "cellwise product";
+
+   /* Check that three arguments are given */
+   if (argc == 3)
+   {
+      WrongNumArgsError(interp, CELLSUMCONSTUSAGE);
+      return TCL_ERROR;
+   }
+      
+   /* Get arguments -- datax, mask */
+   hashkeyx      = argv[1];
+   if (Tcl_GetDouble(interp, argv[2], &val) == TCL_ERROR)
+   {
+      NotADoubleError(interp, 1, CELLSUMCONSTUSAGE);
+      return TCL_ERROR;
+   }  
+   mask_hashkey  = argv[3];
+
+   /* Make sure the datasets exist */
+   if ((databoxx = DataMember(data, hashkeyx, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, hashkeyx);
+      return TCL_ERROR;
+   }
+
+   if ((mask = DataMember(data, mask_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, mask_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      /* Read array size/shape */
+      int    nx = DataboxNx(databoxx);
+      int    ny = DataboxNy(databoxx);
+      int    nz = DataboxNz(databoxx);
+
+      double x  = DataboxX(databoxx);
+      double y  = DataboxY(databoxx);
+      double z  = DataboxZ(databoxx);
+
+      double dx = DataboxDx(databoxx);
+      double dy = DataboxDy(databoxx);
+      double dz = DataboxDz(databoxx);
+
+      /* create the new databox structure for surface storage  */
+      if ( (cellmult = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+
+         /* Make sure data set pointer was added to hash table successfully */
+         if (!AddData(data, cellmult, filename, cellmult_hashkey) )
+            FreeDatabox(cellmult);
+         else
+         {
+            Tcl_AppendElement(interp, cellmult_hashkey);
+         }
+
+         CellMultConst( databoxx, val, mask, cellmult);
+
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+
+   return TCL_OK;
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pfcelldivconst' command
+ * Description: The arguments are data set hash key.  The operation:
+ *              div = quotient of elements of datasetx and <constant>.  
+ *
+ * Cmd. Syntax: pfcelldivconst datasetx const mask
+ *-----------------------------------------------------------------------*/
+
+int               CellDivConstCommand(clientData, interp, argc, argv)
+ClientData        clientData;
+Tcl_Interp       *interp;
+int               argc;
+char             *argv[];
+{
+   Tcl_HashEntry *entryPtr;
+   Data          *data = (Data *)clientData;
+   Databox       *databoxx, *mask;
+   Databox       *celldiv; 
+   double         val;
+   char          *hashkeyx, *mask_hashkey;
+   char           celldiv_hashkey[MAX_KEY_SIZE];
+   char          *filename = "cellwise quotient";
+   
+   /* Check that three arguments are given */
+   if (argc == 3)
+   {
+      WrongNumArgsError(interp, CELLSUMCONSTUSAGE);
+      return TCL_ERROR;
+   }
+
+   /* Get arguments -- datax, mask */
+   hashkeyx      = argv[1];
+   if (Tcl_GetDouble(interp, argv[2], &val) == TCL_ERROR)
+   {
+      NotADoubleError(interp, 1, CELLSUMCONSTUSAGE);
+      return TCL_ERROR;
+   }
+   mask_hashkey  = argv[3];
+
+   /* Make sure the datasets exist */
+   if ((databoxx = DataMember(data, hashkeyx, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, hashkeyx);
+      return TCL_ERROR;
+   }
+
+   if ((mask = DataMember(data, mask_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, mask_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      /* Read array size/shape */
+      int    nx = DataboxNx(databoxx);
+      int    ny = DataboxNy(databoxx);
+      int    nz = DataboxNz(databoxx);
+
+      double x  = DataboxX(databoxx);
+      double y  = DataboxY(databoxx);
+      double z  = DataboxZ(databoxx);
+
+      double dx = DataboxDx(databoxx);
+      double dy = DataboxDy(databoxx);
+      double dz = DataboxDz(databoxx);
+
+      /* create the new databox structure for surface storage  */
+      if ( (celldiv = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+
+         /* Make sure data set pointer was added to hash table successfully */
+         if (!AddData(data, celldiv, filename, celldiv_hashkey) )
+            FreeDatabox(celldiv);
+         else
+         {
+            Tcl_AppendElement(interp, celldiv_hashkey);
+         }
+
+         CellDivConst( databoxx, val, mask, celldiv);
+
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+
+   return TCL_OK;
+
+}
+
 
 /*-----------------------------------------------------------------------
  * routine for `pfstats' command
@@ -3467,10 +4257,123 @@ char          *argv[];
 }
 
 /*-----------------------------------------------------------------------
- * routine for `pfsubsurfacestorage' command
- * Description: Compute the subsurface storage 
+ * routine for `pfgwstorage' command
+ * Description: Compute the subsurface storage **saturated cells only**
  * 
- * Cmd. syntax: pfsubsurfacestorage 
+ * Cmd. syntax: pfgwstorage 
+ *-----------------------------------------------------------------------*/
+int            GWStorageCommand(clientData, interp, argc, argv)
+ClientData     clientData;
+Tcl_Interp    *interp;
+int            argc;
+char          *argv[];
+{
+   Tcl_HashEntry *entryPtr;  /* Points to new hash table entry         */
+   Data       *data = (Data *)clientData;
+
+   Databox    *mask;
+   Databox    *porosity;
+   Databox    *saturation;
+   Databox    *pressure;
+   Databox    *specific_storage;
+   Databox    *gw_storage;
+
+   char    *mask_hashkey;
+   char    *porosity_hashkey;
+   char    *saturation_hashkey;
+   char    *pressure_hashkey;
+   char    *specific_storage_hashkey;
+   char     gw_storage_hashkey[MAX_KEY_SIZE];
+
+   char    *filename = "groundwater storage";
+
+   /* Check and see if there is at least one argument following  */
+   /* the command.                                               */
+   if (argc == 5)
+   {
+      WrongNumArgsError(interp, PFGWSTORAGEUSAGE);
+      return TCL_ERROR;
+   }
+
+   mask_hashkey                 = argv[1];
+   porosity_hashkey             = argv[2];
+   pressure_hashkey             = argv[3];
+   saturation_hashkey           = argv[4];
+   specific_storage_hashkey     = argv[5];
+
+   if ((mask = DataMember(data, mask_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, mask_hashkey);
+      return TCL_ERROR;
+   }
+   if ((porosity = DataMember(data, porosity_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, porosity_hashkey);
+      return TCL_ERROR;
+   }
+
+   if ((pressure = DataMember(data, pressure_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, pressure_hashkey);
+      return TCL_ERROR;
+   }
+
+   if ((saturation = DataMember(data, saturation_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, saturation_hashkey);
+      return TCL_ERROR;
+   }
+
+   if ((specific_storage = DataMember(data, specific_storage_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, specific_storage_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx = DataboxNx(pressure);
+      int ny = DataboxNy(pressure);
+      int nz = DataboxNz(pressure);
+
+      double x = DataboxX(pressure);
+      double y = DataboxY(pressure);
+      double z = DataboxZ(pressure);
+
+      double dx = DataboxDx(pressure);
+      double dy = DataboxDy(pressure);
+      double dz = DataboxDz(pressure);
+
+      /* create the new databox structure for surface storage  */
+      if ( (gw_storage = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+         /* Make sure the data set pointer was added to */
+         /* the hash table successfully.                */
+
+         if (!AddData(data, gw_storage, filename, gw_storage_hashkey))
+            FreeDatabox(gw_storage);
+         else
+         {
+            Tcl_AppendElement(interp, gw_storage_hashkey);
+         }
+
+         ComputeGWStorage(mask, porosity, pressure, saturation, specific_storage, gw_storage);
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+
+   return TCL_OK;
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pfsurfacerunoff' command
+ * Description: Compute the surface runoff     
+ * 
+ * Cmd. syntax: pfsurfacerunoff 
  *-----------------------------------------------------------------------*/
 int            SurfaceRunoffCommand(clientData, interp, argc, argv)
 ClientData     clientData;

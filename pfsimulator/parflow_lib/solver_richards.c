@@ -109,7 +109,7 @@ typedef struct
    double             clm_irr_start;      /* CLM irrigation schedule -- start time of constant cycle [GMT] */
    double             clm_irr_stop;       /* CLM irrigation schedule -- stop time of constant cyle [GMT] */
    double             clm_irr_threshold;  /* CLM irrigation schedule -- soil moisture threshold for deficit cycle */
-
+   int                clm_irr_thresholdtype;  /* Decicit-based saturation criteria (top, bottom, column avg) */
 #endif
 
    int                print_lsm_sink;     /* print LSM sink term? */
@@ -178,6 +178,7 @@ typedef struct
    Grid        *gridTs;               /* New grid fro tsoi (nx*ny*10) */
 
    /* IMF: vars for printing clm irrigation output */
+   Vector      *irr_flag;             /* Flag for irrigating/pumping under deficit-based irrigation scheme */
    Vector      *qflx_qirr;            /* Irrigation applied at surface -- spray or drip */
    Vector      *qflx_qirr_inst;       /* Irrigation applied by inflating soil moisture -- "instant" */
 
@@ -467,6 +468,9 @@ void SetupRichards(PFModule *this_module) {
       InitVectorAll(instance_xtra -> tsoil, 0.0);
 
       /*IMF Initialize variables for CLM irrigation output */
+      instance_xtra -> irr_flag  = NewVector( grid2d, 1, 1 );
+      InitVectorAll(instance_xtra -> irr_flag, 0.0);
+   
       instance_xtra -> qflx_qirr = NewVector( grid2d, 1, 1 );
       InitVectorAll(instance_xtra -> qflx_qirr, 0.0);
 
@@ -778,9 +782,9 @@ void AdvanceRichards(PFModule *this_module,
    Subvector    *eflx_lh_tot_sub, *eflx_lwrad_out_sub, *eflx_sh_tot_sub, *eflx_soil_grnd_sub,
                 *qflx_evap_tot_sub, *qflx_evap_grnd_sub, *qflx_evap_soi_sub, *qflx_evap_veg_sub, 
                 *qflx_tran_veg_sub, *qflx_infl_sub, *swe_out_sub, *t_grnd_sub, *tsoil_sub, 
-                *qflx_qirr_sub, *qflx_qirr_inst_sub;
+                *irr_flag_sub, *qflx_qirr_sub, *qflx_qirr_inst_sub;
    double       *eflx_lh, *eflx_lwrad, *eflx_sh, *eflx_grnd, *qflx_tot, *qflx_grnd, *qflx_soi, 
-                *qflx_eveg, *qflx_tveg, *qflx_in, *swe, *t_g, *t_soi, *qirr, *qirr_inst;
+                *qflx_eveg, *qflx_tveg, *qflx_in, *swe, *t_g, *t_soi, *iflag, *qirr, *qirr_inst;
    int           clm_file_dir_length;
 #endif
 
@@ -1062,6 +1066,7 @@ void AdvanceRichards(PFModule *this_module,
 	    swe_out_sub        = VectorSubvector(instance_xtra -> swe_out,is);
 	    t_grnd_sub         = VectorSubvector(instance_xtra -> t_grnd,is);
             tsoil_sub          = VectorSubvector(instance_xtra -> tsoil,is);
+            irr_flag_sub       = VectorSubvector(instance_xtra -> irr_flag,is);
             qflx_qirr_sub      = VectorSubvector(instance_xtra -> qflx_qirr,is);
             qflx_qirr_inst_sub = VectorSubvector(instance_xtra -> qflx_qirr_inst,is);
 
@@ -1111,6 +1116,7 @@ void AdvanceRichards(PFModule *this_module,
 	    swe                = SubvectorData(swe_out_sub);
 	    t_g                = SubvectorData(t_grnd_sub);
             t_soi              = SubvectorData(tsoil_sub);
+            iflag              = SubvectorData(irr_flag_sub); 
             qirr               = SubvectorData(qflx_qirr_sub);
             qirr_inst          = SubvectorData(qflx_qirr_inst_sub);
  
@@ -1161,7 +1167,7 @@ void AdvanceRichards(PFModule *this_module,
                y               = SubvectorIY(sw_forc_sub);
                z               = fstep - 1;
                // Extract SubvectorElt 
-               // (Array size is correc -- includes ghost nodes
+               // (Array size is correct -- includes ghost nodes
                //  OK because ghost values not used by CLM)
                sw_data         = SubvectorElt(sw_forc_sub,x,y,z);
                lw_data         = SubvectorElt(lw_forc_sub,x,y,z);
@@ -1205,15 +1211,17 @@ void AdvanceRichards(PFModule *this_module,
                                public_xtra -> clm_irr_start,
                                public_xtra -> clm_irr_stop, 
                                public_xtra -> clm_irr_threshold,
-                               qirr, qirr_inst);
+                               qirr, qirr_inst, iflag, 
+                               public_xtra -> clm_irr_thresholdtype);
 
-                  /* IMF Write Met to Silo (for testing) */
+                  /* IMF Write Met to Silo (for testing) 
                   sprintf(file_postfix, "precip.%05d", instance_xtra -> file_number );
                   WriteSilo( file_prefix, file_postfix, instance_xtra -> prcp_forc,
                             t, instance_xtra -> file_number, "Precipitation");
                   sprintf(file_postfix, "air_temp.%05d", instance_xtra -> file_number );
                   WriteSilo( file_prefix, file_postfix, instance_xtra -> tas_forc,
                             t, instance_xtra -> file_number, "AirTemperature");
+                  */
 
                   /* IMF Write CLM? */
                   if ( (instance_xtra -> iteration_number % (-(int)public_xtra -> clm_dump_interval)) == 0 )
@@ -1279,6 +1287,14 @@ void AdvanceRichards(PFModule *this_module,
                        sprintf(file_postfix, "t_soil.%05d", instance_xtra -> file_number );
                        WriteSilo(file_prefix, file_postfix, instance_xtra -> tsoil,
                                  t, instance_xtra -> file_number, "TemperatureSoil");
+
+                       // IMF: irrigation flag -- 1.0 when irrigated, 0.0 when not irrigated
+//                       if ( public_xtra -> clm_irr_type == 1 || public_xtra -> clm_irr_type == 2 )
+//                          {
+//                            sprintf(file_postfix, "qflx_qirr.%05d" ,instance_xtra -> file_number );
+//                            WriteSilo(file_prefix, file_postfix, instance_xtra -> qflx_qirr,
+//                            t, instance_xtra -> file_number, "IrrigationSurface");
+//                          }
 
                        // IMF: irrigation applied to surface -- spray or drip
                        if ( public_xtra -> clm_irr_type == 1 || public_xtra -> clm_irr_type == 2 )
@@ -2225,6 +2241,7 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    NameArray      metforce_switch_na;
    NameArray      irrtype_switch_na;
    NameArray      irrcycle_switch_na;
+   NameArray      irrthresholdtype_switch_na;
 #endif
 
    switch_na = NA_NewNameArray("False True");
@@ -2567,6 +2584,37 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    /* CLM applies irrigation whenever soil moisture < threshold */
    sprintf(key, "%s.CLM.IrrigationThreshold", name);
    public_xtra -> clm_irr_threshold = GetDoubleDefault(key,0.5);
+
+   /* IrrigationThresholdType -- Soil moisture threshold for irrigation if IrrigationCycle == Deficit */
+   /* Specifies where saturation comparison is made -- top layer, bottom layer, average over column */
+   irrthresholdtype_switch_na = NA_NewNameArray("Top Bottom Column");
+   sprintf(key, "%s.CLM.IrrigationThresholdType", name);
+   switch_name = GetStringDefault(key, "Column");
+   switch_value = NA_NameToIndex(irrthresholdtype_switch_na, switch_name);
+   switch (switch_value)
+   {
+        case 0:
+        {
+            public_xtra -> clm_irr_thresholdtype = 0;    
+            break;
+        }
+        case 1:
+        {
+            public_xtra -> clm_irr_thresholdtype = 1;
+            break;
+        }
+        case 2:
+        {
+            public_xtra -> clm_irr_thresholdtype = 2;
+            break;
+        }
+        default:
+        {
+            InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
+                       key);
+        }
+   }
+   NA_FreeNameArray(irrthresholdtype_switch_na);
 
 #endif
 

@@ -129,6 +129,14 @@ int NewGridCommand P((ClientData clientData , Tcl_Interp *interp , int argc , ch
 int NewLabelCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int AxpyCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int SumCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int CellSumCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int CellDiffCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int CellMultCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int CellDivCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int CellSumConstCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int CellDiffConstCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int CellMultConstCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int CellDivConstCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int GetStatsCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int MDiffCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int SaveDiffCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
@@ -138,12 +146,20 @@ int ComputeTopCommand P((ClientData clientData , Tcl_Interp *interp , int argc ,
 int ExtractTopCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int SurfaceStorageCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int SubsurfaceStorageCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int GWStorageCommand P((ClientData clientData, Tcl_Interp *interp , int argc , char *argv []));
 int SurfaceRunoffCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int WaterTableDepthCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 
 void Axpy(double alpha, Databox *X,  Databox *Y);
 void Sum(Databox *X,  double *sum);
-
+void CellSum(Databox *X, Databox *Y, Databox *mask, Databox *sum);
+void CellDiff(Databox *X, Databox *Y, Databox *mask, Databox *sum);
+void CellMult(Databox *X, Databox *Y, Databox *mask, Databox *sum);
+void CellDiv(Databox *X, Databox *Y, Databox *mask, Databox *sum);
+void CellSumConst(Databox *X, double val, Databox *mask, Databox *sum);
+void CellDiffConst(Databox *X, double val, Databox *mask, Databox *sum);
+void CellMultConst(Databox *X, double val, Databox *mask, Databox *sum);
+void CellDivConst(Databox *X, double val, Databox *mask, Databox *sum);
 #undef P
 
 #endif

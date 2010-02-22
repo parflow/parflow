@@ -7,7 +7,7 @@ qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf, t_s
 clm_dump_interval,clm_1d_out,clm_output_dir,clm_output_dir_length,clm_bin_output_dir,         &
 write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,        &
 res_satpf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,      &
-qirr_pf,qirr_inst_pf)
+qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
 
   !=========================================================================
   !
@@ -92,13 +92,14 @@ qirr_pf,qirr_inst_pf)
   real(r8) :: qatm_pf((nx+2)*(ny+2)*3)           ! air specific humidity, passed from PF
 
   ! IMF -- For passing irrigation amounts to write as silo in PF
+  real(r8) :: irr_flag_pf((nx+2)*(ny+2)*3)       ! irrigation flag for deficit-based scheduling -- 1 = irrigate, 0 = no-irrigate
   real(r8) :: qirr_pf((nx+2)*(ny+2)*3)           ! irrigation applied above ground -- spray or drip (2D)
   real(r8) :: qirr_inst_pf((nx+2)*(ny+2)*(nlevsoi+2))! irrigation applied below ground -- 'instant' (3D)
 
   integer  :: clm_dump_interval                  ! dump inteval for CLM output, passed from PF, always in interval of CLM timestep, not time
   integer  :: clm_1d_out                         ! whether to dump 1d output 0=no, 1=yes
   integer  :: clm_output_dir_length
-  character (LEN=clm_output_dir_length) :: clm_output_dir                ! output dir location
+  character (LEN=clm_output_dir_length) :: clm_output_dir ! output dir location
   integer  :: clm_bin_output_dir
   integer  :: write_CLM_binary                   ! whether to write CLM output as binary 
 
@@ -114,6 +115,7 @@ qirr_pf,qirr_inst_pf)
   real(r8) :: irr_startpf                        ! irrigation daily start time for constant cycle
   real(r8) :: irr_stoppf                         ! irrigation daily stop tie for constant cycle
   real(r8) :: irr_thresholdpf                    ! irrigation threshold criteria for deficit cycle (units of soil moisture content)
+  integer  :: irr_thresholdtypepf                ! irrigation threshold criteria type -- top layer, bottom layer, column avg
 
   integer  :: j_incr,k_incr                      ! increment for j and k to convert 1D vector to 3D i,j,k array
   integer  :: i,j,k
@@ -311,8 +313,9 @@ qirr_pf,qirr_inst_pf)
         clm(t)%irr_rate  = irr_ratepf
         clm(t)%irr_start = irr_startpf
         clm(t)%irr_stop  = irr_stoppf
-        clm(t)%irr_threshold = irr_thresholdpf     
-
+        clm(t)%irr_threshold  = irr_thresholdpf     
+        clm(t)%threshold_type = irr_thresholdtypepf
+ 
         ! set clm watsat, tksatu from PF porosity
         ! convert t to i,j index
         i=tile(t)%col        
@@ -467,6 +470,7 @@ qirr_pf,qirr_inst_pf)
      swe_pf(l)=clm(t)%h2osno 
      t_g_pf(l)=clm(t)%t_grnd
      qirr_pf(l)=clm(t)%qflx_qirr
+     irr_flag_pf(l)=clm(t)%irr_flag
   enddo
 
   !3D arrays (tsoil)

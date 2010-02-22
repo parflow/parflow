@@ -76,6 +76,35 @@ Databox         *v;
 }
 
 /*-----------------------------------------------------------------------
+ * IMF: print a Databox in `simple' ascii format -- FORCE NZ -> 1!
+        (added this b/c converting CLM fluxes from silo to ascii or pfb 
+         generated files w/ NZ = <problem NZ> instead of NZ = 1 for flux 
+         fields)
+ *-----------------------------------------------------------------------*/
+
+void            PrintSimpleA2D(fp, v)
+FILE           *fp;
+Databox         *v;
+{
+   int             nx, ny, nz;
+
+   int             m;
+
+   double         *ptr;
+
+
+   nx = DataboxNx(v);
+   ny = DataboxNy(v);
+   nz = 1;                // Force NZ -> 1 (instead of DataboxNz)
+
+   fprintf(fp, "%d %d %d\n", nx, ny, nz);
+
+   ptr = DataboxCoeffs(v);
+   for (m = nx * ny * nz; m--;)
+      fprintf(fp, "% e\n", *ptr++);
+}
+
+/*-----------------------------------------------------------------------
  * print a Databox in `simple' binary format
  *-----------------------------------------------------------------------*/
 
