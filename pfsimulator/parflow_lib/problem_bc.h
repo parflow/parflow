@@ -35,6 +35,7 @@
 #define DirichletBC  0
 #define FluxBC       1
 #define OverlandBC   2   //sk 
+#define ConstHeadRiver   3   //rm
  
 /*----------------------------------------------------------------
  * BCStruct structure

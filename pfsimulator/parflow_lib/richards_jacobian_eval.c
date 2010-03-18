@@ -978,6 +978,42 @@ int           symm_part)      /* Specifies whether to compute just the
 	       break;
 	    }     /* End overland flow case */
 
+         case ConstHeadRiver: //rmm
+         {
+             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+                               {
+                                   im = SubmatrixEltIndex(J_sub, i, j, k);
+                                   
+                                   
+                                   cp[im] = 0.0;
+                                   op[im] = 0.0;
+                               });
+             
+             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+                               {
+                                   if (fdir[2])
+                                   {
+                                       switch(fdir[2])
+                                       {
+                                           case 1:
+                                               
+                                               ip   = SubvectorEltIndex(p_sub, i, j, k);
+                                               io   = SubvectorEltIndex(p_sub, i, j, 0);
+                                               im = SubmatrixEltIndex(J_sub, i, j, k);
+                                               
+                                               if ((pp[ip]) > 0.0) 
+                                               {
+                                                   cp[im] += vol /dz*(dt+1);
+                                               }	
+                                               break;
+                                       }
+                                   }
+                                   
+                               });
+             
+             break;
+         }     /* End constriverhead case */
+             
 	 }     /* End switch BCtype */
       }        /* End ipatch loop */
    }           /* End subgrid loop */

@@ -129,15 +129,18 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 
    /* Overland flow variables */ //sk
    Vector      *KW, *KE, *KN, *KS;
-   Vector      *qx, *qy;
-   Subvector   *kw_sub, *ke_sub, *kn_sub, *ks_sub, *qx_sub, *qy_sub;
+   Vector      *qx, *qy, *h;
+   Subvector   *kw_sub, *ke_sub, *kn_sub, *ks_sub, *qx_sub, *qy_sub, *h_sub;
    Subvector   *x_sl_sub, *y_sl_sub, *mann_sub;
    Subvector   *obf_sub;
-   double      *kw_, *ke_, *kn_, *ks_, *qx_, *qy_;
+   double      *kw_, *ke_, *kn_, *ks_, *qx_, *qy_, *h_;
    double      *x_sl_dat, *y_sl_dat, *mann_dat;
    double      *obf_dat;
    double      dir_x, dir_y;
    double      q_overlnd;
+    /* New Diffusive Vars RMM */
+    double     x_sl_dh_dx, y_sl_dh_dy;
+    int        ippx, ippy, ipmx, ipmy;
 
    Vector      *porosity          = ProblemDataPorosity(problem_data);
    Vector      *permeability_x    = ProblemDataPermeabilityX(problem_data);
@@ -203,6 +206,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    KS = NewVector( grid2d, 1, 1);
    qx = NewVector( grid2d, 1, 1);
    qy = NewVector( grid2d, 1, 1);
+    h = NewVector( grid2d, 1, 1);
 
    /* Pass permeability values */
    /*
@@ -577,6 +581,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       ks_sub = VectorSubvector(KS, is);
       qx_sub = VectorSubvector(qx, is);
       qy_sub = VectorSubvector(qy, is);
+       h_sub = VectorSubvector(h, is);
       x_sl_sub = VectorSubvector(x_sl, is);
       y_sl_sub = VectorSubvector(y_sl, is);
       mann_sub = VectorSubvector(man, is);
@@ -622,6 +627,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       ks_ = SubvectorData(ks_sub);
       qx_ = SubvectorData(qx_sub);
       qy_ = SubvectorData(qy_sub);
+       h_ = SubvectorData(h_sub);
+       
       x_sl_dat = SubvectorData(x_sl_sub);
       y_sl_dat = SubvectorData(y_sl_sub);
       mann_dat = SubvectorData(mann_sub);
@@ -999,18 +1006,51 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			case 1:
 			   io   = SubvectorEltIndex(p_sub, i, j, 0);
 			   ip   = SubvectorEltIndex(p_sub, i, j, k);
+                     ippx = SubvectorEltIndex(p_sub, i+1,j,k);
+                     ippy = SubvectorEltIndex(p_sub, i, j+1,k);
+                     ipmx = SubvectorEltIndex(p_sub, i-1,j,k);
+                     ipmy = SubvectorEltIndex(p_sub, i, j-1,k);
+                     
 
 			   dir_x = 0.0;
 			   dir_y = 0.0;
-			   if(x_sl_dat[io] > 0.0) dir_x = -1.0;
+                     // RMM diffusive wave addition
+                     
+			  /* if(x_sl_dat[io] > 0.0) dir_x = -1.0;
 			   if(y_sl_dat[io] > 0.0) dir_y = -1.0;
 			   if(x_sl_dat[io] < 0.0) dir_x = 1.0; 
-			   if(y_sl_dat[io] < 0.0) dir_y = 1.0; 
+			   if(y_sl_dat[io] < 0.0) dir_y = 1.0;*/
+               /*      x_sl_dh_dx = x_sl_dat[io]; // + (max(pp[ippx],0.0)-max(pp[ipmx],0.0))/(2.0*dx); //max((max(pp[ip],0.0)-max(pp[ipmx],0.0))/dx,0.0) - max(-(max(pp[ippx],0.0)-max(pp[ip],0.0))/dx,0.0);
+                     y_sl_dh_dy = y_sl_dat[io]; // + (max(pp[ippy],0.0)-max(pp[ipmy],0.0))/(2.0*dy); //max((max(pp[ip],0.0)-max(pp[ipmy],0.0))/dy,0.0) - max(-(max(pp[ippy],0.0)-max(pp[ip],0.0))/dy,0.0);
+                */
+                /*  if (x_sl_dh_dx /= x_sl_dat[io]) {
+                         printf("i,j,k ip ippx ippy ipmx ipmy %d %d %d %d %d %d %d %d \n",i,j,k,ip, ippx , ippy ,ipmx ,ipmy);
+                         printf("X: slope_org slope_head %f %f \n",x_sl_dat[io], x_sl_dh_dx);
+                         printf("Y: slope_org slope_head %f %f \n",y_sl_dat[io], y_sl_dh_dy);
+                         printf("X Head: %f %f \n",max(pp[ippx],0.0),max(pp[ipmx],0.0));
+                         printf("Y Head: %f %f \n",max(pp[ippy],0.0),max(pp[ipmy],0.0));
+                         printf("DX DY %f %f \n",dx, dy);
 
-			   qx_[io] = dir_x * (RPowerR(fabs(x_sl_dat[io]),0.5) / mann_dat[io]) * RPowerR(max((pp[ip]),0.0),(5.0/3.0));
+                     } */
+                         
+                     /*   if(x_sl_dh_dx > 0.0) dir_x = -1.0;
+                        if(y_sl_dh_dy > 0.0) dir_y = -1.0;
+                        if(x_sl_dh_dx < 0.0) dir_x = 1.0; 
+                        if(y_sl_dh_dy < 0.0) dir_y = 1.0;*/
+                  
+                     
+                    
 
-			   qy_[io] = dir_y * (RPowerR(fabs(y_sl_dat[io]),0.5) / mann_dat[io]) * RPowerR(max((pp[ip]),0.0),(5.0/3.0));
+			  // qx_[io] = dir_x * (RPowerR(fabs(x_sl_dat[io]),0.5) / mann_dat[io]) * RPowerR(max((pp[ip]),0.0),(5.0/3.0));
 
+			   //qy_[io] = dir_y * (RPowerR(fabs(y_sl_dat[io]),0.5) / mann_dat[io]) * RPowerR(max((pp[ip]),0.0),(5.0/3.0));
+
+               //qx_[io] = dir_x * (RPowerR(fabs(x_sl_dh_dx),0.5) / mann_dat[io]) * RPowerR(max((pp[ip]),0.0),(5.0/3.0));
+                     
+              // qy_[io] = dir_y * (RPowerR(fabs(y_sl_dh_dy),0.5) / mann_dat[io]) * RPowerR(max((pp[ip]),0.0),(5.0/3.0));
+               
+                     h_[io] = max(pp[ip],0.0);
+                     
 			   break;
 		     }
 		  }
@@ -1026,11 +1066,75 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			case 1:
 			   io   = SubvectorEltIndex(p_sub, i, j, 0);
 
-		           ke_[io] = max(qx_[io],0.0) - max(-qx_[io+1],0.0);
-		           kw_[io] = max(qx_[io-1],0.0) - max(-qx_[io],0.0);
+                     
+                     dir_x = 0.0;
+                     dir_y = 0.0;
+                     // RMM diffusive wave addition
+                     
+                     //x_sl_dh_dx = x_sl_dat[io] + (h_[io]-h_[io-1])/dx; //( max((h_[io+1]-h_[io]),0.0)- max(-(h_[io]-h_[io-1]),0.0))/dx; //max((max(pp[ip],0.0)-max(pp[ipmx],0.0))/dx,0.0) - max(-(max(pp[ippx],0.0)-max(pp[ip],0.0))/dx,0.0);
+                     //y_sl_dh_dy = y_sl_dat[io] + (h_[io]-h_[io-sy_p])/dy; //( max((h_[io+sy_p]-h_[io]),0.0)- max(-(h_[io]-h_[io-sy_p]),0.0))/dy; //max((max(pp[ip],0.0)-max(pp[ipmy],0.0))/dy,0.0) - max(-(max(pp[ippy],0.0)-max(pp[ip],0.0))/dy,0.0);
 
-		           kn_[io] = max(qy_[io],0.0) - max(-qy_[io+sy_p],0.0);
-		           ks_[io] = max(qy_[io-sy_p],0.0) - max(-qy_[io],0.0);
+                     /*if(x_sl_dat[io] > 0.0) dir_x = -1.0;
+                     if(y_sl_dat[io] > 0.0) dir_y = -1.0;
+                     if(x_sl_dat[io] < 0.0) dir_x = 1.0; 
+                     if(y_sl_dat[io] < 0.0) dir_y = 1.0;*/
+                     
+                     x_sl_dh_dx = x_sl_dat[io]; // -  min(dir_x,0.0)*(h_[io+1]-h_[io])/dx + max(dir_x,0.0)*(h_[io]-h_[io-1])/dx; 
+                     y_sl_dh_dy = y_sl_dat[io]; // -  min(dir_y,0.0)*(h_[io+sy_p]-h_[io])/dy+ max(dir_y,0.0)*(h_[io]-h_[io-sy_p])/dy; 
+
+                     /*if(dir_x == 0.0) x_sl_dh_dx = (h_[io+1]-h_[io-1])/dx;
+                     if(dir_y == 0.0) y_sl_dh_dy = (h_[io+sy_p]-h_[io-sy_p])/dy;*/
+                     
+                     if(x_sl_dh_dx > 0.0) dir_x = -1.0;
+                     if(y_sl_dh_dy > 0.0) dir_y = -1.0;
+                     if(x_sl_dh_dx < 0.0) dir_x = 1.0; 
+                     if(y_sl_dh_dy < 0.0) dir_y = 1.0;
+                     
+                     qx_[io] = dir_x * (RPowerR(fabs(x_sl_dh_dx),0.5) / mann_dat[io]) * RPowerR(max((h_[io]),0.0),(5.0/3.0));
+                     
+                     qy_[io] = dir_y * (RPowerR(fabs(y_sl_dh_dy),0.5) / mann_dat[io]) * RPowerR(max((h_[io]),0.0),(5.0/3.0));
+                     
+		           //ke_[io] = (5.0/3.0)*(max(qx_[io],0.0)*(h_[io]-h_[io-1]) + min(qx_[io],0.0)*(h_[io+1]-h_[io]));
+                     //ks_[io] = 0.0;
+                     //kw_[io] = 0.0;
+                    //ke_[io] = qx_[io]*(h_[io]-h_[io-1]);
+                    // ke_[io] = max(qx_[io-1],0.0) - max(-qx_[io],0.0);
+		            // kw_[io] = max(qx_[io-1],0.0) - max(-qx_[io],0.0);
+
+		           //kn_[io] = (5.0/3.0)*(max(qy_[io],0.0)*(h_[io]-h_[io-sy_p]) + min(qy_[io],0.0)*(h_[io+sy_p]-h_[io]));
+                    // kn_[io] = qy_[io]*(h_[io]-h_[io-sy_p]);  
+                     
+                     break;
+		     }
+		  }
+               
+	       });
+                     
+                     BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+                                       {
+                                           if (fdir[2])
+                                           {
+                                               switch(fdir[2])
+                                               {
+                                                   case 1:
+                                                       io   = SubvectorEltIndex(p_sub, i, j, 0);
+                                                       
+                                                       
+                     ke_[io] = max(qx_[io],0.0) - max(-qx_[io+1],0.0);
+                     kw_[io] = max(qx_[io-1],0.0) - max(-qx_[io],0.0);
+                     
+                     kn_[io] = max(qy_[io],0.0) - max(-qy_[io+sy_p],0.0);
+                     ks_[io] = max(qy_[io-sy_p],0.0) - max(-qy_[io],0.0);
+
+                     
+                     //max(qy_[io],0.0) - max(-qy_[io+sy_p],0.0);
+		           //ks_[io] = max(qy_[io-sy_p],0.0) - max(-qy_[io],0.0);  
+                   /*  ke_[io] = qx_[io+1];
+                     kw_[io] = qx_[io-1];
+                     
+                     kn_[io] = qy_[io+sy_p];
+                     ks_[io] = qy_[io-sy_p];  */
+                     
 		   
  			   break;
 		     }
@@ -1053,9 +1157,10 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 
 			   q_overlnd = 0.0;
 			   q_overlnd = vol * (max(pp[ip],0.0) - max(opp[ip],0.0)) /dz +
+                  //  dt * vol * (ke_[io]/dx + kn_[io]/dy) / dz;
 			      dt * vol * ((ke_[io]-kw_[io])/dx + (kn_[io] - ks_[io])/dy) / dz;
 		   
-			   obf_dat[io] = 0.0;
+	/*		   obf_dat[io] = 0.0;
 			   if ( i >= 0 && i <= (gnx-1) && j == 0 && qy_[io] < 0.0 ){ //south face
 			      obf_dat[io]+= fabs(qy_[io]);
 			   } else if (i == 0 && j >= 0 && j <= (gny-1) && qx_[io] < 0.0) { // west face
@@ -1071,7 +1176,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			   
 			   if (j==0 && i==0){
 			      *outflow=fabs(ks_[io])+fabs(kw_[io]);
-			   }
+			   } */
 			   
 			   fp[ip] += q_overlnd;
 			   
@@ -1083,6 +1188,208 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 	    
 	       break;
 	    }     /* End OverlandBC case */
+/* experimental BC we apply a flux at the GS unless pressure is greater than zero
+ in which case we remove all ponded water */
+         case ConstHeadRiver:
+         {
+             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+                               {
+                                   ip   = SubvectorEltIndex(p_sub, i, j, k);
+                                   
+                                   if (fdir[0])
+                                   {
+                                       
+                                       switch(fdir[0])
+                                       {
+                                           case -1:
+                                               dir = -1;
+                                               diff  = pp[ip-1] - pp[ip];
+                                               u_old = ffx * PMean(pp[ip-1], pp[ip], 
+                                                                   permxp[ip-1], permxp[ip])
+                                               * (diff / dx )
+                                               * RPMean(pp[ip-1], pp[ip], 
+                                                        rpp[ip-1]*dp[ip-1], rpp[ip]*dp[ip]) 
+                                               / viscosity;
+                                               break;
+                                           case  1:
+                                               dir = 1;
+                                               diff  = pp[ip] - pp[ip+1];
+                                               u_old = ffx * PMean(pp[ip], pp[ip+1], 
+                                                                   permxp[ip], permxp[ip+1])
+                                               * (diff / dx )
+                                               * RPMean(pp[ip], pp[ip+1], 
+                                                        rpp[ip]*dp[ip], rpp[ip+1]*dp[ip+1]) 
+                                               / viscosity;
+                                               break;
+                                       }
+                                       u_new = ffx;
+                                   }
+                                   else if (fdir[1])
+                                   {
+                                       
+                                       switch(fdir[1])
+                                       {
+                                           case -1:
+                                               dir = -1;
+                                               diff  = pp[ip-sy_p] - pp[ip];
+                                               u_old = ffy * PMean(pp[ip-sy_p], pp[ip], 
+                                                                   permyp[ip-sy_p], permyp[ip])
+                                               * (diff / dy )
+                                               * RPMean(pp[ip-sy_p], pp[ip], 
+                                                        rpp[ip-sy_p]*dp[ip-sy_p], rpp[ip]*dp[ip]) 
+                                               / viscosity;
+                                               break;
+                                           case  1:
+                                               dir = 1;
+                                               diff  = pp[ip] - pp[ip+sy_p];
+                                               u_old = ffy * PMean(pp[ip], pp[ip+sy_p], 
+                                                                   permyp[ip], permyp[ip+sy_p])
+                                               * (diff / dy )
+                                               * RPMean(pp[ip], pp[ip+sy_p], 
+                                                        rpp[ip]*dp[ip], rpp[ip+sy_p]*dp[ip+sy_p])
+                                               / viscosity;
+                                               break;
+                                       }
+                                       u_new = ffy;
+                                   }
+                                   else if (fdir[2])
+                                   {
+                                       
+                                       switch(fdir[2])
+                                       {
+                                           case -1:
+                                               dir = -1;
+                                               lower_cond = (pp[ip-sz_p] / dz) 
+                                               - 0.5 * dp[ip-sz_p] * gravity;
+                                               upper_cond = (pp[ip] / dz) + 0.5 * dp[ip] * gravity;
+                                               diff = lower_cond - upper_cond;
+                                               u_old = ffz * PMean(pp[ip-sz_p], pp[ip], 
+                                                                   permzp[ip-sz_p], permzp[ip])
+                                               * diff
+                                               * RPMean(lower_cond, upper_cond, 
+                                                        rpp[ip-sz_p]*dp[ip-sz_p], rpp[ip]*dp[ip]) 
+                                               / viscosity;
+                                               break;
+                                           case  1:
+                                               dir = 1;
+                                               lower_cond = (pp[ip] / dz) - 0.5 * dp[ip] * gravity;
+                                               upper_cond = (pp[ip+sz_p] / dz)
+                                               + 0.5 * dp[ip+sz_p] * gravity;
+                                               diff = lower_cond - upper_cond;
+                                               u_old = ffz * PMean(0, 0, permzp[ip], permzp[ip+sz_p])
+                                               * diff
+                                               * RPMean(lower_cond, upper_cond,
+                                                        rpp[ip]*dp[ip], rpp[ip+sz_p]*dp[ip+sz_p])
+                                               / viscosity;
+                                               break;
+                                       }
+                                       u_new = ffz;
+                                   }
+                                   
+                                   /* Remove the boundary term computed above */
+                                   fp[ip] -= dt * dir * u_old;
+                                   
+                                   u_new = u_new * bc_patch_values[ival]; //sk: here we go in and implement surface routing!
+                                   
+                                   fp[ip] += dt * dir * u_new;
+                               });
+             
+             
+             // SGS TODO can these loops be merged?
+/*             BCStructPatchLoopOvrlnd(i, j, k, fdir, ival, bc_struct, ipatch, is,
+                                     {
+                                         if (fdir[2])
+                                         {
+                                             switch(fdir[2])
+                                             {
+                                                 case 1:
+                                                     io   = SubvectorEltIndex(p_sub, i, j, 0);
+                                                     ip   = SubvectorEltIndex(p_sub, i, j, k);
+                                                     
+                                                     dir_x = 0.0;
+                                                     dir_y = 0.0;
+                                                     if(x_sl_dat[io] > 0.0) dir_x = -1.0;
+                                                     if(y_sl_dat[io] > 0.0) dir_y = -1.0;
+                                                     if(x_sl_dat[io] < 0.0) dir_x = 1.0; 
+                                                     if(y_sl_dat[io] < 0.0) dir_y = 1.0; 
+                                                     
+                                                     qx_[io] = dir_x * (RPowerR(fabs(x_sl_dat[io]),0.5) / mann_dat[io]) * RPowerR(max((pp[ip]),0.0),(5.0/3.0));
+                                                     
+                                                     qy_[io] = dir_y * (RPowerR(fabs(y_sl_dat[io]),0.5) / mann_dat[io]) * RPowerR(max((pp[ip]),0.0),(5.0/3.0));
+                                                     
+                                                     break;
+                                             }
+                                         }
+                                         
+                                     });
+             
+             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+                               {
+                                   if (fdir[2])
+                                   {
+                                       switch(fdir[2])
+                                       {
+                                           case 1:
+                                               io   = SubvectorEltIndex(p_sub, i, j, 0);
+                                               
+                                               ke_[io] = max(qx_[io],0.0) - max(-qx_[io+1],0.0);
+                                               kw_[io] = max(qx_[io-1],0.0) - max(-qx_[io],0.0);
+                                               
+                                               kn_[io] = max(qy_[io],0.0) - max(-qy_[io+sy_p],0.0);
+                                               ks_[io] = max(qy_[io-sy_p],0.0) - max(-qy_[io],0.0);
+                                               
+                                               break;
+                                       }
+                                   }
+                                   
+                               });*/
+             
+             
+           
+             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+                               {
+                                   if (fdir[2])
+                                   {
+                                       switch(fdir[2])
+                                       {
+                                           case 1:
+                                               dir = 1;
+                                               ip   = SubvectorEltIndex(p_sub, i, j, k);
+                                               io   = SubvectorEltIndex(p_sub, i, j, 0);
+                                               
+                                               if (pp[ip] > 0.0) {
+                                                   pp[ip] = 0.0;
+                                                   fp[ip] = 0.0;
+                                               }
+                                               /*		   obf_dat[io] = 0.0;
+                                                if ( i >= 0 && i <= (gnx-1) && j == 0 && qy_[io] < 0.0 ){ //south face
+                                                obf_dat[io]+= fabs(qy_[io]);
+                                                } else if (i == 0 && j >= 0 && j <= (gny-1) && qx_[io] < 0.0) { // west face
+                                                obf_dat[io]+= fabs(qx_[io]);
+                                                } else if (i >= 0 && i <= (gnx-1) && j == (gny-1) && qy_[io] > 0.0) { //north face
+                                                obf_dat[io]+= fabs(qy_[io]);
+                                                } else if (i == (gnx-1) && j >= 0 && j <= (gny-1) && qx_[io] > 0.0) { //east face
+                                                obf_dat[io]+= fabs(qx_[io]);
+                                                } else if (i > 0 && i < (gnx-1) && j > 0 && j < (gny-1)) { //interior
+                                                obf_dat[io] = qx_[io];
+                                                }
+                                                
+                                                
+                                                if (j==0 && i==0){
+                                                *outflow=fabs(ks_[io])+fabs(kw_[io]);
+                                                } */
+                                               
+                                               //fp[ip] += q_overlnd;
+                                               
+                                               break;
+                                       }
+                                   }
+                                   
+                               });
+             
+             break;
+         }     /* End OverlandBC case */
+             
 	 
 	 }     /* End switch BCtype */
       }        /* End ipatch loop */

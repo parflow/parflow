@@ -5849,7 +5849,7 @@ else
             fi
           fi
         ;;
-        -lang* | -lcrt0.o | -lc )
+        -lang* |  -lc )
           arg=
         ;;
         -[lLR])

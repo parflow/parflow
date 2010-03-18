@@ -108,6 +108,10 @@ typedef struct
    double   *values;
 } Type7;               /* //sk Overland flow, constant rainfall*/
 
+typedef struct
+{
+    double   *values;
+} Type8;               /* //rmm constheadriver, constant rainfall*/
 
 /*--------------------------------------------------------------------------
  * BCPressurePackage
@@ -129,7 +133,8 @@ void         BCPressurePackage(
    Type4            *dummy4;
    Type5            *dummy5;
    Type6            *dummy6;
-   Type7            *dummy7;  
+   Type7            *dummy7;
+   Type8            *dummy8;
 
    TimeCycleData    *time_cycle_data;
 
@@ -406,7 +411,26 @@ void         BCPressurePackage(
 
                break;
             }
-
+                    //rmm set up const head in any river cell bc struct
+                case 8:
+                {
+                    BCPressureType8   *bc_pressure_type8;
+                    
+                    BCPressureDataBCType(bc_pressure_data,i) = ConstHeadRiver;
+                    
+                    dummy8 = (Type8 *)(public_xtra -> data[i]);
+                    
+                    bc_pressure_type8 = ctalloc(BCPressureType8, 1);
+                    
+                    BCPressureType8Value(bc_pressure_type8) 
+                    = (dummy8 -> values[interval_number]);
+                    
+                    BCPressureDataIntervalValue(bc_pressure_data,i,interval_number) 
+                    = (void *) bc_pressure_type8;
+                    
+                    break;
+                }
+                    
             }
          }
       }
@@ -492,14 +516,15 @@ PFModule  *BCPressurePackageNewPublicXtra(
    Type5         *dummy5;
    Type6         *dummy6;
    Type7         *dummy7;
+   Type8         *dummy8;
 
    int             i, interval_number, interval_division;
 
    NameArray type_na;
    NameArray function_na;
 
-   //sk
-   type_na = NA_NewNameArray("DirEquilRefPatch DirEquilPLinear FluxConst FluxVolumetric PressureFile FluxFile ExactSolution OverlandFlow");
+   //sk, rmm
+   type_na = NA_NewNameArray("DirEquilRefPatch DirEquilPLinear FluxConst FluxVolumetric PressureFile FluxFile ExactSolution OverlandFlow ConstHeadRiver");
 
    function_na = NA_NewNameArray("dum0 X XPlusYPlusZ X3Y2PlusSinXYPlus1 X3Y4PlusX2PlusSinXYCosYPlus1 XYZTPlus1 XYZTPlus1PermTensor");
 
@@ -888,6 +913,25 @@ PFModule  *BCPressurePackageNewPublicXtra(
             break;
          }
 
+             case 8:
+             {
+                 dummy8 = ctalloc(Type8, 1);
+                 
+                 (dummy8 -> values) = ctalloc(double, interval_division);
+                 
+                 for(interval_number = 0; interval_number < interval_division; interval_number++)
+                 { 
+                     sprintf(key, "Patch.%s.BCPressure.%s.Value", 
+                             patch_name,
+                             NA_IndexToName(GlobalsIntervalNames[global_cycle],
+                                            interval_number));
+                     
+                     dummy8 -> values[interval_number] = GetDouble(key);
+                 }
+                 
+                 (public_xtra -> data[i]) = (void *) dummy8;
+                 break;
+             }
 
          }   /* End switch statement */
       }
@@ -918,6 +962,7 @@ void  BCPressurePackageFreePublicXtra()
    Type5         *dummy5;
    Type6         *dummy6;
    Type7         *dummy7;
+   Type8         *dummy8;
 
    int            num_patches, num_cycles;
    int            i, interval_number, interval_division;
@@ -1058,6 +1103,16 @@ void  BCPressurePackageFreePublicXtra()
                break;
             }
 
+                    //rmm
+                case 8:
+                {
+                    dummy8 = (Type8 *)(public_xtra -> data[i]);
+                    
+                    tfree((dummy8 -> values));
+                    tfree(dummy8);
+                    
+                    break;
+                }
 
             }
          }

@@ -175,7 +175,7 @@ RFCondData   *cdata)
    double    a1, a2, a3;
    double    cx, cy, cz;
    double    sum;
-   double    Tiny = 1.0e-12;
+   double    Tiny = 1.0e-50;
 
    (void) geounit;
 
@@ -217,9 +217,9 @@ RFCondData   *cdata)
    iLxyz = iLxp1 * iLyp1 * iLzp1;
 
    /* Define the size of a correlation neighborhood */
-   nLx = 2*iLx + 1;
-   nLy = 2*iLy + 1;
-   nLz = 2*iLz + 1;
+   nLx = 3*iLx + 1;
+   nLy = 3*iLy + 1;
+   nLz = 3*iLz + 1;
    nLxyz = nLx*nLy*nLz;	
 
    /*------------------------
@@ -298,6 +298,7 @@ RFCondData   *cdata)
       a2 = j*j*cy;
       a3 = k*k*cz;
       cov[i][j][k] = exp(-sqrt(a1+a2+a3));
+        //printf("cov(i,j,k) %d %d %d %f \n",i,j,k,cov[i][j][k]);
     }
 
     /* Allocate memory for variables that will be used in kriging */
@@ -499,7 +500,7 @@ RFCondData   *cdata)
              * this system can be solved once *outside* of the 
              * GrGeomInLoop2 below. */
 
-            npts = 9999;
+            npts = 99999;
             while (npts > max_npts)
             {
                m=0;
@@ -548,6 +549,8 @@ RFCondData   *cdata)
               dj = abs(rpy-iyy[j]);
               dk = abs(rpz-izz[j]);
               b[j] = cov[di][dj][dk];
+//                printf("rpx rpy rpz %d %d %d \n",rpx,rpy,rpz);
+//                printf("b cov[ijk] di dj dk %f %f %d %d %d \n",b[j],cov[di][dj][dk],di,dj,dk);
 
               for (i=0; i<npts; i++)
               {
@@ -555,6 +558,7 @@ RFCondData   *cdata)
                 dj = abs(iyy[i]-iyy[j]);
                 dk = abs(izz[i]-izz[j]);
                 A11[m++] = cov[di][dj][dk];
+//                  printf("A11 cov[ijk] di dj dk %f %f %d %d %d \n",A11[m-1],cov[di][dj][dk],di,dj,dk);
               }
             }
 
@@ -566,12 +570,17 @@ RFCondData   *cdata)
                dpofa_(A11, &npts, &npts, &ierr);
                dposl_(A11, &npts, &npts, w);
             }
+             //printf("ierr %d \n",ierr);
 
             /* Compute the conditional standard deviation for the RV
              * to be simulated. */
             csigma = 0.0;
-            for (i=0; i<npts; i++) csigma += w[i]*b[i]; 
+             for (i=0; i<npts; i++) {
+                 csigma += abs(w[i]*b[i]); 
+            // printf("w, b, csigma %f %f %f \n",w[i],b[i],csigma);
+             }
             csigma =  sqrt(cov[0][0][0] - csigma);
+           //  printf("cov i csigma %f %d %f \n",cov[0][0][0],i,csigma);
 
 	    /* The following loop hits every point in the current
                 * region. That is, it skips by max_search_rad+1
@@ -665,7 +674,7 @@ RFCondData   *cdata)
 			}
 
 			for(i2=0; i2<npts; i2++) w_tmp[i2] = w[i2];
-
+                // printf("i,j,k cpts npts: %d %d %d %d %d \n",i,j,k,cpts,npts);
 			/*--------------------------------------------------
 			 * Conditioning to external data is done here.
 			 *--------------------------------------------------*/
@@ -757,6 +766,7 @@ RFCondData   *cdata)
 			   csigma = 0.0;
 			   for (i2=0; i2<npts+cpts; i2++) csigma += w_tmp[i2]*b[i2]; 
 			   csigma = sqrt(cov[0][0][0] - csigma);
+             //   printf("csigma %f \n",csigma);
 			}
 			/*--------------------------------------------------
 			 * End of external conditioning
@@ -768,12 +778,15 @@ RFCondData   *cdata)
 			uni = Rand();
 			gauinv_(&uni, &gau, &ierr);
 			tmpRFp[index2] = csigma*gau + cmean;
+    //             tmpRFp[index2] = gau;
+
+                 //  printf("csigma %f \n",csigma);
 
 			/* Cutoff tail values if required */
 			if (dist_type > 1)
 			{
-			   if (tmpRFp[index2] < low_cutoff)  tmpRFp[index2] = low_cutoff;
-			   if (tmpRFp[index2] > high_cutoff) tmpRFp[index2] = high_cutoff;
+			  /* if (tmpRFp[index2] < low_cutoff)  tmpRFp[index2] = low_cutoff;
+			   if (tmpRFp[index2] > high_cutoff) tmpRFp[index2] = high_cutoff;*/
 			}
 		     } /* if( abs(tmpRFp[index2]) < Tiny )  */
 		  }   /* end of triple for-loops over i,j,k  */
@@ -813,6 +826,9 @@ RFCondData   *cdata)
             index1 = SubvectorEltIndex(sub_field, i, j, k);
             index2 = SubvectorEltIndex(sub_tmpRF, i, j, k);
             fieldp[index1] = mean + sigma*tmpRFp[index2];
+//             fieldp[index1] = tmpRFp[index2];
+
+             //  printf("sigma %f \n",sigma);
          });
       }
 

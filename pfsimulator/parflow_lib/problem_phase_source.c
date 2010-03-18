@@ -358,7 +358,7 @@ double       time)
 	       area_x = dy*dz;
 	       area_y = dx*dz;
 	       area_z = dx*dy;
-	       area_sum = area_x * area_y + area_z;
+	       area_sum = area_x + area_y + area_z;
 
                px = SubvectorElt(px_sub, ix, iy, iz);
                py = SubvectorElt(py_sub, ix, iy, iz);

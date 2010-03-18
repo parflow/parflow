@@ -91,6 +91,11 @@ typedef struct
    double  value;
 } BCPressureType7;
 
+/* //rmm const head river, constant rain*/
+typedef struct
+{
+    double  value;
+} BCPressureType8;
 
 /*----------------------------------------------------------------
  * BCPressure Data structure
@@ -179,6 +184,10 @@ typedef struct
 /*--------------------------------------------------------------------------*/
 #define BCPressureType7Value(type7)\
         ((type7) -> value)
+
+/*--------------------------------------------------------------------------*/
+#define BCPressureType8Value(type8)\
+((type8) -> value)
 
 /*--------------------------------------------------------------------------
  * Accessor macros: BCPressureData
