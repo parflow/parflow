@@ -363,11 +363,11 @@ PFModule  *RichardsBCInternalNewPublicXtra()
 	       
 	       sprintf(key, "InternalBC.%s.Y", 
 		       NA_IndexToName(public_xtra -> internal_bc_names, i));
-	       dummy0 -> xlocation = GetDouble(key);
+	       dummy0 -> ylocation = GetDouble(key);
 	       
 	       sprintf(key, "InternalBC.%s.Z", 
 		       NA_IndexToName(public_xtra -> internal_bc_names, i));
-	       dummy0 -> xlocation = GetDouble(key);
+	       dummy0 -> zlocation = GetDouble(key);
 	       
 	       sprintf(key, "InternalBC.%s.Value", 
 		       NA_IndexToName(public_xtra -> internal_bc_names, i));
