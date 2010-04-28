@@ -60,23 +60,32 @@ esac
 # Determine which TCL library is built
 if test "${tcl_PREFIX+set}" = set; then
    AC_MSG_CHECKING([for TCL library])
-   if test -f ${tcl_PREFIX}/lib/libtcl.so; then
-      tcl_LIBS='-ltcl'
+   if test -f ${tcl_PREFIX}/lib/libtcl8.5.so; then
+      tcl_LIBS='-ltcl8.5'
       AC_MSG_RESULT([using $tcl_LIBS])
    elif test -f ${tcl_PREFIX}/lib/libtcl8.4.so; then
       tcl_LIBS='-ltcl8.4'
       AC_MSG_RESULT([using $tcl_LIBS])
-   elif test -f ${tcl_PREFIX}/lib/libtcl8.5.so; then
-      tcl_LIBS='-ltcl8.5'
-      AC_MSG_RESULT([using $tcl_LIBS])
-   elif test -f ${tcl_PREFIX}/lib/libtcl.dylib; then
+   elif test -f ${tcl_PREFIX}/lib/libtcl.so; then
       tcl_LIBS='-ltcl'
+      AC_MSG_RESULT([using $tcl_LIBS])
+   elif test -f ${tcl_PREFIX}/lib/libtcl8.5.dylib; then
+      tcl_LIBS='-ltcl8.5'
       AC_MSG_RESULT([using $tcl_LIBS])
    elif test -f ${tcl_PREFIX}/lib/libtcl8.4.dylib; then
       tcl_LIBS='-ltcl8.4'
       AC_MSG_RESULT([using $tcl_LIBS])
-   elif test -f ${tcl_PREFIX}/lib/libtcl8.5.dylib; then
+   elif test -f ${tcl_PREFIX}/lib/libtcl.dylib; then
+      tcl_LIBS='-ltcl'
+      AC_MSG_RESULT([using $tcl_LIBS])
+   elif test -f ${tcl_PREFIX}/lib/libtcl8.5.a; then
       tcl_LIBS='-ltcl8.5'
+      AC_MSG_RESULT([using $tcl_LIBS])
+   elif test -f ${tcl_PREFIX}/lib/libtcl8.4.a; then
+      tcl_LIBS='-ltcl8.4'
+      AC_MSG_RESULT([using $tcl_LIBS])
+   elif test -f ${tcl_PREFIX}/lib/libtcl.a; then
+      tcl_LIBS='-ltcl'
       AC_MSG_RESULT([using $tcl_LIBS])
    else
       AC_MSG_RESULT([could not find a tcl library...assuming not needed])

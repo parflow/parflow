@@ -8129,28 +8129,40 @@ esac
 if test "${tcl_PREFIX+set}" = set; then
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for TCL library" >&5
 $as_echo_n "checking for TCL library... " >&6; }
-   if test -f ${tcl_PREFIX}/lib/libtcl.so; then
-      tcl_LIBS='-ltcl'
+   if test -f ${tcl_PREFIX}/lib/libtcl8.5.so; then
+      tcl_LIBS='-ltcl8.5'
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: using $tcl_LIBS" >&5
 $as_echo "using $tcl_LIBS" >&6; }
    elif test -f ${tcl_PREFIX}/lib/libtcl8.4.so; then
       tcl_LIBS='-ltcl8.4'
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: using $tcl_LIBS" >&5
 $as_echo "using $tcl_LIBS" >&6; }
-   elif test -f ${tcl_PREFIX}/lib/libtcl8.5.so; then
-      tcl_LIBS='-ltcl8.5'
+   elif test -f ${tcl_PREFIX}/lib/libtcl.so; then
+      tcl_LIBS='-ltcl'
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: using $tcl_LIBS" >&5
 $as_echo "using $tcl_LIBS" >&6; }
-   elif test -f ${tcl_PREFIX}/lib/libtcl.dylib; then
-      tcl_LIBS='-ltcl'
+   elif test -f ${tcl_PREFIX}/lib/libtcl8.5.dylib; then
+      tcl_LIBS='-ltcl8.5'
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: using $tcl_LIBS" >&5
 $as_echo "using $tcl_LIBS" >&6; }
    elif test -f ${tcl_PREFIX}/lib/libtcl8.4.dylib; then
       tcl_LIBS='-ltcl8.4'
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: using $tcl_LIBS" >&5
 $as_echo "using $tcl_LIBS" >&6; }
-   elif test -f ${tcl_PREFIX}/lib/libtcl8.5.dylib; then
+   elif test -f ${tcl_PREFIX}/lib/libtcl.dylib; then
+      tcl_LIBS='-ltcl'
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: using $tcl_LIBS" >&5
+$as_echo "using $tcl_LIBS" >&6; }
+   elif test -f ${tcl_PREFIX}/lib/libtcl8.5.a; then
       tcl_LIBS='-ltcl8.5'
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: using $tcl_LIBS" >&5
+$as_echo "using $tcl_LIBS" >&6; }
+   elif test -f ${tcl_PREFIX}/lib/libtcl8.4.a; then
+      tcl_LIBS='-ltcl8.4'
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: using $tcl_LIBS" >&5
+$as_echo "using $tcl_LIBS" >&6; }
+   elif test -f ${tcl_PREFIX}/lib/libtcl.a; then
+      tcl_LIBS='-ltcl'
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: using $tcl_LIBS" >&5
 $as_echo "using $tcl_LIBS" >&6; }
    else

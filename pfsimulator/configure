@@ -606,8 +606,8 @@ M4
 INSTDIR
 PARFLOW_HAVE_HYPRE
 SUNDIALS_C_FILES
-hdf5_LIBS
 PARFLOW_HAVE_SILO
+hdf5_LIBS
 PARFLOW_HAVE_CEGDB
 PARFLOW_HAVE_SAMRAI
 AMPS_LIB_DEPEND
@@ -734,8 +734,8 @@ with_MPICC
 with_amps
 with_samrai
 with_cegdb
-with_silo
 with_hdf5
+with_silo
 with_sundials
 with_hypre
 '
@@ -1407,9 +1407,9 @@ Optional Packages:
                         Specify where SAMRAI is installed.
   --with-cegdb=PATH        Use CEGDB and optionally specify
                             where CEGDB is installed.
+ --with-hdf5=PATH  Use HDF5 and optionally specify where HDF5 is installed.
   --with-silo=PATH        Use SILO and optionally specify
                           where SILO is installed.
- --with-hdf5=PATH  Use HDF5 and optionally specify where HDF5 is installed.
   --with-sundials=PATH	  Use the Sundials solver package
 			  and specify where it is.
   --with-hypre=PATH       Use HYPRE and optionally specify
@@ -5849,7 +5849,7 @@ else
             fi
           fi
         ;;
-        -lang* |  -lc )
+        -lang* | -lcrt0.o | -lc )
           arg=
         ;;
         -[lLR])
@@ -9443,107 +9443,6 @@ $as_echo "#define HAVE_CEGDB 1" >>confdefs.h
 fi
 
 
-PARFLOW_HAVE_SILO="no"
-
-
-# Begin CASC_SUPPORT_SILO
-# Defines silo_PREFIX silo_INCLUDES and silo_LIBS if with-silo is specified.
-
-# Check whether --with-silo was given.
-if test "${with_silo+set}" = set; then :
-  withval=$with_silo;
-else
-  with_silo=no
-fi
-
-
-case "$with_silo" in
-  no)
-    { $as_echo "$as_me:${as_lineno-$LINENO}: configuring without SILO support" >&5
-$as_echo "$as_me: configuring without SILO support" >&6;}
-    : Do nothing
-  ;;
-  yes)
-    # SILO install path was not specified.
-    # Look in a couple of standard locations to probe if
-    # SILO header files are there.
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for SILO installation" >&5
-$as_echo_n "checking for SILO installation... " >&6; }
-    for dir in /usr /usr/local; do
-      if test -f ${dir}/include/silo.h; then
-        silo_PREFIX=${dir}
-        break
-      fi
-    done
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $silo_PREFIX" >&5
-$as_echo "$silo_PREFIX" >&6; }
-  ;;
-  *)
-    # SILO install path was specified.
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for SILO installation" >&5
-$as_echo_n "checking for SILO installation... " >&6; }
-    silo_PREFIX=$with_silo
-    silo_INCLUDES="-I${silo_PREFIX}/include"
-    if test -f ${silo_PREFIX}/include/silo.h; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $silo_PREFIX" >&5
-$as_echo "$silo_PREFIX" >&6; }
-    else
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $silo_PREFIX" >&5
-$as_echo "$silo_PREFIX" >&6; }
-        as_fn_error "SILO not found in $with_silo" "$LINENO" 5
-    fi
-  ;;
-esac
-
-# Determine which SILO library is built
-if test "${silo_PREFIX+set}" = set; then
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for SILO library" >&5
-$as_echo_n "checking for SILO library... " >&6; }
-   if test -f ${silo_PREFIX}/lib/libsilo.a; then
-      silo_LIBS='-lsilo'
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: using $silo_LIBS" >&5
-$as_echo "using $silo_LIBS" >&6; }
-   elif test -f ${silo_PREFIX}/lib/libsiloh5.a; then
-      silo_LIBS='-lsiloh5'
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: using $silo_LIBS" >&5
-$as_echo "using $silo_LIBS" >&6; }
-   else
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: using $silo_LIBS" >&5
-$as_echo "using $silo_LIBS" >&6; }
-      as_fn_error "Could not fine silo library in $silo_PREFIX" "$LINENO" 5
-   fi
-
-   silo_LIBS="-L${silo_PREFIX}/lib ${silo_LIBS}"
-fi
-
-# END CASC_SUPPORT_SILO
-
-
-if test "${silo_PREFIX+set}" = set; then
-  LIBS="$silo_LIBS $LIBS"
-
-# Split silo_LIBS into the LIB_PATH part (silo_LIB_PATH) and the LIB_NAME part (silo_LIB_NAME)
-if test -n "${silo_LIBS}"; then
-  for i in ${silo_LIBS}; do
-    case "$i" in
-    -L*) silo_LIB_PATH="${silo_LIB_PATH} $i" ;;
-    *) silo_LIB_NAME="${silo_LIB_NAME} $i" ;;
-    esac
-  done
-fi
-
-  LIB_PATH="$silo_LIB_PATH $LIB_PATH"
-  LIB_NAME="$silo_LIB_NAME $LIB_NAME"
-  INC_PATH="$silo_INCLUDES $INC_PATH"
-
-$as_echo "#define HAVE_SILO 1" >>confdefs.h
-
-  PARFLOW_HAVE_SILO="yes"
-fi
-
-
-
-
 
 
 # Begin CASC_SUPPORT_HDF5
@@ -9692,6 +9591,104 @@ $as_echo "#define HAVE_HDF5 1" >>confdefs.h
 
 fi
 
+
+PARFLOW_HAVE_SILO="no"
+
+
+# Begin CASC_SUPPORT_SILO
+# Defines silo_PREFIX silo_INCLUDES and silo_LIBS if with-silo is specified.
+
+# Check whether --with-silo was given.
+if test "${with_silo+set}" = set; then :
+  withval=$with_silo;
+else
+  with_silo=no
+fi
+
+
+case "$with_silo" in
+  no)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: configuring without SILO support" >&5
+$as_echo "$as_me: configuring without SILO support" >&6;}
+    : Do nothing
+  ;;
+  yes)
+    # SILO install path was not specified.
+    # Look in a couple of standard locations to probe if
+    # SILO header files are there.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for SILO installation" >&5
+$as_echo_n "checking for SILO installation... " >&6; }
+    for dir in /usr /usr/local; do
+      if test -f ${dir}/include/silo.h; then
+        silo_PREFIX=${dir}
+        break
+      fi
+    done
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $silo_PREFIX" >&5
+$as_echo "$silo_PREFIX" >&6; }
+  ;;
+  *)
+    # SILO install path was specified.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for SILO installation" >&5
+$as_echo_n "checking for SILO installation... " >&6; }
+    silo_PREFIX=$with_silo
+    silo_INCLUDES="-I${silo_PREFIX}/include"
+    if test -f ${silo_PREFIX}/include/silo.h; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $silo_PREFIX" >&5
+$as_echo "$silo_PREFIX" >&6; }
+    else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $silo_PREFIX" >&5
+$as_echo "$silo_PREFIX" >&6; }
+        as_fn_error "SILO not found in $with_silo" "$LINENO" 5
+    fi
+  ;;
+esac
+
+# Determine which SILO library is built
+if test "${silo_PREFIX+set}" = set; then
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for SILO library" >&5
+$as_echo_n "checking for SILO library... " >&6; }
+   if test -f ${silo_PREFIX}/lib/libsilo.a; then
+      silo_LIBS='-lsilo'
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: using $silo_LIBS" >&5
+$as_echo "using $silo_LIBS" >&6; }
+   elif test -f ${silo_PREFIX}/lib/libsiloh5.a; then
+      silo_LIBS='-lsiloh5'
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: using $silo_LIBS" >&5
+$as_echo "using $silo_LIBS" >&6; }
+   else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: using $silo_LIBS" >&5
+$as_echo "using $silo_LIBS" >&6; }
+      as_fn_error "Could not fine silo library in $silo_PREFIX" "$LINENO" 5
+   fi
+
+   silo_LIBS="-L${silo_PREFIX}/lib ${silo_LIBS}"
+fi
+
+# END CASC_SUPPORT_SILO
+
+
+if test "${silo_PREFIX+set}" = set; then
+  LIBS="$silo_LIBS $LIBS"
+
+# Split silo_LIBS into the LIB_PATH part (silo_LIB_PATH) and the LIB_NAME part (silo_LIB_NAME)
+if test -n "${silo_LIBS}"; then
+  for i in ${silo_LIBS}; do
+    case "$i" in
+    -L*) silo_LIB_PATH="${silo_LIB_PATH} $i" ;;
+    *) silo_LIB_NAME="${silo_LIB_NAME} $i" ;;
+    esac
+  done
+fi
+
+  LIB_PATH="$silo_LIB_PATH $LIB_PATH"
+  LIB_NAME="$silo_LIB_NAME $LIB_NAME"
+  INC_PATH="$silo_INCLUDES $INC_PATH"
+
+$as_echo "#define HAVE_SILO 1" >>confdefs.h
+
+  PARFLOW_HAVE_SILO="yes"
+fi
 
 
 

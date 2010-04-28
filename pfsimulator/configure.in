@@ -382,6 +382,20 @@ fi
 AC_SUBST(PARFLOW_HAVE_CEGDB)
 
 dnl
+dnl Set variables for hdf5 support
+dnl
+CASC_SUPPORT_HDF5
+if test "${hdf5_PREFIX+set}" = set; then
+  LIBS="$hdf5_LIBS $LIBS"
+  CASC_SPLIT_LIBS_STRING(hdf5_LIBS,hdf5_LIB_PATH,hdf5_LIB_NAME)
+  LIB_PATH="$hdf5_LIB_PATH $LIB_PATH"
+  LIB_NAME="$hdf5_LIB_NAME $LIB_NAME"
+  INC_PATH="$hdf5_INCLUDES $INC_PATH"
+  AC_DEFINE(HAVE_HDF5,1,HDF5 library is available so use it)
+fi
+AC_SUBST(hdf5_LIBS)
+
+dnl
 dnl Silo support
 dnl
 PARFLOW_HAVE_SILO="no"
@@ -396,23 +410,6 @@ if test "${silo_PREFIX+set}" = set; then
   PARFLOW_HAVE_SILO="yes"
 fi
 AC_SUBST(PARFLOW_HAVE_SILO)
-
-
-
-dnl
-dnl Set variables for hdf5 support
-dnl
-CASC_SUPPORT_HDF5
-if test "${hdf5_PREFIX+set}" = set; then
-  LIBS="$hdf5_LIBS $LIBS"
-  CASC_SPLIT_LIBS_STRING(hdf5_LIBS,hdf5_LIB_PATH,hdf5_LIB_NAME)
-  LIB_PATH="$hdf5_LIB_PATH $LIB_PATH"
-  LIB_NAME="$hdf5_LIB_NAME $LIB_NAME"
-  INC_PATH="$hdf5_INCLUDES $INC_PATH"
-  AC_DEFINE(HAVE_HDF5,1,HDF5 library is available so use it)
-fi
-AC_SUBST(hdf5_LIBS)
-
 
 dnl
 dnl If Sundials is requested, then set up the Sundials libraries and include paths.
