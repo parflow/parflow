@@ -219,10 +219,12 @@ void printMaxMemory(FILE *log_file)
 
 #endif
 
+
    /*
     * Print out info from Linux proc file.
     */
 
+#ifdef __linux__
    if (!amps_Rank(amps_CommWorld)) {
       char procfilename[2056];
 
@@ -246,6 +248,7 @@ void printMaxMemory(FILE *log_file)
 	 fprintf(log_file, "\n\nEND(Contents of %s)\n", procfilename); 
       }
    }
+#endif
 }
 
 
