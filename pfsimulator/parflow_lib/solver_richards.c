@@ -726,10 +726,7 @@ void SetupRichards(PFModule *this_module) {
 void AdvanceRichards(PFModule *this_module, 
 		     double start_time,      /* Starting time */
 		     double stop_time,       /* Stopping time */
-		     double dt,              /* Suggested dt, may be overridden */
-		     int compute_time_step,  /* Flag if true (!= 0)
-						then compute timestep
-						else use provided dt*/
+		     PFModule *time_step_control, /* Use this module to control timestep if supplied */
 		     Vector *evap_trans,     /* Flux from land surface model */ 
 		     Vector **pressure_out,  /* Output vars */
 		     Vector **porosity_out,
@@ -798,6 +795,7 @@ void AdvanceRichards(PFModule *this_module,
    int           max_failures         = public_xtra -> max_convergence_failures;
 
    double        t;
+   double        dt = 0.0;
    double        ct = 0.0;
    double        cdt = 0.0;
    double        print_dt;
@@ -821,17 +819,14 @@ void AdvanceRichards(PFModule *this_module,
  
    // Initialize ct in either case
    ct = start_time;
-   if(compute_time_step) {
-      PFModuleInvokeType(SelectTimeStepInvoke, select_time_step, (&cdt, &dt_info, ct, problem,
+   t  = start_time;
+   if(time_step_control) {
+      PFModuleInvokeType(SelectTimeStepInvoke, time_step_control, (&cdt, &dt_info, t, problem,
 								  problem_data) );
-   }
-   else  // Do not compute timestep
-   {
-   /* 
-      Simply use DT provided; don't use select_time_step module.
-       Note DT will still be reduced if solution does not converge.
-   */
-      cdt = dt;
+   } else {
+
+      PFModuleInvokeType(SelectTimeStepInvoke, select_time_step, (&cdt, &dt_info, t, problem,
+								  problem_data) );
    }
    dt = cdt;
 
@@ -853,7 +848,7 @@ void AdvanceRichards(PFModule *this_module,
       take_more_time_steps = 1;
    }
 
-   t     = start_time;
+
 
 #ifdef HAVE_CLM
    istep  = public_xtra -> clm_istep_start;     // IMF: initialize time counter for CLM
@@ -867,11 +862,7 @@ void AdvanceRichards(PFModule *this_module,
       if (t == ct)
       { 
 
-	 /*
-	  * TODO SGS is this correct?  This will reset the dt to initial value.
-	  */
 	 ct += cdt;
-	 dt = cdt;
 
 /* IMF: The following are only used w/ CLM */
 #ifdef HAVE_CLM      
@@ -1350,6 +1341,14 @@ void AdvanceRichards(PFModule *this_module,
 	 /*******************************************************************/
 	 if (converged)
 	 {
+	    if(time_step_control) {
+	       PFModuleInvokeType(SelectTimeStepInvoke, time_step_control, (&dt, &dt_info, t, problem,
+									    problem_data) );
+	    } else {
+	       PFModuleInvokeType(SelectTimeStepInvoke, select_time_step, (&dt, &dt_info, t, problem,
+									   problem_data) );
+	    }
+
 	    PFVCopy(instance_xtra -> density,    instance_xtra -> old_density);
 	    PFVCopy(instance_xtra -> saturation, instance_xtra -> old_saturation);
 	    PFVCopy(instance_xtra -> pressure,   instance_xtra -> old_pressure);
@@ -2930,15 +2929,14 @@ void      SolverRichards() {
    Vector       *evap_trans;
    
    SetupRichards(this_module);
-   
+
    /*sk Initialize LSM terms*/
    evap_trans = NewVector( grid, 1, 1 );
    InitVectorAll(evap_trans, 0.0);
    AdvanceRichards(this_module, 
 		   start_time, 
 		   stop_time, 
-		   dt, 
-		   compute_time_step, 
+		   NULL,
 		   evap_trans,
 		   &pressure_out, 
                    &porosity_out,

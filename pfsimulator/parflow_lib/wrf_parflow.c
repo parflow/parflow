@@ -147,15 +147,34 @@ void wrfparflowadvance_(double *current_time,
    handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
    FinalizeVectorUpdate(handle); 
 
+   // SGS this is somewhat inefficient as we are allocating
+   // a pf module for each timestep.
+   double initial_step = *dt;
+   double growth_factor = 2.0;
+   double max_step = *dt;
+   // SGS what should this be set to?
+   double min_step = *dt * 1e-8;
+
+   PFModule *time_step_control = PFModuleNewModule(SelectTimeStep, (
+			  initial_step,
+			  growth_factor,
+			  max_step,
+			  min_step));
+
+   PFModuleNewInstance(time_step_control, ());
+
    AdvanceRichards(amps_ThreadLocal(solver),
 		   *current_time, 
 		   stop_time, 
-		   *dt, 
-		   compute_time_step,
+		   time_step_control,
 		   amps_ThreadLocal(evap_trans),
 		   &pressure_out, 
 		   &porosity_out,
 		   &saturation_out);
+
+   PFModuleFreeModuleInstance(time_step_control);
+   PFModuleFreeModule(time_step_control);
+
 
    /* TODO: SGS 
       Are these needed here?  Decided to put them in just be safe but

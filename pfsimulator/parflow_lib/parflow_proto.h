@@ -915,15 +915,15 @@ int SolverRichardsSizeOfTempData (void );
 ProblemData *GetProblemDataRichards (PFModule *this_module);
 Problem  *GetProblemRichards (PFModule *this_module);
 PFModule *GetICPhasePressureRichards (PFModule *this_module);
-void AdvanceRichards (PFModule *this_module, 
-		       double start_time,      
-		       double stop_time,       
-		       double dt,              
-		       int compute_time_step,  
-		       Vector *evap_trans,     
-		       Vector **pressure_out,  
-		       Vector **porosity_out,
-			Vector **saturation_out);
+void AdvanceRichards(PFModule *this_module, 
+		     double start_time,      /* Starting time */
+		     double stop_time,       /* Stopping time */
+		     PFModule *time_step_control, /* Use this module to control timestep if supplied */
+		     Vector *evap_trans,     /* Flux from land surface model */ 
+		     Vector **pressure_out,  /* Output vars */
+		     Vector **porosity_out,
+		     Vector **saturation_out
+   );
 void SetupRichards (PFModule *this_module);
 
 
