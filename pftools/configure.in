@@ -408,6 +408,14 @@ case "$host_os" in
     SHLIB_SUFFIX=".dylib"
     SHLIB_LD="ld -dylib"
     ;;
+  cygwin*)
+    SHLIB_SUFFIX=".dll"
+    if test "$CC_HAS_SHARED" = "yes"; then
+        SHLIB_LD="$CC -shared"
+    else
+        SHLIB_LD="ld -shared"
+    fi
+    ;;
   *) 
     SHLIB_SUFFIX=".so"
     if test "$CC_HAS_SHARED" = "yes"; then
