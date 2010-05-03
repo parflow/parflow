@@ -422,7 +422,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
 
   !    call drv_almaout (drv, tile, clm) !@ This routine was already inactivated in the original tar file 
   if (clm_1d_out == 1) &
-       call drv_1dout (drv, tile,clm,rank)
+       call drv_1dout (drv, tile,clm)
 
   !@== Stefan: call 2D output routine
   ! @RMM now we only call for every clm_dump_interval steps (not 
@@ -441,13 +441,13 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
         !print*, clm(1)
         !print *,clm(1)%istep
         call open_files(clm,drv,rank,ix,iy,istep_pf,clm_output_dir, clm_output_dir_length,clm_bin_output_dir) 
-        call drv_2dout (drv,grid,clm,rank)
+        call drv_2dout (drv,grid,clm)
         !@==  Call to subroutine to close (2D-) output files
         !@==  RMM modified to open/close files (but to include istep) every 
         !@== time step 
         !!if (drv%endtime /= 0)  call close_files(clm,drv,rank)
         !print*, "close files"
-        call close_files(clm,drv,rank)
+        call close_files(clm,drv)
      end if ! write_CLM_binary
   end if  ! mod of istep and dump_interval
 
