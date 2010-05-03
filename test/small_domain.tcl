@@ -137,7 +137,7 @@ pfset TimingInfo.BaseUnit		1.0
 pfset TimingInfo.StartCount		0
 pfset TimingInfo.StartTime		0.0
 pfset TimingInfo.StopTime               [expr 30.0*1]
-pfset TimingInfo.DumpInterval	        0 
+pfset TimingInfo.DumpInterval	        10 
 pfset TimeStep.Type                     Constant
 pfset TimeStep.Value                    10.0
 pfset TimingInfo.DumpAtEnd              True
@@ -332,7 +332,7 @@ if ![pftestFile small_domain.out.porosity.pfb "Max difference in porosity" $sig_
     set passed 0
 }
 
-foreach i "00000 00001" {
+foreach i "00000 00001 00002 00003 00004" {
     if ![pftestFile small_domain.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
 	set passed 0
     }
