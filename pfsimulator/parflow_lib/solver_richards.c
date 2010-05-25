@@ -1182,7 +1182,7 @@ void AdvanceRichards(PFModule *this_module,
 	       {
 
 		  clm_file_dir_length=strlen(public_xtra -> clm_file_dir);
-		  CALL_CLM_LSM(pp,sp,et,ms,po_dat,istep,dt,t,dx,dy,dz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,p,q,r,rank,
+		  CALL_CLM_LSM(pp,sp,et,ms,po_dat,istep,cdt,t,dx,dy,dz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,p,q,r,rank,
                                sw_data,lw_data,prcp_data,tas_data,u_data,v_data,patm_data,qatm_data,
                                eflx_lh,eflx_lwrad,eflx_sh,eflx_grnd,qflx_tot,qflx_grnd,qflx_soi,qflx_eveg,qflx_tveg,qflx_in,swe,t_g,t_soi,
                                public_xtra -> clm_dump_interval, 
@@ -1361,6 +1361,36 @@ void AdvanceRichards(PFModule *this_module,
 	    PFVCopy(instance_xtra -> old_saturation, instance_xtra -> saturation);
 	    PFVCopy(instance_xtra -> old_pressure,   instance_xtra -> pressure);
 	 }
+
+#ifdef HAVE_CLM
+	 /*
+	  * Force timestep to LSM model if we are trying to advance beyond 
+	  * LSM timesteping.
+	  */
+	 switch (public_xtra -> lsm)
+	 {
+	    case 0:
+	    {
+	       // No LSM
+	       break;
+	    }
+	    case 1:
+	    {
+	       printf("SGS t=%f, dt=%f, ct=%f, cdt=%f\n", t, dt, ct, cdt);
+	       // Note ct is time we want to advance to at this point
+	       if ( t + dt > ct) {
+		  dt = ct - t;
+	       }
+	       break;		  
+	    }
+	    default:
+	    {
+	       amps_Printf("Calling unknown LSM model");
+	    }
+	 }
+
+#endif
+	 
          
 	 /*--------------------------------------------------------------
 	  * If we are printing out results, then determine if we need
@@ -2912,7 +2942,6 @@ void      SolverRichards() {
    
    double        start_time          = ProblemStartTime(problem);
    double        stop_time           = ProblemStopTime(problem);
-   double        dt                  = 0.0;
 
    Grid         *grid                = (instance_xtra -> grid);
 
@@ -2920,9 +2949,6 @@ void      SolverRichards() {
    Vector       *porosity_out;
    Vector       *saturation_out;
 
-   // AdvanceRichards should use select_time_step module to compute dt.
-   int compute_time_step = 1; 
-                           
    /* 
     * sk: Vector that contains the sink terms from the land surface model 
     */ 
