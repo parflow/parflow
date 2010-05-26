@@ -1,6 +1,7 @@
 !#include <misc.h>
 
-subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,istep_pf,dt,time,pdx,pdy,     &
+subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,istep_pf,dt,time,start_time,  &
+pdx,pdy,     &
 pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,npp,npq,npr,rank,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,        &
 v_pf,patm_pf,qatm_pf,eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,qflx_tot_pf,            &
 qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf, t_soi_pf,        &
@@ -59,6 +60,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
   !  real(r8) :: res_sat((nx+2)*(ny+2)*(nz+2))      ! residual saturation from ParFlow, on grid w/ ghost nodes for current proc
   real(r8) :: dt                                 ! parflow dt in parflow time units not CLM time units
   real(r8) :: time                               ! parflow time in parflow units
+  real(r8) :: start_time                         ! starting time in parflow units
   real(r8) :: pdx,pdy,pdz                        ! parflow DX, DY and DZ in parflow units
   integer  :: istep_pf                           ! istep, now passed from PF
   integer  :: ix                                 ! parflow ix, starting point for local grid on global grid
@@ -160,7 +162,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
 !  l = 1+i + (nx+2)*(j) + (nx+2)*(ny+2)*(k)
 !  print*, 'press(l):',pressure(l)
    
-  if (time == 0.0d0) then ! Check if initialization necessary 
+  if (time == start_time) then ! Check if initialization necessary 
      !open(6,file='clm.out.txt')
      print *,"INITIALIZATION"
      allocate( counter(nx,ny))

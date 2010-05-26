@@ -1182,9 +1182,11 @@ void AdvanceRichards(PFModule *this_module,
 	       {
 
 		  clm_file_dir_length=strlen(public_xtra -> clm_file_dir);
-		  CALL_CLM_LSM(pp,sp,et,ms,po_dat,istep,cdt,t,dx,dy,dz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,p,q,r,rank,
+		  CALL_CLM_LSM(pp,sp,et,ms,po_dat,istep,cdt,t,start_time, 
+			       dx,dy,dz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,p,q,r,rank,
                                sw_data,lw_data,prcp_data,tas_data,u_data,v_data,patm_data,qatm_data,
-                               eflx_lh,eflx_lwrad,eflx_sh,eflx_grnd,qflx_tot,qflx_grnd,qflx_soi,qflx_eveg,qflx_tveg,qflx_in,swe,t_g,t_soi,
+                               eflx_lh,eflx_lwrad,eflx_sh,eflx_grnd,qflx_tot,qflx_grnd,
+			       qflx_soi,qflx_eveg,qflx_tveg,qflx_in,swe,t_g,t_soi,
                                public_xtra -> clm_dump_interval, 
                                public_xtra -> clm_1d_out, 
                                public_xtra -> clm_file_dir, 
