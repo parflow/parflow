@@ -172,7 +172,7 @@ void wrfparflowadvance_(double *current_time,
 		   &porosity_out,
 		   &saturation_out);
 
-   PFModuleFreeModuleInstance(time_step_control);
+   PFModuleFreeInstance(time_step_control);
    PFModuleFreeModule(time_step_control);
 
 
