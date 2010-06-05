@@ -155,26 +155,36 @@ void wrfparflowadvance_(double *current_time,
    // SGS what should this be set to?
    double min_step = *dt * 1e-8;
 
-   PFModule *time_step_control = PFModuleNewModule(SelectTimeStep, (
-			  initial_step,
-			  growth_factor,
-			  max_step,
-			  min_step));
+   PFModule *time_step_control;
 
-   PFModuleNewInstance(time_step_control, ());
+   time_step_control = NewPFModule((void *)SelectTimeStep,
+				   (void *)WRFSelectTimeStepInitInstanceXtra, \
+				   (void *)SelectTimeStepFreeInstanceXtra, \
+				   (void *)WRFSelectTimeStepNewPublicXtra, \
+				   (void *)WRFSelectTimeStepFreePublicXtra, \
+				   (void *)SelectTimeStepSizeOfTempData, \
+				   NULL, NULL);
+   
+   ThisPFModule = time_step_control;
+   WRFSelectTimeStepNewPublicXtra(initial_step,
+				  growth_factor,
+				  max_step,
+				  min_step);
+   ThisPFModule = NULL;
+
+   PFModule *time_step_control_instance = PFModuleNewInstance(time_step_control, ());
 
    AdvanceRichards(amps_ThreadLocal(solver),
 		   *current_time, 
 		   stop_time, 
-		   time_step_control,
+		   time_step_control_instance,
 		   amps_ThreadLocal(evap_trans),
 		   &pressure_out, 
 		   &porosity_out,
 		   &saturation_out);
 
-   PFModuleFreeInstance(time_step_control);
+   PFModuleFreeInstance(time_step_control_instance);
    PFModuleFreeModule(time_step_control);
-
 
    /* TODO: SGS 
       Are these needed here?  Decided to put them in just be safe but

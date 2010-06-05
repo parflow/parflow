@@ -374,6 +374,15 @@ if {[string length $diff] != 0 } {
     set passed 0
 } 
 
+set silo [pfload default_richards.out.porosity.silo]
+set pfb  [pfload default_richards.out.porosity.pfb]
+set diff [pfmdiff $silo $pfb 12]
+if {[string length $diff] != 0 } {
+    puts "FAILED : Silo output does not match PFB output"
+    puts $diff
+    set passed 0
+} 
+
 pfsave $silo -silo "single_block.silo"
 set silo_single_block [pfload "single_block.silo"]
 set diff [pfmdiff $silo $silo_single_block 12]

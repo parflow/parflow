@@ -231,7 +231,7 @@ void SetupRichards(PFModule *this_module) {
    double        stop_time           = ProblemStopTime(problem);
    int           start_count         = ProblemStartCount(problem);
 
-   char          file_prefix[64], file_postfix[64];
+   char          file_prefix[2048], file_type[2048], file_postfix[2048];
 
    int           take_more_time_steps;
 
@@ -298,45 +298,49 @@ void SetupRichards(PFModule *this_module) {
 
    if ( public_xtra -> write_silo_subsurf_data )
    {
-      sprintf(file_postfix, "perm_x");
-      WriteSilo(file_prefix, file_postfix, ProblemDataPermeabilityX(problem_data),
+      sprintf(file_postfix, "");
+      sprintf(file_type, "perm_x");
+      WriteSilo(file_prefix, file_type, file_postfix, ProblemDataPermeabilityX(problem_data),
                 t, 0, "PermeabilityX");
 
-      sprintf(file_postfix, "perm_y");
-      WriteSilo(file_prefix, file_postfix, ProblemDataPermeabilityY(problem_data),
+      sprintf(file_type, "perm_y");
+      WriteSilo(file_prefix, file_type, file_postfix, ProblemDataPermeabilityY(problem_data),
                 t, 0, "PermeabilityY");
 
-      sprintf(file_postfix, "perm_z");
-      WriteSilo(file_prefix, file_postfix, ProblemDataPermeabilityZ(problem_data),
+      sprintf(file_type, "perm_z");
+      WriteSilo(file_prefix, file_type, file_postfix, ProblemDataPermeabilityZ(problem_data),
                 t, 0, "PermeabilityZ");
 
-      sprintf(file_postfix, "porosity");
-      WriteSilo(file_prefix, file_postfix, ProblemDataPorosity(problem_data),
+      sprintf(file_type, "porosity");
+      WriteSilo(file_prefix, file_type, file_postfix, ProblemDataPorosity(problem_data),
 	        t, 0, "Porosity");
    }
 
    if ( public_xtra -> write_silo_slopes )
    {
-      sprintf(file_postfix, "slope_x");
-      WriteSilo(file_prefix, file_postfix, ProblemDataTSlopeX(problem_data),
+      sprintf(file_postfix, "");
+      sprintf(file_type, "slope_x");
+      WriteSilo(file_prefix, file_type, file_postfix, ProblemDataTSlopeX(problem_data),
                 t, 0, "SlopeX");
 
-      sprintf(file_postfix, "slope_y");
-      WriteSilo(file_prefix, file_postfix, ProblemDataTSlopeY(problem_data),
+      sprintf(file_type, "slope_y");
+      WriteSilo(file_prefix, file_type, file_postfix, ProblemDataTSlopeY(problem_data),
                 t, 0, "SlopeY");
    }
 
    if ( public_xtra -> write_silo_mannings )
    {
-      sprintf(file_postfix, "mannings");
-      WriteSilo(file_prefix, file_postfix, ProblemDataMannings(problem_data),
+      sprintf(file_postfix, "");
+      sprintf(file_type, "mannings");
+      WriteSilo(file_prefix, file_type, file_postfix, ProblemDataMannings(problem_data),
                 t, 0, "Mannings");
    }
 
    if ( public_xtra -> write_silo_specific_storage )
    {
-      sprintf(file_postfix, "specific_storage");
-      WriteSilo(file_prefix, file_postfix, ProblemDataSpecificStorage(problem_data),
+      sprintf(file_postfix, "");
+      sprintf(file_type, "specific_storage");
+      WriteSilo(file_prefix, file_type, file_postfix, ProblemDataSpecificStorage(problem_data),
                 t, 0, "SpecificStorage");
    }
 
@@ -636,8 +640,9 @@ void SetupRichards(PFModule *this_module) {
 
       if ( public_xtra -> write_silo_press )
       {
-	 sprintf(file_postfix, "press.%05d", instance_xtra -> file_number );
-	 WriteSilo(file_prefix, file_postfix, instance_xtra -> pressure,
+	 sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	 sprintf(file_type, "press");
+	 WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
                    t, instance_xtra -> file_number, "Pressure");
 	 any_file_dumped = 1;
       }
@@ -655,8 +660,9 @@ void SetupRichards(PFModule *this_module) {
 
       if ( public_xtra -> write_silo_satur )
       {
-	 sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
-	 WriteSilo(file_prefix, file_postfix, instance_xtra -> saturation, 
+	 sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	 sprintf(file_type, "satur");
+	 WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation, 
                    t, instance_xtra -> file_number, "Saturation");
 	 any_file_dumped = 1;
       }
@@ -675,8 +681,9 @@ void SetupRichards(PFModule *this_module) {
 
       if ( public_xtra -> write_silo_mask )
       {
-	 sprintf(file_postfix, "mask");
-	 WriteSilo(file_prefix, file_postfix, instance_xtra -> mask, 
+	 sprintf(file_postfix, "");
+	 sprintf(file_type, "mask");
+	 WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> mask, 
                    t, instance_xtra -> file_number, "Mask");
 	 any_file_dumped = 1;
       }
@@ -807,7 +814,7 @@ void AdvanceRichards(PFModule *this_module,
    CommHandle   *handle;
 
    char          dt_info;
-   char          file_prefix[64], file_postfix[64];
+   char          file_prefix[2048], file_type[2048], file_postfix[2048];
 
    sprintf(file_prefix, GlobalsOutFileName);
 
@@ -1229,56 +1236,57 @@ void AdvanceRichards(PFModule *this_module,
                   /* IMF Write as silo? */
                   if ( public_xtra -> clm_dump_files && public_xtra -> write_silo_CLM )
                      {
-                       sprintf(file_postfix, "eflx_lh_tot.%05d", instance_xtra -> file_number );
-                       WriteSilo( file_prefix, file_postfix, instance_xtra -> eflx_lh_tot, 
+                       sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+                       sprintf(file_type, "eflx_lh_tot");
+                       WriteSilo( file_prefix, file_type, file_postfix, instance_xtra -> eflx_lh_tot, 
                                  t, instance_xtra -> file_number, "LatentHeat");
 			   
-                       sprintf(file_postfix, "eflx_lwrad_out.%05d", instance_xtra -> file_number );
-                       WriteSilo(file_prefix, file_postfix, instance_xtra -> eflx_lwrad_out, 
+		       sprintf(file_type, "eflx_lwrad_out");
+                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> eflx_lwrad_out, 
                                  t, instance_xtra -> file_number, "LongWave");
 			   
-                       sprintf(file_postfix, "eflx_sh_tot.%05d", instance_xtra -> file_number );
-                       WriteSilo(file_prefix, file_postfix, instance_xtra -> eflx_sh_tot, 
+                       sprintf(file_type, "eflx_sh_tot");
+                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> eflx_sh_tot, 
                                  t, instance_xtra -> file_number, "SensibleHeat");
 			   
-                       sprintf(file_postfix, "eflx_soil_grnd.%05d", instance_xtra -> file_number );
-                       WriteSilo(file_prefix, file_postfix, instance_xtra -> eflx_soil_grnd, 
+                       sprintf(file_type, "eflx_soil_grnd");
+                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> eflx_soil_grnd, 
                                  t, instance_xtra -> file_number, "GroundHeat");
 			   
-                       sprintf(file_postfix, "qflx_evap_tot.%05d", instance_xtra -> file_number );
-                       WriteSilo(file_prefix, file_postfix, instance_xtra -> qflx_evap_tot, 
+                       sprintf(file_type, "qflx_evap_tot");
+                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_tot, 
                                  t, instance_xtra -> file_number, "EvaporationTotal");
 			   
-                       sprintf(file_postfix, "qflx_evap_grnd.%05d", instance_xtra -> file_number );
-                       WriteSilo(file_prefix, file_postfix, instance_xtra -> qflx_evap_grnd, 
+                       sprintf(file_type, "qflx_evap_grnd");
+                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_grnd, 
                                  t, instance_xtra -> file_number, "EvaporationGroundNoSublimation");
 			   
-                       sprintf(file_postfix, "qflx_evap_soi.%05d", instance_xtra -> file_number );
-                       WriteSilo(file_prefix, file_postfix, instance_xtra -> qflx_evap_soi, 
+                       sprintf(file_type, "qflx_evap_soi");
+                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_soi, 
                                  t, instance_xtra -> file_number, "EvaporationGround");
 			   
-                       sprintf(file_postfix, "qflx_evap_veg.%05d", instance_xtra -> file_number );
-                       WriteSilo(file_prefix, file_postfix, instance_xtra -> qflx_evap_veg, 
+                       sprintf(file_type, "qflx_evap_veg");
+                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_veg, 
                                  t, instance_xtra -> file_number, "EvaporationCanopy");
 			   
-                       sprintf(file_postfix, "qflx_tran_veg.%05d", instance_xtra -> file_number );
-                       WriteSilo(file_prefix, file_postfix, instance_xtra -> qflx_tran_veg, 
+                       sprintf(file_type, "qflx_tran_veg");
+                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_tran_veg, 
                                  t, instance_xtra -> file_number, "Transpiration");
 			   
-                       sprintf(file_postfix, "qflx_infl.%05d", instance_xtra -> file_number );
-                       WriteSilo(file_prefix, file_postfix, instance_xtra -> qflx_infl, 
+                       sprintf(file_type, "qflx_infl");
+                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_infl, 
                                  t, instance_xtra -> file_number, "Infiltration");
 			   
-                       sprintf(file_postfix, "swe_out.%05d", instance_xtra -> file_number );
-                       WriteSilo(file_prefix, file_postfix, instance_xtra -> swe_out, 
+                       sprintf(file_type, "swe_out");
+                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> swe_out, 
                                  t, instance_xtra -> file_number, "SWE");
 			   
-                       sprintf(file_postfix, "t_grnd.%05d", instance_xtra -> file_number );
-                       WriteSilo(file_prefix, file_postfix, instance_xtra -> t_grnd, 
+                       sprintf(file_type, "t_grnd");
+                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> t_grnd, 
                                  t, instance_xtra -> file_number, "TemperatureGround");
 
-                       sprintf(file_postfix, "t_soil.%05d", instance_xtra -> file_number );
-                       WriteSilo(file_prefix, file_postfix, instance_xtra -> tsoil,
+                       sprintf(file_type, "t_soil");
+                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> tsoil,
                                  t, instance_xtra -> file_number, "TemperatureSoil");
 
                        // IMF: irrigation flag -- 1.0 when irrigated, 0.0 when not irrigated
@@ -1292,16 +1300,16 @@ void AdvanceRichards(PFModule *this_module,
                        // IMF: irrigation applied to surface -- spray or drip
                        if ( public_xtra -> clm_irr_type == 1 || public_xtra -> clm_irr_type == 2 )
                           {
-                            sprintf(file_postfix, "qflx_qirr.%05d" ,instance_xtra -> file_number );
-                            WriteSilo(file_prefix, file_postfix, instance_xtra -> qflx_qirr, 
-                            t, instance_xtra -> file_number, "IrrigationSurface");
+			     sprintf(file_type, "qflx_qirr");
+			     WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_qirr, 
+				       t, instance_xtra -> file_number, "IrrigationSurface");
                           }
                        
                        // IMF: irrigation applied directly as soil moisture flux -- "instant"
                        if ( public_xtra -> clm_irr_type == 3 )
                           {
-                            sprintf(file_postfix, "qflx_qirr_inst.%05d" ,instance_xtra -> file_number );
-                            WriteSilo(file_prefix, file_postfix, instance_xtra -> qflx_qirr_inst,
+			     sprintf(file_postfix, "qflx_qirr_inst");
+			     WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_qirr_inst,
                             t, instance_xtra -> file_number, "IrrigationInstant");
                           }
 
@@ -1537,8 +1545,9 @@ void AdvanceRichards(PFModule *this_module,
 
 	 if(public_xtra -> write_silo_press) 
 	 {
-	    sprintf(file_postfix, "press.%05d", instance_xtra -> file_number);
-	    WriteSilo(file_prefix, file_postfix, instance_xtra -> pressure,
+	    sprintf(file_postfix, "%05d", instance_xtra -> file_number);
+	    sprintf(file_type, "press");
+	    WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
                       t, instance_xtra -> file_number, "Pressure");
 	    any_file_dumped = 1;
 	 }
@@ -1551,22 +1560,25 @@ void AdvanceRichards(PFModule *this_module,
 
 	 if(public_xtra -> write_silo_satur) 
 	 {
-	    sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
-	    WriteSilo(file_prefix, file_postfix, instance_xtra -> saturation, 
+	    sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	    sprintf(file_type, "satur");
+	    WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation, 
                       t, instance_xtra -> file_number, "Saturation");
 	    any_file_dumped = 1;
 	 }
 
 	 if(public_xtra -> write_silo_evaptrans) {
-	    sprintf(file_postfix, "evaptrans.%05d", instance_xtra -> file_number );
-	    WriteSilo(file_prefix, file_postfix, evap_trans, 
+	    sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	    sprintf(file_type, "evaptrans");
+	    WriteSilo(file_prefix, file_type, file_postfix, evap_trans, 
 		      t, instance_xtra -> file_number, "EvapTrans");
 	    any_file_dumped = 1;
 	 }
 
 	 if(public_xtra -> write_silo_evaptrans_sum) {
-	    sprintf(file_postfix, "evaptranssum.%05d", instance_xtra -> file_number );
-	    WriteSilo(file_prefix, file_postfix, evap_trans_sum, 
+	    sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	    sprintf(file_type, "evaptranssum");
+	    WriteSilo(file_prefix, file_type, file_postfix, evap_trans_sum, 
 		      t, instance_xtra -> file_number, "EvapTransSum");
 	    any_file_dumped = 1;
     
@@ -1575,8 +1587,9 @@ void AdvanceRichards(PFModule *this_module,
 	 }
 
 	 if(public_xtra -> write_silo_overland_sum) {
-	    sprintf(file_postfix, "overlandsum.%05d", instance_xtra -> file_number );
-	    WriteSilo(file_prefix, file_postfix, overland_sum, 
+	    sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	    sprintf(file_type, "overlandsum");
+	    WriteSilo(file_prefix, file_type, file_postfix, overland_sum, 
 		      t, instance_xtra -> file_number, "OverlandSum");
 	    any_file_dumped = 1;
 	    
@@ -1677,8 +1690,9 @@ void AdvanceRichards(PFModule *this_module,
       
       if(public_xtra -> write_silo_press) 
       {
-	 sprintf(file_postfix, "press.%05d", instance_xtra -> file_number);
-	 WriteSilo(file_prefix, file_postfix, instance_xtra -> pressure,
+	 sprintf(file_postfix, "%05d", instance_xtra -> file_number);
+	 sprintf(file_type, "press");
+	 WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
 		   t, instance_xtra -> file_number, "Pressure");
 	 any_file_dumped = 1;
       }
@@ -1691,22 +1705,25 @@ void AdvanceRichards(PFModule *this_module,
       
       if(public_xtra -> write_silo_satur) 
       {
-	 sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
-	 WriteSilo(file_prefix, file_postfix, instance_xtra -> saturation, 
+	 sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	 sprintf(file_type, "satur");
+	 WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation, 
 		   t, instance_xtra -> file_number, "Saturation");
 	 any_file_dumped = 1;
       }
 
       if(public_xtra -> write_silo_evaptrans) {
-	 sprintf(file_postfix, "evaptrans.%05d", instance_xtra -> file_number );
-	 WriteSilo(file_prefix, file_postfix, evap_trans, 
+	 sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	 sprintf(file_type, "evaptrans");
+	 WriteSilo(file_prefix, file_type, file_postfix, evap_trans, 
 		   t, instance_xtra -> file_number, "EvapTrans");
 	 any_file_dumped = 1;
       }
 
       if(public_xtra -> write_silo_evaptrans_sum) {
-	 sprintf(file_postfix, "evaptranssum.%05d", instance_xtra -> file_number );
-	 WriteSilo(file_prefix, file_postfix, evap_trans_sum, 
+	 sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	 sprintf(file_type, "evaptranssum");
+	 WriteSilo(file_prefix, file_type, file_postfix, evap_trans_sum, 
 		   t, instance_xtra -> file_number, "EvapTransSum");
 	 any_file_dumped = 1;
 	 /* reset sum after output */
@@ -1714,8 +1731,9 @@ void AdvanceRichards(PFModule *this_module,
       }
 
       if(public_xtra -> write_silo_overland_sum) {
-	 sprintf(file_postfix, "overlandsum.%05d", instance_xtra -> file_number );
-	 WriteSilo(file_prefix, file_postfix, overland_sum, 
+	 sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	 sprintf(file_type, "overlandsum");
+	 WriteSilo(file_prefix, file_type, file_postfix, overland_sum, 
 		   t, instance_xtra -> file_number, "OverlandSum");
 	 any_file_dumped = 1;
 	 

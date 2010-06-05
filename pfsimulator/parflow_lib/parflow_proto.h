@@ -865,6 +865,15 @@ PFModule *SelectTimeStepNewPublicXtra (void );
 void SelectTimeStepFreePublicXtra (void );
 int SelectTimeStepSizeOfTempData (void );
 
+PFModule  *WRFSelectTimeStepInitInstanceXtra();
+PFModule  *WRFSelectTimeStepNewPublicXtra(
+   double initial_step,
+   double growth_factor,
+   double max_step,
+   double min_step);
+void  WRFSelectTimeStepFreePublicXtra();
+
+
 typedef void (*SetProblemDataInvoke) (ProblemData *problem_data );
 typedef PFModule *(*SetProblemDataInitInstanceXtraInvoke) (Problem *problem , Grid *grid , Grid *grid2d, double *temp_data );
 
@@ -1068,8 +1077,13 @@ void WritePFSBinary_Subvector (amps_File file , Subvector *subvector , Subgrid *
 void WritePFSBinary (char *file_prefix , char *file_suffix , Vector *v , double drop_tolerance );
 
 /* write_parflow_silo.c */
-void     WriteSilo(char    *file_prefix, char    *file_suffix, Vector  *v, 
-                   double time, int step, char *variable_name);
+void     WriteSilo(char    *file_prefix, 
+		   char    *file_type, 
+		   char    *file_suffix, 
+		   Vector  *v, 
+                   double time, 
+		   int step, 
+		   char *variable_name);
 void     WriteSiloInit(char    *file_prefix);
 
 /* wrf_parflow.c */
