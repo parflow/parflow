@@ -217,9 +217,10 @@ void     WriteSiloInit(char    *file_prefix)
 			      "qflx_qirr_inst",
 			      "evaptrans",
 			      "evaptranssum",
-			      "overlandsum"};
+			      "overlandsum",
+                              "overland_bc_flux"};
 
-      for(i = 0; i < 30; i++) {
+      for(i = 0; i < 31; i++) {
 	 sprintf(filename, "%s/%s", file_prefix, output_types[i]);
 	 pf_mk_dir(filename);
 

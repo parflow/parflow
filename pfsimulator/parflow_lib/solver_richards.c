@@ -79,6 +79,8 @@ typedef struct
    int                write_silo_mannings;        /* write mannings? */
    int                write_silo_specific_storage;/* write specific storage? */
    int                write_silo_overland_sum;    /* write sum of overland outflow? */
+   int                write_silo_overland_bc_flux;/* write overland outflow boundary condition flux? */
+
 
 #ifdef HAVE_CLM                           /* VARIABLES FOR CLM ONLY */
    char              *clm_file_dir;       /* directory location for CLM files */
@@ -1386,7 +1388,6 @@ void AdvanceRichards(PFModule *this_module,
 	    }
 	    case 1:
 	    {
-	       printf("SGS t=%f, dt=%f, ct=%f, cdt=%f\n", t, dt, ct, cdt);
 	       // Note ct is time we want to advance to at this point
 	       if ( t + dt > ct) {
 		  dt = ct - t;
@@ -1608,6 +1609,16 @@ void AdvanceRichards(PFModule *this_module,
 	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> ovrl_bc_flx);
 	    any_file_dumped = 1;
 	 }
+
+
+	 if(public_xtra -> write_silo_overland_bc_flux) 
+	 {
+	    /*sk Print the sink terms from the land surface model*/
+	    sprintf(file_type, "overland_bc_flux");
+	    WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> ovrl_bc_flx, 
+		      t, instance_xtra -> file_number, "OverlandBCFlux");
+	    any_file_dumped = 1;
+	 }
       }
 
       /***************************************************************/
@@ -1753,6 +1764,16 @@ void AdvanceRichards(PFModule *this_module,
 	 
 	 any_file_dumped = 1;
       }
+
+      if(public_xtra -> write_silo_overland_bc_flux) 
+      {
+	 /*sk Print the sink terms from the land surface model*/
+	 sprintf(file_type, "overland_bc_flux");
+	 WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> ovrl_bc_flx, 
+		   t, instance_xtra -> file_number, "OverlandBCFlux");
+	 any_file_dumped = 1;
+      }
+
    }
 
    *pressure_out =   instance_xtra -> pressure;
@@ -2766,9 +2787,11 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
 #ifndef HAVE_CLM
    if(public_xtra -> print_lsm_sink) 
    {
-      InputError("Error: setting PrintLSMSink but do not have CLM\n", switch_name, key);
+      InputError("Error: setting %s to %s but do not have CLM\n", switch_name, key);
    }
 #endif
+
+
 
    /* Silo file writing control */
    sprintf(key, "%s.WriteSiloSubsurfData", name);
@@ -2840,6 +2863,24 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
 		 switch_name, key);
    }
    public_xtra -> write_silo_overland_sum = switch_value;
+
+   sprintf(key, "%s.WriteSiloOverlandBCFlux", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid print switch value <%s> for key <%s>\n",
+		 switch_name, key);
+   }
+   public_xtra -> write_silo_overland_bc_flux = switch_value;
+
+#ifndef HAVE_CLM
+   if(public_xtra -> write_silo_overland_bc_flux) 
+   {
+      InputError("Error: setting %s to %s but do not have CLM\n", switch_name, key);
+   }
+#endif
+
 
    sprintf(key, "%s.WriteSiloConcentration", name);
    switch_name = GetStringDefault(key, "False");
