@@ -536,7 +536,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
    verbosity_switch_na = NA_NewNameArray("NoVerbosity LowVerbosity "
 	                                 "NormalVerbosity HighVerbosity");
    sprintf(key, "Solver.Nonlinear.PrintFlag");
-   switch_name = GetStringDefault(key, "HighVerbosity");
+   switch_name = GetStringDefault(key, "NormalVerbosity");
    (public_xtra -> print_flag) = NA_NameToIndex(verbosity_switch_na, 
                                                 switch_name);
    NA_FreeNameArray(verbosity_switch_na);

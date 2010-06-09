@@ -314,7 +314,7 @@ Problem     *problem)      /* General problem information */
                   GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                   {
                      ips = SubvectorEltIndex(m_sub, i, j, k);
-                     m_dat[ips] = 1.0;
+                     m_dat[ips] = region_indices[ir]+1;
                   });
             }     /* End of subgrid loop */
          }        /* End of region loop */
@@ -501,7 +501,7 @@ Problem     *problem)      /* General problem information */
 	    GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
 			 { 
 			    ips = SubvectorEltIndex(m_sub, i, j, k);
-			    m_dat[ips] = 1.0;  
+			    m_dat[ips] = region_indices[ir]+1;  
 			 });  
 	    
 	 }     /* End of subgrid loop */ 
@@ -712,7 +712,9 @@ Problem     *problem)      /* General problem information */
 	    ipicv = SubvectorEltIndex(ic_values_sub, i, j, k);
 
 	    psdat[ips] = ic_values_dat[ipicv];
-            m_dat[ips] = 1.0;
+	    // SGS fixthis
+            m_dat[ips] = 99999;
+//            m_dat[ips] = 1.0;
 	 });
       }        /* End subgrid loop */
 

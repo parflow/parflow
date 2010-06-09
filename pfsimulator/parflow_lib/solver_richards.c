@@ -2881,7 +2881,6 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    }
 #endif
 
-
    sprintf(key, "%s.WriteSiloConcentration", name);
    switch_name = GetStringDefault(key, "False");
    switch_value = NA_NameToIndex(switch_na, switch_name);
