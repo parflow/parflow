@@ -287,7 +287,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
               !  clm(t)%topo_mask(nz-k+1) = 0
            endif
            !    print*, l, i,j,k, topo(l), clm(t)%topo_mask(1)
-           if (topo(l) == 0 .and. topo(l+k_incr) == 1) clm(t)%topo_mask(3) = k+1
+           if (topo(l) == 0 .and. topo(l+k_incr) > 0) clm(t)%topo_mask(3) = k+1
            !    print*, clm(t)%topo_mask(1), clm(t)%topo_mask(2), clm(t)%topo_mask(3)
         enddo
         clm(t)%topo_mask(2) = clm(t)%topo_mask(1)-nlevsoi
