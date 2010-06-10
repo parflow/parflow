@@ -277,7 +277,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
         do k = nz, 1, -1 ! PF loop over z
            l = 1+i + (nx+2)*(j) + (nx+2)*(ny+2)*(k)
             
-           if (topo(l) == 1) then
+           if (topo(l) > 0) then
               counter(i,j) = counter(i,j) + 1
               if (counter(i,j) == 1) then 
                  clm(t)%topo_mask(1) = k
