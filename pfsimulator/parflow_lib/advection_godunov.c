@@ -596,7 +596,7 @@ void     Godunov(
 		area_x = dy*dz;
 		area_y = dx*dz;
 		area_z = dx*dy;
-		area_sum = area_x * area_y + area_z;
+		area_sum = area_x + area_y + area_z;
 
                 rhs  = SubvectorElt(subvector_rhs,   ix  ,iy  ,iz  );
                 scal = SubvectorElt(subvector_scal,  ix  ,iy  ,iz  );

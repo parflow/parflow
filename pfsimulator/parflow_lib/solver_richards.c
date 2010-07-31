@@ -208,6 +208,7 @@ typedef struct
    int          number_logged;
    int          iteration_number;
    double       dump_index;
+   double       clm_dump_index;
 
 } InstanceXtra; 
 
@@ -367,6 +368,7 @@ void SetupRichards(PFModule *this_module) {
 
    instance_xtra -> iteration_number = instance_xtra -> file_number = start_count;
    instance_xtra -> dump_index = 1.0;
+   instance_xtra -> clm_dump_index = 1.0;
 
    if ( ( (t >= stop_time) || (instance_xtra -> iteration_number > public_xtra -> max_iterations) ) 
 	&& ( take_more_time_steps == 1) )
@@ -810,6 +812,7 @@ void AdvanceRichards(PFModule *this_module,
    double        ct = 0.0;
    double        cdt = 0.0;
    double        print_dt;
+   double        print_cdt;
    double        dtmp, err_norm;
    double        gravity = ProblemGravity(problem);
 
@@ -1238,15 +1241,15 @@ void AdvanceRichards(PFModule *this_module,
                   clm_dump_files = 0;
                   if ( public_xtra -> clm_dump_interval > 0 )
                   {
-                     print_dt = ProblemStartTime(problem) +  instance_xtra -> dump_index*dump_interval - t;
-                     if ( (dt + EPSILON) > print_dt )
+                     print_cdt = ProblemStartTime(problem) +  instance_xtra -> clm_dump_index * public_xtra -> clm_dump_interval - ct;
+                     if ( (cdt + EPSILON) > print_cdt )
                      {
                         clm_dump_files = 1;
                      }
                   }
                   else if ( public_xtra -> clm_dump_interval < 0 )
                   {
-                     if ( (instance_xtra -> iteration_number % (-(int)dump_interval)) == 0 )
+                     if ( (instance_xtra -> iteration_number % (-(int)public_xtra -> clm_dump_interval)) == 0 )
                      {
                         clm_dump_files = 1;
                      }
@@ -1259,6 +1262,9 @@ void AdvanceRichards(PFModule *this_module,
                   /* IMF Write as silo? */
                   if ( clm_dump_files && public_xtra -> write_silo_CLM )
                      {
+ 
+                       instance_xtra -> clm_dump_index++;
+
                        sprintf(file_postfix, "%05d", instance_xtra -> file_number );
                        sprintf(file_type, "eflx_lh_tot");
                        WriteSilo( file_prefix, file_type, file_postfix, instance_xtra -> eflx_lh_tot, 
@@ -1409,6 +1415,12 @@ void AdvanceRichards(PFModule *this_module,
 	    PFVCopy(instance_xtra -> old_density,    instance_xtra -> density);
 	    PFVCopy(instance_xtra -> old_saturation, instance_xtra -> saturation);
 	    PFVCopy(instance_xtra -> old_pressure,   instance_xtra -> pressure);
+            
+            // IMF: If not converged for PF.CLM, set clm_file_dumped = 0 so doesn't keep incrementing
+#ifdef HAVE_CLM
+            clm_file_dumped = 0;
+#endif
+
 	 }
 
 #ifdef HAVE_CLM
@@ -1574,9 +1586,7 @@ void AdvanceRichards(PFModule *this_module,
       if ( dump_files )
       {
 
-         // IMF: Needs to be updated if PF *or* CLM output is written...
-         //      Moved to loop below (dump_files) loop
-	 // instance_xtra -> dump_index++;
+         instance_xtra -> dump_index++; 
 			
 	 if(public_xtra -> print_press) {
 	    sprintf(file_postfix, "press.%05d", instance_xtra -> file_number);
@@ -1661,14 +1671,6 @@ void AdvanceRichards(PFModule *this_module,
 	 }
       }  // End of if (dump_files)
 
-      // IMF: Update dump_index if PF *or* CLM files are dumped
-      //      (allows for different dump intervals)
-
-      if (dump_files || clm_dump_files)
-      { 
-         instance_xtra -> dump_index++;
-      }
-
       /***************************************************************/
       /*             Compute the l2 error                            */
       /***************************************************************/
@@ -1715,7 +1717,7 @@ void AdvanceRichards(PFModule *this_module,
 	 instance_xtra -> dt_log[instance_xtra -> number_logged]        = dt;
 	 instance_xtra -> dt_info_log[instance_xtra -> number_logged]   = dt_info;
 	 instance_xtra -> outflow_log[instance_xtra -> number_logged]   = outflow;
-	 if ( any_file_dumped )
+	 if ( any_file_dumped || clm_file_dumped )
 	    instance_xtra -> dumped_log[instance_xtra -> number_logged] = instance_xtra -> file_number;
 	 else
 	    instance_xtra -> dumped_log[instance_xtra -> number_logged] = -1;
@@ -1723,11 +1725,14 @@ void AdvanceRichards(PFModule *this_module,
 	 instance_xtra -> number_logged++;
       }
 
+      printf( "   \n" );
+      printf( "DUMP TEST: %f \t\t %d \t\t %d \t\t %f \t\t %d \t\t %f \n", 
+               t, instance_xtra -> file_number, clm_file_dumped, instance_xtra -> clm_dump_index, 
+                                                any_file_dumped, instance_xtra -> dump_index );
+
       if ( any_file_dumped || clm_file_dumped )
       { 
 	 instance_xtra -> file_number++;
-         any_file_dumped = 0; 
-         clm_file_dumped = 0;
       }
 
       if (take_more_time_steps) {
