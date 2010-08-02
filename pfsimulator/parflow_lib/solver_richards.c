@@ -1225,140 +1225,6 @@ void AdvanceRichards(PFModule *this_module,
                                public_xtra -> clm_irr_threshold,
                                qirr, qirr_inst, iflag, 
                                public_xtra -> clm_irr_thresholdtype);
-
-                  /* IMF Write Met to Silo (for testing) 
-                  sprintf(file_postfix, "precip.%05d", instance_xtra -> file_number );
-                  WriteSilo( file_prefix, file_postfix, instance_xtra -> prcp_forc,
-                            t, instance_xtra -> file_number, "Precipitation");
-                  sprintf(file_postfix, "air_temp.%05d", instance_xtra -> file_number );
-                  WriteSilo( file_prefix, file_postfix, instance_xtra -> tas_forc,
-                            t, instance_xtra -> file_number, "AirTemperature");
-                  */
-
-                  // IMF: Determine if CLM files are to be written...
-                  //      Identical to ParFlow dump_file loop (below),
-                  //      EXCEPT no change to dt, dt_info
-                  clm_dump_files = 0;
-                  if ( public_xtra -> clm_dump_interval > 0 )
-                  {
-                     print_cdt = ProblemStartTime(problem) +  instance_xtra -> clm_dump_index * public_xtra -> clm_dump_interval - ct;
-                     if ( (cdt + EPSILON) > print_cdt )
-                     {
-                        clm_dump_files = 1;
-                     }
-                  }
-                  else if ( public_xtra -> clm_dump_interval < 0 )
-                  {
-                     if ( (instance_xtra -> iteration_number % (-(int)public_xtra -> clm_dump_interval)) == 0 )
-                     {
-                        clm_dump_files = 1;
-                     }
-                  }
-                  else
-                  {
-                     clm_dump_files = 0;
-                  }
-
-                  /* IMF Write as silo? */
-                  if ( clm_dump_files && public_xtra -> write_silo_CLM )
-                     {
- 
-                       instance_xtra -> clm_dump_index++;
-
-                       sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-                       sprintf(file_type, "eflx_lh_tot");
-                       WriteSilo( file_prefix, file_type, file_postfix, instance_xtra -> eflx_lh_tot, 
-                                 t, instance_xtra -> file_number, "LatentHeat");
-                       clm_file_dumped = 1;
-			   
-		       sprintf(file_type, "eflx_lwrad_out");
-                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> eflx_lwrad_out, 
-                                 t, instance_xtra -> file_number, "LongWave");
-                       clm_file_dumped = 1;
-			   
-                       sprintf(file_type, "eflx_sh_tot");
-                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> eflx_sh_tot, 
-                                 t, instance_xtra -> file_number, "SensibleHeat");
-                       clm_file_dumped = 1;
-			   
-                       sprintf(file_type, "eflx_soil_grnd");
-                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> eflx_soil_grnd, 
-                                 t, instance_xtra -> file_number, "GroundHeat");
-                       clm_file_dumped = 1;
-			   
-                       sprintf(file_type, "qflx_evap_tot");
-                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_tot, 
-                                 t, instance_xtra -> file_number, "EvaporationTotal");
-                       clm_file_dumped = 1;
-			   
-                       sprintf(file_type, "qflx_evap_grnd");
-                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_grnd, 
-                                 t, instance_xtra -> file_number, "EvaporationGroundNoSublimation");
-                       clm_file_dumped = 1;
-			   
-                       sprintf(file_type, "qflx_evap_soi");
-                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_soi, 
-                                 t, instance_xtra -> file_number, "EvaporationGround");
-                       clm_file_dumped = 1;
-			   
-                       sprintf(file_type, "qflx_evap_veg");
-                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_veg, 
-                                 t, instance_xtra -> file_number, "EvaporationCanopy");
-                       clm_file_dumped = 1;
-			   
-                       sprintf(file_type, "qflx_tran_veg");
-                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_tran_veg, 
-                                 t, instance_xtra -> file_number, "Transpiration");
-                       clm_file_dumped = 1;
-			   
-                       sprintf(file_type, "qflx_infl");
-                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_infl, 
-                                 t, instance_xtra -> file_number, "Infiltration");
-                       clm_file_dumped = 1;
-			   
-                       sprintf(file_type, "swe_out");
-                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> swe_out, 
-                                 t, instance_xtra -> file_number, "SWE");
-                       clm_file_dumped = 1;
-			   
-                       sprintf(file_type, "t_grnd");
-                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> t_grnd, 
-                                 t, instance_xtra -> file_number, "TemperatureGround");
-                       clm_file_dumped = 1;
-
-                       sprintf(file_type, "t_soil");
-                       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> tsoil,
-                                 t, instance_xtra -> file_number, "TemperatureSoil");
-                       clm_file_dumped = 1;
-
-                       // IMF: irrigation flag -- 1.0 when irrigated, 0.0 when not irrigated
-//                       if ( public_xtra -> clm_irr_type == 1 || public_xtra -> clm_irr_type == 2 )
-//                          {
-//                            sprintf(file_postfix, "qflx_qirr.%05d" ,instance_xtra -> file_number );
-//                            WriteSilo(file_prefix, file_postfix, instance_xtra -> qflx_qirr,
-//                            t, instance_xtra -> file_number, "IrrigationSurface");
-//                            clm_file_dumped = 1;
-//                          }
-
-                       // IMF: irrigation applied to surface -- spray or drip
-                       if ( public_xtra -> clm_irr_type == 1 || public_xtra -> clm_irr_type == 2 )
-                          {
-			     sprintf(file_type, "qflx_qirr");
-			     WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_qirr, 
-                             t, instance_xtra -> file_number, "IrrigationSurface");
-                             clm_file_dumped = 1;
-                          }
-                       
-                       // IMF: irrigation applied directly as soil moisture flux -- "instant"
-                       if ( public_xtra -> clm_irr_type == 3 )
-                          {
-			     sprintf(file_postfix, "qflx_qirr_inst");
-			     WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_qirr_inst,
-                             t, instance_xtra -> file_number, "IrrigationInstant");
-                             clm_file_dumped = 1;
-                          }
-
-                     } // end of write silo 
 		  break;		  
 	       }
 	       default:
@@ -1415,13 +1281,7 @@ void AdvanceRichards(PFModule *this_module,
 	    PFVCopy(instance_xtra -> old_density,    instance_xtra -> density);
 	    PFVCopy(instance_xtra -> old_saturation, instance_xtra -> saturation);
 	    PFVCopy(instance_xtra -> old_pressure,   instance_xtra -> pressure);
-            
-            // IMF: If not converged for PF.CLM, set clm_file_dumped = 0 so doesn't keep incrementing
-#ifdef HAVE_CLM
-            clm_file_dumped = 0;
-#endif
-
-	 }
+	 } // End set t and dt based on convergence
 
 #ifdef HAVE_CLM
 	 /*
@@ -1451,7 +1311,6 @@ void AdvanceRichards(PFModule *this_module,
 
 #endif
 	 
-         
 	 /*--------------------------------------------------------------
 	  * If we are printing out results, then determine if we need
 	  * to print them after this time step.
@@ -1463,6 +1322,7 @@ void AdvanceRichards(PFModule *this_module,
 	  * this iteration.
 	  *--------------------------------------------------------------*/
 
+         // Print ParFlow output? 
 	 dump_files = 0;
 	 if ( dump_interval > 0 )
 	 {
@@ -1495,6 +1355,31 @@ void AdvanceRichards(PFModule *this_module,
 	 {
 	    dump_files = 0;
 	 }
+
+#ifdef HAVE_CLM
+         // Print CLM output?
+         // (parallel setup to PF, but without resetting dt == print_dt for very small dt)
+         clm_dump_files = 0;
+         if ( public_xtra -> clm_dump_interval > 0 )
+         {
+            print_cdt = ProblemStartTime(problem) +  instance_xtra -> clm_dump_index * public_xtra -> clm_dump_interval - t;
+            if ( (dt + EPSILON) > print_cdt )
+            {
+               clm_dump_files = 1;
+            }
+         }
+         else if ( public_xtra -> clm_dump_interval < 0 )
+         {
+            if ( (instance_xtra -> iteration_number % (-(int)public_xtra -> clm_dump_interval)) == 0 )
+            {
+               clm_dump_files = 1;
+            }
+         }
+         else
+         {
+            clm_dump_files = 0;
+         }
+#endif
 
 	 /*--------------------------------------------------------------
 	  * If this is the last iteration, set appropriate variables. 
@@ -1559,8 +1444,6 @@ void AdvanceRichards(PFModule *this_module,
 		      instance_xtra -> density, gravity, problem_data,
 		      CALCFCN));
 
-      any_file_dumped = 0;
-
       /***************************************************************
        * Compute running sum of evap trans for water balance 
        **************************************************************/
@@ -1583,6 +1466,7 @@ void AdvanceRichards(PFModule *this_module,
       /***************************************************************/
 
       /* Dump the pressure, saturation, surface fluxes at this time-step */
+      any_file_dumped = 0;
       if ( dump_files )
       {
 
@@ -1660,7 +1544,6 @@ void AdvanceRichards(PFModule *this_module,
 	    any_file_dumped = 1;
 	 }
 
-
 	 if(public_xtra -> write_silo_overland_bc_flux) 
 	 {
 	    /*sk Print the sink terms from the land surface model*/
@@ -1670,6 +1553,117 @@ void AdvanceRichards(PFModule *this_module,
 	    any_file_dumped = 1;
 	 }
       }  // End of if (dump_files)
+
+      /***************************************************************/
+      /*             Print CLM output files at this time             */
+      /***************************************************************/
+
+#ifdef HAVE_CLM
+      /* Dump the fluxes, infiltration, etc. at this time-step */
+      clm_file_dumped = 0;
+      if ( clm_dump_files )
+      {
+
+         instance_xtra -> clm_dump_index++;
+
+         if ( public_xtra -> write_silo_CLM ) {
+
+//          /* IMF Write Met to Silo (for testing) */
+//          sprintf(file_postfix, "precip.%05d", instance_xtra -> file_number );
+//          WriteSilo( file_prefix, file_postfix, instance_xtra -> prcp_forc,
+//                     t, instance_xtra -> file_number, "Precipitation");
+//          clm_file_dumped = 1;
+//          sprintf(file_postfix, "air_temp.%05d", instance_xtra -> file_number );
+//          WriteSilo( file_prefix, file_postfix, instance_xtra -> tas_forc,
+//                     t, instance_xtra -> file_number, "AirTemperature");
+//          clm_file_dumped = 1;
+               
+            sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+            sprintf(file_type, "eflx_lh_tot");
+            WriteSilo( file_prefix, file_type, file_postfix, instance_xtra -> eflx_lh_tot,
+                       t, instance_xtra -> file_number, "LatentHeat");
+            clm_file_dumped = 1;
+
+            sprintf(file_type, "eflx_lwrad_out");
+            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> eflx_lwrad_out,
+                      t, instance_xtra -> file_number, "LongWave");
+            clm_file_dumped = 1;
+
+            sprintf(file_type, "eflx_sh_tot");
+            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> eflx_sh_tot,
+                      t, instance_xtra -> file_number, "SensibleHeat");
+            clm_file_dumped = 1;
+
+            sprintf(file_type, "eflx_soil_grnd");
+            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> eflx_soil_grnd,
+                      t, instance_xtra -> file_number, "GroundHeat");
+            clm_file_dumped = 1;
+
+            sprintf(file_type, "qflx_evap_tot");
+            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_tot,
+                      t, instance_xtra -> file_number, "EvaporationTotal");
+            clm_file_dumped = 1;
+
+            sprintf(file_type, "qflx_evap_grnd");
+            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_grnd,
+                      t, instance_xtra -> file_number, "EvaporationGroundNoSublimation");
+            clm_file_dumped = 1;
+
+            sprintf(file_type, "qflx_evap_soi");
+            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_soi,
+                      t, instance_xtra -> file_number, "EvaporationGround");
+            clm_file_dumped = 1;
+
+            sprintf(file_type, "qflx_evap_veg");
+            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_veg,
+                      t, instance_xtra -> file_number, "EvaporationCanopy");
+            clm_file_dumped = 1;
+
+            sprintf(file_type, "qflx_tran_veg");
+            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_tran_veg,
+                      t, instance_xtra -> file_number, "Transpiration");
+            clm_file_dumped = 1;
+
+            sprintf(file_type, "qflx_infl");
+            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_infl,
+                      t, instance_xtra -> file_number, "Infiltration");
+            clm_file_dumped = 1;
+
+            sprintf(file_type, "swe_out");
+            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> swe_out,
+                      t, instance_xtra -> file_number, "SWE");
+            clm_file_dumped = 1;
+
+            sprintf(file_type, "t_grnd");
+            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> t_grnd,
+                      t, instance_xtra -> file_number, "TemperatureGround");
+            clm_file_dumped = 1;
+
+            sprintf(file_type, "t_soil");
+            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> tsoil,
+                      t, instance_xtra -> file_number, "TemperatureSoil");
+            clm_file_dumped = 1;
+
+            // IMF: irrigation applied to surface -- spray or drip
+            if ( public_xtra -> clm_irr_type == 1 || public_xtra -> clm_irr_type == 2 )
+            {
+               sprintf(file_type, "qflx_qirr");
+               WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_qirr,
+                         t, instance_xtra -> file_number, "IrrigationSurface");
+               clm_file_dumped = 1;
+            }
+
+            // IMF: irrigation applied directly as soil moisture flux -- "instant"
+            if ( public_xtra -> clm_irr_type == 3 )
+            {
+               sprintf(file_postfix, "qflx_qirr_inst");
+               WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_qirr_inst,
+                         t, instance_xtra -> file_number, "IrrigationInstant");
+               clm_file_dumped = 1;
+            }
+         } // end of if (write_silo_CLM)
+      } // end of if (clm_dump_files)
+#endif
 
       /***************************************************************/
       /*             Compute the l2 error                            */
@@ -1725,14 +1719,11 @@ void AdvanceRichards(PFModule *this_module,
 	 instance_xtra -> number_logged++;
       }
 
-      printf( "   \n" );
-      printf( "DUMP TEST: %f \t\t %d \t\t %d \t\t %f \t\t %d \t\t %f \n", 
-               t, instance_xtra -> file_number, clm_file_dumped, instance_xtra -> clm_dump_index, 
-                                                any_file_dumped, instance_xtra -> dump_index );
-
       if ( any_file_dumped || clm_file_dumped )
       { 
 	 instance_xtra -> file_number++;
+         any_file_dumped = 0;
+         clm_file_dumped = 0;
       }
 
       if (take_more_time_steps) {
