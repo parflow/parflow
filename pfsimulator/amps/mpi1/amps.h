@@ -47,6 +47,22 @@
 #include <strings.h>
 #include <stdio.h>
 #include <sys/times.h>
+
+/*
+ * Prevent inclusion of mpi C++ bindings in mpi.h includes.
+ */
+#ifndef MPI_NO_CPPBIND
+#define MPI_NO_CPPBIND
+#endif
+
+#ifndef MPICH_SKIP_MPICXX
+#define MPICH_SKIP_MPICXX
+#endif
+
+#ifndef OMPI_SKIP_MPICXX
+#define OMPI_SKIP_MPICXX
+#endif
+
 #include <mpi.h>
 
 #ifndef FALSE

@@ -95,11 +95,10 @@ int          fcn)
 
    Subgrid          *subgrid, *subgrid_ind, *new_subgrid;
 
-   Subvector        *f_sub, *p_sub;
-   Submatrix        *A_sub;
+   Subvector        *p_sub;
 
-   double           *cp, *wp, *ep, *sp, *np, *lp, *up;
-   double           *fp, *pp;
+
+   double           *pp;
    double           *internal_bc_conditions = NULL;
 
    double            dx, dy, dz;
@@ -179,20 +178,9 @@ int          fcn)
       {
          subgrid = GridSubgrid(grid, grid_index);
 
-         f_sub = VectorSubvector(f, grid_index);
          p_sub = VectorSubvector(pressure, grid_index);
-         A_sub = MatrixSubmatrix(A, grid_index);
-
-         fp    = SubvectorData(f_sub);
          pp    = SubvectorData(p_sub);
 
-	 cp    = SubmatrixStencilData(A_sub, 0);
-	 wp    = SubmatrixStencilData(A_sub, 1);
-	 ep    = SubmatrixStencilData(A_sub, 2);
-	 sp    = SubmatrixStencilData(A_sub, 3);
-	 np    = SubmatrixStencilData(A_sub, 4);
-	 lp    = SubmatrixStencilData(A_sub, 5);
-	 up    = SubmatrixStencilData(A_sub, 6);
 
          for ( index=0; index < total_num; index++ )
          {
@@ -232,6 +220,9 @@ int          fcn)
 
 	    if (fcn == CALCFCN)
 	    {
+	       Subvector *f_sub = VectorSubvector(f, grid_index);
+	       double *fp       = SubvectorData(f_sub);
+
                BoxLoopI0(i, j, k,
                          ix, iy, iz, nx, ny, nz,
 	       {
@@ -241,24 +232,38 @@ int          fcn)
 	    }
 	    else if (fcn == CALCDER)
 	    {
-                BoxLoopI0(i, j, k,
-			  ix, iy, iz, nx, ny, nz,
-	        {
-                   im = SubmatrixEltIndex(A_sub, i, j, k);
-		   cp[im] = 1.0;
-		   wp[im] = 0.0;
-		   ep[im] = 0.0;
-		   sp[im] = 0.0;
-		   np[im] = 0.0;
-		   lp[im] = 0.0;
-		   up[im] = 0.0;
-		});
+	       Submatrix        *A_sub = MatrixSubmatrix(A, grid_index);
+
+	       double *cp    = SubmatrixStencilData(A_sub, 0);
+	       double *wp    = SubmatrixStencilData(A_sub, 1);
+	       double *ep    = SubmatrixStencilData(A_sub, 2);
+	       double *sp    = SubmatrixStencilData(A_sub, 3);
+	       double *np    = SubmatrixStencilData(A_sub, 4);
+	       double *lp    = SubmatrixStencilData(A_sub, 5);
+	       double *up    = SubmatrixStencilData(A_sub, 6);
+
+	       BoxLoopI0(i, j, k,
+			 ix, iy, iz, nx, ny, nz,
+               {
+		  im = SubmatrixEltIndex(A_sub, i, j, k);
+		  cp[im] = 1.0;
+		  wp[im] = 0.0;
+		  ep[im] = 0.0;
+		  sp[im] = 0.0;
+		  np[im] = 0.0;
+		  lp[im] = 0.0;
+		  up[im] = 0.0;
+	       });
 	    }
 
 	 }        /* End loop over conditions */
       }           /* End loop over processor subgrids */
 
-      FreeSubgridArray(internal_bc_subgrids);
+
+      if ( num_conditions > 0 )
+      {
+	 FreeSubgridArray(internal_bc_subgrids);
+      }
       tfree(internal_bc_conditions);
 
    }              /* End if have well or internal pressure conditions */

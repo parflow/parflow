@@ -43,6 +43,8 @@
 
 #include "parflow.h"
 
+amps_ThreadLocalDcl(int , s_parflow_silo_filetype);
+
 #ifdef HAVE_SILO
 void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   *subgrid, 
                                char *variable_name)
@@ -181,6 +183,44 @@ void     WriteSiloInit(char    *file_prefix)
    int i;
    int j;
 
+   int err;
+
+   char           key[IDB_MAX_KEY_LEN];
+
+   /* 
+      Get compression options for SILO files
+   */
+   
+   sprintf(key, "SILO.CompressionOptions");
+   char *compression_options = GetStringDefault(key, "");
+   if(strlen(compression_options)) {
+      DBSetCompression(compression_options);
+      if(err < 0) {
+	 amps_Printf("Error: Compression options failed for SILO.CompressionOptions=%s\n", compression_options);
+	 amps_Printf("       This may mean SILO was not compiled with compression enabled\n");
+	 exit(1);
+      }
+   }
+
+   sprintf(key, "SILO.Filetype");
+   char *switch_name = GetStringDefault(key, "PDB");
+   NameArray type_na = NA_NewNameArray("PDB HDF5");
+
+   switch (NA_NameToIndex(type_na, switch_name)) {
+      case 0:
+	 s_parflow_silo_filetype = DB_PDB;
+	 break;
+      case 1:
+	 s_parflow_silo_filetype = DB_HDF5;
+	 break;
+      default:
+	 amps_Printf("Error: invalid SILO.Filetype %s\n", switch_name);
+	 exit(1);
+	 break;
+   }
+
+   NA_FreeNameArray(type_na);
+
    if ( p == 0 )
    {
       sprintf(filename, "%s", file_prefix);
@@ -271,6 +311,8 @@ void     WriteSilo(char    *file_prefix,
    BeginTiming(PFBTimingIndex);
 
 #ifdef HAVE_SILO
+
+
    p = amps_Rank(amps_CommWorld);
    P = amps_Size(amps_CommWorld);
    if ( p == 0 )
@@ -321,7 +363,7 @@ void     WriteSilo(char    *file_prefix,
       }
       
       /* TODO SGS what type? HDF PDB? */
-      db_file = DBCreate(filename, DB_CLOBBER, DB_LOCAL, NULL, DB_PDB);
+      db_file = DBCreate(filename, DB_CLOBBER, DB_LOCAL, NULL, s_parflow_silo_filetype);
       
       if (db_file == NULL) {
 	 amps_Printf("Error: can't open silo file %s\n", filename);
@@ -412,7 +454,7 @@ void     WriteSilo(char    *file_prefix,
    }
 
    /* TODO SGS what type? HDF PDB? */
-   db_file = DBCreate(filename, DB_CLOBBER, DB_LOCAL, NULL, DB_PDB);
+   db_file = DBCreate(filename, DB_CLOBBER, DB_LOCAL, NULL, s_parflow_silo_filetype);
    if ( db_file == NULL ) {      
       amps_Printf("Error: can't open silo file %s\n", filename);
    }
