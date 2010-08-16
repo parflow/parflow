@@ -120,7 +120,7 @@ subroutine clm_hydro_irrig (clm,gmt)
       case ( 2 )  ! Average over soil column
          testsat = 0.
          do i = 1, nlevsoi
-            testsat = testsat + ( clm%h2osoi_liq(1) / ( clm%watsat(1)*clm%dz(1)*denh2o ) )
+            testsat = testsat + ( clm%h2osoi_liq(i) / ( clm%watsat(i)*clm%dz(i)*denh2o ) )
          enddo
          testsat = testsat / float( nlevsoi )
       end select   

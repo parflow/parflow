@@ -2695,7 +2695,7 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    /* NOTE: Times in GMT */
    sprintf(key, "%s.CLM.IrrigationStartTime", name);
    public_xtra -> clm_irr_start = GetDoubleDefault(key,12.0);
-   sprintf(key, "%s.IrrigationStopTime", name);
+   sprintf(key, "%s.CLM.IrrigationStopTime", name);
    public_xtra -> clm_irr_stop = GetDoubleDefault(key,20.0);
 
    /* IrrigationThreshold -- Soil moisture threshold for irrigation if IrrigationCycle == Deficit */

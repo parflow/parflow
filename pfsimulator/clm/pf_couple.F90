@@ -88,8 +88,8 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
         do k = clm(t)%topo_mask(3), clm(t)%topo_mask(1) ! CLM loop over z, starting at bottom of pf domains topo_mask(3)
 
            l = 1+i + j_incr*(j) + k_incr*(k)  ! updated indexing @RMM b/c we are looping from k3 to k1
-          !   print*, k, l
-           ! 	l = 1+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k)
+           !   print*, k, l
+           !   l = 1+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k)
            ! first we add direct amount of water: S*phi
            clm(t)%endwb = clm(t)%endwb + saturation(l)*porosity(l) * clm(1)%dz(1) * 1000.0d0
            ! then we add the compressible storage component, note the Ss is hard-wired here at 0.0001 should really be done in PF w/ real values
