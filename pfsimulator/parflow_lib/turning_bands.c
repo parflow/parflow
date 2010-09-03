@@ -51,9 +51,8 @@
  *
  *****************************************************************************/
 
-#include <math.h>
 #include "parflow.h"
-
+#include <cmath>
 
 /*--------------------------------------------------------------------------
  * Structures
@@ -169,7 +168,7 @@ void   *vxtra;
    DX = DX/lambdaX;
    DY = DY/lambdaY;
    DZ = DZ/lambdaZ;
-   dzeta = min(min(DX,DY),DZ) / rzeta;    /* THIS WILL BE MODIFIED SOON */
+   dzeta = pfmin(pfmin(DX,DY),DZ) / rzeta;    /* THIS WILL BE MODIFIED SOON */
 
    /* malloc space for theta_array and phi_array */
    theta_array = talloc(double, num_lines);
@@ -231,16 +230,16 @@ void   *vxtra;
 	 unitz = cos(phi);
 	 
 	 /* determine ZetaMin, Nzeta, izeta, and nzeta */
-	 ZetaMin = (min(0, NX*DX*unitx) +
-		    min(0, NY*DY*unity) +
-		    min(0, NZ*DZ*unitz));
+	 ZetaMin = (pfmin(0, NX*DX*unitx) +
+		    pfmin(0, NY*DY*unity) +
+		    pfmin(0, NZ*DZ*unitz));
 	 NZeta = (fabs(NX*DX*unitx) +
 		  fabs(NY*DY*unity) +
 		  fabs(NZ*DZ*unitz)) / dzeta + 2;
 	 
-	 zeta = (min(xt*unitx, (xt+nx*dx)*unitx) +
-		 min(yt*unity, (yt+ny*dy)*unity) +
-		 min(zt*unitz, (zt+nz*dz)*unitz));
+	 zeta = (pfmin(xt*unitx, (xt+nx*dx)*unitx) +
+		 pfmin(yt*unity, (yt+ny*dy)*unity) +
+		 pfmin(zt*unitz, (zt+nz*dz)*unitz));
 	 izeta = Index(zeta, ZetaMin, dzeta, 0);
 	 nzeta = (fabs(nx*dx*unitx) +
 		  fabs(ny*dy*unity) +

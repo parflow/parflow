@@ -33,16 +33,14 @@
  *
  *****************************************************************************/
 
-#include <math.h>
-
 #include "parflow.h"
-
+#include <math.h>
 
 /*--------------------------------------------------------------------------
  * Macros for DistributeUserGrid
  *--------------------------------------------------------------------------*/
 
-#define pqr_to_xyz(pqr, mxyz, lxyz, xyz)   (pqr*mxyz + min(pqr, lxyz) + xyz)
+#define pqr_to_xyz(pqr, mxyz, lxyz, xyz)   (pqr*mxyz + pfmin(pqr, lxyz) + xyz)
 
 #define pqr_to_nxyz(pqr, mxyz, lxyz)  (pqr < lxyz ? mxyz+1 : mxyz)
 
@@ -87,73 +85,115 @@ SubgridArray   *DistributeUserGrid(
    Q = GlobalsNumProcsY;
    R = GlobalsNumProcsZ;
 
-   /*-----------------------------------------------------------------------
-    * Parflow specifies process layout
-    *-----------------------------------------------------------------------*/
+   Grid *process_grid = ReadProcessGrid();
 
-   if (!P || !Q || !R)
-   {
-      m = (int) pow((double) ((nx*ny*nz) / num_procs), (1.0 / 3.0));
+   /*
+    * If user specified a process grid in input use that.  
+    *
+    * NOTE: this is used mostly for debugging purposes so that one
+    * can manually set the domain decomposition.
+    */
+   if( process_grid ) {
+      
+      /*
+       * These values do not make sense in this case;
+       * don't make sense for the SAMRAI port with
+       * multiple patches per processor.   There 
+       * is not PxQxR anymore.
+       */
+      GlobalsP = -99999;
+      GlobalsQ = -99999;
+      GlobalsR = -99999;
 
-      do
+      all_subgrids = NewSubgridArray();
+
+      SubgridArray* subgrid_array = GridAllSubgrids(process_grid);
+      int i;
+      ForSubgridI(i, subgrid_array) {
+	 Subgrid* new_subgrid = DuplicateSubgrid(SubgridArraySubgrid(subgrid_array, i));
+	 AppendSubgrid(new_subgrid, all_subgrids);
+      }
+
+   } else {
+      
+      /*-----------------------------------------------------------------------
+       * Parflow specifies process layout
+       *-----------------------------------------------------------------------*/
+      
+      if (!P || !Q || !R)
       {
-	 P  = nx / m;
-	 Q  = ny / m;
-	 R  = nz / m;
-
-	 P = P + ((nx % m) > P);
-	 Q = Q + ((ny % m) > Q);
-	 R = R + ((nz % m) > R);
-
-	 m++;
-
-      } while ((P*Q*R) > num_procs);
-   }
-
-   /*-----------------------------------------------------------------------
-    * Check P, Q, R with process allocation
-    *-----------------------------------------------------------------------*/
-
-   if ((P*Q*R) == num_procs)
-   {
-      if (!amps_Rank(amps_CommWorld))
-         amps_Printf("Using process grid (%d,%d,%d)\n", P, Q, R);
-   }
-   else
-      return NULL;
-
-   /*-----------------------------------------------------------------------
-    * Create all_subgrids
-    *-----------------------------------------------------------------------*/
-
-   all_subgrids = NewSubgridArray();
-
-   x = SubgridIX(user_subgrid);
-   y = SubgridIY(user_subgrid);
-   z = SubgridIZ(user_subgrid);
-
-   mx = nx / P;
-   my = ny / Q;
-   mz = nz / R;
-
-   lx = (nx % P);
-   ly = (ny % Q);
-   lz = (nz % R);
-
-   for (p = 0; p < P; p++)
-      for (q = 0; q < Q; q++)
-	 for (r = 0; r < R; r++)
+	 m = (int) pow((double) ((nx*ny*nz) / num_procs), (1.0 / 3.0));
+	 
+	 do
 	 {
-	    AppendSubgrid(NewSubgrid(pqr_to_xyz(p, mx, lx, x),
-				     pqr_to_xyz(q, my, ly, y),
-				     pqr_to_xyz(r, mz, lz, z),
-				     pqr_to_nxyz(p, mx, lx),
-				     pqr_to_nxyz(q, my, ly),
-				     pqr_to_nxyz(r, mz, lz),
-				     0, 0, 0,
-				     pqr_to_process(p, q, r, P, Q, R)),
-			  all_subgrids);
+	    P  = nx / m;
+	    Q  = ny / m;
+	    R  = nz / m;
+	    
+	    P = P + ((nx % m) > P);
+	    Q = Q + ((ny % m) > Q);
+	    R = R + ((nz % m) > R);
+	    
+	    m++;
+	    
+	 } while ((P*Q*R) > num_procs);
+      }
+      
+      /*-----------------------------------------------------------------------
+       * Check P, Q, R with process allocation
+       *-----------------------------------------------------------------------*/
+
+      if ((P*Q*R) == num_procs)
+      {
+	 if (!amps_Rank(amps_CommWorld))
+	    amps_Printf("Using process grid (%d,%d,%d)\n", P, Q, R);
+      }
+      else 
+	 return NULL;
+      
+      /*-----------------------------------------------------------------------
+       * Create all_subgrids
+       *-----------------------------------------------------------------------*/
+      
+      all_subgrids = NewSubgridArray();
+      
+      x = SubgridIX(user_subgrid);
+      y = SubgridIY(user_subgrid);
+      z = SubgridIZ(user_subgrid);
+      
+      mx = nx / P;
+      my = ny / Q;
+      mz = nz / R;
+      
+      lx = (nx % P);
+      ly = (ny % Q);
+      lz = (nz % R);
+      
+      for (p = 0; p < P; p++) {
+	 for (q = 0; q < Q; q++) {
+	    for (r = 0; r < R; r++) {
+	       AppendSubgrid(NewSubgrid(pqr_to_xyz(p, mx, lx, x),
+					pqr_to_xyz(q, my, ly, y),
+					pqr_to_xyz(r, mz, lz, z),
+					pqr_to_nxyz(p, mx, lx),
+					pqr_to_nxyz(q, my, ly),
+					pqr_to_nxyz(r, mz, lz),
+					0, 0, 0,
+					pqr_to_process(p, q, r, P, Q, R)),
+			     all_subgrids);
+	       
+	       if( pqr_to_process(p, q, r, P, Q, R) == amps_Rank(amps_CommWorld)) 
+	       {
+		  GlobalsP = p;
+		  GlobalsQ = q;
+		  GlobalsR = r;
+	       }
+	    }
 	 }
+      }
+   }
+
+   FreeGrid(process_grid);
 
    return all_subgrids;
 }

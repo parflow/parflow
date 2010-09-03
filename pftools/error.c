@@ -79,9 +79,9 @@
  * Check that the grid dimensions are the same.
  *-----------------------------------------------------------------------*/
 
-int      SameDimensions(databoxp, databoxq)
-Databox *databoxp;
-Databox *databoxq;
+int      SameDimensions(
+   Databox *databoxp,
+   Databox *databoxq)
 {
 
    if ((DataboxNx(databoxp) != DataboxNx(databoxq)) ||
@@ -100,9 +100,11 @@ Databox *databoxq;
  * Make sure a coordinate is within the range of the grid
  *-----------------------------------------------------------------------*/
 
-int     InRange(i, j, k, databox)
-int i, j, k;
-Databox *databox;
+int     InRange(
+   int i, 
+   int j, 
+   int k,
+   Databox *databox)
 {
 
    if ((i < 0 || i >= DataboxNx(databox)) ||
@@ -128,8 +130,8 @@ Databox *databox;
 /* Return value - int - One if the file type option is valid and zero other-  */
 /*                      wise                                                  */
 
-int IsValidFileType (option)
-char *option;
+int IsValidFileType (
+   char *option)
 {
    if (   strcmp(option, "pfb" ) == 0
        || strcmp(option, "pfsb") == 0
@@ -158,8 +160,8 @@ char *option;
 /* Return value - char * - A valid file extension or null if the file's       */
 /*                         extension was invalid                              */
 
-char *GetValidFileExtension(filename)
-char *filename;
+char *GetValidFileExtension(
+   char *filename)
 {
    char *extension;
 
@@ -187,10 +189,10 @@ char *filename;
  * This function appends an invalid option error to the Tcl result.
  *------------------------------------------------------------------------*/
 
-void        InvalidOptionError(interp, argnum, usage)
-Tcl_Interp *interp;
-int         argnum;
-char       *usage;
+void        InvalidOptionError(
+   Tcl_Interp *interp,
+   int         argnum,
+   char       *usage)
 {
    char num[256];
 
@@ -204,10 +206,10 @@ char       *usage;
  * This function appends an invalid argument error to the Tcl result.
  *------------------------------------------------------------------------*/
 
-void        InvalidArgError(interp, argnum, usage)
-Tcl_Interp *interp;
-int         argnum;
-char       *usage;
+void        InvalidArgError(
+   Tcl_Interp *interp,
+   int         argnum,
+   char       *usage)
 {
    char     num[256];
 
@@ -220,9 +222,9 @@ char       *usage;
  * This function appends a wrong number of arguments error to the Tcl result.
  *------------------------------------------------------------------------*/
 
-void        WrongNumArgsError(interp, usage)
-Tcl_Interp *interp;
-char       *usage;
+void        WrongNumArgsError(
+   Tcl_Interp *interp,
+   char       *usage)
 {
    Tcl_AppendResult(interp, "\nError: Wrong number of arguments\n", usage,
                             (char *) NULL);
@@ -233,10 +235,10 @@ char       *usage;
  * Assign a missing option error message to the Tcl result             
  *------------------------------------------------------------------------*/
 
-void        MissingOptionError(interp, argnum, usage)
-Tcl_Interp *interp;
-int         argnum;
-char       *usage;
+void        MissingOptionError(
+   Tcl_Interp *interp,
+   int         argnum,
+   char       *usage)
 {
    char num[256];
 
@@ -250,10 +252,10 @@ char       *usage;
  * Assign a missing filename error message to the Tcl result
  *-----------------------------------------------------------------------*/
 
-void        MissingFilenameError(interp, argnum, usage)
-Tcl_Interp *interp;
-int         argnum;
-char       *usage;
+void        MissingFilenameError(
+   Tcl_Interp *interp,
+   int         argnum,
+   char       *usage)
 {
    char num[256];
 
@@ -267,10 +269,10 @@ char       *usage;
  * Assign an invalid file extension error message to the Tcl result
  *-----------------------------------------------------------------------*/
 
-void        InvalidFileExtensionError(interp, argnum, usage)
-Tcl_Interp *interp;
-int         argnum;
-char       *usage;
+void        InvalidFileExtensionError(
+   Tcl_Interp *interp,
+   int         argnum,
+   char       *usage)
 {
    char num[256];
    
@@ -286,10 +288,10 @@ char       *usage;
  * argument passed to a function is not an integer when it should be. 
  *-----------------------------------------------------------------------*/
 
-void        NotAnIntError(interp, argnum, usage)
-Tcl_Interp *interp;
-int         argnum;
-char       *usage;
+void        NotAnIntError(
+   Tcl_Interp *interp,
+   int         argnum,
+   char       *usage)
 {
 
    char num[256];
@@ -306,10 +308,10 @@ char       *usage;
  * argument passed to a function is not a double when it should be. 
  *-----------------------------------------------------------------------*/
 
-void        NotADoubleError(interp, argnum, usage)
-Tcl_Interp *interp;
-int         argnum;
-char       *usage;
+void        NotADoubleError(
+   Tcl_Interp *interp,
+   int         argnum,
+   char       *usage)
 {
 
    char num[256];
@@ -324,9 +326,9 @@ char       *usage;
  * Assign a negative number error to the tcl result
  *-----------------------------------------------------------------------*/
 
-void        NumberNotPositiveError(interp, argnum)
-Tcl_Interp *interp;
-int argnum;
+void        NumberNotPositiveError(
+   Tcl_Interp *interp,
+   int argnum)
 {
    char num[256];
    sprintf(num, "%d", argnum);
@@ -338,8 +340,8 @@ int argnum;
  * Assign an out of memory error to the tcl result
  *-----------------------------------------------------------------------*/
 
-void        MemoryError(interp)
-Tcl_Interp *interp;
+void        MemoryError(
+   Tcl_Interp *interp)
 {
    Tcl_SetResult(interp, "\nError: Memory could not be allocated to perform\n       the requested operation\n", TCL_STATIC);
 }
@@ -350,9 +352,9 @@ Tcl_Interp *interp;
  * Assign an undefined dataset error to the tcl result
  *-----------------------------------------------------------------------*/
 
-void        SetNonExistantError(interp, hashkey)
-Tcl_Interp *interp;
-char       *hashkey;
+void        SetNonExistantError(
+   Tcl_Interp *interp,
+   char       *hashkey)
 {
    Tcl_AppendResult(interp, "\nError: `", hashkey, 
                             "' is not a valid set name\n", (char *) NULL);
@@ -363,8 +365,8 @@ char       *hashkey;
  * Assign an out of memory error to the tcl result
  *-----------------------------------------------------------------------*/
 
-void        ReadWriteError(interp)
-Tcl_Interp *interp;
+void        ReadWriteError(
+   Tcl_Interp *interp)
 {
    Tcl_SetResult(interp, "\nError: The file could not be accesed or there is not enough memory available\n", TCL_STATIC);
 }
@@ -374,11 +376,11 @@ Tcl_Interp *interp;
  * Assign an element out of range error to the TCL result
  *-----------------------------------------------------------------------*/
 
-void        OutOfRangeError(interp, i, j, k)
-Tcl_Interp *interp;
-int         i;
-int         j;
-int         k;
+void        OutOfRangeError(
+   Tcl_Interp *interp,
+   int         i,
+   int         j,
+   int         k)
 {
    char message[256];
    
@@ -392,8 +394,8 @@ int         k;
  * result.
  *-----------------------------------------------------------------------*/
 
-void        DimensionError(interp)
-Tcl_Interp *interp;
+void        DimensionError(
+   Tcl_Interp *interp)
 {
    Tcl_SetResult(interp, "\nError: The dimensions of the given data sets are not compatible\n", TCL_STATIC);
 }

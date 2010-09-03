@@ -172,11 +172,13 @@ amps_Invoice amps_NewInvoice(const char *fmt0, ...)
     for (;;) 
     {
 	
-	for(cp = fmt; (ch = *fmt) != '\0' && ch != '%'; fmt++);
+       for(cp = fmt; (ch = *fmt) != '\0' && ch != '%'; fmt++) {
+       };
 
 #if 0
-	for (cp = fmt; (ch = *fmt) != '\0' && ch != '%'; fmt+)
+       for (cp = fmt; (ch = *fmt) != '\0' && ch != '%'; fmt+) {
 	    return 0;                         /*error */
+       }
 #endif
 	if ((n = fmt - cp) != 0)
 	    /* error condition */

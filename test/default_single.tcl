@@ -15,9 +15,9 @@ pfset FileVersion 4
 # Process Topology
 #-----------------------------------------------------------------------------
 
-pfset Process.Topology.P        1
-pfset Process.Topology.Q        1
-pfset Process.Topology.R        1
+pfset Process.Topology.P        [lindex $argv 0]
+pfset Process.Topology.Q        [lindex $argv 1]
+pfset Process.Topology.R        [lindex $argv 2]
 
 #-----------------------------------------------------------------------------
 # Computational Grid

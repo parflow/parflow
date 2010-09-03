@@ -80,7 +80,7 @@ void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy)
 
    GrGeomSolid      *gr_solid, *gr_domain;
 
-   CommHandle       *handle;
+   VectorUpdateCommHandle       *handle;
 
    Type0            *dummy0;
    Type1            *dummy1;
@@ -89,7 +89,7 @@ void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy)
    SubgridArray     *subgrids = GridSubgrids(grid);
 
    Subgrid          *subgrid;
-   Subvector        *ps_sub;
+   Subvector        *mann_sub;
    Subvector        *m_values_sub;
 
    double           *data;
@@ -134,7 +134,7 @@ void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy)
 	 ForSubgridI(is, subgrids)
 	 {
             subgrid = SubgridArraySubgrid(subgrids, is);
-            ps_sub  = VectorSubvector(mann, is);
+            mann_sub  = VectorSubvector(mann, is);
 	    
 	    ix = SubgridIX(subgrid);
 	    iy = SubgridIY(subgrid);
@@ -147,10 +147,10 @@ void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy)
 	    /* RDF: assume resolution is the same in all 3 directions */
 	    r = SubgridRX(subgrid);
 	    
-	    data = SubvectorData(ps_sub);
+	    data = SubvectorData(mann_sub);
 	    GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
-	       ips = SubvectorEltIndex(ps_sub, i, j, 0);
+	       ips = SubvectorEltIndex(mann_sub, i, j, 0);
 
 	       data[ips] = value;
       //         mannings[i][j][k] = value;
@@ -176,7 +176,7 @@ void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy)
       ForSubgridI(is, subgrids)
       {
 	subgrid = SubgridArraySubgrid(subgrids, is);
-	ps_sub  = VectorSubvector(mann, is);
+	mann_sub  = VectorSubvector(mann, is);
 	    
 	ix = SubgridIX(subgrid);
 	iy = SubgridIY(subgrid);
@@ -189,7 +189,7 @@ void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy)
 	/* RDF: assume resolution is the same in all 3 directions */
 	r = SubgridRX(subgrid);
 	    
-	data = SubvectorData(ps_sub);
+	data = SubvectorData(mann_sub);
 
 	switch(function_type)
 	{	
@@ -197,7 +197,7 @@ void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy)
 	{
 	   GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
 	   {
-	      ips = SubvectorEltIndex(ps_sub, i, j, k);
+	      ips = SubvectorEltIndex(mann_sub, i, j, k);
 	      x = RealSpaceX(i, SubgridRX(subgrid));
 		/* nonlinear case -div(p grad p) = f */
 	      data[ips] = -1.0;
@@ -210,7 +210,7 @@ void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy)
 	{
 	   GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
 	   {
-	      ips = SubvectorEltIndex(ps_sub, i, j, k);
+	      ips = SubvectorEltIndex(mann_sub, i, j, k);
 		/* nonlinear case -div(p grad p) = f */
 	      data[ips] = -3.0;
 	   });
@@ -222,7 +222,7 @@ void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy)
 	{
 	   GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
 	   {
-	      ips = SubvectorEltIndex(ps_sub, i, j, k);
+	      ips = SubvectorEltIndex(mann_sub, i, j, k);
 	      x = RealSpaceX(i, SubgridRX(subgrid));
 	      y = RealSpaceY(j, SubgridRY(subgrid));
 		/* nonlinear case -div(p grad p) = f */
@@ -236,7 +236,7 @@ void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy)
 	{
 	   GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
 	   {
-	      ips = SubvectorEltIndex(ps_sub, i, j, k);
+	      ips = SubvectorEltIndex(mann_sub, i, j, k);
 	      x = RealSpaceX(i, SubgridRX(subgrid));
 	      y = RealSpaceY(j, SubgridRY(subgrid));
 	      z = RealSpaceZ(k, SubgridRZ(subgrid));
@@ -252,7 +252,7 @@ void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy)
 	{
 	   GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
 	   {
-	      ips = SubvectorEltIndex(ps_sub, i, j, k);
+	      ips = SubvectorEltIndex(mann_sub, i, j, k);
 	      x = RealSpaceX(i, SubgridRX(subgrid));
 	      y = RealSpaceY(j, SubgridRY(subgrid));
 	      z = RealSpaceZ(k, SubgridRZ(subgrid));
@@ -268,7 +268,7 @@ void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy)
 	{
 	   GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
 	   {
-	      ips = SubvectorEltIndex(ps_sub, i, j, k);
+	      ips = SubvectorEltIndex(mann_sub, i, j, k);
 	      x = RealSpaceX(i, SubgridRX(subgrid));
 	      y = RealSpaceY(j, SubgridRY(subgrid));
 	      z = RealSpaceZ(k, SubgridRZ(subgrid));
@@ -300,7 +300,7 @@ void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy)
 	   ForSubgridI(is, subgrids)
 	   {
 		   subgrid = SubgridArraySubgrid(subgrids, is);
-		   ps_sub = VectorSubvector(mann, is);
+		   mann_sub = VectorSubvector(mann, is);
 		   m_values_sub = VectorSubvector(m_val, is);
 
 		   ix = SubgridIX(subgrid);
@@ -313,12 +313,12 @@ void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy)
 
 		   r = SubgridRX(subgrid);
 
-		   psdat  = SubvectorData(ps_sub);
+		   psdat  = SubvectorData(mann_sub);
 		   m_values_dat = SubvectorData(m_values_sub);
 
 		   GrGeomInLoop(i,j,k,gr_domain,r,ix,iy,iz,nx,ny,nz,
 		   {
-			   ips = SubvectorEltIndex(ps_sub,i,j,0);
+			   ips = SubvectorEltIndex(mann_sub,i,j,0);
 			   ipicv = SubvectorEltIndex(m_values_sub,i,j,k);
 
 			   psdat[ips] = m_values_dat[ipicv];
@@ -363,7 +363,7 @@ PFModule  *ManningsInitInstanceXtra(
    {
 	   dummy2 = (Type2 *)(public_xtra -> data);
 
-	   dummy2 -> m_values = NewVector(grid, 1, 1);
+	   dummy2 -> m_values = NewVectorType(grid, 1, 1, vector_cell_centered);
 
 	   ReadPFBinary((dummy2 -> filename),(dummy2 -> m_values));
    

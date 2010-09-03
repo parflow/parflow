@@ -275,7 +275,7 @@ typedef struct
    int PV_level_of_interest;						\
    PV_level_of_interest = GrGeomSolidOctreeBGLevel(grgeom) -		\
       box_size_power - 1;						\
-   PV_level_of_interest = max(0, PV_level_of_interest);			\
+   PV_level_of_interest = pfmax(0, PV_level_of_interest);			\
                                                                         \
    i = GrGeomSolidOctreeIX(grgeom);					\
    j = GrGeomSolidOctreeIY(grgeom);					\

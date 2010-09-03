@@ -46,10 +46,14 @@
  * Compute cell-centered velocities from conductivity and pressure head
  *-----------------------------------------------------------------------*/
 
-Databox       *CompSubBox(fun, il, jl, kl, iu, ju, ku)
-Databox        *fun;
-int            il, jl, kl;
-int            iu, ju, ku;
+Databox       *CompSubBox(
+   Databox        *fun,
+   int            il, 
+   int jl, 
+   int kl,
+   int            iu, 
+   int ju, 
+   int ku)
  {
    Databox       *sub_fun;
 

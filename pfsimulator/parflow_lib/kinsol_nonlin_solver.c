@@ -199,7 +199,7 @@ void PrintFinalStats(
  * KinsolNonlinSolver
  *--------------------------------------------------------------------------*/
 
-int KinsolNonlinSolver (Vector *pressure , Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, double *outflow, Vector *evap_trans, Vector *ovrl_bc_flx )
+int KinsolNonlinSolver (Vector *pressure , Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx )
 {
    PFModule     *this_module      = ThisPFModule;
    PublicXtra   *public_xtra      = (PublicXtra   *)PFModulePublicXtra(this_module);
@@ -243,7 +243,6 @@ int KinsolNonlinSolver (Vector *pressure , Vector *density , Vector *old_density
    StateJacEval(current_state)       = richards_jacobian_eval;
    StateJac(current_state)           = jacobian_matrix;
    StatePrecond(current_state)       = precond;
-   StateOutflow(current_state)       = outflow;     /*sk*/
    StateEvapTrans(current_state)     = evap_trans;  /*sk*/
    StateOvrlBcFlx(current_state)     = ovrl_bc_flx; /*sk*/
 
@@ -445,11 +444,11 @@ double      *temp_data)
 	 instance_xtra->integer_outputs[i] = 0;
 
       /* Scaling vectors*/
-      uscale = NewVector(grid, 1, 1);
+      uscale = NewVectorType(grid, 1, 1, vector_cell_centered);
       InitVectorAll(uscale, 1.0);
       instance_xtra -> uscale = uscale;
 
-      fscale = NewVector(grid, 1, 1);
+      fscale = NewVectorType(grid, 1, 1, vector_cell_centered);
       InitVectorAll(fscale, 1.0);
       instance_xtra -> fscale = fscale;
 
@@ -536,7 +535,7 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
    verbosity_switch_na = NA_NewNameArray("NoVerbosity LowVerbosity "
 	                                 "NormalVerbosity HighVerbosity");
    sprintf(key, "Solver.Nonlinear.PrintFlag");
-   switch_name = GetStringDefault(key, "NormalVerbosity");
+   switch_name = GetStringDefault(key, "LowVerbosity");
    (public_xtra -> print_flag) = NA_NameToIndex(verbosity_switch_na, 
                                                 switch_name);
    NA_FreeNameArray(verbosity_switch_na);

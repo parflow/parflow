@@ -28,9 +28,9 @@
 
 #include "pfwell_data.h"
 
-int main(argc, argv)
-int   argc;
-char *argv[];
+int main(
+   int   argc,
+   char *argv[])
 {
    WellListMember   *head;
    WellListMember   *member,
@@ -276,12 +276,12 @@ char *argv[];
    return 0;
 }
 
-void WriteWellListData(fd, time, well_data_stat, num_phases, num_components)
-FILE *fd;
-double time;
-WellDataStat *well_data_stat;
-int num_phases;
-int num_components;
+void WriteWellListData(
+   FILE *fd,
+   double time,
+   WellDataStat *well_data_stat,
+   int num_phases,
+   int num_components)
 {
    int         i, j, indx;
    double      value;

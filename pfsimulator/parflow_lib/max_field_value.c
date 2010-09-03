@@ -119,7 +119,7 @@ int     dir)
                 fi, nx_f, ny_f, nz_f, 1, 1, 1,
                 pi, nx_p, ny_p, nz_p, 1, 1, 1,
       {
-         tmp = fabs( fp[fi] ) / max(plp[pi], prp[pi]);
+         tmp = fabs( fp[fi] ) / pfmax(plp[pi], prp[pi]);
          if ( tmp > max_field_value )
             max_field_value = tmp;
       });
@@ -256,7 +256,7 @@ Vector *phi)
                    vi, nx_v, ny_v, nz_v, 1, 1, 1,
                    pi, nx_p, ny_p, nz_p, 1, 1, 1,
          {
-            psi_max = max(fabs(plp[pi]), fabs(prp[pi])) * ds;
+            psi_max = pfmax(fabs(plp[pi]), fabs(prp[pi])) * ds;
             if ( psi_max != 0.0 )
             {
                tmp_max = fabs(vp[vi]) / psi_max;
@@ -299,7 +299,7 @@ Vector *phi)
    amps_AllReduce(amps_CommWorld, result_invoice, amps_Max);
    amps_FreeInvoice(result_invoice);
 
-   max_field_value = max(max_xdir_value,max(max_ydir_value,max_zdir_value));
+   max_field_value = pfmax(max_xdir_value,pfmax(max_ydir_value,max_zdir_value));
 
 #if 1
    /*****************************************************/
@@ -556,7 +556,7 @@ Vector     *phi)
                }
             }
 
-            psi_max = max(fabs(plp[pi]), fabs(prp[pi])) * ds;
+            psi_max = pfmax(fabs(plp[pi]), fabs(prp[pi])) * ds;
             if ( psi_max != 0.0 )
             {
                if ( dir == 2)
@@ -621,7 +621,7 @@ Vector     *phi)
    amps_AllReduce(amps_CommWorld, result_invoice, amps_Max);
    amps_FreeInvoice(result_invoice);
 
-   max_field_value = max(max_xdir_value,max(max_ydir_value,max_zdir_value));
+   max_field_value = pfmax(max_xdir_value,pfmax(max_ydir_value,max_zdir_value));
 
 #if 1
    /*****************************************************/

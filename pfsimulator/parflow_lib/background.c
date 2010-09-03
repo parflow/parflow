@@ -111,12 +111,12 @@ void         SetBackgroundBounds(
 
       if (SubgridLevel(subgrid) == 0)
       {
-	 ix_lower = min(ix_lower, SubgridIX(subgrid));
-	 iy_lower = min(iy_lower, SubgridIY(subgrid));
-	 iz_lower = min(iz_lower, SubgridIZ(subgrid));
-	 ix_upper = max(ix_upper, SubgridIX(subgrid) + SubgridNX(subgrid) - 1);
-	 iy_upper = max(iy_upper, SubgridIY(subgrid) + SubgridNY(subgrid) - 1);
-	 iz_upper = max(iz_upper, SubgridIZ(subgrid) + SubgridNZ(subgrid) - 1);
+	 ix_lower = pfmin(ix_lower, SubgridIX(subgrid));
+	 iy_lower = pfmin(iy_lower, SubgridIY(subgrid));
+	 iz_lower = pfmin(iz_lower, SubgridIZ(subgrid));
+	 ix_upper = pfmax(ix_upper, SubgridIX(subgrid) + SubgridNX(subgrid) - 1);
+	 iy_upper = pfmax(iy_upper, SubgridIY(subgrid) + SubgridNY(subgrid) - 1);
+	 iz_upper = pfmax(iz_upper, SubgridIZ(subgrid) + SubgridNZ(subgrid) - 1);
       }
    }
 
@@ -127,4 +127,17 @@ void         SetBackgroundBounds(
    BackgroundNX(background) = ix_upper - ix_lower + 1;
    BackgroundNY(background) = iy_upper - iy_lower + 1;
    BackgroundNZ(background) = iz_upper - iz_lower + 1;
+
+// #define SGS
+#ifdef SGS
+   printf("SGS3:%d X = [%f, %f, %e] DX = [%f, %f, %f]\n",
+	  amps_Rank(),
+	  BackgroundX(background), BackgroundY(background), BackgroundZ(background),
+	  BackgroundDX(background), BackgroundDY(background), BackgroundDZ(background));
+   printf("SGS3:%d I = [%i, %i, %i] N = [%i, %i, %i]\n",
+	  amps_Rank(),
+	  BackgroundIX(background), BackgroundIY(background), BackgroundIZ(background),
+	  BackgroundNX(background), BackgroundNY(background), BackgroundNZ(background));
+#endif
+
 }

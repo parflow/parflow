@@ -121,8 +121,8 @@ void   	 CGHS(
 
    BeginTiming(public_xtra -> time_index);
 
-   p = NewVector(instance_xtra -> grid, 1, 1);
-   s = NewVector(instance_xtra -> grid, 1, 1);
+   p = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
+   s = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
 
    /*-----------------------------------------------------------------------
     * Start cghs solve

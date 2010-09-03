@@ -31,6 +31,7 @@
 
 #include "parflow.h"
 
+#include <assert.h>
 
 /*--------------------------------------------------------------------------
  * Structures
@@ -70,6 +71,81 @@ typedef struct
 
 } InstanceXtra;
 
+void resetBoundary(Vector *vector, const double value, const int ghosts) 
+{
+
+   const Grid           *grid = VectorGrid(vector);
+
+   /* currently only works if ghost layer is 2 */
+   assert(ghosts == 2);
+
+   const SubgridArray   *subgrids = GridSubgrids(grid);
+   int sg = 0;
+   ForSubgridI(sg, subgrids)
+   {
+      /* Get information about this subgrid */
+      const Subgrid *subgrid   = SubgridArraySubgrid(subgrids, sg);
+	       
+      const int ix = SubgridIX(subgrid);
+      const int iy = SubgridIY(subgrid);
+      const int iz = SubgridIZ(subgrid);
+      
+      const int nx = SubgridNX(subgrid);
+      const int ny = SubgridNY(subgrid);
+      const int nz = SubgridNZ(subgrid);
+      
+      /* Compute information about the subgrid and ghost layer */
+      const int ix_all = ix - ghosts;
+      const int iy_all = iy - ghosts;
+      const int iz_all = iz - ghosts;
+      
+      const int nx_all = nx + 2*ghosts;
+      const int ny_all = ny + 2*ghosts;
+      const int nz_all = nz + 2*ghosts;
+	       
+      /* Get information about this subvector */
+      const Subvector *subvector = VectorSubvector(vector, sg);
+	       
+      const int nx_f = SubvectorNX(subvector);
+      const int ny_f = SubvectorNY(subvector);
+      const int nz_f = SubvectorNZ(subvector);
+	       
+      double *data = SubvectorElt(subvector,ix_all,iy_all,iz_all);
+
+      int i, j, k;
+      int fi = 0;
+      BoxLoopI1(i,j,k,
+		ix_all,iy_all,iz_all,nx_all,ny_all,nz_all,
+		fi,nx_f,ny_f,nz_f,1,1,1,
+		{
+
+		   double tmp = data[fi];
+
+		   if ( i == ix_all || 
+			j == iy_all || 
+			k == iz_all ||
+			(i == (ix_all + nx_all - 1)) ||
+			(j == (iy_all + ny_all - 1)) || 
+			(k == (iz_all + nz_all - 1)) ) {
+		      data[fi] = value;
+		   } else if ( ((i == ix_all + 1) && (j == iy_all + 1)) ||
+			       ((i == ix_all + 1) && (k == iz_all + 1)) ||
+			       ((i == ix_all + 1) && (j == iy_all + ny_all - 2)) ||
+			       ((i == ix_all + 1) && (k == iz_all + nz_all - 2)) ||
+			       ((i == ix_all + nx_all - 2) && (j == iy_all + 1)) ||
+			       ((i == ix_all + nx_all - 2) && (k == iz_all + 1)) ||
+			       ((i == ix_all + nx_all - 2) && (j == iy_all + ny_all - 2)) ||
+			       ((i == ix_all + nx_all - 2) && (k == iz_all + nz_all - 2)) ) {
+		      data[fi] = value;
+		   } else if ( ((j == iy_all + 1) && (k == iz_all + 1)) ||
+			       ((j == iy_all + 1) && (k == iz_all + nz_all - 2)) ||
+			       ((j == iy_all + ny_all - 2) && (k == iz_all + 1)) ||
+			       ((j == iy_all + ny_all - 2) && (k == iz_all + nz_all - 2)) ) {
+		   data[fi] = value;
+		   }
+		});
+   }
+}
 
 /*--------------------------------------------------------------------------
  * Geometries
@@ -95,7 +171,7 @@ void           Geometries(
 
    IndicatorData      *current_indicator_data;
 
-   CommHandle         *handle;
+   VectorUpdateCommHandle         *handle;
 
    int                 i, k;
 
@@ -104,7 +180,7 @@ void           Geometries(
    /*-----------------------------------------------------------------------
     * Allocate temp vectors
     *-----------------------------------------------------------------------*/
-   tmp_indicator_field = NewVector(instance_xtra -> grid, 1, 2);
+   tmp_indicator_field = NewVectorType(instance_xtra -> grid, 1, 2, vector_cell_centered);
 
    gr_solids = ctalloc(GrGeomSolid *, num_solids);
 
@@ -118,10 +194,6 @@ void           Geometries(
       if (solids[i])
       {
          GrGeomSolidFromGeom(&gr_solids[i], solids[i], extent_array);
-
-#ifdef SGS_DEBUG
-	 GrGeomPrintOctree("solid_geometry", gr_solids[i] -> data);
-#endif
       }
    }
    GrGeomFreeExtentArray(extent_array);
@@ -140,6 +212,16 @@ void           Geometries(
       handle = InitVectorUpdate(tmp_indicator_field, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
 
+#ifdef HAVE_SAMRAI
+      /*
+	SGS This should be removed after vector updates 
+	have been improved in the SAMRAI port.   This algorithm
+	can't have all the ghost cells with valid data, it depends
+	on the outermost layer to be an invalid indicator value
+      */
+      resetBoundary(tmp_indicator_field, -1.0, 2);
+#endif
+
       for (k = 0; k < (current_indicator_data -> num_indicators); k++)
       {
 	 while (gr_solids[i])
@@ -147,10 +229,6 @@ void           Geometries(
             i++;
          }
          GrGeomSolidFromInd(&gr_solids[i], tmp_indicator_field, (current_indicator_data -> indicators)[k]);
-
-#ifdef SGS_DEBUG
-	 GrGeomPrintOctree("indicator_geometry", gr_solids[i] -> data);
-#endif
       }
 
       current_indicator_data = (current_indicator_data -> next_indicator_data);
@@ -364,6 +442,17 @@ PFModule   *GeometriesNewPublicXtra()
 					    NA_IndexToName(geom_input_na,i),
 					    GeomTSolidType);
 
+#if 0
+   if(amps_Rank()==73) {
+      char filename[2056];
+      sprintf(filename, "octree.%d.domain.pfsol", amps_Rank());
+      GrGeomOctree  *data;
+      data = new_solids[0] -> data;
+      GrGeomPrintOctree(filename, data);
+   }
+#endif
+
+
 	    sprintf(key, "GeomInput.%s.GeomNames", 
 		    NA_IndexToName(geom_input_na,i));
 	    geom_name = GetString(key);
@@ -491,7 +580,6 @@ void  GeometriesFreePublicXtra()
 
       NA_FreeNameArray(GlobalsGeomNames);
 
-      /* SGS memory leak here */
       for (g = 0; g < (public_xtra -> num_solids); g++)
          if (public_xtra -> solids[g])
             GeomFreeSolid(public_xtra -> solids[g]);

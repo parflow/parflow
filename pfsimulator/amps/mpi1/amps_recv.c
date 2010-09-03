@@ -40,7 +40,7 @@ char *amps_recvb(
 
     MPI_Get_count(&status, MPI_BYTE, size);
 
-    buf = (char *)malloc(*size);
+    buf = (char *)malloc((size_t)(*size));
 
     MPI_Recv(buf, *size, MPI_BYTE, src, 0, MPI_COMM_WORLD, &status);
 
@@ -95,7 +95,7 @@ int amps_Recv(amps_Comm comm, int source, amps_Invoice invoice)
 
    MPI_Get_count(&status, MPI_BYTE, &size);
 
-   buffer = (char*)malloc(size);
+   buffer = (char*)malloc((size_t)(size));
 
    MPI_Recv(buffer, size, MPI_BYTE, source, 0, MPI_COMM_WORLD, &status);
 

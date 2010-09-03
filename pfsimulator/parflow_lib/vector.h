@@ -37,15 +37,36 @@
 #include "grid.h"
 #include "n_vector.h"
 
+#ifdef HAVE_SAMRAI
+#include "SAMRAI/xfer/RefineAlgorithm.h"
+#include "SAMRAI/xfer/RefineSchedule.h"
+#endif
+
+enum vector_type { 
+   vector_cell_centered,
+   vector_cell_centered_2D,
+   vector_side_centered_x,
+   vector_side_centered_y,
+   vector_side_centered_z,
+   vector_clm_topsoil,
+   vector_met,
+   vector_non_samrai
+};
+
 /*--------------------------------------------------------------------------
  * Subvector
  *--------------------------------------------------------------------------*/
 
 typedef struct
 {
-   double  *data;             /* Pointer to Vector data */
+   double  *data;             /* Pointer to subvector data */
+
+   int      allocated;            /* Was this data allocated? */
     
    Subgrid *data_space;
+
+   int            data_size;    /* Number of elements in vector,
+				   includes ghost points */
 
 } Subvector;
 
@@ -57,8 +78,8 @@ typedef struct _Vector
 {
    Subvector    **subvectors;   /* Array of pointers to subvectors */
 
-   double        *data;         /* Pointer to Vector data */
-   int            data_size;    /* Size of data; includes ghost points */
+   int            data_size;    /* Number of elements in vector.
+				   All subvectors. includes ghost points */
 
 #ifdef SHMEM_OBJECTS
    int            shmem_offset; /* For the shared memory imp the offset
@@ -74,11 +95,26 @@ typedef struct _Vector
                                 /* Information on how to update boundary */
    CommPkg *comm_pkg[NumUpdateModes]; 
 
+   enum vector_type type;
+
+#ifdef HAVE_SAMRAI
+   int samrai_id;               /* SAMRAI ID for this vector */
+   // SGS FIXME This is very hacky and should be removed 
+   int table_index;               /* index into table of variables */
+   
+   SAMRAI::tbox::Pointer< SAMRAI::xfer::RefineAlgorithm > boundary_fill_refine_algorithm;
+   SAMRAI::tbox::Pointer< SAMRAI::xfer::RefineSchedule >  boundary_fill_schedule;
+#endif
+
 } Vector;
 
 
 typedef Vector *N_Vector;
 
+typedef struct _VectorUpdateCommHandle {
+   Vector *vector;
+   CommHandle *comm_handle;
+} VectorUpdateCommHandle;
 
 /*--------------------------------------------------------------------------
  * Accessor functions for the Subvector structure
@@ -106,23 +142,19 @@ typedef Vector *N_Vector;
 #define SubvectorElt(subvector, x, y, z) \
 (SubvectorData(subvector) + SubvectorEltIndex(subvector, x, y, z))
 
+#define SubvectorDataSize(subvector) ((subvector) -> data_size)
+
 /*--------------------------------------------------------------------------
  * Accessor functions for the Vector structure
  *--------------------------------------------------------------------------*/
 
 #define VectorSubvector(vector, n)  ((vector)-> subvectors[(n)])
-#define VectorData(vector)          ((vector)-> data)
 #define VectorGrid(vector)          ((vector)-> grid)
 #define VectorDataSpace(vector)     ((vector)-> data_space)
 #define VectorSize(vector)          ((vector)-> size)
 #define VectorCommPkg(vector, mode) ((vector) -> comm_pkg[mode])
 
-/*--------------------------------------------------------------------------
- * SizeOfVector macro
- *--------------------------------------------------------------------------*/
-
 #define SizeOfVector(vector)  ((vector) -> data_size)
-
 
 #endif
 

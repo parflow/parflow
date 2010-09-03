@@ -70,7 +70,7 @@ void         KinsolPC(Vector      *rhs)
    int           zero             = 1;
 
    /* Allocate temp vector */
-   soln = NewVector(instance_xtra -> grid, 1, 1);
+   soln = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
      
    /* Invoke the preconditioner using a zero initial guess */
    PFModuleInvokeType(PrecondInvoke, precond, (soln, rhs, tol, zero));

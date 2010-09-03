@@ -31,7 +31,8 @@ OBJS = \
 	amps_sizeofinvoice.o \
 	amps_test.o \
 	amps_unpack.o \
-	amps_vector.o 
+	amps_vector.o \
+	amps_abort.o
 
 $(PARFLOW_LIB_DIR)/$(AMPS_LIB): $(OBJS)
 	@AR@ rus $(PARFLOW_LIB_DIR)/$(AMPS_LIB) $(OBJS)

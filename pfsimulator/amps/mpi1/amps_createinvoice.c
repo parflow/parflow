@@ -96,7 +96,7 @@ int amps_CreateInvoice(amps_Comm comm, amps_Invoice inv)
 	    else
 	    {
 	       *( (void **)(ptr -> data)) = 
-		  malloc(sizeof(char)*len*stride);
+		  malloc(sizeof(char)*(size_t)(len*stride));
 	    }
 	 }
 	 cur_pos += AMPS_CALL_CHAR_SIZEOF(comm, cur_pos, NULL, len, stride);
@@ -112,7 +112,7 @@ int amps_CreateInvoice(amps_Comm comm, amps_Invoice inv)
 	    else
 	    {
 	       *( (void **)(ptr -> data)) = 
-		  malloc(sizeof(short)*len*stride);
+		  malloc(sizeof(short)*(size_t)(len*stride));
 	    }
 	 }
 	 cur_pos += AMPS_CALL_SHORT_SIZEOF(comm, cur_pos, NULL, len, stride);
@@ -128,7 +128,7 @@ int amps_CreateInvoice(amps_Comm comm, amps_Invoice inv)
 	    else
 	    {
 	       *( (void **)(ptr -> data)) = 
-		  malloc(sizeof(int)*len*stride);
+		  malloc(sizeof(int)*(size_t)(len*stride));
 	    }
 	 }
 	 cur_pos += AMPS_CALL_INT_SIZEOF(comm, cur_pos, NULL, len, stride);
@@ -144,7 +144,7 @@ int amps_CreateInvoice(amps_Comm comm, amps_Invoice inv)
 	    else
 	    {
 	       *( (void **)(ptr -> data)) = 
-		  malloc(sizeof(long)*len*stride);
+		  malloc(sizeof(long)*(size_t)(len*stride));
 	    }
 	 }
 	 cur_pos += AMPS_CALL_LONG_SIZEOF(comm, cur_pos, NULL, len, stride);
@@ -160,7 +160,7 @@ int amps_CreateInvoice(amps_Comm comm, amps_Invoice inv)
 	    else
 	    {
 	       *( (void **)(ptr -> data)) = 
-		  malloc(sizeof(float)*len*stride);
+		  malloc(sizeof(float)*(size_t)(len*stride));
 	    }
 	 }
 	 cur_pos += AMPS_CALL_FLOAT_SIZEOF(comm, cur_pos, NULL, len, stride);
@@ -176,7 +176,7 @@ int amps_CreateInvoice(amps_Comm comm, amps_Invoice inv)
 	    else
 	    {
 	       *( (void **)(ptr -> data)) = 
-		  malloc(sizeof(double)*len*stride);
+		  malloc(sizeof(double)*(size_t)(len*stride));
 	    }
 	 }
 	 cur_pos += AMPS_CALL_DOUBLE_SIZEOF(comm, cur_pos, NULL, len, stride);

@@ -170,8 +170,8 @@ int    	 zero)
    /*-----------------------------------------------------------------------
     * Allocate temp vectors
     *-----------------------------------------------------------------------*/
-   p = NewVector(instance_xtra -> grid, 1, 1);
-   s = NewVector(instance_xtra -> grid, 1, 1);
+   p = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
+   s = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
 
    /*-----------------------------------------------------------------------
     * Start ppcg solve
@@ -591,7 +591,7 @@ int  PPCGSizeOfTempData()
 
 
    /* set `sz' to max of each of the called modules */
-   sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> precond));
+   sz = pfmax(sz, PFModuleSizeOfTempData(instance_xtra -> precond));
 
    return sz;
 }

@@ -73,12 +73,8 @@ if test -n "$samrai_PREFIX"; then
 fi
 
 # Determine the samrai library names.
-if test -n "$samrai_PREFIX"; then
-   samrai_libs_ls=" `cd $samrai_PREFIX/lib && echo libSAMRAI*.*` "
-fi
-if test -z "$samrai_libs_ls" || test "$samrai_libs_ls" = 'libSAMRAI*.*'; then
-  samrai_libs_ls=' libSAMRAI_appu.a libSAMRAI_algs.a libSAMRAI_solv.a libSAMRAI_geom.a libSAMRAI_mesh.a libSAMRAI_math.a libSAMRAI_pdat.a libSAMRAI_xfer.a libSAMRAI_hier.a libSAMRAI_tbox.a '
-fi
+
+samrai_libs_ls=' libSAMRAI_appu.a libSAMRAI_algs.a libSAMRAI_solv.a libSAMRAI_geom.a libSAMRAI_mesh.a libSAMRAI_math.a libSAMRAI_pdat.a libSAMRAI_xfer.a libSAMRAI_hier.a libSAMRAI_tbox.a '
 
 # Build up SAMRAI_LIBS string using library names.
 if test -n "$samrai_libs_ls"; then

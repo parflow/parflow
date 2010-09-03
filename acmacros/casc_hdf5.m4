@@ -55,8 +55,7 @@ if test "${hdf5_PREFIX+set}" = set; then
    AC_MSG_CHECKING(whether HDF5 link works)
    AC_LANG_PUSH(C++)
    CASC_PUSH_COMPILER_STATE
-   # NOTE lib z and m were from BTNG macro.
-   LIBS="${LIBS} ${hdf5_LIBS} $libz_LIBS -lm "
+   LIBS="${LIBS} ${hdf5_LIBS} $zlib_LIBS $szlib_LIBS -lm "
    CXXFLAGS="${CXXFLAGS} ${hdf5_INCLUDES}"
    AC_LINK_IFELSE([
       #include "hdf5.h"

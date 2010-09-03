@@ -62,7 +62,7 @@ amps_SFclose(file);
 @return shared fille handle
 */
 #ifndef AMPS_SFOPEN_SPECIALIZED
-amps_File amps_SFopen(char *filename,char *type)
+amps_File amps_SFopen(const char *filename, const char *type)
 {
 
    if(amps_Rank(amps_CommWorld))

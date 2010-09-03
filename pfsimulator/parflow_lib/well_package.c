@@ -232,7 +232,7 @@ void         WellPackage(
                WellDataPhysicalXUpper(well_data_physical) = (dummy0 -> xlocation);
                WellDataPhysicalYUpper(well_data_physical) = (dummy0 -> ylocation);
                WellDataPhysicalZUpper(well_data_physical) = (dummy0 -> z_upper);
-               WellDataPhysicalDiameter(well_data_physical) = min(dx, dy);
+               WellDataPhysicalDiameter(well_data_physical) = pfmin(dx, dy);
                WellDataPhysicalSubgrid(well_data_physical) = new_subgrid;
                WellDataPhysicalSize(well_data_physical) = subgrid_volume;
                WellDataPhysicalAction(well_data_physical) = (dummy0 -> action);
@@ -352,7 +352,7 @@ void         WellPackage(
                WellDataPhysicalXUpper(well_data_physical) = (dummy0 -> xlocation);
                WellDataPhysicalYUpper(well_data_physical) = (dummy0 -> ylocation);
                WellDataPhysicalZUpper(well_data_physical) = (dummy0 -> z_upper);
-               WellDataPhysicalDiameter(well_data_physical) = min(dx, dy);
+               WellDataPhysicalDiameter(well_data_physical) = pfmin(dx, dy);
                WellDataPhysicalSubgrid(well_data_physical) = new_subgrid;
                WellDataPhysicalSize(well_data_physical) = subgrid_volume;
                WellDataPhysicalAction(well_data_physical) = (dummy0 -> action);
@@ -551,7 +551,7 @@ void         WellPackage(
                   WellDataPhysicalYUpper(well_data_physical) = y_upper;
                   WellDataPhysicalZUpper(well_data_physical) = z_upper;
 
-                  WellDataPhysicalDiameter(well_data_physical) = min(dx, dx);
+                  WellDataPhysicalDiameter(well_data_physical) = pfmin(dx, dx);
                   WellDataPhysicalSubgrid(well_data_physical) = new_subgrid;
                   WellDataPhysicalSize(well_data_physical) = subgrid_volume;
                   WellDataPhysicalAction(well_data_physical) = action;
@@ -673,7 +673,7 @@ void         WellPackage(
                   WellDataPhysicalYUpper(well_data_physical) = y_upper;
                   WellDataPhysicalZUpper(well_data_physical) = z_upper;
 
-                  WellDataPhysicalDiameter(well_data_physical) = min(dx, dx);
+                  WellDataPhysicalDiameter(well_data_physical) = pfmin(dx, dx);
                   WellDataPhysicalSubgrid(well_data_physical) = new_subgrid;
                   WellDataPhysicalSize(well_data_physical) = subgrid_volume;
                   WellDataPhysicalAction(well_data_physical) = action;

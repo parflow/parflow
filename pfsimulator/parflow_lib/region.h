@@ -179,11 +179,11 @@ typedef struct
 (BackgroundNZ(GlobalsBackground) * (int)pow(2.0, rz))
 
 #define IndexSpaceX(x, rx)\
-(round((x - RealSpaceX(0, rx)) / RealSpaceDX(rx)))
+(pfround((x - RealSpaceX(0, rx)) / RealSpaceDX(rx)))
 #define IndexSpaceY(y, ry)\
-(round((y - RealSpaceY(0, ry)) / RealSpaceDY(ry)))
+(pfround((y - RealSpaceY(0, ry)) / RealSpaceDY(ry)))
 #define IndexSpaceZ(z, rz)\
-(round((z - RealSpaceZ(0, rz)) / RealSpaceDZ(rz)))
+(pfround((z - RealSpaceZ(0, rz)) / RealSpaceDZ(rz)))
 
 /*--------------------------------------------------------------------------
  * Utility macros:

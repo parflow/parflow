@@ -533,7 +533,7 @@ doublereal *dxscr, *dyscr;
 		    j + *k * s_dim2) * s_dim1]);
 /* Computing MIN */
 	    d__1 = abs(dmin__), d__2 = abs(dpls);
-	    dxscr[i__ + (dxscr_dim1 << 1)] = min(d__1,d__2);
+	    dxscr[i__ + (dxscr_dim1 << 1)] = pfmin(d__1,d__2);
 	    if (dpls * dmin__ < (float)0.) {
 		dxscr[i__ + (dxscr_dim1 << 1)] = zero;
 	    }
@@ -543,7 +543,7 @@ doublereal *dxscr, *dyscr;
 	    d__2 = dxscr[i__ + (dxscr_dim1 << 1)], d__3 = (d__1 = dxscr[i__ + 
 		    dxscr_dim1], abs(d__1));
 	    dxscr[i__ + (dxscr_dim1 << 2)] = dxscr[i__ + dxscr_dim1 * 3] * 
-		    min(d__2,d__3);
+		    pfmin(d__2,d__3);
 	}
 	i__2 = ie + 1;
 	for (i__ = is - 1; i__ <= i__2; ++i__) {
@@ -552,7 +552,7 @@ doublereal *dxscr, *dyscr;
 		    2)]);
 /* Computing MIN */
 	    d__1 = abs(ds), d__2 = dxscr[i__ + (dxscr_dim1 << 1)];
-	    slx[i__ + j * slx_dim1] = dxscr[i__ + dxscr_dim1 * 3] * min(d__1,
+	    slx[i__ + j * slx_dim1] = dxscr[i__ + dxscr_dim1 * 3] * pfmin(d__1,
 		    d__2);
 	}
     }
@@ -569,7 +569,7 @@ doublereal *dxscr, *dyscr;
 		    j + *k * s_dim2) * s_dim1]);
 /* Computing MIN */
 	    d__1 = abs(dmin__), d__2 = abs(dpls);
-	    dyscr[j + (dyscr_dim1 << 1)] = min(d__1,d__2);
+	    dyscr[j + (dyscr_dim1 << 1)] = pfmin(d__1,d__2);
 	    if (dpls * dmin__ < (float)0.) {
 		dyscr[j + (dyscr_dim1 << 1)] = zero;
 	    }
@@ -577,7 +577,7 @@ doublereal *dxscr, *dyscr;
 /* Computing MIN */
 	    d__2 = dyscr[j + (dyscr_dim1 << 1)], d__3 = (d__1 = dyscr[j + 
 		    dyscr_dim1], abs(d__1));
-	    dyscr[j + (dyscr_dim1 << 2)] = dyscr[j + dyscr_dim1 * 3] * min(
+	    dyscr[j + (dyscr_dim1 << 2)] = dyscr[j + dyscr_dim1 * 3] * pfmin(
 		    d__2,d__3);
 	}
 	i__2 = je + 1;
@@ -586,7 +586,7 @@ doublereal *dxscr, *dyscr;
 		    + (dyscr_dim1 << 2)] + dyscr[j - 1 + (dyscr_dim1 << 2)]);
 /* Computing MIN */
 	    d__1 = abs(ds), d__2 = dyscr[j + (dyscr_dim1 << 1)];
-	    sly[i__ + j * sly_dim1] = dyscr[j + dyscr_dim1 * 3] * min(d__1,
+	    sly[i__ + j * sly_dim1] = dyscr[j + dyscr_dim1 * 3] * pfmin(d__1,
 		    d__2);
 	}
     }
@@ -675,7 +675,7 @@ doublereal *dzscr, *dzfrm;
 		    (j + kt * s_dim2) * s_dim1]);
 /* Computing MIN */
 	    d__1 = abs(dmin__), d__2 = abs(dpls);
-	    dzscr[i__ + (dzscr_dim1 << 1)] = min(d__1,d__2);
+	    dzscr[i__ + (dzscr_dim1 << 1)] = pfmin(d__1,d__2);
 	    if (dpls * dmin__ < (float)0.) {
 		dzscr[i__ + (dzscr_dim1 << 1)] = zero;
 	    }
@@ -684,7 +684,7 @@ doublereal *dzscr, *dzfrm;
 /* Computing MIN */
 	    d__2 = dzscr[i__ + (dzscr_dim1 << 1)], d__3 = (d__1 = dzscr[i__ + 
 		    dzscr_dim1], abs(d__1));
-	    dzfrm[i__ + kt * dzfrm_dim1] = dzscr[i__ + dzscr_dim1 * 3] * min(
+	    dzfrm[i__ + kt * dzfrm_dim1] = dzscr[i__ + dzscr_dim1 * 3] * pfmin(
 		    d__2,d__3);
 	    kt = *k + 1;
 	    dzscr[i__ + dzscr_dim1] = half * (s[i__ + (j + (kt + 1) * s_dim2) 
@@ -695,7 +695,7 @@ doublereal *dzscr, *dzfrm;
 		    (j + kt * s_dim2) * s_dim1]);
 /* Computing MIN */
 	    d__1 = abs(dmin__), d__2 = abs(dpls);
-	    dzscr[i__ + (dzscr_dim1 << 1)] = min(d__1,d__2);
+	    dzscr[i__ + (dzscr_dim1 << 1)] = pfmin(d__1,d__2);
 	    if (dpls * dmin__ < (float)0.) {
 		dzscr[i__ + (dzscr_dim1 << 1)] = zero;
 	    }
@@ -704,7 +704,7 @@ doublereal *dzscr, *dzfrm;
 /* Computing MIN */
 	    d__2 = dzscr[i__ + (dzscr_dim1 << 1)], d__3 = (d__1 = dzscr[i__ + 
 		    dzscr_dim1], abs(d__1));
-	    dzfrm[i__ + kt * dzfrm_dim1] = dzscr[i__ + dzscr_dim1 * 3] * min(
+	    dzfrm[i__ + kt * dzfrm_dim1] = dzscr[i__ + dzscr_dim1 * 3] * pfmin(
 		    d__2,d__3);
 	    dzscr[i__ + dzscr_dim1] = half * (s[i__ + (j + (*k + 1) * s_dim2) 
 		    * s_dim1] - s[i__ + (j + (*k - 1) * s_dim2) * s_dim1]);
@@ -714,7 +714,7 @@ doublereal *dzscr, *dzfrm;
 		    (j + *k * s_dim2) * s_dim1]);
 /* Computing MIN */
 	    d__1 = abs(dmin__), d__2 = abs(dpls);
-	    dzscr[i__ + (dzscr_dim1 << 1)] = min(d__1,d__2);
+	    dzscr[i__ + (dzscr_dim1 << 1)] = pfmin(d__1,d__2);
 	    if (dpls * dmin__ < (float)0.) {
 		dzscr[i__ + (dzscr_dim1 << 1)] = zero;
 	    }
@@ -723,7 +723,7 @@ doublereal *dzscr, *dzfrm;
 /* Computing MIN */
 	    d__2 = dzscr[i__ + (dzscr_dim1 << 1)], d__3 = (d__1 = dzscr[i__ + 
 		    dzscr_dim1], abs(d__1));
-	    dzfrm[i__ + *k * dzfrm_dim1] = dzscr[i__ + dzscr_dim1 * 3] * min(
+	    dzfrm[i__ + *k * dzfrm_dim1] = dzscr[i__ + dzscr_dim1 * 3] * pfmin(
 		    d__2,d__3);
 	}
 	i__2 = ie + 1;
@@ -734,7 +734,7 @@ doublereal *dzscr, *dzfrm;
 /* Computing MIN */
 	    d__1 = abs(ds), d__2 = dzscr[i__ + (dzscr_dim1 << 1)];
 	    slz[i__ + (j + *kk * slz_dim2) * slz_dim1] = dzscr[i__ + 
-		    dzscr_dim1 * 3] * min(d__1,d__2);
+		    dzscr_dim1 * 3] * pfmin(d__1,d__2);
 	}
     }
     return 0;

@@ -28,9 +28,9 @@
 
 #include "pfwell_cat.h"
 
-int main(argc, argv)
-int   argc;
-char *argv[];
+int main(
+   int   argc,
+   char *argv[])
 {
    Background       *background;
    ProblemData      *problem_data;

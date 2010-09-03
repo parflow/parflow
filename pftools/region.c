@@ -30,47 +30,46 @@
 #include "pfload_file.h"
 #include "region.h"
 
+SubregionArray  *NewSubregionArray();
+
 
 /*--------------------------------------------------------------------------
  * NewSubregion
  *--------------------------------------------------------------------------*/
 
-Subregion  *NewSubregion(ix, iy, iz,
-			 nx, ny, nz,
-			 sx, sy, sz,
-			 rx, ry, rz,
-			 process)
-int       ix, iy, iz;
-int       nx, ny, nz;
-int       sx, sy, sz;
-int       rx, ry, rz;
-int       process;
+Subregion  *NewSubregion(
+int       ix, 
+int iy, int iz,
+int       nx, int ny, int nz,
+int       sx, int sy, int sz,
+int       rx, int ry, int rz,
+int       process)
 {
-   Subregion *new;
+   Subregion *new_subregion;
 
 
-   new = talloc(Subregion, 1);
+   new_subregion = talloc(Subregion, 1);
 
-   (new -> ix)       = ix;
-   (new -> iy)       = iy;
-   (new -> iz)       = iz;
+   (new_subregion -> ix)       = ix;
+   (new_subregion -> iy)       = iy;
+   (new_subregion -> iz)       = iz;
 
-   (new -> nx)       = nx;
-   (new -> ny)       = ny;
-   (new -> nz)       = nz;
+   (new_subregion -> nx)       = nx;
+   (new_subregion -> ny)       = ny;
+   (new_subregion -> nz)       = nz;
 
-   (new -> sx)       = sx;
-   (new -> sy)       = sy;
-   (new -> sz)       = sz;
+   (new_subregion -> sx)       = sx;
+   (new_subregion -> sy)       = sy;
+   (new_subregion -> sz)       = sz;
 
-   (new -> rx)       = rx;
-   (new -> ry)       = ry;
-   (new -> rz)       = rz;
-   (new -> level)    = rx + ry + rz;
+   (new_subregion -> rx)       = rx;
+   (new_subregion -> ry)       = ry;
+   (new_subregion -> rz)       = rz;
+   (new_subregion -> level)    = rx + ry + rz;
 
-   (new -> process)  = process;
+   (new_subregion -> process)  = process;
 
-   return new;
+   return new_subregion;
 }
 
 
@@ -80,15 +79,15 @@ int       process;
 
 SubregionArray  *NewSubregionArray()
 {
-   SubregionArray *new;
+   SubregionArray *new_subregion_array;
 
 
-   new = talloc(SubregionArray, 1);
+   new_subregion_array = talloc(SubregionArray, 1);
 
-   (new -> subregions) = NULL;
-   (new -> size)     = 0;
+   (new_subregion_array -> subregions) = NULL;
+   (new_subregion_array -> size)     = 0;
 
-   return new;
+   return new_subregion_array;
 }
 
 
@@ -96,24 +95,24 @@ SubregionArray  *NewSubregionArray()
  * NewRegion
  *--------------------------------------------------------------------------*/
 
-SGSRegion  *NewRegion(size)
-int  size;
+SGSRegion  *NewRegion(
+   int  size)
 {
-   SGSRegion  *new;
+   SGSRegion  *new_region;
 
    int      i;
 
 
-   new = ctalloc(SGSRegion, 1);
+   new_region = ctalloc(SGSRegion, 1);
 
    if (size)
-      (new -> subregion_arrays) = ctalloc(SubregionArray *, size);
+      (new_region -> subregion_arrays) = ctalloc(SubregionArray *, size);
 
    for (i = 0; i < size; i++)
-      RegionSubregionArray(new, i) = NewSubregionArray();
-   (new -> size)           = size;
+      RegionSubregionArray(new_region, i) = NewSubregionArray();
+   (new_region -> size)           = size;
 
-   return new;
+   return new_region;
 }
 
 
@@ -121,8 +120,8 @@ int  size;
  * FreeSubregion
  *--------------------------------------------------------------------------*/
 
-void  FreeSubregion(subregion)
-Subregion  *subregion;
+void  FreeSubregion(
+   Subregion  *subregion)
 {
    free(subregion);
 }
@@ -132,8 +131,8 @@ Subregion  *subregion;
  * FreeSubregionArray
  *--------------------------------------------------------------------------*/
 
-void  FreeSubregionArray(subregion_array)
-SubregionArray  *subregion_array;
+void  FreeSubregionArray(
+   SubregionArray  *subregion_array)
 {
    int  i;
 
@@ -150,8 +149,8 @@ SubregionArray  *subregion_array;
  * FreeRegion
  *--------------------------------------------------------------------------*/
 
-void  FreeRegion(region)
-SGSRegion  *region;
+void  FreeRegion(
+   SGSRegion  *region)
 {
    int  i;
 
@@ -170,9 +169,9 @@ SGSRegion  *region;
  *   The subregion_array may be empty.
  *--------------------------------------------------------------------------*/
 
-void  AppendSubregion(subregion, subregion_array)
-Subregion       *subregion;
-SubregionArray **subregion_array;
+void  AppendSubregion(
+   Subregion       *subregion,
+   SubregionArray **subregion_array)
 {
    SubregionArray  *s_array    = *subregion_array;
    int              s_array_sz = SubregionArraySize(s_array);
@@ -207,9 +206,9 @@ SubregionArray **subregion_array;
  *   The subregion_array_1 may be empty.
  *--------------------------------------------------------------------------*/
 
-void  AppendSubregionArray(subregion_array_0, subregion_array_1)
-SubregionArray  *subregion_array_0;
-SubregionArray **subregion_array_1;
+void  AppendSubregionArray(
+   SubregionArray  *subregion_array_0,
+   SubregionArray **subregion_array_1)
 {
    int  i;
 

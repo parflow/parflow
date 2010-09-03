@@ -190,7 +190,7 @@ L80:
 	}
 /* Computing MIN */
 	d__1 = w[i] - p - q;
-	tot = min(d__1,tot);
+	tot = pfmin(d__1,tot);
 /* L100: */
     }
 

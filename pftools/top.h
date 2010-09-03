@@ -35,6 +35,7 @@
  *-----------------------------------------------------------------------*/
 
 void ComputeTop(Databox  *mask, Databox  *top);
+void ComputeBottom(Databox  *mask, Databox  *bottom);
 void ExtractTop(Databox *v1 , Databox *v2, Databox *v3);
 
 #endif

@@ -35,6 +35,17 @@
 
 #include "matrix.h"
 
+#ifdef HAVE_SAMRAI
+#include "SAMRAI/hier/PatchDescriptor.h"
+#include "SAMRAI/pdat/CellVariable.h"
+#include "SAMRAI/pdat/SideVariable.h"
+
+using namespace SAMRAI;
+
+#endif
+
+static int samrai_matrix_ids[4][2048];
+
 
 /*--------------------------------------------------------------------------
  * NewStencil
@@ -72,39 +83,41 @@ CommPkg   *NewMatrixUpdatePkg(
    Matrix    *matrix,
    Stencil   *ghost)
 {
-   CommPkg     *new_commpkg;
+   CommPkg     *new_commpkg = NULL;
 
-   Submatrix   *submatrix;
+   Grid* grid = MatrixGrid(matrix);
 
-   Region      *send_reg, *recv_reg;
+   if(GridNumSubgrids(grid) > 1) {
+      PARFLOW_ERROR("NewMatrixUpdatePkg can't be used with number subgrids > 1");
+   } else {
 
-   int          ix, iy, iz;
-   int          sx, sy, sz;
+      Region      *send_reg, *recv_reg;
 
-   int          n;
+      Submatrix * submatrix = MatrixSubmatrix(matrix, 0);
 
+      int ix = SubmatrixIX(submatrix);
+      int iy = SubmatrixIY(submatrix);
+      int iz = SubmatrixIZ(submatrix);
+      int sx = SubmatrixSX(submatrix);
+      int sy = SubmatrixSY(submatrix);
+      int sz = SubmatrixSZ(submatrix);
+      
+      int n = StencilSize(MatrixStencil(matrix));
+      if (MatrixSymmetric(matrix))
+	 n = (n+1)/2;
+      
+      CommRegFromStencil(&send_reg, &recv_reg, MatrixGrid(matrix), ghost);
+      ProjectRegion(send_reg, sx, sy, sz, ix, iy, iz);
+      ProjectRegion(recv_reg, sx, sy, sz, ix, iy, iz);
+      
+      
+      new_commpkg = NewCommPkg(send_reg, recv_reg,
+			       MatrixDataSpace(matrix), n, SubmatrixData(submatrix));
 
-   submatrix = MatrixSubmatrix(matrix, 0);
+      FreeRegion(send_reg);
+      FreeRegion(recv_reg);
 
-   ix = SubmatrixIX(submatrix);
-   iy = SubmatrixIY(submatrix);
-   iz = SubmatrixIZ(submatrix);
-   sx = SubmatrixSX(submatrix);
-   sy = SubmatrixSY(submatrix);
-   sz = SubmatrixSZ(submatrix);
-
-   n = StencilSize(MatrixStencil(matrix));
-   if (MatrixSymmetric(matrix))
-      n = (n+1)/2;
-
-   CommRegFromStencil(&send_reg, &recv_reg, MatrixGrid(matrix), ghost);
-   ProjectRegion(send_reg, sx, sy, sz, ix, iy, iz);
-   ProjectRegion(recv_reg, sx, sy, sz, ix, iy, iz);
-   new_commpkg = NewCommPkg(send_reg, recv_reg,
-		    MatrixDataSpace(matrix), n, MatrixData(matrix));
-
-   FreeRegion(send_reg);
-   FreeRegion(recv_reg);
+   }
 
    return new_commpkg;
 }
@@ -117,7 +130,63 @@ CommPkg   *NewMatrixUpdatePkg(
 CommHandle  *InitMatrixUpdate(
    Matrix      *matrix)
 {
-   return  InitCommunication(MatrixCommPkg(matrix));
+
+   CommHandle *return_handle = NULL;
+
+   enum ParflowGridType grid_type = invalid_grid_type;
+
+#ifdef HAVE_SAMRAI
+   switch(matrix -> type)
+   {
+      case matrix_cell_centered : 
+      {
+	 grid_type = flow_3D_grid_type;
+	 break;
+      }
+      case matrix_non_samrai : 
+      {
+	 grid_type = invalid_grid_type;
+	 break;
+      }
+   }
+#endif
+
+   if(grid_type == invalid_grid_type)
+   {
+      return_handle = InitCommunication(MatrixCommPkg(matrix));
+   } else {
+
+#ifdef HAVE_SAMRAI
+      tbox::Dimension dim(GlobalsParflowSimulation -> getDim(grid_type));
+      if(matrix -> boundary_fill_refine_algorithm.isNull()) {
+	 tbox::Pointer<hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation -> getPatchHierarchy(grid_type));
+	 const int level_number = 0;
+	 
+	 matrix -> boundary_fill_refine_algorithm = new xfer::RefineAlgorithm(dim);
+	 
+	 matrix -> boundary_fill_refine_algorithm -> registerRefine(
+	    matrix -> samrai_id,
+	    matrix -> samrai_id,
+	    matrix -> samrai_id,
+	    tbox::Pointer<xfer::RefineOperator>(NULL));
+	 
+	 tbox::Pointer< hier::PatchLevel > level = 
+	    hierarchy->getPatchLevel(level_number);
+	 
+	 matrix -> boundary_fill_schedule = matrix -> boundary_fill_refine_algorithm
+	    -> createSchedule(level,
+			      level_number-1,
+			      hierarchy,
+			      NULL);
+	 
+      }
+      const double time = 1.0;
+      matrix -> boundary_fill_schedule -> fillData(time);
+      
+#endif
+   }
+
+   return return_handle;
 }
 
 
@@ -128,7 +197,9 @@ CommHandle  *InitMatrixUpdate(
 void         FinalizeMatrixUpdate(
    CommHandle  *handle)
 {
-   FinalizeCommunication(handle);
+   if(handle) {
+      FinalizeCommunication(handle);
+   }
 }
 
 
@@ -142,6 +213,17 @@ SubregionArray  *range,
 Stencil         *stencil,
 int              symmetry,
 Stencil         *ghost)
+{
+   return NewMatrixType(grid, range, stencil, symmetry, ghost, matrix_non_samrai);
+}
+
+Matrix          *NewMatrixType(
+Grid            *grid,
+SubregionArray  *range,
+Stencil         *stencil,
+int              symmetry,
+Stencil         *ghost,
+enum matrix_type     type)
 {
    Matrix         *new_matrix;
    Submatrix      *new_sub;
@@ -166,6 +248,8 @@ Stencil         *ghost)
    int            *data_stencil;
    int             data_stencil_size;
 
+
+   new_matrix = ctalloc(Matrix, 1);
 
    shape = StencilShape(stencil);
 
@@ -249,33 +333,102 @@ Stencil         *ghost)
       {
 	 n = StencilShape(ghost)[j][0];
 	 if (n < 0)
-	    xl = max(xl, -n);
+	    xl = pfmax(xl, -n);
 	 else
-	    xu = max(xu,  n);
+	    xu = pfmax(xu,  n);
 
 	 n = StencilShape(ghost)[j][1];
 	 if (n < 0)
-	    yl = max(yl, -n);
+	    yl = pfmax(yl, -n);
 	 else
-	    yu = max(yu,  n);
+	    yu = pfmax(yu,  n);
 
 	 n = StencilShape(ghost)[j][2];
 	 if (n < 0)
-	    zl = max(zl, -n);
+	    zl = pfmax(zl, -n);
 	 else
-	    zu = max(zu,  n);
+	    zu = pfmax(zu,  n);
       }
+   }
+
+   enum ParflowGridType grid_type = invalid_grid_type;
+#ifdef HAVE_SAMRAI
+    switch(type)
+    {
+       case matrix_cell_centered : 
+       {
+	  grid_type = flow_3D_grid_type;
+	  break;
+       }
+       case matrix_non_samrai :
+       {
+	  grid_type = invalid_grid_type;
+	  break;
+       }
+    }
+
+    tbox::Dimension dim(GlobalsParflowSimulation -> getDim(grid_type));
+
+    hier::IntVector ghosts(dim, xl);
+
+    int index = 0;
+    if(grid_type > 0) {
+       for(int i = 0; i < 2048; i++)
+       {
+	  if(samrai_matrix_ids[grid_type][i] == 0) {
+	     index = i;
+	     break;
+	  }
+       }
+    }
+
+    std::string variable_name = 
+       "Matrix_" + tbox::Utilities::intToString(grid_type, 1) + "_" +
+       tbox::Utilities::intToString(index, 4);
+
+    tbox::Pointer< hier::Variable > variable;
+
+#else 
+
+    type = matrix_non_samrai;
+
+#endif
+
+    new_matrix -> type = type;
+
+
+   // SAMRAI doesn't allow ghost width to be different along
+   // the edges to get max.   This could be fixed with
+   // a more specific SAMRAI data type for PF.
+   switch(type)
+   {
+      case matrix_cell_centered : 
+      {
+	 xl = pfmax(xl, xu); 
+	 xl = pfmax(xl, yl);
+	 xl = pfmax(xl, yu);
+	 xl = pfmax(xl, zl);
+	 xl = pfmax(xl, zu);
+	 xu = xl;
+	 yl = yu = xl;
+	 zl = zu = xl;
+	 break;
+      }
+      case matrix_non_samrai :
+      {
+	 break;
+      }
+      
    }
 
    /*-----------------------------------------------------------------------
     * Set up Matrix shell
     *-----------------------------------------------------------------------*/
 
-   new_matrix = ctalloc(Matrix, 1);
+
 
    (new_matrix -> submatrices) = ctalloc(Submatrix *, GridNumSubgrids(grid));
 
-   data_size = 0;
    MatrixDataSpace(new_matrix) = NewSubregionArray();
    ForSubgridI(i, GridSubgrids(grid))
    {
@@ -317,6 +470,7 @@ Stencil         *ghost)
       nz = SubmatrixNZ(new_sub);
       n  = nx * ny * nz; 
 
+      data_size = 0;
       /* set pointers for upper triangle coefficients */
       for (k = 0; k < StencilSize(stencil); k++)
 	 if (!symmetric_coeff[k])
@@ -336,11 +490,35 @@ Stencil         *ghost)
 	 }
 
       (new_sub -> data_index) = data_index;
+      (new_sub -> data_size) = data_size;
 
       MatrixSubmatrix(new_matrix, i) = new_sub;
-   }
 
-   (new_matrix -> data_size) = data_size;
+      switch(type)
+      {
+#ifdef HAVE_SAMRAI    
+	 case matrix_cell_centered : 
+	 {
+	    // SAMRAI allocates
+	    break;
+	 }
+#endif
+	 case matrix_non_samrai :
+	 {
+	    Submatrix *submatrix = MatrixSubmatrix(new_matrix, i);
+	    data = amps_CTAlloc(double, submatrix -> data_size);
+	    submatrix -> allocated = TRUE;
+	    SubmatrixData(submatrix) = data;
+	    
+	    break;
+	 }
+	 default :
+	 {
+	    // SGS add abort
+	    fprintf(stderr, "Invalid matrix type\n");
+	 }
+      }
+   }
 
    MatrixGrid(new_matrix)  = grid;
    MatrixRange(new_matrix) = range;
@@ -357,16 +535,80 @@ Stencil         *ghost)
     * Set up Matrix data
     *-----------------------------------------------------------------------*/
 
-   data = amps_CTAlloc(double, (data_size));
-   MatrixData(new_matrix) = data;
-   
-   for (i = 0; i < GridNumSubgrids(grid); i++)
-      SubmatrixData(MatrixSubmatrix(new_matrix, i)) = data;
+   switch(type)
+   {
+#ifdef HAVE_SAMRAI    
+      case matrix_cell_centered : 
+      {
+	 variable = new pdat::CellVariable<double>(dim, 
+						   variable_name, 
+						   MatrixDataStencilSize(new_matrix));
+	 break;
+      }
+#endif
+      case matrix_non_samrai :
+      {
+	 // Allocated previously
+	 break;
+      }
+      default :
+      {
+	 // SGS add abort
+	 fprintf(stderr, "Invalid matrix type\n");
+      }
+   }
 
-   if (ghost)
-      MatrixCommPkg(new_matrix) = NewMatrixUpdatePkg(new_matrix, ghost);
-   else
-      MatrixCommPkg(new_matrix) = NULL;
+    /* For SAMRAI vectors set the data pointer */
+    switch(type)
+    {
+#ifdef HAVE_SAMRAI
+       case matrix_cell_centered : 
+       {
+	  tbox::Pointer<hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation -> getPatchHierarchy(grid_type));
+	  tbox::Pointer<hier::PatchLevel > level(hierarchy -> getPatchLevel(0));
+
+	  tbox::Pointer<hier::PatchDescriptor> patch_descriptor(hierarchy -> getPatchDescriptor());
+	  
+	  new_matrix -> samrai_id = patch_descriptor -> definePatchDataComponent(
+	     variable_name, 
+	     variable->getPatchDataFactory()->cloneFactory(ghosts));
+	  
+	  
+	  samrai_matrix_ids[grid_type][index] = new_matrix -> samrai_id;
+	  new_matrix -> table_index = index;
+	  
+	  std::cout << "samrai_id " << new_matrix -> samrai_id << std::endl;
+	  
+	  level -> allocatePatchData(new_matrix -> samrai_id );
+
+	  int i = 0;
+	  for(hier::PatchLevel::Iterator patch_iterator(level); 
+	      patch_iterator; 
+	      patch_iterator++, i++) {
+	     
+	     hier::Patch *patch = *patch_iterator;
+	     
+	     const hier::Box patch_box = patch -> getBox();
+	     
+	     std::cout << "In matrix box " << patch_box << std::endl;
+	     
+	     tbox::Pointer< pdat::CellData<double> > patch_data(
+		patch -> getPatchData(new_matrix -> samrai_id));
+	     Submatrix *submatrix  = MatrixSubmatrix(new_matrix, i);
+	     SubmatrixData(submatrix)= patch_data -> getPointer(0);
+	     patch_data -> fillAll(0);
+
+	     MatrixCommPkg(new_matrix) = NULL;
+	  }
+	  break;
+       }
+#endif
+       case matrix_non_samrai :
+	  if (ghost)
+	     MatrixCommPkg(new_matrix) = NewMatrixUpdatePkg(new_matrix, ghost);
+   
+	  break;
+    }    
 
    /*-----------------------------------------------------------------------
     * Free up memory and return
@@ -403,12 +645,46 @@ void FreeMatrix(
 
    int         i;
 
-
-   amps_TFree(matrix -> data);
-
+   switch(matrix -> type)
+   {
+#ifdef HAVE_SAMRAI
+      case matrix_cell_centered : 
+      {
+	 std::cout << "freeing samrai_id " << matrix -> samrai_id << std::endl;
+	 
+	 ParflowGridType grid_type = flow_3D_grid_type;
+	 if(!matrix -> boundary_fill_refine_algorithm.isNull()) {
+	    matrix -> boundary_fill_refine_algorithm.setNull();
+	    matrix -> boundary_fill_schedule.setNull();
+	 }
+	 
+	 tbox::Pointer<hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation -> getPatchHierarchy(grid_type));
+	 tbox::Pointer<hier::PatchLevel > level(hierarchy -> getPatchLevel(0));
+	 
+	 level -> deallocatePatchData(matrix -> samrai_id);
+	 
+	 tbox::Pointer<hier::PatchDescriptor> patch_descriptor(hierarchy -> getPatchDescriptor());
+	 patch_descriptor -> removePatchDataComponent(matrix -> samrai_id);
+	 
+	 samrai_matrix_ids[grid_type][matrix -> table_index] = 0;
+	 break;
+      }
+#endif
+      case matrix_non_samrai :
+      {
+	 break;
+      }
+      default :
+	 fprintf(stderr, "Invalid matrix type\n");
+   }
+   
    for(i = 0; i < GridNumSubgrids(MatrixGrid(matrix)); i++)
    {
       submatrix = MatrixSubmatrix(matrix, i);
+
+      if(submatrix -> allocated) {
+	 tfree(submatrix -> data);
+      }
 
       tfree(submatrix -> data_index);
       tfree(submatrix);
@@ -424,6 +700,8 @@ void FreeMatrix(
 
    tfree(matrix -> submatrices);
    tfree(matrix);
+
+   
 }
 
 

@@ -218,12 +218,12 @@ NUL is allowed.
 @param key The key to search for
 @return The string which matches the search key
 */
-char *IDB_GetString(IDB *database, char *key)
+char *IDB_GetString(IDB *database, const char *key)
 {
    IDB_Entry lookup_entry;
    IDB_Entry *result;
 
-   lookup_entry.key = key;
+   lookup_entry.key = (char *)key;
 
    result = (IDB_Entry *)HBT_lookup(database, &lookup_entry);
 
@@ -253,14 +253,14 @@ NUL is allowed.
 @return The string which matches the search key
 */
 char *IDB_GetStringDefault(IDB *database, 
-			   char *key,
+			   const char *key,
 			   char *default_value)
 {
    IDB_Entry lookup_entry;
    IDB_Entry *result;
    IDB_Entry *entry;
 
-   lookup_entry.key = key;
+   lookup_entry.key = (char *)key;
 
    result = (IDB_Entry *)HBT_lookup(database, &lookup_entry);
 
@@ -272,7 +272,7 @@ char *IDB_GetStringDefault(IDB *database,
    else
    {
       /* Create an new entry */
-      entry = IDB_NewEntry(key, default_value);
+      entry = IDB_NewEntry((char*)key, default_value);
       entry -> used = 1;
 
       /* Insert into the height balanced tree */
@@ -295,14 +295,14 @@ The program halts if the value is not a valid double.
 @return The double which matches the search key
 */
 double IDB_GetDoubleDefault(IDB *database, 
-			   char *key,
+			   const char *key,
 			   double default_value)
 {
    IDB_Entry lookup_entry;
    IDB_Entry *result;
    double value;
 
-   lookup_entry.key = key;
+   lookup_entry.key = (char *)key;
 
    result = (IDB_Entry *)HBT_lookup(database, &lookup_entry);
 
@@ -327,7 +327,7 @@ double IDB_GetDoubleDefault(IDB *database,
       sprintf(default_string, "%f", default_value);
 
       /* Create an new entry */
-      entry = IDB_NewEntry(key, default_string);
+      entry = IDB_NewEntry((char*)key, default_string);
       entry -> used = 1;
 
       /* Insert into the height balanced tree */
@@ -346,13 +346,13 @@ found print an error and exit.
 @param key The key to search for
 @return The double which matches the search key
 */
-double IDB_GetDouble(IDB *database, char *key)
+double IDB_GetDouble(IDB *database, const char *key)
 {
    IDB_Entry lookup_entry;
    IDB_Entry *result;
    double value;
 
-   lookup_entry.key = key;
+   lookup_entry.key = (char*)key;
 
    result = (IDB_Entry *)HBT_lookup(database, &lookup_entry);
 
@@ -388,14 +388,14 @@ The program halts if the value is not a valid integer.
 @return The integer which matches the search key
 */
 int IDB_GetIntDefault(IDB *database, 
-			   char *key,
+			   const char *key,
 			   int default_value)
 {
    IDB_Entry lookup_entry;
    IDB_Entry *result;
    int value;
 
-   lookup_entry.key = key;
+   lookup_entry.key = (char *)key;
 
    result = (IDB_Entry *)HBT_lookup(database, &lookup_entry);
 
@@ -421,7 +421,7 @@ int IDB_GetIntDefault(IDB *database,
       sprintf(default_string, "%d", default_value);
 
       /* Create an new entry */
-      entry = IDB_NewEntry(key, default_string);
+      entry = IDB_NewEntry((char *)key, default_string);
       entry -> used = 1;
 
       /* Insert into the height balanced tree */
@@ -440,13 +440,13 @@ found print an error and exit.
 @param key The key to search for
 @return The integer which matches the search key
 */
-int IDB_GetInt(IDB *database, char *key)
+int IDB_GetInt(IDB *database, const char *key)
 {
    IDB_Entry lookup_entry;
    IDB_Entry *result;
    int value;
 
-   lookup_entry.key = key;
+   lookup_entry.key = (char*)key;
 
    result = (IDB_Entry *)HBT_lookup(database, &lookup_entry);
 
@@ -633,10 +633,12 @@ int NA_Sizeof(NameArray name_array)
    return name_array -> num;
 }
 
-void InputError(char *format, char *s1, char *s2)
+void InputError(const char *format, const char *s1, const char *s2)
 {
-   if(!amps_Rank(amps_CommWorld))
+   if(!amps_Rank(amps_CommWorld)) 
+   {
       amps_Printf(format, s1, s2);
+   }
 
    exit(1);
 }

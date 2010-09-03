@@ -351,7 +351,6 @@ PFModule  *WRFSelectTimeStepNewPublicXtra(
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;
 
-   Type0            *dummy0;
    Type1            *dummy1;
 
    public_xtra = ctalloc(PublicXtra, 1);

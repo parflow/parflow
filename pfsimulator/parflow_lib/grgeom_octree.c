@@ -28,6 +28,44 @@
 
 #include "parflow.h"
 
+// #define SGS
+
+#if 0
+#define debug_print(arg)			\
+   {						\
+      int foo_x = 28;				\
+      int foo_y = 83;				\
+      int foo_z = 166;				\
+      						\
+      int foo_lower_x = foo_x - 8;		\
+      int foo_lower_y = foo_y - 8;		\
+      int foo_lower_z = foo_z - 8;		\
+      						\
+      int foo_upper_x = foo_x + 8;		\
+      int foo_upper_y = foo_y + 8;		\
+      int foo_upper_z = foo_z + 8;		\
+      							\
+      if( (i > foo_lower_x && i < foo_upper_x) &&	\
+	  (j > foo_lower_y && j < foo_upper_y) &&	\
+	  (k > foo_lower_z && k < foo_upper_z) )	\
+      {							\
+         arg;						\
+      }							\
+   };
+#else
+
+#define debug_print(arg)			\
+   {							\
+      if(amps_Rank()==73)				\
+      {							\
+         arg;						\
+      }							\
+   };
+
+#endif
+
+
+
 /******************************************************************************
  *
  * The functions in this file are for manipulating the Octree structure.
@@ -618,17 +656,17 @@ int                  max_level)
    for(ie = 0; ie < ea_size; ie++)
    {
       GrGeomExtentsIXLower(ea_extents[ie]) =
-	 max(GrGeomExtentsIXLower(ea_extents[ie]), 0);
+	 pfmax(GrGeomExtentsIXLower(ea_extents[ie]), 0);
       GrGeomExtentsIYLower(ea_extents[ie]) =
-	 max(GrGeomExtentsIYLower(ea_extents[ie]), 0);
+	 pfmax(GrGeomExtentsIYLower(ea_extents[ie]), 0);
       GrGeomExtentsIZLower(ea_extents[ie]) =
-	 max(GrGeomExtentsIZLower(ea_extents[ie]), 0);
+	 pfmax(GrGeomExtentsIZLower(ea_extents[ie]), 0);
       GrGeomExtentsIXUpper(ea_extents[ie]) =
-	 min(GrGeomExtentsIXUpper(ea_extents[ie]), (num_indices-1));
+	 pfmin(GrGeomExtentsIXUpper(ea_extents[ie]), (num_indices-1));
       GrGeomExtentsIYUpper(ea_extents[ie]) =
-	 min(GrGeomExtentsIYUpper(ea_extents[ie]), (num_indices-1));
+	 pfmin(GrGeomExtentsIYUpper(ea_extents[ie]), (num_indices-1));
       GrGeomExtentsIZUpper(ea_extents[ie]) =
-	 min(GrGeomExtentsIZUpper(ea_extents[ie]), (num_indices-1));
+	 pfmin(GrGeomExtentsIZUpper(ea_extents[ie]), (num_indices-1));
    }
 
    /*-------------------------------------------------------------
@@ -774,30 +812,30 @@ int                  max_level)
       octree_v2_z = (v2_z - zlower) / dz_lines;
 
       /* Get overall bounds for the vertices */
-      tbox_x_lower = min(min(octree_v0_x, octree_v1_x), octree_v2_x);
-      tbox_y_lower = min(min(octree_v0_y, octree_v1_y), octree_v2_y);
-      tbox_z_lower = min(min(octree_v0_z, octree_v1_z), octree_v2_z);
-      tbox_x_upper = max(max(octree_v0_x, octree_v1_x), octree_v2_x);
-      tbox_y_upper = max(max(octree_v0_y, octree_v1_y), octree_v2_y);
-      tbox_z_upper = max(max(octree_v0_z, octree_v1_z), octree_v2_z);
+      tbox_x_lower = pfmin(pfmin(octree_v0_x, octree_v1_x), octree_v2_x);
+      tbox_y_lower = pfmin(pfmin(octree_v0_y, octree_v1_y), octree_v2_y);
+      tbox_z_lower = pfmin(pfmin(octree_v0_z, octree_v1_z), octree_v2_z);
+      tbox_x_upper = pfmax(pfmax(octree_v0_x, octree_v1_x), octree_v2_x);
+      tbox_y_upper = pfmax(pfmax(octree_v0_y, octree_v1_y), octree_v2_y);
+      tbox_z_upper = pfmax(pfmax(octree_v0_z, octree_v1_z), octree_v2_z);
 
       /* This is to avoid integer overflow below */
-      tbox_x_lower = min(tbox_x_lower, 2*num_indices);
-      tbox_y_lower = min(tbox_y_lower, 2*num_indices);
-      tbox_z_lower = min(tbox_z_lower, 2*num_indices);
-      tbox_x_upper = max(tbox_x_upper, -1);
-      tbox_y_upper = max(tbox_y_upper, -1);
-      tbox_z_upper = max(tbox_z_upper, -1);
+      tbox_x_lower = pfmin(tbox_x_lower, 2*num_indices);
+      tbox_y_lower = pfmin(tbox_y_lower, 2*num_indices);
+      tbox_z_lower = pfmin(tbox_z_lower, 2*num_indices);
+      tbox_x_upper = pfmax(tbox_x_upper, -1);
+      tbox_y_upper = pfmax(tbox_y_upper, -1);
+      tbox_z_upper = pfmax(tbox_z_upper, -1);
 
       for(ie = 0; ie < ea_size; ie++)
       {
 	 /* Intersect bounds with xyz_lines extents */
-	 ix_lower = (int)floor((double) max(tbox_x_lower, ixl_lines[ie]));
-	 iy_lower = (int)floor((double) max(tbox_y_lower, iyl_lines[ie]));
-	 iz_lower = (int)floor((double) max(tbox_z_lower, izl_lines[ie]));
-	 ix_upper = (int)ceil((double) min(tbox_x_upper, ixu_lines[ie]));
-	 iy_upper = (int)ceil((double) min(tbox_y_upper, iyu_lines[ie]));
-	 iz_upper = (int)ceil((double) min(tbox_z_upper, izu_lines[ie]));
+	 ix_lower = (int)floor((double) pfmax(tbox_x_lower, ixl_lines[ie]));
+	 iy_lower = (int)floor((double) pfmax(tbox_y_lower, iyl_lines[ie]));
+	 iz_lower = (int)floor((double) pfmax(tbox_z_lower, izl_lines[ie]));
+	 ix_upper = (int)ceil((double) pfmin(tbox_x_upper, ixu_lines[ie]));
+	 iy_upper = (int)ceil((double) pfmin(tbox_y_upper, iyu_lines[ie]));
+	 iz_upper = (int)ceil((double) pfmin(tbox_z_upper, izu_lines[ie]));
 
 	 for(j = iy_lower; j <= iy_upper; j++)
 	 {
@@ -1000,15 +1038,6 @@ int                  max_level)
                {
                   if (edge_tag[k] != 0)
                   {
-
-#ifdef SGS_DEBUG
-		     amps_Printf("Solid AddFace K : (%d %d) %d %d\n", 
-			    i,
-			    j,
-			    k,
-			    edge_tag[k]);
-#endif
-
                      GrGeomOctreeAddFace(solid_octree, ZDIRECTION,
                                          i, j, k, iz_lower, iz_upper, level,
                                          edge_tag[k]);
@@ -1117,14 +1146,6 @@ int                  max_level)
                {
                   if (edge_tag[j] != 0)
                   {
-#ifdef SGS_DEBUG
-		     amps_Printf("Solid AddFace J : (%d %d) %d %d\n", 
-			    i,
-			    k,
-			    j,
-			    edge_tag[j]);
-#endif
-
                      GrGeomOctreeAddFace(solid_octree, YDIRECTION,
                                          i, k, j, iy_lower, iy_upper, level,
                                          edge_tag[j]);
@@ -1233,14 +1254,6 @@ int                  max_level)
                {
                   if (edge_tag[i] != 0)
                   {
-#ifdef SGS_DEBUG
-		     amps_Printf("Solid AddFace I : (%d %d) %d %d\n", 
-			    j,
-			    k,
-			    j,
-			    edge_tag[i]);
-#endif
-
                      GrGeomOctreeAddFace(solid_octree, XDIRECTION,
                                          j, k, i, ix_lower, ix_upper, level,
                                          edge_tag[i]);
@@ -1580,12 +1593,6 @@ int             octree_iz)
    GrGeomOctree  *grgeom_octree, *grgeom_child;
 
    int            l, min_l = 0 , max_l = 0;
-   int            ix, iy, iz;
-   int            nx, ny, nz;
-   int            rx, ry, rz;
-   int            ix_all, iy_all, iz_all;
-   int            nx_all, ny_all, nz_all;
-   int            nx_f, ny_f, nz_f;
    int            inc, tmp_inc;
    int            i_begin, j_begin, k_begin;
    int            i_end,   j_end,   k_end;
@@ -1638,6 +1645,12 @@ int             octree_iz)
       }
    }
 
+#ifdef SGS
+   printf("SGS:%d levels %d, %d\n",
+	  amps_Rank(),
+	  min_l, max_l);
+#endif
+
    /*-------------------------------------------------------------
     * Create the octree
     *-------------------------------------------------------------*/
@@ -1653,34 +1666,54 @@ int             octree_iz)
             /* Get information about this subgrid */
             subgrid   = SubgridArraySubgrid(subgrids, sg);
 
-            ix = SubgridIX(subgrid);
-            iy = SubgridIY(subgrid);
-            iz = SubgridIZ(subgrid);
+            const int ix = SubgridIX(subgrid);
+            const int iy = SubgridIY(subgrid);
+            const int iz = SubgridIZ(subgrid);
 
-            nx = SubgridNX(subgrid);
-            ny = SubgridNY(subgrid);
-            nz = SubgridNZ(subgrid);
+            const int nx = SubgridNX(subgrid);
+            const int ny = SubgridNY(subgrid);
+            const int nz = SubgridNZ(subgrid);
 
-            rx = SubgridRX(subgrid);
-            ry = SubgridRY(subgrid);
-            rz = SubgridRZ(subgrid);
+            const int rx = SubgridRX(subgrid);
+            const int ry = SubgridRY(subgrid);
+            const int rz = SubgridRZ(subgrid);
+
+#ifdef SGS
+	    printf("SGS:%d subgrid (%d, %d, %d) (%d, %d, %d) (%d, %d, %d)\n",
+		   amps_Rank(),
+		   ix, iy, iz,
+		   nx, ny, nz,
+		   rx, ry, rz);
+#endif
 
             /* Compute information about the subgrid and ghost layer */
-            ix_all = ix - 2;
-            iy_all = iy - 2;
-            iz_all = iz - 2;
+            const int ix_all = ix - 2;
+            const int iy_all = iy - 2;
+            const int iz_all = iz - 2;
 
-            nx_all = nx + 4;
-            ny_all = ny + 4;
-            nz_all = nz + 4;
+            const int nx_all = nx + 4;
+            const int ny_all = ny + 4;
+            const int nz_all = nz + 4;
 
+#ifdef SGS
+	    printf("SGS:%d all (%d, %d, %d) (%d, %d, %d)\n",
+		   amps_Rank(),
+		   ix_all, iy_all, iz_all,
+		   nx_all, ny_all, nz_all);
+#endif
 
             /* Get information about this subvector */
             subvector = VectorSubvector(indicator_field, sg);
 
-            nx_f = SubvectorNX(subvector);
-            ny_f = SubvectorNY(subvector);
-            nz_f = SubvectorNZ(subvector);
+            const int nx_f = SubvectorNX(subvector);
+            const int ny_f = SubvectorNY(subvector);
+            const int nz_f = SubvectorNZ(subvector);
+
+#ifdef SGS
+	    printf("SGS:%d _f (%d, %d, %d)\n",
+		   amps_Rank(),
+		   nx_f, ny_f, nz_f);
+#endif
 
             data = SubvectorElt(subvector,ix_all,iy_all,iz_all);
 
@@ -1705,6 +1738,17 @@ int             octree_iz)
                {
                   ind[index] = OUTSIDE;
                }
+
+// SGS2
+#ifdef SGS
+	       debug_print(
+		     printf("SGS:%d : [%i, %i, %i] ind[index] = %i, data[fi] = %e\n", 
+			    amps_Rank(),
+			    i,j,k,
+			    ind[index],
+			    data[fi]
+			));
+#endif
             });
 
             /* Get the level of the octree this subgrid */
@@ -1713,19 +1757,27 @@ int             octree_iz)
             inc = Pow2(l);
 
             /* Find the beginning and ending indices - accounting for bounds */
-            i_begin = IndexSpaceX(max(RealSpaceX(ix_all, rx), xlower), rx);
-            i_end   = IndexSpaceX(min(RealSpaceX((ix_all + (nx_all - 1)), rx), xupper), rx);
-            j_begin = IndexSpaceY(max(RealSpaceY(iy_all, ry), ylower), ry);
-            j_end   = IndexSpaceY(min(RealSpaceY((iy_all + (ny_all - 1)), ry), yupper), ry);
-            k_begin = IndexSpaceZ(max(RealSpaceZ(iz_all, rz), zlower), rz);
-            k_end   = IndexSpaceZ(min(RealSpaceZ((iz_all + (nz_all - 1)), rz), zupper), rz);
+            i_begin = IndexSpaceX(pfmax(RealSpaceX(ix_all, rx), xlower), rx);
+            i_end   = IndexSpaceX(pfmin(RealSpaceX((ix_all + (nx_all - 1)), rx), xupper), rx);
+            j_begin = IndexSpaceY(pfmax(RealSpaceY(iy_all, ry), ylower), ry);
+            j_end   = IndexSpaceY(pfmin(RealSpaceY((iy_all + (ny_all - 1)), ry), yupper), ry);
+            k_begin = IndexSpaceZ(pfmax(RealSpaceZ(iz_all, rz), zlower), rz);
+            k_end   = IndexSpaceZ(pfmin(RealSpaceZ((iz_all + (nz_all - 1)), rz), zupper), rz);
 
-#ifdef SGS_DEBUG
-	    amps_Printf("k_begin comp %g, %g : (%d, %d)\n", RealSpaceZ(iz_all, rz), zlower, 
-			IndexSpaceZ(RealSpaceZ(iz_all, rz), rz),
-			IndexSpaceZ(zlower, rz));
+#ifdef SGS
+	    printf("SGS:%d: k_begin comp %g, %g : (%d, %d)\n", amps_Rank(),
+		   RealSpaceZ(iz_all, rz), zlower, 
+		   IndexSpaceZ(RealSpaceZ(iz_all, rz), rz),
+		   IndexSpaceZ(zlower, rz));
+	    printf("SGS:%d: begin (%d, %d, %d) (%d, %d, %d)\n", amps_Rank(),
+		   i_begin, j_begin, k_begin, i_end, j_end, k_end);
+
+
+	    printf("SGS:%d: begin (%e, %e, %e) (%e, %e, %e)\n", amps_Rank(),
+		   xlower, ylower, zlower,
+		   xupper, yupper, zupper);
 #endif
-			
+
             /*-------------------------------------------------------
              * Add Inside and Outside nodes in z
              *-------------------------------------------------------*/
@@ -1769,12 +1821,13 @@ int             octree_iz)
                      if (edge_tag[k] != 0)
 
                      {
-#ifdef SGS_DEBUG
-			amps_Printf("AddFace K : (%d %d) %d %d\n", 
-                                            (i - ((int) (octree_ix / inc))),
-                                            (j - ((int) (octree_iy / inc))),
-                                            ((iz_all + k + 1) - ((int) (octree_iz / inc))),
-                                            edge_tag[k]);
+
+#ifdef SGS
+			debug_print(amps_Printf("AddFace K : (%d %d) %d %d\n", 
+						(i - ((int) (octree_ix / inc))),
+						(j - ((int) (octree_iy / inc))),
+						((iz_all + k + 1) - ((int) (octree_iz / inc))),
+						edge_tag[k]));
 #endif
 
                         GrGeomOctreeAddFace(solid_octree, ZDIRECTION,
@@ -1834,12 +1887,13 @@ int             octree_iz)
                   {
                      if (edge_tag[j] != 0)
                      {
-#ifdef SGS_DEBUG
-			amps_Printf("AddFace J : (%d %d) %d %d\n", 
-                                            (i - ((int) (octree_ix / inc))),
-                                            (k - ((int) (octree_iz / inc))),
-                                            (iy_all + j + 1- ((int) (octree_iy / inc))),
-                                            edge_tag[j]);
+
+#ifdef SGS
+			debug_print(amps_Printf("AddFace J : (%d %d) %d %d\n", 
+						(i - ((int) (octree_ix / inc))),
+						(k - ((int) (octree_iz / inc))),
+						(iy_all + j + 1- ((int) (octree_iy / inc))),
+						edge_tag[j]));
 #endif
 
                         GrGeomOctreeAddFace(solid_octree, YDIRECTION,
@@ -1899,12 +1953,12 @@ int             octree_iz)
                      if (edge_tag[i] != 0)
                      {
 
-#ifdef SGS_DEBUG
-			amps_Printf("AddFace I : (%d %d) %d %d\n", 
-                                            (j - ((int) (octree_iy / inc))),
-                                            (k - ((int) (octree_iz / inc))),
-                                            (ix_all + i + 1 - ((int) (octree_ix / inc))),
-                                            edge_tag[i]);
+#ifdef SGS
+			debug_print(amps_Printf("AddFace I : (%d %d) %d %d\n", 
+						(j - ((int) (octree_iy / inc))),
+						(k - ((int) (octree_iz / inc))),
+						(ix_all + i + 1 - ((int) (octree_ix / inc))),
+						edge_tag[i]));
 #endif
 
                         GrGeomOctreeAddFace(solid_octree, XDIRECTION,
@@ -1924,6 +1978,103 @@ int             octree_iz)
              * Add `Fill' nodes to solid_octree (in z)
              *-------------------------------------------------------*/
 
+	    // SGS TODO why is this written like this, can't 
+	    // ind just be used directly, seems to convert to 
+	    // edges back to interior which we already have?
+
+#if 1
+            interior_tag   = ctalloc(unsigned char, nz_all);
+            edge_tag       = ctalloc(int, nz_all);
+            for(j = j_begin; j <= j_end; j++)
+            {
+               for(i = i_begin; i <= i_end; i++)
+               {
+
+		  iprime = i - ix_all;
+		  jprime = j - iy_all;
+		  
+		  /* Add `Full' nodes to the octree */
+		  k = k_begin;
+                  while (k <= k_end)
+                  {
+		     kprime = k - k_begin;
+
+		     index = nx_all * (ny_all * kprime + jprime) + iprime;
+
+#ifdef SGS
+			debug_print( 
+			   printf("SGS:%d FullLoop [%i, %i, %i] [%i, %i, %i] ind[%i]=%i\n",
+				  amps_Rank(),
+				  (i - ((int) (octree_ix / inc))),
+				  (j - ((int) (octree_iy / inc))),
+				  (k - ((int) (octree_iz / inc))),
+				  iprime, jprime, kprime,
+				  index,
+				  ind[index]
+			      )
+			   );
+#endif
+
+
+                     if (ind[index] > 0)
+                     {
+                        /* try to find the (i, j, k, level) octree node */
+                        grgeom_octree = GrGeomOctreeFind(&new_level,
+                                                         solid_octree,
+                                                         (i - ((int) (octree_ix / inc))),
+                                                         (j - ((int) (octree_iy / inc))),
+                                                         (k - ((int) (octree_iz / inc))),
+                                                         level);
+
+#ifdef SGS
+			debug_print( 
+			   printf("SGS:%d GrGeomOctreeFind [%i, %i, %i] %i isfull = %i\n",
+				  amps_Rank(),
+				  (i - ((int) (octree_ix / inc))),
+				  (j - ((int) (octree_iy / inc))),
+				  (k - ((int) (octree_iz / inc))),
+				  level,
+				  GrGeomOctreeCellIsFull(grgeom_octree));
+			   );
+#endif
+
+
+                        /* Only change non-`Full' cells */
+                        if (!GrGeomOctreeCellIsFull(grgeom_octree))
+                        {
+                           if ((new_level == level) || (new_level < min_l))
+                           {
+                              /* Only change `Empty' cells */
+                              if (GrGeomOctreeCellIsEmpty(grgeom_octree))
+                              {
+                                  GrGeomOctreeSetCell(grgeom_octree, GrGeomOctreeCellFull);
+                              }
+                           }
+                           else
+                           {
+                              /* Create children and set */
+                              GrGeomNewOctreeChildren(grgeom_octree);
+                              for (ic = 0; ic < GrGeomOctreeNumChildren; ic++)
+                              {
+                                 grgeom_child = GrGeomOctreeChild(grgeom_octree, ic);
+                                 GrGeomOctreeSetCell(grgeom_child, GrGeomOctreeCellFull);
+                              }
+                           }
+                        }
+
+                        /* compute the new k index */
+                        tmp_inc = Pow2(level - new_level);
+                        k = (((int) (k / tmp_inc)) + 1) * tmp_inc;
+                     }
+                     else
+                     {
+                        k++;
+                     }
+                  }
+               }
+            }
+#else
+
             interior_tag   = ctalloc(unsigned char, nz_all);
             edge_tag       = ctalloc(int, nz_all);
             for(j = j_begin; j <= j_end; j++)
@@ -1937,7 +2088,7 @@ int             octree_iz)
                   prev_state = ind[index];
 
                   /* Fill in the edge crossing info */
-                  for(k = 0; k <= nz;  k++)
+                  for(k = 0; k < nz_all - 2;  k++)
                   {
                      index = nx_all * (ny_all * (k + 1) + jprime) + iprime;
                      edge_tag[k] = 0;
@@ -1957,12 +2108,24 @@ int             octree_iz)
                         }
                         prev_state = OUTSIDE;
                      }
+
+#ifdef SGS
+		  debug_print( 
+		     printf("SGS:%d edge_tag_loop  [%i, %i, %i] [%i, %i] et[]=%i\n",
+			    amps_Rank(),
+			    i, j, k+k_begin,
+			    iprime, jprime,
+			    edge_tag[k]);
+
+		     );
+#endif
+
                   }
 
                   /* Fill in the interior info using the edge crossing info */
                   index = nx_all * (ny_all * 0 + jprime) + iprime;
                   state = ind[index];
-                  for(k = 0; k < nz;  k++)
+                  for(k = 0; k < nz_all - 2;  k++)
                   {
                      interior_tag[k] = 0;
                      if (state == INSIDE)
@@ -1983,7 +2146,27 @@ int             octree_iz)
                            state = INSIDE;
                         }
                      }
+
+#ifdef SGS
+		  debug_print( 
+		     printf("SGS:%d interior_loop  [%i, %i, %i] [%i, %i] it[]=%i\n",
+			    amps_Rank(),
+			    i, j, k+k_begin,
+			    iprime, jprime,
+			    interior_tag[k]);
+		     );
+#endif
+
+
                   }
+
+#ifdef SGS
+		  debug_print( 
+		     printf("SGS:%d k_begin = %d k_end = %d\n",
+			    amps_Rank(),
+			    k_begin, k_end);
+		     );
+#endif
 
                   /* Add `Full' nodes to the octree */
                   k = k_begin;
@@ -1998,6 +2181,19 @@ int             octree_iz)
                                                          (j - ((int) (octree_iy / inc))),
                                                          (k - ((int) (octree_iz / inc))),
                                                          level);
+
+#ifdef SGS
+			debug_print( 
+			   printf("SGS:%d GrGeomOctreeFind [%i, %i, %i] %i isfull = %i\n",
+				  amps_Rank(),
+				  (i - ((int) (octree_ix / inc))),
+				  (j - ((int) (octree_iy / inc))),
+				  (k - ((int) (octree_iz / inc))),
+				  level,
+				  GrGeomOctreeCellIsFull(grgeom_octree));
+			   );
+#endif
+
 
                         /* Only change non-`Full' cells */
                         if (!GrGeomOctreeCellIsFull(grgeom_octree))
@@ -2035,11 +2231,13 @@ int             octree_iz)
             }
             tfree(edge_tag);
             tfree(interior_tag);
+#endif
 
             tfree(ind);
          }
       }
    }
+
 
    /*-------------------------------------------------------------
     * Return the octree
@@ -2061,7 +2259,6 @@ void          GrGeomPrintOctreeStruc(
 
    if  ( grgeom_octree != NULL )
    {
-//      amps_Fprintf(file, " %3u;", GrGeomOctreeCell(octree));
       if( GrGeomOctreeCellIsEmpty(grgeom_octree) ) {
 	 amps_Fprintf(file, " E ");
       } else {

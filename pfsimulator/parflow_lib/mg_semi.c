@@ -176,9 +176,10 @@ int      zero)
       /*-----------------------------------------------------------------
        * Set up temporary vectors: x_l, b_l, temp_vec_l
        *-----------------------------------------------------------------*/
-      x_l[l+1]        = NewVector(instance_xtra -> grid_l[l+1], 1, 1);
-      b_l[l+1]        = NewVector(instance_xtra -> grid_l[l+1], 1, 1);
-      temp_vec_l[l+1] = NewVector(instance_xtra -> grid_l[l+1], 1, 1);
+      // Non SAMRAI grids
+      x_l[l+1]        = NewVectorType(instance_xtra -> grid_l[l+1], 1, 1, vector_non_samrai);
+      b_l[l+1]        = NewVectorType(instance_xtra -> grid_l[l+1], 1, 1, vector_non_samrai);
+      temp_vec_l[l+1] = NewVectorType(instance_xtra -> grid_l[l+1], 1, 1, vector_non_samrai);
 
       /* Set up comm_pkg's */
 
@@ -864,9 +865,9 @@ double       *temp_data)
       NZ = IndexSpaceNZ(0);
 
       /* reset min_N* to be the minimum size that can be coarsened */
-      min_NX = max(2*min_NX - 1, 2);
-      min_NY = max(2*min_NY - 1, 2);
-      min_NZ = max(2*min_NZ - 1, 2);
+      min_NX = pfmax(2*min_NX - 1, 2);
+      min_NY = pfmax(2*min_NY - 1, 2);
+      min_NZ = pfmax(2*min_NZ - 1, 2);
       
       coarsen_l = talloc(int, (max_levels - 1));
       
@@ -1359,9 +1360,9 @@ int  MGSemiSizeOfTempData()
 
    /* set `sz' to max of each of the called modules */
    for (l = 0; l < ((instance_xtra -> num_levels) - 1); l++)
-      sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> smooth_l[l]));
+      sz = pfmax(sz, PFModuleSizeOfTempData(instance_xtra -> smooth_l[l]));
 
-   sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> solve));
+   sz = pfmax(sz, PFModuleSizeOfTempData(instance_xtra -> solve));
 
    return sz;
 }

@@ -177,8 +177,8 @@ int            cycle_number)
 
 	 // This discretizes time to small intervals based on base_time_unit units to avoid fp 
 	 // roundoff issues.  Discretized time is in units of base_time_units.
-	 discretized_time = round(time / (base_time_unit / TIME_CYCLE_SUBDIVISIONS) ) / TIME_CYCLE_SUBDIVISIONS;
-	 discretized_start_time = round( start_time / (base_time_unit / TIME_CYCLE_SUBDIVISIONS) ) / TIME_CYCLE_SUBDIVISIONS;
+	 discretized_time = pfround(time / (base_time_unit / TIME_CYCLE_SUBDIVISIONS) ) / TIME_CYCLE_SUBDIVISIONS;
+	 discretized_start_time = pfround( start_time / (base_time_unit / TIME_CYCLE_SUBDIVISIONS) ) / TIME_CYCLE_SUBDIVISIONS;
 
 	 // Determine the intervals completed in this cycle.
 	 intervals_completed = (discretized_time - discretized_start_time - 1) % cycle_length; 
@@ -243,8 +243,8 @@ TimeCycleData *time_cycle_data)
 
 	    // This discretizes time to small intervals based on base_time_unit units to avoid fp 
 	    // roundoff issues.  Discretized time is in units of base_time_units.
-	    discretized_time = round(time / (base_time_unit / TIME_CYCLE_SUBDIVISIONS) ) / TIME_CYCLE_SUBDIVISIONS;
-	    discretized_start_time = round( start_time / (base_time_unit / TIME_CYCLE_SUBDIVISIONS) ) / TIME_CYCLE_SUBDIVISIONS;
+	    discretized_time = pfround(time / (base_time_unit / TIME_CYCLE_SUBDIVISIONS) ) / TIME_CYCLE_SUBDIVISIONS;
+	    discretized_start_time = pfround( start_time / (base_time_unit / TIME_CYCLE_SUBDIVISIONS) ) / TIME_CYCLE_SUBDIVISIONS;
 
 	    n = (discretized_time - discretized_start_time) / cycle_length;
 	    intervals_completed = (discretized_time - discretized_start_time - 1) % cycle_length; 
@@ -269,7 +269,7 @@ TimeCycleData *time_cycle_data)
             {
                if ( deltat_assigned )
                {
-                  deltat = min(deltat, (transition_time - time));
+                  deltat = pfmin(deltat, (transition_time - time));
                }
                else
                {

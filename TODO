@@ -10,11 +10,24 @@ open/write statements. A couple of the write statements were simply
 commented out to get things to compile.
 
 
-
 SGS
 
 The PFMG and SMG solvers should be updated to use the setbox hypre
 methods for copying data.   Should speed things up a bit.
+
+SGS
+
+The current communication setup causes memory errors because we are
+setting up communication paterns which don't apply.  E.G. vector
+update all2 should only be setup for variables with ghost width of 2.
+
+Possible fix would be to keep stencil width of communication mode around
+and only build valid ones.   Would also be good to prevent uses that
+would not work.
+
+SGS
+
+SAMRAI vector for mg_semi are too big, use PF mechansims instead.
 
 RMM
 Manual: all new test cases (e.g. CLM) not in manual

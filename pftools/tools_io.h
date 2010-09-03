@@ -49,25 +49,51 @@
 
 
 #ifndef CASC_HAVE_BIGENDIAN
+
+void tools_WriteInt(
+   FILE * file,
+   int *ptr,
+   int len);
+
+void tools_WriteDouble(
+   FILE * file,
+   double *ptr,
+   int len);
+
+void tools_ReadInt(
+   FILE * file,
+   int *ptr,
+   int len);
+
+void tools_ReadDouble(
+   FILE * file,
+   double *ptr,
+   int len);
  
-void tools_WriteInt();
  
-void tools_WriteDouble();
- 
-void tools_ReadInt();
- 
-void tools_ReadDouble();
  
 #else
 #ifdef TOOLS_CRAY 
 
-void tools_WriteInt();
+void tools_WriteInt(
+   FILE * file,
+   int *ptr,
+   int len);
+
+void tools_WriteDouble(
+   FILE * file,
+   double *ptr,
+   int len);
  
-void tools_WriteDouble();
- 
-void tools_ReadInt();
- 
-void tools_ReadDouble();
+void tools_ReadInt(
+   FILE * file,
+   int *ptr,
+   int len);
+
+void tools_ReadDouble(
+   FILE * file,
+   double *ptr,
+   int len);
 
 #else
 #ifdef TOOLS_INTS_ARE_64

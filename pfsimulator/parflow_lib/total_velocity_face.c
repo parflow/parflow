@@ -129,7 +129,7 @@ Vector      **saturations)
    double         *pl, *pu, *tl, *tu, *ml, *mu, *vel;
    double          dtmp, temp_density;
 
-   CommHandle     *handle;
+   VectorUpdateCommHandle     *handle;
 
    Vector         *vel_vec[3];
    Subvector      *subvector_v0,
@@ -150,10 +150,10 @@ Vector      **saturations)
 
    BeginTiming(public_xtra -> time_index);
 
-   temp_mobility_x = NewVector(instance_xtra -> grid, 1, 1);
-   temp_mobility_y = NewVector(instance_xtra -> grid, 1, 1);
-   temp_mobility_z = NewVector(instance_xtra -> grid, 1, 1);
-   temp_pressure   = NewVector(instance_xtra -> grid, 1, 1);
+   temp_mobility_x = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
+   temp_mobility_y = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
+   temp_mobility_z = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
+   temp_pressure   = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
 
    /************************************************************************
     *      First do the computations with the total mobility               *

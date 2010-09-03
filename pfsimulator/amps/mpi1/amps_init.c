@@ -36,6 +36,8 @@
 
 #include "amps.h"
 
+int amps_mpi_initialized = FALSE;
+
 #ifdef AMPS_MALLOC_DEBUG
 char amps_malloclog[MAXPATHLEN];
 #endif
@@ -95,6 +97,8 @@ int amps_Init(int *argc, char **argv[])
    int namelen;
 
    MPI_Init(argc, argv);
+   amps_mpi_initialized = TRUE;
+
    MPI_Comm_size(MPI_COMM_WORLD, &amps_size);
    MPI_Comm_rank(MPI_COMM_WORLD, &amps_rank);
 

@@ -131,7 +131,7 @@ int          order)
 
     TimeCycleData    *time_cycle_data;
 
-    CommHandle       *handle = NULL;
+    VectorUpdateCommHandle       *handle = NULL;
 
     SubgridArray     *subgrids;
     SubregionArray   *subregion_array;
@@ -190,8 +190,8 @@ int          order)
    /*-----------------------------------------------------------------------
     * Allocate temp vectors
     *-----------------------------------------------------------------------*/
-    scale           = NewVector(instance_xtra -> grid, 1, 1);
-    right_hand_side = NewVector(instance_xtra -> grid, 1, 1);
+    scale           = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
+    right_hand_side = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
 
    /*-----------------------------------------------------------------------
     * Initialize some data

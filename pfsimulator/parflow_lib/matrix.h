@@ -36,6 +36,16 @@
 
 #include "grid.h"
 
+#ifdef HAVE_SAMRAI
+#include "SAMRAI/xfer/RefineAlgorithm.h"
+#include "SAMRAI/xfer/RefineSchedule.h"
+#endif
+
+enum matrix_type { 
+   matrix_cell_centered,
+   matrix_non_samrai
+};
+
 
 /*--------------------------------------------------------------------------
  * Stencil
@@ -56,12 +66,16 @@ typedef struct
 
 typedef struct
 {
-   double    *data;            /* Pointer to Matrix data */
-   int       *data_index;      /* array of indices corresponding to
+   double*    data;            /* Pointer to Matrix data */
+   int        allocated;       /* Is data was allocated */
+
+   int*       data_index;      /* array of indices corresponding to
 				  stencil coefficient starting positions
 				  in data array */
 
-   Subregion *data_space;
+   int        data_size;       /* Size of data */
+
+   Subregion* data_space;
 
 } Submatrix;
 
@@ -72,9 +86,6 @@ typedef struct
 typedef struct
 {
    Submatrix       **submatrices;  /* Array of pointers to submatrices */
-
-   double           *data;         /* Pointer to Matrix data */
-   int               data_size;    /* Size of data */
 
    Grid             *grid;         /* Matrix domain */
    SubregionArray   *range;        /* Matrix range */
@@ -91,6 +102,17 @@ typedef struct
    int               size;         /* Total number of nonzero coefficients */
 
    CommPkg          *comm_pkg;     /* Information on how to update boundary */
+
+   enum matrix_type type;
+
+#ifdef HAVE_SAMRAI
+   int samrai_id;               /* SAMRAI ID for this vector */
+   // SGS FIXME This is very hacky and should be removed 
+   int table_index;               /* index into table of variables */
+
+   SAMRAI::tbox::Pointer< SAMRAI::xfer::RefineAlgorithm > boundary_fill_refine_algorithm;
+   SAMRAI::tbox::Pointer< SAMRAI::xfer::RefineSchedule >  boundary_fill_schedule;
+#endif
 
 } Matrix;
 
@@ -134,13 +156,15 @@ typedef struct
 #define SubmatrixElt(submatrix, s, x, y, z) \
 (SubmatrixStencilData(submatrix, s) + SubmatrixEltIndex(submatrix, x, y, z))
 
+#define SubmatrixSize(submatrix) SubmatrixNX((submatrix)) * SubmatrixNY((submatrix)) * \
+   SubmatrixNZ((submatrix))
+   
+
 /*--------------------------------------------------------------------------
  * Accessor functions for the Matrix structure
  *--------------------------------------------------------------------------*/
 
 #define MatrixSubmatrix(matrix,n) ((matrix) -> submatrices[(n)])
-
-#define MatrixData(matrix)        ((matrix) -> data)
 
 #define MatrixGrid(matrix)        ((matrix) -> grid)
 #define MatrixRange(matrix)       ((matrix) -> range)

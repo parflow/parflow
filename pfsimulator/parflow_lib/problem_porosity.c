@@ -424,7 +424,7 @@ int  PorositySizeOfTempData()
    /* set `sz' to max of each of the called modules */
    for (n = 0; n < (public_xtra -> num_geo_indexes); n++)
    {
-      sz = max(sz, PFModuleSizeOfTempData((instance_xtra -> PorosityFieldSimulators)[n]));
+      sz = pfmax(sz, PFModuleSizeOfTempData((instance_xtra -> PorosityFieldSimulators)[n]));
    }
 
    /* add local TempData size to `sz' */

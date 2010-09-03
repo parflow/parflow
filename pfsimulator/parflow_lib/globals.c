@@ -36,6 +36,8 @@
 #include "parflow.h"
 #include "globals.h"
 
+#include <limits.h>
+
 
 /*--------------------------------------------------------------------------
  * NewGlobals
@@ -48,6 +50,35 @@ void   NewGlobals(char  *run_name)
    sprintf(GlobalsRunName,     "%s",    run_name);
    sprintf(GlobalsInFileName,  "%s.%s", run_name, "pfidb");
    sprintf(GlobalsOutFileName, "%s.%s", run_name, "out");
+
+   globals_ptr -> logging_level = 0;
+
+#ifdef min
+#undef min
+#endif
+   globals_ptr -> num_procs =   INT_MIN;
+   globals_ptr -> num_procs_x = INT_MIN;
+   globals_ptr -> num_procs_y = INT_MIN;
+   globals_ptr -> num_procs_z = INT_MIN;
+
+   globals_ptr -> background = 0;
+   globals_ptr -> user_grid = 0;
+   globals_ptr -> max_ref_level = -1;
+
+   globals_ptr -> geom_names = 0;
+   globals_ptr -> geometries = 0;
+   
+   globals_ptr -> phase_names = 0;
+   globals_ptr -> contaminant_names = 0;
+
+   /* Timing Cycle information */
+   globals_ptr -> cycle_names = 0;
+   globals_ptr -> num_cycles = 0;
+
+   globals_ptr -> interval_names = 0;
+   globals_ptr -> interval_divisions = 0;
+   globals_ptr -> intervals = 0;
+   globals_ptr -> repeat_counts = 0;
 }
 
 
@@ -57,7 +88,7 @@ void   NewGlobals(char  *run_name)
 
 void  FreeGlobals()
 {
-   tfree(globals);
+   free(globals);
 }
 
 /*--------------------------------------------------------------------------

@@ -32,13 +32,19 @@
 #ifndef _GLOBALS_HEADER
 #define _GLOBALS_HEADER
 
+#include "Parflow.hxx"
+
+#ifdef HAVE_SAMRAI
+#include "SAMRAI/tbox/Pointer.h"
+#endif
 
 /*----------------------------------------------------------------
  * Globals structure
  *----------------------------------------------------------------*/
 
-typedef struct
+typedef struct _Globals
 {
+
    char     run_name[256];
    char     in_file_name[256];
    char     out_file_name[256];
@@ -49,6 +55,12 @@ typedef struct
    int      num_procs_x;      /* number of processes in x */
    int      num_procs_y;      /* number of processes in y */
    int      num_procs_z;      /* number of processes in z */
+
+
+   /* This process in PxQxR process grid */
+   int      p;  
+   int      q;  
+   int      r;  
 
    /* RDF the following just doesn't seem to make sense here */
    Background     *background;
@@ -72,6 +84,14 @@ typedef struct
    int       *interval_divisions;
    int      **intervals;
    int       *repeat_counts;
+
+   // SGS For debugging remove
+   Grid     *grid3d;
+   Grid     *grid2d;
+
+#ifdef  HAVE_SAMRAI
+   SAMRAI::tbox::Pointer<Parflow> parflow_simulation;
+#endif
 
 } Globals;
 
@@ -101,6 +121,10 @@ amps_ThreadLocalDcl(extern IDB *, input_database);
 #define GlobalsNumProcsY       (globals -> num_procs_y)
 #define GlobalsNumProcsZ       (globals -> num_procs_z)
 
+#define GlobalsP       (globals -> p)
+#define GlobalsQ       (globals -> q)
+#define GlobalsR       (globals -> r)
+
 #define GlobalsBackground      (globals -> background)
 #define GlobalsUserGrid        (globals -> user_grid)
 #define GlobalsMaxRefLevel     (globals -> max_ref_level)
@@ -116,6 +140,8 @@ amps_ThreadLocalDcl(extern IDB *, input_database);
 #define GlobalsRepeatCounts       (globals -> repeat_counts)
 
 #define GlobalsContaminatNames    (globals -> contaminant_names)
-#define GlobalsGeometries    (globals -> geometries)
+#define GlobalsGeometries         (globals -> geometries)
+
+#define GlobalsParflowSimulation   (globals -> parflow_simulation)
 
 #endif

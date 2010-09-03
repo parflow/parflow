@@ -64,9 +64,9 @@ int     *izp)
    dtmp = ceil( log(BackgroundNX(bg)) / log(2) );
    background_level = (int)dtmp;
    dtmp = ceil( log(BackgroundNY(bg)) / log(2) );
-   background_level = max(background_level, (int)dtmp);
+   background_level = pfmax(background_level, (int)dtmp);
    dtmp = ceil( log(BackgroundNZ(bg)) / log(2) );
-   background_level = max(background_level, (int)dtmp);
+   background_level = pfmax(background_level, (int)dtmp);
 
    n = (int)pow(2.0, background_level);
 
@@ -169,7 +169,7 @@ int                 zu_ghost)
       bg_ny = BackgroundNY(bg)*ref;
       bg_nz = BackgroundNZ(bg)*ref;
 
-      ref = Pow2(GlobalsMaxRefLevel);
+      ref = (int)Pow2(GlobalsMaxRefLevel);
 
       /*------------------------------------------
        * set the lower extent values
@@ -177,7 +177,7 @@ int                 zu_ghost)
 
       if (xl_ghost > -1)
       {
-	 xl_ghost = max(xl_ghost, 1);
+	 xl_ghost = pfmax(xl_ghost, 1);
 	 GrGeomExtentsIXLower(extents[is]) =
 	    (SubgridIX(subgrid) - xl_ghost) * ref;
       }
@@ -188,7 +188,7 @@ int                 zu_ghost)
 
       if (yl_ghost > -1)
       {
-	 yl_ghost = max(yl_ghost, 1);
+	 yl_ghost = pfmax(yl_ghost, 1);
 	 GrGeomExtentsIYLower(extents[is]) =
 	    (SubgridIY(subgrid) - yl_ghost) * ref;
       }
@@ -199,7 +199,7 @@ int                 zu_ghost)
 
       if (zl_ghost > -1)
       {
-	 zl_ghost = max(zl_ghost, 1);
+	 zl_ghost = pfmax(zl_ghost, 1);
 	 GrGeomExtentsIZLower(extents[is]) =
 	    (SubgridIZ(subgrid) - zl_ghost) * ref;
       }
@@ -214,7 +214,7 @@ int                 zu_ghost)
 
       if (xu_ghost > -1)
       {
-	 xu_ghost = max(xu_ghost, 1);
+	 xu_ghost = pfmax(xu_ghost, 1);
 	 GrGeomExtentsIXUpper(extents[is]) =
 	    (SubgridIX(subgrid) + SubgridNX(subgrid) + xu_ghost) * ref - 1;
       }
@@ -225,7 +225,7 @@ int                 zu_ghost)
 
       if (yu_ghost > -1)
       {
-	 yu_ghost = max(yu_ghost, 1);
+	 yu_ghost = pfmax(yu_ghost, 1);
 	 GrGeomExtentsIYUpper(extents[is]) =
 	    (SubgridIY(subgrid) + SubgridNY(subgrid) + yu_ghost) * ref - 1;
       }
@@ -236,7 +236,7 @@ int                 zu_ghost)
 
       if (zu_ghost > -1)
       {
-	 zu_ghost = max(zu_ghost, 1);
+	 zu_ghost = pfmax(zu_ghost, 1);
 	 GrGeomExtentsIZUpper(extents[is]) =
 	    (SubgridIZ(subgrid) + SubgridNZ(subgrid) + zu_ghost) * ref - 1;
       }

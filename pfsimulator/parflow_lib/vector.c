@@ -35,8 +35,18 @@
 #include "parflow.h"
 #include "vector.h"
 
+#ifdef HAVE_SAMRAI
+#include "SAMRAI/hier/PatchDescriptor.h"
+#include "SAMRAI/pdat/CellVariable.h"
+#include "SAMRAI/pdat/SideVariable.h"
+
+using namespace SAMRAI;
+
+#endif
+
 #include <stdlib.h>
 
+static int samrai_vector_ids[5][2048];
 
 /*--------------------------------------------------------------------------
  * NewVectorCommPkg:
@@ -49,9 +59,16 @@ CommPkg  *NewVectorCommPkg(
    CommPkg     *new_commpkg;
 
 
-   new_commpkg = NewCommPkg(ComputePkgSendRegion(compute_pkg),
-		    ComputePkgRecvRegion(compute_pkg),
-		    VectorDataSpace(vector), 1, VectorData(vector));
+   Grid *grid = VectorGrid(vector);
+
+   if(GridNumSubgrids(grid) > 1) {
+      PARFLOW_ERROR("NewVectorCommPkg can't be used with number subgrids > 1");
+   } else {
+      
+      new_commpkg = NewCommPkg(ComputePkgSendRegion(compute_pkg),
+			       ComputePkgRecvRegion(compute_pkg),
+			       VectorDataSpace(vector), 1, SubvectorData(VectorSubvector(vector,0)));
+   }
 
    return new_commpkg;
 }
@@ -60,21 +77,102 @@ CommPkg  *NewVectorCommPkg(
  * InitVectorUpdate
  *--------------------------------------------------------------------------*/
 
-CommHandle  *InitVectorUpdate(
+VectorUpdateCommHandle  *InitVectorUpdate(
    Vector      *vector,
    int          update_mode)
 {
+
+   enum ParflowGridType grid_type = invalid_grid_type;
+
+#ifdef HAVE_SAMRAI
+   switch(vector -> type)
+   {
+      case vector_cell_centered : 
+      case vector_side_centered_x :
+      case vector_side_centered_y :
+      case vector_side_centered_z :
+      {
+	 grid_type = flow_3D_grid_type;
+	 break;
+      }
+      case vector_cell_centered_2D : 
+      {
+	 grid_type = surface_2D_grid_type;
+	 break;
+      }
+      case vector_clm_topsoil : 
+      {
+	 grid_type = vector_clm_topsoil_grid_type;
+	 break;
+      }
+      case vector_met :
+      {
+	 grid_type = met_2D_grid_type;
+	 break;
+      }
+      case vector_non_samrai : 
+      {
+	 grid_type = invalid_grid_type;
+	 break;
+      }
+   }
+#endif
+
+   CommHandle *amps_com_handle;
+   if(grid_type == invalid_grid_type)
+   {
+      
 #ifdef SHMEM_OBJECTS
-   return (void *)1;
+      amps_com_handle = NULL;
 #else
-
+      
 #ifdef NO_VECTOR_UPDATE
-   return (void*)1;
+      amps_com_handle = NULL;
 #else
-   return  InitCommunication(VectorCommPkg(vector, update_mode));
+      amps_com_handle = InitCommunication(VectorCommPkg(vector, update_mode));
+#endif
+      
+#endif
+   } else {
+
+#ifdef HAVE_SAMRAI
+      tbox::Dimension dim(GlobalsParflowSimulation -> getDim(grid_type));
+      if(vector -> boundary_fill_refine_algorithm.isNull()) {
+	 tbox::Pointer<hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation -> getPatchHierarchy(grid_type));
+	 const int level_number = 0;
+	 
+	 vector -> boundary_fill_refine_algorithm = new xfer::RefineAlgorithm(dim);
+	 
+	 vector -> boundary_fill_refine_algorithm -> registerRefine(
+	    vector -> samrai_id,
+	    vector -> samrai_id,
+	    vector -> samrai_id,
+	    tbox::Pointer<xfer::RefineOperator>(NULL));
+	 
+	 tbox::Pointer< hier::PatchLevel > level = 
+	    hierarchy->getPatchLevel(level_number);
+	 
+	 vector -> boundary_fill_schedule = vector -> boundary_fill_refine_algorithm
+	    -> createSchedule(level,
+			      level_number-1,
+			      hierarchy,
+			      NULL);
+	 
+      }
+      const double time = 1.0;
+      vector -> boundary_fill_schedule -> fillData(time);
+      
+      amps_com_handle = NULL;
 #endif
 
-#endif
+   }
+
+   VectorUpdateCommHandle *vector_update_comm_handle = ctalloc(VectorUpdateCommHandle, 1);
+   vector_update_comm_handle -> vector = vector;
+   vector_update_comm_handle -> comm_handle = amps_com_handle;
+
+
+   return vector_update_comm_handle;
 }
 
 
@@ -83,17 +181,39 @@ CommHandle  *InitVectorUpdate(
  *--------------------------------------------------------------------------*/
 
 void         FinalizeVectorUpdate(
-   CommHandle  *handle)
+   VectorUpdateCommHandle  *handle)
 {
-#ifdef SHMEM_OBJECTS
-   amps_Sync(amps_CommWorld);
-#else
 
+   switch(handle -> vector -> type)
+   {
+      case vector_cell_centered : 
+      case vector_side_centered_x :
+      case vector_side_centered_y :
+      case vector_side_centered_z :
+      case vector_cell_centered_2D : 
+      case vector_clm_topsoil : 
+      case vector_met : 
+      {
+	 break;
+      }
+      case vector_non_samrai : 
+      {
+#ifdef SHMEM_OBJECTS
+	 amps_Sync(amps_CommWorld);
+#else
+	 
 #ifdef NO_VECTOR_UPDATE
 #else
-   FinalizeCommunication(handle);
+	 FinalizeCommunication(handle -> comm_handle);
 #endif
 #endif
+	 
+	 break;
+      }
+   };
+
+  tfree(handle);
+
 }
 
 
@@ -158,6 +278,12 @@ static Vector  *NewTempVector(
 
    VectorSize(new_vector) = GridSize(grid); /* VectorSize(vector) is vector->size, which is the total number of coefficients */
 
+
+#ifdef HAVE_SAMRAI
+   new_vector -> samrai_id = -1;
+   new_vector -> table_index = -1;
+#endif
+
    return new_vector;
 }
 
@@ -166,24 +292,29 @@ static Vector  *NewTempVector(
  * SetTempVectorData
  *--------------------------------------------------------------------------*/
 
-static void     SetTempVectorData(
-   Vector  *vector,
-   double  *data)
+static void     AllocateVectorData(
+   Vector  *vector)
 { 
    Grid       *grid = VectorGrid(vector);
 
    int         i;
 
-
    /* if necessary, free old CommPkg's */
-   if (VectorData(vector))
-      for(i = 0; i < NumUpdateModes; i++)
-	 FreeCommPkg(VectorCommPkg(vector, i));
+   for(i = 0; i < NumUpdateModes; i++)
+      FreeCommPkg(VectorCommPkg(vector, i));
 
-   VectorData(vector) = data;
 
-   ForSubgridI(i, GridSubgrids(grid))
-      SubvectorData(VectorSubvector(vector, i)) = VectorData(vector);
+   ForSubgridI(i, GridSubgrids(grid)) {
+      Subvector *subvector = VectorSubvector(vector, i);
+
+      int data_size = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
+      SubvectorDataSize(subvector) = data_size;
+
+      double  *data = amps_CTAlloc(double, data_size);
+      VectorSubvector(vector, i) -> allocated = TRUE;
+
+      SubvectorData(VectorSubvector(vector, i)) = data;
+   }
 
    for(i = 0; i < NumUpdateModes; i++)
    {
@@ -197,33 +328,299 @@ static void     SetTempVectorData(
  * NewVector
  *--------------------------------------------------------------------------*/
 
+Vector  *NewVectorType(
+   Grid    *grid,
+   int      nc,
+   int      num_ghost,
+   enum vector_type type)
+{
+    Vector  *new_vector;
+
+    new_vector = NewTempVector(grid, nc, num_ghost);
+
+    enum ParflowGridType grid_type = invalid_grid_type;
+
+#ifdef HAVE_SAMRAI
+    switch(type)
+    {
+       case vector_cell_centered : 
+       case vector_side_centered_x :
+       case vector_side_centered_y :
+       case vector_side_centered_z :
+       {
+	  grid_type = flow_3D_grid_type;
+	  break;
+       }
+       case vector_cell_centered_2D : 
+       {
+	  grid_type = surface_2D_grid_type;
+	  break;
+       }
+      case vector_clm_topsoil : 
+      {
+	  grid_type = vector_clm_topsoil_grid_type;
+	  break;
+      }
+      case vector_met :
+      {
+	 grid_type = met_2D_grid_type;
+	  break;
+      }
+       case vector_non_samrai :
+       {
+	  grid_type = invalid_grid_type;
+	  break;
+       }
+    }
+
+    tbox::Dimension dim(GlobalsParflowSimulation -> getDim(grid_type));
+
+    hier::IntVector ghosts(dim, num_ghost);
+
+    int index = 0;
+    if(grid_type > 0) {
+       for(int i = 0; i < 2048; i++)
+       {
+	  if(samrai_vector_ids[grid_type][i] == 0) {
+	     index = i;
+	     break;
+	  }
+       }
+    }
+
+    std::string variable_name("Vector_" + tbox::Utilities::intToString(grid_type, 1) + "_" +
+			      tbox::Utilities::intToString(index, 4) );
+
+    tbox::Pointer< hier::Variable > variable;
+
+#else 
+
+    type = vector_non_samrai;
+    grid_type = invalid_grid_type;
+
+#endif
+
+    new_vector -> type = type;
+
+
+    switch(type)
+    {
+#ifdef HAVE_SAMRAI    
+       case vector_cell_centered : 
+       {
+	  variable = new pdat::CellVariable<double>(dim, variable_name, 1);	 
+	  break;
+       }
+       case vector_cell_centered_2D : 
+       {
+	  variable = new pdat::CellVariable<double>(dim, variable_name, 1);	 
+	  break;
+       }
+       case vector_clm_topsoil : 
+       {
+	  variable = new pdat::CellVariable<double>(dim, variable_name, 1);	 
+	  break;
+       }
+       case vector_met : 
+       {
+	  variable = new pdat::CellVariable<double>(dim, variable_name, 1);	 
+	  break;
+       }
+       case vector_side_centered_x : 
+       {
+	  variable = new pdat::SideVariable<double>(dim, variable_name, 1, true, 0);
+	  break;
+       }
+       case vector_side_centered_y :
+       {
+	  variable = new pdat::SideVariable<double>(dim, variable_name, 1, true, 1);
+	  break;
+       }
+       case vector_side_centered_z :
+       {
+	  variable = new pdat::SideVariable<double>(dim, variable_name, 1, true, 2);
+	  break;
+       }
+#endif
+       case vector_non_samrai :
+       {
+	  AllocateVectorData(new_vector);
+	  break;
+       }
+       default :
+       {
+	  // SGS add abort
+	  fprintf(stderr, "Invalid variable type\n");
+       }
+    }
+
+
+    /* For SAMRAI vectors set the data pointer */
+    switch(type)
+    {
+#ifdef HAVE_SAMRAI
+       case vector_cell_centered : 
+       case vector_cell_centered_2D : 
+       case vector_side_centered_x :
+       case vector_side_centered_y :
+       case vector_side_centered_z :
+       case vector_clm_topsoil : 
+       case vector_met : 
+       {
+
+	  tbox::Pointer<hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation -> getPatchHierarchy(grid_type));
+	  tbox::Pointer<hier::PatchLevel > level(hierarchy -> getPatchLevel(0));
+
+	  tbox::Pointer<hier::PatchDescriptor> patch_descriptor(hierarchy -> getPatchDescriptor());
+	  
+	  new_vector -> samrai_id = patch_descriptor -> definePatchDataComponent(
+	     variable_name, 
+	     variable->getPatchDataFactory()->cloneFactory(ghosts));
+	  
+	  
+	  samrai_vector_ids[grid_type][index] = new_vector -> samrai_id;
+	  new_vector -> table_index = index;
+	  
+	  level -> allocatePatchData(new_vector -> samrai_id );
+
+#if 0
+// SGS these are not needed for SAMRAI backed vectors?
+	  for(int i = 0; i < NumUpdateModes; i++)
+	  {
+	     VectorCommPkg(new_vector, i) = 
+		NewVectorCommPkg(new_vector, GridComputePkg(grid, i));
+	  }
+#endif
+
+	  int i = 0;
+	  for(hier::PatchLevel::Iterator patch_iterator(level); 
+	      patch_iterator; 
+	      patch_iterator++, i++) {
+	     
+	     const hier::Patch* patch = *patch_iterator;
+	     
+	     const hier::Box patch_box = patch -> getBox();
+
+	     Subvector *subvector = VectorSubvector(new_vector, i);
+	     
+	     switch(type)
+	     {
+		case vector_cell_centered : 
+		case vector_cell_centered_2D : 
+		case vector_clm_topsoil : 
+		case vector_met : 
+		{
+		   tbox::Pointer< pdat::CellData<double> > patch_data(
+		      patch -> getPatchData(new_vector -> samrai_id));
+
+		   // SGS from patchdata?
+		   SubvectorDataSize(subvector) = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
+
+		   SubvectorData(VectorSubvector(new_vector, i)) = patch_data -> getPointer(0);
+
+		   patch_data -> fillAll(0);
+
+		   break;
+		}
+		case vector_side_centered_x :
+		{
+		   const int side = 0;
+
+		   tbox::Pointer< pdat::SideData<double> > patch_data(
+		      patch -> getPatchData(new_vector -> samrai_id));
+
+		   // SGS from patchdata?
+		   SubvectorDataSize(subvector) = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
+
+		   SubvectorData(VectorSubvector(new_vector, i)) = patch_data -> getPointer(side, 0);
+
+		   patch_data -> fillAll(0);
+
+		   break;
+		}
+		case vector_side_centered_y :
+		{
+		   const int side = 1;
+		   tbox::Pointer< pdat::SideData<double> > patch_data(
+		      patch -> getPatchData(new_vector -> samrai_id));
+
+		   // SGS from patchdata?
+		   SubvectorDataSize(subvector) = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
+
+		   SubvectorData(VectorSubvector(new_vector, i)) = patch_data -> getPointer(side, 0);
+
+		   patch_data -> fillAll(0);
+
+		   break;
+		}
+		case vector_side_centered_z :
+		{
+		   const int side = 2;
+		   tbox::Pointer< pdat::SideData<double> > patch_data(
+		      patch -> getPatchData(new_vector -> samrai_id));
+
+		   // SGS from patchdata?
+		   SubvectorDataSize(subvector) = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
+
+		   SubvectorData(VectorSubvector(new_vector, i)) = patch_data -> getPointer(side, 0);
+
+		   patch_data -> fillAll(0);
+
+		   break;
+		}
+		default :
+		   TBOX_ERROR("Invalid variable type");
+	     }
+	  }
+	  break;
+       }
+#else
+       // No SAMRAI, do nothing
+       case vector_cell_centered : 
+       case vector_cell_centered_2D : 
+       case vector_side_centered_x :
+       case vector_side_centered_y :
+       case vector_side_centered_z :
+       case vector_clm_topsoil : 
+       case vector_met : 
+       {
+       }
+#endif
+       case vector_non_samrai :
+	  // This case was already handled above
+	  break;
+    }    
+    return new_vector;
+}
+
 Vector  *NewVector(
    Grid    *grid,
    int      nc,
    int      num_ghost)
 {
-    Vector  *new_vector;
-    double  *data;
-
-    new_vector = NewTempVector(grid, nc, num_ghost);
-
-#ifdef SHMEM_OBJECTS
-    /* Node 0 allocates */
-    if(!amps_Rank(amps_CommWorld))
-       data = amps_CTAlloc(double, SizeOfVector(new_vector));
-#else
-    data = amps_CTAlloc(double, SizeOfVector(new_vector));
-#endif
-
-    SetTempVectorData(new_vector, data);
-
-    return new_vector;
+   return NewVectorType(grid, nc, num_ghost, vector_non_samrai);
 }
 
+
+Vector  *NewNoCommunicationVector(
+   Grid    *grid,
+   int      nc,
+   int      num_ghost)
+{
+   return NewVectorType(grid, nc, num_ghost, vector_non_samrai);
+}
 
 /*--------------------------------------------------------------------------
  * FreeTempVector
  *--------------------------------------------------------------------------*/
+
+void FreeSubvector(Subvector *subvector) 
+{
+   if(subvector -> allocated) {
+      tfree(SubvectorData(subvector));
+   }
+   tfree(subvector);
+}
 
 void FreeTempVector(Vector *vector)
 {
@@ -235,7 +632,7 @@ void FreeTempVector(Vector *vector)
 
    ForSubgridI(i, GridSubgrids(VectorGrid(vector)))
    {
-      tfree(VectorSubvector(vector, i));
+      FreeSubvector(VectorSubvector(vector, i));
    }
 
    FreeSubgridArray(VectorDataSpace(vector));
@@ -252,9 +649,50 @@ void FreeTempVector(Vector *vector)
 void     FreeVector(
    Vector  *vector)
 {
-#ifndef SHMEM_OBJECTS
-    amps_TFree(VectorData(vector));
+
+
+    switch(vector -> type)
+    {
+#ifdef HAVE_SAMRAI
+       case vector_cell_centered : 
+       case vector_cell_centered_2D : 
+       case vector_side_centered_x :
+       case vector_side_centered_y :
+       case vector_side_centered_z :
+       case vector_clm_topsoil :
+       case vector_met :
+       {
+	  ParflowGridType grid_type = flow_3D_grid_type;
+	  if(vector -> type == vector_cell_centered_2D) {
+	     grid_type = surface_2D_grid_type;
+	  }
+
+	 if(!vector -> boundary_fill_refine_algorithm.isNull()) {
+	    vector -> boundary_fill_refine_algorithm.setNull();
+	    vector -> boundary_fill_schedule.setNull();
+	 }
+
+	  tbox::Pointer<hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation -> getPatchHierarchy(grid_type));
+	  tbox::Pointer<hier::PatchLevel > level(hierarchy -> getPatchLevel(0));
+	  
+	  level -> deallocatePatchData(vector -> samrai_id);
+	  
+	  tbox::Pointer<hier::PatchDescriptor> patch_descriptor(hierarchy -> getPatchDescriptor());
+	  patch_descriptor -> removePatchDataComponent(vector -> samrai_id);
+
+	  
+	  samrai_vector_ids[grid_type][vector -> table_index] = 0;
+	  break;
+       }
 #endif
+       case vector_non_samrai :
+       {
+	  break;
+       }
+       default :
+	  // SGS abort here
+	  fprintf(stderr, "Invalid variable type\n");
+    }
 
    FreeTempVector(vector);
 }

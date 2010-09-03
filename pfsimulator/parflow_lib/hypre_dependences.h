@@ -26,8 +26,8 @@
   USA
 **********************************************************************EHEADER*/
 
-#include <HYPRE_struct_mv.h>
-#include <HYPRE_struct_ls.h>
+#include "HYPRE_struct_mv.h"
+#include "HYPRE_struct_ls.h"
 
 /* Note we are using internal hypre methods */
 #include "_hypre_struct_mv.h"

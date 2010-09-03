@@ -236,7 +236,7 @@ RFCondData   *cdata)
       yhi /= lambdaY;
       zhi /= lambdaZ;
 
-      dzeta = min(min(dx,dy),dz) / rzeta;    /* THIS WILL BE MODIFIED SOON */
+      dzeta = pfmin(pfmin(dx,dy),dz) / rzeta;    /* THIS WILL BE MODIFIED SOON */
 
       /*--------------------------------------------------------------------
        * Check to see if we need to do TB and zero out the field.
@@ -297,9 +297,9 @@ RFCondData   *cdata)
 	 unitz = cos(phi);
 	 
 	 /* determine izeta, and nzeta */
-	 zeta = (min(xlo*unitx, xhi*unitx) +
-		 min(ylo*unity, yhi*unity) +
-		 min(sh_zlo*unitz, sh_zhi*unitz));
+	 zeta = (pfmin(xlo*unitx, xhi*unitx) +
+		 pfmin(ylo*unity, yhi*unity) +
+		 pfmin(sh_zlo*unitz, sh_zhi*unitz));
 	 izeta = Index(zeta, dzeta);
 	 nzeta = (int)((fabs((xhi - xlo)*unitx) +
 		  fabs((yhi - ylo)*unity) +

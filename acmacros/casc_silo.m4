@@ -44,11 +44,14 @@ esac
 # Determine which SILO library is built
 if test "${silo_PREFIX+set}" = set; then
    AC_MSG_CHECKING([for SILO library])
-   if test -f ${silo_PREFIX}/lib/libsilo.a; then
-      silo_LIBS='-lsilo'
+   if test -f ${silo_PREFIX}/lib/libsiloxx.a; then
+      silo_LIBS='-lsiloxx'
       AC_MSG_RESULT([using $silo_LIBS])
    elif test -f ${silo_PREFIX}/lib/libsiloh5.a; then
       silo_LIBS='-lsiloh5'
+      AC_MSG_RESULT([using $silo_LIBS])
+   elif test -f ${silo_PREFIX}/lib/libsilo.a; then
+      silo_LIBS='-lsilo'
       AC_MSG_RESULT([using $silo_LIBS])
    else
       AC_MSG_RESULT([using $silo_LIBS])

@@ -16,6 +16,11 @@ default: all
 
 include $(OBJECT)/config/Makefile.config
 
+CXX_SRCS = \
+	Parflow.cxx
+
+CXXOBJS = $(CXX_SRCS:.cxx=.o)
+
 OBJS = \
 	advect.o\
 	advection_godunov.o\
@@ -115,6 +120,7 @@ OBJS = \
         problem_spec_storage.o\
         problem_toposlope_x.o\
         problem_toposlope_y.o\
+	process_grid.o \
 	random.o\
 	ratqr.o\
 	rb_GS_point.o\
@@ -154,8 +160,8 @@ OBJS = \
 	compute_top.o \
 	input_checks.o
 
-$(PARFLOW_LIB_DIR)/$(PARFLOW_LIB): $(OBJS) $(AMPS_LIB_DEPEND)
-	@AR@ rus $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB) $(OBJS)
+$(PARFLOW_LIB_DIR)/$(PARFLOW_LIB): $(OBJS) $(CXXOBJS) $(AMPS_LIB_DEPEND)
+	@AR@ rus $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB) $(OBJS) $(CXXOBJS)
 
 all: $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB)
 

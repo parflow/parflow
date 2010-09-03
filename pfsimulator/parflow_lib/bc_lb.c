@@ -85,7 +85,7 @@ void LBInitializeBC(
    double    rho_g;
 
    /* Communications */
-   CommHandle *handle;
+   VectorUpdateCommHandle *handle;
 	         
    /*--------------------------
     *  Initializations

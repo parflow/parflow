@@ -30,11 +30,10 @@
  * Member functions for Region class.
  *
  *****************************************************************************/
-
-#include <math.h>
 #include "parflow.h"
 #include "grid.h"
 
+#include <math.h>
 
 /*--------------------------------------------------------------------------
  * NewSubregion

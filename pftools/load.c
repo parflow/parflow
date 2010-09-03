@@ -41,11 +41,11 @@
  * LoadParflowB:
  *-----------------------------------------------------------------------*/
 
-void           LoadParflowB(filename, all_subgrids, background, databox)
-char          *filename;
-SubgridArray  *all_subgrids;
-Background    *background;
-Databox       *databox;
+void           LoadParflowB(
+   char          *filename,
+   SubgridArray  *all_subgrids,
+   Background    *background,
+   Databox       *databox)
 {
    char      output_name[MAXPATHLEN];
    FILE     *file;

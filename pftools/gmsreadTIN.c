@@ -35,10 +35,10 @@
  * gms_ReadTINs
  *--------------------------------------------------------------------------*/
 
-void           gms_ReadTINs(TINs_ptr, nTINs_ptr, filename)
-gms_TIN     ***TINs_ptr;
-int           *nTINs_ptr;
-char          *filename;
+void           gms_ReadTINs(
+   gms_TIN     ***TINs_ptr,
+   int           *nTINs_ptr,
+   char          *filename)
 {
    FILE	        *file;
    gms_CardType  card_type;

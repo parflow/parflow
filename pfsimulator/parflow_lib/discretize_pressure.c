@@ -130,7 +130,7 @@ void          DiscretizePressure(
 
    double          gravity, dtmp, *phase_density;
 
-   CommHandle     *handle;
+   VectorUpdateCommHandle     *handle;
 
    BCStruct       *bc_struct;
    double         *bc_patch_values;
@@ -188,12 +188,12 @@ void          DiscretizePressure(
 
    for (phase = 0; phase < num_phases; phase++)
    {
-      tmobility_x[phase]  = NewVector(instance_xtra -> grid, 1, 1);
-      tmobility_y[phase]  = NewVector(instance_xtra -> grid, 1, 1);
-      tmobility_z[phase]  = NewVector(instance_xtra -> grid, 1, 1);
-      tcapillary[phase]   = NewVector(instance_xtra -> grid, 1, 1);
+      tmobility_x[phase]  = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
+      tmobility_y[phase]  = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
+      tmobility_z[phase]  = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
+      tcapillary[phase]   = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
    }
-   tvector                = NewVector(instance_xtra -> grid, 1, 1);
+   tvector                = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
 
    /*-----------------------------------------------------------------------
     * Initialize and set some things
@@ -215,7 +215,7 @@ void          DiscretizePressure(
    InitVector(f, 0.0);
 
    /* Compute scaling factor */
-   scale = min(RealSpaceDX(0), min(RealSpaceDY(0), RealSpaceDZ(0)));
+   scale = pfmin(RealSpaceDX(0), pfmin(RealSpaceDY(0), RealSpaceDZ(0)));
    scale = 1 / scale;
 
    gravity  = ProblemGravity(problem);
@@ -883,8 +883,8 @@ void          DiscretizePressure(
 
    if (MatrixCommPkg(A))
    {
-      handle = InitMatrixUpdate(A);
-      FinalizeMatrixUpdate(handle);
+      CommHandle *matrix_handle = InitMatrixUpdate(A);
+      FinalizeMatrixUpdate(matrix_handle);
    }
 
    /*-----------------------------------------------------------------------
@@ -977,8 +977,9 @@ PFModule    *DiscretizePressureInitInstanceXtra(
 
       stencil = NewStencil(seven_pt_shape, 7);
 
-      (instance_xtra -> A) = NewMatrix(grid, NULL, stencil, ON, stencil);
-      (instance_xtra -> f) = NewVector(grid, 1, 1);
+      (instance_xtra -> A) = NewMatrixType(grid, NULL, stencil, ON, stencil,
+					   matrix_cell_centered);
+      (instance_xtra -> f) = NewVectorType(grid, 1, 1, vector_cell_centered);
 
    }
 

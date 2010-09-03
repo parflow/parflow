@@ -35,8 +35,23 @@
 /*--------------------------------------------------------------------------
  * IntersectLineWithTriangle
  *--------------------------------------------------------------------------*/
+void IntersectLineWithTriangle(
+   unsigned int  line_direction,
+   double        coord_0,
+   double        coord_1,
+   double        v0_x,
+   double        v0_y,
+   double        v0_z,
+   double        v1_x,
+   double        v1_y,
+   double        v1_z,
+   double        v2_x,
+   double        v2_y,
+   double        v2_z,
+   int          *intersects,
+   double       *point,
+   int          *normal_component);
 
-void IntersectLineWithTriangle();
 #define XDIRECTION 0
 #define YDIRECTION 1
 #define ZDIRECTION 2
@@ -753,22 +768,22 @@ int main (int argc, char **argv)
  *
  *--------------------------------------------------------------------------*/
 
-void IntersectLineWithTriangle(line_direction, coord_0, coord_1, v0_x, v0_y, v0_z, v1_x, v1_y, v1_z, v2_x, v2_y, v2_z, intersects, point, normal_component)
-unsigned int  line_direction;
-double        coord_0;
-double        coord_1;
-double        v0_x;
-double        v0_y;
-double        v0_z;
-double        v1_x;
-double        v1_y;
-double        v1_z;
-double        v2_x;
-double        v2_y;
-double        v2_z;
-int          *intersects;
-double       *point;
-int          *normal_component;
+void IntersectLineWithTriangle(
+   unsigned int  line_direction,
+   double        coord_0,
+   double        coord_1,
+   double        v0_x,
+   double        v0_y,
+   double        v0_z,
+   double        v1_x,
+   double        v1_y,
+   double        v1_z,
+   double        v2_x,
+   double        v2_y,
+   double        v2_z,
+   int          *intersects,
+   double       *point,
+   int          *normal_component)
 {
    double      p[3], q[3];
    double      A, B, C, D;

@@ -35,10 +35,10 @@
  * gms_ReadSolids
  *--------------------------------------------------------------------------*/
 
-void           gms_ReadSolids(solids_ptr, nsolids_ptr, filename)
-gms_Solid   ***solids_ptr;
-int           *nsolids_ptr;
-char          *filename;
+void           gms_ReadSolids(
+   gms_Solid   ***solids_ptr,
+   int           *nsolids_ptr,
+   char          *filename)
 {
    FILE	        *file;
    gms_CardType  card_type;

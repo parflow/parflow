@@ -58,10 +58,10 @@ int amps_create_mpi_cont_send_type(
    MPI_Datatype *temp_type;
    MPI_Datatype *new_type = NULL;
 
-   mpi_types = (MPI_Datatype *)calloc(inv->num, sizeof(MPI_Datatype));
-   mpi_block_len = (int *)malloc(sizeof(int)*inv->num);
+   mpi_types = (MPI_Datatype *)calloc((size_t)(inv->num), sizeof(MPI_Datatype));
+   mpi_block_len = (int *)malloc(sizeof(int)*(size_t)(inv->num));
 
-   mpi_displacements = (MPI_Aint *)calloc(inv->num, sizeof(MPI_Aint));
+   mpi_displacements = (MPI_Aint *)calloc((size_t)(inv->num), sizeof(MPI_Aint));
 
    /* for each entry in the invoice pack that entry into the letter         */
    ptr = inv -> list;
@@ -252,9 +252,9 @@ void amps_create_mpi_type(
 
    (void)comm;
 
-   mpi_types = (MPI_Datatype *)calloc(inv->num, sizeof(MPI_Datatype));
-   mpi_block_len = (int *)malloc(sizeof(int)*inv->num);
-   mpi_displacements = (MPI_Aint *)calloc(inv->num, sizeof(MPI_Aint));
+   mpi_types = (MPI_Datatype *)calloc((size_t)(inv->num), sizeof(MPI_Datatype));
+   mpi_block_len = (int *)malloc(sizeof(int)*(size_t)(inv->num));
+   mpi_displacements = (MPI_Aint *)calloc((size_t)(inv->num), sizeof(MPI_Aint));
 
    /* for each entry in the invoice pack that entry into the letter         */
 

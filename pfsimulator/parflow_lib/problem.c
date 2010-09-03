@@ -372,18 +372,18 @@ ProblemData   *NewProblemData(
 
    problem_data = ctalloc(ProblemData, 1);
 
-   ProblemDataPermeabilityX(problem_data) = NewVector(grid, 1, 1);
-   ProblemDataPermeabilityY(problem_data) = NewVector(grid, 1, 1);
-   ProblemDataPermeabilityZ(problem_data) = NewVector(grid, 1, 1);
+   ProblemDataPermeabilityX(problem_data) = NewVectorType(grid, 1, 1, vector_cell_centered);
+   ProblemDataPermeabilityY(problem_data) = NewVectorType(grid, 1, 1, vector_cell_centered);
+   ProblemDataPermeabilityZ(problem_data) = NewVectorType(grid, 1, 1, vector_cell_centered);
 
-   ProblemDataSpecificStorage(problem_data) = NewVector(grid, 1, 1); //sk
-   ProblemDataTSlopeX(problem_data) = NewVector(grid2d, 1, 1); //sk
-   ProblemDataTSlopeY(problem_data) = NewVector(grid2d, 1, 1); //sk
-   ProblemDataMannings(problem_data) = NewVector(grid2d, 1, 1); //sk
+   ProblemDataSpecificStorage(problem_data) = NewVectorType(grid, 1, 1, vector_cell_centered); //sk
+   ProblemDataTSlopeX(problem_data)  = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D); //sk
+   ProblemDataTSlopeY(problem_data)  = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D); //sk
+   ProblemDataMannings(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D); //sk
 
-   ProblemDataIndexOfDomainTop(problem_data) = NewVector(grid2d, 1, 1); 
+   ProblemDataIndexOfDomainTop(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D); 
 
-   ProblemDataPorosity(problem_data) = NewVector(grid, 1, 1);
+   ProblemDataPorosity(problem_data) = NewVectorType(grid, 1, 1, vector_cell_centered);
 
    ProblemDataBCPressureData(problem_data) = NewBCPressureData();
 

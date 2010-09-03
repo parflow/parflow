@@ -170,7 +170,7 @@ int           symm_part)      /* Specifies whether to compute just the
    int          nx_po, ny_po, nz_po;
    int          sy_v, sz_v;
    int          sy_m, sz_m;
-   int          ip, ipo, im, iv, io;
+   int          ip, ipo, im, iv;
 
    double       dtmp, dx, dy, dz, vol, ffx, ffy, ffz;
    double       diff, coeff, x_coeff, y_coeff, z_coeff;
@@ -189,14 +189,14 @@ int           symm_part)      /* Specifies whether to compute just the
    int         *fdir;
    int          ipatch, ival;
    
-   CommHandle  *handle;
+   VectorUpdateCommHandle  *handle;
 
 
    /*-----------------------------------------------------------------------
     * Free temp vectors
     *-----------------------------------------------------------------------*/
-   density_der     = NewVector(grid, 1, 1);
-   saturation_der  = NewVector(grid, 1, 1);
+   density_der     = NewVectorType(grid, 1, 1, vector_cell_centered);
+   saturation_der  = NewVectorType(grid, 1, 1, vector_cell_centered);
 
    /*-----------------------------------------------------------------------
     * reuse the temp vectors for both saturation and rel_perm calculations.
@@ -962,7 +962,6 @@ int           symm_part)      /* Specifies whether to compute just the
 			case 1:
 
 			   ip   = SubvectorEltIndex(p_sub, i, j, k);
-			   io   = SubvectorEltIndex(p_sub, i, j, 0);
 			   im = SubmatrixEltIndex(J_sub, i, j, k);
          
 			   if ((pp[ip]) > 0.0) 
@@ -1038,8 +1037,8 @@ int           symm_part)      /* Specifies whether to compute just the
 
    if (MatrixCommPkg(J))
    {
-      handle = InitMatrixUpdate(J);
-      FinalizeMatrixUpdate(handle);
+      CommHandle *matrix_handle = InitMatrixUpdate(J);
+      FinalizeMatrixUpdate(matrix_handle);
    }
 
    *ptr_to_J = J;
@@ -1089,9 +1088,11 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
       stencil = NewStencil(jacobian_stencil_shape, 7);
 
       if (symmetric_jac)
-	 (instance_xtra -> J) = NewMatrix(grid, NULL, stencil, ON, stencil);
+	 (instance_xtra -> J) = NewMatrixType(grid, NULL, stencil, ON, stencil, 
+					      matrix_cell_centered);
       else
-	 (instance_xtra -> J) = NewMatrix(grid, NULL, stencil, OFF, stencil);
+	 (instance_xtra -> J) = NewMatrixType(grid, NULL, stencil, OFF, stencil,
+					      matrix_cell_centered);
 
    }
 

@@ -62,7 +62,7 @@ void    PermeabilityFace(
 
    Grid         *z_grid   = (instance_xtra -> z_grid);
 
-   CommHandle   *handle;
+   VectorUpdateCommHandle   *handle;
 
    SubgridArray *subgrids;
    Subgrid      *subgrid;

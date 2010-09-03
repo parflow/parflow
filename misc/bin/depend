@@ -1,0 +1,77 @@
+#!/bin/sh
+#BHEADER**********************************************************************
+#
+#  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+#  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+#  by the Parflow Team (see the CONTRIBUTORS file)
+#  <parflow\@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+#
+#  This file is part of Parflow. For details, see
+#  http://www.llnl.gov/casc/parflow
+#
+#  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+#  for the GNU Lesser General Public License.
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License (as published
+#  by the Free Software Foundation) version 2.1 dated February 1999.
+#
+#  This program is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+#  and conditions of the GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+#  USA
+#**********************************************************************EHEADER
+
+##
+## Generate dependency information for all files in the current directory
+## and subdirectories.
+##
+
+BIN=`dirname $0`
+bindir=`cd $BIN && pwd`
+
+PERL=${PERL:-perl}
+COMP="$PERL $BIN/cmp.pl"
+
+DIRS=`find . -type d -print | grep -v '\(OLD|NEW|BAK|SAVE|to_be_implemented\|noprefix\|CVS\|\.svn\|\.git\)'`
+for DIR in $DIRS ; do
+
+   #
+   # Generate a dependency file in the subdirectory if *.C files exist
+   #
+
+   echo "Checking dependencies in directory "$DIR
+   FILES=`(cd $DIR; find . -name \*.[Ccf] -or -name \*.cxx)`
+   if [ "*.[fCc] *.cxx" != "$FILES" ] ; then
+      (cd $DIR && perl $bindir/depend.pl . $SAMRAI_DIR/include $FILES)
+
+      #
+      # If Makefile.depend does not exist, then create it
+      #
+
+      if [ ! -r $DIR/Makefile.depend ] ; then
+         echo "   creating "$DIR/Makefile.depend
+         mv -f $DIR/Makefile.depend.tmp $DIR/Makefile.depend
+
+      #
+      # Otherwise, copy if the two files are not the same.  Remove the CVS
+      # portions of the header to ignore changes in date/revision/modified.
+      #
+
+      else
+         if $COMP $DIR/Makefile.depend.tmp $DIR/Makefile.depend ; then
+            rm -f $DIR/Makefile.depend.tmp
+         else
+            echo "   updating "$DIR/Makefile.depend
+            mv -f $DIR/Makefile.depend.tmp $DIR/Makefile.depend
+         fi
+      fi
+   fi
+done
+
+exit 0

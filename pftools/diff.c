@@ -79,12 +79,12 @@
  *   treated as if it were exactly 0.
  *-----------------------------------------------------------------------*/
 
-void      SigDiff(v1, v2, m, absolute_zero, fp)
-Databox  *v1;
-Databox  *v2;
-int       m;
-double    absolute_zero;
-FILE     *fp;
+void      SigDiff(
+   Databox  *v1,
+   Databox  *v2,
+   int       m,
+   double    absolute_zero,
+   FILE     *fp)
 {
    double         *v1_p, *v2_p;
 
@@ -143,8 +143,8 @@ FILE     *fp;
 	       if (m >= 0)
                {
 
-	          fprintf(fp, "Absolute difference at (% 3d, % 3d, % 3d): %e\n",
-	             i, j, k, adiff);
+	          fprintf(fp, "(%d,%d,%d) : %e, %e, %e\n",
+			  i, j, k, adiff, *v1_p, *v2_p);
                }
                   
 	       if (sdiff > max_sdiff)
@@ -184,13 +184,13 @@ FILE     *fp;
 }
 
 
-void         MSigDiff(interp, v1, v2, m, absolute_zero, result)
-Tcl_Interp  *interp;
-Databox     *v1;
-Databox     *v2;
-int          m;
-double       absolute_zero;
-Tcl_Obj     *result;
+void         MSigDiff(
+Tcl_Interp  *interp,
+Databox     *v1,
+Databox     *v2,
+int          m,
+double       absolute_zero,
+Tcl_Obj     *result)
 {
    double         *v1_p, *v2_p;
 
@@ -307,12 +307,14 @@ Tcl_Obj     *result;
 }
 
 
-double    DiffElt(v1, v2, i, j, k, m, absolute_zero)
-Databox  *v1;
-Databox  *v2;
-int       i, j, k;
-int       m;
-double    absolute_zero;
+double    DiffElt(
+   Databox  *v1,
+   Databox  *v2,
+   int       i, 
+   int j, 
+   int k,
+   int       m,
+   double    absolute_zero)
 {
    double         *v1_p, *v2_p;
 

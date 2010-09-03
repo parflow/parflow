@@ -315,9 +315,9 @@ int       SetProblemDataSizeOfTempData()
 
 
    /* set `sz' to max of each of the called modules */
-   sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> geometries));
-   sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> porosity));
-   sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> permeability));
+   sz = pfmax(sz, PFModuleSizeOfTempData(instance_xtra -> geometries));
+   sz = pfmax(sz, PFModuleSizeOfTempData(instance_xtra -> porosity));
+   sz = pfmax(sz, PFModuleSizeOfTempData(instance_xtra -> permeability));
 
    return sz;
 }

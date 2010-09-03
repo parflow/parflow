@@ -689,7 +689,7 @@ BCStruct    *BCPressure(
 	       patch_values = ctalloc(double, patch_values_size);
 	       values[ipatch][is] = patch_values;
 
-               tmp_vector = NewVector(grid, 1, 0);
+               tmp_vector = NewVectorType(grid, 1, 0, vector_cell_centered);
 
                filename = BCPressureType4FileName(bc_pressure_type4);
                ReadPFBinary(filename, tmp_vector);
@@ -738,7 +738,7 @@ BCStruct    *BCPressure(
 	       patch_values = ctalloc(double, patch_values_size);
 	       values[ipatch][is] = patch_values;
 
-               tmp_vector = NewVector(grid, 1, 0);
+               tmp_vector = NewVectorType(grid, 1, 0, vector_cell_centered);
 
                filename = BCPressureType5FileName(bc_pressure_type5);
                ReadPFBinary(filename, tmp_vector);

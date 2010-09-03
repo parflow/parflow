@@ -235,7 +235,6 @@ int          fcn)               /* Flag determining what to calculate
 		  cwet = cwets[ir];
 
 		     ptdat[ipt] = cdry + psdat[ips] * (cwet - cdry);
-                     //printf("      k %d ptdat %e cdry %e psdat %e cwet %e \n",k,ptdat[ipt],cdry,psdat[ips],cwet);
 	       });
 	    }    /* End if clause */
 	    else /* fcn = CALCDER */
@@ -249,7 +248,6 @@ int          fcn)               /* Flag determining what to calculate
 		  cwet     = cwets[ir];
 
 		     ptdat[ipt] = psdat[ips] *(cwet - cdry); /* Here psdat contains the derivative dS/dp */
-                     //printf("Deriv k %d ptdat %e cdry %e psdat %e cwet %e \n",k,ptdat[ipt],cdry,psdat[ips],cwet);
 	       });
 	    }   /* End else clause */
 	 }      /* End subgrid loop */
@@ -377,8 +375,8 @@ PFModule  *ThermalConductivityInitInstanceXtra(
 	 dummy1 = (Type1 *)(public_xtra -> data);
 	 if ( (dummy1->data_from_file) == 1 )
 	 {
-	    dummy1 -> cwet_values = NewVector(grid, 1, 1);
-	    dummy1 -> cdry_values = NewVector(grid, 1, 1);
+	    dummy1 -> cwet_values = NewVectorType(grid, 1, 1, vector_cell_centered);
+	    dummy1 -> cdry_values = NewVectorType(grid, 1, 1, vector_cell_centered);
 	 }
       }
    }

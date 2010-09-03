@@ -51,8 +51,9 @@
  * Compute net cell flux from conductivity and hydraulic head
  *-----------------------------------------------------------------------*/
 
-Databox       *CompFlux(k, h)
-Databox       *k, *h;
+Databox       *CompFlux(
+   Databox       *k, 
+   Databox       *h)
 {
    Databox        *flux;
 
@@ -68,9 +69,6 @@ Databox       *k, *h;
                    cell_ym1, cell_yp1,
                    cell_zm1, cell_zp1;
    int             ii, jj, kk;
-
-
-
 
    nx = DataboxNx(k);
    ny = DataboxNy(k);

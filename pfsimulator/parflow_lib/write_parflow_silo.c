@@ -33,15 +33,14 @@
 
 #include "parflow.h"
 
-#include <sys/stat.h>
-
 #ifdef HAVE_SILO
 #include "silo.h"
 #endif
 
 #include <math.h>
 
-#include "parflow.h"
+// SGS FIXME for C++
+#include <sys/stat.h>
 
 amps_ThreadLocalDcl(int , s_parflow_silo_filetype);
 

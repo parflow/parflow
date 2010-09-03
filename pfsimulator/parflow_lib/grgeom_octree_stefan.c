@@ -635,17 +635,17 @@ int                  max_level;
    for(ie = 0; ie < ea_size; ie++)
    {
       GrGeomExtentsIXLower(ea_extents[ie]) =
-	 max(GrGeomExtentsIXLower(ea_extents[ie]), 0);
+	 pfmax(GrGeomExtentsIXLower(ea_extents[ie]), 0);
       GrGeomExtentsIYLower(ea_extents[ie]) =
-	 max(GrGeomExtentsIYLower(ea_extents[ie]), 0);
+	 pfmax(GrGeomExtentsIYLower(ea_extents[ie]), 0);
       GrGeomExtentsIZLower(ea_extents[ie]) =
-	 max(GrGeomExtentsIZLower(ea_extents[ie]), 0);
+	 pfmax(GrGeomExtentsIZLower(ea_extents[ie]), 0);
       GrGeomExtentsIXUpper(ea_extents[ie]) =
-	 min(GrGeomExtentsIXUpper(ea_extents[ie]), (num_indices-1));
+	 pfmin(GrGeomExtentsIXUpper(ea_extents[ie]), (num_indices-1));
       GrGeomExtentsIYUpper(ea_extents[ie]) =
-	 min(GrGeomExtentsIYUpper(ea_extents[ie]), (num_indices-1));
+	 pfmin(GrGeomExtentsIYUpper(ea_extents[ie]), (num_indices-1));
       GrGeomExtentsIZUpper(ea_extents[ie]) =
-	 min(GrGeomExtentsIZUpper(ea_extents[ie]), (num_indices-1));
+	 pfmin(GrGeomExtentsIZUpper(ea_extents[ie]), (num_indices-1));
    }
 
    /*-------------------------------------------------------------
@@ -791,30 +791,30 @@ int                  max_level;
       octree_v2_z = (v2_z - zlower) / dz_lines;
 
       /* Get overall bounds for the vertices */
-      tbox_x_lower = min(min(octree_v0_x, octree_v1_x), octree_v2_x);
-      tbox_y_lower = min(min(octree_v0_y, octree_v1_y), octree_v2_y);
-      tbox_z_lower = min(min(octree_v0_z, octree_v1_z), octree_v2_z);
-      tbox_x_upper = max(max(octree_v0_x, octree_v1_x), octree_v2_x);
-      tbox_y_upper = max(max(octree_v0_y, octree_v1_y), octree_v2_y);
-      tbox_z_upper = max(max(octree_v0_z, octree_v1_z), octree_v2_z);
+      tbox_x_lower = pfmin(pfmin(octree_v0_x, octree_v1_x), octree_v2_x);
+      tbox_y_lower = pfmin(pfmin(octree_v0_y, octree_v1_y), octree_v2_y);
+      tbox_z_lower = pfmin(pfmin(octree_v0_z, octree_v1_z), octree_v2_z);
+      tbox_x_upper = pfmax(pfmax(octree_v0_x, octree_v1_x), octree_v2_x);
+      tbox_y_upper = pfmax(pfmax(octree_v0_y, octree_v1_y), octree_v2_y);
+      tbox_z_upper = pfmax(pfmax(octree_v0_z, octree_v1_z), octree_v2_z);
 
       /* This is to avoid integer overflow below */
-      tbox_x_lower = min(tbox_x_lower, 2*num_indices);
-      tbox_y_lower = min(tbox_y_lower, 2*num_indices);
-      tbox_z_lower = min(tbox_z_lower, 2*num_indices);
-      tbox_x_upper = max(tbox_x_upper, -1);
-      tbox_y_upper = max(tbox_y_upper, -1);
-      tbox_z_upper = max(tbox_z_upper, -1);
+      tbox_x_lower = pfmin(tbox_x_lower, 2*num_indices);
+      tbox_y_lower = pfmin(tbox_y_lower, 2*num_indices);
+      tbox_z_lower = pfmin(tbox_z_lower, 2*num_indices);
+      tbox_x_upper = pfmax(tbox_x_upper, -1);
+      tbox_y_upper = pfmax(tbox_y_upper, -1);
+      tbox_z_upper = pfmax(tbox_z_upper, -1);
 
       for(ie = 0; ie < ea_size; ie++)
       {
 	 /* Intersect bounds with xyz_lines extents */
-	 ix_lower = (int)floor((double) max(tbox_x_lower, ixl_lines[ie]));
-	 iy_lower = (int)floor((double) max(tbox_y_lower, iyl_lines[ie]));
-	 iz_lower = (int)floor((double) max(tbox_z_lower, izl_lines[ie]));
-	 ix_upper = (int)ceil((double) min(tbox_x_upper, ixu_lines[ie]));
-	 iy_upper = (int)ceil((double) min(tbox_y_upper, iyu_lines[ie]));
-	 iz_upper = (int)ceil((double) min(tbox_z_upper, izu_lines[ie]));
+	 ix_lower = (int)floor((double) pfmax(tbox_x_lower, ixl_lines[ie]));
+	 iy_lower = (int)floor((double) pfmax(tbox_y_lower, iyl_lines[ie]));
+	 iz_lower = (int)floor((double) pfmax(tbox_z_lower, izl_lines[ie]));
+	 ix_upper = (int)ceil((double) pfmin(tbox_x_upper, ixu_lines[ie]));
+	 iy_upper = (int)ceil((double) pfmin(tbox_y_upper, iyu_lines[ie]));
+	 iz_upper = (int)ceil((double) pfmin(tbox_z_upper, izu_lines[ie]));
 
 	 for(j = iy_lower; j <= iy_upper; j++)
 	 {
@@ -1769,12 +1769,12 @@ int             octree_iz;
             inc = Pow2(l);
 
             /* Find the beginning and ending indices - accounting for bounds */
-            i_begin = IndexSpaceX(max(RealSpaceX(ix, rx), xlower), rx);
-            i_end   = IndexSpaceX(min(RealSpaceX((ix + (nx - 1)), rx), xupper), rx);
-            j_begin = IndexSpaceY(max(RealSpaceY(iy, ry), ylower), ry);
-            j_end   = IndexSpaceY(min(RealSpaceY((iy + (ny - 1)), ry), yupper), ry);
-            k_begin = IndexSpaceZ(max(RealSpaceZ(iz, rz), zlower), rz);
-            k_end   = IndexSpaceZ(min(RealSpaceZ((iz + (nz - 1)), rz), zupper), rz);
+            i_begin = IndexSpaceX(pfmax(RealSpaceX(ix, rx), xlower), rx);
+            i_end   = IndexSpaceX(pfmin(RealSpaceX((ix + (nx - 1)), rx), xupper), rx);
+            j_begin = IndexSpaceY(pfmax(RealSpaceY(iy, ry), ylower), ry);
+            j_end   = IndexSpaceY(pfmin(RealSpaceY((iy + (ny - 1)), ry), yupper), ry);
+            k_begin = IndexSpaceZ(pfmax(RealSpaceZ(iz, rz), zlower), rz);
+            k_end   = IndexSpaceZ(pfmin(RealSpaceZ((iz + (nz - 1)), rz), zupper), rz);
 
             /*-------------------------------------------------------
              * Add Inside and Outside nodes in z

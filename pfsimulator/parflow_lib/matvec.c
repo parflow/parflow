@@ -45,7 +45,7 @@ Vector         *x,
 double          beta,
 Vector         *y)
 {
-   CommHandle *handle = NULL;
+   VectorUpdateCommHandle *handle = NULL;
 
    Grid           *grid = MatrixGrid(A);
    Subgrid        *subgrid;

@@ -35,10 +35,10 @@
  * gms_WriteTINs
  *--------------------------------------------------------------------------*/
 
-void           gms_WriteTINs(TINs, nTINs, filename)
-gms_TIN      **TINs;
-int            nTINs;
-char          *filename;
+void           gms_WriteTINs(
+   gms_TIN      **TINs,
+   int            nTINs,
+   char          *filename)
 {
    FILE	        *file;
 

@@ -297,6 +297,10 @@ pfset Solver.Linear.Preconditioner                       MGSemi
 pfset Solver.Linear.Preconditioner.MGSemi.MaxIter        10
 pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      100
 
+pfset Solver.WriteSiloSubsurfData True
+pfset Solver.WriteSiloPressure True
+pfset Solver.WriteSiloSaturation True
+pfset Solver.WriteSiloConcentration True
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files

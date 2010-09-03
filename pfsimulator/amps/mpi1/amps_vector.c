@@ -28,6 +28,8 @@
 
 #include "amps.h"
 
+#include <strings.h>
+
 void amps_vector_in (amps_Comm comm , int type , char **data , char **buf_ptr , int dim , int *len , int *stride )
 {
    int i;
@@ -152,7 +154,7 @@ int amps_vector_align (amps_Comm comm , int type , char **data , char **buf_ptr 
 
 int amps_vector_sizeof_buffer (amps_Comm comm , int type , char **data , char **buf_ptr , int dim , int *len , int *stride )
 {
-   int size = 0;
+   unsigned int size = 0;
    int i;
 
    (void) comm;
@@ -184,16 +186,16 @@ int amps_vector_sizeof_buffer (amps_Comm comm , int type , char **data , char **
 
    for(i = 1; i < dim ; i++)
    {
-      size = size*len[i];
+      size = size*(size_t)len[i];
    }
 
-   return size;
+   return (int)size;
 }
 
 int amps_vector_sizeof_local (amps_Comm comm , int type , char **data , char **buf_ptr , int dim , int *len , int *stride )
 {
-   int size = 0;
-   int el_size = 0;
+   unsigned int size = 0;
+   unsigned int el_size = 0;
    int i;
 
    (void) comm;
@@ -235,10 +237,10 @@ int amps_vector_sizeof_local (amps_Comm comm , int type , char **data , char **b
 
    for(i = 1; i < dim ; i++)
    {
-      size = size*len[i] + stride[i]*(len[i] - 1)*el_size;
+      size = size*(size_t)(len[i]) + (size_t)(stride[i]*(len[i] - 1))*el_size;
    }
 
-   return size;
+   return (int)size;
 }
 
 

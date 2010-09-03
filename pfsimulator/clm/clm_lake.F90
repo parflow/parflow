@@ -254,7 +254,7 @@ subroutine clm_lake (clm)
 
      ! Evaluated stability-dependent variables using moz from prior iteration
 
-     call clm_obult (0., z0mg, z0hg, z0qg, obu, um, ustar, temp1, temp2, clm)
+     call clm_obult (0.0, z0mg, z0hg, z0qg, obu, um, ustar, temp1, temp2, clm)
      obuold = obu
 
      ! Get derivative of fluxes with repect to ground temperature

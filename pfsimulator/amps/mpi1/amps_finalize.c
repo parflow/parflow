@@ -27,6 +27,9 @@
 **********************************************************************EHEADER*/
 #include "amps.h"
 
+
+extern int amps_mpi_initialized;
+
 /*===========================================================================*/
 /**
 
@@ -61,7 +64,9 @@ to an error condition is problematic.
 int amps_Finalize()
 {
 
-   MPI_Finalize();
+   if(amps_mpi_initialized) {
+      MPI_Finalize();
+   }
 
 #ifdef AMPS_MALLOC_DEBUG
   /* check out the heap and shut everything down if we are in debug mode */

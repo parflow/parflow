@@ -31,10 +31,10 @@
  *
  *****************************************************************************/
 
-#include <math.h>
 #include "parflow.h"
 #include "grid.h"
 
+#include <math.h>
 
 /*--------------------------------------------------------------------------
  * NewGrid
@@ -77,16 +77,18 @@ Grid  *NewGrid(
 void  FreeGrid(
    Grid  *grid)
 {
-   FreeSubgridArray(GridAllSubgrids(grid));
-
-   /* these subgrid arrays point to subgrids in all_subgrids */
-   SubgridArraySize(GridSubgrids(grid)) = 0;
-   FreeSubgridArray(GridSubgrids(grid));
-
-   if (GridComputePkgs(grid))
-      FreeComputePkgs(grid);
-
-   tfree(grid);
+   if(grid)  {
+      FreeSubgridArray(GridAllSubgrids(grid));
+      
+      /* these subgrid arrays point to subgrids in all_subgrids */
+      SubgridArraySize(GridSubgrids(grid)) = 0;
+      FreeSubgridArray(GridSubgrids(grid));
+      
+      if (GridComputePkgs(grid))
+	 FreeComputePkgs(grid);
+      
+      tfree(grid);
+   }
 }
 
 
@@ -309,8 +311,8 @@ Subgrid  *ExtractSubgrid(
  *   For subgrids S_1 = (xl_1, yl_1, zl_1) X (xu_1, yu_1, zu_1) and
  *                S_2 = (xl_2, yl_2, zl_2) X (xu_2, yu_2, zu_2) in the same
  *   index space (i.e. same resolution background grid),
- *   S = S_1 * S_2 = (max(xl_i), max(yl_i), max(zl_i)) X
- *                   (min(xu_i), min(yu_i), min(zu_i))
+ *   S = S_1 * S_2 = (pfmax(xl_i), pfmax(yl_i), pfmax(zl_i)) X
+ *                   (pfmin(xu_i), pfmin(yu_i), pfmin(zu_i))
  *
  *   This routine assumes that rs_i >= rs_j, for all s = x, y, z, where
  *   (i,j) = (1,2) or (2,1).  i.e. one of the subgrids passed in has
@@ -343,27 +345,27 @@ Subgrid  *IntersectSubgrids(
    }
 
    /* find x bounds */
-   SubgridNX(new_subgrid) = min(SubgridIX(new_subgrid) + SubgridNX(new_subgrid),
+   SubgridNX(new_subgrid) = pfmin(SubgridIX(new_subgrid) + SubgridNX(new_subgrid),
 			SubgridIX(old) + SubgridNX(old));
-   SubgridIX(new_subgrid)  = max(SubgridIX(new_subgrid), SubgridIX(old));
+   SubgridIX(new_subgrid)  = pfmax(SubgridIX(new_subgrid), SubgridIX(old));
    if (SubgridNX(new_subgrid) > SubgridIX(new_subgrid))
       SubgridNX(new_subgrid) -= SubgridIX(new_subgrid);
    else
       goto empty;
 
    /* find y bounds */
-   SubgridNY(new_subgrid) = min(SubgridIY(new_subgrid) + SubgridNY(new_subgrid),
+   SubgridNY(new_subgrid) = pfmin(SubgridIY(new_subgrid) + SubgridNY(new_subgrid),
 			SubgridIY(old) + SubgridNY(old));
-   SubgridIY(new_subgrid)  = max(SubgridIY(new_subgrid), SubgridIY(old));
+   SubgridIY(new_subgrid)  = pfmax(SubgridIY(new_subgrid), SubgridIY(old));
    if (SubgridNY(new_subgrid) > SubgridIY(new_subgrid))
       SubgridNY(new_subgrid) -= SubgridIY(new_subgrid);
    else
       goto empty;
 
    /* find z bounds */
-   SubgridNZ(new_subgrid) = min(SubgridIZ(new_subgrid) + SubgridNZ(new_subgrid),
+   SubgridNZ(new_subgrid) = pfmin(SubgridIZ(new_subgrid) + SubgridNZ(new_subgrid),
 			SubgridIZ(old) + SubgridNZ(old));
-   SubgridIZ(new_subgrid)  = max(SubgridIZ(new_subgrid), SubgridIZ(old));
+   SubgridIZ(new_subgrid)  = pfmax(SubgridIZ(new_subgrid), SubgridIZ(old));
    if (SubgridNZ(new_subgrid) > SubgridIZ(new_subgrid))
       SubgridNZ(new_subgrid) -= SubgridIZ(new_subgrid);
    else

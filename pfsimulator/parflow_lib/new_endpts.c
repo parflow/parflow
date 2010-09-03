@@ -204,7 +204,7 @@ void NewEndpts (
 	condn = (taun + 1.0) / (taun - 1.0); 
 	cfo = (sqrt(condo) - 1.0) /(sqrt(condo) + 1.0);
 	cfn = (sqrt(condn) - 1.0) /(sqrt(condn) + 1.0);
-	epz = max(ereps, sqrtmep);
+	epz = pfmax(ereps, sqrtmep);
 	test = log(epz) * (1.0/log(cfo) - 1.0/log(cfn));
 
 	/* Resume iteration with current preconditioning matrix */

@@ -84,6 +84,14 @@
 #undef HAVE_CEGDB
 #endif
 
+/*
+ * SAMRAI
+ */
+
+#ifndef HAVE_SAMRAI
+#undef HAVE_SAMRAI
+#endif
+
 
 /*
  * Silo 
@@ -129,6 +137,23 @@
 
 /* Define if you have the 'mallinfo' function. */
 #undef HAVE_MALLINFO
+
+/*
+ * Prevent inclusion of mpi C++ bindings in mpi.h includes.
+ * This is done in here rather than amps.h since other
+ * files include MPI.h.
+ */
+#ifndef MPI_NO_CPPBIND
+#define MPI_NO_CPPBIND
+#endif
+
+#ifndef MPICH_SKIP_MPICXX
+#define MPICH_SKIP_MPICXX
+#endif
+
+#ifndef OMPI_SKIP_MPICXX
+#define OMPI_SKIP_MPICXX
+#endif
 
 
 #endif

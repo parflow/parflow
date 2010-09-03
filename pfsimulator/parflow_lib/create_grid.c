@@ -112,6 +112,9 @@ Grid           *CreateGrid(
 
    CreateComputePkgs(grid);
 
+   // SGS Debug
+   globals -> grid3d = grid;
+
    return grid;
 }
 

@@ -28,7 +28,7 @@
 
 #include "parflow.h"
 
-#include "float.h"
+#include <float.h>
 
 /*--------------------------------------------------------------------------
  * Structures
@@ -169,10 +169,13 @@ int          fcn)               /* Flag determining what to calculate
    int            *region_indices, num_regions, ir;
 
    /* Initialize saturations */
+
+// SGS FIXME why is this needed?
+#undef max		  
   InitVectorAll(phase_saturation, -FLT_MAX);
 
-   switch((public_xtra -> type))
-   {
+  switch((public_xtra -> type))
+  {
 
    case 0:  /* Constant saturation */
    {
@@ -727,16 +730,16 @@ PFModule  *SaturationInitInstanceXtra(
 	 dummy1 = (Type1 *)(public_xtra -> data);
 	 if ( (dummy1->data_from_file) == 1 )
 	 {
-	    dummy1 -> n_values     = NewVector(grid, 1, 1);
-	    dummy1 -> alpha_values = NewVector(grid, 1, 1);
-	    dummy1 -> s_res_values = NewVector(grid, 1, 1);
-	    dummy1 -> s_sat_values = NewVector(grid, 1, 1);
+	    dummy1 -> n_values     = NewVectorType(grid, 1, 1, vector_cell_centered);
+	    dummy1 -> alpha_values = NewVectorType(grid, 1, 1, vector_cell_centered);
+	    dummy1 -> s_res_values = NewVectorType(grid, 1, 1, vector_cell_centered);
+	    dummy1 -> s_sat_values = NewVectorType(grid, 1, 1, vector_cell_centered);
 	 }
       }
       if (public_xtra -> type == 5)  
       {
 	 dummy5 = (Type5 *)(public_xtra -> data);
-         (dummy5 -> satRF) = NewVector(grid, 1, 1);
+         (dummy5 -> satRF) = NewVectorType(grid, 1, 1, vector_cell_centered);
       }
    }
 

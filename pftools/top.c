@@ -56,7 +56,7 @@ void ComputeTop(Databox  *mask, Databox  *top)
    {
       for (i = 0; i < nx; i++)
       {
-	 for (k = nz-1; k >= 0; k--)
+	 for (k = nz-1; k >= 0; --k)
 	 {
 	    if( *(DataboxCoeff(mask, i, j, k)) > 0.0 ) {
 	       break;
@@ -67,6 +67,35 @@ void ComputeTop(Databox  *mask, Databox  *top)
 	    *(DataboxCoeff(top, i, j, 0)) = k;
 	 } else {
 	    *(DataboxCoeff(top, i, j, 0)) = -1;
+	 }
+      }
+   }
+}
+
+void ComputeBottom(Databox  *mask, Databox  *bottom)
+{
+   int             i,  j,  k;
+   int             nx, ny, nz;
+
+   nx = DataboxNx(mask);
+   ny = DataboxNy(mask);
+   nz = DataboxNz(mask);
+
+   for (j = 0; j < ny; j++)
+   {
+      for (i = 0; i < nx; i++)
+      {
+	 for (k = 0; k < nz; ++k)
+	 {
+	    if( *(DataboxCoeff(mask, i, j, k)) > 0.0 ) {
+	       break;
+	    }
+	 }
+
+	 if(k >= 0) {
+	    *(DataboxCoeff(bottom, i, j, 0)) = k;
+	 } else {
+	    *(DataboxCoeff(bottom, i, j, 0)) = -1;
 	 }
       }
    }

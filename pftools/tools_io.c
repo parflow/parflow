@@ -47,10 +47,10 @@ int tools_Short=7;
 static int zero=0;
 static int one =1;
 
-void tools_WriteDouble(file, ptr, len) 
-FILE * file;
-double *ptr;
-int len;
+void tools_WriteDouble(
+   FILE * file,
+   double *ptr,
+   int len)
 { 
    int i; 
    double *data;
@@ -65,10 +65,10 @@ int len;
    } 
 } 
 
-void tools_WriteInt(file, ptr, len) 
-FILE * file;
-int *ptr;
-int len;
+void tools_WriteInt(
+   FILE * file,
+   int *ptr,
+   int len)
 { 
    int i; 
    int *data;
@@ -84,10 +84,10 @@ int len;
 } 
 
 
-void tools_ReadDouble(file, ptr, len) 
-FILE * file;
-double *ptr;
-int len;
+void tools_ReadDouble(
+   FILE * file,
+   double *ptr,
+   int len)
 { 
    int i; 
    double *data;
@@ -102,10 +102,10 @@ int len;
 } 
 
 
-void tools_ReadInt(file, ptr, len) 
-FILE * file;
-int *ptr;
-int len;
+void tools_ReadInt(
+   FILE * file,
+   int *ptr,
+   int len)
 { 
    int i; 
    int *data;
@@ -125,10 +125,10 @@ int len;
 
 #include <stdio.h>	
 
-void tools_WriteFloat(file, ptr, len) 
-FILE * file;
-float *ptr;
-int len;
+void tools_WriteFloat(
+   FILE * file,
+   float *ptr,
+   int len)
 { 
    int i; 
    float *data;
@@ -151,10 +151,10 @@ int len;
    } 
 } 
 
-void tools_WriteDouble(file, ptr, len) 
-FILE * file;
-double *ptr;
-int len;
+void tools_WriteDouble(
+   FILE * file,
+   double *ptr,
+   int len)
 { 
    int i; 
    double *data;
@@ -181,10 +181,10 @@ int len;
    } 
 } 
  
-void tools_WriteInt(file, ptr, len) 
-FILE * file;
-int *ptr;
-int len;
+void tools_WriteInt(
+   FILE * file,
+   int *ptr,
+   int len)
 { 
    int i; 
    int *data; 
@@ -208,10 +208,10 @@ int len;
    } 
 } 
  
-void tools_ReadDouble(file, ptr, len) 
-FILE * file;
-double *ptr;
-int len;
+void tools_ReadDouble(
+   FILE * file,
+   double *ptr,
+   int len)
 { 
    int i; 
    double *data;
@@ -237,10 +237,10 @@ int len;
       *data++ = b.number;
    } 
 } 
-void tools_ReadInt(file, ptr, len) 
-FILE * file;
-int *ptr;
-int len;
+void tools_ReadInt(
+   FILE * file,
+   int *ptr,
+   int len)
 { 
    int i; 
    int *data; 

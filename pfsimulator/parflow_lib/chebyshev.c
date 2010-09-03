@@ -89,8 +89,8 @@ void   	 Chebyshev(
    /*-----------------------------------------------------------------------
     * Allocate temp vectors
     *-----------------------------------------------------------------------*/
-   r   = NewVector(instance_xtra -> grid, 1, 1);
-   del = NewVector(instance_xtra -> grid, 1, 1);
+   r   = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
+   del = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
 
    /*-----------------------------------------------------------------------
     * Start Chebyshev

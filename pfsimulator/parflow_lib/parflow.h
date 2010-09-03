@@ -40,24 +40,12 @@
 #include <sys/param.h>
 #endif
 
-#include <stdio.h>
-#include <math.h>
-
-#include <limits.h>
-#include <float.h>
-
-#include <string.h>
-
-#include <amps.h>
+#include "amps.h"
 
 #include "info_header.h"
-
 #include "general.h"
-
 #include "file_versions.h"
-
 #include "input_database.h"
-
 #include "logging.h"
 #include "timing.h"
 #include "loops.h"
@@ -73,26 +61,19 @@
 #include "grgeometry.h"
 #include "geostats.h"
 #include "lb.h"
-
-
-
 #include "globals.h"
-
 #include "time_cycle_data.h"
-
 #include "problem_bc.h"
 #include "problem_eval.h"
-
 #include "well.h"
 #include "bc_pressure.h"
-
 #include "problem.h"
-
 #include "solver.h"
-
 #include "nl_function_eval.h"
-
 #include "parflow_proto.h"
 #include "parflow_proto_f.h"
+
+// SGS FIXME this should not be here, in fact this whole parflow.h file is dumb.
+#include <math.h>
 
 #endif

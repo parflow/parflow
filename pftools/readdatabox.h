@@ -59,23 +59,14 @@
  * function prototypes
  *-----------------------------------------------------------------------*/
 
-#ifdef __STDC__
-# define        P(s) s
-#else
-# define P(s) ()
-#endif
-
-
 /* readdatabox.c */
-Databox *ReadParflowB P((char *file_name ));
-Databox *ReadParflowSB P((char *file_name ));
-Databox *ReadSimpleA P((char *file_name ));
-Databox *ReadRealSA P((char *file_name ));
-Databox *ReadSimpleB P((char *file_name ));
-Databox *ReadAVSField P((char *filename ));
-Databox *ReadSDS P((char *filename , int ds_num ));
-Databox *ReadSilo P((char *filename ));
-
-#undef P
+Databox *ReadParflowB (char *file_name, double default_value );
+Databox *ReadParflowSB (char *file_name, double default_value  );
+Databox *ReadSimpleA (char *file_name, double default_value  );
+Databox *ReadRealSA (char *file_name, double default_value  );
+Databox *ReadSimpleB (char *file_name, double default_value  );
+Databox *ReadAVSField (char *filename, double default_value  );
+Databox *ReadSDS (char *filename , int ds_num, double default_value  );
+Databox *ReadSilo (char *filename, double default_value  );
 
 #endif

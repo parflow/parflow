@@ -141,6 +141,9 @@ case $CC in
    gcc*)
       C_FLAGS="-Wall $C_FLAGS"
       ;;
+   g++*)
+      C_FLAGS="-Wall -Wno-write-strings $C_FLAGS"
+      ;;
 esac
 
 dnl
@@ -335,20 +338,25 @@ if test "${tcl_PREFIX+set}" = set; then
 fi
 
 dnl
-dnl Silo support
+dnl Support linking with Z lib if HDF requires it
 dnl
-PARFLOW_HAVE_SILO="no"
-CASC_SUPPORT_SILO
-if test "${silo_PREFIX+set}" = set; then
-  LIBS="$silo_LIBS $LIBS"
-  CASC_SPLIT_LIBS_STRING(silo_LIBS,silo_LIB_PATH,silo_LIB_NAME)
-  LIB_PATH="$silo_LIB_PATH $LIB_PATH"
-  LIB_NAME="$silo_LIB_NAME $LIB_NAME"
-  INC_PATH="$silo_INCLUDES $INC_PATH"
-  AC_DEFINE(HAVE_SILO,1,SILO library is available so use it)
-  PARFLOW_HAVE_SILO="yes"
-fi
-AC_SUBST(silo_LIBS)
+CHECK_ZLIB()
+CASC_SPLIT_LIBS_STRING(zlib_LIBS,zlib_LIB_PATH,zlib_LIB_NAME)
+LIB_PATH="$zlib_LIB_PATH $LIB_PATH"
+LIB_NAME="$zlib_LIB_NAME $LIB_NAME"
+INC_PATH="$zlib_INCLUDES $INC_PATH"
+AC_SUBST(zlib_LIBS)
+
+dnl
+dnl Support linking with SZ lib if HDF requires it
+dnl
+CHECK_SZLIB()
+CASC_SPLIT_LIBS_STRING(szlib_LIBS,szlib_LIB_PATH,szlib_LIB_NAME)
+LIB_PATH="$szlib_LIB_PATH $LIB_PATH"
+LIB_NAME="$szlib_LIB_NAME $LIB_NAME"
+INC_PATH="$szlib_INCLUDES $INC_PATH"
+AC_SUBST(szlib_LIBS)
+
 AC_SUBST(PARFLOW_HAVE_SILO)
 dnl
 dnl Set variables for hdf5 support
@@ -364,6 +372,21 @@ if test "${hdf5_PREFIX+set}" = set; then
 fi
 AC_SUBST(hdf5_LIBS)
 
+dnl
+dnl Silo support
+dnl
+PARFLOW_HAVE_SILO="no"
+CASC_SUPPORT_SILO
+if test "${silo_PREFIX+set}" = set; then
+  LIBS="$silo_LIBS $LIBS"
+  CASC_SPLIT_LIBS_STRING(silo_LIBS,silo_LIB_PATH,silo_LIB_NAME)
+  LIB_PATH="$silo_LIB_PATH $LIB_PATH"
+  LIB_NAME="$silo_LIB_NAME $LIB_NAME"
+  INC_PATH="$silo_INCLUDES $INC_PATH"
+  AC_DEFINE(HAVE_SILO,1,SILO library is available so use it)
+  PARFLOW_HAVE_SILO="yes"
+fi
+AC_SUBST(silo_LIBS)
 
 dnl
 dnl Chunk Support

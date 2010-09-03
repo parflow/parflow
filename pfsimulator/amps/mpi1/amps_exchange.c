@@ -39,7 +39,7 @@ void _amps_wait_exchange(amps_Handle handle)
 
   if(handle -> package -> num_recv + handle -> package -> num_send)
   {
-     status = calloc((handle -> package -> num_recv + 
+     status = (MPI_Status*)calloc((handle -> package -> num_recv + 
 		      handle -> package -> num_send), sizeof(MPI_Status));
 
      MPI_Waitall(handle -> package -> num_recv + handle -> package -> num_send,
@@ -55,7 +55,7 @@ void _amps_wait_exchange(amps_Handle handle)
 	   MPI_Type_free(&(handle -> package -> recv_invoices[i] -> mpi_type));   
 	}
 
-	MPI_Request_free(&handle -> package -> recv_requests[i]);
+	MPI_Request_free(&handle -> package -> requests[i]);
      }
      
      for(i = 0; i < handle -> package -> num_send; i++)
@@ -65,7 +65,7 @@ void _amps_wait_exchange(amps_Handle handle)
 	   MPI_Type_free(&handle -> package -> send_invoices[i] -> mpi_type);
 	}
 
-	MPI_Request_free(&handle -> package -> send_requests[i]);
+	MPI_Request_free(&handle -> package -> requests[handle -> package -> num_recv + i]);
      }
   }
 }
@@ -145,7 +145,7 @@ void _amps_wait_exchange(amps_Handle handle)
 	   MPI_Type_free(&(handle -> package -> recv_invoices[i] -> mpi_type));   
 	}
     
-	MPI_Request_free(&handle -> package -> recv_requests[i]);
+	MPI_Request_free(&(handle -> package -> recv_requests[i]));
      }
     
      for(i = 0; i < handle -> package -> num_send; i++)
@@ -155,7 +155,7 @@ void _amps_wait_exchange(amps_Handle handle)
 	   MPI_Type_free(&handle -> package -> send_invoices[i] -> mpi_type);
 	}
 
-	MPI_Request_free(&handle -> package -> send_requests[i]);
+	MPI_Request_free(&(handle -> package -> send_requests[i]));
      }
     
      if(handle -> package -> recv_requests)
@@ -226,10 +226,10 @@ amps_Handle amps_IExchangePackage(amps_Package package)
        *--------------------------------------------------------------------*/
       if(num)
       {
-	 package -> recv_requests = (MPI_Request *)calloc(num,
+	 package -> recv_requests = (MPI_Request *)calloc((size_t)(num),
 							  sizeof(MPI_Request));
 	 
-	 package -> status = (MPI_Status *)calloc(num,
+	 package -> status = (MPI_Status *)calloc((size_t)(num),
 						  sizeof(MPI_Status));
 	 
 	 package -> send_requests = package -> recv_requests + 
@@ -246,10 +246,14 @@ amps_Handle amps_IExchangePackage(amps_Package package)
 	    
 	    amps_create_mpi_type(MPI_COMM_WORLD, package -> recv_invoices[i]);
 	    MPI_Type_commit(&(package -> recv_invoices[i] -> mpi_type));
+
+	    // Temporaries needed by insure++
+	    MPI_Datatype type = package -> recv_invoices[i] -> mpi_type;
+	    MPI_Request *request_ptr = &(package -> recv_requests[i]);
 	    MPI_Recv_init(MPI_BOTTOM, 1, 
-			  package -> recv_invoices[i] -> mpi_type, 
+			  type, 
 			  package -> src[i], 0, MPI_COMM_WORLD,
-			  &(package -> recv_requests[i]));
+			  request_ptr);
 	 }
       }
       
@@ -264,11 +268,14 @@ amps_Handle amps_IExchangePackage(amps_Package package)
 				 package -> send_invoices[i]);
 	    
 	    MPI_Type_commit(&(package -> send_invoices[i] -> mpi_type));
-	    
+
+	    // Temporaries needed by insure++
+	    MPI_Datatype type = package -> send_invoices[i] -> mpi_type;
+	    MPI_Request* request_ptr = &(package -> send_requests[i]);
 	    MPI_Ssend_init(MPI_BOTTOM, 1, 
-			   package -> send_invoices[i] -> mpi_type, 
+			   type, 
 			   package -> dest[i], 0, MPI_COMM_WORLD,
-			   &(package -> send_requests[i]));
+			   request_ptr);
 	 }
       }
    }
@@ -281,7 +288,8 @@ amps_Handle amps_IExchangePackage(amps_Package package)
       MPI_Startall(num, package -> recv_requests);
    }
 
-   return( amps_NewHandle(NULL, 0, NULL, package));
+   
+return( amps_NewHandle(NULL, 0, NULL, package));
 }
 
 #endif

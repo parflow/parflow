@@ -44,7 +44,6 @@
 #endif
 #endif
 
-#include <strings.h>
 #include <stdio.h>
 #include <sys/times.h>
 
@@ -71,13 +70,6 @@
 
 #ifndef TRUE
 #define TRUE  1
-#endif
-
-#ifndef max
-#define max(a,b)  (((a)<(b)) ? (b) : (a))
-#endif
-#ifndef min
-#define min(a,b)  (((a)<(b)) ? (a) : (b))
 #endif
 
 /*===========================================================================*/
@@ -354,15 +346,15 @@ typedef struct
    int            num_send;
    int           *dest;
    amps_Invoice  *send_invoices;
-   
+
    int            num_recv;
    int           *src;
    amps_Invoice  *recv_invoices;
-   
+
+   MPI_Request   *requests;
+
    int            recv_remaining;
    
-   MPI_Request     *requests;
-      
 } amps_PackageStruct;
 
 typedef amps_PackageStruct *amps_Package;
@@ -455,7 +447,7 @@ extern amps_Buffer *amps_BufferFreeList;
 /* Functions to for sizeof                                                   */
 /*---------------------------------------------------------------------------*/
 #define AMPS_SIZEOF(len, stride, size) \
-         (len)*(size)
+   (size_t)(len)*(size)
 
 #define AMPS_CALL_CHAR_SIZEOF(_comm, _src, _dest, _len, _stride) \
         AMPS_SIZEOF((_len),(_stride), sizeof(char))
@@ -507,6 +499,8 @@ extern amps_Buffer *amps_BufferFreeList;
 #define AMPS_CALL_DOUBLE_OUT(_comm, _src, _dest, _len, _stride) \
     AMPS_CONVERT_OUT(double, ctohd, (_comm), (_src), (_dest), (_len),(_stride)) 
 
+
+
 #define AMPS_CONVERT_IN(type, cvt, comm, src, dest, len, stride) \
 { \
     char *ptr_src, *ptr_dest; \
@@ -514,14 +508,15 @@ extern amps_Buffer *amps_BufferFreeList;
     { \
 	if((stride) == 1) \
         { \
-	    bcopy((src), (dest), (len)*sizeof(type)); \
+	   bcopy((src), (dest), (size_t)(len)*sizeof(type));	\
         } \
 	else \
         { \
 	    for(ptr_src = (char*)(src), (ptr_dest) = (char *)(dest); \
-		(ptr_dest) < (char *)(dest) + (len)*(stride)*sizeof(type);\
-		(ptr_src) += sizeof(type), (ptr_dest) += sizeof(type)*(stride)) \
-	    bcopy((ptr_src), (ptr_dest), sizeof(type)); \
+		(ptr_dest) < (char *)(dest) + (size_t)((len)*(stride))*sizeof(type); \
+		(ptr_src) += sizeof(type), (ptr_dest) += sizeof(type)*(size_t)((stride))) \
+	    bcopy(ptr_src, ptr_dest, sizeof(type));			\
+	       ; \
         } \
     } \
 } 
@@ -639,11 +634,8 @@ On most ports \Ref{amps_ISend} and \Ref{amps_Send} are identical.
 */
 #define amps_ISend(comm, dest, invoice) 0, amps_Send((comm), (dest), (invoice))
 
-#define amps_new(comm, size) malloc(size)
+#define amps_new(comm, size) malloc((size_t)(size))
 #define amps_free(comm, buf) free((char*)buf)
-
-
-#define amps_FreeHandle(handle) free((handle));
 
 /**
 
@@ -1057,15 +1049,23 @@ allocated by \Ref{amps_TAlloc} or \Ref{amps_CTAlloc}.
 @return Error code
 */
 
-#define amps_TFree(ptr) if (ptr) free(ptr); else
+#define amps_TFree(ptr) if (ptr) free(ptr); else {}
 /* note: the `else' is required to guarantee termination of the `if' */
  
-#define amps_Error(name, type, comment, operation) 
+// SGS FIXME this should do something more than this
+#define amps_Error(name, type, comment, operation)	\
+   printf("%s : %s\n", name, comment)
 
 #include "amps_proto.h"
 
 #define AMPS_EXCHANGE_SPECIALIZED 1
 #define AMPS_NEWPACKAGE_SPECIALIZED 1
+
+#define PARFLOW_ERROR(X)				\
+   do {							\
+      _amps_Abort(X, __FILE__, __LINE__);		\
+   } while (0)
+
 
 #endif
 

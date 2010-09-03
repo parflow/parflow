@@ -570,7 +570,7 @@ static int KINSolInit(void *kinmem, integer Neq,
   /* Initialize optional output locations in iopt, ropt */
 
   if (ioptExists) {
-    iopt[NFE]    = iopt[NNI] = iopt[NNI] = 0;
+    iopt[NFE]    = iopt[NNI] = 0;
     iopt[NBKTRK] = 0;
   }
   

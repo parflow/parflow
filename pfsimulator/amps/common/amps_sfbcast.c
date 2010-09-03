@@ -98,7 +98,7 @@ int amps_SFBCast(amps_Comm comm, amps_File file, amps_Invoice invoice)
 	 case AMPS_INVOICE_CHAR_CTYPE:
 	    if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    {
-	       *( (void **)(ptr -> data)) = (void *)malloc(sizeof(char)*len*stride);
+	       *( (void **)(ptr -> data)) = (void *)malloc(sizeof(char)*(size_t)(len*stride));
 	       amps_ScanChar(file, *( char **)(ptr -> data), len, stride);
 	       malloced = TRUE;
 	    }
@@ -108,7 +108,7 @@ int amps_SFBCast(amps_Comm comm, amps_File file, amps_Invoice invoice)
 	 case AMPS_INVOICE_SHORT_CTYPE:
 	    if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    {
-	       *( (void **)(ptr -> data)) = (void *)malloc(sizeof(short)*len*stride);
+	       *( (void **)(ptr -> data)) = (void *)malloc(sizeof(short)*(size_t)(len*stride));
 	       amps_ScanShort(file, *( short **)(ptr -> data), len, stride);
 	       malloced = TRUE;
 	    }
@@ -119,7 +119,7 @@ int amps_SFBCast(amps_Comm comm, amps_File file, amps_Invoice invoice)
 	 case AMPS_INVOICE_INT_CTYPE:
 	    if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    {
-	       *( (void **)(ptr -> data)) = (void *)malloc(sizeof(int)*len*stride);
+	       *( (void **)(ptr -> data)) = (void *)malloc(sizeof(int)*(size_t)(len*stride));
 	       amps_ScanInt(file, *( int **)(ptr -> data), len, stride);
 	       malloced = TRUE;
 	    }
@@ -130,7 +130,7 @@ int amps_SFBCast(amps_Comm comm, amps_File file, amps_Invoice invoice)
 	 case AMPS_INVOICE_LONG_CTYPE:
 	    if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    {
-	       *( (void **)(ptr -> data)) = (void *)malloc(sizeof(long)*len*stride);
+	       *( (void **)(ptr -> data)) = (void *)malloc(sizeof(long)*(size_t)(len*stride));
 	       amps_ScanLong(file, *( long **)(ptr -> data), len, stride);
 	       malloced = TRUE;
 	    }
@@ -141,7 +141,7 @@ int amps_SFBCast(amps_Comm comm, amps_File file, amps_Invoice invoice)
 	 case AMPS_INVOICE_FLOAT_CTYPE:
 	    if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    {
-	       *( (void **)(ptr -> data)) = (void *)malloc(sizeof(float)*len*stride);
+	       *( (void **)(ptr -> data)) = (void *)malloc(sizeof(float)*(size_t)(len*stride));
 	       amps_ScanFloat(file, *( float **)(ptr -> data), len, stride);
 	       malloced = TRUE;
 	    }
@@ -152,7 +152,7 @@ int amps_SFBCast(amps_Comm comm, amps_File file, amps_Invoice invoice)
 	 case AMPS_INVOICE_DOUBLE_CTYPE:
 	    if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    {
-	       *( (void **)(ptr -> data)) = (void *)malloc(sizeof(double)*len*stride);
+	       *( (void **)(ptr -> data)) = (void *)malloc(sizeof(double)*(size_t)(len*stride));
 	       amps_ScanDouble(file, *( double **)(ptr -> data), len, stride);
 	       malloced = TRUE;
 	    }

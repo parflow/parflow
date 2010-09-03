@@ -27,7 +27,8 @@
   **********************************************************************EHEADER*/
 
 #include "parflow.h"
-#include "math.h"
+
+#include <math.h>
 
 void OverlandSum(ProblemData *problem_data, 
 		 Vector      *pressure,       /* Current pressure values */

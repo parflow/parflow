@@ -216,7 +216,7 @@ PFModule  *MatDiagScaleInitInstanceXtra(
       /* set new data */
       (instance_xtra -> grid) = grid;
 
-      (instance_xtra -> d) = NewVector(grid, 1, 1);
+      (instance_xtra -> d) = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
    }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;

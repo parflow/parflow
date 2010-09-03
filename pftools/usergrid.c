@@ -58,8 +58,8 @@ Background  *ReadBackground(Tcl_Interp *interp)
  * FreeBackground
  *--------------------------------------------------------------------------*/
 
-void         FreeBackground(background)
-Background  *background;
+void         FreeBackground(
+   Background  *background)
 {
    free(background);
 }
@@ -71,7 +71,7 @@ Background  *background;
 
 Subgrid    *ReadUserSubgrid(Tcl_Interp *interp)
 {
-    Subgrid  *new;
+    Subgrid  *new_subgrid;
 
     int       ix, iy, iz;
     int       nx, ny, nz;
@@ -89,9 +89,9 @@ Subgrid    *ReadUserSubgrid(Tcl_Interp *interp)
     ny = GetInt(interp, "ComputationalGrid.NY");
     nz = GetInt(interp, "ComputationalGrid.NZ");
 
-    new = NewSubgrid(ix, iy, iz, nx, ny, nz, rx, ry, rz, -1);
+    new_subgrid = NewSubgrid(ix, iy, iz, nx, ny, nz, rx, ry, rz, -1);
 
-    return new;
+    return new_subgrid;
 }
 
 
@@ -125,8 +125,8 @@ Grid      *ReadUserGrid(Tcl_Interp *interp)
  * FreeUserGrid
  *--------------------------------------------------------------------------*/
 
-void  FreeUserGrid(user_grid)
-Grid  *user_grid;
+void  FreeUserGrid(
+   Grid  *user_grid)
 {
    FreeGrid(user_grid);
 }
@@ -144,12 +144,12 @@ Grid  *user_grid;
 #define pqr_to_process(p, q, r, P, Q, R)  ((((r)*(Q))+(q))*(P) + (p))
 
 
-SubgridArray   *DistributeUserGrid(user_grid, num_procs, P, Q, R)
-Grid           *user_grid;
-int             num_procs;
-int             P;
-int             Q;
-int             R;
+SubgridArray   *DistributeUserGrid(
+   Grid           *user_grid,
+   int             num_procs,
+   int             P,
+   int             Q,
+   int             R)
 {
    Subgrid     *user_subgrid = GridSubgrid(user_grid, 0);
 

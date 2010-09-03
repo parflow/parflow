@@ -42,14 +42,14 @@
  * Print various statistics
  *-----------------------------------------------------------------------*/
 
-void        Stats(databox, min, max, mean, sum, variance, stdev)
-Databox    *databox;
-double     *min;
-double     *max;
-double     *mean;
-double     *sum;
-double     *variance;
-double     *stdev;
+void        Stats(
+   Databox    *databox,
+   double     *min,
+   double     *max,
+   double     *mean,
+   double     *sum,
+   double     *variance,
+   double     *stdev)
 {
    double  *dp;
 

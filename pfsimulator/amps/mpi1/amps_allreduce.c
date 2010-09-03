@@ -28,6 +28,8 @@
 
 #include "amps.h"
 
+#include <strings.h>
+
 /*===========================================================================*/
 /**
   The collective operation \Ref{amps_AllReduce} is used to take information
@@ -127,28 +129,28 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
 	 printf("AMPS Operation not supported\n");
       }
       
-      in_buffer = (char*)malloc(element_size*len);
-      out_buffer = (char*)malloc(element_size*len);
+      in_buffer = (char*)malloc((size_t)(element_size*len));
+      out_buffer = (char*)malloc((size_t)(element_size*len));
 
       /* Copy into a contigous buffer */
       if(stride == 1) 
-	 bcopy( data, in_buffer, len*element_size);
+	 bcopy( data, in_buffer, (size_t)(len*element_size));
       else 
 	 for(ptr_src = data, ptr_dest = in_buffer; 
 	     ptr_src < data + len*stride*element_size;
 	     ptr_src += stride*element_size, ptr_dest += element_size) 
-		bcopy(ptr_src, ptr_dest, element_size); 
+	    bcopy(ptr_src, ptr_dest, (size_t)(element_size)); 
 
       MPI_Allreduce(in_buffer, out_buffer, len, mpi_type, operation, comm);
       
       /* Copy back into user variables */
       if(stride == 1) 
-	 bcopy( out_buffer, data, len*element_size);
+	 bcopy( out_buffer, data, (size_t)(len*element_size));
       else 
 	 for(ptr_src = out_buffer, ptr_dest = data; 
 	     ptr_src < out_buffer + len*element_size;
 	     ptr_src += element_size, ptr_dest += stride*element_size) 
-	    bcopy(ptr_src, ptr_dest, element_size); 
+	    bcopy(ptr_src, ptr_dest, (size_t)(element_size)); 
 
       free(in_buffer);
       free(out_buffer);

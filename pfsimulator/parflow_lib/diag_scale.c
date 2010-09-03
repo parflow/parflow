@@ -63,7 +63,7 @@ void     DiagScale(
    Grid           *grid = MatrixGrid(A);
    Subgrid        *subgrid;
 
-   CommHandle     *handle = NULL;
+   VectorUpdateCommHandle *handle = NULL;
 
    ComputePkg     *compute_pkg;
    Region         *compute_reg = NULL;
@@ -228,8 +228,8 @@ void     DiagScale(
 
    if (MatrixCommPkg(A))
    {
-      handle = InitMatrixUpdate(A);
-      FinalizeMatrixUpdate(handle);
+      CommHandle *matrix_handle = InitMatrixUpdate(A);
+      FinalizeMatrixUpdate(matrix_handle);
    }
 }
 

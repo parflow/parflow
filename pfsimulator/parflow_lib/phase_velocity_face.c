@@ -119,7 +119,7 @@ int           phase)
 
    double         *pl, *pu, *ml, *mu, *vel, *dl, *du;
 
-   CommHandle     *handle;
+   VectorUpdateCommHandle     *handle;
 
    Vector         *pressure_vector, *vel_vec[3];
    Subvector      *subvector_v0,
@@ -144,11 +144,11 @@ int           phase)
    /*----------------------------------------------------------------------
     * Allocate temp vectors
     *----------------------------------------------------------------------*/
-    temp_mobility_x = NewVector(instance_xtra -> grid, 1, 1);
-    temp_mobility_y = NewVector(instance_xtra -> grid, 1, 1);
-    temp_mobility_z = NewVector(instance_xtra -> grid, 1, 1);
-    temp_pressure   = NewVector(instance_xtra -> grid, 1, 1);
-    temp_density    = NewVector(instance_xtra -> grid, 1, 1);
+    temp_mobility_x = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
+    temp_mobility_y = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
+    temp_mobility_z = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
+    temp_pressure   = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
+    temp_density    = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
 
    /*----------------------------------------------------------------------
     * compute the mobility values for this phase

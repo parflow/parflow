@@ -190,7 +190,7 @@ void      SolverDiffusion()
    double        phase_maximum, total_maximum;
    double	 dtmp, *phase_densities;
 
-   CommHandle   *handle;
+   VectorUpdateCommHandle   *handle;
 
    char          dt_info;
    char          file_prefix[64], file_postfix[64];
@@ -214,12 +214,12 @@ void      SolverDiffusion()
     *-------------------------------------------------------------------*/
    if ( is_multiphase )
    {
-      temp_mobility_x = NewVector(grid, 1, 1);
-      temp_mobility_y = NewVector(grid, 1, 1);
-      temp_mobility_z = NewVector(grid, 1, 1);
-      stemp           = NewVector(grid, 1, 3);
+      temp_mobility_x = NewVectorType(grid, 1, 1, vector_cell_centered);
+      temp_mobility_y = NewVectorType(grid, 1, 1, vector_cell_centered);
+      temp_mobility_z = NewVectorType(grid, 1, 1, vector_cell_centered);
+      stemp           = NewVectorType(grid, 1, 3, vector_cell_centered);
    }
-   ctemp              = NewVector(grid, 1, 3);
+   ctemp              = NewVectorType(grid, 1, 3, vector_cell_centered);
 
 
    IfLogging(1)
@@ -233,7 +233,7 @@ void      SolverDiffusion()
       number_logged = 0;
    }
 
-   sprintf(file_prefix, GlobalsOutFileName);
+   sprintf(file_prefix, "%s", GlobalsOutFileName);
 
    /* do turning bands (and other stuff maybe) */
    PFModuleInvokeType(SetProblemDataInvoke, set_problem_data, (problem_data));
@@ -242,11 +242,11 @@ void      SolverDiffusion()
    phase_densities = talloc(double, ProblemNumPhases(problem));
 
    for(phase = 0; phase < ProblemNumPhases(problem)-1; phase++)
-      {
-	 PFModuleInvokeType(PhaseDensityInvoke, phase_density, 
-			(phase, NULL, NULL, &dtmp, &phase_densities[phase],
-			 CALCFCN));
-      }
+   {
+      PFModuleInvokeType(PhaseDensityInvoke, phase_density, 
+			 (phase, NULL, NULL, &dtmp, &phase_densities[phase],
+			  CALCFCN));
+   }
 
    if ( print_subsurf_data )
    {
@@ -291,26 +291,26 @@ void      SolverDiffusion()
    }
 
 /***********  New for lattice solver  ***********/
-      transient             = 0;
-      still_evolving        = 0;
-      recompute_pressure    = 1;
-      evolve_saturations    = 0;
-      evolve_concentrations = 0;
-      is_multiphase	    = 0;
+   transient             = 0;
+   still_evolving        = 0;
+   recompute_pressure    = 1;
+   evolve_saturations    = 0;
+   evolve_concentrations = 0;
+   is_multiphase	    = 0;
 /************************************************/
 
    t = start_time;
 
-   pressure = NewVector( grid, 1, 1 );
+   pressure = NewVectorType( grid, 1, 1, vector_cell_centered );
    InitVectorAll(pressure, 0.0);
 
-   total_mobility_x = NewVector( grid, 1, 1 );
+   total_mobility_x = NewVectorType( grid, 1, 1, vector_cell_centered );
    InitVectorAll(total_mobility_x, 0.0);
 
-   total_mobility_y = NewVector( grid, 1, 1 );
+   total_mobility_y = NewVectorType( grid, 1, 1, vector_cell_centered );
    InitVectorAll(total_mobility_y, 0.0);
 
-   total_mobility_z = NewVector( grid, 1, 1 );
+   total_mobility_z = NewVectorType( grid, 1, 1, vector_cell_centered );
    InitVectorAll(total_mobility_z, 0.0);
 
    /*-------------------------------------------------------------------
@@ -323,7 +323,7 @@ void      SolverDiffusion()
    {
       for(phase = 0; phase < ProblemNumPhases(problem)-1; phase++)
       {
-         saturations[phase] = NewVector( grid, 1, 3 );
+         saturations[phase] = NewVectorType( grid, 1, 3, vector_cell_centered );
          InitVectorAll(saturations[phase], 0.0);
 
          PFModuleInvokeType(ICPhaseSaturInvoke, 
@@ -336,7 +336,7 @@ void      SolverDiffusion()
          FinalizeVectorUpdate(handle);
       }
 
-      saturations[ProblemNumPhases(problem)-1] = NewVector( grid, 1, 3 );
+      saturations[ProblemNumPhases(problem)-1] = NewVectorType( grid, 1, 3, vector_cell_centered );
       InitVectorAll(saturations[ProblemNumPhases(problem)-1], 0.0);
 
       PFModuleInvokeType(SaturationConstitutiveInvoke, constitutive, (saturations));
@@ -381,7 +381,7 @@ void      SolverDiffusion()
          if ( is_multiphase )
             eval_struct = NewEvalStruct( problem );
 
-         solidmassfactor = NewVector( grid, 1, 2);
+         solidmassfactor = NewVectorType( grid, 1, 2, vector_cell_centered);
 
          /*-------------------------------------------------------------------
           * Allocate and set up initial concentrations
@@ -395,12 +395,12 @@ void      SolverDiffusion()
          {
             for(concen = 0; concen < ProblemNumContaminants(problem); concen++)
             {
-               concentrations[indx] = NewVector( grid, 1, 3 );
+               concentrations[indx] = NewVectorType( grid, 1, 3, vector_cell_centered );
                InitVectorAll(concentrations[indx], 0.0);
 
                PFModuleInvokeType(ICPhaseConcenInvoke, ic_phase_concen,
-                              (concentrations[indx], phase,
-			       concen, problem_data));
+				  (concentrations[indx], phase,
+				   concen, problem_data));
 
                handle = InitVectorUpdate(concentrations[indx], VectorUpdateGodunov);
                FinalizeVectorUpdate(handle);
@@ -415,21 +415,21 @@ void      SolverDiffusion()
          phase_x_velocity = ctalloc(Vector *, ProblemNumPhases(problem) );
          for(phase = 0; phase < ProblemNumPhases(problem); phase++)
          {
-            phase_x_velocity[phase] = NewVector( x_grid, 1, 1 );
+            phase_x_velocity[phase] = NewVectorType( x_grid, 1, 1, vector_cell_centered );
             InitVectorAll(phase_x_velocity[phase], 0.0);
          }
 
          phase_y_velocity = ctalloc(Vector *, ProblemNumPhases(problem) );
          for(phase = 0; phase < ProblemNumPhases(problem); phase++)
          {
-            phase_y_velocity[phase] = NewVector( y_grid, 1, 1 );
+            phase_y_velocity[phase] = NewVectorType( y_grid, 1, 1, vector_cell_centered );
             InitVectorAll(phase_y_velocity[phase], 0.0);
          }
 
          phase_z_velocity = ctalloc(Vector *, ProblemNumPhases(problem) );
          for(phase = 0; phase < ProblemNumPhases(problem); phase++)
          {
-            phase_z_velocity[phase] = NewVector( z_grid, 1, 2 );
+            phase_z_velocity[phase] = NewVectorType( z_grid, 1, 2, vector_cell_centered );
             InitVectorAll(phase_z_velocity[phase], 0.0);
          }
 
@@ -437,26 +437,26 @@ void      SolverDiffusion()
 
 	 if ( is_multiphase )
 	 {
-	    total_x_velocity = NewVector( x_grid, 1, 1 );
+	    total_x_velocity = NewVectorType( x_grid, 1, 1, vector_cell_centered );
             InitVectorAll(total_x_velocity, 0.0);
 
-            total_y_velocity = NewVector( y_grid, 1, 1 );
+            total_y_velocity = NewVectorType( y_grid, 1, 1, vector_cell_centered );
             InitVectorAll(total_y_velocity, 0.0);
 
-            total_z_velocity = NewVector( z_grid, 1, 2 );
+            total_z_velocity = NewVectorType( z_grid, 1, 2, vector_cell_centered );
             InitVectorAll(total_z_velocity, 0.0);
 
-         /*-------------------------------------------------------------------
-          * Allocate and set up edge permeabilities
-          *-------------------------------------------------------------------*/
-            z_permeability = NewVector( z_grid, 1, 2 );
+	    /*-------------------------------------------------------------------
+	     * Allocate and set up edge permeabilities
+	     *-------------------------------------------------------------------*/
+            z_permeability = NewVectorType( z_grid, 1, 2, vector_cell_centered );
             InitVectorAll(z_permeability, 0.0);
 
             PFModuleInvokeType(PermeabilityFaceInvoke, permeability_face,
-			   (z_permeability, 
-			    ProblemDataPermeabilityZ(problem_data)));
+			       (z_permeability, 
+				ProblemDataPermeabilityZ(problem_data)));
 
-	  }
+	 }
 
          /*****************************************************************/
          /*          Print out any of the requested initial data          */
@@ -564,182 +564,174 @@ void      SolverDiffusion()
    {
       if ( recompute_pressure )
       {
-
+	 
 	 /*******************************************************************/
          /*                  Compute the total mobility                     */
          /*******************************************************************/
          InitVectorAll(total_mobility_x, 0.0);
          InitVectorAll(total_mobility_y, 0.0);
          InitVectorAll(total_mobility_z, 0.0);
-
+	 
          PFModuleInvokeType(PhaseMobilityInvoke, phase_mobility,
-                        (total_mobility_x,
-			 total_mobility_y, 
-			 total_mobility_z,
-                         ProblemDataPermeabilityX(problem_data),
-                         ProblemDataPermeabilityY(problem_data),
-                         ProblemDataPermeabilityZ(problem_data),
-                         0,
-                         saturations[0],
-                         ProblemPhaseViscosity(problem, 0)));
-
+			    (total_mobility_x,
+			     total_mobility_y, 
+			     total_mobility_z,
+			     ProblemDataPermeabilityX(problem_data),
+			     ProblemDataPermeabilityY(problem_data),
+			     ProblemDataPermeabilityZ(problem_data),
+			     0,
+			     saturations[0],
+			     ProblemPhaseViscosity(problem, 0)));
+	 
          for(phase = 1; phase < ProblemNumPhases(problem); phase++)
          {
             /* Get the mobility of this phase */
             PFModuleInvokeType(PhaseMobilityInvoke, phase_mobility,
-                           (temp_mobility_x,
-			    temp_mobility_y,
-			    temp_mobility_z,
-                            ProblemDataPermeabilityX(problem_data),
-                            ProblemDataPermeabilityY(problem_data),
-                            ProblemDataPermeabilityZ(problem_data),
-                            phase,
-                            saturations[phase],
-                            ProblemPhaseViscosity(problem, phase)));
-
+			       (temp_mobility_x,
+				temp_mobility_y,
+				temp_mobility_z,
+				ProblemDataPermeabilityX(problem_data),
+				ProblemDataPermeabilityY(problem_data),
+				ProblemDataPermeabilityZ(problem_data),
+				phase,
+				saturations[phase],
+				ProblemPhaseViscosity(problem, phase)));
+	    
             Axpy(1.0, temp_mobility_x, total_mobility_x);
             Axpy(1.0, temp_mobility_y, total_mobility_y);
             Axpy(1.0, temp_mobility_z, total_mobility_z);
          }
-
+	 
          handle = InitVectorUpdate(total_mobility_x, VectorUpdateAll);
          FinalizeVectorUpdate(handle);
-
+	 
          handle = InitVectorUpdate(total_mobility_y, VectorUpdateAll);
          FinalizeVectorUpdate(handle);
-
+	 
          handle = InitVectorUpdate(total_mobility_z, VectorUpdateAll);
          FinalizeVectorUpdate(handle);
+	 
+	 /*=========================================================================
+	   LATTICE BOLTZMANN SECTION
+	   =========================================================================*/
+	 
+	 /***********************************************************************/
+	 /*  Allocate memory                                                    */
+	 /***********************************************************************/
+	 sprintf(file_prefix, "%s", GlobalsOutFileName);
+	 
+	 lattice = ctalloc(Lattice, 1);
+	 
+	 cellType = NewCharVector( grid, 1, 1 );
+	 InitCharVectorAll(cellType, 1);
+	 
+	 /***********************************************************************/
+	 /*  Compute permeability, porosity and initialize lattice variables    */
+	 /***********************************************************************/
+	 PFModuleInvokeType(SetProblemDataInvoke, set_problem_data, (problem_data));
+	 gr_domain = ProblemDataGrDomain(problem_data);
+	 
+	 pwork = NewVectorType( grid, 1, 1, vector_cell_centered );
+	 InitVectorAll(pwork, 0.0);
+	 
+	 /* Assign lattice variables to the lattice structure
+	  * for ease in passing arguments to functions. */
+	 (lattice->grid) 		= grid;
+	 (lattice->pressure) 		= pressure;
+	 /* Assume a scalar perm field given with a kx value of 1.0 */
+	 (lattice->perm)		= ProblemDataPermeabilityX(problem_data);;
+	 (lattice->phi) 		= ProblemDataPorosity(problem_data);
+	 (lattice->pwork)		= pwork;
+	 (lattice->cellType)		= cellType;
+	 (lattice->cfl)	    	= (public_xtra -> CFL);
+	 (lattice->beta_perm) 	= (public_xtra -> beta_perm);
+	 (lattice->beta_pore) 	= (public_xtra -> beta_pore);
+	 (lattice->beta_fracture) 	= (public_xtra -> beta_fracture);
+	 (lattice->beta_fluid) 	= (public_xtra -> beta_fluid);
+	 (lattice->viscosity) 	= ProblemPhaseViscosity(problem, 0);
+	 (lattice->comp_compress_flag)= (public_xtra -> comp_compress_flag);
+	 (lattice->t)			= 0.0;
+	 (lattice->start)		= start_time;
+	 (lattice->dump)		= dump_interval;
+	 (lattice->stop)		= stop_time;
+	 (lattice->density)		= RHO;
+	 
+	 InitVectorAll((lattice->phi), 0.1);
 
+	 /***********************************************************************/
+	 /*                  Solve for the base pressure                        */
+	 /***********************************************************************/
 
+	 if (SOLVE_EQUILIBRIUM)
+	 {
+	    /* Discretize and solve the pressure equation */
+	    PFModuleInvokeType(DiscretizePressureInvoke, 
+			       discretize_pressure, (&A, &f, problem_data, 
+						     t, 
+						     total_mobility_x,
+						     total_mobility_y,
+						     total_mobility_z, 
+						     saturations));
+	    PFModuleInvokeType(MatrixDiagScaleInvoke, diag_scale, (pressure, A, f, DO));
+	    PFModuleReNewInstanceType(LinearSolverInitInstanceXtraInvoke, 
+				      linear_solver, (NULL, NULL, problem_data, A, NULL));
+	    PFModuleInvokeType(LinearSolverInvoke,
+			       linear_solver, (pressure, f, abs_tol, 0));
+	    PFModuleInvokeType(MatrixDiagScaleInvoke, diag_scale, (pressure, A, f, UNDO));
 
-/*=========================================================================
-  LBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLB
-  =========================================================================
+	 } /* end if(SOLVE_EQUILIBRIUM) */
 
-			LATTICE BOLTZMANN SECTION
+	 /***********************************************************************/
+	 /*                Begin the main computational section                 */
+	 /***********************************************************************/
 
-  =========================================================================
-  LBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLBLB
-  =========================================================================*/
+	 /* Print initial permeability, porosity and pressure */
+	 sprintf(file_postfix, "perm_x");
+	 WritePFBinary(file_prefix, file_postfix,
+		       ProblemDataPermeabilityX(problem_data));
 
-   /***********************************************************************/
-   /*  Allocate memory                                                    */
-   /***********************************************************************/
-   sprintf(file_prefix, GlobalsOutFileName);
+	 sprintf(file_postfix, "perm_y");
+	 WritePFBinary(file_prefix, file_postfix,
+		       ProblemDataPermeabilityY(problem_data));
 
-   lattice = ctalloc(Lattice, 1);
+	 sprintf(file_postfix, "perm_z");
+	 WritePFBinary(file_prefix, file_postfix,
+		       ProblemDataPermeabilityZ(problem_data));
 
-   cellType = NewCharVector( grid, 1, 1 );
-   InitCharVectorAll(cellType, 1);
-
-   /***********************************************************************/
-   /*  Compute permeability, porosity and initialize lattice variables    */
-   /***********************************************************************/
-   PFModuleInvokeType(SetProblemDataInvoke, set_problem_data, (problem_data));
-   gr_domain = ProblemDataGrDomain(problem_data);
-
-   pwork = NewVector( grid, 1, 1 );
-   InitVectorAll(pwork, 0.0);
-
-   /* Assign lattice variables to the lattice structure
-    * for ease in passing arguments to functions. */
-   (lattice->grid) 		= grid;
-   (lattice->pressure) 		= pressure;
-   /* Assume a scalar perm field given with a kx value of 1.0 */
-   (lattice->perm)		= ProblemDataPermeabilityX(problem_data);;
-   (lattice->phi) 		= ProblemDataPorosity(problem_data);
-   (lattice->pwork)		= pwork;
-   (lattice->cellType)		= cellType;
-   (lattice->cfl)	    	= (public_xtra -> CFL);
-   (lattice->beta_perm) 	= (public_xtra -> beta_perm);
-   (lattice->beta_pore) 	= (public_xtra -> beta_pore);
-   (lattice->beta_fracture) 	= (public_xtra -> beta_fracture);
-   (lattice->beta_fluid) 	= (public_xtra -> beta_fluid);
-   (lattice->viscosity) 	= ProblemPhaseViscosity(problem, 0);
-   (lattice->comp_compress_flag)= (public_xtra -> comp_compress_flag);
-   (lattice->t)			= 0.0;
-   (lattice->start)		= start_time;
-   (lattice->dump)		= dump_interval;
-   (lattice->stop)		= stop_time;
-   (lattice->density)		= RHO;
-
-   InitVectorAll((lattice->phi), 0.1);
-
-   /***********************************************************************/
-   /*                  Solve for the base pressure                        */
-   /***********************************************************************/
-
-   if (SOLVE_EQUILIBRIUM)
-   {
-      /* Discretize and solve the pressure equation */
-      PFModuleInvokeType(DiscretizePressureInvoke, 
-			 discretize_pressure, (&A, &f, problem_data, 
-					       t, 
-					       total_mobility_x,
-					       total_mobility_y,
-					       total_mobility_z, 
-					       saturations));
-      PFModuleInvokeType(MatrixDiagScaleInvoke, diag_scale, (pressure, A, f, DO));
-      PFModuleReNewInstanceType(LinearSolverInitInstanceXtraInvoke, 
-				linear_solver, (NULL, NULL, problem_data, A, NULL));
-      PFModuleInvokeType(LinearSolverInvoke,
-			 linear_solver, (pressure, f, abs_tol, 0));
-      PFModuleInvokeType(MatrixDiagScaleInvoke, diag_scale, (pressure, A, f, UNDO));
-
-   } /* end if(SOLVE_EQUILIBRIUM) */
-
-   /***********************************************************************/
-   /*                Begin the main computational section                 */
-   /***********************************************************************/
-
-   /* Print initial permeability, porosity and pressure */
-   sprintf(file_postfix, "perm_x");
-   WritePFBinary(file_prefix, file_postfix,
-		 ProblemDataPermeabilityX(problem_data));
-
-   sprintf(file_postfix, "perm_y");
-   WritePFBinary(file_prefix, file_postfix,
-		 ProblemDataPermeabilityY(problem_data));
-
-   sprintf(file_postfix, "perm_z");
-   WritePFBinary(file_prefix, file_postfix,
-		 ProblemDataPermeabilityZ(problem_data));
-
-   sprintf(file_postfix, "porosity");
-   WritePFBinary(file_prefix, file_postfix, ProblemDataPorosity(problem_data));
+	 sprintf(file_postfix, "porosity");
+	 WritePFBinary(file_prefix, file_postfix, ProblemDataPorosity(problem_data));
  
-   /* Initialize the pressure field and initialize */
-   LBInitializeBC (lattice, problem, problem_data); 
-   LBWells (lattice, problem, problem_data);
-   PerturbSystem ( lattice, problem );
-   LatticeFlowInit (lattice, problem);
+	 /* Initialize the pressure field and initialize */
+	 LBInitializeBC (lattice, problem, problem_data); 
+	 LBWells (lattice, problem, problem_data);
+	 PerturbSystem ( lattice, problem );
+	 LatticeFlowInit (lattice, problem);
 
-   pressure_file_number = 0;
-   sprintf(file_postfix, "press.%05d", pressure_file_number);
-   strcpy(name, file_prefix);
-   strcat(name, file_postfix);
-   strcat(name, ".pfb");
-   amps_Printf("Writing %s at t=%f\n", name, (lattice->t));
-   WritePFBinary(file_prefix, file_postfix, pressure);
+	 pressure_file_number = 0;
+	 sprintf(file_postfix, "press.%05d", pressure_file_number);
+	 strcpy(name, file_prefix);
+	 strcat(name, file_postfix);
+	 strcat(name, ".pfb");
+	 amps_Printf("Writing %s at t=%f\n", name, (lattice->t));
+	 WritePFBinary(file_prefix, file_postfix, pressure);
 
-   DiffuseLB( lattice, problem, max_iterations, file_prefix );
+	 DiffuseLB( lattice, problem, max_iterations, file_prefix );
 
-   FreeVector( pwork );
-   FreeCharVector( cellType );
-   for(a=0; a<nDirections; a++) free( (lattice->e)[a] );
-   free( (lattice->e) );
-   free( lattice->Kscale );
-   for(a=0; a<2; a++) free( (lattice->Ktensor)[a] );
-   free( lattice->Ktensor );
-   free( lattice->bforce );
-   free( lattice->c );
-   free( lattice );
+	 FreeVector( pwork );
+	 FreeCharVector( cellType );
+	 for(a=0; a<nDirections; a++) free( (lattice->e)[a] );
+	 free( (lattice->e) );
+	 free( lattice->Kscale );
+	 for(a=0; a<2; a++) free( (lattice->Ktensor)[a] );
+	 free( lattice->Ktensor );
+	 free( lattice->bforce );
+	 free( lattice->c );
+	 free( lattice );
 
 
 /*=========================================================================
   =========================================================================
-		      END OF LATTICE BOLTZMANN SECTION
+  END OF LATTICE BOLTZMANN SECTION
   =========================================================================
   =========================================================================*/
 
@@ -821,14 +813,14 @@ void      SolverDiffusion()
 #if 0
                for(phase = 0; phase < ProblemNumPhases(problem); phase++)
                {
-                 sprintf(file_postfix, "phasex.%01d.%05d", phase, file_number - 1);
-                 WritePFBinary(file_prefix, file_postfix, phase_x_velocity[phase]);
+		  sprintf(file_postfix, "phasex.%01d.%05d", phase, file_number - 1);
+		  WritePFBinary(file_prefix, file_postfix, phase_x_velocity[phase]);
 
-                 sprintf(file_postfix, "phasey.%01d.%05d", phase, file_number - 1);
-                 WritePFBinary(file_prefix, file_postfix, phase_y_velocity[phase]);
+		  sprintf(file_postfix, "phasey.%01d.%05d", phase, file_number - 1);
+		  WritePFBinary(file_prefix, file_postfix, phase_y_velocity[phase]);
 
-                 sprintf(file_postfix, "phasez.%01d.%05d", phase, file_number - 1);
-                 WritePFBinary(file_prefix, file_postfix, phase_z_velocity[phase]);
+		  sprintf(file_postfix, "phasez.%01d.%05d", phase, file_number - 1);
+		  WritePFBinary(file_prefix, file_postfix, phase_z_velocity[phase]);
                }
 
                if ( is_multiphase )
@@ -864,13 +856,13 @@ void      SolverDiffusion()
           *
           *------------------------------------------------------------------*/
 
-          well_dt = TimeCycleDataComputeNextTransition(problem,
-                                                       t,
-                                                       WellDataTimeCycleData(ProblemDataWellData(problem_data)));
+	 well_dt = TimeCycleDataComputeNextTransition(problem,
+						      t,
+						      WellDataTimeCycleData(ProblemDataWellData(problem_data)));
 
-          bc_dt = TimeCycleDataComputeNextTransition(problem,
-                                                  t,
-                                                  BCPressureDataTimeCycleData(ProblemDataBCPressureData(problem_data)));
+	 bc_dt = TimeCycleDataComputeNextTransition(problem,
+						    t,
+						    BCPressureDataTimeCycleData(ProblemDataBCPressureData(problem_data)));
 
          /*------------------------------------------------------------------
           *
@@ -885,7 +877,7 @@ void      SolverDiffusion()
          {
 	    if ( is_multiphase )
 	    {
-	       dt = min(total_dt, min_phase_dt);
+	       dt = pfmin(total_dt, min_phase_dt);
 	    }
             else
 	    {
@@ -1063,22 +1055,22 @@ void      SolverDiffusion()
                   InitVectorAll(stemp, 0.0);
 		  Copy(saturations[phase], stemp);
 		  PFModuleInvokeType(BCPhaseSaturationInvoke, bc_phase_saturation,
-				 (stemp, phase, gr_domain));
+				     (stemp, phase, gr_domain));
 
 
 		  /* Evolve to the new time */
 		  PFModuleInvokeType(AdvectionSaturationInvoke,  advect_satur,
-				 (problem_data, phase,
-				  stemp, saturations[phase],
-				  total_x_velocity, 
-				  total_y_velocity, 
-				  total_z_velocity, 
-				  z_permeability,
-				  ProblemDataPorosity(problem_data),
-				  ProblemPhaseViscosities(problem),
-				  phase_densities,
-				  ProblemGravity(problem),
-				  t, dt, sadvect_order));
+				     (problem_data, phase,
+				      stemp, saturations[phase],
+				      total_x_velocity, 
+				      total_y_velocity, 
+				      total_z_velocity, 
+				      z_permeability,
+				      ProblemDataPorosity(problem_data),
+				      ProblemPhaseViscosities(problem),
+				      phase_densities,
+				      ProblemGravity(problem),
+				      t, dt, sadvect_order));
                }
 	       InitVectorAll(saturations[ProblemNumPhases(problem)-1], 0.0);
 	       PFModuleInvokeType(SaturationConstitutiveInvoke, constitutive, (saturations));
@@ -1123,13 +1115,13 @@ void      SolverDiffusion()
                   Copy(concentrations[indx], ctemp);
 
                   PFModuleInvokeType(AdvectionConcentrationInvoke, advect_concen,
-                                 (problem_data, phase, concen,
-                                  ctemp, concentrations[indx],
-                                  phase_x_velocity[phase], 
-				  phase_y_velocity[phase], 
-				  phase_z_velocity[phase],
-                                  solidmassfactor,
-                                  t, dt, advect_order));
+				     (problem_data, phase, concen,
+				      ctemp, concentrations[indx],
+				      phase_x_velocity[phase], 
+				      phase_y_velocity[phase], 
+				      phase_z_velocity[phase],
+				      solidmassfactor,
+				      t, dt, advect_order));
                   indx++;
 
                }
@@ -1295,10 +1287,10 @@ void      SolverDiffusion()
          {
             if ( dumped_log[k] == -1 )
                fprintf(log_file, "  %06d     %8e   %8e %1c                       %1c\n",
-                            k, time_log[k], dt_log[k], dt_info_log[k], recomp_log[k]);
+		       k, time_log[k], dt_log[k], dt_info_log[k], recomp_log[k]);
             else
                fprintf(log_file, "  %06d     %8e   %8e %1c       %06d          %1c\n",
-                            k, time_log[k], dt_log[k], dt_info_log[k], dumped_log[k], recomp_log[k]);
+		       k, time_log[k], dt_log[k], dt_info_log[k], dumped_log[k], recomp_log[k]);
          }
       }
       else
@@ -1344,7 +1336,7 @@ PFModule *SolverDiffusionInitInstanceXtra()
 
    double       *temp_data, *temp_data_placeholder;
    int           total_mobility_sz, pressure_sz, velocity_sz, satur_sz = 0, 
-                 concen_sz, temp_data_size, sz;
+      concen_sz, temp_data_size, sz;
    int           is_multiphase;
 
    int           i;
@@ -1476,20 +1468,20 @@ PFModule *SolverDiffusionInitInstanceXtra()
 				    (public_xtra -> permeability_face),
 				    (z_grid));
 	 (instance_xtra -> total_velocity_face) =
-	   PFModuleNewInstanceType(TotalVelocityFaceInitInstanceXtraInvoke,
-				   (public_xtra -> total_velocity_face),
-				   (problem, grid, x_grid, y_grid, z_grid, NULL));
+	    PFModuleNewInstanceType(TotalVelocityFaceInitInstanceXtraInvoke,
+				    (public_xtra -> total_velocity_face),
+				    (problem, grid, x_grid, y_grid, z_grid, NULL));
 	 (instance_xtra -> advect_satur) =
-	   PFModuleNewInstanceType(AdvectionSaturationInitInstanceXtraInvoke,
-				   (public_xtra -> advect_satur),
-				   (problem, grid, NULL));
+	    PFModuleNewInstanceType(AdvectionSaturationInitInstanceXtraInvoke,
+				    (public_xtra -> advect_satur),
+				    (problem, grid, NULL));
 	 (instance_xtra -> ic_phase_satur) =
-	   PFModuleNewInstance(ProblemICPhaseSatur(problem), ());
+	    PFModuleNewInstance(ProblemICPhaseSatur(problem), ());
 	 (instance_xtra -> bc_phase_saturation) =
-	   PFModuleNewInstance(ProblemBCPhaseSaturation(problem), ());
+	    PFModuleNewInstance(ProblemBCPhaseSaturation(problem), ());
 	 (instance_xtra -> constitutive) =
-	   PFModuleNewInstanceType(SaturationConstitutiveInitInstanceXtraInvoke,
-				   ProblemSaturationConstitutive(problem), (grid));
+	    PFModuleNewInstanceType(SaturationConstitutiveInitInstanceXtraInvoke,
+				    ProblemSaturationConstitutive(problem), (grid));
       }         
    }
    else
@@ -1543,41 +1535,41 @@ PFModule *SolverDiffusionInitInstanceXtra()
    {
 
       /* compute size for total mobility computation */
-     sz = 0;
-     total_mobility_sz = sz;
+      sz = 0;
+      total_mobility_sz = sz;
 
-     /* compute size for saturation advection */
-     sz = 0;
-     sz += PFModuleSizeOfTempData(instance_xtra -> advect_satur);
-     satur_sz = sz;
+      /* compute size for saturation advection */
+      sz = 0;
+      sz += PFModuleSizeOfTempData(instance_xtra -> advect_satur);
+      satur_sz = sz;
    }
 
    /* compute size for pressure solve */
    sz = 0;
-   sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> discretize_pressure));
-   sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> linear_solver));
+   sz = pfmax(sz, PFModuleSizeOfTempData(instance_xtra -> discretize_pressure));
+   sz = pfmax(sz, PFModuleSizeOfTempData(instance_xtra -> linear_solver));
    pressure_sz = sz;
 
    /* compute size for velocity computation */
    sz = 0;
-   sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> phase_velocity_face));
+   sz = pfmax(sz, PFModuleSizeOfTempData(instance_xtra -> phase_velocity_face));
    if ( is_multiphase )
    {
-      sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> total_velocity_face));
+      sz = pfmax(sz, PFModuleSizeOfTempData(instance_xtra -> total_velocity_face));
    }
    velocity_sz = sz;
 
    /* compute size for concentration advection */
    sz = 0;
-   sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> retardation));
-   sz += max(sz, PFModuleSizeOfTempData(instance_xtra -> advect_concen));
+   sz = pfmax(sz, PFModuleSizeOfTempData(instance_xtra -> retardation));
+   sz += pfmax(sz, PFModuleSizeOfTempData(instance_xtra -> advect_concen));
    concen_sz = sz;
 
    /* set temp_data size to max of pressure_sz, satur_sz, and concen_sz*/
-   temp_data_size = max(max(pressure_sz, velocity_sz), concen_sz);
+   temp_data_size = pfmax(pfmax(pressure_sz, velocity_sz), concen_sz);
    if ( is_multiphase )
    {
-      temp_data_size = max(temp_data_size,max(total_mobility_sz, satur_sz));
+      temp_data_size = pfmax(temp_data_size,pfmax(total_mobility_sz, satur_sz));
    }
 /*     temp_data_size = total_mobility_sz + pressure_sz + velocity_sz 
  *                      + satur_sz + concen_sz;  */
@@ -1608,11 +1600,11 @@ PFModule *SolverDiffusionInitInstanceXtra()
 			     (NULL, NULL, NULL, NULL, NULL, temp_data));
    if ( is_multiphase )
    {
-     PFModuleReNewInstanceType(TotalVelocityFaceInitInstanceXtraInvoke,
-			       (instance_xtra -> total_velocity_face),
-			       (NULL, NULL, NULL, NULL, NULL, temp_data));
-     /* temp_data += PFModuleSizeOfTempData(instance_xtra -> 
-      *   	                            total_velocity_face);  */
+      PFModuleReNewInstanceType(TotalVelocityFaceInitInstanceXtraInvoke,
+				(instance_xtra -> total_velocity_face),
+				(NULL, NULL, NULL, NULL, NULL, temp_data));
+      /* temp_data += PFModuleSizeOfTempData(instance_xtra -> 
+       *   	                            total_velocity_face);  */
 
       /* renew saturation advection modules that take temporary data */
       temp_data_placeholder = temp_data;
@@ -1630,7 +1622,7 @@ PFModule *SolverDiffusionInitInstanceXtra()
    PFModuleReNewInstanceType(AdvectionConcentrationInitInstanceXtraType,
 			     (instance_xtra -> advect_concen),
 			     (NULL, NULL, temp_data_placeholder));
-   temp_data_placeholder += max(PFModuleSizeOfTempData(instance_xtra -> retardation),
+   temp_data_placeholder += pfmax(PFModuleSizeOfTempData(instance_xtra -> retardation),
                                 PFModuleSizeOfTempData(instance_xtra -> advect_concen));
 
    temp_data += temp_data_size;
@@ -1776,7 +1768,7 @@ PFModule   *SolverDiffusionNewPublicXtra(char *name)
       default:
       {
 	 InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-		     key);
+		    key);
       }
    }
    NA_FreeNameArray(linear_solver_na);
@@ -1816,8 +1808,8 @@ PFModule   *SolverDiffusionNewPublicXtra(char *name)
    switch_value = NA_NameToIndex(switch_na, switch_name);
    if(switch_value < 0)
    {
-	 InputError("Error: invalid flag value <%s> for key <%s>\n",
-		    switch_name, key);
+      InputError("Error: invalid flag value <%s> for key <%s>\n",
+		 switch_name, key);
    }
    public_xtra -> comp_compress_flag  = switch_value;
 

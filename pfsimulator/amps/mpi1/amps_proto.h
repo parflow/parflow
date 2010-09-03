@@ -64,6 +64,7 @@ amps_Handle amps_IRecv (amps_Comm comm , int source , amps_Invoice invoice );
 
 /* amps_newhandle.c */
 amps_Handle amps_NewHandle (amps_Comm comm , int id , amps_Invoice invoice , amps_Package package );
+void amps_FreeHandle(amps_Handle handle);
 
 /* amps_newpackage.c */
 amps_Package amps_NewPackage (amps_Comm comm , int num_send , int *dest , amps_Invoice *send_invoices , int num_recv , int *src , amps_Invoice *recv_invoices );
@@ -76,7 +77,7 @@ int amps_create_mpi_cont_send_type (amps_Comm comm , amps_Invoice inv );
 void amps_create_mpi_type (amps_Comm comm , amps_Invoice inv );
 
 /* amps_print.c */
-void amps_Printf (char *fmt , ...);
+void amps_Printf (const char *fmt , ...);
 
 /* amps_recv.c */
 char *amps_recvb (int src , int *size );
@@ -93,7 +94,7 @@ int amps_SFBCast (amps_Comm comm , amps_File file , amps_Invoice invoice );
 int amps_SFclose (amps_File file );
 
 /* amps_sfopen.c */
-amps_File amps_SFopen (char *filename , char *type );
+amps_File amps_SFopen (const char *filename , const char *type );
 
 /* amps_sizeofinvoice.c */
 long amps_sizeof_invoice (amps_Comm comm , amps_Invoice inv );
@@ -123,3 +124,7 @@ void Fsignal (void );
 
 int amps_Wait(amps_Handle handle);
 
+void _amps_Abort(
+      char *message,
+      char *filename,
+      int line);

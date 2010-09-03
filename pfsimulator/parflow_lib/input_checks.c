@@ -35,7 +35,8 @@
 #include "parflow.h"
 
 #include "stdlib.h"
-#include "math.h"
+
+#include <math.h>
 
 /*--------------------------------------------------------------------------
  * CheckTime
@@ -47,7 +48,7 @@ int CheckTime(Problem *problem, char *key, double time) {
    int return_value = TRUE;
 
    double base_time_unit = ProblemBaseTimeUnit(problem);
-   double discretized_time = round(time / base_time_unit);
+   double discretized_time = pfround(time / base_time_unit);
    
    if(fabs(time - discretized_time*base_time_unit) > base_time_unit / 20.0 ) {
       char time_string[100];

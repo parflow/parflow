@@ -35,38 +35,55 @@
 #include "databox.h"
 #include <stdlib.h>
 
+#include <limits>
+
 /*-----------------------------------------------------------------------
  * create new Databox structure
  *-----------------------------------------------------------------------*/
 
-Databox         *NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)
-int             nx, ny, nz;
-double          x,  y,  z;
-double          dx, dy, dz;
+Databox         *NewDatabox(
+   int             nx, 
+   int             ny, 
+   int             nz,
+   double          x,  
+   double          y,  
+   double          z,
+   double          dx, 
+   double          dy, 
+   double          dz,
+   double          default_value)
 {
-   Databox         *new;
+   Databox         *new_databox;
 
-   if ((new = calloc(1, sizeof (Databox))) == NULL)
+   if ((new_databox = (Databox*) calloc(1, sizeof (Databox))) == NULL)
       return((Databox *)NULL);
 
-   if ((DataboxCoeffs(new) = calloc((nx * ny * nz), sizeof (double))) == NULL){
-      free(new);
+   if ((DataboxCoeffs(new_databox) = (double*)calloc((nx * ny * nz), sizeof (double))) == NULL){
+      free(new_databox);
       return((Databox *)NULL);
    }
 
-   DataboxNx(new) = nx;
-   DataboxNy(new) = ny;
-   DataboxNz(new) = nz;
+   for(int k = 0; k < nz; ++k) {
+      for(int j = 0; j < ny; ++j)  {
+	 for(int i = 0; i < nx; ++i)  {
+	    DataboxCoeffs(new_databox)[k * ny * nx + j * nx + i] = default_value;
+	 }
+      }
+   }
 
-   DataboxX(new)  = x;
-   DataboxY(new)  = y;
-   DataboxZ(new)  = z;
+   DataboxNx(new_databox) = nx;
+   DataboxNy(new_databox) = ny;
+   DataboxNz(new_databox) = nz;
 
-   DataboxDx(new) = dx;
-   DataboxDy(new) = dy;
-   DataboxDz(new) = dz;
+   DataboxX(new_databox)  = x;
+   DataboxY(new_databox)  = y;
+   DataboxZ(new_databox)  = z;
 
-   return new;
+   DataboxDx(new_databox) = dx;
+   DataboxDy(new_databox) = dy;
+   DataboxDz(new_databox) = dz;
+
+   return new_databox;
 }
 
 
@@ -74,9 +91,9 @@ double          dx, dy, dz;
  * print Databox grid info
  *-----------------------------------------------------------------------*/
 
-void            GetDataboxGrid(interp, databox)
-Tcl_Interp     *interp;
-Databox        *databox;
+void            GetDataboxGrid(
+   Tcl_Interp     *interp,
+   Databox        *databox)
 {
    Tcl_Obj     *result = Tcl_GetObjResult(interp);
    Tcl_Obj     *double_obj;
@@ -126,8 +143,8 @@ Databox        *databox;
  * free Databox structure
  *-----------------------------------------------------------------------*/
 
-void         FreeDatabox(databox)
-Databox      *databox;
+void         FreeDatabox(
+   Databox      *databox)
 {
    free(DataboxCoeffs(databox));
 

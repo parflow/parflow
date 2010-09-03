@@ -54,7 +54,7 @@ N_Vector N_VNew(
 
    grid      = pf2kinsol_data.grid;
    num_ghost = pf2kinsol_data.num_ghost;
-   return(NewVector(grid, 1, num_ghost));
+   return(NewVectorType(grid, 1, num_ghost, vector_cell_centered));
 }
 
 void N_VPrint(

@@ -104,7 +104,11 @@ namespace eval Parflow {
     namespace export pfnewlabel
     namespace export pfdelete
     namespace export pfcomputetop
+    namespace export pfcomputebottom
     namespace export pfextracttop
+    namespace export pfcomputedomain
+    namespace export pfprintdomain
+    namespace export pfdistondomain
     namespace export pfsurfacestorage
     namespace export pfsubsurfacestorage
     namespace export pfgwstorage

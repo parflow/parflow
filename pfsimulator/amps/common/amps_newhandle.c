@@ -48,4 +48,8 @@ amps_Handle amps_NewHandle(
 
    return handle;
 }
+
+void amps_FreeHandle(amps_Handle handle) {
+   free(handle);
+}
 #endif

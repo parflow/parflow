@@ -37,6 +37,7 @@
 #include "parflow.h"
 
 #include <float.h>
+#include <limits.h>
 
 #define EPSILON 0.00000000001
 
@@ -198,7 +199,6 @@ typedef struct
 
    double      *time_log;
    double      *dt_log;
-   double      *outflow_log;
    int         *seq_log;
    int         *dumped_log;
    char        *recomp_log; 
@@ -244,7 +244,7 @@ void SetupRichards(PFModule *this_module) {
 
    double        dtmp;
 
-   CommHandle   *handle;
+   VectorUpdateCommHandle   *handle;
 
    int           any_file_dumped;
 
@@ -273,11 +273,10 @@ void SetupRichards(PFModule *this_module) {
       instance_xtra -> dt_info_log  = talloc(char,   max_iterations + 1);
       instance_xtra -> dumped_log   = talloc(int,    max_iterations + 1);
       instance_xtra -> recomp_log   = talloc(char,   max_iterations + 1);
-      instance_xtra -> outflow_log  = talloc(double, max_iterations + 1);
       instance_xtra -> number_logged = 0;
    }
 
-   sprintf(file_prefix, GlobalsOutFileName);
+   sprintf(file_prefix, "%s", GlobalsOutFileName);
 
    /* Do turning bands (and other stuff maybe) */
    PFModuleInvokeType(SetProblemDataInvoke, set_problem_data, (problem_data));
@@ -386,134 +385,133 @@ void SetupRichards(PFModule *this_module) {
        * Allocate and set up initial values
        *-------------------------------------------------------------------*/
 
-      instance_xtra -> pressure = NewVector( grid, 1, 1 );
+      /* SGS FIXME why are these here and not created in instance_xtra ? */
+
+      instance_xtra -> pressure = NewVectorType( grid, 1, 1, vector_cell_centered);
       InitVectorAll(instance_xtra -> pressure, -FLT_MAX);
-      // InitVectorAll(instance_xtra -> pressure, 0.0);      
 
-      instance_xtra -> saturation = NewVector( grid, 1, 1 );
+      instance_xtra -> saturation = NewVectorType( grid, 1, 1, vector_cell_centered  );
       InitVectorAll(instance_xtra -> saturation, -FLT_MAX);
-      // InitVectorAll(instance_xtra -> saturation, 0.0);
 
-      instance_xtra -> density = NewVector( grid, 1, 1 );
+      instance_xtra -> density = NewVectorType( grid, 1, 1, vector_cell_centered  );
       InitVectorAll(instance_xtra -> density, 0.0);
 
-      instance_xtra -> old_pressure = NewVector( grid, 1, 1 );
+      instance_xtra -> old_pressure = NewVectorType( grid, 1, 1, vector_cell_centered  );
       InitVectorAll(instance_xtra -> old_pressure, 0.0);
 
-      instance_xtra -> old_saturation = NewVector( grid, 1, 1 );
+      instance_xtra -> old_saturation = NewVectorType( grid, 1, 1, vector_cell_centered  );
       InitVectorAll(instance_xtra -> old_saturation, 0.0);
 
-      instance_xtra -> old_density = NewVector( grid, 1, 1 );
+      instance_xtra -> old_density = NewVectorType( grid, 1, 1, vector_cell_centered );
       InitVectorAll(instance_xtra -> old_density, 0.0);
 
       /*sk Initialize Overland flow boundary fluxes*/
-      instance_xtra -> ovrl_bc_flx = NewVector( grid2d, 1, 1 );
+      instance_xtra -> ovrl_bc_flx = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D );
       InitVectorAll(instance_xtra -> ovrl_bc_flx, 0.0);
 
       if(public_xtra -> write_silo_overland_sum) 
       {
-			instance_xtra -> overland_sum = NewVector( grid2d, 1, 1 );
-			InitVectorAll(instance_xtra -> overland_sum, 0.0);
+	 instance_xtra -> overland_sum = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D );
+	 InitVectorAll(instance_xtra -> overland_sum, 0.0);
       }
 
       /*IMF these need to be outside of ifdef or won't run w/o CLM */
       /*sk Initialize LSM mask */
-      instance_xtra -> mask = NewVector( grid, 1, 1 );
+      instance_xtra -> mask = NewVectorType( grid, 1, 1, vector_cell_centered );
       InitVectorAll(instance_xtra -> mask, 0.0);
 
-      instance_xtra -> evap_trans_sum = NewVector( grid, 1, 0 );
+      instance_xtra -> evap_trans_sum = NewVectorType( grid, 1, 0, vector_cell_centered );
       InitVectorAll(instance_xtra -> evap_trans_sum, 0.0);
 
 /* IMF: the following are only used w/ CLM */
 #ifdef HAVE_CLM 
 
-      /* SGS FIXME should only init these if we are actually running with CLM */
-      /*sk Initialize LSM mask */
-      //instance_xtra -> mask = NewVector( grid, 1, 1 );
-      //InitVectorAll(instance_xtra -> mask, 0.0);
-      //
-      //instance_xtra -> evap_trans_sum = NewVector( grid, 1, 0 );
-      //InitVectorAll(instance_xtra -> evap_trans_sum, 0.0);
-
       /*IMF Initialize variables for printing CLM output*/
-      instance_xtra -> eflx_lh_tot = NewVector( grid2d, 1, 1 );
+      instance_xtra -> eflx_lh_tot = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D );
       InitVectorAll(instance_xtra -> eflx_lh_tot, 0.0);
 	   
-      instance_xtra -> eflx_lwrad_out = NewVector( grid2d, 1, 1 );
+      instance_xtra -> eflx_lwrad_out = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D );
       InitVectorAll(instance_xtra -> eflx_lwrad_out, 0.0);		
 	
-      instance_xtra -> eflx_sh_tot = NewVector( grid2d, 1, 1 );
+      instance_xtra -> eflx_sh_tot = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D );
       InitVectorAll(instance_xtra -> eflx_sh_tot, 0.0);
 	
-      instance_xtra -> eflx_soil_grnd = NewVector( grid2d, 1, 1 );
+      instance_xtra -> eflx_soil_grnd = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D );
       InitVectorAll(instance_xtra -> eflx_soil_grnd, 0.0);
 		
-      instance_xtra -> qflx_evap_tot = NewVector( grid2d, 1, 1 );
+      instance_xtra -> qflx_evap_tot = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D );
       InitVectorAll(instance_xtra -> qflx_evap_tot, 0.0);
 	
-      instance_xtra -> qflx_evap_grnd = NewVector( grid2d, 1, 1 );
+      instance_xtra -> qflx_evap_grnd = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D );
       InitVectorAll(instance_xtra -> qflx_evap_grnd, 0.0);
 
-      instance_xtra -> qflx_evap_soi = NewVector( grid2d, 1, 1 );
+      instance_xtra -> qflx_evap_soi = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D );
       InitVectorAll(instance_xtra -> qflx_evap_soi, 0.0);
 		
-      instance_xtra -> qflx_evap_veg = NewVector( grid2d, 1, 1 );
+      instance_xtra -> qflx_evap_veg = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D );
       InitVectorAll(instance_xtra -> qflx_evap_veg, 0.0);		
 		
-      instance_xtra -> qflx_tran_veg = NewVector( grid2d, 1, 1 );
+      instance_xtra -> qflx_tran_veg = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D );
       InitVectorAll(instance_xtra -> qflx_tran_veg, 0.0);
 		
-      instance_xtra -> qflx_infl = NewVector( grid2d, 1, 1 );
+      instance_xtra -> qflx_infl = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D );
       InitVectorAll(instance_xtra -> qflx_infl, 0.0);
 		
-      instance_xtra -> swe_out = NewVector( grid2d, 1, 1 );
+      instance_xtra -> swe_out = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D );
       InitVectorAll(instance_xtra -> swe_out, 0.0);
 		
-      instance_xtra -> t_grnd = NewVector( grid2d, 1, 1 );
+      instance_xtra -> t_grnd = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D );
       InitVectorAll(instance_xtra -> t_grnd, 0.0);
 
-      instance_xtra -> tsoil = NewVector( gridTs, 1, 1);
+      instance_xtra -> tsoil = NewVectorType( gridTs, 1, 1, vector_clm_topsoil);
       InitVectorAll(instance_xtra -> tsoil, 0.0);
 
       /*IMF Initialize variables for CLM irrigation output */
-      instance_xtra -> irr_flag  = NewVector( grid2d, 1, 1 );
+
+      instance_xtra -> irr_flag  = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D );
       InitVectorAll(instance_xtra -> irr_flag, 0.0);
-   
-      instance_xtra -> qflx_qirr = NewVector( grid2d, 1, 1 );
+
+      instance_xtra -> qflx_qirr = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D );
       InitVectorAll(instance_xtra -> qflx_qirr, 0.0);
 
-      instance_xtra -> qflx_qirr_inst = NewVector( gridTs, 1, 1);
+      instance_xtra -> qflx_qirr_inst = NewVectorType( gridTs, 1, 1, vector_clm_topsoil);
       InitVectorAll(instance_xtra -> qflx_qirr_inst, 0.0);
 
       /*IMF Initialize variables for CLM forcing fields
-            SW rad, LW rad, precip, T(air), U, V, P(air), q(air) */
-      instance_xtra -> sw_forc = NewVector( metgrid, 1, 1 );
+
+	SW rad, LW rad, precip, T(air), U, V, P(air), q(air) */
+      instance_xtra -> sw_forc = NewVectorType( metgrid, 1, 1, vector_met );
       InitVectorAll(instance_xtra -> sw_forc, 100.0);
 
-      instance_xtra -> lw_forc = NewVector( metgrid, 1, 1 );
+      instance_xtra -> lw_forc = NewVectorType( metgrid, 1, 1, vector_met );
       InitVectorAll(instance_xtra -> lw_forc, 100.0);
 
-      instance_xtra -> prcp_forc = NewVector( metgrid, 1, 1 );
+
+      instance_xtra -> prcp_forc = NewVectorType( metgrid, 1, 1, vector_met );
       InitVectorAll(instance_xtra -> prcp_forc, 100.0);
 
-      instance_xtra -> tas_forc = NewVector( metgrid, 1, 1 );
+      instance_xtra -> tas_forc = NewVectorType( metgrid, 1, 1, vector_met );
       InitVectorAll(instance_xtra -> tas_forc, 100.0);
 
-      instance_xtra -> u_forc = NewVector( metgrid, 1, 1 );
+
+      instance_xtra -> u_forc = NewVectorType( metgrid, 1, 1, vector_met );
       InitVectorAll(instance_xtra -> u_forc, 100.0);
 
-      instance_xtra -> v_forc = NewVector( metgrid, 1, 1 );
+
+      instance_xtra -> v_forc = NewVectorType( metgrid, 1, 1, vector_met );
       InitVectorAll(instance_xtra -> v_forc, 100.0);
 
-      instance_xtra -> patm_forc = NewVector( metgrid, 1, 1 );
+      instance_xtra -> patm_forc = NewVectorType( metgrid, 1, 1, vector_met );
       InitVectorAll(instance_xtra -> patm_forc, 100.0);
 
-      instance_xtra -> qatm_forc = NewVector( metgrid, 1, 1 );
+      instance_xtra -> qatm_forc = NewVectorType( metgrid, 1, 1, vector_met );
       InitVectorAll(instance_xtra -> qatm_forc, 100.0); 
 
       /*IMF If 1D met forcing, read forcing vars to arrays */
       if (public_xtra -> clm_metforce == 1)
       {
+	 // SGS Fixme This should not be here should be in init xtra.
+
          // Set filename for 1D forcing file
          sprintf(filename, "%s/%s", public_xtra -> clm_metpath, public_xtra -> clm_metfile);
 
@@ -543,6 +541,7 @@ void SetupRichards(PFModule *this_module) {
             amps_Printf( "Error: can't open file %s \n", filename);
             exit(1);
          }
+	 // SGS this should be done as an array not individual elements
          invoice = amps_NewInvoice( "%d%d%d%d%d%d%d%d", &sw,&lw,&prcp,&tas,&u,&v,&patm,&qatm );
          for (n=0; n<nc; n++)
          {
@@ -585,32 +584,6 @@ void SetupRichards(PFModule *this_module) {
 
       handle = InitVectorUpdate(instance_xtra -> pressure, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
-
-      /*-----------------------------------------------------------------
-       * Allocate phase velocities 
-       *-----------------------------------------------------------------*/
-      /*
-	phase_x_velocity = ctalloc(Vector *, ProblemNumPhases(problem) );
-	for(phase = 0; phase < ProblemNumPhases(problem); phase++)
-	{
-	phase_x_velocity[phase] = NewVector( x_grid, 1, 1 );
-	InitVectorAll(phase_x_velocity[phase], 0.0);
-	}
-
-	phase_y_velocity = ctalloc(Vector *, ProblemNumPhases(problem) );
-	for(phase = 0; phase < ProblemNumPhases(problem); phase++)
-	{
-	phase_y_velocity[phase] = NewVector( y_grid, 1, 1 );
-	InitVectorAll(phase_y_velocity[phase], 0.0);
-	}
-
-	phase_z_velocity = ctalloc(Vector *, ProblemNumPhases(problem) );
-	for(phase = 0; phase < ProblemNumPhases(problem); phase++)
-	{
-	phase_z_velocity[phase] = NewVector( z_grid, 1, 2 );
-	InitVectorAll(phase_z_velocity[phase], 0.0);
-	}
-      */
 
       /*****************************************************************/
       /*          Print out any of the requested initial data          */
@@ -698,8 +671,6 @@ void SetupRichards(PFModule *this_module) {
 
       IfLogging(1)
       {
-	 double        outflow = 0.0;
-
 	 /*
 	  * SGS Better error handing should be added 
 	  */
@@ -713,7 +684,6 @@ void SetupRichards(PFModule *this_module) {
 	 instance_xtra -> time_log[instance_xtra -> number_logged]      = t;
 	 instance_xtra -> dt_log[instance_xtra -> number_logged]        = dt;
 	 instance_xtra -> dt_info_log[instance_xtra -> number_logged]   = 'i';
-	 instance_xtra -> outflow_log[instance_xtra -> number_logged]   = outflow;
 	 if ( any_file_dumped )
 	 {
 	    instance_xtra -> dumped_log[instance_xtra -> number_logged] = instance_xtra -> file_number;
@@ -816,14 +786,12 @@ void AdvanceRichards(PFModule *this_module,
    double        dtmp, err_norm;
    double        gravity = ProblemGravity(problem);
 
-   double        outflow = 0.0;      //sk Outflow due to overland flow
-
-   CommHandle   *handle;
+   VectorUpdateCommHandle   *handle;
 
    char          dt_info;
    char          file_prefix[2048], file_type[2048], file_postfix[2048];
 
-   sprintf(file_prefix, GlobalsOutFileName);
+   sprintf(file_prefix, "%s", GlobalsOutFileName);
 
    /***********************************************************************/
    /*                                                                     */
@@ -994,55 +962,71 @@ void AdvanceRichards(PFModule *this_module,
                // Subdirectories for each variable?
                if ( public_xtra -> clm_metsub )
                {
-                  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "DSWR", \
+
+                  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "DSWR", 
                           public_xtra -> clm_metfile, "DSWR", fstart, fstop );
                   ReadPFBinary( filename, instance_xtra -> sw_forc );
-                  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "DLWR", \
+
+                  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "DLWR", 
                           public_xtra -> clm_metfile, "DLWR", fstart, fstop );
                   ReadPFBinary( filename, instance_xtra -> lw_forc );
-                  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "APCP", \
+
+                  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "APCP", 
                           public_xtra -> clm_metfile, "APCP", fstart, fstop );
                   ReadPFBinary( filename, instance_xtra -> prcp_forc );
-                  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "Temp", \
+
+                  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "Temp", 
                           public_xtra -> clm_metfile, "Temp", fstart, fstop );
                   ReadPFBinary( filename, instance_xtra -> tas_forc );
-                  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "UGRD", \
+
+                  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "UGRD", 
                           public_xtra -> clm_metfile, "UGRD", fstart, fstop);
                   ReadPFBinary( filename, instance_xtra -> u_forc );
-                  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "VGRD", \
+
+                  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "VGRD", 
                           public_xtra -> clm_metfile, "VGRD", fstart, fstop );
                   ReadPFBinary( filename, instance_xtra -> v_forc );
-                  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "Press", \
+
+                  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "Press",
                           public_xtra -> clm_metfile, "Press", fstart, fstop );
                   ReadPFBinary( filename, instance_xtra -> patm_forc );
-                  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "SPFH", \
+
+                  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "SPFH", 
                           public_xtra -> clm_metfile, "SPFH", fstart, fstop );
                   ReadPFBinary( filename, instance_xtra -> qatm_forc );
                }  
                else
                {
-                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, \
+
+                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, 
                           public_xtra -> clm_metfile, "DSWR", fstart, fstop );
                   ReadPFBinary( filename, instance_xtra -> sw_forc );
-                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, \
+
+                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, 
                           public_xtra -> clm_metfile, "DLWR", fstart, fstop );
                   ReadPFBinary( filename, instance_xtra -> lw_forc );
-                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, \ 
+
+                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath,  
                           public_xtra -> clm_metfile, "APCP", fstart, fstop );
                   ReadPFBinary( filename, instance_xtra -> prcp_forc );
-                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, \
+
+                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, 
                           public_xtra -> clm_metfile, "Temp", fstart, fstop );
                   ReadPFBinary( filename, instance_xtra -> tas_forc );
-                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, \
+
+                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, 
                           public_xtra -> clm_metfile, "UGRD", fstart, fstop );
                   ReadPFBinary( filename, instance_xtra -> u_forc );
-                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, \
+
+                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, 
                           public_xtra -> clm_metfile, "VGRD", fstart, fstop );
                   ReadPFBinary( filename, instance_xtra -> v_forc );
-                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, \
+
+                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, 
                           public_xtra -> clm_metfile, "Press", fstart, fstop );
                   ReadPFBinary( filename, instance_xtra -> patm_forc );
-                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, \
+
+                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, 
                           public_xtra -> clm_metfile, "SPFH", fstart, fstop );
                   ReadPFBinary( filename, instance_xtra -> qatm_forc );
                }  // end if/else clm_metsub==False
@@ -1404,7 +1388,7 @@ void AdvanceRichards(PFModule *this_module,
 				      instance_xtra -> old_saturation, 
 				      t, dt, 
 				      problem_data, instance_xtra -> old_pressure, 
-				      &outflow, evap_trans, 
+				      evap_trans, 
 				      instance_xtra -> ovrl_bc_flx));
 
 	 if (retval != 0)
@@ -1710,7 +1694,6 @@ void AdvanceRichards(PFModule *this_module,
 	 instance_xtra -> time_log[instance_xtra -> number_logged]      = t;
 	 instance_xtra -> dt_log[instance_xtra -> number_logged]        = dt;
 	 instance_xtra -> dt_info_log[instance_xtra -> number_logged]   = dt_info;
-	 instance_xtra -> outflow_log[instance_xtra -> number_logged]   = outflow;
 	 if ( any_file_dumped || clm_file_dumped )
 	    instance_xtra -> dumped_log[instance_xtra -> number_logged] = instance_xtra -> file_number;
 	 else
@@ -1874,6 +1857,7 @@ void TeardownRichards(PFModule *this_module) {
       FreeVector(instance_xtra -> tsoil);
 
       /*IMF Initialize variables for CLM irrigation output */
+      FreeVector(instance_xtra -> irr_flag);
       FreeVector(instance_xtra -> qflx_qirr);
       FreeVector(instance_xtra -> qflx_qirr_inst);
       /*IMF Initialize variables for CLM forcing fields
@@ -1886,6 +1870,18 @@ void TeardownRichards(PFModule *this_module) {
       FreeVector(instance_xtra -> v_forc);
       FreeVector(instance_xtra -> patm_forc);
       FreeVector(instance_xtra -> qatm_forc);
+   }
+
+
+   if(public_xtra -> sw1d) {
+      tfree(public_xtra -> sw1d);
+      tfree(public_xtra -> lw1d);
+      tfree(public_xtra -> prcp1d);
+      tfree(public_xtra -> tas1d);
+      tfree(public_xtra -> u1d); 
+      tfree(public_xtra -> v1d);   
+      tfree(public_xtra -> patm1d);
+      tfree(public_xtra -> qatm1d);
    }
 #endif
 
@@ -1924,18 +1920,15 @@ void TeardownRichards(PFModule *this_module) {
 
 	 fprintf(log_file, "\n");
 	 fprintf(log_file, "Overland flow Results\n");
-	 /*fprintf(log_file, "-------------------------\n");
-	   fprintf(log_file, "Sequence #       Time         \\Delta t           Outflow [L/T]\n");
-	   fprintf(log_file, "----------   ------------   --------------       -------------- \n");*/
 	 fprintf(log_file, " %d\n",instance_xtra -> number_logged); 
 	 for (k = 0; k < instance_xtra -> number_logged; k++) //sk start
 	 {
 	    if ( instance_xtra -> dumped_log[k] == -1 )
-	       fprintf(log_file, "  %06d     %8e   %8e       %e\n",
-		       k, instance_xtra -> time_log[k], instance_xtra -> dt_log[k], instance_xtra -> outflow_log[k]);
+	       fprintf(log_file, "  %06d     %8e   %8e\n",
+		       k, instance_xtra -> time_log[k], instance_xtra -> dt_log[k]);
 	    else
-	       fprintf(log_file, "  %06d     %8e   %8e       %e\n",
-		       k, instance_xtra -> time_log[k], instance_xtra -> dt_log[k], instance_xtra -> outflow_log[k]);
+	       fprintf(log_file, "  %06d     %8e   %8e\n",
+		       k, instance_xtra -> time_log[k], instance_xtra -> dt_log[k]);
 	 } //sk end
       }
       else
@@ -1952,7 +1945,6 @@ void TeardownRichards(PFModule *this_module) {
       tfree(instance_xtra -> dt_info_log);
       tfree(instance_xtra -> dumped_log);
       tfree(instance_xtra -> recomp_log);
-      tfree(instance_xtra -> outflow_log);
    }
 
 }
@@ -2001,11 +1993,21 @@ PFModule *SolverRichardsInitInstanceXtra()
 
    /*sk: Create a two-dimensional grid for later use*/
    all_subgrids = GridAllSubgrids(grid);
+
+
+   // SGS FIXME this is incorrect, can't loop over both at same time
+   // assumes same grids in both arrays which is not correct?
    new_all_subgrids = NewSubgridArray();
    ForSubgridI(i, all_subgrids)
    {
       subgrid = SubgridArraySubgrid(all_subgrids, i);
       new_subgrid = DuplicateSubgrid(subgrid);
+// SSS
+//      SubgridIZ(new_subgrid) = 0;
+      Background  *bg = GlobalsBackground;
+//      SubgridIZ(new_subgrid) = BackgroundIZ(bg) + GlobalsR;
+//      SubgridIZ(new_subgrid) = BackgroundIZ(bg);
+      SubgridIZ(new_subgrid) = 0;
       SubgridNZ(new_subgrid) = 1;
       AppendSubgrid(new_subgrid, new_all_subgrids);
    }
@@ -2076,6 +2078,7 @@ PFModule *SolverRichardsInitInstanceXtra()
    {
       subgrid = SubgridArraySubgrid(all_subgrids, i);
       new_subgrid = DuplicateSubgrid(subgrid);
+      SubgridIZ(new_subgrid) = 0;
       SubgridNZ(new_subgrid) = public_xtra -> clm_metnt; 
       AppendSubgrid(new_subgrid, new_all_subgrids);
    }
@@ -2091,6 +2094,7 @@ PFModule *SolverRichardsInitInstanceXtra()
    {
       subgrid = SubgridArraySubgrid(all_subgrids, i);
       new_subgrid = DuplicateSubgrid(subgrid);
+      SubgridIZ(new_subgrid) = 0;
       SubgridNZ(new_subgrid) = 10;
       AppendSubgrid(new_subgrid, new_all_subgrids);
    }
@@ -2204,13 +2208,13 @@ PFModule *SolverRichardsInitInstanceXtra()
 
    /* compute size for velocity computation */
    sz = 0;
-   /*   sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> phase_velocity_face)); */
+   /*   sz = pfmax(sz, PFModuleSizeOfTempData(instance_xtra -> phase_velocity_face)); */
    velocity_sz = sz;
 
    /* compute size for concentration advection */
    sz = 0;
-   sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> retardation));
-   sz = max(sz, PFModuleSizeOfTempData(instance_xtra -> advect_concen));
+   sz = pfmax(sz, PFModuleSizeOfTempData(instance_xtra -> retardation));
+   sz = pfmax(sz, PFModuleSizeOfTempData(instance_xtra -> advect_concen));
    concen_sz = sz;
 
    /* compute size for pressure initial condition */
@@ -2230,7 +2234,7 @@ PFModule *SolverRichardsInitInstanceXtra()
    /* The temp vector space for the nonlinear solver is added in because */
    /* at a later time advection may need to re-solve flow. */
    temp_data_size = parameter_sz 
-      + max(max(max(velocity_sz, concen_sz), nonlin_sz), ic_sz);
+      + pfmax(pfmax(pfmax(velocity_sz, concen_sz), nonlin_sz), ic_sz);
 
    /* allocate temporary data */
    temp_data = NewTempData(temp_data_size);
@@ -2275,7 +2279,7 @@ PFModule *SolverRichardsInitInstanceXtra()
 			     (instance_xtra -> advect_concen),
 			     (NULL, NULL, temp_data_placeholder));
 
-   temp_data_placeholder += max(PFModuleSizeOfTempData(
+   temp_data_placeholder += pfmax(PFModuleSizeOfTempData(
 				   instance_xtra -> retardation),
 				PFModuleSizeOfTempData(
 				   instance_xtra -> advect_concen));
@@ -2329,6 +2333,7 @@ void  SolverRichardsFreeInstanceXtra()
       FreeGrid((instance_xtra -> grid));
 
 #ifdef HAVE_CLM
+      FreeGrid((instance_xtra -> metgrid));
       FreeGrid((instance_xtra -> gridTs));
 #endif
 
@@ -2589,25 +2594,21 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
         case 0:
         {
             public_xtra -> clm_metforce = 0;
-            printf("TEST: clm_metforce = 0 (%d) \n", public_xtra -> clm_metforce );
             break;
         }
         case 1:
         {
             public_xtra -> clm_metforce = 1;
-            printf("TEST: clm_metforce = 1 (%d) \n", public_xtra -> clm_metforce );
             break;
         }
         case 2:
         {
             public_xtra -> clm_metforce = 2;
-            printf("TEST: clm_metforce = 2 (%d) \n", public_xtra -> clm_metforce );
             break;
         }
         case 3:
         {
             public_xtra -> clm_metforce = 3;
-            printf("TEST: clm_metforce = 3 (%d) \n", public_xtra -> clm_metforce );
             break;
         }
         default:
@@ -2994,7 +2995,7 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
        public_xtra -> write_silo_CLM
      ) {
 
-	   WriteSiloInit(GlobalsOutFileName);
+      WriteSiloInit(GlobalsOutFileName);
    }
 
    NA_FreeNameArray(switch_na);
@@ -3065,7 +3066,7 @@ void      SolverRichards() {
    SetupRichards(this_module);
 
    /*sk Initialize LSM terms*/
-   evap_trans = NewVector( grid, 1, 1 );
+   evap_trans = NewVectorType( grid, 1, 1, vector_cell_centered );
    InitVectorAll(evap_trans, 0.0);
    AdvanceRichards(this_module, 
 		   start_time, 

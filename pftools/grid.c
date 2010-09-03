@@ -35,23 +35,23 @@
  * NewGrid
  *--------------------------------------------------------------------------*/
 
-Grid  *NewGrid(subgrids, all_subgrids, neighbors)
-SubgridArray  *subgrids;
-SubgridArray  *all_subgrids;
-SubgridArray  *neighbors;
+Grid  *NewGrid(
+   SubgridArray  *subgrids,
+   SubgridArray  *all_subgrids,
+   SubgridArray  *neighbors)
 {
-   Grid    *new;
+   Grid    *new_grid;
 
    Subgrid *s;
 
    int      i, size;
 
 
-   new = talloc(Grid, 1);
+   new_grid = talloc(Grid, 1);
 
-   (new -> subgrids)      = subgrids;
-   (new -> all_subgrids)  = all_subgrids;
-   (new -> neighbors)     = neighbors;
+   (new_grid -> subgrids)      = subgrids;
+   (new_grid -> all_subgrids)  = all_subgrids;
+   (new_grid -> neighbors)     = neighbors;
 
    size = 0;
    for (i = 0; i < SubgridArraySize(all_subgrids); i++)
@@ -59,9 +59,9 @@ SubgridArray  *neighbors;
       s = SubgridArraySubgrid(all_subgrids, i);
       size += (s -> nx)*(s -> ny)*(s -> nz);
    }
-   (new -> size) = size;
+   (new_grid -> size) = size;
 
-   return new;
+   return new_grid;
 }
 
 
@@ -69,8 +69,8 @@ SubgridArray  *neighbors;
  * FreeGrid
  *--------------------------------------------------------------------------*/
 
-void  FreeGrid(grid)
-Grid  *grid;
+void  FreeGrid(
+   Grid  *grid)
 {
 
    FreeSubgridArray(GridAllSubgrids(grid));

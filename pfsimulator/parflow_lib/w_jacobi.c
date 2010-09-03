@@ -108,7 +108,7 @@ int    	 zero)
 
    int             iter = 0;
 
-   CommHandle     *handle = NULL;
+   VectorUpdateCommHandle     *handle = NULL;
 
    (void) tol;
 
@@ -119,7 +119,7 @@ int    	 zero)
    /*-----------------------------------------------------------------------
     * Allocate temp vectors
     *-----------------------------------------------------------------------*/
-   t = NewVector(instance_xtra -> grid, 1, 1);
+   t = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
 
    /*-----------------------------------------------------------------------
     * Start WJacobi

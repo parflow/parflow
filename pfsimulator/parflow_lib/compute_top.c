@@ -50,17 +50,14 @@ void ComputeTop(Problem     *problem,      /* General problem information */
    Vector        *top      = ProblemDataIndexOfDomainTop(problem_data);
    Vector        *perm_x   = ProblemDataPermeabilityX(problem_data);
 
+   Grid          *grid2d           = VectorGrid(top);
+   SubgridArray  *grid2d_subgrids = GridSubgrids(grid2d);
+
    /* use perm grid as top is 2D and want to loop over Z */
-   Grid          *grid     = VectorGrid(perm_x);
+   Grid          *grid3d          = VectorGrid(perm_x);
+   SubgridArray  *grid3d_subgrids = GridSubgrids(grid3d);
 
-   SubgridArray  *subgrids = GridSubgrids(grid);
-
-   int      ix, iy, iz;
-   int      nx, ny, nz;
-   int      r;
    
-   int      is, i, j, k;
-
    double *top_data;
    int index;
 
@@ -68,27 +65,35 @@ void ComputeTop(Problem     *problem,      /* General problem information */
 
    PFVConstInit(-1, top);
       
-   ForSubgridI(is, subgrids)
+   int is;
+   ForSubgridI(is, grid3d_subgrids)
    {
-      Subgrid       *subgrid          = SubgridArraySubgrid(subgrids, is);
+      Subgrid       *grid2d_subgrid          = SubgridArraySubgrid(grid2d_subgrids, is);
+      Subgrid       *grid3d_subgrid          = SubgridArraySubgrid(grid3d_subgrids, is);
 
       Subvector     *top_subvector    = VectorSubvector(top, is);
 
-      ix = SubgridIX(subgrid);
-      iy = SubgridIY(subgrid);
-      iz = SubgridIZ(subgrid);
+      int grid3d_ix = SubgridIX(grid3d_subgrid);
+      int grid3d_iy = SubgridIY(grid3d_subgrid);
+      int grid3d_iz = SubgridIZ(grid3d_subgrid);
+
+      int grid2d_iz = SubgridIZ(grid2d_subgrid);
       
-      nx = SubgridNX(subgrid);
-      ny = SubgridNY(subgrid);
-      nz = SubgridNZ(subgrid);
+      int grid3d_nx = SubgridNX(grid3d_subgrid);
+      int grid3d_ny = SubgridNY(grid3d_subgrid);
+      int grid3d_nz = SubgridNZ(grid3d_subgrid);
       
-      r = SubgridRX(subgrid);
+      int grid3d_r = SubgridRX(grid3d_subgrid);
 
       top_data = SubvectorData(top_subvector);
       
-      GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+      int i, j, k;
+      GrGeomInLoop(i, j, k, 
+		   gr_solid, grid3d_r, 
+		   grid3d_ix, grid3d_iy, grid3d_iz, 
+		   grid3d_nx, grid3d_ny, grid3d_nz,
       {
-	 index = SubvectorEltIndex(top_subvector, i, j, 0);
+	 index = SubvectorEltIndex(top_subvector, i, j, grid2d_iz);
 	 
 	 if( top_data[index] < k ) {
 	    top_data[index] = k;

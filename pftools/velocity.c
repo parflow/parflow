@@ -53,8 +53,9 @@
  * Compute cell-centered velocities from conductivity and pressure head
  *-----------------------------------------------------------------------*/
 
-Databox       **CompCellVel(k, h)
-Databox        *k, *h;
+Databox       **CompCellVel(
+   Databox        *k, 
+   Databox        *h)
 {
    Databox       **v;
 
@@ -92,7 +93,7 @@ Databox        *k, *h;
 #endif
 
    
-   if ((v = calloc(3, sizeof(Databox *))) == NULL)
+   if ((v = (Databox**) calloc(3, sizeof(Databox *))) == NULL)
       return((Databox **)NULL);
 
    if ((v[0] = NewDatabox((nx-1), (ny-1), (nz-1), x, y, z, dx, dy, dz)) == NULL)
@@ -172,8 +173,9 @@ Databox        *k, *h;
  * Compute vertex-centered velocities from conductivity and pressure head
  *-----------------------------------------------------------------------*/
 
-Databox       **CompVertVel(k, h)
-Databox        *k, *h;
+Databox       **CompVertVel(
+   Databox        *k, 
+   Databox        *h)
 {
    Databox       **v;
 
@@ -210,7 +212,7 @@ Databox        *k, *h;
    }
 #endif
 
-   if ((v = calloc(3, sizeof(Databox *))) == NULL)
+   if ((v = (Databox**)calloc(3, sizeof(Databox *))) == NULL)
       return((Databox **)NULL);
 
    if ((v[0] = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) == NULL)
@@ -270,8 +272,9 @@ Databox        *k, *h;
  * Compute block face-centered velocities from conductivity and pressure head
  *-----------------------------------------------------------------------*/
 
-Databox       **CompBFCVel(k, h)
-Databox        *k, *h;
+Databox       **CompBFCVel(
+   Databox        *k, 
+   Databox        *h)
 {
    Databox       **v;
 
@@ -313,7 +316,7 @@ Databox        *k, *h;
    }
 #endif
 
-   if ((v = calloc(3, sizeof(Databox *))) == NULL)
+   if ((v = (Databox**)calloc(3, sizeof(Databox *))) == NULL)
       return((Databox **)NULL);
 
    if ((v[0] = NewDatabox(nx1, ny, nz, x+0.5*dx, y, z, dx, dy, dz)) == NULL)
@@ -394,10 +397,10 @@ Databox        *k, *h;
  * Compute velocity magnitude
  *-----------------------------------------------------------------------*/
 
-Databox        *CompVMag(vx, vy, vz)
-Databox        *vx;
-Databox        *vy;
-Databox        *vz;
+Databox        *CompVMag(
+   Databox        *vx,
+   Databox        *vy,
+   Databox        *vz)
 {
    Databox        *v;
 

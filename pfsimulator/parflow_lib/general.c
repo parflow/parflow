@@ -32,14 +32,16 @@
  *
  *****************************************************************************/
 
-#include <math.h>
+
 #include "parflow.h"
+
+#include <math.h>
 
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
 #endif
 
-#include <unistd.h>
+// SGS fixme for C++
 #include <sys/stat.h>
 
 amps_ThreadLocalDcl(int, s_max_memory);
@@ -219,7 +221,6 @@ void printMaxMemory(FILE *log_file)
 
 #endif
 
-
    /*
     * Print out info from Linux proc file.
     */
@@ -249,6 +250,7 @@ void printMaxMemory(FILE *log_file)
       }
    }
 #endif
+
 }
 
 

@@ -104,7 +104,7 @@ int    	 zero)
    int             rb   = 0;
    int             iter = 0;
 
-   CommHandle     *handle = NULL;
+   VectorUpdateCommHandle     *handle = NULL;
 
    int             vector_update_mode;
 

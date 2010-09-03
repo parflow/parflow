@@ -62,9 +62,9 @@
  * compute the hydraulic head from the pressure head
  *-----------------------------------------------------------------------*/
 
-Databox        *HHead(h, grid_type)
-Databox        *h;
-GridType        grid_type;
+Databox        *HHead(
+   Databox        *h,
+   GridType        grid_type)
 {
    Databox        *v;
 
@@ -122,9 +122,9 @@ GridType        grid_type;
  * compute the pressure from the hydraulic head
  *-----------------------------------------------------------------------*/
 
-Databox        *PHead(h, grid_type)
-Databox        *h;
-GridType       grid_type;
+Databox        *PHead(
+   Databox        *h,
+   GridType       grid_type)
 {
    Databox        *v;
 

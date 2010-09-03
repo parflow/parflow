@@ -34,9 +34,9 @@
  * Main routine
  *--------------------------------------------------------------------------*/
 
-int main (argc, argv)
-int argc;
-char **argv;
+int main (
+   int argc,
+   char **argv)
 {
    gms_TIN     **TINs = NULL;
    gms_TIN     **new_TINs;

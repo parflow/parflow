@@ -59,11 +59,11 @@
  *   from the sorting.
  *--------------------------------------------------------------------------*/
 
-void      QuickSort(first, last, array, permute)
-int       first;
-int       last;
-EltType  *array;
-int      *permute;
+void      QuickSort(
+   int       first,
+   int       last,
+   EltType  *array,
+   int      *permute)
 {
    EltType  tmp_vert;
    int      tmp_index = 0;

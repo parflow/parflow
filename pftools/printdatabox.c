@@ -53,9 +53,9 @@
  * print a Databox in `simple' ascii format
  *-----------------------------------------------------------------------*/
 
-void            PrintSimpleA(fp, v)
-FILE           *fp;
-Databox         *v;
+void            PrintSimpleA(
+   FILE           *fp,
+   Databox         *v)
 {
    int             nx, ny, nz;
 
@@ -82,9 +82,9 @@ Databox         *v;
          fields)
  *-----------------------------------------------------------------------*/
 
-void            PrintSimpleA2D(fp, v)
-FILE           *fp;
-Databox         *v;
+void            PrintSimpleA2D(
+   FILE           *fp,
+   Databox         *v)
 {
    int             nx, ny, nz;
 
@@ -108,9 +108,9 @@ Databox         *v;
  * print a Databox in `simple' binary format
  *-----------------------------------------------------------------------*/
 
-void            PrintSimpleB(fp, v)
-FILE           *fp;
-Databox         *v;
+void            PrintSimpleB(
+   FILE           *fp,
+   Databox         *v)
 {
    int             nx, ny, nz;
 
@@ -131,9 +131,9 @@ Databox         *v;
  * print a Databox in `parflow' binary format
  *-----------------------------------------------------------------------*/
 
-void            PrintParflowB(fp, v)
-FILE           *fp;
-Databox        *v;
+void            PrintParflowB(
+   FILE           *fp,
+   Databox        *v)
 {
    double  X  = DataboxX(v);     /* These were being set to 0.0 for some
 				    reason...changed to set them to the
@@ -189,9 +189,9 @@ Databox        *v;
  * print a Databox in AVS .fld format
  *-----------------------------------------------------------------------*/
 
-void            PrintAVSField(fp, v)
-FILE           *fp;
-Databox        *v;
+void            PrintAVSField(
+   FILE           *fp,
+   Databox        *v)
 {
    double  X  = DataboxX(v);
    double  Y  = DataboxY(v);
@@ -442,9 +442,9 @@ Databox         *v;
  * print a Databox in `vizamrai' format
  *-----------------------------------------------------------------------*/
 
-void            PrintVizamrai(fp, v)
-FILE           *fp;
-Databox        *v;
+void            PrintVizamrai(
+   FILE           *fp,
+   Databox        *v)
 {
    int     NX = DataboxNx(v);
    int     NY = DataboxNy(v);
@@ -571,7 +571,7 @@ void            PrintSilo(
    char *slash = strchr(filename, '/');
 
    if(slash) {
-      path = malloc(MAXPATHLEN);
+      path = (char*)malloc(MAXPATHLEN);
       strncpy(path, filename, slash - filename);
       path[slash - filename] = 0;
       filename = strdup(slash + 1);
@@ -580,7 +580,7 @@ void            PrintSilo(
    }
 
    if(path) { 	
-      current_path = malloc(MAXPATHLEN);
+      current_path = (char*)malloc(MAXPATHLEN);
       getwd(current_path);
       chdir(path);
    }
@@ -613,6 +613,7 @@ void            PrintSilo(
     }
     
 
+    // SGS need way to specify HDF/PDB and compression options here.
     db = DBCreate(filename, DB_CLOBBER, DB_LOCAL, filename, DB_PDB);
 
     /* Write the origin information */

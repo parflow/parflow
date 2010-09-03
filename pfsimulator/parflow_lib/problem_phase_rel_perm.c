@@ -1019,8 +1019,8 @@ PFModule  *PhaseRelPermInitInstanceXtra(
 	 dummy1 = (Type1 *)(public_xtra -> data);
          if ((dummy1->data_from_file) == 1)
 	 {
-	    (dummy1 -> n_values) = NewVector(grid, 1, 1);
-	    (dummy1 -> alpha_values) = NewVector(grid, 1, 1);
+	    (dummy1 -> n_values) = NewVectorType(grid, 1, 1, vector_cell_centered);
+	    (dummy1 -> alpha_values) = NewVectorType(grid, 1, 1, vector_cell_centered);
 
 	    ReadPFBinary((dummy1 ->alpha_file), 
 			 (dummy1 ->alpha_values));

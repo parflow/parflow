@@ -84,6 +84,20 @@ yes;
     )
   fi
 
+  # Check if it is a IBM compiler.
+  if test $$1 = unknown; then
+    AC_EGREP_CPP(^yes,
+#ifdef __xlC__
+yes;
+#endif
+,
+    $1=xlc
+    # IBM compiler defines __xlC__ to the version number.
+    echo __xlC__ > conftest.C
+    $2=`${CXXCPP} conftest.C | sed /^\\#/d`
+    rm -f conftest.C
+    )
+  fi
 
   # Check if it is a GNU compiler.
   if test $$1 = unknown; then
@@ -124,7 +138,6 @@ yes;
     )
   fi
 
-
   # Check if it is a SGI compiler.
   if test $$1 = unknown; then
     AC_EGREP_CPP(^1,__sgi,
@@ -135,23 +148,6 @@ yes;
       rm -f conftest.C
     )
   fi
-
-
-  # Check if it is a IBM compiler.
-  if test $$1 = unknown; then
-    AC_EGREP_CPP(^yes,
-#ifdef __xlC__
-yes;
-#endif
-,
-    $1=xlc
-    # IBM compiler defines __xlC__ to the version number.
-    echo __xlC__ > conftest.C
-    $2=`${CXXCPP} conftest.C | sed /^\\#/d`
-    rm -f conftest.C
-    )
-  fi
-
 
   AC_LANG_RESTORE
 # End macro CASC_INFO_CXX_ID_NAMES
@@ -206,56 +202,6 @@ yes;
     )
   fi
 
-
-  # Check if it is a GNU compiler.
-  if test $$1 = unknown; then
-    AC_EGREP_CPP(^yes,
-#ifdef __GNUC__
-yes;
-#endif
-,
-    $1=gnu
-    [[$2=`$CC --version | sed -e 's/[^0-9]\{0,\}\([^ ]\{1,\}\).\{0,\}/\1/' -e 1q`]]
-    )
-  fi
-
-
-  # Check if it is a DEC compiler.
-  if test $$1 = unknown; then
-    AC_EGREP_CPP(^ 1,__DECC,
-      $1=dec
-      # DEC compiler defines __DECC_VER to the version number.
-      echo __DECC_VER > conftest.c
-      $2=`${CPP} ${CPPFLAGS} conftest.c | sed -n -e 's/^ //' -e 2p`
-      rm -f conftest.c
-    )
-  fi
-
-
-  # Check if it is a KAI compiler.
-  if test $$1 = unknown; then
-    AC_EGREP_CPP(^1,__KCC,
-      $1=kai
-      # KCC compiler defines __KCC_VERSION to the version number.
-      echo __KCC_VERSION > conftest.c
-      $2=`${CPP} ${CPPFLAGS} conftest.c | sed -n 2p`
-      rm -f conftest.c
-    )
-  fi
-
-
-  # Check if it is a SGI compiler.
-  if test $$1 = unknown; then
-    AC_EGREP_CPP(^1,__sgi,
-      $1=sgi
-      # SGI compiler defines _COMPILER_VERSION to the version number.
-      echo _COMPILER_VERSION > conftest.c
-      $2=`${CPP} ${CPPFLAGS} conftest.c | sed /^\\#/d`
-      rm -f conftest.c
-    )
-  fi
-
-
   # Check if it is a IBM compiler.
   if test $$1 = unknown; then
     if echo "$host_os" | grep "aix" >/dev/null ; then
@@ -280,6 +226,50 @@ yes;
     test "$save_ac_cpp" && ac_cpp=$save_ac_cpp
   fi
 
+  # Check if it is a GNU compiler.
+  if test $$1 = unknown; then
+    AC_EGREP_CPP(^yes,
+#ifdef __GNUC__
+yes;
+#endif
+,
+    $1=gnu
+    [[$2=`$CC --version | sed -e 's/[^0-9]\{0,\}\([^ ]\{1,\}\).\{0,\}/\1/' -e 1q`]]
+    )
+  fi
+
+  # Check if it is a DEC compiler.
+  if test $$1 = unknown; then
+    AC_EGREP_CPP(^ 1,__DECC,
+      $1=dec
+      # DEC compiler defines __DECC_VER to the version number.
+      echo __DECC_VER > conftest.c
+      $2=`${CPP} ${CPPFLAGS} conftest.c | sed -n -e 's/^ //' -e 2p`
+      rm -f conftest.c
+    )
+  fi
+
+  # Check if it is a KAI compiler.
+  if test $$1 = unknown; then
+    AC_EGREP_CPP(^1,__KCC,
+      $1=kai
+      # KCC compiler defines __KCC_VERSION to the version number.
+      echo __KCC_VERSION > conftest.c
+      $2=`${CPP} ${CPPFLAGS} conftest.c | sed -n 2p`
+      rm -f conftest.c
+    )
+  fi
+
+  # Check if it is a SGI compiler.
+  if test $$1 = unknown; then
+    AC_EGREP_CPP(^1,__sgi,
+      $1=sgi
+      # SGI compiler defines _COMPILER_VERSION to the version number.
+      echo _COMPILER_VERSION > conftest.c
+      $2=`${CPP} ${CPPFLAGS} conftest.c | sed /^\\#/d`
+      rm -f conftest.c
+    )
+  fi
 
   AC_LANG_RESTORE
 # End macro CASC_INFO_CC_ID_NAMES

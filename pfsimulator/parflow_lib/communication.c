@@ -367,24 +367,29 @@ CommPkg         *NewCommPkg(
 void FreeCommPkg(
    CommPkg *pkg)
 {
-   int                i;
+   if(pkg) {
+      int i;
 
-   amps_FreePackage(pkg -> package);
+      amps_FreePackage(pkg -> package);
 
-   for(i = pkg -> num_send_invoices; i--;)
-      amps_FreeInvoice(pkg -> send_invoices[i]);
-   for(i = pkg -> num_recv_invoices; i--;)
-      amps_FreeInvoice(pkg -> recv_invoices[i]);
+      for(i = pkg -> num_send_invoices; i--;) {
+	 amps_FreeInvoice(pkg -> send_invoices[i]);
+      }
 
-   tfree(pkg -> send_invoices);
-   tfree(pkg -> recv_invoices);
+      for(i = pkg -> num_recv_invoices; i--;) {
+	 amps_FreeInvoice(pkg -> recv_invoices[i]);
+      }
 
-   tfree(pkg -> send_ranks);					     
-   tfree(pkg -> recv_ranks);					     
+      tfree(pkg -> send_invoices);
+      tfree(pkg -> recv_invoices);
 
-   tfree(pkg -> loop_array);
-
-   tfree(pkg);
+      tfree(pkg -> send_ranks);					     
+      tfree(pkg -> recv_ranks);					     
+      
+      tfree(pkg -> loop_array);
+      
+      tfree(pkg);
+   }
 }
 
 

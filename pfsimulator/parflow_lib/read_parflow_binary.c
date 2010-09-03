@@ -30,11 +30,10 @@
  * Routines to read a Vector from a distributed file.
  *
  *****************************************************************************/
-
-#include <math.h>
-#include <string.h>
-
 #include "parflow.h"
+
+#include <string.h>
+#include <math.h>
 
 void ReadPFBinary_Subvector(
 amps_File       file,
@@ -47,6 +46,7 @@ Subgrid        *subgrid)
 
    int             nx_v = SubvectorNX(subvector);
    int             ny_v = SubvectorNY(subvector);
+   int             nz_v = SubvectorNZ(subvector);
 
    int             i, j, k, ai;
    double         *data;

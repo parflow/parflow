@@ -33,8 +33,8 @@
 #include "file.h"
 
 
-int FileType(filename)
-char *filename;
+int FileType(
+   char *filename)
 {
    char *ptr;
 
@@ -57,23 +57,24 @@ char *filename;
  * Read the input file
  *-----------------------------------------------------------------------*/
 
-Databox *Read(type, filename)
-int type;
-char *filename;
+Databox *Read(
+   int type,
+   char *filename)
 {
 
    Databox *indatabox;
+   double default_value = 0.0;
 
    switch(type)
    {
    case ParflowB:
-      indatabox = ReadParflowB(filename);
+      indatabox = ReadParflowB(filename, default_value);
       break;
    case SimpleA:
-      indatabox = ReadSimpleA(filename);
+      indatabox = ReadSimpleA(filename, default_value);
       break;
    case SimpleB:
-      indatabox = ReadSimpleB(filename);
+      indatabox = ReadSimpleB(filename, default_value);
       break;
    default:
       printf("Cannot read from that file type\n");

@@ -79,10 +79,10 @@ Compare(result, vertex0, vertex1, >)
  * SortVertices
  *--------------------------------------------------------------------------*/
 
-int      *SortVertices(vertices, nvertices, return_permute)
-Vertex  **vertices;
-int       nvertices;
-int       return_permute;
+int      *SortVertices(
+   Vertex  **vertices,
+   int       nvertices,
+   int       return_permute)
 {
    int  *permute = NULL;
    int   i;

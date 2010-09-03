@@ -293,28 +293,28 @@ IDB_Entry *IDB_NewEntry (char *key , char *value );
 IDB *IDB_NewDB (char *filename );
 void IDB_FreeDB (IDB *database );
 void IDB_PrintUsage (FILE *file , IDB *database );
-char *IDB_GetString (IDB *database , char *key );
-char *IDB_GetStringDefault (IDB *database , char *key , char *default_value );
-double IDB_GetDoubleDefault (IDB *database , char *key , double default_value );
-double IDB_GetDouble (IDB *database , char *key );
-int IDB_GetIntDefault (IDB *database , char *key , int default_value );
-int IDB_GetInt (IDB *database , char *key );
+char *IDB_GetString (IDB *database , const char *key );
+char *IDB_GetStringDefault (IDB *database , const char *key , char *default_value );
+double IDB_GetDoubleDefault (IDB *database , const char *key , double default_value );
+double IDB_GetDouble (IDB *database , const char *key );
+int IDB_GetIntDefault (IDB *database , const char *key , int default_value );
+int IDB_GetInt (IDB *database , const char *key );
 NameArray NA_NewNameArray (char *string );
 int NA_AppendToArray (NameArray name_array , char *string );
 void NA_FreeNameArray (NameArray name_array );
 int NA_NameToIndex (NameArray name_array , char *name );
 char *NA_IndexToName (NameArray name_array , int index );
 int NA_Sizeof (NameArray name_array );
-void InputError (char *format , char *s1 , char *s2 );
+void InputError (const char *format , const char *s1 , const char *s2 );
 
-typedef int (*NonlinSolverInvoke) (Vector *pressure , Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, double *outflow, Vector *evap_trans, Vector *ovrl_bc_flx );
+typedef int (*NonlinSolverInvoke) (Vector *pressure , Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx );
 typedef PFModule *(*NonlinSolverInitInstanceXtraInvoke) (Problem *problem , Grid *grid , ProblemData *problem_data , double *temp_data );
 
 /* kinsol_nonlin_solver.c */
 int KINSolInitPC (int neq , N_Vector pressure , N_Vector uscale , N_Vector fval , N_Vector fscale , N_Vector vtemp1 , N_Vector vtemp2 , void *nl_function , double uround , long int *nfePtr , void *current_state );
 int KINSolCallPC (int neq , N_Vector pressure , N_Vector uscale , N_Vector fval , N_Vector fscale , N_Vector vtem , N_Vector ftem , void *nl_function , double uround , long int *nfePtr , void *current_state );
 void PrintFinalStats (FILE *out_file , long int *integer_outputs_now , long int *integer_outputs_total );
-int KinsolNonlinSolver (Vector *pressure , Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, double *outflow, Vector *evap_trans, Vector *ovrl_bc_flx );
+int KinsolNonlinSolver (Vector *pressure , Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx );
 PFModule *KinsolNonlinSolverInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data , double *temp_data );
 void KinsolNonlinSolverFreeInstanceXtra (void );
 PFModule *KinsolNonlinSolverNewPublicXtra (void );
@@ -371,6 +371,7 @@ CommPkg *NewMatrixUpdatePkg (Matrix *matrix , Stencil *ghost );
 CommHandle *InitMatrixUpdate (Matrix *matrix );
 void FinalizeMatrixUpdate (CommHandle *handle );
 Matrix *NewMatrix (Grid *grid , SubregionArray *range , Stencil *stencil , int symmetry , Stencil *ghost );
+Matrix *NewMatrixType (Grid *grid , SubregionArray *range , Stencil *stencil , int symmetry , Stencil *ghost, enum matrix_type type );
 void FreeStencil (Stencil *stencil );
 void FreeMatrix (Matrix *matrix );
 void InitMatrix (Matrix *A , double value );
@@ -414,12 +415,12 @@ void FreeTempVector(Vector *vector);
 /* new_endpts.c */
 void NewEndpts (double *alpha , double *beta , double *pp , int *size_ptr , int n , double *a_ptr , double *b_ptr , double *cond_ptr , double ereps );
 
-typedef void (*NlFunctionEvalInvoke) (Vector *pressure , Vector *fval , ProblemData *problem_data , Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , double dt , double time, Vector *old_pressure, double *outflow , Vector *evap_trans, Vector *ovrl_bc_flx);
+typedef void (*NlFunctionEvalInvoke) (Vector *pressure , Vector *fval , ProblemData *problem_data , Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , double dt , double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx);
 typedef PFModule *(*NlFunctionEvalInitInstanceXtraInvoke) (Problem *problem , Grid *grid , double *temp_data );
 
 /* nl_function_eval.c */
 void KINSolFunctionEval (int size , N_Vector pressure , N_Vector fval , void *current_state );
-void NlFunctionEval (Vector *pressure , Vector *fval , ProblemData *problem_data , Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , double dt , double time, Vector *old_pressure, double *outflow , Vector *evap_trans, Vector *ovrl_bc_flx);
+void NlFunctionEval (Vector *pressure , Vector *fval , ProblemData *problem_data , Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , double dt , double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx);
 PFModule *NlFunctionEvalInitInstanceXtra (Problem *problem , Grid *grid , double *temp_data );
 void NlFunctionEvalFreeInstanceXtra (void );
 PFModule *NlFunctionEvalNewPublicXtra (void );
@@ -873,7 +874,6 @@ PFModule  *WRFSelectTimeStepNewPublicXtra(
    double min_step);
 void  WRFSelectTimeStepFreePublicXtra();
 
-
 typedef void (*SetProblemDataInvoke) (ProblemData *problem_data );
 typedef PFModule *(*SetProblemDataInitInstanceXtraInvoke) (Problem *problem , Grid *grid , Grid *grid2d, double *temp_data );
 
@@ -1001,9 +1001,20 @@ void FreeUserGrid (Grid *user_grid );
 
 /* vector.c */
 CommPkg *NewVectorCommPkg (Vector *vector , ComputePkg *compute_pkg );
-CommHandle *InitVectorUpdate (Vector *vector , int update_mode );
-void FinalizeVectorUpdate (CommHandle *handle );
-Vector *NewVector (Grid *grid , int nc , int num_ghost );
+VectorUpdateCommHandle  *InitVectorUpdate(
+   Vector      *vector,
+   int          update_mode);
+void         FinalizeVectorUpdate(
+   VectorUpdateCommHandle  *handle);
+Vector  *NewVector(
+   Grid    *grid,
+   int      nc,
+   int      num_ghost);
+Vector  *NewVectorType(
+   Grid    *grid,
+   int      nc,
+   int      num_ghost,
+   enum vector_type type);
 void FreeVector (Vector *vector );
 void InitVector (Vector *v , double value );
 void InitVectorAll (Vector *v , double value );
@@ -1131,3 +1142,5 @@ void OverlandSum(ProblemData *problem_data,
 		 Vector      *pressure,       /* Current pressure values */
 		 double dt, 
 		 Vector *overland_sum);
+
+Grid      *ReadProcessGrid();

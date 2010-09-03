@@ -25,61 +25,11 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
   USA
 **********************************************************************EHEADER*/
-/******************************************************************************
- *
- *-----------------------------------------------------------------------------
- * address
- *-----------------------------------------------------------------------------
- * contrib
- *-----------------------------------------------------------------------------
- * copyright
- *-----------------------------------------------------------------------------
- *
- *                               History 
- *-----------------------------------------------------------------------------
- $Log: hbt.c,v $
- Revision 1.1.1.1  2006/02/14 23:05:50  kollet
- CLM.PF_1.0
 
- Revision 1.1.1.1  2006/02/14 18:51:22  kollet
- CLM.PF_1.0
-
- Revision 2.4  2000/12/06 17:46:19  smithsg
- Initialize variable
-
- Revision 2.3  1998/07/16 17:22:44  ssmith
- Minor Modification to allow use of vmalloc memory library.
-
- Revision 2.2  1997/09/30 00:34:57  ssmith
- Fixed compile bugs/warnings on Alpha and SP2
- 	Include stdlib.h to get malloc decls
-         Problems with CNKSOL macros
- Enabled compiling on Alpha SP2 with new TCL interface
-
- Revision 2.1  1997/09/03 17:43:06  ssmith
- New input file format
-
- Revision 1.6  1997/02/27 23:29:50  ssmith
- Removed old code and added buttons to explicitly create the output files
-
- Revision 1.5  1995/12/21 00:49:58  steve
- Added copyright
-
- * Revision 1.4  1995/05/04  20:14:10  ssmith
- * Changed bcopy to be memcpy
- *
- * Revision 1.3  1994/10/28  19:55:37  ssmith
- * General Cleanup, Error messages to popups
- *
- * Revision 1.2  1994/08/09  21:20:20  ssmith
- * New XParFlow that runs on SGI + some bug fixes
- *
- *
- *****************************************************************************/
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
 #include "hbt.h"
+
+#include <stdlib.h>
+#include <string.h>
 
 /*===========================================================================*/
 /* The stack size for the deletion algorithm.                                */

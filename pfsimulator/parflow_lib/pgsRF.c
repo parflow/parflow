@@ -36,6 +36,9 @@
 
 #include "parflow.h"
 
+#include <limits.h>
+#include <float.h>
+
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -165,7 +168,7 @@ RFCondData   *cdata)
    double    *cval;             /* Values for cond data for single node */
 
    /* Communications */
-   CommHandle *handle;
+   VectorUpdateCommHandle *handle;
    int        update_mode;
 
    /* Miscellaneous variables */
@@ -175,6 +178,8 @@ RFCondData   *cdata)
    double    a1, a2, a3;
    double    cx, cy, cz;
    double    sum;
+
+   // FIXME Shouldn't we get this from numeric_limits?
    double    Tiny = 1.0e-12;
 
    (void) geounit;
@@ -182,7 +187,7 @@ RFCondData   *cdata)
    /*-----------------------------------------------------------------------
     * Allocate temp vectors
     *-----------------------------------------------------------------------*/
-   tmpRF = NewVector(instance_xtra -> grid, 1, max_search_rad);
+   tmpRF = NewVectorType(instance_xtra -> grid, 1, max_search_rad, vector_cell_centered);
 
    /*-----------------------------------------------------------------------
     * Start sequential Gaussian simulator algorithm
@@ -347,9 +352,17 @@ RFCondData   *cdata)
    /* Convert the cutoff values to a gaussian if they're lognormal on input */
    if ((dist_type == 1) || (dist_type == 3))
    {
-      if (low_cutoff <= 0.0) low_cutoff = Tiny;
-      else low_cutoff = (log(low_cutoff/mean))/sigma;
-      high_cutoff = (log(high_cutoff/mean))/sigma;
+      if (low_cutoff <= 0.0) {
+	 low_cutoff = Tiny;
+      } else {
+	 low_cutoff = (log(low_cutoff/mean))/sigma;
+      }
+
+      if(high_cutoff <= 0.0) {
+	 high_cutoff = DBL_MAX;
+      } else {
+	 high_cutoff = (log(high_cutoff/mean))/sigma;
+      }
    }
 
    /*--------------------------------------------------------------------

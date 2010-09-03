@@ -30,6 +30,8 @@
 #include "llnlmath.h"
 #include "llnltyps.h"
 
+#include "float.h"
+
 /*---------------------------------------------------------------------
  * Define module structures
  *---------------------------------------------------------------------*/
@@ -77,7 +79,6 @@ void    *current_state)
    Vector      *old_density    = StateOldDensity(  ((State*)current_state) );
    double       dt             = StateDt(          ((State*)current_state) );
    double       time           = StateTime(        ((State*)current_state) );
-   double       *outflow       = StateOutflow(     ((State*)current_state) );
    Vector       *evap_trans    = StateEvapTrans(   ((State*)current_state) );
    Vector       *ovrl_bc_flx   = StateOvrlBcFlx(   ((State*)current_state) );
 
@@ -85,7 +86,7 @@ void    *current_state)
  
    PFModuleInvokeType(NlFunctionEvalInvoke, nl_function_eval, 
 		  (pressure, fval, problem_data, saturation, old_saturation, 
-		   density, old_density, dt, time, old_pressure, outflow, evap_trans,
+		   density, old_density, dt, time, old_pressure, evap_trans,
 		   ovrl_bc_flx) );
  
    return;
@@ -106,7 +107,6 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 		     double dt,   /* Time step size */
 		     double time,     /* New time value */
 		     Vector *old_pressure,  
-		     double *outflow,  /*sk Outflow due to overland flow*/
 		     Vector *evap_trans,   /*sk sink term from land surface model*/
 		     Vector *ovrl_bc_flx)  /*sk overland flow boundary fluxes*/ 
 {
@@ -186,7 +186,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    int          ipatch, ival;
    int          dir = 0;
    
-   CommHandle  *handle;
+   VectorUpdateCommHandle  *handle;
 
    BeginTiming(public_xtra -> time_index);
 
@@ -197,12 +197,12 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    handle = InitVectorUpdate(pressure, VectorUpdateAll);
    FinalizeVectorUpdate(handle);
  
-   KW = NewVector( grid2d, 1, 1);
-   KE = NewVector( grid2d, 1, 1);
-   KN = NewVector( grid2d, 1, 1);
-   KS = NewVector( grid2d, 1, 1);
-   qx = NewVector( grid2d, 1, 1);
-   qy = NewVector( grid2d, 1, 1);
+   KW = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D);
+   KE = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D);
+   KN = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D);
+   KS = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D);
+   qx = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D);
+   qy = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D);
 
    /* Pass permeability values */
    /*
@@ -408,14 +408,15 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       Densities are currently defined everywhere so should be valid for 
       these boundary cells.
 
-      This is a little hacky in the sense that we are inserting values
-      and then need to overwrite them again.  It might be more clean
-      to rewrite the Dirichlet boundary condition code to not require
-      the values be in the pressure field for these cells but instead
-      grab the values out of the BCStructPatchValues as was done here.
-      In other words use bc_patch_values[ival] in rel_perm_module code
-      and remove this loop.  SGS not sure if that will work or not so 
-      left it here for later exploration.
+      SGS not sure if this will work or not so left it here for later
+      exploration.  This is a little hacky in the sense that we are
+      inserting values and then need to overwrite them again.  It
+      might be more clean to rewrite the Dirichlet boundary condition
+      code to not require the values be in the pressure field for
+      these cells but instead grab the values out of the
+      BCStructPatchValues as was done here.  In other words use
+      bc_patch_values[ival] in rel_perm_module code and remove this
+      loop.
    */
 
    ForSubgridI(is, GridSubgrids(grid))
@@ -580,7 +581,10 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       x_sl_sub = VectorSubvector(x_sl, is);
       y_sl_sub = VectorSubvector(y_sl, is);
       mann_sub = VectorSubvector(man, is);
-      // SGS TODO This looks very wrong, why going to DB here, should come from DS 
+      /*
+	SGS TODO This looks very wrong, why going to DB here, should
+	come from DS
+      */
       gnx = GetInt("ComputationalGrid.NX");
       gny = GetInt("ComputationalGrid.NY");
       obf_sub = VectorSubvector(ovrl_bc_flx,is);
@@ -997,7 +1001,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 		     switch(fdir[2])
 		     {
 			case 1:
-			   io   = SubvectorEltIndex(p_sub, i, j, 0);
+			   io   = SubvectorEltIndex(qx_sub, i, j, 0);
 			   ip   = SubvectorEltIndex(p_sub, i, j, k);
 
 			   dir_x = 0.0;
@@ -1007,9 +1011,9 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			   if(x_sl_dat[io] < 0.0) dir_x = 1.0; 
 			   if(y_sl_dat[io] < 0.0) dir_y = 1.0; 
 
-			   qx_[io] = dir_x * (RPowerR(fabs(x_sl_dat[io]),0.5) / mann_dat[io]) * RPowerR(max((pp[ip]),0.0),(5.0/3.0));
+			   qx_[io] = dir_x * (RPowerR(fabs(x_sl_dat[io]),0.5) / mann_dat[io]) * RPowerR(pfmax((pp[ip]),0.0),(5.0/3.0));
 
-			   qy_[io] = dir_y * (RPowerR(fabs(y_sl_dat[io]),0.5) / mann_dat[io]) * RPowerR(max((pp[ip]),0.0),(5.0/3.0));
+			   qy_[io] = dir_y * (RPowerR(fabs(y_sl_dat[io]),0.5) / mann_dat[io]) * RPowerR(pfmax((pp[ip]),0.0),(5.0/3.0));
 
 			   break;
 		     }
@@ -1024,13 +1028,13 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 		     switch(fdir[2])
 		     {
 			case 1:
-			   io   = SubvectorEltIndex(p_sub, i, j, 0);
+			   io   = SubvectorEltIndex(ke_sub, i, j, 0);
 
-		           ke_[io] = max(qx_[io],0.0) - max(-qx_[io+1],0.0);
-		           kw_[io] = max(qx_[io-1],0.0) - max(-qx_[io],0.0);
+		           ke_[io] = pfmax(qx_[io],0.0) - pfmax(-qx_[io+1],0.0);
+		           kw_[io] = pfmax(qx_[io-1],0.0) - pfmax(-qx_[io],0.0);
 
-		           kn_[io] = max(qy_[io],0.0) - max(-qy_[io+sy_p],0.0);
-		           ks_[io] = max(qy_[io-sy_p],0.0) - max(-qy_[io],0.0);
+		           kn_[io] = pfmax(qy_[io],0.0) - pfmax(-qy_[io+sy_p],0.0);
+		           ks_[io] = pfmax(qy_[io-sy_p],0.0) - pfmax(-qy_[io],0.0);
 		   
  			   break;
 		     }
@@ -1039,7 +1043,6 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 	       });
 
 
-	       *outflow = 0.0;
 	       BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
 	       {
 		  if (fdir[2])
@@ -1049,10 +1052,10 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			case 1:
 			   dir = 1;
 			   ip   = SubvectorEltIndex(p_sub, i, j, k);
-			   io   = SubvectorEltIndex(p_sub, i, j, 0);
+			   io   = SubvectorEltIndex(obf_sub, i, j, 0);
 
 			   q_overlnd = 0.0;
-			   q_overlnd = vol * (max(pp[ip],0.0) - max(opp[ip],0.0)) /dz +
+			   q_overlnd = vol * (pfmax(pp[ip],0.0) - pfmax(opp[ip],0.0)) /dz +
 			      dt * vol * ((ke_[io]-kw_[io])/dx + (kn_[io] - ks_[io])/dy) / dz;
 		   
 			   obf_dat[io] = 0.0;
@@ -1068,10 +1071,6 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			      obf_dat[io] = qx_[io];
 			   }
 			   
-			   
-			   if (j==0 && i==0){
-			      *outflow=fabs(ks_[io])+fabs(kw_[io]);
-			   }
 			   
 			   fp[ip] += q_overlnd;
 			   
@@ -1123,9 +1122,9 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
                {
 		  ip   = SubvectorEltIndex(p_sub, i, j, k);
 		  value =  bc_patch_values[ival];
-		  
+// SGS FIXME why is this needed?
+#undef max		  
 		  pp[ip + fdir[0]*1 + fdir[1]*sy_p + fdir[2]*sz_p] = -FLT_MAX;
-//		  fp[ip + fdir[0]*1 + fdir[1]*sy_p + fdir[2]*sz_p] = -FLT_MAX;
 		  fp[ip + fdir[0]*1 + fdir[1]*sy_p + fdir[2]*sz_p] = 0.0;
 		  
 	       });

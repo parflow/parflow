@@ -16,38 +16,80 @@ ifeq (${PARFLOW_HAVE_CLM},yes)
 TESTS += clm.tcl
 endif
 
+PARALLEL_TESTS =
 
-check:
+ifeq (${AMPS},mpi1)
+
+PARALLEL_TESTS += \
+	clm.tcl
+endif
+
+SAMRAI_TESTS :=
+ifeq (${PARFLOW_HAVE_SAMRAI},yes)
+SAMRAI_TESTS += \
+	clm_samrai.tcl
+endif
+
+check: check_samrai check_sequential check_parallel
+
+check_sequential:
 	@-for i in $(TESTS); \
 	do \
 	        make --no-print-directory testclean; \
-		tclsh $$i; \
+		tclsh $$i 1 1 1; \
 	done
+
+check_parallel:
+	@-for i in $(PARALLEL_TESTS); \
+	do \
+		for processor_topology in "1 2 1" "2 1 1" "2 2 1" "3 3 1" "1 4 1" "4 1 1"; \
+		do \
+		        make --no-print-directory testclean; \
+			echo "*****************************************************************************"; \
+			echo "Running $$i on $$processor_topology"; \
+			tclsh $$i $$processor_topology; \
+		done \
+	done
+
+
+check_samrai:
+	@-for i in $(SAMRAI_TESTS); \
+	do \
+		for processor_topology in "1 1 1 1" "2 1 1 1"; \
+		do \
+		        make --no-print-directory testclean; \
+			echo "*****************************************************************************"; \
+			echo "Running $$i on $$processor_topology"; \
+			tclsh $$i $$processor_topology; \
+		done \
+	done
+
+
 
 clean: testclean
 
 testclean:
 	@rm -f global_nt.scr
-	@rm -f clm_elog.txt.0
-	@rm -f washita.para.out.dat.0
-	@rm -f balance.txt.0
-	@rm -f alma_washita.output.txt.0
-	@rm -f washita.output.txt.0
-	@rm -f qflx_infl/*.bin.0
+	@rm -f clm_elog.txt.*
+	@rm -f washita.para.out.dat.*
+	@rm -f balance.txt.*
+	@rm -f alma_washita.output.txt.*
+	@rm -f washita.output.txt.*
+	@rm -fr qflx_infl
 	@rm -f clm.out.pftcl
-	@rm -f qflx_top_soil/*.bin.0
-	@rm -f swe_out/*.bin.0
-	@rm -f qflx_evap_veg/*.bin.0
-	@rm -f diag_out/*.dat.0
-	@rm -f eflx_soil_grnd/*.bin.0
-	@rm -f qflx_evap_soi/*.bin.0
-	@rm -f qflx_tran_veg/*.bin.0
-	@rm -f qflx_evap_tot/*.bin.0
-	@rm -f t_grnd/*.bin.0
-	@rm -f eflx_lwrad_out/*.bin.0
-	@rm -f eflx_sh_tot/*.bin.0
-	@rm -f eflx_lh_tot/*.bin.0
-	@rm -f qflx_evap_grnd/*.bin.0
+	@rm -fr qflx_top_soil
+	@rm -fr swe_out
+	@rm -fr qflx_evap_veg
+	@rm -fr diag_out
+	@rm -fr eflx_soil_grnd
+	@rm -fr qflx_evap_soi
+	@rm -fr qflx_tran_veg
+	@rm -fr qflx_evap_tot
+	@rm -fr t_grnd
+	@rm -fr eflx_lwrad_out
+	@rm -fr eflx_sh_tot
+	@rm -fr eflx_lh_tot
+	@rm -fr qflx_evap_grnd
 	@rm -f *.pfb*
 	@rm -f *.silo*
 	@rm -f *.pfsb*
@@ -59,4 +101,7 @@ testclean:
 	@rm -f *.out.txt
 	@rm -fr default_richards.out
 	@rm -fr clm.out
-
+	@rm -fr test.log.*
+	@rm -fr drv_clmin.dat.*
+	@rm -fr drv_vegm.dat.*
+	@rm -fr core*

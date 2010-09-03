@@ -214,7 +214,6 @@ double       time)
            changed notion of BC to be pressure head, not head potential to make more consistent with
            other BC ideas and PF -- to change back, uncomment the "-dtmp*..." portion below */
                 phead = internal_bc_conditions[ibc_sg];  //-  dtmp * (Z + k*dz);
-                //printf("i, j, k, phead: %d %d %d %f \n",i,j,k,phead);
 
                /* set column elements */
                for (index = 1; index < 7; index++)
@@ -250,8 +249,6 @@ double       time)
                      SubmatrixElt(A_sub, index, i, j, k)[0] = 0.0;
                   }
                   SubvectorElt(f_sub, i, j, k)[0] = phead;
-                   //printf("i, j, k, phead: %d %d %d %f \n",i,j,k,phead);
-
                }
             });
          }
@@ -414,8 +411,7 @@ PFModule  *BCInternalNewPublicXtra()
 
    (public_xtra -> num_conditions) = num_conditions = 
       NA_Sizeof(public_xtra -> internal_bc_names);
-   printf("num conditions %d \n",num_conditions);
-    printf(internal_bc_names);
+
    if ( num_conditions > 0 )
    {
       (public_xtra -> type)      = ctalloc(int,    num_conditions);

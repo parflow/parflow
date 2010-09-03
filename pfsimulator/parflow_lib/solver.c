@@ -98,6 +98,19 @@ void
 
    GlobalsMaxRefLevel = 0;
 
+
+
+   /*-----------------------------------------------------------------------
+    * Initialize SAMRAI hierarchy
+    *-----------------------------------------------------------------------*/
+   // SGS FIXME is this a good place for this?  need UserGrid
+
+#ifdef HAVE_SAMRAI
+   // SGS FIXME is this correct for restarts?
+   double time = 0.0;
+   GlobalsParflowSimulation -> initializePatchHierarchy(time);
+#endif
+
    switch_name = GetStringDefault("Solver", "Impes");
    solver  = NA_NameToIndex(solver_na, switch_name);
 

@@ -143,6 +143,10 @@ int SaveDiffCommand P((ClientData clientData , Tcl_Interp *interp , int argc , c
 int DiffEltCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int DeleteCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int ComputeTopCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int ComputeBottomCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int ComputeDomainCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int PrintDomainCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int PFDistOnDomainCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int ExtractTopCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int SurfaceStorageCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int SubsurfaceStorageCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));

@@ -89,7 +89,7 @@ void DiffuseLB (
    double    next_stop;
 
    /* Communications */
-   CommHandle *handle;
+   VectorUpdateCommHandle *handle;
 
    (void) problem;
 

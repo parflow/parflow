@@ -9,6 +9,8 @@
 
 #include "parflow.h"
 
+#include <float.h>
+
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -92,7 +94,10 @@ double       time)
    /* Locals associated with wells */
    int               well;
    int               cycle_number, interval_number;
-   double            volume, flux, well_value, weight = -FLT_MAX;
+   double            volume, flux, well_value;
+// SGS FIXME why is this needed?
+#undef max		  
+   double            weight = -FLT_MAX;
    double            area_x, area_y, area_z, area_sum;
    double            avg_x, avg_y, avg_z;
    double            dx, dy, dz;

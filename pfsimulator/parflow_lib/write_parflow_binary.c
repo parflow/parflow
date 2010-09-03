@@ -31,9 +31,9 @@
  *
  *****************************************************************************/
 
-#include <math.h>
-
 #include "parflow.h"
+
+#include <math.h>
 
 long SizeofPFBinarySubvector(
    Subvector *subvector,
@@ -161,6 +161,17 @@ Vector  *v)
       exit(1);
    }
 
+   /* Compute number of patches to write */
+   int num_subgrids = GridNumSubgrids(grid);
+   {
+      amps_Invoice invoice = amps_NewInvoice("%i", &num_subgrids);
+
+      amps_AllReduce(amps_CommWorld, invoice, amps_Add);
+
+      amps_FreeInvoice(invoice);
+   }
+
+
    if ( p == 0 )
    {
       amps_WriteDouble(file, &BackgroundX(GlobalsBackground), 1);
@@ -175,7 +186,7 @@ Vector  *v)
       amps_WriteDouble(file, &BackgroundDY(GlobalsBackground), 1);
       amps_WriteDouble(file, &BackgroundDZ(GlobalsBackground), 1);
 
-      amps_WriteInt(file, &P, 1);
+      amps_WriteInt(file, &num_subgrids, 1);
    }
 
    ForSubgridI(g, subgrids)

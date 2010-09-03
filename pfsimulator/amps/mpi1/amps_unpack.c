@@ -87,8 +87,8 @@ int amps_unpack(
 	 {
 	    if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    {
-	       *((void **)(ptr -> data)) = malloc(sizeof(char)
-						     *len*stride);
+	       *((void **)(ptr -> data)) = malloc(sizeof(char) *
+						  (size_t)(len*stride));
 	       malloced = TRUE;
 
 	       MPI_Type_vector(len, 1, stride, MPI_BYTE, &mpi_type);
@@ -116,8 +116,8 @@ int amps_unpack(
 	 {
 	    if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    {
-	       *((void **)(ptr -> data)) = malloc(sizeof(short)* 
-						  len*stride);
+	       *((void **)(ptr -> data)) = malloc(sizeof(short) * 
+						  (size_t)(len*stride));
 	       malloced = TRUE;
 
 	       MPI_Type_vector(len, 1, stride, MPI_SHORT, &mpi_type);
@@ -144,7 +144,7 @@ int amps_unpack(
 	    if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    {
 	       *((void **)(ptr -> data)) = malloc(sizeof(int)* 
-						  len*stride);
+						  (size_t)(len*stride));
 	       malloced = TRUE;
 
 	       MPI_Type_vector(len, 1, stride, MPI_INT, &mpi_type);
@@ -171,7 +171,7 @@ int amps_unpack(
 	    if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    {
 	       *((void **)(ptr -> data)) = malloc(sizeof(long)*
-						  len*stride);
+						  (size_t)(len*stride));
 	       malloced = TRUE;
 
 	       MPI_Type_vector(len, 1, stride, MPI_LONG, &mpi_type);
@@ -198,7 +198,7 @@ int amps_unpack(
 	    if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    {
 	       *((void **)(ptr -> data)) = malloc(sizeof(float)*
-						  len*stride);
+						  (size_t)(len*stride));
 	       malloced = TRUE;
 
 	       MPI_Type_vector(len, 1, stride, MPI_FLOAT, &mpi_type);
@@ -225,7 +225,7 @@ int amps_unpack(
 	    if( ptr -> data_type == AMPS_INVOICE_POINTER)
 	    {
 	       *((void **)(ptr -> data)) = malloc(sizeof(double)*
-						  len*stride);
+						  (size_t)(len*stride));
 	       malloced = TRUE;
 
 	       MPI_Type_vector(len, 1, stride, MPI_DOUBLE, &mpi_type);
@@ -256,7 +256,7 @@ int amps_unpack(
 				   ptr -> ptr_len, ptr -> ptr_stride);
 
 	 if( ptr -> data_type == AMPS_INVOICE_POINTER )
-	    data = *(char **)(ptr -> data) = (char *)malloc(size);
+	    data = *(char **)(ptr -> data) = (char *)malloc((size_t)(size));
 	 else 
 	    data = (char *)ptr -> data;
 

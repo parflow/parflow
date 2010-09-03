@@ -151,15 +151,15 @@ int              type)
 	    switch(type)
 	    {
 	    case 1:
-	       shear_array[ishear] = min(z, shear_array[ishear]);
+	       shear_array[ishear] = pfmin(z, shear_array[ishear]);
 	       break;
 	    case 2:
-	       shear_array[ishear] = max(z, shear_array[ishear]);
+	       shear_array[ishear] = pfmax(z, shear_array[ishear]);
 	       break;
 	    }
 
-	    shear_min[is] = min(shear_min[is], shear_array[ishear]);
-	    shear_max[is] = max(shear_max[is], shear_array[ishear]);
+	    shear_min[is] = pfmin(shear_min[is], shear_array[ishear]);
+	    shear_max[is] = pfmax(shear_max[is], shear_array[ishear]);
 	 }
       });
 

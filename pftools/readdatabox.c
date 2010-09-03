@@ -55,7 +55,7 @@
  * read a SILO file
  *-----------------------------------------------------------------------*/
 
-Databox         *ReadSilo(char *filename)
+Databox         *ReadSilo(char *filename, double default_value)
 {
 #ifdef HAVE_SILO
    Databox         *v;
@@ -80,7 +80,7 @@ Databox         *ReadSilo(char *filename)
    char *slash = strchr(filename, '/');
 
    if(slash) {
-      path = malloc(MAXPATHLEN);
+      path = (char *)malloc(MAXPATHLEN);
       strncpy(path, filename, slash - filename);
       path[slash - filename] = 0;
       filename = strdup(slash + 1);
@@ -89,12 +89,13 @@ Databox         *ReadSilo(char *filename)
    }
 
    if(path) { 	
-      current_path = malloc(MAXPATHLEN);
+      current_path = (char *)malloc(MAXPATHLEN);
       getwd(current_path);
       chdir(path);
    }
 
-   db = DBOpen(filename, DB_PDB, DB_READ);
+//   db = DBOpen(filename, DB_PDB, DB_READ);
+   db = DBOpen(filename, DB_UNKNOWN, DB_READ);
    if(db == NULL)
    {
       printf("Failed to open SILO file %s\n", filename);
@@ -132,7 +133,7 @@ Databox         *ReadSilo(char *filename)
    DZ = delta[2];
 
    /* create the new databox structure */
-   if ((v = NewDatabox(NX, NY, NZ, X, Y, Z, DX, DY, DZ)) == NULL)
+   if ((v = NewDatabox(NX, NY, NZ, X, Y, Z, DX, DY, DZ, default_value)) == NULL)
    {
       return((Databox *)NULL);
    }
@@ -191,7 +192,8 @@ Databox         *ReadSilo(char *filename)
 	 }
       
 	 DBfile *proc_db;
-	 proc_db = DBOpen(proc_filename, DB_PDB, DB_READ);
+//	 proc_db = DBOpen(proc_filename, DB_PDB, DB_READ);
+	 proc_db = DBOpen(proc_filename, DB_UNKNOWN, DB_READ);
 	 if(db == NULL)
 	 {
 	    printf("Failed to open SILO file %s\n", filename);
@@ -271,8 +273,9 @@ Databox         *ReadSilo(char *filename)
  * read a binary `parflow' file
  *-----------------------------------------------------------------------*/
 
-Databox         *ReadParflowB(file_name)
-char           *file_name;
+Databox         *ReadParflowB(
+   char           *file_name,
+   double default_value)
 {
    Databox         *v;
 
@@ -312,7 +315,7 @@ char           *file_name;
    tools_ReadInt(fp, &num_subgrids,  1);
 
    /* create the new databox structure */
-   if ((v = NewDatabox(NX, NY, NZ, X, Y, Z, DX, DY, DZ)) == NULL)
+   if ((v = NewDatabox(NX, NY, NZ, X, Y, Z, DX, DY, DZ, default_value)) == NULL)
    {
       fclose(fp);
       return((Databox *)NULL);
@@ -352,8 +355,9 @@ char           *file_name;
  * read a scattered binary `parflow' file
  *-----------------------------------------------------------------------*/
 
-Databox         *ReadParflowSB(file_name)
-char           *file_name;
+Databox         *ReadParflowSB(
+   char           *file_name,
+   double default_value)
 {
    Databox         *v;
 
@@ -393,7 +397,7 @@ char           *file_name;
    tools_ReadInt(fp, &num_subgrids,  1);
 
    /* create the new databox structure */
-   if ((v = NewDatabox(NX, NY, NZ, X, Y, Z, DX, DY, DZ)) == NULL)
+   if ((v = NewDatabox(NX, NY, NZ, X, Y, Z, DX, DY, DZ, default_value)) == NULL)
    {
       fclose(fp);
       return((Databox *)NULL);
@@ -436,8 +440,9 @@ char           *file_name;
  * read a `simple ascii' file
  *-----------------------------------------------------------------------*/
 
-Databox         *ReadSimpleA(file_name)
-char           *file_name;
+Databox         *ReadSimpleA(
+   char           *file_name,
+   double default_value)
 {
    Databox         *v;
 
@@ -458,7 +463,7 @@ char           *file_name;
    fscanf(fp, "%d %d %d", &nx, &ny, &nz);
 
    /* create the new databox structure */
-   if ((v = NewDatabox(nx, ny, nz, 0, 0, 0, 0, 0, 0)) == NULL)
+   if ((v = NewDatabox(nx, ny, nz, 0, 0, 0, 0, 0, 0, default_value)) == NULL)
    {
       fclose(fp);
       return((Databox *)NULL);
@@ -477,8 +482,9 @@ char           *file_name;
  * read a `real scattered ascii' file
  *-----------------------------------------------------------------------*/
 
-Databox        *ReadRealSA(file_name)
-char           *file_name;
+Databox        *ReadRealSA(
+   char           *file_name,
+   double default_value)
 {
    Databox         *v;
 
@@ -501,7 +507,7 @@ char           *file_name;
    fscanf(fp, "%lf %lf %lf", &dx, &dy, &dz);
 
    /* create the new databox structure */
-   if ((v = NewDatabox(nx, ny, nz, 0, 0, 0, 0, 0, 0)) == NULL)
+   if ((v = NewDatabox(nx, ny, nz, 0, 0, 0, 0, 0, 0, default_value)) == NULL)
    {
       fclose(fp);
       return((Databox *)NULL);
@@ -528,8 +534,9 @@ char           *file_name;
  * read a `simple binary' file
  *-----------------------------------------------------------------------*/
 
-Databox         *ReadSimpleB(file_name)
-char           *file_name;
+Databox         *ReadSimpleB(
+   char           *file_name,
+   double default_value)
 {
    Databox         *v;
 
@@ -550,7 +557,7 @@ char           *file_name;
    tools_ReadInt(fp, &nz,     1);
 
    /* create the new databox structure */
-   if ((v = NewDatabox(nx, ny, nz, 0, 0, 0, 0, 0, 0)) == NULL)
+   if ((v = NewDatabox(nx, ny, nz, 0, 0, 0, 0, 0, 0, default_value)) == NULL)
    {
       fclose(fp);
       return((Databox *)NULL);
@@ -601,8 +608,8 @@ static int parse_fld_header(char *header, int *count,
       if (*ptr == '\n')
          newlines++;
  
-   *tokens = malloc(newlines*sizeof(char **));
-   *values = malloc(newlines*sizeof(char **));
+   *tokens = (char**)malloc(newlines*sizeof(char **));
+   *values = (char**)malloc(newlines*sizeof(char **));
  
    if ((ptr = strtok(header,"\n")) != NULL) {
       do {
@@ -673,8 +680,9 @@ static void free_pairs(int count, char **token, char **value)
 #define HEADER_SIZE_INIT 512
 #define HEADER_SIZE_INC 512
 
-Databox         *ReadAVSField(file_name)
-char           *file_name;
+Databox         *ReadAVSField(
+   char           *file_name,
+   double default_value)
 {
    Databox         *v;
 
@@ -793,7 +801,7 @@ char           *file_name;
  
    /* create the new databox structure */
    /* set X, Y, Z, DX, DY, DZ to 0 initially; will calculate and set later */
-   if ((v = NewDatabox(NX, NY, NZ, 0, 0, 0, 0, 0, 0)) == NULL)
+   if ((v = NewDatabox(NX, NY, NZ, 0, 0, 0, 0, 0, 0, default_value)) == NULL)
    {
       fclose(fp);
       return((Databox *)NULL);
@@ -921,7 +929,8 @@ char           *file_name;
  * read an HDF file
  *-----------------------------------------------------------------------*/
 
-Databox         *ReadSDS(char *filename, int ds_num)
+Databox         *ReadSDS(char *filename, int ds_num,
+			 double default_value)
 {
   Databox         *v;
 
@@ -957,7 +966,7 @@ Databox         *ReadSDS(char *filename, int ds_num)
 
 
   /* create the new databox structure */
-  if((v = NewDatabox(dim[2], dim[1], dim[0], 0, 0, 0, 0, 0, 0)) == NULL)
+  if((v = NewDatabox(dim[2], dim[1], dim[0], 0, 0, 0, 0, 0, 0, default_value)) == NULL)
      return((Databox *)NULL);
      
 
