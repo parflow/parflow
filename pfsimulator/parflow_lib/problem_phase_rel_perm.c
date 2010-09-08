@@ -28,6 +28,9 @@
 
 #include "parflow.h"
 
+#include <assert.h>
+
+
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -38,6 +41,9 @@ typedef struct
 
    int    type; /* input type */
    void  *data; /* pointer to Type structure */
+
+   int        time_index;
+
 } PublicXtra;
 
 typedef struct
@@ -55,6 +61,19 @@ typedef struct
    double *values;
 } Type0;
 
+
+typedef struct {
+   double min_pressure_head;
+   int    num_sample_points;
+
+   double *x;
+   double *a;
+   double *d;
+   double *a_der;
+   double *d_der;
+  
+} VanGTable;
+
 typedef struct
 {
    int     num_regions;
@@ -66,6 +85,9 @@ typedef struct
    char   *n_file;
    Vector *alpha_values;
    Vector *n_values;
+
+   VanGTable **lookup_tables;
+
 } Type1;                      /* Van Genuchten Rel. Perm. */
 
 typedef struct
@@ -90,6 +112,212 @@ typedef struct
    double **coefficients;
 } Type4;                      /* Polynomial Function for Rel. Perm. */
 
+
+VanGTable *VanGComputeTable(
+   int num_sample_points,
+   double min_pressure_head,
+   double alpha,
+   double n)
+{
+   double *x,*a,*d,*a_der,*d_der;
+   
+   VanGTable *new_table = ctalloc(VanGTable, 1);
+
+   new_table -> num_sample_points = num_sample_points;
+   new_table -> min_pressure_head = min_pressure_head;
+
+   new_table -> x = ctalloc(double, num_sample_points+1);// interpolation points
+   new_table -> a = ctalloc(double, num_sample_points+1);// function value at interpolation point
+   new_table -> d = ctalloc(double, num_sample_points+1);// derivative used in monotonic spline
+   new_table -> a_der = ctalloc(double, num_sample_points+1);// function derivative value
+   new_table -> d_der = ctalloc(double, num_sample_points+1);// derivative of function derivative
+ 
+   x = new_table -> x;
+   a = new_table -> a;
+   d = new_table -> d;
+   a_der = new_table -> a_der;
+   d_der = new_table -> d_der;
+
+   double h[num_sample_points+1];
+   double f[num_sample_points+1],del[num_sample_points+1],f_der[num_sample_points+1];
+   double del_der[num_sample_points+1];
+   double alph, beta, magn;
+   int index;
+   double interval,m,opahn,ahnm1,coeff;
+   
+   // Loop over sample min_pressure_head to 0.0, min_pressure_head/num_sample_points step
+   interval = min_pressure_head/(double)(num_sample_points + 1);
+   m        = 1.0e0 - (1.0e0/n);
+
+   // evenly spaced interpolation points (future: variably spaced points)
+   for(index = 0; index <= num_sample_points; index++)
+   {
+      x[index]   = fabs(index*interval); 
+      opahn      = 1.0 + pow(alpha*x[index],n);
+      ahnm1      = pow(alpha*x[index],n-1);
+      // calculating function at interpolation points
+      a[index]   = pow(1.0 - ahnm1/(pow(opahn,m)),2)
+			   /pow(opahn,(m/2));
+
+      coeff    = 1.0 - ahnm1*pow(opahn,-m);
+      // calculating derivative at interpolation points
+      a_der[index] = 2.0*(coeff/(pow(opahn,(m/2))))
+		         *((n-1)*pow(alpha*x[index],n-2)*alpha
+		         *pow(opahn,-m)
+		         - ahnm1*m*pow(opahn,-(m+1))*n*alpha*ahnm1)
+			 + pow(coeff,2)*(m/2)*pow(opahn,(-(m+2)/2))
+	                 *n*alpha*ahnm1;
+   }
+
+   // begin monotonic spline (see Fritsch and Carlson, SIAM J. Num. Anal., 17 (2), 1980)
+   for(index = 0; index < num_sample_points; index++)
+   {
+      h[index] = x[index + 1] - x[index];
+      f[index] = a[index + 1] - a[index];
+      del[index] = f[index]/h[index]; 
+      f_der[index] = a_der[index + 1] - a_der[index];
+      del_der[index] = f_der[index]/h[index];
+   }
+   d[0] = del[0];
+   d[num_sample_points] = del[num_sample_points - 1];
+   d_der[0] = del_der[0];
+   d_der[num_sample_points] = del_der[num_sample_points - 1];
+
+   for(index = 1; index < num_sample_points; index++)
+   {
+      d[index] = (del[index - 1] + del[index])/2;
+      d_der[index] = (del_der[index - 1] + del_der[index])/2;
+   }
+
+
+   for(index = 0; index < num_sample_points; index++)
+   {
+      if(del[index] == 0.0)   
+      {
+         d[index] = 0;
+         d[index+1] = 0;
+      }
+      else
+      {
+         alph = d[index]/del[index];
+         beta = d[index+1]/del[index];
+         magn = pow(alph,2) + pow(beta,2);
+         if(magn > 9.0)
+         {
+            d[index] = 3*alph*del[index]/magn;
+            d[index+1] = 3*beta*del[index]/magn;
+         }
+      }
+
+      if(del_der[index] == 0.0)   
+      {
+         d_der[index] = 0;
+         d_der[index+1] = 0;
+      }
+      else
+      {
+	 // to ensure monotonicity
+         alph = d_der[index]/del_der[index];
+         beta = d_der[index+1]/del_der[index];
+         magn = pow(alph,2) + pow(beta,2);
+         if(magn > 9.0)
+         {
+            d_der[index] = 3*alph*del_der[index]/magn;
+            d_der[index+1] = 3*beta*del_der[index]/magn;
+         }
+      }
+   }
+   return new_table;
+}
+		      
+
+double VanGLookup(
+   double pressure_head,
+   VanGTable *lookup_table,
+   int fcn)
+{
+   double rel_perm, t;
+   int pt = 0;
+   int num_sample_points = lookup_table -> num_sample_points;
+   double min_pressure_head = lookup_table -> min_pressure_head;
+   int max = num_sample_points +1;
+
+   // This table goes from 0 to fabs(min_pressure_head)
+   assert(pressure_head >= 0);
+
+   // SGS TODO add warning in output?
+   // Make sure values are in the table range, if lower then set to the minimum.
+   if(pressure_head >= fabs(min_pressure_head)){
+      pressure_head = fabs(min_pressure_head);
+      pt = num_sample_points - 1;
+   } else {
+
+
+#if 0
+      // Use direct table lookup to avoid using this binary search since
+      // we have uniformly spaced points.
+      // when using variably spaced interpolation points, use binary
+      // search to find the interval
+      {
+	 int min = 0;
+	 int mid;
+	 
+	 while(max != min+1){
+	    mid = min + floor((max - min)/2);
+	    if(pressure_head == lookup_table -> x[mid]){
+	       min = mid;
+	       max = min+1;
+	    }
+	    if(pressure_head < lookup_table -> x[mid]){
+	       max = mid;
+	    } else {
+	       min = mid;
+	    }
+	 }
+	 pt = min;
+      }
+#else 
+      double interval = min_pressure_head/(double)(num_sample_points + 1);
+      interval = fabs(interval);
+      if(pressure_head >= fabs(min_pressure_head)){
+	 pressure_head = fabs(min_pressure_head);
+	 pt = num_sample_points - 1;
+      } else {
+	 pt = (int)floor(pressure_head / interval);
+	 if(pt > max) {
+	    pt = max-1;
+	 }
+      }
+#endif
+   }
+
+   double x = lookup_table -> x[pt];
+   double a = lookup_table -> a[pt];
+   double d = lookup_table -> d[pt];
+   double a_der = lookup_table -> a_der[pt];
+   double d_der = lookup_table -> d_der[pt];
+
+   // using cubic Hermite interpolation
+   if(fcn == CALCFCN){
+   	t = (pressure_head - x)/(lookup_table -> x[pt+1] - x);
+   	rel_perm = (2.0*pow(t,3) - 3.0*pow(t,2) + 1.0)*a 
+		+ (pow(t,3) - 2.0*pow(t,2) + t)
+		*(lookup_table -> x[pt+1] - x)*d + (-2.0*pow(t,3)
+		+ 3.0*pow(t,2))*(lookup_table -> a[pt+1])
+		+(pow(t,3) - pow(t,2))*(lookup_table -> x[pt+1] - x)
+		*(lookup_table -> d[pt+1]);
+   } else {
+   	t = (pressure_head - x)/(lookup_table -> x[pt+1] - x);
+   	rel_perm = (2.0*pow(t,3) - 3.0*pow(t,2) + 1.0)*a_der 
+		+ (pow(t,3) - 2.0*pow(t,2) + t)
+		*(lookup_table -> x[pt+1] - x)*d_der + (-2.0*pow(t,3)
+		+ 3.0*pow(t,2))*(lookup_table -> a_der[pt+1])
+		+(pow(t,3) - pow(t,2))*(lookup_table -> x[pt+1] - x)
+		*(lookup_table -> d_der[pt+1]);
+   }
+   return rel_perm;
+}
+		     
 
 /*--------------------------------------------------------------------------
  * PhaseRelPerm:
@@ -147,6 +375,13 @@ int          fcn)            /* Flag determining what to calculate
 
    int            num_regions, *region_indices;
    int            ir, *fdir;
+
+   /*-----------------------------------------------------------------------
+    * Begin timing
+    *-----------------------------------------------------------------------*/
+
+   BeginTiming(public_xtra -> time_index);
+
 
    /* Initialize relative permeabilities to 0.0 */
    InitVectorAll( phase_rel_perm, 0.0);
@@ -267,7 +502,7 @@ int          fcn)            /* Flag determining what to calculate
       region_indices = (dummy1 -> region_indices);
       alphas         = (dummy1 -> alphas);
       ns             = (dummy1 -> ns);
-      data_from_file = (dummy1->data_from_file);
+      data_from_file = (dummy1 -> data_from_file);
 
       /* Compute rel perms for Dirichlet boundary conditions */
       if (data_from_file == 0)  /* alphas and ns given by region */
@@ -298,11 +533,101 @@ int          fcn)            /* Flag determining what to calculate
 	    ppdat = SubvectorData(pp_sub);
 	    pddat = SubvectorData(pd_sub);
 
+#if 0
+	    /*
+	      This is a debugging tool that prints out function eval
+	      and table values */
+	    static int one_time = 1;
+	    if(one_time && (dummy1 -> lookup_tables[ir]) ) {
+	       
+	       one_time = 0;
+	       for( head = 0.0; head < 300.0; head += 1) {
+
+		  alpha      = alphas[ir];
+		  n          = ns[ir];
+		  m          = 1.0e0 - (1.0e0/n);
+		  
+		  opahn      = 1.0 + pow(alpha*head,n);
+		  ahnm1      = pow(alpha*head,n-1);
+		  double f_val = pow(1.0 - ahnm1/(pow(opahn,m)),2)
+		     /pow(opahn,(m/2));
+
+		  printf("DebugTable, %e, %e, %e\n",
+			 head,
+			 VanGLookup(head, 
+				    dummy1 -> lookup_tables[ir],
+				    CALCFCN),
+			 f_val);
+	       }
+	    }
+#endif
+
 	    if ( fcn == CALCFCN )
 	    {
+	       if(dummy1 -> lookup_tables[ir]) {
+		  GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz, 
+				 nx, ny, nz,
+		 {
+		    /* Table Lookup */
+		    
+		    ipr = SubvectorEltIndex(pr_sub, 
+					    i+fdir[0], j+fdir[1], k+fdir[2]);
+		    ipp = SubvectorEltIndex(pp_sub, 
+					    i+fdir[0], j+fdir[1], k+fdir[2]);
+		    ipd = SubvectorEltIndex(pd_sub, 
+					    i+fdir[0], j+fdir[1], k+fdir[2]);
+		    
+		    if (ppdat[ipp] >= 0.0)
+		       prdat[ipr] = 1.0;
+		    else
+		    {
+		       head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
+
+		       prdat[ipr] = VanGLookup(head, 
+					       dummy1 -> lookup_tables[ir],
+					       CALCFCN);
+		    }
+		 });
+	       } else {
+
+		  /* Compute VanG curve */
+		  
+		  GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz, 
+				 nx, ny, nz,
+                  {
+		     ipr = SubvectorEltIndex(pr_sub, 
+					     i+fdir[0], j+fdir[1], k+fdir[2]);
+		     ipp = SubvectorEltIndex(pp_sub, 
+					     i+fdir[0], j+fdir[1], k+fdir[2]);
+		     ipd = SubvectorEltIndex(pd_sub, 
+					     i+fdir[0], j+fdir[1], k+fdir[2]);
+		     
+		     if (ppdat[ipp] >= 0.0)
+			prdat[ipr] = 1.0;
+		     else
+		     {
+			alpha      = alphas[ir];
+			n          = ns[ir];
+			m          = 1.0e0 - (1.0e0/n);
+			
+			head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
+			opahn      = 1.0 + pow(alpha*head,n);
+			ahnm1      = pow(alpha*head,n-1);
+			prdat[ipr] = pow(1.0 - ahnm1/(pow(opahn,m)),2)
+			   /pow(opahn,(m/2));
+		     }
+		  });
+	       }
+	    }
+	    else  /* fcn = CALCDER */
+	    {
+             if(dummy1 -> lookup_tables[ir]) {
+
 	       GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz, 
 			      nx, ny, nz,
 	       {
+		  /* Table Lookup */
+		
                   ipr = SubvectorEltIndex(pr_sub, 
 					  i+fdir[0], j+fdir[1], k+fdir[2]);
                   ipp = SubvectorEltIndex(pp_sub, 
@@ -311,23 +636,20 @@ int          fcn)            /* Flag determining what to calculate
 					  i+fdir[0], j+fdir[1], k+fdir[2]);
 
 		  if (ppdat[ipp] >= 0.0)
-		     prdat[ipr] = 1.0;
+		     prdat[ipr] = 0.0;
 		  else
 		  {
-		     alpha      = alphas[ir];
-		     n          = ns[ir];
-		     m          = 1.0e0 - (1.0e0/n);
-
-		     head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-		     opahn      = 1.0 + pow(alpha*head,n);
-		     ahnm1      = pow(alpha*head,n-1);
-		     prdat[ipr] = pow(1.0 - ahnm1/(pow(opahn,m)),2)
-		                  /pow(opahn,(m/2));
+		     head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
+		     prdat[ipr] = VanGLookup(head, 
+					     dummy1 -> lookup_tables[ir],
+					     CALCDER);
 		  }
 	       });
-	    }
-	    else  /* fcn = CALCDER */
-	    {
+
+           } else {
+
+		  /* Compute VanG curve */
+
 	       GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz, 
 			      nx, ny, nz,
 	       {
@@ -359,6 +681,7 @@ int          fcn)            /* Flag determining what to calculate
 			            *n*alpha*ahnm1;
 		  }
 	       });
+              }
 	    }   /* End else clause */
 	 }      /* End subgrid loop */
       }         /* End loop over regions */
@@ -461,7 +784,7 @@ int          fcn)            /* Flag determining what to calculate
 		                   *((n-1)*pow(alpha*head,n-2)*alpha
 				   *pow(opahn,-m)
 				   - ahnm1*m*pow(opahn,-(m+1))*n*alpha*ahnm1)
-			           + pow(coeff,2)*(m/2)*pow(opahn,(-(m+2)/2))
+			           +  pow(coeff,2)*(m/2)*pow(opahn,(-(m+2)/2))
 			            *n*alpha*ahnm1;
 		  }
 	       });
@@ -500,8 +823,30 @@ int          fcn)            /* Flag determining what to calculate
 
 	    if ( fcn == CALCFCN )
 	    {
-	       GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-	       {
+	       if(dummy1 -> lookup_tables[ir]){
+	         GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+	         {
+		  /* Table Lookup */
+                  ipr = SubvectorEltIndex(pr_sub, i, j, k);
+                  ipp = SubvectorEltIndex(pp_sub, i, j, k);
+                  ipd = SubvectorEltIndex(pd_sub, i, j, k);
+		  
+		  if (ppdat[ipp] >= 0.0)
+		     prdat[ipr] = 1.0;
+		  else
+		  {
+		     head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
+		     prdat[ipr] = VanGLookup(head, 
+					     dummy1 -> lookup_tables[ir],
+					     CALCFCN);
+		  }
+	         });
+	       } else {
+
+		  /* Compute VanG curve */
+
+	         GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+	         {
                   ipr = SubvectorEltIndex(pr_sub, i, j, k);
                   ipp = SubvectorEltIndex(pp_sub, i, j, k);
                   ipd = SubvectorEltIndex(pd_sub, i, j, k);
@@ -521,9 +866,32 @@ int          fcn)            /* Flag determining what to calculate
 		                  /pow(opahn,(m/2));
 		  }
 	       });
+	     }
 	    }    /* End if clause */
 	    else /* fcn = CALCDER */
 	    {
+	      if(dummy1 -> lookup_tables[ir]){
+	       GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+	       {
+		  /* Table Lookup */
+                  ipr = SubvectorEltIndex(pr_sub, i, j, k);
+                  ipp = SubvectorEltIndex(pp_sub, i, j, k);
+                  ipd = SubvectorEltIndex(pd_sub, i, j, k);
+
+		  if (ppdat[ipp] >= 0.0)
+		     prdat[ipr] = 0.0;
+		  else
+		  {
+		     head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
+		     prdat[ipr] = VanGLookup(head, 
+					     dummy1 -> lookup_tables[ir],
+					     CALCDER);
+		  }
+	       });
+              } else {
+
+		  /* Compute VanG curve */
+
 	       GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
 	       {
                   ipr = SubvectorEltIndex(pr_sub, i, j, k);
@@ -551,6 +919,7 @@ int          fcn)            /* Flag determining what to calculate
 			            *n*alpha*ahnm1;
 		  }
 	       });
+              }
 	    }   /* End else clause */
 	 }      /* End subgrid loop */
       }         /* End subregion loop */
@@ -987,7 +1356,16 @@ int          fcn)            /* Flag determining what to calculate
       FinalizeVectorUpdate(handle);
    }
 #endif
+
+   /*-----------------------------------------------------------------------
+    * End timing
+    *-----------------------------------------------------------------------*/
+
+   IncFLOPCount(1);
+   EndTiming(public_xtra -> time_index);
 }
+
+
 
 /*--------------------------------------------------------------------------
  * PhaseRelPermInitInstanceXtra
@@ -1039,6 +1417,7 @@ PFModule  *PhaseRelPermInitInstanceXtra(
    PFModuleInstanceXtra(this_module) = instance_xtra;
    return this_module;
 }
+
 
 /*-------------------------------------------------------------------------
  * PhaseRelPermFreeInstanceXtra
@@ -1137,6 +1516,8 @@ PFModule   *PhaseRelPermNewPublicXtra()
 	    (dummy1 -> region_indices) = ctalloc(int,    num_regions);
 	    (dummy1 -> alphas        ) = ctalloc(double, num_regions);
 	    (dummy1 -> ns            ) = ctalloc(double, num_regions);
+
+	    (dummy1 -> lookup_tables)        = ctalloc(VanGTable*, num_regions);
 	 
 	    for (ir = 0; ir < num_regions; ir++)
 	    {
@@ -1150,6 +1531,24 @@ PFModule   *PhaseRelPermNewPublicXtra()
 
 	       sprintf(key, "Geom.%s.RelPerm.N", region);
 	       dummy1 -> ns[ir] = GetDouble(key);
+
+	       sprintf(key, "Geom.%s.RelPerm.NumSamplePoints", region);
+
+	       int num_sample_points = GetIntDefault(key, 0);
+	       
+	       if(num_sample_points) { 
+		  sprintf(key, "Geom.%s.RelPerm.MinPressureHead", region);
+		  double min_pressure_head = GetDouble(key);
+
+		  dummy1 -> lookup_tables[ir] = VanGComputeTable(num_sample_points,
+								 min_pressure_head,
+								 dummy1 -> alphas[ir],
+								 dummy1 -> ns[ir]);
+					     
+	       } else {
+		  dummy1 -> lookup_tables[ir] = NULL;
+	       }
+
 	    }
 	    
 	    dummy1->alpha_file = NULL;
@@ -1271,6 +1670,8 @@ PFModule   *PhaseRelPermNewPublicXtra()
    }     /* End switch */
 
    NA_FreeNameArray(type_na);
+
+   (public_xtra -> time_index) = RegisterTiming("PhaseRelPerm");
    
    PFModulePublicXtra(this_module) = public_xtra;
    return this_module;
@@ -1323,6 +1724,23 @@ void  PhaseRelPermFreePublicXtra()
 	tfree(dummy1 -> region_indices);
 	tfree(dummy1 -> alphas);
 	tfree(dummy1 -> ns);
+
+	num_regions = (dummy1 -> num_regions);
+	for (ir = 0; ir < num_regions; ir++)
+	{
+	   if(dummy1 -> lookup_tables[ir]) {
+	      tfree(dummy1 -> lookup_tables[ir] -> x);
+	      tfree(dummy1 -> lookup_tables[ir] -> a);
+	      tfree(dummy1 -> lookup_tables[ir] -> d);
+	      tfree(dummy1 -> lookup_tables[ir] -> a_der);
+	      tfree(dummy1 -> lookup_tables[ir] -> d_der);
+
+	      tfree(dummy1 -> lookup_tables[ir]);
+	   }
+	}
+
+	tfree(dummy1 -> lookup_tables);
+
 	tfree(dummy1);
 
 	break;

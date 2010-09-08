@@ -21,10 +21,9 @@ TESTS := \
 	harvey_flow_pgs.tcl \
 	default_overland.tcl \
 	crater2D.tcl \
+	crater2D_vangtable.tcl \
 	small_domain.tcl \
 	richards_hydrostatic_equalibrium.tcl
-
-
 
 ifeq (${PARFLOW_HAVE_HYPRE},yes)
 TESTS += \

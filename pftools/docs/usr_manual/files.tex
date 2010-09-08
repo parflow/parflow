@@ -1557,12 +1557,33 @@ specified on {\em geom\_name}.
 pfset Geom.domain.RelPerm.Alpha  0.005
 \end{verbatim}\end{display}
 
+
 \pfkey{double}{Geom.{\em geom\_name}.RelPerm.N}{no default}
 {This key specifies the $N$ parameter for the Van Genuchten function specified
 on {\em geom\_name}.
 }
 \begin{display}\begin{verbatim}
 pfset Geom.domain.RelPerm.N   2.0
+\end{verbatim}\end{display}
+
+\pfkey{int}{Geom.{\em geom\_name}.RelPerm.NumSamplePoints}{0}
+{This key specifies the number of sample points for a spline base interpolation table
+for the Van Genuchten function specified on {\em geom\_name}.   If this number is 0 (the default) 
+then the function is evaluated directly.   Using the interpolation table is faster but is less
+accurate.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.RelPerm.NumSamplePoints  20000
+\end{verbatim}\end{display}
+
+\pfkey{int}{Geom.{\em geom\_name}.RelPerm.MinPressureHead}{no default}
+ {This key specifies the lower value for a spline base interpolation
+ table for the Van Genuchten function specified on {\em geom\_name}.
+  The upper value of the range is 0.  This value is used only when the
+ table lookup method is used ({\em NumSamplePoints} is greater than 0).
+  }
+\begin{display}\begin{verbatim}
+pfset Geom.domain.RelPerm.MinPressureHead -300
 \end{verbatim}\end{display}
 
 \pfkey{double}{Geom.{\em geom\_name}.RelPerm.A}{no default}
