@@ -10,13 +10,24 @@ lappend auto_path $env(PARFLOW_DIR)/bin
 package require parflow
 namespace import Parflow::*
 
+set runname  crater2D_vangtable_linear
+
 #---------------------------------------------------------
 # Controls for the VanG curves used later.
 #---------------------------------------------------------
 #set VG_points 0
 set VG_points 20000
-set VG_alpha 2.0
+
+# Note this problem was setup to use an easy curve for the linear
+# interpolation. This way the test will match closely between direct
+# evaluation and when using linear interpolation avoiding the
+# complicated decision about what is accurate enough.  The linear
+# interpolation method can cause significant differences in results
+# for most "real" parameters for the Van Gnuchten curves.
+# 
+set VG_alpha 0.01
 set VG_N 2.0
+set VG_interpolation_method "Linear"
 
 pfset FileVersion 4
 
@@ -230,7 +241,7 @@ pfset Gravity				1.0
 pfset TimingInfo.BaseUnit		1.0
 pfset TimingInfo.StartCount		0
 pfset TimingInfo.StartTime		0.0
-pfset TimingInfo.StopTime               10.0
+pfset TimingInfo.StopTime               20.0
 pfset TimingInfo.DumpInterval	        10.0
 pfset TimeStep.Type                     Constant
 pfset TimeStep.Value                    10.0
@@ -279,37 +290,44 @@ pfset Geom.zone1.RelPerm.Alpha             $VG_alpha
 pfset Geom.zone1.RelPerm.N                 $VG_N
 pfset Geom.zone1.RelPerm.NumSamplePoints   $VG_points
 pfset Geom.zone1.RelPerm.MinPressureHead   -300
+pfset Geom.zone1.RelPerm.InterpolationMethod   $VG_interpolation_method
 
 pfset Geom.zone2.RelPerm.Alpha             $VG_alpha
 pfset Geom.zone2.RelPerm.N                 $VG_N
 pfset Geom.zone2.RelPerm.NumSamplePoints   $VG_points
 pfset Geom.zone2.RelPerm.MinPressureHead   -300
+pfset Geom.zone2.RelPerm.InterpolationMethod   $VG_interpolation_method
 
 
 pfset Geom.zone3above4.RelPerm.Alpha             $VG_alpha
 pfset Geom.zone3above4.RelPerm.N                 $VG_N
 pfset Geom.zone3above4.RelPerm.NumSamplePoints   $VG_points
 pfset Geom.zone3above4.RelPerm.MinPressureHead   -300
+pfset Geom.zone3above4.RelPerm.InterpolationMethod   $VG_interpolation_method
 
 pfset Geom.zone3left4.RelPerm.Alpha             $VG_alpha
 pfset Geom.zone3left4.RelPerm.N                 $VG_N
 pfset Geom.zone3left4.RelPerm.NumSamplePoints   $VG_points
 pfset Geom.zone3left4.RelPerm.MinPressureHead   -300
+pfset Geom.zone3left4.RelPerm.InterpolationMethod   $VG_interpolation_method
 
 pfset Geom.zone3right4.RelPerm.Alpha             $VG_alpha
 pfset Geom.zone3right4.RelPerm.N                 $VG_N
 pfset Geom.zone3right4.RelPerm.NumSamplePoints   $VG_points
 pfset Geom.zone3right4.RelPerm.MinPressureHead   -300
+pfset Geom.zone3right4.RelPerm.InterpolationMethod   $VG_interpolation_method
 
 pfset Geom.zone3below4.RelPerm.Alpha             $VG_alpha
 pfset Geom.zone3below4.RelPerm.N                 $VG_N
 pfset Geom.zone3below4.RelPerm.NumSamplePoints   $VG_points
 pfset Geom.zone3below4.RelPerm.MinPressureHead   -300
+pfset Geom.zone3below4.RelPerm.InterpolationMethod   $VG_interpolation_method
 
 pfset Geom.zone4.RelPerm.Alpha                   $VG_alpha
 pfset Geom.zone4.RelPerm.N                       $VG_N
 pfset Geom.zone4.RelPerm.NumSamplePoints         $VG_points
-pfset Geom.zone4.RelPerm.MinPressureHead   -300
+pfset Geom.zone4.RelPerm.MinPressureHead         -300
+pfset Geom.zone4.RelPerm.InterpolationMethod     $VG_interpolation_method
 
 #---------------------------------------------------------
 # Saturation
@@ -484,8 +502,9 @@ pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      100
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-pfrun crater2D_vangtable
-pfundist crater2D_vangtable
+
+pfrun $runname
+pfundist $runname
 
 #
 # Tests 
@@ -493,25 +512,24 @@ pfundist crater2D_vangtable
 source pftest.tcl
 set passed 1
 
-if ![pftestFile crater2D_vangtable.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
+if ![pftestFile $runname.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
     set passed 0
 }
-if ![pftestFile crater2D_vangtable.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
+if ![pftestFile $runname.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
     set passed 0
 }
-if ![pftestFile crater2D_vangtable.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
+if ![pftestFile $runname.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
     set passed 0
 }
-if ![pftestFile crater2D_vangtable.out.porosity.pfb "Max difference in porosity" $sig_digits] {
+if ![pftestFile $runname.out.porosity.pfb "Max difference in porosity" $sig_digits] {
     set passed 0
 }
 
-#foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-foreach i "00000 00001" {
-    if ![pftestFile crater2D_vangtable.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
+foreach i "00000 00001 00002" {
+    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
 	set passed 0
     }
-    if ![pftestFile crater2D_vangtable.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
+    if ![pftestFile $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
 	set passed 0
     }
 }
