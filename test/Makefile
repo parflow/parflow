@@ -64,7 +64,7 @@ PARALLEL_TESTS += \
 	default_richards.tcl
 endif
 
-check: check_samrai check_sequential check_parallel
+check: check_sequential check_parallel check_samrai 
 
 check_sequential:
 	@-for i in $(TESTS); \

@@ -39,8 +39,6 @@
 #include <float.h>
 #include <limits.h>
 
-#define EPSILON 0.00000000001
-
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -1261,7 +1259,21 @@ void AdvanceRichards(PFModule *this_module,
 	 else  /* Not converged, so decrease time step */
 	 {
 	    t = t - dt;
-	    dt = 0.5 * dt;
+
+	    double new_dt = 0.5 * dt;
+
+	    // If time increment is too small don't try to cut in half.
+	    {
+	       double test_time = t + new_dt;
+	       double diff_time = test_time - t;
+
+	       if(diff_time  >  TIME_EPSILON ) {
+		  dt = new_dt;
+	       } else {
+		  PARFLOW_ERROR("Time increment is too small; solver has failed\n");
+	       }
+	    }
+	    
 	    PFVCopy(instance_xtra -> old_density,    instance_xtra -> density);
 	    PFVCopy(instance_xtra -> old_saturation, instance_xtra -> saturation);
 	    PFVCopy(instance_xtra -> old_pressure,   instance_xtra -> pressure);
@@ -1283,7 +1295,19 @@ void AdvanceRichards(PFModule *this_module,
 	    {
 	       // Note ct is time we want to advance to at this point
 	       if ( t + dt > ct) {
-		  dt = ct - t;
+		  double new_dt = ct - t;
+
+		  // If time increment is too small we have a problem. Just halt
+		  {
+		     double test_time = t + new_dt;
+		     double diff_time = test_time - t;
+
+		     if(diff_time  >  TIME_EPSILON ) {
+			dt = new_dt;
+		     } else {
+			PARFLOW_ERROR("Time increment is too small; CLM wants a small timestep\n");
+		     }
+		  }
 	       }
 	       break;		  
 	    }
@@ -1312,7 +1336,7 @@ void AdvanceRichards(PFModule *this_module,
 	 {
 	    print_dt = ProblemStartTime(problem) +  instance_xtra -> dump_index*dump_interval - t;
 
-	    if ( (dt + EPSILON) > print_dt )
+	    if ( (dt + TIME_EPSILON) > print_dt )
 	    {
 	       /*
 		* if the difference is small don't try to compute
@@ -1320,7 +1344,7 @@ void AdvanceRichards(PFModule *this_module,
 		* output slightly off in time but avoids
 		* extremely small dt values.
 		*/
-	       if( fabs(dt - print_dt) > EPSILON) {
+	       if( fabs(dt - print_dt) > TIME_EPSILON) {
 		  dt = print_dt;
 	       }
 	       dt_info = 'p';
@@ -1347,7 +1371,7 @@ void AdvanceRichards(PFModule *this_module,
          if ( public_xtra -> clm_dump_interval > 0 )
          {
             print_cdt = ProblemStartTime(problem) +  instance_xtra -> clm_dump_index * public_xtra -> clm_dump_interval - t;
-            if ( (dt + EPSILON) > print_cdt )
+            if ( (dt + TIME_EPSILON) > print_cdt )
             {
                clm_dump_files = 1;
             }
@@ -1370,7 +1394,19 @@ void AdvanceRichards(PFModule *this_module,
 	  *--------------------------------------------------------------*/
 	 if ( (t + dt) >= stop_time )
 	 {   
-	    dt = stop_time - t;
+	    double new_dt = stop_time - t;
+	    
+	    double test_time = t + new_dt;
+	    double diff_time = test_time - t;
+
+	    if(diff_time  >  TIME_EPSILON ) {
+	       dt = new_dt;
+	    } else {
+	       PARFLOW_ERROR("Time increment is too small for last iteration\n");
+	    }
+
+	    dt = new_dt;
+
 	    dt_info = 'f';
 	 }
          

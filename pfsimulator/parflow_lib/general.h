@@ -34,6 +34,7 @@
 #ifndef _GENERAL_HEADER
 #define _GENERAL_HEADER
 
+#include <float.h>
 
 /*--------------------------------------------------------------------------
  * Define memory allocation routines
@@ -133,6 +134,7 @@
 #define GetDoubleDefault(key, default) IDB_GetDoubleDefault(amps_ThreadLocal(input_database), (key), (default))
 #define GetStringDefault(key, default) IDB_GetStringDefault(amps_ThreadLocal(input_database), (key), (default))
 
+#define TIME_EPSILON (FLT_EPSILON * 10)
 
 #endif
 

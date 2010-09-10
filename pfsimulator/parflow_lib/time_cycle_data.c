@@ -281,6 +281,19 @@ TimeCycleData *time_cycle_data)
       }
    }
 
+   /*
+    * If time is too small then don't attempt to take a super small timestep.
+    */
+   {
+      double test = time + deltat;
+      double diff = test - time;
+
+      if(diff  <=  TIME_EPSILON) {
+	 deltat = -1.0;
+      }
+   }
+
+
    return deltat;
 }
 
