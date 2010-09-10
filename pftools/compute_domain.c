@@ -42,11 +42,12 @@ void ComputeDomain(
 		   int R)
 {
    int num_procs = P * Q * R;
+   int p;
 
    // For each subgrid find the min/max k values 
    // in the active region (using top/bottom).  
    // Reset the subgrid to reflect this vertical extent.
-   for(int p = 0; p < num_procs; p++)
+   for(p = 0; p < num_procs; p++)
    {
       int s_i;
       ForSubgridI(s_i, all_subgrids)
@@ -56,6 +57,9 @@ void ComputeDomain(
 	 int process = SubgridProcess(subgrid);
 
 	 if(process == p) {
+	    int i;
+	    int j;
+
 	    int ix = SubgridIX(subgrid);
 	    int iy = SubgridIY(subgrid);
 	    int iz = SubgridIZ(subgrid);
@@ -67,9 +71,9 @@ void ComputeDomain(
 	    int patch_top = iz;
 	    int patch_bottom = iz + nz;
  
-	    for (int j = iy; j < iy+ ny; ++j)
+	    for (j = iy; j < iy+ ny; ++j)
 	    {
-	       for (int i = ix; i < ix + nx; ++i)
+	       for (i = ix; i < ix + nx; ++i)
 	       {
 		  int k_top = *(DataboxCoeff(top, i, j, 0));
 		  if ( k_top >= 0 ) {
@@ -99,9 +103,9 @@ void ComputeDomain(
 	    iy = max(0, iy -1);
 	    ny = min(DataboxNy(top), ny + 1);
 
-	    for (int j = iy; j < iy+ ny; ++j)
+	    for (j = iy; j < iy+ ny; ++j)
 	    {
-	       for (int i = ix; i < ix + nx; ++i)
+	       for (i = ix; i < ix + nx; ++i)
 	       {
 		  int k_top = *(DataboxCoeff(top, i, j, 0));
 		  if ( k_top >= 0 ) {

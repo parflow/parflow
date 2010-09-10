@@ -35,8 +35,6 @@
 #include "databox.h"
 #include <stdlib.h>
 
-#include <limits>
-
 /*-----------------------------------------------------------------------
  * create new Databox structure
  *-----------------------------------------------------------------------*/
@@ -50,10 +48,32 @@ Databox         *NewDatabox(
    double          z,
    double          dx, 
    double          dy, 
+   double          dz)
+{
+   return NewDataboxDefault(
+      nx, ny, nz,
+      x, y, z,
+      dx, dy, dz,
+      0.0);
+}
+
+
+Databox         *NewDataboxDefault(
+   int             nx, 
+   int             ny, 
+   int             nz,
+   double          x,  
+   double          y,  
+   double          z,
+   double          dx, 
+   double          dy, 
    double          dz,
    double          default_value)
 {
    Databox         *new_databox;
+   int i;
+   int j;
+   int k;
 
    if ((new_databox = (Databox*) calloc(1, sizeof (Databox))) == NULL)
       return((Databox *)NULL);
@@ -63,9 +83,9 @@ Databox         *NewDatabox(
       return((Databox *)NULL);
    }
 
-   for(int k = 0; k < nz; ++k) {
-      for(int j = 0; j < ny; ++j)  {
-	 for(int i = 0; i < nx; ++i)  {
+   for(k = 0; k < nz; ++k) {
+      for(j = 0; j < ny; ++j)  {
+	 for(i = 0; i < nx; ++i)  {
 	    DataboxCoeffs(new_databox)[k * ny * nx + j * nx + i] = default_value;
 	 }
       }

@@ -133,7 +133,7 @@ Databox         *ReadSilo(char *filename, double default_value)
    DZ = delta[2];
 
    /* create the new databox structure */
-   if ((v = NewDatabox(NX, NY, NZ, X, Y, Z, DX, DY, DZ, default_value)) == NULL)
+   if ((v = NewDataboxDefault(NX, NY, NZ, X, Y, Z, DX, DY, DZ, default_value)) == NULL)
    {
       return((Databox *)NULL);
    }
@@ -315,7 +315,7 @@ Databox         *ReadParflowB(
    tools_ReadInt(fp, &num_subgrids,  1);
 
    /* create the new databox structure */
-   if ((v = NewDatabox(NX, NY, NZ, X, Y, Z, DX, DY, DZ, default_value)) == NULL)
+   if ((v = NewDataboxDefault(NX, NY, NZ, X, Y, Z, DX, DY, DZ, default_value)) == NULL)
    {
       fclose(fp);
       return((Databox *)NULL);
@@ -397,7 +397,7 @@ Databox         *ReadParflowSB(
    tools_ReadInt(fp, &num_subgrids,  1);
 
    /* create the new databox structure */
-   if ((v = NewDatabox(NX, NY, NZ, X, Y, Z, DX, DY, DZ, default_value)) == NULL)
+   if ((v = NewDataboxDefault(NX, NY, NZ, X, Y, Z, DX, DY, DZ, default_value)) == NULL)
    {
       fclose(fp);
       return((Databox *)NULL);
@@ -463,7 +463,7 @@ Databox         *ReadSimpleA(
    fscanf(fp, "%d %d %d", &nx, &ny, &nz);
 
    /* create the new databox structure */
-   if ((v = NewDatabox(nx, ny, nz, 0, 0, 0, 0, 0, 0, default_value)) == NULL)
+   if ((v = NewDataboxDefault(nx, ny, nz, 0, 0, 0, 0, 0, 0, default_value)) == NULL)
    {
       fclose(fp);
       return((Databox *)NULL);
@@ -507,7 +507,7 @@ Databox        *ReadRealSA(
    fscanf(fp, "%lf %lf %lf", &dx, &dy, &dz);
 
    /* create the new databox structure */
-   if ((v = NewDatabox(nx, ny, nz, 0, 0, 0, 0, 0, 0, default_value)) == NULL)
+   if ((v = NewDataboxDefault(nx, ny, nz, 0, 0, 0, 0, 0, 0, default_value)) == NULL)
    {
       fclose(fp);
       return((Databox *)NULL);
@@ -557,7 +557,7 @@ Databox         *ReadSimpleB(
    tools_ReadInt(fp, &nz,     1);
 
    /* create the new databox structure */
-   if ((v = NewDatabox(nx, ny, nz, 0, 0, 0, 0, 0, 0, default_value)) == NULL)
+   if ((v = NewDataboxDefault(nx, ny, nz, 0, 0, 0, 0, 0, 0, default_value)) == NULL)
    {
       fclose(fp);
       return((Databox *)NULL);
@@ -801,7 +801,7 @@ Databox         *ReadAVSField(
  
    /* create the new databox structure */
    /* set X, Y, Z, DX, DY, DZ to 0 initially; will calculate and set later */
-   if ((v = NewDatabox(NX, NY, NZ, 0, 0, 0, 0, 0, 0, default_value)) == NULL)
+   if ((v = NewDataboxDefault(NX, NY, NZ, 0, 0, 0, 0, 0, 0, default_value)) == NULL)
    {
       fclose(fp);
       return((Databox *)NULL);

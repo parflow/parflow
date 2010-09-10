@@ -4438,12 +4438,14 @@ int PrintDomainCommand(
    int Q = GetInt(interp, "Process.Topology.Q");
    int R = GetInt(interp, "Process.Topology.R");
    int num_procs = P * Q * R;
+   
+   int p;
 
 
    sprintf(line, "pfset ProcessGrid.NumSubgrids %d\n", subgrid_array -> size);
    Tcl_DStringAppend(&result, line, strlen(line));
 
-   for(int p = 0; p < num_procs; p++)
+   for(p = 0; p < num_procs; p++)
    {
       int s_i;
       ForSubgridI(s_i, subgrid_array)
