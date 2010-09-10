@@ -692,6 +692,13 @@ int          fcn)            /* Flag determining what to calculate
 		     // Linear
 		     case 1: 
 		     {
+			int pt = 0;
+			VanGTable *lookup_table = dummy1 -> lookup_tables[ir];
+			double interval = lookup_table -> interval;
+			double min_pressure_head = lookup_table -> min_pressure_head;
+			int num_sample_points = lookup_table -> num_sample_points;
+			int max = num_sample_points +1;
+
 			GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz, 
 				 nx, ny, nz,
 			{
@@ -710,9 +717,15 @@ int          fcn)            /* Flag determining what to calculate
 			   {
 			      head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 			      
-			      prdat[ipr] = VanGLookupLinear(head, 
-							    dummy1 -> lookup_tables[ir],
-							    CALCFCN);
+			      if(head < fabs(min_pressure_head)){
+				 pt = (int)floor(head / interval);
+				 assert(pt < max);
+
+				 prdat[ipr] = lookup_table -> a[pt] + lookup_table -> slope[pt] * 
+				    (head - lookup_table -> x[pt]);
+			      } else {
+				 prdat[ipr] = 0.0;
+			      }
 			   }
 			});
 		     }
@@ -785,6 +798,13 @@ int          fcn)            /* Flag determining what to calculate
 		   // Linear
 		   case 1: 
 		   {
+		      int pt = 0;
+		      VanGTable *lookup_table = dummy1 -> lookup_tables[ir];
+		      double interval = lookup_table -> interval;
+		      double min_pressure_head = lookup_table -> min_pressure_head;
+		      int num_sample_points = lookup_table -> num_sample_points;
+		      int max = num_sample_points +1;
+
 		      GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz, 
 				     nx, ny, nz,
 	              {
@@ -802,9 +822,22 @@ int          fcn)            /* Flag determining what to calculate
 			 else
 			 {
 			    head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-			    prdat[ipr] = VanGLookupLinear(head, 
-							  dummy1 -> lookup_tables[ir],
-							  CALCDER);
+			    if (ppdat[ipp] >= 0.0)
+			       prdat[ipr] = 1.0;
+			    else
+			    {
+			       head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
+			       
+			       if(head < fabs(min_pressure_head)){
+				  pt = (int)floor(head / interval);
+				  assert(pt < max);
+				
+				  prdat[ipr] = lookup_table -> a_der[pt] + lookup_table -> slope[pt] * 
+				     (head - lookup_table -> x[pt]);
+			       } else {
+				  prdat[ipr] = 0.0;
+			       }
+			   }
 			 }
 	              });
 
@@ -1017,6 +1050,13 @@ int          fcn)            /* Flag determining what to calculate
 		     // Linear
 		     case 1: 
 		     {
+			int pt = 0;
+			VanGTable *lookup_table = dummy1 -> lookup_tables[ir];
+			double interval = lookup_table -> interval;
+			double min_pressure_head = lookup_table -> min_pressure_head;
+			int num_sample_points = lookup_table -> num_sample_points;
+			int max = num_sample_points +1;
+
 			GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                         {
 			   /* Table Lookup */
@@ -1029,9 +1069,22 @@ int          fcn)            /* Flag determining what to calculate
 			   else
 			   {
 			      head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-			      prdat[ipr] = VanGLookupLinear(head, 
-							    dummy1 -> lookup_tables[ir],
-							    CALCFCN);
+			      if (ppdat[ipp] >= 0.0)
+				 prdat[ipr] = 1.0;
+			      else
+			      {
+				 head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
+				 
+				 if(head < fabs(min_pressure_head)){
+				    pt = (int)floor(head / interval);
+				    assert(pt < max);
+				    
+				    prdat[ipr] = lookup_table -> a[pt] + lookup_table -> slope[pt] * 
+				       (head - lookup_table -> x[pt]);
+				 } else {
+				    prdat[ipr] = 0.0;
+				 }
+			      }
 			   }
 			});
 		     }
@@ -1094,6 +1147,13 @@ int          fcn)            /* Flag determining what to calculate
 		    break;
 		    case 1:
 		    {
+		      int pt = 0;
+		      VanGTable *lookup_table = dummy1 -> lookup_tables[ir];
+		      double interval = lookup_table -> interval;
+		      double min_pressure_head = lookup_table -> min_pressure_head;
+		      int num_sample_points = lookup_table -> num_sample_points;
+		      int max = num_sample_points +1;
+
 		       GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
 	               {
 			  /* Table Lookup */
@@ -1106,10 +1166,29 @@ int          fcn)            /* Flag determining what to calculate
 			  else
 			  {
 			     head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-			     
-			     prdat[ipr] = VanGLookupLinear(head, 
-							   dummy1 -> lookup_tables[ir],
-							   CALCDER);
+
+			     if (ppdat[ipp] >= 0.0)
+				prdat[ipr] = 0.0;
+			     else
+			     {
+				head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
+				if (ppdat[ipp] >= 0.0)
+				   prdat[ipr] = 1.0;
+				else
+				{
+				   head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
+				   
+				   if(head < fabs(min_pressure_head)){
+				      pt = (int)floor(head / interval);
+				      assert(pt < max);
+				      
+				      prdat[ipr] = lookup_table -> a_der[pt] + lookup_table -> slope[pt] * 
+					 (head - lookup_table -> x[pt]);
+				   } else {
+				      prdat[ipr] = 0.0;
+				   }
+				}
+			     }
 			  }
 		       });
 		    }
