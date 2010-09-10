@@ -172,7 +172,7 @@ for $cfile (@FILES) {
     # Add SAMRAI_config.h because everything should depend on it,
     # even though it is ignored for the purpose of finding dependencies.
     # (It is ignored because it is generated at configure time.)
-    push(@deps, '$(SAMRAI_DIR)/include/SAMRAI/SAMRAI_config.h');
+#    push(@deps, '$(SAMRAI_DIR)/include/SAMRAI/SAMRAI_config.h');
     printDependencies( $FILENUMBER, $cfile, @deps );
 
     $FILENUMBER=$FILENUMBER + 1;
@@ -321,7 +321,8 @@ sub fixName {
    $_ = shift(@_);
    print "Fixing name $_\n" if $debug;
    if ( m|(.*)/SAMRAI/(.*)$|o ) {
-      return("\$(SAMRAI_DIR)/include/SAMRAI/$2");
+#      return("\$(SAMRAI_DIR)/include/SAMRAI/$2");
+       return("");
    }
    if ( m|../parflow_lib/(.*)$|o ) {
       return("\$(PARFLOW_INCLUDE_DIR)/$1");

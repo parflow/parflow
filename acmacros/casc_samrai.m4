@@ -24,7 +24,7 @@ AC_ARG_WITH(samrai,
 if test "${with_samrai}" = yes; then
   AC_MSG_ERROR(SAMRAI install directory omitted.
 Please specify using --with-samrai=STRING)
-elif test "${with_samrai_install}" = no; then
+elif test "${with_samrai}" = no; then
   unset samrai_PREFIX
   AC_MSG_RESULT([no])
 else

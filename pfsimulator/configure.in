@@ -535,7 +535,7 @@ if test "${samrai_PREFIX+set}" = set; then
   INC_PATH="$samrai_INCLUDES $INC_PATH"
   SAMRAI_DIR="$samrai_PREFIX"
   PARFLOW_HAVE_SAMRAI="yes"
-  AC_DEFINE(HAVE_SILO,1,SILO library is available so use it)
+  AC_DEFINE(HAVE_SAMRAI,1,SILO library is available so use it)
 else
   AC_MSG_WARN([Error: Parflow configured without the SAMRAI library])
 fi

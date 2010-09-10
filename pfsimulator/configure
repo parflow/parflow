@@ -14401,7 +14401,7 @@ Please specify using --with-samrai=STRING" >&5
 echo "$as_me: error: SAMRAI install directory omitted.
 Please specify using --with-samrai=STRING" >&2;}
    { (exit 1); exit 1; }; }
-elif test "${with_samrai_install}" = no; then
+elif test "${with_samrai}" = no; then
   unset samrai_PREFIX
   { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
@@ -14506,7 +14506,7 @@ fi
   PARFLOW_HAVE_SAMRAI="yes"
 
 cat >>confdefs.h <<\_ACEOF
-#define HAVE_SILO 1
+#define HAVE_SAMRAI 1
 _ACEOF
 
 else
