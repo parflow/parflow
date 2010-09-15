@@ -159,6 +159,36 @@ void            GetDataboxGrid(
 
 }
 
+
+// IMF
+/*-----------------------------------------------------------------------
+ * reset Databox grid info
+ *-----------------------------------------------------------------------*/
+void SetDataboxGrid(
+   Databox      *databox,
+   int           nx,
+   int           ny, 
+   int           nz, 
+   double        x, 
+   double        y, 
+   double        z, 
+   double        dx,
+   double        dy, 
+   double        dz)
+{
+   DataboxNx(databox) = nx;
+   DataboxNy(databox) = ny;
+   DataboxNz(databox) = nz;
+   DataboxX(databox)  = x;
+   DataboxY(databox)  = y;
+   DataboxZ(databox)  = z;
+   DataboxDx(databox) = dx;
+   DataboxDy(databox) = dy;
+   DataboxDz(databox) = dz;
+}
+// IMF
+
+
 /*-----------------------------------------------------------------------
  * free Databox structure
  *-----------------------------------------------------------------------*/

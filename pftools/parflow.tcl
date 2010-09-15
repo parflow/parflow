@@ -78,6 +78,7 @@ namespace eval Parflow {
     namespace export pfgetelt
     namespace export pfgridtype
     namespace export pfgetgrid
+    namespace export pfsetgrid
     namespace export pfcvel
     namespace export pfvvel
     namespace export pfvmag
@@ -115,6 +116,11 @@ namespace eval Parflow {
     namespace export pfsurfacerunoff
     namespace export pfwatertabledepth
     namespace export pfwritedb
+
+    namespace export pfslopex
+    namespace export pfslopey
+    namespace export pfupstreamarea
+    namespace export pfpitfilldem
 
     namespace export pfprintdata
     namespace export pfprintdiff

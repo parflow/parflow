@@ -107,7 +107,6 @@ subroutine clm_hydro_soil (clm)
      vol_ice(i) = min(clm%watsat(i), clm%h2osoi_ice(i)/(clm%dz(i)*denice))
      clm%eff_porosity(i) = clm%watsat(i)-vol_ice(i)
      vol_liq(i) = min(clm%eff_porosity(i), clm%h2osoi_liq(i)/(clm%dz(i)*denh2o))
-!	 print*, vol_liq(i), i, clm%eff_porosity(i)
   enddo
 
   ! Calculate wetness of soil
@@ -143,12 +142,6 @@ subroutine clm_hydro_soil (clm)
   wmean = wmean / zmean
   clm%qflx_surf = 0.0d0
   clm%qflx_infl = clm%qflx_top_soil - clm%qflx_evap_grnd
-!  write(*,*) clm%qflx_infl,  clm%qflx_evap_grnd, clm%qflx_top_soil
-  !@RMM debug
-  ! print*, clm%qflx_infl, clm%qflx_top_soil, clm%qflx_evap_grnd
-
-  ! limit ground ET based on water availability
- ! if (clm%h2osoi_liq(1) <= 1.E-3) clm%qflx_infl = clm%qflx_top_soil
 
 
   ! Add in hillslope runoff
@@ -181,16 +174,16 @@ subroutine clm_hydro_soil (clm)
      dzmm(i) = clm%dz(i)*1.e3
   enddo
 
-  !write(999,*) time, clm%qflx_infl
-
   !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  ! Stefan: instead of calling the subroutine to calc soilwater distribution
-  ! we introduced the Parflow couple, which is called after clm_main .
+  ! Instead of calling the subroutine to calc soilwater distribution
+  ! we introduced the Parflow couple, which is called after clm_main.
   ! That way clm_soilwater becomes obsolete
   !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  !  call clm_soilwater (vol_liq, clm%eff_porosity, clm%qflx_infl, sdamp, &
-  !                      dwat   , hk              , dhkdw        , clm)
+  ! LEGACY 
+  ! call clm_soilwater (vol_liq, clm%eff_porosity, clm%qflx_infl, sdamp, &
+  !                     dwat   , hk              , dhkdw        , clm)
+
   ! Set zero to hydraulic conductivity if effective porosity 5% in any of 
   ! two neighbor layers or liquid content (theta) less than 0.001
 
@@ -212,7 +205,6 @@ subroutine clm_hydro_soil (clm)
 
 
   ! Renew the mass of liquid water
-
   !  do i= 1,nlevsoi 
   !     clm%h2osoi_liq(i) = clm%h2osoi_liq(i) + dwat(i)*dzmm(i)
   !	 clm%h2osoi_liq(i) = vol_liq(i)*clm%dz(i)*denh2o
@@ -222,6 +214,17 @@ subroutine clm_hydro_soil (clm)
   ! [3] Streamflow and total runoff
   !=========================================================================
 
+  !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ! Instead of using parameterized subsurface runoff (drainage), all
+  ! subsurface flow is calculated by ParFlow. The code below is kept as 
+  ! legacy only -- drainage fluxes are set to zero. 
+  !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  clm%qflx_drain = 0.                      ! subsurface runoff
+  qflx_drain_wet = 0.                      ! subsurface runoff
+  qflx_drain_dry = 0.                      ! subsurface runoff
+
+  !=== LEGACY
   ! The amount of streamflow is assumed maintained by flow from the 
   ! lowland water table with different levels contributing according to 
   ! their thickness and saturated hydraulic conductivity, i.e. a given 
@@ -233,12 +236,7 @@ subroutine clm_hydro_soil (clm)
   ! explicitly prior to the main soil water calculation.
   ! Another assumption: no subsurface runoff for ice mixed soil 
   ! Zong-Liang Yang & G.-Y. Niu                                         
-
-  clm%qflx_drain = 0.                      ! subsurface runoff
-  qflx_drain_wet = 0.                      ! subsurface runoff        
-  qflx_drain_dry = 0.                      ! subsurface runoff        
-
-
+  ! 
   ! hksum = 0.
   ! do i = 6,nlevsoi-1                  
   !    hksum = hksum + hk(i)
@@ -252,20 +250,18 @@ subroutine clm_hydro_soil (clm)
   !       wsat = wsat + s(i)*clm%dz(i)*hk(i)                         
   !       dzksum  = dzksum   + hk(i)*clm%dz(i)                       
   !    enddo
-
-  !  wsat = wsat / zsat                                         
-
-  !   qflx_drain_dry = (1.-fcov)*4.e-2* wsat ** (2.*clm%bsw(1)+3.)  ! mm/s
+  !
+  !    wsat = wsat / zsat                                         
+  !
+  !    qflx_drain_dry = (1.-fcov)*4.e-2* wsat ** (2.*clm%bsw(1)+3.)  ! mm/s
   !    qflx_drain_wet = fcov * 1.e-5 * exp(-zwt)                     ! mm/s
-  !     clm%qflx_drain = qflx_drain_dry + qflx_drain_wet
-
-  clm%qflx_drain = 0.
-
-  !     do i = 6, nlevsoi-1                 
-  !        clm%h2osoi_liq(i) = clm%h2osoi_liq(i) &
-  !             - clm%dtime*clm%qflx_drain*clm%dz(i)*hk(i)/dzksum                                  
-  !     enddo
-  !  endif
+  !    clm%qflx_drain = qflx_drain_dry + qflx_drain_wet
+  !
+  !    do i = 6, nlevsoi-1                 
+  !       clm%h2osoi_liq(i) = clm%h2osoi_liq(i) &
+  !                           - clm%dtime*clm%qflx_drain*clm%dz(i)*hk(i)/dzksum                                  
+  !    enddo
+  ! endif
 
   ! --------------------------------------------------------------------
   ! Limit h2osoi_liq to be greater than or equal to watmin. 

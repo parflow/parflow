@@ -421,7 +421,6 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
 
      taf = wtg0*tg + wta0*thm + wtl0*clm%t_veg
      qaf = wtlq0*qsatl+wtgq0*qg+clm%forc_q*wtaq0
-!print *,wtg0,tg,wta0,thm,wtl0,clm%t_veg
 
 ! Update Monin-Obukhov length and wind speed including the stability effect
 

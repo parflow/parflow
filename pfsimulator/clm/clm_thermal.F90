@@ -245,10 +245,6 @@ subroutine clm_thermal (clm)
      if (temp_alpha > 1.) temp_alpha = 1.d0
 
      hr   = dexp(psit/roverg/tg)
-     ! if (clm%pf_press(1) < -150000.d0) hr = 0.0d0
-     ! print*, hr, temp_alpha, psit, roverg, tg, clm%pf_vol_liq(1),clm%watsat(1), clm%pf_press(1)
-     ! cutoff ET at -150m
-     ! if (clm%pf_press(1)<=-150000.0d0) hr = 0.d0
      qred = (1.-clm%frac_sno)*hr + clm%frac_sno
   else
      hr   = 0.
@@ -526,7 +522,6 @@ subroutine clm_thermal (clm)
 
   i = size(at)
   call clm_tridia (i ,at ,bt ,ct ,rt ,clm%t_soisno(clm%snl+1:nlevsoi))
-  !print *,i,at(1),bt(1),ct(1),rt(1),clm%t_soisno(1)
 
   !=========================================================================
   ! [5] Melting or Freezing 

@@ -48,11 +48,11 @@ subroutine drv_readvegtf (drv,grid,tile,clm,rank)
   character*100 :: RI
 
   !=== End Variable Definition =============================================
+
   nchp = drv%nch
   write(RI,*)rank
 
   !=== Read in Vegetation Data
-  !  open(2,file=drv%vegtf,form='formatted',action='read')
   open(2,file=trim(adjustl(drv%vegtf))//'.'//trim(adjustl(RI)),form='formatted',action='read')
 
   read(2,*)  !skip header
@@ -85,7 +85,7 @@ subroutine drv_readvegtf (drv,grid,tile,clm,rank)
   enddo          !R 
 
   !=== Exclude tiles with MINA (minimum tile grid area),  
-  !===   normalize remaining tiles to 100%
+  !=== normalize remaining tiles to 100%
 
   do r=1,drv%nr  !rows
      do c=1,drv%nc  !columns         
@@ -106,9 +106,9 @@ subroutine drv_readvegtf (drv,grid,tile,clm,rank)
   enddo
 
   !=== Exclude tiles with MAXT (Maximum Tiles per grid), 
-  !===   normalize remaining tiles to 100%
+  !=== normalize remaining tiles to 100%
   !=== Determine the grid predominance order of the tiles
-  !===   PVEG(NT) will contain the predominance order of tiles
+  !=== PVEG(NT) will contain the predominance order of tiles
 
   do r=1,drv%nr  !rows
      do c=1,drv%nc  !columns

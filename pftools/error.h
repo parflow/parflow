@@ -115,6 +115,7 @@ static char *SAVEPFUSAGE   = "Usage: pfsave dataset -filetype filename\n       f
 static char *GETLISTUSAGE  = "Usage: pfgetlist [dataset]\n";
 static char *GETELTUSAGE   = "Usage: pfgetelt dataset i j k\n"; 
 static char *GETGRIDUSAGE  = "Usage: pfgetgrid dataset\n";
+static char *SETGRIDUSAGE  = "Usage: pfsetgrid { nx ny nz } { x y z } { dx dy dz } dataset\n       Types: int nx, ny, nz;  double x, y, z, dx, dy, dz;\n";
 static char *GRIDTYPEUSAGE = "Usage: pfgridtype [vertex | cell]\n";
 static char *CVELUSAGE     = "Usage: pfcvel conductivity phead\n";
 static char *VVELUSAGE     = "Usage: pfvvel conductivity phead\n";
@@ -149,7 +150,11 @@ static char *PFSUBSURFACESTORAGEUSAGE   = "Usage: pfsubsuracestorge mask porosit
 static char *PFGWSTORAGEUSAGE           = "Usage: pfgwstorge mask porosity pressure saturation specific_storage\n";
 static char *PFSURFACERUNOFFUSAGE       = "Usage: pfsuracerunoff top slope_x slope_y mannings pressure\n";
 static char *PFWATERTABLEDEPTHUSAGE     = "Usage: pfwatertabledepth top saturation\n";
-static char *DELETEUSAGE   = "Usage: pfdelete dataset\n";
+static char *PFSLOPEXUSAGE              = "Usage: pfslopex dem\n";
+static char *PFSLOPEYUSAGE              = "Usage: pfslopey dem\n";
+static char *PFUPSTREAMAREAUSAGE        = "Usage: pfupstreamarea sx sy\n";
+static char *PFPITFILLDEMUSAGE          = "Usage  pfpitfilldem dem dpit maxiter\n";
+static char *DELETEUSAGE                = "Usage: pfdelete dataset\n";
 
 /*-----------------------------------------------------------------------
  * function prototypes

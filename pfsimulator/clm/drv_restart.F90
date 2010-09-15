@@ -114,8 +114,7 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
 
   !=== End Variable Definition =============================================
 
-  write(RI,*) rank
-  print*, "in drv_restart routine"
+  write(RI,*)  rank
 
   !=== Read Active Archive File ============================================
 
@@ -128,8 +127,8 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
      open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(TS))//'.'//trim(adjustl(RI)),form='unformatted')
      ! open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(RI)),form='unformatted')
 
-     read(40) yr,mo,da,hr,mn,ss,vclass,nc,nr,nch  !Time, veg class, no. tiles
-     print *, yr,mo,da,hr,mn,ss,vclass,nc,nr,nch  !Time, veg class, no. tiles
+     read(40)     yr,mo,da,hr,mn,ss,vclass,nc,nr,nch  !Time, veg class, no. tiles
+     write(999,*) yr,mo,da,hr,mn,ss,vclass,nc,nr,nch  !Time, veg class, no. tiles
 
      allocate (col(nch),row(nch),fgrd(nch),vegt(nch))
      allocate (t_grnd(nch),t_veg(nch),h2osno(nch),snowage(nch),         &
@@ -146,39 +145,22 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
           tmptileoi(nch),tmptileoa(nch))
 
      read(40) col                  !Grid Col of Tile   
-     print *, col                  !Grid Col of Tile   
      read(40) row                  !Grid Row of Tile
-     print *, row                  !Grid Row of Tile
      read(40) fgrd                 !Fraction of Grid covered by tile
-     print *, fgrd                 !Fraction of Grid covered by tile
      read(40) vegt                 !Vegetation Type of Tile
-     print *, vegt                 !Vegetation Type of Tile
      read(40) t_grnd               !CLM Soil Surface Temperature [K] 
-     print *, t_grnd               !CLM Soil Surface Temperature [K] 
      read(40) t_veg                !CLM Leaf Temperature [K] 
-     print *, t_veg                !CLM Leaf Temperature [K] 
      read(40) h2osno               !CLM Snow Cover, Water Equivalent [mm] 
-     print *, h2osno               !CLM Snow Cover, Water Equivalent [mm] 
      read(40) snowage              !CLM Non-dimensional snow age [-] 
-     print *, snowage              !CLM Non-dimensional snow age [-] 
      read(40) snowdp               !CLM Snow Depth [m]
-     print *, snowdp               !CLM Snow Depth [m]
      read(40) h2ocan               !CLM Depth of Water on Foliage [mm]
-     print *, h2ocan               !CLM Depth of Water on Foliage [mm]
      read(40) frac_sno             !CLM Fractional Snow Cover [-]
-     print *, frac_sno             !CLM Fractional Snow Cover [-]
      read(40) elai                 !CLM Leaf Area Index
-     print *, elai                 !CLM Leaf Area Index
      read(40) esai                 !CLM Stem Area Index
-     print *, esai                 !CLM Stem Area Index
      read(40) snl                  !CLM Actual number of snow layers
-     print *, snl                  !CLM Actual number of snow layers
      read(40) xerr                 !CLM Accumulation of water balance error
-     print *, xerr                 !CLM Accumulation of water balance error
      read(40) zerr                 !CLM Accumulation of energy balnce error
-     print *, zerr                 !CLM Accumulation of energy balnce error
      read(40) istep                !CLM Number of time step
-     print *, istep                !CLM Number of time step
 
      do l = -nlevsno+1,nlevsoi
         read(40) tmptileoa  !CLM Layer Depth [m]

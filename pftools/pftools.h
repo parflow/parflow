@@ -117,6 +117,7 @@ int SaveSDSCommand P((ClientData clientData , Tcl_Interp *interp , int argc , ch
 int GetListCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int GetEltCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int GetGridCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int SetGridCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int GridTypeCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int CVelCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int VVelCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
@@ -164,6 +165,12 @@ void CellSumConst(Databox *X, double val, Databox *mask, Databox *sum);
 void CellDiffConst(Databox *X, double val, Databox *mask, Databox *sum);
 void CellMultConst(Databox *X, double val, Databox *mask, Databox *sum);
 void CellDivConst(Databox *X, double val, Databox *mask, Databox *sum);
+
+int SlopeXUpwindCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int SlopeYUpwindCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int UpstreamAreaCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int PitFillCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+
 #undef P
 
 #endif

@@ -66,12 +66,6 @@ subroutine drv_getforce (drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf
 
 ! Valdai - 1D Met data
 
-! IMF: removed read 1D forcing -- passed from solver_richards.c -> clm.F90
-!  read (11,*) solar, clm(1)%forc_lwrad, prcp, clm(1)%forc_t, clm(1)%forc_u, &
-!              clm(1)%forc_v, clm(1)%forc_pbot, clm(1)%forc_q
-!  print*, solar, clm(1)%forc_lwrad, prcp, clm(1)%forc_t, clm(1)%forc_u, &
-!              clm(1)%forc_v, clm(1)%forc_pbot, clm(1)%forc_q
-
   ! IMF: modified for 2D
   ! Loop over tile space (convert from pf-to-clm)
   do t = 1,drv%nch
@@ -117,25 +111,5 @@ subroutine drv_getforce (drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf
         clm(t)%forc_snow    = 0
      endif
   enddo
-
-! IMF: Obselete 
-!=== Extend forcing to entire CLM tile space uniformly
-!=== This should be modified for spatially variable forcing
-!  do t=2,drv%nch
-!     clm(t)%itypprc       = clm(1)%itypprc
-!     clm(t)%forc_rain     = clm(1)%forc_rain
-!     clm(t)%forc_snow     = clm(1)%forc_snow
-!     clm(t)%forc_lwrad    = clm(1)%forc_lwrad
-!     clm(t)%forc_t        = clm(1)%forc_t
-!     clm(t)%forc_u        = clm(1)%forc_u
-!     clm(t)%forc_v        = clm(1)%forc_v
-!     clm(t)%forc_pbot     = clm(1)%forc_pbot
-!     clm(t)%forc_q        = clm(1)%forc_q
-!     clm(t)%forc_rho      = clm(1)%forc_rho
-!     clm(t)%forc_solad(1) = clm(1)%forc_solad(1) 
-!     clm(t)%forc_solad(2) = clm(1)%forc_solad(2) 
-!     clm(t)%forc_solai(1) = clm(1)%forc_solai(1) 
-!     clm(t)%forc_solai(2) = clm(1)%forc_solai(2) 
-!  enddo
 
 end subroutine drv_getforce

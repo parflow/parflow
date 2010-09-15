@@ -60,6 +60,7 @@ typedef struct
    /* InitInstanceXtra arguments */
    Problem   *problem;
    Grid      *grid;
+   Grid      *grid2d;
    double    *temp_data;
 
 } InstanceXtra;
@@ -142,8 +143,6 @@ PFModule  *SetProblemDataInitInstanceXtra(
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
 
-   (void) grid2d;
-
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
@@ -162,6 +161,13 @@ PFModule  *SetProblemDataInitInstanceXtra(
 
    if ( grid != NULL )
       (instance_xtra -> grid) = grid;
+
+   /*-----------------------------------------------------------------------
+    * Initialize data associated with `grid2d'
+    *-----------------------------------------------------------------------*/
+
+   if ( grid2d != NULL )
+      (instance_xtra -> grid2d) = grid2d;
 
    /*-----------------------------------------------------------------------
     * Initialize data associated with argument `temp_data'
@@ -189,13 +195,13 @@ PFModule  *SetProblemDataInitInstanceXtra(
 	     PFModuleNewInstance(ProblemSpecStorage(problem), ());
       (instance_xtra -> x_slope) =                                   //sk
 	 PFModuleNewInstanceType(SlopeInitInstanceXtraInvoke, 
-				 ProblemXSlope(problem), (grid));
+				 ProblemXSlope(problem), (grid2d));
       (instance_xtra -> y_slope) =                                   //sk
 	 PFModuleNewInstanceType(SlopeInitInstanceXtraInvoke,
-				 ProblemYSlope(problem), (grid));
+				 ProblemYSlope(problem), (grid2d));
       (instance_xtra -> mann) =                                   //sk
 	 PFModuleNewInstanceType(ManningsInitInstanceXtraInvoke,
-				 ProblemMannings(problem), (grid));
+				 ProblemMannings(problem), (grid2d));
 
       (instance_xtra -> site_data_not_formed) = 1;
 
@@ -220,11 +226,11 @@ PFModule  *SetProblemDataInitInstanceXtra(
 				(grid, temp_data));
       PFModuleReNewInstance((instance_xtra -> specific_storage), ());    //sk
       PFModuleReNewInstanceType(SlopeInitInstanceXtraInvoke, 
-				(instance_xtra -> x_slope), (grid));    //sk
+				(instance_xtra -> x_slope), (grid2d));    //sk
       PFModuleReNewInstanceType(SlopeInitInstanceXtraInvoke, 
-				(instance_xtra -> y_slope), (grid));    //sk
+				(instance_xtra -> y_slope), (grid2d));    //sk
       PFModuleReNewInstanceType(ManningsInitInstanceXtraInvoke,
-				(instance_xtra -> mann), (grid));    //sk
+				(instance_xtra -> mann), (grid2d));    //sk
       PFModuleReNewInstance((instance_xtra -> wells), ());
       PFModuleReNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
 				(instance_xtra -> bc_pressure), (problem));
