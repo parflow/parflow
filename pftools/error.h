@@ -153,7 +153,8 @@ static char *PFWATERTABLEDEPTHUSAGE     = "Usage: pfwatertabledepth top saturati
 static char *PFSLOPEXUSAGE              = "Usage: pfslopex dem\n";
 static char *PFSLOPEYUSAGE              = "Usage: pfslopey dem\n";
 static char *PFUPSTREAMAREAUSAGE        = "Usage: pfupstreamarea sx sy\n";
-static char *PFPITFILLDEMUSAGE          = "Usage  pfpitfilldem dem dpit maxiter\n";
+static char *PFPITFILLDEMUSAGE          = "Usage: pfpitfilldem dem dpit maxiter\n";
+static char *PFMOVINGAVGDEMUSAGE        = "Usage: pfmovingavgdem dem wsize maxiter\n";
 static char *DELETEUSAGE                = "Usage: pfdelete dataset\n";
 
 /*-----------------------------------------------------------------------

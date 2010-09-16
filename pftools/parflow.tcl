@@ -121,6 +121,7 @@ namespace eval Parflow {
     namespace export pfslopey
     namespace export pfupstreamarea
     namespace export pfpitfilldem
+    namespace export pfmovingavgdem
 
     namespace export pfprintdata
     namespace export pfprintdiff

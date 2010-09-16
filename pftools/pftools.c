@@ -5489,3 +5489,128 @@ int            PitFillCommand(
    return TCL_OK;
 }
 
+
+/*-----------------------------------------------------------------------
+ * routine for `pfmovingavgdem' command
+ * Description: Iterative moving average routine to fill sinks in DEM
+ *              using average of neighboring cells.
+ *
+ * Notes:       Parameter wsize is given in number of cells 
+ *
+ * Cmd. syntax: pfmovingavgdem dem wsize maxiter
+*-----------------------------------------------------------------------*/
+int            MovingAvgCommand(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+   Tcl_HashEntry *entryPtr;   // Points to new hash table entry
+   Data          *data = (Data *)clientData;
+
+   // Inputs
+   Databox       *dem;
+   char          *dem_hashkey;
+   double         wsize;
+   int            maxiter;
+
+   // Output
+   Databox       *newdem;
+   char          *filename = "Moving-Avg Sink-Filled DEM";
+   char           newdem_hashkey[MAX_KEY_SIZE];
+
+   // Local
+   int            iter;
+   int            nsink;
+   int            i,  j;
+   int            nx, ny, nz;
+   double         x,  y,  z;
+   double         dx, dy, dz;
+
+   /* Check if three arguments following command  */
+   if (argc == 3)
+   {
+      WrongNumArgsError(interp, PFMOVINGAVGDEMUSAGE);
+      return TCL_ERROR;
+   }
+
+   dem_hashkey = argv[1];
+   if (Tcl_GetDouble(interp, argv[2], &wsize) == TCL_ERROR)
+   {
+      NotADoubleError(interp, 1, PFMOVINGAVGDEMUSAGE);
+      return TCL_ERROR;
+   }
+   if (Tcl_GetInt(interp, argv[3], &maxiter) == TCL_ERROR)
+   {
+      NotAnIntError(interp, 1, PFMOVINGAVGDEMUSAGE);
+      return TCL_ERROR;
+   }
+
+   if ((dem = DataMember(data, dem_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,dem_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      nx    = DataboxNx(dem);
+      ny    = DataboxNy(dem);
+      nz    = 1;
+
+      x     = DataboxX(dem);
+      y     = DataboxY(dem);
+      z     = DataboxZ(dem);
+
+      dx    = DataboxDx(dem);
+      dy    = DataboxDy(dem);
+      dz    = DataboxDz(dem);
+
+      /* create the new databox structure for moving avg filled dem  */
+      if ( (newdem = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+         /* Make sure the data set pointer was added to */
+         /* the hash table successfully.                */
+         if (!AddData(data, newdem, filename, newdem_hashkey))
+            FreeDatabox(newdem);
+         else
+         {
+            Tcl_AppendElement(interp, newdem_hashkey);
+         }
+
+         // Set values of newdem to values of original dem
+         for ( j = 0; j < ny; j++ )
+         {
+            for ( i = 0; i < nx; i++ )
+            {
+               *DataboxCoeff(newdem,i,j,0) = *DataboxCoeff(dem,i,j,0);
+            }
+         }
+
+         // Iterate to fill pits...
+         iter  = 0;
+         nsink = 9999;
+         while ( (iter < maxiter) && (nsink > 0) )
+         {
+            nsink = ComputeMovingAvg( newdem, wsize );
+            iter  = iter + 1;
+         }
+
+         // Print summary...
+         printf( "*******************************************************\n" );
+         printf( "SUMMARY: pfmovingavgdem  \n" );
+         printf( "*******************************************************\n" );
+         printf( "ITERATIONS: \t\t %d \n", iter );
+         printf( "REMAINING SINKS: \t %d \n", nsink );
+         printf( "   \n" );
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+
+   }
+   return TCL_OK;
+}
+
+

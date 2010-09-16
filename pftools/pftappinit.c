@@ -233,7 +233,8 @@ EXPORT(int,Parflow_Init)(Tcl_Interp *interp)
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfpitfilldem", (Tcl_CmdProc *)PitFillCommand, 
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
-
+   Tcl_CreateCommand(interp, "Parflow::pfmovingavgdem", (Tcl_CmdProc *)MovingAvgCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
 
 #ifdef SGS
    Tcl_CreateExitHandler((Tcl_ExitProc *)PFTExitProc, (ClientData) data);
