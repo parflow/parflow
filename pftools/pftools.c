@@ -5614,3 +5614,158 @@ int            MovingAvgCommand(
 }
 
 
+/*-----------------------------------------------------------------------
+ * routine for `pfslopeD8' command
+ * Description: Compute D8 slopes all [i,j]. 
+ *
+ * Notes:       local minima: slope set to zero (no drainage)
+ *              otherwise:    1st order maximum downward slope to lowest
+ *                            neighbor (adjacent or diagonal)
+ *
+ * Cmd. syntax: pfslopeD8 dem
+*-----------------------------------------------------------------------*/
+int            SlopeD8Command(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+   Tcl_HashEntry *entryPtr;   // Points to new hash table entry
+   Data          *data = (Data *)clientData;
+
+   // Input
+   Databox       *dem;
+   char          *dem_hashkey;
+
+   // Output
+   Databox       *slope;
+   char           slope_hashkey[MAX_KEY_SIZE];
+   char          *filename = "slope (D8)";
+
+   /* Check if one argument following command  */
+   if (argc == 1)
+   {
+      WrongNumArgsError(interp, PFSLOPED8USAGE);
+      return TCL_ERROR;
+   }
+
+   dem_hashkey = argv[1];
+   if ((dem = DataMember(data, dem_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,dem_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx    = DataboxNx(dem);
+      int ny    = DataboxNy(dem);
+      int nz    = 1;
+
+      double x  = DataboxX(dem);
+      double y  = DataboxY(dem);
+      double z  = DataboxZ(dem);
+
+      double dx = DataboxDx(dem);
+      double dy = DataboxDy(dem);
+      double dz = DataboxDz(dem);
+
+      /* create the new databox structure for slope values (slope) */
+      if ( (slope = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+         /* Make sure dataset pointer was added to hash table   */
+         if (!AddData(data, slope, filename, slope_hashkey))
+            FreeDatabox(slope);
+         else
+         {
+            Tcl_AppendElement(interp, slope_hashkey);
+         }
+         /* Compute slopex */
+         ComputeSlopeD8(dem,slope);
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+   return TCL_OK;
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pfsegmentD8' command
+ * Description: Compute D8 segment lengths for all [i,j].
+ *
+ * Notes:       local minima: segment length set to zero (as for slope)
+ *              otherwise:    segment length is distance between parent and
+ *                            child cell centers
+ *
+ * Cmd. syntax: pfsegmentD8 dem
+*-----------------------------------------------------------------------*/
+int            SegmentD8Command(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+   Tcl_HashEntry *entryPtr;   // Points to new hash table entry
+   Data          *data = (Data *)clientData;
+
+   // Input
+   Databox       *dem;
+   char          *dem_hashkey;
+
+   // Output
+   Databox       *ds;
+   char           ds_hashkey[MAX_KEY_SIZE];
+   char          *filename = "ds (D8)";
+
+   /* Check if one argument following command  */
+   if (argc == 1)
+   {
+      WrongNumArgsError(interp, PFSEGMENTD8USAGE);
+      return TCL_ERROR;
+   }
+
+   dem_hashkey = argv[1];
+   if ((dem = DataMember(data, dem_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,dem_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx    = DataboxNx(dem);
+      int ny    = DataboxNy(dem);
+      int nz    = 1;
+
+      double x  = DataboxX(dem);
+      double y  = DataboxY(dem);
+      double z  = DataboxZ(dem);
+
+      double dx = DataboxDx(dem);
+      double dy = DataboxDy(dem);
+      double dz = DataboxDz(dem);
+
+      /* create the new databox structure for ds values (ds) */
+      if ( (ds = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+         /* Make sure dataset pointer was added to hash table   */
+         if (!AddData(data, ds, filename, ds_hashkey))
+            FreeDatabox(ds);
+         else
+         {
+            Tcl_AppendElement(interp, ds_hashkey);
+         }
+         /* Compute ds */
+         ComputeSegmentD8(dem,ds);
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+   return TCL_OK;
+}
+

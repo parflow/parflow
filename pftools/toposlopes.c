@@ -678,7 +678,8 @@ int ComputeMovingAvg(
                } // end loop over ii
             } // end loop over jj
    
-            *DataboxCoeff(dem,i,j,0) = mavg / counter; 
+            // add dz/100. to eliminate nagging sinks in flat areas
+            *DataboxCoeff(dem,i,j,0) = (mavg + (dz/100.0)) / counter; 
 
          } // end if smag==0 or lmin==1
 
@@ -730,5 +731,591 @@ int ComputeMovingAvg(
 
 }
 
+
+/*-----------------------------------------------------------------------
+ * ComputeSlopeD8:
+ *
+ * Calculate the topographic slope at [i,j] based on a simple D8 scheme.
+ * Drainage direction is first identifed as towards lowest adjacent or diagonal 
+ * neighbor. Slope is then calculated as DOWNWIND slope (from [i,j] to child).
+ *
+ * If cell is a local minimum, slope is set to zero (no drainage).
+ *
+ *-----------------------------------------------------------------------*/
+void ComputeSlopeD8(
+   Databox *dem,
+   Databox *slope)
+{
+
+   int             i,  j,  ii, jj;
+   int             imin,   jmin;
+   int             nx, ny, nz;
+   double          x,  y,  z;
+   double          dx, dy, dz;
+   double          dxy, zmin;
+
+   nx    = DataboxNx(dem);
+   ny    = DataboxNy(dem);
+   nz    = DataboxNz(dem);
+   x     = DataboxX(dem);
+   y     = DataboxY(dem);
+   z     = DataboxZ(dem);
+   dx    = DataboxDx(dem);
+   dy    = DataboxDy(dem);
+   dz    = DataboxDz(dem);
+
+   dxy   = sqrt( dx*dx + dy*dy );
+
+   // Loop over all [i,j]
+   for (j = 0; j < ny; j++)
+   {
+      for (i = 0; i < nx; i++)
+      {
+
+         // print check
+         printf( "i,j: %d  %d \n", i, j );
+
+         // Loop over neighbors (adjacent and diagonal)
+         // ** Find elevation and indices of lowest neighbor
+         // ** Exclude self and off-grid cells
+         imin = -9999;        
+         jmin = -9999;         
+         zmin = 100000000.0;
+         for (jj = j-1; jj <= j+1; jj++)
+         {
+            for (ii = i-1; ii <= i+1; ii++)
+            { 
+            
+               // print check
+               printf( "i,j,ii,jj: %d  %d  %d  %d \n", i,j,ii,jj);
+
+               // skip if off grid
+               if ((ii<0) || (jj<0) || (ii>nx-1) || (jj>ny-1))
+               {
+                  ;
+               }
+               
+               // find lowest neighbor
+               else
+               {
+                  if ( *DataboxCoeff(dem,ii,jj,0) < zmin )
+                  {
+                     zmin = *DataboxCoeff(dem,ii,jj,0);
+                     imin = ii; 
+                     jmin = jj;
+                  }
+               }
+            }
+         }
+
+         printf( "[i,j,z] | [imin,jmin,zmin]: %d  %d  %f  *|*  %d  %d  %f  \n", 
+                 i, j, *DataboxCoeff(dem,i,j,0), imin, jmin, zmin);
+
+         // Calculate slope towards lowest neighbor
+         // ** If edge cell and local minimum, drain directly off-grid at upwind slope
+
+         // ... SW corner, local minimum ...
+         if ( (i==0) && (j==0) && (zmin==*DataboxCoeff(dem,i,j,0)) )
+         { 
+            *DataboxCoeff(slope,i,j,0) = fabs(*DataboxCoeff(dem,i+1,j+1,0) - *DataboxCoeff(dem,i,j,0)) / dxy;
+         }
+ 
+         // ... SE corner, local minimum ...
+         else if ( (i==nx-1) && (j==0) && (zmin==*DataboxCoeff(dem,i,j,0)) )
+         {
+            *DataboxCoeff(slope,i,j,0) = fabs(*DataboxCoeff(dem,i-1,j+1,0) - *DataboxCoeff(dem,i,j,0)) / dxy;
+         }
+
+         // ... NE corner, local minimum ...
+         else if ( (i==nx-1) && (j==ny-1) && (zmin==*DataboxCoeff(dem,i,j,0)) )
+         {
+            *DataboxCoeff(slope,i,j,0) = fabs(*DataboxCoeff(dem,i-1,j-1,0) - *DataboxCoeff(dem,i,j,0)) / dxy;
+         }
+ 
+         // ... NW corner, local minimum ...
+         else if ( (i==0) && (j==ny-1) && (zmin==*DataboxCoeff(dem,i,j,0)) )
+         {
+            *DataboxCoeff(slope,i,j,0) = fabs(*DataboxCoeff(dem,i+1,j-1,0) - *DataboxCoeff(dem,i,j,0)) / dxy;
+         }
+
+         // ... West edge, not corner, local minimum ...
+         else if ( (i==0) && (zmin==*DataboxCoeff(dem,i,j,0)) )
+         { 
+            *DataboxCoeff(slope,i,j,0) = fabs(*DataboxCoeff(dem,i+1,j,0) - *DataboxCoeff(dem,i,j,0)) / dx;
+         }
+        
+         // ... East edge, not corner, local minimum ...
+         else if ( (i==nx-1) && (zmin==*DataboxCoeff(dem,i,j,0)) )
+         {
+            *DataboxCoeff(slope,i,j,0) = fabs(*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i-1,j,0)) / dx;
+         }
+
+         // ... South edge, not corner, local minimum ...
+         else if ( (j==0) && (zmin==*DataboxCoeff(dem,i,j,0)) )
+         {
+            *DataboxCoeff(slope,i,j,0) = fabs(*DataboxCoeff(dem,i,j+1,0) - *DataboxCoeff(dem,i,j,0)) / dy;
+         }
+ 
+         // ... North edge, not corner, local minimum ...
+         else if ( (j==ny-1) && (zmin==*DataboxCoeff(dem,i,j,0)) )
+         {
+            *DataboxCoeff(slope,i,j,0) = fabs(*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i,j-1,0)) / dy;
+         }
+
+         // ... All other cells...
+         else
+         {
+         
+            // Local minimum --> set slope to zero
+            if ( zmin==*DataboxCoeff(dem,i,j,0) )
+            {
+               *DataboxCoeff(slope,i,j,0) = 0.0;
+            }
+  
+            // Else, calculate slope...
+            else
+            {
+               if ( i==imin )      // adjacent in y
+               {
+                  *DataboxCoeff(slope,i,j,0) = fabs(*DataboxCoeff(dem,i,j,0) -
+                                                    *DataboxCoeff(dem,imin,jmin,0)) / dy;
+               }
+               else if ( j==jmin ) // adjacent in x
+               {
+                  *DataboxCoeff(slope,i,j,0) = fabs(*DataboxCoeff(dem,i,j,0) - 
+                                                    *DataboxCoeff(dem,imin,jmin,0)) / dx;
+               }
+               else
+               {
+                  *DataboxCoeff(slope,i,j,0) = fabs(*DataboxCoeff(dem,i,j,0) - 
+                                                    *DataboxCoeff(dem,imin,jmin,0)) / dxy;
+               }
+            }
+         }
+
+      }  // end loop over i
+
+   } // end loop over j
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * ComputeSegmentD8:
+ *
+ * Compute the downstream slope segment lenth at [i,j] for D8 slopes.
+ * D8 drainage directions are defined towards lowest adjacent or diagonal
+ * neighbor. Segment length is then given as the distance from [i,j] to child 
+ * (at cell centers).
+ *
+ * If child is adjacent in x --> ds = dx
+ * If child is adjacent in y --> ds = dy
+ * If child is diagonal --> ds = dxy = sqrt( dx*dx + dy*dy )
+ *
+ * If cell is a local minimum --> ds = 0.0
+ * 
+ *-----------------------------------------------------------------------*/
+void ComputeSegmentD8(
+   Databox *dem,
+   Databox *ds)
+{
+
+   int             i,  j,  ii, jj;
+   int             imin,   jmin;
+   int             nx, ny, nz;
+   double          x,  y,  z;
+   double          dx, dy, dz;
+   double          dxy, zmin;
+
+   nx    = DataboxNx(dem);
+   ny    = DataboxNy(dem);
+   nz    = DataboxNz(dem);
+   x     = DataboxX(dem);
+   y     = DataboxY(dem);
+   z     = DataboxZ(dem);
+   dx    = DataboxDx(dem);
+   dy    = DataboxDy(dem);
+   dz    = DataboxDz(dem);
+
+   dxy   = sqrt( dx*dx + dy*dy );
+
+   // Loop over all [i,j]
+   for (j = 0; j < ny; j++)
+   {
+      for (i = 0; i < nx; i++)
+      {
+
+         // Loop over neighbors (adjacent and diagonal)
+         // ** Find elevation and indices of lowest neighbor
+         // ** Exclude self and off-grid cells
+         imin = -9999;
+         jmin = -9999;
+         zmin = 100000000000.0;
+         for (jj = j-1; jj <= j+1; jj++)
+         {
+            for (ii = i-1; ii <= i+1; ii++)
+            {
+
+               // skip if off grid
+               if ((ii<0) || (jj<0) || (ii>nx-1) || (jj>ny-1))
+               {
+                  ;
+               }
+
+               // find lowest neighbor
+               else
+               {
+                   if ( (*DataboxCoeff(dem,ii,jj,0) < zmin) )
+                   {
+                      zmin = *DataboxCoeff(dem,ii,jj,0);
+                      imin = ii;
+                      jmin = jj;
+                   }
+               }
+            }
+         }
+
+         // Calculate slope towards lowest neighbor
+         // ** If edge cell and local minimum, drain directly off-grid at upwind slope
+
+         // ... SW corner, local minimum ...
+         if ( (i==0) && (j==0) && (zmin==*DataboxCoeff(dem,i,j,0)) )
+         {
+            *DataboxCoeff(ds,i,j,0) = dxy;
+         }
+
+         // ... SE corner, local minimum ...
+         else if ( (i==nx-1) && (j==0) && (zmin==*DataboxCoeff(dem,i,j,0)) )
+         {
+            *DataboxCoeff(ds,i,j,0) = dxy;
+         }
+
+         // ... NE corner, local minimum ...
+         else if ( (i==nx-1) && (j==ny-1) && (zmin==*DataboxCoeff(dem,i,j,0)) )
+         {
+            *DataboxCoeff(ds,i,j,0) = dxy;
+         }
+
+         // ... NW corner, local minimum ...
+         else if ( (i==0) && (j==ny-1) && (zmin==*DataboxCoeff(dem,i,j,0)) )
+         {
+            *DataboxCoeff(ds,i,j,0) = dxy;
+         }
+
+         // ... West edge, not corner, local minimum ...
+         else if ( (i==0) && (zmin==*DataboxCoeff(dem,i,j,0)) )
+         {
+            *DataboxCoeff(ds,i,j,0) = dx;
+         }
+
+         // ... East edge, not corner, local minimum ...
+         else if ( (i==nx-1) && (zmin==*DataboxCoeff(dem,i,j,0)) )
+         {
+            *DataboxCoeff(ds,i,j,0) = dx;
+         }
+
+         // ... South edge, not corner, local minimum ...
+         else if ( (j==0) && (zmin==*DataboxCoeff(dem,i,j,0)) )
+         {
+            *DataboxCoeff(ds,i,j,0) = dy;
+         }
+
+         // ... North edge, not corner, local minimum ...
+         else if ( (j==ny-1) && (zmin==*DataboxCoeff(dem,i,j,0)) )
+         {
+            *DataboxCoeff(ds,i,j,0) = dy;
+         }
+
+         // ... All other cells...
+         else
+         {
+
+            // Local minimum --> set slope to zero
+            if ( zmin==*DataboxCoeff(dem,i,j,0) )
+            {
+               *DataboxCoeff(ds,i,j,0) = 0.0;
+            }
+
+            // Else, calculate segment length...
+            else
+            {
+               if ( i==imin )      // adjacent in y
+               {
+                  *DataboxCoeff(ds,i,j,0) = dy;
+               }
+               else if ( j==jmin ) // adjacent in x
+               {
+                  *DataboxCoeff(ds,i,j,0) = dx;
+               }
+               else
+               {
+                  *DataboxCoeff(ds,i,j,0) = dxy;
+               }
+            }
+         }
+
+      }  // end loop over i
+
+   } // end loop over j
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * ComputeChildD8:
+ *
+ * Compute elevation of the downstream child of each cell using the D8 method.
+ * The value returned for child[i,j] is the elevation of the cell to which [i,j] 
+ * drains.
+ *
+ * If cell is a local minimum --> child = -9999.0
+ *
+ *-----------------------------------------------------------------------*/
+void ComputeChildD8(
+   Databox *dem,
+   Databox *child)
+{
+
+   int             i,  j,  ii, jj;
+   int             imin,   jmin;
+   int             nx, ny, nz;
+   double          x,  y,  z;
+   double          dx, dy, dz;
+   double          zmin;
+
+   nx    = DataboxNx(dem);
+   ny    = DataboxNy(dem);
+   nz    = DataboxNz(dem);
+   x     = DataboxX(dem);
+   y     = DataboxY(dem);
+   z     = DataboxZ(dem);
+   dx    = DataboxDx(dem);
+   dy    = DataboxDy(dem);
+   dz    = DataboxDz(dem);
+
+   // Loop over all [i,j]
+   for (j = 0; j < ny; j++)
+   {
+      for (i = 0; i < nx; i++)
+      {
+
+         // Loop over neighbors (adjacent and diagonal)
+         // ** Find elevation and indices of lowest neighbor
+         // ** Exclude off-grid cells
+         imin = -9999;
+         jmin = -9999;
+         zmin = 100000000000.0;
+         for (jj = j-1; jj <= j+1; jj++)
+         {
+            for (ii = i-1; ii <= i+1; ii++)
+            {
+
+               // skip if off grid
+               if ((ii<0) || (jj<0) || (ii>nx-1) || (jj>ny-1))
+               {
+                  ;
+               }
+
+               // find lowest neighbor
+               else
+               {
+                   if ( (*DataboxCoeff(dem,ii,jj,0) < zmin) )
+                   {
+                      zmin = *DataboxCoeff(dem,ii,jj,0);
+                      imin = ii;
+                      jmin = jj;
+                   }
+               }
+            }
+         }
+
+         // Determine elevation lowest neighbor -- lowest neighbor is D8 child!!
+         // ** If local minimum (edge or otherwise), set value to -9999.0 (no child)
+         if ( zmin==*DataboxCoeff(dem,i,j,0) )
+         {
+            *DataboxCoeff(child,i,j,0) = -9999.0;
+         }
+
+         // Else, calculate segment length...
+         else
+         {
+            *DataboxCoeff(child,i,j,0) = *DataboxCoeff(dem,imin,jmin,0);
+         }
+
+      }  // end loop over i
+
+   } // end loop over j
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * ComputeFlintsLawDEM:
+ *
+ * Compute elevations at all [i,j] using Flint's Law:
+ *
+ * Flint's law gives slope as a function of upstream area:
+ *     S'[i,j] = c*(A[i,j]**theta)
+ * 
+ * Using the definition of slope as S = dz/ds = (z[i,j]-z[ii,jj])/ds, where [ii,jj]
+ * is the D8 child of [i,j], the elevation at [i,j] is given by:
+ *     z[i,j]  = z[ii,jj] + S[i,j]*ds[i,j]
+ *
+ * We can then estimate the elevation z[i,j] using Flints Law:
+ *     z'[i,j] = z[ii,jj] + c*(A[i,j]**theta)*ds[i,j]
+ * 
+ * For cells without D8 child (local minima or drains off grid), 
+ * value is set to value of original DEM.
+ *
+ *-----------------------------------------------------------------------*/
+void ComputeFlintsLawDEM(
+   Databox *dem,
+   double   c,
+   double   theta,
+   Databox *flintdem)
+{
+
+   int             i,  j;
+   int             nx, ny, nz;
+   double          x,  y,  z;
+   double          dx, dy, dz;
+
+   Databox        *sx;
+   Databox        *sy;
+   Databox        *area;
+   Databox        *ds;
+   Databox        *child;
+
+   nx    = DataboxNx(dem);
+   ny    = DataboxNy(dem);
+   nz    = DataboxNz(dem);
+   x     = DataboxX(dem);
+   y     = DataboxY(dem);
+   z     = DataboxZ(dem);
+   dx    = DataboxDx(dem);
+   dy    = DataboxDy(dem);
+   dz    = DataboxDz(dem);
+
+   // compute upwind slopes, upstream area 
+   sx    = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
+   sy    = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
+   area  = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
+   ComputeSlopeXUpwind(dem,dx,sx);
+   ComputeSlopeYUpwind(dem,dy,sy);
+   ComputeUpstreamArea(sx,sy,area);
+
+   // compute segment lengths and child elevations for D8 grid
+   ComputeSegmentD8(dem,ds);
+   ComputeChildD8(dem,child);
+
+   // compute elevations using Flint's law
+   for (j = 0; j < ny; j++)
+   {
+      for (i = 0; i < nx; i++)
+      { 
+
+         // If no child, set elevation to raw DEM value
+         if (*DataboxCoeff(child,i,j,0) == -9999.0)
+         { 
+            *DataboxCoeff(flintdem,i,j,0) = *DataboxCoeff(dem,i,j,0);  
+         }
+
+         // Otherwise, estimate using Flint's Law        
+         else
+         { 
+            *DataboxCoeff(flintdem,i,j,0) = *DataboxCoeff(child,i,j,0) + 
+                                            (c * pow( *DataboxCoeff(area,i,j,0), theta ) * (*DataboxCoeff(ds,i,j,0)) );
+         }
+
+      } // end loop over i
+
+   } // end loop over j
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * ComputeFlintsLawQuick:
+ *
+ * Compute elevations at all [i,j] using Flint's Law...
+ * Same as ComputeFlintsLawDEM, but known variables are provided instead of 
+ * being computed in the function (area, ds, child).
+ *
+ *-----------------------------------------------------------------------*/
+void ComputeFlintsLawQuick(
+   Databox *dem,
+   Databox *area,
+   Databox *child,
+   Databox *ds,
+   double   c,
+   double   theta,
+   Databox *flintdem)
+{
+
+   int             i,  j;
+   int             nx, ny, nz;
+   double          x,  y,  z;
+   double          dx, dy, dz;
+
+   nx    = DataboxNx(dem);
+   ny    = DataboxNy(dem);
+   nz    = DataboxNz(dem);
+   x     = DataboxX(dem);
+   y     = DataboxY(dem);
+   z     = DataboxZ(dem);
+   dx    = DataboxDx(dem);
+   dy    = DataboxDy(dem);
+   dz    = DataboxDz(dem);
+
+   // compute elevations using Flint's law
+   for (j = 0; j < ny; j++)
+   {
+      for (i = 0; i < nx; i++)
+      {
+
+         // If no child, set elevation to raw DEM value
+         if (*DataboxCoeff(child,i,j,0) == -9999.0)
+         {
+            *DataboxCoeff(flintdem,i,j,0) = *DataboxCoeff(dem,i,j,0);
+         }
+
+         // Otherwise, estimate using Flint's Law
+         else
+         {
+            *DataboxCoeff(flintdem,i,j,0) = *DataboxCoeff(child,i,j,0) +
+                                            (c * pow( *DataboxCoeff(area,i,j,0), theta ) * (*DataboxCoeff(ds,i,j,0)) );
+         }
+
+      } // end loop over i
+
+   } // end loop over j
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * ComputeFlintsLawFit:
+ *
+ * Compute parameters of Flint's Law (c and theta) based on DEM and area
+ * using a least squares fit. Residuals are calculated at each cell with 
+ * respect to initial DEM values as:
+ *
+ *   r[i,j]  =  (z[i,j] - z'[i,j])
+ *
+ * where z'[i,j] is the elevation estimated via Flint's law:
+ * 
+ *   z'[i,j] =  z_child[i,j] + c*(A[i,j]**theta)*ds[i,j]
+ *
+ * where z_child is the elevation of the CHILD of [i,j] and ds is the segment
+ * length of the slope between [i,j] and it's child. 
+ *
+ * Least squares minimization is carried out by the Levenberg-Marquardt 
+ * method as detailed in Numerical Recipes in C, similar to used in MINPACK 
+ * function lmdif. 
+ * 
+ * NOTES: All parent/child relationships, slopes, and segment lengths are 
+ *        calculated based on a simple D8 scheme. 
+ *
+ *-----------------------------------------------------------------------*/
 
 

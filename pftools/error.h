@@ -155,7 +155,10 @@ static char *PFSLOPEYUSAGE              = "Usage: pfslopey dem\n";
 static char *PFUPSTREAMAREAUSAGE        = "Usage: pfupstreamarea sx sy\n";
 static char *PFPITFILLDEMUSAGE          = "Usage: pfpitfilldem dem dpit maxiter\n";
 static char *PFMOVINGAVGDEMUSAGE        = "Usage: pfmovingavgdem dem wsize maxiter\n";
+static char *PFSLOPED8USAGE             = "Usage: pfsopeD8 dem\n";
+static char *PFSEGMENTD8USAGE           = "Usage: pfsegmentD8 dem\n";
 static char *DELETEUSAGE                = "Usage: pfdelete dataset\n";
+
 
 /*-----------------------------------------------------------------------
  * function prototypes

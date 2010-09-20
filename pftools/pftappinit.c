@@ -235,6 +235,10 @@ EXPORT(int,Parflow_Init)(Tcl_Interp *interp)
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfmovingavgdem", (Tcl_CmdProc *)MovingAvgCommand,
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfslopeD8", (Tcl_CmdProc *)SlopeD8Command,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfsegmentD8", (Tcl_CmdProc *)SegmentD8Command,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
 
 #ifdef SGS
    Tcl_CreateExitHandler((Tcl_ExitProc *)PFTExitProc, (ClientData) data);

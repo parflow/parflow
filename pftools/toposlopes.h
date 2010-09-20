@@ -72,5 +72,32 @@ int ComputeMovingAvg(
    Databox *dem,
    double   wsize);
 
+void ComputeSlopeD8(
+   Databox *dem,
+   Databox *slope);
+
+void ComputeSegmentD8(
+   Databox *dem,
+   Databox *ds);
+
+void ComputeChildD8(
+   Databox *dem,
+   Databox *child);
+
+void ComputeFlintsLawDEM(
+   Databox *dem,
+   double   c, 
+   double   theta, 
+   Databox *flintdem);
+
+void ComputeFlintsLawQuick(
+   Databox *dem,
+   Databox *area,
+   Databox *child, 
+   Databox *ds, 
+   double   c, 
+   double   theta, 
+   Databox *flintdem);
+
 #endif
 
