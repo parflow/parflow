@@ -200,8 +200,9 @@ void      SolverImpes()
 
    int           iteration_number = 0, number_logged, file_number, dump_index;
    int           indx, phase, concen;
-   int           transient, recompute_pressure, still_evolving, 
-                 any_file_dumped;
+   int           transient, recompute_pressure, still_evolving; 
+   int           any_file_dumped;
+   int           pressure_file_dumped;
    int           dump_files, evolve_saturations, evolve_concentrations;
    int           is_multiphase;
 
@@ -573,13 +574,26 @@ void      SolverImpes()
           * Log this step
           *----------------------------------------------------------------*/
 
+	 /* 
+	    If printing pressure need to increment the file number even.
+	    The file I/O will actually occur below after pressure is
+	    calculated and written to file_number - 1.
+	    Know that we will compute an initial pressure so will dump 
+	    output for initial step.
+	  */
+
+	 if ( print_press )
+	 {
+	    pressure_file_dumped = 1;
+	 }
+
          IfLogging(1)
          {
             seq_log[number_logged]       = iteration_number;
             time_log[number_logged]      = t;
             dt_log[number_logged]        = dt;
             dt_info_log[number_logged]   = 'i';
-            if ( any_file_dumped )
+            if ( any_file_dumped || pressure_file_dumped)
                dumped_log[number_logged] = file_number;
             else
                dumped_log[number_logged] = -1;
@@ -590,7 +604,12 @@ void      SolverImpes()
             number_logged++;
          }
 
-         if ( any_file_dumped ) file_number++;
+         if ( any_file_dumped || pressure_file_dumped) {
+	    file_number++;
+	 }	 
+
+	 pressure_file_dumped = 0;
+	 any_file_dumped = 0;
       }
    }
    else
@@ -769,6 +788,11 @@ void      SolverImpes()
             {
                sprintf(file_postfix, "press.%05d", file_number - 1);
                WritePFBinary(file_prefix, file_postfix, pressure);
+	       IfLogging(1)
+	       {
+		  dumped_log[number_logged-1] = file_number-1;
+	       }
+	       pressure_file_dumped = 1;
             }
 
 	    if(public_xtra -> write_silo_press) 
@@ -777,7 +801,11 @@ void      SolverImpes()
 	       sprintf(file_postfix, "press");
 	       WriteSilo(file_prefix, file_type, file_postfix, pressure,
 			 t, file_number - 1, "Pressure");
-	       any_file_dumped = 1;
+	       IfLogging(1)
+	       {
+		  dumped_log[number_logged-1] = file_number-1;
+	       }
+	       pressure_file_dumped = 1;
 	    }
 
 
@@ -793,6 +821,12 @@ void      SolverImpes()
 
                  sprintf(file_postfix, "phasez.%01d.%05d", phase, file_number - 1);
                  WritePFBinary(file_prefix, file_postfix, phase_z_velocity[phase]);
+
+		 IfLogging(1)
+		 {
+		    dumped_log[number_logged-1] = file_number-1;
+		 }
+		 pressure_file_dumped = 1;
                }
 
                if ( is_multiphase )
@@ -805,6 +839,11 @@ void      SolverImpes()
 
                   sprintf(file_postfix, "totalz.%05d", file_number - 1);
                   WritePFBinary(file_prefix, file_postfix, total_z_velocity);
+		  IfLogging(1)
+		  {
+		     dumped_log[number_logged-1] = file_number-1;
+		  }
+		  pressure_file_dumped = 1;
                }
             }
          }
@@ -1011,8 +1050,6 @@ void      SolverImpes()
             t += dt;
          }
 
-         any_file_dumped = 0;
-
          /******************************************************************/
          /*         Solve for and print the saturations                    */
          /******************************************************************/
@@ -1184,7 +1221,7 @@ void      SolverImpes()
             time_log[number_logged]      = t;
             dt_log[number_logged]        = dt;
             dt_info_log[number_logged]   = dt_info;
-            if ( any_file_dumped )
+            if ( any_file_dumped)
                dumped_log[number_logged] = file_number;
             else
                dumped_log[number_logged] = -1;
@@ -1195,7 +1232,12 @@ void      SolverImpes()
             number_logged++;
          }
 
-         if ( any_file_dumped ) file_number++;
+         if ( any_file_dumped || pressure_file_dumped) {
+	    file_number++;
+	 }
+
+	 any_file_dumped = 0;
+	 pressure_file_dumped = 0;
 
       }
       else
@@ -2120,8 +2162,5 @@ void   SolverImpesFreePublicXtra()
 
 int  SolverImpesSizeOfTempData()
 {
-
-   /* SGS temp data */
-
    return 0;
 }
