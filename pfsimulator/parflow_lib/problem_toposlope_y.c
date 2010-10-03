@@ -90,7 +90,7 @@ void         YSlope(
 
    SubgridArray     *subgrids = GridSubgrids(grid2d);
 
-   CommHandle       *handle;
+   VectorUpdateCommHandle       *handle;
 
    Subgrid          *subgrid;
    Subvector        *ps_sub;
@@ -107,6 +107,7 @@ void         YSlope(
    int               is, i, j, k, ips, ipicv;
    double            time=0.0;
 
+   (void)dummy;
 
    /*-----------------------------------------------------------------------
     * Put in any user defined sources for this phase
@@ -323,10 +324,9 @@ void         YSlope(
 	    GrGeomInLoop(i,j,k,gr_domain,r,ix,iy,iz,nx,ny,nz,
 			 {
 			    ips = SubvectorEltIndex(ps_sub,i,j,0);
-			    ipicv = SubvectorEltIndex(sy_values_sub,i,j,k);
+			    ipicv = SubvectorEltIndex(sy_values_sub,i,j,0);
 
 			    psdat[ips] = sy_values_dat[ipicv];
-			    //slopey[i][j][k] = sy_values_dat[ipicv];
 			 });
 	 } /* End subgrid loop */
 
@@ -375,7 +375,9 @@ PFModule  *YSlopeInitInstanceXtra(
       {
 	 dummy2 = (Type2 *)(public_xtra -> data);
 
-	 dummy2 -> sy_values = NewVector(grid2d, 1, 1);
+	 dummy2 -> sy_values = NewVectorType(grid2d, 1, 1,
+					     vector_cell_centered_2D);
+					 
 	 ReadPFBinary((dummy2 -> filename),(dummy2 -> sy_values));
       }
    }

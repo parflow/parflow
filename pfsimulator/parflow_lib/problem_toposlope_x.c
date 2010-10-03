@@ -89,7 +89,7 @@ void         XSlope(
    Type1            *dummy1;
    Type2            *dummy2;
 
-   CommHandle       *handle;
+   VectorUpdateCommHandle       *handle;
 
    SubgridArray     *subgrids = GridSubgrids(grid2d);
 
@@ -108,6 +108,7 @@ void         XSlope(
    int               is, i, j, k, ips, ipicv;
    double            time=0.0;
 
+   (void)dummy;
 
    /*-----------------------------------------------------------------------
     * Put in any user defined sources for this phase
@@ -333,7 +334,7 @@ void         XSlope(
 	    GrGeomInLoop(i,j,k,gr_domain,r,ix,iy,iz,nx,ny,nz,
 			 {
 			    ips = SubvectorEltIndex(ps_sub,i,j,0);
-			    ipicv = SubvectorEltIndex(sx_values_sub,i,j,k);
+			    ipicv = SubvectorEltIndex(sx_values_sub,i,j,0);
 
 			    psdat[ips] = sx_values_dat[ipicv];
 			 });
@@ -377,7 +378,8 @@ PFModule  *XSlopeInitInstanceXtra(
       {
 	 dummy2 = (Type2 *)(public_xtra -> data);
 
-	 dummy2 -> sx_values = NewVector(grid2d, 1, 1);
+	 dummy2 -> sx_values = NewVectorType(grid2d, 1, 1,
+					     vector_cell_centered_2D);
 	 ReadPFBinary((dummy2 -> filename),(dummy2 -> sx_values));
       }
    }
