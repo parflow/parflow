@@ -37,6 +37,7 @@
 #include "silo.h"
 #endif
 
+#include <string.h>
 #include <math.h>
 
 // SGS FIXME for C++
