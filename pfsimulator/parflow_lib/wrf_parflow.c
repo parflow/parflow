@@ -34,6 +34,8 @@
 #include "parflow.h"
 #include "solver.h"
 
+#include <string.h>
+
 amps_ThreadLocalDcl(PFModule *, Solver_module);
 amps_ThreadLocalDcl(PFModule *, solver);
 amps_ThreadLocalDcl(Vector   *, evap_trans);
@@ -130,10 +132,6 @@ void wrfparflowadvance_(double *current_time,
    Vector       *saturation_out;
 
    VectorUpdateCommHandle   *handle;
-
-   // AdvanceRichards should not use select_time_step module to compute dt.
-   // Use the provided dt with possible subcycling if it does not converge.
-   int compute_time_step = 0; 
 
    WRF2PF(wrf_flux, *num_soil_layers, 
 	  *ghost_size_i_lower, *ghost_size_j_lower, 
