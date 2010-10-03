@@ -80,7 +80,7 @@ void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy)
 
    GrGeomSolid      *gr_solid, *gr_domain;
 
-   CommHandle       *handle;
+   VectorUpdateCommHandle       *handle;
 
    Type0            *dummy0;
    Type1            *dummy1;
@@ -101,6 +101,8 @@ void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy)
 
    int               is, i, j, k, ips, ipicv;
    double            time=0.0;
+
+   (void)dummy;
 
     /*-----------------------------------------------------------------------
     * Put in any user defined mannings 
@@ -363,7 +365,8 @@ PFModule  *ManningsInitInstanceXtra(
    {
 	   dummy2 = (Type2 *)(public_xtra -> data);
 
-	   dummy2 -> m_values = NewVector(grid2d, 1, 1);
+	   dummy2 -> m_values = NewVectorType(grid2d, 1, 1,
+					      vector_cell_centered_2D);
 
 	   ReadPFBinary((dummy2 -> filename),(dummy2 -> m_values));
    
