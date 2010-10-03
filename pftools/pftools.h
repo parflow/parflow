@@ -173,6 +173,9 @@ int PitFillCommand   P((ClientData clientData , Tcl_Interp *interp , int argc , 
 int MovingAvgCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int SlopeD8Command   P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int SegmentD8Command P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int ChildD8Command   P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int FlintsLawCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int FlintsLawFitCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 
 #undef P
 

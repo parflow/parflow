@@ -155,8 +155,11 @@ static char *PFSLOPEYUSAGE              = "Usage: pfslopey dem\n";
 static char *PFUPSTREAMAREAUSAGE        = "Usage: pfupstreamarea sx sy\n";
 static char *PFPITFILLDEMUSAGE          = "Usage: pfpitfilldem dem dpit maxiter\n";
 static char *PFMOVINGAVGDEMUSAGE        = "Usage: pfmovingavgdem dem wsize maxiter\n";
-static char *PFSLOPED8USAGE             = "Usage: pfsopeD8 dem\n";
+static char *PFSLOPED8USAGE             = "Usage: pfslopeD8 dem\n";
 static char *PFSEGMENTD8USAGE           = "Usage: pfsegmentD8 dem\n";
+static char *PFCHILDD8USAGE             = "Usage: pfchildD8 dem\n";
+static char *PFFLINTSLAWDEMUSAGE        = "Usage: pfflintslaw dem c p\n";
+static char *PFFLINTSLAWFITUSAGE        = "Usage: pfflintslawfit dem c0 p0 maxiter\n";
 static char *DELETEUSAGE                = "Usage: pfdelete dataset\n";
 
 

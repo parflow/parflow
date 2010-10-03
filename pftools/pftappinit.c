@@ -239,6 +239,14 @@ EXPORT(int,Parflow_Init)(Tcl_Interp *interp)
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfsegmentD8", (Tcl_CmdProc *)SegmentD8Command,
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfchildD8", (Tcl_CmdProc *)ChildD8Command, 
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfflintslaw", (Tcl_CmdProc *)FlintsLawCommand, 
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfflintslawfit", (Tcl_CmdProc *)FlintsLawFitCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+
+
 
 #ifdef SGS
    Tcl_CreateExitHandler((Tcl_ExitProc *)PFTExitProc, (ClientData) data);

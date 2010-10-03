@@ -124,6 +124,9 @@ namespace eval Parflow {
     namespace export pfmovingavgdem
     namespace export pfslopeD8
     namespace export pfsegmentD8
+    namespace export pfchildD8
+    namespace export pfflintslaw
+    namespace export pfflintslawfit
  
     namespace export pfprintdata
     namespace export pfprintdiff

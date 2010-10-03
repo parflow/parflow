@@ -772,12 +772,9 @@ void ComputeSlopeD8(
       for (i = 0; i < nx; i++)
       {
 
-         // print check
-         printf( "i,j: %d  %d \n", i, j );
-
          // Loop over neighbors (adjacent and diagonal)
          // ** Find elevation and indices of lowest neighbor
-         // ** Exclude self and off-grid cells
+         // ** Exclude off-grid cells
          imin = -9999;        
          jmin = -9999;         
          zmin = 100000000.0;
@@ -786,9 +783,6 @@ void ComputeSlopeD8(
             for (ii = i-1; ii <= i+1; ii++)
             { 
             
-               // print check
-               printf( "i,j,ii,jj: %d  %d  %d  %d \n", i,j,ii,jj);
-
                // skip if off grid
                if ((ii<0) || (jj<0) || (ii>nx-1) || (jj>ny-1))
                {
@@ -807,9 +801,6 @@ void ComputeSlopeD8(
                }
             }
          }
-
-         printf( "[i,j,z] | [imin,jmin,zmin]: %d  %d  %f  *|*  %d  %d  %f  \n", 
-                 i, j, *DataboxCoeff(dem,i,j,0), imin, jmin, zmin);
 
          // Calculate slope towards lowest neighbor
          // ** If edge cell and local minimum, drain directly off-grid at upwind slope
@@ -976,7 +967,7 @@ void ComputeSegmentD8(
          }
 
          // Calculate slope towards lowest neighbor
-         // ** If edge cell and local minimum, drain directly off-grid at upwind slope
+         // ** If edge cell and local minimum, drain directly off-grid 
 
          // ... SW corner, local minimum ...
          if ( (i==0) && (j==0) && (zmin==*DataboxCoeff(dem,i,j,0)) )
@@ -1150,29 +1141,214 @@ void ComputeChildD8(
 
 
 /*-----------------------------------------------------------------------
- * ComputeFlintsLawDEM:
+ * ComputeTestParentD8:
+ *
+ * Returns 1 if ii,jj is the unique D8 parent of i,j (based on elevations).
+ * Returns 0 otherwise.
+ * 
+ * If [i,j] and [ii,jj] are not neighbors, returns -999
+ *
+ *-----------------------------------------------------------------------*/
+int ComputeTestParentD8(
+                 int i,
+                 int j,
+                 int ii,
+                 int jj,
+                 Databox *dem)
+{
+
+   int           test = -999;
+   int           itest, jtest;
+   int           imin,   jmin;
+   int           nx, ny;
+   double        zmin;
+
+   nx    = DataboxNx(dem);
+   ny    = DataboxNy(dem);
+   itest = 0;
+   jtest = 0;
+
+   // not neighbors
+   if ( (fabs(i-ii)>1.0) || (fabs(j-jj)>1.0) )
+   {
+      test = 0; 
+   }
+
+   // neighbors
+   else
+   {
+      // find D8 child of [ii,jj]
+      // ** loop over neighbors of [ii,jj] (adjacent and diagonal)
+      // ** find elevation and indices of lowest neighbor (including self)
+      // ** exclude off-grid cells
+      imin = -9999;
+      jmin = -9999;
+      zmin = 100000000000.0;
+      for (jtest = jj-1; jtest <= jj+1; jtest++)
+      {
+         for (itest = ii-1; itest <= ii+1; itest++)
+         {
+
+            // skip if off grid...
+            if ((itest<0) || (jtest<0) || (itest>nx-1) || (jtest>ny-1) )
+            {
+               ;
+            }
+            
+            // skip self...
+            else if ( (itest==ii) && (jtest==jj) )
+            {
+               ;
+            }
+
+            // find lowest neighbor
+            else
+            {
+
+               if ( (*DataboxCoeff(dem,itest,jtest,0) < zmin) )
+               {
+                  zmin = *DataboxCoeff(dem,itest,jtest,0);
+                  imin = itest;
+                  jmin = jtest;
+               }
+
+            }
+         }
+      }
+
+      // Determine if [ii,jj] is parent of [i,j]
+      // ** if [imin,jmin] == [i,j] ... then [i,j] is lowest neighbor of [ii,jj]
+      // ** if [i,j] is also at lower elevation than [ii,jj], then [ii,jj] is D8 parent of [i,j]
+      if ( (imin==i) && (jmin==j)                                                    // [imin,jmin] == [i,j] of potential child
+            && (*DataboxCoeff(dem,imin,jmin,0)<*DataboxCoeff(dem,ii,jj,0)) )         // child elevation lower than parent 
+      { 
+         test = 1;
+      } 
+      else
+      { 
+         test = 0;
+      }
+ 
+   }
+
+   return test;
+ 
+}     
+
+
+/*-----------------------------------------------------------------------
+ * ComputeFlintsLawRec:
+ * 
+ * Recursively computes Flint's law up a given drainage network
+ *
+ * 
+ *---------------------------------------------------------------------*/
+void ComputeFlintsLawRec(
+   int      i, 
+   int      j, 
+   Databox *dem,
+   Databox *demflint,
+   Databox *child,
+   Databox *area,
+   Databox *ds,
+   double   c,
+   double   p)
+{
+
+   int      ii, jj;
+   int      nx, ny;
+   int      test = -999;
+
+   nx       = DataboxNx(demflint);
+   ny       = DataboxNy(demflint);
+
+   // if i or j is off grid --> skip 
+   if ( (i<0) || (i>=nx) || (j<0) || (j>=ny) )
+   {
+      test  = 0; 
+   }
+
+   // else --> loop over neighbors of [i,j]
+   else 
+   {
+
+      for (jj = j-1; jj <= j+1; jj++ )
+      {
+         for (ii = i-1; ii <= i+1; ii++ )
+         { 
+
+            // skip off-grid cells...
+            if ( (ii<0) || (jj<0) || (ii>nx-1) || (jj>ny-1) )
+            { 
+               test = 0;
+            }
+
+            // skip self...
+            else if ( (ii==i) && (jj==j) )
+            {
+               test = 0;
+            }
+
+            // if on grid and not self, test if [ii,jj] is D8 parent of [i,j]
+            else 
+            {  
+               test  = ComputeTestParentD8(i,j,ii,jj,dem);
+            }
+
+            // if [ii,jj] is a parent 
+            // ...and Flint's Law DEM not already computed for [ii,jj] -- demflint(ii,jj)==-9999. (avoid infinite loop)
+            // compute DEM and move upstream (RECURSIVE!)
+            if ((test==1) && (*DataboxCoeff(demflint,ii,jj,0)==-9999.0))
+            { 
+
+               // compute DEM...   
+               *DataboxCoeff(demflint,ii,jj,0) = *DataboxCoeff(demflint,i,j,0) + 
+                                                 c * pow(*DataboxCoeff(area,ii,jj,0),p) * *DataboxCoeff(ds,ii,jj,0);
+
+               // recursive loop...
+               ComputeFlintsLawRec(ii,jj,dem,demflint,child,area,ds,c,p);
+
+            } // end recursive if statement
+ 
+         } // end loop over ii
+
+      } // end loop over jj
+
+   } // end if re: off grid
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * ComputeFlintsLaw:
  *
  * Compute elevations at all [i,j] using Flint's Law:
  *
  * Flint's law gives slope as a function of upstream area:
- *     S'[i,j] = c*(A[i,j]**theta)
- * 
- * Using the definition of slope as S = dz/ds = (z[i,j]-z[ii,jj])/ds, where [ii,jj]
+ *     S'[i,j] = c*(A[i,j]**p)
+ *
+ * Using the definition of slope as S = dz/ds = fabs(z[i,j]-z[ii,jj])/ds, where [ii,jj]
  * is the D8 child of [i,j], the elevation at [i,j] is given by:
  *     z[i,j]  = z[ii,jj] + S[i,j]*ds[i,j]
  *
  * We can then estimate the elevation z[i,j] using Flints Law:
- *     z'[i,j] = z[ii,jj] + c*(A[i,j]**theta)*ds[i,j]
- * 
- * For cells without D8 child (local minima or drains off grid), 
+ *     z'[i,j] = z[ii,jj] + c*(A[i,j]**p)*ds[i,j]
+ *
+ * For cells without D8 child (local minima or drains off grid),
  * value is set to value of original DEM.
  *
+ * NOTE: This routine loops over all cells to find local minima, then 
+ *       recursively loops upstream from child to parent, calculating 
+ *       each successive parent's elevation based on the child elevation
+ *       and Flint's law. Every drainage path therefore satisfies Flint's
+ *       law perfectly. 
+ *
  *-----------------------------------------------------------------------*/
-void ComputeFlintsLawDEM(
+void ComputeFlintsLaw(
    Databox *dem,
    double   c,
-   double   theta,
-   Databox *flintdem)
+   double   p,
+   Databox *demflint)
 {
 
    int             i,  j;
@@ -1196,7 +1372,7 @@ void ComputeFlintsLawDEM(
    dy    = DataboxDy(dem);
    dz    = DataboxDz(dem);
 
-   // compute upwind slopes, upstream area 
+   // compute upwind slopes, upstream area
    sx    = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
    sy    = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
    area  = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
@@ -1205,67 +1381,17 @@ void ComputeFlintsLawDEM(
    ComputeUpstreamArea(sx,sy,area);
 
    // compute segment lengths and child elevations for D8 grid
+   ds    = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
+   child = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
    ComputeSegmentD8(dem,ds);
    ComputeChildD8(dem,child);
 
-   // compute elevations using Flint's law
-   for (j = 0; j < ny; j++)
-   {
-      for (i = 0; i < nx; i++)
-      { 
-
-         // If no child, set elevation to raw DEM value
-         if (*DataboxCoeff(child,i,j,0) == -9999.0)
-         { 
-            *DataboxCoeff(flintdem,i,j,0) = *DataboxCoeff(dem,i,j,0);  
-         }
-
-         // Otherwise, estimate using Flint's Law        
-         else
-         { 
-            *DataboxCoeff(flintdem,i,j,0) = *DataboxCoeff(child,i,j,0) + 
-                                            (c * pow( *DataboxCoeff(area,i,j,0), theta ) * (*DataboxCoeff(ds,i,j,0)) );
-         }
-
-      } // end loop over i
-
-   } // end loop over j
-
-}
-
-
-/*-----------------------------------------------------------------------
- * ComputeFlintsLawQuick:
- *
- * Compute elevations at all [i,j] using Flint's Law...
- * Same as ComputeFlintsLawDEM, but known variables are provided instead of 
- * being computed in the function (area, ds, child).
- *
- *-----------------------------------------------------------------------*/
-void ComputeFlintsLawQuick(
-   Databox *dem,
-   Databox *area,
-   Databox *child,
-   Databox *ds,
-   double   c,
-   double   theta,
-   Databox *flintdem)
-{
-
-   int             i,  j;
-   int             nx, ny, nz;
-   double          x,  y,  z;
-   double          dx, dy, dz;
-
-   nx    = DataboxNx(dem);
-   ny    = DataboxNy(dem);
-   nz    = DataboxNz(dem);
-   x     = DataboxX(dem);
-   y     = DataboxY(dem);
-   z     = DataboxZ(dem);
-   dx    = DataboxDx(dem);
-   dy    = DataboxDy(dem);
-   dz    = DataboxDz(dem);
+   // initialize all cells of computed DEM to -9999.0
+   for (j = 0; j < ny; j++) { 
+    for (i = 0; i < nx; i++) { 
+     *DataboxCoeff(demflint,i,j,0) = -9999.0;
+    }
+   }
 
    // compute elevations using Flint's law
    for (j = 0; j < ny; j++)
@@ -1273,17 +1399,19 @@ void ComputeFlintsLawQuick(
       for (i = 0; i < nx; i++)
       {
 
-         // If no child, set elevation to raw DEM value
+         // If child elevation is set to -9999.0...
+         // -- cell is a local minimum (no child)
+         // -- set demflint elevation to original DEM value
+         // -- then loop upstream (recursively) to calculate parent elevations
          if (*DataboxCoeff(child,i,j,0) == -9999.0)
          {
-            *DataboxCoeff(flintdem,i,j,0) = *DataboxCoeff(dem,i,j,0);
-         }
 
-         // Otherwise, estimate using Flint's Law
-         else
-         {
-            *DataboxCoeff(flintdem,i,j,0) = *DataboxCoeff(child,i,j,0) +
-                                            (c * pow( *DataboxCoeff(area,i,j,0), theta ) * (*DataboxCoeff(ds,i,j,0)) );
+            // set value at [i,j]
+            *DataboxCoeff(demflint,i,j,0) = *DataboxCoeff(dem,i,j,0);
+
+            // call recursive function
+            ComputeFlintsLawRec(i,j,dem,demflint,child,area,ds,c,p);
+
          }
 
       } // end loop over i
@@ -1296,7 +1424,7 @@ void ComputeFlintsLawQuick(
 /*-----------------------------------------------------------------------
  * ComputeFlintsLawFit:
  *
- * Compute parameters of Flint's Law (c and theta) based on DEM and area
+ * Compute parameters of Flint's Law (c and p) based on DEM and area
  * using a least squares fit. Residuals are calculated at each cell with 
  * respect to initial DEM values as:
  *
@@ -1304,7 +1432,7 @@ void ComputeFlintsLawQuick(
  *
  * where z'[i,j] is the elevation estimated via Flint's law:
  * 
- *   z'[i,j] =  z_child[i,j] + c*(A[i,j]**theta)*ds[i,j]
+ *   z'[i,j] =  z_child[i,j] + c*(A[i,j]**p)*ds[i,j]
  *
  * where z_child is the elevation of the CHILD of [i,j] and ds is the segment
  * length of the slope between [i,j] and it's child. 
@@ -1313,9 +1441,491 @@ void ComputeFlintsLawQuick(
  * method as detailed in Numerical Recipes in C, similar to used in MINPACK 
  * function lmdif. 
  * 
- * NOTES: All parent/child relationships, slopes, and segment lengths are 
- *        calculated based on a simple D8 scheme. 
+ * NOTES: 
+ * - All parent/child relationships, slopes, and segment lengths are 
+ *   calculated based on a simple D8 scheme. 
+ * - Areas are calculated based on two-direction model used in ParFlow
+ *   (i.e., no unique paren-child...any cell that drains into [i,j] is part of area)
+ * - Areas must be converted from number of cells to m2 before fitting
+ *   (area = area*dx*dy)
  *
  *-----------------------------------------------------------------------*/
+void ComputeFlintsLawFit(
+   Databox *dem,
+   double   c0,
+   double   p0,
+   int      maxiter,    
+   Databox *demflint) 
+{
 
+   // grid vars
+   int             i,  j,  n1, n2;
+   int             nx, ny, nz, iter;
+   double          x,  y,  z;
+   double          dx, dy, dz;
+
+   // calculated vars
+   Databox        *sx;
+   Databox        *sy;
+   Databox        *area;
+   Databox        *ds;
+   Databox        *child;
+
+   // get grid info
+   nx       = DataboxNx(dem);
+   ny       = DataboxNy(dem);
+   nz       = DataboxNz(dem);
+   x        = DataboxX(dem);
+   y        = DataboxY(dem);
+   z        = DataboxZ(dem);
+   dx       = DataboxDx(dem);
+   dy       = DataboxDy(dem);
+   dz       = DataboxDz(dem);
+
+   // compute upwind slopes, upstream area
+   // NOTE: these values don't change during iteration -- c,p adjusted to fit these values!
+   sx       = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
+   sy       = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
+   area     = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
+   ComputeSlopeXUpwind(dem,dx,sx);
+   ComputeSlopeYUpwind(dem,dy,sy);
+   ComputeUpstreamArea(sx,sy,area);
+
+   // convert areas from number of cells to m^2
+   for (j=0; j<ny; j++)
+   {
+      for (i=0; i<nx; i++)
+      {
+         *DataboxCoeff(area,i,j,0) = *DataboxCoeff(area,i,j,0) * dx * dy; 
+      }
+   }
+
+   // compute segment lengths and child elevations for D8 grid
+   // NOTE: these values don't change during iteration -- c,p adjusted to fit these values!
+   ds       = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
+   child    = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
+   ComputeSegmentD8(dem,ds);
+   ComputeChildD8(dem,child);
+
+   // INITIALIZE L-M VARS
+   int    ma = 2;
+   double c      = c0;
+   double ctry   = c0; 
+   double p      = p0;
+   double ptry   = p0; 
+   double beta[ma];
+   double da[ma];
+   double alpha[ma][ma];
+   double covar[ma][ma];
+   double oneda[ma][1];
+   double chisq  = 1000.0;
+   double ochisq = 0.1;
+   double dchisq = 100.0 * (chisq-ochisq)/(ochisq);
+   double alamda = 0.00001;
+
+   // initialize coefficient arrays
+   for (n1=0; n1<ma; n1++)
+   { 
+      beta[n1]     = 0.0;
+      da[n1]       = 0.0;
+      oneda[n1][1] = 0.0;
+      for (n2=0; n2<ma; n2++)
+      { 
+         alpha[n1][n2] = 0.0;
+         covar[n1][n2] = 0.0;
+      }
+   }
+
+   // initialize all cells of computed DEM (demflint) to -9999.0
+   for (j = 0; j < ny; j++) {
+      for (i = 0; i < nx; i++) {
+         *DataboxCoeff(demflint,i,j,0) = -9999.0;
+      }
+   }
+
+   // calculate chisq at initial parameter values
+   chisq  = ComputeLMCoeff(demflint,dem,area,child,ds,c0,p0,alpha,beta,chisq);
+   ochisq = chisq;
+
+   // L-M ITERATION
+   // iterates until maxiter or convergence, 
+   // where convergence is considered a percent change in chisq less than .1%
+   iter          = 0; 
+   while ( (iter<maxiter) && (dchisq>0.001) )
+   { 
+
+      // copy fitting matrix, alter by augmenting diagonals
+      for (n1=0; n1<ma; (n1)++)
+      { 
+
+         // copy all values
+         oneda[n1][0]     = beta[n1];
+         for (n2=0; n2<ma; (n2)++)
+         { 
+            covar[n1][n2] = alpha[n1][n2];
+         }
+
+         // augment diagonals
+         covar[n1][n1]    = alpha[n1][n1] * (1.0+alamda);
+
+      }
+
+      // matrix solution (Gauss-Jordan elimination)
+      ComputeGaussJordan(covar,ma,oneda,1);
+
+      // copy oneda -> da
+      for (j=0; j<ma; j++) { da[j] = oneda[j][0] ; }
+
+      // adjust parameters for next test
+      ctry       = c + da[0];
+      ptry       = p + da[1];
+
+      // reset all cells of computed DEM (demflint) to -9999.0
+      for (j = 0; j < ny; j++) {
+         for (i = 0; i < nx; i++) {
+            *DataboxCoeff(demflint,i,j,0) = -9999.0;
+         }
+      }
+
+      // Call ComputeLMCoeff
+      chisq      = ComputeLMCoeff(demflint,dem,area,child,ds,ctry,ptry,covar,da,chisq);
+
+      // compute convergence criteria
+      dchisq     = 100.0 * fabs(chisq-ochisq)/(ochisq);
+
+      // update alamda...
+      // if new chisq is smaller than old, moving in right direction...
+      if (chisq < ochisq)
+      {
+         // printf( "ITERATION SUCCESS:\t %d \t %f \t %f \t %f \t %f \t %f \t %f \t %f \t %f \n", 
+         //          iter, ctry, ptry, alamda, ochisq, chisq, dchisq, da[0], da[1] );
+         alamda  = alamda * 0.1;               // cut parameter shift
+         ochisq  = chisq;                      // reset ochisq
+         c       = ctry;                       // set parameter to latest iteration value
+         p       = ptry;                       // set parameter to latest iteration value
+         for (n1=0; n1<ma; n1++)               // reset alpha and beta values
+         { 
+            beta[n1] = da[n1];
+            for (n2=0; n2<ma; n2++)
+            { 
+               alpha[n1][n2] = covar[n1][n2];
+            }
+         }
+         
+      } 
+      
+      // else new chisq is larger than old, moving in wrong direction...
+      else
+      {
+         // printf( "ITERATION FAIL:   \t %d \t %f \t %f \t %f \t %f \t %f \t %f \t %f \t %f \n", 
+         //          iter, ctry, ptry, alamda, ochisq, chisq, dchisq, da[0], da[1] );
+         alamda  = alamda * 10.0;
+         chisq   = ochisq; 
+      }
+
+      // iteration and convergence criteria
+      iter       = iter + 1;
+
+   } // end of while loop
+
+   // compute elevations using Flint's law
+   // with final parameter values...
+   // if no iterations succeeded, final values are reset to initial values.
+   // -- start by resetting demflint to -9999.0
+   for (j = 0; j < ny; j++) {
+      for (i = 0; i < nx; i++) {
+         *DataboxCoeff(demflint,i,j,0) = -9999.0;
+      }
+   }
+   // -- then call recursive loop
+   for (j = 0; j < ny; j++)
+   {
+      for (i = 0; i < nx; i++)
+      {
+
+         // If child elevation is set to -9999.0...
+         // -- cell is a local minimum (no child)
+         // -- set demflint elevation to original DEM value
+         // -- then loop upstream (recursively) to calculate parent elevations
+         if (*DataboxCoeff(child,i,j,0) == -9999.0)
+         {
+
+            // set value at [i,j]
+            *DataboxCoeff(demflint,i,j,0) = *DataboxCoeff(dem,i,j,0);
+
+            // call recursive function
+            ComputeFlintsLawRec(i,j,dem,demflint,child,area,ds,ctry,ptry);
+
+         }
+
+      } // end loop over i
+
+   } // end loop over j
+
+   printf( "-------------------------------------------------------------\n" );
+   printf( "Flints Law Fit: \n" );
+   printf( "iterations: %d \n", iter );
+   printf( "c = %f \n", ctry );
+   printf( "p = %f \n", ptry );
+   printf( "------------------\n" );
+
+}
+
+// Additional subroutines for ComputeFlintsLawFit
+// ComputeFlintLM: Computes slopes and derivatives needed by LM fitting routine
+void ComputeFlintLM(
+   Databox *dem,             // original dem values
+   Databox *demflint,        // estimated dem values
+   Databox *area,            // upstream areas  -- independent var
+   Databox *child,           // child dem value -- constant
+   Databox *ds,              // segment length  -- constant
+   double   c,               // c parameter value            (not changed in this routine)
+   double   p,               // p (exponent) parameter value (not changed in this routine)
+   Databox *dzdc,            // derivative of Flint's law wrt. c
+   Databox *dzdp)            // derivative of Flint's law wrt. p     
+{
+
+   int      i,  j;
+   int      nx, ny;
+   
+   nx       = DataboxNx(dem);
+   ny       = DataboxNy(dem);
+
+   // Calculate Flints Law DEM using current parameter estimates
+   for (j=0; j<ny; j++)
+   { 
+      for (i=0; i<nx; i++)
+      { 
+
+         // If child elevation is set to -9999.0...
+         // -- cell is a local minimum (no child)
+         // -- set demflint elevation to original DEM value
+         // -- then loop upstream (recursively) to calculate parent elevations
+         //    (THIS IS THE SAME AS IN ComputeFlintsLaw)
+         if (*DataboxCoeff(child,i,j,0) == -9999.0)
+         {
+
+            // set value at [i,j]
+            *DataboxCoeff(demflint,i,j,0) = *DataboxCoeff(dem,i,j,0);
+
+            // call recursive function
+            ComputeFlintsLawRec(i,j,dem,demflint,child,area,ds,c,p);
+
+         } 
+
+      } // end loop over i
+   
+   } // end loop over j
+   
+   // Loop again to calculate derivatives
+   for (j=0; j<ny; j++)
+   {
+      for (i=0; i<nx; i++)
+      {
+
+         // evaluate derivative WRT c (evaluate at all cells)
+         *DataboxCoeff(dzdc,i,j,0)     = pow(*DataboxCoeff(area,i,j,0), p) * (*DataboxCoeff(ds,i,j,0));
+
+         // evaluate derivative WRT p (evaluate at all cells)
+         *DataboxCoeff(dzdp,i,j,0)     = c * pow(*DataboxCoeff(area,i,j,0), p)
+                                           * log(*DataboxCoeff(area,i,j,0))
+                                           * (*DataboxCoeff(ds,i,j,0));
+
+      } // end loop over i
+
+   } // end loop over j
+
+} 
+
+double ComputeLMCoeff( 
+   Databox *demflint,        // estimated elevations -- dependent var
+   Databox *dem,             // actual elevations -- constant
+   Databox *area,            // upstream areas    -- independent var
+   Databox *child,           // child dem value   -- constant
+   Databox *ds,              // segment length    -- constant
+   double   c,               // c parameter value
+   double   p,               // p parameter value
+   double   alpha[2][2],     // working space     -- [2x2] array
+   double   beta[2],         // working space     -- [2] array
+   double   chisq)           // chisq value
+{ 
+
+   int      i, j; 
+   int      ma = 2;
+   int      nx, ny, nz;
+   double   x,  y,  z;
+   double   dx, dy, dz;
+   double   df; 
+   Databox *dfdc;
+   Databox *dfdp;
+
+   // get grid info
+   nx     = DataboxNx(dem);
+   ny     = DataboxNy(dem);
+   nz     = DataboxNz(dem);
+   x      = DataboxX(dem);
+   y      = DataboxY(dem);
+   z      = DataboxZ(dem);
+   dx     = DataboxDx(dem);
+   dy     = DataboxDy(dem);
+   dz     = DataboxDz(dem);
+
+   // initialize derivatives
+   dfdc   = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
+   dfdp   = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
+
+   // set alpha and beta values to zero
+   for (i=0; i<ma; i++)
+   { 
+      beta[i] = 0.0; 
+      for (j=0; j<ma; j++)
+      { 
+         alpha[i][j] = 0.0;  
+      }
+   }
+
+   // resetting demflint to -9999.0
+   for (j = 0; j < ny; j++) {
+      for (i = 0; i < nx; i++) {
+         *DataboxCoeff(demflint,i,j,0) = -9999.0;
+      }
+   }
+
+   // calculate function values and derivatives at all [i,j] for current parameter values [c,p]
+   ComputeFlintLM(dem,demflint,area,child,ds,c,p,dfdc,dfdp);
+
+   // loop to calculate chisq, alpha, beta
+   chisq   = 0.0;
+   for (j=0; j<ny; j++)
+   { 
+      for (i=0; i<nx; i++)
+      { 
+      
+         // skip local minima 
+         // (don't fit to cells w/o downstream slopes)
+         if (*DataboxCoeff(child,i,j,0) == -9999.0)
+         { 
+            ;
+         }
+
+         // compute coefficients based on all other cells
+         else
+         { 
+
+            // calculate residual at [i,j]
+            df          = *DataboxCoeff(dem,i,j,0) - *DataboxCoeff(demflint,i,j,0);
+
+            // add to chisq sum...
+            // NOTE: we assume all local variances are unity, so chisq reduces to the sum of squared residuals
+            chisq       = chisq + (df * df);
+
+            // add to alphas
+            alpha[0][0] = alpha[0][0] + (*DataboxCoeff(dfdc,i,j,0)) * (*DataboxCoeff(dfdc,i,j,0));
+            alpha[0][1] = alpha[0][1] + (*DataboxCoeff(dfdc,i,j,0)) * (*DataboxCoeff(dfdp,i,j,0));
+            alpha[1][0] = alpha[1][0] + (*DataboxCoeff(dfdp,i,j,0)) * (*DataboxCoeff(dfdc,i,j,0));
+            alpha[1][1] = alpha[1][1] + (*DataboxCoeff(dfdp,i,j,0)) * (*DataboxCoeff(dfdp,i,j,0));
+
+            // add to betas
+            beta[0]     = beta[0] + (df)*(*DataboxCoeff(dfdc,i,j,0));
+            beta[1]     = beta[1] + (df)*(*DataboxCoeff(dfdp,i,j,0));
+
+         } // end if child
+
+      } // end loop over i
+
+   } // end loop over j
+
+   return chisq;
+
+}
+
+void ComputeGaussJordan( 
+   double  a[2][2], 
+   int     n, 
+   double  b[2][1], 
+   int     m)
+{
+   
+   int     i, icol, irow, j, k, l, ll;
+   double  big, dum, pivinv, temp;
+
+   // book keeping arrays
+   int     indxc[n];
+   int     indxr[n];
+   int     ipiv[n];
+
+   irow  = 0;
+   icol  = 0;
+
+   // set pivot indices to zero
+   for (j=0; j<n; j++) ipiv[j]=0;
+   
+   // loop over columns to be reduced
+   for (i=0; i<n; i++) 
+   { 
+      big  = 0.0;
+      for (j=0; j<n; j++)
+      { 
+         if (ipiv[j] != 1)
+         {
+            for (k=0; k<n; k++)
+            { 
+               if (ipiv[k] == 0)
+               {
+                  if (fabs(a[j][k]) >= big)
+                  {
+                     big  = fabs(a[j][k]);
+                     irow = j;  
+                     icol = k;
+                  }
+               }
+               else if (ipiv[k] > 1)
+               {
+                  printf( "ComputeGaussJordan -- ERROR: Singular Matrix - 1 \n" );
+               }
+            }
+         }   
+      }
+      ++(ipiv[icol]);
+
+      // interchange rows if necessary
+      if (irow != icol)
+      {
+         for (l=0; l<n; l++) { temp = a[irow][l] ; a[irow][l] = a[icol][l] ; a[icol][l] = temp ; }
+         for (l=0; l<m; l++) { temp = b[irow][l] ; b[irow][l] = b[icol][l] ; b[icol][l] = temp ; }
+      }
+
+      // divide pivot row by pivot element
+      indxr[i]  = irow;
+      indxc[i]  = icol;
+      if (a[icol][icol] == 0.0) 
+      { 
+         printf( "ComputeGaussJordan -- ERROR: Singular Matrix - 2 \n" );
+      }
+      pivinv        = 1.0 / a[icol][icol];
+      a[icol][icol] = 1.0;
+      for (l=0; l<n; l++) a[icol][l] *= pivinv;
+      for (l=0; l<m; l++) b[icol][l] *= pivinv;
+      for (ll=0; ll<n; ll++)
+      { 
+         if (ll != icol) 
+         {
+            dum         = a[ll][icol];
+            a[ll][icol] = 0.0;    
+            for (l=0; l<n; l++) a[ll][l] -= a[icol][l]*dum;
+            for (l=0; l<m; l++) b[ll][l] -= b[icol][l]*dum;
+         }
+      }
+   } // end loop over i (column reduce loop)
+
+   // reverse any column interchanges
+   for (l=n-1; l>=0; l--)
+   { 
+      if (indxr[l] != indxc[l])
+      { 
+         for (k=0; k<n; k++) { temp = a[k][indxr[l]] ; a[k][indxr[l]] = a[k][indxc[l]] ; a[k][indxc[l]] = temp ; }
+      }
+   }
+
+}    
 

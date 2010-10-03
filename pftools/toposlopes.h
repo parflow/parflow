@@ -84,20 +84,58 @@ void ComputeChildD8(
    Databox *dem,
    Databox *child);
 
-void ComputeFlintsLawDEM(
+void ComputeFlintsLawRec(
+   int      i, 
+   int      j, 
+   Databox *dem, 
+   Databox *demflint, 
+   Databox *child, 
+   Databox *area, 
+   Databox *ds,
+   double   c, 
+   double   p);
+
+void ComputeFlintsLaw(
    Databox *dem,
    double   c, 
-   double   theta, 
+   double   p, 
    Databox *flintdem);
 
-void ComputeFlintsLawQuick(
+void ComputeFlintsLawFit(
+   Databox *dem, 
+   double   c, 
+   double   p, 
+   int      maxiter,
+   Databox *demflint);
+
+void ComputeFlintLM(
    Databox *dem,
+   Databox *demflint,
    Databox *area,
    Databox *child, 
    Databox *ds, 
-   double   c, 
-   double   theta, 
-   Databox *flintdem);
+   double   c,  
+   double   p, 
+   Databox *dzdc, 
+   Databox *dzdp);
 
+double ComputeLMCoeff(
+   Databox *demflint, 
+   Databox *dem, 
+   Databox *area, 
+   Databox *child, 
+   Databox *ds, 
+   double   c, 
+   double   p, 
+   double   alpha[2][2], 
+   double   beta[2], 
+   double   chisq); 
+
+void ComputeGaussJordan(
+   double   a[2][2], 
+   int      n, 
+   double   b[2][1], 
+   int      m);
+ 
 #endif
 

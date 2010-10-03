@@ -5769,3 +5769,271 @@ int            SegmentD8Command(
    return TCL_OK;
 }
 
+
+/*-----------------------------------------------------------------------
+ * routine for `pfchildD8' command
+ * Description: Compute unique D8 childe for all cells; 
+ *              child[i,j] is elevation of cell to which [i,j] drains
+ *              (i.e., elevation of [i,j]'s child)
+ *
+ * Notes:       local minima: child elevation set to own elevation     
+ *
+ * Cmd. syntax: pfchildD8 dem
+*-----------------------------------------------------------------------*/
+int            ChildD8Command(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+   Tcl_HashEntry *entryPtr;   // Points to new hash table entry
+   Data          *data = (Data *)clientData;
+
+   // Input
+   Databox       *dem;
+   char          *dem_hashkey;
+
+   // Output
+   Databox       *child;
+   char           child_hashkey[MAX_KEY_SIZE];
+   char          *filename = "child elevation (D8)";
+
+   /* Check if one argument following command  */
+   if (argc == 1)
+   {
+      WrongNumArgsError(interp, PFCHILDD8USAGE);
+      return TCL_ERROR;
+   }
+
+   dem_hashkey = argv[1];
+   if ((dem = DataMember(data, dem_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,dem_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx    = DataboxNx(dem);
+      int ny    = DataboxNy(dem);
+      int nz    = 1;
+
+      double x  = DataboxX(dem);
+      double y  = DataboxY(dem);
+      double z  = DataboxZ(dem);
+
+      double dx = DataboxDx(dem);
+      double dy = DataboxDy(dem);
+      double dz = DataboxDz(dem);
+
+      /* create the new databox structure for child values (child) */
+      if ( (child = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+         /* Make sure dataset pointer was added to hash table   */
+         if (!AddData(data, child, filename, child_hashkey))
+            FreeDatabox(child);
+         else
+         {
+            Tcl_AppendElement(interp, child_hashkey);
+         }
+         /* Compute child */
+         ComputeChildD8(dem,child);
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+   return TCL_OK;
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pfflintslaw' command
+ * Description: Compute DEM elevations using Flint's Law based on user
+ *              provided DEM and parameters (c,p). Computed elevations 
+ *              returned as new databox. 
+ *
+ * Cmd. syntax: pfflintslaw dem c p 
+*-----------------------------------------------------------------------*/
+int            FlintsLawCommand(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+   Tcl_HashEntry *entryPtr;   // Points to new hash table entry
+   Data          *data = (Data *)clientData;
+
+   // Input
+   Databox       *dem;
+   char          *dem_hashkey;
+   double         c;
+   double         p; 
+ 
+   // Output
+   Databox       *flint;
+   char           flint_hashkey[MAX_KEY_SIZE];
+   char          *filename = "Flint's Law Elevations"; 
+
+   /* Check if one argument following command  */
+   if (argc == 1)
+   {
+      WrongNumArgsError(interp, PFFLINTSLAWDEMUSAGE); 
+      return TCL_ERROR;
+   }
+
+   dem_hashkey = argv[1];
+   if ((dem = DataMember(data, dem_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,dem_hashkey);
+      return TCL_ERROR;
+   }
+
+   if (Tcl_GetDouble(interp, argv[2], &c) == TCL_ERROR)
+   { 
+      NotADoubleError(interp, 1, PFFLINTSLAWDEMUSAGE); 
+      return TCL_ERROR;
+   }
+   
+   if (Tcl_GetDouble(interp, argv[3], &p) == TCL_ERROR)
+   { 
+      NotADoubleError(interp, 1, PFFLINTSLAWDEMUSAGE);
+   }
+
+   {
+      int nx    = DataboxNx(dem);
+      int ny    = DataboxNy(dem);
+      int nz    = 1;
+
+      double x  = DataboxX(dem);
+      double y  = DataboxY(dem);
+      double z  = DataboxZ(dem);
+
+      double dx = DataboxDx(dem);
+      double dy = DataboxDy(dem);
+      double dz = DataboxDz(dem);
+
+      /* create the new databox structure for flint values (flint) */
+      if ( (flint = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+         /* Make sure dataset pointer was added to hash table   */
+         if (!AddData(data, flint, filename, flint_hashkey))
+            FreeDatabox(flint);
+         else
+         {
+            Tcl_AppendElement(interp, flint_hashkey);
+         }
+         /* Compute elevations */
+         ComputeFlintsLaw(dem,c,p,flint);
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+   return TCL_OK;
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pfflintslawfit' command
+ * Description: Compute DEM elevations using Flint's Law based on user
+ *              provided DEM, with parameters fit based on non-linear 
+ *              least squares minimization (i.e., Flints law is fit to data)
+ *
+ * NOTES:       Fitting uses D8 slopes, D8 child elevations, and bi-directional
+ *              upstream area. 
+ *
+ * Cmd. syntax: pfflintslawfit dem c0 p0 maxiter
+*-----------------------------------------------------------------------*/
+int            FlintsLawFitCommand(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+   Tcl_HashEntry *entryPtr;   // Points to new hash table entry
+   Data          *data = (Data *)clientData;
+
+   // Input
+   Databox       *dem;
+   char          *dem_hashkey;
+   double         c, p;
+   int            maxiter;
+
+   // Output
+   Databox       *flint;
+   char           flint_hashkey[MAX_KEY_SIZE];
+   char          *filename = "Flint's Law Elevations";
+
+   /* Check if one argument following command  */
+   if (argc == 1)
+   {
+      WrongNumArgsError(interp, PFFLINTSLAWFITUSAGE);
+      return TCL_ERROR;
+   }
+
+   dem_hashkey = argv[1];
+
+   if ((dem = DataMember(data, dem_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,dem_hashkey);
+      return TCL_ERROR;
+   }
+
+   if (Tcl_GetDouble(interp, argv[2], &c) == TCL_ERROR)
+   {
+      NotADoubleError(interp, 1, PFPITFILLDEMUSAGE);
+      return TCL_ERROR;
+   }
+
+   if (Tcl_GetDouble(interp, argv[3], &p) == TCL_ERROR)
+   {
+      NotADoubleError(interp, 1, PFPITFILLDEMUSAGE);
+      return TCL_ERROR;
+   }
+
+   if (Tcl_GetInt(interp, argv[4], &maxiter) == TCL_ERROR)
+   {
+      NotAnIntError(interp, 1, PFFLINTSLAWDEMUSAGE);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx    = DataboxNx(dem);
+      int ny    = DataboxNy(dem);
+      int nz    = 1;
+
+      double x  = DataboxX(dem);
+      double y  = DataboxY(dem);
+      double z  = DataboxZ(dem);
+
+      double dx = DataboxDx(dem);
+      double dy = DataboxDy(dem);
+      double dz = DataboxDz(dem);
+
+      /* create the new databox structure for flint values (flint) */
+      if ( (flint = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+         /* Make sure dataset pointer was added to hash table   */
+         if (!AddData(data, flint, filename, flint_hashkey))
+            FreeDatabox(flint);
+         else
+         {
+            Tcl_AppendElement(interp, flint_hashkey);
+         }
+         /* Compute elevations */
+         ComputeFlintsLawFit(dem,c,p,maxiter,flint);
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+
+   return TCL_OK;
+}
+

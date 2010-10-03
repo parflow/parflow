@@ -266,16 +266,28 @@ This command computes y = alpha*x+y where alpha is a scalar and x and
 y are identifiers representing data sets.  No data set identifier is
 returned upon successful completion since data set y is overwritten.
 
+
 \item{\begin{verbatim}pfcomputetop mask\end{verbatim}} 
 This command computes the the top of the domain based on the mask of
  active and inactive zones.  This is the land-surface in \code{clm} or
  overland flow simulations.  The identifier of the data set created by
  this operation is returned upon successful completion.
 
+
 \item{\begin{verbatim}pfwatertabledepth top saturation \end{verbatim}}
  This command computes the the water table depth (distance from top to
  first cell with saturation = 1).  The identifier of the data set
  created by this operation is returned upon successful completion.
+
+
+\item{\begin{verbatim}pfcellsum datasetp datasetq mask\end{verbatim}}
+This command computes the cellwise sum of two datasets (i.e., the sum at each
+individual cell, not the sum over the domain). Datasets must have the same
+dimensions. 
+
+
+\item{\begin{verbatim}pfcellsumconst dataset constant mask\end{verbatim}}
+This command adds the value of constant to each (active) cell of dataset. 
 
 
 \item{\begin{verbatim}pfcvel conductivity phead\end{verbatim}}
@@ -286,9 +298,11 @@ is not the same as the grid cells; its corners are defined by the
 grid vertices.)  The identifier of the data set created by this
 operation is returned upon successful completion.
 
+
 \item{\begin{verbatim}pfdelete dataset\end{verbatim}}
 This command deletes the data set represented by the identifier `dataset'.
         
+
 \item{\begin{verbatim}pfdiffelt datasetp datasetq i j k digits [zero]\end{verbatim}}
 This command returns the difference of two corresponding coordinates
 from `datasetp' and `datasetq' if the number of digits in agreement
@@ -308,11 +322,13 @@ pfrun.  This command requires that the processor topology and
 computational grid be set in the input file so that it knows how to
 distribute the data.
 
+
 \item{\begin{verbatim}pfflux conductivity hhead\end{verbatim}}
 This command computes the net Darcy flux at vertices for the
 conductivity data set `conductivity' and the hydraulic head data      
 set given by `hhead'.  An identifier representing the flux computed   
 will be returned upon successful completion.
+
 
 \item{\begin{verbatim}pfextracttop top data\end{verbatim}} 
 This command computes the the top of the domain based on the top of the
@@ -328,6 +344,7 @@ are the number of grid points along the x, y, and z axes respectively.
 The string `dataset' is an identifier representing the data set whose
 element is to be retrieved.
         
+
 \item{\begin{verbatim}pfgetgrid dataset\end{verbatim}}
 This command returns a description of the grid which serves as the
 domain of data set `dataset'.  The format of the description is given 
@@ -341,7 +358,8 @@ coordinate in each direction.}
 \end{itemize}
 The above information is returned in the following Tcl list format:
 {nx ny nz} {x y z} {dx dy dz}
-        
+       
+
 \item{\begin{verbatim}pfgridtype gridtype\end{verbatim}}
 This command sets the grid type to either cell centered if `gridtype'
 is set to `cell' or vetex centered if `gridtype' is set to `vertex'.
@@ -349,10 +367,12 @@ If no new value for `gridtype' is given, then the current value of
 `gridtype' is returned.  The value of `gridtype' will be returned upon
 successful completion of this command.
 
+
 \item{\begin{verbatim}pfhhead phead\end{verbatim}}
 This command computes the hydraulic head from the pressure head       
 represented by the identifier `phead'.  An identifier for the 
 hydraulic head computed is returned upon successful completion.
+
 
 \item{\begin{verbatim}pflistdata dataset\end{verbatim}}
 This command returns a list of pairs if no argument is given.  The
@@ -361,8 +381,8 @@ set and the second item will be that data set's label.  If a data
 set's identifier is given as an argument, then just that data set's   
 name and label will be returned.
        
-\item{\begin{verbatim}pfload [file format] filename\end{verbatim}}
 
+\item{\begin{verbatim}pfload [file format] filename\end{verbatim}}
 Loads a dataset into memory so it can be manipulated using the other
 utilities.  A file format may preceed the filename in order to
 indicate the file's format.  If no file type option is given, then the
@@ -386,6 +406,7 @@ Default file type for files with a `.silo' extension.
 Default file type for files with a `.rsa' extension
 \end{itemize}
       
+
 \item{\begin{verbatim}pfloadsds filename dsnum\end{verbatim}}
 This command is used to load Scientific Data Sets from HDF files.    
 The SDS number `dsnum' will be used to find the SDS you wish to load
@@ -394,6 +415,7 @@ be assigned an identifier which will be used to refer to the data set
 until it is deleted.  This identifier will be returned upon
 successful completion of the command.  
         
+
 \item{\begin{verbatim}pfmdiff datasetp datasetq digits [zero]\end{verbatim}}
 If `digits' is greater than or equal to zero, then this command     
 computes the grid point at which the number of digits in agreement    
@@ -425,11 +447,13 @@ data set will be returned upon successful completion.
 This command changes the label of the data set `dataset' to
 `newlabel'.
  
+
 \item{\begin{verbatim}pfphead hhead\end{verbatim}}
 This command computes the pressure head from the hydraulic head   
 represented by the identifier `hhead'.  An identifier for the pressure
 head is returned upon successful completion.
         
+
 \item{\begin{verbatim}pfsavediff datasetp datasetq digits [zero] -file filename
 \end{verbatim}}
 This command saves to a file the differences between the values
@@ -447,6 +471,7 @@ computed will be saved.
 In each of the above cases, the maximum absolute difference given
 the criteria will also be saved.
 
+
 \item{\begin{verbatim}pfsave dataset -filetype filename\end{verbatim}}
 This command is used to save the data set given by the identifier
 `dataset' to a file `filename' of type `filetype' in one of the
@@ -460,6 +485,7 @@ File type options include:
 \item{silo} Silo binary format.
 \item{vis}  Vizamrai binary format.
 \end{itemize}
+
 
 \item{\begin{verbatim}pfsavesds dataset -filetype filename\end{verbatim}}
 This command is used to save the data set represented by the
@@ -479,6 +505,96 @@ The possible HDF formats are:
 \end{itemize}
 
        
+\item{\begin{verbatim}pfsetgrid {nx ny nz} {x0 y0 z0} {dx dy dz} dataset\end{verbatim}}
+This command replaces the grid information of dataset with the values provided. 
+
+
+\item{\begin{verbatim}pfslopex dem\end{verbatim}}
+This command computes slopes in the x-direction using 1st order upwind
+finite differences based on the digital elevation model dem. Slopes at local 
+maxima (in x-direction) are calculated as the maximum downward gradient to 
+an adjacent neighbor. Slopes at local minima (in x-direction) do not drain in 
+the x-direction and are therefore set to zero. Note that dem must be a 
+ParFlow dataset and must have the correct grid information -- dx in particular
+is used in slope calculations. If gridded elevation values are read from a text 
+file (e.g., using pfload's simple ascii format), grid inforamtion must be 
+specified using the pfsetgrid command. 
+
+
+\item{\begin{verbatim}pfslopey dem\end{verbatim}}
+This command computes slopes in the y-direction using 1st order upwind 
+finite differences based on the digital elevation model dem. Slopes at local 
+maxima (in y-direction) are calculated as the maximum downward gradient to 
+an adjacent neighbor. Slopes at local minima (in y-direction) do not drain in
+the y-direction and are therefore set to zero. Note that dem must be a 
+ParFlow dataset and must have the correct grid information -- dy in particular 
+is used in slope calculations. If gridded elevation values are read in from a 
+text file (e.g., using pfload's simple ascii format), grid information must be
+specified using the pfsetgrid command. 
+
+
+\item{begin{verbatim}pfslopeD8 dem\end{verbatim}}
+This command computes slopes according to the eight-point pour method (commonly
+referred to as the D8 method) based on the digital elevation model dem. Slopes 
+are computed as the maximum downward gradient between a given cell and it's lowest 
+neighbor (adjacent or diagonal). Local minima are set to zero; where local minima 
+occur on the edge of the domain, the 1st order upwind slope is used (i.e., the cell 
+is assumed to drain out of the domain). Note that dem must be a ParFlow dataset and
+must have the correct grid information -- dx and dy both used in slope calculations.
+If gridded elevation values are read in from a text file (e.g., using pfload's simple 
+ascii format), grid information must be specified using the pfsetgrid command. It should be noted that ParFlow uses slope_x and slope_y (NOT D8 slopes!) in runoff calculations.
+
+
+\item{\begin{verbatim}pfpitfilldem dem dpit maxiter
+This command fills sinks in the digital elevation model dem by a standard iterative 
+pit-filling routine. Sinks are identified as cells with zero slope in both x- and 
+y-directions, or as local minima in elevation (i.e., all adjacent neighbors have 
+higher elevations). At each iteration, the value dpit is added to all remaining 
+sinks. The procedure continues iteratively until all sinks are filled or the number
+of iterations reaches maxiter. For most applications, sinks should be filled prior
+to computing slopes (i.e., prior to executing pfslopex and pfslopey).
+
+
+\item{\begin{verbatim}pfflintslaw dem c p\end{verbatim}}
+This command smooths the digital elevation model dem according to Flints Law, with
+Flints Law parameters specified by c and p, respectively. Flints Law relates the 
+slope magnitude at a given cell to its upstream contributing area: S = c*A**p. In 
+this routine, elevations at local minima retain the same value as in the original 
+dem. Elevations at all other cells are computed by applying Flints Law recursively 
+up each drainage path, starting at its terminus (a local minimum) until a drainage 
+divide is reached. Elevations are computed as: 
+
+dem[i,j] = dem[child] + c*(A[i,j]**p)*ds[i,j]
+
+where child is the D8 child of [i,j] (i.e., the cell to which [i,j] drains according
+to the D8 method); ds[i,j] is the segment length between the [i,j] and its child; 
+A[i,j] is the upstream contributing area of [i,j]; and c and p are constants.
+
+
+\item{\begin{verbatim}pfflintslawfit dem c0 p0 maxiter\end{verbatim}}
+This command fits Flint's Law parameters c and p for the provided digital elevation 
+model dem using the iterative Levenberg-Marquardt method of non-linear least squares 
+minimization. The user must provide initial estimates of c0 and p0; results are not
+sensitive to these initial values. The user must also specify the maximum number of 
+iterations as maxiter. Final values of c and p are printed to the screen, and a 
+dataset containing smoothed elevation values is returned. Smoothed elevations are 
+identical to running pfflintslaw for the final values of c and p. Note that dem 
+must be a ParFlow dataset and must have the correct grid information -- dx, dy, nx, 
+and ny are used in parameter estimation and Flint's Law calculations. If gridded 
+elevation values are read in from a text file (e.g., using pfload's simple ascii 
+format), grid information must be specified using the pfsetgrid command. 
+
+
+\item{\begin{verbatim}pfmovingaveragedem dem wsize maxiter
+This command fills sinks in the digital elevation model dem by a standard iterative
+moving-average routine. Sinks are identified as cells with zero slope in both x- and
+y-directions, or as local minima in elevation (i.e., all adjacent cells have higher 
+elevations). At each iteration, a moving average is taken over a window of width
+wsize around each remaining sink; sinks are thus filled by averaging over neighboring
+cells. The procedure continues iteratively until all sinks are filled or the number 
+of iterations reaches maxiter. For most applications, sinks should be filled prior
+to computing slopes (i.e., prior to executing pfslopex and pfslopey). 
+
 \item{\begin{verbatim}pfstats dataset\end{verbatim}}
 This command prints various statistics for the data set represented by
 the identifier `dataset'.  The minimum, maximum, mean, sum, variance,
@@ -486,23 +602,28 @@ and standard deviation are all computed.  The above values are
 returned in a list of the following form:
 {min max mean sum variance (standard deviation)}
 
+
 \item{\begin{verbatim}pfsubsurfacestorage mask porosity pressure saturation specific_storage\end{verbatim}}
 This command computes the sub-surface water storage (compressible and incompressible components) based on mask, porosity, saturation, storativity and pressure fields. The equations used to calculate this quantity are given in \S~\ref{Water Balance}. The identifier  
 of the data set created by this operation is returned upon successful 
 completion.  
 
+
 \item{\begin{verbatim}pfsum dataset\end{verbatim}}
 This command computes the sum over the domain of the dataset.
+
 
 \item{\begin{verbatim}pfsurfacerunoff top slope_x slope_y  mannings pressure\end{verbatim}}
 This command computes the surface water runoff (out of the domain) based on a computed top, pressure field, slopes and mannings roughness values. This is integrated along all domain boundaries and is calculated any location that slopes at the edge of the domain point outward.  This data is in units of $[L^3 T^{-1}]$ and the equations used to calculate this quantity are given in \S~\ref{Water Balance}. The identifier  
 of the data set created by this operation is returned upon successful 
 completion.  
         
+
 \item{\begin{verbatim}pfsurfacestorage top pressure\end{verbatim}}
 This command computes the surface water storage (ponded water on top of the domain) based on a computed top and pressure field. The equations used to calculate this quantity are given in \S~\ref{Water Balance}. The identifier  
 of the data set created by this operation is returned upon successful 
 completion.  
+
 
 \item{\begin{verbatim}pfvmag datasetx datasety datasetz\end{verbatim}}
 This command computes the velocity magnitude when given three velocity
@@ -563,7 +684,6 @@ description of `pfstats' will be displayed along with a label.
 
 
 \item{\begin{verbatim}pfundist filename, pfundist runname\end{verbatim}}
-
 The command undistributes a \parflow{} output file.  \parflow{} uses a
 distributed file system where each node can write to its own file.
 The pfundist command takes all of these individual files and collapses
@@ -574,6 +694,15 @@ then all of the output files associated with that run are
 undistributed.
 
 Normally this is done after every pfrun command.
+
+
+\item{\begin{verbatim}pfupstreamarea slope_x slope_y\end{verbatim}}
+This command computes the upstream area contributing to surface runoff
+at each cell based on the x and y slope values provided in datasets 
+slope_x and slope_y, respectively. Contributing area is computed recursively
+for each cell; areas are not weighted by slope direction. Areas are returned
+as the number of upstream (contributing) cells; to compute actual area, simply
+multiply by the cell area (dx*dy). 
 
         
 \end{description}        
