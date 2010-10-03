@@ -31,6 +31,7 @@
 
 #include "parflow.h"
 
+#include <string.h>
 #include <assert.h>
 
 /*--------------------------------------------------------------------------
@@ -108,7 +109,6 @@ void resetBoundary(Vector *vector, const double value, const int ghosts)
 	       
       const int nx_f = SubvectorNX(subvector);
       const int ny_f = SubvectorNY(subvector);
-      const int nz_f = SubvectorNZ(subvector);
 	       
       double *data = SubvectorElt(subvector,ix_all,iy_all,iz_all);
 
@@ -118,8 +118,6 @@ void resetBoundary(Vector *vector, const double value, const int ghosts)
 		ix_all,iy_all,iz_all,nx_all,ny_all,nz_all,
 		fi,nx_f,ny_f,nz_f,1,1,1,
 		{
-
-		   double tmp = data[fi];
 
 		   if ( i == ix_all || 
 			j == iy_all || 
