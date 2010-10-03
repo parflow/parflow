@@ -105,3 +105,4 @@ testclean:
 	@rm -fr drv_clmin.dat.*
 	@rm -fr drv_vegm.dat.*
 	@rm -fr core*
+	@rm -fr clm_output.txt.*

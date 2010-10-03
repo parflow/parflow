@@ -127,17 +127,4 @@ void         SetBackgroundBounds(
    BackgroundNX(background) = ix_upper - ix_lower + 1;
    BackgroundNY(background) = iy_upper - iy_lower + 1;
    BackgroundNZ(background) = iz_upper - iz_lower + 1;
-
-// #define SGS
-#ifdef SGS
-   printf("SGS3:%d X = [%f, %f, %e] DX = [%f, %f, %f]\n",
-	  amps_Rank(),
-	  BackgroundX(background), BackgroundY(background), BackgroundZ(background),
-	  BackgroundDX(background), BackgroundDY(background), BackgroundDZ(background));
-   printf("SGS3:%d I = [%i, %i, %i] N = [%i, %i, %i]\n",
-	  amps_Rank(),
-	  BackgroundIX(background), BackgroundIY(background), BackgroundIZ(background),
-	  BackgroundNX(background), BackgroundNY(background), BackgroundNZ(background));
-#endif
-
 }

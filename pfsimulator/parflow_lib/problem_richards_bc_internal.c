@@ -226,8 +226,17 @@ int          fcn)
                BoxLoopI0(i, j, k,
                          ix, iy, iz, nx, ny, nz,
 	       {
-                  ip = SubvectorEltIndex(f_sub, i, j, k);
-	          fp[ip] = pp[ip] - value;
+		  /* Need to check if i,j,k is part of this subgrid or not */
+                  if (((i >= SubgridIX(subgrid)) &&
+                       (i < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
+                      ((j >= SubgridIY(subgrid)) &&
+                       (j < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
+                      ((k >= SubgridIZ(subgrid)) &&
+                       (k < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
+                  {
+		     ip = SubvectorEltIndex(f_sub, i, j, k);
+		     fp[ip] = pp[ip] - value;
+		  }
 	       });
 	    }
 	    else if (fcn == CALCDER)
@@ -245,14 +254,24 @@ int          fcn)
 	       BoxLoopI0(i, j, k,
 			 ix, iy, iz, nx, ny, nz,
                {
-		  im = SubmatrixEltIndex(A_sub, i, j, k);
-		  cp[im] = 1.0;
-		  wp[im] = 0.0;
-		  ep[im] = 0.0;
-		  sp[im] = 0.0;
-		  np[im] = 0.0;
-		  lp[im] = 0.0;
-		  up[im] = 0.0;
+
+		  /* Need to check if i,j,k is part of this subgrid or not */
+                  if (((i >= SubgridIX(subgrid)) &&
+                       (i < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
+                      ((j >= SubgridIY(subgrid)) &&
+                       (j < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
+                      ((k >= SubgridIZ(subgrid)) &&
+                       (k < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
+                  {
+		     im = SubmatrixEltIndex(A_sub, i, j, k);
+		     cp[im] = 1.0;
+		     wp[im] = 0.0;
+		     ep[im] = 0.0;
+		     sp[im] = 0.0;
+		     np[im] = 0.0;
+		     lp[im] = 0.0;
+		     up[im] = 0.0;
+		  }
 	       });
 	    }
 

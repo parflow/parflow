@@ -406,7 +406,6 @@ PFModule  *BCInternalNewPublicXtra()
    public_xtra = ctalloc(PublicXtra, 1);
 
    internal_bc_names = GetStringDefault("InternalBC.Names", "");
-    printf("internal bc \n");
    public_xtra -> internal_bc_names = NA_NewNameArray(internal_bc_names);
 
    (public_xtra -> num_conditions) = num_conditions = 

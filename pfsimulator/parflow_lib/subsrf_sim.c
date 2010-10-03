@@ -231,12 +231,6 @@ GrGeomSolid  **gr_geounits)
       {
 	 gr_solid = ProblemDataGrSolid(problem_data, tens_indexes[ir]);
 
-#ifdef SGS
-	 printf("SGS kx_values[%d] %e\n", ir, kx_values[ir]);
-	 printf("SGS ky_values[%d] %e\n", ir, ky_values[ir]);
-	 printf("SGS kz_values[%d] %e\n", ir, kz_values[ir]);
-#endif
-
 	 ForSubgridI(sg, GridSubgrids(grid))
 	 {
 	    subgrid = SubgridArraySubgrid(GridSubgrids(grid), sg);

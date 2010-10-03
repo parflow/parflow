@@ -16,6 +16,7 @@ TESTS := \
 	test_X.tcl \
 	default_single.tcl \
 	default_richards.tcl \
+	default_richards_wells.tcl \
 	forsyth2.tcl \
 	harvey.flow.tcl \
 	harvey_flow_pgs.tcl \
@@ -61,7 +62,8 @@ ifeq (${AMPS},mpi1)
 
 PARALLEL_TESTS += \
 	default_single.tcl \
-	default_richards.tcl
+	default_richards.tcl \
+	default_richards_wells.tcl
 endif
 
 check: check_sequential check_parallel check_samrai 
@@ -140,6 +142,7 @@ testclean:
 	@rm -f *.pfidb
 	@rm -f *.out.txt
 	@rm -fr default_richards.out 
+	@rm -fr default_richards_wells.out 
 	@rm -fr indicator_field.out
 	@rm -fr water_balance.out
 	@rm -fr default_overland.out
