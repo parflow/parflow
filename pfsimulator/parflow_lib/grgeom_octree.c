@@ -1867,7 +1867,6 @@ int             octree_iz)
 	    // ind just be used directly, seems to convert to 
 	    // edges back to interior which we already have?
 
-#if 1
             interior_tag   = ctalloc(unsigned char, nz_all);
             edge_tag       = ctalloc(int, nz_all);
             for(j = j_begin; j <= j_end; j++)
@@ -1930,123 +1929,9 @@ int             octree_iz)
                   }
                }
             }
-#else
-
-            interior_tag   = ctalloc(unsigned char, nz_all);
-            edge_tag       = ctalloc(int, nz_all);
-            for(j = j_begin; j <= j_end; j++)
-            {
-               for(i = i_begin; i <= i_end; i++)
-               {
-                  iprime = i - ix_all;
-                  jprime = j - iy_all;
-
-                  index = nx_all * (ny_all * 0 + jprime) + iprime;
-                  prev_state = ind[index];
-
-                  /* Fill in the edge crossing info */
-                  for(k = 0; k < nz_all - 2;  k++)
-                  {
-                     index = nx_all * (ny_all * (k + 1) + jprime) + iprime;
-                     edge_tag[k] = 0;
-                     if (ind[index] == INSIDE)
-                     {
-                        if (prev_state != INSIDE)
-                        {
-                           edge_tag[k] = -1;
-                        }
-                        prev_state = INSIDE;
-                     }
-                     else
-                     {
-                        if (prev_state != OUTSIDE)
-                        {
-                           edge_tag[k] = 1;
-                        }
-                        prev_state = OUTSIDE;
-                     }
-
-                  }
-
-                  /* Fill in the interior info using the edge crossing info */
-                  index = nx_all * (ny_all * 0 + jprime) + iprime;
-                  state = ind[index];
-                  for(k = 0; k < nz_all - 2;  k++)
-                  {
-                     interior_tag[k] = 0;
-                     if (state == INSIDE)
-                     {
-                        if (edge_tag[k] != 0)
-                        {
-                           state = OUTSIDE;
-                        }
-                        else if (edge_tag[k+1] == 0)
-                        {
-                           interior_tag[k] = GrGeomOctreeCellFull;
-                        }
-                     }
-                     else
-                     {
-                        if (edge_tag[k] != 0)
-                        {
-                           state = INSIDE;
-                        }
-                     }
-
-                  }
-
-                  /* Add `Full' nodes to the octree */
-                  k = k_begin;
-                  while (k <= k_end)
-                  {
-                     if (interior_tag[(k - k_begin)])
-                     {
-                        /* try to find the (i, j, k, level) octree node */
-                        grgeom_octree = GrGeomOctreeFind(&new_level,
-                                                         solid_octree,
-                                                         (i - ((int) (octree_ix / inc))),
-                                                         (j - ((int) (octree_iy / inc))),
-                                                         (k - ((int) (octree_iz / inc))),
-                                                         level);
-
-                        /* Only change non-`Full' cells */
-                        if (!GrGeomOctreeCellIsFull(grgeom_octree))
-                        {
-                           if ((new_level == level) || (new_level < min_l))
-                           {
-                              /* Only change `Empty' cells */
-                              if (GrGeomOctreeCellIsEmpty(grgeom_octree))
-                              {
-                                  GrGeomOctreeSetCell(grgeom_octree, GrGeomOctreeCellFull);
-                              }
-                           }
-                           else
-                           {
-                              /* Create children and set */
-                              GrGeomNewOctreeChildren(grgeom_octree);
-                              for (ic = 0; ic < GrGeomOctreeNumChildren; ic++)
-                              {
-                                 grgeom_child = GrGeomOctreeChild(grgeom_octree, ic);
-                                 GrGeomOctreeSetCell(grgeom_child, GrGeomOctreeCellFull);
-                              }
-                           }
-                        }
-
-                        /* compute the new k index */
-                        tmp_inc = Pow2(level - new_level);
-                        k = (((int) (k / tmp_inc)) + 1) * tmp_inc;
-                     }
-                     else
-                     {
-                        k++;
-                     }
-                  }
-               }
-            }
-            tfree(edge_tag);
-            tfree(interior_tag);
-#endif
-
+	    
+	    tfree(edge_tag);
+	    tfree(interior_tag);
             tfree(ind);
          }
       }

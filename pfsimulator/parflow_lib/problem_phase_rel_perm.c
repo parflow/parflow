@@ -2044,6 +2044,9 @@ void  PhaseRelPermFreePublicXtra()
 	      tfree(dummy1 -> lookup_tables[ir] -> a_der);
 	      tfree(dummy1 -> lookup_tables[ir] -> d_der);
 
+	      tfree(dummy1 -> lookup_tables[ir] -> slope);
+	      tfree(dummy1 -> lookup_tables[ir] -> slope_der);
+
 	      tfree(dummy1 -> lookup_tables[ir]);
 	   }
 	}
