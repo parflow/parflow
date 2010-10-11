@@ -49,17 +49,20 @@ int ComputeTestParent(
    int j,
    int ii,
    int jj,
+   Databox *dem,
    Databox *sx,
    Databox *sy);
 
 void ComputeParentMap( 
    int i,
    int j,
+   Databox *dem,
    Databox *sx,
    Databox *sy,
    Databox *parentmap);
 
 void ComputeUpstreamArea( 
+   Databox *dem,
    Databox *sx, 
    Databox *sy, 
    Databox *area);

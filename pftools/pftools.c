@@ -5297,6 +5297,8 @@ int            UpstreamAreaCommand(
    Data          *data = (Data *)clientData;
 
    // Input
+   Databox       *dem;
+   char          *dem_hashkey;
    Databox       *sx;
    char          *sx_hashkey;
    Databox       *sy;
@@ -5308,14 +5310,21 @@ int            UpstreamAreaCommand(
    char          *filename = "upstream contributing area";
 
    /* Check if two arguments following command  */
-   if (argc == 2)
+   if (argc == 3)
    {
       WrongNumArgsError(interp, PFUPSTREAMAREAUSAGE);
       return TCL_ERROR;
    }
 
-   sx_hashkey = argv[1];
-   sy_hashkey = argv[2];
+   dem_hashkey = argv[1];
+   sx_hashkey  = argv[2];
+   sy_hashkey  = argv[3];
+   
+   if ((dem = DataMember(data, dem_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,dem_hashkey);
+      return TCL_ERROR;
+   }
 
    if ((sx = DataMember(data, sx_hashkey, entryPtr)) == NULL)
    {
@@ -5354,7 +5363,7 @@ int            UpstreamAreaCommand(
          }
          /* Compute areas */
 
-         ComputeUpstreamArea(sx,sy,area);
+         ComputeUpstreamArea(dem,sx,sy,area);
       }
       else
       {
