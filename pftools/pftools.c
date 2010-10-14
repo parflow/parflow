@@ -5354,6 +5354,7 @@ int            UpstreamAreaCommand(
       /* create the new databox structure for area values (area) */
       if ( (area = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
       {
+
          /* Make sure dataset pointer was added to hash table   */
          if (!AddData(data, area, filename, area_hashkey))
             FreeDatabox(area);
@@ -5361,9 +5362,94 @@ int            UpstreamAreaCommand(
          {
             Tcl_AppendElement(interp, area_hashkey);
          }
-         /* Compute areas */
 
+         /* Compute areas */
          ComputeUpstreamArea(dem,sx,sy,area);
+
+      }
+
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+
+   }
+
+   return TCL_OK;
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pffillflats' command
+ * Description: Find flat regions in DEM, eliminat flats by bilinearly 
+ *              interpolating elevations across flat region.
+ *
+ * Cmd. syntax: pffillflats dem
+*-----------------------------------------------------------------------*/
+int            FillFlatsCommand(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+   Tcl_HashEntry *entryPtr;   // Points to new hash table entry
+   Data          *data = (Data *)clientData;
+
+   // Input
+   Databox       *dem;
+   char          *dem_hashkey;
+
+   // Output
+   Databox       *newdem;
+   char           newdem_hashkey[MAX_KEY_SIZE];
+   char          *filename = "DEM with flats filled";
+
+   /* Check if one argument following command  */
+   if (argc == 1)
+   {
+      WrongNumArgsError(interp, PFFILLFLATSUSAGE);
+      return TCL_ERROR;
+   }
+
+   dem_hashkey = argv[1];
+   if ((dem = DataMember(data, dem_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,dem_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx    = DataboxNx(dem);
+      int ny    = DataboxNy(dem);
+      int nz    = 1;
+
+      double x  = DataboxX(dem);
+      double y  = DataboxY(dem);
+      double z  = DataboxZ(dem);
+
+      double dx = DataboxDx(dem);
+      double dy = DataboxDy(dem);
+      double dz = DataboxDz(dem);
+
+      /* create the new databox structure for new dem values (newdem) */
+      if ( (newdem = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+
+         /* Make sure dataset pointer was added to hash table   */
+         if (!AddData(data, newdem, filename, newdem_hashkey))
+         {
+            FreeDatabox(newdem);
+         }
+         else
+         {
+            Tcl_AppendElement(interp, newdem_hashkey);
+         }
+
+         /* Compute DEM w/o flat regions */
+         ComputeFillFlats(dem,newdem);
+
       }
       else
       {
@@ -6044,5 +6130,6 @@ int            FlintsLawFitCommand(
    }
 
    return TCL_OK;
+
 }
 

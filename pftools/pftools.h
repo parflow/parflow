@@ -169,6 +169,7 @@ void CellDivConst(Databox *X, double val, Databox *mask, Databox *sum);
 int SlopeXUpwindCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int SlopeYUpwindCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int UpstreamAreaCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int FillFlatsCommand    P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int PitFillCommand   P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int MovingAvgCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int SlopeD8Command   P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));

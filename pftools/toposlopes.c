@@ -432,6 +432,12 @@ int ComputeTestParent(
       printf("Error: TestParent(i,j,ii,jj,sx,sy) \n");
       printf("       [i,j] and [ii,jj] are not adjacent cells! \n");
    }
+   
+   // print check
+   if (test==1)
+   {
+      printf( "                       --> ComputeTestParent: [%d,%d] is parent of [%d,%d] \n", ii,jj,i,j );
+   }
 
    return test; 
 
@@ -501,7 +507,7 @@ void ComputeParentMap( int i,
                ;
             }
 
-            // skip of NEIGHBOR is nodata cell (dem=-9999.0)
+            // skip if NEIGHBOR is nodata cell (dem=-9999.0)
             else if (*DataboxCoeff(dem,ii,jj,0)==-9999.0)
             {
                ;
@@ -514,7 +520,7 @@ void ComputeParentMap( int i,
                parent  = ComputeTestParent( i,j,ii,jj,dem,sx,sy );
              
                // if parent, loop recursively
-               if (parent==1) 
+               if ( (parent==1) && (*DataboxCoeff(parentmap,ii,jj,0)!=1.0) )
                { 
                   ComputeParentMap(ii,jj,dem,sx,sy,parentmap);
                }
@@ -571,6 +577,9 @@ void ComputeUpstreamArea(
       for (i = 0; i < nx; i++)
       {
 
+         // print check
+         printf( "ComputeUpstreamArea -- OuterLoop -- [%d,%d] \n", i, j );
+
          // zero out parentmap
          for (jj = 0; jj < ny; jj++)
          { 
@@ -584,6 +593,7 @@ void ComputeUpstreamArea(
          // (skip nodata cells...if not nodata, recursive loop)
          if ( *DataboxCoeff(dem,i,j,0)!=-9999.0 )
          {
+            printf( "                       Calling ComputeParentMap @ [%d,%d] \n", i, j);
             ComputeParentMap(i,j,dem,sx,sy,parentmap);
          }
 
@@ -600,8 +610,387 @@ void ComputeUpstreamArea(
 
    } // end loop over j
 
+   FreeDatabox(parentmap);
+
 }
 
+
+/*-----------------------------------------------------------------------
+ * ComputeFlatMap:
+ *
+ * Computes map of contiguous flat region starting from the given [i,j]. 
+ * Recursively loops over neighbors to map extent of flat region
+ *
+ *-----------------------------------------------------------------------*/
+
+void ComputeFlatMap( 
+   int i,
+   int j,
+   Databox *dem,
+   Databox *flatmap)
+{
+
+   int      ii, jj;
+   int nx  = DataboxNx(dem);
+   int ny  = DataboxNy(dem);
+
+   // skip if self is nodata cell (dem=-9999.0)
+   if (*DataboxCoeff(dem,i,j,0)==-9999.0)
+   {
+      ;
+   }
+
+   // otherwise, loop over neighbors...
+   else
+   {
+
+      // Add self to flat map
+      *DataboxCoeff(flatmap,i,j,0) = 1.0;
+
+      // Loop over neighbors
+      for (jj = j-1; jj <= j+1; jj++)
+      {
+         for (ii = i-1; ii <= i+1; ii++)
+         {
+
+            // skip self
+            if ((ii==i) && (jj==j))
+            {
+               ;
+            }
+
+            // skip diagonals
+            else if ((ii!=i) && (jj!=j))
+            {
+               ;
+            }
+
+            // skip off-grid cells
+            else if (ii<0 || jj<0 || ii>nx-1 || jj>ny-1)
+            {
+               ;
+            }
+
+            // skip if NEIGHBOR is nodata cell (dem=-9999.0)
+            else if (*DataboxCoeff(dem,ii,jj,0)==-9999.0)
+            {
+               ;
+            }
+
+            // otherwise, test if [ii,jj] has same elevation as [i,j]...
+            else
+            {
+               // if same elevation, loop recursively
+               if (*DataboxCoeff(dem,i,j,0)==*DataboxCoeff(dem,ii,jj,0))
+               {
+                  // only make recursive call if cell isn't already mapped...
+                  if (*DataboxCoeff(flatmap,ii,jj,0)!=1.0) 
+                  {
+                     *DataboxCoeff(flatmap,ii,jj,0) = 1.0;
+                     ComputeFlatMap(ii,jj,dem,flatmap);
+                  }
+               }
+            }
+
+         } // end loop over i
+
+      } // end loop over j
+
+   } // end if self==nodata
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * ComputeFillFlats:
+ *
+ * Scans DEM for flat areas, defined as contiguous areas where all cells
+ * have exactly the same elevation. Areas must have at least one cell with
+ * identical elevations at all adjacent neighbors (i.e., one cell with zero
+ * slope in both x and y). 
+ *
+ * Once the extent of a flat area is identified, elevations are adjusted 
+ * by bilinearly interpolating across the flat region. This imposes a small
+ * arbitrary slope so that areas are no longer perfectly flat.
+ *
+ *-----------------------------------------------------------------------*/
+void ComputeFillFlats(
+    Databox *dem,
+    Databox *newdem)
+{
+
+   int             flat;
+   int             i,  j,  ii,  jj;
+   int             iscan, jscan;
+   double          zleft, dleft;
+   double          zright, dright;
+   double          zup, dup;
+   double          zdown, ddown;
+   double          wt_sum, sum_wt;
+   int             nx, ny, nz;
+   double          x,  y,  z;
+   double          dx, dy, dz;
+   Databox        *flatmap;
+  
+   // check 1
+   // printf( "Starting ComputeFillFlats\n" );
+ 
+   // Read grid info from input vars
+   nx      = DataboxNx(dem);
+   ny      = DataboxNy(dem);
+   nz      = DataboxNz(dem);
+   x       = DataboxX(dem);
+   y       = DataboxY(dem);
+   z       = DataboxZ(dem);
+   dx      = DataboxDx(dem);
+   dy      = DataboxDy(dem);
+   dz      = DataboxDz(dem);
+
+   // Create empty databox for flatmap 
+   flatmap = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
+
+   // Set initial values of newdem to dem
+   for (j = 0; j < ny; j++)
+   {
+      for (i = 0; i < nx; i++)
+      {
+         *DataboxCoeff(newdem,i,j,0) = *DataboxCoeff(dem,i,j,0);
+      }
+   }
+
+   // Loop over full grid...
+   // printf( "         ComputeFillFlats -- Looping over full grid \n" );
+   for (j = 0; j < ny; j++)
+   {
+      for (i = 0; i < nx; i++)
+      {
+
+         // printf( "         Outer Loop @ [%d,%d] ... \n", i, j );
+
+         // skip nodata cells
+         if ( *DataboxCoeff(newdem,i,j,0) == -9999.0 )
+         {
+            ;
+         }
+ 
+         // else, loop over neighbors, test if cell is a local flat spot
+         else
+         {
+
+            // assume flat until tests otherwise
+            flat    = 1;
+            for (jj = j-1; jj <= j+1; jj++)
+            { 
+               for (ii = i-1; ii <= i+1; ii++)
+               { 
+                  // make sure [i,j] and [ii,jj] are adjacent
+                  if ( (fabs(i-ii)+fabs(j-jj)) == 1.0 )
+                  { 
+                     // skip off-grid cells
+                     if ( (ii<0) || (jj<0) || (ii>=nx) || (jj>=ny) )
+                     { 
+                        ;
+                     }
+                     // otherwise, if [i,j] and [ii,jj] are NOT at same elevation, set flat to zero
+                     else if (*DataboxCoeff(newdem,i,j,0) != *DataboxCoeff(newdem,ii,jj,0))
+                     { 
+                           flat = 0;
+                     } // end if/else on off-grid cells
+                  } // end if on adjacent
+               } // end loop over ii
+            } // end loop over jj
+
+            // printf( "         --> flat[%d,%d] = %d \n", i, j, flat );         
+
+            // if [i,j] is part of a flat region...
+            // -- map extent of flat region
+            // -- interpolate to eliminate flat region
+            if (flat==1)
+            {
+
+               // reset flatmap to all zeros
+               for (jj = 0; jj < ny; jj++)
+               { 
+                  for (ii = 0; ii < nx; ii++)
+                  {
+                     *DataboxCoeff(flatmap,ii,jj,0) = 0.0;
+                  }
+               }
+
+               // call ComputeFlatMap
+               // printf( "         --> call ComputeFlatMap @ [%d,%d] \n", i, j );
+               ComputeFlatMap(i,j,newdem,flatmap);
+               // printf( "             done. \n" );
+
+               // modify newdem values to eliminate flat region
+               for (jj = 0; jj < ny; jj++)
+               {
+                  for (ii = 0; ii < nx; ii++)
+                  {
+
+                     // printf( "         Inner Loop @ [%d,%d] ... \n", ii, jj );
+
+                     // don't change edge cells
+                     if ( (ii==0) || (ii==nx-1) || (jj==0) || (jj==ny-1) )
+                     {
+                        ;
+                     }
+
+                     // interpolate to set flat cells
+                     else if (*DataboxCoeff(flatmap,ii,jj,0)==1.0)
+                     {
+
+                        // printf( "         --> Interpolating flat cell ... \n" );
+
+                        zleft    = 0.0;
+                        dleft    = 0.0;
+                        zright   = 0.0;
+                        dright   = 0.0;
+                        zup      = 0.0;
+                        dup      = 0.0;
+                        zdown    = 0.0;
+                        ddown    = 0.0;
+                           
+                        // scan left...
+                        iscan    = ii;
+                        while ( (iscan>0) && (*DataboxCoeff(flatmap,iscan,jj,0)==1.0) )
+                        {
+                           iscan = iscan - 1;
+                        }
+                        // printf( "             iscan[left] = \t%d \n", iscan );
+                        zleft    = *DataboxCoeff(newdem,iscan,jj,0);
+                        dleft    = fabs( (double)ii - (double)iscan );
+                        
+                        // scan right...
+                        iscan    = ii;
+                        while ( (iscan<nx-1) && (*DataboxCoeff(flatmap,iscan,jj,0)==1.0) )
+                        { 
+                           iscan = iscan + 1;
+                        }
+                        // printf( "             iscan[right] = \t%d \n", iscan );
+                        zright   = *DataboxCoeff(newdem,iscan,jj,0);
+                        dright   = fabs( (double)ii - (double)iscan );
+              
+                        // scan up...
+                        jscan    = jj;
+                        while ( (jscan<ny-1) && (*DataboxCoeff(flatmap,ii,jscan,0)==1.0) )
+                        {
+                           jscan = jscan + 1;
+                        }
+                        // printf( "             iscan[up] = \t%d \n", jscan );
+                        zup      = *DataboxCoeff(newdem,ii,jscan,0);
+                        dup      = fabs( (double)jj - (double)jscan );
+                        
+                        // scan down...
+                        jscan    = jj;
+                        while ( (jscan>0) && (*DataboxCoeff(flatmap,ii,jscan,0)==1.0) )
+                        { 
+                           jscan = jscan - 1;
+                        }
+                        // printf( "             iscan[down] = \t%d \n", jscan );
+                        zdown    = *DataboxCoeff(newdem,ii,jscan,0);
+                        ddown    = fabs( (double)jj - (double)jscan );
+                        
+                        // compute weighted sum and sum of weights (linear inverse distance weighting)
+                        wt_sum   = (zleft/dleft) + (zright/dright) + (zup/dup) + (zdown/ddown);
+                        sum_wt   = (1./dleft)    + (1./dright)     + (1./dup)  + (1./ddown);
+
+                        // Inverse distance weighted avg...
+                        // *DataboxCoeff(newdem,ii,jj,0) = wt_sum/sum_wt;
+
+                        // Inverse distance weighted avg WITH SELF TERM!
+                        *DataboxCoeff(newdem,ii,jj,0) = (*DataboxCoeff(newdem,ii,jj,0) + (wt_sum/sum_wt)) / 2.0;
+ 
+                        // printf( "             wt_sum = (%f/%f) + (%f/%f) + (%f/%f) + (%f/%f) \n", 
+                        //          zleft, dleft, zright, dright, zup, dup, zdown, ddown );
+                        // printf( "             sum_wt = (1./%f) + (1./%f) + (1./%f) + (1./%f) \n", 
+                        //          dleft, dright, dup, ddown );
+             
+
+                     } // end else
+                  } // end loop over ii
+               } // end loop over jj
+            } // end if flat==1
+         } // end if/else nodata
+      } // end loop over i
+   } // end loop over j
+
+   FreeDatabox(flatmap);
+
+}
+
+/*-----------------------------------------------------------------------
+
+   FillFlats...
+   ALTERNATIVE SCHEME TO ENSURE DRAINAGE @ LOWEST NEIGHBOR...
+   INCOMPLETE!!!
+
+               // identify lowest cell -- i.e., cell where flat region should drains
+               imin    = -9999;
+               jmin    = -9999;
+               zmin    =  99999999.0;
+               no_out  =  1;
+               for (jj = 0; jj < ny; jj++)
+               {
+                  for (ii = 0; ii < nx; ii++)
+                  {
+
+                     // find cells in flat region
+                     if (*DataboxCoeff(flatmap,ii,jj,0)==1.0)
+                     {
+
+                        // loop to find lowest neighbor
+                        for (jscan = jj-1; jscan <= jj+1; jscan++)
+                        {
+                           for (iscan = ii-1; iscan <= ii+1; iscan++)
+                           {
+                              // skip off-grid cells
+                              if ( (iscan<0) || (jscan<0) || (iscan>=nx) || (jscan>=ny) )
+                              {
+                                 ;
+                              }
+                              // skip nodata cells
+                              else if (*DataboxCoeff(dem,iscan,jscan,0)==-9999.0)
+                              {
+                                 ;
+                              }
+                              // skip cells in flat region
+                              else if (*DataboxCoeff(flatmap,iscan,jscan,0)==1.0)
+                              {
+                                 ;
+                              }
+                              // skip diagonals
+                              else if ( (fabs(iscan-ii)+fabs(jscan-jj)) != 1.0 )
+                              {
+                                 ;
+                              }
+                              // if z[iscan,jscan] < z[flat region] AND z[iscan,jscan] < z[flat] -> set imin,jmin,zmin
+                              else if ( (*DataboxCoeff(dem,iscan,jscan,0)<*DataboxCoeff(dem,ii,jj,0)) &&
+                                        (*DataboxCoeff(dem,iscan,jscan,0)<zmin) )
+                              {
+                                 imin = iscan;
+                                 jmin = jscan;
+                                 zmin = *DataboxCoeff(dem,iscan,jscan,0);
+                              }
+
+                           } // end neighbor loop (iscan)
+                        } // end neighbor loop (jscan)
+                     } // end if in flatmap
+                  } // end loop over ii
+               } // end loop over jj
+
+               // if flat area is a local minimum (depression) --> no drainage outlet
+               // decrease slopes slightly to create fill-able minimum
+               // if ( (imin==-9999) && (jmin==-9999) )
+               {
+                  for (jj = 0; jj < ny; jj++)
+                  {
+
+   INCOMPLETE
+ *-----------------------------------------------------------------------*/
+
+
+                     
 
 /*-----------------------------------------------------------------------
  * ComputePitFill:
@@ -633,8 +1022,6 @@ int ComputePitFill(
  
    Databox        *sx;
    Databox        *sy;
-   // char            sx_hashkey;
-   // char            sy_hashkey;
 
    nx    = DataboxNx(dem);
    ny    = DataboxNy(dem);
@@ -739,6 +1126,8 @@ int ComputePitFill(
       } // end loop over i
    } // end loop over j
 
+   FreeDatabox(sx);
+   FreeDatabox(sy);
    return nsink;
 
 }
@@ -924,6 +1313,8 @@ int ComputeMovingAvg(
       } // end loop over i
    } // end loop over j
 
+   FreeDatabox(sx);
+   FreeDatabox(sy);
    return nsink;
 
 }
@@ -1888,6 +2279,12 @@ void ComputeFlintsLaw(
 
    } // end loop over j
 
+   FreeDatabox(sx);
+   FreeDatabox(sy);
+   FreeDatabox(area);
+   FreeDatabox(ds);
+   FreeDatabox(child);
+
 }
 
 
@@ -2160,6 +2557,12 @@ void ComputeFlintsLawFit(
    printf( "-------------------------------------------------------------\n" );
    printf( " \n \n \n " );
 
+   FreeDatabox(sx);
+   FreeDatabox(sy);
+   FreeDatabox(area);
+   FreeDatabox(ds);
+   FreeDatabox(child);
+
 }
 
 // Additional subroutines for ComputeFlintsLawFit
@@ -2352,6 +2755,8 @@ double ComputeLMCoeff(
 
    } // end loop over j
 
+   FreeDatabox(dfdc);
+   FreeDatabox(dfdp);
    return chisq;
 
 }

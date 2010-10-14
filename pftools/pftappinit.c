@@ -231,6 +231,8 @@ EXPORT(int,Parflow_Init)(Tcl_Interp *interp)
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfupstreamarea", (Tcl_CmdProc *)UpstreamAreaCommand, 
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pffillflats", (Tcl_CmdProc *)FillFlatsCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfpitfilldem", (Tcl_CmdProc *)PitFillCommand, 
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfmovingavgdem", (Tcl_CmdProc *)MovingAvgCommand,

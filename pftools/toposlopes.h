@@ -67,6 +67,10 @@ void ComputeUpstreamArea(
    Databox *sy, 
    Databox *area);
 
+void ComputeFillFlats(
+    Databox *dem,
+    Databox *newdem);
+
 int ComputePitFill( 
    Databox *dem,
    double   dpit);
