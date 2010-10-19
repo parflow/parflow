@@ -161,6 +161,7 @@ static char *PFSEGMENTD8USAGE           = "Usage: pfsegmentD8 dem\n";
 static char *PFCHILDD8USAGE             = "Usage: pfchildD8 dem\n";
 static char *PFFLINTSLAWDEMUSAGE        = "Usage: pfflintslaw dem c p\n";
 static char *PFFLINTSLAWFITUSAGE        = "Usage: pfflintslawfit dem c0 p0 maxiter\n";
+static char *PFFLINTSLAWBYBASINUSAGE    = "Usage: pfflintslawbybasin dem c0 p0 maxiter\n";
 static char *DELETEUSAGE                = "Usage: pfdelete dataset\n";
 
 

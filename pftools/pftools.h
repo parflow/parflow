@@ -177,6 +177,7 @@ int SegmentD8Command P((ClientData clientData , Tcl_Interp *interp , int argc , 
 int ChildD8Command   P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int FlintsLawCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int FlintsLawFitCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int FlintsLawByBasinCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 
 #undef P
 

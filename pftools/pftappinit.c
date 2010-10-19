@@ -247,7 +247,8 @@ EXPORT(int,Parflow_Init)(Tcl_Interp *interp)
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfflintslawfit", (Tcl_CmdProc *)FlintsLawFitCommand,
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
-
+   Tcl_CreateCommand(interp, "Parflow::pfflintslawbybasin", (Tcl_CmdProc *)FlintsLawByBasinCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
 
 
 #ifdef SGS

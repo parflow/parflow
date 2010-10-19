@@ -6133,3 +6133,106 @@ int            FlintsLawFitCommand(
 
 }
 
+/*-----------------------------------------------------------------------
+ * routine for `pfflintslawbybasin' command
+ * Description: Compute DEM elevations using Flint's Law based on user
+ *              provided DEM, with parameters fit based on non-linear
+ *              least squares minimization (i.e., Flints law is fit to data)
+ *
+ * NOTES:       Fitting uses D8 slopes, D8 child elevations, and bi-directional
+ *              upstream area.
+ *              Flint's Law is fit for each basin separately...
+ *              This is the only difference w/ FlintsLawFitCommand
+ *
+ * Cmd. syntax: pfflintslawbybasin dem c0 p0 maxiter
+*-----------------------------------------------------------------------*/
+int            FlintsLawByBasinCommand(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+   Tcl_HashEntry *entryPtr;   // Points to new hash table entry
+   Data          *data = (Data *)clientData;
+
+   // Input
+   Databox       *dem;
+   char          *dem_hashkey;
+   double         c, p;
+   int            maxiter;
+
+   // Output
+   Databox       *flint;
+   char           flint_hashkey[MAX_KEY_SIZE];
+   char          *filename = "Flint's Law Elevations";
+
+   /* Check if one argument following command  */
+   if (argc == 1)
+   {
+      WrongNumArgsError(interp, PFFLINTSLAWFITUSAGE);
+      return TCL_ERROR;
+   }
+
+   dem_hashkey = argv[1];
+
+   if ((dem = DataMember(data, dem_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,dem_hashkey);
+      return TCL_ERROR;
+   }
+
+   if (Tcl_GetDouble(interp, argv[2], &c) == TCL_ERROR)
+   {
+      NotADoubleError(interp, 1, PFPITFILLDEMUSAGE);
+      return TCL_ERROR;
+   }
+
+   if (Tcl_GetDouble(interp, argv[3], &p) == TCL_ERROR)
+   {
+      NotADoubleError(interp, 1, PFPITFILLDEMUSAGE);
+      return TCL_ERROR;
+   }
+
+   if (Tcl_GetInt(interp, argv[4], &maxiter) == TCL_ERROR)
+   {
+      NotAnIntError(interp, 1, PFFLINTSLAWDEMUSAGE);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx    = DataboxNx(dem);
+      int ny    = DataboxNy(dem);
+      int nz    = 1;
+
+      double x  = DataboxX(dem);
+      double y  = DataboxY(dem);
+      double z  = DataboxZ(dem);
+
+      double dx = DataboxDx(dem);
+      double dy = DataboxDy(dem);
+      double dz = DataboxDz(dem);
+
+      /* create the new databox structure for flint values (flint) */
+      if ( (flint = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+         /* Make sure dataset pointer was added to hash table   */
+         if (!AddData(data, flint, filename, flint_hashkey))
+            FreeDatabox(flint);
+         else
+         {
+            Tcl_AppendElement(interp, flint_hashkey);
+         }
+         /* Compute elevations */
+         ComputeFlintsLawByBasin(dem,c,p,maxiter,flint);
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+
+   return TCL_OK;
+
+}
+

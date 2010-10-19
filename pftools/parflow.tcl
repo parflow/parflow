@@ -128,6 +128,7 @@ namespace eval Parflow {
     namespace export pfchildD8
     namespace export pfflintslaw
     namespace export pfflintslawfit
+    namespace export pfflintslawbybasin
  
     namespace export pfprintdata
     namespace export pfprintdiff

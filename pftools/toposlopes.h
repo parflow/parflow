@@ -115,6 +115,13 @@ void ComputeFlintsLawFit(
    int      maxiter,
    Databox *demflint);
 
+void ComputeFlintsLawByBasin(
+   Databox *dem,
+   double   c,
+   double   p,
+   int      maxiter,
+   Databox *demflint);
+
 void ComputeFlintLM(
    Databox *dem,
    Databox *demflint,
