@@ -213,6 +213,10 @@ EXPORT(int,Parflow_Init)(Tcl_Interp *interp)
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfprintdomain", (Tcl_CmdProc *)PrintDomainCommand,
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfextract2Ddomain", (Tcl_CmdProc *)Extract2DDomainCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfbuilddomain", (Tcl_CmdProc *)BuildDomainCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfdistondomain", (Tcl_CmdProc *)PFDistOnDomainCommand,
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfsurfacestorage", (Tcl_CmdProc *)SurfaceStorageCommand,

@@ -15,7 +15,7 @@ set verbose 0
 # 0 = flat top (no overland flow)
 # 1 = slope to upper-y 
 #---------------------------------------------------------
-set use_slopes -1
+set use_slopes 1
 
 #---------------------------------------------------------
 # Flux on the top surface

@@ -15,7 +15,7 @@ set verbose 0
 # 0 = flat top (no overland flow)
 # 1 = slope to upper-x
 #---------------------------------------------------------
-set use_slopes -1
+set use_slopes 1
 
 #---------------------------------------------------------
 # Flux on the top surface
@@ -352,9 +352,9 @@ pfset Patch.z-upper.BCPressure.6.Value	              $rec_flux
 pfset TopoSlopesX.Type "Constant"
 pfset TopoSlopesX.GeomNames "left right channel"
 if $use_slopes {
-    pfset TopoSlopesX.Geom.left.Value -0.005
-    pfset TopoSlopesX.Geom.right.Value 0.005
-    pfset TopoSlopesX.Geom.channel.Value 0.00
+    pfset TopoSlopesX.Geom.left.Value    0.000
+    pfset TopoSlopesX.Geom.right.Value   0.000
+    pfset TopoSlopesX.Geom.channel.Value [expr 0.001 * $use_slopes]
 } {
     pfset TopoSlopesX.Geom.left.Value    0.00
     pfset TopoSlopesX.Geom.right.Value   0.00
@@ -367,9 +367,9 @@ if $use_slopes {
 pfset TopoSlopesY.Type "Constant"
 pfset TopoSlopesY.GeomNames "left right channel"
 if $use_slopes {
-    pfset TopoSlopesY.Geom.left.Value    0.000
-    pfset TopoSlopesY.Geom.right.Value   0.000
-    pfset TopoSlopesY.Geom.channel.Value [expr 0.001 * $use_slopes]
+    pfset TopoSlopesY.Geom.left.Value    -0.005
+    pfset TopoSlopesY.Geom.right.Value   0.005
+    pfset TopoSlopesY.Geom.channel.Value 0.0
 } {
     pfset TopoSlopesY.Geom.left.Value    0.000
     pfset TopoSlopesY.Geom.right.Value   0.000
@@ -406,7 +406,7 @@ pfset KnownSolution                                    NoKnownSolution
 #-----------------------------------------------------------------------------
 
 pfset Solver                                             Richards
-pfset Solver.MaxIter                                     2500
+pfset Solver.MaxIter                                     100
 
 pfset Solver.AbsTol                                      1E-10
 pfset Solver.Nonlinear.MaxIter                           20
@@ -457,6 +457,8 @@ pfset Geom.domain.ICPressure.RefPatch                   z-upper
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
+#pfwritedb $runname
+#exec ../opf $runname
 pfrun $runname
 pfundist $runname
 
@@ -520,7 +522,7 @@ for {set i 0} {$i <= 19} {incr i} {
     if { $i > 0} {
 	set surface_runoff [pfsurfacerunoff $top $slope_x $slope_y $mannings $pressure]
 	pfsave $surface_runoff -silo "surface_runoff.$i.silo"
-	set total_surface_runoff [expr [pfsum $surface_runoff] * [pfget TimeStep.Value]]
+	set total_surface_runoff [expr [pfsum $surface_runoff] * [pfget TimingInfo.DumpInterval]]
 	if $verbose {
 	    puts [format "Surface runoff from pftools\t\t\t : %.16e" $total_surface_runoff]
 	}
@@ -546,7 +548,7 @@ for {set i 0} {$i <= 19} {incr i} {
     }
     set bc_flux [pfget Patch.z-upper.BCPressure.$bc_index.Value]
 
-    set boundary_flux [expr $bc_flux * $surface_area_of_domain * [pfget TimeStep.Value]]
+    set boundary_flux [expr $bc_flux * $surface_area_of_domain * [pfget TimingInfo.DumpInterval]]
     if $verbose {
 	puts [format "BC flux\t\t\t\t\t\t : %.16e" $boundary_flux]
     }

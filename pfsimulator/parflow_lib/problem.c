@@ -207,6 +207,9 @@ Problem   *NewProblem(
    ProblemMannings(problem) =
       PFModuleNewModule(Mannings, ()); //sk
 
+   ProblemOverlandFlowEval(problem) =
+      PFModuleNewModule(OverlandFlowEval, ()); //DOK
+
    if ( solver != RichardsSolve )
    {
    ProblemCapillaryPressure(problem) =
@@ -349,6 +352,8 @@ void      FreeProblem(
    PFModuleFreeModule(ProblemXSlope(problem)); //sk
    PFModuleFreeModule(ProblemYSlope(problem));
    PFModuleFreeModule(ProblemMannings(problem));
+
+   PFModuleFreeModule(ProblemOverlandFlowEval(problem)); //DOK
 
    PFModuleFreeModule(ProblemDomain(problem));
 

@@ -249,7 +249,8 @@ int HBT_insert(
   HBT_element *temp, *inserted, *rebalance_son, *rebalance, 
                   *rebalance_father;
   int done = 0;
-  int test, test_rebalance, rebalance_B;
+  int test, test_rebalance;
+  short rebalance_B;
 
   int (*compare)(void *, void *) = tree -> compare;
 
@@ -453,8 +454,8 @@ int HBT_insert(
 	  
 	  if ( B(temp) == rebalance_B )
 	  {
-	      B(rebalance) = -rebalance_B;
-	      B(rebalance_son) = BALANCED;
+	     B(rebalance) = (short)-rebalance_B;
+	     B(rebalance_son) = BALANCED;
 	  }
 	  else if ( B(temp) == 0 )
 	      B(rebalance) = (B(rebalance_son) = BALANCED);
@@ -507,7 +508,8 @@ void *HBT_delete(
     void *ret;
     
     HBT_element *del, *successor, *father, *current,*son, *grandson, *temp;
-    int test, done,dir, top_of_stack;
+    int test, done, top_of_stack;
+    short dir;
 
     int (*compare)(void *, void *) = tree -> compare;
     
@@ -827,8 +829,8 @@ void *HBT_delete(
 		    B(son) = (B(current) = BALANCED);
 		else if( B(grandson) == dir)
 		{
-		    B(son) = -dir;
-		    B(current) = BALANCED;
+		   B(son) = (short)-dir;
+		   B(current) = BALANCED;
 		}
 		else
 		{

@@ -14,3 +14,4 @@ amps_sfclose.o: amps_sfclose.c $(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/am
 amps_sfopen.o: amps_sfopen.c $(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h
 amps_wait.o: amps_wait.c $(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h
 signal.o: signal.c
+amps_abort.o: amps_abort.c

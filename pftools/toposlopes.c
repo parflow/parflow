@@ -2244,7 +2244,7 @@ void ComputeFlintsLawFit(
    ComputeChildD8(dem,child);
 
    // INITIALIZE L-M VARS
-   int    ma     = 2;
+   const int  ma = 2;
    double c      = c0;
    double ctry   = c0; 
    double p      = p0;
@@ -2514,8 +2514,8 @@ double ComputeLMCoeff(
    Databox *ds,              // segment length    -- constant
    double   c,               // c parameter value
    double   p,               // p parameter value
-   double   alpha[2][2],     // working space     -- [2x2] array
-   double   beta[2],         // working space     -- [2] array
+   double   alpha[][2],      // working space     -- [2x2] array
+   double   beta[],          // working space     -- [2] array
    double   chisq)           // chisq value
 { 
 
@@ -2618,9 +2618,9 @@ double ComputeLMCoeff(
 }
 
 void ComputeGaussJordan( 
-   double  a[2][2], 
+   double  a[][2], 
    int     n, 
-   double  b[2][1], 
+   double  b[][1], 
    int     m)
 {
    

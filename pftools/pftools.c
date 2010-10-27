@@ -317,7 +317,6 @@ int            PFDistOnDomainCommand(
 #endif
        
        FreeBackground(background);
-       FreeSubgridArray(domain);
        FreeDatabox(inbox);
        
        return TCL_OK;
@@ -3666,7 +3665,7 @@ int               GetStatsCommand(
    double         min, max, mean, sum, variance, stdev;
 
    Tcl_Obj     *result = Tcl_GetObjResult(interp);
-   Tcl_Obj     *int_obj;
+   Tcl_Obj     *double_obj;
 
    /* One argument must be given */
 
@@ -3688,23 +3687,23 @@ int               GetStatsCommand(
 
    Stats(databox, &min, &max, &mean, &sum, &variance, &stdev);
 
-   int_obj = Tcl_NewIntObj(min);
-   Tcl_ListObjAppendElement(interp, result, int_obj);
+   double_obj = Tcl_NewDoubleObj(min);
+   Tcl_ListObjAppendElement(interp, result, double_obj);
 
-   int_obj = Tcl_NewIntObj(max);
-   Tcl_ListObjAppendElement(interp, result, int_obj);
+   double_obj = Tcl_NewDoubleObj(max);
+   Tcl_ListObjAppendElement(interp, result, double_obj);
 
-   int_obj = Tcl_NewIntObj(mean);
-   Tcl_ListObjAppendElement(interp, result, int_obj);
+   double_obj = Tcl_NewDoubleObj(mean);
+   Tcl_ListObjAppendElement(interp, result, double_obj);
 
-   int_obj = Tcl_NewIntObj(sum);
-   Tcl_ListObjAppendElement(interp, result, int_obj);
+   double_obj = Tcl_NewDoubleObj(sum);
+   Tcl_ListObjAppendElement(interp, result, double_obj);
 
-   int_obj = Tcl_NewIntObj(variance);
-   Tcl_ListObjAppendElement(interp, result, int_obj);
+   double_obj = Tcl_NewDoubleObj(variance);
+   Tcl_ListObjAppendElement(interp, result, double_obj);
 
-   int_obj = Tcl_NewIntObj(stdev);
-   Tcl_ListObjAppendElement(interp, result, int_obj);
+   double_obj = Tcl_NewDoubleObj(stdev);
+   Tcl_ListObjAppendElement(interp, result, double_obj);
 
    return TCL_OK;
 }
@@ -4592,6 +4591,146 @@ int PrintDomainCommand(
 
 
    Tcl_DStringResult(interp, &result);
+   return TCL_OK;
+}
+
+
+/*
+  Builds a subgrid array from the current Parflow database key/values 
+  that specify the processor topology.
+ */
+int BuildDomainCommand(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+   Data       *data = (Data *)clientData;
+   SubgridArray *subgrid_array;
+
+   Tcl_DString     result;
+
+   /* Check and see if there is at least one argument following  */
+   /* the command.                                               */
+   if (argc == 0)
+   {
+      WrongNumArgsError(interp, PFBUILDDOMAINUSAGE);
+      return TCL_ERROR;
+   }
+
+   Tcl_DStringInit(&result);
+
+   subgrid_array = NewSubgridArray();
+
+   /*--------------------------------------------------------------------
+    * Get the processor topology from the database 
+    *--------------------------------------------------------------------*/
+   int s_i;
+   int size = GetInt(interp, "ProcessGrid.NumSubgrids");
+
+   for(s_i = 0; s_i < size; s_i++) 
+   {
+      char key[1024];
+      int p;
+      
+      int ix;
+      int iy;
+      int iz;
+      
+      int nx;
+      int ny;
+      int nz;
+      
+      int rx = 0;
+      int ry = 0;
+      int rz = 0;
+
+      sprintf(key, "ProcessGrid.%d.P", s_i);
+      p = GetInt(interp, key);
+
+      sprintf(key, "ProcessGrid.%d.IX", s_i);
+      ix = GetInt(interp, key);
+
+      sprintf(key, "ProcessGrid.%d.IY", s_i);
+      iy = GetInt(interp, key);
+
+      sprintf(key, "ProcessGrid.%d.IZ", s_i);
+      iz = GetInt(interp, key);
+
+      sprintf(key, "ProcessGrid.%d.NX", s_i);
+      nx = GetInt(interp, key);
+
+      sprintf(key, "ProcessGrid.%d.NY", s_i);
+      ny = GetInt(interp, key);
+
+      sprintf(key, "ProcessGrid.%d.NZ", s_i);
+      nz = GetInt(interp, key);
+
+      AppendSubgrid(NewSubgrid(ix, iy, iz, 
+			       nx, ny, nz,
+			       rx, ry, rz,
+			       p),
+		    &subgrid_array);
+      
+   }
+
+   char         newhashkey[32];
+   char         label[MAX_LABEL_SIZE];
+
+   sprintf(label, "Subgrid Array");
+
+   if (!AddSubgridArray(data, subgrid_array, label, newhashkey))
+      FreeSubgridArray(subgrid_array);
+   else
+      Tcl_AppendElement(interp, newhashkey);
+
+   return TCL_OK;
+}
+
+int Extract2DDomainCommand(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+   Tcl_HashEntry *entryPtr;  /* Points to new hash table entry         */
+   Data       *data = (Data *)clientData;
+
+   /* Check and see if there is at least one argument following  */
+   /* the command.                                               */
+   if (argc == 1)
+   {
+      WrongNumArgsError(interp, PFEXTRACT2DDOMAINUSAGE);
+      return TCL_ERROR;
+   }
+
+   char       *subgrid_array_hashkey = argv[1];
+   SubgridArray *subgrid_array;
+
+   if ((subgrid_array = (SubgridArray*)DataMember(data, subgrid_array_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp, subgrid_array_hashkey);
+      return TCL_ERROR;
+   }
+
+   SubgridArray  *all_subgrids = Extract2DDomain(subgrid_array);
+
+   if (!all_subgrids)
+   {
+      printf("Extract 2D Domain failed\n");
+      return TCL_ERROR;
+   }
+
+   char         newhashkey[32];
+   char         label[MAX_LABEL_SIZE];
+
+   sprintf(label, "Subgrid2D Array");
+
+   if (!AddSubgridArray(data, all_subgrids, label, newhashkey))
+      FreeSubgridArray(all_subgrids);
+   else
+      Tcl_AppendElement(interp, newhashkey);
+
    return TCL_OK;
 }
 

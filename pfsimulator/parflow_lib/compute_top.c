@@ -61,9 +61,12 @@ void ComputeTop(Problem     *problem,      /* General problem information */
    double *top_data;
    int index;
 
+   VectorUpdateCommHandle   *handle;
+
    (void) problem;
 
-   PFVConstInit(-1, top);
+   InitVectorAll(top, -1);
+//   PFVConstInit(-1, top);
       
    int is;
    ForSubgridI(is, grid3d_subgrids)
@@ -100,4 +103,8 @@ void ComputeTop(Problem     *problem,      /* General problem information */
 	 }
       });
    }     /* End of subgrid loop */
+
+   /* Pass top values to neighbors.  */
+   handle = InitVectorUpdate(top, VectorUpdateAll);
+   FinalizeVectorUpdate(handle);
 }

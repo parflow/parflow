@@ -157,6 +157,7 @@ OBJS = \
 	nl_function_eval.o \
 	evaptranssum.o \
 	overlandsum.o \
+	overlandflow_eval.o \
 	compute_top.o \
 	input_checks.o
 

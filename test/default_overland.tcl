@@ -14,9 +14,9 @@ namespace import Parflow::*
 
 pfset FileVersion 4
 
-pfset Process.Topology.P 1
-pfset Process.Topology.Q 1
-pfset Process.Topology.R 1
+pfset Process.Topology.P        [lindex $argv 0]
+pfset Process.Topology.Q        [lindex $argv 1]
+pfset Process.Topology.R        [lindex $argv 2]
 
 #---------------------------------------------------------
 # Computational Grid
@@ -372,9 +372,7 @@ pfset Solver.Nonlinear.Globalization                     LineSearch
 pfset Solver.Linear.KrylovDimension                      20
 pfset Solver.Linear.MaxRestart                           2
 
-pfset Solver.Linear.Preconditioner                       MGSemi
-pfset Solver.Linear.Preconditioner.MGSemi.MaxIter        1
-pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      10
+pfset Solver.Linear.Preconditioner                       PFMGOctree
 pfset Solver.PrintSubsurf				False
 pfset  Solver.Drop                                      1E-20
 pfset Solver.AbsTol                                     1E-9

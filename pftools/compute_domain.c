@@ -98,10 +98,10 @@ void ComputeDomain(
 	    // since these are 2d arrays it should be reasonably quick.
 	    // Not a single loop since we don't need to pad these values.
 	    ix = max(0, ix -1);
-	    nx = min(DataboxNx(top), nx + 1);
+	    nx = min(DataboxNx(top) - ix, nx + 2 - ix);
 
 	    iy = max(0, iy -1);
-	    ny = min(DataboxNy(top), ny + 1);
+	    ny = min(DataboxNy(top) - iy, ny + 2 - iy);
 
 	    for (j = iy; j < iy+ ny; ++j)
 	    {
@@ -125,3 +125,23 @@ void ComputeDomain(
       }
    }
 }
+
+SubgridArray  *Extract2DDomain(
+   SubgridArray  *all_subgrids)
+{
+   SubgridArray  *new_subgrids;
+   int s_i;
+
+   new_subgrids = CopyGrid(all_subgrids);
+   
+   ForSubgridI(s_i, all_subgrids)
+   {
+      Subgrid* subgrid = SubgridArraySubgrid(new_subgrids, s_i);
+      SubgridIZ(subgrid) = 0;
+      SubgridNZ(subgrid) = 1;
+   }
+   
+   return new_subgrids;
+}
+
+

@@ -52,6 +52,14 @@ set out [pfprintdomain $domain]
 
 set grid_file [open samrai_grid.tmp.tcl w]
 puts $grid_file $out
+close $grid_file
+
+# Test 2D domain extraction
+set domain2d [pfextract2Ddomain $domain]
+set out [pfprintdomain $domain2d]
+set grid_file [open samrai_grid2D.tmp.tcl w]
+puts $grid_file $out
+close $grid_file
 
 # Note we could execute out stuff directly but put it in a file
 # for debugging reasons.

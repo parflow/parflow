@@ -71,6 +71,7 @@ typedef struct
    Vector   *fscale;
 
    Matrix   *jacobian_matrix;
+   Matrix   *jacobian_matrix_C;
 
    long int  integer_outputs[OPT_SIZE];
 
@@ -206,6 +207,8 @@ int KinsolNonlinSolver (Vector *pressure , Vector *density , Vector *old_density
    InstanceXtra *instance_xtra    = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    Matrix       *jacobian_matrix  = (instance_xtra -> jacobian_matrix);
+   Matrix       *jacobian_matrix_C  = (instance_xtra -> jacobian_matrix_C);
+
    Vector       *uscale           = (instance_xtra -> uscale);
    Vector       *fscale           = (instance_xtra -> fscale);
 
@@ -242,6 +245,7 @@ int KinsolNonlinSolver (Vector *pressure , Vector *density , Vector *old_density
    StateSaturation(current_state)    = saturation;
    StateJacEval(current_state)       = richards_jacobian_eval;
    StateJac(current_state)           = jacobian_matrix;
+   StateJacC(current_state)           = jacobian_matrix_C;//dok
    StatePrecond(current_state)       = precond;
    StateEvapTrans(current_state)     = evap_trans;  /*sk*/
    StateOvrlBcFlx(current_state)     = ovrl_bc_flx; /*sk*/
@@ -663,7 +667,10 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
 
    if (public_xtra -> matvec != NULL)
       public_xtra -> richards_jacobian_eval = 
-                                 PFModuleNewModule(RichardsJacobianEval, ());
+                                 PFModuleNewModuleType(
+				    RichardsJacobianEvalNewPublicXtraInvoke,
+				    RichardsJacobianEval, 
+				    ("Solver.Nonlinear.Jacobian"));
    else 
       public_xtra -> richards_jacobian_eval = NULL;
 

@@ -147,6 +147,8 @@ int ComputeTopCommand P((ClientData clientData , Tcl_Interp *interp , int argc ,
 int ComputeBottomCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int ComputeDomainCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int PrintDomainCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int Extract2DDomainCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int BuildDomainCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int PFDistOnDomainCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int ExtractTopCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int SurfaceStorageCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));

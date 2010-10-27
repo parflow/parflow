@@ -44,5 +44,8 @@ void ComputeDomain(
 		   int Q, 
 		   int R);
 
+SubgridArray  *Extract2DDomain(
+   SubgridArray  *all_subgrids);
+
 #endif
 

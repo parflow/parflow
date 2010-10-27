@@ -1,5 +1,14 @@
 SGS
 
+Should have a test case where slope topology is coming from an input file.
+
+SGS
+
+The filenames have problems if there are "//" in them.  Looks like this
+causes a core dump.
+
+SGS
+
 Update manual to reflect the change to the makefile.   "make install" is now the default behavior.
 
 SGS  

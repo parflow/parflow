@@ -47,7 +47,7 @@ typedef struct
    PFModule  *precond;
    PFModule  *discretization;
 
-   Matrix    *PC;
+   Matrix    *PC, *JC; 
 
    Grid      *grid;
 
@@ -106,7 +106,7 @@ double        time)
    PFModule      *discretization     = public_xtra -> discretization;
    PFModule      *precond            = public_xtra -> precond;
 
-   Matrix        *PC;
+   Matrix        *PC, *JC;
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
@@ -137,17 +137,28 @@ double        time)
 			     pc_matrix_type));
       (instance_xtra -> precond) =
          PFModuleNewInstanceType(PrecondInitInstanceXtraInvoke, 
-				 precond,(problem, grid, problem_data, NULL, 
+				 precond,(problem, grid, problem_data, NULL,NULL, 
 					  temp_data));
+/*
+      (instance_xtra -> precond) =
+         PFModuleNewInstanceType(PrecondInitInstanceXtraInvoke, 
+				 precond,(problem, grid, problem_data, NULL,NULL, 
+					  temp_data));
+*/
    }
    else if (pressure != NULL)
    {
       PFModuleInvokeType(RichardsJacobianEvalInvoke, (instance_xtra -> discretization),
-			 (pressure, &PC, saturation, density, problem_data, dt, 
+			 (pressure, &PC, &JC, saturation, density, problem_data, dt, 
 			  time, pc_matrix_type));
       PFModuleReNewInstanceType(PrecondInitInstanceXtraInvoke, 
 				(instance_xtra -> precond),
-				(NULL, NULL, problem_data, PC, temp_data));
+				(NULL, NULL, problem_data, PC,JC, temp_data));
+/*
+      PFModuleReNewInstanceType(PrecondInitInstanceXtraInvoke, 
+				(instance_xtra -> precond),
+				(NULL, NULL, problem_data, PC,JC, temp_data));
+*/
    }
    else
    {
@@ -156,7 +167,12 @@ double        time)
 			    (problem, grid, temp_data, pc_matrix_type));
       PFModuleReNewInstanceType(PrecondInitInstanceXtraInvoke, 
 			    (instance_xtra -> precond),
-			    (NULL, NULL, problem_data, NULL, temp_data));
+			    (NULL, NULL, problem_data, NULL, NULL, temp_data));
+/*
+      PFModuleReNewInstanceType(PrecondInitInstanceXtraInvoke, 
+			    (instance_xtra -> precond),
+			    (NULL, NULL, problem_data, NULL, NULL, temp_data));
+*/
    }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -286,8 +302,10 @@ PFModule  *KinsolPCNewPublicXtra(char *name, char *pc_name)
    }
    NA_FreeNameArray(precond_switch_na);
 
+   sprintf(key, "%s.Jacobian", name);
    public_xtra -> discretization = PFModuleNewModuleType(
-      RichardsJacobianEvalNewPublicXtraInvoke, RichardsJacobianEval, ());
+      RichardsJacobianEvalNewPublicXtraInvoke, RichardsJacobianEval, 
+      (key));
 
    PFModulePublicXtra(this_module) = public_xtra;
 

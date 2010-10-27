@@ -1559,7 +1559,7 @@ int             octree_iz)
    int            i_begin, j_begin, k_begin;
    int            i_end,   j_end,   k_end;
    int            index;
-   int            state, prev_state;
+   int            prev_state;
 
    int            sg, i, j, k, ic, level, new_level;
    int            fi, iprime, jprime, kprime;
@@ -1648,7 +1648,6 @@ int             octree_iz)
 
             const int nx_f = SubvectorNX(subvector);
             const int ny_f = SubvectorNY(subvector);
-            const int nz_f = SubvectorNZ(subvector);
 
             data = SubvectorElt(subvector,ix_all,iy_all,iz_all);
 

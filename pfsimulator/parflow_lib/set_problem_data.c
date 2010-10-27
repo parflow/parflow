@@ -195,10 +195,10 @@ PFModule  *SetProblemDataInitInstanceXtra(
 	     PFModuleNewInstance(ProblemSpecStorage(problem), ());
       (instance_xtra -> x_slope) =                                   //sk
 	 PFModuleNewInstanceType(SlopeInitInstanceXtraInvoke, 
-				 ProblemXSlope(problem), (grid2d));
+				 ProblemXSlope(problem), (grid, grid2d));
       (instance_xtra -> y_slope) =                                   //sk
 	 PFModuleNewInstanceType(SlopeInitInstanceXtraInvoke,
-				 ProblemYSlope(problem), (grid2d));
+				 ProblemYSlope(problem), (grid, grid2d));
       (instance_xtra -> mann) =                                   //sk
 	 PFModuleNewInstanceType(ManningsInitInstanceXtraInvoke,
 				 ProblemMannings(problem), (grid2d));
@@ -226,9 +226,9 @@ PFModule  *SetProblemDataInitInstanceXtra(
 				(grid, temp_data));
       PFModuleReNewInstance((instance_xtra -> specific_storage), ());    //sk
       PFModuleReNewInstanceType(SlopeInitInstanceXtraInvoke, 
-				(instance_xtra -> x_slope), (grid2d));    //sk
+				(instance_xtra -> x_slope), (grid, grid2d));    //sk
       PFModuleReNewInstanceType(SlopeInitInstanceXtraInvoke, 
-				(instance_xtra -> y_slope), (grid2d));    //sk
+				(instance_xtra -> y_slope), (grid, grid2d));    //sk
       PFModuleReNewInstanceType(ManningsInitInstanceXtraInvoke,
 				(instance_xtra -> mann), (grid2d));    //sk
       PFModuleReNewInstance((instance_xtra -> wells), ());

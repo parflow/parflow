@@ -1,0 +1,10 @@
+# use glob syntax.
+syntax: glob
+*~
+
+syntax: glob
+*tmp
+
+
+syntax: regexp
+(.*/)?\#[^/]*\#$

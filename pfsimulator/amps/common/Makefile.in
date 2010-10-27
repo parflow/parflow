@@ -29,6 +29,7 @@ OBJS = \
 	amps_sfclose.o \
 	amps_sfopen.o \
 	amps_wait.o \
+	amps_abort.o \
 	signal.o 
 
 $(PARFLOW_LIB_DIR)/$(AMPS_COMMON_LIB): $(OBJS)

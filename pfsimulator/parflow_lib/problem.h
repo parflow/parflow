@@ -97,6 +97,7 @@ typedef struct
    PFModule  *x_slope;
    PFModule  *y_slope;
    PFModule  *mann;
+   PFModule  *overlandflow_eval;       //DOK   
 
 } Problem;
 
@@ -185,6 +186,8 @@ typedef struct
 #define ProblemXSlope(problem)                    ((problem) -> x_slope) //sk
 #define ProblemYSlope(problem)                    ((problem) -> y_slope) //sk
 #define ProblemMannings(problem)                  ((problem) -> mann) //sk
+
+#define ProblemOverlandFlowEval(problem)          ((problem) -> overlandflow_eval) //DOK
 
 /* boundary condition accessors */
 #define ProblemBCPressure(problem)                ((problem) -> bc_pressure)

@@ -143,6 +143,33 @@ void  FreeUserGrid(
 
 #define pqr_to_process(p, q, r, P, Q, R)  ((((r)*(Q))+(q))*(P) + (p))
 
+SubgridArray   *CopyGrid(
+   SubgridArray *all_subgrids) 
+{
+   SubgridArray  *new_subgrids;
+
+   int s_i;
+
+   new_subgrids = NewSubgridArray();
+
+   ForSubgridI(s_i, all_subgrids)
+   {
+      Subgrid* subgrid = SubgridArraySubgrid(all_subgrids, s_i);
+      AppendSubgrid(NewSubgrid(SubgridIX(subgrid),
+			       SubgridIY(subgrid),
+			       SubgridIZ(subgrid),
+			       SubgridNX(subgrid),
+			       SubgridNY(subgrid),
+			       SubgridNZ(subgrid),
+			       SubgridRX(subgrid),
+			       SubgridRY(subgrid),
+			       SubgridRZ(subgrid),
+			       SubgridProcess(subgrid)),
+		    &new_subgrids);
+   }
+
+   return new_subgrids;
+}
 
 SubgridArray   *DistributeUserGrid(
    Grid           *user_grid,

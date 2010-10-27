@@ -1169,8 +1169,48 @@ endif
 
 ${FILE_62:X.o=${NDIM}.o}: ${DEPENDS_62}
 
-FILE_63=overlandsum.o
+FILE_63=overlandflow_eval.o
 DEPENDS_63:=\
+	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
+	Parflow.hxx background.h bc_pressure.h char_vector.h		\
+	communication.h computation.h file_versions.h general.h		\
+	geometry.h geostats.h globals.h grgeom_list.h grgeom_octree.h	\
+	grgeometry.h grid.h hbt.h info_header.h input_database.h lb.h	\
+	llnlmath.h llnltyps.h logging.h loops.h matrix.h n_vector.h	\
+	nl_function_eval.h overlandflow_eval.c parflow.h parflow_proto.h\
+	parflow_proto_f.h pf_module.h problem.h problem_bc.h		\
+	problem_eval.h region.h solver.h time_cycle_data.h timing.h	\
+	vector.h well.h
+
+ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
+DEPENDS_63 +=\
+	
+endif
+
+${FILE_63:X.o=${NDIM}.o}: ${DEPENDS_63}
+
+FILE_64=overlandflow_eval_diffusive.o
+DEPENDS_64:=\
+	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
+	Parflow.hxx background.h bc_pressure.h char_vector.h		\
+	communication.h computation.h file_versions.h general.h		\
+	geometry.h geostats.h globals.h grgeom_list.h grgeom_octree.h	\
+	grgeometry.h grid.h hbt.h info_header.h input_database.h lb.h	\
+	llnlmath.h llnltyps.h logging.h loops.h matrix.h n_vector.h	\
+	nl_function_eval.h overlandflow_eval_diffusive.c parflow.h	\
+	parflow_proto.h parflow_proto_f.h pf_module.h problem.h		\
+	problem_bc.h problem_eval.h region.h solver.h time_cycle_data.h	\
+	timing.h vector.h well.h
+
+ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
+DEPENDS_64 +=\
+	
+endif
+
+${FILE_64:X.o=${NDIM}.o}: ${DEPENDS_64}
+
+FILE_65=overlandsum.o
+DEPENDS_65:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1182,14 +1222,14 @@ DEPENDS_63:=\
 	solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_63 +=\
+DEPENDS_65 +=\
 	
 endif
 
-${FILE_63:X.o=${NDIM}.o}: ${DEPENDS_63}
+${FILE_65:X.o=${NDIM}.o}: ${DEPENDS_65}
 
-FILE_64=pcg.o
-DEPENDS_64:=\
+FILE_66=pcg.o
+DEPENDS_66:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1201,14 +1241,14 @@ DEPENDS_64:=\
 	time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_64 +=\
+DEPENDS_66 +=\
 	
 endif
 
-${FILE_64:X.o=${NDIM}.o}: ${DEPENDS_64}
+${FILE_66:X.o=${NDIM}.o}: ${DEPENDS_66}
 
-FILE_65=permeability_face.o
-DEPENDS_65:=\
+FILE_67=permeability_face.o
+DEPENDS_67:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1220,14 +1260,14 @@ DEPENDS_65:=\
 	solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_65 +=\
+DEPENDS_67 +=\
 	
 endif
 
-${FILE_65:X.o=${NDIM}.o}: ${DEPENDS_65}
+${FILE_67:X.o=${NDIM}.o}: ${DEPENDS_67}
 
-FILE_66=perturb_lb.o
-DEPENDS_66:=\
+FILE_68=perturb_lb.o
+DEPENDS_68:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1239,14 +1279,14 @@ DEPENDS_66:=\
 	solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_66 +=\
+DEPENDS_68 +=\
 	
 endif
 
-${FILE_66:X.o=${NDIM}.o}: ${DEPENDS_66}
+${FILE_68:X.o=${NDIM}.o}: ${DEPENDS_68}
 
-FILE_67=pf_module.o
-DEPENDS_67:=\
+FILE_69=pf_module.o
+DEPENDS_69:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1258,14 +1298,14 @@ DEPENDS_67:=\
 	solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_67 +=\
+DEPENDS_69 +=\
 	
 endif
 
-${FILE_67:X.o=${NDIM}.o}: ${DEPENDS_67}
+${FILE_69:X.o=${NDIM}.o}: ${DEPENDS_69}
 
-FILE_68=pf_pfmg.o
-DEPENDS_68:=\
+FILE_70=pf_pfmg.o
+DEPENDS_70:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1277,14 +1317,14 @@ DEPENDS_68:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_68 +=\
+DEPENDS_70 +=\
 	
 endif
 
-${FILE_68:X.o=${NDIM}.o}: ${DEPENDS_68}
+${FILE_70:X.o=${NDIM}.o}: ${DEPENDS_70}
 
-FILE_69=pf_pfmg_octree.o
-DEPENDS_69:=\
+FILE_71=pf_pfmg_octree.o
+DEPENDS_71:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1297,14 +1337,14 @@ DEPENDS_69:=\
 	vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_69 +=\
+DEPENDS_71 +=\
 	
 endif
 
-${FILE_69:X.o=${NDIM}.o}: ${DEPENDS_69}
+${FILE_71:X.o=${NDIM}.o}: ${DEPENDS_71}
 
-FILE_70=pf_smg.o
-DEPENDS_70:=\
+FILE_72=pf_smg.o
+DEPENDS_72:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1316,14 +1356,14 @@ DEPENDS_70:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_70 +=\
+DEPENDS_72 +=\
 	
 endif
 
-${FILE_70:X.o=${NDIM}.o}: ${DEPENDS_70}
+${FILE_72:X.o=${NDIM}.o}: ${DEPENDS_72}
 
-FILE_71=pfield.o
-DEPENDS_71:=\
+FILE_73=pfield.o
+DEPENDS_73:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1335,14 +1375,14 @@ DEPENDS_71:=\
 	time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_71 +=\
+DEPENDS_73 +=\
 	
 endif
 
-${FILE_71:X.o=${NDIM}.o}: ${DEPENDS_71}
+${FILE_73:X.o=${NDIM}.o}: ${DEPENDS_73}
 
-FILE_72=pgsRF.o
-DEPENDS_72:=\
+FILE_74=pgsRF.o
+DEPENDS_74:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1354,14 +1394,14 @@ DEPENDS_72:=\
 	time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_72 +=\
+DEPENDS_74 +=\
 	
 endif
 
-${FILE_72:X.o=${NDIM}.o}: ${DEPENDS_72}
+${FILE_74:X.o=${NDIM}.o}: ${DEPENDS_74}
 
-FILE_73=phase_velocity_face.o
-DEPENDS_73:=\
+FILE_75=phase_velocity_face.o
+DEPENDS_75:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1373,14 +1413,14 @@ DEPENDS_73:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_73 +=\
+DEPENDS_75 +=\
 	
 endif
 
-${FILE_73:X.o=${NDIM}.o}: ${DEPENDS_73}
+${FILE_75:X.o=${NDIM}.o}: ${DEPENDS_75}
 
-FILE_74=ppcg.o
-DEPENDS_74:=\
+FILE_76=ppcg.o
+DEPENDS_76:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1392,14 +1432,14 @@ DEPENDS_74:=\
 	time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_74 +=\
+DEPENDS_76 +=\
 	
 endif
 
-${FILE_74:X.o=${NDIM}.o}: ${DEPENDS_74}
+${FILE_76:X.o=${NDIM}.o}: ${DEPENDS_76}
 
-FILE_75=press_function_eval.031407.o
-DEPENDS_75:=\
+FILE_77=press_function_eval.031407.o
+DEPENDS_77:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1412,14 +1452,14 @@ DEPENDS_75:=\
 	vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_75 +=\
+DEPENDS_77 +=\
 	
 endif
 
-${FILE_75:X.o=${NDIM}.o}: ${DEPENDS_75}
+${FILE_77:X.o=${NDIM}.o}: ${DEPENDS_77}
 
-FILE_76=printgrid.o
-DEPENDS_76:=\
+FILE_78=printgrid.o
+DEPENDS_78:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1431,14 +1471,14 @@ DEPENDS_76:=\
 	solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_76 +=\
+DEPENDS_78 +=\
 	
 endif
 
-${FILE_76:X.o=${NDIM}.o}: ${DEPENDS_76}
+${FILE_78:X.o=${NDIM}.o}: ${DEPENDS_78}
 
-FILE_77=printmatrix.o
-DEPENDS_77:=\
+FILE_79=printmatrix.o
+DEPENDS_79:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1450,14 +1490,14 @@ DEPENDS_77:=\
 	solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_77 +=\
+DEPENDS_79 +=\
 	
 endif
 
-${FILE_77:X.o=${NDIM}.o}: ${DEPENDS_77}
+${FILE_79:X.o=${NDIM}.o}: ${DEPENDS_79}
 
-FILE_78=printvector.o
-DEPENDS_78:=\
+FILE_80=printvector.o
+DEPENDS_80:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1469,14 +1509,14 @@ DEPENDS_78:=\
 	solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_78 +=\
+DEPENDS_80 +=\
 	
 endif
 
-${FILE_78:X.o=${NDIM}.o}: ${DEPENDS_78}
+${FILE_80:X.o=${NDIM}.o}: ${DEPENDS_80}
 
-FILE_79=problem.o
-DEPENDS_79:=\
+FILE_81=problem.o
+DEPENDS_81:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1488,14 +1528,14 @@ DEPENDS_79:=\
 	solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_79 +=\
+DEPENDS_81 +=\
 	
 endif
 
-${FILE_79:X.o=${NDIM}.o}: ${DEPENDS_79}
+${FILE_81:X.o=${NDIM}.o}: ${DEPENDS_81}
 
-FILE_80=problem_bc.o
-DEPENDS_80:=\
+FILE_82=problem_bc.o
+DEPENDS_82:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1507,14 +1547,14 @@ DEPENDS_80:=\
 	solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_80 +=\
+DEPENDS_82 +=\
 	
 endif
 
-${FILE_80:X.o=${NDIM}.o}: ${DEPENDS_80}
+${FILE_82:X.o=${NDIM}.o}: ${DEPENDS_82}
 
-FILE_81=problem_bc_internal.o
-DEPENDS_81:=\
+FILE_83=problem_bc_internal.o
+DEPENDS_83:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1526,14 +1566,14 @@ DEPENDS_81:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_81 +=\
+DEPENDS_83 +=\
 	
 endif
 
-${FILE_81:X.o=${NDIM}.o}: ${DEPENDS_81}
+${FILE_83:X.o=${NDIM}.o}: ${DEPENDS_83}
 
-FILE_82=problem_bc_phase_saturation.o
-DEPENDS_82:=\
+FILE_84=problem_bc_phase_saturation.o
+DEPENDS_84:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1546,14 +1586,14 @@ DEPENDS_82:=\
 	vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_82 +=\
+DEPENDS_84 +=\
 	
 endif
 
-${FILE_82:X.o=${NDIM}.o}: ${DEPENDS_82}
+${FILE_84:X.o=${NDIM}.o}: ${DEPENDS_84}
 
-FILE_83=problem_bc_pressure.o
-DEPENDS_83:=\
+FILE_85=problem_bc_pressure.o
+DEPENDS_85:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1565,14 +1605,14 @@ DEPENDS_83:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_83 +=\
+DEPENDS_85 +=\
 	
 endif
 
-${FILE_83:X.o=${NDIM}.o}: ${DEPENDS_83}
+${FILE_85:X.o=${NDIM}.o}: ${DEPENDS_85}
 
-FILE_84=problem_capillary_pressure.o
-DEPENDS_84:=\
+FILE_86=problem_capillary_pressure.o
+DEPENDS_86:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1585,14 +1625,14 @@ DEPENDS_84:=\
 	vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_84 +=\
+DEPENDS_86 +=\
 	
 endif
 
-${FILE_84:X.o=${NDIM}.o}: ${DEPENDS_84}
+${FILE_86:X.o=${NDIM}.o}: ${DEPENDS_86}
 
-FILE_85=problem_domain.o
-DEPENDS_85:=\
+FILE_87=problem_domain.o
+DEPENDS_87:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1604,14 +1644,14 @@ DEPENDS_85:=\
 	solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_85 +=\
+DEPENDS_87 +=\
 	
 endif
 
-${FILE_85:X.o=${NDIM}.o}: ${DEPENDS_85}
+${FILE_87:X.o=${NDIM}.o}: ${DEPENDS_87}
 
-FILE_86=problem_eval.o
-DEPENDS_86:=\
+FILE_88=problem_eval.o
+DEPENDS_88:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1623,14 +1663,14 @@ DEPENDS_86:=\
 	solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_86 +=\
+DEPENDS_88 +=\
 	
 endif
 
-${FILE_86:X.o=${NDIM}.o}: ${DEPENDS_86}
+${FILE_88:X.o=${NDIM}.o}: ${DEPENDS_88}
 
-FILE_87=problem_geometries.o
-DEPENDS_87:=\
+FILE_89=problem_geometries.o
+DEPENDS_89:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1642,14 +1682,14 @@ DEPENDS_87:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_87 +=\
+DEPENDS_89 +=\
 	
 endif
 
-${FILE_87:X.o=${NDIM}.o}: ${DEPENDS_87}
+${FILE_89:X.o=${NDIM}.o}: ${DEPENDS_89}
 
-FILE_88=problem_heat_capacity.o
-DEPENDS_88:=\
+FILE_90=problem_heat_capacity.o
+DEPENDS_90:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1661,14 +1701,14 @@ DEPENDS_88:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_88 +=\
+DEPENDS_90 +=\
 	
 endif
 
-${FILE_88:X.o=${NDIM}.o}: ${DEPENDS_88}
+${FILE_90:X.o=${NDIM}.o}: ${DEPENDS_90}
 
-FILE_89=problem_ic_phase_concen.o
-DEPENDS_89:=\
+FILE_91=problem_ic_phase_concen.o
+DEPENDS_91:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1680,14 +1720,14 @@ DEPENDS_89:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_89 +=\
+DEPENDS_91 +=\
 	
 endif
 
-${FILE_89:X.o=${NDIM}.o}: ${DEPENDS_89}
+${FILE_91:X.o=${NDIM}.o}: ${DEPENDS_91}
 
-FILE_90=problem_ic_phase_pressure.o
-DEPENDS_90:=\
+FILE_92=problem_ic_phase_pressure.o
+DEPENDS_92:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1700,14 +1740,14 @@ DEPENDS_90:=\
 	timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_90 +=\
+DEPENDS_92 +=\
 	
 endif
 
-${FILE_90:X.o=${NDIM}.o}: ${DEPENDS_90}
+${FILE_92:X.o=${NDIM}.o}: ${DEPENDS_92}
 
-FILE_91=problem_ic_phase_pressure.mask.o
-DEPENDS_91:=\
+FILE_93=problem_ic_phase_pressure.mask.o
+DEPENDS_93:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1720,14 +1760,14 @@ DEPENDS_91:=\
 	time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_91 +=\
+DEPENDS_93 +=\
 	
 endif
 
-${FILE_91:X.o=${NDIM}.o}: ${DEPENDS_91}
+${FILE_93:X.o=${NDIM}.o}: ${DEPENDS_93}
 
-FILE_92=problem_ic_phase_pressure.org.o
-DEPENDS_92:=\
+FILE_94=problem_ic_phase_pressure.org.o
+DEPENDS_94:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1740,14 +1780,14 @@ DEPENDS_92:=\
 	time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_92 +=\
+DEPENDS_94 +=\
 	
 endif
 
-${FILE_92:X.o=${NDIM}.o}: ${DEPENDS_92}
+${FILE_94:X.o=${NDIM}.o}: ${DEPENDS_94}
 
-FILE_93=problem_ic_phase_satur.o
-DEPENDS_93:=\
+FILE_95=problem_ic_phase_satur.o
+DEPENDS_95:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1759,14 +1799,14 @@ DEPENDS_93:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_93 +=\
+DEPENDS_95 +=\
 	
 endif
 
-${FILE_93:X.o=${NDIM}.o}: ${DEPENDS_93}
+${FILE_95:X.o=${NDIM}.o}: ${DEPENDS_95}
 
-FILE_94=problem_mannings.o
-DEPENDS_94:=\
+FILE_96=problem_mannings.o
+DEPENDS_96:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1778,14 +1818,14 @@ DEPENDS_94:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_94 +=\
+DEPENDS_96 +=\
 	
 endif
 
-${FILE_94:X.o=${NDIM}.o}: ${DEPENDS_94}
+${FILE_96:X.o=${NDIM}.o}: ${DEPENDS_96}
 
-FILE_95=problem_phase_density.o
-DEPENDS_95:=\
+FILE_97=problem_phase_density.o
+DEPENDS_97:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1797,14 +1837,14 @@ DEPENDS_95:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_95 +=\
+DEPENDS_97 +=\
 	
 endif
 
-${FILE_95:X.o=${NDIM}.o}: ${DEPENDS_95}
+${FILE_97:X.o=${NDIM}.o}: ${DEPENDS_97}
 
-FILE_96=problem_phase_heat_capacity.o
-DEPENDS_96:=\
+FILE_98=problem_phase_heat_capacity.o
+DEPENDS_98:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1817,14 +1857,14 @@ DEPENDS_96:=\
 	time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_96 +=\
+DEPENDS_98 +=\
 	
 endif
 
-${FILE_96:X.o=${NDIM}.o}: ${DEPENDS_96}
+${FILE_98:X.o=${NDIM}.o}: ${DEPENDS_98}
 
-FILE_97=problem_phase_internal_energy.o
-DEPENDS_97:=\
+FILE_99=problem_phase_internal_energy.o
+DEPENDS_99:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1837,14 +1877,14 @@ DEPENDS_97:=\
 	time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_97 +=\
+DEPENDS_99 +=\
 	
 endif
 
-${FILE_97:X.o=${NDIM}.o}: ${DEPENDS_97}
+${FILE_99:X.o=${NDIM}.o}: ${DEPENDS_99}
 
-FILE_98=problem_phase_mobility.o
-DEPENDS_98:=\
+FILE_100=problem_phase_mobility.o
+DEPENDS_100:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1856,14 +1896,14 @@ DEPENDS_98:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_98 +=\
+DEPENDS_100 +=\
 	
 endif
 
-${FILE_98:X.o=${NDIM}.o}: ${DEPENDS_98}
+${FILE_100:X.o=${NDIM}.o}: ${DEPENDS_100}
 
-FILE_99=problem_phase_rel_perm.o
-DEPENDS_99:=\
+FILE_101=problem_phase_rel_perm.o
+DEPENDS_101:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1875,14 +1915,14 @@ DEPENDS_99:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_99 +=\
+DEPENDS_101 +=\
 	
 endif
 
-${FILE_99:X.o=${NDIM}.o}: ${DEPENDS_99}
+${FILE_101:X.o=${NDIM}.o}: ${DEPENDS_101}
 
-FILE_100=problem_phase_source.o
-DEPENDS_100:=\
+FILE_102=problem_phase_source.o
+DEPENDS_102:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1894,14 +1934,14 @@ DEPENDS_100:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_100 +=\
+DEPENDS_102 +=\
 	
 endif
 
-${FILE_100:X.o=${NDIM}.o}: ${DEPENDS_100}
+${FILE_102:X.o=${NDIM}.o}: ${DEPENDS_102}
 
-FILE_101=problem_phase_source_with_initxtra.o
-DEPENDS_101:=\
+FILE_103=problem_phase_source_with_initxtra.o
+DEPENDS_103:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1914,14 +1954,14 @@ DEPENDS_101:=\
 	time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_101 +=\
+DEPENDS_103 +=\
 	
 endif
 
-${FILE_101:X.o=${NDIM}.o}: ${DEPENDS_101}
+${FILE_103:X.o=${NDIM}.o}: ${DEPENDS_103}
 
-FILE_102=problem_phase_viscosity.o
-DEPENDS_102:=\
+FILE_104=problem_phase_viscosity.o
+DEPENDS_104:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1933,14 +1973,14 @@ DEPENDS_102:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_102 +=\
+DEPENDS_104 +=\
 	
 endif
 
-${FILE_102:X.o=${NDIM}.o}: ${DEPENDS_102}
+${FILE_104:X.o=${NDIM}.o}: ${DEPENDS_104}
 
-FILE_103=problem_porosity.o
-DEPENDS_103:=\
+FILE_105=problem_porosity.o
+DEPENDS_105:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1952,14 +1992,14 @@ DEPENDS_103:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_103 +=\
+DEPENDS_105 +=\
 	
 endif
 
-${FILE_103:X.o=${NDIM}.o}: ${DEPENDS_103}
+${FILE_105:X.o=${NDIM}.o}: ${DEPENDS_105}
 
-FILE_104=problem_retardation.o
-DEPENDS_104:=\
+FILE_106=problem_retardation.o
+DEPENDS_106:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1971,14 +2011,14 @@ DEPENDS_104:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_104 +=\
+DEPENDS_106 +=\
 	
 endif
 
-${FILE_104:X.o=${NDIM}.o}: ${DEPENDS_104}
+${FILE_106:X.o=${NDIM}.o}: ${DEPENDS_106}
 
-FILE_105=problem_richards_bc_internal.o
-DEPENDS_105:=\
+FILE_107=problem_richards_bc_internal.o
+DEPENDS_107:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -1991,14 +2031,14 @@ DEPENDS_105:=\
 	time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_105 +=\
+DEPENDS_107 +=\
 	
 endif
 
-${FILE_105:X.o=${NDIM}.o}: ${DEPENDS_105}
+${FILE_107:X.o=${NDIM}.o}: ${DEPENDS_107}
 
-FILE_106=problem_saturation.o
-DEPENDS_106:=\
+FILE_108=problem_saturation.o
+DEPENDS_108:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2010,14 +2050,14 @@ DEPENDS_106:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_106 +=\
+DEPENDS_108 +=\
 	
 endif
 
-${FILE_106:X.o=${NDIM}.o}: ${DEPENDS_106}
+${FILE_108:X.o=${NDIM}.o}: ${DEPENDS_108}
 
-FILE_107=problem_saturation_constitutive.o
-DEPENDS_107:=\
+FILE_109=problem_saturation_constitutive.o
+DEPENDS_109:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2030,14 +2070,14 @@ DEPENDS_107:=\
 	time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_107 +=\
+DEPENDS_109 +=\
 	
 endif
 
-${FILE_107:X.o=${NDIM}.o}: ${DEPENDS_107}
+${FILE_109:X.o=${NDIM}.o}: ${DEPENDS_109}
 
-FILE_108=problem_spec_storage.o
-DEPENDS_108:=\
+FILE_110=problem_spec_storage.o
+DEPENDS_110:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2049,14 +2089,14 @@ DEPENDS_108:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_108 +=\
+DEPENDS_110 +=\
 	
 endif
 
-${FILE_108:X.o=${NDIM}.o}: ${DEPENDS_108}
+${FILE_110:X.o=${NDIM}.o}: ${DEPENDS_110}
 
-FILE_109=problem_thermal_conductivity.o
-DEPENDS_109:=\
+FILE_111=problem_thermal_conductivity.o
+DEPENDS_111:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2069,14 +2109,14 @@ DEPENDS_109:=\
 	time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_109 +=\
+DEPENDS_111 +=\
 	
 endif
 
-${FILE_109:X.o=${NDIM}.o}: ${DEPENDS_109}
+${FILE_111:X.o=${NDIM}.o}: ${DEPENDS_111}
 
-FILE_110=problem_thermal_conductivity_old.o
-DEPENDS_110:=\
+FILE_112=problem_thermal_conductivity_old.o
+DEPENDS_112:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2089,14 +2129,14 @@ DEPENDS_110:=\
 	time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_110 +=\
+DEPENDS_112 +=\
 	
 endif
 
-${FILE_110:X.o=${NDIM}.o}: ${DEPENDS_110}
+${FILE_112:X.o=${NDIM}.o}: ${DEPENDS_112}
 
-FILE_111=problem_toposlope_x.o
-DEPENDS_111:=\
+FILE_113=problem_toposlope_x.o
+DEPENDS_113:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2108,14 +2148,14 @@ DEPENDS_111:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_111 +=\
+DEPENDS_113 +=\
 	
 endif
 
-${FILE_111:X.o=${NDIM}.o}: ${DEPENDS_111}
+${FILE_113:X.o=${NDIM}.o}: ${DEPENDS_113}
 
-FILE_112=problem_toposlope_y.o
-DEPENDS_112:=\
+FILE_114=problem_toposlope_y.o
+DEPENDS_114:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2127,14 +2167,14 @@ DEPENDS_112:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_112 +=\
+DEPENDS_114 +=\
 	
 endif
 
-${FILE_112:X.o=${NDIM}.o}: ${DEPENDS_112}
+${FILE_114:X.o=${NDIM}.o}: ${DEPENDS_114}
 
-FILE_113=process_grid.o
-DEPENDS_113:=\
+FILE_115=process_grid.o
+DEPENDS_115:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2146,37 +2186,37 @@ DEPENDS_113:=\
 	solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_113 +=\
-	
-endif
-
-${FILE_113:X.o=${NDIM}.o}: ${DEPENDS_113}
-
-FILE_114=random.o
-DEPENDS_114:=\
-	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
-	random.c
-
-ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_114 +=\
-	
-endif
-
-${FILE_114:X.o=${NDIM}.o}: ${DEPENDS_114}
-
-FILE_115=ratqr.o
-DEPENDS_115:=\
-	f2c.h ratqr.c
-
-ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
 DEPENDS_115 +=\
 	
 endif
 
 ${FILE_115:X.o=${NDIM}.o}: ${DEPENDS_115}
 
-FILE_116=rb_GS_point.o
+FILE_116=random.o
 DEPENDS_116:=\
+	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
+	random.c
+
+ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
+DEPENDS_116 +=\
+	
+endif
+
+${FILE_116:X.o=${NDIM}.o}: ${DEPENDS_116}
+
+FILE_117=ratqr.o
+DEPENDS_117:=\
+	f2c.h ratqr.c
+
+ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
+DEPENDS_117 +=\
+	
+endif
+
+${FILE_117:X.o=${NDIM}.o}: ${DEPENDS_117}
+
+FILE_118=rb_GS_point.o
+DEPENDS_118:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2188,14 +2228,14 @@ DEPENDS_116:=\
 	solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_116 +=\
+DEPENDS_118 +=\
 	
 endif
 
-${FILE_116:X.o=${NDIM}.o}: ${DEPENDS_116}
+${FILE_118:X.o=${NDIM}.o}: ${DEPENDS_118}
 
-FILE_117=read_parflow_binary.o
-DEPENDS_117:=\
+FILE_119=read_parflow_binary.o
+DEPENDS_119:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2207,14 +2247,14 @@ DEPENDS_117:=\
 	region.h solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_117 +=\
+DEPENDS_119 +=\
 	
 endif
 
-${FILE_117:X.o=${NDIM}.o}: ${DEPENDS_117}
+${FILE_119:X.o=${NDIM}.o}: ${DEPENDS_119}
 
-FILE_118=reg_from_stenc.o
-DEPENDS_118:=\
+FILE_120=reg_from_stenc.o
+DEPENDS_120:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2226,14 +2266,14 @@ DEPENDS_118:=\
 	solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_118 +=\
+DEPENDS_120 +=\
 	
 endif
 
-${FILE_118:X.o=${NDIM}.o}: ${DEPENDS_118}
+${FILE_120:X.o=${NDIM}.o}: ${DEPENDS_120}
 
-FILE_119=region.o
-DEPENDS_119:=\
+FILE_121=region.o
+DEPENDS_121:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2245,14 +2285,14 @@ DEPENDS_119:=\
 	time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_119 +=\
+DEPENDS_121 +=\
 	
 endif
 
-${FILE_119:X.o=${NDIM}.o}: ${DEPENDS_119}
+${FILE_121:X.o=${NDIM}.o}: ${DEPENDS_121}
 
-FILE_120=richards_jacobian_eval.o
-DEPENDS_120:=\
+FILE_122=richards_jacobian_eval.o
+DEPENDS_122:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2265,14 +2305,14 @@ DEPENDS_120:=\
 	vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_120 +=\
+DEPENDS_122 +=\
 	
 endif
 
-${FILE_120:X.o=${NDIM}.o}: ${DEPENDS_120}
+${FILE_122:X.o=${NDIM}.o}: ${DEPENDS_122}
 
-FILE_121=richards_jacobian_eval.mod.o
-DEPENDS_121:=\
+FILE_123=richards_jacobian_eval.mod.o
+DEPENDS_123:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2285,14 +2325,14 @@ DEPENDS_121:=\
 	vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_121 +=\
+DEPENDS_123 +=\
 	
 endif
 
-${FILE_121:X.o=${NDIM}.o}: ${DEPENDS_121}
+${FILE_123:X.o=${NDIM}.o}: ${DEPENDS_123}
 
-FILE_122=richards_jacobian_eval.org.o
-DEPENDS_122:=\
+FILE_124=richards_jacobian_eval.org.o
+DEPENDS_124:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2305,36 +2345,36 @@ DEPENDS_122:=\
 	vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_122 +=\
-	
-endif
-
-${FILE_122:X.o=${NDIM}.o}: ${DEPENDS_122}
-
-FILE_123=sadvect.win32.o
-DEPENDS_123:=\
-	f2c.h sadvect.win32.c
-
-ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_123 +=\
-	
-endif
-
-${FILE_123:X.o=${NDIM}.o}: ${DEPENDS_123}
-
-FILE_124=sadvect.win32.o
-DEPENDS_124:=\
-	sadvect.win32.f
-
-ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
 DEPENDS_124 +=\
 	
 endif
 
 ${FILE_124:X.o=${NDIM}.o}: ${DEPENDS_124}
 
-FILE_125=sadvection_godunov.o
+FILE_125=sadvect.win32.o
 DEPENDS_125:=\
+	f2c.h sadvect.win32.c
+
+ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
+DEPENDS_125 +=\
+	
+endif
+
+${FILE_125:X.o=${NDIM}.o}: ${DEPENDS_125}
+
+FILE_126=sadvect.win32.o
+DEPENDS_126:=\
+	sadvect.win32.f
+
+ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
+DEPENDS_126 +=\
+	
+endif
+
+${FILE_126:X.o=${NDIM}.o}: ${DEPENDS_126}
+
+FILE_127=sadvection_godunov.o
+DEPENDS_127:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2347,14 +2387,14 @@ DEPENDS_125:=\
 	vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_125 +=\
+DEPENDS_127 +=\
 	
 endif
 
-${FILE_125:X.o=${NDIM}.o}: ${DEPENDS_125}
+${FILE_127:X.o=${NDIM}.o}: ${DEPENDS_127}
 
-FILE_126=scale.o
-DEPENDS_126:=\
+FILE_128=scale.o
+DEPENDS_128:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2366,14 +2406,14 @@ DEPENDS_126:=\
 	time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_126 +=\
+DEPENDS_128 +=\
 	
 endif
 
-${FILE_126:X.o=${NDIM}.o}: ${DEPENDS_126}
+${FILE_128:X.o=${NDIM}.o}: ${DEPENDS_128}
 
-FILE_127=select_time_step.o
-DEPENDS_127:=\
+FILE_129=select_time_step.o
+DEPENDS_129:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2386,14 +2426,14 @@ DEPENDS_127:=\
 	well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_127 +=\
+DEPENDS_129 +=\
 	
 endif
 
-${FILE_127:X.o=${NDIM}.o}: ${DEPENDS_127}
+${FILE_129:X.o=${NDIM}.o}: ${DEPENDS_129}
 
-FILE_128=set_problem_data.o
-DEPENDS_128:=\
+FILE_130=set_problem_data.o
+DEPENDS_130:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2406,14 +2446,14 @@ DEPENDS_128:=\
 	well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_128 +=\
+DEPENDS_130 +=\
 	
 endif
 
-${FILE_128:X.o=${NDIM}.o}: ${DEPENDS_128}
+${FILE_130:X.o=${NDIM}.o}: ${DEPENDS_130}
 
-FILE_129=sim_shear.o
-DEPENDS_129:=\
+FILE_131=sim_shear.o
+DEPENDS_131:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2425,14 +2465,14 @@ DEPENDS_129:=\
 	solver.h time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_129 +=\
+DEPENDS_131 +=\
 	
 endif
 
-${FILE_129:X.o=${NDIM}.o}: ${DEPENDS_129}
+${FILE_131:X.o=${NDIM}.o}: ${DEPENDS_131}
 
-FILE_130=solver.o
-DEPENDS_130:=\
+FILE_132=solver.o
+DEPENDS_132:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2444,14 +2484,14 @@ DEPENDS_130:=\
 	time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_130 +=\
+DEPENDS_132 +=\
 	
 endif
 
-${FILE_130:X.o=${NDIM}.o}: ${DEPENDS_130}
+${FILE_132:X.o=${NDIM}.o}: ${DEPENDS_132}
 
-FILE_131=solver_impes.o
-DEPENDS_131:=\
+FILE_133=solver_impes.o
+DEPENDS_133:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2463,14 +2503,14 @@ DEPENDS_131:=\
 	solver_impes.c time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_131 +=\
+DEPENDS_133 +=\
 	
 endif
 
-${FILE_131:X.o=${NDIM}.o}: ${DEPENDS_131}
+${FILE_133:X.o=${NDIM}.o}: ${DEPENDS_133}
 
-FILE_132=solver_lb.o
-DEPENDS_132:=\
+FILE_134=solver_lb.o
+DEPENDS_134:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2482,14 +2522,14 @@ DEPENDS_132:=\
 	solver_lb.c time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_132 +=\
+DEPENDS_134 +=\
 	
 endif
 
-${FILE_132:X.o=${NDIM}.o}: ${DEPENDS_132}
+${FILE_134:X.o=${NDIM}.o}: ${DEPENDS_134}
 
-FILE_133=solver_richards.o
-DEPENDS_133:=\
+FILE_135=solver_richards.o
+DEPENDS_135:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2501,14 +2541,14 @@ DEPENDS_133:=\
 	solver_richards.c time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_133 +=\
+DEPENDS_135 +=\
 	
 endif
 
-${FILE_133:X.o=${NDIM}.o}: ${DEPENDS_133}
+${FILE_135:X.o=${NDIM}.o}: ${DEPENDS_135}
 
-FILE_134=stefan_problem_phase_source.o
-DEPENDS_134:=\
+FILE_136=stefan_problem_phase_source.o
+DEPENDS_136:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2521,14 +2561,14 @@ DEPENDS_134:=\
 	vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_134 +=\
+DEPENDS_136 +=\
 	
 endif
 
-${FILE_134:X.o=${NDIM}.o}: ${DEPENDS_134}
+${FILE_136:X.o=${NDIM}.o}: ${DEPENDS_136}
 
-FILE_135=subsrf_sim.o
-DEPENDS_135:=\
+FILE_137=subsrf_sim.o
+DEPENDS_137:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2540,14 +2580,14 @@ DEPENDS_135:=\
 	subsrf_sim.c time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_135 +=\
+DEPENDS_137 +=\
 	
 endif
 
-${FILE_135:X.o=${NDIM}.o}: ${DEPENDS_135}
+${FILE_137:X.o=${NDIM}.o}: ${DEPENDS_137}
 
-FILE_136=time_cycle_data.o
-DEPENDS_136:=\
+FILE_138=time_cycle_data.o
+DEPENDS_138:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2559,14 +2599,14 @@ DEPENDS_136:=\
 	time_cycle_data.c time_cycle_data.h timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_136 +=\
+DEPENDS_138 +=\
 	
 endif
 
-${FILE_136:X.o=${NDIM}.o}: ${DEPENDS_136}
+${FILE_138:X.o=${NDIM}.o}: ${DEPENDS_138}
 
-FILE_137=timing.o
-DEPENDS_137:=\
+FILE_139=timing.o
+DEPENDS_139:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2578,14 +2618,14 @@ DEPENDS_137:=\
 	time_cycle_data.h timing.c timing.h vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_137 +=\
+DEPENDS_139 +=\
 	
 endif
 
-${FILE_137:X.o=${NDIM}.o}: ${DEPENDS_137}
+${FILE_139:X.o=${NDIM}.o}: ${DEPENDS_139}
 
-FILE_138=total_velocity_face.o
-DEPENDS_138:=\
+FILE_140=total_velocity_face.o
+DEPENDS_140:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2597,14 +2637,14 @@ DEPENDS_138:=\
 	time_cycle_data.h timing.h total_velocity_face.c vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_138 +=\
+DEPENDS_140 +=\
 	
 endif
 
-${FILE_138:X.o=${NDIM}.o}: ${DEPENDS_138}
+${FILE_140:X.o=${NDIM}.o}: ${DEPENDS_140}
 
-FILE_139=turning_bands.o
-DEPENDS_139:=\
+FILE_141=turning_bands.o
+DEPENDS_141:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2616,14 +2656,14 @@ DEPENDS_139:=\
 	time_cycle_data.h timing.h turning_bands.c vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_139 +=\
+DEPENDS_141 +=\
 	
 endif
 
-${FILE_139:X.o=${NDIM}.o}: ${DEPENDS_139}
+${FILE_141:X.o=${NDIM}.o}: ${DEPENDS_141}
 
-FILE_140=turning_bandsRF.o
-DEPENDS_140:=\
+FILE_142=turning_bandsRF.o
+DEPENDS_142:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2635,14 +2675,14 @@ DEPENDS_140:=\
 	time_cycle_data.h timing.h turning_bandsRF.c vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_140 +=\
+DEPENDS_142 +=\
 	
 endif
 
-${FILE_140:X.o=${NDIM}.o}: ${DEPENDS_140}
+${FILE_142:X.o=${NDIM}.o}: ${DEPENDS_142}
 
-FILE_141=usergrid_input.o
-DEPENDS_141:=\
+FILE_143=usergrid_input.o
+DEPENDS_143:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2654,14 +2694,14 @@ DEPENDS_141:=\
 	time_cycle_data.h timing.h usergrid_input.c vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_141 +=\
+DEPENDS_143 +=\
 	
 endif
 
-${FILE_141:X.o=${NDIM}.o}: ${DEPENDS_141}
+${FILE_143:X.o=${NDIM}.o}: ${DEPENDS_143}
 
-FILE_142=vector.o
-DEPENDS_142:=\
+FILE_144=vector.o
+DEPENDS_144:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h   	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2673,14 +2713,14 @@ DEPENDS_142:=\
 	time_cycle_data.h timing.h vector.c vector.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_142 +=\
+DEPENDS_144 +=\
 	
 endif
 
-${FILE_142:X.o=${NDIM}.o}: ${DEPENDS_142}
+${FILE_144:X.o=${NDIM}.o}: ${DEPENDS_144}
 
-FILE_143=vector_utilities.o
-DEPENDS_143:=\
+FILE_145=vector_utilities.o
+DEPENDS_145:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2692,14 +2732,14 @@ DEPENDS_143:=\
 	time_cycle_data.h timing.h vector.h vector_utilities.c well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_143 +=\
+DEPENDS_145 +=\
 	
 endif
 
-${FILE_143:X.o=${NDIM}.o}: ${DEPENDS_143}
+${FILE_145:X.o=${NDIM}.o}: ${DEPENDS_145}
 
-FILE_144=w_jacobi.o
-DEPENDS_144:=\
+FILE_146=w_jacobi.o
+DEPENDS_146:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2711,14 +2751,14 @@ DEPENDS_144:=\
 	time_cycle_data.h timing.h vector.h w_jacobi.c well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_144 +=\
+DEPENDS_146 +=\
 	
 endif
 
-${FILE_144:X.o=${NDIM}.o}: ${DEPENDS_144}
+${FILE_146:X.o=${NDIM}.o}: ${DEPENDS_146}
 
-FILE_145=well.o
-DEPENDS_145:=\
+FILE_147=well.o
+DEPENDS_147:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2730,14 +2770,14 @@ DEPENDS_145:=\
 	time_cycle_data.h timing.h vector.h well.c well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_145 +=\
+DEPENDS_147 +=\
 	
 endif
 
-${FILE_145:X.o=${NDIM}.o}: ${DEPENDS_145}
+${FILE_147:X.o=${NDIM}.o}: ${DEPENDS_147}
 
-FILE_146=well_package.o
-DEPENDS_146:=\
+FILE_148=well_package.o
+DEPENDS_148:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2749,14 +2789,14 @@ DEPENDS_146:=\
 	time_cycle_data.h timing.h vector.h well.h well_package.c
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_146 +=\
+DEPENDS_148 +=\
 	
 endif
 
-${FILE_146:X.o=${NDIM}.o}: ${DEPENDS_146}
+${FILE_148:X.o=${NDIM}.o}: ${DEPENDS_148}
 
-FILE_147=wells_lb.o
-DEPENDS_147:=\
+FILE_149=wells_lb.o
+DEPENDS_149:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2768,14 +2808,14 @@ DEPENDS_147:=\
 	time_cycle_data.h timing.h vector.h well.h wells_lb.c
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_147 +=\
+DEPENDS_149 +=\
 	
 endif
 
-${FILE_147:X.o=${NDIM}.o}: ${DEPENDS_147}
+${FILE_149:X.o=${NDIM}.o}: ${DEPENDS_149}
 
-FILE_148=wrf_parflow.o
-DEPENDS_148:=\
+FILE_150=wrf_parflow.o
+DEPENDS_150:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2787,14 +2827,14 @@ DEPENDS_148:=\
 	time_cycle_data.h timing.h vector.h well.h wrf_parflow.c
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_148 +=\
+DEPENDS_150 +=\
 	
 endif
 
-${FILE_148:X.o=${NDIM}.o}: ${DEPENDS_148}
+${FILE_150:X.o=${NDIM}.o}: ${DEPENDS_150}
 
-FILE_149=write_parflow_binary.o
-DEPENDS_149:=\
+FILE_151=write_parflow_binary.o
+DEPENDS_151:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2807,14 +2847,14 @@ DEPENDS_149:=\
 	write_parflow_binary.c
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_149 +=\
+DEPENDS_151 +=\
 	
 endif
 
-${FILE_149:X.o=${NDIM}.o}: ${DEPENDS_149}
+${FILE_151:X.o=${NDIM}.o}: ${DEPENDS_151}
 
-FILE_150=write_parflow_silo.o
-DEPENDS_150:=\
+FILE_152=write_parflow_silo.o
+DEPENDS_152:=\
 	$(AMPS_INCLUDE_DIR)/amps.h $(AMPS_INCLUDE_DIR)/amps_proto.h	\
 	Parflow.hxx background.h bc_pressure.h char_vector.h		\
 	communication.h computation.h file_versions.h general.h		\
@@ -2826,9 +2866,9 @@ DEPENDS_150:=\
 	time_cycle_data.h timing.h vector.h well.h write_parflow_silo.c
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
-DEPENDS_150 +=\
+DEPENDS_152 +=\
 	
 endif
 
-${FILE_150:X.o=${NDIM}.o}: ${DEPENDS_150}
+${FILE_152:X.o=${NDIM}.o}: ${DEPENDS_152}
 

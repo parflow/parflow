@@ -379,6 +379,33 @@ void InitMatrix (Matrix *A , double value );
 /* matvec.c */
 void Matvec (double alpha , Matrix *A , Vector *x , double beta , Vector *y );
 
+/* matvecSubMat.c */
+void MatvecSubMat(void *current_state,
+		  double alpha,
+		  Matrix *JB,
+		  Matrix *JC,
+		  Vector *x,
+		  double  beta,
+		  Vector *y);
+
+/* MatvecJacF */
+void            MatvecJacF(
+   ProblemData     *problem_data,
+   double          alpha,
+   Matrix         *JF,
+   Vector         *x,
+   double          beta,
+   Vector         *y);
+
+/* MatvecJacE */
+void            MatvecJacE(
+   ProblemData     *problem_data,
+   double          alpha,
+   Matrix         *JE,
+   Vector         *x,
+   double          beta,
+   Vector         *y);
+
 /* max_field_value.c */
 double MaxFieldValue (Vector *field , Vector *phi , int dir );
 double MaxPhaseFieldValue (Vector *x_velocity , Vector *y_velocity , Vector *z_velocity , Vector *phi );
@@ -386,7 +413,7 @@ double MaxTotalFieldValue (Problem *problem , EvalStruct *eval_struct , Vector *
 
 
 typedef void (*PrecondInvoke) (Vector *x , Vector *b , double tol , int zero );
-typedef PFModule * (*PrecondInitInstanceXtraInvoke) (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *A , double *temp_data );
+typedef PFModule * (*PrecondInitInstanceXtraInvoke) (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *A, Matrix *B , double *temp_data );
 typedef PFModule *(*PrecondNewPublicXtra) (char *name );
 
 /* mg_semi.c */
@@ -440,7 +467,7 @@ int main (int argc , char *argv []);
 
 /* pcg.c */
 void PCG (Vector *x , Vector *b , double tol , int zero );
-PFModule *PCGInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *A , double *temp_data );
+PFModule *PCGInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *A, Matrix *C, double *temp_data );
 void PCGFreeInstanceXtra (void );
 PFModule *PCGNewPublicXtra (char *name );
 void PCGFreePublicXtra (void );
@@ -467,7 +494,8 @@ void FreePFModule (PFModule *pf_module );
 
 /* pf_pfmg.c */
 void PFMG (Vector *soln , Vector *rhs , double tol , int zero );
-PFModule *PFMGInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *pf_matrix , double *temp_data );
+//PFModule *PFMGInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *pf_Bmat , Matrix *pf_Cmat, double *temp_data );
+PFModule *PFMGInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *pf_Bmat , Matrix *pf_Cmat, double *temp_data );
 void PFMGFreeInstanceXtra (void );
 PFModule *PFMGNewPublicXtra (char *name );
 void PFMGFreePublicXtra (void );
@@ -475,7 +503,7 @@ int PFMGSizeOfTempData (void );
 
 /* pf_pfmg_octree.c */
 void PFMGOctree (Vector *soln , Vector *rhs , double tol , int zero );
-PFModule *PFMGOctreeInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *pf_matrix , double *temp_data );
+PFModule *PFMGOctreeInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *pf_Bmat , Matrix *pf_Cmat, double *temp_data );
 void PFMGOctreeFreeInstanceXtra (void );
 PFModule *PFMGOctreeNewPublicXtra (char *name );
 void PFMGOctreeFreePublicXtra (void );
@@ -658,6 +686,40 @@ PFModule *SpecStorageNewPublicXtra (void );
 void SpecStorageFreePublicXtra (void );
 int SpecStorageSizeOfTempData (void );
 
+/* DOK - overlandfloweval */
+typedef void (*OverlandFlowEvalInvoke) (Grid *grid, 
+   int sg,
+   BCStruct *bc_struct,
+   int ipatch,
+   ProblemData *problem_data, 
+   Vector *pressure,  
+   double *ke_v,
+   double *kw_v,
+   double *kn_v,
+   double *ks_v,
+   double *qx_v,
+   double *qy_v,      
+   int     fcn);
+
+void OverlandFlowEval (Grid *grid, 
+   int sg,
+   BCStruct *bc_struct,
+   int ipatch,
+   ProblemData *problem_data, 
+   Vector *pressure,  
+   double *ke_v,
+   double *kw_v,
+   double *kn_v,
+   double *ks_v,
+   double *qx_v,
+   double *qy_v,      
+   int     fcn);
+PFModule *OverlandFlowEvalInitInstanceXtra (void);
+void OverlandFlowEvalFreeInstanceXtra (void );
+PFModule *OverlandFlowEvalNewPublicXtra (void);
+void OverlandFlowEvalFreePublicXtra (void );
+int OverlandFlowEvalSizeOfTempData (void );
+
 typedef void (*ICPhaseSaturInvoke) (Vector *ic_phase_satur , int phase , ProblemData *problem_data );
 typedef PFModule *(*ICPhaseSaturNewPublicXtraInvoke) (int num_phases );
 
@@ -772,10 +834,10 @@ void SaturationConstitutiveFreePublicXtra (void );
 int SaturationConstitutiveSizeOfTempData (void );
 
 typedef void (*SlopeInvoke) (ProblemData *problem_data, Vector *x_sl, Vector *dummy );
-typedef PFModule *(*SlopeInitInstanceXtraInvoke) (Grid *grid);
+typedef PFModule *(*SlopeInitInstanceXtraInvoke) (Grid *grid3d, Grid *grid2d);
 /* problem_toposlope_x.c */
 void XSlope (ProblemData *problem_data, Vector *x_sl, Vector *dummy );
-PFModule *XSlopeInitInstanceXtra (Grid *grid);
+PFModule *XSlopeInitInstanceXtra (Grid *grid3d, Grid *grid2d);
 void XSlopeFreeInstanceXtra (void );
 PFModule *XSlopeNewPublicXtra (void);
 void XSlopeFreePublicXtra (void );
@@ -783,7 +845,7 @@ int XSlopeSizeOfTempData (void );
 
 /* problem_toposlope_y.c */
 void YSlope (ProblemData *problem_data, Vector *y_slope, Vector *dummy );
-PFModule *YSlopeInitInstanceXtra (Grid *grid);
+PFModule *YSlopeInitInstanceXtra (Grid *grid3d, Grid *grid2d);
 void YSlopeFreeInstanceXtra (void );
 PFModule *YSlopeNewPublicXtra (void);
 void YSlopeFreePublicXtra (void );
@@ -830,15 +892,15 @@ void DeleteSubregion (SubregionArray *sr_array , int index );
 void AppendSubregionArray (SubregionArray *sr_array_0 , SubregionArray *sr_array_1 );
 
 
-typedef void (*RichardsJacobianEvalInvoke) (Vector *pressure , Matrix **ptr_to_J , Vector *saturation , Vector *density , ProblemData *problem_data , double dt , double time , int symm_part );
+typedef void (*RichardsJacobianEvalInvoke) (Vector *pressure , Matrix **ptr_to_J , Matrix **ptr_to_JC, Vector *saturation , Vector *density , ProblemData *problem_data , double dt , double time , int symm_part );
 typedef PFModule *(*RichardsJacobianEvalInitInstanceXtraInvoke) (Problem *problem , Grid *grid , double *temp_data , int symmetric_jac );
-typedef PFModule *(*RichardsJacobianEvalNewPublicXtraInvoke) (void );
+typedef PFModule *(*RichardsJacobianEvalNewPublicXtraInvoke) (char *name);
 /* richards_jacobian_eval.c */
 int KINSolMatVec (void *current_state , N_Vector x , N_Vector y , int *recompute , N_Vector pressure );
-void RichardsJacobianEval (Vector *pressure , Matrix **ptr_to_J , Vector *saturation , Vector *density , ProblemData *problem_data , double dt , double time , int symm_part );
+void RichardsJacobianEval (Vector *pressure , Matrix **ptr_to_J , Matrix **ptr_to_JC,Vector *saturation , Vector *density , ProblemData *problem_data , double dt , double time , int symm_part );
 PFModule *RichardsJacobianEvalInitInstanceXtra (Problem *problem , Grid *grid , double *temp_data , int symmetric_jac );
 void RichardsJacobianEvalFreeInstanceXtra (void );
-PFModule *RichardsJacobianEvalNewPublicXtra (void );
+PFModule *RichardsJacobianEvalNewPublicXtra (char *name);
 void RichardsJacobianEvalFreePublicXtra (void );
 int RichardsJacobianEvalSizeOfTempData (void );
 
@@ -865,6 +927,12 @@ void SelectTimeStepFreeInstanceXtra (void );
 PFModule *SelectTimeStepNewPublicXtra (void );
 void SelectTimeStepFreePublicXtra (void );
 int SelectTimeStepSizeOfTempData (void );
+PFModule  *WRFSelectTimeStepNewPublicXtra(
+   double initial_step,
+   double growth_factor,
+   double max_step,
+   double min_step);
+void  WRFSelectTimeStepFreePublicXtra();
 
 PFModule  *WRFSelectTimeStepInitInstanceXtra();
 PFModule  *WRFSelectTimeStepNewPublicXtra(

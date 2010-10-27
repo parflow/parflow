@@ -57,29 +57,15 @@ typedef struct
 #define BackgroundDZ(background)  ((background) -> DZ)
 
 
-#ifdef __STDC__
-# define        ANSI_PROTO(s) s
-#else
-# define ANSI_PROTO(s) ()
-#endif
-
-
 /* usergrid.c */
+Background *ReadBackground(Tcl_Interp *interp );
+void FreeBackground(Background *background);
+Subgrid *ReadUserSubgrid(Tcl_Interp *interp);
+Grid *ReadUserGrid(Tcl_Interp *interp);
+void FreeUserGrid(Grid *user_grid);
+SubgridArray *DistributeUserGrid(Grid *user_grid , int num_procs , int P , int Q , int R);
+SubgridArray   *CopyGrid(
+   SubgridArray *all_subgrids);
 
-#ifdef __STDC__
-# define        P(s) s
-#else
-# define P(s) ()
-#endif
  
-/* usergrid.c */
-Background *ReadBackground P((Tcl_Interp *interp ));
-void FreeBackground P((Background *background ));
-Subgrid *ReadUserSubgrid P((Tcl_Interp *interp ));
-Grid *ReadUserGrid P((Tcl_Interp *interp ));
-void FreeUserGrid P((Grid *user_grid ));
-SubgridArray *DistributeUserGrid P((Grid *user_grid , int num_procs , int P , int Q , int R ));
- 
-#undef P
-
 #endif

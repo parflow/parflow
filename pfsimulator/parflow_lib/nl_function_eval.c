@@ -52,6 +52,7 @@ typedef struct
    PFModule     *phase_source;
    PFModule     *bc_pressure;
    PFModule     *bc_internal;
+   PFModule	*overlandflow_module; //DOK
 } InstanceXtra;
 
 /*---------------------------------------------------------------------
@@ -122,6 +123,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    PFModule    *phase_source      = (instance_xtra -> phase_source);
    PFModule    *bc_pressure       = (instance_xtra -> bc_pressure);
    PFModule    *bc_internal       = (instance_xtra -> bc_internal);
+   PFModule    *overlandflow_module       = (instance_xtra -> overlandflow_module);
 
    /* Re-use saturation vector to save memory */
    Vector      *rel_perm          = saturation;
@@ -136,7 +138,6 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    double      *kw_, *ke_, *kn_, *ks_, *qx_, *qy_;
    double      *x_sl_dat, *y_sl_dat, *mann_dat;
    double      *obf_dat;
-   double      dir_x, dir_y;
    double      q_overlnd;
 
    Vector      *porosity          = ProblemDataPorosity(problem_data);
@@ -986,13 +987,19 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 
 		  /* Remove the boundary term computed above */
 		  fp[ip] -= dt * dir * u_old;
-
+		  //add source boundary terms 
 		  u_new = u_new * bc_patch_values[ival]; //sk: here we go in and implement surface routing!
 
 		  fp[ip] += dt * dir * u_new;
 	       });
- 
 
+	       // SGS Fix this up later after things are a bit more stable.   Probably should 
+	       // Use this loop inside the overland flow eval as it is more efficient.
+#if 1
+               /* Call overlandflow_eval to compute fluxes across the east, west, north, and south faces */
+               PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module, (grid, is, bc_struct, ipatch, problem_data, pressure,
+					 ke_, kw_, kn_, ks_, qx_, qy_, CALCFCN));
+#else
 	       // SGS TODO can these loops be merged?
 	       BCStructPatchLoopOvrlnd(i, j, k, fdir, ival, bc_struct, ipatch, is,
 	       {
@@ -1004,8 +1011,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			   io   = SubvectorEltIndex(qx_sub, i, j, 0);
 			   ip   = SubvectorEltIndex(p_sub, i, j, k);
 
-			   dir_x = 0.0;
-			   dir_y = 0.0;
+			   double dir_x = 0.0;
+			   double dir_y = 0.0;
 			   if(x_sl_dat[io] > 0.0) dir_x = -1.0;
 			   if(y_sl_dat[io] > 0.0) dir_y = -1.0;
 			   if(x_sl_dat[io] < 0.0) dir_x = 1.0; 
@@ -1042,6 +1049,9 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 
 	       });
 
+#endif
+
+
 
 	       BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
 	       {
@@ -1052,7 +1062,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			case 1:
 			   dir = 1;
 			   ip   = SubvectorEltIndex(p_sub, i, j, k);
-			   io   = SubvectorEltIndex(obf_sub, i, j, 0);
+			   io   = SubvectorEltIndex(x_sl_sub, i, j, 0);
 
 			   q_overlnd = 0.0;
 			   q_overlnd = vol * (pfmax(pp[ip],0.0) - pfmax(opp[ip],0.0)) /dz +
@@ -1070,8 +1080,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			   } else if (i > 0 && i < (gnx-1) && j > 0 && j < (gny-1)) { //interior
 			      obf_dat[io] = qx_[io];
 			   }
-			   
-			   
+			   			   
 			   fp[ip] += q_overlnd;
 			   
    			   break;
@@ -1099,6 +1108,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       subgrid = GridSubgrid(grid, is);
 	 
       p_sub   = VectorSubvector(pressure, is);
+      f_sub   = VectorSubvector(fval, is);
 
       nx_p = SubvectorNX(p_sub);
       ny_p = SubvectorNY(p_sub);
@@ -1108,6 +1118,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       sz_p = ny_p * nx_p;
 
       pp = SubvectorData(p_sub);
+      fp  = SubvectorData(f_sub);
 
       for (ipatch = 0; ipatch < BCStructNumPatches(bc_struct); ipatch++)
       {
@@ -1196,6 +1207,8 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem     *problem,
 			     ProblemBCPressure(problem), (problem) );
       (instance_xtra -> bc_internal) =
          PFModuleNewInstance(ProblemBCInternal(problem), () );
+      (instance_xtra -> overlandflow_module) =
+         PFModuleNewInstance(ProblemOverlandFlowEval(problem), () ); //DOK
 
    }
    else
@@ -1212,6 +1225,7 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem     *problem,
       PFModuleReNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
 				(instance_xtra -> bc_pressure), (problem));
       PFModuleReNewInstance((instance_xtra -> bc_internal), ());
+      PFModuleReNewInstance((instance_xtra -> overlandflow_module), ()); //DOK
    }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -1236,6 +1250,7 @@ void  NlFunctionEvalFreeInstanceXtra()
       PFModuleFreeInstance(instance_xtra -> phase_source);
       PFModuleFreeInstance(instance_xtra -> bc_pressure);
       PFModuleFreeInstance(instance_xtra -> bc_internal);
+      PFModuleFreeInstance(instance_xtra -> overlandflow_module); //DOK
       
       tfree(instance_xtra);
    }

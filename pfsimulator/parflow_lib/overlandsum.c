@@ -126,6 +126,105 @@ void OverlandSum(ProblemData *problem_data,
 		  pressure_ptr     = SubvectorData(pressure_subvector);
 		  top_ptr          = SubvectorData(top_subvector);
 
+		  int state;
+		  const int inactive = -1;
+		  const int active = 1;
+
+		  for(i = ix; i < ix + nx; i++) 
+		  {
+		     j = iy - 1;
+
+		     index_top = SubvectorEltIndex(top_subvector, i, j, 0);
+		     int k = (int)top_ptr[index_top];
+
+		     if( k < 0 ) {
+			state = inactive;
+		     } else {
+			state = active;
+		     }
+
+		     while( j < iy + ny) {
+			
+			if( state == inactive) {
+			   index_top = SubvectorEltIndex(top_subvector, i, j, 0);
+			   k = (int)top_ptr[index_top];
+			   while( k < 0 && j <= iy + ny) {
+			      j++;
+			      index_top = SubvectorEltIndex(top_subvector, i, j, 0);
+			      k = (int)top_ptr[index_top];
+			   }
+
+			   // If still in interior
+			   if( j < iy + ny) {
+
+			      if ( k >=0 ) {
+				 
+				 // inactive to active
+				 
+				 index_slope_y         = SubvectorEltIndex(slope_y_subvector, i, j, 0);
+				 
+				 // sloping to inactive active from active
+				 if( slope_y_ptr[index_slope_y] > 0) {
+				    index_pressure        = SubvectorEltIndex(pressure_subvector, i, j, k);
+				    
+				    if(pressure_ptr[index_pressure] > 0) 
+				    {
+				       index_overland_sum    = SubvectorEltIndex(overland_sum_subvector,  i, j, 0);
+				       index_mannings        = SubvectorEltIndex(mannings_subvector, i, j, 0);
+				       
+				       overland_sum_ptr[index_overland_sum] += 
+					  (sqrt( fabs(slope_y_ptr[index_slope_y]) ) / mannings_ptr[index_mannings] ) *
+					  pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dx * dt;
+				    }
+				 }
+			      }
+
+			      state = active;
+			   }
+
+			} else {
+			   index_top = SubvectorEltIndex(top_subvector, i, j+1, 0);
+			   k = (int)top_ptr[index_top];
+			   while( k >= 0 && j <= iy + ny) {
+			      j++;
+			      index_top = SubvectorEltIndex(top_subvector, i, j+1, 0);
+			      k = (int)top_ptr[index_top];
+			   }
+
+			   // If still in interior
+			   if( j < iy + ny) {
+
+			      index_top     = SubvectorEltIndex(top_subvector, i, j, 0);
+			      k = (int)top_ptr[index_top];
+
+			      // active to inactive
+
+			      
+			      index_slope_y         = SubvectorEltIndex(slope_y_subvector, i, j, 0);
+
+			      // sloping from active to inactive
+			      if( slope_y_ptr[index_slope_y] < 0) {
+				 index_pressure        = SubvectorEltIndex(pressure_subvector, i, j, k);
+
+				 if(pressure_ptr[index_pressure] > 0) 
+				 {
+				    index_overland_sum    = SubvectorEltIndex(overland_sum_subvector,  i, j, 0);
+				    index_mannings        = SubvectorEltIndex(mannings_subvector, i, j, 0);
+				    
+				    overland_sum_ptr[index_overland_sum] += 
+				    (sqrt( fabs(slope_y_ptr[index_slope_y]) ) / mannings_ptr[index_mannings] ) *
+				       pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dx * dt;
+				 }
+			      }
+			   }
+
+			   state = inactive;
+			}
+			j++;
+		     }
+		  }
+
+#if 0
 		  for(i = ix; i < ix + nx; i++) 
 		  {
 		     for(j = iy; j < iy + ny; j++) 
@@ -188,7 +287,102 @@ void OverlandSum(ProblemData *problem_data,
 			}
 		     }
 		  }
+#endif
 
+
+		  for(j = iy; j < iy + ny; j++) 
+		  {
+		     i = ix - 1;
+
+		     index_top = SubvectorEltIndex(top_subvector, i, j, 0);
+		     int k = (int)top_ptr[index_top];
+
+		     if( k < 0 ) {
+			state = inactive;
+		     } else {
+			state = active;
+		     }
+
+		     while( i < ix + nx) {
+			
+			if( state == inactive) {
+			   index_top = SubvectorEltIndex(top_subvector, i, j, 0);
+			   k = (int)top_ptr[index_top];
+			   while( k < 0 && i <= ix + nx) {
+			      i++;
+			      index_top = SubvectorEltIndex(top_subvector, i, j, 0);
+			      k = (int)top_ptr[index_top];
+			   }
+
+			   // If still in interior
+			   if( i < ix + nx) {
+
+			      if ( k >=0 ) {
+				 
+				 // inactive to active
+				 
+				 index_slope_x         = SubvectorEltIndex(slope_x_subvector, i, j, 0);
+				 
+				 // sloping to inactive active from active
+				 if( slope_x_ptr[index_slope_x] > 0) {
+				    index_pressure        = SubvectorEltIndex(pressure_subvector, i, j, k);
+				    
+				    if(pressure_ptr[index_pressure] > 0) 
+				    {
+				       index_overland_sum    = SubvectorEltIndex(overland_sum_subvector,  i, j, 0);
+				       index_mannings        = SubvectorEltIndex(mannings_subvector, i, j, 0);
+				       
+				       overland_sum_ptr[index_overland_sum] += 
+					  (sqrt( fabs(slope_x_ptr[index_slope_x]) ) / mannings_ptr[index_mannings] ) *
+					  pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dy * dt;
+				    }
+				 }
+			      }
+
+			      state = active;
+			   }
+
+			} else {
+			   index_top = SubvectorEltIndex(top_subvector, i+1, j, 0);
+			   k = (int)top_ptr[index_top];
+			   while( k >= 0 && i <= ix + nx) {
+			      i++;
+			      index_top = SubvectorEltIndex(top_subvector, i+1, j, 0);
+			      k = (int)top_ptr[index_top];
+			   }
+
+			   // If still in interior
+			   if( i < ix + nx) {
+
+			      index_top     = SubvectorEltIndex(top_subvector, i, j, 0);
+			      k = (int)top_ptr[index_top];
+
+			      // active to inactive
+			      index_slope_x         = SubvectorEltIndex(slope_x_subvector, i, j, 0);
+
+			      // sloping from active to inactive
+			      if( slope_x_ptr[index_slope_x] < 0) {
+				 index_pressure        = SubvectorEltIndex(pressure_subvector, i, j, k);
+
+				 if(pressure_ptr[index_pressure] > 0) 
+				 {
+				    index_overland_sum    = SubvectorEltIndex(overland_sum_subvector,  i, j, 0);
+				    index_mannings        = SubvectorEltIndex(mannings_subvector, i, j, 0);
+				    
+				    overland_sum_ptr[index_overland_sum] += 
+				    (sqrt( fabs(slope_x_ptr[index_slope_x]) ) / mannings_ptr[index_mannings] ) *
+				       pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dy * dt;
+				 }
+			      }
+			   }
+
+			   state = inactive;
+			}
+			i++;
+		     }
+		  }
+
+#if 0
 
 		  for(j = iy; j < iy + ny; j++) 
 		  {
@@ -252,6 +446,9 @@ void OverlandSum(ProblemData *problem_data,
 			}
 		     }
 		  }
+#endif
+
+
 	       }
 	    }
 	 }

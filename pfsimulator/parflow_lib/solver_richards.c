@@ -746,12 +746,19 @@ void AdvanceRichards(PFModule *this_module,
 
    /* IMF: For CLM met forcing (local to AdvanceRichards) */
    int           istep;                                           // IMF: counter for clm output times
-   int           fstep,fflag,fstart,fstop;                        // IMF: index w/in 3D forcing array corresponding to istep
+   int           fstep = INT_MIN;
+   int           fflag,fstart,fstop;           // IMF: index w/in 3D forcing array corresponding to istep
    int           n;                                               // IMF: index vars for looping over subgrid data
    double        sw,lw,prcp,tas,u,v,patm,qatm;                    // IMF: 1D forcing vars (local to AdvanceRichards) 
-   double       *sw_data,*lw_data,*prcp_data,                     // IMF: 2D forcing vars (SubvectorData) (local to AdvanceRichards)
-                *tas_data,*u_data,*v_data,*patm_data,*qatm_data;  
-   char          filename[128];                                   // IMF: 1D input file name *or* 2D/3D input file base name
+   double       *sw_data = NULL;
+   double       *lw_data = NULL;
+   double       *prcp_data = NULL;                     // IMF: 2D forcing vars (SubvectorData) (local to AdvanceRichards)
+   double       *tas_data = NULL;
+   double       *u_data = NULL;
+   double       *v_data = NULL;
+   double       *patm_data = NULL;
+   double       *qatm_data = NULL;  
+   char          filename[2048];                                   // IMF: 1D input file name *or* 2D/3D input file base name
    Subvector    *sw_forc_sub, *lw_forc_sub, *prcp_forc_sub, *tas_forc_sub, 
                 *u_forc_sub, *v_forc_sub, *patm_forc_sub, *qatm_forc_sub;
 
@@ -1183,6 +1190,13 @@ void AdvanceRichards(PFModule *this_module,
 	       case 1:
 	       {
 
+		  sprintf(file_postfix, "%05d", instance_xtra -> file_number);
+		  sprintf(file_type, "press_pre_clm");
+		  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
+			    t, instance_xtra -> file_number, "PressurePreCLM");
+		  any_file_dumped = 1;
+
+
 		  clm_file_dir_length=strlen(public_xtra -> clm_file_dir);
 		  CALL_CLM_LSM(pp,sp,et,ms,po_dat,istep,cdt,t,start_time, 
 			       dx,dy,dz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,p,q,r,rank,
@@ -1208,6 +1222,13 @@ void AdvanceRichards(PFModule *this_module,
                                public_xtra -> clm_irr_threshold,
                                qirr, qirr_inst, iflag, 
                                public_xtra -> clm_irr_thresholdtype);
+
+		  sprintf(file_postfix, "%05d", instance_xtra -> file_number);
+		  sprintf(file_type, "press_post_clm");
+		  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
+			    t, instance_xtra -> file_number, "PressurePostCLM");
+		  any_file_dumped = 1;
+
 		  break;		  
 	       }
 	       default:
@@ -2039,11 +2060,6 @@ PFModule *SolverRichardsInitInstanceXtra()
    {
       subgrid = SubgridArraySubgrid(all_subgrids, i);
       new_subgrid = DuplicateSubgrid(subgrid);
-// SSS
-//      SubgridIZ(new_subgrid) = 0;
-      Background  *bg = GlobalsBackground;
-//      SubgridIZ(new_subgrid) = BackgroundIZ(bg) + GlobalsR;
-//      SubgridIZ(new_subgrid) = BackgroundIZ(bg);
       SubgridIZ(new_subgrid) = 0;
       SubgridNZ(new_subgrid) = 1;
       AppendSubgrid(new_subgrid, new_all_subgrids);

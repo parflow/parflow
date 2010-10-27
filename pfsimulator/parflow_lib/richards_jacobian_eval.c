@@ -26,6 +26,18 @@
   USA
 **********************************************************************EHEADER*/
 
+/*
+  SGS TODO this needs some work in the overland flow current
+ implemnetation is doing communication and computations that are not
+ needed.  The C matrix is wasting a lot of space and communication.
+ Making it a set of vectors will save a great deal of space or adding
+ 2D Matrix support.  
+
+ SGS TODO There is a problem attempting to avoid doing the overland
+ flow additions since the flag is not local.  A neighbor doing
+ overland flow means the process does as well if the overland flow
+ cell is on the boundary.
+ */
 
 #include "parflow.h"
 #include "llnlmath.h"
@@ -35,7 +47,15 @@
  * Define module structures
  *---------------------------------------------------------------------*/
 
-typedef void PublicXtra;
+enum JacobianType { 
+   simple,
+   overland_flow
+};
+
+typedef struct
+{
+ enum JacobianType type;
+} PublicXtra;
 
 typedef struct
 {
@@ -46,8 +66,29 @@ typedef struct
    PFModule     *rel_perm_module;
    PFModule     *bc_pressure;
    PFModule     *bc_internal;
+   PFModule	*overlandflow_module; //DOK
 
+   /* The analytic Jacobian matrix is decomposed as follows:
+    *       
+    *      [ JC  JE ]
+    * J =  |        |
+    *      [ JF  JB ] 
+    *       
+    *where JC corresponds to surface-surface interations, 
+    *      JB corresponds to subsurface-subsurface interations, 
+    *      JE corresponds to surface-subsurface interations, and
+    *      JF corresponds to subsurface-surface interations.
+    *
+    * To make for a more efficient implementation, we store the 
+    * interactions for JE and JF as part of JB, so that JC handles 
+    * only surface-surface interactions, and JB handles the rest
+    *
+    * To make this more general, JB = J whenever there is no 
+    * overland flow contributions to the Jacobian. Hence the 
+    * analytic Jacobian for the subsurface flow is invoked instead.
+   */
    Matrix       *J;
+   Matrix       *JC;
 
    Grid         *grid;
    double       *temp_data;
@@ -66,6 +107,12 @@ int           jacobian_stencil_shape[7][3] = {{ 0,  0,  0},
 					      { 0,  0, -1},
 					      { 0,  0,  1}};
 
+
+int           jacobian_stencil_shape_C[5][3] = {{ 0,  0,  0},
+					      {-1,  0,  0},
+					      { 1,  0,  0},
+					      { 0, -1,  0},
+					      { 0,  1,  0}};
 
 /*---------------------------------------------------------------------
  * Define macros for jacobian evaluation
@@ -86,20 +133,31 @@ N_Vector  pressure)
 {
    PFModule    *richards_jacobian_eval = StateJacEval(((State*)current_state));
    Matrix      *J                = StateJac(         ((State*)current_state) );
+   Matrix      *JC                = StateJacC(         ((State*)current_state) );
    Vector      *saturation       = StateSaturation(  ((State*)current_state) );
    Vector      *density          = StateDensity(     ((State*)current_state) );
    ProblemData *problem_data     = StateProblemData( ((State*)current_state) );
    double       dt               = StateDt(          ((State*)current_state) );
    double       time             = StateTime(        ((State*)current_state) );
 
+   InstanceXtra  *instance_xtra   = (InstanceXtra *)PFModuleInstanceXtra(richards_jacobian_eval);
+
+   PFModule    *bc_pressure       = (instance_xtra -> bc_pressure);
+   StateBCPressure((State*)current_state)           = bc_pressure;
+
+   InitVector(y, 0.0);
+
    if ( *recompute )
    { 
       PFModuleInvokeType(RichardsJacobianEvalInvoke, richards_jacobian_eval, 
-      (pressure, &J, saturation, density, problem_data,
+      (pressure, &J, &JC, saturation, density, problem_data,
       dt, time, 0));
    }
 
-   Matvec(1.0, J, x, 0.0, y);
+   if(JC == NULL)
+     Matvec(1.0, J, x, 0.0, y); 
+   else
+     MatvecSubMat(current_state, 1.0, J, JC, x, 0.0, y);    
 
    return(0);
 }
@@ -112,6 +170,8 @@ void    RichardsJacobianEval(
 Vector       *pressure,       /* Current pressure values */
 Matrix      **ptr_to_J,       /* Pointer to the J pointer - this will be set
 		                 to instance_xtra pointer at end */
+Matrix      **ptr_to_JC,       /* Pointer to the JC pointer - this will be set
+		                 to instance_xtra pointer at end */
 Vector       *saturation,     /* Saturation / work vector */
 Vector       *density,        /* Density vector */
 ProblemData  *problem_data,   /* Geometry data for problem */
@@ -123,6 +183,7 @@ int           symm_part)      /* Specifies whether to compute just the
 {
    PFModule      *this_module     = ThisPFModule;
    InstanceXtra  *instance_xtra   = (InstanceXtra *)PFModuleInstanceXtra(this_module);
+   PublicXtra    *public_xtra     = (PublicXtra *)PFModulePublicXtra(this_module);
 
    Problem     *problem           = (instance_xtra -> problem);
 
@@ -131,8 +192,10 @@ int           symm_part)      /* Specifies whether to compute just the
    PFModule    *rel_perm_module   = (instance_xtra -> rel_perm_module);
    PFModule    *bc_pressure       = (instance_xtra -> bc_pressure);
    PFModule    *bc_internal       = (instance_xtra -> bc_internal);
+   PFModule    *overlandflow_module       = (instance_xtra -> overlandflow_module);
 
    Matrix      *J                 = (instance_xtra -> J);
+   Matrix      *JC                = (instance_xtra -> JC);
 
    Vector      *density_der       = NULL;
    Vector      *saturation_der    = NULL;
@@ -146,6 +209,13 @@ int           symm_part)      /* Specifies whether to compute just the
    Vector      *permeability_y    = ProblemDataPermeabilityY(problem_data);
    Vector      *permeability_z    = ProblemDataPermeabilityZ(problem_data);
    Vector      *sstorage          = ProblemDataSpecificStorage(problem_data); //sk
+   Vector      *top               = ProblemDataIndexOfDomainTop(problem_data);//DOK
+   Vector      *slope_x              = ProblemDataTSlopeX(problem_data);  //DOK
+
+   /* Overland flow variables */ //DOK
+   Vector      *KW, *KE, *KN, *KS;
+   Subvector   *kw_sub, *ke_sub, *kn_sub, *ks_sub, *top_sub, *sx_sub;
+   double      *kw_der, *ke_der, *kn_der, *ks_der;   
 
    double       gravity           = ProblemGravity(problem);
    double       viscosity         = ProblemPhaseViscosity(problem, 0);
@@ -155,12 +225,16 @@ int           symm_part)      /* Specifies whether to compute just the
    Subvector   *p_sub, *d_sub, *s_sub, *po_sub, *rp_sub, *ss_sub;
    Subvector   *permx_sub, *permy_sub, *permz_sub, *dd_sub, *sd_sub, *rpd_sub;
    Submatrix   *J_sub;
+   Submatrix   *JC_sub;
 
    Grid        *grid              = VectorGrid(pressure);
+   Grid        *grid2d            = VectorGrid(slope_x);
 
    double      *pp, *sp, *sdp, *pop, *dp, *ddp, *rpp, *rpdp;
    double      *permxp, *permyp, *permzp;
    double      *cp, *wp, *ep, *sop, *np, *lp, *up, *op = NULL, *ss;
+
+   double      *cp_c, *wp_c, *ep_c, *sop_c, *np_c, *top_dat; //DOK
 
    int          i, j, k, r, is;
    int          ix, iy, iz;
@@ -171,6 +245,8 @@ int           symm_part)      /* Specifies whether to compute just the
    int          sy_v, sz_v;
    int          sy_m, sz_m;
    int          ip, ipo, im, iv;
+
+   int		itop, k1, io, io1, ovlnd_flag; //DOK
 
    double       dtmp, dx, dy, dz, vol, ffx, ffy, ffz;
    double       diff, coeff, x_coeff, y_coeff, z_coeff;
@@ -189,7 +265,8 @@ int           symm_part)      /* Specifies whether to compute just the
    int         *fdir;
    int          ipatch, ival;
    
-   VectorUpdateCommHandle  *handle;
+   CommHandle  *handle;
+   VectorUpdateCommHandle  *vector_update_handle;
 
 
    /*-----------------------------------------------------------------------
@@ -205,8 +282,23 @@ int           symm_part)      /* Specifies whether to compute just the
    rel_perm_der      = saturation_der;
 
    /* Pass pressure values to neighbors.  */
-   handle = InitVectorUpdate(pressure, VectorUpdateAll);
-   FinalizeVectorUpdate(handle);
+   vector_update_handle = InitVectorUpdate(pressure, VectorUpdateAll);
+   FinalizeVectorUpdate(vector_update_handle);
+
+/* Define grid for surface contribution */ 
+   KW = NewVectorType( grid2d, 1, 1, vector_cell_centered);
+   KE = NewVectorType( grid2d, 1, 1, vector_cell_centered);
+   KN = NewVectorType( grid2d, 1, 1, vector_cell_centered);
+   KS = NewVectorType( grid2d, 1, 1, vector_cell_centered);
+
+   InitVector(KW, 0.0);
+   InitVector(KE, 0.0);
+   InitVector(KN, 0.0);
+   InitVector(KS, 0.0);
+
+   // SGS set this to 1 since the off/on behavior does not work in 
+   // parallel.
+   ovlnd_flag = 1; // determines whether or not to set up data structs for overland flow contribution
 
    /* Pass permeability values */
    /*
@@ -221,6 +313,7 @@ int           symm_part)      /* Specifies whether to compute just the
 
    /* Initialize matrix values to zero. */
    InitMatrix(J, 0.0);
+   InitMatrix(JC, 0.0);
 
    /* Calculate time term contributions. */
 
@@ -241,7 +334,7 @@ int           symm_part)      /* Specifies whether to compute just the
 
       J_sub  = MatrixSubmatrix(J, is);
       cp     = SubmatrixStencilData(J_sub, 0);
-	
+
       p_sub   = VectorSubvector(pressure, is);
       d_sub  = VectorSubvector(density, is);
       s_sub  = VectorSubvector(saturation, is);
@@ -266,7 +359,7 @@ int           symm_part)      /* Specifies whether to compute just the
       dz = SubgridDZ(subgrid);
 	 
       vol = dx*dy*dz;
-	 
+      
       nx_v  = SubvectorNX(d_sub);
       ny_v  = SubvectorNY(d_sub);
       nz_v  = SubvectorNZ(d_sub);
@@ -296,6 +389,7 @@ int           symm_part)      /* Specifies whether to compute just the
 
 	 cp[im] += (sdp[iv]*dp[iv] + sp[iv]*ddp[iv])
 	    *pop[ipo]*vol + ss[iv]*vol*(sdp[iv]*dp[iv]*pp[iv]+sp[iv]*ddp[iv]*pp[iv]+sp[iv]*dp[iv]); //sk start
+
       });
 
    }   /* End subgrid loop */
@@ -369,7 +463,6 @@ int           symm_part)      /* Specifies whether to compute just the
       permy_sub = VectorSubvector(permeability_y, is);
       permz_sub = VectorSubvector(permeability_z, is);
       J_sub    = MatrixSubmatrix(J, is);
-
 
       r = SubgridRX(subgrid);
 	 
@@ -632,7 +725,7 @@ int           symm_part)      /* Specifies whether to compute just the
 			   * PMean(pp[ip], pp[ip+1], permxp[ip], permxp[ip+1]) 
 			   / viscosity;
 		        ep[im] = coeff * diff
-			   * RPMean(pp[ip], pp[ip+1], 0.0, prod_der);      
+			   * RPMean(pp[ip], pp[ip+1], 0.0, prod_der);  
 			break;
 		     }
 		  }   /* End switch on fdir[0] */
@@ -653,7 +746,8 @@ int           symm_part)      /* Specifies whether to compute just the
 			   permyp[ip-sy_v], permyp[ip]) 
 			   / viscosity;
 		        sop[im] = - coeff * diff
-			   * RPMean(pp[ip-sy_v], pp[ip], prod_der, 0.0);      
+			   * RPMean(pp[ip-sy_v], pp[ip], prod_der, 0.0);  
+
 			break;
 		     }
 		     case 1:
@@ -666,7 +760,7 @@ int           symm_part)      /* Specifies whether to compute just the
 			   permyp[ip], permyp[ip+sy_v]) 
 			   / viscosity;
 		        np[im] = - coeff * diff
-			   * RPMean(pp[ip], pp[ip+sy_v], 0.0, prod_der);      
+			   * RPMean(pp[ip], pp[ip+sy_v], 0.0, prod_der);     
 			break;
 		     }
 		  }   /* End switch on fdir[1] */
@@ -695,6 +789,7 @@ int           symm_part)      /* Specifies whether to compute just the
 			   prod_der, 0.0)
 			   - gravity * 0.5 * dz * ddp[ip]
 			   * RPMean(lower_cond, upper_cond, prod_lo, prod));
+
 			break;
 		     }
 		     case 1:
@@ -715,6 +810,7 @@ int           symm_part)      /* Specifies whether to compute just the
 			   0.0, prod_der)
 			   - gravity * 0.5 * dz * ddp[ip]
 			   * RPMean(lower_cond, upper_cond, prod, prod_up));
+
 			break;
 		     }
 		  }   /* End switch on fdir[2] */
@@ -726,7 +822,6 @@ int           symm_part)      /* Specifies whether to compute just the
 	 }        /* End ipatch loop */
       }           /* End subgrid loop */
    }                 /* End if symm_part */
-
 
    ForSubgridI(is, GridSubgrids(grid))
    {
@@ -742,6 +837,12 @@ int           symm_part)      /* Specifies whether to compute just the
       permy_sub = VectorSubvector(permeability_y, is);
       permz_sub = VectorSubvector(permeability_z, is);
       J_sub     = MatrixSubmatrix(J, is);
+
+      /* overland flow - DOK */
+      kw_sub = VectorSubvector(KW, is);
+      ke_sub = VectorSubvector(KE, is);
+      kn_sub = VectorSubvector(KN, is);
+      ks_sub = VectorSubvector(KS, is);
 
       dx = SubgridDX(subgrid);
       dy = SubgridDY(subgrid);
@@ -759,7 +860,7 @@ int           symm_part)      /* Specifies whether to compute just the
       nx_v = SubvectorNX(p_sub);
       ny_v = SubvectorNY(p_sub);
       nz_v = SubvectorNZ(p_sub);
-	 
+
       sy_v = nx_v;
       sz_v = ny_v * nx_v;
 
@@ -770,6 +871,12 @@ int           symm_part)      /* Specifies whether to compute just the
       np    = SubmatrixStencilData(J_sub, 4);
       lp    = SubmatrixStencilData(J_sub, 5);
       up    = SubmatrixStencilData(J_sub, 6);
+
+      /* overland flow contribution */
+      kw_der = SubvectorData(kw_sub);
+      ke_der = SubvectorData(ke_sub);
+      kn_der = SubvectorData(kn_sub);
+      ks_der = SubvectorData(ks_sub);
 
       pp     = SubvectorData(p_sub);
       sp     = SubvectorData(s_sub);
@@ -942,49 +1049,270 @@ int           symm_part)      /* Specifies whether to compute just the
 	       {
 		  im = SubmatrixEltIndex(J_sub, i, j, k);
 
-		  if (fdir[0] == -1)  op = wp;
-		  if (fdir[0] ==  1)  op = ep;
-		  if (fdir[1] == -1)  op = sop;
-		  if (fdir[1] ==  1)  op = np;
-		  if (fdir[2] == -1)  op = lp;
-		  if (fdir[2] ==  1)  op = up;
+		  //remove contributions to this row corresponding to boundary
+		  if (fdir[0] == -1)
+		    op = wp;
+		  else if (fdir[0] ==  1)
+		    op = ep;
+		  else if (fdir[1] == -1)
+		    op = sop;
+		  else if (fdir[1] ==  1)
+		    op = np;
+		  else if (fdir[2] == -1)
+		    op = lp;
+		  else // (fdir[2] ==  1)
+                  {
+                       op = up;
+                  /* check if overland flow kicks in */
+                       if(!ovlnd_flag)
+		       {
+                          ip = SubvectorEltIndex(p_sub, i, j, k);  
+			  if((pp[ip]) > 0.0) 
+			  {
+			     ovlnd_flag = 1;
+			  }
+                       }
+                  }                         
 
 		  cp[im] += op[im];
-		  op[im] = 0.0;
+		  op[im] = 0.0; //zero out entry in row of Jacobian 
 	       });
 
-	       BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-	       {
-		  if (fdir[2])
-		  {
-		     switch(fdir[2])
-		     {
-			case 1:
 
+	       switch (public_xtra -> type) 
+	       {
+		  case simple :
+		  {
+		     BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+                     {
+			if(fdir[2] == 1) {
 			   ip   = SubvectorEltIndex(p_sub, i, j, k);
+			   io   = SubvectorEltIndex(p_sub, i, j, 0);
 			   im = SubmatrixEltIndex(J_sub, i, j, k);
-         
+			   
 			   if ((pp[ip]) > 0.0) 
 			   {
 			      cp[im] += vol /dz*(dt+1);
 			   }	
-   			   break;
-		     }
+			}
+		     });
+		     break;
+		  }
+		  case overland_flow :
+		  { 
+		     /* Get overland flow contributions - DOK*/
+		     // SGS can we skip this invocation if !overland_flow? 
+		     PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module, 
+					(grid, is, bc_struct, ipatch, problem_data, pressure,
+					 ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
+
+		     break;
 		  }
 
-	       });
+	       }
 
-	       break;
 	    }     /* End overland flow case */
 
 	 }     /* End switch BCtype */
       }        /* End ipatch loop */
    }           /* End subgrid loop */
 
-   FreeBCStruct(bc_struct);
-
    PFModuleInvokeType(RichardsBCInternalInvoke, bc_internal, (problem, problem_data, NULL, J, time,
 							      pressure, CALCDER));
+
+
+
+   if(public_xtra -> type == overland_flow) {
+
+      // SGS always have to do communication here since
+      // each processor may/may not be doing overland flow.
+      /* Update ghost points for JB before building JC */
+      if (MatrixCommPkg(J))
+      {
+	 handle = InitMatrixUpdate(J);
+	 FinalizeMatrixUpdate(handle);
+      }
+
+      /* Pass KW values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KW, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KE values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KE, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KS values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KS, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KN values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KN, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+   }
+
+   /* Build submatrix JC if overland flow case */ 
+   if(ovlnd_flag && public_xtra -> type == overland_flow)
+   {
+      /* begin loop to build JC */
+      ForSubgridI(is, GridSubgrids(grid))
+      {
+	 subgrid = GridSubgrid(grid, is);
+
+	 dx = SubgridDX(subgrid);
+	 dy = SubgridDY(subgrid);
+	 dz = SubgridDZ(subgrid);
+
+	 vol = dx*dy*dz;
+      
+	 ffx = dy * dz;
+	 ffy = dx * dz;
+	 ffz = dx * dy;
+           
+	 p_sub = VectorSubvector(pressure, is);
+
+	 J_sub     = MatrixSubmatrix(J, is);
+	 JC_sub     = MatrixSubmatrix(JC, is);    
+
+	 kw_sub = VectorSubvector(KW, is);
+	 ke_sub = VectorSubvector(KE, is);
+	 kn_sub = VectorSubvector(KN, is);
+	 ks_sub = VectorSubvector(KS, is);
+
+	 top_sub = VectorSubvector(top, is);
+	 sx_sub = VectorSubvector(slope_x, is);
+           
+	 sy_v = SubvectorNX(sx_sub);
+	 nx_m = SubmatrixNX(J_sub);
+	 ny_m = SubmatrixNY(J_sub);
+	 sy_m = nx_m;
+	 sz_m = nx_m*ny_m;           
+
+	 ix = SubgridIX(subgrid);
+	 iy = SubgridIY(subgrid);
+	 iz = SubgridIZ(subgrid);
+
+	 nx = SubgridNX(subgrid);
+	 ny = SubgridNY(subgrid);
+           
+	 pp = SubvectorData(p_sub);	 
+	 /* for Bmat */
+	 cp    = SubmatrixStencilData(J_sub, 0);
+	 wp    = SubmatrixStencilData(J_sub, 1);
+	 ep    = SubmatrixStencilData(J_sub, 2);
+	 sop   = SubmatrixStencilData(J_sub, 3);
+	 np    = SubmatrixStencilData(J_sub, 4);
+	 lp    = SubmatrixStencilData(J_sub, 5);
+	 up    = SubmatrixStencilData(J_sub, 6);
+
+	 /* for Cmat */
+	 cp_c    = SubmatrixStencilData(JC_sub, 0);
+	 wp_c    = SubmatrixStencilData(JC_sub, 1);
+	 ep_c    = SubmatrixStencilData(JC_sub, 2);
+	 sop_c   = SubmatrixStencilData(JC_sub, 3);
+	 np_c    = SubmatrixStencilData(JC_sub, 4);
+  
+	 kw_der = SubvectorData(kw_sub);
+	 ke_der = SubvectorData(ke_sub);
+	 kn_der = SubvectorData(kn_sub);
+	 ks_der = SubvectorData(ks_sub);
+
+	 top_dat = SubvectorData(top_sub);
+      
+	 for (ipatch = 0; ipatch < BCStructNumPatches(bc_struct); ipatch++)
+	 {
+	    switch(BCStructBCType(bc_struct, ipatch))
+	    {
+	       case OverlandBC:
+	       {
+		  BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+                  {
+		     if (fdir[2] == 1)
+		     {
+
+			/* Loop over boundary patches to build JC matrix.
+			 */
+			io   = SubmatrixEltIndex(J_sub, i, j, iz);	
+			io1   = SubvectorEltIndex(sx_sub, i, j, 0);	   	           
+			itop = SubvectorEltIndex(top_sub,i,j,0);
+		           
+			/* Update JC */
+			ip   = SubvectorEltIndex(p_sub, i, j, k);
+			im = SubmatrixEltIndex(J_sub, i, j, k);
+
+			/* First put contributions from subsurface diagonal onto diagonal of JC */
+			cp_c[io] = cp[im];
+			cp[im] = 0.0; // update JB
+			/* Now check off-diagonal nodes to see if any surface-surface connections exist */
+			/* West */
+			k1 = (int)top_dat[itop-1];                            
+
+			if( k1 >= 0)
+			{
+			   if(k1 == k) /*west node is also surface node */
+			   {
+			      wp_c[io] += wp[im];
+			      wp[im] = 0.0; // update JB
+			   }
+			}
+			/* East */
+			k1 = (int)top_dat[itop+1];                                 
+			if( k1 >= 0)
+			{
+			   if(k1 == k) /*east node is also surface node */
+			   {
+			      ep_c[io] += ep[im];
+			      ep[im] = 0.0; //update JB
+			   }
+			}
+			/* South */
+			k1 = (int)top_dat[itop-sy_v];                                 
+			if( k1 >= 0)
+			{
+			   if(k1 == k) /*south node is also surface node */
+			   {
+			      sop_c[io] += sop[im];
+			      sop[im] = 0.0; //update JB
+			   }
+			}
+			/* North */
+			k1 = (int)top_dat[itop+sy_v];                           
+			if( k1 >= 0)
+			{
+			   if(k1 == k) /*north node is also surface node */
+			   {
+			      np_c[io] += np[im];
+			      np[im] = 0.0; // Update JB
+			   }
+			}
+			
+			/* Now add overland contributions to JC */ 
+			if ((pp[ip]) > 0.0) 
+			{
+			   /*diagonal term */
+			   cp_c[io] += (vol /dz) + (vol/ffy)*dt*(ke_der[io1] - kw_der[io1])
+			      + (vol/ffx)*dt*(kn_der[io1] - ks_der[io1]);
+
+			}
+			   			   
+			/*west term */
+			wp_c[io] -=  (vol/ffy)*dt*(ke_der[io1-1]); 
+
+			/*East term */
+			ep_c[io] +=  (vol/ffy)*dt*(kw_der[io1+1]); 
+
+			/*south term */
+			sop_c[io] -=  (vol/ffx)*dt*(kn_der[io1-sy_v]); 
+
+			/*north term */
+			np_c[io] +=  (vol/ffx)*dt*(ks_der[io1+sy_v]); 	
+		     } 
+		  }); 
+		  break;
+	       }
+
+	    }     /* End switch BCtype */
+	 }        /* End ipatch loop */
+      }           /* End subgrid loop */
+   }
+
+
 
    /* Set pressures outside domain to zero.  
     * Recall: equation to solve is f = 0, so components of f outside 
@@ -1018,36 +1346,82 @@ int           symm_part)      /* Specifies whether to compute just the
       lp = SubmatrixStencilData(J_sub, 5);
       up = SubmatrixStencilData(J_sub, 6);
 
+      /* for Cmat */
+      JC_sub = MatrixSubmatrix(JC, is);
+      cp_c    = SubmatrixStencilData(JC_sub, 0);
+      wp_c    = SubmatrixStencilData(JC_sub, 1);
+      ep_c    = SubmatrixStencilData(JC_sub, 2);
+      sop_c   = SubmatrixStencilData(JC_sub, 3);
+      np_c    = SubmatrixStencilData(JC_sub, 4);
+
       GrGeomOutLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-      {
-	 im   = SubmatrixEltIndex(J_sub, i, j, k);
-	 cp[im] = 1.0;
-	 wp[im] = 0.0;
-	 ep[im] = 0.0;
-	 sop[im] = 0.0;
-	 np[im] = 0.0;
-	 lp[im] = 0.0;
-	 up[im] = 0.0;
-      });
+		    {
+		       im   = SubmatrixEltIndex(J_sub, i, j, k);
+		       cp[im] = 1.0;
+		       wp[im] = 0.0;
+		       ep[im] = 0.0;
+		       sop[im] = 0.0;
+		       np[im] = 0.0;
+		       lp[im] = 0.0;
+		       up[im] = 0.0;
+
+#if 0
+		       /* JC matrix */
+		       cp_c[im] = 1.0;
+		       wp_c[im] = 0.0;
+		       ep_c[im] = 0.0;
+		       sop_c[im] = 0.0;
+		       np_c[im] = 0.0;
+#endif
+		    });
    }
+
 
    /*-----------------------------------------------------------------------
     * Update matrix ghost points
     *-----------------------------------------------------------------------*/
-
-   if (MatrixCommPkg(J))
+   if(public_xtra -> type == overland_flow)
    {
-      CommHandle *matrix_handle = InitMatrixUpdate(J);
-      FinalizeMatrixUpdate(matrix_handle);
+      /* Update matrices and setup pointers */
+      if (MatrixCommPkg(J))
+      {
+	 handle = InitMatrixUpdate(J);
+	 FinalizeMatrixUpdate(handle);
+      }
+      *ptr_to_J = J;
+      
+      if (MatrixCommPkg(JC))
+      {
+	 handle = InitMatrixUpdate(JC);
+	 FinalizeMatrixUpdate(handle);
+      }
+      *ptr_to_JC = JC;
    }
+   else /* No overland flow */
+   {
+      *ptr_to_JC = NULL;
 
-   *ptr_to_J = J;
+      if (MatrixCommPkg(J))
+      {
+	 handle = InitMatrixUpdate(J);
+	 FinalizeMatrixUpdate(handle);
+      }
+
+      *ptr_to_J = J;
+   }/* end if ovlnd_flag */  
 
    /*-----------------------------------------------------------------------
     * Free temp vectors
     *-----------------------------------------------------------------------*/
+
+   FreeBCStruct(bc_struct);
+
    FreeVector(density_der);
    FreeVector(saturation_der);
+   FreeVector(KW);
+   FreeVector(KE);
+   FreeVector(KN);
+   FreeVector(KS);
 
    return;
 }
@@ -1066,7 +1440,7 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
 
-   Stencil       *stencil;
+   Stencil       *stencil, *stencil_C;
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
@@ -1079,6 +1453,7 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
       if ( (instance_xtra -> grid) != NULL )
       {
 	 FreeMatrix(instance_xtra -> J);
+	 FreeMatrix(instance_xtra -> JC); /* DOK */
       }
 
       /* set new data */
@@ -1086,13 +1461,20 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
 
       /* set up jacobian matrix */
       stencil = NewStencil(jacobian_stencil_shape, 7);
+      stencil_C = NewStencil(jacobian_stencil_shape, 7);//DOK
 
-      if (symmetric_jac)
-	 (instance_xtra -> J) = NewMatrixType(grid, NULL, stencil, ON, stencil, 
-					      matrix_cell_centered);
-      else
-	 (instance_xtra -> J) = NewMatrixType(grid, NULL, stencil, OFF, stencil,
-					      matrix_cell_centered);
+      if (symmetric_jac){
+	 (instance_xtra -> J)  =  NewMatrixType(grid, NULL, stencil, ON, stencil, 
+						matrix_cell_centered);
+	 (instance_xtra -> JC) = NewMatrixType(grid, NULL, stencil_C, ON, stencil_C,
+					       matrix_cell_centered);
+      }
+      else{
+	 (instance_xtra -> J)  = NewMatrixType(grid, NULL, stencil, OFF, stencil,
+					       matrix_cell_centered);
+	 (instance_xtra -> JC) = NewMatrixType(grid, NULL, stencil_C, OFF, stencil_C,
+					       matrix_cell_centered);
+      }
 
    }
 
@@ -1118,15 +1500,18 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
          PFModuleNewInstanceType(PhaseRelPermInitInstanceXtraInvoke, ProblemPhaseRelPerm(problem), (NULL, NULL) );
       (instance_xtra -> bc_internal) =
          PFModuleNewInstance(ProblemBCInternal(problem), () );
+      (instance_xtra -> overlandflow_module) =
+         PFModuleNewInstance(ProblemOverlandFlowEval(problem), () ); //DOK
    }
    else {
       PFModuleReNewInstance((instance_xtra -> density_module), ());
       PFModuleReNewInstanceType(BCPressureInitInstanceXtraInvoke, (instance_xtra -> bc_pressure), (problem));
       PFModuleReNewInstanceType(SaturationInitInstanceXtraInvoke, (instance_xtra -> saturation_module), 
-				 (NULL, NULL));
+				(NULL, NULL));
       PFModuleReNewInstanceType(PhaseRelPermInitInstanceXtraInvoke, (instance_xtra -> rel_perm_module), 
 				(NULL, NULL));
       PFModuleReNewInstance((instance_xtra -> bc_internal), ());
+      PFModuleReNewInstance((instance_xtra -> overlandflow_module), ()); //DOK
    }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -1150,8 +1535,11 @@ void  RichardsJacobianEvalFreeInstanceXtra()
       PFModuleFreeInstance(instance_xtra -> saturation_module);
       PFModuleFreeInstance(instance_xtra -> rel_perm_module);
       PFModuleFreeInstance(instance_xtra -> bc_internal);
+      PFModuleFreeInstance(instance_xtra -> overlandflow_module); //DOK      
 
       FreeMatrix(instance_xtra -> J);
+
+      FreeMatrix(instance_xtra -> JC); /* DOK */
 
       tfree(instance_xtra);
    }
@@ -1162,13 +1550,41 @@ void  RichardsJacobianEvalFreeInstanceXtra()
  * RichardsJacobianEvalNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule   *RichardsJacobianEvalNewPublicXtra()
+PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;
+   char           key[IDB_MAX_KEY_LEN];
+   char          *switch_name;
+   int            switch_value;
+   NameArray      precond_na;
 
 
-   public_xtra = NULL;
+   public_xtra = ctalloc(PublicXtra, 1);
+
+   precond_na = NA_NewNameArray("Simple OverlandFlowCoupling");
+   sprintf(key, "%s.Type", name);
+   switch_name = GetStringDefault(key,"Simple");
+   switch_value  = NA_NameToIndex(precond_na, switch_name);
+   switch (switch_value) 
+   {
+      case 0 :
+      {
+	 public_xtra -> type = simple;
+	 break;
+      }
+      case 1 :
+      {
+	 public_xtra -> type = overland_flow;
+	 break;
+      }
+      default:
+      {
+	 InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
+		     key);
+      }
+   }
+
 
    PFModulePublicXtra(this_module) = public_xtra;
    return this_module;
@@ -1201,3 +1617,4 @@ int  RichardsJacobianEvalSizeOfTempData()
    int  sz = 0;
    return sz;
 }
+

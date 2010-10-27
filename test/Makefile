@@ -15,6 +15,7 @@ default: check
 TESTS := \
 	test_X.tcl \
 	default_single.tcl \
+	uvm_flow.tcl \
 	default_richards.tcl \
 	default_richards_wells.tcl \
 	forsyth2.tcl \
@@ -56,14 +57,22 @@ endif
 
 
 
-PARALLEL_TESTS :=
+PARALLEL_3DTOPO_TESTS :=
+PARALLEL_2DTOPO_TESTS :=
 
 ifeq (${AMPS},mpi1)
 
-PARALLEL_TESTS += \
+PARALLEL_3DTOPO_TESTS += \
 	default_single.tcl \
 	default_richards.tcl \
 	default_richards_wells.tcl
+
+PARALLEL_2DTOPO_TESTS += \
+	default_overland.tcl \
+	default_overland.pfmg.jac.tcl \
+	default_overland.pfmg_octree.jac.tcl \
+	water_balance_x.hardflow.nojac.tcl \
+	water_balance_x.hardflow.jac.tcl
 endif
 
 check: check_sequential check_parallel check_samrai 
@@ -74,7 +83,7 @@ check_sequential:
 	        make --no-print-directory testclean; \
 		echo "*****************************************************************************"; \
 		echo "Running $$i"; \
-		tclsh $$i 1 1 1; \
+		time tclsh $$i 1 1 1; \
 	done
 	@-for i in $(SUBDIRS); \
 	do \
@@ -82,14 +91,24 @@ check_sequential:
 	done 
 
 check_parallel:
-	@-for i in $(PARALLEL_TESTS); \
+	@-for i in $(PARALLEL_3DTOPO_TESTS); \
 	do \
 		for processor_topology in "1 1 2" "1 2 1" "2 1 1" "2 2 2" "3 3 3" "1 1 4" "1 4 1" "4 1 1"; \
 		do \
 		        make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			tclsh $$i $$processor_topology; \
+			time tclsh $$i $$processor_topology; \
+		done \
+	done
+	@-for i in $(PARALLEL_2DTOPO_TESTS); \
+	do \
+		for processor_topology in "1 2 1" "2 1 1" "1 4 1" "4 1 1"; \
+		do \
+		        make --no-print-directory testclean; \
+			echo "*****************************************************************************"; \
+			echo "Running $$i on $$processor_topology"; \
+			time tclsh $$i $$processor_topology; \
 		done \
 	done
 	@-for i in $(SUBDIRS); \
@@ -101,12 +120,20 @@ check_parallel:
 check_samrai:
 	 @-for i in $(SAMRAI_TESTS); \
 	 do \
+		for processor_topology in "2 2 1" "2 2 1" "2 2 1" "2 2 1" "2 2 1" "2 2 1" "2 2 1"; \
+	 	do \
+			make --no-print-directory testclean; \
+			echo "*****************************************************************************"; \
+			echo "Running $$i on $$processor_topology"; \
+			echo "time tclsh $$i $$processor_topology"; \
+			time tclsh $$i $$processor_topology; \
+		done; \
 		for processor_topology in "1 1 1" "1 2 1" "2 1 1" "2 2 1" "3 3 1" "1 4 1" "4 1 1"; \
 	 	do \
 			make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			tclsh $$i $$processor_topology; \
+			time tclsh $$i $$processor_topology; \
 		done \
 	done
 	@-for i in $(SAMRAI_TESTS_WITH_PATCH_COUNT); \
@@ -116,7 +143,7 @@ check_samrai:
 		        make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			tclsh $$i $$processor_topology; \
+			time tclsh $$i $$processor_topology; \
 		done \
 	done
 	@-for i in $(SUBDIRS); \
@@ -142,12 +169,11 @@ testclean:
 	@rm -f *.pfidb
 	@rm -f *.out.txt
 	@rm -fr default_richards.out 
-	@rm -fr default_richards_wells.out 
+	@rm -fr *.out.wells
 	@rm -fr indicator_field.out
 	@rm -fr water_balance.out
 	@rm -fr default_overland.out
 	@rm -fr test.log.*
 	@rm -fr richards_hydrostatic_equalibrium.out
-	@rm -fr default_single.out.wells
 	@rm -fr core.*
 	@rm -fr samrai_grid.tmp.tcl

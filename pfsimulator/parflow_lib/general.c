@@ -35,6 +35,10 @@
 
 #include "parflow.h"
 
+#ifdef __linux__
+ #include <unistd.h>
+#endif
+
 #include <math.h>
 
 #ifdef HAVE_MALLOC_H

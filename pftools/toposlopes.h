@@ -141,14 +141,14 @@ double ComputeLMCoeff(
    Databox *ds, 
    double   c, 
    double   p, 
-   double   alpha[2][2], 
-   double   beta[2], 
+   double   alpha[][2], 
+   double   beta[], 
    double   chisq); 
 
 void ComputeGaussJordan(
-   double   a[2][2], 
+   double   a[][2], 
    int      n, 
-   double   b[2][1], 
+   double   b[][1], 
    int      m);
  
 #endif

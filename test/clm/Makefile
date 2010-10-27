@@ -21,7 +21,8 @@ PARALLEL_TESTS =
 ifeq (${AMPS},mpi1)
 
 PARALLEL_TESTS += \
-	clm.tcl
+	clm.tcl \
+	clm.jac.tcl
 endif
 
 SAMRAI_TESTS :=

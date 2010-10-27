@@ -115,7 +115,7 @@ int main (int argc , char *argv [])
        *-----------------------------------------------------------------------*/
 
 
-      char *restart_read_dirname;
+      char *restart_read_dirname = NULL;
       int is_from_restart = FALSE;
       int restore_num = 0;
       

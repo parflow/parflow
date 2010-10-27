@@ -1061,11 +1061,5 @@ allocated by \Ref{amps_TAlloc} or \Ref{amps_CTAlloc}.
 #define AMPS_EXCHANGE_SPECIALIZED 1
 #define AMPS_NEWPACKAGE_SPECIALIZED 1
 
-#define PARFLOW_ERROR(X)				\
-   do {							\
-      _amps_Abort(X, __FILE__, __LINE__);		\
-   } while (0)
-
-
 #endif
 

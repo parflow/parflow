@@ -31,10 +31,15 @@ typedef struct
    PFModule    *nl_function_eval;
    PFModule    *richards_jacobian_eval;
    PFModule    *precond;
+   PFModule    *bc_pressure;//dok
 
    ProblemData *problem_data;
 
    Matrix      *jacobian_matrix;
+   Matrix      *jacobian_matrix_C;//dok
+   Matrix      *jacobian_matrix_E;//dok
+   Matrix      *jacobian_matrix_F;//dok
+
 
    Vector      *old_density;
    Vector      *old_saturation;
@@ -58,6 +63,7 @@ typedef struct
  *--------------------------------------------------------------------------*/
 
 #define StateFunc(state)          ((state)->nl_function_eval)
+#define StateBCPressure(state)          ((state)->bc_pressure)//dok
 #define StateProblemData(state)   ((state)->problem_data)
 #define StateOldDensity(state)    ((state)->old_density)
 #define StateOldPressure(state)   ((state)->old_pressure)
@@ -68,6 +74,9 @@ typedef struct
 #define StateTime(state)          ((state)->time)
 #define StateJacEval(state)       ((state)->richards_jacobian_eval)
 #define StateJac(state)           ((state)->jacobian_matrix)
+#define StateJacC(state)           ((state)->jacobian_matrix_C)//dok
+#define StateJacE(state)           ((state)->jacobian_matrix_E)//dok
+#define StateJacF(state)           ((state)->jacobian_matrix_F)//dok
 #define StatePrecond(state)       ((state)->precond)
 #define StateOutflow(state)       ((state)->outflow) /*sk*/
 #define StateEvapTrans(state)     ((state)->evap_trans) /*sk*/
