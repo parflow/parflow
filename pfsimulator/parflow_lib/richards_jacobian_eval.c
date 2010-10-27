@@ -1559,11 +1559,12 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
    int            switch_value;
    NameArray      precond_na;
 
+   (void)name;
 
    public_xtra = ctalloc(PublicXtra, 1);
 
    precond_na = NA_NewNameArray("Approximate Analytic");
-   sprintf(key, "Solver.Jacobian.Type", name);
+   sprintf(key, "Solver.Jacobian.Type");
    switch_name = GetStringDefault(key,"Approximate");
    switch_value  = NA_NameToIndex(precond_na, switch_name);
    switch (switch_value) 
