@@ -266,8 +266,7 @@ pfset Solver.Nonlinear.EtaValue                          0.01
 
 
 pfset Solver.Nonlinear.UseJacobian                       True
-pfset Solver.Linear.Preconditioner.Jacobian.Type         Analytic
-pfset Solver.Nonlinear.Jacobian.Type                     Analytic
+pfset Solver.Jacobian.Type                               Analytic
 
 pfset Solver.Nonlinear.DerivativeEpsilon                 1e-12
 pfset Solver.Nonlinear.StepTol                           1e-20
