@@ -3427,6 +3427,16 @@ are {\bf False} and {\bf True}.
 Using the Jacobian will most likely decrease the number of nonlinear iterations
 but require more memory to run.
 }
+
+\pfkey{string}{Solver.Nonlinear.Jacobian.Type}{Approximate}
+{This key specifies the Jacobian to use.  Choices for this key 
+are {\bf Approximate} and {\bf Analytic}.
+{\bf Approximate} is faster and uses less memory while {\bf Analytic} will 
+result in fewer iterations.
+}
+
+
+
 \begin{display}\begin{verbatim}
 pfset Solver.Nonlinear.UseJacobian   True
 \end{verbatim}\end{display}
@@ -3465,6 +3475,8 @@ requires more memory and compute time. The choice {\bf PFMGOctree} can be more e
 pfset Solver.Linear.Preconditioner   MGSemi
 \end{verbatim}\end{display}
 
+
+pfset Solver.Linear.Preconditioner.Jacobian.Type         Analytic
 
 \pfkey{string}{Solver.Linear.Preconditioner.SymmetricMat}{Symmetric}
 {This key specifies whether the preconditioning matrix is symmetric.
@@ -3506,6 +3518,13 @@ the SMG multigrid preconditioner.
 \begin{display}\begin{verbatim}
 pfset Solver.Linear.Preconditioner.SMG.NumPostRelax    0
 \end{verbatim}\end{display}
+
+\pfkey{string}{Solver.Linear.Preconditioner.Jacobian.Type}{Approximate}
+{This key specifies the Jacobian to use for the linear preconditioner.  
+Choices for this key are {\bf Approximate} and {\bf Analytic}.
+{\bf Approximate} is faster and uses less memory while {\bf Analytic} will 
+result in fewer iterations.
+}
 
 \pfkey{string}{Solver.LSM}{none}
 {This key specifies whether a land surface model, such as \code{CLM}, will be called each solver timestep.

@@ -417,8 +417,8 @@ pfset Solver.Nonlinear.EtaValue                          0.01
 
 #pfset Solver.Nonlinear.UseJacobian                       False
 pfset Solver.Nonlinear.UseJacobian                       True
-pfset Solver.Linear.Preconditioner.Jacobian.Type         OverlandFlowCoupling
-pfset Solver.Nonlinear.Jacobian.Type                     OverlandFlowCoupling
+pfset Solver.Linear.Preconditioner.Jacobian.Type         Analytic
+pfset Solver.Nonlinear.Jacobian.Type                     Analytic
 
 pfset Solver.Nonlinear.DerivativeEpsilon                 1e-8
 pfset Solver.Nonlinear.StepTol				 1e-30
