@@ -2858,7 +2858,7 @@ void ComputeFlintsLawByBasin(
             // run fitting routine for basindem
             // (since routine ignores nodata cells, will fit only to basin area) 
             // -- initialize L-M vars
-            int    ma     = 2;
+            const int ma     = 2;
             double c      = c0;
             double ctry   = c0;
             double p      = p0;
