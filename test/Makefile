@@ -177,3 +177,4 @@ testclean:
 	@rm -fr richards_hydrostatic_equalibrium.out
 	@rm -fr core.*
 	@rm -fr samrai_grid.tmp.tcl
+	@rm -f samrai_grid2D.tmp.tcl
