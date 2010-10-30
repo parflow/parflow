@@ -50,7 +50,7 @@
 using namespace SAMRAI;
 
 const tbox::Dimension Parflow::d_dim[Parflow::number_of_grid_types] = { 
-   tbox::Dimension::INVALID_DIMENSION, 
+   tbox::Dimension::getInvalidDimension(), 
    tbox::Dimension(3), 
    tbox::Dimension(3),
    tbox::Dimension(3),
@@ -328,21 +328,23 @@ void Parflow::initializePatchHierarchy(double time)
 	    standard_tag_and_initialize,
 	    box_generator,
 	    load_balancer);
+
+      const int d_max_levels = d_patch_hierarchy[grid_type] -> getMaxNumberOfLevels();
       
-      d_tag_buffer_array[grid_type].resizeArray(d_gridding_algorithm[grid_type]->getMaxLevels());
-      for (int il = 0; il < d_gridding_algorithm[grid_type]->getMaxLevels(); il++) {
+      d_tag_buffer_array[grid_type].resizeArray(d_max_levels);
+      for (int il = 0; il < d_max_levels; il++) {
 	 d_tag_buffer_array[grid_type][il] = 1;
       }
-      
+
       const hier::IntVector one_vector(d_dim[grid_type], 1);
 #if 0
-      const hier::IntVector ratio(d_gridding_algorithm[grid_type] -> getMaxLevels() > 1 ? 
+      const hier::IntVector ratio(d_max_levels > 1 ? 
 				  d_gridding_algorithm[grid_type] -> getRatioToCoarserLevel(1) : one_vector);
 #endif
-      const hier::IntVector ratio(d_gridding_algorithm[grid_type] -> getMaxLevels() > 1 ? 
+      const hier::IntVector ratio(d_max_levels > 1 ? 
 				  d_patch_hierarchy[grid_type] -> getRatioToCoarserLevel(1) : one_vector);
 
-      int d_max_levels = d_gridding_algorithm[grid_type] -> getMaxLevels();
+
 
       std::vector<hier::IntVector> fine_connector_gcw(d_max_levels,
 						      hier::IntVector(d_dim[grid_type]));
