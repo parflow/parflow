@@ -63,16 +63,17 @@ PARALLEL_2DTOPO_TESTS :=
 ifeq (${AMPS},mpi1)
 
 PARALLEL_3DTOPO_TESTS += \
+	uvm_flow.tcl \
 	default_single.tcl \
 	default_richards.tcl \
-	default_richards_wells.tcl
+	default_richards_wells.tcl 
 
 PARALLEL_2DTOPO_TESTS += \
 	default_overland.tcl \
 	default_overland.pfmg.jac.tcl \
 	default_overland.pfmg_octree.jac.tcl \
 	water_balance_x.hardflow.nojac.tcl \
-	water_balance_x.hardflow.jac.tcl
+	water_balance_x.hardflow.jac.tcl 
 endif
 
 check: check_sequential check_parallel check_samrai 
@@ -83,7 +84,7 @@ check_sequential:
 	        make --no-print-directory testclean; \
 		echo "*****************************************************************************"; \
 		echo "Running $$i"; \
-		time tclsh $$i 1 1 1; \
+		tclsh $$i 1 1 1; \
 	done
 	@-for i in $(SUBDIRS); \
 	do \
@@ -98,7 +99,7 @@ check_parallel:
 		        make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			time tclsh $$i $$processor_topology; \
+			tclsh $$i $$processor_topology; \
 		done \
 	done
 	@-for i in $(PARALLEL_2DTOPO_TESTS); \
@@ -108,7 +109,7 @@ check_parallel:
 		        make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			time tclsh $$i $$processor_topology; \
+			tclsh $$i $$processor_topology; \
 		done \
 	done
 	@-for i in $(SUBDIRS); \
@@ -126,14 +127,14 @@ check_samrai:
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
 			echo "time tclsh $$i $$processor_topology"; \
-			time tclsh $$i $$processor_topology; \
+			tclsh $$i $$processor_topology; \
 		done; \
 		for processor_topology in "1 1 1" "1 2 1" "2 1 1" "2 2 1" "3 3 1" "1 4 1" "4 1 1"; \
 	 	do \
 			make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			time tclsh $$i $$processor_topology; \
+			tclsh $$i $$processor_topology; \
 		done \
 	done
 	@-for i in $(SAMRAI_TESTS_WITH_PATCH_COUNT); \
@@ -143,7 +144,7 @@ check_samrai:
 		        make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			time tclsh $$i $$processor_topology; \
+			tclsh $$i $$processor_topology; \
 		done \
 	done
 	@-for i in $(SUBDIRS); \

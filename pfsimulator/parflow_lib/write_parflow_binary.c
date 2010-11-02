@@ -174,13 +174,21 @@ Vector  *v)
 
    if ( p == 0 )
    {
+
       amps_WriteDouble(file, &BackgroundX(GlobalsBackground), 1);
       amps_WriteDouble(file, &BackgroundY(GlobalsBackground), 1);
       amps_WriteDouble(file, &BackgroundZ(GlobalsBackground), 1);
 
+#if 0
       amps_WriteInt(file, &BackgroundNX(GlobalsBackground), 1);
       amps_WriteInt(file, &BackgroundNY(GlobalsBackground), 1);
       amps_WriteInt(file, &BackgroundNZ(GlobalsBackground), 1);
+#else
+      amps_WriteInt(file, &SubgridNX(GridBackground(grid)), 1);
+      amps_WriteInt(file, &SubgridNY(GridBackground(grid)), 1);
+      amps_WriteInt(file, &SubgridNZ(GridBackground(grid)), 1);
+
+#endif
 
       amps_WriteDouble(file, &BackgroundDX(GlobalsBackground), 1);
       amps_WriteDouble(file, &BackgroundDY(GlobalsBackground), 1);

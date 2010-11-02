@@ -71,6 +71,12 @@ typedef struct
 
    ComputePkg   **compute_pkgs;
 
+   Subgrid        *background;   /* The background reference grid for 
+				    this grid.   Includes the entire 
+				    space of points that all subgrids
+				    lie in.  Basically the bounding
+				    box for the subgrids */
+
 } Grid;
 
 
@@ -105,6 +111,8 @@ typedef struct
 /*--------------------------------------------------------------------------
  * Accessor macros: Grid
  *--------------------------------------------------------------------------*/
+
+#define GridBackground(grid)  ((grid) -> background)
 
 #define GridSubgrids(grid)    ((grid) -> subgrids)
 #define GridAllSubgrids(grid) ((grid) -> all_subgrids)

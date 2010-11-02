@@ -493,6 +493,8 @@ pfundist $runname
 # Tests 
 #
 source pftest.tcl
+set sig_digits 5
+
 set passed 1
 
 if ![pftestFile $runname.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {

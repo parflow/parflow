@@ -242,7 +242,7 @@ void GrGeomSolidFromInd (GrGeomSolid **solid_ptr , Vector *indicator_field , int
 void GrGeomSolidFromGeom (GrGeomSolid **solid_ptr , GeomSolid *geom_solid , GrGeomExtentArray *extent_array );
 
 /* grid.c */
-Grid *NewGrid (SubgridArray *subgrids , SubgridArray *all_subgrids );
+Grid *NewGrid (SubgridArray *subgrids, SubgridArray *all_subgrids);
 void FreeGrid (Grid *grid );
 int ProjectSubgrid (Subgrid *subgrid , int sx , int sy , int sz , int ix , int iy , int iz );
 Subgrid *ConvertToSubgrid (Subregion *subregion );

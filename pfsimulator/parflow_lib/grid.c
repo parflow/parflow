@@ -50,21 +50,54 @@ Grid  *NewGrid(
 
    int      i, size;
 
+   int ix = INT_MAX;
+   int iy = INT_MAX;
+   int iz = INT_MAX;
+   int nx = INT_MIN;
+   int ny = INT_MIN;
+   int nz = INT_MIN;
 
    new_grid = talloc(Grid, 1);
 
-   (new_grid -> subgrids)      = subgrids;
-   (new_grid -> all_subgrids)  = all_subgrids;
+   new_grid -> subgrids      = subgrids;
+   new_grid -> all_subgrids  = all_subgrids;
 
    size = 0;
    for (i = 0; i < SubgridArraySize(all_subgrids); i++)
    {
       s = SubgridArraySubgrid(all_subgrids, i);
       size += (s -> nx)*(s -> ny)*(s -> nz);
-   }
-   (new_grid -> size) = size;
 
-   (new_grid -> compute_pkgs) = NULL;
+      if(s -> ix < ix) {
+	 ix = s -> ix;
+      }
+
+      if(s -> iy < iy) {
+	 iy = s -> iy;
+      }
+
+      if(s -> iz < iz) {
+	 iz = s -> iz;
+      }
+
+      if( (s -> ix + s -> nx) > nx) {
+	 nx = s -> ix + s -> nx;
+      }
+
+      if( (s -> iy + s -> ny) > ny) {
+	 ny = s -> iy + s -> ny;
+      }
+
+      if( (s -> iz + s -> nz) > nz) {
+	 nz = s -> iz + s -> nz;
+      }
+   }
+
+   new_grid -> background = NewSubgrid(ix, iy, iz, nx, ny, nz, 1, 1, 1, 0);
+
+   new_grid -> size = size;
+
+   new_grid -> compute_pkgs = NULL;
 
    return new_grid;
 }
@@ -118,9 +151,9 @@ int         ProjectSubgrid(
     * set the strides
     *------------------------------------------------------*/
 
-   (subgrid -> sx) = sx;
-   (subgrid -> sy) = sy;
-   (subgrid -> sz) = sz;
+   subgrid -> sx = sx;
+   subgrid -> sy = sy;
+   subgrid -> sz = sz;
 
    /*------------------------------------------------------
     * project in x
@@ -132,8 +165,8 @@ int         ProjectSubgrid(
    il = ((int) ((il + (sx-1)) / sx)) * sx - ix;
    iu = ((int) ((iu + (sx-1)) / sx)) * sx - ix;
 
-   (subgrid -> ix) = il;
-   (subgrid -> nx) = (iu - il) / sx;
+   subgrid -> ix = il;
+   subgrid -> nx = (iu - il) / sx;
 
    /*------------------------------------------------------
     * project in y
@@ -145,8 +178,8 @@ int         ProjectSubgrid(
    il = ((int) ((il + (sy-1)) / sy)) * sy - iy;
    iu = ((int) ((iu + (sy-1)) / sy)) * sy - iy;
 
-   (subgrid -> iy) = il;
-   (subgrid -> ny) = (iu - il) / sy;
+   subgrid -> iy = il;
+   subgrid -> ny = (iu - il) / sy;
 
    /*------------------------------------------------------
     * project in z
@@ -158,8 +191,8 @@ int         ProjectSubgrid(
    il = ((int) ((il + (sz-1)) / sz)) * sz - iz;
    iu = ((int) ((iu + (sz-1)) / sz)) * sz - iz;
 
-   (subgrid -> iz) = il;
-   (subgrid -> nz) = (iu - il) / sz;
+   subgrid -> iz = il;
+   subgrid -> nz = (iu - il) / sz;
 
    /*------------------------------------------------------
     * return
@@ -173,9 +206,9 @@ int         ProjectSubgrid(
    }
    else
    {
-      (subgrid -> nx) = 0;
-      (subgrid -> ny) = 0;
-      (subgrid -> nz) = 0;
+      subgrid -> nx = 0;
+      subgrid -> ny = 0;
+      subgrid -> nz = 0;
 
       return 0;
    }

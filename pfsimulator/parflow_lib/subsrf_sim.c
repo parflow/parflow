@@ -159,11 +159,6 @@ GrGeomSolid  **gr_geounits)
 
    (void) num_geounits;
 
-#ifdef SGS
-      WriteSilo("f1", "perm_x", "", ProblemDataPermeabilityZ(problem_data),
-                0, 0, "PermeabilityX");
-#endif
-
    BeginTiming(public_xtra -> time_index);
 
    /* Transfer conditioning data from the public_xtra structure to a local
@@ -190,12 +185,6 @@ GrGeomSolid  **gr_geounits)
 			 KFieldSimulators[i],
 			 (geounits[j], gr_geounits[j], perm_z, cdata));
    }
-
-#ifdef SGS
-      WriteSilo("f2", "perm_x", "", ProblemDataPermeabilityZ(problem_data),
-                0, 0, "PermeabilityX");
-#endif
-
 
    /*------------------------------------------------------------------------
     * Multiply by scalars k_x, k_y and k_z which can vary by cell
@@ -360,12 +349,6 @@ GrGeomSolid  **gr_geounits)
    handle = InitVectorUpdate(perm_z, VectorUpdateAll);
    FinalizeVectorUpdate(handle);
 
-#ifdef SGS
-      WriteSilo("f4", "perm_x", "", ProblemDataPermeabilityZ(problem_data),
-                0, 0, "PermeabilityX");
-#endif
-
-
    /*------------------------------------------------------------------------
     * Compute an average permeability for each flux well
     *------------------------------------------------------------------------*/
@@ -482,12 +465,6 @@ GrGeomSolid  **gr_geounits)
    EndTiming(public_xtra -> time_index);
 
    tfree(cdata);
-
-#ifdef SGS
-      WriteSilo("f5", "perm_x", "", ProblemDataPermeabilityZ(problem_data),
-                0, 0, "PermeabilityX");
-#endif
-
 
    return;
 }  
