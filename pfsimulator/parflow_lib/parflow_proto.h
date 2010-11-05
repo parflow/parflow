@@ -893,12 +893,12 @@ void AppendSubregionArray (SubregionArray *sr_array_0 , SubregionArray *sr_array
 
 
 typedef void (*RichardsJacobianEvalInvoke) (Vector *pressure , Matrix **ptr_to_J , Matrix **ptr_to_JC, Vector *saturation , Vector *density , ProblemData *problem_data , double dt , double time , int symm_part );
-typedef PFModule *(*RichardsJacobianEvalInitInstanceXtraInvoke) (Problem *problem , Grid *grid , double *temp_data , int symmetric_jac );
+typedef PFModule *(*RichardsJacobianEvalInitInstanceXtraInvoke) (Problem *problem , Grid *grid , ProblemData *problem_data, double *temp_data , int symmetric_jac );
 typedef PFModule *(*RichardsJacobianEvalNewPublicXtraInvoke) (char *name);
 /* richards_jacobian_eval.c */
 int KINSolMatVec (void *current_state , N_Vector x , N_Vector y , int *recompute , N_Vector pressure );
 void RichardsJacobianEval (Vector *pressure , Matrix **ptr_to_J , Matrix **ptr_to_JC,Vector *saturation , Vector *density , ProblemData *problem_data , double dt , double time , int symm_part );
-PFModule *RichardsJacobianEvalInitInstanceXtra (Problem *problem , Grid *grid , double *temp_data , int symmetric_jac );
+PFModule *RichardsJacobianEvalInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data, double *temp_data , int symmetric_jac );
 void RichardsJacobianEvalFreeInstanceXtra (void );
 PFModule *RichardsJacobianEvalNewPublicXtra (char *name);
 void RichardsJacobianEvalFreePublicXtra (void );

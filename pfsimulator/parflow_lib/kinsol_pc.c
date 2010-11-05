@@ -133,7 +133,7 @@ double        time)
       (instance_xtra -> discretization) = 
 	 PFModuleNewInstanceType(
 	    RichardsJacobianEvalInitInstanceXtraInvoke,
-	    discretization, (problem, grid, temp_data, 
+	    discretization, (problem, grid, problem_data, temp_data, 
 			     pc_matrix_type));
       (instance_xtra -> precond) =
          PFModuleNewInstanceType(PrecondInitInstanceXtraInvoke, 
@@ -164,7 +164,7 @@ double        time)
    {
       PFModuleReNewInstanceType(RichardsJacobianEvalInitInstanceXtraInvoke,
 			    (instance_xtra -> discretization), 
-			    (problem, grid, temp_data, pc_matrix_type));
+				(problem, grid, problem_data, temp_data, pc_matrix_type));
       PFModuleReNewInstanceType(PrecondInitInstanceXtraInvoke, 
 			    (instance_xtra -> precond),
 			    (NULL, NULL, problem_data, NULL, NULL, temp_data));

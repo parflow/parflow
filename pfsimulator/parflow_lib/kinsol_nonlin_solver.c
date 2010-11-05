@@ -365,7 +365,7 @@ double      *temp_data)
 	 /* Initialize instance for nonsymmetric matrix */
 	 instance_xtra -> richards_jacobian_eval = 
 	    PFModuleNewInstanceType(RichardsJacobianEvalInitInstanceXtraInvoke, public_xtra -> richards_jacobian_eval, 
-				(problem, grid, temp_data, 0));
+				    (problem, grid, problem_data, temp_data, 0));
       else
 	 instance_xtra -> richards_jacobian_eval = NULL;
    }
@@ -382,7 +382,7 @@ double      *temp_data)
 
       if (instance_xtra -> richards_jacobian_eval != NULL)
 	 PFModuleReNewInstanceType(RichardsJacobianEvalInitInstanceXtraInvoke, instance_xtra -> richards_jacobian_eval, 
-			       (problem, grid, temp_data, 0));
+				   (problem, grid, problem_data, temp_data, 0));
    }
 
    /*-----------------------------------------------------------------------

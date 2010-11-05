@@ -47,7 +47,12 @@
  * Define module structures
  *---------------------------------------------------------------------*/
 
+// Which Jacobian to use.
+// 
+
 enum JacobianType { 
+   no_nonlinear_jacobian,
+   not_set,
    simple,
    overland_flow
 };
@@ -268,9 +273,37 @@ int           symm_part)      /* Specifies whether to compute just the
    CommHandle  *handle;
    VectorUpdateCommHandle  *vector_update_handle;
 
-
+   // Determine if an overland flow boundary condition is being used.
+   // If so will use the analytic Jacobian.
+   if(public_xtra -> type == not_set)
+   {
+      // Default to simple
+      public_xtra -> type = simple;
+      
+      BCPressureData   *bc_pressure_data 
+	 = ProblemDataBCPressureData(problem_data);
+      int num_patches = BCPressureDataNumPatches(bc_pressure_data);
+      
+      if ( num_patches > 0 )
+      {
+	 int i;
+	 for (i = 0; i < num_patches; i++)
+	 {
+	    int type = BCPressureDataType(bc_pressure_data,i);
+	    switch(type) {
+	       case 7:
+	       {
+		  public_xtra -> type = overland_flow;
+		  printf("SGS setting overland flow\n");
+	       }
+	       break;
+	    }
+	 }
+      }
+   }
+   
    /*-----------------------------------------------------------------------
-    * Free temp vectors
+    * Allocate temp vectors
     *-----------------------------------------------------------------------*/
    density_der     = NewVectorType(grid, 1, 1, vector_cell_centered);
    saturation_der  = NewVectorType(grid, 1, 1, vector_cell_centered);
@@ -1048,39 +1081,43 @@ int           symm_part)      /* Specifies whether to compute just the
 	       BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
 	       {
 		  im = SubmatrixEltIndex(J_sub, i, j, k);
-
+		  
 		  //remove contributions to this row corresponding to boundary
 		  if (fdir[0] == -1)
-		    op = wp;
+		     op = wp;
 		  else if (fdir[0] ==  1)
-		    op = ep;
+		     op = ep;
 		  else if (fdir[1] == -1)
-		    op = sop;
+		     op = sop;
 		  else if (fdir[1] ==  1)
-		    op = np;
+		     op = np;
 		  else if (fdir[2] == -1)
-		    op = lp;
+		     op = lp;
 		  else // (fdir[2] ==  1)
                   {
-                       op = up;
-                  /* check if overland flow kicks in */
-                       if(!ovlnd_flag)
-		       {
-                          ip = SubvectorEltIndex(p_sub, i, j, k);  
-			  if((pp[ip]) > 0.0) 
-			  {
-			     ovlnd_flag = 1;
-			  }
-                       }
+		     op = up;
+		     /* check if overland flow kicks in */
+		     if(!ovlnd_flag)
+		     {
+			ip = SubvectorEltIndex(p_sub, i, j, k);  
+			if((pp[ip]) > 0.0) 
+			{
+			   ovlnd_flag = 1;
+			}
+		     }
                   }                         
-
+		  
 		  cp[im] += op[im];
 		  op[im] = 0.0; //zero out entry in row of Jacobian 
 	       });
-
-
+	       
 	       switch (public_xtra -> type) 
 	       {
+		  case no_nonlinear_jacobian :
+		  case not_set :
+		  {
+		     assert(1);
+		  }
 		  case simple :
 		  {
 		     BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
@@ -1105,12 +1142,11 @@ int           symm_part)      /* Specifies whether to compute just the
 		     PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module, 
 					(grid, is, bc_struct, ipatch, problem_data, pressure,
 					 ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
-
+		     
 		     break;
 		  }
-
+		  
 	       }
-
 	    }     /* End overland flow case */
 
 	 }     /* End switch BCtype */
@@ -1434,6 +1470,7 @@ int           symm_part)      /* Specifies whether to compute just the
 PFModule    *RichardsJacobianEvalInitInstanceXtra(
    Problem     *problem,
    Grid        *grid,
+   ProblemData *problem_data,
    double      *temp_data,
    int          symmetric_jac)
 {
@@ -1441,6 +1478,8 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
    InstanceXtra  *instance_xtra;
 
    Stencil       *stencil, *stencil_C;
+
+   (void)problem_data;
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
@@ -1514,7 +1553,8 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
       PFModuleReNewInstance((instance_xtra -> overlandflow_module), ()); //DOK
    }
 
-   PFModuleInstanceXtra(this_module) = instance_xtra;
+
+   PFModuleInstanceXtra(this_module) = instance_xtra;   
    return this_module;
 }
 
@@ -1557,26 +1597,27 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
    char           key[IDB_MAX_KEY_LEN];
    char          *switch_name;
    int            switch_value;
-   NameArray      precond_na;
+   NameArray      switch_na;
+
 
    (void)name;
 
    public_xtra = ctalloc(PublicXtra, 1);
 
-   precond_na = NA_NewNameArray("Approximate Analytic");
-   sprintf(key, "Solver.Jacobian.Type");
-   switch_name = GetStringDefault(key,"Approximate");
-   switch_value  = NA_NameToIndex(precond_na, switch_name);
+   switch_na = NA_NewNameArray("False True");
+   sprintf(key, "Solver.Nonlinear.UseJacobian");
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
    switch (switch_value) 
    {
       case 0 :
       {
-	 public_xtra -> type = simple;
+	 public_xtra -> type = no_nonlinear_jacobian;
 	 break;
       }
       case 1 :
       {
-	 public_xtra -> type = overland_flow;
+	 public_xtra -> type = not_set;
 	 break;
       }
       default:
@@ -1585,7 +1626,7 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
 		     key);
       }
    }
-
+   NA_FreeNameArray(switch_na);
 
    PFModulePublicXtra(this_module) = public_xtra;
    return this_module;

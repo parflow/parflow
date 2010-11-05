@@ -4,7 +4,7 @@ syntax: glob
 
 syntax: glob
 *tmp
-
+*svn*
 
 syntax: regexp
 (.*/)?\#[^/]*\#$

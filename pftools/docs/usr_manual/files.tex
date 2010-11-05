@@ -3431,17 +3431,6 @@ but require more memory to run.
 pfset Solver.Nonlinear.UseJacobian   True
 \end{verbatim}\end{display}
 
-
-\pfkey{string}{Solver.Jacobian.Type}{Approximate}
-{This key specifies the Jacobian to use for both the linear preconditioner and the nonlinear solver.  Choices for this key 
-are {\bf Approximate} and {\bf Analytic}.
-{\bf Approximate} is faster and uses less memory while {\bf Analytic} will 
-result in fewer iterations.
-}
-\begin{display}\begin{verbatim}
-pfset Solver.Jacobian   Analytic 
-\end{verbatim}\end{display}
-
 \pfkey{double}{Solver.Nonlinear.DerivativeEpsilon}{1e-7}
 {This key specifies the value of $\epsilon$ used in approximating the action of
 the Jacobian on a vector with approximate directional derivatives of the

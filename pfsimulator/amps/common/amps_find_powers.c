@@ -50,12 +50,12 @@ void amps_FindPowers(
         if(high == N)   /* no defect, power of 2! */
         {
             *Nnext = N;
-            *log   = high_log;
+            *log   = (int)high_log;
 	 }
         else
         {
-            *Nnext = high << 1;
-            *log   = high_log + 1;
+	   *Nnext = (int)high << 1;
+            *log   = (int)high_log + 1;
 	 }
      }
     else /* condition low >= N satisfied */
@@ -63,12 +63,12 @@ void amps_FindPowers(
         if(low == N)    /* no defect, power of 2! */
         {
             *Nnext = N;
-            *log   = low_log;
+            *log   = (int)low_log;
 	 }
         else
         {
-            *Nnext = low;
-            *log   = low_log;
+	   *Nnext = (int)low;
+	   *log   = (int)low_log;
 	 }
      }
 

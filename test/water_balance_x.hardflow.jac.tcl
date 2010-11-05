@@ -414,10 +414,7 @@ pfset Solver.Nonlinear.ResidualTol                       1e-9
 pfset Solver.Nonlinear.EtaChoice                         Walker1 
 pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaValue                          0.01
-
 pfset Solver.Nonlinear.UseJacobian                       True
-pfset Solver.Jacobian.Type                               Analytic
-
 pfset Solver.Nonlinear.DerivativeEpsilon                 1e-8
 pfset Solver.Nonlinear.StepTol				 1e-30
 pfset Solver.Nonlinear.Globalization                     LineSearch
