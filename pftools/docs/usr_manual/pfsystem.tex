@@ -631,7 +631,7 @@ If gridded elevation values are read in from a text file (e.g., using pfload's s
 ascii format), grid information must be specified using the pfsetgrid command. It should be noted that ParFlow uses slopex and slopey (NOT D8 slopes!) in runoff calculations.
 
 
-\item{\begin{verbatim}pfpitfilldem dem dpit maxiter
+\item{\begin{verbatim}pfpitfilldem dem dpit maxiter \end{verbatim}}
 This command fills sinks in the digital elevation model dem by a standard iterative 
 pit-filling routine. Sinks are identified as cells with zero slope in both x- and 
 y-directions, or as local minima in elevation (i.e., all adjacent neighbors have 
