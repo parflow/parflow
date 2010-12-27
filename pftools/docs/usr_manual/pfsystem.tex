@@ -613,13 +613,13 @@ finite differences based on the digital elevation model dem. Slopes at local
 maxima (in y-direction) are calculated as the maximum downward gradient to 
 an adjacent neighbor. Slopes at local minima (in y-direction) do not drain in
 the y-direction and are therefore set to zero. Note that dem must be a 
-ParFlow dataset and must have the correct grid information -- dy in particular 
+ParFlow dataset and must have the correct grid information - dy in particular 
 is used in slope calculations. If gridded elevation values are read in from a 
 text file (e.g., using pfload's simple ascii format), grid information must be
 specified using the pfsetgrid command. 
 
 
-\item{begin{verbatim}pfslopeD8 dem\end{verbatim}}
+\item{\begin{verbatim}pfslopeD8 dem\end{verbatim}}
 This command computes slopes according to the eight-point pour method (commonly
 referred to as the D8 method) based on the digital elevation model dem. Slopes 
 are computed as the maximum downward gradient between a given cell and it's lowest 
@@ -628,7 +628,7 @@ occur on the edge of the domain, the 1st order upwind slope is used (i.e., the c
 is assumed to drain out of the domain). Note that dem must be a ParFlow dataset and
 must have the correct grid information -- dx and dy both used in slope calculations.
 If gridded elevation values are read in from a text file (e.g., using pfload's simple 
-ascii format), grid information must be specified using the pfsetgrid command. It should be noted that ParFlow uses slope_x and slope_y (NOT D8 slopes!) in runoff calculations.
+ascii format), grid information must be specified using the pfsetgrid command. It should be noted that ParFlow uses slopex and slopey (NOT D8 slopes!) in runoff calculations.
 
 
 \item{\begin{verbatim}pfpitfilldem dem dpit maxiter
@@ -671,7 +671,7 @@ elevation values are read in from a text file (e.g., using pfload's simple ascii
 format), grid information must be specified using the pfsetgrid command. 
 
 
-\item{\begin{verbatim}pfmovingaveragedem dem wsize maxiter
+\item{\begin{verbatim}pfmovingaveragedem dem wsize maxiter \end{verbatim}}
 This command fills sinks in the digital elevation model dem by a standard iterative
 moving-average routine. Sinks are identified as cells with zero slope in both x- and
 y-directions, or as local minima in elevation (i.e., all adjacent cells have higher 
@@ -785,7 +785,7 @@ Normally this is done after every pfrun command.
 \item{\begin{verbatim}pfupstreamarea slope_x slope_y\end{verbatim}}
 This command computes the upstream area contributing to surface runoff
 at each cell based on the x and y slope values provided in datasets 
-slope_x and slope_y, respectively. Contributing area is computed recursively
+\file{slope_x} and \file{slope_y}, respectively. Contributing area is computed recursively
 for each cell; areas are not weighted by slope direction. Areas are returned
 as the number of upstream (contributing) cells; to compute actual area, simply
 multiply by the cell area (dx*dy). 

@@ -42,6 +42,7 @@
 #include "parflow.h"
 #include "llnlmath.h"
 #include "llnltyps.h"
+#include "assert.h" 
 
 /*---------------------------------------------------------------------
  * Define module structures
