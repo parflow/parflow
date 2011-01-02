@@ -60,6 +60,7 @@ typedef struct
    int                max_iterations;
    int                max_convergence_failures;   /* maximum number of convergence failures that are allowed */
    int                lsm;                        /* land surface model */
+    int                terrain_following_grid;      /* @RMM flag for terrain following grid in NL fn eval, sets sslopes=toposl */
 
    int                print_subsurf_data;         /* print permeability/porosity? */
    int                print_press;                /* print pressures? */
@@ -111,7 +112,7 @@ typedef struct
    double             clm_irr_start;      /* CLM irrigation schedule -- start time of constant cycle [GMT] */
    double             clm_irr_stop;       /* CLM irrigation schedule -- stop time of constant cyle [GMT] */
    double             clm_irr_threshold;  /* CLM irrigation schedule -- soil moisture threshold for deficit cycle */
-   int                clm_irr_thresholdtype;  /* Decicit-based saturation criteria (top, bottom, column avg) */
+   int                clm_irr_thresholdtype;  /* Deficit-based saturation criteria (top, bottom, column avg) */
 #endif
 
    int                print_lsm_sink;     /* print LSM sink term? */
@@ -281,6 +282,15 @@ void SetupRichards(PFModule *this_module) {
    PFModuleInvokeType(SetProblemDataInvoke, set_problem_data, (problem_data));
    ComputeTop(problem, problem_data);
 
+    /* @RMM set subsurface slopes to topographic slopes if we have terrain following grid
+     turned on.  We might later make this an geometry or input file option but for now
+     it's just copying one vector into another */
+    if ( public_xtra -> terrain_following_grid )
+    {
+        Copy(ProblemDataTSlopeX(problem_data),ProblemDataSSlopeX(problem_data));
+        Copy(ProblemDataTSlopeY(problem_data), ProblemDataSSlopeY(problem_data) );
+        
+    } 
    /* Write subsurface data */
    if ( print_subsurf_data )
    {
@@ -2514,6 +2524,20 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    sprintf(key, "%s.CLM.CLMFileDir", name);
    public_xtra -> clm_file_dir = GetStringDefault(key,"");
 
+    /* @RMM added switch for terrain-following grid */
+    /* RMM set terrain grid (default=False) */
+    sprintf(key, "%s.TerrainFollowingGrid", name);
+    switch_name = GetStringDefault(key, "False");
+    switch_value = NA_NameToIndex(switch_na, switch_name);
+    if(switch_value < 0)
+    {
+        InputError("Error: invalid value <%s> for key <%s>\n",
+                   switch_name, key );
+    }
+    public_xtra -> terrain_following_grid = switch_value;
+    
+    if (public_xtra -> terrain_following_grid == 1) { printf("TFG true \n");} 
+    
    /* RMM added beta input function for clm */
    beta_switch_na = NA_NewNameArray("none Linear Cosine");
    sprintf(key, "%s.CLM.EvapBeta", name);

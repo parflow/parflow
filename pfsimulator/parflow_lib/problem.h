@@ -97,7 +97,11 @@ typedef struct
    PFModule  *x_slope;
    PFModule  *y_slope;
    PFModule  *mann;
-   PFModule  *overlandflow_eval;       //DOK   
+   PFModule  *overlandflow_eval;       //DOK 
+
+  /* @RMM terrain grid */
+ /*   double x_sslope;
+    double y_sslope; */
 
 } Problem;
 
@@ -134,6 +138,10 @@ typedef struct
    Vector *x_slope;
    Vector *y_slope;
    Vector *mann;
+    
+    /* @RMM terrain grid */
+    Vector *x_sslope;
+    Vector *y_sslope;
 
 } ProblemData;
 
@@ -233,6 +241,8 @@ typedef struct
 #define ProblemDataTSlopeX(problem_data)        ((problem_data) -> x_slope) //sk
 #define ProblemDataTSlopeY(problem_data)        ((problem_data) -> y_slope) //sk
 #define ProblemDataMannings(problem_data)       ((problem_data) -> mann) //sk
+#define ProblemDataSSlopeX(problem_data)        ((problem_data) -> x_sslope) //RMM
+#define ProblemDataSSlopeY(problem_data)        ((problem_data) -> y_sslope) //RMM
 
 /*--------------------------------------------------------------------------
  * Misc macros

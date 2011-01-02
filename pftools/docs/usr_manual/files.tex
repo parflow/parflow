@@ -3254,6 +3254,17 @@ timing information section.
 pfset Solver.WriteSiloOverlandSum  True
 \end{verbatim}\end{display}
 
+\pfkey{string}{Solver.TerrainFollowingGrid}{False}
+{
+This key specifies that a terrain-following coordinate transform is used for solver Richards. This key sets x and y subsurface slopes to be the same as the Topographic slopes (a value of False sets these subsurface slopes to zero).
+These slopes are used in the Darcy fluxes to add a density, gravity -dependent term.  This key will not change the output files (that is the output is still orthogonal) or the geometries (they will still follow the computational grid)-- these two things are both to do items.  This key only changes solver Richards, not solver Impes. 
+}
+
+\begin{display}\begin{verbatim}
+pfset Solver.TerrainFollowingGrid                        True
+\end{verbatim}\end{display}
+
+
 %=============================================================================
 %=============================================================================
 

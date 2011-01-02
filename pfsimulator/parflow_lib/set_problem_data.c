@@ -201,7 +201,7 @@ PFModule  *SetProblemDataInitInstanceXtra(
 				 ProblemYSlope(problem), (grid, grid2d));
       (instance_xtra -> mann) =                                   //sk
 	 PFModuleNewInstanceType(ManningsInitInstanceXtraInvoke,
-				 ProblemMannings(problem), (grid2d));
+				 ProblemMannings(problem), (grid, grid2d));
 
       (instance_xtra -> site_data_not_formed) = 1;
 
@@ -230,7 +230,7 @@ PFModule  *SetProblemDataInitInstanceXtra(
       PFModuleReNewInstanceType(SlopeInitInstanceXtraInvoke, 
 				(instance_xtra -> y_slope), (grid, grid2d));    //sk
       PFModuleReNewInstanceType(ManningsInitInstanceXtraInvoke,
-				(instance_xtra -> mann), (grid2d));    //sk
+				(instance_xtra -> mann), (grid, grid2d));    //sk
       PFModuleReNewInstance((instance_xtra -> wells), ());
       PFModuleReNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
 				(instance_xtra -> bc_pressure), (problem));

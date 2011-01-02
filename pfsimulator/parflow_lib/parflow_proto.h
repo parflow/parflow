@@ -666,11 +666,11 @@ void ICPhasePressureFreePublicXtra (void );
 int ICPhasePressureSizeOfTempData (void );
 
 typedef void (*ManningsInvoke) (ProblemData *problem_data, Vector *mann, Vector *dummy);
-typedef PFModule *(*ManningsInitInstanceXtraInvoke) (Grid *grid);
+typedef PFModule *(*ManningsInitInstanceXtraInvoke) (Grid *grid3d, Grid *grid2d);
 
 /* problem_mannings.c */
 void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy);
-PFModule *ManningsInitInstanceXtra (Grid *grid);
+PFModule *ManningsInitInstanceXtra (Grid *grid3d, Grid *grid2d);
 void ManningsFreeInstanceXtra (void );
 PFModule *ManningsNewPublicXtra (void);
 void ManningsFreePublicXtra (void );

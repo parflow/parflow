@@ -29,7 +29,7 @@
 #include "parflow.h"
 #include "llnlmath.h"
 #include "llnltyps.h"
-
+//#include "math.h"
 #include "float.h"
 
 /*---------------------------------------------------------------------
@@ -149,6 +149,13 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    Vector      *y_sl              = ProblemDataTSlopeY(problem_data);  //sk
    Vector      *man               = ProblemDataMannings(problem_data);  //sk
 
+    /* @RMM terrain following grid slope variables */ 
+    
+   Vector      *x_ssl              = ProblemDataSSlopeX(problem_data);  //@RMM
+   Vector      *y_ssl              = ProblemDataSSlopeY(problem_data);  //@RMM
+   Subvector   *x_ssl_sub, *y_ssl_sub;   //@RMM
+   double      *x_ssl_dat, *y_ssl_dat;    //@RMM
+    
    double       gravity           = ProblemGravity(problem);
    double       viscosity         = ProblemPhaseViscosity(problem, 0);
 
@@ -355,7 +362,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       s_sub  = VectorSubvector(source, is);
       f_sub  = VectorSubvector(fval, is);
       et_sub = VectorSubvector(evap_trans, is);
-	 
+       
       /* RDF: assumes resolutions are the same in all 3 directions */
       r = SubgridRX(subgrid);
 
@@ -477,6 +484,9 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       permx_sub = VectorSubvector(permeability_x, is);
       permy_sub = VectorSubvector(permeability_y, is);
       permz_sub = VectorSubvector(permeability_z, is);
+       /* @RMM added to provide access to x/y slopes */ 
+       x_ssl_sub = VectorSubvector(x_ssl, is);
+       y_ssl_sub = VectorSubvector(y_ssl, is);
 
       /* RDF: assumes resolutions are the same in all 3 directions */
       r = SubgridRX(subgrid);
@@ -511,37 +521,76 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       permxp = SubvectorData(permx_sub);
       permyp = SubvectorData(permy_sub);
       permzp = SubvectorData(permz_sub);
+       
+       /* @RMM  added to provide slopes to terrain fns */
+       x_ssl_dat = SubvectorData(x_ssl_sub);
+       y_ssl_dat = SubvectorData(y_ssl_sub);
+       
+       qx_sub = VectorSubvector(qx, is);
+
 
       GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
       {
 	 ip = SubvectorEltIndex(p_sub, i, j, k);
+     io = SubvectorEltIndex(p_sub, i, j, 0);     
 
 	 /* Calculate right face velocity.
-	    diff >= 0 implies flow goes left to right */
+      diff >= 0 implies flow goes left to right */
 	 diff    = pp[ip] - pp[ip+1];
-	 u_right = ffx * PMean(pp[ip], pp[ip+1], 
+	 u_right = ffx*(1.0/cos(atan(y_ssl_dat[io]))) * PMean(pp[ip], pp[ip+1], 
 	 permxp[ip], permxp[ip+1])
-	    * (diff / dx )
+	    * (diff / dx *(1.0/cos(atan(x_ssl_dat[io]))) )
 	    * RPMean(pp[ip], pp[ip+1], rpp[ip]*dp[ip],
 	    rpp[ip+1]*dp[ip+1])
 	    / viscosity;
 
+          /* Calculate right face velocity gravity terms
+           @RMM added sin* g term to test terrain-following grid
+           should I upwind on gravity terms or pressure?
+           pressure is currently       implemented
+           Sx < 0 implies flow goes left to right */
+          
+          u_right += ffx *(1.0/cos(atan(y_ssl_dat[io])))* PMean(pp[ip], pp[ip+1], 
+                                permxp[ip], permxp[ip+1])
+          * (-gravity*sin(atan(x_ssl_dat[io])))
+          * RPMean(pp[ip], pp[ip+1], rpp[ip]*dp[ip],
+                   rpp[ip+1]*dp[ip+1])
+          / viscosity; 
+ 
+          
 	 /* Calculate front face velocity.
 	    diff >= 0 implies flow goes back to front */
 	 diff    = pp[ip] - pp[ip+sy_p];
-	 u_front = ffy * PMean(pp[ip], pp[ip+sy_p], permyp[ip], 
+	 u_front = ffy*(1.0/cos(atan(x_ssl_dat[io]))) * PMean(pp[ip], pp[ip+sy_p], permyp[ip], 
 	 permyp[ip+sy_p])
-	    * (diff / dy )
+	    * (diff / dy*(1.0/cos(atan(y_ssl_dat[io]))) )
 	    * RPMean(pp[ip], pp[ip+sy_p], rpp[ip]*dp[ip],
 	    rpp[ip+sy_p]*dp[ip+sy_p])
 	    / viscosity;
-		
+          
+          /* Calculate front face velocity gravity terms
+           @RMM added sin* g term to test terrain-following grid
+           note upwinding on gravity terms not pressure 
+           Sy < 0 implies flow goes from left to right
+           */
+	
+          u_front += ffy*(1.0/cos(atan(x_ssl_dat[io]))) * PMean(pp[ip], pp[ip+sy_p], permyp[ip], 
+                                permyp[ip+sy_p])
+          * (-gravity*sin(atan(y_ssl_dat[io])))
+          * RPMean(pp[ip],pp[ip+sy_p], rpp[ip]*dp[ip],
+                   rpp[ip+sy_p]*dp[ip+sy_p])
+          / viscosity;
+          
 	 /* Calculate upper face velocity.
-	    diff >= 0 implies flow goes lower to upper */
-	 lower_cond = (pp[ip] / dz) - 0.5 * dp[ip] * gravity;
-	 upper_cond = (pp[ip+sz_p] / dz) + 0.5 * dp[ip+sz_p] * gravity;
+	    diff >= 0 implies flow goes lower to upper 
+      @RMM added cos to g term to test terrain-following grid
+      */
+          lower_cond = (pp[ip] / dz) - 0.5 * dp[ip] * gravity  * 
+             cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2)))); 
+          upper_cond = (pp[ip+sz_p] / dz) + 0.5 * dp[ip+sz_p] * gravity * 
+             cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2)))); 
 	 diff = lower_cond - upper_cond;
-	 u_upper = ffz * PMean(pp[ip], pp[ip+sz_p], 
+	 u_upper = ffz*(1.0/cos(atan(x_ssl_dat[io])))*(1.0/cos(atan(y_ssl_dat[io]))) * PMean(pp[ip], pp[ip+sz_p], 
 	 permzp[ip], permzp[ip+sz_p])
 	    * diff
 	    * RPMean(lower_cond, upper_cond, rpp[ip]*dp[ip], 
@@ -571,7 +620,11 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       p_sub     = VectorSubvector(pressure, is);
       op_sub = VectorSubvector(old_pressure, is);
       os_sub = VectorSubvector(old_saturation, is);
-
+       
+       /* @RMM added to provide access to x/y slopes */ 
+       x_ssl_sub = VectorSubvector(x_ssl, is);
+       y_ssl_sub = VectorSubvector(y_ssl, is);
+       
       // sk Overland flow
       kw_sub = VectorSubvector(KW, is);
       ke_sub = VectorSubvector(KE, is);
@@ -635,6 +688,10 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       pp = SubvectorData(p_sub);
       opp = SubvectorData(op_sub);
       osp = SubvectorData(os_sub);
+       
+       /* @RMM  added to provide slopes to terrain fns */
+       x_ssl_dat = SubvectorData(x_ssl_sub);
+       y_ssl_dat = SubvectorData(y_ssl_sub);
 
       for (ipatch = 0; ipatch < BCStructNumPatches(bc_struct); ipatch++)
       {
@@ -644,11 +701,11 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 	 {
 
 	    case DirichletBC:
-	    {
+	    { 
 	       BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
 	       {
 		  ip   = SubvectorEltIndex(p_sub, i, j, k);
-
+          io = SubvectorEltIndex(p_sub, i, j, 0);    
 		  value =  bc_patch_values[ival];
 
 		  /* Don't currently do upstream weighting on boundaries */
@@ -660,12 +717,21 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			case -1:
 			   dir = -1;
 			   diff  = pp[ip-1] - pp[ip];
-			   u_old = ffx 
+			   u_old = ffx *(1.0/cos(atan(y_ssl_dat[io])))
 			      * PMean(pp[ip-1], pp[ip], permxp[ip-1], permxp[ip])
-			      * (diff / dx )
+			      * (diff / dx*(1.0/cos(atan(x_ssl_dat[io]))) )
 			      * RPMean(pp[ip-1], pp[ip], 
 			      rpp[ip-1]*dp[ip-1], rpp[ip]*dp[ip]) 
 			      / viscosity;
+                     
+                u_old += ffx *(1.0/cos(atan(y_ssl_dat[io]))) *
+                     PMean(pp[ip-1], pp[ip], 
+                            permxp[ip-1], permxp[ip])
+                     * (-gravity*sin(atan(x_ssl_dat[io])))
+                     * RPMean(pp[ip-1], pp[ip] , rpp[ip-1]*dp[ip-1],
+                              rpp[ip]*dp[ip])
+                     / viscosity;     
+                     
 			   diff = value - pp[ip];
 			   u_new = RPMean(value, pp[ip], 
 			   rpp[ip-1]*dp[ip-1], rpp[ip]*dp[ip]);
@@ -673,18 +739,27 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			case  1:
 			   dir = 1;
 			   diff  = pp[ip] - pp[ip+1];
-			   u_old = ffx 
+			   u_old = ffx *(1.0/cos(atan(y_ssl_dat[io])))
 			      * PMean(pp[ip], pp[ip+1], permxp[ip], permxp[ip+1])
-			      * (diff / dx )
+			      * (diff / dx*(1.0/cos(atan(x_ssl_dat[io]))) )
 			      * RPMean(pp[ip], pp[ip+1],
 			      rpp[ip]*dp[ip], rpp[ip+1]*dp[ip+1]) 
 			      / viscosity;
+
+                u_old += ffx *(1.0/cos(atan(y_ssl_dat[io])))
+                     * PMean(pp[ip], pp[ip+1], 
+                        permxp[ip], permxp[ip+1])
+                     * (-gravity*sin(atan(x_ssl_dat[io])))
+                     * RPMean(pp[ip], pp[ip+1], rpp[ip]*dp[ip],
+                              rpp[ip+1]*dp[ip+1])
+                     / viscosity;                         
+                     
 			   diff = pp[ip] - value;
 			   u_new = RPMean(pp[ip], value,
 			   rpp[ip]*dp[ip], rpp[ip+1]*dp[ip+1]);
 			   break;
 		     }
-		     u_new = u_new * ffx * ( permxp[ip] / viscosity ) 
+		     u_new = u_new * ffx *(1.0/cos(atan(y_ssl_dat[io]))) * ( permxp[ip] / viscosity ) 
 			* 2.0 * (diff/dx);
 		  }
 		  else if (fdir[1])
@@ -694,13 +769,23 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			case -1:
 			   dir = -1;
 			   diff  = pp[ip-sy_p] - pp[ip];
-			   u_old = ffy 
+			   u_old = ffy *(1.0/cos(atan(x_ssl_dat[io])))
 			      * PMean(pp[ip-sy_p], pp[ip], 
 			      permyp[ip-sy_p], permyp[ip])
-			      * (diff / dy )
+			      * (diff / dy*(1.0/cos(atan(y_ssl_dat[io]))) )
 			      * RPMean(pp[ip-sy_p], pp[ip], 
 			      rpp[ip-sy_p]*dp[ip-sy_p], rpp[ip]*dp[ip]) 
 			      / viscosity;
+                
+                u_old += ffy*(1.0/cos(atan(x_ssl_dat[io]))) * 
+                    PMean(pp[ip], pp[ip-sy_p], permyp[ip], 
+                            permyp[ip-sy_p])
+                     * (-gravity*sin(atan(y_ssl_dat[io])))
+                     * RPMean(pp[ip],pp[ip-sy_p], rpp[ip]*dp[ip],
+                              rpp[ip-sy_p]*dp[ip-sy_p])
+                     / viscosity;
+                     
+                     
 			   diff =  value - pp[ip];
 			   u_new = RPMean(value, pp[ip], 
 			   rpp[ip-sy_p]*dp[ip-sy_p], rpp[ip]*dp[ip]);
@@ -708,19 +793,29 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			case  1:
 			   dir = 1;
 			   diff  = pp[ip] - pp[ip+sy_p];
-			   u_old = ffy 
+			    u_old = ffy *(1.0/cos(atan(x_ssl_dat[io])))
 			      * PMean(pp[ip], pp[ip+sy_p], 
 			      permyp[ip], permyp[ip+sy_p])
-			      * (diff / dy )
+			      * (diff / dy *(1.0/cos(atan(y_ssl_dat[io]))) )
 			      * RPMean(pp[ip], pp[ip+sy_p], 
 			      rpp[ip]*dp[ip], rpp[ip+sy_p]*dp[ip+sy_p])
 			      / viscosity;
+                     
+               u_old += ffy*(1.0/cos(atan(x_ssl_dat[io]))) 
+                     * PMean(pp[ip], pp[ip+sy_p], permyp[ip], 
+                        permyp[ip+sy_p])
+                     * (-gravity*sin(atan(y_ssl_dat[io])))
+                     * RPMean(pp[ip],pp[ip+sy_p], rpp[ip]*dp[ip],
+                              rpp[ip+sy_p]*dp[ip+sy_p])
+                     / viscosity;
+                     
+                     
 			   diff = pp[ip] - value;
 			   u_new = RPMean(pp[ip], value,
 			   rpp[ip]*dp[ip], rpp[ip+sy_p]*dp[ip+sy_p]);
 			   break;
 		     }
-		     u_new = u_new * ffy * ( permyp[ip] / viscosity ) 
+		     u_new = u_new * ffy * (1.0/cos(atan(x_ssl_dat[io])))* ( permyp[ip] / viscosity ) 
 			* 2.0 * (diff/dy);
 		  }
 		  else if (fdir[2])
@@ -731,11 +826,15 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			{
 			   dir = -1;
 			   lower_cond = (pp[ip-sz_p] / dz) 
-			      - 0.5 * dp[ip-sz_p] * gravity;
-			   upper_cond = (pp[ip] / dz) + 0.5 * dp[ip] * gravity;
+			      - 0.5 * dp[ip-sz_p] * gravity *
+                 cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2))));
+                
+			   upper_cond = (pp[ip] / dz) + 0.5 * dp[ip] * gravity*
+                 cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2))));
+                
 			   diff = lower_cond - upper_cond;
 
-			   u_old = ffz 
+			   u_old = ffz *(1.0/cos(atan(x_ssl_dat[io])))*(1.0/cos(atan(y_ssl_dat[io]))) 
 			      * PMean(pp[ip-sz_p], pp[ip], 
 			      permzp[ip-sz_p], permzp[ip])
 			      * diff
@@ -753,26 +852,51 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			case  1:
 			{
 			   dir = 1;
-			   lower_cond = (pp[ip] / dz) - 0.5 * dp[ip] * gravity;
+			   
+                /* Calculate upper face velocity.
+                 @RMM added cos to g term to test terrain-following grid
+                 */
+                
+                lower_cond = (pp[ip] / dz) - 0.5 * dp[ip] * gravity *
+                cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2)))); 
+                
 			   upper_cond = (pp[ip+sz_p] / dz) 
-			      - 0.5 * dp[ip+sz_p] * gravity;
+                - 0.5 * dp[ip+sz_p] * gravity  *
+                cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2)))); 
+                 
+                diff = lower_cond - upper_cond;
+                u_upper = ffz * (1.0/cos(atan(x_ssl_dat[io])))*(1.0/cos(atan(y_ssl_dat[io])))*
+                PMean(pp[ip], pp[ip+sz_p], 
+                                      permzp[ip], permzp[ip+sz_p])
+                * diff
+                * RPMean(lower_cond, upper_cond, rpp[ip]*dp[ip], 
+                         rpp[ip+sz_p]*dp[ip+sz_p])
+                / viscosity;
+                
+                
 			   diff = lower_cond - upper_cond;
-			   u_old = ffz 
+			   u_old = ffz * (1.0/cos(atan(x_ssl_dat[io])))*(1.0/cos(atan(y_ssl_dat[io])))
 			      * PMean(pp[ip], pp[ip+sz_p], 
 			      permzp[ip], permzp[ip+sz_p])
 			      * diff
 			      * RPMean(lower_cond, upper_cond, 
 			      rpp[ip]*dp[ip], rpp[ip+sz_p]*dp[ip+sz_p])
 			      / viscosity;
-			   lower_cond = (pp[ip] / dz) - 0.25 * dp[ip] * gravity;
-			   upper_cond = (value / dz) + 0.25 * dp[ip] * gravity;
+                
+                lower_cond = (pp[ip] / dz) - 0.25 * dp[ip] * gravity *
+               cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2)))); 
+                
+                upper_cond = (value / dz) + 0.25 * dp[ip] * gravity *
+               cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2)))); 
+                
 			   diff = lower_cond - upper_cond;
 			   u_new = RPMean(lower_cond, upper_cond,
 			   rpp[ip]*dp[ip], rpp[ip+sz_p]*dp[ip+sz_p]);
 			   break;
 			}   /* End case 1 */
 		     }
-		     u_new = u_new * ffz * ( permzp[ip] / viscosity ) 
+		     u_new = u_new * ffz * (1.0/cos(atan(x_ssl_dat[io])))*(1.0/cos(atan(y_ssl_dat[io])))*
+               ( permzp[ip] / viscosity ) 
 			* 2.0 * diff;
 		  }
 
@@ -783,15 +907,15 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 		  fp[ip] += dt * dir * u_new;
 	       });
 
-	       break;
-	    }
+	       break; 
+	    } 
 
 	    case FluxBC:
 	    {
 	       BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
 	       {
 		  ip   = SubvectorEltIndex(p_sub, i, j, k);
-
+          io   = SubvectorEltIndex(p_sub, i, j, 0);
 		  if (fdir[0])
 		  {
 		     switch(fdir[0])
@@ -799,22 +923,43 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			case -1:
 			   dir = -1;
 			   diff  = pp[ip-1] - pp[ip];
-			   u_old = ffx * PMean(pp[ip-1], pp[ip], 
+			   u_old = ffx * (1.0/cos(atan(y_ssl_dat[io]))) 
+                     *PMean(pp[ip-1], pp[ip], 
 			   permxp[ip-1], permxp[ip])
-			      * (diff / dx )
+			      * (diff / dx * (1.0/cos(atan(x_ssl_dat[io]))) )
 			      * RPMean(pp[ip-1], pp[ip], 
 			      rpp[ip-1]*dp[ip-1], rpp[ip]*dp[ip]) 
 			      / viscosity;
+              
+                u_old += ffx * (1.0/cos(atan(y_ssl_dat[io])))
+                     * PMean(pp[ip-1], pp[ip], 
+                        permxp[ip-1], permxp[ip])
+                     * (-gravity*sin(atan(x_ssl_dat[io])))
+                     * RPMean(pp[ip-1], pp[ip] , rpp[ip-1]*dp[ip-1],
+                              rpp[ip]*dp[ip])
+                     / viscosity;     
+                     
+                     
 			   break;
 			case  1:
 			   dir = 1;
 			   diff  = pp[ip] - pp[ip+1];
-			   u_old = ffx * PMean(pp[ip], pp[ip+1], 
+			   u_old = ffx * (1.0/cos(atan(y_ssl_dat[io])))
+                     * PMean(pp[ip], pp[ip+1], 
 			   permxp[ip], permxp[ip+1])
-			      * (diff / dx )
+			      * (diff / dx * (1.0/cos(atan(x_ssl_dat[io]))) )
 			      * RPMean(pp[ip], pp[ip+1], 
 			      rpp[ip]*dp[ip], rpp[ip+1]*dp[ip+1]) 
 			      / viscosity;
+                     
+               u_old += ffx *(1.0/cos(atan(y_ssl_dat[io])))
+                     * PMean(pp[ip], pp[ip+1], 
+                        permxp[ip], permxp[ip+1])
+                 * (-gravity*sin(atan(x_ssl_dat[io])))
+                 * RPMean(pp[ip], pp[ip+1], rpp[ip]*dp[ip],
+                rpp[ip+1]*dp[ip+1])
+                     / viscosity;     
+                     
 			   break;
 		     }
 		     u_new = ffx;
@@ -826,25 +971,46 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			case -1:
 			   dir = -1;
 			   diff  = pp[ip-sy_p] - pp[ip];
-			   u_old = ffy * PMean(pp[ip-sy_p], pp[ip], 
+			   u_old = ffy * (1.0/cos(atan(x_ssl_dat[io])))
+                     * PMean(pp[ip-sy_p], pp[ip], 
 			   permyp[ip-sy_p], permyp[ip])
 			      * (diff / dy )
 			      * RPMean(pp[ip-sy_p], pp[ip], 
 			      rpp[ip-sy_p]*dp[ip-sy_p], rpp[ip]*dp[ip]) 
 			      / viscosity;
+               
+               u_old += ffy*(1.0/cos(atan(x_ssl_dat[io]))) * 
+                 PMean(pp[ip], pp[ip-sy_p], permyp[ip], 
+                       permyp[ip-sy_p])
+                 * (-gravity*sin(atan(y_ssl_dat[io])))
+                 * RPMean(pp[ip],pp[ip-sy_p], rpp[ip]*dp[ip],
+                          rpp[ip-sy_p]*dp[ip-sy_p])
+                 / viscosity;
+                     
+                     
 			   break;
 			case  1:
 			   dir = 1;
 			   diff  = pp[ip] - pp[ip+sy_p];
-			   u_old = ffy * PMean(pp[ip], pp[ip+sy_p], 
+			   u_old = ffy * (1.0/cos(atan(x_ssl_dat[io])))
+                     * PMean(pp[ip], pp[ip+sy_p], 
 			   permyp[ip], permyp[ip+sy_p])
 			      * (diff / dy )
 			      * RPMean(pp[ip], pp[ip+sy_p], 
 			      rpp[ip]*dp[ip], rpp[ip+sy_p]*dp[ip+sy_p])
 			      / viscosity;
+                     
+               u_old += ffy*(1.0/cos(atan(x_ssl_dat[io]))) 
+                     * PMean(pp[ip], pp[ip+sy_p], permyp[ip], 
+                             permyp[ip+sy_p])
+                     * (-gravity*sin(atan(y_ssl_dat[io])))
+                     * RPMean(pp[ip],pp[ip+sy_p], rpp[ip]*dp[ip],
+                              rpp[ip+sy_p]*dp[ip+sy_p])
+                     / viscosity;
+                     
 			   break;
 		     }
-		     u_new = ffy;
+		     u_new = ffy * (1.0/cos(atan(x_ssl_dat[io])));
 		  }
 		  else if (fdir[2])
 		  {
@@ -853,10 +1019,15 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			case -1:
 			   dir = -1;
 			   lower_cond = (pp[ip-sz_p] / dz) 
-			      - 0.5 * dp[ip-sz_p] * gravity;
-			   upper_cond = (pp[ip] / dz) + 0.5 * dp[ip] * gravity;
+			      - 0.5 * dp[ip-sz_p] * gravity*
+                    cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2))));
+                     
+			   upper_cond = (pp[ip] / dz) + 0.5 * dp[ip] * gravity*
+                    cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2))));
+                     
 			   diff = lower_cond - upper_cond;
-			   u_old = ffz * PMean(pp[ip-sz_p], pp[ip], 
+			   u_old = ffz * (1.0/cos(atan(x_ssl_dat[io])))* (1.0/cos(atan(y_ssl_dat[io])))
+                     * PMean(pp[ip-sz_p], pp[ip], 
 			   permzp[ip-sz_p], permzp[ip])
 			      * diff
 			      * RPMean(lower_cond, upper_cond, 
@@ -865,18 +1036,23 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			   break;
 			case  1:
 			   dir = 1;
-			   lower_cond = (pp[ip] / dz) - 0.5 * dp[ip] * gravity;
+			   lower_cond = (pp[ip] / dz) - 0.5 * dp[ip] * gravity*
+                    cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2))));
+                     
 			   upper_cond = (pp[ip+sz_p] / dz)
-			      + 0.5 * dp[ip+sz_p] * gravity;
-			   diff = lower_cond - upper_cond;
-			   u_old = ffz * PMean(0, 0, permzp[ip], permzp[ip+sz_p])
+			      + 0.5 * dp[ip+sz_p] * gravity*
+                    cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2))));
+			 
+                     diff = lower_cond - upper_cond;
+			   u_old = ffz * (1.0/cos(atan(x_ssl_dat[io])))* (1.0/cos(atan(y_ssl_dat[io]))) 
+                     * PMean(0, 0, permzp[ip], permzp[ip+sz_p])
 			      * diff
 			      * RPMean(lower_cond, upper_cond,
 			      rpp[ip]*dp[ip], rpp[ip+sz_p]*dp[ip+sz_p])
 			      / viscosity;
 			   break;
 		     }
-		     u_new = ffz;
+		     u_new = ffz* (1.0/cos(atan(x_ssl_dat[io])))* (1.0/cos(atan(y_ssl_dat[io])));
 		  }
 
 		  /* Remove the boundary term computed above */
@@ -894,7 +1070,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 	       BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
 	       {
 		  ip   = SubvectorEltIndex(p_sub, i, j, k);
-
+          io   = SubvectorEltIndex(p_sub, i, j, 0);
 		  if (fdir[0])
 		  {
 
@@ -903,25 +1079,44 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			case -1:
 			   dir = -1;
 			   diff  = pp[ip-1] - pp[ip];
-			   u_old = ffx * PMean(pp[ip-1], pp[ip], 
+			   u_old = ffx* (1.0/cos(atan(y_ssl_dat[io])))
+                     * PMean(pp[ip-1], pp[ip], 
 			   permxp[ip-1], permxp[ip])
 			      * (diff / dx )
 			      * RPMean(pp[ip-1], pp[ip], 
 			      rpp[ip-1]*dp[ip-1], rpp[ip]*dp[ip]) 
 			      / viscosity;
+                
+                u_old += ffx* (1.0/cos(atan(y_ssl_dat[io]))) 
+                     * PMean(pp[ip-1], pp[ip], 
+                    permxp[ip-1], permxp[ip])
+                    * (-gravity*sin(atan(x_ssl_dat[io])))
+                    * RPMean(x_ssl_dat[io], 0, rpp[ip-1]*dp[ip-1],
+                        rpp[ip]*dp[ip])
+                     / viscosity;     
+                     
 			   break;
 			case  1:
 			   dir = 1;
 			   diff  = pp[ip] - pp[ip+1];
-			   u_old = ffx * PMean(pp[ip], pp[ip+1], 
+			   u_old = ffx* (1.0/cos(atan(y_ssl_dat[io]))) 
+                     * PMean(pp[ip], pp[ip+1], 
 			   permxp[ip], permxp[ip+1])
 			      * (diff / dx )
 			      * RPMean(pp[ip], pp[ip+1], 
 			      rpp[ip]*dp[ip], rpp[ip+1]*dp[ip+1]) 
 			      / viscosity;
+                     
+               u_old += ffx* (1.0/cos(atan(y_ssl_dat[io]))) 
+                     * PMean(pp[ip], pp[ip+1], 
+                        permxp[ip], permxp[ip+1])
+               * (-gravity*sin(atan(x_ssl_dat[io])))
+               * RPMean(x_ssl_dat[io], 0, rpp[ip]*dp[ip],
+                    rpp[ip+1]*dp[ip+1])
+                     / viscosity;     
 			   break;
 		     }
-		     u_new = ffx;
+		     u_new = ffx * (1.0/cos(atan(y_ssl_dat[io])));
 		  }
 		  else if (fdir[1])
 		  {
@@ -931,25 +1126,45 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			case -1:
 			   dir = -1;
 			   diff  = pp[ip-sy_p] - pp[ip];
-			   u_old = ffy * PMean(pp[ip-sy_p], pp[ip], 
+			   u_old = ffy * (1.0/cos(atan(x_ssl_dat[io])))
+                     * PMean(pp[ip-sy_p], pp[ip], 
 			   permyp[ip-sy_p], permyp[ip])
 			      * (diff / dy )
 			      * RPMean(pp[ip-sy_p], pp[ip], 
 			      rpp[ip-sy_p]*dp[ip-sy_p], rpp[ip]*dp[ip]) 
 			      / viscosity;
+                     
+                u_old += ffy*(1.0/cos(atan(x_ssl_dat[io]))) * 
+                     PMean(pp[ip], pp[ip-sy_p], permyp[ip], 
+                           permyp[ip-sy_p])
+                     * (-gravity*sin(atan(y_ssl_dat[io])))
+                     * RPMean(pp[ip],pp[ip-sy_p], rpp[ip]*dp[ip],
+                              rpp[ip-sy_p]*dp[ip-sy_p])
+                     / viscosity;
+                     
 			   break;
 			case  1:
 			   dir = 1;
 			   diff  = pp[ip] - pp[ip+sy_p];
-			   u_old = ffy * PMean(pp[ip], pp[ip+sy_p], 
+			   u_old = ffy* (1.0/cos(atan(x_ssl_dat[io])))
+                     * PMean(pp[ip], pp[ip+sy_p], 
 			   permyp[ip], permyp[ip+sy_p])
 			      * (diff / dy )
 			      * RPMean(pp[ip], pp[ip+sy_p], 
 			      rpp[ip]*dp[ip], rpp[ip+sy_p]*dp[ip+sy_p])
 			      / viscosity;
+                     
+                u_old += ffy*(1.0/cos(atan(x_ssl_dat[io]))) 
+                     * PMean(pp[ip], pp[ip+sy_p], permyp[ip], 
+                             permyp[ip+sy_p])
+                     * (-gravity*sin(atan(y_ssl_dat[io])))
+                     * RPMean(pp[ip],pp[ip+sy_p], rpp[ip]*dp[ip],
+                              rpp[ip+sy_p]*dp[ip+sy_p])
+                     / viscosity;  
+                     
 			   break;
 		     }
-		     u_new = ffy;
+		     u_new = ffy* (1.0/cos(atan(x_ssl_dat[io])));
 		  }
 		  else if (fdir[2])
 		  {
@@ -959,10 +1174,14 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			case -1:
 			   dir = -1;
 			   lower_cond = (pp[ip-sz_p] / dz) 
-			      - 0.5 * dp[ip-sz_p] * gravity;
-			   upper_cond = (pp[ip] / dz) + 0.5 * dp[ip] * gravity;
+			      - 0.5 * dp[ip-sz_p] * gravity*
+               cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2))));
+			   upper_cond = (pp[ip] / dz) + 0.5 * dp[ip] * gravity*
+                cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2))));
+                     
 			   diff = lower_cond - upper_cond;
-			   u_old = ffz * PMean(pp[ip-sz_p], pp[ip], 
+			   u_old = ffz * (1.0/cos(atan(x_ssl_dat[io])))* (1.0/cos(atan(y_ssl_dat[io])))
+                     * PMean(pp[ip-sz_p], pp[ip], 
 			   permzp[ip-sz_p], permzp[ip])
 			      * diff
 			      * RPMean(lower_cond, upper_cond, 
@@ -971,18 +1190,21 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			   break;
 			case  1:
 			   dir = 1;
-			   lower_cond = (pp[ip] / dz) - 0.5 * dp[ip] * gravity;
+			   lower_cond = (pp[ip] / dz) - 0.5 * dp[ip] * gravity *
+               cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2))));
 			   upper_cond = (pp[ip+sz_p] / dz)
-			      + 0.5 * dp[ip+sz_p] * gravity;
+			      + 0.5 * dp[ip+sz_p] * gravity *
+              cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2))));
 			   diff = lower_cond - upper_cond;
-			   u_old = ffz * PMean(0, 0, permzp[ip], permzp[ip+sz_p])
+			   u_old = ffz * (1.0/cos(atan(x_ssl_dat[io])))* (1.0/cos(atan(y_ssl_dat[io]))) 
+                     * PMean(0, 0, permzp[ip], permzp[ip+sz_p])
 			      * diff
 			      * RPMean(lower_cond, upper_cond,
 			      rpp[ip]*dp[ip], rpp[ip+sz_p]*dp[ip+sz_p])
 			      / viscosity;
 			   break;
 		     }
-		     u_new = ffz;
+		     u_new = ffz* (1.0/cos(atan(x_ssl_dat[io])))* (1.0/cos(atan(y_ssl_dat[io])));
 		  }
 
 		  /* Remove the boundary term computed above */

@@ -26,7 +26,8 @@ TESTS := \
 	crater2D_vangtable_spline.tcl \
 	crater2D_vangtable_linear.tcl \
 	small_domain.tcl \
-	richards_hydrostatic_equalibrium.tcl
+	richards_hydrostatic_equalibrium.tcl \
+	terrain_following_grid_overland.tcl
 
 ifeq (${PARFLOW_HAVE_HYPRE},yes)
 TESTS += \
