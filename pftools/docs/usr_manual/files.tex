@@ -1187,7 +1187,7 @@ pfset Geom.domain.Porosity.Value   1.0
 
 \subsection{Specific Storage}
 \label{Specific Storage}
-\pfaddanchor{pfinPorosity}
+\pfaddanchor{pfinSpecStorage}
 
 Here, specific storage ($S_s$ in Equation \ref{eq:richard}) values are assigned within geounits (specified in
 \S~\ref{Geometries} above) using one of the methods described below.
@@ -1221,6 +1221,58 @@ geometry, {\em geometry\_name}, if the type was set to constant.
 \begin{display}\begin{verbatim}
 pfset Geom.domain.SpecificStorage.Value 1.0e-4
 \end{verbatim}\end{display}
+
+%%
+%% == @RMM dZ Multipliers
+%%
+\subsection{dZMultipliers}
+\label{dZ Multipliers}
+\pfaddanchor{pfindZMult}
+
+Here, dZ multipliers ($\delta Z * m$) values are assigned within geounits (specified in
+\S~\ref{Geometries} above) using one of the methods described below.
+
+The format for this section of input is:
+
+\pfkey{string}{ Solver.Nonlinear.VariableDz}{False}
+{
+This key specifies whether dZ multipliers are to be used, the default is False, which sets them to 1.0.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Nonlinear.VariableDz     True
+\end{verbatim}\end{display}
+
+\pfkey{string}{dzScale.Type}{no default}
+{
+This key specifies which method is to be used to assign variable vertical grid spacing.  The only choice currently
+available is {\bf Constant} which indicates that a constant is to be
+assigned to all grid cells within a geometry.
+}
+\begin{display}\begin{verbatim}
+pfset dzScale.Type            Constant
+\end{verbatim}\end{display}
+
+\pfkey{list}{Specific dzScale.GeomNames}{no default}
+{
+This key specifies all of the geometries on which a different dz scaling value will be 
+assigned.  These geometries must cover the entire computational domain.
+}
+\begin{display}\begin{verbatim}
+pfset dzScale.GeomNames       "domain"
+\end{verbatim}\end{display}
+
+\pfkey{double}{Geom.{\em geometry\_name}.dzScale.Value}{no default}
+{
+This key specifies the value assigned to all points in the named
+geometry, {\em geometry\_name}, if the type was set to constant.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.dzScale.Value 1.0
+\end{verbatim}\end{display}
+
+
+
+
 %%
 %% == mannings roughness
 %%

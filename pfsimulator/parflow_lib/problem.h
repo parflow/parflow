@@ -99,10 +99,9 @@ typedef struct
    PFModule  *mann;
    PFModule  *overlandflow_eval;       //DOK 
 
-  /* @RMM terrain grid */
- /*   double x_sslope;
-    double y_sslope; */
-
+  /* @RMM Variable dZ */
+    PFModule  *dz_mult;         //rmm
+    
 } Problem;
 
 typedef struct
@@ -143,6 +142,9 @@ typedef struct
     Vector *x_sslope;
     Vector *y_sslope;
 
+    /* @RMM variable dz  */
+    Vector *dz_mult;
+    
 } ProblemData;
 
 /* Values of solver argument to NewProblem function */
@@ -197,6 +199,8 @@ typedef struct
 
 #define ProblemOverlandFlowEval(problem)          ((problem) -> overlandflow_eval) //DOK
 
+#define ProblemdzScale(problem)            ((problem) -> dz_mult)  //RMM
+
 /* boundary condition accessors */
 #define ProblemBCPressure(problem)                ((problem) -> bc_pressure)
 #define ProblemBCPressurePackage(problem)         ((problem) -> bc_pressure_package)
@@ -243,7 +247,7 @@ typedef struct
 #define ProblemDataMannings(problem_data)       ((problem_data) -> mann) //sk
 #define ProblemDataSSlopeX(problem_data)        ((problem_data) -> x_sslope) //RMM
 #define ProblemDataSSlopeY(problem_data)        ((problem_data) -> y_sslope) //RMM
-
+#define ProblemDataZmult(problem_data)          ((problem_data) -> dz_mult)  //RMM
 /*--------------------------------------------------------------------------
  * Misc macros
  *   RDF not quite right, maybe?

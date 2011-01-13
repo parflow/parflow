@@ -686,6 +686,18 @@ PFModule *SpecStorageNewPublicXtra (void );
 void SpecStorageFreePublicXtra (void );
 int SpecStorageSizeOfTempData (void );
 
+/* @RMM new module for dz scaling factors */
+
+typedef void (*dzScaleInvoke) (ProblemData *problem_data, Vector *dz_mult );
+
+/* problem_dz_scale.c */
+void dzScale (ProblemData *problem_data, Vector *dz_mult );
+PFModule *dzScaleInitInstanceXtra (void );
+void dzScaleFreeInstanceXtra (void );
+PFModule *dzScaleNewPublicXtra (void );
+void dzScaleFreePublicXtra (void );
+int dzScaleSizeOfTempData (void );
+
 /* DOK - overlandfloweval */
 typedef void (*OverlandFlowEvalInvoke) (Grid *grid, 
    int sg,

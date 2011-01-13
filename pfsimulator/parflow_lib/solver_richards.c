@@ -60,8 +60,9 @@ typedef struct
    int                max_iterations;
    int                max_convergence_failures;   /* maximum number of convergence failures that are allowed */
    int                lsm;                        /* land surface model */
-    int                terrain_following_grid;      /* @RMM flag for terrain following grid in NL fn eval, sets sslopes=toposl */
-
+   int                terrain_following_grid;      /* @RMM flag for terrain following grid in NL fn eval, sets sslopes=toposl */
+   int                variable_dz;                /* @RMM flag for variable dz-multipliers */
+    
    int                print_subsurf_data;         /* print permeability/porosity? */
    int                print_press;                /* print pressures? */
    int                print_velocities;           /* print velocities? */
@@ -287,10 +288,27 @@ void SetupRichards(PFModule *this_module) {
      it's just copying one vector into another */
     if ( public_xtra -> terrain_following_grid )
     {
-        Copy(ProblemDataTSlopeX(problem_data),ProblemDataSSlopeX(problem_data));
-        Copy(ProblemDataTSlopeY(problem_data), ProblemDataSSlopeY(problem_data) );
+        Copy(ProblemDataTSlopeX(problem_data), ProblemDataSSlopeX(problem_data));
+        Copy(ProblemDataTSlopeY(problem_data), ProblemDataSSlopeY(problem_data));
         
     } 
+    
+    /* @RMM set dz multipliers to 1, except if we have variable dz, then
+     set to input multiplier.  Right now this is over the entire grid which is 
+     somewhat less effecient in memory use */
+    /* note, InitVectorAll is not working in this context, I need to get the dz
+     multipliers from input dump into a mult[nz] array, then copy into ProblemDataZmult
+     also the way I do this I need to update the ghost nodes too...
+     */
+ /*   if ( public_xtra -> variable_dz )
+    {
+        
+    } else {
+        //PFVConstInit(1.0, ProblemDataZmult(problem_data));
+       InitVectorAll(ProblemDataZmult(problem_data), 1.0);
+        printf("initi ProblemZmult \n");
+        }  */
+
    /* Write subsurface data */
    if ( print_subsurf_data )
    {
@@ -2537,6 +2555,7 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
     public_xtra -> terrain_following_grid = switch_value;
     
     if (public_xtra -> terrain_following_grid == 1) { printf("TFG true \n");} 
+  
     
    /* RMM added beta input function for clm */
    beta_switch_na = NA_NewNameArray("none Linear Cosine");

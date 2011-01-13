@@ -55,6 +55,7 @@ typedef struct
    PFModule  *x_slope; //sk
    PFModule  *y_slope; //sk
    PFModule  *mann; //sk
+    PFModule  *dz_mult; //RMM
    int        site_data_not_formed;
 
    /* InitInstanceXtra arguments */
@@ -86,6 +87,7 @@ void          SetProblemData(
    PFModule      *x_slope      = (instance_xtra -> x_slope); //sk
    PFModule      *y_slope      = (instance_xtra -> y_slope); //sk
    PFModule      *mann         = (instance_xtra -> mann); //sk
+       PFModule      *dz_mult         = (instance_xtra -> dz_mult); //sk
 
    /* Note: the order in which these modules are called is important */
    PFModuleInvokeType(WellPackageInvoke, wells, (problem_data));
@@ -123,6 +125,9 @@ void          SetProblemData(
 			 (problem_data,
 			  ProblemDataMannings(problem_data),
 			  ProblemDataPorosity(problem_data)));
+      PFModuleInvokeType(dzScaleInvoke, dz_mult,                 //RMM
+              (problem_data,
+              ProblemDataZmult(problem_data)));       
       (instance_xtra -> site_data_not_formed) = 0;
    }
 
@@ -202,6 +207,8 @@ PFModule  *SetProblemDataInitInstanceXtra(
       (instance_xtra -> mann) =                                   //sk
 	 PFModuleNewInstanceType(ManningsInitInstanceXtraInvoke,
 				 ProblemMannings(problem), (grid, grid2d));
+     (instance_xtra -> dz_mult) =                                   //RMM
+       PFModuleNewInstance(ProblemdzScale(problem), ());
 
       (instance_xtra -> site_data_not_formed) = 1;
 
@@ -231,6 +238,7 @@ PFModule  *SetProblemDataInitInstanceXtra(
 				(instance_xtra -> y_slope), (grid, grid2d));    //sk
       PFModuleReNewInstanceType(ManningsInitInstanceXtraInvoke,
 				(instance_xtra -> mann), (grid, grid2d));    //sk
+      PFModuleReNewInstance((instance_xtra -> dz_mult), ());    //RMM
       PFModuleReNewInstance((instance_xtra -> wells), ());
       PFModuleReNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
 				(instance_xtra -> bc_pressure), (problem));
@@ -265,7 +273,7 @@ void  SetProblemDataFreeInstanceXtra()
       PFModuleFreeInstance(instance_xtra -> x_slope);   //sk
       PFModuleFreeInstance(instance_xtra -> y_slope);   //sk
       PFModuleFreeInstance(instance_xtra -> mann);   //sk
-
+       PFModuleFreeInstance(instance_xtra -> dz_mult);  // RMM
       tfree(instance_xtra);
    }
 }

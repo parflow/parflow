@@ -206,6 +206,9 @@ Problem   *NewProblem(
 
    ProblemMannings(problem) =
       PFModuleNewModule(Mannings, ()); //sk
+    
+    ProblemdzScale(problem) =
+    PFModuleNewModule(dzScale, ()); //RMM
 
    ProblemOverlandFlowEval(problem) =
       PFModuleNewModule(OverlandFlowEval, ()); //DOK
@@ -352,7 +355,8 @@ void      FreeProblem(
    PFModuleFreeModule(ProblemXSlope(problem)); //sk
    PFModuleFreeModule(ProblemYSlope(problem));
    PFModuleFreeModule(ProblemMannings(problem));
-
+    PFModuleFreeModule(ProblemdzScale(problem));  //RMM
+    
    PFModuleFreeModule(ProblemOverlandFlowEval(problem)); //DOK
 
    PFModuleFreeModule(ProblemDomain(problem));
@@ -389,6 +393,9 @@ ProblemData   *NewProblemData(
     /* @RMM added vectors for subsurface slopes for terrain-following grid */
    ProblemDataSSlopeX(problem_data)  = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D); //RMM
    ProblemDataSSlopeY(problem_data)  = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D); //RMM
+ 
+    /* @RMM added vector dz multiplier */
+   ProblemDataZmult(problem_data)  = NewVectorType(grid, 1, 1, vector_cell_centered); //RMM
     
    ProblemDataIndexOfDomainTop(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D); 
 
@@ -435,6 +442,7 @@ void          FreeProblemData(
       FreeVector(ProblemDataMannings(problem_data)); //sk
       FreeVector(ProblemDataSSlopeX(problem_data)); //RMM
       FreeVector(ProblemDataSSlopeY(problem_data)); //RMM
+      FreeVector(ProblemDataZmult(problem_data)); //RMM
       FreeVector(ProblemDataIndexOfDomainTop(problem_data));
 
       tfree(problem_data);

@@ -118,6 +118,7 @@ OBJS = \
 	problem_thermal_conductivity.o\
 	problem_saturation_constitutive.o\
         problem_spec_storage.o\
+        problem_dz_scale.o\
         problem_toposlope_x.o\
         problem_toposlope_y.o\
 	process_grid.o \
