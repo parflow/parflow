@@ -703,7 +703,7 @@ BCStruct    *BCPressure(
 
                   itmp = SubvectorEltIndex(subvector, i, j, k);
 
-                  patch_values[ival] = tmpp[itmp] /*- density*gravity*z;*/
+                  patch_values[ival] = tmpp[itmp]; /*- density*gravity*z;*/
                   /*last part taken out, very likely to be a bug)*/
 
                });
