@@ -139,18 +139,31 @@ subroutine drv_clmini (drv, grid, tile, clm, istep_pf)
   else                                    !soil, ice, wetland
      
      do j = 1, nlevsoi
-!        clm%z(j) = tile%scalez*(exp(0.5*(j-0.5))-1.)     !node depths
-        !@ new node depths, dz = 0.1 evenly w/ depth
-        clm%z(j) = drv%dz*(dble(j)-.5d0)
-     enddo
+ 
+        ! IMF: Original CLM formulation
+        !      (removed when PF and CLM coupled; scalez no longer read from input files?)
+        ! clm%z(j) = tile%scalez*(exp(0.5*(j-0.5))-1.)     !node depths
+        
+        ! IMF: Replaced by constant DZ from ParFlow...
+        !      (z set based on constant ParFlow DZ)
+        ! clm%z(j) = drv%dz*(dble(j)-0.5d0)
+        
+        ! IMF: Replaced by variable DZ from ParFlow...
+        !      (dummy values set here, actual values set in clm.F90 initialization)
+        !      (z[1] = .5*dz*pf_dz_mult[1])
+        !      (z[k] = sum(dz*pf_dz_mult[1],dz*pf_dz_mult[2],...dz*pf_dz_mult[k]) - 0.5*dz*pf_dz_mult[k]) 
+        clm%z(j) = drv%dz*(dble(j)-0.5d0)
 
+     enddo
      
+     ! IMF: not changed -- same as original CLM 
      clm%dz(1)  = 0.5*(clm%z(1)+clm%z(2))         !thickness b/n two interfaces
      do j = 2,nlevsoi-1
         clm%dz(j)= 0.5*(clm%z(j+1)-clm%z(j-1)) 
      enddo
      clm%dz(nlevsoi)= clm%z(nlevsoi)-clm%z(nlevsoi-1)
 
+     ! IMF: not changed -- same as original CLM
      clm%zi(0)   = 0.                             !interface depths 
      do j = 1, nlevsoi-1
         clm%zi(j)= 0.5*(clm%z(j)+clm%z(j+1))     
@@ -176,8 +189,7 @@ subroutine drv_clmini (drv, grid, tile, clm, istep_pf)
   clm%rootfr(nlevsoi)=.5*( exp(-tile%roota*clm%zi(nlevsoi-1))&
                          + exp(-tile%rootb*clm%zi(nlevsoi-1)))
   
-! reset depth variables assigned by user in clmin file 
-
+  ! reset depth variables assigned by user in clmin file 
   do l=1,nlevsoi
      if (grid(tile%col,tile%row)%rootfr /= drv%udef) &
           clm%rootfr(l)=grid(tile%col,tile%row)%rootfr    

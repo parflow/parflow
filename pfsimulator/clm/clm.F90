@@ -1,11 +1,10 @@
 !#include <misc.h>
 
-subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,istep_pf,dt,time,start_time,  &
-pdx,pdy,     &
-pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,ip,npp,npq,npr,rank,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,        &
-v_pf,patm_pf,qatm_pf,eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,qflx_tot_pf,            &
-qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf, t_soi_pf,        &
-clm_dump_interval,clm_1d_out,clm_output_dir,clm_output_dir_length,clm_bin_output_dir,         &
+subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,pf_dz_mult,istep_pf,dt,time,  &
+start_time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,nz_rz,ip,npp,npq,npr,rank,sw_pf,lw_pf,   &
+prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf,eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,    &
+qflx_tot_pf,qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf,      &
+t_soi_pf,clm_dump_interval,clm_1d_out,clm_output_dir,clm_output_dir_length,clm_bin_output_dir,&
 write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,        &
 res_satpf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,      &
 qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
@@ -29,27 +28,39 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
 
   implicit none
 
-  type (drvdec)           :: drv              
+  type (drvdec)           :: drv
   type (tiledec),pointer :: tile(:)
-  type (griddec),pointer :: grid(:,:)   
+  type (griddec),pointer :: grid(:,:)
   type (clm1d),pointer :: clm(:)
 
+  ! IMF...
+  ! This added call to set-up parameters...
+  ! use clm_varpar
+  !=== Parameters ==========================================================
+  ! integer :: nz_rz                               ! number of layers, now passed from ParFlow 
+  ! call clm_varpar(
+  ! integer, parameter :: nlevsoi     =  nz_rz     !number of soil levels
+  ! integer, parameter :: nlevlak     =  10        !number of lake levels
+  ! integer, parameter :: nlevsno     =  5    !number of maximum snow levels
+  ! integer, parameter :: numrad      =   2   !number of solar radiation bands: vis, nir
+  ! integer, parameter :: numcol      =   8   !number of soil color types
 
   !=== Local Variables =====================================================
 
   ! basic indices, counters
-  integer :: t                                   ! tile space counter
-  integer :: l                                   ! layer counter 
-  integer :: r,c                                 ! row,column indices
-  integer :: ierr                                ! error output 
+  integer  :: t                                   ! tile space counter
+  integer  :: l                                   ! layer counter 
+  integer  :: r,c                                 ! row,column indices
+  integer  :: ierr                                ! error output 
 
   ! values passed from parflow
-  integer :: nx,ny,nz,nx_f,ny_f,nz_f
+  integer  :: nx,ny,nz,nx_f,ny_f,nz_f,nz_rz
   real(r8) :: pressure((nx+2)*(ny+2)*(nz+2))     ! pressure head, from parflow on grid w/ ghost nodes for current proc
   real(r8) :: saturation((nx+2)*(ny+2)*(nz+2))   ! saturation from parflow, on grid w/ ghost nodes for current proc
   real(r8) :: evap_trans((nx+2)*(ny+2)*(nz+2))   ! ET flux from CLM to ParFlow on grid w/ ghost nodes for current proc
   real(r8) :: topo((nx+2)*(ny+2)*(nz+2))         ! mask from ParFlow 0 for inactive, 1 for active, on grid w/ ghost nodes for current proc
   real(r8) :: porosity((nx+2)*(ny+2)*(nz+2))     ! porosity from ParFlow, on grid w/ ghost nodes for current proc
+  real(r8) :: pf_dz_mult((nx+2)*(ny+2)*(nz+2))   ! dz multiplier from ParFlow on PF grid w/ ghost nodes for current proc
   real(r8) :: dt                                 ! parflow dt in parflow time units not CLM time units
   real(r8) :: time                               ! parflow time in parflow units
   real(r8) :: start_time                         ! starting time in parflow units
@@ -61,7 +72,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
   integer  :: npp,npq,npr                        ! number of processors in x,y,z
   integer  :: rank                               ! processor rank, from ParFlow
   
-  ! surface fluxes form CLM
+  ! surface fluxes & forcings
   real(r8) :: eflx_lh_pf((nx+2)*(ny+2)*3)        ! e_flux   (lh)    output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
   real(r8) :: eflx_lwrad_pf((nx+2)*(ny+2)*3)     ! e_flux   (lw)    output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
   real(r8) :: eflx_sh_pf((nx+2)*(ny+2)*3)        ! e_flux   (sens)  output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
@@ -112,9 +123,10 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
   integer  :: irr_thresholdtypepf                ! irrigation threshold criteria type -- top layer, bottom layer, column avg
 
   ! local indices & counters
-  integer  :: i,j,k                              ! indices for local looping
+  integer  :: i,j,k,k1,j1,l1                     ! indices for local looping
   integer  :: j_incr,k_incr                      ! increment for j and k to convert 1D vector to 3D i,j,k array
   integer, allocatable :: counter(:,:) 
+  real(r8) :: total
   character*100 :: RI
 
   save
@@ -135,12 +147,13 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
   drv%dy = pdy
   drv%dz = pdz
   drv%nc = nx
-  drv%nr = ny
-  drv%nt = 18
+  drv%nr = ny                   
+  drv%nt = 18                  ! 18 IGBP land cover classes
   drv%ts = dt*3600.d0          ! Assume PF in hours, CLM in seconds
   j_incr = nx_f
   k_incr = nx_f*ny_f
-   
+ 
+ 
   !=== Check if initialization is necessary
   if (time == start_time) then 
      
@@ -182,6 +195,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
      ! write(999,*) "Allocate arrays -- actual NCH"
      ! allocate (tile(drv%nch),stat=ierr); call drv_astp(ierr)
      ! allocate (clm (drv%nch),stat=ierr); call drv_astp(ierr)
+
 
      !=== CURRENT =============================================================================================
      !=== Because we only use one tile per grid cell, we don't need to call readvegtf to determine actual nch
@@ -259,7 +273,6 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
 
         do k = nz, 1, -1 ! PF loop over z
            l = 1+i + (nx+2)*(j) + (nx+2)*(ny+2)*(k)
-            
            if (topo(l) > 0) then
               counter(i,j) = counter(i,j) + 1
               if (counter(i,j) == 1) then 
@@ -276,6 +289,56 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
 
      enddo ! t
 
+     
+     !=== IMF:
+     !    Set up variable DZ over root column
+     !    -- Copy dz multipliers for root zone cells from PF grid to 1D array
+     !    -- Then loop to recompute clm(t)%z(j), clm(t)%dz(j), clm(t)%zi(j) 
+     !       (replaces values set in drv_clmini)
+     do t = 1,drv%nch
+
+        i = tile(t)%col
+        j = tile(t)%row
+
+        ! reset node depths (clm%z) based on variable dz multiplier
+        do k = 1, nlevsoi
+           l                 = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
+           if (k==1) then
+              clm(t)%z(k)    = 0.5 * drv%dz * pf_dz_mult(l)
+           else
+              total          = 0.0
+              do k1 = 1, k-1
+                 l1          = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k1-1))
+                 total       = total + (drv%dz * pf_dz_mult(l1))
+              enddo
+              clm%z(k)       = total + (0.5 * drv%dz * pf_dz_mult(l))
+           endif
+        enddo
+
+        ! set dz values (node thickness)
+        ! (computed from node depths as in original CLM -- not always equal to PF dz values!)
+        clm(t)%dz(1)            = 0.5*(clm(t)%z(1)+clm(t)%z(2))         !thickness b/n two interfaces
+        do k = 2,nlevsoi-1
+           clm(t)%dz(k)         = 0.5*(clm(t)%z(k+1)-clm(t)%z(k-1))
+        enddo
+        clm(t)%dz(nlevsoi)      = clm(t)%z(nlevsoi)-clm(t)%z(nlevsoi-1)
+
+        ! set zi values (interface depths)
+        ! (computed from node depths as in original CLM -- not always equal to PF interfaces!)
+        clm(t)%zi(0)            = 0.                             !interface depths
+        do k = 1, nlevsoi-1
+           clm(t)%zi(k)         = 0.5*(clm(t)%z(k)+clm(t)%z(k+1))
+        enddo
+        clm(t)%zi(nlevsoi)      = clm(t)%z(nlevsoi) + 0.5*clm(t)%dz(nlevsoi)
+
+        ! PRINT CHECK
+        ! do k = 1, nlevsoi
+        !    l                 = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
+        !    write(999,*) "DZ CHECK -- ", i, j, k, l, pf_dz_mult(l), clm(t)%dz(k), clm(t)%z(k), clm(t)%zi(k)
+        ! enddo
+
+     enddo !t 
+           
 
      !=== Loop over CLM tile space to set keys/constants from PF
      !    (watsat, residual sat, irrigation keys)
@@ -310,10 +373,8 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
 
      end do !t
 
-
      !=== Read restart file or set initial conditions
      call drv_restart(1,drv,tile,clm,rank,istep_pf)        ! (1=read,2=write)
-
 
   endif !======= End of the initialization ================
 

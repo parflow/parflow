@@ -78,7 +78,6 @@ void    OverlandFlowEval(
 
    Subvector     *sx_sub, *sy_sub, *mann_sub, *top_sub, *p_sub;
 
-
    double        *sx_dat, *sy_dat, *mann_dat, *top_dat, *pp; 
 
    double        xdir, ydir; 
@@ -112,7 +111,7 @@ void    OverlandFlowEval(
       if(qx_v == NULL || qy_v == NULL) /* do not return velocity fluxes */
       {
 	 BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, sg,
-         {       
+         {     
 	    if (fdir[2] == 1)
 	    {
 	       io = SubvectorEltIndex(sx_sub,i, j, 0);
@@ -145,7 +144,6 @@ void    OverlandFlowEval(
 	       /* compute kw and ke - NOTE: io is for current cell */
 	       kw_v[io] = pfmax(q_v[0],0.0) - pfmax(-q_v[1],0.0);  
 	       ke_v[io] = pfmax(q_v[1],0.0) - pfmax(-q_v[2],0.0);                              
-	       
 	       
 	       /* compute north and south faces */
 	       /* First initialize velocities, q_v, for inactive region */
@@ -215,7 +213,6 @@ void    OverlandFlowEval(
 	       /* compute kw and ke - NOTE: io is for current cell */
 	       kw_v[io] = pfmax(q_v[0],0.0) - pfmax(-q_v[1],0.0);  
 	       ke_v[io] = pfmax(q_v[1],0.0) - pfmax(-q_v[2],0.0);                              
-	       
 	       
 	       /* compute north and south faces */
 	       /* First initialize velocities, q_v, for inactive region */
@@ -289,7 +286,7 @@ void    OverlandFlowEval(
 	       /* compute derivs of ks and kn - NOTE: io is for current cell */
 	       ks_v[io] = - pfmax(-q_mid,0.0);  
 	       kn_v[io] = pfmax(q_mid,0.0);  
-	       
+
 	    }
 	    
 	 });
@@ -334,7 +331,7 @@ void    OverlandFlowEval(
 	       /* compute derivs of ks and kn - NOTE: io is for current cell */
 	       ks_v[io] = - pfmax(-q_mid,0.0);  
 	       kn_v[io] = pfmax(q_mid,0.0);  
-	       
+
 	    }
 	    
 	 });

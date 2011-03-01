@@ -717,7 +717,7 @@ Problem     *problem)      /* General problem information */
 	    psdat[ips] = ic_values_dat[ipicv];
 	    // SGS fixthis
             m_dat[ips] = 99999;
-//            m_dat[ips] = 1.0;
+            // m_dat[ips] = 1.0;
 	 });
       }        /* End subgrid loop */
 

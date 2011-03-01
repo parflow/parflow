@@ -125,6 +125,15 @@ namespace eval Parflow {
     namespace export pffillflats
     namespace export pfpitfilldem
     namespace export pfmovingavgdem
+    namespace export pftopodeficit
+    namespace export pfsattrans
+    namespace export pfeffectiverecharge
+    namespace export pftoporecharge
+    namespace export pftopoindex
+    namespace export pftopowt
+    namespace export pfhydrostatic
+    namespace export pfslopexD4
+    namespace export pfslopeyD4
     namespace export pfslopeD8
     namespace export pfsegmentD8
     namespace export pfchildD8

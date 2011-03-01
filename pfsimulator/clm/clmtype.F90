@@ -119,8 +119,9 @@ module clmtype
      integer frac_veg_nosno       ! fraction of veg cover, excluding snow-covered veg (now 0 OR 1) [-]
 
      real(r8) :: zi(-nlevsno+0:nlevsoi)          !interface level below a "z" level (m)
-     real(r8) :: dz(-nlevsno+1:nlevsoi)          !layer depth (m)
-     real(r8) :: z (-nlevsno+1:nlevsoi)          !layer thickness (m)
+     real(r8) :: dz(-nlevsno+1:nlevsoi)          !layer thickness (m)
+     real(r8) :: dz_mult(nlevsoi)                !IMF: dz multiplier from parflow
+     real(r8) :: z (-nlevsno+1:nlevsoi)          !layer depth (m)
      real(r8) :: t_soisno  (-nlevsno+1:nlevsoi)  !soil temperature (Kelvin)
      real(r8) :: h2osoi_liq(-nlevsno+1:nlevsoi)  !liquid water (kg/m2) (new)
      real(r8) :: h2osoi_ice(-nlevsno+1:nlevsoi)  !ice lens (kg/m2) (new)

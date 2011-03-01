@@ -152,19 +152,16 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    Vector      *y_sl              = ProblemDataTSlopeY(problem_data);  //sk
    Vector      *man               = ProblemDataMannings(problem_data);  //sk
 
-    /* @RMM terrain following grid slope variables */ 
-    
-   Vector      *x_ssl              = ProblemDataSSlopeX(problem_data);  //@RMM
-   Vector      *y_ssl              = ProblemDataSSlopeY(problem_data);  //@RMM
-    /* @RMM variable dz multiplier */
-    Vector      *z_mult              = ProblemDataZmult(problem_data);  //@RMM
-    
-    Subvector   *x_ssl_sub, *y_ssl_sub;   //@RMM
+   /* @RMM terrain following grid slope variables */ 
+   Vector      *x_ssl             = ProblemDataSSlopeX(problem_data);  //@RMM
+   Vector      *y_ssl             = ProblemDataSSlopeY(problem_data);  //@RMM
+   Subvector   *x_ssl_sub, *y_ssl_sub;   //@RMM
    double      *x_ssl_dat, *y_ssl_dat;    //@RMM
-    
-   
+
+   /* @RMM variable dz multiplier */
+   Vector      *z_mult            = ProblemDataZmult(problem_data);  //@RMM
    Subvector   *z_mult_sub;   //@RMM
-    double      *z_mult_dat;   //@RMM
+   double      *z_mult_dat;   //@RMM
     
    double       gravity           = ProblemGravity(problem);
    double       viscosity         = ProblemPhaseViscosity(problem, 0);
@@ -262,10 +259,10 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       po_sub = VectorSubvector(porosity, is);
       f_sub  = VectorSubvector(fval, is);
 
-       /* @RMM added to provide access to zmult */
-       z_mult_sub = VectorSubvector(z_mult, is);
-       /* @RMM added to provide variable dz */
-       z_mult_dat = SubvectorData(z_mult_sub);
+      /* @RMM added to provide access to zmult */
+      z_mult_sub = VectorSubvector(z_mult, is);
+      /* @RMM added to provide variable dz */
+      z_mult_dat = SubvectorData(z_mult_sub);
        
       /* RDF: assumes resolutions are the same in all 3 directions */
       r = SubgridRX(subgrid);
@@ -325,10 +322,10 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       os_sub = VectorSubvector(old_saturation, is);
       f_sub  = VectorSubvector(fval, is);
 
-       /* @RMM added to provide access to zmult */
-       z_mult_sub = VectorSubvector(z_mult, is);
-       /* @RMM added to provide variable dz */
-       z_mult_dat = SubvectorData(z_mult_sub);
+      /* @RMM added to provide access to zmult */
+      z_mult_sub = VectorSubvector(z_mult, is);
+      /* @RMM added to provide variable dz */
+      z_mult_dat = SubvectorData(z_mult_sub);
        
       /* RDF: assumes resolutions are the same in all 3 directions */
       r = SubgridRX(subgrid);
@@ -1336,7 +1333,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
                      * (pfmax(pp[ip],0.0) - pfmax(opp[ip],0.0)) / sep+
 			      dt * vol * z_mult_dat[ip]* ((ke_[io]-kw_[io])/dx + (kn_[io] - ks_[io])/dy) 
                      / sep;
-		   
+
 			   obf_dat[io] = 0.0;
 			   if ( i >= 0 && i <= (gnx-1) && j == 0 && qy_[io] < 0.0 ){ //south face
 			      obf_dat[io]+= fabs(qy_[io]);
@@ -1351,7 +1348,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			   }
 			   			   
 			   fp[ip] += q_overlnd;
-			   
+
    			   break;
 		     }
 		  }

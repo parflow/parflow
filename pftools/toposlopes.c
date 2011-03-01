@@ -200,8 +200,7 @@ void ComputeSlopeXUpwind(
 
    } // end loop over j
           
-}
-
+} // END FUNCTION:  ComputeSlopeXUpwind
 
 /*-----------------------------------------------------------------------
  * ComputeSlopeYUpwind:
@@ -261,7 +260,7 @@ void ComputeSlopeYUpwind(
                *DataboxCoeff(sy,i,j,0) = (0.0-*DataboxCoeff(dem,i,j,0))/dy;
             }
             else
-            { 
+            {
                *DataboxCoeff(sy,i,j,0) = (*DataboxCoeff(dem,i,j+1,0)-*DataboxCoeff(dem,i,j,0))/dy;
             }
          }
@@ -321,14 +320,14 @@ void ComputeSlopeYUpwind(
          // All other cells...
          else
          {
- 
+
             // compute slope in negative y-direction
             if (*DataboxCoeff(dem,i,j-1,0)==-9999.0)
             {
                s1     = (*DataboxCoeff(dem,i,j,0)-0.0)/dy;
             }
             else
-            {            
+            {
                s1     = (*DataboxCoeff(dem,i,j,0)-*DataboxCoeff(dem,i,j-1,0))/dy;
             }
 
@@ -374,7 +373,1022 @@ void ComputeSlopeYUpwind(
 
    } // end loop over j
 
-}
+} // END FUNCTION: CompuateSlopeYUpwind
+
+
+/*-----------------------------------------------------------------------
+ * ComputeSlopeXD4:
+ *
+ * Calculate the topographic slope at [i,j] in the x-direction based on D4 method
+ * (Same as common D8, but no diagonal slopes -- adjacent only)
+ *
+ * D4 sets slope at each cell as the maximum downward gradient to an adjacent cell;
+ * If max down grad is in x, SX gets set; if max down grad is in y, SX==0.
+ *
+ *-----------------------------------------------------------------------*/
+void ComputeSlopeXD4(
+   Databox *dem,
+   Databox *sx)
+
+{
+   int             i,  j;
+   int             nx, ny;
+   int             arbcount;
+   double          dx, dy;
+   double          s1, s2, s3, s4, sx_temp, sy_temp;
+
+   dx = DataboxDx(dem);
+   dy = DataboxDy(dem);
+   nx = DataboxNx(dem);
+   ny = DataboxNy(dem);
+   arbcount = 0;
+
+   // Loop over all [i,j]
+   for (j = 0; j < ny; j++)
+   {
+      for (i = 0; i < nx; i++)
+      {
+
+         // Skip cells with nodata/missing values
+         // NOTE: nodata value is hard-wired to -9999.0!
+         if (*DataboxCoeff(dem,i,j,0)==-9999.0)
+         {
+            *DataboxCoeff(sx,i,j,0) = -9999.0;
+         }
+
+         // Deal with corners
+         // SW corner [0,0]
+         else if ((i==0) && (j==0))
+         {
+    
+            // x-slope
+            if (*DataboxCoeff(dem,i+1,j,0)==-9999.0)
+            {
+               s1                      = (0.0 - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+            else
+            {
+               s1                      = (*DataboxCoeff(dem,i+1,j,0) - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+
+            // y-slope
+            if (*DataboxCoeff(dem,i,j+1,0)==-9999.0)
+            {
+               s2                      = (0.0 - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+            else
+            {
+               s2                      = (*DataboxCoeff(dem,i,j+1,0) - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+
+            if ( fabs(s1)>fabs(s2) )
+            { 
+               *DataboxCoeff(sx,i,j,0) = s1;
+            }
+            else if ( fabs(s1)<fabs(s2) )
+            {
+               *DataboxCoeff(sx,i,j,0) = 0.0;
+            }
+            else
+            {
+               printf( "[%d,%d] -- SX=SY -- Arbitrarily setting sx=sx_temp, sy=0.0 \n", i, j );
+               *DataboxCoeff(sx,i,j,0) = s1;
+               arbcount                = arbcount + 1;
+            }
+         }
+
+         // SE corner [nx-1,0]
+         else if ((i==nx-1) && (j==0))
+         {
+
+            // x-slope
+            if (*DataboxCoeff(dem,i-1,j,0)==-9999.0)
+            {
+               s1                      = (*DataboxCoeff(dem,i,j,0) - 0.0)/dx;
+            }
+            else
+            {
+               s1                      = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i-1,j,0))/dx;
+            }
+
+            // y-slope
+            if (*DataboxCoeff(dem,i,j+1,0)==-9999.0)
+            {
+               s2                      = (0.0 - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+            else
+            {
+               s2                      = (*DataboxCoeff(dem,i,j+1,0) - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+
+            if ( fabs(s1)>fabs(s2) )
+            {
+               *DataboxCoeff(sx,i,j,0) = s1;
+            }
+            else if ( fabs(s1)<fabs(s2) )
+            {
+               *DataboxCoeff(sx,i,j,0) = 0.0;
+            }
+            else
+            {
+               printf( "[%d,%d] -- SX=SY -- Arbitrarily setting sx=sx_temp, sy=0.0 \n", i, j );
+               *DataboxCoeff(sx,i,j,0) = s1;
+               arbcount                = arbcount + 1;
+            }
+         }
+
+         // NE corner [nx-1,ny-1]
+         else if ((i==nx-1) && (j==ny-1))
+         {
+
+            // x-slope
+            if (*DataboxCoeff(dem,i-1,j,0)==-9999.0)
+            {
+               s1                      = (*DataboxCoeff(dem,i,j,0) - 0.0)/dx;
+            }
+            else
+            {
+               s1                      = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i-1,j,0))/dx;
+            }
+
+            // y-slope
+            if (*DataboxCoeff(dem,i,j-1,0)==-9999.0)
+            {
+               s2                      = (*DataboxCoeff(dem,i,j,0) - 0.0)/dy;
+            }
+            else
+            { 
+               s2                      = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i,j-1,0))/dy;
+            }
+
+            if ( fabs(s1)>fabs(s2) )
+            {
+               *DataboxCoeff(sx,i,j,0) = s1;
+            }
+            else if ( fabs(s1)<fabs(s2) )
+            {
+               *DataboxCoeff(sx,i,j,0) = 0.0;
+            }
+            else
+            {
+               printf( "[%d,%d] -- SX=SY -- Arbitrarily setting sx=sx_temp, sy=0.0 \n", i, j );
+               *DataboxCoeff(sx,i,j,0) = s1;
+               arbcount                = arbcount + 1;
+            }
+         }
+
+         // NW corner [0,ny-1]
+         else if ((i==0) && (j==ny-1))
+         {
+
+            // x-slope
+            if (*DataboxCoeff(dem,i+1,j,0)==-9999.0)
+            {
+               s1                      = (0.0 - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+            else
+            {
+               s1                      = (*DataboxCoeff(dem,i+1,j,0) - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+
+            // y-slope
+            if (*DataboxCoeff(dem,i,j-1,0)==-9999.0)
+            {
+               s2                      = (*DataboxCoeff(dem,i,j,0) - 0.0)/dy;
+            }
+            else
+            { 
+               s2                      = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i,j-1,0))/dy;
+            }
+
+            if ( fabs(s1)>fabs(s2) )
+            {
+               *DataboxCoeff(sx,i,j,0) = s1;
+            }
+            else if ( fabs(s1)<fabs(s2) )
+            {
+               *DataboxCoeff(sx,i,j,0) = 0.0;
+            }
+            else
+            {
+               printf( "[%d,%d] -- SX=SY -- Arbitrarily setting sx=sx_temp, sy=0.0 \n", i, j );
+               *DataboxCoeff(sx,i,j,0) = s1;
+               arbcount                = arbcount + 1;
+            }
+         }
+
+
+         // Eastern edge, not corner [nx-1,1:ny-1]
+         else if (i==nx-1)
+         {
+  
+            // x-slope
+            if (*DataboxCoeff(dem,i-1,j,0)==-9999.0)
+            {
+               sx_temp                 = (*DataboxCoeff(dem,i,j,0) - 0.0)/dx;
+            }
+            else
+            { 
+               sx_temp                 = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i-1,j,0))/dx;
+            }
+            
+            // y-slope
+            if (*DataboxCoeff(dem,i,j+1,0)==-9999.0)
+            { 
+               s2                      = (0.0 - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+            else
+            {
+               s2                      = (*DataboxCoeff(dem,i,j+1,0) - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+            if (*DataboxCoeff(dem,i,j-1,0)==-9999.0)
+            {
+               s3                      = (*DataboxCoeff(dem,i,j,0) - 0.0)/dy;
+            }
+            else
+            {
+               s3                      = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i,j-1,0))/dy;
+            }
+            if ( fabs(s2)>fabs(s3) )
+            {
+               sy_temp                 = s2;
+            }
+            else
+            {
+               sy_temp                 = s3;
+            }
+            
+            if ( fabs(sx_temp)>fabs(sy_temp) )
+            {
+               *DataboxCoeff(sx,i,j,0) = sx_temp;
+            }
+            else if ( fabs(sx_temp)<fabs(sy_temp) )
+            { 
+               *DataboxCoeff(sx,i,j,0) = 0.0;
+            } 
+            else
+            {
+               printf( "[%d,%d] -- SX=SY -- Arbitrarily setting sx=sx_temp, sy=0.0 \n", i, j );
+               *DataboxCoeff(sx,i,j,0) = sx_temp;
+               arbcount                = arbcount + 1;
+            }
+         }
+
+         // Western edge, not corner [nx-1,1:ny-1]
+         else if (i==0)
+         {
+  
+            // x-slope
+            if (*DataboxCoeff(dem,i+1,j,0)==-9999.0)
+            {
+               sx_temp                 = (0.0 - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+            else
+            {
+               sx_temp                 = (*DataboxCoeff(dem,i+1,j,0) - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+
+            // y-slope
+            if (*DataboxCoeff(dem,i,j+1,0)==-9999.0)
+            {
+               s2                      = (0.0 - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+            else
+            {
+               s2                      = (*DataboxCoeff(dem,i,j+1,0) - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+            if (*DataboxCoeff(dem,i,j-1,0)==-9999.0)
+            {
+               s3                      = (*DataboxCoeff(dem,i,j,0) - 0.0)/dy;
+            }
+            else
+            {
+               s3                      = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i,j-1,0))/dy;
+            }
+            if ( fabs(s2)>fabs(s3) )
+            {
+               sy_temp                 = s2;
+            }
+            else
+            {
+               sy_temp                 = s3;
+            }
+
+            if ( fabs(sx_temp)>fabs(sy_temp) )
+            {
+               *DataboxCoeff(sx,i,j,0) = sx_temp;
+            }
+            else if ( fabs(sx_temp)<fabs(sy_temp) )
+            {
+               *DataboxCoeff(sx,i,j,0) = 0.0;
+            }
+            else
+            {
+               printf( "[%d,%d] -- SX=SY -- Arbitrarily setting sx=sx_temp, sy=0.0 \n", i, j );
+               *DataboxCoeff(sx,i,j,0) = sx_temp;
+               arbcount                = arbcount + 1;
+            }
+         }  
+
+         // Southern edge, not corner [nx-1,1:ny-1]
+         else if (j==0)
+         {
+
+            // x-slope
+            if (*DataboxCoeff(dem,i-1,j,0)==-9999.0)
+            { 
+               s1                      = (*DataboxCoeff(dem,i,j,0) - 0.0)/dx;
+            }
+            else
+            {
+               s1                      = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i-1,j,0))/dx;
+            }
+            if (*DataboxCoeff(dem,i+1,j,0)==-9999.0)
+            {
+               s2                       = (0.0 - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+            else
+            {
+               s2                       = (*DataboxCoeff(dem,i+1,j,0) - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+            if ( fabs(s1)>fabs(s2) )
+            {
+               sx_temp                 = s1;
+            }
+            else
+            {
+               sx_temp                 = s2;
+            }
+
+            // y-slope
+            if (*DataboxCoeff(dem,i,j+1,0)==-9999.0)
+            {
+               sy_temp                 = (0.0 - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+            else
+            {
+               sy_temp                 = (*DataboxCoeff(dem,i,j+1,0) - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+
+            if ( fabs(sx_temp)>fabs(sy_temp) )
+            {
+               *DataboxCoeff(sx,i,j,0) = sx_temp;
+            }
+            else if ( fabs(sx_temp)<fabs(sy_temp) )
+            {
+               *DataboxCoeff(sx,i,j,0) = 0.0;
+            }
+            else
+            {
+               printf( "[%d,%d] -- SX=SY -- Arbitrarily setting sx=sx_temp, sy=0.0 \n", i, j );
+               *DataboxCoeff(sx,i,j,0) = sx_temp;
+               arbcount                = arbcount + 1;
+            }
+         }
+
+         // Northern edge, not corner [nx-1,1:ny-1]
+         else if (j==ny-1)
+         {
+
+            // x-slope
+            if (*DataboxCoeff(dem,i-1,j,0)==-9999.0)
+            { 
+               s1                      = (*DataboxCoeff(dem,i,j,0) - 0.0)/dx;
+            }
+            else
+            {
+               s1                      = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i-1,j,0))/dx;
+            }
+            if (*DataboxCoeff(dem,i+1,j,0)==-9999.0)
+            {
+               s2                       = (0.0 - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+            else
+            {
+               s2                       = (*DataboxCoeff(dem,i+1,j,0) - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+            if ( fabs(s1)>fabs(s2) )
+            {
+               sx_temp                 = s1;
+            }
+            else
+            {
+               sx_temp                 = s2;
+            }
+
+            // y-slope
+            if (*DataboxCoeff(dem,i,j-1,0)==-9999.0)
+            {
+               sy_temp                 = (*DataboxCoeff(dem,i,j,0) - 0.0)/dy;
+            }
+            else
+            {
+               sy_temp                 = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i,j-1,0))/dy;
+            }
+
+            if ( fabs(sx_temp)>fabs(sy_temp) )
+            {
+               *DataboxCoeff(sx,i,j,0) = sx_temp;
+            }
+            else if ( fabs(sx_temp)<fabs(sy_temp) )
+            {
+               *DataboxCoeff(sx,i,j,0) = 0.0;
+            }
+            else
+            {
+               printf( "[%d,%d] -- SX=SY -- Arbitrarily setting sx=sx_temp, sy=0.0 \n", i, j );
+               *DataboxCoeff(sx,i,j,0) = sx_temp;
+               arbcount                = arbcount + 1;
+            }
+         }
+
+         // All other cells...
+         else
+         {
+
+            // slope-x
+            if (*DataboxCoeff(dem,i-1,j,0)==-9999.0)
+            {
+               s1     = (*DataboxCoeff(dem,i,j,0)-0.0)/dx;
+            }
+            else
+            {
+               s1     = (*DataboxCoeff(dem,i,j,0)-*DataboxCoeff(dem,i-1,j,0))/dx;
+            }
+            if (*DataboxCoeff(dem,i+1,j,0)==-9999.0)
+            {
+               s2     = (0.0-*DataboxCoeff(dem,i,j,0))/dx;
+            }
+            else
+            {
+               s2     = (*DataboxCoeff(dem,i+1,j,0)-*DataboxCoeff(dem,i,j,0))/dx;
+            }
+            if ( fabs(s1)>fabs(s2) )
+            {
+               sx_temp                 = s1;
+            }
+            else
+            {
+               sx_temp                 = s2;
+            }
+
+            // slope-y
+            if (*DataboxCoeff(dem,i,j+1,0)==-9999.0)
+            {
+               s3                      = (0.0 - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+            else
+            {
+               s3                      = (*DataboxCoeff(dem,i,j+1,0) - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+            if (*DataboxCoeff(dem,i,j-1,0)==-9999.0)
+            {
+               s4                      = (*DataboxCoeff(dem,i,j,0) - 0.0)/dy;
+            }
+            else
+            {
+               s4                      = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i,j-1,0))/dy;
+            }
+            if ( fabs(s3)>fabs(s4) )
+            {
+               sy_temp                 = s3;
+            }
+            else
+            {
+               sy_temp                 = s4;
+            }
+
+            if ( fabs(sx_temp)>fabs(sy_temp) )
+            {
+               *DataboxCoeff(sx,i,j,0) = sx_temp;
+            }
+            else if ( fabs(sx_temp)<fabs(sy_temp) )
+            {
+               *DataboxCoeff(sx,i,j,0) = 0.0;
+            }
+            else
+            {
+               printf( "[%d,%d] -- SX=SY -- Arbitrarily setting sx=sx_temp, sy=0.0 \n", i, j );
+               *DataboxCoeff(sx,i,j,0) = sx_temp;
+               arbcount                = arbcount + 1;
+            }
+
+         } // end if (all other cells)
+
+      }  // end loop over i
+
+   } // end loop over j
+
+   printf( "ARBITRARY CELLS: arbcount = %d \n", arbcount );
+
+} // END FUCTION: ComputeSlopeXD4
+
+
+/*-----------------------------------------------------------------------
+ * ComputeSlopeYD4:
+ *
+ * Calculate the topographic slope at [i,j] in the y-direction based on D4 method
+ * (Same as common D8, but no diagonal slopes -- adjacent only)
+ *
+ * D4 sets slope at each cell as the maximum downward gradient to an adjacent cell;
+ * If max down grad is in y, SY gets set; if max down grad is in x, SY==0.
+ *
+ *-----------------------------------------------------------------------*/
+void ComputeSlopeYD4(
+   Databox *dem,
+   Databox *sy)
+
+{
+   int             i,  j;
+   int             nx, ny;
+   int             arbcount;
+   double          dx, dy;
+   double          s1, s2, s3, s4, sx_temp, sy_temp;
+
+   dx = DataboxDx(dem);
+   dy = DataboxDy(dem);
+   nx = DataboxNx(dem);
+   ny = DataboxNy(dem);
+   arbcount = 0;
+
+   // Loop over all [i,j]
+   for (j = 0; j < ny; j++)
+   {
+      for (i = 0; i < nx; i++)
+      {
+
+         // Skip cells with nodata/missing values
+         // NOTE: nodata value is hard-wired to -9999.0!
+         if (*DataboxCoeff(dem,i,j,0)==-9999.0)
+         {
+            *DataboxCoeff(sy,i,j,0) = -9999.0;
+         }
+
+         // Deal with corners
+         // SW corner [0,0]
+         else if ((i==0) && (j==0))
+         {
+
+            // x-slope
+            if (*DataboxCoeff(dem,i+1,j,0)==-9999.0)
+            {
+               s1                      = (0.0 - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+            else
+            {
+               s1                      = (*DataboxCoeff(dem,i+1,j,0) - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+
+            // y-slope
+            if (*DataboxCoeff(dem,i,j+1,0)==-9999.0)
+            {
+               s2                      = (0.0 - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+            else
+            {
+               s2                      = (*DataboxCoeff(dem,i,j+1,0) - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+
+            if ( fabs(s1)>fabs(s2) )
+            {
+               *DataboxCoeff(sy,i,j,0) = 0.0;
+            }
+            else if ( fabs(s1)<fabs(s2) )
+            {
+               *DataboxCoeff(sy,i,j,0) = s2;
+            }
+            else
+            {
+               printf( "[%d,%d] -- SX=SY -- Arbitrarily setting sx=sx_temp, sy=0.0 \n", i, j );
+               *DataboxCoeff(sy,i,j,0) = 0.0;
+               arbcount                = arbcount + 1;
+            }
+         }
+
+         // SE corner [nx-1,0]
+         else if ((i==nx-1) && (j==0))
+         {
+
+            // x-slope
+            if (*DataboxCoeff(dem,i-1,j,0)==-9999.0)
+            {
+               s1                      = (*DataboxCoeff(dem,i,j,0) - 0.0)/dx;
+            }
+            else
+            {
+               s1                      = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i-1,j,0))/dx;
+            }
+
+            // y-slope
+            if (*DataboxCoeff(dem,i,j+1,0)==-9999.0)
+            {
+               s2                      = (0.0 - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+            else
+            {
+               s2                      = (*DataboxCoeff(dem,i,j+1,0) - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+
+            if ( fabs(s1)>fabs(s2) )
+            {
+               *DataboxCoeff(sy,i,j,0) = 0.0;
+            }
+            else if ( fabs(s1)<fabs(s2) )
+            {
+               *DataboxCoeff(sy,i,j,0) = s2;
+            }
+            else
+            {
+               printf( "[%d,%d] -- SX=SY -- Arbitrarily setting sx=sx_temp, sy=0.0 \n", i, j );
+               *DataboxCoeff(sy,i,j,0) = 0.0;
+               arbcount                = arbcount + 1;
+            }
+         }
+
+         // NE corner [nx-1,ny-1]
+         else if ((i==nx-1) && (j==ny-1))
+         {
+
+            // x-slope
+            if (*DataboxCoeff(dem,i-1,j,0)==-9999.0)
+            {
+               s1                      = (*DataboxCoeff(dem,i,j,0) - 0.0)/dx;
+            }
+            else
+            {
+               s1                      = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i-1,j,0))/dx;
+            }
+
+            // y-slope
+            if (*DataboxCoeff(dem,i,j-1,0)==-9999.0)
+            {
+               s2                      = (*DataboxCoeff(dem,i,j,0) - 0.0)/dy;
+            }
+            else
+            {
+               s2                      = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i,j-1,0))/dy;
+            }
+
+            if ( fabs(s1)>fabs(s2) )
+            {
+               *DataboxCoeff(sy,i,j,0) = 0.0;
+            }
+            else if ( fabs(s1)<fabs(s2) )
+            {
+               *DataboxCoeff(sy,i,j,0) = s2;
+            }
+            else
+            {
+               printf( "[%d,%d] -- SX=SY -- Arbitrarily setting sx=sx_temp, sy=0.0 \n", i, j );
+               *DataboxCoeff(sy,i,j,0) = 0.0;
+               arbcount                = arbcount + 1;
+            }
+         }
+
+         // NW corner [0,ny-1]
+         else if ((i==0) && (j==ny-1))
+         {
+
+            // x-slope
+            if (*DataboxCoeff(dem,i+1,j,0)==-9999.0)
+            {
+               s1                      = (0.0 - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+            else
+            {
+               s1                      = (*DataboxCoeff(dem,i+1,j,0) - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+
+            // y-slope
+            if (*DataboxCoeff(dem,i,j-1,0)==-9999.0)
+            {
+               s2                      = (*DataboxCoeff(dem,i,j,0) - 0.0)/dy;
+            }
+            else
+            {
+               s2                      = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i,j-1,0))/dy;
+            }
+
+            if ( fabs(s1)>fabs(s2) )
+            {
+               *DataboxCoeff(sy,i,j,0) = 0.0;
+            }
+            else if ( fabs(s1)<fabs(s2) )
+            {
+               *DataboxCoeff(sy,i,j,0) = s2;
+            }
+            else
+            {
+               printf( "[%d,%d] -- SX=SY -- Arbitrarily setting sx=sx_temp, sy=0.0 \n", i, j );
+               *DataboxCoeff(sy,i,j,0) = 0.0;
+               arbcount                = arbcount + 1;
+            }
+         }
+
+         // Eastern edge, not corner [nx-1,1:ny-1]
+         else if (i==nx-1)
+         {
+
+            // x-slope
+            if (*DataboxCoeff(dem,i-1,j,0)==-9999.0)
+            {
+               sx_temp                 = (*DataboxCoeff(dem,i,j,0) - 0.0)/dx;
+            }
+            else
+            {
+               sx_temp                 = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i-1,j,0))/dx;
+            }
+
+            // y-slope
+            if (*DataboxCoeff(dem,i,j+1,0)==-9999.0)
+            {
+               s2                      = (0.0 - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+            else
+            {
+               s2                      = (*DataboxCoeff(dem,i,j+1,0) - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+            if (*DataboxCoeff(dem,i,j-1,0)==-9999.0)
+            {
+               s3                      = (*DataboxCoeff(dem,i,j,0) - 0.0)/dy;
+            }
+            else
+            {
+               s3                      = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i,j-1,0))/dy;
+            }
+            if ( fabs(s2)>fabs(s3) )
+            {
+               sy_temp                 = s2;
+            }
+            else
+            {
+               sy_temp                 = s3;
+            }
+
+            if ( fabs(sx_temp)>fabs(sy_temp) )
+            {
+               *DataboxCoeff(sy,i,j,0) = 0.0;
+            }
+            else if ( fabs(sx_temp)<fabs(sy_temp) )
+            {
+               *DataboxCoeff(sy,i,j,0) = sy_temp;
+            }
+            else
+            {
+               printf( "[%d,%d] -- SX=SY -- Arbitrarily setting sx=sx_temp, sy=0.0 \n", i, j );
+               *DataboxCoeff(sy,i,j,0) = 0.0;
+               arbcount                = arbcount + 1;
+            }
+         }
+
+         // Western edge, not corner [nx-1,1:ny-1]
+         else if (i==0)
+         {
+
+            // x-slope
+            if (*DataboxCoeff(dem,i+1,j,0)==-9999.0)
+            {
+               sx_temp                 = (0.0 - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+            else
+            {
+               sx_temp                 = (*DataboxCoeff(dem,i+1,j,0) - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+
+            // y-slope
+            if (*DataboxCoeff(dem,i,j+1,0)==-9999.0)
+            {
+               s2                      = (0.0 - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+            else
+            {
+               s2                      = (*DataboxCoeff(dem,i,j+1,0) - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+            if (*DataboxCoeff(dem,i,j-1,0)==-9999.0)
+            {
+               s3                      = (*DataboxCoeff(dem,i,j,0) - 0.0)/dy;
+            }
+            else
+            {
+               s3                      = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i,j-1,0))/dy;
+            }
+            if ( fabs(s2)>fabs(s3) )
+            {
+               sy_temp                 = s2;
+            }
+            else
+            {
+               sy_temp                 = s3;
+            }
+
+            if ( fabs(sx_temp)>fabs(sy_temp) )
+            {
+               *DataboxCoeff(sy,i,j,0) = 0.0;
+            }
+            else if ( fabs(sx_temp)<fabs(sy_temp) )
+            {
+               *DataboxCoeff(sy,i,j,0) = sy_temp;
+            }
+            else
+            {
+               printf( "[%d,%d] -- SX=SY -- Arbitrarily setting sx=sx_temp, sy=0.0 \n", i, j );
+               *DataboxCoeff(sy,i,j,0) = 0.0;
+               arbcount                = arbcount + 1;
+            }
+         } 
+
+         // Southern edge, not corner [nx-1,1:ny-1]
+         else if (j==0)
+         {
+
+            // x-slope
+            if (*DataboxCoeff(dem,i-1,j,0)==-9999.0)
+            {
+               s1                      = (*DataboxCoeff(dem,i,j,0) - 0.0)/dx;
+            }
+            else
+            {
+               s1                      = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i-1,j,0))/dx;
+            }
+            if (*DataboxCoeff(dem,i+1,j,0)==-9999.0)
+            {
+               s2                       = (0.0 - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+            else
+            {
+               s2                       = (*DataboxCoeff(dem,i+1,j,0) - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+            if ( fabs(s1)>fabs(s2) )
+            {
+               sx_temp                 = s1;
+            }
+            else
+            {
+               sx_temp                 = s2;
+            }
+
+            // y-slope
+            if (*DataboxCoeff(dem,i,j+1,0)==-9999.0)
+            {
+               sy_temp                 = (0.0 - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+            else
+            {
+               sy_temp                 = (*DataboxCoeff(dem,i,j+1,0) - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+
+            if ( fabs(sx_temp)>fabs(sy_temp) )
+            {
+               *DataboxCoeff(sy,i,j,0) = 0.0;
+            }
+            else if ( fabs(sx_temp)<fabs(sy_temp) )
+            {
+               *DataboxCoeff(sy,i,j,0) = sy_temp;
+            }
+            else
+            {
+               printf( "[%d,%d] -- SX=SY -- Arbitrarily setting sx=sx_temp, sy=0.0 \n", i, j );
+               *DataboxCoeff(sy,i,j,0) = 0.0;
+               arbcount                = arbcount + 1;
+            }
+         }
+
+         // Northern edge, not corner [nx-1,1:ny-1]
+         else if (j==ny-1)
+         {
+
+            // x-slope
+            if (*DataboxCoeff(dem,i-1,j,0)==-9999.0)
+            {
+               s1                      = (*DataboxCoeff(dem,i,j,0) - 0.0)/dx;
+            }
+            else
+            {
+               s1                      = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i-1,j,0))/dx;
+            }
+            if (*DataboxCoeff(dem,i+1,j,0)==-9999.0)
+            {
+               s2                       = (0.0 - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+            else
+            {
+               s2                       = (*DataboxCoeff(dem,i+1,j,0) - *DataboxCoeff(dem,i,j,0))/dx;
+            }
+            if ( fabs(s1)>fabs(s2) )
+            {
+               sx_temp                 = s1;
+            }
+            else
+            {
+               sx_temp                 = s2;
+            }
+
+            // y-slope
+            if (*DataboxCoeff(dem,i,j-1,0)==-9999.0)
+            {
+               sy_temp                 = (*DataboxCoeff(dem,i,j,0) - 0.0)/dy;
+            }
+            else
+            {
+               sy_temp                 = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i,j-1,0))/dy;
+            }
+
+            if ( fabs(sx_temp)>fabs(sy_temp) )
+            {
+               *DataboxCoeff(sy,i,j,0) = 0.0;
+            }
+            else if ( fabs(sx_temp)<fabs(sy_temp) )
+            {
+               *DataboxCoeff(sy,i,j,0) = sy_temp;
+            }
+            else
+            {
+               printf( "[%d,%d] -- SX=SY -- Arbitrarily setting sx=sx_temp, sy=0.0 \n", i, j );
+               *DataboxCoeff(sy,i,j,0) = 0.0;
+               arbcount                = arbcount + 1;
+            }
+         }
+
+         // All other cells...
+         else
+         {
+
+            // slope-x
+            if (*DataboxCoeff(dem,i-1,j,0)==-9999.0)
+            {
+               s1     = (*DataboxCoeff(dem,i,j,0)-0.0)/dx;
+            }
+            else
+            {
+               s1     = (*DataboxCoeff(dem,i,j,0)-*DataboxCoeff(dem,i-1,j,0))/dx;
+            }
+            if (*DataboxCoeff(dem,i+1,j,0)==-9999.0)
+            {
+               s2     = (0.0-*DataboxCoeff(dem,i,j,0))/dx;
+            }
+            else
+            {
+               s2     = (*DataboxCoeff(dem,i+1,j,0)-*DataboxCoeff(dem,i,j,0))/dx;
+            }
+            if ( fabs(s1)>fabs(s2) )
+            {
+               sx_temp                 = s1;
+            }
+            else
+            {
+               sx_temp                 = s2;
+            }
+
+            // slope-y
+            if (*DataboxCoeff(dem,i,j+1,0)==-9999.0)
+            {
+               s3                      = (0.0 - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+            else
+            {
+               s3                      = (*DataboxCoeff(dem,i,j+1,0) - *DataboxCoeff(dem,i,j,0))/dy;
+            }
+            if (*DataboxCoeff(dem,i,j-1,0)==-9999.0)
+            {
+               s4                      = (*DataboxCoeff(dem,i,j,0) - 0.0)/dy;
+            }
+            else
+            {
+               s4                      = (*DataboxCoeff(dem,i,j,0) - *DataboxCoeff(dem,i,j-1,0))/dy;
+            }
+            if ( fabs(s3)>fabs(s4) )
+            {
+               sy_temp                 = s3;
+            }
+            else
+            {
+               sy_temp                 = s4;
+            }
+
+            if ( fabs(sx_temp)>fabs(sy_temp) )
+            {
+               *DataboxCoeff(sy,i,j,0) = 0.0;
+            }
+            else if ( fabs(sx_temp)<fabs(sy_temp) )
+            {
+               *DataboxCoeff(sy,i,j,0) = sy_temp;
+            }
+            else
+            {
+               printf( "[%d,%d] -- SX=SY -- Arbitrarily setting sx=sx_temp, sy=0.0 \n", i, j );
+               *DataboxCoeff(sy,i,j,0) = 0.0;
+               arbcount                = arbcount + 1;
+            }
+
+         } // end if (all other cells)
+
+      }  // end loop over i
+
+   } // end loop over j
+
+   printf( "ARBITRARY CELLS: arbcount = %d \n", arbcount );
+
+} // END FUNCTION: ComputeSlopeYD4
 
 
 /*-----------------------------------------------------------------------
@@ -1211,6 +2225,846 @@ int ComputeMovingAvg(
    return nsink;
 
 }
+
+
+/*-----------------------------------------------------------------------
+ * ComputeSatTransmissivity:
+ *
+ * Calculate transmissivity at each [i,j] under satuated conditions.
+ *
+ *    Tran[i,j] = sum( Perm[i,j,k] * dz )
+ *
+ * NOTES: Routine uses dz from input Databox, so dz in perm must be correct.
+ *        For now, assumes constant dz. For domains with VariableDz=True, sat
+ *        transmissivity must be computed off-line and input to other functions.
+ *
+ *-----------------------------------------------------------------------*/
+void ComputeSatTransmissivity(
+   int      nlayers,
+   Databox *mask,
+   Databox *perm,
+   Databox *trans)
+{
+
+   int             i,  j,  k;
+   int             nx, ny, nz;
+   int             topflag, ktop, layers;
+   double          dz;
+
+   nx    = DataboxNx(perm);
+   ny    = DataboxNy(perm);
+   nz    = DataboxNz(perm);
+   dz    = DataboxDz(perm);
+
+   // IMF: Original formulation computed over entire column...
+   // convert areas from number of cells to units squared
+   // for (k = 0; k < nz; k++ ) {
+   //  for (j = 0; j < ny; j++ ) {
+   //   for (i = 0; i < nx; i++ ) {
+   //    
+   //    if (*DataboxCoeff(mask,i,j,k)==1.0)
+   //    {
+   //       *DataboxCoeff(trans,i,j,0) = *DataboxCoeff(trans,i,j,0) + ( *DataboxCoeff(perm,i,j,k) * dz );
+   //    }
+   //
+   //   }
+   //  }
+   // }
+
+   // Modified to compute over a given number of layers...
+   // If you want to compute over teh whole column, set nlayers to a very large value
+   for (j = 0; j < ny; j++) {
+    for (i = 0; i < nx; i++) {
+
+     // Find top of active domain...
+     topflag = 0;
+     ktop    = nz - 1;
+     while (topflag==0)
+     {
+        if (*DataboxCoeff(mask,i,j,ktop)==0.0)
+        {
+           ktop = ktop - 1;
+        }
+        else
+        {
+           topflag = 1;
+        }
+     }
+
+     // Scan from surface down
+     k       = ktop;
+     layers  = 0;
+     while ( (layers<nlayers) && (k>=0) )
+     {
+
+        if (*DataboxCoeff(mask,i,j,k)==1.0)
+        {
+           *DataboxCoeff(trans,i,j,0) = *DataboxCoeff(trans,i,j,0) + ( *DataboxCoeff(perm,i,j,k) * dz );
+        }
+
+        k      = k - 1;
+        layers = layers + 1;
+
+    }
+
+   }
+  }   
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * ComputeSatStorage:
+ *
+ * Calculate total available (incompressible) storage at each column (for
+ * use in TOPMODEL as scale parameter m).
+ *
+ *    stor[i,j] = sum( (porosity[i,j,k]*(ssat[i,j,k]-sres[i,j,k])) * dz )
+ *
+ * NOTES: Routine uses dz from input Databox, so dz in perm must be correct.
+ *        For now, assumes constant dz. For domains with VariableDz=True, sat
+ *        storage must be computed off-line and input to other functions.
+ *
+ *-----------------------------------------------------------------------*/
+void ComputeSatStorage(
+   Databox *mask,
+   Databox *porosity,
+   Databox *ssat,
+   Databox *sres,
+   Databox *stor)
+{
+
+   int             i,  j,  k;
+   int             nx, ny, nz;
+   double          dz;
+
+   nx    = DataboxNx(mask);
+   ny    = DataboxNy(mask);
+   nz    = DataboxNz(mask);
+   dz    = DataboxDz(mask);
+
+   // convert areas from number of cells to units squared
+   for (k = 0; k < nz; k++ ) {
+    for (j = 0; j < ny; j++ ) {
+     for (i = 0; i < nx; i++ ) {
+
+      if (*DataboxCoeff(mask,i,j,k)==1.0)
+      {
+         *DataboxCoeff(stor,i,j,0)  = *DataboxCoeff(stor,i,j,0) + 
+                                      ( *DataboxCoeff(porosity,i,j,k) * (*DataboxCoeff(ssat,i,j,k) - *DataboxCoeff(sres,i,j,0)) * dz );
+      }
+
+     }
+    }
+   }
+    
+}
+
+
+/*-----------------------------------------------------------------------
+ * ComputeTopoIndex:
+ *
+ * Calculate the TOPMODEL topographic index at each [i,j].
+ *
+ * Topographic index is defined as: 
+ * 
+ *    T[i,j] = (A[i,j]/ds[i,j]) / S[i,j] 
+ * 
+ * where: 
+ *    T  = topographic index
+ *    A  = upstream area
+ *    ds = contour length (dx if flow in y direction, dy if flow in x direction)
+ *    S  = local slope (magnitude from upwind sx and sy)
+ *    
+ * NOTES:  Because we use a rectangular DEM at relativelty coarse resolution, 
+ *         combined with a bi-directional flow routine that allows outflow in
+ *         both the x- and y-directions, the original index needs to be modified.
+ *         
+ *         If we try to set S as slope magnitude (S = [Sx**2 + Sy**2]**(1/2)), then
+ *         the contour length ds is ambiguous. Also, since ParFlow only simulates 
+ *         flow in x- and y-directions, this is inconsident with the actual code.
+ * 
+ *         Instead, we can consider x-direction and y-direction flow as independent, 
+ *         then sum the two. From the original TOPMODEL setup, we can derive:
+ * 
+ *         Q ~=~ R*A ~=~ (To * S * ds)
+ * 
+ *         Now assuming Q = Qx + Qy...
+ *         (with isotropic transmissivity)
+ *
+ *         Qx =  To * Sx * dy
+ *         Qy =  To * Sy * dx
+ *         Q  =  To * ( Sx*dy + Sy*dx )
+ *  
+ *         Note that this treats flow in x- and y-directions as completely independent.
+ *         This is similar to the way overland flow is discretized, and consistent with 
+ *         the finite difference scheme used for subsurface flow. 
+ * 
+ *         In terms of topographic index, this translates (roughly) to: 
+ * 
+ *         T = To/R = A / (S*ds)
+ *           = To/R = A / (Sx*dy + Sy*dx)
+ *
+ *         It should lastly be noted that the above formulation avoids problems
+ *         where slope-x or slope-y is zero...where both slope-x and slope-y are
+ *         zero, abs(slope) is set to 0.00001 (similar to HydroSHEDS, but three
+ *         orders of magnitude smaller). 
+ *-----------------------------------------------------------------------*/
+void ComputeTopoIndex( 
+   Databox *dem,
+   Databox *sx, 
+   Databox *sy,
+   Databox *topoindex)
+{
+
+   int             i,  j;
+   int             nx, ny, nz;
+   double          x,  y,  z;
+   double          dx, dy, dz;
+   Databox        *area;
+
+   nx    = DataboxNx(dem);
+   ny    = DataboxNy(dem);
+   nz    = DataboxNz(dem);
+   x     = DataboxX(dem);
+   y     = DataboxY(dem);
+   z     = DataboxZ(dem);
+   dx    = DataboxDx(dem);
+   dy    = DataboxDy(dem);
+   dz    = DataboxDz(dem);
+
+   // compute upwind slopes, upstream area
+   area  = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
+   ComputeUpstreamArea(dem,sx,sy,area);
+
+   // convert areas from number of cells to units squared
+   for (j = 0; j < ny; j++ ) {
+    for (i = 0; i < nx; i++ ) {
+     *DataboxCoeff(area,i,j,0)  = *DataboxCoeff(area,i,j,0) * dx * dy;
+    }
+   }
+
+   // compute topo index
+   for (j = 0; j < ny; j++) {
+    for (i = 0; i < nx; i++ ) {
+     if (*DataboxCoeff(dem,i,j,0)==-9999.0)
+     {
+        *DataboxCoeff(topoindex,i,j,0) = -9999.0;
+     }
+     else
+     {
+        if ( (*DataboxCoeff(sx,i,j,0)==0.0) && (*DataboxCoeff(sy,i,j,0)==0.0) )
+        {
+           *DataboxCoeff(topoindex,i,j,0) = ( *DataboxCoeff(area,i,j,0) /
+                                            ( (0.000001*dy) + (0.000001*dx) ) );
+        }
+        else
+        { 
+           *DataboxCoeff(topoindex,i,j,0) = ( *DataboxCoeff(area,i,j,0) ) /
+                                            ( (fabs(*DataboxCoeff(sx,i,j,0))*dy) + (fabs(*DataboxCoeff(sy,i,j,0))*dx) ); 
+        }
+     }
+    }
+   }
+
+   FreeDatabox(area);
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * ComputeTopoRecharge:
+ *
+ * Estimate the effective recharge at each point based on TOPMODEL assumptions.
+ *
+ * TOPMODEL assumes that effective recharge (Re) integrated over a given area is
+ * equal to the discharge from that area, per unit contour length:
+ * 
+ *    Q  = Re*A 
+ *
+ * Next, TOPMODEL assumes that discharge is dominated by saturated (lateral) subsurface
+ * flow, with is driven by lateral gradients in water table depth. It is assumed that 
+ * the slope of the water table (i.e., the driving force) is eual to the topographic slope
+ * of the land surface:
+ * 
+ *    Q  = Re*A = T * <slope> * <contour length>
+ *              = T * tan(beta) * ds
+ * 
+ * Where tan(beta) is the magnitude of the slope at the land surface, and ds is some contour
+ * length perpindicular to the flow direction. 
+ * 
+ * Because ParFlow separates flow in X and Y, we split the subsurface flow terms into separate
+ * directional components. Assuming these components are additive:
+ * 
+ *    Q  = Qx + Qy
+ *       = ( T * Sx * dy ) + (T * Sy * dx)
+ *       = T * (Sx*dy + Sy*dx)
+ * 
+ * If we follow the original TOPMODEL assumption that transmissivity decreases exponentially
+ * as a function of water deficit D, scaled by some factor m, we arrive at: 
+ * 
+ *    Q  = To * exp(-D/m) * (Sx*dy + Sy*dx)
+ * 
+ * Where D is zero when the water table is at the land surface. 
+ * 
+ * Inverting for Re, for river cells (D==0), we find:
+ * 
+ *    Re = (To/A) * (Sx*dy + Sy*dx)
+ * 
+ * We can use this formula to estimate effective recharge over the contributing area
+ * of each river cell. Starting at the river outlet and working upstream, we can thus
+ * estimate spatially-varying effective recharge over each subcatchment.
+ *
+ * So that's what we do...not sure if it'll give a good result, but better than 
+ * having no estimate of effective recharge, and better than having a spatially-uniform
+ * estimate that really isn't applicable to large areas or regions of complex terrain. 
+ *
+ * Lastly, if sx==sy==0.0, slope values are assumed to equal 0.000001 (as for topoindex)
+ *
+ *-----------------------------------------------------------------------*/
+void ComputeTopoRecharge(
+   int      river[][2],         // array of river cells [nriver x 2]
+   int      nriver,             // number of river points
+   Databox *trans,    
+   Databox *dem,        
+   Databox *sx, 
+   Databox *sy,
+   Databox *recharge)
+{
+
+   int             i,  j,  ii, jj, iriver;
+   int             nx, ny, nz;
+   double          x,  y,  z;
+   double          dx, dy, dz;
+   double          tmp;
+
+   Databox        *area;
+   Databox        *parentmap;
+
+   nx    = DataboxNx(dem);
+   ny    = DataboxNy(dem);
+   nz    = DataboxNz(dem);
+   x     = DataboxX(dem);
+   y     = DataboxY(dem);
+   z     = DataboxZ(dem);
+   dx    = DataboxDx(dem);
+   dy    = DataboxDy(dem);
+   dz    = DataboxDz(dem);
+
+   // compute upwind slopes, upstream area
+   area  = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
+   ComputeUpstreamArea(dem,sx,sy,area);
+
+   // convert areas from number of cells to units squared
+   for (j = 0; j < ny; j++ ) {
+    for (i = 0; i < nx; i++ ) {
+     if ( *DataboxCoeff(area,i,j,0)==-9999.0 )
+     {
+        *DataboxCoeff(area,i,j,0) = -9999.0;
+     }
+     else
+     {
+        *DataboxCoeff(area,i,j,0) = *DataboxCoeff(area,i,j,0) * dx * dy;
+     }
+    }
+   }
+
+   // loop over river cells...
+   parentmap = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
+   for ( iriver = 0; iriver < nriver; iriver++ ) {
+
+    // grab [i,j] from river input
+    i  = river[iriver][0];
+    j  = river[iriver][1];
+
+    // skip inactive/off-grid cells
+    if ( *DataboxCoeff(dem,i,j,0)==-9999.0 )
+    {
+       *DataboxCoeff(recharge,i,j,0) = -9999.0;
+    }
+    else
+    {
+
+       // compute effective recharge using TOPMODEL assumptions
+       if ( (*DataboxCoeff(sx,i,j,0)==0.0) && (*DataboxCoeff(sy,i,j,0)==0.0) )
+       {
+          tmp = ( (*DataboxCoeff(trans,i,j,0)) / (*DataboxCoeff(area,i,j,0)) ) *
+                ( (0.000001*dy) + (0.000001*dx) );
+       }
+       else
+       {
+
+          tmp = ( (*DataboxCoeff(trans,i,j,0)) / (*DataboxCoeff(area,i,j,0)) ) * 
+                ( (fabs(*DataboxCoeff(sx,i,j,0))*dy) + (fabs(*DataboxCoeff(sy,i,j,0))*dx) );
+
+       }
+
+       // compute parent map (1 @ contributing cells, 0 @ outside of contrib area) 
+       for (jj = 0; jj < ny; jj++ ) {
+        for (ii = 0; ii < nx; ii++ ) {
+         *DataboxCoeff(parentmap,ii,jj,0) = 0.0;
+        }
+       }
+       ComputeParentMap(i,j,dem,sx,sy,parentmap);
+
+       // apply tmp over entire contributing area
+       // (note -- overwrites values for all upstream cells/subcatchments, so make
+       //          sure that river cells organized from outlet -> headwaters)
+       for (jj = 0; jj < ny; jj++ ) {
+        for (ii = 0; ii < nx; ii++ ) {
+         if ( *DataboxCoeff(parentmap,ii,jj,0)==1.0 )
+         {
+            *DataboxCoeff(recharge,ii,jj,0) = tmp;
+         }
+        }
+       }
+
+    }
+
+   }
+ 
+   FreeDatabox(area);
+   FreeDatabox(parentmap);
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * ComputeEffectiveRecharge:
+ *
+ * Computes effective recharge over the contributing area of each cell. 
+ * The "effective recharge" calculated here is consistent with Re used in 
+ * TOPMODEL, but is calculated from data inputs instead of by inverting
+ * the TOPMODEL relationship at known river locations (where D==0.0)
+ * 
+ *    Re[i,j] = <total precip over contrib area> - <total ET over contrib area> - <runoff at i,j>
+ * 
+ * where :<contrib area> is the upstream contributing area for cell [i,j].
+ *        <precip> is the total annual precipitation (for a given year, or avg, etc)
+ *        <et> is the corresponding total annual ET
+ *
+ * Units of all input variables are assumed to be the same as units of permeability
+ * values used in TOPMODEL routines (e.g., m/hr). 
+ * 
+ * Assumes cells have equal area (i.e., dx and dy are constant over domain)
+ *
+ *-----------------------------------------------------------------------*/
+void ComputeEffectiveRecharge( 
+   Databox *precip,
+   Databox *et,
+   Databox *runoff, 
+   Databox *sx, 
+   Databox *sy, 
+   Databox *dem,
+   Databox *recharge)
+{
+   int      i,  j,  ii,  jj;
+   int      nx, ny, nz;
+   double   x,  y,  z;
+   double   dx, dy, dz;
+   double   precip_sum, et_sum;
+   Databox *area;
+   Databox *parentmap;
+
+   nx        = DataboxNx(dem);
+   ny        = DataboxNy(dem);
+   nz        = DataboxNz(dem);
+   x         = DataboxX(dem);
+   y         = DataboxY(dem);
+   z         = DataboxZ(dem);
+   dx        = DataboxDx(dem);
+   dy        = DataboxDy(dem);
+   dz        = DataboxDz(dem);
+
+   // compute upstream area
+   area      = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
+   ComputeUpstreamArea(dem,sx,sy,area);
+
+   // convert areas from number of cells to units squared
+   for (j = 0; j < ny; j++ ) {
+    for (i = 0; i < nx; i++ ) {
+     if ( *DataboxCoeff(area,i,j,0)==-9999.0 )
+     {
+        *DataboxCoeff(area,i,j,0) = -9999.0;
+     }
+     else
+     {
+        *DataboxCoeff(area,i,j,0) = *DataboxCoeff(area,i,j,0) * dx * dy;
+     }
+    }
+   }
+
+   // loop over grid cells, compute effective recharge over upstream area
+   parentmap = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
+   for (j = 0; j < ny; j++) {
+    for (i = 0; i < nx; i++) {
+     
+     // skip inactive/off-grid cells
+     if ( *DataboxCoeff(dem,i,j,0)==-9999.0 )
+     {
+        *DataboxCoeff(recharge,i,j,0) = -9999.0;
+     }
+
+     else
+     {
+
+        // compute parent map (1 @ contributing cells, 0 @ outside of contrib area)
+        // (zero out parentmap first!)
+        for (jj = 0; jj < ny; jj++ ) {
+         for (ii = 0; ii < nx; ii++ ) {
+          *DataboxCoeff(parentmap,ii,jj,0) = 0.0;
+         }
+        }
+        ComputeParentMap(i,j,dem,sx,sy,parentmap);
+
+        // compute total precip and ET over contrib area
+        // assume units are volume at each cell (m3)
+        precip_sum = 0.0;
+        et_sum     = 0.0;
+        for (jj = 0; jj < ny; jj++ ) {
+         for (ii = 0; ii < nx; ii++ ) {
+          if ( *DataboxCoeff(parentmap,ii,jj,0)==1.0 )
+          {
+             precip_sum = precip_sum + *DataboxCoeff(precip,ii,jj,0);
+             et_sum     = et_sum     + *DataboxCoeff(et,ii,jj,0);
+          }
+         }
+        }
+       
+        // compute effective recharge as sum(P) - sum(ET) - runoff
+        // all units are volume (m3)
+        // recharge RATE can then be computed by dividing by number of timesteps
+        *DataboxCoeff(recharge,i,j,0) = precip_sum - et_sum - *DataboxCoeff(runoff,i,j,0);
+    
+     }
+    }
+   }
+
+   FreeDatabox( area );
+   FreeDatabox( parentmap );
+
+} // end function ComputeEffectiveRecharge 
+
+
+/*-----------------------------------------------------------------------
+ * ComputeTopoDeficit:
+ *
+ * Computes soil water deficit at each grid cell based on TOPMODEL assumptions.
+ * Takes key for exponential or linear transmissivity profile (i.e., exponential
+ * decay w/ deficit, or linear decay w/ deficit).
+ *
+ * NOTES:  See detailed notes above for assumptions/methods. 
+ *
+ *-----------------------------------------------------------------------*/
+void ComputeTopoDeficit(
+   int      profile,
+   double   m,
+   Databox *trans,
+   Databox *dem,
+   Databox *sx,
+   Databox *sy,
+   Databox *recharge,
+   Databox *ssat,
+   Databox *sres,
+   Databox *porosity,
+   Databox *mask,
+   Databox *deficit)
+{
+
+   int      i,  j,  k;
+   int      nx, ny, nz, nz_flat;
+   double   x,  y,  z;
+   double   dx, dy, dz;
+   double   tmp;
+   Databox *area;
+
+   nx        = DataboxNx(mask);
+   ny        = DataboxNy(mask);
+   nz        = DataboxNz(mask);
+   x         = DataboxX(mask);
+   y         = DataboxY(mask);
+   z         = DataboxZ(mask);
+   dx        = DataboxDx(mask);
+   dy        = DataboxDy(mask);
+   dz        = DataboxDz(mask);
+   nz_flat   = 1;
+
+   // compute upstream area
+   area      = NewDatabox(nx,ny,nz_flat,x,y,z,dx,dy,dz);
+   ComputeUpstreamArea(dem,sx,sy,area);
+
+   // convert areas from number of cells to units squared
+   for (j = 0; j < ny; j++ ) {
+    for (i = 0; i < nx; i++ ) {
+     if ( *DataboxCoeff(area,i,j,0)==-9999.0 )
+     {
+        *DataboxCoeff(area,i,j,0) = -9999.0;
+     }
+     else
+     {
+        *DataboxCoeff(area,i,j,0) = *DataboxCoeff(area,i,j,0) * dx * dy;
+     }
+    }
+   }
+
+   // compute maximum deficit at each point (skip no-data cells)
+   Databox *dmax;
+   dmax      = NewDatabox(nx,ny,nz,x,y,z,dx,dy,dz);
+   for (j = 0; j < ny; j++ ) {
+    for (i = 0; i < nx; i++ ) {
+     if (*DataboxCoeff(dem,i,j,0)==-9999.0)
+     {
+         ;
+     }
+     else
+     {
+         // *DataboxCoeff(dmax,i,j,0) = m;
+         for (k = 0; k < nz; k++ ) {
+          *DataboxCoeff(dmax,i,j,0) = *DataboxCoeff(dmax,i,j,0)
+                                      + ( (*DataboxCoeff(mask,i,j,k)) * (*DataboxCoeff(porosity,i,j,k)) * dz );
+         }
+     }
+    }
+   }
+
+   // choose exponential or linear transmissivity profile
+   // case 0 --> exponential
+   // case 1 --> linear
+   switch (profile)
+   {
+
+      // exponential
+      case 0:
+      {
+
+         // compute deficit at each point (skip no-data cells)
+         for (j = 0; j < ny; j++ ) {
+          for (i = 0; i < nx; i++ ) {
+           if (*DataboxCoeff(dem,i,j,0)==-9999.0)
+           {
+              *DataboxCoeff(deficit,i,j,0) = -9999.0;
+           }
+           else
+           {
+
+              tmp                          = ( (*DataboxCoeff(recharge,i,j,0)) * (*DataboxCoeff(area,i,j,0)) ) / 
+                                             ( (*DataboxCoeff(trans,i,j,0)) * ((fabs(*DataboxCoeff(sx,i,j,0))*dy) + (fabs(*DataboxCoeff(sy,i,j,0))*dx)) );
+
+              *DataboxCoeff(deficit,i,j,0) = fmax( (- m*log(tmp)), 0.0 );
+
+           }
+          }
+         }
+         break;
+      } // end case 0
+
+      // linear
+      case 1:
+      {
+          
+         // compute deficit at each point (skip no-data cells)
+         for (j = 0; j < ny; j++ ) {
+          for (i = 0; i < nx; i++ ) {
+           if (*DataboxCoeff(dem,i,j,0)==-9999.0)
+           {
+              *DataboxCoeff(deficit,i,j,0) = -9999.0;
+           }
+           else
+           {
+
+              tmp                          = ( (*DataboxCoeff(recharge,i,j,0)) * (*DataboxCoeff(area,i,j,0)) ) /
+                                             ( (*DataboxCoeff(trans,i,j,0)) * ((fabs(*DataboxCoeff(sx,i,j,0))*dy) + (fabs(*DataboxCoeff(sy,i,j,0))*dx)) );
+
+              *DataboxCoeff(deficit,i,j,0) = fmax( -(*DataboxCoeff(dmax,i,j,0)*(tmp-1.0)), 0.0 );
+
+           }
+          }
+         }
+         break;
+
+      } // end case 1
+
+      default:
+      {
+         printf( "Hmmm...somehow <profile> switch isn't set in ComputeTopoDeficit\n" );
+      }         
+
+   } // end switch (profile)
+
+   FreeDatabox(area);
+   FreeDatabox(dmax);
+
+} // END FUCTION: ComputeTopoRelDeficit
+
+
+/*-----------------------------------------------------------------------
+ * ComputeTopoDeficitToWT:
+ * 
+ * Estimates water table depth based on TOPMODEL method. Converts local water
+ * deficit (see above) to water table depth as:
+ * 
+ *    Z[wt] = (deficit) / (drainable porosity)
+ *          = (deficit) / (porosity*(ssat-sres))
+ *
+ * NOTES:   Method implicitly assumes that there is ZERO STORAGE above WT
+ *          (i.e., cells are at residual above water table, saturated below)
+ * 
+ *-----------------------------------------------------------------------*/
+void ComputeTopoDeficitToWT(
+   Databox *deficit,
+   Databox *porosity,
+   Databox *ssat,
+   Databox *sres,
+   Databox *mask,
+   Databox *top,
+   Databox *wtdepth)
+{
+
+   int             i,  j,  k;
+   int             nx, ny, nz;
+   double          x,  y,  z;
+   double          dx, dy, dz;
+   double          D0, D1, Z;    
+
+   nx        = DataboxNx(mask);
+   ny        = DataboxNy(mask);
+   nz        = DataboxNz(mask);
+   x         = DataboxX(mask);
+   y         = DataboxY(mask);
+   z         = DataboxZ(mask);
+   dx        = DataboxDx(mask);
+   dy        = DataboxDy(mask);
+   dz        = DataboxDz(mask);
+
+   // loop over grid, skip nodata/ocean cells
+   for ( j = 0; j < ny; j++ ) {
+    for ( i = 0; i < nx; i++ ) {
+
+     if ( *DataboxCoeff(deficit,i,j,0)==-9999.0 )
+     {
+        *DataboxCoeff(wtdepth,i,j,0) = -9999.0;
+     }
+
+     else
+     {
+        
+        // grab index for land surface cell, 
+        // loop over (active) column to compute wtdepth from deficit
+        k           = *DataboxCoeff(top,i,j,0);
+        D0          = *DataboxCoeff(deficit,i,j,0);
+        D1          = *DataboxCoeff(deficit,i,j,0);
+        Z           = 0.0;
+        while ( (D1 > 0.0) && ( k >= 0) )
+        {
+ 
+           // skip inactive cells
+           if (*DataboxCoeff(mask,i,j,k)!=1)
+           {
+              ;
+           }
+  
+           // otherwise, accumulate deficit until you reach
+           else
+           {
+
+              D1    = D0 - dz * ( (*DataboxCoeff(porosity,i,j,k))*(*DataboxCoeff(ssat,i,j,k)) -
+                                  (*DataboxCoeff(porosity,i,j,k))*(*DataboxCoeff(sres,i,j,k)) );
+
+              if (D1 > 0)
+              {
+                 D0 = D1;
+                 Z  = Z + dz;
+                 k  = k - 1;
+              }
+           }
+        }
+        
+        // remaining deficit is less than on cell's worth of storage...distribute within cell
+        Z           = Z + ( D0 / ( (*DataboxCoeff(porosity,i,j,k))*(*DataboxCoeff(ssat,i,j,k)) -
+                                   (*DataboxCoeff(porosity,i,j,k))*(*DataboxCoeff(sres,i,j,k)) ) );
+
+        *DataboxCoeff(wtdepth,i,j,0) = Z;
+
+     }
+    }
+   }
+
+} // END of ComputeTopoDeficitToWT
+
+
+/*-----------------------------------------------------------------------
+ * ComputeHydroStatFromWT:
+ *
+ * Converts a 2D field of water table depth (nz=1) to a 3D pressure field
+ * that is hydrostatic with respect to water table depth. Used for generating
+ * hydrostatic initial conditions from estimated WT distribution.
+ *
+ * Loops over the column from the land surface to the bottom (skipping inactive
+ * cells), and sets pressures hydrostatic with respect to WT depth:
+ * 
+ *   P[i,j,k] = -ZWT[i,j,0] + (ktop-k)*dz + dz/2.
+ * 
+ * Where ZWT is the input water table depth at point [i,j].
+ *
+ *-----------------------------------------------------------------------*/
+void ComputeHydroStatFromWT(
+   Databox *wtdepth,
+   Databox *top,
+   Databox *mask, 
+   Databox *press0)
+{
+
+   int      i,  j,  k, ktop;
+   int      nx, ny, nz;
+   double   x,  y,  z;
+   double   dx, dy, dz;
+
+   nx     = DataboxNx(mask);
+   ny     = DataboxNy(mask);
+   nz     = DataboxNz(mask);
+   x      = DataboxX(mask);
+   y      = DataboxY(mask);
+   z      = DataboxZ(mask);
+   dx     = DataboxDx(mask);
+   dy     = DataboxDy(mask);
+   dz     = DataboxDz(mask);
+
+   // loop over grid, skipping nodata/ocean cells
+   for ( j = 0; j < ny; j++ ) {
+    for ( i = 0; i < nx; i++ ) {
+
+     if ( *DataboxCoeff(wtdepth,i,j,0)==-9999.0 )
+     {
+        ;
+     } 
+
+     else
+     {
+        
+        // loop over active grid from land surface down
+        ktop    = *DataboxCoeff(top,i,j,0);
+        for ( k = ktop; k >= 0; k-- ) {
+
+         // skip inactive cells
+         if ( *DataboxCoeff(mask,i,j,k)!=1.0 )
+         {
+            ;
+         }
+
+         // otherwise, set initial pressure hydrostatic WRT wtdepth
+         else
+         {
+            *DataboxCoeff(press0,i,j,k) = - ( *DataboxCoeff(wtdepth,i,j,0) ) 
+                                          + ( (ktop-k)*dz ) + (dz/2.0);
+         }
+         
+        }
+       
+     }
+    } 
+   }
+
+} // END ComputeHydroStatInitFromWT
 
 
 /*-----------------------------------------------------------------------
@@ -2333,8 +4187,6 @@ void ComputeFlintsLawFit(
       // if new chisq is smaller than old, moving in right direction...
       if (chisq < ochisq)
       {
-         // printf( "ITERATION SUCCESS:\t %d \t %f \t %f \t %f \t %f \t %f \t %f \t %f \t %f \n", 
-         //           iter, ctry, ptry, alamda, ochisq, chisq, dchisq, da[0], da[1] );
          alamda  = alamda * 0.1;               // cut parameter shift
          ochisq  = chisq;                      // reset ochisq
          c       = ctry;                       // set parameter to latest iteration value
@@ -2353,8 +4205,6 @@ void ComputeFlintsLawFit(
       // else new chisq is larger than old, moving in wrong direction...
       else
       {
-         // printf( "ITERATION FAIL:   \t %d \t %f \t %f \t %f \t %f \t %f \t %f \t %f \t %f \n", 
-         //         iter, ctry, ptry, alamda, ochisq, chisq, dchisq, da[0], da[1] );
          alamda  = alamda * 10.0;
          chisq   = ochisq; 
       }

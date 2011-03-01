@@ -74,9 +74,9 @@ typedef struct
 
 void Mannings (ProblemData *problem_data, Vector *mann, Vector *dummy)
 {
-   PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
-    InstanceXtra *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
+   PFModule         *this_module   = ThisPFModule;
+   PublicXtra       *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
+   InstanceXtra     *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);  
 
    // old: @RMMGrid             *grid2d = VectorGrid(mann);
 Grid *grid3d = instance_xtra -> grid3d;
@@ -107,9 +107,9 @@ Grid *grid3d = instance_xtra -> grid3d;
 
    (void)dummy;
 
-    /*-----------------------------------------------------------------------
-    * Put in any user defined mannings 
-    *-----------------------------------------------------------------------*/
+   /*-----------------------------------------------------------------------
+   * Put in any user defined mannings 
+   *-----------------------------------------------------------------------*/
 
    InitVectorAll(mann, 1.0);
  
@@ -156,9 +156,7 @@ Grid *grid3d = instance_xtra -> grid3d;
 	    GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
 	       ips = SubvectorEltIndex(ps_sub, i, j, 0);
-
-	       data[ips] = value;
-      //         mannings[i][j][k] = value;
+               data[ips] = value;
 	    });
 	 }
       }

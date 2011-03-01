@@ -34,49 +34,50 @@
 
 typedef struct
 {
-
-   int     type;
-   int     variable_dz;
-   void   *data;
-
+   NameArray   regions;
+   int         type;
+   int         variable_dz;
+   void       *data;
 } PublicXtra;
 
 typedef void InstanceXtra;
 
 typedef struct
 {
-   NameArray regions;
-   int      num_regions;
-   int     *region_indices;
-   double  *values;
-
+   int         num_regions;
+   int        *region_indices;
+   double     *values;
 } Type0;                       /* constant regions */
 
+typedef struct
+{
+   char       *filename;
+   Vector     *values;
+} Type1;                       /* from PFB */
 
 /*--------------------------------------------------------------------------
  * dZ Scaling values
  *--------------------------------------------------------------------------*/
 void dzScale (ProblemData *problem_data, Vector *dz_mult )
 {
-   PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
+   PFModule       *this_module   = ThisPFModule;
+   PublicXtra     *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
-   Grid          *grid = VectorGrid(dz_mult);
+   Grid           *grid          = VectorGrid(dz_mult);
 
-   Type0          *dummy0;
-
-   SubgridArray   *subgrids = GridSubgrids(grid);
-
+   SubgridArray   *subgrids      = GridSubgrids(grid);
    Subgrid        *subgrid;
    Subvector      *ps_sub;
-
+   Subvector      *dz_sub;
+   Subvector      *val_sub;
    double         *data;
+   double         *dz_dat;
+   double         *val_dat;
 
    int             ix, iy, iz;
    int             nx, ny, nz;
    int             r;
-
-   int             is, i, j, k, ips;
+   int             is, i, j, k, ips, ipicv;
 
 
    /*-----------------------------------------------------------------------
@@ -85,11 +86,15 @@ void dzScale (ProblemData *problem_data, Vector *dz_mult )
 
    InitVector(dz_mult, 1.0);
 
-    if (public_xtra -> variable_dz) {
+   if (public_xtra -> variable_dz) {
    switch((public_xtra -> type))
    {
+
+   // constant regions
    case 0:
    {
+
+      Type0   *dummy0;
       int      num_regions;
       int     *region_indices;
       double  *values;
@@ -97,7 +102,6 @@ void dzScale (ProblemData *problem_data, Vector *dz_mult )
       GrGeomSolid  *gr_solid;
       double        value;
       int           ir;
-
 
       dummy0 = (Type0 *)(public_xtra -> data);
 
@@ -107,11 +111,17 @@ void dzScale (ProblemData *problem_data, Vector *dz_mult )
 
       for (ir = 0; ir < num_regions; ir++)
       {
+
+         printf( "problem_dz_scale -- setting by regions (region %d) \n", is );
+
 	 gr_solid = ProblemDataGrSolid(problem_data, region_indices[ir]);
 	 value    = values[ir];
 
 	 ForSubgridI(is, subgrids)
 	 {
+
+            printf( "problem_dz_scale -- setting for subgrids (subgrid %d) \n", is );
+
             subgrid = SubgridArraySubgrid(subgrids, is);
             ps_sub  = VectorSubvector(dz_mult, is);
 	    
@@ -137,9 +147,60 @@ void dzScale (ProblemData *problem_data, Vector *dz_mult )
 
       break;
    }
+
+   // from PFB
+   case 1:
+   {
+      
+      Type1   *dummy1;
+      dummy1 = (Type1 *)(public_xtra -> data);
+
+      char        *filename  = dummy1 -> filename;
+      Vector      *values    = dummy1 -> values;
+      GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
+
+      values     = NewVectorType( grid, 1, 1, vector_cell_centered );
+      ReadPFBinary( filename, values );   
+
+      ForSubgridI(is, subgrids)
+      {
+
+         printf( "problem_dz_scale -- setting from PFB (subgrid %d) \n", is );
+
+         subgrid = SubgridArraySubgrid(subgrids, is);
+         dz_sub  = VectorSubvector(dz_mult, is);
+         val_sub = VectorSubvector(values,is);
+         dz_dat  = SubvectorData(dz_sub);
+         val_dat = SubvectorData(val_sub);
+
+         ix = SubgridIX(subgrid);
+         iy = SubgridIY(subgrid);
+         iz = SubgridIZ(subgrid);
+
+         nx = SubgridNX(subgrid);
+         ny = SubgridNY(subgrid);
+         nz = SubgridNZ(subgrid);
+
+         /* RDF: assume resolution is the same in all 3 directions */
+         r = SubgridRX(subgrid);
+
+         GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+         {
+
+            ips   = SubvectorEltIndex(dz_sub,  i, j, k);
+            ipicv = SubvectorEltIndex(val_sub, i, j, k);
+            dz_dat[ips] = val_dat[ipicv];
+
+         });
+      }        /* End subgrid loop */
+
+      break;
+  
    }
-    }
-    }
+
+   }
+   }
+   }
 
 
 /*--------------------------------------------------------------------------
@@ -150,7 +211,6 @@ PFModule  *dzScaleInitInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
-
 
 #if 0
    if ( PFModuleInstanceXtra(this_module) == NULL )
@@ -174,11 +234,11 @@ void  dzScaleFreeInstanceXtra()
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
-
    if (instance_xtra)
    {
       tfree(instance_xtra);
    }
+
 }
 
 /*--------------------------------------------------------------------------
@@ -191,69 +251,65 @@ PFModule   *dzScaleNewPublicXtra()
    PublicXtra    *public_xtra;
 
    Type0         *dummy0;
+   Type1         *dummy1;
 
+   int            num_regions, ir; 
    char *switch_name;
+   int  *switch_value;
    char *region;
-   char key[IDB_MAX_KEY_LEN];
-    char *name;
-    int *switch_value;
-     NameArray      switch_na;
-
-   NameArray type_na;
-    
-   type_na = NA_NewNameArray("Constant");
+   char  key[IDB_MAX_KEY_LEN];
+   char *name;
+   NameArray switch_na;
 
    public_xtra = ctalloc(PublicXtra, 1);
 
-    /* @RMM added switch for grid dz multipliers */
-    /* RMM set dz multipliers (default=False) */
-    printf("flag 1: pre name set \n");
-    name = "Solver.Nonlinear.VariableDz";
-    switch_na = NA_NewNameArray("False True");
-    
-    switch_name = GetStringDefault(name, "False");
-    switch_value = NA_NameToIndex(switch_na, switch_name);
+   /* @RMM added switch for grid dz multipliers */
+   /* RMM set dz multipliers (default=False) */
+   // printf("flag 1: pre name set \n");
+   name                   = "Solver.Nonlinear.VariableDz";
+   switch_na              = NA_NewNameArray("False True");
+   switch_name            = GetStringDefault(name, "False");
+   switch_value           = NA_NameToIndex(switch_na, switch_name);
 
-    if(switch_value < 0)
-    {
+   if(switch_value < 0)
+   {
         InputError("Error: invalid value <%s> for key <%s>\n",
                    switch_name, key );
-    }
+   }
     
-
-    public_xtra -> variable_dz = switch_value;
-    
-    
-    if (public_xtra -> variable_dz == 1) { 
-        
-        printf("var dz true \n");
-      switch_name = GetString("dzScale.Type");
+   public_xtra -> variable_dz = switch_value;
+   if (public_xtra -> variable_dz == 1) { 
       
-      public_xtra -> type = NA_NameToIndex(type_na, switch_name);
+      name                   = "dzScale.Type"; 
+      switch_na              = NA_NewNameArray("Constant PFBFile");
+      switch_name            = GetString(name);
+      public_xtra -> type    = NA_NameToIndex(switch_na,switch_name);
 
+      name                   = "dzScale.GeomNames";
+      switch_name            = GetString(name);
+      public_xtra -> regions = NA_NewNameArray(switch_name);
+      num_regions            = NA_Sizeof(public_xtra -> regions);
 
-      switch((public_xtra -> type))
+      // switch for dzScale.Type
+      // Constant = 0; PFBFile = 1;
+      switch( (public_xtra -> type) )
       {
+
+         // Set as constant by regions
 	 case 0:
 	 {
-	    int  num_regions, ir;
-	    
+
+            printf( "problem_dz_scale -- setting dz_mult by regions (type=Constant)\n" );
+
 	    dummy0 = ctalloc(Type0, 1);
-
-	    switch_name = GetString("dzScale.GeomNames");
-
-	    dummy0 -> regions = NA_NewNameArray(switch_name);
-
-	    dummy0 -> num_regions = NA_Sizeof(dummy0 -> regions);
-
-	    num_regions = (dummy0 -> num_regions);
-	    
+ 
+            (dummy0 -> num_regions)    = num_regions;
 	    (dummy0 -> region_indices) = ctalloc(int,    num_regions);
 	    (dummy0 -> values)         = ctalloc(double, num_regions);
 	    
 	    for (ir = 0; ir < num_regions; ir++)
 	    {
-	       region = NA_IndexToName(dummy0 -> regions, ir);
+	       region = NA_IndexToName(public_xtra -> regions, ir);
 
 	       dummy0 -> region_indices[ir] = 
 		  NA_NameToIndex(GlobalsGeomNames, region);
@@ -266,7 +322,24 @@ PFModule   *dzScaleNewPublicXtra()
 	    
 	    break;
 	 }
-	 
+
+         // Read from PFB file	
+         case 1:
+         {
+
+            printf( "problem_dz_scale -- setting dz_mult from file (type=PFBFile)\n" );
+
+            dummy1 = ctalloc(Type1, 1);
+
+            sprintf(key, "Geom.%s.dzScale.FileName", "domain");
+            dummy1 -> filename = GetString(key);
+
+            public_xtra -> data = (void *) dummy1;
+
+            break;
+
+         }
+ 
 	 default:
 	 {
 	    InputError("Error: invalid type <%s> for key <%s>\n",
@@ -276,7 +349,6 @@ PFModule   *dzScaleNewPublicXtra()
       }
     }
    
-   NA_FreeNameArray(type_na);
    
    PFModulePublicXtra(this_module) = public_xtra;
    return this_module;
@@ -292,29 +364,36 @@ void  dzScaleFreePublicXtra()
    PublicXtra  *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    Type0       *dummy0;
-
+   Type1       *dummy1;
 
    if (public_xtra -> variable_dz) {
-           switch((public_xtra -> type))
-           {
-         switch((public_xtra -> type))
-         {
+
+      NA_FreeNameArray(public_xtra -> regions);
+
+      switch((public_xtra -> type))
+      {
          case 0:
          {
             dummy0 = (Type0 *)(public_xtra -> data);
-
-	    NA_FreeNameArray(dummy0 -> regions);
-
 	    tfree(dummy0 -> region_indices);
 	    tfree(dummy0 -> values);
             tfree(dummy0);
             break;
          }
-         }
-           }
+
+         case 1:
+         {
+            dummy1 = (Type1 *)(public_xtra -> data);
+            tfree(dummy1);
+            break;
+         } 
+
+      }
+
    }else {
         
       tfree(public_xtra);
+
    }
 }
 

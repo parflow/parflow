@@ -22,8 +22,6 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
   real(r8) saturation((nx+2)*(ny+2)*(nz+2)),pressure((nx+2)*(ny+2)*(nz+2))
   real(r8) porosity((nx+2)*(ny+2)*(nz+2))
 
-  !@ Variable declarations: write *.pfb file
-
   ! End of variable declaration 
 
   ! Write(*,*)"========== start the loop over the flux ============="
@@ -38,27 +36,16 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
      do k = 1, nlevsoi
 
         l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))    ! updated indexing @RMM 4-12-09
-        ! l = ip+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k-1)
-
         if (k == 1) then
            clm(t)%pf_flux(k)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)) + clm(t)%qflx_infl + clm(t)%qflx_qirr_inst(k)
         else  
            clm(t)%pf_flux(k)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)) + clm(t)%qflx_qirr_inst(k)
         endif
-        
-        ! IMF: Add "instant" irrigation to pf_flux(k) 
-!       if ( (clm(t)%irrig==1) .and. (clm(t)%irr_type==3) ) then
-!          clm(t)%pf_flux(k) = clm(t)%pf_flux(k) + clm(t)%qflx_qirr_inst(k)
-!       endif
 
         ! copy back to pf, assumes timing for pf is hours and timing for clm is seconds
-        evap_trans(l) = clm(t)%pf_flux(k)*3.6d0/drv%dz
-        ! 	  evap_trans(l) = 0.0d0
-        !	  if (k==1) evap_trans(l) = 0.001d0/drv%dz
-        !	  print*, k, l, clm(t)%pf_flux(k), evap_trans(l)
-        !	  print*, l,i,j,k, evap_trans(l)
-        !	  print*, k,evap_trans(l),clm(t)%pf_flux(k),clm(t)%qflx_infl,clm(t)%rootfr(k),clm(t)%qflx_tran_veg
-        !         print*, j_incr, k_incr
+        ! IMF: replaced drv%dz with clm(t)%dz to allow variable DZ...
+        evap_trans(l) = clm(t)%pf_flux(k) * 3.6d0 / clm(t)%dz(k)
+
      enddo
   enddo
 
@@ -88,24 +75,22 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
         do k = clm(t)%topo_mask(3), clm(t)%topo_mask(1) ! CLM loop over z, starting at bottom of pf domains topo_mask(3)
 
            l = 1+i + j_incr*(j) + k_incr*(k)  ! updated indexing @RMM b/c we are looping from k3 to k1
-           !   print*, k, l
-           !   l = 1+i + j_incr*(j-1) + k_incr*(clm(t)%topo_mask(1)-k)
+
            ! first we add direct amount of water: S*phi
            clm(t)%endwb = clm(t)%endwb + saturation(l)*porosity(l) * clm(1)%dz(1) * 1000.0d0
+
            ! then we add the compressible storage component, note the Ss is hard-wired here at 0.0001 should really be done in PF w/ real values
            clm(t)%endwb = clm(t)%endwb + saturation(l) * 0.0001*clm(1)%dz(1) * pressure(l) *1000.d0    
-           !	          print*, k, l, pressure(l), saturation(l),porosity(l), clm(t)%endwb
+
         enddo
 
-        ! add hight of ponded water at surface (ie pressure head at upper pf bddy if > 0) 	 
+        ! add height of ponded water at surface (ie pressure head at upper pf bddy if > 0) 	 
         l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1))
         if (pressure(l) > 0.d0 ) then
            clm(t)%endwb = clm(t)%endwb + pressure(l) * 1000.0d0
         endif
 
-
         !@ Water balance over the entire domain
-        !   begwatb =endwatb  ! begwatb + clm(t)%begwb
         drv%endwatb = drv%endwatb + clm(t)%endwb
         tot_infl_mm = tot_infl_mm + clm(t)%qflx_infl_old * clm(1)%dtime
         tot_tran_veg_mm = tot_tran_veg_mm + clm(t)%qflx_tran_veg_old * clm(1)%dtime
@@ -113,7 +98,6 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
         ! Determine wetland and land ice hydrology (must be placed here since need snow 
         ! updated from clm_combin) and ending water balance
         !@sjk Does my new way of doing the wb influence this?! 05/26/2004
-
         if (clm(t)%itypwat==istwet .or. clm(t)%itypwat==istice) call clm_hydro_wetice (clm(t))
 
         ! -----------------------------------------------------------------

@@ -79,6 +79,14 @@ int ComputeMovingAvg(
    Databox *dem,
    double   wsize);
 
+void ComputeSlopeXD4(
+   Databox *dem,
+   Databox *sx);
+
+void ComputeSlopeYD4(
+   Databox *dem,
+   Databox *sy);
+
 void ComputeSlopeD8(
    Databox *dem,
    Databox *slope);
@@ -150,6 +158,72 @@ void ComputeGaussJordan(
    int      n, 
    double   b[][1], 
    int      m);
+
+void ComputeSatTransmissivity( 
+   int      nlayers,
+   Databox *mask, 
+   Databox *perm, 
+   Databox *trans);
+
+void ComputeSatStorage(
+   Databox *mask,
+   Databox *porosity,
+   Databox *ssat,
+   Databox *sres,
+   Databox *stor);
+
+void ComputeTopoRecharge(
+   int      river[][2],
+   int      nriver,
+   Databox *trans,
+   Databox *dem,
+   Databox *sx, 
+   Databox *sy,
+   Databox *recharge);
+
+void ComputeEffectiveRecharge( 
+   Databox *precip,
+   Databox *et,
+   Databox *runoff, 
+   Databox *sx, 
+   Databox *sy, 
+   Databox *dem,
+   Databox *recharge);
+
+void ComputeTopoIndex(
+   Databox *dem,
+   Databox *sx, 
+   Databox *sy,
+   Databox *topoindex);
+
+void ComputeTopoDeficit(
+   int      profile,
+   double   m,
+   Databox *trans,
+   Databox *dem,
+   Databox *sx, 
+   Databox *sy,
+   Databox *recharge,
+   Databox *ssat,
+   Databox *sres, 
+   Databox *porosity,
+   Databox *mask,
+   Databox *deficit);
+
+void ComputeTopoDeficitToWT(
+   Databox *deficit,
+   Databox *porosity,
+   Databox *ssat,
+   Databox *sres,
+   Databox *mask,
+   Databox *top,
+   Databox *wtdepth);
+
+void ComputeHydroStatFromWT(
+   Databox *wtdepth,
+   Databox *top,
+   Databox *mask, 
+   Databox *press0);
  
 #endif
 

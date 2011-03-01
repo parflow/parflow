@@ -133,6 +133,7 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      clm(k)%frac_veg_nosno     = bigint! fraction of veg cover, excluding snow-covered veg (now 0 OR 1) [-]
      clm(k)%zi(:)              = NaN   ! interface level below a "z" level (m)
      clm(k)%dz(:)              = NaN   ! layer depth (m)
+     clm(k)%dz_mult(:)         = NaN   ! IMF: dz multiplier from ParFlow
      clm(k)%z(:)               = NaN   ! layer thickness (m)
      clm(k)%t_soisno(:)        = NaN   ! soil + snow layer temperature [K]
      clm(k)%h2osoi_liq(:)      = NaN   ! liquid water (kg/m2)

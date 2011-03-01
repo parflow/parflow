@@ -241,6 +241,24 @@ EXPORT(int,Parflow_Init)(Tcl_Interp *interp)
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfmovingavgdem", (Tcl_CmdProc *)MovingAvgCommand,
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfsattrans", (Tcl_CmdProc *)SatTransmissivityCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL); 
+   Tcl_CreateCommand(interp, "Parflow::pftopoindex", (Tcl_CmdProc *)TopoIndexCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pftoporecharge", (Tcl_CmdProc *)TopoRechargeCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfeffectiverecharge", (Tcl_CmdProc *)EffectiveRechargeCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pftopodeficit", (Tcl_CmdProc *)TopoDeficitCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pftopowt", (Tcl_CmdProc *)TopoDeficitToWTCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfhydrostatic", (Tcl_CmdProc *)HydroStatFromWTCommand,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfslopexD4", (Tcl_CmdProc *)SlopeXD4Command,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
+   Tcl_CreateCommand(interp, "Parflow::pfslopeyD4", (Tcl_CmdProc *)SlopeYD4Command,
+                     (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfslopeD8", (Tcl_CmdProc *)SlopeD8Command,
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
    Tcl_CreateCommand(interp, "Parflow::pfsegmentD8", (Tcl_CmdProc *)SegmentD8Command,

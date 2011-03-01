@@ -170,16 +170,26 @@ void CellDivConst(Databox *X, double val, Databox *mask, Databox *sum);
 
 int SlopeXUpwindCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int SlopeYUpwindCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int SlopeXD4Command  P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int SlopeYD4Command  P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int SlopeD8Command   P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int UpstreamAreaCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int FillFlatsCommand    P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int PitFillCommand   P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int MovingAvgCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
-int SlopeD8Command   P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int SegmentD8Command P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int ChildD8Command   P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int FlintsLawCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int FlintsLawFitCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int FlintsLawByBasinCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+
+int SatTransmissivityCommand    P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int TopoIndexCommand            P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int EffectiveRechargeCommand    P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int TopoRechargeCommand         P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int TopoDeficitCommand          P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int TopoDeficitToWTCommand      P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+int HydroStatFromWTCommand      P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 
 #undef P
 

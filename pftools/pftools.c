@@ -1094,8 +1094,8 @@ int            LoadPFCommand(
       }
 
       /* Make sure a filename follows the option */
-
-      if (argc == 2 || argc == 3)
+      // if (argc == 2 || argc == 3)
+      if (argc == 2)
       {
          MissingFilenameError(interp, 1, LOADPFUSAGE);
          return TCL_ERROR;
@@ -5249,10 +5249,6 @@ int            WaterTableDepthCommand(
 }
 
 
-// **********************************************************************
-// IMF: NEW STUFF FOR DEM PRE-PROCESSING
-//***********************************************************************
-
 /*-----------------------------------------------------------------------
  * routine for `pfslopex' command
  * Description: Compute slopes in x-direction at all [i,j] using 1st order
@@ -5849,6 +5845,168 @@ int            MovingAvgCommand(
 
 
 /*-----------------------------------------------------------------------
+ * routine for `pfslopexD4' command
+ * Description: Compute D4 slope x at all [i,j].
+ *
+ * Notes:       local minima: slope set to zero (no drainage)
+ *              otherwise:    1st order maximum downward slope to lowest
+ *                            neighbor (adjacent only!)
+ *
+ * Cmd. syntax: pfslopexD4 dem
+*-----------------------------------------------------------------------*/
+int            SlopeXD4Command(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+   Tcl_HashEntry *entryPtr;   // Points to new hash table entry
+   Data          *data = (Data *)clientData;
+
+   // Input
+   Databox       *dem;
+   char          *dem_hashkey;
+
+   // Outputs
+   Databox       *sx;
+   char           sx_hashkey[MAX_KEY_SIZE];
+   char          *filename = "slope-x (D4)";
+
+   /* Check if one argument following command  */
+   if (argc == 1)
+   {
+      WrongNumArgsError(interp, PFSLOPEXD4USAGE);
+      return TCL_ERROR;
+   }
+
+   dem_hashkey = argv[1];
+   if ((dem = DataMember(data, dem_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,dem_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx    = DataboxNx(dem);
+      int ny    = DataboxNy(dem);
+      int nz    = 1;
+
+      double x  = DataboxX(dem);
+      double y  = DataboxY(dem);
+      double z  = DataboxZ(dem);
+
+      double dx = DataboxDx(dem);
+      double dy = DataboxDy(dem);
+      double dz = DataboxDz(dem);
+
+      /* create the new databox structure for slope values (slope) */
+      if ( (sx = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+
+         /* Make sure dataset pointer was added to hash table   */
+         if (!AddData(data, sx, filename, sx_hashkey))
+            FreeDatabox(sx);
+         else
+         {
+            Tcl_AppendElement(interp, sx_hashkey);
+         }
+
+         /* Compute sx */
+         ComputeSlopeXD4(dem,sx);
+
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+   return TCL_OK;
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pfslopeyD4' command
+ * Description: Compute D4 slope y at all [i,j].
+ *
+ * Notes:       local minima: slope set to zero (no drainage)
+ *              otherwise:    1st order maximum downward slope to lowest
+ *                            neighbor (adjacent only!)
+ *
+ * Cmd. syntax: pfslopeyD4 dem
+*-----------------------------------------------------------------------*/
+int            SlopeYD4Command(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+   Tcl_HashEntry *entryPtr;   // Points to new hash table entry
+   Data          *data = (Data *)clientData;
+
+   // Input
+   Databox       *dem;
+   char          *dem_hashkey;
+
+   // Outputs
+   Databox       *sy;
+   char           sy_hashkey[MAX_KEY_SIZE];
+   char          *filename = "slope-y (D4)";
+
+   /* Check if one argument following command  */
+   if (argc == 1)
+   {
+      WrongNumArgsError(interp, PFSLOPEYD4USAGE);
+      return TCL_ERROR;
+   }
+
+   dem_hashkey = argv[1];
+   if ((dem = DataMember(data, dem_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,dem_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx    = DataboxNx(dem);
+      int ny    = DataboxNy(dem);
+      int nz    = 1;
+
+      double x  = DataboxX(dem);
+      double y  = DataboxY(dem);
+      double z  = DataboxZ(dem);
+
+      double dx = DataboxDx(dem);
+      double dy = DataboxDy(dem);
+      double dz = DataboxDz(dem);
+
+      /* create the new databox structure for slope values (slope) */
+      if ( (sy = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+
+         /* Make sure dataset pointer was added to hash table   */
+         if (!AddData(data, sy, filename, sy_hashkey))
+            FreeDatabox(sy);
+         else
+         {
+            Tcl_AppendElement(interp, sy_hashkey);
+         }
+
+         /* Compute sy */
+         ComputeSlopeYD4(dem,sy);
+
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+   return TCL_OK;
+}
+
+
+/*-----------------------------------------------------------------------
  * routine for `pfslopeD8' command
  * Description: Compute D8 slopes all [i,j]. 
  *
@@ -6373,5 +6531,876 @@ int            FlintsLawByBasinCommand(
 
    return TCL_OK;
 
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pfsattrans' command
+ * Description: Compute saturated transmissivity for all [i,j].
+ *
+ * Notes:       See detailed notes in toposlopes.c regarding assumptions,
+ *              methods, etc.
+ *
+ * Cmd. syntax: pfsattrans mask perm 
+*-----------------------------------------------------------------------*/
+int            SatTransmissivityCommand(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+   Tcl_HashEntry *entryPtr;   // Points to new hash table entry
+   Data          *data = (Data *)clientData;
+
+   // Input
+   int            nlayers;
+   Databox       *mask;
+   char          *mask_hashkey;
+   Databox       *perm;
+   char          *perm_hashkey;
+
+   // Output
+   Databox       *trans;
+   char           trans_hashkey[MAX_KEY_SIZE];
+   char          *filename = "saturated transmissivity";
+
+   /* Check if three arguments following command  */
+   if (argc != 4)
+   {
+      WrongNumArgsError(interp, PFSATTRANSUSAGE);
+      return TCL_ERROR;
+   }
+
+   if (Tcl_GetInt(interp, argv[1], &nlayers) == TCL_ERROR)
+   {
+      NotAnIntError(interp, 1, PFSATTRANSUSAGE);
+      return TCL_ERROR;
+   }
+
+   printf( "TESTING: nlayers=%d n", nlayers );
+
+   mask_hashkey = argv[2];
+   if ((mask = DataMember(data, mask_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,mask_hashkey);
+      return TCL_ERROR;
+   }
+
+   perm_hashkey = argv[3];
+   if ((perm = DataMember(data, perm_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,perm_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+
+      // grab databox info for output (trans)
+      int nx    = DataboxNx(mask);
+      int ny    = DataboxNy(mask);
+      int nz    = 1;
+
+      double x  = DataboxX(mask);
+      double y  = DataboxY(mask);
+      double z  = DataboxZ(mask);
+
+      double dx = DataboxDx(mask);
+      double dy = DataboxDy(mask);
+      double dz = DataboxDz(mask);
+
+      /* create the new databox structure for topoindex values (topoindex) */
+      if ( (trans = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+         /* Make sure dataset pointer was added to hash table   */
+         if (!AddData(data, trans, filename, trans_hashkey))
+            FreeDatabox(trans);
+         else
+         {
+            Tcl_AppendElement(interp, trans_hashkey);
+         }
+         /* Compute saturated transmissivity */
+         ComputeSatTransmissivity(nlayers,mask,perm,trans);
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+   return TCL_OK;
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pftopoindex' command
+ * Description: Compute topographic index for all [i,j].
+ *
+ * Notes:       See detailed notes in toposlopes.c regarding assumptions, 
+ *              methods, etc.
+ *              
+ * Cmd. syntax: pftopoindex dem sx sy
+*-----------------------------------------------------------------------*/
+int            TopoIndexCommand(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+   Tcl_HashEntry *entryPtr;   // Points to new hash table entry
+   Data          *data = (Data *)clientData;
+
+   // Input
+   Databox       *dem;
+   char          *dem_hashkey;
+   Databox       *sx; 
+   char          *sx_hashkey;
+   Databox       *sy;
+   char          *sy_hashkey;
+
+   // Output
+   Databox       *topoindex;
+   char           topoindex_hashkey[MAX_KEY_SIZE];
+   char          *filename = "topographic index";
+
+   /* Check if one argument following command  */
+   if (argc == 1)
+   {
+      WrongNumArgsError(interp, PFTOPOINDEXUSAGE);
+      return TCL_ERROR;
+   }
+
+   dem_hashkey = argv[1];
+   if ((dem = DataMember(data, dem_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,dem_hashkey);
+      return TCL_ERROR;
+   }
+
+   sx_hashkey  = argv[2];
+   if ((sx = DataMember(data, sx_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,sx_hashkey);
+      return TCL_ERROR;
+   }
+
+   sy_hashkey = argv[3];
+   if ((sy = DataMember(data, sy_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,sy_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx    = DataboxNx(dem);
+      int ny    = DataboxNy(dem);
+      int nz    = 1;
+
+      double x  = DataboxX(dem);
+      double y  = DataboxY(dem);
+      double z  = DataboxZ(dem);
+
+      double dx = DataboxDx(dem);
+      double dy = DataboxDy(dem);
+      double dz = DataboxDz(dem);
+
+      /* create the new databox structure for topoindex values (topoindex) */
+      if ( (topoindex = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+         /* Make sure dataset pointer was added to hash table   */
+         if (!AddData(data, topoindex, filename, topoindex_hashkey))
+            FreeDatabox(topoindex);
+         else
+         {
+            Tcl_AppendElement(interp, topoindex_hashkey);
+         }
+         /* Compute topoindex */
+         ComputeTopoIndex(dem,sx,sy,topoindex);
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+   return TCL_OK;
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pftoporecharge' command
+ * Description: Compute effective recharge at all [i,j] over upstream area
+ *              based on topmodel assumptions and given list of river points.
+ *
+ * Notes:       See detailed notes in toposlopes.c regarding assumptions,
+ *              methods, etc.
+ *
+ * Cmd. syntax: pftopore riverfile nriver  trans dem sx sy
+ * 
+ * Input Notes: nriver is an integer (number of river points)
+ *              river  is an array of integers [nriver][2] 
+ *                     (list of river indices, ordered from outlet to headwaters)
+ *              trans  is a Databox of saturated transmissivity
+ *              dem    is a Databox of elevations at each cell
+ *              sx     is a Databox of slopes (x-dir) -- lets you use processed slopes!
+ *              sy     is a Databox of slopes (y-dir) -- lets you use processed slopes!
+*-----------------------------------------------------------------------*/
+int            TopoRechargeCommand(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+   Tcl_HashEntry *entryPtr;   // Points to new hash table entry
+   Data          *data = (Data *)clientData;
+
+   /* Check if one argument following command  */
+   if (argc == 1)
+   {
+      WrongNumArgsError(interp, PFTOPORECHARGEUSAGE);
+      return TCL_ERROR;
+   }
+
+   // Grab inputs
+   int            nriver;
+   if (Tcl_GetInt(interp, argv[1], &nriver) == TCL_ERROR)
+   {
+      NotAnIntError(interp, 1, PFTOPORECHARGEUSAGE);
+      return TCL_ERROR;
+   }
+
+   char          *inputfilename;
+   inputfilename = argv[2];
+
+   Databox       *trans;
+   char          *trans_hashkey;
+   trans_hashkey = argv[3];
+
+   Databox       *dem;
+   char          *dem_hashkey;
+   dem_hashkey   = argv[4];
+
+   Databox       *sx;
+   char          *sx_hashkey;
+   sx_hashkey    = argv[5];
+
+   Databox       *sy;
+   char          *sy_hashkey;
+   sy_hashkey    = argv[6];
+
+   // Create output databox
+   Databox       *recharge;
+   char           recharge_hashkey[MAX_KEY_SIZE];
+   char          *filename = "effective recharge upstream of cell, based on TOPMODEL";
+
+   // Read river points from input file (inputfilename)
+   int            line;
+   int            river[nriver][2];
+   FILE          *inputfile;
+   if ( (inputfile = fopen(inputfilename,"r")) == NULL )
+   {
+      printf( "Input File %s does not seem to exist. \n", inputfilename);
+      WrongNumArgsError(interp, PFTOPORECHARGEUSAGE);
+   }
+   for ( line = 0; line < nriver; line++ )
+   {
+      fscanf( inputfile, "%d %d\n", &river[line][0], &river[line][1] );
+   }
+
+   // Test datasets
+   if ((trans = DataMember(data, trans_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,trans_hashkey);
+      return TCL_ERROR;
+   }
+
+   if ((dem = DataMember(data, dem_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,dem_hashkey);
+      return TCL_ERROR;
+   }
+   
+   if ((sx = DataMember(data, sx_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,sx_hashkey);
+      return TCL_ERROR;
+   }
+   
+   if ((sy = DataMember(data, sy_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,sy_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx    = DataboxNx(dem);
+      int ny    = DataboxNy(dem);
+      int nz    = 1;
+
+      double x  = DataboxX(dem);
+      double y  = DataboxY(dem);
+      double z  = DataboxZ(dem);
+
+      double dx = DataboxDx(dem);
+      double dy = DataboxDy(dem);
+      double dz = DataboxDz(dem);
+
+      /* create the new databox structure for reldef values (reldef) */
+      if ( (recharge = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+         /* Make sure dataset pointer was added to hash table   */
+         if (!AddData(data, recharge, filename, recharge_hashkey))
+            FreeDatabox(recharge);
+         else
+         {
+            Tcl_AppendElement(interp,recharge_hashkey);
+         }
+
+         // TESTING
+         // int i, j;
+         // printf( "TESTING INPUT DATA:/n" );
+         // for (j = 0; j < ny; j++ ) {
+         //  for (i = 0; i < ny; i++ ) {
+         //   printf( "%d\t%d\t%10.5f\t%10.5f\t%10.5f\t%10.5f\n", i, j, 
+         //           *DataboxCoeff(trans,i,j,0), *DataboxCoeff(dem,i,j,0), *DataboxCoeff(sx,i,j,0), *DataboxCoeff(sy,i,j,0) ); 
+         //  }
+         // }
+
+         /* Compute recharge */
+         ComputeTopoRecharge(river,nriver,trans,dem,sx,sy,recharge);
+
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+   return TCL_OK;
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pfeffectiverecharge' command
+ * Description: Compute effective recharge at all [i,j] based on total P-ET
+ *              over upstream area. Effective recharge is consistent with 
+ *              TOPMODEL definition, NOT local P-ET.
+ *
+ * Cmd. syntax: pfeffective recharge precip et sx sy dem 
+ *
+ * Input Notes: precip is total annual (or average annual) precip at each point
+ *              et     is total annual (or average annual) ET at each point
+ *              sx, sy, and dem are needed to compute upstream areas
+*-----------------------------------------------------------------------*/
+int            EffectiveRechargeCommand(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+   Tcl_HashEntry *entryPtr;   // Points to new hash table entry
+   Data          *data = (Data *)clientData;
+
+   /* Check if one argument following command  */
+   if (argc == 1)
+   {
+      WrongNumArgsError(interp, PFEFFRECHARGEUSAGE);
+      return TCL_ERROR;
+   }
+
+   // Input
+   Databox       *precip;
+   char          *precip_hashkey;
+   Databox       *et;
+   char          *et_hashkey;
+   Databox       *runoff;
+   char          *runoff_hashkey;
+   Databox       *sx;
+   char          *sx_hashkey;
+   Databox       *sy;
+   char          *sy_hashkey;
+   Databox       *dem;
+   char          *dem_hashkey;
+
+   // Output
+   Databox       *recharge;
+   char           recharge_hashkey[MAX_KEY_SIZE];
+   char          *filename = "effective recharge over upstream area";
+
+   precip_hashkey = argv[1];
+   if ((precip = DataMember(data, precip_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,precip_hashkey);
+      return TCL_ERROR;
+   }
+
+   et_hashkey = argv[2];
+   if ((et = DataMember(data, et_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,et_hashkey);
+      return TCL_ERROR;
+   }
+
+   runoff_hashkey = argv[3];
+   if ((runoff = DataMember(data, runoff_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,runoff_hashkey);
+      return TCL_ERROR;
+   }
+
+   sx_hashkey = argv[4];
+   if ((sx = DataMember(data, sx_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,sx_hashkey);
+      return TCL_ERROR;
+   }
+
+   sy_hashkey = argv[5];
+   if ((sy = DataMember(data, sy_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,sy_hashkey);
+      return TCL_ERROR;
+   }
+
+   dem_hashkey = argv[6];
+   if ((dem = DataMember(data, dem_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,dem_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx    = DataboxNx(sx);
+      int ny    = DataboxNy(sx);
+      int nz    = 1;
+
+      double x  = DataboxX(sx);
+      double y  = DataboxY(sx);
+      double z  = DataboxZ(sx);
+
+      double dx = DataboxDx(sx);
+      double dy = DataboxDy(sx);
+      double dz = DataboxDz(sx);
+
+      /* create the new databox structure for area values (area) */
+      if ( (recharge = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+
+         /* Make sure dataset pointer was added to hash table   */
+         if (!AddData(data, recharge, filename, recharge_hashkey))
+            FreeDatabox(recharge);
+         else
+         {
+            Tcl_AppendElement(interp, recharge_hashkey);
+         }
+
+         /* Compute effective recharge */
+         ComputeEffectiveRecharge(precip,et,runoff,sx,sy,dem,recharge);
+
+      }
+
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+
+   }
+
+   return TCL_OK;
+
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pftopodeficit' command
+ * Description: Compute water deficit for all [i,j]
+ *              based on TOPMODEL/topographic index.
+ *
+ * Cmd. syntax: pftopodeficit profile m trans dem slopex slopey recharge ssat sres porosity mask
+*-----------------------------------------------------------------------*/
+int            TopoDeficitCommand(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+
+   Tcl_HashEntry *entryPtr;   // Points to new hash table entry
+   Data          *data = (Data *)clientData;
+
+   // Input
+   int            profile;
+   char          *profilename; 
+   double         m;
+   Databox       *trans;
+   char          *trans_hashkey;
+   Databox       *dem;
+   char          *dem_hashkey;
+   Databox       *sx;
+   char          *sx_hashkey;
+   Databox       *sy;
+   char          *sy_hashkey;
+   Databox       *recharge;
+   char          *recharge_hashkey;
+   Databox       *ssat;
+   char          *ssat_hashkey;
+   Databox       *sres;
+   char          *sres_hashkey;
+   Databox       *porosity;
+   char          *porosity_hashkey;
+   Databox       *mask;
+   char          *mask_hashkey;
+
+   // Output
+   Databox       *deficit;
+   char           deficit_hashkey[MAX_KEY_SIZE];
+   char          *filename = "water deficit based on TOPMODEL [m]";
+
+   /* Check if one argument following command  */
+   if (argc == 1)
+   {
+      WrongNumArgsError(interp, PFTOPODEFUSAGE);
+      return TCL_ERROR;
+   }
+
+   profilename  = argv[1];
+   if ( strcmp(profilename,"Exponential")==0 )
+   {
+      profile   = 0;
+      printf( "Profile = %s (case = %d) \n", profilename, profile );
+   }
+   else if ( strcmp(profilename,"Linear")==0 )
+   { 
+      profile   = 1;
+      printf( "Profile = %s (case = %d) \n", profilename, profile );
+   }
+   else
+   {
+      printf( "Profile = %s -- NOT A VALID OPTION! \n", profilename );
+      printf( "(valid options: Exponential, Linear)\n" );
+      InvalidOptionError(interp, 1, PFTOPODEFUSAGE);
+   }
+
+   if (Tcl_GetDouble(interp, argv[2], &m) == TCL_ERROR)
+   {
+      NotADoubleError(interp, 1, PFTOPODEFUSAGE);
+      return TCL_ERROR;
+   }
+
+   trans_hashkey = argv[3];
+   if ((trans = DataMember(data, trans_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,trans_hashkey);
+      return TCL_ERROR;
+   }
+
+   dem_hashkey = argv[4];
+   if ((dem = DataMember(data, dem_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,dem_hashkey);
+      return TCL_ERROR;
+   }
+
+   sx_hashkey = argv[5];
+   if ((sx = DataMember(data, sx_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,sx_hashkey);
+      return TCL_ERROR;
+   }
+
+   sy_hashkey = argv[6];
+   if ((sy = DataMember(data, sy_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,sy_hashkey);
+      return TCL_ERROR;
+   }
+
+   recharge_hashkey = argv[7];
+   if ((recharge = DataMember(data, recharge_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,recharge_hashkey);
+      return TCL_ERROR;
+   }
+
+   ssat_hashkey = argv[8];
+   if ((ssat = DataMember(data, ssat_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,ssat_hashkey);
+      return TCL_ERROR;
+   }
+
+   sres_hashkey = argv[9];
+   if ((sres = DataMember(data, sres_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,sres_hashkey);
+      return TCL_ERROR;
+   }
+
+   porosity_hashkey = argv[10];
+   if ((porosity = DataMember(data, porosity_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,porosity_hashkey);
+      return TCL_ERROR;
+   }
+
+   mask_hashkey = argv[11];
+   if ((mask = DataMember(data, mask_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,mask_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx    = DataboxNx(dem);
+      int ny    = DataboxNy(dem);
+      int nz    = 1;
+
+      double x  = DataboxX(dem);
+      double y  = DataboxY(dem);
+      double z  = DataboxZ(dem);
+
+      double dx = DataboxDx(dem);
+      double dy = DataboxDy(dem);
+      double dz = DataboxDz(dem);
+
+      /* create the new databox structure for deficit values */
+      if ( (deficit = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+         /* Make sure dataset pointer was added to hash table   */
+         if (!AddData(data, deficit, filename, deficit_hashkey))
+            FreeDatabox(deficit);
+         else
+         {
+            Tcl_AppendElement(interp, deficit_hashkey);
+         }
+         /* Compute deficit */
+         ComputeTopoDeficit(profile,m,trans,dem,sx,sy,recharge,ssat,sres,porosity,mask,deficit);
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+   return TCL_OK;
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pftopowt' command
+ * Description: Compute water depth from column water deficit for all [i,j]
+ *              based on TOPMODEL/topographic index.
+ *
+ * Cmd. syntax: pftopowt deficit porosity ssat sres mask top wtdepth
+*-----------------------------------------------------------------------*/
+int            TopoDeficitToWTCommand(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+
+   Tcl_HashEntry *entryPtr;   // Points to new hash table entry
+   Data          *data = (Data *)clientData;
+
+   // Input
+   Databox       *deficit;
+   char          *deficit_hashkey;
+   Databox       *porosity;
+   char          *porosity_hashkey;
+   Databox       *ssat;
+   char          *ssat_hashkey;
+   Databox       *sres;
+   char          *sres_hashkey;
+   Databox       *mask;
+   char          *mask_hashkey;
+   Databox       *top;
+   char          *top_hashkey;
+
+   // Output
+   Databox       *wtdepth;
+   char           wtdepth_hashkey[MAX_KEY_SIZE];
+   char          *filename = "water table depth based on TOPMODEL water deficit [m]";
+  
+   /* Check if one argument following command  */
+   if (argc == 1)
+   {
+      WrongNumArgsError(interp, PFTOPODEFTOWTUSAGE);
+      return TCL_ERROR;
+   }
+
+   /* Grab inputs */
+   deficit_hashkey = argv[1];
+   if ((deficit = DataMember(data, deficit_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,deficit_hashkey);
+      return TCL_ERROR;
+   }
+    
+   porosity_hashkey = argv[2];
+   if ((porosity = DataMember(data, porosity_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,porosity_hashkey);
+      return TCL_ERROR;
+   }
+
+   ssat_hashkey = argv[3];
+   if ((ssat = DataMember(data, ssat_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,ssat_hashkey);
+      return TCL_ERROR;
+   }
+
+   sres_hashkey = argv[4];
+   if ((sres = DataMember(data, sres_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,sres_hashkey);
+      return TCL_ERROR;
+   }
+
+   mask_hashkey = argv[5];
+   if ((mask = DataMember(data, mask_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,mask_hashkey);
+      return TCL_ERROR;
+   }
+
+   top_hashkey = argv[6];
+   if ((top = DataMember(data, top_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,top_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx    = DataboxNx(top);
+      int ny    = DataboxNy(top);
+      int nz    = 1;
+
+      double x  = DataboxX(top);
+      double y  = DataboxY(top);
+      double z  = DataboxZ(top);
+
+      double dx = DataboxDx(top);
+      double dy = DataboxDy(top);
+      double dz = DataboxDz(top);
+
+      /* create the new databox structure for deficit values */
+      if ( (wtdepth = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+         /* Make sure dataset pointer was added to hash table   */
+         if (!AddData(data, wtdepth, filename, wtdepth_hashkey))
+            FreeDatabox(wtdepth);
+         else
+         {
+            Tcl_AppendElement(interp, wtdepth_hashkey);
+         }
+         /* Compute wt depth */
+         ComputeTopoDeficitToWT(deficit,porosity,ssat,sres,mask,top,wtdepth);
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+   return TCL_OK;
+}
+
+
+/*-----------------------------------------------------------------------
+ * routine for `pfwttopress' command
+ * Description: Compute hydrostratic pressure field from water table depth 
+ *
+ * Cmd. syntax: pfhydrostatic wtdepth top mask
+*-----------------------------------------------------------------------*/
+int            HydroStatFromWTCommand(
+   ClientData     clientData,
+   Tcl_Interp    *interp,
+   int            argc,
+   char          *argv[])
+{
+
+   Tcl_HashEntry *entryPtr;   // Points to new hash table entry
+   Data          *data = (Data *)clientData;
+
+   // Input
+   Databox       *wtdepth;
+   char          *wtdepth_hashkey;
+   Databox       *mask;
+   char          *mask_hashkey;
+   Databox       *top;
+   char          *top_hashkey;
+
+   // Output
+   Databox       *press;
+   char           press_hashkey[MAX_KEY_SIZE];
+   char          *filename = "hydrostatic pressure field with respec to water table depths provided [m]";
+
+   /* Check if one argument following command  */
+   if (argc == 1)
+   {
+      WrongNumArgsError(interp, PFHYDROSTATUSAGE);
+      return TCL_ERROR;
+   }
+
+   /* Grab inputs */
+   wtdepth_hashkey = argv[1];
+   if ((wtdepth = DataMember(data, wtdepth_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,wtdepth_hashkey);
+      return TCL_ERROR;
+   }
+
+   mask_hashkey = argv[2];
+   if ((mask = DataMember(data, mask_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,mask_hashkey);
+      return TCL_ERROR;
+   }
+
+   top_hashkey = argv[3];
+   if ((top = DataMember(data, top_hashkey, entryPtr)) == NULL)
+   {
+      SetNonExistantError(interp,top_hashkey);
+      return TCL_ERROR;
+   }
+
+   {
+      int nx    = DataboxNx(mask);
+      int ny    = DataboxNy(mask);
+      int nz    = DataboxNz(mask);
+
+      double x  = DataboxX(mask);
+      double y  = DataboxY(mask);
+      double z  = DataboxZ(mask);
+
+      double dx = DataboxDx(mask);
+      double dy = DataboxDy(mask);
+      double dz = DataboxDz(mask);
+
+      /* create the new databox structure for deficit values */
+      if ( (press = NewDatabox(nx, ny, nz, x, y, z, dx, dy, dz)) )
+      {
+
+         /* Make sure dataset pointer was added to hash table   */
+         if (!AddData(data, press, filename, press_hashkey))
+            FreeDatabox(press);
+         else
+         {
+            Tcl_AppendElement(interp, press_hashkey);
+         }
+
+         /* Compute pressure field */
+         ComputeHydroStatFromWT(wtdepth,top,mask,press);
+
+      }
+      else
+      {
+         ReadWriteError(interp);
+         return TCL_ERROR;
+      }
+   }
+   return TCL_OK;
 }
 
