@@ -544,7 +544,7 @@ void      SolverImpes()
 
 		     if ( public_xtra -> write_silo_concen ) 
 		     {
-			sprintf(file_postfix, "%01d.%02d", phase, concen);
+			sprintf(file_postfix, "%01d.%02d.%05d", phase, concen, file_number);
 			sprintf(file_type, "concen");
 			WriteSilo(file_prefix, file_type, file_postfix, concentrations[indx],
 				  t, file_number, "Concentration");
