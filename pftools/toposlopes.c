@@ -169,8 +169,8 @@ void ComputeSlopeXUpwind(
             }
 
             // determine slope (upwind, max down grad, or zero)
-            if ((s1>0.) && (s2<0.))                     // LOCAL MAXIMUM -- use max down grad
-            {
+            if ((s1>=0.) && (s2<=0.))                 // LOCAL MAXIMUM -- use max down grad
+            {                                         // NOTE: includes flat spots!!
                if (fabs(s1)>fabs(s2))
                {
                   *DataboxCoeff(sx,i,j,0) = s1;
@@ -190,7 +190,7 @@ void ComputeSlopeXUpwind(
             {
                *DataboxCoeff(sx,i,j,0)    = s2;
             }
-            else                                   // ZERO SLOPE (s1==s2==0.0)
+            else                                      // ZERO SLOPE (s1==s2==0.0)
             {
                *DataboxCoeff(sx,i,j,0)    = 0.0;
             }
@@ -342,8 +342,8 @@ void ComputeSlopeYUpwind(
             }
 
             // determine slope (upwind, max down grad, or zero)
-            if ((s1>0.) && (s2<0.))                     // LOCAL MAXIMUM -- use max down grad
-            {
+            if ((s1>=0.) && (s2<=0.))                 // LOCAL MAXIMUM -- use max down grad
+            {                                         // NOTE: includes flat spots!
                if (fabs(s1)>fabs(s2))
                {
                   *DataboxCoeff(sy,i,j,0) = s1;
@@ -363,7 +363,7 @@ void ComputeSlopeYUpwind(
             {
                *DataboxCoeff(sy,i,j,0)    = s2;
             }
-            else                                   // ZERO SLOPE (s1==s2==0.0)
+            else                                      // ZERO SLOPE (s1==s2==0.0)
             {
                *DataboxCoeff(sy,i,j,0)    = 0.0;
             }
