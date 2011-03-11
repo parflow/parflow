@@ -99,7 +99,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
   real(r8) :: qirr_inst_pf((nx+2)*(ny+2)*(nlevsoi+2))! irrigation applied below ground -- 'instant' (3D)
 
   ! output keys
-  integer  :: clm_dump_interval                  ! dump inteval for CLM output, passed from PF, always in interval of CLM timestep, not time
+  real(r8) :: clm_dump_interval                  ! dump inteval for CLM output, passed from PF, always in interval of CLM timestep, not time
   integer  :: clm_1d_out                         ! whether to dump 1d output 0=no, 1=yes
   integer  :: clm_output_dir_length              ! for output directory
   integer  :: clm_bin_output_dir                 ! output directory
@@ -419,7 +419,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
   !=== Call 2D output routine
   !     Only call for clm_dump_interval steps (not time units, integer units)
   !     Only call if write_CLM_binary is True
-  if (mod(istep_pf,clm_dump_interval)==0)  then
+  if (mod(dble(istep_pf),clm_dump_interval)==0)  then
      if (write_CLM_binary==1) then
 
         ! Call subroutine to open (2D-) output files
