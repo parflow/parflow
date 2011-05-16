@@ -213,6 +213,9 @@ Problem   *NewProblem(
    ProblemOverlandFlowEval(problem) =
       PFModuleNewModule(OverlandFlowEval, ()); //DOK
 
+    ProblemOverlandFlowEvalDiff(problem) =
+    PFModuleNewModule(OverlandFlowEvalDiff, ()); //@RMM
+
    if ( solver != RichardsSolve )
    {
    ProblemCapillaryPressure(problem) =
@@ -358,6 +361,7 @@ void      FreeProblem(
     PFModuleFreeModule(ProblemdzScale(problem));  //RMM
     
    PFModuleFreeModule(ProblemOverlandFlowEval(problem)); //DOK
+    PFModuleFreeModule(ProblemOverlandFlowEvalDiff(problem)); //@RMM
 
    PFModuleFreeModule(ProblemDomain(problem));
 

@@ -53,6 +53,8 @@ typedef struct
    PFModule     *bc_pressure;
    PFModule     *bc_internal;
    PFModule	*overlandflow_module; //DOK
+   PFModule	*overlandflow_module_diff; //@RMM
+
 } InstanceXtra;
 
 /*---------------------------------------------------------------------
@@ -126,7 +128,9 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    PFModule    *bc_pressure       = (instance_xtra -> bc_pressure);
    PFModule    *bc_internal       = (instance_xtra -> bc_internal);
    PFModule    *overlandflow_module       = (instance_xtra -> overlandflow_module);
+    PFModule    *overlandflow_module_diff       = (instance_xtra -> overlandflow_module_diff);
 
+    
    /* Re-use saturation vector to save memory */
    Vector      *rel_perm          = saturation;
    Vector      *source            = saturation;
@@ -185,6 +189,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    int          nx_po, ny_po, nz_po;
    int          sy_p, sz_p;
    int          ip, ipo,io;
+    int         diffusive;   //@RMM
 
    double       dtmp, dx, dy, dz, vol, ffx, ffy, ffz;
    double       u_right, u_front, u_upper;
@@ -208,6 +213,14 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    /* Initialize function values to zero. */
    PFVConstInit(0.0, fval);
 
+   /* diffusive test here, this is NOT PF style and should be 
+    re-done putting keys in BC Pressure Package and adding to the 
+    datastructure for overlandflowBC */
+   // diffusive = 0;
+   // printf(" diffusive: %d \n", diffusive);
+    diffusive = GetIntDefault("OverlandFlowDiffusive",0);
+   // printf(" diffusive: %d \n", diffusive);
+    
    /* Pass pressure values to neighbors.  */
    handle = InitVectorUpdate(pressure, VectorUpdateAll);
    FinalizeVectorUpdate(handle);
@@ -1252,9 +1265,17 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 	       // SGS Fix this up later after things are a bit more stable.   Probably should 
 	       // Use this loop inside the overland flow eval as it is more efficient.
 #if 1
+            if (diffusive == 0) {
+            
                /* Call overlandflow_eval to compute fluxes across the east, west, north, and south faces */
                PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module, (grid, is, bc_struct, ipatch, problem_data, pressure,
 					 ke_, kw_, kn_, ks_, qx_, qy_, CALCFCN));
+            } else {
+            /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
+             routing added */
+            PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
+                                                                             ke_, kw_, kn_, ks_, qx_, qy_, CALCFCN));
+            }
 #else
 	       // SGS TODO can these loops be merged?
 	       BCStructPatchLoopOvrlnd(i, j, k, fdir, ival, bc_struct, ipatch, is,
@@ -1475,7 +1496,12 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem     *problem,
          PFModuleNewInstance(ProblemBCInternal(problem), () );
       (instance_xtra -> overlandflow_module) =
          PFModuleNewInstance(ProblemOverlandFlowEval(problem), () ); //DOK
-
+       (instance_xtra -> overlandflow_module) =
+       PFModuleNewInstance(ProblemOverlandFlowEval(problem), () ); //DOK
+       (instance_xtra -> overlandflow_module_diff) =
+       PFModuleNewInstance(ProblemOverlandFlowEvalDiff(problem), () ); //@RMM
+       (instance_xtra -> overlandflow_module_diff) =
+       PFModuleNewInstance(ProblemOverlandFlowEvalDiff(problem), () ); //@RMM
    }
    else
    {
@@ -1492,6 +1518,8 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem     *problem,
 				(instance_xtra -> bc_pressure), (problem));
       PFModuleReNewInstance((instance_xtra -> bc_internal), ());
       PFModuleReNewInstance((instance_xtra -> overlandflow_module), ()); //DOK
+       PFModuleReNewInstance((instance_xtra -> overlandflow_module_diff), ()); //@RMM
+
    }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -1517,6 +1545,7 @@ void  NlFunctionEvalFreeInstanceXtra()
       PFModuleFreeInstance(instance_xtra -> bc_pressure);
       PFModuleFreeInstance(instance_xtra -> bc_internal);
       PFModuleFreeInstance(instance_xtra -> overlandflow_module); //DOK
+       PFModuleFreeInstance(instance_xtra -> overlandflow_module_diff); //@RMM
       
       tfree(instance_xtra);
    }

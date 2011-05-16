@@ -98,6 +98,7 @@ typedef struct
    PFModule  *y_slope;
    PFModule  *mann;
    PFModule  *overlandflow_eval;       //DOK 
+    PFModule  *overlandflow_eval_diff;       //@RMM 
 
   /* @RMM Variable dZ */
     PFModule  *dz_mult;         //rmm
@@ -198,6 +199,7 @@ typedef struct
 #define ProblemMannings(problem)                  ((problem) -> mann) //sk
 
 #define ProblemOverlandFlowEval(problem)          ((problem) -> overlandflow_eval) //DOK
+#define ProblemOverlandFlowEvalDiff(problem)          ((problem) -> overlandflow_eval_diff) //@RMM
 
 #define ProblemdzScale(problem)            ((problem) -> dz_mult)  //RMM
 

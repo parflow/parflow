@@ -732,6 +732,40 @@ PFModule *OverlandFlowEvalNewPublicXtra (void);
 void OverlandFlowEvalFreePublicXtra (void );
 int OverlandFlowEvalSizeOfTempData (void );
 
+/* @RMM - overlandflowevaldiffusive */
+typedef void (*OverlandFlowEvalDiffInvoke) (Grid *grid, 
+                                        int sg,
+                                        BCStruct *bc_struct,
+                                        int ipatch,
+                                        ProblemData *problem_data, 
+                                        Vector *pressure,  
+                                        double *ke_v,
+                                        double *kw_v,
+                                        double *kn_v,
+                                        double *ks_v,
+                                        double *qx_v,
+                                        double *qy_v,      
+                                        int     fcn);
+
+void OverlandFlowEvalDiff (Grid *grid, 
+                       int sg,
+                       BCStruct *bc_struct,
+                       int ipatch,
+                       ProblemData *problem_data, 
+                       Vector *pressure,  
+                       double *ke_v,
+                       double *kw_v,
+                       double *kn_v,
+                       double *ks_v,
+                       double *qx_v,
+                       double *qy_v,      
+                       int     fcn);
+PFModule *OverlandFlowEvalDiffInitInstanceXtra (void);
+void OverlandFlowEvalDiffFreeInstanceXtra (void );
+PFModule *OverlandFlowEvalDiffNewPublicXtra (void);
+void OverlandFlowEvalDiffFreePublicXtra (void );
+int OverlandFlowEvalDiffSizeOfTempData (void );
+
 typedef void (*ICPhaseSaturInvoke) (Vector *ic_phase_satur , int phase , ProblemData *problem_data );
 typedef PFModule *(*ICPhaseSaturNewPublicXtraInvoke) (int num_phases );
 

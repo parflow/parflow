@@ -159,6 +159,7 @@ OBJS = \
 	evaptranssum.o \
 	overlandsum.o \
 	overlandflow_eval.o \
+	overlandflow_eval_diffusive.o \
 	compute_top.o \
 	input_checks.o
 
