@@ -55,6 +55,12 @@ typedef struct
    Vector     *values;
 } Type1;                       /* from PFB */
 
+typedef struct
+{
+    int         num_dz;
+    double     *values;
+} Type2;                       /* from list in tcl array */
+
 /*--------------------------------------------------------------------------
  * dZ Scaling values
  *--------------------------------------------------------------------------*/
@@ -70,6 +76,10 @@ void dzScale (ProblemData *problem_data, Vector *dz_mult )
    Subvector      *ps_sub;
    Subvector      *dz_sub;
    Subvector      *val_sub;
+    
+   VectorUpdateCommHandle       *handle;
+    
+    
    double         *data;
    double         *dz_dat;
    double         *val_dat;
@@ -78,13 +88,14 @@ void dzScale (ProblemData *problem_data, Vector *dz_mult )
    int             nx, ny, nz;
    int             r;
    int             is, i, j, k, ips, ipicv;
+   int             ii;
 
 
    /*-----------------------------------------------------------------------
     * dz Scale
     *-----------------------------------------------------------------------*/
 
-   InitVector(dz_mult, 1.0);
+   InitVectorAll(dz_mult, 1.0);
 
    if (public_xtra -> variable_dz) {
    switch((public_xtra -> type))
@@ -141,6 +152,8 @@ void dzScale (ProblemData *problem_data, Vector *dz_mult )
             {                
 	       ips = SubvectorEltIndex(ps_sub, i, j, k);
 	       data[ips] = value;
+              //  printf("dz %d %d %d %f %f \n",i,j, k, data[ips],value);
+
 	    });
 	 }
       }
@@ -190,6 +203,8 @@ void dzScale (ProblemData *problem_data, Vector *dz_mult )
             ips   = SubvectorEltIndex(dz_sub,  i, j, k);
             ipicv = SubvectorEltIndex(val_sub, i, j, k);
             dz_dat[ips] = val_dat[ipicv];
+            // printf("dz %d %d %d %d %d %f %f \n",i,j, k,ips, ipicv, dz_dat[ips],val_dat[ipicv]);
+
 
          });
       }        /* End subgrid loop */
@@ -198,8 +213,67 @@ void dzScale (ProblemData *problem_data, Vector *dz_mult )
   
    }
 
+           // from list of values, could be function in the future
+       case 2:
+       {
+           Type2    *dummy2;
+           dummy2 = (Type2 *)(public_xtra -> data);
+
+           int      num_dz;
+           double  *values;
+           
+           num_dz    = (dummy2 -> num_dz);
+           values    = (dummy2 -> values);
+           
+          /* for (ii=0; ii < num_dz; ii++) {
+               printf("dz %d %f \n",ii, values[ii]);
+           } */
+           
+      	   //GrGeomSolid  *gr_domain;     
+        
+           GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
+           
+
+           ForSubgridI(is, subgrids)
+           {
+               
+               printf( "problem_dz_scale -- setting from list of dz values \n", is );
+               
+               subgrid = SubgridArraySubgrid(subgrids, is);
+               dz_sub  = VectorSubvector(dz_mult, is);
+               dz_dat  = SubvectorData(dz_sub);
+               
+               ix = SubgridIX(subgrid);
+               iy = SubgridIY(subgrid);
+               iz = SubgridIZ(subgrid);
+               
+               nx = SubgridNX(subgrid);
+               ny = SubgridNY(subgrid);
+               nz = SubgridNZ(subgrid);
+               
+               /* RDF: assume resolution is the same in all 3 directions */
+               r = SubgridRX(subgrid);
+               
+               GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+                            {
+                                
+                                ips   = SubvectorEltIndex(dz_sub,  i, j, k);
+                                dz_dat[ips] = values[k];
+                            //    printf("dz %d %d %d %f %f \n",i,j, k, dz_dat[ips],values[k]);
+
+                                
+                            });
+           }        /* End subgrid loop */
+           
+           break;
+           
+       }
+           
+           
    }
    }
+    handle = InitVectorUpdate(dz_mult, VectorUpdateAll);
+    FinalizeVectorUpdate(handle);
    }
 
 
@@ -252,11 +326,13 @@ PFModule   *dzScaleNewPublicXtra()
 
    Type0         *dummy0;
    Type1         *dummy1;
+   Type2         *dummy2;
 
    int            num_regions, ir; 
    char *switch_name;
    int  *switch_value;
    char *region;
+   char *nzListValues;
    char  key[IDB_MAX_KEY_LEN];
    char *name;
    NameArray switch_na;
@@ -281,15 +357,16 @@ PFModule   *dzScaleNewPublicXtra()
    if (public_xtra -> variable_dz == 1) { 
       
       name                   = "dzScale.Type"; 
-      switch_na              = NA_NewNameArray("Constant PFBFile");
+      switch_na              = NA_NewNameArray("Constant PFBFile nzList");
       switch_name            = GetString(name);
       public_xtra -> type    = NA_NameToIndex(switch_na,switch_name);
 
-      name                   = "dzScale.GeomNames";
-      switch_name            = GetString(name);
-      public_xtra -> regions = NA_NewNameArray(switch_name);
-      num_regions            = NA_Sizeof(public_xtra -> regions);
-
+       name                   = "dzScale.GeomNames";
+       switch_name            = GetString(name);
+       public_xtra -> regions = NA_NewNameArray(switch_name);
+       num_regions            = NA_Sizeof(public_xtra -> regions);
+       
+       
       // switch for dzScale.Type
       // Constant = 0; PFBFile = 1;
       switch( (public_xtra -> type) )
@@ -298,8 +375,9 @@ PFModule   *dzScaleNewPublicXtra()
          // Set as constant by regions
 	 case 0:
 	 {
+         
 
-            printf( "problem_dz_scale -- setting dz_mult by regions (type=Constant)\n" );
+            printf( "problem_dz_scale -- setting dz_mult by regions (type=Constant) \n" );
 
 	    dummy0 = ctalloc(Type0, 1);
  
@@ -326,8 +404,8 @@ PFModule   *dzScaleNewPublicXtra()
          // Read from PFB file	
          case 1:
          {
-
-            printf( "problem_dz_scale -- setting dz_mult from file (type=PFBFile)\n" );
+  
+            printf( "problem_dz_scale -- setting dz_mult from file (type=PFBFile) \n" );
 
             dummy1 = ctalloc(Type1, 1);
 
@@ -339,7 +417,36 @@ PFModule   *dzScaleNewPublicXtra()
             break;
 
          }
- 
+              
+              //Set from tcl list; map to grid
+          case 2:
+          {
+              
+              printf( "problem_dz_scale -- setting dz_mult tcl list \n" );
+              
+              dummy2 = ctalloc(Type2, 1);
+              
+              name                        = "dzScale.nzListNumber";
+            //  switch_name                 = GetString(name);
+            //  nzListValues                = NA_NewNameArray(switch_name);
+              
+              (dummy2 -> num_dz)          = GetDouble(name);
+              // printf("Ncell %d \n",  dummy2 -> num_dz);
+
+              (dummy2 -> values)          = ctalloc(double, (dummy2 -> num_dz)); 
+              for (ir=0; ir < (dummy2 -> num_dz); ir++) {
+                  sprintf(key, "Cell.%d.dzScale.Value", ir);
+                  dummy2 -> values[ir] = GetDouble(key);
+                 // printf("cell %d %s %f \n",ir, key, dummy2 -> values[ir]);
+                 // printf("dz1 %d %f \n",ir, dummy2 -> values[ir]);
+
+              }
+              (public_xtra -> data) = (void *) dummy2;
+              
+              break;
+              
+          }
+              
 	 default:
 	 {
 	    InputError("Error: invalid type <%s> for key <%s>\n",
@@ -365,7 +472,9 @@ void  dzScaleFreePublicXtra()
 
    Type0       *dummy0;
    Type1       *dummy1;
+   Type2       *dummy2;
 
+    
    if (public_xtra -> variable_dz) {
 
       NA_FreeNameArray(public_xtra -> regions);
@@ -388,6 +497,13 @@ void  dzScaleFreePublicXtra()
             break;
          } 
 
+          case 2:
+          {
+              dummy2 = (Type2 *)(public_xtra -> data);
+              tfree(dummy2);
+              break;
+          } 
+              
       }
 
    }else {

@@ -303,7 +303,11 @@ void SetupRichards(PFModule *this_module) {
    if ( public_xtra -> terrain_following_grid )
    {
         Copy(ProblemDataTSlopeX(problem_data), ProblemDataSSlopeX(problem_data));
-        Copy(ProblemDataTSlopeY(problem_data), ProblemDataSSlopeY(problem_data));        
+        Copy(ProblemDataTSlopeY(problem_data), ProblemDataSSlopeY(problem_data));    
+       handle = InitVectorUpdate(ProblemDataSSlopeX(problem_data), VectorUpdateAll);
+       FinalizeVectorUpdate(handle); 
+       handle = InitVectorUpdate(ProblemDataSSlopeY(problem_data), VectorUpdateAll);
+       FinalizeVectorUpdate(handle); 
    } 
     
    /* @IMF -- set DZ multiplier from ProblemDataZmult */

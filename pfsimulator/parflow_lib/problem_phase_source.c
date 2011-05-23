@@ -106,7 +106,7 @@ double       time)
     * Put in any user defined sources for this phase
     *-----------------------------------------------------------------------*/
 
-   InitVector(phase_source, 0.0);
+   InitVectorAll(phase_source, 0.0);
 
    switch((public_xtra -> type[phase]))
    {
