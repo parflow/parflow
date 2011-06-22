@@ -237,7 +237,7 @@ void dzScale (ProblemData *problem_data, Vector *dz_mult )
            ForSubgridI(is, subgrids)
            {
                
-               printf( "problem_dz_scale -- setting from list of dz values \n", is );
+               //printf( "problem_dz_scale -- setting from list of dz values \n", is );
                
                subgrid = SubgridArraySubgrid(subgrids, is);
                dz_sub  = VectorSubvector(dz_mult, is);
@@ -330,7 +330,7 @@ PFModule   *dzScaleNewPublicXtra()
 
    int            num_regions, ir; 
    char *switch_name;
-   int  *switch_value;
+   int  switch_value;
    char *region;
    char *nzListValues;
    char  key[IDB_MAX_KEY_LEN];
