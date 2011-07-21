@@ -49,6 +49,7 @@ void           LoadParflowB(
 {
    char      output_name[MAXPATHLEN];
    FILE     *file;
+    FILE     *dist_file;
 
    Subgrid  *subgrid;
 

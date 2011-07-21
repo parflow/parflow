@@ -128,7 +128,7 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
      ! open(40,file=trim(adjustl(drv%rstf))//trim(adjustl(RI)),form='unformatted')
 
      read(40)     yr,mo,da,hr,mn,ss,vclass,nc,nr,nch  !Time, veg class, no. tiles
-     write(999,*) yr,mo,da,hr,mn,ss,vclass,nc,nr,nch  !Time, veg class, no. tiles
+     !write(999,*) yr,mo,da,hr,mn,ss,vclass,nc,nr,nch  !Time, veg class, no. tiles
 
      allocate (col(nch),row(nch),fgrd(nch),vegt(nch))
      allocate (t_grnd(nch),t_veg(nch),h2osno(nch),snowage(nch),         &

@@ -1,12 +1,12 @@
 !#include <misc.h>
 
-subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,pf_dz_mult,istep_pf,dt,time,  &
-start_time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,nz_rz,ip,npp,npq,npr,rank,sw_pf,lw_pf,   &
-prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf,eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,    &
-qflx_tot_pf,qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf,      &
-t_soi_pf,clm_dump_interval,clm_1d_out,clm_output_dir,clm_output_dir_length,clm_bin_output_dir,&
-write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,        &
-res_satpf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,      &
+subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,pf_dz_mult,istep_pf,dt,time,           &
+start_time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,nz_rz,ip,npp,npq,npr,gnx, gny,rank,sw_pf,lw_pf,   &
+prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf,eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,             &
+qflx_tot_pf,qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf,               &
+t_soi_pf,clm_dump_interval,clm_1d_out,clm_output_dir,clm_output_dir_length,clm_bin_output_dir,         &
+write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,                 &
+res_satpf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,               &
 qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
 
   !=========================================================================
@@ -70,6 +70,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
   integer  :: iy                                 ! parflow iy, starting point for local grid on global grid
   integer  :: ip                               
   integer  :: npp,npq,npr                        ! number of processors in x,y,z
+  integer  :: gnx, gny                           ! global grid, nx and ny
   integer  :: rank                               ! processor rank, from ParFlow
   
   ! surface fluxes & forcings
@@ -139,8 +140,8 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
 
   !=== Open CLM text output
   write(RI,*)  rank
-  open(999, file="clm_output.txt."//trim(adjustl(RI)), action="write")
-  write(999,*) "clm.F90: rank =", rank, "   istep =", istep_pf
+  !open(999, file="clm_output.txt."//trim(adjustl(RI)), action="write")
+  !write(999,*) "clm.F90: rank =", rank, "   istep =", istep_pf
 
   !=== Specify grid size using values passed from PF
   drv%dx = pdx
@@ -157,7 +158,8 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
   !=== Check if initialization is necessary
   if (time == start_time) then 
      
-     write(999,*) "INITIALIZATION"
+     !write(999,*) "INITIALIZATION"
+     
 
      !=== Allocate Memory for Grid Module
      allocate( counter(nx,ny) )
@@ -207,9 +209,9 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
 
 
      !=== Open balance and log files - don't write these at every timestep
-     open (166,file='clm_elog.txt.'//trim(adjustl(RI)))
-     open (199,file='balance.txt.'//trim(adjustl(RI)))
-     write(199,'(a59)') "istep error(%) tot_infl_mm tot_tran_veg_mm begwatb endwatb"
+    ! open (166,file='clm_elog.txt.'//trim(adjustl(RI)))
+    ! open (199,file='balance.txt.'//trim(adjustl(RI)))
+    ! write(199,'(a59)') "istep error(%) tot_infl_mm tot_tran_veg_mm begwatb endwatb"
 
 
      !=== Set clm diagnostic indices and allocate space
@@ -225,29 +227,36 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
 
 
      !=== Initialize clm derived type components
-     write(999,*) "Call clm_typini"
+     !write(999,*) "Call clm_typini"
      call clm_typini(drv%nch,clm,istep_pf)
-
+     
+     !write(999,*) "DIMENSIONS:"
+     !write(999,*) 'local NX:',nx,' NX with ghost:',nx_f,' IX:', ix
+     !write(999,*) 'local NY:',ny,' NY with ghost:',ny_f,' IY:',iy
+     !write(999,*) ' ParFlow NZ:',nz, 'NZ with ghost:',nz_f
+     !write(999,*) ' globla NX:',gnx, ' global NY:', gny
+     !write(999,*) 'DRV-NC:',drv%nc,' DRV-NR:',drv%nr, 'DRV-NCH:',drv%nch
+     !write(999,*) ' Processor Number:',rank, ' local vector start:',ip
 
      !=== Read in vegetation data and set tile information accordingly
-     write(999,*) "Read in vegetation data and set tile information accordingly"
-     call drv_readvegtf (drv, grid, tile, clm, rank)
+     !write(999,*) "Read in vegetation data and set tile information accordingly"
+     call drv_readvegtf (drv, grid, tile, clm,nx, ny, ix, iy, gnx, gny, rank)
 
 
      !=== Transfer grid variables to tile space 
-     write(999,*) "Transfer grid variables to tile space ", drv%nch
+     !write(999,*) "Transfer grid variables to tile space ", drv%nch
      do t = 1, drv%nch
         call drv_g2clm (drv%udef, drv, grid, tile(t), clm(t))   
      enddo
 
 
      !=== Read vegetation parameter data file for IGBP classification
-     write(999,*) "Read vegetation parameter data file for IGBP classification"
+     !write(999,*) "Read vegetation parameter data file for IGBP classification"
      call drv_readvegpf (drv, grid, tile, clm)  
 
 
      !=== Initialize CLM and DIAG variables
-     write(999,*) "Initialize CLM and DIAG variables"
+     !write(999,*) "Initialize CLM and DIAG variables"
      do t=1,drv%nch 
         clm%kpatch = t
         call drv_clmini (drv, grid, tile(t), clm(t), istep_pf) !Initialize CLM Variables
@@ -261,8 +270,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
      !      (1)= top of LS/PF domain 
      !      (2)= top-nlevsoi and 
      !      (3)= the bottom of the LS/PF domain.
-     write(999,*) "Initialize the CLM topography mask"
-     write(999,*) "DIMENSIONS",nx,nx_f,drv%nc,drv%nr,drv%nch,ny,ny_f,nz,nz_f,ip
+     !write(999,*) "Initialize the CLM topography mask"
 
      do t=1,drv%nch
 
@@ -470,8 +478,8 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
 
 
   !=== Write Daily Restarts
-  write(999,*) "End of time advance:" 
-  write(999,*) 'time =', time, 'gmt =', drv%gmt, 'endtime =', drv%endtime
+  !write(999,*) "End of time advance:" 
+  !write(999,*) 'time =', time, 'gmt =', drv%gmt, 'endtime =', drv%endtime
   if ( (drv%gmt==0.0).or.(drv%endtime==1) ) call drv_restart(2,drv,tile,clm,rank,istep_pf)
 
   

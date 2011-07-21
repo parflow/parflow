@@ -75,7 +75,7 @@ subroutine clm_balchk (clm, nstep)
        (clm%forc_solad(1) + clm%forc_solad(2) + clm%forc_solai(1) + clm%forc_solai(2))
 
   !if (abs(clm%errsol) > .10 ) then
-  write(166,100)'solar radiation balance error',nstep,clm%kpatch,clm%errsol
+  !write(166,100)'solar radiation balance error',nstep,clm%kpatch,clm%errsol
   call endrun
   !endif
 
@@ -86,7 +86,7 @@ subroutine clm_balchk (clm, nstep)
   clm%errlon = clm%eflx_lwrad_out - clm%eflx_lwrad_net - clm%forc_lwrad
 
   !if (abs(clm%errlon) > .10 ) then
-  write(166,100)' longwave enery balance error',nstep,clm%kpatch,clm%errlon
+  !write(166,100)' longwave enery balance error',nstep,clm%kpatch,clm%errlon
   call endrun
   !endif
 
@@ -101,10 +101,10 @@ subroutine clm_balchk (clm, nstep)
        - clm%eflx_soil_grnd 
 
   !if (abs(clm%errseb) > .10 ) then
-  write(166,100)' surface flux energy balance error',nstep,clm%kpatch,clm%errseb
-  write(166,300)clm%sabv + clm%sabg,clm%forc_lwrad - clm%eflx_lwrad_out, &
-       clm%eflx_sh_tot, clm%eflx_lh_tot, clm%eflx_soil_grnd, &
-       clm%eflx_impsoil
+  !write(166,100)' surface flux energy balance error',nstep,clm%kpatch,clm%errseb
+  !write(166,300)clm%sabv + clm%sabg,clm%forc_lwrad - clm%eflx_lwrad_out, &
+  !     clm%eflx_sh_tot, clm%eflx_lh_tot, clm%eflx_soil_grnd, &
+  !     clm%eflx_impsoil
   if (abs(clm%errseb) > 10.) call endrun
   !endif
 

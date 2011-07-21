@@ -137,7 +137,7 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
 
   ! SGS according to standard "f" must have fw.d format, changed f -> f20.8, i -> i5 and e -> e10.2
   ! write(199,'(1i5,1x,f20.8,1x,5e13.5)') clm(1)%istep,drv%time,error,tot_infl_mm,tot_tran_veg_mm,drv%begwatb,drv%endwatb
-  write(199,'(1i5,1x,f20.8,1x,5e13.5)') istep_pf,drv%time,error,tot_infl_mm,tot_tran_veg_mm,drv%begwatb,drv%endwatb
+  !write(199,'(1i5,1x,f20.8,1x,5e13.5)') istep_pf,drv%time,error,tot_infl_mm,tot_tran_veg_mm,drv%begwatb,drv%endwatb
   drv%begwatb =drv%endwatb
   !print *,""
   !print *,"Error (%):",error

@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine drv_readvegtf (drv,grid,tile,clm,rank)
+subroutine drv_readvegtf (drv,grid,tile,clm,nx, ny, ix, iy,gnx, gny, rank)
 
   !=========================================================================
   !
@@ -43,7 +43,7 @@ subroutine drv_readvegtf (drv,grid,tile,clm,rank)
   integer  :: nchp          !Number of tiles use for array size
   real(r8) :: sand          !temporary value of input sand
   real(r8) :: clay          !temporary value of input clay
-
+  integer  :: ix,iy,nx,ny, gnx, gny   !global and local grid indicies from ParFlow
   integer  :: rank
   character*100 :: RI
 
@@ -53,33 +53,47 @@ subroutine drv_readvegtf (drv,grid,tile,clm,rank)
   write(RI,*)rank
 
   !=== Read in Vegetation Data
-  open(2,file=trim(adjustl(drv%vegtf))//'.'//trim(adjustl(RI)),form='formatted',action='read')
+  !open(2,file=trim(adjustl(drv%vegtf))//'.'//trim(adjustl(RI)),form='formatted',action='read')
+  open(2,file=trim(adjustl(drv%vegtf)),form='formatted',action='read')
 
   read(2,*)  !skip header
   read(2,*)  !skip header
+  print*, 
+ ! do r=1,drv%nr     !rows
+  !   do c=1,drv%nc  !columns
+   do r =1, gny  ! @RMM replaced local row/column with global grid
+     do c = 1, gnx
+! check to see if we are withing subgrid region for file
+     if (((c > ix).and.(c <= (ix+nx))).and.((r > iy).and.(r <= (iy+ny)))) then
+            ! write(999,*) ' read:', c, r, ix, iy, ix+ny, iy+ny
+            ! flush(999)
 
-  do r=1,drv%nr     !rows
-     do c=1,drv%nc  !columns
         read(2,*) i,j,          &
-             grid(c,r)%latdeg,  &
-             grid(c,r)%londeg,  &
+             grid(c-ix,r-iy)%latdeg,  &
+             grid(c-ix,r-iy)%londeg,  &
              sand,              &
              clay,              &
-             grid(c,r)%isoicol, &
-             (grid(c,r)%fgrd(t),t=1,drv%nt)
+             grid(c-ix,r-iy)%isoicol, &
+             (grid(c-ix,r-iy)%fgrd(t),t=1,drv%nt)
 
-        grid(c,r)%sand(:) = sand
-        grid(c,r)%clay(:) = clay
+        grid(c-ix,r-iy)%sand(:) = sand
+        grid(c-ix,r-iy)%clay(:) = clay
 
         rsum=0.0
         do t=1,drv%nt
-           rsum=rsum+grid(c,r)%fgrd(t)
+           rsum=rsum+grid(c-ix,r-iy)%fgrd(t)
         enddo
         if (rsum >= drv%mina) then
-           grid(c,r)%mask=1
+           grid(c-ix,r-iy)%mask=1
         else
-           grid(c,r)%mask=0
+           grid(c-ix,r-iy)%mask=0
         endif
+        
+        else
+        !write(999,*) ' skip:', c, r, ix, iy, ix+ny, iy+ny
+        !flush(999)
+        read(2,*)
+        end if
 
      enddo       !C 
   enddo          !R 

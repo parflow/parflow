@@ -73,7 +73,8 @@ subroutine drv_readclmin(drv,grid,rank)
 
    !=== Step (1): Open and read domain info into drv_module from clm_in input file
 
-   open(10, file='drv_clmin.dat.'//trim(adjustl(RI)), form='formatted', status = 'old',action='read')
+  ! open(10, file='drv_clmin.dat.'//trim(adjustl(RI)), form='formatted', status = 'old',action='read')
+  open(10, file='drv_clmin.dat', form='formatted', status = 'old',action='read')
    ioval=0
    do while(IOVAL == 0)
       vname='!'
@@ -125,7 +126,9 @@ subroutine drv_readclmin(drv,grid,rank)
 
 
    !=== Open and read 1D  CLM input file
-   open(10, file='drv_clmin.dat.'//trim(adjustl(RI)), form='formatted', status = 'old',action='read')
+!   open(10, file='drv_clmin.dat.'//trim(adjustl(RI)), form='formatted', status = 'old',action='read')
+   open(10, file='drv_clmin.dat', form='formatted', status = 'old',action='read')
+
    ioval=0
    do while (ioval == 0)
       vname='!'

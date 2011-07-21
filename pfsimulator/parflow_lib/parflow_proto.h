@@ -1211,6 +1211,17 @@ void     WriteSilo(char    *file_prefix,
 		   char *variable_name);
 void     WriteSiloInit(char    *file_prefix);
 
+/* write_parflow_silo_PMPIO.c */
+void     WriteSiloPMPIO(char    *file_prefix, 
+                   char    *file_type, 
+                   char    *file_suffix, 
+                   Vector  *v, 
+                   double time, 
+                   int step, 
+                   char *variable_name);
+void     WriteSiloPMPIOInit(char    *file_prefix);
+
+
 /* wrf_parflow.c */
 void wrfparflowinit_ ();
 void wrfparflowadvance_(double *current_time, 

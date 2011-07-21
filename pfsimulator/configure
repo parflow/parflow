@@ -785,6 +785,7 @@ with_silo
 with_sundials
 with_hypre
 with_samrai
+with_amps_sequential_io
 '
       ac_precious_vars='build_alias
 host_alias
@@ -12651,14 +12652,20 @@ _ACEOF
 
 
 
+
+# Check whether --with-amps-with-sequential-io was given.
+if test "$with_amps_sequential_io" = yes; then
+$as_echo "Configuring ParFlow with AMPS Single File IO"
+else
 # Check whether --with-amps was given.
 if test "${with_amps+set}" = set; then
   withval=$with_amps; cat >>confdefs.h <<\_ACEOF
 #define AMPS_SPLIT_FILE 1
 _ACEOF
+fi
+$as_echo "Configuring ParFlow with AMPS Distributed File IO"
 
 fi
-
 
 # END CASC_SUPPORT_AMPS
 

@@ -286,7 +286,7 @@ pfset Solver.CLM.MetFilePath                             ./
 
 pfset Solver.WriteSiloEvapTrans                          True
 pfset Solver.WriteSiloOverlandBCFlux                     True
-
+pfset Solver.PrintCLM  True
 
 # Initial conditions: water pressure
 #---------------------------------------------------------
