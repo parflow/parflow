@@ -59,12 +59,12 @@ amps_ThreadLocalDcl(int , num_silo_files);
 {
     int driver = *((int*) userData);
     DBfile *db_file = DBCreate(fname, DB_CLOBBER, DB_LOCAL, "pmpio", driver);
- /*   if (db_file)
-    {
+//printf("nsname %s \n",nsname);
+/*     if (nsname == "") {} else{
         DBMkDir(db_file, nsname);
         DBSetDir(db_file, nsname);
-    } */
-    return (void *) db_file;
+    } 
+    return (void *) db_file; */
 } 
 
 /*-----------------------------------------------------------------------------
@@ -78,12 +78,12 @@ amps_ThreadLocalDcl(int , num_silo_files);
 {
     DBfile *db_file  = DBOpen(fname, DB_UNKNOWN,
                               ioMode == PMPIO_WRITE ? DB_APPEND : DB_READ);
-/*    if (db_file)
-    {
+/*   if (nsname == "reed") 
+   {} else {
         if (ioMode == PMPIO_WRITE)
             DBMkDir(db_file, nsname);
         DBSetDir(db_file, nsname);
-    } */ 
+    }  */
     return (void *) db_file;
 } 
 
@@ -173,11 +173,14 @@ void     WriteSiloPMPIOInit(char    *file_prefix)
     /* if ( num_silo_files > 1 ) { */    
     if ( p == 0 )
     {
+        /* @RMM we only have a subdir for data for nfiles >1 */
+       // if (num_silo_files > 1) {
         sprintf(filename, "%s", file_prefix);
         pf_mk_dir(filename);
         /*
          @RMM-- no subdir structure for PMPIO
          */ 
+        //}
     }
         
     
@@ -217,14 +220,14 @@ void     WriteSiloPMPIO(char    *file_prefix,
     double         mult, z_coord;  //@RMM dz scale info
     
     int            err;
-    int origin_dims[1];
+    int origin_dims2[1];
     
     char varname[512];
     char meshname[512];
     
     float *coords[3];
     int dims[3];
-           int origin[3];
+    int origin2[3];
 
 
 #ifdef HAVE_SILO
@@ -249,14 +252,26 @@ void     WriteSiloPMPIO(char    *file_prefix,
     
     bat = PMPIO_Init(numGroups, PMPIO_WRITE, MPI_COMM_WORLD, 1,
                      CreateSiloFile, OpenSiloFile, CloseSiloFile, &driver);
-     if(strlen(file_suffix)) {
+//    if (numGroups > 1) { 
+    if(strlen(file_suffix)) {
       sprintf(filename2, "%s/%s.data.%03u.%s.%s", file_prefix, file_type, PMPIO_GroupRank(bat, p), file_suffix, file_extn);
      } else {
       sprintf(filename2, "%s/%s.data.%03u.%s", file_prefix, file_type, PMPIO_GroupRank(bat, p), file_extn);
      }
+   /* } else {
+        if(strlen(file_suffix)) {
+            sprintf(filename2, "%s.pmpio.%s.%s.%s", file_prefix, file_type, file_suffix, file_extn);
+        } else {
+            sprintf(filename2, "%s.pmpio.%s.%s", file_prefix, file_type, file_extn);
+        }                
+    } */
 
-    sprintf(nsName, "domain_%06u",p);  /* note, even though I set this for the open routine we don't use domain structure, all done
-                                        in the mesh */
+  //  if (numGroups == 1) {
+    sprintf(nsName, "domain_%06u",p);  /* note, even though I set this for the open routine we don't use domain structure for mulitple files, all done
+                                        in the mesh.  For a single file (this case) we do use domains */
+//    } else {
+//        nsName == "";
+//    }
     
     /* Wait for write access to the file. All processors call this.
      * Some processors (the first in each group) return immediately
@@ -287,13 +302,14 @@ void     WriteSiloPMPIO(char    *file_prefix,
        
        /* Write the origin information */
 
-       origin_dims[0] = 3;
+       origin_dims2[0] = 3;
        
-
-       origin[0] = ix;
-       origin[1] = iy;
-       origin[2] = iz;
-       err = DBWrite(db_file, "index_origin", origin, origin_dims, 1, DB_INT);
+           
+       origin2[0] = ix;
+       origin2[1] = iy;
+       origin2[2] = iz;
+       
+       err = DBWrite(db_file, "index_origin", origin2, origin_dims2, 1, DB_INT);
        if(err < 0) {
            amps_Printf("Error: Silo failed on DBWrite\n");
        } 
@@ -325,8 +341,11 @@ void     WriteSiloPMPIO(char    *file_prefix,
            coords[2][k] =    SubgridZ(subgrid) + SubgridDZ(subgrid) * ((float)k - 0.5);
        }  
        
+//       if (numGroups > 1) {
        sprintf(meshname,"%s_%06u","mesh",  p);
-
+//       } else {
+//           sprintf(meshname,"%s","mesh");
+//       }
        err = DBPutQuadmesh(db_file, meshname, NULL, coords, dims,
                            3, DB_FLOAT, DB_COLLINEAR, NULL);
        if ( err < 0 ) {      
@@ -356,7 +375,12 @@ void     WriteSiloPMPIO(char    *file_prefix,
        dims[1] = ny;
        dims[2] = nz;
        
+//       if (numGroups > 1 ) {
        sprintf(varname, "%s_%06u", variable_name,p);
+ //      } else {
+//           sprintf(varname, "%s", variable_name);
+
+//       }
       // sprintf(varname, "press_%05d",  p);
 
        err = DBPutQuadvar1(db_file, varname, meshname, 
@@ -365,15 +389,7 @@ void     WriteSiloPMPIO(char    *file_prefix,
                            DB_ZONECENT, NULL);
        
        free(array);
-
    
-       
-    
-       /* Hand off the baton to the next processor. This winds up closing
-        * the file so that the next processor that opens it can be assured
-        * of getting a consistent and up to date view of the file's contents. */
-       PMPIO_HandOffBaton(bat,db_file);
-       
        /* If this is the 'root' processor, also write the main Silo header file */
        if ( p == 0 )
        {
@@ -397,22 +413,32 @@ void     WriteSiloPMPIO(char    *file_prefix,
                
                int groupRank = PMPIO_GroupRank(bat, i);
                char *name = ctalloc(char, 2048);
+            //   if (numGroups > 1) {
                    if(strlen(file_suffix)) { 
+                       /* data file in subdir*/
                sprintf(name, "%s/%s.data.%03u.%s.%s:mesh_%06u", file_prefix,file_type, groupRank, file_suffix, file_extn,i);
                    } else {
                sprintf(name, "%s/%s.data.%03u.%s:mesh_%06u", file_prefix,file_type, groupRank, file_extn,i);        
                    }
+               // *} else {
+                   /* this file */ 
+                 //      sprintf(name, "/domain_%06u/mesh", i);
+                 //    } 
             
                
                meshnames[i] = name;
                meshtypes[i] = DB_QUADMESH;
                name = ctalloc(char, 2048);
-               
+          //     if (numGroups > 1) {              
             if(strlen(file_suffix)) {                
                sprintf(name, "%s/%s.data.%03u.%s.%s:%s_%06u", file_prefix, file_type, groupRank, file_suffix, file_extn,variable_name ,i);
             } else {
                sprintf(name, "%s/%s.data.%03u.%s:%s_%06u", file_prefix, file_type, groupRank,  file_extn,variable_name ,i);              
             }
+//               } else {
+//
+//                       sprintf(name, "/domain_%06u/%s", i, variable_name);
+//               }
                varnames[i] = name;
                vartypes[i] = DB_QUADVAR;
            }
@@ -426,12 +452,18 @@ void     WriteSiloPMPIO(char    *file_prefix,
            
            /* TODO SGS what type? HDF PDB? */
            //  s_parflow_silo_filetype = DB_PDB;
-           db_header_file = DBCreate(filename, DB_CLOBBER, DB_LOCAL, "pmpio", driver);
            
-           if (db_header_file == NULL) {
+//                 if (numGroups > 1) {          
+                     db_header_file = DBCreate(filename, DB_CLOBBER, DB_LOCAL, "pmpio", driver);
+                     if (db_header_file == NULL) {
                amps_Printf("Error: can't open silo file %s\n", filename);
                exit(1);
            }
+//                 } else {
+//                     db_header_file = db_file;
+                     /* Go to root directory in the silo file */
+//                     DBSetDir(db_file, "/");
+//                 }
            
            
            /* Multimesh information; pmpio */
@@ -495,7 +527,9 @@ void     WriteSiloPMPIO(char    *file_prefix,
                amps_Printf("Error: Silo failed on DBWrite\n");
            }
            
+//        if (numGroups > 1) {   
            err = DBClose(db_header_file);
+//                            }
            if ( err < 0 ) {      
                amps_Printf("Error: can't close silo file %s\n", filename);
            }
@@ -512,6 +546,11 @@ void     WriteSiloPMPIO(char    *file_prefix,
            free(varnames);
            free(vartypes); 
        } 
+
+       /* Hand off the baton to the next processor. This winds up closing
+        * the file so that the next processor that opens it can be assured
+        * of getting a consistent and up to date view of the file's contents. */
+       PMPIO_HandOffBaton(bat,db_file);
        
        /* We're done using PMPIO, so finish it off */
        PMPIO_Finish(bat);

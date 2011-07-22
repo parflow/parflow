@@ -51,6 +51,8 @@
 #include <ctype.h>
 #include <unistd.h>
 
+#define round(x) ((x)>=0?(double)((x)+0.5):(double)((x)-0.5))
+
 /*-----------------------------------------------------------------------
  * read a SILO file
  *-----------------------------------------------------------------------*/
@@ -74,11 +76,12 @@ Databox         *ReadSilo(char *filename, double default_value)
    int             err = -1;
 
    DBfile         *db;
-
+    double         epsi = 1.0E-16;
    char *current_path = NULL;
    char *path = NULL;
    char *slash = strchr(filename, '/');
-
+    float *localcoords[3];
+    
    if(slash) {
       path = (char *)malloc(MAXPATHLEN);
       strncpy(path, filename, slash - filename);
@@ -147,7 +150,7 @@ Databox         *ReadSilo(char *filename, double default_value)
    char **multivar_names = toc -> multivar_names;
    int    nmultivar      = toc -> nmultivar;
 
-   /* Check to see if file has a multivar in it to determine file format being used */
+    /* Check to see if file has a multivar in it to determine file format being used */
    if(nmultivar == 0) 
    {
       DBquadvar  *var = DBGetQuadvar(db, "variable");
@@ -184,6 +187,9 @@ Databox         *ReadSilo(char *filename, double default_value)
 	 proc_filename = strtok(varnames[m], seperator);
 	 char *proc_varname;
 	 proc_varname = strtok(NULL, seperator);
+        /*  printf("multivar nvar:  %d  \n", nvars);
+          printf("multivar proc_varname:  %s  \n", proc_varname);
+          printf("multivar proc_filename:  %s  \n", proc_filename); */
 
 	 if(proc_filename == NULL)
 	 {
@@ -213,20 +219,70 @@ Databox         *ReadSilo(char *filename, double default_value)
 	    return NULL;
 	 }
 
-	 nx = var -> dims[0];
-	 ny = var -> dims[1];
-	 nz = var -> dims[2];
+          /* now we need to get the mesh, for PMPIO compat */
+               //  printf("associated mesh: %s \n", var -> meshname);
+      DBquadmesh  *mesh = DBGetQuadmesh(proc_db, var -> meshname);
+          if(mesh == NULL) 
+          {
+              printf("Error: Silo failed to get quadmesh %s \n", varnames[m]);
+              return NULL;
+          }        
+          
+         // printf("mesh ndims: %d \n", mesh -> ndims);
+         
+
+          nx = var -> dims[0];
+	      ny = var -> dims[1];
+	      nz = var -> dims[2];
+       //   printf("nx ny nz : %d %d %d \n", nx, ny, nz);
+      //    nx = mesh -> dims[0];
+      //    ny = mesh -> dims[1];
+       //   nz = mesh -> dims[2];
+       //   printf("nx ny nz : %d %d %d \n", nx, ny, nz);
+          localcoords[0] = (float **)malloc(nx);
+          localcoords[1] = (float **)malloc(ny);
+          localcoords[2] = (float **)malloc(nz);
+          localcoords[0] = mesh -> coords[0];
+          localcoords[1] = mesh -> coords[1];
+          localcoords[2] = mesh -> coords[2];
+     /*     printf("associated mesh: %s \n", var -> meshname);
+          printf("local X Y Z: %f %f %f \n", localcoords[0][0], localcoords[1][0], localcoords[2][0]);
+          printf("global origin: X Y Z %f %f %f \n", X, Y, Z);
+          printf("global delta: DX DY DZ %f %f %f \n", DX, DY, DZ);
+          float temp= (localcoords[0][0] - (X - DX / 2.0))/ DX;
+          printf("temp X : %f \n", temp);
+          temp= (localcoords[1][0] - (Y - DY / 2.0)) / DY;
+          printf("temp Y : %f \n", temp);
+          temp= (localcoords[2][0] - (Z - DZ / 2.0)) / DZ;
+          printf("temp Z : %f \n", temp); */
 
 	 int index_origin[3];
-	 err = DBReadVar(proc_db, "index_origin", &index_origin);
+     err = DBReadVar(proc_db, "index_origin", &index_origin);
 	 if(err < 0) {
 	    printf("Failed to read meta data\n");
 	    return NULL;
-	 } 
-	 x = index_origin[0];
+	 }  
+
+     /* becuase of multi or single file compatibility we need to 
+      * grab the actual mesh from that variable.  Then we need to
+      * determine the origin from the mesh[0][0], [1][0] and [2][0]
+      * divided by DX, DY and DZ since there are multiple origins 
+      * in a single file and this is now ambiguous. */
+      
+     x = index_origin[0];
 	 y = index_origin[1];
 	 z = index_origin[2];
+       //   printf("orig x y z : %d %d %d \n", x, y, z);
 
+          x = round( (localcoords[0][0] - (X - DX / 2.0))  / DX);
+          y = round( (localcoords[1][0] - (Y - DY / 2.0))  / DY);
+          z = round( (localcoords[2][0] - (Z - DZ / 2.0))  / DZ);
+/*          printf("X Y Z, DX DY DZ: %f %f %f %f %f %f \n", X, Y, Z, DX, DY, DZ);
+          printf("local X Y Z: %f %f %f %f %f %f \n", localcoords[0][0], localcoords[1][0], localcoords[2][0]);
+          printf("local IX IY IZ %f %f %f \n", \
+                 (localcoords[0][0] - (X-DX/2.0))  / DX,(localcoords[1][0] - (Y-DY/2.0))  / DY, (localcoords[2][0] - (Z-DZ/2.0))  / DZ );
+          printf("x y z : %d %d %d \n", x, y, z);
+          printf("nx ny nz : %d %d %d \n", nx, ny, nz);  */
 	 int index = 0;
 	 double *vals =  (double *)var -> vals[0];
 	 for (k = 0; k < nz; k++) {
@@ -234,13 +290,13 @@ Databox         *ReadSilo(char *filename, double default_value)
 	       for (i = 0; i < nx; i++) {
 		  ptr = DataboxCoeff(v, x + i, y + j, z + k);
 		  *ptr = vals[index];
-		  index++;
+               index++;
 	       }
 	    }
 	 }
 
 	 DBFreeQuadvar(var);
-
+     
 	 DBClose(proc_db);
       }
 
@@ -250,6 +306,7 @@ Databox         *ReadSilo(char *filename, double default_value)
 
    DBClose(db);
 
+    
 
    if(path) { 	
       free(path);
@@ -261,7 +318,10 @@ Databox         *ReadSilo(char *filename, double default_value)
    }
 
    free(filename);
-
+ /*   free(localcoords[0]);
+    free(localcoords[1]);
+    free(localcoords[2]); */
+    
    return v;
 #else
 

@@ -339,7 +339,7 @@ pfset Solver.WriteSiloPressure True
 pfset Solver.WriteSiloSaturation True
 pfset Solver.WriteSiloConcentration True
 pfset Solver.WriteSiloPMPIOPressure True
-pfset SILO.pmpio.NumFiles  2
+pfset SILO.pmpio.NumFiles  1
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
@@ -358,9 +358,9 @@ set passed 1
 #
 # Check if silopmpio output matches pfb output
 #
+set pfb  [pfload -silo default_richards.out.press.00001.silo]
 set silo [pfload -silo default_richards.out.pmpio.press.00001.silo]
-set pfb  [pfload -pfb default_richards.out.press.00001.pfb]
-set diff [pfmdiff $silo $pfb 12]
+set diff [pfmdiff $silo $pfb 10]
 if {[string length $diff] != 0 } {
     puts "FAILED : Silo output does not match siloPMPIO output"
     puts $diff
@@ -369,7 +369,7 @@ if {[string length $diff] != 0 } {
 
 set silo [pfload default_richards.out.pmpio.porosity.silo]
 set pfb  [pfload default_richards.out.porosity.pfb]
-set diff [pfmdiff $silo $pfb 12]
+set diff [pfmdiff $silo $pfb 10]
 if {[string length $diff] != 0 } {
     puts "FAILED : SiloPMPIO output does not match PFB output"
     puts $diff
@@ -378,12 +378,22 @@ if {[string length $diff] != 0 } {
 
 pfsave $silo -silo "single_block.silo"
 set silo_single_block [pfload "single_block.silo"]
-set diff [pfmdiff $silo $silo_single_block 12]
+set diff [pfmdiff $silo $silo_single_block 10]
 if {[string length $diff] != 0 } {
     puts "FAILED : Silo MP format does not match Silo single block format"
     puts $diff
     set passed 0
 } 
+
+#set silo [pfload -silo default_richards.out.pmpio.press.00001.silo]
+pfsave $silo -sa "single_block.sa"
+set diff [pfmdiff $silo_single_block $pfb 8]
+if {[string length $diff] != 0 } {
+    puts "FAILED : Silo Single Block format does not match PFB format"
+    puts $diff
+    set passed 0
+} 
+
 
 if $passed {
     puts "default_richards_with_siloPMPIO : PASSED"
