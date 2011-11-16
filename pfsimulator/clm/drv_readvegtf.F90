@@ -59,50 +59,42 @@ subroutine drv_readvegtf (drv,grid,tile,clm,nx, ny, ix, iy,gnx, gny, rank)
   read(2,*)  !skip header
   read(2,*)  !skip header
   print*, 
- ! do r=1,drv%nr     !rows
-  !   do c=1,drv%nc  !columns
-   do r =1, gny  ! @RMM replaced local row/column with global grid
-     do c = 1, gnx
-! check to see if we are withing subgrid region for file
-     if (((c > ix).and.(c <= (ix+nx))).and.((r > iy).and.(r <= (iy+ny)))) then
-            ! write(999,*) ' read:', c, r, ix, iy, ix+ny, iy+ny
-            ! flush(999)
+  ! do r=1,drv%nr     !rows
+   ! do c=1,drv%nc  !columns
+  do r =1, gny  ! @RMM replaced local row/column with global grid
+   do c = 1, gnx
+    if (((c > ix).and.(c <= (ix+nx))).and.((r > iy).and.(r <= (iy+ny)))) then
+       read(2,*) i,j,          &
+                 grid(c-ix,r-iy)%latdeg,  &
+                 grid(c-ix,r-iy)%londeg,  &
+                 sand,              &
+                 clay,              &
+                 grid(c-ix,r-iy)%isoicol, &
+                 (grid(c-ix,r-iy)%fgrd(t),t=1,drv%nt)
+       grid(c-ix,r-iy)%sand(:) = sand
+       grid(c-ix,r-iy)%clay(:) = clay
 
-        read(2,*) i,j,          &
-             grid(c-ix,r-iy)%latdeg,  &
-             grid(c-ix,r-iy)%londeg,  &
-             sand,              &
-             clay,              &
-             grid(c-ix,r-iy)%isoicol, &
-             (grid(c-ix,r-iy)%fgrd(t),t=1,drv%nt)
-
-        grid(c-ix,r-iy)%sand(:) = sand
-        grid(c-ix,r-iy)%clay(:) = clay
-
-        rsum=0.0
-        do t=1,drv%nt
-           rsum=rsum+grid(c-ix,r-iy)%fgrd(t)
-        enddo
-        if (rsum >= drv%mina) then
-           grid(c-ix,r-iy)%mask=1
-        else
-           grid(c-ix,r-iy)%mask=0
-        endif
+       rsum=0.0
+       do t=1,drv%nt
+          rsum=rsum+grid(c-ix,r-iy)%fgrd(t)
+       enddo
+       if (rsum >= drv%mina) then
+          grid(c-ix,r-iy)%mask=1
+       else
+          grid(c-ix,r-iy)%mask=0
+       endif
         
-        else
-        !write(999,*) ' skip:', c, r, ix, iy, ix+ny, iy+ny
-        !flush(999)
-        read(2,*)
-        end if
+    else
+       read(2,*)
+    end if
 
-     enddo       !C 
-  enddo          !R 
+   enddo ! C 
+  enddo ! R 
 
   !=== Exclude tiles with MINA (minimum tile grid area),  
   !=== normalize remaining tiles to 100%
-
   do r=1,drv%nr  !rows
-     do c=1,drv%nc  !columns         
+   do c=1,drv%nc  !columns         
 
         rsum=0.0
         do t=1,drv%nt
@@ -204,9 +196,9 @@ subroutine drv_readvegtf (drv,grid,tile,clm,nx, ny, ix, iy,gnx, gny, rank)
      enddo
   enddo
 
-  write(*,*) 'Size of Tile-Space Dimension:',nchp
-  write(*,*) 'Actual Number of Tiles:',drv%nch,drv%nt
-  write(*,*)
+  ! write(*,*) 'Size of Tile-Space Dimension:',nchp
+  ! write(*,*) 'Actual Number of Tiles:',drv%nch,drv%nt
+  ! write(*,*)
   close(2)
   return
 

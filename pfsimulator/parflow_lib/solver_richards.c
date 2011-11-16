@@ -1386,6 +1386,7 @@ void AdvanceRichards(PFModule *this_module,
 	       case 1:
 	       {
 
+                  amps_Printf( "Calling CLM...\n" ); 
 		  clm_file_dir_length=strlen(public_xtra -> clm_file_dir);
 		  CALL_CLM_LSM(pp,sp,et,ms,po_dat,dz_dat,istep,cdt,t,start_time, 
 			       dx,dy,dz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,nz_rz,ip,p,q,r,gnx, gny,rank,
@@ -1411,6 +1412,7 @@ void AdvanceRichards(PFModule *this_module,
                                public_xtra -> clm_irr_threshold,
                                qirr, qirr_inst, iflag, 
                                public_xtra -> clm_irr_thresholdtype);
+                  amps_Printf( "...back in SolverRichards\n" );
 
 		  break;		  
 	       }

@@ -1,7 +1,7 @@
 !#include <misc.h>
 
 subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,pf_dz_mult,istep_pf,dt,time,           &
-start_time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,nz_rz,ip,npp,npq,npr,gnx, gny,rank,sw_pf,lw_pf,   &
+start_time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,nz_rz,ip,npp,npq,npr,gnx,gny,rank,sw_pf,lw_pf,    &
 prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf,eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,             &
 qflx_tot_pf,qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf,               &
 t_soi_pf,clm_dump_interval,clm_1d_out,clm_output_dir,clm_output_dir_length,clm_bin_output_dir,         &
@@ -28,10 +28,10 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
 
   implicit none
 
-  type (drvdec)           :: drv
+  type (drvdec)          :: drv
   type (tiledec),pointer :: tile(:)
   type (griddec),pointer :: grid(:,:)
-  type (clm1d),pointer :: clm(:)
+  type (clm1d),pointer   :: clm(:)
 
   ! IMF...
   ! This added call to set-up parameters...
@@ -140,8 +140,9 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
 
   !=== Open CLM text output
   write(RI,*)  rank
-  !open(999, file="clm_output.txt."//trim(adjustl(RI)), action="write")
-  !write(999,*) "clm.F90: rank =", rank, "   istep =", istep_pf
+
+  open(999, file="clm_output.txt."//trim(adjustl(RI)), action="write")
+  write(999,*) "clm.F90: rank =", rank, "   istep =", istep_pf
 
   !=== Specify grid size using values passed from PF
   drv%dx = pdx
@@ -154,12 +155,10 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
   j_incr = nx_f
   k_incr = nx_f*ny_f
  
- 
   !=== Check if initialization is necessary
   if (time == start_time) then 
      
-     !write(999,*) "INITIALIZATION"
-     
+     write(999,*) "INITIALIZATION"
 
      !=== Allocate Memory for Grid Module
      allocate( counter(nx,ny) )
@@ -170,7 +169,6 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
            allocate (grid(c,r)%pveg(drv%nt))
         enddo                                   ! columns
      enddo                                      ! rows
-
 
      !=== Read in the clm input (drv_clmin.dat)
      call drv_readclmin (drv,grid,rank)  
@@ -227,41 +225,39 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
 
 
      !=== Initialize clm derived type components
-     !write(999,*) "Call clm_typini"
+     write(999,*) "Call clm_typini"
      call clm_typini(drv%nch,clm,istep_pf)
      
-     !write(999,*) "DIMENSIONS:"
-     !write(999,*) 'local NX:',nx,' NX with ghost:',nx_f,' IX:', ix
-     !write(999,*) 'local NY:',ny,' NY with ghost:',ny_f,' IY:',iy
-     !write(999,*) ' ParFlow NZ:',nz, 'NZ with ghost:',nz_f
-     !write(999,*) ' globla NX:',gnx, ' global NY:', gny
-     !write(999,*) 'DRV-NC:',drv%nc,' DRV-NR:',drv%nr, 'DRV-NCH:',drv%nch
-     !write(999,*) ' Processor Number:',rank, ' local vector start:',ip
+     write(999,*) "DIMENSIONS:"
+     write(999,*) 'local NX:',nx,' NX with ghost:',nx_f,' IX:', ix
+     write(999,*) 'local NY:',ny,' NY with ghost:',ny_f,' IY:',iy
+     write(999,*) 'PF    NZ:',nz, 'NZ with ghost:',nz_f
+     write(999,*) 'globla  NX:',gnx, ' global NY:', gny
+     write(999,*) 'DRV-NC:',drv%nc,' DRV-NR:',drv%nr, 'DRV-NCH:',drv%nch
+     write(999,*) ' Processor Number:',rank, ' local vector start:',ip
 
      !=== Read in vegetation data and set tile information accordingly
-     !write(999,*) "Read in vegetation data and set tile information accordingly"
-     call drv_readvegtf (drv, grid, tile, clm,nx, ny, ix, iy, gnx, gny, rank)
+     write(999,*) "Read in vegetation data and set tile information accordingly"
+     call drv_readvegtf (drv, grid, tile, clm, nx, ny, ix, iy, gnx, gny, rank)
 
 
      !=== Transfer grid variables to tile space 
-     !write(999,*) "Transfer grid variables to tile space ", drv%nch
+     write(999,*) "Transfer grid variables to tile space ", drv%nch
      do t = 1, drv%nch
         call drv_g2clm (drv%udef, drv, grid, tile(t), clm(t))   
      enddo
 
-
      !=== Read vegetation parameter data file for IGBP classification
-     !write(999,*) "Read vegetation parameter data file for IGBP classification"
+     write(999,*) "Read vegetation parameter data file for IGBP classification"
      call drv_readvegpf (drv, grid, tile, clm)  
 
 
      !=== Initialize CLM and DIAG variables
-     !write(999,*) "Initialize CLM and DIAG variables"
+     write(999,*) "Initialize CLM and DIAG variables"
      do t=1,drv%nch 
         clm%kpatch = t
         call drv_clmini (drv, grid, tile(t), clm(t), istep_pf) !Initialize CLM Variables
      enddo
-
 
      !=== Initialize the CLM topography mask 
      !    This is two components: 
@@ -270,7 +266,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
      !      (1)= top of LS/PF domain 
      !      (2)= top-nlevsoi and 
      !      (3)= the bottom of the LS/PF domain.
-     !write(999,*) "Initialize the CLM topography mask"
+     write(999,*) "Initialize the CLM topography mask"
 
      do t=1,drv%nch
 
@@ -297,6 +293,15 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
 
      enddo ! t
 
+     !=== IMF:
+     !    Check planar mask...
+     ! open(161,file='planar_mask.txt', action='write')
+     ! do t=1,drv%nch
+     !    i=tile(t)%col
+     !    j=tile(t)%row
+     !    write(161,*) t, i, j, clm(t)%planar_mask
+     ! enddo ! t
+     ! close(161)
      
      !=== IMF:
      !    Set up variable DZ over root column
@@ -308,42 +313,47 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
         i = tile(t)%col
         j = tile(t)%row
 
-        ! reset node depths (clm%z) based on variable dz multiplier
-        do k = 1, nlevsoi
-           l                 = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
-           if (k==1) then
-              clm(t)%z(k)    = 0.5 * drv%dz * pf_dz_mult(l)
-           else
-              total          = 0.0
-              do k1 = 1, k-1
-                 l1          = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k1-1))
-                 total       = total + (drv%dz * pf_dz_mult(l1))
-              enddo
-              clm%z(k)       = total + (0.5 * drv%dz * pf_dz_mult(l))
-           endif
-        enddo
+        ! check if cell is active
+        if (clm(t)%planar_mask == 1) then
 
-        ! set dz values (node thickness)
-        ! (computed from node depths as in original CLM -- not always equal to PF dz values!)
-        clm(t)%dz(1)            = 0.5*(clm(t)%z(1)+clm(t)%z(2))         !thickness b/n two interfaces
-        do k = 2,nlevsoi-1
-           clm(t)%dz(k)         = 0.5*(clm(t)%z(k+1)-clm(t)%z(k-1))
-        enddo
-        clm(t)%dz(nlevsoi)      = clm(t)%z(nlevsoi)-clm(t)%z(nlevsoi-1)
+           ! reset node depths (clm%z) based on variable dz multiplier
+           do k = 1, nlevsoi
+              l                 = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
+              if (k==1) then
+                 clm(t)%z(k)    = 0.5 * drv%dz * pf_dz_mult(l)
+              else
+                 total          = 0.0
+                 do k1 = 1, k-1
+                    l1          = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k1-1))
+                    total       = total + (drv%dz * pf_dz_mult(l1))
+                 enddo
+                 clm%z(k)       = total + (0.5 * drv%dz * pf_dz_mult(l))
+              endif
+           enddo
 
-        ! set zi values (interface depths)
-        ! (computed from node depths as in original CLM -- not always equal to PF interfaces!)
-        clm(t)%zi(0)            = 0.                             !interface depths
-        do k = 1, nlevsoi-1
-           clm(t)%zi(k)         = 0.5*(clm(t)%z(k)+clm(t)%z(k+1))
-        enddo
-        clm(t)%zi(nlevsoi)      = clm(t)%z(nlevsoi) + 0.5*clm(t)%dz(nlevsoi)
+           ! set dz values (node thickness)
+           ! (computed from node depths as in original CLM -- not always equal to PF dz values!)
+           clm(t)%dz(1)            = 0.5*(clm(t)%z(1)+clm(t)%z(2))         !thickness b/n two interfaces
+           do k = 2,nlevsoi-1
+              clm(t)%dz(k)         = 0.5*(clm(t)%z(k+1)-clm(t)%z(k-1))
+           enddo
+           clm(t)%dz(nlevsoi)      = clm(t)%z(nlevsoi)-clm(t)%z(nlevsoi-1)
 
-        ! PRINT CHECK
-        ! do k = 1, nlevsoi
-        !    l                 = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
-        !    write(999,*) "DZ CHECK -- ", i, j, k, l, pf_dz_mult(l), clm(t)%dz(k), clm(t)%z(k), clm(t)%zi(k)
-        ! enddo
+           ! set zi values (interface depths)
+           ! (computed from node depths as in original CLM -- not always equal to PF interfaces!)
+           clm(t)%zi(0)            = 0.                             !interface depths
+           do k = 1, nlevsoi-1
+              clm(t)%zi(k)         = 0.5*(clm(t)%z(k)+clm(t)%z(k+1))
+           enddo
+           clm(t)%zi(nlevsoi)      = clm(t)%z(nlevsoi) + 0.5*clm(t)%dz(nlevsoi)
+
+           ! PRINT CHECK
+           ! do k = 1, nlevsoi
+           !    l                 = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
+           !    write(999,*) "DZ CHECK -- ", i, j, k, l, pf_dz_mult(l), clm(t)%dz(k), clm(t)%z(k), clm(t)%zi(k)
+           ! enddo
+
+        endif ! active/inactive
 
      enddo !t 
            
@@ -352,32 +362,37 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
      !    (watsat, residual sat, irrigation keys)
      do t=1,drv%nch  
 
-        ! for beta and veg stress formulations
-        clm(t)%beta_type          = beta_typepf
-        clm(t)%vegwaterstresstype = veg_water_stress_typepf
-        clm(t)%wilting_point      = wilting_pointpf
-        clm(t)%field_capacity     = field_capacitypf
-        clm(t)%res_sat            = res_satpf
+        ! check if cell is active
+        if (clm(t)%planar_mask == 1) then
 
-        ! for irrigation
-        clm(t)%irr_type           = irr_typepf
-        clm(t)%irr_cycle          = irr_cyclepf
-        clm(t)%irr_rate           = irr_ratepf
-        clm(t)%irr_start          = irr_startpf
-        clm(t)%irr_stop           = irr_stoppf
-        clm(t)%irr_threshold      = irr_thresholdpf     
-        clm(t)%threshold_type     = irr_thresholdtypepf
+           ! for beta and veg stress formulations
+           clm(t)%beta_type          = beta_typepf
+           clm(t)%vegwaterstresstype = veg_water_stress_typepf
+           clm(t)%wilting_point      = wilting_pointpf
+           clm(t)%field_capacity     = field_capacitypf
+           clm(t)%res_sat            = res_satpf
+
+           ! for irrigation
+           clm(t)%irr_type           = irr_typepf
+           clm(t)%irr_cycle          = irr_cyclepf
+           clm(t)%irr_rate           = irr_ratepf
+           clm(t)%irr_start          = irr_startpf
+           clm(t)%irr_stop           = irr_stoppf
+           clm(t)%irr_threshold      = irr_thresholdpf     
+           clm(t)%threshold_type     = irr_thresholdtypepf
  
-        ! set clm watsat, tksatu from PF porosity
-        ! convert t to i,j index
-        i=tile(t)%col        
-        j=tile(t)%row
-        do k = 1, nlevsoi ! loop over clm soil layers (1->nlevsoi)
-           ! convert clm space to parflow space, note that PF space has ghost nodes
-           l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
-           clm(t)%watsat(k)       = porosity(l)
-           clm(t)%tksatu(k)       = clm(t)%tkmg(k)*0.57**clm(t)%watsat(k)
-        end do !k
+           ! set clm watsat, tksatu from PF porosity
+           ! convert t to i,j index
+           i=tile(t)%col        
+           j=tile(t)%row
+           do k = 1, nlevsoi ! loop over clm soil layers (1->nlevsoi)
+              ! convert clm space to parflow space, note that PF space has ghost nodes
+              l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
+              clm(t)%watsat(k)       = porosity(l)
+              clm(t)%tksatu(k)       = clm(t)%tkmg(k)*0.57**clm(t)%watsat(k)
+           end do !k
+
+        endif ! active/inactive
 
      end do !t
 
@@ -397,7 +412,6 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
   !    (converts soil moisture to mass of h2o)
   call pfreadout(clm,drv,tile,saturation,pressure,rank,ix,iy,nx,ny,nz,j_incr,k_incr,ip)
 
-
   !=== Advance time (CLM calendar time keeping routine)
   drv%endtime = 0
   call drv_tick(drv)
@@ -408,20 +422,21 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
   !    (drv_getforce is modified to convert arrays from PF input to CLM space)
   call drv_getforce(drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf,istep_pf)
 
-
   !=== Actual time loop
   !    (loop over CLM tile space, call 1D CLM at each point)
   do t = 1, drv%nch     
      clm(t)%qflx_infl_old       = clm(t)%qflx_infl
-     clm(t)%qflx_tran_veg_old   = clm(t)%qflx_tran_veg                     
+     clm(t)%qflx_tran_veg_old   = clm(t)%qflx_tran_veg
      if (clm(t)%planar_mask == 1) then
         call clm_main (clm(t),drv%day,drv%gmt) 
+     else
      endif ! Planar mask
   enddo ! End of the space vector loop
 
-
   !=== Write CLM Output (timeseries model results)
-  if (clm_1d_out == 1) call drv_1dout (drv, tile,clm)
+  if (clm_1d_out == 1) then 
+     call drv_1dout (drv, tile,clm)
+  endif
 
 
   !=== Call 2D output routine
@@ -448,20 +463,37 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
      i=tile(t)%col
      j=tile(t)%row
      l = 1+i + (nx+2)*(j) + (nx+2)*(ny+2) 
-     eflx_lh_pf(l)      = clm(t)%eflx_lh_tot
-     eflx_lwrad_pf(l)   = clm(t)%eflx_lwrad_out
-     eflx_sh_pf(l)      = clm(t)%eflx_sh_tot
-     eflx_grnd_pf(l)    = clm(t)%eflx_soil_grnd
-     qflx_tot_pf(l)     = clm(t)%qflx_evap_tot
-     qflx_grnd_pf(l)    = clm(t)%qflx_evap_grnd
-     qflx_soi_pf(l)     = clm(t)%qflx_evap_soi
-     qflx_eveg_pf(l)    = clm(t)%qflx_evap_veg 
-     qflx_tveg_pf(l)    = clm(t)%qflx_tran_veg
-     qflx_in_pf(l)      = clm(t)%qflx_infl 
-     swe_pf(l)          = clm(t)%h2osno 
-     t_g_pf(l)          = clm(t)%t_grnd
-     qirr_pf(l)         = clm(t)%qflx_qirr
-     irr_flag_pf(l)     = clm(t)%irr_flag
+     if (clm(t)%planar_mask==1) then
+        eflx_lh_pf(l)      = clm(t)%eflx_lh_tot
+        eflx_lwrad_pf(l)   = clm(t)%eflx_lwrad_out
+        eflx_sh_pf(l)      = clm(t)%eflx_sh_tot
+        eflx_grnd_pf(l)    = clm(t)%eflx_soil_grnd
+        qflx_tot_pf(l)     = clm(t)%qflx_evap_tot
+        qflx_grnd_pf(l)    = clm(t)%qflx_evap_grnd
+        qflx_soi_pf(l)     = clm(t)%qflx_evap_soi
+        qflx_eveg_pf(l)    = clm(t)%qflx_evap_veg 
+        qflx_tveg_pf(l)    = clm(t)%qflx_tran_veg
+        qflx_in_pf(l)      = clm(t)%qflx_infl 
+        swe_pf(l)          = clm(t)%h2osno 
+        t_g_pf(l)          = clm(t)%t_grnd
+        qirr_pf(l)         = clm(t)%qflx_qirr
+        irr_flag_pf(l)     = clm(t)%irr_flag
+     else
+        eflx_lh_pf(l)      = -9999.0
+        eflx_lwrad_pf(l)   = -9999.0
+        eflx_sh_pf(l)      = -9999.0
+        eflx_grnd_pf(l)    = -9999.0
+        qflx_tot_pf(l)     = -9999.0
+        qflx_grnd_pf(l)    = -9999.0
+        qflx_soi_pf(l)     = -9999.0
+        qflx_eveg_pf(l)    = -9999.0
+        qflx_tveg_pf(l)    = -9999.0
+        qflx_in_pf(l)      = -9999.0
+        swe_pf(l)          = -9999.0
+        t_g_pf(l)          = -9999.0
+        qirr_pf(l)         = -9999.0
+        irr_flag_pf(l)     = -9999.0
+     endif
   enddo
 
 
@@ -469,17 +501,25 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
   do t=1,drv%nch            ! Loop over CLM tile space
      i=tile(t)%col
      j=tile(t)%row
-     do k = 1,nlevsoi       ! Loop from 1 -> number of soil layers (in CLM)
-        l = 1+i + j_incr*(j) + k_incr*(nlevsoi-(k-1))
-        t_soi_pf(l)     = clm(t)%t_soisno(k)
-        qirr_inst_pf(l) = clm(t)%qflx_qirr_inst(k)
-     enddo
+     if (clm(t)%planar_mask==1) then
+        do k = 1,nlevsoi       ! Loop from 1 -> number of soil layers (in CLM)
+           l = 1+i + j_incr*(j) + k_incr*(nlevsoi-(k-1))
+           t_soi_pf(l)     = clm(t)%t_soisno(k)
+           qirr_inst_pf(l) = clm(t)%qflx_qirr_inst(k)
+        enddo
+     else
+        do k = 1,nlevsoi
+           l = 1+i + j_incr*(j) + k_incr*(nlevsoi-(k-1))
+           t_soi_pf(l)     = -9999.0
+           qirr_inst_pf(l) = -9999.0
+        enddo
+     endif
   enddo
 
 
   !=== Write Daily Restarts
-  !write(999,*) "End of time advance:" 
-  !write(999,*) 'time =', time, 'gmt =', drv%gmt, 'endtime =', drv%endtime
+  write(999,*) "End of time advance:" 
+  write(999,*) 'time =', time, 'gmt =', drv%gmt, 'endtime =', drv%endtime
   if ( (drv%gmt==0.0).or.(drv%endtime==1) ) call drv_restart(2,drv,tile,clm,rank,istep_pf)
 
   
@@ -501,10 +541,11 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
 
   !=== If at end of simulation, close all files
   if (drv%endtime==1) then
-     close(166)
-     close(199)
+     ! close(166)
+     ! close(199)
      close(999)
   end if
+
 
 
 end subroutine clm_lsm

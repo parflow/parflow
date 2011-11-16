@@ -300,7 +300,7 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      
      ! topomasks - parflow-clm couple parameters
      clm(k)%topo_mask(:)      = NaN  
-     clm(k)%planar_mask       = NaN         
+     clm(k)%planar_mask       = 0.0  ! was NaN...init to 0.0 
 
   end do
 

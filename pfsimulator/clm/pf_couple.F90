@@ -30,23 +30,28 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
   ! print*, ' in pf_couple'
   ! print*,  ip, j_incr, k_incr
   ! evap_trans = 0.d0
-   do t=1,drv%nch     
+  do t=1,drv%nch     
      i=tile(t)%col
      j=tile(t)%row
-     do k = 1, nlevsoi
-
-        l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))    ! updated indexing @RMM 4-12-09
-        if (k == 1) then
-           clm(t)%pf_flux(k)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)) + clm(t)%qflx_infl + clm(t)%qflx_qirr_inst(k)
-        else  
-           clm(t)%pf_flux(k)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)) + clm(t)%qflx_qirr_inst(k)
-        endif
-
-        ! copy back to pf, assumes timing for pf is hours and timing for clm is seconds
-        ! IMF: replaced drv%dz with clm(t)%dz to allow variable DZ...
-        evap_trans(l) = clm(t)%pf_flux(k) * 3.6d0 / clm(t)%dz(k)
-
-     enddo
+     if (clm(t)%planar_mask==1) then
+        do k = 1, nlevsoi
+           l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))    ! updated indexing @RMM 4-12-09
+           if (k == 1) then
+              clm(t)%pf_flux(k)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)) + clm(t)%qflx_infl + clm(t)%qflx_qirr_inst(k)
+           else  
+              clm(t)%pf_flux(k)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)) + clm(t)%qflx_qirr_inst(k)
+           endif
+           ! copy back to pf, assumes timing for pf is hours and timing for clm is seconds
+           ! IMF: replaced drv%dz with clm(t)%dz to allow variable DZ...
+           evap_trans(l) = clm(t)%pf_flux(k) * 3.6d0 / clm(t)%dz(k)
+        enddo
+     ! else
+     !    do k = 1, nlevsoi
+     !       l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
+     !       clm(t)%pf_flux(k) = 0.0
+     !       evap_trans(l) = 0.0
+     !    enddo
+     endif
   enddo
 
   !@ Start: Here we do the mass balance: We look at every tile/cell individually!
@@ -71,7 +76,6 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
         ! @sjk Here we add the total water mass of the layers below CLM soil layers from Parflow to close water balance
         ! @sjk We can use clm(1)%dz(1) because the grids are equidistant and congruent
         clm(t)%endwb=0.0d0 !@sjk only interested in wb below surface
-        ! print*, clm(t)%topo_mask(3), clm(t)%topo_mask(1)
         do k = clm(t)%topo_mask(3), clm(t)%topo_mask(1) ! CLM loop over z, starting at bottom of pf domains topo_mask(3)
 
            l = 1+i + j_incr*(j) + k_incr*(k)  ! updated indexing @RMM b/c we are looping from k3 to k1
@@ -139,7 +143,6 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
   ! write(199,'(1i5,1x,f20.8,1x,5e13.5)') clm(1)%istep,drv%time,error,tot_infl_mm,tot_tran_veg_mm,drv%begwatb,drv%endwatb
   !write(199,'(1i5,1x,f20.8,1x,5e13.5)') istep_pf,drv%time,error,tot_infl_mm,tot_tran_veg_mm,drv%begwatb,drv%endwatb
   drv%begwatb =drv%endwatb
-  !print *,""
   !print *,"Error (%):",error
   !@ End: mass balance  
 
