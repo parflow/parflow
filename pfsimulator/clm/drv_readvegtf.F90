@@ -58,7 +58,7 @@ subroutine drv_readvegtf (drv,grid,tile,clm,nx, ny, ix, iy,gnx, gny, rank)
 
   read(2,*)  !skip header
   read(2,*)  !skip header
-  print*, 
+!  print*, 
   ! do r=1,drv%nr     !rows
    ! do c=1,drv%nc  !columns
   do r =1, gny  ! @RMM replaced local row/column with global grid
