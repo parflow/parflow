@@ -89,12 +89,16 @@ void    OverlandFlowEvalDiff(
    double	 q_v[4], slope_fx_lo, slope_fx_hi, slope_fx_mid;
    double        slope_fy_lo, slope_fy_hi, slope_fy_mid, dx, dy; 
    double        coeff, Pmean, P2, P3;
+    double    slope_mean, manning;
                                                         
    int            ival, sy_v, step;
    int 		  *fdir;
 
    int            i, ii, j, k, ip, ip2, ip3, ip4, ip0, io, itop;
-   int		  i1, j1, k1;
+   int		  i1, j1, k1, iojm1, iojp1, ioip1, ioim1;
+    /* @RMM get grid from global (assuming this is comp grid) to pass to CLM */
+    int gnx = BackgroundNX(GlobalsBackground);
+    int gny = BackgroundNY(GlobalsBackground);
 
       p_sub = VectorSubvector(pressure, sg);
 
@@ -116,16 +120,23 @@ void    OverlandFlowEvalDiff(
             
       sy_v = SubvectorNX(top_sub);
 
+    
+    /*  @RMM Notes: 1) works for KW equation. 2) looping over x and y does not seem to be large enough (i-1, nx+2, etc) even with PatchLoopOvrlnd. 
+      3) Water piles up along boundaries due to looping issue (2) and possibly not enough water in domain due to looping issue (2). 4) I use a
+     friction type approach where I increase Manning's n as a inverse function of friction slope, that is n*=n(1.0 + epsi/Sf) where epsi is
+     chosen somewhat small (0.001) */
 
       if(fcn == CALCFCN)
       {
   //    if(qx_v == NULL || qy_v == NULL) /* do not return velocity fluxes */
   //       {
-            BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, sg,
+            BCStructPatchLoopOvrlnd(i, j, k, fdir, ival, bc_struct, ipatch, sg,
 	    {       
 	       if (fdir[2] == 1)
 	       {
 	                   io = SubvectorEltIndex(sx_sub,i, j, 0);
+                       ioim1 = SubvectorEltIndex(sx_sub,(i-1), j, 0);
+                       iojm1 = SubvectorEltIndex(sx_sub,i, (j-1), 0);
 	       	           itop = SubvectorEltIndex(top_sub, i, j, 0); 
 	       	           /* compute east and west faces */
 	       	           /* First initialize velocities, q_v, for inactive region */
@@ -151,23 +162,42 @@ void    OverlandFlowEvalDiff(
 			   //printf( "here \n");
                            // @RMM  slope is PP(i)-PP(i-1)
 			       //slope_fx_lo = sx_dat[io-1]; 
-               slope_fx_lo = sx_dat[io] + (((pfmax((pp[ip0]),0.0)) - (pfmax((pp[ip]),0.0)))/dx);
-                          // printf("loopingOF: %d %d %d %d %d \n", i, j,k, ip, io);
+               // slope averaged via [ Sx(i)+Sx(i-1) ] / 2
+               //slope_mean = sx_dat[io-1]; 
+               if (i > 0) {
+               slope_mean =  sx_dat[io-1];  // + sx_dat[ioim1]) / 2.0;
+               slope_fx_lo = slope_mean - (((pfmax((pp[ip0]),0.0)) - (pfmax((pp[ip]),0.0)))/dx);
+               } else {
+                   slope_mean =  sx_dat[io];  // + sx_dat[ioim1]) / 2.0;
+                   slope_fx_lo = slope_mean;
+                   
+               }
+                          //printf("loopingOF: %d %d %d %d %d %f \n", i, j,k, ip, io, sx_dat[io]);
+  
 
-                           //@RMM upwind pressure based on slope direction
+                           //@RMM upwind pressure based on slope direction, else we take mean of heads
+               Pmean = pfmax(pp[ip0],0.0); //(((pfmax((pp[ip0]),0.0)) + (pfmax((pp[ip]),0.0)))/2);
 			      if(slope_fx_lo > 0.0) {
-				   P2 = pfmax(pp[ip0],0.0);
+				   Pmean = pfmax(pp[ip0],0.0);
+                      //manning = mann_dat[io];
 		   		    xdir = -1.0;
 			      }
 			      else if(slope_fx_lo < 0.0) {
                    		    xdir = 1.0;
-			    	    P2 = pfmax(pp[ip],0.0);
+			    	    Pmean = pfmax(pp[ip],0.0);
+                      //manning = mann_dat[ioim1];
+
 			      }
                    		 else
-                   		    xdir = 0.0; 
-
-			      q_v[0] = xdir * (RPowerR(fabs(slope_fx_lo),0.5) / mann_dat[io]) * RPowerR(P2,(5.0/3.0));  
-                          // printf(" %d %4.5f %4.5f %4.5e %4.5f %4.5e \n", io, xdir, slope_fx_lo, mann_dat[io], P2, q_v[0]);
+                   		    xdir = 0.0;
+               // if (abs(slope_fx_lo) < 0.000001) {
+              //  slope_fx_lo = 0.00000;   
+              //  } 
+                  q_v[0] = xdir * (RPowerR(fabs(slope_fx_lo),0.5) / (1.0+0.000000001/fabs(slope_fx_lo))*mann_dat[io])
+	//		      q_v[0] = xdir * (RPowerR(fabs(slope_fx_lo),0.5) / ((1.0+0.001/fabs(slope_fx_lo))*manning))
+                                   * RPowerR(Pmean,(5.0/3.0));  
+ 
+                          //printf(" %d %4.5f %4.5f %4.5e %4.5f %4.5e \n", io, xdir, slope_fx_lo, manning, P2, q_v[0]);
 
 			   //}
 			   //printf( "q1 %4.5f \n", q_v[0]);
@@ -177,7 +207,8 @@ void    OverlandFlowEvalDiff(
 			   
                 	  /* Dealing with Ke - look at nodes i and i+1 */           
                  	   k1 = (int)top_dat[itop+1];
-			   ip2 = SubvectorEltIndex(p_sub,(i+1), j, k1); 
+			   ip2 = SubvectorEltIndex(p_sub,(i+1), j, k1);
+               ioip1 = SubvectorEltIndex(p_sub, (i+1), j, 0);
 			   
                 	   //if(k1 >= 0)
                 	   //{       
@@ -187,20 +218,39 @@ void    OverlandFlowEvalDiff(
 			   * for the slope in Manning's equation
 			        @RMM take PP(i+1)=PP(i)       */       	   
 			      //slope_fx_hi = sx_dat[io] ;   //@RMM
-               slope_fx_hi = sx_dat[io] + (((pfmax((pp[ip2]),0.0)) - (pfmax((pp[ip0]),0.0)))/dx);
+               if (i < gnx-1) {
+               slope_mean = sx_dat[io]; 
+                  // slope_mean = ( sx_dat[io] + sx_dat[ioip1]) / 2.0;
+                   slope_fx_hi = slope_mean - (((pfmax((pp[ip2]),0.0)) - (pfmax((pp[ip0]),0.0)))/dx);
+               manning = mann_dat[io];
+               } else {
+                   slope_mean = sx_dat[io];
+                   slope_fx_hi = slope_mean; 
+               }
+
+               
+               Pmean = pfmax(pp[ip2],0); //(((pfmax((pp[ip2]),0.0)) + (pfmax((pp[ip0]),0.0)))/2.0);
 			      if(slope_fx_hi > 0.0) {
 		   		    xdir = -1.0;
-				   P3 = pfmax(pp[ip2],0);   
+                      manning = mann_dat[ioip1];
+				   Pmean = pfmax(pp[ip2],0);   
 			      }
 			      else if(slope_fx_hi < 0.0) {
                    		    xdir = 1.0;
-				   P3 = pfmax(pp[ip0],0.0);
+                      manning = mann_dat[io];
+				   Pmean = pfmax(pp[ip0],0.0);
 			      }
                    	      else
                    		    xdir = 0.0;  
-
-			      q_v[1] = xdir * (RPowerR(fabs(slope_fx_hi),0.5) / mann_dat[io]) * RPowerR(P3,(5.0/3.0));
-              // printf(" %d %4.5f %4.5f %4.5e %4.5f %4.5e \n", io, xdir, slope_fx_lo, mann_dat[io], P2, q_v[0]);
+                // if (fabs(slope_fx_hi) < 0.000001) {
+               // slope_fx_hi = 0.00000;   
+               // }  
+               
+ 			      q_v[1] = xdir * (RPowerR(fabs(slope_fx_hi),0.5) / (1.0+0.000000001/fabs(slope_fx_hi))*mann_dat[io])
+ //                 q_v[1] = xdir * (RPowerR(fabs(slope_fx_hi),0.5) / ((1.0+0.001/fabs(slope_fx_hi))*manning))
+                                   * RPowerR(Pmean,(5.0/3.0));
+ 
+              // printf(" %d %4.5f %4.5f %4.5e %4.5f %4.5e \n", io, xdir, slope_fx_lo, mann_dat[io], Pmean, q_v[1]);
 
 			   //}
 			  //printf( "%4.5f \n", q_v[1]);
@@ -216,6 +266,7 @@ void    OverlandFlowEvalDiff(
                 	  /* Dealing with Ks - look at nodes j-1 and j */           
                  	   k1 = (int)top_dat[itop-sy_v];
                 	   ip3 = SubvectorEltIndex(p_sub,i, (j-1), k1);  
+   
                 	   
 		//	   if(k1 >= 0)
         //        	   {                	            
@@ -225,11 +276,23 @@ void    OverlandFlowEvalDiff(
 			   * for the slope in Manning's equation
 			         now take slope based on PP(j)-PP(j-1)    */
 			      //slope_fy_lo = sy_dat[io-sy_v] ;
-               slope_fy_lo = sy_dat[io] + (((pfmax((pp[ip0]),0.0)) - (pfmax((pp[ip3]),0.0)))/dy);
-			      if(slope_fy_lo > 0.0) {
+               if (j > 0) {
+                   slope_mean = sy_dat[io-sy_v]; 
+                   // slope_mean = ( sy_dat[io] + sy_dat[iojm1]) / 2.0;
+                   slope_fy_lo = slope_mean - (((pfmax((pp[ip0]),0.0)) - (pfmax((pp[ip3]),0.0)))/dy);
+               } else {
+                   slope_mean = sy_dat[io]; 
+                   // slope_mean = ( sy_dat[io] + sy_dat[iojm1]) / 2.0;
+                   slope_fy_lo = slope_mean;
+               }
+
+               
+               Pmean = pp[ip0]; //(((pfmax((pp[ip0]),0.0)) - (pfmax((pp[ip3]),0.0)))/2.0);
+
+			     if(slope_fy_lo > 0.0) {
 		   		    ydir = -1.0;
 				    Pmean = pp[ip0];
-			      }
+			      } 
 			      else if(slope_fy_lo < 0.0) {
                    		 ydir = 1.0;
 				 Pmean = pp[ip3];
@@ -237,7 +300,13 @@ void    OverlandFlowEvalDiff(
                    	      else
                    		    ydir = 0.0; 
 
-			      q_v[2] = ydir * (RPowerR(fabs(slope_fy_lo),0.5) / mann_dat[io]) * RPowerR(pfmax(Pmean,0.0),(5.0/3.0));
+               // if (fabs(slope_fy_lo) < 0.000001) {
+               //    slope_fy_lo = 0.00000;   
+               // }
+               //q_v[2] = ydir * (RPowerR(fabs(slope_fy_lo),0.5) / (1.0+0.000000001/fabs(slope_fy_lo))*mann_dat[io]) 
+			      q_v[2] = ydir * (RPowerR(fabs(slope_fy_lo),0.5) / ((1.0+0.00000001/fabs(slope_fy_lo))*mann_dat[io])) 
+                                   * RPowerR(pfmax(Pmean,0.0),(5.0/3.0));
+
 			   
 			 //  }
 					          	              	   
@@ -247,6 +316,8 @@ void    OverlandFlowEvalDiff(
                 	  /* Dealing with Ke - look at nodes i and i+1 */           
                  	   k1 = (int)top_dat[itop+sy_v];
                 	    ip4 = SubvectorEltIndex(p_sub,i, (j+1), k1);
+                       iojp1 = SubvectorEltIndex(sx_sub,i, (j+1), 0);
+
                 	    
 			//   if(k1 >= 0)
             //    	   {                	            
@@ -254,10 +325,21 @@ void    OverlandFlowEvalDiff(
 			  /* compute the friction slope for east node 
 			   * this handles the pressure gradient correction
 			   * for the slope in Manning's equation
-			  */       	   
+			  */   
+               if (j < gny-1) {
 			      //slope_fy_hi = sy_dat[io];
-               slope_fy_hi = sy_dat[io] + (((pfmax((pp[ip4]),0.0)) - (pfmax((pp[ip0]),0.0)))/dy);
-			      if(slope_fy_hi > 0.0) {
+               slope_mean = sy_dat[io];  
+               //slope_mean = ( sy_dat[io] + sy_dat[iojp1]) / 2.0;
+
+               slope_fy_hi = slope_mean - (((pfmax((pp[ip4]),0.0)) - (pfmax((pp[ip0]),0.0)))/dy);
+               } else {
+                   slope_mean = sy_dat[io];
+                   slope_fy_hi = slope_mean;
+               }
+
+               Pmean = pp[ip4]; //(((pfmax((pp[ip4]),0.0)) + (pfmax((pp[ip0]),0.0)))/2.0);
+ 
+			    if(slope_fy_hi > 0.0) {
 		   		    ydir = -1.0;
 				    Pmean = pp[ip4];    
 			      }
@@ -268,7 +350,18 @@ void    OverlandFlowEvalDiff(
 			      else
                    		    ydir = 0.0; 
 
-			      q_v[3] = ydir * (RPowerR(fabs(slope_fy_hi),0.5) / mann_dat[io]) * RPowerR(pfmax(Pmean,0.0),(5.0/3.0));
+              // if (fabs(slope_fy_hi) < 0.000001) {
+              //     slope_fy_lo = 0.00000;   
+              // } 
+              // q_v[3] = ydir * (RPowerR(fabs(slope_fy_hi),0.5) / (1.0+0.000000001/fabs(slope_fy_hi))*mann_dat[io]) 
+               q_v[3] = ydir * (RPowerR(fabs(slope_fy_hi),0.5) / ((1.0+0.0000001/fabs(slope_fy_hi))*mann_dat[io])) 
+                                   * RPowerR(pfmax(Pmean,0.0),(5.0/3.0));
+               /* printf("Kn_qv[3]: %d %4.5f %4.5f %4.5f %4.5f %4.5f \n", io, mann_dat[io], slope_fy_hi, RPowerR(pfmax(Pmean,0.0),(5.0/3.0))
+                      , ydir,q_v[3]); */
+               
+
+               
+         
 			   }
 					                 	                       
 	                   /* compute kn - NOTE: io is for current cell */

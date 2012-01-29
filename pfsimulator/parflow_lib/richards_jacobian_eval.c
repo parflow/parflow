@@ -126,6 +126,7 @@ int           jacobian_stencil_shape_C[5][3] = {{ 0,  0,  0},
 
 #define PMean(a, b, c, d)    HarmonicMean(c, d)
 #define RPMean(a, b, c, d)   UpstreamMean(a, b, c, d)
+#define Mean(a,b) ArithmeticMean(a, b)  //@RMM
 
 /*  This routine provides the interface between KINSOL and ParFlow
     for richards' equation jacobian evaluations and matrix-vector multiplies.*/
@@ -226,6 +227,17 @@ int           symm_part)      /* Specifies whether to compute just the
    double       gravity           = ProblemGravity(problem);
    double       viscosity         = ProblemPhaseViscosity(problem, 0);
 
+   /* @RMM terrain following grid slope variables */ 
+   Vector      *x_ssl             = ProblemDataSSlopeX(problem_data);  //@RMM
+   Vector      *y_ssl             = ProblemDataSSlopeY(problem_data);  //@RMM
+   Subvector   *x_ssl_sub, *y_ssl_sub;   //@RMM
+   double      *x_ssl_dat, *y_ssl_dat;    //@RMM
+    
+   /* @RMM variable dz multiplier */
+   Vector      *z_mult            = ProblemDataZmult(problem_data);  //@RMM
+   Subvector   *z_mult_sub;   //@RMM
+   double      *z_mult_dat;   //@RMM
+   
    Subgrid     *subgrid;
 
    Subvector   *p_sub, *d_sub, *s_sub, *po_sub, *rp_sub, *ss_sub;
@@ -253,9 +265,10 @@ int           symm_part)      /* Specifies whether to compute just the
    int          ip, ipo, im, iv;
 
    int		itop, k1, io, io1, ovlnd_flag; //DOK
+    int     ioo;   //@RMM
 
-   double       dtmp, dx, dy, dz, vol, ffx, ffy, ffz;
-   double       diff, coeff, x_coeff, y_coeff, z_coeff;
+   double       dtmp, dx, dy, dz, vol, vol2, ffx, ffy, ffz;   //@RMM
+   double       diff, coeff, x_coeff, y_coeff, z_coeff, updir, sep;  //@RMM
    double       prod, prod_rt, prod_no, prod_up, prod_val, prod_lo;
    double       prod_der, prod_rt_der, prod_no_der, prod_up_der;
    double       west_temp, east_temp, north_temp, south_temp;
@@ -263,6 +276,9 @@ int           symm_part)      /* Specifies whether to compute just the
    double       sym_west_temp, sym_east_temp, sym_south_temp, sym_north_temp;
    double       sym_lower_temp, sym_upper_temp;
    double       lower_cond, upper_cond;
+
+   //@RMM : terms for gravity/terrain
+   double   x_dir_g, y_dir_g, z_dir_g, del_x_slope, del_y_slope, x_dir_g_c, y_dir_g_c;
 
    BCStruct    *bc_struct;
    GrGeomSolid *gr_domain         = ProblemDataGrDomain(problem_data);
@@ -377,6 +393,17 @@ int           symm_part)      /* Specifies whether to compute just the
       po_sub = VectorSubvector(porosity, is);
       ss_sub = VectorSubvector(sstorage, is);
 
+       /* @RMM added to provide access to zmult */
+       z_mult_sub = VectorSubvector(z_mult, is);
+       /* @RMM added to provide variable dz */
+       z_mult_dat = SubvectorData(z_mult_sub);
+       /* @RMM added to provide access to x/y slopes */ 
+       x_ssl_sub = VectorSubvector(x_ssl, is);
+       y_ssl_sub = VectorSubvector(y_ssl, is);
+       /* @RMM  added to provide slopes to terrain fns */
+       x_ssl_dat = SubvectorData(x_ssl_sub);
+       y_ssl_dat = SubvectorData(y_ssl_sub);
+       
       /* RDF: assumes resolutions are the same in all 3 directions */
       r = SubgridRX(subgrid);
 	 
@@ -406,13 +433,13 @@ int           symm_part)      /* Specifies whether to compute just the
       ny_m  = SubmatrixNY(J_sub);
       nz_m  = SubmatrixNZ(J_sub);
 
-      pp  = SubvectorData(p_sub);
-      dp  = SubvectorData(d_sub);
-      sp  = SubvectorData(s_sub);
-      ddp = SubvectorData(dd_sub);
-      sdp = SubvectorData(sd_sub);
-      pop = SubvectorData(po_sub);
-      ss  = SubvectorData(ss_sub);
+      pp  = SubvectorData(p_sub);  //pressure
+      dp  = SubvectorData(d_sub);  // density
+      sp  = SubvectorData(s_sub);  //saturation
+      ddp = SubvectorData(dd_sub);  // density derivative: del-rho / del-press
+      sdp = SubvectorData(sd_sub);  // saturation derivative: del-S / del-press
+      pop = SubvectorData(po_sub);   // porosity
+      ss  = SubvectorData(ss_sub);  // sepcific storage
 
       GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
       {
@@ -420,9 +447,9 @@ int           symm_part)      /* Specifies whether to compute just the
 	 im  = SubmatrixEltIndex(J_sub, i, j, k);
 	 ipo = SubvectorEltIndex(po_sub, i, j, k);
 	 iv  = SubvectorEltIndex(d_sub,  i, j, k);
-
+          vol2 = vol * z_mult_dat[ipo]; 
 	 cp[im] += (sdp[iv]*dp[iv] + sp[iv]*ddp[iv])
-	    *pop[ipo]*vol + ss[iv]*vol*(sdp[iv]*dp[iv]*pp[iv]+sp[iv]*ddp[iv]*pp[iv]+sp[iv]*dp[iv]); //sk start
+	    *pop[ipo]*vol2 + ss[iv]*vol2*(sdp[iv]*dp[iv]*pp[iv]+sp[iv]*ddp[iv]*pp[iv]+sp[iv]*dp[iv]); //sk start
 
       });
 
@@ -497,7 +524,16 @@ int           symm_part)      /* Specifies whether to compute just the
       permy_sub = VectorSubvector(permeability_y, is);
       permz_sub = VectorSubvector(permeability_z, is);
       J_sub    = MatrixSubmatrix(J, is);
-
+       
+       /* @RMM added to provide access to x/y slopes */ 
+       x_ssl_sub = VectorSubvector(x_ssl, is);
+       y_ssl_sub = VectorSubvector(y_ssl, is);
+       
+       /* @RMM added to provide access to zmult */
+       z_mult_sub = VectorSubvector(z_mult, is);
+       /* @RMM added to provide variable dz */
+       z_mult_dat = SubvectorData(z_mult_sub);
+       
       r = SubgridRX(subgrid);
 	 
       ix = SubgridIX(subgrid) - 1;
@@ -551,8 +587,9 @@ int           symm_part)      /* Specifies whether to compute just the
 
 	 ip = SubvectorEltIndex(p_sub, i, j, k);
 	 im = SubmatrixEltIndex(J_sub, i, j, k);
-
-	 prod        = rpp[ip] * dp[ip];
+     ioo = SubvectorEltIndex(p_sub, i, j, 0);  
+	 
+     prod        = rpp[ip] * dp[ip];
 	 prod_der    = rpdp[ip] * dp[ip] + rpp[ip] * ddp[ip];
 
 	 prod_rt     = rpp[ip+1] * dp[ip+1];
@@ -566,78 +603,126 @@ int           symm_part)      /* Specifies whether to compute just the
 	 prod_up_der = rpdp[ip+sz_v] * dp[ip+sz_v] 
 	    + rpp[ip+sz_v] * ddp[ip+sz_v];
 
+          //@RMM
+          x_dir_g = Mean(gravity*sin(atan(x_ssl_dat[ioo])),gravity*sin(atan(x_ssl_dat[ioo+1])));
+          x_dir_g_c = Mean(gravity*cos(atan(x_ssl_dat[ioo])),gravity*cos(atan(x_ssl_dat[ioo+1])));
+          y_dir_g = Mean(gravity*sin(atan(y_ssl_dat[ioo])),gravity*sin(atan(y_ssl_dat[ioo+sy_v])));
+          y_dir_g_c = Mean(gravity*cos(atan(y_ssl_dat[ioo])),gravity*cos(atan(y_ssl_dat[ioo+sy_v])));
+          // x_dir_g = x_ssl_dat[ioo];
+          // y_dir_g = y_ssl_dat[ioo];
+      /*   x_dir_g = 0.0;
+          y_dir_g = 0.0;  
+           x_dir_g_c = 1.0;
+          y_dir_g_c = 1.0; */
 	 /* diff >= 0 implies flow goes left to right */
 	 diff = pp[ip] - pp[ip+1];
+          updir= (diff/dx)*x_dir_g_c - x_dir_g;
 
-	 x_coeff = dt * ffx * (1.0/dx) 
+          x_coeff = dt * ffx * (1.0/dx) *z_mult_dat[ip]
 	    * PMean(pp[ip], pp[ip+1], permxp[ip], permxp[ip+1]) 
 	    / viscosity;
 
-	 sym_west_temp = - x_coeff 
-	    * RPMean(pp[ip], pp[ip+1], prod, prod_rt);
+	 sym_west_temp = (- x_coeff 
+                      * RPMean(updir, 0.0, prod, prod_rt))*x_dir_g_c; 
+      //    * RPMean(pp[ip], pp[ip+1], prod, prod_rt))*x_dir_g_c; 
+     //sym_west_temp += (x_coeff*dx*RPMean(updir,0.0, prod_der, 0.0))*x_dir_g; //@RMM TFG contributions, sym
 
-	 west_temp = - x_coeff * diff 
-	    * RPMean(pp[ip], pp[ip+1], prod_der, 0.0)
-	    + sym_west_temp;
+    //-(x_coeff*dx* RPMean(pp[ip], pp[ip+1], prod, prod_rt))*x_dir_g; //@RMM added sym TFG contributions
 
-	 sym_east_temp = x_coeff
-	    * -RPMean(pp[ip], pp[ip+1], prod, prod_rt);
+	 west_temp = (-x_coeff *diff
+	   // * RPMean(pp[ip], pp[ip+1], prod_der, 0.0)) *x_dir_g_c
+          * RPMean(updir,0.0, prod_der, 0.0)) *x_dir_g_c
+                    + sym_west_temp;
+          
+     west_temp += (x_coeff*dx*RPMean(updir,0.0, prod_der, 0.0))*x_dir_g;  //@RMM TFG contributions, non sym
+//          west_temp += (x_coeff*dx*RPMean(pp[ip], pp[ip+1], prod_der, 0.0))*x_dir_g;  //@RMM TFG contributions, non sym
 
-	 east_temp = x_coeff * diff
-	    * RPMean(pp[ip], pp[ip+1], 0.0, prod_rt_der)
+	 sym_east_temp = (-x_coeff
+                      * RPMean(updir,0.0, prod, prod_rt))*x_dir_g_c;
+//          * RPMean(pp[ip], pp[ip+1], prod, prod_rt))*x_dir_g_c;
+
+          //-(x_coeff*dx* RPMean(pp[ip], pp[ip+1], prod, prod_rt))*x_dir_g;  //@RMM added sym TFG contributions
+     //sym_east_temp += (x_coeff*dx*RPMean(updir,0.0, 0.0, prod_rt_der))*x_dir_g; //@RMM  TFG contributions sym
+
+	 east_temp = (x_coeff * diff
+	    * RPMean(updir,0.0, 0.0, prod_rt_der))*x_dir_g_c
+        //  * RPMean(pp[ip], pp[ip+1], 0.0, prod_rt_der))*x_dir_g_c
 	    + sym_east_temp;
-
+          
+     east_temp += -(x_coeff*dx*RPMean(updir,0.0, 0.0, prod_rt_der))*x_dir_g;  //@RMM  TFG contributions non sym
+     //     east_temp += -(x_coeff*dx*RPMean(pp[ip], pp[ip+1], 0.0, prod_rt_der))*x_dir_g;  //@RMM  TFG contributions non sym
+          
 	 /* diff >= 0 implies flow goes south to north */
 	 diff = pp[ip] - pp[ip+sy_v];
+          updir= (diff/dy)*y_dir_g_c - y_dir_g;    
 
-	 y_coeff = dt * ffy * (1.0/dy) 
+	 y_coeff = dt * ffy * (1.0/dy) * z_mult_dat[ip]
 	    * PMean(pp[ip], pp[ip+sy_v], permyp[ip], permyp[ip+sy_v]) 
 	    / viscosity;
 
 	 sym_south_temp = - y_coeff
-	    *RPMean(pp[ip], pp[ip+sy_v], prod, prod_no);
+	    *RPMean(updir, 0.0, prod, prod_no)*y_dir_g_c;
+     //     *RPMean(pp[ip], pp[ip+sy_v], prod, prod_no)*y_dir_g_c;
 
+          //sym_south_temp += (y_coeff*dy*RPMean(pp[ip], pp[ip+sy_v], prod_der, 0.0))*y_dir_g;  //@RMM TFG contributions, SYMM
+          
 	 south_temp = - y_coeff * diff
-	    * RPMean(pp[ip], pp[ip+sy_v], prod_der, 0.0)
-	    + sym_south_temp;
+	  //  * RPMean(pp[ip], pp[ip+sy_v], prod_der, 0.0)*y_dir_g_c
+          * RPMean(updir, 0.0, prod_der, 0.0)*y_dir_g_c
+          + sym_south_temp;
 
+     south_temp += (y_coeff*dy*RPMean(updir, 0.0, prod_der, 0.0))*y_dir_g;  //@RMM TFG contributions, non sym
+//          south_temp += (y_coeff*dy*RPMean(pp[ip], pp[ip+sy_v], prod_der, 0.0))*y_dir_g;  //@RMM TFG contributions, non sym
+
+          
 	 sym_north_temp = y_coeff
-	    * -RPMean(pp[ip], pp[ip+sy_v], prod, prod_no);
-
-	 north_temp = y_coeff * diff
-	    *  RPMean(pp[ip], pp[ip+sy_v], 0.0, 
-	    prod_no_der)
+	    * -RPMean(updir,0.0, prod, prod_no)*y_dir_g_c;
+//          * -RPMean(pp[ip], pp[ip+sy_v], prod, prod_no)*y_dir_g_c;
+     
+     //sym_north_temp += -(y_coeff*dy*RPMean(pp[ip], pp[ip+sy_v], 0.0, prod_no_der))*y_dir_g;  //@RMM  TFG contributions non SYMM
+	 
+     north_temp = y_coeff * diff
+	    *  RPMean(updir, 0.0, 0.0, 
+//                  *  RPMean(pp[ip], pp[ip+sy_v], 0.0, 
+                  prod_no_der)*y_dir_g_c
 	    + sym_north_temp;
+    
+     north_temp += -(y_coeff*dy*RPMean(updir,0.0, 0.0, prod_no_der))*y_dir_g;  //@RMM  TFG contributions non sym
+//          north_temp += -(y_coeff*dy*RPMean(pp[ip], pp[ip+sy_v], 0.0, prod_no_der))*y_dir_g;  //@RMM  TFG contributions non sym
 
+          sep = (dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]));
 	 /* diff >= 0 implies flow goes lower to upper */
-	 lower_cond = pp[ip]      - 0.5 * dz * dp[ip]      * gravity;
-	 upper_cond = pp[ip+sz_v] + 0.5 * dz * dp[ip+sz_v] * gravity;
+	 lower_cond = pp[ip] /sep     - 0.5 *Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip]      * gravity;
+	 upper_cond = pp[ip+sz_v]/sep + 0.5 *Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip+sz_v] * gravity;
+ //                lower_cond = pp[ip]    - 0.5 * dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip]      * gravity;
+ //                upper_cond = pp[ip+sz_v] + 0.5 * dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip+sz_v] * gravity;
 	 diff = lower_cond - upper_cond;
 
-	 z_coeff = dt * ffz * (1.0 / dz) 
-	    * PMean(lower_cond, upper_cond, 
+//	 z_coeff = dt * ffz * (1.0 / (dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]))) 
+                 z_coeff = dt * ffz  
+                 * PMean(lower_cond, upper_cond, 
 	    permzp[ip], permzp[ip+sz_v]) 
 	    / viscosity;
 
-	 sym_lower_temp = - z_coeff
+	 sym_lower_temp = - z_coeff* (1.0 / (dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]))) 
 	    * RPMean(lower_cond, upper_cond, prod, 
 	    prod_up);
 		
 	 lower_temp = - z_coeff 
 	    * ( diff * RPMean(lower_cond, upper_cond, prod_der, 0.0) 
-	    + ( - gravity * 0.5 * dz * ddp[ip]
+	    + ( - gravity * 0.5 * dz*(Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v])) * ddp[ip]
 	    * RPMean(lower_cond, upper_cond, prod, 
 	    prod_up) ) )
 	    + sym_lower_temp;
 
-	 sym_upper_temp = z_coeff
+	 sym_upper_temp = z_coeff* (1.0 / (dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]))) 
 	    * -RPMean(lower_cond, upper_cond, prod, 
 	    prod_up);
 
 	 upper_temp = z_coeff
 	    * ( diff * RPMean(lower_cond, upper_cond, 0.0, 
 	    prod_up_der) 
-	    + ( - gravity * 0.5 * dz * ddp[ip+sz_v]
+	    + ( - gravity * 0.5 * dz*(Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v])) * ddp[ip+sz_v]
 	    *RPMean(lower_cond, upper_cond, prod, 
 	    prod_up) ) )
 	    + sym_upper_temp;
@@ -708,7 +793,11 @@ int           symm_part)      /* Specifies whether to compute just the
 	 
 	 sy_v = nx_v;
 	 sz_v = ny_v * nx_v;
-
+          /* @RMM added to provide access to zmult */
+          z_mult_sub = VectorSubvector(z_mult, is);
+          /* @RMM added to provide variable dz */
+          z_mult_dat = SubvectorData(z_mult_sub);
+          
 	 cp    = SubmatrixStencilData(J_sub, 0);
 	 wp    = SubmatrixStencilData(J_sub, 1);
 	 ep    = SubmatrixStencilData(J_sub, 2);
@@ -744,7 +833,7 @@ int           symm_part)      /* Specifies whether to compute just the
 		     {
 		        diff = pp[ip-1] - pp[ip];
 			prod_der = rpdp[ip-1]*dp[ip-1] + rpp[ip-1]*ddp[ip-1];
-		        coeff = dt * ffx * (1.0/dx) 
+		        coeff = dt *  z_mult_dat[ip]*ffx * (1.0/dx) 
 			   * PMean(pp[ip-1], pp[ip], permxp[ip-1], permxp[ip]) 
 			   / viscosity;
 		        wp[im] = - coeff * diff
@@ -755,7 +844,7 @@ int           symm_part)      /* Specifies whether to compute just the
 		     {
 		        diff = pp[ip] - pp[ip+1];
 			prod_der = rpdp[ip+1]*dp[ip+1] + rpp[ip+1]*ddp[ip+1];
-		        coeff = dt * ffx * (1.0/dx) 
+		        coeff = dt *  z_mult_dat[ip]*ffx * (1.0/dx) 
 			   * PMean(pp[ip], pp[ip+1], permxp[ip], permxp[ip+1]) 
 			   / viscosity;
 		        ep[im] = coeff * diff
@@ -775,7 +864,7 @@ int           symm_part)      /* Specifies whether to compute just the
 		        diff = pp[ip-sy_v] - pp[ip];
 			prod_der = rpdp[ip-sy_v] * dp[ip-sy_v] 
 			   + rpp[ip-sy_v] * ddp[ip-sy_v];
-		        coeff = dt * ffy * (1.0/dy) 
+		        coeff = dt *  z_mult_dat[ip]*ffy * (1.0/dy) 
 			   * PMean(pp[ip-sy_v], pp[ip], 
 			   permyp[ip-sy_v], permyp[ip]) 
 			   / viscosity;
@@ -789,7 +878,7 @@ int           symm_part)      /* Specifies whether to compute just the
 		        diff = pp[ip] - pp[ip+sy_v];
 			prod_der = rpdp[ip+sy_v] * dp[ip+sy_v] 
 			   + rpp[ip+sy_v] * ddp[ip+sy_v];
-		        coeff = dt * ffy * (1.0/dy) 
+		        coeff = dt *  z_mult_dat[ip]*ffy * (1.0/dy) 
 			   * PMean(pp[ip], pp[ip+sy_v], 
 			   permyp[ip], permyp[ip+sy_v]) 
 			   / viscosity;
@@ -808,41 +897,43 @@ int           symm_part)      /* Specifies whether to compute just the
 		     case -1:
 		     {
 			lower_cond = (pp[ip-sz_v]) 
-			   - 0.5 * dz * dp[ip-sz_v] * gravity;
-			upper_cond = (pp[ip] ) + 0.5 * dz * dp[ip] * gravity;
+			   - 0.5 * dz*Mean(z_mult_dat[ip],z_mult_dat[ip-sz_v])
+                 * dp[ip-sz_v] * gravity;
+			upper_cond = (pp[ip] ) + 0.5 * dz *Mean(z_mult_dat[ip],z_mult_dat[ip-sz_v])
+                 * dp[ip] * gravity;
 		        diff = lower_cond - upper_cond;
 			prod_der = rpdp[ip-sz_v] * dp[ip-sz_v] 
 			   + rpp[ip-sz_v] * ddp[ip-sz_v];
 			prod_lo = rpp[ip-sz_v] * dp[ip-sz_v];
-		        coeff = dt * ffz * (1.0/dz) 
+		        coeff = dt * ffz * (1.0/(dz*Mean(z_mult_dat[ip],z_mult_dat[ip-sz_v]))) 
 			   * PMean(pp[ip-sz_v], pp[ip], 
 			   permzp[ip-sz_v], permzp[ip]) 
 			   / viscosity;
 		        lp[im] = - coeff * 
 			   ( diff * RPMean(lower_cond, upper_cond, 
 			   prod_der, 0.0)
-			   - gravity * 0.5 * dz * ddp[ip]
+			   - gravity * 0.5 * dz*Mean(z_mult_dat[ip],z_mult_dat[ip-sz_v]) * ddp[ip]
 			   * RPMean(lower_cond, upper_cond, prod_lo, prod));
 
 			break;
 		     }
 		     case 1:
 		     {
-			lower_cond = (pp[ip]) - 0.5 * dz * dp[ip] * gravity;
+                 lower_cond = (pp[ip]) - 0.5 * dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip] * gravity;
 			upper_cond = (pp[ip+sz_v] ) 
-			   + 0.5 * dz * dp[ip+sz_v] * gravity;
+			   + 0.5 * dz * Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v])*dp[ip+sz_v] * gravity;
 		        diff = lower_cond - upper_cond;
 			prod_der = rpdp[ip+sz_v] * dp[ip+sz_v] 
 			   + rpp[ip+sz_v] * ddp[ip+sz_v];
 			prod_up = rpp[ip+sz_v] * dp[ip+sz_v];
-		        coeff = dt * ffz * (1.0/dz) 
+		        coeff = dt * ffz * (1.0/(dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]))) 
 			   * PMean(lower_cond, upper_cond, 
 			   permzp[ip], permzp[ip+sz_v]) 
 			   / viscosity;
 		        up[im] = - coeff * 
 			   ( diff * RPMean(lower_cond, upper_cond, 
 			   0.0, prod_der)
-			   - gravity * 0.5 * dz * ddp[ip]
+			   - gravity * 0.5 * dz *(Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]))* ddp[ip]
 			   * RPMean(lower_cond, upper_cond, prod, prod_up));
 
 			break;
@@ -882,6 +973,11 @@ int           symm_part)      /* Specifies whether to compute just the
       dy = SubgridDY(subgrid);
       dz = SubgridDZ(subgrid);
 
+       /* @RMM added to provide access to zmult */
+       z_mult_sub = VectorSubvector(z_mult, is);
+       /* @RMM added to provide variable dz */
+       z_mult_dat = SubvectorData(z_mult_sub);
+       
       vol = dx*dy*dz;
       
       ix = SubgridIX(subgrid);
@@ -950,7 +1046,7 @@ int           symm_part)      /* Specifies whether to compute just the
 
 		  if (fdir[0])
 		  {
-		     coeff = dt * ffx * (2.0/dx) * permxp[ip] / viscosity;
+		     coeff = dt * ffx* z_mult_dat[ip] * (2.0/dx) * permxp[ip] / viscosity;
 
 		     switch(fdir[0])
 		     {
@@ -980,7 +1076,7 @@ int           symm_part)      /* Specifies whether to compute just the
 
 		  else if (fdir[1])
 		  {
-		     coeff = dt * ffy * (2.0/dy) * permyp[ip] / viscosity;
+		     coeff = dt * ffy*z_mult_dat[ip] * (2.0/dy) * permyp[ip] / viscosity;
 
 		     switch(fdir[1])
 		     {
@@ -1010,7 +1106,7 @@ int           symm_part)      /* Specifies whether to compute just the
 
 		  else if (fdir[2])
 		  {
-		     coeff = dt * ffz * (2.0/dz) * permzp[ip] / viscosity;
+		     coeff = dt * ffz * (2.0/(dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]))) * permzp[ip] / viscosity;
 
 		     switch(fdir[2])
 		     {
@@ -1019,13 +1115,13 @@ int           symm_part)      /* Specifies whether to compute just the
 			   op = lp;
 			   prod_val = rpp[ip-sz_v] * den_d;
 
-			   lower_cond = (value ) - 0.5 * dz * den_d * gravity;
-			   upper_cond = (pp[ip]) + 0.5 * dz * dp[ip] * gravity;
+			   lower_cond = (value ) - 0.5 * dz *z_mult_dat[ip]* den_d * gravity;
+			   upper_cond = (pp[ip]) + 0.5 * dz *z_mult_dat[ip] * dp[ip] * gravity;
 			   diff = lower_cond - upper_cond;
 
 			   o_temp =  coeff 
 			      * ( diff * RPMean(lower_cond, upper_cond, 0.0, prod_der) 
-			      + ( (-1.0 - gravity * 0.5 * dz * ddp[ip])
+			      + ( (-1.0 - gravity * 0.5 * dz*Mean(z_mult_dat[ip],z_mult_dat[ip-sz_v]) * ddp[ip])
 			      * RPMean(lower_cond, upper_cond, prod_val, prod)));
 			   break;
 			}
@@ -1034,13 +1130,13 @@ int           symm_part)      /* Specifies whether to compute just the
 			   op = up;
 			   prod_val = rpp[ip+sz_v] * den_d;
 
-			   lower_cond = (pp[ip]) - 0.5 * dz * dp[ip] * gravity;
-			   upper_cond = (value ) + 0.5 * dz * den_d * gravity;
+			   lower_cond = (pp[ip]) - 0.5 * dz *Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v])* dp[ip] * gravity;
+			   upper_cond = (value ) + 0.5 * dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * den_d * gravity;
 			   diff = lower_cond - upper_cond;
 
 			   o_temp = - coeff 
 			      * ( diff * RPMean(lower_cond, upper_cond, prod_der, 0.0) 
-			      + ( (1.0 - gravity * 0.5 * dz * ddp[ip])
+			      + ( (1.0 - gravity * 0.5 * dz *Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v])* ddp[ip])
 			      * RPMean(lower_cond, upper_cond, prod, prod_val)));
 			   break;
 			}
@@ -1130,7 +1226,7 @@ int           symm_part)      /* Specifies whether to compute just the
 			   
 			   if ((pp[ip]) > 0.0) 
 			   {
-			      cp[im] += vol /dz*(dt+1);
+			      cp[im] += (vol*z_mult_dat[ip]) /(dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]))*(dt+1);
 			   }	
 			}
 		     });

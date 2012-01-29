@@ -1157,7 +1157,34 @@ void      SolverImpes()
                      indx++;
 
                   }
+                   
                }
+                 int is;
+                
+                /* put call to CRUNCHFLOW here @RMM */
+                ForSubgridI(is, GridSubgrids(grid))
+                {
+                    double        dx,dy,dz;
+                    int           nx,ny,nz,nx_f,ny_f,nz_f,nz_rz,ip,ix,iy,iz; 
+                    int           x,y,z;
+                    
+                    // @RMM - dummy variables for calling CRUNCHFLOW
+                   /* nx = SubgridNX(subgrid);
+                    ny = SubgridNY(subgrid);
+                    nz = SubgridNZ(subgrid);
+                    
+                    ix = SubgridIX(subgrid);
+                    iy = SubgridIY(subgrid);
+                    iz = SubgridIZ(subgrid);
+                    
+                    dx = SubgridDX(subgrid);
+                    dy = SubgridDY(subgrid);
+                    dz = SubgridDZ(subgrid);
+
+                    CALL_CRUNCHFLOW() */
+                                 
+                    
+                }
             }
 
             /* Print the concentration values at this time-step? */

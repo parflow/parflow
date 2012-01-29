@@ -124,7 +124,7 @@ void         XSlope(
 	 int      num_regions;
 	 int     *region_indices;
 	 double  *values;
-
+     double        x, y, z;
 	 double        value;
 	 int           ir;
 
@@ -164,11 +164,18 @@ void         XSlope(
 		* caused.   Switched that to be ctalloc to init to 0 to "hack" a 
 		* fix but is this really a sign of deeper indexing problems?
 		*/
+            /* @RMM: todo. the looping to set slopes only goes over interior nodes
+             not ALL nodes (including ghost) as in nl fn eval and now the overland eval
+             routines.  THis is fine in the KW approximation which only needs interior values
+             but for diffusive wave and for the terrain following grid (which uses the surface
+             topo slopes as subsurface slopes) this can cuase bddy problems.  */
+            
 	       data = SubvectorData(ps_sub);
 	       GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
 			    {
 			       ips = SubvectorEltIndex(ps_sub, i, j, 0);
-
+                    x = RealSpaceX(i, SubgridRX(subgrid));                   
+                   //data[ips] = sin(x)/8.0 + (1/8)*pow(x,-(7/8)) +sin(x/5.0)/(5.0*8.0); 
 			       data[ips] = value;
 			    });
 	    }
@@ -222,13 +229,17 @@ void         XSlope(
 
 	       }   /* End case 1 */
 
-	       case 2:  /* p= x+y+z */
+	       case 2:  /* topo = cos(x)/8 + sin(y)/10 + x^(1/8) + y^(1/2) + cos(x/5)/(5*8) + sin(y/5)/(5*10)
+                     Sx =  sin(x)/ 8 + (1/8)x^(-7/8) + sin(x/5)/(5*8) */
 	       {
 		  GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
 			       {
 				  ips = SubvectorEltIndex(ps_sub, i, j, 0);
-				  /* nonlinear case -div(p grad p) = f */
-				  data[ips] = -3.0;
+                       x = RealSpaceX(i, SubgridRX(subgrid));
+                       y = RealSpaceY(j, SubgridRY(subgrid));
+                       
+                 data[ips] = sin(x)/8.0 + (1/8)*pow(x,-(7/8)) +sin(x/5.0)/(5.0*8.0); 
+			
 			       });
 		  break;
 
@@ -444,7 +455,7 @@ PFModule  *XSlopeNewPublicXtra()
 
    type_na = NA_NewNameArray("Constant PredefinedFunction PFBFile");
 
-   function_type_na = NA_NewNameArray("dum0 X XPlusYPlusZ X3Y2PlusSinXYPlus1 \
+   function_type_na = NA_NewNameArray("dum0 X SineCosTopo X3Y2PlusSinXYPlus1 \
                                        X3Y4PlusX2PlusSinXYCosYPlus1 \
                                        XYZTPlus1 XYZTPlus1PermTensor");
    public_xtra = ctalloc(PublicXtra, 1);
@@ -488,7 +499,7 @@ PFModule  *XSlopeNewPublicXtra()
       {
 	 dummy1 = ctalloc(Type1, 1);
 	    
-	 switch_name = GetString("PhaseSources.PredefinedFunction");
+	 switch_name = GetString("TopoSlopesX.PredefinedFunction");
 	    
 	 dummy1 -> function_type = 
 	    NA_NameToIndex(function_type_na, switch_name);

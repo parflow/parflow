@@ -193,10 +193,11 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 
    double       dtmp, dx, dy, dz, vol, ffx, ffy, ffz;
    double       u_right, u_front, u_upper;
-   double       diff = 0.0e0;
+   double       diff = 0.0e0; 
+    double       updir = 0.0e0;
    double       lower_cond, upper_cond;
     //@RMM : terms for gravity/terrain
-    double   x_dir_g, y_dir_g, z_dir_g, del_x_slope, del_y_slope;
+    double   x_dir_g, y_dir_g, z_dir_g, del_x_slope, del_y_slope, x_dir_g_c, y_dir_g_c;
     
    BCStruct    *bc_struct;
    GrGeomSolid *gr_domain         = ProblemDataGrDomain(problem_data);
@@ -629,11 +630,22 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
          // x_dir_g = RPMean(x_ssl_dat[io],x_ssl_dat[io+1]
          //   ,gravity*sin(atan(x_ssl_dat[io])),gravity*sin(atan(x_ssl_dat[io+1])));
           x_dir_g = Mean(gravity*sin(atan(x_ssl_dat[io])),gravity*sin(atan(x_ssl_dat[io+1])));
+           // x_dir_g = gravity*sin(atan(x_ssl_dat[io]));
+         // x_dir_g = x_ssl_dat[io];
+          x_dir_g_c = Mean(gravity*cos(atan(x_ssl_dat[io])),gravity*cos(atan(x_ssl_dat[io+1])));
+          // x_dir_g_c = gravity*cos(atan(x_ssl_dat[io]));
+          //x_dir_g_c = 1.0; 
           
       //    y_dir_g = RPMean(y_ssl_dat[io], x_ssl_dat[io+sy_p]
       //      ,gravity*sin(atan(y_ssl_dat[io])),gravity*sin(atan(y_ssl_dat[io+sy_p])));
           y_dir_g = Mean(gravity*sin(atan(y_ssl_dat[io])),gravity*sin(atan(y_ssl_dat[io+sy_p])));
-         // z_dir_g = cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2))));
+         // y_dir_g = gravity*sin(atan(y_ssl_dat[io]));
+          //y_dir_g = y_ssl_dat[io];
+          y_dir_g_c = Mean(gravity*cos(atan(y_ssl_dat[io])),gravity*cos(atan(y_ssl_dat[io+sy_p])));
+         // y_dir_g_c = gravity*cos(atan(y_ssl_dat[io]));
+          //y_dir_g_c = 1.0;
+
+          // z_dir_g = cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2))));
           z_dir_g = 1.0;
          // }
           del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
@@ -645,10 +657,13 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 	 /* Calculate right face velocity.
       diff >= 0 implies flow goes left to right */
 	 diff    = pp[ip] - pp[ip+1];
+          updir= (diff/dx)*x_dir_g_c - x_dir_g;
 	 u_right = z_mult_dat[ip]*ffx*del_y_slope * PMean(pp[ip], pp[ip+1], 
 	 permxp[ip], permxp[ip+1])
-	    * (diff / (dx *del_x_slope) )
-	    * RPMean(pp[ip], pp[ip+1], rpp[ip]*dp[ip],
+	    * (diff / (dx *del_x_slope) )*x_dir_g_c
+	   // * RPMean(pp[ip], pp[ip+1],
+           * RPMean(updir,0.0,
+                 rpp[ip]*dp[ip],
 	    rpp[ip+1]*dp[ip+1])
 	    / viscosity;
 
@@ -661,8 +676,10 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
           u_right += z_mult_dat[ip]*ffx *del_y_slope* PMean(pp[ip], pp[ip+1], 
                                 permxp[ip], permxp[ip+1])
           * (-x_dir_g )
-         * RPMean(-x_dir_g, 0.0, rpp[ip]*dp[ip],
-//          * RPMean(-x_dir_g, 0.0, rpp[ip]*dp[ip],                   
+//         * RPMean(pp[ip], pp[ip+1],rpp[ip]*dp[ip],
+         //* RPMean(-x_dir_g, 0.0, rpp[ip]*dp[ip],
+         // * RPMean(-x_dir_g, 0.0, rpp[ip]*dp[ip],
+            * RPMean(updir, 0.0, rpp[ip]*dp[ip],
           rpp[ip+1]*dp[ip+1])
 //          *rpp[ip]*dp[ip]
           / viscosity; 
@@ -671,10 +688,13 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 	 /* Calculate front face velocity.
 	    diff >= 0 implies flow goes back to front */
 	 diff    = pp[ip] - pp[ip+sy_p];
+          updir= (diff/dy)*y_dir_g_c - y_dir_g;    
 	 u_front = z_mult_dat[ip]*ffy*del_x_slope  
         * PMean(pp[ip], pp[ip+sy_p], permyp[ip], permyp[ip+sy_p])
-	    * (diff / (dy*del_y_slope) )
-	    * RPMean(pp[ip], pp[ip+sy_p], rpp[ip]*dp[ip],
+	    * (diff / (dy*del_y_slope) )*y_dir_g_c
+	   // * RPMean(pp[ip], pp[ip+sy_p],
+          * RPMean(updir, 0.0,
+          rpp[ip]*dp[ip],
 	    rpp[ip+sy_p]*dp[ip+sy_p])
 	    / viscosity;
           
@@ -687,8 +707,9 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
           u_front += z_mult_dat[ip]*ffy*del_x_slope
           * PMean(pp[ip], pp[ip+sy_p], permyp[ip], permyp[ip+sy_p])
           * (-y_dir_g)
-          * RPMean(-y_dir_g,0.0, rpp[ip]*dp[ip],
- //           * RPMean(-y_dir_g, 0.0, rpp[ip]*dp[ip],
+   //       * RPMean(pp[ip], pp[ip+sy_p], rpp[ip]*dp[ip],
+  //        * RPMean(-y_dir_g,0.0, rpp[ip]*dp[ip],
+            * RPMean(updir, 0.0, rpp[ip]*dp[ip],
                    rpp[ip+sy_p]*dp[ip+sy_p])
  //         *rpp[ip]*dp[ip]
           / viscosity;

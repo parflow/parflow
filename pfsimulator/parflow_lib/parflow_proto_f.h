@@ -131,6 +131,12 @@ void CLM_LSM( double *pressure_data, double *saturation_data, double *evap_trans
               int *clm_irr_type, int *clm_irr_cycle, double *clm_irr_rate, double *clm_irr_start, double *clm_irr_stop, 
               double *clm_irr_threshold, double *qirr, double *qirr_inst, double *iflag, int *clm_irr_thresholdtype );
 
+    /* @RMM CRUNCHFLOW.F90*/
+//#define CRUNCHFLOW crunchflow_
+//#define CALL_CRUNCHFLOW();
+    
+//    void CRUCHFLOW( );    
+    
 #ifdef __cplusplus     /* wrapper to enable C++ usage */
 }
 #endif

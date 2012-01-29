@@ -212,13 +212,18 @@ void         YSlope(
 
 	       }   /* End case 1 */
 
-	       case 2:  /* p= x+y+z */
-	       {
+            case 2:  /* topo = cos(x)/8 + sin(y)/20 + x^(1/8) + y^(1/8) + cos(x/5)/(5*8) + sin(y/5)/(5*10)
+                      Sy =  cos(y)/ 10 + (1/2)y^(-1/2) + cos(y/5)/(5*10) */
+            {
+	       
 		  GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
 			       {
-				  ips = SubvectorEltIndex(ps_sub, i, j, 0);
-				  /* nonlinear case -div(p grad p) = f */
-				  data[ips] = -3.0;
+                       ips = SubvectorEltIndex(ps_sub, i, j, 0);
+                       x = RealSpaceX(i, SubgridRX(subgrid));
+                       y = RealSpaceY(j, SubgridRY(subgrid));
+                       /* nonlinear case -div(p grad p) = f */
+                       data[ips] = cos(y)/20.0 + (1.0/8.0)*pow(x,-(7/8)) +cos(y/5.0)/(5.0*10.0); 
+                       
 			       });
 		  break;
 
@@ -435,7 +440,7 @@ PFModule  *YSlopeNewPublicXtra()
 
    type_na = NA_NewNameArray("Constant PredefinedFunction PFBFile");
 
-   function_type_na = NA_NewNameArray("dum0 X XPlusYPlusZ X3Y2PlusSinXYPlus1 \
+   function_type_na = NA_NewNameArray("dum0 X SineCosTopo X3Y2PlusSinXYPlus1 \
                                        X3Y4PlusX2PlusSinXYCosYPlus1 \
                                        XYZTPlus1 XYZTPlus1PermTensor");
    public_xtra = ctalloc(PublicXtra, 1);
@@ -479,7 +484,7 @@ PFModule  *YSlopeNewPublicXtra()
       {
 	 dummy1 = ctalloc(Type1, 1);
 	    
-	 switch_name = GetString("PhaseSources.PredefinedFunction");
+	 switch_name = GetString("TopoSlopesY.PredefinedFunction");
 	    
 	 dummy1 -> function_type = 
 	    NA_NameToIndex(function_type_na, switch_name);
