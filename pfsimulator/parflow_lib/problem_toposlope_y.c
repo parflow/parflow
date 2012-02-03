@@ -222,8 +222,9 @@ void         YSlope(
                        x = RealSpaceX(i, SubgridRX(subgrid));
                        y = RealSpaceY(j, SubgridRY(subgrid));
                        /* nonlinear case -div(p grad p) = f */
-                       data[ips] = cos(y)/20.0 + (1.0/8.0)*pow(x,-(7/8)) +cos(y/5.0)/(5.0*10.0); 
-                       
+                       //data[ips] = cos(y)/20.0 + (1.0/8.0)*pow(x,-(7/8)) +cos(y/5.0)/(5.0*10.0); 
+                       data[ips] = (0.10)*cos(y/5.0);
+
 			       });
 		  break;
 

@@ -238,7 +238,8 @@ void         XSlope(
                        x = RealSpaceX(i, SubgridRX(subgrid));
                        y = RealSpaceY(j, SubgridRY(subgrid));
                        
-                 data[ips] = sin(x)/8.0 + (1/8)*pow(x,-(7/8)) +sin(x/5.0)/(5.0*8.0); 
+                 //data[ips] = sin(x)/8.0 + (1/8)*pow(x,-(7/8)) +sin(x/5.0)/(5.0*8.0);
+                       data[ips] = (0.10)*sin(x/5.0);
 			
 			       });
 		  break;
