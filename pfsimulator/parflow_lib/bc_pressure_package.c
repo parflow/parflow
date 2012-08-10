@@ -110,6 +110,12 @@ typedef struct
    double   *values;
 } Type7;               /* //sk Overland flow, constant rainfall*/
 
+typedef struct
+{
+    char     **filenames;
+} Type8;               /* //RM Flux, given in "filenames".pfb but for overland flow */
+
+
 
 /*--------------------------------------------------------------------------
  * BCPressurePackage
@@ -131,7 +137,9 @@ void         BCPressurePackage(
    Type4            *dummy4;
    Type5            *dummy5;
    Type6            *dummy6;
-   Type7            *dummy7;  
+   Type7            *dummy7; 
+   Type8            *dummy8; 
+    
 
    TimeCycleData    *time_cycle_data;
 
@@ -408,7 +416,30 @@ void         BCPressurePackage(
 
                break;
             }
-
+                    /* Setup a file defined flux condition structure for overland flow BC*/
+                case 8:
+                {
+                    BCPressureType8   *bc_pressure_type8;
+                    
+                    BCPressureDataBCType(bc_pressure_data,i) = OverlandBC;
+                    
+                    dummy8 = (Type8 *)(public_xtra -> data[i]);
+                    
+                    bc_pressure_type8 = ctalloc(BCPressureType8, 1);
+                    
+                    BCPressureType8FileName(bc_pressure_type8) 
+                    = ctalloc(char, strlen((dummy8 -> filenames)[interval_number])+1);
+                    
+                    strcpy(BCPressureType8FileName(bc_pressure_type8),
+                           ((dummy8 -> filenames)[interval_number]));
+                    
+                    BCPressureDataIntervalValue(bc_pressure_data,i,interval_number) 
+                    = (void *) bc_pressure_type8;
+                    
+                    break;
+                }
+                    
+                    
             }
          }
       }
@@ -494,6 +525,8 @@ PFModule  *BCPressurePackageNewPublicXtra(
    Type5         *dummy5;
    Type6         *dummy6;
    Type7         *dummy7;
+   Type8         *dummy8;
+    
 
    int             i, interval_number, interval_division;
 
@@ -501,7 +534,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
    NameArray function_na;
 
    //sk
-   type_na = NA_NewNameArray("DirEquilRefPatch DirEquilPLinear FluxConst FluxVolumetric PressureFile FluxFile ExactSolution OverlandFlow");
+   type_na = NA_NewNameArray("DirEquilRefPatch DirEquilPLinear FluxConst FluxVolumetric PressureFile FluxFile ExactSolution OverlandFlow OverlandFlowPFB");
 
    function_na = NA_NewNameArray("dum0 X XPlusYPlusZ X3Y2PlusSinXYPlus1 X3Y4PlusX2PlusSinXYCosYPlus1 XYZTPlus1 XYZTPlus1PermTensor");
 
@@ -889,8 +922,27 @@ PFModule  *BCPressurePackageNewPublicXtra(
             (public_xtra -> data[i]) = (void *) dummy7;
             break;
          }
-
-
+             case 8:
+             {
+                 dummy8 = ctalloc(Type4, 1);
+                 
+                 (dummy8 -> filenames) = ctalloc(char *, interval_division);
+                 
+                 for(interval_number = 0; interval_number < interval_division; interval_number++)
+                 {
+                     
+                     sprintf(key, "Patch.%s.BCPressure.%s.FileName", 
+                             patch_name,
+                             NA_IndexToName(GlobalsIntervalNames[global_cycle],
+                                            interval_number));
+                     
+                     dummy8 -> filenames[interval_number] = GetString(key);
+                 }
+                 
+                 (public_xtra -> data[i]) = (void *) dummy8;
+                 break;
+             }
+                 
          }   /* End switch statement */
       }
    }
@@ -920,6 +972,8 @@ void  BCPressurePackageFreePublicXtra()
    Type5         *dummy5;
    Type6         *dummy6;
    Type7         *dummy7;
+   Type8         *dummy8;
+    
 
    int            num_patches, num_cycles;
    int            i, interval_number, interval_division;
@@ -1010,10 +1064,11 @@ void  BCPressurePackageFreePublicXtra()
 
                dummy4 = (Type4 *)(public_xtra -> data[i]);
 
-               for(interval_number = 0; interval_number < interval_division; interval_number++)
+                for(interval_number = 0; interval_number < interval_division; interval_number++)
                {
                   tfree(((dummy4 -> filenames)[interval_number]));
-               }
+                }  
+                // @RMM had to remove to not error our
 
                tfree((dummy4 -> filenames));
 
@@ -1059,8 +1114,26 @@ void  BCPressurePackageFreePublicXtra()
 
                break;
             }
-
-
+                    //RMM
+                case 8:
+                {
+                    int interval_number;
+                    
+                    dummy8 = (Type8 *)(public_xtra -> data[i]);
+                    
+                   /* for(interval_number = 0; interval_number < interval_division; interval_number++)
+                    {
+                        tfree(((dummy8 -> filenames)[interval_number]));
+                    }  */
+                    // @RMM had to remove to not error our
+                    
+                    tfree((dummy8 -> filenames));
+                    
+                    tfree(dummy8);
+                    
+                    break;
+                }
+                    
             }
          }
 
