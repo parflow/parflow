@@ -50,7 +50,6 @@
 
 // Which Jacobian to use.
 // 
-
 enum JacobianType { 
    no_nonlinear_jacobian,
    not_set,
@@ -73,6 +72,7 @@ typedef struct
    PFModule     *bc_pressure;
    PFModule     *bc_internal;
    PFModule	*overlandflow_module; //DOK
+   PFModule	*overlandflow_module_diff; //@LEC
 
    /* The analytic Jacobian matrix is decomposed as follows:
     *       
@@ -200,6 +200,7 @@ int           symm_part)      /* Specifies whether to compute just the
    PFModule    *bc_pressure       = (instance_xtra -> bc_pressure);
    PFModule    *bc_internal       = (instance_xtra -> bc_internal);
    PFModule    *overlandflow_module       = (instance_xtra -> overlandflow_module);
+   PFModule    *overlandflow_module_diff       = (instance_xtra -> overlandflow_module_diff);
 
    Matrix      *J                 = (instance_xtra -> J);
    Matrix      *JC                = (instance_xtra -> JC);
@@ -220,9 +221,9 @@ int           symm_part)      /* Specifies whether to compute just the
    Vector      *slope_x              = ProblemDataTSlopeX(problem_data);  //DOK
 
    /* Overland flow variables */ //DOK
-   Vector      *KW, *KE, *KN, *KS;
-   Subvector   *kw_sub, *ke_sub, *kn_sub, *ks_sub, *top_sub, *sx_sub;
-   double      *kw_der, *ke_der, *kn_der, *ks_der;   
+   Vector      *KW, *KE, *KN, *KS, *KWns, *KEns, *KNns, *KSns;
+   Subvector   *kw_sub, *ke_sub, *kn_sub, *ks_sub, *kwns_sub, *kens_sub, *knns_sub, *ksns_sub, *top_sub, *sx_sub;
+   double      *kw_der, *ke_der, *kn_der, *ks_der, *kwns_der, *kens_der, *knns_der, *ksns_der;   
 
    double       gravity           = ProblemGravity(problem);
    double       viscosity         = ProblemPhaseViscosity(problem, 0);
@@ -263,6 +264,13 @@ int           symm_part)      /* Specifies whether to compute just the
    int          sy_v, sz_v;
    int          sy_m, sz_m;
    int          ip, ipo, im, iv;
+   
+   
+   int          diffusive;   //@LEC
+   diffusive = GetIntDefault("OverlandFlowDiffusive",0);
+    
+    int          overlandspinup;   //@RMM
+    overlandspinup = GetIntDefault("OverlandFlowSpinUp",0);
 
    int		itop, k1, io, io1, ovlnd_flag; //DOK
     int     ioo;   //@RMM
@@ -311,7 +319,7 @@ int           symm_part)      /* Specifies whether to compute just the
 	       case 7:
 	       {
 		  public_xtra -> type = overland_flow;
-		  printf("SGS setting overland flow\n");
+		 // printf("SGS setting overland flow\n");
 	       }
 	       break;
 	    }
@@ -340,11 +348,19 @@ int           symm_part)      /* Specifies whether to compute just the
    KE = NewVectorType( grid2d, 1, 1, vector_cell_centered);
    KN = NewVectorType( grid2d, 1, 1, vector_cell_centered);
    KS = NewVectorType( grid2d, 1, 1, vector_cell_centered);
+   KWns = NewVectorType( grid2d, 1, 1, vector_cell_centered);
+   KEns = NewVectorType( grid2d, 1, 1, vector_cell_centered);
+   KNns = NewVectorType( grid2d, 1, 1, vector_cell_centered);
+   KSns = NewVectorType( grid2d, 1, 1, vector_cell_centered);
 
    InitVector(KW, 0.0);
    InitVector(KE, 0.0);
    InitVector(KN, 0.0);
    InitVector(KS, 0.0);
+   InitVector(KWns, 0.0);
+   InitVector(KEns, 0.0);
+   InitVector(KNns, 0.0);
+   InitVector(KSns, 0.0);
 
    // SGS set this to 1 since the off/on behavior does not work in 
    // parallel.
@@ -450,6 +466,14 @@ int           symm_part)      /* Specifies whether to compute just the
           vol2 = vol * z_mult_dat[ipo]; 
 	 cp[im] += (sdp[iv]*dp[iv] + sp[iv]*ddp[iv])
 	    *pop[ipo]*vol2 + ss[iv]*vol2*(sdp[iv]*dp[iv]*pp[iv]+sp[iv]*ddp[iv]*pp[iv]+sp[iv]*dp[iv]); //sk start
+          
+//          if (overlandspinup == 1) {
+              /* add flux loss equal to excess head  that overwrites the prior overland flux */
+/*              if (k == nz-1) {
+                  sep = dz*z_mult_dat[ip];  
+                  cp[ip] +=  -vol*z_mult_dat[ip]/ sep;
+              } } 
+                   */
 
       });
 
@@ -694,6 +718,10 @@ int           symm_part)      /* Specifies whether to compute just the
 	 /* diff >= 0 implies flow goes lower to upper */
 	 lower_cond = pp[ip] /sep     - 0.5 *Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip]      * gravity;
 	 upper_cond = pp[ip+sz_v]/sep + 0.5 *Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip+sz_v] * gravity;
+          
+          lower_cond = pp[ip] /sep     - 0.5  * dp[ip]      * gravity;
+          upper_cond = pp[ip+sz_v]/sep + 0.5  * dp[ip+sz_v] * gravity;
+          
  //                lower_cond = pp[ip]    - 0.5 * dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip]      * gravity;
  //                upper_cond = pp[ip+sz_v] + 0.5 * dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip+sz_v] * gravity;
 	 diff = lower_cond - upper_cond;
@@ -726,6 +754,8 @@ int           symm_part)      /* Specifies whether to compute just the
 	    *RPMean(lower_cond, upper_cond, prod, 
 	    prod_up) ) )
 	    + sym_upper_temp;
+          
+          
 
 	 cp[im]      -= west_temp + south_temp + lower_temp;
 	 cp[im+1]    -= east_temp;
@@ -968,6 +998,10 @@ int           symm_part)      /* Specifies whether to compute just the
       ke_sub = VectorSubvector(KE, is);
       kn_sub = VectorSubvector(KN, is);
       ks_sub = VectorSubvector(KS, is);
+      kwns_sub = VectorSubvector(KWns, is);
+      kens_sub = VectorSubvector(KEns, is);
+      knns_sub = VectorSubvector(KNns, is);
+      ksns_sub = VectorSubvector(KSns, is);
 
       dx = SubgridDX(subgrid);
       dy = SubgridDY(subgrid);
@@ -1007,6 +1041,10 @@ int           symm_part)      /* Specifies whether to compute just the
       ke_der = SubvectorData(ke_sub);
       kn_der = SubvectorData(kn_sub);
       ks_der = SubvectorData(ks_sub);
+      kwns_der = SubvectorData(kwns_sub);
+      kens_der = SubvectorData(kens_sub);
+      knns_der = SubvectorData(knns_sub);
+      ksns_der = SubvectorData(ksns_sub);
 
       pp     = SubvectorData(p_sub);
       sp     = SubvectorData(s_sub);
@@ -1234,13 +1272,50 @@ int           symm_part)      /* Specifies whether to compute just the
 		  }
 		  case overland_flow :
 		  { 
+		 // printf("case overland_flow\n");
 		     /* Get overland flow contributions - DOK*/
 		     // SGS can we skip this invocation if !overland_flow? 
-		     PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module, 
+		     		     
+		     //PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module, 
+			//		(grid, is, bc_struct, ipatch, problem_data, pressure,
+			//		 ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
+		     
+              if (overlandspinup == 1) {
+                  /* add flux loss equal to excess head  that overwrites the prior overland flux */
+                  if ((pp[ip]) > 0.0) 
+                  {
+                  sep = dz*z_mult_dat[ip];  //RMM
+                      cp[im] += 0.0; // vol*z_mult_dat[ip]*dt*(1.0);
+                  }
+              }  else {
+
+		      /* Get overland flow contributions for using kinematic or diffusive - LEC */
+		      if (diffusive == 0) {
+            	      	      PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module, 
 					(grid, is, bc_struct, ipatch, problem_data, pressure,
 					 ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
+			     //  printf("Kinematic Diffuive CALCDER invoked\n");
+		      } else {
+		      	    //  printf("Else... invoke diffusive CALCDER\n");
+		      			      	      
+		      	        /* Test running Diffuisve calc FCN */               
+                               //double *dummy1, *dummy2, *dummy3, *dummy4; 
+                               //PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
+                                //                                             ke_der, kw_der, kn_der, ks_der, 
+                                 //       dummy1, dummy2, dummy3, dummy4,
+                                  //                                                    NULL, NULL, CALCFCN));
+                              
+                               PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, 
+		      	      	      		(grid, is, bc_struct, ipatch, problem_data, pressure,
+                                                 ke_der, kw_der, kn_der, ks_der, 
+                                                 kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
+                              // printf("Diffusive CALCDER invoked\n");
+                      }
+              }
+		     
 		     
 		     break;
+
 		  }
 		  
 	       }
@@ -1255,7 +1330,7 @@ int           symm_part)      /* Specifies whether to compute just the
 
 
 
-   if(public_xtra -> type == overland_flow) {
+   if (public_xtra -> type == overland_flow) {
 
       // SGS always have to do communication here since
       // each processor may/may not be doing overland flow.
@@ -1277,6 +1352,18 @@ int           symm_part)      /* Specifies whether to compute just the
       FinalizeVectorUpdate(vector_update_handle);
       /* Pass KN values to neighbors.  */
       vector_update_handle = InitVectorUpdate(KN, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+       /* Pass KWns values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KWns, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KEns values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KEns, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KSns values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KSns, VectorUpdateAll);
+      FinalizeVectorUpdate(vector_update_handle);
+      /* Pass KNns values to neighbors.  */
+      vector_update_handle = InitVectorUpdate(KNns, VectorUpdateAll);
       FinalizeVectorUpdate(vector_update_handle);
    }
 
@@ -1307,6 +1394,10 @@ int           symm_part)      /* Specifies whether to compute just the
 	 ke_sub = VectorSubvector(KE, is);
 	 kn_sub = VectorSubvector(KN, is);
 	 ks_sub = VectorSubvector(KS, is);
+	 kwns_sub = VectorSubvector(KWns, is);
+	 kens_sub = VectorSubvector(KEns, is);
+	 knns_sub = VectorSubvector(KNns, is);
+	 ksns_sub = VectorSubvector(KSns, is);
 
 	 top_sub = VectorSubvector(top, is);
 	 sx_sub = VectorSubvector(slope_x, is);
@@ -1345,6 +1436,10 @@ int           symm_part)      /* Specifies whether to compute just the
 	 ke_der = SubvectorData(ke_sub);
 	 kn_der = SubvectorData(kn_sub);
 	 ks_der = SubvectorData(ks_sub);
+	 kwns_der = SubvectorData(kwns_sub);
+	 kens_der = SubvectorData(kens_sub);
+	 knns_der = SubvectorData(knns_sub);
+	 ksns_der = SubvectorData(ksns_sub);
 
 	 top_dat = SubvectorData(top_sub);
       
@@ -1416,25 +1511,43 @@ int           symm_part)      /* Specifies whether to compute just the
 			}
 			
 			/* Now add overland contributions to JC */ 
-			if ((pp[ip]) > 0.0) 
-			{
-			   /*diagonal term */
-			   cp_c[io] += (vol /dz) + (vol/ffy)*dt*(ke_der[io1] - kw_der[io1])
-			      + (vol/ffx)*dt*(kn_der[io1] - ks_der[io1]);
+		        if ((pp[ip]) > 0.0) 
+				{
+				/*diagonal term */
+				cp_c[io] += (vol /dz) + (vol/ffy)*dt*(ke_der[io1] - kw_der[io1])
+				+ (vol/ffx)*dt*(kn_der[io1] - ks_der[io1]);
 
-			}
-			   			   
-			/*west term */
-			wp_c[io] -=  (vol/ffy)*dt*(ke_der[io1-1]); 
+				}
+			
+			if (diffusive == 0) {
+				   			   
+				/*west term */
+				wp_c[io] -=  (vol/ffy)*dt*(ke_der[io1-1]); 
 
-			/*East term */
-			ep_c[io] +=  (vol/ffy)*dt*(kw_der[io1+1]); 
+				/*East term */
+				ep_c[io] +=  (vol/ffy)*dt*(kw_der[io1+1]); 
 
-			/*south term */
-			sop_c[io] -=  (vol/ffx)*dt*(kn_der[io1-sy_v]); 
+				/*south term */
+				sop_c[io] -=  (vol/ffx)*dt*(kn_der[io1-sy_v]); 
 
-			/*north term */
-			np_c[io] +=  (vol/ffx)*dt*(ks_der[io1+sy_v]); 	
+				/*north term */
+				np_c[io] +=  (vol/ffx)*dt*(ks_der[io1+sy_v]); 
+		        } else {
+				   			   
+				/*west term */
+				wp_c[io] -=  (vol/ffy)*dt*(kwns_der[io1]); 
+
+				/*East term */
+				ep_c[io] +=  (vol/ffy)*dt*(kens_der[io1]); 
+
+				/*south term */
+				sop_c[io] -=  (vol/ffx)*dt*(ksns_der[io1]); 
+
+				/*north term */
+				np_c[io] +=  (vol/ffx)*dt*(knns_der[io1]); 	
+		        
+		        }
+                 
 		     } 
 		  }); 
 		  break;
@@ -1547,7 +1660,7 @@ int           symm_part)      /* Specifies whether to compute just the
     * Free temp vectors
     *-----------------------------------------------------------------------*/
 
-   FreeBCStruct(bc_struct);
+    FreeBCStruct(bc_struct);
 
    FreeVector(density_der);
    FreeVector(saturation_der);
@@ -1638,6 +1751,8 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
          PFModuleNewInstance(ProblemBCInternal(problem), () );
       (instance_xtra -> overlandflow_module) =
          PFModuleNewInstance(ProblemOverlandFlowEval(problem), () ); //DOK
+       (instance_xtra -> overlandflow_module_diff) =
+       PFModuleNewInstance(ProblemOverlandFlowEvalDiff(problem), () ); //RMM-LEC
    }
    else {
       PFModuleReNewInstance((instance_xtra -> density_module), ());
@@ -1648,6 +1763,8 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
 				(NULL, NULL));
       PFModuleReNewInstance((instance_xtra -> bc_internal), ());
       PFModuleReNewInstance((instance_xtra -> overlandflow_module), ()); //DOK
+       PFModuleReNewInstance((instance_xtra -> overlandflow_module_diff), ()); //RMM-LEC
+ 
    }
 
 
@@ -1673,6 +1790,7 @@ void  RichardsJacobianEvalFreeInstanceXtra()
       PFModuleFreeInstance(instance_xtra -> rel_perm_module);
       PFModuleFreeInstance(instance_xtra -> bc_internal);
       PFModuleFreeInstance(instance_xtra -> overlandflow_module); //DOK      
+        PFModuleFreeInstance(instance_xtra -> overlandflow_module_diff); //RMM-LEC      
 
       FreeMatrix(instance_xtra -> J);
 

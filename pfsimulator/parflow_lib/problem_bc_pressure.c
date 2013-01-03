@@ -39,7 +39,7 @@
 typedef struct
 {
    int     num_phases;
-
+   //int     iflag;   //@RMM
 } PublicXtra;
 
 typedef struct
@@ -96,9 +96,11 @@ BCStruct    *BCPressure(
    int             num_patches;
    int             ipatch, is, i, j, k, ival, phase;
    int             cycle_number, interval_number;
+ 
 	         
+ //       if (time == 10000.0) {
+            printf("time: %f \n", time);
    bc_struct = NULL;
-
    num_patches = BCPressureDataNumPatches(bc_pressure_data);
 
    if (num_patches > 0)
@@ -927,8 +929,7 @@ BCStruct    *BCPressure(
                  int              itmp;
                  double           dtmp;
                  
-                 bc_pressure_type8 = BCPressureDataIntervalValue(
-                                                                 bc_pressure_data,ipatch,interval_number);
+                 bc_pressure_type8 = BCPressureDataIntervalValue(bc_pressure_data,ipatch,interval_number);
                  
                  ForSubgridI(is, subgrids)
                  {
@@ -946,6 +947,7 @@ BCStruct    *BCPressure(
                      //data = ctalloc(double, SizeOfVector(tmp_vector));
                      //SetTempVectorData(tmp_vector, data);
                      
+                     printf("reading overland file \n");
                      filename = BCPressureType8FileName(bc_pressure_type8);
                      ReadPFBinary(filename, tmp_vector);
                      
@@ -968,7 +970,7 @@ BCStruct    *BCPressure(
          }
       }
    }
-    
+    //}
     return bc_struct;
 }
 

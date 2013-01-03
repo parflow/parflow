@@ -224,6 +224,9 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
     diffusive = GetIntDefault("OverlandFlowDiffusive",0);
    // printf(" diffusive: %d \n", diffusive);
     
+    int          overlandspinup;   //@RMM
+    overlandspinup = GetIntDefault("OverlandFlowSpinUp",0);
+    
    /* Pass pressure values to neighbors.  */
    handle = InitVectorUpdate(pressure, VectorUpdateAll);
    FinalizeVectorUpdate(handle);
@@ -403,6 +406,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
           del_y_slope = 1.0;
 	 fp[ip] += ss[ip]*vol*del_x_slope*del_y_slope*z_mult_dat[ip] *(pp[ip]*sp[ip]*dp[ip] - opp[ip]*osp[ip]*odp[ip]);
          // printf(" ZMD2: %d %f \n",ip, z_mult_dat[ip]);
+          
       });
    }
 
@@ -466,6 +470,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
           del_x_slope = 1.0;
           del_y_slope = 1.0;
 	 fp[ip] -= vol*del_x_slope*del_y_slope*z_mult_dat[ip] * dt * (sp[ip] + et[ip]);
+          
+          
       });
    }
 
@@ -630,18 +636,23 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
          // x_dir_g = RPMean(x_ssl_dat[io],x_ssl_dat[io+1]
          //   ,gravity*sin(atan(x_ssl_dat[io])),gravity*sin(atan(x_ssl_dat[io+1])));
           x_dir_g = Mean(gravity*sin(atan(x_ssl_dat[io])),gravity*sin(atan(x_ssl_dat[io+1])));
-           // x_dir_g = gravity*sin(atan(x_ssl_dat[io]));
+          x_dir_g = gravity*sin(Mean(atan(x_ssl_dat[io]),atan(x_ssl_dat[io+1])));
+
+          // x_dir_g = gravity*sin(atan(x_ssl_dat[io]));
          // x_dir_g = x_ssl_dat[io];
           x_dir_g_c = Mean(gravity*cos(atan(x_ssl_dat[io])),gravity*cos(atan(x_ssl_dat[io+1])));
+          x_dir_g_c = gravity*cos(Mean(atan(x_ssl_dat[io]),atan(x_ssl_dat[io+1])));
           // x_dir_g_c = gravity*cos(atan(x_ssl_dat[io]));
           //x_dir_g_c = 1.0; 
           
       //    y_dir_g = RPMean(y_ssl_dat[io], x_ssl_dat[io+sy_p]
       //      ,gravity*sin(atan(y_ssl_dat[io])),gravity*sin(atan(y_ssl_dat[io+sy_p])));
           y_dir_g = Mean(gravity*sin(atan(y_ssl_dat[io])),gravity*sin(atan(y_ssl_dat[io+sy_p])));
+          y_dir_g = gravity*sin(Mean(atan(y_ssl_dat[io]),atan(y_ssl_dat[io+sy_p])));
          // y_dir_g = gravity*sin(atan(y_ssl_dat[io]));
           //y_dir_g = y_ssl_dat[io];
           y_dir_g_c = Mean(gravity*cos(atan(y_ssl_dat[io])),gravity*cos(atan(y_ssl_dat[io+sy_p])));
+          y_dir_g_c = gravity*cos(Mean(atan(y_ssl_dat[io]),atan(y_ssl_dat[io+sy_p])));
          // y_dir_g_c = gravity*cos(atan(y_ssl_dat[io]));
           //y_dir_g_c = 1.0;
 
@@ -725,13 +736,19 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 
          // sep = dz*z_mult_dat[ip];
 
-          lower_cond = pp[ip]/ sep   - 0.5 *(Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]))* dp[ip] * gravity  * 
-             z_dir_g; 
+//          lower_cond = pp[ip]/ sep   - 0.5 *(Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]))* dp[ip] * gravity  * 
+//             z_dir_g; 
           
         //  sep = dz*z_mult_dat[ip+sz_p];
 
-          upper_cond = pp[ip+sz_p] / sep  + 0.5*(Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]))* dp[ip+sz_p] * gravity * 
-            z_dir_g; 
+//          upper_cond = pp[ip+sz_p] / sep  + 0.5*(Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]))* dp[ip+sz_p] * gravity * 
+//            z_dir_g; 
+          
+          //CPS
+          lower_cond = pp[ip]/ sep   - 0.5 * dp[ip] * gravity  * z_dir_g;
+          
+          upper_cond = pp[ip+sz_p] / sep  + 0.5*dp[ip+sz_p] * gravity *z_dir_g;
+          
           diff = (lower_cond - upper_cond);
 	 u_upper = ffz*del_x_slope*del_y_slope 
           * PMean(pp[ip], pp[ip+sz_p], permzp[ip], permzp[ip+sz_p])
@@ -1251,9 +1268,16 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			      * RPMean(lower_cond, upper_cond,
 			      rpp[ip]*dp[ip], rpp[ip+sz_p]*dp[ip+sz_p])
 			      / viscosity;
+
+                //     sep = dz*z_mult_dat[ip];  //RMM
+                //     q_overlnd =  -vol*z_mult_dat[ip]*(pfmax(pp[ip],0.0) - 0.0) / sep;
+ 
+                     
 			   break;
 		     }
 		     u_new = ffz* del_x_slope* del_y_slope;
+              
+              //u_new += q_overlnd;
 		  }
 
 		  /* Remove the boundary term computed above */
@@ -1450,8 +1474,11 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
             } else {
             /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
              routing added */
+                double *dummy1, *dummy2, *dummy3, *dummy4; 
             PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
-                                                                             ke_, kw_, kn_, ks_, qx_, qy_, CALCFCN));
+                                                                             ke_, kw_, kn_, ks_, 
+                                        dummy1, dummy2, dummy3, dummy4,
+                                                                                      qx_, qy_, CALCFCN));
             }
 #else
 	       // SGS TODO can these loops be merged?
@@ -1532,7 +1559,14 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
                      * (pfmax(pp[ip],0.0) - pfmax(opp[ip],0.0)) / sep+
 			      dt * vol * z_mult_dat[ip]* ((ke_[io]-kw_[io])/dx + (kn_[io] - ks_[io])/dy) 
                      / sep;
+                     
 
+                      if (overlandspinup == 1) {
+                     /* add flux loss equal to excess head  that overwrites the prior overland flux */
+                     sep = dz*z_mult_dat[ip];  //RMM
+                     q_overlnd =  vol*z_mult_dat[ip]*dt*(pfmax(pp[ip],0.0) - 0.0);
+                       }
+                     
 /*			   obf_dat[io] = 0.0;
 			   if ( i >= 0 && i <= (gnx-1) && j == 0 && qy_[io] < 0.0 ){ //south face
 			      obf_dat[io]+= fabs(qy_[io]);
@@ -1545,7 +1579,9 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			   } else if (i > 0 && i < (gnx-1) && j > 0 && j < (gny-1)) { //interior
 			      obf_dat[io] = qx_[io];
 			   } */
-			   			   
+			   			
+
+                     
 			   fp[ip] += q_overlnd;
 
    			   break;
