@@ -1,7 +1,7 @@
 *****************************************************************************
 ParFlow Output Log
 		Version: 3.1.600
-	Compiled on    : Jan  1 2011 21:32:32
+	Compiled on    : Jan  9 2013 09:09:30
 *****************************************************************************
 ==============================================
 BEGIN Log Info (MGSemi)
@@ -89,25 +89,25 @@ END Log Info
 BEGIN Log Info (Timing)
 
 Solver Setup:
-  wall clock time   = 0.033800 seconds
+  wall clock time   = 0.020500 seconds
   wall MFLOPS = 0.000000 (0)
 Solver:
-  wall clock time   = 1.270700 seconds
-  wall MFLOPS = 45.458890 (5.77646e+07)
+  wall clock time   = 0.671800 seconds
+  wall MFLOPS = 65.453559 (4.39717e+07)
 Solver Cleanup:
-  wall clock time   = 0.001400 seconds
+  wall clock time   = 0.000900 seconds
   wall MFLOPS = 0.000000 (0)
 Matvec:
-  wall clock time   = 0.025300 seconds
-  wall MFLOPS = 494.517628 (1.25113e+07)
+  wall clock time   = 0.011500 seconds
+  wall MFLOPS = 845.609739 (9.72451e+06)
 PFSB I/O:
   wall clock time   = 0.000000 seconds
   wall MFLOPS = 0.000000 (0)
 PFB I/O:
-  wall clock time   = 0.008500 seconds
+  wall clock time   = 0.014500 seconds
   wall MFLOPS = 0.000000 (0)
 CLM:
-  wall clock time   = 0.000000 seconds
+  wall clock time   = 0.000100 seconds
   wall MFLOPS = 0.000000 (0)
 PFSOL Read:
   wall clock time   = 0.000000 seconds
@@ -119,33 +119,33 @@ Godunov Advection:
   wall clock time   = 0.000000 seconds
   wall MFLOPS = 0.000000 (0)
 Geometries:
-  wall clock time   = 0.003100 seconds
+  wall clock time   = 0.001900 seconds
   wall MFLOPS = 0.000000 (0)
 SubsrfSim:
   wall clock time   = 0.000100 seconds
   wall MFLOPS = 0.000000 (0)
 Porosity:
-  wall clock time   = 0.000100 seconds
+  wall clock time   = 0.000000 seconds
   wall MFLOPS = 0.000000 (0)
 PhaseRelPerm:
-  wall clock time   = 0.217400 seconds
-  wall MFLOPS = 0.004535 (986)
+  wall clock time   = 0.121900 seconds
+  wall MFLOPS = 0.007006 (854)
 MGSemi:
-  wall clock time   = 0.208000 seconds
-  wall MFLOPS = 203.257817 (4.22776e+07)
+  wall clock time   = 0.099800 seconds
+  wall MFLOPS = 329.265000 (3.28606e+07)
 NL_F_Eval:
-  wall clock time   = 0.813900 seconds
-  wall MFLOPS = 0.000971 (790)
+  wall clock time   = 0.391000 seconds
+  wall MFLOPS = 0.001673 (654)
 KINSol:
-  wall clock time   = 1.252000 seconds
-  wall MFLOPS = 46.137869 (5.77646e+07)
+  wall clock time   = 0.650800 seconds
+  wall MFLOPS = 67.565613 (4.39717e+07)
 
 END Log Info
 ==============================================
 ==============================================
 BEGIN Log Info (ParFlow Total Time)
 
-Total Run Time: 1.332100 seconds
+Total Run Time: 0.705100 seconds
 
 
 
