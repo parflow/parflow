@@ -13,9 +13,7 @@ SUBDIRS = clm
 default: check
 
 TESTS := \
-	test_X.tcl \
 	default_single.tcl \
-	uvm_flow.tcl \
 	default_richards.tcl \
 	default_richards_wells.tcl \
 	forsyth2.tcl \
@@ -64,7 +62,6 @@ PARALLEL_2DTOPO_TESTS :=
 ifeq (${AMPS},mpi1)
 
 PARALLEL_3DTOPO_TESTS += \
-	uvm_flow.tcl \
 	default_single.tcl \
 	default_richards.tcl \
 	default_richards_wells.tcl 
