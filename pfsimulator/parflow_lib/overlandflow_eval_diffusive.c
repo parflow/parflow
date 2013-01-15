@@ -326,7 +326,7 @@ void    OverlandFlowEvalDiff(
  	       if (fdir[2] == 1)
  	       {
  	       	        
- 	       	      // printf("Made it inside CALCDER :) ");
+ 	       	       //printf("Made it inside CALCDER");
        
  	       	        io = SubvectorEltIndex(sx_sub,i, j, 0);
  	       	        itop = SubvectorEltIndex(top_sub, i, j, 0);
@@ -338,6 +338,7 @@ void    OverlandFlowEvalDiff(
  	       	        /*KW  - look at nodes i-1 and i*/
  	       	        k1 = (int)top_dat[itop-1];
  	       	        ip = SubvectorEltIndex(p_sub,(i-1), j, k1);
+ 	       	        	       	    
  	       	       
  	       	        /*Calcualte Friction Slope */
  	       	        if (i > 0) {
@@ -348,28 +349,39 @@ void    OverlandFlowEvalDiff(
  	       	        	slope_fx_lo = slope_mean; 
  	       	        }
  	       	        
- 	       	        
- 	       	        Pcen = pfmax(pp[ip0],0.0);  //pressure of current cel
+ 	       	        manning = (1.0+0.0000001/fabs(slope_fx_lo))*mann_dat[io];
+ 	       	        Pcen = pfmax(pp[ip0],0.0);  //pressure of current cell
                         Pdel = pfmax(pp[ip],0.0);   // pressure cell to the west
 
                         /* Caluculate Derivative */
-                        if(slope_fx_lo > 0.0) {
-			   kw_vns[io]= (-1/(2*((1.0+0.0000001/fabs(slope_fx_lo))*manning)))* RPowerR(fabs(slope_fx_lo),-0.5)* RPowerR(Pcen,(5.0/3.0));  
+                        if(fabs(slope_fx_lo)<0.0000001){
+                           kw_vns[io]=0;
+                           kw_v[io]=0;
+                         }
+                        
+                         else if(slope_fx_lo > 0.0) {
+                           xdir = -1.0;
+                           kw_vns[io]= xdir * (-1/(2*dx*manning))* RPowerR(fabs(slope_fx_lo),-0.5)* RPowerR(Pcen,(5.0/3.0));  
 			   
-		           kw_v[io]= (5/(3*((1.0+0.0000001/fabs(slope_fx_lo))*manning)))* RPowerR(fabs(slope_fx_lo),0.5) * RPowerR(Pcen,(2.0/3.0))+  
-				1/(2*((1.0+0.0000001/fabs(slope_fx_lo))*manning))* RPowerR(fabs(slope_fx_lo),-0.5) * RPowerR(Pcen,(5.0/3.0));  
-			}
+		           kw_v[io]= xdir * ((5/(3*manning))* RPowerR(fabs(slope_fx_lo),0.5) * RPowerR(Pcen,(2.0/3.0))+  
+				     1/(2*dx*manning)* RPowerR(fabs(slope_fx_lo),-0.5) * RPowerR(Pcen,(5.0/3.0)));  
+			} 
 			else if(slope_fx_lo < 0.0) {
-		      	    kw_vns[io]= (5/(3*((1.0+0.0000001/fabs(slope_fx_lo))*manning)))* RPowerR(fabs(slope_fx_lo),0.5) * RPowerR(Pdel,(2.0/3.0))-  
-				1/(2*((1.0+0.0000001/fabs(slope_fx_lo))*manning))* RPowerR(fabs(slope_fx_lo),-0.5) * RPowerR(Pdel,(5.0/3.0)); 
-					
-			    kw_v[io]= (1/(2*((1.0+0.0000001/fabs(slope_fx_lo))*manning)))* RPowerR(fabs(slope_fx_lo),-0.5)* RPowerR(Pdel,(5.0/3.0));  
-		      
+			    xdir=1.0;
+		            /*This is dfi-1/di-1 East*/
+		            kw_vns[io]= xdir *((5/(3*manning))* RPowerR(fabs(slope_fx_lo),0.5) * RPowerR(Pdel,(2.0/3.0))-  
+				        1/(2*dx*manning)* RPowerR(fabs(slope_fx_lo),-0.5) * RPowerR(Pdel,(5.0/3.0))); 
+		            /* This is dfi-1/di East */  
+			    kw_v[io]= xdir * ((1/(2*dx*manning))* RPowerR(fabs(slope_fx_lo),-0.5)* RPowerR(Pdel,(5.0/3.0)));  
+                            //kw_v[io]=0;  			    
+
 		         }
-                         else{
-                   	    kw_vns[io]=0;
-                   	    kw_v[io]=0;
-			 }
+                         //else{
+                   	  //  kw_vns[io]=0;
+                   	   // kw_v[io]=0;
+			 //}
+			 
+			 //printf("WEST: i %d j %d %4.5e %4.5e %4.5e %4.5e %4.5e %4.5e \n", i, j, Pcen, Pdel, slope_fx_lo, slope_mean, kw_v[io], kw_vns[io]);
 			 
 			 
 			 /* KE - look at nodes i+1 and i */
@@ -380,35 +392,48 @@ void    OverlandFlowEvalDiff(
 		        if (i < gnx-1) {
 		        	slope_mean = sx_dat[io]; 
 		        	slope_fx_hi = slope_mean + (((pfmax((pp[ip2]),0.0)) - (pfmax((pp[ip0]),0.0)))/dx);
-		        } else {
+				} else {
 		        	slope_mean = sx_dat[io]; 
 		        	slope_fx_hi = slope_mean; 
 		        }
                   
-		        
+		        manning = (1.0+0.0000001/fabs(slope_fx_hi))*mann_dat[io];
                         Pcen = pfmax(pp[ip0],0.0);  //pressure of current cel
                         Pdel = pfmax(pp[ip2],0.0);   // pressure cell to the east
                         
                         /* Caluculate Derivative */
-                        if(slope_fx_lo > 0.0) {
-			    ke_vns[io]= (5/(3*((1.0+0.0000001/fabs(slope_fx_lo))*manning)))* RPowerR(fabs(slope_fx_lo),0.5) * RPowerR(Pdel,(2.0/3.0))+  
-				1/(2*((1.0+0.0000001/fabs(slope_fx_lo))*manning))* RPowerR(fabs(slope_fx_lo),-0.5) * RPowerR(Pdel,(5.0/3.0));  
-                        	
-                            ke_v[io]= (-1/(2*((1.0+0.0000001/fabs(slope_fx_lo))*manning)))* RPowerR(fabs(slope_fx_lo),-0.5)* RPowerR(Pdel,(5.0/3.0));  
-			   		       
+                          if(fabs(slope_fx_hi)<0.0000001){
+                            ke_vns[io]=0;
+                            ke_v[io]=0;
+                           }
+                         
+                          else if(slope_fx_hi > 0.0) {
+                            xdir = -1.0;       
+                             /*This is dfi+1/di+1 for kw */
+                             ke_vns[io]= xdir * ((5/(3*manning))* RPowerR(fabs(slope_fx_hi),0.5) * RPowerR(Pdel,(2.0/3.0))+  
+				             1/(2*dx*manning)* RPowerR(fabs(slope_fx_hi),-0.5) * RPowerR(Pdel,(5.0/3.0))); 
+                            
+                            /* This is dfi+1/di for kw */ 	
+                            ke_v[io]= xdir * ((-1/(2*dx*manning))* RPowerR(fabs(slope_fx_hi),-0.5)* RPowerR(Pdel,(5.0/3.0)));  
+                            //  ke_v[io]=0;                              
+
 			}
-			else if(slope_fx_lo < 0.0) {
-		      	        ke_vns[io]= (1/(2*((1.0+0.0000001/fabs(slope_fx_lo))*manning)))* RPowerR(fabs(slope_fx_lo),-0.5)* RPowerR(Pcen,(5.0/3.0));  
+			else if(slope_fx_hi < 0.0) {
+				xdir=1.0;
+		      	        ke_vns[io]= xdir * ((1/(2*dx*manning))* RPowerR(fabs(slope_fx_hi),-0.5)* RPowerR(Pcen,(5.0/3.0)));  
 				
-				ke_v[io]= (5/(3*((1.0+0.0000001/fabs(slope_fx_lo))*manning)))* RPowerR(fabs(slope_fx_lo),0.5) * RPowerR(Pcen,(2.0/3.0))-  
-				1/(2*((1.0+0.0000001/fabs(slope_fx_lo))*manning))* RPowerR(fabs(slope_fx_lo),-0.5) * RPowerR(Pcen,(5.0/3.0)); 	   
+				ke_v[io]= xdir *((5/(3*manning))* RPowerR(fabs(slope_fx_hi),0.5) * RPowerR(Pcen,(2.0/3.0))-  
+				1/(2*dx*manning)* RPowerR(fabs(slope_fx_hi),-0.5) * RPowerR(Pcen,(5.0/3.0))); 	   
 		      
 		         }
-                         else{
-                   	    ke_vns[io]=0;
-                   	    ke_v[io]=0;
-			 }
+                        // else{
+                   	 //   ke_vns[io]=0;
+                   	  //  ke_v[io]=0;
+			 //}
 		        
+			// printf("i %d j %d %4.5f %4.5f %4.5f %4.5f %4.5e %4.5e %4.5e %4.5e \n", i, j, slope_mean, slope_fx_lo, Pcen, Pdel, kw_v[io], kw_vns[io], ke_v[io], ke_vns[io]);
+			//printf("EAST: i %d j %d %4.5e %4.5e %4.5e %4.5e %4.5e %4.5e \n", i, j,  Pcen, Pdel, slope_fx_hi, slope_mean, ke_v[io], ke_vns[io]);
+			 
 			 
 			/*KS  - look at nodes j-1 and j*/
  	       	         k1 = (int)top_dat[itop-sy_v];
@@ -422,28 +447,39 @@ void    OverlandFlowEvalDiff(
  	       	        	slope_mean = sy_dat[io]; 
  	       	        	slope_fy_lo = slope_mean; 
  	       	        }
-
+                        manning = (1.0+0.0000001/fabs(slope_fy_lo))*mann_dat[io];
  	       	        Pcen = pfmax(pp[ip0],0.0);  //pressure of current cel
                         Pdel = pfmax(pp[ip3],0.0);   // pressure cell to the south
 
                         /* Caluculate Derivative */
-                        if(slope_fx_lo > 0.0) {
-			   ks_vns[io]= (-1/(2*((1.0+0.0000001/fabs(slope_fy_lo))*manning)))* RPowerR(fabs(slope_fy_lo),-0.5)* RPowerR(Pcen,(5.0/3.0));  
+                        if(fabs(slope_fy_lo)<0.0000001){
+                                   ks_vns[io]=0;
+                                   ks_v[io]=0;
+
+			} 
+                        else if(slope_fy_lo > 0.0) {
+                           ydir = -1.0;
+			           ks_vns[io]= ydir * ((-1/(2*dy*manning))* RPowerR(fabs(slope_fy_lo),-0.5)* RPowerR(Pcen,(5.0/3.0)));  
 			   
-		           ks_v[io]= (5/(3*((1.0+0.0000001/fabs(slope_fy_lo))*manning)))* RPowerR(fabs(slope_fy_lo),0.5) * RPowerR(Pcen,(2.0/3.0))+  
-				1/(2*((1.0+0.0000001/fabs(slope_fy_lo))*manning))* RPowerR(fabs(slope_fy_lo),-0.5) * RPowerR(Pcen,(5.0/3.0));  
+		                   ks_v[io]= ydir * ((5/(3*manning))* RPowerR(fabs(slope_fy_lo),0.5) * RPowerR(Pcen,(2.0/3.0))+  
+				           1/(2*dy*manning)* RPowerR(fabs(slope_fy_lo),-0.5) * RPowerR(Pcen,(5.0/3.0)));  
 			}
-			else if(slope_fx_lo < 0.0) {
-		      	    ks_vns[io]= (5/(3*((1.0+0.0000001/fabs(slope_fy_lo))*manning)))* RPowerR(fabs(slope_fy_lo),0.5) * RPowerR(Pdel,(2.0/3.0))-  
-				1/(2*((1.0+0.0000001/fabs(slope_fy_lo))*manning))* RPowerR(fabs(slope_fy_lo),-0.5) * RPowerR(Pdel,(5.0/3.0)); 
+			else if(slope_fy_lo < 0.0) {
+			    ydir = 1.0;
+		      	    ks_vns[io]=ydir * (5/(3*manning)* RPowerR(fabs(slope_fy_lo),0.5) * RPowerR(Pdel,(2.0/3.0))-  
+				1/(2*dy*manning)* RPowerR(fabs(slope_fy_lo),-0.5) * RPowerR(Pdel,(5.0/3.0))); 
 					
-			    ks_v[io]= (1/(2*((1.0+0.0000001/fabs(slope_fy_lo))*manning)))* RPowerR(fabs(slope_fy_lo),-0.5)* RPowerR(Pdel,(5.0/3.0));  
+				//ks_v[io]=0.0;	
+			    ks_v[io]= ydir * ((1/(2*dy*manning))* RPowerR(fabs(slope_fy_lo),-0.5)* RPowerR(Pdel,(5.0/3.0)));  
 		      
 		         }
-                         else{
-                   	    ks_vns[io]=0;
-                   	    ks_v[io]=0;
-			 }
+                         //else{
+                   	  //  ks_vns[io]=0;
+                   	   // ks_v[io]=0;
+			// }
+			 
+			//printf("SOUTH: i %d j %d %4.5e %4.5e %4.5e %4.5e %4.5e %4.5e \n", i, j,  Pcen, Pdel, slope_fy_lo, slope_mean,  ks_v[io], ks_vns[io]);
+			 
 			 
 			 /* KN - look at nodes j+1 and j */
 		         k1 = (int)top_dat[itop+sy_v];
@@ -459,29 +495,41 @@ void    OverlandFlowEvalDiff(
 		        	slope_fy_hi = slope_mean; 
 	               }
                   
-		        
+		        manning = (1.0+0.0000001/fabs(slope_fy_hi))*mann_dat[io];
                         Pcen = pfmax(pp[ip0],0.0);  //pressure of current cel
                         Pdel = pfmax(pp[ip4],0.0);   // pressure cell to the east
                         
                         /* Caluculate Derivative */
-                        if(slope_fy_lo > 0.0) {
-			    kn_vns[io]= (5/(3*((1.0+0.0000001/fabs(slope_fy_lo))*manning)))* RPowerR(fabs(slope_fy_lo),0.5) * RPowerR(Pdel,(2.0/3.0))+  
-				1/(2*((1.0+0.0000001/fabs(slope_fy_lo))*manning))* RPowerR(fabs(slope_fy_lo),-0.5) * RPowerR(Pdel,(5.0/3.0));  
+                        if(fabs(slope_fy_hi)<0.0000001){
+			
+                           kn_vns[io]=0;
+                           kn_v[io]=0;
+
+			}
+                        
+                        else if(slope_fy_hi > 0.0) {
+                            ydir = -1.0;
+			    kn_vns[io]= ydir * ((5/(3*manning))* RPowerR(fabs(slope_fy_hi),0.5) * RPowerR(Pdel,(2.0/3.0))+  
+				1/(2*dy*manning)* RPowerR(fabs(slope_fy_hi),-0.5) * RPowerR(Pdel,(5.0/3.0)));  
                         	
-                            kn_v[io]= (-1/(2*((1.0+0.0000001/fabs(slope_fy_lo))*manning)))* RPowerR(fabs(slope_fy_lo),-0.5)* RPowerR(Pdel,(5.0/3.0));  
+			     //kn_v[io]=0.0;
+							
+                            kn_v[io]= ydir * ((-1/(2*dy*manning))* RPowerR(fabs(slope_fy_hi),-0.5)* RPowerR(Pdel,(5.0/3.0)));  
 			   		       
 			}
-			else if(slope_fy_lo < 0.0) {
-		      	        kn_vns[io]= (1/(2*((1.0+0.0000001/fabs(slope_fy_lo))*manning)))* RPowerR(fabs(slope_fy_lo),-0.5)* RPowerR(Pcen,(5.0/3.0));  
+			else if(slope_fy_hi < 0.0) {
+				ydir = 1.0;
+		      	        kn_vns[io]= ydir * ((1/(2*dy*manning))* RPowerR(fabs(slope_fy_hi),-0.5)* RPowerR(Pcen,(5.0/3.0)));  
 				
-				kn_v[io]= (5/(3*((1.0+0.0000001/fabs(slope_fy_lo))*manning)))* RPowerR(fabs(slope_fy_lo),0.5) * RPowerR(Pcen,(2.0/3.0))-  
-				1/(2*((1.0+0.0000001/fabs(slope_fy_lo))*manning))* RPowerR(fabs(slope_fy_lo),-0.5) * RPowerR(Pcen,(5.0/3.0)); 	   
+				kn_v[io]= ydir * ((5/(3*manning))* RPowerR(fabs(slope_fy_hi),0.5) * RPowerR(Pcen,(2.0/3.0))-  
+				1/(2*dy*manning)* RPowerR(fabs(slope_fy_hi),-0.5) * RPowerR(Pcen,(5.0/3.0))); 	   
 		      
 		         }
-                         else{
-                   	    kn_vns[io]=0;
-                   	    kn_v[io]=0;
-			 }
+                         //else{
+                   	 //   kn_vns[io]=0;
+                   	 //   kn_v[io]=0;
+			 //}
+                	 //printf("NORTH: i %d j %d %4.5e %4.5e %4.5e %4.5e %4.5e %4.5e \n", i, j,  Pcen, Pdel, slope_fy_hi, slope_mean,  kn_v[io], kn_vns[io]);
 	       }
 	       });
 	    //}
