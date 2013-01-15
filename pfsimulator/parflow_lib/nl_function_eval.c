@@ -636,23 +636,23 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
          // x_dir_g = RPMean(x_ssl_dat[io],x_ssl_dat[io+1]
          //   ,gravity*sin(atan(x_ssl_dat[io])),gravity*sin(atan(x_ssl_dat[io+1])));
           x_dir_g = Mean(gravity*sin(atan(x_ssl_dat[io])),gravity*sin(atan(x_ssl_dat[io+1])));
-          x_dir_g = gravity*sin(Mean(atan(x_ssl_dat[io]),atan(x_ssl_dat[io+1])));
-
-          // x_dir_g = gravity*sin(atan(x_ssl_dat[io]));
+         // x_dir_g = gravity*sin(Mean(atan(x_ssl_dat[io]),atan(x_ssl_dat[io+1])));
+          //x_dir_g = gravity*sin(atan(x_ssl_dat[io]))
+         // x_dir_g = gravity*sin(atan(x_ssl_dat[io]));
          // x_dir_g = x_ssl_dat[io];
           x_dir_g_c = Mean(gravity*cos(atan(x_ssl_dat[io])),gravity*cos(atan(x_ssl_dat[io+1])));
-          x_dir_g_c = gravity*cos(Mean(atan(x_ssl_dat[io]),atan(x_ssl_dat[io+1])));
-          // x_dir_g_c = gravity*cos(atan(x_ssl_dat[io]));
+         // x_dir_g_c = gravity*cos(Mean(atan(x_ssl_dat[io]),atan(x_ssl_dat[io+1])));
+         //  x_dir_g_c = gravity*cos(atan(x_ssl_dat[io]));
           //x_dir_g_c = 1.0; 
           
       //    y_dir_g = RPMean(y_ssl_dat[io], x_ssl_dat[io+sy_p]
       //      ,gravity*sin(atan(y_ssl_dat[io])),gravity*sin(atan(y_ssl_dat[io+sy_p])));
           y_dir_g = Mean(gravity*sin(atan(y_ssl_dat[io])),gravity*sin(atan(y_ssl_dat[io+sy_p])));
-          y_dir_g = gravity*sin(Mean(atan(y_ssl_dat[io]),atan(y_ssl_dat[io+sy_p])));
-         // y_dir_g = gravity*sin(atan(y_ssl_dat[io]));
+         // y_dir_g = gravity*sin(Mean(atan(y_ssl_dat[io]),atan(y_ssl_dat[io+sy_p])));
+          //y_dir_g = gravity*sin(atan(y_ssl_dat[io]));
           //y_dir_g = y_ssl_dat[io];
           y_dir_g_c = Mean(gravity*cos(atan(y_ssl_dat[io])),gravity*cos(atan(y_ssl_dat[io+sy_p])));
-          y_dir_g_c = gravity*cos(Mean(atan(y_ssl_dat[io]),atan(y_ssl_dat[io+sy_p])));
+          //y_dir_g_c = gravity*cos(Mean(atan(y_ssl_dat[io]),atan(y_ssl_dat[io+sy_p])));
          // y_dir_g_c = gravity*cos(atan(y_ssl_dat[io]));
           //y_dir_g_c = 1.0;
 
