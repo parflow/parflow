@@ -1635,7 +1635,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 		  ip   = SubvectorEltIndex(p_sub, i, j, k);
 		  value =  bc_patch_values[ival];
 // SGS FIXME why is this needed?
-#undef max		  
+//#undef max		  
 		  pp[ip + fdir[0]*1 + fdir[1]*sy_p + fdir[2]*sz_p] = -FLT_MAX;
 		  fp[ip + fdir[0]*1 + fdir[1]*sy_p + fdir[2]*sz_p] = 0.0;
 		  

@@ -1611,14 +1611,14 @@ int           symm_part)      /* Specifies whether to compute just the
 		       lp[im] = 0.0;
 		       up[im] = 0.0;
 
-#if 0
-		       /* JC matrix */
-		       cp_c[im] = 1.0;
-		       wp_c[im] = 0.0;
-		       ep_c[im] = 0.0;
-		       sop_c[im] = 0.0;
-		       np_c[im] = 0.0;
-#endif
+//#if 0
+//		       /* JC matrix */
+//		       cp_c[im] = 1.0;
+//		       wp_c[im] = 0.0;
+//		       ep_c[im] = 0.0;
+//		       sop_c[im] = 0.0;
+//		       np_c[im] = 0.0;
+//#endif */
 		    });
    }
 
