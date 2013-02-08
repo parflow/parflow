@@ -456,6 +456,7 @@ PFModule   *dzScaleNewPublicXtra()
       }
     }
    
+    NA_FreeNameArray(switch_na);
    
    PFModulePublicXtra(this_module) = public_xtra;
    return this_module;
