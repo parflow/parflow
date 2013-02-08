@@ -1282,10 +1282,10 @@ int           symm_part)      /* Specifies whether to compute just the
 		     
               if (overlandspinup == 1) {
                   /* add flux loss equal to excess head  that overwrites the prior overland flux */
-                  if ((pp[ip]) > 0.0) 
+                  if ((pp[ip]) >= 0.0) 
                   {
                   sep = dz*z_mult_dat[ip];  //RMM
-                      cp[im] += 0.0; // vol*z_mult_dat[ip]*dt*(1.0);
+                      cp[im] += vol*z_mult_dat[ip]*dt*(1.0);
                   }
               }  else {
 
@@ -1668,7 +1668,10 @@ int           symm_part)      /* Specifies whether to compute just the
    FreeVector(KE);
    FreeVector(KN);
    FreeVector(KS);
-
+    FreeVector(KWns);
+    FreeVector(KEns);
+    FreeVector(KNns);
+    FreeVector(KSns);
    return;
 }
 
