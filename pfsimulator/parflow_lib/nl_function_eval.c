@@ -1710,9 +1710,9 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem     *problem,
          PFModuleNewInstance(ProblemBCInternal(problem), () );
       (instance_xtra -> overlandflow_module) =
          PFModuleNewInstance(ProblemOverlandFlowEval(problem), () ); //DOK
-       (instance_xtra -> overlandflow_module) =
+//       (instance_xtra -> overlandflow_module) =
 //       PFModuleNewInstance(ProblemOverlandFlowEval(problem), () ); //DOK
-//       (instance_xtra -> overlandflow_module_diff) =
+       (instance_xtra -> overlandflow_module_diff) =
        PFModuleNewInstance(ProblemOverlandFlowEvalDiff(problem), () ); //@RMM
 //       (instance_xtra -> overlandflow_module_diff) =
 //       PFModuleNewInstance(ProblemOverlandFlowEvalDiff(problem), () ); //@RMM
