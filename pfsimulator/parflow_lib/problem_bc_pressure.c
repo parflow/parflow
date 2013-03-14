@@ -99,7 +99,7 @@ BCStruct    *BCPressure(
  
 	         
  //       if (time == 10000.0) {
-            printf("time: %f \n", time);
+      //      printf("time: %f \n", time);
    bc_struct = NULL;
    num_patches = BCPressureDataNumPatches(bc_pressure_data);
 
