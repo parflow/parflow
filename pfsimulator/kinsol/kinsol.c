@@ -487,8 +487,8 @@ static int KINSolInit(void *kinmem, integer Neq,
     }
   }
 
-  if(printfl>0)fprintf(fp,"scsteptol used: %12.3g \n",scsteptol);
-  if(printfl>0)fprintf(fp,"fnormtol  used: %12.3g \n",fnormtol);
+  //if(printfl>0)fprintf(fp,"scsteptol used: %12.3g \n",scsteptol);
+  //if(printfl>0)fprintf(fp,"fnormtol  used: %12.3g \n",fnormtol);
 
   sqrt_relfunc = RSqrt(uround);
 
@@ -596,8 +596,8 @@ static int KINSolInit(void *kinmem, integer Neq,
   /* initialize the L2 norms of f for the linear  iteration steps  */
   fnorm = N_VWL2Norm(fval,fscale);
   f1norm = HALF * fnorm * fnorm;
-  if(printfl >0)fprintf(fp,
-    "KINSolInit nni= %4ld  fnorm= %26.16g  nfe=%6ld \n",nni, fnorm, nfe);
+ /* if(printfl >0)fprintf(fp,
+    "KINSolInit nni= %4ld  fnorm= %26.16g  nfe=%6ld \n",nni, fnorm, nfe);  */
 
   /* Problem has been successfully initialized */
 
@@ -787,8 +787,8 @@ static int KINSolInit(void *kinmem, integer Neq,
     f1norm = f1normp;
 
     /*  print out the current nni, fnorm, and nfe values for printfl>0) */
-    if(printfl>0)fprintf(msgfp,"KINSol nni= %4ld fnorm= %26.16g nfe=%6ld\n",
-			    nni, fnorm, nfe);
+/*    if(printfl>0)fprintf(msgfp,"KINSol nni= %4ld fnorm= %26.16g nfe=%6ld\n",
+			    nni, fnorm, nfe); */
 
     if(ret !=0) break;  /*  ret == 0 means keep iterating ;  != 0 means there
 			 is some reason to stop the iteration process and
@@ -810,9 +810,9 @@ static int KINSolInit(void *kinmem, integer Neq,
     ropt[FNORM] = fnorm;
     ropt[STEPL] = stepl;
   }
-  if(printfl>0)fprintf(msgfp,"KINSol return value %d\n",ret);
+ // if(printfl>0)fprintf(msgfp,"KINSol return value %d\n",ret);
 
-  if(printfl>0){
+ /* if(printfl>0){
     if(ret == KINSOL_SUCCESS)
         fprintf(msgfp,"---KINSOL_SUCCESS\n");
     if(ret==KINSOL_STEP_LT_STPTOL)
@@ -829,7 +829,7 @@ static int KINSolInit(void *kinmem, integer Neq,
         fprintf(msgfp,"---KINSOL_PRECONDSET_FAILURE\n");
     if(ret==KINSOL_PRECONDSOLVE_FAILURE)
         fprintf(msgfp,"---KINSOL_PRECONDSOLVE_FAILURE\n");
-  }
+  } */
 
   return(ret);	
 }
