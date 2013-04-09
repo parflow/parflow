@@ -322,8 +322,9 @@ Grid *grid3d = instance_xtra -> grid3d;
 		   GrGeomInLoop(i,j,k,gr_domain,r,ix,iy,iz,nx,ny,nz,
 		   {
 			   ips = SubvectorEltIndex(ps_sub,i,j,0);
-			   ipicv = SubvectorEltIndex(m_values_sub,i,j,k);
-
+			 //  ipicv = SubvectorEltIndex(m_values_sub,i,j,k);
+                         // CMS, CPS 2D mannings only needed
+                           ipicv = SubvectorEltIndex(m_values_sub,i,j,0);
 			   psdat[ips] = m_values_dat[ipicv];
 		   });
 	   } /* End subgrid loop */

@@ -14,7 +14,7 @@ include $(OBJECT)/config/Makefile.config
 
 SUBDIRS = common $(AMPS) 
 
-CONFIG_SUBDIRS = common smpi mpi1 seq
+CONFIG_SUBDIRS = common smpi mpi1 oas3 seq
 
 all:
 	@for DIR in $(SUBDIRS); do if test -d $$DIR; then (cd $$DIR && $(MAKE) $@) ; fi || exit 1; done

@@ -93,6 +93,7 @@ PARFLOW_HAVE_CLM       = @PARFLOW_HAVE_CLM@
 PARFLOW_HAVE_SILO      = @PARFLOW_HAVE_SILO@
 PARFLOW_HAVE_HYPRE     = @PARFLOW_HAVE_HYPRE@
 PARFLOW_HAVE_SAMRAI    = @PARFLOW_HAVE_SAMRAI@
+PARFLOW_HAVE_OAS3      = @PARFLOW_HAVE_OAS3@
 
 ######################################################################
 # Rules used in all directories.

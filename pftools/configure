@@ -9183,6 +9183,9 @@ case "$with_amps" in
   mpi1)
     AMPS=mpi1
   ;;
+  oas3)
+    AMPS=oas3
+  ;;
   smpi)
     AMPS=smpi
   ;;
@@ -9190,8 +9193,8 @@ case "$with_amps" in
     AMPS=win32
   ;;
   *)
-    { { echo "$as_me:$LINENO: error: Invalid AMPS version specified, use seq, mpi1, smpi, win32" >&5
-echo "$as_me: error: Invalid AMPS version specified, use seq, mpi1, smpi, win32" >&2;}
+    { { echo "$as_me:$LINENO: error: Invalid AMPS version specified, use seq, mpi1, oas3, smpi, win32" >&5
+echo "$as_me: error: Invalid AMPS version specified, use seq, mpi1, oas3, smpi, win32" >&2;}
    { (exit 1); exit 1; }; }
   ;;
 esac

@@ -4,7 +4,6 @@
 ## Revision:	$LastChangedRevision: 2026 $
 ## Modified:	$LastChangedDate: 2008-02-28 16:23:19 -0800 (Thu, 28 Feb 2008) $
 
-
 PARFLOW	      =	@top_srcdir@
 SRCDIR	      =	@srcdir@
 SUBDIR        = parflow_lib
@@ -24,7 +23,7 @@ OBJS = $(SRCS:.c=.o)
 
 $(PARFLOW_BIN_DIR)/parflow: $(CXXOBJS) $(OBJS) $(AMPS_LIB_DEPEND) $(CLM_LIB_DEPEND) $(PARFLOW_LIB_DEPEND)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) \
-			$(PARFLOW_LIBS) $(LDLIBS) -o $@
+			$(PARFLOW_LIBS) $(LIBXML) $(LIBOASIS) $(LIBPSMILE) $(NETCDF_LIB) $(LDLIBS) -o $@
 
 all: $(PARFLOW_BIN_DIR)/parflow 
 

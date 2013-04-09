@@ -1,0 +1,204 @@
+#! /bin/sh
+#BHEADER**********************************************************************
+#
+#  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+#  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+#  by the Parflow Team (see the CONTRIBUTORS file)
+#  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+#
+#  This file is part of Parflow. For details, see
+#  http://www.llnl.gov/casc/parflow
+#
+#  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+#  for the GNU Lesser General Public License.
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License (as published
+#  by the Free Software Foundation) version 2.1 dated February 1999.
+#
+#  This program is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+#  and conditions of the GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+#  USA
+#**********************************************************************EHEADER
+
+if [ -f ~/.parflowrc ] 
+then
+    . ~/.parflowrc
+fi
+
+
+#=============================================================================
+#
+# Loop to parse users arguments
+#
+#=============================================================================
+PROGRAM=""
+DEBUG=""
+while getopts hpg: c
+do
+	case $c in
+	hp) 
+		echo "usage: $0 run runname process_group"
+		echo "Runs parflow on the allocated cube."
+	        exit 0;;
+	p) 
+	       PROGRAM=$2
+	       shift 
+	       shift;;
+        g)    for i in $2
+	      do 
+		    DEBUG="$DEBUG -cegdb $i"
+	      done
+              shift
+	      shift;;
+esac
+done
+
+if [ "$DMALLOC_OPTIONS" ]; then
+	rm -f malloc.log.????
+fi
+
+HOST_FILE="./.hostfile"
+
+#
+# The following is a hack to deal with NFS temp mount problems
+#
+if [ -z "$AMPS_ROOT_DIR" ]; then
+	AMPS_ROOT_DIR=$HOME
+	export AMPS_ROOT_DIR
+fi
+
+real_home=`(cd $AMPS_ROOT_DIR; sh -c "pwd")`
+AMPS_EXE_DIR=`echo \`pwd\` | sed "s#$real_home#$AMPS_ROOT_DIR#"`
+export AMPS_EXE_DIR
+
+if [ -z "$PROGRAM" ]
+then
+	#
+	# The default is to run ParFlow
+	#
+	PROGRAM=parflow
+fi
+
+if [ -z "$DEBUG" ]
+then
+    DISPLAY_OPT=""
+else
+
+    if [ -z "$DISPLAY" ]
+    then
+	DEBUG_OPT="-display `hostname`:0.0"
+    else
+	DEBUG_OPT="-display $DISPLAY"
+    fi
+fi
+
+case `uname -a` in
+    *AIX*)
+    #
+    # IBM SP2
+    #
+  
+    poe $PARFLOW_DIR/bin/$PROGRAM -procs `cat .amps.info.$2` $1 $DEBUG_OPT $DEBUG > $1.out.txt
+
+    exit 0
+    ;;
+    *WildFire*)
+    #
+    # For Sun WildFire systems
+    #
+    tmrun -np `cat .amps.info.$2`  $PARFLOW_DIR/bin/$PROGRAM $1 $DEBUG_OPT $DEBUG > $1.out.txt
+    exit 0
+    ;;
+    *chaos*)
+    #
+    # For LC chaos systems
+    #
+    srun -n $2 $PARFLOW_RUN_OPTS $PARFLOW_DIR/bin/$PROGRAM $1 > $1.out.txt
+    exit 0
+    ;;
+    *Cygwin*)
+    #
+    # For cygwin
+    #
+    mpiexec -n $2 ${PARFLOW_DIR}/bin/$PROGRAM $1 2>&1 > $1.out.txt < /dev/null
+    exit 0
+    ;;
+esac
+
+#
+# Assume MPICH or OpenMPI based cluster
+#
+if [ "`mpirun 2> /dev/null`" = "Missing: program name" ] 
+then
+    #
+    # MPICH
+    #
+    if [ "$PBS_NODEFILE" = "" ]
+    then
+       mpirun -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
+    else
+       mpirun -machinefile $PBS_NODEFILE -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
+   fi
+elif mpirun  2>&1 | grep -q "Open MPI"
+then
+    #
+    # OpenMPI
+    #
+    mpirun -np $2  $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
+    exit 0
+elif mpirun  2>&1 | grep -q "mpirun"
+then
+    #
+    # Other MPI
+    #
+    mpirun -np $2  $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
+    exit 0
+else
+    mpiexec -n $2 ${PARFLOW_DIR}/bin/$PROGRAM $1 2>&1 > $1.out.txt < /dev/null
+    exit 0
+fi
+
+
+
+if [ "$DMALLOC_OPTIONS" ]; then
+	grep "^known" malloc.log.* 
+fi
+
+
+exit 0
+
+#
+# Junk below here for keeping around
+#
+
+MACHINE_NUM=`cat .amps.info.$2`
+
+MACHINE_LIST=""
+while [ $MACHINE_NUM -gt 1 ]
+do
+	echo "hello"
+	for i in `cat $HOST_FILE`
+	do
+		echo "hello"
+		if [ $MACHINE_NUM -gt 1 ] 
+		then 
+			MACHINE_LIST="$MACHINE_LIST -np 1 -machine $i"
+		fi
+		MACHINE_NUM=`echo $MACHINE_NUM-1 | bc`
+	done
+done
+
+echo MachineList $MACHINE_LIST
+
+echo mpirun  $MACHINE_LIST $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
+
+
+
+

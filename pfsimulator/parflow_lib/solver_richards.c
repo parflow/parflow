@@ -927,6 +927,15 @@ void AdvanceRichards(PFModule *this_module,
    Vector       *evap_trans_sum      = instance_xtra -> evap_trans_sum;
    Vector       *overland_sum        = instance_xtra -> overland_sum;     /* sk: Vector of outflow at the boundary*/
 
+#ifdef HAVE_OAS3
+   Grid         *grid                = (instance_xtra -> grid);
+   Subgrid      *subgrid;
+   Subvector    *p_sub, *s_sub, *et_sub, *m_sub;
+   double       *pp, *sp, *et, *ms;
+   double       sw_lat = .0;
+   double       sw_lon = .0;
+#endif
+
 #ifdef HAVE_CLM
    Grid         *grid                = (instance_xtra -> grid);
    Subgrid      *subgrid;
@@ -988,6 +997,39 @@ void AdvanceRichards(PFModule *this_module,
 
    sprintf(file_prefix, "%s", GlobalsOutFileName);
 
+//CPS oasis definition phase
+#ifdef HAVE_OAS3
+        int p = GetInt("Process.Topology.P");
+        int q = GetInt("Process.Topology.Q");
+        int r = GetInt("Process.Topology.R");
+        int nlon = GetInt("ComputationalGrid.NX");
+        int nlat = GetInt("ComputationalGrid.NY");
+        double  pfl_step = GetDouble("TimeStep.Value");
+        double  pfl_stop = GetDouble("TimingInfo.StopTime");
+
+        int is;
+        ForSubgridI(is, GridSubgrids(grid))
+         {
+            double        dx,dy;
+            int           nx,ny,ix,iy;
+
+            subgrid  = GridSubgrid(grid, is);
+
+            nx = SubgridNX(subgrid);
+            ny = SubgridNY(subgrid);
+
+            ix = SubgridIX(subgrid);
+            iy = SubgridIY(subgrid);
+
+            dx = SubgridDX(subgrid);
+            dy = SubgridDY(subgrid);
+
+            CALL_oas_pfl_define(nx,ny,dx,dy,ix,iy,sw_lon,sw_lat,nlon,nlat,pfl_step,pfl_stop);
+         }
+            amps_Sync(amps_CommWorld);
+
+#endif     // end to HAVE_OAS3 CALL
+
    /***********************************************************************/
    /*                                                                     */
    /*                Begin the main computational section                 */
@@ -1040,6 +1082,44 @@ void AdvanceRichards(PFModule *this_module,
       { 
 
 	 ct += cdt;
+
+//CPS oasis exchange
+#ifdef HAVE_OAS3
+        ForSubgridI(is, GridSubgrids(grid))
+         {
+            int           ix,iy,nx,ny,nz,nx_f,ny_f;
+
+            subgrid  = GridSubgrid(grid, is);
+
+
+            p_sub    = VectorSubvector(instance_xtra -> pressure, is);
+            s_sub    = VectorSubvector(instance_xtra -> saturation, is);
+            et_sub   = VectorSubvector(evap_trans, is);
+            m_sub    = VectorSubvector(instance_xtra -> mask, is);
+
+            ix       = SubgridIX(subgrid);
+            iy       = SubgridIY(subgrid);
+            nx       = SubgridNX(subgrid);
+            ny       = SubgridNY(subgrid);
+            nz       = SubgridNZ(subgrid);
+            nx_f     = SubvectorNX(et_sub);
+            ny_f     = SubvectorNY(et_sub);
+
+
+            sp       = SubvectorData(s_sub);
+            pp       = SubvectorData(p_sub);
+            et       = SubvectorData(et_sub);
+            ms       = SubvectorData(m_sub);
+
+//CPS       amps_Printf("Calling oasis send/receive for time  %3.1f \n", t);
+            CALL_send_fld2_clm(pp,sp,ms,ix,iy,nx,ny,nz,nx_f,ny_f,t);
+            amps_Sync(amps_CommWorld);
+            CALL_receive_fld2_clm(et,ms,ix,iy,nx,ny,nz,nx_f,ny_f,t);
+         }
+         amps_Sync(amps_CommWorld);
+         handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
+         FinalizeVectorUpdate(handle);
+#endif     // end to HAVE_OAS3 CALL
 
          // IMF: Added to include CLM dumps in file_number updating. 
          //      Init to zero outside of ifdef HAVE_CLM
@@ -1485,6 +1565,27 @@ void AdvanceRichards(PFModule *this_module,
 	    PFVCopy(instance_xtra -> old_saturation, instance_xtra -> saturation);
 	    PFVCopy(instance_xtra -> old_pressure,   instance_xtra -> pressure);
 	 } // End set t and dt based on convergence
+
+#ifdef HAVE_OAS3
+         // CPS added to fix oasis exchange break due to parflow time stepping reduction
+         // Note ct is time we want to advance to at this point
+               if ( t + dt > ct) {
+                  double new_dt = ct - t;
+
+                  // If time increment is too small we have a problem. Just halt
+                  {
+                     double test_time = t + new_dt;
+                     double diff_time = test_time - t;
+
+                     if(diff_time  >  TIME_EPSILON ) {
+                        dt = new_dt;
+                     } else {
+                        PARFLOW_ERROR("Time increment is too small; OASIS wants a small timestep\n");
+                        break;
+                     }
+                  }
+               }
+#endif
 
 #ifdef HAVE_CLM
 	 /*
@@ -2901,19 +3002,21 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    sprintf(key, "%s.CLM.CLMFileDir", name);
    public_xtra -> clm_file_dir = GetStringDefault(key,"");
 
+//CPS moved outside CLM def
    /* @RMM added switch for terrain-following grid */
    /* RMM set terrain grid (default=False) */
-   sprintf(key, "%s.TerrainFollowingGrid", name);
-   switch_name = GetStringDefault(key, "False");
-   switch_value = NA_NameToIndex(switch_na, switch_name);
-   if(switch_value < 0)
-   {
-       InputError("Error: invalid value <%s> for key <%s>\n",
-                  switch_name, key );
-   }
-   public_xtra -> terrain_following_grid = switch_value;
+//   sprintf(key, "%s.TerrainFollowingGrid", name);
+//   switch_name = GetStringDefault(key, "False");
+//   switch_value = NA_NameToIndex(switch_na, switch_name);
+//   if(switch_value < 0)
+//   {
+//       InputError("Error: invalid value <%s> for key <%s>\n",
+//                  switch_name, key );
+//   }
+//   public_xtra -> terrain_following_grid = switch_value;
     
-   if (public_xtra -> terrain_following_grid == 1) { printf("TFG true \n");} 
+//   if (public_xtra -> terrain_following_grid == 1) { printf("TFG true \n");} 
+//CPS
 
    /* IMF added key for number of layers in CLM (i.e., layers in root zone) */
    sprintf(key, "%s.CLM.RootZoneNZ", name);
@@ -3206,6 +3309,22 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
 
 #endif
 
+//CPS
+   /* @RMM added switch for terrain-following grid */
+   /* RMM set terrain grid (default=False) */
+   sprintf(key, "%s.TerrainFollowingGrid", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+       InputError("Error: invalid value <%s> for key <%s>\n",
+                  switch_name, key );
+   }
+   public_xtra -> terrain_following_grid = switch_value;
+
+   if (public_xtra -> terrain_following_grid == 1) { printf("TFG true \n");}
+// CPS
+ 
    sprintf(key, "%s.MaxIter", name);
    public_xtra -> max_iterations = GetIntDefault(key, 1000000);
 

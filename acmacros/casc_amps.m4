@@ -6,7 +6,7 @@ AC_DEFUN([CASC_SUPPORT_AMPS],[
 # Determine which AMPS layer to support.
 # Defines AMPS_LIBS, AMPS_LIB_DEPEND
 AC_ARG_WITH(amps,
-[  --with-amps=AMPS_TYPE   Set the version of AMPS to use: seq, mpi1, smpi, win32],
+[  --with-amps=AMPS_TYPE   Set the version of AMPS to use: seq, mpi1, oas3, smpi, win32],
 , with_amps=seq)
 
 case "$with_amps" in
@@ -19,6 +19,9 @@ case "$with_amps" in
   mpi1)
     AMPS=mpi1
   ;;
+  oas3)
+    AMPS=oas3
+  ;;
   smpi)
     AMPS=smpi
   ;;
@@ -26,7 +29,7 @@ case "$with_amps" in
     AMPS=win32
   ;;
   *)
-    AC_MSG_ERROR([Invalid AMPS version specified, use seq, mpi1, smpi, win32])
+    AC_MSG_ERROR([Invalid AMPS version specified, use seq, mpi1, oas3, smpi, win32])
   ;;    
 esac
 

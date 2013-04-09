@@ -68,6 +68,10 @@
 #undef HAVE_CLM
 #endif
 
+#ifndef HAVE_OAS3
+#undef HAVE_OAS3
+#endif
+
 /*
  * HDF5 common data format library
  */

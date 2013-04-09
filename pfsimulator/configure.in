@@ -25,7 +25,8 @@ AC_ARG_WITH(AR,
    [  --with-AR=ARG           manually set AR to ARG])
 AC_ARG_WITH(clm,
    [  --with-clm              build with CLM])
-
+AC_ARG_WITH(oas3,
+   [  --with-oas3             build with OAS3])
 dnl
 dnl Initialize common macros to empty strings
 dnl
@@ -215,6 +216,16 @@ AC_SUBST(CLM_DIR)
 AC_SUBST(CLM_LIBS)
 AC_SUBST(CLM_LIB_DEPEND)
 AC_SUBST(PARFLOW_HAVE_CLM)
+
+dnl
+dnl OAS3
+dnl
+PARFLOW_HAVE_OAS3="no"
+if test "$with_oas3" = "yes"; then
+   PARFLOW_HAVE_OAS3="yes"
+   AC_DEFINE(HAVE_OAS3)
+fi
+AC_SUBST(PARFLOW_HAVE_OAS3)
 
 dnl
 dnl Fortran 90

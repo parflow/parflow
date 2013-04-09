@@ -184,6 +184,11 @@ VanGTable *VanGComputeTable(
 		         - ahnm1*m*pow(opahn,-(m+1))*n*alpha*ahnm1)
 			 + pow(coeff,2)*(m/2)*pow(opahn,(-(m+2)/2))
 	                 *n*alpha*ahnm1;
+    //CPS fix of 1<n<2, K is infinite at pressure head = 0
+   if ((n < 2) && (index == 0)) {
+     a_der[index] = 0;
+   }
+
    }
 
    /* Fill in slope for linear interpolation */
