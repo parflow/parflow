@@ -62,8 +62,9 @@ typedef struct
  *---------------------------------------------------------------------*/
 
 #define PMean(a, b, c, d)    HarmonicMean(c, d)
+#define PMeanDZ(a,b,c,d)     HarmonicMeanDZ(a, b, c, d)
 #define RPMean(a, b, c, d)   UpstreamMean(a, b, c, d)
-#define Mean(a,b) ArithmeticMean(a, b)
+#define Mean(a,b)            ArithmeticMean(a, b)
 
 
 /*  This routine provides the interface between KINSOL and ParFlow
@@ -751,7 +752,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
           
           diff = (lower_cond - upper_cond);
 	 u_upper = ffz*del_x_slope*del_y_slope 
-          * PMean(pp[ip], pp[ip+sz_p], permzp[ip], permzp[ip+sz_p])
+          * PMeanDZ(permzp[ip], permzp[ip+sz_p], z_mult_dat[ip],z_mult_dat[ip+sz_p])
 	    * diff
 	    * RPMean(lower_cond, upper_cond, rpp[ip]*dp[ip], 
 	    rpp[ip+sz_p]*dp[ip+sz_p])
@@ -1025,8 +1026,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			   diff = (lower_cond - upper_cond);
 
 			   u_old = ffz *del_x_slope*del_y_slope 
-			      * PMean(pp[ip-sz_p], pp[ip], 
-			      permzp[ip-sz_p], permzp[ip])
+			      * PMeanDZ(permzp[ip-sz_p], permzp[ip], 
+                            z_mult_dat[ip-sz_p],z_mult_dat[ip])
 			      * diff
 			      * RPMean(lower_cond, upper_cond, 
 			      rpp[ip-sz_p]*dp[ip-sz_p], rpp[ip]*dp[ip]) 
@@ -1067,8 +1068,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
                 
                
 			   u_old = ffz * del_x_slope*del_y_slope
-			      * PMean(pp[ip], pp[ip+sz_p], 
-			      permzp[ip], permzp[ip+sz_p])
+			      * PMeanDZ(permzp[ip], permzp[ip+sz_p], 
+                            z_mult_dat[ip],z_mult_dat[ip+sz_p])
 			      * diff
 			      * RPMean(lower_cond, upper_cond, 
 			      rpp[ip]*dp[ip], rpp[ip+sz_p]*dp[ip+sz_p])
@@ -1242,8 +1243,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
                      
 			   diff = lower_cond - upper_cond;
 			   u_old = ffz * del_x_slope* del_y_slope
-                     * PMean(pp[ip-sz_p], pp[ip], 
-			   permzp[ip-sz_p], permzp[ip])
+                     * PMeanDZ(permzp[ip-sz_p], permzp[ip],
+                               z_mult_dat[ip-sz_p],z_mult_dat[ip])
 			      * diff
 			      * RPMean(lower_cond, upper_cond, 
 			      rpp[ip-sz_p]*dp[ip-sz_p], rpp[ip]*dp[ip]) 
@@ -1263,7 +1264,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			 
                      diff = lower_cond - upper_cond;
 			   u_old = ffz * del_x_slope* del_y_slope 
-                     * PMean(0, 0, permzp[ip], permzp[ip+sz_p])
+                     * PMeanDZ(permzp[ip], permzp[ip+sz_p],
+                               z_mult_dat[ip],z_mult_dat[ip+sz_p])
 			      * diff
 			      * RPMean(lower_cond, upper_cond,
 			      rpp[ip]*dp[ip], rpp[ip+sz_p]*dp[ip+sz_p])
@@ -1426,8 +1428,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
                      
 			   diff = lower_cond - upper_cond;
 			   u_old = ffz * del_x_slope* del_y_slope
-                     * PMean(pp[ip-sz_p], pp[ip], 
-			   permzp[ip-sz_p], permzp[ip])
+                     * PMeanDZ(permzp[ip-sz_p], permzp[ip],
+                               z_mult_dat[ip-sz_p],z_mult_dat[ip])
 			      * diff
 			      * RPMean(lower_cond, upper_cond, 
 			      rpp[ip-sz_p]*dp[ip-sz_p], rpp[ip]*dp[ip]) 
@@ -1445,7 +1447,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
               z_dir_g;
 			   diff = lower_cond - upper_cond;
 			   u_old = ffz * del_x_slope* del_y_slope 
-                     * PMean(0, 0, permzp[ip], permzp[ip+sz_p])
+                     * PMeanDZ(permzp[ip], permzp[ip+sz_p],
+                               z_mult_dat[ip],z_mult_dat[ip+sz_p])
 			      * diff
 			      * RPMean(lower_cond, upper_cond,
 			      rpp[ip]*dp[ip], rpp[ip+sz_p]*dp[ip+sz_p])
@@ -1558,13 +1561,22 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			   q_overlnd =  vol*z_mult_dat[ip]
                      * (pfmax(pp[ip],0.0) - pfmax(opp[ip],0.0)) / sep+
 			      dt * vol * z_mult_dat[ip]* ((ke_[io]-kw_[io])/dx + (kn_[io] - ks_[io])/dy) 
-                     / sep;
+                     / sep; // +exp(pfmin(pp[ip],0.0)*10.0)*0.001;
                      
 
                       if (overlandspinup == 1) {
                      /* add flux loss equal to excess head  that overwrites the prior overland flux */
                      sep = dz*z_mult_dat[ip];  //RMM
-                     q_overlnd =  vol*z_mult_dat[ip]*dt*(pfmax(pp[ip],0.0) - 0.0);
+                         // q_overlnd = 0.0;
+    
+                              //q_overlnd =  vol*z_mult_dat[ip]*dt*((pp[ip] - 0.0) +exp(pfmin(pp[ip],0.0)*10.0)*0.001);
+                          q_overlnd =  vol*z_mult_dat[ip]*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)*10.0)*0.001);
+    
+
+                         //q_overlnd =  vol*z_mult_dat[ip]*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)*1.0)*0.000001);
+    
+
+                         // q_overlnd =  vol*z_mult_dat[ip]*dt*((pfmax(pp[ip],0.0) - 0.0));
                        }
                      
 /*			   obf_dat[io] = 0.0;
@@ -1583,6 +1595,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 
                      
 			   fp[ip] += q_overlnd;
+                     //printf("Q: %f  ip:%i  \n", q_overlnd, ip);
 
    			   break;
 		     }

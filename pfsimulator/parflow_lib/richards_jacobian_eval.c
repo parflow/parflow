@@ -125,6 +125,7 @@ int           jacobian_stencil_shape_C[5][3] = {{ 0,  0,  0},
  *---------------------------------------------------------------------*/
 
 #define PMean(a, b, c, d)    HarmonicMean(c, d)
+#define PMeanDZ(a,b,c,d)     HarmonicMeanDZ(a, b, c, d)
 #define RPMean(a, b, c, d)   UpstreamMean(a, b, c, d)
 #define Mean(a,b) ArithmeticMean(a, b)  //@RMM
 
@@ -728,8 +729,7 @@ int           symm_part)      /* Specifies whether to compute just the
 
 //	 z_coeff = dt * ffz * (1.0 / (dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]))) 
                  z_coeff = dt * ffz  
-                 * PMean(lower_cond, upper_cond, 
-	    permzp[ip], permzp[ip+sz_v]) 
+                 * PMeanDZ(permzp[ip], permzp[ip+sz_v],z_mult_dat[ip],z_mult_dat[ip+sz_v]) 
 	    / viscosity;
 
 	 sym_lower_temp = - z_coeff* (1.0 / (dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]))) 
@@ -936,8 +936,8 @@ int           symm_part)      /* Specifies whether to compute just the
 			   + rpp[ip-sz_v] * ddp[ip-sz_v];
 			prod_lo = rpp[ip-sz_v] * dp[ip-sz_v];
 		        coeff = dt * ffz * (1.0/(dz*Mean(z_mult_dat[ip],z_mult_dat[ip-sz_v]))) 
-			   * PMean(pp[ip-sz_v], pp[ip], 
-			   permzp[ip-sz_v], permzp[ip]) 
+			   * PMeanDZ(permzp[ip-sz_v], permzp[ip],
+                       z_mult_dat[ip-sz_v],z_mult_dat[ip]) 
 			   / viscosity;
 		        lp[im] = - coeff * 
 			   ( diff * RPMean(lower_cond, upper_cond, 
@@ -957,8 +957,8 @@ int           symm_part)      /* Specifies whether to compute just the
 			   + rpp[ip+sz_v] * ddp[ip+sz_v];
 			prod_up = rpp[ip+sz_v] * dp[ip+sz_v];
 		        coeff = dt * ffz * (1.0/(dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]))) 
-			   * PMean(lower_cond, upper_cond, 
-			   permzp[ip], permzp[ip+sz_v]) 
+			   * PMeanDZ(permzp[ip], permzp[ip+sz_v],
+                         z_mult_dat[ip],z_mult_dat[ip+sz_v]) 
 			   / viscosity;
 		        up[im] = - coeff * 
 			   ( diff * RPMean(lower_cond, upper_cond, 
@@ -1282,11 +1282,25 @@ int           symm_part)      /* Specifies whether to compute just the
 		     
               if (overlandspinup == 1) {
                   /* add flux loss equal to excess head  that overwrites the prior overland flux */
-                  if ((pp[ip]) >= 0.0) 
-                  {
-                  sep = dz*z_mult_dat[ip];  //RMM
-                      cp[im] += vol*z_mult_dat[ip]*dt*(1.0);
-                  }
+                  BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+                                    {
+                                        if(fdir[2] == 1) {
+                                            ip   = SubvectorEltIndex(p_sub, i, j, k);
+                                            io   = SubvectorEltIndex(p_sub, i, j, 0);
+                                            im = SubmatrixEltIndex(J_sub, i, j, k);
+                                            vol = dx*dy*dz;
+                                            
+                                            if ((pp[ip]) >= 0.0) 
+                                            {
+                                                sep = dz*z_mult_dat[ip];  //RMM
+                                                cp[im] += vol*z_mult_dat[ip]*dt*(1.0 + 10.0*exp(0.0*10.0)*0.001);
+                                            } else {
+                                                cp[im] += 0.0 + vol*z_mult_dat[ip]*dt*10.0*exp(pfmin(pp[ip],0.0)*10.0)*0.001;
+                                            }
+                                        }
+                                    });
+                  
+
               }  else {
 
 		      /* Get overland flow contributions for using kinematic or diffusive - LEC */
@@ -1515,9 +1529,13 @@ int           symm_part)      /* Specifies whether to compute just the
 				{
 				/*diagonal term */
 				cp_c[io] += (vol /dz) + (vol/ffy)*dt*(ke_der[io1] - kw_der[io1])
-				+ (vol/ffx)*dt*(kn_der[io1] - ks_der[io1]);
+                    + (vol/ffx)*dt*(kn_der[io1] - ks_der[io1]); //+10.0*exp(pfmin(pp[ip],0.0)*10.0)*0.001;
 
-				}
+				} else {
+                    
+                    cp_c[io] += 0.0; // + 10.0*exp(pfmin(pp[ip],0.0)*10.0)*0.001;
+                    
+                }
 			
 			if (diffusive == 0) {
 				   			   
@@ -1668,10 +1686,11 @@ int           symm_part)      /* Specifies whether to compute just the
    FreeVector(KE);
    FreeVector(KN);
    FreeVector(KS);
-    FreeVector(KWns);
-    FreeVector(KEns);
-    FreeVector(KNns);
-    FreeVector(KSns);
+   FreeVector(KWns);
+   FreeVector(KEns);
+   FreeVector(KNns);
+   FreeVector(KSns);
+
    return;
 }
 

@@ -109,6 +109,10 @@ typedef struct
    int                write_silopmpio_overland_sum;    /* write sum of overland outflow as PMPIO? */
    int                write_silopmpio_overland_bc_flux;/* write overland outflow boundary condition flux as PMPIO? */
    int                write_silopmpio_dzmult;          /* write dz multiplier as PMPIO? */
+   int                spinup;                         /* spinup flag, remove ponded water */
+   int                evap_trans_file;                /* read evap_trans as a SS file before advance richards */
+   int                evap_trans_file_transient;                /* read evap_trans as a transient file before advance richards timestep */
+   char              *evap_trans_filename;           /* File name for evap trans */
     
     
 #ifdef HAVE_CLM                           /* VARIABLES FOR CLM ONLY */
@@ -1466,7 +1470,6 @@ void AdvanceRichards(PFModule *this_module,
 	       case 1:
 	       {
 
-                  amps_Printf( "Calling CLM...\n" ); 
 		  clm_file_dir_length=strlen(public_xtra -> clm_file_dir);
 		  CALL_CLM_LSM(pp,sp,et,ms,po_dat,dz_dat,istep,cdt,t,start_time, 
 			       dx,dy,dz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,nz_rz,ip,p,q,r,gnx, gny,rank,
@@ -1492,7 +1495,6 @@ void AdvanceRichards(PFModule *this_module,
                                public_xtra -> clm_irr_threshold,
                                qirr, qirr_inst, iflag, 
                                public_xtra -> clm_irr_thresholdtype);
-                  amps_Printf( "...back in SolverRichards\n" );
 
 		  break;		  
 	       }
@@ -1512,11 +1514,26 @@ void AdvanceRichards(PFModule *this_module,
 
 #endif   //End of call to CLM
 
+          /******************************************/
+          /*    read transient evap trans flux file */
+          /******************************************/
+          if (public_xtra -> evap_trans_file_transient) {
+              sprintf(filename, "%s.%05d.pfb", public_xtra -> evap_trans_filename, (istep-1) );
+              //printf("%s %s \n",filename, public_xtra -> evap_trans_filename);
+              ReadPFBinary( filename, evap_trans );
+              
+              handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
+              FinalizeVectorUpdate(handle);
+          }
+          
       } //Endif to check whether an entire dt is complete
 
       converged = 1;
       conv_failures = 0;
 
+
+       
+       
       do  /* while not converged */
       {
 
@@ -1722,6 +1739,7 @@ void AdvanceRichards(PFModule *this_module,
          
 	 t += dt;
 
+          
 	 /*******************************************************************/
 	 /*          Solve the nonlinear system for this time step          */
 	 /*******************************************************************/
@@ -1762,6 +1780,61 @@ void AdvanceRichards(PFModule *this_module,
 
       instance_xtra -> iteration_number++;
      
+       /***************************************************************
+        *         spinup - remove excess pressure at land surface     *
+        ***************************************************************/
+       //int spinup = 1;
+       if ( public_xtra -> spinup == 1 ) {
+           
+           GrGeomSolid *gr_domain         = ProblemDataGrDomain(problem_data);
+           
+           int          i, j, k, r, is;
+           int          ix, iy, iz;
+           int          nx, ny, nz;
+           int          ip;
+           
+           Subgrid     *subgrid;
+           Grid        *grid              = VectorGrid(evap_trans_sum);
+           
+           ForSubgridI(is, GridSubgrids(grid))
+           {
+               subgrid = GridSubgrid(grid, is);
+               p_sub   = VectorSubvector(instance_xtra -> pressure, is);
+               
+               r = SubgridRX(subgrid);
+               
+               ix = SubgridIX(subgrid);
+               iy = SubgridIY(subgrid);
+               iz = SubgridIZ(subgrid);
+               
+               nx = SubgridNX(subgrid);
+               ny = SubgridNY(subgrid);
+               nz = SubgridNZ(subgrid);
+               
+               pp = SubvectorData(p_sub);
+               
+               GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+                            {
+                                
+                                ip = SubvectorEltIndex(p_sub, i, j, k);
+                                // printf(" %d %d %d %d  \n",i,j,k,ip);
+                                // printf(" pp[ip] %10.3f \n",pp[ip]);
+                                // printf(" NZ: %d \n",nz);
+                                if (k == (nz-1)) {
+                                    //   printf(" %d %d %d %d  \n",i,j,k,ip);
+                                    //   printf(" pp[ip] %10.3f \n",pp[ip]);
+                                    
+                                    if (pp[ip] > 0.0) {
+                                        printf(" pressure-> 0 %d %d %d %10.3f \n",i,j,k,pp[ip]);
+                                        pp[ip] = 0.0; 
+                                    }  }
+                                
+                            });
+           }
+           
+           
+       }
+       
       /* Calculate densities and saturations for the new pressure. */
       PFModuleInvokeType(PhaseDensityInvoke,  phase_density, 
 		     (0, instance_xtra -> pressure, instance_xtra -> density, 
@@ -1791,7 +1864,7 @@ void AdvanceRichards(PFModule *this_module,
 		     instance_xtra -> overland_sum);
       }
 
-      /***************************************************************/
+            /***************************************************************/
       /*                 Print the pressure and saturation           */
       /***************************************************************/
 
@@ -3390,7 +3463,7 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    public_xtra -> print_specific_storage = switch_value;
 
    sprintf(key, "%s.PrintTop", name);
-   switch_name = GetStringDefault(key, "True");
+   switch_name = GetStringDefault(key, "False");
    switch_value = NA_NameToIndex(switch_na, switch_name);
    if(switch_value < 0)
    {
@@ -3873,7 +3946,48 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
                    switch_name, key);
     }
     public_xtra -> write_silopmpio_top = switch_value;
+   
+    //@RMM spinup key
+    sprintf(key, "%s.Spinup", name);
+    switch_name = GetStringDefault(key, "False");
+    switch_value = NA_NameToIndex(switch_na, switch_name);
+    if(switch_value < 0)
+    {
+        InputError("Error: invalid value <%s> for key <%s>\n",
+                   switch_name, key);
+    }
+    public_xtra -> spinup = switch_value;
     
+    
+    /* @RMM read evap trans as SS file before advance richards 
+     for P-E spinup type runs                                  */
+    
+    sprintf(key, "%s.EvapTransFile", name);
+    switch_name = GetStringDefault(key, "False");
+    switch_value = NA_NameToIndex(switch_na, switch_name);
+    if(switch_value < 0)
+    {
+        InputError("Error: invalid print switch value <%s> for key <%s>\n",
+                   switch_name, key);
+    }
+    public_xtra -> evap_trans_file = switch_value;
+
+    
+    sprintf(key, "%s.EvapTransFileTransient", name);
+    switch_name = GetStringDefault(key, "False");
+    switch_value = NA_NameToIndex(switch_na, switch_name);
+    if(switch_value < 0)
+    {
+        InputError("Error: invalid print switch value <%s> for key <%s>\n",
+                   switch_name, key);
+    }
+    public_xtra -> evap_trans_file_transient = switch_value;
+    
+    
+    /* and read file name for evap trans file  */
+    sprintf(key, "%s.EvapTrans.FileName", name);
+    public_xtra -> evap_trans_filename = GetStringDefault(key, "");
+
     
     /* Initialize silo if necessary */
     if( public_xtra -> write_silopmpio_subsurf_data || 
@@ -3956,6 +4070,10 @@ void      SolverRichards() {
    Vector       *pressure_out;
    Vector       *porosity_out;
    Vector       *saturation_out;
+    
+   char          filename[2048]; 
+    
+   VectorUpdateCommHandle   *handle;
 
    /* 
     * sk: Vector that contains the sink terms from the land surface model 
@@ -3966,8 +4084,18 @@ void      SolverRichards() {
 
    /*sk Initialize LSM terms*/
    evap_trans = NewVectorType( grid, 1, 1, vector_cell_centered );
-   InitVectorAll(evap_trans, 0.0);
-   AdvanceRichards(this_module, 
+    InitVectorAll(evap_trans, 0.0);
+    
+    if (public_xtra -> evap_trans_file) {
+        sprintf(filename, "%s", public_xtra -> evap_trans_filename );
+        //printf("%s %s \n",filename, public_xtra -> evap_trans_filename);
+        ReadPFBinary( filename, evap_trans );
+        
+        handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
+        FinalizeVectorUpdate(handle);
+    }
+    
+   AdvanceRichards(this_module,
 		   start_time, 
 		   stop_time, 
 		   NULL,

@@ -42,6 +42,7 @@
 #define ArithmeticMean(a, b)  ( 0.5*((a) + (b)) )
 #define GeometricMean(a, b)   ( sqrt((a)*(b)) )
 #define HarmonicMean(a, b)    ( ((a) + (b)) ? (2.0*(a)*(b))/((a) + (b)) : 0 )
+#define HarmonicMeanDZ(a, b, c, d)    ( ((a*c) + (b*d)) ? ( (c+d)/ ((c/a) + (d/b)) ) : 0 )
 #define UpstreamMean(a, b, c, d) ( (( a - b ) >= 0) ? c : d )
 
 #define CellFaceConductivity  HarmonicMean
