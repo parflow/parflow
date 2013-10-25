@@ -60,6 +60,8 @@ enum JacobianType {
 typedef struct
 {
  enum JacobianType type;
+ double SpinupDampP1; // NBE
+ double SpinupDampP2; // NBE
 } PublicXtra;
 
 typedef struct
@@ -1293,9 +1295,11 @@ int           symm_part)      /* Specifies whether to compute just the
                                             if ((pp[ip]) >= 0.0) 
                                             {
                                                 sep = dz*z_mult_dat[ip];  //RMM
-                                                cp[im] += vol*z_mult_dat[ip]*dt*(1.0 + 10.0*exp(0.0*10.0)*0.001);
+                                                //cp[im] += vol*z_mult_dat[ip]*dt*(1.0 + 10.0*exp(0.0*10.0)*0.001);
+                                                cp[im] += vol*z_mult_dat[ip]*dt*(1.0 + public_xtra -> SpinupDampP1 *exp(0.0* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2); //NBE
                                             } else {
-                                                cp[im] += 0.0 + vol*z_mult_dat[ip]*dt*10.0*exp(pfmin(pp[ip],0.0)*10.0)*0.001;
+                                                //cp[im] += 0.0 + vol*z_mult_dat[ip]*dt*10.0*exp(pfmin(pp[ip],0.0)*10.0)*0.001;
+                                                cp[im] += 0.0 + vol*z_mult_dat[ip]*dt* public_xtra -> SpinupDampP1 *exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2; //NBE
                                             }
                                         }
                                     });
@@ -1529,12 +1533,13 @@ int           symm_part)      /* Specifies whether to compute just the
 				{
 				/*diagonal term */
 				cp_c[io] += (vol /dz) + (vol/ffy)*dt*(ke_der[io1] - kw_der[io1])
-                    + (vol/ffx)*dt*(kn_der[io1] - ks_der[io1]); //+10.0*exp(pfmin(pp[ip],0.0)*10.0)*0.001;
+                    + (vol/ffx)*dt*(kn_der[io1] - ks_der[io1]) +
+                    (public_xtra -> SpinupDampP1 *exp(0.0* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2); //NBE
 
 				} else {
                     
-                    cp_c[io] += 0.0; // + 10.0*exp(pfmin(pp[ip],0.0)*10.0)*0.001;
-                    
+                    cp_c[io] += 0.0 +
+                    (public_xtra -> SpinupDampP1 *exp(0.0* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2); //NBE
                 }
 			
 			if (diffusive == 0) {
@@ -1840,6 +1845,12 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
    (void)name;
 
    public_xtra = ctalloc(PublicXtra, 1);
+/* These parameters dampen the transition/switching into overland flow to speedup
+   the spinup process */
+   sprintf(key, "OverlandSpinupDampP1");
+   public_xtra -> SpinupDampP1 = GetDoubleDefault(key, 0.0);
+   sprintf(key, "OverlandSpinupDampP2");
+   public_xtra -> SpinupDampP2 = GetDoubleDefault(key, 0.0); // NBE
 
    switch_na = NA_NewNameArray("False True");
    sprintf(key, "Solver.Nonlinear.UseJacobian");

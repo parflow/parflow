@@ -39,7 +39,8 @@
 typedef struct
 {
    int       time_index;
-
+    double    SpinupDampP1; // NBE
+    double    SpinupDampP2; // NBE
 } PublicXtra;
 
 typedef struct
@@ -1561,7 +1562,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			   q_overlnd =  vol*z_mult_dat[ip]
                      * (pfmax(pp[ip],0.0) - pfmax(opp[ip],0.0)) / sep+
 			      dt * vol * z_mult_dat[ip]* ((ke_[io]-kw_[io])/dx + (kn_[io] - ks_[io])/dy) 
-                     / sep; // +exp(pfmin(pp[ip],0.0)*10.0)*0.001;
+                     / sep + (exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1 )* public_xtra -> SpinupDampP2 ); //NBE
                      
 
                       if (overlandspinup == 1) {
@@ -1570,7 +1571,11 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
                          // q_overlnd = 0.0;
     
                               //q_overlnd =  vol*z_mult_dat[ip]*dt*((pp[ip] - 0.0) +exp(pfmin(pp[ip],0.0)*10.0)*0.001);
-                          q_overlnd =  vol*z_mult_dat[ip]*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)*10.0)*0.001);
+                          
+                          // Next line was RMM original
+                          //q_overlnd =  vol*z_mult_dat[ip]*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)*10.0)*0.001);
+                          q_overlnd =  vol*z_mult_dat[ip]*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1 )* public_xtra -> SpinupDampP2 ); //NBE
+                          
     
 
                          //q_overlnd =  vol*z_mult_dat[ip]*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)*1.0)*0.000001);
@@ -1787,9 +1792,17 @@ PFModule   *NlFunctionEvalNewPublicXtra()
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;
+   char           key[IDB_MAX_KEY_LEN];
 
 
    public_xtra = ctalloc(PublicXtra, 1);
+    
+/* These parameters dampen the transition/switching into overland flow to speedup
+   the spinup process. */
+   sprintf(key, "OverlandSpinupDampP1");
+   public_xtra -> SpinupDampP1 = GetDoubleDefault(key, 0.0);
+   sprintf(key, "OverlandSpinupDampP2");
+   public_xtra -> SpinupDampP2 = GetDoubleDefault(key, 0.0); //NBE
 
    (public_xtra -> time_index) = RegisterTiming("NL_F_Eval");
 

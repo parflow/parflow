@@ -113,6 +113,7 @@ typedef struct
    int                evap_trans_file;                /* read evap_trans as a SS file before advance richards */
    int                evap_trans_file_transient;                /* read evap_trans as a transient file before advance richards timestep */
    char              *evap_trans_filename;           /* File name for evap trans */
+   int                evap_trans_file_looping;                /* Loop over the flux files if we run out */
     
     
 #ifdef HAVE_CLM                           /* VARIABLES FOR CLM ONLY */
@@ -998,6 +999,11 @@ void AdvanceRichards(PFModule *this_module,
 
    char          dt_info;
    char          file_prefix[2048], file_type[2048], file_postfix[2048];
+    
+   /* Added for transient EvapTrans file management - NBE */
+    int Stepcount, Loopcount;
+    Stepcount=0;
+    Loopcount=0;
 
    sprintf(file_prefix, "%s", GlobalsOutFileName);
 
@@ -1520,7 +1526,29 @@ void AdvanceRichards(PFModule *this_module,
           if (public_xtra -> evap_trans_file_transient) {
               sprintf(filename, "%s.%05d.pfb", public_xtra -> evap_trans_filename, (istep-1) );
               //printf("%s %s \n",filename, public_xtra -> evap_trans_filename);
+              
+              /* Added flag to give the option to loop back over the flux files 
+               This means a file doesn't have to exist for each time step - NBE */
+              if (public_xtra -> evap_trans_file_looping) {
+                  
+              if( access( filename, 0 ) != -1 ) {
+                  // file exists
+                  Stepcount+=1;
+
+              } else {
+                  
+                  if (Loopcount > Stepcount) {
+                      Loopcount = 0;
+                  }
+                  sprintf(filename, "%s.%05d.pfb", public_xtra -> evap_trans_filename, Loopcount );
+                  //printf("Using flux file %s \n",filename);
+                  Loopcount+=1;
+              }
+              } // NBE
+              
               ReadPFBinary( filename, evap_trans );
+              
+              //printf("Checking time step logging, steps = %i\n",Stepcount);
               
               handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
               FinalizeVectorUpdate(handle);
@@ -1643,8 +1671,30 @@ void AdvanceRichards(PFModule *this_module,
 	 }
 
 #endif
-	 
-	 /*--------------------------------------------------------------
+          
+	 /* RMM added fix to adjust evap_trans for time step */
+          if (public_xtra -> evap_trans_file_transient) {
+              
+              // Note ct is time we want to advance to at this point
+              if ( t + dt > ct) {
+                  double new_dt = ct - t;
+                  
+                  // If time increment is too small we have a problem. Just halt
+                  {
+                      double test_time = t + new_dt;
+                      double diff_time = test_time - t;
+                      
+                      if(diff_time  >  TIME_EPSILON ) {
+                          dt = new_dt;
+                      } else {
+                          PARFLOW_ERROR("Time increment is too small; CLM wants a small timestep\n");
+                      }
+                  }
+              }
+              //  break;
+          }
+          
+     /*--------------------------------------------------------------
 	  * If we are printing out results, then determine if we need
 	  * to print them after this time step.
 	  *
@@ -3982,6 +4032,17 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
                    switch_name, key);
     }
     public_xtra -> evap_trans_file_transient = switch_value;
+    
+    /* Nick's addition*/
+    sprintf(key, "%s.EvapTrans.FileLooping", name);
+    switch_name = GetStringDefault(key, "False");
+    switch_value = NA_NameToIndex(switch_na, switch_name);
+    if(switch_value < 0)
+    {
+        InputError("Error: invalid print switch value <%s> for key <%s>\n",
+                   switch_name, key);
+    }
+    public_xtra -> evap_trans_file_looping = switch_value;
     
     
     /* and read file name for evap trans file  */
