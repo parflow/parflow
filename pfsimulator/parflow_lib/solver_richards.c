@@ -1518,7 +1518,7 @@ void AdvanceRichards(PFModule *this_module,
          istep  = istep + 1;
 	 EndTiming(CLMTimingIndex);
 
-#endif   //End of call to CLM
+//#endif   //End of call to CLM
 
           /******************************************/
           /*    read transient evap trans flux file */
@@ -1553,7 +1553,7 @@ void AdvanceRichards(PFModule *this_module,
               handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
               FinalizeVectorUpdate(handle);
           }
-          
+#endif          
       } //Endif to check whether an entire dt is complete
 
       converged = 1;
@@ -1670,7 +1670,7 @@ void AdvanceRichards(PFModule *this_module,
 	    }
 	 }
 
-#endif
+//#endif
           
 	 /* RMM added fix to adjust evap_trans for time step */
           if (public_xtra -> evap_trans_file_transient) {
@@ -1693,7 +1693,7 @@ void AdvanceRichards(PFModule *this_module,
               }
               //  break;
           }
-          
+#endif          
      /*--------------------------------------------------------------
 	  * If we are printing out results, then determine if we need
 	  * to print them after this time step.
@@ -1842,6 +1842,9 @@ void AdvanceRichards(PFModule *this_module,
            int          ix, iy, iz;
            int          nx, ny, nz;
            int          ip;
+	// JLW add declarations for use without CLM
+	   Subvector   *p_sub_sp;
+	   double      *pp_sp;
            
            Subgrid     *subgrid;
            Grid        *grid              = VectorGrid(evap_trans_sum);
@@ -1849,7 +1852,7 @@ void AdvanceRichards(PFModule *this_module,
            ForSubgridI(is, GridSubgrids(grid))
            {
                subgrid = GridSubgrid(grid, is);
-               p_sub   = VectorSubvector(instance_xtra -> pressure, is);
+               p_sub_sp   = VectorSubvector(instance_xtra -> pressure, is);
                
                r = SubgridRX(subgrid);
                
@@ -1861,12 +1864,12 @@ void AdvanceRichards(PFModule *this_module,
                ny = SubgridNY(subgrid);
                nz = SubgridNZ(subgrid);
                
-               pp = SubvectorData(p_sub);
+               pp_sp = SubvectorData(p_sub_sp);
                
                GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
                             {
                                 
-                                ip = SubvectorEltIndex(p_sub, i, j, k);
+                                ip = SubvectorEltIndex(p_sub_sp, i, j, k);
                                 // printf(" %d %d %d %d  \n",i,j,k,ip);
                                 // printf(" pp[ip] %10.3f \n",pp[ip]);
                                 // printf(" NZ: %d \n",nz);
@@ -1874,9 +1877,9 @@ void AdvanceRichards(PFModule *this_module,
                                     //   printf(" %d %d %d %d  \n",i,j,k,ip);
                                     //   printf(" pp[ip] %10.3f \n",pp[ip]);
                                     
-                                    if (pp[ip] > 0.0) {
-                                        printf(" pressure-> 0 %d %d %d %10.3f \n",i,j,k,pp[ip]);
-                                        pp[ip] = 0.0; 
+                                    if (pp_sp[ip] > 0.0) {
+                                        printf(" pressure-> 0 %d %d %d %10.3f \n",i,j,k,pp_sp[ip]);
+                                        pp_sp[ip] = 0.0; 
                                     }  }
                                 
                             });
