@@ -1294,12 +1294,21 @@ int           symm_part)      /* Specifies whether to compute just the
                                             
                                             if ((pp[ip]) >= 0.0) 
                                             {
-                                                sep = dz*z_mult_dat[ip];  //RMM
-                                                //cp[im] += vol*z_mult_dat[ip]*dt*(1.0 + 10.0*exp(0.0*10.0)*0.001);
-                                                cp[im] += vol*z_mult_dat[ip]*dt*(1.0 + public_xtra -> SpinupDampP1 *exp(0.0* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2); //NBE
+                                                //sep = dz*z_mult_dat[ip];  //RMM
+                                               // cp[im] += (vol/dz)*dt*(1.0 + 1.0*exp(0.0*1.0)*0.001);
+                                                //cp[im] += vol*z_mult_dat[ip]*dt*(1.0 + public_xtra -> SpinupDampP1 *exp(0.0* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2); //NBE
+                                                //@RMM- fixed overland spinpup to 1) be consistent with nl function eval
+                                               //cp[im] += (vol/dz)*dt*(1.0 + public_xtra -> SpinupDampP1 *exp(0.0* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2); //NBE
+                                                // Laura's version
+                                                cp[im] += (vol/dz)*dt*(1.0 + 0.0); //LEC
+                                
                                             } else {
-                                                //cp[im] += 0.0 + vol*z_mult_dat[ip]*dt*10.0*exp(pfmin(pp[ip],0.0)*10.0)*0.001;
-                                                cp[im] += 0.0 + vol*z_mult_dat[ip]*dt* public_xtra -> SpinupDampP1 *exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2; //NBE
+                                                //cp[im] += 0.0 + (vol/dz)*z_mult_dat[ip]*dt*1.0*exp(pfmin(pp[ip],0.0)*1.0)*0.001;
+
+                                            //cp[im] += 0.0 + vol*z_mult_dat[ip]*dt* public_xtra -> SpinupDampP1 *exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2; //NBE
+                                            // Laura's version
+                                                cp[im] += 0.0; //+ vol/dz*dt*public_xtra -> SpinupDampP1 *exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2; //NBE
+
                                             }
                                         }
                                     });
@@ -1532,14 +1541,16 @@ int           symm_part)      /* Specifies whether to compute just the
 		        if ((pp[ip]) > 0.0) 
 				{
 				/*diagonal term */
-				cp_c[io] += (vol /dz) + (vol/ffy)*dt*(ke_der[io1] - kw_der[io1])
-                    + (vol/ffx)*dt*(kn_der[io1] - ks_der[io1]) +
-                    (public_xtra -> SpinupDampP1 *exp(0.0* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2); //NBE
+                    cp_c[io] += (vol /dz) + (vol/ffy)*dt*(ke_der[io1] - kw_der[io1])
+                    + (vol/ffx)*dt*(kn_der[io1] - ks_der[io1]);
+                  // +dt*(vol/dz)*(public_xtra -> SpinupDampP1 *exp(0.0* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2); //NBE
 
 				} else {
-                    
-                    cp_c[io] += 0.0 +
-                    (public_xtra -> SpinupDampP1 *exp(0.0* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2); //NBE
+                    //cp_c[io] += 0.0;
+                    // Laura's version
+                    cp_c[io] += 0.0 + dt*(vol/dz)*(public_xtra -> SpinupDampP1 *exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2); //NBE              
+
+                    //+ dt*(vol/dz)*(public_xtra -> SpinupDampP1 *exp(0.0* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2); //NBE
                 }
 			
 			if (diffusive == 0) {

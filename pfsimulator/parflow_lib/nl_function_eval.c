@@ -1014,7 +1014,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			{
 			   dir = -1;
                 sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip-sz_p]);  //RMM
-                sep = dz*z_mult_dat[ip];  //RMM
+                //sep = dz*z_mult_dat[ip];  //RMM
                //printf("case-1 %d %d %d %f %f  \n", i,j,k, z_mult_dat[ip],z_mult_dat[ip-sz_p]);
                 
 			   lower_cond = pp[ip-sz_p] / sep
@@ -1034,7 +1034,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			      rpp[ip-sz_p]*dp[ip-sz_p], rpp[ip]*dp[ip]) 
 			      / viscosity;
                 
-                sep = dz*z_mult_dat[ip];
+                //sep = dz*z_mult_dat[ip];
                 //printf("case-1 %f %f %d \n", sep,z_mult_dat[ip], ip);
 
 			   lower_cond = value/sep  -  0.25*dp[ip] * gravity;
@@ -1077,7 +1077,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			      / viscosity;
                // printf("uold: %10.6e \n", u_old);
                 
-                sep = dz/2.0;
+                //sep = dz/2.0;
                // printf("case+1 %f %f %d \n", sep,z_mult_dat[ip], ip);
 
                 lower_cond = (pp[ip] / sep) - 0.25 *  dp[ip] * gravity *
@@ -1232,8 +1232,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 		     {
 			case -1:
 			   dir = -1;
-//                sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip-sz_p]);  //RMM     
-                    sep = dz*z_mult_dat[ip];  //RMM
+                sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip-sz_p]);  //RMM     
+                   // sep = dz*z_mult_dat[ip];  //RMM
 
                      lower_cond = (pp[ip-sz_p] / sep) 
 			      - 0.5 * dp[ip-sz_p] * gravity*
@@ -1418,8 +1418,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 		     {
 			case -1:
 			   dir = -1;
-                //    sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip-sz_p]);  //RMM
-                    sep = dz*z_mult_dat[ip];  //RMM
+                    sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip-sz_p]);  //RMM
+                  //  sep = dz*z_mult_dat[ip];  //RMM
 
 			   lower_cond = (pp[ip-sz_p] / sep) 
 			      - 0.5 * dp[ip-sz_p] * gravity*
@@ -1438,7 +1438,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			   break;
 			case  1:
 			   dir = 1;
-                     sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]);  //RMM
+                    sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]);  //RMM
                   //   sep = dz*z_mult_dat[ip];  //RMM
 
 			   lower_cond = (pp[ip] / sep) - 0.5 * dp[ip] * gravity *
@@ -1552,31 +1552,40 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			   q_overlnd = 0.0;
                      
                     /* old version, not sure we 
-                    should be differecing variable dz with bddy values
-                     sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip-sz_p]);  //RMM */
+                    should be differecing variable dz with bddy values */
+                    // sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip-sz_p]);  //RMM 
                    /* shorthand for new dz * multiplier */
-                     sep = dz*z_mult_dat[ip];  //RMM
+                   // sep = dz*z_mult_dat[ip];  //RMM
                      
                      
                      
-			   q_overlnd =  vol*z_mult_dat[ip]
+			 /*  q_overlnd =  vol*z_mult_dat[ip]
                      * (pfmax(pp[ip],0.0) - pfmax(opp[ip],0.0)) / sep+
 			      dt * vol * z_mult_dat[ip]* ((ke_[io]-kw_[io])/dx + (kn_[io] - ks_[io])/dy) 
-                     / sep + (exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1 )* public_xtra -> SpinupDampP2 ); //NBE
+                     / sep + (exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1 )* public_xtra -> SpinupDampP2 ); //NBE  */
                      
+                      q_overlnd =  vol
+                     * (pfmax(pp[ip],0.0) - pfmax(opp[ip],0.0)) / dz +
+                     dt * vol* ((ke_[io]-kw_[io])/dx + (kn_[io] - ks_[io])/dy) 
+                     / dz + vol*dt/dz*(exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1 )* public_xtra -> SpinupDampP2 ); //NBE  
+                     
+                    /* q_overlnd = vol * (pfmax(pp[ip],0.0) - pfmax(opp[ip],0.0)) /dz +
+                     dt * vol * ((ke_[io]-kw_[io])/dx + (kn_[io] - ks_[io])/dy) / dz;  */
 
                       if (overlandspinup == 1) {
                      /* add flux loss equal to excess head  that overwrites the prior overland flux */
-                     sep = dz*z_mult_dat[ip];  //RMM
+                     //sep = dz*z_mult_dat[ip];  //RMM NOTE this should be the "long form" of sep that uses pmean but need to be consistent w/ jacobian
                          // q_overlnd = 0.0;
     
                               //q_overlnd =  vol*z_mult_dat[ip]*dt*((pp[ip] - 0.0) +exp(pfmin(pp[ip],0.0)*10.0)*0.001);
                           
                           // Next line was RMM original
-                          //q_overlnd =  vol*z_mult_dat[ip]*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)*10.0)*0.001);
-                          q_overlnd =  vol*z_mult_dat[ip]*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1 )* public_xtra -> SpinupDampP2 ); //NBE
-                          
-    
+                          //q_overlnd =  (vol/dz)*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)*1.0)*0.001);
+//                          q_overlnd =  vol*z_mult_dat[ip]*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1 )* public_xtra -> SpinupDampP2 ); //NBE
+                          //q_overlnd =  (vol/dz)*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1 )* public_xtra -> SpinupDampP2 ); //@RMM
+                          //Laura's version
+                          q_overlnd =  (vol/dz)*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1 )* public_xtra -> SpinupDampP2 ); //@RMM
+                           // printf("spinup keys: %f %f \n",public_xtra -> SpinupDampP1, public_xtra -> SpinupDampP2);
 
                          //q_overlnd =  vol*z_mult_dat[ip]*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)*1.0)*0.000001);
     
