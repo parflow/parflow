@@ -1,4 +1,4 @@
-128
+129
 29
 Patch.x-lower.BCPressure.Type
 9
@@ -61,8 +61,8 @@ ICPressure.GeomNames
 domain
 28
 Solver.Linear.Preconditioner
-6
-MGSemi
+4
+PFMG
 15
 Perm.TensorType
 12
@@ -171,6 +171,10 @@ domain
 Geom.domain.ICPressure.Value
 3
 1.0
+41
+Solver.Linear.Preconditioner.SymmetricMat
+9
+Symmetric
 25
 Geom.domain.Porosity.Type
 8
@@ -438,7 +442,7 @@ TimingInfo.StartCount
 34
 Solver.Nonlinear.DerivativeEpsilon
 5
-1e-16
+1e-12
 30
 Patch.y-upper.BCPressure.Cycle
 8

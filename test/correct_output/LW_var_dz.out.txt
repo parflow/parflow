@@ -1,0 +1,269 @@
+Process 0 on zaphod
+Process 1 on zaphod
+problem_dz_scale -- setting dz_mult tcl list 
+problem_dz_scale -- setting dz_mult tcl list 
+TFG true 
+TFG true 
+Node 0: Using process grid (2,1,1)
+Node 0: Well Information
+Node 0: No Wells.
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=          1897366.644995468  nfe=     1 
+KINSol nni=    1 fnorm=          1894037.544122706 nfe=    23
+KINSol nni=    2 fnorm=          1365992.071896155 nfe=    26
+KINSol nni=    3 fnorm=            324021.09089253 nfe=    27
+KINSol nni=    4 fnorm=          323659.5692214813 nfe=    33
+KINSol nni=    5 fnorm=          323632.2490734334 nfe=    44
+KINSol nni=    6 fnorm=          323438.6335883097 nfe=    48
+KINSol nni=    7 fnorm=          323182.8041470572 nfe=    54
+KINSol nni=    8 fnorm=          308561.8878626705 nfe=    57
+KINSol nni=    9 fnorm=          263276.4515989983 nfe=    58
+KINSol nni=   10 fnorm=          113200.5206557638 nfe=    65
+KINSol nni=   11 fnorm=          50397.94227552466 nfe=    66
+KINSol nni=   12 fnorm=          26168.57163060663 nfe=    69
+KINSol nni=   13 fnorm=          12908.53859531087 nfe=    70
+KINSol nni=   14 fnorm=          212.8119220536404 nfe=    71
+KINSol nni=   15 fnorm=          2.290135741971964 nfe=    72
+KINSol nni=   16 fnorm=       0.001753014580153175 nfe=    73
+KINSol nni=   17 fnorm=       1.08546325168513e-07 nfe=    74
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=          1486410.577750627  nfe=     1 
+KINSol nni=    1 fnorm=          1480143.644462796 nfe=     6
+KINSol nni=    2 fnorm=          1464182.757476814 nfe=    14
+KINSol nni=    3 fnorm=          1461616.115501013 nfe=    20
+KINSol nni=    4 fnorm=          1460582.188027497 nfe=    28
+KINSol nni=    5 fnorm=          1443331.883891996 nfe=    37
+KINSol nni=    6 fnorm=          1412013.211329808 nfe=    44
+KINSol nni=    7 fnorm=          1410863.627627477 nfe=    49
+KINSol nni=    8 fnorm=          1408022.642148803 nfe=    56
+KINSol nni=    9 fnorm=          1395794.285572426 nfe=    65
+KINSol nni=   10 fnorm=          1376328.777862023 nfe=    74
+KINSol nni=   11 fnorm=          1371768.821431239 nfe=    78
+KINSol nni=   12 fnorm=          1343332.085491939 nfe=    83
+KINSol nni=   13 fnorm=           1338481.27998651 nfe=    91
+KINSol nni=   14 fnorm=          1331767.817884203 nfe=    97
+KINSol nni=   15 fnorm=          1239390.772503525 nfe=   105
+KINSol nni=   16 fnorm=          1237154.411241856 nfe=   109
+KINSol nni=   17 fnorm=          1232211.240840115 nfe=   117
+KINSol nni=   18 fnorm=          1219066.680726599 nfe=   125
+KINSol nni=   19 fnorm=          1197985.369999834 nfe=   130
+KINSol nni=   20 fnorm=          1196958.986815388 nfe=   134
+KINSol nni=   21 fnorm=          1117084.111208796 nfe=   138
+KINSol nni=   22 fnorm=          1110475.733174399 nfe=   141
+KINSol nni=   23 fnorm=          1101023.418906919 nfe=   149
+KINSol nni=   24 fnorm=           1072207.58768499 nfe=   152
+KINSol nni=   25 fnorm=          1067565.250734768 nfe=   160
+KINSol nni=   26 fnorm=          1048505.851233178 nfe=   162
+KINSol nni=   27 fnorm=          1039648.682576687 nfe=   171
+KINSol nni=   28 fnorm=          981118.0001799919 nfe=   173
+KINSol nni=   29 fnorm=          981106.6739528071 nfe=   176
+KINSol nni=   30 fnorm=          977266.3835611925 nfe=   180
+KINSol nni=   31 fnorm=          966950.4552026886 nfe=   184
+KINSol nni=   32 fnorm=          934659.0696104367 nfe=   189
+KINSol nni=   33 fnorm=          893311.8407203049 nfe=   193
+KINSol nni=   34 fnorm=           884847.026414337 nfe=   199
+KINSol nni=   35 fnorm=          865130.2012980436 nfe=   203
+KINSol nni=   36 fnorm=          804616.2004234651 nfe=   211
+KINSol nni=   37 fnorm=          790593.6417112557 nfe=   215
+KINSol nni=   38 fnorm=          776568.0177710941 nfe=   219
+KINSol nni=   39 fnorm=          757158.2357767904 nfe=   224
+KINSol nni=   40 fnorm=           751546.662911004 nfe=   229
+KINSol nni=   41 fnorm=          508896.0346040698 nfe=   232
+KINSol nni=   42 fnorm=          501451.3369414724 nfe=   237
+KINSol nni=   43 fnorm=          348113.2719762066 nfe=   241
+KINSol nni=   44 fnorm=          346137.0043477233 nfe=   247
+KINSol nni=   45 fnorm=          66533.86925200906 nfe=   248
+KINSol nni=   46 fnorm=          10517.41328003942 nfe=   249
+KINSol nni=   47 fnorm=          1175.227317210346 nfe=   250
+KINSol nni=   48 fnorm=          46.21057882402272 nfe=   251
+KINSol nni=   49 fnorm=        0.09795357883089256 nfe=   252
+KINSol nni=   50 fnorm=      2.566732355235465e-05 nfe=   253
+KINSol nni=   51 fnorm=       4.61436877961295e-08 nfe=   254
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=          1591386.707015786  nfe=     1 
+KINSol nni=    1 fnorm=          1298742.192559818 nfe=     7
+KINSol nni=    2 fnorm=          565634.0508751454 nfe=    10
+KINSol nni=    3 fnorm=          532284.0451344353 nfe=    17
+KINSol nni=    4 fnorm=          71530.25157754227 nfe=    18
+KINSol nni=    5 fnorm=           12226.5124729135 nfe=    19
+KINSol nni=    6 fnorm=          1185.442450244254 nfe=    20
+KINSol nni=    7 fnorm=          18.20140488082316 nfe=    21
+KINSol nni=    8 fnorm=        0.00407470369815785 nfe=    22
+KINSol nni=    9 fnorm=      1.562411624822218e-08 nfe=    23
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=          985179.1345570233  nfe=     1 
+KINSol nni=    1 fnorm=          95446.95464636214 nfe=     2
+KINSol nni=    2 fnorm=          64596.52984095864 nfe=     6
+KINSol nni=    3 fnorm=          992.5880047387768 nfe=     7
+KINSol nni=    4 fnorm=          12.89984890767516 nfe=     8
+KINSol nni=    5 fnorm=        0.02522874402466901 nfe=     9
+KINSol nni=    6 fnorm=      6.512232496439007e-06 nfe=    10
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=          558140.4814331377  nfe=     1 
+KINSol nni=    1 fnorm=          54381.03755114453 nfe=     2
+KINSol nni=    2 fnorm=          968.0858759325529 nfe=     3
+KINSol nni=    3 fnorm=          8.943072289933031 nfe=     4
+KINSol nni=    4 fnorm=       0.002586849600265658 nfe=     5
+KINSol nni=    5 fnorm=      1.390579832132996e-07 nfe=     6
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=           422513.186978682  nfe=     1 
+KINSol nni=    1 fnorm=          38280.02557512683 nfe=     2
+KINSol nni=    2 fnorm=            563.25917191561 nfe=     3
+KINSol nni=    3 fnorm=          2.357479470979684 nfe=     4
+KINSol nni=    4 fnorm=      0.0005130217207997772 nfe=     5
+KINSol nni=    5 fnorm=      2.685680417179638e-07 nfe=     6
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=          381160.6919877547  nfe=     1 
+KINSol nni=    1 fnorm=          29941.02728059717 nfe=     2
+KINSol nni=    2 fnorm=          563.9474258215929 nfe=     3
+KINSol nni=    3 fnorm=           1.97467770611635 nfe=     4
+KINSol nni=    4 fnorm=       0.001157068943703236 nfe=     5
+KINSol nni=    5 fnorm=      5.734297109512807e-07 nfe=     6
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=          357693.8787038993  nfe=     1 
+KINSol nni=    1 fnorm=          25018.80160255309 nfe=     2
+KINSol nni=    2 fnorm=          458.5226822572486 nfe=     3
+KINSol nni=    3 fnorm=         0.8360803069484869 nfe=     4
+KINSol nni=    4 fnorm=      0.0003412536730587428 nfe=     5
+KINSol nni=    5 fnorm=      2.274278897586111e-07 nfe=     6
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=          339202.0832185678  nfe=     1 
+KINSol nni=    1 fnorm=          21772.18400889113 nfe=     2
+KINSol nni=    2 fnorm=          343.6184936334614 nfe=     3
+KINSol nni=    3 fnorm=         0.3144915514526779 nfe=     4
+KINSol nni=    4 fnorm=      2.996954863068084e-05 nfe=     5
+KINSol nni=    5 fnorm=      1.972781312066313e-08 nfe=     6
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=           323517.524707648  nfe=     1 
+KINSol nni=    1 fnorm=          19379.19469511613 nfe=     2
+KINSol nni=    2 fnorm=          259.7878409034021 nfe=     3
+KINSol nni=    3 fnorm=         0.2543558877007107 nfe=     4
+KINSol nni=    4 fnorm=      3.142863943065376e-06 nfe=     5
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=          309944.7986788613  nfe=     1 
+KINSol nni=    1 fnorm=          17460.65270772469 nfe=     2
+KINSol nni=    2 fnorm=          206.2006037755897 nfe=     3
+KINSol nni=    3 fnorm=         0.1757287921787029 nfe=     4
+KINSol nni=    4 fnorm=      1.159723361230694e-05 nfe=     5
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=          298051.8283151698  nfe=     1 
+KINSol nni=    1 fnorm=          15838.64579122132 nfe=     2
+KINSol nni=    2 fnorm=          165.5087663574886 nfe=     3
+KINSol nni=    3 fnorm=         0.1262563050890139 nfe=     4
+KINSol nni=    4 fnorm=      9.458432887897443e-05 nfe=     5
+KINSol nni=    5 fnorm=      1.911101459451222e-08 nfe=     6
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=          287503.4219076933  nfe=     1 
+KINSol nni=    1 fnorm=          14456.55473611275 nfe=     2
+KINSol nni=    2 fnorm=          130.4088441546959 nfe=     3
+KINSol nni=    3 fnorm=        0.08373420784310438 nfe=     4
+KINSol nni=    4 fnorm=      5.650021521278207e-05 nfe=     5
+KINSol nni=    5 fnorm=      9.212517357572319e-08 nfe=     6
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=          278047.9506906514  nfe=     1 
+KINSol nni=    1 fnorm=          13340.41921526038 nfe=     2
+KINSol nni=    2 fnorm=          105.3752867240291 nfe=     3
+KINSol nni=    3 fnorm=        0.07069839879094593 nfe=     4
+KINSol nni=    4 fnorm=      4.695052220498414e-05 nfe=     5
+KINSol nni=    5 fnorm=      5.753514137521088e-08 nfe=     6
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=          269536.8381195579  nfe=     1 
+KINSol nni=    1 fnorm=           12495.3348791393 nfe=     2
+KINSol nni=    2 fnorm=           89.2362628325606 nfe=     3
+KINSol nni=    3 fnorm=        0.03662289907051862 nfe=     4
+KINSol nni=    4 fnorm=      1.341040569067314e-05 nfe=     5
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=          261896.5932481003  nfe=     1 
+KINSol nni=    1 fnorm=          11846.73593989934 nfe=     2
+KINSol nni=    2 fnorm=          80.06112194594793 nfe=     3
+KINSol nni=    3 fnorm=          0.035759332661894 nfe=     4
+KINSol nni=    4 fnorm=      2.128480421303583e-05 nfe=     5
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=          255043.8724439576  nfe=     1 
+KINSol nni=    1 fnorm=          11285.42831370212 nfe=     2
+KINSol nni=    2 fnorm=          72.75863550510887 nfe=     3
+KINSol nni=    3 fnorm=        0.05615205179777361 nfe=     4
+KINSol nni=    4 fnorm=      5.308689441599944e-05 nfe=     5
+KINSol nni=    5 fnorm=      2.371027771055132e-08 nfe=     6
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=          248872.2299703959  nfe=     1 
+KINSol nni=    1 fnorm=          10722.34447985714 nfe=     2
+KINSol nni=    2 fnorm=          62.93641713050378 nfe=     3
+KINSol nni=    3 fnorm=        0.02769170359228947 nfe=     4
+KINSol nni=    4 fnorm=       1.03441488977869e-05 nfe=     5
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=          243276.1037131708  nfe=     1 
+KINSol nni=    1 fnorm=          10115.22284798407 nfe=     2
+KINSol nni=    2 fnorm=          51.55022052380414 nfe=     3
+KINSol nni=    3 fnorm=        0.01269224376892343 nfe=     4
+KINSol nni=    4 fnorm=      1.596195751157377e-06 nfe=     5
+KINSol return value 1
+---KINSOL_SUCCESS
+scsteptol used:        1e-25 
+fnormtol  used:        1e-05 
+KINSolInit nni=    0  fnorm=          238153.6248142361  nfe=     1 
+KINSol nni=    1 fnorm=          9473.336673247293 nfe=     2
+KINSol nni=    2 fnorm=          40.79909529709714 nfe=     3
+KINSol nni=    3 fnorm=        0.01584471608073018 nfe=     4
+KINSol nni=    4 fnorm=      1.404852927443546e-05 nfe=     5
+KINSol return value 1
+---KINSOL_SUCCESS
+Node 0: Well Information
+Node 0: No Wells.
+Problem solved 
+Problem solved 

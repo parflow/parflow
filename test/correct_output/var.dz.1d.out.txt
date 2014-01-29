@@ -1,0 +1,10 @@
+Process 0 on zaphod
+problem_dz_scale -- setting dz_mult tcl list 
+Node 0: Using process grid (1,1,1)
+Node 0: Warning: isolated cell exists, need to fix the input.
+Node 0: Warning: isolated cell exists, need to fix the input.
+Node 0: Well Information
+Node 0: No Wells.
+Node 0: Well Information
+Node 0: No Wells.
+Problem solved 
