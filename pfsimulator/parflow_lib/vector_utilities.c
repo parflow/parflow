@@ -62,6 +62,7 @@
  * PFVAxpy(a, x, y)                  y = y + a * x
  * PFVScaleBy(a, x)                  x = x * a
  *
+ * PFVLayerCopy (a, b, x, y)         NBE: Extracts layer b from vector y, inserts into layer a of vector x
  ****************************************************************************/
 
 #include "parflow.h"
@@ -1959,3 +1960,88 @@ void PFVScaleBy(
   IncFLOPCount( VectorSize(x) );
 }
 
+void PFVLayerCopy (
+/* NBE: Extract layer b from y and insert into layer a of x   */
+int  a,
+int  b,
+Vector *x,
+Vector *y)
+{
+    Grid       *grid     = VectorGrid(x);
+    Subgrid    *subgrid;
+    
+    Subvector  *x_sub;
+    Subvector  *y_sub;
+    
+    double     *xp, *yp;
+    
+    int         ix,   iy,   iz;
+    int         nx,   ny,   nz;
+    int         nx_x, ny_x, nz_x;
+    int         nx_y, ny_y, nz_y;
+    
+    int         sg, i, j, k, i_x, i_y, jinc, kinc;
+
+    ForSubgridI(sg, GridSubgrids(grid))
+    {
+        subgrid = GridSubgrid(grid, sg);
+        
+        ix = SubgridIX(subgrid);
+        iy = SubgridIY(subgrid);
+        iz = SubgridIZ(subgrid);
+        
+        nx = SubgridNX(subgrid);
+        ny = SubgridNY(subgrid);
+        nz = SubgridNZ(subgrid);
+        
+        x_sub = VectorSubvector(x, sg);
+        y_sub = VectorSubvector(y, sg);
+        
+        nx_x = SubvectorNX(x_sub);
+        ny_x = SubvectorNY(x_sub);
+        nz_x = SubvectorNZ(x_sub);
+        
+        nx_y = SubvectorNX(y_sub);
+        ny_y = SubvectorNY(y_sub);
+        nz_y = SubvectorNZ(y_sub);
+        
+        xp = SubvectorElt(x_sub, ix, iy, iz);
+        yp = SubvectorElt(y_sub, ix, iy, b);
+        
+        i_x = 0;
+        i_y = 0;
+        
+        DeclareInc(jinc, kinc, nx, ny, nz, nx_x, ny_x, nz_x, 1, 1, 1);
+        
+        i_x = 0;
+        i_y = 0;
+        
+        for (k = iz; k < iz + nz; k++)
+        {
+            if (k == a) {
+                for (j = iy; j < iy + ny; j++)
+                {
+                    for (i = ix; i < ix + nx; i++)
+                    {
+                        xp[i_x]=yp[i_y];
+                        i_x += 1;
+                        i_y += 1;
+                    }
+                    i_x += jinc;
+                    i_y += jinc;
+                }
+            } else {
+                for (j = iy; j < iy + ny; j++)
+                {
+                    for (i = ix; i < ix + nx; i++)
+                    {
+                        i_x += 1;
+                    }
+                    i_x += jinc;
+                }
+            }
+            i_x += kinc;
+        }
+    }
+    IncFLOPCount( 2 * VectorSize(x) );
+}

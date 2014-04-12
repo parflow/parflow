@@ -124,6 +124,7 @@ typedef struct
    // int                clm_dump_files;     /* boolean 0-1, integer, for write CLM output from PF */
 
    int                clm_nz;             /* Number of CLM soil layers (layers in root zone) */
+   int                clm_SoiLayer;     /* NBE: Layer number for LAI seasonal variations */
    int                clm_istep_start;    /* CLM time counter for met forcing (line in 1D file; name extension of 2D/3D files) */
    int                clm_fstep_start;    /* CLM time counter for inside met forcing files -- used for time keeping w/in 3D met files */
    int                clm_metforce;       /* CLM met forcing  -- 1=uniform (default), 2=distributed, 3=distributed w/ multiple timesteps */
@@ -147,6 +148,8 @@ typedef struct
    double             clm_irr_stop;       /* CLM irrigation schedule -- stop time of constant cyle [GMT] */
    double             clm_irr_threshold;  /* CLM irrigation schedule -- soil moisture threshold for deficit cycle */
    int                clm_irr_thresholdtype;  /* Deficit-based saturation criteria (top, bottom, column avg) */
+    
+   int                clm_reuse_count;  /* NBE: Number of times to use each CLM input */
 #endif
 
    int                print_lsm_sink;     /* print LSM sink term? */
@@ -154,6 +157,8 @@ typedef struct
    int                write_silopmpio_CLM;     /* write CLM output as silo as PMPIO? */
    int                print_CLM;          /* print CLM output as PFB? */
    int                write_CLM_binary;   /* write binary output (**default**)? */
+
+   int                single_clm_file;    /* NBE: Write all CLM outputs into a single multi-layer PFB */
 
 } PublicXtra; 
 
@@ -232,7 +237,10 @@ typedef struct
    Vector      *u_forc;               /* east-west wind [m/s] @ ref height (hgt set in drv_clmin.dat, currently 10m) */
    Vector      *v_forc;               /* south-north wind [m/s] @ ref height (hgt set in drv_clmin.dat, currently 10m)*/
    Vector      *patm_forc;            /* surface air pressure [Pa] */
-   Vector      *qatm_forc;            /* surface air humidity [kg/kg] @ ref height (hgt set in drv_clmin.dat, currently 2m) */ 
+   Vector      *qatm_forc;            /* surface air humidity [kg/kg] @ ref height (hgt set in drv_clmin.dat, currently 2m) */
+   
+   Grid        *snglclm;              /* NBE: New grid for single file CLM ouptut */
+   Vector      *clm_out_grid;          /* NBE - Holds multi-layer, single file output of CLM */
 #endif
 
    double      *time_log;
@@ -296,6 +304,8 @@ void SetupRichards(PFModule *this_module) {
    amps_File     metf1d;                               // for distributing 1D met forcings
    Grid         *metgrid = (instance_xtra -> metgrid); // grid for 2D and 3D met forcings
    Grid         *gridTs = (instance_xtra -> gridTs);   // grid for writing T-soil or instant irrig flux as Silo
+   
+   Grid         *snglclm = (instance_xtra -> snglclm);   // NBE: grid for single file CLM outputs
 #endif
 
    t = start_time;
@@ -597,7 +607,12 @@ void SetupRichards(PFModule *this_module) {
 
 
 /* IMF: the following are only used w/ CLM */
-#ifdef HAVE_CLM 
+#ifdef HAVE_CLM
+       /* NBE: CLM single file output */
+       if (public_xtra -> single_clm_file) {
+       instance_xtra -> clm_out_grid = NewVectorType( snglclm, 1, 1, vector_met);
+       InitVectorAll(instance_xtra -> clm_out_grid, 0.0);
+       }
        
       /*IMF Initialize variables for printing CLM output*/
       instance_xtra -> eflx_lh_tot = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D );
@@ -949,6 +964,11 @@ void AdvanceRichards(PFModule *this_module,
 
    /* IMF: For CLM met forcing (local to AdvanceRichards) */
    int           istep;                                           // IMF: counter for clm output times
+    
+    /* NBE added for clm reuse of inputs */
+   int           clm_next = 1; //NBE: Counter for reuse loop
+   int           clm_skip = public_xtra -> clm_reuse_count; // NBE:defaults to 1
+    
    int           fstep = INT_MIN;
    int           fflag,fstart,fstop;                              // IMF: index w/in 3D forcing array corresponding to istep
    int           n;                                               // IMF: index vars for looping over subgrid data
@@ -1153,6 +1173,10 @@ void AdvanceRichards(PFModule *this_module,
           int gny = BackgroundNY(GlobalsBackground);
     // printf("global nx, ny: %d %d \n", gnx, gny);
 	 int is;
+          
+          // NBE: setting up a way to reuse CLM inputs for multiple time steps
+          if (clm_next == 1)
+          {
 
          /* IMF: If 1D met forcing */ 
          if (public_xtra -> clm_metforce == 1)
@@ -1321,11 +1345,17 @@ void AdvanceRichards(PFModule *this_module,
                }  // end if/else clm_metsub==False
              }  //end if (fstep==0)
          }  //end if (clm_metforce==3)
+              
+     }     /* NBE - End of clm_reuse_count block */
+          
+
+          
 
 	 ForSubgridI(is, GridSubgrids(grid))
 	 {
 	    double        dx,dy,dz;
-	    int           nx,ny,nz,nx_f,ny_f,nz_f,nz_rz,ip,ix,iy,iz; 
+	    int           nx,ny,nz,nx_f,ny_f,nz_f,nz_rz,ip,ix,iy,iz;
+        int           soi_z;
             int           x,y,z;
 
 	    subgrid            = GridSubgrid(grid, is);
@@ -1379,7 +1409,8 @@ void AdvanceRichards(PFModule *this_module,
 	    nx_f = SubvectorNX(et_sub);
 	    ny_f = SubvectorNY(et_sub);
 	    nz_f = SubvectorNZ(et_sub);
-            nz_rz= public_xtra -> clm_nz;
+        nz_rz= public_xtra -> clm_nz;
+        soi_z= public_xtra -> clm_SoiLayer;
  	    
 	    sp = SubvectorData(s_sub);
 	    pp = SubvectorData(p_sub);
@@ -1431,6 +1462,7 @@ void AdvanceRichards(PFModule *this_module,
                   patm_data[n] = patm;
                   qatm_data[n] = qatm;
                }
+                
             }
             // 2D Case...
             if (public_xtra -> clm_metforce == 2)
@@ -1463,8 +1495,9 @@ void AdvanceRichards(PFModule *this_module,
                v_data          = SubvectorElt(v_forc_sub,x,y,z);
                patm_data       = SubvectorElt(patm_forc_sub,x,y,z);
                qatm_data       = SubvectorElt(qatm_forc_sub,x,y,z);
+                
             }
-             
+         
 	    ip = SubvectorEltIndex(p_sub, ix, iy, iz);
 	    switch (public_xtra -> lsm)
 	    {
@@ -1500,7 +1533,7 @@ void AdvanceRichards(PFModule *this_module,
                                public_xtra -> clm_irr_stop, 
                                public_xtra -> clm_irr_threshold,
                                qirr, qirr_inst, iflag, 
-                               public_xtra -> clm_irr_thresholdtype);
+                               public_xtra -> clm_irr_thresholdtype,soi_z);
 
 		  break;		  
 	       }
@@ -1512,11 +1545,13 @@ void AdvanceRichards(PFModule *this_module,
 	    } /* switch on LSM */
 	    
 	 }
+          
+          
 	 handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
 	 FinalizeVectorUpdate(handle); 
 
-         istep  = istep + 1;
-	 EndTiming(CLMTimingIndex);
+        
+
 
 //#endif   //End of call to CLM
 
@@ -1553,6 +1588,30 @@ void AdvanceRichards(PFModule *this_module,
               handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
               FinalizeVectorUpdate(handle);
           }
+         
+          
+          /* NBE counter for reusing CLM input files */
+          clm_next += 1;
+          if (clm_next > clm_skip)
+          {
+              istep  = istep + 1;
+              clm_next = 1;
+          } // NBE
+
+          //istep  = istep + 1;
+          
+    	 EndTiming(CLMTimingIndex);
+          
+          
+       /* ============================================================= */
+       /*   NBE: It looks like the time step isn't really scaling the CLM
+             inputs, but the looping flag is working as intended as 
+             of 2014-04-06. 
+            
+            It is using the different time step counter BUT then it
+             isn't scaling the inputs properly.
+       /* ============================================================= */
+          
 #endif          
       } //Endif to check whether an entire dt is complete
 
@@ -2100,12 +2159,15 @@ void AdvanceRichards(PFModule *this_module,
       /***************************************************************/
 
 #ifdef HAVE_CLM
+       int k;
+       
       /* Dump the fluxes, infiltration, etc. at this time-step */
       clm_file_dumped = 0;
       if ( clm_dump_files )
       {
 
          instance_xtra -> clm_dump_index++;
+          
 
          if ( public_xtra -> write_silo_CLM ) {
 
@@ -2205,8 +2267,47 @@ void AdvanceRichards(PFModule *this_module,
             }
          } // end of if (write_silo_CLM)
 
-         if ( public_xtra -> print_CLM ) {
+          if ( public_xtra -> print_CLM ) {
+         
+             if (public_xtra -> single_clm_file) //NBE
+             {
+                 // NBE: CLM single file output
+                 PFVLayerCopy(0, 0, instance_xtra -> clm_out_grid, instance_xtra -> eflx_lh_tot);
+                 PFVLayerCopy(1, 0, instance_xtra -> clm_out_grid, instance_xtra -> eflx_lwrad_out);
+                 PFVLayerCopy(2, 0, instance_xtra -> clm_out_grid, instance_xtra -> eflx_sh_tot);
+                 PFVLayerCopy(3, 0, instance_xtra -> clm_out_grid, instance_xtra -> eflx_soil_grnd);
+                 PFVLayerCopy(4, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_evap_tot);
+                 PFVLayerCopy(5, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_evap_grnd);
+                 PFVLayerCopy(6, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_evap_soi);
+                 PFVLayerCopy(7, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_evap_veg);
+                 PFVLayerCopy(8, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_tran_veg);
+                 PFVLayerCopy(9, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_infl);
+                 PFVLayerCopy(10, 0, instance_xtra -> clm_out_grid, instance_xtra -> swe_out);
+                 PFVLayerCopy(11, 0, instance_xtra -> clm_out_grid, instance_xtra -> t_grnd);
+                 
+                 if ( public_xtra -> clm_irr_type == 1 || public_xtra -> clm_irr_type == 2 )
+                 {
+                      PFVLayerCopy(12, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_qirr);
+                 }
+                 if ( public_xtra -> clm_irr_type == 3 )
+                 {
+                     PFVLayerCopy(12, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_qirr_inst);
+                 }
 
+                 for (k = 0; k < public_xtra -> clm_nz; k++)
+                 {
+                 //Write out the bottom layer in the lowest index position, build upward
+                 PFVLayerCopy(13+k, k, instance_xtra -> clm_out_grid, instance_xtra -> tsoil);
+                 }
+                 /* NBE: added .C instead of writing a different write function with
+                 a different extension since PFB is hard-wired */
+                  sprintf(file_postfix, "clm_output.%05d.C", instance_xtra -> file_number);
+                  WritePFBinary(file_prefix, file_postfix, instance_xtra -> clm_out_grid);
+                  clm_file_dumped = 1;
+             // End of CLM Single file output
+                 
+             } else {
+            // Otherwise do the old output
             sprintf(file_postfix, "eflx_lh_tot.%05d", instance_xtra -> file_number );
             WritePFBinary(file_prefix, file_postfix, instance_xtra -> eflx_lh_tot );
             clm_file_dumped = 1;
@@ -2274,6 +2375,8 @@ void AdvanceRichards(PFModule *this_module,
                WritePFBinary(file_prefix, file_postfix, instance_xtra -> qflx_qirr_inst );
                clm_file_dumped = 1;
             }
+                 
+            } // end of multi-file output - NBE
          } // end of if (print_CLM)
 
       } // end of if (clm_dump_files)
@@ -2641,6 +2744,8 @@ PFModule *SolverRichardsInitInstanceXtra()
 #ifdef HAVE_CLM
    Grid         *gridTs;
    Grid         *metgrid;
+    
+   Grid         *snglclm; // NBE: New grid for CLM single file output
 #endif
 
    SubgridArray *new_subgrids;
@@ -2746,13 +2851,33 @@ PFModule *SolverRichardsInitInstanceXtra()
       subgrid = SubgridArraySubgrid(all_subgrids, i);
       new_subgrid = DuplicateSubgrid(subgrid);
       SubgridIZ(new_subgrid) = 0;
-      SubgridNZ(new_subgrid) = public_xtra -> clm_metnt; 
+      SubgridNZ(new_subgrid) = public_xtra -> clm_metnt;
       AppendSubgrid(new_subgrid, new_all_subgrids);
    }
    new_subgrids  = GetGridSubgrids(new_all_subgrids);
    metgrid       = NewGrid(new_subgrids, new_all_subgrids);
    CreateComputePkgs(metgrid);
    (instance_xtra -> metgrid) = metgrid;
+    
+    //NBE: Define the grid type only if it's required
+    if (public_xtra -> single_clm_file) {
+    
+        /* NBE - Create new grid for single file CLM output */
+        all_subgrids = GridAllSubgrids(grid);
+        new_all_subgrids = NewSubgridArray();
+        ForSubgridI(i, all_subgrids)
+        {
+            subgrid = SubgridArraySubgrid(all_subgrids, i);
+            new_subgrid = DuplicateSubgrid(subgrid);
+            SubgridIZ(new_subgrid) = 0;
+            SubgridNZ(new_subgrid) = 13 + public_xtra -> clm_nz;
+            AppendSubgrid(new_subgrid, new_all_subgrids);
+        }
+        new_subgrids  = GetGridSubgrids(new_all_subgrids);
+        snglclm  = NewGrid(new_subgrids, new_all_subgrids);
+        CreateComputePkgs(snglclm);
+        (instance_xtra -> snglclm) = snglclm;
+    }
 
    /* IMF New grid for Tsoil (nx*ny*10) */
    all_subgrids = GridAllSubgrids(grid);
@@ -2762,7 +2887,8 @@ PFModule *SolverRichardsInitInstanceXtra()
       subgrid = SubgridArraySubgrid(all_subgrids, i);
       new_subgrid = DuplicateSubgrid(subgrid);
       SubgridIZ(new_subgrid) = 0;
-      SubgridNZ(new_subgrid) = 10;
+      //SubgridNZ(new_subgrid) = 10;
+      SubgridNZ(new_subgrid) = public_xtra -> clm_nz; //NBE: Use variable # of soil layers
       AppendSubgrid(new_subgrid, new_all_subgrids);
    }
    new_subgrids  = GetGridSubgrids(new_all_subgrids);
@@ -3002,6 +3128,8 @@ void  SolverRichardsFreeInstanceXtra()
 #ifdef HAVE_CLM
       FreeGrid((instance_xtra -> metgrid));
       FreeGrid((instance_xtra -> gridTs));
+
+      FreeGrid((instance_xtra -> snglclm));  //NBE
 #endif
 
       tfree(instance_xtra);
@@ -3143,10 +3271,41 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
     
 //   if (public_xtra -> terrain_following_grid == 1) { printf("TFG true \n");} 
 //CPS
-
-   /* IMF added key for number of layers in CLM (i.e., layers in root zone) */
+    
+    // NBE: Keys for the single file CLM output
+    sprintf(key, "%s.CLM.SingleFile", name);
+    switch_name = GetStringDefault(key, "False");
+    switch_value = NA_NameToIndex(switch_na, switch_name);
+    if(switch_value < 0)
+    {
+        InputError("Error: invalid value <%s> for key <%s>\n",
+                   switch_name, key );
+    }
+    public_xtra -> single_clm_file = switch_value;
+    
+   // NBE: Different clm_nz must be hard wired, working on a way to dynamically allocate instead
+    // unfortunately, the number is still hard wired in clm_varpar.f90 as of 4-12-2014
+    
+    /* IMF added key for number of layers in CLM (i.e., layers in root zone) */
    sprintf(key, "%s.CLM.RootZoneNZ", name);
    public_xtra -> clm_nz = GetIntDefault(key, 10);
+    
+    /* NBE added key to specify layer for t_soisno in clm_dynvegpar */
+   sprintf(key, "%s.CLM.SoiLayer", name);
+   public_xtra -> clm_SoiLayer = GetIntDefault(key, 7);
+
+    //------
+    
+    /* NBE added key to reuse a set of CLM input files for an integer 
+       number of time steps */
+    sprintf(key, "%s.CLM.ReuseCount", name);
+    public_xtra -> clm_reuse_count = GetIntDefault(key, 1);
+    if (public_xtra -> clm_reuse_count < 1)
+    {
+        public_xtra -> clm_reuse_count = 1;
+    }
+    
+    // -------------------
     
    /* RMM added beta input function for clm */
    beta_switch_na = NA_NewNameArray("none Linear Cosine");
