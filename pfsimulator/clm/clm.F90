@@ -7,7 +7,7 @@ qflx_tot_pf,qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf
 t_soi_pf,clm_dump_interval,clm_1d_out,clm_output_dir,clm_output_dir_length,clm_bin_output_dir,         &
 write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,                 &
 res_satpf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,               &
-qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
+qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z)
 
   !=========================================================================
   !
@@ -55,6 +55,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
 
   ! values passed from parflow
   integer  :: nx,ny,nz,nx_f,ny_f,nz_f,nz_rz
+  integer  :: soi_z                               ! NBE: Specify layer shold be used for reference temperature
   real(r8) :: pressure((nx+2)*(ny+2)*(nz+2))     ! pressure head, from parflow on grid w/ ghost nodes for current proc
   real(r8) :: saturation((nx+2)*(ny+2)*(nz+2))   ! saturation from parflow, on grid w/ ghost nodes for current proc
   real(r8) :: evap_trans((nx+2)*(ny+2)*(nz+2))   ! ET flux from CLM to ParFlow on grid w/ ghost nodes for current proc
@@ -223,6 +224,10 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf)
         allocate (clm(t)%diagsnow(1:drv%snowind,-nlevsno+1:0),stat=ierr); call drv_astp(ierr)
      end do
 
+     !====================================================
+     !NBE: Define the reference layer for the seasonal soi
+     clm%soi_z = soi_z                  ! Probably out of place
+     write(999,*) "Check soi_z",clm%soi_z
 
      !=== Initialize clm derived type components
      write(999,*) "Call clm_typini"

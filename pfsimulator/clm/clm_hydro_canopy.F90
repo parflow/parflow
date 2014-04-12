@@ -101,7 +101,7 @@ subroutine clm_hydro_canopy (clm)
         ! Water storage of intercepted precipitation and dew
 
         clm%qflx_prec_intr = prcp*fpi*clm%frac_veg_nosno
-        clm%h2ocan = max(0., clm%h2ocan + clm%dtime*clm%qflx_prec_intr)
+        clm%h2ocan = max(dble(0.), clm%h2ocan + clm%dtime*clm%qflx_prec_intr)
 
         ! Initialize rate of canopy runoff and snow falling off canopy
 
@@ -201,7 +201,7 @@ subroutine clm_hydro_canopy (clm)
      vegt     = clm%frac_veg_nosno*(clm%elai + clm%esai)
      dewmxi   = 1.0/clm%dewmx
      clm%fwet = ((dewmxi/vegt)*clm%h2ocan)**.666666666666
-     clm%fwet = min(clm%fwet,1.0)     ! Check for maximum limit of fwet
+     clm%fwet = min(clm%fwet,dble(1.0))     ! Check for maximum limit of fwet
      clm%fdry = (1.-clm%fwet)*clm%elai/(clm%elai+clm%esai)
   else
      clm%fwet = 0.

@@ -253,7 +253,7 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
   taf = (tg + thm)/2.
   qaf = (clm%forc_q+qg)/2.
 
-  ur = max(1.0,sqrt(clm%forc_u*clm%forc_u+clm%forc_v*clm%forc_v))    ! limit must set to 1.0, otherwise
+  ur = max(dble(1.0),sqrt(clm%forc_u*clm%forc_u+clm%forc_v*clm%forc_v))    ! limit must set to 1.0, otherwise
   dth = thm-taf
   dqh = clm%forc_q-qaf
   dthv = dth*(1.+0.61*clm%forc_q)+0.61*th*dqh
@@ -402,7 +402,7 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
      else
         clm%qflx_tran_veg = 0.
      endif
-     ecidif = max(0., clm%qflx_evap_veg-clm%qflx_tran_veg-clm%h2ocan/clm%dtime)
+     ecidif = max(dble(0.0), clm%qflx_evap_veg-clm%qflx_tran_veg-clm%h2ocan/clm%dtime)
      clm%qflx_evap_veg = min(clm%qflx_evap_veg,clm%qflx_tran_veg+clm%h2ocan/clm%dtime)
 
 ! The energy loss due to above two limits is added to 
@@ -436,14 +436,14 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
      zeta=zldis*vkc*grav*thvstar/(ustar**2*thv)
 
      if (zeta >= 0.) then     !stable
-        zeta = min(2.,max(zeta,0.01))
+        zeta = min(dble(2.),max(zeta,dble(0.01)))
      else                     !unstable
-        zeta = max(-100.,min(zeta,-0.01))
+        zeta = max(dble(-100.),min(zeta,dble(-0.01)))
      endif
      obu = zldis/zeta
 
      if (dthv >= 0.) then
-        um=max(ur,0.1)
+        um=max(ur,dble(0.1))
      else
         wc=beta*(-grav*ustar*thvstar*zii/thv)**0.333
         um=sqrt(ur*ur+wc*wc)
@@ -519,7 +519,7 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
 
 ! Update dew accumulation (kg/m2) 
 
-  clm%h2ocan = max(0.,clm%h2ocan + (clm%qflx_tran_veg-clm%qflx_evap_veg)*clm%dtime)
+  clm%h2ocan = max(dble(0.),clm%h2ocan + (clm%qflx_tran_veg-clm%qflx_evap_veg)*clm%dtime)
 
 end subroutine clm_leaftem
 

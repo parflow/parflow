@@ -217,8 +217,8 @@ subroutine clm_thermal (clm)
   qred = 1.
   if (clm%itypwat/=istwet .AND. clm%itypwat/=istice) then ! NOT wetland and ice land
      wx   = (clm%h2osoi_liq(1)/denh2o+clm%h2osoi_ice(1)/denice)/clm%dz(1)
-     fac  = min(1., wx/clm%watsat(1))
-     fac  = max( fac, 0.01 )
+     fac  = min(dble(1.), wx/clm%watsat(1))
+     fac  = max( fac, dble(0.01) )
      psit = -clm%sucsat(1) * fac ** (- clm%bsw(1))
      psit = max(clm%smpmin, psit)
      !@ Stefan: replace original psit with values from Parflow
@@ -314,7 +314,7 @@ subroutine clm_thermal (clm)
   thm = clm%forc_t + 0.0098*clm%forc_hgt_t              
   th = clm%forc_t*(100000./clm%forc_pbot)**(rair/cpair)  ! potential T  (forc_t*(forc_psrf/forc_pbot)**(rair/cp))
   thv = th*(1.+0.61*clm%forc_q)                          ! virtual potential T
-  ur = max(1.0,sqrt(clm%forc_u*clm%forc_u+clm%forc_v*clm%forc_v))    ! limit must set to 1.0, otherwise,
+  ur = max(dble(1.0),sqrt(clm%forc_u*clm%forc_u+clm%forc_v*clm%forc_v))    ! limit must set to 1.0, otherwise,
 
   ! 3.2 BARE PART
   ! Ground fluxes and temperatures
@@ -348,15 +348,15 @@ subroutine clm_thermal (clm)
         thvstar=tstar*(1.+0.61*clm%forc_q) + 0.61*th*qstar
         zeta=zldis*vkc*grav*thvstar/(ustar**2*thv)
         if (zeta >= 0.) then     !stable
-           zeta = min(2.,max(zeta,0.01))
+           zeta = min(dble(2.),max(zeta,dble(0.01)))
         else                     !unstable
-           zeta = max(-100.,min(zeta,-0.01))
+           zeta = max(dble(-100.),min(zeta,dble(-0.01)))
         endif
 
         obu = zldis/zeta
 
         if (dthv >= 0.) then
-           um = max(ur,0.1)
+           um = max(ur,dble(0.1))
         else
            wc = beta*(-grav*ustar*thvstar*zii/thv)**0.333
            um = sqrt(ur*ur+wc*wc)
@@ -560,7 +560,7 @@ subroutine clm_thermal (clm)
 
   egsmax = (clm%h2osoi_ice(clm%snl+1)+clm%h2osoi_liq(clm%snl+1)) / clm%dtime
 
-  egidif = max( 0., clm%qflx_evap_soi - egsmax )
+  egidif = max(dble( 0.), clm%qflx_evap_soi - egsmax )
   clm%qflx_evap_soi = min ( clm%qflx_evap_soi, egsmax )
   clm%eflx_sh_grnd = clm%eflx_sh_grnd + htvp*egidif
   ! Ground heat flux

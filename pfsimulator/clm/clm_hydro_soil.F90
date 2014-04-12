@@ -111,7 +111,7 @@ subroutine clm_hydro_soil (clm)
 
   ! Calculate wetness of soil
   do i = 1,nlevsoi
-     s(i) = min(1.,(vol_ice(i)+vol_liq(i))/clm%watsat(i))
+     s(i) = min(dble(1.),(vol_ice(i)+vol_liq(i))/clm%watsat(i))
   end do
 
   !write(20,*) s(:nlevsoi)
@@ -127,7 +127,7 @@ subroutine clm_hydro_soil (clm)
 
   ! Saturation fraction
 
-  fcov = clm%wtfact*min(1.,exp(-zwt))
+  fcov = clm%wtfact*min(dble(1.),exp(-zwt))
 
   ! Currently no overland flow parameterization in code is considered
   ! qflx_surf = 0.   Zong-Liang Yang & G.-Y. Niu
@@ -289,7 +289,7 @@ subroutine clm_hydro_soil (clm)
 
   ! Determine water in excess of saturation
 
-  xs = max(0., clm%h2osoi_liq(1)-(clm%pondmx+clm%eff_porosity(1)*dzmm(1)))
+  xs = max(dble(0.), clm%h2osoi_liq(1)-(clm%pondmx+clm%eff_porosity(1)*dzmm(1)))
   !@ I implement a warning here because "pondmx" is a empirical factor we don't really know/use 
   !@  if (xs > 0.) then
   !@   write(20,*)"TROUBLE: Ponding in individual cell"

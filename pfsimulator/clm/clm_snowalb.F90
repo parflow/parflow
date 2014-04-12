@@ -63,8 +63,8 @@ subroutine clm_snowalb (clm, coszen, nband, ind, alb)
 
 ! Czf corrects albedo of new snow for solar zenith
 
-    cff    = ((1.+1./sl)/(1.+max(0.001,coszen)*2.*sl )- 1./sl)
-    cff    = max(cff,0.)
+    cff    = ((1.+1./sl)/(1.+max(dble(0.001),coszen)*2.*sl )- 1./sl)
+    cff    = max(cff,dble(0.))
     czf    = 0.4*cff*(1.-albs)
     albs = albs+czf
     czf    = 0.4*cff*(1.-albl)

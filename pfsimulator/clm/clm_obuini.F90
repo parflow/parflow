@@ -57,7 +57,7 @@ subroutine clm_obuini(ur,      thv,     dthv,      zldis,       &
   ustar=0.06
   wc=0.5
   if (dthv >= 0.) then
-     um=max(ur,0.1)
+     um=max(ur,dble(0.1))
   else
      um=sqrt(ur*ur+wc*wc)
   endif
@@ -65,11 +65,11 @@ subroutine clm_obuini(ur,      thv,     dthv,      zldis,       &
   rib=grav*zldis*dthv/(thv*um*um)
 
   if (rib >= 0.) then      ! neutral or stable
-     zeta = rib*log(zldis/z0m)/(1.-5.*min(rib,0.19))
-     zeta = min(2.,max(zeta,0.01 ))
+     zeta = rib*log(zldis/z0m)/(1.-5.*min(rib,dble(0.19)))
+     zeta = min(dble(2.),max(zeta,dble(0.01) ))
   else                    !unstable
      zeta=rib*log(zldis/z0m)
-     zeta = max(-100.,min(zeta,-0.01 ))
+     zeta = max(dble(-100.),min(zeta,dble(-0.01) ))
   endif
 
   obu=zldis/zeta

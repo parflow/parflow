@@ -112,7 +112,7 @@ subroutine clm_stomata(mpe,       apar,     ei,        ea,      &
      psn = 0.
      return
   else                          ! day time
-     fnf = min(foln/max(mpe,folnmx), 1.0)
+     fnf = min(foln/max(mpe,folnmx), dble(1.0))
      tc = clm%t_veg-tfrz                            
      ppf = 4.6*apar                  
      j = ppf*qe25
@@ -137,8 +137,8 @@ subroutine clm_stomata(mpe,       apar,     ei,        ea,      &
 ! ci iteration
 
      do iter = 1, niter
-        wj = max(ci-cp,0.)*j/(ci+2.*cp)*c3psn + j*(1.-c3psn)
-        wc = max(ci-cp,0.)*vcmx/(ci+awc)*c3psn + vcmx*(1.-c3psn)
+        wj = max(ci-cp,dble(0.))*j/(ci+2.*cp)*c3psn + j*(1.-c3psn)
+        wc = max(ci-cp,dble(0.))*vcmx/(ci+awc)*c3psn + vcmx*(1.-c3psn)
         we = 0.5*vcmx*c3psn + 4000.*vcmx*ci/clm%forc_pbot*(1.-c3psn) 
         psn = min(wj,wc,we) 
         cs = max( co2-1.37*rb*clm%forc_pbot*psn, mpe )
@@ -153,7 +153,7 @@ subroutine clm_stomata(mpe,       apar,     ei,        ea,      &
         r1 = q/a
         r2 = c/q
         rs = max(r1,r2)
-        ci = max( cs-psn*clm%forc_pbot*1.65*rs, 0. )
+        ci = max( cs-psn*clm%forc_pbot*1.65*rs, dble(0.) )
      enddo
 
      ! rs, rb:  s m**2 / umol -> s/m 
