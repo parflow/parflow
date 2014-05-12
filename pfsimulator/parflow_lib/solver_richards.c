@@ -999,6 +999,11 @@ void AdvanceRichards(PFModule *this_module,
 
    char          dt_info;
    char          file_prefix[2048], file_type[2048], file_postfix[2048];
+
+   /* multi dimensional N_Vector that is passed to KinSol*/
+   N_Vector     multiDimVector;
+   N_VectorContent multiDimContent;
+
     
    /* Added for transient EvapTrans file management - NBE */
     int Stepcount, Loopcount;
@@ -1046,6 +1051,13 @@ void AdvanceRichards(PFModule *this_module,
    /*                                                                     */
    /***********************************************************************/
  
+
+   multiDimVector = N_VMake_Parflow(2);   // create a multi dimensional N_Vector with two dimensions
+   multiDimContent = NV_CONTENT_PF(multiDimVector);	     
+   multiDimContent->dim[0] = pressure;      // assemble fields into one N_Vector element
+   multiDimContent->dim[1] = temperature;   // currently pressure and temperature	
+
+
    // Initialize ct in either case
    ct = start_time;
    t  = start_time;
