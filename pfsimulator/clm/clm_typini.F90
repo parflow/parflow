@@ -85,6 +85,7 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      clm(k)%z0m       = NaN      ! aerodynamic roughness length [m]
      clm(k)%displa    = NaN      ! displacement height [m]
      clm(k)%dleaf     = NaN      ! inverse sqrt of leaf dimension [m**-0.5]
+     clm(k)%bkmult    = 1.0d0    ! beetle kill multiplier, init to 1 in case not set @CAP 2014-02-24
 
      ! soil physical parameters
      clm(k)%bsw   (:) = NaN      ! Clapp and Hornberger "b"

@@ -1,6 +1,6 @@
 !#include <misc.h>
 
-subroutine drv_1dout (drv, tile, clm)
+subroutine drv_1dout (drv, tile, clm,clm_write_logs)
 
 !=========================================================================
 !
@@ -37,6 +37,7 @@ subroutine drv_1dout (drv, tile, clm)
   type (drvdec)  :: drv              
   type (tiledec) :: tile(drv%nch)
   type (clm1d)   :: clm (drv%nch)
+  integer :: clm_write_logs
 
 !=== Local Variables =======================================================
 
@@ -85,6 +86,7 @@ subroutine drv_1dout (drv, tile, clm)
   real_snl = real(clm%snl)
   real_frac_veg_nosno = real(clm%frac_veg_nosno)
 
+  if (clm_write_logs==1) then  ! NBE: Allow interrupt of writing the log files
 !  write(20)  drv%time, drv%ss, drv%mn, drv%hr, drv%da, drv%mo, drv%yr                          ! [1] Time
 !  write(20)  drv_gridave (n,mask,tile%fgrd,clm%forc_solad(1)+clm%forc_solad(2)+clm%forc_solai(1)+clm%forc_solai(2))  ! [2]  W/m2
 !  write(20)  drv_gridave (n,mask,tile%fgrd,clm%sabv)                                           ! [3]  W/m2
@@ -171,6 +173,7 @@ subroutine drv_1dout (drv, tile, clm)
   write(20,*) (drv_gridave (n,mask,tile%fgrd,t_soisno  (:,i), drv), i=1,nlevsoi), " [40]"   ! [40] K          NOTE:This statement assumes spatially uniform layering
   write(20,*) (drv_gridave (n,mask,tile%fgrd,h2osoi_liq(:,i), drv), i=1,nlevsoi), " [41]"   ! [41] millimeter NOTE:This statement assumes spatially uniform layering
   write(20,*) (drv_gridave (n,mask,tile%fgrd,h2osoi_ice(:,i), drv), i=1,nlevsoi), " [42]"   ! [42] millimeter NOTE:This statement assumes spatially uniform layering
+endif ! NBE: End of log file interupt
   
 !@== Variables added for diagnostics
   topsoil  = drv_gridave (n,mask,tile%fgrd,clm%qflx_top_soil*clm%dtime, drv)  ! [44] Total water applied at the ground suface [mm]

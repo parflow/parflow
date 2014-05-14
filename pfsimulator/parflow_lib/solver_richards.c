@@ -150,6 +150,9 @@ typedef struct
    int                clm_irr_thresholdtype;  /* Deficit-based saturation criteria (top, bottom, column avg) */
     
    int                clm_reuse_count;  /* NBE: Number of times to use each CLM input */
+   int                clm_write_logs;   /* NBE: Write the processor logs for CLM or not */
+   int                clm_last_rst;     /* NBE: Only write/overwrite one rst file or write a lot of them */
+   int                clm_daily_rst;    /* NBE: Write daily RST files or hourly */
 #endif
 
    int                print_lsm_sink;     /* print LSM sink term? */
@@ -967,7 +970,10 @@ void AdvanceRichards(PFModule *this_module,
     
     /* NBE added for clm reuse of inputs */
    int           clm_next = 1; //NBE: Counter for reuse loop
-   int           clm_skip = public_xtra -> clm_reuse_count; // NBE:defaults to 1
+   int           clm_skip = public_xtra -> clm_reuse_count;       // NBE:defaults to 1
+   int           clm_write_logs = public_xtra -> clm_write_logs;  // NBE: defaults to 1, disables log file writing if 0
+   int           clm_last_rst = public_xtra -> clm_last_rst;      // Reuse of the RST file
+   int           clm_daily_rst = public_xtra -> clm_daily_rst;    // Daily or hourly RST files, defaults to daily
     
    int           fstep = INT_MIN;
    int           fflag,fstart,fstop;                              // IMF: index w/in 3D forcing array corresponding to istep
@@ -1533,7 +1539,8 @@ void AdvanceRichards(PFModule *this_module,
                                public_xtra -> clm_irr_stop, 
                                public_xtra -> clm_irr_threshold,
                                qirr, qirr_inst, iflag, 
-                               public_xtra -> clm_irr_thresholdtype,soi_z);
+                               public_xtra -> clm_irr_thresholdtype,
+                               soi_z,clm_next,clm_write_logs,clm_last_rst,clm_daily_rst);
 
 		  break;		  
 	       }
@@ -3305,6 +3312,42 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
         public_xtra -> clm_reuse_count = 1;
     }
     
+    /* NBE - Allows disabling of the CLM output logs generated for each processor
+        Checking of the values is manual right not in case other options are added */
+    sprintf(key, "%s.CLM.WriteLogs", name);
+    switch_name = GetStringDefault(key, "True");
+    switch_value = NA_NameToIndex(switch_na, switch_name);
+    if(switch_value < 0)
+    {
+        InputError("Error: invalid value <%s> for key <%s>\n",
+                   switch_name, key );
+    }
+    public_xtra -> clm_write_logs = switch_value;
+    
+    /* NBE - Only write ONE restart file and overwrite it each time instead of writing 
+     a new RST at every step/day */
+    sprintf(key, "%s.CLM.WriteLastRST", name);
+    switch_name = GetStringDefault(key, "False");
+    switch_value = NA_NameToIndex(switch_na, switch_name);
+    if(switch_value < 0)
+    {
+        InputError("Error: invalid value <%s> for key <%s>\n",
+                   switch_name, key );
+    }
+    public_xtra -> clm_last_rst = switch_value;
+    
+    /* NBE - Option to write daily or hourly outputs from CLM */
+    sprintf(key, "%s.CLM.DailyRST", name);
+    switch_name = GetStringDefault(key, "True");
+    switch_value = NA_NameToIndex(switch_na, switch_name);
+    if(switch_value < 0)
+    {
+        InputError("Error: invalid value <%s> for key <%s>\n",
+                   switch_name, key );
+    }
+    public_xtra -> clm_daily_rst = switch_value;
+    
+
     // -------------------
     
    /* RMM added beta input function for clm */

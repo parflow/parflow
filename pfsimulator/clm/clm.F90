@@ -7,7 +7,8 @@ qflx_tot_pf,qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf
 t_soi_pf,clm_dump_interval,clm_1d_out,clm_output_dir,clm_output_dir_length,clm_bin_output_dir,         &
 write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,                 &
 res_satpf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,               &
-qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z)
+qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z,clm_next,clm_write_logs,                    &
+clm_last_rst,clm_daily_rst)
 
   !=========================================================================
   !
@@ -73,7 +74,13 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z)
   integer  :: npp,npq,npr                        ! number of processors in x,y,z
   integer  :: gnx, gny                           ! global grid, nx and ny
   integer  :: rank                               ! processor rank, from ParFlow
-  
+
+  integer :: clm_next                           ! NBE: Passing flag to sync outputs
+  integer :: d_stp                              ! NBE: Dummy for CLM restart
+  integer :: clm_write_logs                     ! NBE: Enable/disable writing of the log files
+  integer :: clm_last_rst                       ! NBE: Write all the CLM restart files or just the last one
+  integer :: clm_daily_rst                      ! NBE: Write daily restart files or hourly
+
   ! surface fluxes & forcings
   real(r8) :: eflx_lh_pf((nx+2)*(ny+2)*3)        ! e_flux   (lh)    output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
   real(r8) :: eflx_lwrad_pf((nx+2)*(ny+2)*3)     ! e_flux   (lw)    output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
@@ -142,8 +149,10 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z)
   !=== Open CLM text output
   write(RI,*)  rank
 
-  open(999, file="clm_output.txt."//trim(adjustl(RI)), action="write")
-  write(999,*) "clm.F90: rank =", rank, "   istep =", istep_pf
+! NBE: Throughout clm.F90, any writes to unit 999 are now prefaced with the logical to disable the
+!       writing of the log files. This greatly reduces the number of files created during a run.
+  if (clm_write_logs==1) open(999, file="clm_output.txt."//trim(adjustl(RI)), action="write")
+  if (clm_write_logs==1) write(999,*) "clm.F90: rank =", rank, "   istep =", istep_pf
 
   !=== Specify grid size using values passed from PF
   drv%dx = pdx
@@ -159,7 +168,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z)
   !=== Check if initialization is necessary
   if (time == start_time) then 
      
-     write(999,*) "INITIALIZATION"
+     if (clm_write_logs==1) write(999,*) "INITIALIZATION"
 
      !=== Allocate Memory for Grid Module
      allocate( counter(nx,ny) )
@@ -172,7 +181,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z)
      enddo                                      ! rows
 
      !=== Read in the clm input (drv_clmin.dat)
-     call drv_readclmin (drv,grid,rank)  
+     call drv_readclmin (drv,grid,rank,clm_write_logs)
 
 
      !=== Allocate memory for subgrid tile space
@@ -182,18 +191,18 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z)
      !=== This is done twice, because tile space size is initially unknown        
      !=== First - allocate max possible size, then allocate calculated size 
      !=== Allocate maximum NCH
-     ! write(999,*) "Allocate arrays -- using maximum NCH"
+     ! if (clm_write_logs==1) write(999,*) "Allocate arrays -- using maximum NCH"
      ! drv%nch = drv%nr*drv%nc*drv%nt
      ! allocate (tile(drv%nch),stat=ierr); call drv_astp(ierr) 
      ! allocate (clm (drv%nch),stat=ierr); call drv_astp(ierr)
 
      !=== Read vegetation data to determine actual NCH
-     ! write(999,*) "Call vegetation-data-read (drv_readvegtf), determines actual NCH"
+     ! if (clm_write_logs==1) write(999,*) "Call vegetation-data-read (drv_readvegtf), determines actual NCH"
      ! call drv_readvegtf (drv, grid, tile, clm, rank)               !Determine actual NCH
      ! deallocate (tile,clm)                                         !Deallocate to save memory
 
      !=== Allocate for calculated NCH
-     ! write(999,*) "Allocate arrays -- actual NCH"
+     ! if (clm_write_logs==1) write(999,*) "Allocate arrays -- actual NCH"
      ! allocate (tile(drv%nch),stat=ierr); call drv_astp(ierr)
      ! allocate (clm (drv%nch),stat=ierr); call drv_astp(ierr)
 
@@ -202,7 +211,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z)
      !=== Because we only use one tile per grid cell, we don't need to call readvegtf to determine actual nch
      !    (nch is just equal to number of cells (nr*nc))
      drv%nch = drv%nr*drv%nc
-     write(999,*) "Allocate arrays -- using NCH =", drv%nch
+     if (clm_write_logs==1) write(999,*) "Allocate arrays -- using NCH =", drv%nch
      allocate (tile(drv%nch), stat=ierr); call drv_astp(ierr) 
      allocate (clm (drv%nch), stat=ierr); call drv_astp(ierr)
 
@@ -227,12 +236,13 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z)
      !====================================================
      !NBE: Define the reference layer for the seasonal soi
      clm%soi_z = soi_z                  ! Probably out of place
-     write(999,*) "Check soi_z",clm%soi_z
+     if (clm_write_logs==1) write(999,*) "Check soi_z",clm%soi_z
 
      !=== Initialize clm derived type components
-     write(999,*) "Call clm_typini"
+     if (clm_write_logs==1) write(999,*) "Call clm_typini"
      call clm_typini(drv%nch,clm,istep_pf)
      
+     if (clm_write_logs==1) then
      write(999,*) "DIMENSIONS:"
      write(999,*) 'local NX:',nx,' NX with ghost:',nx_f,' IX:', ix
      write(999,*) 'local NY:',ny,' NY with ghost:',ny_f,' IY:',iy
@@ -240,25 +250,25 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z)
      write(999,*) 'globla  NX:',gnx, ' global NY:', gny
      write(999,*) 'DRV-NC:',drv%nc,' DRV-NR:',drv%nr, 'DRV-NCH:',drv%nch
      write(999,*) ' Processor Number:',rank, ' local vector start:',ip
-
+     endif
      !=== Read in vegetation data and set tile information accordingly
-     write(999,*) "Read in vegetation data and set tile information accordingly"
+     if (clm_write_logs==1) write(999,*) "Read in vegetation data and set tile information accordingly"
      call drv_readvegtf (drv, grid, tile, clm, nx, ny, ix, iy, gnx, gny, rank)
 
 
      !=== Transfer grid variables to tile space 
-     write(999,*) "Transfer grid variables to tile space ", drv%nch
+     if (clm_write_logs==1) write(999,*) "Transfer grid variables to tile space ", drv%nch
      do t = 1, drv%nch
         call drv_g2clm (drv%udef, drv, grid, tile(t), clm(t))   
      enddo
 
      !=== Read vegetation parameter data file for IGBP classification
-     write(999,*) "Read vegetation parameter data file for IGBP classification"
+     if (clm_write_logs==1) write(999,*) "Read vegetation parameter data file for IGBP classification"
      call drv_readvegpf (drv, grid, tile, clm)  
 
 
      !=== Initialize CLM and DIAG variables
-     write(999,*) "Initialize CLM and DIAG variables"
+     if (clm_write_logs==1) write(999,*) "Initialize CLM and DIAG variables"
      do t=1,drv%nch 
         clm%kpatch = t
         call drv_clmini (drv, grid, tile(t), clm(t), istep_pf) !Initialize CLM Variables
@@ -271,7 +281,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z)
      !      (1)= top of LS/PF domain 
      !      (2)= top-nlevsoi and 
      !      (3)= the bottom of the LS/PF domain.
-     write(999,*) "Initialize the CLM topography mask"
+     if (clm_write_logs==1) write(999,*) "Initialize the CLM topography mask"
 
      do t=1,drv%nch
 
@@ -355,7 +365,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z)
            ! PRINT CHECK
            ! do k = 1, nlevsoi
            !    l                 = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
-           !    write(999,*) "DZ CHECK -- ", i, j, k, l, pf_dz_mult(l), clm(t)%dz(k), clm(t)%z(k), clm(t)%zi(k)
+           !    if (clm_write_logs==1) write(999,*) "DZ CHECK -- ", i, j, k, l, pf_dz_mult(l), clm(t)%dz(k), clm(t)%z(k), clm(t)%zi(k)
            ! enddo
 
         endif ! active/inactive
@@ -440,7 +450,7 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z)
 
   !=== Write CLM Output (timeseries model results)
   if (clm_1d_out == 1) then 
-     call drv_1dout (drv, tile,clm)
+     call drv_1dout (drv, tile,clm,clm_write_logs)
   endif
 
 
@@ -522,15 +532,35 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z)
   enddo
 
 
+
   !=== Write Daily Restarts
+  if (clm_write_logs==1) then
   write(999,*) "End of time advance:" 
   write(999,*) 'time =', time, 'gmt =', drv%gmt, 'endtime =', drv%endtime
-  if ( (drv%gmt==0.0).or.(drv%endtime==1) ) call drv_restart(2,drv,tile,clm,rank,istep_pf)
+  endif
 
-  
+! if ( (drv%gmt==0.0).or.(drv%endtime==1) ) call drv_restart(2,drv,tile,clm,rank,istep_pf)
+  ! ----------------------------------
+  ! NBE: Added more control over writing of the RST files
+    if (clm_next == 1) then
+     if (clm_last_rst==1) then
+      d_stp=0
+     else
+      d_stp = istep_pf
+     endif
+
+      if (clm_daily_rst==1) then
+       if ( (drv%gmt==0.0).or.(drv%endtime==1) ) call drv_restart(2,drv,tile,clm,rank,d_stp)
+      else
+       call drv_restart(2,drv,tile,clm,rank,d_stp)
+      endif
+
+    endif
+  ! ---------------------------------
+
   !=== Call routine to calculate CLM flux passed to PF
   !    (i.e., routine that couples CLM and PF)
-  call pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,nz,j_incr,k_incr,ip,istep_pf)   
+  call pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,nz,j_incr,k_incr,ip,d_stp)
 
 
   !=== LEGACY ===========================================================================================
@@ -541,14 +571,15 @@ qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z)
 
 
   !=== Write spatially-averaged BC's and IC's to file for user
+  if (clm_write_logs==1) then ! NBE
   if (istep_pf==1) call drv_pout(drv,tile,clm,rank)
-
+  endif
 
   !=== If at end of simulation, close all files
   if (drv%endtime==1) then
      ! close(166)
      ! close(199)
-     close(999)
+     if (clm_write_logs==1) close(999)
   end if
 
 
