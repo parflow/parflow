@@ -59,13 +59,13 @@ subroutine clm_snowage (clm)
 
      age3  = 0.3
      arg   = 5.e3*(1./tfrz-1./clm%t_grnd)
-     arg2  = min(0.,10.*arg)
+     arg2  = min(dble(0.),dble(10.)*arg)
      age2  = exp(arg2)
      age1  = exp(arg)
      dela  = 1.e-6*clm%dtime*(age1+age2+age3)
-     dels  = 0.1*max(0.0, clm%h2osno-clm%h2osno_old)
+     dels  = 0.1*max(dble(0.0), clm%h2osno-clm%h2osno_old)
      sge   = (clm%snowage+dela)*(1.0-dels)
-     clm%snowage   = max(0.0,sge)
+     clm%snowage   = max(dble(0.0),sge)
 
   endif
 

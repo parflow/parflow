@@ -228,7 +228,9 @@ subroutine clm_lake (clm)
   thm = clm%forc_t + 0.0098*clm%forc_hgt_t  ! intermed. variable equiv to forc_t*(pgcm/forc_pbot)**(rair/cp)
   th = clm%forc_t*(100000./clm%forc_pbot)**(rair/cpair) ! potential T
   thv = th*(1.+0.61*clm%forc_q)             ! virtual potential T
-  ur = max(1.0,sqrt(clm%forc_u*clm%forc_u+clm%forc_v*clm%forc_v))    ! limit must set to 1  , otherwise,
+  ! Original line
+  !ur = max(1.0,sqrt(clm%forc_u*clm%forc_u+clm%forc_v*clm%forc_v))    ! limit must set to 1  , otherwise,
+  ur = max(dble(1.0),sqrt(clm%forc_u*clm%forc_u+clm%forc_v*clm%forc_v))  ! NBE
 
   ! Initialization variables
 
@@ -293,14 +295,18 @@ subroutine clm_lake (clm)
      zeta=zldis*vkc * grav*thvstar/(ustar**2*thv)
 
      if (zeta >= 0.) then     !stable
-        zeta = min(2.,max(zeta,0.01))
+        ! zeta = min(2.,max(zeta,0.01))
+        zeta = min(dble(2.0d+0),max(zeta,dble(0.01d+0)))  ! NBE
+
      else                     !unstable
-        zeta = max(-100.,min(zeta,-0.01))
+        ! zeta = max(-100.,min(zeta,-0.01))
+        zeta = max(dble(-100.0d+0),min(zeta,dble(-0.01d+0))) ! NBE
      endif
      obu = zldis/zeta
 
      if (dthv >= 0.) then
-        um = max(ur,0.1)
+        ! um = max(ur,0.1)
+        um = max(ur,dble(0.1d+0)) ! NBE
      else
         wc = beta1*(-grav*ustar*thvstar*zii/thv)**0.333
         um = sqrt(ur*ur+wc*wc)
@@ -350,7 +356,8 @@ subroutine clm_lake (clm)
   ! Energy residual for snow melting
 
   if (clm%h2osno > 0. .AND. clm%t_grnd >= tfrz) then
-     hm = min( clm%h2osno*hfus/clm%dtime, max(clm%eflx_soil_grnd,0.) )
+     ! hm = min( clm%h2osno*hfus/clm%dtime, max(clm%eflx_soil_grnd,0.) )
+     hm = min( clm%h2osno*hfus/clm%dtime, max(clm%eflx_soil_grnd,dble(0.0d+0)) ) ! NBE
   else
      hm = 0.
   endif
@@ -373,7 +380,8 @@ subroutine clm_lake (clm)
   km = tkwat/cwat
 
   fin = beta(idlak)*clm%sabg + clm%forc_lwrad - (clm%eflx_lwrad_out+clm%eflx_sh_tot+clm%eflx_lh_tot+hm)
-  u2m = max(1.0,ustar/vkc*log(2./z0mg))
+  ! u2m = max(1.0,ustar/vkc*log(2./z0mg))
+  u2m = max(dble(1.0d+0),ustar/vkc*log(2./z0mg)) ! NBE
 
   ws = 1.2e-03 * u2m
   ks = 6.6*sqrt(abs(sin(clm%lat)))*(u2m**(-1.84))
@@ -382,8 +390,10 @@ subroutine clm_lake (clm)
      drhodz = (rhow(j+1)-rhow(j)) / (clm%z(j+1)-clm%z(j))
      n2 = -grav / rhow(j) * drhodz
      num = 40. * n2 * (vkc*clm%z(j))**2
-     den = max( (ws**2) * exp(-2.*ks*clm%z(j)), 1.e-10 )
-     ri = ( -1. + sqrt( max(1.+num/den, 0.) ) ) / 20.
+     ! den = max( (ws**2) * exp(-2.*ks*clm%z(j)), 1.e-10 )
+     den = max( (ws**2) * exp(-2.*ks*clm%z(j)), dble(1.e-10) ) ! NBE
+     !ri = ( -1. + sqrt( max(1.+num/den, 0.) ) ) / 20.
+     ri = ( dble(-1.0d+0) + sqrt( max(dble(1.0d+0)+num/den, dble(0.0d+0)) ) ) / dble(20.0d+0) ! NBE
      if (idlak == 1 .AND. clm%t_grnd > tfrz) then
         ke = vkc*ws*clm%z(j)/p0 * exp(-ks*clm%z(j)) / (1.+37.*ri*ri)
      else
@@ -399,8 +409,10 @@ subroutine clm_lake (clm)
   do j = 1, nlevlak
      zin  = clm%z(j) - 0.5*clm%dz(j)
      zout = clm%z(j) + 0.5*clm%dz(j)
-     in  = exp( -eta(idlak)*max(  zin-za(idlak),0. ) )
-     out = exp( -eta(idlak)*max( zout-za(idlak),0. ) )
+     !in  = exp( -eta(idlak)*max(  zin-za(idlak),0. ) )
+     in  = exp( -eta(idlak)*max(  zin-za(idlak),dble(0.0d+0) ) ) ! NBE
+     !out = exp( -eta(idlak)*max( zout-za(idlak),0. ) )
+     out = exp( -eta(idlak)*max( zout-za(idlak),dble(0.0d+0) ) ) ! NBE
 
      ! Assumed solar absorption is only in the considered depth
      if (j == nlevlak) out = 0.  
@@ -515,7 +527,8 @@ subroutine clm_lake (clm)
   ! Update snow pack
 
   clm%h2osno = clm%h2osno + (clm%forc_snow-qmelt-qflx_sub_snow+qflx_dew_snow)*clm%dtime
-  clm%h2osno = max( clm%h2osno, 0. )
+  !clm%h2osno = max( clm%h2osno, 0. )
+  clm%h2osno = max( clm%h2osno, dble(0.0d+0) )
 
   ! No snow if lake unfrozen
 

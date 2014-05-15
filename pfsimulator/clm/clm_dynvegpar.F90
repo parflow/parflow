@@ -43,7 +43,8 @@ subroutine clm_dynvegpar (clm)
 ! only nonzero if NOT glacier/ice, water or bare soil
 
   if ((.not. clm%lakpoi) .AND. (.not. clm%baresoil) .AND. (clm%itypwat/=istice)) then  
-     seasb     = max(0., 1. - 0.0016*max(298.-clm%t_soisno(7), .0)**2)
+     !seasb     = max(dble(0.), dble(1.) - dble(0.0016)*max(298.-clm%t_soisno(7),dble(0.0))**2)
+     seasb     = max(dble(0.), dble(1.) - dble(0.0016)*max(298.-clm%t_soisno(clm%soi_z),dble(0.0))**2) ! NBE: Added variable to set layer #
      clm%tlai  = clm%maxlai + (clm%minlai-clm%maxlai)*(1.-seasb)
      clm%tsai  = clm%tsai
   else

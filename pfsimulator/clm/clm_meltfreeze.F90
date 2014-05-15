@@ -147,7 +147,7 @@ subroutine clm_meltfreeze (fact,     brr,       hs,     dhsdT,  &
         if (j == 1) then
            if ((clm%snl+1 == 1) .AND. (clm%h2osno > 0.) .AND. (xm(j) > 0.)) then
               temp1 = clm%h2osno                                        ! kg/m2
-              clm%h2osno = max(0.,temp1-xm(j))
+              clm%h2osno = max(dble(0.),temp1-xm(j))
               propor = clm%h2osno/temp1
               clm%snowdp = propor * clm%snowdp
               heatr = hm(j) - hfus*(temp1-clm%h2osno)/clm%dtime         ! W/m2
@@ -158,21 +158,21 @@ subroutine clm_meltfreeze (fact,     brr,       hs,     dhsdT,  &
                  xm(j) = 0.
                  hm(j) = 0.
               endif
-              clm%qflx_snomelt = max(0.,(temp1-clm%h2osno))/clm%dtime   ! kg/(m2 s)
+              clm%qflx_snomelt = max(dble(0.),(temp1-clm%h2osno))/clm%dtime   ! kg/(m2 s)
               xmf = hfus*clm%qflx_snomelt
            endif
         endif
 
         heatr = 0.
         if (xm(j) > 0.) then
-           clm%h2osoi_ice(j) = max(0., wice0(j)-xm(j))
+           clm%h2osoi_ice(j) = max(dble(0.), wice0(j)-xm(j))
            heatr = hm(j) - hfus*(wice0(j)-clm%h2osoi_ice(j))/clm%dtime
         else if (xm(j) < 0.) then
            clm%h2osoi_ice(j) = min(wmass0(j), wice0(j)-xm(j))
            heatr = hm(j) - hfus*(wice0(j)-clm%h2osoi_ice(j))/clm%dtime  
         endif
 
-        clm%h2osoi_liq(j) = max(0.,wmass0(j)-clm%h2osoi_ice(j))
+        clm%h2osoi_liq(j) = max(dble(0.),wmass0(j)-clm%h2osoi_ice(j))
 
         if (abs(heatr) > 0.) then
            if (j > clm%snl+1) then
@@ -186,7 +186,7 @@ subroutine clm_meltfreeze (fact,     brr,       hs,     dhsdT,  &
         xmf = xmf + hfus * (wice0(j)-clm%h2osoi_ice(j))/clm%dtime
 
         if (clm%imelt(j) == 1 .AND. j < 1) then
-           clm%qflx_snomelt = clm%qflx_snomelt + max(0.,(wice0(j)-clm%h2osoi_ice(j)))/clm%dtime  
+           clm%qflx_snomelt = clm%qflx_snomelt + max(dble(0.),(wice0(j)-clm%h2osoi_ice(j)))/clm%dtime  
         endif
 
      endif

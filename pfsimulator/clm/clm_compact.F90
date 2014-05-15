@@ -98,7 +98,7 @@ subroutine clm_compact(clm)
      ! Compaction occurring during melt
 
      if(clm%imelt(i) == 1)then
-        ddz3 = - 1./clm%dtime * max(0.,(clm%frac_iceold(i) - fi)/clm%frac_iceold(i))
+        ddz3 = - 1./clm%dtime * max(dble(0.),(clm%frac_iceold(i) - fi)/clm%frac_iceold(i))
      else
         ddz3 = 0.
      endif

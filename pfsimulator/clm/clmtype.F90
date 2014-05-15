@@ -83,7 +83,7 @@ module clmtype
      real(r8) :: esai      ! exposed stem area index
      real(r8) :: minlai    ! minimum leaf area index
      real(r8) :: maxlai    ! maximum leaf area index
-
+     real(r8) :: bkmult    ! beetle kill multiplier for stomatal resistance @CAP 2014-02-24
 ! Soil physical parameters
 
       real(r8) :: bsw   (nlevsoi) ! Clapp and Hornberger "b"  --- NOT USED in PF.CLM COUPLE  @RMM
@@ -321,6 +321,8 @@ module clmtype
      real(r8) :: pressure_data(1:nlevsoi)    ! pressure-head (m) over top-10 layers in parflow mapped to CLM grid (1-nlevsoi)
      real(r8) :: evap_trans_data(1:nlevsoi)  ! ET-Flux over top-10 layers in CLM grid (1-nlevsoi) to be mapped back to ParFlow (m/d)
      real(r8) :: porosity_data(1:nlevsoi)    ! porosity (-) over top-10 layers in parflow mapped to CLM grid (1-nlevsoi) - only done during init routine
+
+     integer :: soi_z ! NBE added
 
 
 !=== End Variable List ===================================================

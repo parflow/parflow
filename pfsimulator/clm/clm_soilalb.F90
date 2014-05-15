@@ -45,7 +45,7 @@ subroutine clm_soilalb (clm, coszen, nband, albsnd, albsni)
         albsod = albice(ib)
         albsoi = albsod
      else if (clm%t_grnd > tfrz) then                !unfrozen lake, wetland
-        albsod = 0.05/(max(0.001,coszen) + 0.15)
+        albsod = 0.05/(max(dble(0.001),coszen) + 0.15)
         albsoi = albsod
      else                                            !frozen lake, wetland
         albsod = alblak(ib)

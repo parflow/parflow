@@ -158,6 +158,9 @@ subroutine clm_stomata(mpe,       apar,     ei,        ea,      &
 
      ! rs, rb:  s m**2 / umol -> s/m 
      rs = min(rsmax0, rs*cf)
+     ! multiply stomatal resistance for beetle kill or not @CAP 2014-02-24
+     rs = rs*clm%bkmult
+     
      rb = rb*cf 
 
   endif

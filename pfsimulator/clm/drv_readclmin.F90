@@ -41,7 +41,7 @@
 ! $Id: drv_readclmin.F90,v 1.1.1.1 2006/02/14 23:05:52 kollet Exp $
 !=========================================================================
 
-subroutine drv_readclmin(drv,grid,rank)
+subroutine drv_readclmin(drv,grid,rank,clm_write_logs)
 
   use precision
   use drv_module          ! 1-D Land Model Driver variables
@@ -52,6 +52,7 @@ subroutine drv_readclmin(drv,grid,rank)
 
   type (drvdec)  :: drv              
   type (griddec) :: grid(drv%nc,drv%nr)
+  integer :: clm_write_logs
 
 !=== Local Variables =====================================================
 
@@ -168,7 +169,7 @@ subroutine drv_readclmin(drv,grid,rank)
    enddo
    close(10)
 
-
+if (clm_write_logs==1) then
    !=== Open files for time series output
    ! If restarting from a restart file then assume append to old output file
    if (drv%startcode == 1) then  ! Append to old output file
@@ -176,7 +177,7 @@ subroutine drv_readclmin(drv,grid,rank)
    else
       open(20,file=trim(adjustl(drv%outf1d))//"."//trim(adjustl(RI))) !,form='unformatted')
    endif
-
+endif
 
    !=== Read in 2-D and 3-D (GRID SPACE) parameter arrays here (to overwrite 1-D arrays read above)
    !===  NOTE TO USER: READ IN YOUR 2-D PARAMETERS & INITIAL CONDITIONS HERE

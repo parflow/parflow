@@ -71,8 +71,8 @@ subroutine clm_twoStream (clm, ib , ic , coszen, vai, &
   ! weights of leaf and stem values.
   ! -----------------------------------------------------------------
 
-  cosz = max(0.001, coszen)
-  chil = min( max(clm%xl, -0.4), 0.6 )
+  cosz = max(dble(0.001), coszen)
+  chil = min( max(clm%xl, dble(-0.4)), dble(0.6) )
   if (abs(chil) <= 0.01) chil = 0.01
   phi1 = 0.5 - 0.633*chil - 0.330*chil*chil
   phi2 = 0.877 * (1.-2.*phi1)

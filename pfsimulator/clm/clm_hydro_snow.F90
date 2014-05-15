@@ -71,12 +71,12 @@ subroutine clm_hydro_snow(clm)
      endif
      clm%h2osoi_liq(clm%snl+1) = clm%h2osoi_liq(clm%snl+1) +  &
           (clm%qflx_rain_grnd + clm%qflx_dew_grnd - clm%qflx_evap_grnd)*clm%dtime
-     clm%h2osoi_liq(clm%snl+1) = max(0., clm%h2osoi_liq(clm%snl+1))
+     clm%h2osoi_liq(clm%snl+1) = max(dble(0.), clm%h2osoi_liq(clm%snl+1))
      
      ! Porosity and partial volume
      
      do j = clm%snl+1, 0
-        vol_ice(j) = min(1., clm%h2osoi_ice(j)/(clm%dz(j)*denice))
+        vol_ice(j) = min(dble(1.), clm%h2osoi_ice(j)/(clm%dz(j)*denice))
         eff_porosity(j) = 1. - vol_ice(j)
         vol_liq(j) = min(eff_porosity(j),clm%h2osoi_liq(j)/(clm%dz(j)*denh2o))
      enddo
@@ -97,11 +97,11 @@ subroutine clm_hydro_snow(clm)
            if (eff_porosity(j)<clm%wimp .OR. eff_porosity(j+1)<clm%wimp) then
               qout = 0.
            else
-              qout = max(0.,(vol_liq(j)-clm%ssi*eff_porosity(j))*clm%dz(j))
+              qout = max(dble(0.),(vol_liq(j)-clm%ssi*eff_porosity(j))*clm%dz(j))
               qout = min(qout,(1.-vol_ice(j+1)-vol_liq(j+1))*clm%dz(j+1))
            endif
         else
-           qout = max(0.,(vol_liq(j)-clm%ssi*eff_porosity(j))*clm%dz(j))
+           qout = max(dble(0.),(vol_liq(j)-clm%ssi*eff_porosity(j))*clm%dz(j))
         endif
         qout = qout*1000.
         clm%h2osoi_liq(j) = clm%h2osoi_liq(j) - qout
