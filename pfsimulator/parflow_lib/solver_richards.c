@@ -1001,7 +1001,7 @@ void AdvanceRichards(PFModule *this_module,
    char          file_prefix[2048], file_type[2048], file_postfix[2048];
 
    /* multi dimensional N_Vector that is passed to KinSol*/
-   N_Vector     multiDimVector;
+   N_Vector     multiDimNVector;
    N_VectorContent multiDimContent;
 
     
@@ -1052,10 +1052,10 @@ void AdvanceRichards(PFModule *this_module,
    /***********************************************************************/
  
 
-   multiDimVector = N_VMake_Parflow(2);   // create a multi dimensional N_Vector with two dimensions
+   multiDimNVector = NV_MAKE_PF(2);   // create a multi dimensional N_Vector with two dimensions
    multiDimContent = NV_CONTENT_PF(multiDimVector);	     
    multiDimContent->dim[0] = pressure;      // assemble fields into one N_Vector element
-   multiDimContent->dim[1] = temperature;   // currently pressure and temperature	
+   //multiDimContent->dim[1] = temperature;   // currently pressure and temperature	
 
 
    // Initialize ct in either case
@@ -1599,6 +1599,9 @@ void AdvanceRichards(PFModule *this_module,
 	    PFVCopy(instance_xtra -> density,    instance_xtra -> old_density);
 	    PFVCopy(instance_xtra -> saturation, instance_xtra -> old_saturation);
 	    PFVCopy(instance_xtra -> pressure,   instance_xtra -> old_pressure);
+
+	    PFVCopy(multiDimContent->dim[0], old_pressure);
+            //PFVCopy(multiDimContent->dim[1],old_temperature);	
 	 }
 	 else  /* Not converged, so decrease time step */
 	 {
@@ -1621,6 +1624,8 @@ void AdvanceRichards(PFModule *this_module,
 	    PFVCopy(instance_xtra -> old_density,    instance_xtra -> density);
 	    PFVCopy(instance_xtra -> old_saturation, instance_xtra -> saturation);
 	    PFVCopy(instance_xtra -> old_pressure,   instance_xtra -> pressure);
+	    PFVCopy(old_pressure, multiDimContent->dim[0]);
+            //PFVCopy(old_temperature,multiDimContent->dim[1]);
 	 } // End set t and dt based on convergence
 
 #ifdef HAVE_OAS3
@@ -1807,7 +1812,7 @@ void AdvanceRichards(PFModule *this_module,
 	 /*******************************************************************/
 	  
 	 retval = PFModuleInvokeType(NonlinSolverInvoke, nonlin_solver, 
-				     (instance_xtra -> pressure, 
+				     (multiDimNVector, 
 				      instance_xtra -> density, 
 				      instance_xtra -> old_density, 
 				      instance_xtra -> saturation, 

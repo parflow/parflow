@@ -1172,6 +1172,8 @@ void PFVLin1 (double a , Vector *x , Vector *y , Vector *z );
 void PFVLin2 (double a , Vector *x , Vector *y , Vector *z );
 void PFVAxpy (double a , Vector *x , Vector *y );
 void PFVScaleBy (double a , Vector *x );
+int PFVConstrMask (Vector *c, Vector *x, Vector *m);  
+double PFVMinQuotient (Vector *num, Vector *denom); 
 
 /* w_jacobi.c */
 void WJacobi (Vector *x , Vector *b , double tol , int zero );
