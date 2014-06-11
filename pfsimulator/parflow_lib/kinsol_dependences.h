@@ -30,3 +30,16 @@
 #include "../kinsol/iterativ.h"
 #include "../kinsol/kinspgmr.h"
 #include "../kinsol/spgmr.h"
+
+
+//#include <kinsol/kinsol_spgmr.h>
+//#include <kinsol/kinsol.h>
+//#include <kinsol/kinsol_spils.h>
+
+//#include <kinsol/kinsol_band.h>
+//#include <kinsol/kinsol_bbdpre.h>
+//#include <kinsol/kinsol_dense.h>
+//#include <kinsol/kinsol_direct.h>
+//#include <kinsol/kinsol_lapack.h>
+//#include <kinsol/kinsol_spbcgs.h>
+//#include <kinsol/kinsol_sptfqmr.h>

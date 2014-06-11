@@ -56,6 +56,8 @@
 #include "grid.h"
 #include "matrix.h"
 #include "vector.h"
+#include "n_vector.h"
+#include <sundials/sundials_nvector.h>
 #include "pf_module.h"
 #include "geometry.h"
 #include "grgeometry.h"

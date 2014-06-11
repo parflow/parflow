@@ -64,7 +64,7 @@ void         KinsolPC(Vector      *rhs)
    PFModule     *this_module      = ThisPFModule;
    InstanceXtra *instance_xtra    = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
-   PFModule     *precond          = instance_xtra -> precond;
+   PFModule     *precond_pressure          = instance_xtra -> precond;
    Vector       *soln             = NULL;
    double        tol              = 0.0;
    int           zero             = 1;
@@ -73,7 +73,7 @@ void         KinsolPC(Vector      *rhs)
    soln = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
      
    /* Invoke the preconditioner using a zero initial guess */
-   PFModuleInvokeType(PrecondInvoke, precond, (soln, rhs, tol, zero));
+   PFModuleInvokeType(PrecondInvoke, precond_pressure, (soln, rhs, tol, zero));
 
    /* Copy solution from soln to the rhs vector. */
    PFVCopy(soln, rhs);
@@ -104,7 +104,7 @@ double        time)
    int            pc_matrix_type     = public_xtra -> pc_matrix_type;
 
    PFModule      *discretization     = public_xtra -> discretization;
-   PFModule      *precond            = public_xtra -> precond;
+   PFModule      *precond_pressure            = public_xtra -> precond;
 
    Matrix        *PC, *JC;
 
@@ -137,12 +137,12 @@ double        time)
 			     pc_matrix_type));
       (instance_xtra -> precond) =
          PFModuleNewInstanceType(PrecondInitInstanceXtraInvoke, 
-				 precond,(problem, grid, problem_data, NULL,NULL, 
+				 precond_pressure,(problem, grid, problem_data, NULL,NULL, 
 					  temp_data));
 /*
       (instance_xtra -> precond) =
          PFModuleNewInstanceType(PrecondInitInstanceXtraInvoke, 
-				 precond,(problem, grid, problem_data, NULL,NULL, 
+				 precond_pressure,(problem, grid, problem_data, NULL,NULL, 
 					  temp_data));
 */
    }

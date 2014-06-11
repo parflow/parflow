@@ -73,8 +73,8 @@ typedef struct
 
 void     KINSolFunctionEval(
 int      size,
-N_Vector pressure,
-N_Vector fval,
+N_Vector multiDimNVector,
+N_Vector fvaln,
 void    *current_state)
 {
    PFModule  *nl_function_eval = StateFunc(        ((State*)current_state) );
@@ -88,9 +88,13 @@ void    *current_state)
    double       time           = StateTime(        ((State*)current_state) );
    Vector       *evap_trans    = StateEvapTrans(   ((State*)current_state) );
    Vector       *ovrl_bc_flx   = StateOvrlBcFlx(   ((State*)current_state) );
-
+   Vector       *pressure,*fval;
    (void) size;
  
+
+   pressure = NV_CONTENT_PF(multiDimNVector)->dims[0]; 
+   fval = NV_CONTENT_PF(fvaln)->dims[0];   
+
    PFModuleInvokeType(NlFunctionEvalInvoke, nl_function_eval, 
 		  (pressure, fval, problem_data, saturation, old_saturation, 
 		   density, old_density, dt, time, old_pressure, evap_trans,
