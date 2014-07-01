@@ -1703,7 +1703,7 @@ PFModule  *PhaseRelPermInitInstanceXtra(
 	    ReadPFBinary((dummy1 ->alpha_file), 
 			 (dummy1 ->alpha_values));
             handle = InitVectorUpdate(dummy1 ->alpha_values, VectorUpdateAll);
-            FinalizeVectorUpdate(handle);
+            FinalizeVectorUpdate(handle); // This is needed to initalize ghost cells after reading the pfb
 	    
             ReadPFBinary((dummy1 ->n_file), 
 			 (dummy1 ->n_values));
