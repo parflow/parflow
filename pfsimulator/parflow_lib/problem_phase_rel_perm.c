@@ -1679,6 +1679,7 @@ PFModule  *PhaseRelPermInitInstanceXtra(
    InstanceXtra  *instance_xtra;
 
    Type1         *dummy1;
+   VectorUpdateCommHandle   *handle;
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
@@ -1701,8 +1702,13 @@ PFModule  *PhaseRelPermInitInstanceXtra(
 
 	    ReadPFBinary((dummy1 ->alpha_file), 
 			 (dummy1 ->alpha_values));
-	    ReadPFBinary((dummy1 ->n_file), 
+            handle = InitVectorUpdate(dummy1 ->alpha_values, VectorUpdateAll);
+            FinalizeVectorUpdate(handle);
+	    
+            ReadPFBinary((dummy1 ->n_file), 
 			 (dummy1 ->n_values));
+            handle = InitVectorUpdate(dummy1 ->n_values, VectorUpdateAll);
+            FinalizeVectorUpdate(handle);
 	 }
       }
 
