@@ -195,7 +195,13 @@ typedef struct
    /*****************************************************************************
     * Local variables that need to be kept around 
     *****************************************************************************/
-   Vector      *pressure;
+   
+   Vector      *pressure2;
+   Vector      *saturation2;
+   Vector      *old_saturation2;
+   Vector      *old_pressure2;
+
+Vector      *pressure;
    Vector      *saturation;
    Vector      *density;
    Vector      *old_density;
@@ -573,6 +579,26 @@ void SetupRichards(PFModule *this_module) {
        *-------------------------------------------------------------------*/
 
       /* SGS FIXME why are these here and not created in instance_xtra ? */
+   
+
+      instance_xtra -> pressure2 = NewVectorType( grid, 1, 1, vector_cell_centered);
+      InitVectorAll(instance_xtra -> pressure2, -FLT_MAX);
+
+      instance_xtra -> saturation2 = NewVectorType( grid, 1, 1, vector_cell_centered  );
+      InitVectorAll(instance_xtra -> saturation2, -FLT_MAX);
+
+      instance_xtra -> old_pressure2 = NewVectorType( grid, 1, 1, vector_cell_centered  );
+      InitVectorAll(instance_xtra -> old_pressure2, 0.0);
+
+      instance_xtra -> old_saturation2 = NewVectorType( grid, 1, 1, vector_cell_centered  );
+      InitVectorAll(instance_xtra -> old_saturation2, 0.0);
+
+
+
+
+
+
+
       instance_xtra -> pressure = NewVectorType( grid, 1, 1, vector_cell_centered);
       InitVectorAll(instance_xtra -> pressure, -FLT_MAX);
 
@@ -1076,11 +1102,19 @@ void AdvanceRichards(PFModule *this_module,
    /*                Begin the main computational section                 */
    /*                                                                     */
    /***********************************************************************/
- 
 
-   multiDimNVector = N_VNewEmpty_PF(1);   // create a multi dimensional N_Vector with two dimensions
+ 
+PFVCopy(instance_xtra -> saturation, instance_xtra -> saturation2);
+            PFVCopy(instance_xtra -> pressure,   instance_xtra -> pressure2);
+PFVCopy(instance_xtra -> old_saturation, instance_xtra -> old_saturation2);
+            PFVCopy(instance_xtra -> old_pressure,   instance_xtra -> old_pressure2);
+
+
+
+   multiDimNVector = N_VNewEmpty_PF(2);   // create a multi dimensional N_Vector with two dimensions
    multiDimContent = NV_CONTENT_PF(multiDimNVector);	     
    multiDimContent->dims[0] = instance_xtra -> pressure;      // assemble fields into one N_Vector element
+multiDimContent->dims[1] = instance_xtra -> pressure2;   //dummy
    //multiDimContent->dims[1] = temperature;   // currently pressure and temperature	
 
 
@@ -1666,6 +1700,10 @@ void AdvanceRichards(PFModule *this_module,
 	    PFVCopy(instance_xtra -> saturation, instance_xtra -> old_saturation);
 	    PFVCopy(instance_xtra -> pressure,   instance_xtra -> old_pressure);
 
+
+            PFVCopy(instance_xtra -> saturation2, instance_xtra -> old_saturation2);
+            PFVCopy(instance_xtra -> pressure2,   instance_xtra -> old_pressure2);
+
 	    // PFVCopy(multiDimContent->dims[0], old_pressure);
             //PFVCopy(multiDimContent->dims[1],old_temperature);	
 	 }
@@ -1690,6 +1728,10 @@ void AdvanceRichards(PFModule *this_module,
 	    PFVCopy(instance_xtra -> old_density,    instance_xtra -> density);
 	    PFVCopy(instance_xtra -> old_saturation, instance_xtra -> saturation);
 	    PFVCopy(instance_xtra -> old_pressure, multiDimContent->dims[0]);
+
+	    PFVCopy(instance_xtra -> old_saturation2, instance_xtra -> saturation2);
+            PFVCopy(instance_xtra -> old_pressure2, multiDimContent->dims[1]);	
+
             //PFVCopy(old_temperature,multiDimContent->dims[1]);
 	 } // End set t and dt based on convergence
 
@@ -1885,7 +1927,8 @@ void AdvanceRichards(PFModule *this_module,
 				      t, dt, 
 				      problem_data, instance_xtra -> old_pressure, 
 				      evap_trans, 
-				      instance_xtra -> ovrl_bc_flx));
+				      instance_xtra -> ovrl_bc_flx ,// ));
+				      instance_xtra -> saturation2 , instance_xtra -> old_saturation2 , instance_xtra -> old_pressure2));
 
 	 if (retval != 0)
 	 {
@@ -1982,6 +2025,14 @@ void AdvanceRichards(PFModule *this_module,
 		      instance_xtra -> density, gravity, problem_data,
 		      CALCFCN));
 
+
+
+      PFModuleInvokeType(SaturationInvoke, problem_saturation,
+                     (instance_xtra -> saturation2, instance_xtra -> pressure2,
+                      instance_xtra -> density, gravity, problem_data,
+                      CALCFCN));
+
+
       /***************************************************************
        * Compute running sum of evap trans for water balance 
        **************************************************************/
@@ -2022,6 +2073,12 @@ void AdvanceRichards(PFModule *this_module,
 	    sprintf(file_type, "press");
 	    WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
                       t, instance_xtra -> file_number, "Pressure");
+
+      //      sprintf(file_type, "press");
+  //          WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure2,
+    //                  t, instance_xtra -> file_number, "Pressure2");
+
+
 	    any_file_dumped = 1;
      }
 
@@ -2047,6 +2104,11 @@ void AdvanceRichards(PFModule *this_module,
 	    sprintf(file_type, "satur");
 	    WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation, 
                       t, instance_xtra -> file_number, "Saturation");
+
+//sprintf(file_type, "satur");
+//            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation2,
+//                      t, instance_xtra -> file_number, "Saturation2");
+
 	    any_file_dumped = 1;
 	 }
 
@@ -2493,6 +2555,13 @@ void AdvanceRichards(PFModule *this_module,
 	 sprintf(file_type, "press");
 	 WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
 		   t, instance_xtra -> file_number, "Pressure");
+
+
+
+//sprintf(file_type, "press");
+  //       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure2,
+    //               t, instance_xtra -> file_number, "Pressure2");
+
 	 any_file_dumped = 1;
     
       }
@@ -2510,6 +2579,11 @@ void AdvanceRichards(PFModule *this_module,
 	 sprintf(file_type, "satur");
 	 WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation, 
 		   t, instance_xtra -> file_number, "Saturation");
+
+//sprintf(file_type, "satur");
+  //       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation2,
+    //               t, instance_xtra -> file_number, "Saturation2");
+
 	 any_file_dumped = 1;
       }
 
@@ -2629,6 +2703,13 @@ void TeardownRichards(PFModule *this_module) {
    FreeVector( instance_xtra -> pressure );
    FreeVector( instance_xtra -> ovrl_bc_flx );
    FreeVector( instance_xtra -> mask );
+
+
+FreeVector( instance_xtra -> saturation2 );
+   FreeVector( instance_xtra -> old_saturation2 );
+   FreeVector( instance_xtra -> old_pressure2 );
+   FreeVector( instance_xtra -> pressure2 );
+
 
    if(instance_xtra -> evap_trans_sum) {
       FreeVector( instance_xtra -> evap_trans_sum);

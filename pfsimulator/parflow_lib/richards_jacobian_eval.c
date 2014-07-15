@@ -146,6 +146,9 @@ N_Vector  multiDimNVector)
    Matrix      *JC                = StateJacC(         ((State*)current_state) );
    Vector      *saturation       = StateSaturation(  ((State*)current_state) );
    Vector      *density          = StateDensity(     ((State*)current_state) );
+
+   Vector      *saturation2       = StateSaturation2(  ((State*)current_state) );
+
    ProblemData *problem_data     = StateProblemData( ((State*)current_state) );
    double       dt               = StateDt(          ((State*)current_state) );
    double       time             = StateTime(        ((State*)current_state) );
@@ -158,12 +161,13 @@ N_Vector  multiDimNVector)
    PFModule    *bc_pressure       = (instance_xtra -> bc_pressure);
    StateBCPressure((State*)current_state)           = bc_pressure;
 
-  // InitVector(y, 0.0);  necessary?
   
    pressure = NV_CONTENT_PF(multiDimNVector)->dims[0];
 
    x = NV_CONTENT_PF(xn)->dims[0];
    y = NV_CONTENT_PF(yn)->dims[0];
+
+   InitVector(y, 0.0);
 
    if ( *recompute )
    { 
@@ -172,11 +176,34 @@ N_Vector  multiDimNVector)
       dt, time, 0));
    }
 
+
    if(JC == NULL)
      Matvec(1.0, J, x, 0.0, y); 
    else
      MatvecSubMat(current_state, 1.0, J, JC, x, 0.0, y);    
 
+
+
+
+
+   pressure = NV_CONTENT_PF(multiDimNVector)->dims[1];
+
+   x = NV_CONTENT_PF(xn)->dims[1];
+   y = NV_CONTENT_PF(yn)->dims[1];
+
+   InitVector(y, 0.0);
+
+   if ( *recompute )
+   {
+      PFModuleInvokeType(RichardsJacobianEvalInvoke, richards_jacobian_eval,
+      (pressure, &J, &JC, saturation2, density, problem_data,
+      dt, time, 0));
+   }
+
+    if(JC == NULL)
+     Matvec(1.0, J, x, 0.0, y);
+   else
+     MatvecSubMat(current_state, 1.0, J, JC, x, 0.0, y);
 
 
    return(0);

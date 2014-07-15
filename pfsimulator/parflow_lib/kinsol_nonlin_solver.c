@@ -202,7 +202,7 @@ void PrintFinalStats(
  * KinsolNonlinSolver
  *--------------------------------------------------------------------------*/
 
-int KinsolNonlinSolver (N_Vector multiDimNVector, Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx )
+int KinsolNonlinSolver (N_Vector multiDimNVector, Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx , Vector *saturation2 , Vector *old_saturation2 , Vector *old_pressure2)
 {
    PFModule     *this_module      = ThisPFModule;
    PublicXtra   *public_xtra      = (PublicXtra   *)PFModulePublicXtra(this_module);
@@ -245,7 +245,15 @@ int KinsolNonlinSolver (N_Vector multiDimNVector, Vector *density , Vector *old_
    StateOldSaturation(current_state) = old_saturation;
    StateDensity(current_state)       = density;
    StateSaturation(current_state)    = saturation;
-   StateJacEval(current_state)       = richards_jacobian_eval;
+   
+
+   StateOldPressure2(current_state)   = old_pressure2;
+   StateOldSaturation2(current_state) = old_saturation2;
+   StateSaturation2(current_state)    = saturation2;
+
+
+
+StateJacEval(current_state)       = richards_jacobian_eval;
    StateJac(current_state)           = jacobian_matrix;
    StateJacC(current_state)           = jacobian_matrix_C;//dok
    StatePrecond(current_state)       = precond_pressure;
@@ -407,11 +415,11 @@ double      *temp_data)
 
 
       /* Scaling vectors*/
-      uscalen = N_VNew_PF(grid,1);
+      uscalen = N_VNew_PF(grid,2);
       N_VConst_PF(1.0,uscalen);
       instance_xtra -> uscalen = uscalen;
 
-      fscalen = N_VNew_PF(grid,1);
+      fscalen = N_VNew_PF(grid,2);
       N_VConst_PF(1.0,fscalen);
       instance_xtra -> fscalen = fscalen;
 

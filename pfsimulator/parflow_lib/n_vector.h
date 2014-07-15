@@ -39,7 +39,7 @@ struct _N_VectorContent {
 typedef struct _N_VectorContent *N_VectorContent;
 
 #define NV_CONTENT_PF(v) ( (N_VectorContent)(v->content) )
-#define NUMDIMS 1
+#define NUMDIMS 2
 #define N_VFree                       N_VDestroy_PF
 #define N_VConstrProdPos	      N_VConstrProdPos_PF
 

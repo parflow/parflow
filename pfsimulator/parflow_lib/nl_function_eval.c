@@ -84,6 +84,14 @@ void    *current_state)
    Vector      *old_saturation = StateOldSaturation(((State*)current_state) );
    Vector      *density        = StateDensity(     ((State*)current_state) );
    Vector      *old_density    = StateOldDensity(  ((State*)current_state) );
+
+
+
+   Vector      *old_pressure2   = StateOldPressure2(((State*)current_state) );
+   Vector      *saturation2     = StateSaturation2(  ((State*)current_state) );
+   Vector      *old_saturation2 = StateOldSaturation2(((State*)current_state) );
+
+
    double       dt             = StateDt(          ((State*)current_state) );
    double       time           = StateTime(        ((State*)current_state) );
    Vector       *evap_trans    = StateEvapTrans(   ((State*)current_state) );
@@ -99,6 +107,14 @@ void    *current_state)
 		  (pressure, fval, problem_data, saturation, old_saturation, 
 		   density, old_density, dt, time, old_pressure, evap_trans,
 		   ovrl_bc_flx) );
+
+   pressure = NV_CONTENT_PF(multiDimNVector)->dims[1];
+   fval = NV_CONTENT_PF(fvaln)->dims[1];
+
+   PFModuleInvokeType(NlFunctionEvalInvoke, nl_function_eval,
+                  (pressure, fval, problem_data, saturation2, old_saturation2,
+                   density, old_density, dt, time, old_pressure2, evap_trans,
+                   ovrl_bc_flx) );
  
    return;
 }

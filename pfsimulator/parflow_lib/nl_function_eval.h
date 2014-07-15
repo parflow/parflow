@@ -47,6 +47,10 @@ typedef struct
    Vector      *density;
    Vector      *saturation;
 
+   Vector      *old_saturation2;
+   Vector      *old_pressure2;
+   Vector      *saturation2;
+
    double       dt;
    double       time;
    double       *outflow; /*sk*/
@@ -70,6 +74,12 @@ typedef struct
 #define StateOldSaturation(state) ((state)->old_saturation)
 #define StateDensity(state)       ((state)->density)
 #define StateSaturation(state)    ((state)->saturation)
+
+#define StateSaturation2(state)    ((state)->saturation2)
+#define StateOldPressure2(state)   ((state)->old_pressure2)
+#define StateOldSaturation2(state) ((state)->old_saturation2)
+
+
 #define StateDt(state)            ((state)->dt)
 #define StateTime(state)          ((state)->time)
 #define StateJacEval(state)       ((state)->richards_jacobian_eval)
