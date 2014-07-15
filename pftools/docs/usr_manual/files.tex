@@ -120,8 +120,8 @@ and is not part of the file format.
 %=============================================================================
 %=============================================================================
 
-\section{Main Input File (.pftcl)}
-\label{Main Input File (.pftcl)}
+\section{Main Input File (.tcl)}
+\label{Main Input File (.tcl)}
 
 The main \parflow{} input file is a TCL script.  This might seem
 overly combersome at first but the basic input file structure is not
@@ -201,6 +201,138 @@ value of \kbd{PFIN_VERSION}.
 %=============================================================================
 %=============================================================================
 
+\subsection{Computing Topology}
+\label{Computing Topology}
+
+This section describes how processors are assigned in order to solve the domain
+in parallel. “P” allocates the number of processes to the grid-cells in x. “Q” allocates
+the number of processes to the grid-cells in y. “R” allocates the number of processes to
+the grid-cells in z. Please note “R” should always be 1 if you are running with Solver
+Richards \cite{JW01} unless you’re running a totally saturated domain (solver 
+IMPES).
+
+\pfkey{integer}{Process.Topology.P}{no default}
+{This assigns the process splits in the \emph{x} direction.}
+\begin{display}\begin{verbatim} 
+pfset Process.Topology.P        2
+\end{verbatim}\end{display} 
+
+\pfkey{integer}{Process.Topology.Q}{no default}
+{This assigns the process splits in the \emph{y} direction.}
+\begin{display}\begin{verbatim} 
+pfset Process.Topology.Q        1
+\end{verbatim}\end{display} 
+
+\pfkey{integer}{Process.Topology.P}{no default}
+{This assigns the process splits in the \emph{z} direction.}
+\begin{display}\begin{verbatim} 
+pfset Process.Topology.R        1
+\end{verbatim}\end{display} 
+
+In addition, you can assign the computing topology when you initiate your parflow script using tcl. 
+You must include the topology allocation when using tclsh and the parflow script.
+
+Example Usage: \begin{verbatim}
+[from Terminal] tclsh default_single.tcl 2 1 1
+
+[At the top of default_single.tcl you must include the following]
+set NP  [lindex $argv 0]
+set NQ  [lindex $argv 1]
+
+pfset Process.Topology.P        $NP
+pfset Process.Topology.Q        $NQ
+pfset Process.Topology.R        1 \end{verbatim}
+
+%=============================================================================
+%=============================================================================
+
+\subsection{Computational Grid}
+\label{Computational Grid}
+
+The computational grid is briefly described in \S~\ref{Defining the Problem}. The computational grid keys set
+the bottom left corner of the domain to a specific point in space. If using 
+a .pfsol file, the bottom left corner location of the .pfsol file must be the points
+designated in the computational grid. The user can also assign the \emph{x}, \emph{y} 
+and \emph{z} location to correspond to a specific coordinate system (i.e. UTM).
+
+\pfkey{double}{ComputationalGrid.Lower.X}{no default}
+{This assigns the lower \emph{x} coordinate location for the computational grid.}
+\begin{display}\begin{verbatim} 
+pfset   ComputationalGrid.Lower.X  0.0
+\end{verbatim}\end{display} 
+
+\pfkey{double}{ComputationalGrid.Lower.Y}{no default}
+{This assigns the lower \emph{y} coordinate location for the computational grid.}
+\begin{display}\begin{verbatim} 
+pfset   ComputationalGrid.Lower.Y  0.0
+\end{verbatim}\end{display} 
+
+\pfkey{double}{ComputationalGrid.Lower.Z}{no default}
+{This assigns the lower \emph{z} coordinate location for the computational grid.}
+\begin{display}\begin{verbatim} 
+pfset   ComputationalGrid.Lower.Z  0.0
+\end{verbatim}\end{display} 
+
+\pfkey{integer}{ComputationalGrid.NX}{no default}
+{This assigns the number of grid cells in the \emph{x} direction for the computational grid.}
+\begin{display}\begin{verbatim} 
+pfset  ComputationalGrid.NX  10 
+\end{verbatim}\end{display} 
+
+\pfkey{integer}{ComputationalGrid.NY}{no default}
+{This assigns the number of grid cells in the \emph{y} direction for the computational grid.}
+\begin{display}\begin{verbatim} 
+pfset  ComputationalGrid.NY  10 
+\end{verbatim}\end{display} 
+
+\pfkey{integer}{ComputationalGrid.NZ}{no default}
+{This assigns the number of grid cells in the \emph{z} direction for the computational grid.}
+\begin{display}\begin{verbatim} 
+pfset  ComputationalGrid.NZ  10 
+\end{verbatim}\end{display} 
+
+\pfkey{real}{ComputationalGrid.DX}{no default}
+{This defines the size of grid cells in the \emph{x} direction. Units are \emph{L} and are 
+defined by the units of the hydraulic conductivity used in the problem.}
+\begin{display}\begin{verbatim} 
+pfset  ComputationalGrid.DX  10.0 
+\end{verbatim}\end{display} 
+
+\pfkey{real}{ComputationalGrid.DY}{no default}
+{This defines the size of grid cells in the \emph{y} direction. Units are \emph{L} and are 
+defined by the units of the hydraulic conductivity used in the problem.}
+\begin{display}\begin{verbatim} 
+pfset  ComputationalGrid.DY  10.0 
+\end{verbatim}\end{display} 
+
+\pfkey{real}{ComputationalGrid.DZ}{no default}
+{This defines the size of grid cells in the \emph{z} direction. Units are \emph{L} and are 
+defined by the units of the hydraulic conductivity used in the problem.}
+\begin{display}\begin{verbatim} 
+pfset  ComputationalGrid.DZ  1.0 
+\end{verbatim}\end{display} 
+
+
+Example Usage: \begin{verbatim}
+#---------------------------------------------------------
+# Computational Grid
+#---------------------------------------------------------
+pfset ComputationalGrid.Lower.X	-10.0
+pfset ComputationalGrid.Lower.Y     10.0
+pfset ComputationalGrid.Lower.Z	1.0
+
+pfset ComputationalGrid.NX		18
+pfset ComputationalGrid.NY		18
+pfset ComputationalGrid.NZ		8
+
+pfset ComputationalGrid.DX		8.0
+pfset ComputationalGrid.DY		10.0
+pfset ComputationalGrid.DZ		1.0
+\end{verbatim}
+
+
+%=============================================================================
+%=
 \subsection{Geometries}
 \label{Geometries}
 \pfaddanchor{pfinGeometries}
@@ -334,74 +466,65 @@ pfset Geom.background.Patches   "left right front back bottom top"
 Here is an example geometry input section which has three geometry inputs.
 
 \begin{display}\begin{verbatim}
-
-
 #---------------------------------------------------------
-# Geometries:
+# The Names of the GeomInputs
 #---------------------------------------------------------
-
-#
-# This defines the three geometry input names
-# 
-pfset GeomInput.Names   "solidinput indinput boxinput"
-
+pfset GeomInput.Names 			"solidinput indinput boxinput"
 #
 # For a solid file geometry input type you need to specify the names
 # of the gemetries and the filename
-# 
-pfset GeomInput.solidinput.InputType  SolidFile
-
 #
-# The names of the geometries contained in the solid file.  Order is
-# important and defines the mapping.  First geometry gets the first name.
-#
-pfset GeomInput.solidinput.GeomNames 
-                   "domain bottomlayer middlelayer toplayer"
 
+pfset GeomInput.solidinput.InputType	SolidFile
+
+# The names of the geometries contained in the solid file. Order is 
+# important and defines the mapping. First geometry gets the first name. 
+pfset GeomInput.solidinput.GeomNames	"domain"
 #
 # Filename that contains the geometry
 #
-pfset GeomInput.solidinput.FileName   ocwd.pfsol
- 
-#
-# Order is important here, must match what is solid file, what is 
-# printed by the conversion routine.
-#
-pfset Geom.domain.Patches  "henry frank jane betsy al nellie"
+
+pfset GeomInput.solidinput.FileName 	ocwd.pfsol
 
 #
-# An indicator field is a 3D field of values.  The values within the
-# field can be mapped to ParFlow geometries
-# Indicator fields must match the computation grid exactly!  
+# An indicator field is a 3D field of values. 
+# The values within the field can be mapped 
+# to ParFlow geometries. Indicator fields must match the
+# computation grid exactly! 
+#
+
+pfset GeomInput.indinput.InputType 		IndicatorField
+pfset GeomInput.indinput.GeomNames    	“sourceregion concenregion”
+pfset GeomInput.indinput.FileName		ocwd.pfb
+
+#
+# Within the indicator.pfb file, assign the values to each GeomNames
 # 
-pfset GeomInput.indinput.InputType    IndicatorField
-pfset GeomInput.indinput.GeomNames    "sourceregion concenregion"
-pfset GeomInput.indinput.FileName     ocwd.pfb
-
-#
-# Here we set up the mapping between values in the field and
-# ParFlow geometries
-#
-pfset GeomInput.sourceregion.Value    11
-pfset GeomInput.concenregion.Value    21
+pfset GeomInput.sourceregion.Value 	11
+pfset GeomInput.concenregion.Value 	12
 
 #
 # A box is just a box defined by two points.
-# 
-pfset GeomInput.boxinput.InputType    Box
-pfset GeomInput.boxinput.GeomName     background
- 
-pfset Geom.background.Lower.X         -1.0
-pfset Geom.background.Lower.Y         -1.0
-pfset Geom.background.Lower.Z         -1.0
-pfset Geom.background.Upper.X         151.0
-pfset Geom.background.Upper.Y         171.0
-pfset Geom.background.Upper.Z         11.0
-
-# 
-# Order is fixed, but you can change the name 
 #
-pfset Geom.background.Patches         "left right front back bottom top"
+
+pfset GeomInput.boxinput.InputType	Box
+pfset GeomInput.boxinput.GeomName	background
+pfset Geom.background.Lower.X 		-1.0
+pfset Geom.background.Lower.Y 		-1.0
+pfset Geom.background.Lower.Z 		-1.0
+pfset Geom.background.Upper.X 		151.0
+pfset Geom.background.Upper.Y 		171.0
+pfset Geom.background.Upper.Z 		11.0
+
+#
+# The patch order is fixed in the .pfsol file, but you 
+# can call the patch name anything you 
+# want (i.e. left right front back bottom top)
+#
+
+pfset Geom.domain.Patches             		" z-upper x-lower y-lower \
+                                      			x-upper y-upper z-lower"
+
 \end{verbatim}\end{display}
 
 %=============================================================================
@@ -482,7 +605,6 @@ is the absolute value of the integer part of the value.
 pfset TimingInfo.DumpInterval  10.0
 \end{verbatim}\end{display}
 
-%=============================================================================
 \vspace{0.5in}
 
 For {\em Richards' equation cases only} input is collected for time step
@@ -546,6 +668,32 @@ Growth} type time step is selected.
 pfset TimeStep.MinStep      1.0e-3
 \end{verbatim}\end{display}
 
+Here is a detailed example of how timing keys might be used in a simualtion.
+\begin{display}\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Setup timing info [hr]
+# 8760 hours in a year. Dumping files every 24 hours. Hourly timestep
+#-----------------------------------------------------------------------------
+pfset TimingInfo.BaseUnit		1.0
+pfset TimingInfo.StartCount		0
+pfset TimingInfo.StartTime		0.0
+pfset TimingInfo.StopTime		8760.0
+pfset TimingInfo.DumpInterval	-24
+
+## Timing constant example
+pfset TimeStep.Type			Constant
+pfset TimeStep.Value			1.0
+
+## Timing growth example
+pfset TimeStep.Type			Growth
+pfset TimeStep.InitialStep		0.0001
+TimeStep.GrowthFactor		1.4
+TimeStep.MaxStep			1.0
+TimeStep.MinStep			0.0001
+\end{verbatim}\end{display}
+
+%=============================================================================
+
 %=============================================================================
 %=============================================================================
 
@@ -587,6 +735,25 @@ This key is used to specify the how many times a named time interval repeats.  A
 pfset Cycle.onoff.Repeat               -1
 \end{verbatim}\end{display}
 
+Here is a detailed example of how time cycles might be used in a simualtion.
+\begin{display}\begin{verbatim}
+
+#-----------------------------------------------------------------------------
+# Time Cycles
+#-----------------------------------------------------------------------------
+pfset Cycle.Names 			"constant rainrec"
+pfset Cycle.constant.Names		"alltime"
+pfset Cycle.constant.alltime.Length	8760
+pfset Cycle.constant.Repeat		-1
+
+# Creating a rain and recession period for the rest of year
+pfset Cycle.rainrec.Names		"rain rec"
+pfset Cycle.rainrec.rain.Length	10
+pfset Cycle.rainrec.rec.Length	8750
+pfset Cycle.rainrec.Repeat              	-1
+\end{verbatim}\end{display}
+
+
 %=============================================================================
 %=============================================================================
 
@@ -599,7 +766,7 @@ The domain may be represented by any of the solid types in
 These surface patches are used to define boundary conditions in
 \S~\ref{Boundary Conditions: Pressure} and
 \S~\ref{Boundary Conditions: Saturation} below.
-Subsequently, it is required that the union of the defined surface
+Subsequently, it is required that the union (or combination) of the defined surface
 patches equal the entire domain surface.  NOTE: This requirement is NOT checked
 in the code.
 
@@ -1236,17 +1403,29 @@ The format for this section of input is:
 
 \pfkey{string}{ Solver.Nonlinear.VariableDz}{False}
 {
-This key specifies whether dZ multipliers are to be used, the default is False, which sets them to 1.0.
+This key specifies whether dZ multipliers are to be used, the default is False.
+The default indicates a false or non-active variable dz and each layer thickness is 1.0 [L].
 }
 \begin{display}\begin{verbatim}
 pfset Solver.Nonlinear.VariableDz     True
 \end{verbatim}\end{display}
 
+\pfkey{list}{dzScale.GeomNames}{no default}
+{
+This key specifies which problem domain is being applied a variable dz subsurface.
+These geometries must cover the entire computational domain.
+}
+\begin{display}\begin{verbatim}
+pfset dzScale.GeomNames domain
+\end{verbatim}\end{display}
+
+
 \pfkey{string}{dzScale.Type}{no default}
 {
-This key specifies which method is to be used to assign variable vertical grid spacing.  The only choice currently
-available is {\bf Constant} which indicates that a constant is to be
-assigned to all grid cells within a geometry.
+This key specifies which method is to be used to assign variable vertical grid spacing.  The choices currently
+available are {\bf Constant} which indicates that a constant is to be
+assigned to all grid cells within a geometry, {\bf nzList} which assigns all layers of a given model to a list value,
+and {\bf PFBFile} which reads in values from a distributed pfb file.
 }
 \begin{display}\begin{verbatim}
 pfset dzScale.Type            Constant
@@ -1270,6 +1449,65 @@ geometry, {\em geometry\_name}, if the type was set to constant.
 pfset Geom.domain.dzScale.Value 1.0
 \end{verbatim}\end{display}
 
+\pfkey{string}{Geom.{\em geometry\_name}.dzScale.FileName}{no default}
+{
+This key specifies file to be read in for variable dz values for the given 
+geometry, {\em geometry\_name}, if the type was set to {\bf PFBFile}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.dzScale.FileName  vardz.pfb
+\end{verbatim}\end{display}
+
+\pfkey{integer}{dzScale.nzListNumber}{no default}
+{
+This key indicates the number of layers with variable dz in the subsurface.
+This value is the same as the \emph{ComputationalGrid.NZ} key.
+}
+\begin{display}\begin{verbatim}
+pfset dzScale.nzListNumber  10
+\end{verbatim}\end{display}
+
+
+\pfkey{double}{Cell.{\em nzListNumber}.dzScale.Value}{no default}
+{
+This key assigns the thickness of each layer defined by nzListNumber.
+ParFlow assigns the layers from the bottom-up (i.e. the bottom 
+of the domain is layer 0, the top is layer NZ-1). The total domain depth
+(\emph{Geom.domain.Upper.Z}) does not change with variable dz. The layer thickness
+is calculated by \emph{ComputationalGrid.DZ *dZScale}.
+}
+\begin{display}\begin{verbatim}
+pfset Cell.0.dzScale.Value 1.0
+\end{verbatim}\end{display}
+
+Example Usage: 
+\begin{display}\begin{verbatim}
+
+#--------------------------------------------
+# Variable dz Assignments
+#------------------------------------------
+# Set VariableDz to be true
+# Indicate number of layers (nzlistnumber), which is the same as nz
+# (1) There is nz*dz = total depth to allocate,  
+# (2) Each layer’s thickness is dz*dzScale, and
+# (3) Assign the layer thickness from the bottom up.
+# In this example nz = 5; dz = 10; total depth 40;
+# Layers 	Thickness [m]
+# 0 		15 			Bottom layer
+# 1		15
+# 2		5
+# 3		4.5			
+# 4 		0.5			Top layer
+pfset Solver.Nonlinear.VariableDz     True
+pfset dzScale.GeomNames            domain
+pfset dzScale.Type            nzList
+pfset dzScale.nzListNumber       5
+pfset Cell.0.dzScale.Value 1.5
+pfset Cell.1.dzScale.Value 1.5
+pfset Cell.2.dzScale.Value 0.5
+pfset Cell.3.dzScale.Value 0.45
+pfset Cell.4.dzScale.Value 0.05
+\end{verbatim}\end{display}
 
 
 
@@ -1774,6 +2012,7 @@ $\frac{\partial p}{\partial t}-\nabla\cdot (Kp\nabla p)=f$, where
 $K = diag(1 \;\; 2 \;\; 3)$.
 
 \end{description}
+
 
 %=============================================================================
 %=============================================================================
@@ -2311,6 +2550,33 @@ $p = x^3 y^4 + x^2 + \sin(xy)\cos y + 1$
 \item[{\bf XYZTPlus1}: ] $p = xyzt + 1$
 \item[{\bf XYZTPlus1PermTensor}: ] $p = xyzt + 1$
 \end{description}
+
+Example Script:
+\begin{display}\begin{verbatim}
+
+#---------------------------------------------------------
+# Initial conditions: water pressure [m]
+#---------------------------------------------------------
+# Using a patch is great when you are not using a box domain
+# If using a box domain HydroStaticDepth is fine
+# If your RefPatch is z-lower (bottom of domain), the pressure is positive.
+# If your RefPatch is z-upper (top of domain), the pressure is negative.
+### Set water table to be at the bottom of the domain, the top layer is initially dry
+pfset ICPressure.Type				HydroStaticPatch
+pfset ICPressure.GeomNames		domain
+pfset Geom.domain.ICPressure.Value	2.2
+
+pfset Geom.domain.ICPressure.RefGeom	domain
+pfset Geom.domain.ICPressure.RefPatch	z-lower
+
+### Using a .pfb to initialize
+pfset ICPressure.Type                                   PFBFile
+pfset ICPressure.GeomNames		 "domain"
+pfset Geom.domain.ICPressure.FileName	press.00090.pfb
+
+pfset Geom.domain.ICPressure.RefGeom	domain
+pfset Geom.domain.ICPressure.RefPatch	z-upper
+\end{verbatim}\end{display}
 
 %=============================================================================
 %=============================================================================
@@ -3578,6 +3844,13 @@ Choices for this key include {\bf none} and {\bf CLM}. Note that \code{CLM} must
 pfset Solver.LSM CLM
 \end{verbatim}\end{display}
 
+
+%======
+% new keys for CLM distributed forcing, restarts, etc here  @RMM
+%=======
+\subsection{CLM Solver Parameters}
+\label{CLM Solver Parameters}
+
 \pfkey{string}{Solver.CLM.Print1dOut}{False}
 {This key specifies whether the \code{CLM} one dimensional (averaged over each processor) output file is written or not. 
 Choices for this key include {\bf True} and {\bf False}. Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
@@ -3586,9 +3859,6 @@ Choices for this key include {\bf True} and {\bf False}. Note that \code{CLM} mu
 pfset Solver.CLM.Print1dOut   False
 \end{verbatim}\end{display}
 
-%======
-% new keys for CLM distributed forcing, restarts, etc here  @RMM
-%=======
 
 \pfkey{integer}{Solver.CLM.IstepStart}{1}
 {This key specifies the value of the counter, {\em istep} in \code{CLM}.  This key primarily determines the start of the output counter for \code{CLM}.It is used to restart a run by setting the key to the ending step of the previous run plus one. Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
@@ -3792,6 +4062,45 @@ pfset Solver.CLM.IrrigationStopTime 1200
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.IrrigationThreshold 0.2
 \end{verbatim}\end{display}
+
+\pfkey{integer}{Solver.CLM.ReuseCount}{1}
+{How many times to reuse a CLM input. For example timestep=1, 
+reuse =1 is normal behavior but reuse=2 and timestep=0.5 subdivides 
+the time step using the same CLM input for both halves instead of needing two files.} 
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.ReuseCount      5
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.CLM.WriteLogs}{True}
+{When {\bf False}, this disables writing of the CLM output log files for each processor. 
+For example, in the clm.tcl test case, if this flag is added {\bf False}, 
+washita.output.txt.\emph{p} and washita.para.out.dat.\emph{p} (were \emph{p} is the processor \#)
+are not created, assuming \emph{washita} is the run name.} 
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.WriteLogs    False
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.CLM.WriteLastRST}{False}
+{Controls whether CLM restart files are sequentially written or whether a single
+file \emph{restart file name}.00000.\emph{p} is overwritten each time the restart file is output,
+where \emph{p} is the processor number. If "True" only one file is written/overwritten and if 
+"False" outputs are written more frequently. Compatible with DailyRST and ReuseCount;
+for the latter, outputs are written every n steps where n is the value of ReuseCount.} 
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.WriteLastRST   True
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.CLM.DailyRST}{True}
+{Controls whether CLM writes daily restart files (default) or at every time step when set 
+to False; outputs are numbered according to the istep from ParFlow. If {\bf ReuseCount=n}, 
+with n greater than 1, the output will be written every n steps (i.e. it still writes hourly 
+restart files if your time step is 0.5 or 0.25, etc...). Fully compatible with {\bf WriteLastRST=False}
+so that each daily output is overwritten to time 00000 in \emph{restart file name}.00000.p 
+where \emph{p} is the processor number.} 
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.DailyRST    False
+\end{verbatim}\end{display}
+
 
 %=============================================================================
 %=============================================================================
