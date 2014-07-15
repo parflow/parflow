@@ -247,6 +247,106 @@ The table below provides a list of ParFlow commands with short descriptions grou
 The last two columns in this table indicate what examples from \S~\ref{common_pftcl}, if any, the command is used in 
 and whether the command is compatible with a terrain following grid domain formulation. 
 
+\small{
+\begin{tabular}{ | p{2.5cm} | p{6cm} | p{2cm} | p{3cm} | }
+\hline
+	\bf{Name} & \bf{Short Description} & \bf{Examples} & \bf{Compatible with TFG} \\ \hline
+	pfhelp & Get help for PF Tools &  &  \\ \hline
+	Mathematical Operations &  &  &  \\ \hline
+	pfcellsum & datasetx + datasety &  &  \\ \hline
+	pfcelldiff & datasetx - datasety &  &  \\ \hline
+	pfcellmult & datasetx   * datasety &  &  \\ \hline
+	pfcelldiv & datasetx / datasety &  &  \\ \hline
+	pfcellsumconst & dataset + constant &  &  \\ \hline
+	pfcelldiffconst & dataset - constant &  &  \\ \hline
+	pfcellmultconst & dataset * constant &  &  \\ \hline
+	pfcelldivconst & dataset / constant &  &  \\ \hline
+	pfsum & Sum dataset & 7, 9 &  \\ \hline
+	pfdiffelt & Element difference &  &  \\ \hline
+	pfprintdiff & Print difference &  &  \\ \hline
+	pfmdiff & Calculate area where the difference between two datasets is less than a threshold &  &  \\ \hline
+	pfprintmdiff & Print the locations with differences greater than a minimum threshold &  &  \\ \hline
+	pfsavediff & Save the difference between two datasets &  &  \\ \hline
+	pfaxpy & y=alpha*x+y &  &  \\ \hline
+	pfgetstats & Calculate dataset statistics (min, max, mean, var, stdev) &  &  \\ \hline
+	pfprintstats & Print formatted statistics &  &  \\ \hline
+	pfstats & Calculate and print dataset statistics (min, max, mean, var, stdev) &  &  \\ \hline
+	Calculate physical parameters &  &  &  \\ \hline
+	pfbfcvel & Calculate block face centered velocity &  &  \\ \hline
+	pfcvel & Calculate Darcy velocity &  &  \\ \hline
+	pfvvel & Calculate Darcy velocity at cell vertices &  &  \\ \hline
+	pfvmag & Calculate velocity magnitude given components &  &  \\ \hline
+	pfflux & Calculate Darcy flux &  &  \\ \hline
+	pfhhead & Calculate hydraulic head & 2 &  \\ \hline
+	pfphead & Calculate pressure head from hydraulic head &  &  \\ \hline
+	pfsattrans & calculate saturated transmissivity &  &  \\ \hline
+	pfupstreamarea & Calculate upstream area &  &  \\ \hline
+	pfeffectiverecharge & Calculate effective recharge &  &  \\ \hline
+	pfwatertabledepth & Calculate water table from saturation &  &  \\ \hline
+	pfhydrostatic & Calculate hydrostatic pressure field  &  &  \\ \hline
+	pfsubsurfacestorage & Calculate total sub-surface storage & 7 &  \\ \hline
+	pfgwstorage & Calculate saturated subsurface storage &  &  \\ \hline
+	pfsurfacerunoff & Calculate total surface runoff & 9 &  \\ \hline
+	pfsurfacestorage & Calculate total surface storage & 8 &  \\ \hline
+	DEM Operations &  &  &  \\ \hline
+	pfslopex & Calculate slopes in the x-direction & 5 &  \\ \hline
+	pfslopey & Calculate slope in the y-direction & 5 &  \\ \hline
+	pfchildD8 & Calculate D8 child &  &  \\ \hline
+	pfsegmentD8 & Calculate D8 segment lengths &  &  \\ \hline
+	pfslopeD8 & Calculate D8 slopes &  &  \\ \hline
+	pfslopexD4 & Calculate D4 slopes in the x-direction &  &  \\ \hline
+	pfslopeyD4 & Calculate D4 slopes in the y-direction &  &  \\ \hline
+	pffillflats & Fill DEM flats & 5 &  \\ \hline
+	pfmovingavgdem & Fill dem sinks with moving average &  &  \\ \hline
+	pfpitfilldem & Fill sinks in the dem using iterative pitfilling routine & 5 &  \\ \hline
+	pfflintslawfit & Calculate Flint's Law parameters &  &  \\ \hline
+	pfflintslaw & Smooth DEM using Flints Law &  &  \\ \hline
+	pfflintslawbybasin & Smooth DEM using Flints Law by basin &  &  \\ \hline
+	Topmodel functions &  &  &  \\ \hline
+	pftopodeficit & Calculate TOPMODEL water deficit &  &  \\ \hline
+	pftopoindex & Calculate topographic index &  &  \\ \hline
+	pftopowt & Calculate watertable based on topographic index &  &  \\ \hline
+	pftoporecharge & Calculate effective recharge &  &  \\ \hline
+	Domain Operations &  &  &  \\ \hline
+	pfcomputedomain & Compute domain mask & 3 &  \\ \hline
+	pfcomputetop & Compute domain top & 3, 6, 8, 9 &  \\ \hline
+	pfextracttop & Extract domain top & 6 &  \\ \hline
+	pfcomputebottom & Compute domain bottom & 3 &  \\ \hline
+	pfsetgrid & Set grid & 5 &  \\ \hline
+	pfgridtype & Set grid type &  &  \\ \hline
+	pfgetgrid & Return grid information &  &  \\ \hline
+	pfgetelt & Extract element from domain & 10 &  \\ \hline
+	pfextract2Ddomain & Build 2D domain &  &  \\ \hline
+	pfenlargebox & Compute expanded dataset &  &  \\ \hline
+	pfgetsubbox & Return subset of data &  &  \\ \hline
+	pfprintdomain & Print domain & 3 &  \\ \hline
+	pfbuilddomain & Build a subgrid array from a ParFlow database &  &  \\ \hline
+	Dataset operations &  &  &  \\ \hline
+	pflistdata & Return dataset names and labels &  &  \\ \hline
+	pfgetlist & Return dataset descriptions &  &  \\ \hline
+	pfprintlist & Print list of datasets and their labels &  &  \\ \hline
+	pfnewlabel & Change dataset label &  &  \\ \hline
+	pfnewdata & Create new dataset &  &  \\ \hline
+	pfprintgrid & Print grid &  &  \\ \hline
+	pfnewgrid & Set grid for new dataset &  &  \\ \hline
+	pfdelete & Delete dataset &  &  \\ \hline
+	pfreload & Reload dataset &  &  \\ \hline
+	pfreloadall & Reload all current datasets &  &  \\ \hline
+	pfprintdata & Print all elements of a dataset &  &  \\ \hline
+	pfprintelt & Print a single element &  &  \\ \hline
+	File Operations &  &  &  \\ \hline
+	pfload & Load file & All &  \\ \hline
+	pfloadsds & Load Scientific Data Set from HDF file &  &  \\ \hline
+	pfdist & Distribute files  based on processor topology & 4 &  \\ \hline
+	pfdistondomain & Distribute files based on domain &  &  \\ \hline
+	pfundist & Undistribute files &  &  \\ \hline
+	pfsave & Save dataset & 1,2,5,6 &  \\ \hline
+	pfsavesds & Save dataset in an HDF format &  &  \\ \hline
+	pfwritedb & Write the settings for a PF run to a database &  &  \\ \hline
+\end{tabular}
+}
+
+
 Detailed descriptions of every command are included below in alphabetical order.
 Note that the required inputs are listed following each command. Commands that perform 
 operations on data sets will require an identifier for each data set it takes as input. 
