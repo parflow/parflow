@@ -63,7 +63,7 @@ p = p^0(x), \; t = 0,
 completes the specification of the problem.
 \section{Terrain Following Grid}
 \label{TFG}
-The terrain following grid formulation transforms the \parflow{} grid to conform to topography \ref{M13}. This alters the form of Darcy's law to include a topographic slope component:
+The terrain following grid formulation transforms the \parflow{} grid to conform to topography \cite{M13}. This alters the form of Darcy's law to include a topographic slope component:
 \begin{eqnarray}
 q_x=\textbf{K}(p)\rho(p)(\frac{\partial p}{\partial x}\cos \theta_x + \sin \theta_x) 
 \label{eq:darcyTFG}
@@ -387,10 +387,10 @@ phase $\XK_0$ (e.g. water) under saturated conditions (i.e. $k_{r0} = 1$).
 
 \section{Water Balance}
 \label{Water Balance}
-\parflow{} can calculate a water balance for the Richards' equation, overland flow and \code{clm} capabilities.  This water balance is computes using \code{pftools} commands as described in \S~\ref{Manipulating Data}.  There are two water balance storage components, subsurface and surface, and two flux calculations, overland flow and evapotranspiration.  The storage components have units $[L^3]$ while the fluxes may be instantaneous and have units $[L^3T^{-1}]$ or cumulative over an output interval with units $[L^3]$.  Examples of water balance calculations and errors are given in the scripts \code{water_balance_x.tcl} and \code{water_balance_y.tcl}.  The size of water balance errors depend on solver settings and tolerances but are typically very small, $<10^{-10} [-]$.\newline
+\parflow{} can calculate a water balance for the Richards' equation, overland flow and \code{clm} capabilities. For a schematic of the water balance in \parflow{} please see \cite{M10}. This water balance is computes using \code{pftools} commands as described in \S~\ref{Manipulating Data}.  There are two water balance storage components, subsurface and surface, and two flux calculations, overland flow and evapotranspiration.  The storage components have units $[L^3]$ while the fluxes may be instantaneous and have units $[L^3T^{-1}]$ or cumulative over an output interval with units $[L^3]$.  Examples of water balance calculations and errors are given in the scripts \code{water_balance_x.tcl} and \code{water_balance_y.tcl}.  The size of water balance errors depend on solver settings and tolerances but are typically very small, $<10^{-10} [-]$.\newline
 The water balance takes the form:
 \begin{eqnarray}
-Vol_{subsurface} + Vol_{surface} = \sum[Q_{overland} + Q_{evapotranspiration} + Q_{source sink}]\Delta t
+\frac{\Delta [Vol_{subsurface} + Vol_{surface}]}{\Delta t} = Q_{overland} + Q_{evapotranspiration} + Q_{source sink}
 \label{eq:balance}
 \end{eqnarray}
 where $Vol_{subsurface}$ is the subsurface storage $[L^3]$; $Vol_{surface}$ is the surface storage $[L^3]$; $Q_{overland}$ is the overland flux $[L^3 T^{-1}]$; $Q_{evapotranspiration}$ is the evapotranspiration flux passed from \code{clm} or other LSM, etc, $[L^3 T^{-1}]$; and $Q_{source sink}$ are any other source/sink fluxes specified in the simulation $[L^3 T^{-1}]$. The surface and subsurface storage routines are calculated using the \parflow{} toolset commands \code{pfsurfacestorage} and \code{pfsubsurfacestorage} respectively.  Overland flow out of the domain is calculated by \code{pfsurfacerunoff}.  Details for the use of these commands are given in \S~\ref{PFTCL Commands} and \S~\ref{common_pftcl}. $Q_{evapotranspiration}$ must be written out by \parflow{} as a variable (as shown in \S~ref{Code Parameters}) and only contains the external fluxes passed from a module such as \code{clm} or \emph{WRF}. Note that these volume and flux quantities are calculated spatially over the domain and are returned as array values, just like any other quantity in \parflow{}.  The tools command \code{pfsum} will sum these arrays into a single value for the enrite domain. All other fluxes must be determined by the user.\newline
