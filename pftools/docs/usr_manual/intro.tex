@@ -84,86 +84,98 @@ What follows are tables of \parflow{} references with information on topics, typ
 application.  \ref{pfref1}, \ref{pfref2}, \ref{pfref3} and \ref{pfref4} describe the  \\
 \newpage
 
-{\tiny 
+{\scriptsize
 \begin{table}
+\renewcommand{\arraystretch}{2.5}
 \center
-%\tabcolsep=.2cm
 \caption{List of \parflow{} references with application and process details.}
-\begin{tabular}{ p{1cm} p{2cm} l l p{1cm} p{1.5cm} p{1cm} p{1cm} | c | c | c | c | p{1cm} }
-\bf{Author(s)} & \bf{Title} & \bf{Journal} & \bf{Year} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} & \bf{Access/DOI} \\   
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c | c }
+\bf{Author, Journal, Year} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} & \bf{Ref.} \\   
 \hline{}
-Cui et al. & Modeling Nitrogen Transport and Transformation in Aquifers Using a Particle-Tracking Approach & CAGEO & 2014 & SLIM-FAST & Model Development (nitrogen biogeochemistry) & Column to Hillslope & Idealized & X &   & X &  & DOI: 10.1016/j.cageo.2014.05.005  \\
-Condon and Maxwell & Feedbacks between managed irrigation and water availability: Diagnosing temporal and spatial patterns using an integrated hydrologic model & WRR & 2014 & CLM & Agriculture & Watershed (1600 km2) & Little Washita, OK &  & X& X & & DOI: 10.1002/2013WR014868  \\
-Meyerhoff et al. & Characterization of groundwater and surface water mixing in a semi-confined karst aquifer using time-lapse electrical resistivity tomography & WRR & 2014 & SLIM-FAST & Karst Environments & 2D & Transects in Santa Fe River Watershed & & X & & & DOI: 10.1002/2013WR013991  \\
-Condon and Maxwell & Groundwater-fed irrigation impacts spatially distributed temporal scaling behavior of the natural system: A spatio-temporal framework for understanding water management impacts & ERL & 2014 & CLM & Agriculture & Watershed (1600 km2) & Little Washita, OK & & X & X & & DOI: 10.1016/j.advwatres.2013.07.012  \\
-Maxwell et al. & Surface-subsurface model intercomparison: A first set of benchmark results to diagnose integrated hydrology and feedbacks & WRR & 2014 & Model Comparison & Many  & Idealized  &   &   & X  & X  &    \\ 
-Meyerhoff et al. & Improved Hydrograph Prediction Through Subsurface Characterization: Conditional Stochastic Hillslope Simulations & HJ & 2014 &  & Stochastic runoff generation, conditioning & Hillslope & Idealized & X & &X & & DOI: 10.1007/s10040-014-1112-6  \\
-Williams et al. & Development and verification of a new wind speed forecasting system using an Ensemble Kalman Filter data assimilation technique in a fully coupled hydrologic and atmospheric model & JAMES & 2013 & WRF & Atmosphere, DART, Data Assimilation & 15km × 15km × 5m & Idealized & X & & X & & DOI: 10.1002/jame.20051  \\
-Condon et al. & The impact of subsurface conceptualization on land energy fluxes & AWR & 2013 & CLM & Subsurface Heterogeneity (land surface fluxes) & Watershed (56,000 km2) & Upper Klamath, OR & X & X & X & & DOI: 10.1016/j.advwatres.2013.08.001  \\
-Condon and Maxwell & Implementation of a linear optimization water allocation algorithm into a fully integrated physical hydrology model & AWR & 2013 & CLM & Agriculture & Sub-Watershed (600 km2) & Little Washita, OK &  & X & X & & DOI: 10.1016/j.advwatres.2013.07.012   \\
+Cui et al. CAGEO (2014) & SLIM-FAST & Model Development (nitrogen biogeochemistry) & Column to Hillslope & Idealized & X &   & X &  & \cite{Cui14}  \\
+Condon and Maxwell WRR (2014) & CLM & Agriculture & Watershed (1600 km2) & Little Washita, OK &  & X& X & & \cite{Condon14b}  \\
+Meyerhoff et al. WRR (2014) & SLIM-FAST & Karst Environments & 2D & Transects in Santa Fe River Watershed & & X & & & \cite{Meyerhoff14b}  \\
+Condon and Maxwell ERL (2014) & CLM & Agriculture & Watershed (1600 km2) & Little Washita, OK & & X & X & & \cite{Condon14a}  \\
+Maxwell et al. WRR (2014) & Model Comparison & Many  & Idealized  &   &   & X  & X  & & \cite{Maxwell14}   \\ 
+Meyerhoff et al. HJ (2014) &  & Stochastic runoff generation, conditioning & Hillslope & Idealized & X & &X & & \cite{Meyerhoff14a}  \\
+Williams et al. JAMES (2013) & WRF & Atmosphere, DART, Data Assimilation & 15km × 15km × 5m & Idealized & X & & X & & \cite{Williams13}  \\
+Condon et al. AWR (2013) & CLM & Subsurface Heterogeneity (land surface fluxes) & Watershed (56,000 km2) & Upper Klamath, OR & X & X & X & & \cite{Condon13b}  \\
+Condon and Maxwell AWR (2013) & CLM & Agriculture & Sub-Watershed (600 km2) & Little Washita, OK &  & X & X & & \cite{Condon13a} \\
+Atchley et al. ES\&T (2013) & SLIM-FAST; CrunchFlow & Risk Assessment & 1200m × 300m × 60m & Idealized &  & X & X & & \cite{Atchley13b}  \\
+Mikkelson et al. EH (2013) & CLM & Mountain Pine Beetle & Hillslope (500m × 1000m × 12.5m) & Idealized &  & X & X & & \cite{Mikkelson13}   \\
+Maxwell AWR (2013) & Model Development & Idealized & & & & X & X & X & \cite{Maxwell13} \\
+Atchley et al. AWR (2013) & SLIM-FAST; CrunchFlow & Risk Assessment & 1200m × 300m × 60m & Idealized & X &  &  & & \cite{Atchley13a}   \\ 
 \end{tabular}
 \label{pfref1}
 \end{table}
 
 \begin{table} \center
+\renewcommand{\arraystretch}{2.5}
+\center
 \caption{List of \parflow{} references with application and process details (cont.).}
 
-\begin{tabular}{ p{1cm} p{2cm} p{0.75cm} p{0.5cm} p{1cm} p{1.5cm} p{1cm} p{1cm} p{0.25cm} p{0.25cm} p{0.25cm} p{0.25cm} p{1cm} }
-\bf{Author(s)} & \bf{Title} & \bf{Journal} & \bf{Year} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} & \bf{Access/DOI} \\   
-Atchley et al. & Human health risk assessment of CO2 leakage into overlying aquifers using a stochastic, geochemical reactive transport approach & ES\&T & 2013 & SLIM-FAST; CrunchFlow & Risk Assessment & 1200m × 300m × 60m & Idealized &  & DOI: 10.1021/es400316c   \\
-Mikkelson et al. & Mountain pine beetle infestation impacts: Modeling water and energy budgets at the hill-slope scale & EH & 2013 & CLM & Mountain Pine Beetle & Hillslope (500m × 1000m × 12.5m) & Idealized & X & DOI: 10.1002/eco.278  \\
-Keyes et al.  & Multiphysics simulations: Challenges and opportunities & IJHPCA & 2013 & Model Comparison & DOI: 10.1177/1094342012468181 \\
-Maxwell & A terrain-following grid transform and preconditioner for parallel, large-scale, integrated hydrologic modeling & AWR & 2013 & Model Development & Idealized &  & DOI: 10.1016/j.advwatres.2012.10.001 \\
-Atchley et al. & Using streamlines to simulate stochastic reactive transport in heterogeneous aquifers: Kinetic metal release and transport in CO2 impacted drinking water aquifers & AWR & 2013 & SLIM-FAST; CrunchFlow & Risk Assessment & 1200m × 300m × 60m & Idealized &  & DOI: 10.1016/j.advwatres.2012.09.005 \\ 
-de Rooij et al. &  A particle-tracking scheme for simulating pathlines in coupled surface-subsurface flows & AWR & 2013 & SLIM-FAST & Model Development (surface particles) & Hillslope & Idealized &  & DOI: 10.1016/j.advwatres.2012.07.022  \\
-Ferguson and Maxwell & Human impacts on terrestrial hydrology: Climate change versus pumping and irrigation & ERL & 2012 & CLM & Agriculture & Watershed (1600 km2) & Little Washita, OK &  & DOI: 10.1088/1748-9326/7/4/044022 \\
-Siirila and Maxwell  & A new perspective on human health risk assessment: Development of a time dependent methodology and the effect of varying exposure durations & STE & 2012 & SLIM-FAST & Risk Assessment & 4000m × 1000m × 100m & Idealized &  & DOI: 10.1016/j.scitotenv.2012.05.030  \\
-Siirila and Maxwell & Evaluating effective reaction rates of kinetically driven solutes in large-scale, statistically anisotropic media: Human health risk implications & WRR & 2012 & SLIM-FAST & Risk Assessment & 4000m × 1000m × 100m & Idealized &  & DOI: 10.1029/2011WR011516  \\
-Siirila et al. & A quantitative methodology to assess the risks to human health from CO2 leakage into groundwater & AWR & 2012 & SLIM-FAST & Risk Assessment & 4000m × 1000m × 100m & Idealized &  & DOI: 10.1016/j.advwatres.2010.11.005  \\
-Meyerhoff and Maxwell & Quantifying the effects of subsurface heterogeneity on hillslope runoff using a stochastic approach & HJ & 2011 & Subsurface Heterogeneity (runoff generation) & Hillslope (300m × 300m × 6m) & Idealized &  &  &  & DOI: 10.1007/s10040-011-0753-y  \\
-Williams and Maxwell & Propagating subsurface uncertainty to the atmosphere using fully-coupled, stochastic simulations & JH & 2011 & WRF & Atmosphere & 15km × 15km × 5m & Idealized &  &  & DOI: 10.1175/2011JHM1363.1 \\
-Ferguson and Maxwell & Hydrologic and land-energy feedbacks of agricultural water management practices & ERL & 2011 & CLM & Agriculture & Watershed (1600 km2) & Little Washita, OK &  & DOI: 10.1088/1748-9326/6/1/014006 \\
-Daniels et al. & An algorithm for flow direction enforcement using subgrid-scale stream location data & JHE & 2011 & Streamflow & Owens Valley, CA floodplain & DOI: 10.1061/(ASCE)HE.1943-5584.0000340 \\
-Atchley and Maxwell & Influences of subsurface heterogeneity and vegetation cover on soil moisture, surface temperature, and evapotranspiration at hillslope scales. & HJ & 2011 & CLM & Subsurface Heterogeneity (land surface processes) & Hillslope (250m × 250m × 2m) & Idealized &  &  & DOI: 10.1007/s10040-010-0690-1  \\
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c | c }
+\bf{Author, Journal, Year} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} & \bf{Ref.} \\   
+\hline{}
+   
+de Rooij et al. AWR (2013) & SLIM-FAST & Model Development (surface particles) & Hillslope & Idealized  &  &  & X & & \cite{deRooij13}   \\
+Ferguson and Maxwell ERL (2012) & CLM & Agriculture & Watershed (1600 km2) & Little Washita,  &  &  & X & & \cite{Ferguson12} \\
+Siirila and Maxwell STOTEN (2012) & SLIM-FAST & Risk Assessment & 4000m × 1000m × 100m & Idealized  & X &  &  & & \cite{Siirila12c} \\
+Siirila and Maxwell WRR (2012) & SLIM-FAST & Risk Assessment & 4000m × 1000m × 100m & Idealized  & X &  &  & & \cite{Siirila12b}  \\
+Siirila et al. AWR (2012) & SLIM-FAST & Risk Assessment & 4000m × 1000m × 100m & Idealized  & X &  &  & & \cite{Condon13b} \\
+Meyerhoff and Maxwell HJ (2011) & & Subsurface Heterogeneity (runoff generation) & Hillslope (300m × 300m × 6m) & Idealized  & X &  & X & & \cite{Meyerhoff11} \\
+Williams and Maxwell JHM (2011) & WRF & Atmosphere & 15km × 15km × 5m & Idealized & X &  & X & & \cite{Williams11}  \\
+Ferguson and Maxwell ERL (2011) & CLM & Agriculture & Watershed (1600 km2) & Little Washita, OK  &  &  & X & & \cite{Ferguson11}  \\
+Daniels et al. JHE (2011) & & Regional & Streamflow & Owens Valley, CA floodplain  &  &  & X & & \cite{Daniels11}  \\
+Atchley and Maxwell HJ (2011) & CLM & Subsurface Heterogeneity (land surface processes) & Hillslope (250m × 250m × 2m) &Golden, CO  & X &  & X & & \cite{Atchely11}  \\
+Maxwell et al. MWR (2011) & WRF & Atmosphere & Watershed (1600 km2) & Little Washita, OK  &  &  & X & & \cite{Maxwell11} \\
+Rihani et al. WRR (2010) & CLM & Subsurface Heterogeneity (land energy fluxes) & Hillslope (5000m × 100m × 310m/80m) & Idealized  &  &  & X & & \cite{Rihani10}  \\
 \end{tabular}
 \label{pfref2}
 \end{table}
 
 \begin{table} \center
+\renewcommand{\arraystretch}{2.5}
+\center
+
 \caption{List of \parflow{} references with application and process details (cont.).}
 
-\begin{tabular}{ p{1cm} p{2cm} p{0.75cm} p{0.5cm} p{1cm} p{1.5cm} p{1cm} p{1cm} p{0.25cm} p{0.25cm} p{0.25cm} p{0.25cm} p{1cm} }
-\bf{Author(s)} & \bf{Title} & \bf{Journal} & \bf{Year} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} & \bf{Access/DOI} \\   
-Maxwell et al. & Development of a coupled groundwater-atmospheric model & MWR & 2011 & WRF & Atmosphere & Watershed (1600 km2) & Little Washita, OK &  & DOI: 10.1175/2010MWR3392.1 \\
-Rihani et al. & Coupling groundwater and land-surface processes: Idealized simulations to identify effects of terrain and subsurface heterogeneity on land surface energy fluxes & WRR & 2010 & CLM & Subsurface Heterogeneity (land energy fluxes) & Hillslope (5000m × 100m × 310m/80m) & Idealized &  & DOI: 10.1029/2010WR009111  \\
-Maxwell & Infiltration in arid environments: Spatial patterns between subsurface heterogeneity and water-energy balances & VZJ & 2010 & CLM & Subsurface Heterogeneity (infiltration) & Hillslope (1000m× 50m) & Idealized (Nevada Test Site) &  &  & DOI: 10.2136/vzj2010.0014  \\
-Ferguson and Maxwell & The role of groundwater in watershed response and land surface feedbacks under climate change & WRR & 2010 & CLM & Agriculture & Watershed (1600 km2) & Little Washita, OK &  &  &  & DOI: 10.1029/2009WR008616 \\
-Kollet et al. & Proof-of-concept of regional scale hydrologic simulations at hydrologic resolution utilizing massively parallel computer resources & WRR & 2010 & CLM & Computational Scaling & 45m x 45m & Idealized &  &  &  &  & DOI: 10.1029/2009WR008730 \\
-Sulis et al. & A comparison of two physics-based numerical models for simulating surface water-groundwater interactions & AWR & 2010 & - & Model Comparison (CATHY) & 400m × 320m × 5m & Idealized &  & DOI: 10.1016/j.advwatres.2010.01.010 \\
-Kollet et al. & The Influence of Rain Sensible Heat and Subsurface Energy Transport on the Energy Balance at the Land Surface & VZJ & 2009 & CLM & Heat Transport (ParFlowE) & Column & Idealized &  & DOI:10.2136/vzj2009.0005  \\
-Frei et al. & Patterns and dynamics of river-aquifer exchange with variably-saturated flow using a fully-coupled model & JH & 2009 & - & Groundwater-Surface water exchange & 2 km by 5.5 km & Idealized river corridor &  & DOI: 10.1016/j.jhydrol.2009.06.038 \\
-Maxwell and Kollet & Interdependence of groundwater dynamics and land-energy feedbacks under climate change & NG & 2008 & CLM & Climate Change (land-energy feedbacks to groudnwater) & Watershed (1600 km2) & Little Washita watershed &  & DOI: 10.1038/ngeo315 \\
-Kollet and Maxwell & Demonstrating fractal scaling of baseflow residence time distributions using a fully-coupled groundwater and land surface model & GRL & 2008 & SLIM-FAST & Residence Time Distributions  & Watershed (1600 km2) & Little Washita watershed &  &  & DOI: 10.1029/2008GL033215  \\
-Maxwell and Kollet & Quantifying the effects of three-dimensional subsurface heterogeneity on Hortonian runoff processes using a coupled numerical, stochastic approach & AWR & 2008 & - & Subsurface Heterogeneity (runoff) & Hillslope (3000  × 3000m) & Idealized &  &  &  & DOI: 10.1016/j.advwatres.2008.01.020 \\
-Kollet and Maxwell & Capturing the influence of groundwater dynamics on land surface processes using an integrated, distributed watershed model & WRR & 2008 & CLM & Subsurface Heterogeneity (land energy fluxes) & Watershed (1600 km2) & Little Washita watershed &  &  & DOI: 10.1029/2007WR006004 \\
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c | c }
+\bf{Author, Journal, Year} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} & \bf{Ref.} \\   
+\hline{}
+   
+Maxwell ZJ (2010) & CLM & Subsurface Heterogeneity (infiltration) & Hillslope (1000m× 50m) & Rainer Mesa (Nevada Test Site) & X &  & X & & \cite{Maxwell10}    \\
+Ferguson and Maxwell WRR (2010) & CLM & Agriculture & Watershed (1600 km2) & Little Washita, OK &  &  & X & & \cite{Ferguson10}  \\
+Kollet et al. WRR (2010) & CLM & Computational Scaling & 45m x 45m & Idealized & X &  & X & & \cite{Kollet10} \\
+Sulis et al. AWR (2010) & - & Model Comparison (CATHY) & 400m × 320m × 5m & Idealized &  &  & X & & \cite{Sulis10}  \\
+Kollet et al.VZJ (2009) & CLM & Heat Transport (ParFlowE) & Column & Wagineng, NL &  &  & X & & \cite{Kollet09}   \\
+Frei et al. JoH (2009) & - & Groundwater-Surface water exchange & 2 km by 5.5 km & Consumnes River & X &  & X & & \cite{Frie09} \\
+Maxwell and Kollet NGeo (2008) & CLM & Climate Change (land-energy feedbacks to groudnwater) & Watershed (1600 km2) & Little Washita, OK &  &  & X & & \cite{MK08a}  \\
+Kollet and Maxwell GRL (2008) & SLIM-FAST & Residence Time Distributions  & Watershed (1600 km2) & Little Washita, OK &  &  & X & & \cite{KM08b} \\
+Maxwell and Kollet AWR (2008) & - & Subsurface Heterogeneity (runoff) & Hillslope (3000  × 3000m) & Idealized & X &  & X & & \cite{MK08b} \\
+Kollet and Maxwell WRR (2008) & CLM & Subsurface Heterogeneity (land energy fluxes) & Watershed (1600 km2) & Little Washita watershed &  &  & X & & \cite{KM08a} \\
 \end{tabular}
 \label{pfref3}
 \end{table}
 
 \begin{table} \center
+\renewcommand{\arraystretch}{2.5}
+\center
+
 \caption{List of \parflow{} references with application and process details (cont.).}
 
-\begin{tabular}{ p{1cm} p{2cm} p{0.75cm} p{0.5cm} p{1cm} p{1.5cm} p{1cm} p{1cm} p{0.25cm} p{0.25cm} p{0.25cm} p{0.25cm} p{1cm} }
-\bf{Author(s)} & \bf{Title} & \bf{Journal} & \bf{Year} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} & \bf{Access/DOI} \\   
+\begin{tabular}{ l  p{1.5cm} p{2cm} p{1.5cm} p{1.5cm} | c | c | c | c | c }
+\bf{Author, Journal, Year} & \bf{Coupled Model} & \bf{Application} & \bf{Scale} & \bf{Domain} & \bf{TB} & \bf{TFG} & \bf{VS} & \bf{Vdz} & \bf{Ref.} \\   
+\hline{}
 
-Maxwell et al. & Revistiting the Cape Cod Bacteria Injection Experiment Using a Stochastic Modeling Approach & ES\&T & 2007 & particles & Subsurface Transport & 17m × 10.2m × 3.8m & Cape Cod & DOI: 10.1021/es062693a \\
-Maxwell et al. & The groundwater-land-surface-atmosphere connection: soil moisture effects on the atmospheric boundary layer in fully-coupled simulations & AWR & 2007 & ARPS, CLM & Model Development (ARPS) & Watershed (1600 km2) & Little Washita watershed &  &  & DOI: 10.1016/j.advwatres.2007.05.018  \\
-Kollet and Maxwell. & Integrated surface-groundwater flow modeling: A free-surface overland flow boundary condition in a parallel groundwater flow model & AWR & 2006 & - & Model Development (Overland Flow) \& Subsurface Heterogeneity (shallow overland flow) & Catchment (1.62 × 1km) & Idealized &  &  &  & DOI: 10.1016/j.advwatres.2005.08.006 \\
-Maxwell and Miller & Development of a coupled land surface and groundwater model & JH & 2005 & CLM & Model Development (CLM) & Column &  &  & ? \\
-Ajami et al. & Assessing the impact of model spin-up on surface water-groundwater interactions using an integrated hydrologic model & WRR & 2014 & CLM & Spin Up (initial conditions) & Watershed (208 km2) & Ringkobing Fjord subcatchment &  &  & DOI: 10.1002/2013WR014258 \\
-Shrestha et al. & A scale-consistent Terrestrial Systems Modeling Platform based on COSMO, CLM and ParFlow & MWR & 2014 & COSMO-CLM & Model Development (TerrSysMP) & watershed (64 × 64 km and 150 × 150 km) & Idealized; Rur catchment &  &  & DOI: 10.1175/MWR-D-14-00029.1 \\
-Burger et al. & Introduction of a web service for cloud computing with the integrated hydrologic simulation platform ParFlow & CG & 2012 & ParFlow Web & Model Development (ParFlow Web) &  & DOI:10.1016/j.cageo.2012.01.007 \\
-Kollet & Influence of soil heterogeneity on evapotranspiration under shallow water table conditions: transient, stochastic simulations & ERL & 2009 & CLM & Subsurface Heterogeneity (evapotranspiration) & Column; 45m × 45m & Idealized &  &  & DOI:10.1088/1748-9326/4/3/035007 \\
+Maxwell et al.ES\&T (2007) & particles & Subsurface Transport & 17m × 10.2m × 3.8m & Cape Cod & X &  &  & & \cite{MWH07}  \\
+Maxwell et al.AWR (2007) & ARPS, CLM & Model Development (ARPS) & Watershed (1600 km2) & Little Washita watershed &  &  & X & & \cite{MCK07}  \\
+Kollet and Maxwell AWR (2006) & - & Model Development (Overland Flow) \& Subsurface Heterogeneity (shallow overland flow) & Catchment (1.62 × 1km) & Idealized & X &  & X & & \cite{KM06}  \\
+Maxwell and Miller JH (2005) & CLM & Model Development (CLM) & Column & Valdai, Russia &  &  & X & & \cite{MM05}  \\
+Ajami et al. WRR (2014) & CLM & Spin Up (initial conditions) & Watershed (208 km2) & Ringkobing Fjord subcatchment &  &  & X & & \cite{Ajami14}  \\
+Shrestha et al.MWR (2014) & COSMO-CLM & Model Development (TerrSysMP) & watershed (64 × 64 km and 150 × 150 km) & Idealized; Rur catchment &  & X & X & & \cite{KM08a} \\
+Burger et al. CAGEO (2012) & ParFlow Web & Model Development (ParFlow Web)&  &  & &  & X &  & \cite{Burger12}  \\
+Kollet ERL (2009) & CLM & Subsurface Heterogeneity (evapotranspiration) & Column; 45m × 45m & Idealized &  X &  & X & & \cite{K09} \\
 \end{tabular}
 \label{pfref4}
 \end{table}
