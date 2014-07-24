@@ -2371,7 +2371,12 @@ patch are used.
 The choice {\bf FluxFile} defines a flux boundary condition that is read form a
 properly distributed .pfb file defined on a grid consistent with the pressure
 field grid.  Only the values needed for the patch are used.
-The choices {\bf OverlandFlow} and {\bf OverlandFlowPFB} both turn on fully-coupled overland flow routing as described in \cite{KM06} and in \S~\ref{Overland Flow}.  The key {\bf OverlandFlow} corresponds to a {\bf Value} key with a positive or negative value, to indicate uniform fluxes (such as rainfall or evapotranspiration) over the entire domain while the key {\bf OverlandFlowPFB} allows a \code{.pfb} file to contain grid-based, spatially-variable fluxes.
+The choices {\bf OverlandFlow} and {\bf OverlandFlowPFB} both turn on 
+fully-coupled overland flow routing as described in \cite{KM06} and in \S~\ref{Overland Flow}.  
+The key {\bf OverlandFlow} corresponds to a {\bf Value} key with a positive or negative value, 
+to indicate uniform fluxes (such as rainfall or evapotranspiration) over the entire domain 
+while the key {\bf OverlandFlowPFB} allows a \code{.pfb} file to contain grid-based, 
+spatially-variable fluxes.
 The choice {\bf ExactSolution} specifies that an exact known solution 
 is to be applied as a
 Dirichlet boundary condition on the respective patch.  Note that this does not
@@ -4064,9 +4069,12 @@ pfset Solver.CLM.IrrigationThreshold 0.2
 \end{verbatim}\end{display}
 
 \pfkey{integer}{Solver.CLM.ReuseCount}{1}
-{How many times to reuse a CLM input. For example timestep=1, 
+{How many times to reuse a \code{CLM} atmospheric forcing file input. For example timestep=1, 
 reuse =1 is normal behavior but reuse=2 and timestep=0.5 subdivides 
-the time step using the same CLM input for both halves instead of needing two files.} 
+the time step using the same \code{CLM} input for both halves instead of needing two files.
+This is particually useful for large, distributed runs when the user wants to run \parflow{}
+at a smaller timestep than the \code{CLM} forcing.  Forcing files will be re-used and
+total fluxes adjusted accordingly without needing duplicate files.} 
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.ReuseCount      5
 \end{verbatim}\end{display}
@@ -4100,6 +4108,18 @@ where \emph{p} is the processor number.}
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.DailyRST    False
 \end{verbatim}\end{display}
+
+\pfkey{string}{Solver.CLM.SingleFile}{False}
+{Controls whether \parflow{} writes all \code{CLM} output variables as a single file per time step.
+When "True", this combines the output of all the CLM output variables into a special multi-layer 
+PFB with the file extension ".C.pfb". The first 13 layers correspond to the 2-D CLM
+outputs and the remaining layers are the soil temperatures in each layer. For example, 
+a model with 4 soil layers will 
+create a SingleFile CLM output with 17 layers at each time step.} 
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.SingleFile   True
+\end{verbatim}\end{display}
+
 
 
 %=============================================================================
