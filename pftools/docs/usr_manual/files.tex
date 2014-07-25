@@ -3849,6 +3849,35 @@ Choices for this key include {\bf none} and {\bf CLM}. Note that \code{CLM} must
 pfset Solver.LSM CLM
 \end{verbatim}\end{display}
 
+%=============================================================================
+%=============================================================================
+
+\subsection{Spinup Options}
+\label{Spinup Options}
+
+These keys allow for \emph{reduced or dampened physics} during model spinup or initialization. They are {\bf only} intended
+for these initialization periods, {\bf not} for regular runtime. 
+
+\pfkey{integer}{OverlandFlowSpinUp}{0}
+{This key specifies that a \emph{simplified} form of the overland flow boundary condition (Equation \ref{eq:overland_bc}) be used in place of the full equation.
+This formulation \emph{removes lateral flow} and drives and ponded water pressures to zero.  While this can be helpful in spinning up the subsurface,
+this is no longer coupled subsurface-surface flow.  If set to zero (the default) this key behaves normally. 
+}
+\begin{display}\begin{verbatim}
+pfset OverlandFlowSpinUp   1
+\end{verbatim}\end{display}
+
+\pfkey{double}{OverlandFlowSpinUpDampP1}{0.0}
+{This key provides exponential dampening to the pressure relationship the overland flow equation }
+\begin{display}\begin{verbatim}
+pfset OverlandSpinupDampP1  10.0
+\end{verbatim}\end{display}
+
+\pfkey{double}{OverlandFlowSpinUpDampP2}{0.0}
+{This key provides exponential dampening to the pressure relationship in the overland flow equation }
+\begin{display}\begin{verbatim}
+pfset OverlandSpinupDampP2  0.1
+\end{verbatim}\end{display}
 
 %======
 % new keys for CLM distributed forcing, restarts, etc here  @RMM
@@ -3875,15 +3904,15 @@ pfset Solver.CLM.IstepStart     8761
 
 \pfkey{String}{Solver.CLM.MetForcing}{no default}
 {This key specifies defines whether 1D (uniform over  
-the domain) or 2D (spatially distributed) forcing data is used.  Choices for this key are {\bf 1D} and {\bf 2D}. This key  
-has no default so the user {\em must} set it to 1D or 2D. Failure to set this key will cause \code{CLM} to still be run but with unpredictable values causing \code{CLM} to eventually crash. 1D meteorological forcing files are text files with single columns for each variable and each timestep per row, while 2D forcing files are distributed \parflow{} binary files, one for each variable and timestep.  File names are specified in the {\bf Solver.CLM.MetFileName} variable below. Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
+the domain), 2D (spatially distributed) or 3D (spatially distributed with multiple timesteps per \code{.pfb} forcing file) forcing data is used.  Choices for this key are {\bf 1D}, {\bf 2D} and {\bf 3D}. This key  
+has no default so the user {\em must} set it to 1D, 2D or 3D. Failure to set this key will cause \code{CLM} to still be run but with unpredictable values causing \code{CLM} to eventually crash. 1D meteorological forcing files are text files with single columns for each variable and each timestep per row, while 2D forcing files are distributed \parflow{} binary files, one for each variable and timestep.  File names are specified in the {\bf Solver.CLM.MetFileName} variable below. Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.MetForcing   2D       
 \end{verbatim}\end{display}
 
 \pfkey{String}{Solver.CLM.MetFileName}{no default}
-{This key specifies defines the file name for 1D  or 2D forcing data.  1D meteorological forcing files are text files with single columns for each variable and each timestep per row, while 2D forcing files are distributed \parflow{} binary files, one for each variable and timestep. Behavior of this key is different for 1D and 2D cases, as sepcified by the {\bf Solver.CLM.MetForcing} key above. For 1D cases, it is the {\em FULL FILE NAME}. Note that in this configuration, this forcing file is {\bf not} distributed,  the user does not provide copies such as \code{narr.1hr.txt.0}, \code{narr.1hr.txt.1} for each processor.  \parflow{} only needs the single original file ({\em e.g.} narr.1hr.txt).  For 2D cases, this key is the {\em BASE FILE NAME} for the 2D forcing files, currently set to NLDAS, with individual files determined as follows \code{NLDAS.<variable>.<time step>.pfb}. Where the \code{<variable>} is the forcing variable and \code{<timestep>} is the integer file counter corresponding to {\em istep} above. Forcing is needed for following variables:
+{This key specifies defines the file name for 1D, 2D or 3D forcing data.  1D meteorological forcing files are text files with single columns for each variable and each timestep per row, while 2D and 3D forcing files are distributed \parflow{} binary files, one for each variable and timestep (2D) or one for each variable and \emph{multiple} timesteps (3D). Behavior of this key is different for 1D and 2D and 3D cases, as sepcified by the {\bf Solver.CLM.MetForcing} key above. For 1D cases, it is the {\em FULL FILE NAME}. Note that in this configuration, this forcing file is {\bf not} distributed,  the user does not provide copies such as \code{narr.1hr.txt.0}, \code{narr.1hr.txt.1} for each processor.  \parflow{} only needs the single original file ({\em e.g.} narr.1hr.txt).  For 2D cases, this key is the {\em BASE FILE NAME} for the 2D forcing files, currently set to NLDAS, with individual files determined as follows \code{NLDAS.<variable>.<time step>.pfb}. Where the \code{<variable>} is the forcing variable and \code{<timestep>} is the integer file counter corresponding to {\em istep} above. Forcing is needed for following variables:
 \begin{description}
 \item[{\bf DSWR}: ] Downward Visible or Short-Wave radiation $[W/m^2]$.
 \item[{\bf DLWR}: ] Downward Infa-Red or Long-Wave radiation $[W/m^2]$
@@ -3901,12 +3930,19 @@ pfset Solver.CLM.MetFileName                             narr.1hr.txt
 \end{verbatim}\end{display}
 
 \pfkey{String}{Solver.CLM.MetFilePath}{no default}
-{This key specifies defines the location of 1D or 2D forcing data. For 1D cases, this is the path to a single forcing file ({\em e.g.}  
-\code{narr.1hr.txt}). For 2D cases, this is the path to the directory  
+{This key specifies defines the location of 1D, 2D or 3D forcing data. For 1D cases, this is the path to a single forcing file ({\em e.g.}  
+\code{narr.1hr.txt}). For 2D and 3D cases, this is the path to the directory  
 containing all forcing files. Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.MetFilePath		"path/to/met/forcing/data/"
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Solver.CLM.MetFileNT}{no default}
+{This key specifies the number of timesteps per file for 3D forcing data. 
+}
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.MetFileNT	24	
 \end{verbatim}\end{display}
 
 \pfkey{string}{Solver.WriteSiloCLM}{False}
