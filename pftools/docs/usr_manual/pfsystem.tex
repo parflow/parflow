@@ -6,11 +6,15 @@
 
 The \parflow{} system is still evolving, but here we discuss how to define the problem in
 \S~\ref{Defining the Problem}, how to run \parflow{} in
-\S~\ref{Running ParFlow}, and options for to visualizing the results in
-\S~\ref{Visualizing Output}.  There is also a utility providing a set
-of functions for manipulating \parflow{} data.  This utility is discussed in 
-\S~\ref{Manipulating Data}.  Lastly, \S~\ref{Test Directory} discusses the
-contents of a directory of test problems provided with \parflow{}.
+\S~\ref{Running ParFlow}, and restart a simulation in \S~\ref{Restarting a Run}.
+We also cover options for to visualizing the results in
+\S~\ref{Visualizing Output} and summarize the contents of a directory of test problems 
+provided with \parflow{} in \S~\ref{Test Directory}.  Finally in \S~\ref{Tutorial}
+we walk through two \parflow{} input scripts in detail. 
+
+
+The reader is also referred to \S~\ref{Manipulating Data}
+for a detailed listing of the of functions for manipulating \parflow{} data.  
 
 %=============================================================================
 %=============================================================================
@@ -18,22 +22,42 @@ contents of a directory of test problems provided with \parflow{}.
 \section{Defining the Problem}
 \label{Defining the Problem}
 
-Defining the problem may involve several steps.
-One of these steps may require definition complicated geometries such as hydrostratigraphic layers.
-These geometries are then converted to the
-\file{.pfsol} file format (\S~\ref{ParFlow Solid Files (.pfsol)})
-using the appropriate \pftools{} conversion utility
-(\S~\ref{Manipulating Data}).
+There are many ways to define a problem in \parflow{}, here we summarize the general 
+approach for defining a domain (\S~\ref{Defining a domain}) and simulating
+ a real watershed (\S~\ref{Defining a Real domain}). 
 
-The "main" \parflow{} input file is the \file{.tcl} file.
+In all cases The "main" \parflow{} input file is the \file{.tcl} file.
 This input file is a TCL script with some special routines to
 create a database which is used as the input for \parflow{}.
 See \S~\ref{Main Input File (.tcl)} for details on the format
 of this file.
 The input values into \parflow{} are defined by a key/value pair.  For
 each key you provide the associated value using the \code{pfset} command
-inside the input script.  To set the computational grid for the problem
-you would enter:
+inside the input script. 
+
+Since the input file is a TCL script you can use any feature of TCL to
+define the problem.  This manual will make no effort to teach TCL so
+refer to one of the available TCL manuals for more information
+(``Practical Programming in TCL and TK'' by Brent Welch \cite{welch.95} 
+is a good starting point).  
+This is NOT required, you can get along fine without understanding TCL/TK.
+
+Looking at the example programs in the \file{test} directory (\S~\ref{Test Directory}) and 
+going through the annotated input scripts included in this manual ( \S~\ref{Tutorial}) is 
+one of the best ways to understand what a \parflow{} input file looks like. 
+
+\subsection{Basic Domain Definition}
+\label{Defining a domain}
+
+ParFlow can handel complex geometries and defining the problem may involve several steps.
+Users can specify simple box domains directly in the \file{tcl} script. If a more complicated
+domain is required, the user may convert geometries into the \file{.pfsol} file format 
+(\S~\ref{ParFlow Solid Files (.pfsol)}) using the appropriate \pftools{} conversion utility 
+(\S~\ref{Manipulating Data}).  Alternatively, the topography can be specified using 
+\file{.pfb} files of the slopes in the x and y directions.
+
+Regardless of the approach the user must set the computational grid within the \file{.pfb} 
+script as follows:
 
 \begin{display}\begin{verbatim}
 #-----------------------------------------------------------------------------
@@ -70,17 +94,125 @@ pfset Geom.domain.Patches "very_long_name_1 very_long_name_2 very_long_name_3 \
                            very_long_name_4 very_long_name_5 very_long_name_6"
 \end{verbatim}\end{display}
 
+%%%%%
+\subsection{Setting Up a Real Domain}
+\label{Defining a Real domain}
 
-Since the input file is a TCL script you can use any feature of TCL to
-define the problem.  This manual will make no effort to teach TCL so
-refer to one of the available TCL manuals for more information
-(``Practical Programming in TCL and TK'' by Brent Welch \cite{welch.95} 
-is a good starting point).  
-This is NOT required, you can get along fine without understanding TCL/TK.
+This section provides a brief outline of a sample workflow for setup \parflow{} \code{CLM} 
+simulation of a real domain. Of course there are many ways to accomplish this and users
+are encouraged to develop a workflow that works for them. 
 
-Looking at the example programs in the \file{test} directory is one of
-the best ways to understand what a \parflow{} input file looks like. See
-\S~\ref{Test Directory}.  
+This example assues that you are running with \parflow{} \code{CLM} and it uses 
+slope files and an indicator file to define the topography and geologic units of the domain. 
+An alternate approach would be to define geometries by building a \file{.pfsol} file 
+(\S~\ref{ParFlow Solid Files (.pfsol)}) using the appropriate \pftools{} conversion 
+utility(\S~\ref{Manipulating Data}).
+
+The general approach is as follows:
+
+\begin{enumerate}
+   \item Gather input datasets to define the domain. First decide the resolution that you 
+   would like to simulate at. Then gather the following datasets at the appropriate resolution 
+   for your domain:
+   \begin{enumerate}
+		\item Elevation (DEM)
+	    \item Soil data for the near surface layers 
+	    \item Geologic maps for the deeper subsurface
+	    \item Land Cover
+	\end{enumerate}
+	
+   \item Create Consistent gridded layers that are all clipped to your domain and have 
+  the same number of grid cells
+
+   \item Convert gridded files to \file{.pfb} (\S~\ref{ParFlow Binary Files (.pfb)}). One way 
+   to accomplish this is by reformatting the gridded outputs to the correct \parflow{}
+   \file{.sa} order (\S~\ref{ParFlow Simple ASCII Files (.sa and .sb)}) and to convert
+   the \file{.sa} file to \file{.pfb} using the conversion tools (see \S~\ref{common_pftcl}
+   Example 1)
+  
+   \item Calculate slopes in the x and y directions from the elevation dataset. This can be 
+   done with the built in tools as shown in \S~\ref{common_pftcl} Example 5. 
+   In most cases some additional processing of  the DEM will be required to ensure that 
+   the drainage patterns are correct. To check this  you  can run a "parking lot test" by 
+   setting the permeability of surface to almost zero and adding a flux to the top surface.
+   If the results from this test don't look right (i.e. your runoff patterns don't match 
+   what you expect) you will need to go back and modify your DEM.  The built in \parflow{}
+   tools pitfall and flatfill can be used to address some issues. 
+   (These tools are also shown in \S~\ref{common_pftcl} Example 5). 
+
+   \item Create and indicator file for the subsurface. The indicator file is a 3D \file{.pfb} 
+   file with the same dimensions as your domain that has an integer for every cell 
+   designating which unit it belongs to. The units you define will correspond to the soil 
+   types and geologic units from your input datasets. 
+
+   \item Determine the hydrologic properties for each of the subsurface units defined in 
+   the indicator file. You will need: Permeability, specific storage, porosity and 
+   vanGenuchten parameters. 
+
+   \item At this you are ready to run a \parflow{} model without \code{CLM} and if you 
+   don't need to include the land surface model in your simulations you can ignore the 
+   following steps. Either way, at this point it is advisable to run a "spinup" simulation 
+   to initialize the water table. There are several ways to approach this. One way is to 
+   start with the water table at a constant depth and run for 
+   a long time with a constant recharge forcing until the water table reaches a steady 
+   state.
+
+   \item Convert land cover classifications to the IGBP land cover classes that are used 
+   in CLM. 
+   
+   \begin{itemize}
+		 \item[] 1. Evergreen Needleleaf Forest
+		 \item[] 2. Evergreen Broadleaf Forest
+		 \item[] 3. Deciduous Needleleaf Forest
+		 \item[] 4. Deciduous Broadleaf Forest
+		 \item[] 5. Mixed Forests
+		 \item[] 6. Closed Shrublands
+		 \item[] 7. Open Shrublands
+		 \item[] 8. Woody Savannas
+		 \item[] 9. Savannas
+     	 \item[] 10. Grasslands
+		 \item[] 11. Permanent Wetlands
+		 \item[] 12. Croplands
+		 \item[] 13. Urban and Built-Up
+		 \item[] 14. Cropland/Natural Vegetation Mosaic
+		 \item[] 15. Snow and Ice
+		 \item[] 16. Barren or Sparsely Vegetated
+		 \item[] 17. Water
+		 \item[] 18. Wooded Tundra
+  \end{itemize}
+
+   \item Create a \code{CLM} vegm file that designates the land cover fractions for every 
+   cell (Refer to the \file{clm input} directory in the Washita Example for an sample of 
+   what a \file{vegm} file should look like).
+
+   \item Create a \code{CLM} driver file to set the parameters for the CLM model (Refer to the 
+   \file{clm input} directory in the Washita Example for a sample of a \code{CLM} driver file).
+
+   \item Assemble meteorological forcing data for your domain. CLM requires the following 
+   variables: 
+   
+   \begin{itemize}
+		\item DLWR: Long wave radiation (W/m2)
+		\item APCP: Precipitation (mm/s)
+		\item Temp: Air Temperature (K)
+		\item UGRD: East-west wind speed (m/s)
+		\item SPFH:	Specific humidity (kg/kg)
+	\end{itemize}
+	
+	If you choose to do spatially heterogenous forcings you will need to generate separate 
+	files for each variable. The files should be formatted in the standard ParFlow format 
+	with the third (i.e. z dimension) as time. If you are doing hourly simulations it is 
+	standard practice to put 24 hours in one file, but you can decide how many time steps per 
+	file. For an example of heterogenous forcing files refer to the \file{NLDAS} directory
+	in the Washita Example)
+
+	Alternatively, if you would like to force the model with spatially homogenous forcings, 
+	then a single file can be provided where each variable is a column and rows designate 
+	time steps. 
+
+   \item Run your simulation!
+   
+\end{enumerate}
 
 %=============================================================================
 %=============================================================================
@@ -245,6 +377,8 @@ as templates in making new files and for use in testing the code.  These files s
 
 \item{\file{test_x.tcl} A test problem for the Richards' solver that compares output to an analytical solution.}
 
+\item{\file{/washita/tcl_scripts/LW_Test.tcl} A three day simulation of the Little Washita domain using \parflow{} \code{CLM} with 3D forcings. }
+
 \end{description}
 
 %=============================================================================
@@ -253,6 +387,43 @@ as templates in making new files and for use in testing the code.  These files s
 \section{Annotated Input Scripts}
 \label{Tutorial}
 
+This section contains two annotated input scripts:
+
+\begin{itemize}
+	\item \S~\ref{Harvey Flow Example} contains the harvey flow example (\file{harvey.flow.tcl})
+	which is an idealized domain with a heterogenous subsurface. The example also demonstrates how to generate 
+	multiple realizations of the subsurface and add pumping wells. 
+	 
+	\item \S~\ref{Little Washita Example} contains the Little Washita example (\file{LW_Test.tcl})
+	which simulates a moderately sized (41km by 41km) real domain using \parflow{} \code{CLM}
+	with 3D meteorological forcings.
+	 
+\end{itemize}
+
+To run \parflow{}, you use a script written in Tcl/TK.  This script has a lot of flexibility, as it is somewhere in between a program 
+and a user interface.  The tcl script gives \parflow{} the data it requires (or tells \parflow{} where to find or read in that data) 
+and also tells \parflow{} to run.
+
+To run the simulation:
+\begin{enumerate}
+\item{make any modifications to the tcl input script (and give a new name, if you want to)}
+\item{save the tcl script}
+\item{For Linux/Unix/OSX: invoke the script from the command line using the tcl-shell, this looks like: \file{>tclsh filename.tcl}}
+\item{Wait patiently for the command prompt to return (Linux/Unix/OSX) indicating that \parflow{} has finished.  Intermediate files are written as the simulation runs, however there is no other indication that \parflow{} is running.}
+\end{enumerate}
+
+To modify a tcl script, you right-click and select edit from the menu.  If you select open, you will run the script.
+
+{\bf Note:}  The units for {\bf K} (\i{m/d}, usually) are critical to the entire construction.  
+These length and time units for {\bf K} set the units for all other variables (input or generated, 
+throughout the entire simulation) in the simulation.  \parflow{} can set to solve using hydraulic 
+conductivity by literally setting density, viscosity and gravity to one (as is done in the script below).  
+This means the pressure units are in length (meters), so pressure is now so-called pressure-head.
+
+%________________________________
+\subsection{Harvey Flow Example}
+\label{Harvey Flow Example}
+
 This tutorial matches the \file{harvey_flow.tcl} file found in the \file{/test} directory.  This example is directly from \cite{MWH07}.  
 This example demonstrates how to set up and run a fully saturated flow problem with heterogeneous hydraulic conductivity using 
 the turning bands approach \cite{TAG89}. Given statistical parameters describing the geology of your site, 
@@ -260,28 +431,8 @@ this script can be easily modified to make as many realizations
 of the subsurface as you like, each different and yet having the same statistical parameters, useful for a Monte Carlo simulation.  This example
 is the basis for several fully-saturated \parflow{} applications \cite{Siirila12a,Siirila12b,Siirila12c,Atchley13a,Atchley13b,Cui14m}.
 
-To run \parflow{}, you use a script written in Tcl/TK.  This script has a lot of flexibility, as it is somewhere in between a program 
-and a user interface.  The tcl script gives \parflow{} the data it requires (or tells \parflow{} where to find or read in that data) 
-and also tells \parflow{} to run.
-
-As stated above, the tcl script for the Cape Cod simulation is called \file{harvey.flow.tcl}
-
 When the script runs, it creates a new directory named \file{/flow} right in the directory where the tcl script is stored.  \parflow{} then puts all its output in \file{/flow}.  Of course, you can change the name and location of this output directory by modifying the tcl script that runs \parflow{}.
 
-To run the simulation:
-\begin{enumerate}
-\item{make any modifications to the tcl input script (and give a new name, if you want to)}
-\item{save the tcl script}
-\item{For Linux/Unix/OSX: invoke the script from the command line using the tcl-shell, this looks like: \file{>tclsh harvey_flow.tcl}}
-\item{Wait patiently for the command prompt to return (Linux/Unix/OSX) indicating that \parflow{} has finished.  Intermediate files are written as the simulation runs, however there is no other indication that \parflow{} is running.}
-\end{enumerate}
-
-To modify a tcl script, you right-click and select edit from the menu.  If you select open, you will run the script.
-
-{\bf Note:}  The units for {\bf K} (\i{m/d}, usually) are critical to the entire construction.  These length and time units for {\bf K} set the units for all other variables (input or generated, throughout the entire simulation) in the simulation.  \parflow{} can set to solve using hydraulic conductivity by literally setting density, viscosity and gravity to one (as is done in the script below).  This means the pressure units are in length (meters), so pressure is now so-called pressure-head.
-
-\subsection{Harvey Flow Example}
-%%add text explaining example
 
 Now for the tcl script:
 
@@ -986,10 +1137,247 @@ You can then directly open \file{harvey_flow.#.out.perm_x.silo} (where \file{#} 
 You can also generate representations of head or pressure (or y or z permeability) throughout your domain using \parflow{} output files. 
 See the section on visualization for more details.
 
+%----------------------------------
 \subsection{Little Washita Example}
-%% Laura-- put your example text here
-%%
+\label{Little Washita Example}
+This tutorial matches the \file{LW_Test.tcl} file found in the \file{/test/washita/tcl_scripts} 
+directory and corresponds to \cite{Condon14a, Condon14b}.  This script runs the Little Washita domain for three days using \parflow{} \code{CLM} with 3D forcings. 
+The domain is setup using terrain following grid (\S~\ref{TFG}) and subsurface geologes are specified using a \file{.pfb} indicator file. 
+Input files were generated using the workflow detailed in \S~\ref{Defining a Real domain}. 
 
+Now for the tcl script:
+
+\begin{verbatim}
+#
+# Import the ParFlow TCL package
+#
+\end{verbatim}
+
+These first three lines are what link \parflow{} and the tcl script, thus allowing you to use a set of commands seen later, such as \code{pfset}, etc.
+
+\begin{verbatim}
+lappend auto_path $env(PARFLOW_DIR)/bin 
+package require parflow
+namespace import Parflow::*
+
+#-----------------------------------------------------------------------------
+# File input version number
+#-----------------------------------------------------------------------------
+pfset FileVersion 4
+\end{verbatim}
+
+These next lines set the parallel process topology.  The domain is divided in \emph{x},\emph{y} and \emph{z} by \code{P}, \code{Q} and \code{R}.
+The total number of processors is \code{P*Q*R}  (\emph{see} \S~\ref{Computing Topology}).
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Process Topology
+#----------------------------------------------------------------------------
+
+pfset Process.Topology.P     1
+pfset Process.Topology.Q     1
+pfset Process.Topology.R     1
+\end{verbatim}
+
+Before we really get started make a directory for our outputs and copy all of the required input files into the run directory. 
+These files will be described in detail later as they get used.
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Make a directory for the simulation and copy inputs into it
+#-----------------------------------------------------------------------------
+exec mkdir "Outputs"
+cd "./Outputs"
+
+# ParFlow Inputs
+file copy -force "../../parflow_input/LW.slopex.pfb" .
+file copy -force "../../parflow_input/LW.slopey.pfb" .
+file copy -force "../../parflow_input/IndicatorFile_Gleeson.50z.pfb"   .
+file copy -force "../../parflow_input/press.init.pfb"  .
+
+#CLM Inputs
+file copy -force "../../clm_input/drv_clmin.dat" .
+file copy -force "../../clm_input/drv_vegp.dat"  .
+file copy -force "../../clm_input/drv_vegm.alluv.dat"  . 
+
+puts "Files Copied"
+\end{verbatim}
+
+Next we set up the computational grid (\emph{see} \S~\ref{Defining the Problem} and  \S~\ref{Computational Grid}).
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Computational Grid
+#----------------------------------------------------------------------------
+\end{verbatim}
+
+Locate the origin in the domain.
+
+\begin{verbatim}
+pfset ComputationalGrid.Lower.X    0.0
+pfset ComputationalGrid.Lower.Y    0.0
+pfset ComputationalGrid.Lower.Z    0.0
+\end{verbatim}
+
+Define the size of the domain grid block.  Length units, same as those on hydraulic conductivity.
+
+\begin{verbatim}
+pfset ComputationalGrid.DX     1000.0
+pfset ComputationalGrid.DY     1000.0
+pfset ComputationalGrid.DZ     2.0
+\end{verbatim}
+
+Define the number of grid blocks in the domain.
+
+\begin{verbatim}
+pfset ComputationalGrid.NX      41
+pfset ComputationalGrid.NY      41
+pfset ComputationalGrid.NZ      50
+\end{verbatim}
+
+This next piece is comparable to a pre-declaration of variables.  These will be areas in our domain geometry. 
+The regions themselves will be defined later.  You must always have one that is the name of your entire domain.  
+If you want subsections within your domain, you may declare these as well. Here define two geometries one is the
+domain and one is for the indicator file (which will also span the entire domain).
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# The Names of the GeomInputs
+#-----------------------------------------------------------------------------
+pfset GeomInput.Names                     "box_input indi_input"
+\end{verbatim}
+
+Now you characterize the domain that you just pre-declared to be a \code{box} (\emph{see} \S~\ref{Geometries}),
+and you also give it a name, \code{domain}.
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Domain Geometry Input
+#-----------------------------------------------------------------------------
+pfset GeomInput.box_input.InputType      Box
+pfset GeomInput.box_input.GeomName      domain
+\end{verbatim}
+
+Here, you set the limits in space for your entire domain.  The span from \file{Lower.X} to \file{Upper.X} 
+will be equal to the product of \file{ComputationalGrid.DX} times \file{ComputationalGrid.NX}.  
+Same for {\em Y} and {\em Z} (i.e. the number of grid elements times size of the grid element has to
+equal the size of the grid in each dimension).   The /code{Patches} key assigns names to the outside edges, 
+because the domain is the limit of the problem in space.
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Domain Geometry 
+#-----------------------------------------------------------------------------
+pfset Geom.domain.Lower.X                        0.0
+pfset Geom.domain.Lower.Y                        0.0
+pfset Geom.domain.Lower.Z                        0.0
+ 
+pfset Geom.domain.Upper.X                        41000.0
+pfset Geom.domain.Upper.Y                        41000.0
+pfset Geom.domain.Upper.Z                          100.0
+
+pfset Geom.domain.Patches             "x-lower x-upper y-lower y-upper z-lower z-upper"
+\end{verbatim}
+
+Now we setup the indicator file. Recall that the indicator  file has integer values for every grid
+cell in the domain designating what geologic unit it belongs to. The \file{GeomNames} list
+should include a name for every unit in your indicator file. In this example we have 13 soil
+units and eight geologic units. The \file{FileName} points to the indicator file that \parflow{}
+will read. Recall that we copied this file into our run directory above. 
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Indicator Geometry Input
+#-----------------------------------------------------------------------------
+pfset GeomInput.indi_input.InputType      IndicatorField
+pfset GeomInput.indi_input.GeomNames      "s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 g1 g2 g3 g4 g5 g6 g7 g8"
+pfset Geom.indi_input.FileName            "IndicatorFile_Gleeson.50z.pfb"
+\end{verbatim}
+
+For every name in the \file{GeomNames} list we define the corresponding value in the indicator file. 
+For example, here we are saying that our first soil unit (\file{s1}) is represented by the number "1"
+in the indicator file while the first geologic unit (\file{g1}) is represented by the number "21".
+Note that the integers used in the indicator file do not need to be consecutive.
+
+\begin{verbatim}
+pfset GeomInput.s1.Value                1
+pfset GeomInput.s2.Value                2
+pfset GeomInput.s3.Value                3
+pfset GeomInput.s4.Value                4
+pfset GeomInput.s5.Value                5
+pfset GeomInput.s6.Value                6
+pfset GeomInput.s7.Value                7
+pfset GeomInput.s8.Value                8
+pfset GeomInput.s9.Value                9
+pfset GeomInput.s10.Value               10
+pfset GeomInput.s11.Value               11
+pfset GeomInput.s12.Value               12
+pfset GeomInput.s13.Value               13
+pfset GeomInput.g1.Value                21
+pfset GeomInput.g2.Value                22
+pfset GeomInput.g3.Value                23
+pfset GeomInput.g4.Value                24
+pfset GeomInput.g5.Value                25
+pfset GeomInput.g6.Value                26
+pfset GeomInput.g7.Value                27
+pfset GeomInput.g8.Value                28
+\end{verbatim}
+
+Now you add permeability data to the domain sections defined above (\S~\ref{Permeability}).  
+You can reassign values simply by re-stating them -- there is no need to comment out or 
+delete the previous version -- the final statement is the only one that counts. Also, note
+that you do not need to assign permeability values to all of the geometries names for the indicator 
+file. Any geometry that is not assigned its own permeability values will take the \file{domain}
+value. 
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Permeability (values in m/hr)
+#-----------------------------------------------------------------------------
+pfset Geom.Perm.Names                     "domain s1 s2 s3 s4 s5 s6 s7 s8 s9 g2 g3 g6 g8"
+
+pfset Geom.domain.Perm.Type           Constant
+pfset Geom.domain.Perm.Value          0.2
+
+pfset Geom.s1.Perm.Type               Constant
+pfset Geom.s1.Perm.Value              0.269022595
+
+pfset Geom.s2.Perm.Type               Constant
+pfset Geom.s2.Perm.Value              0.043630356
+
+pfset Geom.s3.Perm.Type               Constant
+pfset Geom.s3.Perm.Value              0.015841225
+
+pfset Geom.s4.Perm.Type               Constant
+pfset Geom.s4.Perm.Value              0.007582087
+
+pfset Geom.s5.Perm.Type               Constant
+pfset Geom.s5.Perm.Value              0.01818816
+
+pfset Geom.s6.Perm.Type               Constant
+pfset Geom.s6.Perm.Value              0.005009435
+
+pfset Geom.s7.Perm.Type               Constant
+pfset Geom.s7.Perm.Value              0.005492736
+
+pfset Geom.s8.Perm.Type               Constant
+pfset Geom.s8.Perm.Value              0.004675077
+
+pfset Geom.s9.Perm.Type               Constant
+pfset Geom.s9.Perm.Value              0.003386794
+
+pfset Geom.g2.Perm.Type               Constant
+pfset Geom.g2.Perm.Value              0.025
+
+pfset Geom.g3.Perm.Type               Constant
+pfset Geom.g3.Perm.Value              0.059
+
+pfset Geom.g6.Perm.Type               Constant
+pfset Geom.g6.Perm.Value              0.2
+
+pfset Geom.g8.Perm.Type              Constant
+pfset Geom.g8.Perm.Value             0.68
+\end{verbatim}
 
 %============
 %============
