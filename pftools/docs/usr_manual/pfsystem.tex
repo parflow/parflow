@@ -94,7 +94,8 @@ pfset Geom.domain.Patches "very_long_name_1 very_long_name_2 very_long_name_3 \
                            very_long_name_4 very_long_name_5 very_long_name_6"
 \end{verbatim}\end{display}
 
-%%%%%
+%=============================================================================
+%=============================================================================
 \subsection{Setting Up a Real Domain}
 \label{Defining a Real domain}
 
@@ -155,7 +156,7 @@ The general approach is as follows:
    to initialize the water table. There are several ways to approach this. One way is to 
    start with the water table at a constant depth and run for 
    a long time with a constant recharge forcing until the water table reaches a steady 
-   state.
+   state. There are some additional key for spinup runs that are provided in \S~\ref{Spinup Options}.
 
    \item Convert land cover classifications to the IGBP land cover classes that are used 
    in CLM. 
@@ -278,6 +279,8 @@ timings and MFLOP rates.  For Richards' equation problems (including overland fl
 name>.out.kinsol.log} file contains the nonlinear convergence information for each timestep.  Additionally, the \file{<run
 name>.out.tx} contains all information routed to \file{standard out} of the machine you are running on and often contains error messages and other control information.
 
+%=============================================================================
+%=============================================================================
 \section{Restarting a Run}
 \label{Restarting a Run}
 
@@ -1237,7 +1240,7 @@ pfset ComputationalGrid.NZ      50
 
 This next piece is comparable to a pre-declaration of variables.  These will be areas in our domain geometry. 
 The regions themselves will be defined later.  You must always have one that is the name of your entire domain.  
-If you want subsections within your domain, you may declare these as well. Here define two geometries one is the
+If you want subsections within your domain, you may declare these as well. Here we define two geometries one is the
 domain and one is for the indicator file (which will also span the entire domain).
 
 \begin{verbatim}
@@ -1279,11 +1282,11 @@ pfset Geom.domain.Upper.Z                          100.0
 pfset Geom.domain.Patches             "x-lower x-upper y-lower y-upper z-lower z-upper"
 \end{verbatim}
 
-Now we setup the indicator file. Recall that the indicator  file has integer values for every grid
+Now we setup the indicator file. As noted above, the indicator  file has integer values for every grid
 cell in the domain designating what geologic unit it belongs to. The \file{GeomNames} list
-should include a name for every unit in your indicator file. In this example we have 13 soil
+should include a name for every unit in your indicator file. In this example we have thirteen soil
 units and eight geologic units. The \file{FileName} points to the indicator file that \parflow{}
-will read. Recall that we copied this file into our run directory above. 
+will read. Recall that this file into the run directory at the start of the script. 
 
 \begin{verbatim}
 #-----------------------------------------------------------------------------
@@ -1296,7 +1299,7 @@ pfset Geom.indi_input.FileName            "IndicatorFile_Gleeson.50z.pfb"
 
 For every name in the \file{GeomNames} list we define the corresponding value in the indicator file. 
 For example, here we are saying that our first soil unit (\file{s1}) is represented by the number "1"
-in the indicator file while the first geologic unit (\file{g1}) is represented by the number "21".
+in the indicator file, while the first geologic unit (\file{g1}) is represented by the number "21".
 Note that the integers used in the indicator file do not need to be consecutive.
 
 \begin{verbatim}
@@ -1326,9 +1329,10 @@ pfset GeomInput.g8.Value                28
 Now you add permeability data to the domain sections defined above (\S~\ref{Permeability}).  
 You can reassign values simply by re-stating them -- there is no need to comment out or 
 delete the previous version -- the final statement is the only one that counts. Also, note
-that you do not need to assign permeability values to all of the geometries names for the indicator 
-file. Any geometry that is not assigned its own permeability values will take the \file{domain}
-value. 
+that you do not need to assign permeability values to all of the geometries names. 
+Any geometry that is not assigned its own permeability value will take the \file{domain}
+value. However, every geometry listed in \file{Porosity.GeomNames} must have 
+values assigned. 
 
 \begin{verbatim}
 #-----------------------------------------------------------------------------
@@ -1378,6 +1382,592 @@ pfset Geom.g6.Perm.Value              0.2
 pfset Geom.g8.Perm.Type              Constant
 pfset Geom.g8.Perm.Value             0.68
 \end{verbatim}
+
+The following section allows you to specify the permeability tensor.  
+In the case below, permeability is symmetric in all directions (x, y, and z) and therefore each is set to 1.0.
+Also note that we just specify this once for the whole domain because we want isotropic
+permeability everywhere. You can specify different tensors for different units by repeating 
+these lines with different \file{Geom.Names}.
+
+\begin{verbatim}
+pfset Perm.TensorType                     TensorByGeom
+pfset Geom.Perm.TensorByGeom.Names        "domain"
+pfset Geom.domain.Perm.TensorValX         1.0d0
+pfset Geom.domain.Perm.TensorValY         1.0d0
+pfset Geom.domain.Perm.TensorValZ         1.0d0
+\end{verbatim}
+
+Next we set the specific storage. Here again we specify one value for the whole domain but
+these lines can be easily repeated to set different values for different units. 
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Specific Storage
+#-----------------------------------------------------------------------------
+pfset SpecificStorage.Type                Constant
+pfset SpecificStorage.GeomNames           "domain"
+pfset Geom.domain.SpecificStorage.Value   1.0e-5
+\end{verbatim}
+
+\parflow{} has the capability to deal with a multiphase system, but we only have one (water) in this example. 
+As we stated earlier, we set density and viscosity artificially (and later gravity) both to 1.0.  
+Again, this is merely a trick to solve for hydraulic conductivity and pressure head.  
+If you were to set density and viscosity to their true values, the code would calculate {\bf k} (permeability). 
+By using the \emph{normalized} values instead, you effectively embed the conversion of {\bf k} to {\bf K} (hydraulic conductivity). 
+So this way, we get hydraulic conductivity, which is what we want for this problem.
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Phases
+#-----------------------------------------------------------------------------
+pfset Phase.Names                         "water"
+
+pfset Phase.water.Density.Type            Constant
+pfset Phase.water.Density.Value           1.0
+
+pfset Phase.water.Viscosity.Type          Constant
+pfset Phase.water.Viscosity.Value         1.0
+\end{verbatim}
+
+This example does not include the \parflow{} grid based transport scheme.  Therefore we leave 
+contaminants blank.
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Contaminants
+#-----------------------------------------------------------------------------
+pfset Contaminants.Names                  ""
+\end{verbatim}
+
+As with density and viscosity, gravity is normalized here.  If we used the true value
+(in the \emph{[L]} and \emph{[T]} units of hydraulic conductivity) the code would be calculating permeability.  
+Instead, we normalize so that the code calculates hydraulic conductivity.
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Gravity
+#-----------------------------------------------------------------------------
+pfset Gravity                             1.0
+\end{verbatim}
+
+Next we set up the timing for our simulation.
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Timing (time units is set by units of permeability)
+#-----------------------------------------------------------------------------
+\end{verbatim}
+
+This specifies the base unit of time for all time values entered. All time should be expressed
+as multiples of this value. To keep things simple here we set it to 1. Because we expressed
+our permeability in units of m/hr in this example this means that our basin unit of time is 1hr. 
+
+\begin{verbatim}
+pfset TimingInfo.BaseUnit                 1.0
+\end{verbatim}
+
+This key specifies the time step number that will be associated with the first advection cycle
+of the transient problem. Because we are starting from scratch we set this to 0. If we were 
+restarting a run we would set this to the laste time step of your previous simulation. Refer to 
+\S~\ref{Restarting a Run} for additional instructions on restarting a run.
+
+\begin{verbatim}
+pfset TimingInfo.StartCount               0.0
+\end{verbatim}
+
+\file{StartTime} and \file{StopTime} specify the start and stop times for the simulation. These 
+values should correspond with the forcing files you are using. 
+
+\begin{verbatim}
+pfset TimingInfo.StartTime                0.0
+pfset TimingInfo.StopTime                 72.0
+\end{verbatim}
+
+This key specifies the timing interval at which \parflow{} time dependent outputs will be written. 
+Here we have a base unit of 1hr so a dump interval of 24 means that we are writing daily outputs. 
+Note that this key only controls the \parflow{} output interval and not the interval that \code{CLM}
+outputs will be written out at. 
+
+\begin{verbatim}
+pfset TimingInfo.DumpInterval             24.0
+\end{verbatim}
+
+Here we set the time step value. For this example we use a constant time step of 1hr. 
+
+\begin{verbatim}
+pfset TimeStep.Type                       Constant
+pfset TimeStep.Value                      1.0
+\end{verbatim}
+
+Next, we assign the porosity (\emph{see} \S~\ref{Porosity}).  As with the permeability
+we assign different values for different indicator geometries. Here we assign 
+values for all of our soil units but not for the geologic units, they will default to the
+domain value of 0.4. Note that every geometry listed in \file{Porosity.GeomNames} must have 
+values assigned. 
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Porosity
+#-----------------------------------------------------------------------------
+pfset Geom.Porosity.GeomNames             "domain s1 s2 s3 s4 s5 s6 s7 s8 s9"
+
+pfset Geom.domain.Porosity.Type          Constant
+pfset Geom.domain.Porosity.Value         0.4
+
+pfset Geom.s1.Porosity.Type    Constant
+pfset Geom.s1.Porosity.Value   0.375
+
+pfset Geom.s2.Porosity.Type    Constant
+pfset Geom.s2.Porosity.Value   0.39
+
+pfset Geom.s3.Porosity.Type    Constant
+pfset Geom.s3.Porosity.Value   0.387
+
+pfset Geom.s4.Porosity.Type    Constant
+pfset Geom.s4.Porosity.Value   0.439
+
+pfset Geom.s5.Porosity.Type    Constant
+pfset Geom.s5.Porosity.Value   0.489
+
+pfset Geom.s6.Porosity.Type    Constant
+pfset Geom.s6.Porosity.Value   0.399
+
+pfset Geom.s7.Porosity.Type    Constant
+pfset Geom.s7.Porosity.Value   0.384
+
+pfset Geom.s8.Porosity.Type            Constant
+pfset Geom.s8.Porosity.Value           0.482
+
+pfset Geom.s9.Porosity.Type            Constant
+pfset Geom.s9.Porosity.Value           0.442
+\end{verbatim}
+
+Having defined the geometry of our problem before and named it \code{domain}, we are
+now ready to report/upload that problem, which we do here.
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Domain
+#-----------------------------------------------------------------------------
+pfset Domain.GeomName                     "domain"
+\end{verbatim}
+
+Mobility between phases is set to 1.0 because we only have one phase (water).
+
+\begin{verbatim}
+#----------------------------------------------------------------------------
+# Mobility
+#----------------------------------------------------------------------------
+pfset Phase.water.Mobility.Type        Constant
+pfset Phase.water.Mobility.Value       1.0
+\end{verbatim}
+
+Again, \parflow{} has more capabilities than we are using here in this example. 
+Note that since there are no well names listed here, \parflow{} assumes we have no wells. 
+If we had pumping wells, we would have to include them here, because they 
+would affect the head distribution throughout our domain.  See \S~\ref{Harvey Flow Example} 
+for an example of how to include pumping wells in this script.
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Wells
+#-----------------------------------------------------------------------------
+pfset Wells.Names                         ""
+\end{verbatim}
+
+You can give certain periods of time names if you want. For example if you aren't running with \code{CLM} 
+and you would like to have periods with rain and periods without.   
+Here, however we have only one time cycle because \code{CLM} will handle the variable forcings.
+Therefore, we specify one time cycle and it's constant for the duration of the simulation. 
+We accomplish this by giving it a repeat value of -1, which repeats indefinitely.  The length of 
+the cycle is the length specified below (an integer) multiplied by the base unit value we specified earlier.
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Time Cycles
+#-----------------------------------------------------------------------------
+pfset Cycle.Names                         "constant"
+pfset Cycle.constant.Names                "alltime"
+pfset Cycle.constant.alltime.Length        1
+pfset Cycle.constant.Repeat               -1
+\end{verbatim}
+
+Now, we assign Boundary Conditions for each face (each of the Patches in the domain defined before).  
+Recall the previously stated Patches and associate them with the boundary conditions that follow.
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Boundary Conditions
+#-----------------------------------------------------------------------------
+pfset BCPressure.PatchNames                   [pfget Geom.domain.Patches]
+\end{verbatim}
+
+The bottom and sides of our domain are all set to no-flow (i.e. constant flux of 0) boundaries.
+
+\begin{verbatim}
+pfset Patch.x-lower.BCPressure.Type		      FluxConst
+pfset Patch.x-lower.BCPressure.Cycle		      "constant"
+pfset Patch.x-lower.BCPressure.alltime.Value	      0.0
+
+pfset Patch.y-lower.BCPressure.Type		      FluxConst
+pfset Patch.y-lower.BCPressure.Cycle		      "constant"
+pfset Patch.y-lower.BCPressure.alltime.Value	      0.0
+
+pfset Patch.z-lower.BCPressure.Type		      FluxConst
+pfset Patch.z-lower.BCPressure.Cycle		      "constant"
+pfset Patch.z-lower.BCPressure.alltime.Value	      0.0
+
+pfset Patch.x-upper.BCPressure.Type		      FluxConst
+pfset Patch.x-upper.BCPressure.Cycle		      "constant"
+pfset Patch.x-upper.BCPressure.alltime.Value	      0.0
+
+pfset Patch.y-upper.BCPressure.Type		      FluxConst
+pfset Patch.y-upper.BCPressure.Cycle		      "constant"
+pfset Patch.y-upper.BCPressure.alltime.Value	      0.0
+\end{verbatim}
+
+The top is set to an \code{OverlandFLow} boundary to turn on the fully-coupled overland flow
+routing. 
+
+\begin{verbatim}
+pfset Patch.z-upper.BCPressure.Type		      OverlandFlow
+pfset Patch.z-upper.BCPressure.Cycle		      "constant"
+pfset Patch.z-upper.BCPressure.alltime.Value	      0.0
+\end{verbatim}
+
+Next we define topographic slopes and values. These slope values were derived from a digital
+elevation model of the domain following the workflow outlined in \S~\ref{Defining a Real domain}.
+In this example we read the slope files in from \file{.pfb} files that were copied into the run directory
+at the start of this script. 
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Topo slopes in x-direction
+#-----------------------------------------------------------------------------
+pfset TopoSlopesX.Type                                "PFBFile"
+pfset TopoSlopesX.GeomNames                           "domain"
+pfset TopoSlopesX.FileName                            "LW.slopex.pfb"
+
+#-----------------------------------------------------------------------------
+# Topo slopes in y-direction
+#-----------------------------------------------------------------------------
+pfset TopoSlopesY.Type                                "PFBFile"
+pfset TopoSlopesY.GeomNames                           "domain"
+pfset TopoSlopesY.FileName                            "LW.slopey.pfb"
+\end{verbatim}
+
+And now we define the Mannings \emph{n}, again just one value for the whole domain in this example. 
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Mannings coefficient
+#-----------------------------------------------------------------------------
+pfset Mannings.Type                                   "Constant"
+pfset Mannings.GeomNames                              "domain"
+pfset Mannings.Geom.domain.Value                      5.52e-6
+\end{verbatim}
+
+Following the same approach as we did for \file{Porosity} we define the relative permeability
+inputs that will be used for Richards' equation implementation (\S~\ref{Richards RelPerm}).
+Here we use \file{VanGenuchten} parameters. Note that every geometry listed in \file{Porosity.GeomNames} must have 
+values assigned. 
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Relative Permeability
+#-----------------------------------------------------------------------------
+pfset Phase.RelPerm.Type                  VanGenuchten
+pfset Phase.RelPerm.GeomNames             "domain s1 s2 s3 s4 s5 s6 s7 s8 s9 "
+
+pfset Geom.domain.RelPerm.Alpha           3.5
+pfset Geom.domain.RelPerm.N               2.0
+
+pfset Geom.s1.RelPerm.Alpha        3.548
+pfset Geom.s1.RelPerm.N            4.162
+
+pfset Geom.s2.RelPerm.Alpha        3.467
+pfset Geom.s2.RelPerm.N            2.738
+
+pfset Geom.s3.RelPerm.Alpha        2.692
+pfset Geom.s3.RelPerm.N            2.445
+
+pfset Geom.s4.RelPerm.Alpha        0.501
+pfset Geom.s4.RelPerm.N            2.659
+
+pfset Geom.s5.RelPerm.Alpha        0.661
+pfset Geom.s5.RelPerm.N            2.659
+
+pfset Geom.s6.RelPerm.Alpha        1.122
+pfset Geom.s6.RelPerm.N            2.479
+
+pfset Geom.s7.RelPerm.Alpha        2.089
+pfset Geom.s7.RelPerm.N            2.318
+
+pfset Geom.s8.RelPerm.Alpha        0.832
+pfset Geom.s8.RelPerm.N            2.514
+
+pfset Geom.s9.RelPerm.Alpha        1.585
+pfset Geom.s9.RelPerm.N            2.413
+\end{verbatim}
+
+Next we do the same thing for saturation (\S~\ref{Saturation}) again using the \file{VanGenuchten} parameters
+Note that every geometry listed in \file{Porosity.GeomNames} must have 
+values assigned. 
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Saturation
+#-----------------------------------------------------------------------------
+pfset Phase.Saturation.Type               VanGenuchten
+pfset Phase.Saturation.GeomNames          "domain s1 s2 s3 s4 s5 s6 s7 s8 s9 "
+
+pfset Geom.domain.Saturation.Alpha        3.5
+pfset Geom.domain.Saturation.N            2.
+pfset Geom.domain.Saturation.SRes         0.2
+pfset Geom.domain.Saturation.SSat         1.0
+
+pfset Geom.s1.Saturation.Alpha        3.548
+pfset Geom.s1.Saturation.N            4.162
+pfset Geom.s1.Saturation.SRes         0.000001
+pfset Geom.s1.Saturation.SSat         1.0
+
+pfset Geom.s2.Saturation.Alpha        3.467
+pfset Geom.s2.Saturation.N            2.738
+pfset Geom.s2.Saturation.SRes         0.000001
+pfset Geom.s2.Saturation.SSat         1.0
+
+pfset Geom.s3.Saturation.Alpha        2.692
+pfset Geom.s3.Saturation.N            2.445
+pfset Geom.s3.Saturation.SRes         0.000001
+pfset Geom.s3.Saturation.SSat         1.0
+
+pfset Geom.s4.Saturation.Alpha        0.501
+pfset Geom.s4.Saturation.N            2.659
+pfset Geom.s4.Saturation.SRes         0.000001
+pfset Geom.s4.Saturation.SSat         1.0
+
+pfset Geom.s5.Saturation.Alpha        0.661
+pfset Geom.s5.Saturation.N            2.659
+pfset Geom.s5.Saturation.SRes         0.000001
+pfset Geom.s5.Saturation.SSat         1.0
+
+pfset Geom.s6.Saturation.Alpha        1.122
+pfset Geom.s6.Saturation.N            2.479
+pfset Geom.s6.Saturation.SRes         0.000001
+pfset Geom.s6.Saturation.SSat         1.0
+
+pfset Geom.s7.Saturation.Alpha        2.089
+pfset Geom.s7.Saturation.N            2.318
+pfset Geom.s7.Saturation.SRes         0.000001
+pfset Geom.s7.Saturation.SSat         1.0
+
+pfset Geom.s8.Saturation.Alpha        0.832
+pfset Geom.s8.Saturation.N            2.514
+pfset Geom.s8.Saturation.SRes         0.000001
+pfset Geom.s8.Saturation.SSat         1.0
+
+pfset Geom.s9.Saturation.Alpha        1.585
+pfset Geom.s9.Saturation.N            2.413
+pfset Geom.s9.Saturation.SRes         0.000001
+pfset Geom.s9.Saturation.SSat         1.0
+\end{verbatim}
+
+Phase sources allows you to add sources other than wells and boundaries, but 
+we do not have any so this key is constant, 0.0 over entire domain.
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Phase sources:
+#-----------------------------------------------------------------------------
+pfset PhaseSources.water.Type                         "Constant"
+pfset PhaseSources.water.GeomNames                    "domain"
+pfset PhaseSources.water.Geom.domain.Value            0.0
+\end{verbatim}
+
+In this example we are using \parflow{} \file{CLM} so we must provide some parameters for \file{CLM} (\S~\ref{CLM Solver Parameters}).
+Note that \file{CLM} will also require some additional inputs outside of the tcl script. Refer to 
+\file{/washita/clm_input/} for examples of the \code{CLM} \file{vegm} and \file{driver} files. These inputs
+are also discussed briefly in \S~\ref{Defining a Real domain}.
+
+\begin{verbatim}
+#----------------------------------------------------------------
+# CLM Settings:
+# ------------------------------------------------------------
+\end{verbatim}
+
+First we specify that we will be using \code{CLM} as the land surface model and provide the name of a directory
+that outputs will be written to. For this example we do not need outputs for each processor or a binary output directory. 
+Finally we set the dump interval to 1, indicating that we will be writing outputs for every time step. Note that
+this does not have to match the dump interval for \parflow{} outputs. Recall that earlier we set the \parflow{} dump
+interval to 24. 
+
+\begin{verbatim}
+pfset Solver.LSM                                      CLM
+pfset Solver.CLM.CLMFileDir                           "clm_output/"
+pfset Solver.CLM.Print1dOut                           False
+pfset Solver.BinaryOutDir                             False
+pfset Solver.CLM.CLMDumpInterval                      1
+\end{verbatim}
+
+Next we specify the details of the meteorological forcing files that \code{clm} will read. First we provide the 
+name of the files and the directory they can be found in. Next we specify that we are using
+\file{3D} forcing files meaning that we have spatially distributed forcing with multiple time steps in every 
+file. Therefore we must also specify the number of times steps (\code{MetFileNT}) in every file, in this case 24.  
+Finally, we specify the initial value for the CLM counter. 
+
+\begin{verbatim}
+pfset Solver.CLM.MetFileName                          "NLDAS"
+pfset Solver.CLM.MetFilePath                          "../../NLDAS/"
+pfset Solver.CLM.MetForcing                           3D
+pfset Solver.CLM.MetFileNT                            24
+pfset Solver.CLM.IstepStart                           1
+\end{verbatim}
+
+This last set of \code{CLM} parameters refers to the physical properties of the system. Refer to \S~\ref{CLM Solver Parameters}
+for details. 
+\begin{verbatim}
+pfset Solver.CLM.EvapBeta                             Linear
+pfset Solver.CLM.VegWaterStress                       Saturation
+pfset Solver.CLM.ResSat                               0.1
+pfset Solver.CLM.WiltingPoint                         0.12
+pfset Solver.CLM.FieldCapacity                        0.98
+pfset Solver.CLM.IrrigationType                       none
+\end{verbatim}
+
+Next we set the initial conditions for the domain. In this example we are using a pressure \file{.pfb} 
+file that was obtained by spinning up the model in the workflow outlined in \S~\ref{Defining a Real domain}.
+Alternatively, the water table can be set to a constant value by changing the \code{ICPressure.Type}. Again, 
+the input file that is referenced here was was copied into the run directory at the top of this script. 
+
+\begin{verbatim}
+#---------------------------------------------------------
+# Initial conditions: water pressure
+#---------------------------------------------------------
+pfset ICPressure.Type                                 PFBFile
+pfset ICPressure.GeomNames                            domain
+pfset Geom.domain.ICPressure.RefPatch                   z-upper
+pfset Geom.domain.ICPressure.FileName                   press.init.pfb
+\end{verbatim}
+
+Now we specify what outputs we would like written. In this example we specify that we would like to write
+out \code{CLM} variables as well as \file{Pressure} and \file{Saturation}. However, there are many options 
+for this and you should change these options according to what type of analysis you will be performing on your 
+results. A complete list of print options is provided in \S~\ref{Code Parameters}. 
+
+\begin{verbatim}
+#----------------------------------------------------------------
+# Outputs
+# ------------------------------------------------------------
+#Writing output (all pfb):
+pfset Solver.PrintSubsurfData                         False
+pfset Solver.PrintPressure                            True
+pfset Solver.PrintSaturation                          True
+pfset Solver.PrintMask                                True
+
+pfset Solver.WriteCLMBinary                           False
+pfset Solver.PrintCLM                                 True
+pfset Solver.WriteSiloSpecificStorage                 False
+pfset Solver.WriteSiloMannings                        False
+pfset Solver.WriteSiloMask                            False
+pfset Solver.WriteSiloSlopes                          False
+pfset Solver.WriteSiloSubsurfData                     False
+pfset Solver.WriteSiloPressure                        False
+pfset Solver.WriteSiloSaturation                      False
+pfset Solver.WriteSiloEvapTrans                       False
+pfset Solver.WriteSiloEvapTransSum                    False
+pfset Solver.WriteSiloOverlandSum                     False
+pfset Solver.WriteSiloCLM                             False
+\end{verbatim}
+
+Next we specify the solver settings for the ParFlow (\S~\ref{RE Solver Parameters}).
+HELP!! Can someone please annotate this last part!!
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Set solver parameters
+#-----------------------------------------------------------------------------
+# ParFlow Solution
+pfset Solver                                          Richards
+pfset Solver.TerrainFollowingGrid                     True
+pfset Solver.Nonlinear.VariableDz                     False
+
+pfset Solver.MaxIter                                  25000
+pfset Solver.Drop                                     1E-20
+pfset Solver.AbsTol                                   1E-8
+pfset Solver.MaxConvergenceFailures                   8
+pfset Solver.Nonlinear.MaxIter                        80
+pfset Solver.Nonlinear.ResidualTol                    1e-6
+
+## new solver settings for Terrain Following Grid
+pfset Solver.Nonlinear.EtaChoice                         EtaConstant
+pfset Solver.Nonlinear.EtaValue                          0.001
+pfset Solver.Nonlinear.UseJacobian                       True 
+pfset Solver.Nonlinear.DerivativeEpsilon                 1e-16
+pfset Solver.Nonlinear.StepTol				 			1e-30
+pfset Solver.Nonlinear.Globalization                     LineSearch
+pfset Solver.Linear.KrylovDimension                      70
+pfset Solver.Linear.MaxRestarts                           2
+
+pfset Solver.Linear.Preconditioner                       PFMG
+pfset Solver.Linear.Preconditioner.PCMatrixType     FullJacobian
+\end{verbatim}
+
+%!! Add text here !!
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Exact solution specification for error calculations
+#-----------------------------------------------------------------------------
+pfset KnownSolution                                   NoKnownSolution
+\end{verbatim}
+
+%!! Add text here !!
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Distribute inputs
+#-----------------------------------------------------------------------------
+pfset ComputationalGrid.NX                41 
+pfset ComputationalGrid.NY                41 
+pfset ComputationalGrid.NZ                1
+pfdist LW.slopex.pfb
+pfdist LW.slopey.pfb
+
+pfset ComputationalGrid.NX                41 
+pfset ComputationalGrid.NY                41 
+pfset ComputationalGrid.NZ                50 
+pfdist IndicatorFile_Gleeson.50z.pfb
+pfdist press.init.pfb
+\end{verbatim}
+
+%!! Add text here !!
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Run Simulation
+#-----------------------------------------------------------------------------
+set runname "LW"
+puts $runname
+pfrun    $runname
+pfrun    $runname
+\end{verbatim}
+
+%!! Add text here !!
+
+\begin{verbatim}
+#-----------------------------------------------------------------------------
+# Undistribute Files
+#-----------------------------------------------------------------------------
+pfundist $runname
+pfundist press.init.pfb
+pfundist LW.slopex.pfb
+pfundist LW.slopey.pfb
+pfundist IndicatorFile_Gleeson.50z.pfb
+
+puts "ParFlow run Complete"
+\end{verbatim}
+
+
 
 %============
 %============
