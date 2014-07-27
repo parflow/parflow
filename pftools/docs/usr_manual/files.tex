@@ -208,7 +208,7 @@ This section describes how processors are assigned in order to solve the domain
 in parallel. “P” allocates the number of processes to the grid-cells in x. “Q” allocates
 the number of processes to the grid-cells in y. “R” allocates the number of processes to
 the grid-cells in z. Please note “R” should always be 1 if you are running with Solver
-Richards \cite{JW01} unless you’re running a totally saturated domain (solver 
+Richards \cite{Jones-Woodward01} unless you’re running a totally saturated domain (solver 
 IMPES).
 
 \pfkey{integer}{Process.Topology.P}{no default}
@@ -3842,6 +3842,31 @@ the SMG multigrid preconditioner.
 pfset Solver.Linear.Preconditioner.SMG.NumPostRelax    0
 \end{verbatim}\end{display}
 
+
+\pfkey{logical}{Solver.EvapTransFile}{False}
+{This key specifies specifies that the Flux terms for Richards' equation are read in from a \file{.pfb} file.  This file has $[T^-1]$
+units.}
+\begin{display}\begin{verbatim}
+pfset Solver.EvapTransFile    True
+\end{verbatim}\end{display}
+
+\pfkey{logical}{Solver.EvapTransFileTransient}{False}
+{This key specifies specifies that the Flux terms for Richards' equation are read in from a series of flux \file{.pfb} file.  Each file has $[T^-1]$
+units.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.EvapTransFileTransient    True
+\end{verbatim}\end{display}
+
+
+\pfkey{string}{Solver.EvapTrans.FileName}{no default}
+{This key specifies specifies filename for the distributed \file{.pfb} file that contains the flux values for Richards' equation.  This file has $[T^-1]$
+units.  For the steady-state option (\emph{Solver.EvapTransFile=\bf{True}}) this key should be the complete filename.  For the transient option 
+(\emph{Solver.EvapTransFileTransient=\bf{True}} then the filename is a header and \parflow{} will load one file per timestep, with the form \file{filename.00000.pfb}.}
+\begin{display}\begin{verbatim}
+pfset Solver.EvapTrans.FileName   evap.trans.test.pfb
+\end{verbatim}\end{display}
+
 \pfkey{string}{Solver.LSM}{none}
 {This key specifies whether a land surface model, such as \code{CLM}, will be called each solver timestep.
 Choices for this key include {\bf none} and {\bf CLM}. Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
@@ -3869,13 +3894,15 @@ pfset OverlandFlowSpinUp   1
 \end{verbatim}\end{display}
 
 \pfkey{double}{OverlandFlowSpinUpDampP1}{0.0}
-{This key provides exponential dampening to the pressure relationship the overland flow equation }
+{This key sets $P_1$ and provides exponential dampening to the pressure relationship in the overland flow equation by adding the 
+following term: $P_2*exp(\psi*P_2)$}
 \begin{display}\begin{verbatim}
 pfset OverlandSpinupDampP1  10.0
 \end{verbatim}\end{display}
 
 \pfkey{double}{OverlandFlowSpinUpDampP2}{0.0}
-{This key provides exponential dampening to the pressure relationship in the overland flow equation }
+{This key sets $P_2$ and provides exponential dampening to the pressure relationship in the overland flow equation adding the 
+following term: $P_2*exp(\psi*P_2)$ }
 \begin{display}\begin{verbatim}
 pfset OverlandSpinupDampP2  0.1
 \end{verbatim}\end{display}
@@ -3951,6 +3978,29 @@ pfset Solver.CLM.MetFileNT	24
 }
 \begin{display}\begin{verbatim}
 pfset Solver.WriteSiloCLM True
+\end{verbatim}\end{display}
+The output variables are:
+\begin{description}
+\item \file{eflx_lh_tot} for latent heat flux total $[W/m^2]$ using the silo variable {\em LatentHeat};
+\item \file{eflx_lwrad_out} for outgoing long-wave radiation $[W/m^2]$ using the silo variable {\em LongWave};
+\item \file{eflx_sh_tot} for sensible heat flux total $[W/m^2]$ using the silo variable {\em SensibleHeat};
+\item \file{eflx_soil_grnd} for ground heat flux $[W/m^2]$ using the silo variable {\em GroundHeat};
+\item \file{qflx_evap_tot} for total evaporation $[mm/s]$ using the silo variable {\em EvaporationTotal}; 
+\item \file{qflx_evap_grnd} for ground evaporation without sublimation $[mm/s]$ using the silo variable {\em EvaporationGroundNoSublimation};
+\item \file{qflx_evap_soi} for soil evaporation $[mm/s]$ using the silo variable {\em EvaporationGround};
+\item \file{qflx_evap_veg} for vegetation evaporation $[mm/s]$ using the silo variable {\em EvaporationCanopy};
+\item \file{qflx_tran_veg} for vegetation transpiration $[mm/s]$ using the silo variable {\em Transpiration}; 
+\item \file{qflx_infl} for soil infiltration $[mm/s]$ using the silo variable {\em Infiltration};
+\item \file{swe_out} for snow water equivalent $[mm]$ using the silo variable {\em SWE};
+\item \file{t_grnd} for ground surface temperature $[K]$ using the silo variable {\em TemperatureGround}; and 
+\item \file{t_soil} for soil temperature over all layers $[K]$ using the silo variable {\em TemperatureSoil}.
+\end{description}
+
+\pfkey{string}{Solver.PrintCLM}{False}
+{This key specifies whether the \code{CLM} writes two dimensional binary output files to a \file{PFB} binary format. Note that \code{CLM} must be compiled and linked at runtime for this option to be active. These files are all written according to the standard format used for all \parflow{} variables, using the {\em runname}, and {\em istep}.  Variables are either two-dimensional or over the number of \code{CLM} layers (default of ten). 
+}
+\begin{display}\begin{verbatim}
+pfset Solver.PrintCLM True
 \end{verbatim}\end{display}
 The output variables are:
 \begin{description}
@@ -4151,8 +4201,9 @@ pfset Solver.CLM.DailyRST    False
 When "True", this combines the output of all the CLM output variables into a special multi-layer 
 PFB with the file extension ".C.pfb". The first 13 layers correspond to the 2-D CLM
 outputs and the remaining layers are the soil temperatures in each layer. For example, 
-a model with 4 soil layers will 
-create a SingleFile CLM output with 17 layers at each time step.} 
+a model with 4 soil layers will create a SingleFile CLM output with 17 layers at each time step. The
+file pseudo code is given below in \S~\ref{ParFlow Binary Files (.c.pfb)} and the variables and units
+are as specified in the multiple \code{PFB} and \code{SILO} formats as above.} 
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.SingleFile   True
 \end{verbatim}\end{display}
@@ -4190,6 +4241,52 @@ BEGIN
          END
       END
    END
+END
+\end{verbatim}\end{display}
+%=============================================================================
+%=============================================================================
+
+\section{ParFlow CLM Single Output Binary Files (.pfb)}
+\label{ParFlow Binary Files (.c.pfb)}
+
+The \file{.pfb} file format is a binary file format which is used
+to store \code{CLM} output data in a single file.  It is written as BIG ENDIAN binary bit ordering \cite{endian}.
+The format for the file is:
+
+\begin{display}\begin{verbatim}
+<double : X>    <double : Y>    <double : Z>
+<integer : NX>  <integer : NY>  <integer : NZ>
+<double : DX>   <double : DY>   <double : DZ>
+
+<integer : num_subgrids>
+FOR subgrid = 0 TO <num_subgrids> - 1
+BEGIN
+   <integer : ix>  <integer : iy>  <integer : iz>
+   <integer : nx>  <integer : ny>  <integer : nz>
+   <integer : rx>  <integer : ry>  <integer : rz>
+      FOR j = iy TO iy + <ny> - 1
+      BEGIN
+         FOR i = ix TO ix + <nx> - 1
+         BEGIN
+            eflx_lh_tot_ij
+	    eflx_lwrad_out_ij
+	    eflx_sh_tot_ij
+	    eflx_soil_grnd_ij
+	    qflx_evap_tot_ij
+	    qflx_evap_grnd_ij
+	    qflx_evap_soi_ij
+	    qflx_evap_veg_ij
+	    qflx_infl_ij
+	    swe_out_ij
+	    t_grnd_ij
+     IF (clm_irr_type == 1)  qflx_qirr_ij 
+ELSE IF (clm_irr_type == 3)  qflx_qirr_inst_ij
+ELSE                         NULL
+	    FOR k = 1 TO clm_nz
+	    tsoil_ijk
+	    END
+         END
+      END
 END
 \end{verbatim}\end{display}
 

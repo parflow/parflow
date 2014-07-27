@@ -158,8 +158,8 @@ The general approach is as follows:
    a long time with a constant recharge forcing until the water table reaches a steady 
    state. There are some additional key for spinup runs that are provided in \S~\ref{Spinup Options}.
 
-   \item Convert land cover classifications to the IGBP land cover classes that are used 
-   in CLM. 
+   \item Convert land cover classifications to the IGBP\footnote{http://www.igbp.net}
+   land cover classes that are used in CLM. 
    
    \begin{itemize}
 		 \item[] 1. Evergreen Needleleaf Forest
@@ -360,7 +360,7 @@ as templates in making new files and for use in testing the code.  These files s
 
 \item{\file{crater2D.tcl} An example of a two-dimensional, variably-saturated crater infiltration prblem with time-varying boundary conditions.  It uses the solid file \file{crater2D.pfsol.}}
 
-\item{\file{default_richards.tcl} The default variably-saturated Richards’ Equation simulation test script.}
+\item{\file{default_richards.tcl} The default variably-saturated Richards' Equation simulation test script.}
 
 \item{\file{default_single.tcl} The default parflow, single-processor, fully-saturated test script.}
 
@@ -369,6 +369,14 @@ as templates in making new files and for use in testing the code.  These files s
 \item{\file{harvey.flow.tcl} An example from \cite{MWH07} for the Cape Cod bacterial injection site.  This example is a three-dimensional, fully-saturated flow problem with spatially heterogeneous media (using a correlated, random field approach).  It also provides examples of how tcl/tk scripts may be used in conjunction with ParFlow to loop iteratively or to run other scripts or programs.  It uses the input text file \file{stats4.txt}. This input script is fully detailed in \S~\ref{Tutorial}}
 
 \item{\file{default_overland.tcl} An overland flow boundary condition test and example script based loosely on the V-catchment problem in \cite{KM06}.  There are options provided to expand this problem into other overland flow-type, transient boundary-type problems included in the file as well.}
+
+\item{\file{LW_var_dz_spinup.tcl} An example that uses the Little Washita domain to demonstrate a steady-state spinup initialization using P-E forcing. It also demonstrates the variable dz keys.}
+
+\item{\file {LW_var_dz.tcl} An example that uses the Little Washita domain to demonstrate surface flow network development.  It also uses the variable dz keys.}
+
+\item{\file {Evap_Trans_test.tcl} An example that modifies the \file{default_overland.tcl} to demonstrate steady-state external flux \file{.pfb} files.}
+
+\item{\file {overland_flux.tcl} An example that modifies the \file{default_overland.tcl} to demonstrate transient external flux \file{.pfb} files.}
 
 \item{\file{/clm/clm.tcl} An example of how to use \parflow{} coupled to {\file{clm}}.  This directory also includes {\file{clm}}-specific input. Note: this problem will only run if {\file{--with-clm}} flag is used during the configure and build process.}
 
@@ -432,7 +440,7 @@ This example demonstrates how to set up and run a fully saturated flow problem w
 the turning bands approach \cite{TAG89}. Given statistical parameters describing the geology of your site, 
 this script can be easily modified to make as many realizations 
 of the subsurface as you like, each different and yet having the same statistical parameters, useful for a Monte Carlo simulation.  This example
-is the basis for several fully-saturated \parflow{} applications \cite{Siirila12a,Siirila12b,Siirila12c,Atchley13a,Atchley13b,Cui14m}.
+is the basis for several fully-saturated \parflow{} applications \cite{Siirila12a,Siirila12b,SNSMM10,Atchley13a,Atchley13b,Cui14}.
 
 When the script runs, it creates a new directory named \file{/flow} right in the directory where the tcl script is stored.  \parflow{} then puts all its output in \file{/flow}.  Of course, you can change the name and location of this output directory by modifying the tcl script that runs \parflow{}.
 
@@ -1880,7 +1888,8 @@ pfset Solver.WriteSiloCLM                             False
 \end{verbatim}
 
 Next we specify the solver settings for the ParFlow (\S~\ref{RE Solver Parameters}).
-HELP!! Can someone please annotate this last part!!
+First we turn on solver Richards and the terrain following grid.  We turn off 
+variable dz.
 
 \begin{verbatim}
 #-----------------------------------------------------------------------------
@@ -1890,7 +1899,15 @@ HELP!! Can someone please annotate this last part!!
 pfset Solver                                          Richards
 pfset Solver.TerrainFollowingGrid                     True
 pfset Solver.Nonlinear.VariableDz                     False
+\end{verbatim}
 
+We then set the max solver settings and linear and nonlinear convergence
+tolerance settings. The linear system will be solved to a norm of $10^-8$ and 
+the nonlinear system will be solved to less than $10^-6$. Of note in latter key block 
+is the EtaChoice and that we use the analytical Jacobian (\emph{UseJacobian=\bf{True}}).
+We are using the \emph{FullJacobian} preconditioner, which is a more robust approach
+but is more expensive.
+\begin{verbatim}
 pfset Solver.MaxIter                                  25000
 pfset Solver.Drop                                     1E-20
 pfset Solver.AbsTol                                   1E-8
@@ -1898,7 +1915,6 @@ pfset Solver.MaxConvergenceFailures                   8
 pfset Solver.Nonlinear.MaxIter                        80
 pfset Solver.Nonlinear.ResidualTol                    1e-6
 
-## new solver settings for Terrain Following Grid
 pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaValue                          0.001
 pfset Solver.Nonlinear.UseJacobian                       True 
@@ -1912,7 +1928,7 @@ pfset Solver.Linear.Preconditioner                       PFMG
 pfset Solver.Linear.Preconditioner.PCMatrixType     FullJacobian
 \end{verbatim}
 
-%!! Add text here !!
+This key is just for testing the Richards' formulation, so we are not using it.
 
 \begin{verbatim}
 #-----------------------------------------------------------------------------
@@ -1921,7 +1937,9 @@ pfset Solver.Linear.Preconditioner.PCMatrixType     FullJacobian
 pfset KnownSolution                                   NoKnownSolution
 \end{verbatim}
 
-%!! Add text here !!
+Next we distribute all the inputs as described by the keys in \S~\ref{PFTCL Commands}.  Note the slopes 
+are 2D files, while the rest of the \parflow{} inputs are 3D so we need to alter the NZ accordingly
+following example \ref{dist example} in \S~\ref{common_pftcl}.
 
 \begin{verbatim}
 #-----------------------------------------------------------------------------
@@ -1940,7 +1958,7 @@ pfdist IndicatorFile_Gleeson.50z.pfb
 pfdist press.init.pfb
 \end{verbatim}
 
-%!! Add text here !!
+Now we run the simulation.  Note that we use a tcl variable to set the run name.
 
 \begin{verbatim}
 #-----------------------------------------------------------------------------
@@ -1949,10 +1967,9 @@ pfdist press.init.pfb
 set runname "LW"
 puts $runname
 pfrun    $runname
-pfrun    $runname
 \end{verbatim}
 
-%!! Add text here !!
+All that is left is to undistribute files.
 
 \begin{verbatim}
 #-----------------------------------------------------------------------------
