@@ -7,7 +7,8 @@
 This chapter is an introduction to setting up and running \parflow{}.
 In \S~\ref{Installing ParFlow}, we describe how to install \parflow{}.
 In \S~\ref{Running the Sample Problem}, we lead the user through a
-simple groundwater problem, supplied with the \parflow{} distribution.
+simple groundwater problem, supplied with the \parflow{} distribution. In \S~\ref{ParFlow Solvers}
+we describe the solver options available for use with \parflow{} applications.
 
 %=============================================================================
 %=============================================================================
@@ -37,7 +38,7 @@ do \emph{NOT} include compilation on Windows machines.
 \parflow{} requires a Standard \emph{ANSI C} and \emph{FORTRAN 90/95}
 compiler to build code. Many versions of \code{C} and \code{Fortran} are
 compatible with \parflow{} (e.g. Intel or IBM).  However, \code{GCC} and \code{gFortran}, available for
-free on almost every platform, and are good options. They may be found at:
+free on almost every platform, are good options. They may be found at:
 \begin{center}
 \code{http://gcc.gnu.org/}  
 \end{center}
@@ -171,7 +172,7 @@ cd test
 tclsh default_single.tcl 1 1 1
 \end{verbatim}\end{display}
 
-Note that \code{PAFLOW_DIR} must be set for this to work and it assume tclsh
+Note that \code{PAFLOW_DIR} must be set for this to work and it assumes tclsh
 is in your path.  Make sure to use the same \code{TCL} as was used in the
 \code{pftools} configure. The entire suite of test cases may be run at once to test a range of functionality in \parflow{}.  This may be done by:
 \begin{display}\begin{verbatim}
@@ -252,7 +253,7 @@ It is often desirable to use different C and F90/95 compilers
 (such as \emph{Intel} or \emph{Portland Group}) to match hardware specifics,
 for performance reasons or simply personal preference.  To change compilers,
 set the \code{CC}, \code{FC} and \code{F77} variables (these may include a path too). 
-For example to change to the \emph{Intel} compilers in c-shell:
+For example, to change to the \emph{Intel} compilers in c-shell:
 \begin{display}\begin{verbatim}
 setenv CC icc
 setenv FC ifort

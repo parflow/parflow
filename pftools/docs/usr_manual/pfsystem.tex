@@ -7,7 +7,7 @@
 The \parflow{} system is still evolving, but here we discuss how to define the problem in
 \S~\ref{Defining the Problem}, how to run \parflow{} in
 \S~\ref{Running ParFlow}, and restart a simulation in \S~\ref{Restarting a Run}.
-We also cover options for to visualizing the results in
+We also cover options for visualizing the results in
 \S~\ref{Visualizing Output} and summarize the contents of a directory of test problems 
 provided with \parflow{} in \S~\ref{Test Directory}.  Finally in \S~\ref{Tutorial}
 we walk through two \parflow{} input scripts in detail. 
@@ -26,7 +26,7 @@ There are many ways to define a problem in \parflow{}, here we summarize the gen
 approach for defining a domain (\S~\ref{Defining a domain}) and simulating
  a real watershed (\S~\ref{Defining a Real domain}). 
 
-In all cases The "main" \parflow{} input file is the \file{.tcl} file.
+In all cases the ``main" \parflow{} input file is the \file{.tcl} file.
 This input file is a TCL script with some special routines to
 create a database which is used as the input for \parflow{}.
 See \S~\ref{Main Input File (.tcl)} for details on the format
@@ -49,7 +49,7 @@ one of the best ways to understand what a \parflow{} input file looks like.
 \subsection{Basic Domain Definition}
 \label{Defining a domain}
 
-ParFlow can handel complex geometries and defining the problem may involve several steps.
+ParFlow can handle complex geometries and defining the problem may involve several steps.
 Users can specify simple box domains directly in the \file{tcl} script. If a more complicated
 domain is required, the user may convert geometries into the \file{.pfsol} file format 
 (\S~\ref{ParFlow Solid Files (.pfsol)}) using the appropriate \pftools{} conversion utility 
@@ -103,7 +103,7 @@ This section provides a brief outline of a sample workflow for setup \parflow{} 
 simulation of a real domain. Of course there are many ways to accomplish this and users
 are encouraged to develop a workflow that works for them. 
 
-This example assues that you are running with \parflow{} \code{CLM} and it uses 
+This example assumes that you are running with \parflow{} \code{CLM} and it uses 
 slope files and an indicator file to define the topography and geologic units of the domain. 
 An alternate approach would be to define geometries by building a \file{.pfsol} file 
 (\S~\ref{ParFlow Solid Files (.pfsol)}) using the appropriate \pftools{} conversion 
@@ -122,7 +122,7 @@ The general approach is as follows:
 	    \item Land Cover
 	\end{enumerate}
 	
-   \item Create Consistent gridded layers that are all clipped to your domain and have 
+   \item Create consistent gridded layers that are all clipped to your domain and have 
   the same number of grid cells
 
    \item Convert gridded files to \file{.pfb} (\S~\ref{ParFlow Binary Files (.pfb)}). One way 
@@ -134,14 +134,14 @@ The general approach is as follows:
    \item Calculate slopes in the x and y directions from the elevation dataset. This can be 
    done with the built in tools as shown in \S~\ref{common_pftcl} Example 5. 
    In most cases some additional processing of  the DEM will be required to ensure that 
-   the drainage patterns are correct. To check this  you  can run a "parking lot test" by 
+   the drainage patterns are correct. To check this  you  can run a ``parking lot test" by 
    setting the permeability of surface to almost zero and adding a flux to the top surface.
    If the results from this test don't look right (i.e. your runoff patterns don't match 
    what you expect) you will need to go back and modify your DEM.  The built in \parflow{}
-   tools pitfall and flatfill can be used to address some issues. 
+   tools pitfill and flatfill can be used to address some issues. 
    (These tools are also shown in \S~\ref{common_pftcl} Example 5). 
 
-   \item Create and indicator file for the subsurface. The indicator file is a 3D \file{.pfb} 
+   \item Create an indicator file for the subsurface. The indicator file is a 3D \file{.pfb} 
    file with the same dimensions as your domain that has an integer for every cell 
    designating which unit it belongs to. The units you define will correspond to the soil 
    types and geologic units from your input datasets. 
@@ -150,9 +150,9 @@ The general approach is as follows:
    the indicator file. You will need: Permeability, specific storage, porosity and 
    vanGenuchten parameters. 
 
-   \item At this you are ready to run a \parflow{} model without \code{CLM} and if you 
+   \item At this point you are ready to run a \parflow{} model without \code{CLM} and if you 
    don't need to include the land surface model in your simulations you can ignore the 
-   following steps. Either way, at this point it is advisable to run a "spinup" simulation 
+   following steps. Either way, at this point it is advisable to run a ``spinup" simulation 
    to initialize the water table. There are several ways to approach this. One way is to 
    start with the water table at a constant depth and run for 
    a long time with a constant recharge forcing until the water table reaches a steady 
@@ -190,14 +190,17 @@ The general approach is as follows:
    \file{clm input} directory in the Washita Example for a sample of a \code{CLM} driver file).
 
    \item Assemble meteorological forcing data for your domain. CLM requires the following 
-   variables: 
+   variables (also described on p. \pageref{clm_forcing}): 
    
    \begin{itemize}
-		\item DLWR: Long wave radiation (W/m2)
-		\item APCP: Precipitation (mm/s)
-		\item Temp: Air Temperature (K)
-		\item UGRD: East-west wind speed (m/s)
-		\item SPFH:	Specific humidity (kg/kg)
+		\item DLWR: Long wave radiation $[W/m^2]$
+		\item DSWR: Visible or short-wave radiation $[W/m^2]$.
+		\item APCP: Precipitation $[mm/s]$
+		\item Temp: Air Temperature $[K]$
+		\item UGRD: East-west wind speed $[m/s]$
+		\item SPFH:	Specific humidity $[kg/kg]$
+		\item Press: Atmospheric pressure $[pa]$
+                \item VGRD: South-to-North wind speed $[m/s]$
 	\end{itemize}
 	
 	If you choose to do spatially heterogenous forcings you will need to generate separate 
@@ -289,10 +292,10 @@ system time limit has been reached, \parflow{} has been prematurely
 terminated or the user specifically sets up a problem to run in segments.
 In order to restart a run the user needs to know the conditions under which
 \parflow{} stopped.  If \parflow{} was prematurely terminated then the
-user must examine the output files from the last "timed dump" to see if
+user must examine the output files from the last ``timed dump" to see if
 they are complete.  If not then those data files should be discarded and the
-output files from the next to last "timed dump" will be used in the
-restarting procedure.  As an important note, if any set of "timed dump"
+output files from the next to last ``timed dump" will be used in the
+restarting procedure.  As an important note, if any set of ``timed dump"
 files are deleted remember to also delete corresponding lines in the well
 output file or recombining the well output files from the individual segments
 afterwards will be difficult.  It is not necessary to delete lines from
@@ -308,7 +311,7 @@ this procedure :
    \begin{itemize}
       \item Write down the dump sequence number for the last collection of
            ``timed dump'' data.
-      \item Examine the log file to find out what real time that "timed dump"
+      \item Examine the log file to find out what real time that ``timed dump"
             data was written out at and write it down.
    \end{itemize}
    \item Prepare input data files from output data files :
@@ -358,7 +361,7 @@ as templates in making new files and for use in testing the code.  These files s
 
 \begin{description}
 
-\item{\file{crater2D.tcl} An example of a two-dimensional, variably-saturated crater infiltration prblem with time-varying boundary conditions.  It uses the solid file \file{crater2D.pfsol.}}
+\item{\file{crater2D.tcl} An example of a two-dimensional, variably-saturated crater infiltration problem with time-varying boundary conditions.  It uses the solid file \file{crater2D.pfsol.}}
 
 \item{\file{default_richards.tcl} The default variably-saturated Richards' Equation simulation test script.}
 
@@ -381,8 +384,6 @@ as templates in making new files and for use in testing the code.  These files s
 \item{\file{/clm/clm.tcl} An example of how to use \parflow{} coupled to {\file{clm}}.  This directory also includes {\file{clm}}-specific input. Note: this problem will only run if {\file{--with-clm}} flag is used during the configure and build process.}
 
 \item{\file{water_balance_x.tcl} and {\file{water_balance_y.tcl}}. An overland flow example script that uses the water-balance routines integrated into {\file{pftools}}.  These two problems are based on simple overland flow conditions with slopes primarily in the x or y-directions.  Note: this problem only will run if the Silo file capability is used, that is a {\file{--with-silo=PATH}} flag is used during the configure and build process.}
-
-\item{\file{pfmg.tcl} and \file{pfmg_octree.tcl}. Tests of the external \emph{Hypre} preconditioner options.  Note: this problem only will run if the \emph{Hypre} capability is used, that is a {\file{--with-hypre=PATH}} flag is used during the configure and build process.}
 
 \item{\file{pfmg.tcl} and \file{pfmg_octree.tcl}. Tests of the external \emph{Hypre} preconditioner options.  Note: this problem only will run if the \emph{Hypre} capability is used, that is a {\file{--with-hypre=PATH}} flag is used during the configure and build process.}
 
@@ -537,7 +538,7 @@ pfset GeomInput.domain_input.GeomName   domain
 Here, you set the limits in space for your entire domain.  The span from \file{Lower.X} to \file{Upper.X} 
 will be equal to the product of \file{ComputationalGrid.DX} times \file{ComputationalGrid.NX}.  
 Same for {\em Y} and {\em Z} (i.e. the number of grid elements times size of the grid element has to
-equal the size of the grid in each dimension).   The /code{Patches} key assigns names to the outside edges, 
+equal the size of the grid in each dimension).   The \code{Patches} key assigns names to the outside edges, 
 because the domain is the limit of the problem in space.
 
 \begin{verbatim}
@@ -735,7 +736,7 @@ pfset Phase.water.Viscosity.Value	1.0
 \end{verbatim}
 
 We will not use the \parflow{} grid based transport scheme.  We will then leave 
-contaminants blank because we will use a different code for to model (virus, tracer) contamination.
+contaminants blank because we will use a different code to model (virus, tracer) contamination.
 
 \begin{verbatim}
 #----------------------------------------------------------------------------
@@ -853,7 +854,7 @@ Recall the previously stated Patches and associate them with the boundary condit
 pfset BCPressure.PatchNames "left right front back bottom top"
 \end{verbatim}
 
-These are Dirichelet BCs (i.e. constant head over cell so the pressure head 
+These are Dirichlet BCs (i.e. constant head over cell so the pressure head 
 is set to hydrostatic-- \emph{see} \S~\ref{Boundary Conditions: Pressure}).  
 There is no time dependence, so use the \code{constant} time cycle we defined previously.  
 \code{RefGeom} links this to the established domain geometry and tells \parflow{} 
@@ -1000,7 +1001,7 @@ In this case, it is a directory called flow.
 Then you cd (change directory) into that new directory.  
 If you wanted to put an entire path rather than just a name, 
 you would have more control over where your output file goes.  
-For example, you would put \file{file mkdir "/cape_cod/revised_statistics/flow"} 
+For example, you would put \file{file mkdir ``/cape_cod/revised_statistics/flow"} 
 and then change into that directory. 
 
 \begin{verbatim}
@@ -1090,7 +1091,8 @@ This actually corresponds to the example presented in the \code{SLIM} user's man
 #source bromide_trans.sm.tcl
 \end{verbatim}
 
-We can add options to this script.  For example if we wanted to add a pumping well
+We can add options to this script.  For example if we wanted to add a pumping well these additions
+are described below.
 %==============================
 \subsection*{Adding a Pumping Well}
 
@@ -1144,7 +1146,8 @@ pfset Solver.WriteSiloSaturation True
 \end{verbatim}\end{display}
 
 
-You can then directly open \file{harvey_flow.#.out.perm_x.silo} (where \file{#} is the realization number) will be the field of your domain, showing the variation in x-permeability in 3-D space.
+You can then directly open the file \file{harvey_flow.#.out.perm_x.silo} (where \file{#} is the realization number).
+The resulting image will be the hydraulic conductivity field of your domain, showing the variation in x-permeability in 3-D space.
 You can also generate representations of head or pressure (or y or z permeability) throughout your domain using \parflow{} output files. 
 See the section on visualization for more details.
 
@@ -1272,7 +1275,7 @@ pfset GeomInput.box_input.GeomName      domain
 Here, you set the limits in space for your entire domain.  The span from \file{Lower.X} to \file{Upper.X} 
 will be equal to the product of \file{ComputationalGrid.DX} times \file{ComputationalGrid.NX}.  
 Same for {\em Y} and {\em Z} (i.e. the number of grid elements times size of the grid element has to
-equal the size of the grid in each dimension).   The /code{Patches} key assigns names to the outside edges, 
+equal the size of the grid in each dimension).   The \code{Patches} key assigns names to the outside edges, 
 because the domain is the limit of the problem in space.
 
 \begin{verbatim}
@@ -1306,8 +1309,8 @@ pfset Geom.indi_input.FileName            "IndicatorFile_Gleeson.50z.pfb"
 \end{verbatim}
 
 For every name in the \file{GeomNames} list we define the corresponding value in the indicator file. 
-For example, here we are saying that our first soil unit (\file{s1}) is represented by the number "1"
-in the indicator file, while the first geologic unit (\file{g1}) is represented by the number "21".
+For example, here we are saying that our first soil unit (\file{s1}) is represented by the number ``1"
+in the indicator file, while the first geologic unit (\file{g1}) is represented by the number ``21".
 Note that the integers used in the indicator file do not need to be consecutive.
 
 \begin{verbatim}
@@ -1476,7 +1479,7 @@ pfset TimingInfo.BaseUnit                 1.0
 
 This key specifies the time step number that will be associated with the first advection cycle
 of the transient problem. Because we are starting from scratch we set this to 0. If we were 
-restarting a run we would set this to the laste time step of your previous simulation. Refer to 
+restarting a run we would set this to the last time step of your previous simulation. Refer to 
 \S~\ref{Restarting a Run} for additional instructions on restarting a run.
 
 \begin{verbatim}
@@ -1902,8 +1905,8 @@ pfset Solver.Nonlinear.VariableDz                     False
 \end{verbatim}
 
 We then set the max solver settings and linear and nonlinear convergence
-tolerance settings. The linear system will be solved to a norm of $10^-8$ and 
-the nonlinear system will be solved to less than $10^-6$. Of note in latter key block 
+tolerance settings. The linear system will be solved to a norm of $10^{-8}$ and 
+the nonlinear system will be solved to less than $10^{-6}$. Of note in latter key block 
 is the EtaChoice and that we use the analytical Jacobian (\emph{UseJacobian=\bf{True}}).
 We are using the \emph{FullJacobian} preconditioner, which is a more robust approach
 but is more expensive.

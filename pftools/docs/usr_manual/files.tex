@@ -548,7 +548,7 @@ on when data is printed out.
   valued.  A base unit of ``0.5'' would allow integers and fractions
   of 0.5 to be used for time input values.
 
-  The rational behind this restriction is to allow time to be
+  The rationale behind this restriction is to allow time to be
   discretized on some interval to enable integer arithmetic to be used
   when computing/comparing times.  This avoids the problems associated
   with real value comparisons which can lead to events occurring at
@@ -3950,6 +3950,7 @@ pfset Solver.CLM.MetForcing   2D
 \item[{\bf VGRD}: ] South-to-North or V-component of wind $[m/s]$
 \item[{\bf Press}: ] Atmospheric Pressure $[pa]$
 \item[{\bf SPFH}: ] Water-vapor specific humidity $[kg/kg]$
+\label{clm_forcing}
 \end{description}
 Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
 }
@@ -4246,7 +4247,7 @@ END
 %=============================================================================
 %=============================================================================
 
-\section{ParFlow CLM Single Output Binary Files (.pfb)}
+\section{ParFlow CLM Single Output Binary Files (.c.pfb)}
 \label{ParFlow Binary Files (.c.pfb)}
 
 The \file{.pfb} file format is a binary file format which is used
