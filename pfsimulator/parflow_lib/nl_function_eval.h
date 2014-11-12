@@ -25,6 +25,7 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
   USA
 **********************************************************************EHEADER*/
+#define FGTest
 
 typedef struct
 {
@@ -41,22 +42,12 @@ typedef struct
    Matrix      *jacobian_matrix_F;//dok
 
 
-   Vector      *old_density;
-   Vector      *old_saturation;
-   Vector      *old_pressure;
-   Vector      *density;
-   Vector      *saturation;
-
-   Vector      *old_saturation2;
-   Vector      *old_pressure2;
-   Vector      *saturation2;
+   N_Vector     fieldContainerNVector;	
 
    double       dt;
    double       time;
    double       *outflow; /*sk*/
    
-   Vector       *evap_trans; /*sk*/
-   Vector       *ovrl_bc_flx; /*sk*/
    
 } State;
 
@@ -69,17 +60,6 @@ typedef struct
 #define StateFunc(state)          ((state)->nl_function_eval)
 #define StateBCPressure(state)          ((state)->bc_pressure)//dok
 #define StateProblemData(state)   ((state)->problem_data)
-#define StateOldDensity(state)    ((state)->old_density)
-#define StateOldPressure(state)   ((state)->old_pressure)
-#define StateOldSaturation(state) ((state)->old_saturation)
-#define StateDensity(state)       ((state)->density)
-#define StateSaturation(state)    ((state)->saturation)
-
-#define StateSaturation2(state)    ((state)->saturation2)
-#define StateOldPressure2(state)   ((state)->old_pressure2)
-#define StateOldSaturation2(state) ((state)->old_saturation2)
-
-
 #define StateDt(state)            ((state)->dt)
 #define StateTime(state)          ((state)->time)
 #define StateJacEval(state)       ((state)->richards_jacobian_eval)
@@ -89,5 +69,19 @@ typedef struct
 #define StateJacF(state)           ((state)->jacobian_matrix_F)//dok
 #define StatePrecond(state)       ((state)->precond)
 #define StateOutflow(state)       ((state)->outflow) /*sk*/
-#define StateEvapTrans(state)     ((state)->evap_trans) /*sk*/
-#define StateOvrlBcFlx(state)     ((state)->ovrl_bc_flx) /*sk*/
+#define StateFieldContainer(state)       ((state)->fieldContainerNVector)
+
+
+/* Vectors that are part of fieldContainerNVector and may vary with number of species/phases */
+#define StateOldDensity(state)    (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[1])
+#define StateOldPressure(state)   (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[4])
+#define StateOldSaturation(state) (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[3])
+#define StateDensity(state)       (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[0])
+#define StateSaturation(state)    (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[2])
+#define StateEvapTrans(state)     (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[5])
+#define StateOvrlBcFlx(state)     (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[6])
+#ifdef FGTest
+    #define StateSaturation2(state)    (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[7]) /*FG for tests*/
+    #define StateOldPressure2(state)   (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[9]) /*FG for tests*/
+    #define StateOldSaturation2(state) (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[8]) /*FG for tests*/
+#endif

@@ -96,7 +96,7 @@ typedef struct
  *--------------------------------------------------------------------------*/
 int  KINSolInitPC(
 int       neq,
-N_Vector  multiDimNVector,
+N_Vector  speciesNVector,
 N_Vector  uscale,
 N_Vector  fval,
 N_Vector  fscale,
@@ -129,7 +129,7 @@ void     *current_state)
 
 
    PFModuleReNewInstanceType(KinsolPCInitInstanceXtraInvoke, precond_pressure, (NULL, NULL, problem_data, NULL, 
-								                NV_CONTENT_PF(multiDimNVector)->dims[0],   //pressure
+								                NV_CONTENT_PF(speciesNVector)->dims[0],   //pressure
 										saturation, density, dt, time));
    return(0);
 }
@@ -140,7 +140,7 @@ void     *current_state)
  *--------------------------------------------------------------------------*/
 int   KINSolCallPC(
 int       neq,	
-N_Vector  multiDimNVector,
+N_Vector  speciesNVector,
 N_Vector  uscale,
 N_Vector  fval,
 N_Vector  fscale,
@@ -154,7 +154,7 @@ void     *current_state)
    PFModule *precond_pressure = StatePrecond( (State*)current_state );
 
    (void) neq;
-   (void) multiDimNVector;
+   (void) speciesNVector;
    (void) uscale;
    (void) fval;
    (void) fscale;
@@ -202,7 +202,7 @@ void PrintFinalStats(
  * KinsolNonlinSolver
  *--------------------------------------------------------------------------*/
 
-int KinsolNonlinSolver (N_Vector multiDimNVector, Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx , Vector *saturation2 , Vector *old_saturation2 , Vector *old_pressure2)
+int KinsolNonlinSolver (N_Vector speciesNVector, N_Vector fieldContainerNVector,  double t , double dt , ProblemData *problem_data)
 {
    PFModule     *this_module      = ThisPFModule;
    PublicXtra   *public_xtra      = (PublicXtra   *)PFModulePublicXtra(this_module);
@@ -240,25 +240,13 @@ int KinsolNonlinSolver (N_Vector multiDimNVector, Vector *density , Vector *old_
    StateProblemData(current_state)   = problem_data;
    StateTime(current_state)          = t;
    StateDt(current_state)            = dt;
-   StateOldDensity(current_state)    = old_density;
-   StateOldPressure(current_state)   = old_pressure;
-   StateOldSaturation(current_state) = old_saturation;
-   StateDensity(current_state)       = density;
-   StateSaturation(current_state)    = saturation;
+
+   StateFieldContainer(current_state)    = fieldContainerNVector;
    
-
-   StateOldPressure2(current_state)   = old_pressure2;
-   StateOldSaturation2(current_state) = old_saturation2;
-   StateSaturation2(current_state)    = saturation2;
-
-
-
-StateJacEval(current_state)       = richards_jacobian_eval;
+   StateJacEval(current_state)       = richards_jacobian_eval;
    StateJac(current_state)           = jacobian_matrix;
    StateJacC(current_state)           = jacobian_matrix_C;//dok
    StatePrecond(current_state)       = precond_pressure;
-   StateEvapTrans(current_state)     = evap_trans;  /*sk*/
-   StateOvrlBcFlx(current_state)     = ovrl_bc_flx; /*sk*/
 
    if (!amps_Rank(amps_CommWorld))
       fprintf(kinsol_file,"\nKINSOL starting step for time %f\n",t);
@@ -267,7 +255,7 @@ StateJacEval(current_state)       = richards_jacobian_eval;
 
    ret = KINSol( (void*)kin_mem,        /* Memory allocated above */
 	         neq,                   /* Dummy variable here */
-	         multiDimNVector,       /* Initial guess @ this was "pressure before" */
+	         speciesNVector,       /* Initial guess @ this was "pressure before" */
 	         feval,                 /* Nonlinear function */
 	         globalization,         /* Globalization method */
 	         uscale,                /* Scalings for the variable */
@@ -415,11 +403,19 @@ double      *temp_data)
 
 
       /* Scaling vectors*/
+#ifdef FGTest      
       uscalen = N_VNew_PF(grid,2);
+#else
+      uscalen = N_VNew_PF(grid,1);
+#endif
       N_VConst_PF(1.0,uscalen);
       instance_xtra -> uscalen = uscalen;
 
+#ifdef FGTest
       fscalen = N_VNew_PF(grid,2);
+#else
+      fscalen = N_VNew_PF(grid,1);
+#endif
       N_VConst_PF(1.0,fscalen);
       instance_xtra -> fscalen = fscalen;
 

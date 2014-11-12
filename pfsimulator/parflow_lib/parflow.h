@@ -33,6 +33,9 @@
  *
  *****************************************************************************/
 
+#define FGTest
+
+
 #ifndef _PARFLOW_HEADER
 #define _PARFLOW_HEADER
 

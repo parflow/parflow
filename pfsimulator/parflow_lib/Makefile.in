@@ -62,6 +62,8 @@ OBJS = \
 	innerprod.o\
 	inputRF.o\
 	input_database.o\
+	kinsol_function_eval.o\
+	kinsol_matvec.o\
 	kinsol_nonlin_solver.o\
 	kinsol_pc.o\
 	l2_error_norm.o\

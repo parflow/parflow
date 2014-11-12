@@ -34,6 +34,7 @@
  *
  *****************************************************************************/
 
+
 #include "parflow.h"
 
 #include <string.h>
@@ -195,11 +196,12 @@ typedef struct
    /*****************************************************************************
     * Local variables that need to be kept around 
     *****************************************************************************/
-   
+#ifdef FGTest   
    Vector      *pressure2;
    Vector      *saturation2;
    Vector      *old_saturation2;
    Vector      *old_pressure2;
+#endif
 
 Vector      *pressure;
    Vector      *saturation;
@@ -580,7 +582,7 @@ void SetupRichards(PFModule *this_module) {
 
       /* SGS FIXME why are these here and not created in instance_xtra ? */
    
-
+#ifdef FGTest 
       instance_xtra -> pressure2 = NewVectorType( grid, 1, 1, vector_cell_centered);
       InitVectorAll(instance_xtra -> pressure2, -FLT_MAX);
 
@@ -592,11 +594,7 @@ void SetupRichards(PFModule *this_module) {
 
       instance_xtra -> old_saturation2 = NewVectorType( grid, 1, 1, vector_cell_centered  );
       InitVectorAll(instance_xtra -> old_saturation2, 0.0);
-
-
-
-
-
+#endif
 
 
       instance_xtra -> pressure = NewVectorType( grid, 1, 1, vector_cell_centered);
@@ -1053,9 +1051,10 @@ void AdvanceRichards(PFModule *this_module,
    char          file_prefix[2048], file_type[2048], file_postfix[2048];
 
    /* multi dimensional N_Vector that is passed to KinSol*/
-   N_Vector     multiDimNVector;
-   N_VectorContent multiDimContent;
-
+   N_Vector     speciesNVector;
+   N_VectorContent speciesContent;
+   N_Vector     fieldContainerNVector;
+   N_VectorContent containerContent;
     
    /* Added for transient EvapTrans file management - NBE */
     int Stepcount, Loopcount;
@@ -1103,19 +1102,35 @@ void AdvanceRichards(PFModule *this_module,
    /*                                                                     */
    /***********************************************************************/
 
- 
-PFVCopy(instance_xtra -> saturation, instance_xtra -> saturation2);
-            PFVCopy(instance_xtra -> pressure,   instance_xtra -> pressure2);
-PFVCopy(instance_xtra -> old_saturation, instance_xtra -> old_saturation2);
-            PFVCopy(instance_xtra -> old_pressure,   instance_xtra -> old_pressure2);
+#ifdef FGTest 
+    PFVCopy(instance_xtra -> saturation, instance_xtra -> saturation2);
+    PFVCopy(instance_xtra -> pressure,   instance_xtra -> pressure2);
+    PFVCopy(instance_xtra -> old_saturation, instance_xtra -> old_saturation2);
+    PFVCopy(instance_xtra -> old_pressure,   instance_xtra -> old_pressure2);
 
-
-
-   multiDimNVector = N_VNewEmpty_PF(2);   // create a multi dimensional N_Vector with two dimensions
-   multiDimContent = NV_CONTENT_PF(multiDimNVector);	     
-   multiDimContent->dims[0] = instance_xtra -> pressure;      // assemble fields into one N_Vector element
-multiDimContent->dims[1] = instance_xtra -> pressure2;   //dummy
-   //multiDimContent->dims[1] = temperature;   // currently pressure and temperature	
+    speciesNVector = N_VNewEmpty_PF(2);   // create a multi dimensional N_Vector with two dimensions
+    speciesContent = NV_CONTENT_PF(speciesNVector);
+    speciesContent->dims[0] = instance_xtra -> pressure;  // assemble fields into one N_Vector element
+    speciesContent->dims[1] = instance_xtra -> pressure2; //test with two times pressure
+    fieldContainerNVector = N_VNewEmpty_PF(10);
+    containerContent = NV_CONTENT_PF(fieldContainerNVector);
+    containerContent->dims[7] = instance_xtra -> saturation2;
+    containerContent->dims[8] = instance_xtra -> old_saturation2; 
+    containerContent->dims[9] = instance_xtra -> old_pressure2;
+#else
+    speciesNVector = N_VNewEmpty_PF(1); 
+    speciesContent = NV_CONTENT_PF(speciesNVector);
+    speciesContent->dims[0] = instance_xtra -> pressure;
+    fieldContainerNVector = N_VNewEmpty_PF(7);
+    containerContent = NV_CONTENT_PF(fieldContainerNVector);
+#endif
+    containerContent->dims[0] = instance_xtra -> density;
+    containerContent->dims[1] = instance_xtra -> old_density;
+    containerContent->dims[2] = instance_xtra -> saturation;
+    containerContent->dims[3] = instance_xtra -> old_saturation;
+    containerContent->dims[4] = instance_xtra -> old_pressure;
+    containerContent->dims[5] = evap_trans;
+    containerContent->dims[6] = instance_xtra -> ovrl_bc_flx;
 
 
    // Initialize ct in either case
@@ -1700,12 +1715,10 @@ multiDimContent->dims[1] = instance_xtra -> pressure2;   //dummy
 	    PFVCopy(instance_xtra -> saturation, instance_xtra -> old_saturation);
 	    PFVCopy(instance_xtra -> pressure,   instance_xtra -> old_pressure);
 
-
+#ifdef FGTest 
             PFVCopy(instance_xtra -> saturation2, instance_xtra -> old_saturation2);
             PFVCopy(instance_xtra -> pressure2,   instance_xtra -> old_pressure2);
-
-	    // PFVCopy(multiDimContent->dims[0], old_pressure);
-            //PFVCopy(multiDimContent->dims[1],old_temperature);	
+#endif
 	 }
 	 else  /* Not converged, so decrease time step */
 	 {
@@ -1727,12 +1740,11 @@ multiDimContent->dims[1] = instance_xtra -> pressure2;   //dummy
 	    
 	    PFVCopy(instance_xtra -> old_density,    instance_xtra -> density);
 	    PFVCopy(instance_xtra -> old_saturation, instance_xtra -> saturation);
-	    PFVCopy(instance_xtra -> old_pressure, multiDimContent->dims[0]);
-
+	    PFVCopy(instance_xtra -> old_pressure, speciesContent->dims[0]);
+#ifdef FGTest 
 	    PFVCopy(instance_xtra -> old_saturation2, instance_xtra -> saturation2);
-            PFVCopy(instance_xtra -> old_pressure2, multiDimContent->dims[1]);	
-
-            //PFVCopy(old_temperature,multiDimContent->dims[1]);
+            PFVCopy(instance_xtra -> old_pressure2, speciesContent->dims[1]);	
+#endif
 	 } // End set t and dt based on convergence
 
 #ifdef HAVE_OAS3
@@ -1913,22 +1925,16 @@ multiDimContent->dims[1] = instance_xtra -> pressure2;   //dummy
          
 	 t += dt;
 
-          
+
 	 /*******************************************************************/
 	 /*          Solve the nonlinear system for this time step          */
 	 /*******************************************************************/
 	  
 	 retval = PFModuleInvokeType(NonlinSolverInvoke, nonlin_solver, 
-				     (multiDimNVector, 
-				      instance_xtra -> density, 
-				      instance_xtra -> old_density, 
-				      instance_xtra -> saturation, 
-				      instance_xtra -> old_saturation, 
+				     (speciesNVector,
+				      fieldContainerNVector,  
 				      t, dt, 
-				      problem_data, instance_xtra -> old_pressure, 
-				      evap_trans, 
-				      instance_xtra -> ovrl_bc_flx ,// ));
-				      instance_xtra -> saturation2 , instance_xtra -> old_saturation2 , instance_xtra -> old_pressure2));
+				      problem_data));  
 
 	 if (retval != 0)
 	 {
@@ -2026,12 +2032,12 @@ multiDimContent->dims[1] = instance_xtra -> pressure2;   //dummy
 		      CALCFCN));
 
 
-
+#ifdef FGTest
       PFModuleInvokeType(SaturationInvoke, problem_saturation,
                      (instance_xtra -> saturation2, instance_xtra -> pressure2,
                       instance_xtra -> density, gravity, problem_data,
                       CALCFCN));
-
+#endif
 
       /***************************************************************
        * Compute running sum of evap trans for water balance 
@@ -2071,13 +2077,13 @@ multiDimContent->dims[1] = instance_xtra -> pressure2;   //dummy
 	 {
 	    sprintf(file_postfix, "%05d", instance_xtra -> file_number);
 	    sprintf(file_type, "press");
-	    WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
+	    WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure2,
                       t, instance_xtra -> file_number, "Pressure");
-
+#ifdef FGTest
       //      sprintf(file_type, "press");
   //          WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure2,
     //                  t, instance_xtra -> file_number, "Pressure2");
-
+#endif
 
 	    any_file_dumped = 1;
      }
@@ -2104,11 +2110,11 @@ multiDimContent->dims[1] = instance_xtra -> pressure2;   //dummy
 	    sprintf(file_type, "satur");
 	    WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation, 
                       t, instance_xtra -> file_number, "Saturation");
-
+#ifdef FGTest
 //sprintf(file_type, "satur");
 //            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation2,
 //                      t, instance_xtra -> file_number, "Saturation2");
-
+#endif
 	    any_file_dumped = 1;
 	 }
 
@@ -2553,15 +2559,15 @@ multiDimContent->dims[1] = instance_xtra -> pressure2;   //dummy
       {
 	 sprintf(file_postfix, "%05d", instance_xtra -> file_number);
 	 sprintf(file_type, "press");
-	 WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
+	 WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure2,
 		   t, instance_xtra -> file_number, "Pressure");
 
 
-
+#ifdef FGTest
 //sprintf(file_type, "press");
   //       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure2,
     //               t, instance_xtra -> file_number, "Pressure2");
-
+#endif
 	 any_file_dumped = 1;
     
       }
@@ -2579,11 +2585,11 @@ multiDimContent->dims[1] = instance_xtra -> pressure2;   //dummy
 	 sprintf(file_type, "satur");
 	 WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation, 
 		   t, instance_xtra -> file_number, "Saturation");
-
+#ifdef FGTest
 //sprintf(file_type, "satur");
   //       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation2,
     //               t, instance_xtra -> file_number, "Saturation2");
-
+#endif
 	 any_file_dumped = 1;
       }
 
@@ -2704,12 +2710,12 @@ void TeardownRichards(PFModule *this_module) {
    FreeVector( instance_xtra -> ovrl_bc_flx );
    FreeVector( instance_xtra -> mask );
 
-
+#ifdef FGTest
 FreeVector( instance_xtra -> saturation2 );
    FreeVector( instance_xtra -> old_saturation2 );
    FreeVector( instance_xtra -> old_pressure2 );
    FreeVector( instance_xtra -> pressure2 );
-
+#endif
 
    if(instance_xtra -> evap_trans_sum) {
       FreeVector( instance_xtra -> evap_trans_sum);

@@ -307,14 +307,14 @@ char *NA_IndexToName (NameArray name_array , int index );
 int NA_Sizeof (NameArray name_array );
 void InputError (const char *format , const char *s1 , const char *s2 );
 
-typedef int (*NonlinSolverInvoke) (N_Vector multiDimNVector , Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *saturation2 , Vector *old_saturation2 , Vector *old_pressure2 );
+typedef int (*NonlinSolverInvoke) (N_Vector speciesNVector , N_Vector fieldContainerNVector , double t , double dt , ProblemData *problem_data );
 typedef PFModule *(*NonlinSolverInitInstanceXtraInvoke) (Problem *problem , Grid *grid , ProblemData *problem_data , double *temp_data );
 
 /* kinsol_nonlin_solver.c */
-int KINSolInitPC (int neq , N_Vector multiDimNVector , N_Vector uscale , N_Vector fval , N_Vector fscale , N_Vector vtemp1 , N_Vector vtemp2 , void *nl_function , double uround , long int *nfePtr , void *current_state );
-int KINSolCallPC (int neq , N_Vector multiDimNVector , N_Vector uscale , N_Vector fval , N_Vector fscale , N_Vector vtem , N_Vector ftem , void *nl_function , double uround , long int *nfePtr , void *current_state );
+int KINSolInitPC (int neq , N_Vector speciesNVector , N_Vector uscale , N_Vector fval , N_Vector fscale , N_Vector vtemp1 , N_Vector vtemp2 , void *nl_function , double uround , long int *nfePtr , void *current_state );
+int KINSolCallPC (int neq , N_Vector speciesNVector , N_Vector uscale , N_Vector fval , N_Vector fscale , N_Vector vtem , N_Vector ftem , void *nl_function , double uround , long int *nfePtr , void *current_state );
 void PrintFinalStats (FILE *out_file , long int *integer_outputs_now , long int *integer_outputs_total );
-int KinsolNonlinSolver (N_Vector multiDimNVector , Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx , Vector *saturation2 , Vector *old_saturation2 , Vector *old_pressure2 );
+int KinsolNonlinSolver (N_Vector speciesNVector , N_Vector fieldContainerNVector , double t , double dt , ProblemData *problem_data );
 PFModule *KinsolNonlinSolverInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data , double *temp_data );
 void KinsolNonlinSolverFreeInstanceXtra (void );
 PFModule *KinsolNonlinSolverNewPublicXtra (void );
@@ -477,7 +477,7 @@ typedef void (*NlFunctionEvalInvoke) (Vector *pressure , Vector *fval , ProblemD
 typedef PFModule *(*NlFunctionEvalInitInstanceXtraInvoke) (Problem *problem , Grid *grid , double *temp_data );
 
 /* nl_function_eval.c */
-void KINSolFunctionEval (int size , N_Vector multiDimNVector , N_Vector fval , void *current_state );
+void KINSolFunctionEval (int size , N_Vector speciesNVector , N_Vector fval , void *current_state );
 void NlFunctionEval (Vector *pressure , Vector *fval , ProblemData *problem_data , Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , double dt , double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx);
 PFModule *NlFunctionEvalInitInstanceXtra (Problem *problem , Grid *grid , double *temp_data );
 void NlFunctionEvalFreeInstanceXtra (void );
@@ -981,7 +981,7 @@ typedef void (*RichardsJacobianEvalInvoke) (Vector *pressure , Matrix **ptr_to_J
 typedef PFModule *(*RichardsJacobianEvalInitInstanceXtraInvoke) (Problem *problem , Grid *grid , ProblemData *problem_data, double *temp_data , int symmetric_jac );
 typedef PFModule *(*RichardsJacobianEvalNewPublicXtraInvoke) (char *name);
 /* richards_jacobian_eval.c */
-int KINSolMatVec (void *current_state , N_Vector x , N_Vector y , int *recompute , N_Vector multiDimNVector );
+int KINSolMatVec (void *current_state , N_Vector x , N_Vector y , int *recompute , N_Vector speciesNVector );
 void RichardsJacobianEval (Vector *pressure , Matrix **ptr_to_J , Matrix **ptr_to_JC,Vector *saturation , Vector *density , ProblemData *problem_data , double dt , double time , int symm_part );
 PFModule *RichardsJacobianEvalInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data, double *temp_data , int symmetric_jac );
 void RichardsJacobianEvalFreeInstanceXtra (void );
