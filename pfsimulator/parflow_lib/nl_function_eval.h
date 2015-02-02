@@ -25,13 +25,17 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
   USA
 **********************************************************************EHEADER*/
-#define FGTest
 
 typedef struct
 {
-   PFModule    *nl_function_eval;
+   PFModule    *press_function_eval;
    PFModule    *richards_jacobian_eval;
-   PFModule    *precond;
+   PFModule    *precond_pressure;
+#ifdef withTemperature   
+   PFModule    *temp_function_eval;
+   PFModule    *temperature_jacobian_eval;
+   PFModule    *precond_temperature;   
+#endif
    PFModule    *bc_pressure;//dok
 
    ProblemData *problem_data;
@@ -57,7 +61,7 @@ typedef struct
  * Accessor macros: State
  *--------------------------------------------------------------------------*/
 
-#define StateFunc(state)          ((state)->nl_function_eval)
+#define StatePressFunc(state)          ((state)->press_function_eval)
 #define StateBCPressure(state)          ((state)->bc_pressure)//dok
 #define StateProblemData(state)   ((state)->problem_data)
 #define StateDt(state)            ((state)->dt)
@@ -67,7 +71,14 @@ typedef struct
 #define StateJacC(state)           ((state)->jacobian_matrix_C)//dok
 #define StateJacE(state)           ((state)->jacobian_matrix_E)//dok
 #define StateJacF(state)           ((state)->jacobian_matrix_F)//dok
-#define StatePrecond(state)       ((state)->precond)
+#define StatePrecondPressure(state)       ((state)->precond_pressure)
+#ifdef withTemperature
+  #define StatePrecondTemperature(state)       ((state)->precond_temperature)
+  #define StateFuncTemp(state)           ((state)->temp_function_eval)
+  #define StateJacEvalTemperature(state) ((state)->temperature_jacobian_eval)
+#else
+  #define StatePrecond(state)       ((state)->precond_pressure)
+#endif
 #define StateOutflow(state)       ((state)->outflow) /*sk*/
 #define StateFieldContainer(state)       ((state)->fieldContainerNVector)
 
@@ -84,4 +95,16 @@ typedef struct
     #define StateSaturation2(state)    (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[7]) /*FG for tests*/
     #define StateOldPressure2(state)   (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[9]) /*FG for tests*/
     #define StateOldSaturation2(state) (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[8]) /*FG for tests*/
+#endif
+#ifdef withTemperature
+  #define StateOldTemperature(state)     (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[11])
+  #define StateOldViscosity(state)       (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[9]) //does not change yet
+  #define StateViscosity(state)          (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[9])
+  #define StateClmEnergySource(state)    (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[12])
+  #define StateForcT(state)              (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[13])
+  #define StateHeatCapacityWater(state)  (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[7])
+  #define StateHeatCapacityRock(state)   (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[8])
+  #define StateXVelocity(state)   (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[14])
+  #define StateYVelocity(state)   (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[15])
+  #define StateZVelocity(state)   (((N_VectorContent)(((state)->fieldContainerNVector)->content))->dims[16])
 #endif

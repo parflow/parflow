@@ -148,7 +148,23 @@ Problem   *NewProblem(
    ProblemPhaseDensity(problem) = 
       PFModuleNewModuleType(PhaseDensityNewPublicXtraInvoke, 
 			    PhaseDensity, (num_phases));
+#ifdef withTemperature
 
+//notyet ready      ProblemPhaseViscosity(problem) =
+//      PFModuleNewModuleType(PhaseViscosityNewPublicXtraInvoke,
+//                            PhaseViscosity, (num_phases));
+//
+   problem -> phase_viscosity = ctalloc(double, num_phases);
+   for(i = 0; i < num_phases; i++)
+   {
+      /* SGS need to add switch on type */
+      sprintf(key, "Phase.%s.Viscosity.Value",
+              NA_IndexToName(GlobalsPhaseNames, i));
+      problem -> phase_viscosity[i] = GetDouble(key);
+   }
+//
+
+#else
    problem -> phase_viscosity = ctalloc(double, num_phases);
    for(i = 0; i < num_phases; i++)
    {
@@ -157,7 +173,7 @@ Problem   *NewProblem(
 	      NA_IndexToName(GlobalsPhaseNames, i));
       problem -> phase_viscosity[i] = GetDouble(key);
    }
-
+#endif
    (problem -> contaminant_degradation) = ctalloc(double, num_contaminants);
 
 
@@ -190,6 +206,16 @@ Problem   *NewProblem(
    {  
       ProblemPhaseRelPerm(problem) = PFModuleNewModule(PhaseRelPerm, ());
    }
+
+
+#ifdef withTemperature
+      ProblemTempSource(problem) =
+      PFModuleNewModule(TempSource, ());
+
+      ProblemPhaseHeatCapacity(problem) =
+      PFModuleNewModuleType(PhaseHeatCapacityNewPublicXtraInvoke,
+                            PhaseHeatCapacity, (num_phases));   
+#endif
 
    ProblemPhaseSource(problem) =
       PFModuleNewModuleType(PhaseSourceNewPublicXtraInvoke,
@@ -226,6 +252,12 @@ Problem   *NewProblem(
    {  
       ProblemSaturation(problem) = 
         PFModuleNewModule(Saturation, ());
+
+#ifdef withTemperature
+      ProblemThermalConductivity(problem) =
+        PFModuleNewModule(ThermalConductivity, ());
+#endif
+
    }
 
    /*-----------------------------------------------------------------------
@@ -249,6 +281,15 @@ Problem   *NewProblem(
    ProblemBCPressurePackage(problem) =
       PFModuleNewModuleType(BCPressurePackageNewPublicXtraInvoke,
 			    BCPressurePackage, (num_phases));
+#ifdef withTemperature
+   ProblemBCTemperature(problem) =
+      PFModuleNewModuleType(BCTemperatureNewPublicXtraInvoke,
+                            BCTemperature, (num_phases));
+
+   ProblemBCTemperaturePackage(problem) =
+      PFModuleNewModuleType(BCTemperaturePackageNewPublicXtraInvoke,
+                            BCTemperaturePackage, (num_phases));
+#endif
 
    if ( solver != RichardsSolve )
    {
@@ -271,6 +312,10 @@ Problem   *NewProblem(
    {
       ProblemICPhasePressure(problem) = 
          PFModuleNewModule(ICPhasePressure, ());
+#ifdef withTemperature
+      ProblemICPhaseTemperature(problem) =
+         PFModuleNewModule(ICPhaseTemperature, ());
+#endif
    }
 
    ProblemICPhaseConcen(problem) =
@@ -336,12 +381,28 @@ void      FreeProblem(
    }
    else
    {
+#ifdef withTemperature
+      PFModuleFreeModule(ProblemThermalConductivity(problem));
+      PFModuleFreeModule(ProblemICPhaseTemperature(problem));
+#endif
       PFModuleFreeModule(ProblemSaturation(problem));
       PFModuleFreeModule(ProblemICPhasePressure(problem));
       PFModuleFreeModule(ProblemPhaseRelPerm(problem));
       PFModuleFreeModule(ProblemSelectTimeStep(problem));
       PFModuleFreeModule(ProblemL2ErrorNorm(problem));
    }
+
+#ifdef withTemperature
+   PFModuleFreeModule(ProblemTempSource(problem));
+   PFModuleFreeModule(ProblemBCTemperaturePackage(problem));
+   PFModuleFreeModule(ProblemBCTemperature(problem));
+//not rdy   PFModuleFreeModule(ProblemPhaseViscosity(problem));
+ tfree(problem -> phase_viscosity);
+//
+   PFModuleFreeModule(ProblemPhaseHeatCapacity(problem));
+#else
+   tfree(problem -> phase_viscosity);
+#endif
    PFModuleFreeModule(ProblemICPhaseConcen(problem));
    PFModuleFreeModule(ProblemBCPressurePackage(problem));
    PFModuleFreeModule(ProblemBCPressure(problem));
@@ -353,7 +414,6 @@ void      FreeProblem(
    PFModuleFreeModule(ProblemPermeability(problem));
    tfree(problem -> contaminant_degradation);
    PFModuleFreeModule(ProblemPhaseDensity(problem));
-   tfree(problem -> phase_viscosity);
    PFModuleFreeModule(ProblemSpecStorage(problem)); //sk
    PFModuleFreeModule(ProblemXSlope(problem)); //sk
    PFModuleFreeModule(ProblemYSlope(problem));
@@ -406,7 +466,9 @@ ProblemData   *NewProblemData(
    ProblemDataPorosity(problem_data) = NewVectorType(grid, 1, 1, vector_cell_centered);
 
    ProblemDataBCPressureData(problem_data) = NewBCPressureData();
-
+#ifdef withTemperature
+   ProblemDataBCTemperatureData(problem_data) = NewBCTemperatureData();
+#endif
    ProblemDataWellData(problem_data) = NewWellData();
 
    return problem_data;
@@ -433,7 +495,9 @@ void          FreeProblemData(
          GrGeomFreeSolid(ProblemDataGrSolids(problem_data)[i]);
       tfree(ProblemDataGrSolids(problem_data));
 #endif
-
+#ifdef withTemperature
+      FreeBCTemperatureData(ProblemDataBCTemperatureData(problem_data));
+#endif
       FreeWellData(ProblemDataWellData(problem_data));
       FreeBCPressureData(ProblemDataBCPressureData(problem_data));
       FreeVector(ProblemDataPorosity(problem_data));

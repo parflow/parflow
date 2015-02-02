@@ -73,7 +73,7 @@ typedef struct
     pressure values.  This evaluation is basically an application
     of the stencil to the pressure array. */
 
-void NlFunctionEval (Vector *pressure,  /* Current pressure values */
+void PressFunctionEval (Vector *pressure,  /* Current pressure values */
 		     Vector *fval, /* Return values of the nonlinear function */
 		     ProblemData *problem_data, /* Geometry data for problem */
 		     Vector *saturation ,  /* Saturation / work vector */
@@ -187,6 +187,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    /* Initialize function values to zero. */
    PFVConstInit(0.0, fval);
 
+
    /* diffusive test here, this is NOT PF style and should be 
     re-done putting keys in BC Pressure Package and adding to the 
     datastructure for overlandflowBC */
@@ -227,6 +228,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 
    PFModuleInvokeType(SaturationInvoke, saturation_module, (saturation, pressure, density, 
    gravity, problem_data, CALCFCN));
+
 
    /* bc_struct = PFModuleInvoke(BCStruct *, bc_pressure, 
       (problem_data, grid, gr_domain, time));*/
@@ -294,6 +296,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       pop = SubvectorData(po_sub);
       fp  = SubvectorData(f_sub);
 
+
+
       GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
       {
 	 ip  = SubvectorEltIndex(f_sub,   i, j, k);
@@ -303,9 +307,12 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
           del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));
           del_x_slope = 1.0;
           del_y_slope = 1.0;
-          
 	 fp[ip] = (sp[ip]*dp[ip] - osp[ip]*odp[ip])*pop[ipo]*vol*del_x_slope*del_y_slope*z_mult_dat[ip];
+//      printf("##FG1:index: %i ; %lf(f) =  ( %lf(sp) * %lf(dp) - %lf(osp) * %lf(odp) ) * %lf(pop) * %lf(vol)\n",ip,fp[ip],sp[ip],dp[ip],osp[ip],odp[ip],pop[ipo],vol);
+
       });
+
+
    }
 
    /*@ Add in contributions from compressible storage */
@@ -1663,10 +1670,10 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 
 
 /*--------------------------------------------------------------------------
- * NlFunctionEvalInitInstanceXtra
+ * PressFunctionEvalInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule    *NlFunctionEvalInitInstanceXtra(Problem     *problem,
+PFModule    *PressFunctionEvalInitInstanceXtra(Problem     *problem,
 					    Grid        *grid,
 					    double      *temp_data)
 					    
@@ -1738,10 +1745,10 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem     *problem,
 
 
 /*--------------------------------------------------------------------------
- * NlFunctionEvalFreeInstanceXtra
+ * PressFunctionEvalFreeInstanceXtra
  *--------------------------------------------------------------------------*/
 
-void  NlFunctionEvalFreeInstanceXtra()
+void  PressFunctionEvalFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
@@ -1763,10 +1770,10 @@ void  NlFunctionEvalFreeInstanceXtra()
 
 
 /*--------------------------------------------------------------------------
- * NlFunctionEvalNewPublicXtra
+ * PressFunctionEvalNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule   *NlFunctionEvalNewPublicXtra()
+PFModule   *PressFunctionEvalNewPublicXtra()
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;
@@ -1782,7 +1789,7 @@ PFModule   *NlFunctionEvalNewPublicXtra()
    sprintf(key, "OverlandSpinupDampP2");
    public_xtra -> SpinupDampP2 = GetDoubleDefault(key, 0.0); //NBE
 
-   (public_xtra -> time_index) = RegisterTiming("NL_F_Eval");
+   (public_xtra -> time_index) = RegisterTiming("Press_F_Eval");
 
    PFModulePublicXtra(this_module) = public_xtra;
 
@@ -1791,10 +1798,10 @@ PFModule   *NlFunctionEvalNewPublicXtra()
 
 
 /*--------------------------------------------------------------------------
- * NlFunctionEvalFreePublicXtra
+ * PressFunctionEvalFreePublicXtra
  *--------------------------------------------------------------------------*/
 
-void  NlFunctionEvalFreePublicXtra()
+void  PressFunctionEvalFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
    PublicXtra  *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
@@ -1808,10 +1815,10 @@ void  NlFunctionEvalFreePublicXtra()
 
 
 /*--------------------------------------------------------------------------
- * NlFunctionEvalSizeOfTempData
+ * PressFunctionEvalSizeOfTempData
  *--------------------------------------------------------------------------*/
 
-int  NlFunctionEvalSizeOfTempData()
+int  PressFunctionEvalSizeOfTempData()
 {
    return 0;
 }

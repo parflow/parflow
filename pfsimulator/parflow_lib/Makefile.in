@@ -6,6 +6,19 @@
 ## Modified:	$LastChangedDate: 2008-02-28 16:23:19 -0800 (Thu, 28 Feb 2008) $
 
 
+##      bc_temperature_package.o\
+##      bc_temperature.o\
+##      problem_phase_viscosity.o\
+##      problem_temp_source.o\
+##      problem_phase_heat_capacity.o\
+##      problem_thermal_conductivity.o\
+##      problem_ic_phase_temperature.o\
+##      temperature_jacobian_eval.o\
+##      temp_function_eval.o\
+##      kinsol_pc_temperature.o\
+##      kinsol_pc_pressure.o\
+##      problem_bc_temperature.o\
+
 PARFLOW	      =	@top_srcdir@
 SRCDIR	      =	@srcdir@
 SUBDIR        = parflow_lib
@@ -22,6 +35,18 @@ CXX_SRCS = \
 CXXOBJS = $(CXX_SRCS:.cxx=.o)
 
 OBJS = \
+      bc_temperature_package.o\
+      bc_temperature.o\
+      problem_phase_viscosity.o\
+      problem_temp_source.o\
+      problem_phase_heat_capacity.o\
+      problem_thermal_conductivity.o\
+      problem_ic_phase_temperature.o\
+      temperature_jacobian_eval.o\
+      temp_function_eval.o\
+      kinsol_pc_temperature.o\
+      kinsol_pc_pressure.o\
+      problem_bc_temperature.o\
 	advect.o\
 	advection_godunov.o\
 	axpy.o\
@@ -89,7 +114,7 @@ OBJS = \
 	pgsRF.o\
 	phase_velocity_face.o\
 	ppcg.o\
-	nl_function_eval.o\
+	press_function_eval.o\
 	printgrid.o\
 	printmatrix.o\
 	printvector.o\
@@ -158,7 +183,6 @@ OBJS = \
 	write_parflow_silo_pmpio.o \
 	wrf_parflow.o \
 	n_vector.o \
-	nl_function_eval.o \
 	evaptranssum.o \
 	overlandsum.o \
 	overlandflow_eval.o \

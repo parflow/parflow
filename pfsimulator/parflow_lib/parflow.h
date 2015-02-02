@@ -33,8 +33,8 @@
  *
  *****************************************************************************/
 
-#define FGTest
-
+#undef FGTest
+#define withTemperature
 
 #ifndef _PARFLOW_HEADER
 #define _PARFLOW_HEADER
@@ -72,6 +72,9 @@
 #include "problem_eval.h"
 #include "well.h"
 #include "bc_pressure.h"
+#ifdef withTemperature
+  #include "bc_temperature.h"
+#endif
 #include "problem.h"
 #include "solver.h"
 #include "nl_function_eval.h"

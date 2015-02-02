@@ -595,8 +595,8 @@ void  ThermalConductivityFreePublicXtra()
 
 	if (dummy1->data_from_file == 1)
 	{
-	   FreeTempVector(dummy1->cdry_values);
-	   FreeTempVector(dummy1->cwet_values);
+	   FreeVector(dummy1->cdry_values);
+	   FreeVector(dummy1->cwet_values);
 	}
 
 	tfree(dummy1 -> region_indices);

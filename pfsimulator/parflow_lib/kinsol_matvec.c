@@ -27,6 +27,18 @@ N_Vector  speciesNVector)
    Matrix      *JC                = StateJacC(         ((State*)current_state) );
    Vector      *saturation       = StateSaturation(  ((State*)current_state) );
    Vector      *density          = StateDensity(     ((State*)current_state) );
+
+#ifdef withTemperature
+   PFModule    *temperature_jacobian_eval = StateJacEvalTemperature(((State*)current_state));
+
+   Vector      *temperature; 
+   Vector      *heat_capacity_water       = StateHeatCapacityWater(  ((State*)current_state) );
+   Vector      *heat_capacity_rock       = StateHeatCapacityRock(  ((State*)current_state) );
+   Vector      *x_velocity       	= StateXVelocity(  ((State*)current_state) );
+   Vector      *y_velocity              = StateYVelocity(  ((State*)current_state) );
+   Vector      *z_velocity              = StateZVelocity(  ((State*)current_state) );
+#endif
+
 #ifdef FGTest
    Vector      *saturation2       = StateSaturation2(  ((State*)current_state) );
 #endif
@@ -36,12 +48,6 @@ N_Vector  speciesNVector)
 
    Vector      *pressure;
    Vector      *x, *y;
-
-//FG: Check This 
-   //InstanceXtra  *instance_xtra   = (InstanceXtra *)PFModuleInstanceXtra(richards_jacobian_eval);
-
-   //PFModule    *bc_pressure       = (instance_xtra -> bc_pressure);
-   //StateBCPressure((State*)current_state)           = bc_pressure;
 
 
    pressure = NV_CONTENT_PF(speciesNVector)->dims[0];
@@ -63,6 +69,28 @@ N_Vector  speciesNVector)
      Matvec(1.0, J, x, 0.0, y);
    else
      MatvecSubMat(current_state, 1.0, J, JC, x, 0.0, y);
+
+#ifdef withTemperature
+   temperature = NV_CONTENT_PF(speciesNVector)->dims[1];
+
+   x = NV_CONTENT_PF(xn)->dims[1];
+   y = NV_CONTENT_PF(yn)->dims[1];
+
+   InitVector(y, 0.0);
+
+   if ( *recompute )
+   {
+      PFModuleInvokeType(TemperatureJacobianEvalInvoke, temperature_jacobian_eval,
+      (temperature,&J , pressure, saturation, density, heat_capacity_water, heat_capacity_rock, x_velocity, y_velocity, z_velocity ,problem_data,
+      dt, time, 0));
+
+   }
+
+   // if(JC == NULL)
+     Matvec(1.0, J, x, 0.0, y);
+   //else
+   //  MatvecSubMat(current_state, 1.0, J, JC, x, 0.0, y);
+#endif
 
 #ifdef FGTest
    pressure = NV_CONTENT_PF(speciesNVector)->dims[1];

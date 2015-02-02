@@ -56,7 +56,19 @@ typedef struct
 					   SolverRichards */
    /* PDE coefficients */
    double      gravity;
+#ifdef withTemperature
+//not yet ready   PFModule   *phase_viscosity;
+   double     *phase_viscosity;
+//
+   PFModule   *temp_source;
+   PFModule   *thermal_conductivity;
+   PFModule   *phase_heat_capacity;
+   PFModule   *bc_temperature;
+   PFModule   *bc_temperature_package;
+   PFModule   *ic_phase_temperature;
+#else
    double     *phase_viscosity;         /* array of size num_phases */
+#endif
    double     *contaminant_degradation; /* array of size num_contaminants */
    PFModule   *phase_density; 
    PFModule   *permeability;
@@ -133,7 +145,9 @@ typedef struct
 
    WellData       *well_data;
    BCPressureData *bc_pressure_data;
-   
+#ifdef withTemperature
+   BCTemperatureData *bc_temperature_data;
+#endif
    /*sk  overland flow*/
    Vector *x_slope;
    Vector *y_slope;
@@ -178,10 +192,28 @@ typedef struct
 #define ProblemSelectTimeStep(problem)            ((problem) -> select_time_step)
 				       
 /* PDE accessors */
+
+#ifdef withTemperature
+//not yet ready        #define ProblemPhaseViscosity(problem)            ((problem) -> phase_viscosity)
+
+        #define ProblemPhaseViscosities(problem)          ((problem) -> phase_viscosity)
+        #define ProblemPhaseViscosity(problem, i)         ((problem) -> phase_viscosity[i])
+//
+
+	#define ProblemTempSource(problem)                ((problem) -> temp_source)	
+        #define ProblemThermalConductivity(problem)       ((problem) -> thermal_conductivity)
+        #define ProblemPhaseHeatCapacity(problem)         ((problem) -> phase_heat_capacity)
+        #define ProblemBCTemperature(problem)             ((problem) -> bc_temperature)
+        #define ProblemBCTemperaturePackage(problem)      ((problem) -> bc_temperature_package)
+        #define ProblemICPhaseTemperature(problem)        ((problem) -> ic_phase_temperature)
+	#define ProblemDataBCTemperatureData(problem_data)((problem_data) -> bc_temperature_data)
+#else
+	#define ProblemPhaseViscosities(problem)          ((problem) -> phase_viscosity)
+	#define ProblemPhaseViscosity(problem, i)         ((problem) -> phase_viscosity[i])
+#endif
+
 #define ProblemGravity(problem)                   ((problem) -> gravity)
 #define ProblemPhaseDensity(problem)              ((problem) -> phase_density)
-#define ProblemPhaseViscosities(problem)          ((problem) -> phase_viscosity)
-#define ProblemPhaseViscosity(problem, i)         ((problem) -> phase_viscosity[i])
 #define ProblemContaminantDegradations(problem)   ((problem) -> contaminant_degradation)
 #define ProblemContaminantDegradation(problem, i) ((problem) -> contaminant_degradation[i])
 #define ProblemPermeability(problem)              ((problem) -> permeability)

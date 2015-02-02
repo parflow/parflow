@@ -1,35 +1,14 @@
 /*BHEADER**********************************************************************
-
-  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-  by the Parflow Team (see the CONTRIBUTORS file)
-  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-
-  This file is part of Parflow. For details, see
-  http://www.llnl.gov/casc/parflow
-
-  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-  for the GNU Lesser General Public License.
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License (as published
-  by the Free Software Foundation) version 2.1 dated February 1999.
-
-  This program is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-  and conditions of the GNU General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-  USA
-**********************************************************************EHEADER*/
+ * (c) 1995   The Regents of the University of California
+ *
+ * See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+ * notice, contact person, and disclaimer.
+ *
+ * $Revision: 1.1.1.1 $
+ *********************************************************************EHEADER*/
 
 #include "parflow.h"
-
 #include <string.h>
-
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -62,10 +41,7 @@ typedef struct
 
 typedef struct
 {
-   int       reference_solid;
-   int       reference_patch;
-   double   *values;
-   double  **value_at_interface;
+  double   *values;
 } Type0;               /* Dirichlet, constant */
 
 typedef struct
@@ -93,7 +69,7 @@ typedef struct
 typedef struct
 {
    char     **filenames;
-} Type4;               /* Pressure, given in "filenames".pfb */
+} Type4;               /* Temperature, given in "filenames".pfb */
 
 typedef struct
 {
@@ -103,32 +79,20 @@ typedef struct
 typedef struct
 {
    int	      function_type;
-} Type6;           /* Dir. pressure for testing known solution MATH problems */
-
-typedef struct
-{
-   double   *values;
-} Type7;               /* //sk Overland flow, constant rainfall*/
-
-typedef struct
-{
-    char     **filenames;
-} Type8;               /* //RM Flux, given in "filenames".pfb but for overland flow */
-
+} Type6;           /* Dir. temperature for testing known solution MATH problems */
 
 
 /*--------------------------------------------------------------------------
- * BCPressurePackage
+ * BCTemperaturePackage
  *--------------------------------------------------------------------------*/
 
-void         BCPressurePackage(
-   ProblemData *problem_data)
+void         BCTemperaturePackage(ProblemData *problem_data)
 {
    PFModule         *this_module   = ThisPFModule;
-   PublicXtra       *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
-   BCPressureData   *bc_pressure_data 
-                        = ProblemDataBCPressureData(problem_data);
+   BCTemperatureData   *bc_temperature_data 
+                        = ProblemDataBCTemperatureData(problem_data);
 
    Type0            *dummy0;
    Type1            *dummy1;
@@ -137,9 +101,6 @@ void         BCPressurePackage(
    Type4            *dummy4;
    Type5            *dummy5;
    Type6            *dummy6;
-   Type7            *dummy7; 
-   Type8            *dummy8; 
-    
 
    TimeCycleData    *time_cycle_data;
 
@@ -149,9 +110,9 @@ void         BCPressurePackage(
                      interval_number;
 
    /* Allocate the bc data */
-   BCPressureDataNumPhases(bc_pressure_data) = (public_xtra -> num_phases);
+   BCTemperatureDataNumPhases(bc_temperature_data) = (public_xtra -> num_phases);
 
-   BCPressureDataNumPatches(bc_pressure_data) = (public_xtra -> num_patches);
+   BCTemperatureDataNumPatches(bc_temperature_data) = (public_xtra -> num_patches);
 
    if ( (public_xtra -> num_patches) > 0 )
    {
@@ -177,116 +138,97 @@ void         BCPressurePackage(
          TimeCycleDataCycleLength(time_cycle_data, cycle_number) = cycle_length;
       }
 
-      BCPressureDataTimeCycleData(bc_pressure_data) = time_cycle_data;
+      BCTemperatureDataTimeCycleData(bc_temperature_data) = time_cycle_data;
 
      /* Load the Boundary Condition Data */
 
-      num_patches = BCPressureDataNumPatches(bc_pressure_data);
-      BCPressureDataTypes(bc_pressure_data)        = ctalloc(int, num_patches);
-      BCPressureDataPatchIndexes(bc_pressure_data) = ctalloc(int, num_patches);
-      BCPressureDataCycleNumbers(bc_pressure_data) = ctalloc(int, num_patches);
-      BCPressureDataBCTypes(bc_pressure_data)      = ctalloc(int, num_patches);
-      BCPressureDataValues(bc_pressure_data)       = ctalloc(void **, 
+      num_patches = BCTemperatureDataNumPatches(bc_temperature_data);
+      BCTemperatureDataTypes(bc_temperature_data)        = ctalloc(int, num_patches);
+      BCTemperatureDataPatchIndexes(bc_temperature_data) = ctalloc(int, num_patches);
+      BCTemperatureDataCycleNumbers(bc_temperature_data) = ctalloc(int, num_patches);
+      BCTemperatureDataBCTypes(bc_temperature_data)      = ctalloc(int, num_patches);
+      BCTemperatureDataValues(bc_temperature_data)       = ctalloc(void **, 
 							     num_patches);
 
       for (i = 0; i < num_patches; i++)
       {
-         BCPressureDataType(bc_pressure_data,i) = (public_xtra -> input_types[i]);
-         BCPressureDataPatchIndex(bc_pressure_data,i) = (public_xtra -> patch_indexes[i]);
-         BCPressureDataCycleNumber(bc_pressure_data,i) = (public_xtra -> cycle_numbers[i]);
+         BCTemperatureDataType(bc_temperature_data,i) = (public_xtra -> input_types[i]);
+         BCTemperatureDataPatchIndex(bc_temperature_data,i) = (public_xtra -> patch_indexes[i]);
+         BCTemperatureDataCycleNumber(bc_temperature_data,i) = (public_xtra -> cycle_numbers[i]);
 
-         interval_division = TimeCycleDataIntervalDivision(time_cycle_data, BCPressureDataCycleNumber(bc_pressure_data,i));
-         BCPressureDataIntervalValues(bc_pressure_data, i) = ctalloc(void *, interval_division);
+         interval_division = TimeCycleDataIntervalDivision(time_cycle_data, BCTemperatureDataCycleNumber(bc_temperature_data,i));
+         BCTemperatureDataIntervalValues(bc_temperature_data, i) = ctalloc(void *, interval_division);
          for(interval_number = 0; interval_number < interval_division; interval_number++)
          {
             switch((public_xtra -> input_types[i]))
             {
-            /* Setup a fixed pressure condition structure */
+            /* Setup a fixed temperature condition structure */
             case 0:
             {
-               BCPressureType0 *bc_pressure_type0;
-
-               int              phase;
-               int num_phases = BCPressureDataNumPhases(bc_pressure_data);
-
-               BCPressureDataBCType(bc_pressure_data,i) = DirichletBC;
-
+               BCTemperatureType0   *bc_temperature_type0;
+             
+               BCTemperatureDataBCType(bc_temperature_data,i) = DirichletBC;
+                
                dummy0 = (Type0 *)(public_xtra -> data[i]);
-
-               bc_pressure_type0 = ctalloc(BCPressureType0, 1);
-
-	       BCPressureType0RefSolid(bc_pressure_type0) = 
-                                                   (dummy0 -> reference_solid);
-
-	       BCPressureType0RefPatch(bc_pressure_type0) = 
-                                                   (dummy0 -> reference_patch);
-
-               BCPressureType0Value(bc_pressure_type0) = (dummy0 -> values[interval_number]);
-
-               if (num_phases > 1)
-               {
-                  BCPressureType0ValueAtInterfaces(bc_pressure_type0) = ctalloc(double, (num_phases - 1));
-                  for(phase = 1; phase < num_phases; phase++)
-                  {
-                     BCPressureType0ValueAtInterface(bc_pressure_type0,phase) = ((dummy0 -> value_at_interface[interval_number])[phase-1]);
-                  }
-               }
-               else
-               {
-                  BCPressureType0ValueAtInterfaces(bc_pressure_type0) = NULL;
-               }
-
-               BCPressureDataIntervalValue(bc_pressure_data,i,interval_number) = (void *) bc_pressure_type0;
+                
+               bc_temperature_type0 = ctalloc(BCTemperatureType0, 1);
+                
+               BCTemperatureType0Value(bc_temperature_type0)
+                                = (dummy0 -> values[interval_number]);
+ 
+               BCTemperatureDataIntervalValue(bc_temperature_data,i,interval_number)
+                             = (void *) bc_temperature_type0;
+ 
 
                break;
             }
 
-            /* Setup a piecewise linear pressure condition structure */
+            /* Setup a piecewise linear temperature condition structure */
             case 1:
             {
-               BCPressureType1   *bc_pressure_type1;
+               BCTemperatureType1   *bc_temperature_type1;
                int                point, phase;
                int                num_points;
-               int                num_phases = BCPressureDataNumPhases(bc_pressure_data);
+               int                num_phases = BCTemperatureDataNumPhases(bc_temperature_data);
 
-               BCPressureDataBCType(bc_pressure_data,i) = DirichletBC;
+               BCTemperatureDataBCType(bc_temperature_data,i) = DirichletBC;
 
                dummy1 = (Type1 *)(public_xtra -> data[i]);
 
                num_points = (dummy1 -> num_points[interval_number]);
 
-               bc_pressure_type1 = ctalloc(BCPressureType1, 1);
+               bc_temperature_type1 = ctalloc(BCTemperatureType1, 1);
 
-               BCPressureType1XLower(bc_pressure_type1) = (dummy1 -> xlower[interval_number]);
-               BCPressureType1YLower(bc_pressure_type1) = (dummy1 -> ylower[interval_number]);
-               BCPressureType1XUpper(bc_pressure_type1) = (dummy1 -> xupper[interval_number]);
-               BCPressureType1YUpper(bc_pressure_type1) = (dummy1 -> yupper[interval_number]);
-               BCPressureType1NumPoints(bc_pressure_type1) = (dummy1 -> num_points[interval_number]);
+               BCTemperatureType1XLower(bc_temperature_type1) = (dummy1 -> xlower[interval_number]);
+               BCTemperatureType1YLower(bc_temperature_type1) = (dummy1 -> ylower[interval_number]);
+               BCTemperatureType1XUpper(bc_temperature_type1) = (dummy1 -> xupper[interval_number]);
+               BCTemperatureType1YUpper(bc_temperature_type1) = (dummy1 -> yupper[interval_number]);
+               BCTemperatureType1NumPoints(bc_temperature_type1) = (dummy1 -> num_points[interval_number]);
 
-               BCPressureType1Points(bc_pressure_type1) = ctalloc(double, num_points);
-               BCPressureType1Values(bc_pressure_type1) = ctalloc(double, num_points);
+               BCTemperatureType1Points(bc_temperature_type1) = ctalloc(double, num_points);
+               BCTemperatureType1Values(bc_temperature_type1) = ctalloc(double, num_points);
 
                for(point = 0; point < num_points; point++)
                {
-                  BCPressureType1Point(bc_pressure_type1,point) = ((dummy1 -> points[interval_number])[point]);
-                  BCPressureType1Value(bc_pressure_type1,point) = ((dummy1 -> values[interval_number])[point]);
+                  BCTemperatureType1Point(bc_temperature_type1,point) = ((dummy1 -> points[interval_number])[point]);
+                  BCTemperatureType1Value(bc_temperature_type1,point) = ((dummy1 -> values[interval_number])[point]);
                }
 
                if (num_phases > 1)
                {
-                  BCPressureType1ValueAtInterfaces(bc_pressure_type1) = ctalloc(double, (num_phases - 1));
+                  BCTemperatureType1ValueAtInterfaces(bc_temperature_type1) = ctalloc(double, (num_phases - 1));
 
                   for(phase = 1; phase < num_phases; phase++)
                   {
-                     BCPressureType1ValueAtInterface(bc_pressure_type1,phase) = ((dummy1 -> value_at_interface[interval_number])[phase-1]);
+                     BCTemperatureType1ValueAtInterface(bc_temperature_type1,phase) = ((dummy1 -> value_at_interface[interval_number])[phase-1]);
                   }
                }
                else
                {
-                  BCPressureType1ValueAtInterfaces(bc_pressure_type1) = NULL;
+                  BCTemperatureType1ValueAtInterfaces(bc_temperature_type1) = NULL;
                }
 
-               BCPressureDataIntervalValue(bc_pressure_data,i,interval_number) = (void *) bc_pressure_type1;
+               BCTemperatureDataIntervalValue(bc_temperature_data,i,interval_number) = (void *) bc_temperature_type1;
 
                break;
             }
@@ -294,19 +236,19 @@ void         BCPressurePackage(
             /* Setup a constant flux condition structure */
             case 2:
             {
-               BCPressureType2   *bc_pressure_type2;
+               BCTemperatureType2   *bc_temperature_type2;
 
-               BCPressureDataBCType(bc_pressure_data,i) = FluxBC;
+               BCTemperatureDataBCType(bc_temperature_data,i) = FluxBC;
 
                dummy2 = (Type2 *)(public_xtra -> data[i]);
 
-               bc_pressure_type2 = ctalloc(BCPressureType2, 1);
+               bc_temperature_type2 = ctalloc(BCTemperatureType2, 1);
 
-               BCPressureType2Value(bc_pressure_type2) 
+               BCTemperatureType2Value(bc_temperature_type2) 
                                 = (dummy2 -> values[interval_number]);
 
-               BCPressureDataIntervalValue(bc_pressure_data,i,interval_number) 
-                             = (void *) bc_pressure_type2;
+               BCTemperatureDataIntervalValue(bc_temperature_data,i,interval_number) 
+                             = (void *) bc_temperature_type2;
 
                break;
             }
@@ -314,42 +256,42 @@ void         BCPressurePackage(
             /* Setup a volumetric flux condition structure */
             case 3:
             {
-               BCPressureType3   *bc_pressure_type3;
+               BCTemperatureType3   *bc_temperature_type3;
 
-               BCPressureDataBCType(bc_pressure_data,i) = FluxBC;
+               BCTemperatureDataBCType(bc_temperature_data,i) = FluxBC;
 
                dummy3 = (Type3 *)(public_xtra -> data[i]);
 
-               bc_pressure_type3 = ctalloc(BCPressureType3, 1);
+               bc_temperature_type3 = ctalloc(BCTemperatureType3, 1);
 
-               BCPressureType3Value(bc_pressure_type3) 
+               BCTemperatureType3Value(bc_temperature_type3) 
                      = (dummy3 -> values[interval_number]);
 
-               BCPressureDataIntervalValue(bc_pressure_data,i,interval_number) 
-                     = (void *) bc_pressure_type3;
+               BCTemperatureDataIntervalValue(bc_temperature_data,i,interval_number) 
+                     = (void *) bc_temperature_type3;
 
                break;
             }
 
-            /* Setup a file defined pressure condition structure */
+            /* Setup a file defined temperature condition structure */
             case 4:
             {
-               BCPressureType4   *bc_pressure_type4;
+               BCTemperatureType4   *bc_temperature_type4;
 
-               BCPressureDataBCType(bc_pressure_data,i) = DirichletBC;
+               BCTemperatureDataBCType(bc_temperature_data,i) = DirichletBC;
 
                dummy4 = (Type4 *)(public_xtra -> data[i]);
 
-               bc_pressure_type4 = ctalloc(BCPressureType4, 1);
+               bc_temperature_type4 = ctalloc(BCTemperatureType4, 1);
 
-               BCPressureType4FileName(bc_pressure_type4) 
+               BCTemperatureType4FileName(bc_temperature_type4) 
                   = ctalloc(char, strlen((dummy4 -> filenames)[interval_number])+1);
 
-               strcpy(BCPressureType4FileName(bc_pressure_type4),
+               strcpy(BCTemperatureType4FileName(bc_temperature_type4),
 		      ((dummy4 -> filenames)[interval_number]));
 
-               BCPressureDataIntervalValue(bc_pressure_data,i,interval_number) 
-                  = (void *) bc_pressure_type4;
+               BCTemperatureDataIntervalValue(bc_temperature_data,i,interval_number) 
+                  = (void *) bc_temperature_type4;
 
                break;
             }
@@ -357,89 +299,46 @@ void         BCPressurePackage(
             /* Setup a file defined flux condition structure */
             case 5:
             {
-               BCPressureType5   *bc_pressure_type5;
+               BCTemperatureType5   *bc_temperature_type5;
 
-               BCPressureDataBCType(bc_pressure_data,i) = FluxBC;
+               BCTemperatureDataBCType(bc_temperature_data,i) = FluxBC;
 
                dummy5 = (Type5 *)(public_xtra -> data[i]);
 
-               bc_pressure_type5 = ctalloc(BCPressureType5, 1);
+               bc_temperature_type5 = ctalloc(BCTemperatureType5, 1);
 
-               BCPressureType5FileName(bc_pressure_type5) 
+               BCTemperatureType5FileName(bc_temperature_type5) 
 		  = ctalloc(char, strlen((dummy5 -> filenames)[interval_number])+1);
 
-               strcpy(BCPressureType5FileName(bc_pressure_type5),
+               strcpy(BCTemperatureType5FileName(bc_temperature_type5),
 		      ((dummy5 -> filenames)[interval_number]));
 
-               BCPressureDataIntervalValue(bc_pressure_data,i,interval_number) 
-		  = (void *) bc_pressure_type5;
+               BCTemperatureDataIntervalValue(bc_temperature_data,i,interval_number) 
+		  = (void *) bc_temperature_type5;
 
                break;
             }
 
-            /* Setup a Dir. pressure MATH problem condition */
+            /* Setup a Dir. temperature MATH problem condition */
             case 6:
             {
-               BCPressureType6   *bc_pressure_type6; 
+               BCTemperatureType6   *bc_temperature_type6; 
 
-               BCPressureDataBCType(bc_pressure_data,i) = DirichletBC;
+               BCTemperatureDataBCType(bc_temperature_data,i) = DirichletBC;
 
                dummy6 = (Type6 *)(public_xtra -> data[i]);
 
-               bc_pressure_type6 = ctalloc(BCPressureType6, 1);
+               bc_temperature_type6 = ctalloc(BCTemperatureType6, 1);
 
-               BCPressureType6FunctionType(bc_pressure_type6) 
+               BCTemperatureType6FunctionType(bc_temperature_type6) 
 		  = (dummy6 -> function_type);
 
-               BCPressureDataIntervalValue(bc_pressure_data,i,interval_number) 
-		  = (void *) bc_pressure_type6;
+               BCTemperatureDataIntervalValue(bc_temperature_data,i,interval_number) 
+		  = (void *) bc_temperature_type6;
 
                break;
             }
 
-			/*//sk  Setup a overland flow condition structure */
-            case 7:
-            {
-               BCPressureType7   *bc_pressure_type7;
-
-               BCPressureDataBCType(bc_pressure_data,i) = OverlandBC;
-
-               dummy7 = (Type7 *)(public_xtra -> data[i]);
-
-               bc_pressure_type7 = ctalloc(BCPressureType7, 1);
-
-               BCPressureType7Value(bc_pressure_type7) 
-                                = (dummy7 -> values[interval_number]);
-
-               BCPressureDataIntervalValue(bc_pressure_data,i,interval_number) 
-                             = (void *) bc_pressure_type7;
-
-               break;
-            }
-                    /* Setup a file defined flux condition structure for overland flow BC*/
-                case 8:
-                {
-                    BCPressureType8   *bc_pressure_type8;
-                    
-                    BCPressureDataBCType(bc_pressure_data,i) = OverlandBC;
-                    
-                    dummy8 = (Type8 *)(public_xtra -> data[i]);
-                    
-                    bc_pressure_type8 = ctalloc(BCPressureType8, 1);
-                    
-                    BCPressureType8FileName(bc_pressure_type8) 
-                    = ctalloc(char, strlen((dummy8 -> filenames)[interval_number])+1);
-                    
-                    strcpy(BCPressureType8FileName(bc_pressure_type8),
-                           ((dummy8 -> filenames)[interval_number]));
-                    
-                    BCPressureDataIntervalValue(bc_pressure_data,i,interval_number) 
-                    = (void *) bc_pressure_type8;
-                    
-                    break;
-                }
-                    
-                    
             }
          }
       }
@@ -448,11 +347,10 @@ void         BCPressurePackage(
 
 
 /*--------------------------------------------------------------------------
- * BCPressurePackageInitInstanceXtra
+ * BCTemperaturePackageInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule *BCPressurePackageInitInstanceXtra(
-   Problem *problem)
+PFModule *BCTemperaturePackageInitInstanceXtra(Problem *problem)
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra;
@@ -460,7 +358,7 @@ PFModule *BCPressurePackageInitInstanceXtra(
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
-      instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
+      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    if (problem != NULL)
    {
@@ -473,13 +371,13 @@ PFModule *BCPressurePackageInitInstanceXtra(
 
 
 /*--------------------------------------------------------------------------
- * BCPressurePackageFreeInstanceXtra
+ * BCTemperaturePackageFreeInstanceXtra
  *--------------------------------------------------------------------------*/
 
-void  BCPressurePackageFreeInstanceXtra()
+void  BCTemperaturePackageFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = (InstanceXtra  *)PFModuleInstanceXtra(this_module);
+   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    if (instance_xtra)
    {
@@ -489,10 +387,9 @@ void  BCPressurePackageFreeInstanceXtra()
 
 
 /*--------------------------------------------------------------------------
- * BCPressurePackageNewPublicXtra
+ * BCTemperaturePackageNewPublicXtra
  *--------------------------------------------------------------------------*/
-PFModule  *BCPressurePackageNewPublicXtra(
-   int        num_phases)
+PFModule  *BCTemperaturePackageNewPublicXtra(int num_phases)
 {
    PFModule      *this_module   = ThisPFModule;
    PublicXtra    *public_xtra;
@@ -524,9 +421,6 @@ PFModule  *BCPressurePackageNewPublicXtra(
    Type4         *dummy4;
    Type5         *dummy5;
    Type6         *dummy6;
-   Type7         *dummy7;
-   Type8         *dummy8;
-    
 
    int             i, interval_number, interval_division;
 
@@ -534,7 +428,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
    NameArray function_na;
 
    //sk
-   type_na = NA_NewNameArray("DirEquilRefPatch DirEquilPLinear FluxConst FluxVolumetric PressureFile FluxFile ExactSolution OverlandFlow OverlandFlowPFB");
+   type_na = NA_NewNameArray("DirConst DirEquilPLinear FluxConst FluxVolumetric TemperatureFile FluxFile ExactSolution");
 
    function_na = NA_NewNameArray("dum0 X XPlusYPlusZ X3Y2PlusSinXYPlus1 X3Y4PlusX2PlusSinXYCosYPlus1 XYZTPlus1 XYZTPlus1PermTensor");
 
@@ -543,7 +437,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
    (public_xtra -> num_phases) = num_phases;
 
-   patch_names = GetString("BCPressure.PatchNames");
+   patch_names = GetString("BCTemperature.PatchNames");
    
    public_xtra -> patches = NA_NewNameArray(patch_names);
    num_patches = NA_Sizeof(public_xtra -> patches);
@@ -582,7 +476,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
 	    NA_NameToIndex(GlobalsGeometries[domain_index]->patches, 
 			   patch_name);
 
-	 sprintf(key, "Patch.%s.BCPressure.Type", patch_name);
+	 sprintf(key, "Patch.%s.BCTemperature.Type", patch_name);
 	 switch_name = GetString(key);
 	 	 
 	 public_xtra -> input_types[i] = NA_NameToIndex(type_na, switch_name);
@@ -593,7 +487,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
 		       switch_name, key);
 	 }
 
-	 sprintf(key, "Patch.%s.BCPressure.Cycle", patch_name);
+	 sprintf(key, "Patch.%s.BCTemperature.Cycle", patch_name);
 	 cycle_name = GetString(key);
 
 	 public_xtra -> cycle_numbers[i] = i;
@@ -626,79 +520,22 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
          case 0:
          {
-            int     size;
-
-            dummy0 = ctalloc(Type0, 1);
-
-            (dummy0 -> values)             = ctalloc(double,   
-						     interval_division);
-            (dummy0 -> value_at_interface) = ctalloc(double *, 
-						     interval_division);
-
-	    sprintf(key, "Patch.%s.BCPressure.RefGeom", patch_name);
-	    switch_name = GetString(key);
-
-	    dummy0 -> reference_solid = NA_NameToIndex(GlobalsGeomNames, 
-						       switch_name);
-
-	    if(dummy0 -> reference_solid < 0)
-	    {
-	       InputError("Error: invalid geometry name <%s> for reference solid <%s>\n", switch_name, key);
-	    }
-
-	    sprintf(key, "Patch.%s.BCPressure.RefPatch", patch_name);
-	    switch_name = GetString(key);
-
-	    dummy0 -> reference_patch = 
-	       NA_NameToIndex(GeomSolidPatches(
-		  GlobalsGeometries[dummy0 -> reference_solid]),
-			      switch_name);
-
-	    if(dummy0 -> reference_patch < 0)
-	    {
-	       InputError("Error: invalid reference patch name <%s> for key <%s>\n", switch_name, key);
-	    }
-
-            for(interval_number = 0; 
-		interval_number < interval_division; 
-		interval_number++)
-            {
-
-	       sprintf(key, "Patch.%s.BCPressure.%s.Value", 
-		       patch_name,
-		       NA_IndexToName(
-			  GlobalsIntervalNames[global_cycle],
-			  interval_number));
-		  
-	       dummy0 -> values[interval_number] = GetDouble(key);
-
-               if (num_phases > 1)
-               {
-                  size = (num_phases - 1);
-
-                  (dummy0 -> value_at_interface[interval_number]) = 
-		                                         ctalloc(double, size);
-
-		  for(phase=1; phase < num_phases; phase++)
-		  {
-		     sprintf(key, "Patch.%s.BCPressure.%s.%s.IntValue",
-			     patch_name,
-			     NA_IndexToName(
-				GlobalsIntervalNames[global_cycle],
-				interval_number),
-			     NA_IndexToName(GlobalsPhaseNames, phase));
-		     
-		     dummy0 -> value_at_interface[interval_number][phase] = 
-			GetDouble(key);
-		  }
-               }
-               else
-               {
-                  (dummy0 -> value_at_interface[interval_number]) = NULL;
-               }
-            }
-
+            dummy0 = ctalloc(Type0, 1); 
+ 
+            (dummy0 -> values) = ctalloc(double, interval_division);  
+                
+            for(interval_number = 0; interval_number < interval_division; interval_number++)
+            {   
+               sprintf(key, "Patch.%s.BCTemperature.%s.Value",
+                       patch_name, 
+                       NA_IndexToName(GlobalsIntervalNames[global_cycle],
+                          interval_number)); 
+ 
+               dummy0 -> values[interval_number] = GetDouble(key); 
+            }              
+                   
             (public_xtra -> data[i]) = (void *) dummy0;
+
             break;
          }
 
@@ -728,24 +565,24 @@ PFModule  *BCPressurePackageNewPublicXtra(
 				 interval_number);
 		  
                /* read in the xy-line */
-	       sprintf(key, "Patch.%s.BCPressure.%s.XLower", patch_name,
+	       sprintf(key, "Patch.%s.BCTemperature.%s.XLower", patch_name,
 		       interval_name);
 	       dummy1 -> xlower[interval_number] = GetDouble(key);
 
-	       sprintf(key, "Patch.%s.BCPressure.%s.YLower", patch_name,
+	       sprintf(key, "Patch.%s.BCTemperature.%s.YLower", patch_name,
 		       interval_name);
 	       dummy1 -> ylower[interval_number] = GetDouble(key);
 
-	       sprintf(key, "Patch.%s.BCPressure.%s.XUpper", patch_name,
+	       sprintf(key, "Patch.%s.BCTemperature.%s.XUpper", patch_name,
 		       interval_name);
 	       dummy1 -> xupper[interval_number] = GetDouble(key);
 
-	       sprintf(key, "Patch.%s.BCPressure.%s.YUpper", patch_name,
+	       sprintf(key, "Patch.%s.BCTemperature.%s.YUpper", patch_name,
 		       interval_name);
 	       dummy1 -> yupper[interval_number] = GetDouble(key);
 
                /* read num_points */
-	       sprintf(key, "Patch.%s.BCPressure.%s.NumPoints", patch_name,
+	       sprintf(key, "Patch.%s.BCTemperature.%s.NumPoints", patch_name,
 		       interval_name);
 	       num_points = GetInt(key);
 
@@ -756,11 +593,11 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
                for (k = 0; k < num_points; k++)
                {
-		  sprintf(key, "Patch.%s.BCPressure.%s.%d.Location",
+		  sprintf(key, "Patch.%s.BCTemperature.%s.%d.Location",
 			  patch_name, interval_name, k);		  
 		  dummy1 -> points[interval_number][k] = GetDouble(key);
 
-		  sprintf(key, "Patch.%s.BCPressure.%s.%d.Value",
+		  sprintf(key, "Patch.%s.BCTemperature.%s.%d.Value",
 			  patch_name, interval_name, k);		  
 		  dummy1 -> values[interval_number][k] = GetDouble(key);
                }
@@ -774,7 +611,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
 		  for(phase=1; phase < num_phases; phase++)
 		  {
-		     sprintf(key, "Patch.%s.BCPressure.%s.%s.IntValue",
+		     sprintf(key, "Patch.%s.BCTemperature.%s.%s.IntValue",
 			     patch_name,
 			     NA_IndexToName(
 				GlobalsIntervalNames[global_cycle],
@@ -803,7 +640,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
             for(interval_number = 0; interval_number < interval_division; interval_number++)
 	    { 
-	       sprintf(key, "Patch.%s.BCPressure.%s.Value", 
+	       sprintf(key, "Patch.%s.BCTemperature.%s.Value", 
 		       patch_name,
 		       NA_IndexToName(GlobalsIntervalNames[global_cycle],
 			  interval_number));
@@ -823,7 +660,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
             for(interval_number = 0; interval_number < interval_division; interval_number++)
             {
-	       sprintf(key, "Patch.%s.BCPressure.%s.Value", 
+	       sprintf(key, "Patch.%s.BCTemperature.%s.Value", 
 		       patch_name,
 		       NA_IndexToName(GlobalsIntervalNames[global_cycle],
 			  interval_number));
@@ -844,7 +681,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
             for(interval_number = 0; interval_number < interval_division; interval_number++)
             {
 
-	       sprintf(key, "Patch.%s.BCPressure.%s.FileName", 
+	       sprintf(key, "Patch.%s.BCTemperature.%s.FileName", 
 		       patch_name,
 		       NA_IndexToName(GlobalsIntervalNames[global_cycle],
 			  interval_number));
@@ -864,7 +701,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
             for(interval_number = 0; interval_number < interval_division; interval_number++)
             {
-	       sprintf(key, "Patch.%s.BCPressure.%s.FileName", 
+	       sprintf(key, "Patch.%s.BCTemperature.%s.FileName", 
 		       patch_name,
 		       NA_IndexToName(GlobalsIntervalNames[global_cycle],
 			  interval_number));
@@ -883,7 +720,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
             for(interval_number = 0; interval_number < interval_division; 
 		interval_number++)
             {
-	       sprintf(key, "Patch.%s.BCPressure.%s.PredefinedFunction", 
+	       sprintf(key, "Patch.%s.BCTemperature.%s.PredefinedFunction", 
 		       patch_name,
 		       NA_IndexToName(GlobalsIntervalNames[global_cycle],
 				      interval_number));
@@ -903,46 +740,6 @@ PFModule  *BCPressurePackageNewPublicXtra(
             break;
          }
 
-		 case 7:
-         {
-            dummy7 = ctalloc(Type7, 1);
-
-            (dummy7 -> values) = ctalloc(double, interval_division);
-
-            for(interval_number = 0; interval_number < interval_division; interval_number++)
-	    { 
-	       sprintf(key, "Patch.%s.BCPressure.%s.Value", 
-		       patch_name,
-		       NA_IndexToName(GlobalsIntervalNames[global_cycle],
-			  interval_number));
-
-	       dummy7 -> values[interval_number] = GetDouble(key);
-            }
-
-            (public_xtra -> data[i]) = (void *) dummy7;
-            break;
-         }
-             case 8:
-             {
-                 dummy8 = ctalloc(Type8, 1);
-                 
-                 (dummy8 -> filenames) = ctalloc(char *, interval_division);
-                 
-                 for(interval_number = 0; interval_number < interval_division; interval_number++)
-                 {
-                     
-                     sprintf(key, "Patch.%s.BCPressure.%s.FileName", 
-                             patch_name,
-                             NA_IndexToName(GlobalsIntervalNames[global_cycle],
-                                            interval_number));
-                     
-                     dummy8 -> filenames[interval_number] = GetString(key);
-                 }
-                 
-                 (public_xtra -> data[i]) = (void *) dummy8;
-                 break;
-             }
-                 
          }   /* End switch statement */
       }
    }
@@ -956,13 +753,13 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
 
 /*-------------------------------------------------------------------------
- * BCPressurePackageFreePublicXtra
+ * BCTemperaturePackageFreePublicXtra
  *-------------------------------------------------------------------------*/
 
-void  BCPressurePackageFreePublicXtra()
+void  BCTemperaturePackageFreePublicXtra()
 {
    PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = (PublicXtra  *)PFModulePublicXtra(this_module);
+   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
    Type0         *dummy0;
    Type1         *dummy1;
@@ -971,9 +768,6 @@ void  BCPressurePackageFreePublicXtra()
    Type4         *dummy4;
    Type5         *dummy5;
    Type6         *dummy6;
-   Type7         *dummy7;
-   Type8         *dummy8;
-    
 
    int            num_patches, num_cycles;
    int            i, interval_number, interval_division;
@@ -995,18 +789,11 @@ void  BCPressurePackageFreePublicXtra()
             case 0:
             {
                dummy0 = (Type0 *)(public_xtra -> data[i]);
-
-               for(interval_number = 0; interval_number < interval_division; interval_number++)
-               {
-                  tfree((dummy0 -> value_at_interface[interval_number]));
-               }
-
-               tfree((dummy0 -> value_at_interface));
+ 
                tfree((dummy0 -> values));
-
                tfree(dummy0);
 
-               break;
+		    break;
             }
 
             case 1:
@@ -1064,11 +851,10 @@ void  BCPressurePackageFreePublicXtra()
 
                dummy4 = (Type4 *)(public_xtra -> data[i]);
 
-                for(interval_number = 0; interval_number < interval_division; interval_number++)
+               for(interval_number = 0; interval_number < interval_division; interval_number++)
                {
                   tfree(((dummy4 -> filenames)[interval_number]));
-                }  
-                // @RMM had to remove to not error our
+               }
 
                tfree((dummy4 -> filenames));
 
@@ -1104,36 +890,6 @@ void  BCPressurePackageFreePublicXtra()
                break;
             }
 
-			//sk
-			case 7:
-            {
-               dummy7 = (Type7 *)(public_xtra -> data[i]);
-
-               tfree((dummy7 -> values));
-               tfree(dummy7);
-
-               break;
-            }
-                    //RMM
-                case 8:
-                {
-                    int interval_number;
-                    
-                    dummy8 = (Type8 *)(public_xtra -> data[i]);
-                    
-                   /* for(interval_number = 0; interval_number < interval_division; interval_number++)
-                    {
-                        tfree(((dummy8 -> filenames)[interval_number]));
-                    }  */
-                    // @RMM had to remove to not error our
-                    
-                    tfree((dummy8 -> filenames));
-                    
-                    tfree(dummy8);
-                    
-                    break;
-                }
-                    
             }
          }
 
@@ -1162,10 +918,10 @@ void  BCPressurePackageFreePublicXtra()
 
 
 /*--------------------------------------------------------------------------
- * BCPressurePackageSizeOfTempData
+ * BCTemperaturePackageSizeOfTempData
  *--------------------------------------------------------------------------*/
 
-int  BCPressurePackageSizeOfTempData()
+int  BCTemperaturePackageSizeOfTempData()
 {
    return 0;
 }

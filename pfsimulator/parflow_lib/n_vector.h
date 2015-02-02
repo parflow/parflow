@@ -42,7 +42,7 @@ typedef struct _N_VectorContent *N_VectorContent;
 #define N_VFree                       N_VDestroy_PF
 #define N_VConstrProdPos	      N_VConstrProdPos_PF
 
-#ifdef FGTest
+#if defined(FGTest) || defined(withTemperature)
   #define NUMDIMS 2
 #else
   #define NUMDIMS 1

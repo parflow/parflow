@@ -51,9 +51,15 @@ typedef struct
    double    eta_gamma;
    double    derivative_epsilon;
    
-   PFModule *precond;
-   PFModule *nl_function_eval;
+   PFModule *precond_pressure;
+   PFModule *press_function_eval;
    PFModule *richards_jacobian_eval;
+
+#ifdef withTemperature
+   PFModule *temperature_jacobian_eval;
+   PFModule *precond_temperature;
+   PFModule *temp_function_eval;
+#endif
 
    KINSpgmruserAtimesFn   matvec;
    KINSpgmrPrecondFn      pcinit;
@@ -63,9 +69,15 @@ typedef struct
 
 typedef struct
 {
-   PFModule  *precond;
-   PFModule  *nl_function_eval;
+   PFModule  *precond_pressure;
+   PFModule  *press_function_eval;
    PFModule  *richards_jacobian_eval;
+
+#ifdef withTemperature
+   PFModule *temperature_jacobian_eval;
+   PFModule *precond_temperature;
+   PFModule *temp_function_eval;
+#endif
 
    N_Vector   uscalen;
    N_Vector   fscalen;
@@ -107,10 +119,21 @@ double    uround,
 long int *nfePtr,
 void     *current_state)
 {
-   PFModule    *precond_pressure      = StatePrecond( ((State*)current_state) );
+   PFModule    *precond_pressure      = StatePrecondPressure( ((State*)current_state) );
+State* state = (State*)current_state;
+#ifdef withTemperature
+   PFModule    *precond_temperature      = StatePrecondTemperature( ((State*)current_state) );
+   Vector      *heat_capacity_water   = StateHeatCapacityWater(((State*)current_state));
+   Vector      *heat_capacity_rock   = StateHeatCapacityRock(((State*)current_state));
+   Vector      *x_velocity   = StateXVelocity(((State*)current_state));
+   Vector      *y_velocity   = StateYVelocity(((State*)current_state));
+   Vector      *z_velocity   = StateZVelocity(((State*)current_state));
+#endif
    ProblemData *problem_data = StateProblemData( ((State*)current_state) );
    Vector      *saturation   = StateSaturation( ((State*)current_state) );
    Vector      *density      = StateDensity( ((State*)current_state) );
+
+
    double       dt           = StateDt( ((State*)current_state) );
    double       time         = StateTime( ((State*)current_state) );
 
@@ -128,9 +151,23 @@ void     *current_state)
       itself */
 
 
-   PFModuleReNewInstanceType(KinsolPCInitInstanceXtraInvoke, precond_pressure, (NULL, NULL, problem_data, NULL, 
-								                NV_CONTENT_PF(speciesNVector)->dims[0],   //pressure
-										saturation, density, dt, time));
+
+#ifdef withTemperature
+/* not yet ready(vis+t) */  PFModuleReNewInstanceType(KinsolPCPressInitInstanceXtraInvoke, precond_pressure, (NULL, NULL, problem_data, NULL,
+                                                                                NV_CONTENT_PF(speciesNVector)->dims[0],   //pressure
+                                         //                                       NV_CONTENT_PF(speciesNVector)->dims[1],   //temperature
+                                                                                saturation, density /*,viscosity*/, dt, time));
+
+   PFModuleReNewInstanceType(KinsolPCTempInitInstanceXtraInvoke, precond_temperature, (NULL, NULL, problem_data, NULL,
+										NV_CONTENT_PF(speciesNVector)->dims[1],   //temperature
+                                                                                NV_CONTENT_PF(speciesNVector)->dims[0],   //pressure
+                                                                                saturation, density,heat_capacity_water,heat_capacity_rock,x_velocity,y_velocity,z_velocity, dt, time));
+#else
+   PFModuleReNewInstanceType(KinsolPCInitInstanceXtraInvoke, precond_pressure, (NULL, NULL, problem_data, NULL,
+                                                                                NV_CONTENT_PF(speciesNVector)->dims[0],   //pressure
+                                                                                saturation, density, dt, time));
+#endif
+
    return(0);
 }
 
@@ -151,8 +188,10 @@ double    uround,
 long int *nfePtr,
 void     *current_state)
 {
-   PFModule *precond_pressure = StatePrecond( (State*)current_state );
-
+   PFModule *precond_pressure = StatePrecondPressure( (State*)current_state );
+#ifdef withTemperature
+   PFModule *precond_temperature = StatePrecondTemperature( (State*)current_state );
+#endif
    (void) neq;
    (void) speciesNVector;
    (void) uscale;
@@ -166,7 +205,13 @@ void     *current_state)
    /* The preconditioner module invoked here is the KinsolPC module
       itself */
 
+
+#ifdef withTemperature
+   PFModuleInvokeType(KinsolPCPressInvoke, precond_pressure, (NV_CONTENT_PF(vtem)->dims[0]));
+   PFModuleInvokeType(KinsolPCTempInvoke, precond_temperature, (NV_CONTENT_PF(vtem)->dims[1]));
+#else
    PFModuleInvokeType(KinsolPCInvoke, precond_pressure, (NV_CONTENT_PF(vtem)->dims[0]));
+#endif
 
    return(0);
 }
@@ -214,9 +259,15 @@ int KinsolNonlinSolver (N_Vector speciesNVector, N_Vector fieldContainerNVector,
    N_Vector      uscale           = (instance_xtra -> uscalen);
    N_Vector      fscale           = (instance_xtra -> fscalen);
 
-   PFModule  *nl_function_eval       = instance_xtra -> nl_function_eval;
+   PFModule  *press_function_eval       = instance_xtra -> press_function_eval;
    PFModule  *richards_jacobian_eval = instance_xtra -> richards_jacobian_eval;
-   PFModule  *precond_pressure                = instance_xtra -> precond;
+   PFModule  *precond_pressure                = instance_xtra -> precond_pressure;
+
+#ifdef withTemperature
+   PFModule  *temp_function_eval       = instance_xtra -> temp_function_eval;
+   PFModule  *temperature_jacobian_eval= instance_xtra -> temperature_jacobian_eval;
+   PFModule  *precond_temperature      = instance_xtra -> precond_temperature;
+#endif
 
    State        *current_state    = (instance_xtra -> current_state);
 
@@ -236,7 +287,7 @@ int KinsolNonlinSolver (N_Vector speciesNVector, N_Vector fieldContainerNVector,
 
    int           ret              = 0;
 
-   StateFunc(current_state)          = nl_function_eval;
+   StatePressFunc(current_state)          = press_function_eval;
    StateProblemData(current_state)   = problem_data;
    StateTime(current_state)          = t;
    StateDt(current_state)            = dt;
@@ -246,8 +297,12 @@ int KinsolNonlinSolver (N_Vector speciesNVector, N_Vector fieldContainerNVector,
    StateJacEval(current_state)       = richards_jacobian_eval;
    StateJac(current_state)           = jacobian_matrix;
    StateJacC(current_state)           = jacobian_matrix_C;//dok
-   StatePrecond(current_state)       = precond_pressure;
-
+   StatePrecondPressure(current_state)       = precond_pressure;
+#ifdef withTemperature
+   StateFuncTemp(current_state)          = temp_function_eval;
+   StatePrecondTemperature(current_state)       = precond_temperature;
+   StateJacEvalTemperature(current_state)       = temperature_jacobian_eval;
+#endif
    if (!amps_Rank(amps_CommWorld))
       fprintf(kinsol_file,"\nKINSOL starting step for time %f\n",t);
 
@@ -346,16 +401,9 @@ double      *temp_data)
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
    {
-      if (public_xtra -> precond != NULL)
-	 instance_xtra -> precond =
-	    PFModuleNewInstanceType(KinsolPCInitInstanceXtraInvoke, public_xtra -> precond,
-				    (problem, grid, problem_data, temp_data,
-				     NULL, NULL, NULL, 0, 0));
-      else
-	 instance_xtra -> precond = NULL;
 
-      instance_xtra -> nl_function_eval = 
-	 PFModuleNewInstanceType(NlFunctionEvalInitInstanceXtraInvoke, public_xtra -> nl_function_eval, 
+      instance_xtra -> press_function_eval = 
+	 PFModuleNewInstanceType(PressFunctionEvalInitInstanceXtraInvoke, public_xtra -> press_function_eval, 
 				 (problem, grid, temp_data));
 
       if (public_xtra -> richards_jacobian_eval != NULL)
@@ -365,21 +413,82 @@ double      *temp_data)
 				    (problem, grid, problem_data, temp_data, 0));
       else
 	 instance_xtra -> richards_jacobian_eval = NULL;
+
+#ifdef withTemperature
+      if (public_xtra -> precond_pressure != NULL)
+         instance_xtra -> precond_pressure =
+            PFModuleNewInstanceType(KinsolPCPressInitInstanceXtraInvoke, public_xtra -> precond_pressure,
+                                    (problem, grid, problem_data, temp_data,
+                                    /*NULL, NULL,*/NULL,NULL, NULL, 0, 0));
+      else
+         instance_xtra -> precond_pressure = NULL;
+
+      if (public_xtra -> precond_temperature != NULL)
+         instance_xtra -> precond_temperature =
+            PFModuleNewInstanceType(KinsolPCTempInitInstanceXtraInvoke, public_xtra -> precond_temperature,
+                                    (problem, grid, problem_data, temp_data,
+                                     NULL, NULL, NULL,NULL, NULL, NULL,NULL, NULL, NULL, 0, 0));
+      else
+         instance_xtra -> precond_temperature = NULL;
+
+      instance_xtra -> temp_function_eval =
+         PFModuleNewInstanceType(TempFunctionEvalInitInstanceXtraInvoke, public_xtra -> temp_function_eval,
+                                 (problem, grid, temp_data));
+
+      if (public_xtra -> temperature_jacobian_eval != NULL)
+         /* Initialize instance for nonsymmetric matrix */
+         instance_xtra -> temperature_jacobian_eval =
+            PFModuleNewInstanceType(TemperatureJacobianEvalInitInstanceXtraInvoke, public_xtra -> temperature_jacobian_eval,
+                                    (problem, grid, temp_data, 0));
+      else
+         instance_xtra -> temperature_jacobian_eval = NULL;
+#else
+     if (public_xtra -> precond_pressure != NULL)
+         instance_xtra -> precond_pressure =
+            PFModuleNewInstanceType(KinsolPCInitInstanceXtraInvoke, public_xtra -> precond_pressure,
+                                    (problem, grid, problem_data, temp_data,
+                                     NULL, NULL, NULL, 0, 0));
+      else
+         instance_xtra -> precond_pressure = NULL;
+#endif
+
    }
    else
    {
-      if (instance_xtra -> precond != NULL)
-	 PFModuleReNewInstanceType(KinsolPCInitInstanceXtraInvoke,
-			       instance_xtra -> precond,
-			        (problem, grid, problem_data, temp_data,
-				 NULL, NULL, NULL, 0, 0));
 
-      PFModuleReNewInstanceType(NlFunctionEvalInitInstanceXtraInvoke, instance_xtra -> nl_function_eval, 
+      PFModuleReNewInstanceType(PressFunctionEvalInitInstanceXtraInvoke, instance_xtra -> press_function_eval, 
 			    (problem, grid, temp_data));
 
       if (instance_xtra -> richards_jacobian_eval != NULL)
 	 PFModuleReNewInstanceType(RichardsJacobianEvalInitInstanceXtraInvoke, instance_xtra -> richards_jacobian_eval, 
-				   (problem, grid, problem_data, temp_data, 0));
+				   (problem, grid,problem_data, temp_data, 0));
+#ifdef withTemperature
+      if (instance_xtra -> precond_pressure != NULL)
+         PFModuleReNewInstanceType(KinsolPCPressInitInstanceXtraInvoke,
+                               instance_xtra -> precond_pressure,
+                                (problem, grid, problem_data, temp_data,
+                                 /*NULL, NULL,*/NULL,NULL, NULL, 0, 0));
+
+      if (instance_xtra -> precond_temperature != NULL)
+         PFModuleReNewInstanceType(KinsolPCTempInitInstanceXtraInvoke,
+                               instance_xtra -> precond_temperature,
+                                (problem, grid, problem_data, temp_data,
+                                 NULL, NULL, NULL,NULL, NULL, NULL,NULL, NULL, NULL, 0, 0));
+
+      PFModuleReNewInstanceType(TempFunctionEvalInitInstanceXtraInvoke, instance_xtra -> temp_function_eval,
+                            (problem, grid, temp_data));
+
+      if (instance_xtra -> temperature_jacobian_eval != NULL)
+         PFModuleReNewInstanceType(TemperatureJacobianEvalInitInstanceXtraInvoke, instance_xtra -> temperature_jacobian_eval,
+                                   (problem, grid, temp_data, 0));
+#else
+      if (instance_xtra -> precond_pressure != NULL)
+         PFModuleReNewInstanceType(KinsolPCInitInstanceXtraInvoke,
+                               instance_xtra -> precond_pressure,
+                                (problem, grid, problem_data, temp_data,
+                                 NULL, NULL, NULL, 0, 0));
+#endif
+
    }
 
    /*-----------------------------------------------------------------------
@@ -403,7 +512,7 @@ double      *temp_data)
 
 
       /* Scaling vectors*/
-#ifdef FGTest      
+#if defined(FGTest) || defined(withTemperature)    
       uscalen = N_VNew_PF(grid,2);
 #else
       uscalen = N_VNew_PF(grid,1);
@@ -411,7 +520,7 @@ double      *temp_data)
       N_VConst_PF(1.0,uscalen);
       instance_xtra -> uscalen = uscalen;
 
-#ifdef FGTest
+#if defined(FGTest)  || defined(withTemperature)
       fscalen = N_VNew_PF(grid,2);
 #else
       fscalen = N_VNew_PF(grid,1);
@@ -487,15 +596,27 @@ void  KinsolNonlinSolverFreeInstanceXtra()
 
    if (instance_xtra)
    {
-      PFModuleFreeInstance((instance_xtra -> nl_function_eval));
+      PFModuleFreeInstance((instance_xtra -> press_function_eval));
       if (instance_xtra -> richards_jacobian_eval != NULL)
       {
          PFModuleFreeInstance((instance_xtra -> richards_jacobian_eval));
       }
-      if (instance_xtra -> precond != NULL)
+      if (instance_xtra -> precond_pressure != NULL)
       {
-         PFModuleFreeInstance((instance_xtra -> precond));
+         PFModuleFreeInstance((instance_xtra -> precond_pressure));
       }
+
+#ifdef withTemperature
+      PFModuleFreeInstance((instance_xtra -> temp_function_eval));
+      if (instance_xtra -> temperature_jacobian_eval != NULL)
+      {
+         PFModuleFreeInstance((instance_xtra -> temperature_jacobian_eval));
+      }
+      if (instance_xtra -> precond_temperature != NULL)
+      {
+         PFModuleFreeInstance((instance_xtra -> precond_temperature));
+      }
+#endif
 
       N_VDestroy_PF(instance_xtra -> uscalen);                                   
       N_VDestroy_PF(instance_xtra -> fscalen);
@@ -648,16 +769,31 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
    switch_value = NA_NameToIndex(precond_switch_na, switch_name);
    if (switch_value == 0)
    {
-      (public_xtra -> precond) = NULL;
+      (public_xtra -> precond_pressure) = NULL;
+#ifdef withTemperature
+      (public_xtra -> precond_temperature) = NULL;
+#endif
       (public_xtra -> pcinit)  = NULL;
       (public_xtra -> pcsolve) = NULL;
    }
    else if ( switch_value > 0 )
    {
-      (public_xtra -> precond) = PFModuleNewModuleType(
-	 KinsolPCNewPublicXtraInvoke,
-	 KinsolPC, 
-	 (key, switch_name));
+#ifdef withTemperature
+      (public_xtra -> precond_pressure) = PFModuleNewModuleType(
+         KinsolPCNewPublicXtraInvoke,
+         KinsolPC/*Press*/,
+         (key, switch_name));
+
+      (public_xtra -> precond_temperature) = PFModuleNewModuleType(
+         KinsolPCTempNewPublicXtraInvoke,
+         KinsolPCTemp,
+         (key, switch_name));
+#else
+      (public_xtra -> precond_pressure) = PFModuleNewModuleType(
+         KinsolPCNewPublicXtraInvoke,
+         KinsolPC,
+         (key, switch_name));
+#endif
       (public_xtra -> pcinit)  = (KINSpgmrPrecondFn)KINSolInitPC;
       (public_xtra -> pcsolve) = (KINSpgmrPrecondSolveFn)KINSolCallPC;
    }
@@ -668,19 +804,32 @@ PFModule  *KinsolNonlinSolverNewPublicXtra()
    }
    NA_FreeNameArray(precond_switch_na);
 
-   public_xtra -> nl_function_eval = PFModuleNewModule(NlFunctionEval, ());
+#ifdef withTemperature
+   public_xtra -> temp_function_eval = PFModuleNewModule(TempFunctionEval, ());
+#endif
+   public_xtra -> press_function_eval = PFModuleNewModule(PressFunctionEval, ());
    public_xtra -> neq = ((public_xtra -> max_restarts)+1)
                            *(public_xtra -> krylov_dimension);
 
    if (public_xtra -> matvec != NULL)
+   {
       public_xtra -> richards_jacobian_eval = 
                                  PFModuleNewModuleType(
 				    RichardsJacobianEvalNewPublicXtraInvoke,
 				    RichardsJacobianEval, 
-				    ("Solver.Nonlinear.Jacobian"));
-   else 
+				    ("Solver.Nonlinear.Pressure.Jacobian"));
+#ifdef withTemperature
+      public_xtra -> temperature_jacobian_eval =
+                                 PFModuleNewModule(
+                                    TemperatureJacobianEval,
+                                    ());
+#endif
+   }else{ 
+#ifdef withTemperature
+      public_xtra -> temperature_jacobian_eval = NULL;
+#endif
       public_xtra -> richards_jacobian_eval = NULL;
-
+   }
    (public_xtra -> time_index) = RegisterTiming("KINSol");
    
    PFModulePublicXtra(this_module) = public_xtra;
@@ -703,12 +852,22 @@ void  KinsolNonlinSolverFreePublicXtra()
       {
          PFModuleFreeModule(public_xtra -> richards_jacobian_eval);
       }
-      if (public_xtra -> precond != NULL)
+      if (public_xtra -> precond_pressure != NULL)
       {
-         PFModuleFreeModule(public_xtra -> precond);
+         PFModuleFreeModule(public_xtra -> precond_pressure);
       }
-      PFModuleFreeModule(public_xtra -> nl_function_eval);
-
+      PFModuleFreeModule(public_xtra -> press_function_eval);
+#ifdef withTemperature
+      if (public_xtra -> temperature_jacobian_eval != NULL)
+      {
+         PFModuleFreeModule(public_xtra -> temperature_jacobian_eval);
+      }
+      if (public_xtra -> precond_temperature != NULL)
+      {
+         PFModuleFreeModule(public_xtra -> precond_temperature);
+      }
+      PFModuleFreeModule(public_xtra -> temp_function_eval);
+#endif
       tfree(public_xtra);
    }
 }
@@ -722,22 +881,38 @@ int  KinsolNonlinSolverSizeOfTempData()
    PFModule             *this_module   = ThisPFModule;
    InstanceXtra         *instance_xtra = (InstanceXtra         *)PFModuleInstanceXtra(this_module);
 
-   PFModule             *precond       = (instance_xtra -> precond);
-   PFModule             *jacobian_eval = (instance_xtra -> 
+   PFModule             *precond_pressure       = (instance_xtra -> precond_pressure);
+   PFModule             *richards_jacobian_eval = (instance_xtra -> 
 					  richards_jacobian_eval);
+#ifdef withTemperature
+   PFModule             *precond_temperature       = (instance_xtra -> precond_temperature);
+   PFModule             *temperature_jacobian_eval = (instance_xtra ->
+                                          temperature_jacobian_eval);
+#endif
 
    int sz = 0;
 
    /* SGS temp data */
    
-   if (jacobian_eval != NULL)
+   if (richards_jacobian_eval != NULL)
    {
-      sz += PFModuleSizeOfTempData(jacobian_eval);
+      sz += PFModuleSizeOfTempData(richards_jacobian_eval);
    }
-   if (precond != NULL)
+   if (precond_pressure != NULL)
    {
-      sz += PFModuleSizeOfTempData(precond);
+      sz += PFModuleSizeOfTempData(precond_pressure);
    }
+#ifdef withTemperature
+   if (temperature_jacobian_eval != NULL)
+   {
+      sz += PFModuleSizeOfTempData(temperature_jacobian_eval);
+   }
+   if (precond_temperature != NULL)
+   {
+      sz += PFModuleSizeOfTempData(precond_temperature);
+   }
+#endif
 
    return sz;
+
 }

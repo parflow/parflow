@@ -203,6 +203,23 @@ typedef struct
    Vector      *old_pressure2;
 #endif
 
+#ifdef withTemperature
+   PFModule     *ic_phase_temperature;
+   PFModule     *phase_heat_capacity;
+//not ready   PFModule     *phase_viscosity;
+   Vector	*temperature;
+   Vector       *heat_capacity_water;
+   Vector       *heat_capacity_rock;
+//not rdy   Vector       *viscosity;
+   Vector       *old_viscosity;
+   Vector       *old_temperature;
+   Vector       *x_velocity, *y_velocity, *z_velocity;
+   Vector       *clm_energy_source;
+   Vector       *forc_t;
+#endif
+
+
+
 Vector      *pressure;
    Vector      *saturation;
    Vector      *density;
@@ -274,6 +291,15 @@ void SetupRichards(PFModule *this_module) {
    InstanceXtra *instance_xtra       = (InstanceXtra *)PFModuleInstanceXtra(this_module);
    Problem      *problem             = (public_xtra -> problem);
    PFModule     *ic_phase_pressure   = (instance_xtra -> ic_phase_pressure);
+#ifdef withTemperature
+   PFModule     *ic_phase_temperature   = (instance_xtra -> ic_phase_temperature);
+   PFModule     *phase_heat_capacity = (instance_xtra -> phase_heat_capacity);
+//not ready   PFModule     *phase_viscosity     = (instance_xtra -> phase_viscosity);
+
+   Grid         *x_grid              = (instance_xtra -> x_grid);
+   Grid         *y_grid              = (instance_xtra -> y_grid);
+   Grid         *z_grid              = (instance_xtra -> z_grid);
+#endif
    PFModule     *phase_density       = (instance_xtra -> phase_density);
    PFModule     *problem_saturation  = (instance_xtra -> problem_saturation);
 
@@ -595,7 +621,39 @@ void SetupRichards(PFModule *this_module) {
       instance_xtra -> old_saturation2 = NewVectorType( grid, 1, 1, vector_cell_centered  );
       InitVectorAll(instance_xtra -> old_saturation2, 0.0);
 #endif
+#ifdef withTemperature
+      instance_xtra -> temperature = NewVectorType( grid, 1, 1, vector_cell_centered);
+      InitVectorAll(instance_xtra -> temperature, 0.0);	
 
+      instance_xtra -> heat_capacity_water = NewVectorType( grid, 1, 1, vector_cell_centered);
+      InitVectorAll(instance_xtra -> heat_capacity_water, 0.0);
+
+      instance_xtra -> heat_capacity_rock = NewVectorType( grid, 1, 1, vector_cell_centered);
+      InitVectorAll(instance_xtra -> heat_capacity_rock, 1.932e+6);
+
+ //not rdy     instance_xtra -> viscosity = NewVectorType( grid, 1, 1, vector_cell_centered);
+ //not rdy     InitVectorAll(instance_xtra -> viscosity, 0.0);
+
+      instance_xtra -> old_temperature = NewVectorType( grid, 1, 1, vector_cell_centered);
+      InitVectorAll(instance_xtra -> old_temperature, 0.0);
+
+      instance_xtra -> old_viscosity = NewVectorType( grid, 1, 1, vector_cell_centered);
+      InitVectorAll(instance_xtra -> old_viscosity, 0.0);
+
+      instance_xtra -> clm_energy_source = NewVectorType( grid, 1, 1, vector_cell_centered);
+      InitVectorAll(instance_xtra -> clm_energy_source, 0.0);
+
+      instance_xtra -> forc_t = NewVectorType( grid, 1, 1, vector_cell_centered);
+      InitVectorAll(instance_xtra -> forc_t, 0.0);
+
+      /* Velocity vectors for heat convection */
+      instance_xtra -> x_velocity = NewVectorType( x_grid, 1, 1 , vector_cell_centered);
+      InitVectorAll(instance_xtra -> x_velocity, 0.0);
+      instance_xtra -> y_velocity = NewVectorType( y_grid, 1, 1 , vector_cell_centered);
+      InitVectorAll(instance_xtra -> y_velocity, 0.0);
+      instance_xtra -> z_velocity = NewVectorType( z_grid, 1, 1 , vector_cell_centered);
+      InitVectorAll(instance_xtra -> z_velocity, 0.0);
+#endif
 
       instance_xtra -> pressure = NewVectorType( grid, 1, 1, vector_cell_centered);
       InitVectorAll(instance_xtra -> pressure, -FLT_MAX);
@@ -770,6 +828,45 @@ void SetupRichards(PFModule *this_module) {
       } 
 
 #endif
+
+#ifdef withTemperature
+      /* Set initial temperature and pass around ghost data to start */
+      PFModuleInvokeType(ICPhaseTemperatureInvoke,
+                         ic_phase_temperature,
+                         (instance_xtra -> temperature, problem_data, problem));
+
+      handle = InitVectorUpdate(instance_xtra -> temperature, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+
+      /* Set initial heat capacity and pass around ghost data to start */
+      PFModuleInvokeType(PhaseHeatCapacityInvoke,
+                         phase_heat_capacity,
+                         (0,instance_xtra -> heat_capacity_water, problem_data));
+
+      handle = InitVectorUpdate(instance_xtra -> heat_capacity_water, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+
+      /* Set initial heat capacity and pass around ghost data to start */
+      PFModuleInvokeType(PhaseHeatCapacityInvoke,
+                         phase_heat_capacity,
+                         (1,instance_xtra -> heat_capacity_rock, problem_data));
+
+      handle = InitVectorUpdate(instance_xtra -> heat_capacity_rock, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+
+/* not yeet ready
+      // Set initial viscosity and pass around ghost data to start 
+      PFModuleInvokeType(PhaseViscosityInvoke,
+                         phase_viscosity,
+                         (0,instance_xtra -> pressure, instance_xtra -> temperature, instance_xtra -> viscosity, CALCFCN));
+
+      handle = InitVectorUpdate(instance_xtra -> viscosity, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+*/
+
+//
+#endif
+
 
       /* Set initial pressures and pass around ghost data to start */
       PFModuleInvokeType(ICPhasePressureInvoke, 
@@ -965,6 +1062,13 @@ void AdvanceRichards(PFModule *this_module,
    PFModule     *l2_error_norm       = (instance_xtra -> l2_error_norm);
    PFModule     *nonlin_solver       = (instance_xtra -> nonlin_solver);
 
+#ifdef withTemperature
+   PFModule     *ic_phase_temperature   = (instance_xtra -> ic_phase_temperature);
+   PFModule     *phase_heat_capacity = (instance_xtra -> phase_heat_capacity);
+//not ready   PFModule     *phase_viscosity     = (instance_xtra -> phase_viscosity);
+#endif
+
+
    ProblemData  *problem_data        = (instance_xtra -> problem_data);
 
    int           start_count         = ProblemStartCount(problem);
@@ -1101,6 +1205,25 @@ void AdvanceRichards(PFModule *this_module,
    /*                Begin the main computational section                 */
    /*                                                                     */
    /***********************************************************************/
+#ifdef withTemperature
+    speciesNVector = N_VNewEmpty_PF(2);   // create a multi dimensional N_Vector with two dimensions
+    speciesContent = NV_CONTENT_PF(speciesNVector);
+    speciesContent->dims[0] = instance_xtra -> pressure;  // assemble fields into one N_Vector element
+    speciesContent->dims[1] = instance_xtra -> temperature; //test with two times pressure
+    fieldContainerNVector = N_VNewEmpty_PF(17);
+    containerContent = NV_CONTENT_PF(fieldContainerNVector);
+  
+    containerContent->dims[7] = instance_xtra -> heat_capacity_water;
+    containerContent->dims[8] = instance_xtra -> heat_capacity_rock;
+    containerContent->dims[9] = NULL; //not rdy instance_xtra ->viscosity;
+    containerContent->dims[10] = NULL; //not rdy instance_xtra ->old_viscosity;
+    containerContent->dims[11] = instance_xtra -> old_temperature;
+    containerContent->dims[12] = instance_xtra -> clm_energy_source;
+    containerContent->dims[13] = instance_xtra -> forc_t;
+    containerContent->dims[14] = instance_xtra -> x_velocity;
+    containerContent->dims[15] = instance_xtra -> y_velocity;
+    containerContent->dims[16] = instance_xtra -> z_velocity;
+#endif
 
 #ifdef FGTest 
     PFVCopy(instance_xtra -> saturation, instance_xtra -> saturation2);
@@ -1117,7 +1240,9 @@ void AdvanceRichards(PFModule *this_module,
     containerContent->dims[7] = instance_xtra -> saturation2;
     containerContent->dims[8] = instance_xtra -> old_saturation2; 
     containerContent->dims[9] = instance_xtra -> old_pressure2;
-#else
+#endif
+
+#if !defined(withTemperature) && !defined(FGTest)
     speciesNVector = N_VNewEmpty_PF(1); 
     speciesContent = NV_CONTENT_PF(speciesNVector);
     speciesContent->dims[0] = instance_xtra -> pressure;
@@ -1715,6 +1840,10 @@ void AdvanceRichards(PFModule *this_module,
 	    PFVCopy(instance_xtra -> saturation, instance_xtra -> old_saturation);
 	    PFVCopy(instance_xtra -> pressure,   instance_xtra -> old_pressure);
 
+#ifdef withTemperature
+//not rdy	    PFVCopy(instance_xtra -> viscosity, instance_xtra -> old_viscosity);
+            PFVCopy(instance_xtra -> temperature,   instance_xtra -> old_temperature);
+#endif
 #ifdef FGTest 
             PFVCopy(instance_xtra -> saturation2, instance_xtra -> old_saturation2);
             PFVCopy(instance_xtra -> pressure2,   instance_xtra -> old_pressure2);
@@ -1740,10 +1869,14 @@ void AdvanceRichards(PFModule *this_module,
 	    
 	    PFVCopy(instance_xtra -> old_density,    instance_xtra -> density);
 	    PFVCopy(instance_xtra -> old_saturation, instance_xtra -> saturation);
-	    PFVCopy(instance_xtra -> old_pressure, speciesContent->dims[0]);
+	    PFVCopy(instance_xtra -> old_pressure,instance_xtra -> pressure);
+#ifdef withTemperature
+//not rdy	    PFVCopy(instance_xtra -> old_viscosity, instance_xtra -> viscosity);
+            PFVCopy(instance_xtra -> old_temperature, instance_xtra ->temperature);	
+#endif
 #ifdef FGTest 
 	    PFVCopy(instance_xtra -> old_saturation2, instance_xtra -> saturation2);
-            PFVCopy(instance_xtra -> old_pressure2, speciesContent->dims[1]);	
+            PFVCopy(instance_xtra -> old_pressure2, instance_xtra ->pressure2);	
 #endif
 	 } // End set t and dt based on convergence
 
@@ -2031,7 +2164,15 @@ void AdvanceRichards(PFModule *this_module,
 		      instance_xtra -> density, gravity, problem_data,
 		      CALCFCN));
 
-
+#ifdef withTemperature
+/*not yet ready
+      PFModuleInvokeType(PhaseViscosityInvoke, phase_viscosity,
+                     (0,instance_xtra -> pressure, instance_xtra -> temperature,
+                      instance_xtra -> viscosity, CALCFCN));
+      handle = InitVectorUpdate(instance_xtra -> viscosity, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);	
+*/
+#endif
 #ifdef FGTest
       PFModuleInvokeType(SaturationInvoke, problem_saturation,
                      (instance_xtra -> saturation2, instance_xtra -> pressure2,
@@ -2077,7 +2218,7 @@ void AdvanceRichards(PFModule *this_module,
 	 {
 	    sprintf(file_postfix, "%05d", instance_xtra -> file_number);
 	    sprintf(file_type, "press");
-	    WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure2,
+	    WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> temperature,
                       t, instance_xtra -> file_number, "Pressure");
 #ifdef FGTest
       //      sprintf(file_type, "press");
@@ -2559,7 +2700,7 @@ void AdvanceRichards(PFModule *this_module,
       {
 	 sprintf(file_postfix, "%05d", instance_xtra -> file_number);
 	 sprintf(file_type, "press");
-	 WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure2,
+	 WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> temperature,
 		   t, instance_xtra -> file_number, "Pressure");
 
 
@@ -2710,8 +2851,21 @@ void TeardownRichards(PFModule *this_module) {
    FreeVector( instance_xtra -> ovrl_bc_flx );
    FreeVector( instance_xtra -> mask );
 
+#ifdef withTemperature
+   FreeVector( instance_xtra -> temperature );
+   FreeVector( instance_xtra -> heat_capacity_water );
+   FreeVector( instance_xtra -> heat_capacity_rock );
+ //not rdy  FreeVector( instance_xtra -> viscosity );
+   FreeVector( instance_xtra -> old_viscosity );
+   FreeVector( instance_xtra -> old_temperature );
+   FreeVector( instance_xtra -> clm_energy_source );
+   FreeVector( instance_xtra -> forc_t );
+   FreeVector( instance_xtra -> x_velocity );
+   FreeVector( instance_xtra -> y_velocity );
+   FreeVector( instance_xtra -> z_velocity );
+#endif
 #ifdef FGTest
-FreeVector( instance_xtra -> saturation2 );
+   FreeVector( instance_xtra -> saturation2 );
    FreeVector( instance_xtra -> old_saturation2 );
    FreeVector( instance_xtra -> old_pressure2 );
    FreeVector( instance_xtra -> pressure2 );
@@ -3051,6 +3205,23 @@ PFModule *SolverRichardsInitInstanceXtra()
 	 PFModuleNewInstanceType(ICPhasePressureInitInstanceXtraInvoke,
 				 ProblemICPhasePressure(problem), 
 				 (problem, grid, NULL));
+#ifdef withTemperature
+      (instance_xtra -> ic_phase_temperature) =
+         PFModuleNewInstanceType(ICPhaseTemperatureInitInstanceXtraInvoke,
+                                 ProblemICPhaseTemperature(problem),
+                                 (problem, grid, NULL));
+
+      (instance_xtra -> phase_heat_capacity) =
+         PFModuleNewInstance(
+                                 ProblemPhaseHeatCapacity(problem),
+                                 ());
+/*not rdy
+      (instance_xtra -> phase_viscosity) =
+         PFModuleNewInstanceType(PhaseViscosityInitInstanceXtraInvoke,
+                                 ProblemPhaseViscosity(problem),
+                                 (problem, grid, NULL));
+*/
+#endif
       (instance_xtra -> problem_saturation) =
 	 PFModuleNewInstanceType(SaturationInitInstanceXtraInvoke,
 				 ProblemSaturation(problem), (grid, NULL));
@@ -3092,6 +3263,21 @@ PFModule *SolverRichardsInitInstanceXtra()
       PFModuleReNewInstanceType(ICPhasePressureInitInstanceXtraInvoke,
 				(instance_xtra -> ic_phase_pressure), 
 				(problem, grid, NULL));
+
+#ifdef withTemperature
+      PFModuleReNewInstanceType(ICPhaseTemperatureInitInstanceXtraInvoke,
+                                (instance_xtra -> ic_phase_temperature),
+                                (problem, grid, NULL));
+
+      PFModuleReNewInstance(
+                                (instance_xtra -> phase_heat_capacity),
+                                ());
+/* not rdy
+      PFModuleReNewInstanceType(PhaseViscosityInitInstanceXtraInvoke,
+                                (instance_xtra -> phase_viscosity),
+                                ());
+*/
+#endif
       PFModuleReNewInstanceType(SaturationInitInstanceXtraInvoke,
 				(instance_xtra -> problem_saturation), 
 				(grid, NULL)); 
@@ -3122,7 +3308,10 @@ PFModule *SolverRichardsInitInstanceXtra()
 
    /* compute size for pressure initial condition */
    ic_sz = PFModuleSizeOfTempData(instance_xtra -> ic_phase_pressure);
-
+#ifdef withTemperature
+   /* compute size for temperature initial condition */
+   ic_sz = PFModuleSizeOfTempData(instance_xtra -> ic_phase_temperature);
+#endif
    /* compute size for initial pressure guess*/
    /*ig_sz = PFModuleSizeOfTempData(instance_xtra -> ig_phase_pressure);*/
 
@@ -3155,9 +3344,16 @@ PFModule *SolverRichardsInitInstanceXtra()
 
    /* renew ic_phase_pressure module */
    PFModuleReNewInstanceType(ICPhasePressureInitInstanceXtraInvoke,
-			     (instance_xtra -> ic_phase_pressure),
-			     (NULL, NULL, temp_data));
+                             (instance_xtra -> ic_phase_pressure),
+                             (NULL, NULL, temp_data));
 
+
+#ifdef withTemperature
+   /* renew ic_phase_temperature module */
+   PFModuleReNewInstanceType(ICPhaseTemperatureInitInstanceXtraInvoke,
+                             (instance_xtra -> ic_phase_temperature),
+                             (NULL, NULL, temp_data));
+#endif
    /* renew nonlinear solver module */
    PFModuleReNewInstanceType(NonlinSolverInitInstanceXtraInvoke,
 			     (instance_xtra -> nonlin_solver),
@@ -3219,6 +3415,11 @@ void  SolverRichardsFreeInstanceXtra()
 	 PFModuleFreeInstance((instance_xtra -> phase_velocity_face));
 
       PFModuleFreeInstance((instance_xtra -> ic_phase_pressure));
+#ifdef withTemperature
+      PFModuleFreeInstance((instance_xtra -> ic_phase_temperature));
+      PFModuleFreeInstance((instance_xtra -> phase_heat_capacity));
+//not ready      PFModuleFreeInstance((instance_xtra -> phase_viscosity));
+#endif   
       PFModuleFreeInstance((instance_xtra -> problem_saturation));
       PFModuleFreeInstance((instance_xtra -> phase_density));
       PFModuleFreeInstance((instance_xtra -> select_time_step));
