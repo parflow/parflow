@@ -140,7 +140,7 @@ Vector      *z_velocity)
    int          nx_p, ny_p, nz_p;
    int          nx_po, ny_po, nz_po;
    int          sy_p, sz_p;
-   int          ip, ipo,io;
+   int          ip, ipo,io,ipp1;
 
    int          water = 0;
    int          rock  = 1;
@@ -249,6 +249,7 @@ Vector      *z_velocity)
       dz = SubgridDZ(subgrid);
 	 
       vol = dx*dy*dz;
+      r = SubgridRX(subgrid);
 
       nx_f = SubvectorNX(f_sub);
       ny_f = SubvectorNY(f_sub);
@@ -279,15 +280,19 @@ Vector      *z_velocity)
       zvp = SubvectorData(zv_sub);
 
 
-      ip  = SubvectorEltIndex(f_sub,   ix, iy, iz);
-      ipo = SubvectorEltIndex(po_sub,  ix, iy, iz);
-
-      BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-		ip, nx_f, ny_f, nz_f, 1, 1, 1,
-		ipo, nx_po, ny_po, nz_po, 1, 1, 1,
+//      ip  = SubvectorEltIndex(f_sub,   ix, iy, iz);
+//      ipo = SubvectorEltIndex(po_sub,  ix, iy, iz);
+//printf("#########################\n");
+//      BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
+//  		ip, nx_f, ny_f, nz_f, 1, 1, 1,
+//		ipo, nx_po, ny_po, nz_po, 1, 1, 1,
+      GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
 	     { 
+      ip  = SubvectorEltIndex(f_sub,   i,j,k);
+      ipo = SubvectorEltIndex(po_sub,  i,j,k);
 //FGtest sp = 1   
-//FGtest dp = 1  
+//FGtest dp = 1 
+//printf("##FG ip %d ; ipo %d\n",ip,ipo); 
           //   fp[ip] = (tp[ip] - otp[ip]) * 1 /*sp[ip]*/  * 1 /*dp[ip]*/ * /* hcwp[ip]*/ 1.0 * pop[ipo] * vol;
 		fp[ip] = (tp[ip] - otp[ip]) * pop[ipo] * vol;
 //	       printf("##FG2:index: %i ; %lf(f) =  ( %lf(tp) - %lf(otp) )  * %lf(pop)  * %lf(vol)\n",ip,fp[ip],tp[ip],otp[ip],pop[ipo],vol);
@@ -325,6 +330,7 @@ Vector      *z_velocity)
       dz = SubgridDZ(subgrid);
 	 
       vol = dx*dy*dz;
+      r = SubgridRX(subgrid);
 
       nx_f = SubvectorNX(f_sub);
       ny_f = SubvectorNY(f_sub);
@@ -337,11 +343,13 @@ Vector      *z_velocity)
       fp  = SubvectorData(f_sub);
 
       
-      ip = SubvectorEltIndex(f_sub, ix, iy, iz);
+//      ip = SubvectorEltIndex(f_sub, ix, iy, iz);
  
-      BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-		ip, nx_f, ny_f, nz_f, 1, 1, 1,
+//      BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+//  		ip, nx_f, ny_f, nz_f, 1, 1, 1,
+       GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
 	     {
+			  ip = SubvectorEltIndex(f_sub, i,j,k);
 			 fp[ip] += vol * /* hcrp[ip]*/ 1.0 * (1.0 - pop[ip]) * (tp[ip] - otp[ip]);
 // printf("##FG:index: %i ; %lf(f) += %lf(add) = %lf(vol) * ( 1.0 - %lf(pop) ) * ( %lf(tp) - %lf(otp) )\n",ip,fp[ip],(vol * (1.0 - pop[ip]) * (tp[ip] - otp[ip])),vol,pop[ip],tp[ip],otp[ip]);
              //printf("Storage %d %d %d %e %e %e\n",i,j,k,fp[ip],tp[ip],otp[ip]);
@@ -389,6 +397,7 @@ Vector      *z_velocity)
       dz = SubgridDZ(subgrid);
 	 
       vol = dx*dy*dz;
+      r = SubgridRX(subgrid);
 
       nx_f = SubvectorNX(f_sub);
       ny_f = SubvectorNY(f_sub);
@@ -405,11 +414,13 @@ Vector      *z_velocity)
       fp  = SubvectorData(f_sub);
       dp  = SubvectorData(d_sub);
       
-      ip = SubvectorEltIndex(f_sub, ix, iy, iz);
+ //     ip = SubvectorEltIndex(f_sub, ix, iy, iz);
 
-      BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-		ip, nx_f, ny_f, nz_f, 1, 1, 1,
+ //     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+ // 		ip, nx_f, ny_f, nz_f, 1, 1, 1,
+              GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
 	     {
+                ip = SubvectorEltIndex(f_sub, i,j,k);
 	        //fp[ip] -= vol * dt * hsp[ip]; // energy sink source
 	        //fp[ip] -= vol * dt * dp[ip] * qsp[ip] * hcwp[ip] * tsp[ip]; // mass-energy sink
 	        //if (i==0 && j ==0 && k== 239) fp[ip] -= vol * dt * dp[ip] * 1.0e-6 * hcwp[ip] * (283.0 - 273.15); // mass-energy sink
@@ -486,13 +497,13 @@ Vector      *z_velocity)
       rp_sub    = VectorSubvector(rel_perm, is);
       f_sub     = VectorSubvector(fval, is);
 	 
-      ix = SubgridIX(subgrid) - 1;
-      iy = SubgridIY(subgrid) - 1;
-      iz = SubgridIZ(subgrid) - 1;
+      ix = SubgridIX(subgrid) -1;
+      iy = SubgridIY(subgrid) -1;
+      iz = SubgridIZ(subgrid) -1;
 	 
-      nx = SubgridNX(subgrid) + 1;
-      ny = SubgridNY(subgrid) + 1;
-      nz = SubgridNZ(subgrid) + 1;
+      nx = SubgridNX(subgrid) +1;
+      ny = SubgridNY(subgrid) +1;
+      nz = SubgridNZ(subgrid) +1;
 	 
       dx = SubgridDX(subgrid);
       dy = SubgridDY(subgrid);
@@ -508,19 +519,25 @@ Vector      *z_velocity)
 	 
       sy_p = nx_p;
       sz_p = ny_p * nx_p;
+      r = SubgridRX(subgrid);
 
       tp    = SubvectorData(t_sub);
       rpp   = SubvectorData(rp_sub);
       fp    = SubvectorData(f_sub);
-      
-      ip = SubvectorEltIndex(t_sub, ix, iy, iz);
+//printf("########## ix %d ,iy %d ,iz %d ,nx %d ,ny %d ,nz %d \n",ix,iy,iz,nx,ny,nz);      
+//      ip = SubvectorEltIndex(t_sub, ix, iy, iz);
 
-      BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-		ip, nx_p, ny_p, nz_p, 1, 1, 1,
-	     {
+//      BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+//		ip, nx_p, ny_p, nz_p, 1, 1, 1,
+             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+             {
+            ip = SubvectorEltIndex(t_sub, i,j,k);
+
 //	   if(k==0) printf("i, j, t, io, qy %d %d %d %d %e\n",i,j,t,io,pp[ip]);
 	        /* Calculate right face velocity.
 		   diff >= 0 implies flow goes left to right */
+//printf("##FG: ip %d ,i %d ,j %d  ,k %d  \n",ip,i,j,k);
+//printf("##FG ip: %d ; i: %d ; j: %d ; k: %d ; tp[ip] %lf ; tp[ip+1] %lf ; tp[ip+y] %lf ; tp[ip+z] %lf \n",ip,i,j,k,tp[ip],tp[ip+1],tp[ip+sy_p],tp[ip+sz_p]);
 	       diff    = tp[ip] - tp[ip+1];
 		u_right = ffx 
 		              * (diff / dx )
@@ -550,6 +567,8 @@ Vector      *z_velocity)
 		fp[ip+sy_p] -= dt * u_front;
 		fp[ip+sz_p] -= dt * u_upper;
                 //printf("Der %d %d %d %d %e \n",ip,i,j,k,fp[ip]);
+//            printf("##FG ip: %d ; i: %d ; j: %d ; k: %d ; fp[ip] %lf ; fp[ip+1] %lf ; fp[ipy] %lf ; fp[ipz] %lf \n",ip,i,j,k,fp[ip],fp[ip+1],fp[ip+sy_p],fp[ip+sz_p]);
+
 	     });
    }
 
@@ -602,13 +621,15 @@ Vector      *z_velocity)
       xvp = SubvectorData(xv_sub);
       yvp = SubvectorData(yv_sub);
       zvp = SubvectorData(zv_sub);
+      r = SubgridRX(subgrid);
 
-
-      ip = SubvectorEltIndex(t_sub, ix, iy, iz);
+//      ip = SubvectorEltIndex(t_sub, ix, iy, iz);
  
-      BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-                ip, nx_p, ny_p, nz_p, 1, 1, 1,
+//      BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+//                ip, nx_p, ny_p, nz_p, 1, 1, 1,
+             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
              {
+                ip = SubvectorEltIndex(t_sub, i,j,k);
                 /* Calculate right face temperature at i+1/2.
                    diff >= 0 implies flow goes left to right */
                 u_right = ffx * RPMean(0.0, xvp[ip], hcwp[ip+1]*(tp[ip+1]-273.15),      hcwp[ip]*(tp[ip]-273.15)) * xvp[ip]; 

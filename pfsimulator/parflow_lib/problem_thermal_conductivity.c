@@ -114,7 +114,7 @@ int          fcn)               /* Flag determining what to calculate
    int            ix,   iy,   iz, r;
    int            nx,   ny,   nz;
 
-   int            i, j, k, ipt, ips, ipp;
+   int            i, j, k, ipt, ips, ipp, *fdir;
 
    int            cwet_index, cdry_index;
 
@@ -123,8 +123,8 @@ int          fcn)               /* Flag determining what to calculate
    (void) gravity;
 
    /* Initialize thermal conductivity to 0.0 */
-   InitVectorAll(phase_thermalconductivity,0.0);
-
+ if ( fcn == CALCFCN )  InitVectorAll(phase_thermalconductivity,1.2);
+ else InitVectorAll(phase_thermalconductivity,0.0); 
    switch((public_xtra -> type))
    {
 
@@ -139,6 +139,52 @@ int          fcn)               /* Flag determining what to calculate
       region_indices = (dummy0 -> region_indices);
       values         = (dummy0 -> values);
 
+     for (ir = 0; ir < num_regions; ir++)
+      {
+         gr_solid = ProblemDataGrSolid(problem_data, region_indices[ir]);
+
+         ForSubgridI(sg, subgrids)
+         {
+            subgrid = SubgridArraySubgrid(subgrids, sg);
+            pt_sub = VectorSubvector(phase_thermalconductivity,sg);
+
+            ix = SubgridIX(subgrid);
+            iy = SubgridIY(subgrid);
+            iz = SubgridIZ(subgrid);
+
+            nx = SubgridNX(subgrid);
+            ny = SubgridNY(subgrid);
+            nz = SubgridNZ(subgrid);
+
+            r = SubgridRX(subgrid);
+
+            ptdat = SubvectorData(pt_sub);
+
+            if ( fcn == CALCFCN )
+            {
+               GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
+                              nx, ny, nz,
+               {
+                  ips = SubvectorEltIndex(pt_sub,
+                                          i+fdir[0], j+fdir[1], k+fdir[2]);
+                  ptdat[ips] = values[ir];
+
+               });
+            }
+            else  /* fcn = CALCDER */
+            {
+               GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
+                              nx, ny, nz,
+               {
+                  ips = SubvectorEltIndex(pt_sub,
+                                          i+fdir[0], j+fdir[1], k+fdir[2]);
+                  ptdat[ips] = 0.0;
+               });
+            }   /* End else clause */
+         }      /* End subgrid loop */
+      }         /* End loop over regions */
+
+
       for (ir = 0; ir < num_regions; ir++)
       {
 	 gr_solid = ProblemDataGrSolid(problem_data, region_indices[ir]);
@@ -148,13 +194,13 @@ int          fcn)               /* Flag determining what to calculate
 	    subgrid = SubgridArraySubgrid(subgrids,     sg);
 	    pt_sub  = VectorSubvector(phase_thermalconductivity, sg);
 
-	    ix = SubgridIX(subgrid);
-	    iy = SubgridIY(subgrid);
-	    iz = SubgridIZ(subgrid);
+	    ix = SubgridIX(subgrid) -1 ;
+	    iy = SubgridIY(subgrid) -1;
+	    iz = SubgridIZ(subgrid) -1;
 
-	    nx = SubgridNX(subgrid);
-	    ny = SubgridNY(subgrid);
-	    nz = SubgridNZ(subgrid);
+	    nx = SubgridNX(subgrid) +2;
+	    ny = SubgridNY(subgrid) +2;
+	    nz = SubgridNZ(subgrid) +2;
 
 	    r  = SubgridRX(subgrid);
 
@@ -269,13 +315,13 @@ int          fcn)               /* Flag determining what to calculate
 	    cwet_values_sub = VectorSubvector(cwet_values, sg);
 	    cdry_values_sub = VectorSubvector(cdry_values, sg);
 
-	    ix = SubgridIX(subgrid);
-	    iy = SubgridIY(subgrid);
-	    iz = SubgridIZ(subgrid);
+	    ix = SubgridIX(subgrid) ;
+	    iy = SubgridIY(subgrid) ;
+	    iz = SubgridIZ(subgrid) ;
 
-	    nx = SubgridNX(subgrid);
-	    ny = SubgridNY(subgrid);
-	    nz = SubgridNZ(subgrid);
+	    nx = SubgridNX(subgrid) ;
+	    ny = SubgridNY(subgrid) ;
+	    nz = SubgridNZ(subgrid) ;
 
 	    r  = SubgridRX(subgrid);
 
@@ -340,6 +386,7 @@ PFModule  *ThermalConductivityInitInstanceXtra(
    InstanceXtra  *instance_xtra;
 
    Type1         *dummy1;
+   VectorUpdateCommHandle   *handle;
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
@@ -377,29 +424,22 @@ PFModule  *ThermalConductivityInitInstanceXtra(
 	 {
 	    dummy1 -> cwet_values = NewVectorType(grid, 1, 1, vector_cell_centered);
 	    dummy1 -> cdry_values = NewVectorType(grid, 1, 1, vector_cell_centered);
+
+            ReadPFBinary((dummy1 ->cdry_file),
+                         (dummy1 ->cdry_values));
+            handle = InitVectorUpdate(dummy1 ->cdry_values, VectorUpdateAll);
+            FinalizeVectorUpdate(handle); // This is needed to initalize ghost cells after reading the pfb
+            ReadPFBinary((dummy1 ->cwet_file),
+                         (dummy1 ->cwet_values));
+            handle = InitVectorUpdate(dummy1 ->cwet_values, VectorUpdateAll);
+            FinalizeVectorUpdate(handle); // This is needed to initalize ghost cells after reading the pfb
+
+
 	 }
       }
    }
 
 
-   /*-----------------------------------------------------------------------
-    * Initialize data associated with argument `temp_data'
-    *-----------------------------------------------------------------------*/
-
-
-      /* Uses a spatially varying field */
-      if (public_xtra->type == 1)
-      {
-	 dummy1 = (Type1 *)(public_xtra -> data);
-	 if ( (dummy1->data_from_file) == 1)
-	 {
-            ReadPFBinary((dummy1 ->cdry_file), 
-			 (dummy1 ->cdry_values));
-	    ReadPFBinary((dummy1 ->cwet_file), 
-			 (dummy1 ->cwet_values));
-	 }
-	 
-      }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
 

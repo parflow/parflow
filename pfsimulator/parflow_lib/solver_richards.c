@@ -82,6 +82,11 @@ typedef struct
    int                print_overland_bc_flux;     /* print overland outflow boundary condition flux? */
    int                write_silo_subsurf_data;    /* write permeability/porosity? */
    int                write_silo_press;           /* write pressures? */
+#ifdef withTemperature
+   int                write_silo_tempe;           /* write temperature? */
+   int                write_silopmpio_tempe;      /* write temperature as PMPIO? */
+   int                print_tempe;                /* print temperature? */
+#endif
    int                write_silo_velocities;      /* write velocities? */
    int                write_silo_satur;           /* write saturations? */
    int                write_silo_concen;          /* write concentrations? */
@@ -304,6 +309,10 @@ void SetupRichards(PFModule *this_module) {
    PFModule     *problem_saturation  = (instance_xtra -> problem_saturation);
 
    int           print_press         = (public_xtra -> print_press);
+#ifdef withTemperature
+   int           print_tempe         = (public_xtra -> print_tempe);
+
+#endif
    int           print_satur         = (public_xtra -> print_satur);
    int           print_wells         = (public_xtra -> print_wells);
 
@@ -595,6 +604,9 @@ void SetupRichards(PFModule *this_module) {
    {
       take_more_time_steps = 0;
       print_press           = 0;
+#ifdef withTemperature
+      print_tempe           = 0;
+#endif
       print_satur           = 0;
       print_wells           = 0;
    }
@@ -940,6 +952,43 @@ void SetupRichards(PFModule *this_module) {
                      t, instance_xtra -> file_number, "Pressure");
            any_file_dumped = 1;
        }
+
+
+#ifdef withTemperature
+      /*-----------------------------------------------------------------
+       * Print out the initial temperature?
+       *-----------------------------------------------------------------*/
+
+         if(print_tempe) {
+            sprintf(file_postfix, "tempe.%05d", instance_xtra -> file_number);
+            WritePFBinary(file_prefix, file_postfix, instance_xtra -> temperature);
+            any_file_dumped = 1;
+         }
+
+         if(public_xtra -> write_silo_tempe)
+         {
+            sprintf(file_postfix, "%05d", instance_xtra -> file_number);
+            sprintf(file_type, "tempe");
+            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> temperature,
+                      t, instance_xtra -> file_number, "Temperature");
+
+            any_file_dumped = 1;
+          }
+
+          if(public_xtra -> write_silopmpio_tempe)
+          {
+              sprintf(file_postfix, "%05d", instance_xtra -> file_number);
+              sprintf(file_type, "tempe");
+              WriteSiloPMPIO(file_prefix, file_type, file_postfix, instance_xtra -> temperature,
+                        t, instance_xtra -> file_number, "Temperature");
+              any_file_dumped = 1;
+          }
+
+
+#endif
+
+
+
       /*-----------------------------------------------------------------
        * Print out the initial saturations?
        *-----------------------------------------------------------------*/
@@ -2218,16 +2267,11 @@ void AdvanceRichards(PFModule *this_module,
 	 {
 	    sprintf(file_postfix, "%05d", instance_xtra -> file_number);
 	    sprintf(file_type, "press");
-	    WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> temperature,
+	    WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
                       t, instance_xtra -> file_number, "Pressure");
-#ifdef FGTest
-      //      sprintf(file_type, "press");
-  //          WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure2,
-    //                  t, instance_xtra -> file_number, "Pressure2");
-#endif
 
 	    any_file_dumped = 1;
-     }
+          }
 
           if(public_xtra -> write_silopmpio_press) 
           {
@@ -2237,7 +2281,39 @@ void AdvanceRichards(PFModule *this_module,
                         t, instance_xtra -> file_number, "Pressure");
               any_file_dumped = 1;
           }
-          
+         
+
+
+#ifdef withTemperature
+
+         if(public_xtra -> print_tempe) {
+            sprintf(file_postfix, "tempe.%05d", instance_xtra -> file_number);
+            WritePFBinary(file_prefix, file_postfix, instance_xtra -> temperature);
+            any_file_dumped = 1;
+         }
+
+         if(public_xtra -> write_silo_tempe)
+         {
+            sprintf(file_postfix, "%05d", instance_xtra -> file_number);
+            sprintf(file_type, "tempe");
+            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> temperature,
+                      t, instance_xtra -> file_number, "Temperature");
+
+            any_file_dumped = 1;
+          }
+
+          if(public_xtra -> write_silopmpio_tempe)
+          {
+              sprintf(file_postfix, "%05d", instance_xtra -> file_number);
+              sprintf(file_type, "tempe");
+              WriteSiloPMPIO(file_prefix, file_type, file_postfix, instance_xtra -> temperature,
+                        t, instance_xtra -> file_number, "Temperature");
+              any_file_dumped = 1;
+          }
+
+
+#endif
+ 
           
 	 if(public_xtra -> print_satur ) {
 	    sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
@@ -2251,11 +2327,6 @@ void AdvanceRichards(PFModule *this_module,
 	    sprintf(file_type, "satur");
 	    WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation, 
                       t, instance_xtra -> file_number, "Saturation");
-#ifdef FGTest
-//sprintf(file_type, "satur");
-//            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation2,
-//                      t, instance_xtra -> file_number, "Saturation2");
-#endif
 	    any_file_dumped = 1;
 	 }
 
@@ -2700,19 +2771,36 @@ void AdvanceRichards(PFModule *this_module,
       {
 	 sprintf(file_postfix, "%05d", instance_xtra -> file_number);
 	 sprintf(file_type, "press");
-	 WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> temperature,
+	 WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
 		   t, instance_xtra -> file_number, "Pressure");
-
-
-#ifdef FGTest
-//sprintf(file_type, "press");
-  //       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure2,
-    //               t, instance_xtra -> file_number, "Pressure2");
-#endif
 	 any_file_dumped = 1;
     
       }
       
+
+
+
+#ifdef withTemperature
+
+         if(public_xtra -> print_tempe) {
+            sprintf(file_postfix, "tempe.%05d", instance_xtra -> file_number);
+            WritePFBinary(file_prefix, file_postfix, instance_xtra -> temperature);
+            any_file_dumped = 1;
+         }
+         
+         if(public_xtra -> write_silo_tempe)
+         {  
+            sprintf(file_postfix, "%05d", instance_xtra -> file_number);
+            sprintf(file_type, "tempe");
+            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> temperature,
+                      t, instance_xtra -> file_number, "Temperature");
+         
+            any_file_dumped = 1;
+          } 
+            
+#endif
+
+
       if( print_satur ) 
       {
 	 sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
@@ -2726,11 +2814,6 @@ void AdvanceRichards(PFModule *this_module,
 	 sprintf(file_type, "satur");
 	 WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation, 
 		   t, instance_xtra -> file_number, "Saturation");
-#ifdef FGTest
-//sprintf(file_type, "satur");
-  //       WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation2,
-    //               t, instance_xtra -> file_number, "Saturation2");
-#endif
 	 any_file_dumped = 1;
       }
 
@@ -4041,6 +4124,19 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    }
    public_xtra -> print_press = switch_value;
 
+#ifdef withTemperature
+   sprintf(key, "%s.PrintTemperature", name);
+   switch_name = GetStringDefault(key, "True");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid print switch value <%s> for key <%s>\n",
+                 switch_name, key );
+   }
+   public_xtra -> print_tempe = switch_value;
+
+#endif
+
    sprintf(key, "%s.PrintVelocities", name);
    switch_name = GetStringDefault(key, "False");
    switch_value = NA_NameToIndex(switch_na, switch_name);
@@ -4181,6 +4277,21 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
 		 switch_name, key );
    }
    public_xtra -> write_silo_press = switch_value;
+
+
+
+#ifdef withTemperature
+   sprintf(key, "%s.WriteSiloTemperature", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)
+   {
+      InputError("Error: invalid value <%s> for key <%s>\n",
+                 switch_name, key );
+   }
+   public_xtra -> write_silo_tempe = switch_value;
+#endif
+
 
    sprintf(key, "%s.WriteSiloVelocities", name);
    switch_name = GetStringDefault(key, "False");
@@ -4324,6 +4435,9 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    /* Initialize silo if necessary */
    if( public_xtra -> write_silo_subsurf_data || 
        public_xtra -> write_silo_press  ||
+#ifdef withTemperature
+       public_xtra -> write_silo_tempe  ||
+#endif
        public_xtra -> write_silo_velocities ||
        public_xtra -> write_silo_satur ||
        public_xtra -> write_silo_concen ||
@@ -4367,7 +4481,21 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
                    switch_name, key );
     }
     public_xtra -> write_silopmpio_press = switch_value;
-    
+   
+#ifdef withTemperature
+    sprintf(key, "%s.WriteSiloPMPIOTemperature", name);
+    switch_name = GetStringDefault(key, "False");
+    switch_value = NA_NameToIndex(switch_na, switch_name);
+    if(switch_value < 0)
+    {
+        InputError("Error: invalid value <%s> for key <%s>\n",
+                   switch_name, key );
+    }
+    public_xtra -> write_silopmpio_tempe = switch_value;
+
+#endif
+
+ 
     sprintf(key, "%s.WriteSiloPMPIOVelocities", name);
     switch_name = GetStringDefault(key, "False");
     switch_value = NA_NameToIndex(switch_na, switch_name);
@@ -4562,6 +4690,9 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
     /* Initialize silo if necessary */
     if( public_xtra -> write_silopmpio_subsurf_data || 
        public_xtra -> write_silopmpio_press  ||
+#ifdef withTemperature
+       public_xtra -> write_silopmpio_tempe  ||
+#endif
        public_xtra -> write_silopmpio_velocities ||
        public_xtra -> write_silopmpio_satur ||
        public_xtra -> write_silopmpio_concen ||

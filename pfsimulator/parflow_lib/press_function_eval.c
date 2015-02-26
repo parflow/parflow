@@ -297,12 +297,15 @@ void PressFunctionEval (Vector *pressure,  /* Current pressure values */
       fp  = SubvectorData(f_sub);
 
 
-
       GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
       {
+
+
 	 ip  = SubvectorEltIndex(f_sub,   i, j, k);
 	 ipo = SubvectorEltIndex(po_sub,  i, j, k);
           io = SubvectorEltIndex(f_sub, i, j, 0);
+
+
           del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
           del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));
           del_x_slope = 1.0;
@@ -596,7 +599,7 @@ void PressFunctionEval (Vector *pressure,  /* Current pressure values */
       {
 	 ip = SubvectorEltIndex(p_sub, i, j, k);
      io = SubvectorEltIndex(p_sub, i, j, 0);     
-
+//printf("##FG ip: %d ; i: %d ; j: %d ; k: %d ; tp[ip] %lf ; tp[ip+1] %lf ; tp[ipy] %lf ; tp[ipz] %lf \n",ip,i,j,k,pp[ip],pp[ip+1],pp[ip+sy_p],pp[ip+sz_p]);
           /* @RMM: modified the terrain-following transform
            to be swtichable in the UZ
            terms:

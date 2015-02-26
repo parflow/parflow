@@ -44,15 +44,14 @@ typedef struct
    PFModule     *density_module;
    PFModule     *heat_capacity_module;
    PFModule     *saturation_module;
-   PFModule     *rel_perm_module;
    PFModule     *thermal_conductivity;
    PFModule     *bc_temperature;
    PFModule     *bc_internal;
 
    Vector       *density_der;
    Vector       *saturation_der;
-   Vector       *rel_perm;
-   Vector       *rel_perm_der;
+   Vector       *thermal_cond;
+   Vector       *thermal_cond_der;
 
    Matrix       *J;
 
@@ -90,7 +89,6 @@ int           symm_part)      /* Specifies whether to compute just the
    PFModule    *density_module       = (instance_xtra -> density_module);
    PFModule    *heat_capacity_module = (instance_xtra -> heat_capacity_module);
    PFModule    *saturation_module    = (instance_xtra -> saturation_module);
-   PFModule    *rel_perm_module      = (instance_xtra -> rel_perm_module);
    PFModule    *thermal_conductivity = (instance_xtra -> thermal_conductivity);
    PFModule    *bc_temperature       = (instance_xtra -> bc_temperature);
    PFModule    *bc_internal          = (instance_xtra -> bc_internal);
@@ -101,8 +99,8 @@ int           symm_part)      /* Specifies whether to compute just the
    Vector      *saturation_der    = (instance_xtra -> saturation_der);
 
    /* Re-use vectors to save memory */
-   Vector      *rel_perm          = (instance_xtra -> rel_perm);
-   Vector      *rel_perm_der      = (instance_xtra -> rel_perm_der);
+   Vector      *thermal_cond          = (instance_xtra -> thermal_cond);
+   Vector      *thermal_cond_der      = (instance_xtra -> thermal_cond_der);
 
   //double      press[58][30][360],pressbc[58][30],xslope[58][30],yslope[58][30],mans[58][30];
 
@@ -116,14 +114,13 @@ int           symm_part)      /* Specifies whether to compute just the
 
    Subgrid     *subgrid;
 
-   Subvector   *p_sub, *t_sub, *d_sub, *s_sub, *po_sub, *rp_sub, *hcw_sub, *hcr_sub, *ss_sub;
-   Subvector   *permx_sub, *permy_sub, *permz_sub, *dd_sub, *sd_sub, *rpd_sub;
+   Subvector   *p_sub, *t_sub, *d_sub, *s_sub, *po_sub, *tcp_sub, *hcw_sub, *hcr_sub, *ss_sub;
+   Subvector   *dd_sub, *sd_sub, *tcdp_sub;
    Submatrix   *J_sub;
 
    Grid        *grid              = VectorGrid(temperature);
 
-   double      *pp, *tp, *sp, *sdp, *pop, *dp, *ddp, *rpp, *rpdp, *ss;
-   double      *permxp, *permyp, *permzp;
+   double      *pp, *tp, *sp, *pop, *dp, *ddp, *tcp, *tcdp, *ss;
    double      *cp, *wp, *ep, *sop, *np, *lp, *up, *op, *hcwp, *hcrp;
 
    /* Fluid flow velcocities */ 
@@ -157,7 +154,6 @@ int           symm_part)      /* Specifies whether to compute just the
    double       value, den_d, dend_d;
    int         *fdir;
    int          ipatch, ival;
-   
    CommHandle  *handle;
    VectorUpdateCommHandle  *vector_update_handle;
 
@@ -176,11 +172,6 @@ int           symm_part)      /* Specifies whether to compute just the
    vector_update_handle = InitVectorUpdate(permeability_z, VectorUpdateAll);
    FinalizeVectorUpdate(vector_update_handle);*/
 
-#if 0
-   printf("Check 1 - before accumulation term.\n");
-   fflush(NULL);
-   malloc_verify(NULL);
-#endif
 
    /* Initialize matrix values to zero. */
    InitMatrix(J, 0.0);
@@ -231,8 +222,9 @@ int           symm_part)      /* Specifies whether to compute just the
 	 dz = SubgridDZ(subgrid);
 	 
 	 vol = dx*dy*dz;
-	 
-	 nx_v  = SubvectorNX(d_sub);
+         r = SubgridRX(subgrid);
+
+	 nx_v   = SubvectorNX(d_sub);
 	 ny_v  = SubvectorNY(d_sub);
 	 nz_v  = SubvectorNZ(d_sub);
 
@@ -249,25 +241,30 @@ int           symm_part)      /* Specifies whether to compute just the
 	 dp  = SubvectorData(d_sub);
 	 sp  = SubvectorData(s_sub);
 	 ddp = SubvectorData(dd_sub);
-	 sdp = SubvectorData(sd_sub);
 	 pop = SubvectorData(po_sub);
 	 hcwp = SubvectorData(hcw_sub);
 	 hcrp = SubvectorData(hcr_sub);
 	 ss = SubvectorData(ss_sub);
-      
-	 im  = SubmatrixEltIndex(J_sub,  ix, iy, iz);
-	 ipo = SubvectorEltIndex(po_sub, ix, iy, iz);
-	 iv  = SubvectorEltIndex(d_sub,  ix, iy, iz);
 
-	 BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
-		   im,  nx_m,  ny_m,  nz_m,  1, 1, 1,
-		   ipo, nx_po, ny_po, nz_po, 1, 1, 1,
-		   iv,  nx_v,  ny_v,  nz_v,  1, 1, 1,
-		   {					//FGtest dp und sp =1 	
+  //       im  = SubmatrixEltIndex(J_sub,  ix, iy, iz);
+  //       ipo = SubvectorEltIndex(po_sub, ix, iy, iz);
+  //       iv  = SubvectorEltIndex(d_sub,  ix, iy, iz);
+
+  //       BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
+  //                 im,  nx_m,  ny_m,  nz_m,  1, 1, 1,
+  //                 ipo, nx_po, ny_po, nz_po, 1, 1, 1,
+   //                iv,  nx_v,  ny_v,  nz_v,  1, 1, 1,
+
+            GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+		   {
+			   im  = SubmatrixEltIndex(J_sub,  i,j,k);
+         		   ipo = SubvectorEltIndex(po_sub, i,j,k);
+		           iv  = SubvectorEltIndex(d_sub,  i,j,k);
+					//FGtest dp und sp =1 	
 			   cp[im] += pop[ipo]*hcwp[iv]*vol* 1.0 ;//( sp[iv]*dp[iv] + tp[iv]*sp[iv]*ddp[iv] );
-                           //cp[im] += (pp[iv]*sp[iv])*hcwp[iv]*(ss[iv]/gravity)*vol;
+			 //cp[im] += (pp[iv]*sp[iv])*hcwp[iv]*(ss[iv]/gravity)*vol;
                            cp[im] += vol * (1.0 - pop[ipo]) * hcrp[iv];
-                           //printf("%e %e \n",sp[iv],pp[iv]);
+
 		   });
       }   /* End subgrid loop */
 #endif
@@ -284,16 +281,16 @@ int           symm_part)      /* Specifies whether to compute just the
    {
       subgrid = GridSubgrid(grid, is);
 	 
-      p_sub = VectorSubvector(temperature, is);
+      t_sub = VectorSubvector(temperature, is);
 
-      nx_v = SubvectorNX(p_sub);
-      ny_v = SubvectorNY(p_sub);
-      nz_v = SubvectorNZ(p_sub);
+      nx_v = SubvectorNX(t_sub);
+      ny_v = SubvectorNY(t_sub);
+      nz_v = SubvectorNZ(t_sub);
 	 
       sy_v = nx_v;
       sz_v = ny_v * nx_v;
 
-      pp = SubvectorData(p_sub);
+      tp = SubvectorData(t_sub);
 
       for (ipatch = 0; ipatch < BCStructNumPatches(bc_struct); ipatch++)
       {
@@ -306,9 +303,9 @@ int           symm_part)      /* Specifies whether to compute just the
 	 {
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
 	    {
-	       ip   = SubvectorEltIndex(p_sub, i, j, k);
+	       ip   = SubvectorEltIndex(t_sub, i, j, k);
 	       value =  bc_patch_values[ival];
-	       pp[ip + fdir[0]*1 + fdir[1]*sy_v + fdir[2]*sz_v] = value;
+	       tp[ip + fdir[0]*1 + fdir[1]*sy_v + fdir[2]*sz_v] = value;
 	       
 	    });
 	    break;
@@ -318,22 +315,15 @@ int           symm_part)      /* Specifies whether to compute just the
       }        /* End ipatch loop */
    }           /* End subgrid loop */
 
-   /* Calculate rel_perm and rel_perm_der */
-
-   /*PFModuleInvoke(void, rel_perm_module, 
-		  (rel_perm, pressure, density, 1.0, problem_data, 
-		   CALCFCN));
-
-   PFModuleInvoke(void, rel_perm_module, 
-		  (rel_perm_der, pressure, density, 1.0, problem_data, 
-		   CALCDER));*/
+   /* Calculate thermal_cond and thermal_cond_der */
+//FG
 
    PFModuleInvoke(void, thermal_conductivity,
-                  (rel_perm, pressure, saturation, 1.0, problem_data,
+                  (thermal_cond, temperature, saturation, 1.0, problem_data,
                    CALCFCN));
 
    PFModuleInvoke(void, thermal_conductivity,
-                  (rel_perm_der, pressure, saturation, 1.0, problem_data,
+                  (thermal_cond_der, temperature, saturation, 1.0, problem_data,
                    CALCDER));
 
 #if 1
@@ -342,9 +332,9 @@ int           symm_part)      /* Specifies whether to compute just the
    {
       subgrid = GridSubgrid(grid, is);
 	
-      p_sub    = VectorSubvector(temperature, is);
-      rp_sub   = VectorSubvector(rel_perm, is);
-      rpd_sub  = VectorSubvector(rel_perm_der, is);
+      t_sub    = VectorSubvector(temperature, is);
+      tcp_sub   = VectorSubvector(thermal_cond, is);
+      tcdp_sub  = VectorSubvector(thermal_cond_der, is);
       J_sub    = MatrixSubmatrix(J, is);
 	 
       ix = SubgridIX(subgrid) - 1;
@@ -363,13 +353,15 @@ int           symm_part)      /* Specifies whether to compute just the
       ffy = dx * dz;
       ffz = dx * dy;
 
-      nx_v = SubvectorNX(p_sub);
-      ny_v = SubvectorNY(p_sub);
-      nz_v = SubvectorNZ(p_sub);
+      nx_v = SubvectorNX(t_sub);
+      ny_v = SubvectorNY(t_sub);
+      nz_v = SubvectorNZ(t_sub);
 	 
       nx_m = SubmatrixNX(J_sub);
       ny_m = SubmatrixNY(J_sub);
       nz_m = SubmatrixNZ(J_sub);
+
+      r = SubgridRX(subgrid);
 
       sy_v = nx_v;
       sz_v = ny_v * nx_v;
@@ -384,71 +376,77 @@ int           symm_part)      /* Specifies whether to compute just the
       lp    = SubmatrixStencilData(J_sub, 5);
       up    = SubmatrixStencilData(J_sub, 6);
 
-      pp     = SubvectorData(p_sub);
-      rpp    = SubvectorData(rp_sub);
-      rpdp   = SubvectorData(rpd_sub);
+      tp     = SubvectorData(t_sub);
+      tcp    = SubvectorData(tcp_sub);
+      tcdp   = SubvectorData(tcdp_sub);
       
       ip = SubvectorEltIndex(p_sub, ix, iy, iz);
       im = SubmatrixEltIndex(J_sub, ix, iy, iz);
 
+//printf("##########\n");
       BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-		ip, nx_v, ny_v, nz_v, 1, 1, 1,
-		im, nx_m, ny_m, nz_m, 1, 1, 1,
+                ip, nx_v, ny_v, nz_v, 1, 1, 1,
+                im, nx_m, ny_m, nz_m, 1, 1, 1,
+//             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
 	     {
-	        prod        = rpp[ip];
-		prod_der    = rpdp[ip];
+//                ip = SubvectorEltIndex(t_sub, i,j,k);
+//                im = SubmatrixEltIndex(J_sub, i,j,k);
+  //printf("##FG ip %d ; tcp: %lf ; lcp+1 %lf \n",ip,tcp[ip],tcp[ip+1]);              
 
-	        prod_rt     = rpp[ip+1];
-		prod_rt_der = rpdp[ip+1];
+	        prod        = tcp[ip];
+		prod_der    = tcdp[ip];
 
-	        prod_no     = rpp[ip+sy_v];
-		prod_no_der = rpdp[ip+sy_v];
+	        prod_rt     = tcp[ip+1];
+		prod_rt_der = tcdp[ip+1];
 
-	        prod_up     = rpp[ip+sz_v];
-		prod_up_der = rpdp[ip+sz_v]; 
+	        prod_no     = tcp[ip+sy_v];
+		prod_no_der = tcdp[ip+sy_v];
+
+	        prod_up     = tcp[ip+sz_v];
+		prod_up_der = tcdp[ip+sz_v]; 
 
 	        /* diff >= 0 implies flow goes left to right */
-	        diff = pp[ip] - pp[ip+1];
+	        diff = tp[ip] - tp[ip+1];
 
 		x_coeff = dt * ffx * (1.0/dx); 
 
 		sym_west_temp = - x_coeff 
-		                  * RPMean(pp[ip], pp[ip+1], prod, prod_rt);
+		                  * RPMean(tp[ip], tp[ip+1], prod, prod_rt);
 
 		west_temp = - x_coeff * diff 
-		                 * RPMean(pp[ip], pp[ip+1], prod_der, 0.0)
+		                 * RPMean(tp[ip], tp[ip+1], prod_der, 0.0)
 		              + sym_west_temp;
 
 		sym_east_temp = x_coeff
-		                * -RPMean(pp[ip], pp[ip+1], prod, prod_rt);
+		                * -RPMean(tp[ip], tp[ip+1], prod, prod_rt);
 
 		east_temp = x_coeff * diff
-		               * RPMean(pp[ip], pp[ip+1], 0.0, prod_rt_der)
+		               * RPMean(tp[ip], tp[ip+1], 0.0, prod_rt_der)
 		            + sym_east_temp;
 
 	        /* diff >= 0 implies flow goes south to north */
-	        diff = pp[ip] - pp[ip+sy_v];
+	        diff = tp[ip] - tp[ip+sy_v];
 
 		y_coeff = dt * ffy * (1.0/dy); 
 
 		sym_south_temp = - y_coeff
-                                   *RPMean(pp[ip], pp[ip+sy_v], prod, prod_no);
+                                   *RPMean(tp[ip], tp[ip+sy_v], prod, prod_no);
 
 		south_temp = - y_coeff * diff
-                                  * RPMean(pp[ip], pp[ip+sy_v], prod_der, 0.0)
+                                  * RPMean(tp[ip], tp[ip+sy_v], prod_der, 0.0)
                                + sym_south_temp;
 
 		sym_north_temp = y_coeff
-                                 * -RPMean(pp[ip], pp[ip+sy_v], prod, prod_no);
+                                 * -RPMean(tp[ip], tp[ip+sy_v], prod, prod_no);
 
 		north_temp = y_coeff * diff
-                                *  RPMean(pp[ip], pp[ip+sy_v], 0.0, 
+                                *  RPMean(tp[ip], tp[ip+sy_v], 0.0, 
 					  prod_no_der)
 		             + sym_north_temp;
 
 	        /* diff >= 0 implies flow goes lower to upper */
-		lower_cond = pp[ip];
-		upper_cond = pp[ip+sz_v];
+		lower_cond = tp[ip];
+		upper_cond = tp[ip+sz_v];
 		diff = lower_cond - upper_cond;
 
 		z_coeff = dt * ffz * (1.0 / dz); 
@@ -502,21 +500,10 @@ int           symm_part)      /* Specifies whether to compute just the
 		   */
 		}
 
-		/*
-		if ( (i == 0) && (j==0) && (k==0) )
-		printf("Stencil update: east_temp %f prod %f prod_rt %f\n"  
-		       "   north_temp %f upper_temp %f\n"
-		       "   ep[im] %f i %i j %i k %i\n",
-		       east_temp, prod, prod_rt, north_temp, upper_temp,
-                       ep[im], i, j, k);
-		*/
 
 	     });
    }
 
-#if 0
-   PrintMatrix("matrix_dump1", J);
-#endif
 
 
 #endif
@@ -525,12 +512,13 @@ int           symm_part)      /* Specifies whether to compute just the
    /* Calculate contributions from convection*/
    ForSubgridI(is, GridSubgrids(grid)) 
    {
+
       subgrid = GridSubgrid(grid, is); 
+
+      r = SubgridRX(subgrid);
                  
-      t_sub    = VectorSubvector(temperature, is); 
       d_sub    = VectorSubvector(density, is);
       dd_sub   = VectorSubvector(density_der, is); 
-      s_sub  = VectorSubvector(saturation, is);
       hcw_sub = VectorSubvector(heat_capacity_water, is);
       zv_sub    = VectorSubvector(z_velocity, is);
       yv_sub    = VectorSubvector(y_velocity, is);
@@ -553,9 +541,9 @@ int           symm_part)      /* Specifies whether to compute just the
       ffy = dx * dz;
       ffz = dx * dy;
  
-      nx_v = SubvectorNX(p_sub);
-      ny_v = SubvectorNY(p_sub);
-      nz_v = SubvectorNZ(p_sub);
+      nx_v = SubvectorNX(t_sub);
+      ny_v = SubvectorNY(t_sub);
+      nz_v = SubvectorNZ(t_sub);
  
       nx_m = SubmatrixNX(J_sub);
       ny_m = SubmatrixNY(J_sub);
@@ -574,22 +562,18 @@ int           symm_part)      /* Specifies whether to compute just the
       lp    = SubmatrixStencilData(J_sub, 5);
       up    = SubmatrixStencilData(J_sub, 6);
  
-      tp     = SubvectorData(t_sub);
       dp     = SubvectorData(d_sub);
       ddp    = SubvectorData(dd_sub);
-      sp     = SubvectorData(s_sub);
       hcwp   = SubvectorData(hcw_sub);
       xvp    = SubvectorData(xv_sub);
       yvp    = SubvectorData(yv_sub);
       zvp    = SubvectorData(zv_sub);
  
-      ip = SubvectorEltIndex(t_sub, ix, iy, iz);
-      im = SubmatrixEltIndex(J_sub, ix, iy, iz);
- 
-      BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz, 
-                ip, nx_v, ny_v, nz_v, 1, 1, 1, 
-                im, nx_m, ny_m, nz_m, 1, 1, 1, 
+      GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz, 
              {
+                ip = SubvectorEltIndex(d_sub, i,j,k);
+                im = SubmatrixEltIndex(J_sub, i,j,k);
+
                 prod        = dp[ip];
                 prod_der    = ddp[ip]; 
                                             
@@ -624,21 +608,10 @@ int           symm_part)      /* Specifies whether to compute just the
                 //sop[im+sy_m] += south_temp;
                 //lp[im+sz_m] += lower_temp;
        
-                /*
-                if ( (i == 0) && (j==0) && (k==0) )
-                printf("Stencil update: east_temp %f prod %f prod_rt %f\n"  
-                       "   north_temp %f upper_temp %f\n"
-                       "   ep[im] %f i %i j %i k %i\n",
-                       east_temp, prod, prod_rt, north_temp, upper_temp,
-                       ep[im], i, j, k);
-                */ 
        
              });
    }   
        
-#if 0
-   PrintMatrix("matrix_dump1", J); 
-#endif           
                  
               
 #endif           
@@ -660,20 +633,11 @@ int           symm_part)      /* Specifies whether to compute just the
 	 {
             subgrid = GridSubgrid(grid, is);
 	 
-	    p_sub     = VectorSubvector(temperature, is);
-	    dd_sub    = VectorSubvector(density_der, is);
-	    rpd_sub   = VectorSubvector(rel_perm_der, is);
-	    d_sub     = VectorSubvector(density, is);
-	    rp_sub    = VectorSubvector(rel_perm, is);
-	    permx_sub = VectorSubvector(permeability_x, is);
-	    permy_sub = VectorSubvector(permeability_y, is);
-	    permz_sub = VectorSubvector(permeability_z, is);
+	    t_sub     = VectorSubvector(temperature, is);
+	    tcdp_sub   = VectorSubvector(thermal_cond_der, is);
+	    tcp_sub    = VectorSubvector(thermal_cond, is);
 	    J_sub     = MatrixSubmatrix(J, is);
 
-            hcw_sub   = VectorSubvector(heat_capacity_water, is);
-            xv_sub    = VectorSubvector(x_velocity, is);
-            yv_sub    = VectorSubvector(y_velocity, is);
-            zv_sub    = VectorSubvector(z_velocity, is);
 
 	    dx = SubgridDX(subgrid);
 	    dy = SubgridDY(subgrid);
@@ -683,9 +647,9 @@ int           symm_part)      /* Specifies whether to compute just the
 	    ffy = dx * dz;
 	    ffz = dx * dy;
 	 
-	    nx_v = SubvectorNX(p_sub);
-	    ny_v = SubvectorNY(p_sub);
-	    nz_v = SubvectorNZ(p_sub);
+	    nx_v = SubvectorNX(t_sub);
+	    ny_v = SubvectorNY(t_sub);
+	    nz_v = SubvectorNZ(t_sub);
 	 
 	    sy_v = nx_v;
 	    sz_v = ny_v * nx_v;
@@ -698,25 +662,15 @@ int           symm_part)      /* Specifies whether to compute just the
 	    lp    = SubmatrixStencilData(J_sub, 5);
 	    up    = SubmatrixStencilData(J_sub, 6);
 
-	    pp     = SubvectorData(p_sub);
-	    ddp    = SubvectorData(dd_sub);
-	    rpdp   = SubvectorData(rpd_sub);
-	    dp     = SubvectorData(d_sub);
-	    rpp    = SubvectorData(rp_sub);
-	    permxp = SubvectorData(permx_sub);
-	    permyp = SubvectorData(permy_sub);
-	    permzp = SubvectorData(permz_sub);
-
-            hcwp    = SubvectorData(hcw_sub);
-            xvp = SubvectorData(xv_sub);
-            yvp = SubvectorData(yv_sub);
-            zvp = SubvectorData(zv_sub);
+	    tp     = SubvectorData(t_sub);
+	    tcdp   = SubvectorData(tcdp_sub);
+	    tcp    = SubvectorData(tcp_sub);
 
 	    for (ipatch = 0; ipatch < BCStructNumPatches(bc_struct); ipatch++)
 	    {
                BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
 	       {
-		  ip = SubvectorEltIndex(p_sub, i, j, k);
+		  ip = SubvectorEltIndex(t_sub, i, j, k);
 		  im = SubmatrixEltIndex(J_sub, i, j, k);
 
 		  if (fdir[0])
@@ -725,20 +679,20 @@ int           symm_part)      /* Specifies whether to compute just the
 		     {
 		     case -1:
 		     {
-		        diff = pp[ip-1] - pp[ip];
-			prod_der = rpdp[ip-1];
+		        diff = tp[ip-1] - tp[ip];
+			prod_der = tcdp[ip-1];
 		        coeff = dt * ffx * (1.0/dx); 
 		        wp[im] = - coeff * diff
-			   * RPMean(pp[ip-1], pp[ip], prod_der, 0.0);      
+			   * RPMean(tp[ip-1], tp[ip], prod_der, 0.0);      
 			break;
 		     }
 		     case 1:
 		     {
-		        diff = pp[ip] - pp[ip+1];
-			prod_der = rpdp[ip+1];
+		        diff = tp[ip] - tp[ip+1];
+			prod_der = tcdp[ip+1];
 		        coeff = dt * ffx * (1.0/dx); 
 		        ep[im] = coeff * diff
-			   * RPMean(pp[ip], pp[ip+1], 0.0, prod_der);      
+			   * RPMean(tp[ip], tp[ip+1], 0.0, prod_der);      
 			break;
 		     }
 		     }   /* End switch on fdir[0] */
@@ -751,20 +705,20 @@ int           symm_part)      /* Specifies whether to compute just the
 		     {
 		     case -1:
 		     {
-		        diff = pp[ip-sy_v] - pp[ip];
-			prod_der = rpdp[ip-sy_v]; 
+		        diff = tp[ip-sy_v] - tp[ip];
+			prod_der = tcdp[ip-sy_v]; 
 		        coeff = dt * ffy * (1.0/dy); 
 		        sop[im] = - coeff * diff
-			   * RPMean(pp[ip-sy_v], pp[ip], prod_der, 0.0);      
+			   * RPMean(tp[ip-sy_v], tp[ip], prod_der, 0.0);      
 			break;
 		     }
 		     case 1:
 		     {
-		        diff = pp[ip] - pp[ip+sy_v];
-			prod_der = rpdp[ip+sy_v];
+		        diff = tp[ip] - tp[ip+sy_v];
+			prod_der = tcdp[ip+sy_v];
 		        coeff = dt * ffy * (1.0/dy); 
 		        np[im] = - coeff * diff
-			   * RPMean(pp[ip], pp[ip+sy_v], 0.0, prod_der);      
+			   * RPMean(tp[ip], tp[ip+sy_v], 0.0, prod_der);      
 			break;
 		     }
 		     }   /* End switch on fdir[1] */
@@ -777,22 +731,22 @@ int           symm_part)      /* Specifies whether to compute just the
 		     {
 		     case -1:
 		     {
-			lower_cond = (pp[ip-sz_v]); 
-			upper_cond = (pp[ip] );
+			lower_cond = (tp[ip-sz_v]); 
+			upper_cond = (tp[ip] );
 		        diff = lower_cond - upper_cond;
-			prod_der = rpdp[ip-sz_v];
-			prod_lo = rpp[ip-sz_v];
+			prod_der = tcdp[ip-sz_v];
+			prod_lo = tcp[ip-sz_v];
 		        coeff = dt * ffz * (1.0/dz); 
 		        lp[im] = - coeff * diff * RPMean(lower_cond, upper_cond, prod_der, 0.0);
                        break;
 		     }
 		     case 1:
 		     {
-			lower_cond = (pp[ip]);
-			upper_cond = (pp[ip+sz_v] ); 
+			lower_cond = (tp[ip]);
+			upper_cond = (tp[ip+sz_v] ); 
 		        diff = lower_cond - upper_cond;
-			prod_der = rpdp[ip+sz_v];
-			prod_up = rpp[ip+sz_v];
+			prod_der = tcdp[ip+sz_v];
+			prod_up = tcp[ip+sz_v];
 		        coeff = dt * ffz * (1.0/dz); 
 		        up[im] = - coeff * diff * RPMean(lower_cond, upper_cond, 0.0, prod_der);
 			break;
@@ -813,15 +767,9 @@ int           symm_part)      /* Specifies whether to compute just the
    {
       subgrid = GridSubgrid(grid, is);
 	 
-      p_sub     = VectorSubvector(temperature, is);
-      s_sub     = VectorSubvector(saturation, is);
-      dd_sub    = VectorSubvector(density_der, is);
-      rpd_sub   = VectorSubvector(rel_perm_der, is);
-      d_sub     = VectorSubvector(density, is);
-      rp_sub    = VectorSubvector(rel_perm, is);
-      permx_sub = VectorSubvector(permeability_x, is);
-      permy_sub = VectorSubvector(permeability_y, is);
-      permz_sub = VectorSubvector(permeability_z, is);
+      t_sub     = VectorSubvector(temperature, is);
+      tcdp_sub   = VectorSubvector(thermal_cond_der, is);
+      tcp_sub    = VectorSubvector(thermal_cond, is);
       J_sub     = MatrixSubmatrix(J, is);
 
       dx = SubgridDX(subgrid);
@@ -835,9 +783,9 @@ int           symm_part)      /* Specifies whether to compute just the
       ffy = dx * dz;
       ffz = dx * dy;
 	 
-      nx_v = SubvectorNX(p_sub);
-      ny_v = SubvectorNY(p_sub);
-      nz_v = SubvectorNZ(p_sub);
+      nx_v = SubvectorNX(t_sub);
+      ny_v = SubvectorNY(t_sub);
+      nz_v = SubvectorNZ(t_sub);
 	 
       sy_v = nx_v;
       sz_v = ny_v * nx_v;
@@ -850,15 +798,9 @@ int           symm_part)      /* Specifies whether to compute just the
       lp    = SubmatrixStencilData(J_sub, 5);
       up    = SubmatrixStencilData(J_sub, 6);
 
-      pp     = SubvectorData(p_sub);
-      sp     = SubvectorData(s_sub);
-      ddp    = SubvectorData(dd_sub);
-      rpdp   = SubvectorData(rpd_sub);
-      dp     = SubvectorData(d_sub);
-      rpp    = SubvectorData(rp_sub);
-      permxp = SubvectorData(permx_sub);
-      permyp = SubvectorData(permy_sub);
-      permzp = SubvectorData(permz_sub);
+      tp     = SubvectorData(t_sub);
+      tcdp   = SubvectorData(tcdp_sub);
+      tcp    = SubvectorData(tcp_sub);
 
 
       for (ipatch = 0; ipatch < BCStructNumPatches(bc_struct); ipatch++)
@@ -872,24 +814,15 @@ int           symm_part)      /* Specifies whether to compute just the
 	 {
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
 	    {
-	       ip   = SubvectorEltIndex(p_sub, i, j, k);
+	       ip   = SubvectorEltIndex(t_sub, i, j, k);
 
 	       value =  bc_patch_values[ival];
 
-	       /*PFModuleInvoke( void, density_module, 
-			       (0, pressure, temperature, density, &value, &den_d, CALCFCN));
-	       PFModuleInvoke( void, density_module, 
-			       (0, pressure, temperature, density_der, &value, &dend_d, CALCDER_T));*/
-//FG	       PFModuleInvoke( void, density_module, 
-//FG			       (0, NULL, NULL, NULL, &value, &den_d, CALCFCN));
-//FG	       PFModuleInvoke( void, density_module, 
-//FG			       (0, NULL, NULL, NULL, &value, &dend_d, CALCDER_T));
-
-	       ip = SubvectorEltIndex(p_sub, i, j, k);
+	       ip = SubvectorEltIndex(t_sub, i, j, k);
 	       im = SubmatrixEltIndex(J_sub, i, j, k);
 
-	       prod        = rpp[ip];
-	       prod_der    = rpdp[ip];
+	       prod        = tcp[ip];
+	       prod_der    = tcdp[ip];
 
 	       if (fdir[0])
 	       {
@@ -900,21 +833,21 @@ int           symm_part)      /* Specifies whether to compute just the
 		  case -1:
 		  {
 		     op = wp;
-		     prod_val = rpp[ip-1];
-		     diff = value - pp[ip];
+		     prod_val = tcp[ip-1];
+		     diff = value - tp[ip];
 		     o_temp =  coeff 
-		       * ( diff * RPMean(value, pp[ip], 0.0, prod_der) 
-			   - RPMean(value, pp[ip], prod_val, prod) );
+		       * ( diff * RPMean(value, tp[ip], 0.0, prod_der) 
+			   - RPMean(value, tp[ip], prod_val, prod) );
 		     break;
 		  }
 		  case 1:
 		  {
 		     op = ep;
-		     prod_val = rpp[ip+1];
-		     diff = pp[ip] - value;
+		     prod_val = tcp[ip+1];
+		     diff = tp[ip] - value;
 		     o_temp = - coeff 
-		       * ( diff * RPMean(pp[ip], value, prod_der, 0.0) 
-			   + RPMean(pp[ip], value, prod, prod_val) );
+		       * ( diff * RPMean(tp[ip], value, prod_der, 0.0) 
+			   + RPMean(tp[ip], value, prod, prod_val) );
 		     break;
 		  }
 		  }   /* End switch on fdir[0] */
@@ -930,21 +863,21 @@ int           symm_part)      /* Specifies whether to compute just the
 		  case -1:
 		  {
 		     op = sop;
-		     prod_val = rpp[ip-sy_v];
-		     diff = value - pp[ip];
+		     prod_val = tcp[ip-sy_v];
+		     diff = value - tp[ip];
 		     o_temp =  coeff 
-		       * ( diff * RPMean(value, pp[ip], 0.0, prod_der) 
-			   - RPMean(value, pp[ip], prod_val, prod) );
+		       * ( diff * RPMean(value, tp[ip], 0.0, prod_der) 
+			   - RPMean(value, tp[ip], prod_val, prod) );
 		     break;
 		  }
 		  case 1:
 		  {
 		     op = np;
-		     prod_val = rpp[ip+sy_v];
-		     diff = pp[ip] - value;
+		     prod_val = tcp[ip+sy_v];
+		     diff = tp[ip] - value;
 		     o_temp = - coeff 
-		       * ( diff * RPMean(pp[ip], value, prod_der, 0.0) 
-			   + RPMean(pp[ip], value, prod, prod_val) );
+		       * ( diff * RPMean(tp[ip], value, prod_der, 0.0) 
+			   + RPMean(tp[ip], value, prod, prod_val) );
 		     break;
 		  }
 		  }   /* End switch on fdir[1] */
@@ -960,10 +893,10 @@ int           symm_part)      /* Specifies whether to compute just the
 		  case -1:
 		  {
 		     op = lp;
-		     prod_val = rpp[ip-sz_v];
+		     prod_val = tcp[ip-sz_v];
 
 		     lower_cond = (value );
-		     upper_cond = (pp[ip]);
+		     upper_cond = (tp[ip]);
 		     diff = lower_cond - upper_cond;
 
 		     o_temp =  coeff 
@@ -975,9 +908,9 @@ int           symm_part)      /* Specifies whether to compute just the
 		  case 1:
 		  {
 		     op = up;
-		     prod_val = rpp[ip+sz_v] * den_d;
+		     prod_val = tcp[ip+sz_v] * den_d;
 
-		     lower_cond = (pp[ip]);
+		     lower_cond = (tp[ip]);
 		     upper_cond = (value );
 		     diff = lower_cond - upper_cond;
 
@@ -994,11 +927,6 @@ int           symm_part)      /* Specifies whether to compute just the
 	       cp[im] += op[im];
 	       cp[im] -= o_temp;
 	       op[im] = 0.0;
-	       /*
-	       if ( (i==0) && (j==0) && (k==0) )
-		  printf("fdir: %i %i %i o_temp %f\n",
-			 fdir[0], fdir[1], fdir[2], o_temp);
-			 */
 	    });
 
 	    break;
@@ -1062,14 +990,10 @@ int           symm_part)      /* Specifies whether to compute just the
                   {  
                   case -1:
                   { 
-                        //cp[im] -= ffz * AMean(sp[ip-sz_v], sp[ip]) * AMean(hcwp[ip], hcwp[ip-sz_v]) 
-                        //         * max(0.0, zvp[ip]);
                   break;
                   }
                   case 1:
                   {
-                        //cp[im] += ffz * AMean(sp[ip], sp[ip+sz_v]) * AMean(hcwp[ip], hcwp[ip+sz_v]) 
-                        //        * min(zvp[ip], 0.0);
                      break;
                   }
                   }   /* End switch on fdir[2] */
@@ -1086,9 +1010,6 @@ int           symm_part)      /* Specifies whether to compute just the
    }           /* End subgrid loop */
 #endif
 
-#if 0
-   PrintMatrix("matrix_dump2", J);
-#endif
 
    FreeBCStruct(bc_struct);
 #if 1
@@ -1157,11 +1078,6 @@ int           symm_part)      /* Specifies whether to compute just the
 
    *ptr_to_J = J;
 
-#if 0
-   PrintMatrix("matrix_dump3", J);
-   exit(1);
-#endif
-
 
    return;
 }
@@ -1195,8 +1111,8 @@ int          symmetric_jac)
 	 FreeMatrix(instance_xtra -> J);
          FreeVector(instance_xtra -> density_der);
          FreeVector(instance_xtra -> saturation_der);
-         FreeVector(instance_xtra -> rel_perm);
-         FreeVector(instance_xtra -> rel_perm_der);
+         FreeVector(instance_xtra -> thermal_cond);
+         FreeVector(instance_xtra -> thermal_cond_der);
       }
 
       /* set new data */
@@ -1212,8 +1128,8 @@ int          symmetric_jac)
 
       (instance_xtra -> density_der)     = NewVector(grid, 1, 1);
       (instance_xtra -> saturation_der)  = NewVector(grid, 1, 1);
-      (instance_xtra -> rel_perm)        = NewVector(grid, 1, 1);
-      (instance_xtra -> rel_perm_der)        = NewVector(grid, 1, 1);
+      (instance_xtra -> thermal_cond)        = NewVector(grid, 1, 1);
+      (instance_xtra -> thermal_cond_der)        = NewVector(grid, 1, 1);
    }
 
    if ( temp_data != NULL )
@@ -1240,8 +1156,6 @@ int          symmetric_jac)
         PFModuleNewInstance(ProblemBCTemperature(problem), (problem) );
       (instance_xtra -> saturation_module) =
          PFModuleNewInstance(ProblemSaturation(problem), (NULL, NULL) );
-      (instance_xtra -> rel_perm_module) =
-         PFModuleNewInstance(ProblemPhaseRelPerm(problem), (NULL, NULL) );
       (instance_xtra -> thermal_conductivity) =
          PFModuleNewInstance(ProblemThermalConductivity(problem), (NULL) );
       (instance_xtra -> bc_internal) =
@@ -1278,14 +1192,13 @@ void  TemperatureJacobianEvalFreeInstanceXtra()
       PFModuleFreeInstance(instance_xtra -> heat_capacity_module);
       PFModuleFreeInstance(instance_xtra -> bc_temperature);
       PFModuleFreeInstance(instance_xtra -> saturation_module);
-      PFModuleFreeInstance(instance_xtra -> rel_perm_module);
-      //PFModuleFreeInstance(instance_xtra -> thermal_conductivity);
+      PFModuleFreeInstance(instance_xtra -> thermal_conductivity);
       PFModuleFreeInstance(instance_xtra -> bc_internal);
 
       FreeVector(instance_xtra -> density_der);
       FreeVector(instance_xtra -> saturation_der);
-      FreeVector(instance_xtra -> rel_perm);
-      FreeVector(instance_xtra -> rel_perm_der);
+      FreeVector(instance_xtra -> thermal_cond);
+      FreeVector(instance_xtra -> thermal_cond_der);
       
       FreeMatrix(instance_xtra -> J);
 
