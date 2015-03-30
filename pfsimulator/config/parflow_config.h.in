@@ -114,6 +114,14 @@
 #endif
 
 /*
+ * p4est library for adaptive mesh refinement
+ */
+
+#ifndef HAVE_P4EST
+#undef HAVE_P4EST
+#endif
+
+/*
  * Building with XDR
  */
 #ifndef HAVE_XDR
