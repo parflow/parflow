@@ -1,0 +1,5 @@
+#! /bin/sh
+
+rm -rf autom4te.cache
+aclocal -Wall -I ../acmacros 
+autoconf -Wall -I ../acmaros -I . --force
