@@ -503,6 +503,47 @@ fi
 AC_SUBST(PARFLOW_HAVE_HYPRE)
 
 dnl
+dnl Set variables for P4EST support.
+dnl
+PARFLOW_HAVE_P4EST="no"
+P4EST_DIR=""
+CASC_SUPPORT_P4EST
+if test "${p4est_PREFIX+set}" = set; then
+  LIBS="$p4est_LIBS $LIBS"
+  CASC_SPLIT_LIBS_STRING(p4est_LIBS,p4est_LIB_PATH,p4est_LIB_NAME)
+  LIB_PATH="$p4est_LIB_PATH $LIB_PATH"
+  LIB_NAME="$p4est_LIB_NAME $LIB_NAME"
+  INC_PATH="$p4est_INCLUDES $INC_PATH"
+
+  AC_MSG_CHECKING(whether P4EST was compiled with MPI)
+  if test "$p4est_MPI" = yes ; then
+    AC_DEFINE([P4EST_MPI],[1],[p4est library is configured with MPI])
+    AC_MSG_RESULT(yes)
+    if test "$with_mpi" = no ; then
+       AC_MSG_ERROR([sequential Parflow cannot call P4EST compiled with MPI])
+    fi
+    P4EST_DIR="$p4est_PREFIX"
+    AC_DEFINE(HAVE_P4EST,1,[P4EST library is available so use it])
+    PARFLOW_HAVE_P4EST="yes"
+  elif test "$p4est_MPI" = no ; then
+    AC_MSG_RESULT(no)
+    if test "$with_mpi" != no ; then
+       AC_MSG_ERROR([parallel Parflow cannot call P4EST compiled without MPI])
+    fi
+    P4EST_DIR="$p4est_PREFIX"
+    AC_DEFINE(HAVE_P4EST,1,[P4EST library is available so use it])
+    PARFLOW_HAVE_P4EST="yes"
+  else
+    AC_MSG_WARN([Cannot determine if p4est was compiled with MPI])
+  fi
+else
+  AC_MSG_NOTICE([NOTIFICATION: Parflow configured without the P4EST library])
+  AC_DEFINE([LACKS_P4EST],[1],[p4est library is missing])
+fi
+AC_SUBST([PARFLOW_HAVE_P4EST])
+AC_SUBST([P4EST_DIR])
+
+dnl
 dnl Set variables for SAMRAI support.
 dnl
 PARFLOW_HAVE_SAMRAI="no"
