@@ -37,10 +37,8 @@ if test "${p4est_PREFIX+yes}" = yes; then
     p4est_LIBS="-L${p4est_PREFIX}/local/lib -lp4est -lsc"
 
     save_cppflags=$CPPFLAGS
-    save_cpp=$CPP
 
     # Add p4est include flags to cpp to look in its header file.
-    CPP="$CC -E"
     CPPFLAGS="$p4est_INCLUDES $CPPFLAGS"
 
     # Check if p4est header is ok.
@@ -62,7 +60,6 @@ P4EST_COMPILED_WITH_MPI
     AC_MSG_RESULT([$p4est_MPI])
 
     # Reset cpp after checking p4est header file.
-    CPP=$save_cpp
     CPPFLAGS=$save_cppflags
 
 fi
