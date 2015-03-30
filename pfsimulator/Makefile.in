@@ -16,7 +16,7 @@ SUBDIR        = .
 SRCDIR        = @srcdir@
 OBJECT        = .
 
-SUBDIRS = amps $(CLM_DIR) kinsol parflow_lib parflow_exe 
+SUBDIRS = amps $(CLM_DIR) kinsol parflow_lib parflow_exe p4est_test
 
 # This should be done before a release to set the version # and build.  
 # Also should run a commit to update the repository version number.

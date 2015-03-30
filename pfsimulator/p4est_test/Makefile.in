@@ -1,0 +1,36 @@
+PARFLOW	      =	..
+SRCDIR	      =	.
+SUBDIR        = p4est_test
+
+OBJECT        = ..
+
+default: all
+
+include $(OBJECT)/config/Makefile.config
+
+FILES = \
+	parflow_p4est_simple.c
+
+OBJS = \
+	parflow_p4est_simple.o
+
+OUT = $(FILES:.c=)
+
+build:  $(FILES) $(OBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) \
+	$(PARFLOW_LIBS) $(LDLIBS) -o $(OUT)
+	#$(LIBXML) $(LIBOASIS) $(LIBPSMILE) $(NETCDF_LIB) $(LDLIBS) -o $(OUT)
+	
+$(PARFLOW_LIB_DIR)/$(PARFLOW_LIB): $(OBJS) 
+	ar rus $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB) $(OBJS) 
+
+all: $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB)
+
+clean:
+	$(PARFLOW_CLEAN) 
+	rm $(OUT)
+
+veryclean: clean
+	@$(RM) Makefile
+
+
