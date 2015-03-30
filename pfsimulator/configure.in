@@ -535,10 +535,10 @@ if test "${p4est_PREFIX+set}" = set; then
     AC_DEFINE(HAVE_P4EST,1,[P4EST library is available so use it])
     PARFLOW_HAVE_P4EST="yes"
   else
-    AC_MSG_WARN([Cannot determine if p4est was compiled with MPI])
+    AC_MSG_ERROR([Cannot determine if p4est was compiled with MPI])
   fi
 else
-  AC_MSG_NOTICE([NOTIFICATION: Parflow configured without the P4EST library])
+  dnl AC_MSG_NOTICE([NOTIFICATION: Parflow configured without the P4EST library])
   AC_DEFINE([LACKS_P4EST],[1],[p4est library is missing])
 fi
 AC_SUBST([PARFLOW_HAVE_P4EST])
