@@ -243,7 +243,7 @@ subroutine clm_thermal (clm)
      
      if (temp_alpha < 0.0) temp_alpha = 0.00d0
      if (temp_alpha > 1.) temp_alpha = 1.d0
-
+!print*,'temp-alpha1:',temp_alpha
      hr   = dexp(psit/roverg/tg)
      qred = (1.-clm%frac_sno)*hr + clm%frac_sno
   else
@@ -399,6 +399,7 @@ subroutine clm_thermal (clm)
 !
      clm%eflx_sh_grnd  = -raih*dth
      clm%qflx_evap_soi  = -temp_alpha*raiw*dqh
+!print*, 'Alpha:', temp_alpha
      clm%eflx_sh_tot  = clm%eflx_sh_grnd
      clm%qflx_evap_tot  = clm%qflx_evap_soi
 
@@ -459,7 +460,7 @@ subroutine clm_thermal (clm)
      if ( (clm%vegwaterstresstype == 2).and.(clm%pf_vol_liq(1)<=clm%wilting_point*clm%watsat(1)) ) clm%btran = 0.0d0
 
      call clm_leaftem(z0mv,z0hv,z0qv,thm,th,thv,tg,qg,dqgdT,htvp,sfacx,     &
-          dqgmax,emv,emg,dlrad,ulrad,cgrnds,cgrndl,cgrnd,clm)
+          dqgmax,emv,emg,dlrad,ulrad,cgrnds,cgrndl,cgrnd,temp_alpha,clm)
 
   endif
 

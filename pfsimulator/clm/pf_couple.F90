@@ -38,6 +38,7 @@ subroutine pf_couple(drv,clm,tile,evap_trans,saturation,pressure,porosity,nx,ny,
            l = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))    ! updated indexing @RMM 4-12-09
            if (k == 1) then
               clm(t)%pf_flux(k)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)) + clm(t)%qflx_infl + clm(t)%qflx_qirr_inst(k)
+        !!print*, 'Beta:',(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)),clm(t)%qflx_infl,saturation(l),pressure(l)
            else  
               clm(t)%pf_flux(k)=(-clm(t)%qflx_tran_veg*clm(t)%rootfr(k)) + clm(t)%qflx_qirr_inst(k)
            endif

@@ -95,12 +95,12 @@ subroutine clm_hydro_canopy (clm)
 
         ! Direct throughfall
 
-        fpi = 1. - exp(-0.5*(clm%elai + clm%esai))
+        fpi = 0.25*(1. - exp(-0.5*(clm%elai + clm%esai)))
         qflx_through  = prcp*(1.-fpi)*clm%frac_veg_nosno
 
         ! Water storage of intercepted precipitation and dew
 
-        clm%qflx_prec_intr = prcp*fpi*clm%frac_veg_nosno
+        clm%qflx_prec_intr = 0.25*prcp*fpi*clm%frac_veg_nosno
         clm%h2ocan = max(dble(0.), clm%h2ocan + clm%dtime*clm%qflx_prec_intr)
 
         ! Initialize rate of canopy runoff and snow falling off canopy

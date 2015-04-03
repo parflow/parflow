@@ -6,7 +6,7 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
                         htvp,       sfacx,      dqgmax,         &
                         emv,        emg,        dlrad,          &
                         ulrad,      cgrnds,     cgrndl,         &
-                        cgrnd,      clm)
+                        cgrnd,      temp_alpha,      clm)
 
 !=========================================================================
 !
@@ -84,7 +84,8 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
        sfacx,             & ! coefficient for "sfact"
        dqgmax,            & ! max of d(qg)/d(theta)
        emv,               & ! ground emissivity
-       emg                  ! vegetation emissivity
+       emg,               &  ! vegetation emissivity
+       temp_alpha            ! beta-type formulation for soil resistance / bare soil under canopy evap
 
   real(r8), intent(inout) :: &
        cgrnd,             & ! deriv. of soil energy flux wrt to soil temp [w/m2/k]
@@ -488,8 +489,8 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
   clm%taux  = clm%taux - clm%frac_veg_nosno*clm%forc_rho*clm%forc_u/ram(1)
   clm%tauy  = clm%tauy - clm%frac_veg_nosno*clm%forc_rho*clm%forc_v/ram(1)
   clm%eflx_sh_grnd = clm%eflx_sh_grnd + cpair*clm%forc_rho*wtg*delt
-  clm%qflx_evap_soi = clm%qflx_evap_soi +   clm%forc_rho*wtgq*delq
-
+  clm%qflx_evap_soi = clm%qflx_evap_soi +   temp_alpha*clm%forc_rho*wtgq*delq
+!!print*, 'temp_alpha:',temp_alpha
 ! 2 m height air temperature
 
   clm%t_ref2m   = clm%t_ref2m + clm%frac_veg_nosno*(taf + temp1*dth * &
