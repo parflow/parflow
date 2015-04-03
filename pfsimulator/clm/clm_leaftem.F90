@@ -149,7 +149,9 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
        qsatl,             & ! leaf specific humidity [kg/kg]
        qsatldT,           & ! derivative of "qsatl" on "t_veg"
        air,bir,cir,       & ! atmos. radiation temporay set
-       dc1,dc2              ! derivative of energy flux [W/m2/K]
+       dc1,dc2,           & ! derivative of energy flux [W/m2/K]
+       w, csoilcn           ! weight function and revised csoilc - declare  @RMM
+
 
   real(r8) delt,          & ! temporary
        delq                 ! temporary
@@ -291,10 +293,16 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
 ! Aerodynamic resistances raw and rah between heights zpd+z0h and z0hg.
 ! if no vegetation, rah(2)=0 because zpd+z0h = z0hg.
 ! (Dickinson et al., 1993, pp.54)
+! Weighting the drag coefficient of soil under canopy for changes in canopy density
+! per Zeng et al. 2005 JClimate and Lawrence et al. 2007 JHM
+!  @BR "alpha" in weighting set to 2, csoilc changed in clm_input.dat to 0.0025
+! @CLM Dry Bias
 
+     w = exp(-2*(clm%elai+clm%esai))     !## added this line @RMM
+     csoilcn = (vkc/(0.13*(clm%zlnd*uaf/1.5e-5)**0.45))*w + clm%csoilc*(1.-w)  !@RMM
      ram(2) = 0.               ! not used
-     rah(2) = 1./(clm%csoilc*uaf)
-     raw(2) = rah(2) 
+     rah(2) = 1./(csoilcn*uaf)  !### Changed clm%csoilc to csoilcn
+     raw(2) = rah(2)
 
 ! Stomatal resistances for sunlit and shaded fractions of canopy.
 ! should do each iteration to account for differences in eah, tv.

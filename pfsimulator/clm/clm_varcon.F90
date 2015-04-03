@@ -43,8 +43,7 @@ module clm_varcon
   real(r8) :: tkwat  = 0.6       !thermal conductivity of water [W/m/k]
   real(r8) :: cwat   = 4.188e06  !LSM: specific heat capacity of water (J/m**3/Kelvin)
   real(r8) :: cice   = 2.094e06  !LSM: specific heat capacity of ice   (J/m**3/Kelvin)
-! real(r8) :: tcrit  = 2.5       !critical temperature to determine rain or snow
-  real(r8) :: tcrit  = 0.0       !critical temperature to determine rain or snow
+  real(r8) :: tcrit  = 2.5       !critical temperature to determine rain or snow
   real(r8) :: tfrz   = 273.16    !freezing temperature [K]
   real(r8) :: po2    = 0.209     !constant atmospheric partial pressure  O2 (mol/mol)
   real(r8) :: pco2   = 355.e-06  !constant atmospheric partial pressure CO2 (mol/mol)
