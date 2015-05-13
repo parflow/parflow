@@ -142,7 +142,7 @@ int           symm_part)      /* Specifies whether to compute just the
    double       prod, prod_rt, prod_no, prod_up, prod_val, prod_lo;
    double       prod_der, prod_rt_der, prod_no_der, prod_up_der;
    double       west_temp, east_temp, north_temp, south_temp;
-   double       lower_temp, upper_temp, o_temp;
+   double       lower_temp, upper_temp, o_temp, o_new;
    double       sym_west_temp, sym_east_temp, sym_south_temp, sym_north_temp;
    double       sym_lower_temp, sym_upper_temp;
    double       lower_cond, upper_cond;
@@ -156,6 +156,39 @@ int           symm_part)      /* Specifies whether to compute just the
    int          ipatch, ival;
    CommHandle  *handle;
    VectorUpdateCommHandle  *vector_update_handle;
+
+
+
+//TODO: #FG This has to be outsourced to a module
+Vector *constThermalCond = NewVectorType( grid, 1, 1, vector_cell_centered  );
+double *ctcp;
+Subvector *ctc_sub;
+InitVectorAll(constThermalCond, 0.0);
+ForSubgridI(is, GridSubgrids(grid))
+   {
+      subgrid = GridSubgrid(grid, is);
+      ctc_sub  = VectorSubvector(constThermalCond, is);
+      ctcp     = SubvectorData(ctc_sub);
+      ix = SubgridIX(subgrid);
+      iy = SubgridIY(subgrid);
+      iz = SubgridIZ(subgrid);
+
+      nx = SubgridNX(subgrid);
+      ny = SubgridNY(subgrid);
+      nz = SubgridNZ(subgrid);
+      r = SubgridRX(subgrid);
+
+      GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+      {
+        ip  = SubvectorEltIndex(ctc_sub,   i,j,k);
+        ctcp[ip]=1.0;
+      });
+
+   }
+
+//ENDTODO:
+
+
 
    /* Pass temperature values to neighbors.  */
    vector_update_handle = InitVectorUpdate(temperature, VectorUpdateAll);
@@ -254,16 +287,15 @@ int           symm_part)      /* Specifies whether to compute just the
   //                 im,  nx_m,  ny_m,  nz_m,  1, 1, 1,
   //                 ipo, nx_po, ny_po, nz_po, 1, 1, 1,
    //                iv,  nx_v,  ny_v,  nz_v,  1, 1, 1,
-
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
 		   {
 			   im  = SubmatrixEltIndex(J_sub,  i,j,k);
          		   ipo = SubvectorEltIndex(po_sub, i,j,k);
 		           iv  = SubvectorEltIndex(d_sub,  i,j,k);
 					//FGtest dp und sp =1 	
-			   cp[im] += pop[ipo]*hcwp[iv]*vol* 1.0 ;//( sp[iv]*dp[iv] + tp[iv]*sp[iv]*ddp[iv] );
+			   cp[im] += pop[ipo]* /*hcwp[iv]*/ vol* 1.0 ;//( sp[iv]*dp[iv] + tp[iv]*sp[iv]*ddp[iv] );
 			 //cp[im] += (pp[iv]*sp[iv])*hcwp[iv]*(ss[iv]/gravity)*vol;
-                           cp[im] += vol * (1.0 - pop[ipo]) * hcrp[iv];
+                           cp[im] += vol * (1.0 - pop[ipo])  /*hcrp[iv]*/;
 
 		   });
       }   /* End subgrid loop */
@@ -336,7 +368,8 @@ int           symm_part)      /* Specifies whether to compute just the
       tcp_sub   = VectorSubvector(thermal_cond, is);
       tcdp_sub  = VectorSubvector(thermal_cond_der, is);
       J_sub    = MatrixSubmatrix(J, is);
-	 
+      ctc_sub  = VectorSubvector(constThermalCond, is);
+      ctcp     = SubvectorData(ctc_sub);	 
       ix = SubgridIX(subgrid) - 1;
       iy = SubgridIY(subgrid) - 1;
       iz = SubgridIZ(subgrid) - 1;
@@ -384,14 +417,14 @@ int           symm_part)      /* Specifies whether to compute just the
       im = SubmatrixEltIndex(J_sub, ix, iy, iz);
 
 //printf("##########\n");
-      BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-                ip, nx_v, ny_v, nz_v, 1, 1, 1,
-                im, nx_m, ny_m, nz_m, 1, 1, 1,
-//             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+//      BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
+//                ip, nx_v, ny_v, nz_v, 1, 1, 1,
+//                im, nx_m, ny_m, nz_m, 1, 1, 1,
+             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
 	     {
-//                ip = SubvectorEltIndex(t_sub, i,j,k);
-//                im = SubmatrixEltIndex(J_sub, i,j,k);
-  //printf("##FG ip %d ; tcp: %lf ; lcp+1 %lf \n",ip,tcp[ip],tcp[ip+1]);              
+                ip = SubvectorEltIndex(t_sub, i,j,k);
+                im = SubmatrixEltIndex(J_sub, i,j,k);
+ //printf("##FG ip %d ; tp: %e;  \n",ip,tp[ip]);              
 
 	        prod        = tcp[ip];
 		prod_der    = tcdp[ip];
@@ -411,18 +444,24 @@ int           symm_part)      /* Specifies whether to compute just the
 		x_coeff = dt * ffx * (1.0/dx); 
 
 		sym_west_temp = - x_coeff 
-		                  * RPMean(tp[ip], tp[ip+1], prod, prod_rt);
+		                  * RPMean(tp[ip], tp[ip+1], prod, prod_rt)* PMean(tp[ip], tp[ip+1], ctcp[ip], ctcp[ip+1])
+		                  ;
 
 		west_temp = - x_coeff * diff 
-		                 * RPMean(tp[ip], tp[ip+1], prod_der, 0.0)
+		                 * RPMean(tp[ip], tp[ip+1], prod_der, 0.0)* PMean(tp[ip], tp[ip+1], ctcp[ip], ctcp[ip+1])
 		              + sym_west_temp;
 
 		sym_east_temp = x_coeff
-		                * -RPMean(tp[ip], tp[ip+1], prod, prod_rt);
+		                * -RPMean(tp[ip], tp[ip+1], prod, prod_rt)* PMean(tp[ip], tp[ip+1], ctcp[ip], ctcp[ip+1])
+		                ;
 
 		east_temp = x_coeff * diff
-		               * RPMean(tp[ip], tp[ip+1], 0.0, prod_rt_der)
+		               * RPMean(tp[ip], tp[ip+1], 0.0, prod_rt_der)* PMean(tp[ip], tp[ip+1], ctcp[ip], ctcp[ip+1])
 		            + sym_east_temp;
+
+
+
+
 
 	        /* diff >= 0 implies flow goes south to north */
 	        diff = tp[ip] - tp[ip+sy_v];
@@ -430,18 +469,20 @@ int           symm_part)      /* Specifies whether to compute just the
 		y_coeff = dt * ffy * (1.0/dy); 
 
 		sym_south_temp = - y_coeff
-                                   *RPMean(tp[ip], tp[ip+sy_v], prod, prod_no);
+                                   *RPMean(tp[ip], tp[ip+sy_v], prod, prod_no)* PMean(tp[ip], tp[ip+sy_v], ctcp[ip], ctcp[ip+sy_v])
+				  ;
 
 		south_temp = - y_coeff * diff
-                                  * RPMean(tp[ip], tp[ip+sy_v], prod_der, 0.0)
+                                  * RPMean(tp[ip], tp[ip+sy_v], prod_der, 0.0)* PMean(tp[ip], tp[ip+sy_v], ctcp[ip], ctcp[ip+sy_v])
                                + sym_south_temp;
 
 		sym_north_temp = y_coeff
-                                 * -RPMean(tp[ip], tp[ip+sy_v], prod, prod_no);
+                                 * -RPMean(tp[ip], tp[ip+sy_v], prod, prod_no)* PMean(tp[ip], tp[ip+sy_v], ctcp[ip], ctcp[ip+sy_v])
+                                 ;
 
 		north_temp = y_coeff * diff
                                 *  RPMean(tp[ip], tp[ip+sy_v], 0.0, 
-					  prod_no_der)
+					  prod_no_der)* PMean(tp[ip], tp[ip+sy_v], ctcp[ip], ctcp[ip+sy_v])
 		             + sym_north_temp;
 
 	        /* diff >= 0 implies flow goes lower to upper */
@@ -453,30 +494,34 @@ int           symm_part)      /* Specifies whether to compute just the
 
 		sym_lower_temp = - z_coeff
                                    * RPMean(lower_cond, upper_cond, prod, 
-					    prod_up);
+					    prod_up)*PMean(tp[ip], tp[ip+sz_v], ctcp[ip], ctcp[ip+sz_v])
+				;
 		
 		lower_temp = - z_coeff 
-		      * ( diff * RPMean(lower_cond, upper_cond, prod_der, 0.0) 
-			  + RPMean(lower_cond, upper_cond, prod, 
-				       prod_up) ) 
-                               + sym_lower_temp;
+		      * ( diff * RPMean(lower_cond, upper_cond, prod_der, 0.0)* PMean(tp[ip], tp[ip+sz_v], ctcp[ip], ctcp[ip+sz_v]) 
+//FG why?
+//			  + RPMean(lower_cond, upper_cond, prod, 
+//				       prod_up) * PMean(tp[ip], tp[ip+sz_v], ctcp[ip], ctcp[ip+sz_v])
+                          )   + sym_lower_temp;
 
 		sym_upper_temp = z_coeff
                                  * -RPMean(lower_cond, upper_cond, prod, 
-					   prod_up);
+					   prod_up)* PMean(tp[ip], tp[ip+sz_v], ctcp[ip], ctcp[ip+sz_v])
+                              ;
 
 		upper_temp = z_coeff
                        * ( diff * RPMean(lower_cond, upper_cond, 0.0, 
-					 prod_up_der) 
-			  + RPMean(lower_cond, upper_cond, prod, 
-				      prod_up) ) 
-                               + sym_upper_temp;
-
+					 prod_up_der) * PMean(tp[ip], tp[ip+sz_v], ctcp[ip], ctcp[ip+sz_v])
+//FG why?
+//			  + RPMean(lower_cond, upper_cond, prod, 
+//				      prod_up) * PMean(tp[ip], tp[ip+sz_v], ctcp[ip], ctcp[ip+sz_v]) 
+                              ) + sym_upper_temp;
+//printf("##FG im %d ; we %e ; s %e ; l %e ; n %e ; u %e ; e %e \n",im,west_temp,south_temp,lower_temp,north_temp,upper_temp,east_temp);
+	
 		cp[im]      -= west_temp + south_temp + lower_temp;
 		cp[im+1]    -= east_temp;
 		cp[im+sy_m] -= north_temp;
 		cp[im+sz_m] -= upper_temp;
-
 		if (! symm_part)
 		{
 		   ep[im] += east_temp;
@@ -508,7 +553,7 @@ int           symm_part)      /* Specifies whether to compute just the
 
 #endif
 
-#if 0
+#if 1
    /* Calculate contributions from convection*/
    ForSubgridI(is, GridSubgrids(grid)) 
    {
@@ -608,7 +653,6 @@ int           symm_part)      /* Specifies whether to compute just the
                 //sop[im+sy_m] += south_temp;
                 //lp[im+sz_m] += lower_temp;
        
-       
              });
    }   
        
@@ -628,7 +672,6 @@ int           symm_part)      /* Specifies whether to compute just the
       /*  of BC is involved.  Without this correction, only the symmetric */
       /*  part would be removed, incorrectly leaving the nonsymmetric     */
       /*  contribution on the diagonal.                                   */
-     
          ForSubgridI(is, GridSubgrids(grid))
 	 {
             subgrid = GridSubgrid(grid, is);
@@ -771,7 +814,8 @@ int           symm_part)      /* Specifies whether to compute just the
       tcdp_sub   = VectorSubvector(thermal_cond_der, is);
       tcp_sub    = VectorSubvector(thermal_cond, is);
       J_sub     = MatrixSubmatrix(J, is);
-
+      ctc_sub  = VectorSubvector(constThermalCond, is);
+      ctcp     = SubvectorData(ctc_sub);
       dx = SubgridDX(subgrid);
       dy = SubgridDY(subgrid);
       dz = SubgridDZ(subgrid);
@@ -836,18 +880,23 @@ int           symm_part)      /* Specifies whether to compute just the
 		     prod_val = tcp[ip-1];
 		     diff = value - tp[ip];
 		     o_temp =  coeff 
-		       * ( diff * RPMean(value, tp[ip], 0.0, prod_der) 
-			   - RPMean(value, tp[ip], prod_val, prod) );
+		       * ( diff * RPMean(value, tp[ip], 0.0, prod_der)  * PMean(tp[ip-1], tp[ip], ctcp[ip-1], ctcp[ip])
+			   - RPMean(value, tp[ip], prod_val, prod) * PMean(tp[ip], tp[ip+sz_v], ctcp[ip-1], ctcp[ip])
+			);
+		     o_new = coeff * (diff * tcdp[ip] - tcp[ip]);
 		     break;
 		  }
 		  case 1:
 		  {
+//printf("##FG in\n");
 		     op = ep;
 		     prod_val = tcp[ip+1];
 		     diff = tp[ip] - value;
 		     o_temp = - coeff 
-		       * ( diff * RPMean(tp[ip], value, prod_der, 0.0) 
-			   + RPMean(tp[ip], value, prod, prod_val) );
+		       * ( diff * RPMean(tp[ip], value, prod_der, 0.0) * PMean(tp[ip], tp[ip+1], ctcp[ip], ctcp[ip+1]) 
+			+    RPMean(tp[ip], value, prod, prod_val) * PMean(tp[ip], tp[ip+1], ctcp[ip], ctcp[ip+1])
+ 			);
+		      o_new = - coeff * (diff * tcdp[ip] + tcp[ip]);
 		     break;
 		  }
 		  }   /* End switch on fdir[0] */
@@ -866,8 +915,10 @@ int           symm_part)      /* Specifies whether to compute just the
 		     prod_val = tcp[ip-sy_v];
 		     diff = value - tp[ip];
 		     o_temp =  coeff 
-		       * ( diff * RPMean(value, tp[ip], 0.0, prod_der) 
-			   - RPMean(value, tp[ip], prod_val, prod) );
+		       * ( diff * RPMean(value, tp[ip], 0.0, prod_der) * PMean(tp[ip-sy_v], tp[ip], ctcp[ip-sy_v], ctcp[ip])
+			   - RPMean(value, tp[ip], prod_val, prod) * PMean(tp[ip-sy_v], tp[ip], ctcp[ip-sy_v], ctcp[ip])
+			);
+                     o_new = coeff * (diff * tcdp[ip] - tcp[ip]);
 		     break;
 		  }
 		  case 1:
@@ -876,8 +927,10 @@ int           symm_part)      /* Specifies whether to compute just the
 		     prod_val = tcp[ip+sy_v];
 		     diff = tp[ip] - value;
 		     o_temp = - coeff 
-		       * ( diff * RPMean(tp[ip], value, prod_der, 0.0) 
-			   + RPMean(tp[ip], value, prod, prod_val) );
+		       * ( diff * RPMean(tp[ip], value, prod_der, 0.0) * PMean(tp[ip], tp[ip+sy_v], ctcp[ip], ctcp[ip+sy_v])
+			   + RPMean(tp[ip], value, prod, prod_val) * PMean(tp[ip], tp[ip+sy_v], ctcp[ip], ctcp[ip+sy_v])
+			 );
+                     o_new = - coeff * (diff * tcdp[ip] + tcp[ip]);
 		     break;
 		  }
 		  }   /* End switch on fdir[1] */
@@ -900,9 +953,11 @@ int           symm_part)      /* Specifies whether to compute just the
 		     diff = lower_cond - upper_cond;
 
 		     o_temp =  coeff 
-		      * ( diff * RPMean(lower_cond, upper_cond, 0.0, prod_der) 
+		      * ( diff * RPMean(lower_cond, upper_cond, 0.0, prod_der) * PMean(tp[ip-sz_v], tp[ip], ctcp[ip-sz_v], ctcp[ip])
 			  + ( (-1.0)
-			    * RPMean(lower_cond, upper_cond, prod_val, prod)));
+			    * RPMean(lower_cond, upper_cond, prod_val, prod) * PMean(tp[ip-sz_v], tp[ip], ctcp[ip-sz_v], ctcp[ip])
+			     ));
+		     o_new = coeff * (diff * tcdp[ip] - tcp[ip]);
 		  break;
 		  }
 		  case 1:
@@ -915,17 +970,21 @@ int           symm_part)      /* Specifies whether to compute just the
 		     diff = lower_cond - upper_cond;
 
 		     o_temp = - coeff 
-		      * ( diff * RPMean(lower_cond, upper_cond, prod_der, 0.0) 
+		      * ( diff * RPMean(lower_cond, upper_cond, prod_der, 0.0) * PMean(tp[ip], tp[ip+sz_v], ctcp[ip], ctcp[ip+sz_v])
 			  + ( (1.0)
-			    * RPMean(lower_cond, upper_cond, prod, prod_val)));
+			    * RPMean(lower_cond, upper_cond, prod, prod_val)* PMean(tp[ip], tp[ip+sz_v], ctcp[ip], ctcp[ip+sz_v])
+			     ));
+                     o_new = - coeff * (diff * tcdp[ip] + tcp[ip]);
 		     break;
 		  }
 		  }   /* End switch on fdir[2] */
 
 		  }   /* End if (fdir[2]) */
-
-	       cp[im] += op[im];
-	       cp[im] -= o_temp;
+//printf("##FG 1: im %d ; cp[im] %e \n",im,cp[im]);
+               cp[im] -= o_temp;
+//printf("##FG 2: im %d ; cp[im] %e ; o_temp %e \n",im,cp[im],o_temp);
+	       cp[im] -= o_new;  //op[im];
+//printf("##FG 3: im %d ; cp[im] %e ; op[im] %e \n",im,cp[im],op[im]);
 	       op[im] = 0.0;
 	    });
 
@@ -944,7 +1003,7 @@ int           symm_part)      /* Specifies whether to compute just the
 	       if (fdir[1] ==  1)  op = np;
 	       if (fdir[2] == -1)  op = lp;
 	       if (fdir[2] ==  1)  op = up;
-
+//printf("##FG im %d ; op[im] %e \n",im,op[im]);
 	       cp[im] += op[im];
 	       op[im] = 0.0;
 

@@ -159,7 +159,37 @@ Vector      *z_velocity)
    int         *fdir;
    int          ipatch, ival;
    int          dir = 0;
-   
+
+//TODO: #FG This has to be outsourced to a module  
+Vector *constThermalCond = NewVectorType( grid, 1, 1, vector_cell_centered  );
+double *ctcp;
+Subvector *ctc_sub;
+InitVectorAll(constThermalCond, 0.0);
+ForSubgridI(is, GridSubgrids(grid))
+   {
+      subgrid = GridSubgrid(grid, is);
+      ctc_sub  = VectorSubvector(constThermalCond, is);
+      ctcp     = SubvectorData(ctc_sub);
+      ix = SubgridIX(subgrid);
+      iy = SubgridIY(subgrid);
+      iz = SubgridIZ(subgrid);
+
+      nx = SubgridNX(subgrid);
+      ny = SubgridNY(subgrid);
+      nz = SubgridNZ(subgrid);
+      r = SubgridRX(subgrid);
+
+      GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+      {
+        ip  = SubvectorEltIndex(ctc_sub,   i,j,k);
+        ctcp[ip]=1.0;
+      });
+
+   } 
+//ENDTODO: 
+
+
+
    CommHandle  *handle;
    VectorUpdateCommHandle  *vector_update_handle;
 
@@ -341,7 +371,6 @@ Vector      *z_velocity)
       hcrp = SubvectorData(hcr_sub);
       pop = SubvectorData(po_sub);
       fp  = SubvectorData(f_sub);
-
       
 //      ip = SubvectorEltIndex(f_sub, ix, iy, iz);
  
@@ -351,6 +380,9 @@ Vector      *z_velocity)
 	     {
 			  ip = SubvectorEltIndex(f_sub, i,j,k);
 			 fp[ip] += vol * /* hcrp[ip]*/ 1.0 * (1.0 - pop[ip]) * (tp[ip] - otp[ip]);
+
+
+
 // printf("##FG:index: %i ; %lf(f) += %lf(add) = %lf(vol) * ( 1.0 - %lf(pop) ) * ( %lf(tp) - %lf(otp) )\n",ip,fp[ip],(vol * (1.0 - pop[ip]) * (tp[ip] - otp[ip])),vol,pop[ip],tp[ip],otp[ip]);
              //printf("Storage %d %d %d %e %e %e\n",i,j,k,fp[ip],tp[ip],otp[ip]);
 	     });
@@ -496,7 +528,8 @@ Vector      *z_velocity)
       t_sub     = VectorSubvector(temperature, is);
       rp_sub    = VectorSubvector(rel_perm, is);
       f_sub     = VectorSubvector(fval, is);
-	 
+      ctc_sub  = VectorSubvector(constThermalCond, is);
+      ctcp     = SubvectorData(ctc_sub);	 
       ix = SubgridIX(subgrid) -1;
       iy = SubgridIY(subgrid) -1;
       iz = SubgridIZ(subgrid) -1;
@@ -525,10 +558,10 @@ Vector      *z_velocity)
       rpp   = SubvectorData(rp_sub);
       fp    = SubvectorData(f_sub);
 //printf("########## ix %d ,iy %d ,iz %d ,nx %d ,ny %d ,nz %d \n",ix,iy,iz,nx,ny,nz);      
-//      ip = SubvectorEltIndex(t_sub, ix, iy, iz);
+     ip = SubvectorEltIndex(t_sub, ix, iy, iz);
 
-//      BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-//		ip, nx_p, ny_p, nz_p, 1, 1, 1,
+//     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+//     ip, nx_p, ny_p, nz_p, 1, 1, 1,
              GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
              {
             ip = SubvectorEltIndex(t_sub, i,j,k);
@@ -541,8 +574,8 @@ Vector      *z_velocity)
 	       diff    = tp[ip] - tp[ip+1];
 		u_right = ffx 
 		              * (diff / dx )
-		              * RPMean(tp[ip], tp[ip+1], rpp[ip],
-				       rpp[ip+1]);
+		              * RPMean(tp[ip], tp[ip+1], rpp[ip], rpp[ip+1])
+		              * PMean(tp[ip], tp[ip+1], ctcp[ip], ctcp[ip+1]);
 
 	        /* Calculate front face velocity.
 		   diff >= 0 implies flow goes back to front */
@@ -550,8 +583,10 @@ Vector      *z_velocity)
 		u_front = ffy 
 		              * (diff / dy )
 		              * RPMean(tp[ip], tp[ip+sy_p], rpp[ip],
-				       rpp[ip+sy_p]);
-		
+				       rpp[ip+sy_p])* PMean(tp[ip], tp[ip+sy_p], ctcp[ip], ctcp[ip+sy_p]);
+	
+//printf("%d ip ###FGte: front %lf ; tp %lf ; tpy1 %lf ; ffy %lf ; diff %lf ; dy %lf ; rpp %lf ; rppy1 %lf ; RPMean %lf \n",ip, u_front, tp[ip],tp[ip+sy_p],ffy,diff,dy,rpp[ip],rpp[ip+sy_p],PMean(tp[ip], tp[ip+sy_p], rpp[ip],rpp[ip+sy_p]));
+	
 	        /* Calculate upper face velocity.
 		   diff >= 0 implies flow goes lower to upper */
 		lower_cond = (tp[ip] / dz);
@@ -560,8 +595,8 @@ Vector      *z_velocity)
 		u_upper = ffz 
 		              * diff
 		              * RPMean(lower_cond, upper_cond, rpp[ip], 
-				       rpp[ip+sz_p]);
-
+				       rpp[ip+sz_p])* PMean(tp[ip], tp[ip+sz_p], ctcp[ip], ctcp[ip+sz_p]);
+//printf("ip %d  ###FG:  right %lf ,front %lf  ,upper %lf , fp %lf ,fpx1 %lf, fpy1 %lf, fpz1 %lf \n",ip,u_right,u_front,u_upper,tp[ip],tp[ip+1],tp[ip+sy_p],tp[ip+sz_p]);
 	        fp[ip]      += dt * ( u_right + u_front + u_upper );
 		fp[ip+1]    -= dt * u_right;
 		fp[ip+sy_p] -= dt * u_front;
@@ -570,11 +605,14 @@ Vector      *z_velocity)
 //            printf("##FG ip: %d ; i: %d ; j: %d ; k: %d ; fp[ip] %lf ; fp[ip+1] %lf ; fp[ipy] %lf ; fp[ipz] %lf \n",ip,i,j,k,fp[ip],fp[ip+1],fp[ip+sy_p],fp[ip+sz_p]);
 
 	     });
+
+
+
    }
 
 #endif
 
-#if 0
+#if 1
    /* Calculate contributions from convection*/
    ForSubgridI(is, GridSubgrids(grid))
    {             
@@ -623,24 +661,28 @@ Vector      *z_velocity)
       zvp = SubvectorData(zv_sub);
       r = SubgridRX(subgrid);
 
-//      ip = SubvectorEltIndex(t_sub, ix, iy, iz);
+      ip = SubvectorEltIndex(t_sub, ix, iy, iz);
  
-//      BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-//                ip, nx_p, ny_p, nz_p, 1, 1, 1,
-             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+      BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+                ip, nx_p, ny_p, nz_p, 1, 1, 1,
+//             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
              {
                 ip = SubvectorEltIndex(t_sub, i,j,k);
+//xvp[ip]=0.0;
+//yvp[ip]=0.0;
+//zvp[ip]=0.0;
+//printf("##FG ip: %d ; xvp: %e ; yvp: %e ; zvp: %e \n",ip,xvp[ip],yvp[ip],zvp[ip]);
                 /* Calculate right face temperature at i+1/2.
                    diff >= 0 implies flow goes left to right */
-                u_right = ffx * RPMean(0.0, xvp[ip], hcwp[ip+1]*(tp[ip+1]-273.15),      hcwp[ip]*(tp[ip]-273.15)) * xvp[ip]; 
+                u_right = ffx * RPMean(0.0, xvp[ip], hcwp[ip+1]*(tp[ip+1]),      hcwp[ip]*(tp[ip])) * xvp[ip]; 
                
                 /* Calculate front face velocity.
                    diff >= 0 implies flow goes back to front */
-                u_front = ffy * RPMean(0.0, yvp[ip], hcwp[ip+sy_p]*(tp[ip+sy_p]-273.15), hcwp[ip]*(tp[ip]-273.15)) * yvp[ip];
+                u_front = ffy * RPMean(0.0, yvp[ip], hcwp[ip+sy_p]*(tp[ip+sy_p]), hcwp[ip]*(tp[ip])) * yvp[ip];
  
                 /* Calculate upper face velocity.
                    diff >= 0 implies flow goes lower to upper */
-                u_upper = ffz * RPMean(0.0, zvp[ip], hcwp[ip+sz_p]*(tp[ip+sz_p]-273.15), hcwp[ip]*(tp[ip]-273.15)) * zvp[ip];
+                u_upper = ffz * RPMean(0.0, zvp[ip], hcwp[ip+sz_p]*(tp[ip+sz_p]), hcwp[ip]*(tp[ip])) * zvp[ip];
  
                 fp[ip]      += dt * ( u_right + u_front + u_upper);
                 fp[ip+1]    -= dt * u_right;
@@ -672,7 +714,8 @@ Vector      *z_velocity)
       yv_sub    = VectorSubvector(y_velocity, is);
       zv_sub    = VectorSubvector(z_velocity, is);
       po_sub    = VectorSubvector(porosity, is);
-
+      ctc_sub  = VectorSubvector(constThermalCond, is);
+      ctcp     = SubvectorData(ctc_sub);
       dx = SubgridDX(subgrid);
       dy = SubgridDY(subgrid);
       dz = SubgridDZ(subgrid);
@@ -733,22 +776,22 @@ Vector      *z_velocity)
 		  case -1:
 		     dir = -1;
    		     diff  = tp[ip-1] - tp[ip];
-		     u_old = ffx * (diff / dx ) * RPMean(tp[ip-1], tp[ip], rpp[ip-1], rpp[ip]); 
-//FGtest                  u_old+= ffx * RPMean(0.0, xvp[ip-1], hcwp[ip]*(tp[ip]-273.15),hcwp[ip-1]*(tp[ip-1]-273.15)) * xvp[ip-1];
+		     u_old = ffx * (diff / dx ) * RPMean(tp[ip-1], tp[ip], rpp[ip-1], rpp[ip])* PMean(tp[ip-1], tp[ip], ctcp[ip-1], ctcp[ip]); 
+                  u_old+= ffx * RPMean(0.0, xvp[ip-1], hcwp[ip]*(tp[ip]),hcwp[ip-1]*(tp[ip-1])) * xvp[ip-1];
  
                      diff = value - tp[ip];
 		     u_new = ffx * 2.0 * (diff/dx) * rpp[ip];
-//FGtest                     u_new+= ffx * RPMean(0.0, xvp[ip-1], hcwp[ip]*(tp[ip]-273.15),hcwp[ip]*(value-273.15)) * xvp[ip-1];
+                  u_new+= ffx * RPMean(0.0, xvp[ip-1], hcwp[ip]*(tp[ip]),hcwp[ip]*(value)) * xvp[ip-1];
 		     break;
 		  case  1:
 		     dir = 1;
    		     diff  = tp[ip] - tp[ip+1];
-		     u_old = ffx * (diff / dx ) * RPMean(tp[ip], tp[ip+1], rpp[ip], rpp[ip+1]); 
-//FGtest                     u_old+=ffx * RPMean(0.0, xvp[ip], hcwp[ip+1]*(tp[ip+1]-273.15), hcwp[ip]*(tp[ip]-273.15)) * xvp[ip];
+		     u_old = ffx * (diff / dx ) * RPMean(tp[ip], tp[ip+1], rpp[ip], rpp[ip+1])* PMean(tp[ip], tp[ip+1], ctcp[ip], ctcp[ip+1]); 
+                   u_old+=ffx * RPMean(0.0, xvp[ip], hcwp[ip+1]*(tp[ip+1]), hcwp[ip]*(tp[ip])) *xvp[ip];
 
 		     diff = tp[ip] - value;
 		     u_new = ffx * 2.0 * (diff/dx) * rpp[ip];
-//FGtest                     u_new+= ffx * RPMean(0.0, xvp[ip], hcwp[ip]*(value-273.15), hcwp[ip]*(tp[ip]-273.15)) * xvp[ip];
+                  u_new+= ffx * RPMean(0.0, xvp[ip], hcwp[ip]*(value), hcwp[ip]*(tp[ip])) * xvp[ip];
 		     break;
 		  }
 	       }
@@ -759,22 +802,22 @@ Vector      *z_velocity)
 		  case -1:
 		     dir = -1;
    		     diff  = tp[ip-sy_p] - tp[ip];
-		     u_old = ffy * (diff / dy )* RPMean(tp[ip-sy_p], tp[ip], rpp[ip-sy_p], rpp[ip]); 
-//FGtest                     u_old+= ffy * RPMean(0.0, yvp[ip-sy_p], hcwp[ip]*(tp[ip]-273.15),hcwp[ip-sy_p]*(tp[ip-sy_p]-273.15)) * yvp[ip-sy_p];
+		     u_old = ffy * (diff / dy )* RPMean(tp[ip-sy_p], tp[ip], rpp[ip-sy_p], rpp[ip])* PMean(tp[ip-sy_p], tp[ip], ctcp[ip-sy_p], ctcp[ip]); 
+                     u_old+= ffy * RPMean(0.0, yvp[ip-sy_p], hcwp[ip]*(tp[ip]),hcwp[ip-sy_p]*(tp[ip-sy_p])) * yvp[ip-sy_p];
 
 		     diff =  value - tp[ip];
 		     u_new = ffy * 2.0 * (diff / dy) * rpp[ip];
-//FGtest                     u_new+= ffy * RPMean(0.0, yvp[ip-sy_p], hcwp[ip]*(tp[ip]-273.15),hcwp[ip]*(value-273.15)) * yvp[ip-sy_p];
+                    u_new+= ffy * RPMean(0.0, yvp[ip-sy_p], hcwp[ip]*(tp[ip]),hcwp[ip]*(value)) * yvp[ip-sy_p];
 		     break;
 		  case  1:
 		     dir = 1;
    		     diff  = tp[ip] - tp[ip+sy_p];
-		     u_old = ffy * (diff / dy ) * RPMean(tp[ip], tp[ip+sy_p], rpp[ip], rpp[ip+sy_p]);
-//FGtest                     u_old+=ffy * RPMean(0.0, yvp[ip], hcwp[ip+sy_p]*(tp[ip+sy_p]-273.15), hcwp[ip]*(tp[ip]-273.15)) * yvp[ip];
+		     u_old = ffy * (diff / dy ) * RPMean(tp[ip], tp[ip+sy_p], rpp[ip], rpp[ip+sy_p])* PMean(tp[ip], tp[ip+sy_p], ctcp[ip], ctcp[ip+sy_p]);
+                    u_old+=ffy * RPMean(0.0, yvp[ip], hcwp[ip+sy_p]*(tp[ip+sy_p]), hcwp[ip]*(tp[ip])) * yvp[ip];
 
 		     diff = tp[ip] - value;
 		     u_new = ffy * 2.0 *(diff/dy) * rpp[ip];
-//FGtest                     u_new+= ffy * RPMean(0.0, yvp[ip], hcwp[ip]*(value-273.15), hcwp[ip]*(tp[ip]-273.15)) * yvp[ip];
+                   u_new+= ffy * RPMean(0.0, yvp[ip], hcwp[ip]*(value), hcwp[ip]*(tp[ip])) * yvp[ip];
 		     break;
 		  }
 	       }
@@ -786,29 +829,28 @@ Vector      *z_velocity)
 		     {
 		     dir = -1;
 		     diff = tp[ip-sz_p] - tp[ip];
-		     u_old = ffz * diff/dz * RPMean(tp[ip-sz_p], tp[ip], rpp[ip-sz_p], rpp[ip]); 
-//FGtest                     u_old+= ffz * RPMean(0.0, zvp[ip-sz_p], hcwp[ip]*(tp[ip]-273.15),hcwp[ip-sz_p]*(tp[ip-sz_p]-273.15)) * zvp[ip-sz_p];
+		     u_old = ffz * diff/dz * RPMean(tp[ip-sz_p], tp[ip], rpp[ip-sz_p], rpp[ip])* PMean(tp[ip-sz_p], tp[ip], ctcp[ip-sz_p], ctcp[ip]); 
+                  u_old+= ffz * RPMean(0.0,  zvp[ip-sz_p], hcwp[ip]*(tp[ip]),hcwp[ip-sz_p]*(tp[ip-sz_p])) * zvp[ip-sz_p];
 
 		     diff = value - tp[ip];
 		     u_new = ffz * 2.0 * (diff/dz) * rpp[ip];
-//FGtest                     u_new+= ffz * RPMean(0.0, zvp[ip-sz_p], hcwp[ip]*(tp[ip]-273.15),hcwp[ip]*(value-273.15)) * zvp[ip-sz_p];
+                 u_new+= ffz * RPMean(0.0,  zvp[ip-sz_p], hcwp[ip]*(tp[ip]),hcwp[ip]*(value)) * zvp[ip-sz_p];
 		     break;
 		     }   /* End case -1 */
 		  case  1:
 		     {
 		     dir = 1;
 		     diff = tp[ip] - tp[ip+sz_p];
-		     u_old = ffz * diff/dz * RPMean(tp[ip], tp[ip+sz_p], rpp[ip], rpp[ip+sz_p]);
-//FGtest                     u_old+=ffz * RPMean(0.0, zvp[ip], hcwp[ip+sz_p]*(tp[ip+sz_p]-273.15), hcwp[ip]*(tp[ip]-273.15)) * zvp[ip];
+		     u_old = ffz * diff/dz * RPMean(tp[ip], tp[ip+sz_p], rpp[ip], rpp[ip+sz_p])* PMean(tp[ip], tp[ip+sz_p], ctcp[ip], ctcp[ip+sz_p]);
+                 u_old+=ffz * RPMean(0.0, zvp[ip], hcwp[ip+sz_p]*(tp[ip+sz_p]), hcwp[ip]*(tp[ip])) *  zvp[ip];
 
 		     diff = tp[ip] - value;
 		     u_new = ffz * 2.0 * (diff/dz) * rpp[ip];
-//FGtest                     u_new+= ffz * RPMean(0.0, zvp[ip], hcwp[ip]*(value-273.15), hcwp[ip]*(tp[ip]-273.15)) * zvp[ip];
+                u_new+= ffz * RPMean(0.0, zvp[ip], hcwp[ip]*(value), hcwp[ip]*(tp[ip])) *  zvp[ip];
 		     break;
 		     }   /* End case 1 */
 		  }
 	       }
-
 	       /* Remove the boundary term computed above */
 	       fp[ip] -= dt * dir * u_old;
 
@@ -835,8 +877,11 @@ Vector      *z_velocity)
 		     u_old = ffx 
 		       * (diff / dx )
 		       * RPMean(tp[ip-1], tp[ip], 
-				rpp[ip-1], rpp[ip]); 
-//FGtest                     u_old+= ffx * RPMean(0.0, xvp[ip-1], hcwp[ip]*(tp[ip]-273.15),hcwp[ip-1]*(tp[ip-1]-273.15)) * xvp[ip-1];
+				rpp[ip-1], rpp[ip])* PMean(tp[ip-1], tp[ip], ctcp[ip-1], ctcp[ip]); 
+                     u_old+= ffx * RPMean(0.0, xvp[ip-1], hcwp[ip]*(tp[ip]),hcwp[ip-1]*(tp[ip-1])) * xvp[ip-1];
+
+                     u_new  = ffx * RPMean(0.0, xvp[ip-1], hcwp[ip]*(tp[ip]),hcwp[ip]*(bc_patch_values[ival]*dx/2) / rpp[ip] + tp[ip]) * xvp[ip-1];
+                    u_new += ffx *  bc_patch_values[ival];
 		     break;
 		  case  1:
 		     dir = 1;
@@ -844,11 +889,13 @@ Vector      *z_velocity)
 		     u_old = ffx 
 		       * (diff / dx )
 		       * RPMean(tp[ip], tp[ip+1], 
-				rpp[ip], rpp[ip+1]); 
-//FGtest                     u_old+=ffx * RPMean(0.0, xvp[ip], hcwp[ip+1]*(tp[ip+1]-273.15), hcwp[ip]*(tp[ip]-273.15)) * xvp[ip];
+				rpp[ip], rpp[ip+1])* PMean(tp[ip], tp[ip+1], ctcp[ip], ctcp[ip+1]); 
+                     u_old+=ffx * RPMean(0.0, xvp[ip], hcwp[ip+1]*(tp[ip+1]), hcwp[ip]*(tp[ip])) * xvp[ip];
+
+                     u_new = ffx * RPMean(0.0, xvp[ip], hcwp[ip]*(bc_patch_values[ival]*dx/2) / rpp[ip] + tp[ip], hcwp[ip]*tp[ip]) * xvp[ip];
+                    u_new += ffx * bc_patch_values[ival];
 		     break;
 		  }
-		  u_new = ffx;
 	       }
 	       else if (fdir[1])
 	       {
@@ -860,8 +907,11 @@ Vector      *z_velocity)
 		     u_old = ffy 
 		       * (diff / dy )
 		       * RPMean(tp[ip-sy_p], tp[ip], 
-				rpp[ip-sy_p], rpp[ip]); 
-//FGtest                     u_old+= ffy * RPMean(0.0, yvp[ip-sy_p], hcwp[ip]*(tp[ip]-273.15),hcwp[ip-sy_p]*(tp[ip-sy_p]-273.15)) * yvp[ip-sy_p];
+				rpp[ip-sy_p], rpp[ip])* PMean(tp[ip-sy_p], tp[ip], ctcp[ip-sy_p], ctcp[ip]); 
+                    u_old+= ffy * RPMean(0.0, yvp[ip-sy_p], hcwp[ip]*(tp[ip]),hcwp[ip-sy_p]*(tp[ip-sy_p])) * yvp[ip-sy_p];
+                     u_new  = ffy * RPMean(0.0, yvp[ip-sy_p], hcwp[ip]*(tp[ip]),hcwp[ip]*(bc_patch_values[ival]*dy/2) / rpp[ip] + tp[ip]) * yvp[ip-sy_p];
+
+		    u_new += ffy * bc_patch_values[ival];
 		     break;
 		  case  1:
 		     dir = 1;
@@ -869,11 +919,13 @@ Vector      *z_velocity)
 		     u_old = ffy 
 		       * (diff / dy )
 		       * RPMean(tp[ip], tp[ip+sy_p], 
-				rpp[ip], rpp[ip+sy_p]);
-//FGtest                     u_old+=ffy * RPMean(0.0, yvp[ip], hcwp[ip+sy_p]*(tp[ip+sy_p]-273.15), hcwp[ip]*(tp[ip]-273.15)) * yvp[ip];
+				rpp[ip], rpp[ip+sy_p])* PMean(tp[ip], tp[ip+sy_p], ctcp[ip], ctcp[ip+sy_p]);
+                   u_old+=ffy * RPMean(0.0, yvp[ip], hcwp[ip+sy_p]*(tp[ip+sy_p]), hcwp[ip]*(tp[ip])) * yvp[ip];
+                     u_new = ffx * RPMean(0.0, yvp[ip], hcwp[ip]*(bc_patch_values[ival]*dy/2) / rpp[ip] + tp[ip], hcwp[ip]*tp[ip]) * yvp[ip];
+
+                    u_new += ffy *  bc_patch_values[ival];
 		     break;
 		  }
-		  u_new = ffy;
 	       }
 	       else if (fdir[2])
 	       {
@@ -887,8 +939,11 @@ Vector      *z_velocity)
 		     u_old = ffz 
 		       * diff
 		       * RPMean(lower_cond, upper_cond, 
-				rpp[ip-sz_p], rpp[ip]); 
-                  //   u_old+= ffz * RPMean(0.0, zvp[ip-sz_p], hcwp[ip]*(tp[ip]-273.15),hcwp[ip-sz_p]*(tp[ip-sz_p]-273.15)) * zvp[ip-sz_p];
+				rpp[ip-sz_p], rpp[ip])* PMean(tp[ip-sz_p], tp[ip], ctcp[ip-sz_p], ctcp[ip]); 
+                     u_old+= ffz * RPMean(0.0, zvp[ip-sz_p], hcwp[ip]*(tp[ip]),hcwp[ip-sz_p]*(tp[ip-sz_p])) * zvp[ip-sz_p];
+                     u_new  = ffz * RPMean(0.0, zvp[ip-sz_p], hcwp[ip]*(tp[ip]),hcwp[ip]*(bc_patch_values[ival]*dz/2) / rpp[ip] + tp[ip]) * zvp[ip-sz_p];
+
+	             u_new += ffz * bc_patch_values[ival];
 		     break;
 		  case  1:
 		     dir = 1;
@@ -898,13 +953,15 @@ Vector      *z_velocity)
 		     u_old = ffz 
 		       * diff
 		       * RPMean(lower_cond, upper_cond,
-				rpp[ip], rpp[ip+sz_p]);
-                    // u_old+=ffz * RPMean(0.0, zvp[ip], hcwp[ip+sz_p]*(tp[ip+sz_p]-273.15), hcwp[ip]*(tp[ip]-273.15)) * zvp[ip];
+				rpp[ip], rpp[ip+sz_p])* PMean(tp[ip], tp[ip+sz_p], ctcp[ip], ctcp[ip+sz_p]);
+                     u_old+=ffz * RPMean(0.0, zvp[ip], hcwp[ip+sz_p]*(tp[ip+sz_p]), hcwp[ip]*(tp[ip])) * zvp[ip];
+                     u_new = ffz * RPMean(0.0, zvp[ip], hcwp[ip]*(bc_patch_values[ival]*dz/2) / rpp[ip] + tp[ip], hcwp[ip]*tp[ip]) * zvp[ip];
+
+		     u_new += ffz * bc_patch_values[ival];
 		     break;
 		  }
-		  u_new = ffz;
 	       }
-
+//printf("ip %d  ###FG:   fpv %lf , fpn %lf  \n",ip,fp[ip],fp[ip]-(dt * dir * u_old));
 	       /* Remove the boundary term computed above */
 	       fp[ip] -= dt * dir * u_old;
 	       /*
@@ -912,7 +969,6 @@ Vector      *z_velocity)
 		  printf("f before flux BC additions: %12.8f \n", fp[ip]);
 		  */
 	       /* Add the correct boundary term */
-	       u_new = u_new * bc_patch_values[ival];
 	       fp[ip] += dt * dir * u_new;
                 //printf("Der %d %d %d %d %e \n",ip,i,j,k,fp[ip]);
 	       /*

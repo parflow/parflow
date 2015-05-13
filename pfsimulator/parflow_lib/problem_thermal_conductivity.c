@@ -123,8 +123,7 @@ int          fcn)               /* Flag determining what to calculate
    (void) gravity;
 
    /* Initialize thermal conductivity to 0.0 */
- if ( fcn == CALCFCN )  InitVectorAll(phase_thermalconductivity,1.2);
- else InitVectorAll(phase_thermalconductivity,0.0); 
+ InitVectorAll(phase_thermalconductivity,0.0);
    switch((public_xtra -> type))
    {
 
@@ -138,7 +137,7 @@ int          fcn)               /* Flag determining what to calculate
       num_regions    = (dummy0 -> num_regions);
       region_indices = (dummy0 -> region_indices);
       values         = (dummy0 -> values);
-
+/*
      for (ir = 0; ir < num_regions; ir++)
       {
          gr_solid = ProblemDataGrSolid(problem_data, region_indices[ir]);
@@ -171,7 +170,7 @@ int          fcn)               /* Flag determining what to calculate
 
                });
             }
-            else  /* fcn = CALCDER */
+            else  // fcn = CALCDER /
             {
                GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                               nx, ny, nz,
@@ -180,11 +179,11 @@ int          fcn)               /* Flag determining what to calculate
                                           i+fdir[0], j+fdir[1], k+fdir[2]);
                   ptdat[ips] = 0.0;
                });
-            }   /* End else clause */
-         }      /* End subgrid loop */
-      }         /* End loop over regions */
+            }   // End else clause /
+         }      // End subgrid loop /
+      }         // End loop over regions /
 
-
+*/
       for (ir = 0; ir < num_regions; ir++)
       {
 	 gr_solid = ProblemDataGrSolid(problem_data, region_indices[ir]);

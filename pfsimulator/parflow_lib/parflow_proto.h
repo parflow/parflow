@@ -518,12 +518,20 @@ double N_VMinQuotient_PF(N_Vector num, N_Vector denom);
 /* new_endpts.c */
 void NewEndpts (double *alpha , double *beta , double *pp , int *size_ptr , int n , double *a_ptr , double *b_ptr , double *cond_ptr , double ereps );
 
-typedef void (*PressFunctionEvalInvoke) (Vector *pressure , Vector *fval , ProblemData *problem_data , Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , double dt , double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx);
+typedef void (*PressFunctionEvalInvoke) (Vector *pressure , Vector *fval , ProblemData *problem_data , Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , double dt , double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx
+#ifdef withTemperature
+,Vector *x_velocity, Vector *y_velocity, Vector *z_velocity
+#endif
+);
 typedef PFModule *(*PressFunctionEvalInitInstanceXtraInvoke) (Problem *problem , Grid *grid , double *temp_data );
 
 /* press_function_eval.c */
 void KINSolFunctionEval (int size , N_Vector speciesNVector , N_Vector fval , void *current_state );
-void PressFunctionEval (Vector *pressure , Vector *fval , ProblemData *problem_data , Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , double dt , double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx);
+void PressFunctionEval (Vector *pressure , Vector *fval , ProblemData *problem_data , Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , double dt , double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx
+#ifdef withTemperature
+,Vector *x_velocity, Vector *y_velocity, Vector *z_velocity
+#endif
+);
 PFModule *PressFunctionEvalInitInstanceXtra (Problem *problem , Grid *grid , double *temp_data );
 void PressFunctionEvalFreeInstanceXtra (void );
 PFModule *PressFunctionEvalNewPublicXtra (void );

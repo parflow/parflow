@@ -128,7 +128,7 @@ Problem     *problem)    /* General problem information */
    int           *region_indices;
 
    int            ix, iy, iz;
-   int            nx, ny, nz;
+   int            nx, ny, nz , nx_p , ny_p , nz_p;
    int            r;
 
    int            is, i, j, k, ips, iel, ipicv;
@@ -169,20 +169,26 @@ Problem     *problem)    /* General problem information */
 	    nx = SubgridNX(subgrid)+2;
 	    ny = SubgridNY(subgrid)+2;
 	    nz = SubgridNZ(subgrid)+2;
-	    
+	   
+      nx_p = SubvectorNX(ps_sub);
+      ny_p = SubvectorNY(ps_sub);
+      nz_p = SubvectorNZ(ps_sub);
+ 
 	    /* RDF: assume resolution is the same in all 3 directions */
 	    r = SubgridRX(subgrid);
 	    
 	    data = SubvectorData(ps_sub);
+ips = SubvectorEltIndex(ps_sub, ix, iy, iz);
 	    GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-            {
+//BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+//                ips, nx_p, ny_p, nz_p, 1, 1, 1,  
+          {
 	       ips = SubvectorEltIndex(ps_sub, i, j, k); /*#define SubvectorEltIndex(subvector, x, y, z) \
 														(((x) - SubvectorIX(subvector)) + \
 														(((y) - SubvectorIY(subvector)) + \
 														(((z) - SubvectorIZ(subvector))) * \
 															SubvectorNY(subvector)) * \
 															SubvectorNX(subvector))*/
-
 	       data[ips] = values[ir];
 	    });
 	 }     /* End of subgrid loop */
