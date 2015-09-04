@@ -272,6 +272,9 @@ EXPORT(int,Parflow_Init)(Tcl_Interp *interp)
    Tcl_CreateCommand(interp, "Parflow::pfflintslawbybasin", (Tcl_CmdProc *)FlintsLawByBasinCommand,
                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
 
+    //NBE: Adding another write module
+   Tcl_CreateCommand(interp, "Parflow::pfvtksave", (Tcl_CmdProc *)SavePFVTKCommand,
+                      (ClientData) data, (Tcl_CmdDeleteProc *) NULL);
 
 #ifdef SGS
    Tcl_CreateExitHandler((Tcl_ExitProc *)PFTExitProc, (ClientData) data);

@@ -1281,6 +1281,7 @@ int               SavePFCommand(
    Tcl_HashEntry *entryPtr; 
    Databox       *databox;
 
+    
 
    /* The command three arguments */
 
@@ -1398,6 +1399,345 @@ int               SavePFCommand(
    return TCL_OK;
 }
 
+/*-----------------------------------------------------------------------
+ * routine for `pfvtksave' command
+ * Description: The first argument to this command is the hashkey of the
+ *              dataset to be saved, the second is the format of the
+ *              file the data is to be saved in. The remaining arguments
+ *              are optional and can be in any order.
+ * Cmd. syntax: pftkvsave dataset -filetype filename [-flt -dem demname -var variable name]
+ * NBE: May 2015
+ *-----------------------------------------------------------------------*/
+
+int SavePFVTKCommand(
+    ClientData        clientData,
+    Tcl_Interp       *interp,
+    int               argc,
+    char             *argv[])
+{
+    Data          *data = (Data *)clientData;
+    
+    char          *filename;
+    char          *varname;
+    int           i,j,k;
+    int           flt=0;
+    char          *dzlist_in;
+    char*         Endp1;
+    int           dz_els;
+
+    FILE          *fp = NULL;
+    
+    char          *hashkey, *demhash;
+    Tcl_HashEntry *entryPtr;
+    Databox       *databox, *databox2;
+    
+// Fail based on number of arguments
+    if ((argc < 4) || (argc > 11))
+    {
+        printf("ERROR: Wrong number of arguments");
+        return TCL_ERROR;
+    }
+    
+    if (strcmp(argv[2],"-vtk")==0) {
+        // Do nothing
+    } else if (strcmp(argv[2],"–vtk")==0) {
+        argv[2] = "-vtk"; // Corrects long dash if present
+    } else if (strcmp(argv[2],"-clmvtk")==0) {
+        // Do nothing
+    } else if (strcmp(argv[2],"–clmvtk")==0) {
+        argv[2] = "-clmvtk"; // Corrects long dash if present
+    } else {
+        printf("ERROR: Invalid file type. Must be vtk or clmvtk");
+        return TCL_ERROR;
+    }
+    
+    filename = argv[3];
+    
+    // Initialize to stop the warning
+    hashkey = argv[1];
+    demhash = argv[2];
+    
+    varname="variable"; // Initialize some defaults
+    dzlist_in="-999999";
+    
+    /* Scan through the argument list and match options */
+    for (i=4; i < argc; ++i ) {
+        if ((strcmp(argv[i],"-flt")==0) || (strcmp(argv[i],"–flt")==0)) {flt=1;}
+        if ((strcmp(argv[i],"-dem")==0) || (strcmp(argv[i],"–dem")==0)) {demhash=argv[i+1];}
+        if ((strcmp(argv[i],"-var")==0) || (strcmp(argv[i],"–var")==0)) {varname=argv[i+1];}
+        if ((strcmp(argv[i],"-tfg")==0) || (strcmp(argv[i],"–tfg")==0)) {dzlist_in=argv[i+1];} // NBE 20150813
+
+//        printf("Arg[%i]: %s \n",i,argv[i]); //NBE
+    }
+    
+    if (strcmp(dzlist_in,"-999999")!=0) {
+    dz_els = strtod (dzlist_in, &Endp1);
+    } else {
+        dz_els=1;
+    }
+
+    if (dz_els==0) {
+        printf("ERROR: dz_list has length zero \n");
+        return TCL_ERROR;
+    } else if (dz_els < 0) {
+        printf("ERROR: dz_list has length less than zero \n");
+        return TCL_ERROR;
+    }
+    
+    double        dzlst[dz_els];
+
+    if (strcmp(dzlist_in,"-999999")!=0) {
+    for (i=0; i<dz_els; ++i) {
+        dzlst[i] = strtod (Endp1,&Endp1);
+    }
+    } else {
+        dzlst[0]=1.0;
+    }
+    
+    /* Make sure the MAIN dataset exists */
+    if ((databox = DataMember(data, hashkey, entryPtr)) == NULL)
+    {
+        SetNonExistantError(interp, hashkey);
+        return TCL_ERROR;
+    }
+
+    if (argc == 4) { //ARGC LOGICAL
+        // Basic write, structured points
+        if ((fp = fopen(filename, "wb")) == NULL)
+        {
+            ReadWriteError(interp);
+            return TCL_ERROR;
+        }
+        
+        if ((strcmp(argv[2],"-vtk")==0) )  {
+            PrintVTK(fp, databox, varname,flt);
+        } else if ((strcmp(argv[2],"-clmvtk")==0)) {
+            PrintCLMVTK(fp, databox, varname,flt);
+        } else {
+            printf("ERROR: Invalid filetype \n");
+            return TCL_ERROR;
+        }
+        fclose(fp);
+    
+        return TCL_OK;
+    
+    } else {
+
+        if (strcmp(argv[2],demhash)==0) // Only a variable name was found
+        {
+        if ((fp = fopen(filename, "wb")) == NULL)
+        {
+            ReadWriteError(interp);
+            return TCL_ERROR;
+        }
+            if ((strcmp(argv[2],"-vtk")==0) )  {
+                PrintVTK(fp, databox, varname,flt);
+            } else if ((strcmp(argv[2],"-clmvtk")==0))  {
+                PrintCLMVTK(fp, databox, varname,flt);
+            } else {
+                printf("ERROR: Invalid filetype \n");
+                return TCL_ERROR;
+            }
+        fclose(fp);
+        
+        return TCL_OK;
+        }
+        
+    if ((demhash == NULL) || ((databox2 = DataMember(data, demhash, entryPtr)) == NULL))
+    {
+        printf( "WARNING: dem not found, reverting to structured point VTK \n" );
+        if ((fp = fopen(filename, "wb")) == NULL)
+        {
+            ReadWriteError(interp);
+            return TCL_ERROR;
+        }
+        if ((strcmp(argv[2],"-vtk")==0) )  {
+            PrintVTK(fp, databox, varname,flt);
+        } else if ((strcmp(argv[2],"-clmvtk")==0) )  {
+            PrintCLMVTK(fp, databox, varname,flt);
+        } else {
+            printf("ERROR: Invalid filetype \n");
+            return TCL_ERROR;
+        }
+        fclose(fp);
+        return TCL_OK;
+    }
+        
+        /* Since the dem was found, use it to shift the vertical */
+        
+        // Make sure the grids are same size
+        int    nx = DataboxNx(databox); // Data
+        int    ny = DataboxNy(databox);
+        int    nz = DataboxNz(databox);
+        int    nx2 = DataboxNx(databox2); // DEM
+        int    ny2 = DataboxNy(databox2);
+        int    nz2 = DataboxNz(databox2);
+       
+        if ( (nx != nx2) || (ny != ny2))
+        {
+            printf("ERROR: Grid dimensions do not match! \n");
+            return TCL_ERROR;
+        }
+
+        double x  = DataboxX(databox);
+        double y  = DataboxY(databox);
+        
+        double dx = DataboxDx(databox);
+        double dy = DataboxDy(databox);
+        double dz = DataboxDz(databox);
+        
+        int nxp = nx+1;
+        int nyp = ny+1;
+        int nzp = nz+1;
+        int nxyzp = nxp*nyp*nzp;
+        int n=0;
+
+        double *Xp;
+
+        double elev=0;
+        double zoffset=nz*dz;
+
+        /* CLM mode uses 1-layer, adjust accordingly */
+        int nzl=0;
+        
+        int imn,jmn,imx,jmx;
+        
+        if ((strcmp(argv[2],"-clmvtk")==0))  {
+            nzp = 2;
+            nzl = 0;
+            zoffset = dz;
+            Xp = (double*) malloc(sizeof(double) * (nxp*nyp*2)*3);
+            // Block for CLM case
+            for(k = nzl; k < nzp; ++k)  {
+                for(j = 0; j < nyp; ++j)  {
+                    for(i = 0; i < nxp; ++i)  {
+                        Xp[n] = x + i*dx;
+                        Xp[n+1] = y + j*dy;
+                        //
+                        if (1==0) {
+                            /* Simple method, use cell elevation, duplicate edge point */
+                            imn=0;
+                            jmn=0;
+                            if (i>=nx) {imn=-1;}
+                            if (j>=ny) {jmn=-1;}
+                            elev = *DataboxCoeff(databox2, i+imn, j+jmn, nz2-1);
+                            Xp[n+2] = elev - zoffset + dz*(double)k;
+                        } else {
+                            /*  Simple interpolation */
+                            imn=-1;
+                            jmn=-1;
+                            imx=0;
+                            jmx=0;
+                            if (i==0) { imn=0;}
+                            if (i>=nx) {imx=-1;}
+                            if (j==0) { jmn=0;}
+                            if (j>=ny) {jmx=-1;}
+                            elev = (*DataboxCoeff(databox2, i+imn, j+jmn, nz2-1) + *DataboxCoeff(databox2, i+imx, j+jmn, nz2-1) +
+                                    *DataboxCoeff(databox2, i+imn, j+jmx, nz2-1) + *DataboxCoeff(databox2, i+imx, j+jmx, nz2-1)) /4.0;
+                            Xp[n+2] = elev - zoffset + dz*(double)k;
+                        }
+                        n=n+3;
+                    }
+                }
+            }
+            // End block for CLM case
+        } else {
+            Xp = (double*) malloc(sizeof(double) * nxyzp*3);
+            
+            if ((strcmp(dzlist_in,"-999999")!=0) && (dz_els != (nzp-1))) {
+                printf("ERROR: Num els of Var_dz list not equal to nz!  \n");
+                return TCL_ERROR;
+            }
+            
+            // Block for normal datafiles
+            double c_dz[nzp];
+            c_dz[0] = 0.0;
+            
+            if (strcmp(dzlist_in,"-999999")!=0) {
+                zoffset = 0.0;
+                for (i=0; i<dz_els; ++i) {
+                    zoffset = zoffset + dzlst[i];
+                }
+                
+                for (i=1; i<nzp; ++i) {
+                    c_dz[i] = c_dz[i-1] + dzlst[i-1];
+                }
+            } else {
+                c_dz[0] = 0;
+                for (i=1; i<nzp; ++i) {
+                    c_dz[i] = c_dz[i-1] + dz;
+                }
+            }
+
+            /* compute point locations */
+            for(k = nzl; k < nzp; ++k)  {
+                for(j = 0; j < nyp; ++j)  {
+                    for(i = 0; i < nxp; ++i)  {
+                        Xp[n] = x + i*dx;
+                        Xp[n+1] = y + j*dy;
+                        //
+                        if (1==0) {
+                            /* Simple method, use cell elevation, duplicate edge point */
+                            imn=0;
+                            jmn=0;
+                            if (i>=nx) {imn=-1;}
+                            if (j>=ny) {jmn=-1;}
+                            elev = *DataboxCoeff(databox2, i+imn, j+jmn, nz2-1);
+                            //                        Xp[n+2] = elev - zoffset + dz*(double)k;  // NBE commented
+                            Xp[n+2] = elev - zoffset + c_dz[k];
+                        } else {
+                            /*  Simple interpolation */
+                            imn=-1;
+                            jmn=-1;
+                            imx=0;
+                            jmx=0;
+                            if (i==0) { imn=0;}
+                            if (i>=nx) {imx=-1;}
+                            if (j==0) { jmn=0;}
+                            if (j>=ny) {jmx=-1;}
+                            elev = (*DataboxCoeff(databox2, i+imn, j+jmn, nz2-1) + *DataboxCoeff(databox2, i+imx, j+jmn, nz2-1) +
+                                    *DataboxCoeff(databox2, i+imn, j+jmx, nz2-1) + *DataboxCoeff(databox2, i+imx, j+jmx, nz2-1)) /4.0;
+                            //                        Xp[n+2] = elev - zoffset + dz*(double)k; // NBE commented
+                            Xp[n+2] = elev - zoffset + c_dz[k];
+                        }
+                        n=n+3;
+                    }
+                }
+            }
+            
+            // End of normal block
+        }
+
+        /* Make sure the file could be opened, then write to it */
+        if ((fp = fopen(filename, "wb")) == NULL)
+        {
+            ReadWriteError(interp);
+            return TCL_ERROR;
+        }
+        if ((strcmp(argv[2],"-vtk")==0))  {
+            PrintTFG_VTK(fp, databox, Xp, varname,flt);
+            return TCL_OK;
+        } else if ((strcmp(argv[2],"-clmvtk")==0))  {
+            PrintTFG_CLMVTK(fp, databox, Xp, varname,flt);
+            return TCL_OK;
+        } else {
+            printf("ERROR: Invalid filetype \n");
+            return TCL_ERROR;
+        }
+        fclose(fp);
+        return TCL_OK;
+        
+    } // END OF ARGC LOGICAL
+   
+    /* Close the file, if still opened */
+    if(fp) {
+        fclose(fp);
+    }
+    return TCL_OK;
+}
+
+// END of PFVsave
+/* -------------------------------------------------------------------------------------- */
 
 #ifdef HAVE_HDF4
 
@@ -7064,6 +7404,7 @@ int            TopoDeficitCommand(
    }
 
    profilename  = argv[1];
+   profile   = 0; // Fixes compiler warning
    if ( strcmp(profilename,"Exponential")==0 )
    {
       profile   = 0;
