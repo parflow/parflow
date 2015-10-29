@@ -19,16 +19,19 @@ endif
 PARALLEL_TESTS =
 
 ifeq (${AMPS},mpi1)
-
-PARALLEL_TESTS += \
-	clm.tcl \
-	clm.jac.tcl
+ifeq (${PARFLOW_HAVE_CLM},yes)
+	PARALLEL_TESTS += \
+		clm.tcl \
+		clm.jac.tcl
+endif
 endif
 
 SAMRAI_TESTS :=
 ifeq (${PARFLOW_HAVE_SAMRAI},yes)
+ifeq (${PARFLOW_HAVE_CLM},yes)
 SAMRAI_TESTS += \
 	clm_samrai.tcl
+endif
 endif
 
 check: check_samrai check_sequential check_parallel
