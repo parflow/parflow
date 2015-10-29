@@ -234,6 +234,11 @@ AC_DEFUN([CASC_FIND_F77LIBS],
          dnl * LF_FLIBS creates variable $flibs_result containing a list of 
          dnl * flags related to the Fortran compiler
          LF_FLIBS
+
+	 # Remove whitespace between -l/-L and library/path name
+	 flibs_result=`echo $flibs_result | sed 's/-l\s\+/-l/gp'`
+	 flibs_result=`echo $flibs_result | sed 's/-L\s\+/-l/gp'	`
+
          for casc_flag in $flibs_result; do
 
             dnl * Here we sort the flags in $flibs_result
