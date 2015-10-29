@@ -787,7 +787,6 @@ with_silo
 with_sundials
 with_hypre
 with_samrai
-with_amps_sequential_io
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1463,7 +1462,7 @@ Optional Packages:
   --with-MPICC=ARG        ARG is mpicc or similar MPI C compiling tool
   --with-mpi-libs=LIBS    LIBS is space-separated list of library names
                           needed for MPI, e.g. \"nsl socket mpi\"
-  --with-amps=AMPS_TYPE   Set the version of AMPS to use: seq, mpi1, smpi, win32
+  --with-amps=AMPS_TYPE   Set the version of AMPS to use: seq, mpi1, oas3, smpi, win32
   --with-amps-sequential-io  Use AMPS sequentail I/O
   --with-cegdb=PATH        Use CEGDB and optionally specify
                             where CEGDB is installed.
@@ -2133,8 +2132,9 @@ if test "${with_clm+set}" = set; then
   withval=$with_clm;
 fi
 
+
 # Check whether --with-oas3 was given.
-if test "${with_oas3+set}" = set; then :
+if test "${with_oas3+set}" = set; then
   withval=$with_oas3;
 fi
 
@@ -5838,13 +5838,18 @@ _ACEOF
 
 fi
 
+
+
+
+
 PARFLOW_HAVE_OAS3="no"
 if test "$with_oas3" = "yes"; then
    PARFLOW_HAVE_OAS3="yes"
-   $as_echo "#define HAVE_OAS3 1" >>confdefs.h
+   cat >>confdefs.h <<\_ACEOF
+#define HAVE_OAS3 1
+_ACEOF
 
 fi
-
 
 
 if test -n "$with_F90"; then
@@ -7602,6 +7607,11 @@ else
     rm -f conftest.f conftest.o conftest
 
   FLIBS="$flibs_result"
+
+
+	 # Remove whitespace between -l/-L and library/path name
+	 flibs_result=`echo $flibs_result | sed 's/-l\s\+/-l/gp'`
+	 flibs_result=`echo $flibs_result | sed 's/-L\s\+/-l/gp'`
 
          for casc_flag in $flibs_result; do
 
@@ -12667,20 +12677,14 @@ _ACEOF
 
 
 
-
-# Check whether --with-amps-with-sequential-io was given.
-if test "$with_amps_sequential_io" = yes; then
-$as_echo "Configuring ParFlow with AMPS Single File IO"
-else
 # Check whether --with-amps was given.
 if test "${with_amps+set}" = set; then
   withval=$with_amps; cat >>confdefs.h <<\_ACEOF
 #define AMPS_SPLIT_FILE 1
 _ACEOF
-fi
-$as_echo "Configuring ParFlow with AMPS Distributed File IO"
 
 fi
+
 
 # END CASC_SUPPORT_AMPS
 
@@ -14612,6 +14616,38 @@ fi
   LIB_PATH="$hypre_LIB_PATH $LIB_PATH"
   LIB_NAME="$hypre_LIB_NAME $LIB_NAME"
   INC_PATH="$hypre_INCLUDES $INC_PATH"
+
+  # Extract Hypre version number from config file
+  hypre_include_dir=`echo $hypre_INCLUDES | sed 's/-I//'`
+  hypre_version=`grep HYPRE_RELEASE_VERSION $hypre_include_dir/HYPRE_config.h`
+
+  set x $hypre_version
+  hypre_version=`echo ${4} | sed s/\"//g`
+
+  # Seperate Hypre config number into components
+  oldifs="$IFS"
+  IFS=.
+  set x $hypre_version
+  IFS="$oldifs"
+  PARFLOW_HYPRE_VERSION_MAJOR=${2}
+  PARFLOW_HYPRE_VERSION_MINOR=${3}
+  PARFLOW_HYPRE_VERSION_PATCH=${4}
+
+
+cat >>confdefs.h <<_ACEOF
+#define PARFLOW_HYPRE_VERSION_MAJOR $PARFLOW_HYPRE_VERSION_MAJOR
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define PARFLOW_HYPRE_VERSION_MINOR $PARFLOW_HYPRE_VERSION_MINOR
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define PARFLOW_HYPRE_VERSION_PATCH $PARFLOW_HYPRE_VERSION_PATCH
+_ACEOF
+
 
   { $as_echo "$as_me:$LINENO: checking whether HYPRE was compiled with MPI" >&5
 $as_echo_n "checking whether HYPRE was compiled with MPI... " >&6; }

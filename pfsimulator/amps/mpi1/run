@@ -135,36 +135,48 @@ esac
 #
 # Assume MPICH or OpenMPI based cluster
 #
-if [ "`mpirun 2> /dev/null`" = "Missing: program name" ] 
+if which mpirun >& /dev/null
 then
+    if [ "`mpirun 2> /dev/null`" = "Missing: program name" ] 
+    then
     #
     # MPICH
     #
-    if [ "$PBS_NODEFILE" = "" ]
+	if [ "$PBS_NODEFILE" = "" ]
+	then
+	    mpirun -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
+	else
+	    mpirun -machinefile $PBS_NODEFILE -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
+	fi
+    elif mpirun  2>&1 | grep -q "Open MPI"
     then
-       mpirun -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
-    else
-       mpirun -machinefile $PBS_NODEFILE -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
-   fi
-elif mpirun  2>&1 | grep -q "Open MPI"
-then
     #
     # OpenMPI
     #
-    mpirun -np $2  $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
-    exit 0
-elif mpirun  2>&1 | grep -q "mpirun"
-then
+	mpirun -np $2  $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
+	exit 0
+    elif mpirun  2>&1 | grep -q "mpirun"
+    then
     #
     # Other MPI
     #
-    mpirun -np $2  $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
+	mpirun -np $2  $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
+	exit 0
+    fi
+elif which aprun >& /dev/null
+then
+    #
+    # Cray
+    #
+    echo "aprun -n $2  $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt"
     exit 0
 else
+    #
+    # Default
+    #
     mpiexec -n $2 ${PARFLOW_DIR}/bin/$PROGRAM $1 2>&1 > $1.out.txt < /dev/null
     exit 0
 fi
-
 
 
 if [ "$DMALLOC_OPTIONS" ]; then

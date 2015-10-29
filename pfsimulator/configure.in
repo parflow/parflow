@@ -478,6 +478,26 @@ if test "${hypre_PREFIX+set}" = set; then
   LIB_NAME="$hypre_LIB_NAME $LIB_NAME"
   INC_PATH="$hypre_INCLUDES $INC_PATH"
 
+  # Extract Hypre version number from config file
+  hypre_include_dir=`echo $hypre_INCLUDES | sed 's/-I//'`
+  hypre_version=`grep HYPRE_RELEASE_VERSION $hypre_include_dir/HYPRE_config.h`
+
+  set x $hypre_version
+  hypre_version=`echo ${4} | sed s/\"//g`
+
+  # Seperate Hypre config number into components
+  oldifs="$IFS"
+  IFS=.
+  set x $hypre_version
+  IFS="$oldifs"
+  PARFLOW_HYPRE_VERSION_MAJOR=${2}
+  PARFLOW_HYPRE_VERSION_MINOR=${3}
+  PARFLOW_HYPRE_VERSION_PATCH=${4}
+
+  AC_DEFINE_UNQUOTED(PARFLOW_HYPRE_VERSION_MAJOR,$PARFLOW_HYPRE_VERSION_MAJOR,[Hypre version major])
+  AC_DEFINE_UNQUOTED(PARFLOW_HYPRE_VERSION_MINOR,$PARFLOW_HYPRE_VERSION_MINOR,[Hypre version minor])
+  AC_DEFINE_UNQUOTED(PARFLOW_HYPRE_VERSION_PATCH,$PARFLOW_HYPRE_VERSION_PATCH,[Hypre version patch])
+
   AC_MSG_CHECKING(whether HYPRE was compiled with MPI)
   if test "$hypre_MPI" = yes ; then
      AC_DEFINE([HYPRE_MPI],[1],[Hypre library is configured with MPI])
