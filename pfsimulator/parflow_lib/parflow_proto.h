@@ -277,6 +277,15 @@ double InfinityNorm (Vector *x );
 /* innerprod.c */
 double InnerProd (Vector *x , Vector *y );
 
+/* input_porosity.c */
+void InputPorosity (GeomSolid *geounit , GrGeomSolid *gr_geounit , Vector *field );
+PFModule *InputPorosityInitInstanceXtra (Grid *grid , double *temp_data );
+void InputPorosityFreeInstanceXtra (void );
+PFModule *InputPorosityNewPublicXtra (char *geom_name );
+void InputPorosityFreePublicXtra (void );
+int InputPorositySizeOfTempData (void );
+
+
 /* inputRF.c */
 void InputRF (GeomSolid *geounit , GrGeomSolid *gr_geounit , Vector *field , RFCondData *cdata );
 PFModule *InputRFInitInstanceXtra (Grid *grid , double *temp_data );

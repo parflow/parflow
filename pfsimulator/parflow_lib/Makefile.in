@@ -60,6 +60,7 @@ OBJS = \
 	hbt.o\
 	infinity_norm.o\
 	innerprod.o\
+        input_porosity.o\
 	inputRF.o\
 	input_database.o\
 	kinsol_nonlin_solver.o\

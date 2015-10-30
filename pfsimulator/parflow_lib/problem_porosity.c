@@ -316,7 +316,7 @@ PFModule   *PorosityNewPublicXtra()
    /*----------------------------------------------------------
     * The name array to map names to switch values 
     *----------------------------------------------------------*/
-   switch_na = NA_NewNameArray("Constant");
+   switch_na = NA_NewNameArray("Constant PFBFile");
 
    public_xtra = ctalloc(PublicXtra, 1);
 
@@ -362,6 +362,12 @@ PFModule   *PorosityNewPublicXtra()
 										ConstantPorosity, (geom_name));
 	    break;
 	 }
+         case 1:
+         {
+            (public_xtra -> PorosityFieldSimulators)[i] = PFModuleNewModuleType(PorosityFieldNewPublicXtraInvoke,
+                                                                                InputPorosity, (geom_name));
+            break;
+         }
 	 default:
 	 {
 	    InputError("Error: invalid porosity type <%s> for key <%s>\n",
