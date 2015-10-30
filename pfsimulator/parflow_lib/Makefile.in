@@ -113,6 +113,7 @@ OBJS = \
 	problem_phase_source.o\
 	problem_phase_viscosity.o\
 	problem_porosity.o\
+	problem_real_space_z.o\
 	problem_retardation.o\
 	problem_richards_bc_internal.o\
 	problem_saturation.o\

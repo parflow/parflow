@@ -45,7 +45,8 @@
 double         **CalcElevations(
    GeomSolid       *geom_solid,
    int              ref_patch,
-   SubgridArray    *subgrids)
+   SubgridArray    *subgrids,
+   ProblemData  *problem_data)
 {
    GrGeomSolid        *grgeom_solid;
 
@@ -54,10 +55,17 @@ double         **CalcElevations(
    Background         *bg = GlobalsBackground;
 
    Subgrid            *subgrid;
+
+   Vector      *z_mult            = ProblemDataZmult(problem_data);
+   Vector      *rsz                 = ProblemDataRealSpaceZ(problem_data);
+   Subvector   *z_mult_sub;
+   Subvector   *rsz_sub;
+   double      *z_mult_dat;
+   double      *rsz_dat;
 		  
    double            **elevation_arrays;
    double             *elevation_array;
-   double              z, dz2, zupper, zlower, zinit;
+   double              dz2, zupper, zlower, zinit;
 		  
    int	               ix, iy, iz;
    int	               nx, ny, nz;
@@ -65,7 +73,7 @@ double         **CalcElevations(
 		  
    int                *fdir;
 		  
-   int	               is, i,  j,  k, iel;
+   int	               is, i,  j,  k, iel,ival;
 	           
 
    /*-----------------------------------------------------
@@ -96,6 +104,11 @@ double         **CalcElevations(
    {
       subgrid = SubgridArraySubgrid(subgrids, is);
 
+      z_mult_sub = VectorSubvector(z_mult, is);
+      rsz_sub = VectorSubvector(rsz, is);
+      z_mult_dat = SubvectorData(z_mult_sub);
+      rsz_dat = SubvectorData(rsz_sub);
+
       /* RDF: assume resolutions are the same in all 3 directions */
       rz = SubgridRZ(subgrid);
 
@@ -122,9 +135,8 @@ double         **CalcElevations(
 	 if (fdir[2] != 0)
 	 {
 	    iel = (j-iy)*nx + (i-ix);
-	    z   = RealSpaceZ(k, rz) + fdir[2]*dz2;
-	    
-	    elevation_array[iel] = z;
+	    ival = SubvectorEltIndex(z_mult_sub, i,j,k);    
+	    elevation_array[iel] = rsz_dat[ival]+ fdir[2]*dz2*z_mult_dat[ival];
 	 }
 
       });

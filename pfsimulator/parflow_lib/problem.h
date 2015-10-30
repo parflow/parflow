@@ -102,7 +102,7 @@ typedef struct
 
   /* @RMM Variable dZ */
     PFModule  *dz_mult;         //rmm
-    
+    PFModule  *real_space_z;    
 } Problem;
 
 typedef struct
@@ -145,7 +145,7 @@ typedef struct
 
     /* @RMM variable dz  */
     Vector *dz_mult;
-    
+    Vector *rsz;    
 } ProblemData;
 
 /* Values of solver argument to NewProblem function */
@@ -202,6 +202,7 @@ typedef struct
 #define ProblemOverlandFlowEvalDiff(problem)          ((problem) -> overlandflow_eval_diff) //@RMM
 
 #define ProblemdzScale(problem)            ((problem) -> dz_mult)  //RMM
+#define ProblemRealSpaceZ(problem)            ((problem) -> real_space_z)
 
 /* boundary condition accessors */
 #define ProblemBCPressure(problem)                ((problem) -> bc_pressure)
@@ -250,6 +251,7 @@ typedef struct
 #define ProblemDataSSlopeX(problem_data)        ((problem_data) -> x_sslope) //RMM
 #define ProblemDataSSlopeY(problem_data)        ((problem_data) -> y_sslope) //RMM
 #define ProblemDataZmult(problem_data)          ((problem_data) -> dz_mult)  //RMM
+#define ProblemDataRealSpaceZ(problem_data)     ((problem_data) -> rsz)
 /*--------------------------------------------------------------------------
  * Misc macros
  *   RDF not quite right, maybe?

@@ -738,19 +738,21 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 
          // sep = dz*z_mult_dat[ip];
 
-//          lower_cond = pp[ip]/ sep   - 0.5 *(Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]))* dp[ip] * gravity  * 
-//             z_dir_g; 
+        //  lower_cond = pp[ip]/ sep   - 0.5 *(Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]))* dp[ip] * gravity  * 
+        //     z_dir_g; 
           
         //  sep = dz*z_mult_dat[ip+sz_p];
 
-//          upper_cond = pp[ip+sz_p] / sep  + 0.5*(Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]))* dp[ip+sz_p] * gravity * 
-//            z_dir_g; 
+       //   upper_cond = pp[ip+sz_p] / sep  + 0.5*(Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]))* dp[ip+sz_p] * gravity * 
+       //     z_dir_g; 
           
           //CPS
-          lower_cond = pp[ip]/ sep   - 0.5 * dp[ip] * gravity  * z_dir_g;
-          
-          upper_cond = pp[ip+sz_p] / sep  + 0.5*dp[ip+sz_p] * gravity *z_dir_g;
-          
+         
+          lower_cond = pp[ip]/ sep   - (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p]))  * dp[ip] * gravity  * z_dir_g;
+
+          upper_cond = pp[ip+sz_p] / sep  + (z_mult_dat[ip+sz_p]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) * dp[ip+sz_p] * gravity *z_dir_g;
+
+ 
           diff = (lower_cond - upper_cond);
 	 u_upper = ffz*del_x_slope*del_y_slope 
           * PMeanDZ(permzp[ip], permzp[ip+sz_p], z_mult_dat[ip],z_mult_dat[ip+sz_p])
@@ -1018,10 +1020,10 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
                //printf("case-1 %d %d %d %f %f  \n", i,j,k, z_mult_dat[ip],z_mult_dat[ip-sz_p]);
                 
 			   lower_cond = pp[ip-sz_p] / sep
-			      - 0.5*dp[ip-sz_p] * gravity *
+			      -  (z_mult_dat[ip-sz_p]/(z_mult_dat[ip]+z_mult_dat[ip-sz_p])) *dp[ip-sz_p] * gravity *
                  z_dir_g;
                 
-			   upper_cond = pp[ip]/ sep + 0.5* dp[ip] * gravity*
+			   upper_cond = pp[ip]/ sep + (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip-sz_p]))* dp[ip] * gravity*
                  z_dir_g;
                 
 			   diff = (lower_cond - upper_cond);
@@ -1059,10 +1061,10 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
                // printf("%d %d %d %f %f \n",i,j,k,pp[ip], pp[ip+sz_p]);
 
 
-                lower_cond = pp[ip]/sep  -  0.5* dp[ip] * gravity *
+                lower_cond = pp[ip]/sep  - (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) * dp[ip] * gravity *
                 z_dir_g; 
                 
-			   upper_cond = pp[ip+sz_p] /sep + 0.5*dp[ip+sz_p] * gravity  *
+			   upper_cond = pp[ip+sz_p] /sep + (z_mult_dat[ip+sz_p]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) *dp[ip+sz_p] * gravity  *
                 z_dir_g; 
                  
                 diff = (lower_cond - upper_cond);
@@ -1236,10 +1238,10 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
                    // sep = dz*z_mult_dat[ip];  //RMM
 
                      lower_cond = (pp[ip-sz_p] / sep) 
-			      - 0.5 * dp[ip-sz_p] * gravity*
+			      -  (z_mult_dat[ip]-sz_p/(z_mult_dat[ip]+z_mult_dat[ip-sz_p]))  * dp[ip-sz_p] * gravity*
                     z_dir_g;
                      
-			   upper_cond = (pp[ip] / sep) + 0.5 * dp[ip] * gravity*
+			   upper_cond = (pp[ip] / sep) + (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip-sz_p]))  * dp[ip] * gravity*
                     z_dir_g;
                      
 			   diff = lower_cond - upper_cond;
@@ -1256,11 +1258,11 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
               sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]);  //RMM
  //                   sep = dz*z_mult_dat[ip];  //RMM
 
-			   lower_cond = (pp[ip] / sep) - 0.5 * dp[ip] * gravity*
+			   lower_cond = (pp[ip] / sep) - (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) * dp[ip] * gravity*
                     z_dir_g;
                      
 			   upper_cond = (pp[ip+sz_p] / sep)
-			      + 0.5 * dp[ip+sz_p] * gravity*
+			      + (z_mult_dat[ip+sz_p]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) * dp[ip+sz_p] * gravity*
                     z_dir_g;
 			 
                      diff = lower_cond - upper_cond;
@@ -1422,9 +1424,9 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
                   //  sep = dz*z_mult_dat[ip];  //RMM
 
 			   lower_cond = (pp[ip-sz_p] / sep) 
-			      - 0.5 * dp[ip-sz_p] * gravity*
+			      - (z_mult_dat[ip-sz_p]/(z_mult_dat[ip]+z_mult_dat[ip-sz_p]))  * dp[ip-sz_p] * gravity*
                z_dir_g;
-			   upper_cond = (pp[ip] / sep) + 0.5 * dp[ip] * gravity*
+			   upper_cond = (pp[ip] / sep) + (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip-sz_p])) * dp[ip] * gravity*
                 z_dir_g;
                      
 			   diff = lower_cond - upper_cond;
@@ -1441,10 +1443,10 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
                     sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]);  //RMM
                   //   sep = dz*z_mult_dat[ip];  //RMM
 
-			   lower_cond = (pp[ip] / sep) - 0.5 * dp[ip] * gravity *
+			   lower_cond = (pp[ip] / sep) - (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) * dp[ip] * gravity *
                z_dir_g;
 			   upper_cond = (pp[ip+sz_p] / sep)
-			      + 0.5 * dp[ip+sz_p] * gravity *
+			      +  (z_mult_dat[ip+sz_p]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p]))  * dp[ip+sz_p] * gravity *
               z_dir_g;
 			   diff = lower_cond - upper_cond;
 			   u_old = ffz * del_x_slope* del_y_slope 

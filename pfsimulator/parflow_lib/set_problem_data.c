@@ -56,6 +56,7 @@ typedef struct
    PFModule  *y_slope; //sk
    PFModule  *mann; //sk
     PFModule  *dz_mult; //RMM
+   PFModule  *real_space_z;
    int        site_data_not_formed;
 
    /* InitInstanceXtra arguments */
@@ -88,7 +89,7 @@ void          SetProblemData(
    PFModule      *y_slope      = (instance_xtra -> y_slope); //sk
    PFModule      *mann         = (instance_xtra -> mann); //sk
        PFModule      *dz_mult         = (instance_xtra -> dz_mult); //sk
-
+   PFModule      *real_space_z         = (instance_xtra -> real_space_z);
    /* Note: the order in which these modules are called is important */
    PFModuleInvokeType(WellPackageInvoke, wells, (problem_data));
    if ( (instance_xtra -> site_data_not_formed) )
@@ -127,7 +128,10 @@ void          SetProblemData(
 			  ProblemDataPorosity(problem_data)));
       PFModuleInvokeType(dzScaleInvoke, dz_mult,                 //RMM
               (problem_data,
-              ProblemDataZmult(problem_data)));       
+              ProblemDataZmult(problem_data)));
+      PFModuleInvokeType(realSpaceZInvoke, real_space_z,                 
+              (problem_data,
+              ProblemDataRealSpaceZ(problem_data)));       
       (instance_xtra -> site_data_not_formed) = 0;
    }
 
@@ -210,6 +214,9 @@ PFModule  *SetProblemDataInitInstanceXtra(
      (instance_xtra -> dz_mult) =                                   //RMM
        PFModuleNewInstance(ProblemdzScale(problem), ());
 
+     (instance_xtra -> real_space_z) =                                   
+       PFModuleNewInstance(ProblemRealSpaceZ(problem), ());
+
       (instance_xtra -> site_data_not_formed) = 1;
 
       (instance_xtra -> wells) =
@@ -239,6 +246,7 @@ PFModule  *SetProblemDataInitInstanceXtra(
       PFModuleReNewInstanceType(ManningsInitInstanceXtraInvoke,
 				(instance_xtra -> mann), (grid, grid2d));    //sk
       PFModuleReNewInstance((instance_xtra -> dz_mult), ());    //RMM
+      PFModuleReNewInstance((instance_xtra -> real_space_z), ());
       PFModuleReNewInstance((instance_xtra -> wells), ());
       PFModuleReNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
 				(instance_xtra -> bc_pressure), (problem));
@@ -274,6 +282,7 @@ void  SetProblemDataFreeInstanceXtra()
       PFModuleFreeInstance(instance_xtra -> y_slope);   //sk
       PFModuleFreeInstance(instance_xtra -> mann);   //sk
        PFModuleFreeInstance(instance_xtra -> dz_mult);  // RMM
+       PFModuleFreeInstance(instance_xtra -> real_space_z);
       tfree(instance_xtra);
    }
 }

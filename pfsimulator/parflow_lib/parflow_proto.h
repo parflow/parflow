@@ -41,7 +41,7 @@ void BCPressurePackageFreePublicXtra (void );
 int BCPressurePackageSizeOfTempData (void );
 
 /* calc_elevations.c */
-double **CalcElevations (GeomSolid *geom_solid , int ref_patch , SubgridArray *subgrids );
+double **CalcElevations (GeomSolid *geom_solid , int ref_patch , SubgridArray *subgrids ,ProblemData  *problem_data );
 
 typedef void (*LinearSolverInvoke) (Vector *x , Vector *b , double tol , int zero );
 typedef PFModule *(*LinearSolverInitInstanceXtraInvoke) (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *A , double *temp_data );
@@ -706,6 +706,20 @@ void dzScaleFreeInstanceXtra (void );
 PFModule *dzScaleNewPublicXtra (void );
 void dzScaleFreePublicXtra (void );
 int dzScaleSizeOfTempData (void );
+
+
+typedef void (*realSpaceZInvoke) (ProblemData *problem_data, Vector *rsz );
+
+/* problem_real_space_z.c */
+void realSpaceZ (ProblemData *problem_data, Vector *rsz );
+PFModule *realSpaceZInitInstanceXtra (void );
+void realSpaceZFreeInstanceXtra (void );
+PFModule *realSpaceZNewPublicXtra (void );
+void realSpaceZFreePublicXtra (void );
+int realSpaceZSizeOfTempData (void );
+
+
+
 
 /* DOK - overlandfloweval */
 typedef void (*OverlandFlowEvalInvoke) (Grid *grid, 
