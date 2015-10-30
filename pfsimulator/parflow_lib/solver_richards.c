@@ -1969,7 +1969,7 @@ void AdvanceRichards(PFModule *this_module,
       /***************************************************************
        * Compute running sum of evap trans for water balance 
        **************************************************************/
-      if(public_xtra -> write_silo_evaptrans_sum) {
+      if(public_xtra -> write_silo_evaptrans_sum || public_xtra -> print_evaptrans_sum) {
 	 EvapTransSum(problem_data, dt, evap_trans_sum, evap_trans);
       }
 
