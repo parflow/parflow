@@ -93,13 +93,18 @@ int            GeomReadTSolids(
    GeomVertex      **vertices;
    GeomVertexArray  *vertex_array;
    GeomTriangle    **triangles;
-   int               nS, nT, nV;
+
+   double *invoiceDBuffer;
+   int *invoiceIBuffer;
+
+   int               nC, nS, nT, nV;
+   int 		     Csize, CsizeR, count;
 
    int             **patches;
    int               num_patches;
    int              *num_patch_triangles;
 
-   int               s, t, v, p;
+   int               c, s, t, v, p;
 		    
    char              *solids_filename;
    amps_File         solids_file;
@@ -149,18 +154,42 @@ int            GeomReadTSolids(
    amps_FreeInvoice(invoice);
    
    vertices     = ctalloc(GeomVertex *, nV);
-   
+  
+
    /* Read in all the vertices */
-   for (v = 0; v < nV; v++) 
-   {
-      vertices[v] = ctalloc(GeomVertex, 1);
+   /* FG: For performance reasons we load multiple values at once. 
+    * This needs extra memory (per default about 240kb with Csize = 10000). If this imposes problems you can reduce the Csize*/	 
+
+   /* FG: Calculate number of chunks */
+   Csize = 10000;	
+   nC = nV / Csize;
+   CsizeR = nV % Csize;
    
-      invoice = amps_NewInvoice("%d%d%d",
-				&GeomVertexX(vertices[v]),
-				&GeomVertexY(vertices[v]),
-				&GeomVertexZ(vertices[v]));
+   /* FG: one extra iteration with rest if nV was not evenly divisible */
+   if(CsizeR) nC++;  
+   count=0;
+   /* FG: Read in all vertice chunks */
+   for (c = 0; c < nC; c++) 
+   {
+      /* FG: if last iteration and not evenly divisible*/
+      if((c==nC-1)&&(CsizeR)) Csize = CsizeR;
+      invoiceDBuffer     = ctalloc(double, 3*Csize);      
+      invoice = amps_NewInvoice("%*d",3*Csize,invoiceDBuffer);
       amps_SFBCast(amps_CommWorld, solids_file, invoice);
       amps_FreeInvoice(invoice);
+
+      /* FG: copy invoiceBuffer to original data structure*/ 
+      for (v=0 ; v < Csize ; v++)
+      {
+	vertices[count] = ctalloc(GeomVertex, 1);
+	GeomVertexX(vertices[count]) = invoiceDBuffer[3*v];
+	GeomVertexY(vertices[count]) = invoiceDBuffer[3*v+1];	
+	GeomVertexZ(vertices[count]) = invoiceDBuffer[3*v+2];
+	count++;
+      }
+
+      tfree(invoiceDBuffer);
+
    }
    
    vertex_array = GeomNewVertexArray(vertices, nV);
@@ -182,17 +211,40 @@ int            GeomReadTSolids(
 
       triangles = ctalloc(GeomTriangle *, nT);
 
-      /* Read in the triangles */
-      for (t = 0; t < nT; t++) 
-      {
-	 triangles[t] = ctalloc(GeomTriangle, 1);
 
-         invoice = amps_NewInvoice("%i%i%i",
-				   &GeomTriangleV0(triangles[t]),
-				   &GeomTriangleV1(triangles[t]),
-				   &GeomTriangleV2(triangles[t]));
+      /* Read in the triangles */ 
+      /* FG: For performance reasons we load multiple values at once. 
+      * This needs extra memory (per default about 240kb with Csize = 10000). If this imposes problems you can reduce the Csize*/
+      /* FG: Calculate number of chunks */
+      Csize = 10000;
+      nC = nT / Csize;
+      CsizeR = nT % Csize;
+
+      /* FG: one extra iteration with rest if nT was not evenly divisible */
+      if(CsizeR) nC++;
+      count=0;
+      /* FG: Read in all triangle chunks */      
+      for (c = 0; c < nC; c++) 
+      {
+ 	 /* FG: if last iteration and not evenly divisible*/
+         if((c==nC-1)&&(CsizeR)) Csize = CsizeR;
+         invoiceIBuffer     = ctalloc(int, 3*Csize);
+         invoice = amps_NewInvoice("%*i",3*Csize,invoiceIBuffer);
          amps_SFBCast(amps_CommWorld, solids_file, invoice);
          amps_FreeInvoice(invoice);
+
+         /* FG: copy invoiceBuffer to original data structure*/
+         for (t=0 ; t < Csize ; t++)
+         {
+           triangles[count] = ctalloc(GeomTriangle, 1);
+           GeomTriangleV0(triangles[count]) = invoiceIBuffer[3*t];
+           GeomTriangleV1(triangles[count]) = invoiceIBuffer[3*t+1];
+           GeomTriangleV2(triangles[count]) = invoiceIBuffer[3*t+2];
+           count++;
+         }
+
+         tfree(invoiceIBuffer);
+
       }
 
       surface = GeomNewTIN(vertex_array, triangles, nT);
@@ -215,12 +267,15 @@ int            GeomReadTSolids(
 	 patches[p] = talloc(int, num_patch_triangles[p]);
 
 	 /* Read in the triangle indices */
-	 for (t = 0; t < num_patch_triangles[p]; t++)
-	 {
-	    invoice = amps_NewInvoice("%i", &patches[p][t]);
+//	 for (t = 0; t < num_patch_triangles[p]; t++)
+//	 {
+	    /* FG: send all patch_triangles at once*/
+	    invoice = amps_NewInvoice("%*i", num_patch_triangles[p] ,patches[p]);
 	    amps_SFBCast(amps_CommWorld, solids_file, invoice);
 	    amps_FreeInvoice(invoice);
-	 }
+//	 }
+
+
       }
 
       solids_data[s] =
