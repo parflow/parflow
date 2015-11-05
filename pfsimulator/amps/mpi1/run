@@ -168,7 +168,7 @@ then
     #
     # Cray
     #
-    echo "aprun -n $2  $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt"
+    aprun -n $2  $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
     exit 0
 else
     #
