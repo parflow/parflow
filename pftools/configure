@@ -9701,8 +9701,8 @@ _ACEOF
 # Check whether --with-amps-sequential-io was given.
 if test "${with_amps_sequential_io+set}" = set; then
   withval=$with_amps_sequential_io; if test "x$with_amps_sequential_io" = xyes; then
-  { $as_echo "$as_me:$LINENO: result: configuring with AMPS sequential I/O" >&5
-$as_echo "configuring with AMPS sequential I/O" >&6; }
+  { $as_echo "$as_me:$LINENO: result: Configuring with AMPS sequential I/O" >&5
+$as_echo "Configuring with AMPS sequential I/O" >&6; }
 else
   cat >>confdefs.h <<\_ACEOF
 #define AMPS_SPLIT_FILE 1
@@ -9711,9 +9711,13 @@ _ACEOF
 fi
 
 else
-  cat >>confdefs.h <<\_ACEOF
+
+	{ $as_echo "$as_me:$LINENO: result: Configuring with AMPS distributed I/O" >&5
+$as_echo "Configuring with AMPS distributed I/O" >&6; }
+        cat >>confdefs.h <<\_ACEOF
 #define AMPS_SPLIT_FILE 1
 _ACEOF
+
 
 
 fi
