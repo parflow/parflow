@@ -51,9 +51,10 @@ AC_SUBST(AMPS_LIBS)
 AC_SUBST(AMPS_LIB_DEPEND)
 AC_DEFINE_UNQUOTED(AMPS,$AMPS,AMPS porting layer)
 
-AC_ARG_WITH(amps,
+AC_ARG_WITH(amps-sequential-io,
 [  --with-amps-sequential-io  Use AMPS sequentail I/O],
-  AC_DEFINE(AMPS_SPLIT_FILE),
+   [AS_IF([test "x$with_amps_sequential_io" = xyes], [AC_MSG_RESULT([configuring with AMPS sequential I/O])], [AC_DEFINE(AMPS_SPLIT_FILE)])],
+   [AC_DEFINE(AMPS_SPLIT_FILE)]
 )
 
 # END CASC_SUPPORT_AMPS

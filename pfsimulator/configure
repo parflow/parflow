@@ -779,6 +779,7 @@ with_mpi_lib_dirs
 with_mpi_flags
 with_MPICC
 with_amps
+with_amps_sequential_io
 with_cegdb
 with_zlib
 with_szlib
@@ -12677,11 +12678,23 @@ _ACEOF
 
 
 
-# Check whether --with-amps was given.
-if test "${with_amps+set}" = set; then
-  withval=$with_amps; cat >>confdefs.h <<\_ACEOF
+# Check whether --with-amps-sequential-io was given.
+if test "${with_amps_sequential_io+set}" = set; then
+  withval=$with_amps_sequential_io; if test "x$with_amps_sequential_io" = xyes; then
+  { $as_echo "$as_me:$LINENO: result: configuring with AMPS sequential I/O" >&5
+$as_echo "configuring with AMPS sequential I/O" >&6; }
+else
+  cat >>confdefs.h <<\_ACEOF
 #define AMPS_SPLIT_FILE 1
 _ACEOF
+
+fi
+
+else
+  cat >>confdefs.h <<\_ACEOF
+#define AMPS_SPLIT_FILE 1
+_ACEOF
+
 
 fi
 
