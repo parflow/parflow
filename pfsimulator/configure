@@ -6692,7 +6692,7 @@ fi
 
           ;;
           # Ignore these flags.
-        -lang* | -lcrt*.o | -lc | -lgcc* | -lSystem | -libmil | -LANG:=* | -LIST:* | -LNO:*)
+        -lang* | -lcrt*.o | -lc | -lgcc* | -lSystem | -libmil | -LANG:=* | -LIST:* | -LNO:* | -ltcmalloc_minimal)
           ;;
         -lkernel32)
           test x"$CYGWIN" != xyes && ac_cv_fc_libs="$ac_cv_fc_libs $ac_arg"
@@ -7607,7 +7607,6 @@ else
   fi
     rm -f conftest.f conftest.o conftest
 
-  FLIBS="$flibs_result"
 
 
 	 # Remove whitespace between -l/-L and library/path name
@@ -10771,7 +10770,7 @@ fi
 
           ;;
           # Ignore these flags.
-        -lang* | -lcrt*.o | -lc | -lgcc* | -lSystem | -libmil | -LANG:=* | -LIST:* | -LNO:*)
+        -lang* | -lcrt*.o | -lc | -lgcc* | -lSystem | -libmil | -LANG:=* | -LIST:* | -LNO:* | -ltcmalloc_minimal)
           ;;
         -lkernel32)
           test x"$CYGWIN" != xyes && ac_cv_f77_libs="$ac_cv_f77_libs $ac_arg"

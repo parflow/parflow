@@ -9101,7 +9101,7 @@ fi
 
           ;;
           # Ignore these flags.
-        -lang* | -lcrt*.o | -lc | -lgcc* | -lSystem | -libmil | -LANG:=* | -LIST:* | -LNO:*)
+        -lang* | -lcrt*.o | -lc | -lgcc* | -lSystem | -libmil | -LANG:=* | -LIST:* | -LNO:* | -ltcmalloc_minimal)
           ;;
         -lkernel32)
           test x"$CYGWIN" != xyes && ac_cv_f77_libs="$ac_cv_f77_libs $ac_arg"
@@ -9760,6 +9760,10 @@ $as_echo_n "checking for TCL installation... " >&6; }
         tcl_PREFIX=${dir}
 	tcl_INCLUDES="-I${tcl_PREFIX}/include/tcl8.5"
         break
+      elif test -f ${dir}/include/tcl8.6/tcl.h; then
+        tcl_PREFIX=${dir}
+	tcl_INCLUDES="-I${tcl_PREFIX}/include/tcl8.6"
+        break
       else
         { { $as_echo "$as_me:$LINENO: error: TCL not found in /usr or /usr/local" >&5
 $as_echo "$as_me: error: TCL not found in /usr or /usr/local" >&2;}
@@ -9786,6 +9790,10 @@ $as_echo_n "checking for TCL installation... " >&6; }
         tcl_PREFIX=${dir}
 	tcl_INCLUDES="-I${tcl_PREFIX}/include/tcl8.5"
         break
+      elif test -f ${dir}/include/tcl8.6/tcl.h; then
+        tcl_PREFIX=${dir}
+	tcl_INCLUDES="-I${tcl_PREFIX}/include/tcl8.6"
+        break
       else
         { $as_echo "$as_me:$LINENO: result: $tcl_PREFIX" >&5
 $as_echo "$tcl_PREFIX" >&6; }
@@ -9801,7 +9809,11 @@ esac
 if test "${tcl_PREFIX+set}" = set; then
    { $as_echo "$as_me:$LINENO: checking for TCL library" >&5
 $as_echo_n "checking for TCL library... " >&6; }
-   if test -f ${tcl_PREFIX}/lib/libtcl8.5.so; then
+   if test -f ${tcl_PREFIX}/lib/libtcl8.6.so; then
+      tcl_LIBS='-ltcl8.6'
+      { $as_echo "$as_me:$LINENO: result: using $tcl_LIBS" >&5
+$as_echo "using $tcl_LIBS" >&6; }
+   elif test -f ${tcl_PREFIX}/lib/libtcl8.5.so; then
       tcl_LIBS='-ltcl8.5'
       { $as_echo "$as_me:$LINENO: result: using $tcl_LIBS" >&5
 $as_echo "using $tcl_LIBS" >&6; }
@@ -9811,6 +9823,10 @@ $as_echo "using $tcl_LIBS" >&6; }
 $as_echo "using $tcl_LIBS" >&6; }
    elif test -f ${tcl_PREFIX}/lib/libtcl.so; then
       tcl_LIBS='-ltcl'
+      { $as_echo "$as_me:$LINENO: result: using $tcl_LIBS" >&5
+$as_echo "using $tcl_LIBS" >&6; }
+   elif test -f ${tcl_PREFIX}/lib/libtcl8.6.dylib; then
+      tcl_LIBS='-ltcl8.6'
       { $as_echo "$as_me:$LINENO: result: using $tcl_LIBS" >&5
 $as_echo "using $tcl_LIBS" >&6; }
    elif test -f ${tcl_PREFIX}/lib/libtcl8.5.dylib; then
@@ -9823,6 +9839,10 @@ $as_echo "using $tcl_LIBS" >&6; }
 $as_echo "using $tcl_LIBS" >&6; }
    elif test -f ${tcl_PREFIX}/lib/libtcl.dylib; then
       tcl_LIBS='-ltcl'
+      { $as_echo "$as_me:$LINENO: result: using $tcl_LIBS" >&5
+$as_echo "using $tcl_LIBS" >&6; }
+   elif test -f ${tcl_PREFIX}/lib/libtcl8.6.a; then
+      tcl_LIBS='-ltcl8.6'
       { $as_echo "$as_me:$LINENO: result: using $tcl_LIBS" >&5
 $as_echo "using $tcl_LIBS" >&6; }
    elif test -f ${tcl_PREFIX}/lib/libtcl8.5.a; then

@@ -633,7 +633,7 @@ AC_DEFUN([LF_FLIBS],[
   dnl Phew! Done! Now, output the result
   dnl
 
-  FLIBS="$flibs_result"
+  dnl FLIBS="$flibs_result"
   dnl AC_MSG_RESULT([$FLIBS])
 dnl  AC_SUBST(FLIBS)
 ])dnl
