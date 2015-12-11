@@ -13,7 +13,9 @@ default: check
 TESTS := \
 
 ifeq (${PARFLOW_HAVE_CLM},yes)
-TESTS += clm.tcl
+TESTS += clm.tcl \
+         clm_forc_veg.tcl \
+		 clm_varDZ.tcl
 endif
 
 PARALLEL_TESTS =
@@ -22,7 +24,9 @@ ifeq (${AMPS},mpi1)
 ifeq (${PARFLOW_HAVE_CLM},yes)
 	PARALLEL_TESTS += \
 		clm.tcl \
-		clm.jac.tcl
+		clm.jac.tcl \
+        clm_forc_veg.tcl \
+		clm_varDZ.tcl
 endif
 endif
 
@@ -110,3 +114,11 @@ testclean:
 	@rm -fr drv_vegm.dat.*
 	@rm -fr core*
 	@rm -fr clm_output.txt.*
+	@rm -fr clm_varDZ_output.txt.*
+	@rm -fr clm_varDZ.out
+	@rm -f clm_varDZ.out.pftcl
+	@rm -f clm_varDZ_elog.txt.*
+	@rm -fr clm_forc_veg_output.txt.*
+	@rm -fr clm_forc_veg.out
+	@rm -f clm_forc_veg.out.pftcl
+	@rm -f clm_forc_veg_elog.txt.*	

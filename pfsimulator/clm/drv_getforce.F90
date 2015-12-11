@@ -1,6 +1,7 @@
 !#include <misc.h>
 
-subroutine drv_getforce (drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf,istep_pf)
+subroutine drv_getforce (drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf,	&
+			patm_pf,qatm_pf,lai_pf,sai_pf,z0m_pf,displa_pf,istep_pf,clm_forc_veg)
 
 !=========================================================================
 !
@@ -41,6 +42,7 @@ subroutine drv_getforce (drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf
   type (tiledec),intent(inout) :: tile(drv%nch)
   type (clm1d)  ,intent(inout) :: clm (drv%nch)
   integer,intent(in)  :: istep_pf,nx,ny
+  integer,intent(in)  :: clm_forc_veg                       ! BH: whether vegetation (LAI, SAI, z0m, displa) is being forced 0=no, 1=yes
   real(r8),intent(in) :: sw_pf((nx+2)*(ny+2)*3)             ! SW rad, passed from PF
   real(r8),intent(in) :: lw_pf((nx+2)*(ny+2)*3)             ! LW rad, passed from PF
   real(r8),intent(in) :: prcp_pf((nx+2)*(ny+2)*3)           ! Precip, passed from PF
@@ -49,6 +51,10 @@ subroutine drv_getforce (drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf
   real(r8),intent(in) :: v_pf((nx+2)*(ny+2)*3)              ! v-wind, passed from PF
   real(r8),intent(in) :: patm_pf((nx+2)*(ny+2)*3)           ! air pressure, passed from PF
   real(r8),intent(in) :: qatm_pf((nx+2)*(ny+2)*3)           ! air specific humidity, passed from PF
+  real(r8),intent(in) :: lai_pf((nx+2)*(ny+2)*3)            ! lai, passed from PF !BH
+  real(r8),intent(in) :: sai_pf((nx+2)*(ny+2)*3)            ! sai, passed from PF !BH
+  real(r8),intent(in) :: z0m_pf((nx+2)*(ny+2)*3)            ! z0m, passed from PF !BH
+  real(r8),intent(in) :: displa_pf((nx+2)*(ny+2)*3)         ! displacement height, passed from PF !BH
 
 
 !=== Local Variables =====================================================
@@ -81,7 +87,14 @@ subroutine drv_getforce (drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf
      clm(t)%forc_v          = v_pf(l)
      clm(t)%forc_pbot       = patm_pf(l)
      clm(t)%forc_q          = qatm_pf(l)
-
+	 ! BH: added the option for forcing or not the vegetation
+	if  (clm_forc_veg== 1) then 
+		clm(t)%elai	        = lai_pf(l)
+		clm(t)%esai	        = sai_pf(l)	
+		clm(t)%z0m	        = z0m_pf(l) 
+		clm(t)%displa	    = displa_pf(l)     
+	endif
+	 
      !Treat air density
      clm(t)%forc_rho        = clm(t)%forc_pbot/(clm(t)%forc_t*2.8704e2)
 

@@ -3974,6 +3974,25 @@ pfset Solver.CLM.MetFilePath		"path/to/met/forcing/data/"
 pfset Solver.CLM.MetFileNT	24	
 \end{verbatim}\end{display}
 
+%====
+% @BH Forcing the vegetation in CLM
+%=====
+\pfkey{string}{Solver.CLM.ForceVegetation}{False}
+{This key specifies whether vegetation should be forced in \code{CLM}. Currently this option only works for 1D and 3D forcings, as specified by the key \code{Solver.CLM.MetForcing}. Choices for this key include {\bf True} and {\bf False}. Forced vegetation variables are :
+\begin{description}
+\item[{\bf LAI}: ] Leaf Area Index $[-]$
+\item[{\bf SAI}: ] Stem Area Index $[-]$
+\item[{\bf Z0M}: ] Aerodynamic roughness length $[m]$
+\item[{\bf DISPLA}: ] Displacement height $[m]$
+\label{clm_forcing}
+\end{description}
+In the case of 1D meteorological forcings, \code{CLM} requires four files for vegetation time series and one vegetation map. The four files should be named respectively \code{lai.dat}, \code{sai.dat}, \code{z0m.dat}, \code{displa.dat}. They are ASCII files and contain 18 time-series columns (one per IGBP vegetation class, and each timestep per row). The vegetation map should be a properly distributed 2D \parflow{} binary file (\code{.pfb}) which contains vegetation indices (from 1 to 18). The vegetation map filename is \code{veg\_map.pfb}. \parflow{} uses the vegetation map to pass to \code{CLM} a 2D map for each vegetation variable at each time step. 
+In the case of 3D meteorological forcings, \parflow{} expects four distincts properly distributed \parflow{} binary file (\code{.pfb}), the third dimension being the timesteps. The files should be named \code{LAI.pfb}, \code{SAI.pfb}, \code{Z0M.pfb}, \code{DISPLA.pfb}. No vegetation map is needed in this case.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.ForceVegetation  True
+\end{verbatim}\end{display}
+
 \pfkey{string}{Solver.WriteSiloCLM}{False}
 {This key specifies whether the \code{CLM} writes two dimensional binary output files to a silo binary format. This data may be read in by VisIT and other visualization packages.  Note that \code{CLM} and silo must be compiled and linked at runtime for this option to be active. These files are all written according to the standard format used for all \parflow{} variables, using the {\em runname}, and {\em istep}.  Variables are either two-dimensional or over the number of \code{CLM} layers (default of ten). 
 }
