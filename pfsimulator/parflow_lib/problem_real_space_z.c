@@ -63,7 +63,7 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
    int             ix, iy, iz;
    int             nx, ny, nz;
    int             r;
-   int             is, i, j, k, ips;
+   int             is, i, j, k,l, ips=0;
 
 
    GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
@@ -101,8 +101,14 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
             z = BackgroundZ(GlobalsBackground);
             
             zz=ctalloc(double, (nz));
-            for (k = iz; k < iz + nz; k++){
-                ips = SubvectorEltIndex(rsz_sub, ix, iy, k);
+            for (l = iz; l < iz + nz; l++){
+		GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, l, nx, ny, 1,
+                {
+		   //we need one index of level k which is inside the domain
+		   ips = SubvectorEltIndex(rsz_sub, i, j, k);
+	           goto  breakout;   
+		});
+		breakout:;
                 z +=  0.5 * RealSpaceDZ(SubgridRZ(subgrid)) * dz_data[ips];  
 		zz[k-iz]=z;
                 z +=  0.5 * RealSpaceDZ(SubgridRZ(subgrid)) * dz_data[ips];
