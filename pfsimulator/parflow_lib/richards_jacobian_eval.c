@@ -719,11 +719,17 @@ int           symm_part)      /* Specifies whether to compute just the
 
           sep = (dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]));
 	 /* diff >= 0 implies flow goes lower to upper */
-	 lower_cond = pp[ip] /sep     - 0.5 *Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip]      * gravity;
-	 upper_cond = pp[ip+sz_v]/sep + 0.5 *Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip+sz_v] * gravity;
+	// lower_cond = pp[ip] /sep     - 0.5 *Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip]      * gravity;
+	// upper_cond = pp[ip+sz_v]/sep + 0.5 *Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip+sz_v] * gravity;
           
-          lower_cond = pp[ip] /sep     - 0.5  * dp[ip]      * gravity;
-          upper_cond = pp[ip+sz_v]/sep + 0.5  * dp[ip+sz_v] * gravity;
+     //     lower_cond = pp[ip] /sep     - 0.5  * dp[ip]      * gravity;
+     //     upper_cond = pp[ip+sz_v]/sep + 0.5  * dp[ip+sz_v] * gravity;
+ 
+          
+          lower_cond = pp[ip]/ sep   - (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip+sz_v]))  * dp[ip] * gravity;
+          
+          upper_cond = pp[ip+sz_v] / sep  + (z_mult_dat[ip+sz_v]/(z_mult_dat[ip]+z_mult_dat[ip+sz_v])) * dp[ip+sz_v] * gravity ;
+          
           
  //                lower_cond = pp[ip]    - 0.5 * dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip]      * gravity;
  //                upper_cond = pp[ip+sz_v] + 0.5 * dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip+sz_v] * gravity;
