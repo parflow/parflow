@@ -320,7 +320,7 @@ pfset Solver.Nonlinear.DerivativeEpsilon                 1e-2
 
 pfset Solver.Linear.KrylovDimension                      10
 
-pfset Solver.Linear.Preconditioner                       MGSemi
+pfset Solver.Linear.Preconditioner                       PFMG 
 pfset Solver.Linear.Preconditioner.MGSemi.MaxIter        1
 pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      100
 

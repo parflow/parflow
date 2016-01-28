@@ -21,7 +21,7 @@ pfset FileVersion 4
 
 pfset Process.Topology.P 1
 pfset Process.Topology.Q 1
-pfset Process.Topology.R 1
+pfset Process.Topology.R 2
 
 #---------------------------------------------------------
 # Computational Grid

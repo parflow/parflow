@@ -278,7 +278,6 @@ pfset Solver.Linear.KrylovDimension                      20
 pfset Solver.Linear.MaxRestart                           2
 
 pfset Solver.Linear.Preconditioner                       MGSemi
-pfset Solver.Linear.Preconditioner                       SMG 
 pfset Solver.Linear.Preconditioner                       PFMG 
 pfset Solver.Linear.Preconditioner.SymmetricMat	         Symmetric
 pfset Solver.Linear.Preconditioner.MGSemi.MaxIter        1
@@ -286,7 +285,10 @@ pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      10
 pfset Solver.PrintSubsurf				False
 pfset  Solver.Drop                                      1E-20
 pfset Solver.AbsTol                                     1E-12
- 
+
+# turn on to write SILO output
+# for vis in VisIt
+#
 #pfset Solver.WriteSiloSubsurfData True
 #pfset Solver.WriteSiloPressure True
 #pfset Solver.WriteSiloSaturation True

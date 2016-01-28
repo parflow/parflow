@@ -309,6 +309,13 @@ pfset PhaseConcen.water.tce.Type                      Constant
 pfset PhaseConcen.water.tce.GeomNames                 concen_region
 pfset PhaseConcen.water.tce.Geom.concen_region.Value  0.8
 
+
+pfset Solver.WriteSiloSubsurfData True
+pfset Solver.WriteSiloPressure True
+pfset Solver.WriteSiloSaturation True
+pfset Solver.WriteSiloConcentration True
+
+
 #-----------------------------------------------------------------------------
 # The Solver Impes MaxIter default value changed so to get previous
 # results we need to set it back to what it was
