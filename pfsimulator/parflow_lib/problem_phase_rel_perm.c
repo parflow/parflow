@@ -95,6 +95,10 @@ typedef struct
 
    VanGTable **lookup_tables;
 
+#ifdef PF_PRINT_VG_TABLE
+   int     *print_table;
+#endif
+
 } Type1;                      /* Van Genuchten Rel. Perm. */
 
 typedef struct
@@ -162,7 +166,7 @@ VanGTable *VanGComputeTable(
    double interval,m,opahn,ahnm1,coeff;
    
    // Loop over sample min_pressure_head to 0.0, min_pressure_head/num_sample_points step
-   interval = min_pressure_head/(double)(num_sample_points + 1);
+   interval = min_pressure_head/(double)(num_sample_points - 1);
    new_table -> interval = fabs(interval);
    m        = 1.0e0 - (1.0e0/n);
 
@@ -371,11 +375,11 @@ inline double VanGLookupLinear(
 
       // using cubic Hermite interpolation
 
-      // SGS Slope can be precomputed in table.
-      if(fcn == CALCFCN){
+
+      if(fcn == CALCFCN) {
 	 rel_perm = lookup_table -> a[pt] + lookup_table -> slope[pt] * (pressure_head - lookup_table -> x[pt]);
       } else {
-	 rel_perm = lookup_table -> a_der[pt] + lookup_table -> slope[pt] * (pressure_head - lookup_table -> x[pt]);
+	 rel_perm = lookup_table -> a_der[pt] + lookup_table -> slope_der[pt] * (pressure_head - lookup_table -> x[pt]);
       }
    }
 
@@ -597,16 +601,15 @@ int          fcn)            /* Flag determining what to calculate
 	    ppdat = SubvectorData(pp_sub);
 	    pddat = SubvectorData(pd_sub);
 
-#if 0
+#ifdef PF_PRINT_VG_TABLE
 	    /*
 	      This is a debugging tool that prints out function eval
 	      and table values */
-	    static int one_time = 1;
-	    if(one_time && (dummy1 -> lookup_tables[ir]) ) {
+	    if(dummy1 -> print_table[ir] && (dummy1 -> lookup_tables[ir]) ) {
+	      
+               dummy1 -> print_table[ir] = 0;
 	       
-	       one_time = 0;
-//	       for( head = 0.0; head < 300.0; head += 1) {
-	       for( head = 0.0; head < 30.0; head += 0.001) {
+	       for( head = 0.0; head < fabs((dummy1 -> lookup_tables[ir])->min_pressure_head); head += 0.001) {
 
 		  alpha      = alphas[ir];
 		  n          = ns[ir];
@@ -617,20 +620,24 @@ int          fcn)            /* Flag determining what to calculate
 		  double f_val = pow(1.0 - ahnm1/(pow(opahn,m)),2)
 		     /pow(opahn,(m/2));
 
-		  printf("DebugTableFn, %e, %e, %e, %e\n",
+		  printf("DebugTableFn, %d, %e, %e, %e, %e, %e\n",
+			 ir,
 			 head,
-			 VanGLookup(head, 
-				    dummy1 -> lookup_tables[ir],
-				    CALCFCN),
 			 f_val,
-			 VanGLookup(head, 
-				    dummy1 -> lookup_tables[ir],
-				    CALCFCN) - f_val
+			 VanGLookupLinear(head, 
+					  dummy1 -> lookup_tables[ir],
+					  CALCFCN),
+			 fabs(VanGLookupLinear(head, 
+					       dummy1 -> lookup_tables[ir],
+					       CALCFCN) - f_val),
+			 fabs((VanGLookupLinear(head, 
+						dummy1 -> lookup_tables[ir],
+						CALCFCN) - f_val)/f_val)
+
 		     );
 	       }
 
-//	       for( head = 0.0; head < 300.0; head += 1) {
-	       for( head = 0.0; head < 30.0; head += 0.001) {
+	       for( head = 0.0; head < fabs((dummy1 -> lookup_tables[ir])->min_pressure_head); head += 0.001) {
 
 		     alpha    = alphas[ir];
 		     n        = ns[ir];
@@ -647,15 +654,19 @@ int          fcn)            /* Flag determining what to calculate
 			           + pow(coeff,2)*(m/2)*pow(opahn,(-(m+2)/2))
 			            *n*alpha*ahnm1;
 
-		  printf("DebugTableDer, %e, %e, %e, %e\n",
+		  printf("DebugTableDer, %d, %e, %e, %e, %e, %e\n",
+			 ir,
 			 head,
-			 VanGLookup(head, 
-				    dummy1 -> lookup_tables[ir],
-				    CALCDER),
 			 f_val,
-			 VanGLookup(head, 
-				    dummy1 -> lookup_tables[ir],
-				    CALCDER) - f_val
+			 VanGLookupLinear(head, 
+					  dummy1 -> lookup_tables[ir],
+					  CALCDER),
+			 fabs(VanGLookupLinear(head, 
+						dummy1 -> lookup_tables[ir],
+						CALCDER) - f_val),
+			 fabs((VanGLookupLinear(head, 
+						dummy1 -> lookup_tables[ir],
+						CALCDER) - f_val)/f_val)
 		     );
 	       }
 	    }
@@ -837,7 +848,7 @@ int          fcn)            /* Flag determining what to calculate
 				  pt = (int)floor(head / interval);
 				  assert(pt < max);
 				
-				  prdat[ipr] = lookup_table -> a_der[pt] + lookup_table -> slope[pt] * 
+				  prdat[ipr] = lookup_table -> a_der[pt] + lookup_table -> slope_der[pt] * 
 				     (head - lookup_table -> x[pt]);
 			       } else {
 				  prdat[ipr] = 0.0;
@@ -1187,7 +1198,7 @@ int          fcn)            /* Flag determining what to calculate
 				      pt = (int)floor(head / interval);
 				      assert(pt < max);
 				      
-				      prdat[ipr] = lookup_table -> a_der[pt] + lookup_table -> slope[pt] * 
+				      prdat[ipr] = lookup_table -> a_der[pt] + lookup_table -> slope_der[pt] * 
 					 (head - lookup_table -> x[pt]);
 				   } else {
 				      prdat[ipr] = 0.0;
@@ -1822,12 +1833,20 @@ PFModule   *PhaseRelPermNewPublicXtra()
 	    (dummy1 -> region_indices) = ctalloc(int,    num_regions);
 	    (dummy1 -> alphas        ) = ctalloc(double, num_regions);
 	    (dummy1 -> ns            ) = ctalloc(double, num_regions);
+#if PF_PRINT_VG_TABLE
+	    (dummy1 -> print_table   ) = ctalloc(int,    num_regions);
+#endif
 
 	    (dummy1 -> lookup_tables)        = ctalloc(VanGTable*, num_regions);
 	 
 	    for (ir = 0; ir < num_regions; ir++)
 	    {
-	       region = NA_IndexToName(public_xtra -> regions, ir);
+	      
+#if PF_PRINT_VG_TABLE
+               dummy1 -> print_table[ir] = 1;
+#endif
+
+               region = NA_IndexToName(public_xtra -> regions, ir);
 	    
 	       dummy1 -> region_indices[ir] = 
 		 NA_NameToIndex(GlobalsGeomNames, region);
