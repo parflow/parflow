@@ -35,6 +35,7 @@
 
 #ifdef HAVE_SILO
 #include "silo.h"
+#include <mpi.h>
 #include <pmpio.h>
 #endif
 
