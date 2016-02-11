@@ -5824,11 +5824,15 @@ case $CC in
             ;;
 esac
 
+{ $as_echo "$as_me:$LINENO: checking if CLM is wanted" >&5
+$as_echo_n "checking if CLM is wanted... " >&6; }
 CLM_DIR=""
 CLM_LIBS=""
 CLM_LIB_DEPEND=""
 PARFLOW_HAVE_CLM="no"
 if test "$with_clm" = "yes"; then
+   { $as_echo "$as_me:$LINENO: result: yes" >&5
+$as_echo "yes" >&6; }
    PARFLOW_HAVE_CLM="yes"
    CLM_DIR="clm"
    CLM_LIBS="-lclm"
@@ -5837,6 +5841,9 @@ if test "$with_clm" = "yes"; then
 #define HAVE_CLM 1
 _ACEOF
 
+else
+   { $as_echo "$as_me:$LINENO: result: no" >&5
+$as_echo "no" >&6; }
 fi
 
 
@@ -6692,7 +6699,7 @@ fi
 
           ;;
           # Ignore these flags.
-        -lang* | -lcrt*.o | -lc | -lgcc* | -lSystem | -libmil | -LANG:=* | -LIST:* | -LNO:* | -ltcmalloc_minimal)
+        -lang* | -lcrt*.o | -lc | -lgcc* | -lSystem | -libmil | -LANG:=* | -LIST:* | -LNO:*)
           ;;
         -lkernel32)
           test x"$CYGWIN" != xyes && ac_cv_fc_libs="$ac_cv_fc_libs $ac_arg"
@@ -10770,7 +10777,7 @@ fi
 
           ;;
           # Ignore these flags.
-        -lang* | -lcrt*.o | -lc | -lgcc* | -lSystem | -libmil | -LANG:=* | -LIST:* | -LNO:* | -ltcmalloc_minimal)
+        -lang* | -lcrt*.o | -lc | -lgcc* | -lSystem | -libmil | -LANG:=* | -LIST:* | -LNO:*)
           ;;
         -lkernel32)
           test x"$CYGWIN" != xyes && ac_cv_f77_libs="$ac_cv_f77_libs $ac_arg"
@@ -14843,8 +14850,8 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 else
-  { $as_echo "$as_me:$LINENO: WARNING: Error: Parflow configured without the SAMRAI library" >&5
-$as_echo "$as_me: WARNING: Error: Parflow configured without the SAMRAI library" >&2;}
+  { $as_echo "$as_me:$LINENO: WARNING: Parflow configured without the SAMRAI library" >&5
+$as_echo "$as_me: WARNING: Parflow configured without the SAMRAI library" >&2;}
 fi
 
 
