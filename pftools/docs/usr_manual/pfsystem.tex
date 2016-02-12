@@ -189,18 +189,18 @@ The general approach is as follows:
    \item Create a \code{CLM} driver file to set the parameters for the CLM model (Refer to the 
    \file{clm input} directory in the Washita Example for a sample of a \code{CLM} driver file).
 
-   \item Assemble meteorological forcing data for your domain. CLM requires the following 
+   \item Assemble meteorological forcing data for your domain. CLM uses Greenwich Mean Time (GMT), not local time. The year, date and hour (in GMT) that the forcing begins should match the values in \code{drv_clmin.dat}.  CLM requires the following 
    variables (also described on p. \pageref{clm_forcing}): 
    
    \begin{itemize}
-		\item DLWR: Long wave radiation $[W/m^2]$
 		\item DSWR: Visible or short-wave radiation $[W/m^2]$.
+		\item DLWR: Long wave radiation $[W/m^2]$
 		\item APCP: Precipitation $[mm/s]$
 		\item Temp: Air Temperature $[K]$
 		\item UGRD: East-west wind speed $[m/s]$
-		\item SPFH:	Specific humidity $[kg/kg]$
-		\item Press: Atmospheric pressure $[pa]$
                 \item VGRD: South-to-North wind speed $[m/s]$
+		\item Press: Atmospheric pressure $[pa]$
+		\item SPFH:	Specific humidity $[kg/kg]$
 	\end{itemize}
 	
 	If you choose to do spatially heterogenous forcings you will need to generate separate 
@@ -335,6 +335,7 @@ this procedure :
                      as the start\_count.
                \item Use the real time that the dump occured at from step 1
                      as the start\_time.
+	     \item To restart with \code{CLM}, use the \file{Solver.CLM.IstepStart} key described in \S~\ref{CLM Solver Parameters} with a value equal to the dump sequence plus one. Make sure this corresponds to changes to \code{drv_clmin.dat}. 
             \end{itemize}
    \end{itemize}
 \end{enumerate}

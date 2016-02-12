@@ -554,7 +554,7 @@ on when data is printed out.
   with real value comparisons which can lead to events occurring at
   different timesteps on different architectures or compilers.
 
-  This values is also used when describing ``time cycling data'' in,
+  This value is also used when describing ``time cycling data'' in,
   currently, the well and boundary condition sections.  The lengths of
   the cycles in those sections will be integer multiples of this
   value, therefore it needs to be the smallest divisor which produces
@@ -3845,14 +3845,14 @@ pfset Solver.Linear.Preconditioner.SMG.NumPostRelax    0
 
 \pfkey{logical}{Solver.EvapTransFile}{False}
 {This key specifies specifies that the Flux terms for Richards' equation are read in from a \file{.pfb} file.  This file has $[T^-1]$
-units.}
+units. Note this key is for a steady-state flux and should \emph{not} be used in conjunction with the transient key below.}
 \begin{display}\begin{verbatim}
 pfset Solver.EvapTransFile    True
 \end{verbatim}\end{display}
 
 \pfkey{logical}{Solver.EvapTransFileTransient}{False}
 {This key specifies specifies that the Flux terms for Richards' equation are read in from a series of flux \file{.pfb} file.  Each file has $[T^-1]$
-units.
+	units. Note this key should not be used with the key above, only one of these keys should be set to \code{True} at a time, not both.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.EvapTransFileTransient    True
@@ -4006,7 +4006,7 @@ The output variables are:
 \item \file{eflx_sh_tot} for sensible heat flux total $[W/m^2]$ using the silo variable {\em SensibleHeat};
 \item \file{eflx_soil_grnd} for ground heat flux $[W/m^2]$ using the silo variable {\em GroundHeat};
 \item \file{qflx_evap_tot} for total evaporation $[mm/s]$ using the silo variable {\em EvaporationTotal}; 
-\item \file{qflx_evap_grnd} for ground evaporation without sublimation $[mm/s]$ using the silo variable {\em EvaporationGroundNoSublimation};
+\item \file{qflx_evap_grnd} for ground evaporation without condensation $[mm/s]$ using the silo variable {\em EvaporationGroundNoSublimation};
 \item \file{qflx_evap_soi} for soil evaporation $[mm/s]$ using the silo variable {\em EvaporationGround};
 \item \file{qflx_evap_veg} for vegetation evaporation $[mm/s]$ using the silo variable {\em EvaporationCanopy};
 \item \file{qflx_tran_veg} for vegetation transpiration $[mm/s]$ using the silo variable {\em Transpiration}; 
@@ -4228,6 +4228,19 @@ are as specified in the multiple \code{PFB} and \code{SILO} formats as above.}
 pfset Solver.CLM.SingleFile   True
 \end{verbatim}\end{display}
 
+\pfkey{integer}{Solver.CLM.RootZoneNZ}{10}
+{This key sets the number of soil layers the \parflow{} expects from \code{CLM}.  It will allocate and format all the arrays for passing variables to and from \code{CLM} accordingly.  Note that this does not set the soil layers in \code{CLM} 
+to do that the user needs to change the value of the parameter \code{nlevsoi} in the file  
+\file{clm\_varpar.F90} in the \file{\emph{PARFLOW\_DIR}\textbackslash pfsimulator\textbackslash clm} directory to reflect the desired numnber of soil layers and recompile. Most likely the key \code{Solver.CLM.SoiLayer}, described below, will also need to be changed.} 
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.RootZoneNZ      4
+\end{verbatim}\end{display}
+
+\pfkey{integer}{Solver.CLM.SoiLayer}{7}
+{This key sets the soil layer, and thus the soil depth, that \code{CLM} uses for the seasonal temperature adjustment for all leaf and stem area indices.} 
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.SoiLayer      4
+\end{verbatim}\end{display}
 
 
 %=============================================================================
