@@ -201,7 +201,15 @@ clm_last_rst,clm_daily_rst)
      !=== Read in the clm input (drv_clmin.dat)
      call drv_readclmin (drv,grid,rank,clm_write_logs)
 
+     if (rank==0) then
+       write(9919,*) "CLM startcode for date (1=restart, 2=defined):", drv%startcode
+       write(9919,*) "CLM IC (1=restart, 2=defined):", drv%clm_ic
+    !=== @RMM check for error in IC or starting time
+       if (drv%startcode == 0) stop
+       if (drv%clm_ic == 0) stop
 
+
+     end if
      !=== Allocate memory for subgrid tile space
      !=== LEGACY =============================================================================================
      !=== (Keeping around in case we go back to multiple tiles per cell)
