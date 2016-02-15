@@ -178,10 +178,10 @@ clm_last_rst,clm_daily_rst)
      
      if (clm_write_logs==1) write(999,*) "INITIALIZATION"
 
-!RMM: writing a CLM.out.log file with basic information only from the master node (0 processor)
+!RMM: writing a CLM.out.clm.log file with basic information only from the master node (0 processor)
 !
   if (rank==0) then
-  open(9919, file="CLM.out.log",action="write")
+  open(9919, file="CLM.out.clm.log",action="write")
   write(9919,*) "******************************"
   write(9919,*) " CLM log basic output"
   write(9919,*)
