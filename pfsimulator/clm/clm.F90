@@ -162,16 +162,6 @@ clm_last_rst,clm_daily_rst)
   if (clm_write_logs==1) open(999, file="clm_output.txt."//trim(adjustl(RI)), action="write")
   if (clm_write_logs==1) write(999,*) "clm.F90: rank =", rank, "   istep =", istep_pf
 
-!RMM: writing a CLM.log.out file with basic information only from the master node (0 processor)
-!
-  if (rank==0) then
-  open(9919, file="CLM.log.out",action="write")
-  write(9919,*) "******************************"
-  write(9919,*) " CLM log basic output"
-  write(9919,*)
-  write(9919,*) "CLM starting istep =", istep_pf
-  end if ! CLM log
-
   !=== Specify grid size using values passed from PF
   drv%dx = pdx
   drv%dy = pdy
@@ -187,6 +177,16 @@ clm_last_rst,clm_daily_rst)
   if (time == start_time) then 
      
      if (clm_write_logs==1) write(999,*) "INITIALIZATION"
+
+!RMM: writing a CLM.out.log file with basic information only from the master node (0 processor)
+!
+  if (rank==0) then
+  open(9919, file="CLM.out.log",action="write")
+  write(9919,*) "******************************"
+  write(9919,*) " CLM log basic output"
+  write(9919,*)
+  write(9919,*) "CLM starting istep =", istep_pf
+  end if ! CLM log
 
      !=== Allocate Memory for Grid Module
      allocate( counter(nx,ny) )
@@ -484,6 +484,14 @@ clm_last_rst,clm_daily_rst)
   !=== Advance time (CLM calendar time keeping routine)
   drv%endtime = 0
   call drv_tick(drv)
+
+!RMM: writing a CLM.log.out file with basic information only from the master node (0 processor)
+!
+  if (rank==0) then
+  write(9919,*)
+  write(9919,*) "CLM starting time =", time, "gmt =", drv%gmt,"istep_pf =",istep_pf 
+  write(9919,*) "CLM day =", drv%da, "month =", drv%mo,"year =", drv%yr
+  end if ! CLM log
 
 
   !=== Read in the atmospheric forcing for off-line run
