@@ -162,6 +162,16 @@ clm_last_rst,clm_daily_rst)
   if (clm_write_logs==1) open(999, file="clm_output.txt."//trim(adjustl(RI)), action="write")
   if (clm_write_logs==1) write(999,*) "clm.F90: rank =", rank, "   istep =", istep_pf
 
+!RMM: writing a CLM.log.out file with basic information only from the master node (0 processor)
+!
+  if (rank==0) then
+  open(9919, file="CLM.log.out",action="write")
+  write(9919,*) "******************************"
+  write(9919,*) " CLM log basic output"
+  write(9919,*)
+  write(9919,*) "CLM starting istep =", istep_pf
+  end if ! CLM log
+
   !=== Specify grid size using values passed from PF
   drv%dx = pdx
   drv%dy = pdy
@@ -255,7 +265,7 @@ clm_last_rst,clm_daily_rst)
      write(999,*) 'local NX:',nx,' NX with ghost:',nx_f,' IX:', ix
      write(999,*) 'local NY:',ny,' NY with ghost:',ny_f,' IY:',iy
      write(999,*) 'PF    NZ:',nz, 'NZ with ghost:',nz_f
-     write(999,*) 'globla  NX:',gnx, ' global NY:', gny
+     write(999,*) 'global  NX:',gnx, ' global NY:', gny
      write(999,*) 'DRV-NC:',drv%nc,' DRV-NR:',drv%nr, 'DRV-NCH:',drv%nch
      write(999,*) ' Processor Number:',rank, ' local vector start:',ip
      endif
@@ -586,6 +596,10 @@ clm_last_rst,clm_daily_rst)
   write(999,*) "End of time advance:" 
   write(999,*) 'time =', time, 'gmt =', drv%gmt, 'endtime =', drv%endtime
   endif
+ if (rank==0) then
+    write(9919,*) "End of time advance:"
+    write(9919,*) 'time =', time, 'gmt =', drv%gmt, 'endtime =', drv%endtime
+ end if !! rank 0, write log info
 
 ! if ( (drv%gmt==0.0).or.(drv%endtime==1) ) call drv_restart(2,drv,tile,clm,rank,istep_pf)
   ! ----------------------------------
@@ -598,7 +612,10 @@ clm_last_rst,clm_daily_rst)
      endif
 
       if (clm_daily_rst==1) then
-       if ( (drv%gmt==0.0).or.(drv%endtime==1) ) call drv_restart(2,drv,tile,clm,rank,d_stp)
+       if ( (drv%gmt==0.0).or.(drv%endtime==1) ) then
+         if (rank==0) write(9919,*) 'Writing restart time =', time, 'gmt =', drv%gmt, 'istep_pf =',istep_pf
+            call drv_restart(2,drv,tile,clm,rank,d_stp)
+             end if
       else
        call drv_restart(2,drv,tile,clm,rank,d_stp)
       endif
@@ -628,6 +645,7 @@ clm_last_rst,clm_daily_rst)
      ! close(166)
      ! close(199)
      if (clm_write_logs==1) close(999)
+     if (rank == 0) close (9919)
   end if
 
 
