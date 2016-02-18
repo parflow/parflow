@@ -630,6 +630,13 @@ clm_last_rst,clm_daily_rst)
       if (clm_daily_rst==1) then
        if ( (drv%gmt==0.0).or.(drv%endtime==1) ) then
          if (rank==0) write(9919,*) 'Writing restart time =', time, 'gmt =', drv%gmt, 'istep_pf =',istep_pf
+          !! @RMM/LEC  add in a TCL file that sets an istep value to better automate restarts
+          if (rank==0) then
+                open(393, file="clm_restart.tcl",action="write")
+                write(393,*) "set istep ",istep_pf
+                close(393)
+          end if  !  write istep corresponding to restart step
+
             call drv_restart(2,drv,tile,clm,rank,d_stp)
              end if
       else
