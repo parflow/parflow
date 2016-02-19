@@ -339,7 +339,7 @@ subroutine clm_thermal (clm)
 
      niters=3
      do iter = 1, niters         ! begin stability iteration
-        call clm_obult(0.,z0mg,z0hg,z0qg,obu,um,ustar,temp1,temp2,clm)
+        call clm_obult(0.0d0,z0mg,z0hg,z0qg,obu,um,ustar,temp1,temp2,clm)
         tstar = temp1*dth
         qstar = temp2*dqh
         z0hg = z0mg/exp(0.13 * (ustar*z0mg/1.5e-5)**0.45)
