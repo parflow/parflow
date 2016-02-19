@@ -97,6 +97,18 @@ Problem   *NewProblem(
    ProblemDumpInterval(problem) = GetDouble("TimingInfo.DumpInterval");
    CheckTime(problem, "TimingInfo.DumpInterval", ProblemDumpInterval(problem));
 
+   ProblemDumpIntervalExecutionTimeLimit(problem) = GetIntDefault("TimingInfo.DumpIntervalExecutionTimeLimit", 0);
+
+#ifndef PF_HAVE_SLURM
+   if(ProblemDumpIntervalExecutionTimeLimit(problem))
+   {
+      /*
+       * SGS TODO should create a print warning/error function.   Can we use some standard logging library?
+       */
+     amps_Printf("Warning: TimingInfo.DumpIntervalExecutionTimeLimit is ignored if SLURM not linked with Parflow");   
+   }
+#endif
+
    NameArray      switch_na = NA_NewNameArray("False True");
    char *switch_name = GetStringDefault("TimingInfo.DumpAtEnd", "False");
    int switch_value = NA_NameToIndex(switch_na, switch_name);

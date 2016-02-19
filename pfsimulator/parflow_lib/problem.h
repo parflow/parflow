@@ -49,6 +49,10 @@ typedef struct
    double      stop_time;
    double      dump_interval;
 
+   /* Stop execution if remaining time is less than user specified
+      value (s) */
+   int         dump_interval_execution_time_limit; 
+
    int         dump_at_end;             /* write out files at end of simulation */
 
    /* Time step info */
@@ -174,8 +178,10 @@ typedef struct
 #define ProblemStartTime(problem)                 ((problem) -> start_time)
 #define ProblemStopTime(problem)                  ((problem) -> stop_time)
 #define ProblemDumpInterval(problem)              ((problem) -> dump_interval)
+#define ProblemDumpIntervalExecutionTimeLimit(problem)              ((problem) -> dump_interval_execution_time_limit)
 #define ProblemDumpAtEnd(problem)                 ((problem) -> dump_at_end)
 #define ProblemSelectTimeStep(problem)            ((problem) -> select_time_step)
+
 				       
 /* PDE accessors */
 #define ProblemGravity(problem)                   ((problem) -> gravity)

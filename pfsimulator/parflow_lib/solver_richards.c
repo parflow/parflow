@@ -36,6 +36,10 @@
 
 #include "parflow.h"
 
+#ifdef PF_HAVE_SLURM
+#include <slurm/slurm.h>
+#endif
+
 #include <string.h>
 #include <float.h>
 #include <limits.h>
@@ -1108,6 +1112,7 @@ void AdvanceRichards(PFModule *this_module,
 
    int           start_count         = ProblemStartCount(problem);
    double        dump_interval       = ProblemDumpInterval(problem);
+   int           dump_interval_execution_time_limit = ProblemDumpIntervalExecutionTimeLimit(problem);
 
    Vector       *porosity            = ProblemDataPorosity(problem_data);
    Vector       *evap_trans_sum      = instance_xtra -> evap_trans_sum;
@@ -2713,6 +2718,26 @@ void AdvanceRichards(PFModule *this_module,
 	 take_more_time_steps = (instance_xtra -> iteration_number < max_iterations) &&
 	    (t < stop_time);
       }
+
+#ifdef PF_HAVE_SLURM
+      /*
+       * If at end of a dump_interval and user requests halt if
+       * remaining time in job is less than user specified value.
+       * Used to halt jobs gracefully when running on batch systems.
+       */
+      if(dump_files && dump_interval_execution_time_limit)
+      {
+	printf("Checking execution time limit, interation = %d, remaining time = %ld (s)\n", 
+	       instance_xtra -> iteration_number,
+	       slurm_get_rem_time(0));
+		    
+	if(slurm_get_rem_time(0) <= dump_interval_execution_time_limit)
+	  {
+	     printf("Remaining time less than supplied DumpIntervalExectionTimeLimit = %d, halting execution\n", dump_interval_execution_time_limit);
+	     take_more_time_steps = 0;
+	  }
+      }
+#endif
 
    }   /* ends do for time loop */
    while( take_more_time_steps );
