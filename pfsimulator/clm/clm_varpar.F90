@@ -18,8 +18,8 @@ module clm_varpar
 
 ! define level parameters
 
-  integer, parameter :: nlevsoi     =  4   !number of soil levels
-  integer, parameter :: nlevlak     =  4   !number of lake levels
+  integer, parameter :: nlevsoi     =  10   !number of soil levels
+  integer, parameter :: nlevlak     =  10   !number of lake levels
   integer, parameter :: nlevsno     =  5    !number of maximum snow levels
 
   integer, parameter :: numrad      =   2   !number of solar radiation bands: vis, nir
