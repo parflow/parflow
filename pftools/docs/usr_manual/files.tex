@@ -605,6 +605,23 @@ is the absolute value of the integer part of the value.
 pfset TimingInfo.DumpInterval  10.0
 \end{verbatim}\end{display}
 
+\pfkey{integer}{TimingInfo.DumpIntervalExecutionTimeLimit}{0}
+{
+This key is used to indicate a wall clock time to halt the execution
+of a run.  At the end of each dump interval the time remaining in the
+batch job is compared with the user supplied value, if remaining time
+is less than or equal to the supplied value the execution is halted.
+Typically used when running on batch systems with time limits to force
+a clean shutdown near the end of the batch job.  Time units is
+seconds, a value of {\bf 0} (the default) disables the check.
+
+Currently only supported on SLURM based systems, ``--with-slurm'' must be specified
+at configure time to enable.
+}
+\begin{display}\begin{verbatim}
+pfset TimingInfo.DumpIntervalExecutionTimeLimit 360
+\end{verbatim}\end{display}
+
 \vspace{0.5in}
 
 For {\em Richards' equation cases only} input is collected for time step
