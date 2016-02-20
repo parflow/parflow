@@ -182,3 +182,4 @@ testclean:
 	@rm -fr core.*
 	@rm -fr samrai_grid.tmp.tcl
 	@rm -f samrai_grid2D.tmp.tcl
+	@rm -fr LW_var_dz_spinup.out
