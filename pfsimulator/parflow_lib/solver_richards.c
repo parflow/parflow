@@ -36,7 +36,7 @@
 
 #include "parflow.h"
 
-#ifdef PF_HAVE_SLURM
+#ifdef HAVE_SLURM
 #include <slurm/slurm.h>
 #endif
 
@@ -2719,7 +2719,7 @@ void AdvanceRichards(PFModule *this_module,
 	    (t < stop_time);
       }
 
-#ifdef PF_HAVE_SLURM
+#ifdef HAVE_SLURM
       /*
        * If at end of a dump_interval and user requests halt if
        * remaining time in job is less than user specified value.

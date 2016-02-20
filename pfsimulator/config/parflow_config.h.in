@@ -96,6 +96,14 @@
 #undef HAVE_SAMRAI
 #endif
 
+/*
+ * SLURM
+ */
+
+#ifndef HAVE_SLURM
+#undef HAVE_SLURM
+#endif
+
 
 /*
  * Silo 

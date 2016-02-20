@@ -648,6 +648,8 @@ F77_FLAGS
 XARGS
 M4
 INSTDIR
+SLURM_DIR
+PARFLOW_HAVE_SLURM
 SAMRAI_DIR
 PARFLOW_HAVE_SAMRAI
 PARFLOW_HAVE_HYPRE
@@ -788,6 +790,7 @@ with_silo
 with_sundials
 with_hypre
 with_samrai
+with_slurm
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1482,6 +1485,8 @@ Optional Packages:
                           where HYPRE is installed.
   --with-samrai=PATH
                         Specify where SAMRAI is installed.
+  --with-slurm=PATH        Use SLURM and optionally specify
+                          where SLURM is installed.
 
 Some influential environment variables:
   CC          C compiler command
@@ -6699,7 +6704,7 @@ fi
 
           ;;
           # Ignore these flags.
-        -lang* | -lcrt*.o | -lc | -lgcc* | -lSystem | -libmil | -LANG:=* | -LIST:* | -LNO:*)
+        -lang* | -lcrt*.o | -lc | -lgcc* | -lSystem | -libmil | -LANG:=* | -LIST:* | -LNO:* | -ltcmalloc_minimal)
           ;;
         -lkernel32)
           test x"$CYGWIN" != xyes && ac_cv_fc_libs="$ac_cv_fc_libs $ac_arg"
@@ -10777,7 +10782,7 @@ fi
 
           ;;
           # Ignore these flags.
-        -lang* | -lcrt*.o | -lc | -lgcc* | -lSystem | -libmil | -LANG:=* | -LIST:* | -LNO:*)
+        -lang* | -lcrt*.o | -lc | -lgcc* | -lSystem | -libmil | -LANG:=* | -LIST:* | -LNO:* | -ltcmalloc_minimal)
           ;;
         -lkernel32)
           test x"$CYGWIN" != xyes && ac_cv_f77_libs="$ac_cv_f77_libs $ac_arg"
@@ -14852,6 +14857,116 @@ _ACEOF
 else
   { $as_echo "$as_me:$LINENO: WARNING: Parflow configured without the SAMRAI library" >&5
 $as_echo "$as_me: WARNING: Parflow configured without the SAMRAI library" >&2;}
+fi
+
+
+
+PARFLOW_HAVE_SLURM="no"
+
+
+# Begin CASC_SUPPORT_SLURM
+# Defines slurm_PREFIX slurm_INCLUDES and slurm_LIBS if with-slurm is specified.
+
+# Check whether --with-slurm was given.
+if test "${with_slurm+set}" = set; then
+  withval=$with_slurm;
+else
+  with_slurm=no
+fi
+
+
+case "$with_slurm" in
+  no)
+    { $as_echo "$as_me:$LINENO: configuring without SLURM support" >&5
+$as_echo "$as_me: configuring without SLURM support" >&6;}
+    : Do nothing
+  ;;
+  yes)
+    # SLURM install path was not specified.
+    # Look in a couple of standard locations to probe if
+    # SLURM header files are there.
+    { $as_echo "$as_me:$LINENO: checking for SLURM installation" >&5
+$as_echo_n "checking for SLURM installation... " >&6; }
+    for dir in /opt/slurm/default /usr /usr/local; do
+      if test -f ${dir}/include/slurm/slurm.h; then
+        slurm_PREFIX=${dir}
+        break
+      fi
+    done
+    { $as_echo "$as_me:$LINENO: result: $slurm_PREFIX" >&5
+$as_echo "$slurm_PREFIX" >&6; }
+  ;;
+  *)
+    # SLURM install path was specified.
+    { $as_echo "$as_me:$LINENO: checking for SLURM installation" >&5
+$as_echo_n "checking for SLURM installation... " >&6; }
+    slurm_PREFIX=$with_slurm
+    slurm_INCLUDES="-I${slurm_PREFIX}/include"
+    if test -f ${slurm_PREFIX}/include/slurm/slurm.h; then
+        { $as_echo "$as_me:$LINENO: result: $slurm_PREFIX" >&5
+$as_echo "$slurm_PREFIX" >&6; }
+    else
+        { $as_echo "$as_me:$LINENO: result: $slurm_PREFIX" >&5
+$as_echo "$slurm_PREFIX" >&6; }
+        { { $as_echo "$as_me:$LINENO: error: SLURM not found in $with_slurm" >&5
+$as_echo "$as_me: error: SLURM not found in $with_slurm" >&2;}
+   { (exit 1); exit 1; }; }
+    fi
+  ;;
+esac
+
+# Determine which SLURM library is built
+if test "${slurm_PREFIX+set}" = set; then
+   { $as_echo "$as_me:$LINENO: checking for SLURM library" >&5
+$as_echo_n "checking for SLURM library... " >&6; }
+   if test -f ${slurm_PREFIX}/lib/libslurm.so; then
+      slurm_LIBS='-lslurm'
+      { $as_echo "$as_me:$LINENO: result: using $slurm_LIBS" >&5
+$as_echo "using $slurm_LIBS" >&6; }
+   elif test -f ${slurm_PREFIX}/lib/libslurm.a; then
+      slurm_LIBS='-lslurm'
+      { $as_echo "$as_me:$LINENO: result: using $slurm_LIBS" >&5
+$as_echo "using $slurm_LIBS" >&6; }
+   else
+      { $as_echo "$as_me:$LINENO: result: using $slurm_LIBS" >&5
+$as_echo "using $slurm_LIBS" >&6; }
+      { { $as_echo "$as_me:$LINENO: error: Could not fine slurm library in $slurm_PREFIX" >&5
+$as_echo "$as_me: error: Could not fine slurm library in $slurm_PREFIX" >&2;}
+   { (exit 1); exit 1; }; }
+   fi
+
+   slurm_LIBS="-L${slurm_PREFIX}/lib ${slurm_LIBS}"
+fi
+
+# END CASC_SUPPORT_SLURM
+
+
+if test "${slurm_PREFIX+set}" = set; then
+  LIBS="$slurm_LIBS $LIBS"
+
+# Split slurm_LIBS into the LIB_PATH part (slurm_LIB_PATH) and the LIB_NAME part (slurm_LIB_NAME)
+if test -n "${slurm_LIBS}"; then
+  for i in ${slurm_LIBS}; do
+    case "$i" in
+    -L*) slurm_LIB_PATH="${slurm_LIB_PATH} $i" ;;
+    *) slurm_LIB_NAME="${slurm_LIB_NAME} $i" ;;
+    esac
+  done
+fi
+
+  LIB_PATH="$LIB_PATH $slurm_LIB_PATH "
+  LIB_NAME="$LIB_NAME $slurm_LIB_NAME"
+  INC_PATH="$slurm_INCLUDES $INC_PATH"
+  SLURM_DIR="$slurm_PREFIX"
+  PARFLOW_HAVE_SLURM="yes"
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_SLURM 1
+_ACEOF
+
+else
+  { $as_echo "$as_me:$LINENO: WARNING: Parflow configured without the SLURM library" >&5
+$as_echo "$as_me: WARNING: Parflow configured without the SLURM library" >&2;}
 fi
 
 

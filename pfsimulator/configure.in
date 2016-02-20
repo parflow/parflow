@@ -540,12 +540,32 @@ if test "${samrai_PREFIX+set}" = set; then
   INC_PATH="$samrai_INCLUDES $INC_PATH"
   SAMRAI_DIR="$samrai_PREFIX"
   PARFLOW_HAVE_SAMRAI="yes"
-  AC_DEFINE(HAVE_SAMRAI,1,SILO library is available so use it)
+  AC_DEFINE(HAVE_SAMRAI,1,SAMRAI library is available so use it)
 else
   AC_MSG_WARN([Parflow configured without the SAMRAI library])
 fi
 AC_SUBST(PARFLOW_HAVE_SAMRAI)
 AC_SUBST(SAMRAI_DIR)
+
+dnl
+dnl Set variables for SLURM support.
+dnl
+PARFLOW_HAVE_SLURM="no"
+CASC_SUPPORT_SLURM
+if test "${slurm_PREFIX+set}" = set; then
+  LIBS="$slurm_LIBS $LIBS"
+  CASC_SPLIT_LIBS_STRING(slurm_LIBS,slurm_LIB_PATH,slurm_LIB_NAME)
+  LIB_PATH="$LIB_PATH $slurm_LIB_PATH "
+  LIB_NAME="$LIB_NAME $slurm_LIB_NAME"
+  INC_PATH="$slurm_INCLUDES $INC_PATH"
+  SLURM_DIR="$slurm_PREFIX"
+  PARFLOW_HAVE_SLURM="yes"
+  AC_DEFINE(HAVE_SLURM,1,SILO library is available so use it)
+else
+  AC_MSG_WARN([Parflow configured without the SLURM library])
+fi
+AC_SUBST(PARFLOW_HAVE_SLURM)
+AC_SUBST(SLURM_DIR)
 
 
 debug_ext=debug

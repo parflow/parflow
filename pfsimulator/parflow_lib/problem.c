@@ -99,7 +99,7 @@ Problem   *NewProblem(
 
    ProblemDumpIntervalExecutionTimeLimit(problem) = GetIntDefault("TimingInfo.DumpIntervalExecutionTimeLimit", 0);
 
-#ifndef PF_HAVE_SLURM
+#ifndef HAVE_SLURM
    if(ProblemDumpIntervalExecutionTimeLimit(problem))
    {
       /*
