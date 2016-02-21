@@ -2727,15 +2727,23 @@ void AdvanceRichards(PFModule *this_module,
        */
       if(dump_files && dump_interval_execution_time_limit)
       {
-	printf("Checking execution time limit, interation = %d, remaining time = %ld (s)\n", 
-	       instance_xtra -> iteration_number,
-	       slurm_get_rem_time(0));
-		    
-	if(slurm_get_rem_time(0) <= dump_interval_execution_time_limit)
-	  {
-	     printf("Remaining time less than supplied DumpIntervalExectionTimeLimit = %d, halting execution\n", dump_interval_execution_time_limit);
-	     take_more_time_steps = 0;
-	  }
+         if(!amps_Rank(amps_CommWorld))
+         {
+
+            printf("Checking execution time limit, interation = %d, remaining time = %ld (s)\n", 
+               instance_xtra -> iteration_number,
+               slurm_get_rem_time(0));
+         }
+                    
+	 if(slurm_get_rem_time(0) <= dump_interval_execution_time_limit)
+	 {
+	    if(!amps_Rank(amps_CommWorld))
+	    {
+	       printf("Remaining time less than supplied DumpIntervalExectionTimeLimit = %d, halting execution\n", dump_interval_execution_time_limit);
+	    }
+	    
+	    take_more_time_steps = 0;
+	 }
       }
 #endif
 
