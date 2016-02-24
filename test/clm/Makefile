@@ -44,6 +44,8 @@ check_sequential:
 	@-for i in $(TESTS); \
 	do \
 	        make --no-print-directory testclean; \
+		echo "*****************************************************************************"; \
+		echo "Running $$i on 1 1 1"; \
 		tclsh $$i 1 1 1; \
 	done
 
