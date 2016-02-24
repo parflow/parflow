@@ -44,9 +44,6 @@
 
 #define pqr_to_nxyz(pqr, mxyz, lxyz)  (pqr < lxyz ? mxyz+1 : mxyz)
 
-#define pqr_to_process(p, q, r, P, Q, R)  ((((r)*(Q))+(q))*(P) + (p))
-
-
 /*--------------------------------------------------------------------------
  * DistributeUserGrid:
  *   We currently assume that the user's grid consists of 1 subgrid only.

@@ -27,6 +27,7 @@
 **********************************************************************EHEADER*/
 
 #include "parflow.h"
+#include "globals.h"
 
 /*--------------------------------------------------------------------------
  * Structures
@@ -99,6 +100,25 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
             rsz_data = SubvectorData(rsz_sub);
 
             z = BackgroundZ(GlobalsBackground);
+
+	    /* Receive partial sum from rank below current rank.  This is lower z value for this rank. */
+	    if ( GlobalsR >  0 )
+	    {
+	       amps_Invoice invoice = amps_NewInvoice("%d", &z);
+	       int srcRank = pqr_to_process(GlobalsP,
+					    GlobalsQ,
+					    GlobalsR - 1,
+					    GlobalsNumProcsX,
+					    GlobalsNumProcsY,
+					    GlobalsNumProcsZ);
+	       
+	       amps_Recv(amps_CommWorld, srcRank, invoice);
+	       amps_FreeInvoice(invoice);
+	    }
+	    else
+	    {
+	       z = BackgroundZ(GlobalsBackground);
+	    }
             
             zz=ctalloc(double, (nz));
             for (l = iz; l < iz + nz; l++){
@@ -114,7 +134,22 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
                 z +=  0.5 * RealSpaceDZ(SubgridRZ(subgrid)) * dz_data[ips];
             }
 
- 
+	    /* Send partial sum to rank above current rank */
+	    if ( GlobalsR < GlobalsNumProcsZ - 1 )
+	    {
+	       amps_Invoice invoice = amps_NewInvoice("%d", &z);
+	       
+	       int dstRank = pqr_to_process(GlobalsP,
+					    GlobalsQ,
+					    GlobalsR + 1,
+					    GlobalsNumProcsX,
+					    GlobalsNumProcsY,
+					    GlobalsNumProcsZ);
+	       
+	       amps_Send(amps_CommWorld, dstRank, invoice);
+	       amps_FreeInvoice(invoice);
+	    }
+
 	    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
             {   
 	        ips = SubvectorEltIndex(rsz_sub, i, j, k);
