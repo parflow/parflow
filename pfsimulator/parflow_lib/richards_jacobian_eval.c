@@ -322,7 +322,6 @@ int           symm_part)      /* Specifies whether to compute just the
 	       case 7:
 	       {
 		  public_xtra -> type = overland_flow;
-		 // printf("SGS setting overland flow\n");
 	       }
 	       break;
 	    }
@@ -541,6 +540,8 @@ int           symm_part)      /* Specifies whether to compute just the
    ForSubgridI(is, GridSubgrids(grid))
    {
       subgrid = GridSubgrid(grid, is);
+      Subgrid* grid2d_subgrid = GridSubgrid(grid2d, is);
+      int grid2d_iz = SubgridIZ(grid2d_subgrid);
 	
       p_sub    = VectorSubvector(pressure, is);
       d_sub    = VectorSubvector(density, is);
@@ -614,7 +615,7 @@ int           symm_part)      /* Specifies whether to compute just the
 
 	 ip = SubvectorEltIndex(p_sub, i, j, k);
 	 im = SubmatrixEltIndex(J_sub, i, j, k);
-     ioo = SubvectorEltIndex(p_sub, i, j, 0);  
+	 ioo = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 	 
      prod        = rpp[ip] * dp[ip];
 	 prod_der    = rpdp[ip] * dp[ip] + rpp[ip] * ddp[ip];

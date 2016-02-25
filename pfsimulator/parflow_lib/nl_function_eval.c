@@ -270,6 +270,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    ForSubgridI(is, GridSubgrids(grid))
    {
       subgrid = GridSubgrid(grid, is);
+      Subgrid* grid2d_subgrid = GridSubgrid(grid2d, is);
+      int grid2d_iz = SubgridIZ(grid2d_subgrid);
 	
       d_sub  = VectorSubvector(density, is);
       od_sub = VectorSubvector(old_density, is);
@@ -329,7 +331,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       {
 	 ip  = SubvectorEltIndex(f_sub,   i, j, k);
 	 ipo = SubvectorEltIndex(po_sub,  i, j, k);
-          io = SubvectorEltIndex(f_sub, i, j, 0);
+	 io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
+	 
           del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
           del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));
           del_x_slope = 1.0;
@@ -344,6 +347,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    ForSubgridI(is, GridSubgrids(grid))
    {
       subgrid = GridSubgrid(grid, is);
+      Subgrid       *grid2d_subgrid          = GridSubgrid(grid2d, is);
+      int grid2d_iz = SubgridIZ(grid2d_subgrid);
 	
       ss_sub  = VectorSubvector(sstorage, is);
 
@@ -401,7 +406,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
       {
 	 ip = SubvectorEltIndex(f_sub, i, j, k);
-          io = SubvectorEltIndex(f_sub, i, j, 0);
+	 io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
+
           del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
           del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));
           del_x_slope = 1.0;
@@ -421,6 +427,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    ForSubgridI(is, GridSubgrids(grid))
    {
       subgrid = GridSubgrid(grid, is);
+      Subgrid       *grid2d_subgrid          = GridSubgrid(grid2d, is);
+      int grid2d_iz = SubgridIZ(grid2d_subgrid);
 	
       s_sub  = VectorSubvector(source, is);
       f_sub  = VectorSubvector(fval, is);
@@ -466,8 +474,9 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       {
 
 	 ip = SubvectorEltIndex(f_sub, i, j, k);
-          io = SubvectorEltIndex(f_sub, i, j, 0);
-          del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
+	 io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
+
+	 del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
           del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));
           del_x_slope = 1.0;
           del_y_slope = 1.0;
@@ -553,10 +562,14 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 		  (rel_perm, pressure, density, gravity, problem_data, 
 		   CALCFCN));
 
+   
    /* Calculate contributions from second order derivatives and gravity */
    ForSubgridI(is, GridSubgrids(grid))
    {
       subgrid = GridSubgrid(grid, is);
+      
+      Subgrid       *grid2d_subgrid          = GridSubgrid(grid2d, is);
+      int grid2d_iz = SubgridIZ(grid2d_subgrid);
 	
       p_sub     = VectorSubvector(pressure, is);
       d_sub     = VectorSubvector(density, is);
@@ -606,20 +619,20 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       permyp = SubvectorData(permy_sub);
       permzp = SubvectorData(permz_sub);
        
-       /* @RMM  added to provide slopes to terrain fns */
-       x_ssl_dat = SubvectorData(x_ssl_sub);
-       y_ssl_dat = SubvectorData(y_ssl_sub);
-       
-       /* @RMM added to provide variable dz */
-       z_mult_dat = SubvectorData(z_mult_sub);
-       
-       qx_sub = VectorSubvector(qx, is);
+      /* @RMM  added to provide slopes to terrain fns */
+      x_ssl_dat = SubvectorData(x_ssl_sub);
+      y_ssl_dat = SubvectorData(y_ssl_sub);
+      
+      /* @RMM added to provide variable dz */
+      z_mult_dat = SubvectorData(z_mult_sub);
+      
+      qx_sub = VectorSubvector(qx, is);
 
 
       GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
       {
 	 ip = SubvectorEltIndex(p_sub, i, j, k);
-     io = SubvectorEltIndex(p_sub, i, j, 0);     
+	 io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 
           /* @RMM: modified the terrain-following transform
            to be swtichable in the UZ
@@ -638,11 +651,13 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
          // x_dir_g = RPMean(x_ssl_dat[io],x_ssl_dat[io+1]
          //   ,gravity*sin(atan(x_ssl_dat[io])),gravity*sin(atan(x_ssl_dat[io+1])));
           x_dir_g = Mean(gravity*sin(atan(x_ssl_dat[io])),gravity*sin(atan(x_ssl_dat[io+1])));
+
          // x_dir_g = gravity*sin(Mean(atan(x_ssl_dat[io]),atan(x_ssl_dat[io+1])));
           //x_dir_g = gravity*sin(atan(x_ssl_dat[io]))
          // x_dir_g = gravity*sin(atan(x_ssl_dat[io]));
          // x_dir_g = x_ssl_dat[io];
           x_dir_g_c = Mean(gravity*cos(atan(x_ssl_dat[io])),gravity*cos(atan(x_ssl_dat[io+1])));
+
          // x_dir_g_c = gravity*cos(Mean(atan(x_ssl_dat[io]),atan(x_ssl_dat[io+1])));
          //  x_dir_g_c = gravity*cos(atan(x_ssl_dat[io]));
           //x_dir_g_c = 1.0; 
@@ -650,10 +665,11 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
       //    y_dir_g = RPMean(y_ssl_dat[io], x_ssl_dat[io+sy_p]
       //      ,gravity*sin(atan(y_ssl_dat[io])),gravity*sin(atan(y_ssl_dat[io+sy_p])));
           y_dir_g = Mean(gravity*sin(atan(y_ssl_dat[io])),gravity*sin(atan(y_ssl_dat[io+sy_p])));
-         // y_dir_g = gravity*sin(Mean(atan(y_ssl_dat[io]),atan(y_ssl_dat[io+sy_p])));
+	  //y_dir_g = gravity*sin(Mean(atan(y_ssl_dat[io]),atan(y_ssl_dat[io+sy_p])));
           //y_dir_g = gravity*sin(atan(y_ssl_dat[io]));
           //y_dir_g = y_ssl_dat[io];
-          y_dir_g_c = Mean(gravity*cos(atan(y_ssl_dat[io])),gravity*cos(atan(y_ssl_dat[io+sy_p])));
+	  y_dir_g_c = Mean(gravity*cos(atan(y_ssl_dat[io])),gravity*cos(atan(y_ssl_dat[io+sy_p])));
+
           //y_dir_g_c = gravity*cos(Mean(atan(y_ssl_dat[io]),atan(y_ssl_dat[io+sy_p])));
          // y_dir_g_c = gravity*cos(atan(y_ssl_dat[io]));
           //y_dir_g_c = 1.0;
@@ -710,7 +726,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
           rpp[ip]*dp[ip],
 	    rpp[ip+sy_p]*dp[ip+sy_p])
 	    / viscosity;
-          
+
           /* Calculate front face velocity gravity terms
            @RMM added sin* g term to test terrain-following grid
            note upwinding on gravity terms not pressure 
@@ -726,7 +742,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
                    rpp[ip+sy_p]*dp[ip+sy_p])
  //         *rpp[ip]*dp[ip]
           / viscosity;
-          
+
 	 /* Calculate upper face velocity.
 	    diff >= 0 implies flow goes lower to upper 
       @RMM added cos to g term to test terrain-following grid
@@ -762,7 +778,6 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 	    / viscosity;
         //  printf("uupper: %10.6e \n", u_upper);
 
-
 	 fp[ip]      += dt * ( u_right + u_front + u_upper );
 	 fp[ip+1]    -= dt * u_right;
 	 fp[ip+sy_p] -= dt * u_front;
@@ -775,6 +790,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    ForSubgridI(is, GridSubgrids(grid))
    {
       subgrid = GridSubgrid(grid, is);
+      Subgrid       *grid2d_subgrid          = GridSubgrid(grid2d, is);
+      int grid2d_iz = SubgridIZ(grid2d_subgrid);
 	 
       d_sub     = VectorSubvector(density, is);
       rp_sub    = VectorSubvector(rel_perm, is);
@@ -877,7 +894,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 	       BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
 	       {
 		  ip   = SubvectorEltIndex(p_sub, i, j, k);
-          io = SubvectorEltIndex(p_sub, i, j, 0);    
+		  io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
+
 		  value =  bc_patch_values[ival];
 //               if (pp[ip] < 0.) {
                    x_dir_g = 0.0;
@@ -1115,7 +1133,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 	       BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
 	       {
 		  ip   = SubvectorEltIndex(p_sub, i, j, k);
-          io   = SubvectorEltIndex(p_sub, i, j, 0);
+		  io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
+
 //               if (pp[ip] < 0.) {
                    x_dir_g = 0.0;
                    y_dir_g = 0.0;
@@ -1300,7 +1319,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 	       BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
 	       {
 		  ip   = SubvectorEltIndex(p_sub, i, j, k);
-          io   = SubvectorEltIndex(p_sub, i, j, 0);
+		  io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
+		  
 //               if (pp[ip] < 0.) {
                    x_dir_g = 0.0;
                    y_dir_g = 0.0;
@@ -1625,8 +1645,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 	 }     /* End switch BCtype */
       }        /* End ipatch loop */
    }           /* End subgrid loop */
-   
-   
+
    /*
      Reset values inserted for the DirichletBC back to the decoupled
      problem used in the inactive cells.
@@ -1675,7 +1694,6 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 	 }     /* End switch BCtype */
       }        /* End ipatch loop */
    }           /* End subgrid loop */
-
 
    FreeBCStruct(bc_struct);
 
