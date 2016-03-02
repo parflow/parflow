@@ -87,37 +87,41 @@ CommPkg   *NewMatrixUpdatePkg(
 
    Grid* grid = MatrixGrid(matrix);
 
-   if(GridNumSubgrids(grid) > 1) {
-      PARFLOW_ERROR("NewMatrixUpdatePkg can't be used with number subgrids > 1");
-   } else {
-
-      Region      *send_reg, *recv_reg;
-
-      Submatrix * submatrix = MatrixSubmatrix(matrix, 0);
-
-      int ix = SubmatrixIX(submatrix);
-      int iy = SubmatrixIY(submatrix);
-      int iz = SubmatrixIZ(submatrix);
-      int sx = SubmatrixSX(submatrix);
-      int sy = SubmatrixSY(submatrix);
-      int sz = SubmatrixSZ(submatrix);
-      
-      int n = StencilSize(MatrixStencil(matrix));
-      if (MatrixSymmetric(matrix))
-	 n = (n+1)/2;
-      
-      CommRegFromStencil(&send_reg, &recv_reg, MatrixGrid(matrix), ghost);
-      ProjectRegion(send_reg, sx, sy, sz, ix, iy, iz);
-      ProjectRegion(recv_reg, sx, sy, sz, ix, iy, iz);
-      
-      
-      new_commpkg = NewCommPkg(send_reg, recv_reg,
-			       MatrixDataSpace(matrix), n, SubmatrixData(submatrix));
-
-      FreeRegion(send_reg);
-      FreeRegion(recv_reg);
-
+   if (!USE_P4EST){
+       if(GridNumSubgrids(grid) > 1) {
+           PARFLOW_ERROR("NewMatrixUpdatePkg can't be used with number subgrids > 1");
+         }
+   }else {
+#ifndef HAVE_P4EST
+       PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
    }
+
+   Region      *send_reg, *recv_reg;
+
+   Submatrix * submatrix = MatrixSubmatrix(matrix, 0);
+
+   int ix = SubmatrixIX(submatrix);
+   int iy = SubmatrixIY(submatrix);
+   int iz = SubmatrixIZ(submatrix);
+   int sx = SubmatrixSX(submatrix);
+   int sy = SubmatrixSY(submatrix);
+   int sz = SubmatrixSZ(submatrix);
+
+   int n = StencilSize(MatrixStencil(matrix));
+   if (MatrixSymmetric(matrix))
+     n = (n+1)/2;
+
+   CommRegFromStencil(&send_reg, &recv_reg, MatrixGrid(matrix), ghost);
+   ProjectRegion(send_reg, sx, sy, sz, ix, iy, iz);
+   ProjectRegion(recv_reg, sx, sy, sz, ix, iy, iz);
+
+
+   new_commpkg = NewCommPkg(send_reg, recv_reg,
+                            MatrixDataSpace(matrix), n, SubmatrixData(submatrix));
+
+   FreeRegion(send_reg);
+   FreeRegion(recv_reg);
 
    return new_commpkg;
 }

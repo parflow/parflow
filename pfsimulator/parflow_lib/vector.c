@@ -61,15 +61,19 @@ CommPkg  *NewVectorCommPkg(
 
    Grid *grid = VectorGrid(vector);
 
-   if(GridNumSubgrids(grid) > 1) {
-      PARFLOW_ERROR("NewVectorCommPkg can't be used with number subgrids > 1");
-   } else {
-      
-      new_commpkg = NewCommPkg(ComputePkgSendRegion(compute_pkg),
-			       ComputePkgRecvRegion(compute_pkg),
-			       VectorDataSpace(vector), 1, SubvectorData(VectorSubvector(vector,0)));
+   if (!USE_P4EST){
+       if(GridNumSubgrids(grid) > 1) {
+           PARFLOW_ERROR("NewVectorCommPkg can't be used with number subgrids > 1");
+       }
+   }else{
+#ifndef HAVE_P4EST
+       PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
    }
 
+   new_commpkg = NewCommPkg(ComputePkgSendRegion(compute_pkg),
+                            ComputePkgRecvRegion(compute_pkg),
+                            VectorDataSpace(vector), 1, SubvectorData(VectorSubvector(vector,0)));
    return new_commpkg;
 }
 
