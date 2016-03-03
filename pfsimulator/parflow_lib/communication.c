@@ -178,6 +178,7 @@ CommPkg         *NewCommPkg(
    int   i, j, p;
 
    int   dim;
+   int   PQR  = GlobalsNumProcsX * GlobalsNumProcsY * GlobalsNumProcsZ;
 
    new_comm_pkg = ctalloc(CommPkg, 1);
 
@@ -202,53 +203,71 @@ CommPkg         *NewCommPkg(
    num_send_procs = 0;
    if(num_send_subregions)
    {
-      new_comm_pkg -> send_ranks = send_proc_array = 
-	 talloc(int, num_send_subregions);
+       new_comm_pkg -> send_ranks = send_proc_array =
+               talloc(int, num_send_subregions);
 
-      for (i = 0; i < num_send_subregions; i++)
-	 send_proc_array[i] = -1;
+       for (i = 0; i < num_send_subregions; i++)
+           send_proc_array[i] = -1;
 
-      ForSubregionArrayI(i, send_region)
-      {
-	 comm_sra = RegionSubregionArray(send_region, i);
-	 ForSubregionI(j, comm_sra)
-	 {
-	    comm_sr = SubregionArraySubregion(comm_sra, j);
-	    proc = SubregionProcess(comm_sr);
-
-	    for (p = 0; p < num_send_procs; p++)
-	       if (proc == send_proc_array[p])
-		  break;
-	    if (p >= num_send_procs)
-	       send_proc_array[num_send_procs++] = proc;
-	 }
-      }
+       ForSubregionArrayI(i, send_region)
+       {
+           comm_sra = RegionSubregionArray(send_region, i);
+           ForSubregionI(j, comm_sra)
+           {
+               comm_sr = SubregionArraySubregion(comm_sra, j);
+               proc = SubregionProcess(comm_sr);
+               if ( GlobalsNumProcs ==  PQR ){
+                   for (p = 0; p < num_send_procs; p++)
+                       if (proc == send_proc_array[p])
+                           break;
+                   if (p >= num_send_procs)
+                       send_proc_array[num_send_procs++] = proc;
+               }else {
+                   if (USE_P4EST){
+#ifdef HAVE_P4EST
+                       send_proc_array[num_send_procs++] = proc;
+#else
+                       PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
+                   }
+               }
+           }
+       }
    }
 
    num_recv_procs = 0;
    if(num_recv_subregions)
    {
-      new_comm_pkg -> recv_ranks = 
-	 recv_proc_array = talloc(int, num_recv_subregions);
+       new_comm_pkg -> recv_ranks =
+               recv_proc_array = talloc(int, num_recv_subregions);
 
-      for (i = 0; i < num_recv_subregions; i++)
-	 recv_proc_array[i] = -1;
+       for (i = 0; i < num_recv_subregions; i++)
+           recv_proc_array[i] = -1;
 
-      ForSubregionArrayI(i, recv_region)
-      {
-	 comm_sra = RegionSubregionArray(recv_region, i);
-	 ForSubregionI(j, comm_sra)
-	 {
-	    comm_sr = SubregionArraySubregion(comm_sra, j);
-	    proc = SubregionProcess(comm_sr);
-
-	    for (p = 0; p < num_recv_procs; p++)
-	       if (proc == recv_proc_array[p])
-		  break;
-	    if (p >= num_recv_procs)
-	       recv_proc_array[num_recv_procs++] = proc;
-	 }
-      }
+       ForSubregionArrayI(i, recv_region)
+       {
+           comm_sra = RegionSubregionArray(recv_region, i);
+           ForSubregionI(j, comm_sra)
+           {
+               comm_sr = SubregionArraySubregion(comm_sra, j);
+               proc = SubregionProcess(comm_sr);
+               if ( GlobalsNumProcs ==  PQR ){
+                   for (p = 0; p < num_recv_procs; p++)
+                       if (proc == recv_proc_array[p])
+                           break;
+                   if (p >= num_recv_procs)
+                       recv_proc_array[num_recv_procs++] = proc;
+               }else {
+                   if (USE_P4EST){
+#ifdef HAVE_P4EST
+                       recv_proc_array[num_recv_procs++] = proc;
+#else
+                       PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
+                   }
+               }
+           }
+       }
    }
 
    /*------------------------------------------------------
