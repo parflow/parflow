@@ -300,8 +300,9 @@ static void     AllocateVectorData(
    Vector  *vector)
 { 
    Grid       *grid = VectorGrid(vector);
-
+   double     *data;
    int         i;
+   int         data_size;
 
    /* if necessary, free old CommPkg's */
    for(i = 0; i < NumUpdateModes; i++)
@@ -311,10 +312,10 @@ static void     AllocateVectorData(
    ForSubgridI(i, GridSubgrids(grid)) {
       Subvector *subvector = VectorSubvector(vector, i);
 
-      int data_size = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
+      data_size = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
       SubvectorDataSize(subvector) = data_size;
 
-      double  *data = amps_CTAlloc(double, data_size);
+      data = amps_CTAlloc(double, data_size);
       VectorSubvector(vector, i) -> allocated = TRUE;
 
       SubvectorData(VectorSubvector(vector, i)) = data;
