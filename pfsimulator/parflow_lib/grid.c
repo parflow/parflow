@@ -122,36 +122,26 @@ void  FreeGrid(
 {
     if(grid)  {
 
-      if (grid -> background) {
-	 FreeSubgrid(grid -> background);
-      }
+	if (grid -> background) {
+	    FreeSubgrid(grid -> background);
+	}
 
-      if (!USE_P4EST){
-          FreeSubgridArray(GridAllSubgrids(grid));
+        FreeSubgridArray(GridAllSubgrids(grid));
 
-          /* these subgrid arrays point to subgrids in all_subgrids */
-          SubgridArraySize(GridSubgrids(grid)) = 0;
-          FreeSubgridArray(GridSubgrids(grid));
+        /* these subgrid arrays point to subgrids in all_subgrids */
+        SubgridArraySize(GridSubgrids(grid)) = 0;
+        FreeSubgridArray(GridSubgrids(grid));
 
-          if (GridComputePkgs(grid))
-          FreeComputePkgs(grid);
-     } else {
+        if (GridComputePkgs(grid))
+            FreeComputePkgs(grid);
 #ifdef HAVE_P4EST
-           FreeSubgridArray(GridAllSubgrids(grid));
-
-           if (GridComputePkgs(grid))
-             FreeComputePkgs(grid);
-
-           if(grid->pfgrid != NULL){
-             /* destroy pfgrid structure */
-             parflow_p4est_grid_destroy (grid->pfgrid);
-           }
-#else
-        PARFLOW_ERROR("ParFlow compiled without p4est");
+        if(grid->pfgrid != NULL){
+            /* destroy pfgrid structure */
+            parflow_p4est_grid_destroy (grid->pfgrid);
+        }
 #endif
-    }
         tfree(grid);
-   }
+    }
 }
 
 
