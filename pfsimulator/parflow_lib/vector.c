@@ -271,7 +271,7 @@ static Vector  *NewTempVector(
 
       n = SubvectorNX(new_sub) * SubvectorNY(new_sub) * SubvectorNZ(new_sub);
 
-      data_size = n;
+      data_size += n;
 
       VectorSubvector(new_vector, i) = new_sub;
    }
