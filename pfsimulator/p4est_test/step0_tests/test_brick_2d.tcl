@@ -1,5 +1,4 @@
-# Trying to compute - \Delta p = 0 in one dimension with solution p = x.
-# using pfb input for both ICPressure and BCPressure
+# Trying to compute - \Delta p = 0 in one dimension with solution p = cos(x)cosh(y).
 
 # Import the ParFlow TCL package
 lappend auto_path $env(PARFLOW_DIR)/bin 
@@ -11,10 +10,8 @@ pfset FileVersion 4
 # remove files from previous run
 foreach file [glob -nocomplain *test_brick.out.*] {file delete -force -- $file}
 foreach file [glob -nocomplain test_brick.pfidb] {file delete -force -- $file}
-foreach file [glob -nocomplain icpressure.pfb*] {file delete -force -- $file}
 
-
-pfset Process.Topology.P 1
+pfset Process.Topology.P 2
 pfset Process.Topology.Q 1
 pfset Process.Topology.R 1
 
@@ -25,9 +22,9 @@ pfset ComputationalGrid.Lower.X                  0.0
 pfset ComputationalGrid.Lower.Y                  0.0
 pfset ComputationalGrid.Lower.Z                  0.0
 
-pfset ComputationalGrid.DX	                 0.2
-pfset ComputationalGrid.DY                       0.2
-pfset ComputationalGrid.DZ	                 0.2
+pfset ComputationalGrid.DX	                 0.01
+pfset ComputationalGrid.DY                       0.01
+pfset ComputationalGrid.DZ	                 0.01
 
 pfset ComputationalGrid.NX                       12
 pfset ComputationalGrid.NY                       12
@@ -41,8 +38,8 @@ pfset use_pforest                               "yes"
 #---------------------------------------------------------
 # Computational SubGrid dims
 #---------------------------------------------------------
-pfset ComputationalSubgrid.MX                    4
-pfset ComputationalSubgrid.MY                    3
+pfset ComputationalSubgrid.MX                    6
+pfset ComputationalSubgrid.MY                    12
 pfset ComputationalSubgrid.MZ                    1
 
 #---------------------------------------------------------
@@ -53,7 +50,7 @@ pfset GeomInput.Names "domain_input background_input"
 #---------------------------------------------------------
 # Known Solution
 #---------------------------------------------------------
-pfset KnownSolution                                   2D_XY
+pfset KnownSolution                                   2D_CosX_CoshY
 
 #--------------------------------------------------------
 # prepare ICPressure File which has the initial values for pressure
@@ -204,19 +201,19 @@ pfset BCPressure.PatchNames "left right front back bottom top"
 
 pfset Patch.left.BCPressure.Type			ExactSolution
 pfset Patch.left.BCPressure.Cycle			"constant"
-pfset Patch.left.BCPressure.alltime.PredefinedFunction	2D_XY
+pfset Patch.left.BCPressure.alltime.PredefinedFunction	2D_CosX_CoshY
 
 pfset Patch.right.BCPressure.Type			ExactSolution
 pfset Patch.right.BCPressure.Cycle			"constant"
-pfset Patch.right.BCPressure.alltime.PredefinedFunction 2D_XY
+pfset Patch.right.BCPressure.alltime.PredefinedFunction 2D_CosX_CoshY
 
 pfset Patch.front.BCPressure.Type			ExactSolution
 pfset Patch.front.BCPressure.Cycle			"constant"
-pfset Patch.front.BCPressure.alltime.PredefinedFunction  2D_XY
+pfset Patch.front.BCPressure.alltime.PredefinedFunction  2D_CosX_CoshY
 
 pfset Patch.back.BCPressure.Type			ExactSolution
 pfset Patch.back.BCPressure.Cycle			"constant"
-pfset Patch.back.BCPressure.alltime.PredefinedFunction  2D_XY
+pfset Patch.back.BCPressure.alltime.PredefinedFunction  2D_CosX_CoshY
 
 # pfset Patch.front.BCPressure.Type			FluxConst
 # pfset Patch.front.BCPressure.Cycle			"constant"
@@ -297,6 +294,11 @@ pfset Mannings.Geom.domain.Value 0.0
 pfset SpecificStorage.Type            Constant
 pfset SpecificStorage.GeomNames       "domain"
 pfset Geom.domain.SpecificStorage.Value 0.0
+
+#-----------------------------------------------------------------------------
+# Print pressure for visualization
+#-----------------------------------------------------------------------------
+pfset Solver.WriteSiloPressure		True
 
 #-----------------------------------------------------------------------------
 # Write out data base

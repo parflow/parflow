@@ -1,0 +1,21 @@
+We are trying to generalize to  #Subgrids per procesor > 1. The
+easiest case possible is running the code with only one processor
+with two subgrids:
+
+#  +-----+-----+
+#  |     |     |
+#  |     |     |
+#  +-----+-----+
+#
+#  Nx = Ny = 12
+#  PARFLOW + P4EST
+#  P=2, Q=1     	Mx=6 My=12, --> 2 Trees and initial level 0
+
+This configuration is prohibited in the stantard Parflow version and
+we have forced the code to run under these conditions in the Parflow+p4est
+implementation. As expected the code crashes in several places. So far
+we have identified:
+
+- Set up the send and recv processor arrays in the correspoding message envelops (communication.c)
+- The vector and matrix  allocation (vector.c and matrix.c)
+- The Non linear solver, in particular the grids needed for the multigrid V-cycle. (mg_semi.c)
