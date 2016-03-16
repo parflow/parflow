@@ -51,27 +51,37 @@ Grid  *NewGrid(
    SubgridArray  *all_subgrids)
 {
    Grid    *new_grid;
-
+   SubgridArray  *s_arr;
    Subgrid *s;
-
    int      i, size;
-
-   int ix = INT_MAX;
-   int iy = INT_MAX;
-   int iz = INT_MAX;
-   int nx = INT_MIN;
-   int ny = INT_MIN;
-   int nz = INT_MIN;
+   int      ix = INT_MAX;
+   int      iy = INT_MAX;
+   int      iz = INT_MAX;
+   int      nx = INT_MIN;
+   int      ny = INT_MIN;
+   int      nz = INT_MIN;
+#ifdef HAVE_P4EST
+            amps_Invoice invoice;
+#endif
 
    new_grid = talloc(Grid, 1);
-
    new_grid -> subgrids      = subgrids;
    new_grid -> all_subgrids  = all_subgrids;
 
+   if (!USE_P4EST){
+        s_arr = all_subgrids;
+   }else{
+#ifdef HAVE_P4EST
+        s_arr = subgrids;
+#else
+        PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
+   }
+
    size = 0;
-   for (i = 0; i < SubgridArraySize(all_subgrids); i++)
+   for (i = 0; i < SubgridArraySize(s_arr); i++)
    {
-      s = SubgridArraySubgrid(all_subgrids, i);
+      s = SubgridArraySubgrid(s_arr, i);
       size += (s -> nx)*(s -> ny)*(s -> nz);
 
       if(s -> ix < ix) {
@@ -99,10 +109,22 @@ Grid  *NewGrid(
       }
    }
 
+   if (USE_P4EST){
+       /* get size */
+       invoice = amps_NewInvoice("%i", &size);
+       amps_AllReduce(amps_CommWorld, invoice, amps_Add);
+       amps_FreeInvoice(invoice);
+       /* get ixyz and nxyz, we want min(ix,iy,iz) and max(nx,ny,nz)*/
+       ix *= -1, iy *= -1, iz *= -1;
+       invoice = amps_NewInvoice("%i%i%i%i%i%i",
+                                 &ix,&iy,&iz, &nx,&ny,&nz );
+       amps_AllReduce(amps_CommWorld, invoice, amps_Max);
+       ix *= -1, iy *= -1, iz *= -1;
+       amps_FreeInvoice(invoice);
+   }
+
    new_grid -> background = NewSubgrid(ix, iy, iz, nx, ny, nz, 1, 1, 1, 0);
-
    new_grid -> size = size;
-
    new_grid -> compute_pkgs = NULL;
 
 #ifdef HAVE_P4EST
