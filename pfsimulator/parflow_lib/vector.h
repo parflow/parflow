@@ -92,8 +92,7 @@ typedef struct _Vector
 
    int            size;         /* Total number of coefficients */
 
-                                /* Information on how to update boundary */
-   CommPkg *comm_pkg[NumUpdateModes]; 
+   CommPkg        **comm_pkg;  /* Information on how to update boundary */
 
    enum vector_type type;
 
@@ -113,7 +112,7 @@ typedef Vector *N_Vector;
 
 typedef struct _VectorUpdateCommHandle {
    Vector *vector;
-   CommHandle *comm_handle;
+   CommHandle **comm_handle;
 } VectorUpdateCommHandle;
 
 /*--------------------------------------------------------------------------
@@ -152,7 +151,8 @@ typedef struct _VectorUpdateCommHandle {
 #define VectorGrid(vector)          ((vector)-> grid)
 #define VectorDataSpace(vector)     ((vector)-> data_space)
 #define VectorSize(vector)          ((vector)-> size)
-#define VectorCommPkg(vector, mode) ((vector) -> comm_pkg[mode])
+#define VectorSubvectorCommPkg(vector, sv_idx, mode) \
+    ((vector) -> comm_pkg[(sv_idx) * (NumUpdateModes) + (mode)])
 
 #define SizeOfVector(vector)  ((vector) -> data_size)
 

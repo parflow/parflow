@@ -85,6 +85,9 @@ VectorUpdateCommHandle  *InitVectorUpdate(
    Vector      *vector,
    int          update_mode)
 {
+   int i;
+   CommHandle **amps_com_handle;
+   VectorUpdateCommHandle *vector_update_comm_handle = ctalloc(VectorUpdateCommHandle, 1);
 
    enum ParflowGridType grid_type = invalid_grid_type;
 
@@ -122,7 +125,7 @@ VectorUpdateCommHandle  *InitVectorUpdate(
    }
 #endif
 
-   CommHandle *amps_com_handle;
+   amps_com_handle = ctalloc(CommHandle *, VectorDataSpace(vector)->size);
    if(grid_type == invalid_grid_type)
    {
       
@@ -133,7 +136,8 @@ VectorUpdateCommHandle  *InitVectorUpdate(
 #ifdef NO_VECTOR_UPDATE
       amps_com_handle = NULL;
 #else
-      amps_com_handle = InitCommunication(VectorCommPkg(vector, update_mode));
+      ForSubregionI(i, VectorDataSpace(vector))
+          amps_com_handle[i] = InitCommunication(VectorSubvectorCommPkg(vector, i, update_mode));
 #endif
       
 #endif
@@ -171,11 +175,8 @@ VectorUpdateCommHandle  *InitVectorUpdate(
 
    }
 
-   VectorUpdateCommHandle *vector_update_comm_handle = ctalloc(VectorUpdateCommHandle, 1);
    vector_update_comm_handle -> vector = vector;
    vector_update_comm_handle -> comm_handle = amps_com_handle;
-
-
    return vector_update_comm_handle;
 }
 
@@ -187,37 +188,39 @@ VectorUpdateCommHandle  *InitVectorUpdate(
 void         FinalizeVectorUpdate(
    VectorUpdateCommHandle  *handle)
 {
+  int i;
 
-   switch(handle -> vector -> type)
-   {
-      case vector_cell_centered : 
-      case vector_side_centered_x :
-      case vector_side_centered_y :
-      case vector_side_centered_z :
-      case vector_cell_centered_2D : 
-      case vector_clm_topsoil : 
-      case vector_met : 
+  switch(handle -> vector -> type)
+    {
+    case vector_cell_centered :
+    case vector_side_centered_x :
+    case vector_side_centered_y :
+    case vector_side_centered_z :
+    case vector_cell_centered_2D :
+    case vector_clm_topsoil :
+    case vector_met :
       {
-	 break;
+        break;
       }
-      case vector_non_samrai : 
+    case vector_non_samrai :
       {
 #ifdef SHMEM_OBJECTS
-	 amps_Sync(amps_CommWorld);
+        amps_Sync(amps_CommWorld);
 #else
-	 
+
 #ifdef NO_VECTOR_UPDATE
 #else
-	 FinalizeCommunication(handle -> comm_handle);
+	ForSubregionI(i, VectorDataSpace(handle->vector))
+	    FinalizeCommunication(handle -> comm_handle[i]);
 #endif
 #endif
-	 
-	 break;
+
+        break;
       }
-   };
+    };
 
+  tfree(handle->comm_handle);
   tfree(handle);
-
 }
 
 
@@ -245,6 +248,8 @@ static Vector  *NewTempVector(
 
    (new_vector -> subvectors) = ctalloc(Subvector *, GridNumSubgrids(grid)); /* 1st arg.: variable type;
 																	      2nd arg.: # of elements to be allocated*/
+
+   new_vector -> comm_pkg = ctalloc(CommPkg *, GridNumSubgrids(grid) * NumUpdateModes);
 
    data_size = 0;
 
@@ -301,15 +306,16 @@ static void     AllocateVectorData(
 { 
    Grid       *grid = VectorGrid(vector);
    double     *data;
-   int         i;
+   int         i,j;
    int         data_size;
 
-   /* if necessary, free old CommPkg's */
-   for(i = 0; i < NumUpdateModes; i++)
-      FreeCommPkg(VectorCommPkg(vector, i));
-
-
    ForSubgridI(i, GridSubgrids(grid)) {
+
+      /* if necessary, free old CommPkg's */
+      for(j = 0; j < NumUpdateModes; j++){
+          FreeCommPkg(VectorSubvectorCommPkg(vector, i, j));
+      }
+
       Subvector *subvector = VectorSubvector(vector, i);
 
       data_size = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
@@ -319,12 +325,11 @@ static void     AllocateVectorData(
       VectorSubvector(vector, i) -> allocated = TRUE;
 
       SubvectorData(VectorSubvector(vector, i)) = data;
-   }
 
-   for(i = 0; i < NumUpdateModes; i++)
-   {
-      VectorCommPkg(vector, i) =
-	 NewVectorCommPkg(vector, GridComputePkg(grid, i));
+      for(j = 0; j < NumUpdateModes; j++){
+          VectorSubvectorCommPkg(vector, i, j) =
+                  NewVectorCommPkg(vector, i, GridComputePkg(grid, j));
+      }
    }
 }
 
@@ -629,19 +634,19 @@ void FreeSubvector(Subvector *subvector)
 
 void FreeTempVector(Vector *vector)
 {
-   int i;
-
-
-   for(i = 0; i < NumUpdateModes; i++)
-      FreeCommPkg(VectorCommPkg(vector, i));
+   int i,j;
 
    ForSubgridI(i, GridSubgrids(VectorGrid(vector)))
    {
       FreeSubvector(VectorSubvector(vector, i));
+      for(j = 0; j < NumUpdateModes; j++){
+          FreeCommPkg(VectorSubvectorCommPkg(vector, i, j));
+      }
    }
 
    FreeSubgridArray(VectorDataSpace(vector));
 
+   tfree(vector -> comm_pkg);
    tfree(vector -> subvectors);
    tfree(vector);
 }
