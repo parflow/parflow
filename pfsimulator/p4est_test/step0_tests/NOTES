@@ -11,11 +11,34 @@ with two subgrids:
 #  PARFLOW + P4EST
 #  P=2, Q=1     	Mx=6 My=12, --> 2 Trees and initial level 0
 
-This configuration is prohibited in the stantard Parflow version and
-we have forced the code to run under these conditions in the Parflow+p4est
-implementation. As expected the code crashes in several places. So far
-we have identified:
+This configuration is prohibited in the stantard Parflow version. 
 
-- Set up the send and recv processor arrays in the correspoding message envelops (communication.c)
-- The vector and matrix  allocation (vector.c and matrix.c)
-- The Non linear solver, in particular the grids needed for the multigrid V-cycle. (mg_semi.c)
+The necesary information for parallel comunication, in the following 
+"communication package" is encapsulated in the structure CommPkg 
+(see comunication.h). 
+
+The most important units of numerical information are the 
+Vector and Matrix types (see vector.h and matrix.h). Similarly
+as for the the Grid type,  a Vector is  a composition of subvectors.
+There is a one-one correspondence to each subvector with the 
+Subgrids in Grid. Hence, in practice each Vector contains a 
+single Subvector. The same applies for the Matrix type.
+
+The standard version of ParFlow allocates memory for only one 
+communication package per Vector (Matrix). This is reflected in the
+structures defining each type: escentially they contain a pointer to
+communication package. 
+
+We have modified the Vector and Matrix structures such that we can
+allocate and as many communication packages as Subgrids. Inmediate
+consequences are:
+
+- Take into account that we can have more than one subgrid per processor
+  while creating new communication packages.
+
+- Update of the (parallel) vector-update and matrix-update 
+  .procedures accordingly.
+
+After these changes the code crashes we the test stated at the top
+of this document. We still need to tweak the communication packages
+passed to the Non-linear solver (mg_semi.c).
