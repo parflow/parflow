@@ -261,7 +261,7 @@ pfset Solver.Nonlinear.UseJacobian                       True
 pfset Solver.Nonlinear.DerivativeEpsilon                 1e-8
 
 pfset Solver.Linear.KrylovDimension                      10
-pfset Solver.Linear.Preconditioner                       MGSemi
+pfset Solver.Linear.Preconditioner                       NoPC
 
 pfset Solver.Linear.Preconditioner.SymmetricMat          Symmetric
 pfset Solver.Linear.Preconditioner.MGSemi.MaxIter        1
