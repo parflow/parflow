@@ -30,7 +30,7 @@
  *****************************************************************************/
 
 #include <math.h>
-
+#include <assert.h>
 
 #include "parflow.h"
 #include "amps.h"
@@ -166,20 +166,12 @@ CommPkg         *NewCommPkg(
 
    int  *loop_array;
 
-   int  *send_proc_array = NULL;
-   int  *recv_proc_array = NULL;
-
    int   num_send_subregions;
    int   num_recv_subregions;
 
-   int   num_send_procs;
-   int   num_recv_procs;
-
-   int   proc;
-   int   i, j, p;
+   int   j, p;
 
    int   dim;
-   int   PQR  = GlobalsNumProcsX * GlobalsNumProcsY * GlobalsNumProcsZ;
 
    new_comm_pkg = ctalloc(CommPkg, 1);
 
@@ -191,180 +183,92 @@ CommPkg         *NewCommPkg(
    num_recv_subregions = 0;
    if ( SubregionArraySize(data_space) )
    {
-      num_send_subregions +=
-     SubregionArraySize(RegionSubregionArray(send_region, s_idx));
-      num_recv_subregions +=
-     SubregionArraySize(RegionSubregionArray(recv_region, s_idx));
+       assert( s_idx >= 0 && s_idx < SubregionArraySize(data_space));
+       num_send_subregions +=
+           SubregionArraySize(RegionSubregionArray(send_region, s_idx));
+       num_recv_subregions +=
+           SubregionArraySize(RegionSubregionArray(recv_region, s_idx));
    }
 
-   /*------------------------------------------------------
-    * compute num send and recv processes and proc_array's
-    *------------------------------------------------------*/
-
-   num_send_procs = 0;
-   if(num_send_subregions)
-   {
-       new_comm_pkg -> send_ranks = send_proc_array =
-               talloc(int, num_send_subregions);
-
-       for (i = 0; i < num_send_subregions; i++)
-           send_proc_array[i] = -1;
-
-       ForSubregionArrayI(i, send_region)
-       {
-           comm_sra = RegionSubregionArray(send_region, i);
-           ForSubregionI(j, comm_sra)
-           {
-               comm_sr = SubregionArraySubregion(comm_sra, j);
-               proc = SubregionProcess(comm_sr);
-               if ( GlobalsNumProcs ==  PQR ){
-                   for (p = 0; p < num_send_procs; p++)
-                       if (proc == send_proc_array[p])
-                           break;
-                   if (p >= num_send_procs)
-                       send_proc_array[num_send_procs++] = proc;
-               }else {
-                   if (USE_P4EST){
-#ifdef HAVE_P4EST
-                       send_proc_array[num_send_procs++] = proc;
-#else
-                       PARFLOW_ERROR("ParFlow compiled without p4est");
-#endif
-                   }
-               }
-           }
-       }
-   }
-
-   num_recv_procs = 0;
-   if(num_recv_subregions)
-   {
-       new_comm_pkg -> recv_ranks =
-               recv_proc_array = talloc(int, num_recv_subregions);
-
-       for (i = 0; i < num_recv_subregions; i++)
-           recv_proc_array[i] = -1;
-
-       ForSubregionArrayI(i, recv_region)
-       {
-           comm_sra = RegionSubregionArray(recv_region, i);
-           ForSubregionI(j, comm_sra)
-           {
-               comm_sr = SubregionArraySubregion(comm_sra, j);
-               proc = SubregionProcess(comm_sr);
-               if ( GlobalsNumProcs ==  PQR ){
-                   for (p = 0; p < num_recv_procs; p++)
-                       if (proc == recv_proc_array[p])
-                           break;
-                   if (p >= num_recv_procs)
-                       recv_proc_array[num_recv_procs++] = proc;
-               }else {
-                   if (USE_P4EST){
-#ifdef HAVE_P4EST
-                       recv_proc_array[num_recv_procs++] = proc;
-#else
-                       PARFLOW_ERROR("ParFlow compiled without p4est");
-#endif
-                   }
-               }
-           }
-       }
-   }
 
    /*------------------------------------------------------
     * Set up CommPkg
     *------------------------------------------------------*/
 
-   if(num_send_procs || num_recv_procs)
+   if(num_send_subregions || num_recv_subregions)
       loop_array = (new_comm_pkg -> loop_array)
 	 = talloc(int, (num_send_subregions + num_recv_subregions) * 9);
 
    /* set up send info */
-   if(num_send_procs)
+   if(num_send_subregions)
    {
+       new_comm_pkg -> send_ranks =
+           talloc(int, num_send_subregions);
+       new_comm_pkg -> num_send_invoices = num_send_subregions;
+       new_comm_pkg -> send_invoices =
+           ctalloc(amps_Invoice, num_send_subregions);
 
+       data_sr = SubregionArraySubregion(data_space, s_idx);
+       comm_sra = RegionSubregionArray(send_region, s_idx);
 
-      new_comm_pkg -> num_send_invoices = num_send_procs;
-      (new_comm_pkg -> send_invoices) =
-	 ctalloc(amps_Invoice, num_send_procs);
+       p = 0;
+       ForSubregionI(j, comm_sra)
+       {
+         comm_sr = SubregionArraySubregion(comm_sra, j);
+         new_comm_pkg -> send_ranks[p] =  SubregionProcess(comm_sr);
 
-      for(p = 0; p < num_send_procs; p++)
-      {
-	 num_send_subregions = 0;
-	 ForSubregionI(i, data_space)
-	 {
-	    data_sr = SubregionArraySubregion(data_space, i);
-	    comm_sra = RegionSubregionArray(send_region, i);
+         dim = NewCommPkgInfo(data_sr, comm_sr, s_idx, num_vars,
+                              loop_array);
 
-	    ForSubregionI(j, comm_sra)
-	    {
-	       comm_sr = SubregionArraySubregion(comm_sra, j);
+         invoice =
+             amps_NewInvoice("%&.&D(*)",
+                             loop_array + 1,
+                             loop_array + 5,
+                             dim,
+                             data + loop_array[0]);
 
-	       if (SubregionProcess(comm_sr) == send_proc_array[p])
-	       {
-		  dim = NewCommPkgInfo(data_sr, comm_sr, i, num_vars, 
-				       loop_array);
+         amps_AppendInvoice(&(new_comm_pkg -> send_invoices[p]),
+                            invoice);
 
-		  invoice =
-		     amps_NewInvoice("%&.&D(*)",
-				     loop_array + 1,
-				     loop_array + 5,
-				     dim,
-				     data + loop_array[0]);
-
-		  amps_AppendInvoice(&(new_comm_pkg -> send_invoices[p]),
-			 invoice);
-
-		  num_send_subregions++;
-		  loop_array += 9;
-	       }
-	    }
-	 }
-      }
-
+         p++;
+         loop_array += 9;
+       }
+       assert(p == num_send_subregions);
    }
 
    /* set up recv info */
-   if(num_recv_procs)
+   if(num_recv_subregions)
    {
-      new_comm_pkg -> num_recv_invoices = num_recv_procs;
-      (new_comm_pkg -> recv_invoices) =
-	 ctalloc(amps_Invoice, num_recv_procs);
+       new_comm_pkg -> recv_ranks = talloc(int, num_recv_subregions);
+       new_comm_pkg -> num_recv_invoices = num_recv_subregions;
+       new_comm_pkg -> recv_invoices =
+           ctalloc(amps_Invoice, num_recv_subregions);
 
-      for(p = 0; p < num_recv_procs; p++)
-      {
-	 num_recv_subregions = 0;
-	 ForSubregionI(i, data_space)
-	 {
-	    data_sr = SubregionArraySubregion(data_space, i);
-	    comm_sra = RegionSubregionArray(recv_region, i);
+       data_sr = SubregionArraySubregion(data_space, s_idx);
+       comm_sra = RegionSubregionArray(recv_region, s_idx);
 
-	    ForSubregionI(j, comm_sra)
-	    {
-	       comm_sr = SubregionArraySubregion(comm_sra, j);
+       p = 0;
+       ForSubregionI(j, comm_sra)
+       {
+         comm_sr = SubregionArraySubregion(comm_sra, j);
+         new_comm_pkg -> recv_ranks[p] =  SubregionProcess(comm_sr);
 
-	       if (SubregionProcess(comm_sr) == recv_proc_array[p])
-	       {
-		  dim = NewCommPkgInfo(data_sr, comm_sr, i, num_vars, 
-				       loop_array);
+         dim = NewCommPkgInfo(data_sr, comm_sr, s_idx, num_vars,
+                              loop_array);
+         invoice =
+             amps_NewInvoice("%&.&D(*)",
+                             loop_array + 1,
+                             loop_array + 5,
+                             dim,
+                             data + loop_array[0]);
 
-		  invoice =
-		     amps_NewInvoice("%&.&D(*)",
-				     loop_array + 1,
-				     loop_array + 5,
-				     dim,
-				     data + loop_array[0]);
-
-		  amps_AppendInvoice(&(new_comm_pkg -> recv_invoices[p]),
-				     invoice);
-
-		  num_recv_subregions++;
-		  loop_array += 9;
-	       }
-	    }
-	 }
-      }
-   }
+         amps_AppendInvoice(&(new_comm_pkg -> recv_invoices[p]),
+                            invoice);
+         p++;
+         loop_array += 9;
+       }
+       assert(p == num_recv_subregions);
+    }
 
    new_comm_pkg -> package = amps_NewPackage(amps_CommWorld,
 					     new_comm_pkg -> num_send_invoices,
@@ -373,7 +277,6 @@ CommPkg         *NewCommPkg(
 					     new_comm_pkg -> num_recv_invoices,
 					     new_comm_pkg -> recv_ranks,
 					     new_comm_pkg -> recv_invoices);
-
 
 
    return new_comm_pkg;
