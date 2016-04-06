@@ -8,8 +8,8 @@ namespace import Parflow::*
 pfset FileVersion 4
 
 # remove files from previous run
-foreach file [glob -nocomplain *test_brick_with_p4est.out.*] {file delete -force -- $file}
-foreach file [glob -nocomplain test_brick_with_p4est.pfidb] {file delete -force -- $file}
+foreach file [glob -nocomplain *test_brick_2d_with_p4est.out.*] {file delete -force -- $file}
+foreach file [glob -nocomplain test_brick_2d_with_p4est.pfidb] {file delete -force -- $file}
 
 
 pfset Process.Topology.P 1
@@ -304,4 +304,4 @@ pfset Solver.WriteSiloPressure		True
 #-----------------------------------------------------------------------------
 # Write out data base
 #-----------------------------------------------------------------------------
-pfwritedb test_brick_with_p4est
+pfwritedb test_brick_2d_with_p4est

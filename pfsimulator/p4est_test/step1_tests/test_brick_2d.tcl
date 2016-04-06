@@ -8,8 +8,8 @@ namespace import Parflow::*
 pfset FileVersion 4
 
 # remove files from previous run
-foreach file [glob -nocomplain *test_brick.out.*] {file delete -force -- $file}
-foreach file [glob -nocomplain test_brick.pfidb] {file delete -force -- $file}
+foreach file [glob -nocomplain *test_brick_2d.out.*] {file delete -force -- $file}
+foreach file [glob -nocomplain test_brick_2d.pfidb] {file delete -force -- $file}
 
 pfset Process.Topology.P  [lindex $argv 0]
 pfset Process.Topology.Q  [lindex $argv 1]
@@ -22,8 +22,8 @@ pfset ComputationalGrid.Lower.X                  0.0
 pfset ComputationalGrid.Lower.Y                  0.0
 pfset ComputationalGrid.Lower.Z                  0.0
 
-pfset ComputationalGrid.DX	                 0.02
-pfset ComputationalGrid.DY                       0.02
+pfset ComputationalGrid.DX	                 0.01
+pfset ComputationalGrid.DY                       0.01
 pfset ComputationalGrid.DZ	                 1
 
 pfset ComputationalGrid.NX                       12
@@ -303,5 +303,4 @@ pfset Solver.WriteSiloPressure		True
 #-----------------------------------------------------------------------------
 # Write out data base
 #-----------------------------------------------------------------------------
-pfwritedb test_brick
-
+pfwritedb test_brick_2d
