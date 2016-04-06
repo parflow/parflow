@@ -35,9 +35,7 @@ struct parflow_p4est_qiter {
 void
 parflow_p4est_sg_param_init(parflow_p4est_sg_param_t *sp){
 
-  char            *Nkey[3];
-  char            *mkey[3];
-  int             p, t, sum;
+  int             t;
 
   sp->N[0] = GetIntDefault("ComputationalGrid.NX", 1);
   sp->N[1] = GetIntDefault("ComputationalGrid.NY", 1);
@@ -47,26 +45,8 @@ parflow_p4est_sg_param_init(parflow_p4est_sg_param_t *sp){
   sp->m[1] = GetIntDefault("ComputationalSubgrid.MY", 1);
   sp->m[2] = GetIntDefault("ComputationalSubgrid.MZ", 1);
 
-  Nkey[0] = "ComputationalGrid.NX";
-  Nkey[1] = "ComputationalGrid.NY";
-  Nkey[2] = "ComputationalGrid.NZ";
-
-  mkey[0] = "ComputationalSubgrid.MX";
-  mkey[1] = "ComputationalSubgrid.MY";
-  mkey[2] = "ComputationalSubgrid.MZ";
-
   for (t=0; t<3; ++t){
-      sp->P[t] = sp->N[t] / sp->m[t];
       sp->l[t] = sp->N[t] % sp->m[t];
-      sum = 0;
-      for(p = 0; p < sp->P[t]; ++p){
-         sum += ( p < sp->l[t] ) ? sp->m[t] + 1 : sp->m[t];
-      }
-      if ( sum != sp->N[t] ){
-
-          InputError("Error: invalid combination of <%s> and <%s>\n",
-                     Nkey[t], mkey[t]);
-      }
   }
 }
 

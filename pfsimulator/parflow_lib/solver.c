@@ -77,17 +77,53 @@ void
 
    int solver;
    NameArray solver_na;
-
+#ifdef HAVE_P4EST
+   const char     *Nkey[3];
+   const char     *mkey[3];
+   int             P[3],l, N, m, p, t, sum;
+#endif
    solver_na = NA_NewNameArray("Richards Diffusion Impes");
 
    /*-----------------------------------------------------------------------
     * Read global solver input
     *-----------------------------------------------------------------------*/
 
-   GlobalsNumProcsX = GetIntDefault("Process.Topology.P", 1);
-   GlobalsNumProcsY = GetIntDefault("Process.Topology.Q", 1);
-   GlobalsNumProcsZ = GetIntDefault("Process.Topology.R", 1);
+   if (!USE_P4EST){
+      GlobalsNumProcsY = GetIntDefault("Process.Topology.Q", 1);
+      GlobalsNumProcsX = GetIntDefault("Process.Topology.P", 1);
+      GlobalsNumProcsZ = GetIntDefault("Process.Topology.R", 1);
+   }else{
+#ifdef HAVE_P4EST
+      Nkey[0] = "ComputationalGrid.NX";
+      Nkey[1] = "ComputationalGrid.NY";
+      Nkey[2] = "ComputationalGrid.NZ";
 
+      mkey[0] = "ComputationalSubgrid.MX";
+      mkey[1] = "ComputationalSubgrid.MY";
+      mkey[2] = "ComputationalSubgrid.MZ";
+
+      for (t=0; t<3; ++t){
+          N    = GetIntDefault(Nkey[t], 1);
+          m    = GetIntDefault(mkey[t], 1);
+          P[t] = N / m;
+          l    = N % m;;
+          sum  = 0;
+          for(p = 0; p < P[t]; ++p){
+             sum += ( p < l ) ? m + 1 : m;
+          }
+          if ( sum != N ){
+
+              InputError("Error: invalid combination of <%s> and <%s>\n",
+                         Nkey[t], mkey[t]);
+          }
+      }
+      GlobalsNumProcsX = P[0];
+      GlobalsNumProcsY = P[1];
+      GlobalsNumProcsZ = P[2];
+#else
+      PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
+   }
    GlobalsNumProcs = amps_Size(amps_CommWorld);
 
    GlobalsBackground = ReadBackground();
