@@ -62,7 +62,7 @@ parflow_p4est_sg_param_update(parflow_p4est_qiter_t * qiter,
   for (t = 0; t < 3; ++t){
     sp->icorner[t] =  (int) v[t];
     sp->p[t] = ( sp->icorner[t] < sp->l[t] ) ? sp->m[t] + 1 : sp->m[t];
-    offset   = ( sp->icorner[t] < sp->l[t] ) ? sp->l[t] : 0;
+    offset   = ( sp->icorner[t] >= sp->l[t] ) ? sp->l[t] : 0;
     sp->icorner[t] = sp->icorner[t] * sp->p[t] + offset;
     P4EST_ASSERT( sp->icorner[t] + sp->p[t] <= sp->N[t]);
   }
