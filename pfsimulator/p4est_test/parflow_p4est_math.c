@@ -22,5 +22,5 @@ powtwo_div(int a)
         c++;
         a /= 2;
     }
-    return (int) pow(2, c);
+    return c;
 }

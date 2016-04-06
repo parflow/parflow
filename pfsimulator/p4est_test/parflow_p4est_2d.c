@@ -32,8 +32,8 @@ parflow_p4est_grid_2d_new(int Px, int Py
     tz = pfmax(Pz, 1);
     gt = gcd(gt, tz);
 #endif
-    g = powtwo_div(gt);
-    initial_level = (int) log2((double) g);
+    initial_level = powtwo_div(gt);
+    g = (int) pow(2, initial_level);
     quad_data_size = sizeof(parflow_p4est_quad_data_t);
 
     /*
