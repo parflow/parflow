@@ -56,6 +56,11 @@ typedef struct _Globals
    int      num_procs_y;      /* number of processes in y */
    int      num_procs_z;      /* number of processes in z */
 
+#ifdef HAVE_P4EST
+   int      num_sg_points_x;   /* number of subgrid points in x */
+   int      num_sg_points_y;   /* number of subgrid points in y */
+   int      num_sg_points_z;   /* number of subgrid points in z */
+#endif
 
    /* This process in PxQxR process grid */
    int      p;  
@@ -120,6 +125,12 @@ amps_ThreadLocalDcl(extern IDB *, input_database);
 #define GlobalsNumProcsX       (globals -> num_procs_x)
 #define GlobalsNumProcsY       (globals -> num_procs_y)
 #define GlobalsNumProcsZ       (globals -> num_procs_z)
+
+#ifdef HAVE_P4EST
+#define GlobalsSubrgridPointsX        (globals -> num_sg_points_x)
+#define GlobalsSubrgridPointsY        (globals -> num_sg_points_y)
+#define GlobalsSubrgridPointsZ        (globals -> num_sg_points_z)
+#endif
 
 #define GlobalsP       (globals -> p)
 #define GlobalsQ       (globals -> q)

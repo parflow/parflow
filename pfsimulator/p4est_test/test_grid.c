@@ -20,6 +20,10 @@ main (int argc, char **argv)
   GlobalsNumProcsY = GetIntDefault ("Process.Topology.Q", 1);
   GlobalsNumProcsZ = GetIntDefault ("Process.Topology.R", 1);
 
+  GlobalsSubrgridPointsX = GetIntDefault ("ComputationalSubgrid.MX", 2);
+  GlobalsSubrgridPointsY = GetIntDefault ("ComputationalSubgrid.MY", 2);
+  GlobalsSubrgridPointsZ = GetIntDefault ("ComputationalSubgrid.MZ", 2);
+
   GlobalsNumProcs = amps_Size (amps_CommWorld);
 
   GlobalsBackground = ReadBackground ();
