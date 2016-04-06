@@ -156,8 +156,8 @@ Grid           *CreateGrid(
    /* Loop on the quadrants (leafs) of this forest
       and attach a subgrid on each */
    for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_QUAD);
-        parflow_p4est_qiter_isvalid(qiter);
-        parflow_p4est_qiter_next(qiter)) {
+        qiter != NULL;
+        qiter = parflow_p4est_qiter_next(qiter)) {
 
        /* Get bottom left corner (anchor node)  in
             * index space for the new subgrid */
@@ -182,12 +182,11 @@ Grid           *CreateGrid(
                                           0,  0,  0, 99999);
        parflow_p4est_qiter_set_data(qiter, (void*) user_subgrid);
     }
-    parflow_p4est_qiter_destroy (qiter);
 
    /* Loop over the ghost layer */
     for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_GHOST);
-         parflow_p4est_qiter_isvalid(qiter);
-         parflow_p4est_qiter_next(qiter)) {
+         qiter != NULL;
+         qiter = parflow_p4est_qiter_next(qiter)) {
 
         /* Get bottom left corner (anchor node)  in
              * index space for the new subgrid */
@@ -213,7 +212,6 @@ Grid           *CreateGrid(
                                            0,  0,  0, 99999);
         parflow_p4est_qiter_set_data(qiter, (void*) user_subgrid);
    }
-   parflow_p4est_qiter_destroy (qiter);
 #endif
 
    return grid;

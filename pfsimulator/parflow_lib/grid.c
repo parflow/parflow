@@ -137,24 +137,22 @@ void  FreeGrid(
        /* Free memory allocated in the the quadrants
         * of the forest */
        for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_QUAD);
-            parflow_p4est_qiter_isvalid(qiter);
-            parflow_p4est_qiter_next(qiter)) {
+            qiter != NULL;
+            qiter = parflow_p4est_qiter_next(qiter)) {
 
             quad_subgrid = (Subgrid *) parflow_p4est_qiter_get_data(qiter);
             FreeSubgrid ( quad_subgrid );
 
        }
-       parflow_p4est_qiter_destroy (qiter);
 
         /* Free memory allocated in the ghost layer */
-        for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_GHOST);
-             parflow_p4est_qiter_isvalid(qiter);
-             parflow_p4est_qiter_next(qiter)) {
+       for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_GHOST);
+            qiter != NULL;
+            qiter = parflow_p4est_qiter_next(qiter)) {
 
             quad_subgrid = (Subgrid *) parflow_p4est_qiter_get_data(qiter);
             FreeSubgrid ( quad_subgrid );
         }
-        parflow_p4est_qiter_destroy (qiter);
 
         /* destroy pfgrid structure */
         parflow_p4est_grid_destroy (grid->pfgrid);
