@@ -56,8 +56,8 @@ parflow_p4est_qiter_3d_t
 int             parflow_p4est_qiter_isvalid_3d(parflow_p4est_qiter_3d_t *
                                                qit_3d);
 
-void            parflow_p4est_qiter_next_3d(parflow_p4est_qiter_3d_t *
-                                            qit_3d);
+parflow_p4est_qiter_3d_t
+    * parflow_p4est_qiter_next_3d(parflow_p4est_qiter_3d_t * qit_3d);
 
 void            parflow_p4est_qiter_destroy_3d(parflow_p4est_qiter_3d_t *
                                                qit_3d);

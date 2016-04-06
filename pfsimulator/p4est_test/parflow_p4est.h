@@ -23,7 +23,8 @@ parflow_p4est_qiter_t *parflow_p4est_qiter_init(parflow_p4est_grid_t *
 
 int             parflow_p4est_qiter_isvalid(parflow_p4est_qiter_t * qiter);
 
-void            parflow_p4est_qiter_next(parflow_p4est_qiter_t * qiter);
+parflow_p4est_qiter_t *parflow_p4est_qiter_next(parflow_p4est_qiter_t *
+                                                qiter);
 
 void            parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter,
                                             double v[3]);
