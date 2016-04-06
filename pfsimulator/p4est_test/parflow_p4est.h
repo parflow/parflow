@@ -10,12 +10,6 @@ typedef enum parflow_p4est_iter_type {
 } parflow_p4est_iter_type_t;
 
 /*
- * Accesor macros
- */
-#define PARFLOW_P4EST_GET_GRID_DIM(pfgrid) ((pfgrid)->dim)
-#define PARFLOW_P4EST_GET_QITER_DIM(qiter) ((qiter)->dim)
-
-/*
  * Functions
  */
 parflow_p4est_grid_t *parflow_p4est_grid_new(int Px, int Py, int Pz);

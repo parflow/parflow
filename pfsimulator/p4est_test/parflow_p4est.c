@@ -23,6 +23,12 @@ struct parflow_p4est_qiter {
 };
 
 /*
+ * Accesor macros
+ */
+#define PARFLOW_P4EST_GET_GRID_DIM(pfgrid) ((pfgrid)->dim)
+#define PARFLOW_P4EST_GET_QITER_DIM(qiter) ((qiter)->dim)
+
+/*
  * A globals structure muss exist prior calling this function
  */
 parflow_p4est_grid_t *
