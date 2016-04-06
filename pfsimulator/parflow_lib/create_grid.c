@@ -155,7 +155,7 @@ Grid           *CreateGrid(
 
    /* Loop on the quadrants (leafs) of this forest
       and attach a subgrid on each */
-   for (qiter = parflow_p4est_qiter_init(grid->pfgrid);
+   for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_QUAD);
         parflow_p4est_qiter_isvalid(qiter);
         parflow_p4est_qiter_next(qiter)) {
 
@@ -184,39 +184,36 @@ Grid           *CreateGrid(
     }
     parflow_p4est_qiter_destroy (qiter);
 
-#if 0
    /* Loop over the ghost layer */
-   G = (int) ghost_layer->elem_count;
-   P4EST_ASSERT( Q >= 0 );
-   for (q = 0; q < G; ++q) {
-       quad = p4est_quadrant_array_index (ghost_layer, (size_t) q);
-       level_factor = pow (2., quad->level);
-       gt = parflow_p4est_gquad_owner_tree (quad);
-       parflow_p4est_qcoord_to_vertex (grid->pfgrid, gt, quad, v);
+    for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_GHOST);
+         parflow_p4est_qiter_isvalid(qiter);
+         parflow_p4est_qiter_next(qiter)) {
 
-       /* Get bottom left corner (anchor node)  in
-        * index space for the new subgrid */
-       ix = (int) level_factor * v[0];
-       iy = (int) level_factor * v[1];
-       iz = (int) level_factor * v[2];
+        /* Get bottom left corner (anchor node)  in
+             * index space for the new subgrid */
+        parflow_p4est_qiter_qcorner(qiter, v);
 
-       /* Decide the dimensions for the new subgrid */
-       px =  ix < lx ? mx + 1 : mx;
-       py =  iy < ly ? my + 1 : my;
-       if (Nz > 1){
-          pz = iz < lz ? mz + 1 : mz;
-       }
-       else{
-          pz = 1;
-       }
+        /* Decide the dimensions for the new subgrid */
+        ix = (int) v[0];
+        iy = (int) v[1];
+        iz = (int) v[2];
+
+        px =  ix < lx ? mx + 1 : mx;
+        py =  iy < ly ? my + 1 : my;
+        if (Nz > 1){
+            pz = iz < lz ? mz + 1 : mz;
+          }
+        else{
+            pz = 1;
+          }
 
        /* Allocate new subgrid and attach it to this
         * ghost quadrant */
-       quad->p.user_data =
-           (void *) NewSubgrid(ix, iy, iz, px, py, pz,
-                                0,  0,  0, -9999);
+        user_subgrid = NewSubgrid(ix, iy, iz, px, py, pz,
+                                           0,  0,  0, 99999);
+        parflow_p4est_qiter_set_data(qiter, (void*) user_subgrid);
    }
-#endif
+   parflow_p4est_qiter_destroy (qiter);
 #endif
 
    return grid;
