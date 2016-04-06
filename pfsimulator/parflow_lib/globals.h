@@ -127,9 +127,9 @@ amps_ThreadLocalDcl(extern IDB *, input_database);
 #define GlobalsNumProcsZ       (globals -> num_procs_z)
 
 #ifdef HAVE_P4EST
-#define GlobalsSubrgridPointsX        (globals -> num_sg_points_x)
-#define GlobalsSubrgridPointsY        (globals -> num_sg_points_y)
-#define GlobalsSubrgridPointsZ        (globals -> num_sg_points_z)
+#define GlobalsSubgridPointsX        (globals -> num_sg_points_x)
+#define GlobalsSubgridPointsY        (globals -> num_sg_points_y)
+#define GlobalsSubgridPointsZ        (globals -> num_sg_points_z)
 #endif
 
 #define GlobalsP       (globals -> p)

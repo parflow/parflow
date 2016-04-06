@@ -20,9 +20,9 @@ main (int argc, char **argv)
   GlobalsNumProcsY = GetIntDefault ("Process.Topology.Q", 1);
   GlobalsNumProcsZ = GetIntDefault ("Process.Topology.R", 1);
 
-  GlobalsSubrgridPointsX = GetIntDefault ("ComputationalSubgrid.MX", 2);
-  GlobalsSubrgridPointsY = GetIntDefault ("ComputationalSubgrid.MY", 2);
-  GlobalsSubrgridPointsZ = GetIntDefault ("ComputationalSubgrid.MZ", 2);
+  GlobalsSubgridPointsX = GetIntDefault ("ComputationalSubgrid.MX", 2);
+  GlobalsSubgridPointsY = GetIntDefault ("ComputationalSubgrid.MY", 2);
+  GlobalsSubgridPointsZ = GetIntDefault ("ComputationalSubgrid.MZ", 2);
 
   GlobalsNumProcs = amps_Size (amps_CommWorld);
 
@@ -33,7 +33,7 @@ main (int argc, char **argv)
   SetBackgroundBounds (GlobalsBackground, GlobalsUserGrid);
 
   /*
-   * Initialize sc and p{4,casc8}est library
+   * Initialize sc and p{4,8}est library
    */
   sc_init (amps_CommWorld, 1, 1, NULL, SC_LP_DEFAULT);
   p4est_init (NULL, SC_LP_DEFAULT);

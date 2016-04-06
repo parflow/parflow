@@ -139,9 +139,9 @@ Grid           *CreateGrid(
    Ny = SubgridNY(user_subgrid);
    Nz = SubgridNZ(user_subgrid);
 
-   mx = GlobalsSubrgridPointsX;
-   my = GlobalsSubrgridPointsY;
-   mz = GlobalsSubrgridPointsZ;
+   mx = GlobalsSubgridPointsX;
+   my = GlobalsSubgridPointsY;
+   mz = GlobalsSubgridPointsZ;
 
   /* Compute number of subgrids per coordinate direction. */
    Px = Nx / mx;
