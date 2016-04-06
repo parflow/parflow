@@ -1,0 +1,50 @@
+It is possible to solve Laplace equation in 
+ParFlow by noticing that it is a particular
+case from the Richards equation. 
+
+The scripts:
+
+test_brick_2d.tcl and test_brick_2d_with_p4est.tcl
+
+Set up the parameters that need to be passed to
+the Parflow's Richards solver to perform the above
+task. With these two scripts, we try to compute p
+such that 
+
+		\Delta p = 0,
+
+in two dimensions based on the solution 
+		
+		p(x,y) = cos(x)cosh(y).
+
+We compare the results obtained with the upstream
+version of ParFlow and with the version that uses
+p4est as a meshing back-end. Ideally the results
+should be identicall. 
+
+The run_step1_tests_2d.sh
+runs Parflow with the two data sets provided by
+the scripts above with different processor/grid/
+subgrid configurations and compares the l2 norm
+of the error in both cases. To run it just tipe
+
+	./run_step1_tests_2d.sh 
+
+in the current directory.
+
+Additionally there is a steps1_tests.tcl script
+which also runs the same test cases, but takes
+advantage of some internal Parflow functions and
+compares directly the pressure output file of each
+case. To run it just type
+
+	tclsh step1_tests.tcl
+
+in the current directory. 
+
+In case that further comparison is desired. By
+executing both of the previous scripts, silo
+files of the pressure field are produced. These
+can be open with visit for visualization. Once
+open choose add->pseudocolor->Pressure and
+then click on the Draw buttom.
