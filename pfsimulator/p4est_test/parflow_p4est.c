@@ -48,9 +48,3 @@ parflow_p4est_qcoord_to_vertex (parflow_p4est_grid_t * pfgrid,
     parflow_p4est_qcoord_to_vertex_3d (pfgrid, treeid, quad, v);
   }
 }
-
-int
-parflow_p4est_quad_owner_rank (p4est_quadrant_t *quad)
-{
-  return quad->p.piggy1.owner_rank;
-}

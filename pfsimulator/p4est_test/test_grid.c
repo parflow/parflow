@@ -40,7 +40,6 @@ main (int argc, char **argv)
 
   grid = CreateGrid (GlobalsUserGrid);
 
-  PrintGrid ("pfgrid", grid);
   FreeGrid (grid);
 
   sc_finalize ();

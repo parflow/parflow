@@ -86,7 +86,6 @@ Grid           *CreateGrid(
    int                q, k, Q, G;
    int                Nx, Ny, Nz;
    int                mx, my, mz;
-   int                owner_rank;
    int                Px, Py, Pz;
    int                lx, ly, lz;
    int                px, py, pz;
@@ -210,7 +209,6 @@ Grid           *CreateGrid(
        level_factor = pow (2., quad->level);
        gt = quad->p.piggy3.which_tree;
        parflow_p4est_qcoord_to_vertex (grid->pfgrid, gt, quad, v);
-       owner_rank = parflow_p4est_quad_owner_rank(quad);
 
        /* Get bottom left corner (anchor node)  in
         * index space for the new subgrid */
@@ -232,7 +230,7 @@ Grid           *CreateGrid(
         * ghost quadrant */
        quad->p.user_data =
            (void *) NewSubgrid(ix, iy, iz, px, py, pz,
-                                0,  0,  0, owner_rank);
+                                0,  0,  0, -9999);
    }
 #endif
 
