@@ -107,7 +107,13 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
                             parflow_p4est_iter_type_t itype)
 {
     parflow_p4est_qiter_2d_t *qit_2d;
-    int             rank;
+
+    /** This processor is empty */
+    if (pfg->forest->local_num_quadrants == 0) {
+        P4EST_ASSERT(pfg->forest->first_local_tree == -1);
+        P4EST_ASSERT(pfg->forest->last_local_tree == -2);
+        return NULL;
+    }
 
     qit_2d = P4EST_ALLOC_ZERO(parflow_p4est_qiter_2d_t, 1);
     qit_2d->itype = PARFLOW_P4EST_QUAD;
