@@ -60,7 +60,7 @@ parflow_p4est_qiter_2d_t
     * parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d);
 
 parflow_p4est_quad_data_t
-    * parflow_p4est_qiter_get_data_2d(parflow_p4est_qiter_2d_t * qit_2d);
+    * parflow_p4est_get_quad_data_2d(parflow_p4est_qiter_2d_t * qit_2d);
 
 parflow_p4est_ghost_data_t
     * parflow_p4est_get_ghost_data_2d(parflow_p4est_grid_2d_t *pfg,

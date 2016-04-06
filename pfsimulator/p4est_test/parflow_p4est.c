@@ -140,15 +140,15 @@ parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter, double v[3])
 }
 
 parflow_p4est_quad_data_t *
-parflow_p4est_qiter_get_data(parflow_p4est_qiter_t * qiter)
+parflow_p4est_get_quad_data(parflow_p4est_qiter_t * qiter)
 {
     int             dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);
 
     if (dim == 2) {
-        return parflow_p4est_qiter_get_data_2d(qiter->q.qiter_2d);
+        return parflow_p4est_get_quad_data_2d(qiter->q.qiter_2d);
     } else {
         P4EST_ASSERT(dim == 3);
-        return parflow_p4est_qiter_get_data_3d(qiter->q.qiter_3d);
+        return parflow_p4est_get_quad_data_3d(qiter->q.qiter_3d);
     }
 }
 

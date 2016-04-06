@@ -61,7 +61,7 @@ parflow_p4est_qiter_3d_t
     * parflow_p4est_qiter_next_3d(parflow_p4est_qiter_3d_t * qit_3d);
 
 parflow_p4est_quad_data_t
-    * parflow_p4est_qiter_get_data_3d(parflow_p4est_qiter_3d_t * qit_3d);
+    * parflow_p4est_get_quad_data_3d(parflow_p4est_qiter_3d_t * qit_3d);
 
 
 parflow_p4est_ghost_data_t
