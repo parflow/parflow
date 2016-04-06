@@ -91,87 +91,101 @@ parflow_p4est_grid_2d_destroy(parflow_p4est_grid_2d_t * pfg)
     P4EST_FREE(pfg);
 }
 
-/* START: Quadrant iterator routines */
+/*
+ * START: Quadrant iterator routines 
+ */
 
-void
-parflow_p4est_qiter_init_2d(parflow_p4est_qiter_2d_t * qiter,
-                            parflow_p4est_grid_2d_t * pfg)
+parflow_p4est_qiter_2d_t *
+parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg)
 {
-    memset(qiter, 0, sizeof(parflow_p4est_qiter_2d_t));
+    parflow_p4est_qiter_2d_t *qit_2d;
 
-    qiter->forest = pfg->forest;
-    qiter->tt = qiter->forest->first_local_tree;
-    if (qiter->tt <= qiter->forest->last_local_tree) {
-        P4EST_ASSERT(qiter->tt >= 0);
-        qiter->tree =
-            p4est_tree_array_index(qiter->forest->trees, qiter->tt);
-        qiter->tquadrants = &qiter->tree->quadrants;
-        qiter->Q = (int) qiter->tquadrants->elem_count;
-        P4EST_ASSERT(qiter->Q > 0);
-        qiter->quad = p4est_quadrant_array_index(qiter->tquadrants,
-                                                 (size_t) qiter->q);
+    qit_2d = P4EST_ALLOC(parflow_p4est_qiter_2d_t, 1);
+    qit_2d->forest = pfg->forest;
+    qit_2d->tt = qit_2d->forest->first_local_tree;
+    if (qit_2d->tt <= qit_2d->forest->last_local_tree) {
+        P4EST_ASSERT(qit_2d->tt >= 0);
+        qit_2d->tree =
+            p4est_tree_array_index(qit_2d->forest->trees, qit_2d->tt);
+        qit_2d->tquadrants = &qit_2d->tree->quadrants;
+        qit_2d->Q = (int) qit_2d->tquadrants->elem_count;
+        P4EST_ASSERT(qit_2d->Q > 0);
+        qit_2d->quad = p4est_quadrant_array_index(qit_2d->tquadrants,
+                                                  (size_t) qit_2d->q);
     }
+
+    return qit_2d;
 }
 
 int
-parflow_p4est_qiter_isvalid_2d(parflow_p4est_qiter_2d_t * qiter)
+parflow_p4est_qiter_isvalid_2d(parflow_p4est_qiter_2d_t * qit_2d)
 {
-    return (qiter->q < qiter->Q);
+    return (qit_2d->q < qit_2d->Q);
 }
 
 void
-parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qiter)
+parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d)
 {
 
     P4EST_ASSERT(parflow_p4est_quad_iter_isvalid(qiter));
 
-    if (++qiter->q == qiter->Q) {
-        if (++qiter->tt <= qiter->forest->last_local_tree) {
-            qiter->tree =
-                p4est_tree_array_index(qiter->forest->trees, qiter->tt);
-            qiter->tquadrants = &qiter->tree->quadrants;
-            qiter->Q = (int) qiter->tquadrants->elem_count;
-            qiter->q = 0;
-            qiter->quad = p4est_quadrant_array_index(qiter->tquadrants,
-                                                     (size_t) qiter->q);
+    if (++qit_2d->q == qit_2d->Q) {
+        if (++qit_2d->tt <= qit_2d->forest->last_local_tree) {
+            qit_2d->tree =
+                p4est_tree_array_index(qit_2d->forest->trees, qit_2d->tt);
+            qit_2d->tquadrants = &qit_2d->tree->quadrants;
+            qit_2d->Q = (int) qit_2d->tquadrants->elem_count;
+            qit_2d->q = 0;
+            qit_2d->quad = p4est_quadrant_array_index(qit_2d->tquadrants,
+                                                      (size_t) qit_2d->q);
         } else {
-            memset(qiter, 0, sizeof(parflow_p4est_qiter_2d_t));
+            memset(qit_2d, 0, sizeof(parflow_p4est_qiter_2d_t));
             return;
         }
     } else {
-        qiter->quad =
-            p4est_quadrant_array_index(qiter->tquadrants, qiter->q);
+        qit_2d->quad =
+            p4est_quadrant_array_index(qit_2d->tquadrants,
+                                       (size_t) qit_2d->q);
     }
 
-    P4EST_ASSERT(parflow_p4est_qiter_isvalid(qiter));
+    P4EST_ASSERT(parflow_p4est_qiter_isvalid(qit_2d));
 }
-/* END: Quadrant iterator routines */
 
+void
+parflow_p4est_qiter_destroy_2d(parflow_p4est_qiter_2d_t * qit_2d)
+{
+    P4EST_FREE(qit_2d);
+}
 
-/* START: Ghost iterator routines */
+/*
+ * END: Quadrant iterator routines 
+ */
+
+/*
+ * START: Ghost iterator routines 
+ */
+static          p4est_topidx_t
+parflow_p4est_gquad_owner_tree(p4est_quadrant_t * quad)
+{
+    return quad->p.piggy3.which_tree;
+}
+
 void
 parflow_p4est_giter_init_2d(parflow_p4est_giter_2d_t * giter,
                             parflow_p4est_grid_2d_t * pfg)
 {
-    memset(qiter, 0, sizeof(parflow_p4est_giter_2d_t));
+    memset(giter, 0, sizeof(parflow_p4est_giter_2d_t));
 
     giter->ghost = pfg->ghost;
     giter->ghost_layer = &giter->ghost->ghosts;
     giter->G = (int) giter->ghost_layer->elem_count;
+    giter->connect = pfg->connect;
     P4EST_ASSERT(Q >= 0);
     if (giter->g < giter->G) {
         P4EST_ASSERT(giter->g >= 0);
         giter->quad =
             p4est_quadrant_array_index(giter->ghost_layer,
                                        (size_t) giter->g);
-        giter->level = pow (2., giter->quad->level);
-        p4est_qcoord_to_vertex(pfg->connect,
-                               parflow_p4est_gquad_owner_tree(giter->quad),
-                               giter->quad->x, giter->quad->y,
-#ifdef P4_TO_P8
-                               giter->quad->z,
-#endif
-                               giter->v);
         // TODO: Get owner rank
 
     }
@@ -195,32 +209,23 @@ parflow_p4est_giter_next_2d(parflow_p4est_giter_2d_t * giter)
         giter->quad =
             p4est_quadrant_array_index(giter->ghost_layer,
                                        (size_t) giter->g);
-        giter->level = pow (2., giter->quad->level);
-        p4est_qcoord_to_vertex(pfg->connect,
-                               parflow_p4est_gquad_owner_tree(giter->quad),
-                               giter->quad->x, giter->quad->y,
-#ifdef P4_TO_P8
-                               giter->quad->z,
-#endif
-                               giter->v);
         // TODO: get owner rank
-    } else {
-
     }
 }
-/* END: Ghost iterator routines */
 
-#if 0
+/*
+ * END: Ghost iterator routines 
+ */
+
 void
-parflow_p4est_qcoord_to_vertex_2d(parflow_p4est_grid_t * pfgrid,
+parflow_p4est_qcoord_to_vertex_2d(p4est_connectivity_t * connect,
                                   p4est_topidx_t treeid,
                                   p4est_quadrant_t * quad, double v[3])
 {
 
-    p4est_qcoord_to_vertex(pfgrid->connect, treeid, quad->x, quad->y,
+    p4est_qcoord_to_vertex(connect, treeid, quad->x, quad->y,
 #ifdef P4_TO_P8
                            quad->z,
 #endif
                            v);
 }
-#endif

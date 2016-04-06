@@ -16,10 +16,10 @@ typedef struct parflow_p4est_grid_2d {
 typedef struct parflow_p4est_qiter_2d {
 
     p4est_t        *forest;
+    p4est_connectivity_t *connect;
     p4est_topidx_t  tt;
     p4est_tree_t   *tree;
     sc_array_t     *tquadrants;
-    double          level;      /* level of current quadrant */
     int             owner_rank; /* processor owning current quadrant */
     int             Q;          /* quadrants in this tree */
     int             q;          /* index of current quad in this tree */
@@ -31,8 +31,7 @@ typedef struct parflow_p4est_giter_2d {
 
     p4est_ghost_t  *ghost;
     sc_array_t     *ghost_layer;
-    double          v[3];       /* lower left corner of current quadrant */
-    double          level;      /* level of current quadrant */
+    p4est_connectivity_t *connect;
     int             owner_rank; /* processor owning current quadrant */
     int             G;          /* ghosts quadrants in this layer */
     int             g;          /* index of current quad in this layer */
@@ -45,20 +44,22 @@ parflow_p4est_grid_2d_t *parflow_p4est_grid_2d_new(int Px, int Py);
 void            parflow_p4est_grid_2d_destroy(parflow_p4est_grid_2d_t *
                                               pfgrid);
 
-void            parflow_p4est_qcoord_to_vertex_2d(parflow_p4est_grid_t *
-                                                  pfgrid,
+void            parflow_p4est_qcoord_to_vertex_2d(p4est_connectivity_t *
+                                                  connect,
                                                   p4est_topidx_t treeid,
                                                   p4est_quadrant_t *
                                                   quad, double v[3]);
 
-void            parflow_p4est_qiter_init_2d(parflow_p4est_qiter_2d_t *
-                                            qiter,
-                                            parflow_p4est_grid_2d_t * pfg);
+parflow_p4est_qiter_2d_t
+    * parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg);
 
 int             parflow_p4est_qiter_isvalid_2d(parflow_p4est_qiter_2d_t *
-                                               qiter);
+                                               qit_2d);
 
 void            parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t *
-                                            qiter);
+                                            qit_2d);
+
+void            parflow_p4est_qiter_destroy_2d(parflow_p4est_qiter_2d_t *
+                                               qit_2d);
 
 #endif                          // !PARLOW_P4EST_2D_H
