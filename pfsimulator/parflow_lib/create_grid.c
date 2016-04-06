@@ -84,10 +84,14 @@ Grid           *CreateGrid(
 
 #ifdef HAVE_P4EST
    int                q, k, Q;
-   int                nx, ny, nz;
-   int                num_procs, owner_rank;
+   int                Nx, Ny, Nz;
+   int                mx, my, mz;
+   int                owner_rank;
    int                Px, Py, Pz;
-   double             v[3];
+   int                lx, ly, lz;
+   int                px, py, pz;
+   double             x, y, z;
+   double             level_factor, v[3];
    Subgrid            *user_subgrid;
    sc_array_t         *tquadrants;
    p4est_t            *forest;
@@ -129,31 +133,31 @@ Grid           *CreateGrid(
    globals -> grid3d = grid;
 
 #ifdef HAVE_P4EST
-
    user_subgrid = GridSubgrid(user_grid, 0);
 
-   nx = SubgridNX(user_subgrid);
-   ny = SubgridNY(user_subgrid);
-   nz = SubgridNZ(user_subgrid);
+   Nx = SubgridNX(user_subgrid);
+   Ny = SubgridNY(user_subgrid);
+   Nz = SubgridNZ(user_subgrid);
 
-   Px = pfmax (nx - 1, 1);
-   Py = pfmax (ny - 1, 1);
-   Pz = pfmax (nz - 1, 1);
+   mx = GlobalsSubrgridPointsX;
+   my = GlobalsSubrgridPointsY;
+   mz = GlobalsSubrgridPointsZ;
 
-   num_procs = GlobalsNumProcs;
+  /* Compute number of subgrids per coordinate direction. */
+   Px = Nx / mx;
+   Py = Ny / my;
+   Pz = (Nz == 1) ? 1 : Nz / mz;
 
-   /*  Make sure there will be as much
-      processors as quadrants. Only for step1 */
-   P4EST_ASSERT( num_procs == Px*Py*Pz );
+   lx = Nx % mx;
+   ly = Ny % my;
+   lz = Nz % mz;
 
    /* Create the p{4,8}est object. */
-   grid->pfgrid = parflow_p4est_grid_new (nx, ny, nz);
+   grid->pfgrid = parflow_p4est_grid_new (Px, Py, Pz);
 
    forest =  grid->pfgrid->forest;
 
-   //printf ("\n=S= Local num quadrants %i \n", (int) forest->local_num_quadrants);
-
-   /* loop over al quadrants to attach a subgrid on it */
+   /* Loop over the trees un the forest */
    for (tt = forest->first_local_tree, k = 0;
         tt <= forest->last_local_tree; ++tt) {
 
@@ -162,19 +166,37 @@ Grid           *CreateGrid(
        Q = (int) tquadrants->elem_count;
        P4EST_ASSERT( Q > 0 );
 
+       /* Loop on the quadrants (leafs) of this forest
+          and attach a subgrid on each */
        for (q = 0; q < Q; ++q, ++k) {
            quad = p4est_quadrant_array_index (tquadrants, q);
            parflow_p4est_qcoord_to_vertex (grid->pfgrid, tt, quad, v);
+           level_factor = pow (2., quad->level);
            owner_rank = parflow_p4est_quad_owner_rank(quad);
-           quad->p.user_data =
-               (void *) NewSubgrid(v[0], v[1], v[2],
-                                   8, 8, 8,
-                                   0, 0, 0,
-                                   owner_rank);
 
+           /* Get bottom left corner (anchor node) for the
+              new subgrid */
+           x = level_factor * v[0];
+           y = level_factor * v[1];
+           z = level_factor * v[2];
+
+           /* Decide the dimensions for the new subgrid */
+           px = (int) x < lx ? mx + 1 : mx;
+           py = (int) y < ly ? my + 1 : my;
+           if (Nz > 1){
+              pz = (int) z < lz ? mz + 1 : mz;
+           }else{
+              pz = 1;
+           }
+
+           /* Allocate new subgrid and attach it to this quadrant */
+           quad->p.user_data =
+               (void *) NewSubgrid( x,  y,  z, px, py, pz,
+                                    0,  0,  0, owner_rank);
        }
      }
 
+     /* Assert that every quadrant was visited */
      P4EST_ASSERT( k == (int) forest->local_num_quadrants );
 #endif
 
