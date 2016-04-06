@@ -115,15 +115,6 @@ Grid           *CreateGrid(
 
    grid = NewGrid(subgrids, all_subgrids);
 
-   /*-----------------------------------------------------------------------
-    * Create communication packages.
-    *-----------------------------------------------------------------------*/
-
-   CreateComputePkgs(grid);
-
-   // SGS Debug
-   globals -> grid3d = grid;
-
 #else
    grid = talloc(Grid, 1);
    GridSubgrids(grid) = NewSubgridArray();
@@ -171,6 +162,15 @@ Grid           *CreateGrid(
                        parflow_p4est_qiter_get_owner_rank(qiter));
    }
 #endif
+
+    /*-----------------------------------------------------------------------
+     * Create communication packages.
+     *-----------------------------------------------------------------------*/
+
+    CreateComputePkgs(grid);
+
+    // SGS Debug
+    globals -> grid3d = grid;
 
    return grid;
 }
