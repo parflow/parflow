@@ -27,7 +27,7 @@ parflow_p4est_grid_2d_new(int Px, int Py
 #ifdef P4_TO_P8
     int             tz;
 #endif
-    int             level, refine_level, balance;
+    int             initial_level;
     parflow_p4est_grid_2d_t *pfg;
 
     pfg = P4EST_ALLOC_ZERO(parflow_p4est_grid_2d_t, 1);
@@ -39,9 +39,7 @@ parflow_p4est_grid_2d_new(int Px, int Py
     gt = gcd(gt, tz);
 #endif
     g = powtwo_div(gt);
-
-    refine_level = (int) log2((double) g);
-    balance = refine_level > 0;
+    initial_level = (int) log2((double) g);
 
     /*
      * Create connectivity structure
@@ -52,25 +50,11 @@ parflow_p4est_grid_2d_new(int Px, int Py
 #endif
                                                 , 0, 0);
 
-    pfg->forest = p4est_new(amps_CommWorld, pfg->connect, 0, NULL, NULL);
-
     /*
-     * Refine to get a grid with same number of elements as parflow
-     * old Grid structure and resdistribute quadrants among mpi_comm
+     * Create p4est structure
      */
-    for (level = 0; level < refine_level; ++level) {
-        p4est_refine(pfg->forest, 0, parflow_p4est_refine_fn, NULL);
-        p4est_partition(pfg->forest, 0, NULL);
-    }
-
-    /*
-     * After refine, call 2:1 balance and redistribute new quadrants
-     * among the mpi communicator
-     */
-    if (balance) {
-        p4est_balance(pfg->forest, P4EST_CONNECT_FACE, NULL);
-        p4est_partition(pfg->forest, 0, NULL);
-    }
+    pfg->forest = p4est_new_ext(amps_CommWorld, pfg->connect,
+                                0, initial_level, 1, 0, NULL, NULL);
 
     /*
      * allocate ghost storage 
@@ -85,9 +69,9 @@ parflow_p4est_grid_2d_new(int Px, int Py
 void
 parflow_p4est_grid_2d_destroy(parflow_p4est_grid_2d_t * pfg)
 {
+    p4est_ghost_destroy(pfg->ghost);
     p4est_destroy(pfg->forest);
     p4est_connectivity_destroy(pfg->connect);
-    p4est_ghost_destroy(pfg->ghost);
     P4EST_FREE(pfg);
 }
 
@@ -100,6 +84,7 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
                             parflow_p4est_iter_type_t itype)
 {
     parflow_p4est_qiter_2d_t *qit_2d;
+    int             rank;
 
     qit_2d = P4EST_ALLOC_ZERO(parflow_p4est_qiter_2d_t, 1);
     qit_2d->itype = PARFLOW_P4EST_QUAD;

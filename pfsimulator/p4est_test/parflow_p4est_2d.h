@@ -3,6 +3,7 @@
 
 #include "parflow_p4est.h"
 #include <p4est_lnodes.h>
+#include <p4est_extended.h>
 
 typedef struct parflow_p4est_grid_2d {
 
