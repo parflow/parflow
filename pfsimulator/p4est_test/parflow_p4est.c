@@ -81,6 +81,7 @@ parflow_p4est_sg_param_update(parflow_p4est_qiter_t * qiter,
   for (t = 0; t < 3; ++t){
     sp->icorner[t] =  (int) v[t];
     sp->p[t] = ( sp->icorner[t] < sp->l[t] ) ? sp->m[t] + 1 : sp->m[t];
+    sp->icorner[t] *= sp->p[t];
   }
 }
 
