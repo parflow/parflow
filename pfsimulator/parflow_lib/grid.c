@@ -135,14 +135,14 @@ void  FreeGrid(
 #else
        FreeSubgridArray(GridSubgrids(grid));
        /* Free data allocated in the the quadrants
-        * of the forest */
+        * of the forest
        for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_QUAD);
             qiter != NULL;
             qiter = parflow_p4est_qiter_next(qiter)) {
 
             quad_data = parflow_p4est_get_quad_data(qiter);
-            //FreeSubgrid ( quad_data->pf_subgrid );
-       }
+            FreeSubgrid ( quad_data->pf_subgrid );
+       }*/
 
 
         /* Free memory allocated in the ghost layer */
