@@ -114,6 +114,7 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
     if (pfg->forest->local_num_quadrants == 0) {
         P4EST_ASSERT(pfg->forest->first_local_tree == -1);
         P4EST_ASSERT(pfg->forest->last_local_tree == -2);
+        P4EST_ASSERT( (int) pfg->ghost->ghosts.elem_count == 0);
         return NULL;
     }
 
