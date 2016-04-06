@@ -50,7 +50,8 @@ void            parflow_p4est_qcoord_to_vertex_2d(p4est_connectivity_t *
                                                   quad, double v[3]);
 
 parflow_p4est_qiter_2d_t
-    * parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg);
+    * parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
+                                  parflow_p4est_iter_type_t itype);
 
 int             parflow_p4est_qiter_isvalid_2d(parflow_p4est_qiter_2d_t *
                                                qit_2d);

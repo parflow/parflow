@@ -96,58 +96,97 @@ parflow_p4est_grid_2d_destroy(parflow_p4est_grid_2d_t * pfg)
  */
 
 parflow_p4est_qiter_2d_t *
-parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg)
+parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
+                            parflow_p4est_iter_type_t itype)
 {
     parflow_p4est_qiter_2d_t *qit_2d;
 
     qit_2d = P4EST_ALLOC_ZERO(parflow_p4est_qiter_2d_t, 1);
-    qit_2d->forest = pfg->forest;
-    qit_2d->connect = pfg->connect;
-    qit_2d->tt = qit_2d->forest->first_local_tree;
-    if (qit_2d->tt <= qit_2d->forest->last_local_tree) {
-        P4EST_ASSERT(qit_2d->tt >= 0);
-        qit_2d->tree =
-            p4est_tree_array_index(qit_2d->forest->trees, qit_2d->tt);
-        qit_2d->tquadrants = &qit_2d->tree->quadrants;
-        qit_2d->Q = (int) qit_2d->tquadrants->elem_count;
-        P4EST_ASSERT(qit_2d->Q > 0);
-        qit_2d->quad = p4est_quadrant_array_index(qit_2d->tquadrants,
-                                                  (size_t) qit_2d->q);
+    if (itype == PARFLOW_P4EST_QUAD) {
+        qit_2d->itype = PARFLOW_P4EST_QUAD;
+        qit_2d->forest = pfg->forest;
+        qit_2d->connect = pfg->connect;
+        qit_2d->tt = qit_2d->forest->first_local_tree;
+        if (qit_2d->tt <= qit_2d->forest->last_local_tree) {
+            P4EST_ASSERT(qit_2d->tt >= 0);
+            qit_2d->tree =
+                p4est_tree_array_index(qit_2d->forest->trees, qit_2d->tt);
+            qit_2d->tquadrants = &qit_2d->tree->quadrants;
+            qit_2d->Q = (int) qit_2d->tquadrants->elem_count;
+            P4EST_ASSERT(qit_2d->Q > 0);
+            qit_2d->quad = p4est_quadrant_array_index(qit_2d->tquadrants,
+                                                      (size_t) qit_2d->q);
+        }
+    } else {
+        P4EST_ASSERT(itype == PARFLOW_P4EST_GHOST);
+        qit_2d->itype = PARFLOW_P4EST_GHOST;
+        qit_2d->ghost = pfg->ghost;
+        qit_2d->ghost_layer = &qit_2d->ghost->ghosts;
+        qit_2d->G = (int) qit_2d->ghost_layer->elem_count;
+        qit_2d->connect = pfg->connect;
+        P4EST_ASSERT(Q >= 0);
+        if (qit_2d->g < qit_2d->G) {
+            P4EST_ASSERT(qit_2d->g >= 0);
+            qit_2d->quad =
+                p4est_quadrant_array_index(qit_2d->ghost_layer,
+                                           (size_t) qit_2d->g);
+            // TODO: Get owner rank
+
+        }
     }
 
+    P4EST_ASSERT(parflow_p4est_giter_isvalid(giter));
     return qit_2d;
 }
 
 int
 parflow_p4est_qiter_isvalid_2d(parflow_p4est_qiter_2d_t * qit_2d)
 {
-    return (qit_2d->q < qit_2d->Q);
+    if (qit_2d->itype == PARFLOW_P4EST_QUAD) {
+        return (qit_2d->q < qit_2d->Q);
+    } else {
+        P4EST_ASSERT(itype == PARFLOW_P4EST_GHOST);
+        return (qit_2d->g < qit_2d->G);
+    }
 }
 
 void
 parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d)
 {
 
-    P4EST_ASSERT(parflow_p4est_quad_iter_isvalid(qiter));
-    if (++qit_2d->q == qit_2d->Q) {
-        if (++qit_2d->tt <= qit_2d->forest->last_local_tree) {
-            qit_2d->tree =
-                p4est_tree_array_index(qit_2d->forest->trees, qit_2d->tt);
-            qit_2d->tquadrants = &qit_2d->tree->quadrants;
-            qit_2d->Q = (int) qit_2d->tquadrants->elem_count;
-            qit_2d->q = 0;
-            qit_2d->quad = p4est_quadrant_array_index(qit_2d->tquadrants,
-                                                      (size_t) qit_2d->q);
+    P4EST_ASSERT(parflow_p4est_quad_iter_isvalid(qit_2d));
+
+    if (qit_2d->itype == PARFLOW_P4EST_QUAD) {
+        if (++qit_2d->q == qit_2d->Q) {
+            if (++qit_2d->tt <= qit_2d->forest->last_local_tree) {
+                qit_2d->tree =
+                    p4est_tree_array_index(qit_2d->forest->trees,
+                                           qit_2d->tt);
+                qit_2d->tquadrants = &qit_2d->tree->quadrants;
+                qit_2d->Q = (int) qit_2d->tquadrants->elem_count;
+                qit_2d->q = 0;
+                qit_2d->quad =
+                    p4est_quadrant_array_index(qit_2d->tquadrants,
+                                               (size_t) qit_2d->q);
+            } else {
+                memset(qit_2d, 0, sizeof(parflow_p4est_qiter_2d_t));
+                return;
+            }
         } else {
-            memset(qit_2d, 0, sizeof(parflow_p4est_qiter_2d_t));
-            return;
+            qit_2d->quad =
+                p4est_quadrant_array_index(qit_2d->tquadrants,
+                                           (size_t) qit_2d->q);
         }
     } else {
-        qit_2d->quad =
-            p4est_quadrant_array_index(qit_2d->tquadrants,
-                                       (size_t) qit_2d->q);
-    }
+        P4EST_ASSERT(itype == PARFLOW_P4EST_GHOST);
+        if (++qit_2d->g < qit_2d->G) {
 
+            qit_2d->quad =
+                p4est_quadrant_array_index(qit_2d->ghost_layer,
+                                           (size_t) qit_2d->g);
+            // TODO: get owner rank
+        }
+    }
     P4EST_ASSERT(parflow_p4est_qiter_isvalid(qit_2d));
 }
 

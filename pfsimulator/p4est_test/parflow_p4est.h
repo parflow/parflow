@@ -23,7 +23,9 @@ parflow_p4est_grid_t *parflow_p4est_grid_new(int Px, int Py, int Pz);
 void            parflow_p4est_grid_destroy(parflow_p4est_grid_t * pfgrid);
 
 parflow_p4est_qiter_t *parflow_p4est_qiter_init(parflow_p4est_grid_t *
-                                                pfg);
+                                                pfg,
+                                                parflow_p4est_iter_type_t
+                                                itype);
 
 int             parflow_p4est_qiter_isvalid(parflow_p4est_qiter_t * qiter);
 

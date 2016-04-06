@@ -49,7 +49,8 @@ void            parflow_p4est_qcoord_to_vertex_3d(p8est_connectivity_t *
                                                   quad, double v[3]);
 
 parflow_p4est_qiter_3d_t
-    * parflow_p4est_qiter_init_3d(parflow_p4est_grid_3d_t * pfg);
+    * parflow_p4est_qiter_init_3d(parflow_p4est_grid_3d_t * pfg,
+                                  parflow_p4est_iter_type_t itype);
 
 int             parflow_p4est_qiter_isvalid_3d(parflow_p4est_qiter_3d_t *
                                                qit_3d);
@@ -64,5 +65,4 @@ void            parflow_p4est_qiter_set_data_3d(parflow_p4est_qiter_3d_t *
 
 void           *parflow_p4est_qiter_get_data_3d(parflow_p4est_qiter_3d_t *
                                                 qit_3d);
-
 #endif                          // !PARLOW_P4EST_3D_H

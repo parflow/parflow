@@ -56,7 +56,8 @@ parflow_p4est_grid_destroy(parflow_p4est_grid_t * pfgrid)
 }
 
 parflow_p4est_qiter_t *
-parflow_p4est_qiter_init(parflow_p4est_grid_t * pfgrid)
+parflow_p4est_qiter_init(parflow_p4est_grid_t * pfgrid,
+                         parflow_p4est_iter_type_t itype)
 {
     parflow_p4est_qiter_t *qiter;
     int             dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
@@ -64,10 +65,12 @@ parflow_p4est_qiter_init(parflow_p4est_grid_t * pfgrid)
     qiter = P4EST_ALLOC(parflow_p4est_qiter_t, 1);
     qiter->dim = dim;
     if (dim == 2) {
-        qiter->q.qiter_2d = parflow_p4est_qiter_init_2d(pfgrid->p.p4);
+        qiter->q.qiter_2d =
+            parflow_p4est_qiter_init_2d(pfgrid->p.p4, itype);
     } else {
         P4EST_ASSERT(dim == 3);
-        qiter->q.qiter_3d = parflow_p4est_qiter_init_3d(pfgrid->p.p8);
+        qiter->q.qiter_3d =
+            parflow_p4est_qiter_init_3d(pfgrid->p.p8, itype);
     }
 
     return qiter;
@@ -158,10 +161,10 @@ parflow_p4est_qiter_get_data(parflow_p4est_qiter_t * qiter)
     int             dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);
 
     if (dim == 2) {
-        parflow_p4est_qiter_get_data_2d(qiter->q.qiter_2d);
+        return parflow_p4est_qiter_get_data_2d(qiter->q.qiter_2d);
     } else {
         P4EST_ASSERT(dim == 3);
-        parflow_p4est_qiter_get_data_3d(qiter->q.qiter_3d);
+        return parflow_p4est_qiter_get_data_3d(qiter->q.qiter_3d);
     }
 }
 
