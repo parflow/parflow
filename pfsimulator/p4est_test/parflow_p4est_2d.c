@@ -21,6 +21,7 @@ parflow_p4est_grid_2d_new(int Px, int Py
     int             tz;
 #endif
     int             initial_level;
+    size_t          quad_data_size;
     parflow_p4est_grid_2d_t *pfg;
 
     pfg = P4EST_ALLOC_ZERO(parflow_p4est_grid_2d_t, 1);
@@ -33,6 +34,7 @@ parflow_p4est_grid_2d_new(int Px, int Py
 #endif
     g = powtwo_div(gt);
     initial_level = (int) log2((double) g);
+    quad_data_size = sizeof(parflow_p4est_quad_data_t);
 
     /*
      * Create connectivity structure
@@ -47,7 +49,8 @@ parflow_p4est_grid_2d_new(int Px, int Py
      * Create p4est structure
      */
     pfg->forest = p4est_new_ext(amps_CommWorld, pfg->connect,
-                                0, initial_level, 1, 0, NULL, NULL);
+                                0, initial_level, 1,
+                                quad_data_size, NULL, NULL);
 
     /*
      * allocate ghost storage 
