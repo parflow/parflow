@@ -7,11 +7,8 @@ parflow_p4est_grid_t *
 parflow_p4est_grid_new (int nx, int ny, int nz)
 {
   parflow_p4est_grid_t *pfgrid;
-  int                 NX, NY, NZ;
 
-  pfgrid = NULL;
-
-  if (NZ == 1) {
+  if (nz == 1) {
     pfgrid = parflow_p4est_grid_2d_new (nx, ny);
   }
   else {
