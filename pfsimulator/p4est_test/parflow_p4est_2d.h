@@ -17,10 +17,10 @@ typedef struct parflow_p4est_grid_2d {
 typedef struct parflow_p4est_qiter_2d {
 
   /** Fields used by both types of iterators */
-    parflow_p4est_iter_type_t itype;    /* Flag identifiying iterator type */
+    parflow_p4est_iter_type_t itype;   /* Flag identifiying iterator type */
     p4est_connectivity_t *connect;
-    p4est_topidx_t  tt;         /* owner tree of the current quadrant */
-    p4est_quadrant_t *quad;     /* current quadrant */
+    p4est_topidx_t  which_tree;        /* owner tree of the current quadrant */
+    p4est_quadrant_t *quad;            /* current quadrant */
 
   /** Fields used only for (all) quadrant iterator */
     p4est_t        *forest;

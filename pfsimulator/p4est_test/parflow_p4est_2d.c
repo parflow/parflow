@@ -79,17 +79,20 @@ parflow_p4est_qiter_info_2d(parflow_p4est_qiter_2d_t * qit_2d)
     P4EST_ASSERT(qit_2d != NULL);
     if (qit_2d->itype == PARFLOW_P4EST_QUAD) {
         qit_2d->tree =
-            p4est_tree_array_index(qit_2d->forest->trees, qit_2d->tt);
+            p4est_tree_array_index(qit_2d->forest->trees,
+                                   qit_2d->which_tree);
         qit_2d->tquadrants = &qit_2d->tree->quadrants;
         qit_2d->Q = (int) qit_2d->tquadrants->elem_count;
         qit_2d->quad =
             p4est_quadrant_array_index(qit_2d->tquadrants,
                                        (size_t) qit_2d->q);
+        printf("TREE %i QUAD %i\n", qit_2d->which_tree, qit_2d->q);
     } else {
         P4EST_ASSERT(qit_2d->itype == PARFLOW_P4EST_GHOST);
         qit_2d->quad =
             p4est_quadrant_array_index(qit_2d->ghost_layer,
                                        (size_t) qit_2d->g);
+        qit_2d->which_tree = qit_2d->quad->p.piggy3.which_tree;
         /** Update owner rank **/
         rank = 0;
         while (qit_2d->ghost->proc_offsets[rank + 1] <= qit_2d->g) {
@@ -97,6 +100,7 @@ parflow_p4est_qiter_info_2d(parflow_p4est_qiter_2d_t * qit_2d)
             P4EST_ASSERT(rank < qit_2d->ghost->mpisize);
         }
         qit_2d->owner_rank = rank;
+        printf("GHOST QUAD %i\n", qit_2d->g);
     }
 
     return qit_2d;
@@ -123,7 +127,7 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
 
        /** Populate necesary fields **/
         qit_2d->forest = pfg->forest;
-        qit_2d->tt = qit_2d->forest->first_local_tree;
+        qit_2d->which_tree = qit_2d->forest->first_local_tree;
         qit_2d->owner_rank = qit_2d->forest->mpirank;
 
         /** Populate ghost fields with invalid values **/
@@ -163,7 +167,7 @@ parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d)
         /** We visited all local quadrants in current tree */
         if (++qit_2d->q == qit_2d->Q) {
 
-            if (++qit_2d->tt <= qit_2d->forest->last_local_tree) {
+            if (++qit_2d->which_tree <= qit_2d->forest->last_local_tree) {
 
                 /** Reset quadrant counter to skip to the next tree */
                 qit_2d->q = 0;
