@@ -34,9 +34,6 @@ parflow_p4est_qiter_t *parflow_p4est_qiter_next(parflow_p4est_qiter_t *
 void            parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter,
                                             double v[3]);
 
-void            parflow_p4est_qiter_set_data(parflow_p4est_qiter_t *
-                                             qiter, void *user_data);
-
 parflow_p4est_quad_data_t
     * parflow_p4est_qiter_get_data(parflow_p4est_qiter_t * qiter);
 

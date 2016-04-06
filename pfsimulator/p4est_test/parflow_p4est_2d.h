@@ -58,9 +58,6 @@ int             parflow_p4est_qiter_isvalid_2d(parflow_p4est_qiter_2d_t *
 parflow_p4est_qiter_2d_t
     * parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d);
 
-void            parflow_p4est_qiter_set_data_2d(parflow_p4est_qiter_2d_t *
-                                                qit_2d, void *user_data);
-
 parflow_p4est_quad_data_t
     * parflow_p4est_qiter_get_data_2d(parflow_p4est_qiter_2d_t * qit_2d);
 #endif                          // !PARLOW_P4EST_2D_H
