@@ -93,7 +93,7 @@ Grid           *CreateGrid(
    int                ix, iy, iz;
    int                ghost_idx;
    double             v[3];
-   Subgrid            *user_subgrid, **ss;
+   Subgrid            *user_subgrid;
    parflow_p4est_qiter_t *qiter;
    parflow_p4est_quad_data_t *quad_data;
    parflow_p4est_ghost_data_t *ghost_data;
@@ -186,8 +186,7 @@ Grid           *CreateGrid(
                                parflow_p4est_qiter_get_owner_rank(qiter));
     }
 
-   ghost_data = parflow_p4est_get_ghost_data(grid->pfgrid);
-   ss = (Subgrid **) ghost_data->ghost_subgrids->array;
+
    /* Loop over the ghost layer */
     for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_GHOST);
          qiter != NULL;
@@ -213,9 +212,10 @@ Grid           *CreateGrid(
 
        /* Allocate new subgrid and attach it to the corresponding
         * ghost quadrant position */
-        ghost_idx = parflow_p4est_qiter_get_ghost_idx(qiter);
-        ss[ghost_idx] = NewSubgrid(ix, iy, iz, px, py, pz, 0,  0,  0,
-                                     parflow_p4est_qiter_get_owner_rank(qiter));
+          ghost_data = parflow_p4est_get_ghost_data(grid->pfgrid, qiter);
+          ghost_data->pf_subgrid = NewSubgrid(ix, iy, iz, px, py, pz, 0,  0,  0,
+                                   parflow_p4est_qiter_get_owner_rank(qiter));
+
    }
 #endif
 
