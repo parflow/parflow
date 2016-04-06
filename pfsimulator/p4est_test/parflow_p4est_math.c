@@ -1,26 +1,26 @@
 #include <math.h>
 
 int
-gcd (int a, int b)
+gcd(int a, int b)
 {
-  int                 c;
+    int             c;
 
-  while (a) {
-    c = a;
-    a = b % a;
-    b = c;
-  }
-  return b;
+    while (a) {
+        c = a;
+        a = b % a;
+        b = c;
+    }
+    return b;
 }
 
 int
-powtwo_div (int a)
+powtwo_div(int a)
 {
-  int                 c = 0;
+    int             c = 0;
 
-  while (!(a % 2)) {
-    c++;
-    a /= 2;
-  }
-  return (int) pow (2, c);
+    while (!(a % 2)) {
+        c++;
+        a /= 2;
+    }
+    return (int) pow(2, c);
 }

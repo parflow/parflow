@@ -5,50 +5,50 @@
 #include <p8est.h>
 
 int
-main (int argc, char **argv)
+main(int argc, char **argv)
 {
-  Grid               *grid;
+    Grid           *grid;
 
-  if (amps_Init (&argc, &argv)) {
-    amps_Printf ("Error: amps_Init initalization failed\n");
-    exit (1);
-  }
+    if (amps_Init(&argc, &argv)) {
+        amps_Printf("Error: amps_Init initalization failed\n");
+        exit(1);
+    }
 
-  NewGlobals (argv[1]);
+    NewGlobals(argv[1]);
 
-  amps_ThreadLocal (input_database) = IDB_NewDB (GlobalsInFileName);
+    amps_ThreadLocal(input_database) = IDB_NewDB(GlobalsInFileName);
 
-  GlobalsNumProcsX = GetIntDefault ("Process.Topology.P", 1);
-  GlobalsNumProcsY = GetIntDefault ("Process.Topology.Q", 1);
-  GlobalsNumProcsZ = GetIntDefault ("Process.Topology.R", 1);
+    GlobalsNumProcsX = GetIntDefault("Process.Topology.P", 1);
+    GlobalsNumProcsY = GetIntDefault("Process.Topology.Q", 1);
+    GlobalsNumProcsZ = GetIntDefault("Process.Topology.R", 1);
 
-  GlobalsSubgridPointsX = GetIntDefault ("ComputationalSubgrid.MX", 2);
-  GlobalsSubgridPointsY = GetIntDefault ("ComputationalSubgrid.MY", 2);
-  GlobalsSubgridPointsZ = GetIntDefault ("ComputationalSubgrid.MZ", 2);
+    GlobalsSubgridPointsX = GetIntDefault("ComputationalSubgrid.MX", 2);
+    GlobalsSubgridPointsY = GetIntDefault("ComputationalSubgrid.MY", 2);
+    GlobalsSubgridPointsZ = GetIntDefault("ComputationalSubgrid.MZ", 2);
 
-  GlobalsNumProcs = amps_Size (amps_CommWorld);
+    GlobalsNumProcs = amps_Size(amps_CommWorld);
 
-  GlobalsBackground = ReadBackground ();
+    GlobalsBackground = ReadBackground();
 
-  GlobalsUserGrid = ReadUserGrid ();
+    GlobalsUserGrid = ReadUserGrid();
 
-  SetBackgroundBounds (GlobalsBackground, GlobalsUserGrid);
+    SetBackgroundBounds(GlobalsBackground, GlobalsUserGrid);
 
-  /*
-   * Initialize sc and p{4,8}est library
-   */
-  sc_init (amps_CommWorld, 1, 1, NULL, SC_LP_DEFAULT);
-  p4est_init (NULL, SC_LP_DEFAULT);
+    /*
+     * Initialize sc and p{4,8}est library
+     */
+    sc_init(amps_CommWorld, 1, 1, NULL, SC_LP_DEFAULT);
+    p4est_init(NULL, SC_LP_DEFAULT);
 
-  grid = CreateGrid (GlobalsUserGrid);
+    grid = CreateGrid(GlobalsUserGrid);
 
-  FreeGrid (grid);
+    FreeGrid(grid);
 
-  sc_finalize ();
+    sc_finalize();
 
-  IDB_FreeDB (amps_ThreadLocal (input_database));
-  FreeGlobals ();
-  amps_Finalize ();
+    IDB_FreeDB(amps_ThreadLocal(input_database));
+    FreeGlobals();
+    amps_Finalize();
 
-  return 0;
+    return 0;
 }
