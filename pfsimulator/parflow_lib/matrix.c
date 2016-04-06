@@ -81,6 +81,7 @@ Stencil  *NewStencil(
 
 CommPkg   *NewMatrixUpdatePkg(
    Matrix    *matrix,
+   int       submatrix_idx,
    Stencil   *ghost)
 {
    CommPkg     *new_commpkg = NULL;
@@ -99,7 +100,7 @@ CommPkg   *NewMatrixUpdatePkg(
 
    Region      *send_reg, *recv_reg;
 
-   Submatrix * submatrix = MatrixSubmatrix(matrix, 0);
+   Submatrix * submatrix = MatrixSubmatrix(matrix, submatrix_idx);
 
    int ix = SubmatrixIX(submatrix);
    int iy = SubmatrixIY(submatrix);
@@ -118,7 +119,7 @@ CommPkg   *NewMatrixUpdatePkg(
 
 
    new_commpkg = NewCommPkg(send_reg, recv_reg,
-                            MatrixDataSpace(matrix), n, SubmatrixData(submatrix));
+                            MatrixDataSpace(matrix), submatrix_idx, n, SubmatrixData(submatrix));
 
    FreeRegion(send_reg);
    FreeRegion(recv_reg);

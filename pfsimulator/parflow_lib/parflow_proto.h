@@ -376,9 +376,9 @@ int MatDiagScaleSizeOfTempData (void );
 
 /* matrix.c */
 Stencil *NewStencil (int shape [][3 ], int sz );
-CommPkg *NewMatrixUpdatePkg (Matrix *matrix , Stencil *ghost );
-CommHandle *InitMatrixUpdate (Matrix *matrix );
-void FinalizeMatrixUpdate (CommHandle *handle );
+CommPkg *NewMatrixUpdatePkg (Matrix *matrix , int submatrix_idx, Stencil *ghost );
+MatrixUpdateCommHandle *InitMatrixUpdate (Matrix *matrix );
+void FinalizeMatrixUpdate (MatrixUpdateCommHandle *handle );
 Matrix *NewMatrix (Grid *grid , SubregionArray *range , Stencil *stencil , int symmetry , Stencil *ghost );
 Matrix *NewMatrixType (Grid *grid , SubregionArray *range , Stencil *stencil , int symmetry , Stencil *ghost, enum matrix_type type );
 void FreeStencil (Stencil *stencil );
