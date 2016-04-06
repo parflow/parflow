@@ -9,8 +9,8 @@ namespace import Parflow::*
 pfset FileVersion 4
 
 # remove files from previous run
-foreach file [glob -nocomplain *prueba.out.*] {file delete -force -- $file}
-foreach file [glob -nocomplain prueba.pfidb] {file delete -force -- $file}
+foreach file [glob -nocomplain *test_brick.out.*] {file delete -force -- $file}
+foreach file [glob -nocomplain test_brick.pfidb] {file delete -force -- $file}
 foreach file [glob -nocomplain icpressure.pfb*] {file delete -force -- $file}
 
 
@@ -29,8 +29,8 @@ pfset ComputationalGrid.DX	                 0.2
 pfset ComputationalGrid.DY                       0.2
 pfset ComputationalGrid.DZ	                 0.2
 
-pfset ComputationalGrid.NX                       8
-pfset ComputationalGrid.NY                       8
+pfset ComputationalGrid.NX                       12
+pfset ComputationalGrid.NY                       12
 pfset ComputationalGrid.NZ                       1
 
 #---------------------------------------------------------
@@ -41,8 +41,8 @@ pfset use_pforest                               "yes"
 #---------------------------------------------------------
 # Computational SubGrid dims
 #---------------------------------------------------------
-pfset ComputationalSubgrid.MX                    8
-pfset ComputationalSubgrid.MY                    8
+pfset ComputationalSubgrid.MX                    4
+pfset ComputationalSubgrid.MY                    3
 pfset ComputationalSubgrid.MZ                    1
 
 #---------------------------------------------------------
