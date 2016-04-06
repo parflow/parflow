@@ -7,32 +7,23 @@
 int
 main(int argc, char **argv)
 {
-    Grid           *grid;
 
     if (amps_Init(&argc, &argv)) {
         amps_Printf("Error: amps_Init initalization failed\n");
         exit(1);
     }
 
+    /*-----------------------------------------------------------------------
+     * Set up globals structure
+     *-----------------------------------------------------------------------*/
+
     NewGlobals(argv[1]);
 
+    /*-----------------------------------------------------------------------
+     * Read the Users Input Deck
+     *-----------------------------------------------------------------------*/
+
     amps_ThreadLocal(input_database) = IDB_NewDB(GlobalsInFileName);
-
-    GlobalsNumProcsX = GetIntDefault("Process.Topology.P", 1);
-    GlobalsNumProcsY = GetIntDefault("Process.Topology.Q", 1);
-    GlobalsNumProcsZ = GetIntDefault("Process.Topology.R", 1);
-
-    GlobalsSubgridPointsX =  GetIntDefault("ComputationalSubgrid.MX", 1);
-    GlobalsSubgridPointsY =  GetIntDefault("ComputationalSubgrid.MY", 1);
-    GlobalsSubgridPointsZ =  GetIntDefault("ComputationalSubgrid.MZ", 1);
-
-    GlobalsNumProcs = amps_Size(amps_CommWorld);
-
-    GlobalsBackground = ReadBackground();
-
-    GlobalsUserGrid = ReadUserGrid();
-
-    SetBackgroundBounds(GlobalsBackground, GlobalsUserGrid);
 
     /*
      * Initialize sc and p{4,8}est library
@@ -40,9 +31,40 @@ main(int argc, char **argv)
     sc_init(amps_CommWorld, 1, 1, NULL, SC_LP_DEFAULT);
     p4est_init(NULL, SC_LP_DEFAULT);
 
-    grid = CreateGrid(GlobalsUserGrid);
+    NewLogging();
 
-    FreeGrid(grid);
+    /*-----------------------------------------------------------------------
+     * Setup timing table
+     *-----------------------------------------------------------------------*/
+
+    NewTiming();
+
+    /*-----------------------------------------------------------------------
+     * Solve the problem
+     *-----------------------------------------------------------------------*/
+    Solve();
+    printf("Problem solved \n");
+    fflush(NULL);
+
+    /*-----------------------------------------------------------------------
+     * Log global information
+     *-----------------------------------------------------------------------*/
+
+    LogGlobals();
+
+    /*-----------------------------------------------------------------------
+     * Print timing results
+     *-----------------------------------------------------------------------*/
+
+    PrintTiming();
+
+    /*-----------------------------------------------------------------------
+     * Clean up
+     *-----------------------------------------------------------------------*/
+
+    FreeLogging();
+
+    FreeTiming();
 
     sc_finalize();
 
