@@ -29,15 +29,15 @@ pfset ComputationalGrid.DX	                 0.2
 pfset ComputationalGrid.DY                       0.2
 pfset ComputationalGrid.DZ	                 0.2
 
-pfset ComputationalGrid.NX                       11
-pfset ComputationalGrid.NY                       7
+pfset ComputationalGrid.NX                       8
+pfset ComputationalGrid.NY                       8
 pfset ComputationalGrid.NZ                       1
 
 #---------------------------------------------------------
 # Computational SubGrid dims
 #---------------------------------------------------------
-pfset ComputationalSubgrid.MX                    3
-pfset ComputationalSubgrid.MY                    3
+pfset ComputationalSubgrid.MX                    8
+pfset ComputationalSubgrid.MY                    8
 pfset ComputationalSubgrid.MZ                    1
 
 #---------------------------------------------------------
