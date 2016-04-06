@@ -45,6 +45,10 @@ typedef struct parflow_p4est_sg_param{
 void
 parflow_p4est_sg_param_init(parflow_p4est_sg_param_t *sp);
 
+void
+parflow_p4est_sg_param_update(parflow_p4est_qiter_t * qiter,
+                              parflow_p4est_sg_param_t *sp);
+
 parflow_p4est_grid_t *parflow_p4est_grid_new(int Px, int Py, int Pz);
 
 void            parflow_p4est_grid_destroy(parflow_p4est_grid_t * pfgrid);
