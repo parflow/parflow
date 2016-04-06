@@ -111,14 +111,15 @@ Grid           *CreateGrid(
    } else {
 #ifdef HAVE_P4EST
       all_subgrids = NewSubgridArray();
-      subgrids     = all_subgrids;
+      subgrids     = NewSubgridArray();
 
       /* Initialize information to compute number of subgrids
        * and their corresponding dimensions */
         parflow_p4est_sg_param_init(sp);
 
       /* Create the pfgrid. */
-      pfgrid = parflow_p4est_grid_new (sp->P[0], sp->P[1], sp->P[2]);
+      pfgrid = parflow_p4est_grid_new (GlobalsNumProcsX, GlobalsNumProcsY,
+                                       GlobalsNumProcsZ);
 
       /* Loop on the quadrants (leafs) of this forest
          and attach a subgrid on each */
@@ -135,6 +136,7 @@ Grid           *CreateGrid(
              NewSubgrid(sp->icorner[0], sp->icorner[1], sp->icorner[2],
                         sp->p[0], sp->p[1], sp->p[2], 0,  0,  0,
                         parflow_p4est_qiter_get_owner_rank(qiter));
+          AppendSubgrid(quad_data->pf_subgrid, subgrids);
           AppendSubgrid(quad_data->pf_subgrid, all_subgrids);
       }
 
@@ -153,6 +155,7 @@ Grid           *CreateGrid(
               NewSubgrid(sp->icorner[0], sp->icorner[1], sp->icorner[2],
                          sp->p[0], sp->p[1], sp->p[2], 0,  0,  0,
                          parflow_p4est_qiter_get_owner_rank(qiter));
+            AppendSubgrid(ghost_data->pf_subgrid, all_subgrids);
       }
 #else
     PARFLOW_ERROR("ParFlow compiled without p4est");

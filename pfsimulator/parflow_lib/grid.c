@@ -155,7 +155,6 @@ void  FreeGrid(
                quad_data = parflow_p4est_get_quad_data(qiter);
                FreeSubgrid ( quad_data->pf_subgrid );
            }
-#endif
 
            /* Free memory allocated in the ghost layer */
            for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_GHOST);
@@ -165,6 +164,7 @@ void  FreeGrid(
                ghost_data = parflow_p4est_get_ghost_data(grid->pfgrid, qiter);
                FreeSubgrid ( ghost_data->pf_subgrid );
            }
+#endif
 
            /* destroy pfgrid structure */
            parflow_p4est_grid_destroy (grid->pfgrid);
