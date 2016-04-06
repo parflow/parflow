@@ -137,7 +137,7 @@ parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter, double v[3])
     }
 
     for (k = 0; k < 3; ++k) {
-        v[k] *= level_factor;
+        v[k] *= sc_intpow(2, level_factor);
     }
 }
 
