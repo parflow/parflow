@@ -53,4 +53,8 @@ parflow_p4est_quad_data_t
 int             parflow_p4est_qiter_get_owner_rank(parflow_p4est_qiter_t *
                                                    qiter);
 
+parflow_p4est_ghost_data_t
+   * parflow_p4est_get_ghost_data(parflow_p4est_grid_t * pfgrid,
+                                  parflow_p4est_qiter_t * qiter);
+
 #endif                          // !PARLOW_P4EST_H

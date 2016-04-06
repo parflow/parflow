@@ -206,7 +206,18 @@ parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d)
 parflow_p4est_quad_data_t *
 parflow_p4est_qiter_get_data_2d(parflow_p4est_qiter_2d_t * qit_2d)
 {
-    return (parflow_p4est_quad_data_t*) qit_2d->quad->p.user_data;
+    return (parflow_p4est_quad_data_t *) qit_2d->quad->p.user_data;
+}
+
+parflow_p4est_ghost_data_t *
+parflow_p4est_get_ghost_data_2d(parflow_p4est_grid_2d_t *pfg,
+                                parflow_p4est_qiter_2d_t * qit_2d)
+{
+    sc_array_t *gdata = pfg->ghost_data;
+
+    P4EST_ASSERT(qit_2d->itype & PARFLOW_P4EST_GHOST);
+
+    return (parflow_p4est_ghost_data_t *) sc_array_index_int(gdata, qit_2d->g);
 }
 
 /*

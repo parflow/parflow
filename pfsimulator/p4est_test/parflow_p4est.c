@@ -165,20 +165,19 @@ parflow_p4est_qiter_get_owner_rank(parflow_p4est_qiter_t * qiter)
     }
 }
 
-int
-parflow_p4est_qiter_get_ghost_idx(parflow_p4est_qiter_t * qiter)
+parflow_p4est_ghost_data_t *
+parflow_p4est_get_ghost_data(parflow_p4est_grid_t * pfgrid,
+                             parflow_p4est_qiter_t * qiter)
 {
-    int             g;
-    int             dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);
+
+    int             dim = PARFLOW_P4EST_GET_QITER_DIM(pfgrid);
 
     if (dim == 2) {
-        g = qiter->q.qiter_2d->g;
+        return parflow_p4est_get_ghost_data_2d(pfgrid->p.p4,
+                                               qiter->q.qiter_2d);
     } else {
         P4EST_ASSERT(dim == 3);
-        g = qiter->q.qiter_3d->g;
+        return parflow_p4est_get_ghost_data_3d(pfgrid->p.p8,
+                                               qiter->q.qiter_3d);
     }
-
-    P4EST_ASSERT(g >= 0);
-
-    return g;
 }
