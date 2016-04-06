@@ -14,9 +14,9 @@ foreach file [glob -nocomplain prueba.pfidb] {file delete -force -- $file}
 foreach file [glob -nocomplain icpressure.pfb*] {file delete -force -- $file}
 
 
-pfset Process.Topology.P 2
-pfset Process.Topology.Q 2
-pfset Process.Topology.R 2
+pfset Process.Topology.P 1
+pfset Process.Topology.Q 1
+pfset Process.Topology.R 1
 
 #---------------------------------------------------------
 # Computational Grid
@@ -25,11 +25,11 @@ pfset ComputationalGrid.Lower.X                  0.0
 pfset ComputationalGrid.Lower.Y                  0.0
 pfset ComputationalGrid.Lower.Z                  0.0
 
-pfset ComputationalGrid.DX	                 0.0625
-pfset ComputationalGrid.DY                       0.0625
-pfset ComputationalGrid.DZ	                 0.333
+pfset ComputationalGrid.DX	                 0.2
+pfset ComputationalGrid.DY                       0.2
+pfset ComputationalGrid.DZ	                 0.2
 
-pfset ComputationalGrid.NX                       10
+pfset ComputationalGrid.NX                       11
 pfset ComputationalGrid.NY                       7
 pfset ComputationalGrid.NZ                       1
 
@@ -38,7 +38,7 @@ pfset ComputationalGrid.NZ                       1
 #---------------------------------------------------------
 pfset ComputationalSubgrid.MX                    3
 pfset ComputationalSubgrid.MY                    3
-pfset ComputationalSubgrid.MZ                    3
+pfset ComputationalSubgrid.MZ                    1
 
 #---------------------------------------------------------
 # The Names of the GeomInputs
@@ -48,7 +48,7 @@ pfset GeomInput.Names "domain_input background_input"
 #---------------------------------------------------------
 # Known Solution
 #---------------------------------------------------------
-#pfset KnownSolution                                   2D_XY
+pfset KnownSolution                                   2D_XY
 
 #--------------------------------------------------------
 # prepare ICPressure File which has the initial values for pressure
@@ -294,8 +294,7 @@ pfset SpecificStorage.GeomNames       "domain"
 pfset Geom.domain.SpecificStorage.Value 0.0
 
 #-----------------------------------------------------------------------------
-# Run and Unload the ParFlow output files
+# Write out data base
 #-----------------------------------------------------------------------------
-pfrun test_brick
-pfundist test_brick
+pfwritedb test_brick
 
