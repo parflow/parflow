@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <parflow.h>
 #include <parflow_p4est.h>
+#include <p4est.h>
+#include <p8est.h>
 
 int
 main (int argc, char **argv)

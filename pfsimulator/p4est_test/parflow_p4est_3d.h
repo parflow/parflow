@@ -2,10 +2,20 @@
 #define PARLOW_P4EST_3D_H
 
 #include "parflow_p4est.h"
+#include <p8est_lnodes.h>
 
-parflow_p4est_grid_t *parflow_p4est_grid_3d_new (int Px, int Py, int Pz);
+typedef struct parflow_p4est_grid_3d
+{
+  int                 dim;
+  p8est_t            *forest;
+  p8est_connectivity_t *connect;
+  p8est_ghost_t      *ghost;
+}
+parflow_p4est_grid_3d_t;
 
-void                parflow_p4est_grid_3d_destroy (parflow_p4est_grid_t *
+parflow_p4est_grid_3d_t *parflow_p4est_grid_3d_new (int Px, int Py, int Pz);
+
+void                parflow_p4est_grid_3d_destroy (parflow_p4est_grid_3d_t *
                                                    pfgrid);
 
 void                parflow_p4est_qcoord_to_vertex_3d (parflow_p4est_grid_t *

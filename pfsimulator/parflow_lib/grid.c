@@ -133,6 +133,7 @@ void  FreeGrid(
        if (GridComputePkgs(grid))
          FreeComputePkgs(grid);
 #else
+#if 0
        forest =  grid->pfgrid->forest;
        ghost_layer =  &grid->pfgrid->ghost->ghosts;
 
@@ -163,9 +164,10 @@ void  FreeGrid(
             quad_subgrid = (Subgrid *) quad->p.user_data ;
             FreeSubgrid ( quad_subgrid );
         }
-
+#endif
         /* destroy pfgrid structure */
         parflow_p4est_grid_destroy (grid->pfgrid);
+
 #endif
         tfree(grid);
    }

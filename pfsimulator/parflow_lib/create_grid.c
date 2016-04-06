@@ -156,7 +156,7 @@ Grid           *CreateGrid(
 
    /* Create the pfgrid. */
    grid->pfgrid = parflow_p4est_grid_new (Px, Py, Pz);
-
+#if 0
    forest       = grid->pfgrid->forest;
    ghost_layer  = &grid->pfgrid->ghost->ghosts;
 
@@ -232,6 +232,7 @@ Grid           *CreateGrid(
            (void *) NewSubgrid(ix, iy, iz, px, py, pz,
                                 0,  0,  0, -9999);
    }
+#endif
 #endif
 
    return grid;

@@ -1,24 +1,8 @@
 #ifndef PARLOW_P4EST_H
 #define PARLOW_P4EST_H
 
-#ifndef P4_TO_P8
-#include <p4est.h>
-#include <p4est_connectivity.h>
-#include <p4est_ghost.h>
-#else
-#include <p8est.h>
-#include <p8est_connectivity.h>
-#include <p8est_ghost.h>
-#endif
 
-typedef struct parflow_p4est_grid
-{
-  int                 dim;
-  p4est_t            *forest;
-  p4est_connectivity_t *connect;
-  p4est_ghost_t      *ghost;
-}
-parflow_p4est_grid_t;
+typedef struct parflow_p4est_grid parflow_p4est_grid_t;
 
 /*Accesor macros*/
 #define PARFLOW_P4EST_GET_GRID_DIM(pfgrid) ((pfgrid)->dim)
@@ -26,9 +10,10 @@ parflow_p4est_grid_t;
 /*Functions*/
 parflow_p4est_grid_t *parflow_p4est_grid_new (int Px, int Py, int Pz);
 
+
 void                parflow_p4est_grid_destroy (parflow_p4est_grid_t *
                                                 pfgrid);
-
+#if 0
 void                parflow_p4est_qcoord_to_vertex (parflow_p4est_grid_t *
                                                     pfgrid,
                                                     p4est_topidx_t treeid,
@@ -36,5 +21,6 @@ void                parflow_p4est_qcoord_to_vertex (parflow_p4est_grid_t *
                                                     double v[3]);
 p4est_topidx_t
 parflow_p4est_gquad_owner_tree (p4est_quadrant_t   *quad);
+#endif
 
 #endif // !PARLOW_P4EST_H
