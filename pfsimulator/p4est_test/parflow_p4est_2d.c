@@ -89,6 +89,59 @@ parflow_p4est_grid_2d_destroy (parflow_p4est_grid_2d_t * pfg)
   P4EST_FREE (pfg);
 }
 
+void
+parflow_p4est_quad_iter_init_2d (parflow_p4est_quad_iter_2d_t * quadit,
+                                 parflow_p4est_grid_2d_t * pfg)
+{
+  memset (quadit, 0, sizeof (parflow_p4est_quad_iter_2d_t));
+
+  quadit->forest = pfg->forest;
+  quadit->tt = quadit->forest->first_local_tree;
+  if (quadit->tt <= quadit->forest->last_local_tree) {
+    P4EST_ASSERT (quadit->tt >= 0);
+    quadit->tree = p4est_tree_array_index (quadit->forest->trees, quadit->tt);
+    quadit->tquadrants = &quadit->tree->quadrants;
+    quadit->Q = (int) quadit->tquadrants->elem_count;
+    P4EST_ASSERT (quadit->Q > 0);
+    quadit->quad = p4est_quadrant_array_index (quadit->tquadrants,
+                                               (size_t) quadit->q);
+  }
+}
+
+int
+parflow_p4est_quad_iter_isvalid_2d (parflow_p4est_quad_iter_2d_t * quadit)
+{
+  return (quadit->q < quadit->Q);
+}
+
+void
+parflow_p4est_quad_iter_next_2d (parflow_p4est_quad_iter_2d_t * quadit)
+{
+
+  P4EST_ASSERT (parflow_p4est_quad_iter_isvalid (quadit));
+
+  if (++quadit->q == quadit->Q) {
+    if (++quadit->tt <= quadit->forest->last_local_tree) {
+      quadit->tree =
+        p4est_tree_array_index (quadit->forest->trees, quadit->tt);
+      quadit->tquadrants = &quadit->tree->quadrants;
+      quadit->Q = (int) quadit->tquadrants->elem_count;
+      quadit->q = 0;
+      quadit->quad = p4est_quadrant_array_index (quadit->tquadrants,
+                                                 (size_t) quadit->q);
+    }
+    else {
+      memset (quadit, 0, sizeof (parflow_p4est_ghost_iter_2d_t));
+      return;
+    }
+  }
+  else {
+    quadit->quad = p4est_quadrant_array_index (quadit->tquadrants, quadit->q);
+  }
+
+  P4EST_ASSERT (parflow_p4est_quad_iter_isvalid (quadit));
+}
+
 #if 0
 void
 parflow_p4est_qcoord_to_vertex_2d (parflow_p4est_grid_t * pfgrid,

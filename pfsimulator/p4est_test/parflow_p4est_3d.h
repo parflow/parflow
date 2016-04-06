@@ -13,6 +13,33 @@ typedef struct parflow_p4est_grid_3d
 }
 parflow_p4est_grid_3d_t;
 
+typedef struct parflow_p4est_quad_iter_3d
+{
+  p8est_t            *forest;
+  p4est_topidx_t      tt;
+  p8est_tree_t       *tree;
+  sc_array_t         *tquadrants;
+  double              level;    /* level of current quadrant */
+  int                 owner_rank;       /* processor owning current quadrant */
+  int                 Q;        /* quadrants in this tree */
+  int                 q;        /* index of current quad in this tree */
+  p4est_quadrant_t   *quad;     /* current quadrant */
+}
+parflow_p4est_quad_iter_3d_t;
+
+typedef struct parflow_p4est_ghost_iter_3d
+{
+  p8est_ghost_t      *ghost;
+  sc_array_t         *ghost_layer;
+  double              level;    /* level of current quadrant */
+  int                 owner_rank;       /* processor owning current quadrant */
+  int                 G;        /* ghosts quadrants in this layer */
+  int                 g;        /* index of current quad in this layer */
+  p4est_quadrant_t   *quad;     /* current quadrant */
+}
+parflow_p4est_ghost_iter_3d_t;
+
+
 parflow_p4est_grid_3d_t *parflow_p4est_grid_3d_new (int Px, int Py, int Pz);
 
 void                parflow_p4est_grid_3d_destroy (parflow_p4est_grid_3d_t *
