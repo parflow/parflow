@@ -34,6 +34,11 @@ pfset ComputationalGrid.NY                       8
 pfset ComputationalGrid.NZ                       1
 
 #---------------------------------------------------------
+# Use p4est software for adaptive mesh refinement
+#---------------------------------------------------------
+pfset use_pforest                               "yes"
+
+#---------------------------------------------------------
 # Computational SubGrid dims
 #---------------------------------------------------------
 pfset ComputationalSubgrid.MX                    8
