@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <parflow.h>
 #ifdef HAVE_P4EST
 #include <parflow_p4est.h>
