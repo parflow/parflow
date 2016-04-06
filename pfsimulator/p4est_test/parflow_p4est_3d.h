@@ -63,5 +63,10 @@ void            parflow_p4est_qiter_next_3d(parflow_p4est_qiter_3d_t *
 
 void            parflow_p4est_qiter_destroy_3d(parflow_p4est_qiter_3d_t *
                                                qit_3d);
+void            parflow_p4est_qiter_set_data_3d(parflow_p4est_qiter_3d_t *
+                                                qit_3d, void *user_data);
+
+void           *parflow_p4est_qiter_get_data_3d(parflow_p4est_qiter_3d_t *
+                                                qit_3d);
 
 #endif                          // !PARLOW_P4EST_3D_H

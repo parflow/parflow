@@ -17,5 +17,7 @@
 #define parflow_p4est_giter_init_2d       parflow_p4est_giter_init_3d
 #define parflow_p4est_giter_next_2d       parflow_p4est_giter_next_3d
 #define parflow_p4est_qiter_destroy_2d    parflow_p4est_qiter_destroy_3d
+#define parflow_p4est_qiter_set_data_2d   parflow_p4est_qiter_set_data_3d
+#define parflow_p4est_qiter_get_data_2d   parflow_p4est_qiter_get_data_3d
 
 #endif                          /* !PARFLOW_P4_TO_P8_H */

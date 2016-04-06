@@ -62,4 +62,10 @@ void            parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t *
 void            parflow_p4est_qiter_destroy_2d(parflow_p4est_qiter_2d_t *
                                                qit_2d);
 
+void            parflow_p4est_qiter_set_data_2d(parflow_p4est_qiter_2d_t *
+                                                qit_2d, void *user_data);
+
+void           *parflow_p4est_qiter_get_data_2d(parflow_p4est_qiter_2d_t *
+                                                qit_2d);
+
 #endif                          // !PARLOW_P4EST_2D_H

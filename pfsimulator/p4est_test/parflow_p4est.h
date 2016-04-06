@@ -27,13 +27,20 @@ void            parflow_p4est_qiter_next(parflow_p4est_qiter_t * qiter);
 void            parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter,
                                             double v[3]);
 
+void            parflow_p4est_qiter_set_data(parflow_p4est_qiter_t *
+                                             qiter, void *user_data);
+
+void           *parflow_p4est_qiter_get_data(parflow_p4est_qiter_t *
+                                             qiter);
 #if 0
 void            parflow_p4est_qcoord_to_vertex(parflow_p4est_grid_t *
                                                pfgrid,
                                                p4est_topidx_t treeid,
                                                p4est_quadrant_t * quad,
                                                double v[3]);
+
 p4est_topidx_t  parflow_p4est_gquad_owner_tree(p4est_quadrant_t * quad);
+
 #endif
 
 #endif                          // !PARLOW_P4EST_H

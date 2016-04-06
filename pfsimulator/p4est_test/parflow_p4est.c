@@ -138,6 +138,33 @@ parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter, double v[3])
     }
 }
 
+void
+parflow_p4est_qiter_set_data(parflow_p4est_qiter_t *
+                             qiter, void *user_data)
+{
+    int             dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);
+
+    if (dim == 2) {
+        parflow_p4est_qiter_set_data_2d(qiter->q.qiter_2d, user_data);
+    } else {
+        P4EST_ASSERT(dim == 3);
+        parflow_p4est_qiter_set_data_3d(qiter->q.qiter_3d, user_data);
+    }
+}
+
+void           *
+parflow_p4est_qiter_get_data(parflow_p4est_qiter_t * qiter)
+{
+    int             dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);
+
+    if (dim == 2) {
+        parflow_p4est_qiter_get_data_2d(qiter->q.qiter_2d);
+    } else {
+        P4EST_ASSERT(dim == 3);
+        parflow_p4est_qiter_get_data_3d(qiter->q.qiter_3d);
+    }
+}
+
 #if 0
 p4est_topidx_t
 parflow_p4est_gquad_owner_tree(p4est_quadrant_t * quad)
