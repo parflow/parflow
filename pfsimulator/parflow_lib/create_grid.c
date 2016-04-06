@@ -158,7 +158,7 @@ Grid           *CreateGrid(
    for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_QUAD);
         qiter != NULL;
         qiter = parflow_p4est_qiter_next(qiter)) {
-
+#if 0
        /* Get bottom left corner (anchor node)  in
             * index space for the new subgrid */
        parflow_p4est_qiter_qcorner(qiter, v);
@@ -181,13 +181,14 @@ Grid           *CreateGrid(
        user_subgrid = NewSubgrid(ix, iy, iz, px, py, pz, 0,  0,  0,
                                  parflow_p4est_qiter_get_owner_rank(qiter));
        parflow_p4est_qiter_set_data(qiter, (void*) user_subgrid);
+#endif
     }
 
    /* Loop over the ghost layer */
     for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_GHOST);
          qiter != NULL;
          qiter = parflow_p4est_qiter_next(qiter)) {
-
+#if 0
         /* Get bottom left corner (anchor node)  in
              * index space for the new subgrid */
         parflow_p4est_qiter_qcorner(qiter, v);
@@ -211,6 +212,7 @@ Grid           *CreateGrid(
         user_subgrid = NewSubgrid(ix, iy, iz, px, py, pz, 0,  0,  0,
                                   parflow_p4est_qiter_get_owner_rank(qiter));
         parflow_p4est_qiter_set_data(qiter, (void*) user_subgrid);
+#endif
    }
 #endif
 
