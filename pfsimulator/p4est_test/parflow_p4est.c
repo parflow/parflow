@@ -152,7 +152,7 @@ parflow_p4est_qiter_set_data(parflow_p4est_qiter_t *
     }
 }
 
-void           *
+parflow_p4est_quad_data_t *
 parflow_p4est_qiter_get_data(parflow_p4est_qiter_t * qiter)
 {
     int             dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);

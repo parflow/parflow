@@ -207,10 +207,10 @@ parflow_p4est_qiter_set_data_2d(parflow_p4est_qiter_2d_t * qit_2d,
     qit_2d->quad->p.user_data = user_data;
 }
 
-void           *
+parflow_p4est_quad_data_t *
 parflow_p4est_qiter_get_data_2d(parflow_p4est_qiter_2d_t * qit_2d)
 {
-    return qit_2d->quad->p.user_data;
+    return (parflow_p4est_quad_data_t*) qit_2d->quad->p.user_data;
 }
 
 /*
