@@ -86,7 +86,6 @@ parflow_p4est_qiter_info_2d(parflow_p4est_qiter_2d_t * qit_2d)
         qit_2d->quad =
             p4est_quadrant_array_index(qit_2d->tquadrants,
                                        (size_t) qit_2d->q);
-        printf("TREE %i QUAD %i\n", qit_2d->which_tree, qit_2d->q);
     } else {
         P4EST_ASSERT(qit_2d->itype & PARFLOW_P4EST_GHOST);
         qit_2d->quad =
@@ -100,7 +99,6 @@ parflow_p4est_qiter_info_2d(parflow_p4est_qiter_2d_t * qit_2d)
             P4EST_ASSERT(rank < qit_2d->ghost->mpisize);
         }
         qit_2d->owner_rank = rank;
-        printf("GHOST QUAD %i\n", qit_2d->g);
     }
 
     return qit_2d;
