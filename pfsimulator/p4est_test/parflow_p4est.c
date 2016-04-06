@@ -1,6 +1,7 @@
 #include <parflow.h>
 #include <parflow_p4est_2d.h>
 #include <parflow_p4est_3d.h>
+#include <sc_functions.h>
 
 struct parflow_p4est_grid {
 

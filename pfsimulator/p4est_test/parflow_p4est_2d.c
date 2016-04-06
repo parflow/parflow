@@ -8,13 +8,6 @@
 #include <p8est_vtk.h>
 #endif
 
-static int
-parflow_p4est_refine_fn(p4est_t * p4est, p4est_topidx_t which_tree,
-                        p4est_quadrant_t * quadrant)
-{
-    return 1;
-}
-
 parflow_p4est_grid_2d_t *
 parflow_p4est_grid_2d_new(int Px, int Py
 #ifdef P4_TO_P8
@@ -139,7 +132,7 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
         qit_2d->q = -1;
     }
 
-    P4EST_ASSERT(parflow_p4est_giter_isvalid(giter));
+    // P4EST_ASSERT(parflow_p4est_qiter_isvalid_2d(qit_2d));
     return qit_2d;
 }
 
@@ -149,7 +142,7 @@ parflow_p4est_qiter_isvalid_2d(parflow_p4est_qiter_2d_t * qit_2d)
     if (qit_2d->itype == PARFLOW_P4EST_QUAD) {
         return (qit_2d->q < qit_2d->Q);
     } else {
-        P4EST_ASSERT(itype == PARFLOW_P4EST_GHOST);
+        P4EST_ASSERT(qit_2d->itype == PARFLOW_P4EST_GHOST);
         return (qit_2d->g < qit_2d->G);
     }
 }
@@ -158,7 +151,7 @@ void
 parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d)
 {
     int             rank;
-    P4EST_ASSERT(parflow_p4est_quad_iter_isvalid(qit_2d));
+    P4EST_ASSERT(parflow_p4est_qiter_isvalid_2d(qit_2d));
 
     if (qit_2d->itype == PARFLOW_P4EST_QUAD) {
         if (++qit_2d->q == qit_2d->Q) {
@@ -182,7 +175,7 @@ parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d)
                                            (size_t) qit_2d->q);
         }
     } else {
-        P4EST_ASSERT(itype == PARFLOW_P4EST_GHOST);
+        P4EST_ASSERT(qit_2d->itype == PARFLOW_P4EST_GHOST);
         if (++qit_2d->g < qit_2d->G) {
 
             qit_2d->quad =
@@ -197,7 +190,7 @@ parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d)
             qit_2d->owner_rank = rank;
         }
     }
-    P4EST_ASSERT(parflow_p4est_qiter_isvalid(qit_2d));
+    P4EST_ASSERT(parflow_p4est_qiter_isvalid_2d(qit_2d));
 }
 
 void
