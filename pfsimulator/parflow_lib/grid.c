@@ -140,7 +140,7 @@ void  FreeGrid(
             parflow_p4est_qiter_isvalid(qiter);
             parflow_p4est_qiter_next(qiter)) {
 
-            quad_subgrid = (Subgrid *) parflow_p4est_qiter_get_data(quiter) ;
+            quad_subgrid = (Subgrid *) parflow_p4est_qiter_get_data(qiter);
             FreeSubgrid ( quad_subgrid );
 
        }

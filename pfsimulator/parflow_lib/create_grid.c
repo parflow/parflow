@@ -180,7 +180,7 @@ Grid           *CreateGrid(
        /* Allocate new subgrid and attach it to this quadrant */
        user_subgrid = NewSubgrid(ix, iy, iz, px, py, pz,
                                           0,  0,  0, 99999);
-       parflow_p4est_qiter_set_data(quiter, (void*) user_grid);
+       parflow_p4est_qiter_set_data(qiter, (void*) user_subgrid);
     }
     parflow_p4est_qiter_destroy (qiter);
 
