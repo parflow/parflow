@@ -16,20 +16,20 @@ typedef struct parflow_p4est_grid_3d {
 
 typedef struct parflow_p4est_qiter_3d {
 
-    /* Fields used by both types of iterators */
+    /** Fields used by both types of iterators */
     parflow_p4est_iter_type_t itype; /* Flag identifiying iterator type*/
     p8est_connectivity_t *connect;
     p4est_topidx_t  tt;
     p8est_quadrant_t *quad;     /* current quadrant */
 
-    /* Fields used only for quadrant iterator */
+    /** Fields used only for quadrant iterator */
     p8est_t        *forest;
     p8est_tree_t   *tree;
     sc_array_t     *tquadrants;
     int             Q;          /* quadrants in this tree */
     int             q;          /* index of current quad in this tree */
 
-    /* Fields used only for ghost iterator */
+    /** Fields used only for ghost iterator */
     p8est_ghost_t  *ghost;
     sc_array_t     *ghost_layer;
     int             owner_rank; /* processor owning current quadrant */
