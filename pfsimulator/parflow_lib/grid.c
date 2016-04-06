@@ -105,6 +105,10 @@ Grid  *NewGrid(
 
    new_grid -> compute_pkgs = NULL;
 
+#ifdef HAVE_P4EST
+   new_grid->pfgrid = NULL;
+#endif
+
    return new_grid;
 }
 
@@ -133,29 +137,37 @@ void  FreeGrid(
        if (GridComputePkgs(grid))
          FreeComputePkgs(grid);
 #else
-       FreeSubgridArray(GridSubgrids(grid));
-       /* Free data allocated in the the quadrants
-        * of the forest
-       for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_QUAD);
-            qiter != NULL;
-            qiter = parflow_p4est_qiter_next(qiter)) {
+       FreeSubgridArray(GridAllSubgrids(grid));
 
-            quad_data = parflow_p4est_get_quad_data(qiter);
-            FreeSubgrid ( quad_data->pf_subgrid );
-       }*/
+       if (GridComputePkgs(grid))
+         FreeComputePkgs(grid);
 
+       if(grid->pfgrid != NULL){
 
-        /* Free memory allocated in the ghost layer */
-       for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_GHOST);
-            qiter != NULL;
-            qiter = parflow_p4est_qiter_next(qiter)) {
+           /* Free data allocated in the the quadrants
+            * of the forest */
+#if 0
+           for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_QUAD);
+                qiter != NULL;
+                qiter = parflow_p4est_qiter_next(qiter)) {
 
-            ghost_data = parflow_p4est_get_ghost_data(grid->pfgrid, qiter);
-            FreeSubgrid ( ghost_data->pf_subgrid );
+               quad_data = parflow_p4est_get_quad_data(qiter);
+               FreeSubgrid ( quad_data->pf_subgrid );
+           }
+#endif
+
+           /* Free memory allocated in the ghost layer */
+           for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_GHOST);
+                qiter != NULL;
+                qiter = parflow_p4est_qiter_next(qiter)) {
+
+               ghost_data = parflow_p4est_get_ghost_data(grid->pfgrid, qiter);
+               FreeSubgrid ( ghost_data->pf_subgrid );
+           }
+
+           /* destroy pfgrid structure */
+           parflow_p4est_grid_destroy (grid->pfgrid);
         }
-
-        /* destroy pfgrid structure */
-        parflow_p4est_grid_destroy (grid->pfgrid);
 
 #endif
         tfree(grid);
