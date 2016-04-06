@@ -118,23 +118,23 @@ parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter, double v[3])
 {
     int             k;
     int             dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);
-    double          level_factor;
+    int             level;
 
     if (dim == 2) {
         parflow_p4est_qcoord_to_vertex_2d(qiter->q.qiter_2d->connect,
                                           qiter->q.qiter_2d->which_tree,
                                           qiter->q.qiter_2d->quad, v);
-        level_factor = qiter->q.qiter_2d->quad->level;
+        level = qiter->q.qiter_2d->quad->level;
     } else {
         P4EST_ASSERT(dim == 3);
         parflow_p4est_qcoord_to_vertex_3d(qiter->q.qiter_3d->connect,
                                           qiter->q.qiter_3d->which_tree,
                                           qiter->q.qiter_3d->quad, v);
-        level_factor = qiter->q.qiter_3d->quad->level;
+        level = qiter->q.qiter_3d->quad->level;
     }
 
     for (k = 0; k < 3; ++k) {
-        v[k] *= sc_intpow(2, level_factor);
+        v[k] *= sc_intpow(2, level);
     }
 }
 
