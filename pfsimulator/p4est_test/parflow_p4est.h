@@ -4,7 +4,7 @@
 #include <parflow.h>
 #include <sc_containers.h>
 
-typedef struct Subgrid Subgrid_t;
+typedef Subregion Subgrid;
 typedef struct parflow_p4est_grid parflow_p4est_grid_t;
 typedef struct parflow_p4est_qiter parflow_p4est_qiter_t;
 
@@ -14,7 +14,9 @@ typedef enum parflow_p4est_iter_type {
 } parflow_p4est_iter_type_t;
 
 typedef struct parflow_p4est_quad_data {
-    Subgrid_t      *pf_subgrid;
+
+    Subgrid *pf_subgrid;
+
 } parflow_p4est_quad_data_t;
 
 typedef struct parflow_p4est_ghost_data {

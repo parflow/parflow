@@ -182,8 +182,8 @@ Grid           *CreateGrid(
 
        /* Allocate new subgrid and attach it to this quadrant */
        quad_data = parflow_p4est_qiter_get_data(qiter);
-       quad_data->pf_subgrid = (Subgrid_t *) NewSubgrid(ix, iy, iz, px, py, pz, 0,  0,  0,
-                                             parflow_p4est_qiter_get_owner_rank(qiter));
+       quad_data->pf_subgrid = NewSubgrid(ix, iy, iz, px, py, pz, 0,  0,  0,
+                               parflow_p4est_qiter_get_owner_rank(qiter));
     }
 
    ghost_data = parflow_p4est_get_ghost_data(grid->pfgrid);
