@@ -90,7 +90,7 @@ Grid           *CreateGrid(
    int                Px, Py, Pz;
    int                lx, ly, lz;
    int                px, py, pz;
-   double             x, y, z;
+   int                ix, iy, iz;
    double             level_factor, v[3];
    Subgrid            *user_subgrid;
    sc_array_t         *tquadrants;
@@ -175,17 +175,17 @@ Grid           *CreateGrid(
            parflow_p4est_qcoord_to_vertex (grid->pfgrid, tt, quad, v);
            level_factor = pow (2., quad->level);
 
-           /* Get bottom left corner (anchor node) for the
-              new subgrid */
-           x = level_factor * v[0];
-           y = level_factor * v[1];
-           z = level_factor * v[2];
+           /* Get bottom left corner (anchor node)  in
+            * index space for the new subgrid */
+           ix = (int) level_factor * v[0];
+           iy = (int) level_factor * v[1];
+           iz = (int) level_factor * v[2];
 
            /* Decide the dimensions for the new subgrid */
-           px = (int) x < lx ? mx + 1 : mx;
-           py = (int) y < ly ? my + 1 : my;
+           px =  ix < lx ? mx + 1 : mx;
+           py =  iy < ly ? my + 1 : my;
            if (Nz > 1){
-              pz = (int) z < lz ? mz + 1 : mz;
+              pz = iz < lz ? mz + 1 : mz;
            }
            else{
               pz = 1;
@@ -193,7 +193,7 @@ Grid           *CreateGrid(
 
            /* Allocate new subgrid and attach it to this quadrant */
            quad->p.user_data =
-               (void *) NewSubgrid( x,  y,  z, px, py, pz,
+               (void *) NewSubgrid(ix, iy, iz, px, py, pz,
                                     0,  0,  0, forest->mpirank);
          }
    }
@@ -210,24 +210,26 @@ Grid           *CreateGrid(
        parflow_p4est_qcoord_to_vertex (grid->pfgrid, gt, quad, v);
        owner_rank = parflow_p4est_quad_owner_rank(quad);
 
-       x = level_factor * v[0];
-       y = level_factor * v[1];
-       z = level_factor * v[2];
+       /* Get bottom left corner (anchor node)  in
+        * index space for the new subgrid */
+       ix = (int) level_factor * v[0];
+       iy = (int) level_factor * v[1];
+       iz = (int) level_factor * v[2];
 
        /* Decide the dimensions for the new subgrid */
-       px = (int) x < lx ? mx + 1 : mx;
-       py = (int) y < ly ? my + 1 : my;
+       px =  ix < lx ? mx + 1 : mx;
+       py =  iy < ly ? my + 1 : my;
        if (Nz > 1){
-           pz = (int) z < lz ? mz + 1 : mz;
+          pz = iz < lz ? mz + 1 : mz;
        }
        else{
-           pz = 1;
+          pz = 1;
        }
 
        /* Allocate new subgrid and attach it to this
         * ghost quadrant */
        quad->p.user_data =
-           (void *) NewSubgrid( x,  y,  z, px, py, pz,
+           (void *) NewSubgrid(ix, iy, iz, px, py, pz,
                                 0,  0,  0, owner_rank);
    }
 #endif
