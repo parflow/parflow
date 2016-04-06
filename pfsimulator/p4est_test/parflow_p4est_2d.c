@@ -118,21 +118,11 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
        /** Populate necesary fields **/
         qit_2d->forest = pfg->forest;
         qit_2d->tt = qit_2d->forest->first_local_tree;
-        if (qit_2d->tt <= qit_2d->forest->last_local_tree) {
-            P4EST_ASSERT(qit_2d->tt >= 0);
-            qit_2d->tree =
-                p4est_tree_array_index(qit_2d->forest->trees, qit_2d->tt);
-            qit_2d->tquadrants = &qit_2d->tree->quadrants;
-            qit_2d->Q = (int) qit_2d->tquadrants->elem_count;
-            P4EST_ASSERT(qit_2d->Q > 0);
-            qit_2d->quad = p4est_quadrant_array_index(qit_2d->tquadrants,
-                                                      (size_t) qit_2d->q);
-        }
+        qit_2d->owner_rank = qit_2d->forest->mpirank;
 
         /** Populate ghost fields with invalid values **/
         qit_2d->G = -1;
         qit_2d->g = -1;
-        qit_2d->owner_rank = -1;
     } else {
         P4EST_ASSERT(itype == PARFLOW_P4EST_GHOST);
 
@@ -141,20 +131,10 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
         qit_2d->ghost_layer = &qit_2d->ghost->ghosts;
         qit_2d->G = (int) qit_2d->ghost_layer->elem_count;
         P4EST_ASSERT(qit_2d->G >= 0);
-        if (qit_2d->g < qit_2d->G) {
-            P4EST_ASSERT(qit_2d->g >= 0);
-            qit_2d->quad =
-                p4est_quadrant_array_index(qit_2d->ghost_layer,
-                                           (size_t) qit_2d->g);
-            qit_2d->tt = qit_2d->quad->p.piggy3.which_tree;
 
-            /** Get owner rank **/
-            rank = 0;
-            while (qit_2d->ghost->proc_offsets[rank + 1] <= qit_2d->g) {
-                ++rank;
-                P4EST_ASSERT(rank < qit_2d->ghost->mpisize);
-            }
-            qit_2d->owner_rank = rank;
+        if (qit_2d->g == qit_2d->G) {
+            P4EST_FREE(qit_2d);
+            return NULL;
         }
 
         /** Populate quad fields with invalid values **/
@@ -162,8 +142,10 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
         qit_2d->q = -1;
     }
 
-    // P4EST_ASSERT(parflow_p4est_qiter_isvalid_2d(qit_2d));
-    return qit_2d;
+    P4EST_ASSERT(qit_2d != NULL);
+
+    /** Complete iterator information */
+    return parflow_p4est_qiter_info_2d(qit_2d);
 }
 
 int
@@ -177,50 +159,42 @@ parflow_p4est_qiter_isvalid_2d(parflow_p4est_qiter_2d_t * qit_2d)
     }
 }
 
-void
+parflow_p4est_qiter_2d_t *
 parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d)
 {
-    int             rank;
-    P4EST_ASSERT(parflow_p4est_qiter_isvalid_2d(qit_2d));
-
+    P4EST_ASSERT(qit_2d != NULL);
     if (qit_2d->itype == PARFLOW_P4EST_QUAD) {
+
+        /** We visited all local quadrants in current tree */
         if (++qit_2d->q == qit_2d->Q) {
+
             if (++qit_2d->tt <= qit_2d->forest->last_local_tree) {
-                qit_2d->tree =
-                    p4est_tree_array_index(qit_2d->forest->trees,
-                                           qit_2d->tt);
-                qit_2d->tquadrants = &qit_2d->tree->quadrants;
-                qit_2d->Q = (int) qit_2d->tquadrants->elem_count;
+
+                /** Reset quadrant counter to skip to the next tree */
                 qit_2d->q = 0;
-                qit_2d->quad =
-                    p4est_quadrant_array_index(qit_2d->tquadrants,
-                                               (size_t) qit_2d->q);
             } else {
-                memset(qit_2d, 0, sizeof(parflow_p4est_qiter_2d_t));
-                return;
+
+                /** We visited all local trees. We are done, free
+                 ** iterator and return null ptr */
+                P4EST_FREE(qit_2d);
+                return NULL;
             }
-        } else {
-            qit_2d->quad =
-                p4est_quadrant_array_index(qit_2d->tquadrants,
-                                           (size_t) qit_2d->q);
         }
     } else {
         P4EST_ASSERT(qit_2d->itype == PARFLOW_P4EST_GHOST);
-        if (++qit_2d->g < qit_2d->G) {
 
-            qit_2d->quad =
-                p4est_quadrant_array_index(qit_2d->ghost_layer,
-                                           (size_t) qit_2d->g);
-            /** Update owner rank **/
-            rank = 0;
-            while (qit_2d->ghost->proc_offsets[rank + 1] <= qit_2d->g) {
-                ++rank;
-                P4EST_ASSERT(rank < qit_2d->ghost->mpisize);
-            }
-            qit_2d->owner_rank = rank;
+        /** We visited all local quadrants in the ghost layer.
+         ** We are done, deallocate iterator and return null ptr */
+        if (++qit_2d->g == qit_2d->G) {
+            P4EST_FREE(qit_2d);
+            return NULL;
         }
     }
-    P4EST_ASSERT(parflow_p4est_qiter_isvalid_2d(qit_2d));
+
+    P4EST_ASSERT(qit_2d != NULL);
+
+    /** Update iterator information */
+    return parflow_p4est_qiter_info_2d(qit_2d);
 }
 
 void
