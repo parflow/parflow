@@ -87,16 +87,26 @@ pf_param_with_p4est=( "6 12 1" "6 6 1" "3 4 1" "3 3 1")
 np_arr=( 2 4 12 16 )
 
 for (( i=0;i<4;i++ )); do
+
+	T=$(echo "${i}+1" | bc -l)
+
+	#Delete output from previous runs
+	rm -rf output_test${T}
+	mkdir  output_test${T}
+
 	#Update parflow data base for each case
 	tclsh test_brick_2d.tcl ${pf_param[i]}
 	tclsh test_brick_2d_with_p4est.tcl ${pf_param_with_p4est[i]}
 
-	T=$(echo "${i}+1" | bc -l)
+	#Move the created data base to output directory
+	mv *.pfidb output_test${T}/
+
 	#run example and retrieve pressure l2 error
 	echo  "Running TEST ${T}"
-	mpirun -np ${np_arr[i]} ../test_grid test_brick_2d\
+	cd  output_test${T}/
+	mpirun -np ${np_arr[i]} ../../test_grid test_brick_2d\
 		| grep pressure_l2_err > l2_err.out
-	mpirun -np ${np_arr[i]} ../test_grid test_brick_2d_with_p4est\
+	mpirun -np ${np_arr[i]} ../../test_grid test_brick_2d_with_p4est\
 		| grep pressure_l2_err > l2_err_p4.out
 
 	#Compare l2 error from both simulations
@@ -104,4 +114,5 @@ for (( i=0;i<4;i++ )); do
 	E2=$(cat l2_err_p4.out	| awk 'NR==1 {print $6}')
 	echo | awk -v E=$E1-$E2, -v TOL=$EPS '{if (E*E>TOL)\
 		printf ( "FAILED \n\n"); else printf ("PASSED \n\n");}'
+	cd ..
 done
