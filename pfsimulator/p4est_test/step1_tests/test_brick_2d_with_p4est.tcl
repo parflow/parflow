@@ -27,8 +27,8 @@ pfset ComputationalGrid.DX	                 0.01
 pfset ComputationalGrid.DY                       0.01
 pfset ComputationalGrid.DZ	                 1
 
-pfset ComputationalGrid.NX                       12
-pfset ComputationalGrid.NY                       12
+pfset ComputationalGrid.NX                       [lindex $argv 0]
+pfset ComputationalGrid.NY                       [lindex $argv 1]
 pfset ComputationalGrid.NZ                       1
 
 #---------------------------------------------------------
@@ -39,9 +39,9 @@ pfset use_pforest                               "yes"
 #---------------------------------------------------------
 # Computational SubGrid dims
 #---------------------------------------------------------
-pfset ComputationalSubgrid.MX                    [lindex $argv 0]
-pfset ComputationalSubgrid.MY                    [lindex $argv 1]
-pfset ComputationalSubgrid.MZ                    [lindex $argv 2]
+pfset ComputationalSubgrid.MX                    [lindex $argv 2]
+pfset ComputationalSubgrid.MY                    [lindex $argv 3]
+pfset ComputationalSubgrid.MZ                    1
 
 #---------------------------------------------------------
 # The Names of the GeomInputs

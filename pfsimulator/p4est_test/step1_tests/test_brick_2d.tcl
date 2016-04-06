@@ -11,9 +11,9 @@ pfset FileVersion 4
 foreach file [glob -nocomplain *test_brick_2d.out.*] {file delete -force -- $file}
 foreach file [glob -nocomplain test_brick_2d.pfidb] {file delete -force -- $file}
 
-pfset Process.Topology.P  [lindex $argv 0]
-pfset Process.Topology.Q  [lindex $argv 1]
-pfset Process.Topology.R  [lindex $argv 2]
+pfset Process.Topology.P  [lindex $argv 2]
+pfset Process.Topology.Q  [lindex $argv 3]
+pfset Process.Topology.R  1
 
 #---------------------------------------------------------
 # Computational Grid
@@ -26,8 +26,8 @@ pfset ComputationalGrid.DX	                 0.01
 pfset ComputationalGrid.DY                       0.01
 pfset ComputationalGrid.DZ	                 1
 
-pfset ComputationalGrid.NX                       12
-pfset ComputationalGrid.NY                       12
+pfset ComputationalGrid.NX                       [lindex $argv 0]
+pfset ComputationalGrid.NY                       [lindex $argv 1]
 pfset ComputationalGrid.NZ                       1
 
 #---------------------------------------------------------
