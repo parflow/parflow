@@ -174,62 +174,6 @@ parflow_p4est_qiter_destroy_2d(parflow_p4est_qiter_2d_t * qit_2d)
  * END: Quadrant iterator routines 
  */
 
-/*
- * START: Ghost iterator routines 
- */
-static          p4est_topidx_t
-parflow_p4est_gquad_owner_tree(p4est_quadrant_t * quad)
-{
-    return quad->p.piggy3.which_tree;
-}
-
-void
-parflow_p4est_giter_init_2d(parflow_p4est_giter_2d_t * giter,
-                            parflow_p4est_grid_2d_t * pfg)
-{
-    memset(giter, 0, sizeof(parflow_p4est_giter_2d_t));
-
-    giter->ghost = pfg->ghost;
-    giter->ghost_layer = &giter->ghost->ghosts;
-    giter->G = (int) giter->ghost_layer->elem_count;
-    giter->connect = pfg->connect;
-    P4EST_ASSERT(Q >= 0);
-    if (giter->g < giter->G) {
-        P4EST_ASSERT(giter->g >= 0);
-        giter->quad =
-            p4est_quadrant_array_index(giter->ghost_layer,
-                                       (size_t) giter->g);
-        // TODO: Get owner rank
-
-    }
-    P4EST_ASSERT(parflow_p4est_giter_isvalid(giter));
-}
-
-int
-parflow_p4est_giter_isvalid_2d(parflow_p4est_giter_2d_t * giter)
-{
-    return (giter->g < giter->G);
-}
-
-void
-parflow_p4est_giter_next_2d(parflow_p4est_giter_2d_t * giter)
-{
-
-    P4EST_ASSERT(parflow_p4est_giter_isvalid(giter));
-
-    if (++giter->g < giter->G) {
-
-        giter->quad =
-            p4est_quadrant_array_index(giter->ghost_layer,
-                                       (size_t) giter->g);
-        // TODO: get owner rank
-    }
-}
-
-/*
- * END: Ghost iterator routines 
- */
-
 void
 parflow_p4est_qcoord_to_vertex_2d(p4est_connectivity_t * connect,
                                   p4est_topidx_t treeid,
