@@ -2,6 +2,7 @@
 #include <parflow_p4est_2d.h>
 #include <parflow_p4est_3d.h>
 #include <sc_functions.h>
+#include <sc_containers.h>
 
 struct parflow_p4est_grid {
 
@@ -151,6 +152,19 @@ parflow_p4est_qiter_get_data(parflow_p4est_qiter_t * qiter)
     }
 }
 
+parflow_p4est_ghost_data_t *
+parflow_p4est_get_ghost_data(parflow_p4est_grid_t * pfgrid)
+{
+    int             dim = PARFLOW_P4EST_GET_QITER_DIM(pfgrid);
+
+    if (dim == 2) {
+        return pfgrid->p.p4->ghost_data;
+    } else {
+        P4EST_ASSERT(dim == 3);
+        return pfgrid->p.p8->ghost_data;
+    }
+}
+
 int
 parflow_p4est_qiter_get_owner_rank(parflow_p4est_qiter_t * qiter)
 {
@@ -164,3 +178,20 @@ parflow_p4est_qiter_get_owner_rank(parflow_p4est_qiter_t * qiter)
     }
 }
 
+int
+parflow_p4est_qiter_get_ghost_idx(parflow_p4est_qiter_t * qiter)
+{
+    int             g;
+    int             dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);
+
+    if (dim == 2) {
+        g = qiter->q.qiter_2d->g;
+    } else {
+        P4EST_ASSERT(dim == 3);
+        g = qiter->q.qiter_3d->g;
+    }
+
+    P4EST_ASSERT(g >= 0);
+
+    return g;
+}

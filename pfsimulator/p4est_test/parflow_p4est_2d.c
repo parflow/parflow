@@ -56,6 +56,9 @@ parflow_p4est_grid_2d_new(int Px, int Py
      * allocate ghost storage 
      */
     pfg->ghost = p4est_ghost_new(pfg->forest, P4EST_CONNECT_FACE);
+    pfg->ghost_data = P4EST_ALLOC(parflow_p4est_ghost_data_t, 1);
+    pfg->ghost_data->ghost_subgrids =
+        sc_array_new_size(sizeof(Subgrid *), pfg->ghost->ghosts.elem_count);
 
     // p4est_vtk_write_file (pfg->forest, NULL, P4EST_STRING "_pfbrick");
 
@@ -66,6 +69,8 @@ void
 parflow_p4est_grid_2d_destroy(parflow_p4est_grid_2d_t * pfg)
 {
     p4est_ghost_destroy(pfg->ghost);
+    sc_array_destroy(pfg->ghost_data->ghost_subgrids);
+    P4EST_FREE(pfg->ghost_data);
     p4est_destroy(pfg->forest);
     p4est_connectivity_destroy(pfg->connect);
     P4EST_FREE(pfg);

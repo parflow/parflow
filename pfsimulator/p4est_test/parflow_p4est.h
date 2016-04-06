@@ -2,6 +2,7 @@
 #define PARLOW_P4EST_H
 
 #include <parflow.h>
+#include <sc_containers.h>
 
 typedef struct Subgrid Subgrid_t;
 typedef struct parflow_p4est_grid parflow_p4est_grid_t;
@@ -15,6 +16,12 @@ typedef enum parflow_p4est_iter_type {
 typedef struct parflow_p4est_quad_data {
     Subgrid_t      *pf_subgrid;
 } parflow_p4est_quad_data_t;
+
+typedef struct parflow_p4est_ghost_data {
+
+    sc_array_t     *ghost_subgrids;
+
+} parflow_p4est_ghost_data_t;
 
 /*
  * Functions
@@ -37,7 +44,12 @@ void            parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter,
 parflow_p4est_quad_data_t
     * parflow_p4est_qiter_get_data(parflow_p4est_qiter_t * qiter);
 
+parflow_p4est_ghost_data_t
+    * parflow_p4est_get_ghost_data(parflow_p4est_grid_t * pfgrid);
+
 int             parflow_p4est_qiter_get_owner_rank(parflow_p4est_qiter_t *
                                                    qiter);
+int             parflow_p4est_qiter_get_ghost_idx(parflow_p4est_qiter_t *
+                                                  qiter);
 
 #endif                          // !PARLOW_P4EST_H
