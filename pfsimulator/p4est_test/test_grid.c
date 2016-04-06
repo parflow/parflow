@@ -22,9 +22,9 @@ main(int argc, char **argv)
     GlobalsNumProcsY = GetIntDefault("Process.Topology.Q", 1);
     GlobalsNumProcsZ = GetIntDefault("Process.Topology.R", 1);
 
-    GlobalsSubgridPointsX = GetIntDefault("ComputationalSubgrid.MX", 2);
-    GlobalsSubgridPointsY = GetIntDefault("ComputationalSubgrid.MY", 2);
-    GlobalsSubgridPointsZ = GetIntDefault("ComputationalSubgrid.MZ", 2);
+    GlobalsSubgridPointsX =  GetIntDefault("ComputationalSubgrid.MX", 1);
+    GlobalsSubgridPointsY =  GetIntDefault("ComputationalSubgrid.MY", 1);
+    GlobalsSubgridPointsZ =  GetIntDefault("ComputationalSubgrid.MZ", 1);
 
     GlobalsNumProcs = amps_Size(amps_CommWorld);
 

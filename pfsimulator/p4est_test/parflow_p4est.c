@@ -33,6 +33,61 @@ struct parflow_p4est_qiter {
 /*
  * A globals structure muss exist prior calling this function
  */
+void
+parflow_p4est_sg_param_init(parflow_p4est_sg_param_t *sp){
+
+  char            *Nkey[3];
+  char            *mkey[3];
+  int             p, t, sum;
+
+  sp->N[0] = GetIntDefault("ComputationalGrid.NX", 1);
+  sp->N[1] = GetIntDefault("ComputationalGrid.NY", 1);
+  sp->N[2] = GetIntDefault("ComputationalGrid.NZ", 1);
+
+  sp->m[0] = GetIntDefault("ComputationalSubgrid.MX", 1);
+  sp->m[1] = GetIntDefault("ComputationalSubgrid.MY", 1);
+  sp->m[2] = GetIntDefault("ComputationalSubgrid.MZ", 1);
+
+  Nkey[0] = "ComputationalGrid.NX";
+  Nkey[1] = "ComputationalGrid.NY";
+  Nkey[2] = "ComputationalGrid.NZ";
+
+  mkey[0] = "ComputationalSubgrid.MX";
+  mkey[1] = "ComputationalSubgrid.MY";
+  mkey[2] = "ComputationalSubgrid.MZ";
+
+  for (t=0; t<3; ++t){
+      sp->P[t] = sp->N[t] / sp->m[t];
+      sp->l[t] = sp->N[t] % sp->m[t];
+      sum = 0;
+      for(p = 0; p < sp->P[t]; ++p){
+         sum += ( p < sp->l[t] ) ? sp->m[t] + 1 : sp->m[t];
+      }
+      if ( sum != sp->N[t] ){
+
+          InputError("Error: invalid combination of <%s> and <%s>\n",
+                     Nkey[t], mkey[t]);
+      }
+  }
+}
+
+void
+parflow_p4est_sg_param_update(parflow_p4est_qiter_t * qiter,
+                              parflow_p4est_sg_param_t *sp)
+{
+  int    t;
+  double v[3];
+
+  parflow_p4est_qiter_qcorner(qiter, v);
+  for (t = 0; t < 3; ++t){
+    sp->icorner[t] =  (int) v[t];
+    sp->p[t] = ( sp->icorner[t] < sp->l[t] ) ? sp->m[t] + 1 : sp->m[t];
+  }
+}
+
+/*
+ * A globals structure muss exist prior calling this function
+ */
 parflow_p4est_grid_t *
 parflow_p4est_grid_new(int Px, int Py, int Pz)
 {
