@@ -5,8 +5,8 @@
 int
 main (int argc, char **argv)
 {
-  int                   nx,ny,nz;
-  Grid                 *grid;
+  int                 nx, ny, nz;
+  Grid               *grid;
   parflow_p4est_grid_t *pfgrid;
 
   if (amps_Init (&argc, &argv)) {
@@ -36,13 +36,15 @@ main (int argc, char **argv)
   ny = GetIntDefault ("ComputationalGrid.NY", 1);
   nz = GetIntDefault ("ComputationalGrid.NZ", 1);
 
-  /*Initialize sc and p{4,casc8}est library */
+  /*
+   * Initialize sc and p{4,casc8}est library
+   */
   sc_init (amps_CommWorld, 1, 1, NULL, SC_LP_DEFAULT);
   p4est_init (NULL, SC_LP_DEFAULT);
 
-  //pfgrid = parflow_p4est_grid_new (nx, ny, nz);
+  pfgrid = parflow_p4est_grid_new (nx, ny, nz);
 
-  //parflow_p4est_grid_destroy (pfgrid);
+  parflow_p4est_grid_destroy (pfgrid);
 
   PrintGrid ("pfgrid", grid);
   FreeGrid (grid);

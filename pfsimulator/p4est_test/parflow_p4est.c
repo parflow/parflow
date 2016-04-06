@@ -2,7 +2,9 @@
 #include <parflow_p4est_2d.h>
 #include <parflow_p4est_3d.h>
 
-/*A globals structure muss exist prior calling this function */
+/*
+ * A globals structure muss exist prior calling this function
+*/
 parflow_p4est_grid_t *
 parflow_p4est_grid_new (int nx, int ny, int nz)
 {

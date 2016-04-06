@@ -4,6 +4,7 @@ int
 gcd (int a, int b)
 {
   int                 c;
+
   while (a) {
     c = a;
     a = b % a;
@@ -16,6 +17,7 @@ int
 powtwo_div (int a)
 {
   int                 c = 0;
+
   while (!(a % 2)) {
     c++;
     a /= 2;

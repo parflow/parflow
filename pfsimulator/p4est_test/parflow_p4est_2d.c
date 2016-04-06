@@ -24,6 +24,7 @@ parflow_p4est_grid_2d_new (int NX, int NY
 {
   int                 g, gt;
   int                 tx, ty;
+
 #ifdef P4_TO_P8
   int                 tz;
 #endif
@@ -48,7 +49,9 @@ parflow_p4est_grid_2d_new (int NX, int NY
   refine_level = (int) log2 ((double) g);
   balance = refine_level > 0;
 
-  /*Create connectivity structure */
+  /*
+   * Create connectivity structure
+   */
   pfgrid->connect = p4est_connectivity_new_brick (tx / g, ty / g,
 #ifdef P4_TO_P8
                                                   tz / g,
@@ -61,21 +64,25 @@ parflow_p4est_grid_2d_new (int NX, int NY
 
   pfgrid->forest = p4est_new (amps_CommWorld, pfgrid->connect, 0, NULL, NULL);
 
-  /*Refine to get a grid with same number of elements as parflow
-     old Grid structure and resdistribute quadrants among mpi_comm */
+  /*
+   * Refine to get a grid with same number of elements as parflow
+   * old Grid structure and resdistribute quadrants among mpi_comm
+   */
   for (level = 0; level < refine_level; ++level) {
     p4est_refine (pfgrid->forest, 0, parflow_p4est_refine_fn, NULL);
     p4est_partition (pfgrid->forest, 0, NULL);
   }
 
-  /*After refine, call 2:1 balance and redistribute new quadrants
-     among the mpi communicator */
+  /*
+   * After refine, call 2:1 balance and redistribute new quadrants
+   * among the mpi communicator
+   */
   if (balance) {
     p4est_balance (pfgrid->forest, P4EST_CONNECT_FULL, NULL);
     p4est_partition (pfgrid->forest, 0, NULL);
   }
 
-  //p4est_vtk_write_file (pfgrid->forest, NULL, P4EST_STRING "_pfbrick");
+  p4est_vtk_write_file (pfgrid->forest, NULL, P4EST_STRING "_pfbrick");
 
   return pfgrid;
 }
