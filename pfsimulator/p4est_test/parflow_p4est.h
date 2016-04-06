@@ -19,11 +19,15 @@ typedef struct parflow_p4est_quad_data {
 
 } parflow_p4est_quad_data_t;
 
+typedef parflow_p4est_quad_data_t parflow_p4est_ghost_data_t;
+
+/*
 typedef struct parflow_p4est_ghost_data {
 
     sc_array_t     *ghost_subgrids;
 
 } parflow_p4est_ghost_data_t;
+*/
 
 /*
  * Functions

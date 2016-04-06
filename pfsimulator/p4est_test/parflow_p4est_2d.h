@@ -11,7 +11,7 @@ typedef struct parflow_p4est_grid_2d {
     p4est_t        *forest;
     p4est_connectivity_t *connect;
     p4est_ghost_t  *ghost;
-    parflow_p4est_ghost_data_t  *ghost_data;
+    sc_array_t     *ghost_data;
 
 } parflow_p4est_grid_2d_t;
 
