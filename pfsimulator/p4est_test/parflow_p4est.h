@@ -27,9 +27,9 @@ typedef struct parflow_p4est_sg_param{
 
   /** These values are set just once **/
   int       N[3];   /** Input number of grid points per coord. direction */
-  int       P[3];   /** Input number of subgrids per coord. direction */
+  int       P[3];   /** Computed number of subgrids per coord. direction */
   int       m[3];   /** Input number of subgrid points per coord. direction */
-  int       l[3];
+  int       l[3];   /** Residual N % m **/
 
   /** These values are to be updated
    ** when looping over p4est quadrants */
