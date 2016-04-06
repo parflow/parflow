@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <parflow.h>
+#ifdef HAVE_P4EST
 #include <parflow_p4est.h>
 #include <p4est.h>
 #include <p8est.h>
+#endif
 
 int
 main(int argc, char **argv)
@@ -25,12 +27,13 @@ main(int argc, char **argv)
 
     amps_ThreadLocal(input_database) = IDB_NewDB(GlobalsInFileName);
 
+#ifdef HAVE_P4EST
     /*
      * Initialize sc and p{4,8}est library
      */
     sc_init(amps_CommWorld, 1, 1, NULL, SC_LP_DEFAULT);
     p4est_init(NULL, SC_LP_DEFAULT);
-
+#endif
     NewLogging();
 
     /*-----------------------------------------------------------------------
@@ -66,8 +69,9 @@ main(int argc, char **argv)
 
     FreeTiming();
 
+#ifdef HAVE_P4EST
     sc_finalize();
-
+#endif
     IDB_FreeDB(amps_ThreadLocal(input_database));
     FreeGlobals();
     amps_Finalize();
