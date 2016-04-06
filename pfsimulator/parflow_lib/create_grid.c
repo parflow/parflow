@@ -91,10 +91,12 @@ Grid           *CreateGrid(
    int                lx, ly, lz;
    int                px, py, pz;
    int                ix, iy, iz;
+   int                ghost_idx;
    double             v[3];
-   Subgrid            *user_subgrid;
+   Subgrid            *user_subgrid, **ss;
    parflow_p4est_qiter_t *qiter;
    parflow_p4est_quad_data_t *quad_data;
+   parflow_p4est_ghost_data_t *ghost_data;
 #endif
 
 #ifndef HAVE_P4EST
@@ -180,15 +182,17 @@ Grid           *CreateGrid(
 
        /* Allocate new subgrid and attach it to this quadrant */
        quad_data = parflow_p4est_qiter_get_data(qiter);
-       quad_data->pf_subgrid = NewSubgrid(ix, iy, iz, px, py, pz, 0,  0,  0,
-                                          parflow_p4est_qiter_get_owner_rank(qiter));
+       quad_data->pf_subgrid = (Subgrid_t *) NewSubgrid(ix, iy, iz, px, py, pz, 0,  0,  0,
+                                             parflow_p4est_qiter_get_owner_rank(qiter));
     }
 
+   ghost_data = parflow_p4est_get_ghost_data(grid->pfgrid);
+   ss = (Subgrid **) ghost_data->ghost_subgrids->array;
    /* Loop over the ghost layer */
     for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_GHOST);
          qiter != NULL;
          qiter = parflow_p4est_qiter_next(qiter)) {
-#if 0
+
         /* Get bottom left corner (anchor node)  in
              * index space for the new subgrid */
         parflow_p4est_qiter_qcorner(qiter, v);
@@ -207,12 +211,11 @@ Grid           *CreateGrid(
             pz = 1;
           }
 
-       /* Allocate new subgrid and attach it to this
-        * ghost quadrant */
-        user_subgrid = NewSubgrid(ix, iy, iz, px, py, pz, 0,  0,  0,
-                                  parflow_p4est_qiter_get_owner_rank(qiter));
-        parflow_p4est_qiter_set_data(qiter, (void*) user_subgrid);
-#endif
+       /* Allocate new subgrid and attach it to the corresponding
+        * ghost quadrant position */
+        ghost_idx = parflow_p4est_qiter_get_ghost_idx(qiter);
+        ss[ghost_idx] = NewSubgrid(ix, iy, iz, px, py, pz, 0,  0,  0,
+                                     parflow_p4est_qiter_get_owner_rank(qiter));
    }
 #endif
 

@@ -117,8 +117,11 @@ void  FreeGrid(
    Grid  *grid)
 {
 #ifdef HAVE_P4EST
+  int                 ghost_idx;
+  Subgrid             **ss;
   parflow_p4est_qiter_t *qiter;
   parflow_p4est_quad_data_t *quad_data;
+  parflow_p4est_ghost_data_t *ghost_data;
 #endif
 
    if(grid)  {
@@ -141,17 +144,18 @@ void  FreeGrid(
             qiter = parflow_p4est_qiter_next(qiter)) {
 
             quad_data = parflow_p4est_qiter_get_data(qiter);
-            FreeSubgrid ( quad_data->pf_subgrid );
+            FreeSubgrid ( (Subgrid *) quad_data->pf_subgrid );
        }
 
         /* Free memory allocated in the ghost layer */
+       ghost_data = parflow_p4est_get_ghost_data(grid->pfgrid);
+       ss = (Subgrid **) ghost_data->ghost_subgrids->array;
        for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_GHOST);
             qiter != NULL;
             qiter = parflow_p4est_qiter_next(qiter)) {
-#if 0
-            quad_subgrid = (Subgrid *) parflow_p4est_qiter_get_data(qiter);
-            FreeSubgrid ( quad_subgrid );
-#endif
+
+            ghost_idx = parflow_p4est_qiter_get_ghost_idx(qiter);
+            FreeSubgrid ( ss[ghost_idx]);
         }
 
         /* destroy pfgrid structure */
