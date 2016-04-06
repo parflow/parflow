@@ -124,14 +124,14 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
         qit_2d->ghost_layer = &qit_2d->ghost->ghosts;
         qit_2d->G = (int) qit_2d->ghost_layer->elem_count;
         qit_2d->connect = pfg->connect;
-        P4EST_ASSERT(Q >= 0);
+        P4EST_ASSERT(qit_2d->G >= 0);
         if (qit_2d->g < qit_2d->G) {
             P4EST_ASSERT(qit_2d->g >= 0);
             qit_2d->quad =
                 p4est_quadrant_array_index(qit_2d->ghost_layer,
                                            (size_t) qit_2d->g);
+            qit_2d->tt = qit_2d->quad->p.piggy3.which_tree;
             // TODO: Get owner rank
-
         }
     }
 
