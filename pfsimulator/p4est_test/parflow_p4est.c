@@ -4,21 +4,18 @@
 
 /*A globals structure muss exist prior calling this function */
 parflow_p4est_grid_t *
-parflow_p4est_grid_new ()
+parflow_p4est_grid_new (int nx, int ny, int nz)
 {
   parflow_p4est_grid_t *pfgrid;
   int                 NX, NY, NZ;
 
   pfgrid = NULL;
-  NX = GetIntDefault ("ComputationalGrid.NX", 1);
-  NY = GetIntDefault ("ComputationalGrid.NY", 1);
-  NZ = GetIntDefault ("ComputationalGrid.NZ", 1);
 
   if (NZ == 1) {
-    pfgrid = parflow_p4est_grid_2d_new (NX, NY);
+    pfgrid = parflow_p4est_grid_2d_new (nx, ny);
   }
   else {
-    pfgrid = parflow_p4est_grid_3d_new (NX, NY, NZ);
+    pfgrid = parflow_p4est_grid_3d_new (nx, ny, nz);
   }
   return pfgrid;
 }

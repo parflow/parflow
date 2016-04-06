@@ -21,7 +21,7 @@ parflow_p4est_grid_t;
 #define PARFLOW_P4EST_GET_GRID_DIM(pfgrid) ((pfgrid)->dim)
 
 /*Functions*/
-parflow_p4est_grid_t *parflow_p4est_grid_new ();
+parflow_p4est_grid_t *parflow_p4est_grid_new (int nx, int ny, int nz);
 
 void                parflow_p4est_grid_destroy (parflow_p4est_grid_t *
                                                 pfgrid);

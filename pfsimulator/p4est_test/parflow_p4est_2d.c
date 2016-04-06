@@ -75,7 +75,7 @@ parflow_p4est_grid_2d_new (int NX, int NY
     p4est_partition (pfgrid->forest, 0, NULL);
   }
 
-  p4est_vtk_write_file (pfgrid->forest, NULL, P4EST_STRING "_pfbrick");
+  //p4est_vtk_write_file (pfgrid->forest, NULL, P4EST_STRING "_pfbrick");
 
   return pfgrid;
 }
