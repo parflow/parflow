@@ -100,8 +100,9 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg)
 {
     parflow_p4est_qiter_2d_t *qit_2d;
 
-    qit_2d = P4EST_ALLOC(parflow_p4est_qiter_2d_t, 1);
+    qit_2d = P4EST_ALLOC_ZERO(parflow_p4est_qiter_2d_t, 1);
     qit_2d->forest = pfg->forest;
+    qit_2d->connect = pfg->connect;
     qit_2d->tt = qit_2d->forest->first_local_tree;
     if (qit_2d->tt <= qit_2d->forest->last_local_tree) {
         P4EST_ASSERT(qit_2d->tt >= 0);
@@ -128,7 +129,6 @@ parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d)
 {
 
     P4EST_ASSERT(parflow_p4est_quad_iter_isvalid(qiter));
-
     if (++qit_2d->q == qit_2d->Q) {
         if (++qit_2d->tt <= qit_2d->forest->last_local_tree) {
             qit_2d->tree =
