@@ -94,3 +94,16 @@ parflow_p4est_grid_2d_destroy (parflow_p4est_grid_t * pfgrid)
   p4est_connectivity_destroy (pfgrid->connect);
   P4EST_FREE (pfgrid);
 }
+
+void
+parflow_p4est_qcoord_to_vertex_2d (parflow_p4est_grid_t * pfgrid,
+                                   p4est_topidx_t treeid,
+                                   p4est_quadrant_t * quad, double v[3])
+{
+
+  p4est_qcoord_to_vertex (pfgrid->connect, treeid, quad->x, quad->y,
+#ifdef P4_TO_P8
+                          quad->z,
+#endif
+                          v);
+}

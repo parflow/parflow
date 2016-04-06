@@ -26,4 +26,12 @@ parflow_p4est_grid_t *parflow_p4est_grid_new (int nx, int ny, int nz);
 void                parflow_p4est_grid_destroy (parflow_p4est_grid_t *
                                                 pfgrid);
 
+void                parflow_p4est_qcoord_to_vertex (parflow_p4est_grid_t *
+                                                    pfgrid,
+                                                    p4est_topidx_t treeid,
+                                                    p4est_quadrant_t * quad,
+                                                    double v[3]);
+
+int                 parflow_p4est_quad_owner_rank (p4est_quadrant_t *quad);
+
 #endif // !PARLOW_P4EST_H

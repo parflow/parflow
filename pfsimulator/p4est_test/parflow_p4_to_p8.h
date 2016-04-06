@@ -5,5 +5,6 @@
 
 #define parflow_p4est_grid_2d_new         parflow_p4est_grid_3d_new
 #define parflow_p4est_grid_2d_destroy     parflow_p4est_grid_3d_destroy
+#define parflow_p4est_qcoord_to_vertex_2d parflow_p4est_qcoord_to_vertex_3d
 
 #endif /* !PARFLOW_P4_TO_P8_H */
