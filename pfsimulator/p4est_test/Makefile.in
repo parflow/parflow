@@ -14,9 +14,12 @@ FILES = \
 OUT = $(FILES:.c=) 	 
 
 OBJS = \
-        test_grid.o \
-	parflow_p4est_math.o \
-        parflow_p4est.o parflow_p4est_2d.o  parflow_p4est_3d.o 
+        test_grid.o
+
+ifeq ($(PARFLOW_HAVE_P4EST), yes)
+OBJS += parflow_p4est_math.o \
+parflow_p4est.o parflow_p4est_2d.o  parflow_p4est_3d.o
+endif
 
 $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB): $(OBJS) $(AMPS_LIB_DEPEND)
 	ar rus $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB) $(OBJS)
