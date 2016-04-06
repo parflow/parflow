@@ -71,6 +71,36 @@ parflow_p4est_grid_2d_destroy(parflow_p4est_grid_2d_t * pfg)
 /*
  * START: Quadrant iterator routines 
  */
+static parflow_p4est_qiter_2d_t *
+parflow_p4est_qiter_info_2d(parflow_p4est_qiter_2d_t * qit_2d)
+{
+    int             rank;
+
+    P4EST_ASSERT(qit_2d != NULL);
+    if (qit_2d->itype == PARFLOW_P4EST_QUAD) {
+        qit_2d->tree =
+            p4est_tree_array_index(qit_2d->forest->trees, qit_2d->tt);
+        qit_2d->tquadrants = &qit_2d->tree->quadrants;
+        qit_2d->Q = (int) qit_2d->tquadrants->elem_count;
+        qit_2d->quad =
+            p4est_quadrant_array_index(qit_2d->tquadrants,
+                                       (size_t) qit_2d->q);
+    } else {
+        P4EST_ASSERT(qit_2d->itype == PARFLOW_P4EST_GHOST);
+        qit_2d->quad =
+            p4est_quadrant_array_index(qit_2d->ghost_layer,
+                                       (size_t) qit_2d->g);
+        /** Update owner rank **/
+        rank = 0;
+        while (qit_2d->ghost->proc_offsets[rank + 1] <= qit_2d->g) {
+            ++rank;
+            P4EST_ASSERT(rank < qit_2d->ghost->mpisize);
+        }
+        qit_2d->owner_rank = rank;
+    }
+
+    return qit_2d;
+}
 
 parflow_p4est_qiter_2d_t *
 parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
