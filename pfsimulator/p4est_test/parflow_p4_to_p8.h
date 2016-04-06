@@ -4,8 +4,8 @@
 #include <p4est_to_p8est.h>
 
 #define parflow_p4est_grid_2d_t           parflow_p4est_grid_3d_t
-#define parflow_p4est_quad_iter_2d_t      parflow_p4est_quad_iter_3d_t
-#define parflow_p4est_ghost_iter_2d_t     parflow_p4est_ghost_iter_3d_t
+#define parflow_p4est_qiter_2d_t          parflow_p4est_qiter_3d_t
+#define parflow_p4est_giter_2d_t          parflow_p4est_giter_3d_t
 
 #define parflow_p4est_grid_2d_new         parflow_p4est_grid_3d_new
 #define parflow_p4est_grid_2d_destroy     parflow_p4est_grid_3d_destroy
