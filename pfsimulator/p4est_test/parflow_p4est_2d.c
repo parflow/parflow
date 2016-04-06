@@ -92,7 +92,7 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
 
     if (itype == PARFLOW_P4EST_QUAD) {
 
-       /* Populate necesary fields */
+       /** Populate necesary fields **/
         qit_2d->forest = pfg->forest;
         qit_2d->tt = qit_2d->forest->first_local_tree;
         if (qit_2d->tt <= qit_2d->forest->last_local_tree) {
@@ -106,14 +106,14 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
                                                       (size_t) qit_2d->q);
         }
 
-        /* Populate ghost fields with invalid values */
+        /** Populate ghost fields with invalid values **/
         qit_2d->G = -1;
         qit_2d->g = -1;
         qit_2d->owner_rank = -1;
     } else {
         P4EST_ASSERT(itype == PARFLOW_P4EST_GHOST);
 
-        /* Populate necesary fields */
+        /** Populate necesary fields **/
         qit_2d->ghost = pfg->ghost;
         qit_2d->ghost_layer = &qit_2d->ghost->ghosts;
         qit_2d->G = (int) qit_2d->ghost_layer->elem_count;
@@ -124,10 +124,17 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
                 p4est_quadrant_array_index(qit_2d->ghost_layer,
                                            (size_t) qit_2d->g);
             qit_2d->tt = qit_2d->quad->p.piggy3.which_tree;
-            // TODO: Get owner rank
+
+            /** Get owner rank **/
+            rank = 0;
+            while (qit_2d->ghost->proc_offsets[rank + 1] <= qit_2d->g) {
+                ++rank;
+                P4EST_ASSERT(rank < qit_2d->ghost->mpisize);
+            }
+            qit_2d->owner_rank = rank;
         }
 
-        /* Populate quad fields with invalid values */
+        /** Populate quad fields with invalid values **/
         qit_2d->Q = -1;
         qit_2d->q = -1;
     }
@@ -150,7 +157,7 @@ parflow_p4est_qiter_isvalid_2d(parflow_p4est_qiter_2d_t * qit_2d)
 void
 parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d)
 {
-
+    int             rank;
     P4EST_ASSERT(parflow_p4est_quad_iter_isvalid(qit_2d));
 
     if (qit_2d->itype == PARFLOW_P4EST_QUAD) {
@@ -181,7 +188,13 @@ parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d)
             qit_2d->quad =
                 p4est_quadrant_array_index(qit_2d->ghost_layer,
                                            (size_t) qit_2d->g);
-            // TODO: get owner rank
+            /** Update owner rank **/
+            rank = 0;
+            while (qit_2d->ghost->proc_offsets[rank + 1] <= qit_2d->g) {
+                ++rank;
+                P4EST_ASSERT(rank < qit_2d->ghost->mpisize);
+            }
+            qit_2d->owner_rank = rank;
         }
     }
     P4EST_ASSERT(parflow_p4est_qiter_isvalid(qit_2d));
