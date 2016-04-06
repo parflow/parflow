@@ -9,28 +9,27 @@ default: all
 include $(OBJECT)/config/Makefile.config
 
 FILES = \
-	parflow_p4est_simple.c
+        test_grid.c
+
+OUT = $(FILES:.c=) 	 
 
 OBJS = \
-	parflow_p4est_simple.o
+        test_grid.o \
+	parflow_p4est_math.o \
+        parflow_p4est.o parflow_p4est_2d.o  parflow_p4est_3d.o 
 
-OUT = $(FILES:.c=)
-
-build:  $(FILES) $(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) \
-	$(PARFLOW_LIBS) $(LDLIBS) -o $(OUT)
-	#$(LIBXML) $(LIBOASIS) $(LIBPSMILE) $(NETCDF_LIB) $(LDLIBS) -o $(OUT)
-	
-$(PARFLOW_LIB_DIR)/$(PARFLOW_LIB): $(OBJS) 
-	ar rus $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB) $(OBJS) 
-
+$(PARFLOW_LIB_DIR)/$(PARFLOW_LIB): $(OBJS) $(AMPS_LIB_DEPEND)
+	ar rus $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB) $(OBJS)
+        
 all: $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB)
-
-clean:
+        
+build: $(OBJS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
+	-o $(OUT) $(OBJS) $(PARFLOW_LIBS) $(LDLIBS)
+	
+clean: 
 	$(PARFLOW_CLEAN) 
-	rm $(OUT)
+	@$(RM) $(OUT)
 
 veryclean: clean
 	@$(RM) Makefile
-
-
