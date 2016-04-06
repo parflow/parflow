@@ -111,51 +111,63 @@ void  FreeGrid(
    Grid  *grid)
 {
 #ifdef HAVE_P4EST
-   int                q, k, Q;
-   Subgrid            *quad_subgrid;
-   sc_array_t         *tquadrants;
-   p4est_t            *forest;
-   p4est_topidx_t      tt;
-   p4est_tree_t       *tree;
-   p4est_quadrant_t   *quad;
+  int                q, k, Q, G;
+  Subgrid            *quad_subgrid;
+  sc_array_t         *tquadrants;
+  sc_array_t         *ghost_layer;
+  p4est_t            *forest;
+  p4est_topidx_t      tt;
+  p4est_tree_t       *tree;
+  p4est_quadrant_t   *quad;
 #endif
 
    if(grid)  {
-      FreeSubgridArray(GridAllSubgrids(grid));
-      
-      /* these subgrid arrays point to subgrids in all_subgrids */
-      SubgridArraySize(GridSubgrids(grid)) = 0;
-      FreeSubgridArray(GridSubgrids(grid));
-      
-      if (GridComputePkgs(grid))
-	 FreeComputePkgs(grid);
-      
-      tfree(grid);
+       FreeSubgridArray(GridAllSubgrids(grid));
+
+       /* these subgrid arrays point to subgrids in all_subgrids */
+       SubgridArraySize(GridSubgrids(grid)) = 0;
+       FreeSubgridArray(GridSubgrids(grid));
+
+       if (GridComputePkgs(grid))
+         FreeComputePkgs(grid);
+
+       tfree(grid);
 
 #ifdef HAVE_P4EST
-   forest =  grid->pfgrid->forest;
+       forest =  grid->pfgrid->forest;
+       ghost_layer =  &grid->pfgrid->ghost->ghosts;
 
-   /* loop over al quadrants to free the subgrid on it */
-   for (tt = forest->first_local_tree, k = 0;
-        tt <= forest->last_local_tree; ++tt) {
+       /* Free memory allocated in the the quadrants
+        * of the forest */
+       for (tt = forest->first_local_tree, k = 0;
+            tt <= forest->last_local_tree; ++tt) {
 
-       tree = p4est_tree_array_index (forest->trees, tt);
-       tquadrants = &tree->quadrants;
-       Q = (int) tquadrants->elem_count;
-       P4EST_ASSERT( Q > 0 );
+           tree = p4est_tree_array_index (forest->trees, tt);
+           tquadrants = &tree->quadrants;
+           Q = (int) tquadrants->elem_count;
+           P4EST_ASSERT( Q > 0 );
 
-       for (q = 0; q < Q; ++q, ++k) {
-           quad = p4est_quadrant_array_index (tquadrants, q);
-           quad_subgrid = (Subgrid *) quad->p.user_data ;
-           FreeSubgrid ( quad_subgrid );
-       }
-     }
+           for (q = 0; q < Q; ++q, ++k) {
+               quad = p4est_quadrant_array_index (tquadrants, (size_t) q);
+               quad_subgrid = (Subgrid *) quad->p.user_data ;
+               FreeSubgrid ( quad_subgrid );
+           }
+        }
 
-     P4EST_ASSERT( k == (int) forest->local_num_quadrants );
+        /* Assert that every quadrant was visited */
+        P4EST_ASSERT( k == (int) forest->local_num_quadrants );
 
-     parflow_p4est_grid_destroy (grid->pfgrid);
+        /* Free memory allocated in the ghost layer */
+        G = (int) ghost_layer->elem_count;
+        for (q = 0; q < G; ++q) {
+            quad = p4est_quadrant_array_index (ghost_layer, (size_t) q);
+            quad_subgrid = (Subgrid *) quad->p.user_data ;
+            FreeSubgrid ( quad_subgrid );
+        }
+
+        /* destroy pfgrid structure */
+        parflow_p4est_grid_destroy (grid->pfgrid);
 #endif
-
    }
 }
 

@@ -83,7 +83,7 @@ Grid           *CreateGrid(
    SubgridArray  *all_subgrids;
 
 #ifdef HAVE_P4EST
-   int                q, k, Q;
+   int                q, k, Q, G;
    int                Nx, Ny, Nz;
    int                mx, my, mz;
    int                owner_rank;
@@ -94,8 +94,9 @@ Grid           *CreateGrid(
    double             level_factor, v[3];
    Subgrid            *user_subgrid;
    sc_array_t         *tquadrants;
+   sc_array_t         *ghost_layer;
    p4est_t            *forest;
-   p4est_topidx_t      tt;
+   p4est_topidx_t      tt, gt;
    p4est_tree_t       *tree;
    p4est_quadrant_t   *quad;
 #endif
@@ -143,7 +144,7 @@ Grid           *CreateGrid(
    my = GlobalsSubgridPointsY;
    mz = GlobalsSubgridPointsZ;
 
-  /* Compute number of subgrids per coordinate direction. */
+   /* Compute number of subgrids per coordinate direction. */
    Px = Nx / mx;
    Py = Ny / my;
    Pz = (Nz == 1) ? 1 : Nz / mz;
@@ -152,10 +153,11 @@ Grid           *CreateGrid(
    ly = Ny % my;
    lz = Nz % mz;
 
-   /* Create the p{4,8}est object. */
+   /* Create the pfgrid. */
    grid->pfgrid = parflow_p4est_grid_new (Px, Py, Pz);
 
-   forest =  grid->pfgrid->forest;
+   forest       = grid->pfgrid->forest;
+   ghost_layer  = &grid->pfgrid->ghost->ghosts;
 
    /* Loop over the trees un the forest */
    for (tt = forest->first_local_tree, k = 0;
@@ -169,10 +171,9 @@ Grid           *CreateGrid(
        /* Loop on the quadrants (leafs) of this forest
           and attach a subgrid on each */
        for (q = 0; q < Q; ++q, ++k) {
-           quad = p4est_quadrant_array_index (tquadrants, q);
+           quad = p4est_quadrant_array_index (tquadrants, (size_t) q);
            parflow_p4est_qcoord_to_vertex (grid->pfgrid, tt, quad, v);
            level_factor = pow (2., quad->level);
-           owner_rank = parflow_p4est_quad_owner_rank(quad);
 
            /* Get bottom left corner (anchor node) for the
               new subgrid */
@@ -185,19 +186,50 @@ Grid           *CreateGrid(
            py = (int) y < ly ? my + 1 : my;
            if (Nz > 1){
               pz = (int) z < lz ? mz + 1 : mz;
-           }else{
+           }
+           else{
               pz = 1;
            }
 
            /* Allocate new subgrid and attach it to this quadrant */
            quad->p.user_data =
                (void *) NewSubgrid( x,  y,  z, px, py, pz,
-                                    0,  0,  0, owner_rank);
-       }
-     }
+                                    0,  0,  0, forest->mpirank);
+         }
+   }
+   /* Assert that every quadrant was visited */
+   P4EST_ASSERT( k == (int) forest->local_num_quadrants );
 
-     /* Assert that every quadrant was visited */
-     P4EST_ASSERT( k == (int) forest->local_num_quadrants );
+   /* Loop over the ghost layer */
+   G = (int) ghost_layer->elem_count;
+   P4EST_ASSERT( Q >= 0 );
+   for (q = 0; q < G; ++q) {
+       quad = p4est_quadrant_array_index (ghost_layer, (size_t) q);
+       level_factor = pow (2., quad->level);
+       gt = quad->p.piggy3.which_tree;
+       parflow_p4est_qcoord_to_vertex (grid->pfgrid, gt, quad, v);
+       owner_rank = parflow_p4est_quad_owner_rank(quad);
+
+       x = level_factor * v[0];
+       y = level_factor * v[1];
+       z = level_factor * v[2];
+
+       /* Decide the dimensions for the new subgrid */
+       px = (int) x < lx ? mx + 1 : mx;
+       py = (int) y < ly ? my + 1 : my;
+       if (Nz > 1){
+           pz = (int) z < lz ? mz + 1 : mz;
+       }
+       else{
+           pz = 1;
+       }
+
+       /* Allocate new subgrid and attach it to this
+        * ghost quadrant */
+       quad->p.user_data =
+           (void *) NewSubgrid( x,  y,  z, px, py, pz,
+                                0,  0,  0, owner_rank);
+   }
 #endif
 
    return grid;
