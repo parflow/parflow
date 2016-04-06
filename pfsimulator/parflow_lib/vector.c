@@ -54,6 +54,7 @@ static int samrai_vector_ids[5][2048];
 
 CommPkg  *NewVectorCommPkg(
    Vector   *vector,
+   int       subgrid_idx,
    ComputePkg  *compute_pkg)
 {
    CommPkg     *new_commpkg;
@@ -73,7 +74,10 @@ CommPkg  *NewVectorCommPkg(
 
    new_commpkg = NewCommPkg(ComputePkgSendRegion(compute_pkg),
                             ComputePkgRecvRegion(compute_pkg),
-                            VectorDataSpace(vector), 1, SubvectorData(VectorSubvector(vector,0)));
+                            VectorDataSpace(vector),
+                            subgrid_idx,
+                            1,
+                            SubvectorData(VectorSubvector(vector,subgrid_idx)));
    return new_commpkg;
 }
 

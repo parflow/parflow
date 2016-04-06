@@ -151,6 +151,7 @@ CommPkg         *NewCommPkg(
    Region          *send_region,
    Region          *recv_region,
    SubregionArray  *data_space,
+   int              s_idx,
    int              num_vars,           /* number of variables in the vector */
    double          *data)
 {
@@ -188,12 +189,12 @@ CommPkg         *NewCommPkg(
 
    num_send_subregions = 0;
    num_recv_subregions = 0;
-   ForSubregionI(i, data_space)
+   if ( SubregionArraySize(data_space) )
    {
       num_send_subregions +=
-	 SubregionArraySize(RegionSubregionArray(send_region, i));
+     SubregionArraySize(RegionSubregionArray(send_region, s_idx));
       num_recv_subregions +=
-	 SubregionArraySize(RegionSubregionArray(recv_region, i));
+     SubregionArraySize(RegionSubregionArray(recv_region, s_idx));
    }
 
    /*------------------------------------------------------

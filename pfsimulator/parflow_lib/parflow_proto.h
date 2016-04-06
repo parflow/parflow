@@ -88,7 +88,7 @@ void FreeComputePkgs (Grid *grid );
 
 /* communication.c */
 int NewCommPkgInfo (Subregion *data_sr , Subregion *comm_sr , int index , int num_vars , int *loop_array );
-CommPkg *NewCommPkg (Region *send_region , Region *recv_region , SubregionArray *data_space , int num_vars , double *data );
+CommPkg *NewCommPkg (Region *send_region , Region *recv_region , SubregionArray *data_space , int s_idx, int num_vars , double *data );
 void FreeCommPkg (CommPkg *pkg );
 // SGS what's up with this?
 CommHandle *InitCommunication (CommPkg *comm_pkg );
@@ -1145,7 +1145,7 @@ Grid *ReadUserGrid (void );
 void FreeUserGrid (Grid *user_grid );
 
 /* vector.c */
-CommPkg *NewVectorCommPkg (Vector *vector , ComputePkg *compute_pkg );
+CommPkg *NewVectorCommPkg (Vector *vector , int subgrid_idx, ComputePkg *compute_pkg );
 VectorUpdateCommHandle  *InitVectorUpdate(
    Vector      *vector,
    int          update_mode);
