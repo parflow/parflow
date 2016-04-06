@@ -3,7 +3,7 @@
 
 #include "parflow_p4est.h"
 
-parflow_p4est_grid_t *parflow_p4est_grid_2d_new (int NX, int NY);
+parflow_p4est_grid_t *parflow_p4est_grid_2d_new (int Px, int Py);
 
 void                parflow_p4est_grid_2d_destroy (parflow_p4est_grid_t *
                                                    pfgrid);

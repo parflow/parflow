@@ -16,9 +16,9 @@ parflow_p4est_refine_fn (p4est_t * p4est, p4est_topidx_t which_tree,
 }
 
 parflow_p4est_grid_t *
-parflow_p4est_grid_2d_new (int NX, int NY
+parflow_p4est_grid_2d_new (int Px, int Py
 #ifdef P4_TO_P8
-                           , int NZ
+                           , int Pz
 #endif
   )
 {
@@ -37,11 +37,11 @@ parflow_p4est_grid_2d_new (int NX, int NY
 #else
   pfgrid->dim = 2;
 #endif
-  tx = pfmax (NX - 1, 1);
-  ty = pfmax (NY - 1, 1);
+  tx = pfmax (Px , 1);
+  ty = pfmax (Py , 1);
   gt = gcd (tx, ty);
 #ifdef P4_TO_P8
-  tz = pfmax (NZ - 1, 1);
+  tz = pfmax (Pz, 1);
   gt = gcd (gt, tz);
 #endif
   g = powtwo_div (gt);

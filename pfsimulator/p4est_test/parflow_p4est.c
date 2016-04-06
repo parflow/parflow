@@ -6,15 +6,15 @@
  * A globals structure muss exist prior calling this function
 */
 parflow_p4est_grid_t *
-parflow_p4est_grid_new (int nx, int ny, int nz)
+parflow_p4est_grid_new (int Px, int Py, int Pz)
 {
   parflow_p4est_grid_t *pfgrid;
 
-  if (nz == 1) {
-    pfgrid = parflow_p4est_grid_2d_new (nx, ny);
+  if (Pz == 1) {
+    pfgrid = parflow_p4est_grid_2d_new (Px, Py);
   }
   else {
-    pfgrid = parflow_p4est_grid_3d_new (nx, ny, nz);
+    pfgrid = parflow_p4est_grid_3d_new (Px, Py, Pz);
   }
   return pfgrid;
 }
