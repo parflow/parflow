@@ -77,7 +77,7 @@ parflow_p4est_qiter_info_2d(parflow_p4est_qiter_2d_t * qit_2d)
     int             rank;
 
     P4EST_ASSERT(qit_2d != NULL);
-    if (qit_2d->itype == PARFLOW_P4EST_QUAD) {
+    if (qit_2d->itype & PARFLOW_P4EST_QUAD) {
         qit_2d->tree =
             p4est_tree_array_index(qit_2d->forest->trees,
                                    qit_2d->which_tree);
@@ -88,7 +88,7 @@ parflow_p4est_qiter_info_2d(parflow_p4est_qiter_2d_t * qit_2d)
                                        (size_t) qit_2d->q);
         printf("TREE %i QUAD %i\n", qit_2d->which_tree, qit_2d->q);
     } else {
-        P4EST_ASSERT(qit_2d->itype == PARFLOW_P4EST_GHOST);
+        P4EST_ASSERT(qit_2d->itype & PARFLOW_P4EST_GHOST);
         qit_2d->quad =
             p4est_quadrant_array_index(qit_2d->ghost_layer,
                                        (size_t) qit_2d->g);
@@ -120,10 +120,10 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
     }
 
     qit_2d = P4EST_ALLOC_ZERO(parflow_p4est_qiter_2d_t, 1);
-    qit_2d->itype = PARFLOW_P4EST_QUAD;
+    qit_2d->itype = itype;
     qit_2d->connect = pfg->connect;
 
-    if (itype == PARFLOW_P4EST_QUAD) {
+    if (itype & PARFLOW_P4EST_QUAD) {
 
        /** Populate necesary fields **/
         qit_2d->forest = pfg->forest;
@@ -134,7 +134,7 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
         qit_2d->G = -1;
         qit_2d->g = -1;
     } else {
-        P4EST_ASSERT(itype == PARFLOW_P4EST_GHOST);
+        P4EST_ASSERT(itype & PARFLOW_P4EST_GHOST);
 
         /** Populate necesary fields **/
         qit_2d->ghost = pfg->ghost;
@@ -142,6 +142,8 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
         qit_2d->G = (int) qit_2d->ghost_layer->elem_count;
         P4EST_ASSERT(qit_2d->G >= 0);
 
+        /** There are no quadrants in this ghost layer,
+         **  we are done. */
         if (qit_2d->g == qit_2d->G) {
             P4EST_FREE(qit_2d);
             return NULL;
@@ -162,7 +164,7 @@ parflow_p4est_qiter_2d_t *
 parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d)
 {
     P4EST_ASSERT(qit_2d != NULL);
-    if (qit_2d->itype == PARFLOW_P4EST_QUAD) {
+    if (qit_2d->itype & PARFLOW_P4EST_QUAD) {
 
         /** We visited all local quadrants in current tree */
         if (++qit_2d->q == qit_2d->Q) {
@@ -180,7 +182,7 @@ parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d)
             }
         }
     } else {
-        P4EST_ASSERT(qit_2d->itype == PARFLOW_P4EST_GHOST);
+        P4EST_ASSERT(qit_2d->itype & PARFLOW_P4EST_GHOST);
 
         /** We visited all local quadrants in the ghost layer.
          ** We are done, deallocate iterator and return null ptr */
