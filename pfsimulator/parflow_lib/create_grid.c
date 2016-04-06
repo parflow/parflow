@@ -82,6 +82,19 @@ Grid           *CreateGrid(
    SubgridArray  *subgrids;
    SubgridArray  *all_subgrids;
 
+#ifdef HAVE_P4EST
+   int                q, k, Q;
+   int                nx, ny, nz;
+   int                num_procs, owner_rank;
+   int                Px, Py, Pz;
+   double             v[3];
+   Subgrid            *user_subgrid;
+   sc_array_t         *tquadrants;
+   p4est_t            *forest;
+   p4est_topidx_t      tt;
+   p4est_tree_t       *tree;
+   p4est_quadrant_t   *quad;
+#endif
 
    /*-----------------------------------------------------------------------
     * Create all_subgrids
@@ -114,6 +127,56 @@ Grid           *CreateGrid(
 
    // SGS Debug
    globals -> grid3d = grid;
+
+#ifdef HAVE_P4EST
+
+   user_subgrid = GridSubgrid(user_grid, 0);
+
+   nx = SubgridNX(user_subgrid);
+   ny = SubgridNY(user_subgrid);
+   nz = SubgridNZ(user_subgrid);
+
+   Px = pfmax (nx - 1, 1);
+   Py = pfmax (ny - 1, 1);
+   Pz = pfmax (nz - 1, 1);
+
+   num_procs = GlobalsNumProcs;
+
+   /*  Make sure there will be as much
+      processors as quadrants. Only for step1 */
+   P4EST_ASSERT( num_procs == Px*Py*Pz );
+
+   /* Create the p{4,8}est object. */
+   grid->pfgrid = parflow_p4est_grid_new (nx, ny, nz);
+
+   forest =  grid->pfgrid->forest;
+
+   //printf ("\n=S= Local num quadrants %i \n", (int) forest->local_num_quadrants);
+
+   /* loop over al quadrants to attach a subgrid on it */
+   for (tt = forest->first_local_tree, k = 0;
+        tt <= forest->last_local_tree; ++tt) {
+
+       tree = p4est_tree_array_index (forest->trees, tt);
+       tquadrants = &tree->quadrants;
+       Q = (int) tquadrants->elem_count;
+       P4EST_ASSERT( Q > 0 );
+
+       for (q = 0; q < Q; ++q, ++k) {
+           quad = p4est_quadrant_array_index (tquadrants, q);
+           parflow_p4est_qcoord_to_vertex (grid->pfgrid, tt, quad, v);
+           owner_rank = parflow_p4est_quad_owner_rank(quad);
+           quad->p.user_data =
+               (void *) NewSubgrid(v[0], v[1], v[2],
+                                   8, 8, 8,
+                                   0, 0, 0,
+                                   owner_rank);
+
+       }
+     }
+
+     P4EST_ASSERT( k == (int) forest->local_num_quadrants );
+#endif
 
    return grid;
 }

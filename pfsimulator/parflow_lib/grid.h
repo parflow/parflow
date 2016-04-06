@@ -34,6 +34,9 @@
 #ifndef _GRID_HEADER
 #define _GRID_HEADER
 
+#ifdef HAVE_P4EST
+#include "../p4est_test/parflow_p4est.h"
+#endif
 /*--------------------------------------------------------------------------
  * Terminology:
  *   See region.h
@@ -76,6 +79,9 @@ typedef struct
 				    space of points that all subgrids
 				    lie in.  Basically the bounding
 				    box for the subgrids */
+#ifdef HAVE_P4EST
+   parflow_p4est_grid_t *pfgrid;
+#endif
 
 } Grid;
 

@@ -110,6 +110,16 @@ Grid  *NewGrid(
 void  FreeGrid(
    Grid  *grid)
 {
+#ifdef HAVE_P4EST
+   int                q, k, Q;
+   Subgrid            *quad_subgrid;
+   sc_array_t         *tquadrants;
+   p4est_t            *forest;
+   p4est_topidx_t      tt;
+   p4est_tree_t       *tree;
+   p4est_quadrant_t   *quad;
+#endif
+
    if(grid)  {
       FreeSubgridArray(GridAllSubgrids(grid));
       
@@ -121,6 +131,31 @@ void  FreeGrid(
 	 FreeComputePkgs(grid);
       
       tfree(grid);
+
+#ifdef HAVE_P4EST
+   forest =  grid->pfgrid->forest;
+
+   /* loop over al quadrants to free the subgrid on it */
+   for (tt = forest->first_local_tree, k = 0;
+        tt <= forest->last_local_tree; ++tt) {
+
+       tree = p4est_tree_array_index (forest->trees, tt);
+       tquadrants = &tree->quadrants;
+       Q = (int) tquadrants->elem_count;
+       P4EST_ASSERT( Q > 0 );
+
+       for (q = 0; q < Q; ++q, ++k) {
+           quad = p4est_quadrant_array_index (tquadrants, q);
+           quad_subgrid = (Subgrid *) quad->p.user_data ;
+           FreeSubgrid ( quad_subgrid );
+       }
+     }
+
+     P4EST_ASSERT( k == (int) forest->local_num_quadrants );
+
+     parflow_p4est_grid_destroy (grid->pfgrid);
+#endif
+
    }
 }
 
