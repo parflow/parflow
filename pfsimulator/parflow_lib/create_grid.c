@@ -90,70 +90,74 @@ Grid           *CreateGrid(
    parflow_p4est_ghost_data_t *ghost_data;
 #endif
 
-#ifndef HAVE_P4EST
-   /*-----------------------------------------------------------------------
-    * Create all_subgrids
-    *-----------------------------------------------------------------------*/
+   if (!USE_P4EST){
 
-   if (!(all_subgrids = DistributeUserGrid(user_grid)))
-   {
-      if (!amps_Rank(amps_CommWorld))
-         amps_Printf("Incorrect process allocation input\n");
-      exit(1);
-   }
+      /*-----------------------------------------------------------------------
+       * Create all_subgrids
+       *-----------------------------------------------------------------------*/
 
-   /*-----------------------------------------------------------------------
-    * Create subgrids
-    *-----------------------------------------------------------------------*/
+      if (!(all_subgrids = DistributeUserGrid(user_grid)))
+      {
+          if (!amps_Rank(amps_CommWorld))
+          amps_Printf("Incorrect process allocation input\n");
+          exit(1);
+      }
 
-   subgrids = GetGridSubgrids(all_subgrids);
+      /*-----------------------------------------------------------------------
+       * Create subgrids
+       *-----------------------------------------------------------------------*/
 
+      subgrids = GetGridSubgrids(all_subgrids);
+   } else {
+#ifdef HAVE_P4EST
+      all_subgrids = NewSubgridArray();
+      subgrids     = all_subgrids;
+
+      /* Initialize information to compute number of subgrids
+       * and their corresponding dimensions */
+        parflow_p4est_sg_param_init(sp);
+
+      /* Create the pfgrid. */
+      pfgrid = parflow_p4est_grid_new (sp->P[0], sp->P[1], sp->P[2]);
+
+      /* Loop on the quadrants (leafs) of this forest
+         and attach a subgrid on each */
+      for (qiter = parflow_p4est_qiter_init(pfgrid, PARFLOW_P4EST_QUAD);
+          qiter != NULL;
+          qiter = parflow_p4est_qiter_next(qiter)) {
+
+          /* Update paramenters to decide dimensions for the new subgrid */
+          parflow_p4est_sg_param_update(qiter, sp);
+
+          /* Allocate new subgrid and attach it to this quadrant */
+          quad_data = parflow_p4est_get_quad_data(qiter);
+          quad_data->pf_subgrid =
+             NewSubgrid(sp->icorner[0], sp->icorner[1], sp->icorner[2],
+                        sp->p[0], sp->p[1], sp->p[2], 0,  0,  0,
+                        parflow_p4est_qiter_get_owner_rank(qiter));
+          AppendSubgrid(quad_data->pf_subgrid, all_subgrids);
+      }
+
+      /* Loop over the ghost layer */
+      for (qiter = parflow_p4est_qiter_init(pfgrid, PARFLOW_P4EST_GHOST);
+           qiter != NULL;
+           qiter = parflow_p4est_qiter_next(qiter)) {
+
+          /* Update paramenters to decide dimensions for the new subgrid */
+          parflow_p4est_sg_param_update(qiter, sp);
+
+          /* Allocate new subgrid and attach it to the corresponding
+           * ghost_data structure */
+            ghost_data = parflow_p4est_get_ghost_data(pfgrid, qiter);
+            ghost_data->pf_subgrid =
+              NewSubgrid(sp->icorner[0], sp->icorner[1], sp->icorner[2],
+                         sp->p[0], sp->p[1], sp->p[2], 0,  0,  0,
+                         parflow_p4est_qiter_get_owner_rank(qiter));
+      }
 #else
-   all_subgrids = NewSubgridArray();
-   subgrids     = all_subgrids;
-
-   /* Initialize information to compute number of subgrids
-    * and their corresponding dimensions */
-   parflow_p4est_sg_param_init(sp);
-
-   /* Create the pfgrid. */
-   pfgrid = parflow_p4est_grid_new (sp->P[0], sp->P[1], sp->P[2]);
-
-   /* Loop on the quadrants (leafs) of this forest
-      and attach a subgrid on each */
-   for (qiter = parflow_p4est_qiter_init(pfgrid, PARFLOW_P4EST_QUAD);
-        qiter != NULL;
-        qiter = parflow_p4est_qiter_next(qiter)) {
-
-       /* Update paramenters to decide dimensions for the new subgrid */
-       parflow_p4est_sg_param_update(qiter, sp);
-
-       /* Allocate new subgrid and attach it to this quadrant */
-       quad_data = parflow_p4est_get_quad_data(qiter);
-       quad_data->pf_subgrid =
-           NewSubgrid(sp->icorner[0], sp->icorner[1], sp->icorner[2],
-                      sp->p[0], sp->p[1], sp->p[2], 0,  0,  0,
-                      parflow_p4est_qiter_get_owner_rank(qiter));
-       AppendSubgrid(quad_data->pf_subgrid, all_subgrids);
-    }
-
-   /* Loop over the ghost layer */
-    for (qiter = parflow_p4est_qiter_init(pfgrid, PARFLOW_P4EST_GHOST);
-         qiter != NULL;
-         qiter = parflow_p4est_qiter_next(qiter)) {
-
-        /* Update paramenters to decide dimensions for the new subgrid */
-        parflow_p4est_sg_param_update(qiter, sp);
-
-       /* Allocate new subgrid and attach it to the corresponding
-        * ghost_data structure */
-        ghost_data = parflow_p4est_get_ghost_data(pfgrid, qiter);
-        ghost_data->pf_subgrid =
-            NewSubgrid(sp->icorner[0], sp->icorner[1], sp->icorner[2],
-                       sp->p[0], sp->p[1], sp->p[2], 0,  0,  0,
-                       parflow_p4est_qiter_get_owner_rank(qiter));
-   }
+    PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif
+  }
 
     /*-----------------------------------------------------------------------
      * Create the grid.
@@ -161,9 +165,14 @@ Grid           *CreateGrid(
 
     grid = NewGrid(subgrids, all_subgrids);
 
+    if (USE_P4EST){
 #ifdef HAVE_P4EST
-    grid->pfgrid = pfgrid;
+      grid->pfgrid = pfgrid;
+#else
+      PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif
+    }
+
     /*-----------------------------------------------------------------------
      * Create communication packages.
      *-----------------------------------------------------------------------*/

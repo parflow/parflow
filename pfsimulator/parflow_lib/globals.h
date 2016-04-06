@@ -56,6 +56,8 @@ typedef struct _Globals
    int      num_procs_y;      /* number of processes in y */
    int      num_procs_z;      /* number of processes in z */
 
+   int      use_p4est;        /*Logical variable to decide whether
+                                we use the p4est library. */
 #ifdef HAVE_P4EST
    int      num_sg_points_x;   /* number of subgrid points in x */
    int      num_sg_points_y;   /* number of subgrid points in y */
@@ -125,6 +127,8 @@ amps_ThreadLocalDcl(extern IDB *, input_database);
 #define GlobalsNumProcsX       (globals -> num_procs_x)
 #define GlobalsNumProcsY       (globals -> num_procs_y)
 #define GlobalsNumProcsZ       (globals -> num_procs_z)
+
+#define USE_P4EST	       (globals -> use_p4est)
 
 #ifdef HAVE_P4EST
 #define GlobalsSubgridPointsX        (globals -> num_sg_points_x)

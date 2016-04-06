@@ -126,23 +126,24 @@ void  FreeGrid(
   parflow_p4est_ghost_data_t *ghost_data;
 #endif
 
-   if(grid)  {
-#ifndef HAVE_P4EST
-       FreeSubgridArray(GridAllSubgrids(grid));
+    if(grid)  {
+      if (!USE_P4EST){
+          FreeSubgridArray(GridAllSubgrids(grid));
 
-       /* these subgrid arrays point to subgrids in all_subgrids */
-       SubgridArraySize(GridSubgrids(grid)) = 0;
-       FreeSubgridArray(GridSubgrids(grid));
+          /* these subgrid arrays point to subgrids in all_subgrids */
+          SubgridArraySize(GridSubgrids(grid)) = 0;
+          FreeSubgridArray(GridSubgrids(grid));
 
-       if (GridComputePkgs(grid))
-         FreeComputePkgs(grid);
-#else
-       FreeSubgridArray(GridAllSubgrids(grid));
+          if (GridComputePkgs(grid))
+          FreeComputePkgs(grid);
+     } else {
+#ifdef HAVE_P4EST
+           FreeSubgridArray(GridAllSubgrids(grid));
 
-       if (GridComputePkgs(grid))
-         FreeComputePkgs(grid);
+           if (GridComputePkgs(grid))
+             FreeComputePkgs(grid);
 
-       if(grid->pfgrid != NULL){
+           if(grid->pfgrid != NULL){
 
            /* Free data allocated in the the quadrants
             * of the forest */
@@ -167,9 +168,11 @@ void  FreeGrid(
 
            /* destroy pfgrid structure */
            parflow_p4est_grid_destroy (grid->pfgrid);
-        }
-
-#endif
+       }
+    #else
+        PARFLOW_ERROR("ParFlow compiled without p4est");
+    #endif
+    }
         tfree(grid);
    }
 }
