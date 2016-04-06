@@ -141,8 +141,8 @@ void  FreeGrid(
             qiter != NULL;
             qiter = parflow_p4est_qiter_next(qiter)) {
 
-            quad_data = parflow_p4est_qiter_get_data(qiter);
-            FreeSubgrid ( (Subgrid *) quad_data->pf_subgrid );
+            quad_data = parflow_p4est_get_quad_data(qiter);
+            FreeSubgrid ( quad_data->pf_subgrid );
        }
 
         /* Free memory allocated in the ghost layer */
