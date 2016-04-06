@@ -101,6 +101,7 @@ Grid           *CreateGrid(
    p4est_quadrant_t   *quad;
 #endif
 
+#ifndef HAVE_P4EST
    /*-----------------------------------------------------------------------
     * Create all_subgrids
     *-----------------------------------------------------------------------*/
@@ -133,7 +134,8 @@ Grid           *CreateGrid(
    // SGS Debug
    globals -> grid3d = grid;
 
-#ifdef HAVE_P4EST
+#else
+   grid = talloc(Grid, 1);
    user_subgrid = GridSubgrid(user_grid, 0);
 
    Nx = SubgridNX(user_subgrid);

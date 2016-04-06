@@ -122,6 +122,8 @@ void  FreeGrid(
 #endif
 
    if(grid)  {
+
+ #ifndef HAVE_P4EST
        FreeSubgridArray(GridAllSubgrids(grid));
 
        /* these subgrid arrays point to subgrids in all_subgrids */
@@ -130,10 +132,7 @@ void  FreeGrid(
 
        if (GridComputePkgs(grid))
          FreeComputePkgs(grid);
-
-       tfree(grid);
-
-#ifdef HAVE_P4EST
+#else
        forest =  grid->pfgrid->forest;
        ghost_layer =  &grid->pfgrid->ghost->ghosts;
 
@@ -168,6 +167,7 @@ void  FreeGrid(
         /* destroy pfgrid structure */
         parflow_p4est_grid_destroy (grid->pfgrid);
 #endif
+        tfree(grid);
    }
 }
 
