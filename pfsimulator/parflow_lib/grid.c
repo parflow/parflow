@@ -39,6 +39,7 @@
 #ifdef HAVE_P4EST
 #include <p4est.h>
 #include <p8est.h>
+#include "../p4est_test/parflow_p4est.h"
 #endif
 
 /*--------------------------------------------------------------------------
@@ -116,14 +117,8 @@ void  FreeGrid(
    Grid  *grid)
 {
 #ifdef HAVE_P4EST
-  int                q, k, Q, G;
   Subgrid            *quad_subgrid;
-  sc_array_t         *tquadrants;
-  sc_array_t         *ghost_layer;
-  p4est_t            *forest;
-  p4est_topidx_t      tt;
-  p4est_tree_t       *tree;
-  p4est_quadrant_t   *quad;
+  parflow_p4est_qiter_t *qiter;
 #endif
 
    if(grid)  {
@@ -138,30 +133,19 @@ void  FreeGrid(
        if (GridComputePkgs(grid))
          FreeComputePkgs(grid);
 #else
-#if 0
-       forest =  grid->pfgrid->forest;
-       ghost_layer =  &grid->pfgrid->ghost->ghosts;
 
        /* Free memory allocated in the the quadrants
         * of the forest */
-       for (tt = forest->first_local_tree, k = 0;
-            tt <= forest->last_local_tree; ++tt) {
+       for (parflow_p4est_qiter_init(qiter, grid->pfgrid);
+            parflow_p4est_qiter_isvalid(qiter);
+            parflow_p4est_qiter_next(qiter)) {
 
-           tree = p4est_tree_array_index (forest->trees, tt);
-           tquadrants = &tree->quadrants;
-           Q = (int) tquadrants->elem_count;
-           P4EST_ASSERT( Q > 0 );
+          // quad_subgrid = (Subgrid *) qiter->quad->p.user_data ;
+           //FreeSubgrid ( quad_subgrid );
 
-           for (q = 0; q < Q; ++q, ++k) {
-               quad = p4est_quadrant_array_index (tquadrants, (size_t) q);
-               quad_subgrid = (Subgrid *) quad->p.user_data ;
-               FreeSubgrid ( quad_subgrid );
-           }
-        }
-
-        /* Assert that every quadrant was visited */
-        P4EST_ASSERT( k == (int) forest->local_num_quadrants );
-
+       }
+       parflow_p4est_qiter_destroy (qiter);
+#if 0
         /* Free memory allocated in the ghost layer */
         G = (int) ghost_layer->elem_count;
         for (q = 0; q < G; ++q) {

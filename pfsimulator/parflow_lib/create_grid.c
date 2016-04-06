@@ -34,8 +34,7 @@
 
 #include "parflow.h"
 #ifdef HAVE_P4EST
-#include <p4est.h>
-#include <p8est.h>
+#include "../p4est_test/parflow_p4est.h"
 #endif
 
 /*--------------------------------------------------------------------------
@@ -86,21 +85,15 @@ Grid           *CreateGrid(
    SubgridArray  *all_subgrids;
 
 #ifdef HAVE_P4EST
-   int                q, k, Q, G;
    int                Nx, Ny, Nz;
    int                mx, my, mz;
    int                Px, Py, Pz;
    int                lx, ly, lz;
    int                px, py, pz;
    int                ix, iy, iz;
-   double             level_factor, v[3];
+   double             v[3];
    Subgrid            *user_subgrid;
-   sc_array_t         *tquadrants;
-   sc_array_t         *ghost_layer;
-   p4est_t            *forest;
-   p4est_topidx_t      tt, gt;
-   p4est_tree_t       *tree;
-   p4est_quadrant_t   *quad;
+   parflow_p4est_qiter_t *qiter;
 #endif
 
 #ifndef HAVE_P4EST
@@ -159,51 +152,39 @@ Grid           *CreateGrid(
 
    /* Create the pfgrid. */
    grid->pfgrid = parflow_p4est_grid_new (Px, Py, Pz);
-#if 0
-   forest       = grid->pfgrid->forest;
-   ghost_layer  = &grid->pfgrid->ghost->ghosts;
 
-   /* Loop over the trees un the forest */
-   for (tt = forest->first_local_tree, k = 0;
-        tt <= forest->last_local_tree; ++tt) {
+   /* Loop on the quadrants (leafs) of this forest
+      and attach a subgrid on each */
+   for (qiter = parflow_p4est_qiter_init(grid->pfgrid);
+        parflow_p4est_qiter_isvalid(qiter);
+        parflow_p4est_qiter_next(qiter)) {
 
-       tree = p4est_tree_array_index (forest->trees, tt);
-       tquadrants = &tree->quadrants;
-       Q = (int) tquadrants->elem_count;
-       P4EST_ASSERT( Q > 0 );
-
-       /* Loop on the quadrants (leafs) of this forest
-          and attach a subgrid on each */
-       for (q = 0; q < Q; ++q, ++k) {
-           quad = p4est_quadrant_array_index (tquadrants, (size_t) q);
-           parflow_p4est_qcoord_to_vertex (grid->pfgrid, tt, quad, v);
-           level_factor = pow (2., quad->level);
-
-           /* Get bottom left corner (anchor node)  in
+       /* Get bottom left corner (anchor node)  in
             * index space for the new subgrid */
-           ix = (int) level_factor * v[0];
-           iy = (int) level_factor * v[1];
-           iz = (int) level_factor * v[2];
+       parflow_p4est_qiter_qcorner(qiter, v);
 
-           /* Decide the dimensions for the new subgrid */
-           px =  ix < lx ? mx + 1 : mx;
-           py =  iy < ly ? my + 1 : my;
-           if (Nz > 1){
-              pz = iz < lz ? mz + 1 : mz;
-           }
-           else{
-              pz = 1;
-           }
+       /* Decide the dimensions for the new subgrid */
+       ix = (int) v[0];
+       iy = (int) v[1];
+       iz = (int) v[2];
 
-           /* Allocate new subgrid and attach it to this quadrant */
-           quad->p.user_data =
-               (void *) NewSubgrid(ix, iy, iz, px, py, pz,
-                                    0,  0,  0, forest->mpirank);
+       px =  ix < lx ? mx + 1 : mx;
+       py =  iy < ly ? my + 1 : my;
+       if (Nz > 1){
+           pz = iz < lz ? mz + 1 : mz;
          }
-   }
-   /* Assert that every quadrant was visited */
-   P4EST_ASSERT( k == (int) forest->local_num_quadrants );
+       else{
+           pz = 1;
+         }
 
+       /* Allocate new subgrid and attach it to this quadrant
+       qiter->quad->p.user_data =
+           (void *) NewSubgrid(ix, iy, iz, px, py, pz,
+                               0,  0,  0, 99999); */
+    }
+    parflow_p4est_qiter_destroy (qiter);
+
+#if 0
    /* Loop over the ghost layer */
    G = (int) ghost_layer->elem_count;
    P4EST_ASSERT( Q >= 0 );
