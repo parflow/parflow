@@ -178,8 +178,8 @@ Grid           *CreateGrid(
          }
 
        /* Allocate new subgrid and attach it to this quadrant */
-       user_subgrid = NewSubgrid(ix, iy, iz, px, py, pz,
-                                          0,  0,  0, 99999);
+       user_subgrid = NewSubgrid(ix, iy, iz, px, py, pz, 0,  0,  0,
+                                 parflow_p4est_qiter_get_owner_rank(qiter));
        parflow_p4est_qiter_set_data(qiter, (void*) user_subgrid);
     }
 
@@ -208,8 +208,8 @@ Grid           *CreateGrid(
 
        /* Allocate new subgrid and attach it to this
         * ghost quadrant */
-        user_subgrid = NewSubgrid(ix, iy, iz, px, py, pz,
-                                           0,  0,  0, 99999);
+        user_subgrid = NewSubgrid(ix, iy, iz, px, py, pz, 0,  0,  0,
+                                  parflow_p4est_qiter_get_owner_rank(qiter));
         parflow_p4est_qiter_set_data(qiter, (void*) user_subgrid);
    }
 #endif

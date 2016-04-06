@@ -33,4 +33,7 @@ void            parflow_p4est_qiter_set_data(parflow_p4est_qiter_t *
 void           *parflow_p4est_qiter_get_data(parflow_p4est_qiter_t *
                                              qiter);
 
+int             parflow_p4est_qiter_get_owner_rank(parflow_p4est_qiter_t *
+                                                   qiter);
+
 #endif                          // !PARLOW_P4EST_H

@@ -165,3 +165,16 @@ parflow_p4est_qiter_get_data(parflow_p4est_qiter_t * qiter)
     }
 }
 
+int
+parflow_p4est_qiter_get_owner_rank(parflow_p4est_qiter_t * qiter)
+{
+    int             dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);
+
+    if (dim == 2) {
+        return qiter->q.qiter_2d->owner_rank;
+    } else {
+        P4EST_ASSERT(dim == 3);
+        return qiter->q.qiter_3d->owner_rank;
+    }
+}
+
