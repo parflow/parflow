@@ -15,29 +15,28 @@ typedef struct parflow_p4est_grid_2d {
 
 typedef struct parflow_p4est_qiter_2d {
 
-    p4est_t        *forest;
-    p4est_connectivity_t *connect;
-    p4est_topidx_t  tt;
-    p4est_tree_t   *tree;
-    sc_array_t     *tquadrants;
-    int             owner_rank; /* processor owning current quadrant */
-    int             Q;          /* quadrants in this tree */
-    int             q;          /* index of current quad in this tree */
-    p4est_quadrant_t *quad;     /* current quadrant */
+  /* Fields used by both types of iterators */
+  parflow_p4est_iter_type_t itype; /* Flag identifiying iterator type*/
+  p4est_connectivity_t *connect;
+  p4est_topidx_t  tt;
+  p4est_quadrant_t *quad;     /* current quadrant */
+
+  /* Fields used only for (all) quadrant iterator */
+  p4est_t        *forest;
+  p4est_tree_t   *tree;
+  sc_array_t     *tquadrants;
+  int             Q;          /* quadrants in this tree */
+  int             q;          /* index of current quad in this tree */
+
+  /* Fields used only for ghost iterator */
+  p4est_ghost_t  *ghost;
+  sc_array_t     *ghost_layer;
+  int             owner_rank; /* processor owning current quadrant */
+  int             G;          /* ghosts quadrants in this layer */
+  int             g;          /* index of current quad in this layer */
 
 } parflow_p4est_qiter_2d_t;
 
-typedef struct parflow_p4est_giter_2d {
-
-    p4est_ghost_t  *ghost;
-    sc_array_t     *ghost_layer;
-    p4est_connectivity_t *connect;
-    int             owner_rank; /* processor owning current quadrant */
-    int             G;          /* ghosts quadrants in this layer */
-    int             g;          /* index of current quad in this layer */
-    p4est_quadrant_t *quad;     /* current quadrant */
-
-} parflow_p4est_giter_2d_t;
 
 parflow_p4est_grid_2d_t *parflow_p4est_grid_2d_new(int Px, int Py);
 

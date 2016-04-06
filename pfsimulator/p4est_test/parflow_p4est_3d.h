@@ -15,31 +15,27 @@ typedef struct parflow_p4est_grid_3d {
 
 typedef struct parflow_p4est_qiter_3d {
 
-    p8est_t        *forest;
+    /* Fields used by both types of iterators */
+    parflow_p4est_iter_type_t itype; /* Flag identifiying iterator type*/
     p8est_connectivity_t *connect;
     p4est_topidx_t  tt;
+    p8est_quadrant_t *quad;     /* current quadrant */
+
+    /* Fields used only for quadrant iterator */
+    p8est_t        *forest;
     p8est_tree_t   *tree;
     sc_array_t     *tquadrants;
-    int             owner_rank; /* processor owning current quadrant */
     int             Q;          /* quadrants in this tree */
     int             q;          /* index of current quad in this tree */
-    p8est_quadrant_t *quad;     /* current quadrant */
-    double          v[3];       /* lower left corner of current quadrant */
 
-} parflow_p4est_qiter_3d_t;
-
-typedef struct parflow_p4est_giter_3d {
-
+    /* Fields used only for ghost iterator */
     p8est_ghost_t  *ghost;
     sc_array_t     *ghost_layer;
-    p8est_connectivity_t *connect;
     int             owner_rank; /* processor owning current quadrant */
     int             G;          /* ghosts quadrants in this layer */
     int             g;          /* index of current quad in this layer */
-    p8est_quadrant_t *quad;     /* current quadrant */
-    double          v[3];       /* lower left corner of current quadrant */
 
-} parflow_p4est_giter_3d_t;
+} parflow_p4est_qiter_3d_t;
 
 parflow_p4est_grid_3d_t *parflow_p4est_grid_3d_new(int Px, int Py, int Pz);
 

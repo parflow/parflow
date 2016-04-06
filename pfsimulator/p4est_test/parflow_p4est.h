@@ -4,6 +4,11 @@
 typedef struct parflow_p4est_grid parflow_p4est_grid_t;
 typedef struct parflow_p4est_qiter parflow_p4est_qiter_t;
 
+typedef enum parflow_p4est_iter_type {
+    PARFLOW_P4EST_QUAD,
+    PARFLOW_P4EST_GHOST
+} parflow_p4est_iter_type_t;
+
 /*
  * Accesor macros
  */
