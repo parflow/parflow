@@ -1,27 +1,24 @@
 #! /bin/bash
 
-# This is the default style for indent 2.2.10 (see man page)
-#
-#"$INDENT" \
-#    -nbad -bap -nbc -bbo -bl -bli2 -bls -ncdb -nce -cp1 -cs -di2
-#    -ndj -nfc1 -nfca -hnl -i2 -ip5 -lp -pcs -nprs -psl -saf -sai
-#    -saw -nsc -nsob
-#    "$@"
-
 # Recall that code enclosed by  /* *INDENT-OFF* */  and
-#  /* *INDENT-ON */ wont be formated. 
+#  /* *INDENT-ON */ wont be formated.
 
-# blank lines after declarations ( -bad )
-# blank lines after procedures   ( -bap )
-# comment delimiters on blank lines ( -cdb -sc )
-# braces indent 0 ( -bli0 ) 
-# braces on if line, else after ( -br -nce )
-# declarations set to indent 20 ( -di20 )
-# use spaces instead of tabs ( -nut )
-# swallow optional blank lines ( -sob )
-# Put the type of a procedure on the line before its name ( -psl )
+#We will use a modified version of the original Berkley style
+#whose settings are (see manpage):
+# "$INDENT \
+#	-nbad -nbap -bbo -bc -br -brs -c33 -cd33 -cdb -ce -ci4 -cli0
+#       -cp33 -di16 -fc1 -fca -hnl -i4 -ip4 -l75 -lp -npcs -nprs -psl
+#	-saf -sai -saw -sc -nsob -nss -ts8"
 
-INDENT_OPTIONS="-bad -bap -cdb -sc -bli0 -br -nce -di20 -nut -sob -psl"
+# We will introduce the changes:
+# No blank line after declaration -nbad
+# Blanck line after procedure -bap
+# No tabs -nut
+# Swallow optional blanck lines
+
+INDENT_OPTIONS="-nbad -bap -bbo -nbc -br -brs -c33 -cd33 -cdb -ce -ci4 -cli0
+            	-cp33 -di16 -fc1 -fca -hnl -i4 -ip4 -l75 -lp -npcs -nprs -psl
+	        -saf -sai -saw -sc -nsob -nss -ts8 -nut -sob"
 
 INDENT=`which gnuindent 2> /dev/null`
 if test -z "$INDENT" ; then
