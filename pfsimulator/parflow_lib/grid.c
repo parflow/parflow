@@ -120,12 +120,6 @@ Grid  *NewGrid(
 void  FreeGrid(
    Grid  *grid)
 {
-#ifdef HAVE_P4EST
-  parflow_p4est_qiter_t *qiter;
-  parflow_p4est_quad_data_t *quad_data;
-  parflow_p4est_ghost_data_t *ghost_data;
-#endif
-
     if(grid)  {
       if (!USE_P4EST){
           FreeSubgridArray(GridAllSubgrids(grid));
@@ -144,34 +138,12 @@ void  FreeGrid(
              FreeComputePkgs(grid);
 
            if(grid->pfgrid != NULL){
-
-           /* Free data allocated in the the quadrants
-            * of the forest */
-#if 0
-           for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_QUAD);
-                qiter != NULL;
-                qiter = parflow_p4est_qiter_next(qiter)) {
-
-               quad_data = parflow_p4est_get_quad_data(qiter);
-               FreeSubgrid ( quad_data->pf_subgrid );
+             /* destroy pfgrid structure */
+             parflow_p4est_grid_destroy (grid->pfgrid);
            }
-
-           /* Free memory allocated in the ghost layer */
-           for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_GHOST);
-                qiter != NULL;
-                qiter = parflow_p4est_qiter_next(qiter)) {
-
-               ghost_data = parflow_p4est_get_ghost_data(grid->pfgrid, qiter);
-               FreeSubgrid ( ghost_data->pf_subgrid );
-           }
-#endif
-
-           /* destroy pfgrid structure */
-           parflow_p4est_grid_destroy (grid->pfgrid);
-       }
-    #else
+#else
         PARFLOW_ERROR("ParFlow compiled without p4est");
-    #endif
+#endif
     }
         tfree(grid);
    }
