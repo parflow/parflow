@@ -878,7 +878,49 @@ BCStruct    *BCPressure(
 		  });
 		  break;
 
-	       }    /* End case 5 */
+	       }    /* End case 6 */
+	       case 7: /* p = -2*(x-0.5)^2 +0.5*/
+	       {
+
+                  BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+                  {
+		     x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
+
+
+		     patch_values[ival] = -2 * pow(x-0.5,2.0) - 0.5;
+		  });
+		  break;
+
+	       }
+	       case 8: /* p = x*y*/
+	       {
+
+                  BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+                  {
+		     x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
+		     y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
+
+
+		     patch_values[ival] = x*y;
+		  });
+		  break;
+	       }
+	       case 9: /* p = cos(x)*cosh(y) */
+	       {
+
+                  BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+                  {
+		     x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
+		     y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
+
+
+		     patch_values[ival] = cos(x)*cosh(y);
+		  });
+		  break;
+
+
+	       }
+
 
 	       }    /* End switch */
 

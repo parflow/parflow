@@ -145,7 +145,8 @@ double      *l2_error_norm)
 			    ips = SubvectorEltIndex(p_sub, i, j, k);
 			    
 			    x = RealSpaceX(i, SubgridRX(subgrid));
-			    
+			    y = RealSpaceY(j, SubgridRY(subgrid));
+
 			    soln = x;
 			    err += (data[ips] - soln)*(data[ips] - soln);
 			 });
@@ -233,6 +234,50 @@ double      *l2_error_norm)
 	    break;
 
 	 }   /* End case  p = x*y*z*t + 1*/
+	 case 8: /* p = -2*(x-0.5)^2 -0.5*/
+	 {
+	    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+			 {
+			    ips = SubvectorEltIndex(p_sub, i, j, k);
+
+			    x = RealSpaceX(i, SubgridRX(subgrid));
+
+			    soln =  -2 * pow(x-0.5,2.0) - 0.5;
+			    err += (data[ips] - soln)*(data[ips] - soln);
+			 });
+	    break;
+
+	 }
+	 case 9: /* p = x*y*/
+	 {
+	    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+			 {
+			    ips = SubvectorEltIndex(p_sub, i, j, k);
+
+			    x = RealSpaceX(i, SubgridRX(subgrid));
+			    y = RealSpaceY(j, SubgridRY(subgrid));
+
+			    soln =  x*y;
+			    err += (data[ips] - soln)*(data[ips] - soln);
+			 });
+	    break;
+
+	 }
+	 case 10: /* p = cos(x)*cosh(y)*/
+	 {
+	    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+			 {
+			    ips = SubvectorEltIndex(p_sub, i, j, k);
+
+			    x = RealSpaceX(i, SubgridRX(subgrid));
+			    y = RealSpaceY(j, SubgridRY(subgrid));
+
+			    soln =  cos(x)*cosh(y);
+			    err += (data[ips] - soln)*(data[ips] - soln);
+			 });
+	    break;
+
+	 }
 	 
       }   /* End switch statement for solution types */
       
@@ -309,7 +354,7 @@ PFModule  *L2ErrorNormNewPublicXtra()
     *----------------------------------------------------------*/
    switch_na = NA_NewNameArray("NoKnownSolution Constant X XPlusYPlusZ \
                              X3Y2PlusSinXYPlus1 X3Y4PlusX2PlusSinXYCosYPlus1 \
-                             XYZTPlus1 XYZTPlus1PermTensor");                               
+                             XYZTPlus1 XYZTPlus1PermTensor 1D_0Dir 2D_XY 2D_CosX_CoshY");
 
    public_xtra = ctalloc(PublicXtra, 1);
 
@@ -361,6 +406,20 @@ PFModule  *L2ErrorNormNewPublicXtra()
       {
 	 break;
       }
+      case 8:
+       {
+ 	 break;
+       }
+
+       case 9:
+       {
+ 	 break;
+       }
+
+       case 10:
+       {
+ 	 break;
+       }
       default:
       {
 	 InputError("Error: invalid solution type <%s> for key <%s>\n",

@@ -536,7 +536,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
    //sk
    type_na = NA_NewNameArray("DirEquilRefPatch DirEquilPLinear FluxConst FluxVolumetric PressureFile FluxFile ExactSolution OverlandFlow OverlandFlowPFB");
 
-   function_na = NA_NewNameArray("dum0 X XPlusYPlusZ X3Y2PlusSinXYPlus1 X3Y4PlusX2PlusSinXYCosYPlus1 XYZTPlus1 XYZTPlus1PermTensor");
+   function_na = NA_NewNameArray("dum0 X XPlusYPlusZ X3Y2PlusSinXYPlus1 X3Y4PlusX2PlusSinXYCosYPlus1 XYZTPlus1 XYZTPlus1PermTensor 1D_0Dir 2D_XY 2D_CosX_CoshY");
 
    /* allocate space for the public_xtra structure */
    public_xtra = ctalloc(PublicXtra, 1);
