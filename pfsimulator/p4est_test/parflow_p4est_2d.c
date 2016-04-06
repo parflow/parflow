@@ -102,10 +102,13 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
     parflow_p4est_qiter_2d_t *qit_2d;
 
     qit_2d = P4EST_ALLOC_ZERO(parflow_p4est_qiter_2d_t, 1);
+    qit_2d->itype = PARFLOW_P4EST_QUAD;
+    qit_2d->connect = pfg->connect;
+
     if (itype == PARFLOW_P4EST_QUAD) {
-        qit_2d->itype = PARFLOW_P4EST_QUAD;
+
+       /* Populate necesary fields */
         qit_2d->forest = pfg->forest;
-        qit_2d->connect = pfg->connect;
         qit_2d->tt = qit_2d->forest->first_local_tree;
         if (qit_2d->tt <= qit_2d->forest->last_local_tree) {
             P4EST_ASSERT(qit_2d->tt >= 0);
@@ -117,13 +120,18 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
             qit_2d->quad = p4est_quadrant_array_index(qit_2d->tquadrants,
                                                       (size_t) qit_2d->q);
         }
+
+        /* Populate ghost fields with invalid values */
+        qit_2d->G = -1;
+        qit_2d->g = -1;
+        qit_2d->owner_rank = -1;
     } else {
         P4EST_ASSERT(itype == PARFLOW_P4EST_GHOST);
-        qit_2d->itype = PARFLOW_P4EST_GHOST;
+
+        /* Populate necesary fields */
         qit_2d->ghost = pfg->ghost;
         qit_2d->ghost_layer = &qit_2d->ghost->ghosts;
         qit_2d->G = (int) qit_2d->ghost_layer->elem_count;
-        qit_2d->connect = pfg->connect;
         P4EST_ASSERT(qit_2d->G >= 0);
         if (qit_2d->g < qit_2d->G) {
             P4EST_ASSERT(qit_2d->g >= 0);
@@ -133,6 +141,10 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
             qit_2d->tt = qit_2d->quad->p.piggy3.which_tree;
             // TODO: Get owner rank
         }
+
+        /* Populate quad fields with invalid values */
+        qit_2d->Q = -1;
+        qit_2d->q = -1;
     }
 
     P4EST_ASSERT(parflow_p4est_giter_isvalid(giter));
