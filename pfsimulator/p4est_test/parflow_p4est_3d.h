@@ -5,6 +5,8 @@
 #include <p8est_lnodes.h>
 #include <p8est_extended.h>
 
+SC_EXTERN_C_BEGIN;
+
 typedef struct parflow_p4est_grid_3d {
 
     int             dim;
@@ -68,4 +70,6 @@ parflow_p4est_ghost_data_t
     * parflow_p4est_get_ghost_data_3d(parflow_p4est_grid_3d_t *pfg,
                                       parflow_p4est_qiter_3d_t * qit_3d);
 
-#endif                          // !PARLOW_P4EST_3D_H
+SC_EXTERN_C_END;
+
+#endif                          /* !PARLOW_P4EST_3D_H */

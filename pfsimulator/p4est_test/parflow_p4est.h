@@ -4,6 +4,8 @@
 #include <parflow.h>
 #include <sc_containers.h>
 
+SC_EXTERN_C_BEGIN;
+
 typedef Subregion Subgrid;
 typedef struct parflow_p4est_grid parflow_p4est_grid_t;
 typedef struct parflow_p4est_qiter parflow_p4est_qiter_t;
@@ -68,4 +70,6 @@ parflow_p4est_ghost_data_t
    * parflow_p4est_get_ghost_data(parflow_p4est_grid_t * pfgrid,
                                   parflow_p4est_qiter_t * qiter);
 
-#endif                          // !PARLOW_P4EST_H
+SC_EXTERN_C_END;
+
+#endif                          /* !PARLOW_P4EST_H */
