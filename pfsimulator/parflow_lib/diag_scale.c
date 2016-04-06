@@ -64,6 +64,7 @@ void     DiagScale(
    Subgrid        *subgrid;
 
    VectorUpdateCommHandle *handle = NULL;
+   MatrixUpdateCommHandle *matrix_handle = NULL;
 
    ComputePkg     *compute_pkg;
    Region         *compute_reg = NULL;
@@ -226,9 +227,9 @@ void     DiagScale(
     * Update matrix ghost points
     *-----------------------------------------------------------------------*/
 
-   if (MatrixCommPkg(A))
+   if (MatrixCommPkg(A,0))
    {
-      CommHandle *matrix_handle = InitMatrixUpdate(A);
+      matrix_handle = InitMatrixUpdate(A);
       FinalizeMatrixUpdate(matrix_handle);
    }
 }

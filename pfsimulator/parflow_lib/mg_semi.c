@@ -185,10 +185,10 @@ int      zero)
 
       /* SGS not done */
       restrict_comm_pkg_l[l] =
-	 NewVectorCommPkg(temp_vec_l[l],
+     NewVectorCommPkg(temp_vec_l[l],0,
 			  (instance_xtra -> restrict_compute_pkg_l[l]));
       prolong_comm_pkg_l[l] =
-	 NewVectorCommPkg(temp_vec_l[l],
+     NewVectorCommPkg(temp_vec_l[l],0,
 			  (instance_xtra -> prolong_compute_pkg_l[l]));
    }
 

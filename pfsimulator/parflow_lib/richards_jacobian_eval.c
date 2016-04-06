@@ -298,7 +298,7 @@ int           symm_part)      /* Specifies whether to compute just the
    int         *fdir;
    int          ipatch, ival;
    
-   CommHandle  *handle;
+   MatrixUpdateCommHandle  *matrix_update_handle;
    VectorUpdateCommHandle  *vector_update_handle;
 
    // Determine if an overland flow boundary condition is being used.
@@ -1305,10 +1305,10 @@ int           symm_part)      /* Specifies whether to compute just the
       // SGS always have to do communication here since
       // each processor may/may not be doing overland flow.
       /* Update ghost points for JB before building JC */
-      if (MatrixCommPkg(J))
+      if (MatrixCommPkg(J,0))
       {
-	 handle = InitMatrixUpdate(J);
-	 FinalizeMatrixUpdate(handle);
+         matrix_update_handle = InitMatrixUpdate(J);
+         FinalizeMatrixUpdate(matrix_update_handle);
       }
 
       /* Pass KW values to neighbors.  */
@@ -1603,17 +1603,17 @@ int           symm_part)      /* Specifies whether to compute just the
    if(public_xtra -> type == overland_flow)
    {
       /* Update matrices and setup pointers */
-      if (MatrixCommPkg(J))
+      if (MatrixCommPkg(J,0))
       {
-	 handle = InitMatrixUpdate(J);
-	 FinalizeMatrixUpdate(handle);
+         matrix_update_handle = InitMatrixUpdate(J);
+         FinalizeMatrixUpdate(matrix_update_handle);
       }
       *ptr_to_J = J;
       
-      if (MatrixCommPkg(JC))
+      if (MatrixCommPkg(JC,0))
       {
-	 handle = InitMatrixUpdate(JC);
-	 FinalizeMatrixUpdate(handle);
+         matrix_update_handle = InitMatrixUpdate(JC);
+         FinalizeMatrixUpdate(matrix_update_handle);
       }
       *ptr_to_JC = JC;
    }
@@ -1621,10 +1621,10 @@ int           symm_part)      /* Specifies whether to compute just the
    {
       *ptr_to_JC = NULL;
 
-      if (MatrixCommPkg(J))
+      if (MatrixCommPkg(J,0))
       {
-	 handle = InitMatrixUpdate(J);
-	 FinalizeMatrixUpdate(handle);
+         matrix_update_handle = InitMatrixUpdate(J);
+         FinalizeMatrixUpdate(matrix_update_handle);
       }
 
       *ptr_to_J = J;

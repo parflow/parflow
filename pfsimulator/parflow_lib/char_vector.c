@@ -56,7 +56,7 @@ CommPkg  *NewCharVectorUpdatePkg(
 
    new_comm_pkg = NewCommPkg(ComputePkgSendRegion(compute_pkg),
 		    ComputePkgRecvRegion(compute_pkg),
-		    CharVectorDataSpace(charvector),
+            CharVectorDataSpace(charvector), 0,
 		    CharVectorNC(charvector),
 		    (double*) CharVectorData(charvector)); 
 

@@ -131,6 +131,7 @@ void          DiscretizePressure(
    double          gravity, dtmp, *phase_density;
 
    VectorUpdateCommHandle     *handle;
+   MatrixUpdateCommHandle     *matrix_handle;
 
    BCStruct       *bc_struct;
    double         *bc_patch_values;
@@ -881,9 +882,9 @@ void          DiscretizePressure(
     * Update matrix ghost points
     *-----------------------------------------------------------------------*/
 
-   if (MatrixCommPkg(A))
+   if (MatrixCommPkg(A,0))
    {
-      CommHandle *matrix_handle = InitMatrixUpdate(A);
+      matrix_handle = InitMatrixUpdate(A);
       FinalizeMatrixUpdate(matrix_handle);
    }
 
