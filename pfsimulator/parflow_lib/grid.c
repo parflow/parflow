@@ -123,8 +123,7 @@ void  FreeGrid(
 #endif
 
    if(grid)  {
-
- #ifndef HAVE_P4EST
+#ifndef HAVE_P4EST
        FreeSubgridArray(GridAllSubgrids(grid));
 
        /* these subgrid arrays point to subgrids in all_subgrids */
@@ -134,7 +133,7 @@ void  FreeGrid(
        if (GridComputePkgs(grid))
          FreeComputePkgs(grid);
 #else
-
+       FreeSubgridArray(GridSubgrids(grid));
        /* Free data allocated in the the quadrants
         * of the forest */
        for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_QUAD);
@@ -142,8 +141,9 @@ void  FreeGrid(
             qiter = parflow_p4est_qiter_next(qiter)) {
 
             quad_data = parflow_p4est_get_quad_data(qiter);
-            FreeSubgrid ( quad_data->pf_subgrid );
+            //FreeSubgrid ( quad_data->pf_subgrid );
        }
+
 
         /* Free memory allocated in the ghost layer */
        for (qiter = parflow_p4est_qiter_init(grid->pfgrid, PARFLOW_P4EST_GHOST);

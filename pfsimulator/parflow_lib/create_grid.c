@@ -80,11 +80,10 @@ Grid           *CreateGrid(
    Grid           *user_grid)
 {
    Grid        *grid;
-
+#ifndef HAVE_P4EST
    SubgridArray  *subgrids;
    SubgridArray  *all_subgrids;
-
-#ifdef HAVE_P4EST
+#else HAVE_P4EST
    parflow_p4est_sg_param_t subgparam, *sp = &subgparam;
    Subgrid                  *user_subgrid;
    parflow_p4est_qiter_t    *qiter;
@@ -127,6 +126,8 @@ Grid           *CreateGrid(
 
 #else
    grid = talloc(Grid, 1);
+   GridSubgrids(grid) = NewSubgridArray();
+   GridAllSubgrids(grid) = GridSubgrids(grid);
 
    /* Initialize information to compute number of subgrids
     * and their corresponding dimensions */
@@ -150,6 +151,7 @@ Grid           *CreateGrid(
            NewSubgrid(sp->icorner[0], sp->icorner[1], sp->icorner[2],
                       sp->p[0], sp->p[1], sp->p[2], 0,  0,  0,
                       parflow_p4est_qiter_get_owner_rank(qiter));
+       AppendSubgrid(quad_data->pf_subgrid, GridSubgrids(grid));
     }
 
    /* Loop over the ghost layer */
