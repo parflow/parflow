@@ -101,7 +101,7 @@ typedef struct
 
    int               size;         /* Total number of nonzero coefficients */
 
-   CommPkg          *comm_pkg;     /* Information on how to update boundary */
+   CommPkg          **comm_pkg;     /* Information on how to update boundary */
 
    enum matrix_type type;
 
@@ -116,6 +116,11 @@ typedef struct
 
 } Matrix;
 
+
+typedef struct _MatrixUpdateCommHandle {
+   Matrix *matrix;
+   CommHandle **comm_handle;
+} MatrixUpdateCommHandle;
 
 /*--------------------------------------------------------------------------
  * Accessor functions for the Stencil structure
@@ -180,7 +185,6 @@ typedef struct
 
 #define MatrixSize(matrix)        ((matrix) -> size)
 
-#define MatrixCommPkg(matrix)     ((matrix) -> comm_pkg)
-
+#define MatrixCommPkg(matrix,i)     ((matrix) -> comm_pkg[(i)])
 
 #endif

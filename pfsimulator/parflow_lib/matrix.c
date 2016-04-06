@@ -131,11 +131,12 @@ CommPkg   *NewMatrixUpdatePkg(
  * InitMatrixUpdate
  *--------------------------------------------------------------------------*/
 
-CommHandle  *InitMatrixUpdate(
+MatrixUpdateCommHandle  *InitMatrixUpdate(
    Matrix      *matrix)
 {
-
-   CommHandle *return_handle = NULL;
+   int i;
+   CommHandle **amps_comm_handle;
+   MatrixUpdateCommHandle *matrix_update_comm_handle = ctalloc(MatrixUpdateCommHandle, 1);
 
    enum ParflowGridType grid_type = invalid_grid_type;
 
@@ -155,9 +156,11 @@ CommHandle  *InitMatrixUpdate(
    }
 #endif
 
+   amps_comm_handle = ctalloc(CommHandle *, MatrixDataSpace(matrix)->size);;
    if(grid_type == invalid_grid_type)
    {
-      return_handle = InitCommunication(MatrixCommPkg(matrix));
+       ForSubregionI(i, MatrixDataSpace(matrix))
+               amps_comm_handle[i] = InitCommunication(MatrixCommPkg(matrix, i));
    } else {
 
 #ifdef HAVE_SAMRAI
@@ -190,7 +193,9 @@ CommHandle  *InitMatrixUpdate(
 #endif
    }
 
-   return return_handle;
+   matrix_update_comm_handle -> matrix = matrix;
+   matrix_update_comm_handle -> comm_handle = amps_comm_handle;
+   return matrix_update_comm_handle;
 }
 
 
@@ -199,11 +204,17 @@ CommHandle  *InitMatrixUpdate(
  *--------------------------------------------------------------------------*/
 
 void         FinalizeMatrixUpdate(
-   CommHandle  *handle)
+  MatrixUpdateCommHandle  *handle)
 {
-   if(handle) {
-      FinalizeCommunication(handle);
-   }
+   int i;
+
+   ForSubregionI(i, MatrixDataSpace(handle->matrix))
+        if (handle -> comm_handle[i]){
+            FinalizeCommunication(handle -> comm_handle[i]);
+
+        }
+   tfree(handle->comm_handle);
+   tfree(handle);
 }
 
 
@@ -430,7 +441,7 @@ enum matrix_type     type)
     *-----------------------------------------------------------------------*/
 
 
-
+    new_matrix -> comm_pkg = ctalloc(CommPkg *, GridNumSubgrids(grid));
    (new_matrix -> submatrices) = ctalloc(Submatrix *, GridNumSubgrids(grid));
 
    MatrixDataSpace(new_matrix) = NewSubregionArray();
@@ -602,14 +613,15 @@ enum matrix_type     type)
 	     SubmatrixData(submatrix)= patch_data -> getPointer(0);
 	     patch_data -> fillAll(0);
 
-	     MatrixCommPkg(new_matrix) = NULL;
+         MatrixCommPkg(new_matrix,0) = NULL;
 	  }
 	  break;
        }
 #endif
        case matrix_non_samrai :
-	  if (ghost)
-	     MatrixCommPkg(new_matrix) = NewMatrixUpdatePkg(new_matrix, ghost);
+          if (ghost)
+             ForSubgridI(i, GridSubgrids(grid))
+                 MatrixCommPkg(new_matrix, i) = NewMatrixUpdatePkg(new_matrix, i, ghost);
    
 	  break;
     }    
@@ -692,6 +704,9 @@ void FreeMatrix(
 
       tfree(submatrix -> data_index);
       tfree(submatrix);
+
+      if (MatrixCommPkg(matrix,i))
+        FreeCommPkg(MatrixCommPkg(matrix,i));
    }
 
    FreeStencil(MatrixStencil(matrix));
@@ -699,13 +714,9 @@ void FreeMatrix(
 
    FreeSubregionArray(MatrixDataSpace(matrix));
 
-   if (MatrixCommPkg(matrix))
-      FreeCommPkg(MatrixCommPkg(matrix));
-
+   tfree(matrix -> comm_pkg);
    tfree(matrix -> submatrices);
    tfree(matrix);
-
-   
 }
 
 
