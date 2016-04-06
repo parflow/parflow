@@ -48,3 +48,8 @@ parflow_p4est_qcoord_to_vertex (parflow_p4est_grid_t * pfgrid,
     parflow_p4est_qcoord_to_vertex_3d (pfgrid, treeid, quad, v);
   }
 }
+
+p4est_topidx_t
+parflow_p4est_gquad_owner_tree (p4est_quadrant_t   *quad){
+  return quad->p.piggy3.which_tree;
+}

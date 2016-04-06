@@ -207,7 +207,7 @@ Grid           *CreateGrid(
    for (q = 0; q < G; ++q) {
        quad = p4est_quadrant_array_index (ghost_layer, (size_t) q);
        level_factor = pow (2., quad->level);
-       gt = quad->p.piggy3.which_tree;
+       gt = parflow_p4est_gquad_owner_tree (quad);
        parflow_p4est_qcoord_to_vertex (grid->pfgrid, gt, quad, v);
 
        /* Get bottom left corner (anchor node)  in

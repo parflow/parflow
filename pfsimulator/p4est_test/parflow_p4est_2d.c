@@ -24,7 +24,6 @@ parflow_p4est_grid_2d_new (int Px, int Py
 {
   int                 g, gt;
   int                 tx, ty;
-
 #ifdef P4_TO_P8
   int                 tz;
 #endif

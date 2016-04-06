@@ -34,4 +34,7 @@ void                parflow_p4est_qcoord_to_vertex (parflow_p4est_grid_t *
                                                     p4est_topidx_t treeid,
                                                     p4est_quadrant_t * quad,
                                                     double v[3]);
+p4est_topidx_t
+parflow_p4est_gquad_owner_tree (p4est_quadrant_t   *quad);
+
 #endif // !PARLOW_P4EST_H
