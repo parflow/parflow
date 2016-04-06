@@ -66,18 +66,26 @@ parflow_p4est_qiter_t *
 parflow_p4est_qiter_init(parflow_p4est_grid_t * pfgrid,
                          parflow_p4est_iter_type_t itype)
 {
-    parflow_p4est_qiter_t *qiter;
+    parflow_p4est_qiter_t *qiter = NULL;
+    parflow_p4est_qiter_2d_t *qit_2d;
+    parflow_p4est_qiter_3d_t *qit_3d;
     int             dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
 
-    qiter = P4EST_ALLOC(parflow_p4est_qiter_t, 1);
-    qiter->dim = dim;
     if (dim == 2) {
-        qiter->q.qiter_2d =
-            parflow_p4est_qiter_init_2d(pfgrid->p.p4, itype);
+        qit_2d = parflow_p4est_qiter_init_2d(pfgrid->p.p4, itype);
+        if(qit_2d){
+           qiter = P4EST_ALLOC(parflow_p4est_qiter_t, 1);
+           qiter->dim = dim;
+           qiter->q.qiter_2d = qit_2d;
+        }
     } else {
         P4EST_ASSERT(dim == 3);
-        qiter->q.qiter_3d =
-            parflow_p4est_qiter_init_3d(pfgrid->p.p8, itype);
+        qit_3d = parflow_p4est_qiter_init_3d(pfgrid->p.p8, itype);
+        if(qit_3d){
+           qiter = P4EST_ALLOC(parflow_p4est_qiter_t, 1);
+           qiter->dim = dim;
+           qiter->q.qiter_3d = qit_3d;
+        }
     }
 
     return qiter;
