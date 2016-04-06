@@ -83,19 +83,6 @@ parflow_p4est_qiter_init(parflow_p4est_grid_t * pfgrid,
     return qiter;
 }
 
-int
-parflow_p4est_qiter_isvalid(parflow_p4est_qiter_t * qiter)
-{
-    int             dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);
-
-    if (dim == 2) {
-        return parflow_p4est_qiter_isvalid_2d(qiter->q.qiter_2d);
-    } else {
-        P4EST_ASSERT(dim == 3);
-        return parflow_p4est_qiter_isvalid_3d(qiter->q.qiter_3d);
-    }
-}
-
 parflow_p4est_qiter_t *
 parflow_p4est_qiter_next(parflow_p4est_qiter_t * qiter)
 {
@@ -124,20 +111,6 @@ parflow_p4est_qiter_next(parflow_p4est_qiter_t * qiter)
 
     P4EST_ASSERT(qiter);
     return qiter;
-}
-
-void
-parflow_p4est_qiter_destroy(parflow_p4est_qiter_t * qiter)
-{
-    int             dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);
-
-    if (dim == 2) {
-        parflow_p4est_qiter_destroy_2d(qiter->q.qiter_2d);
-    } else {
-        P4EST_ASSERT(dim == 3);
-        parflow_p4est_qiter_destroy_3d(qiter->q.qiter_3d);
-    }
-    P4EST_FREE(qiter);
 }
 
 void
@@ -192,10 +165,3 @@ parflow_p4est_qiter_get_data(parflow_p4est_qiter_t * qiter)
     }
 }
 
-#if 0
-p4est_topidx_t
-parflow_p4est_gquad_owner_tree(p4est_quadrant_t * quad)
-{
-    return quad->p.piggy3.which_tree;
-}
-#endif

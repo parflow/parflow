@@ -154,17 +154,6 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
     return parflow_p4est_qiter_info_2d(qit_2d);
 }
 
-int
-parflow_p4est_qiter_isvalid_2d(parflow_p4est_qiter_2d_t * qit_2d)
-{
-    if (qit_2d->itype == PARFLOW_P4EST_QUAD) {
-        return (qit_2d->q < qit_2d->Q);
-    } else {
-        P4EST_ASSERT(qit_2d->itype == PARFLOW_P4EST_GHOST);
-        return (qit_2d->g < qit_2d->G);
-    }
-}
-
 parflow_p4est_qiter_2d_t *
 parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d)
 {
@@ -214,12 +203,6 @@ void           *
 parflow_p4est_qiter_get_data_2d(parflow_p4est_qiter_2d_t * qit_2d)
 {
     return qit_2d->quad->p.user_data;
-}
-
-void
-parflow_p4est_qiter_destroy_2d(parflow_p4est_qiter_2d_t * qit_2d)
-{
-    P4EST_FREE(qit_2d);
 }
 
 /*
