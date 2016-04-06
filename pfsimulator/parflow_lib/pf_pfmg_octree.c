@@ -1107,14 +1107,12 @@ int          zero;
 }
 
 PFModule  *PFMGOctreeInitInstanceXtra(problem, grid, problem_data,  
-				      pf_Bmat, pf_Cmat, pf_Emat, pf_Fmat, temp_data)
+				      pf_Bmat, pf_Cmat, temp_data)
 Problem      *problem;
 Grid         *grid;
 ProblemData  *problem_data;
-Matrix       *pf_Bmat,
-Matrix	     *pf_Cmat,
-Matrix	     *pf_Emat,
-Matrix	     *pf_Fmat,
+Matrix       *pf_Bmat;
+Matrix	     *pf_Cmat;
 double       *temp_data;
 {
    amps_Printf("Error: Parflow not compiled with hypre, can't use pfmg\n");   
