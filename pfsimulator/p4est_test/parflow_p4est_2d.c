@@ -78,11 +78,14 @@ parflow_p4est_grid_2d_new (int Px, int Py
    * among the mpi communicator
    */
   if (balance) {
-    p4est_balance (pfgrid->forest, P4EST_CONNECT_FULL, NULL);
+    p4est_balance (pfgrid->forest, P4EST_CONNECT_FACE, NULL);
     p4est_partition (pfgrid->forest, 0, NULL);
   }
 
-  p4est_vtk_write_file (pfgrid->forest, NULL, P4EST_STRING "_pfbrick");
+   /* allocate ghost storage */
+   pfgrid->ghost = p4est_ghost_new (pfgrid->forest, P4EST_CONNECT_FACE);
+
+  //p4est_vtk_write_file (pfgrid->forest, NULL, P4EST_STRING "_pfbrick");
 
   return pfgrid;
 }
@@ -92,6 +95,7 @@ parflow_p4est_grid_2d_destroy (parflow_p4est_grid_t * pfgrid)
 {
   p4est_destroy (pfgrid->forest);
   p4est_connectivity_destroy (pfgrid->connect);
+  p4est_ghost_destroy (pfgrid->ghost);
   P4EST_FREE (pfgrid);
 }
 

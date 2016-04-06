@@ -4,9 +4,11 @@
 #ifndef P4_TO_P8
 #include <p4est.h>
 #include <p4est_connectivity.h>
+#include <p4est_ghost.h>
 #else
 #include <p8est.h>
 #include <p8est_connectivity.h>
+#include <p8est_ghost.h>
 #endif
 
 typedef struct parflow_p4est_grid
@@ -14,6 +16,7 @@ typedef struct parflow_p4est_grid
   int                 dim;
   p4est_t            *forest;
   p4est_connectivity_t *connect;
+  p4est_ghost_t      *ghost;
 }
 parflow_p4est_grid_t;
 
