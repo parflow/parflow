@@ -29,9 +29,16 @@ pfset ComputationalGrid.DX	                 0.0625
 pfset ComputationalGrid.DY                       0.0625
 pfset ComputationalGrid.DZ	                 0.333
 
-pfset ComputationalGrid.NX                       17
-pfset ComputationalGrid.NY                       9
-pfset ComputationalGrid.NZ                       4
+pfset ComputationalGrid.NX                       10
+pfset ComputationalGrid.NY                       7
+pfset ComputationalGrid.NZ                       1
+
+#---------------------------------------------------------
+# Computational SubGrid dims
+#---------------------------------------------------------
+pfset ComputationalSubgrid.MX                    3
+pfset ComputationalSubgrid.MY                    3
+pfset ComputationalSubgrid.MZ                    3
 
 #---------------------------------------------------------
 # The Names of the GeomInputs
