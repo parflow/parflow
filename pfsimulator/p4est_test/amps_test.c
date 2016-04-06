@@ -5,7 +5,7 @@ int
 main(int argc, char **argv)
 {
   int simple;
-  int   dim,i, me;
+  int   dim,i, me, comm_size;
   double *array_s,*array_r;
   int   len[3] = {3,4,1};
   int   str[3];
@@ -24,6 +24,7 @@ main(int argc, char **argv)
 
   simple  = atoi(argv[1]);
   me = amps_Rank(amps_CommWorld);
+  comm_size = amps_Size(amps_CommWorld);
 
   array_s  = amps_CTAlloc(double,29);
   array_r  = amps_CTAlloc(double,29);
@@ -36,18 +37,17 @@ main(int argc, char **argv)
         }
       send_invoice = amps_NewInvoice("%&.&D(*)",len, str, dim, array_s);
       recv_invoice = amps_NewInvoice("%&.&D(*)",len, str, dim, array_r);
-    }
-  if (me == 1){
+    }else{
       for(i=0;i<29;i++){
-          array_s[i] = 1.;
+          array_s[i] = me;
         }
       str[0] = str[1] = str[2] = 1;
       send_invoice = amps_NewInvoice("%&.&D(*)",len, str, dim, array_s);
       recv_invoice = amps_NewInvoice("%&.&D(*)",len, str, dim, array_r);
     }
 
-  src  = (me == 0) ? 1 : 0;
-  dest = (me == 0) ? 1 : 0;
+  src  = (me == 0) ? (comm_size - 1) : (me - 1);
+  dest = (me + 1) % comm_size;
 
   if (simple) {
 
