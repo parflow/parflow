@@ -21,17 +21,28 @@ typedef struct parflow_p4est_quad_data {
 
 typedef parflow_p4est_quad_data_t parflow_p4est_ghost_data_t;
 
-/*
-typedef struct parflow_p4est_ghost_data {
+typedef struct parflow_p4est_sg_param{
 
-    sc_array_t     *ghost_subgrids;
+  /** These values are set just once **/
+  int       N[3];   /** Input number of grid points per coord. direction */
+  int       P[3];   /** Input number of subgrids per coord. direction */
+  int       m[3];   /** Input number of subgrid points per coord. direction */
+  int       l[3];
 
-} parflow_p4est_ghost_data_t;
-*/
+  /** These values are to be updated
+   ** when looping over p4est quadrants */
+  int       p[3];         /** Computed number of subgrid points per coord. direction */
+  int       icorner[3];   /** Bottom left corner in index space */
+
+}parflow_p4est_sg_param_t;
+
 
 /*
  * Functions
  */
+void
+parflow_p4est_sg_param_init(parflow_p4est_sg_param_t *sp);
+
 parflow_p4est_grid_t *parflow_p4est_grid_new(int Px, int Py, int Pz);
 
 void            parflow_p4est_grid_destroy(parflow_p4est_grid_t * pfgrid);
