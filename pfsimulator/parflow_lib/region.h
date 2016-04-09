@@ -81,6 +81,7 @@ typedef struct
    int  level;           /* Refinement level = rx + ry + rz */
 
    int  process;         /* Process containing this subgrid */
+   int  locidx;          /* Index of this subregion in owned process*/
 
 } Subregion;
 
@@ -134,6 +135,8 @@ typedef struct
 #define SubregionLevel(subregion) ((subregion) -> level)
 
 #define SubregionProcess(subregion) ((subregion) -> process)
+
+#define SubregionLocIdx(subregion) ((subregion) -> locidx)
 
 /*--------------------------------------------------------------------------
  * Accessor macros: SubregionArray

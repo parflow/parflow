@@ -106,6 +106,8 @@ typedef struct
 
 #define SubgridProcess(subgrid)  SubregionProcess(subgrid)
 
+#define SubgridLocIdx(subgrid) SubregionLocIdx(subgrid)
+
 /*--------------------------------------------------------------------------
  * Accessor macros: SubgridArray
  *--------------------------------------------------------------------------*/

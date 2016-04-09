@@ -78,6 +78,8 @@ int       process)
 
    (new_subregion -> process)  = process;
 
+   (new_subregion -> locidx)  = 0;
+
    return new_subregion;
 }
 
