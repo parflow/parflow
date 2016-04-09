@@ -126,6 +126,10 @@ main(int argc, char **argv)
 #endif
     }
 
+    FreeUserGrid(GlobalsUserGrid);
+
+    FreeBackground(GlobalsBackground);
+
     IDB_FreeDB(amps_ThreadLocal(input_database));
     FreeGlobals();
     amps_Finalize();
