@@ -83,12 +83,11 @@ Grid           *CreateGrid(
    SubgridArray  *subgrids;
    SubgridArray  *all_subgrids;
 #ifdef HAVE_P4EST
-   int                        locidx = 0;
    parflow_p4est_grid_t       *pfgrid;
    parflow_p4est_sg_param_t    subgparam, *sp = &subgparam;
    parflow_p4est_qiter_t      *qiter;
-   parflow_p4est_quad_data_t  *quad_data;
-   parflow_p4est_ghost_data_t *ghost_data;
+   parflow_p4est_quad_data_t  *quad_data = NULL;
+   parflow_p4est_ghost_data_t *ghost_data = NULL;
 #endif
 
    if (!USE_P4EST){
@@ -137,10 +136,9 @@ Grid           *CreateGrid(
              NewSubgrid(sp->icorner[0], sp->icorner[1], sp->icorner[2],
                         sp->p[0], sp->p[1], sp->p[2], 0,  0,  0,
                         parflow_p4est_qiter_get_owner_rank(qiter));
-          SubgridLocIdx(quad_data->pf_subgrid) = locidx;
+          SubgridLocIdx(quad_data->pf_subgrid) = parflow_p4est_qiter_get_local_idx(qiter);
           AppendSubgrid(quad_data->pf_subgrid, subgrids);
           AppendSubgrid(quad_data->pf_subgrid, all_subgrids);
-          locidx ++;
       }
 
       /* Loop over the ghost layer */
@@ -158,6 +156,8 @@ Grid           *CreateGrid(
               NewSubgrid(sp->icorner[0], sp->icorner[1], sp->icorner[2],
                          sp->p[0], sp->p[1], sp->p[2], 0,  0,  0,
                          parflow_p4est_qiter_get_owner_rank(qiter));
+            SubgridLocIdx(ghost_data->pf_subgrid) =
+                parflow_p4est_qiter_get_local_idx(qiter);
             AppendSubgrid(ghost_data->pf_subgrid, all_subgrids);
       }
 #else
