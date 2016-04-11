@@ -24,8 +24,10 @@ typedef struct parflow_p4est_qiter_2d {
     p4est_connectivity_t *connect;
     p4est_topidx_t  which_tree;        /* owner tree of the current quadrant */
     p4est_quadrant_t *quad;            /* current quadrant */
+    int             owner_rank; /* processor owning current quadrant */
+    int             local_idx;  /* number of subgrid relative to the owner processor */
 
-  /** Fields used only for (all) quadrant iterator */
+  /** Fields used only for local quadrant iterator */
     p4est_t        *forest;
     p4est_tree_t   *tree;
     sc_array_t     *tquadrants;
@@ -35,7 +37,6 @@ typedef struct parflow_p4est_qiter_2d {
   /** Fields used only for ghost iterator */
     p4est_ghost_t  *ghost;
     sc_array_t     *ghost_layer;
-    int             owner_rank; /* processor owning current quadrant */
     int             G;          /* ghosts quadrants in this layer */
     int             g;          /* index of current quad in this layer */
 

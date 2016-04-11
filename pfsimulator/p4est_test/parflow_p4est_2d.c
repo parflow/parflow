@@ -84,6 +84,7 @@ parflow_p4est_qiter_info_2d(parflow_p4est_qiter_2d_t * qit_2d)
 
     P4EST_ASSERT(qit_2d != NULL);
     if (qit_2d->itype & PARFLOW_P4EST_QUAD) {
+        /*TODO: tree, Q, tquadrants only change in a new tree*/
         qit_2d->tree =
             p4est_tree_array_index(qit_2d->forest->trees,
                                    qit_2d->which_tree);
@@ -98,6 +99,7 @@ parflow_p4est_qiter_info_2d(parflow_p4est_qiter_2d_t * qit_2d)
             p4est_quadrant_array_index(qit_2d->ghost_layer,
                                        (size_t) qit_2d->g);
         qit_2d->which_tree = qit_2d->quad->p.piggy3.which_tree;
+        qit_2d->local_idx = qit_2d->quad->p.piggy3.local_num;
         /** Update owner rank **/
         rank = 0;
         while (qit_2d->ghost->proc_offsets[rank + 1] <= qit_2d->g) {
@@ -136,6 +138,7 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
         qit_2d->owner_rank = qit_2d->forest->mpirank;
 
         /** Populate ghost fields with invalid values **/
+        qit_2d->local_idx = 0;
         qit_2d->G = -1;
         qit_2d->g = -1;
     } else {
@@ -172,6 +175,7 @@ parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d)
     if (qit_2d->itype & PARFLOW_P4EST_QUAD) {
 
         /** We visited all local quadrants in current tree */
+        ++qit_2d->local_idx;
         if (++qit_2d->q == qit_2d->Q) {
 
             if (++qit_2d->which_tree <= qit_2d->forest->last_local_tree) {
