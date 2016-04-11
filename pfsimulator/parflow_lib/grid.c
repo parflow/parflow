@@ -375,7 +375,9 @@ Subgrid  *ExtractSubgrid(
    }
 
    new_subgrid = NewSubgrid(ix, iy, iz, nx, ny, nz, rx, ry, rz,
-		    SubgridProcess(subgrid));
+            SubgridProcess(subgrid));
+
+   SubgridLocIdx(new_subgrid) = SubgridLocIdx(subgrid);
 
    return new_subgrid;
 }

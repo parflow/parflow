@@ -354,11 +354,13 @@ Stencil  *stencil)
 		  {
 		  case 0:
 		     SubgridProcess(subgrid2) = SubgridProcess(subgrid1);
+             SubgridLocIdx(subgrid2) = SubgridLocIdx(subgrid1);
 		     AppendSubgrid(subgrid2,
 				   RegionSubregionArray(region1, i));
 		     break;
 		  case 1:
 		     SubgridProcess(subgrid2) = SubgridProcess(subgrid0);
+             SubgridLocIdx(subgrid2) = SubgridLocIdx(subgrid0);
 		     AppendSubgrid(subgrid2,
 				   RegionSubregionArray(region1, j));
 		     break;
@@ -382,90 +384,92 @@ Stencil  *stencil)
    FreeRegion(subgrid_region);
    FreeRegion(neighbor_region);
 
-   /*------------------------------------------------------
+   if(!USE_P4EST){
+       /*------------------------------------------------------
     * Union the send_region and recv_region by process
     *------------------------------------------------------*/
 
-   proc_array = talloc(int, SubgridArraySize(neighbors));
+       proc_array = talloc(int, SubgridArraySize(neighbors));
 
-   for (r = 0; r < 2; r++)
-   {
-      switch(r)
-      {
-      case 0:
-	 region0 = send_region;
-	 break;
-      case 1:
-	 region0 = recv_region;
-	 break;
-      }
+       for (r = 0; r < 2; r++)
+       {
+           switch(r)
+           {
+           case 0:
+               region0 = send_region;
+               break;
+           case 1:
+               region0 = recv_region;
+               break;
+           }
 
-      region1 = NewRegion(RegionSize(region0));
+           region1 = NewRegion(RegionSize(region0));
 
-      ForSubregionArrayI(i, region0)
-      {
-	 sa0 = RegionSubregionArray(region0, i);
-	 sa1 = RegionSubregionArray(region1, i);
+           ForSubregionArrayI(i, region0)
+           {
+               sa0 = RegionSubregionArray(region0, i);
+               sa1 = RegionSubregionArray(region1, i);
 
-	 /* determine proc_array and num_procs */
+               /* determine proc_array and num_procs */
 
-	 num_procs = 0;
-	 ForSubgridI(j, sa0)
-	 {
-	    subgrid0 = SubgridArraySubgrid(sa0, j);
+               num_procs = 0;
+               ForSubgridI(j, sa0)
+               {
+                   subgrid0 = SubgridArraySubgrid(sa0, j);
 
-	    for (p = 0; p < num_procs; p++)
-	       if (SubgridProcess(subgrid0) == proc_array[p])
-		  break;
-	    if (p == num_procs)
-	    {
-	       proc_array[p] = SubgridProcess(subgrid0);
-	       num_procs++;
-	    }
-	 }
+                   for (p = 0; p < num_procs; p++)
+                       if (SubgridProcess(subgrid0) == proc_array[p])
+                           break;
+                   if (p == num_procs)
+                   {
+                       proc_array[p] = SubgridProcess(subgrid0);
+                       num_procs++;
+                   }
+               }
 
-	 /* union by process */
+               /* union by process */
 
-	 for (p = 0; p < num_procs; p++)
-	 {
-	    /* put subgrids on proc_array[p] into sa2 */
+               for (p = 0; p < num_procs; p++)
+               {
+                   /* put subgrids on proc_array[p] into sa2 */
 
-	    sa2 = NewSubgridArray();
+                   sa2 = NewSubgridArray();
 
-	    ForSubgridI(j, sa0)
-	    {
-	       subgrid0 = SubgridArraySubgrid(sa0, j);
+                   ForSubgridI(j, sa0)
+                   {
+                       subgrid0 = SubgridArraySubgrid(sa0, j);
 
-	       if (SubgridProcess(subgrid0) == proc_array[p])
-		  AppendSubgrid(subgrid0, sa2);
-	    }
+                       if (SubgridProcess(subgrid0) == proc_array[p])
+                           AppendSubgrid(subgrid0, sa2);
+                   }
 
-	    sa3 = UnionSubgridArray(sa2);
-	    ForSubgridI(j, sa3)
-	       SubgridProcess(SubgridArraySubgrid(sa3, j)) = proc_array[p];
-	    AppendSubgridArray(sa3, sa1);
+                   sa3 = UnionSubgridArray(sa2);
+                   ForSubgridI(j, sa3)
+                           SubgridProcess(SubgridArraySubgrid(sa3, j)) = proc_array[p];
+                   AppendSubgridArray(sa3, sa1);
 
-	    SubregionArraySize(sa2) = 0;
-	    FreeSubgridArray(sa2);
-	    SubregionArraySize(sa3) = 0;
-	    FreeSubgridArray(sa3);
-	 }
-      }
+                   SubregionArraySize(sa2) = 0;
+                   FreeSubgridArray(sa2);
+                   SubregionArraySize(sa3) = 0;
+                   FreeSubgridArray(sa3);
+               }
+           }
 
-      FreeRegion(region0);
+           FreeRegion(region0);
 
-      switch(r)
-      {
-      case 0:
-	 send_region = region1;
-	 break;
-      case 1:
-	 recv_region = region1;
-	 break;
-      }
+           switch(r)
+           {
+           case 0:
+               send_region = region1;
+               break;
+           case 1:
+               recv_region = region1;
+               break;
+           }
+       }
+
+       tfree(proc_array);
    }
-
-   tfree(proc_array);
 
    /*------------------------------------------------------
     * Return

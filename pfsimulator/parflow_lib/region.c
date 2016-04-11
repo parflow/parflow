@@ -199,6 +199,8 @@ Subregion  *DuplicateSubregion(
 		      SubregionRZ(subregion),
 		      SubregionProcess(subregion));
 
+   SubregionLocIdx(new_subregion) = SubregionLocIdx(subregion);
+
    return new_subregion;
 }
 
