@@ -617,6 +617,9 @@ amps_Invoice amps_NewInvoice(const char *fmt0, ...)
  done:
 
     inv -> num = num;
+
+    /*Backwards compatibility: set default tag to zero*/
+    inv->tag = 0;
     
     return inv;
 }
@@ -647,5 +650,7 @@ int amps_num_package_items(amps_Invoice inv)
    return num;
 }
 
-
+void amps_SetInvoice_tag(amps_Invoice inv, int tag){
+      inv->tag = tag;
+}
 

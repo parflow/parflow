@@ -287,6 +287,7 @@ typedef struct amps_invoicestruct
     int num;          /* number of items in the list                        */
 
     amps_Comm comm;
+    int     tag;    /*tag for MPI messages*/
 
     MPI_Datatype mpi_type;
     int mpi_type_commited;

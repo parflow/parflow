@@ -87,7 +87,7 @@ amps_Handle amps_IExchangePackage(amps_Package package)
       MPI_Type_commit(&(package -> recv_invoices[i] -> mpi_type));
      
       MPI_Irecv(MPI_BOTTOM, 1, package -> recv_invoices[i] -> mpi_type, 
-		package -> src[i], 0, MPI_COMM_WORLD,
+        package -> src[i], package -> recv_invoices[i] -> tag, MPI_COMM_WORLD,
 		&(package -> requests[i]));
    }
 
@@ -101,7 +101,7 @@ amps_Handle amps_IExchangePackage(amps_Package package)
       MPI_Type_commit(&(package -> send_invoices[i] -> mpi_type));
       
       MPI_Isend(MPI_BOTTOM, 1, package -> send_invoices[i] -> mpi_type, 
-		package -> dest[i], 0, MPI_COMM_WORLD,
+        package -> dest[i], package -> send_invoices[i] -> tag, MPI_COMM_WORLD,
 		&(package -> requests[package -> num_recv +i]));
    }
    
@@ -252,7 +252,8 @@ amps_Handle amps_IExchangePackage(amps_Package package)
 	    MPI_Request *request_ptr = &(package -> recv_requests[i]);
 	    MPI_Recv_init(MPI_BOTTOM, 1, 
 			  type, 
-			  package -> src[i], 0, MPI_COMM_WORLD,
+              package -> src[i],
+              package -> recv_invoices[i] -> tag, MPI_COMM_WORLD,
 			  request_ptr);
 	 }
       }
@@ -274,7 +275,8 @@ amps_Handle amps_IExchangePackage(amps_Package package)
 	    MPI_Request* request_ptr = &(package -> send_requests[i]);
 	    MPI_Ssend_init(MPI_BOTTOM, 1, 
 			   type, 
-			   package -> dest[i], 0, MPI_COMM_WORLD,
+               package -> dest[i],
+               package -> send_invoices[i] -> tag, MPI_COMM_WORLD,
 			   request_ptr);
 	 }
       }
