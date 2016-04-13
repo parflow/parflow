@@ -1,0 +1,31 @@
+It is possible to solve Laplace equation in 
+ParFlow by noticing that it is a particular
+case from the Richards equation. 
+
+The scripts:
+
+test_brick_2d.tcl and test_brick_2d_with_p4est.tcl
+
+Set up the parameters that need to be passed to
+the Parflow's Richards solver to perform the above
+task. With these two scripts, we try to compute p
+such that 
+
+		\Delta p = 0,
+
+in two dimensions based on the solution 
+		
+		p(x,y) = cos(x)cosh(y).
+
+We compare the results obtained with the upstream
+version of ParFlow and with the version that uses
+p4est as a meshing back-end. Ideally the results
+should be identicall. 
+
+We currently do not support the use of a preconditioner
+in this step. Hence it has been deactivated in both
+test_brick_2d.tcl and test_brick_2d_with_p4est.tcl 
+to make the comparison meaningful.
+
+See the steps0_tests.tcl for details in the mesh
+configuration for each test.

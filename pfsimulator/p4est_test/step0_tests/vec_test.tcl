@@ -1,4 +1,4 @@
-# Trying to compute - \Delta p = 0 in two dimensions with solution p(x,y) = Cos(x)_Cosh(y).
+# Trying to compute - \Delta p = 0 in one dimension with solution p = cos(x)cosh(y).
 
 # Import the ParFlow TCL package
 lappend auto_path $env(PARFLOW_DIR)/bin 
@@ -11,9 +11,9 @@ pfset FileVersion 4
 foreach file [glob -nocomplain *test_brick_2d.out.*] {file delete -force -- $file}
 foreach file [glob -nocomplain test_brick_2d.pfidb] {file delete -force -- $file}
 
-pfset Process.Topology.P  [lindex $argv 2]
-pfset Process.Topology.Q  [lindex $argv 3]
-pfset Process.Topology.R  1
+pfset Process.Topology.P 2
+pfset Process.Topology.Q 1
+pfset Process.Topology.R 1
 
 #---------------------------------------------------------
 # Computational Grid
@@ -24,22 +24,22 @@ pfset ComputationalGrid.Lower.Z                  0.0
 
 pfset ComputationalGrid.DX	                 0.01
 pfset ComputationalGrid.DY                       0.01
-pfset ComputationalGrid.DZ	                 1
+pfset ComputationalGrid.DZ	                 0.01
 
-pfset ComputationalGrid.NX                       [lindex $argv 0]
-pfset ComputationalGrid.NY                       [lindex $argv 1]
+pfset ComputationalGrid.NX                       12
+pfset ComputationalGrid.NY                       12
 pfset ComputationalGrid.NZ                       1
 
 #---------------------------------------------------------
 # Use p4est software for adaptive mesh refinement
 #---------------------------------------------------------
-pfset use_pforest                               "no"
+pfset use_pforest                               "yes"
 
 #---------------------------------------------------------
 # Computational SubGrid dims
 #---------------------------------------------------------
-pfset ComputationalSubgrid.MX                    5
-pfset ComputationalSubgrid.MY                    3
+pfset ComputationalSubgrid.MX                    6
+pfset ComputationalSubgrid.MY                    12
 pfset ComputationalSubgrid.MZ                    1
 
 #---------------------------------------------------------
