@@ -141,6 +141,33 @@ int  NewCommPkgInfo(
    return dim;
 }
 
+static int ComputeTag(int loc_idx_sender,
+                      Subregion *send_sr, Subregion *recv_sr){
+
+    int tx, ty, tz;
+    int tag;
+
+    tx = SubregionIX(send_sr) - SubregionIX(recv_sr);
+    ty = SubregionIY(send_sr) - SubregionIY(recv_sr);
+    tz = SubregionIZ(send_sr) - SubregionIZ(recv_sr);
+
+    if (tx){
+        tag = tx < 0 ? 1 : 0;
+    }else{
+        if (ty){
+            tag = ty < 0 ? 3 : 2;
+        }else{
+
+            if (tz){
+                tag = tz < 0 ? 5 : 4;
+            }
+        }
+    }
+
+    tag += 6 * loc_idx_sender;
+
+    return tag;
+}
 
 /*--------------------------------------------------------------------------
  * NewCommPkg:
