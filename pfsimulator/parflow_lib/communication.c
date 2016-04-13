@@ -141,6 +141,7 @@ int  NewCommPkgInfo(
    return dim;
 }
 
+#ifdef HAVE_P4EST
 static int ComputeTag(int loc_idx_sender,
                       Subregion *send_sr, Subregion *recv_sr){
 
@@ -168,6 +169,7 @@ static int ComputeTag(int loc_idx_sender,
 
     return tag;
 }
+#endif
 
 /*--------------------------------------------------------------------------
  * NewCommPkg:
@@ -186,9 +188,10 @@ CommPkg         *NewCommPkg(
 
    amps_Invoice  invoice;
 
-   SubregionArray  *comm_sra;
-   Subregion       *comm_sr;
+   SubregionArray  *send_sra = RegionSubregionArray(send_region, s_idx);
+   SubregionArray  *recv_sra = RegionSubregionArray(recv_region, s_idx);
 
+   Subregion       *send_sr, *recv_sr;
    Subregion       *data_sr;
 
    int  *loop_array;
@@ -199,6 +202,10 @@ CommPkg         *NewCommPkg(
    int   j, p;
 
    int   dim;
+
+#ifdef HAVE_P4EST
+   int  loc_idx, tag;
+#endif
 
    new_comm_pkg = ctalloc(CommPkg, 1);
 
@@ -211,12 +218,9 @@ CommPkg         *NewCommPkg(
    if ( SubregionArraySize(data_space) )
    {
        assert( s_idx >= 0 && s_idx < SubregionArraySize(data_space));
-       num_send_subregions +=
-           SubregionArraySize(RegionSubregionArray(send_region, s_idx));
-       num_recv_subregions +=
-           SubregionArraySize(RegionSubregionArray(recv_region, s_idx));
+       num_send_subregions += SubregionArraySize(send_sra);
+       num_recv_subregions += SubregionArraySize(recv_sra);
    }
-
 
    /*------------------------------------------------------
     * Set up CommPkg
@@ -236,15 +240,14 @@ CommPkg         *NewCommPkg(
            ctalloc(amps_Invoice, num_send_subregions);
 
        data_sr = SubregionArraySubregion(data_space, s_idx);
-       comm_sra = RegionSubregionArray(send_region, s_idx);
 
        p = 0;
-       ForSubregionI(j, comm_sra)
+       ForSubregionI(j, send_sra)
        {
-         comm_sr = SubregionArraySubregion(comm_sra, j);
-         new_comm_pkg -> send_ranks[p] =  SubregionProcess(comm_sr);
+         send_sr = SubregionArraySubregion(send_sra, j);
+         new_comm_pkg -> send_ranks[p] =  SubregionProcess(send_sr);
 
-         dim = NewCommPkgInfo(data_sr, comm_sr, s_idx, num_vars,
+         dim = NewCommPkgInfo(data_sr, send_sr, 0, num_vars,
                               loop_array);
 
          invoice =
@@ -254,9 +257,19 @@ CommPkg         *NewCommPkg(
                              dim,
                              data + loop_array[0]);
 
+         if ( USE_P4EST ){
+#ifdef HAVE_P4EST
+             loc_idx = s_idx;
+             recv_sr = SubregionArraySubregion(recv_sra, j);
+             tag = ComputeTag(loc_idx, send_sr, recv_sr);
+             amps_SetInvoice_tag( invoice,  tag);
+#else
+             PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
+         }
+
          amps_AppendInvoice(&(new_comm_pkg -> send_invoices[p]),
                             invoice);
-
          p++;
          loop_array += 9;
        }
@@ -272,15 +285,14 @@ CommPkg         *NewCommPkg(
            ctalloc(amps_Invoice, num_recv_subregions);
 
        data_sr = SubregionArraySubregion(data_space, s_idx);
-       comm_sra = RegionSubregionArray(recv_region, s_idx);
 
        p = 0;
-       ForSubregionI(j, comm_sra)
+       ForSubregionI(j, recv_sra)
        {
-         comm_sr = SubregionArraySubregion(comm_sra, j);
-         new_comm_pkg -> recv_ranks[p] =  SubregionProcess(comm_sr);
+         recv_sr = SubregionArraySubregion(recv_sra, j);
+         new_comm_pkg -> recv_ranks[p] =  SubregionProcess(recv_sr);
 
-         dim = NewCommPkgInfo(data_sr, comm_sr, s_idx, num_vars,
+         dim = NewCommPkgInfo(data_sr, recv_sr, 0, num_vars,
                               loop_array);
          invoice =
              amps_NewInvoice("%&.&D(*)",
@@ -288,6 +300,17 @@ CommPkg         *NewCommPkg(
                              loop_array + 5,
                              dim,
                              data + loop_array[0]);
+
+         if ( USE_P4EST ){
+#ifdef HAVE_P4EST
+             loc_idx = SubregionLocIdx(recv_sr);
+             send_sr = SubregionArraySubregion(send_sra, j);
+             tag = ComputeTag(loc_idx, recv_sr, send_sr);
+             amps_SetInvoice_tag( invoice, tag );
+#else
+             PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
+         }
 
          amps_AppendInvoice(&(new_comm_pkg -> recv_invoices[p]),
                             invoice);
