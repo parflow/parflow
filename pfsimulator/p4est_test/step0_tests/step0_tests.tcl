@@ -43,31 +43,51 @@ namespace import Parflow::*
 #  PARLOW		PARFLOW + P4EST
 #  P=2, Q=2     	Mx=6 My=6     --> 1 Trees and initial level 1
 
+#	TEST 3
+#  +-----+-----+-----+
+#  |     |     |     |
+#  |     |     |     |
+#  +-----+-----+-----+
+#  |     |     |     |
+#  |     |     |     |
+#  +-----+-----+-----+
+#  |     |     |     |
+#  |     |     |     |
+#  +-----+-----+-----+
+#
+#  Nx = Ny = 12
+#  PARLOW		PARFLOW + P4EST
+#  P=3, Q=3     	Mx=4 My=4    --> 9 Trees and initial level 0
+
 # each quoted text is a combination of Nx,Ny as described above
 array set pf_param_nxy {
         1 "12 12"
         2 "12 12"
+	3 "12 12"
 }
 
 # each quoted text is a combination of P,Q as described above
 array set pf_param_pq {
         1 "2 1"
-        2 "4 1"
+	2 "2 2"
+	3 "3 3"
 }
 
 # each quoted text is a combination of Mx,My as described above
 array set pf_param_mxy {
         1 "6 12"
         2 "6 6"
+	3 "4 4"
 }
 
 # Required number of processors for stantard ParFLow
 array set np_arr {
 	1 "2"
         2 "4"
+	3 "9"
 }
 
-for {set i 1} {$i < 3} {incr i} {
+for {set i 1} {$i < 4} {incr i} {
 
 	#Purge output from previous runs
         exec rm -rf "output_test${i}"
