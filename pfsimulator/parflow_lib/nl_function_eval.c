@@ -221,10 +221,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    /* diffusive test here, this is NOT PF style and should be 
     re-done putting keys in BC Pressure Package and adding to the 
     datastructure for overlandflowBC */
-   // diffusive = 0;
-   // printf(" diffusive: %d \n", diffusive);
-    diffusive = GetIntDefault("OverlandFlowDiffusive",0);
-   // printf(" diffusive: %d \n", diffusive);
+      diffusive = GetIntDefault("OverlandFlowDiffusive",0);
     
     int          overlandspinup;   //@RMM
     overlandspinup = GetIntDefault("OverlandFlowSpinUp",0);
@@ -240,16 +237,6 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    qx = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D);
    qy = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D);
 
-   /* Pass permeability values */
-   /*
-     handle = InitVectorUpdate(permeability_x, VectorUpdateAll);
-     FinalizeVectorUpdate(handle);
-
-     handle = InitVectorUpdate(permeability_y, VectorUpdateAll);
-     FinalizeVectorUpdate(handle);
-
-     handle = InitVectorUpdate(permeability_z, VectorUpdateAll);
-     FinalizeVectorUpdate(handle); */
 
    /* Calculate pressure dependent properties: density and saturation */
 
@@ -259,12 +246,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    PFModuleInvokeType(SaturationInvoke, saturation_module, (saturation, pressure, density, 
    gravity, problem_data, CALCFCN));
 
-   /* bc_struct = PFModuleInvoke(BCStruct *, bc_pressure, 
-      (problem_data, grid, gr_domain, time));*/
-
-   /*@ Why are the above things calculated here again; they were allready
-     calculated in the driver solver_richards and passed further @*/
-
+ 
    /* Calculate accumulation terms for the function values */
 
    ForSubgridI(is, GridSubgrids(grid))
@@ -413,7 +395,6 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
           del_x_slope = 1.0;
           del_y_slope = 1.0;
 	 fp[ip] += ss[ip]*vol*del_x_slope*del_y_slope*z_mult_dat[ip] *(pp[ip]*sp[ip]*dp[ip] - opp[ip]*osp[ip]*odp[ip]);
-         // printf(" ZMD2: %d %f \n",ip, z_mult_dat[ip]);
           
       });
    }
@@ -639,93 +620,59 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
            terms:
            1. x dir terrain tendency:  gravity*sin(atan(x_ssl_dat[io]))
            2. y dir terrain tendency:  gravity*sin(atan(y_ssl_dat[io]))
-           3. z dir terrain decrease in g: cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2))))
-           4. change in delta-x due to slope: (1.0/cos(atan(x_ssl_dat[io])))
-           5. change in delta-y due to slope: (1.0/cos(atan(y_ssl_dat[io]))) */
-/*          if (pp[ip] < 0.) {
-              x_dir_g = 0.0;
-              y_dir_g = 0.0;
-              z_dir_g = 1.0;
-              
-          } else { */
-         // x_dir_g = RPMean(x_ssl_dat[io],x_ssl_dat[io+1]
-         //   ,gravity*sin(atan(x_ssl_dat[io])),gravity*sin(atan(x_ssl_dat[io+1])));
-          x_dir_g = Mean(gravity*sin(atan(x_ssl_dat[io])),gravity*sin(atan(x_ssl_dat[io+1])));
+           3. change in delta-x due to slope: (1.0/cos(atan(x_ssl_dat[io])))
+           4. change in delta-y due to slope: (1.0/cos(atan(y_ssl_dat[io]))) */
 
-         // x_dir_g = gravity*sin(Mean(atan(x_ssl_dat[io]),atan(x_ssl_dat[io+1])));
-          //x_dir_g = gravity*sin(atan(x_ssl_dat[io]))
-         // x_dir_g = gravity*sin(atan(x_ssl_dat[io]));
-         // x_dir_g = x_ssl_dat[io];
-          x_dir_g_c = Mean(gravity*cos(atan(x_ssl_dat[io])),gravity*cos(atan(x_ssl_dat[io+1])));
-
-         // x_dir_g_c = gravity*cos(Mean(atan(x_ssl_dat[io]),atan(x_ssl_dat[io+1])));
-         //  x_dir_g_c = gravity*cos(atan(x_ssl_dat[io]));
-          //x_dir_g_c = 1.0; 
           
-      //    y_dir_g = RPMean(y_ssl_dat[io], x_ssl_dat[io+sy_p]
-      //      ,gravity*sin(atan(y_ssl_dat[io])),gravity*sin(atan(y_ssl_dat[io+sy_p])));
+          x_dir_g = Mean(gravity*sin(atan(x_ssl_dat[io])),gravity*sin(atan(x_ssl_dat[io+1])));
+          x_dir_g_c = Mean(gravity*cos(atan(x_ssl_dat[io])),gravity*cos(atan(x_ssl_dat[io+1])));
           y_dir_g = Mean(gravity*sin(atan(y_ssl_dat[io])),gravity*sin(atan(y_ssl_dat[io+sy_p])));
-	  //y_dir_g = gravity*sin(Mean(atan(y_ssl_dat[io]),atan(y_ssl_dat[io+sy_p])));
-          //y_dir_g = gravity*sin(atan(y_ssl_dat[io]));
-          //y_dir_g = y_ssl_dat[io];
-	  y_dir_g_c = Mean(gravity*cos(atan(y_ssl_dat[io])),gravity*cos(atan(y_ssl_dat[io+sy_p])));
+	      y_dir_g_c = Mean(gravity*cos(atan(y_ssl_dat[io])),gravity*cos(atan(y_ssl_dat[io+sy_p])));
 
-          //y_dir_g_c = gravity*cos(Mean(atan(y_ssl_dat[io]),atan(y_ssl_dat[io+sy_p])));
-         // y_dir_g_c = gravity*cos(atan(y_ssl_dat[io]));
-          //y_dir_g_c = 1.0;
-
-          // z_dir_g = cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2))));
           z_dir_g = 1.0;
-         // }
-          del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
-          del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));
 
           del_x_slope = 1.0;
           del_y_slope = 1.0;
           
 	 /* Calculate right face velocity.
       diff >= 0 implies flow goes left to right */
-	 diff    = pp[ip] - pp[ip+1];
+	
+          diff    = pp[ip] - pp[ip+1];
           updir= (diff/dx)*x_dir_g_c - x_dir_g;
-	 u_right = z_mult_dat[ip]*ffx*del_y_slope * PMean(pp[ip], pp[ip+1], 
-	 permxp[ip], permxp[ip+1])
-	    * (diff / (dx *del_x_slope) )*x_dir_g_c
-	   // * RPMean(pp[ip], pp[ip+1],
-           * RPMean(updir,0.0,
-                 rpp[ip]*dp[ip],
-	    rpp[ip+1]*dp[ip+1])
-	    / viscosity;
+          
+          u_right = z_mult_dat[ip]*ffx*del_y_slope * PMean(pp[ip], pp[ip+1],
+                    permxp[ip], permxp[ip+1])
+	                * (diff / (dx *del_x_slope) )*x_dir_g_c
+                    * RPMean(updir,0.0,
+                    rpp[ip]*dp[ip],
+	                rpp[ip+1]*dp[ip+1])
+	                / viscosity;
 
           /* Calculate right face velocity gravity terms
            @RMM added sin* g term to test terrain-following grid
-           should I upwind on gravity terms or pressure?
-           pressure is currently       implemented
+            upwind on pressure is currently implemented
            Sx < 0 implies flow goes left to right */
           
           u_right += z_mult_dat[ip]*ffx *del_y_slope* PMean(pp[ip], pp[ip+1], 
-                                permxp[ip], permxp[ip+1])
-          * (-x_dir_g )
-//         * RPMean(pp[ip], pp[ip+1],rpp[ip]*dp[ip],
-         //* RPMean(-x_dir_g, 0.0, rpp[ip]*dp[ip],
-         // * RPMean(-x_dir_g, 0.0, rpp[ip]*dp[ip],
-            * RPMean(updir, 0.0, rpp[ip]*dp[ip],
-          rpp[ip+1]*dp[ip+1])
-//          *rpp[ip]*dp[ip]
-          / viscosity; 
+                     permxp[ip], permxp[ip+1])
+                     * (-x_dir_g )
+                     * RPMean(updir, 0.0, rpp[ip]*dp[ip],
+                     rpp[ip+1]*dp[ip+1])
+                     / viscosity;
  
           
 	 /* Calculate front face velocity.
 	    diff >= 0 implies flow goes back to front */
-	 diff    = pp[ip] - pp[ip+sy_p];
-          updir= (diff/dy)*y_dir_g_c - y_dir_g;    
-	 u_front = z_mult_dat[ip]*ffy*del_x_slope  
-        * PMean(pp[ip], pp[ip+sy_p], permyp[ip], permyp[ip+sy_p])
-	    * (diff / (dy*del_y_slope) )*y_dir_g_c
-	   // * RPMean(pp[ip], pp[ip+sy_p],
-          * RPMean(updir, 0.0,
-          rpp[ip]*dp[ip],
-	    rpp[ip+sy_p]*dp[ip+sy_p])
-	    / viscosity;
+	     diff    = pp[ip] - pp[ip+sy_p];
+         updir= (diff/dy)*y_dir_g_c - y_dir_g;
+	 
+         u_front = z_mult_dat[ip]*ffy*del_x_slope
+                  * PMean(pp[ip], pp[ip+sy_p], permyp[ip], permyp[ip+sy_p])
+	              * (diff / (dy*del_y_slope) )*y_dir_g_c
+                  * RPMean(updir, 0.0,
+                    rpp[ip]*dp[ip],
+	                rpp[ip+sy_p]*dp[ip+sy_p])
+	                / viscosity;
 
           /* Calculate front face velocity gravity terms
            @RMM added sin* g term to test terrain-following grid
@@ -734,49 +681,35 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
            */
 	
           u_front += z_mult_dat[ip]*ffy*del_x_slope
-          * PMean(pp[ip], pp[ip+sy_p], permyp[ip], permyp[ip+sy_p])
-          * (-y_dir_g)
-   //       * RPMean(pp[ip], pp[ip+sy_p], rpp[ip]*dp[ip],
-  //        * RPMean(-y_dir_g,0.0, rpp[ip]*dp[ip],
-            * RPMean(updir, 0.0, rpp[ip]*dp[ip],
-                   rpp[ip+sy_p]*dp[ip+sy_p])
- //         *rpp[ip]*dp[ip]
-          / viscosity;
+                     * PMean(pp[ip], pp[ip+sy_p], permyp[ip], permyp[ip+sy_p])
+                     * (-y_dir_g)
+                     * RPMean(updir, 0.0, rpp[ip]*dp[ip],
+                       rpp[ip+sy_p]*dp[ip+sy_p])
+                       / viscosity;
 
 	 /* Calculate upper face velocity.
 	    diff >= 0 implies flow goes lower to upper 
-      @RMM added cos to g term to test terrain-following grid
       */
-            sep = dz*(Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]));
-          //printf("%d %d %d %f %f \n",i,j,k,z_mult_dat[ip], z_mult_dat[ip+sz_p]);
-          //printf("%d %d %d %f %f \n",i,j,k,pp[ip], pp[ip+sz_p]);
-
-
-         // sep = dz*z_mult_dat[ip];
-
-        //  lower_cond = pp[ip]/ sep   - 0.5 *(Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]))* dp[ip] * gravity  * 
-        //     z_dir_g; 
+          sep = dz*(Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]));
           
-        //  sep = dz*z_mult_dat[ip+sz_p];
-
-       //   upper_cond = pp[ip+sz_p] / sep  + 0.5*(Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]))* dp[ip+sz_p] * gravity * 
-       //     z_dir_g; 
-          
-          //CPS
          
-          lower_cond = pp[ip]/ sep   - (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p]))  * dp[ip] * gravity  * z_dir_g;
+          lower_cond = pp[ip]/ sep
+                       - (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p]))
+                       * dp[ip] * gravity * z_dir_g;
 
-          upper_cond = pp[ip+sz_p] / sep  + (z_mult_dat[ip+sz_p]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) * dp[ip+sz_p] * gravity *z_dir_g;
+          upper_cond = pp[ip+sz_p] / sep
+                       + (z_mult_dat[ip+sz_p]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p]))
+                       * dp[ip+sz_p] * gravity *z_dir_g;
 
  
           diff = (lower_cond - upper_cond);
-	 u_upper = ffz*del_x_slope*del_y_slope 
-          * PMeanDZ(permzp[ip], permzp[ip+sz_p], z_mult_dat[ip],z_mult_dat[ip+sz_p])
-	    * diff
-	    * RPMean(lower_cond, upper_cond, rpp[ip]*dp[ip], 
-	    rpp[ip+sz_p]*dp[ip+sz_p])
-	    / viscosity;
-        //  printf("uupper: %10.6e \n", u_upper);
+          
+          u_upper = ffz*del_x_slope*del_y_slope
+                    * PMeanDZ(permzp[ip], permzp[ip+sz_p], z_mult_dat[ip],z_mult_dat[ip+sz_p])
+	                * diff
+	                * RPMean(lower_cond, upper_cond, rpp[ip]*dp[ip],
+                      rpp[ip+sz_p]*dp[ip+sz_p])
+	                / viscosity;
 
 	 fp[ip]      += dt * ( u_right + u_front + u_upper );
 	 fp[ip+1]    -= dt * u_right;
@@ -897,22 +830,15 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 		  io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 
 		  value =  bc_patch_values[ival];
-//               if (pp[ip] < 0.) {
                    x_dir_g = 0.0;
                    y_dir_g = 0.0;
                    z_dir_g = 1.0;
                    
-/*               } else {
-                   
-               x_dir_g = gravity*sin(atan(x_ssl_dat[io]));
-               y_dir_g = gravity*sin(atan(y_ssl_dat[io]));
-               z_dir_g = cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2)))); */
-    //           }
                 del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
-               del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));
+                del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));
                
-               del_x_slope = 1.0;
-               del_y_slope = 1.0;
+                del_x_slope = 1.0;
+                del_y_slope = 1.0;
                
 
 		  /* Don't currently do upstream weighting on boundaries */
@@ -1034,11 +960,9 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			{
 			   dir = -1;
                 sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip-sz_p]);  //RMM
-                //sep = dz*z_mult_dat[ip];  //RMM
-               //printf("case-1 %d %d %d %f %f  \n", i,j,k, z_mult_dat[ip],z_mult_dat[ip-sz_p]);
                 
-			   lower_cond = pp[ip-sz_p] / sep
-			      -  (z_mult_dat[ip-sz_p]/(z_mult_dat[ip]+z_mult_dat[ip-sz_p])) *dp[ip-sz_p] * gravity *
+			    lower_cond = pp[ip-sz_p] / sep
+                -  (z_mult_dat[ip-sz_p]/(z_mult_dat[ip]+z_mult_dat[ip-sz_p])) *dp[ip-sz_p] * gravity *
                  z_dir_g;
                 
 			   upper_cond = pp[ip]/ sep + (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip-sz_p]))* dp[ip] * gravity*
@@ -1054,8 +978,6 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			      rpp[ip-sz_p]*dp[ip-sz_p], rpp[ip]*dp[ip]) 
 			      / viscosity;
                 
-                //sep = dz*z_mult_dat[ip];
-                //printf("case-1 %f %f %d \n", sep,z_mult_dat[ip], ip);
 
 			   lower_cond = value/sep  -  0.25*dp[ip] * gravity;
 			   upper_cond = pp[ip]/sep +  0.25*dp[ip] * gravity;
@@ -1073,17 +995,13 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
                  */
                 
                 sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]);  //RMM
-                //sep = dz*z_mult_dat[ip];  //RMM
-               // printf("case+1 %f %f %f %d \n", sep,z_mult_dat[ip],z_mult_dat[ip+sz_p], ip);
-               // printf("%d %d %d %f %f \n",i,j,k,z_mult_dat[ip], z_mult_dat[ip+sz_p]);
-               // printf("%d %d %d %f %f \n",i,j,k,pp[ip], pp[ip+sz_p]);
-
-
+ 
                 lower_cond = pp[ip]/sep  - (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) * dp[ip] * gravity *
                 z_dir_g; 
                 
-			   upper_cond = pp[ip+sz_p] /sep + (z_mult_dat[ip+sz_p]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) *dp[ip+sz_p] * gravity  *
-                z_dir_g; 
+			   upper_cond = pp[ip+sz_p] /sep
+                           + (z_mult_dat[ip+sz_p]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p]))
+                           * dp[ip+sz_p] * gravity  *  z_dir_g;
                  
                 diff = (lower_cond - upper_cond);
                 
@@ -1095,11 +1013,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			      * RPMean(lower_cond, upper_cond, 
 			      rpp[ip]*dp[ip], rpp[ip+sz_p]*dp[ip+sz_p])
 			      / viscosity;
-               // printf("uold: %10.6e \n", u_old);
-                
-                //sep = dz/2.0;
-               // printf("case+1 %f %f %d \n", sep,z_mult_dat[ip], ip);
-
+ 
                 lower_cond = (pp[ip] / sep) - 0.25 *  dp[ip] * gravity *
                z_dir_g; 
                 
@@ -1115,7 +1029,6 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 		     u_new = u_new * ffz * del_x_slope*del_y_slope*
                ( permzp[ip] / viscosity ) 
 			* 2.0 * diff;
-              //printf("%f %f %f %f %f \n", u_new, ffz, del_x_slope, del_y_slope, diff);
 		  }
 
 		  /* Remove the boundary term computed above */
@@ -1135,18 +1048,9 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 		  ip   = SubvectorEltIndex(p_sub, i, j, k);
 		  io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 
-//               if (pp[ip] < 0.) {
                    x_dir_g = 0.0;
                    y_dir_g = 0.0;
                    z_dir_g = 1.0;
-                   
-/*               } else { */
-//               x_dir_g = gravity*sin(atan(x_ssl_dat[io]));
-//               y_dir_g = gravity*sin(atan(y_ssl_dat[io]));
-//               z_dir_g = cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2))));
-            //   }
-                   del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
-               del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));
                
               del_x_slope = 1.0;
               del_y_slope = 1.0;
@@ -1254,7 +1158,6 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			case -1:
 			   dir = -1;
                 sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip-sz_p]);  //RMM     
-                   // sep = dz*z_mult_dat[ip];  //RMM
 
                      lower_cond = (pp[ip-sz_p] / sep) 
 			      -  (z_mult_dat[ip]-sz_p/(z_mult_dat[ip]+z_mult_dat[ip-sz_p]))  * dp[ip-sz_p] * gravity*
@@ -1275,7 +1178,6 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			case  1:
 			   dir = 1;
               sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]);  //RMM
- //                   sep = dz*z_mult_dat[ip];  //RMM
 
 			   lower_cond = (pp[ip] / sep) - (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) * dp[ip] * gravity*
                     z_dir_g;
@@ -1293,15 +1195,12 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			      rpp[ip]*dp[ip], rpp[ip+sz_p]*dp[ip+sz_p])
 			      / viscosity;
 
-                //     sep = dz*z_mult_dat[ip];  //RMM
-                //     q_overlnd =  -vol*z_mult_dat[ip]*(pfmax(pp[ip],0.0) - 0.0) / sep;
- 
+   
                      
 			   break;
 		     }
 		     u_new = ffz* del_x_slope* del_y_slope;
               
-              //u_new += q_overlnd;
 		  }
 
 		  /* Remove the boundary term computed above */
@@ -1321,19 +1220,9 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 		  ip   = SubvectorEltIndex(p_sub, i, j, k);
 		  io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 		  
-//               if (pp[ip] < 0.) {
                    x_dir_g = 0.0;
                    y_dir_g = 0.0;
                    z_dir_g = 1.0;
-                   
-//               } else { 
-                   
-//               x_dir_g = gravity*sin(atan(x_ssl_dat[io]));
- //              y_dir_g = gravity*sin(atan(y_ssl_dat[io]));
- //              z_dir_g = cos(atan(sqrt(pow(x_ssl_dat[io],2)+pow(y_ssl_dat[io],2))));
-            //   }
-               del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
-               del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));
                
                del_x_slope = 1.0;
                del_y_slope = 1.0;
@@ -1461,7 +1350,6 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			case  1:
 			   dir = 1;
                     sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]);  //RMM
-                  //   sep = dz*z_mult_dat[ip];  //RMM
 
 			   lower_cond = (pp[ip] / sep) - (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) * dp[ip] * gravity *
                z_dir_g;
@@ -1573,65 +1461,23 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 
 			   q_overlnd = 0.0;
                      
-                    /* old version, not sure we 
-                    should be differecing variable dz with bddy values */
-                    // sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip-sz_p]);  //RMM 
-                   /* shorthand for new dz * multiplier */
-                   // sep = dz*z_mult_dat[ip];  //RMM
-                     
-                     
-                     
-			 /*  q_overlnd =  vol*z_mult_dat[ip]
-                     * (pfmax(pp[ip],0.0) - pfmax(opp[ip],0.0)) / sep+
-			      dt * vol * z_mult_dat[ip]* ((ke_[io]-kw_[io])/dx + (kn_[io] - ks_[io])/dy) 
-                     / sep + (exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1 )* public_xtra -> SpinupDampP2 ); //NBE  */
                      
                       q_overlnd =  vol
                      * (pfmax(pp[ip],0.0) - pfmax(opp[ip],0.0)) / dz +
                      dt * vol* ((ke_[io]-kw_[io])/dx + (kn_[io] - ks_[io])/dy) 
-                     / dz + vol*dt/dz*(exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1 )* public_xtra -> SpinupDampP2 ); //NBE  
+                     / dz + vol*dt/dz*(exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1 )* public_xtra -> SpinupDampP2 );
+                     //NBE
                      
-                    /* q_overlnd = vol * (pfmax(pp[ip],0.0) - pfmax(opp[ip],0.0)) /dz +
-                     dt * vol * ((ke_[io]-kw_[io])/dx + (kn_[io] - ks_[io])/dy) / dz;  */
-
+                   
                       if (overlandspinup == 1) {
                      /* add flux loss equal to excess head  that overwrites the prior overland flux */
-                     //sep = dz*z_mult_dat[ip];  //RMM NOTE this should be the "long form" of sep that uses pmean but need to be consistent w/ jacobian
-                         // q_overlnd = 0.0;
-    
-                              //q_overlnd =  vol*z_mult_dat[ip]*dt*((pp[ip] - 0.0) +exp(pfmin(pp[ip],0.0)*10.0)*0.001);
-                          
-                          // Next line was RMM original
-                          //q_overlnd =  (vol/dz)*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)*1.0)*0.001);
-//                          q_overlnd =  vol*z_mult_dat[ip]*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1 )* public_xtra -> SpinupDampP2 ); //NBE
-                          //q_overlnd =  (vol/dz)*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1 )* public_xtra -> SpinupDampP2 ); //@RMM
-                          //Laura's version
-                          q_overlnd =  (vol/dz)*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1 )* public_xtra -> SpinupDampP2 ); //@RMM
-                           // printf("spinup keys: %f %f \n",public_xtra -> SpinupDampP1, public_xtra -> SpinupDampP2);
-
-                         //q_overlnd =  vol*z_mult_dat[ip]*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)*1.0)*0.000001);
-    
-
-                         // q_overlnd =  vol*z_mult_dat[ip]*dt*((pfmax(pp[ip],0.0) - 0.0));
+                          q_overlnd =  (vol/dz)*dt*((pfmax(pp[ip],0.0) - 0.0)+exp(pfmin(pp[ip],0.0)*
+                                       public_xtra -> SpinupDampP1 )* public_xtra -> SpinupDampP2 ); //@RMM
                        }
                      
-/*			   obf_dat[io] = 0.0;
-			   if ( i >= 0 && i <= (gnx-1) && j == 0 && qy_[io] < 0.0 ){ //south face
-			      obf_dat[io]+= fabs(qy_[io]);
-			   } else if (i == 0 && j >= 0 && j <= (gny-1) && qx_[io] < 0.0) { // west face
-			      obf_dat[io]+= fabs(qx_[io]);
-			   } else if (i >= 0 && i <= (gnx-1) && j == (gny-1) && qy_[io] > 0.0) { //north face
-			      obf_dat[io]+= fabs(qy_[io]);
-			   } else if (i == (gnx-1) && j >= 0 && j <= (gny-1) && qx_[io] > 0.0) { //east face
-			      obf_dat[io]+= fabs(qx_[io]);
-			   } else if (i > 0 && i < (gnx-1) && j > 0 && j < (gny-1)) { //interior
-			      obf_dat[io] = qx_[io];
-			   } */
 			   			
 
-                     
-			   fp[ip] += q_overlnd;
-                     //printf("Q: %f  ip:%i  \n", q_overlnd, ip);
+                        fp[ip] += q_overlnd;
 
    			   break;
 		     }
@@ -1757,12 +1603,8 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem     *problem,
          PFModuleNewInstance(ProblemBCInternal(problem), () );
       (instance_xtra -> overlandflow_module) =
          PFModuleNewInstance(ProblemOverlandFlowEval(problem), () ); //DOK
-//       (instance_xtra -> overlandflow_module) =
-//       PFModuleNewInstance(ProblemOverlandFlowEval(problem), () ); //DOK
        (instance_xtra -> overlandflow_module_diff) =
        PFModuleNewInstance(ProblemOverlandFlowEvalDiff(problem), () ); //@RMM
-//       (instance_xtra -> overlandflow_module_diff) =
-//       PFModuleNewInstance(ProblemOverlandFlowEvalDiff(problem), () ); //@RMM
    }
    else
    {
