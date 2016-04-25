@@ -961,7 +961,7 @@ BCStruct    *BCPressure(
                  int              itmp;
                  double           dtmp;
                  
-                 bc_pressure_type8 = BCPressureDataIntervalValue(bc_pressure_data,ipatch,interval_number);
+                 bc_pressure_type8 = (BCPressureType8*)BCPressureDataIntervalValue(bc_pressure_data,ipatch,interval_number);
                  
                  ForSubgridI(is, subgrids)
                  {
