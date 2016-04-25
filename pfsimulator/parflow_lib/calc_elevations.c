@@ -201,7 +201,7 @@ double         **CalcElevations(
       {
 	 int R;
 	 int num=nx*ny;
-	 double* temp_array = ctalloc(double *, num);
+	 double* temp_array = ctalloc(double, num);
 	 
 
 	 for(R = 1; R < GlobalsNumProcsZ; R++)
