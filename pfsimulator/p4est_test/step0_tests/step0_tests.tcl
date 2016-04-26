@@ -116,7 +116,7 @@ for {set i 1} {$i < 4} {incr i} {
 
 	#Colapse paralell output in single files
 	pfundist test_brick_2d
-	#pfundist test_brick_2d_with_p4est
+	pfundist test_brick_2d_with_p4est
 	
 	#Compare pressure output file for both test cases	
         source ../compare_files.tcl
