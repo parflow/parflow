@@ -11,7 +11,7 @@ the Parflow's Richards solver to perform the above
 task. With these two scripts, we try to compute p
 such that 
 
-		\Delta p = 0,
+		\Delta p = 0,                (1)
 
 in two dimensions based on the solution 
 		
@@ -22,23 +22,26 @@ version of ParFlow and with the version that uses
 p4est as a meshing back-end. Ideally the results
 should be identicall. 
 
-The run_step1_tests_2d.sh
-runs Parflow with the two data sets provided by
-the scripts above with different processor/grid/
-subgrid configurations and compares the l2 norm
-of the error in both cases. To run it just tipe
+The scripts:
 
-	./run_step1_tests_2d.sh 
+test_brick_3d_tcl and test_brick_3d_with_p4est.tcl
 
-in the current directory.
+do the similar for the three dimensional form of (1)
+based on the solution
 
-Additionally there is a steps1_tests.tcl script
-which also runs the same test cases, but takes
-advantage of some internal Parflow functions and
-compares directly the pressure output file of each
-case. To run it just type
+		p(x,y,z,t) = xyzt + 1.
 
-	tclsh step1_tests.tcl
+We compare the results obtained with the upstream
+version of ParFlow and with the version that uses
+p4est as a meshing back-end. Ideally the results
+should be identicall.
+
+The steps1_tests_2d.tcl and steps1_tests_3d.tcl
+scripts run test cases taking advantage of some internal
+Parflow functions and comparing directly the pressure output
+file of each case. To run it just type
+
+	tclsh step1_tests_2d.tcl (resp. step1_tests_3d.tcl)
 
 in the current directory. 
 
