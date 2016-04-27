@@ -90,8 +90,8 @@ array set np_arr {
 for {set i 1} {$i < 4} {incr i} {
 
 	#Purge output from previous runs
-        exec rm -rf "output_test${i}"
-        exec mkdir  output_test${i}
+	exec rm -rf "output_2d_test${i}"
+	exec mkdir  output_2d_test${i}
 
 	#Update parflow data base for each case
         set  Nxy [split $pf_param_nxy($i) ]
@@ -105,11 +105,11 @@ for {set i 1} {$i < 4} {incr i} {
                 [lindex $Mxy 0] [lindex $Mxy 1]
 	
         #Move the created data base to output directory
-        exec mv {*}[glob *.pfidb] output_test${i}/
+	exec mv {*}[glob *.pfidb] output_2d_test${i}/
 
 	#run each example
 	puts "Running TEST $i"
-        cd  output_test${i}/
+	cd  output_2d_test${i}/
         exec mpirun -np $np_arr($i) ../../test_grid test_brick_2d
 	#We will run them in serial with p4est
         exec mpirun -np 1 ../../test_grid test_brick_2d_with_p4est
