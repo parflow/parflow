@@ -22,10 +22,19 @@ version of ParFlow and with the version that uses
 p4est as a meshing back-end. Ideally the results
 should be identicall. 
 
+The scripts:
+
+test_brick_3d_tcl and test_brick_3d_with_p4est.tcl
+
+do the similar for the three dimensional form of (1)
+based on the solution
+
+		p(x,y,z,t) = xyzt + 1.
+
 We currently do not support the use of a preconditioner
 in this step. Hence it has been deactivated in both
-test_brick_2d.tcl and test_brick_2d_with_p4est.tcl 
+test_brick_{2,3}d.tcl and test_brick_{2,3}d_with_p4est.tcl
 to make the comparison meaningful.
 
-See the steps0_tests.tcl for details in the mesh
+See the steps0_tests_{2,3}d.tcl for details in the mesh
 configuration for each test.
