@@ -1,4 +1,4 @@
-# Trying to compute - \Delta p = 0 in one dimension with solution p = cos(x)cosh(y).
+# Trying to compute - \Delta p = 0 in three dimensions with solution p(x,y,z,t) = xyzt + 1.
 
 # Import the ParFlow TCL package
 lappend auto_path $env(PARFLOW_DIR)/bin 
@@ -12,8 +12,8 @@ foreach file [glob -nocomplain *test_brick_2d.out.*] {file delete -force -- $fil
 foreach file [glob -nocomplain test_brick_2d.pfidb] {file delete -force -- $file}
 
 pfset Process.Topology.P 2
-pfset Process.Topology.Q 1
-pfset Process.Topology.R 1
+pfset Process.Topology.Q 2
+pfset Process.Topology.R 2
 
 #---------------------------------------------------------
 # Computational Grid
@@ -28,7 +28,7 @@ pfset ComputationalGrid.DZ	                 0.01
 
 pfset ComputationalGrid.NX                       12
 pfset ComputationalGrid.NY                       12
-pfset ComputationalGrid.NZ                       1
+pfset ComputationalGrid.NZ                       12
 
 #---------------------------------------------------------
 # Use p4est software for adaptive mesh refinement
@@ -39,8 +39,8 @@ pfset use_pforest                               "yes"
 # Computational SubGrid dims
 #---------------------------------------------------------
 pfset ComputationalSubgrid.MX                    6
-pfset ComputationalSubgrid.MY                    12
-pfset ComputationalSubgrid.MZ                    1
+pfset ComputationalSubgrid.MY                    6
+pfset ComputationalSubgrid.MZ                    6
 
 #---------------------------------------------------------
 # The Names of the GeomInputs
@@ -50,7 +50,7 @@ pfset GeomInput.Names "domain_input background_input"
 #---------------------------------------------------------
 # Known Solution
 #---------------------------------------------------------
-pfset KnownSolution                                   2D_CosX_CoshY
+pfset KnownSolution                                   XYZTPlus1
 
 #--------------------------------------------------------
 # prepare ICPressure File which has the initial values for pressure
@@ -201,19 +201,19 @@ pfset BCPressure.PatchNames "left right front back bottom top"
 
 pfset Patch.left.BCPressure.Type			ExactSolution
 pfset Patch.left.BCPressure.Cycle			"constant"
-pfset Patch.left.BCPressure.alltime.PredefinedFunction	2D_CosX_CoshY
+pfset Patch.left.BCPressure.alltime.PredefinedFunction	XYZTPlus1
 
 pfset Patch.right.BCPressure.Type			ExactSolution
 pfset Patch.right.BCPressure.Cycle			"constant"
-pfset Patch.right.BCPressure.alltime.PredefinedFunction 2D_CosX_CoshY
+pfset Patch.right.BCPressure.alltime.PredefinedFunction XYZTPlus1
 
 pfset Patch.front.BCPressure.Type			ExactSolution
 pfset Patch.front.BCPressure.Cycle			"constant"
-pfset Patch.front.BCPressure.alltime.PredefinedFunction  2D_CosX_CoshY
+pfset Patch.front.BCPressure.alltime.PredefinedFunction  XYZTPlus1
 
 pfset Patch.back.BCPressure.Type			ExactSolution
 pfset Patch.back.BCPressure.Cycle			"constant"
-pfset Patch.back.BCPressure.alltime.PredefinedFunction  2D_CosX_CoshY
+pfset Patch.back.BCPressure.alltime.PredefinedFunction  XYZTPlus1
 
 # pfset Patch.front.BCPressure.Type			FluxConst
 # pfset Patch.front.BCPressure.Cycle			"constant"
