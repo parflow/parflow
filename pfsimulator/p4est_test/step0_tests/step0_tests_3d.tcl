@@ -101,16 +101,16 @@ for {set i 1} {$i < 4} {incr i} {
 	set passed 1
 
 	foreach t "00000 00001" {
-		if ![pftestFile test_brick_3d.out.press.$t.pfb \
-		test_brick_3d.out.press.$t.pfb \
-		"Max difference in Pressure for timestep $t" $sig_digits] {
+                if ![pftestFile test_brick_3d.out.press.$t.pfb \
+                test_brick_3d_with_p4est.out.press.$t.pfb \
+                "Max difference in Pressure for timestep $t" $sig_digits] {
 			set passed 0
 		}
 	}
 
-	if $passed {
+        if $passed {
 		puts "PASSED\n"
-	} {
+        } else {
 		puts "FAILED\n"
 	}
 
