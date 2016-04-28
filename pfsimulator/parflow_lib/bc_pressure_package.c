@@ -924,7 +924,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
          }
              case 8:
              {
-                 dummy8 = ctalloc(Type4, 1);
+                 dummy8 = ctalloc(Type8, 1);
                  
                  (dummy8 -> filenames) = ctalloc(char *, interval_division);
                  

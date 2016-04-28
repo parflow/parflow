@@ -96,6 +96,14 @@
 #undef HAVE_SAMRAI
 #endif
 
+/*
+ * SLURM
+ */
+
+#ifndef HAVE_SLURM
+#undef HAVE_SLURM
+#endif
+
 
 /*
  * Silo 
@@ -111,6 +119,18 @@
 
 #ifndef HAVE_HYPRE
 #undef HAVE_HYPRE
+#endif
+
+#ifndef PARFLOW_HYPRE_VERSION_MAJOR
+#undef PARFLOW_HYPRE_VERSION_MAJOR
+#endif
+
+#ifndef PARFLOW_HYPRE_VERSION_MINOR
+#undef PARFLOW_HYPRE_VERSION_MINOR
+#endif
+
+#ifndef PARFLOW_HYPRE_VERSION_PATCH
+#undef PARFLOW_HYPRE_VERSION_PATCH
 #endif
 
 /*

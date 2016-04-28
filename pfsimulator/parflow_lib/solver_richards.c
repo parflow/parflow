@@ -36,6 +36,10 @@
 
 #include "parflow.h"
 
+#ifdef HAVE_SLURM
+#include <slurm/slurm.h>
+#endif
+
 #include <string.h>
 #include <float.h>
 #include <limits.h>
@@ -120,6 +124,7 @@ typedef struct
    char              *clm_file_dir;       /* directory location for CLM files */
    int                clm_dump_interval;  /* time interval, integer, for CLM output */
    int                clm_1d_out;         /* boolean 0-1, integer, for CLM 1-d output */
+   int                clm_forc_veg;       /* boolean 0-1, integer, for CLM vegetation forcing option*/ /*BH*/
    int                clm_bin_out_dir;    /* boolean 0-1, integer, for sep dirs for each clm binary output */
    // int                clm_dump_files;     /* boolean 0-1, integer, for write CLM output from PF */
 
@@ -133,7 +138,7 @@ typedef struct
    char              *clm_metfile;        /* File name for 1D forcing *or* base name for 2D forcing */
    char              *clm_metpath;        /* Path to CLM met forcing file(s) */
    double            *sw1d,*lw1d,*prcp1d, /* 1D forcing variables */
-                     *tas1d,*u1d,*v1d,*patm1d,*qatm1d;
+                     *tas1d,*u1d,*v1d,*patm1d,*qatm1d,*lai1d,*sai1d,*z0m1d,*displa1d; /* BH: added lai, sai, z0m, displa*/
 
    int                clm_beta_function;  /* CLM evap function for var sat 0=none, 1=linear, 2=cos */
    double             clm_res_sat;        /* CLM residual saturation in soil sat units [-] */
@@ -241,6 +246,11 @@ typedef struct
    Vector      *v_forc;               /* south-north wind [m/s] @ ref height (hgt set in drv_clmin.dat, currently 10m)*/
    Vector      *patm_forc;            /* surface air pressure [Pa] */
    Vector      *qatm_forc;            /* surface air humidity [kg/kg] @ ref height (hgt set in drv_clmin.dat, currently 2m) */
+   Vector      *lai_forc;	          /* LAI                              BH */
+   Vector      *sai_forc;	          /* SAI 					          BH */  
+   Vector      *z0m_forc;	          /* Aerodynamic roughness length [m] BH */
+   Vector      *displa_forc;	      /* Displacement height [m] 		  BH */
+   Vector      *veg_map_forc;	      /* Vegetation map [classes 1-18]	  BH */
    
    Grid        *snglclm;              /* NBE: New grid for single file CLM ouptut */
    Vector      *clm_out_grid;          /* NBE - Holds multi-layer, single file output of CLM */
@@ -299,9 +309,9 @@ void SetupRichards(PFModule *this_module) {
 #ifdef HAVE_CLM
    /* IMF: for CLM met forcings (local to SetupRichards)*/
    char          filename[128];         
-   int           n,nc;
+   int           n,nc,c;				                           /*Added c BH*/
    int           ch;
-   double        sw,lw,prcp,tas,u,v,patm,qatm;         // forcing vars
+   double        sw,lw,prcp,tas,u,v,patm,qatm,lai,sai,z0m,displa;  // forcing vars added vegetation BH
    FILE         *metf_temp;                            // temp file for forcings   
    amps_Invoice  invoice;                              // for distributing 1D met forcings
    amps_File     metf1d;                               // for distributing 1D met forcings
@@ -693,6 +703,23 @@ void SetupRichards(PFModule *this_module) {
       instance_xtra -> qatm_forc = NewVectorType( metgrid, 1, 1, vector_met );
       InitVectorAll(instance_xtra -> qatm_forc, 100.0); 
 
+	  /* BH: added vegetatin vectors (LAI, SAI, z0m, DISPLA) and vegetation map)*/
+      instance_xtra -> lai_forc = NewVectorType( metgrid, 1, 1, vector_met ); 
+      InitVectorAll(instance_xtra -> lai_forc, 100.0); 		
+
+      instance_xtra -> sai_forc = NewVectorType( metgrid, 1, 1, vector_met );
+      InitVectorAll(instance_xtra -> sai_forc, 100.0);			
+				
+      instance_xtra -> z0m_forc = NewVectorType( metgrid, 1, 1, vector_met );
+      InitVectorAll(instance_xtra -> z0m_forc, 100.0); 			
+
+      instance_xtra -> displa_forc = NewVectorType( metgrid, 1, 1, vector_met );	
+      InitVectorAll(instance_xtra -> displa_forc, 100.0); 			
+
+      instance_xtra -> veg_map_forc = NewVectorType( metgrid, 1, 1, vector_met );
+      InitVectorAll(instance_xtra -> veg_map_forc, 100.0);	
+	  /* BH: end add */
+	  
       /*IMF If 1D met forcing, read forcing vars to arrays */
       if (public_xtra -> clm_metforce == 1)
       {
@@ -743,7 +770,147 @@ void SetupRichards(PFModule *this_module) {
          }
          amps_FreeInvoice( invoice );
          amps_SFclose( metf1d );
-      } 
+      
+	   /* BH: added the option to force vegetation or not: here LAI, SAI, Z0M, Displa and pfb vegetation maps are read*/
+	   (public_xtra -> lai1d) = ctalloc(double,nc*18);
+	   (public_xtra -> sai1d) = ctalloc(double,nc*18);
+	   (public_xtra -> z0m1d) = ctalloc(double,nc*18);
+	   (public_xtra -> displa1d) = ctalloc(double,nc*18);
+	   if (public_xtra -> clm_forc_veg == 1)
+	   {		
+	    
+	    /*Reading file LAI*/ /*BH*/
+         /*sprintf(filename, "%s/%s", public_xtra -> clm_metpath, public_xtra -> clm_metfile);*/
+         sprintf(filename, "%s/%s", public_xtra -> clm_metpath, "lai.dat");
+
+         // Open file, count number of lines
+         if ( (metf_temp = fopen(filename,"r")) == NULL )
+         {
+            printf("Error: can't open file %s \n", filename);
+            exit(1);
+         }
+         /*assume nc remains the same BH*/
+         // Read 1D met file to arrays of length nc
+         //(public_xtra -> lai1d) = ctalloc(double,nc*18);
+         if ((metf1d = amps_SFopen( filename, "r")) == NULL )
+         {
+            amps_Printf( "Error: can't open file %s \n", filename);
+            exit(1);
+         }
+	 // SGS this should be done as an array not individual elements
+         invoice = amps_NewInvoice( "%d", &lai );
+         for (n=0; n<nc; n++)
+         {  for (c=0; c<18; c++)
+            	{
+            	amps_SFBCast( amps_CommWorld, metf1d, invoice);
+            	(public_xtra -> lai1d)[18*n+c]   = lai;
+		}
+  
+         }
+         amps_FreeInvoice( invoice );
+         amps_SFclose( metf1d );
+
+	    /*Reading file SAI*/ /*BH*/
+         /*sprintf(filename, "%s/%s", public_xtra -> clm_metpath, public_xtra -> clm_metfile);*/
+         sprintf(filename, "%s/%s", public_xtra -> clm_metpath, "sai.dat");
+
+         // Open file, count number of lines
+         if ( (metf_temp = fopen(filename,"r")) == NULL )
+         {
+            printf("Error: can't open file %s \n", filename);
+            exit(1);
+         }
+         /*assume nc remains the same BH */
+         // Read 1D met file to arrays of length nc
+         //(public_xtra -> sai1d) = ctalloc(double,nc*18);
+         if ((metf1d = amps_SFopen( filename, "r")) == NULL )
+         {
+            amps_Printf( "Error: can't open file %s \n", filename);
+            exit(1);
+         }
+	 // SGS this should be done as an array not individual elements
+         invoice = amps_NewInvoice( "%d", &sai );
+         for (n=0; n<nc; n++)
+         {  for (c=0; c<18; c++)
+            	{
+            	amps_SFBCast( amps_CommWorld, metf1d, invoice);
+            	(public_xtra -> sai1d)[18*n+c]   = sai;
+		}
+  
+         }
+         amps_FreeInvoice( invoice );
+         amps_SFclose( metf1d );
+
+	    /*Reading file z0m*/ /*BH*/
+         /*sprintf(filename, "%s/%s", public_xtra -> clm_metpath, public_xtra -> clm_metfile);*/
+         sprintf(filename, "%s/%s", public_xtra -> clm_metpath, "z0m.dat");
+
+         // Open file, count number of lines
+         if ( (metf_temp = fopen(filename,"r")) == NULL )
+         {
+            printf("Error: can't open file %s \n", filename);
+            exit(1);
+         }
+         /*assume nc remains the same BH*/
+         // Read 1D met file to arrays of length nc
+         //(public_xtra -> z0m1d) = ctalloc(double,nc*18);
+         if ((metf1d = amps_SFopen( filename, "r")) == NULL )
+         {
+            amps_Printf( "Error: can't open file %s \n", filename);
+            exit(1);
+         }
+	 // SGS this should be done as an array not individual elements
+         invoice = amps_NewInvoice( "%d", &z0m );
+         for (n=0; n<nc; n++)
+         {  for (c=0; c<18; c++)
+            	{
+            	amps_SFBCast( amps_CommWorld, metf1d, invoice);
+            	(public_xtra -> z0m1d)[18*n+c]   = z0m;
+		}
+  
+         }
+         amps_FreeInvoice( invoice );
+         amps_SFclose( metf1d );
+
+	 /*Reading file displa*/ /*BH*/
+         /*sprintf(filename, "%s/%s", public_xtra -> clm_metpath, public_xtra -> clm_metfile);*/
+         sprintf(filename, "%s/%s", public_xtra -> clm_metpath, "displa.dat");
+
+         // Open file, count number of lines
+         if ( (metf_temp = fopen(filename,"r")) == NULL )
+         {
+            printf("Error: can't open file %s \n", filename);
+            exit(1);
+         }
+         /*assume nc remains the same BH*/
+         // Read 1D met file to arrays of length nc
+         //(public_xtra -> displa1d) = ctalloc(double,nc*18);
+         if ((metf1d = amps_SFopen( filename, "r")) == NULL )
+         {
+            amps_Printf( "Error: can't open file %s \n", filename);
+            exit(1);
+         }
+	 // SGS this should be done as an array not individual elements
+         invoice = amps_NewInvoice( "%d", &displa );
+         for (n=0; n<nc; n++)
+         {  for (c=0; c<18; c++)
+            	{
+            	amps_SFBCast( amps_CommWorld, metf1d, invoice);
+            	(public_xtra -> displa1d)[18*n+c]   = displa;
+		}
+  
+         }
+         amps_FreeInvoice( invoice );
+         amps_SFclose( metf1d );
+
+	 /*Reading file vegetation map*//* BH*/
+
+         sprintf(filename, "%s/%s.pfb", public_xtra -> clm_metpath,"veg_map"); 
+         ReadPFBinary( filename, instance_xtra -> veg_map_forc );
+       } 	  
+	  /* BH: end of reading LAI/SAI/Z0M/DISPLA/vegetation map*/
+	  } 
+	   
 
 #endif
 
@@ -945,6 +1112,7 @@ void AdvanceRichards(PFModule *this_module,
 
    int           start_count         = ProblemStartCount(problem);
    double        dump_interval       = ProblemDumpInterval(problem);
+   int           dump_interval_execution_time_limit = ProblemDumpIntervalExecutionTimeLimit(problem);
 
    Vector       *porosity            = ProblemDataPorosity(problem_data);
    Vector       *evap_trans_sum      = instance_xtra -> evap_trans_sum;
@@ -977,8 +1145,10 @@ void AdvanceRichards(PFModule *this_module,
     
    int           fstep = INT_MIN;
    int           fflag,fstart,fstop;                              // IMF: index w/in 3D forcing array corresponding to istep
-   int           n;                                               // IMF: index vars for looping over subgrid data
+   int           n,c;                                               // IMF: index vars for looping over subgrid data BH: added c
+   int          ind_veg;					                      /*BH: temporary variable to store vegetation index*/   
    double        sw,lw,prcp,tas,u,v,patm,qatm;                    // IMF: 1D forcing vars (local to AdvanceRichards) 
+   double       lai[18],sai[18],z0m[18],displa[18];		          /*BH: array with lai/sai/z0m/displa values for each veg class*/   
    double       *sw_data = NULL;
    double       *lw_data = NULL;
    double       *prcp_data = NULL;                                // IMF: 2D forcing vars (SubvectorData) (local to AdvanceRichards)
@@ -987,9 +1157,16 @@ void AdvanceRichards(PFModule *this_module,
    double       *v_data = NULL;
    double       *patm_data = NULL;
    double       *qatm_data = NULL;  
+   double	*lai_data = NULL;				                      /*BH*/
+   double	*sai_data = NULL;				                      /*BH*/
+   double	*z0m_data = NULL;				                      /*BH*/
+   double	*displa_data = NULL;				                  /*BH*/
+   double	*veg_map_data = NULL;				                  /*BH*/ /*will fail if veg_map_data is declared as int*/   
    char          filename[2048];                                   // IMF: 1D input file name *or* 2D/3D input file base name
    Subvector    *sw_forc_sub, *lw_forc_sub, *prcp_forc_sub, *tas_forc_sub, 
-                *u_forc_sub, *v_forc_sub, *patm_forc_sub, *qatm_forc_sub;
+                *u_forc_sub, *v_forc_sub, *patm_forc_sub, *qatm_forc_sub, 
+				*lai_forc_sub, *sai_forc_sub, *z0m_forc_sub, *displa_forc_sub,
+				*veg_map_forc_sub;                                             /*BH: added LAI/SAI/Z0M/DISPLA/vegmap*/
 
    /* IMF: For writing CLM output */ 
    Subvector    *eflx_lh_tot_sub, *eflx_lwrad_out_sub, *eflx_sh_tot_sub, *eflx_soil_grnd_sub,
@@ -1196,6 +1373,18 @@ void AdvanceRichards(PFModule *this_module,
             v    = (public_xtra -> v1d)[istep-1];
             patm = (public_xtra -> patm1d)[istep-1];
             qatm = (public_xtra -> qatm1d)[istep-1];
+			
+            /*BH: populating vegetation vectors*/
+            for (c=0; c<18; c++)
+		    {
+		    lai[c]=(public_xtra -> lai1d)[(istep-1)*18+c];
+            /*printf("LAI by class: class %d: value %f\n",c,lai[c]);*/
+		    sai[c]=(public_xtra -> sai1d)[(istep-1)*18+c];	 
+		    z0m[c]=(public_xtra -> z0m1d)[(istep-1)*18+c]; 	
+		    displa[c]=(public_xtra -> displa1d)[(istep-1)*18+c]; 
+		    }  
+			
+			/*BH: end populating vegetation vectors*/			
          } //end if (clm_metforce==1)
 	 else
 	 {
@@ -1313,6 +1502,28 @@ void AdvanceRichards(PFModule *this_module,
                   sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "SPFH", 
                           public_xtra -> clm_metfile, "SPFH", fstart, fstop );
                   ReadPFBinary( filename, instance_xtra -> qatm_forc );
+				  
+				  /*BH: added the option to force vegetation or not*/
+				  if (public_xtra -> clm_forc_veg == 1)
+				  {
+					  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "LAI",
+							  public_xtra -> clm_metfile, "LAI", fstart, fstop );
+					  ReadPFBinary( filename, instance_xtra -> lai_forc );
+
+					  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "SAI",
+							  public_xtra -> clm_metfile, "SAI", fstart, fstop );
+					  ReadPFBinary( filename, instance_xtra -> sai_forc );
+
+					  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "Z0M", 
+							  public_xtra -> clm_metfile, "Z0M", fstart, fstop );
+					  ReadPFBinary( filename, instance_xtra -> z0m_forc );
+
+					  sprintf(filename, "%s/%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, "DISPLA", 
+							  public_xtra -> clm_metfile, "DISPLA", fstart, fstop );
+					  ReadPFBinary( filename, instance_xtra -> displa_forc );
+				 }
+				 /*BH: end added the option to force vegetation or not*/
+				  
                }  
                else
                {
@@ -1348,6 +1559,28 @@ void AdvanceRichards(PFModule *this_module,
                   sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath, 
                           public_xtra -> clm_metfile, "SPFH", fstart, fstop );
                   ReadPFBinary( filename, instance_xtra -> qatm_forc );
+				  
+				   /*BH: added the option to force vegetation or not*/
+				 if (public_xtra -> clm_forc_veg == 1)
+				 {
+                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath,
+                          public_xtra -> clm_metfile, "LAI", fstart, fstop );
+                  ReadPFBinary( filename, instance_xtra -> lai_forc );	
+
+                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath,
+                          public_xtra -> clm_metfile, "SAI", fstart, fstop );	
+                  ReadPFBinary( filename, instance_xtra -> sai_forc );	
+
+                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath,
+                          public_xtra -> clm_metfile, "Z0M", fstart, fstop );	
+                  ReadPFBinary( filename, instance_xtra -> z0m_forc );	
+
+                  sprintf(filename, "%s/%s.%s.%06d_to_%06d.pfb", public_xtra -> clm_metpath,
+                          public_xtra -> clm_metfile, "DISPLA", fstart, fstop );	
+                  ReadPFBinary( filename, instance_xtra -> displa_forc );			
+				 }		
+                 /*BH: end added the option to force vegetation or not*/				 
+				  
                }  // end if/else clm_metsub==False
              }  //end if (fstep==0)
          }  //end if (clm_metforce==3)
@@ -1399,6 +1632,12 @@ void AdvanceRichards(PFModule *this_module,
             v_forc_sub         = VectorSubvector(instance_xtra -> v_forc,is);
             patm_forc_sub      = VectorSubvector(instance_xtra -> patm_forc,is);
             qatm_forc_sub      = VectorSubvector(instance_xtra -> qatm_forc,is);
+            /*BH: added LAI/SAI/Z0M/DISPLA/VEGMAP for vegetation forcing*/
+            lai_forc_sub       = VectorSubvector(instance_xtra -> lai_forc,is);	
+            sai_forc_sub       = VectorSubvector(instance_xtra -> sai_forc,is);	
+            z0m_forc_sub       = VectorSubvector(instance_xtra -> z0m_forc,is);	
+            displa_forc_sub    = VectorSubvector(instance_xtra -> displa_forc,is);
+            veg_map_forc_sub   = VectorSubvector(instance_xtra -> veg_map_forc,is);		
  
 	    nx = SubgridNX(subgrid);
 	    ny = SubgridNY(subgrid);
@@ -1456,6 +1695,14 @@ void AdvanceRichards(PFModule *this_module,
                v_data          = SubvectorData(v_forc_sub);
                patm_data       = SubvectorData(patm_forc_sub);
                qatm_data       = SubvectorData(qatm_forc_sub);
+			   
+			   /* BH: added LAI/SAI/Z0M/DISPLA/VEGMAP for vegetation forcing*/
+               lai_data        = SubvectorData(lai_forc_sub);
+               sai_data        = SubvectorData(sai_forc_sub);
+               z0m_data        = SubvectorData(z0m_forc_sub);
+               displa_data     = SubvectorData(displa_forc_sub);
+               veg_map_data    = SubvectorData(veg_map_forc_sub);			   
+			   
                // Fill SubvectorData's w/ uniform forcinv values  
                for (n=0; n<((nx+2)*(ny+2)*3); n++)
                {
@@ -1467,6 +1714,15 @@ void AdvanceRichards(PFModule *this_module,
                   v_data[n]    = v;
                   patm_data[n] = patm;
                   qatm_data[n] = qatm;
+				  
+				  /* BH: added LAI/SAI/Z0M/DISPLA/VEGMAP for vegetation forcing*/
+				  ind_veg      = veg_map_data[n];
+				  /*printf("current index:%d \n",ind_veg);*/
+				  lai_data[n]  = lai[ind_veg-1];
+				  /*printf("lai of current index:%f \n",lai[ind_veg-1]);*/
+				  sai_data[n]  = sai[ind_veg-1];
+				  z0m_data[n]  = z0m[ind_veg-1];
+				  displa_data[n]  = displa[ind_veg-1]; 			  
                }
                 
             }
@@ -1501,6 +1757,12 @@ void AdvanceRichards(PFModule *this_module,
                v_data          = SubvectorElt(v_forc_sub,x,y,z);
                patm_data       = SubvectorElt(patm_forc_sub,x,y,z);
                qatm_data       = SubvectorElt(qatm_forc_sub,x,y,z);
+			   
+			   /* BH: added LAI/SAI/Z0M/DISPLA/VEGMAP for vegetation forcing*/
+               lai_data        = SubvectorElt(lai_forc_sub,x,y,z);
+               sai_data        = SubvectorElt(sai_forc_sub,x,y,z);
+               z0m_data        = SubvectorElt(z0m_forc_sub,x,y,z);  
+               displa_data     = SubvectorElt(displa_forc_sub,x,y,z); 			   
                 
             }
          
@@ -1515,14 +1777,17 @@ void AdvanceRichards(PFModule *this_module,
 	       case 1:
 	       {
 
+		  /*BH: added vegetation forcings and associated option (clm_forc_veg)*/
 		  clm_file_dir_length=strlen(public_xtra -> clm_file_dir);
 		  CALL_CLM_LSM(pp,sp,et,ms,po_dat,dz_dat,istep,cdt,t,start_time, 
 			       dx,dy,dz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,nz_rz,ip,p,q,r,gnx, gny,rank,
                                sw_data,lw_data,prcp_data,tas_data,u_data,v_data,patm_data,qatm_data,
+							   lai_data,sai_data,z0m_data,displa_data,
                                eflx_lh,eflx_lwrad,eflx_sh,eflx_grnd,qflx_tot,qflx_grnd,
-			       qflx_soi,qflx_eveg,qflx_tveg,qflx_in,swe,t_g,t_soi,
+			                   qflx_soi,qflx_eveg,qflx_tveg,qflx_in,swe,t_g,t_soi,
                                public_xtra -> clm_dump_interval, 
                                public_xtra -> clm_1d_out, 
+							   public_xtra -> clm_forc_veg, 
                                public_xtra -> clm_file_dir, 
                                clm_file_dir_length, 
                                public_xtra -> clm_bin_out_dir, 
@@ -1969,7 +2234,7 @@ void AdvanceRichards(PFModule *this_module,
       /***************************************************************
        * Compute running sum of evap trans for water balance 
        **************************************************************/
-      if(public_xtra -> write_silo_evaptrans_sum) {
+      if(public_xtra -> write_silo_evaptrans_sum || public_xtra -> print_evaptrans_sum) {
 	 EvapTransSum(problem_data, dt, evap_trans_sum, evap_trans);
       }
 
@@ -2454,6 +2719,34 @@ void AdvanceRichards(PFModule *this_module,
 	    (t < stop_time);
       }
 
+#ifdef HAVE_SLURM
+      /*
+       * If at end of a dump_interval and user requests halt if
+       * remaining time in job is less than user specified value.
+       * Used to halt jobs gracefully when running on batch systems.
+       */
+      if(dump_files && dump_interval_execution_time_limit)
+      {
+         if(!amps_Rank(amps_CommWorld))
+         {
+
+            printf("Checking execution time limit, interation = %d, remaining time = %ld (s)\n", 
+               instance_xtra -> iteration_number,
+               slurm_get_rem_time(0));
+         }
+                    
+	 if(slurm_get_rem_time(0) <= dump_interval_execution_time_limit)
+	 {
+	    if(!amps_Rank(amps_CommWorld))
+	    {
+	       printf("Remaining time less than supplied DumpIntervalExectionTimeLimit = %d, halting execution\n", dump_interval_execution_time_limit);
+	    }
+	    
+	    take_more_time_steps = 0;
+	 }
+      }
+#endif
+
    }   /* ends do for time loop */
    while( take_more_time_steps );
 
@@ -2652,6 +2945,12 @@ void TeardownRichards(PFModule *this_module) {
       FreeVector(instance_xtra -> v_forc);
       FreeVector(instance_xtra -> patm_forc);
       FreeVector(instance_xtra -> qatm_forc);
+	  /*BH: added vegetation forcing variable & veg map*/
+	  FreeVector(instance_xtra -> lai_forc);
+      FreeVector(instance_xtra -> sai_forc);
+      FreeVector(instance_xtra -> z0m_forc);
+      FreeVector(instance_xtra -> displa_forc);	
+      FreeVector(instance_xtra -> veg_map_forc);
    }
 
 
@@ -2664,6 +2963,11 @@ void TeardownRichards(PFModule *this_module) {
       tfree(public_xtra -> v1d);   
       tfree(public_xtra -> patm1d);
       tfree(public_xtra -> qatm1d);
+	  /*BH: added vegetation forcing variable*/
+      tfree(public_xtra -> lai1d);
+      tfree(public_xtra -> sai1d);
+      tfree(public_xtra -> z0m1d);
+      tfree(public_xtra -> displa1d); 
    }
 #endif
 
@@ -3250,6 +3554,19 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    }
    public_xtra -> clm_1d_out = switch_value;
 
+   /*BH: added an option for choosing to force vegetation (LAI,SAI,displa, z0)*/
+   sprintf(key, "%s.CLM.ForceVegetation", name);
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if(switch_value < 0)	
+   {
+      InputError("Error: invalid print switch value <%s> for key <%s>\n",
+		 switch_name, key );
+   }
+   public_xtra -> clm_forc_veg = switch_value;  
+   /*BH: end added an option for choosing to force vegetation (LAI,SAI,displa, z0)*/
+
+   
    sprintf(key, "%s.CLM.BinaryOutDir", name);
    switch_name = GetStringDefault(key, "True");
    switch_value = NA_NameToIndex(switch_na, switch_name);

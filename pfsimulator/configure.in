@@ -203,16 +203,20 @@ dnl CLM Support
 dnl
 dnl CLM_DIR is empty when not building with CLM.  This will case the
 dnl directory to be skipped in the compilation.
+AC_MSG_CHECKING(if CLM is wanted)
 CLM_DIR=""
 CLM_LIBS=""
 CLM_LIB_DEPEND=""
 PARFLOW_HAVE_CLM="no"
 if test "$with_clm" = "yes"; then
+   AC_MSG_RESULT(yes)
    PARFLOW_HAVE_CLM="yes"
    CLM_DIR="clm"
    CLM_LIBS="-lclm"
    CLM_LIB_DEPEND="\$(PARFLOW_LIB_DIR)/libclm.a"
-   AC_DEFINE(HAVE_CLM)	  
+   AC_DEFINE(HAVE_CLM)
+else
+   AC_MSG_RESULT(no)
 fi
 AC_SUBST(CLM_DIR)
 AC_SUBST(CLM_LIBS)
@@ -478,6 +482,26 @@ if test "${hypre_PREFIX+set}" = set; then
   LIB_NAME="$hypre_LIB_NAME $LIB_NAME"
   INC_PATH="$hypre_INCLUDES $INC_PATH"
 
+  # Extract Hypre version number from config file
+  hypre_include_dir=`echo $hypre_INCLUDES | sed 's/-I//'`
+  hypre_version=`grep HYPRE_RELEASE_VERSION $hypre_include_dir/HYPRE_config.h`
+
+  set x $hypre_version
+  hypre_version=`echo ${4} | sed s/\"//g`
+
+  # Seperate Hypre config number into components
+  oldifs="$IFS"
+  IFS=.
+  set x $hypre_version
+  IFS="$oldifs"
+  PARFLOW_HYPRE_VERSION_MAJOR=${2}
+  PARFLOW_HYPRE_VERSION_MINOR=${3}
+  PARFLOW_HYPRE_VERSION_PATCH=${4}
+
+  AC_DEFINE_UNQUOTED(PARFLOW_HYPRE_VERSION_MAJOR,$PARFLOW_HYPRE_VERSION_MAJOR,[Hypre version major])
+  AC_DEFINE_UNQUOTED(PARFLOW_HYPRE_VERSION_MINOR,$PARFLOW_HYPRE_VERSION_MINOR,[Hypre version minor])
+  AC_DEFINE_UNQUOTED(PARFLOW_HYPRE_VERSION_PATCH,$PARFLOW_HYPRE_VERSION_PATCH,[Hypre version patch])
+
   AC_MSG_CHECKING(whether HYPRE was compiled with MPI)
   if test "$hypre_MPI" = yes ; then
      AC_DEFINE([HYPRE_MPI],[1],[Hypre library is configured with MPI])
@@ -555,12 +579,32 @@ if test "${samrai_PREFIX+set}" = set; then
   INC_PATH="$samrai_INCLUDES $INC_PATH"
   SAMRAI_DIR="$samrai_PREFIX"
   PARFLOW_HAVE_SAMRAI="yes"
-  AC_DEFINE(HAVE_SAMRAI,1,SILO library is available so use it)
+  AC_DEFINE(HAVE_SAMRAI,1,SAMRAI library is available so use it)
 else
-  AC_MSG_WARN([Error: Parflow configured without the SAMRAI library])
+  AC_MSG_WARN([Parflow configured without the SAMRAI library])
 fi
 AC_SUBST(PARFLOW_HAVE_SAMRAI)
 AC_SUBST(SAMRAI_DIR)
+
+dnl
+dnl Set variables for SLURM support.
+dnl
+PARFLOW_HAVE_SLURM="no"
+CASC_SUPPORT_SLURM
+if test "${slurm_PREFIX+set}" = set; then
+  LIBS="$slurm_LIBS $LIBS"
+  CASC_SPLIT_LIBS_STRING(slurm_LIBS,slurm_LIB_PATH,slurm_LIB_NAME)
+  LIB_PATH="$LIB_PATH $slurm_LIB_PATH "
+  LIB_NAME="$LIB_NAME $slurm_LIB_NAME"
+  INC_PATH="$slurm_INCLUDES $INC_PATH"
+  SLURM_DIR="$slurm_PREFIX"
+  PARFLOW_HAVE_SLURM="yes"
+  AC_DEFINE(HAVE_SLURM,1,SILO library is available so use it)
+else
+  AC_MSG_WARN([Parflow configured without the SLURM library])
+fi
+AC_SUBST(PARFLOW_HAVE_SLURM)
+AC_SUBST(SLURM_DIR)
 
 
 debug_ext=debug

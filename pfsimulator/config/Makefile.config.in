@@ -19,7 +19,7 @@
 .c.o:
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c @SRCDIR_COMPILE_PREFIX@$< -o $@
 .cxx.o:
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c @SRCDIR_COMPILE_PREFIX@$< -o $@
+	$(CXX) $(CFLAGS) $(CPPFLAGS) -c @SRCDIR_COMPILE_PREFIX@$< -o $@
 
 SHELL         = /bin/sh
 

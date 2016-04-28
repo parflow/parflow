@@ -126,7 +126,7 @@ void LBInitializeBC(
 	    ref_patch = BCPressureType0RefPatch(bc_pressure_type0);
 
 	    /* Calculate elevations at (x,y) points on reference patch. */
-	    elevations = CalcElevations(ref_solid, ref_patch, subgrids);
+	    elevations = CalcElevations(ref_solid, ref_patch, subgrids,problem_data);
 
 	    ForSubgridI(is, subgrids)
 	    {

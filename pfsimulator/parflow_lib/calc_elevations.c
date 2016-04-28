@@ -31,6 +31,8 @@
 
 #include "parflow.h"
 
+#include <assert.h>
+
 
 /*--------------------------------------------------------------------------
  * This routine returns the elevations on a patch of a
@@ -45,7 +47,8 @@
 double         **CalcElevations(
    GeomSolid       *geom_solid,
    int              ref_patch,
-   SubgridArray    *subgrids)
+   SubgridArray    *subgrids,
+   ProblemData  *problem_data)
 {
    GrGeomSolid        *grgeom_solid;
 
@@ -54,10 +57,17 @@ double         **CalcElevations(
    Background         *bg = GlobalsBackground;
 
    Subgrid            *subgrid;
+
+   Vector      *z_mult            = ProblemDataZmult(problem_data);
+   Vector      *rsz                 = ProblemDataRealSpaceZ(problem_data);
+   Subvector   *z_mult_sub;
+   Subvector   *rsz_sub;
+   double      *z_mult_dat;
+   double      *rsz_dat;
 		  
    double            **elevation_arrays;
    double             *elevation_array;
-   double              z, dz2, zupper, zlower, zinit;
+   double              dz2, zupper, zlower, zinit;
 		  
    int	               ix, iy, iz;
    int	               nx, ny, nz;
@@ -65,7 +75,7 @@ double         **CalcElevations(
 		  
    int                *fdir;
 		  
-   int	               is, i,  j,  k, iel;
+   int	               is, i,  j,  k, iel,ival;
 	           
 
    /*-----------------------------------------------------
@@ -92,9 +102,21 @@ double         **CalcElevations(
 
    elevation_arrays = ctalloc(double *, SubgridArraySize(subgrids));
 
+   /*
+     SGS TODO SHOULD HAVE ASSERT MACRO
+     This algorithm only works for one subgrid per rank due to the merge process.   
+     Unless we could guarantee subgrids are ordered on each rank.
+   */
+   assert(SubgridArraySize(subgrids)==1);
+
    ForSubgridI(is, subgrids)
    {
       subgrid = SubgridArraySubgrid(subgrids, is);
+
+      z_mult_sub = VectorSubvector(z_mult, is);
+      rsz_sub = VectorSubvector(rsz, is);
+      z_mult_dat = SubvectorData(z_mult_sub);
+      rsz_dat = SubvectorData(rsz_sub);
 
       /* RDF: assume resolutions are the same in all 3 directions */
       rz = SubgridRZ(subgrid);
@@ -113,7 +135,7 @@ double         **CalcElevations(
 
       /* Initialize the elevation_array */
       for (iel = 0; iel < (nx*ny); iel++)
-	 elevation_array[iel] = zinit;
+	 elevation_array[iel] = FLT_MAX;
 
       /* Construct elevation_array */
       GrGeomPatchLoop(i, j, k, fdir, grgeom_solid, ref_patch, 
@@ -122,16 +144,132 @@ double         **CalcElevations(
 	 if (fdir[2] != 0)
 	 {
 	    iel = (j-iy)*nx + (i-ix);
-	    z   = RealSpaceZ(k, rz) + fdir[2]*dz2;
+	    ival = SubvectorEltIndex(z_mult_sub, i,j,k);
+
+	    if( ( (i >= SubgridIX(subgrid)) && (i < (SubgridIX(subgrid) + SubgridNX(subgrid)))) && 
+		( (j >= SubgridIY(subgrid)) && (j < (SubgridIY(subgrid) + SubgridNY(subgrid)))) &&
+		( (k >= SubgridIZ(subgrid)) && (k < (SubgridIZ(subgrid) + SubgridNZ(subgrid)))) )
+	    {
+	       elevation_array[iel] = rsz_dat[ival]+ fdir[2]*dz2*z_mult_dat[ival];
+	    }
+	 }
+      });
+
+      /*
+	SGS TODO SHOULD HAVE ASSERT MACRO
+	This algorithm only works for one subgrid per rank due to the merge process.   
+	Unless we could guarantee subgrids are ordered on each rank.
+
+	SGS TODO this algorithm is inefficient, currently sends all arrays from each rank in the Z 
+	dimension to the bottom rank, performs a reduction and then sends up the column.   
+	MPI has calls that will do this, likely more efficiently.   AMPS is a little limiting.
+      */
+      assert(SubgridArraySize(subgrids)==1);
+
+      if(GlobalsR)
+      {
+	 /*
+	  * Send elevation array to lowest Rank in this Z column.
+	  */
+	 
+	 int num=nx*ny;
+	 
+	 amps_Invoice invoice = amps_NewInvoice("%*d", num, elevation_array);
+	 
+	 int dstRank = pqr_to_process(GlobalsP,
+				      GlobalsQ,
+				      0,
+				      GlobalsNumProcsX,
+				      GlobalsNumProcsY,
+				      GlobalsNumProcsZ);
+	 
+	 amps_Send(amps_CommWorld, dstRank, invoice);
+
+	 amps_FreeInvoice(invoice);
+ 
+	 /*
+	  * Receive 
+	  */
+	 invoice = amps_NewInvoice("%*d", num, elevation_array);
+	 
+	 amps_Recv(amps_CommWorld, dstRank, invoice);
+	 
+	 amps_FreeInvoice(invoice);
+	 
+      }
+      else
+      {
+	 int R;
+	 int num=nx*ny;
+	 double* temp_array = ctalloc(double, num);
+	 
+
+	 for(R = 1; R < GlobalsNumProcsZ; R++)
+	 {
+
+	    int dstRank = pqr_to_process(GlobalsP,
+					 GlobalsQ,
+					 R,
+					 GlobalsNumProcsX,
+					 GlobalsNumProcsY,
+					 GlobalsNumProcsZ);
+
+	    /*
+	     * Receive and reduce results from all processors.
+	     */
+	    amps_Invoice invoice = amps_NewInvoice("%*d", num, temp_array);
 	    
-	    elevation_array[iel] = z;
+	    amps_Recv(amps_CommWorld, dstRank, invoice);
+	    
+	    amps_FreeInvoice(invoice);
+	    
+	    /* 
+	     * Reduction
+	     */
+	    for (iel = 0; iel < (nx*ny); iel++)
+	    {
+	       elevation_array[iel] = MIN(elevation_array[iel], temp_array[iel]);
+	    }
 	 }
 
-      });
+	 free(temp_array);
+
+	 /*
+	  * Original algorithm had default value of 0.0. This forces unset values to 0.0 
+	  * after reduction.
+	  */
+	 for (iel = 0; iel < (nx*ny); iel++)
+	 {
+	    if(elevation_array[iel] == FLT_MAX)
+	    {
+	       elevation_array[iel] = zinit;
+	    }
+	 }
+
+
+	 /*
+	  * Send reduced array to other ranks in column
+	  */
+	 for(R = 1; R < GlobalsNumProcsZ; R++)
+	 {
+	    
+	    int dstRank = pqr_to_process(GlobalsP,
+					 GlobalsQ,
+					 R,
+					 GlobalsNumProcsX,
+					 GlobalsNumProcsY,
+					 GlobalsNumProcsZ);
+
+	    amps_Invoice invoice = amps_NewInvoice("%*d", num, elevation_array);
+	    amps_Send(amps_CommWorld, dstRank, invoice);
+	    amps_FreeInvoice(invoice);
+	 }
+
+      }
 
       elevation_arrays[is] = elevation_array;
    }
-
+      
    GrGeomFreeSolid(grgeom_solid);
 
    return elevation_arrays;

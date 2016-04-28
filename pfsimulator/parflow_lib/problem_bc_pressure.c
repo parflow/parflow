@@ -85,6 +85,13 @@ BCStruct    *BCPressure(
 
    Subgrid        *subgrid;
 
+   Vector      *z_mult            = ProblemDataZmult(problem_data);
+   Vector      *rsz                 = ProblemDataRealSpaceZ(problem_data);
+   Subvector   *z_mult_sub;
+   Subvector   *rsz_sub;
+   double      *z_mult_dat;
+   double      *rsz_dat;
+
    BCStruct       *bc_struct;
    double       ***values;
 
@@ -94,7 +101,7 @@ BCStruct    *BCPressure(
    int            *fdir;
 
    int             num_patches;
-   int             ipatch, is, i, j, k, ival, phase;
+   int             ipatch, is, i, j, k, ival, ips , phase;
    int             cycle_number, interval_number;
  
 	         
@@ -175,7 +182,7 @@ BCStruct    *BCPressure(
 	       ref_patch = BCPressureType0RefPatch(bc_pressure_type0);
 
 	       /* Calculate elevations at (x,y) points on reference patch. */
-	       instance_xtra -> elevations[ipatch] = CalcElevations(ref_solid, ref_patch, subgrids);
+	       instance_xtra -> elevations[ipatch] = CalcElevations(ref_solid, ref_patch, subgrids,problem_data);
 	    }
 
 	    elevations = instance_xtra -> elevations[ipatch];
@@ -183,6 +190,11 @@ BCStruct    *BCPressure(
 	    ForSubgridI(is, subgrids)
 	    {
 	       subgrid = SubgridArraySubgrid(subgrids, is);
+
+               z_mult_sub = VectorSubvector(z_mult, is);
+               rsz_sub = VectorSubvector(rsz, is);
+               z_mult_dat = SubvectorData(z_mult_sub);
+               rsz_dat = SubvectorData(rsz_sub);
 
 	       /* compute patch_values_size (this isn't really needed yet) */
 	       patch_values_size = 0;
@@ -214,8 +226,8 @@ BCStruct    *BCPressure(
 		  PFModuleInvokeType(PhaseDensityInvoke, phase_density,
 				 (0, NULL, NULL, &ref_press, &ref_den, 
 				  CALCFCN));
-
-		  z = RealSpaceZ(k, SubgridRZ(subgrid)) + fdir[2]*dz2;
+                  ips = SubvectorEltIndex(z_mult_sub, i,j,k);
+		  z = rsz_dat[ips] + fdir[2]*dz2*z_mult_dat[ips];
 		  iel = (i-ix) + (j-iy)*nx;
 		  fcn_val = 0.0;
 		  nonlin_resid = 1.0;
@@ -381,6 +393,11 @@ BCStruct    *BCPressure(
 	    {
 	       subgrid = SubgridArraySubgrid(subgrids, is);
 
+               z_mult_sub = VectorSubvector(z_mult, is);
+               rsz_sub = VectorSubvector(rsz, is);
+               z_mult_dat = SubvectorData(z_mult_sub);
+               rsz_dat = SubvectorData(rsz_sub);
+
 	       /* compute patch_values_size (this isn't really needed yet) */
 	       patch_values_size = 0;
 	       BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
@@ -410,7 +427,8 @@ BCStruct    *BCPressure(
                {
                   x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0]*dx2;
                   y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1]*dy2;
-                  z = RealSpaceZ(k, SubgridRZ(subgrid)) + fdir[2]*dz2;
+                  ips = SubvectorEltIndex(z_mult_sub, i,j,k);
+                  z = rsz_dat[ips] + fdir[2]*dz2*z_mult_dat[ips];
 	       
                   /* project center of BC face onto piecewise line */
                   xy = (x*unitx + y*unity - line_min) / line_length;
@@ -603,6 +621,9 @@ BCStruct    *BCPressure(
 	    {
 	       subgrid = SubgridArraySubgrid(subgrids, is);
 
+               z_mult_sub = VectorSubvector(z_mult, is);
+               z_mult_dat = SubvectorData(z_mult_sub);
+
 	       /* compute patch_values_size (this isn't really needed yet) */
 	       patch_values_size = 0;
 	       BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
@@ -620,15 +641,16 @@ BCStruct    *BCPressure(
                area = 0.0;
                BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
                {
+                  ips = SubvectorEltIndex(z_mult_sub, i,j,k);
                   /* primary direction x */
                   if (fdir[0])
                   {
-                     area += dy * dz;
+                     area += dy * dz * z_mult_dat[ips];
                   }
                   /* primary direction y */
                   else if (fdir[1])
                   {
-                     area += dx * dz;
+                     area += dx * dz * z_mult_dat[ips];
                   }
                   /* primary direction z */
                   else if (fdir[2])
@@ -679,6 +701,11 @@ BCStruct    *BCPressure(
 	    {
 	       subgrid = SubgridArraySubgrid(subgrids, is);
 
+               z_mult_sub = VectorSubvector(z_mult, is);
+               rsz_sub = VectorSubvector(rsz, is);
+               z_mult_dat = SubvectorData(z_mult_sub);
+               rsz_dat = SubvectorData(rsz_sub);
+
 	       dz2  = SubgridDZ(subgrid) / 2.0;
 
 	       /* compute patch_values_size (this isn't really needed yet) */
@@ -701,8 +728,8 @@ BCStruct    *BCPressure(
                tmpp = SubvectorData(subvector);
                BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
                {
-                  z = RealSpaceZ(k, SubgridRZ(subgrid)) + fdir[2]*dz2;
-
+                  ips = SubvectorEltIndex(z_mult_sub, i,j,k);
+                  z = rsz_dat[ips] + fdir[2]*dz2*z_mult_dat[ips];
                   itmp = SubvectorEltIndex(subvector, i, j, k);
 
                   patch_values[ival] = tmpp[itmp]; /*- density*gravity*z;*/
@@ -775,6 +802,11 @@ BCStruct    *BCPressure(
 	    {
 	       subgrid = SubgridArraySubgrid(subgrids, is);
 
+               z_mult_sub = VectorSubvector(z_mult, is);
+               rsz_sub = VectorSubvector(rsz, is);
+               z_mult_dat = SubvectorData(z_mult_sub);
+               rsz_dat = SubvectorData(rsz_sub);
+
 	       /* compute patch_values_size */
 	       patch_values_size = 0;
 	       BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
@@ -812,8 +844,8 @@ BCStruct    *BCPressure(
                   {
 		     x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
 		     y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
-		     z = RealSpaceZ(k, SubgridRZ(subgrid)) + fdir[2] * dz2;
-
+                     ips = SubvectorEltIndex(z_mult_sub, i,j,k);
+                     z = rsz_dat[ips] + fdir[2]*dz2*z_mult_dat[ips];
 		     patch_values[ival] = x + y + z;
 		  });
 
@@ -842,8 +874,8 @@ BCStruct    *BCPressure(
                   {
 		     x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
 		     y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
-		     z = RealSpaceZ(k, SubgridRZ(subgrid)) + fdir[2] * dz2;
-
+                     ips = SubvectorEltIndex(z_mult_sub, i,j,k);
+                     z = rsz_dat[ips] + fdir[2]*dz2*z_mult_dat[ips];
 		     patch_values[ival] = pow(x,3)*pow(y,4) + x*x + sin(x*y)*cos(y) + 1;
 		  });
 		  break;
@@ -857,8 +889,8 @@ BCStruct    *BCPressure(
                   {
 		     x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
 		     y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
-		     z = RealSpaceZ(k, SubgridRZ(subgrid)) + fdir[2] * dz2;
-
+                     ips = SubvectorEltIndex(z_mult_sub, i,j,k);
+                     z = rsz_dat[ips] + fdir[2]*dz2*z_mult_dat[ips];
 		     patch_values[ival] = x * y * z * time + 1;
 		  });
 		  break;
@@ -872,8 +904,8 @@ BCStruct    *BCPressure(
                   {
 		     x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
 		     y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
-		     z = RealSpaceZ(k, SubgridRZ(subgrid)) + fdir[2] * dz2;
-
+                     ips = SubvectorEltIndex(z_mult_sub, i,j,k);
+                     z = rsz_dat[ips] + fdir[2]*dz2*z_mult_dat[ips];
 		     patch_values[ival] = x * y * z * time + 1;
 		  });
 		  break;
@@ -971,7 +1003,7 @@ BCStruct    *BCPressure(
                  int              itmp;
                  double           dtmp;
                  
-                 bc_pressure_type8 = BCPressureDataIntervalValue(bc_pressure_data,ipatch,interval_number);
+                 bc_pressure_type8 = (BCPressureType8*)BCPressureDataIntervalValue(bc_pressure_data,ipatch,interval_number);
                  
                  ForSubgridI(is, subgrids)
                  {

@@ -150,6 +150,10 @@ Problem     *problem)      /* General problem information */
    Subvector     *ic_values_sub;
    Subvector     *m_sub;
 
+   Vector      *rsz                 = ProblemDataRealSpaceZ(problem_data);
+   Subvector   *rsz_sub;
+   double      *rsz_dat;
+
    double        *data;
    double        *fcn_data;
    double        *new_density_data;
@@ -165,7 +169,7 @@ Problem     *problem)      /* General problem information */
    int            nx, ny, nz;
    int            r;
 
-   int            is, i, j, k, ips, iel, ipicv;
+   int            is, i, j, k, ips, iel, ipicv,ival;
 
    amps_Invoice   result_invoice;
 
@@ -255,7 +259,6 @@ Problem     *problem)      /* General problem information */
       double  *ref_den;
       double   dtmp;
       double   nonlin_resid;
-      double   z;
       int      ir;
 
       dummy1 = (Type1 *)(public_xtra -> data);
@@ -336,7 +339,10 @@ Problem     *problem)      /* General problem information */
 	       fcn_data            = SubvectorData(tf_sub);
 	       tndd_sub            = VectorSubvector(temp_new_density_der, is);
 	       new_density_der_data = SubvectorData(tndd_sub);
-	    
+	   
+               rsz_sub = VectorSubvector(rsz, is);
+               rsz_dat = SubvectorData(rsz_sub);
+ 
 	       ix = SubgridIX(subgrid);
 	       iy = SubgridIY(subgrid);
 	       iz = SubgridIZ(subgrid);
@@ -353,9 +359,9 @@ Problem     *problem)      /* General problem information */
 		  GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
 	          {
 	             ips = SubvectorEltIndex(ps_sub, i, j, k);
-		     z = RealSpaceZ(k, SubgridRZ(subgrid));
+		     ival = SubvectorEltIndex(rsz_sub, i,j,k);
 		     dtmp = 1.0 - 0.5*new_density_der_data[ips]*gravity
-		                         *(z-reference_elevations[ir]);
+		                         *(rsz_dat[ival]-reference_elevations[ir]);
 		     data[ips] = data[ips] - fcn_data[ips]/dtmp;
 		  });
 	       }  
@@ -392,6 +398,9 @@ Problem     *problem)      /* General problem information */
 	       ps_sub           = VectorSubvector(ic_pressure, is);
 	       data             = SubvectorData(ps_sub);
 	    
+               rsz_sub = VectorSubvector(rsz, is);
+               rsz_dat = SubvectorData(rsz_sub);
+
 	       ix = SubgridIX(subgrid);
 	       iy = SubgridIY(subgrid);
 	       iz = SubgridIZ(subgrid);
@@ -408,10 +417,10 @@ Problem     *problem)      /* General problem information */
 	          GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                   {
 	             ips = SubvectorEltIndex(tf_sub, i, j, k);
-		     z = RealSpaceZ(k, SubgridRZ(subgrid));
+		     ival = SubvectorEltIndex(rsz_sub, i,j,k);
 		     fcn_data[ips] = data[ips] - pressure_values[ir]
 		       - 0.5*(new_density_data[ips]+ref_den[ir])
-		       *gravity*(z-reference_elevations[ir]);
+		       *gravity*(rsz_dat[ival]-reference_elevations[ir]);
 		     nonlin_resid += fcn_data[ips]*fcn_data[ips];
 		  });
 	       }
@@ -420,10 +429,10 @@ Problem     *problem)      /* General problem information */
 		  GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
 		  {
 	             ips = SubvectorEltIndex(tf_sub, i, j, k);
-		     z = RealSpaceZ(k, SubgridRZ(subgrid));
+		     ival = SubvectorEltIndex(rsz_sub, i,j,k);
 		     ref_den[ir] = new_density_data[ips];
 		     fcn_data[ips] = -ref_den[ir]*gravity
-		                           *(z-reference_elevations[ir]);
+		                           *(rsz_dat[ival]-reference_elevations[ir]);
 		     nonlin_resid += fcn_data[ips]*fcn_data[ips];
 		  });
 	       }
@@ -462,7 +471,6 @@ Problem     *problem)      /* General problem information */
       double   *ref_den;
       double    dtmp;
       double    nonlin_resid;
-      double    z;
       double  ***elevations;
       int       ir;
 
@@ -516,7 +524,7 @@ Problem     *problem)      /* General problem information */
       {
 	 ref_solid = ProblemDataSolid(problem_data, geom_indices[ir]);
 	 elevations[ir] = CalcElevations(ref_solid, patch_indices[ir], 
-					 subgrids);
+					 subgrids,problem_data);
 	 
       }        /* End of region loop */
       
@@ -559,6 +567,9 @@ Problem     *problem)      /* General problem information */
 	       tndd_sub            = VectorSubvector(temp_new_density_der, is);
 	       new_density_der_data = SubvectorData(tndd_sub);
 	    
+               rsz_sub = VectorSubvector(rsz, is);
+               rsz_dat = SubvectorData(rsz_sub);
+
 	       ix = SubgridIX(subgrid);
 	       iy = SubgridIY(subgrid);
 	       iz = SubgridIZ(subgrid);
@@ -576,9 +587,9 @@ Problem     *problem)      /* General problem information */
 	          {
 	             ips = SubvectorEltIndex(ps_sub, i, j, k);
 		     iel = (i-ix) + (j-iy)*nx;
-		     z = RealSpaceZ(k, SubgridRZ(subgrid));
+		     ival = SubvectorEltIndex(rsz_sub, i,j,k);
 		     dtmp = 1.0 - 0.5*new_density_der_data[ips]*gravity
-		                           *(z-elevations[ir][is][iel]);
+		                           *(rsz_dat[ival]-elevations[ir][is][iel]);
 		     data[ips] = data[ips] - fcn_data[ips]/dtmp;
 		  });
 	       }
@@ -614,6 +625,9 @@ Problem     *problem)      /* General problem information */
 	       ps_sub           = VectorSubvector(ic_pressure, is);
 	       data             = SubvectorData(ps_sub);
 	    
+               rsz_sub = VectorSubvector(rsz, is);
+               rsz_dat = SubvectorData(rsz_sub);
+
 	       ix = SubgridIX(subgrid);
 	       iy = SubgridIY(subgrid);
 	       iz = SubgridIZ(subgrid);
@@ -631,10 +645,10 @@ Problem     *problem)      /* General problem information */
                   {
 	             ips = SubvectorEltIndex(tf_sub, i, j, k);
 		     iel = (i-ix) + (j-iy)*nx;
-		     z = RealSpaceZ(k, SubgridRZ(subgrid));
+		     ival = SubvectorEltIndex(rsz_sub, i,j,k);
 		     fcn_data[ips] = data[ips] - pressure_values[ir]
 		       - 0.5*(new_density_data[ips]+ref_den[ir])
-		       *gravity*(z-elevations[ir][is][iel]);
+		       *gravity*(rsz_dat[ival]-elevations[ir][is][iel]);
 		     nonlin_resid += fcn_data[ips]*fcn_data[ips];
 		  });
 	       }
@@ -644,10 +658,10 @@ Problem     *problem)      /* General problem information */
                   {
 	             ips = SubvectorEltIndex(tf_sub, i, j, k);
 		     iel = (i-ix) + (j-iy)*nx;
-		     z = RealSpaceZ(k, SubgridRZ(subgrid));
+		     ival = SubvectorEltIndex(rsz_sub, i,j,k);
 		     ref_den[ir] = new_density_data[ips];
 		     fcn_data[ips] = - ref_den[ir]*gravity
-		                                  *(z-elevations[ir][is][iel]);
+		                                  *(rsz_dat[ival]-elevations[ir][is][iel]);
 		     nonlin_resid += fcn_data[ips]*fcn_data[ips];
 		  });
 	       }

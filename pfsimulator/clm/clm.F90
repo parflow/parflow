@@ -2,9 +2,10 @@
 
 subroutine clm_lsm(pressure,saturation,evap_trans,topo,porosity,pf_dz_mult,istep_pf,dt,time,           &
 start_time,pdx,pdy,pdz,ix,iy,nx,ny,nz,nx_f,ny_f,nz_f,nz_rz,ip,npp,npq,npr,gnx,gny,rank,sw_pf,lw_pf,    &
-prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf,eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,             &
+prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf,lai_pf,sai_pf,z0m_pf,displa_pf,                               &
+eflx_lh_pf,eflx_lwrad_pf,eflx_sh_pf,eflx_grnd_pf,                                                     &
 qflx_tot_pf,qflx_grnd_pf,qflx_soi_pf,qflx_eveg_pf,qflx_tveg_pf,qflx_in_pf,swe_pf,t_g_pf,               &
-t_soi_pf,clm_dump_interval,clm_1d_out,clm_output_dir,clm_output_dir_length,clm_bin_output_dir,         &
+t_soi_pf,clm_dump_interval,clm_1d_out,clm_forc_veg,clm_output_dir,clm_output_dir_length,clm_bin_output_dir,         &
 write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,                 &
 res_satpf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,               &
 qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z,clm_next,clm_write_logs,                    &
@@ -103,6 +104,10 @@ clm_last_rst,clm_daily_rst)
   real(r8) :: v_pf((nx+2)*(ny+2)*3)              ! v-wind, passed from PF
   real(r8) :: patm_pf((nx+2)*(ny+2)*3)           ! air pressure, passed from PF
   real(r8) :: qatm_pf((nx+2)*(ny+2)*3)           ! air specific humidity, passed from PF
+  real(r8) :: lai_pf((nx+2)*(ny+2)*3)            ! BH: lai, passed from PF
+  real(r8) :: sai_pf((nx+2)*(ny+2)*3)            ! BH: sai, passed from PF
+  real(r8) :: z0m_pf((nx+2)*(ny+2)*3)            ! BH: z0m, passed from PF
+  real(r8) :: displa_pf((nx+2)*(ny+2)*3)         ! BH: displacement height, passed from PF
   real(r8) :: irr_flag_pf((nx+2)*(ny+2)*3)       ! irrigation flag for deficit-based scheduling -- 1 = irrigate, 0 = no-irrigate
   real(r8) :: qirr_pf((nx+2)*(ny+2)*3)           ! irrigation applied above ground -- spray or drip (2D)
   real(r8) :: qirr_inst_pf((nx+2)*(ny+2)*(nlevsoi+2))! irrigation applied below ground -- 'instant' (3D)
@@ -110,6 +115,7 @@ clm_last_rst,clm_daily_rst)
   ! output keys
   real(r8) :: clm_dump_interval                  ! dump inteval for CLM output, passed from PF, always in interval of CLM timestep, not time
   integer  :: clm_1d_out                         ! whether to dump 1d output 0=no, 1=yes
+  integer  :: clm_forc_veg                       ! BH: whether vegetation (LAI, SAI, z0m, displa) is being forced 0=no, 1=yes
   integer  :: clm_output_dir_length              ! for output directory
   integer  :: clm_bin_output_dir                 ! output directory
   integer  :: write_CLM_binary                   ! whether to write CLM output as binary 
@@ -133,6 +139,8 @@ clm_last_rst,clm_daily_rst)
 
   ! local indices & counters
   integer  :: i,j,k,k1,j1,l1                     ! indices for local looping
+  integer  :: bj,bl                              ! indices for local looping !BH
+
   integer  :: j_incr,k_incr                      ! increment for j and k to convert 1D vector to 3D i,j,k array
   integer, allocatable :: counter(:,:) 
   real(r8) :: total
@@ -170,6 +178,16 @@ clm_last_rst,clm_daily_rst)
      
      if (clm_write_logs==1) write(999,*) "INITIALIZATION"
 
+!RMM: writing a CLM.out.clm.log file with basic information only from the master node (0 processor)
+!
+  if (rank==0) then
+  open(9919, file="CLM.out.clm.log",action="write")
+  write(9919,*) "******************************"
+  write(9919,*) " CLM log basic output"
+  write(9919,*)
+  write(9919,*) "CLM starting istep =", istep_pf
+  end if ! CLM log
+
      !=== Allocate Memory for Grid Module
      allocate( counter(nx,ny) )
      allocate (grid(drv%nc,drv%nr),stat=ierr) ; call drv_astp(ierr) 
@@ -183,7 +201,15 @@ clm_last_rst,clm_daily_rst)
      !=== Read in the clm input (drv_clmin.dat)
      call drv_readclmin (drv,grid,rank,clm_write_logs)
 
+     if (rank==0) then
+       write(9919,*) "CLM startcode for date (1=restart, 2=defined):", drv%startcode
+       write(9919,*) "CLM IC (1=restart, 2=defined):", drv%clm_ic
+    !=== @RMM check for error in IC or starting time
+       if (drv%startcode == 0) stop
+       if (drv%clm_ic == 0) stop
 
+
+     end if
      !=== Allocate memory for subgrid tile space
      !=== LEGACY =============================================================================================
      !=== (Keeping around in case we go back to multiple tiles per cell)
@@ -247,7 +273,7 @@ clm_last_rst,clm_daily_rst)
      write(999,*) 'local NX:',nx,' NX with ghost:',nx_f,' IX:', ix
      write(999,*) 'local NY:',ny,' NY with ghost:',ny_f,' IY:',iy
      write(999,*) 'PF    NZ:',nz, 'NZ with ghost:',nz_f
-     write(999,*) 'globla  NX:',gnx, ' global NY:', gny
+     write(999,*) 'global  NX:',gnx, ' global NY:', gny
      write(999,*) 'DRV-NC:',drv%nc,' DRV-NR:',drv%nr, 'DRV-NCH:',drv%nch
      write(999,*) ' Processor Number:',rank, ' local vector start:',ip
      endif
@@ -327,15 +353,20 @@ clm_last_rst,clm_daily_rst)
 
         i = tile(t)%col
         j = tile(t)%row
-
+		
+		!!!! BH: modification of the interfaces depths and layers thicknesses to match PF definitions
+	    clm(t)%zi(0)            = 0.   
+    
         ! check if cell is active
         if (clm(t)%planar_mask == 1) then
 
            ! reset node depths (clm%z) based on variable dz multiplier
            do k = 1, nlevsoi
               l                 = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
+	      clm(t)%dz(k)	= drv%dz * pf_dz_mult(l) ! basile
               if (k==1) then
                  clm(t)%z(k)    = 0.5 * drv%dz * pf_dz_mult(l)
+	      	clm(t)%zi(k)	= drv%dz * pf_dz_mult(l) ! basile
               else
                  total          = 0.0
                  do k1 = 1, k-1
@@ -343,32 +374,63 @@ clm_last_rst,clm_daily_rst)
                     total       = total + (drv%dz * pf_dz_mult(l1))
                  enddo
                  clm%z(k)       = total + (0.5 * drv%dz * pf_dz_mult(l))
+		clm%zi(k)	= total + drv%dz * pf_dz_mult(l)! basile
               endif
            enddo
 
-           ! set dz values (node thickness)
-           ! (computed from node depths as in original CLM -- not always equal to PF dz values!)
-           clm(t)%dz(1)            = 0.5*(clm(t)%z(1)+clm(t)%z(2))         !thickness b/n two interfaces
-           do k = 2,nlevsoi-1
-              clm(t)%dz(k)         = 0.5*(clm(t)%z(k+1)-clm(t)%z(k-1))
+
+          !! BH : the following is the previous version: commented
+          ! ! set dz values (node thickness)
+          ! ! (computed from node depths as in original CLM -- not always equal to PF dz values!)
+          ! clm(t)%dz(1)            = 0.5*(clm(t)%z(1)+clm(t)%z(2))         !thickness b/n two interfaces
+          ! do k = 2,nlevsoi-1
+          !    clm(t)%dz(k)         = 0.5*(clm(t)%z(k+1)-clm(t)%z(k-1))
+          ! enddo
+          ! clm(t)%dz(nlevsoi)      = clm(t)%z(nlevsoi)-clm(t)%z(nlevsoi-1)
+!
+          ! ! set zi values (interface depths)
+          ! ! (computed from node depths as in original CLM -- not always equal to PF interfaces!)
+          ! clm(t)%zi(0)            = 0.                             !interface depths
+          ! do k = 1, nlevsoi-1
+          !    clm(t)%zi(k)         = 0.5*(clm(t)%z(k)+clm(t)%z(k+1))
+          ! enddo
+          ! clm(t)%zi(nlevsoi)      = clm(t)%z(nlevsoi) + 0.5*clm(t)%dz(nlevsoi)
+!
+ !!          ! PRINT CHECK
+!          do k = 1, nlevsoi
+!             l                 = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
+!             if (clm_write_logs==1) write(999,*) "DZ CHECK -- ", i, j, k, l, pf_dz_mult(l), clm(t)%dz(k), clm(t)%z(k), &
+!                 clm(t)%zi(k),clm(t)%rootfr(k)
+!           enddo
+          !! BH : commented (end)
+		  
+		   !! BH: Overwrite Rootfr disttribution: start
+           !! BH: the following overwrites the root fraction definition which is previously set up in drv_clmini.F90 
+		   !! BH: but based on constant DZ, regardless of pf_dz_mult.
+           do bj = 1, nlevsoi-1
+           clm(t)%rootfr(bj) = .5*( exp(-tile(t)%roota*clm(t)%zi(bj-1))  &
+                           + exp(-tile(t)%rootb*clm(t)%zi(bj-1))  &
+                           - exp(-tile(t)%roota*clm(t)%zi(bj  ))  &
+                           - exp(-tile(t)%rootb*clm(t)%zi(bj  )) )
            enddo
-           clm(t)%dz(nlevsoi)      = clm(t)%z(nlevsoi)-clm(t)%z(nlevsoi-1)
+           clm(t)%rootfr(nlevsoi)=.5*( exp(-tile(t)%roota*clm(t)%zi(nlevsoi-1))&
+                               + exp(-tile(t)%rootb*clm(t)%zi(nlevsoi-1)))
 
-           ! set zi values (interface depths)
-           ! (computed from node depths as in original CLM -- not always equal to PF interfaces!)
-           clm(t)%zi(0)            = 0.                             !interface depths
-           do k = 1, nlevsoi-1
-              clm(t)%zi(k)         = 0.5*(clm(t)%z(k)+clm(t)%z(k+1))
+           ! reset depth variables assigned by user in clmin file 
+           do bl=1,nlevsoi
+              if (grid(tile(t)%col,tile(t)%row)%rootfr /= drv%udef) &
+                 clm(t)%rootfr(bl)=grid(tile(t)%col,tile(t)%row)%rootfr    
            enddo
-           clm(t)%zi(nlevsoi)      = clm(t)%z(nlevsoi) + 0.5*clm(t)%dz(nlevsoi)
 
-           ! PRINT CHECK
-           ! do k = 1, nlevsoi
-           !    l                 = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
-           !    if (clm_write_logs==1) write(999,*) "DZ CHECK -- ", i, j, k, l, pf_dz_mult(l), clm(t)%dz(k), clm(t)%z(k), clm(t)%zi(k)
-           ! enddo
-
-        endif ! active/inactive
+ !!          ! PRINT CHECK
+           !do k = 1, nlevsoi
+           !  l                 = 1+i + j_incr*(j) + k_incr*(clm(t)%topo_mask(1)-(k-1))
+           !  if (clm_write_logs==1) write(999,*) "DZ CHECK -- ", i, j, k, l, pf_dz_mult(l), clm(t)%dz(k), clm(t)%z(k), &
+           !      clm(t)%zi(k),clm(t)%rootfr(k)
+           !enddo
+           !! BH: Overwrite Rootfr disttribution: end
+		   
+		   endif ! active/inactive
 
      enddo !t 
            
@@ -431,12 +493,24 @@ clm_last_rst,clm_daily_rst)
   drv%endtime = 0
   call drv_tick(drv)
 
+!RMM: writing a CLM.log.out file with basic information only from the master node (0 processor)
+!
+  if (rank==0) then
+  write(9919,*)
+  write(9919,*) "CLM starting time =", time, "gmt =", drv%gmt,"istep_pf =",istep_pf 
+  write(9919,*) "CLM day =", drv%da, "month =", drv%mo,"year =", drv%yr
+  end if ! CLM log
+
 
   !=== Read in the atmospheric forcing for off-line run
   !    (values no longer read by drv_getforce, passed from PF)
   !    (drv_getforce is modified to convert arrays from PF input to CLM space)
-  call drv_getforce(drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf,istep_pf)
-
+  !call drv_getforce(drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf,patm_pf,qatm_pf,istep_pf)
+  !BH: modification of drv_getforc to optionnaly force vegetation (LAI/SAI/Z0M/DISPLA): 
+  !BH: this replaces values from clm_dynvegpar called previously from drv_clmini and 
+  !BH: replaces values from drv_readvegpf
+  call drv_getforce(drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf, &
+	patm_pf,qatm_pf,lai_pf,sai_pf,z0m_pf,displa_pf,istep_pf,clm_forc_veg)
   !=== Actual time loop
   !    (loop over CLM tile space, call 1D CLM at each point)
   do t = 1, drv%nch     
@@ -538,6 +612,10 @@ clm_last_rst,clm_daily_rst)
   write(999,*) "End of time advance:" 
   write(999,*) 'time =', time, 'gmt =', drv%gmt, 'endtime =', drv%endtime
   endif
+ if (rank==0) then
+    write(9919,*) "End of time advance:"
+    write(9919,*) 'time =', time, 'gmt =', drv%gmt, 'endtime =', drv%endtime
+ end if !! rank 0, write log info
 
 ! if ( (drv%gmt==0.0).or.(drv%endtime==1) ) call drv_restart(2,drv,tile,clm,rank,istep_pf)
   ! ----------------------------------
@@ -550,7 +628,17 @@ clm_last_rst,clm_daily_rst)
      endif
 
       if (clm_daily_rst==1) then
-       if ( (drv%gmt==0.0).or.(drv%endtime==1) ) call drv_restart(2,drv,tile,clm,rank,d_stp)
+       if ( (drv%gmt==0.0).or.(drv%endtime==1) ) then
+         if (rank==0) write(9919,*) 'Writing restart time =', time, 'gmt =', drv%gmt, 'istep_pf =',istep_pf
+          !! @RMM/LEC  add in a TCL file that sets an istep value to better automate restarts
+          if (rank==0) then
+                open(393, file="clm_restart.tcl",action="write")
+                write(393,*) "set istep ",istep_pf
+                close(393)
+          end if  !  write istep corresponding to restart step
+
+            call drv_restart(2,drv,tile,clm,rank,d_stp)
+             end if
       else
        call drv_restart(2,drv,tile,clm,rank,d_stp)
       endif
@@ -580,6 +668,7 @@ clm_last_rst,clm_daily_rst)
      ! close(166)
      ! close(199)
      if (clm_write_logs==1) close(999)
+     if (rank == 0) close (9919)
   end if
 
 

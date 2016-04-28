@@ -6,7 +6,7 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
                         htvp,       sfacx,      dqgmax,         &
                         emv,        emg,        dlrad,          &
                         ulrad,      cgrnds,     cgrndl,         &
-                        cgrnd,      clm)
+                        cgrnd,      temp_alpha,      clm)
 
 !=========================================================================
 !
@@ -84,7 +84,8 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
        sfacx,             & ! coefficient for "sfact"
        dqgmax,            & ! max of d(qg)/d(theta)
        emv,               & ! ground emissivity
-       emg                  ! vegetation emissivity
+       emg,               &  ! vegetation emissivity
+       temp_alpha            ! beta-type formulation for soil resistance / bare soil under canopy evap
 
   real(r8), intent(inout) :: &
        cgrnd,             & ! deriv. of soil energy flux wrt to soil temp [w/m2/k]
@@ -148,7 +149,9 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
        qsatl,             & ! leaf specific humidity [kg/kg]
        qsatldT,           & ! derivative of "qsatl" on "t_veg"
        air,bir,cir,       & ! atmos. radiation temporay set
-       dc1,dc2              ! derivative of energy flux [W/m2/K]
+       dc1,dc2,           & ! derivative of energy flux [W/m2/K]
+       w, csoilcn           ! weight function and revised csoilc - declare  @RMM
+
 
   real(r8) delt,          & ! temporary
        delq                 ! temporary
@@ -290,10 +293,16 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
 ! Aerodynamic resistances raw and rah between heights zpd+z0h and z0hg.
 ! if no vegetation, rah(2)=0 because zpd+z0h = z0hg.
 ! (Dickinson et al., 1993, pp.54)
+! Weighting the drag coefficient of soil under canopy for changes in canopy density
+! per Zeng et al. 2005 JClimate and Lawrence et al. 2007 JHM
+!  @BR "alpha" in weighting set to 2, csoilc changed in clm_input.dat to 0.0025
+! @CLM Dry Bias
 
+     w = exp(-2*(clm%elai+clm%esai))     !## added this line @RMM
+     csoilcn = (vkc/(0.13*(clm%zlnd*uaf/1.5e-5)**0.45))*w + clm%csoilc*(1.-w)  !@RMM
      ram(2) = 0.               ! not used
-     rah(2) = 1./(clm%csoilc*uaf)
-     raw(2) = rah(2) 
+     rah(2) = 1./(csoilcn*uaf)  !### Changed clm%csoilc to csoilcn
+     raw(2) = rah(2)
 
 ! Stomatal resistances for sunlit and shaded fractions of canopy.
 ! should do each iteration to account for differences in eah, tv.
@@ -488,8 +497,8 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
   clm%taux  = clm%taux - clm%frac_veg_nosno*clm%forc_rho*clm%forc_u/ram(1)
   clm%tauy  = clm%tauy - clm%frac_veg_nosno*clm%forc_rho*clm%forc_v/ram(1)
   clm%eflx_sh_grnd = clm%eflx_sh_grnd + cpair*clm%forc_rho*wtg*delt
-  clm%qflx_evap_soi = clm%qflx_evap_soi +   clm%forc_rho*wtgq*delq
-
+  clm%qflx_evap_soi = clm%qflx_evap_soi +   temp_alpha*clm%forc_rho*wtgq*delq
+!!print*, 'temp_alpha:',temp_alpha
 ! 2 m height air temperature
 
   clm%t_ref2m   = clm%t_ref2m + clm%frac_veg_nosno*(taf + temp1*dth * &

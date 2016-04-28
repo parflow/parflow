@@ -95,7 +95,7 @@ subroutine clm_hydro_canopy (clm)
 
         ! Direct throughfall
 
-        fpi = 1. - exp(-0.5*(clm%elai + clm%esai))
+        fpi = 0.25d0*(1. - exp(-0.5*(clm%elai + clm%esai)))
         qflx_through  = prcp*(1.-fpi)*clm%frac_veg_nosno
 
         ! Water storage of intercepted precipitation and dew

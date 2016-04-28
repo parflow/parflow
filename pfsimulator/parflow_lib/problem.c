@@ -97,6 +97,18 @@ Problem   *NewProblem(
    ProblemDumpInterval(problem) = GetDouble("TimingInfo.DumpInterval");
    CheckTime(problem, "TimingInfo.DumpInterval", ProblemDumpInterval(problem));
 
+   ProblemDumpIntervalExecutionTimeLimit(problem) = GetIntDefault("TimingInfo.DumpIntervalExecutionTimeLimit", 0);
+
+#ifndef HAVE_SLURM
+   if(ProblemDumpIntervalExecutionTimeLimit(problem))
+   {
+      /*
+       * SGS TODO should create a print warning/error function.   Can we use some standard logging library?
+       */
+     amps_Printf("Warning: TimingInfo.DumpIntervalExecutionTimeLimit is ignored if SLURM not linked with Parflow");   
+   }
+#endif
+
    NameArray      switch_na = NA_NewNameArray("False True");
    char *switch_name = GetStringDefault("TimingInfo.DumpAtEnd", "False");
    int switch_value = NA_NameToIndex(switch_na, switch_name);
@@ -209,6 +221,11 @@ Problem   *NewProblem(
     
     ProblemdzScale(problem) =
     PFModuleNewModule(dzScale, ()); //RMM
+
+
+    ProblemRealSpaceZ(problem) =
+    PFModuleNewModule(realSpaceZ, ()); 
+
 
    ProblemOverlandFlowEval(problem) =
       PFModuleNewModule(OverlandFlowEval, ()); //DOK
@@ -359,7 +376,9 @@ void      FreeProblem(
    PFModuleFreeModule(ProblemYSlope(problem));
    PFModuleFreeModule(ProblemMannings(problem));
     PFModuleFreeModule(ProblemdzScale(problem));  //RMM
-    
+   PFModuleFreeModule(ProblemRealSpaceZ(problem));    
+
+
    PFModuleFreeModule(ProblemOverlandFlowEval(problem)); //DOK
     PFModuleFreeModule(ProblemOverlandFlowEvalDiff(problem)); //@RMM
 
@@ -400,6 +419,8 @@ ProblemData   *NewProblemData(
  
     /* @RMM added vector dz multiplier */
    ProblemDataZmult(problem_data)  = NewVectorType(grid, 1, 1, vector_cell_centered); //RMM
+
+   ProblemDataRealSpaceZ(problem_data)  = NewVectorType(grid, 1, 1, vector_cell_centered);
     
    ProblemDataIndexOfDomainTop(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D); 
 
@@ -447,6 +468,7 @@ void          FreeProblemData(
       FreeVector(ProblemDataSSlopeX(problem_data)); //RMM
       FreeVector(ProblemDataSSlopeY(problem_data)); //RMM
       FreeVector(ProblemDataZmult(problem_data)); //RMM
+      FreeVector(ProblemDataRealSpaceZ(problem_data));
       FreeVector(ProblemDataIndexOfDomainTop(problem_data));
 
       tfree(problem_data);

@@ -159,4 +159,6 @@ amps_ThreadLocalDcl(extern IDB *, input_database);
 
 #define GlobalsParflowSimulation   (globals -> parflow_simulation)
 
+#define pqr_to_process(p, q, r, P, Q, R)  ((((r)*(Q))+(q))*(P) + (p))
+
 #endif

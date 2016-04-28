@@ -35,6 +35,17 @@
 #ifdef HAVE_HYPRE
 #include "hypre_dependences.h"
 
+/*
+ * Versions of Hypre > 2.10.x require dimension argument for
+ * BoxCreate.  Previous versions don't require argument.
+ */
+#if PARFLOW_HYPRE_VERSION_MAJOR > 2 || \
+   ( PARFLOW_HYPRE_VERSION_MAJOR >= 2 &&  PARFLOW_HYPRE_VERSION_MINOR >= 10 )
+#define PARFLOW_HYPRE_DIM 3
+#else
+#define PARFLOW_HYPRE_DIM
+#endif
+
 typedef struct
 {
    int  max_iter;
@@ -150,7 +161,8 @@ int          zero)
       ihi[1] = ilo[1] + ny_v - 1;
       ihi[2] = ilo[2] + nz_v - 1;
 
-      value_box = hypre_BoxCreate();
+      value_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
+      
       hypre_BoxSetExtents(value_box, ilo, ihi); 
 
       GrGeomInBoxLoop(i, j, k, 
@@ -165,7 +177,7 @@ int          zero)
 			 ihi[1] = ilo[1] + num_j - 1;
 			 ihi[2] = ilo[2] + num_k - 1;
 			 
-			 set_box = hypre_BoxCreate();
+			 set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
 			 hypre_BoxSetExtents(set_box, ilo, ihi); 
 
 			 hypre_StructVectorSetBoxValues ( hypre_b,
@@ -259,7 +271,7 @@ int          zero)
       ihi[1] = ilo[1] + ny_v - 1;
       ihi[2] = ilo[2] + nz_v - 1;
 
-      value_box = hypre_BoxCreate();
+      value_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
       hypre_BoxSetExtents(value_box, ilo, ihi); 
 
       GrGeomInBoxLoop(i, j, k, 
@@ -274,7 +286,7 @@ int          zero)
 			 ihi[1] = ilo[1] + num_j - 1;
 			 ihi[2] = ilo[2] + num_k - 1;
 			 
-			 set_box = hypre_BoxCreate();
+			 set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
 			 hypre_BoxSetExtents(set_box, ilo, ihi); 
 
 			 hypre_StructVectorSetBoxValues ( hypre_x,
@@ -545,7 +557,7 @@ double       *temp_data)
 			ihi[1] = ilo[1] + ny_m - 1;
 	    		ihi[2] = ilo[2] + nz_m - 1;
 
-	    		value_box = hypre_BoxCreate();
+	    		value_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
 	    		hypre_BoxSetExtents(value_box, ilo, ihi); 
 
 	    		GrGeomInBoxLoop(i, j, k, 
@@ -561,7 +573,7 @@ double       *temp_data)
 			       ihi[1] = ilo[1] + num_j - 1;
 			       ihi[2] = ilo[2] + num_k - 1;
 			       
-			       set_box = hypre_BoxCreate();
+			       set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
 			       hypre_BoxSetExtents(set_box, ilo, ihi); 
 			       
                                /* IMF: commented print statement
@@ -616,7 +628,7 @@ double       *temp_data)
 	    		ihi[1] = ilo[1] + ny - 1;
 	    		ihi[2] = ilo[2] + nz - 1;
 
-	    		value_box = hypre_BoxCreate();
+	    		value_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
 	    		hypre_BoxSetExtents(value_box, ilo, ihi); 
 
 	    		GrGeomInBoxLoop(i, j, k, 
@@ -631,7 +643,7 @@ double       *temp_data)
 			       ihi[1] = ilo[1] + num_j - 1;
 			       ihi[2] = ilo[2] + num_k - 1;
 
-			       set_box = hypre_BoxCreate();
+			       set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
 			       hypre_BoxSetExtents(set_box, ilo, ihi); 
 
 			       /*
@@ -747,7 +759,7 @@ double       *temp_data)
 			ihi[1] = ilo[1] + ny_m - 1;
 	    		ihi[2] = ilo[2] + nz_m - 1;
 
-	    		value_box = hypre_BoxCreate();
+	    		value_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
 	    		hypre_BoxSetExtents(value_box, ilo, ihi); 
 
 	    		GrGeomInBoxLoop(i, j, k, 
@@ -763,7 +775,7 @@ double       *temp_data)
 			       ihi[1] = ilo[1] + num_j - 1;
 			       ihi[2] = ilo[2] + num_k - 1;
 			       
-			       set_box = hypre_BoxCreate();
+			       set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
 			       hypre_BoxSetExtents(set_box, ilo, ihi); 
 			       
                                /* IMF: commented print statement
@@ -854,7 +866,7 @@ double       *temp_data)
 	    		ihi[1] = ilo[1] + ny - 1;
 	    		ihi[2] = ilo[2] + nz - 1;
 
-	    		value_box = hypre_BoxCreate();
+	    		value_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
 	    		hypre_BoxSetExtents(value_box, ilo, ihi); 
 
 	    		GrGeomInBoxLoop(i, j, k, 
@@ -869,7 +881,7 @@ double       *temp_data)
 			       ihi[1] = ilo[1] + num_j - 1;
 			       ihi[2] = ilo[2] + num_k - 1;
 
-			       set_box = hypre_BoxCreate();
+			       set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
 			       hypre_BoxSetExtents(set_box, ilo, ihi); 
 
 			       /*

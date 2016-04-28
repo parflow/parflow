@@ -322,7 +322,6 @@ int           symm_part)      /* Specifies whether to compute just the
 	       case 7:
 	       {
 		  public_xtra -> type = overland_flow;
-		 // printf("SGS setting overland flow\n");
 	       }
 	       break;
 	    }
@@ -369,16 +368,6 @@ int           symm_part)      /* Specifies whether to compute just the
    // parallel.
    ovlnd_flag = 1; // determines whether or not to set up data structs for overland flow contribution
 
-   /* Pass permeability values */
-   /*
-     handle = InitVectorUpdate(permeability_x, VectorUpdateAll);
-     FinalizeVectorUpdate(handle);
-
-     handle = InitVectorUpdate(permeability_y, VectorUpdateAll);
-     FinalizeVectorUpdate(handle);
-
-     handle = InitVectorUpdate(permeability_z, VectorUpdateAll);
-     FinalizeVectorUpdate(handle);*/
 
    /* Initialize matrix values to zero. */
    InitMatrix(J, 0.0);
@@ -470,13 +459,7 @@ int           symm_part)      /* Specifies whether to compute just the
 	 cp[im] += (sdp[iv]*dp[iv] + sp[iv]*ddp[iv])
 	    *pop[ipo]*vol2 + ss[iv]*vol2*(sdp[iv]*dp[iv]*pp[iv]+sp[iv]*ddp[iv]*pp[iv]+sp[iv]*dp[iv]); //sk start
           
-//          if (overlandspinup == 1) {
-              /* add flux loss equal to excess head  that overwrites the prior overland flux */
-/*              if (k == nz-1) {
-                  sep = dz*z_mult_dat[ip];  
-                  cp[ip] +=  -vol*z_mult_dat[ip]/ sep;
-              } } 
-                   */
+
 
       });
 
@@ -541,6 +524,8 @@ int           symm_part)      /* Specifies whether to compute just the
    ForSubgridI(is, GridSubgrids(grid))
    {
       subgrid = GridSubgrid(grid, is);
+      Subgrid* grid2d_subgrid = GridSubgrid(grid2d, is);
+      int grid2d_iz = SubgridIZ(grid2d_subgrid);
 	
       p_sub    = VectorSubvector(pressure, is);
       d_sub    = VectorSubvector(density, is);
@@ -614,7 +599,7 @@ int           symm_part)      /* Specifies whether to compute just the
 
 	 ip = SubvectorEltIndex(p_sub, i, j, k);
 	 im = SubmatrixEltIndex(J_sub, i, j, k);
-     ioo = SubvectorEltIndex(p_sub, i, j, 0);  
+	 ioo = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 	 
      prod        = rpp[ip] * dp[ip];
 	 prod_der    = rpdp[ip] * dp[ip] + rpp[ip] * ddp[ip];
@@ -635,13 +620,8 @@ int           symm_part)      /* Specifies whether to compute just the
           x_dir_g_c = Mean(gravity*cos(atan(x_ssl_dat[ioo])),gravity*cos(atan(x_ssl_dat[ioo+1])));
           y_dir_g = Mean(gravity*sin(atan(y_ssl_dat[ioo])),gravity*sin(atan(y_ssl_dat[ioo+sy_v])));
           y_dir_g_c = Mean(gravity*cos(atan(y_ssl_dat[ioo])),gravity*cos(atan(y_ssl_dat[ioo+sy_v])));
-          // x_dir_g = x_ssl_dat[ioo];
-          // y_dir_g = y_ssl_dat[ioo];
-      /*   x_dir_g = 0.0;
-          y_dir_g = 0.0;  
-           x_dir_g_c = 1.0;
-          y_dir_g_c = 1.0; */
-	 /* diff >= 0 implies flow goes left to right */
+ 
+          /* diff >= 0 implies flow goes left to right */
 	 diff = pp[ip] - pp[ip+1];
           updir= (diff/dx)*x_dir_g_c - x_dir_g;
 
@@ -650,34 +630,23 @@ int           symm_part)      /* Specifies whether to compute just the
 	    / viscosity;
 
 	 sym_west_temp = (- x_coeff 
-                      * RPMean(updir, 0.0, prod, prod_rt))*x_dir_g_c; 
-      //    * RPMean(pp[ip], pp[ip+1], prod, prod_rt))*x_dir_g_c; 
-     //sym_west_temp += (x_coeff*dx*RPMean(updir,0.0, prod_der, 0.0))*x_dir_g; //@RMM TFG contributions, sym
+                      * RPMean(updir, 0.0, prod, prod_rt))*x_dir_g_c;  //@RMM TFG contributions, sym
 
-    //-(x_coeff*dx* RPMean(pp[ip], pp[ip+1], prod, prod_rt))*x_dir_g; //@RMM added sym TFG contributions
 
 	 west_temp = (-x_coeff *diff
-	   // * RPMean(pp[ip], pp[ip+1], prod_der, 0.0)) *x_dir_g_c
           * RPMean(updir,0.0, prod_der, 0.0)) *x_dir_g_c
                     + sym_west_temp;
           
      west_temp += (x_coeff*dx*RPMean(updir,0.0, prod_der, 0.0))*x_dir_g;  //@RMM TFG contributions, non sym
-//          west_temp += (x_coeff*dx*RPMean(pp[ip], pp[ip+1], prod_der, 0.0))*x_dir_g;  //@RMM TFG contributions, non sym
 
 	 sym_east_temp = (-x_coeff
-                      * RPMean(updir,0.0, prod, prod_rt))*x_dir_g_c;
-//          * RPMean(pp[ip], pp[ip+1], prod, prod_rt))*x_dir_g_c;
-
-          //-(x_coeff*dx* RPMean(pp[ip], pp[ip+1], prod, prod_rt))*x_dir_g;  //@RMM added sym TFG contributions
-     //sym_east_temp += (x_coeff*dx*RPMean(updir,0.0, 0.0, prod_rt_der))*x_dir_g; //@RMM  TFG contributions sym
+                      * RPMean(updir,0.0, prod, prod_rt))*x_dir_g_c;  //@RMM added sym TFG contributions
 
 	 east_temp = (x_coeff * diff
 	    * RPMean(updir,0.0, 0.0, prod_rt_der))*x_dir_g_c
-        //  * RPMean(pp[ip], pp[ip+1], 0.0, prod_rt_der))*x_dir_g_c
 	    + sym_east_temp;
           
      east_temp += -(x_coeff*dx*RPMean(updir,0.0, 0.0, prod_rt_der))*x_dir_g;  //@RMM  TFG contributions non sym
-     //     east_temp += -(x_coeff*dx*RPMean(pp[ip], pp[ip+1], 0.0, prod_rt_der))*x_dir_g;  //@RMM  TFG contributions non sym
           
 	 /* diff >= 0 implies flow goes south to north */
 	 diff = pp[ip] - pp[ip+sy_v];
@@ -688,49 +657,37 @@ int           symm_part)      /* Specifies whether to compute just the
 	    / viscosity;
 
 	 sym_south_temp = - y_coeff
-	    *RPMean(updir, 0.0, prod, prod_no)*y_dir_g_c;
-     //     *RPMean(pp[ip], pp[ip+sy_v], prod, prod_no)*y_dir_g_c;
-
-          //sym_south_temp += (y_coeff*dy*RPMean(pp[ip], pp[ip+sy_v], prod_der, 0.0))*y_dir_g;  //@RMM TFG contributions, SYMM
+	    *RPMean(updir, 0.0, prod, prod_no)*y_dir_g_c;  //@RMM TFG contributions, SYMM
           
 	 south_temp = - y_coeff * diff
-	  //  * RPMean(pp[ip], pp[ip+sy_v], prod_der, 0.0)*y_dir_g_c
           * RPMean(updir, 0.0, prod_der, 0.0)*y_dir_g_c
           + sym_south_temp;
 
      south_temp += (y_coeff*dy*RPMean(updir, 0.0, prod_der, 0.0))*y_dir_g;  //@RMM TFG contributions, non sym
-//          south_temp += (y_coeff*dy*RPMean(pp[ip], pp[ip+sy_v], prod_der, 0.0))*y_dir_g;  //@RMM TFG contributions, non sym
 
           
 	 sym_north_temp = y_coeff
-	    * -RPMean(updir,0.0, prod, prod_no)*y_dir_g_c;
-//          * -RPMean(pp[ip], pp[ip+sy_v], prod, prod_no)*y_dir_g_c;
-     
-     //sym_north_temp += -(y_coeff*dy*RPMean(pp[ip], pp[ip+sy_v], 0.0, prod_no_der))*y_dir_g;  //@RMM  TFG contributions non SYMM
+	    * -RPMean(updir,0.0, prod, prod_no)*y_dir_g_c;   //@RMM  TFG contributions non SYMM
 	 
      north_temp = y_coeff * diff
 	    *  RPMean(updir, 0.0, 0.0, 
-//                  *  RPMean(pp[ip], pp[ip+sy_v], 0.0, 
                   prod_no_der)*y_dir_g_c
 	    + sym_north_temp;
     
      north_temp += -(y_coeff*dy*RPMean(updir,0.0, 0.0, prod_no_der))*y_dir_g;  //@RMM  TFG contributions non sym
-//          north_temp += -(y_coeff*dy*RPMean(pp[ip], pp[ip+sy_v], 0.0, prod_no_der))*y_dir_g;  //@RMM  TFG contributions non sym
 
           sep = (dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]));
 	 /* diff >= 0 implies flow goes lower to upper */
-	 lower_cond = pp[ip] /sep     - 0.5 *Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip]      * gravity;
-	 upper_cond = pp[ip+sz_v]/sep + 0.5 *Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip+sz_v] * gravity;
+ 
           
-          lower_cond = pp[ip] /sep     - 0.5  * dp[ip]      * gravity;
-          upper_cond = pp[ip+sz_v]/sep + 0.5  * dp[ip+sz_v] * gravity;
+          lower_cond = pp[ip]/ sep   - (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip+sz_v]))  * dp[ip] * gravity;
           
- //                lower_cond = pp[ip]    - 0.5 * dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip]      * gravity;
- //                upper_cond = pp[ip+sz_v] + 0.5 * dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]) * dp[ip+sz_v] * gravity;
-	 diff = lower_cond - upper_cond;
+          upper_cond = pp[ip+sz_v] / sep  + (z_mult_dat[ip+sz_v]/(z_mult_dat[ip]+z_mult_dat[ip+sz_v])) * dp[ip+sz_v] * gravity ;
+          
+          
+ 	 diff = lower_cond - upper_cond;
 
-//	 z_coeff = dt * ffz * (1.0 / (dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_v]))) 
-                 z_coeff = dt * ffz  
+                 z_coeff = dt * ffz
                  * PMeanDZ(permzp[ip], permzp[ip+sz_v],z_mult_dat[ip],z_mult_dat[ip+sz_v]) 
 	    / viscosity;
 
@@ -1274,10 +1231,9 @@ int           symm_part)      /* Specifies whether to compute just the
 		  }
 		  case overland_flow :
 		  { 
-		 // printf("case overland_flow\n");
-		     /* Get overland flow contributions - DOK*/
-		     // SGS can we skip this invocation if !overland_flow? 
-		     		     
+
+              /* Get overland flow contributions - DOK*/
+		     // SGS can we skip this invocation if !overland_flow?
 		     //PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module, 
 			//		(grid, is, bc_struct, ipatch, problem_data, pressure,
 			//		 ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
@@ -1294,20 +1250,10 @@ int           symm_part)      /* Specifies whether to compute just the
                                             
                                             if ((pp[ip]) >= 0.0) 
                                             {
-                                                //sep = dz*z_mult_dat[ip];  //RMM
-                                               // cp[im] += (vol/dz)*dt*(1.0 + 1.0*exp(0.0*1.0)*0.001);
-                                                //cp[im] += vol*z_mult_dat[ip]*dt*(1.0 + public_xtra -> SpinupDampP1 *exp(0.0* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2); //NBE
-                                                //@RMM- fixed overland spinpup to 1) be consistent with nl function eval
-                                               //cp[im] += (vol/dz)*dt*(1.0 + public_xtra -> SpinupDampP1 *exp(0.0* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2); //NBE
-                                                // Laura's version
                                                 cp[im] += (vol/dz)*dt*(1.0 + 0.0); //LEC
                                 
                                             } else {
-                                                //cp[im] += 0.0 + (vol/dz)*z_mult_dat[ip]*dt*1.0*exp(pfmin(pp[ip],0.0)*1.0)*0.001;
-
-                                            //cp[im] += 0.0 + vol*z_mult_dat[ip]*dt* public_xtra -> SpinupDampP1 *exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2; //NBE
-                                            // Laura's version
-                                                cp[im] += 0.0; //+ vol/dz*dt*public_xtra -> SpinupDampP1 *exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2; //NBE
+                                                cp[im] += 0.0;
 
                                             }
                                         }
@@ -1321,10 +1267,8 @@ int           symm_part)      /* Specifies whether to compute just the
             	      	      PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module, 
 					(grid, is, bc_struct, ipatch, problem_data, pressure,
 					 ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
-			     //  printf("Kinematic Diffuive CALCDER invoked\n");
 		      } else {
-		      	    //  printf("Else... invoke diffusive CALCDER\n");
-		      			      	      
+                  
 		      	        /* Test running Diffuisve calc FCN */               
                                //double *dummy1, *dummy2, *dummy3, *dummy4; 
                                //PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
@@ -1336,7 +1280,6 @@ int           symm_part)      /* Specifies whether to compute just the
 		      	      	      		(grid, is, bc_struct, ipatch, problem_data, pressure,
                                                  ke_der, kw_der, kn_der, ks_der, 
                                                  kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
-                              // printf("Diffusive CALCDER invoked\n");
                       }
               }
 		     
@@ -1543,14 +1486,11 @@ int           symm_part)      /* Specifies whether to compute just the
 				/*diagonal term */
                     cp_c[io] += (vol /dz) + (vol/ffy)*dt*(ke_der[io1] - kw_der[io1])
                     + (vol/ffx)*dt*(kn_der[io1] - ks_der[io1]);
-                  // +dt*(vol/dz)*(public_xtra -> SpinupDampP1 *exp(0.0* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2); //NBE
-
+ 
 				} else {
-                    //cp_c[io] += 0.0;
                     // Laura's version
                     cp_c[io] += 0.0 + dt*(vol/dz)*(public_xtra -> SpinupDampP1 *exp(pfmin(pp[ip],0.0)* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2); //NBE              
 
-                    //+ dt*(vol/dz)*(public_xtra -> SpinupDampP1 *exp(0.0* public_xtra -> SpinupDampP1)* public_xtra -> SpinupDampP2); //NBE
                 }
 			
 			if (diffusive == 0) {
