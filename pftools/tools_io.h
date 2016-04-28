@@ -55,6 +55,11 @@ void tools_WriteInt(
    int *ptr,
    int len);
 
+void tools_WriteFloat(
+   FILE * file,
+   float *ptr,
+   int len);
+
 void tools_WriteDouble(
    FILE * file,
    double *ptr,
@@ -69,9 +74,8 @@ void tools_ReadDouble(
    FILE * file,
    double *ptr,
    int len);
- 
- 
- 
+
+
 #else
 #ifdef TOOLS_CRAY 
 
@@ -84,7 +88,7 @@ void tools_WriteDouble(
    FILE * file,
    double *ptr,
    int len);
- 
+
 void tools_ReadInt(
    FILE * file,
    int *ptr,

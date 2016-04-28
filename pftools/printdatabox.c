@@ -672,5 +672,374 @@ void            PrintSilo(
 }
 
 
+/*-----------------------------------------------------------------------
+ * print a Databox as VTK structured points (same structure as PFB)
+ * NBE: 2015-05-19
+ *-----------------------------------------------------------------------*/
 
+void            PrintVTK(
+                              FILE           *fp,
+                              Databox        *v,
+                              char           *varname,
+                              int           flt)
+{
+    double  X  = DataboxX(v);
+    double  Y  = DataboxY(v);
+    double  Z  = DataboxZ(v);
+    int     NX = DataboxNx(v);
+    int     NY = DataboxNy(v);
+    int     NZ = DataboxNz(v);
+    double  DX = DataboxDx(v);
+    double  DY = DataboxDy(v);
+    double  DZ = DataboxDz(v);
+    
+    //This uses the mixed VTK BINARY legacy format, writes as either double or float
+    
+    fprintf(fp,"# vtk DataFile Version 2.0 \n");
+    fprintf(fp,"ParFlow VTK output \n");
+    fprintf(fp,"BINARY \n");
+    fprintf(fp,"DATASET STRUCTURED_POINTS \n");
+    fprintf(fp,"DIMENSIONS %i %i %i \n", NX+1, NY+1,NZ+1);
+    fprintf(fp,"ORIGIN %f %f %f \n",X,Y,Z);
+    fprintf(fp,"SPACING %f %f %f \n",DX,DY,DZ);
+    fprintf(fp,"CELL_DATA %i \n",NX*NY*NZ);
 
+    if (flt == 1) {
+        /* Write the data as float to reduce file size */
+        int     nxyzp = (NX+1)*(NY+1)*(NZ+1);
+        int     j;
+        double *DTd;
+        float *DTf;
+        DTd = (double*) malloc(tools_SizeofDouble * nxyzp*3);
+        DTf = (float*) malloc(tools_SizeofFloat * nxyzp*3);
+        DTd = DataboxCoeffs(v);
+            for (j=0;j < (NX*NY*NZ); ++j) {
+                DTf[j] = (float)DTd[j];
+            }
+        free(DTd);
+        fprintf(fp,"SCALARS %s float\n",varname);
+        fprintf(fp,"LOOKUP_TABLE default\n");
+        tools_WriteFloat(fp, DTf, NX*NY*NZ);
+
+    } else {
+        fprintf(fp,"SCALARS %s double \n",varname);
+        fprintf(fp,"LOOKUP_TABLE default \n");
+        tools_WriteDouble(fp, DataboxCoeffs(v), NX*NY*NZ);
+    }
+}
+
+/*-----------------------------------------------------------------------
+ * print a Databox as VTK structured grid
+ * NBE: 2015-05-19
+ * Designed mainly for terrain following grid outputs
+ *-----------------------------------------------------------------------*/
+
+void            PrintTFG_VTK(
+                         FILE           *fp,
+                         Databox        *v,
+                         double         *pnts,
+                         char           *varname,
+                         int            flt)
+{
+    int     NX = DataboxNx(v);
+    int     NY = DataboxNy(v);
+    int     NZ = DataboxNz(v);
+    int     nxyzp = (NX+1)*(NY+1)*(NZ+1);
+    
+    //This uses the mixed VTK BINARY legacy format, writes as either double or float
+
+    fprintf(fp,"# vtk DataFile Version 2.0\n");
+    fprintf(fp,"ParFlow VTK output\n");
+    fprintf(fp,"BINARY\n");
+    fprintf(fp,"DATASET STRUCTURED_GRID\n");
+    fprintf(fp,"DIMENSIONS %i %i %i\n", NX+1, NY+1,NZ+1);
+
+/* ------------------ Set point mode write ---------------- */
+        /* To reduce size, write points as float */
+        int     i;
+        float *pnt;
+        pnt = (float*) malloc(tools_SizeofFloat * nxyzp*3);
+        for (i=0;i < (nxyzp*3); ++i) {
+            pnt[i] = (float)pnts[i];
+        }
+        fprintf(fp,"POINTS %i float\n",nxyzp);
+        tools_WriteFloat(fp, pnt, nxyzp*3);
+
+// COMMENT THE PREVIOUS 8 AND UNCOMMENT THE FOLLOWING 3 TO FORCE DOUBLE WRITE
+//        /* Write points as double */
+//        fprintf(fp,"POINTS %i double\n",nxyzp);
+//        tools_WriteDouble(fp, pnts, nxyzp*3);
+    
+/* ---------------- End of point mode set ---------------- */
+    
+    fprintf(fp,"CELL_DATA %i\n",NX*NY*NZ);
+    
+    if (flt == 1) {
+        /* Write the data as float to reduce file size */
+        int     j;
+        double *DTd;
+        float *DTf;
+        DTd = (double*) malloc(tools_SizeofDouble * nxyzp*3);
+        DTf = (float*) malloc(tools_SizeofFloat * nxyzp*3);
+        DTd = DataboxCoeffs(v);
+        
+        for (j=0;j < (NX*NY*NZ); ++j) {
+            DTf[j] = (float)DTd[j];
+        }
+
+        fprintf(fp,"SCALARS %s float\n",varname);
+        fprintf(fp,"LOOKUP_TABLE default\n");
+        tools_WriteFloat(fp, DTf, NX*NY*NZ);
+
+    } else {
+        fprintf(fp,"SCALARS %s double\n",varname);
+        fprintf(fp,"LOOKUP_TABLE default\n");
+        tools_WriteDouble(fp, DataboxCoeffs(v), NX*NY*NZ);
+    }
+}
+/*-----------------------------------------------------------------------
+ * print a Databox as CLM VTK structured grid
+ * NBE: 2015-05-19
+ * Designed mainly for terrain following grid outputs
+ *-----------------------------------------------------------------------*/
+
+void            PrintCLMVTK(
+                         FILE           *fp,
+                         Databox        *v,
+                         char           *varname,
+                         int           flt)
+{
+    double  X  = DataboxX(v);
+    double  Y  = DataboxY(v);
+    double  Z  = DataboxZ(v);
+    int     NX = DataboxNx(v);
+    int     NY = DataboxNy(v);
+    int     NZ = DataboxNz(v);
+    double  DX = DataboxDx(v);
+    double  DY = DataboxDy(v);
+    double  DZ = DataboxDz(v);
+    int     i,j,k;
+    char    *CLMvars[14];
+    
+    // List of the variables in the CLM single file format
+    CLMvars[0]="eflx_lh_tot";
+    CLMvars[1]="eflx_lwrad_out";
+    CLMvars[2]="eflx_sh_tot";
+    CLMvars[3]="eflx_soil_grnd";
+    CLMvars[4]="qflx_evap_tot";
+    CLMvars[5]="qflx_evap_grnd";
+    CLMvars[6]="qflx_evap_soi";
+    CLMvars[7]="qflx_evap_veg";
+    CLMvars[8]="qflx_tran_veg";
+    CLMvars[9]="qflx_infl";
+    CLMvars[10]="swe_out";
+    CLMvars[11]="t_grnd";
+    CLMvars[12]="qflx_qirr";
+    CLMvars[13]="tsoil";
+    
+    //This uses the mixed VTK BINARY legacy format, writes as either double or float
+    fprintf(fp,"# vtk DataFile Version 2.0 \n");
+    fprintf(fp,"ParFlow CLM-VTK output \n");
+    fprintf(fp,"BINARY \n");
+    fprintf(fp,"DATASET STRUCTURED_POINTS \n");
+    fprintf(fp,"DIMENSIONS %i %i %i \n", NX+1, NY+1,2);
+    fprintf(fp,"ORIGIN %f %f %f \n",X,Y,Z);
+    fprintf(fp,"SPACING %f %f %f \n",DX,DY,DZ);
+    fprintf(fp,"CELL_DATA %i \n",NX*NY);
+
+    if (flt == 1) {
+        /* Write the data as float to reduce file size */
+//        int     nxyzp = (NX+1)*(NY+1)*(NZ+1);
+        int     nxyzp = (NX)*(NY)*(NZ);
+        int     nn;
+        double *DTd;
+        float  *DTf;
+        float  *val;
+        DTd = (double*) malloc(tools_SizeofDouble * nxyzp);
+        DTf = (float*) malloc(tools_SizeofFloat * nxyzp);
+        DTd = DataboxCoeffs(v);
+        for (j=0;j < (NX*NY*NZ); ++j) {
+            DTf[j] = (float)DTd[j];
+        }
+        
+        for (k=0; k<13; ++k) {
+            fprintf(fp,"SCALARS %s float \n",CLMvars[k]);
+            fprintf(fp,"LOOKUP_TABLE default \n");
+            for (j=0; j<NY; ++j) {
+                for (i=0; i<NX; ++i) {
+                    nn=(k)*NX*NY + (j)*NX + i;
+                    val = &DTf[nn];
+                    tools_WriteFloat(fp,val, 1);
+                }
+            }
+        }
+        
+        // And then write the soil layers, however many of those there are
+        for (k=13; k < NZ; ++k) {
+            fprintf(fp,"SCALARS %s_L%i float \n",CLMvars[13],k-12);
+            fprintf(fp,"LOOKUP_TABLE default \n");
+            for (j=0; j<NY; ++j) {
+                for (i=0; i<NX; ++i) {
+                    nn=(k)*NX*NY + (j)*NX + i;
+                    val = &DTf[nn];
+                    tools_WriteFloat(fp,val, 1);
+                }
+            }
+        }
+
+    } else {
+
+        // Write the standard variables, sadly these have to be written one at a time...
+        for (k=0; k<13; ++k) {
+        fprintf(fp,"SCALARS %s double \n",CLMvars[k]);
+        fprintf(fp,"LOOKUP_TABLE default \n");
+                for (j=0; j<NY; ++j) {
+                    for (i=0; i<NX; ++i) {
+                        tools_WriteDouble(fp,(DataboxCoeffs(v) + (k)*NX*NY + (j)*NX + i) ,1);
+                    }
+                }
+            }
+        
+        // And then write the soil layers, however many of those there are
+        for (k=13; k < NZ; ++k) {
+        fprintf(fp,"SCALARS %s_L%i double \n",CLMvars[13],k-12);
+        fprintf(fp,"LOOKUP_TABLE default \n");
+            for (j=0; j<NY; ++j) {
+                for (i=0; i<NX; ++i) {
+                    tools_WriteDouble(fp,(DataboxCoeffs(v) + (k)*NX*NY + (j)*NX + i) ,1);
+                }
+            }
+        }
+    }
+}
+
+/*-----------------------------------------------------------------------
+ * print a Databox as CLM VTK structured grid
+ * NBE: 2015-05-19
+ * Designed mainly for terrain following grid outputs
+ *-----------------------------------------------------------------------*/
+
+void            PrintTFG_CLMVTK(
+                             FILE           *fp,
+                             Databox        *v,
+                             double         *pnts,
+                             char           *varname,
+                             int            flt)
+{
+    int     NX = DataboxNx(v);
+    int     NY = DataboxNy(v);
+    int     NZ = DataboxNz(v);
+    int     nxyzp = (NX+1)*(NY+1)*(2);
+    int     i,j,k;
+    char    *CLMvars[14];
+    
+    // List of the variables in the CLM single file format
+    CLMvars[0]="eflx_lh_tot";
+    CLMvars[1]="eflx_lwrad_out";
+    CLMvars[2]="eflx_sh_tot";
+    CLMvars[3]="eflx_soil_grnd";
+    CLMvars[4]="qflx_evap_tot";
+    CLMvars[5]="qflx_evap_grnd";
+    CLMvars[6]="qflx_evap_soi";
+    CLMvars[7]="qflx_evap_veg";
+    CLMvars[8]="qflx_tran_veg";
+    CLMvars[9]="qflx_infl";
+    CLMvars[10]="swe_out";
+    CLMvars[11]="t_grnd";
+    CLMvars[12]="qflx_qirr";
+    CLMvars[13]="tsoil";
+    
+    //This uses the mixed VTK BINARY legacy format, writes as either double or float
+    
+    fprintf(fp,"# vtk DataFile Version 2.0\n");
+    fprintf(fp,"ParFlow VTK output\n");
+    fprintf(fp,"BINARY\n");
+    fprintf(fp,"DATASET STRUCTURED_GRID\n");
+    fprintf(fp,"DIMENSIONS %i %i %i\n", NX+1, NY+1,2);
+    
+    /* ------------------ Set point mode write ---------------- */
+    /* To reduce size, write points as float */
+//    int     i;
+    float *pnt;
+    pnt = (float*) malloc(tools_SizeofFloat * nxyzp*3);
+    for (i=0;i < (nxyzp*3); ++i) {
+        pnt[i] = (float)pnts[i];
+    }
+    fprintf(fp,"POINTS %i float\n",nxyzp);
+    tools_WriteFloat(fp, pnt, nxyzp*3);
+
+    // COMMENT THE PREVIOUS 8 AND UNCOMMENT THE FOLLOWING 3 TO FORCE DOUBLE WRITE
+    //        /* Write points as double */
+    //        fprintf(fp,"POINTS %i double\n",nxyzp);
+    //        tools_WriteDouble(fp, pnts, nxyzp*3);
+    
+    /* ---------------- End of point mode set ---------------- */
+    
+    fprintf(fp,"CELL_DATA %i\n",NX*NY);
+    
+    if (flt == 1) {
+        /* Write the data as float to reduce file size */
+        //        int     nxyzp = (NX+1)*(NY+1)*(NZ+1);
+        int     nxyzp = (NX)*(NY)*(NZ);
+        int     nn;
+        double *DTd;
+        float  *DTf;
+        float  *val;
+        DTd = (double*) malloc(tools_SizeofDouble * nxyzp);
+        DTf = (float*) malloc(tools_SizeofFloat * nxyzp);
+        DTd = DataboxCoeffs(v);
+        for (j=0;j < (NX*NY*NZ); ++j) {
+            DTf[j] = (float)DTd[j];
+        }
+        
+        for (k=0; k<13; ++k) {
+            fprintf(fp,"SCALARS %s float \n",CLMvars[k]);
+            fprintf(fp,"LOOKUP_TABLE default \n");
+            for (j=0; j<NY; ++j) {
+                for (i=0; i<NX; ++i) {
+                    nn=(k)*NX*NY + (j)*NX + i;
+                    val = &DTf[nn];
+                    tools_WriteFloat(fp,val, 1);
+                }
+            }
+        }
+        
+        // And then write the soil layers, however many of those there are
+        for (k=13; k < NZ; ++k) {
+            fprintf(fp,"SCALARS %s_L%i float \n",CLMvars[13],k-12);
+            fprintf(fp,"LOOKUP_TABLE default \n");
+            for (j=0; j<NY; ++j) {
+                for (i=0; i<NX; ++i) {
+                    nn=(k)*NX*NY + (j)*NX + i;
+                    val = &DTf[nn];
+                    tools_WriteFloat(fp,val, 1);
+                }
+            }
+        }
+
+        
+    } else {
+        
+        // Write the standard variables, sadly these have to be written one at a time...
+        for (k=0; k<13; ++k) {
+            fprintf(fp,"SCALARS %s double \n",CLMvars[k]);
+            fprintf(fp,"LOOKUP_TABLE default \n");
+            for (j=0; j<NY; ++j) {
+                for (i=0; i<NX; ++i) {
+                    tools_WriteDouble(fp,(DataboxCoeffs(v) + (k)*NX*NY + (j)*NX + i) ,1);
+                }
+            }
+        }
+        
+        // And then write the soil layers, however many of those there are
+        for (k=13; k < NZ; ++k) {
+            fprintf(fp,"SCALARS %s_L%i double \n",CLMvars[13],k-12);
+            fprintf(fp,"LOOKUP_TABLE default \n");
+            for (j=0; j<NY; ++j) {
+                for (i=0; i<NX; ++i) {
+                    tools_WriteDouble(fp,(DataboxCoeffs(v) + (k)*NX*NY + (j)*NX + i) ,1);
+                }
+            }
+        }
+    }
+}

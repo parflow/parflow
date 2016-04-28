@@ -57,8 +57,6 @@ SAMRAI_TESTS_WITH_PATCH_COUNT += \
 
 endif
 
-
-
 PARALLEL_3DTOPO_TESTS :=
 PARALLEL_2DTOPO_TESTS :=
 
@@ -79,7 +77,46 @@ PARALLEL_2DTOPO_TESTS += \
 
 endif
 
-check: check_sequential check_parallel check_samrai 
+CHECK_TARGETS=check_sequential check_parallel check_samrai
+
+check:
+	@(logfile=check.$$$$.checklog; \
+        make $(CHECK_TARGETS) | tee $$logfile; \
+        num_run=`grep Running $$logfile | wc -l`; \
+        num_passed=`grep PASSED $$logfile | wc -l`; \
+        num_ctest_run=0; \
+        for i in $$(grep "tests failed out of" $$logfile | awk '{print $$9}'); \
+        do \
+        num_ctest_run=$$(( $$num_ctest_run + $$i)); \
+        done; \
+        num_ctest_failed=0; \
+        for i in $$(grep "tests failed out of" $$logfile | awk '{print $$4}'); \
+        do \
+        num_ctest_failed=$$(( $$num_ctest_failed + $$i)); \
+        done; \
+        num_run=$$(( $$num_run + $$num_ctest_run )); \
+        num_passed=$$(( $$num_passed + $$num_ctest_run - $$num_ctest_failed )); \
+        echo; echo; \
+        echo "##############################################################################"; \
+        echo ; \
+        echo "     $$((num_passed*100/num_run))% tests passed, $$((num_run-num_passed)) tests failed out of $$num_run"; \
+        echo; \
+        if [ $$num_run -eq 0 ]; \
+        then \
+        echo "     FAILED : no tests run"; \
+        else \
+        if [ $$num_passed -eq $$num_run ]; \
+        then \
+        echo "     PASSED All"; \
+        else \
+        echo "     FAILED Tests"; \
+        fi; \
+        fi; \
+        echo; \
+        echo "##############################################################################"; \
+	rm $$logfile; \
+        )
+
 
 check_sequential:
 	@-for i in $(TESTS); \
@@ -182,3 +219,5 @@ testclean:
 	@rm -fr core.*
 	@rm -fr samrai_grid.tmp.tcl
 	@rm -f samrai_grid2D.tmp.tcl
+	@rm -fr LW_var_dz_spinup.out
+	@rm -fr default_single.out

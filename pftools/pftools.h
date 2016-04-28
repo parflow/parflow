@@ -157,6 +157,9 @@ int GWStorageCommand P((ClientData clientData, Tcl_Interp *interp , int argc , c
 int SurfaceRunoffCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 int WaterTableDepthCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
 
+//NBE: Adding a new write tool
+int SavePFVTKCommand P((ClientData clientData , Tcl_Interp *interp , int argc , char *argv []));
+
 void Axpy(double alpha, Databox *X,  Databox *Y);
 void Sum(Databox *X,  double *sum);
 void CellSum(Databox *X, Databox *Y, Databox *mask, Databox *sum);

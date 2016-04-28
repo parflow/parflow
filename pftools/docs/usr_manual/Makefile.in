@@ -47,6 +47,8 @@ FILES =\
  start.tex \
  version.tex \
  manual.bbl.tex \
+ pftools.tex \
+ bib.tex \
  fdl.tex
 
 all:

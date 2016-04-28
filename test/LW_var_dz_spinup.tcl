@@ -159,14 +159,11 @@ pfset Gravity				1.0
 pfset TimingInfo.BaseUnit        10.0
 pfset TimingInfo.StartCount      0
 pfset TimingInfo.StartTime       0.0
-pfset TimingInfo.StopTime        200.0
 pfset TimingInfo.StopTime        7000.0
-pfset TimingInfo.DumpInterval    20.0
 pfset TimingInfo.DumpInterval    1000.0
 pfset TimeStep.Type              Constant
-pfset TimeStep.Value             10.0
-pfset TimeStep.Value             500.0
-#pfset TimeStep.Value             0.2
+pfset TimeStep.Value             1000.0
+
 #-----------------------------------------------------------------------------
 # Porosity
 #-----------------------------------------------------------------------------
@@ -268,8 +265,8 @@ pfset Patch.z-upper.BCPressure.alltime.Value	      -0.0001
 # Copy slopes to working dir
 #----------------
 
-file copy input/lw.1km.slope_x.10x.pfb .
-file copy input/lw.1km.slope_y.10x.pfb .
+file copy -force input/lw.1km.slope_x.10x.pfb .
+file copy -force input/lw.1km.slope_y.10x.pfb .
 
 #---------------------------------------------------------
 # Topo slopes in x-direction
@@ -352,8 +349,6 @@ pfset Solver.AbsTol                                     1E-10
 pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaValue                          0.001
 pfset Solver.Nonlinear.UseJacobian                       True 
-#pfset Solver.Nonlinear.UseJacobian                       False 
-pfset Solver.Nonlinear.DerivativeEpsilon                 1e-14
 pfset Solver.Nonlinear.StepTol				 1e-25
 pfset Solver.Nonlinear.Globalization                     LineSearch
 pfset Solver.Linear.KrylovDimension                      80
@@ -363,6 +358,9 @@ pfset Solver.Linear.Preconditioner                       MGSemi
 pfset Solver.Linear.Preconditioner                       PFMG
 pfset Solver.Linear.Preconditioner.PCMatrixType     FullJacobian
 
+pfset Solver.WriteSiloPressure                          True
+pfset Solver.WriteSiloSaturation                        True
+
 ##---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
@@ -370,20 +368,17 @@ pfset Solver.Linear.Preconditioner.PCMatrixType     FullJacobian
 # set water table to be at the bottom of the domain, the top layer is initially dry
 pfset ICPressure.Type                                   HydroStaticPatch
 pfset ICPressure.GeomNames                              domain
-pfset Geom.domain.ICPressure.Value                      -10.0
+pfset Geom.domain.ICPressure.Value                      0.0
 
 pfset Geom.domain.ICPressure.RefGeom                    domain
 pfset Geom.domain.ICPressure.RefPatch                   z-upper
 
 
 #spinup key
-# True=skim pressures, False = regular (default)
-#pfset Solver.Spinup           True
-#pfset Solver.Spinup           False 
 
 pfset OverlandFlowSpinUp  1
 pfset OverlandSpinupDampP1 1.0
-pfset OverlandSpinupDampP2 0.001
+pfset OverlandSpinupDampP2 0.00001
 
 #-----------------------------------------------------------------------------
 # Run and do tests

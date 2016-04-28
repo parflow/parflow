@@ -33,6 +33,7 @@ void tools_io_dummy_func_call()
 {   
 }
 
+
 #ifdef TOOLS_CRAY
 
 #include <stdio.h>
@@ -47,23 +48,23 @@ int tools_Short=7;
 static int zero=0;
 static int one =1;
 
-void tools_WriteDouble(
-   FILE * file,
-   double *ptr,
-   int len)
-{ 
-   int i; 
-   double *data;
-   double number;
-
-   /* write out each double with bytes swaped                               */
-   for(i=len, data=ptr; i--;) 
-   { 
-      CRAY2IEG(&tools_Double, &one, &number, &zero, data);
-      fwrite( &number, 8, 1, file );
-      data++;
-   } 
-} 
+//void tools_WriteDouble(
+//   FILE * file,
+//   double *ptr,
+//   int len)
+//{ 
+//   int i; 
+//   double *data;
+//   double number;
+//
+//   /* write out each double with bytes swaped                               */
+//   for(i=len, data=ptr; i--;) 
+//   { 
+//      CRAY2IEG(&tools_Double, &one, &number, &zero, data);
+//      fwrite( &number, 8, 1, file );
+//      data++;
+//   } 
+//} 
 
 void tools_WriteInt(
    FILE * file,
@@ -134,8 +135,10 @@ void tools_WriteFloat(
    float *data;
    union
    {
-      double number;
-      char buf[8];
+//      double number;
+//      char buf[8];
+       float number;
+       char buf[4];
    } a, b;
  
    /* write out each double with bytes swaped                               */
@@ -146,8 +149,8 @@ void tools_WriteFloat(
       b.buf[1] = a.buf[2];
       b.buf[2] = a.buf[1];
       b.buf[3] = a.buf[0];
- 
-      fwrite( &b.number, sizeof(float), 1, (FILE *)file ); 
+
+      fwrite( &b.number, sizeof(float), 1, (FILE *)file );
    } 
 } 
 
@@ -176,11 +179,19 @@ void tools_WriteDouble(
       b.buf[5] = a.buf[2];
       b.buf[6] = a.buf[1];
       b.buf[7] = a.buf[0];
- 
-      fwrite( &b.number, sizeof(double), 1, (FILE *)file ); 
+
+//       b.buf[0] = a.buf[0];
+//       b.buf[1] = a.buf[1];
+//       b.buf[2] = a.buf[2];
+//       b.buf[3] = a.buf[3];
+//       b.buf[4] = a.buf[4];
+//       b.buf[5] = a.buf[5];
+//       b.buf[6] = a.buf[6];
+//       b.buf[7] = a.buf[7];
+      fwrite( &b.number, sizeof(double), 1, (FILE *)file );
    } 
 } 
- 
+
 void tools_WriteInt(
    FILE * file,
    int *ptr,

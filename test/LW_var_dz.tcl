@@ -254,7 +254,7 @@ pfset Patch.y-upper.BCPressure.Type		      FluxConst
 pfset Patch.y-upper.BCPressure.Cycle		      "constant"
 pfset Patch.y-upper.BCPressure.alltime.Value	      0.0
 
-## overland flow boundary condition with very heavy rainfall then slight ET
+## overland flow boundary condition with very heavy rainfall 
 pfset Patch.z-upper.BCPressure.Type		      OverlandFlow
 pfset Patch.z-upper.BCPressure.Cycle		      "constant"
 # constant recharge at 100 mm / y
@@ -264,8 +264,8 @@ pfset Patch.z-upper.BCPressure.alltime.Value	      -0.005
 # Copy slopes to working dir
 #----------------
 
-file copy input/lw.1km.slope_x.10x.pfb .
-file copy input/lw.1km.slope_y.10x.pfb .
+file copy -force input/lw.1km.slope_x.10x.pfb .
+file copy -force input/lw.1km.slope_y.10x.pfb .
 
 #---------------------------------------------------------
 # Topo slopes in x-direction

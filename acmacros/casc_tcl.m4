@@ -27,6 +27,10 @@ case "$with_tcl" in
         tcl_PREFIX=${dir}
 	tcl_INCLUDES="-I${tcl_PREFIX}/include/tcl8.5"
         break
+      elif test -f ${dir}/include/tcl8.6/tcl.h; then
+        tcl_PREFIX=${dir}
+	tcl_INCLUDES="-I${tcl_PREFIX}/include/tcl8.6"
+        break
       else
         AC_MSG_ERROR([TCL not found in /usr or /usr/local])
       fi
@@ -49,6 +53,10 @@ case "$with_tcl" in
         tcl_PREFIX=${dir}
 	tcl_INCLUDES="-I${tcl_PREFIX}/include/tcl8.5"
         break
+      elif test -f ${dir}/include/tcl8.6/tcl.h; then
+        tcl_PREFIX=${dir}
+	tcl_INCLUDES="-I${tcl_PREFIX}/include/tcl8.6"
+        break
       else
         AC_MSG_RESULT([$tcl_PREFIX])
         AC_MSG_ERROR([TCL not found in $with_tcl])
@@ -60,7 +68,10 @@ esac
 # Determine which TCL library is built
 if test "${tcl_PREFIX+set}" = set; then
    AC_MSG_CHECKING([for TCL library])
-   if test -f ${tcl_PREFIX}/lib/libtcl8.5.so; then
+   if test -f ${tcl_PREFIX}/lib/libtcl8.6.so; then
+      tcl_LIBS='-ltcl8.6'
+      AC_MSG_RESULT([using $tcl_LIBS])
+   elif test -f ${tcl_PREFIX}/lib/libtcl8.5.so; then
       tcl_LIBS='-ltcl8.5'
       AC_MSG_RESULT([using $tcl_LIBS])
    elif test -f ${tcl_PREFIX}/lib/libtcl8.4.so; then
@@ -68,6 +79,9 @@ if test "${tcl_PREFIX+set}" = set; then
       AC_MSG_RESULT([using $tcl_LIBS])
    elif test -f ${tcl_PREFIX}/lib/libtcl.so; then
       tcl_LIBS='-ltcl'
+      AC_MSG_RESULT([using $tcl_LIBS])
+   elif test -f ${tcl_PREFIX}/lib/libtcl8.6.dylib; then
+      tcl_LIBS='-ltcl8.6'
       AC_MSG_RESULT([using $tcl_LIBS])
    elif test -f ${tcl_PREFIX}/lib/libtcl8.5.dylib; then
       tcl_LIBS='-ltcl8.5'
@@ -77,6 +91,9 @@ if test "${tcl_PREFIX+set}" = set; then
       AC_MSG_RESULT([using $tcl_LIBS])
    elif test -f ${tcl_PREFIX}/lib/libtcl.dylib; then
       tcl_LIBS='-ltcl'
+      AC_MSG_RESULT([using $tcl_LIBS])
+   elif test -f ${tcl_PREFIX}/lib/libtcl8.6.a; then
+      tcl_LIBS='-ltcl8.6'
       AC_MSG_RESULT([using $tcl_LIBS])
    elif test -f ${tcl_PREFIX}/lib/libtcl8.5.a; then
       tcl_LIBS='-ltcl8.5'

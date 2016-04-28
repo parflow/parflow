@@ -13,22 +13,29 @@ default: check
 TESTS := \
 
 ifeq (${PARFLOW_HAVE_CLM},yes)
-TESTS += clm.tcl
+TESTS += clm.tcl \
+         clm_forc_veg.tcl \
+		 clm_varDZ.tcl
 endif
 
 PARALLEL_TESTS =
 
 ifeq (${AMPS},mpi1)
-
-PARALLEL_TESTS += \
-	clm.tcl \
-	clm.jac.tcl
+ifeq (${PARFLOW_HAVE_CLM},yes)
+	PARALLEL_TESTS += \
+		clm.tcl \
+		clm.jac.tcl \
+        clm_forc_veg.tcl \
+		clm_varDZ.tcl
+endif
 endif
 
 SAMRAI_TESTS :=
 ifeq (${PARFLOW_HAVE_SAMRAI},yes)
+ifeq (${PARFLOW_HAVE_CLM},yes)
 SAMRAI_TESTS += \
 	clm_samrai.tcl
+endif
 endif
 
 check: check_samrai check_sequential check_parallel
@@ -37,6 +44,8 @@ check_sequential:
 	@-for i in $(TESTS); \
 	do \
 	        make --no-print-directory testclean; \
+		echo "*****************************************************************************"; \
+		echo "Running $$i on 1 1 1"; \
 		tclsh $$i 1 1 1; \
 	done
 
@@ -107,3 +116,11 @@ testclean:
 	@rm -fr drv_vegm.dat.*
 	@rm -fr core*
 	@rm -fr clm_output.txt.*
+	@rm -fr clm_varDZ_output.txt.*
+	@rm -fr clm_varDZ.out
+	@rm -f clm_varDZ.out.pftcl
+	@rm -f clm_varDZ_elog.txt.*
+	@rm -fr clm_forc_veg_output.txt.*
+	@rm -fr clm_forc_veg.out
+	@rm -f clm_forc_veg.out.pftcl
+	@rm -f clm_forc_veg_elog.txt.*	

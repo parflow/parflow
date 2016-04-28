@@ -154,6 +154,7 @@ and whether the command is compatible with a terrain following grid domain formu
 	pfundist & Undistribute files &  & X  \\ \hline
 	pfsave & Save dataset & 1,2,5,6 & X \\ \hline
 	pfsavesds & Save dataset in an HDF format &  & X \\ \hline
+	pfvtksave & Save dataset in VTK format using DEM & X & X \\ \hline
 	pfwritedb & Write the settings for a PF run to a database &  & X  \\ \hline
 \end{tabular}
 \label{pftools3}
@@ -774,6 +775,47 @@ components.  The three parameters are identifiers which represent
 the x, y, and z components respectively.  The identifier of the data
 set created by this operation is returned upon successful completion.
 
+
+\item{\begin{verbatim}pfvtksave dataset filetype filename [options]\end{verbatim}}
+This command loads PFB or SILO output, reads a DEM from a file and generates
+a 3D VTK output field from that \parflow{} output.
+
+The options:
+Any combination of these can be used and they can be specified in any order as long as the required elements immediately follow each option.
+
+-var specifies what the variable written to the dataset will be called. This is followed by a text string, like "Pressure" or "Saturation" to define the name of the data that will be written to the VTK. If this isn't specified, you'll get a property written to the file creatively called "Variable". This option is ignored if you are using -clmvtk since all its variables are predefined.
+
+-dem specifies that a DEM is to be used. The argument following -dem MUST be the handle of the dataset containing the elevations. If it cannot be found, the tool ignores it and reverts to non-dem mode. If the nx and ny dimensions of the grids don’t match, the tool will error out. This option shifts the layers so that the top of the domain coincides with the land surface defined by the DEM. Regardless of the actual number of layers in the DEM file, the tool only uses the elevations in the top layer of this dataset, meaning a 1-layer PFB can be used.
+
+-flt tells the tool to write the data as type float instead of double. Since the VTKs are really only used for visualization, this reduces the file size and speeds up plotting.
+
+-tfg causes the tool to override the specified dz in the dataset PFB and uses a user specified list of layer thicknesses instead. This is designed for terrain following grids and can only be used in conjunction with a DEM. The argument following the flag is a text string containing the number of layers and the dz list of actual layer thicknesses (not dz multipliers) for each layer from the bottom up such as: -tfg "5 200.0 1.0 0.7 0.2 0.1"
+Note that the quotation marks around the list are necessary. 
+
+Example:
+\begin{display}
+\begin{verbatim}
+file copy -force CLM_dem.cpfb CLM_dem.pfb
+
+set CLMdat [pfload -pfb clm.out.clm_output.00005.C.pfb]
+set Pdat [pfload -pfb clm.out.press.00005.pfb]
+set Perm [pfload -pfb clm.out.perm_x.pfb]
+set DEMdat [pfload -pfb CLM_dem.pfb]
+
+set dzlist "10 6.0 5.0 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5"
+
+pfvtksave $Pdat -vtk "CLM.out.Press.00005a.vtk" -var "Press" 
+pfvtksave $Pdat -vtk "CLM.out.Press.00005b.vtk" -var "Press" -flt 
+pfvtksave $Pdat -vtk "CLM.out.Press.00005c.vtk" -var "Press" -dem $DEMdat 
+pfvtksave $Pdat -vtk "CLM.out.Press.00005d.vtk" -var "Press" -dem $DEMdat -flt
+pfvtksave $Pdat -vtk "CLM.out.Press.00005e.vtk" -var "Press" -dem $DEMdat -flt -tfg $dzlist
+pfvtksave $Perm -vtk "CLM.out.Perm.00005.vtk" -var "Perm" -flt -dem $DEMdat -tfg $dzlist
+
+pfvtksave $CLMdat -clmvtk "CLM.out.CLM.00005.vtk" -flt 
+pfvtksave $CLMdat -clmvtk "CLM.out.CLM.00005.vtk" -flt -dem $DEMdat
+
+pfvtksave $DEMdat -vtk "CLM.out.Elev.00000.vtk" -flt -var "Elevation" -dem $DEMdat
+\end{verbatim}\end{display}
 
 \item{\begin{verbatim}pfvvel conductivity phead\end{verbatim}}
 This command computes the Darcy velocity in cells for the conductivity

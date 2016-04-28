@@ -32,17 +32,28 @@
 %=============== Title Page
 
 \begin{TitlePage}
-\Title{\parflow{} User's Manual} \SubTitle{GMWI 2014-01 \PFVersion}
-\SubTitle{July, 2014 v.693}
-\InputPS{igwmc3.ps}(0, 0)(620,94)(0.7)
+\Title{\parflow{} User's Manual} \SubTitle{GMWI 2016-01 \PFVersion}
+\SubTitle{Feb, 2016 v.743}
+%\InputPS{IGWMC-logo-new.eps}(0, 0)(620,94)(0.6)
+\InputPS{IGWMC-logo-new.eps}(0, 0)(620,230)(0.55)
  \Author{ 
 Reed M. Maxwell\footnote{ {\em Department of Geology and Geological Engineering and Integrated GroundWater Modeling Center, Colorado School of Mines, Golden, CO, USA.} \textsf{rmaxwell@mines.edu}}, 
 Stefan J. Kollet\footnote{{\em Institute for Bio- and Geosciences, Agrosphere (IBG-3) and Centre for High-Performance Scientific Computing in Terrestrial Systems, Research Centre J{\a"u}lich, J{\a"u}lich, Germany.} \textsf{s.kollet@fz-juelich.de}}, 
 Steven G. Smith\footnote {\em Center for Applied Scientific Computing, Lawrence Livermore National Laboratory, Livermore, CA. USA.}, 
 Carol S. Woodward\footnote{{\em Center for Applied Scientific Computing, Lawrence Livermore National Laboratory, Livermore, CA, USA.} \textsf{cswoodward@llnl.gov}}, 
 Robert D. Falgout\footnote{\em Center for Applied Scientific Computing, Lawrence Livermore National Laboratory, Livermore, CA, USA.},  
-Ian M. Ferguson\footnote{\em Department of Geology and Geological Engineering and Integrated GroundWater Modeling Center, Colorado School of Mines, Golden, CO, USA.},
-Nicholas Engdahl\textsuperscript{6}, Laura E. Condon\textsuperscript{6}, Sonya Lopez\textsuperscript{6}, James Gilbert\textsuperscript{6}, Lindsay Bearup\textsuperscript{6}, Jennifer Jefferson\textsuperscript{6}, Christine Pribulick\textsuperscript{6}, Chuck Baldwin, 
+Ian M. Ferguson\footnote{\em US Bureau of Reclamation, Denver, CO, USA.},
+Nicholas Engdahl\footnote{{\em Civil and Environmental Engineering, Washington State University, Pullman, WA, USA.} \textsf{nick.engdahl@wsu.edu} }, 
+Laura E. Condon\footnote{{\em Civil and Environmental Engineering, Syracuse University, Syracuse, NY, USA.} \textsf{lecondon@syr.edu}}, 
+Basile Hector\footnote{\em LTHE, Grenoble, FR.}, 
+Sonya Lopez\footnote{\em California State University, Los Angeles, CA, USA.}, 
+James Gilbert\textsuperscript{1}, 
+Lindsay Bearup\textsuperscript{1}, 
+Jennifer Jefferson\textsuperscript{1},
+Caitlin Collins\textsuperscript{1}, 
+Inge de Graaf\textsuperscript{1}, 
+Christine Pribulick\textsuperscript{1},
+Chuck Baldwin, 
 William J. Bosl \footnote{{\em Children's Hospital Informatics Program, Harvard Medical School, Boston, MA, USA.}}, 
 Richard Hornung\footnote{{\em Center for Applied Scientific Computing, Lawrence Livermore National Laboratory, Livermore, CA, USA.}}, 
 Steven Ashby\footnote{{\em Pacific Northwest National Laboratory, Richland, WA, USA.}}
@@ -52,7 +63,7 @@ Steven Ashby\footnote{{\em Pacific Northwest National Laboratory, Richland, WA, 
 %=============== Copyright Page
 
 \begin{CopyrightPage}
-{\em Suggested citation: }Maxwell, R.M., S.J. Kollet, S.G. Smith, C.S. Woodward, R.D. Falgout, I.M. Ferguson, N. Engdahl, L.E. Condon, S.R. Lopez, J. Gilbert, L. Bearup, J. Jefferson, C. Prubilick, C. Baldwin, W.J. Bosl, R. Hornung, S. Ashby, \parflow{} User's Manual. Integrated GroundWater Modeling Center Report GWMI 2014-01, \pageref{end}p.\newline
+{\em Suggested citation: }Maxwell, R.M., S.J. Kollet, S.G. Smith, C.S. Woodward, R.D. Falgout, I.M. Ferguson, N. Engdahl, L.E. Condon, B. Hector, S.R. Lopez, J. Gilbert, L. Bearup, J. Jefferson, C. Collins, I. de Graaf, C. Prubilick, C. Baldwin, W.J. Bosl, R. Hornung, S. Ashby, \parflow{} User's Manual. Integrated GroundWater Modeling Center Report GWMI 2016-01, \pageref{end}p.\newline
 
 { \scriptsize
 \noindent ParFlow is released under the GNU LPGL License \newline
@@ -106,8 +117,9 @@ advertising or product endorsement purposes.}
 
 %=============== Print the References here
 \input{bib}
+%\input{bib}
 %\bibliographystyle{plain}
-%\bibliography{manual}
+%\bibliography{newRefs_ParFlowManual}
 
 %=============== Print the Index here
 

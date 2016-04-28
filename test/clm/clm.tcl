@@ -263,16 +263,13 @@ pfset Solver.Nonlinear.MaxIter                           15
 pfset Solver.Nonlinear.ResidualTol                       1e-9
 pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaValue                          0.01
-pfset Solver.Nonlinear.UseJacobian                       False
-pfset Solver.Nonlinear.DerivativeEpsilon                 1e-12
+pfset Solver.Nonlinear.UseJacobian                       True 
 pfset Solver.Nonlinear.StepTol                           1e-20
 pfset Solver.Nonlinear.Globalization                     LineSearch
 pfset Solver.Linear.KrylovDimension                      15
 pfset Solver.Linear.MaxRestart                           2
  
-pfset Solver.Linear.Preconditioner                       MGSemi
-pfset Solver.Linear.Preconditioner.MGSemi.MaxIter        1
-pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      10
+pfset Solver.Linear.Preconditioner                       PFMG 
 pfset Solver.PrintSubsurf                                False
 pfset Solver.Drop                                        1E-20
 pfset Solver.AbsTol                                      1E-9

@@ -58,6 +58,10 @@ void PrintSimpleA(FILE *fp , Databox *v );
 void PrintSimpleA2D(FILE *fp , Databox *v );        // Added @ IMF
 void PrintSimpleB(FILE *fp , Databox *v );
 void PrintParflowB(FILE *fp , Databox *v );
+void PrintVTK(FILE *fp , Databox *v , char *varname, int flt); // NBE
+void PrintCLMVTK(FILE *fp , Databox *v , char *varname, int flt); // NBE
+void PrintTFG_VTK(FILE *fp , Databox *v ,double *pnts, char *varname, int flt); // NBE
+void PrintTFG_CLMVTK(FILE *fp , Databox *v ,double *pnts, char *varname, int flt); // NBE
 void PrintAVSField(FILE *fp , Databox *v );
 int  PrintSDS(char *filename , int type , Databox *v );
 void PrintVizamrai(FILE *fp , Databox *v );
