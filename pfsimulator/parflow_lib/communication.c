@@ -262,7 +262,7 @@ CommPkg         *NewCommPkg(
              loc_idx = s_idx;
              recv_sr = SubregionArraySubregion(recv_sra, j);
              tag = ComputeTag(loc_idx, send_sr, recv_sr);
-             amps_SetInvoice_tag( invoice,  tag);
+             amps_SetInvoiceTag( invoice,  tag);
 #else
              PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif
@@ -306,7 +306,7 @@ CommPkg         *NewCommPkg(
              loc_idx = SubregionLocIdx(recv_sr);
              send_sr = SubregionArraySubregion(send_sra, j);
              tag = ComputeTag(loc_idx, recv_sr, send_sr);
-             amps_SetInvoice_tag( invoice, tag );
+             amps_SetInvoiceTag( invoice, tag );
 #else
              PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif
