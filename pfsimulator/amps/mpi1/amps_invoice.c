@@ -650,7 +650,7 @@ int amps_num_package_items(amps_Invoice inv)
    return num;
 }
 
-void amps_SetInvoice_tag(amps_Invoice inv, int tag){
+void amps_SetInvoiceTag(amps_Invoice inv, int tag){
       inv->tag = tag;
 }
 

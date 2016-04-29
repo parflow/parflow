@@ -44,7 +44,7 @@ int amps_FreeInvoice (amps_Invoice inv );
 int amps_add_invoice (amps_Invoice *inv , int ignore , int type , int len_type , int len , int *ptr_len , int stride_type , int stride , int *ptr_stride , int dim_type , int dim , int *ptr_dim , int data_type , void *data );
 amps_Invoice amps_NewInvoice (const char *fmt0 , ...);
 int amps_num_package_items (amps_Invoice inv );
-void amps_SetInvoice_tag(amps_Invoice inv, int tag);
+void amps_SetInvoiceTag(amps_Invoice inv, int tag);
 
 /* amps_io.c */
 void amps_ScanChar (amps_File file , char *data , int len , int stride );
