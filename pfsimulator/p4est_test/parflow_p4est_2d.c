@@ -67,11 +67,31 @@ parflow_p4est_grid_2d_new(int Px, int Py
 void
 parflow_p4est_grid_2d_destroy(parflow_p4est_grid_2d_t * pfg)
 {
+    /* Mesh structure must have been freed before
+     * with parflow_p4est_grid_2d_mesh_destroy */
+    P4EST_ASSERT(pfg->mesh == NULL);
+
     p4est_ghost_destroy(pfg->ghost);
     sc_array_destroy(pfg->ghost_data);
     p4est_destroy(pfg->forest);
     p4est_connectivity_destroy(pfg->connect);
     P4EST_FREE(pfg);
+}
+
+void
+parflow_p4est_grid_2d_mesh_init(parflow_p4est_grid_2d_t * pfgrid)
+{
+    pfgrid->mesh = p4est_mesh_new (pfgrid->forest, pfgrid->ghost,
+                                   P4EST_CONNECT_FACE );
+}
+
+void
+parflow_p4est_grid_2d_mesh_destroy(parflow_p4est_grid_2d_t *pfgrid)
+{
+    if (pfgrid->mesh != NULL){
+        p4est_mesh_destroy (pfgrid->mesh);
+        pfgrid->mesh = NULL;
+    }
 }
 
 /*

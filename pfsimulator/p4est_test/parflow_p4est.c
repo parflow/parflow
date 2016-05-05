@@ -101,6 +101,34 @@ parflow_p4est_grid_destroy(parflow_p4est_grid_t * pfgrid)
     P4EST_FREE(pfgrid);
 }
 
+void
+parflow_p4est_grid_mesh_init(parflow_p4est_grid_t *pfgrid)
+{
+    int             dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
+
+    if (dim == 2) {
+        /* At the moment the mesh structure is
+         * required only for 3D problems*/
+        pfgrid->p.p4->mesh = NULL;
+    } else {
+        P4EST_ASSERT(dim == 3);
+        parflow_p4est_grid_3d_mesh_init(pfgrid->p.p8);
+    }
+}
+
+void
+parflow_p4est_grid_mesh_destroy(parflow_p4est_grid_t *pfgrid)
+{
+    int             dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
+
+    if (dim == 2) {
+        parflow_p4est_grid_2d_mesh_destroy(pfgrid->p.p4);
+    } else {
+        P4EST_ASSERT(dim == 3);
+        parflow_p4est_grid_3d_mesh_destroy(pfgrid->p.p8);
+    }
+}
+
 parflow_p4est_qiter_t *
 parflow_p4est_qiter_init(parflow_p4est_grid_t * pfgrid,
                          parflow_p4est_iter_type_t itype)

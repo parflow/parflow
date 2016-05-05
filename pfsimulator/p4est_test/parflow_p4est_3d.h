@@ -15,6 +15,9 @@ typedef struct parflow_p4est_grid_3d {
     p8est_ghost_t  *ghost;
     sc_array_t     *ghost_data;
 
+    p8est_mesh_t   *mesh;       /* Allocated only during ParFlow grid
+                                   initialization and destroyed inmediatly
+                                   afterwards */
 } parflow_p4est_grid_3d_t;
 
 typedef struct parflow_p4est_qiter_3d {
@@ -46,6 +49,12 @@ parflow_p4est_grid_3d_t *parflow_p4est_grid_3d_new(int Px, int Py, int Pz);
 
 void            parflow_p4est_grid_3d_destroy(parflow_p4est_grid_3d_t *
                                               pfgrid);
+
+void            parflow_p4est_grid_3d_mesh_init(parflow_p4est_grid_3d_t *
+                                                pfgrid);
+
+void            parflow_p4est_grid_3d_mesh_destroy(parflow_p4est_grid_3d_t *
+                                                   pfgrid);
 
 void            parflow_p4est_qcoord_to_vertex_3d(p8est_connectivity_t *
                                                   connect,
