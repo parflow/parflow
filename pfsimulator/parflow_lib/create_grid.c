@@ -121,6 +121,9 @@ Grid           *CreateGrid(
       pfgrid = parflow_p4est_grid_new (GlobalsNumProcsX, GlobalsNumProcsY,
                                        GlobalsNumProcsZ);
 
+      /* Allocate p4est mesh structure if required*/
+      parflow_p4est_grid_mesh_init(pfgrid);
+
       /* Loop on the quadrants (leafs) of this forest
          and attach a subgrid on each */
       for (qiter = parflow_p4est_qiter_init(pfgrid, PARFLOW_P4EST_QUAD);
@@ -136,10 +139,18 @@ Grid           *CreateGrid(
              NewSubgrid(sp->icorner[0], sp->icorner[1], sp->icorner[2],
                         sp->p[0], sp->p[1], sp->p[2], 0,  0,  0,
                         parflow_p4est_qiter_get_owner_rank(qiter));
-          SubgridLocIdx(quad_data->pf_subgrid) = parflow_p4est_qiter_get_local_idx(qiter);
+          SubgridLocIdx(quad_data->pf_subgrid)
+              = parflow_p4est_qiter_get_local_idx(qiter);
+
+          /*Retrieve -z and +z neighborhood information*/
+          parflow_p4est_get_zneigh(quad_data->pf_subgrid, qiter, pfgrid);
+
           AppendSubgrid(quad_data->pf_subgrid, subgrids);
           AppendSubgrid(quad_data->pf_subgrid, all_subgrids);
       }
+
+      /*Destroy p4est mesh structure */
+      parflow_p4est_grid_mesh_destroy(pfgrid);
 
       /* Loop over the ghost layer */
       for (qiter = parflow_p4est_qiter_init(pfgrid, PARFLOW_P4EST_GHOST);
