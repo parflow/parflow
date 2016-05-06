@@ -56,6 +56,11 @@ void            parflow_p4est_grid_3d_mesh_init(parflow_p4est_grid_3d_t *
 void            parflow_p4est_grid_3d_mesh_destroy(parflow_p4est_grid_3d_t *
                                                    pfgrid);
 
+
+void            parflow_p4est_get_zneigh_3d(Subgrid * subgrid,
+                                            parflow_p4est_qiter_3d_t * qiter,
+                                            parflow_p4est_grid_3d_t * pfgrid);
+
 void            parflow_p4est_qcoord_to_vertex_3d(p8est_connectivity_t *
                                                   connect,
                                                   p4est_topidx_t treeid,

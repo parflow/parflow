@@ -59,6 +59,10 @@ void            parflow_p4est_grid_mesh_init(parflow_p4est_grid_t *
 void            parflow_p4est_grid_mesh_destroy(parflow_p4est_grid_t *
                                                 pfgrid);
 
+void            parflow_p4est_get_zneigh(Subgrid * subgrid,
+                                         parflow_p4est_qiter_t * qiter,
+                                         parflow_p4est_grid_t * pfgrid);
+
 parflow_p4est_qiter_t *parflow_p4est_qiter_init(parflow_p4est_grid_t *
                                                 pfg,
                                                 parflow_p4est_iter_type_t

@@ -129,6 +129,22 @@ parflow_p4est_grid_mesh_destroy(parflow_p4est_grid_t *pfgrid)
     }
 }
 
+void
+parflow_p4est_get_zneigh(Subgrid * subgrid,
+                         parflow_p4est_qiter_t * qiter,
+                         parflow_p4est_grid_t * pfgrid)
+{
+    int             dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
+
+    if (dim == 2) {
+        parflow_p4est_get_zneigh_2d(subgrid);
+    } else {
+        P4EST_ASSERT(dim == 3);
+        parflow_p4est_get_zneigh_3d(subgrid,
+                                    qiter->q.qiter_3d, pfgrid->p.p8);
+    }
+}
+
 parflow_p4est_qiter_t *
 parflow_p4est_qiter_init(parflow_p4est_grid_t * pfgrid,
                          parflow_p4est_iter_type_t itype)

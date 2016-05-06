@@ -94,6 +94,54 @@ parflow_p4est_grid_2d_mesh_destroy(parflow_p4est_grid_2d_t *pfgrid)
     }
 }
 
+void
+parflow_p4est_get_zneigh_2d( Subgrid * subgrid
+#ifdef P4_TO_P8
+                           ,parflow_p4est_qiter_2d_t * qiter,
+                            parflow_p4est_grid_2d_t * pfgrid
+#endif
+    )
+{
+    int z_neighs[] = {-1, -1};
+
+#ifdef P4_TO_P8
+    p4est_mesh_t     *mesh = pfgrid->mesh;
+    p4est_locidx_t    K     = mesh->local_num_quadrants;
+    p4est_locidx_t    G     = mesh->ghost_num_quadrants;
+    int8_t            qtof;
+    p4est_locidx_t    qtoq;
+    int               f,lidx;
+    int               faces[] = {4,5}; /** -z face = 4, +z face = 5 */
+
+    P4EST_ASSERT(qiter->itype == PARFLOW_P4EST_QUAD);
+    lidx = qiter->local_idx;
+
+    /** Inspect mesh structure to get neighborhod information **/
+    for (f = 0; f < 2; ++f) {
+        qtoq = mesh->quad_to_quad[P4EST_FACES * lidx + faces[f]];
+        P4EST_ASSERT(qtoq >= 0);
+        qtof = mesh->quad_to_face[P4EST_FACES * lidx + faces[f]];
+
+        if (qtoq == lidx && qtof == faces[f]) {
+            /** face lies on the domain boundary, nothing to do **/
+        } else {
+            if (qtoq >= K) {
+                /** face neighbor is on a different processor **/
+                P4EST_ASSERT( (qtoq - K) < G);
+                z_neighs[f] = qtoq;
+            } else {
+                /** face neighbor is on the same processor **/
+                P4EST_ASSERT(qtoq < K);
+                z_neighs[f] = qtoq;
+            }
+        }
+    }
+#endif
+
+    subgrid->minus_z_neigh =  z_neighs[0];
+    subgrid->plus_z_neigh  =  z_neighs[1];
+}
+
 /*
  * START: Quadrant iterator routines 
  */

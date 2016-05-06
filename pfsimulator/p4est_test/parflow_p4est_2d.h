@@ -56,6 +56,8 @@ void            parflow_p4est_grid_2d_mesh_init(parflow_p4est_grid_2d_t *
 void            parflow_p4est_grid_2d_mesh_destroy(parflow_p4est_grid_2d_t *
                                                    pfgrid);
 
+void            parflow_p4est_get_zneigh_2d(Subgrid * subgrid);
+
 void            parflow_p4est_qcoord_to_vertex_2d(p4est_connectivity_t *
                                                   connect,
                                                   p4est_topidx_t treeid,
