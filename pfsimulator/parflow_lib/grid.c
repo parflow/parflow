@@ -379,6 +379,11 @@ Subgrid  *ExtractSubgrid(
 
    SubgridLocIdx(new_subgrid) = SubgridLocIdx(subgrid);
 
+#ifdef HAVE_P4EST
+   SubregionMinusZneigh(new_subgrid) = SubregionMinusZneigh(subgrid);
+   SubregionPlusZneigh(new_subgrid)  = SubregionPlusZneigh(subgrid);
+#endif
+
    return new_subgrid;
 }
 

@@ -83,6 +83,11 @@ typedef struct
    int  process;         /* Process containing this subgrid */
    int  locidx;          /* Index of this subregion in owned process*/
 
+#ifdef HAVE_P4EST
+   int minus_z_neigh;  /* Access to -z neighbor to this subgrid */
+   int plus_z_neigh;   /* Access to +z neighbor to this subgrid */
+#endif
+
 } Subregion;
 
 /*--------------------------------------------------------------------------
@@ -137,6 +142,11 @@ typedef struct
 #define SubregionProcess(subregion) ((subregion) -> process)
 
 #define SubregionLocIdx(subregion) ((subregion) -> locidx)
+
+#ifdef HAVE_P4EST
+#define SubregionMinusZneigh(subregion) ((subregion) -> minus_z_neigh)
+#define SubregionPlusZneigh(subregion)  ((subregion) -> plus_z_neigh )
+#endif
 
 /*--------------------------------------------------------------------------
  * Accessor macros: SubregionArray

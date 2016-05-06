@@ -80,6 +80,11 @@ int       process)
 
    (new_subregion -> locidx)  = 0;
 
+#ifdef HAVE_P4EST
+   (new_subregion -> minus_z_neigh) = -1;
+   (new_subregion -> plus_z_neigh)  = -1;
+#endif
+
    return new_subregion;
 }
 
@@ -200,6 +205,11 @@ Subregion  *DuplicateSubregion(
 		      SubregionProcess(subregion));
 
    SubregionLocIdx(new_subregion) = SubregionLocIdx(subregion);
+
+#ifdef HAVE_P4EST
+   SubregionMinusZneigh(new_subregion) = SubregionMinusZneigh(subregion);
+   SubregionPlusZneigh(new_subregion)  = SubregionPlusZneigh(subregion);
+#endif
 
    return new_subregion;
 }

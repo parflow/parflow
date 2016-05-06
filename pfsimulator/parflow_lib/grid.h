@@ -108,6 +108,11 @@ typedef struct
 
 #define SubgridLocIdx(subgrid) SubregionLocIdx(subgrid)
 
+#ifdef HAVE_P4EST
+#define SubgridMinusZneigh(subregion) ((subgrid) -> minus_z_neigh)
+#define SubgridPlusZneigh(subregion)  ((subgrid) -> plus_z_neigh )
+#endif
+
 /*--------------------------------------------------------------------------
  * Accessor macros: SubgridArray
  *--------------------------------------------------------------------------*/
