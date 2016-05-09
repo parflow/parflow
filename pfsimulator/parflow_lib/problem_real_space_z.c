@@ -29,6 +29,10 @@
 #include "parflow.h"
 #include "globals.h"
 
+#ifdef HAVE_P4EST
+#include "../p4est_test/parflow_p4est.h"
+#endif
+
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -39,6 +43,21 @@ typedef struct
 
 typedef void InstanceXtra;
 
+#ifdef HAVE_P4EST
+static int ComputeTag(Subgrid *send_sg, Subgrid *recv_sg){
+
+    int tag;
+    int tz = SubgridIZ(send_sg) - SubgridIZ(recv_sg);
+
+    if (tz){
+        tag = tz < 0 ? 1 : 0;
+    }
+
+    tag += 2 * SubgridLocIdx(send_sg);
+
+    return tag;
+}
+#endif
 
 /*--------------------------------------------------------------------------
  * realSpaceZ values
@@ -54,7 +73,8 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
    Subgrid        *subgrid;
    Subvector      *dz_sub;
    Subvector      *rsz_sub;
-    
+
+   amps_Invoice    invoice;
    VectorUpdateCommHandle       *handle;
    
    Vector      *dz_mult            = ProblemDataZmult(problem_data);
@@ -65,11 +85,16 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
    int             nx, ny, nz;
    int             r;
    int             is, i, j, k,l, ips=0;
+   int             srcRank, dstRank;
 
 
    GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
 
-
+#ifdef HAVE_P4EST
+   SubgridArray   *all_subgrids      = GridAllSubgrids(grid);
+   Subgrid        *neigh_subgrid;
+   int             tag, sidx;
+#endif
 
    /*-----------------------------------------------------------------------
     * real_space_z
@@ -102,24 +127,38 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
             z = BackgroundZ(GlobalsBackground);
 
 	    /* Receive partial sum from rank below current rank.  This is lower z value for this rank. */
-	    if ( GlobalsR >  0 )
-	    {
-	       amps_Invoice invoice = amps_NewInvoice("%d", &z);
-	       int srcRank = pqr_to_process(GlobalsP,
-					    GlobalsQ,
-					    GlobalsR - 1,
-					    GlobalsNumProcsX,
-					    GlobalsNumProcsY,
-					    GlobalsNumProcsZ);
-	       
-	       amps_Recv(amps_CommWorld, srcRank, invoice);
-	       amps_FreeInvoice(invoice);
-	    }
-	    else
-	    {
-	       z = BackgroundZ(GlobalsBackground);
-	    }
-            
+	    if (!USE_P4EST){
+		if ( GlobalsR >  0 )
+		  {
+		    invoice = amps_NewInvoice("%d", &z);
+		    srcRank = pqr_to_process(GlobalsP,
+						 GlobalsQ,
+						 GlobalsR - 1,
+						 GlobalsNumProcsX,
+						 GlobalsNumProcsY,
+						 GlobalsNumProcsZ);
+
+		    amps_Recv(amps_CommWorld, srcRank, invoice);
+		    amps_FreeInvoice(invoice);
+		  }
+	    }else {
+#ifdef HAVE_P4EST
+		sidx = SubgridMinusZneigh(subgrid);
+		if ( sidx  >= 0 )
+		  {
+		    neigh_subgrid = SubgridArraySubgrid(all_subgrids, sidx);
+		    invoice = amps_NewInvoice("%d", &z);
+		    srcRank = SubgridProcess(neigh_subgrid);
+		    tag     = ComputeTag(neigh_subgrid, subgrid);
+		    amps_SetInvoiceTag( invoice,  tag);
+		    amps_Recv(amps_CommWorld, srcRank, invoice);
+		    amps_FreeInvoice(invoice);
+		  }
+#else
+    PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
+            }
+
             zz=ctalloc(double, (nz));
 
 	    /*
@@ -152,19 +191,37 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
             }
 
 	    /* Send partial sum to rank above current rank */
-	    if ( GlobalsR < GlobalsNumProcsZ - 1 )
-	    {
-	       amps_Invoice invoice = amps_NewInvoice("%d", &z);
-	       
-	       int dstRank = pqr_to_process(GlobalsP,
-					    GlobalsQ,
-					    GlobalsR + 1,
-					    GlobalsNumProcsX,
-					    GlobalsNumProcsY,
-					    GlobalsNumProcsZ);
-	       
-	       amps_Send(amps_CommWorld, dstRank, invoice);
-	       amps_FreeInvoice(invoice);
+	    if (!USE_P4EST){
+		if ( GlobalsR < GlobalsNumProcsZ - 1 )
+		  {
+		    invoice = amps_NewInvoice("%d", &z);
+
+		    dstRank = pqr_to_process(GlobalsP,
+					     GlobalsQ,
+					     GlobalsR + 1,
+					     GlobalsNumProcsX,
+					     GlobalsNumProcsY,
+					     GlobalsNumProcsZ);
+
+		    amps_Send(amps_CommWorld, dstRank, invoice);
+		    amps_FreeInvoice(invoice);
+		  }
+	    }else {
+#ifdef HAVE_P4EST
+		sidx = SubgridPlusZneigh(subgrid);
+		if ( sidx  >=  0 )
+		  {
+		    neigh_subgrid = SubgridArraySubgrid(all_subgrids, sidx);
+		    invoice = amps_NewInvoice("%d", &z);
+		    dstRank = SubgridProcess(neigh_subgrid);
+		    tag     = ComputeTag(subgrid, neigh_subgrid);
+		    amps_SetInvoiceTag( invoice,  tag);
+		    amps_Send(amps_CommWorld, dstRank, invoice);
+		    amps_FreeInvoice(invoice);
+		  }
+#else
+    PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
 	    }
 
 	    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
