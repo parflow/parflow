@@ -171,6 +171,9 @@ Grid           *CreateGrid(
                 parflow_p4est_qiter_get_local_idx(qiter);
             AppendSubgrid(ghost_data->pf_subgrid, all_subgrids);
       }
+
+      /*There is no PxQxR processor arrange with p4est, set invalid values*/
+      GlobalsP = GlobalsQ = GlobalsR = -1;
 #else
     PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif
