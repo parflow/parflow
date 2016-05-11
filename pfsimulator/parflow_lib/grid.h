@@ -81,6 +81,7 @@ typedef struct
 				    box for the subgrids */
 #ifdef HAVE_P4EST
    parflow_p4est_grid_t *pfgrid;
+   int           *z_levels;
 #endif
 
 } Grid;

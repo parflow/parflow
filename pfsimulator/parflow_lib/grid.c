@@ -129,6 +129,7 @@ Grid  *NewGrid(
 
 #ifdef HAVE_P4EST
    new_grid->pfgrid = NULL;
+   new_grid->z_levels = NULL;
 #endif
 
    return new_grid;
@@ -160,6 +161,10 @@ void  FreeGrid(
         if(grid->pfgrid != NULL){
             /* destroy pfgrid structure */
             parflow_p4est_grid_destroy (grid->pfgrid);
+        }
+        if(grid->z_levels != NULL){
+          /* Destroy z level array */
+          P4EST_FREE (grid->z_levels);
         }
 #endif
         tfree(grid);

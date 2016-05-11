@@ -34,6 +34,8 @@
 
 #include "parflow.h"
 #ifdef HAVE_P4EST
+#include <p4est.h>
+#include <p8est.h>
 #include "../p4est_test/parflow_p4est.h"
 #endif
 
@@ -88,6 +90,8 @@ Grid           *CreateGrid(
    parflow_p4est_qiter_t      *qiter;
    parflow_p4est_quad_data_t  *quad_data = NULL;
    parflow_p4est_ghost_data_t *ghost_data = NULL;
+   int                        *z_levels;
+   int                         lz, pz, offset;
 #endif
 
    if (!USE_P4EST){
@@ -117,6 +121,15 @@ Grid           *CreateGrid(
        * and their corresponding dimensions */
         parflow_p4est_sg_param_init(sp);
 
+      /* Allocate and populate array to store z_levels in the grid */
+        z_levels = P4EST_ALLOC(int, GlobalsNumProcsZ);
+
+        for (lz = 0; lz < GlobalsNumProcsZ; ++lz){
+            pz     =  lz < sp->l[2]  ? sp->m[2] + 1 : sp->m[2];
+            offset =  lz >= sp->l[2] ? sp->l[2] : 0 ;
+            z_levels[lz] = lz * pz + offset;
+        }
+
       /* Create the pfgrid. */
       pfgrid = parflow_p4est_grid_new (GlobalsNumProcsX, GlobalsNumProcsY,
                                        GlobalsNumProcsZ);
@@ -139,8 +152,8 @@ Grid           *CreateGrid(
              NewSubgrid(sp->icorner[0], sp->icorner[1], sp->icorner[2],
                         sp->p[0], sp->p[1], sp->p[2], 0,  0,  0,
                         parflow_p4est_qiter_get_owner_rank(qiter));
-          SubgridLocIdx(quad_data->pf_subgrid)
-              = parflow_p4est_qiter_get_local_idx(qiter);
+          SubgridLocIdx(quad_data->pf_subgrid) =
+              parflow_p4est_qiter_get_local_idx(qiter);
 
           /*Retrieve -z and +z neighborhood information*/
           parflow_p4est_get_zneigh(quad_data->pf_subgrid, qiter, pfgrid);
@@ -188,6 +201,7 @@ Grid           *CreateGrid(
     if (USE_P4EST){
 #ifdef HAVE_P4EST
       grid->pfgrid = pfgrid;
+      grid->z_levels = z_levels;
 #else
       PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif
