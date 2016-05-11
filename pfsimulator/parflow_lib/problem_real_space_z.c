@@ -79,21 +79,29 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
    
    Vector      *dz_mult            = ProblemDataZmult(problem_data);
  
-   double         *rsz_data, *dz_data,z , *zz;
+   double         *rsz_data, *dz_data, z[GridNumSubgrids(grid)] , *zz;
 
    int             ix, iy, iz;
    int             nx, ny, nz;
    int             r;
    int             is, i, j, k,l, ips=0;
    int             srcRank, dstRank;
-
+   int             num_z_levels;
 
    GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
 
 #ifdef HAVE_P4EST
-   SubgridArray   *all_subgrids      = GridAllSubgrids(grid);
-   Subgrid        *neigh_subgrid;
-   int             tag, sidx;
+   SubgridArray       *all_subgrids  = GridAllSubgrids(grid);
+   Subgrid            *neigh_subgrid;
+   sc_array_t         *sendbuf;
+   sc_array_t         *old_sendbuf = NULL;
+   sc_array_t         *new_requests;
+   sc_array_t         *old_requests = NULL;
+   double             *zbuf;
+   int                *z_levels = grid->z_levels;
+   int                *outreq;
+   int                 tag, mpiret;
+   int                 ll, sidx;
 #endif
 
    /*-----------------------------------------------------------------------
@@ -102,61 +110,85 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
 
    InitVectorAll(rsz, 1.0);
 
+   if (!USE_P4EST){
+       num_z_levels = 1;
+     } else{
+#ifdef HAVE_P4EST
+       num_z_levels = GlobalsNumProcsZ;
+#else
+       PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
+     }
+
+#ifdef HAVE_P4EST
+   for (ll = 0; ll < num_z_levels; ++ll)
+   {
+       if (USE_P4EST) {
+           sendbuf      = sc_array_new (sizeof (double));
+           new_requests = sc_array_new (sizeof (sc_MPI_Request));
+       }
+#endif
 	 ForSubgridI(is, subgrids)
 	 {
-
-
             subgrid = SubgridArraySubgrid(subgrids, is);
+
+            if (USE_P4EST){
+#ifdef HAVE_P4EST
+                /** This subgrid does not lie in this level, skip it */
+                if (  SubgridIZ(subgrid) != z_levels[ll] )
+                  continue;
+#endif
+            }
+
             dz_sub  = VectorSubvector(dz_mult, is);
             rsz_sub  = VectorSubvector(rsz, is);
-	    
-	    ix = SubgridIX(subgrid);
-	    iy = SubgridIY(subgrid);
-	    iz = SubgridIZ(subgrid);
-	    
-	    nx = SubgridNX(subgrid);
-	    ny = SubgridNY(subgrid);
-	    nz = SubgridNZ(subgrid);
-	    
-	    /* RDF: assume resolution is the same in all 3 directions */
-	    r = SubgridRX(subgrid);
-	    
-	    dz_data = SubvectorData(dz_sub);
+
+            ix = SubgridIX(subgrid);
+            iy = SubgridIY(subgrid);
+            iz = SubgridIZ(subgrid);
+
+            nx = SubgridNX(subgrid);
+            ny = SubgridNY(subgrid);
+            nz = SubgridNZ(subgrid);
+
+            /* RDF: assume resolution is the same in all 3 directions */
+            r = SubgridRX(subgrid);
+
+            dz_data = SubvectorData(dz_sub);
             rsz_data = SubvectorData(rsz_sub);
 
-            z = BackgroundZ(GlobalsBackground);
+            z[is] = BackgroundZ(GlobalsBackground);
 
-	    /* Receive partial sum from rank below current rank.  This is lower z value for this rank. */
-	    if (!USE_P4EST){
-		if ( GlobalsR >  0 )
-		  {
-		    invoice = amps_NewInvoice("%d", &z);
-		    srcRank = pqr_to_process(GlobalsP,
-						 GlobalsQ,
-						 GlobalsR - 1,
-						 GlobalsNumProcsX,
-						 GlobalsNumProcsY,
-						 GlobalsNumProcsZ);
-
-		    amps_Recv(amps_CommWorld, srcRank, invoice);
-		    amps_FreeInvoice(invoice);
-		  }
-	    }else {
+            if (USE_P4EST){
 #ifdef HAVE_P4EST
-		sidx = SubgridMinusZneigh(subgrid);
-		if ( sidx  >= 0 )
-		  {
-		    neigh_subgrid = SubgridArraySubgrid(all_subgrids, sidx);
-		    invoice = amps_NewInvoice("%d", &z);
-		    srcRank = SubgridProcess(neigh_subgrid);
-		    tag     = ComputeTag(neigh_subgrid, subgrid);
-		    amps_SetInvoiceTag( invoice,  tag);
-		    amps_Recv(amps_CommWorld, srcRank, invoice);
-		    amps_FreeInvoice(invoice);
-		  }
-#else
-    PARFLOW_ERROR("ParFlow compiled without p4est");
+                sidx = SubgridMinusZneigh(subgrid);
+
+                /** We have a neighboring subgrid from bellow, receive its partial sum */
+                if ( sidx  >= 0 )
+                {
+                    neigh_subgrid = SubgridArraySubgrid(all_subgrids, sidx);
+                    srcRank = SubgridProcess(neigh_subgrid);
+                    tag     = ComputeTag(neigh_subgrid, subgrid);
+                    mpiret  = sc_MPI_Recv (&z[is], 1, sc_MPI_DOUBLE, srcRank,
+                                           tag,  amps_CommWorld, sc_MPI_STATUS_IGNORE);
+                    SC_CHECK_MPI (mpiret);
+                }
 #endif
+            }else {
+                /* Receive partial sum from rank below current rank.  This is lower z value for this rank. */
+                if ( GlobalsR >  0 )
+                {
+                    invoice = amps_NewInvoice("%d", &z[is]);
+                    srcRank = pqr_to_process(GlobalsP,
+                                             GlobalsQ,
+                                             GlobalsR - 1,
+                                             GlobalsNumProcsX,
+                                             GlobalsNumProcsY,
+                                             GlobalsNumProcsZ);
+
+                    amps_Recv(amps_CommWorld, srcRank, invoice);
+                    amps_FreeInvoice(invoice);
+                }
             }
 
             zz=ctalloc(double, (nz));
@@ -170,7 +202,6 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
 	     */
 
             for (l = iz; l < iz + nz; l++){
-
 	       int *breaking_out_PV_visiting = 0;
 		GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, l, nx, ny, 1,
                 {
@@ -185,60 +216,92 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
 		if(breaking_out_PV_visiting) {
 		   tfree(breaking_out_PV_visiting-1);
 		}
-                z +=  0.5 * RealSpaceDZ(SubgridRZ(subgrid)) * dz_data[ips];  
-		zz[k-iz]=z;
-                z +=  0.5 * RealSpaceDZ(SubgridRZ(subgrid)) * dz_data[ips];
+		z[is] +=  0.5 * RealSpaceDZ(SubgridRZ(subgrid)) * dz_data[ips];
+		zz[k-iz]=z[is];
+		z[is] +=  0.5 * RealSpaceDZ(SubgridRZ(subgrid)) * dz_data[ips];
             }
 
-	    /* Send partial sum to rank above current rank */
-	    if (!USE_P4EST){
-		if ( GlobalsR < GlobalsNumProcsZ - 1 )
-		  {
-		    invoice = amps_NewInvoice("%d", &z);
-
-		    dstRank = pqr_to_process(GlobalsP,
-					     GlobalsQ,
-					     GlobalsR + 1,
-					     GlobalsNumProcsX,
-					     GlobalsNumProcsY,
-					     GlobalsNumProcsZ);
-
-		    amps_Send(amps_CommWorld, dstRank, invoice);
-		    amps_FreeInvoice(invoice);
-		  }
-	    }else {
+            if (USE_P4EST){
 #ifdef HAVE_P4EST
-		sidx = SubgridPlusZneigh(subgrid);
-		if ( sidx  >=  0 )
-		  {
-		    neigh_subgrid = SubgridArraySubgrid(all_subgrids, sidx);
-		    invoice = amps_NewInvoice("%d", &z);
-		    dstRank = SubgridProcess(neigh_subgrid);
-		    tag     = ComputeTag(subgrid, neigh_subgrid);
-		    amps_SetInvoiceTag( invoice,  tag);
-		    amps_Send(amps_CommWorld, dstRank, invoice);
-		    amps_FreeInvoice(invoice);
-		  }
-#else
-    PARFLOW_ERROR("ParFlow compiled without p4est");
+                sidx = SubgridPlusZneigh(subgrid);
+
+                /** We have a neighboring subgrid above, send our partial sum */
+                if ( sidx  >=  0 )
+                {
+                    neigh_subgrid = SubgridArraySubgrid(all_subgrids, sidx);
+                    dstRank = SubgridProcess(neigh_subgrid);
+                    tag     = ComputeTag(subgrid, neigh_subgrid);
+                    outreq  = (sc_MPI_Request *) sc_array_push (new_requests);
+                    zbuf    = (double *) sc_array_push (sendbuf);
+                    zbuf    = &z[is];
+                    mpiret  = sc_MPI_Isend (zbuf, 1, sc_MPI_DOUBLE, dstRank,
+                                            tag, amps_CommWorld, outreq);
+                    SC_CHECK_MPI (mpiret);
+                }
 #endif
-	    }
+            }else {
+                /* Send partial sum to rank above current rank */
+                if ( GlobalsR < GlobalsNumProcsZ - 1 )
+                {
+                    invoice = amps_NewInvoice("%d", &z[is]);
 
-	    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-            {   
-	        ips = SubvectorEltIndex(rsz_sub, i, j, k);
-                  
-		rsz_data[ips] = zz[k-iz];
-		
-	    });
+                    dstRank = pqr_to_process(GlobalsP,
+                                             GlobalsQ,
+                                             GlobalsR + 1,
+                                             GlobalsNumProcsX,
+                                             GlobalsNumProcsY,
+                                             GlobalsNumProcsZ);
+
+                    amps_Send(amps_CommWorld, dstRank, invoice);
+                    amps_FreeInvoice(invoice);
+                }
+            }
+
+            GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+            {
+             ips = SubvectorEltIndex(rsz_sub, i, j, k);
+             rsz_data[ips] = zz[k-iz];
+            });
             tfree(zz);
-	 }
+     }
 
+     if ( USE_P4EST ){
+#ifdef HAVE_P4EST
 
-   
-    handle = InitVectorUpdate(rsz, VectorUpdateAll);
-    FinalizeVectorUpdate(handle);
+         /** There are no send requests for this z_level,
+          * free request and buffer array*/
+         if ( !new_requests->elem_count ){
+             sc_array_destroy (new_requests);
+             sc_array_destroy (sendbuf);
+             sendbuf  = new_requests = NULL;
+         }
+
+         if (old_requests != NULL){
+             /** Complete sends from previous z_level */
+             mpiret = sc_MPI_Waitall ((int) old_requests->elem_count,
+                                      (sc_MPI_Request *) old_requests->array,
+                                      sc_MPI_STATUSES_IGNORE);
+             SC_CHECK_MPI (mpiret);
+
+             /** Free requests and buffer from previous level */
+             sc_array_destroy (old_requests);
+             sc_array_destroy (old_sendbuf);
+         }
+
+         /** Save current requests and buffer to be completed
+          *  in the next z_level */
+         old_requests = new_requests;
+         old_sendbuf  = sendbuf;
+#endif
+     }
+
+#ifdef HAVE_P4EST
    }
+#endif
+
+   handle = InitVectorUpdate(rsz, VectorUpdateAll);
+   FinalizeVectorUpdate(handle);
+}
 
 
 /*--------------------------------------------------------------------------
