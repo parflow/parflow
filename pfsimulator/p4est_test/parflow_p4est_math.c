@@ -24,3 +24,9 @@ powtwo_div(int a)
     }
     return c;
 }
+
+
+int int_compare (int a, int b)
+{
+  return a == b ? 0 : a < b ? -1 : +1;
+}
