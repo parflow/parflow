@@ -124,7 +124,16 @@ void
       PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif
    }
+
    GlobalsNumProcs = amps_Size(amps_CommWorld);
+
+#ifdef HAVE_P4EST
+   /** Support for empty processors not implement yet */
+   if ( GlobalsNumProcs >
+        GlobalsNumProcsX * GlobalsNumProcsY * GlobalsNumProcsZ){
+       PARFLOW_ERROR("Number of processors bigger as the number of subgrids");
+   }
+#endif
 
    GlobalsBackground = ReadBackground();
 
