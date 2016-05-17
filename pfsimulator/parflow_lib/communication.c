@@ -36,6 +36,9 @@
 #include "amps.h"
 #include "communication.h"
 
+#ifdef HAVE_P4EST
+#include "../p4est_test/parflow_p4est_math.h"
+#endif
 
 /*--------------------------------------------------------------------------
  * NewCommPkgInfo:
@@ -142,23 +145,27 @@ int  NewCommPkgInfo(
 }
 
 #ifdef HAVE_P4EST
+
+
+
 static int ComputeTag(int loc_idx_sender,
                       Subregion *send_sr, Subregion *recv_sr){
 
     int tx, ty, tz;
     int tag;
 
-    tx = SubregionIX(send_sr) - SubregionIX(recv_sr);
-    ty = SubregionIY(send_sr) - SubregionIY(recv_sr);
-    tz = SubregionIZ(send_sr) - SubregionIZ(recv_sr);
+    tx = int_compare(SubregionIX(send_sr) , SubregionIX(recv_sr));
+    ty = int_compare(SubregionIY(send_sr) , SubregionIY(recv_sr));
+    tz = int_compare(SubregionIZ(send_sr) , SubregionIZ(recv_sr));
 
     if (tx){
         tag = tx < 0 ? 1 : 0;
     }else{
+        assert( tx== 0 );
         if (ty){
             tag = ty < 0 ? 3 : 2;
         }else{
-
+            assert( ty == 0 );
             if (tz){
                 tag = tz < 0 ? 5 : 4;
             }

@@ -31,6 +31,7 @@
 
 #ifdef HAVE_P4EST
 #include "../p4est_test/parflow_p4est.h"
+#include "../p4est_test/parflow_p4est_math.h"
 #endif
 
 /*--------------------------------------------------------------------------
@@ -47,10 +48,12 @@ typedef void InstanceXtra;
 static int ComputeTag(Subgrid *send_sg, Subgrid *recv_sg){
 
     int tag;
-    int tz = SubgridIZ(send_sg) - SubgridIZ(recv_sg);
+    int tz = int_compare(SubregionIZ(send_sg) , SubregionIZ(recv_sg));
 
     if (tz){
         tag = tz < 0 ? 1 : 0;
+    }else{
+        PARFLOW_ERROR("Trying to compute invalid tag");
     }
 
     tag += 2 * SubgridLocIdx(send_sg);
