@@ -8,12 +8,12 @@ namespace import Parflow::*
 pfset FileVersion 4
 
 # remove files from previous run
-foreach file [glob -nocomplain *test_brick_2d.out.*] {file delete -force -- $file}
-foreach file [glob -nocomplain test_brick_2d.pfidb] {file delete -force -- $file}
+foreach file [glob -nocomplain *vec_test.out.*] {file delete -force -- $file}
+foreach file [glob -nocomplain vec_test.pfidb] {file delete -force -- $file}
 
-pfset Process.Topology.P 2
-pfset Process.Topology.Q 2
-pfset Process.Topology.R 2
+pfset Process.Topology.P 1
+pfset Process.Topology.Q 1
+pfset Process.Topology.R 1
 
 #---------------------------------------------------------
 # Computational Grid
@@ -38,7 +38,7 @@ pfset use_pforest                               "yes"
 #---------------------------------------------------------
 # Computational SubGrid dims
 #---------------------------------------------------------
-pfset ComputationalSubgrid.MX                    6
+pfset ComputationalSubgrid.MX                    12
 pfset ComputationalSubgrid.MY                    6
 pfset ComputationalSubgrid.MZ                    6
 
@@ -261,7 +261,7 @@ pfset Solver.Nonlinear.UseJacobian                       True
 pfset Solver.Nonlinear.DerivativeEpsilon                 1e-8
 
 pfset Solver.Linear.KrylovDimension                      10
-pfset Solver.Linear.Preconditioner                       NoPC
+pfset Solver.Linear.Preconditioner                       PFMGOctree
 
 pfset Solver.Linear.Preconditioner.SymmetricMat          Symmetric
 pfset Solver.Linear.Preconditioner.MGSemi.MaxIter        1
@@ -303,4 +303,4 @@ pfset Solver.WriteSiloPressure		True
 #-----------------------------------------------------------------------------
 # Write out data base
 #-----------------------------------------------------------------------------
-pfwritedb test_brick_2d
+pfwritedb vec_test
