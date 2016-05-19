@@ -130,6 +130,7 @@ Grid  *NewGrid(
 #ifdef HAVE_P4EST
    new_grid->pfgrid = NULL;
    new_grid->z_levels = NULL;
+   new_grid->proj_flag = 0;
 #endif
 
    return new_grid;

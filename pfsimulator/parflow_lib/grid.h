@@ -81,7 +81,9 @@ typedef struct
 				    box for the subgrids */
 #ifdef HAVE_P4EST
    parflow_p4est_grid_t *pfgrid;
-   int           *z_levels;
+   int                  *z_levels;
+   int                   proj_flag;  /* Flag identifying if this grid comes
+                                      * from projecting an existing 3D grid to 2D */
 #endif
 
 } Grid;
@@ -138,6 +140,10 @@ typedef struct
 
 #define GridSubgrid(grid, i)  (SubgridArraySubgrid(GridSubgrids(grid), i))
 #define GridNumSubgrids(grid) (SubgridArraySize(GridSubgrids(grid)))
+
+#ifdef HAVE_P4EST
+#define GridIsProjected(grid) ((grid) -> proj_flag)
+#endif
 
 /*--------------------------------------------------------------------------
  * Utility macros:
