@@ -3067,6 +3067,10 @@ PFModule *SolverRichardsInitInstanceXtra()
    int           nonlin_sz, parameter_sz;
    int           i;
 
+#ifdef HAVE_P4EST
+   int          proj_flag;
+#endif
+
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
    else
@@ -3082,6 +3086,10 @@ PFModule *SolverRichardsInitInstanceXtra()
    /*sk: Create a two-dimensional grid for later use*/
    all_subgrids = GridAllSubgrids(grid);
 
+#ifdef HAVE_P4EST
+   /** Is this two dimensional grid comming from a 3D one ? */
+   proj_flag = GlobalsNumProcsZ > 1 ? 1 : 0;
+#endif
 
    // SGS FIXME this is incorrect, can't loop over both at same time
    // assumes same grids in both arrays which is not correct?
@@ -3091,12 +3099,43 @@ PFModule *SolverRichardsInitInstanceXtra()
       subgrid = SubgridArraySubgrid(all_subgrids, i);
       new_subgrid = DuplicateSubgrid(subgrid);
       SubgridIZ(new_subgrid) = 0;
+
+      /** With p4est we need to remember our Z corner
+       * to avoid bad communication paterns when allocating
+       * the ComputePkgs */
+      if (USE_P4EST){
+#ifdef HAVE_P4EST
+          SubgridIZ(new_subgrid) += proj_flag ? SubgridIZ(subgrid) : 0;
+#endif
+      }
+
       SubgridNZ(new_subgrid) = 1;
       AppendSubgrid(new_subgrid, new_all_subgrids);
    }
    new_subgrids  = GetGridSubgrids(new_all_subgrids);
    grid2d        = NewGrid(new_subgrids, new_all_subgrids);
+
+   if (USE_P4EST){
+#ifdef HAVE_P4EST
+       /** Set projection flag for the two dimensional grid */
+       GridIsProjected(grid2d) = proj_flag;
+#endif
+   }
+
    CreateComputePkgs(grid2d);
+
+   if (USE_P4EST){
+#ifdef HAVE_P4EST
+       /** Complete projection if necessary */
+       if (proj_flag){
+         ForSubgridI(i, new_all_subgrids)
+         {
+           new_subgrid = SubgridArraySubgrid(new_all_subgrids, i);
+           SubgridIZ(new_subgrid) = 0;
+         }
+       }
+#endif
+   }
 
    /* Create the x velocity grid */
    all_subgrids = GridAllSubgrids(grid);

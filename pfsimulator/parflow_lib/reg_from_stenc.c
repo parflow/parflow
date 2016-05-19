@@ -350,17 +350,23 @@ Stencil  *stencil)
 
 	       if ( (subgrid2 = IntersectSubgrids(subgrid0, subgrid1)) )
 	       {
+		   if (USE_P4EST){
+#ifdef HAVE_P4EST
+		       if ( GridIsProjected(grid) )
+			 SubregionIZ(subgrid2) = 0;
+#endif
+		   }
 		  switch(r)
 		  {
 		  case 0:
 		     SubgridProcess(subgrid2) = SubgridProcess(subgrid1);
-             SubgridLocIdx(subgrid2) = SubgridLocIdx(subgrid1);
+		     SubgridLocIdx(subgrid2) = SubgridLocIdx(subgrid1);
 		     AppendSubgrid(subgrid2,
 				   RegionSubregionArray(region1, i));
 		     break;
 		  case 1:
 		     SubgridProcess(subgrid2) = SubgridProcess(subgrid0);
-             SubgridLocIdx(subgrid2) = SubgridLocIdx(subgrid0);
+		     SubgridLocIdx(subgrid2) = SubgridLocIdx(subgrid0);
 		     AppendSubgrid(subgrid2,
 				   RegionSubregionArray(region1, j));
 		     break;
