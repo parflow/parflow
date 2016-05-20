@@ -94,14 +94,19 @@ void
       GlobalsNumProcsZ = GetIntDefault("Process.Topology.R", 1);
    }else{
 #ifdef HAVE_P4EST
+      /** Retrieve desired dimensions of the grid */
       Nkey[0] = "ComputationalGrid.NX";
       Nkey[1] = "ComputationalGrid.NY";
       Nkey[2] = "ComputationalGrid.NZ";
 
+      /** Retrieve desired dimensions of a subgrid */
       mkey[0] = "ComputationalSubgrid.MX";
       mkey[1] = "ComputationalSubgrid.MY";
       mkey[2] = "ComputationalSubgrid.MZ";
 
+      /** Ensure that with the user input is possible to
+        * create a consistent decomposition of the grid. If
+        * not we quit the program and print an error message */
       for (t=0; t<3; ++t){
           N    = GetIntDefault(Nkey[t], 1);
           m    = GetIntDefault(mkey[t], 1);
@@ -117,6 +122,9 @@ void
                          Nkey[t], mkey[t]);
           }
       }
+
+      /** Reinterpret GlobalsNumProcs{X,Y,Z} as the number of subgrids in
+        * that coordinate direction */
       GlobalsNumProcsX = P[0];
       GlobalsNumProcsY = P[1];
       GlobalsNumProcsZ = P[2];
@@ -128,7 +136,8 @@ void
    GlobalsNumProcs = amps_Size(amps_CommWorld);
 
 #ifdef HAVE_P4EST
-   /** Support for empty processors not implement yet */
+   /** Support for empty processors not yet implemented.
+    *  Print an error message and quit the program */
    if ( GlobalsNumProcs >
         GlobalsNumProcsX * GlobalsNumProcsY * GlobalsNumProcsZ){
        PARFLOW_ERROR("Number of processors bigger as the number of subgrids");

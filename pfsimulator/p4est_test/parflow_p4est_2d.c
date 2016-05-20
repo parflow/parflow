@@ -126,11 +126,13 @@ parflow_p4est_get_zneigh_2d( Subgrid * subgrid
             /** face lies on the domain boundary, nothing to do **/
         } else {
             if (qtoq >= K) {
-                /** face neighbor is on a different processor **/
+                /** face neighbor is on a different processor,
+                 *  then qtoq contains its local index in the ghost layer */
                 P4EST_ASSERT( (qtoq - K) < G);
                 z_neighs[f] = qtoq;
             } else {
-                /** face neighbor is on the same processor **/
+                /** face neighbor is on the same processor,
+                  * then qtoq contains its local index */
                 P4EST_ASSERT(qtoq < K);
                 z_neighs[f] = qtoq;
             }
@@ -145,6 +147,8 @@ parflow_p4est_get_zneigh_2d( Subgrid * subgrid
 /*
  * START: Quadrant iterator routines 
  */
+
+/** Complete iterator information */
 static parflow_p4est_qiter_2d_t *
 parflow_p4est_qiter_info_2d(parflow_p4est_qiter_2d_t * qit_2d)
 {
@@ -174,6 +178,7 @@ parflow_p4est_qiter_info_2d(parflow_p4est_qiter_2d_t * qit_2d)
     return qit_2d;
 }
 
+/** Allocate and initialize interatior information */
 parflow_p4est_qiter_2d_t *
 parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
                             parflow_p4est_iter_type_t itype)
@@ -234,6 +239,7 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
     return parflow_p4est_qiter_info_2d(qit_2d);
 }
 
+/** Advance the iterator */
 parflow_p4est_qiter_2d_t *
 parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d)
 {

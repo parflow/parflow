@@ -39,18 +39,27 @@ typedef struct parflow_p4est_sg_param{
 }parflow_p4est_sg_param_t;
 
 
-/*
- * Functions
- */
+/** Init parameter structure */
 void
 parflow_p4est_sg_param_init(parflow_p4est_sg_param_t *sp);
 
+/** Update parameter structure */
 void
 parflow_p4est_sg_param_update(parflow_p4est_qiter_t * qiter,
                               parflow_p4est_sg_param_t *sp);
 
+/** Create a parflow_p4est_grid structure.
+ *  A globals structure must exist prior calling this function.
+ *  TODO: Explain how Px, Py and Pz are computed.
+ * \param [in] Px    Number of subgrids in the x coordinate direction.
+ * \param [in] Py    Number of subgrids in the y coordinate direction.
+ * \param [in] Pz    Number of subgrids in the z coordinate direction.
+ *
+ * \return Freshly allocated parflow_p4est_grid structure.
+ */
 parflow_p4est_grid_t *parflow_p4est_grid_new(int Px, int Py, int Pz);
 
+/** Destroy a parflow_p4est_grid structure */
 void            parflow_p4est_grid_destroy(parflow_p4est_grid_t * pfgrid);
 
 void            parflow_p4est_grid_mesh_init(parflow_p4est_grid_t *
@@ -63,25 +72,46 @@ void            parflow_p4est_get_zneigh(Subgrid * subgrid,
                                          parflow_p4est_qiter_t * qiter,
                                          parflow_p4est_grid_t * pfgrid);
 
+/** Create an iterator over all local or ghost quadrants.
+ * \param [in] pfg      Pointer to a valid parflow_p4est_grid structure.
+ * \param [in] itype    Flag determining the type of iterator.
+ *
+ * \return Complete internal state of iterator.
+ */
 parflow_p4est_qiter_t *parflow_p4est_qiter_init(parflow_p4est_grid_t *
                                                 pfg,
                                                 parflow_p4est_iter_type_t
                                                 itype);
-
+/** Advance the iterator.
+ *  \param[in] qiter   Valid interator.
+ *
+ *  \return After procesing one quadrant, return an interator with
+ *          information of the next quadrant. (resp. ghost).
+ *          If this has been the last quadrant return NULL.
+ */
 parflow_p4est_qiter_t *parflow_p4est_qiter_next(parflow_p4est_qiter_t *
                                                 qiter);
 
+/** Get coorner of a quadrant in the brick coordinate system
+ * \param [in] pfg      Pointer to a valid iterator structure.
+ * \param [out] v       Coordinates of the quadrant in the passed iterator.
+ */
 void            parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter,
                                             double v[3]);
 
+/** Retrieve a pointer to the information placed on each quadrant */
 parflow_p4est_quad_data_t
     * parflow_p4est_get_quad_data(parflow_p4est_qiter_t * qiter);
 
+/** Get owner rank of the quadrant in the passed iterator */
 int             parflow_p4est_qiter_get_owner_rank(parflow_p4est_qiter_t *
                                                    qiter);
 
+/** Get index in the owner processor of quadrant in the passed iterator */
 int             parflow_p4est_qiter_get_local_idx(parflow_p4est_qiter_t *
                                                    qiter);
+
+/** Retrieve a pointer to the information placed on each ghost quadrant */
 parflow_p4est_ghost_data_t
    * parflow_p4est_get_ghost_data(parflow_p4est_grid_t * pfgrid,
                                   parflow_p4est_qiter_t * qiter);
