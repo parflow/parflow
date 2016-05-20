@@ -111,6 +111,11 @@ void  FreeGrid(
    Grid  *grid)
 {
    if(grid)  {
+
+      if (grid -> background) {
+	 FreeSubgrid(grid -> background);
+      }
+      
       FreeSubgridArray(GridAllSubgrids(grid));
       
       /* these subgrid arrays point to subgrids in all_subgrids */

@@ -121,14 +121,31 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
 	    }
             
             zz=ctalloc(double, (nz));
+
+	    /*
+	     * This is very ugly, the loop macro is allocating memory,
+	     * since this loop is breaking out of the macro need to make sure
+	     * the allocation is freed.
+	     *
+	     * Is there really no better way to compute the ips value needed here?
+	     */
+
             for (l = iz; l < iz + nz; l++){
+
+	       int *breaking_out_PV_visiting = 0;
 		GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, l, nx, ny, 1,
                 {
 		   //we need one index of level k which is inside the domain
 		   ips = SubvectorEltIndex(rsz_sub, i, j, k);
+		   
+		   breaking_out_PV_visiting = PV_visiting;
 	           goto  breakout;   
 		});
+		
 		breakout:;
+		if(breaking_out_PV_visiting) {
+		   tfree(breaking_out_PV_visiting-1);
+		}
                 z +=  0.5 * RealSpaceDZ(SubgridRZ(subgrid)) * dz_data[ips];  
 		zz[k-iz]=z;
                 z +=  0.5 * RealSpaceDZ(SubgridRZ(subgrid)) * dz_data[ips];
