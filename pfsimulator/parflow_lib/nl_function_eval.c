@@ -315,8 +315,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 	 ipo = SubvectorEltIndex(po_sub,  i, j, k);
 	 io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 	 
-          del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
-          del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));
+     /*     del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
+          del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
           del_x_slope = 1.0;
           del_y_slope = 1.0;
           
@@ -390,8 +390,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 	 ip = SubvectorEltIndex(f_sub, i, j, k);
 	 io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 
-          del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
-          del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));
+       /*   del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
+          del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
           del_x_slope = 1.0;
           del_y_slope = 1.0;
 	 fp[ip] += ss[ip]*vol*del_x_slope*del_y_slope*z_mult_dat[ip] *(pp[ip]*sp[ip]*dp[ip] - opp[ip]*osp[ip]*odp[ip]);
@@ -457,8 +457,8 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 	 ip = SubvectorEltIndex(f_sub, i, j, k);
 	 io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 
-	 del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
-          del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));
+	 /* del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
+          del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
           del_x_slope = 1.0;
           del_y_slope = 1.0;
 	 fp[ip] -= vol*del_x_slope*del_y_slope*z_mult_dat[ip] * dt * (sp[ip] + et[ip]);
