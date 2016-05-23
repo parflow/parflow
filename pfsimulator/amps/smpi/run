@@ -26,47 +26,94 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 #  USA
 #**********************************************************************EHEADER
+#
+# Run parflow in parallel.
+# Script hides the different ways to run MPI jobs.
+#
 
+#-----------------------------------------------------------------------------
+#
+# Program usage 
+#
+#-----------------------------------------------------------------------------
+function usage () {
+   echo "usage: $0 run [-hvpg] pfidb_file num_procs [process_group]"
+   echo "    -h               help"
+   echo "    -v               verbose"
+   echo "    -p executable    executable to run"
+   echo "    -g debug_options cegdb debug optons"
+   echo ""
+   echo "Runs parflow on using mpi startup command (e.g. mpiexec, mpirun etc)."
+}
 
 #=============================================================================
 #
-# Loop to parse users arguments
+# Verbose logging
 #
 #=============================================================================
-PROGRAM=""
-DEBUG=""
-while getopts hpg: c
-do
-	case $c in
-	hp) 
-		echo "usage: $0 run runname process_group"
-		echo "Runs parflow on the allocated cube."
-	        exit 0;;
-	p) 
-	       PROGRAM=$2
-	       shift 
-	       shift;;
-        g)    for i in $2
-	      do 
-		    DEBUG="$DEBUG -cegdb $i"
-	      done
-              shift
-	      shift;;
-esac
-done
+function pflog () {
+   if [ $VERBOSE -eq 1 ]
+   then
+      echo "pfrun: $@"
+   fi
+}
 
-if [ "$MALLOC_DEBUG" ]; then
-	rm -f malloc.log.????
+if [ -f ~/.parflowrc ] 
+then
+   . ~/.parflowrc
 fi
 
-HOST_FILE="./.hostfile"
+#=============================================================================
+#
+# Parse users arguments
+#
+#=============================================================================
+VERBOSE=0
+PROGRAM=""
+DEBUG=""
+while getopts vhpg: c
+do
+   case $c in
+      h)
+	 usage;
+	 exit 1;;
+      v)
+	 VERBOSE=1
+	 shift;
+	 ;;
+      p) 
+	 PROGRAM=$2
+	 shift 
+	 shift;;
+      g)    for i in $2
+	    do 
+	       DEBUG="$DEBUG -cegdb $i"
+	    done
+            shift
+	    shift;;
+   esac
+done
+
+if [ ! \( "$#" -eq 2 -o "$#" -eq 3 \) ]; then
+  usage
+  exit 1
+fi
+
+PFSCRIPT=$1
+NUMPROCS=$2
+PROCESS_GROUP=$3
+
+if ! [ -e "${PFSCRIPT}.pfidb" ]; then
+  echo "pfidb file \"${PFSCRIPT}.pfidb\" not found" >&2
+  exit 1
+fi
 
 #
 # The following is a hack to deal with NFS temp mount problems
 #
 if [ -z "$AMPS_ROOT_DIR" ]; then
-	AMPS_ROOT_DIR=$HOME
-	export AMPS_ROOT_DIR
+   AMPS_ROOT_DIR=$HOME
+   export AMPS_ROOT_DIR
 fi
 
 real_home=`(cd $AMPS_ROOT_DIR; sh -c "pwd")`
@@ -75,63 +122,97 @@ export AMPS_EXE_DIR
 
 if [ -z "$PROGRAM" ]
 then
-	#
-	# The default is to run ParFlow
-	#
-	PROGRAM=parflow
+   #
+   # The default is to run ParFlow
+   #
+   PROGRAM=parflow
 fi
 
 if [ -z "$DEBUG" ]
 then
-    DISPLAY_OPT=""
+   DISPLAY_OPT=""
 else
 
-    if [ -z "$DISPLAY" ]
-    then
-	DEBUG_OPT="-display `hostname`:0.0"
-    else
-	DEBUG_OPT="-display $DISPLAY"
-    fi
-fi
-
-if [ "AIX" = "`uname`" ]
-then
-    #
-    # IBM SP2
-    #
-  
-    poe $PARFLOW_DIR/bin/$PROGRAM -procs `cat .amps.info.$2` $1 $DEBUG_OPT $DEBUG 2>&1 > $1.out.txt
-
-    exit 0
-fi
-
-if [ "`mpirun 2> /dev/null`" = "Missing: program name" ] 
-then
-    #
-    # MPICH
-    #
-    if [ "$PBS_NODEFILE" = "" ]
-    then
-       mpirun -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
-    else
-       mpirun -machinefile $PBS_NODEFILE -nodes $3 -np $2 $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
+   if [ -z "$DISPLAY" ]
+   then
+      DEBUG_OPT="-display `hostname`:0.0"
+   else
+      DEBUG_OPT="-display $DISPLAY"
    fi
-elif mpirun  2>&1 | grep -q "Open MPI"
+fi
+
+#
+# Specify machine specific ways to launch MPI executables.
+#
+case `uname -a` in
+   *AIX*)
+      #
+      # IBM SP2
+      #
+      CMD="poe $PARFLOW_DIR/bin/$PROGRAM -procs `cat .amps.info.${NUMPROCS}` ${PFSCRIPT} $DEBUG_OPT $DEBUG > ${PFSCRIPT}.out.txt"
+      ;;
+   *WildFire*)
+      #
+      # For Sun WildFire systems
+      #
+      pflog "Running with SUN tmrun"
+      CMD="tmrun -np `cat .amps.info.${NUMPROCS}`  $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} $DEBUG_OPT $DEBUG > ${PFSCRIPT}.out.txt"
+      ;;
+   *chaos*)
+      #
+      # For LC chaos systems
+      #
+      CMD="srun -n ${NUMPROCS} $PARFLOW_RUN_OPTS $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} > ${PFSCRIPT}.out.txt"
+      ;;
+esac
+
+#
+# If mpiexec exists use it first since this is a standard way of running
+# mpi executables for MPI-2
+#
+if which mpiexec >/dev/null 2>&1
 then
-    #
-    # OpenMPI
-    #
-    mpirun -np $2  $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
+   CMD="mpiexec -n ${NUMPROCS}  $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
+elif which mpirun >/dev/null 2>&1
+then
+   #
+   # Didn't have mpiexec so try some mpirun variations
+   #
+   if [ "`mpirun 2> /dev/null`" = "Missing: program name" ] 
+   then
+      #
+      # Older MPICH. Newer MPICH should be using mpiexec.
+      #
+      if [ "$PBS_NODEFILE" = "" ]
+      then
+	 CMD="mpirun -nodes $3 -np ${NUMPROCS} $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
+      else
+	 CMD="mpirun -machinefile $PBS_NODEFILE -nodes $3 -np ${NUMPROCS} $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
+      fi
+   else
+      #
+      # Other MPI
+      #
+      CMD="mpirun -np ${NUMPROCS}  $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
+   fi
+elif which aprun >/dev/null 2>&1
+then
+   #
+   # Cray using aprun
+   #
+   CMD="aprun -n ${NUMPROCS}  $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
+elif which srun >/dev/null 2>&1
+then
+   #
+   # Srun based systems
+   #
+   CMD="srun -n ${NUMPROCS} $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
 else
-    echo "Unrecognized MPI implementation"
-    exit 1
-
+   echo "Failed to determine how to run mpi executables" >&2
+   exit 1
 fi
 
-if [ "$MALLOC_DEBUG" ]; then
-	grep "^known" malloc.log.* 
-fi
-
-
-
+pflog "Running : $CMD" 
+eval $CMD
+exit $?
 

@@ -121,6 +121,11 @@ void  FreeGrid(
    Grid  *grid)
 {
     if(grid)  {
+
+      if (grid -> background) {
+	 FreeSubgrid(grid -> background);
+      }
+
       if (!USE_P4EST){
           FreeSubgridArray(GridAllSubgrids(grid));
 
