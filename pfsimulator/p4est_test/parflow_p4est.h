@@ -116,6 +116,9 @@ parflow_p4est_ghost_data_t
    * parflow_p4est_get_ghost_data(parflow_p4est_grid_t * pfgrid,
                                   parflow_p4est_qiter_t * qiter);
 
+/** Returns 1 if there are no trees in this processor, 0 otherwise */
+int             parflow_p4est_rank_is_empty(parflow_p4est_grid_t * pfgrid);
+
 SC_EXTERN_C_END;
 
 #endif                          /* !PARLOW_P4EST_H */

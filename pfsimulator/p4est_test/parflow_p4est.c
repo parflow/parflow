@@ -276,3 +276,19 @@ parflow_p4est_get_ghost_data(parflow_p4est_grid_t * pfgrid,
                                                qiter->q.qiter_3d);
     }
 }
+
+int
+parflow_p4est_rank_is_empty(parflow_p4est_grid_t * pfgrid)
+{
+  int             K;
+  int             dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
+
+  if (dim == 2) {
+      K = pfgrid->p.p4->forest->local_num_quadrants;
+  } else {
+      P4EST_ASSERT(dim == 3);
+      K = pfgrid->p.p8->forest->local_num_quadrants;
+  }
+
+  return K > 0 ? 0 : 1;
+}
