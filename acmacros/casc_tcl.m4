@@ -68,7 +68,20 @@ esac
 # Determine which TCL library is built
 if test "${tcl_PREFIX+set}" = set; then
    AC_MSG_CHECKING([for TCL library])
-   if test -f ${tcl_PREFIX}/lib/libtcl8.6.so; then
+
+   if test -f ${tcl_PREFIX}/lib64/libtcl8.6.so; then
+      tcl_LIBS='-ltcl8.6'
+      AC_MSG_RESULT([using $tcl_LIBS])
+   elif test -f ${tcl_PREFIX}/lib64/libtcl8.5.so; then
+      tcl_LIBS='-ltcl8.5'
+      AC_MSG_RESULT([using $tcl_LIBS])
+   elif test -f ${tcl_PREFIX}/lib64/libtcl8.4.so; then
+      tcl_LIBS='-ltcl8.4'
+      AC_MSG_RESULT([using $tcl_LIBS])
+   elif test -f ${tcl_PREFIX}/lib64/libtcl.so; then
+      tcl_LIBS='-ltcl'
+      AC_MSG_RESULT([using $tcl_LIBS])
+   elif test -f ${tcl_PREFIX}/lib/libtcl8.6.so; then
       tcl_LIBS='-ltcl8.6'
       AC_MSG_RESULT([using $tcl_LIBS])
    elif test -f ${tcl_PREFIX}/lib/libtcl8.5.so; then

@@ -3904,7 +3904,6 @@ else
   fi
     rm -f conftest.f conftest.o conftest
 
-  FLIBS="$flibs_result"
 
 
 	 # Remove whitespace between -l/-L and library/path name
@@ -4920,7 +4919,6 @@ else
   fi
     rm -f conftest.f conftest.o conftest
 
-  FLIBS="$flibs_result"
 
 
 	 # Remove whitespace between -l/-L and library/path name
@@ -9101,7 +9099,7 @@ fi
 
           ;;
           # Ignore these flags.
-        -lang* | -lcrt*.o | -lc | -lgcc* | -lSystem | -libmil | -LANG:=* | -LIST:* | -LNO:* | -ltcmalloc_minimal)
+        -lang* | -lcrt*.o | -lc | -lgcc* | -lSystem | -libmil | -LANG:=* | -LIST:* | -LNO:*)
           ;;
         -lkernel32)
           test x"$CYGWIN" != xyes && ac_cv_f77_libs="$ac_cv_f77_libs $ac_arg"
@@ -9809,7 +9807,24 @@ esac
 if test "${tcl_PREFIX+set}" = set; then
    { $as_echo "$as_me:$LINENO: checking for TCL library" >&5
 $as_echo_n "checking for TCL library... " >&6; }
-   if test -f ${tcl_PREFIX}/lib/libtcl8.6.so; then
+
+   if test -f ${tcl_PREFIX}/lib64/libtcl8.6.so; then
+      tcl_LIBS='-ltcl8.6'
+      { $as_echo "$as_me:$LINENO: result: using $tcl_LIBS" >&5
+$as_echo "using $tcl_LIBS" >&6; }
+   elif test -f ${tcl_PREFIX}/lib64/libtcl8.5.so; then
+      tcl_LIBS='-ltcl8.5'
+      { $as_echo "$as_me:$LINENO: result: using $tcl_LIBS" >&5
+$as_echo "using $tcl_LIBS" >&6; }
+   elif test -f ${tcl_PREFIX}/lib64/libtcl8.4.so; then
+      tcl_LIBS='-ltcl8.4'
+      { $as_echo "$as_me:$LINENO: result: using $tcl_LIBS" >&5
+$as_echo "using $tcl_LIBS" >&6; }
+   elif test -f ${tcl_PREFIX}/lib64/libtcl.so; then
+      tcl_LIBS='-ltcl'
+      { $as_echo "$as_me:$LINENO: result: using $tcl_LIBS" >&5
+$as_echo "using $tcl_LIBS" >&6; }
+   elif test -f ${tcl_PREFIX}/lib/libtcl8.6.so; then
       tcl_LIBS='-ltcl8.6'
       { $as_echo "$as_me:$LINENO: result: using $tcl_LIBS" >&5
 $as_echo "using $tcl_LIBS" >&6; }
