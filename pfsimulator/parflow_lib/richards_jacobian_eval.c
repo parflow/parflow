@@ -1305,7 +1305,7 @@ int           symm_part)      /* Specifies whether to compute just the
       // SGS always have to do communication here since
       // each processor may/may not be doing overland flow.
       /* Update ghost points for JB before building JC */
-      if (MatrixCommPkg(J,0))
+      if (J->comm_pkg)
       {
          matrix_update_handle = InitMatrixUpdate(J);
          FinalizeMatrixUpdate(matrix_update_handle);
@@ -1603,14 +1603,14 @@ int           symm_part)      /* Specifies whether to compute just the
    if(public_xtra -> type == overland_flow)
    {
       /* Update matrices and setup pointers */
-      if (MatrixCommPkg(J,0))
+      if (J->comm_pkg)
       {
          matrix_update_handle = InitMatrixUpdate(J);
          FinalizeMatrixUpdate(matrix_update_handle);
       }
       *ptr_to_J = J;
       
-      if (MatrixCommPkg(JC,0))
+      if (JC->comm_pkg)
       {
          matrix_update_handle = InitMatrixUpdate(JC);
          FinalizeMatrixUpdate(matrix_update_handle);
@@ -1621,7 +1621,7 @@ int           symm_part)      /* Specifies whether to compute just the
    {
       *ptr_to_JC = NULL;
 
-      if (MatrixCommPkg(J,0))
+      if (J->comm_pkg)
       {
          matrix_update_handle = InitMatrixUpdate(J);
          FinalizeMatrixUpdate(matrix_update_handle);
