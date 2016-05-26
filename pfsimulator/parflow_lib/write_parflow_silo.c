@@ -39,8 +39,6 @@
 
 #include <string.h>
 #include <math.h>
-
-// SGS FIXME for C++
 #include <sys/stat.h>
 
 amps_ThreadLocalDcl(int , s_parflow_silo_filetype);

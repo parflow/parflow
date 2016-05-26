@@ -41,13 +41,9 @@
 
 #include <string.h>
 #include <math.h>
-
-// SGS FIXME for C++
 #include <sys/stat.h>
 
-amps_ThreadLocalDcl(int , s_parflow_silo_filetype);
-amps_ThreadLocalDcl(int , num_silo_files); 
-
+amps_ThreadLocalDcl(int , s_num_silo_files); 
 
 /*-----------------------------------------------------------------------------
  * Purpose:     Impliment the create callback to initialize pmpio
@@ -134,15 +130,15 @@ void     WriteSiloPMPIOInit(char    *file_prefix)
     
     /* need database key for number of files, need to check if numgroups > npocs */
     /* should put this in an init routine */
-    num_silo_files = GetIntDefault("SILO.pmpio.NumFiles",1);
+    s_num_silo_files = GetIntDefault("SILO.pmpio.NumFiles",1);
     
-    if (num_silo_files > P+1) {
-        amps_Printf("Error: Number of SILO files %d \n", num_silo_files);
+    if (s_num_silo_files > P+1) {
+        amps_Printf("Error: Number of SILO files %d \n", s_num_silo_files);
         amps_Printf("       exceeds the number of processors %d \n", P+1);
         exit(1);
     }
-    if (num_silo_files < 1) {
-        amps_Printf("Error: Number of SILO files %d \n", num_silo_files);
+    if (s_num_silo_files < 1) {
+        amps_Printf("Error: Number of SILO files %d \n", s_num_silo_files);
         amps_Printf("       is less than 1 \n");
         exit(1);
     }
@@ -249,10 +245,10 @@ void     WriteSiloPMPIO(char    *file_prefix,
 
    p = amps_Rank(amps_CommWorld);
    P = amps_Size(amps_CommWorld);
-            numGroups = num_silo_files;
+   numGroups = s_num_silo_files;
     
-    bat = PMPIO_Init(numGroups, PMPIO_WRITE, MPI_COMM_WORLD, 1,
-                     CreateSiloFile, OpenSiloFile, CloseSiloFile, &driver);
+   bat = PMPIO_Init(numGroups, PMPIO_WRITE, MPI_COMM_WORLD, 1,
+		    CreateSiloFile, OpenSiloFile, CloseSiloFile, &driver);
 //    if (numGroups > 1) { 
     if(strlen(file_suffix)) {
       sprintf(filename2, "%s/%s.data.%03u.%s.%s", file_prefix, file_type, PMPIO_GroupRank(bat, p), file_suffix, file_extn);

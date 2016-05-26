@@ -220,69 +220,42 @@ Databox         *ReadSilo(char *filename, double default_value)
 	 }
 
           /* now we need to get the mesh, for PMPIO compat */
-               //  printf("associated mesh: %s \n", var -> meshname);
-      DBquadmesh  *mesh = DBGetQuadmesh(proc_db, var -> meshname);
-          if(mesh == NULL) 
-          {
-              printf("Error: Silo failed to get quadmesh %s \n", varnames[m]);
-              return NULL;
-          }        
-          
-         // printf("mesh ndims: %d \n", mesh -> ndims);
-         
+	 DBquadmesh  *mesh = DBGetQuadmesh(proc_db, var -> meshname);
+	 if(mesh == NULL) 
+	 {
+	    printf("Error: Silo failed to get quadmesh %s \n", varnames[m]);
+	    return NULL;
+	 }        
+	 
+	 nx = var -> dims[0];
+	 ny = var -> dims[1];
+	 nz = var -> dims[2];
 
-          nx = var -> dims[0];
-	      ny = var -> dims[1];
-	      nz = var -> dims[2];
-       //   printf("nx ny nz : %d %d %d \n", nx, ny, nz);
-      //    nx = mesh -> dims[0];
-      //    ny = mesh -> dims[1];
-       //   nz = mesh -> dims[2];
-       //   printf("nx ny nz : %d %d %d \n", nx, ny, nz);
-          localcoords[0] = (float **)malloc(nx);
-          localcoords[1] = (float **)malloc(ny);
-          localcoords[2] = (float **)malloc(nz);
-          localcoords[0] = mesh -> coords[0];
-          localcoords[1] = mesh -> coords[1];
-          localcoords[2] = mesh -> coords[2];
-     /*     printf("associated mesh: %s \n", var -> meshname);
-          printf("local X Y Z: %f %f %f \n", localcoords[0][0], localcoords[1][0], localcoords[2][0]);
-          printf("global origin: X Y Z %f %f %f \n", X, Y, Z);
-          printf("global delta: DX DY DZ %f %f %f \n", DX, DY, DZ);
-          float temp= (localcoords[0][0] - (X - DX / 2.0))/ DX;
-          printf("temp X : %f \n", temp);
-          temp= (localcoords[1][0] - (Y - DY / 2.0)) / DY;
-          printf("temp Y : %f \n", temp);
-          temp= (localcoords[2][0] - (Z - DZ / 2.0)) / DZ;
-          printf("temp Z : %f \n", temp); */
-
+	 /* Casting here is a dangerous */
+	 localcoords[0] = (float *)mesh -> coords[0];
+	 localcoords[1] = (float *)mesh -> coords[1];
+	 localcoords[2] = (float *)mesh -> coords[2];
+	  
 	 int index_origin[3];
-     err = DBReadVar(proc_db, "index_origin", &index_origin);
+	 err = DBReadVar(proc_db, "index_origin", &index_origin);
 	 if(err < 0) {
 	    printf("Failed to read meta data\n");
 	    return NULL;
 	 }  
 
-     /* becuase of multi or single file compatibility we need to 
-      * grab the actual mesh from that variable.  Then we need to
-      * determine the origin from the mesh[0][0], [1][0] and [2][0]
-      * divided by DX, DY and DZ since there are multiple origins 
-      * in a single file and this is now ambiguous. */
-      
-     x = index_origin[0];
+	 /* becuase of multi or single file compatibility we need to 
+	  * grab the actual mesh from that variable.  Then we need to
+	  * determine the origin from the mesh[0][0], [1][0] and [2][0]
+	  * divided by DX, DY and DZ since there are multiple origins 
+	  * in a single file and this is now ambiguous. */
+	 
+	 x = index_origin[0];
 	 y = index_origin[1];
 	 z = index_origin[2];
-       //   printf("orig x y z : %d %d %d \n", x, y, z);
-
-          x = round( (localcoords[0][0] - (X - DX / 2.0))  / DX);
-          y = round( (localcoords[1][0] - (Y - DY / 2.0))  / DY);
-          z = round( (localcoords[2][0] - (Z - DZ / 2.0))  / DZ);
-/*          printf("X Y Z, DX DY DZ: %f %f %f %f %f %f \n", X, Y, Z, DX, DY, DZ);
-          printf("local X Y Z: %f %f %f %f %f %f \n", localcoords[0][0], localcoords[1][0], localcoords[2][0]);
-          printf("local IX IY IZ %f %f %f \n", \
-                 (localcoords[0][0] - (X-DX/2.0))  / DX,(localcoords[1][0] - (Y-DY/2.0))  / DY, (localcoords[2][0] - (Z-DZ/2.0))  / DZ );
-          printf("x y z : %d %d %d \n", x, y, z);
-          printf("nx ny nz : %d %d %d \n", nx, ny, nz);  */
+	 
+	 x = round( (localcoords[0][0] - (X - DX / 2.0))  / DX);
+	 y = round( (localcoords[1][0] - (Y - DY / 2.0))  / DY);
+	 z = round( (localcoords[2][0] - (Z - DZ / 2.0))  / DZ);
 	 int index = 0;
 	 double *vals =  (double *)var -> vals[0];
 	 for (k = 0; k < nz; k++) {
