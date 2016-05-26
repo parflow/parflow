@@ -40,9 +40,11 @@
 #include <slurm/slurm.h>
 #endif
 
+#include <unistd.h>
 #include <string.h>
 #include <float.h>
 #include <limits.h>
+
 
 /*--------------------------------------------------------------------------
  * Structures
@@ -1875,15 +1877,15 @@ void AdvanceRichards(PFModule *this_module,
     	 EndTiming(CLMTimingIndex);
           
           
-       /* ============================================================= */
-       /*   NBE: It looks like the time step isn't really scaling the CLM
-             inputs, but the looping flag is working as intended as 
-             of 2014-04-06. 
-            
-            It is using the different time step counter BUT then it
-             isn't scaling the inputs properly.
-       /* ============================================================= */
+       /* =============================================================
+	  NBE: It looks like the time step isn't really scaling the CLM
+	  inputs, but the looping flag is working as intended as 
+	  of 2014-04-06. 
           
+	  It is using the different time step counter BUT then it
+	  isn't scaling the inputs properly.
+	  ============================================================= */
+	    
 #endif          
       } //Endif to check whether an entire dt is complete
 

@@ -1195,6 +1195,7 @@ void PFVLin1 (double a , Vector *x , Vector *y , Vector *z );
 void PFVLin2 (double a , Vector *x , Vector *y , Vector *z );
 void PFVAxpy (double a , Vector *x , Vector *y );
 void PFVScaleBy (double a , Vector *x );
+void PFVLayerCopy (int  a, int  b, Vector *x, Vector *y);
 
 /* w_jacobi.c */
 void WJacobi (Vector *x , Vector *b , double tol , int zero );
