@@ -1234,14 +1234,15 @@ void WritePFSBinary_Subvector (amps_File file , Subvector *subvector , Subgrid *
 void WritePFSBinary (char *file_prefix , char *file_suffix , Vector *v , double drop_tolerance );
 
 /* write_parflow_silo.c */
-void     WriteSilo(char    *file_prefix, 
+void WriteSilo(char    *file_prefix, 
 		   char    *file_type, 
 		   char    *file_suffix, 
 		   Vector  *v, 
                    double time, 
 		   int step, 
 		   char *variable_name);
-void     WriteSiloInit(char    *file_prefix);
+void WriteSiloInit(char    *file_prefix);
+void pf_mk_dir(char *filename);
 
 /* write_parflow_silo_PMPIO.c */
 void     WriteSiloPMPIO(char    *file_prefix, 
