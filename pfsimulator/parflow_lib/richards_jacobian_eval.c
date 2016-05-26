@@ -157,11 +157,18 @@ N_Vector  pressure)
 
    InitVector(y, 0.0);
 
+   /* 
+    * Compute Jacobian if needed.
+    */
    if ( *recompute )
-   { 
+   {
       PFModuleInvokeType(RichardsJacobianEvalInvoke, richards_jacobian_eval, 
       (pressure, &J, &JC, saturation, density, problem_data,
       dt, time, 0));
+
+      *recompute=0;
+      StateJac( ((State*)current_state) ) = J;
+      StateJacC( ((State*)current_state) ) = JC; 
    }
 
    if(JC == NULL)
