@@ -45,7 +45,7 @@ case "$with_hypre" in
     AC_CHECK_HEADER(HYPRE_config.h,:,AC_MSG_ERROR([HYPRE not found in $with_hypre]))
 
     # Check if HYPRE was compiled with parallelism.
-    AC_MSG_CHECKING(if hypre is serial or parallel)
+    AC_MSG_CHECKING(if hypre is parallel)
     AC_EGREP_CPP([^HYPRE_SEQUENTIAL_IS_DEFINED$], [
 #include <HYPRE_config.h>
 #ifdef HYPRE_SEQUENTIAL
