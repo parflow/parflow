@@ -33,7 +33,7 @@
 
 #include "parflow.h"
 
-#ifdef HAVE_SILO
+#if defined(HAVE_SILO) &&  defined(HAVE_MPI)
 #include "silo.h"
 #include <mpi.h>
 #include <pmpio.h>
@@ -52,17 +52,14 @@ amps_ThreadLocalDcl(int , s_num_silo_files);
  *              data; a void pointer to the driver determined in main.
  *-----------------------------------------------------------------------------
  */
- void *CreateSiloFile(const char *fname, const char *nsname, void *userData)
+#if defined(HAVE_SILO) &&  defined(HAVE_MPI)
+void *CreateSiloFile(const char *fname, const char *nsname, void *userData)
 {
-    int driver = *((int*) userData);
-    DBfile *db_file = DBCreate(fname, DB_CLOBBER, DB_LOCAL, "pmpio", driver);
-//printf("nsname %s \n",nsname);
-/*     if (nsname == "") {} else{
-        DBMkDir(db_file, nsname);
-        DBSetDir(db_file, nsname);
-    } 
-    return (void *) db_file; */
-} 
+   int driver = *((int*) userData);
+   DBfile *db_file = DBCreate(fname, DB_CLOBBER, DB_LOCAL, "pmpio", driver);
+
+   return (void *)db_file;
+}
 
 /*-----------------------------------------------------------------------------
  * Purpose:     Impliment the open callback to initialize pmpio
@@ -70,30 +67,27 @@ amps_ThreadLocalDcl(int , s_num_silo_files);
  *              directory or, for read, just cd into the right directory.
  *-----------------------------------------------------------------------------
  */
- void *OpenSiloFile(const char *fname, const char *nsname, PMPIO_iomode_t ioMode,
+void *OpenSiloFile(const char *fname, const char *nsname, PMPIO_iomode_t ioMode,
                   void *userData)
 {
+
     DBfile *db_file  = DBOpen(fname, DB_UNKNOWN,
                               ioMode == PMPIO_WRITE ? DB_APPEND : DB_READ);
-/*   if (nsname == "reed") 
-   {} else {
-        if (ioMode == PMPIO_WRITE)
-            DBMkDir(db_file, nsname);
-        DBSetDir(db_file, nsname);
-    }  */
     return (void *) db_file;
-} 
+}
 
 /*-----------------------------------------------------------------------------
  * Purpose:     Impliment the close callback for pmpio
  *-----------------------------------------------------------------------------
  */
- void CloseSiloFile(void *file, void *userData)
+void CloseSiloFile(void *file, void *userData)
 {
     DBfile *db_file = (DBfile *) file;
     if (db_file)
         DBClose(db_file);
-} 
+}
+
+#endif
 
 /*
  Silo file writing uses a directory to store files.  This directory
@@ -102,8 +96,8 @@ amps_ThreadLocalDcl(int , s_num_silo_files);
 void     WriteSiloPMPIOInit(char    *file_prefix)
 {
     char            filename[2048];
-    
-#ifdef HAVE_SILO
+
+#if defined(HAVE_SILO) &&  defined(HAVE_MPI)
     int p = amps_Rank(amps_CommWorld);
     int P = amps_Size(amps_CommWorld);
     int i;
@@ -179,8 +173,9 @@ void     WriteSiloPMPIOInit(char    *file_prefix)
          */ 
         //}
     }
-        
-    
+
+#else
+    amps_Printf("Parflow not compiled with SILO and MPI, can't use SILO PMPIO\n");
 #endif
 }
 
@@ -227,7 +222,7 @@ void     WriteSiloPMPIO(char    *file_prefix,
     int origin2[3];
 
 
-#ifdef HAVE_SILO
+#if defined(HAVE_SILO) &&  defined(HAVE_MPI)
     int driver = DB_PDB;
     int numGroups;
     PMPIO_baton_t *bat; 
@@ -240,8 +235,7 @@ void     WriteSiloPMPIO(char    *file_prefix,
 
    BeginTiming(PFBTimingIndex);
 
-#ifdef HAVE_SILO
-
+#if defined(HAVE_SILO) &&  defined(HAVE_MPI)
 
    p = amps_Rank(amps_CommWorld);
    P = amps_Size(amps_CommWorld);
@@ -561,9 +555,8 @@ void     WriteSiloPMPIO(char    *file_prefix,
 
 
 #else
-   amps_Printf("Parflow not compiled with SILO, can't create SILO file\n");
+   amps_Printf("Parflow not compiled with SILO and MPI, can't use SILO PMPIO\n");
 #endif
-
 
    EndTiming(PFBTimingIndex);
 }
