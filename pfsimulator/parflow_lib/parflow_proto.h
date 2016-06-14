@@ -43,6 +43,11 @@ int BCPressurePackageSizeOfTempData (void );
 /* calc_elevations.c */
 double **CalcElevations (GeomSolid *geom_solid , int ref_patch , SubgridArray *subgrids ,ProblemData  *problem_data );
 
+#ifdef HAVE_P4EST
+/* calc_elevations_with_p4est.c */
+double **CalcElevations_with_p4est (GeomSolid *geom_solid , int ref_patch , SubgridArray *subgrids ,ProblemData  *problem_data );
+#endif
+
 typedef void (*LinearSolverInvoke) (Vector *x , Vector *b , double tol , int zero );
 typedef PFModule *(*LinearSolverInitInstanceXtraInvoke) (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *A , double *temp_data );
 typedef PFModule *(*LinearSolverNewPublicXtraInvoke) (char *name );

@@ -523,8 +523,19 @@ Problem     *problem)      /* General problem information */
       for (ir = 0; ir < num_regions; ir++)
       {
 	 ref_solid = ProblemDataSolid(problem_data, geom_indices[ir]);
-	 elevations[ir] = CalcElevations(ref_solid, patch_indices[ir], 
-					 subgrids,problem_data);
+
+	 if (!USE_P4EST){
+	     elevations[ir] = CalcElevations(ref_solid, patch_indices[ir],
+					     subgrids,problem_data);
+	   }else{
+#ifdef HAVE_P4EST
+	     elevations[ir] = CalcElevations_with_p4est(ref_solid, patch_indices[ir],
+							subgrids,problem_data);
+#else
+	     PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
+	   }
+
 	 
       }        /* End of region loop */
       

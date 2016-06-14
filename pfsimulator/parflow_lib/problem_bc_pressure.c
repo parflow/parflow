@@ -182,8 +182,17 @@ BCStruct    *BCPressure(
 	       ref_patch = BCPressureType0RefPatch(bc_pressure_type0);
 
 	       /* Calculate elevations at (x,y) points on reference patch. */
-	       instance_xtra -> elevations[ipatch] = CalcElevations(ref_solid, ref_patch, subgrids,problem_data);
-	    }
+
+	       if (!USE_P4EST){
+		   instance_xtra -> elevations[ipatch] = CalcElevations(ref_solid, ref_patch, subgrids,problem_data);
+		 }else{
+#ifdef HAVE_P4EST
+                   instance_xtra -> elevations[ipatch] = CalcElevations_with_p4est(ref_solid, ref_patch, subgrids,problem_data);
+#else
+                   PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
+		 }
+	      }
 
 	    elevations = instance_xtra -> elevations[ipatch];
 

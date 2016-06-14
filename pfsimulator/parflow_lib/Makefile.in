@@ -166,6 +166,10 @@ OBJS = \
 	compute_top.o \
 	input_checks.o
 
+ifeq ($(PARFLOW_HAVE_P4EST), yes)
+OBJS += calc_elevations_with_p4est.o
+endif
+
 $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB): $(OBJS) $(CXXOBJS) $(AMPS_LIB_DEPEND)
 	@AR@ rus $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB) $(OBJS) $(CXXOBJS)
 
