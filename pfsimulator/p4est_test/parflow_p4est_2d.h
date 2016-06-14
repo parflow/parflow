@@ -81,7 +81,7 @@ parflow_p4est_ghost_data_t
     * parflow_p4est_get_ghost_data_2d(parflow_p4est_grid_2d_t *pfg,
                                       parflow_p4est_qiter_2d_t * qit_2d);
 
-int parflow_p4est_get_projection_owner_2d (Subgrid *subgrid);
+void parflow_p4est_get_projection_info_2d (Subgrid *subgrid, int info[2]);
 
 SC_EXTERN_C_END;
 

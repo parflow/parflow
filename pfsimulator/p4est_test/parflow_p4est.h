@@ -123,13 +123,16 @@ int             parflow_p4est_rank_is_empty(parflow_p4est_grid_t * pfgrid);
  * \param [in] subgrid       Subgrid to be projected.
  * \param [in] z_level       Height of the xy plane we whish to project to.
  * \param [in] pfgrid        Pointer to a valid parflow_p4est_grid structure.
- *
- * \return Owner rank of the subgrid coordinates (x,y,z_level) where (x,y)
- *         are taken from the pased subgrid.
+ * \param [in, out] info     An array of two integers. The first one is the
+ *                           owner rank of the subgrid coordinates (x,y,z_level)
+ *                           where (x,y) are taken from the pased subgrid. The
+ *                           second one is the morton code of the
+ *                           projection, it can be used as a tag to
+ *                           distiguish columns in mpi communication.
  */
-int
-parflow_p4est_get_projection_owner (Subgrid *subgrid, int z_level,
-                                    parflow_p4est_grid_t *pfgrid);
+void
+parflow_p4est_get_projection_info (Subgrid *subgrid, int z_level,
+                                   parflow_p4est_grid_t *pfgrid, int info[2]);
 SC_EXTERN_C_END;
 
 #endif                          /* !PARLOW_P4EST_H */

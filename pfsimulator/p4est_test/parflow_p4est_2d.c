@@ -5,13 +5,33 @@
 #include <p4est_vtk.h>
 #else
 #include "parflow_p4est_3d.h"
+#include <p8est_bits.h>
 #include <p8est_vtk.h>
 #endif
 
 #ifdef P4_TO_P8
-static p4est_topidx_t compute_lex_idx (int Tx, int Ty, int vv[3])
+static p4est_topidx_t
+parflow_p4est_lexicord(int Tx, int Ty, int vv[3])
 {
   return ( vv[2] * Ty  + vv[1] ) * Tx  + vv[0];
+}
+
+static uint64_t
+parflow_p4est_morton ( int w[2])
+{
+  int       i;
+  uint64_t  xx   = (uint64_t) w[0];
+  uint64_t  yy   = (uint64_t) w[1];
+  uint64_t  one  = (uint64_t) 1;
+  int       bits = (sizeof(uint64_t) * CHAR_BIT)/P4EST_DIM;
+  uint64_t  m = 0;
+
+  for (i = 0; i < bits; ++i) {
+      m |= ( (xx & (one << i)) << (i    ) );
+      m |= ( (yy & (one << i)) << (i + 1) );
+   }
+
+  return m;
 }
 #endif
 
@@ -94,7 +114,7 @@ parflow_p4est_grid_2d_new(int Px, int Py
         vv[1] = (int) v[1];
         vv[2] = (int) v[2];
 
-        lidx = compute_lex_idx(pfg->Tx, pfg->Ty, vv);
+        lidx = parflow_p4est_lexicord(pfg->Tx, pfg->Ty, vv);
         P4EST_ASSERT( lidx >= 0 && lidx < num_trees );
         pfg->lexic_to_tree[lidx]=tt;
      }
@@ -366,25 +386,23 @@ parflow_p4est_qcoord_to_vertex_2d(p4est_connectivity_t * connect,
 }
 
 
-int parflow_p4est_get_projection_owner_2d (Subgrid *subgrid
+void parflow_p4est_get_projection_info_2d (Subgrid *subgrid
 #ifdef P4_TO_P8
-    , int z_level ,
-    parflow_p4est_grid_2d_t *pfg
+    , int zl_idx , parflow_p4est_grid_2d_t *pfg
 #endif
-    )
+    ,int info[2])
 {
-  int owner;
 #ifdef P4_TO_P8
   double v[3];
   int    face;
-  int    vv[3];
+  int    vv[3], w[2];
   int    lidx;
-  int    zl = z_level / GlobalsSubgridPointsZ;
+  int    qlen;
   size_t  q = (size_t) subgrid->idx_in_tree;
   p4est_tree_t   *tree;
   p4est_topidx_t tt = (int32_t) subgrid->owner_tree;
   p4est_quadrant_t *quad;
-  p4est_topidx_t   num_trees = pfg->P * pfg->Q * pfg->R;
+  p4est_topidx_t   num_trees = pfg->Tx * pfg->Ty * pfg->Tz;
   p4est_topidx_t   tp;
   p4est_quadrant_t  proj;
 
@@ -399,34 +417,43 @@ int parflow_p4est_get_projection_owner_2d (Subgrid *subgrid
   p4est_qcoord_to_vertex(pfg->connect, tt,
                          quad->x, quad->y, quad->z, v);
 
+  qlen = 1 << quad->level;
+
   /* Project such coordinates in the desired z level and
    * figure out the tree owning the projection */
-  vv[0] = (int) v[0];
-  vv[1] = (int) v[1];
-  vv[2] = zl;
+  w[0] = (int)( v[0] * qlen );
+  w[1] = (int)( v[1] * qlen );
 
-  lidx = compute_lex_idx(pfg->P, pfg->Q, vv);
+  vv[0] = w[0] / qlen;
+  vv[1] = w[1] / qlen;
+  vv[2] = zl_idx / qlen;
+
+  lidx = parflow_p4est_lexicord(pfg->Tx, pfg->Ty, vv);
   P4EST_ASSERT( lidx >= 0 && lidx < num_trees );
   tp = pfg->lexic_to_tree[lidx];
   P4EST_ASSERT(tp >= 0);
 
-  face = v[2] > zl ? 4 : 5;
+  /* Provide face direction to search function */
+  face = v[2] > zl_idx ? 4 : 5;
 
-  /* Set a temporaty quadrant with same (x,y) coordinates as
-   * as the quadrant containing this subgrid. The z coordinate
-   * is manipulated to match the coordinates of the quadrant
-   * corresponding to the z projection of subgrid */
+  /* Construct a quadrant matching the coordinates of the
+   * desired projection */
   proj.level = quad->level;
   proj.x = quad->x;
   proj.y = quad->y;
-  proj.z = (p4est_qcoord_t) zl * P4EST_QUADRANT_LEN(proj.level);
+  proj.z = (p4est_qcoord_t)
+      (zl_idx % qlen) * P4EST_QUADRANT_LEN(proj.level);
 
   /* Owner of projected subgrid is the owner of the temporay
    * quadrant */
-  owner = p4est_quadrant_find_owner(pfg->forest, tp, face, &proj);
-#else
-  owner =  SubgridProcess(subgrid);
-#endif
+  info[0] = p4est_quadrant_find_owner(pfg->forest, tp, face, &proj);
+  P4EST_ASSERT(info[0] >= 0 && info[0] < GlobalsNumProcs);
 
-  return owner;
+  /* Use the morton code of the projected quadrant as tag */
+  info[1] = (int) parflow_p4est_morton(w);
+  P4EST_ASSERT( info[1] < MPI_TAG_UB);
+#else
+  info[0] =  SubgridProcess(subgrid);
+  info[1] =  SubgridLocIdx(subgrid);
+#endif
 }
