@@ -128,6 +128,11 @@ void
       GlobalsNumProcsX = P[0];
       GlobalsNumProcsY = P[1];
       GlobalsNumProcsZ = P[2];
+
+      /*Pupulate GlobalsSubgridPoints{X,Y,Z}*/
+      GlobalsSubgridPointsX = GetIntDefault(mkey[0], 1);
+      GlobalsSubgridPointsY = GetIntDefault(mkey[1], 1);
+      GlobalsSubgridPointsZ = GetIntDefault(mkey[2], 1);
 #else
       PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif
