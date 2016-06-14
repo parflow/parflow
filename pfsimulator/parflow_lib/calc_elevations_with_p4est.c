@@ -46,7 +46,7 @@
  * conditions relative to a reference patch on a reference solid.
  *--------------------------------------------------------------------------*/
 
-double         **CalcElevations(
+double         **CalcElevations_with_p4est(
    GeomSolid       *geom_solid,
    int              ref_patch,
    SubgridArray    *subgrids,
@@ -61,7 +61,7 @@ double         **CalcElevations(
    Subgrid            *subgrid;
 
    Vector      *z_mult            = ProblemDataZmult(problem_data);
-   Vector      *rsz                 = ProblemDataRealSpaceZ(problem_data);
+   Vector      *rsz               = ProblemDataRealSpaceZ(problem_data);
    Subvector   *z_mult_sub;
    Subvector   *rsz_sub;
    double      *z_mult_dat;
@@ -77,19 +77,22 @@ double         **CalcElevations(
 
    int                *fdir;
 
-   int	               is, i,  j,  k, iel,ival;
+   int	               is, i,  j, k, iel,ival;
 
    int                 num, srcRank, dstRank;
 
-   sc_array_t         *send_buffer;
+   sc_list_t          *send_buffer;
    sc_array_t         *send_requests;
    sc_array_t         *recv_requests;
-   sc_MPI_Status      *recv_statuses;
+   sc_link_t          *link;
+   double             *temp_array;
    double             *ebuf;
-   int                *sreq;
-   int                *rreq;
+   sc_MPI_Request     *sreq;
+   sc_MPI_Request     *rreq;
    int                 tag, mpiret;
-   int                 ll, sidx;
+   int                 sidx, info[2];
+   int                 R;
+   parflow_p4est_grid_t *pfgrid = globals->grid3d->pfgrid;
 
    /*-----------------------------------------------------
     * Convert the Geom solid to a GrGeom solid, making
@@ -115,14 +118,13 @@ double         **CalcElevations(
 
    elevation_arrays = ctalloc(double *, SubgridArraySize(subgrids));
 
-   send_buffer   = sc_array_new (sizeof (double));
-   send_requests = sc_array_new (sizeof (sc_MPI_Request));
-   recv_buffer   = sc_array_new (sizeof (double));
-   recv_requests = sc_array_new (sizeof (sc_MPI_Request));
+   send_buffer    = sc_list_new (NULL);
+   send_requests  = sc_array_new (sizeof (sc_MPI_Request));
+   recv_requests  = sc_array_new (sizeof (sc_MPI_Request));
 
    /* First loop: - All subgrids compute elevation array
     *             - Except zlevel 0 subgrids, post all the Isends to
-    *               lowest subgrid in my Z-Column */
+    *               lowest subgrid in our Z-Column */
    ForSubgridI(is, subgrids)
    {
       subgrid    = SubgridArraySubgrid(subgrids, is);
@@ -141,10 +143,11 @@ double         **CalcElevations(
       nx = SubgridNX(subgrid);
       ny = SubgridNY(subgrid);
       nz = IndexSpaceZ(zupper, rz) - iz + 1;
+      num = nx*ny;
 
       dz2 = RealSpaceDZ(rz)/2.0;
 
-      elevation_array = ctalloc(double, (nx*ny));
+      elevation_array = ctalloc(double, num);
 
       /* Initialize the elevation_array */
       for (iel = 0; iel < (nx*ny); iel++)
@@ -173,67 +176,60 @@ double         **CalcElevations(
       /** We are not the lowest subgrid in this Z column. */
       if( sidx  >= 0 )
       {
-         /* Send elevation array to lowest subgrid in this Z column. */
-         num     = nx*ny;
-         dstRank = parflow_p4est_get_subgrid_owner( projectXY(subgrid) );
-         sreq    = (sc_MPI_Request *) sc_array_push (send_requests);
-         tag     = 0;
-         ebuf    = (double *) sc_array_push_count (send_buffer, num);
-         ebuf    = elevation_array;
-         mpiret  = sc_MPI_Isend (ebuf, num, sc_MPI_DOUBLE, dstRank,
-                                 tag, amps_CommWorld, sreq);
-         SC_CHECK_MPI (mpiret);
+          /* Send elevation array to lowest subgrid in this Z column. */
+          parflow_p4est_get_projection_info (subgrid, 0, pfgrid, info);
+          tag     = info[1];
+          dstRank = info[0];
+          sreq    = (sc_MPI_Request *) sc_array_push (send_requests);
+          link    = sc_list_append (send_buffer, (void *) elevation_array);
+          ebuf    = (double *) link->data;
+          mpiret  = sc_MPI_Isend (ebuf, num, sc_MPI_DOUBLE, dstRank,
+                                  tag, amps_CommWorld, sreq);
+          SC_CHECK_MPI (mpiret);
+
       }
+
+      elevation_arrays[is] = elevation_array;
    }
 
-   /* Second loop: - Only subgrids in lowest z-layer do work
-    *              - Irecv elevation array from upper subgrids
-    *              - Reduce received elevation array
-    *              - Isend reduced array to upper subgrids in my Z column
-    *              - Complete Irecvs from upper guys        */
+   /* Reduction and Column "Broadcast" */
    ForSubgridI(is, subgrids)
    {
      subgrid = SubgridArraySubgrid(subgrids, is);
      nx      = SubgridNX(subgrid);
      ny      = SubgridNY(subgrid);
      sidx    = SubgridMinusZneigh(subgrid);
+     num     = nx*ny;
 
      /** We are the lowest subgrid in this Z column. */
      if( sidx  < 0 )
      {
-         int R;
-         int num=nx*ny;
+         elevation_array = elevation_arrays[is];
+         parflow_p4est_get_projection_info (subgrid, 0, pfgrid, info);
+         tag = info[1];
+         temp_array = ctalloc(double, num);
 
-	 /** Receive elevation array from upper subgrids */
-	 for(R = 1; R < GlobalsNumProcsZ; R++)
-	 {
-	    inreq  = (sc_MPI_Request *) sc_array_push (recv_requests);
-	    tag     = 0;
-	    ebuf    = (double *) sc_array_push_count (recv_buffer, num);
-	    mpiret  = sc_MPI_Irecv (ebuf, num, sc_MPI_DOUBLE, sc_MPI_ANY_SOURCE,
-				    tag, amps_CommWorld, rreq);
-	    SC_CHECK_MPI (mpiret);
-	 }
+         for(R = 1; R < GlobalsNumProcsZ; R++)
+         {
+             /** Receive and reduce elevation array from top subgrids in
+               * in our column */
+             parflow_p4est_get_projection_info (subgrid, R, pfgrid, info);
+             srcRank = info[0];
+             mpiret  = sc_MPI_Recv (temp_array, num, sc_MPI_DOUBLE, srcRank,
+                                    tag, amps_CommWorld, sc_MPI_STATUS_IGNORE);
+             SC_CHECK_MPI (mpiret);
 
-         /** Complete receive operations */
-         mpiret = sc_MPI_Waitall ((int) recv_requests->elem_count,
-                                  (sc_MPI_Request *) recv_requests->array,
-                                  sc_MPI_STATUSES_IGNORE);
-         SC_CHECK_MPI (mpiret);
+             for (iel = 0; iel < num; iel++)
+             {
+                 elevation_array[iel] = SC_MIN(elevation_array[iel], temp_array[iel]);
+             }
+         }
 
-	 /** Reduction */
-	 for (k = 0; k<recv_buffer->elem_cout; ++k)
-	 {
-	   temp_array = sc_array_index_int(recv_buffer,  k*num);
-	   for (iel = 0; iel < num; iel++)
-	   {
-	       elevation_array[iel] = SC_MIN(elevation_array[iel], temp_array[iel]);
-	   }
-	 }
+         free(temp_array);
 
 	 /* Original algorithm had default value of 0.0.
 	  * This forces unset values to 0.0  after reduction */
-	 for (iel = 0; iel < (nx*ny); iel++)
+	 for (iel = 0; iel < num; iel++)
 	 {
 	    if(elevation_array[iel] == FLT_MAX)
 	    {
@@ -241,49 +237,31 @@ double         **CalcElevations(
 	    }
 	 }
 
-	 /** Send reduced array to other ranks in my column */
+	 /** Send reduced array to top subgrids in our column */
 	 for(R = 1; R < GlobalsNumProcsZ; R++)
 	 {
-	     /* Send elevation array to lowest subgrid in this Z column. */
-	     dstRank = parflow_p4est_get_subgrid_owner( projectXYZ(subgrid, R) );
-	     sreq  = (sc_MPI_Request *) sc_array_push (send_requests);
-	     tag     = 1;
-	     ebuf    = (double *) sc_array_push_count (send_buffer, num);
-	     ebuf    = elevation_array;
+	     sreq    = (sc_MPI_Request *) sc_array_push (send_requests);
+	     parflow_p4est_get_projection_info(subgrid, R, pfgrid, info);
+	     dstRank = info[0];
+	     link    = sc_list_append (send_buffer, (void *) elevation_array);
+	     ebuf    = (double *) link->data;
 	     mpiret  = sc_MPI_Isend (ebuf, num, sc_MPI_DOUBLE, dstRank,
 				     tag, amps_CommWorld, sreq);
 	     SC_CHECK_MPI (mpiret);
-	  }
+	 }
+      }else{
 
-      }
-   }
-
-
-   /* Third loop:  - Ireceive reduced array from bottom subgrid
-    *              - Wait all Isends */
-   ForSubgridI(is, subgrids)
-   {
-     subgrid = SubgridArraySubgrid(subgrids, is);
-     nx      = SubgridNX(subgrid);
-     ny      = SubgridNY(subgrid);
-     sidx    = SubgridMinusZneigh(subgrid);
-
-      /** We are not the lowest subgrid in this Z column. */
-      if( sidx  >= 0 )
-      {
-         /* Ireceive reduced array */
-          num     = nx*ny;
-          srcRank = parflow_p4est_get_subgrid_owner( projectXY(subgrid) );
+         /** We are not the lowest subgrid in this Z column:
+           * Ireceive reduced array from bottom subgrid     */
+          parflow_p4est_get_projection_info(subgrid, 0, pfgrid, info);
+          srcRank = info[0];
           rreq  = (sc_MPI_Request *) sc_array_push (recv_requests);
-          tag     = 1;
-          ebuf    = (double *) sc_array_push_count (recv_buffer, num);
-          ebuf    = elevation_array;
+          tag     = info[1];
+          ebuf    = elevation_arrays[is];
           mpiret  = sc_MPI_Irecv (ebuf, num, sc_MPI_DOUBLE, srcRank,
                                   tag, amps_CommWorld, rreq);
           SC_CHECK_MPI (mpiret);
       }
-
-      elevation_arrays[is] = elevation_array;
    }
 
    /** Complete receive operations */
@@ -300,9 +278,8 @@ double         **CalcElevations(
 
    /** Free requests and buffer arrays */
    sc_array_destroy (send_requests);
-   sc_array_destroy (send_buffer);
    sc_array_destroy (recv_requests);
-   sc_array_destroy (recv_buffer);
+   sc_list_destroy (send_buffer);
 
    GrGeomFreeSolid(grgeom_solid);
 
