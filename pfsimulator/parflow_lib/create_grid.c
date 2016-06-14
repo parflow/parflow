@@ -155,6 +155,12 @@ Grid           *CreateGrid(
           SubgridLocIdx(quad_data->pf_subgrid) =
               parflow_p4est_qiter_get_local_idx(qiter);
 
+          /* Provide acces to quad that this subgrid is attached to */
+          quad_data->pf_subgrid->owner_tree =
+              (int32_t) parflow_p4est_qiter_get_tree(qiter);
+          quad_data->pf_subgrid->idx_in_tree =
+              parflow_p4est_qiter_get_idx_in_tree (qiter);
+
           /*Retrieve -z and +z neighborhood information*/
           parflow_p4est_get_zneigh(quad_data->pf_subgrid, qiter, pfgrid);
 
