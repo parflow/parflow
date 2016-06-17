@@ -512,7 +512,15 @@ int PFMGSizeOfTempData (void );
 
 /* pf_pfmg_octree.c */
 void PFMGOctree (Vector *soln , Vector *rhs , double tol , int zero );
-PFModule *PFMGOctreeInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *pf_Bmat , Matrix *pf_Cmat, double *temp_data );
+PFModule  *PFMGOctreeInitInstanceXtra(
+   Problem      *problem,
+   Grid         *grid,
+   ProblemData  *problem_data,
+   Matrix       *pf_Bmat,
+   Matrix	     *pf_Cmat,
+   Matrix	     *pf_Emat,
+   Matrix	     *pf_Fmat,
+   double       *temp_data);
 void PFMGOctreeFreeInstanceXtra (void );
 PFModule *PFMGOctreeNewPublicXtra (char *name );
 void PFMGOctreeFreePublicXtra (void );
