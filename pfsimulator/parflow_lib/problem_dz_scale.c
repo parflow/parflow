@@ -122,17 +122,11 @@ void dzScale (ProblemData *problem_data, Vector *dz_mult )
 
       for (ir = 0; ir < num_regions; ir++)
       {
-
-         printf( "problem_dz_scale -- setting by regions (region %d) \n", is );
-
 	 gr_solid = ProblemDataGrSolid(problem_data, region_indices[ir]);
 	 value    = values[ir];
 
 	 ForSubgridI(is, subgrids)
 	 {
-
-            printf( "problem_dz_scale -- setting for subgrids (subgrid %d) \n", is );
-
             subgrid = SubgridArraySubgrid(subgrids, is);
             ps_sub  = VectorSubvector(dz_mult, is);
 	    
@@ -152,8 +146,6 @@ void dzScale (ProblemData *problem_data, Vector *dz_mult )
             {                
 	       ips = SubvectorEltIndex(ps_sub, i, j, k);
 	       data[ips] = value;
-              //  printf("dz %d %d %d %f %f \n",i,j, k, data[ips],value);
-
 	    });
 	 }
       }
@@ -177,9 +169,6 @@ void dzScale (ProblemData *problem_data, Vector *dz_mult )
 
       ForSubgridI(is, subgrids)
       {
-
-         printf( "problem_dz_scale -- setting from PFB (subgrid %d) \n", is );
-
          subgrid = SubgridArraySubgrid(subgrids, is);
          dz_sub  = VectorSubvector(dz_mult, is);
          val_sub = VectorSubvector(values,is);
@@ -203,9 +192,6 @@ void dzScale (ProblemData *problem_data, Vector *dz_mult )
             ips   = SubvectorEltIndex(dz_sub,  i, j, k);
             ipicv = SubvectorEltIndex(val_sub, i, j, k);
             dz_dat[ips] = val_dat[ipicv];
-            // printf("dz %d %d %d %d %d %f %f \n",i,j, k,ips, ipicv, dz_dat[ips],val_dat[ipicv]);
-
-
          });
       }        /* End subgrid loop */
 
@@ -225,20 +211,10 @@ void dzScale (ProblemData *problem_data, Vector *dz_mult )
            num_dz    = (dummy2 -> num_dz);
            values    = (dummy2 -> values);
            
-          /* for (ii=0; ii < num_dz; ii++) {
-               printf("dz %d %f \n",ii, values[ii]);
-           } */
-           
-      	   //GrGeomSolid  *gr_domain;     
-        
            GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
-           
 
            ForSubgridI(is, subgrids)
            {
-               
-               //printf( "problem_dz_scale -- setting from list of dz values \n", is );
-               
                subgrid = SubgridArraySubgrid(subgrids, is);
                dz_sub  = VectorSubvector(dz_mult, is);
                dz_dat  = SubvectorData(dz_sub);
@@ -259,9 +235,6 @@ void dzScale (ProblemData *problem_data, Vector *dz_mult )
                                 
                                 ips   = SubvectorEltIndex(dz_sub,  i, j, k);
                                 dz_dat[ips] = values[k];
-                            //    printf("dz %d %d %d %f %f \n",i,j, k, dz_dat[ips],values[k]);
-
-                                
                             });
            }        /* End subgrid loop */
            
@@ -341,7 +314,6 @@ PFModule   *dzScaleNewPublicXtra()
 
    /* @RMM added switch for grid dz multipliers */
    /* RMM set dz multipliers (default=False) */
-   // printf("flag 1: pre name set \n");
    name                   = "Solver.Nonlinear.VariableDz";
    switch_na              = NA_NewNameArray("False True");
    switch_name            = GetStringDefault(name, "False");
@@ -376,9 +348,6 @@ PFModule   *dzScaleNewPublicXtra()
 	 case 0:
 	 {
          
-
-            printf( "problem_dz_scale -- setting dz_mult by regions (type=Constant) \n" );
-
 	    dummy0 = ctalloc(Type0, 1);
  
             (dummy0 -> num_regions)    = num_regions;
@@ -404,9 +373,6 @@ PFModule   *dzScaleNewPublicXtra()
          // Read from PFB file	
          case 1:
          {
-  
-            printf( "problem_dz_scale -- setting dz_mult from file (type=PFBFile) \n" );
-
             dummy1 = ctalloc(Type1, 1);
 
             sprintf(key, "Geom.%s.dzScale.FileName", "domain");
@@ -421,25 +387,15 @@ PFModule   *dzScaleNewPublicXtra()
               //Set from tcl list; map to grid
           case 2:
           {
-              
-              printf( "problem_dz_scale -- setting dz_mult tcl list \n" );
-              
               dummy2 = ctalloc(Type2, 1);
               
               name                        = "dzScale.nzListNumber";
-            //  switch_name                 = GetString(name);
-            //  nzListValues                = NA_NewNameArray(switch_name);
-              
               (dummy2 -> num_dz)          = GetDouble(name);
-              // printf("Ncell %d \n",  dummy2 -> num_dz);
 
               (dummy2 -> values)          = ctalloc(double, (dummy2 -> num_dz)); 
               for (ir=0; ir < (dummy2 -> num_dz); ir++) {
                   sprintf(key, "Cell.%d.dzScale.Value", ir);
                   dummy2 -> values[ir] = GetDouble(key);
-                 // printf("cell %d %s %f \n",ir, key, dummy2 -> values[ir]);
-                 // printf("dz1 %d %f \n",ir, dummy2 -> values[ir]);
-
               }
               (public_xtra -> data) = (void *) dummy2;
               
