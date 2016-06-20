@@ -96,13 +96,13 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
 #ifdef HAVE_P4EST
    SubgridArray       *all_subgrids  = GridAllSubgrids(grid);
    Subgrid            *neigh_subgrid;
-   sc_array_t         *sendbuf;
-   sc_array_t         *old_sendbuf = NULL;
+   sc_mempool_t       *sendbuf;
+   sc_mempool_t       *old_sendbuf = NULL;
    sc_array_t         *new_requests;
    sc_array_t         *old_requests = NULL;
    double             *zbuf;
    int                *z_levels = grid->z_levels;
-   int                *outreq;
+   sc_MPI_Request     *outreq;
    int                 tag, mpiret;
    int                 ll, sidx;
 #endif
@@ -127,7 +127,7 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
    for (ll = 0; ll < num_z_levels; ++ll)
    {
        if (USE_P4EST) {
-           sendbuf      = sc_array_new (sizeof (double));
+           sendbuf      = sc_mempool_new (sizeof (double));
            new_requests = sc_array_new (sizeof (sc_MPI_Request));
        }
 #endif
@@ -235,7 +235,7 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
                     dstRank = SubgridProcess(neigh_subgrid);
                     tag     = ComputeTag(subgrid, neigh_subgrid);
                     outreq  = (sc_MPI_Request *) sc_array_push (new_requests);
-                    zbuf    = (double *) sc_array_push (sendbuf);
+                    zbuf    = (double *) sc_mempool_alloc (sendbuf);
                     zbuf    = &z[is];
                     mpiret  = sc_MPI_Isend (zbuf, 1, sc_MPI_DOUBLE, dstRank,
                                             tag, amps_CommWorld, outreq);
@@ -275,7 +275,7 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
           * free request and buffer array*/
          if ( !new_requests->elem_count ){
              sc_array_destroy (new_requests);
-             sc_array_destroy (sendbuf);
+             sc_mempool_destroy (sendbuf);
              sendbuf  = new_requests = NULL;
          }
 
@@ -288,7 +288,7 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
 
              /** Free requests and buffer from previous level */
              sc_array_destroy (old_requests);
-             sc_array_destroy (old_sendbuf);
+             sc_mempool_destroy (old_sendbuf);
          }
 
          /** Save current requests and buffer to be completed
