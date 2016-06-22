@@ -10,6 +10,7 @@ SC_EXTERN_C_BEGIN;
 typedef struct parflow_p4est_grid_3d {
 
     int             dim;
+    int             Tx,Ty,Tz;    /*Number of trees in each coordinate direction*/
     p8est_t        *forest;
     p8est_connectivity_t *connect;
     p8est_ghost_t  *ghost;
