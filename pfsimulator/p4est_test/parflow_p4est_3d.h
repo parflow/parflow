@@ -88,6 +88,9 @@ parflow_p4est_ghost_data_t
     * parflow_p4est_get_ghost_data_3d(parflow_p4est_grid_3d_t *pfg,
                                       parflow_p4est_qiter_3d_t * qit_3d);
 
+
+int parflow_p4est_get_projection_owner_3d (Subgrid *subgrid, int z_level,
+                                           parflow_p4est_grid_3d_t *pfg);
 SC_EXTERN_C_END;
 
 #endif                          /* !PARLOW_P4EST_3D_H */

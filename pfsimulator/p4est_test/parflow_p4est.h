@@ -119,6 +119,17 @@ parflow_p4est_ghost_data_t
 /** Returns 1 if there are no trees in this processor, 0 otherwise */
 int             parflow_p4est_rank_is_empty(parflow_p4est_grid_t * pfgrid);
 
+/** Get owner of the projection of this subgrid in a target xy plane.
+ * \param [in] subgrid       Subgrid to be projected.
+ * \param [in] z_level       Height of the xy plane we whish to project to.
+ * \param [in] pfgrid        Pointer to a valid parflow_p4est_grid structure.
+ *
+ * \return Owner rank of the subgrid coordinates (x,y,z_level) where (x,y)
+ *         are taken from the pased subgrid.
+ */
+int
+parflow_p4est_get_projection_owner (Subgrid *subgrid, int z_level,
+                                    parflow_p4est_grid_t *pfgrid);
 SC_EXTERN_C_END;
 
 #endif                          /* !PARLOW_P4EST_H */

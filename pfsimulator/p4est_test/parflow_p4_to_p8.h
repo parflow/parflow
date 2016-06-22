@@ -20,5 +20,6 @@
 #define parflow_p4est_qiter_destroy_2d    parflow_p4est_qiter_destroy_3d
 #define parflow_p4est_get_quad_data_2d    parflow_p4est_get_quad_data_3d
 #define parflow_p4est_get_ghost_data_2d   parflow_p4est_get_ghost_data_3d
+#define parflow_p4est_get_projection_owner_2d parflow_p4est_get_projection_owner_3d
 
 #endif                          /* !PARFLOW_P4_TO_P8_H */

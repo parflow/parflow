@@ -292,3 +292,18 @@ parflow_p4est_rank_is_empty(parflow_p4est_grid_t * pfgrid)
 
   return K > 0 ? 0 : 1;
 }
+
+int
+parflow_p4est_get_projection_owner (Subgrid *subgrid, int z_level,
+                                    parflow_p4est_grid_t *pfgrid)
+{
+  int             dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
+
+  if (dim == 2) {
+      return parflow_p4est_get_projection_owner_2d (subgrid);
+  }else{
+      P4EST_ASSERT(dim == 3);
+      return parflow_p4est_get_projection_owner_3d (subgrid, z_level,
+                                                    pfgrid->p.p8);
+  }
+}
