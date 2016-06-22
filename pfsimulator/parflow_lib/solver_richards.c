@@ -2993,6 +2993,10 @@ void TeardownRichards(PFModule *this_module) {
       {
 	 fprintf(log_file, "Transient Problem Solved.\n");
 	 fprintf(log_file, "-------------------------\n");
+	 fprintf(log_file, "\n");
+	 fprintf(log_file, "Total Timesteps: %d\n", instance_xtra -> number_logged-1);
+	 fprintf(log_file, "\n");
+         fprintf(log_file, "-------------------------\n");
 	 fprintf(log_file, "Sequence #       Time         \\Delta t         Dumpfile #   Recompute?\n");
 	 fprintf(log_file, "----------   ------------   ------------ -     ----------   ----------\n");
 
@@ -3008,7 +3012,6 @@ void TeardownRichards(PFModule *this_module) {
 
 	 fprintf(log_file, "\n");
 	 fprintf(log_file, "Overland flow Results\n");
-	 fprintf(log_file, " %d\n",instance_xtra -> number_logged); 
 	 for (k = 0; k < instance_xtra -> number_logged; k++) //sk start
 	 {
 	    if ( instance_xtra -> dumped_log[k] == -1 )
@@ -3968,8 +3971,6 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
                   switch_name, key );
    }
    public_xtra -> terrain_following_grid = switch_value;
-
-   if (public_xtra -> terrain_following_grid == 1) { printf("TFG true \n");}
 // CPS
  
    sprintf(key, "%s.MaxIter", name);
