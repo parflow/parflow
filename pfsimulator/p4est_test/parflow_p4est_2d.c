@@ -8,6 +8,13 @@
 #include <p8est_vtk.h>
 #endif
 
+#ifdef P4_TO_P8
+static p4est_topidx_t compute_lex_idx (int Tx, int Ty, int vv[3])
+{
+  return ( vv[2] * Ty  + vv[1] ) * Tx  + vv[0];
+}
+#endif
+
 parflow_p4est_grid_2d_t *
 parflow_p4est_grid_2d_new(int Px, int Py
 #ifdef P4_TO_P8
@@ -19,6 +26,9 @@ parflow_p4est_grid_2d_new(int Px, int Py
     int             tx, ty;
 #ifdef P4_TO_P8
     int             tz;
+    int             vv[3];
+    p4est_topidx_t  tt, num_trees, lidx;
+    double          v[3];
 #endif
     int             initial_level;
     size_t          quad_data_size;
@@ -36,12 +46,18 @@ parflow_p4est_grid_2d_new(int Px, int Py
     g = 1 << initial_level;
     quad_data_size = sizeof(parflow_p4est_quad_data_t);
 
+    pfg->Tx = tx / g;
+    pfg->Ty = ty / g;
+#ifdef P4_TO_P8
+    pfg->Tz = tz / g;
+#endif
+
     /*
      * Create connectivity structure
      */
-    pfg->connect = p4est_connectivity_new_brick(tx / g, ty / g
+    pfg->connect = p4est_connectivity_new_brick(pfg->Tx, pfg->Ty
 #ifdef P4_TO_P8
-                                                , tz / g, 0
+                                                , pfg->Tz , 0
 #endif
                                                 , 0, 0);
 
@@ -61,6 +77,29 @@ parflow_p4est_grid_2d_new(int Px, int Py
 
     // p4est_vtk_write_file (pfg->forest, NULL, P4EST_STRING "_pfbrick");
 
+#ifdef P4_TO_P8
+    num_trees = pfg->Tx * pfg->Ty * pfg->Tz;
+
+    /** Compute permutation transforming lexicographical to brick order */
+    pfg->lexic_to_tree = P4EST_ALLOC_ZERO(p4est_topidx_t, num_trees);
+
+    for (tt = 0; tt < num_trees; ++tt)
+          pfg->lexic_to_tree[tt] = -1;
+
+    for (tt = 0; tt < num_trees; ++tt) {
+
+        p4est_qcoord_to_vertex(pfg->connect, tt, 0, 0, 0, v);
+
+        vv[0] = (int) v[0];
+        vv[1] = (int) v[1];
+        vv[2] = (int) v[2];
+
+        lidx = compute_lex_idx(pfg->Tx, pfg->Ty, vv);
+        P4EST_ASSERT( lidx >= 0 && lidx < num_trees );
+        pfg->lexic_to_tree[lidx]=tt;
+     }
+#endif
+
     return pfg;
 }
 
@@ -75,6 +114,9 @@ parflow_p4est_grid_2d_destroy(parflow_p4est_grid_2d_t * pfg)
     sc_array_destroy(pfg->ghost_data);
     p4est_destroy(pfg->forest);
     p4est_connectivity_destroy(pfg->connect);
+#ifdef P4_TO_P8
+    P4EST_FREE(pfg->lexic_to_tree);
+#endif
     P4EST_FREE(pfg);
 }
 
