@@ -109,6 +109,7 @@ Grid  *NewGrid(
       }
    }
 
+#ifdef HAVE_P4EST
    if (USE_P4EST){
        /* get size */
        invoice = amps_NewInvoice("%i", &size);
@@ -122,6 +123,7 @@ Grid  *NewGrid(
        ix *= -1, iy *= -1, iz *= -1;
        amps_FreeInvoice(invoice);
    }
+#endif
 
    new_grid -> background = NewSubgrid(ix, iy, iz, nx, ny, nz, 1, 1, 1, 0);
    new_grid -> size = size;

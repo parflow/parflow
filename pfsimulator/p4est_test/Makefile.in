@@ -1,7 +1,7 @@
-PARFLOW	      =	..
-SRCDIR	      =	.
+PARFLOW	      =	@top_srcdir@
+SRCDIR	      =	@srcdir@
 SUBDIR        = p4est_test
-
+VPATH         = @srcdir@
 OBJECT        = ..
 
 default: all
@@ -21,8 +21,8 @@ OBJS += parflow_p4est_math.o \
 parflow_p4est.o parflow_p4est_2d.o  parflow_p4est_3d.o
 endif
 
-$(PARFLOW_LIB_DIR)/$(PARFLOW_LIB): $(OBJS) $(AMPS_LIB_DEPEND)
-	ar rus $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB) $(OBJS)
+$(PARFLOW_LIB_DIR)/$(PARFLOW_LIB): $(OBJS)
+	@AR@ rus $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB) $(OBJS)
         
 all: $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB)
         

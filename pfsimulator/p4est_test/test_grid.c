@@ -2,7 +2,7 @@
 #include <string.h>
 #include <parflow.h>
 #ifdef HAVE_P4EST
-#include <parflow_p4est.h>
+#include "parflow_p4est.h"
 #include <p4est.h>
 #include <p8est.h>
 #endif
