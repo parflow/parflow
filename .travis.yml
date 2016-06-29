@@ -1,0 +1,25 @@
+language: cpp
+sudo: required
+dist: trusty
+compiler:
+  - gcc
+os:
+  - linux
+before_install:
+  - echo $LANG
+  - echo $LC_ALL
+  - test -n $CC  && unset CC
+  - test -n $CXX && unset CXX
+  - sudo apt-get -qq update
+  - sudo apt-get install -y libhypre libhypre-dev
+  - sudo apt-get install -y libsilo-bin libsilo-dev
+before_script:
+  - cd $TRAVIS_BUILD_DIR
+  - mkdir -p build.pfsimulator && (cd build.pfsimulator && ../pfsimulator/configure )
+  - mkdir -p build.pftools && (cd build.pftools  && ../pftools/configure )
+script:
+  - cd $TRAVIS_BUILD_DIR
+  - (cd build.pfsimulator && make)
+  - (cd build.pftools && make)
+  - (cd test && make)
+  
