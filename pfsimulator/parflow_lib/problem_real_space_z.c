@@ -30,8 +30,7 @@
 #include "globals.h"
 
 #ifdef HAVE_P4EST
-#include "../p4est_test/parflow_p4est.h"
-#include "../p4est_test/parflow_p4est_math.h"
+#include "parflow_p4est_dependences.h"
 #endif
 
 /*--------------------------------------------------------------------------

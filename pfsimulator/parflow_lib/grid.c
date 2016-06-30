@@ -37,9 +37,7 @@
 #include <math.h>
 
 #ifdef HAVE_P4EST
-#include <p4est.h>
-#include <p8est.h>
-#include "../p4est_test/parflow_p4est.h"
+#include "parflow_p4est_dependences.h"
 #endif
 
 /*--------------------------------------------------------------------------

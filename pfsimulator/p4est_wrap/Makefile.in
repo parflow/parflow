@@ -1,6 +1,6 @@
 PARFLOW	      =	@top_srcdir@
 SRCDIR	      =	@srcdir@
-SUBDIR        = p4est_test
+SUBDIR        = p4est_wrap
 VPATH         = @srcdir@
 OBJECT        = ..
 

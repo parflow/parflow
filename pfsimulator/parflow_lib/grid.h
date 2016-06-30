@@ -35,7 +35,7 @@
 #define _GRID_HEADER
 
 #ifdef HAVE_P4EST
-#include "../p4est_test/parflow_p4est.h"
+#include "../p4est_wrap/parflow_p4est.h"
 #endif
 /*--------------------------------------------------------------------------
  * Terminology:
