@@ -40,9 +40,9 @@ FILES =\
  manual.tex \
  version.tex
 
-all:
+all: manual.pdf 
 
-doc:  manual.ps manual/manual.html
+doc: manual.pdf manual/manual.html
 
 version.tex : $(PARFLOW)/../pfsimulator/parflow_lib/version.h
 	echo "\def\PFVersion{"`awk -F "\"" '{print $$2}' $(PARFLOW)/../pfsimulator/parflow_lib/version.h`"}" > version.tex

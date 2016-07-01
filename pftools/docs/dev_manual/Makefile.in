@@ -53,9 +53,12 @@ FILES =\
  ref.tex\
  ref.grid.tex
 
-all:
+all: manual.pdf 
 
-doc:  manual.ps manual/manual.html
+doc: manual.pdf manual/manual.html
+
+manual.pdf: manual.dvi
+	@dvipdf manual
 
 version.tex : $(PARFLOW)/../pfsimulator/parflow_lib/version.h
 	echo "\def\PFVersion{"`awk -F "\"" '{print $$2}' $(PARFLOW)/../pfsimulator/parflow_lib/version.h`"}" > version.tex

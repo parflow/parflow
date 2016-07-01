@@ -36,29 +36,39 @@ LINK_FILES = do_online \
 	     parflow.sty \
              parflow.perl \
              parflow.bib \
-             IGWMC-logo-new.eps
-FILES =\
- manual.tex\
- defs.tex\
- files.tex\
- intro.tex\
- models.tex \
- pfsystem.tex\
- start.tex \
- manual.bbl.tex \
- pftools.tex \
- bib.tex \
- fdl.tex
+             IGWMC-logo-new.eps \
+             IGWMC-logo-new.pdf
 
-all:
+FILES = \
+	bib.tex \
+	defs.tex \
+	fdl.tex \
+	files.tex \
+	inputps.tex \
+	intro.tex \
+	lic.tex \
+	manual.bbl.tex \
+	manual.tex \
+	manual.v3.bbl.tex \
+	models.tex \
+	pfsystem.tex \
+	pftools.tex \
+	start.tex \
+	fig_pfsystem.eps \
+	fig_pfsystem.pdf
 
-doc:  manual.ps manual/manual.html
+all: manual.pdf
+
+doc: manual.pdf manual/manual.html
 
 version.tex : $(PARFLOW)/../pfsimulator/parflow_lib/version.h
 	echo "\def\PFVersion{"`awk -F "\"" '{print $$2}' $(PARFLOW)/../pfsimulator/parflow_lib/version.h`"}" > version.tex
 
 manual.ps: manual.dvi
 	@dvips -o manual.ps manual
+
+manual.pdf: manual.dvi
+	@dvipdf manual
 
 manual/manual.html: manual.dvi
 	@latex2html $(ONLINE_OPTS) manual.tex
@@ -89,6 +99,7 @@ doc_install:
 	@$(INSTALL) -c -m 644 manual.ps $(INSTALL_DIR)/$(MANUAL).ps
 
 clean:
+	@rm -f manual.pdf manual.ps
 	$(PARFLOW_CLEAN)
 
 veryclean: clean
