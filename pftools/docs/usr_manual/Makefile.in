@@ -18,7 +18,7 @@ SRCDIR	      =	@srcdir@
 SUBDIR        = docs/usr_manual
 VPATH	      =	@srcdir@
 OBJECT        = ../..
-TEXLIBDIR    = @srcdir@/../lib/
+TEXLIBDIR     = @srcdir@/../lib/
 
 include $(OBJECT)/config/Makefile.config
 
@@ -35,8 +35,8 @@ LINK_FILES = do_online \
              html.perl \
 	     parflow.sty \
              parflow.perl \
-             parflow.bib
-
+             parflow.bib \
+             IGWMC-logo-new.eps
 FILES =\
  manual.tex\
  defs.tex\
@@ -45,7 +45,6 @@ FILES =\
  models.tex \
  pfsystem.tex\
  start.tex \
- version.tex \
  manual.bbl.tex \
  pftools.tex \
  bib.tex \
@@ -56,7 +55,7 @@ all:
 doc:  manual.ps manual/manual.html
 
 version.tex : $(PARFLOW)/../pfsimulator/parflow_lib/version.h
-	echo "\def\PFVersion{"`cut -d$ -f2 $(PARFLOW)/../pfsimulator/parflow_lib/version.h`"}" > version.tex
+	echo "\def\PFVersion{"`awk -F "\"" '{print $$2}' $(PARFLOW)/../pfsimulator/parflow_lib/version.h`"}" > version.tex
 
 manual.ps: manual.dvi
 	@dvips -o manual.ps manual
@@ -65,8 +64,7 @@ manual/manual.html: manual.dvi
 	@latex2html $(ONLINE_OPTS) manual.tex
 	@$(TEXLIBDIR)/do_online manual
 
-#	bibtex manual
-manual.dvi: Makefile $(FILES)
+manual.dvi: Makefile $(FILES) version.tex
 	@for i in ${LINK_FILES}; do     \
 	   if [ ! -h $$i ] ; then    \
 	     ln -s $(TEXLIBDIR)/$$i . ;\
@@ -78,9 +76,7 @@ manual.dvi: Makefile $(FILES)
 	   fi \
 	done 
 	@latex manual
-	@bibtex manual
 	@makeindex manual.idx
-	@latex manual
 	@latex manual
 
 install:
