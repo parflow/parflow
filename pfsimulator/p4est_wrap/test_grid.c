@@ -11,10 +11,22 @@ int
 main(int argc, char **argv)
 {
     char *key_val;
+    char filename[MAXPATHLEN];
+    FILE *file = NULL;
+    FILE *log_file = NULL;
+    amps_Clock_t wall_clock_time;
 
     if (amps_Init(&argc, &argv)) {
         amps_Printf("Error: amps_Init initalization failed\n");
         exit(1);
+    }
+
+    wall_clock_time = amps_Clock();
+    
+    if(argc != 2) {
+       amps_Printf("Error: invalid number of arguments.\n");
+       amps_Printf("       Invoke as parflow <pfidb file>.\n");
+       exit(1);
     }
 
     /*-----------------------------------------------------------------------
@@ -86,6 +98,42 @@ main(int argc, char **argv)
 #endif
     }
 
+    wall_clock_time = amps_Clock() - wall_clock_time;
+
+    IfLogging(0) 
+    {
+       if(!amps_Rank(amps_CommWorld)) {
+ 	 log_file = OpenLogFile("ParFlow Total Time");
+
+	 fprintf(log_file, "Total Run Time: %f seconds\n\n", 
+		      (double)wall_clock_time/(double)AMPS_TICKS_PER_SEC);
+       }
+    }
+
+    printMaxMemory(log_file);
+
+    IfLogging(0) {
+       fprintf(log_file, "\n");
+
+       if(!amps_Rank(amps_CommWorld))
+       {
+ 	  printMemoryInfo(log_file);
+ 	  fprintf(log_file, "\n");
+
+	  CloseLogFile(log_file);
+       }
+    }
+
+    if(!amps_Rank(amps_CommWorld))
+    {
+       sprintf(filename, "%s.%s", GlobalsOutFileName, "pftcl");
+       file = fopen(filename, "w" );
+      
+       IDB_PrintUsage(file, amps_ThreadLocal(input_database));
+      
+       fclose(file);
+    }
+      
     IDB_FreeDB(amps_ThreadLocal(input_database));
     FreeGlobals();
     amps_Finalize();
