@@ -1,4 +1,4 @@
-# Created by https://www.gitignore.io/api/fortran,c++,c
+# Created by https://www.gitignore.io
 
 ### Fortran ###
 # Compiled Object files
@@ -98,3 +98,7 @@
 # Debug files
 *.dSYM/
 *.su
+
+### Emacs ###
+*~
+\#*\#
