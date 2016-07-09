@@ -59,7 +59,7 @@ void   NewLogging()
       
       fprintf(log_file, "*****************************************************************************\n");
       fprintf(log_file, "ParFlow Output Log\n");
-      fprintf(log_file, "\t\t%s\n", ParFlowRevision);
+      fprintf(log_file, "\t\t%s\n", PARFLOW_VERSION_STRING);
       fprintf(log_file, "\tCompiled on    : %s %s\n", __DATE__, __TIME__);
 #ifdef CFLAGS
       fprintf(log_file, "\tWith C flags   : %s\n", CFLAGS);

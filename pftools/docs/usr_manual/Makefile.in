@@ -61,8 +61,9 @@ all: manual.pdf
 
 doc: manual.pdf manual/manual.html
 
-version.tex : $(PARFLOW)/../pfsimulator/parflow_lib/version.h
-	echo "\def\PFVersion{"`awk -F "\"" '{print $$2}' $(PARFLOW)/../pfsimulator/parflow_lib/version.h`"}" > version.tex
+version.tex : $(PARFLOW)/../VERSION
+	echo $(PARFLOW)/../VERSION
+	echo "\def\PFVersion{" `awk '{print $$2}' $(PARFLOW)/../VERSION` "}" > version.tex
 
 manual.ps: manual.dvi
 	@dvips -o manual.ps manual
