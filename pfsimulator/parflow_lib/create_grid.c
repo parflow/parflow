@@ -112,6 +112,8 @@ Grid           *CreateGrid(
       subgrids = GetGridSubgrids(all_subgrids);
    } else {
 #ifdef HAVE_P4EST
+      BeginTiming(P4ESTimingIndex);
+
       all_subgrids = NewSubgridArray();
       subgrids     = NewSubgridArray();
 
@@ -191,6 +193,8 @@ Grid           *CreateGrid(
 
       /*There is no PxQxR processor arrange with p4est, set invalid values*/
       GlobalsP = GlobalsQ = GlobalsR = -1;
+
+      EndTiming(P4ESTimingIndex);
 #else
     PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif

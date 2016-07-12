@@ -463,6 +463,8 @@ Stencil  *stencil)
               * subgrid in the owner rank. */
              if (USE_P4EST && do_indx_union){
 #ifdef HAVE_P4EST
+                 BeginTiming(P4ESTimingIndex);
+
                  loc_idx_array = talloc(int, SubgridArraySize(neighbors));
 
                  /* Determine loc_idx_array and num of
@@ -515,6 +517,8 @@ Stencil  *stencil)
                  FreeSubgridArray(sa2);
 
                  tfree(loc_idx_array);
+
+                 EndTiming(P4ESTimingIndex);
 #endif
                }else{
 

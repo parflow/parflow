@@ -529,8 +529,10 @@ Problem     *problem)      /* General problem information */
 					     subgrids,problem_data);
 	   }else{
 #ifdef HAVE_P4EST
+	     BeginTiming(P4ESTimingIndex);
 	     elevations[ir] = CalcElevations_with_p4est(ref_solid, patch_indices[ir],
 							subgrids,problem_data);
+	     EndTiming(P4ESTimingIndex);
 #else
 	     PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif

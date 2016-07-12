@@ -61,7 +61,9 @@ void  NewTiming()
 #ifdef VECTOR_UPDATE_TIMING
    RegisterTiming("VectorUpdate");
 #endif
-
+#ifdef HAVE_P4EST
+   RegisterTiming("P4EST");
+#endif
 }
 
 

@@ -94,6 +94,8 @@ void
       GlobalsNumProcsZ = GetIntDefault("Process.Topology.R", 1);
    }else{
 #ifdef HAVE_P4EST
+       BeginTiming(P4ESTimingIndex);
+
       /** Retrieve desired dimensions of the grid */
       Nkey[0] = "ComputationalGrid.NX";
       Nkey[1] = "ComputationalGrid.NY";
@@ -133,6 +135,8 @@ void
       GlobalsSubgridPointsX = GetIntDefault(mkey[0], 1);
       GlobalsSubgridPointsY = GetIntDefault(mkey[1], 1);
       GlobalsSubgridPointsZ = GetIntDefault(mkey[2], 1);
+
+      EndTiming(P4ESTimingIndex);
 #else
       PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif

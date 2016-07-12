@@ -3126,6 +3126,7 @@ PFModule *SolverRichardsInitInstanceXtra()
 
    if (USE_P4EST){
 #ifdef HAVE_P4EST
+       BeginTiming(P4ESTimingIndex);
        /** Complete projection if necessary */
        if (proj_flag){
          ForSubgridI(i, new_all_subgrids)
@@ -3134,6 +3135,7 @@ PFModule *SolverRichardsInitInstanceXtra()
            SubgridIZ(new_subgrid) = 0;
          }
        }
+       EndTiming(P4ESTimingIndex);
 #endif
    }
 

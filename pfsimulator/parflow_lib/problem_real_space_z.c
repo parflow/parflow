@@ -123,11 +123,14 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
      }
 
 #ifdef HAVE_P4EST
+
    for (ll = 0; ll < num_z_levels; ++ll)
    {
        if (USE_P4EST) {
+           BeginTiming(P4ESTimingIndex);
            sendbuf      = sc_mempool_new (sizeof (double));
            new_requests = sc_array_new (sizeof (sc_MPI_Request));
+           EndTiming(P4ESTimingIndex);
        }
 #endif
 	 ForSubgridI(is, subgrids)
@@ -163,6 +166,8 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
 
             if (USE_P4EST){
 #ifdef HAVE_P4EST
+                BeginTiming(P4ESTimingIndex);
+
                 sidx = SubgridMinusZneigh(subgrid);
 
                 /** We have a neighboring subgrid from bellow, receive its partial sum */
@@ -175,6 +180,8 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
                                            tag,  amps_CommWorld, sc_MPI_STATUS_IGNORE);
                     SC_CHECK_MPI (mpiret);
                 }
+
+                EndTiming(P4ESTimingIndex);
 #endif
             }else {
                 /* Receive partial sum from rank below current rank.  This is lower z value for this rank. */
@@ -225,6 +232,7 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
 
             if (USE_P4EST){
 #ifdef HAVE_P4EST
+                BeginTiming(P4ESTimingIndex);
                 sidx = SubgridPlusZneigh(subgrid);
 
                 /** We have a neighboring subgrid above, send our partial sum */
@@ -240,6 +248,7 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
                                             tag, amps_CommWorld, outreq);
                     SC_CHECK_MPI (mpiret);
                 }
+                EndTiming(P4ESTimingIndex);
 #endif
             }else {
                 /* Send partial sum to rank above current rank */
@@ -269,6 +278,7 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
 
      if ( USE_P4EST ){
 #ifdef HAVE_P4EST
+         BeginTiming(P4ESTimingIndex);
 
          /** There are no send requests for this z_level,
           * free request and buffer array*/
@@ -294,6 +304,8 @@ void realSpaceZ (ProblemData *problem_data, Vector *rsz )
           *  in the next z_level */
          old_requests = new_requests;
          old_sendbuf  = sendbuf;
+
+         EndTiming(P4ESTimingIndex);
 #endif
      }
 
