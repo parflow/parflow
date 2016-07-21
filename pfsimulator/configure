@@ -14910,10 +14910,21 @@ esac
 if test "${slurm_PREFIX+set}" = set; then
    { $as_echo "$as_me:$LINENO: checking for SLURM library" >&5
 $as_echo_n "checking for SLURM library... " >&6; }
-   if test -f ${slurm_PREFIX}/lib/libslurm.so; then
+   if test -f ${slurm_PREFIX}/lib64/libslurm.so; then
       slurm_LIBS='-lslurm'
       { $as_echo "$as_me:$LINENO: result: using $slurm_LIBS" >&5
 $as_echo "using $slurm_LIBS" >&6; }
+      slurm_LIBS="-L${slurm_PREFIX}/lib ${slurm_LIBS}"
+   elif test -f ${slurm_PREFIX}/lib64/libslurm.a; then
+      slurm_LIBS='-lslurm'
+      { $as_echo "$as_me:$LINENO: result: using $slurm_LIBS" >&5
+$as_echo "using $slurm_LIBS" >&6; }
+      slurm_LIBS="-L${slurm_PREFIX}/lib ${slurm_LIBS}"
+   elif test -f ${slurm_PREFIX}/lib/libslurm.so; then
+      slurm_LIBS='-lslurm'
+      { $as_echo "$as_me:$LINENO: result: using $slurm_LIBS" >&5
+$as_echo "using $slurm_LIBS" >&6; }
+      slurm_LIBS="-L${slurm_PREFIX}/lib ${slurm_LIBS}"
    elif test -f ${slurm_PREFIX}/lib/libslurm.a; then
       slurm_LIBS='-lslurm'
       { $as_echo "$as_me:$LINENO: result: using $slurm_LIBS" >&5
@@ -14925,8 +14936,6 @@ $as_echo "using $slurm_LIBS" >&6; }
 $as_echo "$as_me: error: Could not fine slurm library in $slurm_PREFIX" >&2;}
    { (exit 1); exit 1; }; }
    fi
-
-   slurm_LIBS="-L${slurm_PREFIX}/lib ${slurm_LIBS}"
 fi
 
 # END CASC_SUPPORT_SLURM
