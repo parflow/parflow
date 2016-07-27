@@ -14,8 +14,8 @@ namespace import Parflow::*
 
 pfset FileVersion 4
 
-set NP 2
-set NQ 2
+set NP [ lindex $argv 0 ]
+set NQ [ lindex $argv 1 ]
 set NR 1
 set Proc [ expr $NP*$NQ*$NR ]
 set runname terrain.sine
@@ -32,9 +32,9 @@ pfset ComputationalGrid.Lower.X           0.0
 pfset ComputationalGrid.Lower.Y           0.0
 pfset ComputationalGrid.Lower.Z           0.0
 
-set NX          40
-set NY          40
-set NZ          50
+set NX          [expr 50 * $NP]
+set NY          [expr 50 * $NQ]
+set NZ          [expr 40 * $NR]
 
 pfset ComputationalGrid.NX               $NX
 pfset ComputationalGrid.NY               $NY
@@ -57,13 +57,18 @@ pfset use_pforest                               "no"
 # Computational SubGrid dims
 #---------------------------------------------------------
 
-set MX          20
-set MY          20
-set MZ          50
+set MX          50
+set MY          50
+set MZ          40
 
 pfset ComputationalSubgrid.MX                    $MX
 pfset ComputationalSubgrid.MY                    $MY
 pfset ComputationalSubgrid.MZ                    $MZ
+
+#---------------------------------------------------------
+# Set silent output
+#---------------------------------------------------------
+pfset LoggingLevel           0
 
 #---------------------------------------------------------
 # The Names of the GeomInputs
@@ -331,8 +336,9 @@ pfset  Solver.Drop                                       1E-20
 pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaValue                          0.001
 pfset Solver.Nonlinear.UseJacobian                       True
-pfset Solver.Linear.Preconditioner                       PFMGOctree
-#pfset Solver.Linear.Preconditioner.PCMatrixType          FullJacobian
+pfset Solver.Linear.Preconditioner                       PFMG
+pfset Solver.Linear.Preconditioner.PCMatrixType          FullJacobian
+pfset Solver.Nonlinear.PrintFlag			 NoVerbosity
 
 pfset Solver.WriteSiloSubsurfData False
 pfset Solver.WriteSiloMask False
