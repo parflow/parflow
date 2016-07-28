@@ -35,6 +35,9 @@
 #include "parflow.h"
 #include "timing.h"
 
+#ifdef HAVE_P4EST
+#include <sc_statistics.h>
+#endif
 
 #ifdef PF_TIMING
 
@@ -124,7 +127,9 @@ void  PrintTiming()
    double mflops;
 
    int     i;
-
+#ifdef HAVE_P4EST
+   sc_statinfo_t       stats[timing->size];
+#endif
 
    max_invoice = amps_NewInvoice("%d%d", &time_ticks, &cpu_ticks);
 
@@ -191,6 +196,20 @@ void  PrintTiming()
       fclose(file);
    }
 #endif
+
+   if(USE_P4EST){
+#ifdef HAVE_P4EST
+       for (i = 0; i < timing->size; ++i) {
+           time_ticks = (double)((timing->time)[i]) / AMPS_TICKS_PER_SEC;
+           sc_stats_set1 (stats + i,
+                          time_ticks,
+                          (timing->name)[i]);
+         }
+       sc_stats_compute (amps_CommWorld, timing->size, &stats[0]);
+       sc_stats_print (-1, SC_LP_PRODUCTION,
+                       timing->size, &stats[0], 1, 1);
+#endif
+   }
 
    amps_FreeInvoice(max_invoice);
 }
