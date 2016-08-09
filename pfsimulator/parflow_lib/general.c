@@ -45,6 +45,10 @@
 #include <malloc.h>
 #endif
 
+#ifdef HAVE_P4EST
+#include <sc.h>
+#endif
+
 // SGS fixme for C++
 #include <sys/stat.h>
 
@@ -183,6 +187,10 @@ void printMaxMemory(FILE *log_file)
 {
 #ifdef HAVE_MALLINFO
 
+#ifdef HAVE_P4EST
+  int mpiret;
+  int maxmin[2], record_mem[2];
+#endif
 
 
    /*
@@ -193,36 +201,61 @@ void printMaxMemory(FILE *log_file)
 
    recordMemoryInfo();
 
-   amps_Invoice invoice = amps_NewInvoice("%i", &maxmem);
+   if (!USE_P4EST){
+       amps_Invoice invoice = amps_NewInvoice("%i", &maxmem);
 
-   if (amps_Rank(amps_CommWorld) != 0) {
-	 maxmem = (int)amps_ThreadLocal(s_max_memory);
-	 amps_Send(amps_CommWorld, 0, invoice);
-   } else {
+       if (amps_Rank(amps_CommWorld) != 0) {
+           maxmem = (int)amps_ThreadLocal(s_max_memory);
+           amps_Send(amps_CommWorld, 0, invoice);
+       } else {
 
-      int p = 0;
+           int p = 0;
 
-      if(log_file) {
-	 fprintf(log_file, 
-		 "Maximum memory used on processor %d : %d MB\n", 
-		 p, 
-		 (int)amps_ThreadLocal(s_max_memory)/(1024*1024) );
+           if(log_file) {
+               fprintf(log_file,
+                       "Maximum memory used on processor %d : %d MB\n",
+                       p,
+                       (int)amps_ThreadLocal(s_max_memory)/(1024*1024) );
+            }
+
+           for (p = 1; p < amps_Size(amps_CommWorld); p++) {
+               amps_Recv(amps_CommWorld, p, invoice);
+               if(log_file) {
+                   fprintf(log_file,
+                           "Maximum memory used on processor %d : %d MB\n",
+                           p,
+                           maxmem/(1024*1024) );
+               }
+           }
+
+         }
+
+       amps_FreeInvoice(invoice);
       }
-	 
-      for (p = 1; p < amps_Size(amps_CommWorld); p++) {
-	 amps_Recv(amps_CommWorld, p, invoice);
-	 if(log_file) {
-	    fprintf(log_file, 
-		    "Maximum memory used on processor %d : %d MB\n", 
-		    p, 
-		    maxmem/(1024*1024) );
-	 }
-      }
-      
+   else{
+#ifdef HAVE_P4EST
+       /* With p4est we print the maximum and minimum from
+        * the high-water mark recorded on each processor */
+       record_mem[0] = (int)amps_ThreadLocal(s_max_memory);
+       record_mem[1] = record_mem[0] * -1;
+
+       mpiret = sc_MPI_Reduce(&record_mem, &maxmin, 2, sc_MPI_INT,
+                               sc_MPI_MAX, 0, amps_CommWorld);
+       SC_CHECK_MPI (mpiret);
+
+       if(log_file) {
+           fprintf(log_file,
+                   "Maximum memory used by a processor: %d MB\n",
+                   maxmin[0]/(1024*1024) );
+           fprintf(log_file,
+                   "Minimum memory used by a processor: %d MB\n",
+                   maxmin[1]/(-1024*1024) );
+       }
+#else
+       PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
+
    }
-   
-   amps_FreeInvoice(invoice);
-
 #endif
 
    /*
@@ -254,6 +287,7 @@ void printMaxMemory(FILE *log_file)
       }
    }
 #endif
+
 
 }
 
