@@ -67,7 +67,9 @@ main(int argc, char **argv)
      * Solve the problem
      *-----------------------------------------------------------------------*/
     Solve();
-    printf("Problem solved \n");
+    if(!amps_Rank(amps_CommWorld))
+      printf("Problem solved \n");
+
     fflush(NULL);
 
     /*-----------------------------------------------------------------------
@@ -93,8 +95,6 @@ main(int argc, char **argv)
     if(USE_P4EST){
 #ifdef HAVE_P4EST
       sc_finalize();
-#else
-      PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif
     }
 
@@ -104,33 +104,24 @@ main(int argc, char **argv)
     {
        if(!amps_Rank(amps_CommWorld)) {
  	 log_file = OpenLogFile("ParFlow Total Time");
-
-	 fprintf(log_file, "Total Run Time: %f seconds\n\n", 
+         fprintf(log_file, "Total Run Time: %f seconds\n",
 		      (double)wall_clock_time/(double)AMPS_TICKS_PER_SEC);
+	 CloseLogFile(log_file);
+
        }
     }
 
+    log_file = OpenLogFile("ParFlow Memory stats");
     printMaxMemory(log_file);
-
-    IfLogging(0) {
-       fprintf(log_file, "\n");
-
-       if(!amps_Rank(amps_CommWorld))
-       {
- 	  printMemoryInfo(log_file);
- 	  fprintf(log_file, "\n");
-
-	  CloseLogFile(log_file);
-       }
-    }
+    CloseLogFile(log_file);
 
     if(!amps_Rank(amps_CommWorld))
     {
        sprintf(filename, "%s.%s", GlobalsOutFileName, "pftcl");
        file = fopen(filename, "w" );
-      
+
        IDB_PrintUsage(file, amps_ThreadLocal(input_database));
-      
+
        fclose(file);
     }
       
