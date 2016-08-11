@@ -48,8 +48,8 @@ main(int argc, char **argv)
       /*
        * Initialize sc and p{4,8}est library
        */
-      sc_init(amps_CommWorld, 1, 1, NULL, SC_LP_DEFAULT);
-      p4est_init(NULL, SC_LP_DEFAULT);
+      sc_init(amps_CommWorld, 1, 1, NULL, SC_LP_SILENT);
+      p4est_init(NULL, SC_LP_PRODUCTION);
 #else
       PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif
