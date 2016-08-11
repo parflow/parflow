@@ -4008,7 +4008,10 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    }
    public_xtra -> terrain_following_grid = switch_value;
 
-   if (public_xtra -> terrain_following_grid == 1) { printf("TFG true \n");}
+   if (public_xtra -> terrain_following_grid == 1){
+       if(!amps_Rank(amps_CommWorld))
+         printf("TFG true \n");
+   }
 // CPS
  
    sprintf(key, "%s.MaxIter", name);
