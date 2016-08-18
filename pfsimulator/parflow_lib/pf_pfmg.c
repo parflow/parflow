@@ -312,8 +312,10 @@ double       *temp_data)
 	 instance_xtra->dxyz[0] = SubgridDX(subgrid);
 	 instance_xtra->dxyz[1] = SubgridDY(subgrid);
 	 instance_xtra->dxyz[2] = SubgridDZ(subgrid);
-      }		
-      HYPRE_StructGridSetExtents(instance_xtra->hypre_grid, ilo, ihi); 
+
+         HYPRE_StructGridSetExtents(instance_xtra->hypre_grid, ilo, ihi);
+      }
+
       HYPRE_StructGridAssemble(instance_xtra->hypre_grid);
    }
 
