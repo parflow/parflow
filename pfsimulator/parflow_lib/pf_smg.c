@@ -298,8 +298,10 @@ double       *temp_data)
 	 ihi[0] = ilo[0] + SubgridNX(subgrid) - 1;
 	 ihi[1] = ilo[1] + SubgridNY(subgrid) - 1;
 	 ihi[2] = ilo[2] + SubgridNZ(subgrid) - 1;
+
+         HYPRE_StructGridSetExtents(instance_xtra->hypre_grid, ilo, ihi);
       }		
-      HYPRE_StructGridSetExtents(instance_xtra->hypre_grid, ilo, ihi); 
+
       HYPRE_StructGridAssemble(instance_xtra->hypre_grid);
    }
 
