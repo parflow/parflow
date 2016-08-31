@@ -7,27 +7,31 @@
 #include <p4est.h>
 #include <p8est.h>
 #endif
+#include <assert.h>
 
 int
 main(int argc, char **argv)
 {
     size_t fret;
-    int  file_len;
+    int  len, file_len, num_elem, k;
+    char filename[MAXPATHLEN];
     char *file_data, *data_ptr;
-    char *saveptr, *saveptr1 ,*ptr;
+    char *saveptr;
     FILE *file = NULL;
-    int mpiret, rank, count;
-    char key[IDB_MAX_KEY_LEN];
-    char value[IDB_MAX_VALUE_LEN];
-
-    int key_len;
-    int value_len;
+    FILE *log_file = NULL;
+    int mpiret, rank;
+    char *key_len, *key;
+    char *value_len, *value;
+    IDB *db;
+    IDB_Entry *entry;
+    amps_Clock_t wall_clock_time;
 
     if (amps_Init(&argc, &argv)) {
         amps_Printf("Error: amps_Init initalization failed\n");
         exit(1);
     }
 
+    wall_clock_time = amps_Clock();
     rank = amps_Rank(amps_CommWorld);
 
     sc_init(amps_CommWorld, 1, 1, NULL, SC_LP_SILENT);
@@ -44,9 +48,16 @@ main(int argc, char **argv)
 
     NewGlobals(argv[1]);
 
+    /* Initalize the db structure */
+    db = (IDB *)HBT_new(IDB_Compare,
+                        IDB_Free,
+                        IDB_Print,
+                        NULL,
+                        0);
+
     /* Rank 0 opens and reads lenght of the file */
     if (!rank){
-      if ( ( file = fopen(argv[1], "r") )== NULL){
+      if ( ( file = fopen(GlobalsInFileName, "r") )== NULL){
           PARFLOW_ERROR("Failed to open db file");
       }else{
           if ( fseek (file, 0, SEEK_END) )
@@ -82,58 +93,136 @@ main(int argc, char **argv)
     mpiret = sc_MPI_Bcast(file_data, file_len, sc_MPI_CHAR, 0 , amps_CommWorld);
     SC_CHECK_MPI (mpiret);
 
-
-    ptr = data_ptr = strtok_r(file_data, "\n", &saveptr);
-    while (data_ptr){
-        saveptr1 = saveptr;
-        data_ptr = strtok_r(NULL, "\n", &saveptr);
-        printf("%s %p\n", data_ptr, saveptr);
+    if ( (data_ptr = strtok_r(file_data, "\n", &saveptr)) ){
+        /*Get number of elements*/
+        if ( sscanf(data_ptr, "%i", &num_elem ) != 1 ){
+            PARFLOW_ERROR("scanf failed");
+        }
+    }else{
+        PARFLOW_ERROR("strtok_r failed");
     }
 
-#if 0
-    /*Get number of elements*/
-    if ( sscanf(file_data, "%i%n", &num_elem, &offset ) != 1 ){
-        PARFLOW_ERROR("scanf failed");
-    }
+   for (k=0; k<num_elem; ++k){
 
-    /*loop over the file_data to build IDB*/
-    data_ptr = file_data + offset;
-    count = 0;
-
-
-    while ( sscanf(data_ptr, "%i%s%i%s%n", &key_len, key, &value_len, value, &offset ) == 4 ){
-        printf("%i %s %i %s\n", key_len, key, value_len, value);
-        data_ptr += offset;
-        count ++;
-    }
-#endif
-
-#if 0
-    while ( sscanf(data_ptr, "%i%s%n", &key_len, key, &offset ) == 2 ){
-        data_ptr += offset;
-        if (sscanf(data_ptr, "%i%n", &value_len, &offset ) != 1);
-
-        data_ptr += offset;
-        if ( !value_len ){
-            value[0] = '\0';
-            offset += 1;
+        key_len = strtok_r(NULL, "\n", &saveptr);
+        if ( sscanf(key_len, "%i", &len ) == 1 && key_len ){
+          if ( len ){
+              key =  strtok_r(NULL, "\n", &saveptr);
+              assert( len == (int) strlen(key) );
+          }else{
+              key = " ";
+          }
         }else{
-            sscanf(data_ptr, "%s%n", value, &offset );
+            PARFLOW_ERROR("Failed reading key");
         }
 
-        printf("%i %s %i %s\n", key_len, key, value_len, value);
-        data_ptr += offset;
-        count ++;
+        value_len = strtok_r(NULL, "\n", &saveptr);
+        if ( sscanf(value_len, "%i", &len ) == 1 && value_len ){
+          if ( len ){
+              value =  strtok_r(NULL, "\n", &saveptr);
+              assert( len == (int) strlen(value) );
+          }else{
+             value = " ";
+          }
+        }else{
+            PARFLOW_ERROR("Failed reading value");
+        }
+
+        /* Create an new entry */
+        entry = IDB_NewEntry(key, value);
+
+        /* Insert into the height balanced tree */
+        HBT_insert(db, entry, 0);
     }
-#endif
 
     if (file_data){
-        tfree(file_data);
+       tfree(file_data);
     }
 
+    amps_ThreadLocal(input_database) = db;
 
-    FreeGlobals();
+    key = GetStringDefault("use_pforest","no");
+    USE_P4EST = strcmp(key, "yes") == 0 ? TRUE : FALSE;
+
+    if(USE_P4EST){
+#ifdef HAVE_P4EST
+      /*
+       * Initialize sc and p{4,8}est library
+       */
+      p4est_init(NULL, SC_LP_PRODUCTION);
+#else
+      PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
+    }
+
+    NewLogging();
+
+    /*-----------------------------------------------------------------------
+     * Setup timing table
+     *-----------------------------------------------------------------------*/
+
+    NewTiming();
+
+    /*-----------------------------------------------------------------------
+     * Solve the problem
+     *-----------------------------------------------------------------------*/
+    Solve();
+    if(!amps_Rank(amps_CommWorld))
+      printf("Problem solved \n");
+
+    fflush(NULL);
+
+    /*-----------------------------------------------------------------------
+     * Log global information
+     *-----------------------------------------------------------------------*/
+
+    LogGlobals();
+
+    /*-----------------------------------------------------------------------
+     * Print timing results
+     *-----------------------------------------------------------------------*/
+
+    PrintTiming();
+
+    /*-----------------------------------------------------------------------
+     * Clean up
+     *-----------------------------------------------------------------------*/
+
+    FreeLogging();
+
+    FreeTiming();
+
     sc_finalize();
+
+    wall_clock_time = amps_Clock() - wall_clock_time;
+
+    IfLogging(0)
+    {
+       if(!amps_Rank(amps_CommWorld)) {
+         log_file = OpenLogFile("ParFlow Total Time");
+         fprintf(log_file, "Total Run Time: %f seconds\n",
+                      (double)wall_clock_time/(double)AMPS_TICKS_PER_SEC);
+         CloseLogFile(log_file);
+
+       }
+    }
+
+    log_file = OpenLogFile("ParFlow Memory stats");
+    printMaxMemory(log_file);
+    CloseLogFile(log_file);
+
+    if(!amps_Rank(amps_CommWorld))
+    {
+       sprintf(filename, "%s.%s", GlobalsOutFileName, "pftcl");
+       file = fopen(filename, "w" );
+
+       IDB_PrintUsage(file, amps_ThreadLocal(input_database));
+
+       fclose(file);
+    }
+
+    IDB_FreeDB(amps_ThreadLocal(input_database));
+    FreeGlobals();
     amps_Finalize();
 
     return 0;
