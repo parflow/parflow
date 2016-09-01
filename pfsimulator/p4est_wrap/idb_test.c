@@ -6,6 +6,8 @@
 #include "parflow_p4est.h"
 #include <p4est.h>
 #include <p8est.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #endif
 #include <assert.h>
 
@@ -63,19 +65,20 @@ main(int argc, char **argv)
     file = NULL;
     file_len = 0;
     if (!rank){
+      int fd;
+      struct stat statbuf;
+
       if ( ( file = fopen(GlobalsInFileName, "rb") )== NULL)
         PARFLOW_ERROR("Failed to open db file");
       
-      if ( fseek (file, 0, SEEK_END) )
-        PARFLOW_ERROR("fseek failed");
+      if ((fd = fileno (file)) < 0)
+        PARFLOW_ERROR("Failed to get file number of db file");
 
-      file_len = (int) ftell (file);
+      if (fstat (fd, &statbuf))
+        PARFLOW_ERROR("Failed to fstat db file");
 
-      if (file_len < 0)
-        PARFLOW_ERROR("ftell failed");
-
-      if ( fseek (file, 0, SEEK_SET) )
-        PARFLOW_ERROR("fseek failed");
+      if ((file_len = (int) statbuf.st_size) < 0)
+        PARFLOW_ERROR("fstat file size negative");
 
       printf ("Opened configuration file %s length %d\n",
               GlobalsInFileName, file_len);
@@ -91,7 +94,7 @@ main(int argc, char **argv)
     /* Rank 0 copies content of db to string */
     if(!rank){
       fret = fread(file_data, sizeof(char), (size_t) file_len, file);
-      if ( fret < (size_t)file_len )
+      if ( fret < (size_t) file_len )
         PARFLOW_ERROR("fread failed");
 
       /* make sure the input data is null-terminated */
