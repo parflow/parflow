@@ -8,13 +8,7 @@ default: all
 
 include $(OBJECT)/config/Makefile.config
 
-FILES = \
-        test_grid.c
-
-OUT = $(FILES:.c=) 	 
-
-OBJS = \
-        test_grid.o
+OBJS =
 
 ifeq ($(PARFLOW_HAVE_P4EST), yes)
 OBJS += parflow_p4est_math.o \
@@ -26,10 +20,6 @@ $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB): $(OBJS)
         
 all: $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB)
         
-build: $(OBJS)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
-	-o $(OUT) $(OBJS) $(PARFLOW_LIBS) $(LDLIBS)
-	
 clean: 
 	$(PARFLOW_CLEAN) 
 	@$(RM) $(OUT)
