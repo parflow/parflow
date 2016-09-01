@@ -47,9 +47,12 @@
 #define PFBTimingIndex  5
 #define CLMTimingIndex  6
 #define PFSOLReadTimingIndex  7
-#define P4ESTimingIndex  8
+#define IDBReadTimingIndex  8
+#ifdef HAVE_P4EST
+#define P4ESTimingIndex  9
+#endif
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  9
+#define VectorUpdateTimingIndex  10
 #endif
 
 #if defined(PF_TIMING)

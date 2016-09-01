@@ -61,11 +61,12 @@ void  NewTiming()
    RegisterTiming("PFB I/O");
    RegisterTiming("CLM");
    RegisterTiming("PFSOL Read");
-#ifdef VECTOR_UPDATE_TIMING
-   RegisterTiming("VectorUpdate");
-#endif
+   RegisterTiming("IDB Read");
 #ifdef HAVE_P4EST
    RegisterTiming("P4EST");
+#endif
+#ifdef VECTOR_UPDATE_TIMING
+   RegisterTiming("VectorUpdate");
 #endif
 }
 
