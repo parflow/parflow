@@ -13,11 +13,15 @@ int
 main(int argc, char **argv)
 {
     size_t fret;
-    int  len, file_len, num_elem, k;
+    int file_len;
+    unsigned len, num_elem, uk;
+#ifdef SC_ENABLE_DEBUG
+    unsigned klen;
+#endif
     char filename[MAXPATHLEN];
     char *file_data, *data_ptr;
     char *saveptr;
-    FILE *file = NULL;
+    FILE *file;
     FILE *log_file = NULL;
     int mpiret, rank;
     char *key_len, *key;
@@ -55,89 +59,116 @@ main(int argc, char **argv)
                         NULL,
                         0);
 
-    /* Rank 0 opens and reads lenght of the file */
+    /* Rank 0 opens and reads length of the file */
+    file = NULL;
+    file_len = 0;
     if (!rank){
-      if ( ( file = fopen(GlobalsInFileName, "r") )== NULL){
-          PARFLOW_ERROR("Failed to open db file");
-      }else{
-          if ( fseek (file, 0, SEEK_END) )
-            PARFLOW_ERROR("fseek failed");
+      if ( ( file = fopen(GlobalsInFileName, "rb") )== NULL)
+        PARFLOW_ERROR("Failed to open db file");
+      
+      if ( fseek (file, 0, SEEK_END) )
+        PARFLOW_ERROR("fseek failed");
 
-          file_len = (int) ftell (file);
+      file_len = (int) ftell (file);
 
-          if (file_len < 0)
-            PARFLOW_ERROR("ftell failed");
+      if (file_len < 0)
+        PARFLOW_ERROR("ftell failed");
 
-          if ( fseek (file, 0, SEEK_SET) )
-            PARFLOW_ERROR("fseek failed");
-      }
+      if ( fseek (file, 0, SEEK_SET) )
+        PARFLOW_ERROR("fseek failed");
+
+      printf ("Opened configuration file %s length %d\n",
+              GlobalsInFileName, file_len);
     }
 
-    /*Send lenght of file to all cpus and allocate space for its data */
+    /* Send length of file to all cpus and allocate space for its data */
     mpiret = sc_MPI_Bcast(&file_len, 1, sc_MPI_INT, 0 , amps_CommWorld);
     SC_CHECK_MPI (mpiret);
 
-    file_data = talloc(char, file_len);
+    SC_ASSERT (file_len >= 0);
+    file_data = talloc(char, file_len + 1);
 
-    /*Rank 0 copies content of db to string */
+    /* Rank 0 copies content of db to string */
     if(!rank){
       fret = fread(file_data, sizeof(char), (size_t) file_len, file);
       if ( fret < (size_t)file_len )
         PARFLOW_ERROR("fread failed");
+
+      /* make sure the input data is null-terminated */
+      file_data[file_len] = '\0';
+
+      SC_ASSERT (file != NULL);
+      if ( fclose(file) )
+        PARFLOW_ERROR("fclose failed");
+
+      file = NULL;
     }
+    SC_ASSERT (file == NULL);
 
-    if(file)
-      fclose(file);
-
-    /*Make information on file available to all cpus*/
-    mpiret = sc_MPI_Bcast(file_data, file_len, sc_MPI_CHAR, 0 , amps_CommWorld);
+    /* Make information on file available to all cpus */
+    mpiret = sc_MPI_Bcast(file_data, file_len + 1, sc_MPI_BYTE,
+                          0, amps_CommWorld);
     SC_CHECK_MPI (mpiret);
 
-    if ( (data_ptr = strtok_r(file_data, "\n", &saveptr)) ){
-        /*Get number of elements*/
-        if ( sscanf(data_ptr, "%i", &num_elem ) != 1 ){
-            PARFLOW_ERROR("scanf failed");
-        }
-    }else{
-        PARFLOW_ERROR("strtok_r failed");
+    /* Get number of elements */
+    saveptr = NULL;
+    if ( (data_ptr = strtok_r(file_data, "\n\r", &saveptr)) == NULL ){
+        PARFLOW_ERROR("strtok_r failed on number of entries");
+    }
+    if ( sscanf(data_ptr, "%u", &num_elem ) != 1 ) {
+        PARFLOW_ERROR("scanf failed on number of entries");
     }
 
-   for (k=0; k<num_elem; ++k){
+   for ( uk = 0; uk < num_elem; ++uk ) {
 
-        key_len = strtok_r(NULL, "\n", &saveptr);
-        if ( sscanf(key_len, "%i", &len ) == 1 && key_len ){
-          if ( len ){
-              key =  strtok_r(NULL, "\n", &saveptr);
-              assert( len == (int) strlen(key) );
-          }else{
-              key = " ";
-          }
-        }else{
+        /* read length of key on this line */
+        key_len = strtok_r(NULL, "\n\r", &saveptr);
+        if ( key_len == NULL || 
+             sscanf (key_len, "%u", &len ) != 1 ||
+             len == 0 ){
+            PARFLOW_ERROR("Failed reading key length");
+        }
+#ifdef SC_ENABLE_DEBUG
+        klen = len;
+#endif
+
+        /* this line contains just the key */
+        key = strtok_r(NULL, "\n\r", &saveptr);
+        if ( key == NULL ||
+             strlen (key) != (size_t) len ) {
             PARFLOW_ERROR("Failed reading key");
         }
 
-        value_len = strtok_r(NULL, "\n", &saveptr);
-        if ( sscanf(value_len, "%i", &len ) == 1 && value_len ){
-          if ( len ){
-              value =  strtok_r(NULL, "\n", &saveptr);
-              assert( len == (int) strlen(value) );
-          }else{
-             value = " ";
-          }
-        }else{
-            PARFLOW_ERROR("Failed reading value");
+        /* read length of value on this line */
+        value_len = strtok_r(NULL, "\n\r", &saveptr);
+        if ( value_len == NULL || 
+             sscanf (value_len, "%u", &len ) != 1 ) {
+            PARFLOW_ERROR("Failed reading value length");
+        }
+
+        /* the length may be zero, in which case strtok_r sees no line */
+        if (len == 0) {
+            value = "";
+        }
+        else {
+            /* this line contains a non-empty value */
+            value = strtok_r(NULL, "\n\r", &saveptr);
+            if ( value == NULL ||
+                 strlen (value) != (size_t) len ) {
+                PARFLOW_ERROR("Failed reading value");
+            }
         }
 
         /* Create an new entry */
+        SC_ASSERT (strlen (key) == klen);
         entry = IDB_NewEntry(key, value);
 
         /* Insert into the height balanced tree */
         HBT_insert(db, entry, 0);
     }
 
-    if (file_data){
-       tfree(file_data);
-    }
+    SC_ASSERT (file_data != NULL);
+    tfree (file_data);
 
     amps_ThreadLocal(input_database) = db;
 
