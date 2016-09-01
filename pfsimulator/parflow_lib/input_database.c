@@ -30,6 +30,12 @@
 
 #include <string.h>
 
+#ifdef HAVE_P4EST
+#include <sc.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#endif
+
 /**
 Prints out a database entry.  If it was not used during the
 it is flagged as being unused.
@@ -121,11 +127,13 @@ A return of NULL indicates and error occured while reading the database.
 */
 IDB *IDB_NewDB(char *filename)
 {
+
+  IDB *db;
+  IDB_Entry *entry;
+
+#ifndef HAVE_P4EST
    int  num_entries;
    amps_Invoice invoice;
-
-   IDB *db;
-   IDB_Entry *entry;
    
    char key[IDB_MAX_KEY_LEN];
    char value[IDB_MAX_VALUE_LEN];
@@ -175,6 +183,142 @@ IDB *IDB_NewDB(char *filename)
    amps_FreeInvoice(invoice);
 
    amps_SFclose(file);
+
+#else
+   size_t fret;
+   int file_len;
+   unsigned len, num_elem, uk;
+#ifdef SC_ENABLE_DEBUG
+   unsigned klen;
+#endif
+   char *file_data, *data_ptr;
+   char *saveptr;
+   char *key_len, *key;
+   char *value_len, *value;
+   FILE *file;
+   int mpiret, rank;
+
+   rank = amps_Rank(amps_CommWorld);
+
+   /* Initalize the db structure */
+   db = (IDB *)HBT_new(IDB_Compare,
+                      IDB_Free,
+                      IDB_Print,
+                      NULL,
+                      0);
+
+   /* Rank 0 opens and reads length of the file */
+   file = NULL;
+   file_len = 0;
+   if (!rank){
+     int fd;
+     struct stat statbuf;
+
+     if ( ( file = fopen(filename, "rb") )== NULL)
+       PARFLOW_ERROR("Failed to open db file");
+
+     if ((fd = fileno (file)) < 0)
+       PARFLOW_ERROR("Failed to get file number of db file");
+
+     if (fstat (fd, &statbuf))
+       PARFLOW_ERROR("Failed to fstat db file");
+
+     if ((file_len = (int) statbuf.st_size) < 0)
+       PARFLOW_ERROR("fstat file size negative");
+
+     printf ("Opened configuration file %s length %d\n",
+             filename, file_len);
+   }
+
+   /* Send length of file to all cpus and allocate space for its data */
+   mpiret = sc_MPI_Bcast(&file_len, 1, sc_MPI_INT, 0 , amps_CommWorld);
+   SC_CHECK_MPI (mpiret);
+
+   SC_ASSERT (file_len >= 0);
+   file_data = talloc(char, file_len + 1);
+
+   /* Rank 0 copies content of db to string */
+   if(!rank){
+     fret = fread(file_data, sizeof(char), (size_t) file_len, file);
+     if ( fret < (size_t) file_len )
+       PARFLOW_ERROR("fread failed");
+
+     /* make sure the input data is null-terminated */
+     file_data[file_len] = '\0';
+
+     SC_ASSERT (file != NULL);
+     if ( fclose(file) )
+       PARFLOW_ERROR("fclose failed");
+
+     file = NULL;
+   }
+   SC_ASSERT (file == NULL);
+
+   /* Make information on file available to all cpus */
+   mpiret = sc_MPI_Bcast(file_data, file_len + 1, sc_MPI_BYTE,
+                         0, amps_CommWorld);
+   SC_CHECK_MPI (mpiret);
+
+   /* Get number of elements */
+   saveptr = NULL;
+   if ( (data_ptr = strtok_r(file_data, "\n\r", &saveptr)) == NULL ){
+       PARFLOW_ERROR("strtok_r failed on number of entries");
+   }
+   if ( sscanf(data_ptr, " %u", &num_elem ) != 1 ) {
+       PARFLOW_ERROR("scanf failed on number of entries");
+   }
+
+  for ( uk = 0; uk < num_elem; ++uk ) {
+
+       /* read length of key on this line */
+       key_len = strtok_r(NULL, "\n\r", &saveptr);
+       if ( key_len == NULL ||
+            sscanf (key_len, " %u", &len ) != 1 ||
+            len == 0 ){
+           PARFLOW_ERROR("Failed reading key length");
+       }
+#ifdef SC_ENABLE_DEBUG
+       klen = len;
+#endif
+
+       /* this line contains just the key */
+       key = strtok_r(NULL, "\n\r", &saveptr);
+       if ( key == NULL ||
+            strlen (key) != (size_t) len ) {
+           PARFLOW_ERROR("Failed reading key");
+       }
+
+       /* read length of value on this line */
+       value_len = strtok_r(NULL, "\n\r", &saveptr);
+       if ( value_len == NULL ||
+            sscanf (value_len, " %u", &len ) != 1 ) {
+           PARFLOW_ERROR("Failed reading value length");
+       }
+
+       /* the length may be zero, in which case strtok_r sees no line */
+       if (len == 0) {
+           value = "";
+       }
+       else {
+           /* this line contains a non-empty value */
+           value = strtok_r(NULL, "\n\r", &saveptr);
+           if ( value == NULL ||
+               strlen (value) != (size_t) len ) {
+               PARFLOW_ERROR("Failed reading value");
+           }
+       }
+
+       /* Create an new entry */
+       SC_ASSERT (strlen (key) == klen);
+       entry = IDB_NewEntry(key, value);
+
+       /* Insert into the height balanced tree */
+       HBT_insert(db, entry, 0);
+   }
+
+   SC_ASSERT (file_data != NULL);
+   tfree (file_data);
+#endif
 
    return db;
 }
