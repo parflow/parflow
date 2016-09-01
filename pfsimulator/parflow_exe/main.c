@@ -61,6 +61,12 @@ using namespace SAMRAI;
 
 #include <string.h>
 
+#ifdef HAVE_P4EST
+#include "../p4est_wrap/parflow_p4est.h"
+#include <p4est.h>
+#include <p8est.h>
+#endif
+
 int main (int argc , char *argv [])
 {
    FILE *file = NULL;
@@ -68,7 +74,11 @@ int main (int argc , char *argv [])
    FILE *log_file = NULL;
    
    amps_Clock_t wall_clock_time;
-   
+
+#ifdef HAVE_P4EST
+   char *key_val;
+#endif
+
    /*-----------------------------------------------------------------------
     * Initialize tbox::MPI and SAMRAI, enable logging, and process
     * command line.
@@ -108,6 +118,13 @@ int main (int argc , char *argv [])
       cegdb(&argc, &argv, amps_Rank(MPI_CommWorld));
 #endif
       
+#ifdef HAVE_P4EST
+    /* Initialize sc a library */
+    sc_init(amps_CommWorld, 1, 1, NULL, SC_LP_SILENT);
+#else
+    PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
+
       wall_clock_time = amps_Clock();
       
       /*-----------------------------------------------------------------------
@@ -233,6 +250,15 @@ int main (int argc , char *argv [])
        *-----------------------------------------------------------------------*/
 
       amps_ThreadLocal(input_database) = IDB_NewDB(GlobalsInFileName);
+      key_val = GetStringDefault("use_pforest","no");
+      USE_P4EST = strcmp(key_val, "yes") == 0 ? TRUE : FALSE;
+
+      if(USE_P4EST){
+  #ifdef HAVE_P4EST
+        /* Initialize p4est library */
+        p4est_init(NULL, SC_LP_PRODUCTION);
+  #endif
+      }
 
       /*-----------------------------------------------------------------------
        * Setup log printing
@@ -250,7 +276,9 @@ int main (int argc , char *argv [])
        * Solve the problem
        *-----------------------------------------------------------------------*/
       Solve();
-      printf("Problem solved \n");
+      if(!amps_Rank(amps_CommWorld)){
+        printf("Problem solved \n");
+      }
       fflush(NULL);
 
       /*-----------------------------------------------------------------------
@@ -319,6 +347,10 @@ int main (int argc , char *argv [])
       IDB_FreeDB(amps_ThreadLocal(input_database));
 
       FreeGlobals();
+
+#ifdef HAVE_P4EST
+      sc_finalize();
+#endif
 
       /*-----------------------------------------------------------------------
        * Shutdown AMPS
