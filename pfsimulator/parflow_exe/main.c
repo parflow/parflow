@@ -119,10 +119,8 @@ int main (int argc , char *argv [])
 #endif
       
 #ifdef HAVE_P4EST
-    /* Initialize sc a library */
+    /* Initialize sc library */
     sc_init(amps_CommWorld, 1, 1, NULL, SC_LP_SILENT);
-#else
-    PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif
 
       wall_clock_time = amps_Clock();
@@ -254,10 +252,12 @@ int main (int argc , char *argv [])
       USE_P4EST = strcmp(key_val, "yes") == 0 ? TRUE : FALSE;
 
       if(USE_P4EST){
-  #ifdef HAVE_P4EST
+#ifdef HAVE_P4EST
         /* Initialize p4est library */
         p4est_init(NULL, SC_LP_PRODUCTION);
-  #endif
+#else
+    PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
       }
 
       /*-----------------------------------------------------------------------
