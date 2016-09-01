@@ -266,12 +266,12 @@ CommPkg         *NewCommPkg(
 
          if ( USE_P4EST ){
 #ifdef HAVE_P4EST
-             BeginTiming(P4ESTimingIndex);
+             BeginTiming(P4ESTSetupTimingIndex);
              loc_idx = s_idx;
              recv_sr = SubregionArraySubregion(recv_sra, j);
              tag = ComputeTag(loc_idx, send_sr, recv_sr);
              amps_SetInvoiceTag( invoice,  tag);
-             EndTiming(P4ESTimingIndex);
+             EndTiming(P4ESTSetupTimingIndex);
 #else
              PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif
@@ -312,12 +312,12 @@ CommPkg         *NewCommPkg(
 
          if ( USE_P4EST ){
 #ifdef HAVE_P4EST
-             BeginTiming(P4ESTimingIndex);
+             BeginTiming(P4ESTSetupTimingIndex);
              loc_idx = SubregionLocIdx(recv_sr);
              send_sr = SubregionArraySubregion(send_sra, j);
              tag = ComputeTag(loc_idx, recv_sr, send_sr);
              amps_SetInvoiceTag( invoice, tag );
-             EndTiming(P4ESTimingIndex);
+             EndTiming(P4ESTSetupTimingIndex);
 #else
              PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif

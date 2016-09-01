@@ -49,10 +49,12 @@
 #define PFSOLReadTimingIndex  7
 #define IDBReadTimingIndex  8
 #ifdef HAVE_P4EST
-#define P4ESTimingIndex  9
+#define P4ESTSetupTimingIndex  9
+#define P4ESTSolveTimingIndex  10
+#define P4ESTCleanupTimingIndex  11
 #endif
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  10
+#define VectorUpdateTimingIndex  12
 #endif
 
 #if defined(PF_TIMING)

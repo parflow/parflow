@@ -102,6 +102,8 @@ double         **CalcElevations_with_p4est(
     * Also set some other miscellaneous values.
     *-----------------------------------------------------*/
 
+   BeginTiming(P4ESTSolveTimingIndex);
+
    zlower = BackgroundZLower(bg);
    zupper = BackgroundZUpper(bg);
    extent_array = GrGeomCreateExtentArray(subgrids, 0, 0, 0, 0, -1, -1);
@@ -282,6 +284,8 @@ double         **CalcElevations_with_p4est(
    sc_list_destroy (send_buffer);
 
    GrGeomFreeSolid(grgeom_solid);
+
+   EndTiming(P4ESTSolveTimingIndex);
 
    return elevation_arrays;
 }

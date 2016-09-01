@@ -463,7 +463,7 @@ Stencil  *stencil)
               * subgrid in the owner rank. */
              if (USE_P4EST && do_indx_union){
 #ifdef HAVE_P4EST
-                 BeginTiming(P4ESTimingIndex);
+                 BeginTiming(P4ESTSetupTimingIndex);
 
                  loc_idx_array = talloc(int, SubgridArraySize(neighbors));
 
@@ -518,7 +518,7 @@ Stencil  *stencil)
 
                  tfree(loc_idx_array);
 
-                 EndTiming(P4ESTimingIndex);
+                 EndTiming(P4ESTSetupTimingIndex);
 #endif
                }else{
 

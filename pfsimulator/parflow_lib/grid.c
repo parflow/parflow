@@ -109,7 +109,7 @@ Grid  *NewGrid(
 
 #ifdef HAVE_P4EST
    if (USE_P4EST){
-       BeginTiming(P4ESTimingIndex);
+       BeginTiming(P4ESTSetupTimingIndex);
 
        /* get size */
        invoice = amps_NewInvoice("%i", &size);
@@ -123,7 +123,7 @@ Grid  *NewGrid(
        ix *= -1, iy *= -1, iz *= -1;
        amps_FreeInvoice(invoice);
 
-       EndTiming(P4ESTimingIndex);
+       EndTiming(P4ESTSetupTimingIndex);
    }
 #endif
 
@@ -163,7 +163,7 @@ void  FreeGrid(
         if (GridComputePkgs(grid))
             FreeComputePkgs(grid);
 #ifdef HAVE_P4EST
-        BeginTiming(P4ESTimingIndex);
+        BeginTiming(P4ESTCleanupTimingIndex);
         if(grid->pfgrid != NULL){
             /* destroy pfgrid structure */
             parflow_p4est_grid_destroy (grid->pfgrid);
@@ -172,7 +172,7 @@ void  FreeGrid(
           /* Destroy z level array */
           P4EST_FREE (grid->z_levels);
         }
-        EndTiming(P4ESTimingIndex);
+        EndTiming(P4ESTCleanupTimingIndex);
 #endif
         tfree(grid);
     }

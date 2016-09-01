@@ -187,9 +187,7 @@ BCStruct    *BCPressure(
 		   instance_xtra -> elevations[ipatch] = CalcElevations(ref_solid, ref_patch, subgrids,problem_data);
 		 }else{
 #ifdef HAVE_P4EST
-                   BeginTiming(P4ESTimingIndex);
                    instance_xtra -> elevations[ipatch] = CalcElevations_with_p4est(ref_solid, ref_patch, subgrids,problem_data);
-                   EndTiming(P4ESTimingIndex);
 #else
                    PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif
