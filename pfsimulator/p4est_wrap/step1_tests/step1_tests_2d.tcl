@@ -150,8 +150,8 @@ for {set i 1} {$i < 6} {incr i} {
 	#run each example
 	puts "Running TEST $i"
 	cd  output_2d_test${i}/
-        exec mpirun -np $np_arr($i) ../../test_grid test_brick_2d
-        exec mpirun -np $np_arr($i) ../../test_grid test_brick_2d_with_p4est
+        exec mpirun -np $np_arr($i) parflow test_brick_2d
+        exec mpirun -np $np_arr($i) parflow test_brick_2d_with_p4est
 
 	#Colapse paralell output in single files
 	pfundist test_brick_2d
