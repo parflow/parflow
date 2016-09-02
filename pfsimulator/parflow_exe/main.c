@@ -75,9 +75,7 @@ int main (int argc , char *argv [])
    
    amps_Clock_t wall_clock_time;
 
-#ifdef HAVE_P4EST
    char *key_val;
-#endif
 
    /*-----------------------------------------------------------------------
     * Initialize tbox::MPI and SAMRAI, enable logging, and process
