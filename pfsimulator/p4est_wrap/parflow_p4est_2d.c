@@ -72,6 +72,8 @@ parflow_p4est_grid_2d_new(int Px, int Py
     pfg->Tz = tz / g;
 #endif
 
+     BeginTiming(P4ESTimingIndex);
+
     /*
      * Create connectivity structure
      */
@@ -92,6 +94,9 @@ parflow_p4est_grid_2d_new(int Px, int Py
      * allocate ghost storage 
      */
     pfg->ghost = p4est_ghost_new(pfg->forest, P4EST_CONNECT_FACE);
+
+    EndTiming(P4ESTimingIndex);
+
     pfg->ghost_data = sc_array_new_size(sizeof(parflow_p4est_ghost_data_t),
                                         pfg->ghost->ghosts.elem_count);
 
@@ -143,8 +148,10 @@ parflow_p4est_grid_2d_destroy(parflow_p4est_grid_2d_t * pfg)
 void
 parflow_p4est_grid_2d_mesh_init(parflow_p4est_grid_2d_t * pfgrid)
 {
+    BeginTiming(P4ESTimingIndex);
     pfgrid->mesh = p4est_mesh_new (pfgrid->forest, pfgrid->ghost,
                                    P4EST_CONNECT_FACE );
+    EndTiming(P4ESTimingIndex);
 }
 
 void

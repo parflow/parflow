@@ -64,8 +64,9 @@ void  NewTiming()
    RegisterTiming("IDB Read");
 #ifdef HAVE_P4EST
    RegisterTiming("P4EST_Setup");
-   RegisterTiming("P4EST_Solve");
-   RegisterTiming("P4EST_Cleanup");
+   RegisterTiming("PF_P4EST_Setup");
+   RegisterTiming("PF_P4EST_Solve");
+   RegisterTiming("PF_P4EST_Cleanup");
 #endif
 #ifdef VECTOR_UPDATE_TIMING
    RegisterTiming("VectorUpdate");
