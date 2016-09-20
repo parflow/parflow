@@ -62,7 +62,7 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
 
    int            i, j, k, ai;
    double         *data;
-    double         mult, z_coord;  //@RMM dz scale info
+   double         mult, z_coord;  //@RMM dz scale info
 
    int            err;
 
@@ -73,6 +73,10 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
    int dims[3];
 
    int p =  amps_Rank(amps_CommWorld);
+
+#ifdef HAVE_P4EST
+   int loc_idx = SubgridLocIdx(subgrid);
+#endif
 
    dims[0] = nx+1;
    dims[1] = ny+1;
@@ -118,7 +122,13 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
            coords[2][k] =    SubgridZ(subgrid) + SubgridDZ(subgrid) * ((float)k - 0.5);
    }  
 
-   sprintf(meshname, "%s_%06u", "mesh", p);
+   if (!USE_P4EST){
+       sprintf(meshname, "%s_%06u", "mesh", p);
+   }else{
+#ifdef HAVE_P4EST
+       sprintf(meshname, "%s_%06u_%06u", "mesh", p, loc_idx);
+#endif
+   }
 
    err = DBPutQuadmesh(db_file, meshname, NULL, coords, dims,
                        3, DB_FLOAT, DB_COLLINEAR, NULL);
@@ -149,7 +159,14 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
    dims[1] = ny;
    dims[2] = nz;
 
-   sprintf(varname, "%s_%06u", variable_name, p);
+   if (!USE_P4EST){
+       sprintf(varname, "%s_%06u", variable_name, p);
+   }else{
+#ifdef HAVE_P4EST
+       sprintf(varname, "%s_%06u_%06u", variable_name, p, loc_idx);
+#endif
+   }
+
    err = DBPutQuadvar1(db_file, varname, meshname, 
                        (float*)array, dims, 3,
                        NULL, 0, DB_DOUBLE, 
