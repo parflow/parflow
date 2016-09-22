@@ -97,7 +97,7 @@ parflow_p4est_grid_2d_new(int Px, int Py
 
     EndTiming(P4ESTimingIndex);
 
-    pfg->ghost_data = sc_array_new_size(sizeof(parflow_p4est_ghost_data_t),
+    pfg->ghost_data = sc_array_new_count(sizeof(parflow_p4est_ghost_data_t),
                                         pfg->ghost->ghosts.elem_count);
 
     // p4est_vtk_write_file (pfg->forest, NULL, P4EST_STRING "_pfbrick");
