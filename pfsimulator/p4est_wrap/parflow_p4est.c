@@ -333,3 +333,20 @@ parflow_p4est_get_projection_info (Subgrid *subgrid, int z_level,
                                             pfgrid->p.p8, info);
   }
 }
+
+void
+parflow_p4est_nquads_per_rank(parflow_p4est_grid_t *pfgrid,
+                              int *quads_per_rank)
+{
+  int             dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
+
+  if (dim == 2) {
+      parflow_p4est_nquads_per_rank_2d (pfgrid->p.p4,
+                                        quads_per_rank);
+  }else{
+      P4EST_ASSERT(dim == 3);
+      parflow_p4est_nquads_per_rank_3d (pfgrid->p.p8,
+                                        quads_per_rank);
+  }
+
+}

@@ -43,6 +43,10 @@
 // SGS FIXME for C++
 #include <sys/stat.h>
 
+#ifdef HAVE_P4EST
+#include "parflow_p4est_dependences.h"
+#endif
+
 amps_ThreadLocalDcl(int , s_parflow_silo_filetype);
 
 #ifdef HAVE_SILO
@@ -73,10 +77,7 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
    int dims[3];
 
    int p =  amps_Rank(amps_CommWorld);
-
-#ifdef HAVE_P4EST
    int loc_idx = SubgridLocIdx(subgrid);
-#endif
 
    dims[0] = nx+1;
    dims[1] = ny+1;
@@ -122,13 +123,9 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
            coords[2][k] =    SubgridZ(subgrid) + SubgridDZ(subgrid) * ((float)k - 0.5);
    }  
 
-   if (!USE_P4EST){
-       sprintf(meshname, "%s_%06u", "mesh", p);
-   }else{
-#ifdef HAVE_P4EST
-       sprintf(meshname, "%s_%06u_%06u", "mesh", p, loc_idx);
-#endif
-   }
+
+   sprintf(meshname, "%s_%06u_%06u", "mesh", p, loc_idx);
+
 
    err = DBPutQuadmesh(db_file, meshname, NULL, coords, dims,
                        3, DB_FLOAT, DB_COLLINEAR, NULL);
@@ -159,13 +156,7 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
    dims[1] = ny;
    dims[2] = nz;
 
-   if (!USE_P4EST){
-       sprintf(varname, "%s_%06u", variable_name, p);
-   }else{
-#ifdef HAVE_P4EST
-       sprintf(varname, "%s_%06u_%06u", variable_name, p, loc_idx);
-#endif
-   }
+   sprintf(varname, "%s_%06u_%06u", variable_name, p, loc_idx);
 
    err = DBPutQuadvar1(db_file, varname, meshname, 
                        (float*)array, dims, 3,
@@ -329,28 +320,43 @@ void     WriteSilo(char    *file_prefix,
    Subgrid        *subgrid;
    Subvector      *subvector;
 
-   int             g;
+   int             g, idx, k, K;
+   int             mpisize;
    int             p, P;
+   int             err;
 
    char            file_extn[7] = "silo";
    char            filename[512];
-
-   int err;
+   char            *name;
 
 #ifdef HAVE_SILO
    DBfile *db_file;
+#endif
+
+#ifdef HAVE_P4EST
+   int  mpiret;
+   int  num_names = 0;
+   int *quads_per_rank;
 #endif
 
    BeginTiming(PFBTimingIndex);
 
 #ifdef HAVE_SILO
 
-
    p = amps_Rank(amps_CommWorld);
-   P = amps_Size(amps_CommWorld);
+   mpisize = amps_Size(amps_CommWorld);
+
+   if (USE_P4EST){
+#ifdef HAVE_P4EST
+       quads_per_rank = P4EST_ALLOC(int, mpisize);
+       parflow_p4est_nquads_per_rank(grid->pfgrid, quads_per_rank);
+#else
+       PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
+   }
+
    if ( p == 0 )
    {
-
       int i;
       char **meshnames;
       int   *meshtypes;
@@ -360,35 +366,65 @@ void     WriteSilo(char    *file_prefix,
 
       DBoptlist *optlist;
 
+      if (!USE_P4EST){
+          P = mpisize;
+          K = 1;
+      }else{
+#ifdef HAVE_P4EST
+          P = 0;
+          for(i = 0; i < mpisize; i++)
+            P += quads_per_rank[i];
+#endif
+      }
+
       meshnames = ctalloc(char *, P);
       meshtypes = ctalloc(int, P);
 
       varnames = ctalloc(char *, P);
       vartypes = ctalloc(int, P);
-      
-      for(i = 0; i < P; i++) {
-	 char *name = ctalloc(char, 2048);
-	 if(strlen(file_suffix)) {
-	    sprintf(name, "%s/%s/%06u/data.%s.%s:mesh_%06u", file_prefix, file_type, i, file_suffix, file_extn, i);
-	 } else {
-	    sprintf(name, "%s/%s/%06u/data.%s:mesh_%06u", file_prefix, file_type, i, file_extn, i);
-	 }
-	 meshnames[i] = name;
-	 meshtypes[i] = DB_QUADMESH;
 
-	 name = ctalloc(char, 2048);
-	 if(strlen(file_suffix)) {
-	    sprintf(name, "%s/%s/%06u/data.%s.%s:%s_%06u", file_prefix, file_type, i, file_suffix, file_extn, 
-		    variable_name,i);
-	 } else {
-	    sprintf(name, "%s/%s/%06u/data.%s:%s_%06u", file_prefix, file_type, i, file_extn, 
-		    variable_name,i);
+      idx = 0;
+      for(i = 0; i < mpisize; i++) {
+
+	 if (USE_P4EST){
+#ifdef HAVE_P4EST
+	     K = quads_per_rank[i];
+#endif
 	 }
-	 varnames[i] = name;
-	 vartypes[i] = DB_QUADVAR;
+
+	 for (k = 0; k < K; ++k){
+	     name = ctalloc(char, 2048);
+	     if(strlen(file_suffix)) {
+		 sprintf(name, "%s/%s/%06u/data.%s.%s:mesh_%06u_%06u",
+			 file_prefix, file_type, i, file_suffix, file_extn, i,k);
+	       } else {
+		 sprintf(name, "%s/%s/%06u/data.%s:mesh_%06u_%06u",
+			 file_prefix, file_type, i, file_extn, i,k);
+	       }
+	     meshnames[idx] = name;
+	     meshtypes[idx] = DB_QUADMESH;
+
+	     name = ctalloc(char, 2048);
+	     if(strlen(file_suffix)) {
+		 sprintf(name, "%s/%s/%06u/data.%s.%s:%s_%06u_%06u",
+			 file_prefix, file_type, i, file_suffix, file_extn, variable_name,i,k);
+	       } else {
+		 sprintf(name, "%s/%s/%06u/data.%s:%s_%06u_%06u",
+			 file_prefix, file_type, i, file_extn, variable_name,i,k);
+	       }
+	     varnames[idx] = name;
+	     vartypes[idx] = DB_QUADVAR;
+
+	     idx++;
+	 }
       }
-      
-      /* open file */
+
+      if ( idx != P ) {
+         amps_Printf("Error: Fail setting mesh names\n");
+         exit(1);
+      }
+
+      /* open   file */
       if(strlen(file_suffix)) {
 	 sprintf(filename, "%s.%s.%s.%s", file_prefix, file_type, file_suffix, file_extn);
       } else {
@@ -478,6 +514,12 @@ void     WriteSilo(char    *file_prefix,
       free(meshtypes);
       free(varnames);
       free(vartypes);
+   }
+
+   if (USE_P4EST){
+#ifdef HAVE_P4EST
+       P4EST_FREE (quads_per_rank);
+#endif
    }
 
    if(strlen(file_suffix)) {

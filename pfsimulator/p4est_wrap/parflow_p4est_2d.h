@@ -83,6 +83,8 @@ parflow_p4est_ghost_data_t
 
 void parflow_p4est_get_projection_info_2d (Subgrid *subgrid, int info[2]);
 
+void            parflow_p4est_nquads_per_rank_2d(parflow_p4est_grid_2d_t *pfg,
+                                                 int * quads_per_rank);
 SC_EXTERN_C_END;
 
 #endif                          /* !PARLOW_P4EST_2D_H */

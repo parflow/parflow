@@ -464,3 +464,16 @@ void parflow_p4est_get_projection_info_2d (Subgrid *subgrid
   info[1] =  SubgridLocIdx(subgrid);
 #endif
 }
+
+void
+parflow_p4est_nquads_per_rank_2d(parflow_p4est_grid_2d_t *pfg,
+                                 int * quads_per_rank)
+{
+    int             ig;
+    int             mpisize = amps_Size(amps_CommWorld);
+    p4est_gloidx_t  *gfq = pfg->forest->global_first_quadrant;
+
+    for (ig = 0; ig < mpisize; ig++){
+        quads_per_rank[ig] = (int) (gfq[ig + 1] - gfq[ig]);
+    }
+}
