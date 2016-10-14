@@ -1240,6 +1240,27 @@ long SizeofPFSBinarySubvector (Subvector *subvector , Subgrid *subgrid , double 
 void WritePFSBinary_Subvector (amps_File file , Subvector *subvector , Subgrid *subgrid , double drop_tolerance );
 void WritePFSBinary (char *file_prefix , char *file_suffix , Vector *v , double drop_tolerance );
 
+/* read_parflow_netcdf.c */
+void ReadNetCDF_Subvector (int varid, Subvector *subvector, Subgrid *subgrid, int timestep);
+void ReadNetCDF (char *varname, Vector *v, int timestep);
+
+/* write_parflow_netcdf.c */
+void WriteNetCDF_Subvector (int varid , Subvector *subvector , Subgrid *subgrid );
+void WriteNetCDF_Timestamp ();
+void WriteNetCDF (char *file_prefix , char *file_suffix , Vector *v );
+
+/* write_parflow_netcdf_create.c */
+void WriteNetCDF_MakeSettings(char *file_prefix, Vector *v);
+void WriteNetCDF_CreateNewFile();
+void WriteNetCDF_GlobalTCLAttributes(void (*write_method)(void *), HBT_element *tree);
+void WriteNetCDF_WriteGlobalAttribute(void *obj);
+void WriteNetCDF_Metadata(int varid, char *standard_name, char *units, char *long_name);
+void SetNetCDF_VariableChunking(char *file_prefix, char *varname, size_t *chunks);
+int WriteNetCDF_Variable(char *varname);
+void FreeNetCDF();
+void OpenNetCDF(char *file);
+void WriteNetCDF_ResetTime();
+
 /* write_parflow_silo.c */
 void WriteSilo(char    *file_prefix, 
 		   char    *file_type, 

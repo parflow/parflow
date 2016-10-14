@@ -72,6 +72,10 @@
 #undef HAVE_OAS3
 #endif
 
+#ifndef HAVE_NETCDF
+#undef HAVE_NETCDF
+#endif
+
 /*
  * HDF5 common data format library
  */

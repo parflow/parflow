@@ -130,6 +130,7 @@ OBJS = \
 	ratqr.o\
 	rb_GS_point.o\
 	read_parflow_binary.o\
+	read_parflow_netcdf.o\
 	reg_from_stenc.o\
 	region.o\
 	richards_jacobian_eval.o\
@@ -156,6 +157,8 @@ OBJS = \
 	well_package.o\
 	wells_lb.o\
 	write_parflow_binary.o \
+	write_parflow_netcdf.o \
+	write_parflow_netcdf_create.o \
 	write_parflow_silo.o \
 	write_parflow_silo_pmpio.o \
 	wrf_parflow.o \

@@ -48,6 +48,7 @@ long AMPS_CPU_TICKS_PER_SEC;
 
 int amps_size;
 int amps_rank;
+MPI_Info romio_info = MPI_INFO_NULL;
 
 #ifdef AMPS_F2CLIB_FIX
 int MAIN__()
@@ -72,7 +73,7 @@ message passing system.  For example, on {\em Chameleon} the
 int main( int argc, char *argv)
 {
    amps_Init(argc, argv);
-   
+
    amps_Printf("Hello World");
 
    amps_Finalize();
@@ -84,7 +85,7 @@ int main( int argc, char *argv)
 @memo Initialize AMPS
 @param argc Command line argument count [IN/OUT]
 @param argv Command line argument array [IN/OUT]
-@return 
+@return
 */
 int amps_Init(int *argc, char **argv[])
 {
@@ -159,7 +160,7 @@ int amps_Init(int *argc, char **argv[])
 #endif
 
    return 0;
-}  
+}
 
 
 /*===========================================================================*/
@@ -173,7 +174,7 @@ This must be done before any other {\em AMPS} calls.
 int main( int argc, char *argv)
 {
    amps_EmbeddedInit();
-   
+
    amps_Printf("Hello World");
 
    amps_Finalize();
@@ -183,7 +184,7 @@ int main( int argc, char *argv)
 {\large Notes:}
 
 @memo Initialize AMPS
-@return 
+@return
 */
 int amps_EmbeddedInit(void)
 {
@@ -210,6 +211,33 @@ int amps_EmbeddedInit(void)
 #endif
 
    return 0;
-}  
+}
 
+void amps_SetInfo(char* filename)
+{
+   MPI_File fh;
+   FILE *logfile;
+   int nkeys, i;
 
+   MPI_File_open(amps_CommWorld, filename, MPI_MODE_RDONLY, MPI_INFO_NULL, &fh);
+   MPI_File_get_info(fh, &romio_info);
+
+   if (amps_rank == 0) {
+      logfile = OpenLogFile("ROMIO");
+      fprintf(logfile, "Following ROMIO hints were used\n");
+      fprintf(logfile, "-------------------------------\n");
+      MPI_Info_get_nkeys(romio_info, &nkeys);
+      fprintf(logfile, "MPI File Info: nkeys = %d\n",nkeys);
+      for (i=0; i<nkeys; i++) {
+          char key[MPI_MAX_INFO_KEY], value[MPI_MAX_INFO_VAL];
+          int  valuelen, flag;
+
+          MPI_Info_get_nthkey(romio_info, i, key);
+          MPI_Info_get_valuelen(romio_info, key, &valuelen, &flag);
+          MPI_Info_get(romio_info, key, valuelen+1, value, &flag);
+          fprintf(logfile, "MPI File Info: [%2d] key = %25s, value = %s\n",i,key,value);
+    }
+   }
+   CloseLogFile(logfile);
+   MPI_File_close(&fh);
+}

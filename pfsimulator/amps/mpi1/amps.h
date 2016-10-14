@@ -133,9 +133,12 @@ Currently there is only the global communication context.
 @memo Global communication context
 */
 #define amps_CommWorld MPI_COMM_WORLD
+#define amps_Info romio_info
+#define amps_Wtime() MPI_Wtime()
 
 extern int amps_rank;
 extern int amps_size;
+extern MPI_Info romio_info;
 
 /*===========================================================================*/
 /**

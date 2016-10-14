@@ -100,6 +100,34 @@ typedef struct
    int                write_silo_overland_sum;    /* write sum of overland outflow? */
    int                write_silo_overland_bc_flux;/* write overland outflow boundary condition flux? */
    int                write_silo_dzmult;          /* write dz multiplier */
+
+   // netcdf output flags
+   int write_netcdf_subsurf_data; /* write permeability/porosity? */
+   int write_netcdf_mask;         /* write mask? */
+   int write_netcdf_slopes;       /* write mask? */
+   int write_netcdf_mannings;
+   int write_netcdf_dzmult;
+   int write_netcdf_CLM;
+   int write_netcdf_evaptrans;
+   int write_netcdf_evaptrans_sum;
+   int write_netcdf_overland_sum;
+   int write_netcdf_overland_bc_flux;
+   int write_netcdf_press; /* write pressures? */
+   int write_netcdf_satur; /* write saturations? */
+
+   int chunk_netcdf_press;
+   int chunk_netcdf_press0;
+   int chunk_netcdf_press1;
+   int chunk_netcdf_press2;
+   int chunk_netcdf_press3;
+   int chunk_netcdf_satur;
+   int chunk_netcdf_satur0;
+   int chunk_netcdf_satur1;
+   int chunk_netcdf_satur2;
+   int chunk_netcdf_satur3;
+
+   char *romio_hint_file;
+
    int                write_silopmpio_subsurf_data;    /* write permeability/porosity as PMPIO? */
    int                write_silopmpio_press;           /* write pressures as PMPIO? */
    int                write_silopmpio_velocities;      /* write velocities as PMPIO? */
@@ -360,6 +388,36 @@ void SetupRichards(PFModule *this_module) {
    /* @IMF -- set DZ multiplier from ProblemDataZmult */
    instance_xtra -> dz_mult = ProblemDataZmult(problem_data);
 
+   // check for NetCDF I/O usage
+   if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur ||
+       public_xtra->write_netcdf_subsurf_data ||
+       public_xtra->write_netcdf_mask || public_xtra->write_netcdf_slopes ||
+       public_xtra->write_netcdf_mannings || public_xtra->write_netcdf_dzmult ||
+       public_xtra->write_netcdf_CLM || public_xtra->write_netcdf_evaptrans ||
+       public_xtra->write_netcdf_evaptrans_sum ||
+       public_xtra->write_netcdf_overland_sum ||
+       public_xtra->write_netcdf_overland_bc_flux) {
+     printf("put stuff\n");
+     WriteNetCDF_MakeSettings(file_prefix,
+                              ProblemDataPermeabilityX(problem_data));
+     WriteNetCDF_CreateNewFile();
+   }
+ 
+   // setup NetCDF interface
+   if (public_xtra->chunk_netcdf_press) {
+     size_t chunks[] = {
+         public_xtra->chunk_netcdf_press0, public_xtra->chunk_netcdf_press1,
+         public_xtra->chunk_netcdf_press2, public_xtra->chunk_netcdf_press3};
+     SetNetCDF_VariableChunking(file_prefix, "press", chunks);
+   }
+ 
+   if (public_xtra->chunk_netcdf_satur) {
+     size_t chunks[] = {
+         public_xtra->chunk_netcdf_satur0, public_xtra->chunk_netcdf_satur1,
+         public_xtra->chunk_netcdf_satur2, public_xtra->chunk_netcdf_satur3};
+     SetNetCDF_VariableChunking(file_prefix, "satur", chunks);
+   }
+
    /* Write subsurface data */
    if ( public_xtra -> print_subsurf_data )
    {
@@ -434,7 +492,25 @@ void SetupRichards(PFModule *this_module) {
         
     }
     
-    
+   if (public_xtra->write_netcdf_subsurf_data) {
+     sprintf(file_type, "perm_x");
+     WriteNetCDF(file_prefix, file_type, ProblemDataPermeabilityX(problem_data));
+ 
+     sprintf(file_type, "perm_y");
+     WriteNetCDF(file_prefix, file_type, ProblemDataPermeabilityY(problem_data));
+ 
+     sprintf(file_type, "perm_z");
+     WriteNetCDF(file_prefix, file_type, ProblemDataPermeabilityZ(problem_data));
+ 
+     sprintf(file_type, "porosity");
+     WriteNetCDF(file_prefix, file_type, ProblemDataPorosity(problem_data));
+ 
+     // IMF -- added specific storage to subsurface bundle
+     sprintf(file_type, "specific_storage");
+     WriteNetCDF(file_prefix, file_type,
+                 ProblemDataSpecificStorage(problem_data));
+   }   
+ 
    if ( public_xtra -> print_slopes )
    {
       sprintf(file_postfix, "slope_x");
@@ -467,7 +543,15 @@ void SetupRichards(PFModule *this_module) {
         WriteSiloPMPIO(file_prefix, file_type, file_postfix, ProblemDataTSlopeY(problem_data),
                   t, 0, "SlopeY");
     }
-    
+
+   if (public_xtra->write_netcdf_slopes) {
+     sprintf(file_type, "slope_x");
+     WriteNetCDF(file_prefix, file_type, ProblemDataTSlopeX(problem_data));
+ 
+     sprintf(file_type, "slope_y");
+     WriteNetCDF(file_prefix, file_type, ProblemDataTSlopeY(problem_data));
+   }    
+
    if ( public_xtra -> print_mannings )
    {
       sprintf(file_postfix, "mannings");
@@ -489,7 +573,12 @@ void SetupRichards(PFModule *this_module) {
         WriteSiloPMPIO(file_prefix, file_type, file_postfix, ProblemDataMannings(problem_data),
                   t, 0, "Mannings");
     }
-    
+   
+   if (public_xtra->write_netcdf_mannings) {
+     sprintf(file_type, "mannings");
+     WriteNetCDF(file_prefix, file_type, ProblemDataMannings(problem_data));
+   }
+ 
    if ( public_xtra -> print_dzmult )
    {
       sprintf(file_postfix, "dz_mult");
@@ -511,7 +600,12 @@ void SetupRichards(PFModule *this_module) {
         WriteSiloPMPIO(file_prefix, file_type, file_postfix, instance_xtra -> dz_mult, 
                   t, 0, "DZ_Multiplier");
     }
-    
+  
+   if (public_xtra->write_netcdf_dzmult) {
+     sprintf(file_type, "dz_mult");
+     WriteNetCDF(file_prefix, file_type, instance_xtra->dz_mult);
+   }
+  
    // IMF -- 
    // Lumped specific storage w/ subsurf bundle, 
    // Left keys for individual printing for backward compatibility
@@ -608,7 +702,7 @@ void SetupRichards(PFModule *this_module) {
       InitVectorAll(instance_xtra -> ovrl_bc_flx, 0.0);
 
       if (public_xtra -> write_silo_overland_sum || public_xtra -> print_overland_sum ||
-         public_xtra -> write_silopmpio_overland_sum  ) 
+         public_xtra -> write_silopmpio_overland_sum  || public_xtra -> write_netcdf_overland_sum) 
       {
 	 instance_xtra -> overland_sum = NewVectorType( grid2d, 1, 1, vector_cell_centered_2D );
 	 InitVectorAll(instance_xtra -> overland_sum, 0.0);
@@ -988,6 +1082,12 @@ void SetupRichards(PFModule *this_module) {
                      t, instance_xtra -> file_number, "Pressure");
            any_file_dumped = 1;
        }
+
+     if (public_xtra->write_netcdf_press) {
+       sprintf(file_postfix, "press.%05d", instance_xtra->file_number);
+       WriteNetCDF(file_prefix, file_postfix, instance_xtra->pressure);
+       any_file_dumped = 1;
+     }
       /*-----------------------------------------------------------------
        * Print out the initial saturations?
        *-----------------------------------------------------------------*/
@@ -1016,6 +1116,12 @@ void SetupRichards(PFModule *this_module) {
                      t, instance_xtra -> file_number, "Saturation");
            any_file_dumped = 1;
        }
+
+     if (public_xtra->write_netcdf_satur) {
+       sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
+       WriteNetCDF(file_prefix, file_postfix, instance_xtra->saturation);
+       any_file_dumped = 1;
+     }
       /*-----------------------------------------------------------------
        * Print out mask?
        *-----------------------------------------------------------------*/
@@ -1045,7 +1151,13 @@ void SetupRichards(PFModule *this_module) {
                      t, instance_xtra -> file_number, "Mask");
            any_file_dumped = 1;
        }
-       
+     
+     if (public_xtra->write_netcdf_mask) {
+       sprintf(file_postfix, "mask");
+       WriteNetCDF(file_prefix, file_postfix, instance_xtra->mask);
+       any_file_dumped = 1;
+     }
+  
       /*-----------------------------------------------------------------
        * Log this step
        *-----------------------------------------------------------------*/
@@ -2236,14 +2348,16 @@ void AdvanceRichards(PFModule *this_module,
       /***************************************************************
        * Compute running sum of evap trans for water balance 
        **************************************************************/
-      if(public_xtra -> write_silo_evaptrans_sum || public_xtra -> print_evaptrans_sum) {
+      if(public_xtra -> write_silo_evaptrans_sum || public_xtra -> print_evaptrans_sum ||
+         public_xtra -> write_netcdf_evaptrans_sum) {
 	 EvapTransSum(problem_data, dt, evap_trans_sum, evap_trans);
       }
 
       /***************************************************************
        * Compute running sum of overland outflow for water balance 
        **************************************************************/
-      if(public_xtra -> write_silo_overland_sum || public_xtra -> print_overland_sum) {
+      if(public_xtra -> write_silo_overland_sum || public_xtra -> print_overland_sum ||
+         public_xtra -> write_netcdf_overland_sum) {
 	 OverlandSum(problem_data, 
 		     instance_xtra -> pressure,
 		     dt, 
@@ -2284,7 +2398,12 @@ void AdvanceRichards(PFModule *this_module,
                         t, instance_xtra -> file_number, "Pressure");
               any_file_dumped = 1;
           }
-          
+      
+         if (public_xtra->write_netcdf_press) {
+           sprintf(file_postfix, "press.%05d", instance_xtra->file_number);
+           WriteNetCDF(file_prefix, file_postfix, instance_xtra->pressure);
+           any_file_dumped = 1;
+         }    
           
 	 if(public_xtra -> print_satur ) {
 	    sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
@@ -2309,14 +2428,56 @@ void AdvanceRichards(PFModule *this_module,
                         t, instance_xtra -> file_number, "Saturation");
               any_file_dumped = 1;
           }
-          
+         
+         if (public_xtra->write_netcdf_satur) {
+           sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
+           WriteNetCDF(file_prefix, file_postfix, instance_xtra->saturation);
+           any_file_dumped = 1;
+         }
+   
+         // do static fields if it fits
+	 // TODO check if this needs to be here -> static in time depend print????
+         if (public_xtra->write_netcdf_subsurf_data) {
+           sprintf(file_type, "perm_x");
+           WriteNetCDF(file_prefix, file_type,
+                       ProblemDataPermeabilityX(problem_data));
+   
+           sprintf(file_type, "perm_y");
+           WriteNetCDF(file_prefix, file_type,
+                       ProblemDataPermeabilityY(problem_data));
+   
+           sprintf(file_type, "perm_z");
+           WriteNetCDF(file_prefix, file_type,
+                       ProblemDataPermeabilityZ(problem_data));
+   
+           sprintf(file_type, "porosity");
+           WriteNetCDF(file_prefix, file_type, ProblemDataPorosity(problem_data));
+   
+           sprintf(file_type, "specific_storage");
+           WriteNetCDF(file_prefix, file_type,
+                       ProblemDataSpecificStorage(problem_data));
+           any_file_dumped = 1;
+         }
+  
+         if (public_xtra->write_netcdf_mask) {
+           sprintf(file_postfix, "mask");
+           WriteNetCDF(file_prefix, file_postfix, instance_xtra->mask);
+           any_file_dumped = 1;
+         }
+         // TODO end 
+
          if(public_xtra -> print_evaptrans ) {
             sprintf(file_postfix, "evaptrans.%05d", instance_xtra -> file_number );
             WritePFBinary(file_prefix, file_postfix, evap_trans );
             any_file_dumped = 1;
          }
-
-          
+         
+         if (public_xtra->write_netcdf_evaptrans) {
+           sprintf(file_type, "evaptrans.%05d", instance_xtra->file_number);
+           WriteNetCDF(file_prefix, file_type, evap_trans);
+           any_file_dumped = 1;
+         }
+ 
 	 if(public_xtra -> write_silo_evaptrans) {
 	    sprintf(file_postfix, "%05d", instance_xtra -> file_number );
 	    sprintf(file_type, "evaptrans");
@@ -2333,12 +2494,19 @@ void AdvanceRichards(PFModule *this_module,
               any_file_dumped = 1;
           }
           
-         if(public_xtra -> print_evaptrans_sum || public_xtra -> write_silo_evaptrans_sum) {
+         if(public_xtra -> print_evaptrans_sum || public_xtra -> write_silo_evaptrans_sum ||
+            public_xtra -> write_netcdf_evaptrans_sum) {
 
             if(public_xtra -> print_evaptrans_sum ) {
                sprintf(file_postfix, "evaptranssum.%05d", instance_xtra -> file_number );
                WritePFBinary(file_prefix, file_postfix, evap_trans_sum );
                any_file_dumped = 1;
+            }
+
+            if (public_xtra->write_netcdf_evaptrans_sum) {
+              sprintf(file_type, "evaptranssum.%05d", instance_xtra->file_number);
+              WriteNetCDF(file_prefix, file_type, evap_trans_sum);
+              any_file_dumped = 1;
             }
 
             if(public_xtra -> write_silo_evaptrans_sum) {
@@ -2361,12 +2529,19 @@ void AdvanceRichards(PFModule *this_module,
 	    PFVConstInit(0.0, evap_trans_sum);
          }
 
-         if(public_xtra -> print_overland_sum || public_xtra -> write_silo_overland_sum) {
+         if(public_xtra -> print_overland_sum || public_xtra -> write_silo_overland_sum ||
+            public_xtra -> write_overland_sum) {
 
             if(public_xtra -> print_overland_sum ) {
                sprintf(file_postfix, "overlandsum.%05d", instance_xtra -> file_number );
                WritePFBinary(file_prefix, file_postfix, overland_sum );
                any_file_dumped = 1;
+            }
+
+            if (public_xtra->write_netcdf_overland_sum) {
+              sprintf(file_type, "overlandsum.%05d", instance_xtra->file_number);
+              WriteNetCDF(file_prefix, file_type, overland_sum);
+              any_file_dumped = 1;
             }
 
             if(public_xtra -> write_silo_overland_sum) {
@@ -2393,6 +2568,12 @@ void AdvanceRichards(PFModule *this_module,
             sprintf(file_postfix, "overland_bc_flux.%05d", instance_xtra -> file_number );
             WritePFBinary(file_prefix, file_postfix, instance_xtra -> ovrl_bc_flx );
             any_file_dumped = 1;
+         }
+
+         if (public_xtra->write_netcdf_overland_bc_flux) {
+           sprintf(file_type, "overland_bc_flux.%05d", instance_xtra->file_number);
+           WriteNetCDF(file_prefix, file_type, instance_xtra->ovrl_bc_flx);
+           any_file_dumped = 1;
          }
 
          if(public_xtra -> write_silo_overland_bc_flux)
@@ -2441,7 +2622,74 @@ void AdvanceRichards(PFModule *this_module,
       {
 
          instance_xtra -> clm_dump_index++;
-          
+       
+         if (public_xtra->write_netcdf_CLM) {
+            sprintf(file_type, "eflx_lh_tot.%05d", instance_xtra->file_number);
+            WriteNetCDF(file_prefix, file_type, instance_xtra->eflx_lh_tot);
+            clm_file_dumped = 1;
+    
+            sprintf(file_type, "eflx_lwrad_out.%05d", instance_xtra->file_number);
+            WriteNetCDF(file_prefix, file_type, instance_xtra->eflx_lwrad_out);
+            clm_file_dumped = 1;
+    
+            sprintf(file_type, "eflx_sh_tot.%05d", instance_xtra->file_number);
+            WriteNetCDF(file_prefix, file_type, instance_xtra->eflx_sh_tot);   
+            clm_file_dumped = 1;
+    
+            sprintf(file_type, "eflx_soil_grnd.%05d", instance_xtra->file_number);
+            WriteNetCDF(file_prefix, file_type, instance_xtra->eflx_soil_grnd);
+            clm_file_dumped = 1;
+    
+            sprintf(file_type, "qflx_evap_tot.%05d", instance_xtra->file_number);
+            WriteNetCDF(file_prefix, file_type, instance_xtra->qflx_evap_tot);
+            clm_file_dumped = 1;
+    
+            sprintf(file_type, "qflx_evap_grnd.%05d", instance_xtra->file_number);
+            WriteNetCDF(file_prefix, file_type, instance_xtra->qflx_evap_grnd);
+            clm_file_dumped = 1;
+    
+            sprintf(file_type, "qflx_evap_soi.%05d", instance_xtra->file_number);
+            WriteNetCDF(file_prefix, file_type, instance_xtra->qflx_evap_soi);
+            clm_file_dumped = 1;
+    
+            sprintf(file_type, "qflx_evap_veg.%05d", instance_xtra->file_number);
+            WriteNetCDF(file_prefix, file_type, instance_xtra->qflx_evap_veg);
+            clm_file_dumped = 1;
+    
+            sprintf(file_type, "qflx_tran_veg.%05d", instance_xtra->file_number);
+            WriteNetCDF(file_prefix, file_type, instance_xtra->qflx_tran_veg);
+            clm_file_dumped = 1;
+    
+            sprintf(file_type, "qflx_infl.%05d", instance_xtra->file_number);
+            WriteNetCDF(file_prefix, file_type, instance_xtra->qflx_infl);
+            clm_file_dumped = 1;
+    
+            sprintf(file_type, "swe_out.%05d", instance_xtra->file_number);
+            WriteNetCDF(file_prefix, file_type, instance_xtra->swe_out);
+            clm_file_dumped = 1;
+    
+            sprintf(file_type, "t_grnd.%05d", instance_xtra->file_number);
+            WriteNetCDF(file_prefix, file_type, instance_xtra->t_grnd);
+            clm_file_dumped = 1;
+    
+            sprintf(file_type, "t_soil.%05d", instance_xtra->file_number);
+            WriteNetCDF(file_prefix, file_type, instance_xtra->tsoil);
+            clm_file_dumped = 1;
+    
+            // IMF: irrigation applied to surface -- spray or drip
+            if (public_xtra->clm_irr_type == 1 || public_xtra->clm_irr_type == 2) {
+              sprintf(file_type, "qflx_qirr.%05d", instance_xtra->file_number);
+              WriteNetCDF(file_prefix, file_type, instance_xtra->qflx_qirr);
+              clm_file_dumped = 1;
+            }
+    
+            // IMF: irrigation applied directly as soil moisture flux -- "instant"
+            if (public_xtra->clm_irr_type == 3) {
+              sprintf(file_type, "qflx_qirr_inst.%05d", instance_xtra->file_number);
+              WriteNetCDF(file_prefix, file_type, instance_xtra->qflx_qirr_inst);
+              clm_file_dumped = 1;
+            }
+         } // end of if (write_netcdf_CLM)
 
          if ( public_xtra -> write_silo_CLM ) {
 
@@ -2830,7 +3078,8 @@ void AdvanceRichards(PFModule *this_module,
          PFVConstInit(0.0, evap_trans_sum);
       }
 
-      if(public_xtra -> print_overland_sum || public_xtra -> write_silo_overland_sum) 
+      if(public_xtra -> print_overland_sum || public_xtra -> write_silo_overland_sum ||
+         public_xtra -> write_netcdf_overlandsum) 
       {
 
          if(public_xtra -> print_overland_sum ) 
@@ -2857,6 +3106,12 @@ void AdvanceRichards(PFModule *this_module,
          sprintf(file_postfix, "overland_bc_flux.%05d", instance_xtra -> file_number );
          WritePFBinary(file_prefix, file_postfix, instance_xtra -> ovrl_bc_flx );
          any_file_dumped = 1;
+      }
+
+      if (public_xtra->write_netcdf_overland_bc_flux) {
+        sprintf(file_type, "overland_bc_flux.%05d", instance_xtra->file_number);
+        WriteNetCDF(file_prefix, file_type, instance_xtra->ovrl_bc_flx);
+        any_file_dumped = 1;
       }
 
       if(public_xtra -> write_silo_overland_bc_flux)
@@ -3409,6 +3664,12 @@ void  SolverRichardsFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
    InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
+
+   if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur ||
+       public_xtra->write_netcdf_subsurf_data ||
+       public_xtra->write_netcdf_mask) {
+     FreeNetCDF();
+   }
 
    if ( instance_xtra )
    {
@@ -4169,6 +4430,181 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    }
    public_xtra -> print_lsm_sink = switch_value;
 
+   //////////////////////
+   // NetCDF Tcl flags //
+   //////////////////////
+   sprintf(key, "NetCDF.WriteSubsurf");
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if (switch_value < 0) {
+     InputError("Error: invalid print switch value <%s> for key <%s>\n",
+                switch_name, key);
+   }
+   public_xtra->write_netcdf_subsurf_data = switch_value;
+ 
+   sprintf(key, "NetCDF.WriteMask");
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if (switch_value < 0) {
+     InputError("Error: invalid print switch value <%s> for key <%s>\n",
+                switch_name, key);
+   }
+   public_xtra->write_netcdf_mask = switch_value;
+ 
+   sprintf(key, "NetCDF.WriteSlopes");
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if (switch_value < 0) {
+     InputError("Error: invalid print switch value <%s> for key <%s>\n",
+                switch_name, key);
+   }
+   public_xtra->write_netcdf_slopes = switch_value;
+ 
+   sprintf(key, "NetCDF.WriteMannings");
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if (switch_value < 0) {
+     InputError("Error: invalid print switch value <%s> for key <%s>\n",
+                switch_name, key);
+   }
+   public_xtra->write_netcdf_mannings = switch_value;
+ 
+   sprintf(key, "NetCDF.WriteDZMult");
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if (switch_value < 0) {
+     InputError("Error: invalid print switch value <%s> for key <%s>\n",
+                switch_name, key);
+   }
+   public_xtra->write_netcdf_dzmult = switch_value;
+ 
+   sprintf(key, "NetCDF.WriteCLM");
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if (switch_value < 0) {
+     InputError("Error: invalid print switch value <%s> for key <%s>\n",
+                switch_name, key);
+   }
+   public_xtra->write_netcdf_CLM = switch_value;
+ 
+   sprintf(key, "NetCDF.WriteEvapTrans");
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if (switch_value < 0) {
+     InputError("Error: invalid print switch value <%s> for key <%s>\n",
+                switch_name, key);
+   }
+   public_xtra->write_netcdf_evaptrans = switch_value;
+ 
+   sprintf(key, "NetCDF.WriteEvapTransSum");
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if (switch_value < 0) {
+     InputError("Error: invalid print switch value <%s> for key <%s>\n",
+                switch_name, key);
+   }
+   public_xtra->write_netcdf_evaptrans_sum = switch_value;
+ 
+   sprintf(key, "NetCDF.WriteOverlandSum");
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if (switch_value < 0) {
+     InputError("Error: invalid print switch value <%s> for key <%s>\n",
+                switch_name, key);
+   }
+   public_xtra->write_netcdf_overland_sum = switch_value;
+ 
+   sprintf(key, "NetCDF.WriteOverlandBCFlux");
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if (switch_value < 0) {
+     InputError("Error: invalid print switch value <%s> for key <%s>\n",
+                switch_name, key);
+   }
+   public_xtra->write_netcdf_overland_bc_flux = switch_value;
+ 
+   sprintf(key, "NetCDF.WritePressure");
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if (switch_value < 0) {
+     InputError("Error: invalid print switch value <%s> for key <%s>\n",
+                switch_name, key);
+   }
+   public_xtra->write_netcdf_press = switch_value;
+ 
+   sprintf(key, "NetCDF.ChunkingPressure");
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if (switch_value < 0) {
+     InputError("Error: invalid print switch value <%s> for key <%s>\n",
+                switch_name, key);
+   }
+   public_xtra->chunk_netcdf_press = switch_value;
+ 
+   sprintf(key, "NetCDF.ChunkingPressure1");
+   public_xtra->chunk_netcdf_press0 = GetIntDefault(key, 0);
+   sprintf(key, "NetCDF.ChunkingPressure2");
+   public_xtra->chunk_netcdf_press1 = GetIntDefault(key, 0);
+   sprintf(key, "NetCDF.ChunkingPressure3");
+   public_xtra->chunk_netcdf_press2 = GetIntDefault(key, 0);
+   sprintf(key, "NetCDF.ChunkingPressure4");
+   public_xtra->chunk_netcdf_press3 = GetIntDefault(key, 0);
+ 
+   sprintf(key, "NetCDF.WriteSaturation");
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if (switch_value < 0) {
+     InputError("Error: invalid print switch value <%s> for key <%s>\n",
+                switch_name, key);
+   }
+   public_xtra->write_netcdf_satur = switch_value;
+ 
+   sprintf(key, "NetCDF.ChunkingSaturation");
+   switch_name = GetStringDefault(key, "False");
+   switch_value = NA_NameToIndex(switch_na, switch_name);
+   if (switch_value < 0) {
+     InputError("Error: invalid print switch value <%s> for key <%s>\n",
+                switch_name, key);
+   }
+   public_xtra->chunk_netcdf_satur = switch_value;
+ 
+   sprintf(key, "NetCDF.ChunkingSaturation1");
+   public_xtra->chunk_netcdf_satur0 = GetIntDefault(key, 0);
+   sprintf(key, "NetCDF.ChunkingSaturation2");
+   public_xtra->chunk_netcdf_satur1 = GetIntDefault(key, 0);
+   sprintf(key, "NetCDF.ChunkingSaturation3");
+   public_xtra->chunk_netcdf_satur2 = GetIntDefault(key, 0);
+   sprintf(key, "NetCDF.ChunkingSaturation4");
+   public_xtra->chunk_netcdf_satur3 = GetIntDefault(key, 0);
+ 
+   char *default_val = "None";
+   sprintf(key, "NetCDF.ROMIOhints");
+   switch_name = GetStringDefault(key, "None");
+   if (strcmp(switch_name, default_val) != 0) {
+     amps_SetInfo(switch_name);
+   } else {
+     if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur ||
+         public_xtra->write_netcdf_subsurf_data ||
+         public_xtra->write_netcdf_mask || public_xtra->write_netcdf_slopes ||
+         public_xtra->write_netcdf_mannings ||
+         public_xtra->write_netcdf_dzmult || public_xtra->write_netcdf_CLM ||
+         public_xtra->write_netcdf_evaptrans ||
+         public_xtra->write_netcdf_evaptrans_sum ||
+         public_xtra->write_netcdf_overland_sum ||
+         public_xtra->write_netcdf_overland_bc_flux) {
+       logfile = OpenLogFile("ROMIO");
+       fprintf(
+           logfile,
+           "It is advised to use ROMIO hints together with NetCDF output!\n");
+       fprintf(logfile, "The performance improvement can be substantial!\n");
+       fprintf(logfile,
+               "Assure yourself that you set the correct hints for your "
+               "specific file system.\n");
+       CloseLogFile(logfile);
+     }
+   }
+   public_xtra->romio_hint_file = switch_name;
+ 
 #ifndef HAVE_CLM
    if(public_xtra -> print_lsm_sink) 
    {

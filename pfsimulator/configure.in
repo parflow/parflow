@@ -448,6 +448,22 @@ fi
 AC_SUBST(PARFLOW_HAVE_SILO)
 
 dnl
+dnl NetCDF support
+dnl
+PARFLOW_HAVE_NETCDF="no"
+CASC_SUPPORT_NETCDF
+if test "${netcdf_PREFIX+set}" = set; then
+  LIBS="$netcdf_LIBS $LIBS"
+  CASC_SPLIT_LIBS_STRING(netcdf_LIBS,netcdf_LIB_PATH,netcdf_LIB_NAME)
+  LIB_PATH="$netcdf_LIB_PATH $LIB_PATH"
+  LIB_NAME="$netcdf_LIB_NAME $LIB_NAME"
+  INC_PATH="$netcdf_INCLUDES $INC_PATH"
+  AC_DEFINE(HAVE_NETCDF,1,NetCDF library is available so use it)
+  PARFLOW_HAVE_NETCDF="yes"
+fi
+AC_SUBST(PARFLOW_HAVE_NETCDF)
+
+dnl
 dnl If Sundials is requested, then set up the Sundials libraries and include paths.
 dnl
 
