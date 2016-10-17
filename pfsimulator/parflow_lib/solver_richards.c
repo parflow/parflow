@@ -2530,7 +2530,7 @@ void AdvanceRichards(PFModule *this_module,
          }
 
          if(public_xtra -> print_overland_sum || public_xtra -> write_silo_overland_sum ||
-            public_xtra -> write_overland_sum) {
+            public_xtra -> write_netcdf_overland_sum) {
 
             if(public_xtra -> print_overland_sum ) {
                sprintf(file_postfix, "overlandsum.%05d", instance_xtra -> file_number );
@@ -3079,7 +3079,7 @@ void AdvanceRichards(PFModule *this_module,
       }
 
       if(public_xtra -> print_overland_sum || public_xtra -> write_silo_overland_sum ||
-         public_xtra -> write_netcdf_overlandsum) 
+         public_xtra -> write_netcdf_overland_sum) 
       {
 
          if(public_xtra -> print_overland_sum ) 
@@ -3663,6 +3663,7 @@ PFModule *SolverRichardsInitInstanceXtra()
 void  SolverRichardsFreeInstanceXtra()
 {
    PFModule      *this_module   = ThisPFModule;
+   PublicXtra *public_xtra = (PublicXtra *)PFModulePublicXtra(this_module);
    InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur ||
@@ -3723,6 +3724,8 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    PublicXtra    *public_xtra;
    
    char key[IDB_MAX_KEY_LEN];
+
+   FILE *logfile;
 
    char          *switch_name;
    int            switch_value;
