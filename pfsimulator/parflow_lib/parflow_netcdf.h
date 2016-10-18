@@ -47,6 +47,7 @@
 // is standard for UNIX OS
 #include <dirent.h>
 
+// error function for the netcdf lib
 #define ERRCODE 2
 #define ERR(e, line)                                                           \
   {                                                                            \

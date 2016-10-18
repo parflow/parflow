@@ -397,7 +397,6 @@ void SetupRichards(PFModule *this_module) {
        public_xtra->write_netcdf_evaptrans_sum ||
        public_xtra->write_netcdf_overland_sum ||
        public_xtra->write_netcdf_overland_bc_flux) {
-     printf("put stuff\n");
      WriteNetCDF_MakeSettings(file_prefix,
                               ProblemDataPermeabilityX(problem_data));
      WriteNetCDF_CreateNewFile();
@@ -4436,7 +4435,7 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    //////////////////////
    // NetCDF Tcl flags //
    //////////////////////
-   sprintf(key, "NetCDF.WriteSubsurf");
+   sprintf(key, "NetCDF.WriteSubsurfData");
    switch_name = GetStringDefault(key, "False");
    switch_value = NA_NameToIndex(switch_na, switch_name);
    if (switch_value < 0) {

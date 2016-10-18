@@ -398,7 +398,6 @@ void WriteNetCDF_CreateNewFile() {
     }
   }
 
-  printf("%s\n", nc_filename);
   if (closed) {
     if ((retval = nc_create_par(&nc_filename, NC_MPIIO | NC_NETCDF4,
                                 amps_CommWorld, amps_Info, &ncid)))

@@ -69,13 +69,27 @@ void WriteNetCDF_Subvector(int varid, Subvector *subvector, Subgrid *subgrid) {
   });
 
   // NC_COLLECTIVE and ROMIO hints will manage to do this nicely in parallel
-  if (dimlen == 3) {
+  switch (dimlen) {
+    case 2:
+    {
     startp[0] = iz, startp[1] = iy, startp[2] = ix;
     countp[0] = nz, countp[1] = ny, countp[2] = nx;
 
     if ((retval = nc_put_vara_double(ncid, varid, startp, countp, &data_nc[0])))
       ERR(retval, __LINE__);
-  } else if (dimlen == 4) {
+    break;
+    }
+    case 3:
+    {
+    startp[0] = iy, startp[1] = ix;
+    countp[0] = ny, countp[1] = nx;
+
+    if ((retval = nc_put_vara_double(ncid, varid, startp, countp, &data_nc[0])))
+      ERR(retval, __LINE__);
+    break;
+    }
+    case 4:
+    {
     startp[0] = time_cont_offset + time_index - time_index_offset;
     countp[0] = 1;
     startp[1] = iz, startp[2] = iy, startp[3] = ix;
@@ -83,6 +97,12 @@ void WriteNetCDF_Subvector(int varid, Subvector *subvector, Subgrid *subgrid) {
 
     if ((retval = nc_put_vara_double(ncid, varid, startp, countp, &data_nc[0])))
       ERR(retval, __LINE__);
+    break;
+    }
+    default:
+    {
+    break;
+    }
   }
 #endif
 }
@@ -116,6 +136,7 @@ void WriteNetCDF(char *file_prefix, char *file_postfix, Vector *v) {
   }
 
   // process the varname to check for the time dim
+  printf("%s\n", file_postfix);
   varname = strtok(file_postfix, ".");
 
   // this is dirty and should be resolved differently
@@ -132,21 +153,62 @@ void WriteNetCDF(char *file_prefix, char *file_postfix, Vector *v) {
   // define the dimid arrays needed for var I/O
   free(dimids);
   dimids = (int *)malloc(dimlen);
-  if (dimlen == 3) {
-    dimids[0] = z_dimid;
-    dimids[1] = y_dimid;
-    dimids[2] = x_dimid;
+  if (strcmp(file_postfix, "slope_x") == 0 ||
+      strcmp(file_postfix, "slope_y") == 0 ||
+      strcmp(file_postfix, "dz_mult") == 0 ||
+      strcmp(file_postfix, "mask") == 0 ||
+      strcmp(file_postfix, "mannings") == 0) {
+    dimids[0] = y_dimid;
+    dimids[1] = x_dimid;
+
+    dimlen = 2;
 
     // if we are in 3D we need to check if the 3D field was already written
     int test_varid;
     retval = nc_inq_varid(ncid, varname, &test_varid);
     if (retval == NC_NOERR)
       return;
-  } else if (dimlen == 4) {
+  }else if (strcmp(file_postfix, "overlandsum") == 0 ||
+      strcmp(file_postfix, "overland_bc_flux") == 0 ||
+      strcmp(file_postfix, "eflx_lh_tot") == 0 ||
+      strcmp(file_postfix, "eflx_lwrad_out") == 0 ||
+      strcmp(file_postfix, "eflx_soil_grnd") == 0 ||
+      strcmp(file_postfix, "qflx_evap_trans") == 0 ||
+      strcmp(file_postfix, "qflx_evap_tot") == 0 ||
+      strcmp(file_postfix, "qflx_evap_grnd") == 0 ||
+      strcmp(file_postfix, "qflx_evap_soi") == 0 ||
+      strcmp(file_postfix, "qflx_evap_veg") == 0 ||
+      strcmp(file_postfix, "qflx_tran_veg") == 0 ||
+      strcmp(file_postfix, "qflx_infl") == 0 ||
+      strcmp(file_postfix, "swe_out") == 0 ||
+      strcmp(file_postfix, "t_grnd") == 0) {
+    dimids[0] = time_dimid;
+    dimids[1] = y_dimid;
+    dimids[2] = x_dimid;
+
+    dimlen = 3;
+
+    // convert the extracted time step from the varname to integer to process it
+    time_index = atoi(timestep);
+
+    // complete the dimension variable data
+    // if time dim is not complete yet
+    // make comparison to the length of the time dimension +1 because the time
+    // dimension is not yet expanded for the current data
+    nc_inq_dimlen(ncid, time_dimid, &time_dimlen);
+    if (time_dimlen == time_cont_offset + time_index - time_index_offset)
+      WriteNetCDF_Timestamp();
+  } else if (strcmp(file_postfix, "press") == 0 ||
+        strcmp(file_postfix, "satur") == 0 ||
+        strcmp(file_postfix, "evaptrans") == 0 ||
+        strcmp(file_postfix, "evaptranssum") == 0 ||
+        strcmp(file_postfix, "t_soil") == 0) {
     dimids[0] = time_dimid;
     dimids[1] = z_dimid;
     dimids[2] = y_dimid;
     dimids[3] = x_dimid;
+
+    dimlen = 4;
 
     // convert the extracted time step from the varname to integer to process it
     time_index = atoi(timestep);
@@ -159,6 +221,7 @@ void WriteNetCDF(char *file_prefix, char *file_postfix, Vector *v) {
     if (time_dimlen == time_cont_offset + time_index - time_index_offset)
       WriteNetCDF_Timestamp();
   }
+  printf("%d\n", dimlen);
 
   varid = WriteNetCDF_Variable(varname);
 
