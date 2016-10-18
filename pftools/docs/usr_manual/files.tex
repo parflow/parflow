@@ -4259,6 +4259,414 @@ pfset Solver.CLM.RootZoneNZ      4
 pfset Solver.CLM.SoiLayer      4
 \end{verbatim}\end{display}
 
+%===============================================================================
+%===============================================================================
+
+\subsection{NetCDF Options}
+\label{NetCDF Options}
+
+The following keys are used to control how NetCDF writes data. NetCDF allows
+writing to the NetCDF4 file format. To use the NetCDF4 I/O interface only the
+keys \code{StartDate[Year|Month|Day],} \newline
+\code{SplitInterval[none|yearly|monthly|daily]} are absolutely necessary to get
+NetCDF file output for at least one of the \code{Write*} options. It is advised
+though to use \code{ROMIOhints} top get better performance and to fill in the CF
+convention variables.
+
+\pfkey{string}{NetCDF.WriteSubsurfData}{False}
+{This key is used to turn on writing of the subsurface data, Permeability and
+Porosity. The data is written after it is generated and before the main time
+stepping loop - only once during the run. The data is written into a NetCDF
+file.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteSubsurfData  True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WriteSlopes}{False}
+{This key is used to turn on writing of the slope data for the x and y
+direction. The data is written after it is generated and before the main time
+stepping loop - only once during the run. The data is written into a NetCDF
+file.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteSlopes  True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WriteMannings}{False}
+{This key is used to turn on writing of the mannings data. The data is written
+after it is generated and before the main time stepping loop - only once during
+the run. The data is written into a NetCDF file.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteMannings  True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WriteDZMult}{False}
+{This key is used to turn on writing of the DZ-Mult data. The data is written
+after it is generated and before the main time stepping loop - only once during
+the run. The data is written into a NetCDF file.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteDZMult  True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WriteMask}{False}
+{This key is used to specify writing of the mask data using NetCDF4 file format.
+The mask contains values equal to one for active cells and zero for inactive
+cells. The writing of the data is controlled by values in the timing
+information section.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteMask  True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WritePressure}{False}
+{This key is used to turn on writing of the pressure data. The writing of the
+data is controlled by values in the timing information section. The data is
+written into a NetCDF file.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.WritePressure  True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WriteSaturation}{False}
+{This key is used to turn on writing of the saturation data. The writing of
+the data is controlled by values in the timing information section. The data is
+written into a NetCDF file.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteSaturation  True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WriteCLM}{False}
+{This key specifies whether the \code{CLM} writes all the \code{CLM} variables
+into a \code{NetCDF} file. Note that \code{CLM} must be compiled and
+linked at runtime for this option to be active. These variables are all written
+according to the standard format used for all \code{NetCDF} variables. Variables
+are either two-dimensional or over the number of \code{CLM} layers (default of
+ten).}
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteCLM  True
+\end{verbatim}\end{display}
+The output variables are:
+\begin{description}
+\item \file{eflx_lh_tot} for latent heat flux total $[W/m^2]$ using the silo
+variable {\em LatentHeat};
+\item \file{eflx_lwrad_out} for outgoing long-wave radiation $[W/m^2]$ using the silo variable {\em LongWave};
+\item \file{eflx_sh_tot} for sensible heat flux total $[W/m^2]$ using the silo variable {\em SensibleHeat};
+\item \file{eflx_soil_grnd} for ground heat flux $[W/m^2]$ using the silo variable {\em GroundHeat};
+\item \file{qflx_evap_tot} for total evaporation $[mm/s]$ using the silo variable {\em EvaporationTotal};
+\item \file{qflx_evap_grnd} for ground evaporation without sublimation $[mm/s]$ using the silo variable {\em EvaporationGroundNoSublimation};
+\item \file{qflx_evap_soi} for soil evaporation $[mm/s]$ using the silo variable {\em EvaporationGround};
+\item \file{qflx_evap_veg} for vegetation evaporation $[mm/s]$ using the silo variable {\em EvaporationCanopy};
+\item \file{qflx_tran_veg} for vegetation transpiration $[mm/s]$ using the silo variable {\em Transpiration};
+\item \file{qflx_infl} for soil infiltration $[mm/s]$ using the silo variable {\em Infiltration};
+\item \file{swe_out} for snow water equivalent $[mm]$ using the silo variable {\em SWE};
+\item \file{t_grnd} for ground surface temperature $[K]$ using the silo variable {\em TemperatureGround}; and
+\item \file{t_soil} for soil temperature over all layers $[K]$ using the silo variable {\em TemperatureSoil}.
+\end{description}
+
+\pfkey{string}{NetCDf.WriteEvapTrans}{False}
+{
+This key is used to specify printing of the evaporation and rainfall flux data
+using silo binary format.  This data comes from either \code{clm} or from
+external calls to \parflow{} such as \emph{WRF}.  This data is in units of
+$[L^3 T^{-1}]$. The printing of the data is controlled by values in the
+timing information section.
+}
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteEvapTrans  True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WriteEvapTransSum}{False}
+{
+This key is used to specify printing of the evaporation and rainfall flux data
+using silo binary format as a running, cumulative amount.  This data comes from
+either \code{clm} or from external calls to \parflow{} such as \emph{WRF}. This
+data is in units of $[L^3]$. The printing of the data is controlled by values in
+the timing information section.
+}
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteEvapTransSum  True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WriteOverlandSum}{False}
+{
+This key is used to specify calculation and printing of the total overland
+outflow from the domain using silo binary format as a running cumulative
+amount. This is integrated along all domain boundaries and is calculated any
+location that slopes at the edge of the domain point outward. This data is in
+units of $[L^3]$. The printing of the data is controlled by values in the
+timing information section.
+}
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteOverlandSum  True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WriteOverlandBCFlux}{False}
+{
+}
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteOverlandBCFlux  True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.ChunkingPressure}{False}
+{This key is used to turn on the NetCDF feature chunking for the pressure
+variable. If this key is set to \code{True} then \code{NetCDF.CunkingPressure1-4}
+also need to be set.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.ChunkingPressure  True
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.ChunkingPressure1}{no default}
+{This key is used to set the chunk size for the time dimension. The size will
+affect the structure of the pressure variable.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.ChunkingPressure1  10
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.ChunkingPressure2}{no default}
+{This key is used to set the chunk size for the z dimension. The size will
+affect the structure of the pressure variable.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.ChunkingPressure2  10
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.ChunkingPressure3}{no default}
+{This key is used to set the chunk size for the y dimension. The size will
+affect the structure of the pressure variable.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.ChunkingPressure3  10
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.ChunkingPressure4}{no default}
+{This key is used to set the chunk size for the x dimension. The size will
+affect the structure of the pressure variable.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.ChunkingPressure4  10
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.ChunkingSaturation}{False}
+{This key is used to turn on the NetCDF feature chunking for the saturation
+variable. If this key is set to \code{True} then
+\code{NetCDF.CunkingSaturation1-4} also need to be set.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.ChunkingSaturation  True
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.ChunkingSaturation1}{no default}
+{This key is used to set the chunk size for the time dimension. The size will
+affect the structure of the saturation variable.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.ChunkingSaturation1  10
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.ChunkingSaturation2}{no default}
+{This key is used to set the chunk size for the z dimension. The size will
+affect the structure of the saturation variable.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.ChunkingSaturation2  10
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.ChunkingSaturation3}{no default}
+{This key is used to set the chunk size for the y dimension. The size will
+affect the structure of the saturation variable.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.ChunkingSaturation3  10
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.ChunkingSaturation4}{no default}
+{This key is used to set the chunk size for the x dimension. The size will
+affect the structure of the saturation variable.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.ChunkingSaturation4  10
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.ROMIOhints}{no default}
+{This key is used to set the path to the file containing ROMIO hints. ROMIO
+hints affect all MPI I/O functions and generally benefit the NetCDF4 I/O library
+immensely. It is advised to set these keys appropriately for your machine to get
+the best performance possible. The specified path is relative to the execution
+directory.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.ROMIOhints  romio.hints
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.Institution}{none}
+{This key is used to set the content of one of the global attributes in the
+NetCDF output files. These attributes are set according to the CF-1.6 standard.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.Institution  "Institute for Bio- and Geosciences"
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.InstituteID}{none}
+{This key is used to set the content of one of the global attributes in the
+NetCDF output files. These attributes are set according to the CF-1.6 standard.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.InstituteID  "IBGSK"
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.ModelID}{none}
+{This key is used to set the content of one of the global attributes in the
+NetCDF output files. These attributes are set according to the CF-1.6 standard.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.ModelID  "IBGSK-PF"
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.Experiment}{none}
+{This key is used to set the content of one of the global attributes in the
+NetCDF output files. These attributes are set according to the CF-1.6 standard.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.Experiment  "ParFlow evaluation"
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.ExperimentID}{none}
+{This key is used to set the content of one of the global attributes in the
+NetCDF output files. These attributes are set according to the CF-1.6 standard.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.ExperimentID  "evaluation"
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.Contact}{none}
+{This key is used to set the content of one of the global attributes in the
+NetCDF output files. These attributes are set according to the CF-1.6 standard.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.Contact  "example@example.ex"
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.Product}{none}
+{This key is used to set the content of one of the global attributes in the
+NetCDF output files. These attributes are set according to the CF-1.6 standard.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.Product  "output"
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.VersionID}{none}
+{This key is used to set the content of one of the global attributes in the
+NetCDF output files. These attributes are set according to the CF-1.6 standard.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.VersionID  "v1"
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.Domain}{none}
+{This key is used to set the content of one of the global attributes in the
+NetCDF output files. These attributes are set according to the CF-1.6 standard.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.Domain  "artificial"
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.ProjectID}{none}
+{This key is used to set the content of one of the global attributes in the
+NetCDF output files. These attributes are set according to the CF-1.6 standard.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.ProjectID  "PFL"
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.References}{none}
+{This key is used to set the content of one of the global attributes in the
+NetCDF output files. These attributes are set according to the CF-1.6 standard.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.References  "http://www.hpsc-terrsys.de/"
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.Comment}{none}
+{This key is used to set the content of one of the global attributes in the
+NetCDF output files. These attributes are set according to the CF-1.6 standard.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.Comment "no comment"
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.DrivingModelID}{none}
+{This key is used to set the content of one of the global attributes in the
+NetCDF output files. These attributes are set according to the CF-1.6 standard.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.DrivingModelID  "ECMWF-ERAINT"
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.DrivingExperiment}{none}
+{This key is used to set the content of one of the global attributes in the
+NetCDF output files. These attributes are set according to the CF-1.6 standard.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.DrivingExperiment  "evaluation"
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.DrivingModelEnsemble}{none}
+{This key is used to set the content of one of the global attributes in the
+NetCDF output files. These attributes are set according to the CF-1.6 standard.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.DrivingModelEnsemble  "r1i1p1"
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.LatLonFile}{none}
+{This key is used to set the path to the NetCDF4 file containing latitude and
+longitude data. Hence ParFlow does not support latitude and longitude on its
+you have to make sure that the data in the file fits the model domain. The data
+should also be formatted as decimal degrees with the degrees facing north and
+east. The specified path is relative to the execution directory.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.LatLonFile  "latlon.nc"
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.LatLonNames}{none}
+{This key is used to specify the variable names of the latitude and longitude
+variable in the \code{NetCDF.LatLonFile}. The variable names have to be
+separated by a whitespace.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.LatLonNames  "lat lon"
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.HardFileName}{none}
+{This key is used to set a specific hard file name for NetCDF4 output files. If
+file splitting is enabled as well a timestamp will be appended to avoid
+overwritten data. The NetCDF file suffix ".nc" will be added automatically.
+The specified path is relative to the execution directory.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.HardFileName  "hardfile"
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.StartDateYear}{no default}
+{This key is used to set the starting year of the model run.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.StartDateYear  2016
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.StartDateMonth}{no default}
+{This key is used to set the starting month of the model run.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.StartDateMonth  8
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.StartDateDay}{no default}
+{This key is used to set the starting day of the model run.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.StartDateDay  11
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.SplitInterval}{none}
+{This key is used to set the splitting interval of the NetCDF output files.
+Possible values for this key are {\bf none, daily, monthly} and {\bf yearly}.
+The files will be split according to the specified interval and respective to
+the specified StartDate values which are mandatory.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.SplitInterval  monthly
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.AppendDirectory}{no default}
+{This key is used to specify a path containing NetCDF datasets. \parflow{}
+expects these datasets to be in the same format as its own output. When variable
+or dimension names mismatch the model run will break. If \parflow{} finds a file
+where the ending timestamp of the existing dataset matches the timestamp of the
+current model iteration it will continue to write the model data into the
+existing dataset. This timestamp check is made when \parflow{} would create a
+new file itself. The specified path is relative to the execution directory.}
+\begin{display}\begin{verbatim}
+pfset NetCDF.AppendDirectory "/user/sk/data/nc_test/"
+\end{verbatim}\end{display}
+If the dataset does not have a time variable like this the model will definitely
+break:
+\begin{display}\begin{verbatim}
+double time(time) ;
+time:standard_name = "time" ;
+time:units = "days since 2016-08-30T00:00:00Z" ;
+time:long_name = "time" ;
+time:_FillValue = -999.9 ;
+time:calendar = "standard" ;
+time:axis = "T" ;
+\end{verbatim}\end{display}
 
 %=============================================================================
 %=============================================================================
@@ -4664,4 +5072,71 @@ The format for the file is:
    END
 \end{verbatim}\end{display}
 
+%=============================================================================
+%=============================================================================
 
+\newpage
+\section{NetCDF Input and Output Files}
+
+The new NetCDf interface adds a lot of functionality to ParFlow. This added
+functionality will be discussed in the next few sections.
+
+\subsection{Implementation}
+
+The implementation philosophy of the NetCDF interface is very similar to that of
+the PFB interface. The interface is packaged in 4 files within the
+\file{/pfsimulator/parflow_lib}. The main write and read functions are nearly
+the same as the PFB interface and follow the ParFlow naming structure. The
+added metadata tracking and performance tuning is all included through the
+functionality in \newline
+\file{/pfsimulator/parflow_lib/write_parflow_netcdf_create.c}.
+Here all the file system issues are taken care of. In contrast to PFB our goal
+with this I/O option is to reduce the overhead for the data after ParFlow is
+done. So keeping track of file creation and closing is managed in here.
+
+\subsection{I/O mechanism}
+
+Because we only write to one file at one time with an arbitrary amount of
+processes we needed to use a different approach to the very basic writing of
+data itself. For this we are using the collective I/O mode of the NetCDF4
+library and if possible rely on the additional collective buffering option of an
+underlying parallel file system.
+To fully utilize any parallel filesystem you wish to use we support ROMIO key
+values which can be given to the ParFlow model via config file. An example
+config file for the JURECA machine of the JSC is included but for your own
+system you should corroborate with your sys admin.
+
+\subsection{Changes/additions}
+
+The added support for ROMIO keys is located within the
+\file{/pfismulator/amps/mpi1/amps_init.c} file in the function
+\file{amps_SetInfo}. This \file{MPI_Info} is also made global in the amps.h file
+with the variable \file{amps_Info} which should be used in the actual ParFlow
+code.
+
+All NetCDF additions are in the 4 file within
+\file{/pfsimulator/parflow_lib/*netcdf*}. Also Additions were made in
+\file{/pfsimulator/parflow_lib/solver_richards.c}. Everywhere where PFB output
+would be produced NetCDF will be produced as well.
+
+\subsection{Metadata}
+
+For all the Metadata preservation the CF-1.6 convention was used as orientation.
+For variables all this information will be autofilled, all user dependend
+information and naming schemes can be set through the Tcl config files.
+
+All the Tcl key values will preserved as global attributes as well. Fot this not
+only the keys that a user actually set in a config file will be saved but also
+all default values for keys that were not specified. This should make the
+reproducibility of data very easy.
+
+\subsection{Timesplitting}
+
+
+
+\subsection{Chunking}
+\subsection{Coordinate data}
+\subsection{Compression}
+\subsection{Concurrency}
+\subsection{Performance}
+\subsubsection{Weak and strong scaling tests}
