@@ -160,7 +160,7 @@ If all went well a sample Parflow problem can be run using:
 
 ```shell
 cd test
-tclsh default_single.pftcl
+tclsh default_single.tcl 1 1 1
 ```
 
 Note that `PAFLOW_DIR` must be set for this to work and it assumes
