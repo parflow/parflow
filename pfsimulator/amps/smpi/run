@@ -36,7 +36,7 @@
 # Program usage 
 #
 #-----------------------------------------------------------------------------
-function usage () {
+usage () {
    echo "usage: $0 run [-hvpg] pfidb_file num_procs [process_group]"
    echo "    -h               help"
    echo "    -v               verbose"
@@ -51,7 +51,7 @@ function usage () {
 # Verbose logging
 #
 #=============================================================================
-function pflog () {
+pflog () {
    if [ $VERBOSE -eq 1 ]
    then
       echo "pfrun: $@"
