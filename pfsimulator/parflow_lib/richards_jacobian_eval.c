@@ -44,6 +44,9 @@
 #include "llnltyps.h"
 #include "assert.h" 
 
+// declare global saturation module - DOK
+PFModule *g_saturation_module = NULL;
+
 /*---------------------------------------------------------------------
  * Define module structures
  *---------------------------------------------------------------------*/
@@ -206,6 +209,7 @@ int           symm_part)      /* Specifies whether to compute just the
 
    PFModule    *density_module    = (instance_xtra -> density_module);
    PFModule    *saturation_module = (instance_xtra -> saturation_module);
+   g_saturation_module = saturation_module;
    PFModule    *rel_perm_module   = (instance_xtra -> rel_perm_module);
    PFModule    *bc_pressure       = (instance_xtra -> bc_pressure);
    PFModule    *bc_internal       = (instance_xtra -> bc_internal);

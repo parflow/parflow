@@ -33,6 +33,11 @@
  * Structures
  *--------------------------------------------------------------------------*/
 
+extern PFModule *g_saturation_module;
+extern double g_gravity;
+int Niter = 0; // tracks Newton calls
+int pred_switch = 0; // On if predictor is called
+
 typedef struct
 {
    int       max_iter;
@@ -234,6 +239,23 @@ int KinsolNonlinSolver (Vector *pressure , Vector *density , Vector *old_density
 
    int           ret              = 0;
 
+   // Data for initial guess predictor - DOK
+   Grid        *grid              = VectorGrid(pressure);   
+   GrGeomSolid        *gr_domain = ProblemDataGrDomain(problem_data);   
+   PFModule    *saturation_module = g_saturation_module;
+   Subgrid     *subgrid;
+   Vector      *sstorage          = ProblemDataSpecificStorage(problem_data);
+   Vector      *porosity          = ProblemDataPorosity(problem_data);   
+   Vector      *fn_eval = NULL, *saturation_der = NULL, *work_sat;
+   Subvector   *p_sub, *op_sub, *s_sub, *sd_sub, *po_sub, *ss_sub, *f_sub;
+   double      *pp, *op, *sp, *sdp, *pop, *ss, *fval;
+   double       gravity           = g_gravity;
+   double       coeff, dt_old,t_old,tm;
+   int          i, j, k, r, is, im;
+   int          ix, iy, iz;
+   int          nx, ny, nz; 
+   // ======= end predictor data block ====== 
+
    StateFunc(current_state)          = nl_function_eval;
    StateProblemData(current_state)   = problem_data;
    StateTime(current_state)          = t;
@@ -252,6 +274,159 @@ int KinsolNonlinSolver (Vector *pressure , Vector *density , Vector *old_density
 
    if (!amps_Rank(amps_CommWorld))
       fprintf(kinsol_file,"\nKINSOL starting step for time %f\n",t);
+
+   /* Predictor for initial pressure guess - DOK */
+   
+   /* Calculate time term contributions. */
+   fn_eval  = NewVectorType(grid, 1, 1, vector_cell_centered);
+   PFVConstInit(0.0, fn_eval);
+
+   saturation_der  = NewVectorType(grid, 1, 1, vector_cell_centered);   
+
+   work_sat  = NewVectorType(grid, 1, 1, vector_cell_centered);
+   PFVCopy(old_saturation, work_sat);
+
+   if(saturation_module)
+   {
+      pred_switch = 1;
+      PFModuleInvokeType(NlFunctionEvalInvoke, nl_function_eval, 
+		     (old_pressure, fn_eval, problem_data, work_sat, old_saturation, 
+		      old_density, old_density, dt, t, old_pressure, evap_trans,
+		      ovrl_bc_flx) );
+
+//      PFVConstInit(0.0, work_sat);
+//      PFModuleInvokeType(SaturationInvoke, saturation_module, (work_sat, old_pressure, 
+//					       old_density, gravity, problem_data, 
+//					       CALCFCN));
+
+      PFModuleInvokeType(SaturationInvoke, saturation_module, (saturation_der, old_pressure, 
+					       old_density, gravity, problem_data,
+					       CALCDER));
+
+   ForSubgridI(is, GridSubgrids(grid))
+   {
+      subgrid = GridSubgrid(grid, is);
+
+      p_sub   = VectorSubvector(pressure, is);
+      op_sub   = VectorSubvector(old_pressure, is);
+      s_sub  = VectorSubvector(old_saturation, is);
+//      s_sub  = VectorSubvector(work_sat, is);
+      sd_sub = VectorSubvector(saturation_der, is);
+      po_sub = VectorSubvector(porosity, is);
+      ss_sub = VectorSubvector(sstorage, is);
+      f_sub  = VectorSubvector(fn_eval, is);
+
+      r = SubgridRX(subgrid);
+	 
+      ix = SubgridIX(subgrid);
+      iy = SubgridIY(subgrid);
+      iz = SubgridIZ(subgrid);
+	 
+      nx = SubgridNX(subgrid);
+      ny = SubgridNY(subgrid);
+      nz = SubgridNZ(subgrid);
+
+      pp  = SubvectorData(p_sub);  //pressure
+      op  = SubvectorData(op_sub);  //old_pressure
+      sp  = SubvectorData(s_sub);  //saturation
+      sdp = SubvectorData(sd_sub);  // saturation derivative: del-S / del-press
+      pop = SubvectorData(po_sub);   // porosity
+      ss  = SubvectorData(ss_sub);  // sepcific storage
+      fval = SubvectorData(f_sub);  // nonlinear function
+
+      GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+      {
+
+	 im  = SubmatrixEltIndex(p_sub, i, j, k);
+	 double dpdt = -fval[im]/(ss[im]*sp[im] + pop[im]*sdp[im]);
+	 coeff = dt*dpdt;
+
+#if 1
+
+
+///*
+    double sgn = coeff/fabs(dpdt);
+    double coeff2 = sgn*op[im]*op[im];
+    coeff = fabs(coeff) < fabs(coeff2) ? coeff : coeff2;
+    
+    if(fabs(coeff) < 0.1*fabs(op[im]))
+    {
+       pp[im] = coeff*sgn;
+    }
+    else
+    {
+       pp[im] = op[im] + coeff;
+    }
+//*/
+/*
+    double sgn = coeff/fabs(coeff);
+    double corr = 0.0;    
+    if(fabs(coeff) < fabs(op[im]))
+    {
+	    pp[im] = op[im] + coeff;
+	    // 'clip' coeff if necessary
+	    double prod = pp[im]*op[im];
+	    if(coeff < 0.) // psi_n > psi_n+1
+	    {
+	       if(prod < 0.) // saturated to unsaturated - ovlnd bc off
+	       {
+	          pp[im] = -pfmax(1.0e-6,-(0.1*coeff)); 
+	       }
+	    }
+	    else // psi_n+1 > psi_n
+	    {
+	       if(prod < 0.) // unsaturated to saturated - ovlnd bc on
+	       {
+	          pp[im] = pfmax(1.0e-6,(0.1*coeff)); 
+	       }
+	    }
+    }
+    else
+    {
+       if(sgn > 0.)
+       {
+         corr = 1.01*sgn*fabs(op[im]);
+         pp[im] = op[im] + 1.01*sgn*fabs(op[im]);
+       }
+       else
+       {
+         corr = 0.99*sgn*fabs(op[im]);
+         pp[im] = op[im] + 0.99*sgn*fabs(op[im]);       
+       }
+    }	 
+*/
+#else
+
+	 pp[im] = op[im] + coeff;
+	 // 'clip' coeff if necessary
+	 double prod = pp[im]*op[im];
+	 if(coeff < 0.) // psi_n > psi_n+1
+	 {
+	    if(prod < 0.) // saturated to unsaturated - ovlnd bc off
+	    {
+	       pp[im] = -pfmax(1.0e-6,(0.1*op[im])); 
+	    }
+	 }
+	 else // psi_n+1 > psi_n
+	 {
+	    if(prod < 0.) // unsaturated to saturated - ovlnd bc on
+	    {
+	       pp[im] = pfmax(1.0e-6,-(0.1*op[im])); 
+	    }
+	 }
+#endif
+
+	 if(i==0 &&j==0 && k==4)
+	 printf(" %d: pp_init =%f, pp_new = %f, gradient(~dp/dt) = %f, ijk = (%d, %d, %d), sp[%d] = %f, sdp[%d] = %f \n", Niter,op[im], pp[im], coeff, i, j, k, im, sp[im], im, sdp[im]);
+//	 if(i==0 &&j==0 && k==0)printf(" %d: pp_init =%f, pp_new = %f, coeff = %f, fval[%d] = %f, ss[%d] = %f, sp[%d] = %f, pop[%d] = %f, sdp[%d] = %f \n", Niter, op[im], pp[im], coeff, im, fval[im], im, ss[im],im,sp[im],im,pop[im],im,sdp[im]);
+      });          
+   }
+   
+  }
+  ++Niter;
+  pred_switch = 0;     
+   // ========= end predictor loop
+
 
    BeginTiming(public_xtra -> time_index);
 
@@ -290,6 +465,9 @@ int KinsolNonlinSolver (Vector *pressure , Vector *density , Vector *old_density
       ret = 0;
    }
 
+   FreeVector(work_sat);
+   FreeVector(saturation_der);
+   FreeVector(fn_eval);
    return(ret);
 
 }

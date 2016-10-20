@@ -45,6 +45,9 @@
 #include <float.h>
 #include <limits.h>
 
+// define global gravity variable
+double g_gravity;
+
 
 /*--------------------------------------------------------------------------
  * Structures
@@ -301,7 +304,8 @@ void SetupRichards(PFModule *this_module) {
    double        t;
    double        dt = 0.0;
    double        gravity = ProblemGravity(problem);
-
+   g_gravity = ProblemGravity(problem); // DOK - global variable
+   
    double        dtmp;
 
    VectorUpdateCommHandle   *handle;
