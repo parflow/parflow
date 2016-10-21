@@ -675,7 +675,7 @@ void WriteNetCDF_ResetTime() {
   start_time->tm_mday = GetInt("NetCDF.StartDateDay");
   start_time->tm_min = 60 *
                        (time_cont_offset + time_index + time_index_offset +
-                        GetDefaultInt("TimingInfo.StartCount", 0)) *
+                        GetIntDefault("TimingInfo.StartCount", 0)) *
                        (int)GetDouble("TimingInfo.BaseUnit") *
                        (int)GetDouble("TimingInfo.DumpInterval");
   start_time->tm_hour = 0;

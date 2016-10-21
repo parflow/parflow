@@ -168,7 +168,7 @@ void WriteNetCDF(char *file_prefix, char *file_postfix, Vector *v) {
     retval = nc_inq_varid(ncid, varname, &test_varid);
     if (retval == NC_NOERR)
       return;
-  }else if (strcmp(file_postfix, "overlandsum") == 0 ||
+  } else if (strcmp(file_postfix, "overlandsum") == 0 ||
       strcmp(file_postfix, "overland_bc_flux") == 0 ||
       strcmp(file_postfix, "eflx_lh_tot") == 0 ||
       strcmp(file_postfix, "eflx_lwrad_out") == 0 ||

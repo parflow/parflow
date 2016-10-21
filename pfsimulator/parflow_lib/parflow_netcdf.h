@@ -58,6 +58,7 @@
 #define NC_INDEPENDENT 0
 #define NC_COLLECTIVE 1
 
+
 char *FixDots(char *orig, char *rep, char *with);
 uint32_t Adler32(const void *buf, size_t buflength);
 int str_ends_with(const char *str, const char *suffix);
