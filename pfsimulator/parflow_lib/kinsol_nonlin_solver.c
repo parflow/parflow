@@ -345,6 +345,10 @@ int KinsolNonlinSolver (Vector *pressure , Vector *density , Vector *old_density
 
 
 ///*
+// Daniel's initial attempt
+// Works well outside the times when switching occurs, 
+// otherwise guess is poor at the point when overland flow 
+// kicks in.
     double sgn = coeff/fabs(dpdt);
     double coeff2 = sgn*op[im]*op[im];
     coeff = fabs(coeff) < fabs(coeff2) ? coeff : coeff2;
@@ -359,6 +363,10 @@ int KinsolNonlinSolver (Vector *pressure , Vector *density , Vector *old_density
     }
 //*/
 /*
+// Carol's suggestion
+// Works great at the interface when overland flow
+// becomes active, but slow otherwise. (See generic 
+// case before for reason)
     double sgn = coeff/fabs(coeff);
     double corr = 0.0;    
     if(fabs(coeff) < fabs(op[im]))
@@ -386,17 +394,23 @@ int KinsolNonlinSolver (Vector *pressure , Vector *density , Vector *old_density
        if(sgn > 0.)
        {
          corr = 1.01*sgn*fabs(op[im]);
-         pp[im] = op[im] + 1.01*sgn*fabs(op[im]);
+//         pp[im] = op[im] + 1.01*sgn*fabs(op[im]);
        }
        else
        {
          corr = 0.99*sgn*fabs(op[im]);
-         pp[im] = op[im] + 0.99*sgn*fabs(op[im]);       
+//         pp[im] = op[im] + 0.99*sgn*fabs(op[im]);       
        }
+       pp[im] = op[im] + corr;
     }	 
 */
 #else
 
+// Generic: add correction and clip if needed
+// Since the correction, coeff, can be large, this means
+// the initial guess may have a different sign from the 
+// final target (saturated <==> unsaturated), 
+// which leads to slow convergence 
 	 pp[im] = op[im] + coeff;
 	 // 'clip' coeff if necessary
 	 double prod = pp[im]*op[im];
