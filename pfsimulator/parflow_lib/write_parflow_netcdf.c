@@ -155,6 +155,9 @@ void WriteNetCDF(char *file_prefix, char *file_postfix, Vector *v) {
   dimids = (int *)malloc(dimlen);
   if (strcmp(file_postfix, "slope_x") == 0 ||
       strcmp(file_postfix, "slope_y") == 0 ||
+      strcmp(file_postfix, "perm_x") == 0 ||
+      strcmp(file_postfix, "perm_y") == 0 ||
+      strcmp(file_postfix, "perm_z") == 0 ||
       strcmp(file_postfix, "dz_mult") == 0 ||
       strcmp(file_postfix, "mask") == 0 ||
       strcmp(file_postfix, "mannings") == 0) {
