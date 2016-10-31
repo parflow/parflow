@@ -27,7 +27,7 @@
 **********************************************************************EHEADER*/
 
 #ifndef _INPUT_DATABASE_HEADER
-#define _INPUT_DATABASE
+#define _INPUT_DATABASE_HEADER
 
 #include "hbt.h"
 
