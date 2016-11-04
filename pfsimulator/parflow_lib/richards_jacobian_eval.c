@@ -25,7 +25,6 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
   USA
 **********************************************************************EHEADER*/
-
 /*
   SGS TODO this needs some work in the overland flow current
  implemnetation is doing communication and computations that are not
@@ -38,6 +37,8 @@
  overland flow means the process does as well if the overland flow
  cell is on the boundary.
  */
+
+/* code review */
 
 #include "parflow.h"
 #include "llnlmath.h"
