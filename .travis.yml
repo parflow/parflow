@@ -11,15 +11,24 @@ before_install:
   - test -n $CC  && unset CC
   - test -n $CXX && unset CXX
   - sudo apt-get -qq update
-  - sudo apt-get install -y libhypre libhypre-dev
-  - sudo apt-get install -y libsilo-bin libsilo-dev
+  - sudo apt-get install -y gfortran
+  - sudo apt-get install -y libhypre-2.8.0b libhypre-dev
+  - sudo apt-get install -y libsilo-bin  libsilo-dev
+  - sudo apt-get install -y tcl-dev tk-dev
+  - sudo apt-get install -y openmpi-bin openmpi-doc libopenmpi-dev
 before_script:
   - cd $TRAVIS_BUILD_DIR
-  - mkdir -p build.pfsimulator && (cd build.pfsimulator && ../pfsimulator/configure )
-  - mkdir -p build.pftools && (cd build.pftools  && ../pftools/configure )
-script:
-  - cd $TRAVIS_BUILD_DIR
+  - export PARFLOW_SRC_DIR=$TRAVIS_BUILD_DIR
+  - export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install
+  - mkdir -p $PARFLOW_DIR
+  - export CC=mpicc
+  - export CXX=mpiCC
+  - export F77=mpif77
+  - export FC=mpif90
+  - mkdir -p build.pfsimulator && (cd build.pfsimulator && ../pfsimulator/configure --prefix=$PARFLOW_DIR --with-amps=mpi1 --with-hypre --with-silo )
+  - mkdir -p build.pftools && (cd build.pftools  && ../pftools/configure --prefix=$PARFLOW_DIR --with-amps=mpi1 --with-silo)
   - (cd build.pfsimulator && make)
   - (cd build.pftools && make)
-  - (cd test && make)
+script:
+  - (cd test && make check_sequential)
   
