@@ -14323,6 +14323,11 @@ $as_echo "using $silo_LIBS" >&6; }
       silo_LIBS='-lsiloh5'
       { $as_echo "$as_me:$LINENO: result: using $silo_LIBS" >&5
 $as_echo "using $silo_LIBS" >&6; }
+   elif test -f ${silo_PREFIX}/lib/x86_64-linux-gnu/libsiloh5.so; then
+      # This is for Ubuntu
+      silo_LIBS='-lsiloh5'
+      { $as_echo "$as_me:$LINENO: result: using $silo_LIBS" >&5
+$as_echo "using $silo_LIBS" >&6; }
    elif test -f ${silo_PREFIX}/lib/libsilo.a; then
       silo_LIBS='-lsilo'
       { $as_echo "$as_me:$LINENO: result: using $silo_LIBS" >&5
@@ -14439,9 +14444,268 @@ $as_echo "$hypre_PREFIX" >&6; }
     { $as_echo "$as_me:$LINENO: checking for HYPRE installation" >&5
 $as_echo_n "checking for HYPRE installation... " >&6; }
     hypre_PREFIX=$with_hypre
-    hypre_INCLUDES="-I${hypre_PREFIX}/include"
-    hypre_LIBS="-L${hypre_PREFIX}/lib -lHYPRE"
+  ;;
+esac
 
+if test "${hypre_PREFIX+set}" = set; then
+
+    hypre_INCLUDES="-I${hypre_PREFIX}/include"
+
+    #
+    # Check for HYPRE libraries
+    #
+    hypre_LIBS="-L${hypre_PREFIX}/lib"
+
+    HYPRE_OLD_LDFLAGS=$LDFLAGS
+    HYPRE_OLD_CPPFLAGS=$LDFLAGS
+    LDFLAGS="$LDFLAGS -L${hypre_PREFIX}/lib"
+    CPPFLAGS="$CPPFLAGS -I${hypre_PREFIX}/include"
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+    { $as_echo "$as_me:$LINENO: checking for HYPRE_StructPFMGSolve in -lHYPRE" >&5
+$as_echo_n "checking for HYPRE_StructPFMGSolve in -lHYPRE... " >&6; }
+if test "${ac_cv_lib_HYPRE_HYPRE_StructPFMGSolve+set}" = set; then
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lHYPRE  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char HYPRE_StructPFMGSolve ();
+int
+main ()
+{
+return HYPRE_StructPFMGSolve ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
+  ac_cv_lib_HYPRE_HYPRE_StructPFMGSolve=yes
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_HYPRE_HYPRE_StructPFMGSolve=no
+fi
+
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_HYPRE_HYPRE_StructPFMGSolve" >&5
+$as_echo "$ac_cv_lib_HYPRE_HYPRE_StructPFMGSolve" >&6; }
+if test "x$ac_cv_lib_HYPRE_HYPRE_StructPFMGSolve" = x""yes; then
+  hypre_libhypre=yes
+else
+  hypre_libhypre=no
+fi
+
+    if test "$hypre_libhypre" = "yes"
+    then
+	hypre_LIBS="$hypre_LIBS -lHYPRE"
+    else
+        # Following two checks were needed on Ubuntu distributions.   libHYPRE.so was empty.
+	{ $as_echo "$as_me:$LINENO: checking for HYPRE_StructPFMGSolve in -lHYPRE_struct_ls" >&5
+$as_echo_n "checking for HYPRE_StructPFMGSolve in -lHYPRE_struct_ls... " >&6; }
+if test "${ac_cv_lib_HYPRE_struct_ls_HYPRE_StructPFMGSolve+set}" = set; then
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lHYPRE_struct_ls  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char HYPRE_StructPFMGSolve ();
+int
+main ()
+{
+return HYPRE_StructPFMGSolve ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
+  ac_cv_lib_HYPRE_struct_ls_HYPRE_StructPFMGSolve=yes
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_HYPRE_struct_ls_HYPRE_StructPFMGSolve=no
+fi
+
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_HYPRE_struct_ls_HYPRE_StructPFMGSolve" >&5
+$as_echo "$ac_cv_lib_HYPRE_struct_ls_HYPRE_StructPFMGSolve" >&6; }
+if test "x$ac_cv_lib_HYPRE_struct_ls_HYPRE_StructPFMGSolve" = x""yes; then
+  hypre_libhypre=yes
+else
+  hypre_libhypre=no
+fi
+
+	if test "$hypre_libhypre" = "yes"
+	then
+	   hypre_LIBS="$hypre_LIBS -lHYPRE_struct_ls"
+	fi
+
+	{ $as_echo "$as_me:$LINENO: checking for hypre_StructMatvecCreate in -lHYPRE_struct_mv" >&5
+$as_echo_n "checking for hypre_StructMatvecCreate in -lHYPRE_struct_mv... " >&6; }
+if test "${ac_cv_lib_HYPRE_struct_mv_hypre_StructMatvecCreate+set}" = set; then
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lHYPRE_struct_mv  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char hypre_StructMatvecCreate ();
+int
+main ()
+{
+return hypre_StructMatvecCreate ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
+  ac_cv_lib_HYPRE_struct_mv_hypre_StructMatvecCreate=yes
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_HYPRE_struct_mv_hypre_StructMatvecCreate=no
+fi
+
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_HYPRE_struct_mv_hypre_StructMatvecCreate" >&5
+$as_echo "$ac_cv_lib_HYPRE_struct_mv_hypre_StructMatvecCreate" >&6; }
+if test "x$ac_cv_lib_HYPRE_struct_mv_hypre_StructMatvecCreate" = x""yes; then
+  hypre_libhypre=yes
+else
+  hypre_libhypre=no
+fi
+
+	if test "$hypre_libhypre" = "yes"
+	then
+	   hypre_LIBS="$hypre_LIBS -lHYPRE_struct_mv"
+	fi
+    fi
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+    #
+    # Check if parallel version of HYPRE is being used
+    #
     save_cppflags=$CPPFLAGS
     # Add hypre include flags to cpp so we can examine its header file.
     CPPFLAGS="$hypre_INCLUDES $CPPFLAGS"
@@ -14614,8 +14878,7 @@ $as_echo "$hypre_MPI" >&6; }
 
     # Reset cpp after checking hypre header file.
     CPPFLAGS=$save_cppflags
-  ;;
-esac
+fi
 
 # End macro
 
