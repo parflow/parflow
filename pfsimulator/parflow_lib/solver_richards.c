@@ -53,7 +53,6 @@
 typedef struct
 { 
    PFModule          *permeability_face;
-   // jjb PFModule          *phase_velocity_face;
    PFModule          *advect_concen;
    PFModule          *set_problem_data;
    PFModule          *nonlin_solver;
@@ -175,7 +174,6 @@ typedef struct
 typedef struct
 { 
    PFModule          *permeability_face;
-  // jjb PFModule          *phase_velocity_face;
    PFModule          *advect_concen;
    PFModule          *set_problem_data;
 
@@ -3289,11 +3287,6 @@ PFModule *SolverRichardsInitInstanceXtra()
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
    {
-    // jjb  (instance_xtra -> phase_velocity_face) = NULL;
-      /*	 PFModuleNewInstance((public_xtra -> phase_velocity_face),
-                 (problem, grid, x_grid, y_grid, z_grid, NULL));
-      */
-      /* Need to change for rel. perm. and not mobility */
       (instance_xtra -> advect_concen) =
 	 PFModuleNewInstanceType(AdvectionConcentrationInitInstanceXtraType,
 				 (public_xtra -> advect_concen),
@@ -3338,9 +3331,6 @@ PFModule *SolverRichardsInitInstanceXtra()
    }
    else
    {
-    /* jjb  PFModuleReNewInstanceType(PhaseVelocityFaceInitInstanceXtraInvoke,
-				(instance_xtra -> phase_velocity_face),
-				(problem, grid, x_grid, y_grid, z_grid, NULL)); */
       PFModuleReNewInstanceType(AdvectionConcentrationInitInstanceXtraType,
 				(instance_xtra -> advect_concen),
 				(problem, grid, NULL));
@@ -3485,9 +3475,6 @@ void  SolverRichardsFreeInstanceXtra()
 
       PFModuleFreeInstance((instance_xtra -> set_problem_data));
       PFModuleFreeInstance((instance_xtra -> advect_concen));
-    /* jjb  if (instance_xtra -> phase_velocity_face)
-	 PFModuleFreeInstance((instance_xtra -> phase_velocity_face)); */
-
       PFModuleFreeInstance((instance_xtra -> ic_phase_pressure));
       PFModuleFreeInstance((instance_xtra -> problem_saturation));
       PFModuleFreeInstance((instance_xtra -> phase_density));
@@ -3548,13 +3535,6 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    
    (public_xtra -> permeability_face) = 
       PFModuleNewModule(PermeabilityFace, ());
-  // jjb  (public_xtra -> phase_velocity_face) = NULL;
-
-   /*     
-   PFModuleNewModule(PhaseVelocityFace, ());
-   */
-   /* Need to account for rel. perm. and not mobility */
-
    (public_xtra -> advect_concen) = PFModuleNewModule(Godunov, ());
    (public_xtra -> set_problem_data) = PFModuleNewModule(SetProblemData, ());
    (public_xtra -> problem) = NewProblem(RichardsSolve);
@@ -4682,8 +4662,6 @@ void   SolverRichardsFreePublicXtra()
 
       PFModuleFreeModule(public_xtra -> set_problem_data);
       PFModuleFreeModule(public_xtra -> advect_concen);
-     /* jjb if (public_xtra -> phase_velocity_face)
-	 PFModuleFreeModule(public_xtra -> phase_velocity_face); */
       PFModuleFreeModule(public_xtra -> permeability_face);
       PFModuleFreeModule(public_xtra -> nonlin_solver);
       tfree( public_xtra );

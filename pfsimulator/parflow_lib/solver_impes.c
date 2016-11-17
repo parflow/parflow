@@ -810,7 +810,7 @@ void      SolverImpes()
 
 
             if ( print_velocities )
-            { printf("Flag 1 \n");
+            {
                for(phase = 0; phase < ProblemNumPhases(problem); phase++)
                {
                  sprintf(file_postfix, "phasex.%01d.%05d", phase, file_number - 1);
