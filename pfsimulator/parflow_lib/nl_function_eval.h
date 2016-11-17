@@ -54,6 +54,10 @@ typedef struct
    Vector       *evap_trans; /*sk*/
    Vector       *ovrl_bc_flx; /*sk*/
    
+   Vector       *x_velocity; //jjb
+   Vector       *y_velocity; //jjb
+   Vector       *z_velocity; //jjb
+   
 } State;
 
 
@@ -81,3 +85,6 @@ typedef struct
 #define StateOutflow(state)       ((state)->outflow) /*sk*/
 #define StateEvapTrans(state)     ((state)->evap_trans) /*sk*/
 #define StateOvrlBcFlx(state)     ((state)->ovrl_bc_flx) /*sk*/
+#define StateXvel(state)          ((state)->x_velocity) //jjb
+#define StateYvel(state)          ((state)->y_velocity) //jjb
+#define StateZvel(state)          ((state)->z_velocity) //jjb
