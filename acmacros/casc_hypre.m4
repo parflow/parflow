@@ -50,6 +50,12 @@ if test "${hypre_PREFIX+set}" = set; then
     HYPRE_OLD_CPPFLAGS=$LDFLAGS
     LDFLAGS="$LDFLAGS -L${hypre_PREFIX}/lib"
     CPPFLAGS="$CPPFLAGS -I${hypre_PREFIX}/include"
+
+    if test "$with_mpi" = 'yes' ; then
+       LDFLAGS="$LDFLAGS $MPILIBDIRS $MPILIBS "
+       CPPFLAGS="$CPPFLAGS $MPIINCLUDE"
+    fi 
+
     AC_LANG_SAVE
     AC_LANG_C
 
@@ -62,14 +68,18 @@ if test "${hypre_PREFIX+set}" = set; then
 	AC_CHECK_LIB(HYPRE_struct_ls, HYPRE_StructPFMGSolve, [hypre_libhypre=yes], [hypre_libhypre=no])
 	if test "$hypre_libhypre" = "yes"
 	then
-	   hypre_LIBS="$hypre_LIBS -lHYPRE_struct_ls"	
+	   hypre_LIBS="$hypre_LIBS -lHYPRE_struct_ls"
+
+	   AC_CHECK_LIB(HYPRE_struct_mv,hypre_StructMatvecCreate, [hypre_libhypre=yes], [hypre_libhypre=no])
+	   if test "$hypre_libhypre" = "yes"
+	   then
+	      hypre_LIBS="$hypre_LIBS -lHYPRE_struct_mv"	
+	   fi
+	else
+	   with_hypre='no'
+	   hypre_LIBS=''
 	fi
 
-	AC_CHECK_LIB(HYPRE_struct_mv,hypre_StructMatvecCreate, [hypre_libhypre=yes], [hypre_libhypre=no])
-	if test "$hypre_libhypre" = "yes"
-	then
-	   hypre_LIBS="$hypre_LIBS -lHYPRE_struct_mv"	
-	fi
     fi
     AC_LANG_RESTORE
 
