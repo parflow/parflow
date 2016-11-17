@@ -14461,6 +14461,12 @@ if test "${hypre_PREFIX+set}" = set; then
     LDFLAGS="$LDFLAGS -L${hypre_PREFIX}/lib"
     CPPFLAGS="$CPPFLAGS -I${hypre_PREFIX}/include"
 
+    if test "$with_mpi" = 'yes' ; then
+       LDFLAGS="$LDFLAGS $MPILIBDIRS $MPILIBS "
+       CPPFLAGS="$CPPFLAGS $MPIINCLUDE"
+    fi
+
+
     ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -14618,9 +14624,8 @@ fi
 	if test "$hypre_libhypre" = "yes"
 	then
 	   hypre_LIBS="$hypre_LIBS -lHYPRE_struct_ls"
-	fi
 
-	{ $as_echo "$as_me:$LINENO: checking for hypre_StructMatvecCreate in -lHYPRE_struct_mv" >&5
+	   { $as_echo "$as_me:$LINENO: checking for hypre_StructMatvecCreate in -lHYPRE_struct_mv" >&5
 $as_echo_n "checking for hypre_StructMatvecCreate in -lHYPRE_struct_mv... " >&6; }
 if test "${ac_cv_lib_HYPRE_struct_mv_hypre_StructMatvecCreate+set}" = set; then
   $as_echo_n "(cached) " >&6
@@ -14691,10 +14696,15 @@ else
   hypre_libhypre=no
 fi
 
-	if test "$hypre_libhypre" = "yes"
-	then
-	   hypre_LIBS="$hypre_LIBS -lHYPRE_struct_mv"
+	   if test "$hypre_libhypre" = "yes"
+	   then
+	      hypre_LIBS="$hypre_LIBS -lHYPRE_struct_mv"
+	   fi
+	else
+	   with_hypre='no'
+	   hypre_LIBS=''
 	fi
+
     fi
     ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
