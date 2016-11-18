@@ -53,7 +53,6 @@
 typedef struct
 { 
    PFModule          *permeability_face;
-   PFModule          *phase_velocity_face;
    PFModule          *advect_concen;
    PFModule          *set_problem_data;
    PFModule          *nonlin_solver;
@@ -175,7 +174,6 @@ typedef struct
 typedef struct
 { 
    PFModule          *permeability_face;
-   PFModule          *phase_velocity_face;
    PFModule          *advect_concen;
    PFModule          *set_problem_data;
 
@@ -214,7 +212,7 @@ typedef struct
    Vector      *overland_sum;         
    Vector      *ovrl_bc_flx;          /* vector containing outflow at the boundary */
    Vector      *dz_mult;              /* vector containing dz multplier values for all cells */
-
+   Vector      *x_velocity, *y_velocity, *z_velocity; /* vectors to hold velocity face values for pfbs - jjb */
 #ifdef HAVE_CLM
    
    /* RM: vars for pf printing of clm output */
@@ -284,11 +282,15 @@ void SetupRichards(PFModule *this_module) {
    int           print_press         = (public_xtra -> print_press);
    int           print_satur         = (public_xtra -> print_satur);
    int           print_wells         = (public_xtra -> print_wells);
+   int           print_velocities    = (public_xtra -> print_velocities); //jjb
 
    ProblemData  *problem_data        = (instance_xtra -> problem_data);
    PFModule     *set_problem_data    = (instance_xtra -> set_problem_data);
    Grid         *grid                = (instance_xtra -> grid);
    Grid         *grid2d              = (instance_xtra -> grid2d);
+    Grid         *x_grid              = (instance_xtra -> x_grid); //jjb
+   Grid         *y_grid              = (instance_xtra -> y_grid); //jjb
+   Grid         *z_grid              = (instance_xtra -> z_grid); //jjb
 
    double        start_time          = ProblemStartTime(problem);
    double        stop_time           = ProblemStopTime(problem);
@@ -575,6 +577,7 @@ void SetupRichards(PFModule *this_module) {
       print_press           = 0;
       print_satur           = 0;
       print_wells           = 0;
+      print_velocities      = 0; //jjb
    }
          
    if (take_more_time_steps)
@@ -619,6 +622,19 @@ void SetupRichards(PFModule *this_module) {
 
       instance_xtra -> evap_trans_sum = NewVectorType( grid, 1, 0, vector_cell_centered );
       InitVectorAll(instance_xtra -> evap_trans_sum, 0.0);
+      
+      /* intialize vel vectors - jjb */
+      instance_xtra -> x_velocity = ctalloc(Vector, ProblemNumPhases(problem) );
+      instance_xtra -> x_velocity = NewVectorType( x_grid, 1, 1, vector_side_centered_x);
+      InitVectorAll(instance_xtra -> x_velocity, 0.0);
+      
+      instance_xtra -> y_velocity = ctalloc(Vector, ProblemNumPhases(problem) );
+      instance_xtra -> y_velocity = NewVectorType( y_grid, 1, 1, vector_side_centered_y);
+      InitVectorAll(instance_xtra -> y_velocity, 0.0);
+
+      instance_xtra -> z_velocity = ctalloc(Vector, ProblemNumPhases(problem) );
+      instance_xtra -> z_velocity = NewVectorType( z_grid, 1, 2, vector_side_centered_z);
+      InitVectorAll(instance_xtra -> z_velocity, 0.0);
 
 
 /* IMF: the following are only used w/ CLM */
@@ -1045,6 +1061,23 @@ void SetupRichards(PFModule *this_module) {
                      t, instance_xtra -> file_number, "Mask");
            any_file_dumped = 1;
        }
+       
+       /* print initial velocities??? jjb */
+       if ( print_velocities )
+       {
+                 sprintf(file_postfix, "velx.%05d", instance_xtra -> file_number);
+                 WritePFBinary(file_prefix, file_postfix, instance_xtra -> x_velocity);
+
+                 sprintf(file_postfix, "vely.%05d", instance_xtra -> file_number);
+                 WritePFBinary(file_prefix, file_postfix, instance_xtra -> y_velocity);
+
+                 sprintf(file_postfix, "velz.%05d", instance_xtra -> file_number);
+                 WritePFBinary(file_prefix, file_postfix, instance_xtra -> z_velocity);
+		 
+		 any_file_dumped = 1;
+
+        }
+	       
        
       /*-----------------------------------------------------------------
        * Log this step
@@ -2136,7 +2169,10 @@ void AdvanceRichards(PFModule *this_module,
 				      t, dt, 
 				      problem_data, instance_xtra -> old_pressure, 
 				      evap_trans, 
-				      instance_xtra -> ovrl_bc_flx));
+				      instance_xtra -> ovrl_bc_flx,
+				      instance_xtra -> x_velocity,
+				      instance_xtra -> y_velocity, 
+				      instance_xtra -> z_velocity));
 
 	 if (retval != 0)
 	 {
@@ -2221,6 +2257,17 @@ void AdvanceRichards(PFModule *this_module,
            
        }
        
+       /* velocity updates - not sure these are necessary jjb */ 
+   handle = InitVectorUpdate(instance_xtra -> x_velocity, VectorUpdateAll);
+   FinalizeVectorUpdate(handle);
+
+   handle = InitVectorUpdate(instance_xtra ->  y_velocity, VectorUpdateAll);
+   FinalizeVectorUpdate(handle);
+
+   handle = InitVectorUpdate(instance_xtra ->  z_velocity, VectorUpdateAll);
+   FinalizeVectorUpdate(handle);
+   
+       
       /* Calculate densities and saturations for the new pressure. */
       PFModuleInvokeType(PhaseDensityInvoke,  phase_density, 
 		     (0, instance_xtra -> pressure, instance_xtra -> density, 
@@ -2284,6 +2331,21 @@ void AdvanceRichards(PFModule *this_module,
                         t, instance_xtra -> file_number, "Pressure");
               any_file_dumped = 1;
           }
+          
+          if ( public_xtra -> print_velocities ) //jjb
+       {
+                 sprintf(file_postfix, "velx.%05d", instance_xtra -> file_number);
+                 WritePFBinary(file_prefix, file_postfix, instance_xtra -> x_velocity);
+
+                 sprintf(file_postfix, "vely.%05d", instance_xtra -> file_number);
+                 WritePFBinary(file_prefix, file_postfix, instance_xtra -> y_velocity);
+
+                 sprintf(file_postfix, "velz.%05d", instance_xtra -> file_number);
+                 WritePFBinary(file_prefix, file_postfix, instance_xtra -> z_velocity);
+		 
+		 any_file_dumped = 1;
+
+        }
           
           
 	 if(public_xtra -> print_satur ) {
@@ -3225,11 +3287,6 @@ PFModule *SolverRichardsInitInstanceXtra()
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
    {
-      (instance_xtra -> phase_velocity_face) = NULL;
-      /*	 PFModuleNewInstance((public_xtra -> phase_velocity_face),
-                 (problem, grid, x_grid, y_grid, z_grid, NULL));
-      */
-      /* Need to change for rel. perm. and not mobility */
       (instance_xtra -> advect_concen) =
 	 PFModuleNewInstanceType(AdvectionConcentrationInitInstanceXtraType,
 				 (public_xtra -> advect_concen),
@@ -3274,9 +3331,6 @@ PFModule *SolverRichardsInitInstanceXtra()
    }
    else
    {
-      PFModuleReNewInstanceType(PhaseVelocityFaceInitInstanceXtraInvoke,
-				(instance_xtra -> phase_velocity_face),
-				(problem, grid, x_grid, y_grid, z_grid, NULL));
       PFModuleReNewInstanceType(AdvectionConcentrationInitInstanceXtraType,
 				(instance_xtra -> advect_concen),
 				(problem, grid, NULL));
@@ -3421,9 +3475,6 @@ void  SolverRichardsFreeInstanceXtra()
 
       PFModuleFreeInstance((instance_xtra -> set_problem_data));
       PFModuleFreeInstance((instance_xtra -> advect_concen));
-      if (instance_xtra -> phase_velocity_face)
-	 PFModuleFreeInstance((instance_xtra -> phase_velocity_face));
-
       PFModuleFreeInstance((instance_xtra -> ic_phase_pressure));
       PFModuleFreeInstance((instance_xtra -> problem_saturation));
       PFModuleFreeInstance((instance_xtra -> phase_density));
@@ -3484,13 +3535,6 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
    
    (public_xtra -> permeability_face) = 
       PFModuleNewModule(PermeabilityFace, ());
-   (public_xtra -> phase_velocity_face) = NULL;
-
-   /*     
-   PFModuleNewModule(PhaseVelocityFace, ());
-   */
-   /* Need to account for rel. perm. and not mobility */
-
    (public_xtra -> advect_concen) = PFModuleNewModule(Godunov, ());
    (public_xtra -> set_problem_data) = PFModuleNewModule(SetProblemData, ());
    (public_xtra -> problem) = NewProblem(RichardsSolve);
@@ -4618,8 +4662,6 @@ void   SolverRichardsFreePublicXtra()
 
       PFModuleFreeModule(public_xtra -> set_problem_data);
       PFModuleFreeModule(public_xtra -> advect_concen);
-      if (public_xtra -> phase_velocity_face)
-	 PFModuleFreeModule(public_xtra -> phase_velocity_face); 
       PFModuleFreeModule(public_xtra -> permeability_face);
       PFModuleFreeModule(public_xtra -> nonlin_solver);
       tfree( public_xtra );
