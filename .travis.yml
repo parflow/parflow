@@ -25,7 +25,7 @@ before_script:
   - export CXX=mpiCC
   - export F77=mpif77
   - export FC=mpif90
-  - mkdir -p build.pfsimulator && (cd build.pfsimulator && ../pfsimulator/configure --prefix=$PARFLOW_DIR --with-amps=mpi1 --with-hypre --with-silo )
+  - mkdir -p build.pfsimulator && (cd build.pfsimulator && ../pfsimulator/configure --prefix=$PARFLOW_DIR --with-amps=mpi1 --with-hypre --with-silo --with-clm)
   - mkdir -p build.pftools && (cd build.pftools  && ../pftools/configure --prefix=$PARFLOW_DIR --with-amps=mpi1 --with-silo)
   - (cd build.pfsimulator && make)
   - (cd build.pftools && make)
