@@ -30,5 +30,5 @@ before_script:
   - (cd build.pfsimulator && make)
   - (cd build.pftools && make)
 script:
-  - (cd test && make check_sequential)
+  - (cd test && make)
   
