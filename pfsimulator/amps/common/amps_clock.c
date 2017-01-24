@@ -72,16 +72,19 @@ amps_Clock_t amps_Clock()
    return(micro_sec);
 }
 
-#endif
+#else
 
-#ifdef AMPS_NX_CLOCK
-#include <nx.h>
-amps_Clock_t amps_Clock()
+amps_CPUClock_t amps_Clock()   
 {
-	return dclock();
-}
-#endif
+   
+   struct tms cpu_tms;
 
+   times(&cpu_tms);
+   
+   return(cpu_tms.tms_utime);
+}
+
+#endif
 
 #ifndef amps_CPUClock
 
@@ -93,6 +96,7 @@ amps_CPUClock_t amps_CPUClock()
    
    return(cpu_tms.tms_utime);
 }
+
 
 #endif
 

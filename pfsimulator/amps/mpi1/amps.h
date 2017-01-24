@@ -262,6 +262,7 @@ typedef double amps_CPUClock_t;
 typedef long amps_Clock_t;
 typedef clock_t amps_CPUClock_t;
 extern long AMPS_CPU_TICKS_PER_SEC;
+#define AMPS_TICKS_PER_SEC AMPS_CPU_TICKS_PER_SEC
 #endif
 
 typedef MPI_Comm amps_Comm;

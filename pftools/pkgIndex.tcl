@@ -1,10 +1,14 @@
 # Tcl package index file, version 1.0
 
 package ifneeded parflow 1.0 [list \
-	[source [file join $dir parflow.tcl]] \
-	[source [file join $dir pftformat.tcl]] \
-	[source [file join $dir pfvtk.tcl]] \
-	[load [file join $dir parflow[info sharedlibextension]]] ]
+				  [source [file join $dir parflow.tcl]] \
+				  [source [file join $dir pftformat.tcl]] \
+				  [source [file join $dir pfvtk.tcl]] \
+				  [if {[file exists [file join $dir parflow[info sharedlibextension]]]} \
+				       {load [file join $dir parflow[info sharedlibextension]]} \
+				       else \
+				       {load [file join $dir libpftools[info sharedlibextension]] "parflow"}] \
+			      ]
 
 package ifneeded xparflow 1.0 [list \
 	[list [source [file join $dir xpftools.tcl]]] \
