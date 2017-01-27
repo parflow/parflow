@@ -7,6 +7,10 @@ string(REGEX REPLACE "([^;]+)" "${PARFLOW_AMPS_LAYER}/\\1" AMPS_SRC_FILES "${AMP
 
 add_library(amps ${COMMON_SRC_FILES} ${AMPS_SRC_FILES})
 
+if (${PARFLOW_HAVE_MPI})
+  target_include_directories (amps PUBLIC "${MPI_C_INCLUDE_PATH}")
+endif (${PARFLOW_HAVE_MPI})
+
 install(TARGETS amps DESTINATION lib)
 
 # Install the AMPS transport layer specific scripts
