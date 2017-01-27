@@ -29,11 +29,15 @@ endif (${TCL_FOUND})
 
 # TODO need to set from user input
 
-set(PARFLOW_AMPS_TYPE "mpi1")
+# Set AMPS communication layer
+
+set(PARFLOW_AMPS_LAYER "mpi1" CACHE STRING "Set the Communications layer to use")
+set_property(CACHE PARFLOW_AMPS_LAYER PROPERTY STRINGS seq mpi1 oas3 smpi win32)
 
 include_directories ("${CMAKE_SOURCE_DIR}/pfsimulator/parflow_lib")
 
-include_directories ("${PROJECT_SOURCE_DIR}/pfsimulator/amps/${PARFLOW_AMPS_TYPE}")
+include_directories ("${PROJECT_SOURCE_DIR}/pfsimulator/amps/${PARFLOW_AMPS_LAYER}")
+include_directories ("${PROJECT_SOURCE_DIR}/pfsimulator/amps/common")
 
 include_directories ("${PROJECT_BINARY_DIR}/include")
 

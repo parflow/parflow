@@ -25,89 +25,28 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
   USA
 **********************************************************************EHEADER*/
+#ifndef amps_common_include
+#define amps_common_include 
 
-#include "amps.h"
+#include "parflow_config.h"
 
 #include <sys/times.h>
-#include <sys/time.h>
-#include <unistd.h>
-
-long AMPS_CPU_TICKS_PER_SEC;
 
 #ifdef CASC_HAVE_GETTIMEOFDAY
 
-amps_Clock_t amps_start_clock=0;
-
-void amps_clock_init()
-{
-   struct timeval r_time;
-
-   /* get the current time */
-   gettimeofday(&r_time, 0);
-
-   amps_start_clock = r_time.tv_sec;
-
-   AMPS_CPU_TICKS_PER_SEC = sysconf(_SC_CLK_TCK);
-}
-
-/**
-
-Returns the current wall clock time on the node.  This may or may
-not be synchronized across the nodes.  The value returned is
-in some internal units, to convert to seconds divide by
-\Ref{AMPS_TICKS_PER_SEC}.
-
-@memo Current time
-@return current time in {\em AMPS} ticks
-*/
-amps_Clock_t amps_Clock()   
-{
-   struct timeval r_time;
-   amps_Clock_t micro_sec;
-
-   /* get the current time */
-   gettimeofday(&r_time, 0);
-
-   /* get the seconds part */
-   micro_sec = (r_time.tv_sec - amps_start_clock);
-   micro_sec = micro_sec*10000;
-
-   /* get the lower order part */
-   micro_sec += r_time.tv_usec/100;
-
-   return(micro_sec);
-}
+typedef long amps_Clock_t;
+#define AMPS_TICKS_PER_SEC 10000
+typedef clock_t amps_CPUClock_t;
+extern long AMPS_CPU_TICKS_PER_SEC;
 
 #else
 
-void amps_clock_init()
-{
-   AMPS_CPU_TICKS_PER_SEC = sysconf(_SC_CLK_TCK);
-}
-
-amps_CPUClock_t amps_Clock()   
-{
-   
-   struct tms cpu_tms;
-
-   times(&cpu_tms);
-   
-   return(cpu_tms.tms_utime);
-}
+/* Default case, if not using a more specialized clock */
+typedef long amps_Clock_t;
+typedef clock_t amps_CPUClock_t;
+extern long AMPS_CPU_TICKS_PER_SEC;
+#define AMPS_TICKS_PER_SEC AMPS_CPU_TICKS_PER_SEC
 
 #endif
 
-#ifndef amps_CPUClock
-
-amps_CPUClock_t amps_CPUClock()   
-{
-   struct tms cpu_tms;
-
-   times(&cpu_tms);
-   
-   return(cpu_tms.tms_utime);
-}
-
-
 #endif
-
