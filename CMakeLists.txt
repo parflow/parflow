@@ -14,7 +14,6 @@ enable_testing ()
 # General project wide configuration
 #-----------------------------------------------------------------------------
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
-
 # TODO should get rid of non-prefix versions of flags; preprocessor flags should be in PARFLOW namespace
 
 find_package(MPI)
@@ -93,6 +92,7 @@ endif (${HAVE_FC_ACCESS_STREAM})
 set(PARFLOW_AMPS_LAYER "mpi1" CACHE STRING "Set the Communications layer to use")
 set_property(CACHE PARFLOW_AMPS_LAYER PROPERTY STRINGS mpi1 smpi seq oas3 win32)
 
+# Check for gettimeofday
 include(CheckSymbolExists)
 check_symbol_exists(gettimeofday sys/time.h CASC_HAVE_GETTIMEOFDAY)
 
@@ -101,6 +101,7 @@ option(PARFLOW_HAVE_CLM "Compile with CLM" "OFF")
 if ( ${PARFLOW_HAVE_CLM} )
   set(HAVE_CLM ${PARFLOW_HAVE_CLM})
 endif ( ${PARFLOW_HAVE_CLM} )
+
 
 include_directories ("${CMAKE_SOURCE_DIR}/pfsimulator/parflow_lib")
 
