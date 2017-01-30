@@ -15,6 +15,9 @@
 #cmakedefine PARFLOW_HAVE_GETTIMEOFDAY
 #cmakedefine CASC_HAVE_GETTIMEOFDAY
 
+#cmakedefine PARFLOW_HAVE_BIG_ENDIAN
+#cmakedefine CASC_HAVE_BIGENDIAN
+
 #cmakedefine PARFLOW_HAVE_CLM
 #cmakedefine HAVE_CLM
 

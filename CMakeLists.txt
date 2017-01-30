@@ -25,6 +25,7 @@ endif (${MPI_C_FOUND})
 find_package(TCL)
 if (${TCL_FOUND})
   set(PARFLOW_HAVE_TCL TRUE)
+  set(HAVE_TCL TRUE)
 endif (${TCL_FOUND})
 
 find_package(Hypre)
@@ -80,7 +81,6 @@ end program freeform" HAVE_FC_ACCESS_SEQUENTIAL)
 # Set implicit none flag on Fortran compiles
 #
 include(CheckFortranCompilerFlag)
-check_fortran_compiler_flag("-g" SGS_DEBUGGER)
 
 set(none_test 0)
 foreach(flag "-implicitnone" "-fimplicit-none" "-u" "-Wimplicit none")
@@ -95,7 +95,6 @@ foreach(flag "-implicitnone" "-fimplicit-none" "-u" "-Wimplicit none")
 endforeach(flag)
 
 if(${PARFLOW_FORTRAN_IMPLICIT_NONE})
-  message("SGS ${CMAKE_Fortran_FLAGS} ${PARFLOW_FORTRAN_IMPLICIT_NONE_FLAG}")
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${PARFLOW_FORTRAN_IMPLICIT_NONE_FLAG}")
 endif(${PARFLOW_FORTRAN_IMPLICIT_NONE})
 
@@ -125,6 +124,10 @@ set_property(CACHE PARFLOW_AMPS_LAYER PROPERTY STRINGS mpi1 smpi seq oas3 win32)
 #
 # Check for platform specific features
 #
+
+include (TestBigEndian)
+test_big_endian(PARFLOW_HAVE_BIG_ENDIAN)
+set(CASC_HAVE_BIGENDIAN ${PARFLOW_HAVE_BIG_ENDIAN})
 
 # Check for gettimeofday
 include(CheckSymbolExists)
