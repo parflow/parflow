@@ -2,8 +2,9 @@
  * Parflow configure file.
  */
 
+/* Use PARFLOW_ versions; other names are deprecated */
 /* TODO should get rid of non prefixed versions of these flags; CPP
- symbols should be in PARFLOW namespace */
+   symbols should be in PARFLOW namespace.  Should make naming consistent as well */
 
 #cmakedefine PARFLOW_HAVE_TCL
 #cmakedefine HAVE_TCL
@@ -11,6 +12,7 @@
 #cmakedefine PARFLOW_HAVE_MPI
 #cmakedefine HAVE_MPI
 
+#cmakedefine PARFLOW_HAVE_GETTIMEOFDAY
 #cmakedefine CASC_HAVE_GETTIMEOFDAY
 
 #cmakedefine PARFLOW_HAVE_CLM
@@ -18,4 +20,7 @@
 
 #cmakedefine PARFLOW_HAVE_HYPRE
 #cmakedefine HAVE_HYPRE
+
+#cmakedefine PARFLOW_ENABLE_TIMING
+#cmakedefine PF_TIMING
 

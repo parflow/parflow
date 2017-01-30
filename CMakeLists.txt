@@ -31,7 +31,6 @@ find_package(Hypre)
 if (${HYPRE_FOUND})
   set(PARFLOW_HAVE_HYPRE TRUE)
   set(HAVE_HYPRE TRUE)
-
 endif (${HYPRE_FOUND})
 
 #-----------------------------------------------------------------------------
@@ -55,6 +54,10 @@ CHECK_Fortran_SOURCE_COMPILES("program main
 
   stop
 end" FORTRAN_F90_WORKS)
+
+#
+# Determine syntax for writing binary file under Fortran
+#
 
 # Check whether the Fortran compiler supports the access="stream" open syntax
 CHECK_Fortran_SOURCE_COMPILES("program freeform
@@ -92,9 +95,17 @@ endif (${HAVE_FC_ACCESS_STREAM})
 set(PARFLOW_AMPS_LAYER "mpi1" CACHE STRING "Set the Communications layer to use")
 set_property(CACHE PARFLOW_AMPS_LAYER PROPERTY STRINGS mpi1 smpi seq oas3 win32)
 
+#
+# Check for platform specific features
+#
+
 # Check for gettimeofday
 include(CheckSymbolExists)
-check_symbol_exists(gettimeofday sys/time.h CASC_HAVE_GETTIMEOFDAY)
+check_symbol_exists(gettimeofday sys/time.h PARFLOW_HAVE_GETTIMEOFDAY)
+if ( ${PARFLOW_HAVE_GETTIMEOFDAY} )
+  set(CASC_HAVE_GETTIMEOFDAY ${PARFLOW_HAVE_GETTIMEOFDAY})
+endif ( ${PARFLOW_HAVE_GETTIMEOFDAY} )
+
 
 option(PARFLOW_HAVE_CLM "Compile with CLM" "OFF")
 
@@ -102,6 +113,17 @@ if ( ${PARFLOW_HAVE_CLM} )
   set(HAVE_CLM ${PARFLOW_HAVE_CLM})
 endif ( ${PARFLOW_HAVE_CLM} )
 
+
+#
+# Parflow specific configuration options
+#
+
+# Control timing of Parflow functions.
+set (PARFLOW_ENABLE_TIMING False CACHE BOOL "Enable timing of key Parflow functions; may slow down performance")
+if( ${PARFLOW_ENABLE_TIMING} )
+  set (PF_TIMING ${PARFLOW_ENABLE_TIMING})
+endif( ${PARFLOW_ENABLE_TIMING} )
+  
 
 include_directories ("${CMAKE_SOURCE_DIR}/pfsimulator/parflow_lib")
 
