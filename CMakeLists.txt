@@ -46,7 +46,8 @@ CHECK_Fortran_SOURCE_COMPILES("      program main
       end" FORTRAN_77_WORKS)
 
 # Check if Fortran 90 compile works with free format
-set(CMAKE_REQUIRED_FLAGS "${CMAKE_Fortran_FORMAT_FREE_FLAG}")
+set(SAVE_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
+set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${CMAKE_Fortran_FORMAT_FREE_FLAG}")
 CHECK_Fortran_SOURCE_COMPILES("program main
   implicit none
 
@@ -75,7 +76,33 @@ CHECK_Fortran_SOURCE_COMPILES("program freeform
   close(UNIT=10)
 end program freeform" HAVE_FC_ACCESS_SEQUENTIAL)
 
-INCLUDE (CheckCSourceCompiles) 
+#
+# Set implicit none flag on Fortran compiles
+#
+include(CheckFortranCompilerFlag)
+check_fortran_compiler_flag("-g" SGS_DEBUGGER)
+
+set(none_test 0)
+foreach(flag "-implicitnone" "-fimplicit-none" "-u" "-Wimplicit none")
+  message(STATUS "Checking Fortran implicit none flag : ${flag}")
+  check_fortran_compiler_flag("${flag}" PARFLOW_FORTRAN_IMPLICIT_NONE_${none_test})
+  if(${PARFLOW_FORTRAN_IMPLICIT_NONE_${none_test}})
+    set(PARFLOW_FORTRAN_IMPLICIT_NONE TRUE)
+    set(PARFLOW_FORTRAN_IMPLICIT_NONE_FLAG "${flag}")
+    break()
+  endif(${PARFLOW_FORTRAN_IMPLICIT_NONE_${none_test}})
+  math(EXPR none_test "${none_test} + 1")
+endforeach(flag)
+
+if(${PARFLOW_FORTRAN_IMPLICIT_NONE})
+  message("SGS ${CMAKE_Fortran_FLAGS} ${PARFLOW_FORTRAN_IMPLICIT_NONE_FLAG}")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${PARFLOW_FORTRAN_IMPLICIT_NONE_FLAG}")
+endif(${PARFLOW_FORTRAN_IMPLICIT_NONE})
+
+set(CMAKE_REQUIRED_FLAGS ${SAVE_CMAKE_REQUIRED_FLAGS})
+
+INCLUDE (CheckCSourceCompiles)
+
 CHECK_C_SOURCE_COMPILES("int main(int argc, char **argv) {return 0;}"
   C_WORKS)
 
