@@ -14,6 +14,13 @@ if (${PARFLOW_HAVE_MPI})
   target_link_libraries (parflow ${MPI_LIBRARIES})
 endif (${PARFLOW_HAVE_MPI})
 
+if (${PARFLOW_HAVE_SILO})
+  target_link_libraries (parflow ${SILO_LIBRARIES})
+endif (${PARFLOW_HAVE_SILO})
+
+if (${PARFLOW_HAVE_HDF5})
+  target_link_libraries (parflow ${HDF5_LIBRARIES})
+endif (${PARFLOW_HAVE_HDF5})
 
 install(TARGETS parflow DESTINATION bin)
 

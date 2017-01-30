@@ -145,7 +145,6 @@ set (SRC_FILES advect.F
 
 add_library(pfsimulator ${SRC_FILES})
 
-
 install (TARGETS pfsimulator DESTINATION lib)
 
 if (${PARFLOW_HAVE_HYPRE})
@@ -155,4 +154,12 @@ endif (${PARFLOW_HAVE_HYPRE})
 if (${PARFLOW_HAVE_MPI})
   target_include_directories (pfsimulator PUBLIC "${MPI_C_INCLUDE_PATH}")
 endif (${PARFLOW_HAVE_MPI})
+
+if (${PARFLOW_HAVE_HDF5})
+  target_include_directories (pfsimulator PUBLIC "${HDF5_INCLUDE_DIRS}")
+endif (${PARFLOW_HAVE_HDF5})
+
+if (${PARFLOW_HAVE_SILO})
+  target_include_directories (pfsimulator PUBLIC "${SILO_INCLUDE_DIRS}")
+endif (${PARFLOW_HAVE_SILO})
 

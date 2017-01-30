@@ -28,6 +28,18 @@ if (${TCL_FOUND})
   set(HAVE_TCL TRUE)
 endif (${TCL_FOUND})
 
+find_package(Silo)
+if (${SILO_FOUND})
+  set(PARFLOW_HAVE_SILO TRUE)
+  set(HAVE_SILO TRUE)
+endif (${SILO_FOUND})
+
+find_package(HDF5)
+if (${HDF5_FOUND})
+  set(PARFLOW_HAVE_HDF5 TRUE)
+  set(HAVE_HDF5 TRUE)
+endif (${HDF5_FOUND})
+
 find_package(Hypre)
 if (${HYPRE_FOUND})
   set(PARFLOW_HAVE_HYPRE TRUE)
@@ -120,6 +132,10 @@ endif (${HAVE_FC_ACCESS_STREAM})
 # Set AMPS communication layer
 set(PARFLOW_AMPS_LAYER "mpi1" CACHE STRING "Set the Communications layer to use")
 set_property(CACHE PARFLOW_AMPS_LAYER PROPERTY STRINGS mpi1 smpi seq oas3 win32)
+set(AMPS ${PARFLOW_AMPS_LAYER})
+
+set(PARFLOW_AMPS_SEQUENTIAL_IO "no" CACHE STRING "Use AMPS sequential I/O model for output")
+set(AMPS_SPLIT_FILE ${PARFLOW_AMPS_SEQUENTIAL_IO})
 
 #
 # Check for platform specific features
@@ -136,13 +152,11 @@ if ( ${PARFLOW_HAVE_GETTIMEOFDAY} )
   set(CASC_HAVE_GETTIMEOFDAY ${PARFLOW_HAVE_GETTIMEOFDAY})
 endif ( ${PARFLOW_HAVE_GETTIMEOFDAY} )
 
-
 option(PARFLOW_HAVE_CLM "Compile with CLM" "OFF")
 
 if ( ${PARFLOW_HAVE_CLM} )
   set(HAVE_CLM ${PARFLOW_HAVE_CLM})
 endif ( ${PARFLOW_HAVE_CLM} )
-
 
 #
 # Parflow specific configuration options

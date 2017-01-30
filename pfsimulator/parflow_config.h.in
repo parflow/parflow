@@ -6,6 +6,13 @@
 /* TODO should get rid of non prefixed versions of these flags; CPP
    symbols should be in PARFLOW namespace.  Should make naming consistent as well */
 
+
+#cmakedefine PARFLOW_AMPS_LAYER
+#cmakedefine AMPS
+
+#cmakedefine PARFLOW_AMPS_SEQUENTIAL_IO
+#cmakedefine AMPS_SPLIT_FILE
+
 #cmakedefine PARFLOW_HAVE_TCL
 #cmakedefine HAVE_TCL
 
@@ -26,4 +33,15 @@
 
 #cmakedefine PARFLOW_ENABLE_TIMING
 #cmakedefine PF_TIMING
+
+#cmakedefine PARFLOW_HAVE_SILO
+#cmakedefine HAVE_SILO
+
+#cmakedefine PARFLOW_HAVE_SLURM
+#cmakedefine HAVE_SLURM
+
+#cmakedefine PARFLOW_HAVE_HDF5
+#cmakedefine HAVE_HDF5
+
+
 

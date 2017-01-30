@@ -17,14 +17,18 @@
 
 include(FindPackageHandleStandardArgs)
 
+if(NOT HYPRE_ROOT)
+  set(HYPRE_ROOT $ENV{HYPRE_ROOT})
+endif()
+
 find_path(HYPRE_INCLUDE_DIR NAMES HYPRE.h
                             PATH_SUFFIXES hypre
-                            HINTS ${HYPRE_DIR}/include)
+                            HINTS ${HYPRE_ROOT}/include)
 
 if(NOT BUILD_SHARED_LIBS)
-  find_library(HYPRE_LIBRARY NAMES libHYPRE.a HINTS ${HYPRE_DIR}/lib)
+  find_library(HYPRE_LIBRARY NAMES libHYPRE.a HINTS ${HYPRE_ROOT}/lib)
 else()
-  find_library(HYPRE_LIBRARY NAMES HYPRE HINTS ${HYPRE_DIR}/lib)
+  find_library(HYPRE_LIBRARY NAMES HYPRE HINTS ${HYPRE_ROOT}/lib)
 endif()
 
 set(HYPRE_INCLUDE_DIRS ${HYPRE_INCLUDE_DIR})
