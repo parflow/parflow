@@ -43,5 +43,8 @@
 #cmakedefine PARFLOW_HAVE_HDF5
 #cmakedefine HAVE_HDF5
 
+#cmakedefine PARFLOW_HAVE_OAS3
+#cmakedefine HAVE_OAS3
+
 
 

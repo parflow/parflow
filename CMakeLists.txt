@@ -137,6 +137,10 @@ set(AMPS ${PARFLOW_AMPS_LAYER})
 set(PARFLOW_AMPS_SEQUENTIAL_IO "no" CACHE STRING "Use AMPS sequential I/O model for output")
 set(AMPS_SPLIT_FILE ${PARFLOW_AMPS_SEQUENTIAL_IO})
 
+# OAS3
+set(PARFLOW_HAVE_OAS3 "no" CACHE STRING "Build with OAS3")
+set(HAVE_OAS3 ${PARFLOW_HAVE_OAS3})
+
 #
 # Check for platform specific features
 #
