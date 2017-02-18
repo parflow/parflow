@@ -46,6 +46,13 @@ if (${HYPRE_FOUND})
   set(HAVE_HYPRE TRUE)
 endif (${HYPRE_FOUND})
 
+# The set of required Sundials libraries
+find_package(SUNDIALS COMPONENTS sundials_cvode sundials_kinsol)
+if (${SUNDIALS_FOUND})
+  set(PARFLOW_HAVE_SUNDIALS TRUE)
+  set(HAVE_SUNDIALS TRUE)
+endif (${SUNDIALS_FOUND})
+
 #-----------------------------------------------------------------------------
 # Fortran checks
 #-----------------------------------------------------------------------------
@@ -134,7 +141,7 @@ set(PARFLOW_AMPS_LAYER "mpi1" CACHE STRING "Set the Communications layer to use"
 set_property(CACHE PARFLOW_AMPS_LAYER PROPERTY STRINGS mpi1 smpi seq oas3 win32)
 set(AMPS ${PARFLOW_AMPS_LAYER})
 
-set(PARFLOW_AMPS_SEQUENTIAL_IO "no" CACHE STRING "Use AMPS sequential I/O model for output")
+option(PARFLOW_AMPS_SEQUENTIAL_IO "Use AMPS sequential I/O model for output" "OFF")
 set(AMPS_SPLIT_FILE ${PARFLOW_AMPS_SEQUENTIAL_IO})
 
 # OAS3
@@ -146,15 +153,28 @@ set(HAVE_OAS3 ${PARFLOW_HAVE_OAS3})
 #
 
 include (TestBigEndian)
+include(CheckSymbolExists)
+include(CheckIncludeFiles)
+
 test_big_endian(PARFLOW_HAVE_BIG_ENDIAN)
 set(CASC_HAVE_BIGENDIAN ${PARFLOW_HAVE_BIG_ENDIAN})
 
 # Check for gettimeofday
-include(CheckSymbolExists)
 check_symbol_exists(gettimeofday sys/time.h PARFLOW_HAVE_GETTIMEOFDAY)
 if ( ${PARFLOW_HAVE_GETTIMEOFDAY} )
   set(CASC_HAVE_GETTIMEOFDAY ${PARFLOW_HAVE_GETTIMEOFDAY})
 endif ( ${PARFLOW_HAVE_GETTIMEOFDAY} )
+
+check_include_files (malloc.h PARFLOW_HAVE_MALLOC_H)
+if ( ${PARFLOW_HAVE_MALLOC_H} )
+  set(HAVE_MALLOC_H ${PARFLOW_HAVE_MALLOC_H})
+endif ( ${PARFLOW_HAVE_MALLOC_H} )
+
+# Check for mallinfo
+check_symbol_exists(mallinfo malloc.h PARFLOW_HAVE_MALLINFO)
+if ( ${PARFLOW_HAVE_MALLINFO} )
+  set(HAVE_MALLINFO ${PARFLOW_HAVE_MALLINFO})
+endif ( ${PARFLOW_HAVE_MALLINFO} )
 
 option(PARFLOW_HAVE_CLM "Compile with CLM" "OFF")
 

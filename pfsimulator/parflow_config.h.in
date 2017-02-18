@@ -31,6 +31,9 @@
 #cmakedefine PARFLOW_HAVE_HYPRE
 #cmakedefine HAVE_HYPRE
 
+#cmakedefine PARFLOW_HAVE_SUNDIALS
+#cmakedefine HAVE_SUNDIALS
+
 #cmakedefine PARFLOW_ENABLE_TIMING
 #cmakedefine PF_TIMING
 
@@ -45,6 +48,13 @@
 
 #cmakedefine PARFLOW_HAVE_OAS3
 #cmakedefine HAVE_OAS3
+
+#cmakedefine PARFLOW_HAVE_MALLOC_H
+#cmakedefine HAVE_MALLOC_H
+
+#cmakedefine PARFLOW_HAVE_MALLINFO
+#cmakedefine HAVE_MALLINFO
+
 
 
 
