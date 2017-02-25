@@ -581,7 +581,7 @@ void            PrintSilo(
 
    if(path) { 	
       current_path = (char*)malloc(MAXPATHLEN);
-      getwd(current_path);
+      getcwd(current_path, MAXPATHLEN);
       chdir(path);
    }
 

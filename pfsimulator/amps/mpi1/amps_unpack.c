@@ -316,10 +316,10 @@ int amps_unpack(
 	 
 	 for(i = 1; i < dim; i++)
 	 {
-	    MPI_Type_hvector(ptr -> ptr_len[i], 1, 
-				base_size + 
-				(ptr -> ptr_stride[i]-1) * element_size,
-			     *base_type, new_type);
+	    MPI_Type_create_hvector(ptr -> ptr_len[i], 1, 
+				    base_size + 
+				    (ptr -> ptr_stride[i]-1) * element_size,
+				    *base_type, new_type);
 
 	    base_size = base_size*ptr -> ptr_len[i]
 	       + (ptr -> ptr_stride[i]-1)*(ptr->ptr_len[i] - 1)*element_size;
