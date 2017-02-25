@@ -1,15 +1,15 @@
 
 add_test (NAME clm COMMAND tclsh clm.tcl 1 1 1 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-list(APPEND TESTS "")
+set(TESTS "")
 if(${PARFLOW_HAVE_CLM})
-  list(APPNED TESTS
+  list(APPEND TESTS
     clm.tcl
     clm_forc_veg.tcl
     clm_varDZ.tcl)
 endif()
 
-list(APPEND PARALLEL_TESTS "")
+set(APPEND PARALLEL_TESTS)
 
 if(${PARFLOW_AMPS_LAYER} STREQUAL "mpi1")
   list(APPEND PARALLEL_TESTS
@@ -19,7 +19,7 @@ if(${PARFLOW_AMPS_LAYER} STREQUAL "mpi1")
     clm_varDZ.tcl)
 endif()
 
-list(APPEND SAMRAI_TESTS "")
+set(SAMRAI_TESTS)
 
 if(${PARFLOW_HAVE_SAMRAI})
   if(${PARFLOW_HAVE_CLM})
