@@ -210,13 +210,10 @@ configure_file (pfsimulator/version.h.in include/version.h)
 configure_file (pfsimulator/config/Makefile.config.in config/Makefile.config)
 install(FILES ${PROJECT_BINARY_DIR}/config/Makefile.config DESTINATION config)
 
-# TODO zz.cmake notes
-
 if ( ${PARFLOW_HAVE_CLM} )
   configure_file (pfsimulator/clm/parflow_config.F90.in ${PROJECT_BINARY_DIR}/pfsimulator/clm/parflow_config.F90)
 endif ( ${PARFLOW_HAVE_CLM} )
   
-
 #-----------------------------------------------------------------------------
 # CMAKE Subdirectories 
 #-----------------------------------------------------------------------------
@@ -224,9 +221,20 @@ endif ( ${PARFLOW_HAVE_CLM} )
 # Need to turn on testing so tests in subdirctories are included in test target.
 enable_testing ()
 
-add_subdirectory (pfsimulator)
-add_subdirectory (pftools)
-add_subdirectory (test)
+# Optionally build the simulator and/or tools.
+# This is used on architectures where the login node is a different architecture
+# than the compute nodes.   The simulator is built for the compute nodes; tools
+# is built for the login node.
+set (PARFLOW_ENABLE_SIMULATOR True CACHE BOOL "Enable building of the Parflow simulator")
+if ( ${PARFLOW_ENABLE_SIMULATOR} )
+  add_subdirectory (pfsimulator)
+  add_subdirectory (test)
+endif ()
+
+set (PARFLOW_ENABLE_TOOLS True CACHE BOOL "Enable building of the Parflow tools")
+if ( ${PARFLOW_ENABLE_SIMULATOR} )
+  add_subdirectory (pftools)
+endif ()
 
 #-----------------------------------------------------------------------------
 # Setup CTEST environment
