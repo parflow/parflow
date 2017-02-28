@@ -39,8 +39,6 @@
 
 #include <string.h>
 #include <math.h>
-
-// SGS FIXME for C++
 #include <sys/stat.h>
 
 #ifdef HAVE_P4EST

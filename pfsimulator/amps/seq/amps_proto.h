@@ -45,4 +45,9 @@ void amps_FreePackage P((amps_Package package ));
 /* amps_sfbcast.c */
 int amps_SFBCast P((amps_Comm comm , amps_File file , amps_Invoice invoice ));
 
+void _amps_Abort(
+      char *message,
+      char *filename,
+      int line);
+
 #undef P

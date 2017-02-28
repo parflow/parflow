@@ -1108,24 +1108,23 @@ int  PFMGOctreeSizeOfTempData()
  Hyper is not available.   
 */
 
-void         PFMGOctree(soln, rhs, tol, zero)
-Vector      *soln;
-Vector      *rhs;
-double       tol;
-int          zero;
+void         PFMGOctree(
+   Vector      *soln,
+   Vector      *rhs,
+   double       tol,
+   int          zero)
 {
    amps_Printf("Error: Parflow not compiled with hypre, can't use pfmg\n");   
    exit(1);
 }
 
-PFModule  *PFMGOctreeInitInstanceXtra(problem, grid, problem_data,  
-				      pf_Bmat, pf_Cmat, temp_data)
-Problem      *problem;
-Grid         *grid;
-ProblemData  *problem_data;
-Matrix       *pf_Bmat;
-Matrix	     *pf_Cmat;
-double       *temp_data;
+PFModule  *PFMGOctreeInitInstanceXtra(
+   Problem      *problem,
+   Grid         *grid,
+   ProblemData  *problem_data,
+   Matrix       *pf_Bmat,
+   Matrix	*pf_Cmat,
+   double       *temp_data)
 {
    amps_Printf("Error: Parflow not compiled with hypre, can't use pfmg\n");   
    exit(1);

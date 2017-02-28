@@ -191,7 +191,6 @@ typedef struct amps_invoice_entry
 /* Invoices plus the src or dest rank.                                       */
 /*===========================================================================*/
 
-
 typedef struct
 {
    int            num_send;
@@ -209,7 +208,7 @@ typedef struct
 
 typedef amps_PackageStruct *amps_Package;
 
-typedef struct
+typedef struct amps_HandleObject 
 {
    int type;
    amps_Comm comm;
@@ -217,11 +216,9 @@ typedef struct
    amps_Invoice invoice;
    amps_Package package;
 
-} amps_HandleObject;
+} *amps_Handle;
 
 typedef long amps_Clock_t;
-
-typedef amps_HandleObject *amps_Handle;
 
 /*****************************************************************************
  *

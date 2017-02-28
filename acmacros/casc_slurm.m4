@@ -44,9 +44,18 @@ esac
 # Determine which SLURM library is built
 if test "${slurm_PREFIX+set}" = set; then
    AC_MSG_CHECKING([for SLURM library])
-   if test -f ${slurm_PREFIX}/lib/libslurm.so; then
+   if test -f ${slurm_PREFIX}/lib64/libslurm.so; then
       slurm_LIBS='-lslurm'
       AC_MSG_RESULT([using $slurm_LIBS])
+      slurm_LIBS="-L${slurm_PREFIX}/lib ${slurm_LIBS}"	
+   elif test -f ${slurm_PREFIX}/lib64/libslurm.a; then
+      slurm_LIBS='-lslurm'
+      AC_MSG_RESULT([using $slurm_LIBS])
+      slurm_LIBS="-L${slurm_PREFIX}/lib ${slurm_LIBS}"	
+   elif test -f ${slurm_PREFIX}/lib/libslurm.so; then
+      slurm_LIBS='-lslurm'
+      AC_MSG_RESULT([using $slurm_LIBS])
+      slurm_LIBS="-L${slurm_PREFIX}/lib ${slurm_LIBS}"	
    elif test -f ${slurm_PREFIX}/lib/libslurm.a; then
       slurm_LIBS='-lslurm'
       AC_MSG_RESULT([using $slurm_LIBS])
@@ -54,8 +63,6 @@ if test "${slurm_PREFIX+set}" = set; then
       AC_MSG_RESULT([using $slurm_LIBS])
       AC_MSG_ERROR([Could not fine slurm library in $slurm_PREFIX])
    fi
-
-   slurm_LIBS="-L${slurm_PREFIX}/lib ${slurm_LIBS}"
 fi
 
 # END CASC_SUPPORT_SLURM

@@ -502,22 +502,22 @@ if test "${hypre_PREFIX+set}" = set; then
   AC_DEFINE_UNQUOTED(PARFLOW_HYPRE_VERSION_MINOR,$PARFLOW_HYPRE_VERSION_MINOR,[Hypre version minor])
   AC_DEFINE_UNQUOTED(PARFLOW_HYPRE_VERSION_PATCH,$PARFLOW_HYPRE_VERSION_PATCH,[Hypre version patch])
 
-  AC_MSG_CHECKING(whether HYPRE was compiled with MPI)
-  if test "$hypre_MPI" = yes ; then
+  AC_MSG_CHECKING(if HYPRE compile is compatible with Parflow configuration)
+  if test "$hypre_MPI" = 'yes' ; then
      AC_DEFINE([HYPRE_MPI],[1],[Hypre library is configured with MPI])
      AC_MSG_RESULT(yes)
-     if test "$with_mpi" = no ; then
-        AC_MSG_ERROR(sequential Parflow cannot call HYPRE compiled with MPI)
+     if test "$with_mpi" = 'no' ; then
+        AC_MSG_ERROR(sequential Parflow cannot call parallel HYPRE)
      fi
      AC_DEFINE(HAVE_HYPRE,1,HYPRE library is available so use it)
      PARFLOW_HAVE_HYPRE="yes"
-  elif test "$hypre_MPI" = 'yes'; then
+  elif test "$hypre_MPI" = 'no'; then
      AC_MSG_RESULT(no)
-     if test "$with_mpi" != no ; then
-        AC_MSG_ERROR(parallel Parflow cannot call HYPRE compiled without MPI)
+     if test "$with_mpi" = 'yes' ; then
+        AC_MSG_ERROR(parallel Parflow cannot call sequential HYPRE)
      fi
      AC_DEFINE(HAVE_HYPRE,1,HYPRE library is available so use it)
-     PARFLOW_HAVE_HYPRE="yes"
+     PARFLOW_HAVE_HYPRE='yes'
   else
      AC_MSG_WARN(Cannot determine if hypre was compiled with MPI)
   fi

@@ -18,6 +18,7 @@ SRCDIR	      =	@srcdir@
 SUBDIR        = docs/dev_manual
 VPATH	      =	@srcdir@
 OBJECT        = ../..
+TEXLIBDIR     = @srcdir@/../lib/
 
 include $(OBJECT)/config/Makefile.config
 
@@ -52,12 +53,15 @@ FILES =\
  ref.tex\
  ref.grid.tex
 
-all:
+all: manual.pdf 
 
-doc:  manual.ps manual/manual.html
+doc: manual.pdf manual/manual.html
+
+manual.pdf: manual.dvi
+	@dvipdf manual
 
 version.tex : $(PARFLOW)/../pfsimulator/parflow_lib/version.h
-	echo "\def\PFVersion{"`cut -d$ -f2 $(PARFLOW)/../pfsimulator/parflow_lib/version.h`"}" > version.tex
+	echo "\def\PFVersion{"`awk -F "\"" '{print $$2}' $(PARFLOW)/../pfsimulator/parflow_lib/version.h`"}" > version.tex
 
 manual.ps: manual.dvi
 	@dvips -o manual.ps manual
@@ -66,16 +70,19 @@ manual/manual.html: manual.dvi
 	@latex2html $(ONLINE_OPTS) manual.tex
 	@./do_online manual
 
-#	@bibtex manual
-manual.dvi: Makefile $(FILES)
+manual.dvi: Makefile $(FILES) version.tex
 	@for i in ${LINK_FILES}; do     \
 	   if [ ! -h $$i ] ; then    \
-	     ln -s ../lib/$$i . ;\
+	     ln -s $(TEXLIBDIR)/$$i . ;\
+	   fi \
+	done 
+	@for i in ${FILES}; do     \
+	   if [ ! -h $$i ] ; then    \
+	     ln -s $(SRCDIR)/$$i . ;\
 	   fi \
 	done 
 	@latex manual
 	@makeindex manual.idx
-	@latex manual
 	@latex manual
 
 install:

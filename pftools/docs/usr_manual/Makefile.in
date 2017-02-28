@@ -18,7 +18,7 @@ SRCDIR	      =	@srcdir@
 SUBDIR        = docs/usr_manual
 VPATH	      =	@srcdir@
 OBJECT        = ../..
-TEXLIBDIR    = @srcdir@/../lib/
+TEXLIBDIR     = @srcdir@/../lib/
 
 include $(OBJECT)/config/Makefile.config
 
@@ -35,38 +35,47 @@ LINK_FILES = do_online \
              html.perl \
 	     parflow.sty \
              parflow.perl \
-             parflow.bib
+             parflow.bib \
+             IGWMC-logo-new.eps \
+             IGWMC-logo-new.pdf
 
-FILES =\
- manual.tex\
- defs.tex\
- files.tex\
- intro.tex\
- models.tex \
- pfsystem.tex\
- start.tex \
- version.tex \
- manual.bbl.tex \
- pftools.tex \
- bib.tex \
- fdl.tex
+FILES = \
+	bib.tex \
+	defs.tex \
+	fdl.tex \
+	files.tex \
+	inputps.tex \
+	intro.tex \
+	lic.tex \
+	manual.bbl.tex \
+	manual.tex \
+	manual.v3.bbl.tex \
+	models.tex \
+	pfsystem.tex \
+	pftools.tex \
+	start.tex \
+	fig_pfsystem.eps \
+	fig_pfsystem.pdf
 
-all:
+all: manual.pdf
 
-doc:  manual.ps manual/manual.html
+doc: manual.pdf manual/manual.html
 
-version.tex : $(PARFLOW)/../pfsimulator/parflow_lib/version.h
-	echo "\def\PFVersion{"`cut -d$ -f2 $(PARFLOW)/../pfsimulator/parflow_lib/version.h`"}" > version.tex
+version.tex : $(PARFLOW)/../VERSION
+	echo $(PARFLOW)/../VERSION
+	echo "\def\PFVersion{" `awk '{print $$2}' $(PARFLOW)/../VERSION` "}" > version.tex
 
 manual.ps: manual.dvi
 	@dvips -o manual.ps manual
+
+manual.pdf: manual.dvi
+	@dvipdf manual
 
 manual/manual.html: manual.dvi
 	@latex2html $(ONLINE_OPTS) manual.tex
 	@$(TEXLIBDIR)/do_online manual
 
-#	bibtex manual
-manual.dvi: Makefile $(FILES)
+manual.dvi: Makefile $(FILES) version.tex
 	@for i in ${LINK_FILES}; do     \
 	   if [ ! -h $$i ] ; then    \
 	     ln -s $(TEXLIBDIR)/$$i . ;\
@@ -78,9 +87,7 @@ manual.dvi: Makefile $(FILES)
 	   fi \
 	done 
 	@latex manual
-	@bibtex manual
 	@makeindex manual.idx
-	@latex manual
 	@latex manual
 
 install:
@@ -93,6 +100,7 @@ doc_install:
 	@$(INSTALL) -c -m 644 manual.ps $(INSTALL_DIR)/$(MANUAL).ps
 
 clean:
+	@rm -f manual.pdf manual.ps
 	$(PARFLOW_CLEAN)
 
 veryclean: clean

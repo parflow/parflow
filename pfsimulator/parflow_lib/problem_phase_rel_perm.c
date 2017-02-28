@@ -1183,27 +1183,14 @@ int          fcn)            /* Flag determining what to calculate
 			  {
 			     head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
 
-			     if (ppdat[ipp] >= 0.0)
+			     if(head < fabs(min_pressure_head)){
+				pt = (int)floor(head / interval);
+				assert(pt < max);
+				
+				prdat[ipr] = lookup_table -> a_der[pt] + lookup_table -> slope_der[pt] * 
+				   (head - lookup_table -> x[pt]);
+			     } else {
 				prdat[ipr] = 0.0;
-			     else
-			     {
-				head     = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-				if (ppdat[ipp] >= 0.0)
-				   prdat[ipr] = 1.0;
-				else
-				{
-				   head       = fabs(ppdat[ipp])/(pddat[ipd]*gravity);
-				   
-				   if(head < fabs(min_pressure_head)){
-				      pt = (int)floor(head / interval);
-				      assert(pt < max);
-				      
-				      prdat[ipr] = lookup_table -> a_der[pt] + lookup_table -> slope_der[pt] * 
-					 (head - lookup_table -> x[pt]);
-				   } else {
-				      prdat[ipr] = 0.0;
-				   }
-				}
 			     }
 			  }
 		       });

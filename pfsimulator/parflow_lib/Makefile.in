@@ -12,6 +12,8 @@ SUBDIR        = parflow_lib
 VPATH	      =	@srcdir@
 OBJECT        = ..
 
+ABS_TOP_BUILDDIR = @abs_top_builddir@
+
 default: all
 
 include $(OBJECT)/config/Makefile.config

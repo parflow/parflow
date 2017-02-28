@@ -39,6 +39,8 @@ extern "C" {
 /* advect.f */
 #if defined(_CRAYMPP) 
 #define ADVECT ADVECT
+#elif defined(__bg__)
+#define ADVECT advect
 #else
 #define ADVECT advect_
 #endif
@@ -66,6 +68,8 @@ void ADVECT(double *s, double *sn,
 /* sadvect.f */
 #if defined(_CRAYMPP)
 #define SADVECT SADVECT
+#elif defined(__bg__)
+#define SADVECT sadvect
 #else
 #define SADVECT sadvect_
 #endif
@@ -95,7 +99,16 @@ void SADVECT(double *s, double *sn,
 
 
 /* sk: clm.F90*/
+
+
+#if defined(_CRAYMPP) 
+#define CLM_LSM CLM_LSM
+#elif defined(__bg__)
+#define CLM_LSM clm_lsm
+#else
 #define CLM_LSM clm_lsm_
+#endif
+
 #define CALL_CLM_LSM(pressure_data,saturation_data,evap_trans_data,mask,porosity_data, \
                      dz_mult_data, istep, dt, t, start_time, dx, dy, dz, ix, iy, nx, ny, nz, \
 		     nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx, gny, rank,		\

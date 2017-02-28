@@ -22,9 +22,9 @@ SUBDIRS = amps $(CLM_DIR) kinsol parflow_lib p4est_wrap parflow_exe
 # Also should run a commit to update the repository version number.
 #	svn commit -m "Updated version number" @srcdir@/parflow_lib/version.h
 version:
-	@echo "static char ParFlowRevision[] = \""`cat $(PARFLOW)/../VERSION`"."`svnversion -n @srcdir@ | sed -e s/M//`"\";" > @srcdir@/parflow_lib/version.h
+	@DIR=`pwd` && cd @srcdir@/.. > /dev/null 2>&1 && git rev-parse --quiet --is-inside-work-tree > /dev/null 2>&1 && ./bin/pfgenerateversion $$DIR/include/version.h
 
-all:
+all: version
 	@for DIR in $(SUBDIRS); do if test -d $$DIR; then (cd $$DIR && $(MAKE) $@) ; fi || exit 1; done
 
 clean:

@@ -1,0 +1,97 @@
+#!/bin/bash
+# Script to set version number based on Git tags.
+
+defaultVersion=$(cat VERSION | awk '{print $2}')
+
+versionFile=$1
+
+git_is_clean () {
+    # Update the index
+    git update-index -q --ignore-submodules --refresh
+    err=0
+
+    # Disallow unstaged changes in the working tree
+    if ! git diff-files --quiet --ignore-submodules --
+    then
+       err=1
+    fi
+
+    # Disallow uncommitted changes in the index
+    if ! git diff-index --cached --quiet HEAD --ignore-submodules --
+    then
+       git diff-index --cached --name-status -r --ignore-submodules HEAD -- >&2
+       err=1
+    fi
+
+    if [ $err = 1 ]
+    then
+       return 1
+    else
+       return 0
+    fi
+}
+
+
+LF='
+'
+
+versionString="$defaultVersion"
+versionExtra=""
+if test -f version
+then
+   versionString=$(cat version) || versionString="$defaultVersion"
+elif git rev-parse
+then
+   versionString=$(git describe --tags --long --match "v[0-9]*" --abbrev=7 HEAD 2>/dev/null)
+   case "$versionString" in
+      *$LF*)
+	 ;;
+      v[0-9]*)
+	 git update-index -q --refresh
+	 if ! git_is_clean
+	 then
+	    versionExtra="local-changes"
+	 fi
+	 ;;
+   esac
+fi
+
+versionNumber=$(expr "$versionString" : v*'\([0-9\.]*\)')
+versionMajor=$(expr "$versionNumber" : '\([0-9]*\)')
+versionMinor=$(expr "$versionNumber" : [0-9]*\.'\([0-9]*\)')
+versionPatch=$(expr "$versionNumber" : [0-9]*\.[0-9]*\.'\([0-9]*\)')
+versionHash=$(expr "$versionString" : v[0-9\.-]*g'\(.*\)')
+
+if [ -z "$versionExtra" ]
+then
+   :
+else
+   versionString="$versionString-$versionExtra"
+fi
+
+# Create temp version.h file
+echo "#ifndef PARFLOW_VERSION_H" > $versionFile.tmp
+echo "#define PARFLOW_VERSION_H" >> $versionFile.tmp
+echo "#define PARFLOW_VERSION_STRING \"$versionString\"" >> $versionFile.tmp
+echo "#define PARFLOW_VERSION \"$versionNumber\"" >> $versionFile.tmp
+echo "#define PARFLOW_VERSION_MAJOR $versionMajor" >> $versionFile.tmp
+echo "#define PARFLOW_VERSION_MINOR $versionMinor" >> $versionFile.tmp
+echo "#define PARFLOW_VERSION_PATCH $versionPatch" >> $versionFile.tmp
+echo "#define PARFLOW_VERSION_HASH \"$versionHash\"" >> $versionFile.tmp
+echo "#define PARFLOW_VERSION_EXTRA \"$versionExtra\"" >> $versionFile.tmp
+
+echo "#endif" >> $versionFile.tmp
+
+# If version changed then use new one
+if cmp -s $versionFile $versionFile.tmp
+then
+   :
+else
+   mv $versionFile.tmp $versionFile 
+fi
+
+rm -f $versionFile.tmp 
+
+#echo "Building Parflow version : $versionString"
+
+

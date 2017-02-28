@@ -62,6 +62,8 @@ else
    AC_PROG_CC
 fi
 
+AC_PROG_CPP
+
 AC_ISC_POSIX
 
 

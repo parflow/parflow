@@ -516,8 +516,15 @@ void PFMGFreePublicXtra (void );
 int PFMGSizeOfTempData (void );
 
 /* pf_pfmg_octree.c */
+
 void PFMGOctree (Vector *soln , Vector *rhs , double tol , int zero );
-PFModule *PFMGOctreeInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *pf_Bmat , Matrix *pf_Cmat, double *temp_data );
+PFModule  *PFMGOctreeInitInstanceXtra(
+   Problem      *problem,
+   Grid         *grid,
+   ProblemData  *problem_data,
+   Matrix       *pf_Bmat,
+   Matrix	*pf_Cmat,
+   double       *temp_data);
 void PFMGOctreeFreeInstanceXtra (void );
 PFModule *PFMGOctreeNewPublicXtra (char *name );
 void PFMGOctreeFreePublicXtra (void );
@@ -1200,6 +1207,7 @@ void PFVLin1 (double a , Vector *x , Vector *y , Vector *z );
 void PFVLin2 (double a , Vector *x , Vector *y , Vector *z );
 void PFVAxpy (double a , Vector *x , Vector *y );
 void PFVScaleBy (double a , Vector *x );
+void PFVLayerCopy (int  a, int  b, Vector *x, Vector *y);
 
 /* w_jacobi.c */
 void WJacobi (Vector *x , Vector *b , double tol , int zero );
@@ -1238,14 +1246,15 @@ void WritePFSBinary_Subvector (amps_File file , Subvector *subvector , Subgrid *
 void WritePFSBinary (char *file_prefix , char *file_suffix , Vector *v , double drop_tolerance );
 
 /* write_parflow_silo.c */
-void     WriteSilo(char    *file_prefix, 
+void WriteSilo(char    *file_prefix, 
 		   char    *file_type, 
 		   char    *file_suffix, 
 		   Vector  *v, 
                    double time, 
 		   int step, 
 		   char *variable_name);
-void     WriteSiloInit(char    *file_prefix);
+void WriteSiloInit(char    *file_prefix);
+void pf_mk_dir(char *filename);
 
 /* write_parflow_silo_PMPIO.c */
 void     WriteSiloPMPIO(char    *file_prefix, 

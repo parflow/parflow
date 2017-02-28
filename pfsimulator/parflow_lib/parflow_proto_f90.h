@@ -34,6 +34,8 @@
 /* advect.f */
 #if defined(_CRAYMPP) 
 #define ADVECT ADVECT
+#elif defined(__bg__)
+#define ADVECT advect
 #else
 #define ADVECT advect_
 #endif
@@ -61,6 +63,8 @@ void ADVECT(double *s, double *sn,
 /* sadvect.f */
 #if defined(_CRAYMPP)
 #define SADVECT SADVECT
+#else define(__bg__)
+#define SADVECT sadvect
 #else
 #define SADVECT sadvect_
 #endif
