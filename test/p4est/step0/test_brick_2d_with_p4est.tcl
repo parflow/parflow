@@ -297,11 +297,6 @@ pfset SpecificStorage.GeomNames       "domain"
 pfset Geom.domain.SpecificStorage.Value 0.0
 
 #-----------------------------------------------------------------------------
-# Print pressure for visualization
-#-----------------------------------------------------------------------------
-pfset Solver.WriteSiloPressure		True
-
-#-----------------------------------------------------------------------------
 # Write out data base
 #-----------------------------------------------------------------------------
 pfwritedb test_brick_2d_with_p4est

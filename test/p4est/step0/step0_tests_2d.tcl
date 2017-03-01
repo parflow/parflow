@@ -2,8 +2,12 @@ lappend auto_path $env(PARFLOW_DIR)/bin
 package require parflow
 namespace import Parflow::*
 
-# Test cases for step 1 in parflow-p4est integration.
-#
+# Test cases for step 0 in parflow-p4est integration.
+# The goal of this case is enable to enable parflow to
+# run in serial with multiple subgrids. To run this test
+# suite just execute tclsh step0_tests.tcl in the current
+# directory.
+
 # The "test_brick_2d" script sets up the database for
 # to execute the default version of Parflow and take
 # the number of grid points (Nx,Ny) and the Processor
@@ -27,20 +31,6 @@ namespace import Parflow::*
 
 #	TEST 2
 #
-#  +-----+-----+-----+-----+
-#  |     |     |     |     |
-#  |     |     |     |     |
-#  +-----+-----+-----+-----+
-#
-#  Nx = Ny = 14
-#  PARLOW		PARFLOW + P4EST
-#  P=4, Q=1     	Mx=3 My=14,    --> 4 Trees and initial level 0
-#
-#  This case is important to test that the lower left corner of each
-#  Subgrid has been computed correctly.
-
-#	TEST 3
-#
 #  +-----+-----+
 #  |     |     |
 #  |     |     |
@@ -53,81 +43,51 @@ namespace import Parflow::*
 #  PARLOW		PARFLOW + P4EST
 #  P=2, Q=2     	Mx=6 My=6     --> 1 Trees and initial level 1
 
-#	TEST 4
-#
-#  +-----+-----+-----+-----+
-#  |     |     |     |	   |
-#  |     |     |     |	   |
-#  +-----+-----+-----+-----+
-#  |     |     |     |	   |
-#  |     |     |     |	   |
-#  +-----+-----+-----+-----+
-#  |     |     |     |     |
-#  |     |     |     |     |
-#  +-----+-----+-----+-----+
-#
-#  Nx = Ny = 12
-#  PARLOW		PARFLOW + P4EST
-#  P=4, Q=3     	Mx=3 My=4    --> 12 Trees and initial level 0
-
-
-#	TEST 5
-#  +-----+-----+-----+-----+
-#  |     |     |     |	   |
-#  |     |     |     |	   |
-#  +-----+-----+-----+-----+
-#  |     |     |     |	   |
-#  |     |     |     |	   |
-#  +-----+-----+-----+-----+
-#  |     |     |     |	   |
-#  |     |     |     |	   |
-#  +-----+-----+-----+-----+
-#  |     |     |     |     |
-#  |     |     |     |     |
-#  +-----+-----+-----+-----+
+#	TEST 3
+#  +-----+-----+-----+
+#  |     |     |     |
+#  |     |     |     |
+#  +-----+-----+-----+
+#  |     |     |     |
+#  |     |     |     |
+#  +-----+-----+-----+
+#  |     |     |     |
+#  |     |     |     |
+#  +-----+-----+-----+
 #
 #  Nx = Ny = 12
 #  PARLOW		PARFLOW + P4EST
-#  P=4, Q=4     	Mx=3 My=3    --> 1 Trees and initial level 2
-
+#  P=3, Q=3     	Mx=4 My=4    --> 9 Trees and initial level 0
 
 # each quoted text is a combination of Nx,Ny as described above
 array set pf_param_nxy {
         1 "12 12"
-        2 "14 14"
-        3 "12 12"
-        4 "12 12"
-        5 "12 12"
+        2 "12 12"
+	3 "12 12"
 }
 
 # each quoted text is a combination of P,Q as described above
 array set pf_param_pq {
         1 "2 1"
-        2 "4 1"
-        3 "2 2"
-        4 "4 3"
-        5 "4 4"
+	2 "2 2"
+	3 "3 3"
 }
 
 # each quoted text is a combination of Mx,My as described above
 array set pf_param_mxy {
         1 "6 12"
-        2 "3 14"
-        3 "6 6"
-        4 "3 4"
-        5 "3 3"
+        2 "6 6"
+	3 "4 4"
 }
 
-# Required number of processors for each case
+# Required number of processors for stantard ParFLow
 array set np_arr {
 	1 "2"
         2 "4"
-        3 "4"
-        4 "12"
-        5 "16"
+	3 "9"
 }
 
-for {set i 1} {$i < 6} {incr i} {
+for {set i 1} {$i < 4} {incr i} {
 
 	#Purge output from previous runs
 	exec rm -rf "output_2d_test${i}"
@@ -148,10 +108,11 @@ for {set i 1} {$i < 6} {incr i} {
 	exec mv {*}[glob *.pfidb] output_2d_test${i}/
 
 	#run each example
-	puts "Running TEST $i"
+	puts "Running step0_2d_test $i"
 	cd  output_2d_test${i}/
         exec mpirun -np $np_arr($i) parflow test_brick_2d
-        exec mpirun -np $np_arr($i) parflow test_brick_2d_with_p4est
+	#We will run them in serial with p4est
+        exec mpirun -np 1 parflow test_brick_2d_with_p4est
 
 	#Colapse paralell output in single files
 	pfundist test_brick_2d
@@ -160,7 +121,6 @@ for {set i 1} {$i < 6} {incr i} {
 	#Compare pressure output file for both test cases	
         source ../compare_files.tcl
 	set passed 1
-        set sig_digits 4
 	
 	foreach t "00000 00001" {
                 if ![pftestFile test_brick_2d.out.press.$t.pfb \
@@ -171,11 +131,11 @@ for {set i 1} {$i < 6} {incr i} {
 	}
 
         if $passed {
-                puts "PASSED\n"
+                puts "\n\n\n\nstep0_2d_test $i : PASSED"
         } else {
-                puts "FAILED\n"
+                puts "\n\n\n\nstep0_2d_test $i : FAILED"
 	}
-
+	puts "*****************************************************************************"
 
         cd ..
 }

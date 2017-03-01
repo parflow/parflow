@@ -8,12 +8,13 @@ namespace import Parflow::*
 pfset FileVersion 4
 
 # remove files from previous run
-foreach file [glob -nocomplain *test_brick_2d.out.*] {file delete -force -- $file}
-foreach file [glob -nocomplain test_brick_2d.pfidb] {file delete -force -- $file}
+foreach file [glob -nocomplain *test_brick_2d_with_p4est.out.*] {file delete -force -- $file}
+foreach file [glob -nocomplain test_brick_2d_with_p4est.pfidb] {file delete -force -- $file}
 
-pfset Process.Topology.P  [lindex $argv 2]
-pfset Process.Topology.Q  [lindex $argv 3]
-pfset Process.Topology.R  1
+
+pfset Process.Topology.P 1
+pfset Process.Topology.Q 1
+pfset Process.Topology.R 1
 
 #---------------------------------------------------------
 # Computational Grid
@@ -33,13 +34,13 @@ pfset ComputationalGrid.NZ                       1
 #---------------------------------------------------------
 # Use p4est software for adaptive mesh refinement
 #---------------------------------------------------------
-pfset use_pforest                               "no"
+pfset use_pforest                               "yes"
 
 #---------------------------------------------------------
 # Computational SubGrid dims
 #---------------------------------------------------------
-pfset ComputationalSubgrid.MX                    5
-pfset ComputationalSubgrid.MY                    3
+pfset ComputationalSubgrid.MX                    [lindex $argv 2]
+pfset ComputationalSubgrid.MY                    [lindex $argv 3]
 pfset ComputationalSubgrid.MZ                    1
 
 #---------------------------------------------------------
@@ -295,12 +296,8 @@ pfset SpecificStorage.Type            Constant
 pfset SpecificStorage.GeomNames       "domain"
 pfset Geom.domain.SpecificStorage.Value 0.0
 
-#-----------------------------------------------------------------------------
-# Print pressure for visualization
-#-----------------------------------------------------------------------------
-pfset Solver.WriteSiloPressure		True
 
 #-----------------------------------------------------------------------------
 # Write out data base
 #-----------------------------------------------------------------------------
-pfwritedb test_brick_2d
+pfwritedb test_brick_2d_with_p4est

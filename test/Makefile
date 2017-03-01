@@ -8,7 +8,7 @@
 
 include $(PARFLOW_DIR)/config/Makefile.config
 
-SUBDIRS = clm
+SUBDIRS = clm p4est
 
 default: check
 
@@ -77,7 +77,7 @@ PARALLEL_2DTOPO_TESTS += \
 
 endif
 
-CHECK_TARGETS=check_sequential check_parallel check_samrai
+CHECK_TARGETS=check_sequential check_parallel check_samrai check_p4est
 
 check:
 	@(logfile=check.$$$$.checklog; \
@@ -192,6 +192,8 @@ check_samrai:
 	        (cd $$i; make check_samrai); \
 	done 
 
+check_p4est:
+	@(cd p4est; make check_p4est);
 
 clean: testclean
 	@-for i in $(SUBDIRS); \

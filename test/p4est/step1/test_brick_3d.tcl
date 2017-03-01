@@ -8,12 +8,12 @@ namespace import Parflow::*
 pfset FileVersion 4
 
 # remove files from previous run
-foreach file [glob -nocomplain *test_brick_3d_with_p4est.out.*] {file delete -force -- $file}
-foreach file [glob -nocomplain test_brick_3d_with_p4est.pfidb] {file delete -force -- $file}
+foreach file [glob -nocomplain *test_brick_3d.out.*] {file delete -force -- $file}
+foreach file [glob -nocomplain test_brick_3d.pfidb] {file delete -force -- $file}
 
-pfset Process.Topology.P 1
-pfset Process.Topology.Q 1
-pfset Process.Topology.R 1
+pfset Process.Topology.P  [lindex $argv 3]
+pfset Process.Topology.Q  [lindex $argv 4]
+pfset Process.Topology.R  [lindex $argv 5]
 
 #---------------------------------------------------------
 # Computational Grid
@@ -33,14 +33,14 @@ pfset ComputationalGrid.NZ                       [lindex $argv 2]
 #---------------------------------------------------------
 # Use p4est software for adaptive mesh refinement
 #---------------------------------------------------------
-pfset use_pforest                               "yes"
+pfset use_pforest                               "no"
 
 #---------------------------------------------------------
 # Computational SubGrid dims
 #---------------------------------------------------------
-pfset ComputationalSubgrid.MX                    [lindex $argv 3]
-pfset ComputationalSubgrid.MY                    [lindex $argv 4]
-pfset ComputationalSubgrid.MZ                    [lindex $argv 5]
+pfset ComputationalSubgrid.MX                    5
+pfset ComputationalSubgrid.MY                    3
+pfset ComputationalSubgrid.MZ                    1
 
 #---------------------------------------------------------
 # The Names of the GeomInputs
@@ -295,12 +295,8 @@ pfset SpecificStorage.Type            Constant
 pfset SpecificStorage.GeomNames       "domain"
 pfset Geom.domain.SpecificStorage.Value 0.0
 
-#-----------------------------------------------------------------------------
-# Print pressure for visualization
-#-----------------------------------------------------------------------------
-pfset Solver.WriteSiloPressure		True
 
 #-----------------------------------------------------------------------------
 # Write out data base
 #-----------------------------------------------------------------------------
-pfwritedb test_brick_3d_with_p4est
+pfwritedb test_brick_3d

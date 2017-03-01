@@ -1,4 +1,4 @@
-# Trying to compute - \Delta p = 0 in two dimensions with solution p(x,y) = Cos(x)_Cosh(y).
+# Trying to compute - \Delta p = 0 in three dimensions with solution p(x,y,z,t) = xyzt + 1.
 
 # Import the ParFlow TCL package
 lappend auto_path $env(PARFLOW_DIR)/bin 
@@ -8,12 +8,12 @@ namespace import Parflow::*
 pfset FileVersion 4
 
 # remove files from previous run
-foreach file [glob -nocomplain *test_brick_2d.out.*] {file delete -force -- $file}
-foreach file [glob -nocomplain test_brick_2d.pfidb] {file delete -force -- $file}
+foreach file [glob -nocomplain *test_brick_3d.out.*] {file delete -force -- $file}
+foreach file [glob -nocomplain test_brick_3d.pfidb] {file delete -force -- $file}
 
-pfset Process.Topology.P  [lindex $argv 2]
-pfset Process.Topology.Q  [lindex $argv 3]
-pfset Process.Topology.R  1
+pfset Process.Topology.P  [lindex $argv 3]
+pfset Process.Topology.Q  [lindex $argv 4]
+pfset Process.Topology.R  [lindex $argv 5]
 
 #---------------------------------------------------------
 # Computational Grid
@@ -24,11 +24,11 @@ pfset ComputationalGrid.Lower.Z                  0.0
 
 pfset ComputationalGrid.DX	                 0.01
 pfset ComputationalGrid.DY                       0.01
-pfset ComputationalGrid.DZ	                 1
+pfset ComputationalGrid.DZ	                 0.01
 
 pfset ComputationalGrid.NX                       [lindex $argv 0]
 pfset ComputationalGrid.NY                       [lindex $argv 1]
-pfset ComputationalGrid.NZ                       1
+pfset ComputationalGrid.NZ                       [lindex $argv 2]
 
 #---------------------------------------------------------
 # Use p4est software for adaptive mesh refinement
@@ -50,7 +50,7 @@ pfset GeomInput.Names "domain_input background_input"
 #---------------------------------------------------------
 # Known Solution
 #---------------------------------------------------------
-pfset KnownSolution                                   2D_CosX_CoshY
+pfset KnownSolution                                   XYZTPlus1
 
 #--------------------------------------------------------
 # prepare ICPressure File which has the initial values for pressure
@@ -201,19 +201,19 @@ pfset BCPressure.PatchNames "left right front back bottom top"
 
 pfset Patch.left.BCPressure.Type			ExactSolution
 pfset Patch.left.BCPressure.Cycle			"constant"
-pfset Patch.left.BCPressure.alltime.PredefinedFunction	2D_CosX_CoshY
+pfset Patch.left.BCPressure.alltime.PredefinedFunction	XYZTPlus1
 
 pfset Patch.right.BCPressure.Type			ExactSolution
 pfset Patch.right.BCPressure.Cycle			"constant"
-pfset Patch.right.BCPressure.alltime.PredefinedFunction 2D_CosX_CoshY
+pfset Patch.right.BCPressure.alltime.PredefinedFunction XYZTPlus1
 
 pfset Patch.front.BCPressure.Type			ExactSolution
 pfset Patch.front.BCPressure.Cycle			"constant"
-pfset Patch.front.BCPressure.alltime.PredefinedFunction  2D_CosX_CoshY
+pfset Patch.front.BCPressure.alltime.PredefinedFunction  XYZTPlus1
 
 pfset Patch.back.BCPressure.Type			ExactSolution
 pfset Patch.back.BCPressure.Cycle			"constant"
-pfset Patch.back.BCPressure.alltime.PredefinedFunction  2D_CosX_CoshY
+pfset Patch.back.BCPressure.alltime.PredefinedFunction  XYZTPlus1
 
 # pfset Patch.front.BCPressure.Type			FluxConst
 # pfset Patch.front.BCPressure.Cycle			"constant"
@@ -295,12 +295,8 @@ pfset SpecificStorage.Type            Constant
 pfset SpecificStorage.GeomNames       "domain"
 pfset Geom.domain.SpecificStorage.Value 0.0
 
-#-----------------------------------------------------------------------------
-# Print pressure for visualization
-#-----------------------------------------------------------------------------
-pfset Solver.WriteSiloPressure		True
 
 #-----------------------------------------------------------------------------
 # Write out data base
 #-----------------------------------------------------------------------------
-pfwritedb test_brick_2d
+pfwritedb test_brick_3d

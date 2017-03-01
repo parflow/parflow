@@ -11,7 +11,7 @@ the Parflow's Richards solver to perform the above
 task. With these two scripts, we try to compute p
 such that 
 
-		\Delta p = 0,                (1)
+		\Delta p = 0,
 
 in two dimensions based on the solution 
 		
@@ -31,23 +31,5 @@ based on the solution
 
 		p(x,y,z,t) = xyzt + 1.
 
-We compare the results obtained with the upstream
-version of ParFlow and with the version that uses
-p4est as a meshing back-end. Ideally the results
-should be identicall.
-
-The steps1_tests_2d.tcl and steps1_tests_3d.tcl
-scripts run test cases taking advantage of some internal
-Parflow functions and comparing directly the pressure output
-file of each case. To run it just type
-
-	tclsh step1_tests_2d.tcl (resp. step1_tests_3d.tcl)
-
-in the current directory. 
-
-In case that further comparison is desired. By
-executing both of the previous scripts, silo
-files of the pressure field are produced. These
-can be open with visit for visualization. Once
-open choose add->pseudocolor->Pressure and
-then click on the Draw buttom.
+See the steps0_tests_{2,3}d.tcl for details in the mesh
+configuration for each test.

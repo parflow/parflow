@@ -86,11 +86,10 @@ for {set i 1} {$i < 4} {incr i} {
 	exec mv {*}[glob *.pfidb] output_3d_test${i}/
 
 	#run each example
-	puts "Running TEST $i"
+	puts "Running step1_3d_test $i"
 	cd  output_3d_test${i}/
 	exec mpirun -np $np_arr($i) parflow test_brick_3d
-	#We will run them in serial with p4est
-	exec mpirun -np 1 parflow test_brick_3d_with_p4est
+	exec mpirun -np $np_arr($i) parflow test_brick_3d_with_p4est
 
 	#Colapse paralell output in single files
 	pfundist test_brick_3d
@@ -99,9 +98,10 @@ for {set i 1} {$i < 4} {incr i} {
 	#Compare pressure output file for both test cases
 	source ../compare_files.tcl
 	set passed 1
+        set sig_digits 4
 
 	foreach t "00000 00001" {
-                if ![pftestFile test_brick_3d.out.press.$t.pfb \
+                if  ![pftestFile test_brick_3d.out.press.$t.pfb \
                 test_brick_3d_with_p4est.out.press.$t.pfb \
                 "Max difference in Pressure for timestep $t" $sig_digits] {
 			set passed 0
@@ -109,11 +109,11 @@ for {set i 1} {$i < 4} {incr i} {
 	}
 
         if $passed {
-		puts "PASSED\n"
+		puts "\n\n\n\nstep1_3d_test $i: PASSED"
         } else {
-		puts "FAILED\n"
+		puts "\n\n\n\nstep1_3d_test $i: FAILED"
 	}
-
+	puts "*****************************************************************************"
 
 	cd ..
 }
