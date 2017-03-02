@@ -1,0 +1,82 @@
+This is the README file for parflow-p4est integration.
+
+Parflow can be compiled against the p4est software library
+such that the latter functions as mesh manager of the former.
+
+
+1. Installing p4est.
+
+The official web page for source code and documentation for
+p4est is
+
+		http://www.p4est.org/ 
+
+p4est uses the GNU autoconf/automake/libtool build system. We
+require the code to be compiled with parallel functionality.
+(e.g. --enable-mpi)
+
+Please see the official documentation for details.
+
+2. Compiling ParFlow against p4est.
+
+GNU autotools must be invoked to generate the
+necessary configuration files and the configure script.
+A bootstrap script is provided for this purpose: give the
+shell command './bootstrap' and then proceed with the normal
+installation instructions of ParFlow, for example:
+
+```shell
+   cd $PARFLOW_DIR
+   cd pfsimulator
+   ./configure --prefix=$PARFLOW_DIR --with-amps=mpi1 --with-p4est=$P4EST_DIR
+   make 
+   make install
+```
+
+We require ParFlow to be compiled with parallel functionality enabled.
+
+2. Using p4est as mesh manager in a ParFlow simulation.
+
+In order to use p4est as ParFlow's mesh backend, four new key/value
+pairs need to be specified in the tcl input file. These are:
+
+pfset use_pforest			"yes" [default = "no"]
+
+pfset ComputationalSubgrid.MX		5 [default 1]
+pfset ComputationalSubgrid.MY		5 [default 1]
+pfset ComputationalSubgrid.MZ		5 [default 1]
+
+The last three specify the desired size of a subgrid. The key/values
+specifying the processor topology are ignored when p4est is
+used as mesh manager. Hence, in order to run the simulation you should
+generate the corresponding .pfidb file. For example if the
+configuration script is called test.tcl at the end of the tcl
+script use.
+
+pfwritedb "runtest"
+
+and to executed it:
+
+```shell
+   tclsh test.tcl
+   mpirun -np $NPROCS $PARFLOW_DIR/bin/parflow runtest
+```
+
+
+3. Additional information / warnings
+
+With p4est enabled the user has the flexibility of using less
+processes (MPI ranks) than the total number of subgrids.
+
+Configurations  in which the number of processes is bigger
+than the number of subgrids are not yet supported. 
+
+Certain combinations of total number of grid points and
+subgrid size are not allowed. In that case the program 
+automaticaly quits and prints the pair of parameters that
+need to be changed.
+
+Configurations in which the number of subgrids in the
+Z coordinate direction have not been tested.
+
+The MGSemi preconditioner is not supported.
