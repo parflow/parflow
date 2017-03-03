@@ -47,11 +47,14 @@ pfset ComputationalSubgrid.MY		5 [default 1]
 pfset ComputationalSubgrid.MZ		5 [default 1]
 
 The last three specify the desired size of a subgrid. The key/values
-specifying the processor topology are ignored when p4est is
-used as mesh manager. Hence, in order to run the simulation you should
-generate the corresponding .pfidb file. For example if the
-configuration script is called test.tcl at the end of the tcl
-script use.
+defining the process topology are ignored when p4est is
+used as mesh manager. Given the total number of processes (MPI size),
+the process partition is internally managed by p4est.
+Hence, in order to run the simulation you should
+generate the corresponding .pfidb file and specify the number of
+processes (NPROCS) directly in the command line.
+For example if the configuration script is called test.tcl at the
+end of the tcl script use:
 
 pfwritedb "runtest"
 
@@ -61,7 +64,6 @@ and to executed it:
    tclsh test.tcl
    mpirun -np $NPROCS $PARFLOW_DIR/bin/parflow runtest
 ```
-
 
 3. Additional information / warnings
 
@@ -77,6 +79,9 @@ automaticaly quits and prints the pair of parameters that
 need to be changed.
 
 Configurations in which the number of subgrids in the
-Z coordinate direction have not been tested.
+Z coordinate direction is bigger than one have not been tested.
 
 The MGSemi preconditioner is not supported.
+
+Coupling with the common land model (--with-clm) not yet
+suported.
