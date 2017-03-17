@@ -202,13 +202,13 @@ include_directories ("${PROJECT_BINARY_DIR}/include")
 
 #-----------------------------------------------------------------------------
 # Setup configure.h file for accessing configure options
-#-----------------------------------------------------------------------------
-configure_file (pfsimulator/parflow_config.h.in include/parflow_config.h)
+# -----------------------------------------------------------------------------
+# TODO These files should be moved once cmake conversion is completed,
+# placed in cmake to avoid confusion with autoconf versions
+configure_file (cmake/parflow_config.h.in include/parflow_config.h)
 
 # TODO need to setup script logic got correctly generate version file.
-configure_file (pfsimulator/version.h.in include/version.h)
-configure_file (pfsimulator/config/Makefile.config.in config/Makefile.config)
-install(FILES ${PROJECT_BINARY_DIR}/config/Makefile.config DESTINATION config)
+configure_file (cmake/version.h.in include/version.h)
 
 if ( ${PARFLOW_HAVE_CLM} )
   configure_file (pfsimulator/clm/parflow_config.F90.in ${PROJECT_BINARY_DIR}/pfsimulator/clm/parflow_config.F90)
