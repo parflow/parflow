@@ -268,7 +268,7 @@ VanGTable *VanGComputeTable(
 }
 		      
 
-inline double VanGLookupSpline(
+static inline double VanGLookupSpline(
    double pressure_head,
    VanGTable *lookup_table,
    int fcn)
@@ -348,7 +348,7 @@ inline double VanGLookupSpline(
    return rel_perm;
 }
 
-inline double VanGLookupLinear(
+static inline double VanGLookupLinear(
    double pressure_head,
    VanGTable *lookup_table,
    int fcn)
