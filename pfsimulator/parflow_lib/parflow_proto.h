@@ -62,7 +62,7 @@ int BCTemperaturePackageSizeOfTempData (void );
 #endif
 
 /* calc_elevations.c */
-double **CalcElevations (GeomSolid *geom_solid , int ref_patch , SubgridArray *subgrids );
+double **CalcElevations (GeomSolid *geom_solid , int ref_patch , SubgridArray *subgrids,ProblemData  *problem_data );
 
 typedef void (*LinearSolverInvoke) (Vector *x , Vector *b , double tol , int zero );
 typedef PFModule *(*LinearSolverInitInstanceXtraInvoke) (Problem *problem , Grid *grid , ProblemData *problem_data , Matrix *A , double *temp_data );
@@ -518,20 +518,27 @@ double N_VMinQuotient_PF(N_Vector num, N_Vector denom);
 /* new_endpts.c */
 void NewEndpts (double *alpha , double *beta , double *pp , int *size_ptr , int n , double *a_ptr , double *b_ptr , double *cond_ptr , double ereps );
 
-typedef void (*PressFunctionEvalInvoke) (Vector *pressure , Vector *fval , ProblemData *problem_data , Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , double dt , double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx
+typedef void (*PressFunctionEvalInvoke) (Vector *pressure , Vector *fval ,/**/ ProblemData *problem_data , Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , double dt , double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx
 #ifdef withTemperature
-,Vector *x_velocity, Vector *y_velocity, Vector *z_velocity
+   ,Vector       *x_velocity,
+   Vector       *y_velocity,
+   Vector       *z_velocity
 #endif
-);
+ /* void *current_state*/);
+
 typedef PFModule *(*PressFunctionEvalInitInstanceXtraInvoke) (Problem *problem , Grid *grid , double *temp_data );
 
 /* press_function_eval.c */
 void KINSolFunctionEval (int size , N_Vector speciesNVector , N_Vector fval , void *current_state );
-void PressFunctionEval (Vector *pressure , Vector *fval , ProblemData *problem_data , Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , double dt , double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx
+void PressFunctionEval (Vector *pressure , Vector *fval /**/ ,ProblemData *problem_data , Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , double dt , double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx
 #ifdef withTemperature
-,Vector *x_velocity, Vector *y_velocity, Vector *z_velocity
+   ,Vector       *x_velocity,
+   Vector       *y_velocity,
+   Vector       *z_velocity
 #endif
-);
+ /*,void *current_state*/);
+
+
 PFModule *PressFunctionEvalInitInstanceXtra (Problem *problem , Grid *grid , double *temp_data );
 void PressFunctionEvalFreeInstanceXtra (void );
 PFModule *PressFunctionEvalNewPublicXtra (void );
@@ -825,6 +832,18 @@ void dzScaleFreeInstanceXtra (void );
 PFModule *dzScaleNewPublicXtra (void );
 void dzScaleFreePublicXtra (void );
 int dzScaleSizeOfTempData (void );
+
+typedef void (*realSpaceZInvoke) (ProblemData *problem_data, Vector *rsz );
+
+/* problem_real_space_z.c */
+void realSpaceZ (ProblemData *problem_data, Vector *rsz );
+PFModule *realSpaceZInitInstanceXtra (void );
+void realSpaceZFreeInstanceXtra (void );
+PFModule *realSpaceZNewPublicXtra (void );
+void realSpaceZFreePublicXtra (void );
+int realSpaceZSizeOfTempData (void );
+
+
 
 /* DOK - overlandfloweval */
 typedef void (*OverlandFlowEvalInvoke) (Grid *grid, 
@@ -1238,10 +1257,10 @@ void SubsrfSimFreePublicXtra (void );
 int SubsrfSimSizeOfTempData (void );
 
 #ifdef withTemperature
-typedef void (*TempFunctionEvalInvoke) (Vector *temperature, Vector *fval , ProblemData *problem_data , Vector *pressure, Vector *old_pressure, Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , Vector *heat_capacity_water, Vector *heat_capacity_rock, Vector *viscosity, double dt , double time, Vector *old_temperature, Vector *evap_trans, Vector *energy_source, Vector *forc_t, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity);
-typedef PFModule *(*TempFunctionEvalInitInstanceXtraInvoke) ( Problem *problem , Grid *grid , double *temp_data );
+typedef void (*TempFunctionEvalInvoke) (Vector *temperature, Vector *fval , /**/ ProblemData *problem_data ,/**/ Vector *pressure /**/, Vector *old_pressure, Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , Vector *heat_capacity_water, Vector *heat_capacity_rock, Vector *viscosity, double dt , double time, Vector *old_temperature, Vector *evap_trans, Vector *energy_source, Vector *forc_t, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity/*, void *current_state*/);
+typedef PFModule *(*TempFunctionEvalInitInstanceXtraInvoke) ( Problem *problem , Grid *grid , double *temp_data);
 /* temp_function_eval.c */
-void TempFunctionEval (Vector *temperature, Vector *fval , ProblemData *problem_data , Vector *pressure, Vector *old_pressure, Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , Vector *heat_capacity_water, Vector *heat_capacity_rock, Vector *viscosity, double dt , double time, Vector *old_temperature, Vector *evap_trans, Vector *energy_source, Vector *forc_t, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity);
+void TempFunctionEval (Vector *temperature, Vector *fval /**/, ProblemData *problem_data/**/ , Vector *pressure,/**/ Vector *old_pressure, Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , Vector *heat_capacity_water, Vector *heat_capacity_rock, Vector *viscosity, double dt , double time, Vector *old_temperature, Vector *evap_trans, Vector *energy_source, Vector *forc_t, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity /* void *current_state*/);
 PFModule *TempFunctionEvalInitInstanceXtra (Problem *problem , Grid *grid , double *temp_data );
 void TempFunctionEvalFreeInstanceXtra (void );
 PFModule *TempFunctionEvalNewPublicXtra (void );

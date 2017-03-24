@@ -140,13 +140,17 @@ void    RichardsJacobianEval(
 Vector       *pressure,       /* Current pressure values */
 Matrix      **ptr_to_J,       /* Pointer to the J pointer - this will be set
 		                 to instance_xtra pointer at end */
-Matrix      **ptr_to_JC,       /* Pointer to the JC pointer - this will be set
-		                 to instance_xtra pointer at end */
+Matrix      **ptr_to_JC,       
+
 Vector       *saturation,     /* Saturation / work vector */
 Vector       *density,        /* Density vector */
 ProblemData  *problem_data,   /* Geometry data for problem */
 double        dt,             /* Time step size */
 double        time,           /* New time value */
+
+
+//void * current_state,
+
 int           symm_part)      /* Specifies whether to compute just the
                                  symmetric part of the Jacobian (1), or the
 				 full Jacobian */
@@ -167,6 +171,20 @@ int           symm_part)      /* Specifies whether to compute just the
 
    Matrix      *J                 = (instance_xtra -> J);
    Matrix      *JC                = (instance_xtra -> JC);
+
+/*
+   Vector      *saturation       = StateSaturation(  ((State*)current_state) );
+   Vector      *density          = StateDensity(     ((State*)current_state) );
+
+
+#ifdef FGTest
+   Vector      *saturation       = StateSaturation2(  ((State*)current_state) );
+#endif
+
+   ProblemData *problem_data     = StateProblemData( ((State*)current_state) );
+   double       dt               = StateDt(          ((State*)current_state) );
+   double       time             = StateTime(        ((State*)current_state) );
+*/
 
    Vector      *density_der       = NULL;
    Vector      *saturation_der    = NULL;

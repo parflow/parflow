@@ -118,6 +118,11 @@ Problem     *problem)    /* General problem information */
    Subvector     *tndd_sub;
    Subvector     *ic_values_sub;
 
+   Vector      *rsz                 = ProblemDataRealSpaceZ(problem_data);
+   Subvector   *rsz_sub;
+   double      *rsz_dat;
+
+
    double        *data;
    double        *fcn_data;
    double        *psdat, *ic_values_dat;
@@ -131,7 +136,7 @@ Problem     *problem)    /* General problem information */
    int            nx, ny, nz , nx_p , ny_p , nz_p;
    int            r;
 
-   int            is, i, j, k, ips, iel, ipicv;
+   int            is, i, j, k, ips, iel, ipicv, ival;
 
 
    /*-----------------------------------------------------------------------
@@ -209,7 +214,6 @@ ips = SubvectorEltIndex(ps_sub, ix, iy, iz);
 
       double  *reference_elevations;
       double  *temperature_values;
-      double   z;
       int      ir;
 
       dummy1 = (Type1 *)(public_xtra -> data);
@@ -229,7 +233,9 @@ ips = SubvectorEltIndex(ps_sub, ix, iy, iz);
                subgrid             = SubgridArraySubgrid(subgrids, is);
 	       ps_sub              = VectorSubvector(ic_temperature, is);
 	       data    	           = SubvectorData(ps_sub);
-	    
+               rsz_sub = VectorSubvector(rsz, is);
+               rsz_dat = SubvectorData(rsz_sub);
+
 	       ix = SubgridIX(subgrid);
 	       iy = SubgridIY(subgrid);
 	       iz = SubgridIZ(subgrid);
@@ -243,9 +249,9 @@ ips = SubvectorEltIndex(ps_sub, ix, iy, iz);
 
 		  GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
 	          {
+		     ival = SubvectorEltIndex(rsz_sub, i,j,k);
 	             ips = SubvectorEltIndex(ps_sub, i, j, k);
-		     z = RealSpaceZ(k, SubgridRZ(subgrid));
-		     data[ips] = data[ips] - (z-reference_elevations[ir]); 
+		     data[ips] = data[ips] - (rsz_dat[ival]-reference_elevations[ir]); 
 		  });
 	    }     /* End of subgrid loop */
 	 }        /* End of region loop */
@@ -268,7 +274,6 @@ ips = SubvectorEltIndex(ps_sub, ix, iy, iz);
       int      *geom_indices;
       double   *temperature_values;
       double   *ref_den;
-      double    z;
       double  ***elevations;
       int       ir;
 
@@ -288,7 +293,7 @@ ips = SubvectorEltIndex(ps_sub, ix, iy, iz);
       {
 	 ref_solid = ProblemDataSolid(problem_data, geom_indices[ir]);
 	 elevations[ir] = CalcElevations(ref_solid, patch_indices[ir], 
-					 subgrids);
+					 subgrids,problem_data);
 
       }        /* End of region loop */
 
@@ -301,6 +306,8 @@ ips = SubvectorEltIndex(ps_sub, ix, iy, iz);
                subgrid             = SubgridArraySubgrid(subgrids, is);
 	       ps_sub              = VectorSubvector(ic_temperature, is);
 	       data    	           = SubvectorData(ps_sub);
+               rsz_sub = VectorSubvector(rsz, is);
+               rsz_dat = SubvectorData(rsz_sub);
 	    
 	       ix = SubgridIX(subgrid);
 	       iy = SubgridIY(subgrid);
@@ -315,9 +322,10 @@ ips = SubvectorEltIndex(ps_sub, ix, iy, iz);
 
 		  GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
 	          {
+                      ival = SubvectorEltIndex(rsz_sub, i,j,k);
 	             ips = SubvectorEltIndex(ps_sub, i, j, k);
                      iel = (i-ix) + (j-iy)*nx;
-		     data[ips] = temperature_values[ir] -  ( RealSpaceZ(k, SubgridRZ(subgrid)) -  elevations[ir][is][iel] );
+		     data[ips] = temperature_values[ir] -  ( rsz_dat[ival] -  elevations[ir][is][iel] );
 		  });
 	    }     /* End of subgrid loop */
 	 }        /* End of region loop */

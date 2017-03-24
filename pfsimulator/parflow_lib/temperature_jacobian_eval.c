@@ -67,17 +67,22 @@ void    TemperatureJacobianEval(
 Vector       *temperature,       /* Current temperature values */
 Matrix      **ptr_to_J,       /* Pointer to the J pointer - this will be set
 		                 to instance_xtra pointer at end */
-Vector       *pressure,    
-Vector       *saturation,     /* Saturation / work vector */
-Vector       *density,        /* Density vector */
-Vector       *heat_capacity_water, 
-Vector       *heat_capacity_rock, 
+Vector       *pressure,  
+
+
+Vector       *saturation,     
+Vector       *density,        
+Vector       *heat_capacity_water,
+Vector       *heat_capacity_rock,
 Vector       *x_velocity,
 Vector       *y_velocity,
 Vector       *z_velocity,
-ProblemData  *problem_data,   /* Geometry data for problem */
-double        dt,             /* Time step size */
-double        time,           /* New time value */
+ProblemData  *problem_data,   
+double        dt,             
+double        time,           
+
+//void 	      *current_state, 	  
+
 int           symm_part)      /* Specifies whether to compute just the
                                  symmetric part of the Jacobian (1), or the
 				 full Jacobian */
@@ -92,6 +97,21 @@ int           symm_part)      /* Specifies whether to compute just the
    PFModule    *thermal_conductivity = (instance_xtra -> thermal_conductivity);
    PFModule    *bc_temperature       = (instance_xtra -> bc_temperature);
    PFModule    *bc_internal          = (instance_xtra -> bc_internal);
+
+/*
+   Vector      *saturation       = StateSaturation(  ((State*)current_state) );
+   Vector      *density          = StateDensity(     ((State*)current_state) );
+
+   Vector      *heat_capacity_water       = StateHeatCapacityWater(  ((State*)current_state) );
+   Vector      *heat_capacity_rock       = StateHeatCapacityRock(  ((State*)current_state) );
+   Vector      *x_velocity              = StateXVelocity(  ((State*)current_state) );
+   Vector      *y_velocity              = StateYVelocity(  ((State*)current_state) );
+   Vector      *z_velocity              = StateZVelocity(  ((State*)current_state) );
+
+   ProblemData *problem_data     = StateProblemData( ((State*)current_state) );
+   double       dt               = StateDt(          ((State*)current_state) );
+   double       time             = StateTime(        ((State*)current_state) );
+*/
 
    Matrix      *J                 = (instance_xtra -> J);
 
@@ -109,6 +129,11 @@ int           symm_part)      /* Specifies whether to compute just the
    Vector      *permeability_y    = ProblemDataPermeabilityY(problem_data);
    Vector      *permeability_z    = ProblemDataPermeabilityZ(problem_data);
    Vector      *sstorage          = ProblemDataSpecificStorage(problem_data);
+
+   Vector      *z_mult            = ProblemDataZmult(problem_data);  //@RMM
+   Subvector   *z_mult_sub;   //@RMM
+   double      *z_mult_dat;   //@RMM
+
 
    double       gravity           = ProblemGravity(problem);
 
@@ -241,6 +266,11 @@ ForSubgridI(is, GridSubgrids(grid))
 	 hcw_sub = VectorSubvector(heat_capacity_water, is);
 	 hcr_sub = VectorSubvector(heat_capacity_rock, is);
 	 ss_sub = VectorSubvector(sstorage, is);
+
+       /* @RMM added to provide access to zmult */
+       z_mult_sub = VectorSubvector(z_mult, is);
+       /* @RMM added to provide variable dz */
+       z_mult_dat = SubvectorData(z_mult_sub);
 	 
 	 ix = SubgridIX(subgrid);
 	 iy = SubgridIY(subgrid);
@@ -293,9 +323,9 @@ ForSubgridI(is, GridSubgrids(grid))
          		   ipo = SubvectorEltIndex(po_sub, i,j,k);
 		           iv  = SubvectorEltIndex(d_sub,  i,j,k);
 					//FGtest dp und sp =1 	
-			   cp[im] += pop[ipo]* /*hcwp[iv]*/ vol* 1.0 ;//( sp[iv]*dp[iv] + tp[iv]*sp[iv]*ddp[iv] );
+			   cp[im] += pop[ipo]* hcwp[iv] * vol *z_mult_dat[iv] * sp[iv] ;//( sp[iv]*dp[iv] + tp[iv]*sp[iv]*ddp[iv] );
 			 //cp[im] += (pp[iv]*sp[iv])*hcwp[iv]*(ss[iv]/gravity)*vol;
-                           cp[im] += vol * (1.0 - pop[ipo])  /*hcrp[iv]*/;
+                           cp[im] += vol *z_mult_dat[iv]* (1.0 - pop[ipo])  * (1.0 - hcwp[ip]);
 
 		   });
       }   /* End subgrid loop */
@@ -370,6 +400,12 @@ ForSubgridI(is, GridSubgrids(grid))
       J_sub    = MatrixSubmatrix(J, is);
       ctc_sub  = VectorSubvector(constThermalCond, is);
       ctcp     = SubvectorData(ctc_sub);	 
+
+       /* @RMM added to provide access to zmult */
+       z_mult_sub = VectorSubvector(z_mult, is);
+       /* @RMM added to provide variable dz */
+       z_mult_dat = SubvectorData(z_mult_sub);
+
       ix = SubgridIX(subgrid) - 1;
       iy = SubgridIY(subgrid) - 1;
       iz = SubgridIZ(subgrid) - 1;
@@ -441,7 +477,7 @@ ForSubgridI(is, GridSubgrids(grid))
 	        /* diff >= 0 implies flow goes left to right */
 	        diff = tp[ip] - tp[ip+1];
 
-		x_coeff = dt * ffx * (1.0/dx); 
+		x_coeff = dt * ffx *z_mult_dat[ip]* (1.0/dx); 
 
 		sym_west_temp = - x_coeff 
 		                  * RPMean(tp[ip], tp[ip+1], prod, prod_rt)* PMean(tp[ip], tp[ip+1], ctcp[ip], ctcp[ip+1])
@@ -466,7 +502,7 @@ ForSubgridI(is, GridSubgrids(grid))
 	        /* diff >= 0 implies flow goes south to north */
 	        diff = tp[ip] - tp[ip+sy_v];
 
-		y_coeff = dt * ffy * (1.0/dy); 
+		y_coeff = dt * ffy *z_mult_dat[ip]* (1.0/dy); 
 
 		sym_south_temp = - y_coeff
                                    *RPMean(tp[ip], tp[ip+sy_v], prod, prod_no)* PMean(tp[ip], tp[ip+sy_v], ctcp[ip], ctcp[ip+sy_v])
@@ -490,7 +526,7 @@ ForSubgridI(is, GridSubgrids(grid))
 		upper_cond = tp[ip+sz_v];
 		diff = lower_cond - upper_cond;
 
-		z_coeff = dt * ffz * (1.0 / dz); 
+		z_coeff = dt * ffz * (1.0 / (dz*z_mult_dat[ip])); 
 
 		sym_lower_temp = - z_coeff
                                    * RPMean(lower_cond, upper_cond, prod, 
@@ -570,6 +606,11 @@ ForSubgridI(is, GridSubgrids(grid))
       xv_sub    = VectorSubvector(x_velocity, is);
       J_sub    = MatrixSubmatrix(J, is);
                  
+       /* @RMM added to provide access to zmult */
+       z_mult_sub = VectorSubvector(z_mult, is);
+       /* @RMM added to provide variable dz */
+       z_mult_dat = SubvectorData(z_mult_sub);
+
       ix = SubgridIX(subgrid) - 1;
       iy = SubgridIY(subgrid) - 1; 
       iz = SubgridIZ(subgrid) - 1; 
@@ -631,10 +672,10 @@ ForSubgridI(is, GridSubgrids(grid))
                 prod_up     = dp[ip+sz_v];
                 prod_up_der = ddp[ip+sz_v]; 
                  
-                x_coeff = ffx * xvp[ip];   
+                x_coeff = ffx *z_mult_dat[ip]* xvp[ip];   
                 east_temp = x_coeff * RPMean(0.0, xvp[ip], 0.0, dp[ip]*hcwp[ip]+ddp[ip]*hcwp[ip]);
                  
-                y_coeff = ffy * yvp[ip];
+                y_coeff = ffy *z_mult_dat[ip]* yvp[ip];
                 north_temp = y_coeff * RPMean(0.0, yvp[ip], 0.0, dp[ip]*hcwp[ip]+ddp[ip]*hcwp[ip]);
  
                 z_coeff = ffz * zvp[ip];
@@ -681,6 +722,10 @@ ForSubgridI(is, GridSubgrids(grid))
 	    tcp_sub    = VectorSubvector(thermal_cond, is);
 	    J_sub     = MatrixSubmatrix(J, is);
 
+       /* @RMM added to provide access to zmult */
+       z_mult_sub = VectorSubvector(z_mult, is);
+       /* @RMM added to provide variable dz */
+       z_mult_dat = SubvectorData(z_mult_sub);
 
 	    dx = SubgridDX(subgrid);
 	    dy = SubgridDY(subgrid);
@@ -724,7 +769,7 @@ ForSubgridI(is, GridSubgrids(grid))
 		     {
 		        diff = tp[ip-1] - tp[ip];
 			prod_der = tcdp[ip-1];
-		        coeff = dt * ffx * (1.0/dx); 
+		        coeff = dt * ffx *z_mult_dat[ip]* (1.0/dx); 
 		        wp[im] = - coeff * diff
 			   * RPMean(tp[ip-1], tp[ip], prod_der, 0.0);      
 			break;
@@ -733,7 +778,7 @@ ForSubgridI(is, GridSubgrids(grid))
 		     {
 		        diff = tp[ip] - tp[ip+1];
 			prod_der = tcdp[ip+1];
-		        coeff = dt * ffx * (1.0/dx); 
+		        coeff = dt * ffx *z_mult_dat[ip]* (1.0/dx); 
 		        ep[im] = coeff * diff
 			   * RPMean(tp[ip], tp[ip+1], 0.0, prod_der);      
 			break;
@@ -750,7 +795,7 @@ ForSubgridI(is, GridSubgrids(grid))
 		     {
 		        diff = tp[ip-sy_v] - tp[ip];
 			prod_der = tcdp[ip-sy_v]; 
-		        coeff = dt * ffy * (1.0/dy); 
+		        coeff = dt * ffy *z_mult_dat[ip]* (1.0/dy); 
 		        sop[im] = - coeff * diff
 			   * RPMean(tp[ip-sy_v], tp[ip], prod_der, 0.0);      
 			break;
@@ -759,7 +804,7 @@ ForSubgridI(is, GridSubgrids(grid))
 		     {
 		        diff = tp[ip] - tp[ip+sy_v];
 			prod_der = tcdp[ip+sy_v];
-		        coeff = dt * ffy * (1.0/dy); 
+		        coeff = dt * ffy *z_mult_dat[ip]* (1.0/dy); 
 		        np[im] = - coeff * diff
 			   * RPMean(tp[ip], tp[ip+sy_v], 0.0, prod_der);      
 			break;
@@ -779,7 +824,7 @@ ForSubgridI(is, GridSubgrids(grid))
 		        diff = lower_cond - upper_cond;
 			prod_der = tcdp[ip-sz_v];
 			prod_lo = tcp[ip-sz_v];
-		        coeff = dt * ffz * (1.0/dz); 
+		        coeff = dt * ffz * (1.0/(dz*z_mult_dat[ip])); 
 		        lp[im] = - coeff * diff * RPMean(lower_cond, upper_cond, prod_der, 0.0);
                        break;
 		     }
@@ -790,7 +835,7 @@ ForSubgridI(is, GridSubgrids(grid))
 		        diff = lower_cond - upper_cond;
 			prod_der = tcdp[ip+sz_v];
 			prod_up = tcp[ip+sz_v];
-		        coeff = dt * ffz * (1.0/dz); 
+		        coeff = dt * ffz * (1.0/(dz*z_mult_dat[ip])); 
 		        up[im] = - coeff * diff * RPMean(lower_cond, upper_cond, 0.0, prod_der);
 			break;
 		     }
@@ -816,6 +861,12 @@ ForSubgridI(is, GridSubgrids(grid))
       J_sub     = MatrixSubmatrix(J, is);
       ctc_sub  = VectorSubvector(constThermalCond, is);
       ctcp     = SubvectorData(ctc_sub);
+
+       /* @RMM added to provide access to zmult */
+       z_mult_sub = VectorSubvector(z_mult, is);
+       /* @RMM added to provide variable dz */
+       z_mult_dat = SubvectorData(z_mult_sub);
+
       dx = SubgridDX(subgrid);
       dy = SubgridDY(subgrid);
       dz = SubgridDZ(subgrid);
@@ -870,7 +921,7 @@ ForSubgridI(is, GridSubgrids(grid))
 
 	       if (fdir[0])
 	       {
-		  coeff = dt * ffx * (2.0/dx);
+		  coeff = dt * ffx *z_mult_dat[ip]* (2.0/dx);
 
 		  switch(fdir[0])
 		  {
@@ -905,7 +956,7 @@ ForSubgridI(is, GridSubgrids(grid))
 
 	       else if (fdir[1])
 	       {
-		  coeff = dt * ffy * (2.0/dy);
+		  coeff = dt * ffy *z_mult_dat[ip]* (2.0/dy);
 
 		  switch(fdir[1])
 		  {
@@ -939,7 +990,7 @@ ForSubgridI(is, GridSubgrids(grid))
 
 	       else if (fdir[2])
 	       {
-		  coeff = dt * ffz * (2.0/dz);
+		  coeff = dt * ffz * (2.0/(dz*z_mult_dat[ip]));
 
 		  switch(fdir[2])
 		  {

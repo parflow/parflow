@@ -51,13 +51,15 @@ PFModule  *temp_function_eval = StateFuncTemp(        ((State*)current_state) );
 
 #ifdef withTemperature
    temperature = NV_CONTENT_PF(speciesNVector)->dims[1];
-   
+#endif
 
-   fval = NV_CONTENT_PF(fvaln)->dims[0];
+
+#ifdef withTemperature
+      fval = NV_CONTENT_PF(fvaln)->dims[0];
    PFModuleInvokeType(PressFunctionEvalInvoke, press_function_eval,
                   (pressure, fval, problem_data, saturation, old_saturation,
                    density, old_density, dt, time, old_pressure, evap_trans,
-                   ovrl_bc_flx, x_velocity, y_velocity, z_velocity) );
+                   ovrl_bc_flx,x_velocity, y_velocity, z_velocity) );
 
 
    fval = NV_CONTENT_PF(fvaln)->dims[1];
@@ -68,12 +70,12 @@ PFModule  *temp_function_eval = StateFuncTemp(        ((State*)current_state) );
                        dt, time, old_temperature, evap_trans, clm_energy_source, forc_t, x_velocity, y_velocity, z_velocity) );
 
 #else
+
    fval = NV_CONTENT_PF(fvaln)->dims[0];
    PFModuleInvokeType(PressFunctionEvalInvoke, press_function_eval,
                   (pressure, fval, problem_data, saturation, old_saturation,
                    density, old_density, dt, time, old_pressure, evap_trans,
                    ovrl_bc_flx) );
-
 
 #endif
 

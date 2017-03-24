@@ -73,24 +73,29 @@ typedef struct
     pressure values.  This evaluation is basically an application
     of the stencil to the pressure array. */
 
-void PressFunctionEval (Vector *pressure,  /* Current pressure values */
+void PressFunctionEval (
+		     Vector *pressure,  /* Current pressure values */
 		     Vector *fval, /* Return values of the nonlinear function */
-		     ProblemData *problem_data, /* Geometry data for problem */
-		     Vector *saturation ,  /* Saturation / work vector */
-		     Vector *old_saturation,  /* Saturation values at previous time step */
-		     Vector *density, /* Density vector */
-		     Vector *old_density,   /* Density values at previous time step */
-		     double dt,   /* Time step size */
-		     double time,     /* New time value */
-		     Vector *old_pressure,  
-		     Vector *evap_trans,   /*sk sink term from land surface model*/
-		     Vector *ovrl_bc_flx
+                     ProblemData *problem_data, /* Geometry data for problem */
+                     Vector *saturation ,  /* Saturation / work vector */
+                     Vector *old_saturation,  /* Saturation values at previous time step */
+                     Vector *density, /* Density vector */
+                     Vector *old_density,   /* Density values at previous time step */
+                     double dt,   /* Time step size */
+                     double time,     /* New time value */
+                     Vector *old_pressure,
+                     Vector *evap_trans,   /*sk sink term from land surface model*/
+                     Vector *ovrl_bc_flx  /*sk overland flow boundary fluxes*/
+
 #ifdef withTemperature
-                     ,Vector * x_velocity, 
-		     Vector * y_velocity,
-		     Vector * z_velocity
+   ,Vector       *x_velocity,
+   Vector       *y_velocity, 
+   Vector       *z_velocity 
 #endif
-)  /*sk overland flow boundary fluxes*/ 
+
+
+//                     void *current_state
+) 
 {
    PFModule      *this_module     = ThisPFModule;
    InstanceXtra  *instance_xtra   = (InstanceXtra *)PFModuleInstanceXtra(this_module);
@@ -107,7 +112,31 @@ void PressFunctionEval (Vector *pressure,  /* Current pressure values */
    PFModule    *overlandflow_module       = (instance_xtra -> overlandflow_module);
     PFModule    *overlandflow_module_diff       = (instance_xtra -> overlandflow_module_diff);
 
-    
+/*
+   ProblemData *problem_data   = StateProblemData( ((State*)current_state) );
+   Vector      *old_pressure   = StateOldPressure(((State*)current_state) );
+   Vector      *saturation     = StateSaturation(  ((State*)current_state) );
+   Vector      *old_saturation = StateOldSaturation(((State*)current_state) );
+   Vector      *density        = StateDensity(     ((State*)current_state) );
+   Vector      *old_density    = StateOldDensity(  ((State*)current_state) );
+
+#ifdef FGTest
+   Vector      *old_pressure   = StateOldPressure2(((State*)current_state) );
+   Vector      *saturation     = StateSaturation2(  ((State*)current_state) );
+   Vector      *old_saturation = StateOldSaturation2(((State*)current_state) );
+#endif
+
+   double       dt             = StateDt(          ((State*)current_state) );
+   double       time           = StateTime(        ((State*)current_state) );
+   Vector       *evap_trans    = StateEvapTrans(   ((State*)current_state) );
+   Vector       *ovrl_bc_flx   = StateOvrlBcFlx(   ((State*)current_state) );
+   
+#ifdef withTemperature
+   Vector       *x_velocity             = StateXVelocity(((State*)current_state) );
+   Vector       *y_velocity             = StateYVelocity(((State*)current_state) );
+   Vector       *z_velocity             = StateZVelocity(((State*)current_state) );
+#endif
+*/ 
    /* Re-use saturation vector to save memory */
    Vector      *rel_perm          = saturation;
    Vector      *source            = saturation;
@@ -756,9 +785,9 @@ yvp[ip] = PMean(pp[ip], pp[ip+sy_p], permyp[ip], permyp[ip+sy_p]) * (diff / dy )
 //            z_dir_g; 
           
           //CPS
-          lower_cond = pp[ip]/ sep   - 0.5 * dp[ip] * gravity  * z_dir_g;
+          lower_cond = pp[ip]/ sep   - (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) * dp[ip] * gravity  * z_dir_g;
           
-          upper_cond = pp[ip+sz_p] / sep  + 0.5*dp[ip+sz_p] * gravity *z_dir_g;
+          upper_cond = pp[ip+sz_p] / sep  + (z_mult_dat[ip+sz_p]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) *dp[ip+sz_p] * gravity *z_dir_g;
           
           diff = (lower_cond - upper_cond);
 	 u_upper = ffz*del_x_slope*del_y_slope 
@@ -768,9 +797,13 @@ yvp[ip] = PMean(pp[ip], pp[ip+sy_p], permyp[ip], permyp[ip+sy_p]) * (diff / dy )
 	    rpp[ip+sz_p]*dp[ip+sz_p])
 	    / viscosity;
         //  printf("uupper: %10.6e \n", u_upper);
-zvp[ip] = PMean(pp[ip], pp[ip+sz_p], permzp[ip], permzp[ip+sz_p]) * ((pp[ip] - pp[ip+sz_p])/dz) * RPMean(pp[ip], pp[ip+sz_p], rpp[ip]*dp[ip], rpp[ip+sz_p]*dp[ip+sz_p]);
 
-//printf("##FG2 ip: %d ; PMEAN: %e ; diff %e ; dz: %e ; RPMEAN: %e \n",ip,PMean(pp[ip], pp[ip+sz_p], permzp[ip], permzp[ip+sz_p]),((pp[ip] - pp[ip+sz_p])),dz,RPMean(pp[ip], pp[ip+sz_p], rpp[ip]*dp[ip], rpp[ip+sz_p]*dp[ip+sz_p]));
+
+                zvp[ip] = PMean(pp[ip], pp[ip+sz_p],  permzp[ip], permzp[ip+sz_p]) * diff * RPMean(lower_cond, upper_cond, rpp[ip]*dp[ip],rpp[ip+sz_p]*dp[ip+sz_p]);
+                              
+
+
+//printf("##FG2 ip: %d ; PMEAN: %e ; diff %e ; dz: %e ; RPMEAN: %e \n",ip, diff ,lower_cond,upper_cond,RPMean(lower_cond, upper_cond, rpp[ip]*dp[ip],rpp[ip+sz_p]*dp[ip+sz_p]));
 //printf("##FG ip: %d ; xvp: %e ; yvp: %e ; zvp: %e \n",ip,xvp[ip],yvp[ip],zvp[ip]);
 	 fp[ip]      += dt * ( u_right + u_front + u_upper );
 	 fp[ip+1]    -= dt * u_right;
@@ -1038,10 +1071,10 @@ yvp[ip] = u_new * permyp[ip] * 2.0 * (diff/dy);
                //printf("case-1 %d %d %d %f %f  \n", i,j,k, z_mult_dat[ip],z_mult_dat[ip-sz_p]);
                 
 			   lower_cond = pp[ip-sz_p] / sep
-			      - 0.5*dp[ip-sz_p] * gravity *
+			      - (z_mult_dat[ip-sz_p]/(z_mult_dat[ip]+z_mult_dat[ip-sz_p]))*dp[ip-sz_p] * gravity *
                  z_dir_g;
                 
-			   upper_cond = pp[ip]/ sep + 0.5* dp[ip] * gravity*
+			   upper_cond = pp[ip]/ sep + (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip-sz_p]))* dp[ip] * gravity*
                  z_dir_g;
                 
 			   diff = (lower_cond - upper_cond);
@@ -1053,14 +1086,10 @@ yvp[ip] = u_new * permyp[ip] * 2.0 * (diff/dy);
 			      * RPMean(lower_cond, upper_cond, 
 			      rpp[ip-sz_p]*dp[ip-sz_p], rpp[ip]*dp[ip]) 
 			      / viscosity;
-                
+                sep = dz*z_mult_dat[ip]/2.0;
                 //sep = dz*z_mult_dat[ip];
                 //printf("case-1 %f %f %d \n", sep,z_mult_dat[ip], ip);
 
-
-diff =  value - pp[ip];
-u_new = RPMean(value, pp[ip],rpp[ip-sz_p]*dp[ip-sz_p], rpp[ip]*dp[ip]);
-zvp[ip-sz_p] = u_new * permzp[ip] * 2.0 * (diff/dz);
 
 
 			   lower_cond = value/sep  -  0.25*dp[ip] * gravity;
@@ -1068,6 +1097,12 @@ zvp[ip-sz_p] = u_new * permzp[ip] * 2.0 * (diff/dz);
 			   diff = (lower_cond - upper_cond);
 			   u_new = RPMean(lower_cond, upper_cond, 
 			   rpp[ip-sz_p]*dp[ip-sz_p], rpp[ip]*dp[ip]);
+
+
+
+   zvp[ip-sz_p] = u_new * permzp[ip] * 2.0 * diff;
+
+
 			   break;
 			}   /* End case -1 */
 			case  1:
@@ -1085,10 +1120,10 @@ zvp[ip-sz_p] = u_new * permzp[ip] * 2.0 * (diff/dz);
                // printf("%d %d %d %f %f \n",i,j,k,pp[ip], pp[ip+sz_p]);
 
 
-                lower_cond = pp[ip]/sep  -  0.5* dp[ip] * gravity *
+                lower_cond = pp[ip]/sep  -  (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) * dp[ip] * gravity *
                 z_dir_g; 
                 
-			   upper_cond = pp[ip+sz_p] /sep + 0.5*dp[ip+sz_p] * gravity  *
+			   upper_cond = pp[ip+sz_p] /sep + (z_mult_dat[ip+sz_p]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) *dp[ip+sz_p] * gravity  *
                 z_dir_g; 
                  
                 diff = (lower_cond - upper_cond);
@@ -1102,7 +1137,7 @@ zvp[ip-sz_p] = u_new * permzp[ip] * 2.0 * (diff/dz);
 			      rpp[ip]*dp[ip], rpp[ip+sz_p]*dp[ip+sz_p])
 			      / viscosity;
                // printf("uold: %10.6e \n", u_old);
-                
+               sep = dz*z_mult_dat[ip]/2.0;
                 //sep = dz/2.0;
                // printf("case+1 %f %f %d \n", sep,z_mult_dat[ip], ip);
 
@@ -1114,13 +1149,12 @@ zvp[ip-sz_p] = u_new * permzp[ip] * 2.0 * (diff/dz);
                
 
 
-diff = pp[ip] - value;
-u_new = RPMean(pp[ip], value,rpp[ip]*dp[ip], rpp[ip+sz_p]*dp[ip+sz_p]);
-zvp[ip] = u_new * permzp[ip] * 2.0 * (diff/dz);
  
 			   diff = lower_cond - upper_cond;
 			   u_new = RPMean(lower_cond, upper_cond,
 			   rpp[ip]*dp[ip], rpp[ip+sz_p]*dp[ip+sz_p]);
+
+zvp[ip] = u_new * permzp[ip] * 2.0 * diff;
 			   break;
 			}   /* End case 1 */
 		     }
@@ -1268,10 +1302,10 @@ yvp[ip] = bc_patch_values[ival];
                    // sep = dz*z_mult_dat[ip];  //RMM
 
                      lower_cond = (pp[ip-sz_p] / sep) 
-			      - 0.5 * dp[ip-sz_p] * gravity*
+			      - (z_mult_dat[ip-sz_p]/(z_mult_dat[ip]+z_mult_dat[ip-sz_p])) * dp[ip-sz_p] * gravity*
                     z_dir_g;
                      
-			   upper_cond = (pp[ip] / sep) + 0.5 * dp[ip] * gravity*
+			   upper_cond = (pp[ip] / sep) + (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip-sz_p])) * dp[ip] * gravity*
                     z_dir_g;
                      
 			   diff = lower_cond - upper_cond;
@@ -1289,11 +1323,11 @@ zvp[ip-sz_p] = bc_patch_values[ival];
               sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]);  //RMM
  //                   sep = dz*z_mult_dat[ip];  //RMM
 
-			   lower_cond = (pp[ip] / sep) - 0.5 * dp[ip] * gravity*
+			   lower_cond = (pp[ip] / sep) - (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) * dp[ip] * gravity*
                     z_dir_g;
                      
 			   upper_cond = (pp[ip+sz_p] / sep)
-			      + 0.5 * dp[ip+sz_p] * gravity*
+			      + (z_mult_dat[ip+sz_p]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) * dp[ip+sz_p] * gravity*
                     z_dir_g;
 			 
                      diff = lower_cond - upper_cond;
@@ -1456,9 +1490,9 @@ zvp[ip] = bc_patch_values[ival];
                   //  sep = dz*z_mult_dat[ip];  //RMM
 
 			   lower_cond = (pp[ip-sz_p] / sep) 
-			      - 0.5 * dp[ip-sz_p] * gravity*
+			      - (z_mult_dat[ip-sz_p]/(z_mult_dat[ip]+z_mult_dat[ip-sz_p])) * dp[ip-sz_p] * gravity*
                z_dir_g;
-			   upper_cond = (pp[ip] / sep) + 0.5 * dp[ip] * gravity*
+			   upper_cond = (pp[ip] / sep) + (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip-sz_p])) * dp[ip] * gravity*
                 z_dir_g;
                      
 			   diff = lower_cond - upper_cond;
@@ -1475,10 +1509,10 @@ zvp[ip] = bc_patch_values[ival];
                     sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip+sz_p]);  //RMM
                   //   sep = dz*z_mult_dat[ip];  //RMM
 
-			   lower_cond = (pp[ip] / sep) - 0.5 * dp[ip] * gravity *
+			   lower_cond = (pp[ip] / sep) - (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) * dp[ip] * gravity *
                z_dir_g;
 			   upper_cond = (pp[ip+sz_p] / sep)
-			      + 0.5 * dp[ip+sz_p] * gravity *
+			      + (z_mult_dat[ip+sz_p]/(z_mult_dat[ip]+z_mult_dat[ip+sz_p])) * dp[ip+sz_p] * gravity *
               z_dir_g;
 			   diff = lower_cond - upper_cond;
 			   u_old = ffz * del_x_slope* del_y_slope 

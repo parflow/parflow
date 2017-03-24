@@ -35,6 +35,7 @@ CXX_SRCS = \
 CXXOBJS = $(CXX_SRCS:.cxx=.o)
 
 OBJS = \
+         problem_real_space_z.o\
       bc_temperature_package.o\
       bc_temperature.o\
       problem_phase_viscosity.o\
