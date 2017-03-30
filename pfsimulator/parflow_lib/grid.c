@@ -1029,3 +1029,69 @@ SubgridArray  *UnionSubgridArray(
    return new_sa;
 }
 
+/* Create a grid projecting an existing grid into the xy plane
+ * with a target number of z points */
+Grid * CreateZprojectedGrid( Grid *input_grid, int new_nz)
+{
+   Grid         *proj_grid;
+   Subgrid      *subgrid;
+   Subgrid      *new_subgrid;
+   SubgridArray *all_subgrids;
+   SubgridArray *new_subgrids;
+   SubgridArray *new_all_subgrids;
+   int           i;
+#ifdef HAVE_P4EST
+   /** Is this two dimensional grid comming from a 3D one ? */
+   int proj_flag = GlobalsNumProcsZ > 1 ? 1 : 0;
+#endif
+
+   all_subgrids = GridAllSubgrids(input_grid);
+
+   new_all_subgrids = NewSubgridArray();
+   ForSubgridI(i, all_subgrids)
+   {
+      subgrid = SubgridArraySubgrid(all_subgrids, i);
+      new_subgrid = DuplicateSubgrid(subgrid);
+      SubgridIZ(new_subgrid) = 0;
+
+      /** With p4est we need to remember our Z corner
+       * to avoid bad communication paterns when allocating
+       * the ComputePkgs */
+      if (USE_P4EST){
+#ifdef HAVE_P4EST
+          SubgridIZ(new_subgrid) += proj_flag ? SubgridIZ(subgrid) : 0;
+#endif
+      }
+
+      SubgridNZ(new_subgrid) = new_nz;
+      AppendSubgrid(new_subgrid, new_all_subgrids);
+   }
+   new_subgrids  = GetGridSubgrids(new_all_subgrids);
+   proj_grid     = NewGrid(new_subgrids, new_all_subgrids);
+
+   if (USE_P4EST){
+#ifdef HAVE_P4EST
+       /** Set projection flag for the two dimensional grid */
+       GridIsProjected(proj_grid) = proj_flag;
+#endif
+   }
+
+   CreateComputePkgs(proj_grid);
+
+   if (USE_P4EST){
+#ifdef HAVE_P4EST
+       BeginTiming(P4ESTSetupTimingIndex);
+       /** Complete projection if necessary */
+       if (proj_flag){
+         ForSubgridI(i, new_all_subgrids)
+         {
+           new_subgrid = SubgridArraySubgrid(new_all_subgrids, i);
+           SubgridIZ(new_subgrid) = 0;
+         }
+       }
+       EndTiming(P4ESTSetupTimingIndex);
+#endif
+   }
+
+   return proj_grid;
+}

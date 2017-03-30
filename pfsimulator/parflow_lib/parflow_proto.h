@@ -139,6 +139,7 @@ void Copy (Vector *x , Vector *y );
 /* create_grid.c */
 SubgridArray *GetGridSubgrids (SubgridArray *all_subgrids );
 Grid *CreateGrid (Grid *user_grid );
+Grid *CreateZprojectedGrid( Grid *input_grid, int new_nz);
 
 typedef void (*DiagScaleInvoke) (Vector *x , Matrix *A , Vector *b , Vector *d );
 
