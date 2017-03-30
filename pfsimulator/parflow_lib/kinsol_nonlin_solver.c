@@ -67,8 +67,8 @@ typedef struct
    PFModule  *nl_function_eval;
    PFModule  *richards_jacobian_eval;
 
-   Vector   *uscale;
-   Vector   *fscale;
+   N_Vector   uscalen;
+   N_Vector   fscalen;
 
    Matrix   *jacobian_matrix;
    Matrix   *jacobian_matrix_C;
@@ -96,7 +96,7 @@ typedef struct
  *--------------------------------------------------------------------------*/
 int  KINSolInitPC(
 int       neq,
-N_Vector  pressure,
+N_Vector  speciesNVector,
 N_Vector  uscale,
 N_Vector  fval,
 N_Vector  fscale,
@@ -128,7 +128,8 @@ void     *current_state)
       itself */
 
    PFModuleReNewInstanceType(KinsolPCInitInstanceXtraInvoke, precond, (NULL, NULL, problem_data, NULL, 
-								       pressure, saturation, density, dt, time));
+								       NV_CONTENT_PF(speciesNVector)->dims[0], 
+									saturation, density, dt, time));
    return(0);
 }
 
@@ -138,7 +139,7 @@ void     *current_state)
  *--------------------------------------------------------------------------*/
 int   KINSolCallPC(
 int       neq,	
-N_Vector  pressure,
+N_Vector  speciesNVector,
 N_Vector  uscale,
 N_Vector  fval,
 N_Vector  fscale,
@@ -152,7 +153,7 @@ void     *current_state)
    PFModule *precond = StatePrecond( (State*)current_state );
 
    (void) neq;
-   (void) pressure;
+   (void) speciesNVector;
    (void) uscale;
    (void) fval;
    (void) fscale;
@@ -164,7 +165,7 @@ void     *current_state)
    /* The preconditioner module invoked here is the KinsolPC module
       itself */
 
-   PFModuleInvokeType(KinsolPCInvoke, precond, (vtem));
+   PFModuleInvokeType(KinsolPCInvoke, precond, (NV_CONTENT_PF(vtem)->dims[0]));
 
    return(0);
 }
@@ -200,7 +201,7 @@ void PrintFinalStats(
  * KinsolNonlinSolver
  *--------------------------------------------------------------------------*/
 
-int KinsolNonlinSolver (Vector *pressure , Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity )
+int KinsolNonlinSolver (N_Vector speciesNVector , Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity )
 {
    PFModule     *this_module      = ThisPFModule;
    PublicXtra   *public_xtra      = (PublicXtra   *)PFModulePublicXtra(this_module);
@@ -209,8 +210,8 @@ int KinsolNonlinSolver (Vector *pressure , Vector *density , Vector *old_density
    Matrix       *jacobian_matrix  = (instance_xtra -> jacobian_matrix);
    Matrix       *jacobian_matrix_C  = (instance_xtra -> jacobian_matrix_C);
 
-   Vector       *uscale           = (instance_xtra -> uscale);
-   Vector       *fscale           = (instance_xtra -> fscale);
+   N_Vector       uscale           = (instance_xtra -> uscalen);
+   N_Vector       fscale           = (instance_xtra -> fscalen);
 
    PFModule  *nl_function_eval       = instance_xtra -> nl_function_eval;
    PFModule  *richards_jacobian_eval = instance_xtra -> richards_jacobian_eval;
@@ -260,7 +261,7 @@ int KinsolNonlinSolver (Vector *pressure , Vector *density , Vector *old_density
 
    ret = KINSol( (void*)kin_mem,        /* Memory allocated above */
 	         neq,                   /* Dummy variable here */
-	         pressure,              /* Initial guess @ this was "pressure before" */
+	         speciesNVector,              /* Initial guess @ this was "pressure before" */
 	         feval,                 /* Nonlinear function */
 	         globalization,         /* Globalization method */
 	         uscale,                /* Scalings for the variable */
@@ -326,8 +327,8 @@ double      *temp_data)
    double        eta_gamma           = public_xtra -> eta_gamma;
    double        derivative_epsilon  = public_xtra -> derivative_epsilon;
 
-   Vector       *fscale;
-   Vector       *uscale;
+   N_Vector       fscalen;
+   N_Vector       uscalen;
 
    State        *current_state;
 
@@ -450,14 +451,18 @@ double      *temp_data)
       for (i=0; i< OPT_SIZE; i++)
 	 instance_xtra->integer_outputs[i] = 0;
 
-      /* Scaling vectors*/
-      uscale = NewVectorType(grid, 1, 1, vector_cell_centered);
-      InitVectorAll(uscale, 1.0);
-      instance_xtra -> uscale = uscale;
 
-      fscale = NewVectorType(grid, 1, 1, vector_cell_centered);
-      InitVectorAll(fscale, 1.0);
-      instance_xtra -> fscale = fscale;
+
+      /* Scaling vectors*/
+      uscalen = N_VNew_PF(grid,1);
+      N_VConst_PF(1.0,uscalen);
+      instance_xtra -> uscalen = uscalen;
+
+      fscalen = N_VNew_PF(grid,1);
+      N_VConst_PF(1.0,fscalen);
+      instance_xtra -> fscalen = fscalen;
+
+
 
       instance_xtra -> feval = KINSolFunctionEval;
       instance_xtra -> kin_mem = kin_mem;
@@ -492,8 +497,8 @@ void  KinsolNonlinSolverFreeInstanceXtra()
          PFModuleFreeInstance((instance_xtra -> precond));
       }
 
-      FreeVector(instance_xtra -> uscale);
-      FreeVector(instance_xtra -> fscale);
+      N_VDestroy_PF(instance_xtra -> uscalen);                                   
+      N_VDestroy_PF(instance_xtra -> fscalen);
 
       tfree(instance_xtra -> current_state);
 

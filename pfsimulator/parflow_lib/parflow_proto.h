@@ -316,14 +316,14 @@ char *NA_IndexToName (NameArray name_array , int index );
 int NA_Sizeof (NameArray name_array );
 void InputError (const char *format , const char *s1 , const char *s2 );
 
-typedef int (*NonlinSolverInvoke) (Vector *pressure , Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity );
+typedef int (*NonlinSolverInvoke) (N_Vector speciesNVector , Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity );
 typedef PFModule *(*NonlinSolverInitInstanceXtraInvoke) (Problem *problem , Grid *grid , ProblemData *problem_data , double *temp_data );
 
 /* kinsol_nonlin_solver.c */
-int KINSolInitPC (int neq , N_Vector pressure , N_Vector uscale , N_Vector fval , N_Vector fscale , N_Vector vtemp1 , N_Vector vtemp2 , void *nl_function , double uround , long int *nfePtr , void *current_state );
-int KINSolCallPC (int neq , N_Vector pressure , N_Vector uscale , N_Vector fval , N_Vector fscale , N_Vector vtem , N_Vector ftem , void *nl_function , double uround , long int *nfePtr , void *current_state );
+int KINSolInitPC (int neq , N_Vector speciesNVector , N_Vector uscale , N_Vector fval , N_Vector fscale , N_Vector vtemp1 , N_Vector vtemp2 , void *nl_function , double uround , long int *nfePtr , void *current_state );
+int KINSolCallPC (int neq , N_Vector speciesNVector , N_Vector uscale , N_Vector fval , N_Vector fscale , N_Vector vtem , N_Vector ftem , void *nl_function , double uround , long int *nfePtr , void *current_state );
 void PrintFinalStats (FILE *out_file , long int *integer_outputs_now , long int *integer_outputs_total );
-int KinsolNonlinSolver (Vector *pressure , Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity );
+int KinsolNonlinSolver (N_Vector speciesNVector , Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity );
 PFModule *KinsolNonlinSolverInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data , double *temp_data );
 void KinsolNonlinSolverFreeInstanceXtra (void );
 PFModule *KinsolNonlinSolverNewPublicXtra (void );
@@ -447,6 +447,29 @@ void SetPf2KinsolData (Grid *grid , int num_ghost );
 N_Vector N_VNew (int N , void *machEnv );
 void N_VPrint (N_Vector x );
 void FreeTempVector(Vector *vector);
+N_Vector N_VNew_PF (Grid *grid, int numDims);
+N_Vector N_VNewEmpty_PF (int numDims);
+void N_VPrint (N_Vector x);
+N_Vector N_VCloneEmpty_PF(N_Vector w);
+N_Vector N_VClone_PF(N_Vector w);
+void N_VDestroy_PF(N_Vector v);
+void N_VSpace_PF(N_Vector v, long int *lrw, long int *liw);
+void N_VLinearSum_PF(realtype a, N_Vector x ,realtype b, N_Vector y, N_Vector z);
+void N_VConst_PF(realtype c, N_Vector z);
+void N_VProd_PF(N_Vector x, N_Vector y, N_Vector z);
+void N_VDiv_PF(N_Vector x, N_Vector y, N_Vector z);
+void N_VScale_PF(realtype c, N_Vector x, N_Vector z);
+void N_VAbs_PF(N_Vector x, N_Vector y);
+void N_VInv_PF(N_Vector x, N_Vector y);
+double N_VDotProd_PF(N_Vector x, N_Vector y);
+double N_VMaxNorm_PF(N_Vector x);
+double N_VMin_PF(N_Vector x);
+double N_VWL2Norm_PF(N_Vector x, N_Vector w);
+double N_VL1Norm_PF(N_Vector x);
+booleantype N_VConstrMask_PF(N_Vector c, N_Vector x, N_Vector m);
+booleantype N_VConstrProdPos_PF(N_Vector c, N_Vector x);
+double N_VMinQuotient_PF(N_Vector num, N_Vector denom);
+
 
 /* new_endpts.c */
 void NewEndpts (double *alpha , double *beta , double *pp , int *size_ptr , int n , double *a_ptr , double *b_ptr , double *cond_ptr , double ereps );
@@ -455,7 +478,7 @@ typedef void (*NlFunctionEvalInvoke) (Vector *pressure , Vector *fval , ProblemD
 typedef PFModule *(*NlFunctionEvalInitInstanceXtraInvoke) (Problem *problem , Grid *grid , double *temp_data );
 
 /* nl_function_eval.c */
-void KINSolFunctionEval (int size , N_Vector pressure , N_Vector fval , void *current_state );
+void KINSolFunctionEval (int size , N_Vector speciesNVector , N_Vector fval , void *current_state );
 void NlFunctionEval (Vector *pressure , Vector *fval , ProblemData *problem_data , Vector *saturation , Vector *old_saturation , Vector *density , Vector *old_density , double dt , double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity);
 PFModule *NlFunctionEvalInitInstanceXtra (Problem *problem , Grid *grid , double *temp_data );
 void NlFunctionEvalFreeInstanceXtra (void );
@@ -980,7 +1003,7 @@ typedef void (*RichardsJacobianEvalInvoke) (Vector *pressure , Matrix **ptr_to_J
 typedef PFModule *(*RichardsJacobianEvalInitInstanceXtraInvoke) (Problem *problem , Grid *grid , ProblemData *problem_data, double *temp_data , int symmetric_jac );
 typedef PFModule *(*RichardsJacobianEvalNewPublicXtraInvoke) (char *name);
 /* richards_jacobian_eval.c */
-int KINSolMatVec (void *current_state , N_Vector x , N_Vector y , int *recompute , N_Vector pressure );
+int KINSolMatVec (void *current_state , N_Vector x , N_Vector y , int *recompute , N_Vector speciesNVector );
 void RichardsJacobianEval (Vector *pressure , Matrix **ptr_to_J , Matrix **ptr_to_JC,Vector *saturation , Vector *density , ProblemData *problem_data , double dt , double time , int symm_part );
 PFModule *RichardsJacobianEvalInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data, double *temp_data , int symmetric_jac );
 void RichardsJacobianEvalFreeInstanceXtra (void );
@@ -1203,6 +1226,9 @@ void PFVLin2 (double a , Vector *x , Vector *y , Vector *z );
 void PFVAxpy (double a , Vector *x , Vector *y );
 void PFVScaleBy (double a , Vector *x );
 void PFVLayerCopy (int  a, int  b, Vector *x, Vector *y);
+int PFVConstrMask (Vector *c, Vector *x, Vector *m);  
+double PFVMinQuotient (Vector *num, Vector *denom); 
+
 
 /* w_jacobi.c */
 void WJacobi (Vector *x , Vector *b , double tol , int zero );

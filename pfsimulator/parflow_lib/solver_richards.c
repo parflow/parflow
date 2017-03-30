@@ -1237,7 +1237,11 @@ void AdvanceRichards(PFModule *this_module,
 
    char          dt_info;
    char          file_prefix[2048], file_type[2048], file_postfix[2048];
-    
+   
+   /* multi dimensional N_Vector that is passed to KinSol*/
+   N_Vector      speciesNVector;
+   N_VectorContent speciesContent;
+ 
    /* Added for transient EvapTrans file management - NBE */
     int Stepcount, Loopcount;
     Stepcount=0;
@@ -1284,6 +1288,13 @@ void AdvanceRichards(PFModule *this_module,
    /*                                                                     */
    /***********************************************************************/
  
+
+   speciesNVector = N_VNewEmpty_PF(1);   // create a multi dimensional N_Vector (pressure only)
+   speciesContent = NV_CONTENT_PF(speciesNVector);	     
+   speciesContent->dims[0] = instance_xtra -> pressure;      // assemble fields into one N_Vector element
+
+
+
    // Initialize ct in either case
    ct = start_time;
    t  = start_time;
@@ -1953,6 +1964,7 @@ void AdvanceRichards(PFModule *this_module,
 	    PFVCopy(instance_xtra -> density,    instance_xtra -> old_density);
 	    PFVCopy(instance_xtra -> saturation, instance_xtra -> old_saturation);
 	    PFVCopy(instance_xtra -> pressure,   instance_xtra -> old_pressure);
+	    PFVCopy(speciesContent->dims[0], instance_xtra -> old_pressure);
 	 }
 	 else  /* Not converged, so decrease time step */
 	 {
@@ -1975,6 +1987,7 @@ void AdvanceRichards(PFModule *this_module,
 	    PFVCopy(instance_xtra -> old_density,    instance_xtra -> density);
 	    PFVCopy(instance_xtra -> old_saturation, instance_xtra -> saturation);
 	    PFVCopy(instance_xtra -> old_pressure,   instance_xtra -> pressure);
+	    PFVCopy(instance_xtra -> old_pressure, speciesContent->dims[0]);
 	 } // End set t and dt based on convergence
 
 #ifdef HAVE_OAS3
@@ -2161,7 +2174,7 @@ void AdvanceRichards(PFModule *this_module,
 	 /*******************************************************************/
 	  
 	 retval = PFModuleInvokeType(NonlinSolverInvoke, nonlin_solver, 
-				     (instance_xtra -> pressure, 
+				     (speciesNVector, 
 				      instance_xtra -> density, 
 				      instance_xtra -> old_density, 
 				      instance_xtra -> saturation, 

@@ -907,7 +907,9 @@ double PFVWL2Norm(
 
   IncFLOPCount( 3 * VectorSize(x) );
 
-  return(sqrt(sum));
+  //return(sqrt(sum));
+  /*The modified multi species version only returns the sum, NOT sqrt(sum) */
+  return(sum);	
 }
 
 double PFVL1Norm(
@@ -2044,4 +2046,179 @@ Vector *y)
         }
     }
     IncFLOPCount( 2 * VectorSize(x) );
+}
+
+int PFVConstrMask(
+Vector *c, 
+Vector *x, 
+Vector *m)
+{
+  Grid       *grid     = VectorGrid(x);
+  Subgrid    *subgrid;
+
+  Subvector  *c_sub;
+  Subvector  *x_sub;
+  Subvector  *m_sub;
+
+  double     *cp, *xp, *mp;
+
+  int         ix,   iy,   iz;
+  int         nx,   ny,   nz;
+  int         nx_c, ny_c, nz_c;
+  int         nx_x, ny_x, nz_x;
+  int         nx_m, ny_m, nz_m;
+
+  int         sg, i, j, k, i_c, i_x, i_m;
+
+  int        test = 1;
+
+  amps_Invoice    result_invoice;
+
+  ForSubgridI(sg, GridSubgrids(grid))
+  {
+     subgrid = GridSubgrid(grid, sg);
+
+     ix = SubgridIX(subgrid);
+     iy = SubgridIY(subgrid);
+     iz = SubgridIZ(subgrid);
+
+     nx = SubgridNX(subgrid);
+     ny = SubgridNY(subgrid);
+     nz = SubgridNZ(subgrid);
+
+     c_sub = VectorSubvector(c, sg);
+     x_sub = VectorSubvector(x, sg);
+     m_sub = VectorSubvector(m, sg);
+
+     nx_c = SubvectorNX(c_sub);
+     ny_c = SubvectorNY(c_sub);
+     nz_c = SubvectorNZ(c_sub);
+
+     nx_x = SubvectorNX(x_sub);
+     ny_x = SubvectorNY(x_sub);
+     nz_x = SubvectorNZ(x_sub);
+
+     nx_m = SubvectorNX(m_sub);
+     ny_m = SubvectorNY(m_sub);
+     nz_m = SubvectorNZ(m_sub);
+
+     cp = SubvectorElt(c_sub, ix, iy, iz);
+     xp = SubvectorElt(x_sub, ix, iy, iz);
+     mp = SubvectorElt(m_sub, ix, iy, iz);
+
+     i_c = 0;
+     i_x = 0;
+     i_m = 0;
+
+
+     /* The implementation of this operation needs to be re-visited;
+ *         it is different in the manual compared to the nvector_parallel.c
+ *                 implementation; I used the nvector_parallel version here. */
+
+     BoxLoopI3(i, j, k, ix, iy, iz, nx, ny, nz,
+               i_c, nx_c, ny_c, nz_c, 1, 1, 1,
+               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+               i_m, nx_m, ny_m, nz_m, 1, 1, 1,
+               {
+                 mp[i_m] = 0.0;
+                 if (cp[i_c] == 0.0) continue;
+                 if (cp[i_c] > 1.5 || cp[i_c] < -1.5)
+                 {
+                   if (xp[i_x] * cp[i_c] <= 0.0) {test = 0; mp[i_m] = 1.0; }
+                   continue;
+                 }
+                 if (cp[i_c] > 0.5 || cp[i_c] < -0.5)
+                 {
+                   if (xp[i_x] * cp[i_c] <  0.0) {test = 0; mp[i_m] = 1.0;}
+                 }
+               });
+   }
+
+   result_invoice = amps_NewInvoice("%i", &test);
+   amps_AllReduce(amps_CommWorld, result_invoice, amps_Min);
+   amps_FreeInvoice(result_invoice);
+
+   return(test);
+}
+
+/* This routine returns the minimum of the quotients obtained by
+ *    termwise dividing num by denom; zero elements in denom are skippe;
+ *       if no quotients are found, then BIG_REAL in sundialstypes.h
+ *          is resurned */
+
+double PFVMinQuotient(
+Vector *num, 
+Vector *denom)
+{
+  Grid       *grid     = VectorGrid(num);
+  Subgrid    *subgrid;
+
+  Subvector  *x_sub;
+  Subvector  *z_sub;
+
+  double      min = BIG_REAL;
+  booleantype notEvenOnce;
+
+  double     *xp, *zp;
+  int         val;
+
+  int         ix,   iy,   iz;
+  int         nx,   ny,   nz;
+  int         nx_x, ny_x, nz_x;
+  int         nx_z, ny_z, nz_z;
+
+  int         sg, i, j, k, i_x, i_z;
+
+  amps_Invoice    result_invoice;
+
+  ForSubgridI(sg, GridSubgrids(grid))
+  {
+     subgrid = GridSubgrid(grid, sg);
+
+     z_sub = VectorSubvector(denom, sg);
+     x_sub = VectorSubvector(num, sg);
+
+     ix = SubgridIX(subgrid);
+     iy = SubgridIY(subgrid);
+     iz = SubgridIZ(subgrid);
+
+     nx = SubgridNX(subgrid);
+     ny = SubgridNY(subgrid);
+     nz = SubgridNZ(subgrid);
+
+     nx_x = SubvectorNX(x_sub);
+     ny_x = SubvectorNY(x_sub);
+     nz_x = SubvectorNZ(x_sub);
+
+     nx_z = SubvectorNX(z_sub);
+     ny_z = SubvectorNY(z_sub);
+     nz_z = SubvectorNZ(z_sub);
+
+     zp = SubvectorElt(z_sub, ix, iy, iz);
+     xp = SubvectorElt(x_sub, ix, iy, iz);
+
+     i_x = 0;
+     i_z = 0;
+     val = 1;
+     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
+               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+               i_z, nx_z, ny_z, nz_z, 1, 1, 1,
+                {if (zp[iz] == 0.0) continue;
+                 else
+                 {
+                   if (!notEvenOnce) min = MIN(min,xp[i_x]/zp[i_z]);
+                   else
+                   {
+                     min = xp[i_x]/zp[i_z];
+                     notEvenOnce = FALSE;
+                   }
+                 }
+               });
+  }
+
+  result_invoice = amps_NewInvoice("%i", &min);
+  amps_AllReduce(amps_CommWorld, result_invoice, amps_Min);
+  amps_FreeInvoice(result_invoice);
+
+  return(min);
 }

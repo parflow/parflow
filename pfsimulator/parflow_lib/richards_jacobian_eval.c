@@ -136,10 +136,10 @@ int           jacobian_stencil_shape_C[5][3] = {{ 0,  0,  0},
 
 int       KINSolMatVec(
 void     *current_state,
-N_Vector  x,
-N_Vector  y,
+N_Vector  xn,
+N_Vector  yn,
 int      *recompute,
-N_Vector  pressure)
+N_Vector  speciesNVector)
 {
    PFModule    *richards_jacobian_eval = StateJacEval(((State*)current_state));
    Matrix      *J                = StateJac(         ((State*)current_state) );
@@ -150,10 +150,19 @@ N_Vector  pressure)
    double       dt               = StateDt(          ((State*)current_state) );
    double       time             = StateTime(        ((State*)current_state) );
 
+   Vector      *pressure;	
+   Vector      *x, *y;
+
    InstanceXtra  *instance_xtra   = (InstanceXtra *)PFModuleInstanceXtra(richards_jacobian_eval);
 
    PFModule    *bc_pressure       = (instance_xtra -> bc_pressure);
    StateBCPressure((State*)current_state)           = bc_pressure;
+
+  
+   pressure = NV_CONTENT_PF(speciesNVector)->dims[0];
+
+   x = NV_CONTENT_PF(xn)->dims[0];
+   y = NV_CONTENT_PF(yn)->dims[0];
 
    InitVector(y, 0.0);
 
