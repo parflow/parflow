@@ -3152,60 +3152,7 @@ PFModule *SolverRichardsInitInstanceXtra()
    grid = CreateGrid(GlobalsUserGrid);
 
    /*sk: Create a two-dimensional grid for later use*/
-   all_subgrids = GridAllSubgrids(grid);
-
-#ifdef HAVE_P4EST
-   /** Is this two dimensional grid comming from a 3D one ? */
-   proj_flag = GlobalsNumProcsZ > 1 ? 1 : 0;
-#endif
-
-   // SGS FIXME this is incorrect, can't loop over both at same time
-   // assumes same grids in both arrays which is not correct?
-   new_all_subgrids = NewSubgridArray();
-   ForSubgridI(i, all_subgrids)
-   {
-      subgrid = SubgridArraySubgrid(all_subgrids, i);
-      new_subgrid = DuplicateSubgrid(subgrid);
-      SubgridIZ(new_subgrid) = 0;
-
-      /** With p4est we need to remember our Z corner
-       * to avoid bad communication paterns when allocating
-       * the ComputePkgs */
-      if (USE_P4EST){
-#ifdef HAVE_P4EST
-          SubgridIZ(new_subgrid) += proj_flag ? SubgridIZ(subgrid) : 0;
-#endif
-      }
-
-      SubgridNZ(new_subgrid) = 1;
-      AppendSubgrid(new_subgrid, new_all_subgrids);
-   }
-   new_subgrids  = GetGridSubgrids(new_all_subgrids);
-   grid2d        = NewGrid(new_subgrids, new_all_subgrids);
-
-   if (USE_P4EST){
-#ifdef HAVE_P4EST
-       /** Set projection flag for the two dimensional grid */
-       GridIsProjected(grid2d) = proj_flag;
-#endif
-   }
-
-   CreateComputePkgs(grid2d);
-
-   if (USE_P4EST){
-#ifdef HAVE_P4EST
-       BeginTiming(P4ESTSetupTimingIndex);
-       /** Complete projection if necessary */
-       if (proj_flag){
-         ForSubgridI(i, new_all_subgrids)
-         {
-           new_subgrid = SubgridArraySubgrid(new_all_subgrids, i);
-           SubgridIZ(new_subgrid) = 0;
-         }
-       }
-       EndTiming(P4ESTSetupTimingIndex);
-#endif
-   }
+   grid2d  = CreateZprojectedGrid(grid, 1);
 
    /* Create the x velocity grid */
    all_subgrids = GridAllSubgrids(grid);
@@ -3264,56 +3211,18 @@ PFModule *SolverRichardsInitInstanceXtra()
 #ifdef HAVE_CLM
    /* IMF New grid for met forcing (nx*ny*nt) */
    /* NT specified by key CLM.MetForcing3D.NT */
-   all_subgrids = GridAllSubgrids(grid);
-   new_all_subgrids = NewSubgridArray();
-   ForSubgridI(i, all_subgrids)
-   {
-      subgrid = SubgridArraySubgrid(all_subgrids, i);
-      new_subgrid = DuplicateSubgrid(subgrid);
-      SubgridIZ(new_subgrid) = 0;
-      SubgridNZ(new_subgrid) = public_xtra -> clm_metnt;
-      AppendSubgrid(new_subgrid, new_all_subgrids);
-   }
-   new_subgrids  = GetGridSubgrids(new_all_subgrids);
-   metgrid       = NewGrid(new_subgrids, new_all_subgrids);
-   CreateComputePkgs(metgrid);
+   metgrid = CreateZprojectedGrid(grid, public_xtra -> clm_metnt);
    (instance_xtra -> metgrid) = metgrid;
     
     //NBE: Define the grid type only if it's required
     if (public_xtra -> single_clm_file) {
-    
-        /* NBE - Create new grid for single file CLM output */
-        all_subgrids = GridAllSubgrids(grid);
-        new_all_subgrids = NewSubgridArray();
-        ForSubgridI(i, all_subgrids)
-        {
-            subgrid = SubgridArraySubgrid(all_subgrids, i);
-            new_subgrid = DuplicateSubgrid(subgrid);
-            SubgridIZ(new_subgrid) = 0;
-            SubgridNZ(new_subgrid) = 13 + public_xtra -> clm_nz;
-            AppendSubgrid(new_subgrid, new_all_subgrids);
-        }
-        new_subgrids  = GetGridSubgrids(new_all_subgrids);
-        snglclm  = NewGrid(new_subgrids, new_all_subgrids);
-        CreateComputePkgs(snglclm);
+
+        snglclm  = CreateZprojectedGrid(grid, 13 + public_xtra -> clm_nz);
         (instance_xtra -> snglclm) = snglclm;
     }
 
    /* IMF New grid for Tsoil (nx*ny*10) */
-   all_subgrids = GridAllSubgrids(grid);
-   new_all_subgrids = NewSubgridArray();
-   ForSubgridI(i, all_subgrids)
-   {
-      subgrid = SubgridArraySubgrid(all_subgrids, i);
-      new_subgrid = DuplicateSubgrid(subgrid);
-      SubgridIZ(new_subgrid) = 0;
-      //SubgridNZ(new_subgrid) = 10;
-      SubgridNZ(new_subgrid) = public_xtra -> clm_nz; //NBE: Use variable # of soil layers
-      AppendSubgrid(new_subgrid, new_all_subgrids);
-   }
-   new_subgrids  = GetGridSubgrids(new_all_subgrids);
-   gridTs        = NewGrid(new_subgrids, new_all_subgrids);
-   CreateComputePkgs(gridTs);
+   gridTs = CreateZprojectedGrid(grid, public_xtra -> clm_nz);
    (instance_xtra -> gridTs) = gridTs;
 #endif
 
