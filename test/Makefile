@@ -8,7 +8,7 @@
 
 include $(PARFLOW_DIR)/config/Makefile.config
 
-SUBDIRS = clm p4est
+SUBDIRS = clm
 
 default: check
 
