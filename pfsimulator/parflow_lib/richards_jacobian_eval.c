@@ -144,13 +144,7 @@ N_Vector  speciesNVector)
    PFModule    *richards_jacobian_eval = StateJacEval(((State*)current_state));
    Matrix      *J                = StateJac(         ((State*)current_state) );
    Matrix      *JC                = StateJacC(         ((State*)current_state) );
-   Vector      *saturation       = StateSaturation(  ((State*)current_state) );
-   Vector      *density          = StateDensity(     ((State*)current_state) );
-   ProblemData *problem_data     = StateProblemData( ((State*)current_state) );
-   double       dt               = StateDt(          ((State*)current_state) );
-   double       time             = StateTime(        ((State*)current_state) );
 
-   Vector      *pressure;	
    Vector      *x, *y;
 
    InstanceXtra  *instance_xtra   = (InstanceXtra *)PFModuleInstanceXtra(richards_jacobian_eval);
@@ -158,8 +152,6 @@ N_Vector  speciesNVector)
    PFModule    *bc_pressure       = (instance_xtra -> bc_pressure);
    StateBCPressure((State*)current_state)           = bc_pressure;
 
-  
-   pressure = NV_CONTENT_PF(speciesNVector)->dims[0];
 
    x = NV_CONTENT_PF(xn)->dims[0];
    y = NV_CONTENT_PF(yn)->dims[0];
@@ -172,8 +164,7 @@ N_Vector  speciesNVector)
    if ( *recompute )
    {
       PFModuleInvokeType(RichardsJacobianEvalInvoke, richards_jacobian_eval, 
-      (pressure, &J, &JC, saturation, density, problem_data,
-      dt, time, 0));
+      (speciesNVector, current_state , &J, &JC, 0));
 
       *recompute=0;
       StateJac( ((State*)current_state) ) = J;
@@ -193,16 +184,12 @@ N_Vector  speciesNVector)
     pressure values.  */
 
 void    RichardsJacobianEval(
-Vector       *pressure,       /* Current pressure values */
+N_Vector  speciesNVector    ,       /* Current pressure values */
+void * current_state,
 Matrix      **ptr_to_J,       /* Pointer to the J pointer - this will be set
 		                 to instance_xtra pointer at end */
 Matrix      **ptr_to_JC,       /* Pointer to the JC pointer - this will be set
 		                 to instance_xtra pointer at end */
-Vector       *saturation,     /* Saturation / work vector */
-Vector       *density,        /* Density vector */
-ProblemData  *problem_data,   /* Geometry data for problem */
-double        dt,             /* Time step size */
-double        time,           /* New time value */
 int           symm_part)      /* Specifies whether to compute just the
                                  symmetric part of the Jacobian (1), or the
 				 full Jacobian */
@@ -223,6 +210,14 @@ int           symm_part)      /* Specifies whether to compute just the
 
    Matrix      *J                 = (instance_xtra -> J);
    Matrix      *JC                = (instance_xtra -> JC);
+
+   /* state vectors */
+   Vector      *pressure = NV_CONTENT_PF(speciesNVector)->dims[0];
+   Vector      *saturation       = StateSaturation(  ((State*)current_state) );
+   Vector      *density          = StateDensity(     ((State*)current_state) );
+   ProblemData *problem_data     = StateProblemData( ((State*)current_state) );
+   double       dt               = StateDt(          ((State*)current_state) );
+   double       time             = StateTime(        ((State*)current_state) );
 
    Vector      *density_der       = NULL;
    Vector      *saturation_der    = NULL;

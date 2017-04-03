@@ -91,11 +91,8 @@ Problem      *problem,
 Grid         *grid,
 ProblemData  *problem_data,
 double       *temp_data,
-Vector       *pressure,
-Vector       *saturation,
-Vector       *density,
-double        dt,
-double        time)
+N_Vector       speciesNVector,
+void*        current_state)
 {
    PFModule      *this_module        = ThisPFModule;
    PublicXtra    *public_xtra        = (PublicXtra    *)PFModulePublicXtra(this_module);
@@ -107,6 +104,10 @@ double        time)
    PFModule      *precond            = public_xtra -> precond;
 
    Matrix        *PC, *JC;
+
+
+
+
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
@@ -146,11 +147,10 @@ double        time)
 					  temp_data));
 */
    }
-   else if (pressure != NULL)
+   else if (speciesNVector != NULL)
    {
       PFModuleInvokeType(RichardsJacobianEvalInvoke, (instance_xtra -> discretization),
-			 (pressure, &PC, &JC, saturation, density, problem_data, dt, 
-			  time, pc_matrix_type));
+			 (speciesNVector,current_state, &PC, &JC, pc_matrix_type));
       PFModuleReNewInstanceType(PrecondInitInstanceXtraInvoke, 
 				(instance_xtra -> precond),
 				(NULL, NULL, problem_data, PC,JC, temp_data));

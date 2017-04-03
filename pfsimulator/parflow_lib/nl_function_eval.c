@@ -78,28 +78,14 @@ N_Vector fvaln,
 void    *current_state)
 {
    PFModule  *nl_function_eval = StateFunc(        ((State*)current_state) );
-   ProblemData *problem_data   = StateProblemData( ((State*)current_state) );
-   Vector      *old_pressure   = StateOldPressure(((State*)current_state) );
-   Vector      *saturation     = StateSaturation(  ((State*)current_state) );
-   Vector      *old_saturation = StateOldSaturation(((State*)current_state) );
-   Vector      *density        = StateDensity(     ((State*)current_state) );
-   Vector      *old_density    = StateOldDensity(  ((State*)current_state) );
-   double       dt             = StateDt(          ((State*)current_state) );
-   double       time           = StateTime(        ((State*)current_state) );
-   Vector       *evap_trans    = StateEvapTrans(   ((State*)current_state) );
-   Vector       *ovrl_bc_flx   = StateOvrlBcFlx(   ((State*)current_state) );
-   
-   /* velocity vectors jjb */
-   Vector       *x_velocity    = StateXvel(        ((State*)current_state) );
-   Vector       *y_velocity    = StateYvel(        ((State*)current_state) );
-   Vector       *z_velocity    = StateZvel(        ((State*)current_state) );
 
    (void) size;
  
    PFModuleInvokeType(NlFunctionEvalInvoke, nl_function_eval, 
-		  (NV_CONTENT_PF(speciesNVector)->dims[0], NV_CONTENT_PF(fvaln)->dims[0], problem_data, saturation, old_saturation, 
-		   density, old_density, dt, time, old_pressure, evap_trans,
-		   ovrl_bc_flx, x_velocity, y_velocity, z_velocity) );
+		  ( speciesNVector, 
+		    NV_CONTENT_PF(fvaln)->dims[0], 
+		    current_state	
+		   ));
  
    return;
 }
@@ -109,21 +95,10 @@ void    *current_state)
     pressure values.  This evaluation is basically an application
     of the stencil to the pressure array. */
 
-void NlFunctionEval (Vector *pressure,  /* Current pressure values */
-		     Vector *fval, /* Return values of the nonlinear function */
-		     ProblemData *problem_data, /* Geometry data for problem */
-		     Vector *saturation ,  /* Saturation / work vector */
-		     Vector *old_saturation,  /* Saturation values at previous time step */
-		     Vector *density, /* Density vector */
-		     Vector *old_density,   /* Density values at previous time step */
-		     double dt,   /* Time step size */
-		     double time,     /* New time value */
-		     Vector *old_pressure,  
-		     Vector *evap_trans,   /*sk sink term from land surface model*/
-		     Vector *ovrl_bc_flx,  /*sk overland flow boundary fluxes*/
-		     Vector *x_velocity, /* velocity vectors jjb */
-		     Vector *y_velocity,
-		     Vector *z_velocity)
+void NlFunctionEval (N_Vector speciesNVector,
+		     Vector * fval,
+		     void    *current_state
+		     )
 {
    PFModule      *this_module     = ThisPFModule;
    InstanceXtra  *instance_xtra   = (InstanceXtra *)PFModuleInstanceXtra(this_module);
@@ -138,9 +113,24 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    PFModule    *bc_pressure       = (instance_xtra -> bc_pressure);
    PFModule    *bc_internal       = (instance_xtra -> bc_internal);
    PFModule    *overlandflow_module       = (instance_xtra -> overlandflow_module);
-    PFModule    *overlandflow_module_diff       = (instance_xtra -> overlandflow_module_diff);
+   PFModule    *overlandflow_module_diff       = (instance_xtra -> overlandflow_module_diff);
 
-    
+   /* state vectors */
+   Vector *pressure = NV_CONTENT_PF(speciesNVector)->dims[0] ;
+   Vector      *old_pressure   = StateOldPressure(((State*)current_state) ); /* Pressure values at previous time step */
+   Vector      *saturation     = StateSaturation(  ((State*)current_state) ); /* Saturation / work vector */
+   Vector      *old_saturation = StateOldSaturation(((State*)current_state) ); /* Saturation values at previous time step */
+   Vector      *density        = StateDensity(     ((State*)current_state) ); /* Density vector */
+   Vector      *old_density    = StateOldDensity(  ((State*)current_state) ); /* Density values at previous time step */
+   Vector       *evap_trans    = StateEvapTrans(   ((State*)current_state) );  /*sk sink term from land surface model*/
+   Vector       *ovrl_bc_flx   = StateOvrlBcFlx(   ((State*)current_state) );  /*sk overland flow boundary fluxes*/
+   Vector       *x_velocity    = StateXvel(        ((State*)current_state) ); /* velocity vectors jjb */
+   Vector       *y_velocity    = StateYvel(        ((State*)current_state) );
+   Vector       *z_velocity    = StateZvel(        ((State*)current_state) );
+   double       dt             = StateDt(          ((State*)current_state) );
+   double       time           = StateTime(        ((State*)current_state) );
+   ProblemData *problem_data   = StateProblemData( ((State*)current_state) );  
+
    /* Re-use saturation vector to save memory */
    Vector      *rel_perm          = saturation;
    Vector      *source            = saturation;

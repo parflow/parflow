@@ -1241,6 +1241,9 @@ void AdvanceRichards(PFModule *this_module,
    /* multi dimensional N_Vector that is passed to KinSol*/
    N_Vector      speciesNVector;
    N_VectorContent speciesContent;
+   N_Vector      stateContainerNVector;
+   N_VectorContent containerContent;
+
  
    /* Added for transient EvapTrans file management - NBE */
     int Stepcount, Loopcount;
@@ -1292,6 +1295,18 @@ void AdvanceRichards(PFModule *this_module,
    speciesNVector = N_VNewEmpty_PF(1);   // create a multi dimensional N_Vector (pressure only)
    speciesContent = NV_CONTENT_PF(speciesNVector);	     
    speciesContent->dims[0] = instance_xtra -> pressure;      // assemble fields into one N_Vector element
+   stateContainerNVector = N_VNewEmpty_PF(10);
+   containerContent = NV_CONTENT_PF(stateContainerNVector);
+   containerContent->dims[0] = instance_xtra -> density;
+   containerContent->dims[1] = instance_xtra -> old_density;
+   containerContent->dims[2] = instance_xtra -> saturation;
+   containerContent->dims[3] = instance_xtra -> old_saturation;
+   containerContent->dims[4] = instance_xtra -> old_pressure;
+   containerContent->dims[5] = evap_trans;
+   containerContent->dims[6] = instance_xtra -> ovrl_bc_flx;
+   containerContent->dims[7] = instance_xtra -> x_velocity;
+   containerContent->dims[8] = instance_xtra -> y_velocity;
+   containerContent->dims[9] = instance_xtra -> z_velocity;
 
 
 
@@ -2174,18 +2189,11 @@ void AdvanceRichards(PFModule *this_module,
 	 /*******************************************************************/
 	  
 	 retval = PFModuleInvokeType(NonlinSolverInvoke, nonlin_solver, 
-				     (speciesNVector, 
-				      instance_xtra -> density, 
-				      instance_xtra -> old_density, 
-				      instance_xtra -> saturation, 
-				      instance_xtra -> old_saturation, 
+				     (speciesNVector,
+				      stateContainerNVector, 
 				      t, dt, 
-				      problem_data, instance_xtra -> old_pressure, 
-				      evap_trans, 
-				      instance_xtra -> ovrl_bc_flx,
-				      instance_xtra -> x_velocity,
-				      instance_xtra -> y_velocity, 
-				      instance_xtra -> z_velocity));
+				      problem_data  
+				      ));
 
 	 if (retval != 0)
 	 {

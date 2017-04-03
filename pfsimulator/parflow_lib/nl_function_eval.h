@@ -40,23 +40,11 @@ typedef struct
    Matrix      *jacobian_matrix_E;//dok
    Matrix      *jacobian_matrix_F;//dok
 
-
-   Vector      *old_density;
-   Vector      *old_saturation;
-   Vector      *old_pressure;
-   Vector      *density;
-   Vector      *saturation;
+   N_Vector     stateContainerNVector;	
 
    double       dt;
    double       time;
    double       *outflow; /*sk*/
-   
-   Vector       *evap_trans; /*sk*/
-   Vector       *ovrl_bc_flx; /*sk*/
-   
-   Vector       *x_velocity; //jjb
-   Vector       *y_velocity; //jjb
-   Vector       *z_velocity; //jjb
    
 } State;
 
@@ -69,11 +57,6 @@ typedef struct
 #define StateFunc(state)          ((state)->nl_function_eval)
 #define StateBCPressure(state)          ((state)->bc_pressure)//dok
 #define StateProblemData(state)   ((state)->problem_data)
-#define StateOldDensity(state)    ((state)->old_density)
-#define StateOldPressure(state)   ((state)->old_pressure)
-#define StateOldSaturation(state) ((state)->old_saturation)
-#define StateDensity(state)       ((state)->density)
-#define StateSaturation(state)    ((state)->saturation)
 #define StateDt(state)            ((state)->dt)
 #define StateTime(state)          ((state)->time)
 #define StateJacEval(state)       ((state)->richards_jacobian_eval)
@@ -83,8 +66,17 @@ typedef struct
 #define StateJacF(state)           ((state)->jacobian_matrix_F)//dok
 #define StatePrecond(state)       ((state)->precond)
 #define StateOutflow(state)       ((state)->outflow) /*sk*/
-#define StateEvapTrans(state)     ((state)->evap_trans) /*sk*/
-#define StateOvrlBcFlx(state)     ((state)->ovrl_bc_flx) /*sk*/
-#define StateXvel(state)          ((state)->x_velocity) //jjb
-#define StateYvel(state)          ((state)->y_velocity) //jjb
-#define StateZvel(state)          ((state)->z_velocity) //jjb
+
+/* Vectors that are part of fieldContainerNVector and may vary with number of species/phases */
+#define StateFieldContainer(state)       ((state)->stateContainerNVector)
+
+#define StateOldDensity(state)    (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[1])
+#define StateOldPressure(state)   (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[4])
+#define StateOldSaturation(state) (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[3])
+#define StateDensity(state)       (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[0])
+#define StateSaturation(state)    (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[2])
+#define StateEvapTrans(state)     (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[5])
+#define StateOvrlBcFlx(state)     (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[6])
+#define StateXvel(state)          (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[7]) //jjb
+#define StateYvel(state)          (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[8]) //jjb
+#define StateZvel(state)          (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[9]) //jjb

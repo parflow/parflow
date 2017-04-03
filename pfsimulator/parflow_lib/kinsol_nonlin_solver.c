@@ -109,10 +109,6 @@ void     *current_state)
 {
    PFModule    *precond      = StatePrecond( ((State*)current_state) );
    ProblemData *problem_data = StateProblemData( ((State*)current_state) );
-   Vector      *saturation   = StateSaturation( ((State*)current_state) );
-   Vector      *density      = StateDensity( ((State*)current_state) );
-   double       dt           = StateDt( ((State*)current_state) );
-   double       time         = StateTime( ((State*)current_state) );
 
    (void) neq;
    (void) uscale;
@@ -128,8 +124,9 @@ void     *current_state)
       itself */
 
    PFModuleReNewInstanceType(KinsolPCInitInstanceXtraInvoke, precond, (NULL, NULL, problem_data, NULL, 
-								       NV_CONTENT_PF(speciesNVector)->dims[0], 
-									saturation, density, dt, time));
+								       speciesNVector,
+									current_state 
+									));
    return(0);
 }
 
@@ -201,7 +198,7 @@ void PrintFinalStats(
  * KinsolNonlinSolver
  *--------------------------------------------------------------------------*/
 
-int KinsolNonlinSolver (N_Vector speciesNVector , Vector *density , Vector *old_density , Vector *saturation , Vector *old_saturation , double t , double dt , ProblemData *problem_data, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity )
+int KinsolNonlinSolver (N_Vector speciesNVector , N_Vector stateContainerNVector , double t , double dt , ProblemData *problem_data  )
 {
    PFModule     *this_module      = ThisPFModule;
    PublicXtra   *public_xtra      = (PublicXtra   *)PFModulePublicXtra(this_module);
@@ -237,22 +234,13 @@ int KinsolNonlinSolver (N_Vector speciesNVector , Vector *density , Vector *old_
 
    StateFunc(current_state)          = nl_function_eval;
    StateProblemData(current_state)   = problem_data;
+   StateFieldContainer(current_state)    = stateContainerNVector;
    StateTime(current_state)          = t;
    StateDt(current_state)            = dt;
-   StateOldDensity(current_state)    = old_density;
-   StateOldPressure(current_state)   = old_pressure;
-   StateOldSaturation(current_state) = old_saturation;
-   StateDensity(current_state)       = density;
-   StateSaturation(current_state)    = saturation;
    StateJacEval(current_state)       = richards_jacobian_eval;
    StateJac(current_state)           = jacobian_matrix;
    StateJacC(current_state)           = jacobian_matrix_C;//dok
    StatePrecond(current_state)       = precond;
-   StateEvapTrans(current_state)     = evap_trans;  /*sk*/
-   StateOvrlBcFlx(current_state)     = ovrl_bc_flx; /*sk*/
-   StateXvel(current_state)          = x_velocity; //jjb
-   StateYvel(current_state)          = y_velocity; //jjb
-   StateZvel(current_state)          = z_velocity; //jjb
 
    if (!amps_Rank(amps_CommWorld))
       fprintf(kinsol_file,"\nKINSOL starting step for time %f\n",t);
@@ -357,7 +345,7 @@ double      *temp_data)
 	 instance_xtra -> precond =
 	    PFModuleNewInstanceType(KinsolPCInitInstanceXtraInvoke, public_xtra -> precond,
 				    (problem, grid, problem_data, temp_data,
-				     NULL, NULL, NULL, 0, 0));
+				     NULL, NULL ));
       else
 	 instance_xtra -> precond = NULL;
 
@@ -379,7 +367,7 @@ double      *temp_data)
 	 PFModuleReNewInstanceType(KinsolPCInitInstanceXtraInvoke,
 			       instance_xtra -> precond,
 			        (problem, grid, problem_data, temp_data,
-				 NULL, NULL, NULL, 0, 0));
+				 NULL, NULL));
 
       PFModuleReNewInstanceType(NlFunctionEvalInitInstanceXtraInvoke, instance_xtra -> nl_function_eval, 
 			    (problem, grid, temp_data));
