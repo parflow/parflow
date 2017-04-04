@@ -45,7 +45,7 @@ typedef struct
    double       dt;
    double       time;
    double       *outflow; /*sk*/
-   
+   int 		SP; 
 } State;
 
 
@@ -80,3 +80,11 @@ typedef struct
 #define StateXvel(state)          (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[7]) //jjb
 #define StateYvel(state)          (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[8]) //jjb
 #define StateZvel(state)          (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[9]) //jjb
+
+#define StateSP(state)            ((state)->SP)
+
+#ifdef withTemperature
+    #define StateSaturation2(state)    (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[10]) /*FG for tests*/
+    #define StateOldPressure2(state)   (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[11]) /*FG for tests*/
+    #define StateOldSaturation2(state) (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[12]) /*FG for tests*/
+#endif

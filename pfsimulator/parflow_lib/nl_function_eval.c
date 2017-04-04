@@ -80,13 +80,27 @@ void    *current_state)
    PFModule  *nl_function_eval = StateFunc(        ((State*)current_state) );
 
    (void) size;
+
+   //FGTest
+   StateSP(        ((State*)current_state) ) = 1;
+
  
    PFModuleInvokeType(NlFunctionEvalInvoke, nl_function_eval, 
 		  ( speciesNVector, 
 		    NV_CONTENT_PF(fvaln)->dims[0], 
 		    current_state	
 		   ));
- 
+
+#ifdef withTemperature
+   StateSP(        ((State*)current_state) ) = 2;	
+   PFModuleInvokeType(NlFunctionEvalInvoke, nl_function_eval,
+                  ( speciesNVector,
+                    NV_CONTENT_PF(fvaln)->dims[1],
+                    current_state
+                   ));   
+
+#endif
+
    return;
 }
 
@@ -115,11 +129,29 @@ void NlFunctionEval (N_Vector speciesNVector,
    PFModule    *overlandflow_module       = (instance_xtra -> overlandflow_module);
    PFModule    *overlandflow_module_diff       = (instance_xtra -> overlandflow_module_diff);
 
+   
+
+
    /* state vectors */
-   Vector *pressure = NV_CONTENT_PF(speciesNVector)->dims[0] ;
-   Vector      *old_pressure   = StateOldPressure(((State*)current_state) ); /* Pressure values at previous time step */
-   Vector      *saturation     = StateSaturation(  ((State*)current_state) ); /* Saturation / work vector */
-   Vector      *old_saturation = StateOldSaturation(((State*)current_state) ); /* Saturation values at previous time step */
+   //FGTest
+   Vector *pressure,*saturation,*old_saturation,*old_pressure;
+
+   if(StateSP(        ((State*)current_state) )==1){
+     pressure = NV_CONTENT_PF(speciesNVector)->dims[0] ;
+     old_pressure   = StateOldPressure(((State*)current_state) ); /* Pressure values at previous time step */
+     saturation     = StateSaturation(  ((State*)current_state) ); /* Saturation / work vector */
+     old_saturation = StateOldSaturation(((State*)current_state) ); /* Saturation values at previous time step */
+   }else if(StateSP(        ((State*)current_state) )==2){
+     ;
+#ifdef withTemperature
+     pressure = NV_CONTENT_PF(speciesNVector)->dims[1] ;
+     old_pressure   = StateOldPressure2(((State*)current_state) ); /* Pressure values at previous time step */
+     saturation     = StateSaturation2(  ((State*)current_state) ); /* Saturation / work vector */
+     old_saturation = StateOldSaturation2(((State*)current_state) ); /* Saturation values at previous time step */
+#endif
+   }
+
+
    Vector      *density        = StateDensity(     ((State*)current_state) ); /* Density vector */
    Vector      *old_density    = StateOldDensity(  ((State*)current_state) ); /* Density values at previous time step */
    Vector       *evap_trans    = StateEvapTrans(   ((State*)current_state) );  /*sk sink term from land surface model*/

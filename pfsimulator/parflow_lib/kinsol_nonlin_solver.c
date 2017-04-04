@@ -164,6 +164,10 @@ void     *current_state)
 
    PFModuleInvokeType(KinsolPCInvoke, precond, (NV_CONTENT_PF(vtem)->dims[0]));
 
+#ifdef withTemperature
+   PFModuleInvokeType(KinsolPCInvoke, precond, (NV_CONTENT_PF(vtem)->dims[1]));
+#endif
+
    return(0);
 }
 
@@ -442,11 +446,17 @@ double      *temp_data)
 
 
       /* Scaling vectors*/
+#ifdef withTemperature
+      uscalen = N_VNew_PF(grid,2);
+      fscalen = N_VNew_PF(grid,2);
+#else
       uscalen = N_VNew_PF(grid,1);
+      fscalen = N_VNew_PF(grid,1);
+#endif      	
+
       N_VConst_PF(1.0,uscalen);
       instance_xtra -> uscalen = uscalen;
 
-      fscalen = N_VNew_PF(grid,1);
       N_VConst_PF(1.0,fscalen);
       instance_xtra -> fscalen = fscalen;
 

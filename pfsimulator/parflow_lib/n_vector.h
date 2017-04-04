@@ -39,7 +39,12 @@ typedef struct _N_VectorContent *N_VectorContent;
 
 
 #define NV_CONTENT_PF(v) ( (N_VectorContent)(v->content) )
-#define NUMDIMS 1	//This won't be neccessary with newer kinsol. Because the old/frozen Kinsol relies on NV_New() which has no argument and can not know the nomber of species
+
+#ifdef withTemperature
+  #define NUMDIMS 2
+#else
+  #define NUMDIMS 1	//This won't be neccessary with newer kinsol. Because the old/frozen Kinsol relies on NV_New() which has no argument and can not know the nomber of species
+#endif
 #define N_VFree                       N_VDestroy_PF
 #define N_VConstrProdPos	      N_VConstrProdPos_PF
 
