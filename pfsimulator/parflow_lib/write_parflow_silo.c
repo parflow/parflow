@@ -245,6 +245,9 @@ void     WriteSiloInit(char    *file_prefix)
 			      "satur",
 			      "concen",
 			      "press",
+#ifdef withTemperature
+                              "tempe",
+#endif
 			      "slope_x",
 			      "slope_y",
 			      "mannings",

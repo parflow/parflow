@@ -51,6 +51,9 @@ typedef struct
    PFModule  *porosity;
    PFModule  *wells;
    PFModule  *bc_pressure;
+#ifdef withTemperature
+   PFModule  *bc_temperature;
+#endif
    PFModule  *specific_storage; //sk
    PFModule  *x_slope; //sk
    PFModule  *y_slope; //sk
@@ -84,6 +87,9 @@ void          SetProblemData(
    PFModule      *porosity     = (instance_xtra -> porosity);
    PFModule      *wells        = (instance_xtra -> wells);
    PFModule      *bc_pressure  = (instance_xtra -> bc_pressure);
+#ifdef withTemperature
+   PFModule      *bc_temperature  = (instance_xtra -> bc_temperature);
+#endif
    PFModule      *specific_storage = (instance_xtra -> specific_storage); //sk
    PFModule      *x_slope      = (instance_xtra -> x_slope); //sk
    PFModule      *y_slope      = (instance_xtra -> y_slope); //sk
@@ -136,6 +142,9 @@ void          SetProblemData(
    }
 
    PFModuleInvokeType(BCPressurePackageInvoke, bc_pressure, (problem_data));
+#ifdef withTemperature
+   PFModuleInvokeType(BCTemperaturePackageInvoke, bc_temperature, (problem_data));
+#endif 
 }
 
 
@@ -225,6 +234,12 @@ PFModule  *SetProblemDataInitInstanceXtra(
       (instance_xtra -> bc_pressure) =
 	 PFModuleNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
 				 ProblemBCPressurePackage(problem), (problem));
+#ifdef withTemperature
+      (instance_xtra -> bc_temperature) =
+         PFModuleNewInstanceType(BCTemperaturePackageInitInstanceXtraInvoke,
+                                 ProblemBCTemperaturePackage(problem), (problem));
+#endif
+
    }
    else
    {
@@ -250,6 +265,10 @@ PFModule  *SetProblemDataInitInstanceXtra(
       PFModuleReNewInstance((instance_xtra -> wells), ());
       PFModuleReNewInstanceType(BCPressurePackageInitInstanceXtraInvoke,
 				(instance_xtra -> bc_pressure), (problem));
+#ifdef withTemperature
+      PFModuleReNewInstanceType(BCTemperaturePackageInitInstanceXtraInvoke,
+                                (instance_xtra -> bc_temperature), (problem));
+#endif
    }
 
 
@@ -271,6 +290,9 @@ void  SetProblemDataFreeInstanceXtra()
    if(instance_xtra)
    {
       PFModuleFreeInstance(instance_xtra -> bc_pressure);
+#ifdef withTemperature
+      PFModuleFreeInstance(instance_xtra -> bc_temperature);
+#endif
       PFModuleFreeInstance(instance_xtra -> wells);
 
       PFModuleFreeInstance(instance_xtra -> geometries);

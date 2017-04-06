@@ -24,6 +24,15 @@ CXX_SRCS = \
 CXXOBJS = $(CXX_SRCS:.cxx=.o)
 
 OBJS = \
+      bc_temperature_package.o\
+      bc_temperature.o\
+      problem_temp_source.o\
+      problem_thermal_conductivity.o\
+      problem_ic_phase_temperature.o\
+      temperature_jacobian_eval.o\
+      temperature_function_eval.o\
+      kinsol_pc_temperature.o\
+      problem_bc_temperature.o\
 	advect.o\
 	advection_godunov.o\
 	axpy.o\

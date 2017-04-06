@@ -60,7 +60,6 @@ typedef struct
 					   SolverRichards */
    /* PDE coefficients */
    double      gravity;
-   double     *phase_viscosity;         /* array of size num_phases */
    double     *contaminant_degradation; /* array of size num_contaminants */
    PFModule   *phase_density; 
    PFModule   *permeability;
@@ -74,6 +73,21 @@ typedef struct
    PFModule   *capillary_pressure;
    PFModule   *saturation;              /* saturation function used in 
                                            SolverRichards */
+
+#ifdef withTemperature
+//not yet implemented   PFModule   *phase_viscosity;
+//remove next line after implementation
+   double     *phase_viscosity;
+//
+   PFModule   *temp_source;
+   PFModule   *thermal_conductivity;
+   PFModule   *phase_heat_capacity;
+   PFModule   *bc_temperature;
+   PFModule   *bc_temperature_package;
+   PFModule   *ic_phase_temperature;
+#else
+    double     *phase_viscosity;         /* array of size num_phases */
+#endif
 
    /* boundary conditions */
    PFModule   *bc_internal;
@@ -137,7 +151,10 @@ typedef struct
 
    WellData       *well_data;
    BCPressureData *bc_pressure_data;
-   
+#ifdef withTemperature
+   BCTemperatureData *bc_temperature_data;
+#endif  
+ 
    /*sk  overland flow*/
    Vector *x_slope;
    Vector *y_slope;
@@ -186,8 +203,6 @@ typedef struct
 /* PDE accessors */
 #define ProblemGravity(problem)                   ((problem) -> gravity)
 #define ProblemPhaseDensity(problem)              ((problem) -> phase_density)
-#define ProblemPhaseViscosities(problem)          ((problem) -> phase_viscosity)
-#define ProblemPhaseViscosity(problem, i)         ((problem) -> phase_viscosity[i])
 #define ProblemContaminantDegradations(problem)   ((problem) -> contaminant_degradation)
 #define ProblemContaminantDegradation(problem, i) ((problem) -> contaminant_degradation[i])
 #define ProblemPermeability(problem)              ((problem) -> permeability)
@@ -209,6 +224,29 @@ typedef struct
 
 #define ProblemdzScale(problem)            ((problem) -> dz_mult)  //RMM
 #define ProblemRealSpaceZ(problem)            ((problem) -> real_space_z)
+
+
+#ifdef withTemperature
+//not yet implemented        #define ProblemPhaseViscosity(problem)            ((problem) -> phase_viscosity)
+// remove next 2 lines after implementation
+        #define ProblemPhaseViscosities(problem)          ((problem) -> phase_viscosity)
+        #define ProblemPhaseViscosity(problem, i)         ((problem) -> phase_viscosity[i])
+//
+
+	#define ProblemTempSource(problem)                ((problem) -> temp_source)	
+        #define ProblemThermalConductivity(problem)       ((problem) -> thermal_conductivity)
+        #define ProblemPhaseHeatCapacity(problem)         ((problem) -> phase_heat_capacity)
+        #define ProblemBCTemperature(problem)             ((problem) -> bc_temperature)
+        #define ProblemBCTemperaturePackage(problem)      ((problem) -> bc_temperature_package)
+        #define ProblemICPhaseTemperature(problem)        ((problem) -> ic_phase_temperature)
+	#define ProblemDataBCTemperatureData(problem_data)((problem_data) -> bc_temperature_data)
+#else
+	#define ProblemPhaseViscosities(problem)          ((problem) -> phase_viscosity)
+	#define ProblemPhaseViscosity(problem, i)         ((problem) -> phase_viscosity[i])
+#endif
+
+
+
 
 /* boundary condition accessors */
 #define ProblemBCPressure(problem)                ((problem) -> bc_pressure)

@@ -142,6 +142,9 @@ int      *recompute,
 N_Vector  speciesNVector)
 {
    PFModule    *richards_jacobian_eval = StateJacEval(((State*)current_state));
+#ifdef withTemperature
+   PFModule    *temperature_jacobian_eval = StateJacEvalTemperature(((State*)current_state));
+#endif
    Matrix      *J                = StateJac(         ((State*)current_state) );
    Matrix      *JC                = StateJacC(         ((State*)current_state) );
 
@@ -163,8 +166,6 @@ N_Vector  speciesNVector)
     */
    if ( *recompute )
    {
-   //FGTest
-   StateSP(        ((State*)current_state) ) = 1;
       PFModuleInvokeType(RichardsJacobianEvalInvoke, richards_jacobian_eval, 
       (speciesNVector, current_state , &J, &JC, 0));
 
@@ -184,7 +185,6 @@ N_Vector  speciesNVector)
 
 
 #ifdef withTemperature
-
    x = NV_CONTENT_PF(xn)->dims[1];
    y = NV_CONTENT_PF(yn)->dims[1];
 
@@ -192,31 +192,21 @@ N_Vector  speciesNVector)
 
    if ( *recompute )
    {
-   //FGTest
-   StateSP(        ((State*)current_state) ) = 2;
-      PFModuleInvokeType(RichardsJacobianEvalInvoke, richards_jacobian_eval,
-      (speciesNVector, current_state , &J, &JC, 0));
+      PFModuleInvokeType(TemperatureJacobianEvalInvoke, temperature_jacobian_eval,
+      (speciesNVector, current_state , &J,  0));
 
 
-      *recompute=0;
       StateJac( ((State*)current_state) ) = J;
-      StateJacC( ((State*)current_state) ) = JC;
+//      StateJacC( ((State*)current_state) ) = JC;
    }
 
-   if(JC == NULL)
+//   if(JC == NULL)
      Matvec(1.0, J, x, 0.0, y);
-   else
-     MatvecSubMat(current_state, 1.0, J, JC, x, 0.0, y);
-
-
-
-
-
+//   else
+//     MatvecSubMat(current_state, 1.0, J, JC, x, 0.0, y);
 #endif
+
     if ( *recompute ) *recompute=0;
-
-
-
 
    return(0);
 }
@@ -254,22 +244,8 @@ int           symm_part)      /* Specifies whether to compute just the
    Matrix      *JC                = (instance_xtra -> JC);
 
    /* state vectors */
-
-
-   Vector *pressure,*saturation;
-
-   if(StateSP(        ((State*)current_state) )==1){
-     pressure = NV_CONTENT_PF(speciesNVector)->dims[0] ;
-     saturation     = StateSaturation(  ((State*)current_state) ); /* Saturation / work vector */
-   }else if(StateSP(        ((State*)current_state) )==2){
-     ;
-#ifdef withTemperature
-     pressure = NV_CONTENT_PF(speciesNVector)->dims[1] ;
-     saturation     = StateSaturation2(  ((State*)current_state) ); /* Saturation / work vector */
-#endif
-   }
-
-
+   Vector *  pressure = NV_CONTENT_PF(speciesNVector)->dims[0] ;
+   Vector *  saturation     = StateSaturation(  ((State*)current_state) ); /* Saturation / work vector */
 
    Vector      *density          = StateDensity(     ((State*)current_state) );
    ProblemData *problem_data     = StateProblemData( ((State*)current_state) );

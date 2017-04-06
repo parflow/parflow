@@ -40,6 +40,27 @@ PFModule *BCPressurePackageNewPublicXtra (int num_phases );
 void BCPressurePackageFreePublicXtra (void );
 int BCPressurePackageSizeOfTempData (void );
 
+#ifdef withTemperature
+/* bc_temperature.c */
+BCTemperatureData *NewBCTemperatureData (void );
+void FreeBCTemperatureData (BCTemperatureData *bc_temperature_data );
+void PrintBCTemperatureData (BCTemperatureData *bc_temperature_data );
+
+typedef void (*BCTemperaturePackageInvoke) (ProblemData *problem_data );
+typedef PFModule *(*BCTemperaturePackageInitInstanceXtraInvoke) (Problem *problem );
+typedef PFModule *(*BCTemperaturePackageNewPublicXtraInvoke) (int num_phases );
+
+/* bc_temperature_package.c */
+void BCTemperaturePackage (ProblemData *problem_data );
+PFModule *BCTemperaturePackageInitInstanceXtra (Problem *problem );
+void BCTemperaturePackageFreeInstanceXtra (void );
+PFModule *BCTemperaturePackageNewPublicXtra (int num_phases );
+void BCTemperaturePackageFreePublicXtra (void );
+int BCTemperaturePackageSizeOfTempData (void );
+#endif
+
+
+
 /* calc_elevations.c */
 double **CalcElevations (GeomSolid *geom_solid , int ref_patch , SubgridArray *subgrids ,ProblemData  *problem_data );
 
@@ -342,6 +363,18 @@ PFModule *KinsolPCNewPublicXtra (char *name , char *pc_name );
 void KinsolPCFreePublicXtra (void );
 int KinsolPCSizeOfTempData (void );
 
+#ifdef withTemperature
+typedef void (*KinsolPCTemperatureInvoke) (Vector *rhs );
+typedef PFModule * (*KinsolPCTemperatureInitInstanceXtraInvoke) (Problem *problem , Grid *grid , ProblemData *problem_data , double *temp_data , N_Vector speciesNVector, void* current_state );
+typedef PFModule *(*KinsolPCTemperatureNewPublicXtraInvoke) (char *name , char *pc_name );
+/* kinsol_pc_temperature.c */
+void KinsolPCTemperature (Vector *rhs );
+PFModule *KinsolPCTemperatureInitInstanceXtra (Problem *problem , Grid *grid , ProblemData *problem_data , double *temp_data , N_Vector speciesNVector , void* current_state);
+void KinsolPCTemperatureFreeInstanceXtra (void );
+PFModule *KinsolPCTemperatureNewPublicXtra (char *name , char *pc_name );
+void KinsolPCTemperatureFreePublicXtra (void );
+int KinsolPCTemperatureSizeOfTempData (void );
+#endif
 
 typedef void (*L2ErrorNormInvoke) (double time , Vector *pressure , ProblemData *problem_data , double *l2_error_norm );
 
@@ -485,6 +518,29 @@ void NlFunctionEvalFreeInstanceXtra (void );
 PFModule *NlFunctionEvalNewPublicXtra (void );
 void NlFunctionEvalFreePublicXtra (void );
 int NlFunctionEvalSizeOfTempData (void );
+
+#ifdef withTemperature
+typedef void (*TemperatureFunctionEvalInvoke) (N_Vector speciesNVector, Vector *fval , void* current_state);
+typedef PFModule *(*TemperatureFunctionEvalInitInstanceXtraInvoke) ( Problem *problem , Grid *grid , double *temp_data );
+/* temp_function_eval.c */
+void TemperatureFunctionEval (N_Vector speciesNVector, Vector *fval , void* current_state);
+PFModule *TemperatureFunctionEvalInitInstanceXtra (Problem *problem , Grid *grid , double *temp_data );
+void TemperatureFunctionEvalFreeInstanceXtra (void );
+PFModule *TemperatureFunctionEvalNewPublicXtra (void );
+void TemperatureFunctionEvalFreePublicXtra (void );
+int TemperatureFunctionEvalSizeOfTempData (void );
+
+
+typedef void (*TemperatureJacobianEvalInvoke) (N_Vector speciesNVector,void* current_state, Matrix **ptr_to_J , int symm_part);
+typedef PFModule *(*TemperatureJacobianEvalInitInstanceXtraInvoke) (Problem *problem , Grid *grid , double *temp_data , int symmetric_jac  );
+/* temperature_jacobian_eval.c */
+void TemperatureJacobianEval (N_Vector speciesNVector, void* current_state, Matrix **ptr_to_J , int symm_part);
+PFModule *TemperatureJacobianEvalInitInstanceXtra (Problem *problem , Grid *grid , double *temp_data , int symmetric_jac );
+void TemperatureJacobianEvalFreeInstanceXtra (void );
+PFModule *TemperatureJacobianEvalNewPublicXtra (void );
+void TemperatureJacobianEvalFreePublicXtra (void );
+int TemperatureJacobianEvalSizeOfTempData (void );
+#endif
 
 /* nodiag_scale.c */
 void NoDiagScale (Vector *x , Matrix *A , Vector *b , int flag );
@@ -649,6 +705,21 @@ int BCPressureSizeOfTempData (void );
 typedef void (*CapillaryPressureInvoke) (Vector *capillary_pressure , int phase_i , int phase_j , ProblemData *problem_data , Vector *phase_saturation );
 typedef PFModule *(*CapillaryPressureNewPublicXtraInvoke) (int num_phases );
 
+
+#ifdef withTemperature
+typedef void (*BCTemperatureInvoke) (ProblemData *problem_data , Grid *grid , GrGeomSolid *gr_domain , double time  );
+typedef PFModule *(*BCTemperatureInitInstanceXtraInvoke) (Problem *problem );
+typedef PFModule *(*BCTemperatureNewPublicXtraInvoke) (int num_phases );
+/* problem_bc_temperature.c */
+BCStruct *BCTemperature (ProblemData *problem_data , Grid *grid , GrGeomSolid *gr_domain , double time );
+PFModule *BCTemperatureInitInstanceXtra (Problem *problem );
+void BCTemperatureFreeInstanceXtra (void );
+PFModule *BCTemperatureNewPublicXtra (int num_phases );
+void BCTemperatureFreePublicXtra (void );
+int BCTemperatureSizeOfTempData (void );
+#endif
+
+
 /* problem_capillary_pressure.c */
 void CapillaryPressure (Vector *capillary_pressure , int phase_i , int phase_j , ProblemData *problem_data , Vector *phase_saturation );
 PFModule *CapillaryPressureInitInstanceXtra (void );
@@ -704,6 +775,18 @@ PFModule *ICPhasePressureNewPublicXtra (void );
 void ICPhasePressureFreePublicXtra (void );
 int ICPhasePressureSizeOfTempData (void );
 
+#ifdef withTemperature
+typedef void (*ICPhaseTemperatureInvoke) (Vector *ic_temperature , ProblemData *problem_data , Problem *problem );
+typedef PFModule *(*ICPhaseTemperatureInitInstanceXtraInvoke) (Problem *problem , Grid *grid , double *temp_data );
+/* problem_ic_phase_temperature.c */
+void ICPhaseTemperature (Vector *ic_temperature, ProblemData *problem_data , Problem *problem );
+PFModule *ICPhaseTemperatureInitInstanceXtra (Problem *problem , Grid *grid , double *temp_data );
+void ICPhaseTemperatureFreeInstanceXtra (void );
+PFModule *ICPhaseTemperatureNewPublicXtra (void );
+void ICPhaseTemperatureFreePublicXtra (void );
+int ICPhaseTemperatureSizeOfTempData (void );
+#endif
+
 typedef void (*ManningsInvoke) (ProblemData *problem_data, Vector *mann, Vector *dummy);
 typedef PFModule *(*ManningsInitInstanceXtraInvoke) (Grid *grid3d, Grid *grid2d);
 
@@ -748,7 +831,47 @@ PFModule *realSpaceZNewPublicXtra (void );
 void realSpaceZFreePublicXtra (void );
 int realSpaceZSizeOfTempData (void );
 
+#ifdef withTemperature
+typedef void (*ThermalConductivityInvoke) (Vector *phase_thermalconductivity, Vector *phase_pressure, Vector *phase_saturation, double gravity, ProblemData *problem_data, int fcn);
+typedef PFModule *(*ThermalConductivityInitInstanceXtraInvoke) (Grid *grid);
+/* problem_thermal_conductivity.c */
+void ThermalConductivity (Vector *phase_thermalconductivity, Vector *phase_pressure, Vector *phase_saturation, double gravity, ProblemData *problem_data, int fcn );
+PFModule *ThermalConductivityInitInstanceXtra (Grid *grid );
+void ThermalConductivityFreeInstanceXtra (void );
+PFModule *ThermalConductivityNewPublicXtra (void );
+void ThermalConductivityFreePublicXtra (void );
+int ThermalConductivitySizeOfTempData (void );
 
+typedef void (*PhaseHeatCapacityInvoke) (int phase, Vector *heat_capacity, ProblemData *problem_data );
+typedef PFModule *(*PhaseHeatCapacityNewPublicXtraInvoke) (int num_phases );
+/* problem_phase_heat_capacity.c */
+void PhaseHeatCapacity (int phase, Vector *heat_capacity, ProblemData *problem_data);
+PFModule *PhaseHeatCapacityInitInstanceXtra (void );
+void PhaseHeatCapacityFreeInstanceXtra (void );
+PFModule *PhaseHeatCapacityNewPublicXtra (int num_phases);
+void PhaseHeatCapacityFreePublicXtra (void );
+int PhaseHeatCapacitySizeOfTempData (void );
+
+typedef void (*PhaseViscosityInvoke) (int phase , Vector *pressure , Vector *temperature , Vector *viscosity, int fcn );
+typedef PFModule *(*PhaseViscosityNewPublicXtraInvoke) (int num_phases);
+/* problem_phase_viscosity.c */
+void PhaseViscosity (int phase , Vector *pressure , Vector *temperature , Vector *viscosity, int fcn );
+PFModule *PhaseViscosityInitInstanceXtra (void );
+void PhaseViscosityFreeInstanceXtra (void );
+PFModule *PhaseViscosityNewPublicXtra (int num_phases );
+void PhaseViscosityFreePublicXtra (void );
+int PhaseViscositySizeOfTempData (void );
+
+typedef void (*TempSourceInvoke) (Vector *temp_source , Problem *problem , ProblemData *problem_data , double time );
+typedef PFModule *(*TempSourceInitInstanceXtraInvoke) (Grid *grid );
+/* problem_temp_source.c */
+void TempSource (Vector *temp_source , Problem *problem , ProblemData *problem_data , double time );
+PFModule *TempSourceInitInstanceXtra (Grid *grid);
+void TempSourceFreeInstanceXtra (void );
+PFModule *TempSourceNewPublicXtra (void);
+void TempSourceFreePublicXtra (void );
+int TempSourceSizeOfTempData (void );
+#endif
 
 
 /* DOK - overlandfloweval */

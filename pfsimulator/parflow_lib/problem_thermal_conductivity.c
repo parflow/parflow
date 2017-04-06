@@ -340,6 +340,7 @@ PFModule  *ThermalConductivityInitInstanceXtra(
    InstanceXtra  *instance_xtra;
 
    Type1         *dummy1;
+   VectorUpdateCommHandle *handle;
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
@@ -377,29 +378,21 @@ PFModule  *ThermalConductivityInitInstanceXtra(
 	 {
 	    dummy1 -> cwet_values = NewVectorType(grid, 1, 1, vector_cell_centered);
 	    dummy1 -> cdry_values = NewVectorType(grid, 1, 1, vector_cell_centered);
+
+            ReadPFBinary((dummy1 ->cdry_file),
+                         (dummy1 ->cdry_values));
+            handle = InitVectorUpdate(dummy1 ->cdry_values, VectorUpdateAll);
+            FinalizeVectorUpdate(handle); // This is needed to initalize ghost cells after reading the pfb
+            ReadPFBinary((dummy1 ->cwet_file),
+                         (dummy1 ->cwet_values));
+            handle = InitVectorUpdate(dummy1 ->cwet_values, VectorUpdateAll);
+            FinalizeVectorUpdate(handle); // This is needed to initalize ghost cells after reading the pfb
+
 	 }
       }
    }
 
 
-   /*-----------------------------------------------------------------------
-    * Initialize data associated with argument `temp_data'
-    *-----------------------------------------------------------------------*/
-
-
-      /* Uses a spatially varying field */
-      if (public_xtra->type == 1)
-      {
-	 dummy1 = (Type1 *)(public_xtra -> data);
-	 if ( (dummy1->data_from_file) == 1)
-	 {
-            ReadPFBinary((dummy1 ->cdry_file), 
-			 (dummy1 ->cdry_values));
-	    ReadPFBinary((dummy1 ->cwet_file), 
-			 (dummy1 ->cwet_values));
-	 }
-	 
-      }
 
    PFModuleInstanceXtra(this_module) = instance_xtra;
 
@@ -595,8 +588,8 @@ void  ThermalConductivityFreePublicXtra()
 
 	if (dummy1->data_from_file == 1)
 	{
-	   FreeTempVector(dummy1->cdry_values);
-	   FreeTempVector(dummy1->cwet_values);
+	   FreeVector(dummy1->cdry_values);
+	   FreeVector(dummy1->cwet_values);
 	}
 
 	tfree(dummy1 -> region_indices);

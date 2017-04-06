@@ -33,6 +33,12 @@ typedef struct
    PFModule    *precond;
    PFModule    *bc_pressure;//dok
 
+#ifdef withTemperature   
+   PFModule    *temperature_function_eval;
+   PFModule    *temperature_jacobian_eval;
+   PFModule    *precond_temperature;   
+#endif
+
    ProblemData *problem_data;
 
    Matrix      *jacobian_matrix;
@@ -45,7 +51,6 @@ typedef struct
    double       dt;
    double       time;
    double       *outflow; /*sk*/
-   int 		SP; 
 } State;
 
 
@@ -81,10 +86,16 @@ typedef struct
 #define StateYvel(state)          (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[8]) //jjb
 #define StateZvel(state)          (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[9]) //jjb
 
-#define StateSP(state)            ((state)->SP)
-
 #ifdef withTemperature
-    #define StateSaturation2(state)    (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[10]) /*FG for tests*/
-    #define StateOldPressure2(state)   (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[11]) /*FG for tests*/
-    #define StateOldSaturation2(state) (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[12]) /*FG for tests*/
+  #define StatePrecondTemperature(state)       ((state)->precond_temperature)
+  #define StateFuncTemperature(state)           ((state)->temperature_function_eval)
+  #define StateJacEvalTemperature(state) ((state)->temperature_jacobian_eval)
+
+  #define StateOldTemperature(state)     (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[14])
+  #define StateOldViscosity(state)       (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[13]) //does not change yet
+  #define StateViscosity(state)          (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[12])
+  #define StateClmEnergySource(state)    (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[15])
+  #define StateForcT(state)              (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[16])
+  #define StateHeatCapacityWater(state)  (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[10])
+  #define StateHeatCapacityRock(state)   (((N_VectorContent)(((state)->stateContainerNVector)->content))->dims[11])
 #endif
