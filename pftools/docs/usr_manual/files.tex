@@ -477,7 +477,8 @@ pfset GeomInput.Names 			"solidinput indinput boxinput"
 
 pfset GeomInput.solidinput.InputType	SolidFile
 
-# The names of the geometries contained in the solid file. Order is 
+# The names of the geometries contained in the solid file. Order is
+
 # important and defines the mapping. First geometry gets the first name. 
 pfset GeomInput.solidinput.GeomNames	"domain"
 #
@@ -490,7 +491,8 @@ pfset GeomInput.solidinput.FileName 	ocwd.pfsol
 # An indicator field is a 3D field of values. 
 # The values within the field can be mapped 
 # to ParFlow geometries. Indicator fields must match the
-# computation grid exactly! 
+# computation grid exactly!
+
 #
 
 pfset GeomInput.indinput.InputType 		IndicatorField
@@ -4262,6 +4264,84 @@ pfset Solver.CLM.SoiLayer      4
 
 %=============================================================================
 %=============================================================================
+\section{ParFlow NetCDF4 Parallel I/O}
+\label{ParFlow NetCDF4 Parallel I/O}
+NetCDF4 parallel I/O is being implemented in ParFlow. As of now only output capability is implemented. Input functionality will be added in later version. Currently user has option of printing 3-D time varying pressure or saturation or both in a single NetCDF file containing multiple time steps. User should configure ParFlow(pfsimulatior part) "- -with-netcdf" option and link the appropriate NetCDF4 library.
+Naming convention of output files is analogues to binary file names. Following options are available for NetCDF4 output along with various performance tuning options. User is advised to explore NetCDF4 chunking and ROMIO hints option for better I/O performance.
+
+\pfkey{integer}{NetCDF.NumStepsPerFile}{ }
+{This key sets number of time steps user wishes to output in a NetCDF4 file. Once the time step count increases beyond this number, a new file is automatically created.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.NumStepsPerFile    5
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WritePressure}{False}
+{This key sets pressure variable to be written in NetCDF4 file.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.WritePressure    True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WriteSaturation}{False}
+{This key sets saturation variable to be written in NetCDF4 file.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteSaturation    True
+\end{verbatim}\end{display}
+
+\subsection{NetCDF4 Chunking}
+Chunking may have significant impact in writing output. If this key is not set, default chunking scheme will be used by NetCDF library. Chunks are hypercube(hyperslab) of any dimension. When chunking is used, chunks are written in single write operation which can reduce access times. For more information on chunking, refer to NetCDF4 user guide.
+
+\pfkey{string}{NetCDF.Chunking}{False}
+{This key sets chunking for each time varying 3-D variable in NetCDF4 file.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.Chunking    True
+\end{verbatim}\end{display}
+
+Following keys are used only when \textbf{NetCDF.Chunking} is set to true. These keys are used to set chunk sizes in x, y and z direction. A typical size of chunk in each direction should be equal to number of grid points in each direction for each processor. e.g. If we are using a grid of 400(x)X400(y)X30(z) with 2-D domain decomposition of 8X8, then each core has 50(x)X50(y)X30(z) grid points. These values can be used to set chunk sizes each direction. For unequal distribution, chunk sizes should as large as largest value of grid points on the processor. e.g. If one processor has grid distribution of 40(x)X40(y)X30(z) and another has 50(x)X50(y)X30(z), the later values should be used to set chunk sizes in each direction.
+ 
+\pfkey{integer}{NetCDF.ChunkX}{None}
+{This key sets chunking size in x-direction.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.ChunkX    50
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.ChunkY}{None}
+{This key sets chunking size in y-direction.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.ChunkY    50
+\end{verbatim}\end{display}
+
+\pfkey{integer}{NetCDF.ChunkZ}{None}
+{This key sets chunking size in z-direction.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.ChunkZ    30
+\end{verbatim}\end{display}
+
+\subsection{ROMIO Hints}
+ROMIO is a poratable MPI-IO implementation developed at Argonne National Laboratory, USA. Currently it is released as a part of MPICH. ROMIO sets hints to optimize I/O operations for MPI-IO layer through MPI\_Info object. This object is passed on to NetCDF4 while creating a file. ROMIO hints are set in a text file in "key" and "value" pair. \textit{For correct settings contact your HPC site administrator}. As in chunking, ROMIO hints can have significant performance impact on I/O.
+
+\pfkey{string}{NetCDF.ROMIOhints}{None}
+{This key sets ROMIO hints file to be passed on to NetCDF4 interface.If this key is set, the file must be present and readable in experiment directory.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.ROMIOhints    romio.hints
+\end{verbatim}\end{display}
+An example ROMIO hints file looks as follows.
+\begin{display}\begin{verbatim}
+romio_ds_write disable
+romio_ds_read disable
+romio_cb_write enable
+romio_cb_read enable
+cb_buffer_size 33554432
+\end{verbatim}\end{display}
+
+\subsection{Node Level Collective I/O}
+A node level collective strategy has been implemented for I/O. One process on each compute node gathers the data, indices and counts from the participating processes on same compute node. All the root processes from each compute node open a parallel NetCDF4 file and write the data. e.g. If ParFlow is running on 3 compute nodes where each node consists of 24 processors(cores); only 3 I/O streams to filesystem would be opened by each root processor each compute node. This strategy could be particularly useful when ParFlow is running on large number of processors and every processor participating in I/O may create a bottleneck.
+\textit{\textbf{Node level collective I/O is currently implemented for 2-D domain decomposition only.}}
+
+\pfkey{string}{NetCDF.NodeLevelIO}{False}
+{This key sets flag for node level collective I/O.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.NodeLevelIO   True
+\end{verbatim}\end{display}
 
 \section{ParFlow Binary Files (.pfb)}
 \label{ParFlow Binary Files (.pfb)}

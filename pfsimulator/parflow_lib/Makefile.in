@@ -156,6 +156,7 @@ OBJS = \
 	well_package.o\
 	wells_lb.o\
 	write_parflow_binary.o \
+	write_parflow_netcdf.o \
 	write_parflow_silo.o \
 	write_parflow_silo_pmpio.o \
 	wrf_parflow.o \

@@ -33,6 +33,7 @@
 
 #include <unistd.h>
 #include <sys/times.h>
+#include  <inttypes.h>
 
 #include "amps.h"
 
@@ -48,6 +49,12 @@ long AMPS_CPU_TICKS_PER_SEC;
 
 int amps_size;
 int amps_rank;
+int amps_node_rank;
+int amps_node_size;
+int amps_write_rank;
+int amps_write_size;
+MPI_Comm nodeComm = MPI_COMM_NULL;
+MPI_Comm writeComm = MPI_COMM_NULL;
 
 #ifdef AMPS_F2CLIB_FIX
 int MAIN__()
@@ -86,6 +93,24 @@ int main( int argc, char *argv)
 @param argv Command line argument array [IN/OUT]
 @return 
 */
+/*Adler32 function to calculate hash based on node name and length */
+const int MOD_ADLER = 65521;
+
+uint32_t Adler32(unsigned char *data, size_t len) /* where data is the location of the data in physical memory and 
+len is the length of the data in bytes */
+{
+  uint32_t a = 1, b = 0;
+  size_t index;
+
+/* Process each byte of the data in order */
+  for (index = 0; index < len; ++index)
+    {
+      a = (a + data[index]) % MOD_ADLER;
+      b = (b + a) % MOD_ADLER;
+    }
+
+  return (b << 16) | a;
+}
 int amps_Init(int *argc, char **argv[])
 {
 #ifdef AMPS_MPI_SETHOME
@@ -94,6 +119,7 @@ int amps_Init(int *argc, char **argv[])
 #endif
 
    char processor_name[MPI_MAX_PROCESSOR_NAME];
+   unsigned char processor_Name[MPI_MAX_PROCESSOR_NAME];
    int namelen;
 
    MPI_Init(argc, argv);
@@ -101,6 +127,32 @@ int amps_Init(int *argc, char **argv[])
 
    MPI_Comm_size(MPI_COMM_WORLD, &amps_size);
    MPI_Comm_rank(MPI_COMM_WORLD, &amps_rank);
+   
+   /*Split the node level communicator based on Adler32 hash keys*/
+   MPI_Get_processor_name(processor_name,&namelen);
+   uint32_t checkSum = Adler32(processor_name, namelen);
+//   MPI_Comm nodeComm = MPI_COMM_NULL;
+//   MPI_Comm writeComm = MPI_COMM_NULL;
+   MPI_Comm_split(MPI_COMM_WORLD, checkSum, amps_rank, &amps_CommNode);
+  MPI_Comm_rank(amps_CommNode, &amps_node_rank);
+  MPI_Comm_size(amps_CommNode, &amps_node_size);
+  //printf("KKu my rank and size is, %d %d\n", amps_node_rank, amps_node_size);
+  int color;
+  if (amps_node_rank == 0)
+  {
+     color = 0;
+  }
+  else
+  { 
+    color = 1;
+  }
+  MPI_Comm_split(MPI_COMM_WORLD, color, amps_rank, &amps_CommWrite);
+  if(amps_node_rank == 0)
+  {
+//	int amps_write_size;
+	MPI_Comm_size(amps_CommWrite, &amps_write_size);
+  }
+
 
 #ifdef AMPS_STDOUT_NOBUFF
    setbuf (stdout, NULL);

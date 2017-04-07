@@ -686,6 +686,7 @@ ac_ct_FC
 FCFLAGS
 FC
 PARFLOW_HAVE_OAS3
+PARFLOW_HAVE_NETCDF
 PARFLOW_HAVE_CLM
 CLM_LIB_DEPEND
 CLM_LIBS
@@ -769,6 +770,7 @@ with_F90
 with_AR
 with_clm
 with_oas3
+with_netcdf
 enable_opt
 enable_debug
 enable_profiling
@@ -1479,6 +1481,8 @@ Optional Packages:
  --with-hdf5=PATH  Use HDF5 and optionally specify where HDF5 is installed.
   --with-silo=PATH        Use SILO and optionally specify
                           where SILO is installed.
+  --with-netcdf=DIR       use NetCDF and optionally specify
+                          where NetCDF is installed.
   --with-sundials=PATH	  Use the Sundials solver package
 			  and specify where it is.
   --with-hypre=PATH       Use HYPRE and optionally specify
@@ -14371,6 +14375,112 @@ _ACEOF
 fi
 
 
+PARFLOW_HAVE_NETCDF="no"
+
+
+# Begin CASC_SUPPORT_NETCDF
+# Defines netcdf_PREFIX netcdf_INCLUDES and netcdf_LIBS if with-netcdf is specified.
+
+# Check whether --with-netcdf was given.
+if test "${with_netcdf+set}" = set; then
+  withval=$with_netcdf;
+else
+  with_netcdf=no
+fi
+
+
+case "$with_netcdf" in
+  no)
+    { $as_echo "$as_me:$LINENO: configuring without NETCDF support" >&5
+$as_echo "$as_me: configuring without NETCDF support" >&6;}
+    : Do nothing
+  ;;
+  yes)
+    # NETCDF install path was not specified.
+    # Look in a couple of standard locations to probe if
+    # NETCDF header files are there.
+    { $as_echo "$as_me:$LINENO: checking for NETCDF installation" >&5
+$as_echo_n "checking for NETCDF installation... " >&6; }
+    for dir in /usr /usr/local; do
+      if test -f ${dir}/include/netcdf.h; then
+        netcdf_PREFIX=${dir}
+        break
+      fi
+    done
+    { $as_echo "$as_me:$LINENO: result: $netcdf_PREFIX" >&5
+$as_echo "$netcdf_PREFIX" >&6; }
+  ;;
+  *)
+    # NETCDF install path was specified.
+    { $as_echo "$as_me:$LINENO: checking for NETCDF installation" >&5
+$as_echo_n "checking for NETCDF installation... " >&6; }
+    netcdf_PREFIX=$with_netcdf
+    netcdf_INCLUDES="-I${netcdf_PREFIX}/include"
+    if test -f ${netcdf_PREFIX}/include/netcdf.h; then
+        { $as_echo "$as_me:$LINENO: result: $netcdf_PREFIX" >&5
+$as_echo "$netcdf_PREFIX" >&6; }
+    else
+        { $as_echo "$as_me:$LINENO: result: $netcdf_PREFIX" >&5
+$as_echo "$netcdf_PREFIX" >&6; }
+        { { $as_echo "$as_me:$LINENO: error: NETCDF not found in $with_netcdf" >&5
+$as_echo "$as_me: error: NETCDF not found in $with_netcdf" >&2;}
+   { (exit 1); exit 1; }; }
+    fi
+  ;;
+esac
+
+# Determine which NETCDF library is built
+if test "${netcdf_PREFIX+set}" = set; then
+   { $as_echo "$as_me:$LINENO: checking for NETCDF library" >&5
+$as_echo_n "checking for NETCDF library... " >&6; }
+   if test -f ${netcdf_PREFIX}/lib/libnetcdf.a; then
+      netcdf_LIBS='-lnetcdf -luuid'
+      { $as_echo "$as_me:$LINENO: result: using $netcdf_LIBS" >&5
+$as_echo "using $netcdf_LIBS" >&6; }
+   elif test -f ${netcdf_PREFIX}/lib64/libnetcdf.a; then
+      netcdf_LIBS='-lnetcdf -luuid'
+      { $as_echo "$as_me:$LINENO: result: using $netcdf_LIBS" >&5
+$as_echo "using $netcdf_LIBS" >&6; }
+   else
+      { $as_echo "$as_me:$LINENO: result: using $netcdf_LIBS" >&5
+$as_echo "using $netcdf_LIBS" >&6; }
+      { { $as_echo "$as_me:$LINENO: error: Could not find netcdf library in $netcdf_PREFIX" >&5
+$as_echo "$as_me: error: Could not find netcdf library in $netcdf_PREFIX" >&2;}
+   { (exit 1); exit 1; }; }
+   fi
+
+# pack uuid lib here?
+   netcdf_LIBS="-L${netcdf_PREFIX}/lib ${netcdf_LIBS}"
+fi
+
+# END CASC_SUPPORT_NETCDF
+
+
+if test "${netcdf_PREFIX+set}" = set; then
+  LIBS="$netcdf_LIBS $LIBS"
+
+# Split netcdf_LIBS into the LIB_PATH part (netcdf_LIB_PATH) and the LIB_NAME part (netcdf_LIB_NAME)
+if test -n "${netcdf_LIBS}"; then
+  for i in ${netcdf_LIBS}; do
+    case "$i" in
+    -L*) netcdf_LIB_PATH="${netcdf_LIB_PATH} $i" ;;
+    *) netcdf_LIB_NAME="${netcdf_LIB_NAME} $i" ;;
+    esac
+  done
+fi
+
+  LIB_PATH="$netcdf_LIB_PATH $LIB_PATH"
+  LIB_NAME="$netcdf_LIB_NAME $LIB_NAME"
+  INC_PATH="$netcdf_INCLUDES $INC_PATH"
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_NETCDF 1
+_ACEOF
+
+  PARFLOW_HAVE_NETCDF="yes"
+fi
+
+
 
 
 # Check whether --with-sundials was given.
@@ -15972,7 +16082,8 @@ $debug ||
 if test -n "$CONFIG_FILES"; then
 
 
-ac_cr=''
+ac_cr='
+'
 ac_cs_awk_cr=`$AWK 'BEGIN { print "a\rb" }' </dev/null 2>/dev/null`
 if test "$ac_cs_awk_cr" = "a${ac_cr}b"; then
   ac_cs_awk_cr='\\r'
