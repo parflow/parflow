@@ -10,13 +10,13 @@
 #include <p8est_vtk.h>
 #endif
 
-#ifdef P4_TO_P8
 static p4est_topidx_t
 parflow_p4est_lexicord(int Tx, int Ty, int vv[3])
 {
   return ( vv[2] * Ty  + vv[1] ) * Tx  + vv[0];
 }
 
+#ifdef P4_TO_P8
 static uint64_t
 parflow_p4est_morton ( int w[2])
 {
@@ -43,14 +43,15 @@ parflow_p4est_grid_2d_new(int Px, int Py
 #endif
     )
 {
+    int             i;
     int             g, gt;
     int             tx, ty;
 #ifdef P4_TO_P8
     int             tz;
+#endif
     int             vv[3];
     p4est_topidx_t  tt, num_trees, lidx;
     double          v[3];
-#endif
     int             initial_level;
     size_t          quad_data_size;
     parflow_p4est_grid_2d_t *pfg;
@@ -101,20 +102,30 @@ parflow_p4est_grid_2d_new(int Px, int Py
     pfg->ghost_data = sc_array_new_count(sizeof(parflow_p4est_ghost_data_t),
                                         pfg->ghost->ghosts.elem_count);
 
-    // p4est_vtk_write_file (pfg->forest, NULL, P4EST_STRING "_pfbrick");
-
+    num_trees = pfg->Tx * pfg->Ty;
 #ifdef P4_TO_P8
-    num_trees = pfg->Tx * pfg->Ty * pfg->Tz;
+    num_trees *= pfg->Tz;
+#endif
 
-    /** Compute permutation transforming lexicographical to brick order */
-    pfg->lexic_to_tree = P4EST_ALLOC_ZERO(p4est_topidx_t, num_trees);
+    /** Compute permutation transforming lexicographical to brick order
+     *  and its inverse */
+    pfg->lexic_to_tree = P4EST_ALLOC_ZERO (p4est_topidx_t, num_trees);
+    pfg->tree_to_lexic = P4EST_ALLOC_ZERO (p4est_topidx_t, P4EST_DIM * num_trees);
 
-    for (tt = 0; tt < num_trees; ++tt)
+    for (tt = 0; tt < num_trees; ++tt){
           pfg->lexic_to_tree[tt] = -1;
+          for (i = 0; i < P4EST_DIM; ++i){
+	        pfg->tree_to_lexic[ P4EST_DIM * tt + i] = -1;
+	  }
+    }
 
     for (tt = 0; tt < num_trees; ++tt) {
 
-        p4est_qcoord_to_vertex(pfg->connect, tt, 0, 0, 0, v);
+        p4est_qcoord_to_vertex(pfg->connect, tt, 0, 0
+#ifdef P4_TO_P8
+        , 0
+#endif
+        , v);
 
         vv[0] = (int) v[0];
         vv[1] = (int) v[1];
@@ -123,8 +134,11 @@ parflow_p4est_grid_2d_new(int Px, int Py
         lidx = parflow_p4est_lexicord(pfg->Tx, pfg->Ty, vv);
         P4EST_ASSERT( lidx >= 0 && lidx < num_trees );
         pfg->lexic_to_tree[lidx]=tt;
+
+	for (i = 0; i < P4EST_DIM; ++i){
+	      pfg->tree_to_lexic[ P4EST_DIM * tt + i] = vv[i];
+	}
      }
-#endif
 
     return pfg;
 }
@@ -140,9 +154,8 @@ parflow_p4est_grid_2d_destroy(parflow_p4est_grid_2d_t * pfg)
     sc_array_destroy(pfg->ghost_data);
     p4est_destroy(pfg->forest);
     p4est_connectivity_destroy(pfg->connect);
-#ifdef P4_TO_P8
     P4EST_FREE(pfg->lexic_to_tree);
-#endif
+    P4EST_FREE(pfg->tree_to_lexic);
     P4EST_FREE(pfg);
 }
 
@@ -480,7 +493,7 @@ parflow_p4est_nquads_per_rank_2d(parflow_p4est_grid_2d_t *pfg,
 }
 
 void parflow_p4est_get_brick_coord_2d (Subgrid *subgrid,
-		parflow_p4est_grid_2d_t *pfg, int bcoord[3])
+                parflow_p4est_grid_2d_t *pfg, int bcoord[P4EST_DIM])
 {
   double 	      v[3];
   p4est_topidx_t      which_tree;

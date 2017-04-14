@@ -19,7 +19,9 @@ typedef struct parflow_p4est_grid_3d {
     p8est_mesh_t   *mesh;       /* Allocated only during ParFlow grid
                                    initialization and destroyed inmediatly
                                    afterwards */
+
     p4est_topidx_t *lexic_to_tree; /* lexicographical order to brick order */
+    p4est_topidx_t *tree_to_lexic; /* brick order to lexicographical order */
 
 } parflow_p4est_grid_3d_t;
 
