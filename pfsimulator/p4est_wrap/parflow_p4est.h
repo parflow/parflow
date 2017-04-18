@@ -147,6 +147,11 @@ parflow_p4est_get_projection_info (Subgrid *subgrid, int z_level,
  */
 void             parflow_p4est_nquads_per_rank(parflow_p4est_grid_t *pfgrid,
                                                int *quads_per_rank);
+
+void
+parflow_p4est_get_brick_coord (Subgrid *subgrid,
+                               parflow_p4est_grid_t *pfgrid, int bcoord[3]);
+
 SC_EXTERN_C_END;
 
 #endif                          /* !PARLOW_P4EST_H */

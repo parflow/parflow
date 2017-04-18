@@ -95,6 +95,10 @@ void parflow_p4est_get_projection_info_3d (Subgrid *subgrid, int z_level,
 
 void            parflow_p4est_nquads_per_rank_3d(parflow_p4est_grid_3d_t *pfg,
                                                  int * quads_per_rank);
+
+void 		parflow_p4est_get_brick_coord_3d (Subgrid *subgrid,
+						parflow_p4est_grid_3d_t *pfg,
+						int bcoord[3]);
 SC_EXTERN_C_END;
 
 #endif                          /* !PARLOW_P4EST_3D_H */

@@ -350,3 +350,20 @@ parflow_p4est_nquads_per_rank(parflow_p4est_grid_t *pfgrid,
   }
 
 }
+
+void
+parflow_p4est_get_brick_coord(Subgrid *subgrid, parflow_p4est_grid_t *pfgrid,
+                              int bcoord[3])
+{
+  int             dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
+
+  if (dim == 2) {
+      parflow_p4est_get_brick_coord_2d (subgrid, pfgrid->p.p4,
+                                        bcoord);
+  }else{
+      P4EST_ASSERT(dim == 3);
+      parflow_p4est_get_brick_coord_3d (subgrid, pfgrid->p.p8,
+                                        bcoord);
+  }
+
+}

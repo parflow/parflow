@@ -1,5 +1,6 @@
 #include <parflow.h>
 #include "parflow_p4est_math.h"
+#include <sc_functions.h>
 #ifndef P4_TO_P8
 #include "parflow_p4est_2d.h"
 #include <p4est_vtk.h>
@@ -476,4 +477,30 @@ parflow_p4est_nquads_per_rank_2d(parflow_p4est_grid_2d_t *pfg,
     for (ig = 0; ig < mpisize; ig++){
         quads_per_rank[ig] = (int) (gfq[ig + 1] - gfq[ig]);
     }
+}
+
+void parflow_p4est_get_brick_coord_2d (Subgrid *subgrid,
+		parflow_p4est_grid_2d_t *pfg, int bcoord[3])
+{
+  double 	      v[3];
+  p4est_topidx_t      which_tree;
+  p4est_locidx_t      which_quad;
+  p4est_tree_t        *tree;
+  p4est_quadrant_t    *quad;
+
+  which_tree  = SubgridOwnerTree(subgrid);
+  P4EST_ASSERT (pfg->forest->first_local_tree <= which_tree &&
+                which_tree <= pfg->forest->last_local_tree);
+  tree = p4est_tree_array_index(pfg->forest->trees,  which_tree);
+
+  which_quad = SubgridLocIdx(subgrid) - tree->quadrants_offset;
+  P4EST_ASSERT (0 <= which_quad &&
+                which_quad < (p4est_locidx_t) tree->quadrants.elem_count);
+  quad =  p4est_quadrant_array_index(&tree->quadrants, which_quad);
+  parflow_p4est_qcoord_to_vertex_2d(pfg->connect,
+                                  which_tree, quad, v);
+
+  bcoord[0] = (int) v[0] * sc_intpow(2, quad->level);
+  bcoord[1] = (int) v[1] * sc_intpow(2, quad->level);
+  bcoord[2] = (int) v[2] * sc_intpow(2, quad->level);
 }
