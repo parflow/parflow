@@ -87,7 +87,7 @@ typedef struct
    int minus_z_neigh;  /* Access to -z neighbor to this subgrid */
    int plus_z_neigh;   /* Access to +z neighbor to this subgrid */
    int32_t owner_tree;    /* Access to the p4est tree owning this subgrid */
-   int idx_in_tree;      /* Access to quadrant that this subgrid is attached to*/
+   int idx_in_tree;      /*  Access to quadrant that this subgrid is attached to TODO: unecessary field*/
 #endif
 
 } Subregion;
@@ -148,6 +148,7 @@ typedef struct
 #ifdef HAVE_P4EST
 #define SubregionMinusZneigh(subregion) ((subregion) -> minus_z_neigh)
 #define SubregionPlusZneigh(subregion)  ((subregion) -> plus_z_neigh )
+#define SubregionOwnerTree(subregion)  ((subregion) -> owner_tree )
 #endif
 
 /*--------------------------------------------------------------------------

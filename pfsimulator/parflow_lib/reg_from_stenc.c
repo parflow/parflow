@@ -256,12 +256,12 @@ Stencil  *stencil)
 
 #ifdef HAVE_P4EST
    SubgridArray  *sa2_loc;
+   int		  tt, num_trees;
    int            num_loc_idxs;
+   int		 *tree_array = NULL;
    int           *loc_idx_array = NULL;
 #endif
 
-   int            do_indx_union =
-       (GlobalsNumProcs < GlobalsNumProcsX * GlobalsNumProcsY * GlobalsNumProcsZ);
 
    /*------------------------------------------------------
     * Determine neighbors
@@ -370,13 +370,23 @@ Stencil  *stencil)
 		  {
 		  case 0:
 		     SubgridProcess(subgrid2) = SubgridProcess(subgrid1);
-		     SubgridLocIdx(subgrid2) = SubgridLocIdx(subgrid1);
+		     if (USE_P4EST){
+#ifdef HAVE_P4EST
+			 SubgridLocIdx(subgrid2) = SubgridLocIdx(subgrid1);
+			 SubgridOwnerTree(subgrid2) = SubgridOwnerTree(subgrid1);
+#endif
+		     }
 		     AppendSubgrid(subgrid2,
 				   RegionSubregionArray(region1, i));
 		     break;
 		  case 1:
 		     SubgridProcess(subgrid2) = SubgridProcess(subgrid0);
-		     SubgridLocIdx(subgrid2) = SubgridLocIdx(subgrid0);
+		     if (USE_P4EST){
+#ifdef HAVE_P4EST
+			 SubgridLocIdx(subgrid2) = SubgridLocIdx(subgrid0);
+			 SubgridOwnerTree(subgrid2) =  SubgridOwnerTree(subgrid0);
+#endif
+		     }
 		     AppendSubgrid(subgrid2,
 				   RegionSubregionArray(region1, j));
 		     break;
@@ -458,18 +468,18 @@ Stencil  *stencil)
                  AppendSubgrid(subgrid0, sa2);
              }
 
-             /* If p4est is activated and #subgrids < #cpus we
-              * also need to remember the local number of each
-              * subgrid in the owner rank. */
-             if (USE_P4EST && do_indx_union){
+	     /* If p4est is activated we need to remember the local index and the
+	      * tree owning each subgrid. */
+	     if (USE_P4EST){
 #ifdef HAVE_P4EST
                  BeginTiming(P4ESTSetupTimingIndex);
 
+		 tree_array = talloc(int, SubgridArraySize(neighbors));
                  loc_idx_array = talloc(int, SubgridArraySize(neighbors));
 
-                 /* Determine loc_idx_array and num of
-                  * different local indexes in sa2 */
-                 num_loc_idxs = 0;
+                 /* Determine loc_idx_array, tree_array and num of
+                  * different local indexes and trees in sa2 */
+                 num_loc_idxs = num_trees = 0;
                  ForSubgridI(j, sa2)
                  {
                    subgrid0 = SubgridArraySubgrid(sa2, j);
@@ -481,41 +491,57 @@ Stencil  *stencil)
                        loc_idx_array[k] = SubgridLocIdx(subgrid0);
                        num_loc_idxs++;
                    }
+
+		  for (tt = 0; tt < num_trees; tt++)
+                     if ( SubgridOwnerTree(subgrid0) == tree_array[tt])
+                       break;
+                   if (tt == num_trees){
+                       tree_array[tt] = SubgridOwnerTree(subgrid0);
+                       num_trees++;
+                   }
                  }
 
-                 /* put subgrids with loc_idx_array[k] into sa2_loc */
-                 for (k = 0; k < num_loc_idxs; k++){
+                 /* put subgrids with loc_idx_array[k] and array_tree[tt]
+		  * into sa2_loc */
+		 for (tt = 0; tt < num_trees; tt++){
 
-                     sa2_loc = NewSubgridArray();
+		     for (k = 0; k < num_loc_idxs; k++){
 
-                     ForSubgridI(j, sa2)
-                     {
-                       subgrid0 = SubgridArraySubgrid(sa2, j);
-                       if (SubgridLocIdx(subgrid0) == loc_idx_array[k])
-                         AppendSubgrid(subgrid0, sa2_loc);
-                     }
+			 sa2_loc = NewSubgridArray();
 
-                     /*Union of subgrids in sa2_loc*/
-                     sa3 = UnionSubgridArray(sa2_loc);
+			 ForSubgridI(j, sa2)
+			 {
+			   subgrid0 = SubgridArraySubgrid(sa2, j);
+			   if (SubgridLocIdx(subgrid0) == loc_idx_array[k] &&
+			       SubgridOwnerTree(subgrid0) == tree_array[tt])
+			     AppendSubgrid(subgrid0, sa2_loc);
+			 }
 
-                     /*Rembember processor and local indx*/
-                     ForSubgridI(j, sa3)
-                     {
-                       subgrid0 = SubgridArraySubgrid(sa3, j);
-                       SubgridProcess(subgrid0) = proc_array[p];
-                       SubgridLocIdx(subgrid0)  = loc_idx_array[k];
-                     }
-                     AppendSubgridArray(sa3, sa1);
+			 /*Union of subgrids in sa2_loc*/
+			 sa3 = UnionSubgridArray(sa2_loc);
 
-                     SubregionArraySize(sa2_loc) = 0;
-                     FreeSubgridArray(sa2_loc);
-                     SubregionArraySize(sa3) = 0;
-                     FreeSubgridArray(sa3);
-                 }
+			 /*Rembember processor, tree and local indx*/
+			 ForSubgridI(j, sa3)
+			 {
+			   subgrid0 = SubgridArraySubgrid(sa3, j);
+			   SubgridProcess(subgrid0) = proc_array[p];
+			   SubgridOwnerTree(subgrid0) = tree_array[tt];
+			   SubgridLocIdx(subgrid0)  = loc_idx_array[k];
+			 }
+			 AppendSubgridArray(sa3, sa1);
+
+			 SubregionArraySize(sa2_loc) = 0;
+			 FreeSubgridArray(sa2_loc);
+			 SubregionArraySize(sa3) = 0;
+			 FreeSubgridArray(sa3);
+		       }
+
+		 }
 
                  SubregionArraySize(sa2) = 0;
                  FreeSubgridArray(sa2);
 
+		 tfree(tree_array);
                  tfree(loc_idx_array);
 
                  EndTiming(P4ESTSetupTimingIndex);

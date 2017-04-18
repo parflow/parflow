@@ -83,6 +83,7 @@ int       process)
 #ifdef HAVE_P4EST
    (new_subregion -> minus_z_neigh) = -1;
    (new_subregion -> plus_z_neigh)  = -1;
+   (new_subregion -> owner_tree )   = -1;
 #endif
 
    return new_subregion;
@@ -207,6 +208,7 @@ Subregion  *DuplicateSubregion(
    SubregionLocIdx(new_subregion) = SubregionLocIdx(subregion);
 
 #ifdef HAVE_P4EST
+   SubregionOwnerTree(new_subregion) =  SubregionOwnerTree(subregion);
    SubregionMinusZneigh(new_subregion) = SubregionMinusZneigh(subregion);
    SubregionPlusZneigh(new_subregion)  = SubregionPlusZneigh(subregion);
 #endif

@@ -112,8 +112,9 @@ typedef struct
 #define SubgridLocIdx(subgrid) SubregionLocIdx(subgrid)
 
 #ifdef HAVE_P4EST
-#define SubgridMinusZneigh(subregion) ((subgrid) -> minus_z_neigh)
-#define SubgridPlusZneigh(subregion)  ((subgrid) -> plus_z_neigh )
+#define SubgridMinusZneigh(subgrid) ((subgrid) -> minus_z_neigh)
+#define SubgridPlusZneigh(subgrid)  ((subgrid) -> plus_z_neigh )
+#define SubgridOwnerTree(subgrid)  ((subgrid) -> owner_tree )
 #endif
 
 /*--------------------------------------------------------------------------
