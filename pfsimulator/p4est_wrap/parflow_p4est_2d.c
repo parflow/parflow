@@ -495,6 +495,7 @@ parflow_p4est_nquads_per_rank_2d(parflow_p4est_grid_2d_t *pfg,
 void parflow_p4est_get_brick_coord_2d (Subgrid *subgrid,
                 parflow_p4est_grid_2d_t *pfg, int bcoord[P4EST_DIM])
 {
+  int                 k;
   double 	      v[3];
   p4est_topidx_t      which_tree;
   p4est_locidx_t      which_quad;
@@ -502,18 +503,27 @@ void parflow_p4est_get_brick_coord_2d (Subgrid *subgrid,
   p4est_quadrant_t    *quad;
 
   which_tree  = SubgridOwnerTree(subgrid);
-  P4EST_ASSERT (pfg->forest->first_local_tree <= which_tree &&
-                which_tree <= pfg->forest->last_local_tree);
-  tree = p4est_tree_array_index(pfg->forest->trees,  which_tree);
 
-  which_quad = SubgridLocIdx(subgrid) - tree->quadrants_offset;
-  P4EST_ASSERT (0 <= which_quad &&
-                which_quad < (p4est_locidx_t) tree->quadrants.elem_count);
-  quad =  p4est_quadrant_array_index(&tree->quadrants, which_quad);
-  parflow_p4est_qcoord_to_vertex_2d(pfg->connect,
-                                  which_tree, quad, v);
 
-  bcoord[0] = (int) v[0] * sc_intpow(2, quad->level);
-  bcoord[1] = (int) v[1] * sc_intpow(2, quad->level);
-  bcoord[2] = (int) v[2] * sc_intpow(2, quad->level);
+  if (pfg->forest->first_local_tree <= which_tree &&
+      which_tree <= pfg->forest->last_local_tree){
+
+      /*We own this tree, so we can compute the quadrant corner
+       * in the brick order directly */
+      tree = p4est_tree_array_index(pfg->forest->trees,  which_tree);
+      which_quad = SubgridLocIdx(subgrid) - tree->quadrants_offset;
+      P4EST_ASSERT (0 <= which_quad &&
+                    which_quad < (p4est_locidx_t) tree->quadrants.elem_count);
+      quad =  p4est_quadrant_array_index(&tree->quadrants, which_quad);
+      parflow_p4est_qcoord_to_vertex_2d(pfg->connect,
+                                      which_tree, quad, v);
+      for (k = 0; k < P4EST_DIM; k++)
+          bcoord[k] = (int) v[k] * sc_intpow(2, quad->level);
+
+  }else{
+
+      /* We do not own this three, so we return the tree corner instead */
+      for (k = 0; k < P4EST_DIM; k++)
+          bcoord[k] = pfg->tree_to_lexic[which_tree * P4EST_DIM + k];
+  }
 }

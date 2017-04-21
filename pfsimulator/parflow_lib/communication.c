@@ -145,34 +145,22 @@ int  NewCommPkgInfo(
 }
 
 #ifdef HAVE_P4EST
+static int ComputeTag(Subregion *sender, Subregion *receiver){
 
-
-
-static int ComputeTag(int loc_idx_sender,
-                      Subregion *send_sr, Subregion *recv_sr){
-
-    int tx, ty, tz;
+    int k;
     int tag;
+    int scoord[P4EST_DIM], rcoord[P4EST_DIM];
+    int t[3]={0,0,0};
 
-    tx = int_compare(SubregionIX(send_sr) , SubregionIX(recv_sr));
-    ty = int_compare(SubregionIY(send_sr) , SubregionIY(recv_sr));
-    tz = int_compare(SubregionIZ(send_sr) , SubregionIZ(recv_sr));
+    parflow_p4est_get_brick_coord (sender, globals->grid3d->pfgrid, scoord);
+    parflow_p4est_get_brick_coord (receiver, globals->grid3d->pfgrid, rcoord);
 
-    if (tx){
-        tag = tx < 0 ? 1 : 0;
-    }else{
-        assert( tx== 0 );
-        if (ty){
-            tag = ty < 0 ? 3 : 2;
-        }else{
-            assert( ty == 0 );
-            if (tz){
-                tag = tz < 0 ? 5 : 4;
-            }
-        }
-    }
+    for (k = 0; k < P4EST_DIM; k++)
+      t[k] = int_compare(scoord[k] , rcoord[k]);
 
-    tag += 6 * loc_idx_sender;
+    tag = 9 * t[2] + 3 * t[1] + t[0];
+
+    tag += 27 * SubgridLocIdx(sender);
 
     return tag;
 }
@@ -267,9 +255,7 @@ CommPkg         *NewCommPkg(
          if ( USE_P4EST ){
 #ifdef HAVE_P4EST
              BeginTiming(P4ESTSetupTimingIndex);
-             loc_idx = s_idx;
-             recv_sr = SubregionArraySubregion(recv_sra, j);
-             tag = ComputeTag(loc_idx, send_sr, recv_sr);
+             tag = ComputeTag(data_sr, send_sr);
              amps_SetInvoiceTag( invoice,  tag);
              EndTiming(P4ESTSetupTimingIndex);
 #else
@@ -313,9 +299,7 @@ CommPkg         *NewCommPkg(
          if ( USE_P4EST ){
 #ifdef HAVE_P4EST
              BeginTiming(P4ESTSetupTimingIndex);
-             loc_idx = SubregionLocIdx(recv_sr);
-             send_sr = SubregionArraySubregion(send_sra, j);
-             tag = ComputeTag(loc_idx, recv_sr, send_sr);
+             tag = ComputeTag(recv_sr, data_sr);
              amps_SetInvoiceTag( invoice, tag );
              EndTiming(P4ESTSetupTimingIndex);
 #else
