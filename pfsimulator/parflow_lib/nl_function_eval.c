@@ -88,13 +88,18 @@ void    *current_state)
    double       time           = StateTime(        ((State*)current_state) );
    Vector       *evap_trans    = StateEvapTrans(   ((State*)current_state) );
    Vector       *ovrl_bc_flx   = StateOvrlBcFlx(   ((State*)current_state) );
+   
+   /* velocity vectors jjb */
+   Vector       *x_velocity    = StateXvel(        ((State*)current_state) );
+   Vector       *y_velocity    = StateYvel(        ((State*)current_state) );
+   Vector       *z_velocity    = StateZvel(        ((State*)current_state) );
 
    (void) size;
  
    PFModuleInvokeType(NlFunctionEvalInvoke, nl_function_eval, 
 		  (pressure, fval, problem_data, saturation, old_saturation, 
 		   density, old_density, dt, time, old_pressure, evap_trans,
-		   ovrl_bc_flx) );
+		   ovrl_bc_flx, x_velocity, y_velocity, z_velocity) );
  
    return;
 }
@@ -115,7 +120,10 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 		     double time,     /* New time value */
 		     Vector *old_pressure,  
 		     Vector *evap_trans,   /*sk sink term from land surface model*/
-		     Vector *ovrl_bc_flx)  /*sk overland flow boundary fluxes*/ 
+		     Vector *ovrl_bc_flx,  /*sk overland flow boundary fluxes*/
+		     Vector *x_velocity, /* velocity vectors jjb */
+		     Vector *y_velocity,
+		     Vector *z_velocity)
 {
    PFModule      *this_module     = ThisPFModule;
    InstanceXtra  *instance_xtra   = (InstanceXtra *)PFModuleInstanceXtra(this_module);
@@ -176,6 +184,10 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 
    Subvector   *p_sub, *d_sub, *od_sub, *s_sub, *os_sub, *po_sub, *op_sub, *ss_sub, *et_sub;
    Subvector   *f_sub, *rp_sub, *permx_sub, *permy_sub, *permz_sub;
+   
+   Subvector   *vx_sub, *vy_sub, *vz_sub; //jjb
+   double      *vx, *vy, *vz; //jjb
+   int          vxi,vyi,vzi; //jjb
 
    Grid        *grid              = VectorGrid(pressure);
    Grid        *grid2d            = VectorGrid(x_sl);
@@ -549,6 +561,11 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
    {
       subgrid = GridSubgrid(grid, is);
       
+       /* velocity vectors jjb */
+      vx_sub    = VectorSubvector(x_velocity, is);
+      vy_sub    = VectorSubvector(y_velocity, is);
+      vz_sub    = VectorSubvector(z_velocity, is);
+      
       Subgrid       *grid2d_subgrid          = GridSubgrid(grid2d, is);
       int grid2d_iz = SubgridIZ(grid2d_subgrid);
 	
@@ -591,6 +608,11 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 	 
       sy_p = nx_p;
       sz_p = ny_p * nx_p;
+      
+      /* velocity accessors jjb */
+      vx    = SubvectorData(vx_sub);
+      vy    = SubvectorData(vy_sub);
+      vz    = SubvectorData(vz_sub);
 
       pp    = SubvectorData(p_sub);
       dp    = SubvectorData(d_sub);
@@ -622,8 +644,13 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
            2. y dir terrain tendency:  gravity*sin(atan(y_ssl_dat[io]))
            3. change in delta-x due to slope: (1.0/cos(atan(x_ssl_dat[io])))
            4. change in delta-y due to slope: (1.0/cos(atan(y_ssl_dat[io]))) */
-
-          
+	  
+	  /* velocity subvector indices jjb */
+          vxi = SubvectorEltIndex(vx_sub, i+1, j, k);
+	  vyi = SubvectorEltIndex(vy_sub, i, j+1, k);
+	  vzi = SubvectorEltIndex(vz_sub, i, j, k+1);
+	  
+	  
           x_dir_g = Mean(gravity*sin(atan(x_ssl_dat[io])),gravity*sin(atan(x_ssl_dat[io+1])));
           x_dir_g_c = Mean(gravity*cos(atan(x_ssl_dat[io])),gravity*cos(atan(x_ssl_dat[io+1])));
           y_dir_g = Mean(gravity*sin(atan(y_ssl_dat[io])),gravity*sin(atan(y_ssl_dat[io+sy_p])));
@@ -710,6 +737,11 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 	                * RPMean(lower_cond, upper_cond, rpp[ip]*dp[ip],
                       rpp[ip+sz_p]*dp[ip+sz_p])
 	                / viscosity;
+			
+	 /* velocity data jjb */ 
+         vx[vxi]      = u_right/ffx;
+         vy[vyi]      = u_front/ffy;
+         vz[vzi]      = u_upper/ffz;		
 
 	 fp[ip]      += dt * ( u_right + u_front + u_upper );
 	 fp[ip+1]    -= dt * u_right;
