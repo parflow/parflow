@@ -59,12 +59,12 @@ parflow_p4est_grid_2d_new(int Px, int Py
     pfg = P4EST_ALLOC_ZERO(parflow_p4est_grid_2d_t, 1);
     tx = pfmax(Px, 1);
     ty = pfmax(Py, 1);
-    gt = gcd(tx, ty);
+    gt = parflow_p4est_gcd(tx, ty);
 #ifdef P4_TO_P8
     tz = pfmax(Pz, 1);
-    gt = gcd(gt, tz);
+    gt = parflow_p4est_gcd(gt, tz);
 #endif
-    initial_level = powtwo_div(gt);
+    initial_level = parflow_p4est_powtwo_div(gt);
     g = 1 << initial_level;
     quad_data_size = sizeof(parflow_p4est_quad_data_t);
 
@@ -95,7 +95,7 @@ parflow_p4est_grid_2d_new(int Px, int Py
     /*
      * allocate ghost storage 
      */
-    pfg->ghost = p4est_ghost_new(pfg->forest, P4EST_CONNECT_FACE);
+    pfg->ghost = p4est_ghost_new(pfg->forest, P4EST_CONNECT_FULL);
 
     EndTiming(P4ESTimingIndex);
 

@@ -1,7 +1,7 @@
 #include <math.h>
 
 int
-gcd(int a, int b)
+parflow_p4est_gcd(int a, int b)
 {
     int             c;
 
@@ -14,7 +14,7 @@ gcd(int a, int b)
 }
 
 int
-powtwo_div(int a)
+parflow_p4est_powtwo_div(int a)
 {
     int             c = 0;
 
@@ -25,8 +25,7 @@ powtwo_div(int a)
     return c;
 }
 
-
-int int_compare (int a, int b)
+int parflow_p4est_int_compare (int a, int b)
 {
-  return a == b ? 0 : a < b ? -1 : +1;
+  return a == b ? 0 : a < b ? 1 : 2;
 }

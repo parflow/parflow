@@ -47,7 +47,7 @@ typedef void InstanceXtra;
 static int ComputeTag(Subgrid *send_sg, Subgrid *recv_sg){
 
     int tag;
-    int tz = int_compare(SubregionIZ(send_sg) , SubregionIZ(recv_sg));
+    int tz = parflow_p4est_int_compare(SubregionIZ(send_sg) , SubregionIZ(recv_sg));
 
     if (tz){
         tag = tz < 0 ? 1 : 0;

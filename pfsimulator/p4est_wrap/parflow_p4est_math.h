@@ -1,8 +1,24 @@
 #ifndef PARLOW_P4EST_MATH_H
 #define PARFLOW_P4EST_MATH_H
 
-int             gcd(int a, int b);
-int             powtwo_div(int a);
-int             int_compare(int a, int b);
+/** Greatest common divisor routine
+ *  \param [in] a   integer
+ *  \param [in] b   integer
+ *  \return         Greatest common divisor of \a and \b
+ */
+int             parflow_p4est_gcd(int a, int b);
+
+/** Biggest power of 2 divisor routine
+ *  \param [in] a   integer
+ *  \return         Greatest power of 2 that divides \a
+ */
+int             parflow_p4est_powtwo_div(int a);
+
+/** Compare integers functions
+ *  \param [in] a   integer
+ *  \param [in] b   integer
+ *  \return         0 if \a == \b, 1 if \a < \b and 2 if \a > \b
+ */
+int             parflow_p4est_int_compare(int a, int b);
 
 #endif                          // !PARFLOW_P4EST_MATH_H

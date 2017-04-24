@@ -156,7 +156,7 @@ static int ComputeTag(Subregion *sender, Subregion *receiver){
     parflow_p4est_get_brick_coord (receiver, globals->grid3d->pfgrid, rcoord);
 
     for (k = 0; k < P4EST_DIM; k++)
-      t[k] = int_compare(scoord[k] , rcoord[k]);
+      t[k] = parflow_p4est_int_compare(scoord[k] , rcoord[k]);
 
     tag = 9 * t[2] + 3 * t[1] + t[0];
 

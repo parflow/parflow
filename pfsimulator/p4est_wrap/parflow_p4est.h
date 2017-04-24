@@ -62,12 +62,23 @@ parflow_p4est_grid_t *parflow_p4est_grid_new(int Px, int Py, int Pz);
 /** Destroy a parflow_p4est_grid structure */
 void            parflow_p4est_grid_destroy(parflow_p4est_grid_t * pfgrid);
 
+/** Initialize the p4est_mesh_t member from a parflow_p4est_grid structure*/
 void            parflow_p4est_grid_mesh_init(parflow_p4est_grid_t *
                                              pfgrid);
 
+/** Destroy the p4est_mesh_t member from a parflow_p4est_grid structure */
 void            parflow_p4est_grid_mesh_destroy(parflow_p4est_grid_t *
                                                 pfgrid);
 
+/** Provide access to the top and bottom neighbors of a given subgrid.
+ *  \param[in, out] subgrid   Pointer to a valid Subgrid.
+ *  \param[in] qiter          Pointer to a valid interator.
+ *  \param[in] pfgrid         Pointer to a valid parflow_p4est_grid structure.
+ *
+ *  \return Populate the members of the Subgrid structure that give
+ *          the top and bottom neighbors of \subgrid, if no neighbors
+ *          exist then those members are filled with -1.
+ */
 void            parflow_p4est_get_zneigh(Subgrid * subgrid,
                                          parflow_p4est_qiter_t * qiter,
                                          parflow_p4est_grid_t * pfgrid);
@@ -148,6 +159,17 @@ parflow_p4est_get_projection_info (Subgrid *subgrid, int z_level,
 void             parflow_p4est_nquads_per_rank(parflow_p4est_grid_t *pfgrid,
                                                int *quads_per_rank);
 
+/** If owned, get the coorner in in the p4est brick coordinates.
+ * of the tree containing this subgrid.
+ * \param [in] Subgrid       Pointer to a valid Subgrid.
+ * \param [in] pfgrid        Pointer to a valid parflow_p4est_grid structure.
+ * \param [in, out] bcoord   An array of three integers. If the passed subgrid
+ *                           is owned by the calling process, then it contains the
+ *                           coordinates of the quadrant containing the \Subgrid.
+ *                           If the passed subgrid is owned by a neighboring process,
+ *                           then \bcoord contains the coordinates of the tree containing
+ *                           \Subgrid.
+ */
 void
 parflow_p4est_get_brick_coord (Subgrid *subgrid,
                                parflow_p4est_grid_t *pfgrid, int bcoord[3]);
