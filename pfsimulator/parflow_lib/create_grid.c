@@ -218,6 +218,7 @@ Grid           *CreateGrid(
       grid->pfgrid = pfgrid;
       grid->z_levels = z_levels;
       grid->proj_flag = 0;
+      grid->owns_pfgrid = 1;
 #else
       PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif

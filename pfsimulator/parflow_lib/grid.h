@@ -80,7 +80,9 @@ typedef struct
 				    lie in.  Basically the bounding
 				    box for the subgrids */
 #ifdef HAVE_P4EST
-   parflow_p4est_grid_t *pfgrid;
+   parflow_p4est_grid_t *pfgrid;      /* The parflow_p4est grid object */
+   int                   owns_pfgrid; /* Flag identify if pfgrid object is
+                                         owned by this subgrid */
    int                  *z_levels;
    int                   proj_flag;  /* Flag identifying if this grid comes
                                       * from projecting an existing 3D grid to 2D */
@@ -143,6 +145,8 @@ typedef struct
 #define GridNumSubgrids(grid) (SubgridArraySize(GridSubgrids(grid)))
 
 #ifdef HAVE_P4EST
+#define GridParflowP4estObj(grid) ((grid) -> pfgrid)
+#define GridParflowP4estObjIsOwned(grid) ((grid) -> owns_pfgrid)
 #define GridIsProjected(grid) ((grid) -> proj_flag)
 #endif
 

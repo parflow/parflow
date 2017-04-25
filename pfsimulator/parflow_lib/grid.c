@@ -135,6 +135,7 @@ Grid  *NewGrid(
    new_grid->pfgrid = NULL;
    new_grid->z_levels = NULL;
    new_grid->proj_flag = 0;
+   new_grid->owns_pfgrid = 0;
 #endif
 
    return new_grid;
@@ -164,8 +165,9 @@ void  FreeGrid(
             FreeComputePkgs(grid);
 #ifdef HAVE_P4EST
         BeginTiming(P4ESTCleanupTimingIndex);
-        if(grid->pfgrid != NULL){
-            /* destroy pfgrid structure */
+        if(GridParflowP4estObj(grid) != NULL &&
+           GridParflowP4estObjIsOwned(grid)){
+            /* If owned destroy pfgrid structure */
             parflow_p4est_grid_destroy (grid->pfgrid);
         }
         if(grid->z_levels != NULL){
@@ -1073,6 +1075,12 @@ Grid * CreateZprojectedGrid( Grid *input_grid, int new_nz)
 #ifdef HAVE_P4EST
        /** Set projection flag for the two dimensional grid */
        GridIsProjected(proj_grid) = proj_flag;
+
+       /** Give access to the p4est object to this grid */
+       GridParflowP4estObj(proj_grid) = GridParflowP4estObj(input_grid);
+
+       /** This grid does not own the p4est object */
+       GridParflowP4estObjIsOwned(proj_grid) = 0;
 #endif
    }
 
