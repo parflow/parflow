@@ -83,5 +83,6 @@ Z coordinate direction is bigger than one have not been tested.
 
 The MGSemi preconditioner is not supported.
 
-Coupling with the common land model (--with-clm) not yet
-suported.
+Coupling with the common land model (--with-clm) is only
+supported when the number of subgrids match the number of
+processes.
