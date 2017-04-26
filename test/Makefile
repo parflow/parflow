@@ -199,6 +199,7 @@ clean: testclean
 	do \
 	        (cd $$i; make --no-print-directory clean); \
 	done 
+	@(cd p4est; make --no-print-directory clean);
 
 testclean:
 	@rm -f *.pfb*
