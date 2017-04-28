@@ -127,7 +127,7 @@ double Bisector(double a0, double a1)
 
    bisect = (a0 + a1)/2;
 
-   if ( (max(a0, a1)-min(a0, a1)) > M_PI )
+   if ( (max(a0, a1)-fmin(a0, a1)) > M_PI )
       bisect += M_PI;
    
    if (bisect > M_PI)
@@ -460,8 +460,8 @@ void AddTINToProjectionMesh(ProjectionMesh *PM, gms_TIN *tin)
       v2 = tin -> vertices[triangle -> v2];
       
       /* Compute the lower bound of the triangle */
-      min_x = min(v0 -> x, v1 -> x);
-      min_x = min(min_x, v2 -> x);
+      min_x = fmin(v0 -> x, v1 -> x);
+      min_x = fmin(min_x, v2 -> x);
       
       /* Compute the upper bound of the triangle */
       max_x = max(v0 -> x, v1 -> x);
