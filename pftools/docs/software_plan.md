@@ -66,7 +66,7 @@ any concerns for follow up.  The various steps in this process are detailed belo
 
 The Requirements and Design (R&D) Document should include all goals of the new 
 code, targeted use cases, and any constraints.  Furthermore, test problems that 
-target the proposed new capability must also be described in the R&D document.  
+target the proposed new capability must also be described in the R&D document.
 The Requirements and Design Document is viewed as a living document that 
 evolves with the team’s understanding of its tasks and needs. 
 
