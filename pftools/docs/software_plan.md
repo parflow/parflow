@@ -21,7 +21,8 @@ simulate surface and subsurface fluid flow. The goal of the ParFlow project is t
 enable detailed simulations for use in the assessment and management of groundwater 
 and surface water, to investigate system physics and feedbacks and to understand 
 interactions at a range of scales.  This is a living document, and its markdown 
-source is located in teh ParFlow github repo: <https://github.com/parflow/parflow>.
+source is located in the docs directory of the ParFlow github repo: 
+<https://github.com/parflow/parflow/tree/master/pftools/docs>.
 
 ParFlow includes fully-integrated overland flow, the ability to simulate complex 
 topography, geology and heterogeneity and coupled land-surface processes including 
@@ -46,7 +47,9 @@ The following plan describes the processes adopted for development of ParFlow.
 It does not describe the technical work or details of the models and methods used 
 within the simulator.
 
+
 ## 2. Process for New Features or Capability Enhancements
+
 Before commencing development of new features or enhancing existing capabilities 
 within the ParFlow code suite, requirements of the new code as well as the design 
 approach for implementing it must be documented.  These Requirements and Design 
@@ -71,9 +74,11 @@ code, targeted use cases, and any constraints.  Furthermore, test problems that
 target the proposed new capability must also be described in the R&D document.
 The Requirements and Design Document is viewed as a living document that 
 evolves with the team’s understanding of its tasks and needs. 
+A template for teh R&D document is located at:
+<https://github.com/parflow/parflow/blob/master/pftools/docs/design_documents/0000-template.md>.
 
 A requirement should be expressed succinctly in the form of some definite 
-statement, and some set of “victory conditions” that specify when a requirement 
+statement, and some set of victory conditions that specify when a requirement 
 has been met. Requirements should be specific enough that team members can 
 agree on what is meant in a technical sense, but need not articulate a specific 
 approach if they can be met another way.  The victory conditions of a 
