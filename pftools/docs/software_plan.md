@@ -22,7 +22,7 @@ enable detailed simulations for use in the assessment and management of groundwa
 and surface water, to investigate system physics and feedbacks and to understand 
 interactions at a range of scales.  This is a living document, and its markdown 
 source is located in the docs directory of the ParFlow github repo: 
-<https://github.com/parflow/parflow/tree/master/pftools/docs>.
+<https://github.com/parflow/parflow/tree/master/pftools/docs/software_plan.md>.
 
 ParFlow includes fully-integrated overland flow, the ability to simulate complex 
 topography, geology and heterogeneity and coupled land-surface processes including 
