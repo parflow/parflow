@@ -1,5 +1,6 @@
 # ParFlow Software Productivity and Sustainability Plan
 
+## Version 1.0
 
 #### Carol S. Woodward(1), Reed M. Maxwell(2), Steve G. Smith(1), Stefan Kollet(3), Daniel Osei-Kuffuor(1), Carsten Burstedde(3)
 
@@ -19,7 +20,8 @@ integrated, parallel watershed model that makes use of high-performance computin
 simulate surface and subsurface fluid flow. The goal of the ParFlow project is to
 enable detailed simulations for use in the assessment and management of groundwater 
 and surface water, to investigate system physics and feedbacks and to understand 
-interactions at a range of scales.
+interactions at a range of scales.  This is a living document, and its markdown 
+source is located in teh ParFlow github repo: <https://github.com/parflow/parflow>.
 
 ParFlow includes fully-integrated overland flow, the ability to simulate complex 
 topography, geology and heterogeneity and coupled land-surface processes including 
