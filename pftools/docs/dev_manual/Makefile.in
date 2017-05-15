@@ -60,8 +60,10 @@ doc: manual.pdf manual/manual.html
 manual.pdf: manual.dvi
 	@dvipdf manual
 
-version.tex : $(PARFLOW)/../pfsimulator/parflow_lib/version.h
-	echo "\def\PFVersion{"`awk -F "\"" '{print $$2}' $(PARFLOW)/../pfsimulator/parflow_lib/version.h`"}" > version.tex
+VERSION_H=../../../pfsimulator/include/version.h
+
+version.tex : $(VERSION_H)
+	echo "\def\PFVersion{"`awk -F "\"" '{print $$2}' $(VERSION_H)`"}" > version.tex
 
 manual.ps: manual.dvi
 	@dvips -o manual.ps manual
@@ -72,12 +74,12 @@ manual/manual.html: manual.dvi
 
 manual.dvi: Makefile $(FILES) version.tex
 	@for i in ${LINK_FILES}; do     \
-	   if [ ! -h $$i ] ; then    \
+	   if [ ! -f $$i ] ; then    \
 	     ln -s $(TEXLIBDIR)/$$i . ;\
 	   fi \
 	done 
 	@for i in ${FILES}; do     \
-	   if [ ! -h $$i ] ; then    \
+	   if [ ! -f $$i ] ; then    \
 	     ln -s $(SRCDIR)/$$i . ;\
 	   fi \
 	done 
@@ -96,6 +98,7 @@ doc_install:
 
 
 clean:
+	@rm -f manual.pdf manual.ps
 	$(PARFLOW_CLEAN)
 
 veryclean: clean
@@ -104,6 +107,11 @@ veryclean: clean
 	    rm $$i ; \
 	   fi \
 	done 
-	@/bin/rm -f  manual.ps version.tex Makefile
+	@for i in ${FILES}; do     \
+	   if [ -h $$i ] ; then    \
+	    rm $$i ; \
+	   fi \
+	done 
+	@/bin/rm -f  manual.ps version.tex
 	@/bin/rm -fr manual
 
