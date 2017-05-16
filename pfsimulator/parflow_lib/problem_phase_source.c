@@ -37,6 +37,9 @@ typedef struct
 
    int     *region_indices;
    double  *values;
+#ifdef withTemperature
+   double  *tempvalues
+#endif
 
 } Type0;                       /* constant regions */
 
@@ -51,7 +54,7 @@ typedef struct
  *--------------------------------------------------------------------------*/
 
 void         PhaseSource(
-Vector      *phase_source,
+N_Vector      sources,
 int          phase,
 Problem     *problem,
 ProblemData *problem_data,
@@ -70,12 +73,10 @@ double       time)
    Vector           *perm_y = ProblemDataPermeabilityY(problem_data);
    Vector           *perm_z = ProblemDataPermeabilityZ(problem_data);
 
-   Grid             *grid = VectorGrid(phase_source);
 
    Type0            *dummy0;
    Type1            *dummy1;
 
-   SubgridArray     *subgrids = GridSubgrids(grid);
 
    Subgrid          *subgrid, *well_subgrid, *tmp_subgrid;
    Subvector        *px_sub, *py_sub, *pz_sub, *ps_sub;
@@ -105,8 +106,20 @@ double       time)
    /*-----------------------------------------------------------------------
     * Put in any user defined sources for this phase
     *-----------------------------------------------------------------------*/
+   Vector           *phase_source=NV_CONTENT_PF(sources)->dims[0];
+   Grid             *grid = VectorGrid(phase_source);
+   SubgridArray     *subgrids = GridSubgrids(grid);
+   
 
+#ifdef withTemperature
+   Subvector        *pt_sub;
+   double           *tempdata;
+   Vector           *phase_temp=NV_CONTENT_PF(sources)->dims[1];
+   InitVectorAll(phase_temp, 0.0);
+#endif
    InitVectorAll(phase_source, 0.0);
+
+
 
    switch((public_xtra -> type[phase]))
    {
@@ -125,17 +138,26 @@ double       time)
       num_regions    = (dummy0 -> num_regions);
       region_indices = (dummy0 -> region_indices);
       values         = (dummy0 -> values);
-
+#ifdef withTemperature
+      
+      double tempvalue;
+      double *tempvalues     = (dummy0 -> tempvalues);
+#endif
       for (ir = 0; ir < num_regions; ir++)
       {
 	 gr_solid = ProblemDataGrSolid(problem_data, region_indices[ir]);
 	 value    = values[ir];
-
+#ifdef withTemperature
+         tempvalue= tempvalues[ir];
+#endif
 	 ForSubgridI(is, subgrids)
 	 {
             subgrid = SubgridArraySubgrid(subgrids, is);
             ps_sub  = VectorSubvector(phase_source, is);
-	    
+#ifdef withTemperature
+	    pt_sub  = VectorSubvector(phase_temp, is);
+            tempdata = SubvectorData(pt_sub);
+#endif	    
 	    ix = SubgridIX(subgrid);
 	    iy = SubgridIY(subgrid);
 	    iz = SubgridIZ(subgrid);
@@ -151,8 +173,11 @@ double       time)
 	    GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
 	       ips = SubvectorEltIndex(ps_sub, i, j, k);
-
+		
 	       data[ips] = value;
+#ifdef withTemperature
+	       tempdata[ips] =	tempvalue;
+#endif	     		
 	    });
 	 }
       }
@@ -508,7 +533,9 @@ PFModule  *PhaseSourceNewPublicXtra(
 	    
 	    (dummy0 -> region_indices) = ctalloc(int,    num_regions);
 	    (dummy0 -> values)         = ctalloc(double, num_regions);
-	    
+#ifdef withTemperature
+	    (dummy0 -> tempvalues)         = ctalloc(double, num_regions);
+#endif	    
 	    for (ir = 0; ir < num_regions; ir++)
 	    {
 	       
@@ -520,6 +547,12 @@ PFModule  *PhaseSourceNewPublicXtra(
 		       NA_IndexToName(GlobalsPhaseNames, i),
 		       NA_IndexToName(dummy0 -> regions, ir));
 	       dummy0 -> values[ir] = GetDouble(key);
+#ifdef withTemperature
+               sprintf(key, "PhaseSources.%s.Geom.%s.TempValue",
+	               NA_IndexToName(GlobalsPhaseNames, i),
+        	       NA_IndexToName(dummy0 -> regions, ir));
+               dummy0 -> tempvalues[ir] = GetDouble(key);	
+#endif
 	    }
 	    
 	    (public_xtra -> data[i]) = (void *) dummy0;
@@ -594,6 +627,9 @@ void  PhaseSourceFreePublicXtra()
 
 	    tfree(dummy0 -> region_indices);
 	    tfree(dummy0 -> values);
+#ifdef withTemperature
+	    tfree(dummy0 -> tempvalues);
+#endif
             tfree(dummy0);
             break;
          }

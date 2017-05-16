@@ -255,7 +255,7 @@ PFModule   *PhaseHeatCapacityNewPublicXtra(
 	    
 	    break;
 	 }
-	 
+
 	 default:
 	 {
 	    InputError("Error: invalid type <%s> for key <%s>\n",

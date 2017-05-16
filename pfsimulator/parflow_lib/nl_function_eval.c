@@ -150,6 +150,18 @@ void NlFunctionEval (N_Vector speciesNVector,
    Vector      *rel_perm          = saturation;
    Vector      *source            = saturation;
 
+   N_Vector      sourcesNV;
+   N_VectorContent sourcesContent;
+#ifdef withTemperature
+   sourcesNV = N_VNewEmpty_PF(2);
+#else
+   sourcesNV = N_VNewEmpty_PF(1);
+#endif
+   sourcesContent = NV_CONTENT_PF(sourcesNV);
+   sourcesContent->dims[0] = source;
+
+
+
    /* Overland flow variables */ //sk
    Vector      *KW, *KE, *KN, *KS;
    Vector      *qx, *qy;
@@ -419,7 +431,7 @@ void NlFunctionEval (N_Vector speciesNVector,
    /* Add in contributions from source terms - user specified sources and
       flux wells.  Calculate phase source values overwriting current 
       saturation vector */
-   PFModuleInvokeType(PhaseSourceInvoke, phase_source, (source, 0, problem, problem_data,
+   PFModuleInvokeType(PhaseSourceInvoke, phase_source, (sourcesNV, 0, problem, problem_data,
 							time));
 
    ForSubgridI(is, GridSubgrids(grid))

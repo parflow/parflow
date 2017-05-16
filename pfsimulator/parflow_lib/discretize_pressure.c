@@ -195,6 +195,16 @@ void          DiscretizePressure(
    }
    tvector                = NewVectorType(instance_xtra -> grid, 1, 1, vector_cell_centered);
 
+   N_Vector      sourcesNV;
+   N_VectorContent sourcesContent;
+#ifdef withTemperature
+   sourcesNV = N_VNewEmpty_PF(2);
+#else
+   sourcesNV = N_VNewEmpty_PF(1);
+#endif
+   sourcesContent = NV_CONTENT_PF(sourcesNV);
+   sourcesContent->dims[0] =  tvector;
+
    /*-----------------------------------------------------------------------
     * Initialize and set some things
     *-----------------------------------------------------------------------*/
@@ -262,7 +272,7 @@ void          DiscretizePressure(
    for (phase = 0; phase < num_phases; phase++)
    {
       /* get phase_source */
-      PFModuleInvokeType(PhaseSourceInvoke, phase_source, (tvector, phase, problem, 
+      PFModuleInvokeType(PhaseSourceInvoke, phase_source, (sourcesNV, phase, problem, 
 					  problem_data, time));
    
       ForSubgridI(is, GridSubgrids(grid))

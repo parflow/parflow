@@ -995,11 +995,13 @@ PFModule *PhaseRelPermNewPublicXtra (void );
 void PhaseRelPermFreePublicXtra (void );
 int PhaseRelPermSizeOfTempData (void );
 
-typedef void (*PhaseSourceInvoke) (Vector *phase_source , int phase, Problem *problem , ProblemData *problem_data , double time );
+typedef void (*PhaseSourceInvoke) (N_Vector sources , int phase, Problem *problem , ProblemData *problem_data , double time );
+
 typedef PFModule *(*PhaseSourceNewPublicXtraInvoke) (int num_phases);
 
 /* problem_phase_source.c */
-void PhaseSource (Vector *phase_source , int phase, Problem *problem , ProblemData *problem_data , double time );
+void PhaseSource (N_Vector sources , int phase, Problem *problem , ProblemData *problem_data , double time );
+
 PFModule *PhaseSourceInitInstanceXtra (void );
 void PhaseSourceFreeInstanceXtra (void );
 PFModule *PhaseSourceNewPublicXtra (int num_phases);

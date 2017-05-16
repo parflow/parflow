@@ -110,6 +110,16 @@ void    TemperatureFunctionEval(
    Vector      *tsource          = (instance_xtra -> tsource);
 
 
+   N_Vector      sourcesNV;
+   N_VectorContent sourcesContent;
+#ifdef withTemperature
+   sourcesNV = N_VNewEmpty_PF(2);
+   sourcesContent = NV_CONTENT_PF(sourcesNV);
+   sourcesContent->dims[0] = instance_xtra -> qsource;
+   sourcesContent->dims[1] = instance_xtra -> tsource;
+#endif
+
+
    Vector      *porosity          = ProblemDataPorosity(problem_data);
    Vector      *permeability_x    = ProblemDataPermeabilityX(problem_data);
    Vector      *permeability_y    = ProblemDataPermeabilityY(problem_data);
@@ -363,7 +373,7 @@ ForSubgridI(is, GridSubgrids(grid))
        GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
 	     {
 			  ip = SubvectorEltIndex(f_sub, i,j,k);
-			 fp[ip] += vol * z_mult_dat[ip] * (1.0 - hcwp[ip])  * (1.0 - pop[ip]) * (tp[ip] - otp[ip]);
+			 fp[ip] += vol * z_mult_dat[ip] *  hcrp[ip]  * (1.0 - pop[ip]) * (tp[ip] - otp[ip]);
 
 	     });
 
@@ -375,8 +385,8 @@ ForSubgridI(is, GridSubgrids(grid))
       flux wells.  Calculate phase source values overwriting current 
       saturation vector */
 
-//   PFModuleInvoke(void, phase_source, (qsource, tsource, problem, problem_data,      time));
-//   PFModuleInvoke(void, temp_source, (source, problem, problem_data,       time));
+   PFModuleInvoke(void, phase_source, (sourcesNV, 0, problem, problem_data,      time));
+   PFModuleInvoke(void, temp_source, (source, problem, problem_data,       time));
 
 
 #if 1
@@ -434,9 +444,9 @@ ForSubgridI(is, GridSubgrids(grid))
               GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
 	     {
                 ip = SubvectorEltIndex(f_sub, i,j,k);
-	        //fp[ip] -= vol * dt * hsp[ip]; // energy sink source
-	        //fp[ip] -= vol * dt * dp[ip] * qsp[ip] * hcwp[ip] * tsp[ip]; // mass-energy sink
-	        //if (i==0 && j ==0 && k== 239) fp[ip] -= vol * dt * dp[ip] * 1.0e-6 * hcwp[ip] * (283.0 - 273.15); // mass-energy sink
+	        fp[ip] -= vol * dt * hsp[ip]; // energy sink source
+	        fp[ip] -= vol * dt * /*dp[ip] *  */  qsp[ip] * hcwp[ip] * tsp[ip]; // mass-energy sink
+	        //fp[ip] -= vol * dt * dp[ip] * 1.0e-6 * hcwp[ip] * (283.0 - 273.15); // mass-energy sink
 //FGtest  kein CLM -> fällt weg 
 	        fp[ip] -= vol *z_mult_dat[ip] * dt * 0 /* lep[ip]*/ /dz; // energy due to ET from CLM
                  
