@@ -686,15 +686,12 @@ void SetupRichards(PFModule *this_module) {
       InitVectorAll(instance_xtra -> evap_trans_sum, 0.0);
       
       /* intialize vel vectors - jjb */
-      instance_xtra -> x_velocity = ctalloc(Vector, ProblemNumPhases(problem) );
       instance_xtra -> x_velocity = NewVectorType( x_grid, 1, 1, vector_side_centered_x);
       InitVectorAll(instance_xtra -> x_velocity, 0.0);
       
-      instance_xtra -> y_velocity = ctalloc(Vector, ProblemNumPhases(problem) );
       instance_xtra -> y_velocity = NewVectorType( y_grid, 1, 1, vector_side_centered_y);
       InitVectorAll(instance_xtra -> y_velocity, 0.0);
 
-      instance_xtra -> z_velocity = ctalloc(Vector, ProblemNumPhases(problem) );
       instance_xtra -> z_velocity = NewVectorType( z_grid, 1, 2, vector_side_centered_z);
       InitVectorAll(instance_xtra -> z_velocity, 0.0);
 
@@ -3242,6 +3239,10 @@ void TeardownRichards(PFModule *this_module) {
    FreeVector( instance_xtra -> y_velocity );
    FreeVector( instance_xtra -> z_velocity );
 #endif
+
+   FreeVector( instance_xtra -> x_velocity );
+   FreeVector( instance_xtra -> y_velocity );
+   FreeVector( instance_xtra -> z_velocity );
 
    if(instance_xtra -> evap_trans_sum) {
       FreeVector( instance_xtra -> evap_trans_sum);
