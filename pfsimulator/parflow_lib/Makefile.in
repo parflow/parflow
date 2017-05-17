@@ -12,6 +12,7 @@ SUBDIR        = parflow_lib
 VPATH	      =	@srcdir@
 OBJECT        = ..
 
+
 ABS_TOP_BUILDDIR = @abs_top_builddir@
 
 default: all
@@ -23,16 +24,20 @@ CXX_SRCS = \
 
 CXXOBJS = $(CXX_SRCS:.cxx=.o)
 
+ifeq ($(PARFLOW_HAVE_E),yes)
+CPPFLAGS += -DwithTemperature
 OBJS = \
-      bc_temperature_package.o\
-      bc_temperature.o\
-      problem_temp_source.o\
-      problem_thermal_conductivity.o\
-      problem_ic_phase_temperature.o\
-      temperature_jacobian_eval.o\
-      temperature_function_eval.o\
-      kinsol_pc_temperature.o\
-      problem_bc_temperature.o\
+	bc_temperature_package.o\
+	bc_temperature.o\
+	problem_temp_source.o\
+	problem_thermal_conductivity.o\
+	problem_ic_phase_temperature.o\
+	temperature_jacobian_eval.o\
+	temperature_function_eval.o\
+	kinsol_pc_temperature.o\
+	problem_bc_temperature.o
+endif
+OBJS += \
 	advect.o\
 	advection_godunov.o\
 	axpy.o\

@@ -103,4 +103,8 @@ PARFLOW_HAVE_OAS3      = @PARFLOW_HAVE_OAS3@
 
 PARFLOW_CLEAN=@$(RM) *.o *.ii *.int.c *.log *.log.* stamp-* core core.* stats -r ti_files ii_files
 
-
+####################
+#Switch for ParFlowE
+####################
+# = yes  or  = no
+PARFLOW_HAVE_E      = no

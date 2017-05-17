@@ -36,8 +36,6 @@
 #ifndef _PARFLOW_HEADER
 #define _PARFLOW_HEADER
 
-#define withTemperature
-
 #ifndef _WIN32
 #include <sys/param.h>
 #endif
