@@ -4343,6 +4343,29 @@ A node level collective strategy has been implemented for I/O. One process on ea
 pfset NetCDF.NodeLevelIO   True
 \end{verbatim}\end{display}
 
+\subsection{NetCDF4 Initial Conditions: Pressure}
+Analogues to ParFlow binary files, NetCDF4 based option can be used to set the initial conditions for pressure to be read from an "nc" file containing single time step of pressure. The name of the variable in "nc" file should be "pressure". A sample NetCDF header of an initial condition file looks as follows.
+\begin{display}\begin{verbatim}
+netcdf initial_condition {
+dimensions:
+	x = 200 ;
+	y = 200 ;
+	z = 40 ;
+	time = UNLIMITED ; // (1 currently)
+variables:
+	double time(time) ;
+	double pressure(time, z, y, x) ;
+}
+\end{verbatim}\end{display}
+\textit{\textbf{Node level collective I/O is currently not implemented for setting initial conditions.}}
+
+\pfkey{string}{ICPressure.Type}{no default}
+{This key sets flag for initial conditions to be read from a NetCDF file.} 
+\begin{display}\begin{verbatim}
+pfset ICPressure.Type   NCFile
+pfset Geom.domain.ICPressure.FileName   "initial_condition.nc"
+\end{verbatim}\end{display}
+
 \section{ParFlow Binary Files (.pfb)}
 \label{ParFlow Binary Files (.pfb)}
 

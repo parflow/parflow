@@ -27,6 +27,8 @@
 **********************************************************************EHEADER*/
 
 #include "parflow.h"
+#include "parflow_netcdf.h"
+#include <string.h>
 
 #include <float.h>
 
@@ -98,12 +100,17 @@ typedef struct
 typedef struct
 {
    char    *filename;
-
    Vector  *ic_values;
 
 } Type3;                      /* Spatially varying field over entire domain
                                  read from a file */
+typedef struct
+{
+   char    *ncFileName;
+   Vector  *ic_values;
 
+} Type4;                      /* Spatially varying field over entire domain
+                                 read from a file */
 
 
 /*--------------------------------------------------------------------------
@@ -133,6 +140,7 @@ Problem     *problem)      /* General problem information */
    Type1         *dummy1;
    Type2         *dummy2;
    Type3         *dummy3;
+   Type4         *dummy4;
 
    SubgridArray  *subgrids = GridSubgrids(grid);
 
@@ -737,6 +745,53 @@ Problem     *problem)      /* General problem information */
 
       break;
    }           /* End case 3 */
+   case 4:  /* ParFlow NetCDF file with spatially varying pressure values */
+   {
+
+      
+      dummy4 = (Type4 *)(public_xtra -> data);
+
+      Vector *ic_values = dummy4 -> ic_values;
+
+      gr_domain = ProblemDataGrDomain(problem_data);
+
+      ForSubgridI(is, subgrids)
+      {
+	 subgrid = SubgridArraySubgrid(subgrids, is);
+         m_sub               = VectorSubvector(mask, is);
+         m_dat               = SubvectorData(m_sub);
+ 
+	 ps_sub = VectorSubvector(ic_pressure, is);
+	 ic_values_sub = VectorSubvector(ic_values, is);
+
+	 ix = SubgridIX(subgrid);
+	 iy = SubgridIY(subgrid);
+	 iz = SubgridIZ(subgrid);
+
+	 nx = SubgridNX(subgrid);
+	 ny = SubgridNY(subgrid);
+	 nz = SubgridNZ(subgrid);
+
+	 /* RDF: assume resolution is the same in all 3 directions */
+	 r = SubgridRX(subgrid);
+
+	 psdat = SubvectorData(ps_sub);
+	 ic_values_dat = SubvectorData(ic_values_sub);
+
+	 GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+	 {
+	    ips = SubvectorEltIndex(ps_sub, i, j, k);
+	    ipicv = SubvectorEltIndex(ic_values_sub, i, j, k);
+
+	    psdat[ips] = ic_values_dat[ipicv];
+	    // SGS fixthis
+            m_dat[ips] = 99999;
+            // m_dat[ips] = 1.0;
+	 });
+      }        /* End subgrid loop */
+
+      break;
+   }           /* End case 4 */
    }           /* End of switch statement */
 
 
@@ -764,6 +819,7 @@ PFModule  *ICPhasePressureInitInstanceXtra(
    InstanceXtra  *instance_xtra;
 
    Type3         *dummy3;
+   Type4         *dummy4;
 
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
@@ -788,10 +844,16 @@ PFModule  *ICPhasePressureInitInstanceXtra(
 
 	 /* Allocate temp vector */
 	 dummy3 -> ic_values = NewVectorType(grid, 1, 1, vector_cell_centered);
+	 ReadPFBinary((dummy3 -> filename),(dummy3 -> ic_values));
 
-         ReadPFBinary((dummy3 -> filename), 
-		      (dummy3 -> ic_values));
+      }
+      else if (public_xtra -> type == 4)
+      {
+	 dummy4 = (Type4 *)(public_xtra -> data);
 
+	 /* Allocate temp vector */
+	 dummy4 -> ic_values = NewVectorType(grid, 1, 1, vector_cell_centered);
+	 ReadPFNC(dummy4->ncFileName, dummy4->ic_values);
       }
 
    }
@@ -829,13 +891,16 @@ void  ICPhasePressureFreeInstanceXtra()
    if (instance_xtra)
    {
       Type3         *dummy3;
+      Type4         *dummy4;
 
       /* Uses a spatially varying field */
       if (public_xtra -> type == 3)  
       {
 	 dummy3 = (Type3 *)(public_xtra -> data);
+	 dummy4 = (Type4 *)(public_xtra -> data);
 
 	 FreeVector(dummy3 -> ic_values);
+	 FreeVector(dummy4 -> ic_values);
       }
 
       PFModuleFreeInstance(instance_xtra -> phase_density);
@@ -860,16 +925,18 @@ PFModule   *ICPhasePressureNewPublicXtra()
    Type1	 *dummy1;
    Type2	 *dummy2;
    Type3         *dummy3;
+   Type4         *dummy4;
 
    char *switch_name;
    char *region;
    
    char key[IDB_MAX_KEY_LEN];
+   char ncKey[IDB_MAX_KEY_LEN];
 
    NameArray type_na;
 
    type_na = NA_NewNameArray(
-	      "Constant HydroStaticDepth HydroStaticPatch PFBFile");
+	      "Constant HydroStaticDepth HydroStaticPatch PFBFile NCFile");
 
    public_xtra = ctalloc(PublicXtra, 1);
 
@@ -992,22 +1059,33 @@ PFModule   *ICPhasePressureNewPublicXtra()
       case 3:
       {
 	 dummy3 = ctalloc(Type3, 1);
-	 
-	 sprintf(key, "Geom.%s.ICPressure.FileName", "domain");
-	 dummy3 -> filename = GetString(key);
-	 
-	 public_xtra -> data = (void *) dummy3;
-	 
-	 break;
+
+	   sprintf(key, "Geom.%s.ICPressure.FileName", "domain");
+	   dummy3 -> filename = GetString(key);
+	   public_xtra -> data = (void *) dummy3;
+
+	   break;
       }
-      
+
+      case 4:
+      {
+	dummy4 = ctalloc(Type4, 1);
+
+	sprintf(ncKey, "Geom.%s.ICPressure.FileName", "domain");
+	dummy4 -> ncFileName = GetString(ncKey);
+
+	public_xtra -> data = (void *) dummy4;
+
+	break;
+      }
+
       default:
       {
-	 InputError("Error: invalid type <%s> for key <%s>\n",
-		    switch_name, key);
+	InputError("Error: invalid type <%s> for key <%s>\n",
+	    switch_name, key);
       }
    }
-   
+
    NA_FreeNameArray(type_na);
 
    PFModulePublicXtra(this_module) = public_xtra;
@@ -1020,65 +1098,72 @@ PFModule   *ICPhasePressureNewPublicXtra()
 
 void  ICPhasePressureFreePublicXtra()
 {
-   PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
-   
-   
-   Type0       *dummy0;
-   Type1       *dummy1;
-   Type2       *dummy2;
-   Type3       *dummy3;
-   
-   if ( public_xtra )
-   {
-      
-      NA_FreeNameArray(public_xtra -> regions);
-      
-      switch((public_xtra -> type))
-      {
-	 case 0:
-	 {
-	    dummy0 = (Type0 *)(public_xtra -> data);
-	    
-	    tfree(dummy0 -> region_indices);
-	    tfree(dummy0 -> values);
-	    tfree(dummy0);
-	    break;
-	 }
-	 case 1:
-	 {
-	    dummy1 = (Type1 *)(public_xtra -> data);
-	    
-	    tfree(dummy1 -> region_indices);
-	    tfree(dummy1 -> reference_elevations);
-	    tfree(dummy1 -> pressure_values);
-	    tfree(dummy1);
-	    break;
-	 }
-	 case 2:
-	 {
-	    dummy2 = (Type2 *)(public_xtra -> data);
-	    
-	    tfree(dummy2 -> region_indices);
-	    tfree(dummy2 -> patch_indices);
-	    tfree(dummy2 -> geom_indices);
-	    tfree(dummy2 -> pressure_values);
-	    tfree(dummy2);
-	    break;
-	 }
+  PFModule    *this_module   = ThisPFModule;
+  PublicXtra  *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
 
-	 case 3:
-	 {
-	    dummy3 = (Type3 *)(public_xtra -> data);
-	    tfree(dummy3);
-	    break;
-	 }
 
-      }
-      
-      tfree(public_xtra);
-   }
-   
+  Type0       *dummy0;
+  Type1       *dummy1;
+  Type2       *dummy2;
+  Type3       *dummy3;
+  Type4       *dummy4;
+
+  if ( public_xtra )
+  {
+
+    NA_FreeNameArray(public_xtra -> regions);
+
+    switch((public_xtra -> type))
+    {
+      case 0:
+	{
+	  dummy0 = (Type0 *)(public_xtra -> data);
+
+	  tfree(dummy0 -> region_indices);
+	  tfree(dummy0 -> values);
+	  tfree(dummy0);
+	  break;
+	}
+      case 1:
+	{
+	  dummy1 = (Type1 *)(public_xtra -> data);
+
+	  tfree(dummy1 -> region_indices);
+	  tfree(dummy1 -> reference_elevations);
+	  tfree(dummy1 -> pressure_values);
+	  tfree(dummy1);
+	  break;
+	}
+      case 2:
+	{
+	  dummy2 = (Type2 *)(public_xtra -> data);
+
+	  tfree(dummy2 -> region_indices);
+	  tfree(dummy2 -> patch_indices);
+	  tfree(dummy2 -> geom_indices);
+	  tfree(dummy2 -> pressure_values);
+	  tfree(dummy2);
+	  break;
+	}
+
+      case 3:
+	{
+	  dummy3 = (Type3 *)(public_xtra -> data);
+	  tfree(dummy3);
+	  break;
+	}
+      case 4:
+	{
+	  dummy4 = (Type4 *)(public_xtra -> data);
+	  tfree(dummy4);
+	  break;
+	}
+
+    }
+
+    tfree(public_xtra);
+  }
+
 }
 
 /*--------------------------------------------------------------------------
@@ -1087,8 +1172,8 @@ void  ICPhasePressureFreePublicXtra()
 
 int  ICPhasePressureSizeOfTempData()
 {
-   int  sz = 0;
-   return sz;
+  int  sz = 0;
+  return sz;
 }
 
 
