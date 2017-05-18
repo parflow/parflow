@@ -1,4 +1,3 @@
-
 add_executable(parflow main.c)
 target_link_libraries(parflow pfsimulator pfkinsol amps)
 
@@ -22,11 +21,8 @@ if (${PARFLOW_HAVE_HDF5})
   target_link_libraries (parflow ${HDF5_LIBRARIES})
 endif (${PARFLOW_HAVE_HDF5})
 
+if( ${PARFLOW_ENABLE_PROFILING} )
+  set_target_properties(parflow PROPERTIES LINK_FLAGS ${PARFLOW_PROFILE_OPTS})
+endif( ${PARFLOW_ENABLE_PROFILING} )
+  
 install(TARGETS parflow DESTINATION bin)
-
-
-
-
-
-
-

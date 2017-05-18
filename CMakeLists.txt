@@ -191,7 +191,16 @@ set (PARFLOW_ENABLE_TIMING False CACHE BOOL "Enable timing of key Parflow functi
 if( ${PARFLOW_ENABLE_TIMING} )
   set (PF_TIMING ${PARFLOW_ENABLE_TIMING})
 endif( ${PARFLOW_ENABLE_TIMING} )
-  
+
+# Profiling 
+set (PARFLOW_ENABLE_PROFILING False CACHE BOOL "Enable profiling; will slow down performance")
+if( ${PARFLOW_ENABLE_PROFILING} )
+  set (PARFLOW_PROFILE_OPTS "-pg")
+  set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${PARFLOW_PROFILE_OPTS}" )
+  set( CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${PARFLOW_PROFILE_OPTS}" )
+else( ${PARFLOW_ENABLE_PROFILING} )
+  set (PARFLOW_PROFILE_OPTS "")
+endif( ${PARFLOW_ENABLE_PROFILING} )
 
 include_directories ("${CMAKE_SOURCE_DIR}/pfsimulator/parflow_lib")
 
