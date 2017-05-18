@@ -30,8 +30,9 @@
 
 #include "compute_domain.h"
 
-inline int max(int a, int b) { return a > b ? a : b; };
-inline int min(int a, int b) { return a < b ? a : b; };
+/* Locally defined integer min/max functions */
+static inline int domain_max(int a, int b) { return a > b ? a : b; };
+static inline int domain_min(int a, int b) { return a < b ? a : b; };
 
 void ComputeDomain(
 		   SubgridArray  *all_subgrids,
@@ -77,19 +78,19 @@ void ComputeDomain(
 	       {
 		  int k_top = *(DataboxCoeff(top, i, j, 0));
 		  if ( k_top >= 0 ) {
-		     patch_top = max(patch_top, k_top);
+		     patch_top = domain_max(patch_top, k_top);
 		  }
 
 		  int k_bottom = *(DataboxCoeff(bottom, i, j, 0));
 		  if ( k_bottom >= 0 ) {
-		     patch_bottom = min(patch_bottom, k_bottom);
+		     patch_bottom = domain_min(patch_bottom, k_bottom);
 		  }
 	       }
 	    }
 
 	    // adjust grid to include 2 pad cells
-	    patch_top = min(patch_top+2, iz + nz - 1);
-	    patch_bottom = max(patch_bottom-2, iz);
+	    patch_top = domain_min(patch_top+2, iz + nz - 1);
+	    patch_bottom = domain_max(patch_bottom-2, iz);
 
 	    // adjust for ghost cells, need to have patches 
 	    // that extend in height to the neighbor patches.
@@ -97,11 +98,11 @@ void ComputeDomain(
 	    // There is a more efficient way to compute all this but
 	    // since these are 2d arrays it should be reasonably quick.
 	    // Not a single loop since we don't need to pad these values.
-	    ix = max(0, ix -1);
-	    nx = min(DataboxNx(top) - ix, nx + 2 - ix);
+	    ix = domain_max(0, ix -1);
+	    nx = domain_min(DataboxNx(top) - ix, nx + 2 - ix);
 
-	    iy = max(0, iy -1);
-	    ny = min(DataboxNy(top) - iy, ny + 2 - iy);
+	    iy = domain_max(0, iy -1);
+	    ny = domain_min(DataboxNy(top) - iy, ny + 2 - iy);
 
 	    for (j = iy; j < iy+ ny; ++j)
 	    {
@@ -109,12 +110,12 @@ void ComputeDomain(
 	       {
 		  int k_top = *(DataboxCoeff(top, i, j, 0));
 		  if ( k_top >= 0 ) {
-		     patch_top = max(patch_top, k_top);
+		     patch_top = domain_max(patch_top, k_top);
 		  }
 
 		  int k_bottom = *(DataboxCoeff(bottom, i, j, 0));
 		  if ( k_bottom >= 0 ) {
-		     patch_bottom = min(patch_bottom, k_bottom);
+		     patch_bottom = domain_min(patch_bottom, k_bottom);
 		  }
 	       }
 	    }

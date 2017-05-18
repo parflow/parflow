@@ -137,7 +137,9 @@ void  FreeUserGrid(
  *   We currently assume that the user's grid consists of 1 subgrid only.
  *--------------------------------------------------------------------------*/
 
-#define pqr_to_xyz(pqr, mxyz, lxyz, xyz)   (pqr*mxyz + min(pqr, lxyz) + xyz)
+#define USERGRID_MIN(x, y) ((x) < (y) ? (x) : (y))
+
+#define pqr_to_xyz(pqr, mxyz, lxyz, xyz)   (pqr*mxyz + USERGRID_MIN(pqr, lxyz) + xyz)
 
 #define pqr_to_nxyz(pqr, mxyz, lxyz)  (pqr < lxyz ? mxyz+1 : mxyz)
 
