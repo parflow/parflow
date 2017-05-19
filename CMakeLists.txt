@@ -16,41 +16,66 @@ enable_testing ()
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 # TODO should get rid of non-prefix versions of flags; preprocessor flags should be in PARFLOW namespace
 
-find_package(MPI)
-if (${MPI_C_FOUND})
-  set(PARFLOW_HAVE_MPI TRUE)
-  set(HAVE_MPI TRUE)
-endif (${MPI_C_FOUND})
+# TODO replace CASC macro names with PARFLOW when completed.
+
+# Set AMPS communication layer
+set(PARFLOW_AMPS_LAYER "seq" CACHE STRING "Set the Communications layer to use")
+set_property(CACHE PARFLOW_AMPS_LAYER PROPERTY STRINGS seq mpi1 smpi oas3 win32)
+set(AMPS ${PARFLOW_AMPS_LAYER})
+
+option(PARFLOW_AMPS_SEQUENTIAL_IO "Use AMPS sequential I/O model for output" "no")
+set(AMPS_SPLIT_FILE ${PARFLOW_AMPS_SEQUENTIAL_IO})
+
+# OAS3
+option(PARFLOW_HAVE_OAS3 "Build with OAS3" "no")
+
+if (${PARFLOW_HAVE_OAS3})
+  set (PARFLOW_HAVE_OAS3 "yes")
+  set (HAVE_OAS3 ${PARFLOW_HAVE_OAS3})
+endif (${PARFLOW_HAVE_OAS3})
+
+set (PARFLOW_AMPS_LAYER_REQUIRE_MPI mpi1 smpi oas3)
+
+# Check for MPI only if AMPS requires it
+if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
+
+  find_package(MPI)
+  if (${MPI_C_FOUND})
+    set(PARFLOW_HAVE_MPI "yes")
+    set(HAVE_MPI ${PARFLOW_HAVE_MPI})
+  endif (${MPI_C_FOUND})
+
+endif ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
 
 find_package(TCL)
 if (${TCL_FOUND})
-  set(PARFLOW_HAVE_TCL TRUE)
-  set(HAVE_TCL TRUE)
+  set(PARFLOW_HAVE_TCL "yes")
+  set(HAVE_TCL ${PARFLOW_HAVE_TCL})
 endif (${TCL_FOUND})
 
 find_package(Silo)
 if (${SILO_FOUND})
   set(PARFLOW_HAVE_SILO "yes")
-  set(HAVE_SILO TRUE)
+  set(HAVE_SILO ${PARFLOW_HAVE_SILO})
 endif (${SILO_FOUND})
 
 find_package(HDF5)
 if (${HDF5_FOUND})
-  set(PARFLOW_HAVE_HDF5 TRUE)
-  set(HAVE_HDF5 TRUE)
+  set(PARFLOW_HAVE_HDF5 "yes")
+  set(HAVE_HDF5 ${PARFLOW_HAVE_HDF5})
 endif (${HDF5_FOUND})
 
 find_package(Hypre)
 if (${HYPRE_FOUND})
   set(PARFLOW_HAVE_HYPRE "yes")
-  set(HAVE_HYPRE TRUE)
+  set(HAVE_HYPRE ${PARFLOW_HAVE_HYPRE})
 endif (${HYPRE_FOUND})
 
 # The set of required Sundials libraries
 find_package(SUNDIALS COMPONENTS sundials_cvode sundials_kinsol)
 if (${SUNDIALS_FOUND})
-  set(PARFLOW_HAVE_SUNDIALS TRUE)
-  set(HAVE_SUNDIALS TRUE)
+  set(PARFLOW_HAVE_SUNDIALS "yes")
+  set(HAVE_SUNDIALS ${PARFLOW_HAVE_SUNDIALS})
 endif (${SUNDIALS_FOUND})
 
 #-----------------------------------------------------------------------------
@@ -133,24 +158,6 @@ elseif (${HAVE_FC_ACCESS_SEQUENTIAL})
 else (${HAVE_FC_ACCESS_STREAM})
   message( FATAL_ERROR "Unable to determine syntax to use for Fortran binary files")
 endif (${HAVE_FC_ACCESS_STREAM})
-
-# TODO replace CASC macro names with PARFLOW when completed.
-
-# Set AMPS communication layer
-set(PARFLOW_AMPS_LAYER "mpi1" CACHE STRING "Set the Communications layer to use")
-set_property(CACHE PARFLOW_AMPS_LAYER PROPERTY STRINGS mpi1 smpi seq oas3 win32)
-set(AMPS ${PARFLOW_AMPS_LAYER})
-
-option(PARFLOW_AMPS_SEQUENTIAL_IO "Use AMPS sequential I/O model for output" "OFF")
-set(AMPS_SPLIT_FILE ${PARFLOW_AMPS_SEQUENTIAL_IO})
-
-# OAS3
-set(PARFLOW_HAVE_OAS3 "no" CACHE STRING "Build with OAS3")
-
-if (${PARFLOW_HAVE_OAS3})
-  set (PARFLOW_HAVE_OAS3 "yes")
-  set (HAVE_OAS3 ${PARFLOW_HAVE_OAS3})
-endif (${PARFLOW_HAVE_OAS3})
 
 #
 # Check for platform specific features

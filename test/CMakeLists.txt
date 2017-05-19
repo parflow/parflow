@@ -1,19 +1,5 @@
 
-function (pf_add_sequential_test inputfile)
-  string(REGEX REPLACE "/\.tcl" "" testname ${inputfile})
-  add_test (NAME ${testname} COMMAND tclsh ${inputfile} 1 1 1 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-endfunction()
-
-function (pf_add_parallel_test inputfile topology)
-  string(REGEX REPLACE "/\.tcl" "" testname ${inputfile})
-  string(REGEX REPLACE " " "_" postfix ${topology})
-
-  list(APPEND args ${inputfile})
-  separate_arguments(targs UNIX_COMMAND ${topology})
-  list(APPEND args ${targs})
-
-  add_test (NAME ${testname}_${postfix} COMMAND tclsh ${args} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-endfunction()
+include(ParflowTest)
 
 set(TESTS default_single.tcl
   default_richards.tcl
