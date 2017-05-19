@@ -30,7 +30,7 @@ endif (${TCL_FOUND})
 
 find_package(Silo)
 if (${SILO_FOUND})
-  set(PARFLOW_HAVE_SILO TRUE)
+  set(PARFLOW_HAVE_SILO "yes")
   set(HAVE_SILO TRUE)
 endif (${SILO_FOUND})
 
@@ -42,7 +42,7 @@ endif (${HDF5_FOUND})
 
 find_package(Hypre)
 if (${HYPRE_FOUND})
-  set(PARFLOW_HAVE_HYPRE TRUE)
+  set(PARFLOW_HAVE_HYPRE "yes")
   set(HAVE_HYPRE TRUE)
 endif (${HYPRE_FOUND})
 
@@ -146,7 +146,11 @@ set(AMPS_SPLIT_FILE ${PARFLOW_AMPS_SEQUENTIAL_IO})
 
 # OAS3
 set(PARFLOW_HAVE_OAS3 "no" CACHE STRING "Build with OAS3")
-set(HAVE_OAS3 ${PARFLOW_HAVE_OAS3})
+
+if (${PARFLOW_HAVE_OAS3})
+  set (PARFLOW_HAVE_OAS3 "yes")
+  set (HAVE_OAS3 ${PARFLOW_HAVE_OAS3})
+endif (${PARFLOW_HAVE_OAS3})
 
 #
 # Check for platform specific features
@@ -176,9 +180,11 @@ if ( ${PARFLOW_HAVE_MALLINFO} )
   set(HAVE_MALLINFO ${PARFLOW_HAVE_MALLINFO})
 endif ( ${PARFLOW_HAVE_MALLINFO} )
 
-option(PARFLOW_HAVE_CLM "Compile with CLM" "OFF")
+option(PARFLOW_HAVE_CLM "Compile with CLM" "no")
 
 if ( ${PARFLOW_HAVE_CLM} )
+  # Make true value match autoconf value; for some backwards compatiblity
+  set(PARFLOW_HAVE_CLM "yes")
   set(HAVE_CLM ${PARFLOW_HAVE_CLM})
 endif ( ${PARFLOW_HAVE_CLM} )
 
@@ -219,6 +225,8 @@ configure_file (cmake/parflow_config.h.in include/parflow_config.h)
 # TODO need to setup script logic got correctly generate version file.
 configure_file (cmake/version.h.in include/version.h)
 
+configure_file (cmake/Makefile.config.in config/Makefile.config)
+
 if ( ${PARFLOW_HAVE_CLM} )
   configure_file (pfsimulator/clm/parflow_config.F90.in ${PROJECT_BINARY_DIR}/pfsimulator/clm/parflow_config.F90)
 endif ( ${PARFLOW_HAVE_CLM} )
@@ -250,4 +258,4 @@ endif ()
 #-----------------------------------------------------------------------------
 include (CTest)
 
-
+install (DIRECTORY ${CMAKE_BINARY_DIR}/config DESTINATION . )
