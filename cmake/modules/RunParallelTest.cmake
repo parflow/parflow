@@ -2,9 +2,22 @@ cmake_minimum_required(VERSION 3.4)
 
 # Execute command with error check
 macro(pf_exec_check cmd)
-  execute_process(COMMAND ${${cmd}} RESULT_VARIABLE cmdResult)
-  if(cmdResult)
-    message(FATAL_ERROR "Error running ${${cmd}}")
+  execute_process (COMMAND ${${cmd}} RESULT_VARIABLE cmdResult OUTPUT_VARIABLE stdout ERROR_VARIABLE stdout)
+  message(${stdout})
+  if (cmdResult)
+    message (FATAL_ERROR "Error running ${${cmd}}")
+  endif()
+
+  # If FAIL is present test fails
+  string(FIND ${stdout} "FAIL" test)
+  if (NOT ${test} EQUAL -1)
+    message (FATAL_ERROR "Test Failed")
+  endif()
+
+  # Test must say PASSED to pass
+  string(FIND ${stdout} "PASSED" test)
+  if (${test} LESS 0)
+    message (FATAL_ERROR "Test Failed")
   endif()
 endmacro()
 
@@ -23,7 +36,9 @@ endmacro()
 
 pf_test_clean ()
 
-set (CMD tclsh ${PARFLOW_TEST})
+list(APPEND CMD tclsh)
+list(APPEND CMD ${PARFLOW_TEST})
+
 pf_exec_check(CMD)
 
 

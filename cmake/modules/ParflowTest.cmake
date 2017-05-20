@@ -22,7 +22,7 @@ function (pf_add_parallel_test inputfile topology)
   separate_arguments(targs UNIX_COMMAND ${topology})
   list(APPEND args ${targs})
 
-  add_test (NAME ${testname}_${postfix} COMMAND ${CMAKE_COMMAND} -DPARFLOW_TEST=${args} -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunParallelTest.cmake WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  add_test (NAME ${testname}_${postfix} COMMAND ${CMAKE_COMMAND} "-DPARFLOW_TEST=${args}" -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunParallelTest.cmake WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endfunction()
 
 #
@@ -31,6 +31,11 @@ endfunction()
 # inputfile is the TCL script that defines the test.
 #
 function (pf_add_sequential_test inputfile)
-  pf_add_parallel_test $inputfile "1 1 1")
+  string(REGEX REPLACE "/\.tcl" "" testname ${inputfile})
+
+  list(APPEND args ${inputfile})
+  list(APPEND args 1 1 1)
+
+  add_test (NAME ${testname} COMMAND ${CMAKE_COMMAND} "-DPARFLOW_TEST=${args}" -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunParallelTest.cmake WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endfunction()
 
