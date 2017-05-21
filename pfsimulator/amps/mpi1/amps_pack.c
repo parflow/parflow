@@ -32,8 +32,8 @@
 #include "amps.h"
 
 #if MPI_VERSION < 2
-#define MPI_Get_address(location, address]) MPI_Address((location), (address))
-#define MPI_Type_create_hvector(count, blocklength, stride, oldtype, newtype)) MPI_Type_hvector((count), (blocklength), (stride), (oldtype), (newtype))
+#define MPI_Get_address(location, address) MPI_Address((location), (address))
+#define MPI_Type_create_hvector(count, blocklength, stride, oldtype, newtype) MPI_Type_hvector((count), (blocklength), (stride), (oldtype), (newtype))
 #define MPI_Type_create_struct(count, array_of_blocklengths, array_of_displacements, array_of_types, newtype) MPI_Type_struct((count), (array_of_blocklengths), (array_of_displacements), (array_of_types), (newtype))
 #endif
 
@@ -192,7 +192,7 @@ int amps_create_mpi_cont_send_type(
 	    if(i == 0)
 	    {
 	       MPI_Type_create_hvector(ptr -> ptr_len[i], 1, 0,
-				*base_type, &mpi_types[element]);
+				       *base_type, &mpi_types[element]);
 	       MPI_Type_free(base_type);
 	    }
 	    else
