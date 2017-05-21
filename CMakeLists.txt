@@ -18,6 +18,8 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/"
 
 # TODO replace CASC macro names with PARFLOW when completed.
 
+include (version)
+
 # Set AMPS communication layer
 set(PARFLOW_AMPS_LAYER "seq" CACHE STRING "Set the Communications layer to use")
 set_property(CACHE PARFLOW_AMPS_LAYER PROPERTY STRINGS seq mpi1 smpi oas3 win32)
@@ -69,6 +71,14 @@ find_package(Hypre)
 if (${HYPRE_FOUND})
   set(PARFLOW_HAVE_HYPRE "yes")
   set(HAVE_HYPRE ${PARFLOW_HAVE_HYPRE})
+
+  file(STRINGS ${HYPRE_INCLUDE_DIR}/HYPRE_config.h hypreConfig REGEX HYPRE_RELEASE_VERSION)
+  separate_arguments(hypreConfig)
+
+  list(GET hypreConfig 2 PARFLOW_HYPRE_VERSION)
+
+  version_create_variables (PARFLOW_HYPRE)
+
 endif (${HYPRE_FOUND})
 
 # The set of required Sundials libraries
