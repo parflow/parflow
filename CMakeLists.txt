@@ -41,11 +41,7 @@ set (PARFLOW_AMPS_LAYER_REQUIRE_MPI mpi1 smpi oas3)
 # Check for MPI only if AMPS requires it
 if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
 
-  message("SGS MPI_C_COMPILER ${MPI_C_COMPILER}")
-  message("SGS MPI_Fortran_COMPILER ${MPI_Fortran_COMPILER}")
   find_package(MPI)
-  message("SGS MPI_C_COMPILER ${MPI_C_COMPILER}")
-  message("SGS MPI_Fortran_COMPILER ${MPI_Fortran_COMPILER}")
   
   if (${MPI_C_FOUND})
     set(PARFLOW_HAVE_MPI "yes")
