@@ -20,6 +20,11 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/"
 
 include (Version)
 
+# Use RPATH in install, many mpicc scripts use RPATH so default
+# behavior of CMAKE to remove RPATH from installed executables is not
+# so good.
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 # Set AMPS communication layer
 set(PARFLOW_AMPS_LAYER "seq" CACHE STRING "Set the Communications layer to use")
 set_property(CACHE PARFLOW_AMPS_LAYER PROPERTY STRINGS seq mpi1 smpi oas3 win32)
