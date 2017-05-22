@@ -21,6 +21,14 @@ if (${PARFLOW_HAVE_HDF5})
   target_link_libraries (parflow ${HDF5_LIBRARIES})
 endif (${PARFLOW_HAVE_HDF5})
 
+if (${PARFLOW_HAVE_ZLIB})
+  target_link_libraries (parflow ${ZLIB_LIBRARIES})
+endif (${PARFLOW_HAVE_ZLIB})
+
+if (${PARFLOW_HAVE_SZLIB})
+  target_link_libraries (parflow ${SZLIB_LIBRARIES})
+endif (${PARFLOW_HAVE_SZLIB})
+
 if( ${PARFLOW_ENABLE_PROFILING} )
   set_target_properties(parflow PROPERTIES LINK_FLAGS ${PARFLOW_PROFILE_OPTS})
 endif( ${PARFLOW_ENABLE_PROFILING} )

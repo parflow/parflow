@@ -18,7 +18,7 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/"
 
 # TODO replace CASC macro names with PARFLOW when completed.
 
-include (version)
+include (Version)
 
 # Set AMPS communication layer
 set(PARFLOW_AMPS_LAYER "seq" CACHE STRING "Set the Communications layer to use")
@@ -41,7 +41,12 @@ set (PARFLOW_AMPS_LAYER_REQUIRE_MPI mpi1 smpi oas3)
 # Check for MPI only if AMPS requires it
 if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
 
+  message("SGS MPI_C_COMPILER ${MPI_C_COMPILER}")
+  message("SGS MPI_Fortran_COMPILER ${MPI_Fortran_COMPILER}")
   find_package(MPI)
+  message("SGS MPI_C_COMPILER ${MPI_C_COMPILER}")
+  message("SGS MPI_Fortran_COMPILER ${MPI_Fortran_COMPILER}")
+  
   if (${MPI_C_FOUND})
     set(PARFLOW_HAVE_MPI "yes")
     set(HAVE_MPI ${PARFLOW_HAVE_MPI})
@@ -80,6 +85,16 @@ if (${HYPRE_FOUND})
   version_create_variables (PARFLOW_HYPRE)
 
 endif (${HYPRE_FOUND})
+
+find_package(ZLIB)
+if (${ZLIB_FOUND})
+  set(PARFLOW_HAVE_ZLIB "yes")
+endif (${ZLIB_FOUND})
+
+find_package(SZLIB)
+if (${SZLIB_FOUND})
+  set(PARFLOW_HAVE_SZLIB "yes")
+endif (${SZLIB_FOUND})
 
 # The set of required Sundials libraries
 find_package(SUNDIALS COMPONENTS sundials_cvode sundials_kinsol)
