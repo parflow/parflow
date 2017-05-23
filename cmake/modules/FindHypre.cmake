@@ -26,9 +26,9 @@ find_path(HYPRE_INCLUDE_DIR NAMES HYPRE.h
                             HINTS ${HYPRE_ROOT}/include)
 
 if(NOT BUILD_SHARED_LIBS)
-  find_library(HYPRE_LIBRARY NAMES libHYPRE.a HINTS ${HYPRE_ROOT}/lib)
+  find_library(HYPRE_LIBRARY NAMES libHYPRE.a libHYPRE-64.a HINTS ${HYPRE_ROOT}/lib)
 else()
-  find_library(HYPRE_LIBRARY NAMES HYPRE HINTS ${HYPRE_ROOT}/lib)
+  find_library(HYPRE_LIBRARY NAMES HYPRE HYPRE-64 HINTS ${HYPRE_ROOT}/lib)
 endif()
 
 set(HYPRE_INCLUDE_DIRS ${HYPRE_INCLUDE_DIR})

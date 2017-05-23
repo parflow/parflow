@@ -1,5 +1,14 @@
 cmake_minimum_required (VERSION 3.4)
+
 project (PARFLOW C Fortran)
+
+# Control timing of Parflow functions.
+set (PARFLOW_FORCE_SHARED_LIBS False CACHE BOOL "Force CMake to build shared libraries.  On some systems CMake was not setup to build shared libraries")
+if (${PARFLOW_FORCE_SHARED_LIBS})
+    # This was needed since the CMAKE provided on LBNL Cray machines is hardcoded to not support
+    # shared library builds...
+    set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
+endif (${PARFLOW_FORCE_SHARED_LIBS})
 
 #-----------------------------------------------------------------------------
 # Version number
@@ -52,7 +61,7 @@ if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
     set(PARFLOW_HAVE_MPI "yes")
     set(HAVE_MPI ${PARFLOW_HAVE_MPI})
   endif (${MPI_C_FOUND})
-
+  
 endif ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
 
 find_package(TCL)
@@ -61,48 +70,83 @@ if (${TCL_FOUND})
   set(HAVE_TCL ${PARFLOW_HAVE_TCL})
 endif (${TCL_FOUND})
 
-find_package(Silo)
-if (${SILO_FOUND})
-  set(PARFLOW_HAVE_SILO "yes")
-  set(HAVE_SILO ${PARFLOW_HAVE_SILO})
-endif (${SILO_FOUND})
+#-----------------------------------------------------------------------------
+# SILO
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_SILO False CACHE BOOL "Build with Silo")
+if (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
+  find_package(Silo)
+  if (${SILO_FOUND})
+    set(PARFLOW_HAVE_SILO "yes")
+    set(HAVE_SILO ${PARFLOW_HAVE_SILO})
+  endif (${SILO_FOUND})
+endif (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 
-find_package(HDF5)
-if (${HDF5_FOUND})
-  set(PARFLOW_HAVE_HDF5 "yes")
-  set(HAVE_HDF5 ${PARFLOW_HAVE_HDF5})
-endif (${HDF5_FOUND})
+#-----------------------------------------------------------------------------
+# HDF5
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_HDF5 False CACHE BOOL "Build with HDF5")
+if (${PARFLOW_ENABLE_HDF5} OR DEFINED HDF5_ROOT)
+  find_package(HDF5)
+  if (${HDF5_FOUND})
+    set(PARFLOW_HAVE_HDF5 "yes")
+    set(HAVE_HDF5 ${PARFLOW_HAVE_HDF5})
+  endif (${HDF5_FOUND})
+endif (${PARFLOW_ENABLE_HDF5} OR DEFINED HDF5_ROOT)
 
-find_package(Hypre)
-if (${HYPRE_FOUND})
-  set(PARFLOW_HAVE_HYPRE "yes")
-  set(HAVE_HYPRE ${PARFLOW_HAVE_HYPRE})
+#-----------------------------------------------------------------------------
+# Hypre
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_HYPRE False CACHE BOOL "Build with Hypre")
+if (${PARFLOW_ENABLE_HYPRE} OR DEFINED HYPRE_ROOT)
+  find_package(Hypre)
+  if (${HYPRE_FOUND})
+    set(PARFLOW_HAVE_HYPRE "yes")
+    set(HAVE_HYPRE ${PARFLOW_HAVE_HYPRE})
+    
+    file(STRINGS ${HYPRE_INCLUDE_DIR}/HYPRE_config.h hypreConfig REGEX HYPRE_RELEASE_VERSION)
+    separate_arguments(hypreConfig)
+    
+    list(GET hypreConfig 2 PARFLOW_HYPRE_VERSION)
+    
+    version_create_variables (PARFLOW_HYPRE)
+    
+  endif (${HYPRE_FOUND})
+endif (${PARFLOW_ENABLE_HYPRE} OR DEFINED HYPRE_ROOT)
 
-  file(STRINGS ${HYPRE_INCLUDE_DIR}/HYPRE_config.h hypreConfig REGEX HYPRE_RELEASE_VERSION)
-  separate_arguments(hypreConfig)
+#-----------------------------------------------------------------------------
+# ZLIB
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_ZLIB False CACHE BOOL "Build with Zlib compression library")
+if (${PARFLOW_ENABLE_ZLIB} OR DEFINED ZLIB_ROOT)
+  find_package(ZLIB)
+  if (${ZLIB_FOUND})
+    set(PARFLOW_HAVE_ZLIB "yes")
+  endif (${ZLIB_FOUND})
+endif (${PARFLOW_ENABLE_ZLIB} OR DEFINED ZLIB_ROOT)
 
-  list(GET hypreConfig 2 PARFLOW_HYPRE_VERSION)
+#-----------------------------------------------------------------------------
+# SZLIB
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_SZLIB False CACHE BOOL "Build with SZlib compression library")
+if (${PARFLOW_ENABLE_SZLIB} OR DEFINED SZLIB_ROOT)
+  find_package(SZLIB)
+  if (${SZLIB_FOUND})
+    set(PARFLOW_HAVE_SZLIB "yes")
+  endif (${SZLIB_FOUND})
+endif (${PARFLOW_ENABLE_SZLIB} OR DEFINED SZLIB_ROOT)
 
-  version_create_variables (PARFLOW_HYPRE)
-
-endif (${HYPRE_FOUND})
-
-find_package(ZLIB)
-if (${ZLIB_FOUND})
-  set(PARFLOW_HAVE_ZLIB "yes")
-endif (${ZLIB_FOUND})
-
-find_package(SZLIB)
-if (${SZLIB_FOUND})
-  set(PARFLOW_HAVE_SZLIB "yes")
-endif (${SZLIB_FOUND})
-
-# The set of required Sundials libraries
-find_package(SUNDIALS COMPONENTS sundials_cvode sundials_kinsol)
-if (${SUNDIALS_FOUND})
-  set(PARFLOW_HAVE_SUNDIALS "yes")
-  set(HAVE_SUNDIALS ${PARFLOW_HAVE_SUNDIALS})
-endif (${SUNDIALS_FOUND})
+#-----------------------------------------------------------------------------
+# Sundials
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_SUNDIALS False CACHE BOOL "Build with SZlib compression library")
+if (${PARFLOW_ENABLE_SUNDIALS} OR DEFINED SUNDIALS_ROOT)
+  find_package(SUNDIALS COMPONENTS sundials_cvode sundials_kinsol)
+  if (${SUNDIALS_FOUND})
+    set(PARFLOW_HAVE_SUNDIALS "yes")
+    set(HAVE_SUNDIALS ${PARFLOW_HAVE_SUNDIALS})
+  endif (${SUNDIALS_FOUND})
+endif (${PARFLOW_ENABLE_SUNDIALS} OR DEFINED SUNDIALS_ROOT)
 
 #-----------------------------------------------------------------------------
 # Fortran checks

@@ -26,7 +26,7 @@ find_path(SILO_INCLUDE_DIR NAMES silo.h
                             HINTS ${SILO_ROOT}/include)
 
 if(NOT BUILD_SHARED_LIBS)
-  find_library(SILO_LIBRARY NAMES libsiloh5.a HINTS ${SILO_ROOT}/lib)
+  find_library(SILO_LIBRARY NAMES libsiloh5.a libsilo.a HINTS ${SILO_ROOT}/lib)
 else()
   find_library(SILO_LIBRARY NAMES siloh5 silo HINTS ${SILO_ROOT}/lib)
 endif()

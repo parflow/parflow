@@ -141,6 +141,15 @@ Note that the envirobnment variable `PAFLOW_DIR` must be set for this
 to work and it assumes tclsh is in your path.  Make sure to use the
 same TCL as was used in the cmake configure.
 
+## Configure options
+
+A number of packages are optional for building Parflow.  The optional
+packages are enabled by PARFLOW_<package>_ENABLE value to be true or
+setting the <package>_ROOT=<directory> value.  If a package is enabled
+with the first method, CMake will attempt to find the package in
+standard locations.  Setting both values is the same as setting only
+the <pacakge>_ROOT value.
+
 ## Building simulator and tools support seperately
 
 Parflow is composed of two main components that maybe configured and
