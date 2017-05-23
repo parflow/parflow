@@ -29,6 +29,10 @@ if (${PARFLOW_HAVE_SZLIB})
   target_link_libraries (parflow ${SZLIB_LIBRARIES})
 endif (${PARFLOW_HAVE_SZLIB})
 
+if (${PARFLOW_HAVE_SLURM})
+  target_link_libraries (parflow ${SLURM_LIBRARIES})
+endif (${PARFLOW_HAVE_SLURM})
+
 if( ${PARFLOW_ENABLE_PROFILING} )
   set_target_properties(parflow PROPERTIES LINK_FLAGS ${PARFLOW_PROFILE_OPTS})
 endif( ${PARFLOW_ENABLE_PROFILING} )
