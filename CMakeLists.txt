@@ -149,6 +149,18 @@ if (${PARFLOW_ENABLE_SUNDIALS} OR DEFINED SUNDIALS_ROOT)
 endif (${PARFLOW_ENABLE_SUNDIALS} OR DEFINED SUNDIALS_ROOT)
 
 #-----------------------------------------------------------------------------
+# SLURM
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_SLURM False CACHE BOOL "Build with SLURM support")
+if (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
+  find_package(SLURM)
+  if (${SLURM_FOUND})
+    set(PARFLOW_HAVE_SLURM "yes")
+    set(HAVE_SLURM ${PARFLOW_HAVE_SLURM})
+  endif (${SLURM_FOUND})
+endif (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
+
+#-----------------------------------------------------------------------------
 # Fortran checks
 #-----------------------------------------------------------------------------
 INCLUDE (CheckFortranSourceCompiles)
