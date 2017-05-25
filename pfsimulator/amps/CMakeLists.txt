@@ -5,7 +5,7 @@ file(GLOB_RECURSE COMMON_SRC_FILES common/*.c)
 include("${PARFLOW_AMPS_LAYER}/CMakeLists.cmake")
 string(REGEX REPLACE "([^;]+)" "${PARFLOW_AMPS_LAYER}/\\1" AMPS_SRC_FILES "${AMPS_SRC_FILES}")
 
-add_library(amps ${COMMON_SRC_FILES} ${AMPS_SRC_FILES})
+add_library(amps STATIC ${COMMON_SRC_FILES} ${AMPS_SRC_FILES})
 
 if (${PARFLOW_HAVE_MPI})
   target_include_directories (amps PUBLIC "${MPI_C_INCLUDE_PATH}")

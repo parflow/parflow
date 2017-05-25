@@ -2,14 +2,6 @@ cmake_minimum_required (VERSION 3.4)
 
 project (PARFLOW C Fortran)
 
-# Control timing of Parflow functions.
-set (PARFLOW_FORCE_SHARED_LIBS False CACHE BOOL "Force CMake to build shared libraries.  On some systems CMake was not setup to build shared libraries")
-if (${PARFLOW_FORCE_SHARED_LIBS})
-    # This was needed since the CMAKE provided on LBNL Cray machines is hardcoded to not support
-    # shared library builds...
-    set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
-endif (${PARFLOW_FORCE_SHARED_LIBS})
-
 #-----------------------------------------------------------------------------
 # Version number
 #-----------------------------------------------------------------------------
