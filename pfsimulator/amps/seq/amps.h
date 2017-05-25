@@ -213,8 +213,6 @@ typedef struct amps_HandleObject
 
 } *amps_Handle;
 
-typedef long amps_Clock_t;
-
 /*****************************************************************************
  *
  *   PACKING structures and defines
