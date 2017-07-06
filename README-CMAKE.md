@@ -1,27 +1,31 @@
 
-## Quick Start with CMake on Unix
+## Quick Start with CMake on Unix/Linux
 
-CMake support is beta; feedback is appriciated.  The Parflow project
-will be moving to CMake and removing support for the GNU Autoconf.
+CMake support is beta; feedback is appreciated.  The ParFlow project
+will be moving to CMake and removing support for the GNU Autoconf in a
+future release.
 
-Important change for users used to previous building, the configure
-process is one step by default.  Most builds of of Parflow are now on
-MPP architectures or workstations where the login node and compute
-nodes are same archticture the default build process builds both the
-Parflow executable and tools as one process.  This will hopefully make
-building easier for the majority of users.  It is still possible to
-build the two components seperatly; see instuction below.
+Important change for users that have built with Autoconf, the CMake
+configure process is one step by default.  Most builds of of ParFlow
+are on MPP architectures or workstations where the login node and
+compute nodes are same architecture the default build process builds
+both the ParFlow executable and tools with the same compilers and
+libraries in one step.  This will hopefully make building easier for
+the majority of users.  It is still possible to build the two
+components separately; see instruction below for building pftools and
+pfsimulator separately.
 
-CMake supports builds for other OS's and IDE tools (like Visual Studio
-on Windows and XCode on MacOS).  The Parflow team has not tested
-building on other platforms; there will likely be some issues.  We
-welcome bug reports and patches if you attempt other builds.
+CMake supports builds for several operating systems and IDE tools
+(like Visual Studio on Windows and XCode on MacOS).  The ParFlow team
+has not tested building on platforms other than Linux; there will
+likely be some issues on other platforms.  The ParFlow team welcomes
+bug reports and patches if you attempt other builds.
 
 ### Step 1: Setup
 
-Decide where you wish to install Parflow and associated libraries.
+Decide where to install ParFlow and associated libraries.
 
-Set the environment variable `PARFLOW_DIR` to your chosen location:
+Set the environment variable `PARFLOW_DIR` to the chosen location:
 
 For bash:
 
@@ -39,38 +43,66 @@ For csh and tcsh:
 
 Extract the source files from the compressed tar file.
 
+Obtain the release from the ParFlow GitHub web site:
+
+https://github.com/parflow/parflow/releases
+
+and extract the release.  Here we assume you are building in new
+subdirectory in your home directory:
+
 ```shell
    mkdir ~/parflow 
    cd ~/parflow 
-   gunzip ../parflow.tar.Z 
+   tar -xvf ../parflow.tar.gz
+```
+
+Note the ParFlow tar file will be have a different name based on the
+version number.
+
+If you are not using GNU tar or have a very old version GNU tar you
+will need to uncompress the file first:
+
+```shell
+   mkdir ~/parflow 
+   cd ~/parflow 
+   gunzip ../parflow.tar.gz
    tar -xvf ../parflow.tar
 ```
 
-### Step 3: Running CMake to configure Parflow
+### Step 3: Running CMake to configure ParFlow
 
-CMake is a utility that sets up makefiles for building parflow.  First
-create a directory for the build.  It is generally recommend to build
-outside of the source directory to make it keep things clean.  For
-example, restarting a failed build with a seperate build directoy
-simply involves removing the build directory.
+CMake is a utility that sets up makefiles for building ParFlow.  CMake
+allows setting of compiler to use and other options.  First create a
+directory for the build.  It is generally recommend to build outside
+of the source directory to make it keep things clean.  For example,
+restarting a failed build with a separate build directory simply
+involves removing the build directory.
 
 #### Building with the ccmake GUI
 
-You can control build options for Parflow using the ccmake GUI.
+You can control build options for ParFlow using the ccmake GUI.
 
 ```shell
    mkdir build
    cd build
    ccmake ../parflow 
 ```
-You will want to set the CMAKE_INSTALL_PREFIX value to the same thing
-as PARFLOW_DIR was set to above.
+At a minimum, you will want to set the CMAKE_INSTALL_PREFIX value to the same thing
+as PARFLOW_DIR was set to above.  Other variables should be set as desired.
+
+After setting a variable 'c' will configure `ParFlow.  When you are
+completely done setting configuration options, use 'g' to generate the
+configuration and exit ccmake.
+
+If you are new to CMake, the creators of CMake provide some additional ccmake usage notes here:
+
+https://cmake.org/runningcmake/
 
 #### Building with the cmake command line
 
-CMake may also be configured from the command line.  The default will
-configure a sequential version of Parflow using MPI libraries.  CLM is
-being enabled.
+CMake may also be configured from the command line using the cmake
+command.  The default will configure a sequential version of ParFlow
+using MPI libraries.  CLM is being enabled.
 
 ```shell
    mkdir build
@@ -80,9 +112,16 @@ being enabled.
    	 -DPARFLOW_HAVE_CLM=ON
 ```
 
-To build a parallel version of Parflow the communications layer to use
-must be set.  The most common option will be MPI.  Here is a minimal
-example of an MPI build with CLM:
+If TCL is not installed in the standard locations (/usr or /usr/local)
+you need to specify the path to the tclsh location:
+
+```shell
+	-DTCL_TCLSH=${PARFLOW_TCL_DIR}/bin/tclsh8.6
+```
+
+Building a parallel version of ParFlow requires the communications
+layer to use must be set.  The most common option will be MPI.  Here
+is a minimal example of an MPI build with CLM:
 
 ```shell
    mkdir build
@@ -94,7 +133,7 @@ example of an MPI build with CLM:
 ```
 
 Here is a more complex example where location of various external
-packages are being specified and some features are being enabled.
+packages are being specified and some features are being enabled:
 
 ```shell
    mkdir build
@@ -111,9 +150,6 @@ packages are being specified and some features are being enabled.
 	-DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR)
 ```
 
-If TCL is not installed in the system locations (/usr or /usr/local)
-you need to specify the path with the <TODO> option.
-
 ### Step 4: Building and installing
 
 Once CMake has configured and created a set of Makefiles; building is
@@ -125,44 +161,46 @@ easy:
    make install
 ```
 
-Use `./configure --help` to list additional configure options for pftools.
-
-
 ### Step 5: Running a sample problem
 
-If all went well a sample Parflow problem can be run using:
+If all went well a sample ParFlow problem can be run using:
 
 ```shell
 cd parflow/test
 tclsh default_single.tcl 1 1 1
 ```
 
-Note that the envirobnment variable `PAFLOW_DIR` must be set for this
+Note that the environment variable `PAFLOW_DIR` must be set for this
 to work and it assumes tclsh is in your path.  Make sure to use the
-same TCL as was used in the cmake configure.
+same TCL shell as was used in the cmake configure.
+
+Some parallel machines do not allow launching a parallel executable
+from the login node; you may need to run this command in a batch file
+or by starting a parallel interactive session.
 
 ## Configure options
 
-A number of packages are optional for building Parflow.  The optional
+A number of packages are optional for building ParFlow.  The optional
 packages are enabled by PARFLOW_<package>_ENABLE value to be true or
 setting the <package>_ROOT=<directory> value.  If a package is enabled
-with the first method, CMake will attempt to find the package in
-standard locations.  Setting both values is the same as setting only
-the <pacakge>_ROOT value.
+with the using an ENABLE flag CMake will attempt to find the package
+in standard locations.  Explicitly setting the location using the ROOT
+variable for a package automatically enables it, you don't need to
+specify both values.
 
-## Building simulator and tools support seperately
+## Building simulator and tools support separately
 
-Parflow is composed of two main components that maybe configured and
-built seperately.  Some HPC platfroms are hetergenous with the login
-node being different than the compute nodes.  The Parflow system has
+ParFlow is composed of two main components that maybe configured and
+built separately.  Some HPC platforms are heterogeneous with the login
+node being different than the compute nodes.  The ParFlow system has
 an executable for the simulator which needs to run on the compute
-nodes and a set of TCL libraries used for problem setup that may need
-to run on the login node for problem setup.
+nodes and a set of TCL libraries used for problem setup that can be
+run on the login node for problem setup.
 
 The CMake variables PARFLOW_ENABLE_SIMULATOR and PARFLOW_ENABLE_TOOLS
 control which component is configured.  By default both are true.  To
-build seperately use to build directories and run cmake in each to
-build the simulator and tools components seperately. By specifing
-different compilers for each, one can build for different
-archtictures for each component.
+build separately use two build directories and run cmake in each to
+build the simulator and tools components separately. By specifying
+different compilers and options for each, one can target different
+architectures for each component.
 
