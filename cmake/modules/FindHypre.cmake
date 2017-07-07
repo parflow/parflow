@@ -32,6 +32,8 @@ else()
   set(EXT "")
 endif()
 
+message(STATUS "Looing for Ext ${EXT}")
+
 find_library(HYPRE_LIBRARY NAMES libHYPRE${EXT} libHYPRE-64${EXT}
   HINTS ${HYPRE_ROOT}/lib
   PATHS /usr/lib)
@@ -40,20 +42,28 @@ find_library(HYPRE_LIBRARY NAMES libHYPRE${EXT} libHYPRE-64${EXT}
 if(HYPRE_LIBRARY)
   set(HYPRE_LIBRARIES ${HYPRE_LIBRARY})    
 else()
+  message(STATUS "Looking for libHYPRE_struct_ls${EXT}")
   find_library(HYPRE_LIBRARY NAMES libHYPRE_struct_ls${EXT}
     HINTS ${HYPRE_ROOT}/lib
     PATHS /usr/lib /lib)
+
+  message(STATUS "Found ${HYPRE_LIBRARY}")
   if(HYPRE_LIBRARY)
     set(HYPRE_LIBRARIES ${HYPRE_LIBRARY})
-    
+
+      message(STATUS "Looking for libHYPRE_struct_mv${EXT}")
     find_library(HYPRE_LIBRARY NAMES libHYPRE_struct_mv${EXT}
       HINTS ${HYPRE_ROOT}/lib
       PATHS /usr/lib /lib)
+          
+    message(STATUS "Found ${HYPRE_LIBRARY}")
     if(HYPRE_LIBRARY)
       list(APPEND HYPRE_LIBRARIES ${HYPRE_LIBRARY})
     endif()
   endif()
 endif()
+
+message(STATUS "Found ${HYPRE_LIBRARIES}")
 
 set(HYPRE_INCLUDE_DIRS ${HYPRE_INCLUDE_DIR})
 
