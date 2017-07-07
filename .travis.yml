@@ -5,6 +5,10 @@ compiler:
   - gcc
 os:
   - linux
+addons:
+  apt:
+    packages:
+    - cmake-
 
 before_install:
   - echo $LANG
@@ -17,6 +21,8 @@ before_install:
   - sudo apt-get install -y libsilo-bin  libsilo-dev
   - sudo apt-get install -y tcl-dev tk-dev
   - sudo apt-get install -y openmpi-bin openmpi-doc libopenmpi-dev
+  - sudo apt-cache search cmake
+  - cmake --version
 
 before_script:
   - cd $TRAVIS_BUILD_DIR
