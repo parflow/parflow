@@ -5,6 +5,7 @@ compiler:
   - gcc
 os:
   - linux
+
 before_install:
   - echo $LANG
   - echo $LC_ALL
@@ -16,6 +17,7 @@ before_install:
   - sudo apt-get install -y libsilo-bin  libsilo-dev
   - sudo apt-get install -y tcl-dev tk-dev
   - sudo apt-get install -y openmpi-bin openmpi-doc libopenmpi-dev
+
 before_script:
   - cd $TRAVIS_BUILD_DIR
   - export PARFLOW_SRC_DIR=$TRAVIS_BUILD_DIR
