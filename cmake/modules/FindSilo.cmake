@@ -22,14 +22,12 @@ if(NOT SILO_ROOT)
 endif()
 
 find_path(SILO_INCLUDE_DIR NAMES silo.h
-                            PATH_SUFFIXES silo
-                            HINTS ${SILO_ROOT}/include)
+  PATH_SUFFIXES silo
+  HINTS ${SILO_ROOT}/include)
 
-if(NOT BUILD_SHARED_LIBS)
-  find_library(SILO_LIBRARY NAMES libsiloh5.a libsilo.a HINTS ${SILO_ROOT}/lib)
-else()
-  find_library(SILO_LIBRARY NAMES siloh5 silo HINTS ${SILO_ROOT}/lib)
-endif()
+find_library(SILO_LIBRARY NAMES siloh5 silo
+  HINTS ${SILO_ROOT}/lib
+  PATHS /usr/lib64 /usr/lib)
 
 set(SILO_INCLUDE_DIRS ${SILO_INCLUDE_DIR})
 set(SILO_LIBRARIES ${SILO_LIBRARY})

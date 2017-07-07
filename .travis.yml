@@ -38,5 +38,6 @@ before_script:
   - mkdir -p build && (cd build && ../cmake-3.4.3-Linux-x86_64/bin/cmake -DCMAKE_BUILD_TYPE=Release -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DPARFLOW_ENABLE_HYPRE=true -DPARFLOW_ENABLE_HDF5=true -DPARFLOW_ENABLE_SILO=true -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR .. )
   - (cd build && make && make install)
 script:
+  - ls /usr/lib/*HYPRE*
   - (cd build && make test)
   

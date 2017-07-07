@@ -26,35 +26,28 @@ find_path(HYPRE_INCLUDE_DIR NAMES HYPRE.h
   HINTS ${HYPRE_ROOT}/include
   PATHS /usr/include)
 
-if(NOT BUILD_SHARED_LIBS)
-  set(EXT ".a")
-else()
-  set(EXT "")
-endif()
-
-message(STATUS "Looing for Ext ${EXT}")
-
-find_library(HYPRE_LIBRARY NAMES libHYPRE${EXT} libHYPRE-64${EXT}
+find_library(HYPRE_LIBRARY NAMES libHYPRE libHYPRE-64
   HINTS ${HYPRE_ROOT}/lib
-  PATHS /usr/lib)
+  PATHS /usr/lib64 /lib64 /usr/lib /lib)
 
 # Following checks were needed on Ubuntu distributions.   libHYPRE.so is empty.
 if(HYPRE_LIBRARY)
+  message(STATUS "Found ${HYPRE_LIBRARY}")
   set(HYPRE_LIBRARIES ${HYPRE_LIBRARY})    
 else()
-  message(STATUS "Looking for libHYPRE_struct_ls${EXT}")
-  find_library(HYPRE_LIBRARY NAMES libHYPRE_struct_ls${EXT}
+  message(STATUS "Looking for libHYPRE_struct_ls")
+  find_library(HYPRE_LIBRARY NAMES libHYPRE_struct_ls
     HINTS ${HYPRE_ROOT}/lib
-    PATHS /usr/lib /lib)
+    PATHS /usr/lib64 /lib64 /usr/lib /lib)
 
   message(STATUS "Found ${HYPRE_LIBRARY}")
   if(HYPRE_LIBRARY)
     set(HYPRE_LIBRARIES ${HYPRE_LIBRARY})
 
-      message(STATUS "Looking for libHYPRE_struct_mv${EXT}")
-    find_library(HYPRE_LIBRARY NAMES libHYPRE_struct_mv${EXT}
+    message(STATUS "Looking for libHYPRE_struct_mv")
+    find_library(HYPRE_LIBRARY NAMES libHYPRE_struct_mv
       HINTS ${HYPRE_ROOT}/lib
-      PATHS /usr/lib /lib)
+      PATHS /usr/lib64 /lib64 /usr/lib /lib)
           
     message(STATUS "Found ${HYPRE_LIBRARY}")
     if(HYPRE_LIBRARY)
@@ -63,7 +56,7 @@ else()
   endif()
 endif()
 
-message(STATUS "Found ${HYPRE_LIBRARIES}")
+message(STATUS "Found HYPRE_LIBRARIES ${HYPRE_LIBRARIES}")
 
 set(HYPRE_INCLUDE_DIRS ${HYPRE_INCLUDE_DIR})
 
