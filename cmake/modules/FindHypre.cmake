@@ -26,7 +26,7 @@ find_path(HYPRE_INCLUDE_DIR NAMES HYPRE.h
   HINTS ${HYPRE_ROOT}/include
   PATHS /usr/include)
 
-find_library(HYPRE_LIBRARY NAMES libHYPRE libHYPRE-64
+find_library(HYPRE_LIBRARY NAMES HYPRE HYPRE-64
   HINTS ${HYPRE_ROOT}/lib
   PATHS /usr/lib64 /lib64 /usr/lib /lib)
 
@@ -35,8 +35,8 @@ if(HYPRE_LIBRARY)
   message(STATUS "Found ${HYPRE_LIBRARY}")
   set(HYPRE_LIBRARIES ${HYPRE_LIBRARY})    
 else()
-  message(STATUS "Looking for libHYPRE_struct_ls")
-  find_library(HYPRE_LIBRARY NAMES libHYPRE_struct_ls
+  message(STATUS "Looking for HYPRE_struct_ls")
+  find_library(HYPRE_LIBRARY NAMES HYPRE_struct_ls
     HINTS ${HYPRE_ROOT}/lib
     PATHS /usr/lib64 /lib64 /usr/lib /lib)
 
@@ -44,8 +44,8 @@ else()
   if(HYPRE_LIBRARY)
     set(HYPRE_LIBRARIES ${HYPRE_LIBRARY})
 
-    message(STATUS "Looking for libHYPRE_struct_mv")
-    find_library(HYPRE_LIBRARY NAMES libHYPRE_struct_mv
+    message(STATUS "Looking for HYPRE_struct_mv")
+    find_library(HYPRE_LIBRARY NAMES HYPRE_struct_mv
       HINTS ${HYPRE_ROOT}/lib
       PATHS /usr/lib64 /lib64 /usr/lib /lib)
           
