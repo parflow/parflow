@@ -21,6 +21,7 @@ before_install:
   - sudo apt-get install -y gfortran
   - sudo apt-get install -y libhypre-2.8.0b libhypre-dev
   - sudo apt-get install -y libsilo-bin  libsilo-dev
+  - sudo apt-get install -y libhdf5-openmpi-dev libhdf5-openmpi-7 hdf5-helpers
   - sudo apt-get install -y tcl-dev tk-dev
   - sudo apt-get install -y openmpi-bin openmpi-doc libopenmpi-dev
   - if [[ ! -f cmake-3.4.3-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate http://cmake.org/files/v3.4/cmake-3.4.3-Linux-x86_64.tar.gz && tar -xvf cmake-3.4.3-Linux-x86_64.tar.gz; fi
