@@ -22,22 +22,40 @@ if(NOT HYPRE_ROOT)
 endif()
 
 find_path(HYPRE_INCLUDE_DIR NAMES HYPRE.h
-                            PATH_SUFFIXES hypre
-                            HINTS ${HYPRE_ROOT}/include
-			    PATHS /usr/include)
+  PATH_SUFFIXES hypre
+  HINTS ${HYPRE_ROOT}/include
+  PATHS /usr/include)
 
 if(NOT BUILD_SHARED_LIBS)
-  find_library(HYPRE_LIBRARY NAMES libHYPRE.a libHYPRE-64.a
-    HINTS ${HYPRE_ROOT}/lib
-    PATHS /usr/lib)
+  set(EXT ".a")
 else()
-  find_library(HYPRE_LIBRARY NAMES HYPRE HYPRE-64
+  set(EXT "")
+endif()
+
+find_library(HYPRE_LIBRARY NAMES libHYPRE${EXT} libHYPRE-64${EXT}
+  HINTS ${HYPRE_ROOT}/lib
+  PATHS /usr/lib)
+
+# Following checks were needed on Ubuntu distributions.   libHYPRE.so is empty.
+if(HYPRE_LIBRARY)
+  set(HYPRE_LIBRARIES ${HYPRE_LIBRARY})    
+else()
+  find_library(HYPRE_LIBRARY NAMES libHYPRE_struct_ls${EXT}
     HINTS ${HYPRE_ROOT}/lib
-    PATHS /usr/lib)
+    PATHS /usr/lib /lib)
+  if(HYPRE_LIBRARY)
+    set(HYPRE_LIBRARIES ${HYPRE_LIBRARY})
+    
+    find_library(HYPRE_LIBRARY NAMES libHYPRE_struct_mv${EXT}
+      HINTS ${HYPRE_ROOT}/lib
+      PATHS /usr/lib /lib)
+    if(HYPRE_LIBRARY)
+      list(APPEND HYPRE_LIBRARIES ${HYPRE_LIBRARY})
+    endif()
+  endif()
 endif()
 
 set(HYPRE_INCLUDE_DIRS ${HYPRE_INCLUDE_DIR})
-set(HYPRE_LIBRARIES ${HYPRE_LIBRARY})
 
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(HYPRE DEFAULT_MSG HYPRE_LIBRARIES HYPRE_INCLUDE_DIRS)
 
