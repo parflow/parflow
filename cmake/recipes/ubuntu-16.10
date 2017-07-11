@@ -3,9 +3,9 @@
 sudo apt-get update
 sudo apt-get install -y cmake cmake-curses-gui
 sudo apt-get install -y gfortran
-sudo apt-get install -y libhypre-2.8.0b libhypre-dev
+sudo apt-get install -y libhypre-dev
 sudo apt-get install -y libsilo-bin  libsilo-dev
-sudo apt-get install -y libhdf5-openmpi-dev libhdf5-openmpi-7 hdf5-helpers
+sudo apt-get install -y libhdf5-openmpi-dev libhdf5-openmpi-10 hdf5-helpers
 sudo apt-get install -y tcl-dev tk-dev
 sudo apt-get install -y openmpi-bin openmpi-doc libopenmpi-dev
 
