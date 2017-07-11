@@ -79,6 +79,7 @@ endif (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 #-----------------------------------------------------------------------------
 set (PARFLOW_ENABLE_HDF5 False CACHE BOOL "Build with HDF5")
 if (${PARFLOW_ENABLE_HDF5} OR DEFINED HDF5_ROOT)
+  set(HDF5_PREFER_PARALLEL True)
   find_package(HDF5)
   if (${HDF5_FOUND})
     set(PARFLOW_HAVE_HDF5 "yes")
