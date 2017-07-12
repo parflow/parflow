@@ -23,11 +23,12 @@ endif()
 
 find_path(SILO_INCLUDE_DIR NAMES silo.h
   PATH_SUFFIXES silo
-  HINTS ${SILO_ROOT}/include)
+  HINTS ${SILO_ROOT}/include
+  PATHS /usr/include /usr/local/include)
 
 find_library(SILO_LIBRARY NAMES siloh5 silo
   HINTS ${SILO_ROOT}/lib
-  PATHS /usr/lib64 /usr/lib)
+  PATHS /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib)
 
 set(SILO_INCLUDE_DIRS ${SILO_INCLUDE_DIR})
 set(SILO_LIBRARIES ${SILO_LIBRARY})

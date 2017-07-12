@@ -24,12 +24,12 @@ endif()
 find_path(HYPRE_INCLUDE_DIR NAMES HYPRE.h
   PATH_SUFFIXES hypre
   HINTS ${HYPRE_ROOT}/include
-  PATHS /usr/include)
+  PATHS /usr/include /usr/include/openmpi-x86_64)
 
 # Search first for specific HYPRE libraries; on ubuntu the HYPRE.so is broken and empty.
 find_library(HYPRE_LIBRARY_LS NAMES HYPRE_struct_ls
   HINTS ${HYPRE_ROOT}/lib
-  PATHS /usr/lib64 /lib64 /usr/lib /lib)
+  PATHS /usr/lib64 /lib64 /usr/lib /lib /usr/lib64/openmpi/lib)
 
 if(HYPRE_LIBRARY_LS)
   set(HYPRE_LIBRARIES ${HYPRE_LIBRARY_LS})
