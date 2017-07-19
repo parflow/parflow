@@ -1010,6 +1010,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			      rpp[ip-sz_p]*dp[ip-sz_p], rpp[ip]*dp[ip]) 
 			      / viscosity;
                 
+			   sep = dz*z_mult_dat[ip]/2.0;				
 
 			   lower_cond = value/sep  -  0.25*dp[ip] * gravity;
 			   upper_cond = pp[ip]/sep +  0.25*dp[ip] * gravity;
@@ -1045,12 +1046,11 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
 			      * RPMean(lower_cond, upper_cond, 
 			      rpp[ip]*dp[ip], rpp[ip+sz_p]*dp[ip+sz_p])
 			      / viscosity;
- 
-                lower_cond = (pp[ip] / sep) - 0.25 *  dp[ip] * gravity *
-               z_dir_g; 
-                
-                upper_cond = (value / sep) + 0.25 * dp[ip] * gravity *
-               z_dir_g; 
+ 			   
+			   sep = dz*z_mult_dat[ip]/2.0;
+
+	                   lower_cond = (pp[ip] / sep) - 0.25 *  dp[ip] * gravity * z_dir_g; 
+       	  	           upper_cond = (value / sep) + 0.25 * dp[ip] * gravity * z_dir_g; 
                 
 			   diff = lower_cond - upper_cond;
 			   u_new = RPMean(lower_cond, upper_cond,
@@ -1192,7 +1192,7 @@ void NlFunctionEval (Vector *pressure,  /* Current pressure values */
                 sep = dz*Mean(z_mult_dat[ip],z_mult_dat[ip-sz_p]);  //RMM     
 
                      lower_cond = (pp[ip-sz_p] / sep) 
-			      -  (z_mult_dat[ip]-sz_p/(z_mult_dat[ip]+z_mult_dat[ip-sz_p]))  * dp[ip-sz_p] * gravity*
+			      -  (z_mult_dat[ip-sz_p]/(z_mult_dat[ip]+z_mult_dat[ip-sz_p]))  * dp[ip-sz_p] * gravity*
                     z_dir_g;
                      
 			   upper_cond = (pp[ip] / sep) + (z_mult_dat[ip]/(z_mult_dat[ip]+z_mult_dat[ip-sz_p]))  * dp[ip] * gravity*
