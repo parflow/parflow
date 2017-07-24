@@ -43,11 +43,15 @@ To report Parflow bugs, please use the GitHub issue tracker for Parflow:
 
 ## Quick Start
 
-Parflow uses a configure/make system based on the standard GNU
-autoconf configure system.  Parflow is composed of two main components
-that are configured and built seperately.  The main Parflow executable
-is built first then a set of TCL libraries are built.  TCL is used for
-setting up a Parflow run.  Since some MPP architectures use different
+Parflow currently uses a configure/build system based on the standard
+GNU autoconf configure system.  The steps to configure/build with GNU
+autoconf are below.  The project is moving to CMake; the CMake
+configure/build process is documented in the README-CMAKE.md file.
+
+Parflow is composed of two main components that are configured and
+built seperately.  The main Parflow executable is built first then a
+set of TCL libraries are built.  TCL is used for setting up a Parflow
+run.  Since some MPP architectures use different
 processors/OS/compilers for the compute nodes and login nodes Parflow
 supports building the main simulation executable with a different set
 compilers than the TCL libraries used for problem setup.
