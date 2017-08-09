@@ -35,6 +35,7 @@
  *****************************************************************************/
 
 #include "parflow.h"
+#include "parflow_netcdf.h"
 
 #ifdef HAVE_SLURM
 #include <slurm/slurm.h>
@@ -174,7 +175,8 @@ typedef struct
   int write_netcdf_satur; /* write saturations? */
   int numVarTimeVariant;  /*This variable is added to keep track of number of
 			    time variant variable in NetCDF file */
-
+   int 		      nc_evap_trans_file_transient;    /* read NetCDF evap_trans as a transient file before advance richards timestep */
+   char 	     *nc_evap_trans_filename;           /* NetCDF File name for evap trans */
 } PublicXtra; 
 
 typedef struct
@@ -1892,60 +1894,70 @@ void AdvanceRichards(PFModule *this_module,
           /******************************************/
           /*    read transient evap trans flux file */
           /******************************************/
-          if (public_xtra -> evap_trans_file_transient) {
-              sprintf(filename, "%s.%05d.pfb", public_xtra -> evap_trans_filename, (istep-1) );
-              //printf("%s %s \n",filename, public_xtra -> evap_trans_filename);
-              
-              /* Added flag to give the option to loop back over the flux files 
-               This means a file doesn't have to exist for each time step - NBE */
-              if (public_xtra -> evap_trans_file_looping) {
-                  
-              if( access( filename, 0 ) != -1 ) {
-                  // file exists
-                  Stepcount+=1;
+	 if (public_xtra -> nc_evap_trans_file_transient) {
+	   sprintf(filename, public_xtra -> nc_evap_trans_filename);
+	   /*KKu: evaptrans is the name of the variable expected in NetCDF file*/
+	   /*Here looping similar to pfb is not implemented. All steps are assumed to be
+	    * present in the single NetCDF file*/
+	   ReadPFNC(filename, evap_trans, "evaptrans", istep-1); 
+	   handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
+	   FinalizeVectorUpdate(handle);
+	 }
+	 else if (public_xtra -> evap_trans_file_transient) {
+	   sprintf(filename, "%s.%05d.pfb", public_xtra -> evap_trans_filename, (istep-1) );
+	   printf("%d %s %s \n",istep, filename, public_xtra -> evap_trans_filename);
 
-              } else {
-                  
-                  if (Loopcount > Stepcount) {
-                      Loopcount = 0;
-                  }
-                  sprintf(filename, "%s.%05d.pfb", public_xtra -> evap_trans_filename, Loopcount );
-                  //printf("Using flux file %s \n",filename);
-                  Loopcount+=1;
-              }
-              } // NBE
-              
-              ReadPFBinary( filename, evap_trans );
-              
-              //printf("Checking time step logging, steps = %i\n",Stepcount);
-              
-              handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
-              FinalizeVectorUpdate(handle);
-          }
-         
-          
-          /* NBE counter for reusing CLM input files */
-          clm_next += 1;
-          if (clm_next > clm_skip)
-          {
-              istep  = istep + 1;
-              clm_next = 1;
-          } // NBE
+	   /* Added flag to give the option to loop back over the flux files 
+	      This means a file doesn't have to exist for each time step - NBE */
+	   if (public_xtra -> evap_trans_file_looping) {
 
-          //istep  = istep + 1;
-          
-    	 EndTiming(CLMTimingIndex);
-          
-          
-       /* =============================================================
-	  NBE: It looks like the time step isn't really scaling the CLM
-	  inputs, but the looping flag is working as intended as 
-	  of 2014-04-06. 
-          
-	  It is using the different time step counter BUT then it
-	  isn't scaling the inputs properly.
-	  ============================================================= */
-	    
+	     if( access( filename, 0 ) != -1 ) {
+	       // file exists
+	       Stepcount+=1;
+
+	     } else {
+
+	       if (Loopcount > Stepcount) {
+		 Loopcount = 0;
+	       }
+	       sprintf(filename, "%s.%05d.pfb", public_xtra -> evap_trans_filename, Loopcount );
+	       //printf("Using flux file %s \n",filename);
+	       Loopcount+=1;
+	     }
+	   } // NBE
+	   printf("%d %s %s \n",istep, filename, public_xtra -> evap_trans_filename);
+
+	   ReadPFBinary( filename, evap_trans );
+
+	   //printf("Checking time step logging, steps = %i\n",Stepcount);
+
+	   handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
+	   FinalizeVectorUpdate(handle);
+	 }
+
+
+	 /* NBE counter for reusing CLM input files */
+	 clm_next += 1;
+	 if (clm_next > clm_skip)
+	 {
+	   istep  = istep + 1;
+	   clm_next = 1;
+	 } // NBE
+
+	 //istep  = istep + 1;
+
+	 EndTiming(CLMTimingIndex);
+
+
+	 /* =============================================================
+NBE: It looks like the time step isn't really scaling the CLM
+inputs, but the looping flag is working as intended as 
+of 2014-04-06. 
+
+It is using the different time step counter BUT then it
+isn't scaling the inputs properly.
+============================================================= */
+
 #endif          
       } //Endif to check whether an entire dt is complete
 
@@ -1953,378 +1965,378 @@ void AdvanceRichards(PFModule *this_module,
       conv_failures = 0;
 
 
-       
-       
+
+
       do  /* while not converged */
       {
 
-	 /*
+	/*
 	   Record amount of memory in use.
-	 */
+	   */
 
-	 recordMemoryInfo();
+	recordMemoryInfo();
 
-	 /*******************************************************************/
-	 /*                  Compute time step                              */
-	 /*******************************************************************/
-	 if (converged)
-	 {
-	    if(time_step_control) {
-	       PFModuleInvokeType(SelectTimeStepInvoke, time_step_control, (&dt, &dt_info, t, problem,
-									    problem_data) );
-	    } else {
-	       PFModuleInvokeType(SelectTimeStepInvoke, select_time_step, (&dt, &dt_info, t, problem,
-									   problem_data) );
-	    }
+	/*******************************************************************/
+	/*                  Compute time step                              */
+	/*******************************************************************/
+	if (converged)
+	{
+	  if(time_step_control) {
+	    PFModuleInvokeType(SelectTimeStepInvoke, time_step_control, (&dt, &dt_info, t, problem,
+		  problem_data) );
+	  } else {
+	    PFModuleInvokeType(SelectTimeStepInvoke, select_time_step, (&dt, &dt_info, t, problem,
+		  problem_data) );
+	  }
 
-	    PFVCopy(instance_xtra -> density,    instance_xtra -> old_density);
-	    PFVCopy(instance_xtra -> saturation, instance_xtra -> old_saturation);
-	    PFVCopy(instance_xtra -> pressure,   instance_xtra -> old_pressure);
-	 }
-	 else  /* Not converged, so decrease time step */
-	 {
-	    t = t - dt;
+	  PFVCopy(instance_xtra -> density,    instance_xtra -> old_density);
+	  PFVCopy(instance_xtra -> saturation, instance_xtra -> old_saturation);
+	  PFVCopy(instance_xtra -> pressure,   instance_xtra -> old_pressure);
+	}
+	else  /* Not converged, so decrease time step */
+	{
+	  t = t - dt;
 
-	    double new_dt = 0.5 * dt;
+	  double new_dt = 0.5 * dt;
 
-	    // If time increment is too small don't try to cut in half.
-	    {
-	       double test_time = t + new_dt;
-	       double diff_time = test_time - t;
-
-	       if(diff_time  >  TIME_EPSILON ) {
-		  dt = new_dt;
-	       } else {
-		  PARFLOW_ERROR("Time increment is too small; solver has failed\n");
-	       }
-	    }
-	    
-	    PFVCopy(instance_xtra -> old_density,    instance_xtra -> density);
-	    PFVCopy(instance_xtra -> old_saturation, instance_xtra -> saturation);
-	    PFVCopy(instance_xtra -> old_pressure,   instance_xtra -> pressure);
-	 } // End set t and dt based on convergence
-
-#ifdef HAVE_OAS3
-         // CPS added to fix oasis exchange break due to parflow time stepping reduction
-         // Note ct is time we want to advance to at this point
-               if ( t + dt > ct) {
-                  double new_dt = ct - t;
-
-                  // If time increment is too small we have a problem. Just halt
-                  {
-                     double test_time = t + new_dt;
-                     double diff_time = test_time - t;
-
-                     if(diff_time  >  TIME_EPSILON ) {
-                        dt = new_dt;
-                     } else {
-                        PARFLOW_ERROR("Time increment is too small; OASIS wants a small timestep\n");
-                        break;
-                     }
-                  }
-               }
-#endif
-
-#ifdef HAVE_CLM
-	 /*
-	  * Force timestep to LSM model if we are trying to advance beyond 
-	  * LSM timesteping.
-	  */
-	 switch (public_xtra -> lsm)
-	 {
-	    case 0:
-	    {
-	       // No LSM
-	       break;
-	    }
-	    case 1:
-	    {
-	       // Note ct is time we want to advance to at this point
-	       if ( t + dt > ct) {
-		  double new_dt = ct - t;
-
-		  // If time increment is too small we have a problem. Just halt
-		  {
-		     double test_time = t + new_dt;
-		     double diff_time = test_time - t;
-
-		     if(diff_time  >  TIME_EPSILON ) {
-			dt = new_dt;
-		     } else {
-			PARFLOW_ERROR("Time increment is too small; CLM wants a small timestep\n");
-		     }
-		  }
-	       }
-	       break;		  
-	    }
-	    default:
-	    {
-	       amps_Printf("Calling unknown LSM model");
-	    }
-	 }
-
-//#endif
-          
-	 /* RMM added fix to adjust evap_trans for time step */
-          if (public_xtra -> evap_trans_file_transient) {
-              
-              // Note ct is time we want to advance to at this point
-              if ( t + dt > ct) {
-                  double new_dt = ct - t;
-                  
-                  // If time increment is too small we have a problem. Just halt
-                  {
-                      double test_time = t + new_dt;
-                      double diff_time = test_time - t;
-                      
-                      if(diff_time  >  TIME_EPSILON ) {
-                          dt = new_dt;
-                      } else {
-                          PARFLOW_ERROR("Time increment is too small; CLM wants a small timestep\n");
-                      }
-                  }
-              }
-              //  break;
-          }
-#endif          
-     /*--------------------------------------------------------------
-	  * If we are printing out results, then determine if we need
-	  * to print them after this time step.
-	  *
-	  * If we are dumping output at real time intervals, the value
-	  * of dt may be changed.  If this happens, we want to
-	  * compute/evolve all values.  We also set `dump_info' to `p'
-	  * to indicate that the dump interval decided the time step for
-	  * this iteration.
-	  *--------------------------------------------------------------*/
-
-         // Print ParFlow output? 
-	 dump_files = 0;
-	 if ( dump_interval > 0 )
-	 {
-	    print_dt = ProblemStartTime(problem) +  instance_xtra -> dump_index*dump_interval - t;
-
-	    if ( (dt + TIME_EPSILON) > print_dt )
-	    {
-	       /*
-		* if the difference is small don't try to compute
-		* at print_dt, just use dt.  This will
-		* output slightly off in time but avoids
-		* extremely small dt values.
-		*/
-	       if( fabs(dt - print_dt) > TIME_EPSILON) {
-		  dt = print_dt;
-	       }
-	       dt_info = 'p';
-
-	       dump_files = 1;
-	    }
-	 }
-	 else if (dump_interval < 0)
-	 {
-	    if ( (instance_xtra -> iteration_number % (-(int)dump_interval)) == 0 )
-	    {
-	       dump_files = 1;
-	    }
-	 } 
-	 else 
-	 {
-	    dump_files = 0;
-	 }
-
-#ifdef HAVE_CLM
-         // Print CLM output?
-         // (parallel setup to PF, but without resetting dt == print_dt for very small dt)
-         clm_dump_files = 0;
-         if ( public_xtra -> clm_dump_interval > 0 )
-         {
-            print_cdt = ProblemStartTime(problem) +  instance_xtra -> clm_dump_index * public_xtra -> clm_dump_interval - t;
-            if ( (dt + TIME_EPSILON) > print_cdt )
-            {
-               clm_dump_files = 1;
-            }
-         }
-         else if ( public_xtra -> clm_dump_interval < 0 )
-         {
-            if ( (instance_xtra -> iteration_number % (-(int)public_xtra -> clm_dump_interval)) == 0 )
-            {
-               clm_dump_files = 1;
-            }
-         }
-         else
-         {
-            clm_dump_files = 0;
-         }
-#endif
-
-	 /*--------------------------------------------------------------
-	  * If this is the last iteration, set appropriate variables. 
-	  *--------------------------------------------------------------*/
-	 if ( (t + dt) >= stop_time )
-	 {   
-	    double new_dt = stop_time - t;
-	    
+	  // If time increment is too small don't try to cut in half.
+	  {
 	    double test_time = t + new_dt;
 	    double diff_time = test_time - t;
 
 	    if(diff_time  >  TIME_EPSILON ) {
-	       dt = new_dt;
+	      dt = new_dt;
 	    } else {
-	      // PARFLOW_ERROR("Time increment is too small for last iteration\n");
-            amps_Printf("Time increment is too small for last iteration \n");
-            //@RMM had to get rid of the error trap, was driving me crazy that it doesn't complete the log file
+	      PARFLOW_ERROR("Time increment is too small; solver has failed\n");
 	    }
+	  }
 
+	  PFVCopy(instance_xtra -> old_density,    instance_xtra -> density);
+	  PFVCopy(instance_xtra -> old_saturation, instance_xtra -> saturation);
+	  PFVCopy(instance_xtra -> old_pressure,   instance_xtra -> pressure);
+	} // End set t and dt based on convergence
+
+#ifdef HAVE_OAS3
+	// CPS added to fix oasis exchange break due to parflow time stepping reduction
+	// Note ct is time we want to advance to at this point
+	if ( t + dt > ct) {
+	  double new_dt = ct - t;
+
+	  // If time increment is too small we have a problem. Just halt
+	  {
+	    double test_time = t + new_dt;
+	    double diff_time = test_time - t;
+
+	    if(diff_time  >  TIME_EPSILON ) {
+	      dt = new_dt;
+	    } else {
+	      PARFLOW_ERROR("Time increment is too small; OASIS wants a small timestep\n");
+	      break;
+	    }
+	  }
+	}
+#endif
+
+#ifdef HAVE_CLM
+	/*
+	 * Force timestep to LSM model if we are trying to advance beyond 
+	 * LSM timesteping.
+	 */
+	switch (public_xtra -> lsm)
+	{
+	  case 0:
+	    {
+	      // No LSM
+	      break;
+	    }
+	  case 1:
+	    {
+	      // Note ct is time we want to advance to at this point
+	      if ( t + dt > ct) {
+		double new_dt = ct - t;
+
+		// If time increment is too small we have a problem. Just halt
+		{
+		  double test_time = t + new_dt;
+		  double diff_time = test_time - t;
+
+		  if(diff_time  >  TIME_EPSILON ) {
+		    dt = new_dt;
+		  } else {
+		    PARFLOW_ERROR("Time increment is too small; CLM wants a small timestep\n");
+		  }
+		}
+	      }
+	      break;		  
+	    }
+	  default:
+	    {
+	      amps_Printf("Calling unknown LSM model");
+	    }
+	}
+
+	//#endif
+
+	/* RMM added fix to adjust evap_trans for time step */
+	if (public_xtra -> evap_trans_file_transient) {
+
+	  // Note ct is time we want to advance to at this point
+	  if ( t + dt > ct) {
+	    double new_dt = ct - t;
+
+	    // If time increment is too small we have a problem. Just halt
+	    {
+	      double test_time = t + new_dt;
+	      double diff_time = test_time - t;
+
+	      if(diff_time  >  TIME_EPSILON ) {
+		dt = new_dt;
+	      } else {
+		PARFLOW_ERROR("Time increment is too small; CLM wants a small timestep\n");
+	      }
+	    }
+	  }
+	  //  break;
+	}
+#endif          
+	/*--------------------------------------------------------------
+	 * If we are printing out results, then determine if we need
+	 * to print them after this time step.
+	 *
+	 * If we are dumping output at real time intervals, the value
+	 * of dt may be changed.  If this happens, we want to
+	 * compute/evolve all values.  We also set `dump_info' to `p'
+	 * to indicate that the dump interval decided the time step for
+	 * this iteration.
+	 *--------------------------------------------------------------*/
+
+	// Print ParFlow output? 
+	dump_files = 0;
+	if ( dump_interval > 0 )
+	{
+	  print_dt = ProblemStartTime(problem) +  instance_xtra -> dump_index*dump_interval - t;
+
+	  if ( (dt + TIME_EPSILON) > print_dt )
+	  {
+	    /*
+	     * if the difference is small don't try to compute
+	     * at print_dt, just use dt.  This will
+	     * output slightly off in time but avoids
+	     * extremely small dt values.
+	     */
+	    if( fabs(dt - print_dt) > TIME_EPSILON) {
+	      dt = print_dt;
+	    }
+	    dt_info = 'p';
+
+	    dump_files = 1;
+	  }
+	}
+	else if (dump_interval < 0)
+	{
+	  if ( (instance_xtra -> iteration_number % (-(int)dump_interval)) == 0 )
+	  {
+	    dump_files = 1;
+	  }
+	} 
+	else 
+	{
+	  dump_files = 0;
+	}
+
+#ifdef HAVE_CLM
+	// Print CLM output?
+	// (parallel setup to PF, but without resetting dt == print_dt for very small dt)
+	clm_dump_files = 0;
+	if ( public_xtra -> clm_dump_interval > 0 )
+	{
+	  print_cdt = ProblemStartTime(problem) +  instance_xtra -> clm_dump_index * public_xtra -> clm_dump_interval - t;
+	  if ( (dt + TIME_EPSILON) > print_cdt )
+	  {
+	    clm_dump_files = 1;
+	  }
+	}
+	else if ( public_xtra -> clm_dump_interval < 0 )
+	{
+	  if ( (instance_xtra -> iteration_number % (-(int)public_xtra -> clm_dump_interval)) == 0 )
+	  {
+	    clm_dump_files = 1;
+	  }
+	}
+	else
+	{
+	  clm_dump_files = 0;
+	}
+#endif
+
+	/*--------------------------------------------------------------
+	 * If this is the last iteration, set appropriate variables. 
+	 *--------------------------------------------------------------*/
+	if ( (t + dt) >= stop_time )
+	{   
+	  double new_dt = stop_time - t;
+
+	  double test_time = t + new_dt;
+	  double diff_time = test_time - t;
+
+	  if(diff_time  >  TIME_EPSILON ) {
 	    dt = new_dt;
+	  } else {
+	    // PARFLOW_ERROR("Time increment is too small for last iteration\n");
+	    amps_Printf("Time increment is too small for last iteration \n");
+	    //@RMM had to get rid of the error trap, was driving me crazy that it doesn't complete the log file
+	  }
 
-	    dt_info = 'f';
-	 }
-         
-	 t += dt;
+	  dt = new_dt;
 
-          
-	 /*******************************************************************/
-	 /*          Solve the nonlinear system for this time step          */
-	 /*******************************************************************/
-	  
-	 retval = PFModuleInvokeType(NonlinSolverInvoke, nonlin_solver, 
-				     (instance_xtra -> pressure, 
-				      instance_xtra -> density, 
-				      instance_xtra -> old_density, 
-				      instance_xtra -> saturation, 
-				      instance_xtra -> old_saturation, 
-				      t, dt, 
-				      problem_data, instance_xtra -> old_pressure, 
-				      evap_trans, 
-				      instance_xtra -> ovrl_bc_flx,
-				      instance_xtra -> x_velocity,
-				      instance_xtra -> y_velocity, 
-				      instance_xtra -> z_velocity));
+	  dt_info = 'f';
+	}
 
-	 if (retval != 0)
-	 {
-	    converged = 0;
-	    conv_failures++;
-	 }
-	 else 
-	 {
-	    converged = 1;
-	 }
+	t += dt;
 
-	 if (conv_failures >= max_failures)
-	 {
-	    take_more_time_steps = 0;
-	    if(!amps_Rank(amps_CommWorld))
-	    { 
-	       amps_Printf("Error: Time step failed for time %12.4e.\n", t);
-	       amps_Printf("Shutting down.\n");
-	    }
-	 }
+
+	/*******************************************************************/
+	/*          Solve the nonlinear system for this time step          */
+	/*******************************************************************/
+
+	retval = PFModuleInvokeType(NonlinSolverInvoke, nonlin_solver, 
+	    (instance_xtra -> pressure, 
+	     instance_xtra -> density, 
+	     instance_xtra -> old_density, 
+	     instance_xtra -> saturation, 
+	     instance_xtra -> old_saturation, 
+	     t, dt, 
+	     problem_data, instance_xtra -> old_pressure, 
+	     evap_trans, 
+	     instance_xtra -> ovrl_bc_flx,
+	     instance_xtra -> x_velocity,
+	     instance_xtra -> y_velocity, 
+	     instance_xtra -> z_velocity));
+
+	if (retval != 0)
+	{
+	  converged = 0;
+	  conv_failures++;
+	}
+	else 
+	{
+	  converged = 1;
+	}
+
+	if (conv_failures >= max_failures)
+	{
+	  take_more_time_steps = 0;
+	  if(!amps_Rank(amps_CommWorld))
+	  { 
+	    amps_Printf("Error: Time step failed for time %12.4e.\n", t);
+	    amps_Printf("Shutting down.\n");
+	  }
+	}
 
       }  /* Ends do for convergence of time step loop */
       while ( (!converged) && (conv_failures < max_failures) );
 
       instance_xtra -> iteration_number++;
-     
-       /***************************************************************
-        *         spinup - remove excess pressure at land surface     *
-        ***************************************************************/
-       //int spinup = 1;
-       if ( public_xtra -> spinup == 1 ) {
-           
-           GrGeomSolid *gr_domain         = ProblemDataGrDomain(problem_data);
-           
-           int          i, j, k, r, is;
-           int          ix, iy, iz;
-           int          nx, ny, nz;
-           int          ip;
+
+      /***************************************************************
+       *         spinup - remove excess pressure at land surface     *
+       ***************************************************************/
+      //int spinup = 1;
+      if ( public_xtra -> spinup == 1 ) {
+
+	GrGeomSolid *gr_domain         = ProblemDataGrDomain(problem_data);
+
+	int          i, j, k, r, is;
+	int          ix, iy, iz;
+	int          nx, ny, nz;
+	int          ip;
 	// JLW add declarations for use without CLM
-	   Subvector   *p_sub_sp;
-	   double      *pp_sp;
-           
-           Subgrid     *subgrid;
-           Grid        *grid              = VectorGrid(evap_trans_sum);
-           
-           ForSubgridI(is, GridSubgrids(grid))
-           {
-               subgrid = GridSubgrid(grid, is);
-               p_sub_sp   = VectorSubvector(instance_xtra -> pressure, is);
-               
-               r = SubgridRX(subgrid);
-               
-               ix = SubgridIX(subgrid);
-               iy = SubgridIY(subgrid);
-               iz = SubgridIZ(subgrid);
-               
-               nx = SubgridNX(subgrid);
-               ny = SubgridNY(subgrid);
-               nz = SubgridNZ(subgrid);
-               
-               pp_sp = SubvectorData(p_sub_sp);
-               
-               GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                            {
-                                
-                                ip = SubvectorEltIndex(p_sub_sp, i, j, k);
-                                // printf(" %d %d %d %d  \n",i,j,k,ip);
-                                // printf(" pp[ip] %10.3f \n",pp[ip]);
-                                // printf(" NZ: %d \n",nz);
-                                if (k == (nz-1)) {
-                                    //   printf(" %d %d %d %d  \n",i,j,k,ip);
-                                    //   printf(" pp[ip] %10.3f \n",pp[ip]);
-                                    
-                                    if (pp_sp[ip] > 0.0) {
-                                        printf(" pressure-> 0 %d %d %d %10.3f \n",i,j,k,pp_sp[ip]);
-                                        pp_sp[ip] = 0.0; 
-                                    }  }
-                                
-                            });
-           }
-           
-           
-       }
-       
-       /* velocity updates - not sure these are necessary jjb */ 
-   handle = InitVectorUpdate(instance_xtra -> x_velocity, VectorUpdateAll);
-   FinalizeVectorUpdate(handle);
+	Subvector   *p_sub_sp;
+	double      *pp_sp;
 
-   handle = InitVectorUpdate(instance_xtra ->  y_velocity, VectorUpdateAll);
-   FinalizeVectorUpdate(handle);
+	Subgrid     *subgrid;
+	Grid        *grid              = VectorGrid(evap_trans_sum);
 
-   handle = InitVectorUpdate(instance_xtra ->  z_velocity, VectorUpdateAll);
-   FinalizeVectorUpdate(handle);
-   
-       
+	ForSubgridI(is, GridSubgrids(grid))
+	{
+	  subgrid = GridSubgrid(grid, is);
+	  p_sub_sp   = VectorSubvector(instance_xtra -> pressure, is);
+
+	  r = SubgridRX(subgrid);
+
+	  ix = SubgridIX(subgrid);
+	  iy = SubgridIY(subgrid);
+	  iz = SubgridIZ(subgrid);
+
+	  nx = SubgridNX(subgrid);
+	  ny = SubgridNY(subgrid);
+	  nz = SubgridNZ(subgrid);
+
+	  pp_sp = SubvectorData(p_sub_sp);
+
+	  GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+	      {
+
+	      ip = SubvectorEltIndex(p_sub_sp, i, j, k);
+	      // printf(" %d %d %d %d  \n",i,j,k,ip);
+	      // printf(" pp[ip] %10.3f \n",pp[ip]);
+	      // printf(" NZ: %d \n",nz);
+	      if (k == (nz-1)) {
+	      //   printf(" %d %d %d %d  \n",i,j,k,ip);
+	      //   printf(" pp[ip] %10.3f \n",pp[ip]);
+
+	      if (pp_sp[ip] > 0.0) {
+	      printf(" pressure-> 0 %d %d %d %10.3f \n",i,j,k,pp_sp[ip]);
+	      pp_sp[ip] = 0.0; 
+	      }  }
+
+	      });
+	}
+
+
+      }
+
+      /* velocity updates - not sure these are necessary jjb */ 
+      handle = InitVectorUpdate(instance_xtra -> x_velocity, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+
+      handle = InitVectorUpdate(instance_xtra ->  y_velocity, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+
+      handle = InitVectorUpdate(instance_xtra ->  z_velocity, VectorUpdateAll);
+      FinalizeVectorUpdate(handle);
+
+
       /* Calculate densities and saturations for the new pressure. */
       PFModuleInvokeType(PhaseDensityInvoke,  phase_density, 
-		     (0, instance_xtra -> pressure, instance_xtra -> density, 
-		      &dtmp, &dtmp, CALCFCN));
+	  (0, instance_xtra -> pressure, instance_xtra -> density, 
+	   &dtmp, &dtmp, CALCFCN));
       handle = InitVectorUpdate(instance_xtra -> density, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
 
       PFModuleInvokeType(SaturationInvoke, problem_saturation, 
-                     (instance_xtra -> saturation, instance_xtra -> pressure, 
-		      instance_xtra -> density, gravity, problem_data,
-		      CALCFCN));
+	  (instance_xtra -> saturation, instance_xtra -> pressure, 
+	   instance_xtra -> density, gravity, problem_data,
+	   CALCFCN));
 
       /***************************************************************
        * Compute running sum of evap trans for water balance 
        **************************************************************/
       if(public_xtra -> write_silo_evaptrans_sum || public_xtra -> print_evaptrans_sum) {
-	 EvapTransSum(problem_data, dt, evap_trans_sum, evap_trans);
+	EvapTransSum(problem_data, dt, evap_trans_sum, evap_trans);
       }
 
       /***************************************************************
        * Compute running sum of overland outflow for water balance 
        **************************************************************/
       if(public_xtra -> write_silo_overland_sum || public_xtra -> print_overland_sum) {
-	 OverlandSum(problem_data, 
-		     instance_xtra -> pressure,
-		     dt, 
-		     instance_xtra -> overland_sum);
+	OverlandSum(problem_data, 
+	    instance_xtra -> pressure,
+	    dt, 
+	    instance_xtra -> overland_sum);
       }
 
-            /***************************************************************/
+      /***************************************************************/
       /*                 Print the pressure and saturation           */
       /***************************************************************/
 
@@ -2332,209 +2344,209 @@ void AdvanceRichards(PFModule *this_module,
       any_file_dumped = 0;
       if ( dump_files )
       {
-      sprintf(nc_postfix,"%05d",instance_xtra->file_number);
-/*KKU: Writing Current time variable value to NC file */
-    if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur)
-    {
-      WritePFNC(file_prefix,nc_postfix, t,instance_xtra->pressure,public_xtra->numVarTimeVariant,
-	  "time", 1, 1);
-    }
+	sprintf(nc_postfix,"%05d",instance_xtra->file_number);
+	/*KKU: Writing Current time variable value to NC file */
+	if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur)
+	{
+	  WritePFNC(file_prefix,nc_postfix, t,instance_xtra->pressure,public_xtra->numVarTimeVariant,
+	      "time", 1, 1);
+	}
 
-    instance_xtra -> dump_index++; 
+	instance_xtra -> dump_index++; 
 
-    if(public_xtra -> print_press) {
-      sprintf(file_postfix, "press.%05d", instance_xtra -> file_number);
-      WritePFBinary(file_prefix, file_postfix, instance_xtra -> pressure);
-      any_file_dumped = 1;
-    }
+	if(public_xtra -> print_press) {
+	  sprintf(file_postfix, "press.%05d", instance_xtra -> file_number);
+	  WritePFBinary(file_prefix, file_postfix, instance_xtra -> pressure);
+	  any_file_dumped = 1;
+	}
 
-    if(public_xtra -> write_silo_press) 
-    {
-      sprintf(file_postfix, "%05d", instance_xtra -> file_number);
-      sprintf(file_type, "press");
-      WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
-	  t, instance_xtra -> file_number, "Pressure");
-      any_file_dumped = 1;
-    }
+	if(public_xtra -> write_silo_press) 
+	{
+	  sprintf(file_postfix, "%05d", instance_xtra -> file_number);
+	  sprintf(file_type, "press");
+	  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
+	      t, instance_xtra -> file_number, "Pressure");
+	  any_file_dumped = 1;
+	}
 
-    if(public_xtra -> write_silopmpio_press) 
-    {
-      sprintf(file_postfix, "%05d", instance_xtra -> file_number);
-      sprintf(file_type, "press");
-      WriteSiloPMPIO(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
-	  t, instance_xtra -> file_number, "Pressure");
-      any_file_dumped = 1;
-    }
-    if (public_xtra->write_netcdf_press) {
-      sprintf(file_postfix, "press.%05d", instance_xtra->file_number);
-      sprintf(nc_postfix,"%05d",instance_xtra->file_number);
-      WritePFNC(file_prefix,nc_postfix, t, instance_xtra->pressure,public_xtra->numVarTimeVariant,
-	  "pressure", 3, 1);
-      any_file_dumped = 1;
-    }
+	if(public_xtra -> write_silopmpio_press) 
+	{
+	  sprintf(file_postfix, "%05d", instance_xtra -> file_number);
+	  sprintf(file_type, "press");
+	  WriteSiloPMPIO(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
+	      t, instance_xtra -> file_number, "Pressure");
+	  any_file_dumped = 1;
+	}
+	if (public_xtra->write_netcdf_press) {
+	  sprintf(file_postfix, "press.%05d", instance_xtra->file_number);
+	  sprintf(nc_postfix,"%05d",instance_xtra->file_number);
+	  WritePFNC(file_prefix,nc_postfix, t, instance_xtra->pressure,public_xtra->numVarTimeVariant,
+	      "pressure", 3, 1);
+	  any_file_dumped = 1;
+	}
 
-    if ( public_xtra -> print_velocities ) //jjb
-    {
-      sprintf(file_postfix, "velx.%05d", instance_xtra -> file_number);
-      WritePFBinary(file_prefix, file_postfix, instance_xtra -> x_velocity);
+	if ( public_xtra -> print_velocities ) //jjb
+	{
+	  sprintf(file_postfix, "velx.%05d", instance_xtra -> file_number);
+	  WritePFBinary(file_prefix, file_postfix, instance_xtra -> x_velocity);
 
-      sprintf(file_postfix, "vely.%05d", instance_xtra -> file_number);
-      WritePFBinary(file_prefix, file_postfix, instance_xtra -> y_velocity);
+	  sprintf(file_postfix, "vely.%05d", instance_xtra -> file_number);
+	  WritePFBinary(file_prefix, file_postfix, instance_xtra -> y_velocity);
 
-      sprintf(file_postfix, "velz.%05d", instance_xtra -> file_number);
-      WritePFBinary(file_prefix, file_postfix, instance_xtra -> z_velocity);
+	  sprintf(file_postfix, "velz.%05d", instance_xtra -> file_number);
+	  WritePFBinary(file_prefix, file_postfix, instance_xtra -> z_velocity);
 
-      any_file_dumped = 1;
+	  any_file_dumped = 1;
 
-    }
-
-
-    if(public_xtra -> print_satur ) {
-      sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
-      WritePFBinary(file_prefix, file_postfix, instance_xtra -> saturation );
-      any_file_dumped = 1;
-    }
-
-    if(public_xtra -> write_silo_satur) 
-    {
-      sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-      sprintf(file_type, "satur");
-      WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation, 
-	  t, instance_xtra -> file_number, "Saturation");
-      any_file_dumped = 1;
-    }
-
-    if(public_xtra -> write_silopmpio_satur) 
-    {
-      sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-      sprintf(file_type, "satur");
-      WriteSiloPMPIO(file_prefix, file_type, file_postfix, instance_xtra -> saturation, 
-	  t, instance_xtra -> file_number, "Saturation");
-      any_file_dumped = 1;
-    }
-    if (public_xtra->write_netcdf_satur) {
-      sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
-      sprintf(nc_postfix,"%05d",instance_xtra->file_number);
-      WritePFNC(file_prefix,nc_postfix, t,instance_xtra->saturation,public_xtra->numVarTimeVariant,
-	  "saturation", 3, 1);
-      any_file_dumped = 1;
-    }
-
-    if(public_xtra -> print_evaptrans ) {
-      sprintf(file_postfix, "evaptrans.%05d", instance_xtra -> file_number );
-      WritePFBinary(file_prefix, file_postfix, evap_trans );
-      any_file_dumped = 1;
-    }
+	}
 
 
-    if(public_xtra -> write_silo_evaptrans) {
-      sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-      sprintf(file_type, "evaptrans");
-      WriteSilo(file_prefix, file_type, file_postfix, evap_trans, 
-	  t, instance_xtra -> file_number, "EvapTrans");
-      any_file_dumped = 1;
-    }
+	if(public_xtra -> print_satur ) {
+	  sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
+	  WritePFBinary(file_prefix, file_postfix, instance_xtra -> saturation );
+	  any_file_dumped = 1;
+	}
 
-    if(public_xtra -> write_silopmpio_evaptrans) {
-      sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-      sprintf(file_type, "evaptrans");
-      WriteSiloPMPIO(file_prefix, file_type, file_postfix, evap_trans, 
-	  t, instance_xtra -> file_number, "EvapTrans");
-      any_file_dumped = 1;
-    }
+	if(public_xtra -> write_silo_satur) 
+	{
+	  sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	  sprintf(file_type, "satur");
+	  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation, 
+	      t, instance_xtra -> file_number, "Saturation");
+	  any_file_dumped = 1;
+	}
 
-    if(public_xtra -> print_evaptrans_sum || public_xtra -> write_silo_evaptrans_sum) {
+	if(public_xtra -> write_silopmpio_satur) 
+	{
+	  sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	  sprintf(file_type, "satur");
+	  WriteSiloPMPIO(file_prefix, file_type, file_postfix, instance_xtra -> saturation, 
+	      t, instance_xtra -> file_number, "Saturation");
+	  any_file_dumped = 1;
+	}
+	if (public_xtra->write_netcdf_satur) {
+	  sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
+	  sprintf(nc_postfix,"%05d",instance_xtra->file_number);
+	  WritePFNC(file_prefix,nc_postfix, t,instance_xtra->saturation,public_xtra->numVarTimeVariant,
+	      "saturation", 3, 1);
+	  any_file_dumped = 1;
+	}
 
-      if(public_xtra -> print_evaptrans_sum ) {
-	sprintf(file_postfix, "evaptranssum.%05d", instance_xtra -> file_number );
-	WritePFBinary(file_prefix, file_postfix, evap_trans_sum );
-	any_file_dumped = 1;
-      }
+	if(public_xtra -> print_evaptrans ) {
+	  sprintf(file_postfix, "evaptrans.%05d", instance_xtra -> file_number );
+	  WritePFBinary(file_prefix, file_postfix, evap_trans );
+	  any_file_dumped = 1;
+	}
 
-      if(public_xtra -> write_silo_evaptrans_sum) {
-	sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-	sprintf(file_type, "evaptranssum");
-	WriteSilo(file_prefix, file_type, file_postfix, evap_trans_sum, 
-	    t, instance_xtra -> file_number, "EvapTransSum");
-	any_file_dumped = 1;
-      }
 
-      if(public_xtra -> write_silopmpio_evaptrans_sum) {
-	sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-	sprintf(file_type, "evaptranssum");
-	WriteSiloPMPIO(file_prefix, file_type, file_postfix, evap_trans_sum, 
-	    t, instance_xtra -> file_number, "EvapTransSum");
-	any_file_dumped = 1;
-      }
+	if(public_xtra -> write_silo_evaptrans) {
+	  sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	  sprintf(file_type, "evaptrans");
+	  WriteSilo(file_prefix, file_type, file_postfix, evap_trans, 
+	      t, instance_xtra -> file_number, "EvapTrans");
+	  any_file_dumped = 1;
+	}
 
-      /* reset sum after output */
-      PFVConstInit(0.0, evap_trans_sum);
-    }
+	if(public_xtra -> write_silopmpio_evaptrans) {
+	  sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	  sprintf(file_type, "evaptrans");
+	  WriteSiloPMPIO(file_prefix, file_type, file_postfix, evap_trans, 
+	      t, instance_xtra -> file_number, "EvapTrans");
+	  any_file_dumped = 1;
+	}
 
-    if(public_xtra -> print_overland_sum || public_xtra -> write_silo_overland_sum) {
+	if(public_xtra -> print_evaptrans_sum || public_xtra -> write_silo_evaptrans_sum) {
 
-      if(public_xtra -> print_overland_sum ) {
-	sprintf(file_postfix, "overlandsum.%05d", instance_xtra -> file_number );
-	WritePFBinary(file_prefix, file_postfix, overland_sum );
-	any_file_dumped = 1;
-      }
+	  if(public_xtra -> print_evaptrans_sum ) {
+	    sprintf(file_postfix, "evaptranssum.%05d", instance_xtra -> file_number );
+	    WritePFBinary(file_prefix, file_postfix, evap_trans_sum );
+	    any_file_dumped = 1;
+	  }
 
-      if(public_xtra -> write_silo_overland_sum) {
-	sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-	sprintf(file_type, "overlandsum");
-	WriteSilo(file_prefix, file_type, file_postfix, overland_sum, 
-	    t, instance_xtra -> file_number, "OverlandSum");
-	any_file_dumped = 1;
-      }
+	  if(public_xtra -> write_silo_evaptrans_sum) {
+	    sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	    sprintf(file_type, "evaptranssum");
+	    WriteSilo(file_prefix, file_type, file_postfix, evap_trans_sum, 
+		t, instance_xtra -> file_number, "EvapTransSum");
+	    any_file_dumped = 1;
+	  }
 
-      if(public_xtra -> write_silopmpio_overland_sum) {
-	sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-	sprintf(file_type, "overlandsum");
-	WriteSiloPMPIO(file_prefix, file_type, file_postfix, overland_sum, 
-	    t, instance_xtra -> file_number, "OverlandSum");
-	any_file_dumped = 1;
-      }
+	  if(public_xtra -> write_silopmpio_evaptrans_sum) {
+	    sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	    sprintf(file_type, "evaptranssum");
+	    WriteSiloPMPIO(file_prefix, file_type, file_postfix, evap_trans_sum, 
+		t, instance_xtra -> file_number, "EvapTransSum");
+	    any_file_dumped = 1;
+	  }
 
-      /* reset sum after output */
-      PFVConstInit(0.0, overland_sum);
-    }
+	  /* reset sum after output */
+	  PFVConstInit(0.0, evap_trans_sum);
+	}
 
-    if(public_xtra -> print_overland_bc_flux ) {
-      sprintf(file_postfix, "overland_bc_flux.%05d", instance_xtra -> file_number );
-      WritePFBinary(file_prefix, file_postfix, instance_xtra -> ovrl_bc_flx );
-      any_file_dumped = 1;
-    }
+	if(public_xtra -> print_overland_sum || public_xtra -> write_silo_overland_sum) {
 
-    if(public_xtra -> write_silo_overland_bc_flux)
-    {
-      sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-      sprintf(file_type, "overland_bc_flux");
-      WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> ovrl_bc_flx,
-	  t, instance_xtra -> file_number, "OverlandBCFlux");
-      any_file_dumped = 1;
-    }
+	  if(public_xtra -> print_overland_sum ) {
+	    sprintf(file_postfix, "overlandsum.%05d", instance_xtra -> file_number );
+	    WritePFBinary(file_prefix, file_postfix, overland_sum );
+	    any_file_dumped = 1;
+	  }
 
-    if(public_xtra -> write_silopmpio_overland_bc_flux)
-    {
-      sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-      sprintf(file_type, "overland_bc_flux");
-      WriteSiloPMPIO(file_prefix, file_type, file_postfix, instance_xtra -> ovrl_bc_flx,
-	  t, instance_xtra -> file_number, "OverlandBCFlux");
-      any_file_dumped = 1;
-    }
+	  if(public_xtra -> write_silo_overland_sum) {
+	    sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	    sprintf(file_type, "overlandsum");
+	    WriteSilo(file_prefix, file_type, file_postfix, overland_sum, 
+		t, instance_xtra -> file_number, "OverlandSum");
+	    any_file_dumped = 1;
+	  }
 
-    // IMF: I assume this print obselete now that we have keys for EvapTrans and OverlandBCFlux?
-    if(public_xtra -> print_lsm_sink) 
-    {
-      /*sk Print the sink terms from the land surface model*/
-      sprintf(file_postfix, "et.%05d", instance_xtra -> file_number );
-      WritePFBinary(file_prefix, file_postfix, evap_trans);
+	  if(public_xtra -> write_silopmpio_overland_sum) {
+	    sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	    sprintf(file_type, "overlandsum");
+	    WriteSiloPMPIO(file_prefix, file_type, file_postfix, overland_sum, 
+		t, instance_xtra -> file_number, "OverlandSum");
+	    any_file_dumped = 1;
+	  }
 
-      /*sk Print the sink terms from the land surface model*/
-      sprintf(file_postfix, "obf.%05d", instance_xtra -> file_number );
-      WritePFBinary(file_prefix, file_postfix, instance_xtra -> ovrl_bc_flx);
-      any_file_dumped = 1;
-    }
+	  /* reset sum after output */
+	  PFVConstInit(0.0, overland_sum);
+	}
+
+	if(public_xtra -> print_overland_bc_flux ) {
+	  sprintf(file_postfix, "overland_bc_flux.%05d", instance_xtra -> file_number );
+	  WritePFBinary(file_prefix, file_postfix, instance_xtra -> ovrl_bc_flx );
+	  any_file_dumped = 1;
+	}
+
+	if(public_xtra -> write_silo_overland_bc_flux)
+	{
+	  sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	  sprintf(file_type, "overland_bc_flux");
+	  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> ovrl_bc_flx,
+	      t, instance_xtra -> file_number, "OverlandBCFlux");
+	  any_file_dumped = 1;
+	}
+
+	if(public_xtra -> write_silopmpio_overland_bc_flux)
+	{
+	  sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+	  sprintf(file_type, "overland_bc_flux");
+	  WriteSiloPMPIO(file_prefix, file_type, file_postfix, instance_xtra -> ovrl_bc_flx,
+	      t, instance_xtra -> file_number, "OverlandBCFlux");
+	  any_file_dumped = 1;
+	}
+
+	// IMF: I assume this print obselete now that we have keys for EvapTrans and OverlandBCFlux?
+	if(public_xtra -> print_lsm_sink) 
+	{
+	  /*sk Print the sink terms from the land surface model*/
+	  sprintf(file_postfix, "et.%05d", instance_xtra -> file_number );
+	  WritePFBinary(file_prefix, file_postfix, evap_trans);
+
+	  /*sk Print the sink terms from the land surface model*/
+	  sprintf(file_postfix, "obf.%05d", instance_xtra -> file_number );
+	  WritePFBinary(file_prefix, file_postfix, instance_xtra -> ovrl_bc_flx);
+	  any_file_dumped = 1;
+	}
 
       }  // End of if (dump_files)
 
@@ -4413,6 +4425,18 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
     public_xtra->numVarTimeVariant++; 
   }
 
+  sprintf(key, "NetCDF.EvapTransFileTransient");
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0) {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+	switch_name, key);
+  }
+  public_xtra->nc_evap_trans_file_transient = switch_value;
+
+  sprintf(key, "NetCDF.EvapTrans.FileName");
+  public_xtra -> nc_evap_trans_filename = GetStringDefault(key, "");
+
   /*
    * ---------------------------
    * End of NetCDF Tcl flags
@@ -4708,6 +4732,7 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
 	switch_name, key);
   }
   public_xtra -> evap_trans_file_transient = switch_value;
+  printf("KKu: %d\n", switch_value);
 
   /* Nick's addition*/
   sprintf(key, "%s.EvapTrans.FileLooping", name);

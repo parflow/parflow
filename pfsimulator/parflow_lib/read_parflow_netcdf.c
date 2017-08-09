@@ -41,7 +41,7 @@ USA
 
 
 
-void ReadPFNC(char *fileName, Vector *v)
+void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep)
 {
 
   Grid           *grid     = VectorGrid(v);
@@ -59,12 +59,13 @@ void ReadPFNC(char *fileName, Vector *v)
   double          DX, DY, DZ;
   int 		   ncID, varID;
 
+
   OpenNCFile(fileName, &ncID);
   ForSubgridI(g, subgrids)
   {
     subgrid   = SubgridArraySubgrid(subgrids, g);
     subvector = VectorSubvector(v, g);
-    ReadNCFile(ncID, varID, subvector,subgrid);
+    ReadNCFile(ncID, varID, subvector,subgrid, varName, tStep);
   }
   nc_close(ncID);
 
@@ -105,9 +106,10 @@ void OpenNCFile(char *file_name, int *ncID)
   }
 }
 
-void ReadNCFile(int ncID, int varID, Subvector *subvector, Subgrid *subgrid)
+void ReadNCFile(int ncID, int varID, Subvector *subvector, Subgrid *subgrid, char *varName, int tStep)
 {
-  nc_inq_varid(ncID, "pressure", &varID); 
+  //nc_inq_varid(ncID, "pressure", &varID); 
+  nc_inq_varid(ncID, varName, &varID); 
   int ix = SubgridIX(subgrid);
   int iy = SubgridIY(subgrid);
   int iz = SubgridIZ(subgrid);
@@ -131,7 +133,7 @@ void ReadNCFile(int ncID, int varID, Subvector *subvector, Subgrid *subgrid)
 
   (void)subgrid;
 
-  startp[0] = 0, countp[0] = 1;
+  startp[0] = tStep, countp[0] = 1;
   startp[1] = iz, countp[1] = nz;
   startp[2] = iy, countp[2] = ny;
   startp[3] = ix, countp[3] = nx;
