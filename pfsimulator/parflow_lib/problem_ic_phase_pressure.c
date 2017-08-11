@@ -897,9 +897,12 @@ void  ICPhasePressureFreeInstanceXtra()
       if (public_xtra -> type == 3)  
       {
 	 dummy3 = (Type3 *)(public_xtra -> data);
-	 dummy4 = (Type4 *)(public_xtra -> data);
 
 	 FreeVector(dummy3 -> ic_values);
+      }
+      else if(public_xtra -> type == 4 )
+      {
+	 dummy4 = (Type4 *)(public_xtra -> data);
 	 FreeVector(dummy4 -> ic_values);
       }
 
