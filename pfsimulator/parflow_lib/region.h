@@ -87,7 +87,6 @@ typedef struct
    int minus_z_neigh;  /* Access to -z neighbor to this subgrid */
    int plus_z_neigh;   /* Access to +z neighbor to this subgrid */
    int32_t owner_tree;    /* Access to the p4est tree owning this subgrid */
-   int idx_in_tree;      /*  Access to quadrant that this subgrid is attached to TODO: unecessary field*/
 #endif
 
 } Subregion;

@@ -419,7 +419,7 @@ void parflow_p4est_get_projection_info_2d (Subgrid *subgrid
   int    vv[3], w[2];
   int    lidx;
   int    qlen;
-  size_t  q = (size_t) subgrid->idx_in_tree;
+  p4est_locidx_t which_quad;
   p4est_tree_t   *tree;
   p4est_topidx_t tt = (int32_t) subgrid->owner_tree;
   p4est_quadrant_t *quad;
@@ -429,10 +429,13 @@ void parflow_p4est_get_projection_info_2d (Subgrid *subgrid
 
   P4EST_QUADRANT_INIT (&proj);
 
+  P4EST_ASSERT (pfg->forest->first_local_tree <= tt &&
+        tt <= pfg->forest->last_local_tree);
   tree = p4est_tree_array_index(pfg->forest->trees,  tt);
 
   /*Grab the quadrant which this subgrid is attached to */
-  quad = p4est_quadrant_array_index(&tree->quadrants, q );
+  which_quad = SubgridLocIdx(subgrid) - tree->quadrants_offset;
+  quad = p4est_quadrant_array_index(&tree->quadrants, (size_t) which_quad);
 
   /*Compute its coordinates relative to tree vertex */
   p4est_qcoord_to_vertex(pfg->connect, tt,
@@ -514,7 +517,7 @@ void parflow_p4est_get_brick_coord_2d (Subgrid *subgrid,
       which_quad = SubgridLocIdx(subgrid) - tree->quadrants_offset;
       P4EST_ASSERT (0 <= which_quad &&
                     which_quad < (p4est_locidx_t) tree->quadrants.elem_count);
-      quad =  p4est_quadrant_array_index(&tree->quadrants, which_quad);
+      quad =  p4est_quadrant_array_index(&tree->quadrants, (size_t) which_quad);
       parflow_p4est_qcoord_to_vertex_2d(pfg->connect,
                                       which_tree, quad, v);
       for (k = 0; k < P4EST_DIM; k++)
