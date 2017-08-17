@@ -280,6 +280,7 @@ static Vector  *NewTempVector(
 #ifdef HAVE_P4EST
       SubgridOwnerTree(SubvectorDataSpace(new_sub)) = SubgridOwnerTree(subgrid);
       SubgridLocIdx(SubvectorDataSpace(new_sub)) = SubgridLocIdx(subgrid);
+      SubgridGhostIdx(SubvectorDataSpace(new_sub)) = SubgridGhostIdx(subgrid);
 #endif
 
       n = SubvectorNX(new_sub) * SubvectorNY(new_sub) * SubvectorNZ(new_sub);

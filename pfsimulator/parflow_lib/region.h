@@ -87,6 +87,7 @@ typedef struct
    int minus_z_neigh;  /* Access to -z neighbor to this subgrid */
    int plus_z_neigh;   /* Access to +z neighbor to this subgrid */
    int32_t owner_tree;    /* Access to the p4est tree owning this subgrid */
+   int ghostidx;           /* Index of this subregion in ghost layer */
 #endif
 
 } Subregion;
@@ -148,6 +149,7 @@ typedef struct
 #define SubregionMinusZneigh(subregion) ((subregion) -> minus_z_neigh)
 #define SubregionPlusZneigh(subregion)  ((subregion) -> plus_z_neigh )
 #define SubregionOwnerTree(subregion)  ((subregion) -> owner_tree )
+#define SubregionGhostIdx(subregion) ((subregion) -> ghostidx)
 #endif
 
 /*--------------------------------------------------------------------------

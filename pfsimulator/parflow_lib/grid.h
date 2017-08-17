@@ -117,6 +117,7 @@ typedef struct
 #define SubgridMinusZneigh(subgrid) ((subgrid) -> minus_z_neigh)
 #define SubgridPlusZneigh(subgrid)  ((subgrid) -> plus_z_neigh )
 #define SubgridOwnerTree(subgrid)  ((subgrid) -> owner_tree )
+#define SubgridGhostIdx(subgrid) ((subgrid) -> ghostidx )
 #endif
 
 /*--------------------------------------------------------------------------

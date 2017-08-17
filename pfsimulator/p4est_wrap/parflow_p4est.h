@@ -125,6 +125,9 @@ int             parflow_p4est_qiter_get_local_idx(parflow_p4est_qiter_t *
 /** Get owner tree of the quadrant in the passed iterator */
 int             parflow_p4est_qiter_get_tree(parflow_p4est_qiter_t * qiter);
 
+/** Get index in the ghost layer of the quadrant in the passed iterator */
+int             parflow_p4est_qiter_get_ghost_idx (parflow_p4est_qiter_t * qiter);
+
 /** Retrieve a pointer to the information placed on each ghost quadrant */
 parflow_p4est_ghost_data_t
    * parflow_p4est_get_ghost_data(parflow_p4est_grid_t * pfgrid,

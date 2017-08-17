@@ -396,7 +396,8 @@ Subgrid  *ExtractSubgrid(
 #ifdef HAVE_P4EST
    SubregionMinusZneigh(new_subgrid) = SubregionMinusZneigh(subgrid);
    SubregionPlusZneigh(new_subgrid)  = SubregionPlusZneigh(subgrid);
-   new_subgrid->owner_tree = subgrid->owner_tree;
+   SubgridOwnerTree(new_subgrid)= SubgridOwnerTree(subgrid);
+   SubgridGhostIdx(new_subgrid) = SubgridGhostIdx(subgrid);
 #endif
 
    return new_subgrid;

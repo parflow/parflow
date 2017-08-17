@@ -155,6 +155,9 @@ Grid           *CreateGrid(
           SubgridLocIdx(quad_data->pf_subgrid) =
               parflow_p4est_qiter_get_local_idx(qiter);
 
+          SubgridGhostIdx(quad_data->pf_subgrid) =
+                  parflow_p4est_qiter_get_ghost_idx(qiter);
+
           /* Remember tree that owns this subgrid */
           SubgridOwnerTree(quad_data->pf_subgrid) =
               (int32_t) parflow_p4est_qiter_get_tree(qiter);
@@ -186,6 +189,9 @@ Grid           *CreateGrid(
                          parflow_p4est_qiter_get_owner_rank(qiter));
             SubgridLocIdx(ghost_data->pf_subgrid) =
                 parflow_p4est_qiter_get_local_idx(qiter);
+
+            SubgridGhostIdx(ghost_data->pf_subgrid) =
+                    parflow_p4est_qiter_get_ghost_idx(qiter);
 
 	    /* Remember tree that owns this subgrid */
 	    SubgridOwnerTree(ghost_data->pf_subgrid) =

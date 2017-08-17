@@ -211,6 +211,7 @@ Subregion  *DuplicateSubregion(
    SubregionOwnerTree(new_subregion) =  SubregionOwnerTree(subregion);
    SubregionMinusZneigh(new_subregion) = SubregionMinusZneigh(subregion);
    SubregionPlusZneigh(new_subregion)  = SubregionPlusZneigh(subregion);
+   SubregionGhostIdx(new_subregion) = SubregionGhostIdx(subregion);
 #endif
 
    return new_subregion;
