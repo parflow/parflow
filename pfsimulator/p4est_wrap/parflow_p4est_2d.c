@@ -92,10 +92,12 @@ parflow_p4est_grid_2d_new(int Px, int Py
                                 0, initial_level, 1,
                                 quad_data_size, NULL, NULL);
 
+    p4est_vtk_write_file (pfg->forest, NULL,"pftest");
+
     /*
      * allocate ghost storage 
      */
-    pfg->ghost = p4est_ghost_new(pfg->forest, P4EST_CONNECT_FULL);
+    pfg->ghost = p4est_ghost_new(pfg->forest, P4EST_CONNECT_CORNER);
 
     EndTiming(P4ESTimingIndex);
 
@@ -521,7 +523,7 @@ void parflow_p4est_get_brick_coord_2d (Subgrid *subgrid,
       parflow_p4est_qcoord_to_vertex_2d(pfg->connect,
                                       which_tree, quad, v);
       for (k = 0; k < P4EST_DIM; k++)
-          bcoord[k] = (int) v[k] * sc_intpow(2, quad->level);
+          bcoord[k] = (int) ( v[k] * sc_intpow(2, quad->level) );
 
   }else{
 
