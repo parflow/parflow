@@ -199,7 +199,7 @@ CommPkg         *NewCommPkg(
    int   dim;
 
 #ifdef HAVE_P4EST
-   int  loc_idx, tag;
+   int   tag;
 #endif
 
    new_comm_pkg = ctalloc(CommPkg, 1);
