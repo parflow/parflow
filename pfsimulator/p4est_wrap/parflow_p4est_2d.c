@@ -10,29 +10,29 @@
 #include <p8est_vtk.h>
 #endif
 
-static p4est_topidx_t
+static          p4est_topidx_t
 parflow_p4est_lexicord(int Tx, int Ty, int vv[3])
 {
-  return ( vv[2] * Ty  + vv[1] ) * Tx  + vv[0];
+    return (vv[2] * Ty + vv[1]) * Tx + vv[0];
 }
 
 #ifdef P4_TO_P8
-static uint64_t
-parflow_p4est_morton ( int w[2])
+static          uint64_t
+parflow_p4est_morton(int w[2])
 {
-  int       i;
-  uint64_t  xx   = (uint64_t) w[0];
-  uint64_t  yy   = (uint64_t) w[1];
-  uint64_t  one  = (uint64_t) 1;
-  int       bits = (sizeof(uint64_t) * CHAR_BIT)/P4EST_DIM;
-  uint64_t  m = 0;
+    int             i;
+    uint64_t        xx = (uint64_t) w[0];
+    uint64_t        yy = (uint64_t) w[1];
+    uint64_t        one = (uint64_t) 1;
+    int             bits = (sizeof(uint64_t) * CHAR_BIT) / P4EST_DIM;
+    uint64_t        m = 0;
 
-  for (i = 0; i < bits; ++i) {
-      m |= ( (xx & (one << i)) << (i    ) );
-      m |= ( (yy & (one << i)) << (i + 1) );
-   }
+    for (i = 0; i < bits; ++i) {
+        m |= ((xx & (one << i)) << (i));
+        m |= ((yy & (one << i)) << (i + 1));
+    }
 
-  return m;
+    return m;
 }
 #endif
 
@@ -74,35 +74,28 @@ parflow_p4est_grid_2d_new(int Px, int Py
     pfg->Tz = tz / g;
 #endif
 
-     BeginTiming(P4ESTimingIndex);
+    BeginTiming(P4ESTimingIndex);
 
-    /*
-     * Create connectivity structure
-     */
+    /** Create connectivity structure */
     pfg->connect = p4est_connectivity_new_brick(pfg->Tx, pfg->Ty
 #ifdef P4_TO_P8
-                                                , pfg->Tz , 0
+                                                , pfg->Tz, 0
 #endif
                                                 , 0, 0);
 
-    /*
-     * Create p4est structure
-     */
+    /** Create p4est structure */
     pfg->forest = p4est_new_ext(amps_CommWorld, pfg->connect,
                                 0, initial_level, 1,
                                 quad_data_size, NULL, NULL);
 
-    p4est_vtk_write_file (pfg->forest, NULL,"pftest");
-
-    /*
-     * allocate ghost storage 
-     */
+    /** allocate ghost storage */
     pfg->ghost = p4est_ghost_new(pfg->forest, P4EST_CONNECT_CORNER);
 
     EndTiming(P4ESTimingIndex);
 
-    pfg->ghost_data = sc_array_new_count(sizeof(parflow_p4est_ghost_data_t),
-                                        pfg->ghost->ghosts.elem_count);
+    pfg->ghost_data =
+        sc_array_new_count(sizeof(parflow_p4est_ghost_data_t),
+                           pfg->ghost->ghosts.elem_count);
 
     num_trees = pfg->Tx * pfg->Ty;
 #ifdef P4_TO_P8
@@ -111,36 +104,37 @@ parflow_p4est_grid_2d_new(int Px, int Py
 
     /** Compute permutation transforming lexicographical to brick order
      *  and its inverse */
-    pfg->lexic_to_tree = P4EST_ALLOC_ZERO (p4est_topidx_t, num_trees);
-    pfg->tree_to_lexic = P4EST_ALLOC_ZERO (p4est_topidx_t, P4EST_DIM * num_trees);
+    pfg->lexic_to_tree = P4EST_ALLOC_ZERO(p4est_topidx_t, num_trees);
+    pfg->tree_to_lexic =
+        P4EST_ALLOC_ZERO(p4est_topidx_t, P4EST_DIM * num_trees);
 
-    for (tt = 0; tt < num_trees; ++tt){
-          pfg->lexic_to_tree[tt] = -1;
-          for (i = 0; i < P4EST_DIM; ++i){
-	        pfg->tree_to_lexic[ P4EST_DIM * tt + i] = -1;
-	  }
+    for (tt = 0; tt < num_trees; ++tt) {
+        pfg->lexic_to_tree[tt] = -1;
+        for (i = 0; i < P4EST_DIM; ++i) {
+            pfg->tree_to_lexic[P4EST_DIM * tt + i] = -1;
+        }
     }
 
     for (tt = 0; tt < num_trees; ++tt) {
 
         p4est_qcoord_to_vertex(pfg->connect, tt, 0, 0
 #ifdef P4_TO_P8
-        , 0
+                               , 0
 #endif
-        , v);
+                               , v);
 
         vv[0] = (int) v[0];
         vv[1] = (int) v[1];
         vv[2] = (int) v[2];
 
         lidx = parflow_p4est_lexicord(pfg->Tx, pfg->Ty, vv);
-        P4EST_ASSERT( lidx >= 0 && lidx < num_trees );
-        pfg->lexic_to_tree[lidx]=tt;
+        P4EST_ASSERT(lidx >= 0 && lidx < num_trees);
+        pfg->lexic_to_tree[lidx] = tt;
 
-	for (i = 0; i < P4EST_DIM; ++i){
-	      pfg->tree_to_lexic[ P4EST_DIM * tt + i] = vv[i];
-	}
-     }
+        for (i = 0; i < P4EST_DIM; ++i) {
+            pfg->tree_to_lexic[P4EST_DIM * tt + i] = vv[i];
+        }
+    }
 
     return pfg;
 }
@@ -148,8 +142,8 @@ parflow_p4est_grid_2d_new(int Px, int Py
 void
 parflow_p4est_grid_2d_destroy(parflow_p4est_grid_2d_t * pfg)
 {
-    /* Mesh structure must have been freed before
-     * with parflow_p4est_grid_2d_mesh_destroy */
+    /** Mesh structure must have been freed before with
+     * parflow_p4est_grid_2d_mesh_destroy */
     P4EST_ASSERT(pfg->mesh == NULL);
 
     p4est_ghost_destroy(pfg->ghost);
@@ -165,38 +159,38 @@ void
 parflow_p4est_grid_2d_mesh_init(parflow_p4est_grid_2d_t * pfgrid)
 {
     BeginTiming(P4ESTimingIndex);
-    pfgrid->mesh = p4est_mesh_new (pfgrid->forest, pfgrid->ghost,
-                                   P4EST_CONNECT_FACE );
+    pfgrid->mesh = p4est_mesh_new(pfgrid->forest, pfgrid->ghost,
+                                  P4EST_CONNECT_FACE);
     EndTiming(P4ESTimingIndex);
 }
 
 void
-parflow_p4est_grid_2d_mesh_destroy(parflow_p4est_grid_2d_t *pfgrid)
+parflow_p4est_grid_2d_mesh_destroy(parflow_p4est_grid_2d_t * pfgrid)
 {
-    if (pfgrid->mesh != NULL){
-        p4est_mesh_destroy (pfgrid->mesh);
+    if (pfgrid->mesh != NULL) {
+        p4est_mesh_destroy(pfgrid->mesh);
         pfgrid->mesh = NULL;
     }
 }
 
 void
-parflow_p4est_get_zneigh_2d( Subgrid * subgrid
+parflow_p4est_get_zneigh_2d(Subgrid * subgrid
 #ifdef P4_TO_P8
-                           ,parflow_p4est_qiter_2d_t * qiter,
+                            , parflow_p4est_qiter_2d_t * qiter,
                             parflow_p4est_grid_2d_t * pfgrid
 #endif
     )
 {
-    int z_neighs[] = {-1, -1};
+    int             z_neighs[] = { -1, -1 };
 
 #ifdef P4_TO_P8
-    p4est_mesh_t     *mesh = pfgrid->mesh;
-    p4est_locidx_t    K     = mesh->local_num_quadrants;
-    p4est_locidx_t    G     = mesh->ghost_num_quadrants;
-    int8_t            qtof;
-    p4est_locidx_t    qtoq;
-    int               f,lidx;
-    int               faces[] = {4,5}; /** -z face = 4, +z face = 5 */
+    p4est_mesh_t   *mesh = pfgrid->mesh;
+    p4est_locidx_t  K = mesh->local_num_quadrants;
+    p4est_locidx_t  G = mesh->ghost_num_quadrants;
+    int8_t          qtof;
+    p4est_locidx_t  qtoq;
+    int             f, lidx;
+    int             faces[] = { 4, 5 };/** -z face = 4, +z face = 5 */
 
     P4EST_ASSERT(qiter->itype == PARFLOW_P4EST_QUAD);
     lidx = qiter->local_idx;
@@ -213,7 +207,7 @@ parflow_p4est_get_zneigh_2d( Subgrid * subgrid
             if (qtoq >= K) {
                 /** face neighbor is on a different processor,
                  *  then qtoq contains its local index in the ghost layer */
-                P4EST_ASSERT( (qtoq - K) < G);
+                P4EST_ASSERT((qtoq - K) < G);
                 z_neighs[f] = qtoq;
             } else {
                 /** face neighbor is on the same processor,
@@ -225,8 +219,8 @@ parflow_p4est_get_zneigh_2d( Subgrid * subgrid
     }
 #endif
 
-    subgrid->minus_z_neigh =  z_neighs[0];
-    subgrid->plus_z_neigh  =  z_neighs[1];
+    subgrid->minus_z_neigh = z_neighs[0];
+    subgrid->plus_z_neigh = z_neighs[1];
 }
 
 /*
@@ -274,7 +268,7 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
     if (pfg->forest->local_num_quadrants == 0) {
         P4EST_ASSERT(pfg->forest->first_local_tree == -1);
         P4EST_ASSERT(pfg->forest->last_local_tree == -2);
-        P4EST_ASSERT( (int) pfg->ghost->ghosts.elem_count == 0);
+        P4EST_ASSERT((int) pfg->ghost->ghosts.elem_count == 0);
         return NULL;
     }
 
@@ -381,14 +375,15 @@ parflow_p4est_get_quad_data_2d(parflow_p4est_qiter_2d_t * qit_2d)
 }
 
 parflow_p4est_ghost_data_t *
-parflow_p4est_get_ghost_data_2d(parflow_p4est_grid_2d_t *pfg,
+parflow_p4est_get_ghost_data_2d(parflow_p4est_grid_2d_t * pfg,
                                 parflow_p4est_qiter_2d_t * qit_2d)
 {
-    sc_array_t *gdata = pfg->ghost_data;
+    sc_array_t     *gdata = pfg->ghost_data;
 
     P4EST_ASSERT(qit_2d->itype & PARFLOW_P4EST_GHOST);
 
-    return (parflow_p4est_ghost_data_t *) sc_array_index_int(gdata, qit_2d->g);
+    return (parflow_p4est_ghost_data_t *) sc_array_index_int(gdata,
+                                                             qit_2d->g);
 }
 
 /*
@@ -408,91 +403,91 @@ parflow_p4est_qcoord_to_vertex_2d(p4est_connectivity_t * connect,
                            v);
 }
 
-
-void parflow_p4est_get_projection_info_2d (Subgrid *subgrid
+void
+parflow_p4est_get_projection_info_2d(Subgrid * subgrid
 #ifdef P4_TO_P8
-    , int zl_idx , parflow_p4est_grid_2d_t *pfg
+                                     , int zl_idx,
+                                     parflow_p4est_grid_2d_t * pfg
 #endif
-    ,int info[2])
+                                     , int info[2])
 {
 #ifdef P4_TO_P8
-  double v[3];
-  int    face;
-  int    vv[3], w[2];
-  int    lidx;
-  int    qlen;
-  p4est_locidx_t which_quad;
-  p4est_tree_t   *tree;
-  p4est_topidx_t tt = (int32_t) subgrid->owner_tree;
-  p4est_quadrant_t *quad;
-  p4est_topidx_t   num_trees = pfg->Tx * pfg->Ty * pfg->Tz;
-  p4est_topidx_t   tp;
-  p4est_quadrant_t  proj;
+    double          v[3];
+    int             face;
+    int             vv[3], w[2];
+    int             lidx;
+    int             qlen;
+    p4est_locidx_t  which_quad;
+    p4est_tree_t   *tree;
+    p4est_topidx_t  tt = (int32_t) subgrid->owner_tree;
+    p4est_quadrant_t *quad;
+    p4est_topidx_t  num_trees = pfg->Tx * pfg->Ty * pfg->Tz;
+    p4est_topidx_t  tp;
+    p4est_quadrant_t proj;
 
-  P4EST_QUADRANT_INIT (&proj);
+    P4EST_QUADRANT_INIT(&proj);
 
-  P4EST_ASSERT (pfg->forest->first_local_tree <= tt &&
-        tt <= pfg->forest->last_local_tree);
-  tree = p4est_tree_array_index(pfg->forest->trees,  tt);
+    P4EST_ASSERT(pfg->forest->first_local_tree <= tt &&
+                 tt <= pfg->forest->last_local_tree);
+    tree = p4est_tree_array_index(pfg->forest->trees, tt);
 
-  /*Grab the quadrant which this subgrid is attached to */
-  which_quad = SubgridLocIdx(subgrid) - tree->quadrants_offset;
-  quad = p4est_quadrant_array_index(&tree->quadrants, (size_t) which_quad);
+    /** Grab the quadrant which this subgrid is attached to */
+    which_quad = SubgridLocIdx(subgrid) - tree->quadrants_offset;
+    quad =
+        p4est_quadrant_array_index(&tree->quadrants, (size_t) which_quad);
 
-  /*Compute its coordinates relative to tree vertex */
-  p4est_qcoord_to_vertex(pfg->connect, tt,
-                         quad->x, quad->y, quad->z, v);
+    /** Compute its coordinates relative to tree vertex */
+    p4est_qcoord_to_vertex(pfg->connect, tt, quad->x, quad->y, quad->z, v);
 
-  qlen = 1 << quad->level;
+    qlen = 1 << quad->level;
 
-  /* Project such coordinates in the desired z level and
-   * figure out the tree owning the projection */
-  w[0] = (int)( v[0] * qlen );
-  w[1] = (int)( v[1] * qlen );
+    /** Project such coordinates in the desired z level and figure out the
+     * tree owning the projection */
+    w[0] = (int) (v[0] * qlen);
+    w[1] = (int) (v[1] * qlen);
 
-  vv[0] = w[0] / qlen;
-  vv[1] = w[1] / qlen;
-  vv[2] = zl_idx / qlen;
+    vv[0] = w[0] / qlen;
+    vv[1] = w[1] / qlen;
+    vv[2] = zl_idx / qlen;
 
-  lidx = parflow_p4est_lexicord(pfg->Tx, pfg->Ty, vv);
-  P4EST_ASSERT( lidx >= 0 && lidx < num_trees );
-  tp = pfg->lexic_to_tree[lidx];
-  P4EST_ASSERT(tp >= 0);
+    lidx = parflow_p4est_lexicord(pfg->Tx, pfg->Ty, vv);
+    P4EST_ASSERT(lidx >= 0 && lidx < num_trees);
+    tp = pfg->lexic_to_tree[lidx];
+    P4EST_ASSERT(tp >= 0);
 
-  /* Provide face direction to search function */
-  face = v[2] > zl_idx ? 4 : 5;
+    /** Provide face direction to search function */
+    face = v[2] > zl_idx ? 4 : 5;
 
-  /* Construct a quadrant matching the coordinates of the
-   * desired projection */
-  proj.level = quad->level;
-  proj.x = quad->x;
-  proj.y = quad->y;
-  proj.z = (p4est_qcoord_t)
-      (zl_idx % qlen) * P4EST_QUADRANT_LEN(proj.level);
+    /** Construct a quadrant matching the coordinates of the desired
+     * projection */
+    proj.level = quad->level;
+    proj.x = quad->x;
+    proj.y = quad->y;
+    proj.z = (p4est_qcoord_t)
+        (zl_idx % qlen) * P4EST_QUADRANT_LEN(proj.level);
 
-  /* Owner of projected subgrid is the owner of the temporay
-   * quadrant */
-  info[0] = p4est_quadrant_find_owner(pfg->forest, tp, face, &proj);
-  P4EST_ASSERT(info[0] >= 0 && info[0] < GlobalsNumProcs);
+    /** Owner of projected subgrid is the owner of the temporay quadrant */
+    info[0] = p4est_quadrant_find_owner(pfg->forest, tp, face, &proj);
+    P4EST_ASSERT(info[0] >= 0 && info[0] < GlobalsNumProcs);
 
-  /* Use the morton code of the projected quadrant as tag */
-  info[1] = (int) parflow_p4est_morton(w);
-  P4EST_ASSERT( info[1] < MPI_TAG_UB);
+    /** Use the morton code of the projected quadrant as tag */
+    info[1] = (int) parflow_p4est_morton(w);
+    P4EST_ASSERT(info[1] < MPI_TAG_UB);
 #else
-  info[0] =  SubgridProcess(subgrid);
-  info[1] =  SubgridLocIdx(subgrid);
+    info[0] = SubgridProcess(subgrid);
+    info[1] = SubgridLocIdx(subgrid);
 #endif
 }
 
 void
-parflow_p4est_nquads_per_rank_2d(parflow_p4est_grid_2d_t *pfg,
-                                 int * quads_per_rank)
+parflow_p4est_nquads_per_rank_2d(parflow_p4est_grid_2d_t * pfg,
+                                 int *quads_per_rank)
 {
     int             ig;
     int             mpisize = amps_Size(amps_CommWorld);
-    p4est_gloidx_t  *gfq = pfg->forest->global_first_quadrant;
+    p4est_gloidx_t *gfq = pfg->forest->global_first_quadrant;
 
-    for (ig = 0; ig < mpisize; ig++){
+    for (ig = 0; ig < mpisize; ig++) {
         quads_per_rank[ig] = (int) (gfq[ig + 1] - gfq[ig]);
     }
 }
