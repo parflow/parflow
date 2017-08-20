@@ -497,50 +497,47 @@ parflow_p4est_nquads_per_rank_2d(parflow_p4est_grid_2d_t *pfg,
     }
 }
 
-void parflow_p4est_get_brick_coord_2d (Subgrid *subgrid,
-                parflow_p4est_grid_2d_t *pfg, int bcoord[P4EST_DIM])
+void
+parflow_p4est_get_brick_coord_2d(Subgrid * subgrid,
+                                 parflow_p4est_grid_2d_t * pfg,
+                                 int bcoord[P4EST_DIM])
 {
-  int                 k;
-  int                 rank = amps_Rank(amps_CommWorld);
-  double 	      v[3];
-  p4est_topidx_t      which_tree;
-  p4est_locidx_t      which_quad, which_ghost;
-  p4est_tree_t        *tree;
-  p4est_quadrant_t    *quad;
+    int             k;
+    int             rank = amps_Rank(amps_CommWorld);
+    double          v[3];
+    p4est_topidx_t  which_tree;
+    p4est_locidx_t  which_quad, which_ghost;
+    p4est_tree_t   *tree;
+    p4est_quadrant_t *quad;
 
-  which_tree  = SubgridOwnerTree(subgrid);
+    which_tree = SubgridOwnerTree(subgrid);
 
-  if (pfg->forest->first_local_tree <= which_tree &&
-      which_tree <= pfg->forest->last_local_tree){
+    if (rank == subgrid->process) {
 
-      /*We own this tree, so we try to compute the quadrant corner
-       * in the brick order directly */
-      if (rank == subgrid->process){
+        /** We own the subgrid, fetch local quadrant associated to it */
+        tree = p4est_tree_array_index(pfg->forest->trees, which_tree);
+        which_quad = SubgridLocIdx(subgrid) - tree->quadrants_offset;
+        P4EST_ASSERT(0 <= which_quad &&
+                     which_quad <
+                     (p4est_locidx_t) tree->quadrants.elem_count);
+        quad =
+            p4est_quadrant_array_index(&tree->quadrants,
+                                       (size_t) which_quad);
+    } else {
 
-          /* We own the subgrid, fetch local quadrant associated to it */
-          tree = p4est_tree_array_index(pfg->forest->trees,  which_tree);
-          which_quad = SubgridLocIdx(subgrid) - tree->quadrants_offset;
-          P4EST_ASSERT (0 <= which_quad &&
-                        which_quad < (p4est_locidx_t) tree->quadrants.elem_count);
-          quad =  p4est_quadrant_array_index(&tree->quadrants, (size_t) which_quad);
-      }else{
+        /** We do not own the subgrid, we fetch ghost quadrant
+          associated  to it */
+        which_ghost = SubgridGhostIdx(subgrid);
+        P4EST_ASSERT(which_ghost >= 0 &&
+                     which_ghost <
+                     (p4est_locidx_t) pfg->ghost->ghosts.elem_count);
+        quad =
+            p4est_quadrant_array_index(&pfg->ghost->ghosts,
+                                       (size_t) which_ghost);
+    }
 
-          /* We do not own the subgrid, we fetch ghost quadrant associated to it */
-          which_ghost = SubgridGhostIdx(subgrid);
-          P4EST_ASSERT(which_ghost >= 0 &&
-                       which_ghost < (p4est_locidx_t) pfg->ghost->ghosts.elem_count);
-          quad = p4est_quadrant_array_index(&pfg->ghost->ghosts, (size_t) which_ghost);
-      }
+    parflow_p4est_qcoord_to_vertex_2d(pfg->connect, which_tree, quad, v);
 
-      parflow_p4est_qcoord_to_vertex_2d(pfg->connect, which_tree, quad, v);
-
-      for (k = 0; k < P4EST_DIM; k++)
-          bcoord[k] = (int) ( v[k] * sc_intpow(2, quad->level) );
-
-  }else{
-
-      /* We do not own this tree, so we return the tree corner instead */
-      for (k = 0; k < P4EST_DIM; k++)
-          bcoord[k] = pfg->tree_to_lexic[which_tree * P4EST_DIM + k];
-  }
+    for (k = 0; k < P4EST_DIM; k++)
+        bcoord[k] = (int) (v[k] * sc_intpow(2, quad->level));
 }
