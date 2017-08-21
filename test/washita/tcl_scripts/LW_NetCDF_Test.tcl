@@ -26,7 +26,7 @@ cd "./Outputs"
 file copy -force "../../parflow_input/LW.slopex.pfb" .
 file copy -force "../../parflow_input/LW.slopey.pfb" .
 file copy -force "../../parflow_input/IndicatorFile_Gleeson.50z.pfb"   .
-file copy -force "../../parflow_input/press.init.pfb"  .
+file copy -force "../../parflow_input/press.init.nc"  .
 
 #CLM Inputs
 file copy -force "../../clm_input/drv_clmin.dat" .
@@ -426,10 +426,10 @@ pfset Solver.CLM.IrrigationType                       none
 #---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
-pfset ICPressure.Type                                 PFBFile
+pfset ICPressure.Type                                 NCFile
 pfset ICPressure.GeomNames                            domain
 pfset Geom.domain.ICPressure.RefPatch                   z-upper
-pfset Geom.domain.ICPressure.FileName                   press.init.pfb
+pfset Geom.domain.ICPressure.FileName                   press.init.nc
 
 #----------------------------------------------------------------
 # Outputs
@@ -505,7 +505,7 @@ pfset ComputationalGrid.NX                41
 pfset ComputationalGrid.NY                41 
 pfset ComputationalGrid.NZ                50 
 pfdist IndicatorFile_Gleeson.50z.pfb
-pfdist press.init.pfb
+#pfdist press.init.pfb
 
 #-----------------------------------------------------------------------------
 # Run Simulation 
