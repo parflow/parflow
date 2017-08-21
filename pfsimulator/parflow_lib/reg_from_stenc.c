@@ -33,6 +33,9 @@
 
 #include "parflow.h"
 
+#ifdef HAVE_P4EST
+#include "parflow_p4est_dependences.h"
+#endif
 
 /*--------------------------------------------------------------------------
  * ComputeRegFromStencil:
@@ -256,9 +259,8 @@ Stencil  *stencil)
 
 #ifdef HAVE_P4EST
    SubgridArray  *sa2_loc;
-   int		  g, tt, num_trees;
+   int		  tt, num_trees;
    int            num_loc_idxs;
-   int            num_ghosts;
    int		 *tree_array = NULL;
    int           *loc_idx_array = NULL;
    int           *ghost_idx_array = NULL;
@@ -478,87 +480,80 @@ Stencil  *stencil)
 #ifdef HAVE_P4EST
                  BeginTiming(P4ESTSetupTimingIndex);
 
-		 tree_array = talloc(int, SubgridArraySize(neighbors));
+                 tree_array = talloc(int, SubgridArraySize(neighbors));
                  loc_idx_array = talloc(int, SubgridArraySize(neighbors));
                  ghost_idx_array = talloc(int, SubgridArraySize(neighbors));
 
                  /* Determine loc_idx_array, tree_array and num of
                   * different local indexes and trees in sa2 */
-                 num_loc_idxs = num_ghosts = num_trees = 0;
+                 num_loc_idxs = num_trees = 0;
                  ForSubgridI(j, sa2)
                  {
-                   subgrid0 = SubgridArraySubgrid(sa2, j);
+                     subgrid0 = SubgridArraySubgrid(sa2, j);
 
-                   for (k = 0; k < num_loc_idxs; k++)
-                     if (SubgridLocIdx(subgrid0) == loc_idx_array[k])
-                       break;
-                   if (k == num_loc_idxs){
-                       loc_idx_array[k] = SubgridLocIdx(subgrid0);
-                       num_loc_idxs++;
-                   }
+                     for (k = 0; k < num_loc_idxs; k++)
+                         if (SubgridLocIdx(subgrid0) == loc_idx_array[k]){
+                             P4EST_ASSERT (SubgridGhostIdx(subgrid0) == ghost_idx_array[k]);
+                             break;
+                         }
+                     if (k == num_loc_idxs){
+                         loc_idx_array[k] = SubgridLocIdx(subgrid0);
+                         ghost_idx_array[k] = SubgridGhostIdx(subgrid0);
+                         num_loc_idxs++;
+                     }
 
-                   for (g = 0; g < num_ghosts; g++)
-                     if (SubgridGhostIdx(subgrid0) == ghost_idx_array[g])
-                       break;
-                   if (g == num_ghosts){
-                       ghost_idx_array[g] = SubgridGhostIdx(subgrid0);
-                       num_ghosts ++;
-                   }
-
-		  for (tt = 0; tt < num_trees; tt++)
-                     if ( SubgridOwnerTree(subgrid0) == tree_array[tt])
-                       break;
-                   if (tt == num_trees){
-                       tree_array[tt] = SubgridOwnerTree(subgrid0);
-                       num_trees++;
-                   }
+                     for (tt = 0; tt < num_trees; tt++)
+                         if ( SubgridOwnerTree(subgrid0) == tree_array[tt])
+                             break;
+                     if (tt == num_trees){
+                         tree_array[tt] = SubgridOwnerTree(subgrid0);
+                         num_trees++;
+                     }
                  }
 
                  /* put subgrids with loc_idx_array[k] and array_tree[tt]
-		  * into sa2_loc */
+                  * into sa2_loc */
                  for (tt = 0; tt < num_trees; tt++){
 
                      for (k = 0; k < num_loc_idxs; k++){
 
-                         for (g = 0; g < num_ghosts; g++){
 
-                             sa2_loc = NewSubgridArray();
+                         sa2_loc = NewSubgridArray();
 
-                             ForSubgridI(j, sa2)
-                             {
-                                 subgrid0 = SubgridArraySubgrid(sa2, j);
-                                 if (SubgridLocIdx(subgrid0) == loc_idx_array[k] &&
-                                         SubgridOwnerTree(subgrid0) == tree_array[tt] &&
-                                         SubgridGhostIdx(subgrid0) == ghost_idx_array[g] )
-                                     AppendSubgrid(subgrid0, sa2_loc);
-                             }
-
-                             /*Union of subgrids in sa2_loc*/
-                             sa3 = UnionSubgridArray(sa2_loc);
-
-                             /*Rembember processor, tree and local indx*/
-                             ForSubgridI(j, sa3)
-                             {
-                                 subgrid0 = SubgridArraySubgrid(sa3, j);
-                                 SubgridProcess(subgrid0) = proc_array[p];
-                                 SubgridOwnerTree(subgrid0) = tree_array[tt];
-                                 SubgridLocIdx(subgrid0)  = loc_idx_array[k];
-                                 SubgridGhostIdx(subgrid0) = ghost_idx_array[g];
-                             }
-                             AppendSubgridArray(sa3, sa1);
-
-                             SubregionArraySize(sa2_loc) = 0;
-                             FreeSubgridArray(sa2_loc);
-                             SubregionArraySize(sa3) = 0;
-                             FreeSubgridArray(sa3);
+                         ForSubgridI(j, sa2)
+                         {
+                             subgrid0 = SubgridArraySubgrid(sa2, j);
+                             if (SubgridLocIdx(subgrid0) == loc_idx_array[k] &&
+                                     SubgridOwnerTree(subgrid0) == tree_array[tt] )
+                                 AppendSubgrid(subgrid0, sa2_loc);
                          }
+
+                         /*Union of subgrids in sa2_loc*/
+                         sa3 = UnionSubgridArray(sa2_loc);
+
+                         /*Rembember processor, tree and local indx*/
+                         ForSubgridI(j, sa3)
+                         {
+                             subgrid0 = SubgridArraySubgrid(sa3, j);
+                             SubgridProcess(subgrid0) = proc_array[p];
+                             SubgridOwnerTree(subgrid0) = tree_array[tt];
+                             SubgridLocIdx(subgrid0)  = loc_idx_array[k];
+                             SubgridGhostIdx(subgrid0) = ghost_idx_array[k];
+                         }
+                         AppendSubgridArray(sa3, sa1);
+
+                         SubregionArraySize(sa2_loc) = 0;
+                         FreeSubgridArray(sa2_loc);
+                         SubregionArraySize(sa3) = 0;
+                         FreeSubgridArray(sa3);
+
                      }
                  }
 
                  SubregionArraySize(sa2) = 0;
                  FreeSubgridArray(sa2);
 
-		 tfree(tree_array);
+                 tfree(tree_array);
                  tfree(loc_idx_array);
                  tfree(ghost_idx_array);
 
