@@ -4269,6 +4269,8 @@ pfset Solver.CLM.SoiLayer      4
 NetCDF4 parallel I/O is being implemented in ParFlow. As of now only output capability is implemented. Input functionality will be added in later version. Currently user has option of printing 3-D time varying pressure or saturation or both in a single NetCDF file containing multiple time steps. User should configure ParFlow(pfsimulatior part) "- -with-netcdf" option and link the appropriate NetCDF4 library.
 Naming convention of output files is analogues to binary file names. Following options are available for NetCDF4 output along with various performance tuning options. User is advised to explore NetCDF4 chunking and ROMIO hints option for better I/O performance.
 
+\textbf{\textit{HDF5 Library version 1.8.16 or higher is required for NetCDF4 parallel I/O}}
+
 \pfkey{integer}{NetCDF.NumStepsPerFile}{ }
 {This key sets number of time steps user wishes to output in a NetCDF4 file. Once the time step count increases beyond this number, a new file is automatically created.} 
 \begin{display}\begin{verbatim}
@@ -4391,6 +4393,16 @@ pfset NetCDF.EvapTransFileTransient   True
 {This key sets the name of the NetCDF transient evaptrans forcing file.} 
 \begin{display}\begin{verbatim}
 pfset NetCDF.EvapTrans.FileName         "evap_trans.nc"
+\end{verbatim}\end{display}
+
+\subsection{NetCDF Testing Little Washita Test Case}
+The basic NetCDF functionality of output (pressure and saturation) and initial conditions (pressure) can be tested with following tcl script.
+\begin{display}\begin{verbatim}
+parflow/test/washita/tcl_scripts
+\end{verbatim}\end{display}
+This test case will be initialized with following initial condition file.
+\begin{display}\begin{verbatim}
+parflow/test/washita/parflow_input/press.init.nc
 \end{verbatim}\end{display}
 
 \section{ParFlow Binary Files (.pfb)}
