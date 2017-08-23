@@ -4732,7 +4732,6 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
 	switch_name, key);
   }
   public_xtra -> evap_trans_file_transient = switch_value;
-  printf("KKu: %d\n", switch_value);
 
   /* Nick's addition*/
   sprintf(key, "%s.EvapTrans.FileLooping", name);
