@@ -92,7 +92,7 @@ void            parflow_p4est_nquads_per_rank_2d(parflow_p4est_grid_2d_t *pfg,
 
 void 		parflow_p4est_get_brick_coord_2d (Subgrid *subgrid,
 						parflow_p4est_grid_2d_t *pfg,
-						int bcoord[3]);
+                                                p4est_gloidx_t bcoord[3]);
 SC_EXTERN_C_END;
 
 #endif                          /* !PARLOW_P4EST_2D_H */

@@ -2,6 +2,7 @@
 #define PARLOW_P4EST_H
 
 #include <parflow.h>
+#include <p4est_base.h>
 #include <sc_containers.h>
 
 SC_EXTERN_C_BEGIN;
@@ -172,7 +173,7 @@ void             parflow_p4est_nquads_per_rank(parflow_p4est_grid_t *pfgrid,
  */
 void
 parflow_p4est_get_brick_coord (Subgrid *subgrid,
-                               parflow_p4est_grid_t *pfgrid, int bcoord[3]);
+                               parflow_p4est_grid_t *pfgrid, p4est_gloidx_t bcoord[3]);
 
 SC_EXTERN_C_END;
 

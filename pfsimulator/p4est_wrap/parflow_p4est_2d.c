@@ -495,11 +495,12 @@ parflow_p4est_nquads_per_rank_2d(parflow_p4est_grid_2d_t * pfg,
 void
 parflow_p4est_get_brick_coord_2d(Subgrid * subgrid,
                                  parflow_p4est_grid_2d_t * pfg,
-                                 int bcoord[P4EST_DIM])
+                                 p4est_gloidx_t bcoord[P4EST_DIM])
 {
     int             k;
     int             rank = amps_Rank(amps_CommWorld);
     double          v[3];
+    p4est_qcoord_t  qcoord[3];
     p4est_topidx_t  which_tree;
     p4est_locidx_t  which_quad, which_ghost;
     p4est_tree_t   *tree;
@@ -533,6 +534,14 @@ parflow_p4est_get_brick_coord_2d(Subgrid * subgrid,
 
     parflow_p4est_qcoord_to_vertex_2d(pfg->connect, which_tree, quad, v);
 
-    for (k = 0; k < P4EST_DIM; k++)
-        bcoord[k] = (int) (v[k] * sc_intpow(2, quad->level));
+    qcoord[0] = quad->x;
+    qcoord[1] = quad->y;
+#ifdef P4_TO_P8
+    qcoord[2] = quad->z;
+#endif
+
+    for (k = 0; k < P4EST_DIM; k++){
+        bcoord[k] = pfg->tree_to_lexic[P4EST_DIM * which_tree + k] *
+                    (p4est_gloidx_t)(1 << P4EST_MAXLEVEL ) + qcoord[k];
+    }
 }

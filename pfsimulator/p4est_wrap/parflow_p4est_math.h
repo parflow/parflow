@@ -17,8 +17,8 @@ int             parflow_p4est_powtwo_div(int a);
 /** Compare integers functions
  *  \param [in] a   integer
  *  \param [in] b   integer
- *  \return         0 if \a == \b, 1 if \a < \b and 2 if \a > \b
+ *  \return         0 if \a == \b, -1 if \a < \b and +1 if \a > \b
  */
-int             parflow_p4est_int_compare(int a, int b);
+int             parflow_p4est_int_compare(int64_t a, int64_t b);
 
 #endif                          // !PARFLOW_P4EST_MATH_H

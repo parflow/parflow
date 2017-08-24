@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdint.h>
 
 int
 parflow_p4est_gcd(int a, int b)
@@ -25,7 +26,7 @@ parflow_p4est_powtwo_div(int a)
     return c;
 }
 
-int parflow_p4est_int_compare (int a, int b)
+int parflow_p4est_int_compare (int64_t a, int64_t b)
 {
-  return a == b ? 0 : a < b ? 1 : 2;
+  return a == b ? 0 : a < b ? -1 : +1;
 }

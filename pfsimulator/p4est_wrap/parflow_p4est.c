@@ -366,7 +366,7 @@ parflow_p4est_nquads_per_rank(parflow_p4est_grid_t *pfgrid,
 
 void
 parflow_p4est_get_brick_coord(Subgrid *subgrid, parflow_p4est_grid_t *pfgrid,
-                              int bcoord[3])
+                              p4est_gloidx_t bcoord[3])
 {
   int             dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
 

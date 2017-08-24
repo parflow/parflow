@@ -149,14 +149,14 @@ static int ComputeTag(Subregion *sender, Subregion *receiver){
 
     int k;
     int tag;
-    int scoord[P4EST_DIM], rcoord[P4EST_DIM];
+    p4est_gloidx_t scoord[P4EST_DIM], rcoord[P4EST_DIM];
     int t[3]={0,0,0};
 
     parflow_p4est_get_brick_coord (sender, globals->grid3d->pfgrid, scoord);
     parflow_p4est_get_brick_coord (receiver, globals->grid3d->pfgrid, rcoord);
 
     for (k = 0; k < P4EST_DIM; k++)
-      t[k] = parflow_p4est_int_compare(scoord[k] , rcoord[k]);
+      t[k] = parflow_p4est_int_compare(scoord[k] , rcoord[k]) + 1;
 
     tag = 9 * t[2] + 3 * t[1] + t[0];
 
