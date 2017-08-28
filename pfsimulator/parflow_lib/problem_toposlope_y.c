@@ -27,6 +27,7 @@
 **********************************************************************EHEADER*/
 
 #include "parflow.h"
+#include "parflow_netcdf.h"
 
 /*--------------------------------------------------------------------------
  * Structures
@@ -68,6 +69,12 @@ typedef struct
    Vector *sy_values;
 } Type2;                       /* .pfb file */
 
+typedef struct
+{
+   char  *filename;
+   Vector *sy_values;
+} Type3;                       /* .nc file */
+
 
 /*--------------------------------------------------------------------------
  * YSlope 
@@ -89,6 +96,7 @@ void         YSlope(
    Type0            *dummy0;
    Type1            *dummy1;
    Type2            *dummy2;
+   Type3            *dummy3;
 
    SubgridArray     *subgrids = GridSubgrids(grid3d);
 
@@ -339,6 +347,47 @@ void         YSlope(
 
 	 break;
       }
+      
+      case 3:
+      {
+	 Vector *sy_val;
+
+	 dummy3 = (Type3 *)(public_xtra -> data);
+
+	 sy_val= dummy3 -> sy_values;
+
+	 gr_domain = ProblemDataGrDomain(problem_data);
+
+	 ForSubgridI(is, subgrids)
+	 {
+	    subgrid = SubgridArraySubgrid(subgrids, is);
+	    ps_sub = VectorSubvector(y_sl, is);
+	    sy_values_sub = VectorSubvector(sy_val, is);
+
+	    ix = SubgridIX(subgrid);
+	    iy = SubgridIY(subgrid);
+	    iz = SubgridIZ(subgrid);
+
+	    nx = SubgridNX(subgrid);
+	    ny = SubgridNY(subgrid);
+	    nz = SubgridNZ(subgrid);
+
+	    r = SubgridRX(subgrid);
+
+	    psdat  = SubvectorData(ps_sub);
+	    sy_values_dat = SubvectorData(sy_values_sub);
+
+	    GrGeomInLoop(i,j,k,gr_domain,r,ix,iy,iz,nx,ny,nz,
+			 {
+			    ips = SubvectorEltIndex(ps_sub,i,j,0);
+			    ipicv = SubvectorEltIndex(sy_values_sub,i,j,0);
+
+			    psdat[ips] = sy_values_dat[ipicv];
+			 });
+	 } /* End subgrid loop */
+
+	 break;
+      }
 
    }   /* End switch statement for input types */
    
@@ -361,6 +410,7 @@ PFModule  *YSlopeInitInstanceXtra(
    InstanceXtra  *instance_xtra;
 
    Type2  *dummy2;
+   Type3  *dummy3;
    
    if ( PFModuleInstanceXtra(this_module) == NULL )
       instance_xtra = ctalloc(InstanceXtra, 1);
@@ -385,6 +435,16 @@ PFModule  *YSlopeInitInstanceXtra(
 					 
 	 ReadPFBinary((dummy2 -> filename),(dummy2 -> sy_values));
       }
+      
+      if (public_xtra -> type == 3)
+      {
+	 dummy3 = (Type3 *)(public_xtra -> data);
+
+	 dummy3 -> sy_values = NewVectorType(grid2d, 1, 1,
+					     vector_cell_centered_2D);
+					 
+	 ReadPFNC((dummy3 -> filename),(dummy3 -> sy_values), "slopey", 0);
+      }
    }
 
    
@@ -404,11 +464,18 @@ void  YSlopeFreeInstanceXtra()
    InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
 
    Type2  *dummy2;
+   Type3  *dummy3;
 
    if ( public_xtra -> type ==2)
    {
       dummy2 = (Type2 *)(public_xtra -> data);
       FreeVector(dummy2 -> sy_values);
+   }
+   
+   if ( public_xtra -> type ==3)
+   {
+      dummy3 = (Type3 *)(public_xtra -> data);
+      FreeVector(dummy3 -> sy_values);
    }
 
    if (instance_xtra)
@@ -429,6 +496,7 @@ PFModule  *YSlopeNewPublicXtra()
    Type0         *dummy0;
    Type1         *dummy1;
    Type2         *dummy2;
+   Type3         *dummy3;
 
    int  num_regions, ir;
    
@@ -439,7 +507,7 @@ PFModule  *YSlopeNewPublicXtra()
    NameArray type_na;
    NameArray function_type_na;
 
-   type_na = NA_NewNameArray("Constant PredefinedFunction PFBFile");
+   type_na = NA_NewNameArray("Constant PredefinedFunction PFBFile NCFile");
 
    function_type_na = NA_NewNameArray("dum0 X SineCosTopo X3Y2PlusSinXYPlus1 \
                                        X3Y4PlusX2PlusSinXYCosYPlus1 \
@@ -510,6 +578,16 @@ PFModule  *YSlopeNewPublicXtra()
 	 (public_xtra -> data) = (void *) dummy2;
 	 break;
       }
+      
+      case 3:
+      {
+	 dummy3 = ctalloc(Type3, 1);
+             
+	 dummy3 -> filename = GetString("TopoSlopesY.FileName");
+			 
+	 (public_xtra -> data) = (void *) dummy3;
+	 break;
+      }
 
       default:
       {
@@ -567,6 +645,14 @@ void  YSlopeFreePublicXtra()
             dummy2 = (Type2 *)(public_xtra -> data);
 
             tfree(dummy2);
+	    break;
+	 }
+	 case 3:
+	 {
+	    Type3 * dummy3;
+            dummy3 = (Type3 *)(public_xtra -> data);
+
+            tfree(dummy3);
 	    break;
 	 }
       }

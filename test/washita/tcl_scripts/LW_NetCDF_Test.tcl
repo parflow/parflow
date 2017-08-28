@@ -23,8 +23,8 @@ exec mkdir "Outputs"
 cd "./Outputs"
 
 # ParFlow Inputs
-file copy -force "../../parflow_input/LW.slopex.pfb" .
-file copy -force "../../parflow_input/LW.slopey.pfb" .
+file copy -force "../../parflow_input/slopex.nc" .
+file copy -force "../../parflow_input/slopey.nc" .
 file copy -force "../../parflow_input/IndicatorFile_Gleeson.50z.pfb"   .
 file copy -force "../../parflow_input/press.init.nc"  .
 
@@ -284,16 +284,16 @@ pfset Patch.z-upper.BCPressure.alltime.Value	      0.0
 #-----------------------------------------------------------------------------
 # Topo slopes in x-direction
 #-----------------------------------------------------------------------------
-pfset TopoSlopesX.Type                                "PFBFile"
+pfset TopoSlopesX.Type                                "NCFile"
 pfset TopoSlopesX.GeomNames                           "domain"
-pfset TopoSlopesX.FileName                            "LW.slopex.pfb"
+pfset TopoSlopesX.FileName                            "slopex.nc"
 
 #-----------------------------------------------------------------------------
 # Topo slopes in y-direction
 #-----------------------------------------------------------------------------
-pfset TopoSlopesY.Type                                "PFBFile"
+pfset TopoSlopesY.Type                                "NCFile"
 pfset TopoSlopesY.GeomNames                           "domain"
-pfset TopoSlopesY.FileName                            "LW.slopey.pfb"
+pfset TopoSlopesY.FileName                            "slopey.nc"
 
 #-----------------------------------------------------------------------------
 # Mannings coefficient
@@ -498,8 +498,8 @@ pfset NetCDF.WriteSaturation			True
 pfset ComputationalGrid.NX                41 
 pfset ComputationalGrid.NY                41 
 pfset ComputationalGrid.NZ                1
-pfdist LW.slopex.pfb
-pfdist LW.slopey.pfb
+#pfdist LW.slopex.pfb
+#pfdist LW.slopey.pfb
 
 pfset ComputationalGrid.NX                41 
 pfset ComputationalGrid.NY                41 

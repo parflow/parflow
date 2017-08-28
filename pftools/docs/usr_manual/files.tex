@@ -4368,6 +4368,46 @@ pfset ICPressure.Type   NCFile
 pfset Geom.domain.ICPressure.FileName   "initial_condition.nc"
 \end{verbatim}\end{display}
 
+\subsection{NetCDF4 Slopes}
+NetCDF4 based option can be used slopes to be read from an ``nc" file containing single time step of slope values. The name of the variable in ``nc" file should be ``slopex" and ``slopey" A sample NetCDF header of slope file looks as follows.
+\begin{display}\begin{verbatim}
+netcdf slopex {
+dimensions:
+	time = UNLIMITED ; // (1 currently)
+	lon = 41 ;
+	lat = 41 ;
+	lev = 1 ;
+variables:
+  	double time(time) ;
+	double slopex(time, lev, lat, lon) ;
+}
+netcdf slopey {
+dimensions:
+	time = UNLIMITED ; // (1 currently)
+	lon = 41 ;
+	lat = 41 ;
+	lev = 1 ;
+variables:
+	double time(time) ;
+	double slopey(time, lev, lat, lon) ;
+}
+\end{verbatim}\end{display}
+The two NetCDF files can be merged into one single file and can be used with tcl flags. The variable names should be exactly as mentioned above.
+\textit{\textbf{Node level collective I/O is currently not implemented for setting initial conditions.}}
+
+\pfkey{string}{TopoSlopesX.Type}{no default}
+{This key sets flag for slopes in x direction to be read from a NetCDF file.} 
+\begin{display}\begin{verbatim}
+pfset TopoSlopesX.Type   NCFile
+pfset TopoSlopesX.FileName   "slopex.nc"
+\end{verbatim}\end{display}
+\pfkey{string}{TopoSlopesY.Type}{no default}
+{This key sets flag for slopes in y direction to be read from a NetCDF file.} 
+\begin{display}\begin{verbatim}
+pfset TopoSlopesY.Type   NCFile
+pfset TopoSlopesy.FileName   "slopey.nc"
+\end{verbatim}\end{display}
+
 \subsection{NetCDF4 Transient EvapTrans Forcing}
 Following keys can be used for NetCDF4 based transient evaptrans forcing. The file should contain forcing for all time steps. For a given time step, if the forcing is null, zero values could be filled for the given time step in the ``.nc" file. The format of the sample file looks as follows.
 \begin{display}\begin{verbatim}
