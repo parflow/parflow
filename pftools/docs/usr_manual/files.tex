@@ -4290,7 +4290,7 @@ pfset NetCDF.WriteSaturation    True
 \end{verbatim}\end{display}
 
 \subsection{NetCDF4 Chunking}
-Chunking may have significant impact in writing output. If this key is not set, default chunking scheme will be used by NetCDF library. Chunks are hypercube(hyperslab) of any dimension. When chunking is used, chunks are written in single write operation which can reduce access times. For more information on chunking, refer to NetCDF4 user guide.
+Chunking may have significant impact on I/O. If this key is not set, default chunking scheme will be used by NetCDF library. Chunks are hypercube(hyperslab) of any dimension. When chunking is used, chunks are written in single write operation which can reduce access times. For more information on chunking, refer to NetCDF4 user guide.
 
 \pfkey{string}{NetCDF.Chunking}{False}
 {This key sets chunking for each time varying 3-D variable in NetCDF4 file.} 
@@ -4337,7 +4337,7 @@ cb_buffer_size 33554432
 
 \subsection{Node Level Collective I/O}
 A node level collective strategy has been implemented for I/O. One process on each compute node gathers the data, indices and counts from the participating processes on same compute node. All the root processes from each compute node open a parallel NetCDF4 file and write the data. e.g. If ParFlow is running on 3 compute nodes where each node consists of 24 processors(cores); only 3 I/O streams to filesystem would be opened by each root processor each compute node. This strategy could be particularly useful when ParFlow is running on large number of processors and every processor participating in I/O may create a bottleneck.
-\textit{\textbf{Node level collective I/O is currently implemented for 2-D domain decomposition only.}}
+\textit{\textbf{Node level collective I/O is currently implemented for 2-D domain decomposition only. Moreover on speciality architectures, this may not be a portable feature. Users are advised to test this feature on their machine before putting into production.}}
 
 \pfkey{string}{NetCDF.NodeLevelIO}{False}
 {This key sets flag for node level collective I/O.} 

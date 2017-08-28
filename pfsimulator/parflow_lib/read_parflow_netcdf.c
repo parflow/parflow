@@ -137,6 +137,21 @@ void ReadNCFile(int ncID, int varID, Subvector *subvector, Subgrid *subgrid, cha
   startp[1] = iz, countp[1] = nz;
   startp[2] = iy, countp[2] = ny;
   startp[3] = ix, countp[3] = nx;
+  
+  char *switch_name;
+  char key[IDB_MAX_KEY_LEN];
+  char *default_val = "None";
+  sprintf(key, "NetCDF.Chunking");
+  switch_name = GetStringDefault(key, "None");
+  if(strcmp(switch_name, default_val) != 0)
+  {
+    size_t chunksize[4];
+    chunksize[0] = 1;
+    chunksize[1] = GetInt("NetCDF.ChunkZ");
+    chunksize[2] = GetInt("NetCDF.ChunkY");
+    chunksize[3] = GetInt("NetCDF.ChunkX");
+    nc_def_var_chunking(ncID, varID, NC_CHUNKED, chunksize);
+  }
 
   nc_get_vara_double(ncID, varID, startp, countp, nc_data);
 
@@ -148,4 +163,5 @@ void ReadNCFile(int ncID, int varID, Subvector *subvector, Subgrid *subgrid, cha
       d++;
       });
 
+  free(nc_data);
 }
