@@ -1,11 +1,6 @@
 /*BHEADER**********************************************************************
 
-  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-  by the Parflow Team (see the CONTRIBUTORS file)
-  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-
-  This file is part of Parflow. For details, see
+This file is part of Parflow. For details, see
 http://www.llnl.gov/casc/parflow
 
 Please read the COPYRIGHT file or Our Notice and the LICENSE file
@@ -43,7 +38,7 @@ USA
 
 void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep)
 {
-
+#ifdef PARFLOW_HAVE_NETCDF
   Grid           *grid     = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);
   Subgrid        *subgrid;
@@ -104,10 +99,14 @@ void OpenNCFile(char *file_name, int *ncID)
   {
     int res = nc_open_par(file_name,NC_MPIIO, amps_CommWorld, MPI_INFO_NULL, ncID);
   }
+#else
+   amps_Printf("Parflow not compiled with NetCDF, can't read NetCDF file\n");
+#endif
 }
 
 void ReadNCFile(int ncID, int varID, Subvector *subvector, Subgrid *subgrid, char *varName, int tStep)
 {
+#ifdef PARFLOW_HAVE_NETCDF
   //nc_inq_varid(ncID, "pressure", &varID); 
   nc_inq_varid(ncID, varName, &varID); 
   int ix = SubgridIX(subgrid);
@@ -164,4 +163,9 @@ void ReadNCFile(int ncID, int varID, Subvector *subvector, Subgrid *subgrid, cha
       });
 
   free(nc_data);
+
+#else
+   amps_Printf("Parflow not compiled with NetCDF, can't read NetCDF file\n");
+#endif
+
 }

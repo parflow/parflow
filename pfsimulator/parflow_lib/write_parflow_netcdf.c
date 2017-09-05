@@ -1,10 +1,5 @@
 /*BHEADER**********************************************************************
 
-  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-  by the Parflow Team (see the CONTRIBUTORS file)
-  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-
   This file is part of Parflow. For details, see
   http://www.llnl.gov/casc/parflow
 
@@ -43,6 +38,8 @@
 void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int numVarTimeVariant,
 			char *varName, int dimensionality, int timDimensionality)
 {
+#ifdef PARFLOW_HAVE_NETCDF
+
   char *default_val = "False";
   char *switch_name;
   char key[IDB_MAX_KEY_LEN];
@@ -231,11 +228,15 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
     }
   }
 
+#else
+   amps_Printf("Parflow not compiled with NetCDF, can't create NetCDF file\n");
+#endif
+
 }
 
 void CreateNCFile(char *file_name, Vector *v)
 {
-
+#ifdef PARFLOW_HAVE_NETCDF
   Grid           *grid     = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);
   Subgrid        *subgrid;
@@ -280,13 +281,14 @@ void CreateNCFile(char *file_name, Vector *v)
   res = nc_def_dim(ncID, "z", nZ, &zID);
   //res = nc_def_dim(ncID, "time",GetInt("NetCDF.NumStepsPerFile"),&timID);
   res = nc_def_dim(ncID, "time",NC_UNLIMITED,&timID);
-
-
+#else
+   amps_Printf("Parflow not compiled with NetCDF, can't create NetCDF file\n");
+#endif
 }
 
 void CreateNCFileNode(char *file_name, Vector *v)
 {
-
+#ifdef PARFLOW_HAVE_NETCDF
   Grid           *grid     = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);
   Subgrid        *subgrid;
@@ -331,15 +333,22 @@ void CreateNCFileNode(char *file_name, Vector *v)
   res = nc_def_dim(ncID, "z", nZ, &zID);
   //res = nc_def_dim(ncID, "time",GetInt("NetCDF.NumStepsPerFile"),&timID);
   res = nc_def_dim(ncID, "time",NC_UNLIMITED,&timID);
+#else
+   amps_Printf("Parflow not compiled with NetCDF, can't create NetCDF file\n");
+#endif
+
 }
 
 void CloseNC(int ncID)
 {
+#ifdef PARFLOW_HAVE_NETCDF
   nc_close(ncID);
+#endif
 }
 
 int LookUpInventory(char * varName, varNCData **myVarNCData)
 {
+#ifdef PARFLOW_HAVE_NETCDF
   if (strcmp(varName,"time")==0)
   {
     *myVarNCData = malloc(sizeof(varNCData));
@@ -437,10 +446,12 @@ int LookUpInventory(char * varName, varNCData **myVarNCData)
     return satVarID;
   }
 
+#endif
 }
 
 void PutDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData)
 {
+#ifdef PARFLOW_HAVE_NETCDF
   static int counter = 0;
   if (strcmp(myVarNCData->varName,"time")==0)
   {
@@ -506,12 +517,13 @@ void PutDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData)
     int status = nc_put_vara_double(ncID, varID, start, count, &data_nc[0]);
     free(data_nc);
   }
-
+#endif
 }
 
 void PutDataInNCNode(int varID, double *data_nc_node, int *nodeXIndices, int *nodeYIndices, int *nodeZIndices,
     int *nodeXCount, int *nodeYCount, int *nodeZCount, double t, varNCData *myVarNCData)
 {
+#ifdef PARFLOW_HAVE_NETCDF
   if (strcmp(myVarNCData->varName,"time")==0)
   {
     long end[MAX_NC_VARS];
@@ -543,11 +555,13 @@ void PutDataInNCNode(int varID, double *data_nc_node, int *nodeXIndices, int *no
       status = nc_put_vara_double(ncID, varID, start, count, &data_nc_node[index]);
     }
   }
+#endif
 }
 
 
 void find_variable_length( int nid, int varid, long dim_lengths[MAX_NC_VARS] ) 
 {
+#ifdef PARFLOW_HAVE_NETCDF
   int dim_ids[MAX_VAR_DIMS];
   char dim_name[MAX_NC_NAME];
   int ndims, natts, i;
@@ -560,4 +574,5 @@ void find_variable_length( int nid, int varid, long dim_lengths[MAX_NC_VARS] )
   {
     nc_inq_dim( nid, dim_ids[i], dim_name, &dim_lengths[i] );
   }
+#endif
 }
