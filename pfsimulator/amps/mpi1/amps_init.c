@@ -131,12 +131,9 @@ int amps_Init(int *argc, char **argv[])
    /*Split the node level communicator based on Adler32 hash keys*/
    MPI_Get_processor_name(processor_name,&namelen);
    uint32_t checkSum = Adler32(processor_name, namelen);
-//   MPI_Comm nodeComm = MPI_COMM_NULL;
-//   MPI_Comm writeComm = MPI_COMM_NULL;
    MPI_Comm_split(MPI_COMM_WORLD, checkSum, amps_rank, &amps_CommNode);
   MPI_Comm_rank(amps_CommNode, &amps_node_rank);
   MPI_Comm_size(amps_CommNode, &amps_node_size);
-  //printf("KKu my rank and size is, %d %d\n", amps_node_rank, amps_node_size);
   int color;
   if (amps_node_rank == 0)
   {
@@ -149,7 +146,6 @@ int amps_Init(int *argc, char **argv[])
   MPI_Comm_split(MPI_COMM_WORLD, color, amps_rank, &amps_CommWrite);
   if(amps_node_rank == 0)
   {
-//	int amps_write_size;
 	MPI_Comm_size(amps_CommWrite, &amps_write_size);
   }
 
