@@ -104,6 +104,7 @@ set (SRC_FILES advect.F
   ratqr.c
   rb_GS_point.c
   read_parflow_binary.c
+  read_parflow_netcdf.c
   reg_from_stenc.c
   region.c
   richards_jacobian_eval.c
@@ -130,6 +131,7 @@ set (SRC_FILES advect.F
   well_package.c
   wells_lb.c
   write_parflow_binary.c
+  write_parflow_netcdf.c
   write_parflow_silo.c
   write_parflow_silo_pmpio.c
   wrf_parflow.c
