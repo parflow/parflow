@@ -40,10 +40,11 @@ before_script:
   - export CXX=mpiCC
   - export F77=mpif77
   - export FC=mpif90
-  - "[[ $PF_BUILD == 'cmake' ]] || mkdir -p build && (cd build && ../cmake-3.4.3-Linux-x86_64/bin/cmake -DCMAKE_BUILD_TYPE=Release -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DPARFLOW_ENABLE_HYPRE=true -DPARFLOW_ENABLE_HDF5=true -DPARFLOW_ENABLE_SILO=true -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR .. )"
+  - echo "PF_BUILD = $PF_BUILD"
+  - "[[ $PF_BUILD != 'cmake' ]] || (mkdir -p build && cd build && ../cmake-3.4.3-Linux-x86_64/bin/cmake -DCMAKE_BUILD_TYPE=Release -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DPARFLOW_ENABLE_HYPRE=true -DPARFLOW_ENABLE_HDF5=true -DPARFLOW_ENABLE_SILO=true -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR .. )"
   - "[[ $PF_BUILD != 'cmake' ]] || (cd build && make && make install)"
-  - "[[ $PF_BUILD != 'autoconf' ]] || mkdir -p build.pfsimulator && (cd build.pfsimulator && ../pfsimulator/configure --prefix=$PARFLOW_DIR --with-amps=mpi1 --with-hypre --with-silo --with-clm)"
-  - "[[ $PF_BUILD != 'autoconf' ]] || mkdir -p build.pftools && (cd build.pftools  && ../pftools/configure --prefix=$PARFLOW_DIR --with-amps=mpi1 --with-silo)"
+  - "[[ $PF_BUILD != 'autoconf' ]] || (mkdir -p build.pfsimulator && cd build.pfsimulator && ../pfsimulator/configure --prefix=$PARFLOW_DIR --with-amps=mpi1 --with-hypre --with-silo --with-clm)"
+  - "[[ $PF_BUILD != 'autoconf' ]] || (mkdir -p build.pftools && cd build.pftools  && ../pftools/configure --prefix=$PARFLOW_DIR --with-amps=mpi1 --with-silo)"
   - "[[ $PF_BUILD != 'autoconf' ]] || (cd build.pfsimulator && make)"
   - "[[ $PF_BUILD != 'autoconf' ]] || (cd build.pftools && make)"
 
