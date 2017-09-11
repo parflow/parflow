@@ -45,6 +45,11 @@ TESTS += \
 	water_balance_x.tcl 
 endif
 
+ifeq (${PARFLOW_HAVE_NETCDF},yes)
+TESTS += \
+	default_richards_with_netcdf.tcl
+endif
+
 SAMRAI_TESTS :=
 SAMRAI_TESTS_WITH_PATCH_COUNT :=
 ifeq (${PARFLOW_HAVE_SAMRAI},yes)
@@ -220,3 +225,4 @@ testclean:
 	@rm -f samrai_grid2D.tmp.tcl
 	@rm -fr LW_var_dz_spinup.out
 	@rm -fr default_single.out
+	@rm -f *.nc
