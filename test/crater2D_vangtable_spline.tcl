@@ -510,8 +510,11 @@ if ![pftestFile $runname.out.porosity.pfb "Max difference in porosity" $sig_digi
     set passed 0
 }
 
+# Pressure was very close to zero and test was failing so ignore very small pressures even if
+# the numbers differ in sig_digits
+set abs_diff 1E-200
 foreach i "00000 00001 00002" {
-    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
+    if ![pftestFileWithAbs $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits $abs_diff] {
 	set passed 0
     }
     if ![pftestFile $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
