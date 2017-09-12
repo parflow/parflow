@@ -26,7 +26,7 @@ find_path(SILO_INCLUDE_DIR NAMES silo.h
   HINTS ${SILO_ROOT}/include
   PATHS /usr/include /usr/local/include)
 
-find_library(SILO_LIBRARY NAMES siloh5 silo
+find_library(SILO_LIBRARY NAMES siloxx siloh5 silo
   HINTS ${SILO_ROOT}/lib
   PATHS /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib)
 

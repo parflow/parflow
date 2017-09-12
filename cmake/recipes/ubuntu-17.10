@@ -10,7 +10,7 @@ sudo apt-get install -y tcl-dev tk-dev
 sudo apt-get install -y openmpi-bin openmpi-doc libopenmpi-dev
 
 # Clone repo
-git clone git://github.com/smithsg84/parflow.git
+git clone git://github.com/parflow/parflow.git
 (cd parflow && git checkout cmake)
 
 # Setup the installation directory

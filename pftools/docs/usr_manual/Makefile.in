@@ -36,8 +36,7 @@ LINK_FILES = do_online \
 	     parflow.sty \
              parflow.perl \
              parflow.bib \
-             IGWMC-logo-new.eps \
-             IGWMC-logo-new.pdf
+             IGWMC-logo-new.eps
 
 FILES = \
 	bib.tex \
@@ -77,12 +76,12 @@ manual/manual.html: manual.dvi
 
 manual.dvi: Makefile $(FILES) version.tex
 	@for i in ${LINK_FILES}; do     \
-	   if [ ! -h $$i ] ; then    \
+	   if [ ! -f $$i ] ; then    \
 	     ln -s $(TEXLIBDIR)/$$i . ;\
 	   fi \
 	done 
 	@for i in ${FILES}; do     \
-	   if [ ! -h $$i ] ; then    \
+	   if [ ! -f $$i ] ; then    \
 	     ln -s $(SRCDIR)/$$i . ;\
 	   fi \
 	done 
@@ -105,6 +104,11 @@ clean:
 
 veryclean: clean
 	@for i in ${LINK_FILES}; do     \
+	   if [ -h $$i ] ; then    \
+	    rm $$i ; \
+	   fi \
+	done 
+	@for i in ${FILES}; do     \
 	   if [ -h $$i ] ; then    \
 	    rm $$i ; \
 	   fi \
