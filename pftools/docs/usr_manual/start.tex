@@ -58,48 +58,196 @@ package \code{autoconf} to create a configuration file for building
 and installing the \parflow{} program.
 
 \begin{enumerate}
-\item {\bf Setup} \\ Decide where you wish to install Parflow and
-  associated libraries. The following environment variable should be
-  set up in your \file{.profile}, \file{.cshrc}, or other file. Set
-  the environment variable \code{PARFLOW_DIR} to your chosen location
-  (if you are using \code{bash} or a bourne syntax shell):
+\item {\bf Setup} \\
+
+We will use the \file{~/pfdir} directory as the root directory for the
+source, build and install directory in this user manual; you can use a
+different directory if you wish.
+
+Decide where you wish to install Parflow and
+associated libraries. The following environment variable should be
+set up in your \file{.profile}, \file{.cshrc}, or other file. Set
+the environment variable \code{PARFLOW_DIR} to your chosen location
+(if you are using \code{bash} or a bourne syntax shell):
 \begin{display}\begin{verbatim}
-export PARFLOW_DIR=~/parflow
+export PARFLOW_DIR=~/pfdir/install
 \end{verbatim}\end{display}
 If you are using a \code{csh} like shell you will need the following in your
 \file{.cshrc} file:
 \begin{display}\begin{verbatim}
-setenv PARFLOW_DIR ~/parflow
+setenv PARFLOW_DIR ~/pfdir/install
 \end{verbatim}\end{display}
-
-The variable \code{PARFLOW_DIR} specifies the location of the
-installed version of \parflow{}. This is where executables and support
-files will be placed.  If you have a directory which is shared on
-multiple architectures you can set different \code{PARFLOW_DIR}s on
-the different machines (for example \code{~/parflow-arch1} and
-\code{~/parflow-arch2}).  We will use the \file{~/parflow} directory as
-the root directory for building \parflow{} in this user manual; you
-can use a different directory if you wish.
-
 
 %------------------------------
 
-\item {\bf Extract the source}\\
-Extract the source files from the distribution compressed tar file or much more commonly
-the \code{svn} repository.
-This example assumes the \file{parflow.tar.Z} file is in your home directory
-and you are building it in a directory \file{~/parflow}.
+\item {\bf Extract the source}\\ Extract the source files from the
+distribution compressed tar file or by cloning the repository from
+the \parflow{} github repository.  This example assumes the
+\file{parflow.tar.Z} file is in your home directory and you are
+building it in a directory \file{~/parflow}.
 
 \begin{display}\begin{verbatim}
-mkdir ~/parflow
-cd ~/parflow
-gunzip ../parflow.tar.Z 
-tar -xvf ../parflow.tar
+mkdir ~/pfdir
+cd ~/pfdir
+tar -xvf ../parflow.tar.Z
 \end{verbatim}\end{display}
 
 %------------------------------
 
-\item {\bf Build and install \parflow{}}\\ 
+\item {\bf Build and install \parflow{}} with \cmake{}\\ This step builds
+the \parflow{} and associated \pftools{} excutables.  A \parflow{}
+library is also built which can be used when \parflow{} is used as a
+component of another simulation (\emph{e.g.}  WRF).
+
+\cmake{} can be invoked using a command line only version \code{cmake}
+or terminal based GUI \code{ccmake}.  Most of the example below will
+use the command line version since it is easier to directly show the
+command.  The \code{ccmake} version will show all the variables you
+may set in an interactive GUI.
+
+The following commands configure and build a sequenital version of
+\parflow{}.  You can control build options for \parflow{} in the
+\cmake{} configure step by adding other options to that command-line.
+Note we build in a seperate directory from the source.  This keeps the
+source directory free of files created during the build.  Going back
+to a clean state can be done by removing the build directory and
+starting over.  This is fairly common \cmake{} practice.
+
+Here we only set the directory to install in the \cmake{} command.
+
+\begin{display}\begin{verbatim}
+cd ~/pfdir
+mkdir build
+cd build
+cmake ../parflow -DCMAKE_INSTALL_PREFIX=$(PARFLOW_DIR) 
+make 
+make install
+\end{verbatim}\end{display}
+
+For a list of \emph{all} the \cmake{} configure options, the easist
+method is to use the \code{ccmake} command:
+
+\begin{display}\begin{verbatim}
+ccmake ../parflow  -DCMAKE_INSTALL_PREFIX=$(PARFLOW_DIR)
+\end{verbatim}\end{display}
+
+\parflow{} defaults to building a sequential version; setting the
+\code{PARFLOW_AMPS_LAYER} variable is required to build a parallel
+version.  The easist way to use the MPI version to use is to ensure
+that the \code{mpicc} command is in your path and set the
+\code{PARFLOW_AMPS_LAYER} to ``mpi1''.  The \code{PARFLOW_AMPS_LAYER}
+variable controls \emph{AMPS} which stands for \emph{A}nother
+\emph{M}essage \emph{P}assing \emph{S}ytem.  \emph{AMPS} is a flexible
+message-passing adapter layer within \parflow{} that allows a common
+code core to be quickly and easily adapted to different parallel
+environments.
+
+Here is an example of the simplist MPI configuration:
+
+\begin{display}\begin{verbatim}
+cmake ../parflow -DCMAKE_INSTALL_PREFIX=$(PARFLOW_DIR) -DPARFLOW_AMPS_LAYER=mpi1
+\end{verbatim}\end{display}
+
+\code{TCL} is required for building \parflow{}.  If \code{TCL} is not
+installed in the system locations (\code{/usr} or \code{/usr/local})
+you need to specify the path with the
+\code{-DTCL_TCLSH=${PARFLOW_TCL_DIR}/bin/tclsh8.6} \code{cmake}
+option.
+
+\item {\bf Running a sample problem}\\ There is a test directory that
+contains not only example scripts of \parflow{} problems but the
+correct output for these scripts as well.  This may be used to test
+the compilation process and verify that \parflow{} is installed
+correctly.  If all went well a sample \parflow{} problem can be run
+using:
+
+\begin{display}\begin{verbatim}
+cd $PARFLOW_DIR
+cd test
+tclsh default_single.tcl 1 1 1
+\end{verbatim}\end{display}
+
+Note that \code{PAFLOW_DIR} must be set for this to work and it
+assumes tclsh is in your path.  Make sure to use the same \code{TCL}
+as was used in the \cmake{} configure. The entire suite of test
+cases may be run using \ctest{} to test a range of functionality in
+\parflow{}.  This may be done by:
+\begin{display}\begin{verbatim}
+cd build
+make test
+\end{verbatim}\end{display}
+
+\item {\bf Notes and other options:}\\ \parflow{} may be compiled with
+a number of options using the configure script.  Some common options
+are compiling \code{CLM} as in \cite{MM05,KM08a} to compile with
+timing and optimization or to use a compiler other than \code{gcc}.
+To compile with \code{CLM} add \code{-PARFLOW_HAVE_CLM=ON} to the configure
+line such as:
+
+\begin{display}\begin{verbatim}
+cmake ../parflow -DPARFLOW_AMPS_LAYER=mpi1 -PARFLOW_HAVE_CLM=ON -DCMAKE_INSTALL_PREFIX=$(PARFLOW_DIR)) 
+\end{verbatim}\end{display}
+
+Other common options are:
+
+\begin{itemize}
+\item to include the \code{CLM} module:  \code{--PARFLOW_HAVE_CLM=ON}
+\item to include the \emph{SILO} 
+library which provides greater file output formats that are compatible
+with the \emph{VisIt} rendering package and must first be compiled 
+separately (see below): \code{-DSILO_ROOT=$(PARFLOW_SILO_DIR)}
+\item to include the \emph{HDF5} 
+library which provides greater file output formats'' \code{-DHDF5_ROOT=$(PARFLOW_HDF5_DIR)}
+\item to include the \emph{Hypre} library which provides greater solver
+flexibility and options and also needs to be downloaded and built separately:
+\code{-DHYPRE_ROOT=$(PARFLOW_HYPRE_DIR)}
+\item to write a single, undistributed \parflow{} binary file:
+\code{-DPARFLOW_AMPS_SEQUENTIAL_IO=true}
+\item to write timing information in the log file: \code{-DPARFLOW_ENABLE_TIMING=true }
+\end{itemize}
+
+All these options combined in the configure line would look like:
+
+\begin{display}\begin{verbatim}
+cd build
+cmake ../parflow \
+  -DPARFLOW_AMPS_LAYER=mpi1 \
+  -PARFLOW_HAVE_CLM=ON \
+  -DSILO_ROOT=$(PARFLOW_SILO_DIR) \
+  -DHDF5_ROOT=$(PARFLOW_HDF5_DIR) \
+  -DHYPRE_ROOT=$(PARFLOW_HYPRE_DIR) \
+  -DCMAKE_INSTALL_PREFIX=$(PARFLOW_DIR)) 
+make 
+make install
+\end{verbatim}\end{display}
+
+To enable detailed timing of the performance of several different
+components within \parflow{} use the \code{--enable-timing} option.
+The standard \code{CMAKE_BUILD_TYPE} variable controls if a debug or
+release (with optimization) is built.
+\code{-DCMAKE_BUILD_TYPE=RELEASE} will build a release version.
+
+It is often desirable to use different C and F90/95 compilers (such as
+\emph{Intel} or \emph{Portland Group}) to generate optimized code for
+specific architectures or simply personal preference.  To change
+compilers, set the \code{CC}, \code{FC} and \code{F77} variables
+(these may include a path too).  For example, to change to the
+\emph{Intel} compilers in the \code{bash} shell:
+\begin{display}\begin{verbatim}
+export CC=icc
+export FC=ifort
+export F77=ifort
+\end{verbatim}\end{display}
+\end{enumerate}
+
+\item {\bf Build and install \parflow{}} with \code{GNU autoconf}\\
+
+In addition configuration with \code{cmake}, \parflow{} has deprecated
+support for \code{GNU autoconf}. \code{GNU autoconf} support will be
+maintained while the \code{cmake} support is fully tested.  Support
+will be removed in a future relase.  Please use \code{cmake} and
+report bugs.
+  
 This step builds the \parflow{} library and executable that runs on
 a serial or parallel machine.  The library is used when
  \parflow{} is used as a component of another simulation (\emph{e.g.}
