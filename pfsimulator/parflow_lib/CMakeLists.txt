@@ -170,3 +170,7 @@ if (${PARFLOW_HAVE_SILO})
   target_include_directories (pfsimulator PUBLIC "${SILO_INCLUDE_DIRS}")
 endif (${PARFLOW_HAVE_SILO})
 
+if (${PARFLOW_HAVE_NETCDF})
+  target_include_directories (pfsimulator PUBLIC "${NETCDF_INCLUDE_DIRS}")
+endif (${PARFLOW_HAVE_NETCDF})
+

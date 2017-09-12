@@ -75,6 +75,18 @@ if (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 endif (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 
 #-----------------------------------------------------------------------------
+# NetCDF
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_NETCDF False CACHE BOOL "Build with NetCDF")
+if (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_ROOT)
+  find_package (NetCDF)
+  if (${NETCDF_FOUND})
+    set(PARFLOW_HAVE_NETCDF "yes")
+    set(HAVE_NETCDF ${PARFLOW_HAVE_NETCDF})
+  endif (${NETCDF_FOUND})
+endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_ROOT)
+
+#-----------------------------------------------------------------------------
 # HDF5
 #-----------------------------------------------------------------------------
 set (PARFLOW_ENABLE_HDF5 False CACHE BOOL "Build with HDF5")
