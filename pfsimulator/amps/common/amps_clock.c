@@ -26,9 +26,13 @@
   USA
 **********************************************************************EHEADER*/
 
+#include "amps.h"
+
 #include <sys/times.h>
 #include <sys/time.h>
-#include "amps.h"
+#include <unistd.h>
+
+long AMPS_CPU_TICKS_PER_SEC;
 
 #ifdef CASC_HAVE_GETTIMEOFDAY
 
@@ -42,6 +46,8 @@ void amps_clock_init()
    gettimeofday(&r_time, 0);
 
    amps_start_clock = r_time.tv_sec;
+
+   AMPS_CPU_TICKS_PER_SEC = sysconf(_SC_CLK_TCK);
 }
 
 /**
@@ -72,16 +78,24 @@ amps_Clock_t amps_Clock()
    return(micro_sec);
 }
 
-#endif
+#else
 
-#ifdef AMPS_NX_CLOCK
-#include <nx.h>
-amps_Clock_t amps_Clock()
+void amps_clock_init()
 {
-	return dclock();
+   AMPS_CPU_TICKS_PER_SEC = sysconf(_SC_CLK_TCK);
 }
-#endif
 
+amps_CPUClock_t amps_Clock()   
+{
+   
+   struct tms cpu_tms;
+
+   times(&cpu_tms);
+   
+   return(cpu_tms.tms_utime);
+}
+
+#endif
 
 #ifndef amps_CPUClock
 
@@ -93,6 +107,7 @@ amps_CPUClock_t amps_CPUClock()
    
    return(cpu_tms.tms_utime);
 }
+
 
 #endif
 
