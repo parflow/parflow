@@ -354,4 +354,4 @@ include (CTest)
 
 install (DIRECTORY ${CMAKE_BINARY_DIR}/config DESTINATION . )
 
-add_subdirectory(pftools/docs/usr_manual)
+# add_subdirectory(pftools/docs/usr_manual)

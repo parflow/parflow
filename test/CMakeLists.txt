@@ -33,6 +33,11 @@ if(${PARFLOW_HAVE_SILO})
 	water_balance_x.tcl) 
 endif()
 
+if(${PARFLOW_HAVE_NETCDF})
+  list(APPEND TESTS
+    default_richards_with_netcdf.tcl)
+endif()
+
 set(SAMRAI_TESTS)
 set(SAMRAI_TESTS_WITH_PATCH_COUNT)
 
