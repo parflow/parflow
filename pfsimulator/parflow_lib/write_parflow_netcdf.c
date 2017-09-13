@@ -35,6 +35,9 @@
 #include <string.h>
 #include <unistd.h>
 
+static int ncID, xID, yID, zID, timID, varID;
+static int time_step = 0;
+
 void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int numVarTimeVariant,
 			char *varName, int dimensionality, int timDimensionality)
 {

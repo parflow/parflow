@@ -27,8 +27,6 @@
 #define MAX_NC_VARS 8192
 #endif
 
-static int ncID, xID, yID, zID, timID, varID;
-static int time_step = 0;
 typedef struct
 {
 	char *varName;

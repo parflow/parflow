@@ -34,7 +34,8 @@ USA
 #include <string.h>
 #include <unistd.h>
 
-
+extern int ncID, xID, yID, zID, timID, varID;
+extern int time_step;
 
 void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep)
 {
