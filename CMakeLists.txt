@@ -354,4 +354,7 @@ include (CTest)
 
 install (DIRECTORY ${CMAKE_BINARY_DIR}/config DESTINATION . )
 
-# add_subdirectory(pftools/docs/usr_manual)
+set (PARFLOW_ENABLE_LATEX False CACHE BOOL "Enable LaTEX and building of documentation")
+if ( ${PARFLOW_ENABLE_LATEX} )
+  add_subdirectory(pftools/docs/usr_manual)
+endif()
