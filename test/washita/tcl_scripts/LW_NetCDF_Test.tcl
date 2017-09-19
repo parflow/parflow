@@ -500,7 +500,6 @@ pfset NetCDF.WriteEvapTrans			True
 pfset NetCDF.WriteEvapTransSum			True
 pfset NetCDF.WriteOverlandSum			True
 pfset NetCDF.WriteOverlandBCFlux			True
-pfset Solver.PrintOverlandBCFlux			True
 
 #-----------------------------------------------------------------------------
 # Distribute inputs
