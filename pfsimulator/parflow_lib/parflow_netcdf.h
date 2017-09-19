@@ -26,9 +26,14 @@
 #else
 #define MAX_NC_VARS 8192
 #endif
+#include<stdbool.h>
 
-static int ncID, xID, yID, zID, timID, varID;
+static int ncID, xID, yID, zID, lev1ID, timID, varID;
 static int time_step = 0;
+static bool is2Ddefined = false;
+static bool is3Ddefined = false;
+static bool isTdefined = false;
+
 typedef struct
 {
 	char *varName;
@@ -38,8 +43,9 @@ typedef struct
 } varNCData;
 
 void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int numVarTimeVariant,
-			char *varName, int dimensionality, int timDimensionality);
+			char *varName, int dimensionality, bool init, int numVarIni);
 void CreateNCFile(char *file_name, Vector *v);
+void NCDefDimensions(Vector *v, int dimensionality);
 void CloseNC(int ncID);
 int LookUpInventory(char * varName, varNCData **myVarNCData);
 void PutDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData);

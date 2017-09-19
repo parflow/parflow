@@ -491,6 +491,16 @@ pfset Solver.Linear.Preconditioner.PCMatrixType     FullJacobian
 pfset NetCDF.NumStepsPerFile			5
 pfset NetCDF.WritePressure			True
 pfset NetCDF.WriteSaturation			True
+pfset NetCDF.WriteMannings			True
+pfset NetCDF.WriteSubsurface			True
+pfset NetCDF.WriteSlopes			True
+pfset NetCDF.WriteMask				True
+pfset NetCDF.WriteDZMultiplier			True
+pfset NetCDF.WriteEvapTrans			True
+pfset NetCDF.WriteEvapTransSum			True
+pfset NetCDF.WriteOverlandSum			True
+pfset NetCDF.WriteOverlandBCFlux			True
+pfset Solver.PrintOverlandBCFlux			True
 
 #-----------------------------------------------------------------------------
 # Distribute inputs
