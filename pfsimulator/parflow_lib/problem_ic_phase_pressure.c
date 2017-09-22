@@ -853,7 +853,7 @@ PFModule  *ICPhasePressureInitInstanceXtra(
 
 	 /* Allocate temp vector */
 	 dummy4 -> ic_values = NewVectorType(grid, 1, 1, vector_cell_centered);
-	 ReadPFNC(dummy4->ncFileName, dummy4->ic_values, "pressure", 0);
+	 ReadPFNC(dummy4->ncFileName, dummy4->ic_values, "pressure", 0, 3);
       }
 
    }

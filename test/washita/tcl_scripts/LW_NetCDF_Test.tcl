@@ -23,8 +23,7 @@ exec mkdir "Outputs"
 cd "./Outputs"
 
 # ParFlow Inputs
-file copy -force "../../parflow_input/slopex.nc" .
-file copy -force "../../parflow_input/slopey.nc" .
+file copy -force "../../parflow_input/slopes.nc" .
 file copy -force "../../parflow_input/IndicatorFile_Gleeson.50z.pfb"   .
 file copy -force "../../parflow_input/press.init.nc"  .
 
@@ -286,14 +285,14 @@ pfset Patch.z-upper.BCPressure.alltime.Value	      0.0
 #-----------------------------------------------------------------------------
 pfset TopoSlopesX.Type                                "NCFile"
 pfset TopoSlopesX.GeomNames                           "domain"
-pfset TopoSlopesX.FileName                            "slopex.nc"
+pfset TopoSlopesX.FileName                            "slopes.nc"
 
 #-----------------------------------------------------------------------------
 # Topo slopes in y-direction
 #-----------------------------------------------------------------------------
 pfset TopoSlopesY.Type                                "NCFile"
 pfset TopoSlopesY.GeomNames                           "domain"
-pfset TopoSlopesY.FileName                            "slopey.nc"
+pfset TopoSlopesY.FileName                            "slopes.nc"
 
 #-----------------------------------------------------------------------------
 # Mannings coefficient
@@ -489,6 +488,7 @@ pfset Solver.Linear.Preconditioner                       PFMG
 pfset Solver.Linear.Preconditioner.PCMatrixType     FullJacobian
 
 pfset NetCDF.NumStepsPerFile			5
+pfset NetCDF.CLMNumStepsPerFile                 24
 pfset NetCDF.WritePressure			True
 pfset NetCDF.WriteSaturation			True
 pfset NetCDF.WriteMannings			True
@@ -499,7 +499,8 @@ pfset NetCDF.WriteDZMultiplier			True
 pfset NetCDF.WriteEvapTrans			True
 pfset NetCDF.WriteEvapTransSum			True
 pfset NetCDF.WriteOverlandSum			True
-pfset NetCDF.WriteOverlandBCFlux			True
+pfset NetCDF.WriteOverlandBCFlux		True
+pfset NetCDF.WriteCLM				True
 
 #-----------------------------------------------------------------------------
 # Distribute inputs

@@ -458,7 +458,7 @@ PFModule  *XSlopeInitInstanceXtra(
 
 	 dummy3 -> sx_values = NewVectorType(grid2d, 1, 1,
 					     vector_cell_centered_2D);
-	 ReadPFNC((dummy3 -> filename),(dummy3 -> sx_values), "slopex", 0);
+	 ReadPFNC((dummy3 -> filename),(dummy3 -> sx_values), "slopex", 0, 2);
       }
    }
    

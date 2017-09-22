@@ -443,7 +443,7 @@ PFModule  *YSlopeInitInstanceXtra(
 	 dummy3 -> sy_values = NewVectorType(grid2d, 1, 1,
 					     vector_cell_centered_2D);
 					 
-	 ReadPFNC((dummy3 -> filename),(dummy3 -> sy_values), "slopey", 0);
+	 ReadPFNC((dummy3 -> filename),(dummy3 -> sy_values), "slopey", 0, 2);
       }
    }
 
