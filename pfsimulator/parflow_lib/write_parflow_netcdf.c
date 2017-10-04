@@ -195,7 +195,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
       sprintf(file_name, "%s%s%s%s", file_prefix,".",file_postfix,".nc");
       if (numOfDefVars == 0)
       {
-	CreateNCFile(file_name, v);
+	CreateNCFile(file_name);
       }
       NCDefDimensions(v, dimensionality);
       int myVarID=LookUpInventory(varName, &myVarNCData);
@@ -221,7 +221,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
 	is2Ddefined = false;
 	is3Ddefined = false;
 	isTdefined = false;
-	CreateNCFile(file_name, v);
+	CreateNCFile(file_name);
 	NCDefDimensions(v, dimensionality);
 	int myVarID=LookUpInventory(varName, &myVarNCData);
 	PutDataInNC(myVarID, v, t, myVarNCData, dimensionality);
@@ -233,7 +233,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
 	if(numStepsInFile == 0)
 	{
 	  sprintf(file_name, "%s%s%s%s", file_prefix,".",file_postfix,".nc");
-	  CreateNCFile(file_name, v);
+	  CreateNCFile(file_name);
 	  NCDefDimensions(v, dimensionality);
 	  int myVarID=LookUpInventory(varName, &myVarNCData);
 	  PutDataInNC(myVarID,v, t, myVarNCData, dimensionality);

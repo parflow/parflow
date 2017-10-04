@@ -44,7 +44,7 @@ typedef struct
 
 void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int numVarTimeVariant,
 			char *varName, int dimensionality, bool init, int numVarIni);
-void CreateNCFile(char *file_name, Vector *v);
+void CreateNCFile(char *file_name);
 void NCDefDimensions(Vector *v, int dimensionality);
 void CloseNC(int ncID);
 int LookUpInventory(char * varName, varNCData **myVarNCData);
