@@ -12,6 +12,10 @@ the mesoscale, meteorological code ARPS and the NCAR code WRF.
 
 See the "User's Manual" for info on "Getting Started" in ParFlow.
 
+# ParFlowVR
+ParFlowVR is parflow extended by the FlowVR package to enable in-situ analysis and
+computational steering.
+
 ### Citing Parflow
 
 To cite Parflow, please use the following reference.
@@ -66,7 +70,7 @@ For bash:
 
 ```shell
    export PARFLOW_DIR=/home/snoopy/parflow
-```   
+```
 
 For csh and tcsh:
 
@@ -79,9 +83,9 @@ For csh and tcsh:
 Extract the source files from the compressed tar file.
 
 ```shell
-   mkdir ~/parflow 
-   cd ~/parflow 
-   gunzip ../parflow.tar.Z 
+   mkdir ~/parflow
+   cd ~/parflow
+   gunzip ../parflow.tar.Z
    tar -xvf ../parflow.tar
 ```
 
@@ -90,13 +94,13 @@ Extract the source files from the compressed tar file.
 
 This step builds the Parflow library and executable.  The library is
 used when Parflow is used as a component of another simulation
-(e.g. WRF).  
+(e.g. WRF).
 
 ```shell
    cd $PARFLOW_DIR
    cd pfsimulator
    ./configure --prefix=$PARFLOW_DIR --with-amps=mpi1
-   make 
+   make
    make install
 ```
 
@@ -105,7 +109,7 @@ This will build a parallel version of Parflow using MPI libraries.
 You can control build options for Parflow, use
 
 ```shell
-   ./configure --help 
+   ./configure --help
 ```
 
 to see other configure options.
@@ -141,7 +145,7 @@ A typical configure and build looks like:
 ```shell
   cd pftools
   ./configure --prefix=$PARFLOW_DIR --with-amps=mpi1
-  make 
+  make
   make install
   make doc_install
 ```
@@ -174,9 +178,9 @@ the pftools configure.
 
 ## Release
 
-Copyright (c) 1995-2009, Lawrence Livermore National Security LLC. 
+Copyright (c) 1995-2009, Lawrence Livermore National Security LLC.
 
-Produced at the Lawrence Livermore National Laboratory. 
+Produced at the Lawrence Livermore National Laboratory.
 
 Written by the Parflow Team (see the CONTRIBUTORS file)
 
