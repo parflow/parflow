@@ -1719,6 +1719,23 @@ void AdvanceRichards(PFModule *this_module,
 	  }  //end if (fstep==0)
 	}  //end if (clm_metforce==3)
 
+	/* KKu Added NetCDF based forcing option. Treated similar to 2D binary files where
+	 * at every time step forcing data is read. */
+	if ( public_xtra -> clm_metforce == 4 )
+	{
+	  /* KKu Since NetCDF indices start at 0, istep-1 is supplied to read
+	   * for the given time step*/
+	  sprintf(filename, "%s", public_xtra -> clm_metfile);
+	  ReadPFNC(filename, instance_xtra -> sw_forc, "DSWR", istep-1, 2); 
+	  ReadPFNC(filename, instance_xtra -> lw_forc, "DLWR", istep-1, 2); 
+	  ReadPFNC(filename, instance_xtra -> prcp_forc, "APCP", istep-1, 2); 
+	  ReadPFNC(filename, instance_xtra -> tas_forc, "Temp", istep-1, 2); 
+	  ReadPFNC(filename, instance_xtra -> u_forc, "UGRD", istep-1, 2); 
+	  ReadPFNC(filename, instance_xtra -> v_forc, "VGRD", istep-1, 2); 
+	  ReadPFNC(filename, instance_xtra -> patm_forc, "Press", istep-1, 2); 
+	  ReadPFNC(filename, instance_xtra -> qatm_forc, "SPFH", istep-1, 2); 
+	}
+
       }     /* NBE - End of clm_reuse_count block */
 
 
@@ -1898,6 +1915,19 @@ void AdvanceRichards(PFModule *this_module,
 	  z0m_data        = SubvectorElt(z0m_forc_sub,x,y,z);  
 	  displa_data     = SubvectorElt(displa_forc_sub,x,y,z); 			   
 
+	}
+	/* KKu NetCDF case similar to 2D Case */
+	if (public_xtra -> clm_metforce == 4)
+	{
+	  // Just need to grab SubvectorData's
+	  sw_data         = SubvectorData(sw_forc_sub);
+	  lw_data         = SubvectorData(lw_forc_sub);
+	  prcp_data       = SubvectorData(prcp_forc_sub);
+	  tas_data        = SubvectorData(tas_forc_sub);
+	  u_data          = SubvectorData(u_forc_sub);
+	  v_data          = SubvectorData(v_forc_sub);
+	  patm_data       = SubvectorData(patm_forc_sub);
+	  qatm_data       = SubvectorData(qatm_forc_sub);
 	}
 
 	ip = SubvectorEltIndex(p_sub, ix, iy, iz);
@@ -4052,6 +4082,7 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
   /* IMF Key for CLM met file name...
      for 1D forcing, is complete file name
      for 2D/3D forcing, is base file name (w/o timestep extension) */
+  /* KKu NetCDF based forcing file name would be read here */
   sprintf(key, "%s.CLM.MetFileName", name);
   public_xtra -> clm_metfile = GetStringDefault(key, "narr_1hr.sc3.txt");
 
@@ -4065,7 +4096,8 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
 
   /* IMF Switch for 1D (uniform) vs. 2D (distributed) met forcings */
   /* IMF Added 3D option (distributed w/ time axis -- nx*ny*nz; nz=nt) */
-  metforce_switch_na = NA_NewNameArray("none 1D 2D 3D");
+  /* KKu Added NetCDF meteorological forcing*/
+  metforce_switch_na = NA_NewNameArray("none 1D 2D 3D NC");
   sprintf(key, "%s.CLM.MetForcing", name);
   switch_name = GetStringDefault(key, "none");
   switch_value = NA_NameToIndex(metforce_switch_na, switch_name);
@@ -4089,6 +4121,11 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
     case 3:
       {
 	public_xtra -> clm_metforce = 3;
+	break;
+      }
+    case 4:
+      {
+	public_xtra -> clm_metforce = 4;
 	break;
       }
     default:

@@ -31,6 +31,7 @@ file copy -force "../../parflow_input/press.init.nc"  .
 file copy -force "../../clm_input/drv_clmin.dat" .
 file copy -force "../../clm_input/drv_vegp.dat"  .
 file copy -force "../../clm_input/drv_vegm.alluv.dat"  . 
+file copy -force "../../clm_input/metForcing.nc"  . 
 
 puts "Files Copied"
 
@@ -409,10 +410,10 @@ pfset Solver.CLM.Print1dOut                           False
 pfset Solver.BinaryOutDir                             False
 pfset Solver.CLM.CLMDumpInterval                      1
 
-pfset Solver.CLM.MetForcing                           3D
-pfset Solver.CLM.MetFileName                          "NLDAS"
-pfset Solver.CLM.MetFilePath                          "../../NLDAS/"
-pfset Solver.CLM.MetFileNT                            24
+pfset Solver.CLM.MetForcing                           NC
+pfset Solver.CLM.MetFileName                          "metForcing.nc"
+#pfset Solver.CLM.MetFilePath                          "../../NLDAS/"
+pfset Solver.CLM.MetFileNT                            1
 pfset Solver.CLM.IstepStart                           1
 
 pfset Solver.CLM.EvapBeta                             Linear
