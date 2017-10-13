@@ -4398,7 +4398,7 @@ pfset NetCDF.NodeLevelIO   True
 \end{verbatim}\end{display}
 
 \subsection{NetCDF4 Initial Conditions: Pressure}
-Analogues to ParFlow binary files, NetCDF4 based option can be used to set the initial conditions for pressure to be read from an ``nc" file containing single time step of pressure. The name of the variable in ``nc" file should be ``pressure". A sample NetCDF header of an initial condition file looks as follows.
+Analogues to ParFlow binary files, NetCDF4 based option can be used to set the initial conditions for pressure to be read from an ``nc" file containing single time step of pressure. The name of the variable in ``nc" file should be ``pressure". A sample NetCDF header of an initial condition file looks as follows. The names of the dimensions are not important. The order of dimensions is important e.g. \textit{(time, lev, lat, lon) or (time,z, y, x)}
 \begin{display}\begin{verbatim}
 netcdf initial_condition {
 dimensions:
@@ -4421,7 +4421,7 @@ pfset Geom.domain.ICPressure.FileName   "initial_condition.nc"
 \end{verbatim}\end{display}
 
 \subsection{NetCDF4 Slopes}
-NetCDF4 based option can be used slopes to be read from an ``nc" file containing single time step of slope values. The name of the variable in ``nc" file should be ``slopex" and ``slopey" A sample NetCDF header of slope file looks as follows.
+NetCDF4 based option can be used slopes to be read from an ``nc" file containing single time step of slope values. The name of the variable in ``nc" file should be ``slopex" and ``slopey" A sample NetCDF header of slope file looks as follows. The names of the dimensions are not important. The order of dimensions is important e.g. \textit{(time, lat, lon) or (time, y, x)}
 \begin{display}\begin{verbatim}
 netcdf slopex {
 dimensions:
@@ -4459,7 +4459,7 @@ pfset TopoSlopesy.FileName   "slopey.nc"
 \end{verbatim}\end{display}
 
 \subsection{NetCDF4 Transient EvapTrans Forcing}
-Following keys can be used for NetCDF4 based transient evaptrans forcing. The file should contain forcing for all time steps. For a given time step, if the forcing is null, zero values could be filled for the given time step in the ``.nc" file. The format of the sample file looks as follows.
+Following keys can be used for NetCDF4 based transient evaptrans forcing. The file should contain forcing for all time steps. For a given time step, if the forcing is null, zero values could be filled for the given time step in the ``.nc" file. The format of the sample file looks as follows. The names of the dimensions are not important. The order of dimensions is important e.g. \textit{(time, lev, lat, lon) or (time,z, y, x)}
 \begin{display}\begin{verbatim}
 netcdf evap_trans {
 dimensions:
@@ -4516,16 +4516,50 @@ The output variables are:
 \item \file{t_soil} for soil temperature over all layers $[K]$ using the silo variable {\em TemperatureSoil}.
 \end{description}
 
+\subsection{NetCDF4 CLM Input/Forcing}
+NetCDF based meteorological forcing can be used with following TCL keys. It is built similar to 2D forcing case for CLM with parflow binary files. All the required forcing variables must be present in one single NetCDF file spanning entire length of simulation. If the simulation ends before number of time steps in NetCDF forcing file, next cycle of simulation can be restarted with same forcing file provided it covers the time span of this cycle.\\
+e.g. If the NetCDF forcing file contains 100 time steps and simulation CLM-ParFlow simulation runs for 10 cycles containing 10 time steps in each cycle, the same forcing file can be reused. The user has to set correct value for the key \texttt{Solver.CLM.IstepStart}\\
+The format of input file looks as follows. The variable names should match exactly as follows. The names of the dimensions are not important. The order of dimensions is important e.g. \textit{(time, lev, lat, lon) or (time,z, y, x)}
+\begin{display}\begin{verbatim}
+netcdf metForcing {
+dimensions:
+	lon = 41 ;
+	lat = 41 ;
+	time = UNLIMITED ; // (72 currently)
+variables:
+	double time(time) ;
+	double APCP(time, lat, lon) ;
+	double DLWR(time, lat, lon) ;
+	double DSWR(time, lat, lon) ;
+	double Press(time, lat, lon) ;
+	double SPFH(time, lat, lon) ;
+	double Temp(time, lat, lon) ;
+	double UGRD(time, lat, lon) ;
+	double VGRD(time, lat, lon) ;
+\end{verbatim}\end{display}
+\textbf{\textit{Note: While using NetCDF based CLM forcing, \texttt{Solver.CLM.MetFileNT} should be set to its default value of 1}}
+
+\pfkey{string}{Solver.CLM.MetForcing}{no default}
+{This key sets meteorological forcing to be read from NetCDF file.} 
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.MetForcing     NC
+\end{verbatim}\end{display}
+Set the name of the input/forcing file as follows.
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.MetFileName   "metForcing.nc"
+\end{verbatim}\end{display}
+This file should be present in experiment directory. User may create soft links in experiment directory in case where data can not be moved.
 
 \subsection{NetCDF Testing Little Washita Test Case}
-The basic NetCDF functionality of output (pressure and saturation) and initial conditions (pressure) can be tested with following tcl script. CLM output functionality can also be tested with this case.
+The basic NetCDF functionality of output (pressure and saturation) and initial conditions (pressure) can be tested with following tcl script. CLM input/output functionality can also be tested with this case.
 \begin{display}\begin{verbatim}
 parflow/test/washita/tcl_scripts/LW_NetCDF_Test.tcl
 \end{verbatim}\end{display}
-This test case will be initialized with following initial condition file and slopes.
+This test case will be initialized with following initial condition file, slopes and meteorological forcing.
 \begin{display}\begin{verbatim}
 parflow/test/washita/parflow_input/press.init.nc
 parflow/test/washita/parflow_input/slopes.nc
+parflow/test/washita/clm_input/metForcing.nc
 \end{verbatim}\end{display}
 
 \section{ParFlow Binary Files (.pfb)}
