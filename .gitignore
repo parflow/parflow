@@ -1,3 +1,35 @@
+.*.swp
+build/
+
+# Test outputs
+test/**/*.pfb
+test/**/*.pfidb
+test/**/*.pfb.dist
+test/**/*.silo
+test/**/*.out*
+test/*.bootmc
+test/.hostfile
+test/clm/*.bootmc
+test/clm/.hostfile
+test/clm/clm_output.txt.*
+test/clm/diag_out/
+test/clm/drv_clmin.dat.*
+test/clm/drv_vegm.dat.*
+test/clm/eflx_lh_tot/
+test/clm/eflx_lwrad_out/
+test/clm/eflx_sh_tot/
+test/clm/eflx_soil_grnd/
+test/clm/qflx_evap_grnd/
+test/clm/qflx_evap_soi/
+test/clm/qflx_evap_tot/
+test/clm/qflx_evap_veg/
+test/clm/qflx_infl/
+test/clm/qflx_top_soil/
+test/clm/qflx_tran_veg/
+test/clm/swe_out/
+test/clm/t_grnd/
+
+
 # Created by https://www.gitignore.io
 
 ### Fortran ###
