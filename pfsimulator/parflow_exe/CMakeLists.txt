@@ -24,10 +24,6 @@ endif (${PARFLOW_HAVE_NETCDF})
 
 if (${PARFLOW_HAVE_HDF5})
   target_link_libraries (parflow ${HDF5_LIBRARIES})
-
-  if (${PARFLOW_HAVE_NETCDF})
-    target_link_libraries (parflow ${HDF5_HL_LIBRARIES})
-  endif (${PARFLOW_HAVE_NETCDF})
 endif (${PARFLOW_HAVE_HDF5})
 
 if (${PARFLOW_HAVE_ZLIB})
@@ -42,6 +38,15 @@ if (${PARFLOW_HAVE_SLURM})
   target_link_libraries (parflow ${SLURM_LIBRARIES})
 endif (${PARFLOW_HAVE_SLURM})
 
+if( ${PARFLOW_HAVE_FLOWVR} )
+
+  SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}  $ENV{FlowVR_DIR} $ENV{FlowVRVRPN_DIR} $ENV{FlowVRContrib_DIR} ${${CMAKE_PROJECT_NAME}_SOURCE_DIR}/cmake/ ${FlowVR_DIR} ${FlowVRVRPN_DIR} ${FlowVRContrib_DIR})
+  INCLUDE(MacroLogFeature)
+  FIND_PACKAGE(fca REQUIRED)
+  MACRO_LOG_FEATURE(fca_FOUND "FlowVR fca contrib" "fca is needed to run ${CMAKE_PROJECT_NAME} application (compile and install flowvr again making sure to build with the fca lib)" " " TRUE " ")
+  target_link_libraries(parflow ${fca_LIBRARY})
+endif( ${PARFLOW_HAVE_FLOWVR} )
+
 if( ${PARFLOW_ENABLE_PROFILING} )
   set_target_properties(parflow PROPERTIES LINK_FLAGS ${PARFLOW_PROFILE_OPTS})
 endif( ${PARFLOW_ENABLE_PROFILING} )
@@ -50,4 +55,5 @@ if ( DEFINED PARFLOW_LINKER_FLAGS)
    set_target_properties(parflow PROPERTIES LINK_FLAGS ${PARFLOW_LINKER_FLAGS})
 endif ( DEFINED PARFLOW_LINKER_FLAGS)
 
+  
 install(TARGETS parflow DESTINATION bin)

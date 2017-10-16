@@ -54,12 +54,12 @@ set (PARFLOW_AMPS_LAYER_REQUIRE_MPI mpi1 smpi oas3)
 if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
 
   find_package(MPI)
-  
+
   if (${MPI_C_FOUND})
     set(PARFLOW_HAVE_MPI "yes")
     set(HAVE_MPI ${PARFLOW_HAVE_MPI})
   endif (${MPI_C_FOUND})
-  
+
 endif ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
 
 find_package(TCL)
@@ -125,14 +125,14 @@ if (${PARFLOW_ENABLE_HYPRE} OR DEFINED HYPRE_ROOT)
   if (${HYPRE_FOUND})
     set(PARFLOW_HAVE_HYPRE "yes")
     set(HAVE_HYPRE ${PARFLOW_HAVE_HYPRE})
-    
+
     file(STRINGS ${HYPRE_INCLUDE_DIR}/HYPRE_config.h hypreConfig REGEX HYPRE_RELEASE_VERSION)
     separate_arguments(hypreConfig)
-    
+
     list(GET hypreConfig 2 PARFLOW_HYPRE_VERSION)
-    
+
     version_create_variables (PARFLOW_HYPRE)
-    
+
   endif (${HYPRE_FOUND})
 endif (${PARFLOW_ENABLE_HYPRE} OR DEFINED HYPRE_ROOT)
 
@@ -181,6 +181,18 @@ if (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
     set(HAVE_SLURM ${PARFLOW_HAVE_SLURM})
   endif (${SLURM_FOUND})
 endif (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
+
+#-----------------------------------------------------------------------------
+# FLOWVR
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_FLOWVR False CACHE BOOL "Build with FlowVR support")
+if (${PARFLOW_ENABLE_FLOWVR} OR DEFINED FLOWVR_ROOT)
+  find_package(FlowVR)
+  if (${FLOWVR_FOUND})
+    set(PARFLOW_HAVE_FLOWVR "yes")
+    set(HAVE_FLOWVR ${PARFLOW_HAVE_FLOWVR})
+  endif (${FLOWVR_FOUND})
+endif (${PARFLOW_ENABLE_FLOWVR} OR DEFINED FLOWVR_ROOT)
 
 #-----------------------------------------------------------------------------
 # Fortran checks
@@ -309,7 +321,7 @@ if( ${PARFLOW_ENABLE_TIMING} )
   set (PF_TIMING ${PARFLOW_ENABLE_TIMING})
 endif( ${PARFLOW_ENABLE_TIMING} )
 
-# Profiling 
+# Profiling
 set (PARFLOW_ENABLE_PROFILING False CACHE BOOL "Enable profiling; will slow down performance")
 if( ${PARFLOW_ENABLE_PROFILING} )
   set (PARFLOW_PROFILE_OPTS "-pg")
@@ -341,9 +353,9 @@ configure_file (cmake/Makefile.config.in config/Makefile.config)
 if ( ${PARFLOW_HAVE_CLM} )
   configure_file (pfsimulator/clm/parflow_config.F90.in ${PROJECT_BINARY_DIR}/pfsimulator/clm/parflow_config.F90)
 endif ( ${PARFLOW_HAVE_CLM} )
-  
+
 #-----------------------------------------------------------------------------
-# CMAKE Subdirectories 
+# CMAKE Subdirectories
 #-----------------------------------------------------------------------------
 
 # Need to turn on testing so tests in subdirctories are included in test target.

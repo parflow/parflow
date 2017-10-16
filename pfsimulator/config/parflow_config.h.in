@@ -5,7 +5,7 @@
  * Revision:    $LastChangedRevision: 2180 $
  * Modified:    $LastChangedDate: 2008-05-05 16:49:32 -0700 (Mon, 05 May 2008) $
  * Description: PARFLOW configuration file
- */  
+ */
 
 /*
 *************************************************************************
@@ -104,9 +104,17 @@
 #undef HAVE_SLURM
 #endif
 
+/*
+ * FLOWVR
+ */
+
+#ifndef HAVE_FLOWVR
+#undef HAVE_FLOWVR
+#endif
+
 
 /*
- * Silo 
+ * Silo
  */
 
 #ifndef HAVE_SILO
@@ -121,7 +129,7 @@
 #endif
 
 /*
- * Hypre 
+ * Hypre
  */
 
 #ifndef HAVE_HYPRE

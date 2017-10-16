@@ -48,6 +48,9 @@
 
 #cmakedefine PARFLOW_HAVE_NETCDF
 
+#cmakedefine PARFLOW_HAVE_FLOWVR
+#cmakedefine HAVE_FLOWVR
+
 #cmakedefine PARFLOW_HAVE_HDF5
 #cmakedefine HAVE_HDF5
 

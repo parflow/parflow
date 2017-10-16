@@ -62,6 +62,8 @@ compilers than the TCL libraries used for problem setup.
 
 ### Step 1: Setup
 
+**The instructions here are DEPRECATED! Refer to README.cmake to build this branch please!**
+
 Decide where you wish to install Parflow and associated libraries.
 
 Set the environment variable `PARFLOW_DIR` to your chosen location:
