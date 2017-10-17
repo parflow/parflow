@@ -46,7 +46,7 @@ check_sequential:
 	        make --no-print-directory testclean; \
 		echo "*****************************************************************************"; \
 		echo "Running $$i on 1 1 1"; \
-		/usr/bin/time -f "TIME,$$i 1 1 1,%e" tclsh $$i 1 1 1; \
+		tclsh $$i 1 1 1; \
 	done
 
 check_parallel:
@@ -57,7 +57,7 @@ check_parallel:
 		        make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			/usr/bin/time -f "TIME,$$i $$processor_topology,%e" tclsh $$i $$processor_topology; \
+			tclsh $$i $$processor_topology; \
 		done \
 	done
 
@@ -70,7 +70,7 @@ check_samrai:
 		        make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			/usr/bin/time -f "TIME,$$i $$processor_topology,%e" tclsh $$i $$processor_topology; \
+			tclsh $$i $$processor_topology; \
 		done \
 	done
 

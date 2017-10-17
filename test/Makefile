@@ -84,6 +84,8 @@ endif
 
 CHECK_TARGETS=check_sequential check_parallel check_samrai
 
+test: check
+
 check:
 	@(logfile=check.$$$$.checklog; \
         make $(CHECK_TARGETS) | tee $$logfile; \
@@ -129,7 +131,7 @@ check_sequential:
 	        make --no-print-directory testclean; \
 		echo "*****************************************************************************"; \
 		echo "Running $$i"; \
-		/usr/bin/time -f "TIME,$$i 1 1 1,%e" tclsh $$i 1 1 1; \
+		tclsh $$i 1 1 1; \
 	done
 	@-for i in $(SUBDIRS); \
 	do \
@@ -144,7 +146,7 @@ check_parallel:
 		        make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			/usr/bin/time -f "TIME,$$i $$processor_topology,%e" time tclsh $$i $$processor_topology; \
+			time tclsh $$i $$processor_topology; \
 		done \
 	done
 	@-for i in $(PARALLEL_2DTOPO_TESTS); \
@@ -154,7 +156,7 @@ check_parallel:
 		        make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			/usr/bin/time -f "TIME,$$i $$processor_topology,%e" tclsh $$i $$processor_topology; \
+			tclsh $$i $$processor_topology; \
 		done \
 	done
 	@-for i in $(SUBDIRS); \
@@ -171,14 +173,14 @@ check_samrai:
 			make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			/usr/bin/time -f "TIME,$$i $$processor_topology,%e" tclsh $$i $$processor_topology; \
+			tclsh $$i $$processor_topology; \
 		done; \
 		for processor_topology in "1 1 1" "1 2 1" "2 1 1" "2 2 1" "3 3 1" "1 4 1" "4 1 1"; \
 	 	do \
 			make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			/usr/bin/time -f "TIME,$$i $$processor_topology,%e" tclsh $$i $$processor_topology; \
+			tclsh $$i $$processor_topology; \
 		done \
 	done
 	@-for i in $(SAMRAI_TESTS_WITH_PATCH_COUNT); \
@@ -188,7 +190,7 @@ check_samrai:
 		        make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			/usr/bin/time -f "TIME $$processor_topology,$$i,%e" tclsh $$i $$processor_topology; \
+			tclsh $$i $$processor_topology; \
 		done \
 	done
 	@-for i in $(SUBDIRS); \
