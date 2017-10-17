@@ -41,6 +41,17 @@
 #include <slurm/slurm.h>
 #endif
 
+#ifdef HAVE_FLOWVR
+#include <fca/fca.h>
+
+// TODO: remove the following 3 lines? were only for testing purposes!
+#include <time.h>
+#define STRING_SIZE 8
+#define ARRAY_LENGTH 9
+
+#endif
+
+
 #include <unistd.h>
 #include <string.h>
 #include <float.h>
@@ -1346,6 +1357,11 @@ void AdvanceRichards(PFModule *this_module,
    fstart = 0;                                  // init to something, only used with 3D met forcing
    fstop  = 0;                                  // init to something, only used with 3D met forcing
 
+#endif
+
+#ifdef HAVE_FLOWVR
+   // Cool boys need a fca_module: --- is created in this subfunc now ;)
+  flowVRTest();
 #endif
 
    do  /* while take_more_time_steps */
@@ -4883,3 +4899,185 @@ PFModule *GetICPhasePressureRichards(PFModule *this_module) {
   InstanceXtra  *instance_xtra    = (InstanceXtra *)PFModuleInstanceXtra(this_module);
   return (instance_xtra -> ic_phase_pressure);
 }
+
+
+
+
+
+#ifdef HAVE_FLOWVR
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void flowVRTest(void) {
+
+   int sleep_time=2;
+
+
+	fca_port portText = fca_new_port("text", fca_OUT, 0, NULL);
+
+	/*
+	 * Integer and float stamp
+	 */
+	fca_stamp stampInt = fca_register_stamp(portText, "stampInt", fca_INT);
+	printf("Registered stamp: %u - %s\n", fca_get_stamp_type(stampInt), fca_get_stamp_name(stampInt));
+
+	fca_stamp stampFloat = fca_register_stamp(portText, "stampFloat", fca_FLOAT);
+	printf("Registered stamp: %u - %s\n", fca_get_stamp_type(stampFloat), fca_get_stamp_name(stampFloat));
+
+	/*
+	 * String stamp
+	 */
+	fca_stamp stampString = fca_register_stamp(portText, "stampString", fca_STRING, STRING_SIZE);
+	printf("Registered stamp: %u - %s\n", fca_get_stamp_type(stampString), fca_get_stamp_name(stampString));
+
+	/*
+	 * Binary stamp
+	 */
+//	fca_stamp stampBinary = fca_register_stamp(portText, "stampBinary", fca_BINARY, 13);
+//	printf("Registered stamp: %u - %s\n", fca_get_stamp_type(stampBinary), fca_get_stamp_name(stampBinary));
+
+
+	/*
+	 * Array stamp
+	 */
+	fca_stamp stampArray = fca_register_stamp(portText, "stampArray", fca_ARRAY, ARRAY_LENGTH, fca_FLOAT);
+	printf("Registered stamp : %u - %s\n", fca_get_stamp_type(stampArray), fca_get_stamp_name(stampArray));
+
+
+	fca_trace trace = fca_new_trace("beginTrace", fca_trace_INT, NULL);
+	if(trace != NULL) printf("Creation of trace succeded.\n"); else printf("Failed to create a trace.\n");
+
+	fca_trace trace2 = fca_new_trace("endTrace", fca_trace_INT, NULL);
+        if(trace2 != NULL) printf("Creation of trace succeded.\n"); else printf("Failed to create a trace.\n");
+
+	//fca_module modulePut = fca_new_module_from_ports(portText, NULL);
+	//if (!modulePut)
+	//	return 1;
+	fca_module modulePut = fca_new_empty_module();
+	fca_append_port(modulePut, portText);
+	fca_append_trace(modulePut, trace);
+	fca_append_trace(modulePut, trace2);
+
+	if(!fca_init_module(modulePut)){
+		printf("ERROR : init_module failed!\n");
+		return 1;
+	}
+
+	fca_trace testTrace = fca_get_trace(modulePut,"beginTrace");
+	if(testTrace == NULL) printf("ERROR : Test Trace FAIL!!\n"); else printf("Test Trace OK.\n");
+
+	int it=0;
+	while (fca_wait(modulePut))
+	{
+		printf( "++++++++++++++++++++++++++\n");
+		printf( "+++ Beginning exchange +++\n");
+		printf( "++++++++++++++++++++++++++\n");
+		/*
+		 * Sending text
+		 */
+    const char* TIC = "tic";
+    const char* TAC = "tac";
+		char * text;
+    if (it & 1) {
+      text = TAC;
+    } else {
+      text = TIC;
+    } // TODO: code format (e.g. brackets) right?
+
+		// Build data
+
+		fca_message message = fca_new_message(modulePut, strlen(text));
+
+		char* messageBuffer = (char*)fca_get_write_access(message, 0);
+		memcpy(messageBuffer,text,strlen(text));
+
+		/*
+		 * Appending stamp
+		 */
+		// Int
+		/*int* bufferInt = (int) rand();*/
+    int iii = 42;
+    int * bufferInt = &iii;
+		fca_write_stamp(message, stampInt, (void*)bufferInt); // Lol: yes that was wrong in the given example I'd say ;)
+
+		// Float
+    float pi = (float) 3.141592653589793238462643383279;
+		float* bufferFloat = &pi;
+		fca_write_stamp(message, stampFloat, (void*)bufferFloat);
+
+		// String
+		char* testString;
+		//testString = (char*)malloc(STRING_SIZE);
+		testString = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent mauris neque, lobortis ac blandit pellentesque, tincidunt sed orci. Morbi eleifend sollicitudin diam vel ornare. Maecenas malesuada, magna eu pharetra condimentum, ligula augue interdum orci, quis lobortis sem dui a orci. Etiam ac velit nulla. Vestibulum ac aliquam lorem. Donec at velit non lacus scelerisque dignissim nec ac nisi. In at orci quam. ";
+		fca_write_stamp(message, stampString, (void*)testString);
+
+		// Binary
+		char* testBinary;
+		testBinary = (char*)malloc(13);
+		testBinary = "Test string.";
+
+//		fca_write_stamp(message, stampBinary, (void*)testBinary);
+
+		//Array
+		float arrayFloat[ARRAY_LENGTH];
+		for(int i = 0; i < ARRAY_LENGTH; i++)
+			arrayFloat[i] = (float)i;
+		fca_write_stamp(message, stampArray, (void*)arrayFloat);
+
+		int* testBufferInt = (int*)fca_read_stamp(message, stampInt);
+		float* testBufferFloat = (float*)fca_read_stamp(message, stampFloat);
+
+		printf("\n(putfca) SENDING MESSAGE :\n");
+		printf("#  stampInt= %d\n", *testBufferInt);
+		printf("#  stampFloat= %d\n", *testBufferFloat);
+		printf("#  stampString= %d\n", testString);
+				//<< "; stampBinary= " << testBinary
+
+    printf("\n");
+
+		/*
+		 * Sending message
+		 */
+		bool success = fca_put(portText, message);
+
+		if (success) {
+			printf("(putfca) Sent \n");
+		} else {
+			printf("(putfca) Not sent \n");
+		}
+
+		/*
+		 * Writing custom event
+		 */
+		sleep(1);
+		if(!fca_write_trace(trace,&it))
+			printf("ERROR : Not able to write a trace.\n");
+		sleep(1);
+		if(!fca_write_trace(trace2,&it))
+                        printf("ERROR : Not able to write a trace.\n");
+		sleep(1);
+
+		/*
+		 * Reading logs
+		 */
+		fca_stamp stampMit = fca_get_stamp(portText, "it");
+
+		void* stampMitBuffer = fca_read_stamp(message, stampMit);
+		int mit = *((int*)stampMitBuffer);
+		free(stampMitBuffer);
+
+		printf("%s (it=%d)\n", text, mit);
+
+		sleep(sleep_time);
+		++it;
+	}
+
+	fca_free(modulePut);
+
+}
+#endif
