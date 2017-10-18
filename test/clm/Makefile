@@ -13,15 +13,18 @@ default: check
 TESTS := \
 
 ifeq (${PARFLOW_HAVE_CLM},yes)
+ifeq (${PARFLOW_HAVE_HYPRE},yes)
 TESTS += clm.tcl \
          clm_forc_veg.tcl \
-		 clm_varDZ.tcl
+	 clm_varDZ.tcl
+endif
 endif
 
 PARALLEL_TESTS =
 
 ifeq (${AMPS},mpi1)
 ifeq (${PARFLOW_HAVE_CLM},yes)
+ifeq (${PARFLOW_HAVE_HYPRE},yes)
 	PARALLEL_TESTS += \
 		clm.tcl \
 		clm.jac.tcl \
@@ -29,12 +32,15 @@ ifeq (${PARFLOW_HAVE_CLM},yes)
 		clm_varDZ.tcl
 endif
 endif
+endif
 
 SAMRAI_TESTS :=
-ifeq (${PARFLOW_HAVE_SAMRAI},yes)
 ifeq (${PARFLOW_HAVE_CLM},yes)
+ifeq (${PARFLOW_HAVE_SAMRAI},yes)
+ifeq (${PARFLOW_HAVE_HYPRE},yes)
 SAMRAI_TESTS += \
 	clm_samrai.tcl
+endif
 endif
 endif
 

@@ -1,37 +1,51 @@
 
 include(ParflowTest)
 
-set(TESTS default_single.tcl
-  default_richards.tcl
+set(TESTS 
+  default_single.tcl
   default_richards_wells.tcl
   forsyth2.tcl
   harvey.flow.tcl
   harvey_flow_pgs.tcl
-  default_overland.tcl
   crater2D.tcl
   crater2D_vangtable_spline.tcl
   crater2D_vangtable_linear.tcl
   small_domain.tcl
   richards_hydrostatic_equalibrium.tcl
-  terrain_following_grid_overland.tcl
-  var_dz_1D.tcl
-  LW_var_dz.tcl
-  LW_var_dz_spinup.tcl)
+)
 
 if(${PARFLOW_HAVE_HYPRE})
   list(APPEND TESTS 
+    default_richards.tcl
+    default_overland.tcl
+    LW_var_dz.tcl
+    LW_var_dz_spinup.tcl
+    terrain_following_grid_overland.tcl
+    var_dz_1D.tcl
     pfmg.tcl
     smg.tcl
     pfmg_octree.tcl)
 endif()
 
 if(${PARFLOW_HAVE_SILO})
+  list(APPEND TESTS 
+    indicator_field.tcl)
+
+if(${PARFLOW_HAVE_HYPRE})
   list(APPEND TESTS
-	default_richards_with_silo.tcl
-	indicator_field.tcl
 	water_balance_y.tcl
-	water_balance_x.tcl) 
+	water_balance_x.tcl
+	default_richards_with_silo.tcl) 
 endif()
+endif()
+
+if(${PARFLOW_HAVE_NETCDF})
+if(${PARFLOW_HAVE_HYPRE})
+#This test is failing on several platforms
+#list(APPEND TESTS
+#	default_richards_with_netcdf.tcl)
+endif
+endif
 
 set(SAMRAI_TESTS)
 set(SAMRAI_TESTS_WITH_PATCH_COUNT)
