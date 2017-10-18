@@ -51,9 +51,8 @@ endif
 
 ifeq (${PARFLOW_HAVE_NETCDF},yes)
 ifeq (${PARFLOW_HAVE_HYPRE},yes)
-#This test is failing on several platforms
-#TESTS += \
-#	default_richards_with_netcdf.tcl
+TESTS += \
+	default_richards_with_netcdf.tcl
 endif
 endif
 
