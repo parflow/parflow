@@ -51,9 +51,8 @@ endif
 
 ifeq (${PARFLOW_HAVE_NETCDF},yes)
 ifeq (${PARFLOW_HAVE_HYPRE},yes)
-#This test is failing on several platforms
-#TESTS += \
-#	default_richards_with_netcdf.tcl
+TESTS += \
+	default_richards_with_netcdf.tcl
 endif
 endif
 
@@ -158,7 +157,7 @@ check_parallel:
 		        make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			time tclsh $$i $$processor_topology; \
+			tclsh $$i $$processor_topology; \
 		done \
 	done
 	@-for i in $(PARALLEL_2DTOPO_TESTS); \
