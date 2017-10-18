@@ -352,4 +352,4 @@ endif ()
 #-----------------------------------------------------------------------------
 include (CTest)
 
-install (DIRECTORY ${CMAKE_BINARY_DIR}/config DESTINATION . )
+install (DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION config)
