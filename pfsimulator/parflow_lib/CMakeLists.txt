@@ -24,6 +24,7 @@ set (SRC_FILES advect.F
   distribute_usergrid.c
   dpofa.c
   dposl.c
+  flowvr.c
   gauinv.c
   general.c
   geom_t_solid.c

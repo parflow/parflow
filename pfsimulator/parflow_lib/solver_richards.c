@@ -43,12 +43,7 @@
 
 #ifdef HAVE_FLOWVR
 #include <fca/fca.h>
-
-// TODO: remove the following 3 lines? were only for testing purposes!
-#include <time.h>
-#define STRING_SIZE 8
-#define ARRAY_LENGTH 9
-
+#include "flowvr.h"
 #endif
 
 
@@ -56,7 +51,6 @@
 #include <string.h>
 #include <float.h>
 #include <limits.h>
-
 
 /*--------------------------------------------------------------------------
  * Structures
@@ -184,7 +178,7 @@ typedef struct
   /* KKu netcdf output flags */
   int write_netcdf_press; /* write pressures? */
   int write_netcdf_satur; /* write saturations? */
-  int numVarTimeVariant;  /*This variable is added to keep track of number of
+  int numVarTimeVariant;  /* This variable is added to keep track of number of
 			    time variant variable in NetCDF file */
    int 		      nc_evap_trans_file_transient;    /* read NetCDF evap_trans as a transient file before advance richards timestep */
    char 	     *nc_evap_trans_filename;           /* NetCDF File name for evap trans */
@@ -289,7 +283,6 @@ typedef struct
    double       clm_dump_index;
 
 } InstanceXtra;
-
 void SetupRichards(PFModule *this_module) {
    PublicXtra   *public_xtra         = (PublicXtra *)PFModulePublicXtra(this_module);
    InstanceXtra *instance_xtra       = (InstanceXtra *)PFModuleInstanceXtra(this_module);
@@ -1027,7 +1020,6 @@ void SetupRichards(PFModule *this_module) {
            any_file_dumped = 1;
        }
  if (public_xtra->write_netcdf_press) {
-      sprintf(file_postfix, "press.%05d", instance_xtra->file_number);
       sprintf(nc_postfix,"%05d",instance_xtra->file_number);
       WritePFNC(file_prefix,nc_postfix, t,instance_xtra->pressure,public_xtra->numVarTimeVariant,
       			"pressure", 3, 1);
@@ -1312,6 +1304,21 @@ void AdvanceRichards(PFModule *this_module,
 
 #endif     // end to HAVE_OAS3 CALL
 
+#ifdef HAVE_FLOWVR
+   fca_port beginPort = fca_get_port(moduleParflow, "beginPort");
+   while (fca_wait(moduleParflow))
+   {  // yes: sometimes we will begin the main computational section multiple times ;)
+     // ignore start and stop time from parameter ;)
+     fca_stamp stampStartTime = fca_get_stamp(beginPort, "stampStartTime");
+     fca_stamp stampStopTime = fca_get_stamp(beginPort, "stampStopTime");
+     fca_message msg = fca_get(beginPort);
+
+      // extract from FlowVR-messages...
+     start_time = (double) *((float*)fca_read_stamp(msg, stampStartTime));
+     stop_time  = (double) *((float*)fca_read_stamp(msg, stampStopTime));
+     // we got all we need out of this message so lets free it now.
+     fca_free(msg);
+#endif
    /***********************************************************************/
    /*                                                                     */
    /*                Begin the main computational section                 */
@@ -1359,10 +1366,6 @@ void AdvanceRichards(PFModule *this_module,
 
 #endif
 
-#ifdef HAVE_FLOWVR
-   // Cool boys need a fca_module: --- is created in this subfunc now ;)
-  flowVRTest();
-#endif
 
    do  /* while take_more_time_steps */
    {
@@ -1423,8 +1426,8 @@ void AdvanceRichards(PFModule *this_module,
           /* @RMM get grid from global (assuming this is comp grid) to pass to CLM */
           int gnx = BackgroundNX(GlobalsBackground);
           int gny = BackgroundNY(GlobalsBackground);
-    // printf("global nx, ny: %d %d \n", gnx, gny);
-	 int is;
+          // printf("global nx, ny: %d %d \n", gnx, gny);
+          int is;
 
           // NBE: setting up a way to reuse CLM inputs for multiple time steps
           if (clm_next == 1)
@@ -2203,7 +2206,7 @@ isn't scaling the inputs properly.
 	/*******************************************************************/
 	/*          Solve the nonlinear system for this time step          */
 	/*******************************************************************/
-
+// TODO should we do this on the flowvr helpercore maybe?
 	retval = PFModuleInvokeType(NonlinSolverInvoke, nonlin_solver,
 	    (instance_xtra -> pressure,
 	     instance_xtra -> density,
@@ -2349,212 +2352,206 @@ isn't scaling the inputs properly.
       any_file_dumped = 0;
       if ( dump_files )
       {
-	sprintf(nc_postfix,"%05d",instance_xtra->file_number);
-	/*KKU: Writing Current time variable value to NC file */
-	if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur)
-	{
-	  WritePFNC(file_prefix,nc_postfix, t,instance_xtra->pressure,public_xtra->numVarTimeVariant,
-	      "time", 1, 1);
-	}
 
-	instance_xtra -> dump_index++;
+        instance_xtra -> dump_index++;
 
-	if(public_xtra -> print_press) {
-	  sprintf(file_postfix, "press.%05d", instance_xtra -> file_number);
-	  WritePFBinary(file_prefix, file_postfix, instance_xtra -> pressure);
-	  any_file_dumped = 1;
-	}
+#ifdef HAVE_FLOWVR
+        // TODO: make configurable
+        dumpRichardsToFlowVR(
+            t,
+            instance_xtra -> pressure,
+            porosity,
+            instance_xtra -> saturation);
+#else
+        sprintf(nc_postfix,"%05d",instance_xtra->file_number);
+        /*KKU: Writing Current time variable value to NC file */
+        if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur)
+        {
+          WritePFNC(file_prefix,nc_postfix, t,instance_xtra->pressure,public_xtra->numVarTimeVariant,
+              "time", 1, 1);
+        }
 
-	if(public_xtra -> write_silo_press)
-	{
-	  sprintf(file_postfix, "%05d", instance_xtra -> file_number);
-	  sprintf(file_type, "press");
-	  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
-	      t, instance_xtra -> file_number, "Pressure");
-	  any_file_dumped = 1;
-	}
+        if(public_xtra -> print_press) {
+          WritePFBinary(file_prefix, nc_postfix, instance_xtra -> pressure);
+          any_file_dumped = 1;
+        }
 
-	if(public_xtra -> write_silopmpio_press)
-	{
-	  sprintf(file_postfix, "%05d", instance_xtra -> file_number);
-	  sprintf(file_type, "press");
-	  WriteSiloPMPIO(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
-	      t, instance_xtra -> file_number, "Pressure");
-	  any_file_dumped = 1;
-	}
-	if (public_xtra->write_netcdf_press) {
-	  sprintf(file_postfix, "press.%05d", instance_xtra->file_number);
-	  sprintf(nc_postfix,"%05d",instance_xtra->file_number);
-	  WritePFNC(file_prefix,nc_postfix, t, instance_xtra->pressure,public_xtra->numVarTimeVariant,
-	      "pressure", 3, 1);
-	  any_file_dumped = 1;
-	}
+        if(public_xtra -> write_silo_press)
+        {
+          sprintf(file_type, "press");
+          WriteSilo(file_prefix, file_type, nc_postfix, instance_xtra -> pressure,
+              t, instance_xtra -> file_number, "Pressure");
+          any_file_dumped = 1;
+        }
 
-	if ( public_xtra -> print_velocities ) //jjb
-	{
-	  sprintf(file_postfix, "velx.%05d", instance_xtra -> file_number);
-	  WritePFBinary(file_prefix, file_postfix, instance_xtra -> x_velocity);
+        if(public_xtra -> write_silopmpio_press)
+        {
+          sprintf(file_type, "press");
+          WriteSiloPMPIO(file_prefix, file_type, nc_postfix, instance_xtra -> pressure,
+              t, instance_xtra -> file_number, "Pressure");
+          any_file_dumped = 1;
+        }
+        if (public_xtra->write_netcdf_press) {
+          WritePFNC(file_prefix,nc_postfix, t, instance_xtra->pressure,public_xtra->numVarTimeVariant,
+              "pressure", 3, 1);
+          any_file_dumped = 1;
+        }
 
-	  sprintf(file_postfix, "vely.%05d", instance_xtra -> file_number);
-	  WritePFBinary(file_prefix, file_postfix, instance_xtra -> y_velocity);
+        if ( public_xtra -> print_velocities ) //jjb
+        {
+          sprintf(file_postfix, "velx.%05d", instance_xtra -> file_number);
+          WritePFBinary(file_prefix, file_postfix, instance_xtra -> x_velocity);
 
-	  sprintf(file_postfix, "velz.%05d", instance_xtra -> file_number);
-	  WritePFBinary(file_prefix, file_postfix, instance_xtra -> z_velocity);
+          sprintf(file_postfix, "vely.%05d", instance_xtra -> file_number);
+          WritePFBinary(file_prefix, file_postfix, instance_xtra -> y_velocity);
 
-	  any_file_dumped = 1;
+          sprintf(file_postfix, "velz.%05d", instance_xtra -> file_number);
+          WritePFBinary(file_prefix, file_postfix, instance_xtra -> z_velocity);
 
-	}
+          any_file_dumped = 1;
 
-
-	if(public_xtra -> print_satur ) {
-	  sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
-	  WritePFBinary(file_prefix, file_postfix, instance_xtra -> saturation );
-	  any_file_dumped = 1;
-	}
-
-	if(public_xtra -> write_silo_satur)
-	{
-	  sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-	  sprintf(file_type, "satur");
-	  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation,
-	      t, instance_xtra -> file_number, "Saturation");
-	  any_file_dumped = 1;
-	}
-
-	if(public_xtra -> write_silopmpio_satur)
-	{
-	  sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-	  sprintf(file_type, "satur");
-	  WriteSiloPMPIO(file_prefix, file_type, file_postfix, instance_xtra -> saturation,
-	      t, instance_xtra -> file_number, "Saturation");
-	  any_file_dumped = 1;
-	}
-	if (public_xtra->write_netcdf_satur) {
-	  sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
-	  sprintf(nc_postfix,"%05d",instance_xtra->file_number);
-	  WritePFNC(file_prefix,nc_postfix, t,instance_xtra->saturation,public_xtra->numVarTimeVariant,
-	      "saturation", 3, 1);
-	  any_file_dumped = 1;
-	}
-
-	if(public_xtra -> print_evaptrans ) {
-	  sprintf(file_postfix, "evaptrans.%05d", instance_xtra -> file_number );
-	  WritePFBinary(file_prefix, file_postfix, evap_trans );
-	  any_file_dumped = 1;
-	}
+        }
 
 
-	if(public_xtra -> write_silo_evaptrans) {
-	  sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-	  sprintf(file_type, "evaptrans");
-	  WriteSilo(file_prefix, file_type, file_postfix, evap_trans,
-	      t, instance_xtra -> file_number, "EvapTrans");
-	  any_file_dumped = 1;
-	}
+        if(public_xtra -> print_satur ) {
+          sprintf(file_postfix, "satur.%05d", instance_xtra -> file_number );
+          WritePFBinary(file_prefix, file_postfix, instance_xtra -> saturation );
+          any_file_dumped = 1;
+        }
 
-	if(public_xtra -> write_silopmpio_evaptrans) {
-	  sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-	  sprintf(file_type, "evaptrans");
-	  WriteSiloPMPIO(file_prefix, file_type, file_postfix, evap_trans,
-	      t, instance_xtra -> file_number, "EvapTrans");
-	  any_file_dumped = 1;
-	}
+        if(public_xtra -> write_silo_satur)
+        {
+          sprintf(file_type, "satur");
+          WriteSilo(file_prefix, file_type, nc_postfix, instance_xtra -> saturation,
+              t, instance_xtra -> file_number, "Saturation");
+          any_file_dumped = 1;
+        }
 
-	if(public_xtra -> print_evaptrans_sum || public_xtra -> write_silo_evaptrans_sum) {
+        if(public_xtra -> write_silopmpio_satur)
+        {
+          sprintf(file_type, "satur");
+          WriteSiloPMPIO(file_prefix, file_type, nc_postfix, instance_xtra -> saturation,
+              t, instance_xtra -> file_number, "Saturation");
+          any_file_dumped = 1;
+        }
+        if (public_xtra->write_netcdf_satur) {
+          WritePFNC(file_prefix,nc_postfix, t,instance_xtra->saturation,public_xtra->numVarTimeVariant,
+              "saturation", 3, 1);
+          any_file_dumped = 1;
+        }
 
-	  if(public_xtra -> print_evaptrans_sum ) {
-	    sprintf(file_postfix, "evaptranssum.%05d", instance_xtra -> file_number );
-	    WritePFBinary(file_prefix, file_postfix, evap_trans_sum );
-	    any_file_dumped = 1;
-	  }
+        if(public_xtra -> print_evaptrans ) {
+          sprintf(file_postfix, "evaptrans.%05d", instance_xtra -> file_number );
+          WritePFBinary(file_prefix, file_postfix, evap_trans );
+          any_file_dumped = 1;
+        }
 
-	  if(public_xtra -> write_silo_evaptrans_sum) {
-	    sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-	    sprintf(file_type, "evaptranssum");
-	    WriteSilo(file_prefix, file_type, file_postfix, evap_trans_sum,
-		t, instance_xtra -> file_number, "EvapTransSum");
-	    any_file_dumped = 1;
-	  }
 
-	  if(public_xtra -> write_silopmpio_evaptrans_sum) {
-	    sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-	    sprintf(file_type, "evaptranssum");
-	    WriteSiloPMPIO(file_prefix, file_type, file_postfix, evap_trans_sum,
-		t, instance_xtra -> file_number, "EvapTransSum");
-	    any_file_dumped = 1;
-	  }
+        if(public_xtra -> write_silo_evaptrans) {
+          sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+          sprintf(file_type, "evaptrans");
+          WriteSilo(file_prefix, file_type, file_postfix, evap_trans,
+              t, instance_xtra -> file_number, "EvapTrans");
+          any_file_dumped = 1;
+        }
 
-	  /* reset sum after output */
-	  PFVConstInit(0.0, evap_trans_sum);
-	}
+        if(public_xtra -> write_silopmpio_evaptrans) {
+          sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+          sprintf(file_type, "evaptrans");
+          WriteSiloPMPIO(file_prefix, file_type, file_postfix, evap_trans,
+              t, instance_xtra -> file_number, "EvapTrans");
+          any_file_dumped = 1;
+        }
 
-	if(public_xtra -> print_overland_sum || public_xtra -> write_silo_overland_sum) {
+        if(public_xtra -> print_evaptrans_sum || public_xtra -> write_silo_evaptrans_sum) {
 
-	  if(public_xtra -> print_overland_sum ) {
-	    sprintf(file_postfix, "overlandsum.%05d", instance_xtra -> file_number );
-	    WritePFBinary(file_prefix, file_postfix, overland_sum );
-	    any_file_dumped = 1;
-	  }
+          if(public_xtra -> print_evaptrans_sum ) {
+            sprintf(file_postfix, "evaptranssum.%05d", instance_xtra -> file_number );
+            WritePFBinary(file_prefix, file_postfix, evap_trans_sum );
+            any_file_dumped = 1;
+          }
 
-	  if(public_xtra -> write_silo_overland_sum) {
-	    sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-	    sprintf(file_type, "overlandsum");
-	    WriteSilo(file_prefix, file_type, file_postfix, overland_sum,
-		t, instance_xtra -> file_number, "OverlandSum");
-	    any_file_dumped = 1;
-	  }
+          if(public_xtra -> write_silo_evaptrans_sum) {
+            sprintf(file_type, "evaptranssum");
+            WriteSilo(file_prefix, file_type, nc_postfix, evap_trans_sum,
+                t, instance_xtra -> file_number, "EvapTransSum");
+            any_file_dumped = 1;
+          }
 
-	  if(public_xtra -> write_silopmpio_overland_sum) {
-	    sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-	    sprintf(file_type, "overlandsum");
-	    WriteSiloPMPIO(file_prefix, file_type, file_postfix, overland_sum,
-		t, instance_xtra -> file_number, "OverlandSum");
-	    any_file_dumped = 1;
-	  }
+          if(public_xtra -> write_silopmpio_evaptrans_sum) {
+            sprintf(file_type, "evaptranssum");
+            WriteSiloPMPIO(file_prefix, file_type, nc_postfix, evap_trans_sum,
+                t, instance_xtra -> file_number, "EvapTransSum");
+            any_file_dumped = 1;
+          }
 
-	  /* reset sum after output */
-	  PFVConstInit(0.0, overland_sum);
-	}
+          /* reset sum after output */
+          PFVConstInit(0.0, evap_trans_sum);
+        }
 
-	if(public_xtra -> print_overland_bc_flux ) {
-	  sprintf(file_postfix, "overland_bc_flux.%05d", instance_xtra -> file_number );
-	  WritePFBinary(file_prefix, file_postfix, instance_xtra -> ovrl_bc_flx );
-	  any_file_dumped = 1;
-	}
+        if(public_xtra -> print_overland_sum || public_xtra -> write_silo_overland_sum) {
 
-	if(public_xtra -> write_silo_overland_bc_flux)
-	{
-	  sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-	  sprintf(file_type, "overland_bc_flux");
-	  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> ovrl_bc_flx,
-	      t, instance_xtra -> file_number, "OverlandBCFlux");
-	  any_file_dumped = 1;
-	}
+          if(public_xtra -> print_overland_sum ) {
+            sprintf(file_postfix, "overlandsum.%05d", instance_xtra -> file_number );
+            WritePFBinary(file_prefix, file_postfix, overland_sum );
+            any_file_dumped = 1;
+          }
 
-	if(public_xtra -> write_silopmpio_overland_bc_flux)
-	{
-	  sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-	  sprintf(file_type, "overland_bc_flux");
-	  WriteSiloPMPIO(file_prefix, file_type, file_postfix, instance_xtra -> ovrl_bc_flx,
-	      t, instance_xtra -> file_number, "OverlandBCFlux");
-	  any_file_dumped = 1;
-	}
+          if(public_xtra -> write_silo_overland_sum) {
+            sprintf(file_type, "overlandsum");
+            WriteSilo(file_prefix, file_type, nc_postfix, overland_sum,
+                t, instance_xtra -> file_number, "OverlandSum");
+            any_file_dumped = 1;
+          }
 
-	// IMF: I assume this print obselete now that we have keys for EvapTrans and OverlandBCFlux?
-	if(public_xtra -> print_lsm_sink)
-	{
-	  /*sk Print the sink terms from the land surface model*/
-	  sprintf(file_postfix, "et.%05d", instance_xtra -> file_number );
-	  WritePFBinary(file_prefix, file_postfix, evap_trans);
+          if(public_xtra -> write_silopmpio_overland_sum) {
+            sprintf(file_type, "overlandsum");
+            WriteSiloPMPIO(file_prefix, file_type, nc_postfix, overland_sum,
+                t, instance_xtra -> file_number, "OverlandSum");
+            any_file_dumped = 1;
+          }
 
-	  /*sk Print the sink terms from the land surface model*/
-	  sprintf(file_postfix, "obf.%05d", instance_xtra -> file_number );
-	  WritePFBinary(file_prefix, file_postfix, instance_xtra -> ovrl_bc_flx);
-	  any_file_dumped = 1;
-	}
+          /* reset sum after output */
+          PFVConstInit(0.0, overland_sum);
+        }
+
+        if(public_xtra -> print_overland_bc_flux ) {
+          sprintf(file_postfix, "overland_bc_flux.%05d", instance_xtra -> file_number );
+          WritePFBinary(file_prefix, file_postfix, instance_xtra -> ovrl_bc_flx );
+          any_file_dumped = 1;
+        }
+
+        if(public_xtra -> write_silo_overland_bc_flux)
+        {
+          sprintf(file_type, "overland_bc_flux");
+          WriteSilo(file_prefix, file_type, nc_postfix, instance_xtra -> ovrl_bc_flx,
+              t, instance_xtra -> file_number, "OverlandBCFlux");
+          any_file_dumped = 1;
+        }
+
+        if(public_xtra -> write_silopmpio_overland_bc_flux)
+        {
+          sprintf(file_type, "overland_bc_flux");
+          WriteSiloPMPIO(file_prefix, file_type, nc_postfix, instance_xtra -> ovrl_bc_flx,
+              t, instance_xtra -> file_number, "OverlandBCFlux");
+          any_file_dumped = 1;
+        }
+
+        // IMF: I assume this print obselete now that we have keys for EvapTrans and OverlandBCFlux?
+        if(public_xtra -> print_lsm_sink)
+        {
+          /*sk Print the sink terms from the land surface model*/
+          sprintf(file_postfix, "et.%05d", instance_xtra -> file_number );
+          WritePFBinary(file_prefix, file_postfix, evap_trans);
+
+          /*sk Print the sink terms from the land surface model*/
+          sprintf(file_postfix, "obf.%05d", instance_xtra -> file_number );
+          WritePFBinary(file_prefix, file_postfix, instance_xtra -> ovrl_bc_flx);
+          any_file_dumped = 1;
+        }
+#endif  // End of print direct (no flowVR)
 
       }  // End of if (dump_files)
-
       /***************************************************************/
       /*             Print CLM output files at this time             */
       /***************************************************************/
@@ -2562,223 +2559,225 @@ isn't scaling the inputs properly.
 #ifdef HAVE_CLM
       int k;
 
+      // TODO: put clm print also in flowvr?!
+
       /* Dump the fluxes, infiltration, etc. at this time-step */
       clm_file_dumped = 0;
       if ( clm_dump_files )
       {
 
-	instance_xtra -> clm_dump_index++;
+        instance_xtra -> clm_dump_index++;
 
 
-	if ( public_xtra -> write_silo_CLM ) {
+        if ( public_xtra -> write_silo_CLM ) {
 
-	  //          /* IMF Write Met to Silo (for testing) */
-	  //          sprintf(file_postfix, "precip.%05d", instance_xtra -> file_number );
-	  //          WriteSilo( file_prefix, file_postfix, instance_xtra -> prcp_forc,
-	  //                     t, instance_xtra -> file_number, "Precipitation");
-	  //          clm_file_dumped = 1;
-	  //          sprintf(file_postfix, "air_temp.%05d", instance_xtra -> file_number );
-	  //          WriteSilo( file_prefix, file_postfix, instance_xtra -> tas_forc,
-	  //                     t, instance_xtra -> file_number, "AirTemperature");
-	  //          clm_file_dumped = 1;
+          //          /* IMF Write Met to Silo (for testing) */
+          //          sprintf(file_postfix, "precip.%05d", instance_xtra -> file_number );
+          //          WriteSilo( file_prefix, file_postfix, instance_xtra -> prcp_forc,
+          //                     t, instance_xtra -> file_number, "Precipitation");
+          //          clm_file_dumped = 1;
+          //          sprintf(file_postfix, "air_temp.%05d", instance_xtra -> file_number );
+          //          WriteSilo( file_prefix, file_postfix, instance_xtra -> tas_forc,
+          //                     t, instance_xtra -> file_number, "AirTemperature");
+          //          clm_file_dumped = 1;
 
-	  sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-	  sprintf(file_type, "eflx_lh_tot");
-	  WriteSilo( file_prefix, file_type, file_postfix, instance_xtra -> eflx_lh_tot,
-	      t, instance_xtra -> file_number, "LatentHeat");
-	  clm_file_dumped = 1;
+          sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+          sprintf(file_type, "eflx_lh_tot");
+          WriteSilo( file_prefix, file_type, file_postfix, instance_xtra -> eflx_lh_tot,
+              t, instance_xtra -> file_number, "LatentHeat");
+          clm_file_dumped = 1;
 
-	  // @RMM remove a number of output fields to limit files
-	  sprintf(file_type, "eflx_lwrad_out");
-	  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> eflx_lwrad_out,
-	      t, instance_xtra -> file_number, "LongWave");
-	  clm_file_dumped = 1;
+          // @RMM remove a number of output fields to limit files
+          sprintf(file_type, "eflx_lwrad_out");
+          WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> eflx_lwrad_out,
+              t, instance_xtra -> file_number, "LongWave");
+          clm_file_dumped = 1;
 
-	  sprintf(file_type, "eflx_sh_tot");
-	  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> eflx_sh_tot,
-	      t, instance_xtra -> file_number, "SensibleHeat");
-	  clm_file_dumped = 1;
+          sprintf(file_type, "eflx_sh_tot");
+          WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> eflx_sh_tot,
+              t, instance_xtra -> file_number, "SensibleHeat");
+          clm_file_dumped = 1;
 
-	  sprintf(file_type, "eflx_soil_grnd");
-	  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> eflx_soil_grnd,
-	      t, instance_xtra -> file_number, "GroundHeat");
-	  clm_file_dumped = 1;
+          sprintf(file_type, "eflx_soil_grnd");
+          WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> eflx_soil_grnd,
+              t, instance_xtra -> file_number, "GroundHeat");
+          clm_file_dumped = 1;
 
-	  sprintf(file_type, "qflx_evap_tot");
-	  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_tot,
-	      t, instance_xtra -> file_number, "EvaporationTotal");
-	  clm_file_dumped = 1;
+          sprintf(file_type, "qflx_evap_tot");
+          WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_tot,
+              t, instance_xtra -> file_number, "EvaporationTotal");
+          clm_file_dumped = 1;
 
-	  sprintf(file_type, "qflx_evap_grnd");
-	  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_grnd,
-	      t, instance_xtra -> file_number, "EvaporationGroundNoSublimation");
-	  clm_file_dumped = 1;
+          sprintf(file_type, "qflx_evap_grnd");
+          WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_grnd,
+              t, instance_xtra -> file_number, "EvaporationGroundNoSublimation");
+          clm_file_dumped = 1;
 
-	  sprintf(file_type, "qflx_evap_soi");
-	  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_soi,
-	      t, instance_xtra -> file_number, "EvaporationGround");
-	  clm_file_dumped = 1;
+          sprintf(file_type, "qflx_evap_soi");
+          WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_soi,
+              t, instance_xtra -> file_number, "EvaporationGround");
+          clm_file_dumped = 1;
 
-	  sprintf(file_type, "qflx_evap_veg");
-	  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_veg,
-	      t, instance_xtra -> file_number, "EvaporationCanopy");
-	  clm_file_dumped = 1;
+          sprintf(file_type, "qflx_evap_veg");
+          WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_evap_veg,
+              t, instance_xtra -> file_number, "EvaporationCanopy");
+          clm_file_dumped = 1;
 
-	  sprintf(file_type, "qflx_tran_veg");
-	  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_tran_veg,
-	      t, instance_xtra -> file_number, "Transpiration");
-	  clm_file_dumped = 1;
+          sprintf(file_type, "qflx_tran_veg");
+          WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_tran_veg,
+              t, instance_xtra -> file_number, "Transpiration");
+          clm_file_dumped = 1;
 
-	  sprintf(file_type, "qflx_infl");
-	  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_infl,
-	      t, instance_xtra -> file_number, "Infiltration");
-	  clm_file_dumped = 1;
+          sprintf(file_type, "qflx_infl");
+          WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_infl,
+              t, instance_xtra -> file_number, "Infiltration");
+          clm_file_dumped = 1;
 
-	  sprintf(file_type, "swe_out");
-	  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> swe_out,
-	      t, instance_xtra -> file_number, "SWE");
-	  clm_file_dumped = 1;
+          sprintf(file_type, "swe_out");
+          WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> swe_out,
+              t, instance_xtra -> file_number, "SWE");
+          clm_file_dumped = 1;
 
-	  sprintf(file_type, "t_grnd");
-	  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> t_grnd,
-	      t, instance_xtra -> file_number, "TemperatureGround");
-	  clm_file_dumped = 1;
+          sprintf(file_type, "t_grnd");
+          WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> t_grnd,
+              t, instance_xtra -> file_number, "TemperatureGround");
+          clm_file_dumped = 1;
 
-	  sprintf(file_type, "t_soil");
-	  WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> tsoil,
-	      t, instance_xtra -> file_number, "TemperatureSoil");
-	  clm_file_dumped = 1;
+          sprintf(file_type, "t_soil");
+          WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> tsoil,
+              t, instance_xtra -> file_number, "TemperatureSoil");
+          clm_file_dumped = 1;
 
-	  // IMF: irrigation applied to surface -- spray or drip
-	  if ( public_xtra -> clm_irr_type == 1 || public_xtra -> clm_irr_type == 2 )
-	  {
-	    sprintf(file_type, "qflx_qirr");
-	    WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_qirr,
-		t, instance_xtra -> file_number, "IrrigationSurface");
-	    clm_file_dumped = 1;
-	  }
+          // IMF: irrigation applied to surface -- spray or drip
+          if ( public_xtra -> clm_irr_type == 1 || public_xtra -> clm_irr_type == 2 )
+          {
+            sprintf(file_type, "qflx_qirr");
+            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_qirr,
+                t, instance_xtra -> file_number, "IrrigationSurface");
+            clm_file_dumped = 1;
+          }
 
-	  // IMF: irrigation applied directly as soil moisture flux -- "instant"
-	  if ( public_xtra -> clm_irr_type == 3 )
-	  {
-	    sprintf(file_postfix, "qflx_qirr_inst");
-	    WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_qirr_inst,
-		t, instance_xtra -> file_number, "IrrigationInstant");
-	    clm_file_dumped = 1;
-	  }
-	} // end of if (write_silo_CLM)
+          // IMF: irrigation applied directly as soil moisture flux -- "instant"
+          if ( public_xtra -> clm_irr_type == 3 )
+          {
+            sprintf(file_postfix, "qflx_qirr_inst");
+            WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> qflx_qirr_inst,
+                t, instance_xtra -> file_number, "IrrigationInstant");
+            clm_file_dumped = 1;
+          }
+        } // end of if (write_silo_CLM)
 
-	if ( public_xtra -> print_CLM ) {
+        if ( public_xtra -> print_CLM ) {
 
-	  if (public_xtra -> single_clm_file) //NBE
-	  {
-	    // NBE: CLM single file output
-	    PFVLayerCopy(0, 0, instance_xtra -> clm_out_grid, instance_xtra -> eflx_lh_tot);
-	    PFVLayerCopy(1, 0, instance_xtra -> clm_out_grid, instance_xtra -> eflx_lwrad_out);
-	    PFVLayerCopy(2, 0, instance_xtra -> clm_out_grid, instance_xtra -> eflx_sh_tot);
-	    PFVLayerCopy(3, 0, instance_xtra -> clm_out_grid, instance_xtra -> eflx_soil_grnd);
-	    PFVLayerCopy(4, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_evap_tot);
-	    PFVLayerCopy(5, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_evap_grnd);
-	    PFVLayerCopy(6, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_evap_soi);
-	    PFVLayerCopy(7, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_evap_veg);
-	    PFVLayerCopy(8, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_tran_veg);
-	    PFVLayerCopy(9, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_infl);
-	    PFVLayerCopy(10, 0, instance_xtra -> clm_out_grid, instance_xtra -> swe_out);
-	    PFVLayerCopy(11, 0, instance_xtra -> clm_out_grid, instance_xtra -> t_grnd);
+          if (public_xtra -> single_clm_file) //NBE
+          {
+            // NBE: CLM single file output
+            PFVLayerCopy(0, 0, instance_xtra -> clm_out_grid, instance_xtra -> eflx_lh_tot);
+            PFVLayerCopy(1, 0, instance_xtra -> clm_out_grid, instance_xtra -> eflx_lwrad_out);
+            PFVLayerCopy(2, 0, instance_xtra -> clm_out_grid, instance_xtra -> eflx_sh_tot);
+            PFVLayerCopy(3, 0, instance_xtra -> clm_out_grid, instance_xtra -> eflx_soil_grnd);
+            PFVLayerCopy(4, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_evap_tot);
+            PFVLayerCopy(5, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_evap_grnd);
+            PFVLayerCopy(6, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_evap_soi);
+            PFVLayerCopy(7, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_evap_veg);
+            PFVLayerCopy(8, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_tran_veg);
+            PFVLayerCopy(9, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_infl);
+            PFVLayerCopy(10, 0, instance_xtra -> clm_out_grid, instance_xtra -> swe_out);
+            PFVLayerCopy(11, 0, instance_xtra -> clm_out_grid, instance_xtra -> t_grnd);
 
-	    if ( public_xtra -> clm_irr_type == 1 || public_xtra -> clm_irr_type == 2 )
-	    {
-	      PFVLayerCopy(12, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_qirr);
-	    }
-	    if ( public_xtra -> clm_irr_type == 3 )
-	    {
-	      PFVLayerCopy(12, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_qirr_inst);
-	    }
+            if ( public_xtra -> clm_irr_type == 1 || public_xtra -> clm_irr_type == 2 )
+            {
+              PFVLayerCopy(12, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_qirr);
+            }
+            if ( public_xtra -> clm_irr_type == 3 )
+            {
+              PFVLayerCopy(12, 0, instance_xtra -> clm_out_grid, instance_xtra -> qflx_qirr_inst);
+            }
 
-	    for (k = 0; k < public_xtra -> clm_nz; k++)
-	    {
-	      //Write out the bottom layer in the lowest index position, build upward
-	      PFVLayerCopy(13+k, k, instance_xtra -> clm_out_grid, instance_xtra -> tsoil);
-	    }
-	    /* NBE: added .C instead of writing a different write function with
-	       a different extension since PFB is hard-wired */
-	    sprintf(file_postfix, "clm_output.%05d.C", instance_xtra -> file_number);
-	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> clm_out_grid);
-	    clm_file_dumped = 1;
-	    // End of CLM Single file output
+            for (k = 0; k < public_xtra -> clm_nz; k++)
+            {
+              //Write out the bottom layer in the lowest index position, build upward
+              PFVLayerCopy(13+k, k, instance_xtra -> clm_out_grid, instance_xtra -> tsoil);
+            }
+            /* NBE: added .C instead of writing a different write function with
+               a different extension since PFB is hard-wired */
+            sprintf(file_postfix, "clm_output.%05d.C", instance_xtra -> file_number);
+            WritePFBinary(file_prefix, file_postfix, instance_xtra -> clm_out_grid);
+            clm_file_dumped = 1;
+            // End of CLM Single file output
 
-	  } else {
-	    // Otherwise do the old output
-	    sprintf(file_postfix, "eflx_lh_tot.%05d", instance_xtra -> file_number );
-	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> eflx_lh_tot );
-	    clm_file_dumped = 1;
+          } else {
+            // Otherwise do the old output
+            sprintf(file_postfix, "eflx_lh_tot.%05d", instance_xtra -> file_number );
+            WritePFBinary(file_prefix, file_postfix, instance_xtra -> eflx_lh_tot );
+            clm_file_dumped = 1;
 
-	    sprintf(file_postfix, "eflx_lwrad_out.%05d", instance_xtra -> file_number );
-	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> eflx_lwrad_out );
-	    clm_file_dumped = 1;
+            sprintf(file_postfix, "eflx_lwrad_out.%05d", instance_xtra -> file_number );
+            WritePFBinary(file_prefix, file_postfix, instance_xtra -> eflx_lwrad_out );
+            clm_file_dumped = 1;
 
-	    sprintf(file_postfix, "eflx_sh_tot.%05d", instance_xtra -> file_number );
-	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> eflx_sh_tot );
-	    clm_file_dumped = 1;
+            sprintf(file_postfix, "eflx_sh_tot.%05d", instance_xtra -> file_number );
+            WritePFBinary(file_prefix, file_postfix, instance_xtra -> eflx_sh_tot );
+            clm_file_dumped = 1;
 
-	    sprintf(file_postfix, "eflx_soil_grnd.%05d", instance_xtra -> file_number );
-	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> eflx_soil_grnd );
-	    clm_file_dumped = 1;
+            sprintf(file_postfix, "eflx_soil_grnd.%05d", instance_xtra -> file_number );
+            WritePFBinary(file_prefix, file_postfix, instance_xtra -> eflx_soil_grnd );
+            clm_file_dumped = 1;
 
-	    sprintf(file_postfix, "qflx_evap_tot.%05d", instance_xtra -> file_number );
-	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> qflx_evap_tot );
-	    clm_file_dumped = 1;
+            sprintf(file_postfix, "qflx_evap_tot.%05d", instance_xtra -> file_number );
+            WritePFBinary(file_prefix, file_postfix, instance_xtra -> qflx_evap_tot );
+            clm_file_dumped = 1;
 
-	    sprintf(file_postfix, "qflx_evap_grnd.%05d", instance_xtra -> file_number );
-	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> qflx_evap_grnd );
-	    clm_file_dumped = 1;
+            sprintf(file_postfix, "qflx_evap_grnd.%05d", instance_xtra -> file_number );
+            WritePFBinary(file_prefix, file_postfix, instance_xtra -> qflx_evap_grnd );
+            clm_file_dumped = 1;
 
-	    sprintf(file_postfix, "qflx_evap_soi.%05d", instance_xtra -> file_number );
-	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> qflx_evap_soi );
-	    clm_file_dumped = 1;
+            sprintf(file_postfix, "qflx_evap_soi.%05d", instance_xtra -> file_number );
+            WritePFBinary(file_prefix, file_postfix, instance_xtra -> qflx_evap_soi );
+            clm_file_dumped = 1;
 
-	    sprintf(file_postfix, "qflx_evap_veg.%05d", instance_xtra -> file_number );
-	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> qflx_evap_veg );
-	    clm_file_dumped = 1;
+            sprintf(file_postfix, "qflx_evap_veg.%05d", instance_xtra -> file_number );
+            WritePFBinary(file_prefix, file_postfix, instance_xtra -> qflx_evap_veg );
+            clm_file_dumped = 1;
 
-	    sprintf(file_postfix, "qflx_tran_veg.%05d", instance_xtra -> file_number );
-	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> qflx_tran_veg );
-	    clm_file_dumped = 1;
+            sprintf(file_postfix, "qflx_tran_veg.%05d", instance_xtra -> file_number );
+            WritePFBinary(file_prefix, file_postfix, instance_xtra -> qflx_tran_veg );
+            clm_file_dumped = 1;
 
-	    sprintf(file_postfix, "qflx_infl.%05d", instance_xtra -> file_number );
-	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> qflx_infl );
-	    clm_file_dumped = 1;
+            sprintf(file_postfix, "qflx_infl.%05d", instance_xtra -> file_number );
+            WritePFBinary(file_prefix, file_postfix, instance_xtra -> qflx_infl );
+            clm_file_dumped = 1;
 
-	    sprintf(file_postfix, "swe_out.%05d", instance_xtra -> file_number );
-	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> swe_out );
-	    clm_file_dumped = 1;
+            sprintf(file_postfix, "swe_out.%05d", instance_xtra -> file_number );
+            WritePFBinary(file_prefix, file_postfix, instance_xtra -> swe_out );
+            clm_file_dumped = 1;
 
-	    sprintf(file_postfix, "t_grnd.%05d", instance_xtra -> file_number );
-	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> t_grnd );
-	    clm_file_dumped = 1;
+            sprintf(file_postfix, "t_grnd.%05d", instance_xtra -> file_number );
+            WritePFBinary(file_prefix, file_postfix, instance_xtra -> t_grnd );
+            clm_file_dumped = 1;
 
-	    sprintf(file_postfix, "t_soil.%05d", instance_xtra -> file_number );
-	    WritePFBinary(file_prefix, file_postfix, instance_xtra -> tsoil );
-	    clm_file_dumped = 1;
+            sprintf(file_postfix, "t_soil.%05d", instance_xtra -> file_number );
+            WritePFBinary(file_prefix, file_postfix, instance_xtra -> tsoil );
+            clm_file_dumped = 1;
 
-	    // IMF: irrigation applied to surface -- spray or drip
-	    if ( public_xtra -> clm_irr_type == 1 || public_xtra -> clm_irr_type == 2 )
-	    {
-	      sprintf(file_postfix, "qflx_qirr.%05d", instance_xtra -> file_number );
-	      WritePFBinary(file_prefix, file_postfix, instance_xtra -> qflx_qirr );
-	      clm_file_dumped = 1;
-	    }
+            // IMF: irrigation applied to surface -- spray or drip
+            if ( public_xtra -> clm_irr_type == 1 || public_xtra -> clm_irr_type == 2 )
+            {
+              sprintf(file_postfix, "qflx_qirr.%05d", instance_xtra -> file_number );
+              WritePFBinary(file_prefix, file_postfix, instance_xtra -> qflx_qirr );
+              clm_file_dumped = 1;
+            }
 
-	    // IMF: irrigation applied directly as soil moisture flux -- "instant"
-	    if ( public_xtra -> clm_irr_type == 3 )
-	    {
-	      sprintf(file_postfix, "qflx_qirr_inst.%05d", instance_xtra -> file_number );
-	      WritePFBinary(file_prefix, file_postfix, instance_xtra -> qflx_qirr_inst );
-	      clm_file_dumped = 1;
-	    }
+            // IMF: irrigation applied directly as soil moisture flux -- "instant"
+            if ( public_xtra -> clm_irr_type == 3 )
+            {
+              sprintf(file_postfix, "qflx_qirr_inst.%05d", instance_xtra -> file_number );
+              WritePFBinary(file_prefix, file_postfix, instance_xtra -> qflx_qirr_inst );
+              clm_file_dumped = 1;
+            }
 
-	  } // end of multi-file output - NBE
-	} // end of if (print_CLM)
+          } // end of multi-file output - NBE
+        } // end of if (print_CLM)
 
       } // end of if (clm_dump_files)
 #endif
@@ -2788,13 +2787,13 @@ isn't scaling the inputs properly.
       /***************************************************************/
 
       PFModuleInvokeType(L2ErrorNormInvoke, l2_error_norm,
-	  (t, instance_xtra -> pressure, problem_data, &err_norm));
+	      (t, instance_xtra -> pressure, problem_data, &err_norm));
       if( (!amps_Rank(amps_CommWorld)) && (err_norm >= 0.0) )
       {
-	amps_Printf("l2-error in pressure: %20.8e\n", err_norm);
-	amps_Printf("tcl: set pressure_l2_error(%d) %20.8e\n",
-	    instance_xtra -> iteration_number, err_norm);
-	fflush(NULL);
+        amps_Printf("l2-error in pressure: %20.8e\n", err_norm);
+        amps_Printf("tcl: set pressure_l2_error(%d) %20.8e\n",
+            instance_xtra -> iteration_number, err_norm);
+        fflush(NULL);
       }
 
       /*******************************************************************/
@@ -2803,11 +2802,11 @@ isn't scaling the inputs properly.
 
       if ( print_wells && dump_files )
       {
-	WriteWells(file_prefix,
-	    problem,
-	    ProblemDataWellData(problem_data),
-	    t,
-	    WELLDATA_DONTWRITEHEADER);
+        WriteWells(file_prefix,
+            problem,
+            ProblemDataWellData(problem_data),
+            t,
+            WELLDATA_DONTWRITEHEADER);
       }
 
       /*-----------------------------------------------------------------
@@ -2816,36 +2815,36 @@ isn't scaling the inputs properly.
 
       IfLogging(1)
       {
-	/*
-	 * SGS Better error handing should be added
-	 */
-	if(instance_xtra -> number_logged > public_xtra -> max_iterations + 1) {
-	  amps_Printf("Error: max_iterations reached, can't log anymore data\n");
-	  exit(1);
-	}
+        /*
+         * SGS Better error handing should be added
+         */
+        if(instance_xtra -> number_logged > public_xtra -> max_iterations + 1) {
+          amps_Printf("Error: max_iterations reached, can't log anymore data\n");
+          exit(1);
+        }
 
-	instance_xtra -> seq_log[instance_xtra -> number_logged]       = instance_xtra -> iteration_number;
-	instance_xtra -> time_log[instance_xtra -> number_logged]      = t;
-	instance_xtra -> dt_log[instance_xtra -> number_logged]        = dt;
-	instance_xtra -> dt_info_log[instance_xtra -> number_logged]   = dt_info;
-	if ( any_file_dumped || clm_file_dumped )
-	  instance_xtra -> dumped_log[instance_xtra -> number_logged] = instance_xtra -> file_number;
-	else
-	  instance_xtra -> dumped_log[instance_xtra -> number_logged] = -1;
-	instance_xtra -> recomp_log[instance_xtra -> number_logged] = 'y';
-	instance_xtra -> number_logged++;
+        instance_xtra -> seq_log[instance_xtra -> number_logged]       = instance_xtra -> iteration_number;
+        instance_xtra -> time_log[instance_xtra -> number_logged]      = t;
+        instance_xtra -> dt_log[instance_xtra -> number_logged]        = dt;
+        instance_xtra -> dt_info_log[instance_xtra -> number_logged]   = dt_info;
+        if ( any_file_dumped || clm_file_dumped )
+          instance_xtra -> dumped_log[instance_xtra -> number_logged] = instance_xtra -> file_number;
+        else
+          instance_xtra -> dumped_log[instance_xtra -> number_logged] = -1;
+        instance_xtra -> recomp_log[instance_xtra -> number_logged] = 'y';
+        instance_xtra -> number_logged++;
       }
 
       if ( any_file_dumped || clm_file_dumped )
       {
-	instance_xtra -> file_number++;
-	any_file_dumped = 0;
-	clm_file_dumped = 0;
+        instance_xtra -> file_number++;
+        any_file_dumped = 0;
+        clm_file_dumped = 0;
       }
 
       if (take_more_time_steps) {
-	take_more_time_steps = (instance_xtra -> iteration_number < max_iterations) &&
-	  (t < stop_time);
+        take_more_time_steps = (instance_xtra -> iteration_number < max_iterations) &&
+          (t < stop_time);
       }
 
 #ifdef HAVE_SLURM
@@ -2856,28 +2855,39 @@ isn't scaling the inputs properly.
        */
       if(dump_files && dump_interval_execution_time_limit)
       {
-	if(!amps_Rank(amps_CommWorld))
-	{
+        if(!amps_Rank(amps_CommWorld))
+        {
 
-	  printf("Checking execution time limit, interation = %d, remaining time = %ld (s)\n",
-	      instance_xtra -> iteration_number,
-	      slurm_get_rem_time(0));
-	}
+          printf("Checking execution time limit, interation = %d, remaining time = %ld (s)\n",
+              instance_xtra -> iteration_number,
+              slurm_get_rem_time(0));
+        }
 
-	if(slurm_get_rem_time(0) <= dump_interval_execution_time_limit)
-	{
-	  if(!amps_Rank(amps_CommWorld))
-	  {
-	    printf("Remaining time less than supplied DumpIntervalExectionTimeLimit = %d, halting execution\n", dump_interval_execution_time_limit);
-	  }
+        if(slurm_get_rem_time(0) <= dump_interval_execution_time_limit)
+        {
+          if(!amps_Rank(amps_CommWorld))
+          {
+            printf("Remaining time less than supplied DumpIntervalExectionTimeLimit = %d, halting execution\n", dump_interval_execution_time_limit);
+          }
 
-	  take_more_time_steps = 0;
-	}
+          take_more_time_steps = 0;
+        }
       }
 #endif
 
    }   /* ends do for time loop */
    while( take_more_time_steps );
+#ifdef HAVE_FLOWVR
+   // dump the values!
+   dumpRichardsToFlowVR(t,
+       instance_xtra -> pressure,
+       porosity,
+       instance_xtra -> saturation);
+   } /*  ends while (fca_wait(moduleParflow))  */
+#endif
+
+
+   // TODO: do we want to put the final print into flowvr module too? normally not as here parallel printing might be the fastest ;)
 
    /***************************************************************/
    /*                 Print the pressure and saturation           */
@@ -2898,7 +2908,7 @@ isn't scaling the inputs properly.
        sprintf(file_postfix, "%05d", instance_xtra -> file_number);
        sprintf(file_type, "press");
        WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
-	   t, instance_xtra -> file_number, "Pressure");
+           t, instance_xtra -> file_number, "Pressure");
        any_file_dumped = 1;
 
      }
@@ -2915,7 +2925,7 @@ isn't scaling the inputs properly.
        sprintf(file_postfix, "%05d", instance_xtra -> file_number );
        sprintf(file_type, "satur");
        WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> saturation,
-	   t, instance_xtra -> file_number, "Saturation");
+           t, instance_xtra -> file_number, "Saturation");
        any_file_dumped = 1;
      }
 
@@ -2930,7 +2940,7 @@ isn't scaling the inputs properly.
        sprintf(file_postfix, "%05d", instance_xtra -> file_number );
        sprintf(file_type, "evaptrans");
        WriteSilo(file_prefix, file_type, file_postfix, evap_trans,
-	   t, instance_xtra -> file_number, "EvapTrans");
+           t, instance_xtra -> file_number, "EvapTrans");
        any_file_dumped = 1;
      }
 
@@ -2939,18 +2949,18 @@ isn't scaling the inputs properly.
 
        if(public_xtra -> print_evaptrans_sum )
        {
-	 sprintf(file_postfix, "evaptranssum.%05d", instance_xtra -> file_number );
-	 WritePFBinary(file_prefix, file_postfix, evap_trans_sum );
-	 any_file_dumped = 1;
+         sprintf(file_postfix, "evaptranssum.%05d", instance_xtra -> file_number );
+         WritePFBinary(file_prefix, file_postfix, evap_trans_sum );
+         any_file_dumped = 1;
        }
 
        if(public_xtra -> write_silo_evaptrans_sum)
        {
-	 sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-	 sprintf(file_type, "evaptranssum");
-	 WriteSilo(file_prefix, file_type, file_postfix, evap_trans_sum,
-	     t, instance_xtra -> file_number, "EvapTransSum");
-	 any_file_dumped = 1;
+         sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+         sprintf(file_type, "evaptranssum");
+         WriteSilo(file_prefix, file_type, file_postfix, evap_trans_sum,
+             t, instance_xtra -> file_number, "EvapTransSum");
+         any_file_dumped = 1;
        }
 
        /* reset sum after output */
@@ -2962,18 +2972,18 @@ isn't scaling the inputs properly.
 
        if(public_xtra -> print_overland_sum )
        {
-	 sprintf(file_postfix, "overlandsum.%05d", instance_xtra -> file_number );
-	 WritePFBinary(file_prefix, file_postfix, overland_sum );
-	 any_file_dumped = 1;
+         sprintf(file_postfix, "overlandsum.%05d", instance_xtra -> file_number );
+         WritePFBinary(file_prefix, file_postfix, overland_sum );
+         any_file_dumped = 1;
        }
 
        if(public_xtra -> write_silo_overland_sum)
        {
-	 sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-	 sprintf(file_type, "overlandsum");
-	 WriteSilo(file_prefix, file_type, file_postfix, overland_sum,
-	     t, instance_xtra -> file_number, "OverlandSum");
-	 any_file_dumped = 1;
+         sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+         sprintf(file_type, "overlandsum");
+         WriteSilo(file_prefix, file_type, file_postfix, overland_sum,
+             t, instance_xtra -> file_number, "OverlandSum");
+         any_file_dumped = 1;
        }
 
        /* reset sum after output */
@@ -2991,7 +3001,7 @@ isn't scaling the inputs properly.
        sprintf(file_postfix, "%05d", instance_xtra -> file_number );
        sprintf(file_type, "overland_bc_flux");
        WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> ovrl_bc_flx,
-	   t, instance_xtra -> file_number, "OverlandBCFlux");
+           t, instance_xtra -> file_number, "OverlandBCFlux");
        any_file_dumped = 1;
      }
 
@@ -4899,185 +4909,3 @@ PFModule *GetICPhasePressureRichards(PFModule *this_module) {
   InstanceXtra  *instance_xtra    = (InstanceXtra *)PFModuleInstanceXtra(this_module);
   return (instance_xtra -> ic_phase_pressure);
 }
-
-
-
-
-
-#ifdef HAVE_FLOWVR
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void flowVRTest(void) {
-
-   int sleep_time=2;
-
-
-	fca_port portText = fca_new_port("text", fca_OUT, 0, NULL);
-
-	/*
-	 * Integer and float stamp
-	 */
-	fca_stamp stampInt = fca_register_stamp(portText, "stampInt", fca_INT);
-	printf("Registered stamp: %u - %s\n", fca_get_stamp_type(stampInt), fca_get_stamp_name(stampInt));
-
-	fca_stamp stampFloat = fca_register_stamp(portText, "stampFloat", fca_FLOAT);
-	printf("Registered stamp: %u - %s\n", fca_get_stamp_type(stampFloat), fca_get_stamp_name(stampFloat));
-
-	/*
-	 * String stamp
-	 */
-	fca_stamp stampString = fca_register_stamp(portText, "stampString", fca_STRING, STRING_SIZE);
-	printf("Registered stamp: %u - %s\n", fca_get_stamp_type(stampString), fca_get_stamp_name(stampString));
-
-	/*
-	 * Binary stamp
-	 */
-//	fca_stamp stampBinary = fca_register_stamp(portText, "stampBinary", fca_BINARY, 13);
-//	printf("Registered stamp: %u - %s\n", fca_get_stamp_type(stampBinary), fca_get_stamp_name(stampBinary));
-
-
-	/*
-	 * Array stamp
-	 */
-	fca_stamp stampArray = fca_register_stamp(portText, "stampArray", fca_ARRAY, ARRAY_LENGTH, fca_FLOAT);
-	printf("Registered stamp : %u - %s\n", fca_get_stamp_type(stampArray), fca_get_stamp_name(stampArray));
-
-
-	fca_trace trace = fca_new_trace("beginTrace", fca_trace_INT, NULL);
-	if(trace != NULL) printf("Creation of trace succeded.\n"); else printf("Failed to create a trace.\n");
-
-	fca_trace trace2 = fca_new_trace("endTrace", fca_trace_INT, NULL);
-        if(trace2 != NULL) printf("Creation of trace succeded.\n"); else printf("Failed to create a trace.\n");
-
-	//fca_module modulePut = fca_new_module_from_ports(portText, NULL);
-	//if (!modulePut)
-	//	return 1;
-	fca_module modulePut = fca_new_empty_module();
-	fca_append_port(modulePut, portText);
-	fca_append_trace(modulePut, trace);
-	fca_append_trace(modulePut, trace2);
-
-	if(!fca_init_module(modulePut)){
-		printf("ERROR : init_module failed!\n");
-		return 1;
-	}
-
-	fca_trace testTrace = fca_get_trace(modulePut,"beginTrace");
-	if(testTrace == NULL) printf("ERROR : Test Trace FAIL!!\n"); else printf("Test Trace OK.\n");
-
-	int it=0;
-	while (fca_wait(modulePut))
-	{
-		printf( "++++++++++++++++++++++++++\n");
-		printf( "+++ Beginning exchange +++\n");
-		printf( "++++++++++++++++++++++++++\n");
-		/*
-		 * Sending text
-		 */
-    const char* TIC = "tic";
-    const char* TAC = "tac";
-		char * text;
-    if (it & 1) {
-      text = TAC;
-    } else {
-      text = TIC;
-    } // TODO: code format (e.g. brackets) right?
-
-		// Build data
-
-		fca_message message = fca_new_message(modulePut, strlen(text));
-
-		char* messageBuffer = (char*)fca_get_write_access(message, 0);
-		memcpy(messageBuffer,text,strlen(text));
-
-		/*
-		 * Appending stamp
-		 */
-		// Int
-		/*int* bufferInt = (int) rand();*/
-    int iii = 42;
-    int * bufferInt = &iii;
-		fca_write_stamp(message, stampInt, (void*)bufferInt); // Lol: yes that was wrong in the given example I'd say ;)
-
-		// Float
-    float pi = (float) 3.141592653589793238462643383279;
-		float* bufferFloat = &pi;
-		fca_write_stamp(message, stampFloat, (void*)bufferFloat);
-
-		// String
-		char* testString;
-		//testString = (char*)malloc(STRING_SIZE);
-		testString = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent mauris neque, lobortis ac blandit pellentesque, tincidunt sed orci. Morbi eleifend sollicitudin diam vel ornare. Maecenas malesuada, magna eu pharetra condimentum, ligula augue interdum orci, quis lobortis sem dui a orci. Etiam ac velit nulla. Vestibulum ac aliquam lorem. Donec at velit non lacus scelerisque dignissim nec ac nisi. In at orci quam. ";
-		fca_write_stamp(message, stampString, (void*)testString);
-
-		// Binary
-		char* testBinary;
-		testBinary = (char*)malloc(13);
-		testBinary = "Test string.";
-
-//		fca_write_stamp(message, stampBinary, (void*)testBinary);
-
-		//Array
-		float arrayFloat[ARRAY_LENGTH];
-		for(int i = 0; i < ARRAY_LENGTH; i++)
-			arrayFloat[i] = (float)i;
-		fca_write_stamp(message, stampArray, (void*)arrayFloat);
-
-		int* testBufferInt = (int*)fca_read_stamp(message, stampInt);
-		float* testBufferFloat = (float*)fca_read_stamp(message, stampFloat);
-
-		printf("\n(putfca) SENDING MESSAGE :\n");
-		printf("#  stampInt= %d\n", *testBufferInt);
-		printf("#  stampFloat= %d\n", *testBufferFloat);
-		printf("#  stampString= %d\n", testString);
-				//<< "; stampBinary= " << testBinary
-
-    printf("\n");
-
-		/*
-		 * Sending message
-		 */
-		bool success = fca_put(portText, message);
-
-		if (success) {
-			printf("(putfca) Sent \n");
-		} else {
-			printf("(putfca) Not sent \n");
-		}
-
-		/*
-		 * Writing custom event
-		 */
-		sleep(1);
-		if(!fca_write_trace(trace,&it))
-			printf("ERROR : Not able to write a trace.\n");
-		sleep(1);
-		if(!fca_write_trace(trace2,&it))
-                        printf("ERROR : Not able to write a trace.\n");
-		sleep(1);
-
-		/*
-		 * Reading logs
-		 */
-		fca_stamp stampMit = fca_get_stamp(portText, "it");
-
-		void* stampMitBuffer = fca_read_stamp(message, stampMit);
-		int mit = *((int*)stampMitBuffer);
-		free(stampMitBuffer);
-
-		printf("%s (it=%d)\n", text, mit);
-
-		sleep(sleep_time);
-		++it;
-	}
-
-	fca_free(modulePut);
-
-}
-#endif
