@@ -31,8 +31,14 @@ set(PARFLOW_AMPS_LAYER "seq" CACHE STRING "Set the Communications layer to use")
 set_property(CACHE PARFLOW_AMPS_LAYER PROPERTY STRINGS seq mpi1 smpi oas3 win32)
 set(AMPS ${PARFLOW_AMPS_LAYER})
 
-option(PARFLOW_AMPS_SEQUENTIAL_IO "Use AMPS sequential I/O model for output" "no")
-set(AMPS_SPLIT_FILE ${PARFLOW_AMPS_SEQUENTIAL_IO})
+option(PARFLOW_AMPS_SEQUENTIAL_IO "Use AMPS single file I/O model for output of PFB files" "FALSE")
+
+if (${PARFLOW_AMPS_SEQUENTIAL_IO})
+  message("Using single file AMPS I/O for PFB output")
+else ()
+  message("Using multiple file AMPS I/O for PFB output")
+  set(AMPS_SPLIT_FILE "yes")
+endif ()
 
 # OAS3
 option(PARFLOW_HAVE_OAS3 "Build with OAS3" "no")

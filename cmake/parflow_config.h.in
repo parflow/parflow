@@ -10,7 +10,6 @@
 #cmakedefine PARFLOW_AMPS_LAYER
 #cmakedefine AMPS
 
-#cmakedefine PARFLOW_AMPS_SEQUENTIAL_IO
 #cmakedefine AMPS_SPLIT_FILE
 
 #cmakedefine PARFLOW_HAVE_TCL
