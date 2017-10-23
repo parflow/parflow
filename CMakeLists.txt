@@ -89,11 +89,11 @@ endif (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 #-----------------------------------------------------------------------------
 set (PARFLOW_ENABLE_NETCDF False CACHE BOOL "Build with NetCDF")
 if (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_LIBRARY OR DEFINED NETCDF_INCLUDE_DIR) 
-  find_package (NetCDF)
-  if (${NETCDF_FOUND})
+  find_package (netCDF)
+  if (${netCDF_FOUND})
     set(PARFLOW_HAVE_NETCDF "yes")
     set(HAVE_NETCDF ${PARFLOW_HAVE_NETCDF})
-  endif (${NETCDF_FOUND})
+  endif (${netCDF_FOUND})
 endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_LIBRARY OR DEFINED NETCDF_INCLUDE_DIR) 
 
 #-----------------------------------------------------------------------------
@@ -374,6 +374,11 @@ endif ()
 set (PARFLOW_ENABLE_TOOLS True CACHE BOOL "Enable building of the Parflow tools")
 if ( ${PARFLOW_ENABLE_TOOLS} )
   add_subdirectory (pftools)
+endif ()
+
+set (PARFLOW_ENABLE_FLOWVR_TOOLS True CACHE BOOL "Enable building of the FlowVR tools")
+if ( ${PARFLOW_ENABLE_FLOWVR_TOOLS} )
+  add_subdirectory (flowvr)
 endif ()
 
 #-----------------------------------------------------------------------------
