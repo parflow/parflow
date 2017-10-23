@@ -7,6 +7,7 @@
    symbols should be in PARFLOW namespace.  Should make naming consistent as well */
 
 
+
 #cmakedefine PARFLOW_AMPS_LAYER
 #cmakedefine AMPS
 
@@ -63,6 +64,7 @@
 #cmakedefine PARFLOW_HAVE_MALLINFO
 #cmakedefine HAVE_MALLINFO
 
-
+#cmakedefine PARFLOW_HAVE_NETCDF
+#cmakedefine HAVE_NETCDF
 
 

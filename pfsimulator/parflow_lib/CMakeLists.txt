@@ -176,6 +176,6 @@ if (${PARFLOW_HAVE_FLOWVR})
 endif (${PARFLOW_HAVE_FLOWVR})
 
 if (${PARFLOW_HAVE_NETCDF})
-  target_include_directories (pfsimulator PUBLIC "${NETCDF_INCLUDE_DIRS}")
+  target_include_directories (pfsimulator PUBLIC "${netCDF_INCLUDE_DIRS}")
 endif (${PARFLOW_HAVE_NETCDF})
 

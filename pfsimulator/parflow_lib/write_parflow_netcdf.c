@@ -98,7 +98,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
 
 
     double *data_nc_node=NULL;
-    int i, j, k, d, ai; 
+    int i, j, k, d, ai;
 
     if(amps_node_rank == 0)
     {
@@ -134,8 +134,6 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
 
     if (amps_node_rank == 0)
     {
-
-
       static int numStepsInFile = 0;
       int userSpecSteps = GetInt("NetCDF.NumStepsPerFile");
       static char file_name[255];
@@ -147,10 +145,10 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
       {
 	sprintf(file_name, "%s%s%s%s", file_prefix,".",file_postfix,".nc");
 	CloseNC(ncID);
-	CreateNCFileNode(file_name, v);
+	CreateNCFileNodeFromVector(file_name, v);
 	int myVarID=LookUpInventory(varName, &myVarNCData);
 	PutDataInNCNode(myVarID, data_nc_node, nodeXIndices, nodeYIndices, nodeZIndices,
-	    nodeXCount, nodeYCount, nodeZCount, t, myVarNCData);
+	    nodeXCount, nodeYCount, nodeZCount, t, myVarNCData, amps_node_size);
 	numStepsInFile = 1;
 	numOfDefVars=1;
       }
@@ -159,10 +157,10 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
 	if(numStepsInFile == 0)
 	{
 	  sprintf(file_name, "%s%s%s%s", file_prefix,".",file_postfix,".nc");
-	  CreateNCFileNode(file_name, v);
+	  CreateNCFileNodeFromVector(file_name, v);
 	  int myVarID=LookUpInventory(varName, &myVarNCData);
 	  PutDataInNCNode(myVarID, data_nc_node, nodeXIndices, nodeYIndices, nodeZIndices,
-	      nodeXCount, nodeYCount, nodeZCount, t, myVarNCData);
+	      nodeXCount, nodeYCount, nodeZCount, t, myVarNCData, amps_node_size);
 	  numOfDefVars++;
 	  //	CloseNC(ncID);
 	  numStepsInFile++;
@@ -172,7 +170,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
 	  numStepsInFile++;
 	  int myVarID=LookUpInventory(varName, &myVarNCData);
 	  PutDataInNCNode(myVarID, data_nc_node, nodeXIndices, nodeYIndices, nodeZIndices,
-	      nodeXCount, nodeYCount, nodeZCount, t, myVarNCData);
+	      nodeXCount, nodeYCount, nodeZCount, t, myVarNCData, amps_node_size);
 	  if( numStepsInFile == userSpecSteps*numVarTimeVariant)
 	  {
 	    CloseNC(ncID);
@@ -238,9 +236,6 @@ void CreateNCFile(char *file_name, Vector *v)
 {
 #ifdef PARFLOW_HAVE_NETCDF
   Grid           *grid     = VectorGrid(v);
-  SubgridArray   *subgrids = GridSubgrids(grid);
-  Subgrid        *subgrid;
-  Subvector      *subvector;
 
   char *switch_name;
   char key[IDB_MAX_KEY_LEN];
@@ -266,10 +261,10 @@ void CreateNCFile(char *file_name, Vector *v)
     char line[100], romio_key[100],value[100];
     fp = fopen(switch_name, "r");
     while ( fgets ( line, sizeof line, fp ) != NULL ) /* read a line */
-    {	
+    {
       sscanf(line,"%s%s", romio_key, value);
       MPI_Info_set(romio_info, romio_key, value);
-    }	
+    }
     int res = nc_create_par(file_name,NC_NETCDF4|NC_MPIIO, amps_CommWorld, romio_info, &ncID);
   }
   else
@@ -286,23 +281,13 @@ void CreateNCFile(char *file_name, Vector *v)
 #endif
 }
 
-void CreateNCFileNode(char *file_name, Vector *v)
+void CreateNCFileNode(char *file_name, int nX, int nY, int nZ, int *ncidp)
 {
 #ifdef PARFLOW_HAVE_NETCDF
-  Grid           *grid     = VectorGrid(v);
-  SubgridArray   *subgrids = GridSubgrids(grid);
-  Subgrid        *subgrid;
-  Subvector      *subvector;
-
   char *switch_name;
   char key[IDB_MAX_KEY_LEN];
   char *default_val = "None";
   int old_fill_mode;
-
-  int nX = SubgridNX(GridBackground(grid));
-  int nY = SubgridNY(GridBackground(grid));
-  int nZ = SubgridNZ(GridBackground(grid));
-
   sprintf(key, "NetCDF.ROMIOhints");
   switch_name = GetStringDefault(key, "None");
   if(strcmp(switch_name, default_val) != 0)
@@ -318,21 +303,37 @@ void CreateNCFileNode(char *file_name, Vector *v)
     char line[100], romio_key[100],value[100];
     fp = fopen(switch_name, "r");
     while ( fgets ( line, sizeof line, fp ) != NULL ) /* read a line */
-    {	
+    {
       sscanf(line,"%s%s", romio_key, value);
       MPI_Info_set(romio_info, romio_key, value);
-    }	
-    int res = nc_create_par(file_name,NC_NETCDF4|NC_MPIIO, amps_CommWrite, romio_info, &ncID);
+    }
+    int res = nc_create_par(file_name,NC_NETCDF4|NC_MPIIO, amps_CommWrite, romio_info, ncidp);
   }
   else
   {
-    int res = nc_create_par(file_name,NC_NETCDF4|NC_MPIIO, amps_CommWrite, MPI_INFO_NULL, &ncID);
+    int res = nc_create_par(file_name,NC_NETCDF4|NC_MPIIO, amps_CommWrite, MPI_INFO_NULL, ncidp);
   }
-  int res = nc_def_dim(ncID, "x", nX, &xID);
-  res = nc_def_dim(ncID, "y", nY, &yID);
-  res = nc_def_dim(ncID, "z", nZ, &zID);
-  //res = nc_def_dim(ncID, "time",GetInt("NetCDF.NumStepsPerFile"),&timID);
-  res = nc_def_dim(ncID, "time",NC_UNLIMITED,&timID);
+  int res = nc_def_dim(*ncidp, "x", nX, &xID);
+  res = nc_def_dim(*ncidp, "y", nY, &yID);
+  res = nc_def_dim(*ncidp, "z", nZ, &zID);
+  //res = nc_def_dim(*ncidp, "time",GetInt("NetCDF.NumStepsPerFile"),&timID);
+  res = nc_def_dim(*ncidp, "time",NC_UNLIMITED,&timID);
+
+#else
+   amps_Printf("Parflow not compiled with NetCDF, can't create NetCDF file\n");
+#endif
+}
+
+void CreateNCFileNodeFromVector(char *file_name, Vector *v)
+{
+#ifdef PARFLOW_HAVE_NETCDF
+  Grid           *grid     = VectorGrid(v);
+
+  int nX = SubgridNX(GridBackground(grid));
+  int nY = SubgridNY(GridBackground(grid));
+  int nZ = SubgridNZ(GridBackground(grid));
+  CreateNCFileNode(file_name, nX, nY, nZ, &ncID);
+
 #else
    amps_Printf("Parflow not compiled with NetCDF, can't create NetCDF file\n");
 #endif
@@ -502,7 +503,7 @@ void PutDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData)
     int nx_v = SubvectorNX(subvector);
     int ny_v = SubvectorNY(subvector);
 
-    int i, j, k, d, ai; 
+    int i, j, k, d, ai;
     double *data;
     //		double data_nc[nx * ny * nz];
     double *data_nc;
@@ -521,36 +522,32 @@ void PutDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData)
 }
 
 void PutDataInNCNode(int varID, double *data_nc_node, int *nodeXIndices, int *nodeYIndices, int *nodeZIndices,
-    int *nodeXCount, int *nodeYCount, int *nodeZCount, double t, varNCData *myVarNCData)
+    int *nodeXCount, int *nodeYCount, int *nodeZCount, double t, varNCData *myVarNCData, int nodeSize)
 {
 #ifdef PARFLOW_HAVE_NETCDF
-  if (strcmp(myVarNCData->varName,"time")==0)
+  long end[MAX_NC_VARS];
+  nc_var_par_access(ncID, varID, NC_COLLECTIVE);
+  find_variable_length(ncID, varID, end);
+  size_t start[myVarNCData->dimSize], count[myVarNCData->dimSize];
+  if (strcmp(myVarNCData->varName, "time")==0)
   {
-    long end[MAX_NC_VARS];
-    nc_var_par_access(ncID, varID, NC_COLLECTIVE);
-    find_variable_length(ncID, varID, end);
-    size_t start[myVarNCData->dimSize], count[myVarNCData->dimSize];
     start[0] = end[0]; count[0] = 1;
     int status = nc_put_vara_double(ncID, varID, start, count, &t);
   }
   else
   {
-    long end[MAX_NC_VARS];
-    nc_var_par_access(ncID, varID, NC_COLLECTIVE);
-    find_variable_length(ncID, varID, end);
-    size_t start[myVarNCData->dimSize], count[myVarNCData->dimSize];
 
-    int i,j,index, status; 
+    int i, j, index, status;
     start[0] = end[0]-1; count[0] = 1;
-    for(i=0; i<amps_node_size; i++)
+    for(i=0; i<nodeSize; i++)
     {
       start[1] = nodeZIndices[i]; start[2] =nodeYIndices[i]; start[3] = nodeXIndices[i];
       //start[1] = 0; start[2] =nodeYIndices[i]; start[3] = nodeXIndices[i];
       count[1] = nodeZCount[i]; count[2] =nodeYCount[i]; count[3] = nodeXCount[i];
-      index=0;
+      index=0; // TODO: omg. fix it!
       for(j=0; j<i; j++)
       {
-	index += nodeZCount[j]*nodeYCount[j]*nodeXCount[j];
+        index += nodeZCount[j]*nodeYCount[j]*nodeXCount[j];
       }
       status = nc_put_vara_double(ncID, varID, start, count, &data_nc_node[index]);
     }
@@ -559,7 +556,7 @@ void PutDataInNCNode(int varID, double *data_nc_node, int *nodeXIndices, int *no
 }
 
 
-void find_variable_length( int nid, int varid, long dim_lengths[MAX_NC_VARS] ) 
+void find_variable_length( int nid, int varid, long dim_lengths[MAX_NC_VARS] )
 {
 #ifdef PARFLOW_HAVE_NETCDF
   int dim_ids[MAX_VAR_DIMS];

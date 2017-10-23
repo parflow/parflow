@@ -27,6 +27,8 @@
 #define MAX_NC_VARS 8192
 #endif
 
+#include <parflow.h>
+
 static int ncID, xID, yID, zID, timID, varID;
 static int time_step = 0;
 typedef struct
@@ -37,6 +39,7 @@ typedef struct
 	int *dimIDs;
 } varNCData;
 
+
 void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int numVarTimeVariant,
 			char *varName, int dimensionality, int timDimensionality);
 void CreateNCFile(char *file_name, Vector *v);
@@ -44,9 +47,10 @@ void CloseNC(int ncID);
 int LookUpInventory(char * varName, varNCData **myVarNCData);
 void PutDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData);
 void find_variable_length( int nid, int varid, long dim_lengths[MAX_NC_VARS] );
-void CreateNCFileNode(char *file_name, Vector *v);
+void CreateNCFileNodeFromVector(char *file_name, Vector *v);
+void CreateNCFileNode(char *file_name, int nX, int nY, int nZ, int *ncidp);
 void PutDataInNCNode(int varID, double *data_nc_node, int *nodeXIndices, int *nodeYIndices, int *nodeZIndices,
-    			int *nodeXCount, int *nodeYCount, int *nodeZCount, double t, varNCData *myVarNCData);
+    			int *nodeXCount, int *nodeYCount, int *nodeZCount, double t, varNCData *myVarNCData, int nodeSize);
 void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep);
 void OpenNCFile(char *file_name, int *ncID);
 void ReadNCFile(int ncID, int varID, Subvector *subvector, Subgrid *subgrid, char *varName, int tStep);
