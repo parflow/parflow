@@ -66,6 +66,10 @@ find_package(TCL)
 if (${TCL_FOUND})
   set(PARFLOW_HAVE_TCL "yes")
   set(HAVE_TCL ${PARFLOW_HAVE_TCL})
+else (${TCL_FOUND})
+  if (${PARFLOW_ENABLE_TOOLS})
+    message(FATAL_ERROR "TCL is required for building pftools")
+  endif (${PARFLOW_ENABLE_TOOLS})
 endif (${TCL_FOUND})
 
 #-----------------------------------------------------------------------------
@@ -84,13 +88,13 @@ endif (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 # NetCDF
 #-----------------------------------------------------------------------------
 set (PARFLOW_ENABLE_NETCDF False CACHE BOOL "Build with NetCDF")
-if (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_ROOT)
+if (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_LIBRARY OR DEFINED NETCDF_INCLUDE_DIR) 
   find_package (NetCDF)
   if (${NETCDF_FOUND})
     set(PARFLOW_HAVE_NETCDF "yes")
     set(HAVE_NETCDF ${PARFLOW_HAVE_NETCDF})
   endif (${NETCDF_FOUND})
-endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_ROOT)
+endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_LIBRARY OR DEFINED NETCDF_INCLUDE_DIR) 
 
 #-----------------------------------------------------------------------------
 # HDF5
@@ -98,6 +102,7 @@ endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_ROOT)
 set (PARFLOW_ENABLE_HDF5 False CACHE BOOL "Build with HDF5")
 if (${PARFLOW_ENABLE_HDF5} OR DEFINED HDF5_ROOT)
   set(HDF5_PREFER_PARALLEL True)
+
   find_package(HDF5)
   if (${HDF5_FOUND})
     set(PARFLOW_HAVE_HDF5 "yes")
@@ -349,7 +354,7 @@ if ( ${PARFLOW_ENABLE_SIMULATOR} )
 endif ()
 
 set (PARFLOW_ENABLE_TOOLS True CACHE BOOL "Enable building of the Parflow tools")
-if ( ${PARFLOW_ENABLE_SIMULATOR} )
+if ( ${PARFLOW_ENABLE_TOOLS} )
   add_subdirectory (pftools)
 endif ()
 
