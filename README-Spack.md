@@ -1,9 +1,9 @@
 # Building ParFlow with Spack
 
 This document covers building ParFlow with Spack.  This feature is
-expiremental and under development.  Building with Spack may be useful
+experimental and under development.  Building with Spack may be useful
 in some situations since Spack builds a complete dependency tree and
-thus may have fewer compliling and linking issues.  Spack is a
+thus may have fewer compiling and linking issues.  Spack is a
 multi-platform package manager that builds and installs multiple
 versions and configurations of software. Spack has support for Linux,
 macOS, and many supercomputers.
@@ -21,7 +21,7 @@ standard Spack distribution.
 
 The following will download Spack and setup the environment.  The
 source command needs to be done in every new shell to set setup the
-envirnment.
+environment.
 
 ```shell
    git clone git@github.com:parflow/spack.git
@@ -65,8 +65,8 @@ We are looking at how to make this installation simpler; possibly using a Spack 
 ## Testing 
 
 Spack is managing the directories for the ParFlow build so we checkout
-the ParFlow repo to get a copy of the ParFlow regression tests so we
-can run them.
+the ParFlow repository to get a copy of the ParFlow regression tests
+so we can run them.
 
 Clone the ParFlow repository:
 
@@ -101,5 +101,5 @@ Some of the tests that require a large number of MPI ranks may fail
 (The error message is something like "There are not enough slots
 available in the system to satisfy the 27 slots") if you don't have
 enough cores.  The test suite goes up to 27 cores.  We are working to
-fix this issue (for MPI folks, overcommiting is not being enabled or
+fix this issue (for MPI folks, over-committing is not being enabled or
 working in the Spack OpenMPI setup).
