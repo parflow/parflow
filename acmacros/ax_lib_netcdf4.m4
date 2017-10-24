@@ -113,9 +113,10 @@ If supplied, argument 1 must be either 'serial' or 'parallel'.
 fi
 
 dnl Add a default --with-netcdf4 configuration option.
+dnl SGS changed default to be no.
 AC_ARG_WITH([netcdf4],
   AS_HELP_STRING(
-    [--with-netcdf4=[yes/no/PATH]],
+    [--with-netcdf4=[no/yes/PATH]],
     m4_case(m4_normalize([$1]),
             [serial],   [base directory of serial NetCDF4 installation],
             [parallel], [base directory of parallel NetCDF4 installation],
@@ -130,7 +131,7 @@ AC_ARG_WITH([netcdf4],
      NETCDF4_PREFIX="${withval}"
      NC_CONFIG="${withval}/bin/nc-config"
    fi],
-   [with_netcdf4="yes"]
+   [with_netcdf4="no"]
 )
 
 dnl Set defaults to blank
