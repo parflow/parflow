@@ -338,6 +338,11 @@ include_directories ("${PROJECT_SOURCE_DIR}/pfsimulator/amps/common")
 
 include_directories ("${PROJECT_BINARY_DIR}/include")
 
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+  set(__DEBUG "yes")
+    message("debugmode")
+endif ()
+
 #-----------------------------------------------------------------------------
 # Setup configure.h file for accessing configure options
 # -----------------------------------------------------------------------------
