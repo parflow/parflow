@@ -24,7 +24,7 @@ source command needs to be done in every new shell to set setup the
 environment.
 
 ```shell
-   git clone git@github.com:parflow/spack.git
+   git clone https://github.com/parflow/spack.git
    source spack/share/spack/setup-env.sh
 ```   
 
@@ -71,7 +71,7 @@ so we can run them.
 Clone the ParFlow repository:
 
 ```shell
-git clone git@github.com:parflow/parflow.git
+  git clone https://github.com/parflow/parflow.git
 ```
 
 Run a few tests:
