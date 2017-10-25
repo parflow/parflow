@@ -42,9 +42,9 @@
 #include "SAMRAI/geom/CartesianGridGeometry.h"
 #include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/tbox/SAMRAIManager.h"
-#include "SAMRAI/tbox/Database.h" 
-#include "SAMRAI/tbox/InputDatabase.h" 
-#include "SAMRAI/tbox/InputManager.h" 
+#include "SAMRAI/tbox/Database.h"
+#include "SAMRAI/tbox/InputDatabase.h"
+#include "SAMRAI/tbox/InputManager.h"
 #include "SAMRAI/tbox/Utilities.h"
 #include "SAMRAI/tbox/SAMRAI_MPI.h"
 #include "SAMRAI/tbox/RestartManager.h"
@@ -61,32 +61,43 @@ using namespace SAMRAI;
 
 #include <string.h>
 
+#include <unistd.h>
+
 int main (int argc , char *argv [])
 {
-   FILE *file = NULL;
-   
-   FILE *log_file = NULL;
-   
-   amps_Clock_t wall_clock_time;
-   
+  FILE *file = NULL;
+
+  FILE *log_file = NULL;
+
+  amps_Clock_t wall_clock_time;
+
+#ifdef HAVE_FLOWVR
+#ifdef __DEBUG
+  printf("for easier debugger attach: now waiting 5 seconds.\n");
+  sleep(5);  // we want some time to attach the debugger ;)
+#endif
+  initFlowVR();
+#endif
+
+
    /*-----------------------------------------------------------------------
     * Initialize tbox::MPI and SAMRAI, enable logging, and process
     * command line.
     *-----------------------------------------------------------------------*/
 
-#ifdef HAVE_SAMRAI   
+#ifdef HAVE_SAMRAI
    tbox::SAMRAI_MPI::init(&argc, &argv);
    tbox::SAMRAI_MPI::setCallAbortInParallelInsteadOfMPIAbort(true);
    tbox::SAMRAIManager::initialize();
    tbox::SAMRAIManager::startup();
 #endif
-   
+
    // SGS FIXME remove this
    // tbox::SAMRAIManager::setMaxNumberPatchDataEntries(2048);
    {
-      
 
-      
+
+
       /*-----------------------------------------------------------------------
        * Initialize AMPS from existing MPI state initialized by SAMRAI
        *-----------------------------------------------------------------------*/
@@ -103,13 +114,13 @@ int main (int argc , char *argv [])
 	 exit(1);
       }
 #endif
-      
+
 #ifdef HAVE_CEGDB
       cegdb(&argc, &argv, amps_Rank(MPI_CommWorld));
 #endif
-      
+
       wall_clock_time = amps_Clock();
-      
+
       /*-----------------------------------------------------------------------
        * Command line arguments
        *-----------------------------------------------------------------------*/
@@ -118,7 +129,7 @@ int main (int argc , char *argv [])
       char *restart_read_dirname = NULL;
       int is_from_restart = FALSE;
       int restore_num = 0;
-      
+
       if ( (argc != 2) && (argc != 4) ) {
 	 fprintf(stderr, "USAGE: %s <input pfidb filename> <restart dir> <restore number>\n",
 		 argv[0]);
@@ -127,32 +138,32 @@ int main (int argc , char *argv [])
 	 if (argc == 4) {
 	    restart_read_dirname = strdup(argv[2]);
 	    restore_num = atoi(argv[3]);
-	    
+
 	    is_from_restart = TRUE;
 	 }
       }
-      
+
       /*-----------------------------------------------------------------------
        * SAMRAI initialization.
        *-----------------------------------------------------------------------*/
-      
+
       /*-----------------------------------------------------------------------
-       * Create input database and parse all data in input file.  
+       * Create input database and parse all data in input file.
        *-----------------------------------------------------------------------*/
 
 #ifdef HAVE_SAMRAI
       std::string input_filename("samrai.input");
-      
+
       tbox::Dimension dim(3);
 
       tbox::Pointer<tbox::Database> input_db(new tbox::InputDatabase("input_db"));
       tbox::InputManager::getManager()->parseInputFile(input_filename, input_db);
-      
+
       /*
        * Parse input for options to control logging, visualization and restart.
        */
       tbox::Pointer<tbox::Database> main_db = input_db->getDatabase("Main");
-      
+
       std::string log_file_name = "life.log";
       if (main_db->keyExists("log_file_name")) {
 	 log_file_name = main_db->getString("log_file_name");
@@ -171,7 +182,7 @@ int main (int argc , char *argv [])
       if (main_db->keyExists("viz_dump_interval")) {
 	 viz_dump_interval = main_db->getInteger("viz_dump_interval");
       }
-   
+
       tbox::Array<std::string> viz_writer(1);
       std::string viz_dump_dirname;
       if ( viz_dump_interval > 0 ) {
@@ -180,12 +191,12 @@ int main (int argc , char *argv [])
 	       "viz_dump_dirname", "./visit");
 	 }
       }
-   
+
       int restart_interval = 0;
       if (main_db->keyExists("restart_interval")) {
 	 restart_interval = main_db->getInteger("restart_interval");
-      } 
-   
+      }
+
       std::string restart_write_dirname;
       if ( restart_interval > 0 ) {
 	 if (main_db->keyExists("restart_write_dirname")) {
@@ -202,7 +213,7 @@ int main (int argc , char *argv [])
       tbox::plog << "input_filename = " << input_filename << std::endl;
       tbox::plog << "restart_read_dirname = " << restart_read_dirname << std::endl;
       tbox::plog << "restore_num = " << restore_num << std::endl;
-   
+
       /*-----------------------------------------------------------------------
        * If run is from restart then open the restart file.
        *-----------------------------------------------------------------------*/
@@ -211,7 +222,7 @@ int main (int argc , char *argv [])
       if (is_from_restart) {
 	 std::string restart_dir(restart_read_dirname);
 	 restart_manager->
-	    openRestartFile(restart_dir, restore_num, 
+	    openRestartFile(restart_dir, restore_num,
 			    amps_Size() );
       }
 
@@ -280,12 +291,12 @@ int main (int argc , char *argv [])
       wall_clock_time = amps_Clock() - wall_clock_time;
 
 
-      IfLogging(0) 
+      IfLogging(0)
       {
 	 if(!amps_Rank(amps_CommWorld)) {
 	    log_file = OpenLogFile("ParFlow Total Time");
 
-	    fprintf(log_file, "Total Run Time: %f seconds\n\n", 
+	    fprintf(log_file, "Total Run Time: %f seconds\n\n",
 		    (double)wall_clock_time/(double)AMPS_TICKS_PER_SEC);
 	 }
       }
@@ -310,12 +321,12 @@ int main (int argc , char *argv [])
 	 sprintf(filename, "%s.pftcl", GlobalsOutFileName);
 
 	 file = fopen(filename, "w" );
-      
+
 	 IDB_PrintUsage(file, amps_ThreadLocal(input_database));
-      
+
 	 fclose(file);
       }
-      
+
       IDB_FreeDB(amps_ThreadLocal(input_database));
 
       FreeGlobals();
@@ -333,6 +344,10 @@ int main (int argc , char *argv [])
    tbox::SAMRAIManager::shutdown();
    tbox::SAMRAIManager::finalize();
    tbox::SAMRAI_MPI::finalize();
+#endif
+
+#ifdef HAVE_FLOWVR
+  freeFlowVR();
 #endif
 
    return 0;
