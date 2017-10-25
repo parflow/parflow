@@ -5,9 +5,13 @@
 #
 # Import the ParFlow TCL package
 #
-lappend auto_path $env(PARFLOW_DIR)/bin 
+lappend auto_path $env(PARFLOW_DIR)/bin
 package require parflow
 namespace import Parflow::*
+
+file delete -force results
+file mkdir results
+cd results
 
 # Examples of compression options for SILO
 # Note compression only works for HDF5
@@ -54,7 +58,7 @@ pfset GeomInput.domain_input.GeomName             domain
 #---------------------------------------------------------
 # Domain Geometry
 #---------------------------------------------------------
-pfset Geom.domain.Lower.X                        -10.0 
+pfset Geom.domain.Lower.X                        -10.0
 pfset Geom.domain.Lower.Y                         10.0
 pfset Geom.domain.Lower.Z                          1.0
 
@@ -202,7 +206,7 @@ pfset Domain.GeomName domain
 pfset Phase.RelPerm.Type               VanGenuchten
 pfset Phase.RelPerm.GeomNames          domain
 pfset Geom.domain.RelPerm.Alpha        0.005
-pfset Geom.domain.RelPerm.N            2.0    
+pfset Geom.domain.RelPerm.N            2.0
 
 #---------------------------------------------------------
 # Saturation
@@ -280,7 +284,7 @@ pfset TopoSlopesY.GeomNames ""
 pfset TopoSlopesY.Geom.domain.Value 0.0
 
 #---------------------------------------------------------
-# Mannings coefficient 
+# Mannings coefficient
 #---------------------------------------------------------
 
 pfset Mannings.Type "Constant"
@@ -343,9 +347,9 @@ pfrun default_richards
 pfundist default_richards
 
 #
-# Tests 
+# Tests
 #
-source pftest.tcl
+source ../pftest.tcl
 set passed 1
 
 if ![pftestFile default_richards.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {

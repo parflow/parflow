@@ -1,3 +1,4 @@
+# a slidely changed version of pftest(for quick testing..., paths of correc_output were changed...)
 set sig_digits 6
 
 proc pftestIsEqual {a b message} {
@@ -20,7 +21,7 @@ proc eps {{base 1}} {
 
 proc pftestFile {file message sig_digits} {
     if [file exists $file] {
-	set correct [pfload correct_output/$file]
+	set correct [pfload ../correct_output/$file]
 	set new     [pfload                $file]
 	set diff [pfmdiff $new $correct $sig_digits]
 	if {[string length $diff] != 0 } {
@@ -58,7 +59,7 @@ proc pftestFile {file message sig_digits} {
 
 proc pftestFileWithAbs {file message sig_digits abs_value} {
     if [file exists $file] {
-	set correct [pfload correct_output/$file]
+	set correct [pfload ../correct_output/$file]
 	set new     [pfload                $file]
 	set diff [pfmdiff $new $correct $sig_digits]
 	if {[string length $diff] != 0 } {
@@ -67,7 +68,7 @@ proc pftestFileWithAbs {file message sig_digits abs_value} {
 	    set maxAbsDiff [lindex $diff 1]
 	    set i [lindex $mSigDigs 0]
 	    set j [lindex $mSigDigs 1]
-	    set k [lindex $mSigDigs 2] 
+	    set k [lindex $mSigDigs 2]
 
 	    set elt_diff [expr abs([pfgetelt $correct $i $j $k] - [pfgetelt $new $i $j $k])]
 
@@ -83,7 +84,7 @@ proc pftestFileWithAbs {file message sig_digits abs_value} {
 		puts [format "\tMaximum absolute difference = %e" $maxAbsDiff]
 		return 0
 	    }
-	} 
+	}
 
 	return 1
     } {
@@ -98,14 +99,14 @@ proc pftestParseAndEvaluateOutputForTCL {file} {
 
 	if [catch {open $file r} fileID] {
 	    puts "FAILED : output file <$file> could not be read"
-	} { 	
+	} {
 	    while { [gets $fileID line] >= 0} {
 		if [regexp {(.*)tcl:\s*(.*)} $line match header tcl_statement] {
 		    uplevel $tcl_statement
 		}
 	    }
 	    close $fileID
-	} 
+	}
     } {
 	puts "FAILED : output file <$file> not created"
 	return 1
