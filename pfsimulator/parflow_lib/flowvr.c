@@ -31,7 +31,7 @@ void fillGridMessageMetadata(Vector const * const v, GridMessageMetadata *m)
 
 
 void initFlowVR()
-{ // TODO call it from the right place!
+{
   const char* outportnamelist[] = {
     "pressure",
     "porosity",
@@ -105,28 +105,18 @@ void vectorToMessage(Vector* v, fca_message *result, fca_port *port) {
   // normally really generic. low: in common with write_parflow_netcdf
   Grid *grid = VectorGrid(v);
   SubgridArray *subgrids = GridSubgrids(grid);
-  Subgrid *subgrid;
   Subvector *subvector;
 
   int g;
   ForSubgridI(g, subgrids)
   {
-    subgrid = SubgridArraySubgrid(subgrids, g);
     subvector = VectorSubvector(v, g);
   }
-
-  int ix = SubgridIX(subgrid);
-  int iy = SubgridIY(subgrid);
-  int iz = SubgridIZ(subgrid);
-
-  int nx = SubgridNX(subgrid);
-  int ny = SubgridNY(subgrid);
-  int nz = SubgridNZ(subgrid);
 
   int nx_v = SubvectorNX(subvector);
   int ny_v = SubvectorNY(subvector);
 
-  *result = fca_new_message(moduleParflow, sizeof(GridMessageMetadata) + sizeof(double)*nx*ny*nz);
+  *result = fca_new_message(moduleParflow, sizeof(GridMessageMetadata) );
   /*const fca_stamp stampMetadata = fca_get_stamp(*port, "Metadata");*/
   /*fca_write_stamp(result, stampMetadata, (void*) &stampMetadata);*/
   /*const fca_stamp stampN = fca_get_stamp(*port, "N");*/
@@ -135,7 +125,10 @@ void vectorToMessage(Vector* v, fca_message *result, fca_port *port) {
   GridMessageMetadata* m = (GridMessageMetadata*) fca_get_write_access(*result, 0);
   fillGridMessageMetadata(v, m);
 
-  double* buffer = (double*) fca_get_write_access(*result, sizeof(GridMessageMetadata));
+  if(!fca_add_segment(moduleParflow, *result, sizeof(double)*m->nx*m->ny*m->nz)) {
+    PARFLOW_ERROR("could not allocate memory!");
+  }
+  double* buffer = (double*) fca_get_write_access(*result, 1);
 
   double *data;
   data = SubvectorElt(subvector, m->ix, m->iy, m->iz);
@@ -186,7 +179,6 @@ void dumpRichardsToFlowVR(float time, Vector const * const pressure_out,
     vectorToMessage(portnamedatas[i].data, &msg, &port);
 
 
-    // TODO: do I need to send the rank too? and some other metadata like nx... (see vectorToMessage)
     const fca_stamp stampTime = fca_get_stamp(port, "stampTime");
     const fca_stamp stampFileNumber = fca_get_stamp(port, "stampFileNumber");
     fca_write_stamp(msg, stampTime, (void*) &time);
@@ -197,6 +189,7 @@ void dumpRichardsToFlowVR(float time, Vector const * const pressure_out,
     {
       PARFLOW_ERROR("Could not send FlowVR-Message!");
     }
+    printf("put message!%.8f\n", time);
 
     //fca_free(buffer);  // TODO: do we really have to do this? I guess no. Example shows that it should be fine to free messages.
 
