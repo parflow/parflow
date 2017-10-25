@@ -23,10 +23,21 @@ The following will download Spack and setup the environment.  The
 source command needs to be done in every new shell to set setup the
 environment.
 
+For bash:
+
 ```shell
-   git clone git@github.com:parflow/spack.git
+   git clone https://github.com/parflow/spack.git
+   export SPACK_ROOT=$(pwd)/spack
    source spack/share/spack/setup-env.sh
-```   
+```
+
+For tcsh/csh:
+
+```shell
+   git clone https://github.com/parflow/spack.git
+   setenv SPACK_ROOT `pwd`/spack
+   source spack/share/spack/setup-env.csh
+```
 
 ## Building ParFlow
 
@@ -38,28 +49,48 @@ must have a compiler suite (C/C++/Fortran) installed.
 
 ```shell
    spack install parflow@develop
-```   
+```
 
 Hopefully everything built correctly.
 
 ## Running the Spack build of ParFlow 
 
 First setup some environment variables for running out of the Spack
-directories.  These use the Spack location command to find the
-location of TCL, OpenMPI and ParFlow.  The bin directories are added
-to the path.   
+directories.  The Spack command has a location option to determine the
+location of installs of TCL, OpenMPI and ParFlow.  We use the "spack
+location" command to set some environment variables and then add some
+bin directories to the path.  This will ensure that the Spack
+installations will be used to run ParFlow.
+
+For bash:
 
 ```shell
   export PARFLOW_DIR=$(spack location --install-dir parflow)
   export PARFLOW_TCL_DIR=$(spack location --install-dir tcl)
   export PARFLOW_MPI_DIR=$(spack location --install-dir openmpi)
-  export PATH=${PARFLOW_MPI_DIR}/bin:$${PARFLOW_TCL_DIR}/bin:${PARFLOW_DIR}/bin:$PATH
+  export PATH=${PARFLOW_MPI_DIR}/bin:${PARFLOW_TCL_DIR}/bin:${PARFLOW_DIR}/bin:$PATH
 
   # Are we using spack versions?
   echo "Using PARFLOW_DIR=${PARFLOW_DIR}"
   echo "Using tclsh : $(which tclsh)"
   echo "Using mpirun : $(which mpirun)"
 ```
+
+For tcsh/csh:
+
+```shell
+  setenv PARFLOW_DIR `spack location --install-dir parflow`
+  setenv PARFLOW_TCL_DIR `spack location --install-dir tcl`
+  setenv PARFLOW_MPI_DIR `$(spack location --install-dir openmpi)`
+  set path = (${PARFLOW_MPI_DIR}/bin ${PARFLOW_TCL_DIR}/bin ${PARFLOW_DIR}/bin $path )
+  setenv export PATH 
+
+  # Are we using spack versions?
+  echo "Using PARFLOW_DIR=${PARFLOW_DIR}"
+  echo "Using tclsh : `which tclsh`"
+  echo "Using mpirun : `which mpirun`"
+```
+
 We are looking at how to make this installation simpler; possibly using a Spack view.
 
 ## Testing 
@@ -71,7 +102,7 @@ so we can run them.
 Clone the ParFlow repository:
 
 ```shell
-git clone git@github.com:parflow/parflow.git
+  git clone https://github.com/parflow/parflow.git
 ```
 
 Run a few tests:
