@@ -40,7 +40,7 @@ module unload darshan
 module load cmake/3.5.2
 
 # Parflow installation directory
-export PARFLOW_DIR=/global/homes/u/u9563/m2421/parflow/tmp-cori
+export PARFLOW_DIR=/global/homes/u/u9563/m2421/parflow/cori-4layer-43321e5c
 mkdir -p ${PARFLOW_DIR}
 
 # Use some symbols set by Cray modules; hopefully a little more portable this way.
@@ -86,6 +86,7 @@ echo "**************************************************************************
 # C and Fortran otherise Cmake will not build dynamic do to rules in the Cray cmake modules.
 # -parallel was needed due to way Hypre was compiled, unresolved symbols if not used.
 FC=${PARFLOW_F77} CC=${PARFLOW_CC} CXX=${PARFLOW_CXX} cmake ../parflow \
+   -DCMAKE_BUILD_TYPE=RELEASE \
    -DPARFLOW_ENABLE_TIMING=TRUE \
    -DPARFLOW_HAVE_CLM=ON \
    -DPARFLOW_AMPS_LAYER=mpi1 \
