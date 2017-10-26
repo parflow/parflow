@@ -10,6 +10,11 @@
 
 #include "../../pfsimulator/amps/mpi1/amps.h"
 
+#ifdef __DEBUG
+#define D(x...) printf("++++++++ "); printf(x); printf("\n");
+#else
+#define D(x)
+#endif
 
 int CreateFile(const char* filename, int nX, int nY, int nZ, int *pxID, int *pyID, int *pzID, int *ptimeID) {
   int ncID = 0;
@@ -31,19 +36,13 @@ int CreateFile(const char* filename, int nX, int nY, int nZ, int *pxID, int *pyI
 int main (int argc , char *argv [])
 {
   printf("starting netcdf-writer\n");
-  // TODO
-
-  // - Premessage sends out start message with standard timing ;)
-  // - get results
-  // - write them to file
-  // quit
-  //
   fca_module moduleNetCDFWriter = fca_new_empty_module();
   fca_port portPressureIn = fca_new_port("pressureIn", fca_IN, 0, NULL);
 
   fca_append_port(moduleNetCDFWriter, portPressureIn);
-//  fca_port outPort = fca_new_port("outPort", fca_OUT, 0, NULL);
-//  fca_append_port(moduleNetCDFWriter, outPort);
+
+  fca_port outPort = fca_new_port("outPort", fca_OUT, 0, NULL);
+  fca_append_port(moduleNetCDFWriter, outPort);
 
   const fca_stamp stampTime = fca_register_stamp(portPressureIn, "stampTime", fca_FLOAT);
   /*const fca_stamp stampN = fca_register_stamp(portPressureIn, "N", fca_INT);  // contains amount of cores that must be merged*/
@@ -58,7 +57,9 @@ int main (int argc , char *argv [])
   int it = 0;
   int currentFileID;
   int xID, yID, zID, timeID;
+  D("nowWaiting\n");
   while (fca_wait(moduleNetCDFWriter)) {
+    D("got some stuff to write\n"); // TODO: implement debug messages for more performance in release?
     ++it;
     fca_message msg = fca_get(portPressureIn);
     float *time = (float*)fca_read_stamp(msg, stampTime);
@@ -82,12 +83,12 @@ int main (int argc , char *argv [])
         nc_def_var(currentFileID, "time", NC_DOUBLE, 1, &timeID, &timeVarID);
         int pressure_dims[4] = {timeID, zID, yID, xID}; // low: why in this order? I guess so it will count in the right order ;)
         nc_def_var(currentFileID, "pressure", NC_DOUBLE, 4, pressure_dims, &pressureVarID);
-        printf("Adding Time");
+        D("Adding Time");
 
         size_t start[1], count[1];
         nc_var_par_access(currentFileID, timeVarID, NC_COLLECTIVE);
         find_variable_length(currentFileID, timeVarID, start);
-        printf("start writing time at %d\n", start[0]);
+        D("start writing time at %d\n", start[0]);
         count[0] = 1;  // writing one value
         int status = nc_put_vara_double(currentFileID, timeVarID, start, count, time);
       }
@@ -101,13 +102,13 @@ int main (int argc , char *argv [])
       double const * const data = (double*)fca_get_read_access(msg, i+1);
       // now do a write to the cdf! (! all the preparations up there are necessary!
       int status = nc_put_vara_double(currentFileID, pressureVarID, start, count, data);
-      printf("putting doubles");
+      D("putting doubles");
 
     }
 
     // one file per timestep...
     nc_close(currentFileID);
-    printf("wrote %s\n", file_name);
+    D("wrote %s\n", file_name);
 
 
     fca_free(msg);
