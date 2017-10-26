@@ -1054,7 +1054,7 @@ void SetupRichards(PFModule *this_module) {
            any_file_dumped = 1;
        }
  if (public_xtra->write_netcdf_satur) {
-      sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
+//      sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
       sprintf(nc_postfix,"%05d",instance_xtra->file_number);
       WritePFNC(file_prefix,nc_postfix, t,instance_xtra->saturation,public_xtra->numVarTimeVariant,
       			"saturation", 3, 1);
@@ -1264,8 +1264,7 @@ void AdvanceRichards(PFModule *this_module,
    VectorUpdateCommHandle   *handle;
 
    char          dt_info;
-   char          file_prefix[2048], file_type[2048], file_postfix[2048];
-   char 	 nc_postfix[2048];
+   char          file_prefix[2048], file_type[2048], file_postfix[2048], filenumber_postfix[2048];
 
    /* Added for transient EvapTrans file management - NBE */
     int Stepcount, Loopcount;
@@ -2363,23 +2362,26 @@ isn't scaling the inputs properly.
             porosity,
             instance_xtra -> saturation);
 #else
-        sprintf(nc_postfix,"%05d",instance_xtra->file_number);
+        sprintf(filenumber_postfix,"%05d",instance_xtra->file_number);
         /*KKU: Writing Current time variable value to NC file */
         if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur)
         {
-          WritePFNC(file_prefix,nc_postfix, t,instance_xtra->pressure,public_xtra->numVarTimeVariant,
+          WritePFNC(file_prefix,filenumber_postfix, t,instance_xtra->pressure,public_xtra->numVarTimeVariant,
               "time", 1, 1);
         }
 
         if(public_xtra -> print_press) {
-          WritePFBinary(file_prefix, nc_postfix, instance_xtra -> pressure);
+
+          sprintf(file_postfix, "press.%05d", instance_xtra -> file_number );
+          WritePFBinary(file_prefix, file_postfix, instance_xtra -> pressure);
           any_file_dumped = 1;
         }
 
         if(public_xtra -> write_silo_press)
         {
           sprintf(file_type, "press");
-          WriteSilo(file_prefix, file_type, nc_postfix, instance_xtra -> pressure,
+          // TODO: nc_postfix is probably not correct here!
+          WriteSilo(file_prefix, file_type, filenumber_postfix, instance_xtra -> pressure,
               t, instance_xtra -> file_number, "Pressure");
           any_file_dumped = 1;
         }
@@ -2387,12 +2389,12 @@ isn't scaling the inputs properly.
         if(public_xtra -> write_silopmpio_press)
         {
           sprintf(file_type, "press");
-          WriteSiloPMPIO(file_prefix, file_type, nc_postfix, instance_xtra -> pressure,
+          WriteSiloPMPIO(file_prefix, file_type, filenumber_postfix, instance_xtra -> pressure,
               t, instance_xtra -> file_number, "Pressure");
           any_file_dumped = 1;
         }
         if (public_xtra->write_netcdf_press) {
-          WritePFNC(file_prefix,nc_postfix, t, instance_xtra->pressure,public_xtra->numVarTimeVariant,
+          WritePFNC(file_prefix,filenumber_postfix, t, instance_xtra->pressure,public_xtra->numVarTimeVariant,
               "pressure", 3, 1);
           any_file_dumped = 1;
         }
@@ -2422,7 +2424,7 @@ isn't scaling the inputs properly.
         if(public_xtra -> write_silo_satur)
         {
           sprintf(file_type, "satur");
-          WriteSilo(file_prefix, file_type, nc_postfix, instance_xtra -> saturation,
+          WriteSilo(file_prefix, file_type, filenumber_postfix, instance_xtra -> saturation,
               t, instance_xtra -> file_number, "Saturation");
           any_file_dumped = 1;
         }
@@ -2430,12 +2432,12 @@ isn't scaling the inputs properly.
         if(public_xtra -> write_silopmpio_satur)
         {
           sprintf(file_type, "satur");
-          WriteSiloPMPIO(file_prefix, file_type, nc_postfix, instance_xtra -> saturation,
+          WriteSiloPMPIO(file_prefix, file_type, filenumber_postfix, instance_xtra -> saturation,
               t, instance_xtra -> file_number, "Saturation");
           any_file_dumped = 1;
         }
         if (public_xtra->write_netcdf_satur) {
-          WritePFNC(file_prefix,nc_postfix, t,instance_xtra->saturation,public_xtra->numVarTimeVariant,
+          WritePFNC(file_prefix,filenumber_postfix, t,instance_xtra->saturation,public_xtra->numVarTimeVariant,
               "saturation", 3, 1);
           any_file_dumped = 1;
         }
@@ -2473,14 +2475,14 @@ isn't scaling the inputs properly.
 
           if(public_xtra -> write_silo_evaptrans_sum) {
             sprintf(file_type, "evaptranssum");
-            WriteSilo(file_prefix, file_type, nc_postfix, evap_trans_sum,
+            WriteSilo(file_prefix, file_type, filenumber_postfix, evap_trans_sum,
                 t, instance_xtra -> file_number, "EvapTransSum");
             any_file_dumped = 1;
           }
 
           if(public_xtra -> write_silopmpio_evaptrans_sum) {
             sprintf(file_type, "evaptranssum");
-            WriteSiloPMPIO(file_prefix, file_type, nc_postfix, evap_trans_sum,
+            WriteSiloPMPIO(file_prefix, file_type, filenumber_postfix, evap_trans_sum,
                 t, instance_xtra -> file_number, "EvapTransSum");
             any_file_dumped = 1;
           }
@@ -2499,14 +2501,14 @@ isn't scaling the inputs properly.
 
           if(public_xtra -> write_silo_overland_sum) {
             sprintf(file_type, "overlandsum");
-            WriteSilo(file_prefix, file_type, nc_postfix, overland_sum,
+            WriteSilo(file_prefix, file_type, filenumber_postfix, overland_sum,
                 t, instance_xtra -> file_number, "OverlandSum");
             any_file_dumped = 1;
           }
 
           if(public_xtra -> write_silopmpio_overland_sum) {
             sprintf(file_type, "overlandsum");
-            WriteSiloPMPIO(file_prefix, file_type, nc_postfix, overland_sum,
+            WriteSiloPMPIO(file_prefix, file_type, filenumber_postfix, overland_sum,
                 t, instance_xtra -> file_number, "OverlandSum");
             any_file_dumped = 1;
           }
@@ -2524,7 +2526,7 @@ isn't scaling the inputs properly.
         if(public_xtra -> write_silo_overland_bc_flux)
         {
           sprintf(file_type, "overland_bc_flux");
-          WriteSilo(file_prefix, file_type, nc_postfix, instance_xtra -> ovrl_bc_flx,
+          WriteSilo(file_prefix, file_type, filenumber_postfix, instance_xtra -> ovrl_bc_flx,
               t, instance_xtra -> file_number, "OverlandBCFlux");
           any_file_dumped = 1;
         }
@@ -2532,7 +2534,7 @@ isn't scaling the inputs properly.
         if(public_xtra -> write_silopmpio_overland_bc_flux)
         {
           sprintf(file_type, "overland_bc_flux");
-          WriteSiloPMPIO(file_prefix, file_type, nc_postfix, instance_xtra -> ovrl_bc_flx,
+          WriteSiloPMPIO(file_prefix, file_type, filenumber_postfix, instance_xtra -> ovrl_bc_flx,
               t, instance_xtra -> file_number, "OverlandBCFlux");
           any_file_dumped = 1;
         }
