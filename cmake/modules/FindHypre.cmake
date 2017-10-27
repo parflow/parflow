@@ -22,7 +22,8 @@ if(NOT HYPRE_ROOT)
 endif()
 
 # If Hypre root is set then search only in that directory for Hypre
-if (${HYPRE_ROOT})
+if (DEFINED HYPRE_ROOT)
+
   find_path(HYPRE_INCLUDE_DIR NAMES HYPRE.h
     PATH_SUFFIXES hypre
     PATHS ${HYPRE_ROOT}/include
@@ -30,14 +31,16 @@ if (${HYPRE_ROOT})
 
   find_library(HYPRE_LIBRARY_LS NAMES HYPRE_struct_ls
     PATHS ${HYPRE_ROOT}/lib
-    NO_DEFAULT_PATH)
+    NO_DEFAULT_PATH
+    NO_SYSTEM_ENVIRONMENT_PATH)
 
   if(HYPRE_LIBRARY_LS)
     set(HYPRE_LIBRARIES ${HYPRE_LIBRARY_LS})
 
     find_library(HYPRE_LIBRARY_MV NAMES HYPRE_struct_mv
       PATHS ${HYPRE_ROOT}/lib
-      NO_DEFAULT_PATH)
+      NO_DEFAULT_PATH
+      NO_SYSTEM_ENVIRONMENT_PATH)
           
     if(HYPRE_LIBRARY_MV)
       list(APPEND HYPRE_LIBRARIES ${HYPRE_LIBRARY_MV})
@@ -45,12 +48,13 @@ if (${HYPRE_ROOT})
   else()
     find_library(HYPRE_LIBRARY NAMES HYPRE HYPRE-64
       PATHS ${HYPRE_ROOT}/lib
-      NO_DEFAULT_PATH)
+      NO_DEFAULT_PATH
+      NO_SYSTEM_ENVIRONMENT_PATH)
 
     set(HYPRE_LIBRARIES ${HYPRE_LIBRARY})    
   endif()
   
-else (${HYPRE_ROOT})
+else (DEFINED HYPRE_ROOT)
 
   find_path(HYPRE_INCLUDE_DIR NAMES HYPRE.h
     PATH_SUFFIXES hypre
@@ -80,7 +84,7 @@ else (${HYPRE_ROOT})
     set(HYPRE_LIBRARIES ${HYPRE_LIBRARY})    
   endif()
   
-endif (${HYPRE_ROOT})
+endif (DEFINED HYPRE_ROOT)
 
 set(HYPRE_INCLUDE_DIRS ${HYPRE_INCLUDE_DIR})
 
