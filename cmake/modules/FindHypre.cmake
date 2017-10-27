@@ -22,7 +22,7 @@ if(NOT HYPRE_ROOT)
 endif()
 
 # If Hypre root is set then search only in that directory for Hypre
-if ($HYPRE_ROOT)
+if (${HYPRE_ROOT})
   find_path(HYPRE_INCLUDE_DIR NAMES HYPRE.h
     PATH_SUFFIXES hypre
     PATHS ${HYPRE_ROOT}/include
@@ -50,7 +50,7 @@ if ($HYPRE_ROOT)
     set(HYPRE_LIBRARIES ${HYPRE_LIBRARY})    
   endif()
   
-else($HYPRE_ROOT)
+else (${HYPRE_ROOT})
 
   find_path(HYPRE_INCLUDE_DIR NAMES HYPRE.h
     PATH_SUFFIXES hypre
@@ -80,7 +80,7 @@ else($HYPRE_ROOT)
     set(HYPRE_LIBRARIES ${HYPRE_LIBRARY})    
   endif()
   
-endif($HYPRE_ROOT)
+endif (${HYPRE_ROOT})
 
 set(HYPRE_INCLUDE_DIRS ${HYPRE_INCLUDE_DIR})
 
