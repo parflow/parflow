@@ -14,7 +14,7 @@
 #ifdef __DEBUG
 #define D(x...) printf("++++++++ "); printf(x); printf("\n");
 #else
-#define D(x)
+#define D(...)
 #endif
 
 // creates dimension or only returns its id if already existent.
