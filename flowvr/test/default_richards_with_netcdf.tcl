@@ -23,9 +23,11 @@ cd results
 
 pfset FileVersion 4
 
-pfset Process.Topology.P 1
-pfset Process.Topology.Q 1
-pfset Process.Topology.R 1
+pfset Process.Topology.P        [lindex $argv 0]
+pfset Process.Topology.Q        [lindex $argv 1]
+pfset Process.Topology.R        [lindex $argv 2]
+
+pfset FlowVR [if {[lindex $argv 3] == "--FlowVR"} {list True} {list False}]
 
 #---------------------------------------------------------
 # Computational Grid
@@ -338,56 +340,13 @@ pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      100
 
 pfset NetCDF.NumStepsPerFile			5
 pfset NetCDF.WritePressure			True
-pfset NetCDF.WriteSaturation			True
+#pfset NetCDF.WriteSaturation			True
+
+#pfset NetCDF.NumStepsPerFile			1
+#pfset NetCDF.WritePressure			True
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 pfrun default_richards
 pfundist default_richards
-
-#
-# Tests
-#
-source ../pftest.tcl
-set passed 1
-
-if ![pftestFile default_richards.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
-    set passed 0
-}
-if ![pftestFile default_richards.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
-    set passed 0
-}
-if ![pftestFile default_richards.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
-    set passed 0
-}
-
-foreach i "00000 00001 00002 00003 00004 00005" {
-    if ![pftestFile default_richards.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-    set passed 0
-}
-    if ![pftestFile default_richards.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-    set passed 0
-}
-}
-
-#
-# PFTOOLS doesn't support netcdf yet so just see if file was created.
-#
-
-if ![file exists default_richards.out.00000.nc] {
-    puts "NetCDF file was not created"
-    set passed 0
-}
-
-if ![file exists default_richards.out.00005.nc] {
-    puts "NetCDF file was not created"
-    set passed 0
-}
-
-if $passed {
-    puts "default_richards_with_netcdf : PASSED"
-} {
-    puts "default_richards_with_netcdf : FAILED"
-}
-
