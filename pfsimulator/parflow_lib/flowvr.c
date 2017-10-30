@@ -5,6 +5,10 @@
 #include <string.h>  // for memcpy
 #include <stdlib.h>  // for malloc
 
+
+FLOWVR_ACTIVE = 0;
+fca_module moduleParflow;
+
 void fillGridMessageMetadata(Vector const * const v, GridMessageMetadata *m)
 {
   Grid *grid = VectorGrid(v);
@@ -30,12 +34,35 @@ void fillGridMessageMetadata(Vector const * const v, GridMessageMetadata *m)
 }
 
 
-void initFlowVR()
+void NewFlowVR()
 {
+  const char *key = "FlowVR";
+
+  // Refactor: shouldn't there be a GetBooleanDefault?
+  char* switch_name = GetStringDefault(key, "False");
+  NameArray switch_na = NA_NewNameArray("False True");
+  FLOWVR_ACTIVE = NA_NameToIndex(switch_na, switch_name);
+  if(FLOWVR_ACTIVE < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+    FLOWVR_ACTIVE = 0;
+  }
+
+  if (!FLOWVR_ACTIVE)
+  {
+    return;
+  }
+
+#ifndef HAVE_FLOWVR
+  PARFLOW_ERROR("Parflow was not compiled with FlowVR but FlowVR was the input file was set to True");
+  return;
+#else
+
   const char* outportnamelist[] = {
-    "pressure",
-    "porosity",
-    "saturation"
+      "pressure",
+      "porosity",  // REM: does not really change..
+      "saturation"
       /*"subsurf_data",         [> permeability/porosity <]*/
       /*"press",                [> pressures <]*/
       /*"slopes",               [> slopes <]*/
@@ -63,9 +90,9 @@ void initFlowVR()
   {
     fca_port port = fca_new_port(outportnamelist[i], fca_OUT, 0, NULL);
     fca_register_stamp(port, "stampTime", fca_FLOAT);
-    fca_register_stamp(port, "stampFileNumber", fca_INT);
+    fca_register_stamp(port, "stampFileName", fca_STRING);
     /*fca_register_stamp(port, "stampMetadata", fca_BINARY, sizeof(GridMessageMetadata));*/
-//    fca_register_stamp(port, "N", fca_INT);  // always 1 to count in merge ;)
+    //    fca_register_stamp(port, "N", fca_INT);  // always 1 to count in merge ;)
 
     fca_append_port(moduleParflow, port);
   }
@@ -85,7 +112,9 @@ void initFlowVR()
   // in-port beginPort
   fca_port beginPort = fca_new_port("beginPort", fca_IN, 0, NULL);
   fca_register_stamp(beginPort, "stampStartTime", fca_FLOAT);
-  fca_register_stamp(beginPort, "stampStopTime", fca_FLOAT);  // TODO good idea to use float? or should we put the double in the messages payload??
+  fca_register_stamp(beginPort, "stampStopTime", fca_FLOAT);
+  // TODO ^^good idea to use float? or should we put the double in the messages payload??
+  printf("====== flowvr initialisiert.\n");
   fca_append_port(moduleParflow, beginPort);
 
   if(!fca_init_module(moduleParflow)){
@@ -94,10 +123,21 @@ void initFlowVR()
 
   /*fca_trace testTrace = fca_get_trace(modulePut,"beginTrace");*/
   /*if(testTrace == NULL) printf("ERROR : Test Trace FAIL!!\n"); else printf("Test Trace OK.\n");*/
+#endif
 }
 
-void freeFlowVR()
+#ifdef HAVE_FLOWVR
+
+int FlowVR_wait() {
+  if (FLOWVR_ACTIVE)
+    return fca_wait(moduleParflow);
+  else
+    return 0;
+}
+
+void FreeFlowVR()
 {
+  if (!FLOWVR_ACTIVE) return;
   fca_free(moduleParflow);
 }
 
@@ -143,13 +183,10 @@ void vectorToMessage(Vector* v, fca_message *result, fca_port *port) {
 
 // REM: We are better than the nodelevel netcdf feature because during file write the other nodes are already calculating ;)
 // REM: structure of nodelevel netcdf: one process per node gathers everything that has to be written and does the filesystem i/o
-void dumpRichardsToFlowVR(float time, Vector const * const pressure_out,
+void DumpRichardsToFlowVR(const char * filename, float time, Vector const * const pressure_out,
     Vector const * const porosity_out, Vector const * const saturation_out)
 {
-
-  static int filenumber = 0;
-  int it=0; // TODO: unused?
-
+  if (!FLOWVR_ACTIVE) return;
 
   // Build data
   typedef struct
@@ -166,9 +203,10 @@ void dumpRichardsToFlowVR(float time, Vector const * const pressure_out,
   };
 #define n_portnamedata (sizeof (portnamedatas) / sizeof (const PortNameData))
 
-  // TODO: write reasonable values into stamps!
   for (unsigned int i = 0; i < n_portnamedata; ++i)
   {
+    // Sometimes we do not have values for all the data...
+    if (portnamedatas[i].data == NULL) continue;
 
 
     // Prepare the port
@@ -180,9 +218,10 @@ void dumpRichardsToFlowVR(float time, Vector const * const pressure_out,
 
 
     const fca_stamp stampTime = fca_get_stamp(port, "stampTime");
-    const fca_stamp stampFileNumber = fca_get_stamp(port, "stampFileNumber");
+    const fca_stamp stampFileName = fca_get_stamp(port, "stampFileName");
+    printf("writing float: %f\n", time);
     fca_write_stamp(msg, stampTime, (void*) &time);
-    fca_write_stamp(msg, stampFileNumber, (void*) &filenumber);
+    fca_write_stamp(msg, stampFileName, (void*) filename);
 
     // finally send message!
     if(!fca_put(port,  msg))
@@ -193,11 +232,8 @@ void dumpRichardsToFlowVR(float time, Vector const * const pressure_out,
 
     //fca_free(buffer);  // TODO: do we really have to do this? I guess no. Example shows that it should be fine to free messages.
 
-    // TODO: test with silo/hdf5 writer output...
-
   }
-
-  //	++it; TODO: unused?
 }
 
 
+#endif

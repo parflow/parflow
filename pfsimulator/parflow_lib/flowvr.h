@@ -31,15 +31,25 @@
 
 #include "parflow.h"
 
+extern int FLOWVR_ACTIVE;
+
+void NewFlowVR();
+
+#ifdef HAVE_FLOWVR
+
 #include <fca/fca.h>
 
 
-fca_module moduleParflow;
+
+extern fca_module moduleParflow;
 
 // PFModule that is used here: solver_richards.
-void initFlowVR();
-void dumpRichardsToFlowVR(float time, Vector const * const pressure_out,
-    Vector const * const porosity_out, Vector const * const saturation_out);
-void freeFlowVR();
+// TODO: documentation
 
+int FlowVR_wait();
+void DumpRichardsToFlowVR(const char * filename, float time, Vector const * const pressure_out,
+    Vector const * const porosity_out, Vector const * const saturation_out);
+void FreeFlowVR();
+
+#endif
 #endif

@@ -979,52 +979,71 @@ void SetupRichards(PFModule *this_module) {
 
       if ( print_wells )
       {
-	 WriteWells(file_prefix,
-		    problem,
-		    ProblemDataWellData(problem_data),
-		    t,
-		    WELLDATA_WRITEHEADER);
+        WriteWells(file_prefix,
+                   problem,
+                   ProblemDataWellData(problem_data),
+                   t,
+                   WELLDATA_WRITEHEADER);
       }
-    sprintf(nc_postfix,"%05d",instance_xtra->file_number);
-    if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur)
-    {
-	    WritePFNC(file_prefix,nc_postfix, t,instance_xtra->pressure,public_xtra->numVarTimeVariant,
-   		"time", 1, 1);
-    }
+      /*-------------------------------------------------------------------
+       * Print out nc time value?
+       *-------------------------------------------------------------------*/
+
+      sprintf(nc_postfix,"%05d",instance_xtra->file_number);
+      if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur)
+      {
+        WritePFNC(file_prefix,nc_postfix, t,instance_xtra->pressure,public_xtra->numVarTimeVariant,
+                  "time", 1, 1);
+      }
+
+
+#ifdef HAVE_FLOWVR
+        char filename[1024]; // low: reuse other string variable here?
+        int userSpecSteps = GetInt("NetCDF.NumStepsPerFile");
+
+        sprintf(filename, "%s.%05d.nc", file_prefix, instance_xtra -> file_number / userSpecSteps);
+        DumpRichardsToFlowVR(
+            filename,
+            t,
+            instance_xtra -> pressure,
+            NULL,
+            instance_xtra -> saturation);
+#endif
+
       /*-----------------------------------------------------------------
        * Print out the initial pressures?
        *-----------------------------------------------------------------*/
 
       if ( print_press )
       {
-	 sprintf(file_postfix, "press.%05d", instance_xtra -> file_number );
-	 WritePFBinary(file_prefix, file_postfix, instance_xtra -> pressure );
-	 any_file_dumped = 1;
+        sprintf(file_postfix, "press.%05d", instance_xtra -> file_number );
+        WritePFBinary(file_prefix, file_postfix, instance_xtra -> pressure );
+        any_file_dumped = 1;
       }
 
       if ( public_xtra -> write_silo_press )
       {
-	 sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-	 sprintf(file_type, "press");
-	 WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
-                   t, instance_xtra -> file_number, "Pressure");
-	 any_file_dumped = 1;
+        sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+        sprintf(file_type, "press");
+        WriteSilo(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
+                  t, instance_xtra -> file_number, "Pressure");
+        any_file_dumped = 1;
       }
 
-       if ( public_xtra -> write_silopmpio_press )
-       {
-           sprintf(file_postfix, "%05d", instance_xtra -> file_number );
-           sprintf(file_type, "press");
-           WriteSiloPMPIO(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
-                     t, instance_xtra -> file_number, "Pressure");
-           any_file_dumped = 1;
-       }
- if (public_xtra->write_netcdf_press) {
-      sprintf(nc_postfix,"%05d",instance_xtra->file_number);
-      WritePFNC(file_prefix,nc_postfix, t,instance_xtra->pressure,public_xtra->numVarTimeVariant,
-      			"pressure", 3, 1);
-      any_file_dumped = 1;
-    }
+      if ( public_xtra -> write_silopmpio_press )
+      {
+        sprintf(file_postfix, "%05d", instance_xtra -> file_number );
+        sprintf(file_type, "press");
+        WriteSiloPMPIO(file_prefix, file_type, file_postfix, instance_xtra -> pressure,
+                       t, instance_xtra -> file_number, "Pressure");
+        any_file_dumped = 1;
+      }
+      if (public_xtra->write_netcdf_press) {
+        sprintf(nc_postfix,"%05d",instance_xtra->file_number);
+        WritePFNC(file_prefix,nc_postfix, t,instance_xtra->pressure,public_xtra->numVarTimeVariant,
+                  "pressure", 3, 1);
+        any_file_dumped = 1;
+      }
       /*-----------------------------------------------------------------
        * Print out the initial saturations?
        *-----------------------------------------------------------------*/
@@ -1304,19 +1323,50 @@ void AdvanceRichards(PFModule *this_module,
 #endif     // end to HAVE_OAS3 CALL
 
 #ifdef HAVE_FLOWVR
-   fca_port beginPort = fca_get_port(moduleParflow, "beginPort");
-   while (fca_wait(moduleParflow))
-   {  // yes: sometimes we will begin the main computational section multiple times ;)
-     // ignore start and stop time from parameter ;)
-     fca_stamp stampStartTime = fca_get_stamp(beginPort, "stampStartTime");
-     fca_stamp stampStopTime = fca_get_stamp(beginPort, "stampStopTime");
-     fca_message msg = fca_get(beginPort);
+   fca_port beginPort;
+   if (FLOWVR_ACTIVE)
+   {
+     beginPort = fca_get_port(moduleParflow, "beginPort");
+     printf("====now waiting\n");
+   }
+   int hasRun = 0;
+   // For Wait if we get some mor FlowVR Messages...
+   while (!hasRun || FlowVR_wait())
+   {
+     hasRun = 1;
 
-      // extract from FlowVR-messages...
-     start_time = (double) *((float*)fca_read_stamp(msg, stampStartTime));
-     stop_time  = (double) *((float*)fca_read_stamp(msg, stampStopTime));
-     // we got all we need out of this message so lets free it now.
-     fca_free(msg);
+     if (FLOWVR_ACTIVE)
+     {
+       printf("========= now simulating\n");
+       fca_stamp stampStartTime;
+       fca_stamp stampStopTime;
+       fca_message msg;
+
+       void *pstart_time;
+       void *pstop_time;
+       stampStartTime = fca_get_stamp(beginPort, "stampStartTime");
+       stampStopTime = fca_get_stamp(beginPort, "stampStopTime");
+       msg = fca_get(beginPort);
+       // extract from FlowVR-messages...
+       pstart_time = fca_read_stamp(msg, stampStartTime);
+       pstop_time = fca_read_stamp(msg, stampStopTime);
+       // ignore start and stop time from parameter ;)
+       if (pstart_time && pstop_time)
+       {
+         printf("============ extracting time from stamps!\n");
+         start_time = (double) *((float*) pstart_time);
+         stop_time  = (double) *((float*) pstop_time);
+         fca_free(msg);
+       }
+       else
+       {
+         fca_free(msg);
+         continue;
+       }
+       printf("============ start_time: %.8f, stop_time: %.8f\n", start_time, stop_time);
+       if (stop_time - start_time <  0) // do not allow negative simulation. REM: 0 simulation is just resend state ;)
+         continue;
+     }
 #endif
    /***********************************************************************/
    /*                                                                     */
@@ -2205,7 +2255,7 @@ isn't scaling the inputs properly.
 	/*******************************************************************/
 	/*          Solve the nonlinear system for this time step          */
 	/*******************************************************************/
-// TODO should we do this on the flowvr helpercore maybe?
+// low: should we do this on the flowvr helpercore maybe?
 	retval = PFModuleInvokeType(NonlinSolverInvoke, nonlin_solver,
 	    (instance_xtra -> pressure,
 	     instance_xtra -> density,
@@ -2353,21 +2403,25 @@ isn't scaling the inputs properly.
       {
 
         instance_xtra -> dump_index++;
-
+        sprintf(filenumber_postfix,"%05d",instance_xtra->file_number);
 #ifdef HAVE_FLOWVR
-        // TODO: make configurable
-        dumpRichardsToFlowVR(
+        char filename[1024];
+        int userSpecSteps = GetInt("NetCDF.NumStepsPerFile");
+
+        sprintf(filename, "%s.%05d.nc", file_prefix, instance_xtra->file_number / userSpecSteps);
+        DumpRichardsToFlowVR(
+            filename,
             t,
             instance_xtra -> pressure,
             porosity,
             instance_xtra -> saturation);
-#else
-        sprintf(filenumber_postfix,"%05d",instance_xtra->file_number);
+#endif
+
         /*KKU: Writing Current time variable value to NC file */
         if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur)
         {
           WritePFNC(file_prefix,filenumber_postfix, t,instance_xtra->pressure,public_xtra->numVarTimeVariant,
-              "time", 1, 1);
+              "time", 1, 1); // low: why passing pressure when writing time?
         }
 
         if(public_xtra -> print_press) {
@@ -2551,7 +2605,6 @@ isn't scaling the inputs properly.
           WritePFBinary(file_prefix, file_postfix, instance_xtra -> ovrl_bc_flx);
           any_file_dumped = 1;
         }
-#endif  // End of print direct (no flowVR)
 
       }  // End of if (dump_files)
       /***************************************************************/
@@ -2880,16 +2933,9 @@ isn't scaling the inputs properly.
    }   /* ends do for time loop */
    while( take_more_time_steps );
 #ifdef HAVE_FLOWVR
-   // dump the values!
-   dumpRichardsToFlowVR(t,
-       instance_xtra -> pressure,
-       porosity,
-       instance_xtra -> saturation);
-   } /*  ends while (fca_wait(moduleParflow))  */
+   } /*  ends while (FlowVR_wait())  */
 #endif
 
-
-   // TODO: do we want to put the final print into flowvr module too? normally not as here parallel printing might be the fastest ;)
 
    /***************************************************************/
    /*                 Print the pressure and saturation           */

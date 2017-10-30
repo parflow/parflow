@@ -71,13 +71,7 @@ int main (int argc , char *argv [])
 
   amps_Clock_t wall_clock_time;
 
-#ifdef HAVE_FLOWVR
-#ifdef __DEBUG
-  printf("for easier debugger attach: now waiting 5 seconds.\n");
-  sleep(5);  // we want some time to attach the debugger ;)
-#endif
-  initFlowVR();
-#endif
+
 
 
    /*-----------------------------------------------------------------------
@@ -240,10 +234,25 @@ int main (int argc , char *argv [])
 #endif
 
       /*-----------------------------------------------------------------------
-       * Read the Users Input Deck
+       * read the users input deck
        *-----------------------------------------------------------------------*/
 
       amps_ThreadLocal(input_database) = IDB_NewDB(GlobalsInFileName);
+
+      /*-----------------------------------------------------------------------
+       * Try to run as flowvr module?
+       *-----------------------------------------------------------------------*/
+
+#ifdef HAVE_FLOWVR
+#ifdef __DEBUG
+
+  printf("for easier debugger attach: now waiting 5 seconds.\n");
+  sleep(5);  // we want some time to attach the debugger ;)
+#endif
+#endif
+
+      NewFlowVR();
+
 
       /*-----------------------------------------------------------------------
        * Setup log printing
@@ -283,6 +292,10 @@ int main (int argc , char *argv [])
       FreeLogging();
 
       FreeTiming();
+
+#ifdef HAVE_FLOWVR
+      FreeFlowVR();
+#endif
 
       /*-----------------------------------------------------------------------
        * Finalize AMPS and exit
@@ -344,10 +357,6 @@ int main (int argc , char *argv [])
    tbox::SAMRAIManager::shutdown();
    tbox::SAMRAIManager::finalize();
    tbox::SAMRAI_MPI::finalize();
-#endif
-
-#ifdef HAVE_FLOWVR
-  freeFlowVR();
 #endif
 
    return 0;
