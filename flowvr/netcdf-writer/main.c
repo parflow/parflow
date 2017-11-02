@@ -77,8 +77,8 @@ int main (int argc , char *argv [])
 
   fca_append_port(moduleNetCDFWriter, portPressureIn);
 
-  fca_port outPort = fca_new_port("outPort", fca_OUT, 0, NULL);
-  fca_append_port(moduleNetCDFWriter, outPort);
+  fca_port portOut = fca_new_port("out", fca_OUT, 0, NULL);
+  fca_append_port(moduleNetCDFWriter, portOut);
 
   const fca_stamp stampTime = fca_register_stamp(portPressureIn, "stampTime", fca_FLOAT);// TODO good idea to use float? or should we put the double in the messages payload??
   const fca_stamp stampFileName = fca_register_stamp(portPressureIn, "stampFileName", fca_STRING);

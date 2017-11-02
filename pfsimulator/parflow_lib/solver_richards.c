@@ -1323,10 +1323,10 @@ void AdvanceRichards(PFModule *this_module,
 #endif     // end to HAVE_OAS3 CALL
 
 #ifdef HAVE_FLOWVR
-   fca_port beginPort;
+   fca_port beginItPort;
    if (FLOWVR_ACTIVE)
    {
-     beginPort = fca_get_port(moduleParflow, "beginPort");
+     beginItPort = fca_get_port(moduleParflow, "in");
      printf("====now waiting\n");
    }
    int hasRun = 0;
@@ -1344,9 +1344,9 @@ void AdvanceRichards(PFModule *this_module,
 
        void *pstart_time;
        void *pstop_time;
-       stampStartTime = fca_get_stamp(beginPort, "stampStartTime");
-       stampStopTime = fca_get_stamp(beginPort, "stampStopTime");
-       msg = fca_get(beginPort);
+       stampStartTime = fca_get_stamp(beginItPort, "stampStartTime");
+       stampStopTime = fca_get_stamp(beginItPort, "stampStopTime");
+       msg = fca_get(beginItPort);
        // extract from FlowVR-messages...
        pstart_time = fca_read_stamp(msg, stampStartTime);
        pstop_time = fca_read_stamp(msg, stampStopTime);

@@ -11,8 +11,9 @@ starter_outport = simplestarterModule.addPort("out", direction='out')
 
 parflowModule = Module("parflow", cmdline = "tclsh ./default_richards_with_netcdf.tcl 1 1 1 --FlowVR")
 #parflowModule = Module("parflow", cmdline = "tclsh ./default_single.tcl 1 1 1")
-for inportname in [  # TODO: cant we use the beginit port??
-    "beginPort"
+# REM: beginIt is autoadded ;)
+for inportname in [
+    "in"
     ]:
   parflowModule.addPort(inportname, direction="in");
 for outportname in [
@@ -22,14 +23,14 @@ for outportname in [
   parflowModule.addPort(outportname, direction="out");
 
 # writer
-netcdfWriterModule = Module("netcdfwriter", cmdline = "/home/xy124/MasterThesis/parflow/parflow_install/bin/netcdf-writer")
+netcdfWriterModule = Module("netcdfwriter", cmdline = "$PARFLOW_DIR/bin/netcdf-writer")
 writer_inport = netcdfWriterModule.addPort("pressureIn", direction = "in")
-writer_outport = netcdfWriterModule.addPort("outPort", direction = "out")
+writer_outport = netcdfWriterModule.addPort("out", direction = "out")
 
 
 # scheme: pres -> simplestarter -(timestart, timestop)-> parflow -(pressuredata)-> netcdf-writer -(pressuredata)-> [FILE] -> e.g. visit
 pres.getPort("out").link(starter_inport)
-starter_outport.link(parflowModule.getPort("beginPort"))
+starter_outport.link(parflowModule.getPort("in"))
 parflowModule.getPort("pressure").link(writer_inport);
 writer_outport.link(pres.getPort("in"))
 

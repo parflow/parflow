@@ -110,12 +110,12 @@ void NewFlowVR()
 
 
   // in-port beginPort
-  fca_port beginPort = fca_new_port("beginPort", fca_IN, 0, NULL);
-  fca_register_stamp(beginPort, "stampStartTime", fca_FLOAT);
-  fca_register_stamp(beginPort, "stampStopTime", fca_FLOAT);
+  fca_port beginItPort = fca_new_port("in", fca_IN, 0, NULL);
+  fca_register_stamp(beginItPort, "stampStartTime", fca_FLOAT);
+  fca_register_stamp(beginItPort, "stampStopTime", fca_FLOAT);
   // TODO ^^good idea to use float? or should we put the double in the messages payload??
   printf("====== flowvr initialisiert.\n");
-  fca_append_port(moduleParflow, beginPort);
+  fca_append_port(moduleParflow, beginItPort);
 
   if(!fca_init_module(moduleParflow)){
     PARFLOW_ERROR("ERROR : init_module failed!\n");
