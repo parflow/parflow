@@ -2419,6 +2419,7 @@ isn't scaling the inputs properly.
 #ifdef HAVE_FLOWVR
         char filename[1024];
         int userSpecSteps = GetInt("NetCDF.NumStepsPerFile");
+        D("steps per file: %d, filenumber: %d", userSpecSteps, instance_xtra->file_number);
 
         sprintf(filename, "%s.%05d.nc", file_prefix, instance_xtra->file_number / userSpecSteps);
         DumpRichardsToFlowVR(
@@ -2427,6 +2428,7 @@ isn't scaling the inputs properly.
             instance_xtra -> pressure,
             porosity,
             instance_xtra -> saturation);
+        any_file_dumped = 1;
 #endif
 
         /*KKU: Writing Current time variable value to NC file */
