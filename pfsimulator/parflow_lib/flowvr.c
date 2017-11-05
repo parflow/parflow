@@ -59,6 +59,9 @@ void NewFlowVR()
   return;
 #else
 
+  if (amps_size > 1) {
+    fca_init_parallel(amps_rank, amps_size);  // TODO: amps size or amps_node_size
+  }
   const char* outportnamelist[] = {
       "pressure",
       "porosity",  // REM: does not really change..
@@ -86,6 +89,8 @@ void NewFlowVR()
 
   moduleParflow = fca_new_empty_module();
 
+
+
   for (unsigned int i = 0; i < n_outportnamelist; ++i)
   {
     fca_port port = fca_new_port(outportnamelist[i], fca_OUT, 0, NULL);
@@ -110,16 +115,23 @@ void NewFlowVR()
 
 
   // in-port beginPort
-  fca_port beginPort = fca_new_port("beginPort", fca_IN, 0, NULL);
-  fca_register_stamp(beginPort, "stampStartTime", fca_FLOAT);
-  fca_register_stamp(beginPort, "stampStopTime", fca_FLOAT);
+  fca_port beginItPort = fca_new_port("in", fca_IN, 0, NULL);
+  fca_register_stamp(beginItPort, "stampStartTime", fca_FLOAT);
+  fca_register_stamp(beginItPort, "stampStopTime", fca_FLOAT);
   // TODO ^^good idea to use float? or should we put the double in the messages payload??
-  printf("====== flowvr initialisiert.\n");
-  fca_append_port(moduleParflow, beginPort);
+  D("flowvr initialisiert.");
+  fca_append_port(moduleParflow, beginItPort);
+
+//  char modulename[256];
+//
+//  sprintf(modulename, "parflow/%d", amps_Rank(amps_CommWorld));
+//
+//  fca_set_modulename(moduleParflow, modulename);
 
   if(!fca_init_module(moduleParflow)){
     PARFLOW_ERROR("ERROR : init_module failed!\n");
   }
+
 
   /*fca_trace testTrace = fca_get_trace(modulePut,"beginTrace");*/
   /*if(testTrace == NULL) printf("ERROR : Test Trace FAIL!!\n"); else printf("Test Trace OK.\n");*/
@@ -130,7 +142,10 @@ void NewFlowVR()
 
 int FlowVR_wait() {
   if (FLOWVR_ACTIVE)
+  {
+    D("now waiting");
     return fca_wait(moduleParflow);
+  }
   else
     return 0;
 }
@@ -157,7 +172,7 @@ void vectorToMessage(Vector* v, fca_message *result, fca_port *port) {
   int ny_v = SubvectorNY(subvector);
 
   *result = fca_new_message(moduleParflow, sizeof(GridMessageMetadata) );
-  if (result == NULL) 
+  if (result == NULL)
   {
     printf("%d\n", sizeof(GridMessageMetadata));
     PARFLOW_ERROR("Could not create Message");
@@ -168,20 +183,26 @@ void vectorToMessage(Vector* v, fca_message *result, fca_port *port) {
   /*const fca_stamp stampN = fca_get_stamp(*port, "N");*/
   /*fca_write_stamp(result, stampN, 1);*/
   // write to the beginning of our memory segment
-  GridMessageMetadata* m = (GridMessageMetadata*) fca_get_write_access(*result, 0);
-  fillGridMessageMetadata(v, m);
+  GridMessageMetadata m;
+  fillGridMessageMetadata(v, &m);
+  size_t vector_size = sizeof(double)*m.nx*m.ny*m.nz;
+  *result = fca_new_message(moduleParflow, sizeof(GridMessageMetadata) + vector_size);
+  void *buffer = fca_get_write_access(*result, 0);
+  memcpy(buffer, &m, sizeof(GridMessageMetadata));
+  buffer += sizeof(GridMessageMetadata);
 
-  if(!fca_add_segment(moduleParflow, *result, sizeof(double)*m->nx*m->ny*m->nz)) {
-    PARFLOW_ERROR("could not allocate memory!");
-  }
-  double* buffer = (double*) fca_get_write_access(*result, 1);
+  memcpy(buffer, &m, vector_size);
+
+  D("Write  %d bytes + %d bytes", sizeof(GridMessageMetadata), vector_size);
+
+  double* buffer_double = (double*) buffer;
 
   double *data;
-  data = SubvectorElt(subvector, m->ix, m->iy, m->iz);
+  data = SubvectorElt(subvector, m.ix, m.iy, m.iz);
 
   // some iterators
   int i, j, k, d = 0, ai = 0;
-  BoxLoopI1(i, j, k, m->ix, m->iy, m->iz, m->nx, m->ny, m->nz, ai, nx_v, ny_v, nz_v, 1, 1, 1,{ buffer[d] = data[ai]; d++;});
+  BoxLoopI1(i, j, k, m.ix, m.iy, m.iz, m.nx, m.ny, m.nz, ai, nx_v, ny_v, nz_v, 1, 1, 1,{ buffer_double[d] = data[ai]; d++;});
   // TODO: would be more performant if we could read the things not cell by cell I guess
 }
 // TODO: implement swap: do not do the memcpy but have to buffers one for read and wone for write. Change the buffers after one simulation step! (here a simulation step consists of multiple timesteps!
@@ -225,7 +246,7 @@ void DumpRichardsToFlowVR(const char * filename, float time, Vector const * cons
 
     const fca_stamp stampTime = fca_get_stamp(port, "stampTime");
     const fca_stamp stampFileName = fca_get_stamp(port, "stampFileName");
-    printf("writing float: %f\n", time);
+    D("writing float: %f\n", time);
     fca_write_stamp(msg, stampTime, (void*) &time);
     fca_write_stamp(msg, stampFileName, (void*) filename);
 
@@ -234,7 +255,7 @@ void DumpRichardsToFlowVR(const char * filename, float time, Vector const * cons
     {
       PARFLOW_ERROR("Could not send FlowVR-Message!");
     }
-    printf("put message!%.8f\n", time);
+    D("put message!%.8f\n", time);
 
     //fca_free(buffer);  // TODO: do we really have to do this? I guess no. Example shows that it should be fine to free messages.
 

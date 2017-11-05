@@ -40,6 +40,13 @@ void NewFlowVR();
 #include <fca/fca.h>
 
 
+#ifdef __DEBUG  //TODO: add filename and line number
+#define D(x...) printf("=======%d:", amps_Rank(amps_CommWorld)); printf(x); printf("\n") //printf(" %s:%d\n",  __FILE__, __LINE__)
+#else
+#define D(...)
+#endif
+
+
 
 extern fca_module moduleParflow;
 

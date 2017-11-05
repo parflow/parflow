@@ -998,6 +998,10 @@ void SetupRichards(PFModule *this_module) {
 
 
 #ifdef HAVE_FLOWVR
+
+      // TODO FIXME: allowed to send message before first wait?
+      // or should we wait a bit here? -- does not work...
+//      if (!FlowVR_wait()) PARFLOW_ERROR("FlowVR was aborted!");
         char filename[1024]; // low: reuse other string variable here?
         int userSpecSteps = GetInt("NetCDF.NumStepsPerFile");
 
@@ -1323,48 +1327,56 @@ void AdvanceRichards(PFModule *this_module,
 #endif     // end to HAVE_OAS3 CALL
 
 #ifdef HAVE_FLOWVR
-   fca_port beginPort;
+   fca_port beginItPort;
    if (FLOWVR_ACTIVE)
    {
-     beginPort = fca_get_port(moduleParflow, "beginPort");
-     printf("====now waiting\n");
+     beginItPort = fca_get_port(moduleParflow, "in");
    }
    int hasRun = 0;
    // For Wait if we get some mor FlowVR Messages...
-   while (!hasRun || FlowVR_wait())
+   while (FlowVR_wait() || (!FLOWVR_ACTIVE && !hasRun))
    {
      hasRun = 1;
 
      if (FLOWVR_ACTIVE)
      {
-       printf("========= now simulating\n");
+       D("========= now simulating\n");
        fca_stamp stampStartTime;
        fca_stamp stampStopTime;
        fca_message msg;
 
        void *pstart_time;
        void *pstop_time;
-       stampStartTime = fca_get_stamp(beginPort, "stampStartTime");
-       stampStopTime = fca_get_stamp(beginPort, "stampStopTime");
-       msg = fca_get(beginPort);
+       stampStartTime = fca_get_stamp(beginItPort, "stampStartTime");
+       stampStopTime = fca_get_stamp(beginItPort, "stampStopTime");
+       if (stampStartTime == NULL || stampStopTime == NULL) PARFLOW_ERROR("Could not register Stamps!");
+       msg = fca_get(beginItPort);
+
+//       char *tmp;
+//       fca_stamp stampSource = fca_get_stamp(beginItPort, "source");
+//       tmp = (char*)fca_read_stamp(msg, stampSource);
+//       D("source: %s", tmp);
+
        // extract from FlowVR-messages...
        pstart_time = fca_read_stamp(msg, stampStartTime);
        pstop_time = fca_read_stamp(msg, stampStopTime);
        // ignore start and stop time from parameter ;)
+       D("pstart:%d, pstop:%d\n", pstart_time, pstop_time);
        if (pstart_time && pstop_time)
        {
-         printf("============ extracting time from stamps!\n");
+         D("============ extracting time from stamps!\n");
          start_time = (double) *((float*) pstart_time);
          stop_time  = (double) *((float*) pstop_time);
          fca_free(msg);
        }
        else
        {
+         D("===== got invalid stamp value so continuing!");
          fca_free(msg);
          continue;
        }
-       printf("============ start_time: %.8f, stop_time: %.8f\n", start_time, stop_time);
-       if (stop_time - start_time <  0) // do not allow negative simulation. REM: 0 simulation is just resend state ;)
+       D("============ start_time: %.8f, stop_time: %.8f\n", start_time, stop_time);
+       if (stop_time - start_time <=  0.000001) // do not allow negative simulation. REM: 0 simulation is just resend state ;) TODO: implement that 0 timediff works
          continue;
      }
 #endif
@@ -2407,6 +2419,7 @@ isn't scaling the inputs properly.
 #ifdef HAVE_FLOWVR
         char filename[1024];
         int userSpecSteps = GetInt("NetCDF.NumStepsPerFile");
+        D("steps per file: %d, filenumber: %d", userSpecSteps, instance_xtra->file_number);
 
         sprintf(filename, "%s.%05d.nc", file_prefix, instance_xtra->file_number / userSpecSteps);
         DumpRichardsToFlowVR(
@@ -2415,6 +2428,7 @@ isn't scaling the inputs properly.
             instance_xtra -> pressure,
             porosity,
             instance_xtra -> saturation);
+        any_file_dumped = 1;
 #endif
 
         /*KKU: Writing Current time variable value to NC file */
@@ -2933,6 +2947,13 @@ isn't scaling the inputs properly.
    }   /* ends do for time loop */
    while( take_more_time_steps );
 #ifdef HAVE_FLOWVR
+   if (FLOWVR_ACTIVE)
+   {
+     D("Aborting now!");
+     fca_abort(moduleParflow);
+     break;
+   }
+
    } /*  ends while (FlowVR_wait())  */
 #endif
 
