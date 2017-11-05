@@ -171,28 +171,31 @@ void vectorToMessage(Vector* v, fca_message *result, fca_port *port) {
   int nx_v = SubvectorNX(subvector);
   int ny_v = SubvectorNY(subvector);
 
-  *result = fca_new_message(moduleParflow, sizeof(GridMessageMetadata) );
   /*const fca_stamp stampMetadata = fca_get_stamp(*port, "Metadata");*/
   /*fca_write_stamp(result, stampMetadata, (void*) &stampMetadata);*/
   /*const fca_stamp stampN = fca_get_stamp(*port, "N");*/
   /*fca_write_stamp(result, stampN, 1);*/
   // write to the beginning of our memory segment
-  GridMessageMetadata* m = (GridMessageMetadata*) fca_get_write_access(*result, 0);
-  fillGridMessageMetadata(v, m);
+  GridMessageMetadata m;
+  fillGridMessageMetadata(v, &m);
+  size_t vector_size = sizeof(double)*m.nx*m.ny*m.nz;
+  *result = fca_new_message(moduleParflow, sizeof(GridMessageMetadata) + vector_size);
+  void *buffer = fca_get_write_access(*result, 0);
+  memcpy(buffer, &m, sizeof(GridMessageMetadata));
+  buffer += sizeof(GridMessageMetadata);
 
-  if(!fca_add_segment(moduleParflow, *result, sizeof(double)*m->nx*m->ny*m->nz)) {
-    PARFLOW_ERROR("could not allocate memory!");
-  }
-  D("Write Segment0: %d bytes, Segment1: %d bytes", sizeof(GridMessageMetadata), sizeof(double)*m->nx*m->ny*m->nz);
+  memcpy(buffer, &m, vector_size);
 
-  double* buffer = (double*) fca_get_write_access(*result, 1);
+  D("Write  %d bytes + %d bytes", sizeof(GridMessageMetadata), vector_size);
+
+  double* buffer_double = (double*) buffer;
 
   double *data;
-  data = SubvectorElt(subvector, m->ix, m->iy, m->iz);
+  data = SubvectorElt(subvector, m.ix, m.iy, m.iz);
 
   // some iterators
   int i, j, k, d = 0, ai = 0;
-  BoxLoopI1(i, j, k, m->ix, m->iy, m->iz, m->nx, m->ny, m->nz, ai, nx_v, ny_v, nz_v, 1, 1, 1,{ buffer[d] = data[ai]; d++;});
+  BoxLoopI1(i, j, k, m.ix, m.iy, m.iz, m.nx, m.ny, m.nz, ai, nx_v, ny_v, nz_v, 1, 1, 1,{ buffer_double[d] = data[ai]; d++;});
   // TODO: would be more performant if we could read the things not cell by cell I guess
 }
 // TODO: implement swap: do not do the memcpy but have to buffers one for read and wone for write. Change the buffers after one simulation step! (here a simulation step consists of multiple timesteps!

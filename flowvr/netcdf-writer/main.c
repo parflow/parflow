@@ -103,36 +103,40 @@ int main (int argc , char *argv [])
     // FIXME: todo  put filename in metadata as otherwise it will be eaten by nto1 .. ne sollt quatsch sein, da nto1 ja immer nur ausloest wenn von allen was da ist ;)
     D("number of segments: %d", fca_number_of_segments(msg));
     D("size: %d", fca_get_segment_size(msg,0));
-    assert(fca_number_of_segments(msg)%2 == 0);
-    for (int i = 0; i < fca_number_of_segments(msg); i+=2) {
-      GridMessageMetadata* m = (GridMessageMetadata*)fca_get_read_access(msg, i);
-      if (i == 0) {
-        currentFileID = CreateFile(file_name, m->nX, m->nY, m->nZ, &xID, &yID, &zID, &timeID);
-        // add variable Time and pressure:
-        nc_def_var(currentFileID, "time", NC_DOUBLE, 1, &timeID, &timeVarID);
-        int pressure_dims[4] = {timeID, zID, yID, xID}; // low: why in this order? I guess so it will count in the right order ;)
-        nc_def_var(currentFileID, "pressure", NC_DOUBLE, 4, pressure_dims, &pressureVarID);
-        D("Adding Time");
 
-        size_t start[1], count[1];
-        nc_var_par_access(currentFileID, timeVarID, NC_COLLECTIVE);
-        find_variable_length(currentFileID, timeVarID, start);
-        D("start writing timestep %f into file %s at %d\n", time, file_name, start[0]);
-        count[0] = 1;  // writing one value
-        int status = nc_put_vara_double(currentFileID, timeVarID, start, count, &time);
-      }
+    void* buffer = fca_get_read_access(msg, 0);
+    void* end = buffer+fca_get_segment_size(msg, 0);
 
+    GridMessageMetadata* m = (GridMessageMetadata*)buffer;
+    currentFileID = CreateFile(file_name, m->nX, m->nY, m->nZ, &xID, &yID, &zID, &timeID);
+    // add variable Time and pressure:
+    nc_def_var(currentFileID, "time", NC_DOUBLE, 1, &timeID, &timeVarID);
+    int pressure_dims[4] = {timeID, zID, yID, xID}; // low: why in this order? I guess so it will count in the right order ;)
+    nc_def_var(currentFileID, "pressure", NC_DOUBLE, 4, pressure_dims, &pressureVarID);
+    D("Adding Time");
+
+    size_t start[1], count[1];
+    nc_var_par_access(currentFileID, timeVarID, NC_COLLECTIVE);
+    find_variable_length(currentFileID, timeVarID, start);
+    D("start writing timestep %f into file %s at %d\n", time, file_name, start[0]);
+    count[0] = 1;  // writing one value
+    int status = nc_put_vara_double(currentFileID, timeVarID, start, count, &time);
+
+    while(buffer < end) {
+      buffer += sizeof(GridMessageMetadata);
       nc_var_par_access(currentFileID, pressureVarID, NC_COLLECTIVE);
       // write next timestep
       size_t start[4] = {0, m->iz, m->iy, m->ix};
       size_t count[4] = {1, m->nz, m->ny, m->nx};
       find_variable_length(currentFileID, timeVarID, &(start[0]));
       start[0] = start[0] - 1;
-      double const * const data = (double*)fca_get_read_access(msg, i+1);
+      double const * const data = (double*)buffer;
       // now do a write to the cdf! (! all the preparations up there are necessary!
       int status = nc_put_vara_double(currentFileID, pressureVarID, start, count, data);
       D("putting doubles");
 
+      buffer += sizeof(double)*m->nx*m->ny*m->nz;
+      m = (GridMessageMetadata*)buffer;
     }
 
     nc_close(currentFileID);
