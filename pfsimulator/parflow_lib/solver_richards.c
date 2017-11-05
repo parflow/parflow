@@ -1331,7 +1331,7 @@ void AdvanceRichards(PFModule *this_module,
    }
    int hasRun = 0;
    // For Wait if we get some mor FlowVR Messages...
-   while (!hasRun || FlowVR_wait())
+   while (FlowVR_wait() || (!FLOWVR_ACTIVE && !hasRun))
    {
      hasRun = 1;
 

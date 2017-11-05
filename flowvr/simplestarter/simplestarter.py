@@ -18,14 +18,15 @@ simplestarterModule = flowvr.initModule(v)
 print ("-------simple starter now waiting!")
 while simplestarterModule.wait() :
     print ("-------got beginIt")
-    rm = inport.get()
-    rm.clear()
+    #rm = inport.get()
+    #rm.clear()
 
 
     # I do not know how to make an own stamplist atm...
     m = flowvr.MessageWrite(outport.stamps)
 
 
+    print("----setting stamp")
     m.setStamp("stampStartTime", 0.0  )
     m.setStamp("stampStopTime",  0.010)
 
@@ -35,9 +36,9 @@ while simplestarterModule.wait() :
 
     m.clear()
 
-    print ("putting message")
+    print ("-------putting message")
     time.sleep(1)
-    #break
+    break
 
 
 
