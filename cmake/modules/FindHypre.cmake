@@ -21,33 +21,70 @@ if(NOT HYPRE_ROOT)
   set(HYPRE_ROOT $ENV{HYPRE_ROOT})
 endif()
 
-find_path(HYPRE_INCLUDE_DIR NAMES HYPRE.h
-  PATH_SUFFIXES hypre
-  HINTS ${HYPRE_ROOT}/include
-  PATHS /usr/include /usr/include/openmpi-x86_64)
+# If Hypre root is set then search only in that directory for Hypre
+if (DEFINED HYPRE_ROOT)
 
-# Search first for specific HYPRE libraries; on ubuntu the HYPRE.so is broken and empty.
-find_library(HYPRE_LIBRARY_LS NAMES HYPRE_struct_ls
-  HINTS ${HYPRE_ROOT}/lib
-  PATHS /usr/lib64 /lib64 /usr/lib /lib /usr/lib64/openmpi/lib)
+  find_path(HYPRE_INCLUDE_DIR NAMES HYPRE.h
+    PATH_SUFFIXES hypre
+    PATHS ${HYPRE_ROOT}/include
+    NO_DEFAULT_PATH)
 
-if(HYPRE_LIBRARY_LS)
-  set(HYPRE_LIBRARIES ${HYPRE_LIBRARY_LS})
+  find_library(HYPRE_LIBRARY_LS NAMES HYPRE_struct_ls
+    PATHS ${HYPRE_ROOT}/lib
+    NO_DEFAULT_PATH
+    NO_SYSTEM_ENVIRONMENT_PATH)
 
-  find_library(HYPRE_LIBRARY_MV NAMES HYPRE_struct_mv
-    HINTS ${HYPRE_ROOT}/lib
-    PATHS /usr/lib64 /lib64 /usr/lib /lib)
+  if(HYPRE_LIBRARY_LS)
+    set(HYPRE_LIBRARIES ${HYPRE_LIBRARY_LS})
+
+    find_library(HYPRE_LIBRARY_MV NAMES HYPRE_struct_mv
+      PATHS ${HYPRE_ROOT}/lib
+      NO_DEFAULT_PATH
+      NO_SYSTEM_ENVIRONMENT_PATH)
           
-  if(HYPRE_LIBRARY_MV)
-    list(APPEND HYPRE_LIBRARIES ${HYPRE_LIBRARY_MV})
-  endif()
-else()
-  find_library(HYPRE_LIBRARY NAMES HYPRE HYPRE-64
-    HINTS ${HYPRE_ROOT}/lib
-    PATHS /usr/lib64 /lib64 /usr/lib /lib)
+    if(HYPRE_LIBRARY_MV)
+      list(APPEND HYPRE_LIBRARIES ${HYPRE_LIBRARY_MV})
+    endif()
+  else()
+    find_library(HYPRE_LIBRARY NAMES HYPRE HYPRE-64
+      PATHS ${HYPRE_ROOT}/lib
+      NO_DEFAULT_PATH
+      NO_SYSTEM_ENVIRONMENT_PATH)
 
-  set(HYPRE_LIBRARIES ${HYPRE_LIBRARY})    
-endif()
+    set(HYPRE_LIBRARIES ${HYPRE_LIBRARY})    
+  endif()
+  
+else (DEFINED HYPRE_ROOT)
+
+  find_path(HYPRE_INCLUDE_DIR NAMES HYPRE.h
+    PATH_SUFFIXES hypre
+    HINTS ${HYPRE_ROOT}/include
+    PATHS /usr/include /usr/include/openmpi-x86_64)
+  
+  # Search first for specific HYPRE libraries; on ubuntu the HYPRE.so is broken and empty.
+  find_library(HYPRE_LIBRARY_LS NAMES HYPRE_struct_ls
+    HINTS ${HYPRE_ROOT}/lib
+    PATHS /usr/lib64 /lib64 /usr/lib /lib /usr/lib64/openmpi/lib)
+  
+  if(HYPRE_LIBRARY_LS)
+    set(HYPRE_LIBRARIES ${HYPRE_LIBRARY_LS})
+    
+    find_library(HYPRE_LIBRARY_MV NAMES HYPRE_struct_mv
+      HINTS ${HYPRE_ROOT}/lib
+      PATHS /usr/lib64 /lib64 /usr/lib /lib)
+    
+    if(HYPRE_LIBRARY_MV)
+      list(APPEND HYPRE_LIBRARIES ${HYPRE_LIBRARY_MV})
+    endif()
+  else()
+    find_library(HYPRE_LIBRARY NAMES HYPRE HYPRE-64
+      HINTS ${HYPRE_ROOT}/lib
+      PATHS /usr/lib64 /lib64 /usr/lib /lib)
+    
+    set(HYPRE_LIBRARIES ${HYPRE_LIBRARY})    
+  endif()
+  
+endif (DEFINED HYPRE_ROOT)
 
 set(HYPRE_INCLUDE_DIRS ${HYPRE_INCLUDE_DIR})
 

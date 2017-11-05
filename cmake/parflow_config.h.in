@@ -10,7 +10,6 @@
 #cmakedefine PARFLOW_AMPS_LAYER
 #cmakedefine AMPS
 
-#cmakedefine PARFLOW_AMPS_SEQUENTIAL_IO
 #cmakedefine AMPS_SPLIT_FILE
 
 #cmakedefine PARFLOW_HAVE_TCL
@@ -46,6 +45,8 @@
 
 #cmakedefine PARFLOW_HAVE_SLURM
 #cmakedefine HAVE_SLURM
+
+#cmakedefine PARFLOW_HAVE_NETCDF
 
 #cmakedefine PARFLOW_HAVE_HDF5
 #cmakedefine HAVE_HDF5
