@@ -2933,6 +2933,13 @@ isn't scaling the inputs properly.
    }   /* ends do for time loop */
    while( take_more_time_steps );
 #ifdef HAVE_FLOWVR
+   if (FLOWVR_ACTIVE)
+   {
+     D("Aborting now!");
+     fca_abort(moduleParflow);
+     break;
+   }
+
    } /*  ends while (FlowVR_wait())  */
 #endif
 
