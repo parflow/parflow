@@ -59,6 +59,9 @@ void NewFlowVR()
   return;
 #else
 
+  if (amps_size > 1) {
+    fca_init_parallel(amps_rank, amps_size);  // TODO: amps size or amps_node_size
+  }
   const char* outportnamelist[] = {
       "pressure",
       "porosity",  // REM: does not really change..
