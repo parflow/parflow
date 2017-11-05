@@ -157,6 +157,12 @@ void vectorToMessage(Vector* v, fca_message *result, fca_port *port) {
   int ny_v = SubvectorNY(subvector);
 
   *result = fca_new_message(moduleParflow, sizeof(GridMessageMetadata) );
+  if (result == NULL) 
+  {
+    printf("%d\n", sizeof(GridMessageMetadata));
+    PARFLOW_ERROR("Could not create Message");
+  }
+
   /*const fca_stamp stampMetadata = fca_get_stamp(*port, "Metadata");*/
   /*fca_write_stamp(result, stampMetadata, (void*) &stampMetadata);*/
   /*const fca_stamp stampN = fca_get_stamp(*port, "N");*/
