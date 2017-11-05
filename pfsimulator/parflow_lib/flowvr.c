@@ -86,6 +86,8 @@ void NewFlowVR()
 
   moduleParflow = fca_new_empty_module();
 
+
+
   for (unsigned int i = 0; i < n_outportnamelist; ++i)
   {
     fca_port port = fca_new_port(outportnamelist[i], fca_OUT, 0, NULL);
@@ -114,12 +116,19 @@ void NewFlowVR()
   fca_register_stamp(beginItPort, "stampStartTime", fca_FLOAT);
   fca_register_stamp(beginItPort, "stampStopTime", fca_FLOAT);
   // TODO ^^good idea to use float? or should we put the double in the messages payload??
-  printf("====== flowvr initialisiert.\n");
+  D("flowvr initialisiert.");
   fca_append_port(moduleParflow, beginItPort);
+
+//  char modulename[256];
+//
+//  sprintf(modulename, "parflow/%d", amps_Rank(amps_CommWorld));
+//
+//  fca_set_modulename(moduleParflow, modulename);
 
   if(!fca_init_module(moduleParflow)){
     PARFLOW_ERROR("ERROR : init_module failed!\n");
   }
+
 
   /*fca_trace testTrace = fca_get_trace(modulePut,"beginTrace");*/
   /*if(testTrace == NULL) printf("ERROR : Test Trace FAIL!!\n"); else printf("Test Trace OK.\n");*/
@@ -130,7 +139,10 @@ void NewFlowVR()
 
 int FlowVR_wait() {
   if (FLOWVR_ACTIVE)
+  {
+    D("now waiting");
     return fca_wait(moduleParflow);
+  }
   else
     return 0;
 }
@@ -168,6 +180,8 @@ void vectorToMessage(Vector* v, fca_message *result, fca_port *port) {
   if(!fca_add_segment(moduleParflow, *result, sizeof(double)*m->nx*m->ny*m->nz)) {
     PARFLOW_ERROR("could not allocate memory!");
   }
+  D("Write Segment0: %d bytes, Segment1: %d bytes", sizeof(GridMessageMetadata), sizeof(double)*m->nx*m->ny*m->nz);
+
   double* buffer = (double*) fca_get_write_access(*result, 1);
 
   double *data;
@@ -219,7 +233,7 @@ void DumpRichardsToFlowVR(const char * filename, float time, Vector const * cons
 
     const fca_stamp stampTime = fca_get_stamp(port, "stampTime");
     const fca_stamp stampFileName = fca_get_stamp(port, "stampFileName");
-    printf("writing float: %f\n", time);
+    D("writing float: %f\n", time);
     fca_write_stamp(msg, stampTime, (void*) &time);
     fca_write_stamp(msg, stampFileName, (void*) filename);
 
@@ -228,7 +242,7 @@ void DumpRichardsToFlowVR(const char * filename, float time, Vector const * cons
     {
       PARFLOW_ERROR("Could not send FlowVR-Message!");
     }
-    printf("put message!%.8f\n", time);
+    D("put message!%.8f\n", time);
 
     //fca_free(buffer);  // TODO: do we really have to do this? I guess no. Example shows that it should be fine to free messages.
 

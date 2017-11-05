@@ -12,7 +12,7 @@
 #include "../../pfsimulator/amps/mpi1/amps.h"
 
 #ifdef __DEBUG
-#define D(x...) printf("++++++++ "); printf(x); printf("\n");
+#define D(x...) printf("++++++++ "); printf(x); printf(" %s:%d\n",  __FILE__, __LINE__)
 #else
 #define D(...)
 #endif
@@ -35,7 +35,7 @@ int CreateFile(const char* file_name, size_t nX, size_t nY, size_t nZ, int *pxID
   {
     if (nc_create_par(file_name, NC_NETCDF4|NC_MPIIO, amps_CommWrite, MPI_INFO_NULL, &ncID) != NC_NOERR)
     {
-      D("Error creating file!")
+      D("Error creating file!");
       PARFLOW_ERROR("Could not create file!");
     }
   }
@@ -89,7 +89,7 @@ int main (int argc , char *argv [])
 
   int currentFileID;
   int xID, yID, zID, timeID;
-  D("nowWaiting\n");
+  D("now Waiting\n");
   while (fca_wait(moduleNetCDFWriter)) {
     D("got some stuff to write\n");
     fca_message msg = fca_get(portPressureIn);
@@ -100,6 +100,9 @@ int main (int argc , char *argv [])
     int pressureVarID;
     int timeVarID;
 
+    // FIXME: todo  put filename in metadata as otherwise it will be eaten by nto1 .. ne sollt quatsch sein, da nto1 ja immer nur ausloest wenn von allen was da ist ;)
+    D("number of segments: %d", fca_number_of_segments(msg));
+    D("size: %d", fca_get_segment_size(msg,0));
     assert(fca_number_of_segments(msg)%2 == 0);
     for (int i = 0; i < fca_number_of_segments(msg); i+=2) {
       GridMessageMetadata* m = (GridMessageMetadata*)fca_get_read_access(msg, i);
