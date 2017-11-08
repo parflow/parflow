@@ -49,6 +49,7 @@ before_script:
   - "[[ $PF_BUILD != 'autoconf' ]] || (cd build.pftools && make)"
 
 script:
+  - "[[ $PF_BUILD != 'cmake' ]]    || (cat $PARFLOW_DIR/config/*.sh)"
   - "[[ $PF_BUILD != 'cmake' ]]    || (cd build && make test)"
   - "[[ $PF_BUILD != 'autoconf' ]] || (cd test && make)"
   
