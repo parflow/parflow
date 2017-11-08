@@ -337,6 +337,7 @@ configure_file (cmake/parflow_config.h.in include/parflow_config.h)
 configure_file (cmake/version.h.in include/version.h)
 
 configure_file (cmake/Makefile.config.in config/Makefile.config)
+configure_file (cmake/pf-cmake-env.sh.in config/pf-cmake-env.sh)
 
 if ( ${PARFLOW_HAVE_CLM} )
   configure_file (pfsimulator/clm/parflow_config.F90.in ${PROJECT_BINARY_DIR}/pfsimulator/clm/parflow_config.F90)
