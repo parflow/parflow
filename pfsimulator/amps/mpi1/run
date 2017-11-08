@@ -143,30 +143,41 @@ fi
 
 CMD=""
 
+# If CMake was used then use 
+if [ -f $PARFLOW_DIR/config/pf-cmake-env.sh ]
+then
+  source $PARFLOW_DIR/config/pf-cmake-env.sh
+
+  CMD="${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${NUMPROCS} ${MPIEXEC_POSTFLAGS} ${MPIEXEC_PREFLAGS} ${PARFLOW_DIR}/bin/${PROGRAM} ${PFSCRIPT} $DEBUG_OPT $DEBUG"
+fi
+
 #
 # Specify machine specific ways to launch MPI executables.
 #
-case `uname -a` in
-   *AIX*)
-      #
-      # IBM SP2
-      #
-      CMD="poe $PARFLOW_DIR/bin/$PROGRAM -procs `cat .amps.info.${NUMPROCS}` ${PFSCRIPT} $DEBUG_OPT $DEBUG > ${PFSCRIPT}.out.txt"
+if [ -z "$CMD" ]
+then
+   case `uname -a` in
+      *AIX*)
+	 #
+	 # IBM SP2
+	 #
+	 CMD="poe $PARFLOW_DIR/bin/$PROGRAM -procs `cat .amps.info.${NUMPROCS}` ${PFSCRIPT} $DEBUG_OPT $DEBUG > ${PFSCRIPT}.out.txt"
+	 ;;
+      *WildFire*)
+	 #
+	 # For Sun WildFire systems
+	 #
+	 pflog "Running with SUN tmrun"
+	 CMD="tmrun -np `cat .amps.info.${NUMPROCS}`  $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} $DEBUG_OPT $DEBUG > ${PFSCRIPT}.out.txt"
+	 ;;
+      *chaos*)
+	 #
+	 # For LC chaos systems
+	 #
+	 CMD="srun -n ${NUMPROCS} $PARFLOW_RUN_OPTS $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} > ${PFSCRIPT}.out.txt"
       ;;
-   *WildFire*)
-      #
-      # For Sun WildFire systems
-      #
-      pflog "Running with SUN tmrun"
-      CMD="tmrun -np `cat .amps.info.${NUMPROCS}`  $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} $DEBUG_OPT $DEBUG > ${PFSCRIPT}.out.txt"
-      ;;
-   *chaos*)
-      #
-      # For LC chaos systems
-      #
-      CMD="srun -n ${NUMPROCS} $PARFLOW_RUN_OPTS $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} > ${PFSCRIPT}.out.txt"
-      ;;
-esac
+   esac
+fi
 
 if [ -z "$CMD" ]
 then
@@ -211,7 +222,7 @@ then
    fi
 fi
 
-pflog "Running : $CMD" 
+echo "Running : $CMD" 
 eval $CMD
 exit $?
 
