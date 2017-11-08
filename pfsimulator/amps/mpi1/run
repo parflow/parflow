@@ -146,7 +146,7 @@ CMD=""
 # If CMake was used then use 
 if [ -f $PARFLOW_DIR/config/pf-cmake-env.sh ]
 then
-  source $PARFLOW_DIR/config/pf-cmake-env.sh
+  . $PARFLOW_DIR/config/pf-cmake-env.sh
 
   CMD="${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${NUMPROCS} ${MPIEXEC_POSTFLAGS} ${MPIEXEC_PREFLAGS} ${PARFLOW_DIR}/bin/${PROGRAM} ${PFSCRIPT} $DEBUG_OPT $DEBUG 2>&1 > ${PFSCRIPT}.out.txt"
 fi
