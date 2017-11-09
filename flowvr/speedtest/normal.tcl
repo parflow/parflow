@@ -9,15 +9,18 @@ lappend auto_path $env(PARFLOW_DIR)/bin
 package require parflow
 namespace import Parflow::*
 
-source ./common.tcl
-pfset NetCDF.WritePressure			False
+file delete -force results_normal
+file mkdir results_normal
+cd results_normal
 
+source ../common.tcl
+
+pfset NetCDF.WritePressure			True
+#
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-#done in doChecks.sh
-pfwritedb mpi
-#pfrun mpi
+#pfwritedb mpi
+pfrun normal
 
-# done in undist.tcl:
-#pfundist mpi
+pfundist normal

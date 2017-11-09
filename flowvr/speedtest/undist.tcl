@@ -5,4 +5,4 @@ namespace import Parflow::*
 
 #cd results
 
-pfundist default_richards
+pfundist mpi
