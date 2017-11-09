@@ -992,7 +992,6 @@ void PutDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData, int dim
   {
     long end[MAX_NC_VARS];
     nc_var_par_access(netCDFIDs[0], varID, NC_COLLECTIVE);
-    printf("KKu: ncID is %d\n", netCDFIDs[0]);
     find_variable_length(netCDFIDs[0], varID, end);
     size_t start[myVarNCData->dimSize], count[myVarNCData->dimSize];
     start[0] = end[0]; count[0] = 1;
@@ -1004,7 +1003,6 @@ void PutDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData, int dim
     {
       long end[MAX_NC_VARS];
       nc_var_par_access(netCDFIDs[0], varID, NC_COLLECTIVE);
-      printf("KKu: ncID is %d\n", netCDFIDs[0]);
       find_variable_length(netCDFIDs[0], varID, end);
       size_t start[myVarNCData->dimSize], count[myVarNCData->dimSize];
 
@@ -1142,7 +1140,6 @@ void find_variable_length( int nid, int varid, long dim_lengths[MAX_NC_VARS] )
   nc_type type;
   /* inquire on this variable to determine number of dimensions
    *   and dimension ids */
-    printf("KKu: ncID is %d\n", nid);
   nc_inq_var( nid, varid, 0, &type, &ndims, dim_ids, &natts );
   /* get the sizes of each dimension */
   for( i=0; i < ndims; i++ )
