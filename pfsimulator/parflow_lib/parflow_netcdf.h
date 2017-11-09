@@ -1,6 +1,5 @@
 /*BHEADER**********************************************************************
   This file is part of Parflow. For details, see
-  http://www.llnl.gov/casc/parflow
 
   Please read the COPYRIGHT file or Our Notice and the LICENSE file
   for the GNU Lesser General Public License.
@@ -26,9 +25,8 @@
 #else
 #define MAX_NC_VARS 8192
 #endif
+#include<stdbool.h>
 
-static int ncID, xID, yID, zID, timID, varID;
-static int time_step = 0;
 typedef struct
 {
 	char *varName;
@@ -37,16 +35,30 @@ typedef struct
 	int *dimIDs;
 } varNCData;
 
+/* ParFlow NetCDF4 interface declaration */
+
 void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int numVarTimeVariant,
-			char *varName, int dimensionality, int timDimensionality);
-void CreateNCFile(char *file_name, Vector *v);
+			char *varName, int dimensionality, bool init, int numVarIni);
+void CreateNCFile(char *file_name, int *netCDFIDs);
+void NCDefDimensions(Vector *v, int dimensionality, int *netCDFIDs);
 void CloseNC(int ncID);
-int LookUpInventory(char * varName, varNCData **myVarNCData);
-void PutDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData);
+int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs);
+void PutDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData, int dimensionality, int *netCDFIDs);
 void find_variable_length( int nid, int varid, long dim_lengths[MAX_NC_VARS] );
-void CreateNCFileNode(char *file_name, Vector *v);
+void CreateNCFileNode(char *file_name, Vector *v, int *netCDFIDs);
 void PutDataInNCNode(int varID, double *data_nc_node, int *nodeXIndices, int *nodeYIndices, int *nodeZIndices,
-    			int *nodeXCount, int *nodeYCount, int *nodeZCount, double t, varNCData *myVarNCData);
-void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep);
-void OpenNCFile(char *file_name, int *ncID);
-void ReadNCFile(int ncID, int varID, Subvector *subvector, Subgrid *subgrid, char *varName, int tStep);
+    			int *nodeXCount, int *nodeYCount, int *nodeZCount, double t, varNCData *myVarNCData, int *netCDFIDs);
+void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep, int dimensionality);
+void OpenNCFile(char *file_name, int *ncRID);
+void ReadNCFile(int ncRID, int varID, Subvector *subvector, Subgrid *subgrid, char *varName, int tStep, int dimensionality);
+
+
+
+/* CLM NetCDF4 interface declaration */
+void WriteCLMNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int numVarTimeVariant,
+			char *varName, int dimensionality);
+void CreateCLMNCFile(char *file_name, int *clmIDs);
+void NCCLMDefDimensions(Vector *v, int dimensionality, int *clmIDs);
+void PutCLMDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData, int dimensionality, int *clmIDs);
+void CloseCLMNC(int ncCLMID);
+int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs);

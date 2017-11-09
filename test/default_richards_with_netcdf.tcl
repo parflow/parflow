@@ -376,7 +376,7 @@ if ![file exists default_richards.out.00000.nc] {
     set passed 0
 }
 
-if ![file exists default_richards.out.00005.nc] {
+if ![file exists default_richards.out.00001.nc] {
     puts "NetCDF file was not created"
     set passed 0
 }
