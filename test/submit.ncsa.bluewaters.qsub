@@ -1,0 +1,38 @@
+#!/bin/bash
+#PBS -l nodes=1:ppn=32
+#PBS -l walltime=00:30:00
+#PBS -N parflowtest
+#PBS -q debug
+
+cd $PBS_O_WORKDIR
+
+echo "PWD : $(pwd)"
+
+# Appends to path if not path not already present
+function prependToPath {
+   echo $PATH | grep -q $1
+   if [ $? -ne 0 ]
+   then
+      PATH=${1}:${PATH}
+   fi
+}
+
+. /opt/modules/default/init/bash
+
+module load cray-hdf5-parallel
+module load cray-netcdf-hdf5parallel
+module load cray-tpsl
+module unload darshan
+module load cmake/3.9.4
+module load cray-tpsl
+module unload PrgEnv-cray
+module load PrgEnv-intel
+module load intel
+
+export PARFLOW_DIR=$HOME/install
+prependToPath $PARFLOW_DIR/bin
+
+# aprun -n 1 parflow default_single
+
+make test
+
