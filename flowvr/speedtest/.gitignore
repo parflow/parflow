@@ -1,0 +1,9 @@
+*.nc
+*.cmd.xml
+*.net.xml
+*.out.kinsol.log
+*.out.log
+*.out.pftcl
+*.pfidb
+*.run.xml
+
