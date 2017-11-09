@@ -4115,9 +4115,10 @@ SolverRichardsInitInstanceXtra()
                             (NULL, NULL, NULL, temp_data));
 
   /* renew velocity computation modules that take temporary data */
-  /*   PFModuleReNewInstance((instance_xtra -> phase_velocity_face),
-   *   (NULL, NULL, NULL, NULL, NULL, temp_data)); */
-
+  /*   
+   *  PFModuleReNewInstance((instance_xtra -> phase_velocity_face),
+   *   (NULL, NULL, NULL, NULL, NULL, temp_data)); 
+   */
 
   /* renew concentration advection modules that take temporary data */
   temp_data_placeholder = temp_data;
@@ -4369,7 +4370,8 @@ SolverRichardsNewPublicXtra(char *name)
   }
 
   /* NBE - Allows disabling of the CLM output logs generated for each processor
-   *  Checking of the values is manual right not in case other options are added */
+   *  Checking of the values is manual right not in case other options are added 
+   */
   sprintf(key, "%s.CLM.WriteLogs", name);
   switch_name = GetStringDefault(key, "True");
   switch_value = NA_NameToIndex(switch_na, switch_name);
@@ -4520,7 +4522,8 @@ SolverRichardsNewPublicXtra(char *name)
 
   /* IMF Key for met vars in subdirectories
   * If True  -- each variable in it's own subdirectory of MetFilePath (e.g., /Temp, /APCP, etc.)
-  * If False -- all files in MetFilePath */
+  * If False -- all files in MetFilePath 
+  */
   sprintf(key, "%s.CLM.MetFileSubdir", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
