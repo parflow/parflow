@@ -255,6 +255,7 @@ void DumpRichardsToFlowVR(const char * filename, float time, Vector const * cons
     {
       PARFLOW_ERROR("Could not send FlowVR-Message!");
     }
+    fca_free(msg);
     D("put message!%.8f\n", time);
 
     //fca_free(buffer);  // TODO: do we really have to do this? I guess no. Example shows that it should be fine to free messages.
