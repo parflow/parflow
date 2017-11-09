@@ -27,8 +27,8 @@ while simplestarterModule.wait() :
 
 
     print("----setting stamp")
-    m.setStamp("stampStartTime", 0.0  )
-    m.setStamp("stampStopTime",  0.010)
+    m.setStamp("stampStartTime", 0.0)
+    m.setStamp("stampStopTime",  0.1)
 
     # we need to initizlize data also for stamps messages ;)
     m.data = simplestarterModule.alloc(0)
@@ -45,6 +45,7 @@ while simplestarterModule.wait() :
 print ("-----quit simple starter")
 
 simplestarterModule.close()
+#simplestarterModule.abort()
 
 
 
