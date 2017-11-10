@@ -47,7 +47,6 @@
 #cmakedefine HAVE_SLURM
 
 #cmakedefine PARFLOW_HAVE_NETCDF
-#cmakedefine HAVE_NETCDF
 
 #cmakedefine PARFLOW_HAVE_HDF5
 #cmakedefine HAVE_HDF5
