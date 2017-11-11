@@ -10,6 +10,7 @@ package require parflow
 namespace import Parflow::*
 
 source ./common.tcl
+source ./Ns.tcl
 pfset NetCDF.WritePressure			False
 
 #-----------------------------------------------------------------------------

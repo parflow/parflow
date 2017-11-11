@@ -14,6 +14,7 @@ file mkdir results_normal
 cd results_normal
 
 source ../common.tcl
+source ../Ns.tcl
 
 pfset NetCDF.WritePressure			True
 #

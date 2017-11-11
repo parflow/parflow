@@ -14,6 +14,8 @@ class ParflowMPI(Composite):
     prefix = "parflow"
     # hosts: string with host names, separated by spaces
     parflowrun = FlowvrRunOpenMPI("$PARFLOW_DIR/bin/parflow %s" % "mpi", hosts = hosts, prefix = prefix)
+# for debug:
+    #parflowrun = FlowvrRunOpenMPI("xterm -e gdb $PARFLOW_DIR/bin/parflow", hosts = hosts, prefix = prefix)
 
     # hosts_list: convert hosts to a list
     hosts_list = hosts.split(",")
@@ -85,19 +87,22 @@ hosts = ("localhost,"*int(P)*int(Q)*int(R))[:-1]  # cut last ,
 parflowmpi = ParflowMPI(hosts)
 netcdfwriter = NetCDFWriter("netcdfwriter")
 
-#spymodule = SpyModule("spy_module")
 
 # SIMULATION TIME FRAME DATA TRANSFER
 
-#simplestarter.getPort("out").link(spymodule.getPort("in"))
 simplestarter.getPort("out").link(parflowmpi.getPort("in"))
 
 # PRESSURE DATA TRANSFER
 # link parflow (port pressure)  to netcdfwriter.   Comunication N to 1. Using MergeFilter to merge results
 
 #TODO: shouldn't it work without this tree too?
+# REM: if we would work on one core the tree will not work!
 treeOut = generateNto1(prefix="comNto1PressureMerge", in_ports = parflowmpi.getPort("pressure"), arity = 2)
 treeOut.link(netcdfwriter.getPort("pressureIn"))
+
+#spymodule = SpyModule("spy_module")
+#treeOut.link(spymodule.getPort("in"))
+
 #for p in parflowmpi.getPort("pressure"):
         #p.link(netcdfwriter.getPort("pressureIn"))
 

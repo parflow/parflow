@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 # for fancy logs: ./doChecks.sh >log 2>&1
 
@@ -14,6 +14,7 @@ Q=2
 R=1
 
 python ./mpi.py $P $Q $R
+#flowvrd -s 3G & # do not need this line!
 flowvrd &
 
 # wait for flowvrd to startup
@@ -27,7 +28,7 @@ tclsh ./mpi.tcl $P $Q $R --FlowVR # does all the preparation...
 sh $PARFLOW_DIR/bin/bootmc $NumProcs
 sh $PARFLOW_DIR/bin/getmc $NumProcs
 
-flowvr --end mpi
+flowvr --batch-mode mpi
 
 sh $PARFLOW_DIR/bin/freemc
 sh $PARFLOW_DIR/bin/killmc

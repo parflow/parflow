@@ -6,4 +6,4 @@
 *.out.pftcl
 *.pfidb
 *.run.xml
-
+Ns.tcl
