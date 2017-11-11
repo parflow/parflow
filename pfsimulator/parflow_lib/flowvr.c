@@ -171,13 +171,6 @@ void vectorToMessage(Vector* v, fca_message *result, fca_port *port) {
   int nx_v = SubvectorNX(subvector);
   int ny_v = SubvectorNY(subvector);
 
-  *result = fca_new_message(moduleParflow, sizeof(GridMessageMetadata) );
-  if (result == NULL)
-  {
-    printf("%d\n", sizeof(GridMessageMetadata));
-    PARFLOW_ERROR("Could not create Message");
-  }
-
   /*const fca_stamp stampMetadata = fca_get_stamp(*port, "Metadata");*/
   /*fca_write_stamp(result, stampMetadata, (void*) &stampMetadata);*/
   /*const fca_stamp stampN = fca_get_stamp(*port, "N");*/
@@ -187,13 +180,17 @@ void vectorToMessage(Vector* v, fca_message *result, fca_port *port) {
   fillGridMessageMetadata(v, &m);
   size_t vector_size = sizeof(double)*m.nx*m.ny*m.nz;
   *result = fca_new_message(moduleParflow, sizeof(GridMessageMetadata) + vector_size);
+  if (result == NULL)
+  {
+    D("Message_size: %d\n", sizeof(GridMessageMetadata) + vector_size);
+    PARFLOW_ERROR("Could not create Message");
+  }
   void *buffer = fca_get_write_access(*result, 0);
+  D("Will write  %d bytes + %d bytes", sizeof(GridMessageMetadata), vector_size);
+
   memcpy(buffer, &m, sizeof(GridMessageMetadata));
   buffer += sizeof(GridMessageMetadata);
 
-  memcpy(buffer, &m, vector_size);
-
-  D("Write  %d bytes + %d bytes", sizeof(GridMessageMetadata), vector_size);
 
   double* buffer_double = (double*) buffer;
 
