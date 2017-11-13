@@ -33,7 +33,7 @@ int CreateFile(const char* file_name, size_t nX, size_t nY, size_t nZ, int *pxID
 
   if (access( file_name, F_OK ) == -1)
   {
-    if (nc_create_par(file_name, NC_NETCDF4|NC_MPIIO, amps_CommWrite, MPI_INFO_NULL, &ncID) != NC_NOERR)
+    if (nc_create_par(file_name, NC_NETCDF4|NC_MPIIO, amps_CommWorld, MPI_INFO_NULL, &ncID) != NC_NOERR)
     {
       D("Error creating file!");
       PARFLOW_ERROR("Could not create file!");
@@ -103,6 +103,7 @@ int main (int argc , char *argv [])
     // FIXME: todo  put filename in metadata as otherwise it will be eaten by nto1 .. ne sollt quatsch sein, da nto1 ja immer nur ausloest wenn von allen was da ist ;)
     D("number of segments: %d", fca_number_of_segments(msg));
     D("size: %d", fca_get_segment_size(msg,0));
+    D("writing to %s", file_name);
 
     void* buffer = fca_get_read_access(msg, 0);
     void* end = buffer+fca_get_segment_size(msg, 0);
