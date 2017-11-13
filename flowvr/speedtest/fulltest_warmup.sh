@@ -13,6 +13,7 @@ rm $RESULTFILE.*.csv
 for algo in 0 1; do
   # write header:
   rf=$RESULTFILE.$algo.csv
+  echo `git rev-parse HEAD` >> $rf
   echo "flowvr: parflow grid(3,2,1) + netcdf + simplestarter" >> $rf
   echo "normal: parflow grid(4,2,1)" >> $rf
   echo "i=0: warmup run" >> $rf
@@ -34,7 +35,7 @@ for N in 10 20 30 40 50; do
     echo ------------
 
     for i in 0 1 2 3; do
-      `${algos[algo]}`
+      eval ${algos[algo]}
       echo measuring...
       p=${prepaths[algo]}
       dt1000=`./measure.py $p.00999.nc $p.00001.nc`
