@@ -26,12 +26,12 @@ echo "Now starting flowVR . this will take some time. When the output does not c
 read -n1 -r -p "Press any key to continue..." key
 
 python ./parFlowVR.py
-flowvrd &
+flowvrd -s 4M &
 
 # wait for flowvrd to startup
 sleep 1
 
-flowvr parflowvr
+flowvr --batch-mode parflowvr
 
 
 killall flowvrd
