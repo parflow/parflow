@@ -1,35 +1,35 @@
-/*BHEADER**********************************************************************
-
-  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-  by the Parflow Team (see the CONTRIBUTORS file)
-  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-
-  This file is part of Parflow. For details, see
-  http://www.llnl.gov/casc/parflow
-
-  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-  for the GNU Lesser General Public License.
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License (as published
-  by the Free Software Foundation) version 2.1 dated February 1999.
-
-  This program is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-  and conditions of the GNU General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-  USA
-**********************************************************************EHEADER*/
-
-/******************************************************************************
- * Header info for compute package data structures.
+/*BHEADER*********************************************************************
  *
- *****************************************************************************/
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+
+/*****************************************************************************
+* Header info for compute package data structures.
+*
+*****************************************************************************/
 
 #ifndef _COMPUTATION_HEADER
 #define _COMPUTATION_HEADER
@@ -42,14 +42,12 @@
  *    Structure defining various computational regions.
  *--------------------------------------------------------------------------*/
 
-typedef struct
-{
-   Region  *send_region; /* send region */
-   Region  *recv_region; /* receive region */
+typedef struct {
+  Region  *send_region;  /* send region */
+  Region  *recv_region;  /* receive region */
 
-   Region  *ind_region;  /* neighbor independent computational region */
-   Region  *dep_region;  /* neighbor dependent computational region */
-
+  Region  *ind_region;   /* neighbor independent computational region */
+  Region  *dep_region;   /* neighbor dependent computational region */
 } ComputePkg;
 
 
@@ -57,11 +55,11 @@ typedef struct
  * Accessor functions for ComputePkg structure
  *--------------------------------------------------------------------------*/
 
-#define ComputePkgSendRegion(compute_pkg) ((compute_pkg) -> send_region)
-#define ComputePkgRecvRegion(compute_pkg) ((compute_pkg) -> recv_region)
+#define ComputePkgSendRegion(compute_pkg) ((compute_pkg)->send_region)
+#define ComputePkgRecvRegion(compute_pkg) ((compute_pkg)->recv_region)
 
-#define ComputePkgIndRegion(compute_pkg) ((compute_pkg) -> ind_region)
-#define ComputePkgDepRegion(compute_pkg) ((compute_pkg) -> dep_region)
+#define ComputePkgIndRegion(compute_pkg) ((compute_pkg)->ind_region)
+#define ComputePkgDepRegion(compute_pkg) ((compute_pkg)->dep_region)
 
 
 #endif

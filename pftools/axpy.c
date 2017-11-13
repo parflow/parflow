@@ -1,40 +1,40 @@
-/*BHEADER**********************************************************************
-
-  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-  by the Parflow Team (see the CONTRIBUTORS file)
-  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-
-  This file is part of Parflow. For details, see
-  http://www.llnl.gov/casc/parflow
-
-  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-  for the GNU Lesser General Public License.
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License (as published
-  by the Free Software Foundation) version 2.1 dated February 1999.
-
-  This program is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-  and conditions of the GNU General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-  USA
-**********************************************************************EHEADER*/
-/******************************************************************************
- * Axpy
+/*BHEADER*********************************************************************
  *
- * (C) 1993 Regents of the University of California.
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
  *
- *-----------------------------------------------------------------------------
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
  *
- *-----------------------------------------------------------------------------
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
  *
- *****************************************************************************/
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/*****************************************************************************
+* Axpy
+*
+* (C) 1993 Regents of the University of California.
+*
+*-----------------------------------------------------------------------------
+*
+*-----------------------------------------------------------------------------
+*
+*****************************************************************************/
 
 #include "databox.h"
 
@@ -42,42 +42,41 @@
  * Compute Y = alpha*X + Y
  *-----------------------------------------------------------------------*/
 
-void       Axpy(double alpha, Databox *X,  Databox *Y)
+void       Axpy(double alpha, Databox *X, Databox *Y)
 {
-   int             nx, ny, nz;
-   double          x,  y,  z;
-   double          dx, dy, dz;
+  int nx, ny, nz;
+  double x, y, z;
+  double dx, dy, dz;
 
-   double         *xp, *yp;
+  double         *xp, *yp;
 
-   int             m, sx, sy, sz;
-   
+  int m, sx, sy, sz;
 
-   nx = DataboxNx(X);
-   ny = DataboxNy(X);
-   nz = DataboxNz(X);
 
-   x  = DataboxX(X);
-   y  = DataboxY(X);
-   z  = DataboxZ(X);
+  nx = DataboxNx(X);
+  ny = DataboxNy(X);
+  nz = DataboxNz(X);
 
-   dx = DataboxDx(X);
-   dy = DataboxDy(X);
-   dz = DataboxDz(X);
+  x = DataboxX(X);
+  y = DataboxY(X);
+  z = DataboxZ(X);
 
-   xp  = DataboxCoeffs(X);
-   yp  = DataboxCoeffs(Y);
+  dx = DataboxDx(X);
+  dy = DataboxDy(X);
+  dz = DataboxDz(X);
 
-   m = 0;
-   sx = 1;
-   sy = nx;
-   sz = ny*nx;
+  xp = DataboxCoeffs(X);
+  yp = DataboxCoeffs(Y);
 
-   for (m = 0; m < (nx*ny*nz); m++)
-   {
-      yp[m] += alpha*xp[m];
-   }
+  m = 0;
+  sx = 1;
+  sy = nx;
+  sz = ny * nx;
 
+  for (m = 0; m < (nx * ny * nz); m++)
+  {
+    yp[m] += alpha * xp[m];
+  }
 }
 
 

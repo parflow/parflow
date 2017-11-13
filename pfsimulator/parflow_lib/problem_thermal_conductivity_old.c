@@ -1,4 +1,4 @@
-/*BHEADER**********************************************************************
+/*BHEADER*********************************************************************
 
   Copyright (c) 1995-2009, Lawrence Livermore National Security,
   LLC. Produced at the Lawrence Livermore National Laboratory. Written
@@ -25,7 +25,7 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
   USA
 **********************************************************************EHEADER*/
-/******************************************************************************
+/*****************************************************************************
  *
  *  This module computes thermal conductivities.  
  *
