@@ -13,7 +13,7 @@ C   for the GNU Lesser General Public License.
 C
 C This program is free software; you can redistribute it and / or modify
 C it under the terms of the GNU General Public License(as published
-                                                       C by the Free Software Foundation) version 2.1 dated February 1999.
+C by the Free Software Foundation) version 2.1 dated February 1999.
 C
 C This program is distributed in the hope that it will be useful, but
 C WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
