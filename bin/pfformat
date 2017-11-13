@@ -1,0 +1,9 @@
+#!/bin/bash
+# Run the uncrustify code formatter on Parflow code
+
+
+files=$(find . -name \*.[ch])
+for i in $files
+do
+   uncrustify -l C --replace --no-backup -c bin/parflow.cfg $i 
+done
