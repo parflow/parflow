@@ -15,14 +15,14 @@ if (process.argv.length > 2) {
     console.log(out);
 } else {
     var files = ['./mpi.out.00001.nc', './mpi.out.00999.nc'];
-    console.log("FlowVR runtime all files: " + showIt(files) + " s");
+    console.log("FlowVR runtime 1000 files: " + showIt(files) + " s");
     var files = ['./results_normal/normal.out.00001.nc', './results_normal/normal.out.00999.nc'];
-    console.log("normal runtime all files: " + showIt(files) + " s");
+    console.log("normal runtime 1000 files: " + showIt(files) + " s");
 
     var files = ['./mpi.out.00001.nc', './mpi.out.00500.nc'];
-    console.log("FlowVR runtime half files: " + showIt(files) + " s");
+    console.log("FlowVR runtime 500 files: " + showIt(files) + " s");
     var files = ['./results_normal/normal.out.00001.nc', './results_normal/normal.out.00500.nc'];
-    console.log("normal runtime half files: " + showIt(files) + " s");
+    console.log("normal runtime 500 files: " + showIt(files) + " s");
 }
 
 function showIt(files) {
