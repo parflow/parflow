@@ -18,4 +18,10 @@ ADD_LATEX_DOCUMENT(
     IMAGES ${PARFLOW_USER_MANUAL_IMAGES}
     )
 
+ADD_LATEX_DOCUMENT(
+    amps_manual.tex
+    INPUTS ${PARFLOW_USER_MANUAL_FILES}
+    IMAGES ${PARFLOW_USER_MANUAL_IMAGES}
+    )
+
 configure_file (version.tex.in version.tex)
