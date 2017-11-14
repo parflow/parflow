@@ -68,14 +68,6 @@ class NetCDFWriter(Module):
     #self.run.options += '-x DISPLAY'
 
 
-class SpyModule(Module):
-  """Module NetCDFWriter writes parflow output into netCDF files."""
-
-  def __init__(self, name):
-    Module.__init__(self, name, cmdline = "python ./spy_module.py")
-    self.addPort("in", direction = 'in');
-
-
 # Main starts here ###########
 
 P, Q, R = sys.argv[1:4]
@@ -87,6 +79,8 @@ hosts = ("localhost,"*int(P)*int(Q)*int(R))[:-1]  # cut last ,
 parflowmpi = ParflowMPI(hosts)
 netcdfwriter = NetCDFWriter("netcdfwriter")
 
+#spymodule = SpyModule("spy_module")
+#parflowmpi.getPort("pressure")[0].link(spymodule.getPort("in"))
 
 # SIMULATION TIME FRAME DATA TRANSFER
 

@@ -1,8 +1,8 @@
 /* f2c.h  --  Standard Fortran to C header file */
 
 /**  barf  [ba:rf]  2.  "He suggested using FORTRAN, and everybody barfed."
-
-	- From The Shogakukan DICTIONARY OF NEW ENGLISH (Second edition) */
+ *
+ *      - From The Shogakukan DICTIONARY OF NEW ENGLISH (Second edition) */
 
 #ifndef F2C_INCLUDE
 #define F2C_INCLUDE
@@ -43,109 +43,103 @@ typedef long ftnint;
 
 /*external read, write*/
 typedef struct
-{	flag cierr;
-	ftnint ciunit;
-	flag ciend;
-	char *cifmt;
-	ftnint cirec;
-} cilist;
+{ flag cierr;
+  ftnint ciunit;
+  flag ciend;
+  char *cifmt;
+  ftnint cirec; } cilist;
 
 /*internal read, write*/
 typedef struct
-{	flag icierr;
-	char *iciunit;
-	flag iciend;
-	char *icifmt;
-	ftnint icirlen;
-	ftnint icirnum;
-} icilist;
+{ flag icierr;
+  char *iciunit;
+  flag iciend;
+  char *icifmt;
+  ftnint icirlen;
+  ftnint icirnum; } icilist;
 
 /*open*/
 typedef struct
-{	flag oerr;
-	ftnint ounit;
-	char *ofnm;
-	ftnlen ofnmlen;
-	char *osta;
-	char *oacc;
-	char *ofm;
-	ftnint orl;
-	char *oblnk;
-} olist;
+{ flag oerr;
+  ftnint ounit;
+  char *ofnm;
+  ftnlen ofnmlen;
+  char *osta;
+  char *oacc;
+  char *ofm;
+  ftnint orl;
+  char *oblnk; } olist;
 
 /*close*/
 typedef struct
-{	flag cerr;
-	ftnint cunit;
-	char *csta;
-} cllist;
+{ flag cerr;
+  ftnint cunit;
+  char *csta; } cllist;
 
 /*rewind, backspace, endfile*/
 typedef struct
-{	flag aerr;
-	ftnint aunit;
-} alist;
+{ flag aerr;
+  ftnint aunit; } alist;
 
 /* inquire */
 typedef struct
-{	flag inerr;
-	ftnint inunit;
-	char *infile;
-	ftnlen infilen;
-	ftnint	*inex;	/*parameters in standard's order*/
-	ftnint	*inopen;
-	ftnint	*innum;
-	ftnint	*innamed;
-	char	*inname;
-	ftnlen	innamlen;
-	char	*inacc;
-	ftnlen	inacclen;
-	char	*inseq;
-	ftnlen	inseqlen;
-	char 	*indir;
-	ftnlen	indirlen;
-	char	*infmt;
-	ftnlen	infmtlen;
-	char	*inform;
-	ftnint	informlen;
-	char	*inunf;
-	ftnlen	inunflen;
-	ftnint	*inrecl;
-	ftnint	*innrec;
-	char	*inblank;
-	ftnlen	inblanklen;
-} inlist;
+{ flag inerr;
+  ftnint inunit;
+  char *infile;
+  ftnlen infilen;
+  ftnint  *inex;        /*parameters in standard's order*/
+  ftnint  *inopen;
+  ftnint  *innum;
+  ftnint  *innamed;
+  char    *inname;
+  ftnlen innamlen;
+  char    *inacc;
+  ftnlen inacclen;
+  char    *inseq;
+  ftnlen inseqlen;
+  char    *indir;
+  ftnlen indirlen;
+  char    *infmt;
+  ftnlen infmtlen;
+  char    *inform;
+  ftnint informlen;
+  char    *inunf;
+  ftnlen inunflen;
+  ftnint  *inrecl;
+  ftnint  *innrec;
+  char    *inblank;
+  ftnlen inblanklen; } inlist;
 
 #define VOID void
 
-union Multitype {	/* for multiple entry points */
-	integer1 g;
-	shortint h;
-	integer i;
-	/* longint j; */
-	real r;
-	doublereal d;
-	complex c;
-	doublecomplex z;
-	};
+union Multitype {       /* for multiple entry points */
+  integer1 g;
+  shortint h;
+  integer i;
+  /* longint j; */
+  real r;
+  doublereal d;
+  complex c;
+  doublecomplex z;
+};
 
 typedef union Multitype Multitype;
 
-typedef long Long;	/* No longer used; formerly in Namelist */
+typedef long Long;      /* No longer used; formerly in Namelist */
 
-struct Vardesc {	/* for Namelist */
-	char *name;
-	char *addr;
-	ftnlen *dims;
-	int  type;
-	};
+struct Vardesc {        /* for Namelist */
+  char *name;
+  char *addr;
+  ftnlen *dims;
+  int type;
+};
 typedef struct Vardesc Vardesc;
 
 struct Namelist {
-	char *name;
-	Vardesc **vars;
-	int nvars;
-	};
+  char *name;
+  Vardesc **vars;
+  int nvars;
+};
 typedef struct Namelist Namelist;
 
 #ifndef abs
@@ -156,15 +150,15 @@ typedef struct Namelist Namelist;
 #define dabs(x) (doublereal)abs(x)
 
 #ifndef pfmin
-#define pfmin(a,b) ((a) <= (b) ? (a) : (b))
+#define pfmin(a, b) ((a) <= (b) ? (a) : (b))
 #endif
 
 #ifndef pfmax
-#define pfmax(a,b) ((a) >= (b) ? (a) : (b))
+#define pfmax(a, b) ((a) >= (b) ? (a) : (b))
 #endif
 
-#define dpfmin(a,b) (doublereal)pfmin(a,b)
-#define dpfmax(a,b) (doublereal)pfmax(a,b)
+#define dpfmin(a, b) (doublereal)pfmin(a, b)
+#define dpfmax(a, b) (doublereal)pfmax(a, b)
 
 /* procedure parameter types for -A and -C++ */
 
@@ -195,10 +189,10 @@ typedef /* Character */ VOID (*H_fp)();
 typedef /* Subroutine */ int (*S_fp)();
 #endif
 /* E_fp is for real functions when -R is not specified */
-typedef VOID C_f;	/* complex function */
-typedef VOID H_f;	/* character function */
-typedef VOID Z_f;	/* double complex function */
-typedef doublereal E_f;	/* real function with -R not specified */
+typedef VOID C_f;       /* complex function */
+typedef VOID H_f;       /* character function */
+typedef VOID Z_f;       /* double complex function */
+typedef doublereal E_f; /* real function with -R not specified */
 
 /* undef any lower-case symbols that your C compiler predefines, e.g.: */
 

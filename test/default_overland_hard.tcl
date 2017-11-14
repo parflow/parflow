@@ -8,7 +8,7 @@ set runname default_overland
 #
 # Import the ParFlow TCL package
 #
-lappend auto_path $env(PARFLOW_DIR)/bin 
+lappend auto_path $env(PARFLOW_DIR)/bin
 package require parflow
 namespace import Parflow::*
 
@@ -43,52 +43,52 @@ pfset GeomInput.leftinput.GeomName  left
 pfset GeomInput.rightinput.GeomName  right
 pfset GeomInput.channelinput.GeomName  channel
 
-pfset GeomInput.domaininput.InputType  Box 
-pfset GeomInput.leftinput.InputType  Box 
-pfset GeomInput.rightinput.InputType  Box 
-pfset GeomInput.channelinput.InputType  Box 
+pfset GeomInput.domaininput.InputType  Box
+pfset GeomInput.leftinput.InputType  Box
+pfset GeomInput.rightinput.InputType  Box
+pfset GeomInput.channelinput.InputType  Box
 
 #---------------------------------------------------------
-# Domain Geometry 
+# Domain Geometry
 #---------------------------------------------------------
 pfset Geom.domain.Lower.X                        0.0
 pfset Geom.domain.Lower.Y                        0.0
 pfset Geom.domain.Lower.Z                        0.0
- 
+
 pfset Geom.domain.Upper.X                        300.0
 pfset Geom.domain.Upper.Y                        300.0
 pfset Geom.domain.Upper.Z                          1.5
 pfset Geom.domain.Patches             "x-lower x-upper y-lower y-upper z-lower z-upper"
 
 #---------------------------------------------------------
-# Left Slope Geometry 
+# Left Slope Geometry
 #---------------------------------------------------------
 pfset Geom.left.Lower.X                        0.0
 pfset Geom.left.Lower.Y                        0.0
 pfset Geom.left.Lower.Z                        0.0
- 
+
 pfset Geom.left.Upper.X                        140.0
 pfset Geom.left.Upper.Y                        300.0
 pfset Geom.left.Upper.Z                          1.5
 
 #---------------------------------------------------------
-# Right Slope Geometry 
+# Right Slope Geometry
 #---------------------------------------------------------
 pfset Geom.right.Lower.X                        160.0
 pfset Geom.right.Lower.Y                        0.0
 pfset Geom.right.Lower.Z                        0.0
- 
+
 pfset Geom.right.Upper.X                        300.0
 pfset Geom.right.Upper.Y                        300.0
 pfset Geom.right.Upper.Z                          1.5
 
 #---------------------------------------------------------
-# Channel Geometry 
+# Channel Geometry
 #---------------------------------------------------------
 pfset Geom.channel.Lower.X                        140.0
 pfset Geom.channel.Lower.Y                        0.0
 pfset Geom.channel.Lower.Z                        0.0
- 
+
 pfset Geom.channel.Upper.X                        160.0
 pfset Geom.channel.Upper.Y                        300.0
 pfset Geom.channel.Upper.Z                          1.5
@@ -202,7 +202,7 @@ pfset Gravity				1.0
 # Setup timing info
 #-----------------------------------------------------------------------------
 
-# 
+#
 pfset TimingInfo.BaseUnit        0.1
 pfset TimingInfo.StartCount      0
 pfset TimingInfo.StartTime       0.0
@@ -210,7 +210,7 @@ pfset TimingInfo.StopTime        1.0
 pfset TimingInfo.DumpInterval    -1
 pfset TimeStep.Type              Constant
 pfset TimeStep.Value             0.1
- 
+
 #-----------------------------------------------------------------------------
 # Porosity
 #-----------------------------------------------------------------------------
@@ -240,7 +240,7 @@ pfset Phase.RelPerm.Type               VanGenuchten
 pfset Phase.RelPerm.GeomNames          "domain"
 
 pfset Geom.domain.RelPerm.Alpha         6.0
-pfset Geom.domain.RelPerm.N             2. 
+pfset Geom.domain.RelPerm.N             2.
 
 #---------------------------------------------------------
 # Saturation
@@ -276,7 +276,7 @@ pfset Cycle.rainrec.Names                 "rain rec"
 pfset Cycle.rainrec.rain.Length           10
 pfset Cycle.rainrec.rec.Length            10
 pfset Cycle.rainrec.Repeat                -1
- 
+
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
@@ -330,7 +330,7 @@ pfset TopoSlopesY.Geom.right.Value 0.001
 pfset TopoSlopesY.Geom.channel.Value 0.001
 
 #---------------------------------------------------------
-# Mannings coefficient 
+# Mannings coefficient
 #---------------------------------------------------------
 
 pfset Mannings.Type "Constant"
@@ -378,7 +378,7 @@ pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      10
 pfset Solver.PrintSubsurf				False
 pfset  Solver.Drop                                      1E-20
 pfset Solver.AbsTol                                     1E-9
- 
+
 pfset Solver.WriteSiloSubsurfData True
 pfset Solver.WriteSiloPressure True
 pfset Solver.WriteSiloSaturation True
@@ -401,11 +401,11 @@ pfset Geom.domain.ICPressure.RefPatch                   z-upper
 #-----------------------------------------------------------------------------
 
 pfwritedb $runname
-exit
+pfrun $runname
 pfundist $runname
 
 #
-# Tests 
+# Tests
 #
 source pftest.tcl
 set passed 1

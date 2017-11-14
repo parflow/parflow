@@ -15,6 +15,7 @@ void fillGridMessageMetadata(Vector const * const v, GridMessageMetadata *m)
   SubgridArray *subgrids = GridSubgrids(grid);
   Subgrid *subgrid;
   int g;
+
   ForSubgridI(g, subgrids)
   {
     subgrid = SubgridArraySubgrid(subgrids, g);
@@ -41,8 +42,9 @@ void NewFlowVR()
   // Refactor: shouldn't there be a GetBooleanDefault?
   char* switch_name = GetStringDefault(key, "False");
   NameArray switch_na = NA_NewNameArray("False True");
+
   FLOWVR_ACTIVE = NA_NameToIndex(switch_na, switch_name);
-  if(FLOWVR_ACTIVE < 0)
+  if (FLOWVR_ACTIVE < 0)
   {
     InputError("Error: invalid print switch value <%s> for key <%s>\n",
                switch_name, key);
@@ -58,33 +60,33 @@ void NewFlowVR()
   PARFLOW_ERROR("Parflow was not compiled with FlowVR but FlowVR was the input file was set to True");
   return;
 #else
-
-  if (amps_size > 1) {
+  if (amps_size > 1)
+  {
     fca_init_parallel(amps_rank, amps_size);  // TODO: amps size or amps_node_size
   }
   const char* outportnamelist[] = {
-      "pressure",
-      "porosity",  // REM: does not really change..
-      "saturation"
-      /*"subsurf_data",         [> permeability/porosity <]*/
-      /*"press",                [> pressures <]*/
-      /*"slopes",               [> slopes <]*/
-      /*"mannings",             [> mannings <]*/
-      /*"top",                  [> top <]*/
-      /*"velocities",           [> velocities <]*/
-      /*"satur",                [> saturations <]*/
-      /*"mask",                 [> mask <]*/
-      /*"concen",               [> concentrations <]*/
-      /*"wells",                [> well data <]*/
-      /*"dzmult",               [> dz multiplier<]*/
-      /*"evaptrans",            [> evaptrans <]*/
-      /*"evaptrans_sum",        [> evaptrans_sum <]*/
-      /*"overland_sum",         [> overland_sum <]*/
-      /*"overland_bc_flux"      [> overland outflow boundary condition flux <]*/
-      // TODO: ask BH: porosity is missing?
+    "pressure",
+    "porosity",    // REM: does not really change..
+    "saturation"
+    /*"subsurf_data",         [> permeability/porosity <]*/
+    /*"press",                [> pressures <]*/
+    /*"slopes",               [> slopes <]*/
+    /*"mannings",             [> mannings <]*/
+    /*"top",                  [> top <]*/
+    /*"velocities",           [> velocities <]*/
+    /*"satur",                [> saturations <]*/
+    /*"mask",                 [> mask <]*/
+    /*"concen",               [> concentrations <]*/
+    /*"wells",                [> well data <]*/
+    /*"dzmult",               [> dz multiplier<]*/
+    /*"evaptrans",            [> evaptrans <]*/
+    /*"evaptrans_sum",        [> evaptrans_sum <]*/
+    /*"overland_sum",         [> overland_sum <]*/
+    /*"overland_bc_flux"      [> overland outflow boundary condition flux <]*/
+    // TODO: ask BH: porosity is missing?
   };
 
-#define n_outportnamelist (sizeof (outportnamelist) / sizeof (const char *))
+#define n_outportnamelist (sizeof(outportnamelist) / sizeof(const char *))
 
 
   moduleParflow = fca_new_empty_module();
@@ -128,7 +130,8 @@ void NewFlowVR()
 //
 //  fca_set_modulename(moduleParflow, modulename);
 
-  if(!fca_init_module(moduleParflow)){
+  if (!fca_init_module(moduleParflow))
+  {
     PARFLOW_ERROR("ERROR : init_module failed!\n");
   }
 
@@ -140,7 +143,8 @@ void NewFlowVR()
 
 #ifdef HAVE_FLOWVR
 
-int FlowVR_wait() {
+int FlowVR_wait()
+{
   if (FLOWVR_ACTIVE)
   {
     D("now waiting");
@@ -152,17 +156,20 @@ int FlowVR_wait() {
 
 void FreeFlowVR()
 {
-  if (!FLOWVR_ACTIVE) return;
+  if (!FLOWVR_ACTIVE)
+    return;
   fca_free(moduleParflow);
 }
 
-void vectorToMessage(Vector* v, fca_message *result, fca_port *port) {
+void vectorToMessage(Vector* v, fca_message *result, fca_port *port)
+{
   // normally really generic. low: in common with write_parflow_netcdf
   Grid *grid = VectorGrid(v);
   SubgridArray *subgrids = GridSubgrids(grid);
   Subvector *subvector;
 
   int g;
+
   ForSubgridI(g, subgrids)
   {
     subvector = VectorSubvector(v, g);
@@ -178,7 +185,7 @@ void vectorToMessage(Vector* v, fca_message *result, fca_port *port) {
   // write to the beginning of our memory segment
   GridMessageMetadata m;
   fillGridMessageMetadata(v, &m);
-  size_t vector_size = sizeof(double)*m.nx*m.ny*m.nz;
+  size_t vector_size = sizeof(double) * m.nx * m.ny * m.nz;
   *result = fca_new_message(moduleParflow, sizeof(GridMessageMetadata) + vector_size);
   if (result == NULL)
   {
@@ -192,14 +199,14 @@ void vectorToMessage(Vector* v, fca_message *result, fca_port *port) {
   buffer += sizeof(GridMessageMetadata);
 
 
-  double* buffer_double = (double*) buffer;
+  double* buffer_double = (double*)buffer;
 
   double *data;
   data = SubvectorElt(subvector, m.ix, m.iy, m.iz);
 
   // some iterators
   int i, j, k, d = 0, ai = 0;
-  BoxLoopI1(i, j, k, m.ix, m.iy, m.iz, m.nx, m.ny, m.nz, ai, nx_v, ny_v, nz_v, 1, 1, 1,{ buffer_double[d] = data[ai]; d++;});
+  BoxLoopI1(i, j, k, m.ix, m.iy, m.iz, m.nx, m.ny, m.nz, ai, nx_v, ny_v, nz_v, 1, 1, 1, { buffer_double[d] = data[ai]; d++; });
   // TODO: would be more performant if we could read the things not cell by cell I guess
 }
 // TODO: implement swap: do not do the memcpy but have to buffers one for read and wone for write. Change the buffers after one simulation step! (here a simulation step consists of multiple timesteps!
@@ -208,29 +215,30 @@ void vectorToMessage(Vector* v, fca_message *result, fca_port *port) {
 // REM: We are better than the nodelevel netcdf feature because during file write the other nodes are already calculating ;)
 // REM: structure of nodelevel netcdf: one process per node gathers everything that has to be written and does the filesystem i/o
 void DumpRichardsToFlowVR(const char * filename, float time, Vector const * const pressure_out,
-    Vector const * const porosity_out, Vector const * const saturation_out)
+                          Vector const * const porosity_out, Vector const * const saturation_out)
 {
-  if (!FLOWVR_ACTIVE) return;
+  if (!FLOWVR_ACTIVE)
+    return;
 
   // Build data
-  typedef struct
-  {
+  typedef struct {
     const char *name;
     Vector const * const data;
   } PortNameData;
 
   const PortNameData portnamedatas[] =
   {
-    {"pressure",  pressure_out},
-    {"porosity",  porosity_out},
-    {"saturation",  saturation_out}
+    { "pressure", pressure_out },
+    { "porosity", porosity_out },
+    { "saturation", saturation_out }
   };
-#define n_portnamedata (sizeof (portnamedatas) / sizeof (const PortNameData))
+#define n_portnamedata (sizeof(portnamedatas) / sizeof(const PortNameData))
 
   for (unsigned int i = 0; i < n_portnamedata; ++i)
   {
     // Sometimes we do not have values for all the data...
-    if (portnamedatas[i].data == NULL) continue;
+    if (portnamedatas[i].data == NULL)
+      continue;
 
 
     // Prepare the port
@@ -244,11 +252,11 @@ void DumpRichardsToFlowVR(const char * filename, float time, Vector const * cons
     const fca_stamp stampTime = fca_get_stamp(port, "stampTime");
     const fca_stamp stampFileName = fca_get_stamp(port, "stampFileName");
     D("writing float: %f\n", time);
-    fca_write_stamp(msg, stampTime, (void*) &time);
-    fca_write_stamp(msg, stampFileName, (void*) filename);
+    fca_write_stamp(msg, stampTime, (void*)&time);
+    fca_write_stamp(msg, stampFileName, (void*)filename);
 
     // finally send message!
-    if(!fca_put(port,  msg))
+    if (!fca_put(port, msg))
     {
       PARFLOW_ERROR("Could not send FlowVR-Message!");
     }
@@ -256,7 +264,6 @@ void DumpRichardsToFlowVR(const char * filename, float time, Vector const * cons
     D("put message!%.8f\n", time);
 
     //fca_free(buffer);  // TODO: do we really have to do this? I guess no. Example shows that it should be fine to free messages.
-
   }
 }
 

@@ -1,29 +1,29 @@
 /*BHEADER**********************************************************************
-
-  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-  by the Parflow Team (see the CONTRIBUTORS file)
-  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-
-  This file is part of Parflow. For details, see
-  http://www.llnl.gov/casc/parflow
-
-  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-  for the GNU Lesser General Public License.
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License (as published
-  by the Free Software Foundation) version 2.1 dated February 1999.
-
-  This program is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-  and conditions of the GNU General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-  USA
+*
+*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+*  by the Parflow Team (see the CONTRIBUTORS file)
+*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+*
+*  This file is part of Parflow. For details, see
+*  http://www.llnl.gov/casc/parflow
+*
+*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+*  for the GNU Lesser General Public License.
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License (as published
+*  by the Free Software Foundation) version 2.1 dated February 1999.
+*
+*  This program is distributed in the hope that it will be useful, but
+*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+*  and conditions of the GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public
+*  License along with this program; if not, write to the Free Software
+*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+*  USA
 **********************************************************************EHEADER*/
 
 #include "parflow.h"
@@ -33,17 +33,13 @@
  * Structures
  *--------------------------------------------------------------------------*/
 
-typedef struct
-{
-   int    geom_index;
-
+typedef struct {
+  int geom_index;
 } PublicXtra;
 
-typedef struct
-{
-   /* InitInstanceXtra arguments */
-   Grid  *grid;
-
+typedef struct {
+  /* InitInstanceXtra arguments */
+  Grid  *grid;
 } InstanceXtra;
 
 
@@ -52,21 +48,21 @@ typedef struct
  *--------------------------------------------------------------------------*/
 
 void           Domain(
-   ProblemData   *problem_data)
+                      ProblemData *problem_data)
 {
-   PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
+  PFModule      *this_module = ThisPFModule;
+  PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
 
-   int            geom_index    = (public_xtra -> geom_index);
+  int geom_index = (public_xtra->geom_index);
 
 
-   ProblemDataDomain(problem_data) =
-      ProblemDataSolid(problem_data, geom_index);
-   ProblemDataGrDomain(problem_data) =
-      ProblemDataGrSolid(problem_data, geom_index);
+  ProblemDataDomain(problem_data) =
+    ProblemDataSolid(problem_data, geom_index);
+  ProblemDataGrDomain(problem_data) =
+    ProblemDataGrSolid(problem_data, geom_index);
 
-   return;
-}  
+  return;
+}
 
 
 /*--------------------------------------------------------------------------
@@ -74,29 +70,29 @@ void           Domain(
  *--------------------------------------------------------------------------*/
 
 PFModule  *DomainInitInstanceXtra(
-   Grid      *grid)
+                                  Grid *grid)
 {
-   PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra;
+  PFModule      *this_module = ThisPFModule;
+  InstanceXtra  *instance_xtra;
 
 
-   if ( PFModuleInstanceXtra(this_module) == NULL )
-      instance_xtra = ctalloc(InstanceXtra, 1);
-   else
-      instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
+  if (PFModuleInstanceXtra(this_module) == NULL)
+    instance_xtra = ctalloc(InstanceXtra, 1);
+  else
+    instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
-   /*-----------------------------------------------------------------------
-    * Initialize data associated with argument `grid'
-    *-----------------------------------------------------------------------*/
+  /*-----------------------------------------------------------------------
+   * Initialize data associated with argument `grid'
+   *-----------------------------------------------------------------------*/
 
-   if ( grid != NULL)
-   {
-      (instance_xtra -> grid) = grid;
-   }
+  if (grid != NULL)
+  {
+    (instance_xtra->grid) = grid;
+  }
 
-   PFModuleInstanceXtra(this_module) = instance_xtra;
-   return this_module;
-}  
+  PFModuleInstanceXtra(this_module) = instance_xtra;
+  return this_module;
+}
 
 
 /*--------------------------------------------------------------------------
@@ -105,15 +101,15 @@ PFModule  *DomainInitInstanceXtra(
 
 void  DomainFreeInstanceXtra()
 {
-   PFModule      *this_module   = ThisPFModule;
-   InstanceXtra  *instance_xtra = (InstanceXtra *)PFModuleInstanceXtra(this_module);
+  PFModule      *this_module = ThisPFModule;
+  InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
 
-   if(instance_xtra)
-   {
-      tfree(instance_xtra);
-   }
-}  
+  if (instance_xtra)
+  {
+    tfree(instance_xtra);
+  }
+}
 
 
 /*--------------------------------------------------------------------------
@@ -122,26 +118,26 @@ void  DomainFreeInstanceXtra()
 
 PFModule   *DomainNewPublicXtra()
 {
-   PFModule      *this_module   = ThisPFModule;
-   PublicXtra    *public_xtra;
+  PFModule      *this_module = ThisPFModule;
+  PublicXtra    *public_xtra;
 
-   char *geom_name;
+  char *geom_name;
 
-   public_xtra = ctalloc(PublicXtra, 1);
+  public_xtra = ctalloc(PublicXtra, 1);
 
-   geom_name = GetString("Domain.GeomName");
-   public_xtra -> geom_index = NA_NameToIndex(GlobalsGeomNames, geom_name);
+  geom_name = GetString("Domain.GeomName");
+  public_xtra->geom_index = NA_NameToIndex(GlobalsGeomNames, geom_name);
 
-   if( public_xtra -> geom_index < 0 )
-   {
-      InputError("Error: invalid geometry name <%s> for key <%s>\n",
-		  geom_name, "Domain.GeomName");
-   }
+  if (public_xtra->geom_index < 0)
+  {
+    InputError("Error: invalid geometry name <%s> for key <%s>\n",
+               geom_name, "Domain.GeomName");
+  }
 
 
-   PFModulePublicXtra(this_module) = public_xtra;
-   return this_module;
-}  
+  PFModulePublicXtra(this_module) = public_xtra;
+  return this_module;
+}
 
 
 /*--------------------------------------------------------------------------
@@ -150,15 +146,15 @@ PFModule   *DomainNewPublicXtra()
 
 void  DomainFreePublicXtra()
 {
-   PFModule    *this_module   = ThisPFModule;
-   PublicXtra  *public_xtra   = (PublicXtra *)PFModulePublicXtra(this_module);
+  PFModule    *this_module = ThisPFModule;
+  PublicXtra  *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
 
 
-   if (public_xtra)
-   {
-      tfree(public_xtra);
-   }
-}  
+  if (public_xtra)
+  {
+    tfree(public_xtra);
+  }
+}
 
 /*--------------------------------------------------------------------------
  * DomainSizeOfTempData
@@ -166,6 +162,6 @@ void  DomainFreePublicXtra()
 
 int  DomainSizeOfTempData()
 {
-   return 0;
+  return 0;
 }
 

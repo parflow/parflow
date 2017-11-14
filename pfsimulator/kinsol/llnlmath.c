@@ -1,12 +1,12 @@
 /******************************************************************
- *                                                                *
- * File          : llnlmath.c                                     *
- * Programmers   : Scott D. Cohen and Alan C. Hindmarsh @ LLNL    *
- * Last Modified : 1 September 1994                               *
- *----------------------------------------------------------------*
- * This is the implementation file for a C math library.          *
- *                                                                *
- ******************************************************************/
+*                                                                *
+* File          : llnlmath.c                                     *
+* Programmers   : Scott D. Cohen and Alan C. Hindmarsh @ LLNL    *
+* Last Modified : 1 September 1994                               *
+**----------------------------------------------------------------*
+* This is the implementation file for a C math library.          *
+*                                                                *
+******************************************************************/
 
 
 #include <stdio.h>
@@ -24,15 +24,16 @@ real UnitRoundoff(void)
 {
   real u;
   volatile real one_plus_u;
-  
+
   u = ONE;
   one_plus_u = ONE + u;
-  while (one_plus_u != ONE) {
-    u /=  TWO;
+  while (one_plus_u != ONE)
+  {
+    u /= TWO;
     one_plus_u = ONE + u;
   }
-  u *=  TWO;
-  
+  u *= TWO;
+
   return(u);
 }
 
@@ -44,24 +45,27 @@ real RPowerI(real base, int exponent)
 
   prod = ONE;
   expt = ABS(exponent);
-  for(i=1; i <= expt; i++) prod *= base;
-  if (exponent < 0) prod = ONE/prod;
+  for (i = 1; i <= expt; i++)
+    prod *= base;
+  if (exponent < 0)
+    prod = ONE / prod;
   return(prod);
 }
 
 
 real RPowerR(real base, real exponent)
 {
- 
-  if (base <= ZERO) return(ZERO);
+  if (base <= ZERO)
+    return(ZERO);
 
-  return((real)pow((double)base,(double)exponent));
+  return((real)pow((double)base, (double)exponent));
 }
 
 
 real RSqrt(real x)
 {
-  if (x <= ZERO) return(ZERO);
+  if (x <= ZERO)
+    return(ZERO);
 
-  return((real) sqrt((double) x));
+  return((real)sqrt((double)x));
 }
