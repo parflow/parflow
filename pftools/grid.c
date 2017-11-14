@@ -1,30 +1,30 @@
-/*BHEADER**********************************************************************
-
-  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-  by the Parflow Team (see the CONTRIBUTORS file)
-  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-
-  This file is part of Parflow. For details, see
-  http://www.llnl.gov/casc/parflow
-
-  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-  for the GNU Lesser General Public License.
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License (as published
-  by the Free Software Foundation) version 2.1 dated February 1999.
-
-  This program is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-  and conditions of the GNU General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
 #include <math.h>
 #include "pfload_file.h"
@@ -36,32 +36,32 @@
  *--------------------------------------------------------------------------*/
 
 Grid  *NewGrid(
-   SubgridArray  *subgrids,
-   SubgridArray  *all_subgrids,
-   SubgridArray  *neighbors)
+               SubgridArray *subgrids,
+               SubgridArray *all_subgrids,
+               SubgridArray *neighbors)
 {
-   Grid    *new_grid;
+  Grid    *new_grid;
 
-   Subgrid *s;
+  Subgrid *s;
 
-   int      i, size;
+  int i, size;
 
 
-   new_grid = talloc(Grid, 1);
+  new_grid = talloc(Grid, 1);
 
-   (new_grid -> subgrids)      = subgrids;
-   (new_grid -> all_subgrids)  = all_subgrids;
-   (new_grid -> neighbors)     = neighbors;
+  (new_grid->subgrids) = subgrids;
+  (new_grid->all_subgrids) = all_subgrids;
+  (new_grid->neighbors) = neighbors;
 
-   size = 0;
-   for (i = 0; i < SubgridArraySize(all_subgrids); i++)
-   {
-      s = SubgridArraySubgrid(all_subgrids, i);
-      size += (s -> nx)*(s -> ny)*(s -> nz);
-   }
-   (new_grid -> size) = size;
+  size = 0;
+  for (i = 0; i < SubgridArraySize(all_subgrids); i++)
+  {
+    s = SubgridArraySubgrid(all_subgrids, i);
+    size += (s->nx) * (s->ny) * (s->nz);
+  }
+  (new_grid->size) = size;
 
-   return new_grid;
+  return new_grid;
 }
 
 
@@ -70,18 +70,17 @@ Grid  *NewGrid(
  *--------------------------------------------------------------------------*/
 
 void  FreeGrid(
-   Grid  *grid)
+               Grid *grid)
 {
+  FreeSubgridArray(GridAllSubgrids(grid));
 
-   FreeSubgridArray(GridAllSubgrids(grid));
+  /* these subgrid arrays point to subgrids in all_subgrids */
+  SubgridArraySize(GridSubgrids(grid)) = 0;
+  FreeSubgridArray(GridSubgrids(grid));
+  SubgridArraySize(GridNeighbors(grid)) = 0;
+  FreeSubgridArray(GridNeighbors(grid));
 
-   /* these subgrid arrays point to subgrids in all_subgrids */
-   SubgridArraySize(GridSubgrids(grid)) = 0;
-   FreeSubgridArray(GridSubgrids(grid));
-   SubgridArraySize(GridNeighbors(grid)) = 0;
-   FreeSubgridArray(GridNeighbors(grid));
-
-   free(grid);
+  free(grid);
 }
 
 

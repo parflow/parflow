@@ -1,37 +1,37 @@
 /*
  * BHEADER**********************************************************************
-
-  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-  by the Parflow Team (see the CONTRIBUTORS file)
-  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-
-  This file is part of Parflow. For details, see
-  http://www.llnl.gov/casc/parflow
-
-  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-  for the GNU Lesser General Public License.
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License (as published
-  by the Free Software Foundation) version 2.1 dated February 1999.
-
-  This program is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-  and conditions of the GNU General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-  USA
-**********************************************************************EHEADER
+ *
+ * Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ * LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ * by the Parflow Team (see the CONTRIBUTORS file)
+ * <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ * This file is part of Parflow. For details, see
+ * http://www.llnl.gov/casc/parflow
+ *
+ * Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ * for the GNU Lesser General Public License.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License (as published
+ * by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ * and conditions of the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ **********************************************************************EHEADER
  * */
-/******************************************************************************
- *
- * Routines for initializing the solver.
- *
- *****************************************************************************/
+/*****************************************************************************
+*
+* Routines for initializing the solver.
+*
+*****************************************************************************/
 
 #include "parflow.h"
 #include "solver.h"
@@ -44,23 +44,23 @@ amps_ThreadLocalDcl(PFModule *, Solver_module);
 
 void Solve()
 {
-   PFModule       *solver;
-   
-   BeginTiming(SolverSetupTimingIndex);
-   NewSolver();
+  PFModule       *solver;
 
-   solver = PFModuleNewInstance(amps_ThreadLocal(Solver_module), ());
-   EndTiming(SolverSetupTimingIndex);
+  BeginTiming(SolverSetupTimingIndex);
+  NewSolver();
 
-   BeginTiming(SolverTimingIndex);
-   PFModuleInvoke(void, solver, ());
-   EndTiming(SolverTimingIndex);
+  solver = PFModuleNewInstance(amps_ThreadLocal(Solver_module), ());
+  EndTiming(SolverSetupTimingIndex);
 
-   BeginTiming(SolverCleanupTimingIndex);
-   PFModuleFreeInstance(solver);
-   EndTiming(SolverCleanupTimingIndex);
+  BeginTiming(SolverTimingIndex);
+  PFModuleInvoke(void, solver, ());
+  EndTiming(SolverTimingIndex);
 
-   FreeSolver();
+  BeginTiming(SolverCleanupTimingIndex);
+  PFModuleFreeInstance(solver);
+  EndTiming(SolverCleanupTimingIndex);
+
+  FreeSolver();
 }
 
 
@@ -69,75 +69,78 @@ void Solve()
  *--------------------------------------------------------------------------*/
 
 void
-                NewSolver()
+NewSolver()
 {
-   char key[IDB_MAX_KEY_LEN];
-   
-   char *switch_name;
+  char key[IDB_MAX_KEY_LEN];
 
-   int solver;
-   NameArray solver_na;
+  char *switch_name;
 
-   solver_na = NA_NewNameArray("Richards Diffusion Impes");
+  int solver;
+  NameArray solver_na;
 
-   /*-----------------------------------------------------------------------
-    * Read global solver input
-    *-----------------------------------------------------------------------*/
+  solver_na = NA_NewNameArray("Richards Diffusion Impes");
 
-   GlobalsNumProcsX = GetIntDefault("Process.Topology.P", 1);
-   GlobalsNumProcsY = GetIntDefault("Process.Topology.Q", 1);
-   GlobalsNumProcsZ = GetIntDefault("Process.Topology.R", 1);
+  /*-----------------------------------------------------------------------
+   * Read global solver input
+   *-----------------------------------------------------------------------*/
 
-   GlobalsNumProcs = amps_Size(amps_CommWorld);
+  GlobalsNumProcsX = GetIntDefault("Process.Topology.P", 1);
+  GlobalsNumProcsY = GetIntDefault("Process.Topology.Q", 1);
+  GlobalsNumProcsZ = GetIntDefault("Process.Topology.R", 1);
 
-   GlobalsBackground = ReadBackground();
+  GlobalsNumProcs = amps_Size(amps_CommWorld);
 
-   GlobalsUserGrid = ReadUserGrid();
+  GlobalsBackground = ReadBackground();
 
-   SetBackgroundBounds(GlobalsBackground, GlobalsUserGrid);
+  GlobalsUserGrid = ReadUserGrid();
 
-   GlobalsMaxRefLevel = 0;
+  SetBackgroundBounds(GlobalsBackground, GlobalsUserGrid);
+
+  GlobalsMaxRefLevel = 0;
 
 
 
-   /*-----------------------------------------------------------------------
-    * Initialize SAMRAI hierarchy
-    *-----------------------------------------------------------------------*/
-   // SGS FIXME is this a good place for this?  need UserGrid
+  /*-----------------------------------------------------------------------
+   * Initialize SAMRAI hierarchy
+   *-----------------------------------------------------------------------*/
+  // SGS FIXME is this a good place for this?  need UserGrid
 
 #ifdef HAVE_SAMRAI
-   // SGS FIXME is this correct for restarts?
-   double time = 0.0;
-   GlobalsParflowSimulation -> initializePatchHierarchy(time);
+  // SGS FIXME is this correct for restarts?
+  double time = 0.0;
+  GlobalsParflowSimulation->initializePatchHierarchy(time);
 #endif
 
-   switch_name = GetStringDefault("Solver", "Impes");
-   solver  = NA_NameToIndex(solver_na, switch_name);
+  switch_name = GetStringDefault("Solver", "Impes");
+  solver = NA_NameToIndex(solver_na, switch_name);
 
-   switch (solver)
-   {
-      case 0: 
-      {
-	 amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverNewPublicXtraInvoke, SolverRichards, ("Solver"));
-	 break;
-      }
-      case 1:
-      {
-	 amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverNewPublicXtraInvoke, SolverDiffusion, ("Solver"));
-	 break;
-      }
-      case 2:
-      {
-	 amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverNewPublicXtraInvoke, SolverImpes, ("Solver"));
-	 break;
-      }
-      default:
-      {
-	 InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-		     key);
-      }
-   }
-   NA_FreeNameArray(solver_na);
+  switch (solver)
+  {
+    case 0:
+    {
+      amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverNewPublicXtraInvoke, SolverRichards, ("Solver"));
+      break;
+    }
+
+    case 1:
+    {
+      amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverNewPublicXtraInvoke, SolverDiffusion, ("Solver"));
+      break;
+    }
+
+    case 2:
+    {
+      amps_ThreadLocal(Solver_module) = PFModuleNewModuleType(SolverNewPublicXtraInvoke, SolverImpes, ("Solver"));
+      break;
+    }
+
+    default:
+    {
+      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
+                 key);
+    }
+  }
+  NA_FreeNameArray(solver_na);
 }
 
 /*--------------------------------------------------------------------------
@@ -145,15 +148,15 @@ void
  *--------------------------------------------------------------------------*/
 
 void
-                FreeSolver()
+FreeSolver()
 {
-   if (amps_ThreadLocal(Solver_module))
-   {
-      PFModuleFreeModule(amps_ThreadLocal(Solver_module));
-      amps_ThreadLocal(Solver_module) = NULL;
-   }
+  if (amps_ThreadLocal(Solver_module))
+  {
+    PFModuleFreeModule(amps_ThreadLocal(Solver_module));
+    amps_ThreadLocal(Solver_module) = NULL;
+  }
 
-   FreeUserGrid(GlobalsUserGrid);
+  FreeUserGrid(GlobalsUserGrid);
 
-   FreeBackground(GlobalsBackground);
+  FreeBackground(GlobalsBackground);
 }
