@@ -444,6 +444,8 @@ function(latex_execute_latex)
     RESULT_VARIABLE execute_result
     )
 
+  message("${full_command_original}")
+
   if(NOT ${execute_result} EQUAL 0)
     # LaTeX tends to write a file when a failure happens. Delete that file so
     # that LaTeX will run again.
@@ -1256,11 +1258,15 @@ function(latex_copy_input_file file)
   message("output_file=${output_file}")
 
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${file})
+
+    message("exists ${file}")
+
     latex_get_filename_component(path ${file} PATH)
     file(MAKE_DIRECTORY ${output_dir}/${path})
 
     latex_list_contains(use_config ${file} ${LATEX_CONFIGURE})
     if(use_config)
+      message("use_config ${file}")
       configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${file}
         ${output_dir}/${output_file}
         @ONLY
@@ -1271,6 +1277,7 @@ function(latex_copy_input_file file)
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${file}
         )
     else()
+      message("copy ${file} ${CMAKE_CURRENT_SOURCE_DIR}/${file} ${output_dir}/${output_file}")
       add_custom_command(OUTPUT ${output_dir}/${output_file}
         COMMAND ${CMAKE_COMMAND}
         ARGS -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${file} ${output_dir}/${output_file}
