@@ -1,38 +1,38 @@
 /*  -- translated by f2c (version 19940127).
-   You must link the resulting object file with the libraries:
-	-lf2c -lm   (in that order)
-*/
+ * You must link the resulting object file with the libraries:
+ *      -lf2c -lm   (in that order)
+ */
 
 #include "f2c.h"
 
 extern double epslon_(double *x);
 
 /* Subroutine */ int ratqr_(
-int *n,
-double *eps1, 
-double *d, 
-double *e, 
-double *e2,
-int *m,
-double *w,
-int *ind,
-double *bd,
-int *type,
-int *idef, 
-int *ierr)
+                            int *   n,
+                            double *eps1,
+                            double *d,
+                            double *e,
+                            double *e2,
+                            int *   m,
+                            double *w,
+                            int *   ind,
+                            double *bd,
+                            int *   type,
+                            int *   idef,
+                            int *   ierr)
 {
-    /* System generated locals */
-    integer i__1, i__2;
-    doublereal d__1, d__2, d__3;
+  /* System generated locals */
+  integer i__1, i__2;
+  doublereal d__1, d__2, d__3;
 
-    /* Local variables */
-    integer jdef;
-    doublereal f;
-    integer i, j, k;
-    doublereal p, q, r, s, delta;
-    integer k1, ii, jj;
-    doublereal ep, qp;
-    doublereal err, tot;
+  /* Local variables */
+  integer jdef;
+  doublereal f;
+  integer i, j, k;
+  doublereal p, q, r, s, delta;
+  integer k1, ii, jj;
+  doublereal ep, qp;
+  doublereal err, tot;
 
 
 
@@ -87,8 +87,8 @@ int *ierr)
 /*          matrix to split into a direct sum of submatrices. */
 /*          e2(1) is set to 0.0d0 if the smallest eigenvalues have been */
 /*          found, and to 2.0d0 if the largest eigenvalues have been */
-/*          found.  e2 is otherwise unaltered (unless overwritten by bd). 
-*/
+/*          found.  e2 is otherwise unaltered (unless overwritten by bd).
+ */
 
 /*        w contains the m algebraically smallest eigenvalues in */
 /*          ascending order, or the m largest eigenvalues in */
@@ -101,8 +101,8 @@ int *ierr)
 /*        ind contains in its first m positions the submatrix indices */
 /*          associated with the corresponding eigenvalues in w -- */
 /*          1 for eigenvalues belonging to the first submatrix from */
-/*          the top, 2 for those belonging to the second submatrix, etc.. 
-*/
+/*          the top, 2 for those belonging to the second submatrix, etc..
+ */
 
 /*        bd contains refined bounds for the theoretical errors of the */
 /*          corresponding eigenvalues in w.  these bounds are usually */
@@ -123,244 +123,274 @@ int *ierr)
 /*     accurate than ratqr if the eigenvalues are clustered. */
 
 /*     questions and comments should be directed to burton s. garbow, */
-/*     mathematics and computer science div, argonne national laboratory 
-*/
+/*     mathematics and computer science div, argonne national laboratory
+ */
 
 /*     this version dated august 1983. */
 
-/*     ------------------------------------------------------------------ 
-*/
+/*     ------------------------------------------------------------------
+ */
 
-    /* Parameter adjustments */
-    --bd;
-    --ind;
-    --w;
-    --e2;
-    --e;
-    --d;
+  /* Parameter adjustments */
+  --bd;
+  --ind;
+  --w;
+  --e2;
+  --e;
+  --d;
 
-    /* Function Body */
-    *ierr = 0;
-    jdef = *idef;
+  /* Function Body */
+  *ierr = 0;
+  jdef = *idef;
 /*     .......... copy d array into w .......... */
-    i__1 = *n;
-    for (i = 1; i <= i__1; ++i) {
+  i__1 = *n;
+  for (i = 1; i <= i__1; ++i)
+  {
 /* L20: */
-	w[i] = d[i];
-    }
+    w[i] = d[i];
+  }
 
-    if (*type) {
-	goto L40;
-    }
-    j = 1;
-    goto L400;
+  if (*type)
+  {
+    goto L40;
+  }
+  j = 1;
+  goto L400;
 L40:
-    err = 0.;
-    s = 0.;
+  err = 0.;
+  s = 0.;
 /*     .......... look for small sub-diagonal entries and define */
 /*                initial shift from lower gerschgorin bound. */
 /*                copy e2 array into bd .......... */
-    tot = w[1];
-    q = 0.;
-    j = 0;
+  tot = w[1];
+  q = 0.;
+  j = 0;
 
-    i__1 = *n;
-    for (i = 1; i <= i__1; ++i) {
-	p = q;
-	if (i == 1) {
-	    goto L60;
-	}
-	d__3 = (d__1 = d[i], abs(d__1)) + (d__2 = d[i - 1], abs(d__2));
-	if (p > epslon_(&d__3)) {
-	    goto L80;
-	}
+  i__1 = *n;
+  for (i = 1; i <= i__1; ++i)
+  {
+    p = q;
+    if (i == 1)
+    {
+      goto L60;
+    }
+    d__3 = (d__1 = d[i], abs(d__1)) + (d__2 = d[i - 1], abs(d__2));
+    if (p > epslon_(&d__3))
+    {
+      goto L80;
+    }
 L60:
-	e2[i] = 0.;
+    e2[i] = 0.;
 L80:
-	bd[i] = e2[i];
+    bd[i] = e2[i];
 /*     .......... count also if element of e2 has underflowed ........
-.. */
-	if (e2[i] == 0.) {
-	    ++j;
-	}
-	ind[i] = j;
-	q = 0.;
-	if (i != *n) {
-	    q = (d__1 = e[i + 1], abs(d__1));
-	}
+ * .. */
+    if (e2[i] == 0.)
+    {
+      ++j;
+    }
+    ind[i] = j;
+    q = 0.;
+    if (i != *n)
+    {
+      q = (d__1 = e[i + 1], abs(d__1));
+    }
 /* Computing MIN */
-	d__1 = w[i] - p - q;
-	tot = pfmin(d__1,tot);
+    d__1 = w[i] - p - q;
+    tot = pfmin(d__1, tot);
 /* L100: */
-    }
+  }
 
-    if (jdef == 1 && tot < 0.) {
-	goto L140;
-    }
+  if (jdef == 1 && tot < 0.)
+  {
+    goto L140;
+  }
 
-    i__1 = *n;
-    for (i = 1; i <= i__1; ++i) {
+  i__1 = *n;
+  for (i = 1; i <= i__1; ++i)
+  {
 /* L110: */
-	w[i] -= tot;
-    }
+    w[i] -= tot;
+  }
 
-    goto L160;
+  goto L160;
 L140:
-    tot = 0.;
+  tot = 0.;
 
 L160:
-    i__1 = *m;
-    for (k = 1; k <= i__1; ++k) {
+  i__1 = *m;
+  for (k = 1; k <= i__1; ++k)
+  {
 /*     .......... next qr transformation .......... */
 L180:
-	tot += s;
-	delta = w[*n] - s;
-	i = *n;
-	f = (d__1 = epslon_(&tot), abs(d__1));
-	if (*eps1 < f) {
-	    *eps1 = f;
-	}
-	if (delta > *eps1) {
-	    goto L190;
-	}
-	if (delta < -(*eps1)) {
-	    goto L1000;
-	}
-	goto L300;
+    tot += s;
+    delta = w[*n] - s;
+    i = *n;
+    f = (d__1 = epslon_(&tot), abs(d__1));
+    if (*eps1 < f)
+    {
+      *eps1 = f;
+    }
+    if (delta > *eps1)
+    {
+      goto L190;
+    }
+    if (delta < -(*eps1))
+    {
+      goto L1000;
+    }
+    goto L300;
 /*     .......... replace small sub-diagonal squares by zero */
 /*                to reduce the incidence of underflows .......... */
 L190:
-	if (k == *n) {
-	    goto L210;
-	}
-	k1 = k + 1;
-	i__2 = *n;
-	for (j = k1; j <= i__2; ++j) {
-	    d__2 = w[j] + w[j - 1];
+    if (k == *n)
+    {
+      goto L210;
+    }
+    k1 = k + 1;
+    i__2 = *n;
+    for (j = k1; j <= i__2; ++j)
+    {
+      d__2 = w[j] + w[j - 1];
 /* Computing 2nd power */
-	    d__1 = epslon_(&d__2);
-	    if (bd[j] <= d__1 * d__1) {
-		bd[j] = 0.;
-	    }
+      d__1 = epslon_(&d__2);
+      if (bd[j] <= d__1 * d__1)
+      {
+        bd[j] = 0.;
+      }
 /* L200: */
-	}
+    }
 
 L210:
-	f = bd[*n] / delta;
-	qp = delta + f;
-	p = 1.;
-	if (k == *n) {
-	    goto L260;
-	}
-	k1 = *n - k;
+    f = bd[*n] / delta;
+    qp = delta + f;
+    p = 1.;
+    if (k == *n)
+    {
+      goto L260;
+    }
+    k1 = *n - k;
 /*     .......... for i=n-1 step -1 until k do -- .......... */
-	i__2 = k1;
-	for (ii = 1; ii <= i__2; ++ii) {
-	    i = *n - ii;
-	    q = w[i] - s - f;
-	    r = q / qp;
-	    p = p * r + 1.;
-	    ep = f * r;
-	    w[i + 1] = qp + ep;
-	    delta = q - ep;
-	    if (delta > *eps1) {
-		goto L220;
-	    }
-	    if (delta < -(*eps1)) {
-		goto L1000;
-	    }
-	    goto L300;
+    i__2 = k1;
+    for (ii = 1; ii <= i__2; ++ii)
+    {
+      i = *n - ii;
+      q = w[i] - s - f;
+      r = q / qp;
+      p = p * r + 1.;
+      ep = f * r;
+      w[i + 1] = qp + ep;
+      delta = q - ep;
+      if (delta > *eps1)
+      {
+        goto L220;
+      }
+      if (delta < -(*eps1))
+      {
+        goto L1000;
+      }
+      goto L300;
 L220:
-	    f = bd[i] / q;
-	    qp = delta + f;
-	    bd[i + 1] = qp * ep;
+      f = bd[i] / q;
+      qp = delta + f;
+      bd[i + 1] = qp * ep;
 /* L240: */
-	}
+    }
 
 L260:
-	w[k] = qp;
-	s = qp / p;
-	if (tot + s > tot) {
-	    goto L180;
-	}
+    w[k] = qp;
+    s = qp / p;
+    if (tot + s > tot)
+    {
+      goto L180;
+    }
 /*     .......... set error -- irregular end of iteration. */
 /*                deflate minimum diagonal element .......... */
-	*ierr = *n * 5 + k;
-	s = 0.;
-	delta = qp;
+    *ierr = *n * 5 + k;
+    s = 0.;
+    delta = qp;
 
-	i__2 = *n;
-	for (j = k; j <= i__2; ++j) {
-	    if (w[j] > delta) {
-		goto L280;
-	    }
-	    i = j;
-	    delta = w[j];
+    i__2 = *n;
+    for (j = k; j <= i__2; ++j)
+    {
+      if (w[j] > delta)
+      {
+        goto L280;
+      }
+      i = j;
+      delta = w[j];
 L280:
-	    ;
-	}
+      ;
+    }
 /*     .......... convergence .......... */
 L300:
-	if (i < *n) {
-	    bd[i + 1] = bd[i] * f / qp;
-	}
-	ii = ind[i];
-	if (i == k) {
-	    goto L340;
-	}
-	k1 = i - k;
+    if (i < *n)
+    {
+      bd[i + 1] = bd[i] * f / qp;
+    }
+    ii = ind[i];
+    if (i == k)
+    {
+      goto L340;
+    }
+    k1 = i - k;
 /*     .......... for j=i-1 step -1 until k do -- .......... */
-	i__2 = k1;
-	for (jj = 1; jj <= i__2; ++jj) {
-	    j = i - jj;
-	    w[j + 1] = w[j] - s;
-	    bd[j + 1] = bd[j];
-	    ind[j + 1] = ind[j];
+    i__2 = k1;
+    for (jj = 1; jj <= i__2; ++jj)
+    {
+      j = i - jj;
+      w[j + 1] = w[j] - s;
+      bd[j + 1] = bd[j];
+      ind[j + 1] = ind[j];
 /* L320: */
-	}
+    }
 
 L340:
-	w[k] = tot;
-	err += abs(delta);
-	bd[k] = err;
-	ind[k] = ii;
+    w[k] = tot;
+    err += abs(delta);
+    bd[k] = err;
+    ind[k] = ii;
 /* L360: */
-    }
+  }
 
-    if (*type) {
-	goto L1001;
-    }
-    f = bd[1];
-    e2[1] = 2.;
-    bd[1] = f;
-    j = 2;
+  if (*type)
+  {
+    goto L1001;
+  }
+  f = bd[1];
+  e2[1] = 2.;
+  bd[1] = f;
+  j = 2;
 /*     .......... negate elements of w for largest values .......... */
 L400:
-    i__1 = *n;
-    for (i = 1; i <= i__1; ++i) {
+  i__1 = *n;
+  for (i = 1; i <= i__1; ++i)
+  {
 /* L500: */
-	w[i] = -w[i];
-    }
+    w[i] = -w[i];
+  }
 
-    jdef = -jdef;
-    switch ((int)j) {
-	case 1:  goto L40;
-	case 2:  goto L1001;
-    }
+  jdef = -jdef;
+  switch ((int)j)
+  {
+    case 1:  goto L40;
+
+    case 2:  goto L1001;
+  }
 /*     .......... set error -- idef specified incorrectly .......... */
 L1000:
-    *ierr = *n * 6 + 1;
+  *ierr = *n * 6 + 1;
 L1001:
-    return 0;
+  return 0;
 } /* ratqr_ */
 
 double epslon_(double *x)
 {
-    /* System generated locals */
-    doublereal ret_val, d__1;
+  /* System generated locals */
+  doublereal ret_val, d__1;
 
-    /* Local variables */
-    doublereal a, b, c, eps;
+  /* Local variables */
+  doublereal a, b, c, eps;
 
 
 /*     estimate unit roundoff in quantities of size x. */
@@ -387,15 +417,16 @@ double epslon_(double *x)
 
 /*     this version dated 4/6/83. */
 
-    a = 1.3333333333333333;
+  a = 1.3333333333333333;
 L10:
-    b = a - 1.;
-    c = b + b + b;
-    eps = (d__1 = c - 1., abs(d__1));
-    if (eps == 0.) {
-	goto L10;
-    }
-    ret_val = eps * abs(*x);
-    return ret_val;
+  b = a - 1.;
+  c = b + b + b;
+  eps = (d__1 = c - 1., abs(d__1));
+  if (eps == 0.)
+  {
+    goto L10;
+  }
+  ret_val = eps * abs(*x);
+  return ret_val;
 } /* epslon_ */
 

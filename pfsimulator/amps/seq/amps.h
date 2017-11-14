@@ -1,33 +1,33 @@
-/*BHEADER**********************************************************************
-
-  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-  by the Parflow Team (see the CONTRIBUTORS file)
-  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-
-  This file is part of Parflow. For details, see
-  http://www.llnl.gov/casc/parflow
-
-  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-  for the GNU Lesser General Public License.
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License (as published
-  by the Free Software Foundation) version 2.1 dated February 1999.
-
-  This program is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-  and conditions of the GNU General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
 #ifndef amps_include
-#define amps_include 
+#define amps_include
 
 #include "parflow_config.h"
 
@@ -42,7 +42,7 @@
 #include <stdlib.h>
 #endif
 
-#define AMPS_EXCHANGE_SPECIALIZED 
+#define AMPS_EXCHANGE_SPECIALIZED
 #define AMPS_FOPEN_SPECIALIZED
 #define AMPS_NEWHANDLE_SPECIALIZED
 #define AMPS_SFCLOSE_SPECIALIZED
@@ -77,21 +77,21 @@ typedef FILE *amps_File;
 
 #define amps_Printf printf
 
-#define amps_Sync(comm) 
+#define amps_Sync(comm)
 
 #define amps_Exit(code) exit(code)
 
-#define amps_AllReduce( comm , invoice , operation ) 
+#define amps_AllReduce(comm, invoice, operation)
 
-#define amps_BCast( comm , source , invoice ) 0
+#define amps_BCast(comm, source, invoice) 0
 
-#define amps_NewHandle(comm , id , invoice )
+#define amps_NewHandle(comm, id, invoice)
 
 /* If we are doing malloc checking shutdown the malloc logger */
 #ifdef AMPS_MALLOC_DEBUG
-#define amps_Finalize() malloc_verify(0);malloc_shutdown()
+#define amps_Finalize() malloc_verify(0); malloc_shutdown()
 #else
-#define amps_Finalize() 
+#define amps_Finalize()
 #endif
 
 #define amps_Fopen(filename, type) fopen((filename), (type))
@@ -106,7 +106,7 @@ typedef FILE *amps_File;
 /* Macros for all commands that have no function in sequentail code.         */
 /*---------------------------------------------------------------------------*/
 
-#define VOID_FUNC(amps_name) printf("AMPS Error: The %s function is not implemented\n", amps_name );
+#define VOID_FUNC(amps_name) printf("AMPS Error: The %s function is not implemented\n", amps_name);
 
 #define amps_append_invoice amps_new_invoice
 
@@ -131,54 +131,50 @@ typedef FILE *amps_File;
 
 
 /* This structure is used to keep track of the entries in an invoice         */
-typedef struct amps_invoice
-{
-    long   flags;     /* some flags for this invoice */
-    
-    long   combuf_flags; /* flags indicating state of the communications
-			    buffer */
+typedef struct amps_invoice {
+  long flags;         /* some flags for this invoice */
 
-    void   *combuf;    /* pointer to the communications buffer
-			  associated with this invoice                       */
-    
-    struct amps_invoice_entry *list;
-    struct amps_invoice_entry *end_list;
-    int num;          /* number of items in the list                        */
+  long combuf_flags;     /* flags indicating state of the communications
+                          * buffer */
 
-    amps_Comm comm;
-    
+  void   *combuf;      /* pointer to the communications buffer
+                        * associated with this invoice                       */
+
+  struct amps_invoice_entry *list;
+  struct amps_invoice_entry *end_list;
+  int num;            /* number of items in the list                        */
+
+  amps_Comm comm;
 } amps_InvoiceStruct;
 
 typedef amps_InvoiceStruct *amps_Invoice;
 /* Each entry in the invoice has one of these                                */
-typedef struct amps_invoice_entry
-{
-    int     type;         /* type that this invoice points to */
-    
-    long    flags;        /* flags indicating state of the invoice           */
-    
-    int     data_type;    /* what type of pointer do we have                 */
-    long    data_flags;   /* flags indicating state of the data pointer      */
-    void   *data;
+typedef struct amps_invoice_entry {
+  int type;               /* type that this invoice points to */
 
-    void   *extra;
-    
-    int     len_type;
-    int     len;
-    int    *ptr_len;
-    
-    int     stride_type;
-    int     stride;
-    int     *ptr_stride;
+  long flags;             /* flags indicating state of the invoice           */
 
-    int     dim_type;
-    int     dim;
-    int    *ptr_dim;
-    
-    int     ignore;      /* do we ignore this invoice?                       */
-    
-    struct amps_invoice_entry *next;
-    
+  int data_type;          /* what type of pointer do we have                 */
+  long data_flags;        /* flags indicating state of the data pointer      */
+  void   *data;
+
+  void   *extra;
+
+  int len_type;
+  int len;
+  int    *ptr_len;
+
+  int stride_type;
+  int stride;
+  int     *ptr_stride;
+
+  int dim_type;
+  int dim;
+  int    *ptr_dim;
+
+  int ignore;            /* do we ignore this invoice?                       */
+
+  struct amps_invoice_entry *next;
 } amps_InvoiceEntry;
 
 /*===========================================================================*/
@@ -186,39 +182,35 @@ typedef struct amps_invoice_entry
 /* Invoices plus the src or dest rank.                                       */
 /*===========================================================================*/
 
-typedef struct
-{
-   int            num_send;
-   int           *dest;
-   amps_Invoice  *send_invoices;
+typedef struct {
+  int num_send;
+  int           *dest;
+  amps_Invoice  *send_invoices;
 
-   int            num_recv;
-   int           *src;
-   amps_Invoice  *recv_invoices;
+  int num_recv;
+  int           *src;
+  amps_Invoice  *recv_invoices;
 
-   int            recv_remaining;
-   struct amps_HandleObject **recv_handles;
-
+  int recv_remaining;
+  struct amps_HandleObject **recv_handles;
 } amps_PackageStruct;
 
 typedef amps_PackageStruct *amps_Package;
 
-typedef struct amps_HandleObject 
-{
-   int type;
-   amps_Comm comm;
-   int id;
-   amps_Invoice invoice;
-   amps_Package package;
-
+typedef struct amps_HandleObject {
+  int type;
+  amps_Comm comm;
+  int id;
+  amps_Invoice invoice;
+  amps_Package package;
 } *amps_Handle;
 
-/*****************************************************************************
+/****************************************************************************
  *
  *   PACKING structures and defines
  *
  *****************************************************************************/
- 
+
 #define AMPS_PACKED 2
 
 #define AMPS_IGNORE  -1
@@ -227,12 +219,12 @@ typedef struct amps_HandleObject
 #define PACK_NO_CONVERT_TYPE 2
 
 #define AMPS_ALIGN(type, dest) \
-    ((sizeof(type) - \
-      ((unsigned long)(dest) % sizeof(type))) \
-     % sizeof(type));
+  ((sizeof(type) - \
+    ((unsigned long)(dest) % sizeof(type))) \
+   % sizeof(type));
 
 #define AMPS_SIZEOF(type, len, stride) \
-    ((sizeof(type)*(len)*(stride)))
+  ((sizeof(type) * (len) * (stride)))
 
 /*---------------------------------------------------------------------------*/
 /* Macros for Invoice creation and deletion.                                 */
@@ -245,18 +237,18 @@ typedef struct amps_HandleObject
 /*---------------------------------------------------------------------------*/
 #if SGS
 #define AMPS_CLEAR_INVOICE(invoice) \
-    { \
-	  amps_ClearInvoice(invoice); \
-    }
+  { \
+    amps_ClearInvoice(invoice); \
+  }
 
-#define AMPS_PACK_FREE_LETTER(comm, invoice,amps_letter) \
-    if( (invoice) -> combuf_flags & AMPS_INVOICE_OVERLAYED) \
-        (invoice) -> combuf_flags |= AMPS_INVOICE_ALLOCATED; \
-    else \
-    { \
-        (invoice) -> combuf_flags &= ~AMPS_INVOICE_ALLOCATED; \
-	pvm_freebuf(amps_letter); \
-    } 
+#define AMPS_PACK_FREE_LETTER(comm, invoice, amps_letter) \
+  if ((invoice)->combuf_flags & AMPS_INVOICE_OVERLAYED) \
+    (invoice)->combuf_flags |= AMPS_INVOICE_ALLOCATED; \
+  else \
+  { \
+    (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED; \
+    pvm_freebuf(amps_letter); \
+  }
 
 #endif
 
@@ -271,9 +263,9 @@ typedef struct amps_HandleObject
 #define amps_FFclose(file) fclose((file))
 
 
-/******************************************************************************
- * Read and Write routines to write to files in XDR format.
- *****************************************************************************/
+/*****************************************************************************
+* Read and Write routines to write to files in XDR format.
+*****************************************************************************/
 
 
 #define amps_SizeofChar sizeof(char)
@@ -296,91 +288,91 @@ typedef struct amps_HandleObject
 #define amps_SizeofDouble sizeof(double)
 
 #define amps_WriteChar(file, ptr, len) \
-    fwrite( (ptr), sizeof(char), (len), (FILE *)(file) )
+  fwrite((ptr), sizeof(char), (len), (FILE*)(file))
 
 #define amps_WriteShort(file, ptr, len) \
-    fwrite( (ptr), sizeof(short), (len), (FILE *)(file) )
+  fwrite((ptr), sizeof(short), (len), (FILE*)(file))
 
 #define amps_WriteLong(file, ptr, len) \
-    fwrite( (ptr), sizeof(long), (len), (FILE *)(file) )
+  fwrite((ptr), sizeof(long), (len), (FILE*)(file))
 
 #define amps_WriteFloat(file, ptr, len) \
-    fwrite( (ptr), sizeof(float), (len), (FILE *)(file) )
+  fwrite((ptr), sizeof(float), (len), (FILE*)(file))
 
 #ifdef CASC_HAVE_BIGENDIAN
 
 #define amps_WriteInt(file, ptr, len) \
-    fwrite( (ptr), sizeof(int), (len), (FILE *)(file) )
+  fwrite((ptr), sizeof(int), (len), (FILE*)(file))
 
 #define amps_WriteDouble(file, ptr, len) \
-    fwrite( (ptr), sizeof(double), (len), (FILE *)(file) )
+  fwrite((ptr), sizeof(double), (len), (FILE*)(file))
 
 #endif
 
 
 #define amps_ReadChar(file, ptr, len) \
-    fread( (ptr), sizeof(char), (len), (FILE *)(file) )
+  fread((ptr), sizeof(char), (len), (FILE*)(file))
 
 #define amps_ReadShort(file, ptr, len) \
-    fread( (ptr), sizeof(short), (len), (FILE *)(file) )
+  fread((ptr), sizeof(short), (len), (FILE*)(file))
 
 #define amps_ReadLong(file, ptr, len) \
-    fread( (ptr), sizeof(long), (len), (FILE *)(file) )
+  fread((ptr), sizeof(long), (len), (FILE*)(file))
 
 #define amps_ReadFloat(file, ptr, len) \
-    fread( (ptr), sizeof(float), (len), (FILE *)(file) )
+  fread((ptr), sizeof(float), (len), (FILE*)(file))
 
 #ifdef CASC_HAVE_BIGENDIAN
 
 #define amps_ReadInt(file, ptr, len) \
-    fread( (ptr), sizeof(int), (len), (FILE *)(file) )
+  fread((ptr), sizeof(int), (len), (FILE*)(file))
 
 #define amps_ReadDouble(file, ptr, len) \
-    fread( (ptr), sizeof(double), (len), (FILE *)(file) )
+  fread((ptr), sizeof(double), (len), (FILE*)(file))
 
 #endif
 
-#define amps_Error(name, type, comment, operation) 
+#define amps_Error(name, type, comment, operation)
 
 #ifdef AMPS_MEMORY_ALLOC_CHECK
- 
+
 #define amps_TAlloc(type, count) \
-{ \
-     (type *) ptr; \
-     if ( (ptr = (type *) malloc((unsigned int)(sizeof(type) * (count)))) \
-         == NULL) \
-     amps_Printf("Error: out of memory in <%s> at line %d\n", \
-                 __FILE__, __LINE__); \
-     ptr; \
-} 
- 
+  { \
+    (type*)ptr; \
+    if ((ptr = (type*)malloc((unsigned int)(sizeof(type) * (count)))) \
+        == NULL) \
+      amps_Printf("Error: out of memory in <%s> at line %d\n", \
+                  __FILE__, __LINE__); \
+    ptr; \
+  }
+
 #define amps_CTAlloc(type, count) \
-{ \
-     (type *) ptr; \
-     if ( (ptr = (type *) calloc((unsigned int)(count), (unsigned int)sizeof(type))) == NULL ) \
-     amps_Printf("Error: out of memory in <%s> at line %d\n", \
-                 __FILE__, __LINE__); \
-     ptr; \
-} 
- 
+  { \
+    (type*)ptr; \
+    if ((ptr = (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type))) == NULL) \
+      amps_Printf("Error: out of memory in <%s> at line %d\n", \
+                  __FILE__, __LINE__); \
+    ptr; \
+  }
+
 /* note: the `else' is required to guarantee termination of the `if' */
 #define amps_TFree(ptr) if (ptr) free(ptr); else
- 
+
 /*--------------------------------------
  * Do not check memory allocation
  *--------------------------------------*/
- 
+
 #else
- 
+
 #define amps_Talloc(type, count) \
-((count) ? (type *) malloc((unsigned int)(sizeof(type) * (count))) : NULL)
- 
+  ((count) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
+
 #define amps_CTAlloc(type, count) \
-((count) ? (type *) calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
- 
+  ((count) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
+
 /* note: the `else' is required to guarantee termination of the `if' */
 #define amps_TFree(ptr) if (ptr) free(ptr); else
- 
+
 #endif
 
 /* These are the built-in types that are supported */

@@ -1,4 +1,5 @@
 add_executable(parflow main.c)
+
 target_link_libraries(parflow pfsimulator pfkinsol amps)
 
 if( ${PARFLOW_HAVE_CLM} )
@@ -18,11 +19,15 @@ if (${PARFLOW_HAVE_SILO})
 endif (${PARFLOW_HAVE_SILO})
 
 if (${PARFLOW_HAVE_NETCDF})
-  target_link_libraries (parflow ${NETCDF_LIBRARIES})
+  target_link_libraries (parflow ${netCDF_LIBRARIES})
 endif (${PARFLOW_HAVE_NETCDF})
 
 if (${PARFLOW_HAVE_HDF5})
   target_link_libraries (parflow ${HDF5_LIBRARIES})
+
+  if (${PARFLOW_HAVE_NETCDF})
+    target_link_libraries (parflow ${HDF5_HL_LIBRARIES})
+  endif (${PARFLOW_HAVE_NETCDF})
 endif (${PARFLOW_HAVE_HDF5})
 
 if (${PARFLOW_HAVE_ZLIB})
@@ -45,6 +50,4 @@ if ( DEFINED PARFLOW_LINKER_FLAGS)
    set_target_properties(parflow PROPERTIES LINK_FLAGS ${PARFLOW_LINKER_FLAGS})
 endif ( DEFINED PARFLOW_LINKER_FLAGS)
 
-
-  
 install(TARGETS parflow DESTINATION bin)
