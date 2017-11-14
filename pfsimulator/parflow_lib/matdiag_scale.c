@@ -1,55 +1,55 @@
-/*BHEADER**********************************************************************
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/*****************************************************************************
 *
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+* FILE:	matdiag_scale.c
 *
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
+* WRITTEN BY:	Bill Bosl
+*		phone: (510) 423-2873
+*		e-mail: wjbosl@llnl.gov
 *
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
+* DESCRIPTION:
+* Routine for computing the diagonal scaling vector D by taking
+* the inverse of the diagonal elements of A. The subroutine
+* DiagScale is then called to scale or unscale the matrix A.
+* The scaling operation that is carried out is:
 *
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
+*		A~ = D^(-1/2) A D^(-1/2)
 *
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
+*		x~ = D^(1/2) x
 *
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-/******************************************************************************
- *
- * FILE:	matdiag_scale.c
- *
- * WRITTEN BY:	Bill Bosl
- *		phone: (510) 423-2873
- *		e-mail: wjbosl@llnl.gov
- *
- * DESCRIPTION:
- * Routine for computing the diagonal scaling vector D by taking
- * the inverse of the diagonal elements of A. The subroutine
- * DiagScale is then called to scale or unscale the matrix A.
- * The scaling operation that is carried out is:
- *
- *		A~ = D^(-1/2) A D^(-1/2)
- *
- *		x~ = D^(1/2) x
- *
- *		b~ = D^(-1/2) b
- *
- * Unscaling is accomplished by inverting the vector
- * D that was previously computed, then calling DiagScale.
- *
- *
- *****************************************************************************/
+*		b~ = D^(-1/2) b
+*
+* Unscaling is accomplished by inverting the vector
+* D that was previously computed, then calling DiagScale.
+*
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -137,9 +137,9 @@ void MatDiagScale(Vector *x, Matrix *A, Vector *b, int flag)
       BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
                 iv, nx_v, ny_v, nz_v, 1, 1, 1,
                 im, nx_m, ny_m, nz_m, 1, 1, 1,
-                {
-                  dp[iv] = 1.0 / sqrt(cp[im]);
-                });
+      {
+        dp[iv] = 1.0 / sqrt(cp[im]);
+      });
     }
   }
 
@@ -173,9 +173,9 @@ void MatDiagScale(Vector *x, Matrix *A, Vector *b, int flag)
       iv = 0;
       BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                 iv, nx_v, ny_v, nz_v, 1, 1, 1,
-                {
-                  dp[iv] = 1.0 / (dp[iv]);
-                });
+      {
+        dp[iv] = 1.0 / (dp[iv]);
+      });
     }
   }
 

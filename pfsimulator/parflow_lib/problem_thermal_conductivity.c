@@ -1,30 +1,30 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
 #include "parflow.h"
 
@@ -156,18 +156,18 @@ void     ThermalConductivity(
           if (fcn == CALCFCN)
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(pt_sub, i, j, k);
-                           ptdat[ips] = values[ir];
-                         });
+            {
+              ips = SubvectorEltIndex(pt_sub, i, j, k);
+              ptdat[ips] = values[ir];
+            });
           }
           else   /* fcn = CALCDER */
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(pt_sub, i, j, k);
-                           ptdat[ips] = 0.0;
-                         });
+            {
+              ips = SubvectorEltIndex(pt_sub, i, j, k);
+              ptdat[ips] = 0.0;
+            });
           }     /* End else clause */
         }       /* End subgrid loop */
       }         /* End reion loop */
@@ -220,28 +220,28 @@ void     ThermalConductivity(
             if (fcn == CALCFCN)
             {
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                           {
-                             ips = SubvectorEltIndex(ps_sub, i, j, k);
-                             ipt = SubvectorEltIndex(pt_sub, i, j, k);
+              {
+                ips = SubvectorEltIndex(ps_sub, i, j, k);
+                ipt = SubvectorEltIndex(pt_sub, i, j, k);
 
-                             cdry = cdrys[ir];
-                             cwet = cwets[ir];
+                cdry = cdrys[ir];
+                cwet = cwets[ir];
 
-                             ptdat[ipt] = cdry + psdat[ips] * (cwet - cdry);
-                           });
+                ptdat[ipt] = cdry + psdat[ips] * (cwet - cdry);
+              });
             }    /* End if clause */
             else /* fcn = CALCDER */
             {
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                           {
-                             ipt = SubvectorEltIndex(pt_sub, i, j, k);
-                             ips = SubvectorEltIndex(ps_sub, i, j, k);
+              {
+                ipt = SubvectorEltIndex(pt_sub, i, j, k);
+                ips = SubvectorEltIndex(ps_sub, i, j, k);
 
-                             cdry = cdrys[ir];
-                             cwet = cwets[ir];
+                cdry = cdrys[ir];
+                cwet = cwets[ir];
 
-                             ptdat[ipt] = psdat[ips] * (cwet - cdry); /* Here psdat contains the derivative dS/dp */
-                           });
+                ptdat[ipt] = psdat[ips] * (cwet - cdry);     /* Here psdat contains the derivative dS/dp */
+              });
             }   /* End else clause */
           }     /* End subgrid loop */
         }       /* End loop over regions */
@@ -282,35 +282,35 @@ void     ThermalConductivity(
           if (fcn == CALCFCN)
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(pt_sub, i, j, k);
-                           ipt = SubvectorEltIndex(pt_sub, i, j, k);
-                           ipp = SubvectorEltIndex(pp_sub, i, j, k);
+            {
+              ips = SubvectorEltIndex(pt_sub, i, j, k);
+              ipt = SubvectorEltIndex(pt_sub, i, j, k);
+              ipp = SubvectorEltIndex(pp_sub, i, j, k);
 
-                           cwet_index = SubvectorEltIndex(cwet_values_sub, i, j, k);
-                           cdry_index = SubvectorEltIndex(cdry_values_sub, i, j, k);
+              cwet_index = SubvectorEltIndex(cwet_values_sub, i, j, k);
+              cdry_index = SubvectorEltIndex(cdry_values_sub, i, j, k);
 
-                           cdry = cdry_values_dat[cdry_index];
-                           cwet = cwet_values_dat[cwet_index];
+              cdry = cdry_values_dat[cdry_index];
+              cwet = cwet_values_dat[cwet_index];
 
-                           ptdat[ipt] = cdry + psdat[ips] * (cwet - cdry);
-                         });
+              ptdat[ipt] = cdry + psdat[ips] * (cwet - cdry);
+            });
           }      /* End if clause */
           else   /* fcn = CALCDER */
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ipt = SubvectorEltIndex(pt_sub, i, j, k);
-                           ipp = SubvectorEltIndex(pp_sub, i, j, k);
+            {
+              ipt = SubvectorEltIndex(pt_sub, i, j, k);
+              ipp = SubvectorEltIndex(pp_sub, i, j, k);
 
-                           cwet_index = SubvectorEltIndex(cwet_values_sub, i, j, k);
-                           cdry_index = SubvectorEltIndex(cdry_values_sub, i, j, k);
+              cwet_index = SubvectorEltIndex(cwet_values_sub, i, j, k);
+              cdry_index = SubvectorEltIndex(cdry_values_sub, i, j, k);
 
-                           cdry = cdry_values_dat[cdry_index];
-                           cwet = cwet_values_dat[cwet_index];
+              cdry = cdry_values_dat[cdry_index];
+              cwet = cwet_values_dat[cwet_index];
 
-                           ptdat[ipt] = psdat[ipp] * (cwet - cdry);
-                         });
+              ptdat[ipt] = psdat[ipp] * (cwet - cdry);
+            });
           }     /* End else clause */
         }       /* End subgrid loop */
       }         /* End if data_from_file */

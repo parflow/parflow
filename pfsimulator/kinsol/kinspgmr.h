@@ -3,7 +3,7 @@
 * File          : kinspgmr.h                                     *
 * Programmers   : Allan G Taylor and Alan C. Hindmarsh @ LLNL    *
 * Version of    : 19 Mar 1999 Added KINSpgmr return values (int) *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * This is the header file for the KINSol scaled, preconditioned  *
 * GMRES linear solver, KINSpgmr.                                 *
 *                                                                *
@@ -12,25 +12,22 @@
 *                                                                *
 ******************************************************************/
 
+#ifndef KINSPRGMR_H
+#define KINSPRGMR_H
+
 #include "vector.h"
-
-#ifdef __cplusplus     /* wrapper to enable C++ usage */
-extern "C" {
-#endif
-#ifndef _kinspgmr_h
-#define _kinspgmr_h
-
-
-#include <stdio.h>
 #include "kinsol.h"   /*  for KINSOL_IOPT_SIZE, etc.  */
 #include "spgmr.h"
 #include "llnltyps.h"
 
+#include <stdio.h>
+
+BEGIN_EXTERN_C
 
 /******************************************************************
 *                                                                *
 * KINSpgmr solver statistics indices                             *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * The following enumeration gives a symbolic name to each        *
 * KINSpgmr-specific statistic. The symbolic names are used as    *
 * indices into the iopt and ropt arrays and values of both arrays*
@@ -55,7 +52,7 @@ enum { SPGMR_NLI=KINSOL_IOPT_SIZE, SPGMR_NPE, SPGMR_NPS, SPGMR_NCFL };
 /******************************************************************
 *                                                                *
 * KINSpgmr solver constants                                      *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * KINSPGMR_MAXL    : default value for the maximum Krylov        *
 *                   dimension is MIN(N, KINSPGMR_MAXL)           *
 *                                                                *
@@ -78,7 +75,7 @@ enum { SPGMR_NLI=KINSOL_IOPT_SIZE, SPGMR_NPE, SPGMR_NPS, SPGMR_NCFL };
 /******************************************************************
 *                                                                *
 * Type : KINSpgmrPrecondFn                                       *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * The user-supplied preconditioner setup function precondset and *
 * the user-supplied preconditioner solve function precondsolve   *
 * together must define the right preconditoner matrix P chosen   *
@@ -168,7 +165,7 @@ typedef int (*KINSpgmrPrecondFn)(integer Neq,
 /******************************************************************
 *                                                                *
 * Type : KINSpgmrPrecondSolveFn                                  *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * The user-supplied preconditioner solve function precondsolve   *
 * is to solve a linear system P x = r in which the matrix P is   *
 * the (right) preconditioner matrix P.                           *
@@ -264,7 +261,7 @@ typedef int (*KINSpgmruserAtimesFn)(void *f_data, N_Vector v,
 /******************************************************************
 *                                                                *
 * Function : KINSpgmr                                            *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * A call to the KINSpgmr function links the main KINSol solver   *
 * with the KINSpgmr linear solver. Among other things, it sets   *
 * the generic names linit, lsetup, lsolve, and lfree to the      *
@@ -331,7 +328,6 @@ int KINSpgmr(void *kin_mem, int maxl, int maxlrst, int msbpre,
              KINSpgmruserAtimesFn userAtimes,
              void *P_data);
 
-#endif
-#ifdef __cplusplus
-}
+END_EXTERN_C
+
 #endif

@@ -1,33 +1,33 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-/*****************************************************************************
-*
-*****************************************************************************/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/****************************************************************************
+ *
+ *****************************************************************************/
 
 #include "parflow.h"
 
@@ -120,11 +120,11 @@ double  MaxFieldValue(
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               fi, nx_f, ny_f, nz_f, 1, 1, 1,
               pi, nx_p, ny_p, nz_p, 1, 1, 1,
-              {
-                tmp = fabs(fp[fi]) / pfmax(plp[pi], prp[pi]);
-                if (tmp > max_field_value)
-                  max_field_value = tmp;
-              });
+    {
+      tmp = fabs(fp[fi]) / pfmax(plp[pi], prp[pi]);
+      if (tmp > max_field_value)
+        max_field_value = tmp;
+    });
   }
 
   result_invoice = amps_NewInvoice("%d", &max_field_value);
@@ -261,42 +261,42 @@ double  MaxPhaseFieldValue(
       BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
                 vi, nx_v, ny_v, nz_v, 1, 1, 1,
                 pi, nx_p, ny_p, nz_p, 1, 1, 1,
+      {
+        psi_max = pfmax(fabs(plp[pi]), fabs(prp[pi])) * ds;
+        if (psi_max != 0.0)
+        {
+          tmp_max = fabs(vp[vi]) / psi_max;
+          switch (dir)
+          {
+            case 0:
+              {
+                if (tmp_max > max_xdir_value)
                 {
-                  psi_max = pfmax(fabs(plp[pi]), fabs(prp[pi])) * ds;
-                  if (psi_max != 0.0)
-                  {
-                    tmp_max = fabs(vp[vi]) / psi_max;
-                    switch (dir)
-                    {
-                      case 0:
-                        {
-                          if (tmp_max > max_xdir_value)
-                          {
-                            max_xdir_value = tmp_max;
-                          }
-                          break;
-                        }
+                  max_xdir_value = tmp_max;
+                }
+                break;
+              }
 
-                      case 1:
-                        {
-                          if (tmp_max > max_ydir_value)
-                          {
-                            max_ydir_value = tmp_max;
-                          }
-                          break;
-                        }
+            case 1:
+              {
+                if (tmp_max > max_ydir_value)
+                {
+                  max_ydir_value = tmp_max;
+                }
+                break;
+              }
 
-                      case 2:
-                        {
-                          if (tmp_max > max_zdir_value)
-                          {
-                            max_zdir_value = tmp_max;
-                          }
-                          break;
-                        }
-                    }
-                  }
-                });
+            case 2:
+              {
+                if (tmp_max > max_zdir_value)
+                {
+                  max_zdir_value = tmp_max;
+                }
+                break;
+              }
+          }
+        }
+      });
     }
   }
 
@@ -498,130 +498,130 @@ double  MaxTotalFieldValue(
                 vi, nx_v, ny_v, nz_v, 1, 1, 1,
                 si, nx_s, ny_s, nz_s, 1, 1, 1,
                 pi, nx_p, ny_p, nz_p, 1, 1, 1,
+      {
+        if (slp[si] <= srp[si])
+        {
+          s_lower = slp[si];
+          s_upper = srp[si];
+        }
+        else
+        {
+          s_lower = srp[si];
+          s_upper = slp[si];
+        }
+
+        /**************************************************************
+        *                                                            *
+        * Find the maximum value of f' over the interval, given that *
+        *      the real roots of f'' have been previously found      *
+        *                                                            *
+        **************************************************************/
+
+        f_prime_max = fabs(Fprime_OF_S(s_lower, a, b));
+        for (pnt = 0; pnt < EvalNumFPoints(eval_struct); pnt++)
+        {
+          point = EvalFPoint(eval_struct, pnt);
+          value = EvalFValue(eval_struct, pnt);
+          if ((s_lower < point) && (point < s_upper))
+          {
+            tmp = fabs(value);
+            if (tmp > f_prime_max)
+            {
+              f_prime_max = tmp;
+            }
+          }
+        }
+        tmp = fabs(Fprime_OF_S(s_upper, a, b));
+        if (tmp > f_prime_max)
+        {
+          f_prime_max = tmp;
+        }
+
+        if (dir == 2)
+        {
+          /**************************************************************
+          *                                                            *
+          * Find the maximum value of h' over the interval, given that *
+          *      the real roots of h'' have been previously found      *
+          *                                                            *
+          **************************************************************/
+
+          h_prime_max = fabs(Hprime_OF_S(s_lower, a, b));
+          for (pnt = 0; pnt < EvalNumHPoints(eval_struct); pnt++)
+          {
+            point = EvalHPoint(eval_struct, pnt);
+            value = EvalHValue(eval_struct, pnt);
+            if ((s_lower < point) && (point < s_upper))
+            {
+              tmp = fabs(value);
+              if (tmp > h_prime_max)
+              {
+                h_prime_max = tmp;
+              }
+            }
+          }
+          tmp = fabs(Hprime_OF_S(s_upper, a, b));
+          if (tmp > h_prime_max)
+          {
+            h_prime_max = tmp;
+          }
+        }
+
+        psi_max = pfmax(fabs(plp[pi]), fabs(prp[pi])) * ds;
+        if (psi_max != 0.0)
+        {
+          if (dir == 2)
+          {
+            tmp_total = f_prime_max * fabs(vp[vi]) / psi_max;
+            tmp_gravity = h_prime_max * constant * fabs(bp[vi]) / psi_max;
+            tmp_max = (f_prime_max * fabs(vp[vi])
+                       + h_prime_max * constant * fabs(bp[vi]))
+                      / psi_max;
+          }
+          else
+          {
+            tmp_max = (f_prime_max * fabs(vp[vi])) / psi_max;
+          }
+
+          switch (dir)
+          {
+            case 0:
+              {
+                if (tmp_max > max_xdir_value)
                 {
-                  if (slp[si] <= srp[si])
-                  {
-                    s_lower = slp[si];
-                    s_upper = srp[si];
-                  }
-                  else
-                  {
-                    s_lower = srp[si];
-                    s_upper = slp[si];
-                  }
+                  max_xdir_value = tmp_max;
+                }
+                break;
+              }
 
-                  /**************************************************************
-                  *                                                            *
-                  * Find the maximum value of f' over the interval, given that *
-                  *      the real roots of f'' have been previously found      *
-                  *                                                            *
-                  **************************************************************/
+            case 1:
+              {
+                if (tmp_max > max_ydir_value)
+                {
+                  max_ydir_value = tmp_max;
+                }
+                break;
+              }
 
-                  f_prime_max = fabs(Fprime_OF_S(s_lower, a, b));
-                  for (pnt = 0; pnt < EvalNumFPoints(eval_struct); pnt++)
-                  {
-                    point = EvalFPoint(eval_struct, pnt);
-                    value = EvalFValue(eval_struct, pnt);
-                    if ((s_lower < point) && (point < s_upper))
-                    {
-                      tmp = fabs(value);
-                      if (tmp > f_prime_max)
-                      {
-                        f_prime_max = tmp;
-                      }
-                    }
-                  }
-                  tmp = fabs(Fprime_OF_S(s_upper, a, b));
-                  if (tmp > f_prime_max)
-                  {
-                    f_prime_max = tmp;
-                  }
-
-                  if (dir == 2)
-                  {
-                    /**************************************************************
-                    *                                                            *
-                    * Find the maximum value of h' over the interval, given that *
-                    *      the real roots of h'' have been previously found      *
-                    *                                                            *
-                    **************************************************************/
-
-                    h_prime_max = fabs(Hprime_OF_S(s_lower, a, b));
-                    for (pnt = 0; pnt < EvalNumHPoints(eval_struct); pnt++)
-                    {
-                      point = EvalHPoint(eval_struct, pnt);
-                      value = EvalHValue(eval_struct, pnt);
-                      if ((s_lower < point) && (point < s_upper))
-                      {
-                        tmp = fabs(value);
-                        if (tmp > h_prime_max)
-                        {
-                          h_prime_max = tmp;
-                        }
-                      }
-                    }
-                    tmp = fabs(Hprime_OF_S(s_upper, a, b));
-                    if (tmp > h_prime_max)
-                    {
-                      h_prime_max = tmp;
-                    }
-                  }
-
-                  psi_max = pfmax(fabs(plp[pi]), fabs(prp[pi])) * ds;
-                  if (psi_max != 0.0)
-                  {
-                    if (dir == 2)
-                    {
-                      tmp_total = f_prime_max * fabs(vp[vi]) / psi_max;
-                      tmp_gravity = h_prime_max * constant * fabs(bp[vi]) / psi_max;
-                      tmp_max = (f_prime_max * fabs(vp[vi])
-                                 + h_prime_max * constant * fabs(bp[vi]))
-                                / psi_max;
-                    }
-                    else
-                    {
-                      tmp_max = (f_prime_max * fabs(vp[vi])) / psi_max;
-                    }
-
-                    switch (dir)
-                    {
-                      case 0:
-                        {
-                          if (tmp_max > max_xdir_value)
-                          {
-                            max_xdir_value = tmp_max;
-                          }
-                          break;
-                        }
-
-                      case 1:
-                        {
-                          if (tmp_max > max_ydir_value)
-                          {
-                            max_ydir_value = tmp_max;
-                          }
-                          break;
-                        }
-
-                      case 2:
-                        {
-                          if (tmp_max > max_zdir_value)
-                          {
-                            max_zdir_value = tmp_max;
-                          }
-                          if (tmp_total > max_total_value)
-                          {
-                            max_total_value = tmp_total;
-                          }
-                          if (tmp_gravity > max_gravity_value)
-                          {
-                            max_gravity_value = tmp_gravity;
-                          }
-                          break;
-                        }
-                    }
-                  }
-                });
+            case 2:
+              {
+                if (tmp_max > max_zdir_value)
+                {
+                  max_zdir_value = tmp_max;
+                }
+                if (tmp_total > max_total_value)
+                {
+                  max_total_value = tmp_total;
+                }
+                if (tmp_gravity > max_gravity_value)
+                {
+                  max_gravity_value = tmp_gravity;
+                }
+                break;
+              }
+          }
+        }
+      });
     }
   }
 

@@ -1,38 +1,38 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
 #include "parflow.h"
 
-/******************************************************************************
- *
- * The functions in this file are for manipulating the Octree structure.
- *
- *****************************************************************************/
+/*****************************************************************************
+*
+* The functions in this file are for manipulating the Octree structure.
+*
+*****************************************************************************/
 
 /*--------------------------------------------------------------------------
  * Check the octree for isolated cells
@@ -84,33 +84,33 @@ void  GrGeomFixOctree(
   k = 0;
   GrGeomOctreeFaceLoop(i, j, k, fdir, node, grgeom_octree, level,
                        0, 0, 0, num_indices, num_indices, num_indices,
-                       {
-                         face_index = GrGeomOctreeFaceIndex(fdir[0], fdir[1], fdir[2]);
+  {
+    face_index = GrGeomOctreeFaceIndex(fdir[0], fdir[1], fdir[2]);
 
-                         neighbor_node = GrGeomOctreeFind(&new_level, grgeom_octree,
-                                                          i + fdir[0],
-                                                          j + fdir[1],
-                                                          k + fdir[2],
-                                                          level);
-                         if (new_level == level)
-                         {
-                           if (GrGeomOctreeCellIsInside(neighbor_node))
-                           {
-                             GrGeomOctreeClearFace(node, face_index);
+    neighbor_node = GrGeomOctreeFind(&new_level, grgeom_octree,
+                                     i + fdir[0],
+                                     j + fdir[1],
+                                     k + fdir[2],
+                                     level);
+    if (new_level == level)
+    {
+      if (GrGeomOctreeCellIsInside(neighbor_node))
+      {
+        GrGeomOctreeClearFace(node, face_index);
 
-                             for (p = 0; p < num_patches; p++)
-                             {
-                               patch_node = GrGeomOctreeFind(&new_level,
-                                                             patch_octrees[p],
-                                                             i, j, k, level);
-                               if (new_level == level)
-                               {
-                                 GrGeomOctreeClearFace(patch_node, face_index);
-                               }
-                             }
-                           }
-                         }
-                       });
+        for (p = 0; p < num_patches; p++)
+        {
+          patch_node = GrGeomOctreeFind(&new_level,
+                                        patch_octrees[p],
+                                        i, j, k, level);
+          if (new_level == level)
+          {
+            GrGeomOctreeClearFace(patch_node, face_index);
+          }
+        }
+      }
+    }
+  });
 }
 
 /*--------------------------------------------------------------------------
@@ -1657,22 +1657,22 @@ void    GrGeomOctreeFromInd(
         BoxLoopI1(i, j, k,
                   ix_all, iy_all, iz_all, nx_all, ny_all, nz_all,
                   fi, nx_f, ny_f, nz_f, 1, 1, 1,
-                  {
-                    iprime = i - ix_all;
-                    jprime = j - iy_all;
-                    kprime = k - iz_all;
+        {
+          iprime = i - ix_all;
+          jprime = j - iy_all;
+          kprime = k - iz_all;
 
-                    index = nx_all * (ny_all * kprime + jprime) + iprime;
+          index = nx_all * (ny_all * kprime + jprime) + iprime;
 
-                    if (data[fi] == indicator)
-                    {
-                      ind[index] = INSIDE;
-                    }
-                    else
-                    {
-                      ind[index] = OUTSIDE;
-                    }
-                  });
+          if (data[fi] == indicator)
+          {
+            ind[index] = INSIDE;
+          }
+          else
+          {
+            ind[index] = OUTSIDE;
+          }
+        });
 
         /* Get the level of the octree this subgrid */
         /*  lies on in relation to  the background  */
@@ -2160,54 +2160,54 @@ void          GrGeomPrintOctreeCells(
     i = 0; j = 0; k = 0;
 
     GrGeomOctreeLoop(i, j, k, l, node, octree, level, TRUE,
-                     {
-                       amps_Fprintf(file, "%d %d %d %d: ", i, j, k, l);
+    {
+      amps_Fprintf(file, "%d %d %d %d: ", i, j, k, l);
 
-                       cell = GrGeomOctreeCell(node) & ~GrGeomOctreeCellLeaf;
+      cell = GrGeomOctreeCell(node) & ~GrGeomOctreeCellLeaf;
 
-                       switch (cell)
-                       {
-                         case GrGeomOctreeCellEmpty:
-                           amps_Fprintf(file, "Empty\n");
-                           break;
+      switch (cell)
+      {
+        case GrGeomOctreeCellEmpty:
+          amps_Fprintf(file, "Empty\n");
+          break;
 
-                         case GrGeomOctreeCellOutside:
-                           amps_Fprintf(file, "Outside\n");
-                           break;
+        case GrGeomOctreeCellOutside:
+          amps_Fprintf(file, "Outside\n");
+          break;
 
-                         case GrGeomOctreeCellInside:
-                           amps_Fprintf(file, "Inside\n");
-                           break;
+        case GrGeomOctreeCellInside:
+          amps_Fprintf(file, "Inside\n");
+          break;
 
-                         case GrGeomOctreeCellFull:
-                           amps_Fprintf(file, "Full\n");
-                           break;
-                       }
-                     },
-                     {
-                       amps_Fprintf(file, "%d %d %d %d: ", i, j, k, l);
+        case GrGeomOctreeCellFull:
+          amps_Fprintf(file, "Full\n");
+          break;
+      }
+    },
+    {
+      amps_Fprintf(file, "%d %d %d %d: ", i, j, k, l);
 
-                       cell = GrGeomOctreeCell(node) & ~GrGeomOctreeCellLeaf;
+      cell = GrGeomOctreeCell(node) & ~GrGeomOctreeCellLeaf;
 
-                       switch (cell)
-                       {
-                         case GrGeomOctreeCellEmpty:
-                           amps_Fprintf(file, "Empty\n");
-                           break;
+      switch (cell)
+      {
+        case GrGeomOctreeCellEmpty:
+          amps_Fprintf(file, "Empty\n");
+          break;
 
-                         case GrGeomOctreeCellOutside:
-                           amps_Fprintf(file, "Outside\n");
-                           break;
+        case GrGeomOctreeCellOutside:
+          amps_Fprintf(file, "Outside\n");
+          break;
 
-                         case GrGeomOctreeCellInside:
-                           amps_Fprintf(file, "Inside\n");
-                           break;
+        case GrGeomOctreeCellInside:
+          amps_Fprintf(file, "Inside\n");
+          break;
 
-                         case GrGeomOctreeCellFull:
-                           amps_Fprintf(file, "Full\n");
-                           break;
-                       }
-                     });
+        case GrGeomOctreeCellFull:
+          amps_Fprintf(file, "Full\n");
+          break;
+      }
+    });
   }
 
   amps_Fclose(file);

@@ -1,38 +1,38 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
-/******************************************************************************
- *
- * Routine for setting up internal boundary conditions
- *
- **-----------------------------------------------------------------------------
- *
- *****************************************************************************/
+/*****************************************************************************
+*
+* Routine for setting up internal boundary conditions
+*
+*-----------------------------------------------------------------------------
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -171,7 +171,7 @@ void BCInternal(
   }
 
   /* Note: the following two loops can be combined, so
-  *  I will not merge the one above with the one below */
+   *  I will not merge the one above with the one below */
   /*--------------------------------------------------------------------
    * Put in the internal conditions using the subgrids computed above
    *--------------------------------------------------------------------*/
@@ -205,48 +205,48 @@ void BCInternal(
 
         BoxLoopI0(i, j, k,
                   ix, iy, iz, nx, ny, nz,
-                  {
-                    /* @RMM - Fixed bug in internal BC's (down below, only x coord was assigned, not y and z) and
-                     * changed notion of BC to be pressure head, not head potential to make more consistent with
-                     * other BC ideas and PF -- to change back, uncomment the "-dtmp*..." portion below */
-                    phead = internal_bc_conditions[ibc_sg]; //-  dtmp * (Z + k*dz);
+        {
+          /* @RMM - Fixed bug in internal BC's (down below, only x coord was assigned, not y and z) and
+           * changed notion of BC to be pressure head, not head potential to make more consistent with
+           * other BC ideas and PF -- to change back, uncomment the "-dtmp*..." portion below */
+          phead = internal_bc_conditions[ibc_sg];        //-  dtmp * (Z + k*dz);
 
-                    /* set column elements */
-                    for (index = 1; index < 7; index++)
-                    {
-                      i_sft = i - stencil[index][0];
-                      j_sft = j - stencil[index][1];
-                      k_sft = k - stencil[index][2];
+          /* set column elements */
+          for (index = 1; index < 7; index++)
+          {
+            i_sft = i - stencil[index][0];
+            j_sft = j - stencil[index][1];
+            k_sft = k - stencil[index][2];
 
-                      if (((i_sft >= SubgridIX(subgrid)) &&
-                           (i_sft < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
-                          ((j_sft >= SubgridIY(subgrid)) &&
-                           (j_sft < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
-                          ((k_sft >= SubgridIZ(subgrid)) &&
-                           (k_sft < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
-                      {
-                        mp = SubmatrixElt(A_sub, index, i_sft, j_sft, k_sft);
-                        SubvectorElt(f_sub, i_sft, j_sft, k_sft)[0] -= *mp * phead;
-                        *mp = 0.0;
-                      }
-                    }
+            if (((i_sft >= SubgridIX(subgrid)) &&
+                 (i_sft < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
+                ((j_sft >= SubgridIY(subgrid)) &&
+                 (j_sft < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
+                ((k_sft >= SubgridIZ(subgrid)) &&
+                 (k_sft < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
+            {
+              mp = SubmatrixElt(A_sub, index, i_sft, j_sft, k_sft);
+              SubvectorElt(f_sub, i_sft, j_sft, k_sft)[0] -= *mp * phead;
+              *mp = 0.0;
+            }
+          }
 
-                    /* set row elements */
-                    if (((i >= SubgridIX(subgrid)) &&
-                         (i < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
-                        ((j >= SubgridIY(subgrid)) &&
-                         (j < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
-                        ((k >= SubgridIZ(subgrid)) &&
-                         (k < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
-                    {
-                      SubmatrixElt(A_sub, 0, i, j, k)[0] = 1.0;
-                      for (index = 1; index < 7; index++)
-                      {
-                        SubmatrixElt(A_sub, index, i, j, k)[0] = 0.0;
-                      }
-                      SubvectorElt(f_sub, i, j, k)[0] = phead;
-                    }
-                  });
+          /* set row elements */
+          if (((i >= SubgridIX(subgrid)) &&
+               (i < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
+              ((j >= SubgridIY(subgrid)) &&
+               (j < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
+              ((k >= SubgridIZ(subgrid)) &&
+               (k < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
+          {
+            SubmatrixElt(A_sub, 0, i, j, k)[0] = 1.0;
+            for (index = 1; index < 7; index++)
+            {
+              SubmatrixElt(A_sub, index, i, j, k)[0] = 0.0;
+            }
+            SubvectorElt(f_sub, i, j, k)[0] = phead;
+          }
+        });
       }
     }
 
@@ -296,45 +296,45 @@ void BCInternal(
 
         BoxLoopI0(i, j, k,
                   ix, iy, iz, nx, ny, nz,
-                  {
-                    phead = head - dtmp * (Z + k * dz);
+        {
+          phead = head - dtmp * (Z + k * dz);
 
-                    /* set column elements */
-                    for (index = 1; index < 7; index++)
-                    {
-                      i_sft = i - stencil[index][0];
-                      j_sft = j - stencil[index][1];
-                      k_sft = k - stencil[index][2];
+          /* set column elements */
+          for (index = 1; index < 7; index++)
+          {
+            i_sft = i - stencil[index][0];
+            j_sft = j - stencil[index][1];
+            k_sft = k - stencil[index][2];
 
-                      if (((i_sft >= SubgridIX(subgrid)) &&
-                           (i_sft < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
-                          ((j_sft >= SubgridIY(subgrid)) &&
-                           (j_sft < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
-                          ((k_sft >= SubgridIZ(subgrid)) &&
-                           (k_sft < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
-                      {
-                        mp = SubmatrixElt(A_sub, index, i_sft, j_sft, k_sft);
-                        SubvectorElt(f_sub, i_sft, j_sft, k_sft)[0] -= *mp * phead;
-                        *mp = 0.0;
-                      }
-                    }
+            if (((i_sft >= SubgridIX(subgrid)) &&
+                 (i_sft < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
+                ((j_sft >= SubgridIY(subgrid)) &&
+                 (j_sft < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
+                ((k_sft >= SubgridIZ(subgrid)) &&
+                 (k_sft < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
+            {
+              mp = SubmatrixElt(A_sub, index, i_sft, j_sft, k_sft);
+              SubvectorElt(f_sub, i_sft, j_sft, k_sft)[0] -= *mp * phead;
+              *mp = 0.0;
+            }
+          }
 
-                    /* set row elements */
-                    if (((i >= SubgridIX(subgrid)) &&
-                         (i < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
-                        ((j >= SubgridIY(subgrid)) &&
-                         (j < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
-                        ((k >= SubgridIZ(subgrid)) &&
-                         (k < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
-                    {
-                      SubmatrixElt(A_sub, 0, i, j, k)[0] = 1.0;
-                      for (index = 1; index < 7; index++)
-                      {
-                        SubmatrixElt(A_sub, index, i, j, k)[0] = 0.0;
-                      }
-                      SubvectorElt(f_sub, i, j, k)[0] = phead;
-                    }
-                  });
+          /* set row elements */
+          if (((i >= SubgridIX(subgrid)) &&
+               (i < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
+              ((j >= SubgridIY(subgrid)) &&
+               (j < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
+              ((k >= SubgridIZ(subgrid)) &&
+               (k < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
+          {
+            SubmatrixElt(A_sub, 0, i, j, k)[0] = 1.0;
+            for (index = 1; index < 7; index++)
+            {
+              SubmatrixElt(A_sub, index, i, j, k)[0] = 0.0;
+            }
+            SubvectorElt(f_sub, i, j, k)[0] = phead;
+          }
+        });
       }
     }
   }

@@ -1,39 +1,39 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
-/******************************************************************************
- *
- * This is a simple kriging routine that computes a probability
- * field or p-field for the geounit of interest. A p-field is
- * and array of means and variances that are determined solely from
- * external conditioning data.
- *
- *****************************************************************************/
+/*****************************************************************************
+*
+* This is a simple kriging routine that computes a probability
+* field or p-field for the geounit of interest. A p-field is
+* and array of means and variances that are determined solely from
+* external conditioning data.
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -270,68 +270,68 @@ void         PField(
     if (nc_sub)
     {
       GrGeomInLoop(i, j, k, gr_geounit, ref, ix, iy, iz, nx, ny, nz,
-                   {
-                     index1 = SubvectorEltIndex(sub_field, i, j, k);
+      {
+        index1 = SubvectorEltIndex(sub_field, i, j, k);
 
-                     /* Construct the input matrix and vector for kriging */
-                     cpts = 0;
-                     n = 0;
-                     while (n < nc_sub)
-                     {
-                       di = abs(i - ci[n]);
-                       dj = abs(j - cj[n]);
-                       dk = abs(k - ck[n]);
+        /* Construct the input matrix and vector for kriging */
+        cpts = 0;
+        n = 0;
+        while (n < nc_sub)
+        {
+          di = abs(i - ci[n]);
+          dj = abs(j - cj[n]);
+          dk = abs(k - ck[n]);
 
-                       if ((di + dj + dk) == 0) /* that is, if di=dj=dk=0 */
-                       {
-                         fieldp[index1] = v_sub[n];
-                         n = nc_sub;
-                         cpts = 0;
-                       }
+          if ((di + dj + dk) == 0)    /* that is, if di=dj=dk=0 */
+          {
+            fieldp[index1] = v_sub[n];
+            n = nc_sub;
+            cpts = 0;
+          }
 
-                       else if ((di <= iLx) && (dj <= iLy) && (dk <= iLz))
-                       {
-                         i_array[cpts] = n;
-                         value[cpts] = v_sub[n];
-                         b[cpts++] = cov[di][dj][dk];
-                       }
+          else if ((di <= iLx) && (dj <= iLy) && (dk <= iLz))
+          {
+            i_array[cpts] = n;
+            value[cpts] = v_sub[n];
+            b[cpts++] = cov[di][dj][dk];
+          }
 
-                       n++;
-                     }
+          n++;
+        }
 
-                     if (cpts > 0)
-                     {
-                       nn = 0;
-                       for (n = 0; n < cpts; n++)
-                         for (m = 0; m < cpts; m++)
-                         {
-                           di = abs(ci[i_array[n]] - ci[i_array[m]]);
-                           dj = abs(cj[i_array[n]] - cj[i_array[m]]);
-                           dk = abs(ck[i_array[n]] - ck[i_array[m]]);
-                           A[nn++] = cov[di][dj][dk];
-                         }
+        if (cpts > 0)
+        {
+          nn = 0;
+          for (n = 0; n < cpts; n++)
+            for (m = 0; m < cpts; m++)
+            {
+              di = abs(ci[i_array[n]] - ci[i_array[m]]);
+              dj = abs(cj[i_array[n]] - cj[i_array[m]]);
+              dk = abs(ck[i_array[n]] - ck[i_array[m]]);
+              A[nn++] = cov[di][dj][dk];
+            }
 
-                       /* Solve the linear system and compute the
-                        * conditional mean and standard deviation
-                        * for the RV to be simulated.*/
-                       cmean = 0.0;
-                       csigma = 0.0;
-                       for (n = 0; n < cpts; n++)
-                         w[n] = b[n];
+          /* Solve the linear system and compute the
+           * conditional mean and standard deviation
+           * for the RV to be simulated.*/
+          cmean = 0.0;
+          csigma = 0.0;
+          for (n = 0; n < cpts; n++)
+            w[n] = b[n];
 
-                       dpofa_(A, &cpts, &cpts, &ierr);
-                       dposl_(A, &cpts, &cpts, w);
+          dpofa_(A, &cpts, &cpts, &ierr);
+          dposl_(A, &cpts, &cpts, w);
 
-                       for (m = 0; m < cpts; m++)
-                         cmean += w[m] * value[m];
+          for (m = 0; m < cpts; m++)
+            cmean += w[m] * value[m];
 
-                       for (m = 0; m < cpts; m++)
-                         csigma += w[m] * b[m];
-                       csigma = sqrt(cov[0][0][0] - csigma);
+          for (m = 0; m < cpts; m++)
+            csigma += w[m] * b[m];
+          csigma = sqrt(cov[0][0][0] - csigma);
 
-                       fieldp[index1] = cmean + csigma * fieldp[index1];
-                     } /* if(cpts ...  */
-                   }); /* GrGeomInLoop */
+          fieldp[index1] = cmean + csigma * fieldp[index1];
+        }     /* if(cpts ...  */
+      });    /* GrGeomInLoop */
     }   /* if(nc_sub) */
   }  /* gridloop */
      /*-----------------------------------------------------------------------

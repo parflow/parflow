@@ -1,23 +1,23 @@
-/*BHEADER**********************************************************************
- * (c) 1996   The Regents of the University of California
- *
- * See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
- * notice, contact person, and disclaimer.
- *
- * $Revision: 1.1.1.1 $
- *********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+* (c) 1996   The Regents of the University of California
+*
+* See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+* notice, contact person, and disclaimer.
+*
+* $Revision: 1.1.1.1 $
+*********************************************************************EHEADER*/
 
-/*****************************************************************************
-*
-* Top level Multi-Phase Fractional-Flow solver module:
-*              solves pressure equation,
-*              advects saturations,
-*              advects contaminants.
-*           Implicit Saturation Explicit Pressure method is used.
-*
-**-----------------------------------------------------------------------------
-*
-*****************************************************************************/
+/****************************************************************************
+ *
+ * Top level Multi-Phase Fractional-Flow solver module:
+ *              solves pressure equation,
+ *              advects saturations,
+ *              advects contaminants.
+ *           Implicit Saturation Explicit Pressure method is used.
+ *
+ *-----------------------------------------------------------------------------
+ *
+ *****************************************************************************/
 
 #include "parflow.h"
 
@@ -607,8 +607,8 @@ void      SolverDiffusion()
       FinalizeVectorUpdate(handle);
 
       /*=========================================================================
-      *  LATTICE BOLTZMANN SECTION
-      *  =========================================================================*/
+       *  LATTICE BOLTZMANN SECTION
+       *  =========================================================================*/
 
       /***********************************************************************/
       /*  Allocate memory                                                    */
@@ -726,10 +726,10 @@ void      SolverDiffusion()
 
 
 /*=========================================================================
-*  =========================================================================
-*  END OF LATTICE BOLTZMANN SECTION
-*  =========================================================================
-*  =========================================================================*/
+ *  =========================================================================
+ *  END OF LATTICE BOLTZMANN SECTION
+ *  =========================================================================
+ *  =========================================================================*/
 
 
       if (transient)

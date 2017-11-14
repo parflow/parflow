@@ -1,33 +1,33 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-/******************************************************************************
+/*BHEADER*********************************************************************
  *
- *****************************************************************************/
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/*****************************************************************************
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -164,21 +164,21 @@ void          BCPhaseSaturation(
           constant = (dummy0->constant);
 
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                            {
-                              sv = 0;
-                              if (fdir[0])
-                                sv = fdir[0] * sx_v;
-                              else if (fdir[1])
-                                sv = fdir[1] * sy_v;
-                              else if (fdir[2])
-                                sv = fdir[2] * sz_v;
+          {
+            sv = 0;
+            if (fdir[0])
+              sv = fdir[0] * sx_v;
+            else if (fdir[1])
+              sv = fdir[1] * sy_v;
+            else if (fdir[2])
+              sv = fdir[2] * sz_v;
 
-                              iv = SubvectorEltIndex(sat_sub, i, j, k);
+            iv = SubvectorEltIndex(sat_sub, i, j, k);
 
-                              satp[iv       ] = constant;
-                              satp[iv + sv] = constant;
-                              satp[iv + 2 * sv] = constant;
-                            });
+            satp[iv       ] = constant;
+            satp[iv + sv] = constant;
+            satp[iv + 2 * sv] = constant;
+          });
 
           break;
         }
@@ -201,32 +201,32 @@ void          BCPhaseSaturation(
           dz2 = SubgridDZ(subgrid) / 2.0;
 
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                            {
-                              sv = 0;
-                              if (fdir[0])
-                                sv = fdir[0] * sx_v;
-                              else if (fdir[1])
-                                sv = fdir[1] * sy_v;
-                              else if (fdir[2])
-                                sv = fdir[2] * sz_v;
+          {
+            sv = 0;
+            if (fdir[0])
+              sv = fdir[0] * sx_v;
+            else if (fdir[1])
+              sv = fdir[1] * sy_v;
+            else if (fdir[2])
+              sv = fdir[2] * sz_v;
 
-                              iv = SubvectorEltIndex(sat_sub, i, j, k);
+            iv = SubvectorEltIndex(sat_sub, i, j, k);
 
-                              z = RealSpaceZ(k, SubgridRZ(subgrid)) + fdir[2] * dz2;
+            z = RealSpaceZ(k, SubgridRZ(subgrid)) + fdir[2] * dz2;
 
-                              if (z <= height)
-                              {
-                                satp[iv       ] = lower;
-                                satp[iv + sv] = lower;
-                                satp[iv + 2 * sv] = lower;
-                              }
-                              else
-                              {
-                                satp[iv       ] = upper;
-                                satp[iv + sv] = upper;
-                                satp[iv + 2 * sv] = upper;
-                              }
-                            });
+            if (z <= height)
+            {
+              satp[iv       ] = lower;
+              satp[iv + sv] = lower;
+              satp[iv + 2 * sv] = lower;
+            }
+            else
+            {
+              satp[iv       ] = upper;
+              satp[iv + sv] = upper;
+              satp[iv + 2 * sv] = upper;
+            }
+          });
 
           break;
         }
@@ -265,52 +265,52 @@ void          BCPhaseSaturation(
           line_min = (dummy2->xlower) * unitx + (dummy2->ylower) * unity;
 
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                            {
-                              sv = 0;
-                              if (fdir[0])
-                                sv = fdir[0] * sx_v;
-                              else if (fdir[1])
-                                sv = fdir[1] * sy_v;
-                              else if (fdir[2])
-                                sv = fdir[2] * sz_v;
+          {
+            sv = 0;
+            if (fdir[0])
+              sv = fdir[0] * sx_v;
+            else if (fdir[1])
+              sv = fdir[1] * sy_v;
+            else if (fdir[2])
+              sv = fdir[2] * sz_v;
 
-                              iv = SubvectorEltIndex(sat_sub, i, j, k);
+            iv = SubvectorEltIndex(sat_sub, i, j, k);
 
-                              x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
-                              y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
-                              z = RealSpaceZ(k, SubgridRZ(subgrid)) + fdir[2] * dz2;
+            x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
+            y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
+            z = RealSpaceZ(k, SubgridRZ(subgrid)) + fdir[2] * dz2;
 
-                              /* project center of BC face onto piecewise linear line */
-                              xy = x * unitx + y * unity;
-                              xy = (xy - line_min) / line_length;
+            /* project center of BC face onto piecewise linear line */
+            xy = x * unitx + y * unity;
+            xy = (xy - line_min) / line_length;
 
-                              /* find two neighboring points */
-                              ip = 1;
-                              for (; ip < (num_points - 1); ip++)
-                              {
-                                if (xy < point[ip])
-                                  break;
-                              }
+            /* find two neighboring points */
+            ip = 1;
+            for (; ip < (num_points - 1); ip++)
+            {
+              if (xy < point[ip])
+                break;
+            }
 
-                              /* compute the slope */
-                              slope = ((height[ip] - height[ip - 1]) /
-                                       (point[ip] - point[ip - 1]));
+            /* compute the slope */
+            slope = ((height[ip] - height[ip - 1]) /
+                     (point[ip] - point[ip - 1]));
 
-                              interp_height = height[ip - 1] + slope * (xy - point[ip - 1]);
+            interp_height = height[ip - 1] + slope * (xy - point[ip - 1]);
 
-                              if (z <= interp_height)
-                              {
-                                satp[iv       ] = lower;
-                                satp[iv + sv] = lower;
-                                satp[iv + 2 * sv] = lower;
-                              }
-                              else
-                              {
-                                satp[iv       ] = upper;
-                                satp[iv + sv] = upper;
-                                satp[iv + 2 * sv] = upper;
-                              }
-                            });
+            if (z <= interp_height)
+            {
+              satp[iv       ] = lower;
+              satp[iv + sv] = lower;
+              satp[iv + 2 * sv] = lower;
+            }
+            else
+            {
+              satp[iv       ] = upper;
+              satp[iv + sv] = upper;
+              satp[iv + 2 * sv] = upper;
+            }
+          });
 
           break;
         }

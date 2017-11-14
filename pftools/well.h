@@ -1,45 +1,45 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
-/******************************************************************************
- * Header file for `well.c'
- *
- * (C) 1996 Regents of the University of California.
- *
- * see info_header.h for complete information
- *
- *                               History
- **-----------------------------------------------------------------------------
- * $Revision: 1.5 $
- *
- **-----------------------------------------------------------------------------
- *
- *****************************************************************************/
+/*****************************************************************************
+* Header file for `well.c'
+*
+* (C) 1996 Regents of the University of California.
+*
+* see info_header.h for complete information
+*
+*                               History
+*-----------------------------------------------------------------------------
+* $Revision: 1.5 $
+*
+*-----------------------------------------------------------------------------
+*
+*****************************************************************************/
 
 #ifndef WELL_HEADER
 #define WELL_HEADER
@@ -293,45 +293,45 @@ typedef struct {
 
 /* well.c */
 Background * NewBackground ANSI_PROTO(());
-void FreeBackground ANSI_PROTO((Background * background));
-void ReadBackground ANSI_PROTO((FILE * fd, Background * background));
-void WriteBackground ANSI_PROTO((FILE * fd, Background * background));
-void PrintBackground ANSI_PROTO((Background * background));
+void FreeBackground ANSI_PROTO((Background *background));
+void ReadBackground ANSI_PROTO((FILE *fd, Background *background));
+void WriteBackground ANSI_PROTO((FILE *fd, Background *background));
+void PrintBackground ANSI_PROTO((Background *background));
 
 ProblemData *NewProblemData ANSI_PROTO(());
-void FreeProblemData ANSI_PROTO((ProblemData * problem_data));
-void ReadProblemData ANSI_PROTO((FILE * fd, ProblemData * problem_data));
-void WriteProblemData ANSI_PROTO((FILE * fd, ProblemData * problem_data));
-void PrintProblemData ANSI_PROTO((ProblemData * problem_data));
+void FreeProblemData ANSI_PROTO((ProblemData *problem_data));
+void ReadProblemData ANSI_PROTO((FILE *fd, ProblemData *problem_data));
+void WriteProblemData ANSI_PROTO((FILE *fd, ProblemData *problem_data));
+void PrintProblemData ANSI_PROTO((ProblemData *problem_data));
 
 WellDataHeader *NewWellDataHeader ANSI_PROTO(());
-void FreeWellDataHeader ANSI_PROTO((WellDataHeader * well_data_header));
-void ReadWellDataHeader ANSI_PROTO((FILE * fd, WellDataHeader * well_data_header));
-void WriteWellDataHeader ANSI_PROTO((FILE * fd, WellDataHeader * well_data_header));
-void PrintWellDataHeader ANSI_PROTO((WellDataHeader * well_data_header));
+void FreeWellDataHeader ANSI_PROTO((WellDataHeader *well_data_header));
+void ReadWellDataHeader ANSI_PROTO((FILE *fd, WellDataHeader *well_data_header));
+void WriteWellDataHeader ANSI_PROTO((FILE *fd, WellDataHeader *well_data_header));
+void PrintWellDataHeader ANSI_PROTO((WellDataHeader *well_data_header));
 
 WellDataPhysical *NewWellDataPhysical ANSI_PROTO(());
-void FreeWellDataPhysical ANSI_PROTO((WellDataPhysical * well_data_physical));
-void ReadWellDataPhysical ANSI_PROTO((FILE * fd, WellDataPhysical * well_data_physical));
-void WriteWellDataPhysical ANSI_PROTO((FILE * fd, WellDataPhysical * well_data_physical));
-void PrintWellDataPhysical ANSI_PROTO((WellDataPhysical * well_data_physical));
-void CopyWellDataPhysical ANSI_PROTO((WellDataPhysical * updt_well_data_physical, WellDataPhysical * well_data_physical));
+void FreeWellDataPhysical ANSI_PROTO((WellDataPhysical *well_data_physical));
+void ReadWellDataPhysical ANSI_PROTO((FILE *fd, WellDataPhysical *well_data_physical));
+void WriteWellDataPhysical ANSI_PROTO((FILE *fd, WellDataPhysical *well_data_physical));
+void PrintWellDataPhysical ANSI_PROTO((WellDataPhysical *well_data_physical));
+void CopyWellDataPhysical ANSI_PROTO((WellDataPhysical *updt_well_data_physical, WellDataPhysical *well_data_physical));
 
 WellDataValue *NewWellDataValue ANSI_PROTO((int num_phases, int num_components));
-void FreeWellDataValue ANSI_PROTO((WellDataValue * well_data_value));
-void ReadWellDataValue ANSI_PROTO((FILE * fd, WellDataValue * well_data_value, int action, int type, int num_phases, int num_components));
-void WriteWellDataValue ANSI_PROTO((FILE * fd, WellDataValue * well_data_value, int action, int type, int num_phases, int num_components));
-void PrintWellDataValue ANSI_PROTO((WellDataValue * well_data_value, int action, int type, int num_phases, int num_components));
-void CopyWellDataValue ANSI_PROTO((WellDataValue * updt_well_data_value, WellDataValue * well_data_value, int action, int type, int num_phases, int num_components));
+void FreeWellDataValue ANSI_PROTO((WellDataValue *well_data_value));
+void ReadWellDataValue ANSI_PROTO((FILE *fd, WellDataValue *well_data_value, int action, int type, int num_phases, int num_components));
+void WriteWellDataValue ANSI_PROTO((FILE *fd, WellDataValue *well_data_value, int action, int type, int num_phases, int num_components));
+void PrintWellDataValue ANSI_PROTO((WellDataValue *well_data_value, int action, int type, int num_phases, int num_components));
+void CopyWellDataValue ANSI_PROTO((WellDataValue *updt_well_data_value, WellDataValue *well_data_value, int action, int type, int num_phases, int num_components));
 
 WellDataStat *NewWellDataStat ANSI_PROTO((int num_phases, int num_components));
-void FreeWellDataStat ANSI_PROTO((WellDataStat * well_data_stat));
-void ReadWellDataStat ANSI_PROTO((FILE * fd, WellDataStat * well_data_stat, int num_phases, int num_components));
-void WriteWellDataStat ANSI_PROTO((FILE * fd, WellDataStat * well_data_stat, int num_phases, int num_components));
-void PrintWellDataStat ANSI_PROTO((WellDataStat * well_data_stat, int num_phases, int num_components));
-void InitWellDataStat ANSI_PROTO((WellDataStat * well_data_stat, int num_phases, int num_components));
-void UpdateWellDataStat ANSI_PROTO((WellDataStat * updt_well_data_stat, WellDataStat * well_data_stat, int num_phases, int num_components));
-void CopyWellDataStat ANSI_PROTO((WellDataStat * updt_well_data_stat, WellDataStat * well_data_stat, int num_phases, int num_components));
+void FreeWellDataStat ANSI_PROTO((WellDataStat *well_data_stat));
+void ReadWellDataStat ANSI_PROTO((FILE *fd, WellDataStat *well_data_stat, int num_phases, int num_components));
+void WriteWellDataStat ANSI_PROTO((FILE *fd, WellDataStat *well_data_stat, int num_phases, int num_components));
+void PrintWellDataStat ANSI_PROTO((WellDataStat *well_data_stat, int num_phases, int num_components));
+void InitWellDataStat ANSI_PROTO((WellDataStat *well_data_stat, int num_phases, int num_components));
+void UpdateWellDataStat ANSI_PROTO((WellDataStat *updt_well_data_stat, WellDataStat *well_data_stat, int num_phases, int num_components));
+void CopyWellDataStat ANSI_PROTO((WellDataStat *updt_well_data_stat, WellDataStat *well_data_stat, int num_phases, int num_components));
 
 #undef ANSI_PROTO
 

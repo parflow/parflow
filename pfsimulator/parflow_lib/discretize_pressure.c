@@ -1,38 +1,38 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
-/******************************************************************************
- *
- * Discretize the pressure equation using 7-point finite volumes.
- *
- **-----------------------------------------------------------------------------
- *
- *****************************************************************************/
+/*****************************************************************************
+*
+* Discretize the pressure equation using 7-point finite volumes.
+*
+*-----------------------------------------------------------------------------
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -295,9 +295,9 @@ void          DiscretizePressure(
 
       BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                 iv, nx_v, ny_v, nz_v, 1, 1, 1,
-                {
-                  fp[iv] += vf * tv_p[iv];
-                });
+      {
+        fp[iv] += vf * tv_p[iv];
+      });
     }
   }
 
@@ -365,20 +365,20 @@ void          DiscretizePressure(
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
               im, nx_m, ny_m, nz_m, 1, 1, 1,
-              {
-                e_temp = -ffx * Mean(ttx_p[iv], ttx_p[iv + 1]) / dx;
-                n_temp = -ffy * Mean(tty_p[iv], tty_p[iv + sy_v]) / dy;
-                u_temp = -ffz * Mean(ttz_p[iv], ttz_p[iv + sz_v]) / dz;
+    {
+      e_temp = -ffx * Mean(ttx_p[iv], ttx_p[iv + 1]) / dx;
+      n_temp = -ffy * Mean(tty_p[iv], tty_p[iv + sy_v]) / dy;
+      u_temp = -ffz * Mean(ttz_p[iv], ttz_p[iv + sz_v]) / dz;
 
-                ep[im] += e_temp;
-                np[im] += n_temp;
-                up[im] += u_temp;
-                cp[im] -= e_temp + n_temp + u_temp;
+      ep[im] += e_temp;
+      np[im] += n_temp;
+      up[im] += u_temp;
+      cp[im] -= e_temp + n_temp + u_temp;
 
-                cp[im + 1] -= e_temp;
-                cp[im + sy_m] -= n_temp;
-                cp[im + sz_m] -= u_temp;
-              });
+      cp[im + 1] -= e_temp;
+      cp[im + sy_m] -= n_temp;
+      cp[im + sz_m] -= u_temp;
+    });
   }
 
   /*-----------------------------------------------------------------------
@@ -459,33 +459,33 @@ void          DiscretizePressure(
 
       BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                 iv, nx_v, ny_v, nz_v, 1, 1, 1,
-                {
-                  e_temp = -ffx * Coeff(ttx_p[iv], ttx_p[iv + 1],
-                                        tmx_p[iv], tmx_p[iv + 1])
-                           / dx;
-                  n_temp = -ffy * Coeff(tty_p[iv], tty_p[iv + sy_v],
-                                        tmy_p[iv], tmy_p[iv + sy_v])
-                           / dy;
-                  u_temp = -ffz * Coeff(ttz_p[iv], ttz_p[iv + sz_v],
-                                        tmz_p[iv], tmz_p[iv + sz_v])
-                           / dz;
+      {
+        e_temp = -ffx * Coeff(ttx_p[iv], ttx_p[iv + 1],
+                              tmx_p[iv], tmx_p[iv + 1])
+                 / dx;
+        n_temp = -ffy * Coeff(tty_p[iv], tty_p[iv + sy_v],
+                              tmy_p[iv], tmy_p[iv + sy_v])
+                 / dy;
+        u_temp = -ffz * Coeff(ttz_p[iv], ttz_p[iv + sz_v],
+                              tmz_p[iv], tmz_p[iv + sz_v])
+                 / dz;
 
-                  f_temp = ffz * Coeff(ttz_p[iv], ttz_p[iv + sz_v],
-                                       tmz_p[iv], tmz_p[iv + sz_v]) *
-                           (phase_density[phase] * gravity);
+        f_temp = ffz * Coeff(ttz_p[iv], ttz_p[iv + sz_v],
+                             tmz_p[iv], tmz_p[iv + sz_v]) *
+                 (phase_density[phase] * gravity);
 
-                  fp[iv] += f_temp;
+        fp[iv] += f_temp;
 
-                  fp[iv + sz_v] -= f_temp;
+        fp[iv + sz_v] -= f_temp;
 
-                  /* capillary pressure contribution */
-                  fp[iv] -= (e_temp * (tc_p[iv + 1] - tc_p[iv]) +
-                             n_temp * (tc_p[iv + sy_v] - tc_p[iv]) +
-                             u_temp * (tc_p[iv + sz_v] - tc_p[iv]));
-                  fp[iv + 1] += e_temp * (tc_p[iv + 1] - tc_p[iv]);
-                  fp[iv + sy_v] += n_temp * (tc_p[iv + sy_v] - tc_p[iv]);
-                  fp[iv + sz_v] += u_temp * (tc_p[iv + sz_v] - tc_p[iv]);
-                });
+        /* capillary pressure contribution */
+        fp[iv] -= (e_temp * (tc_p[iv + 1] - tc_p[iv]) +
+                   n_temp * (tc_p[iv + sy_v] - tc_p[iv]) +
+                   u_temp * (tc_p[iv + sz_v] - tc_p[iv]));
+        fp[iv + 1] += e_temp * (tc_p[iv + 1] - tc_p[iv]);
+        fp[iv + sy_v] += n_temp * (tc_p[iv + sy_v] - tc_p[iv]);
+        fp[iv + sz_v] += u_temp * (tc_p[iv + sz_v] - tc_p[iv]);
+      });
     }
   }
 
@@ -517,9 +517,9 @@ void          DiscretizePressure(
 
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
-              {
-                tmp_ptr[iv] = fp[iv];
-              });
+    {
+      tmp_ptr[iv] = fp[iv];
+    });
 
     free(fp);
   }
@@ -589,108 +589,108 @@ void          DiscretizePressure(
     }
 
     GrGeomSurfLoop(i, j, k, fdir, gr_domain, 0, ix, iy, iz, nx, ny, nz,
-                   {
-                     if (fdir[0])
-                     {
-                       ff = ffx;
-                       d = dx;
-                       switch (fdir[0])
-                       {
-                         case -1:
-                           sv = -1;
-                           op = wp;
-                           break;
+    {
+      if (fdir[0])
+      {
+        ff = ffx;
+        d = dx;
+        switch (fdir[0])
+        {
+          case -1:
+            sv = -1;
+            op = wp;
+            break;
 
-                         case  1:
-                           sv = 1;
-                           op = ep;
-                           break;
-                       }
-                     }
-                     else if (fdir[1])
-                     {
-                       ff = ffy;
-                       d = dy;
-                       switch (fdir[1])
-                       {
-                         case -1:
-                           sv = -sy_v;
-                           op = sp;
-                           break;
+          case  1:
+            sv = 1;
+            op = ep;
+            break;
+        }
+      }
+      else if (fdir[1])
+      {
+        ff = ffy;
+        d = dy;
+        switch (fdir[1])
+        {
+          case -1:
+            sv = -sy_v;
+            op = sp;
+            break;
 
-                         case  1:
-                           sv = sy_v;
-                           op = np;
-                           break;
-                       }
-                     }
-                     else if (fdir[2])
-                     {
-                       ff = ffz;
-                       d = dz;
-                       switch (fdir[2])
-                       {
-                         case -1:
-                           sv = -sz_v;
-                           op = lp;
-                           break;
+          case  1:
+            sv = sy_v;
+            op = np;
+            break;
+        }
+      }
+      else if (fdir[2])
+      {
+        ff = ffz;
+        d = dz;
+        switch (fdir[2])
+        {
+          case -1:
+            sv = -sz_v;
+            op = lp;
+            break;
 
-                         case  1:
-                           sv = sz_v;
-                           op = up;
-                           break;
-                       }
-                     }
+          case  1:
+            sv = sz_v;
+            op = up;
+            break;
+        }
+      }
 
-                     iv = SubvectorEltIndex(f_sub, i, j, k);
-                     im = SubmatrixEltIndex(A_sub, i, j, k);
+      iv = SubvectorEltIndex(f_sub, i, j, k);
+      im = SubmatrixEltIndex(A_sub, i, j, k);
 
-                     /* fix pressure_0 part */
-                     cp[im] += op[im];
-                     op[im] = 0.0;
+      /* fix pressure_0 part */
+      cp[im] += op[im];
+      op[im] = 0.0;
 
-                     for (phase = 0; phase < num_phases; phase++)
-                     {
-                       if (fdir[0])
-                       {
-                         tm_p = tmx_pvec[phase];
-                         tt_p = ttx_p;
-                       }
-                       else if (fdir[1])
-                       {
-                         tm_p = tmy_pvec[phase];
-                         tt_p = tty_p;
-                       }
-                       else if (fdir[2])
-                       {
-                         tm_p = tmz_pvec[phase];
-                         tt_p = ttz_p;
-                       }
-                       else
-                       {
-                         tm_p = 0;
-                         tt_p = 0;
-                       }
+      for (phase = 0; phase < num_phases; phase++)
+      {
+        if (fdir[0])
+        {
+          tm_p = tmx_pvec[phase];
+          tt_p = ttx_p;
+        }
+        else if (fdir[1])
+        {
+          tm_p = tmy_pvec[phase];
+          tt_p = tty_p;
+        }
+        else if (fdir[2])
+        {
+          tm_p = tmz_pvec[phase];
+          tt_p = ttz_p;
+        }
+        else
+        {
+          tm_p = 0;
+          tt_p = 0;
+        }
 
 
-                       tc_p = tc_pvec[phase];
+        tc_p = tc_pvec[phase];
 
-                       /* fix capillary pressure part */
-                       o_temp = -ff * Coeff(tt_p[iv], tt_p[iv + sv],
-                                            tm_p[iv], tm_p[iv + sv]) / d;
-                       fp[iv] += o_temp * (tc_p[iv + sv] - tc_p[iv]);
+        /* fix capillary pressure part */
+        o_temp = -ff * Coeff(tt_p[iv], tt_p[iv + sv],
+                             tm_p[iv], tm_p[iv + sv]) / d;
+        fp[iv] += o_temp * (tc_p[iv + sv] - tc_p[iv]);
 
-                       /* fix gravity part */
-                       if (fdir[2])
-                       {
-                         f_temp =
-                           ff * Coeff(tt_p[iv], tt_p[iv + sv],
-                                      tm_p[iv], tm_p[iv + sv]) *
-                           (phase_density[phase] * gravity);
-                         fp[iv] -= fdir[2] * f_temp;
-                       }
-                     }
-                   });
+        /* fix gravity part */
+        if (fdir[2])
+        {
+          f_temp =
+            ff * Coeff(tt_p[iv], tt_p[iv + sv],
+                       tm_p[iv], tm_p[iv + sv]) *
+            (phase_density[phase] * gravity);
+          fp[iv] -= fdir[2] * f_temp;
+        }
+      }
+    });
   }
 
   /*-----------------------------------------------------------------------
@@ -745,46 +745,46 @@ void          DiscretizePressure(
         case DirichletBC:
         {
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                            {
-                              if (fdir[0])
-                              {
-                                ff = ffx;
-                                d = dx;
-                                tt_p = ttx_p;
-                              }
-                              else if (fdir[1])
-                              {
-                                ff = ffy;
-                                d = dy;
-                                tt_p = tty_p;
-                              }
-                              else if (fdir[2])
-                              {
-                                ff = ffz;
-                                d = dz;
-                                tt_p = ttz_p;
-                              }
+          {
+            if (fdir[0])
+            {
+              ff = ffx;
+              d = dx;
+              tt_p = ttx_p;
+            }
+            else if (fdir[1])
+            {
+              ff = ffy;
+              d = dy;
+              tt_p = tty_p;
+            }
+            else if (fdir[2])
+            {
+              ff = ffz;
+              d = dz;
+              tt_p = ttz_p;
+            }
 
-                              iv = SubvectorEltIndex(f_sub, i, j, k);
-                              im = SubmatrixEltIndex(A_sub, i, j, k);
+            iv = SubvectorEltIndex(f_sub, i, j, k);
+            im = SubmatrixEltIndex(A_sub, i, j, k);
 
-                              o_temp = -ff * 2.0 * tt_p[iv] / d;
-                              cp[im] -= o_temp;
-                              fp[iv] -= o_temp * bc_patch_values[ival];
+            o_temp = -ff * 2.0 * tt_p[iv] / d;
+            cp[im] -= o_temp;
+            fp[iv] -= o_temp * bc_patch_values[ival];
 
-                              for (phase = 0; phase < num_phases; phase++)
-                              {
-                                /* RDF todo: put in capillary boundary contribution */
+            for (phase = 0; phase < num_phases; phase++)
+            {
+              /* RDF todo: put in capillary boundary contribution */
 
-                                if (fdir[2])
-                                {
-                                  tm_p = tmz_pvec[phase];
-                                  f_temp = ff * tm_p[iv] *
-                                           (phase_density[phase] * gravity);
-                                  fp[iv] += fdir[2] * f_temp;
-                                }
-                              }
-                            });
+              if (fdir[2])
+              {
+                tm_p = tmz_pvec[phase];
+                f_temp = ff * tm_p[iv] *
+                         (phase_density[phase] * gravity);
+                fp[iv] += fdir[2] * f_temp;
+              }
+            }
+          });
 
           break;
         }
@@ -792,24 +792,24 @@ void          DiscretizePressure(
         case FluxBC:
         {
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                            {
-                              if (fdir[0])
-                              {
-                                ff = ffx;
-                              }
-                              else if (fdir[1])
-                              {
-                                ff = ffy;
-                              }
-                              else if (fdir[2])
-                              {
-                                ff = ffz;
-                              }
+          {
+            if (fdir[0])
+            {
+              ff = ffx;
+            }
+            else if (fdir[1])
+            {
+              ff = ffy;
+            }
+            else if (fdir[2])
+            {
+              ff = ffz;
+            }
 
-                              iv = SubvectorEltIndex(f_sub, i, j, k);
+            iv = SubvectorEltIndex(f_sub, i, j, k);
 
-                              fp[iv] -= ff * bc_patch_values[ival];
-                            });
+            fp[iv] -= ff * bc_patch_values[ival];
+          });
 
           break;
         }
@@ -859,19 +859,19 @@ void          DiscretizePressure(
 
     GrGeomOutLoop(i, j, k, gr_domain,
                   r, ix, iy, iz, nx, ny, nz,
-                  {
-                    iv = SubvectorEltIndex(f_sub, i, j, k);
-                    im = SubmatrixEltIndex(A_sub, i, j, k);
+    {
+      iv = SubvectorEltIndex(f_sub, i, j, k);
+      im = SubmatrixEltIndex(A_sub, i, j, k);
 
-                    cp[im] = 1.0;
-                    wp[im] = 0.0;
-                    ep[im] = 0.0;
-                    sp[im] = 0.0;
-                    np[im] = 0.0;
-                    lp[im] = 0.0;
-                    up[im] = 0.0;
-                    fp[iv] = 0.0;
-                  });
+      cp[im] = 1.0;
+      wp[im] = 0.0;
+      ep[im] = 0.0;
+      sp[im] = 0.0;
+      np[im] = 0.0;
+      lp[im] = 0.0;
+      up[im] = 0.0;
+      fp[iv] = 0.0;
+    });
   }
 
   /*-----------------------------------------------------------------------

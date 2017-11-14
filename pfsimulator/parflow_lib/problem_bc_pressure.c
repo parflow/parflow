@@ -1,33 +1,33 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-/******************************************************************************
+/*BHEADER*********************************************************************
  *
- *****************************************************************************/
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/*****************************************************************************
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -198,9 +198,9 @@ BCStruct    *BCPressure(
             /* compute patch_values_size (this isn't really needed yet) */
             patch_values_size = 0;
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                              {
-                                patch_values_size++;
-                              });
+            {
+              patch_values_size++;
+            });
 
             patch_values = ctalloc(double, patch_values_size);
             values[ipatch][is] = patch_values;
@@ -220,132 +220,132 @@ BCStruct    *BCPressure(
 
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct,
                               ipatch, is,
-                              {
-                                ref_press = BCPressureType0Value(bc_pressure_type0);
-                                PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                                   (0, NULL, NULL, &ref_press, &ref_den,
-                                                    CALCFCN));
-                                ips = SubvectorEltIndex(z_mult_sub, i, j, k);
-                                z = rsz_dat[ips] + fdir[2] * dz2 * z_mult_dat[ips];
-                                iel = (i - ix) + (j - iy) * nx;
-                                fcn_val = 0.0;
-                                nonlin_resid = 1.0;
-                                iterations = -1;
+            {
+              ref_press = BCPressureType0Value(bc_pressure_type0);
+              PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                 (0, NULL, NULL, &ref_press, &ref_den,
+                                  CALCFCN));
+              ips = SubvectorEltIndex(z_mult_sub, i, j, k);
+              z = rsz_dat[ips] + fdir[2] * dz2 * z_mult_dat[ips];
+              iel = (i - ix) + (j - iy) * nx;
+              fcn_val = 0.0;
+              nonlin_resid = 1.0;
+              iterations = -1;
 
-                                /* Solve a nonlinear problem for hydrostatic pressure
-                                 * at points on boundary patch given pressure on reference
-                                 * patch.  Note that the problem is only nonlinear if
-                                 * density depends on pressure.
-                                 *
-                                 * The nonlinear problem to solve is:
-                                 *   F(p) = 0
-                                 *   F(p) = P - P_ref
-                                 *          - 0.5*(rho(P) + rho(P_ref))*gravity*(z - z_ref)
-                                 *
-                                 * Newton's method is used to find a solution. */
+              /* Solve a nonlinear problem for hydrostatic pressure
+               * at points on boundary patch given pressure on reference
+               * patch.  Note that the problem is only nonlinear if
+               * density depends on pressure.
+               *
+               * The nonlinear problem to solve is:
+               *   F(p) = 0
+               *   F(p) = P - P_ref
+               *          - 0.5*(rho(P) + rho(P_ref))*gravity*(z - z_ref)
+               *
+               * Newton's method is used to find a solution. */
 
-                                while ((nonlin_resid > 1.0E-6) && (iterations < max_its))
-                                {
-                                  if (iterations > -1)
-                                  {
-                                    PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                                       (0, NULL, NULL, &patch_values[ival],
-                                                        &density_der, CALCDER));
-                                    dtmp = 1.0 - 0.5 * density_der * gravity
-                                           * (z - elevations[is][iel]);
-                                    patch_values[ival] = patch_values[ival] - fcn_val / dtmp;
-                                  }
-                                  else
-                                  {
-                                    patch_values[ival] = ref_press;
-                                  }
-                                  PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                                     (0, NULL, NULL, &patch_values[ival],
-                                                      &density, CALCFCN));
+              while ((nonlin_resid > 1.0E-6) && (iterations < max_its))
+              {
+                if (iterations > -1)
+                {
+                  PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                     (0, NULL, NULL, &patch_values[ival],
+                                      &density_der, CALCDER));
+                  dtmp = 1.0 - 0.5 * density_der * gravity
+                         * (z - elevations[is][iel]);
+                  patch_values[ival] = patch_values[ival] - fcn_val / dtmp;
+                }
+                else
+                {
+                  patch_values[ival] = ref_press;
+                }
+                PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                   (0, NULL, NULL, &patch_values[ival],
+                                    &density, CALCFCN));
 
-                                  fcn_val = patch_values[ival] - ref_press
-                                            - 0.5 * (density + ref_den) * gravity
-                                            * (z - elevations[is][iel]);
-                                  nonlin_resid = fabs(fcn_val);
+                fcn_val = patch_values[ival] - ref_press
+                          - 0.5 * (density + ref_den) * gravity
+                          * (z - elevations[is][iel]);
+                nonlin_resid = fabs(fcn_val);
 
-                                  iterations++;
-                                } /* End of while loop */
+                iterations++;
+              }            /* End of while loop */
 
 
-                                /* Iterate over the phases and reset pressures according to
-                                 * hydrostatic conditions with appropriate densities.
-                                 * At each interface, we have hydrostatic conditions, so
-                                 *
-                                 * z_inter = (P_inter - P_ref) /
-                                 *            (0.5*(rho(P_inter)+rho(P_ref))*gravity
-                                 + z_ref
-                                 +
-                                 + Thus, the interface height and pressure are known
-                                 + and hydrostatic conditions can be determined for
-                                 + new phase.
-                                 +
-                                 + NOTE:  This only works for Pc = 0. */
+              /* Iterate over the phases and reset pressures according to
+               * hydrostatic conditions with appropriate densities.
+               * At each interface, we have hydrostatic conditions, so
+               *
+               * z_inter = (P_inter - P_ref) /
+               *            (0.5*(rho(P_inter)+rho(P_ref))*gravity
+               + z_ref
+               +
+               + Thus, the interface height and pressure are known
+               + and hydrostatic conditions can be determined for
+               + new phase.
+               +
+               + NOTE:  This only works for Pc = 0. */
 
-                                for (phase = 1; phase < num_phases; phase++)
-                                {
-                                  interface_press = BCPressureType0ValueAtInterface(
-                                                                                    bc_pressure_type0, phase);
-                                  PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                                     (phase - 1, NULL, NULL, &interface_press,
-                                                      &interface_den, CALCFCN));
-                                  offset = (interface_press - ref_press)
-                                           / (0.5 * (interface_den + ref_den) * gravity);
-                                  ref_press = interface_press;
-                                  PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                                     (phase, NULL, NULL, &ref_press, &ref_den,
-                                                      CALCFCN));
+              for (phase = 1; phase < num_phases; phase++)
+              {
+                interface_press = BCPressureType0ValueAtInterface(
+                                                                  bc_pressure_type0, phase);
+                PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                   (phase - 1, NULL, NULL, &interface_press,
+                                    &interface_den, CALCFCN));
+                offset = (interface_press - ref_press)
+                         / (0.5 * (interface_den + ref_den) * gravity);
+                ref_press = interface_press;
+                PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                   (phase, NULL, NULL, &ref_press, &ref_den,
+                                    CALCFCN));
 
-                                  /* Only reset pressure value if in another phase.
-                                   * The following "if" test determines whether this point
-                                   * is in another phase by checking if the computed
-                                   * pressure is less than the interface value.  This
-                                   * test ONLY works if the phases are distributed such
-                                   * that the lighter phases are above the heavier ones. */
+                /* Only reset pressure value if in another phase.
+                 * The following "if" test determines whether this point
+                 * is in another phase by checking if the computed
+                 * pressure is less than the interface value.  This
+                 * test ONLY works if the phases are distributed such
+                 * that the lighter phases are above the heavier ones. */
 
-                                  if (patch_values[ival] < interface_press)
-                                  {
-                                    height = elevations[is][iel];
-                                    nonlin_resid = 1.0;
-                                    iterations = -1;
-                                    while ((nonlin_resid > 1.0E-6) && (iterations < max_its))
-                                    {
-                                      if (iterations > -1)
-                                      {
-                                        PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                                           (phase, NULL, NULL, &patch_values[ival],
-                                                            &density_der, CALCDER));
+                if (patch_values[ival] < interface_press)
+                {
+                  height = elevations[is][iel];
+                  nonlin_resid = 1.0;
+                  iterations = -1;
+                  while ((nonlin_resid > 1.0E-6) && (iterations < max_its))
+                  {
+                    if (iterations > -1)
+                    {
+                      PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                         (phase, NULL, NULL, &patch_values[ival],
+                                          &density_der, CALCDER));
 
-                                        dtmp = 1.0 - 0.5 * density_der * gravity
-                                               * (z - height);
-                                        patch_values[ival] = patch_values[ival]
-                                                             - fcn_val / dtmp;
-                                      }
-                                      else
-                                      {
-                                        height = height + offset;
-                                        patch_values[ival] = ref_press;
-                                      }
+                      dtmp = 1.0 - 0.5 * density_der * gravity
+                             * (z - height);
+                      patch_values[ival] = patch_values[ival]
+                                           - fcn_val / dtmp;
+                    }
+                    else
+                    {
+                      height = height + offset;
+                      patch_values[ival] = ref_press;
+                    }
 
-                                      PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                                         (phase, NULL, NULL,
-                                                          &patch_values[ival], &density,
-                                                          CALCFCN));
+                    PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                       (phase, NULL, NULL,
+                                        &patch_values[ival], &density,
+                                        CALCFCN));
 
-                                      fcn_val = patch_values[ival] - ref_press
-                                                - 0.5 * (density + ref_den)
-                                                * gravity * (z - height);
-                                      nonlin_resid = fabs(fcn_val);
+                    fcn_val = patch_values[ival] - ref_press
+                              - 0.5 * (density + ref_den)
+                              * gravity * (z - height);
+                    nonlin_resid = fabs(fcn_val);
 
-                                      iterations++;
-                                    } /* End of while loop */
-                                  } /* End if above interface */
-                                } /* End phase loop */
-                              }); /* End BCStructPatchLoop body */
+                    iterations++;
+                  }              /* End of while loop */
+                }                /* End if above interface */
+              }                  /* End phase loop */
+            });                  /* End BCStructPatchLoop body */
           }                      /* End subgrid loop */
 
 
@@ -393,9 +393,9 @@ BCStruct    *BCPressure(
             /* compute patch_values_size (this isn't really needed yet) */
             patch_values_size = 0;
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                              {
-                                patch_values_size++;
-                              });
+            {
+              patch_values_size++;
+            });
 
             patch_values = ctalloc(double, patch_values_size);
             values[ipatch][is] = patch_values;
@@ -416,149 +416,149 @@ BCStruct    *BCPressure(
                        + BCPressureType1YLower(bc_pressure_type1) * unity;
 
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                              {
-                                x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
-                                y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
-                                ips = SubvectorEltIndex(z_mult_sub, i, j, k);
-                                z = rsz_dat[ips] + fdir[2] * dz2 * z_mult_dat[ips];
+            {
+              x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
+              y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
+              ips = SubvectorEltIndex(z_mult_sub, i, j, k);
+              z = rsz_dat[ips] + fdir[2] * dz2 * z_mult_dat[ips];
 
-                                /* project center of BC face onto piecewise line */
-                                xy = (x * unitx + y * unity - line_min) / line_length;
+              /* project center of BC face onto piecewise line */
+              xy = (x * unitx + y * unity - line_min) / line_length;
 
-                                /* find two neighboring points */
-                                ip = 1;
-                                num_points = BCPressureType1NumPoints(bc_pressure_type1);
-                                for (; ip < (num_points - 1); ip++)
-                                {
-                                  if (xy < BCPressureType1Point(bc_pressure_type1, ip))
-                                    break;
-                                }
+              /* find two neighboring points */
+              ip = 1;
+              num_points = BCPressureType1NumPoints(bc_pressure_type1);
+              for (; ip < (num_points - 1); ip++)
+              {
+                if (xy < BCPressureType1Point(bc_pressure_type1, ip))
+                  break;
+              }
 
-                                /* compute the slope */
-                                slope = ((BCPressureType1Value(bc_pressure_type1, ip)
-                                          - BCPressureType1Value(bc_pressure_type1, (ip - 1)))
-                                         / (BCPressureType1Point(bc_pressure_type1, ip)
-                                            - BCPressureType1Point(bc_pressure_type1, (ip - 1))));
+              /* compute the slope */
+              slope = ((BCPressureType1Value(bc_pressure_type1, ip)
+                        - BCPressureType1Value(bc_pressure_type1, (ip - 1)))
+                       / (BCPressureType1Point(bc_pressure_type1, ip)
+                          - BCPressureType1Point(bc_pressure_type1, (ip - 1))));
 
-                                ref_press = BCPressureType1Value(bc_pressure_type1, ip - 1)
-                                            + slope * (xy - BCPressureType1Point(bc_pressure_type1, ip - 1));
-                                PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                                   (0, NULL, NULL, &ref_press, &ref_den,
-                                                    CALCFCN));
-                                fcn_val = 0.0;
-                                nonlin_resid = 1.0;
-                                iterations = -1;
+              ref_press = BCPressureType1Value(bc_pressure_type1, ip - 1)
+                          + slope * (xy - BCPressureType1Point(bc_pressure_type1, ip - 1));
+              PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                 (0, NULL, NULL, &ref_press, &ref_den,
+                                  CALCFCN));
+              fcn_val = 0.0;
+              nonlin_resid = 1.0;
+              iterations = -1;
 
-                                /* Solve a nonlinear problem for hydrostatic pressure
-                                 * at points on boundary patch given reference pressure.
-                                 * Note that the problem is only nonlinear if
-                                 * density depends on pressure.
-                                 *
-                                 * The nonlinear problem to solve is:
-                                 *   F(p) = 0
-                                 *   F(p) = P - P_ref
-                                 *          - 0.5*(rho(P) + rho(P_ref))*gravity*z
-                                 *
-                                 * Newton's method is used to find a solution. */
+              /* Solve a nonlinear problem for hydrostatic pressure
+               * at points on boundary patch given reference pressure.
+               * Note that the problem is only nonlinear if
+               * density depends on pressure.
+               *
+               * The nonlinear problem to solve is:
+               *   F(p) = 0
+               *   F(p) = P - P_ref
+               *          - 0.5*(rho(P) + rho(P_ref))*gravity*z
+               *
+               * Newton's method is used to find a solution. */
 
-                                while ((nonlin_resid > 1.0E-6) && (iterations < max_its))
-                                {
-                                  if (iterations > -1)
-                                  {
-                                    PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                                       (0, NULL, NULL, &patch_values[ival],
-                                                        &density_der, CALCDER));
-                                    dtmp = 1.0 - 0.5 * density_der * gravity * z;
-                                    patch_values[ival] = patch_values[ival] - fcn_val / dtmp;
-                                  }
-                                  else
-                                  {
-                                    patch_values[ival] = ref_press;
-                                  }
-                                  PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                                     (0, NULL, NULL, &patch_values[ival],
-                                                      &density, CALCFCN));
+              while ((nonlin_resid > 1.0E-6) && (iterations < max_its))
+              {
+                if (iterations > -1)
+                {
+                  PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                     (0, NULL, NULL, &patch_values[ival],
+                                      &density_der, CALCDER));
+                  dtmp = 1.0 - 0.5 * density_der * gravity * z;
+                  patch_values[ival] = patch_values[ival] - fcn_val / dtmp;
+                }
+                else
+                {
+                  patch_values[ival] = ref_press;
+                }
+                PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                   (0, NULL, NULL, &patch_values[ival],
+                                    &density, CALCFCN));
 
-                                  fcn_val = patch_values[ival] - ref_press
-                                            - 0.5 * (density + ref_den) * gravity * z;
-                                  nonlin_resid = fabs(fcn_val);
+                fcn_val = patch_values[ival] - ref_press
+                          - 0.5 * (density + ref_den) * gravity * z;
+                nonlin_resid = fabs(fcn_val);
 
-                                  iterations++;
-                                } /* End of while loop */
+                iterations++;
+              }            /* End of while loop */
 
-                                /* Iterate over the phases and reset pressures according to
-                                 * hydrostatic conditions with appropriate densities.
-                                 * At each interface, we have hydrostatic conditions, so
-                                 *
-                                 * z_inter = (P_inter - P_ref) /
-                                 *            (0.5*(rho(P_inter)+rho(P_ref))*gravity
-                                 + z_ref
-                                 +
-                                 + Thus, the interface height and pressure are known
-                                 + and hydrostatic conditions can be determined for
-                                 + new phase.
-                                 +
-                                 + NOTE:  This only works for Pc = 0. */
+              /* Iterate over the phases and reset pressures according to
+               * hydrostatic conditions with appropriate densities.
+               * At each interface, we have hydrostatic conditions, so
+               *
+               * z_inter = (P_inter - P_ref) /
+               *            (0.5*(rho(P_inter)+rho(P_ref))*gravity
+               + z_ref
+               +
+               + Thus, the interface height and pressure are known
+               + and hydrostatic conditions can be determined for
+               + new phase.
+               +
+               + NOTE:  This only works for Pc = 0. */
 
-                                for (phase = 1; phase < num_phases; phase++)
-                                {
-                                  interface_press = BCPressureType1ValueAtInterface(
-                                                                                    bc_pressure_type1, phase);
-                                  PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                                     (phase - 1, NULL, NULL, &interface_press,
-                                                      &interface_den, CALCFCN));
-                                  offset = (interface_press - ref_press)
-                                           / (0.5 * (interface_den + ref_den) * gravity);
-                                  ref_press = interface_press;
-                                  PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                                     (phase, NULL, NULL, &ref_press, &ref_den,
-                                                      CALCFCN));
+              for (phase = 1; phase < num_phases; phase++)
+              {
+                interface_press = BCPressureType1ValueAtInterface(
+                                                                  bc_pressure_type1, phase);
+                PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                   (phase - 1, NULL, NULL, &interface_press,
+                                    &interface_den, CALCFCN));
+                offset = (interface_press - ref_press)
+                         / (0.5 * (interface_den + ref_den) * gravity);
+                ref_press = interface_press;
+                PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                   (phase, NULL, NULL, &ref_press, &ref_den,
+                                    CALCFCN));
 
-                                  /* Only reset pressure value if in another phase.
-                                   * The following "if" test determines whether this point
-                                   * is in another phase by checking if the computed
-                                   * pressure is less than the interface value.  This
-                                   * test ONLY works if the phases are distributed such
-                                   * that the lighter phases are above the heavier ones. */
+                /* Only reset pressure value if in another phase.
+                 * The following "if" test determines whether this point
+                 * is in another phase by checking if the computed
+                 * pressure is less than the interface value.  This
+                 * test ONLY works if the phases are distributed such
+                 * that the lighter phases are above the heavier ones. */
 
-                                  if (patch_values[ival] < interface_press)
-                                  {
-                                    height = 0.0;
-                                    nonlin_resid = 1.0;
-                                    iterations = -1;
-                                    while ((nonlin_resid > 1.0E-6) && (iterations < max_its))
-                                    {
-                                      if (iterations > -1)
-                                      {
-                                        PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                                           (phase, NULL, NULL, &patch_values[ival],
-                                                            &density_der, CALCDER));
+                if (patch_values[ival] < interface_press)
+                {
+                  height = 0.0;
+                  nonlin_resid = 1.0;
+                  iterations = -1;
+                  while ((nonlin_resid > 1.0E-6) && (iterations < max_its))
+                  {
+                    if (iterations > -1)
+                    {
+                      PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                         (phase, NULL, NULL, &patch_values[ival],
+                                          &density_der, CALCDER));
 
-                                        dtmp = 1.0 - 0.5 * density_der * gravity * (z - height);
-                                        patch_values[ival] = patch_values[ival]
-                                                             - fcn_val / dtmp;
-                                      }
-                                      else
-                                      {
-                                        height = height + offset;
-                                        patch_values[ival] = ref_press;
-                                      }
+                      dtmp = 1.0 - 0.5 * density_der * gravity * (z - height);
+                      patch_values[ival] = patch_values[ival]
+                                           - fcn_val / dtmp;
+                    }
+                    else
+                    {
+                      height = height + offset;
+                      patch_values[ival] = ref_press;
+                    }
 
-                                      PFModuleInvokeType(PhaseDensityInvoke, phase_density,
-                                                         (phase, NULL, NULL,
-                                                          &patch_values[ival], &density,
-                                                          CALCFCN));
+                    PFModuleInvokeType(PhaseDensityInvoke, phase_density,
+                                       (phase, NULL, NULL,
+                                        &patch_values[ival], &density,
+                                        CALCFCN));
 
-                                      fcn_val = patch_values[ival] - ref_press
-                                                - 0.5 * (density + ref_den) * gravity
-                                                * (z - height);
-                                      nonlin_resid = fabs(fcn_val);
+                    fcn_val = patch_values[ival] - ref_press
+                              - 0.5 * (density + ref_den) * gravity
+                              * (z - height);
+                    nonlin_resid = fabs(fcn_val);
 
-                                      iterations++;
-                                    } /* End of while loop */
-                                  } /* End if above interface */
-                                } /* End phase loop */
-                              }); /* End BCStructPatchLoop body */
+                    iterations++;
+                  }              /* End of while loop */
+                }                /* End if above interface */
+              }                  /* End phase loop */
+            });                  /* End BCStructPatchLoop body */
           }
           break;
         }
@@ -580,17 +580,17 @@ BCStruct    *BCPressure(
             /* compute patch_values_size (this isn't really needed yet) */
             patch_values_size = 0;
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                              {
-                                patch_values_size++;
-                              });
+            {
+              patch_values_size++;
+            });
 
             patch_values = ctalloc(double, patch_values_size);
             values[ipatch][is] = patch_values;
 
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                              {
-                                patch_values[ival] = flux;
-                              });
+            {
+              patch_values[ival] = flux;
+            });
           }       /* End subgrid loop */
           break;
         }
@@ -615,9 +615,9 @@ BCStruct    *BCPressure(
             /* compute patch_values_size (this isn't really needed yet) */
             patch_values_size = 0;
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                              {
-                                patch_values_size++;
-                              });
+            {
+              patch_values_size++;
+            });
 
             patch_values = ctalloc(double, patch_values_size);
             values[ipatch][is] = patch_values;
@@ -628,33 +628,33 @@ BCStruct    *BCPressure(
 
             area = 0.0;
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                              {
-                                ips = SubvectorEltIndex(z_mult_sub, i, j, k);
-                                /* primary direction x */
-                                if (fdir[0])
-                                {
-                                  area += dy * dz * z_mult_dat[ips];
-                                }
-                                /* primary direction y */
-                                else if (fdir[1])
-                                {
-                                  area += dx * dz * z_mult_dat[ips];
-                                }
-                                /* primary direction z */
-                                else if (fdir[2])
-                                {
-                                  area += dx * dy;
-                                }
-                              });
+            {
+              ips = SubvectorEltIndex(z_mult_sub, i, j, k);
+              /* primary direction x */
+              if (fdir[0])
+              {
+                area += dy * dz * z_mult_dat[ips];
+              }
+              /* primary direction y */
+              else if (fdir[1])
+              {
+                area += dx * dz * z_mult_dat[ips];
+              }
+              /* primary direction z */
+              else if (fdir[2])
+              {
+                area += dx * dy;
+              }
+            });
 
             if (area > 0.0)
             {
               volumetric_flux = BCPressureType3Value(bc_pressure_type3)
                                 / area;
               BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                                {
-                                  patch_values[ival] = volumetric_flux;
-                                });
+              {
+                patch_values[ival] = volumetric_flux;
+              });
             }
           }           /* End subgrid loop */
           break;
@@ -699,9 +699,9 @@ BCStruct    *BCPressure(
             /* compute patch_values_size (this isn't really needed yet) */
             patch_values_size = 0;
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                              {
-                                patch_values_size++;
-                              });
+            {
+              patch_values_size++;
+            });
 
             patch_values = ctalloc(double, patch_values_size);
             values[ipatch][is] = patch_values;
@@ -715,14 +715,14 @@ BCStruct    *BCPressure(
 
             tmpp = SubvectorData(subvector);
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                              {
-                                ips = SubvectorEltIndex(z_mult_sub, i, j, k);
-                                z = rsz_dat[ips] + fdir[2] * dz2 * z_mult_dat[ips];
-                                itmp = SubvectorEltIndex(subvector, i, j, k);
+            {
+              ips = SubvectorEltIndex(z_mult_sub, i, j, k);
+              z = rsz_dat[ips] + fdir[2] * dz2 * z_mult_dat[ips];
+              itmp = SubvectorEltIndex(subvector, i, j, k);
 
-                                patch_values[ival] = tmpp[itmp]; /*- density*gravity*z;*/
-                                /*last part taken out, very likely to be a bug)*/
-                              });
+              patch_values[ival] = tmpp[itmp];     /*- density*gravity*z;*/
+              /*last part taken out, very likely to be a bug)*/
+            });
 
             FreeVector(tmp_vector);
           }             /* End subgrid loop */
@@ -747,9 +747,9 @@ BCStruct    *BCPressure(
             /* compute patch_values_size (this isn't really needed yet) */
             patch_values_size = 0;
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                              {
-                                patch_values_size++;
-                              });
+            {
+              patch_values_size++;
+            });
 
             patch_values = ctalloc(double, patch_values_size);
             values[ipatch][is] = patch_values;
@@ -763,11 +763,11 @@ BCStruct    *BCPressure(
 
             tmpp = SubvectorData(subvector);
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                              {
-                                itmp = SubvectorEltIndex(subvector, i, j, k);
+            {
+              itmp = SubvectorEltIndex(subvector, i, j, k);
 
-                                patch_values[ival] = tmpp[itmp];
-                              });
+              patch_values[ival] = tmpp[itmp];
+            });
 
             FreeVector(tmp_vector);
           }         /* End subgrid loop */
@@ -796,9 +796,9 @@ BCStruct    *BCPressure(
             /* compute patch_values_size */
             patch_values_size = 0;
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                              {
-                                patch_values_size++;
-                              });
+            {
+              patch_values_size++;
+            });
 
             dx2 = SubgridDX(subgrid) / 2.0;
             dy2 = SubgridDY(subgrid) / 2.0;
@@ -814,11 +814,11 @@ BCStruct    *BCPressure(
               case 1:  /* p = x */
               {
                 BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                                  {
-                                    x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
+                {
+                  x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
 
-                                    patch_values[ival] = x;
-                                  });
+                  patch_values[ival] = x;
+                });
 
                 break;
               }     /* End case 1 */
@@ -826,13 +826,13 @@ BCStruct    *BCPressure(
               case 2:  /* p = x + y + z */
               {
                 BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                                  {
-                                    x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
-                                    y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
-                                    ips = SubvectorEltIndex(z_mult_sub, i, j, k);
-                                    z = rsz_dat[ips] + fdir[2] * dz2 * z_mult_dat[ips];
-                                    patch_values[ival] = x + y + z;
-                                  });
+                {
+                  x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
+                  y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
+                  ips = SubvectorEltIndex(z_mult_sub, i, j, k);
+                  z = rsz_dat[ips] + fdir[2] * dz2 * z_mult_dat[ips];
+                  patch_values[ival] = x + y + z;
+                });
 
                 break;
               }     /* End case 2 */
@@ -840,51 +840,51 @@ BCStruct    *BCPressure(
               case 3:  /* p = x^3y^2 + sinxy + 1*/
               {
                 BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                                  {
-                                    x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
-                                    y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
+                {
+                  x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
+                  y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
 
-                                    patch_values[ival] = x * x * x * y * y + sin(x * y) + 1;
-                                  });
+                  patch_values[ival] = x * x * x * y * y + sin(x * y) + 1;
+                });
                 break;
               }     /* End case 3 */
 
               case 4:  /* p = x^3 y^4 + x^2 + sinxy cosy + 1 */
               {
                 BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                                  {
-                                    x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
-                                    y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
-                                    ips = SubvectorEltIndex(z_mult_sub, i, j, k);
-                                    z = rsz_dat[ips] + fdir[2] * dz2 * z_mult_dat[ips];
-                                    patch_values[ival] = pow(x, 3) * pow(y, 4) + x * x + sin(x * y) * cos(y) + 1;
-                                  });
+                {
+                  x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
+                  y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
+                  ips = SubvectorEltIndex(z_mult_sub, i, j, k);
+                  z = rsz_dat[ips] + fdir[2] * dz2 * z_mult_dat[ips];
+                  patch_values[ival] = pow(x, 3) * pow(y, 4) + x * x + sin(x * y) * cos(y) + 1;
+                });
                 break;
               }     /* End case 4 */
 
               case 5:  /* p = xyzt +1 */
               {
                 BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                                  {
-                                    x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
-                                    y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
-                                    ips = SubvectorEltIndex(z_mult_sub, i, j, k);
-                                    z = rsz_dat[ips] + fdir[2] * dz2 * z_mult_dat[ips];
-                                    patch_values[ival] = x * y * z * time + 1;
-                                  });
+                {
+                  x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
+                  y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
+                  ips = SubvectorEltIndex(z_mult_sub, i, j, k);
+                  z = rsz_dat[ips] + fdir[2] * dz2 * z_mult_dat[ips];
+                  patch_values[ival] = x * y * z * time + 1;
+                });
                 break;
               }     /* End case 5 */
 
               case 6:  /* p = xyzt +1 */
               {
                 BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                                  {
-                                    x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
-                                    y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
-                                    ips = SubvectorEltIndex(z_mult_sub, i, j, k);
-                                    z = rsz_dat[ips] + fdir[2] * dz2 * z_mult_dat[ips];
-                                    patch_values[ival] = x * y * z * time + 1;
-                                  });
+                {
+                  x = RealSpaceX(i, SubgridRX(subgrid)) + fdir[0] * dx2;
+                  y = RealSpaceY(j, SubgridRY(subgrid)) + fdir[1] * dy2;
+                  ips = SubvectorEltIndex(z_mult_sub, i, j, k);
+                  z = rsz_dat[ips] + fdir[2] * dz2 * z_mult_dat[ips];
+                  patch_values[ival] = x * y * z * time + 1;
+                });
                 break;
               }     /* End case 5 */
             }       /* End switch */
@@ -909,17 +909,17 @@ BCStruct    *BCPressure(
             /* compute patch_values_size (this isn't really needed yet) */
             patch_values_size = 0;
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                              {
-                                patch_values_size++;
-                              });
+            {
+              patch_values_size++;
+            });
 
             patch_values = ctalloc(double, patch_values_size);
             values[ipatch][is] = patch_values;
 
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                              {
-                                patch_values[ival] = flux;
-                              });
+            {
+              patch_values[ival] = flux;
+            });
           }       /* End subgrid loop */
           break;
         }
@@ -943,9 +943,9 @@ BCStruct    *BCPressure(
             /* compute patch_values_size (this isn't really needed yet) */
             patch_values_size = 0;
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                              {
-                                patch_values_size++;
-                              });
+            {
+              patch_values_size++;
+            });
 
             patch_values = ctalloc(double, patch_values_size);
             values[ipatch][is] = patch_values;
@@ -962,11 +962,11 @@ BCStruct    *BCPressure(
 
             tmpp = SubvectorData(subvector);
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                              {
-                                itmp = SubvectorEltIndex(subvector, i, j, k);
+            {
+              itmp = SubvectorEltIndex(subvector, i, j, k);
 
-                                patch_values[ival] = tmpp[itmp];
-                              });
+              patch_values[ival] = tmpp[itmp];
+            });
 
             //tfree(VectorData(tmp_vector));
             FreeVector(tmp_vector);

@@ -9,7 +9,7 @@
 
 integer c__1 = 1;
 
-/*BHEADER**********************************************************************
+/*BHEADER*********************************************************************
  *
  * Copyright (c) 1995-2009, Lawrence Livermore National Security,
  * LLC. Produced at the Lawrence Livermore National Laboratory. Written
@@ -56,7 +56,7 @@ doublereal * s, *sn, *uedge, *vedge, *wedge, *betaedge, *phi, *viscos, *densty,
 *gravty, *slx, *sly, *slz;
 integer *lohi, *dlohi;
 doublereal *hx, *dt, *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *
-sfluxz, *dxscr, *dyscr, *dzscr, *dzfrm;
+  sfluxz, *dxscr, *dyscr, *dzscr, *dzfrm;
 {
   /* Initialized data */
 
@@ -94,7 +94,7 @@ sfluxz, *dxscr, *dyscr, *dzscr, *dzfrm;
   extern /* Subroutine */ int sslopez_();
 
 /*     ::: argument declarations */
-  /* Parameter adjustments */
+/* Parameter adjustments */
   --viscos;
   --densty;
   lohi -= 4;

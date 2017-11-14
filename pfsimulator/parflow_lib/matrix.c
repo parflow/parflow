@@ -1,35 +1,35 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-/******************************************************************************
+/*BHEADER*********************************************************************
  *
- * Constructors and destructors for matrix structure.
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
  *
- *****************************************************************************/
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/*****************************************************************************
+*
+* Constructors and destructors for matrix structure.
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -162,7 +162,7 @@ CommHandle  *InitMatrixUpdate(
     tbox::Dimension dim(GlobalsParflowSimulation->getDim(grid_type));
     if (matrix->boundary_fill_refine_algorithm.isNull())
     {
-      tbox::Pointer<hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation->getPatchHierarchy(grid_type));
+      tbox::Pointer < hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation->getPatchHierarchy(grid_type));
       const int level_number = 0;
 
       matrix->boundary_fill_refine_algorithm = new xfer::RefineAlgorithm(dim);
@@ -171,9 +171,9 @@ CommHandle  *InitMatrixUpdate(
                                                              matrix->samrai_id,
                                                              matrix->samrai_id,
                                                              matrix->samrai_id,
-                                                             tbox::Pointer<xfer::RefineOperator>(NULL));
+                                                             tbox::Pointer < xfer::RefineOperator > (NULL));
 
-      tbox::Pointer< hier::PatchLevel > level =
+      tbox::Pointer < hier::PatchLevel > level =
         hierarchy->getPatchLevel(level_number);
 
       matrix->boundary_fill_schedule = matrix->boundary_fill_refine_algorithm
@@ -391,8 +391,7 @@ Matrix          *NewMatrixType(
     "Matrix_" + tbox::Utilities::intToString(grid_type, 1) + "_" +
     tbox::Utilities::intToString(index, 4);
 
-  tbox::Pointer< hier::Variable > variable;
-
+  tbox::Pointer < hier::Variable > variable;
 #else
   type = matrix_non_samrai;
 #endif
@@ -544,9 +543,9 @@ Matrix          *NewMatrixType(
 #ifdef HAVE_SAMRAI
     case matrix_cell_centered:
     {
-      variable = new pdat::CellVariable<double>(dim,
-                                                variable_name,
-                                                MatrixDataStencilSize(new_matrix));
+      variable = new pdat::CellVariable < double > (dim,
+                                                    variable_name,
+                                                    MatrixDataStencilSize(new_matrix));
       break;
     }
 #endif
@@ -569,10 +568,10 @@ Matrix          *NewMatrixType(
 #ifdef HAVE_SAMRAI
     case matrix_cell_centered:
     {
-      tbox::Pointer<hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation->getPatchHierarchy(grid_type));
-      tbox::Pointer<hier::PatchLevel > level(hierarchy->getPatchLevel(0));
+      tbox::Pointer < hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation->getPatchHierarchy(grid_type));
+      tbox::Pointer < hier::PatchLevel > level(hierarchy->getPatchLevel(0));
 
-      tbox::Pointer<hier::PatchDescriptor> patch_descriptor(hierarchy->getPatchDescriptor());
+      tbox::Pointer < hier::PatchDescriptor > patch_descriptor(hierarchy->getPatchDescriptor());
 
       new_matrix->samrai_id = patch_descriptor->definePatchDataComponent(
                                                                          variable_name,
@@ -597,8 +596,8 @@ Matrix          *NewMatrixType(
 
         std::cout << "In matrix box " << patch_box << std::endl;
 
-        tbox::Pointer< pdat::CellData<double> > patch_data(
-                                                           patch->getPatchData(new_matrix->samrai_id));
+        tbox::Pointer < pdat::CellData < double >> patch_data(
+                                                              patch->getPatchData(new_matrix->samrai_id));
         Submatrix *submatrix = MatrixSubmatrix(new_matrix, i);
         SubmatrixData(submatrix) = patch_data->getPointer(0);
         patch_data->fillAll(0);
@@ -664,12 +663,12 @@ void FreeMatrix(
         matrix->boundary_fill_schedule.setNull();
       }
 
-      tbox::Pointer<hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation->getPatchHierarchy(grid_type));
-      tbox::Pointer<hier::PatchLevel > level(hierarchy->getPatchLevel(0));
+      tbox::Pointer < hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation->getPatchHierarchy(grid_type));
+      tbox::Pointer < hier::PatchLevel > level(hierarchy->getPatchLevel(0));
 
       level->deallocatePatchData(matrix->samrai_id);
 
-      tbox::Pointer<hier::PatchDescriptor> patch_descriptor(hierarchy->getPatchDescriptor());
+      tbox::Pointer < hier::PatchDescriptor > patch_descriptor(hierarchy->getPatchDescriptor());
       patch_descriptor->removePatchDataComponent(matrix->samrai_id);
 
       samrai_matrix_ids[grid_type][matrix->table_index] = 0;
@@ -766,9 +765,9 @@ void    InitMatrix(
       im = 0;
       BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                 im, nx_m, ny_m, nz_m, 1, 1, 1,
-                {
-                  Ap[im] = value;
-                });
+      {
+        Ap[im] = value;
+      });
     }
   }
 }

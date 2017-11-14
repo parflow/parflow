@@ -1,35 +1,35 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-/******************************************************************************
+/*BHEADER*********************************************************************
  *
- * Routines to generate a Gaussian random field.
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
  *
- *****************************************************************************/
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/*****************************************************************************
+*
+* Routines to generate a Gaussian random field.
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -155,7 +155,7 @@ void          TurningBandsRF(
   /* compute line directions */
   for (l = 0; l < num_lines; l++)
   {
-    theta_array[l] = 2.0*pi*Rand();
+    theta_array[l] = 2.0 * pi * Rand();
     phi_array[l] = acos(1.0 - 2.0 * Rand());
   }
 
@@ -241,12 +241,12 @@ void          TurningBandsRF(
     fieldp = SubvectorData(field_sub);
     doing_TB = 0;
     GrGeomInLoop(i, j, k, gr_geounit, r, ix, iy, iz, nx, ny, nz,
-                 {
-                   index = SubvectorEltIndex(field_sub, i, j, k);
+    {
+      index = SubvectorEltIndex(field_sub, i, j, k);
 
-                   fieldp[index] = 0.0;
-                   doing_TB = 1;
-                 });
+      fieldp[index] = 0.0;
+      doing_TB = 1;
+    });
 
     if (!doing_TB)
       continue;
@@ -307,15 +307,15 @@ void          TurningBandsRF(
       /* Project Z onto field */
       fieldp = SubvectorData(field_sub);
       GrGeomInLoop(i, j, k, gr_geounit, r, ix, iy, iz, nx, ny, nz,
-                   {
-                     index = SubvectorEltIndex(field_sub, i, j, k);
+      {
+        index = SubvectorEltIndex(field_sub, i, j, k);
 
-                     x = xlo + (i - ix) * dx;
-                     y = ylo + (j - iy) * dy;
-                     z = zlo + (k - iz) * dz - shear_array[(j - iy) * nx + (i - ix)];
-                     zeta = x * unitx + y * unity + z * unitz;
-                     fieldp[index] += Z[Index(zeta, dzeta) - izeta];
-                   });
+        x = xlo + (i - ix) * dx;
+        y = ylo + (j - iy) * dy;
+        z = zlo + (k - iz) * dz - shear_array[(j - iy) * nx + (i - ix)];
+        zeta = x * unitx + y * unity + z * unitz;
+        fieldp[index] += Z[Index(zeta, dzeta) - izeta];
+      });
     }
 
     /*--------------------------------------------------------------------
@@ -326,10 +326,10 @@ void          TurningBandsRF(
     sqrtnl = 1.0 / sqrt((double)num_lines);
     fieldp = SubvectorData(field_sub);
     GrGeomInLoop(i, j, k, gr_geounit, r, ix, iy, iz, nx, ny, nz,
-                 {
-                   index = SubvectorEltIndex(field_sub, i, j, k);
-                   fieldp[index] *= sqrtnl;
-                 });
+    {
+      index = SubvectorEltIndex(field_sub, i, j, k);
+      fieldp[index] *= sqrtnl;
+    });
 
     /*
      * Condition the field to data using the p-field method.
@@ -353,42 +353,42 @@ void          TurningBandsRF(
     {
       case 0:    /* normal distribution */
         GrGeomInLoop(i, j, k, gr_geounit, r, ix, iy, iz, nx, ny, nz,
-                     {
-                       index = SubvectorEltIndex(field_sub, i, j, k);
-                       fieldp[index] = mean + sigma * fieldp[index];
-                     });
+      {
+        index = SubvectorEltIndex(field_sub, i, j, k);
+        fieldp[index] = mean + sigma * fieldp[index];
+      });
         break;
 
       case 1:    /* log normal distribution */
         GrGeomInLoop(i, j, k, gr_geounit, r, ix, iy, iz, nx, ny, nz,
-                     {
-                       index = SubvectorEltIndex(field_sub, i, j, k);
-                       fieldp[index] = mean * exp((sigma) * fieldp[index]);
-                     });
+      {
+        index = SubvectorEltIndex(field_sub, i, j, k);
+        fieldp[index] = mean * exp((sigma) * fieldp[index]);
+      });
         break;
 
       case 2:    /* normal distribution with low and high cutoffs */
         GrGeomInLoop(i, j, k, gr_geounit, r, ix, iy, iz, nx, ny, nz,
-                     {
-                       index = SubvectorEltIndex(field_sub, i, j, k);
-                       fieldp[index] = mean + sigma * fieldp[index];
-                       if (fieldp[index] < low_cutoff)
-                         fieldp[index] = low_cutoff;
-                       if (fieldp[index] > high_cutoff)
-                         fieldp[index] = high_cutoff;
-                     });
+      {
+        index = SubvectorEltIndex(field_sub, i, j, k);
+        fieldp[index] = mean + sigma * fieldp[index];
+        if (fieldp[index] < low_cutoff)
+          fieldp[index] = low_cutoff;
+        if (fieldp[index] > high_cutoff)
+          fieldp[index] = high_cutoff;
+      });
         break;
 
       case 3:    /* log normal distribution with low and high cutoffs */
         GrGeomInLoop(i, j, k, gr_geounit, r, ix, iy, iz, nx, ny, nz,
-                     {
-                       index = SubvectorEltIndex(field_sub, i, j, k);
-                       fieldp[index] = mean * exp((sigma) * fieldp[index]);
-                       if (fieldp[index] < low_cutoff)
-                         fieldp[index] = low_cutoff;
-                       if (fieldp[index] > high_cutoff)
-                         fieldp[index] = high_cutoff;
-                     });
+      {
+        index = SubvectorEltIndex(field_sub, i, j, k);
+        fieldp[index] = mean * exp((sigma) * fieldp[index]);
+        if (fieldp[index] < low_cutoff)
+          fieldp[index] = low_cutoff;
+        if (fieldp[index] > high_cutoff)
+          fieldp[index] = high_cutoff;
+      });
         break;
     }   /* end switch(lognormal)  */
 

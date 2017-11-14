@@ -1,33 +1,33 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-/******************************************************************************
+/*BHEADER*********************************************************************
  *
- *****************************************************************************/
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/*****************************************************************************
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -129,8 +129,8 @@ void SubsrfSim(
   SubgridArray     *subgrids;
 
   Subgrid          *subgrid,
-  *well_subgrid,
-  *tmp_subgrid;
+    *well_subgrid,
+    *tmp_subgrid;
 
   Subvector        *perm_x_sub, *perm_y_sub, *perm_z_sub;
   Subvector        *kx_values_sub, *ky_values_sub, *kz_values_sub;
@@ -238,29 +238,29 @@ void SubsrfSim(
 
 
           GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                       {
-                         ipx = SubvectorEltIndex(perm_x_sub, i, j, k);
-                         ipy = SubvectorEltIndex(perm_y_sub, i, j, k);
-                         ipz = SubvectorEltIndex(perm_z_sub, i, j, k);
+          {
+            ipx = SubvectorEltIndex(perm_x_sub, i, j, k);
+            ipy = SubvectorEltIndex(perm_y_sub, i, j, k);
+            ipz = SubvectorEltIndex(perm_z_sub, i, j, k);
 
-                         perm_x_dat[ipx] = perm_z_dat[ipz] * kx_values[ir];
-                         perm_y_dat[ipy] = perm_z_dat[ipz] * ky_values[ir];
-                         perm_z_dat[ipz] = perm_z_dat[ipz] * kz_values[ir];
-                       });
+            perm_x_dat[ipx] = perm_z_dat[ipz] * kx_values[ir];
+            perm_y_dat[ipy] = perm_z_dat[ipz] * ky_values[ir];
+            perm_z_dat[ipz] = perm_z_dat[ipz] * kz_values[ir];
+          });
 
           // SGS if this is important here why does it not appear in loop below?
           // SGS This loop should not be here, looping over outside of domain multiple
           // times.
           GrGeomOutLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                        {
-                          ipx = SubvectorEltIndex(perm_x_sub, i, j, k);
-                          ipy = SubvectorEltIndex(perm_y_sub, i, j, k);
-                          ipz = SubvectorEltIndex(perm_z_sub, i, j, k);
+          {
+            ipx = SubvectorEltIndex(perm_x_sub, i, j, k);
+            ipy = SubvectorEltIndex(perm_y_sub, i, j, k);
+            ipz = SubvectorEltIndex(perm_z_sub, i, j, k);
 
-                          perm_x_dat[ipx] = 0.0;
-                          perm_y_dat[ipy] = 0.0;
-                          perm_z_dat[ipz] = 0.0;
-                        });
+            perm_x_dat[ipx] = 0.0;
+            perm_y_dat[ipy] = 0.0;
+            perm_z_dat[ipz] = 0.0;
+          });
         }    /* End subgrid loop */
       }      /* End loop over regions */
 
@@ -312,15 +312,15 @@ void SubsrfSim(
         kz_values_dat = SubvectorData(kz_values_sub);
 
         GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                     {
-                       ipx = SubvectorEltIndex(kx_values_sub, i, j, k);
-                       ipy = SubvectorEltIndex(ky_values_sub, i, j, k);
-                       ipz = SubvectorEltIndex(ky_values_sub, i, j, k);
+        {
+          ipx = SubvectorEltIndex(kx_values_sub, i, j, k);
+          ipy = SubvectorEltIndex(ky_values_sub, i, j, k);
+          ipz = SubvectorEltIndex(ky_values_sub, i, j, k);
 
-                       perm_x_dat[ipx] = perm_z_dat[ipz] * kx_values_dat[ipx];
-                       perm_y_dat[ipy] = perm_z_dat[ipz] * ky_values_dat[ipy];
-                       perm_z_dat[ipz] = perm_z_dat[ipz] * kz_values_dat[ipz];
-                     });
+          perm_x_dat[ipx] = perm_z_dat[ipz] * kx_values_dat[ipx];
+          perm_y_dat[ipy] = perm_z_dat[ipz] * ky_values_dat[ipy];
+          perm_z_dat[ipz] = perm_z_dat[ipz] * kz_values_dat[ipz];
+        });
       }      /* End subgrid loop */
       break;
     }        /* End case 1 */
@@ -396,11 +396,11 @@ void SubsrfSim(
           BoxLoopI1(i, j, k,
                     ix, iy, iz, nx, ny, nz,
                     pi, nx_p, ny_p, nz_p, 1, 1, 1,
-                    {
-                      perm_average_x += perm_x_elt[pi] * (cell_volume / well_volume);
-                      perm_average_y += perm_y_elt[pi] * (cell_volume / well_volume);
-                      perm_average_z += perm_z_elt[pi] * (cell_volume / well_volume);
-                    });
+          {
+            perm_average_x += perm_x_elt[pi] * (cell_volume / well_volume);
+            perm_average_y += perm_y_elt[pi] * (cell_volume / well_volume);
+            perm_average_z += perm_z_elt[pi] * (cell_volume / well_volume);
+          });
 
           FreeSubgrid(tmp_subgrid);       /* done with temporary subgrid */
         }
@@ -539,7 +539,7 @@ PFModule  *SubsrfSimInitInstanceXtra(
 
   if (PFModuleInstanceXtra(this_module) == NULL)
   {
-    (instance_xtra->KFieldSimulators) = talloc(PFModule *, num_geo_indexes);
+    (instance_xtra->KFieldSimulators) = talloc(PFModule*, num_geo_indexes);
 
     for (i = 0; i < num_geo_indexes; i++)
       (instance_xtra->KFieldSimulators)[i] =
@@ -688,7 +688,7 @@ PFModule   *SubsrfSimNewPublicXtra()
 
   (public_xtra->num_geo_indexes) = num_geo_indexes;
   (public_xtra->geo_indexes) = ctalloc(int, num_geo_indexes);
-  (public_xtra->KFieldSimulators) = ctalloc(PFModule *, num_geo_indexes);
+  (public_xtra->KFieldSimulators) = ctalloc(PFModule*, num_geo_indexes);
 
   switch_na = NA_NewNameArray("Constant TurnBands ParGauss PFBFile");
 

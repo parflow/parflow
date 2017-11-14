@@ -1,30 +1,30 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
 #include "parflow.h"
 
@@ -125,104 +125,104 @@ void         L2ErrorNorm(
         soln = (dummy1->value);
 
         GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                     {
-                       ips = SubvectorEltIndex(p_sub, i, j, k);
+        {
+          ips = SubvectorEltIndex(p_sub, i, j, k);
 
-                       err += (data[ips] - soln) * (data[ips] - soln);
-                     });
+          err += (data[ips] - soln) * (data[ips] - soln);
+        });
         break;
       }      /* End case p = constant */
 
       case 2:     /* p = x */
       {
         GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                     {
-                       ips = SubvectorEltIndex(p_sub, i, j, k);
+        {
+          ips = SubvectorEltIndex(p_sub, i, j, k);
 
-                       x = RealSpaceX(i, SubgridRX(subgrid));
+          x = RealSpaceX(i, SubgridRX(subgrid));
 
-                       soln = x;
-                       err += (data[ips] - soln) * (data[ips] - soln);
-                     });
+          soln = x;
+          err += (data[ips] - soln) * (data[ips] - soln);
+        });
         break;
       }      /* End case p = x */
 
       case 3:     /* p = x + y +z */
       {
         GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                     {
-                       ips = SubvectorEltIndex(p_sub, i, j, k);
+        {
+          ips = SubvectorEltIndex(p_sub, i, j, k);
 
-                       x = RealSpaceX(i, SubgridRX(subgrid));
-                       y = RealSpaceY(j, SubgridRY(subgrid));
-                       z = RealSpaceZ(k, SubgridRZ(subgrid));
+          x = RealSpaceX(i, SubgridRX(subgrid));
+          y = RealSpaceY(j, SubgridRY(subgrid));
+          z = RealSpaceZ(k, SubgridRZ(subgrid));
 
-                       soln = x + y + z;
-                       err += (data[ips] - soln) * (data[ips] - soln);
-                     });
+          soln = x + y + z;
+          err += (data[ips] - soln) * (data[ips] - soln);
+        });
         break;
       }      /* End case p = x + y + z */
 
       case 4:     /* p = x^3y^2 + sinxy + 1 */
       {
         GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                     {
-                       ips = SubvectorEltIndex(p_sub, i, j, k);
+        {
+          ips = SubvectorEltIndex(p_sub, i, j, k);
 
-                       x = RealSpaceX(i, SubgridRX(subgrid));
-                       y = RealSpaceY(j, SubgridRY(subgrid));
+          x = RealSpaceX(i, SubgridRX(subgrid));
+          y = RealSpaceY(j, SubgridRY(subgrid));
 
-                       soln = x * x * x * y * y + sin(x * y) + 1;
-                       err += (data[ips] - soln) * (data[ips] - soln);
-                     });
+          soln = x * x * x * y * y + sin(x * y) + 1;
+          err += (data[ips] - soln) * (data[ips] - soln);
+        });
         break;
       }     /* p = x^3y^2 + sinxy + 1 */
 
       case 5:     /* p = x^3y^4 + x^2 + sinxy cosy +1 */
       {
         GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                     {
-                       ips = SubvectorEltIndex(p_sub, i, j, k);
+        {
+          ips = SubvectorEltIndex(p_sub, i, j, k);
 
-                       x = RealSpaceX(i, SubgridRX(subgrid));
-                       y = RealSpaceY(j, SubgridRY(subgrid));
-                       z = RealSpaceZ(k, SubgridRZ(subgrid));
+          x = RealSpaceX(i, SubgridRX(subgrid));
+          y = RealSpaceY(j, SubgridRY(subgrid));
+          z = RealSpaceZ(k, SubgridRZ(subgrid));
 
-                       soln = pow(x, 3) * pow(y, 4) + x * x + sin(x * y) * cos(y) + 1;
-                       err += (data[ips] - soln) * (data[ips] - soln);
-                     });
+          soln = pow(x, 3) * pow(y, 4) + x * x + sin(x * y) * cos(y) + 1;
+          err += (data[ips] - soln) * (data[ips] - soln);
+        });
         break;
       }      /* End case  p = x^3y^4 + x^2 + sinxy cosy +1 */
 
       case 6:     /* p = x*y*z*t + 1*/
       {
         GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                     {
-                       ips = SubvectorEltIndex(p_sub, i, j, k);
+        {
+          ips = SubvectorEltIndex(p_sub, i, j, k);
 
-                       x = RealSpaceX(i, SubgridRX(subgrid));
-                       y = RealSpaceY(j, SubgridRY(subgrid));
-                       z = RealSpaceZ(k, SubgridRZ(subgrid));
+          x = RealSpaceX(i, SubgridRX(subgrid));
+          y = RealSpaceY(j, SubgridRY(subgrid));
+          z = RealSpaceZ(k, SubgridRZ(subgrid));
 
-                       soln = x * y * z * time + 1;
-                       err += (data[ips] - soln) * (data[ips] - soln);
-                     });
+          soln = x * y * z * time + 1;
+          err += (data[ips] - soln) * (data[ips] - soln);
+        });
         break;
       }      /* End case  p = x*y*z*t + 1*/
 
       case 7:     /* p = x*y*z*t + 1*/
       {
         GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                     {
-                       ips = SubvectorEltIndex(p_sub, i, j, k);
+        {
+          ips = SubvectorEltIndex(p_sub, i, j, k);
 
-                       x = RealSpaceX(i, SubgridRX(subgrid));
-                       y = RealSpaceY(j, SubgridRY(subgrid));
-                       z = RealSpaceZ(k, SubgridRZ(subgrid));
+          x = RealSpaceX(i, SubgridRX(subgrid));
+          y = RealSpaceY(j, SubgridRY(subgrid));
+          z = RealSpaceZ(k, SubgridRZ(subgrid));
 
-                       soln = x * y * z * time + 1;
-                       err += (data[ips] - soln) * (data[ips] - soln);
-                     });
+          soln = x * y * z * time + 1;
+          err += (data[ips] - soln) * (data[ips] - soln);
+        });
         break;
       }      /* End case  p = x*y*z*t + 1*/
     }     /* End switch statement for solution types */

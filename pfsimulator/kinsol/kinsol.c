@@ -3,7 +3,7 @@
  * File          : kinsol.c                                       *
  * Programmers   : Allan G Taylor and Alan C. Hindmarsh @ LLNL    *
  * Version of    : 29 December 1999                               *
- **----------------------------------------------------------------*
+ *----------------------------------------------------------------*
  * This is the implementation file for the main KINSol solver.    *
  * It is independent of the KINSol linear solver in use.          *
  *                                                                *
@@ -803,7 +803,7 @@ int KINSol(void *kinmem, integer Neq,
     bb = unew;  xx = pp;
 
 
-    ret = KINLinSolDrv((struct KINMemRec*)kinmem, bb, xx);
+    ret = KINLinSolDrv((struct KINMemRec *)kinmem, bb, xx);
 
     /* evaluate the return code from KINLinSolDrv  */
 
@@ -815,10 +815,10 @@ int KINSol(void *kinmem, integer Neq,
 
     if (globalstrategy == INEXACT_NEWTON)
       globalstratret =
-        KINInexactNewton((struct KINMemRec*)kinmem, &fnormp, &f1normp, &maxStepTaken);
+        KINInexactNewton((struct KINMemRec *)kinmem, &fnormp, &f1normp, &maxStepTaken);
     else if (globalstrategy == LINESEARCH)
       globalstratret =
-        KINLineSearch((struct KINMemRec*)kinmem, &fnormp, &f1normp, &maxStepTaken);
+        KINLineSearch((struct KINMemRec *)kinmem, &fnormp, &f1normp, &maxStepTaken);
 
     /* if too many beta condition failures, stop iteration  */
 
@@ -832,13 +832,13 @@ int KINSol(void *kinmem, integer Neq,
     /* Evaluate eta by calling the forcing term routine */
 
     if (callForcingTerm)
-      KINForcingTerm((struct KINMemRec*)kinmem, fnormp);
+      KINForcingTerm((struct KINMemRec *)kinmem, fnormp);
 
     /*  call KINStop to check if tolerances are met at this iteration  */
 
     fnorm = fnormp;
 
-    ret = KINStop((struct KINMemRec*)kinmem, maxStepTaken, globalstratret);
+    ret = KINStop((struct KINMemRec *)kinmem, maxStepTaken, globalstratret);
 
     /* update uu after the iteration  */
     N_VScale(ONE, unew, uu);

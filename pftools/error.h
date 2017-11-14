@@ -1,85 +1,85 @@
-/*BHEADER**********************************************************************
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/*****************************************************************************
+* Error header file
 *
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+* (C) 1993 Regents of the University of California.
 *
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
+* see info_header.h for complete information
 *
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
+*                               History
+*-----------------------------------------------------------------------------
+* $Log: error.h,v $
+* Revision 1.12  1997/09/20 00:16:29  ssmith
+* This checkin updates the TCL/TK interface to use the new package
+* mechanism in TCL rather than re-writing the main TCL routine.
+* Also namespace control was partially implemented to help prevent
+* name conflicts.
+* Globals where removed.
 *
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
+* Revision 1.11  1997/06/05 23:31:04  ssmith
+* Added reload feature
 *
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
+* Revision 1.10  1997/05/13 21:47:06  ssmith
+* Added elnarge box command
 *
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-/******************************************************************************
- * Error header file
- *
- * (C) 1993 Regents of the University of California.
- *
- * see info_header.h for complete information
- *
- *                               History
- **-----------------------------------------------------------------------------
- * $Log: error.h,v $
- * Revision 1.12  1997/09/20 00:16:29  ssmith
- * This checkin updates the TCL/TK interface to use the new package
- * mechanism in TCL rather than re-writing the main TCL routine.
- * Also namespace control was partially implemented to help prevent
- * name conflicts.
- * Globals where removed.
- *
- * Revision 1.11  1997/06/05 23:31:04  ssmith
- * Added reload feature
- *
- * Revision 1.10  1997/05/13 21:47:06  ssmith
- * Added elnarge box command
- *
- * Revision 1.9  1997/03/07 00:30:59  shumaker
- * Added two new pftools, pfgetsubbox and pfbfcvel
- *
- * Revision 1.8  1996/08/21  18:45:47  steve
- * Fixed some compiler warnings and problem with running in different directories
- *
- * Revision 1.7  1996/08/10  06:35:07  mccombjr
- * *** empty log message ***
- *
- * Revision 1.6  1995/12/21  00:56:38  steve
- * Added copyright
- *
- * Revision 1.5  1995/11/14  02:47:42  steve
- * Fixed ^M problems
- *
- * Revision 1.4  1995/11/14  02:12:05  steve
- * Fixed Compiler warnings under Win32
- *
- * Revision 1.3  1995/10/23  18:11:49  steve
- * Added support for HDF
- * Made varargs be ANSI
- *
- * Revision 1.2  1994/05/18  23:33:28  falgout
- * Changed Error stuff, and print interactive message to stderr.
- *
- * Revision 1.1  1993/04/02  23:13:24  falgout
- * Initial revision
- *
- *
- **-----------------------------------------------------------------------------
- *
- *****************************************************************************/
+* Revision 1.9  1997/03/07 00:30:59  shumaker
+* Added two new pftools, pfgetsubbox and pfbfcvel
+*
+* Revision 1.8  1996/08/21  18:45:47  steve
+* Fixed some compiler warnings and problem with running in different directories
+*
+* Revision 1.7  1996/08/10  06:35:07  mccombjr
+* *** empty log message ***
+*
+* Revision 1.6  1995/12/21  00:56:38  steve
+* Added copyright
+*
+* Revision 1.5  1995/11/14  02:47:42  steve
+* Fixed ^M problems
+*
+* Revision 1.4  1995/11/14  02:12:05  steve
+* Fixed Compiler warnings under Win32
+*
+* Revision 1.3  1995/10/23  18:11:49  steve
+* Added support for HDF
+* Made varargs be ANSI
+*
+* Revision 1.2  1994/05/18  23:33:28  falgout
+* Changed Error stuff, and print interactive message to stderr.
+*
+* Revision 1.1  1993/04/02  23:13:24  falgout
+* Initial revision
+*
+*
+*-----------------------------------------------------------------------------
+*
+*****************************************************************************/
 
 #ifndef ERROR_HEADER
 #define ERROR_HEADER
@@ -188,27 +188,27 @@ static char *DELETEUSAGE = "Usage: pfdelete dataset\n";
 
 /* Function prototypes for error checking functions */
 
-int SameDimensions ANSI_PROTO((Databox * databoxp, Databox * databoxq));
-int InRange ANSI_PROTO((int i, int j, int k, Databox * databox));
-int IsValidFileType ANSI_PROTO((char*option));
-char *GetValidFileExtension ANSI_PROTO((char*filename));
+int SameDimensions ANSI_PROTO((Databox *databoxp, Databox *databoxq));
+int InRange ANSI_PROTO((int i, int j, int k, Databox *databox));
+int IsValidFileType ANSI_PROTO((char *option));
+char *GetValidFileExtension ANSI_PROTO((char *filename));
 
 /* Function prototypes for creating error messages  */
 
-void InvalidOptionError ANSI_PROTO((Tcl_Interp * interp, int argnum, char *usage));
-void InvalidArgError ANSI_PROTO((Tcl_Interp * interp, int argnum, char *usage));
-void WrongNumArgsError ANSI_PROTO((Tcl_Interp * interp, char *usage));
-void MissingOptionError ANSI_PROTO((Tcl_Interp * interp, int argnum, char *usage));
-void MissingFilenameError ANSI_PROTO((Tcl_Interp * interp, int argnum, char *usage));
-void InvalidFileExtensionError ANSI_PROTO((Tcl_Interp * interp, int argnum, char *usage));
-void NotAnIntError ANSI_PROTO((Tcl_Interp * interp, int argnum, char *usage));
-void NotADoubleError ANSI_PROTO((Tcl_Interp * interp, int argnum, char *usage));
-void NumberNotPositiveError ANSI_PROTO((Tcl_Interp * interp, int argnum));
-void SetNonExistantError ANSI_PROTO((Tcl_Interp * interp, char *hashkey));
-void MemoryError ANSI_PROTO((Tcl_Interp * interp));
-void ReadWriteError ANSI_PROTO((Tcl_Interp * interp));
-void OutOfRangeError ANSI_PROTO((Tcl_Interp * interp, int i, int j, int k));
-void DimensionError ANSI_PROTO((Tcl_Interp * interp));
+void InvalidOptionError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
+void InvalidArgError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
+void WrongNumArgsError ANSI_PROTO((Tcl_Interp *interp, char *usage));
+void MissingOptionError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
+void MissingFilenameError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
+void InvalidFileExtensionError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
+void NotAnIntError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
+void NotADoubleError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
+void NumberNotPositiveError ANSI_PROTO((Tcl_Interp *interp, int argnum));
+void SetNonExistantError ANSI_PROTO((Tcl_Interp *interp, char *hashkey));
+void MemoryError ANSI_PROTO((Tcl_Interp *interp));
+void ReadWriteError ANSI_PROTO((Tcl_Interp *interp));
+void OutOfRangeError ANSI_PROTO((Tcl_Interp *interp, int i, int j, int k));
+void DimensionError ANSI_PROTO((Tcl_Interp *interp));
 
 #undef ANSI_PROTO
 

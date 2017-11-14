@@ -1,33 +1,33 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-/******************************************************************************
+/*BHEADER*********************************************************************
  *
- *****************************************************************************/
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/*****************************************************************************
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -143,27 +143,27 @@ double         **SimShear(
     shear_min[is] = zupper;
     shear_max[is] = zlower;
     GrGeomSurfLoop(i, j, k, fdir, grgeom_solid, rz, ix, iy, iz, nx, ny, nz,
-                   {
-                     if (fdir[2] == dir)
-                     {
-                       ishear = (j - iy) * nx + (i - ix);
-                       z = RealSpaceZ(k, rz) + fdir[2] * dz2;
+    {
+      if (fdir[2] == dir)
+      {
+        ishear = (j - iy) * nx + (i - ix);
+        z = RealSpaceZ(k, rz) + fdir[2] * dz2;
 
-                       switch (type)
-                       {
-                         case 1:
-                           shear_array[ishear] = pfmin(z, shear_array[ishear]);
-                           break;
+        switch (type)
+        {
+          case 1:
+            shear_array[ishear] = pfmin(z, shear_array[ishear]);
+            break;
 
-                         case 2:
-                           shear_array[ishear] = pfmax(z, shear_array[ishear]);
-                           break;
-                       }
+          case 2:
+            shear_array[ishear] = pfmax(z, shear_array[ishear]);
+            break;
+        }
 
-                       shear_min[is] = pfmin(shear_min[is], shear_array[ishear]);
-                       shear_max[is] = pfmax(shear_max[is], shear_array[ishear]);
-                     }
-                   });
+        shear_min[is] = pfmin(shear_min[is], shear_array[ishear]);
+        shear_max[is] = pfmax(shear_max[is], shear_array[ishear]);
+      }
+    });
 
     if (shear_min[is] > shear_max[is])
       shear_min[is] = shear_max[is] = 0.0;

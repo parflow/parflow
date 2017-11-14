@@ -1,35 +1,35 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-/******************************************************************************
+/*BHEADER*********************************************************************
  *
- * Routines to write a Vector to Silo file.
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
  *
- *****************************************************************************/
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/*****************************************************************************
+*
+* Routines to write a Vector to Silo file.
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -50,7 +50,7 @@ amps_ThreadLocalDcl(int, s_num_silo_files);
  *              Will create the silo file and the 'first' directory (namespace)
  *              in it. The driver type (DB_PDB or DB_HDF5) is passed as user
  *              data; a void pointer to the driver determined in main.
- **-----------------------------------------------------------------------------
+ *-----------------------------------------------------------------------------
  */
 #if defined(HAVE_SILO) && defined(HAVE_MPI)
 void *CreateSiloFile(const char *fname, const char *nsname, void *userData)
@@ -65,7 +65,7 @@ void *CreateSiloFile(const char *fname, const char *nsname, void *userData)
  * Purpose:     Impliment the open callback to initialize pmpio
  *              Will open the silo file and, for write, create the new
  *              directory or, for read, just cd into the right directory.
- **-----------------------------------------------------------------------------
+ *-----------------------------------------------------------------------------
  */
 void *OpenSiloFile(const char *fname, const char *nsname, PMPIO_iomode_t ioMode,
                    void *userData)
@@ -78,7 +78,7 @@ void *OpenSiloFile(const char *fname, const char *nsname, PMPIO_iomode_t ioMode,
 
 /*-----------------------------------------------------------------------------
  * Purpose:     Impliment the close callback for pmpio
- **-----------------------------------------------------------------------------
+ *-----------------------------------------------------------------------------
  */
 void CloseSiloFile(void *file, void *userData)
 {
@@ -178,7 +178,6 @@ void     WriteSiloPMPIOInit(char *file_prefix)
      */
     //}
   }
-
 #else
   amps_Printf("Parflow not compiled with SILO and MPI, can't use SILO PMPIO\n");
 #endif
@@ -369,9 +368,9 @@ void     WriteSiloPMPIO(char *  file_prefix,
     BoxLoopI1(i, j, k,
               ix, iy, iz, nx, ny, nz,
               ai, nx_v, ny_v, nz_v, 1, 1, 1,
-              {
-                array[array_index++] = data[ai];
-              });
+    {
+      array[array_index++] = data[ai];
+    });
 
     dims[0] = nx;
     dims[1] = ny;
@@ -578,9 +577,6 @@ void     WriteSiloPMPIO(char *  file_prefix,
     free(coords[1]);
     free(coords[2]);
   }
-
-
-
 #else
   amps_Printf("Parflow not compiled with SILO and MPI, can't use SILO PMPIO\n");
 #endif

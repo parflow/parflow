@@ -1,30 +1,30 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
 #include "parflow.h"
 
@@ -165,26 +165,26 @@ void         PFMGOctree(
                     num_i, num_j, num_k,
                     gr_domain, box_size_power,
                     ix, iy, iz, nx, ny, nz,
-                    {
-                      ilo[0] = i;
-                      ilo[1] = j;
-                      ilo[2] = k;
-                      ihi[0] = ilo[0] + num_i - 1;
-                      ihi[1] = ilo[1] + num_j - 1;
-                      ihi[2] = ilo[2] + num_k - 1;
+    {
+      ilo[0] = i;
+      ilo[1] = j;
+      ilo[2] = k;
+      ihi[0] = ilo[0] + num_i - 1;
+      ihi[1] = ilo[1] + num_j - 1;
+      ihi[2] = ilo[2] + num_k - 1;
 
-                      set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
-                      hypre_BoxSetExtents(set_box, ilo, ihi);
+      set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
+      hypre_BoxSetExtents(set_box, ilo, ihi);
 
-                      hypre_StructVectorSetBoxValues(hypre_b,
-                                                     set_box,
-                                                     value_box,
-                                                     rhs_ptr,
-                                                     action,
-                                                     boxnum,
-                                                     outside);
-                      hypre_BoxDestroy(set_box);
-                    });
+      hypre_StructVectorSetBoxValues(hypre_b,
+                                     set_box,
+                                     value_box,
+                                     rhs_ptr,
+                                     action,
+                                     boxnum,
+                                     outside);
+      hypre_BoxDestroy(set_box);
+    });
 
     hypre_BoxDestroy(value_box);
   }
@@ -273,26 +273,26 @@ void         PFMGOctree(
                     num_i, num_j, num_k,
                     gr_domain, box_size_power,
                     ix, iy, iz, nx, ny, nz,
-                    {
-                      ilo[0] = i;
-                      ilo[1] = j;
-                      ilo[2] = k;
-                      ihi[0] = ilo[0] + num_i - 1;
-                      ihi[1] = ilo[1] + num_j - 1;
-                      ihi[2] = ilo[2] + num_k - 1;
+    {
+      ilo[0] = i;
+      ilo[1] = j;
+      ilo[2] = k;
+      ihi[0] = ilo[0] + num_i - 1;
+      ihi[1] = ilo[1] + num_j - 1;
+      ihi[2] = ilo[2] + num_k - 1;
 
-                      set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
-                      hypre_BoxSetExtents(set_box, ilo, ihi);
+      set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
+      hypre_BoxSetExtents(set_box, ilo, ihi);
 
-                      hypre_StructVectorSetBoxValues(hypre_x,
-                                                     set_box,
-                                                     value_box,
-                                                     soln_ptr,
-                                                     action,
-                                                     boxnum,
-                                                     outside);
-                      hypre_BoxDestroy(set_box);
-                    });
+      hypre_StructVectorSetBoxValues(hypre_x,
+                                     set_box,
+                                     value_box,
+                                     soln_ptr,
+                                     action,
+                                     boxnum,
+                                     outside);
+      hypre_BoxDestroy(set_box);
+    });
 
     hypre_BoxDestroy(value_box);
   }
@@ -411,16 +411,16 @@ PFModule  *PFMGOctreeInitInstanceXtra(
                       num_i, num_j, num_k,
                       gr_domain, box_size_power,
                       ix, iy, iz, nx, ny, nz,
-                      {
-                        ilo[0] = i;
-                        ilo[1] = j;
-                        ilo[2] = k;
-                        ihi[0] = ilo[0] + num_i - 1;
-                        ihi[1] = ilo[1] + num_j - 1;
-                        ihi[2] = ilo[2] + num_k - 1;
+      {
+        ilo[0] = i;
+        ilo[1] = j;
+        ilo[2] = k;
+        ihi[0] = ilo[0] + num_i - 1;
+        ihi[1] = ilo[1] + num_j - 1;
+        ihi[2] = ilo[2] + num_k - 1;
 
-                        HYPRE_StructGridSetExtents(instance_xtra->hypre_grid, ilo, ihi);
-                      });
+        HYPRE_StructGridSetExtents(instance_xtra->hypre_grid, ilo, ihi);
+      });
     }
 
     HYPRE_StructGridAssemble(instance_xtra->hypre_grid);
@@ -558,48 +558,48 @@ PFModule  *PFMGOctreeInitInstanceXtra(
                           num_i, num_j, num_k,
                           gr_domain, box_size_power,
                           ix, iy, iz, nx, ny, nz,
-                          {
-                            ilo[0] = i;
-                            ilo[1] = j;
-                            ilo[2] = k;
-                            ihi[0] = ilo[0] + num_i - 1;
-                            ihi[1] = ilo[1] + num_j - 1;
-                            ihi[2] = ilo[2] + num_k - 1;
+          {
+            ilo[0] = i;
+            ilo[1] = j;
+            ilo[2] = k;
+            ihi[0] = ilo[0] + num_i - 1;
+            ihi[1] = ilo[1] + num_j - 1;
+            ihi[2] = ilo[2] + num_k - 1;
 
-                            set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
-                            hypre_BoxSetExtents(set_box, ilo, ihi);
+            set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
+            hypre_BoxSetExtents(set_box, ilo, ihi);
 
-                            /* IMF: commented print statement
-                             * amps_Printf("hypre symm matrix value box : %d (%d, %d, %d) (%d, %d, %d)\n", PV_l,
-                             *          ilo[0], ilo[1], ilo[2], ihi[0], ihi[1], ihi[2]);
-                             */
+            /* IMF: commented print statement
+             * amps_Printf("hypre symm matrix value box : %d (%d, %d, %d) (%d, %d, %d)\n", PV_l,
+             *          ilo[0], ilo[1], ilo[2], ihi[0], ihi[1], ihi[2]);
+             */
 
-                            /*
-                             * Note that loop over stencil's is necessary due to hypre
-                             * interface wanting stencil values to be contiguous.
-                             * FORTRAN ordering of (stencil, i, j, k).  PF stores as
-                             * (i, j, k, stencil)
-                             */
-                            for (stencil = 0; stencil < stencil_size; ++stencil)
-                            {
-                              /*
-                               * symmetric stencil values are at 0, 2, 4, 6
-                               */
-                              double *values = SubmatrixStencilData(pfB_sub, stencil * 2);
+            /*
+             * Note that loop over stencil's is necessary due to hypre
+             * interface wanting stencil values to be contiguous.
+             * FORTRAN ordering of (stencil, i, j, k).  PF stores as
+             * (i, j, k, stencil)
+             */
+            for (stencil = 0; stencil < stencil_size; ++stencil)
+            {
+              /*
+               * symmetric stencil values are at 0, 2, 4, 6
+               */
+              double *values = SubmatrixStencilData(pfB_sub, stencil * 2);
 
-                              hypre_StructMatrixSetBoxValues(instance_xtra->hypre_mat,
-                                                             set_box,
-                                                             value_box,
-                                                             1,
-                                                             &stencil_indices_symm[stencil],
-                                                             values,
-                                                             action,
-                                                             boxnum,
-                                                             outside);
-                            }
+              hypre_StructMatrixSetBoxValues(instance_xtra->hypre_mat,
+                                             set_box,
+                                             value_box,
+                                             1,
+                                             &stencil_indices_symm[stencil],
+                                             values,
+                                             action,
+                                             boxnum,
+                                             outside);
+            }
 
-                            hypre_BoxDestroy(set_box);
-                          });
+            hypre_BoxDestroy(set_box);
+          });
 
           hypre_BoxDestroy(value_box);
         }
@@ -627,40 +627,40 @@ PFModule  *PFMGOctreeInitInstanceXtra(
                           num_i, num_j, num_k,
                           gr_domain, box_size_power,
                           ix, iy, iz, nx, ny, nz,
-                          {
-                            ilo[0] = i;
-                            ilo[1] = j;
-                            ilo[2] = k;
-                            ihi[0] = ilo[0] + num_i - 1;
-                            ihi[1] = ilo[1] + num_j - 1;
-                            ihi[2] = ilo[2] + num_k - 1;
+          {
+            ilo[0] = i;
+            ilo[1] = j;
+            ilo[2] = k;
+            ihi[0] = ilo[0] + num_i - 1;
+            ihi[1] = ilo[1] + num_j - 1;
+            ihi[2] = ilo[2] + num_k - 1;
 
-                            set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
-                            hypre_BoxSetExtents(set_box, ilo, ihi);
+            set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
+            hypre_BoxSetExtents(set_box, ilo, ihi);
 
-                            /*
-                             * Note that loop over stencil's is necessary due to hypre
-                             * interface wanting stencil values to be contiguous.
-                             * FORTRAN ordering of (stencil, i, j, k).  PF stores as
-                             * (i, j, k, stencil)
-                             */
-                            for (stencil = 0; stencil < stencil_size; ++stencil)
-                            {
-                              double *values = SubmatrixStencilData(pfB_sub, stencil);
+            /*
+             * Note that loop over stencil's is necessary due to hypre
+             * interface wanting stencil values to be contiguous.
+             * FORTRAN ordering of (stencil, i, j, k).  PF stores as
+             * (i, j, k, stencil)
+             */
+            for (stencil = 0; stencil < stencil_size; ++stencil)
+            {
+              double *values = SubmatrixStencilData(pfB_sub, stencil);
 
-                              hypre_StructMatrixSetBoxValues(instance_xtra->hypre_mat,
-                                                             set_box,
-                                                             value_box,
-                                                             1,
-                                                             &stencil_indices[stencil],
-                                                             values,
-                                                             action,
-                                                             boxnum,
-                                                             outside);
-                            }
+              hypre_StructMatrixSetBoxValues(instance_xtra->hypre_mat,
+                                             set_box,
+                                             value_box,
+                                             1,
+                                             &stencil_indices[stencil],
+                                             values,
+                                             action,
+                                             boxnum,
+                                             outside);
+            }
 
-                            hypre_BoxDestroy(set_box);
-                          });
+            hypre_BoxDestroy(set_box);
+          });
 
           hypre_BoxDestroy(value_box);
         }
@@ -756,48 +756,48 @@ PFModule  *PFMGOctreeInitInstanceXtra(
                           num_i, num_j, num_k,
                           gr_domain, box_size_power,
                           ix, iy, iz, nx, ny, nz,
-                          {
-                            ilo[0] = i;
-                            ilo[1] = j;
-                            ilo[2] = k;
-                            ihi[0] = ilo[0] + num_i - 1;
-                            ihi[1] = ilo[1] + num_j - 1;
-                            ihi[2] = ilo[2] + num_k - 1;
+          {
+            ilo[0] = i;
+            ilo[1] = j;
+            ilo[2] = k;
+            ihi[0] = ilo[0] + num_i - 1;
+            ihi[1] = ilo[1] + num_j - 1;
+            ihi[2] = ilo[2] + num_k - 1;
 
-                            set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
-                            hypre_BoxSetExtents(set_box, ilo, ihi);
+            set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
+            hypre_BoxSetExtents(set_box, ilo, ihi);
 
-                            /* IMF: commented print statement
-                             * amps_Printf("hypre symm matrix value box : %d (%d, %d, %d) (%d, %d, %d)\n", PV_l,
-                             *          ilo[0], ilo[1], ilo[2], ihi[0], ihi[1], ihi[2]);
-                             */
+            /* IMF: commented print statement
+             * amps_Printf("hypre symm matrix value box : %d (%d, %d, %d) (%d, %d, %d)\n", PV_l,
+             *          ilo[0], ilo[1], ilo[2], ihi[0], ihi[1], ihi[2]);
+             */
 
-                            /*
-                             * Note that loop over stencil's is necessary due to hypre
-                             * interface wanting stencil values to be contiguous.
-                             * FORTRAN ordering of (stencil, i, j, k).  PF stores as
-                             * (i, j, k, stencil)
-                             */
-                            for (stencil = 0; stencil < stencil_size; ++stencil)
-                            {
-                              /*
-                               * symmetric stencil values are at 0, 2, 4, 6
-                               */
-                              double *values = SubmatrixStencilData(pfB_sub, stencil * 2);
+            /*
+             * Note that loop over stencil's is necessary due to hypre
+             * interface wanting stencil values to be contiguous.
+             * FORTRAN ordering of (stencil, i, j, k).  PF stores as
+             * (i, j, k, stencil)
+             */
+            for (stencil = 0; stencil < stencil_size; ++stencil)
+            {
+              /*
+               * symmetric stencil values are at 0, 2, 4, 6
+               */
+              double *values = SubmatrixStencilData(pfB_sub, stencil * 2);
 
-                              hypre_StructMatrixSetBoxValues(instance_xtra->hypre_mat,
-                                                             set_box,
-                                                             value_box,
-                                                             1,
-                                                             &stencil_indices_symm[stencil],
-                                                             values,
-                                                             action,
-                                                             boxnum,
-                                                             outside);
-                            }
+              hypre_StructMatrixSetBoxValues(instance_xtra->hypre_mat,
+                                             set_box,
+                                             value_box,
+                                             1,
+                                             &stencil_indices_symm[stencil],
+                                             values,
+                                             action,
+                                             boxnum,
+                                             outside);
+            }
 
-                            hypre_BoxDestroy(set_box);
-                          });
+            hypre_BoxDestroy(set_box);
+          });
           /* Now add surface contributions.
            * We need to loop separately over this since the above
            * box loop does not allow us to loop over the individual
@@ -806,35 +806,35 @@ PFModule  *PFMGOctreeInitInstanceXtra(
            */
           BoxLoopI1(i, j, k, ix, iy, 0, nx, ny, 1,
                     im, nx_m, ny_m, nz_m, 1, 1, 1,
-                    {
-                      itop = SubvectorEltIndex(top_sub, i, j, 0);
-                      ktop = (int)top_dat[itop];
-                      if (ktop >= 0)
-                      {
-                        io = SubmatrixEltIndex(pfC_sub, i, j, iz);
+          {
+            itop = SubvectorEltIndex(top_sub, i, j, 0);
+            ktop = (int)top_dat[itop];
+            if (ktop >= 0)
+            {
+              io = SubmatrixEltIndex(pfC_sub, i, j, iz);
 
-                        /* update diagonal coeff */
-                        coeffs_symm[0] = cp_c[io];                    //cp[im] is zero
-                        /* update east coeff */
-                        //k1 = (int)top_dat[itop+1];
-                        //if(k1 == ktop)
-                        coeffs_symm[1] = 0.0;                    //ep_c[io];// + wp_c[io+1] ; //symmetrize - ep[im] is zero
+              /* update diagonal coeff */
+              coeffs_symm[0] = cp_c[io];                              //cp[im] is zero
+              /* update east coeff */
+              //k1 = (int)top_dat[itop+1];
+              //if(k1 == ktop)
+              coeffs_symm[1] = 0.0;                              //ep_c[io];// + wp_c[io+1] ; //symmetrize - ep[im] is zero
 
-                        /* update north coeff */
-                        //k1 = (int)top_dat[itop+sy_v];
-                        //if(k1 == ktop)
-                        coeffs_symm[2] = 0.0;                    //np_c[io];// + sop_c[io+sy_v]; // symmetrize - np[im] is zero
+              /* update north coeff */
+              //k1 = (int)top_dat[itop+sy_v];
+              //if(k1 == ktop)
+              coeffs_symm[2] = 0.0;                              //np_c[io];// + sop_c[io+sy_v]; // symmetrize - np[im] is zero
 
-                        index[0] = i;
-                        index[1] = j;
-                        index[2] = ktop;
-                        HYPRE_StructMatrixAddToValues(instance_xtra->hypre_mat,
-                                                      index,
-                                                      stencil_size,
-                                                      stencil_indices_symm,
-                                                      coeffs_symm);
-                      }
-                    });
+              index[0] = i;
+              index[1] = j;
+              index[2] = ktop;
+              HYPRE_StructMatrixAddToValues(instance_xtra->hypre_mat,
+                                            index,
+                                            stencil_size,
+                                            stencil_indices_symm,
+                                            coeffs_symm);
+            }
+          });
 
           hypre_BoxDestroy(value_box);
         }
@@ -862,40 +862,40 @@ PFModule  *PFMGOctreeInitInstanceXtra(
                           num_i, num_j, num_k,
                           gr_domain, box_size_power,
                           ix, iy, iz, nx, ny, nz,
-                          {
-                            ilo[0] = i;
-                            ilo[1] = j;
-                            ilo[2] = k;
-                            ihi[0] = ilo[0] + num_i - 1;
-                            ihi[1] = ilo[1] + num_j - 1;
-                            ihi[2] = ilo[2] + num_k - 1;
+          {
+            ilo[0] = i;
+            ilo[1] = j;
+            ilo[2] = k;
+            ihi[0] = ilo[0] + num_i - 1;
+            ihi[1] = ilo[1] + num_j - 1;
+            ihi[2] = ilo[2] + num_k - 1;
 
-                            set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
-                            hypre_BoxSetExtents(set_box, ilo, ihi);
+            set_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
+            hypre_BoxSetExtents(set_box, ilo, ihi);
 
-                            /*
-                             * Note that loop over stencil's is necessary due to hypre
-                             * interface wanting stencil values to be contiguous.
-                             * FORTRAN ordering of (stencil, i, j, k).  PF stores as
-                             * (i, j, k, stencil)
-                             */
-                            for (stencil = 0; stencil < stencil_size; ++stencil)
-                            {
-                              double *values = SubmatrixStencilData(pfB_sub, stencil);
+            /*
+             * Note that loop over stencil's is necessary due to hypre
+             * interface wanting stencil values to be contiguous.
+             * FORTRAN ordering of (stencil, i, j, k).  PF stores as
+             * (i, j, k, stencil)
+             */
+            for (stencil = 0; stencil < stencil_size; ++stencil)
+            {
+              double *values = SubmatrixStencilData(pfB_sub, stencil);
 
-                              hypre_StructMatrixSetBoxValues(instance_xtra->hypre_mat,
-                                                             set_box,
-                                                             value_box,
-                                                             1,
-                                                             &stencil_indices[stencil],
-                                                             values,
-                                                             action,
-                                                             boxnum,
-                                                             outside);
-                            }
+              hypre_StructMatrixSetBoxValues(instance_xtra->hypre_mat,
+                                             set_box,
+                                             value_box,
+                                             1,
+                                             &stencil_indices[stencil],
+                                             values,
+                                             action,
+                                             boxnum,
+                                             outside);
+            }
 
-                            hypre_BoxDestroy(set_box);
-                          });
+            hypre_BoxDestroy(set_box);
+          });
           /* Now add surface contributions.
            * We need to loop separately over this since the above
            * box loop does not allow us to loop over the individual
@@ -904,43 +904,43 @@ PFModule  *PFMGOctreeInitInstanceXtra(
            */
           BoxLoopI1(i, j, k, ix, iy, 0, nx, ny, 1,
                     im, nx_m, ny_m, nz_m, 1, 1, 1,
-                    {
-                      itop = SubvectorEltIndex(top_sub, i, j, 0);
-                      ktop = (int)top_dat[itop];
+          {
+            itop = SubvectorEltIndex(top_sub, i, j, 0);
+            ktop = (int)top_dat[itop];
 
-                      if (ktop >= 0)
-                      {
-                        io = SubmatrixEltIndex(pfC_sub, i, j, iz);
+            if (ktop >= 0)
+            {
+              io = SubmatrixEltIndex(pfC_sub, i, j, iz);
 
-                        /* update diagonal coeff */
-                        coeffs[0] = cp_c[io];                     //cp[im] is zero
-                        /* update west coeff */
-                        //k1 = (int)top_dat[itop-1];
-                        //if(k1 == ktop)
-                        coeffs[1] = 0.0;                        //wp_c[io] ; //wp[im] is zero
-                        /* update east coeff */
-                        //k1 = (int)top_dat[itop+1];
-                        //if(k1 == ktop)
-                        coeffs[2] = 0.0;                        //ep_c[io] ; //ep[im] is zero
-                        /* update south coeff */
-                        //k1 = (int)top_dat[itop-sy_v];
-                        //if(k1 == ktop)
-                        coeffs[3] = 0.0;                        //sop_c[io] ; //sop[im] is zero
-                        /* update north coeff */
-                        //k1 = (int)top_dat[itop+sy_v];
-                        //if(k1 == ktop)
-                        coeffs[4] = 0.0;                        //np_c[io] ; //np[im] is zero
+              /* update diagonal coeff */
+              coeffs[0] = cp_c[io];                               //cp[im] is zero
+              /* update west coeff */
+              //k1 = (int)top_dat[itop-1];
+              //if(k1 == ktop)
+              coeffs[1] = 0.0;                                  //wp_c[io] ; //wp[im] is zero
+              /* update east coeff */
+              //k1 = (int)top_dat[itop+1];
+              //if(k1 == ktop)
+              coeffs[2] = 0.0;                                  //ep_c[io] ; //ep[im] is zero
+              /* update south coeff */
+              //k1 = (int)top_dat[itop-sy_v];
+              //if(k1 == ktop)
+              coeffs[3] = 0.0;                                  //sop_c[io] ; //sop[im] is zero
+              /* update north coeff */
+              //k1 = (int)top_dat[itop+sy_v];
+              //if(k1 == ktop)
+              coeffs[4] = 0.0;                                  //np_c[io] ; //np[im] is zero
 
-                        index[0] = i;
-                        index[1] = j;
-                        index[2] = ktop;
-                        HYPRE_StructMatrixAddToValues(instance_xtra->hypre_mat,
-                                                      index,
-                                                      stencil_size,
-                                                      stencil_indices,
-                                                      coeffs);
-                      }
-                    });
+              index[0] = i;
+              index[1] = j;
+              index[2] = ktop;
+              HYPRE_StructMatrixAddToValues(instance_xtra->hypre_mat,
+                                            index,
+                                            stencil_size,
+                                            stencil_indices,
+                                            coeffs);
+            }
+          });
 
           hypre_BoxDestroy(value_box);
         }

@@ -1,55 +1,55 @@
-/******************************************************************************
- * Turn, InitTurn, FreeTurn, NewTurn
- *
- * Routines to generate a Gaussian random field.
- *
- *
- * (C) 1993 Regents of the University of California.
- *
- * see info_header.h for complete information
- *
- *                               History
- **-----------------------------------------------------------------------------
- * $Log: turning_bands.c,v $
- * Revision 1.1.1.1  2006/02/14 23:05:51  kollet
- * CLM.PF_1.0
- *
- * Revision 1.1.1.1  2006/02/14 18:51:22  kollet
- * CLM.PF_1.0
- *
- * Revision 1.9  1997/09/09 20:06:13  ssmith
- * Added additional input checking
- * Fixed a few problems with the new input file format
- *
- * Revision 1.8  1997/09/03 17:43:48  ssmith
- * New input file format
- *
- * Revision 1.7  1994/07/15 20:33:34  ssmith
- * Added timing routines
- *
- * Revision 1.6  1994/07/01  20:28:09  falgout
- * Added multigrid and made major revisions
- *
- * Revision 1.5  1994/03/03  01:47:32  ssmith
- * Fixed mallocs, use modules instead of methods
- *
- * Revision 1.4  1994/02/10  00:07:35  ssmith
- * Updated to use AMPS
- *
- * Revision 1.3  1994/01/06  01:20:07  falgout
- * Modified to work better for anisotropic problems.
- * The definition of dzeta is now given in terms of an input rzeta value.
- *
- * Revision 1.2  1993/12/22  17:22:05  falgout
- * The initial seed value is now read in from the input_file (turning bands).
- *
- * Revision 1.1  1993/07/23  20:42:11  falgout
- * Initial revision
- *
- *
- **-----------------------------------------------------------------------------
- *
- *****************************************************************************/
+/*****************************************************************************
+* Turn, InitTurn, FreeTurn, NewTurn
+*
+* Routines to generate a Gaussian random field.
+*
+*
+* (C) 1993 Regents of the University of California.
+*
+* see info_header.h for complete information
+*
+*                               History
+*-----------------------------------------------------------------------------
+* $Log: turning_bands.c,v $
+* Revision 1.1.1.1  2006/02/14 23:05:51  kollet
+* CLM.PF_1.0
+*
+* Revision 1.1.1.1  2006/02/14 18:51:22  kollet
+* CLM.PF_1.0
+*
+* Revision 1.9  1997/09/09 20:06:13  ssmith
+* Added additional input checking
+* Fixed a few problems with the new input file format
+*
+* Revision 1.8  1997/09/03 17:43:48  ssmith
+* New input file format
+*
+* Revision 1.7  1994/07/15 20:33:34  ssmith
+* Added timing routines
+*
+* Revision 1.6  1994/07/01  20:28:09  falgout
+* Added multigrid and made major revisions
+*
+* Revision 1.5  1994/03/03  01:47:32  ssmith
+* Fixed mallocs, use modules instead of methods
+*
+* Revision 1.4  1994/02/10  00:07:35  ssmith
+* Updated to use AMPS
+*
+* Revision 1.3  1994/01/06  01:20:07  falgout
+* Modified to work better for anisotropic problems.
+* The definition of dzeta is now given in terms of an input rzeta value.
+*
+* Revision 1.2  1993/12/22  17:22:05  falgout
+* The initial seed value is now read in from the input_file (turning bands).
+*
+* Revision 1.1  1993/07/23  20:42:11  falgout
+* Initial revision
+*
+*
+*-----------------------------------------------------------------------------
+*
+*****************************************************************************/
 
 #include "parflow.h"
 #include <cmath>
@@ -175,7 +175,7 @@ void   *vxtra;
   /* compute line directions */
   for (l = 0; l < num_lines; l++)
   {
-    theta_array[l] = 2.0*pi*Rand();
+    theta_array[l] = 2.0 * pi * Rand();
     phi_array[l] = acos(1.0 - 2.0 * Rand());
   }
 

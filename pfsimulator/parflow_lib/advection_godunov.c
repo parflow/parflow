@@ -1,38 +1,38 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
-/******************************************************************************
- *
- * Advection box to perform the godunov step.
- *
- **-----------------------------------------------------------------------------
- *
- *****************************************************************************/
+/*****************************************************************************
+*
+* Advection box to perform the godunov step.
+*
+*-----------------------------------------------------------------------------
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -134,19 +134,19 @@ void     Godunov(
   SubregionArray   *subregion_array;
 
   Subgrid          *subgrid,
-  *well_subgrid,
-  *tmp_subgrid;
+    *well_subgrid,
+    *tmp_subgrid;
   Subregion        *subregion;
   Subvector        *subvector,
-  *subvector_smf,
-  *subvector_scal,
-  *subvector_rhs,
-  *subvector_xvel,
-  *subvector_yvel,
-  *subvector_zvel,
-  *px_sub,
-  *py_sub,
-  *pz_sub;
+    *subvector_smf,
+    *subvector_scal,
+    *subvector_rhs,
+    *subvector_xvel,
+    *subvector_yvel,
+    *subvector_zvel,
+    *px_sub,
+    *py_sub,
+    *pz_sub;
 
   ComputePkg       *compute_pkg;
   Region           *compute_reg = NULL;
@@ -352,12 +352,12 @@ void     Godunov(
       ci = 0;
       BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                 ci, nx_c, ny_c, nz_c, 1, 1, 1,
-                {
-                  cn[ci] = cn[ci] * decay_factor;
+      {
+        cn[ci] = cn[ci] * decay_factor;
 
-                  cell_change = cn[ci] * ((decay_factor - 1.0) / decay_factor);
-                  contaminant_stat += cell_change * cell_volume;
-                });
+        cell_change = cn[ci] * ((decay_factor - 1.0) / decay_factor);
+        contaminant_stat += cell_change * cell_volume;
+      });
     }
 
     IncFLOPCount(flopest);
@@ -474,18 +474,18 @@ void     Godunov(
                         yi, nx_yv, ny_yv, nz_yv,
                         zi, nx_zv, ny_zv, nz_zv,
                         wi, nx_w, ny_w, nz_w,
-                        {
-                          flux = (xvel_u[xi] - xvel_l[xi]) / dx
-                                 + (yvel_u[yi] - yvel_l[yi]) / dy
-                                 + (zvel_u[zi] - zvel_l[zi]) / dz;
+              {
+                flux = (xvel_u[xi] - xvel_l[xi]) / dx
+                       + (yvel_u[yi] - yvel_l[yi]) / dy
+                       + (zvel_u[zi] - zvel_l[zi]) / dz;
 
-                          scaled_flux = flux / smf[wi];
+                scaled_flux = flux / smf[wi];
 
-                          scal[wi] = dt * scaled_flux;
-                          rhs[wi] = -dt * scaled_flux * input_c;
+                scal[wi] = dt * scaled_flux;
+                rhs[wi] = -dt * scaled_flux * input_c;
 
-                          total_volume += dt * flux * cell_volume;
-                        });
+                total_volume += dt * flux * cell_volume;
+              });
             }
           }
           else if (WellDataPhysicalAction(well_data_physical)
@@ -498,18 +498,18 @@ void     Godunov(
                       yi, nx_yv, ny_yv, nz_yv,
                       zi, nx_zv, ny_zv, nz_zv,
                       wi, nx_w, ny_w, nz_w,
-                      {
-                        /*   compute flux for each cell and store it   */
-                        flux = (xvel_u[xi] - xvel_l[xi]) / dx
-                               + (yvel_u[yi] - yvel_l[yi]) / dy
-                               + (zvel_u[zi] - zvel_l[zi]) / dz;
+            {
+              /*   compute flux for each cell and store it   */
+              flux = (xvel_u[xi] - xvel_l[xi]) / dx
+                     + (yvel_u[yi] - yvel_l[yi]) / dy
+                     + (zvel_u[zi] - zvel_l[zi]) / dz;
 
-                        scaled_flux = flux / smf[wi];
+              scaled_flux = flux / smf[wi];
 
-                        scal[wi] = dt * scaled_flux;
+              scal[wi] = dt * scaled_flux;
 
-                        total_volume += dt * flux * cell_volume;
-                      });
+              total_volume += dt * flux * cell_volume;
+            });
           }
           FreeSubgrid(tmp_subgrid);        /* done with temporary subgrid */
         }
@@ -628,36 +628,36 @@ void     Godunov(
                         ix, iy, iz, nx, ny, nz,
                         pi, nx_p, ny_p, nz_p, 1, 1, 1,
                         wi, nx_w, ny_w, nz_w, 1, 1, 1,
-                        {
-                          scaled_flux = flux / smf[wi];
+              {
+                scaled_flux = flux / smf[wi];
 
-                          if (WellDataPhysicalMethod(well_data_physical)
-                              == FLUX_STANDARD)
-                          {
-                            weight = 1.0;
-                          }
-                          else if (WellDataPhysicalMethod(well_data_physical)
-                                   == FLUX_WEIGHTED)
-                          {
-                            weight = (px[pi] / avg_x) * (area_x / area_sum)
-                                     + (py[pi] / avg_y) * (area_y / area_sum)
-                                     + (pz[pi] / avg_z) * (area_z / area_sum);
-                          }
-                          else if (WellDataPhysicalMethod(well_data_physical)
-                                   == FLUX_PATTERNED)
-                          {
-                            weight = 0.0;
-                          }
-                          else
-                          {
-                            weight = 0.0;
-                          }
+                if (WellDataPhysicalMethod(well_data_physical)
+                    == FLUX_STANDARD)
+                {
+                  weight = 1.0;
+                }
+                else if (WellDataPhysicalMethod(well_data_physical)
+                         == FLUX_WEIGHTED)
+                {
+                  weight = (px[pi] / avg_x) * (area_x / area_sum)
+                           + (py[pi] / avg_y) * (area_y / area_sum)
+                           + (pz[pi] / avg_z) * (area_z / area_sum);
+                }
+                else if (WellDataPhysicalMethod(well_data_physical)
+                         == FLUX_PATTERNED)
+                {
+                  weight = 0.0;
+                }
+                else
+                {
+                  weight = 0.0;
+                }
 
-                          scal[wi] += dt * weight * scaled_flux;
-                          rhs[wi] -= dt * weight * scaled_flux * input_c;
+                scal[wi] += dt * weight * scaled_flux;
+                rhs[wi] -= dt * weight * scaled_flux * input_c;
 
-                          total_volume += dt * weight * flux * cell_volume;
-                        });
+                total_volume += dt * weight * flux * cell_volume;
+              });
             }
           }
           else if (WellDataPhysicalAction(well_data_physical)
@@ -668,31 +668,31 @@ void     Godunov(
                       ix, iy, iz, nx, ny, nz,
                       pi, nx_p, ny_p, nz_p, 1, 1, 1,
                       wi, nx_w, ny_w, nz_w, 1, 1, 1,
-                      {
-                        scaled_flux = flux / smf[wi];
+            {
+              scaled_flux = flux / smf[wi];
 
-                        if (WellDataPhysicalMethod(well_data_physical)
-                            == FLUX_STANDARD)
-                        {
-                          weight = 1.0;
-                        }
-                        else if (WellDataPhysicalMethod(well_data_physical)
-                                 == FLUX_WEIGHTED)
-                        {
-                          weight = (px[pi] / avg_x) * (area_x / area_sum)
-                                   + (py[pi] / avg_y) * (area_y / area_sum)
-                                   + (pz[pi] / avg_z) * (area_z / area_sum);
-                        }
-                        else if (WellDataPhysicalMethod(well_data_physical)
-                                 == FLUX_PATTERNED)
-                        {
-                          weight = 0.0;
-                        }
+              if (WellDataPhysicalMethod(well_data_physical)
+                  == FLUX_STANDARD)
+              {
+                weight = 1.0;
+              }
+              else if (WellDataPhysicalMethod(well_data_physical)
+                       == FLUX_WEIGHTED)
+              {
+                weight = (px[pi] / avg_x) * (area_x / area_sum)
+                         + (py[pi] / avg_y) * (area_y / area_sum)
+                         + (pz[pi] / avg_z) * (area_z / area_sum);
+              }
+              else if (WellDataPhysicalMethod(well_data_physical)
+                       == FLUX_PATTERNED)
+              {
+                weight = 0.0;
+              }
 
-                        scal[wi] -= dt * weight * scaled_flux;
+              scal[wi] -= dt * weight * scaled_flux;
 
-                        total_volume += dt * weight * flux * cell_volume;
-                      });
+              total_volume += dt * weight * flux * cell_volume;
+            });
           }
           FreeSubgrid(tmp_subgrid);        /* done with temporary subgrid */
         }
@@ -754,9 +754,9 @@ void     Godunov(
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               wi, nx_w, ny_w, nz_w, 1, 1, 1,
               ci, nx_c, ny_c, nz_c, 1, 1, 1,
-              {
-                cn[ci] = (cn[ci] - rhs[wi]) / (1.0 + scal[wi]);
-              });
+    {
+      cn[ci] = (cn[ci] - rhs[wi]) / (1.0 + scal[wi]);
+    });
   }
 
   IncFLOPCount(flopest);
@@ -824,10 +824,10 @@ void     Godunov(
                       ix, iy, iz, nx, ny, nz,
                       wi, nx_w, ny_w, nz_w, 1, 1, 1,
                       ci, nx_c, ny_c, nz_c, 1, 1, 1,
-                      {
-                        cell_change = -(scal[wi] * cn[ci] + rhs[wi]);
-                        well_stat += cell_change * cell_volume;
-                      });
+            {
+              cell_change = -(scal[wi] * cn[ci] + rhs[wi]);
+              well_stat += cell_change * cell_volume;
+            });
           }
           else if (WellDataPhysicalAction(well_data_physical) == EXTRACTION_WELL)
           {
@@ -836,10 +836,10 @@ void     Godunov(
                       ix, iy, iz, nx, ny, nz,
                       wi, nx_w, ny_w, nz_w, 1, 1, 1,
                       ci, nx_c, ny_c, nz_c, 1, 1, 1,
-                      {
-                        cell_change = -(scal[wi] * cn[ci]);
-                        well_stat += cell_change * cell_volume;
-                      });
+            {
+              cell_change = -(scal[wi] * cn[ci]);
+              well_stat += cell_change * cell_volume;
+            });
           }
           FreeSubgrid(tmp_subgrid);        /* done with temporary subgrid */
         }
@@ -908,10 +908,10 @@ void     Godunov(
                       ix, iy, iz, nx, ny, nz,
                       wi, nx_w, ny_w, nz_w, 1, 1, 1,
                       ci, nx_c, ny_c, nz_c, 1, 1, 1,
-                      {
-                        cell_change = -(scal[wi] * cn[ci] + rhs[wi]);
-                        well_stat += cell_change * cell_volume;
-                      });
+            {
+              cell_change = -(scal[wi] * cn[ci] + rhs[wi]);
+              well_stat += cell_change * cell_volume;
+            });
           }
           else if (WellDataPhysicalAction(well_data_physical) == EXTRACTION_WELL)
           {
@@ -920,10 +920,10 @@ void     Godunov(
                       ix, iy, iz, nx, ny, nz,
                       wi, nx_w, ny_w, nz_w, 1, 1, 1,
                       ci, nx_c, ny_c, nz_c, 1, 1, 1,
-                      {
-                        cell_change = -(scal[wi] * cn[ci]);
-                        well_stat += cell_change * cell_volume;
-                      });
+            {
+              cell_change = -(scal[wi] * cn[ci]);
+              well_stat += cell_change * cell_volume;
+            });
           }
           FreeSubgrid(tmp_subgrid);        /* done with temporary subgrid */
         }

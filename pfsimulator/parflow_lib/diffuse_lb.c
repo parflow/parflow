@@ -1,15 +1,15 @@
-/******************************************************************************
- *
- * Lattice Darcy solver equation solver.
- *
- *
- * (C) 1993 Regents of the University of California.
- *
- * $Revision: 1.1.1.1 $
- *
- **-----------------------------------------------------------------------------
- *
- *****************************************************************************/
+/*****************************************************************************
+*
+* Lattice Darcy solver equation solver.
+*
+*
+* (C) 1993 Regents of the University of California.
+*
+* $Revision: 1.1.1.1 $
+*
+*-----------------------------------------------------------------------------
+*
+*****************************************************************************/
 
 
 /*--------------------*
@@ -535,11 +535,11 @@ double  MaxVectorValue(
     fi = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               fi, nx_f, ny_f, nz_f, 1, 1, 1,
-              {
-                tmp = fabs(fp[fi]);
-                if (tmp > max_vector_value)
-                  max_vector_value = tmp;
-              });
+    {
+      tmp = fabs(fp[fi]);
+      if (tmp > max_vector_value)
+        max_vector_value = tmp;
+    });
   }
 
   /*--------------------------------------
@@ -613,15 +613,15 @@ double  MaxVectorDividend(
     fi = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               fi, nx_f, ny_f, nz_f, 1, 1, 1,
-              {
-                if (f2p[fi] == 0.0)
-                  tmp = 0.0;
-                else
-                  tmp = fabs(f1p[fi] / f2p[fi]);
+    {
+      if (f2p[fi] == 0.0)
+        tmp = 0.0;
+      else
+        tmp = fabs(f1p[fi] / f2p[fi]);
 
-                if (tmp > max_dividend)
-                  max_dividend = tmp;
-              });
+      if (tmp > max_dividend)
+        max_dividend = tmp;
+    });
   }
 
   /*--------------------------------------

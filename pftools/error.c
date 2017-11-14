@@ -1,70 +1,70 @@
-/*BHEADER**********************************************************************
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/*****************************************************************************
+* Error
 *
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+* (C) 1993 Regents of the University of California.
 *
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
+* see info_header.h for complete information
 *
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
+*                               History
+*-----------------------------------------------------------------------------
+* $Log: error.c,v $
+* Revision 1.8  1997/10/05 20:46:21  ssmith
+* Added support for reading and writing AVS Field types.  Written by
+* Mike Wittman, integrated by SGS.
 *
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
+* Revision 1.7  1997/01/13 22:28:08  ssmith
+* Added more support for Win32 to the Tools directory
 *
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
+* Revision 1.6  1996/08/10 06:35:26  mccombjr
+*** empty log message ***
+***
+* Revision 1.5  1995/12/21  00:56:38  steve
+* Added copyright
 *
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-/******************************************************************************
- * Error
- *
- * (C) 1993 Regents of the University of California.
- *
- * see info_header.h for complete information
- *
- *                               History
- **-----------------------------------------------------------------------------
- * $Log: error.c,v $
- * Revision 1.8  1997/10/05 20:46:21  ssmith
- * Added support for reading and writing AVS Field types.  Written by
- * Mike Wittman, integrated by SGS.
- *
- * Revision 1.7  1997/01/13 22:28:08  ssmith
- * Added more support for Win32 to the Tools directory
- *
- * Revision 1.6  1996/08/10 06:35:26  mccombjr
- *** empty log message ***
- ***
- * Revision 1.5  1995/12/21  00:56:38  steve
- * Added copyright
- *
- * Revision 1.4  1995/10/23  18:11:50  steve
- * Added support for HDF
- * Made varargs be ANSI
- *
- * Revision 1.3  1994/05/18  23:33:28  falgout
- * Changed Error stuff, and print interactive message to stderr.
- *
- * Revision 1.2  1994/02/09  23:26:52  ssmith
- * Cleaned up pftools and added pfload/pfunload
- *
- * Revision 1.1  1993/04/02  23:13:24  falgout
- * Initial revision
- *
- *
- **-----------------------------------------------------------------------------
- *
- *****************************************************************************/
+* Revision 1.4  1995/10/23  18:11:50  steve
+* Added support for HDF
+* Made varargs be ANSI
+*
+* Revision 1.3  1994/05/18  23:33:28  falgout
+* Changed Error stuff, and print interactive message to stderr.
+*
+* Revision 1.2  1994/02/09  23:26:52  ssmith
+* Cleaned up pftools and added pfload/pfunload
+*
+* Revision 1.1  1993/04/02  23:13:24  falgout
+* Initial revision
+*
+*
+*-----------------------------------------------------------------------------
+*
+*****************************************************************************/
 
 #include "databox.h"
 

@@ -1,33 +1,33 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-/******************************************************************************
+/*BHEADER*********************************************************************
  *
- *****************************************************************************/
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/*****************************************************************************
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -140,20 +140,20 @@ double         **CalcElevations(
     /* Construct elevation_array */
     GrGeomPatchLoop(i, j, k, fdir, grgeom_solid, ref_patch,
                     rz, ix, iy, iz, nx, ny, nz,
-                    {
-                      if (fdir[2] != 0)
-                      {
-                        iel = (j - iy) * nx + (i - ix);
-                        ival = SubvectorEltIndex(z_mult_sub, i, j, k);
+    {
+      if (fdir[2] != 0)
+      {
+        iel = (j - iy) * nx + (i - ix);
+        ival = SubvectorEltIndex(z_mult_sub, i, j, k);
 
-                        if (((i >= SubgridIX(subgrid)) && (i < (SubgridIX(subgrid) + SubgridNX(subgrid)))) &&
-                            ((j >= SubgridIY(subgrid)) && (j < (SubgridIY(subgrid) + SubgridNY(subgrid)))) &&
-                            ((k >= SubgridIZ(subgrid)) && (k < (SubgridIZ(subgrid) + SubgridNZ(subgrid)))))
-                        {
-                          elevation_array[iel] = rsz_dat[ival] + fdir[2] * dz2 * z_mult_dat[ival];
-                        }
-                      }
-                    });
+        if (((i >= SubgridIX(subgrid)) && (i < (SubgridIX(subgrid) + SubgridNX(subgrid)))) &&
+            ((j >= SubgridIY(subgrid)) && (j < (SubgridIY(subgrid) + SubgridNY(subgrid)))) &&
+            ((k >= SubgridIZ(subgrid)) && (k < (SubgridIZ(subgrid) + SubgridNZ(subgrid)))))
+        {
+          elevation_array[iel] = rsz_dat[ival] + fdir[2] * dz2 * z_mult_dat[ival];
+        }
+      }
+    });
 
     /*
      * SGS TODO SHOULD HAVE ASSERT MACRO

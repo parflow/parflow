@@ -1,65 +1,63 @@
-/*****************************************************************************
-* File          : spgmr.h                                                   *
-* Programmers   : Scott D. Cohen and Alan C. Hindmarsh @ LLNL               *
-* Version of    : 17 December 1999                                          *
-**---------------------------------------------------------------------------*
-* This is the header file for the implementation of SPGMR Krylov            *
-* iterative linear solver.  The SPGMR algorithm is based on the Scaled      *
-* Preconditioned GMRES (Generalized Minimal Residual) method.               *
-*                                                                           *
-* The SPGMR algorithm solves a N by N linear system A x = b.                *
-* Preconditioning is allowed on the left, right, or both.                   *
-* Scaling is allowed on both sides, and restarts are also allowed.          *
-* We denote the preconditioner and scaling matrices as follows:             *
-*   P1 = left preconditioner                                                *
-*   P2 = right preconditioner                                               *
-*   S1 = diagonal matrix of scale factors for P1-inverse b                  *
-*   S2 = diagonal matrix of scale factors for P2 x                          *
-* The matrices A, P1, and P2 are not required explicitly; only routines     *
-* that provide A, P1-inverse, and P2-inverse as operators are required.     *
-*                                                                           *
-* In this notation, SPGMR applies the underlying GMRES method to the        *
-* equivalent transformed system                                             *
-*   Abar xbar = bbar ,   where                                              *
-*   Abar = S1 (P1-inverse) A (P2-inverse) (S2-inverse) ,                    *
-*   bbar = S1 (P1-inverse) b , and   xbar = S2 P2 x .                       *
-*                                                                           *
-* The scaling matrices must be chosen so that vectors S1 P1-inverse b       *
-* and S2 P2 x have dimensionless components.  If preconditioning is done    *
-* on the left only (P2 = I), by a matrix P, then S2 must be a scaling       *
-* for x, while S1 is a scaling for P-inverse b, and so may also be taken    *
-* as a scaling for x.  Similarly, if preconditioning is done on the         *
-* right only (P1 = I, P2 = P), then S1 must be a scaling for b, while S2    *
-* is a scaling for P x, and may also be taken as a scaling for b.           *
-*                                                                           *
-* The stopping test for the SPGMR iterations is on the L2 norm of the       *
-* scaled preconditioned residual:                                           *
-*      || bbar - Abar xbar ||_2  <  delta                                   *
-* with an input test constant delta.                                        *
-*                                                                           *
-* The usage of this SPGMR solver involves supplying two routines and        *
-* making three calls.  The user-supplied routines are                       *
-*    atimes (A_data, x, y) to compute the product y = A x, given x,         *
-* and                                                                       *
-*    psolve (P_data, x, y, lr) to solve P1 x = y or P2 x = y for x, given y.*
-* The three user calls are:                                                 *
-*    mem  = SpgmrMalloc(N, lmax, machEnv);                                  *
-*           to initialize memory,                                           *
-*    flag = SpgmrSolve(mem,A_data,x,b,...,P_data,s1,s2,atimes,psolve,...);  *
-*           to solve the system, and                                        *
-*    SpgmrFree(mem);                                                        *
-*           to free the memory created by SpgmrMalloc.                      *
-* Complete details for specifying atimes and psolve and for the usage calls *
-* are given in the paragraphs below and in iterativ.h.                      *
-*                                                                           *
-*****************************************************************************/
-
-#ifdef __cplusplus     /* wrapper to enable C++ usage */
-extern "C" {
-#endif
+/****************************************************************************
+ * File          : spgmr.h                                                   *
+ * Programmers   : Scott D. Cohen and Alan C. Hindmarsh @ LLNL               *
+ * Version of    : 17 December 1999                                          *
+ *---------------------------------------------------------------------------*
+ * This is the header file for the implementation of SPGMR Krylov            *
+ * iterative linear solver.  The SPGMR algorithm is based on the Scaled      *
+ * Preconditioned GMRES (Generalized Minimal Residual) method.               *
+ *                                                                           *
+ * The SPGMR algorithm solves a N by N linear system A x = b.                *
+ * Preconditioning is allowed on the left, right, or both.                   *
+ * Scaling is allowed on both sides, and restarts are also allowed.          *
+ * We denote the preconditioner and scaling matrices as follows:             *
+ *   P1 = left preconditioner                                                *
+ *   P2 = right preconditioner                                               *
+ *   S1 = diagonal matrix of scale factors for P1-inverse b                  *
+ *   S2 = diagonal matrix of scale factors for P2 x                          *
+ * The matrices A, P1, and P2 are not required explicitly; only routines     *
+ * that provide A, P1-inverse, and P2-inverse as operators are required.     *
+ *                                                                           *
+ * In this notation, SPGMR applies the underlying GMRES method to the        *
+ * equivalent transformed system                                             *
+ *   Abar xbar = bbar ,   where                                              *
+ *   Abar = S1 (P1-inverse) A (P2-inverse) (S2-inverse) ,                    *
+ *   bbar = S1 (P1-inverse) b , and   xbar = S2 P2 x .                       *
+ *                                                                           *
+ * The scaling matrices must be chosen so that vectors S1 P1-inverse b       *
+ * and S2 P2 x have dimensionless components.  If preconditioning is done    *
+ * on the left only (P2 = I), by a matrix P, then S2 must be a scaling       *
+ * for x, while S1 is a scaling for P-inverse b, and so may also be taken    *
+ * as a scaling for x.  Similarly, if preconditioning is done on the         *
+ * right only (P1 = I, P2 = P), then S1 must be a scaling for b, while S2    *
+ * is a scaling for P x, and may also be taken as a scaling for b.           *
+ *                                                                           *
+ * The stopping test for the SPGMR iterations is on the L2 norm of the       *
+ * scaled preconditioned residual:                                           *
+ *      || bbar - Abar xbar ||_2  <  delta                                   *
+ * with an input test constant delta.                                        *
+ *                                                                           *
+ * The usage of this SPGMR solver involves supplying two routines and        *
+ * making three calls.  The user-supplied routines are                       *
+ *    atimes (A_data, x, y) to compute the product y = A x, given x,         *
+ * and                                                                       *
+ *    psolve (P_data, x, y, lr) to solve P1 x = y or P2 x = y for x, given y.*
+ * The three user calls are:                                                 *
+ *    mem  = SpgmrMalloc(N, lmax, machEnv);                                  *
+ *           to initialize memory,                                           *
+ *    flag = SpgmrSolve(mem,A_data,x,b,...,P_data,s1,s2,atimes,psolve,...);  *
+ *           to solve the system, and                                        *
+ *    SpgmrFree(mem);                                                        *
+ *           to free the memory created by SpgmrMalloc.                      *
+ * Complete details for specifying atimes and psolve and for the usage calls *
+ * are given in the paragraphs below and in iterativ.h.                      *
+ *                                                                           *
+ *****************************************************************************/
 
 #ifndef _spgmr_h
 #define _spgmr_h
+
+BEGIN_EXTERN_C
 
 #include "llnltyps.h"
 #include "iterativ.h"
@@ -69,7 +67,7 @@ extern "C" {
 /******************************************************************
 *                                                                *
 * Types: SpgmrMemRec, SpgmrMem                                   *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * SpgmrMem is a pointer to an SpgmrMemRec which contains         *
 * the memory needed by SpgmrSolve. The SpgmrMalloc routine       *
 * returns a pointer of type SpgmrMem which should then be passed *
@@ -132,7 +130,7 @@ typedef struct {
 /******************************************************************
 *                                                                *
 * Function : SpgmrMalloc                                         *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * SpgmrMalloc allocates the memory used by SpgmrSolve. It        *
 * returns a pointer of type SpgmrMem which the user of the       *
 * SPGMR package should pass to SpgmrSolve. The parameter N       *
@@ -151,7 +149,7 @@ SpgmrMem SpgmrMalloc(integer N, int l_max, void *machEnv);
 /******************************************************************
 *                                                                *
 * Function : SpgmrSolve                                          *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * SpgmrSolve solves the linear system Ax = b using the SPGMR     *
 * method. The return values are given by the symbolic constants  *
 * below. The first SpgmrSolve parameter is a pointer to memory   *
@@ -260,7 +258,7 @@ int SpgmrSolve(SpgmrMem mem, void *A_data, N_Vector x, N_Vector b,
 /******************************************************************
 *                                                                *
 * Function : SpgmrFree                                           *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * SpgmrMalloc frees the memory allocated by SpgmrMalloc. It is   *
 * illegal to use the pointer mem after a call to SpgmrFree.      *
 *                                                                *
@@ -272,7 +270,7 @@ void SpgmrFree(SpgmrMem mem);
 /******************************************************************
 * Macro: SPGMR_VTEMP                                             *
 *                                                                *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * This macro provides access to the work vector vtemp in the     *
 * memory block of the SPGMR module.  The argument mem is the     *
 * memory pointer returned by SpgmrMalloc, of type SpgmrMem,      *
@@ -284,10 +282,6 @@ void SpgmrFree(SpgmrMem mem);
 
 #define SPGMR_VTEMP(mem)  (mem->vtemp)
 
+END_EXTERN_C
 
-
-#endif
-
-#ifdef __cplusplus
-}
 #endif

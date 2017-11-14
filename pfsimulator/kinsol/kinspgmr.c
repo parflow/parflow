@@ -3,7 +3,7 @@
 * File          : kinspgmr.c                                     *
 * Programmers   : Allan G Taylor and Alan C. Hindmarsh @ LLNL    *
 * Version of    : 6 July 2000                                    *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * This is the implementation file for the KINSOL scaled,         *
 * preconditioned GMRES linear solver, KINSPGMR.                  *
 *                                                                *
@@ -36,7 +36,7 @@
 /******************************************************************
 *                                                                *
 * Types : KINSpgmrMemRec, KINSpgmrMem                            *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * The type KINSpgmrMem is pointer to a KINSpgmrMemRec. This      *
 * structure contains KINSpgmr solver-specific data.              *
 *                                                                *
@@ -66,7 +66,7 @@ typedef struct {
 
   KINSpgmruserAtimesFn g_userAtimes;
   /* userAtimes - user-supplied routine to optionally
-   * compute the product J v as required by Spgmr   */
+  * compute the product J v as required by Spgmr   */
 
   void *g_P_data;     /* P_data is a memory block passed to psolve
                        * and precondset through KINSpgmr                */

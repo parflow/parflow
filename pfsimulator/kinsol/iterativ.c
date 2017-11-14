@@ -3,7 +3,7 @@
 * File          : iterativ.c                                     *
 * Programmers   : Scott D. Cohen and Alan C. Hindmarsh @ LLNL    *
 * Last Modified : 1 September 1994                               *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * This is the implementation file for the iterativ.h header      *
 * file. It contains the implementation of functions that may be  *
 * useful for many different iterative solvers of A x = b.        *

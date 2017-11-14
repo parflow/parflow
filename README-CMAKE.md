@@ -188,6 +188,19 @@ in standard locations.  Explicitly setting the location using the ROOT
 variable for a package automatically enables it, you don't need to
 specify both values.
 
+### How to specify command to run MPI applications
+
+There are multiple ways to run MPI applications such as mpiexec,
+mpirun, srun, and aprun.  The command used is dependent on the job
+submission system used.  By default CMake will attempt to determine an
+appropriate tool; a process that does not always yield the correct result.
+
+You may overwride the MPI launcher using
+-DMPIEXEC="<launcher-name>"
+-DMPIEXEC_NUMPROC_FLAG="<flag used to set number of tasks>"
+
+An example for mpiexec is -DMPIEXEC="mpiexec" -DMPIEXEC_NUMPROC_FLAG="-n".
+
 ## Building simulator and tools support separately
 
 ParFlow is composed of two main components that maybe configured and

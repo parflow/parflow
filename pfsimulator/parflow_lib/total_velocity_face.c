@@ -1,33 +1,33 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-/******************************************************************************
+/*BHEADER*********************************************************************
  *
- *****************************************************************************/
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/*****************************************************************************
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -129,12 +129,12 @@ void    TotalVelocityFace(
 
   Vector         *vel_vec[3];
   Subvector      *subvector_v0,
-  *subvector_v1,
-  *subvector_v2;
+    *subvector_v1,
+    *subvector_v2;
   double         *vel0_l, *vel0_r,
-  *vel1_l, *vel1_r,
-  *vel2_l, *vel2_r,
-  *vel_tmp;
+    *vel1_l, *vel1_r,
+    *vel2_l, *vel2_r,
+    *vel_tmp;
   double ds[3];
   double h0, h1, h2, base_constant;
   int dir0 = 0, dir1, dir2, alpha;
@@ -228,9 +228,9 @@ void    TotalVelocityFace(
               pi, nx_p, ny_p, nz_p, 1, 1, 1,
               mi, nx_m, ny_m, nz_m, 1, 1, 1,
               vi, nx_v, ny_v, nz_v, 1, 1, 1,
-              {
-                vel[vi] = -Func(ml[mi], mu[mi]) * (pu[pi] - pl[pi]) / dx;
-              });
+    {
+      vel[vi] = -Func(ml[mi], mu[mi]) * (pu[pi] - pl[pi]) / dx;
+    });
 
     IncFLOPCount(flopest);
   }
@@ -289,9 +289,9 @@ void    TotalVelocityFace(
               pi, nx_p, ny_p, nz_p, 1, 1, 1,
               mi, nx_m, ny_m, nz_m, 1, 1, 1,
               vi, nx_v, ny_v, nz_v, 1, 1, 1,
-              {
-                vel[vi] = -Func(ml[mi], mu[mi]) * (pu[pi] - pl[pi]) / dy;
-              });
+    {
+      vel[vi] = -Func(ml[mi], mu[mi]) * (pu[pi] - pl[pi]) / dy;
+    });
 
     IncFLOPCount(flopest);
   }
@@ -350,9 +350,9 @@ void    TotalVelocityFace(
               pi, nx_p, ny_p, nz_p, 1, 1, 1,
               mi, nx_m, ny_m, nz_m, 1, 1, 1,
               vi, nx_v, ny_v, nz_v, 1, 1, 1,
-              {
-                vel[vi] = -Func(ml[mi], mu[mi]) * (pu[pi] - pl[pi]) / dz;
-              });
+    {
+      vel[vi] = -Func(ml[mi], mu[mi]) * (pu[pi] - pl[pi]) / dz;
+    });
 
     IncFLOPCount(flopest);
   }
@@ -443,10 +443,10 @@ void    TotalVelocityFace(
                 pi, nx_p, ny_p, nz_p, 1, 1, 1,
                 mi, nx_m, ny_m, nz_m, 1, 1, 1,
                 vi, nx_v, ny_v, nz_v, 1, 1, 1,
-                {
-                  vel[vi] -= Coeff(tl[mi], tu[mi], ml[mi], mu[mi]) *
-                             (pu[pi] - pl[pi]) / dx;
-                });
+      {
+        vel[vi] -= Coeff(tl[mi], tu[mi], ml[mi], mu[mi]) *
+                   (pu[pi] - pl[pi]) / dx;
+      });
 
       IncFLOPCount(flopest);
     }
@@ -509,10 +509,10 @@ void    TotalVelocityFace(
                 pi, nx_p, ny_p, nz_p, 1, 1, 1,
                 mi, nx_m, ny_m, nz_m, 1, 1, 1,
                 vi, nx_v, ny_v, nz_v, 1, 1, 1,
-                {
-                  vel[vi] -= Coeff(tl[mi], tu[mi], ml[mi], mu[mi])
-                             * (pu[pi] - pl[pi]) / dy;
-                });
+      {
+        vel[vi] -= Coeff(tl[mi], tu[mi], ml[mi], mu[mi])
+                   * (pu[pi] - pl[pi]) / dy;
+      });
 
       IncFLOPCount(flopest);
     }
@@ -580,10 +580,10 @@ void    TotalVelocityFace(
                 pi, nx_p, ny_p, nz_p, 1, 1, 1,
                 mi, nx_m, ny_m, nz_m, 1, 1, 1,
                 vi, nx_v, ny_v, nz_v, 1, 1, 1,
-                {
-                  vel[vi] -= Coeff(tl[mi], tu[mi], ml[mi], mu[mi])
-                             * ((pu[pi] - pl[pi]) / dz + base_constant);
-                });
+      {
+        vel[vi] -= Coeff(tl[mi], tu[mi], ml[mi], mu[mi])
+                   * ((pu[pi] - pl[pi]) / dz + base_constant);
+      });
 
       IncFLOPCount(flopest);
     }
@@ -636,71 +636,71 @@ void    TotalVelocityFace(
     {
       GrGeomPatchLoop(i, j, k, fdir, gr_domain, ipatch,
                       r, ix, iy, iz, nx, ny, nz,
-                      {
-                        /* primary direction x */
-                        if (fdir[0])
-                        {
-                          dir0 = 0;
-                          dir1 = 1;
-                          dir2 = 2;
-                        }
-                        /* primary direction y */
-                        if (fdir[1])
-                        {
-                          dir0 = 1;
-                          dir1 = 0;
-                          dir2 = 2;
-                        }
-                        /* primary direction z */
-                        if (fdir[2])
-                        {
-                          dir0 = 2;
-                          dir1 = 0;
-                          dir2 = 1;
-                        }
-                        alpha = -fdir[dir0];
+      {
+        /* primary direction x */
+        if (fdir[0])
+        {
+          dir0 = 0;
+          dir1 = 1;
+          dir2 = 2;
+        }
+        /* primary direction y */
+        if (fdir[1])
+        {
+          dir0 = 1;
+          dir1 = 0;
+          dir2 = 2;
+        }
+        /* primary direction z */
+        if (fdir[2])
+        {
+          dir0 = 2;
+          dir1 = 0;
+          dir2 = 1;
+        }
+        alpha = -fdir[dir0];
 
-                        subvector_v0 = VectorSubvector(vel_vec[dir0], sg);
-                        subvector_v1 = VectorSubvector(vel_vec[dir1], sg);
-                        subvector_v2 = VectorSubvector(vel_vec[dir2], sg);
+        subvector_v0 = VectorSubvector(vel_vec[dir0], sg);
+        subvector_v1 = VectorSubvector(vel_vec[dir1], sg);
+        subvector_v2 = VectorSubvector(vel_vec[dir2], sg);
 
-                        vel0_l = SubvectorElt(subvector_v0, i, j, k);
-                        vel0_r = SubvectorElt(subvector_v0,
-                                              i + dir[dir0][0],
-                                              j + dir[dir0][1],
-                                              k + dir[dir0][2]);
-                        vel1_l = SubvectorElt(subvector_v1, i, j, k);
-                        vel1_r = SubvectorElt(subvector_v1,
-                                              i + dir[dir1][0],
-                                              j + dir[dir1][1],
-                                              k + dir[dir1][2]);
-                        vel2_l = SubvectorElt(subvector_v2, i, j, k);
-                        vel2_r = SubvectorElt(subvector_v2,
-                                              i + dir[dir2][0],
-                                              j + dir[dir2][1],
-                                              k + dir[dir2][2]);
+        vel0_l = SubvectorElt(subvector_v0, i, j, k);
+        vel0_r = SubvectorElt(subvector_v0,
+                              i + dir[dir0][0],
+                              j + dir[dir0][1],
+                              k + dir[dir0][2]);
+        vel1_l = SubvectorElt(subvector_v1, i, j, k);
+        vel1_r = SubvectorElt(subvector_v1,
+                              i + dir[dir1][0],
+                              j + dir[dir1][1],
+                              k + dir[dir1][2]);
+        vel2_l = SubvectorElt(subvector_v2, i, j, k);
+        vel2_r = SubvectorElt(subvector_v2,
+                              i + dir[dir2][0],
+                              j + dir[dir2][1],
+                              k + dir[dir2][2]);
 
-                        if (fdir[dir0] == -1)
-                        {
-                          vel_tmp = vel0_r;
-                          vel0_r = vel0_l;
-                          vel0_l = vel_tmp;
-                        }
+        if (fdir[dir0] == -1)
+        {
+          vel_tmp = vel0_r;
+          vel0_r = vel0_l;
+          vel0_l = vel_tmp;
+        }
 
-                        h0 = ds[dir0];
-                        h1 = ds[dir1];
-                        h2 = ds[dir2];
+        h0 = ds[dir0];
+        h1 = ds[dir1];
+        h2 = ds[dir2];
 
 
-                        /*	Apply a xero velocity condition on outer boundaries */
-                        vel0_r[0] = 0.0;
+        /*	Apply a xero velocity condition on outer boundaries */
+        vel0_r[0] = 0.0;
 
-                        /*
-                         * vel0_r[0] = vel0_l[0]
-                         + alpha*h0*( (vel1_r[0] - vel1_l[0])/h1
-                         + (vel2_r[0] - vel2_l[0])/h2 );
-                         */
-                      });
+        /*
+         * vel0_r[0] = vel0_l[0]
+         + alpha*h0*( (vel1_r[0] - vel1_l[0])/h1
+         + (vel2_r[0] - vel2_l[0])/h2 );
+         */
+      });
     }
   }
 

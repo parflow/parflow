@@ -1,30 +1,30 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 /* This file contains utility routines for ParFlow's Vector class.
  *
  * This file was modified from a coresponding PVODE package file to account
@@ -214,9 +214,9 @@ void PFVLinearSum(
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_y, nx_y, ny_y, nz_y, 1, 1, 1,
               i_z, nx_z, ny_z, nz_z, 1, 1, 1,
-              {
-                zp[i_z] = a * xp[i_x] + b * yp[i_y];
-              });
+    {
+      zp[i_z] = a * xp[i_x] + b * yp[i_y];
+    });
   }
   IncFLOPCount(3 * VectorSize(z));
 }
@@ -262,9 +262,9 @@ void PFVConstInit(
     i_z = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               i_z, nx_z, ny_z, nz_z, 1, 1, 1,
-              {
-                zp[i_z] = c;
-              });
+    {
+      zp[i_z] = c;
+    });
   }
 }
 
@@ -331,9 +331,9 @@ void PFVProd(
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_y, nx_y, ny_y, nz_y, 1, 1, 1,
               i_z, nx_z, ny_z, nz_z, 1, 1, 1,
-              {
-                zp[i_z] = xp[i_x] * yp[i_y];
-              });
+    {
+      zp[i_z] = xp[i_x] * yp[i_y];
+    });
   }
   IncFLOPCount(VectorSize(x));
 }
@@ -400,9 +400,9 @@ void PFVDiv(
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_y, nx_y, ny_y, nz_y, 1, 1, 1,
               i_z, nx_z, ny_z, nz_z, 1, 1, 1,
-              {
-                zp[i_z] = xp[i_x] / yp[i_y];
-              });
+    {
+      zp[i_z] = xp[i_x] / yp[i_y];
+    });
   }
   IncFLOPCount(VectorSize(x));
 }
@@ -475,9 +475,9 @@ void PFVScale(
       BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
                 i_x, nx_x, ny_x, nz_x, 1, 1, 1,
                 i_z, nx_z, ny_z, nz_z, 1, 1, 1,
-                {
-                  zp[i_z] = c * xp[i_x];
-                });
+      {
+        zp[i_z] = c * xp[i_x];
+      });
     }
   }
   IncFLOPCount(VectorSize(x));
@@ -534,9 +534,9 @@ void PFVAbs(
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_z, nx_z, ny_z, nz_z, 1, 1, 1,
-              {
-                zp[i_z] = fabs(xp[i_x]);
-              });
+    {
+      zp[i_z] = fabs(xp[i_x]);
+    });
   }
 }
 
@@ -591,9 +591,9 @@ void PFVInv(
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_z, nx_z, ny_z, nz_z, 1, 1, 1,
-              {
-                zp[i_z] = ONE / xp[i_x];
-              });
+    {
+      zp[i_z] = ONE / xp[i_x];
+    });
   }
   IncFLOPCount(VectorSize(x));
 }
@@ -650,9 +650,9 @@ void PFVAddConst(
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_z, nx_z, ny_z, nz_z, 1, 1, 1,
-              {
-                zp[i_z] = xp[i_x] + b;
-              });
+    {
+      zp[i_z] = xp[i_x] + b;
+    });
   }
   IncFLOPCount(VectorSize(x));
 }
@@ -711,9 +711,9 @@ double PFVDotProd(
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_y, nx_y, ny_y, nz_y, 1, 1, 1,
-              {
-                sum += xp[i_x] * yp[i_y];
-              });
+    {
+      sum += xp[i_x] * yp[i_y];
+    });
   }
 
   result_invoice = amps_NewInvoice("%d", &sum);
@@ -768,10 +768,10 @@ double PFVMaxNorm(
     i_x = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-              {
-                if (fabs(xp[i_x]) > max_val)
-                  max_val = fabs(xp[i_x]);
-              });
+    {
+      if (fabs(xp[i_x]) > max_val)
+        max_val = fabs(xp[i_x]);
+    });
   }
 
   result_invoice = amps_NewInvoice("%d", &max_val);
@@ -835,10 +835,10 @@ double PFVWrmsNorm(
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_w, nx_w, ny_w, nz_w, 1, 1, 1,
-              {
-                prod = xp[i_x] * wp[i_w];
-                sum += prod * prod;
-              });
+    {
+      prod = xp[i_x] * wp[i_w];
+      sum += prod * prod;
+    });
   }
 
   result_invoice = amps_NewInvoice("%d", &sum);
@@ -904,10 +904,10 @@ double PFVWL2Norm(
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_w, nx_w, ny_w, nz_w, 1, 1, 1,
-              {
-                prod = xp[i_x] * wp[i_w];
-                sum += prod * prod;
-              });
+    {
+      prod = xp[i_x] * wp[i_w];
+      sum += prod * prod;
+    });
   }
 
   result_invoice = amps_NewInvoice("%d", &sum);
@@ -962,9 +962,9 @@ double PFVL1Norm(
     i_x = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-              {
-                sum += fabs(xp[i_x]);
-              });
+    {
+      sum += fabs(xp[i_x]);
+    });
   }
 
   result_invoice = amps_NewInvoice("%d", &sum);
@@ -1024,18 +1024,18 @@ double PFVMin(
       i_x = 0;
       BoxLoopI1(i, j, k, ix, iy, iz, 1, 1, 1,
                 i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-                {
-                  min_val = xp[i_x];
-                });
+      {
+        min_val = xp[i_x];
+      });
     }
 
     i_x = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-              {
-                if (xp[i_x] < min_val)
-                  min_val = xp[i_x];
-              });
+    {
+      if (xp[i_x] < min_val)
+        min_val = xp[i_x];
+    });
   }
 
   amps_AllReduce(amps_CommWorld, result_invoice, amps_Min);
@@ -1090,18 +1090,18 @@ double PFVMax(
       i_x = 0;
       BoxLoopI1(i, j, k, ix, iy, iz, 1, 1, 1,
                 i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-                {
-                  max_val = xp[i_x];
-                });
+      {
+        max_val = xp[i_x];
+      });
     }
 
     i_x = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-              {
-                if (xp[i_x] > max_val)
-                  max_val = xp[i_x];
-              });
+    {
+      if (xp[i_x] > max_val)
+        max_val = xp[i_x];
+    });
   }
 
   result_invoice = amps_NewInvoice("%d", &max_val);
@@ -1168,13 +1168,13 @@ int PFVConstrProdPos(
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_c, nx_c, ny_c, nz_c, 1, 1, 1,
-              {
-                if (cp[i_c] != ZERO)
-                {
-                  if ((xp[i_x] * cp[i_c]) <= ZERO)
-                    val = 0;
-                }
-              });
+    {
+      if (cp[i_c] != ZERO)
+      {
+        if ((xp[i_x] * cp[i_c]) <= ZERO)
+          val = 0;
+      }
+    });
   }
 
   result_invoice = amps_NewInvoice("%i", &val);
@@ -1239,9 +1239,9 @@ void PFVCompare(
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_z, nx_z, ny_z, nz_z, 1, 1, 1,
-              {
-                zp[i_z] = (fabs(xp[i_x]) >= c) ? ONE : ZERO;
-              });
+    {
+      zp[i_z] = (fabs(xp[i_x]) >= c) ? ONE : ZERO;
+    });
   }
 }
 
@@ -1301,12 +1301,12 @@ int PFVInvTest(
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_z, nx_z, ny_z, nz_z, 1, 1, 1,
-              {
-                if (xp[i_x] == ZERO)
-                  val = 0;
-                else
-                  zp[i_z] = ONE / (xp[i_x]);
-              });
+    {
+      if (xp[i_x] == ZERO)
+        val = 0;
+      else
+        zp[i_z] = ONE / (xp[i_x]);
+    });
   }
 
   result_invoice = amps_NewInvoice("%i", &val);
@@ -1374,9 +1374,9 @@ void PFVCopy(
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_y, nx_y, ny_y, nz_y, 1, 1, 1,
-              {
-                yp[i_y] = xp[i_x];
-              });
+    {
+      yp[i_y] = xp[i_x];
+    });
   }
 }
 
@@ -1442,9 +1442,9 @@ void PFVSum(
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_y, nx_y, ny_y, nz_y, 1, 1, 1,
               i_z, nx_z, ny_z, nz_z, 1, 1, 1,
-              {
-                zp[i_z] = xp[i_x] + yp[i_y];
-              });
+    {
+      zp[i_z] = xp[i_x] + yp[i_y];
+    });
   }
   IncFLOPCount(VectorSize(x));
 }
@@ -1512,9 +1512,9 @@ void PFVDiff(
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_y, nx_y, ny_y, nz_y, 1, 1, 1,
               i_z, nx_z, ny_z, nz_z, 1, 1, 1,
-              {
-                zp[i_z] = xp[i_x] - yp[i_y];
-              });
+    {
+      zp[i_z] = xp[i_x] - yp[i_y];
+    });
   }
   IncFLOPCount(VectorSize(x));
 }
@@ -1571,9 +1571,9 @@ void PFVNeg(
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_z, nx_z, ny_z, nz_z, 1, 1, 1,
-              {
-                zp[i_z] = -xp[i_x];
-              });
+    {
+      zp[i_z] = -xp[i_x];
+    });
   }
 }
 
@@ -1641,9 +1641,9 @@ void PFVScaleSum(
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_y, nx_y, ny_y, nz_y, 1, 1, 1,
               i_z, nx_z, ny_z, nz_z, 1, 1, 1,
-              {
-                zp[i_z] = c * (xp[i_x] + yp[i_y]);
-              });
+    {
+      zp[i_z] = c * (xp[i_x] + yp[i_y]);
+    });
   }
   IncFLOPCount(2 * VectorSize(x));
 }
@@ -1712,9 +1712,9 @@ void PFVScaleDiff(
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_y, nx_y, ny_y, nz_y, 1, 1, 1,
               i_z, nx_z, ny_z, nz_z, 1, 1, 1,
-              {
-                zp[i_z] = c * (xp[i_x] - yp[i_y]);
-              });
+    {
+      zp[i_z] = c * (xp[i_x] - yp[i_y]);
+    });
   }
   IncFLOPCount(2 * VectorSize(x));
 }
@@ -1783,9 +1783,9 @@ void PFVLin1(
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_y, nx_y, ny_y, nz_y, 1, 1, 1,
               i_z, nx_z, ny_z, nz_z, 1, 1, 1,
-              {
-                zp[i_z] = a * (xp[i_x]) + yp[i_y];
-              });
+    {
+      zp[i_z] = a * (xp[i_x]) + yp[i_y];
+    });
   }
   IncFLOPCount(2 * VectorSize(x));
 }
@@ -1854,9 +1854,9 @@ void PFVLin2(
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_y, nx_y, ny_y, nz_y, 1, 1, 1,
               i_z, nx_z, ny_z, nz_z, 1, 1, 1,
-              {
-                zp[i_z] = a * (xp[i_x]) - yp[i_y];
-              });
+    {
+      zp[i_z] = a * (xp[i_x]) - yp[i_y];
+    });
   }
   IncFLOPCount(2 * VectorSize(x));
 }
@@ -1914,9 +1914,9 @@ void PFVAxpy(
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_y, nx_y, ny_y, nz_y, 1, 1, 1,
-              {
-                yp[i_y] += a * (xp[i_x]);
-              });
+    {
+      yp[i_y] += a * (xp[i_x]);
+    });
   }
   IncFLOPCount(2 * VectorSize(x));
 }
@@ -1963,9 +1963,9 @@ void PFVScaleBy(
     i_x = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-              {
-                xp[i_x] = xp[i_x] * a;
-              });
+    {
+      xp[i_x] = xp[i_x] * a;
+    });
   }
   IncFLOPCount(VectorSize(x));
 }

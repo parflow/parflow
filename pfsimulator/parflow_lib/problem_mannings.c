@@ -1,30 +1,30 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
 #include "parflow.h"
 
@@ -145,10 +145,10 @@ void Mannings(ProblemData *problem_data, Vector *mann, Vector *dummy)
 
           data = SubvectorData(ps_sub);
           GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                       {
-                         ips = SubvectorEltIndex(ps_sub, i, j, 0);
-                         data[ips] = value;
-                       });
+          {
+            ips = SubvectorEltIndex(ps_sub, i, j, 0);
+            data[ips] = value;
+          });
         }
       }
 
@@ -190,64 +190,64 @@ void Mannings(ProblemData *problem_data, Vector *mann, Vector *dummy)
           case 1: /* p= x */
           {
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           x = RealSpaceX(i, SubgridRX(subgrid));
-                           /* nonlinear case -div(p grad p) = f */
-                           data[ips] = -1.0;
-                         });
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              x = RealSpaceX(i, SubgridRX(subgrid));
+              /* nonlinear case -div(p grad p) = f */
+              data[ips] = -1.0;
+            });
             break;
           } /* End case 1 */
 
           case 2: /* p= x+y+z */
           {
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           /* nonlinear case -div(p grad p) = f */
-                           data[ips] = -3.0;
-                         });
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              /* nonlinear case -div(p grad p) = f */
+              data[ips] = -3.0;
+            });
             break;
           } /* End case 2 */
 
           case 3: /* p= x^3y^2 + sinxy + 1 */
           {
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           x = RealSpaceX(i, SubgridRX(subgrid));
-                           y = RealSpaceY(j, SubgridRY(subgrid));
-                           /* nonlinear case -div(p grad p) = f */
-                           data[ips] = -pow((3 * x * x * y * y + y * cos(x * y)), 2) - pow((2 * x * x * x * y + x * cos(x * y)), 2) - (x * x * x * y * y + sin(x * y) + 1) * (6 * x * y * y + 2 * x * x * x - (x * x + y * y) * sin(x * y));
-                         });
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              x = RealSpaceX(i, SubgridRX(subgrid));
+              y = RealSpaceY(j, SubgridRY(subgrid));
+              /* nonlinear case -div(p grad p) = f */
+              data[ips] = -pow((3 * x * x * y * y + y * cos(x * y)), 2) - pow((2 * x * x * x * y + x * cos(x * y)), 2) - (x * x * x * y * y + sin(x * y) + 1) * (6 * x * y * y + 2 * x * x * x - (x * x + y * y) * sin(x * y));
+            });
             break;
           } /* End case 3 */
 
           case 4: /* f for p = x^3y^4 + x^2 + sinxy cosy + 1 */
           {
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           x = RealSpaceX(i, SubgridRX(subgrid));
-                           y = RealSpaceY(j, SubgridRY(subgrid));
-                           z = RealSpaceZ(k, SubgridRZ(subgrid));
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              x = RealSpaceX(i, SubgridRX(subgrid));
+              y = RealSpaceY(j, SubgridRY(subgrid));
+              z = RealSpaceZ(k, SubgridRZ(subgrid));
 
-                           data[ips] = -pow(3 * x * x * pow(y, 4) + 2 * x + y * cos(x * y) * cos(y), 2) - pow(4 * x * x * x * y * y * y + x * cos(x * y) * cos(y) - sin(x * y) * sin(y), 2) - (x * x * x * pow(y, 4) + x * x + sin(x * y) * cos(y) + 1) * (6 * x * pow(y, 4) + 2 - (x * x + y * y + 1) * sin(x * y) * cos(y) + 12 * x * x * x * y * y - 2 * x * cos(x * y) * sin(y));
-                         });
+              data[ips] = -pow(3 * x * x * pow(y, 4) + 2 * x + y * cos(x * y) * cos(y), 2) - pow(4 * x * x * x * y * y * y + x * cos(x * y) * cos(y) - sin(x * y) * sin(y), 2) - (x * x * x * pow(y, 4) + x * x + sin(x * y) * cos(y) + 1) * (6 * x * pow(y, 4) + 2 - (x * x + y * y + 1) * sin(x * y) * cos(y) + 12 * x * x * x * y * y - 2 * x * cos(x * y) * sin(y));
+            });
             break;
           } /* End case 4 */
 
           case 5: /* f = xyz-y^2z^2t^2-x^2z^2t^2-x^2y^2t^2 (p=xyzt+1)*/
           {
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           x = RealSpaceX(i, SubgridRX(subgrid));
-                           y = RealSpaceY(j, SubgridRY(subgrid));
-                           z = RealSpaceZ(k, SubgridRZ(subgrid));
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              x = RealSpaceX(i, SubgridRX(subgrid));
+              y = RealSpaceY(j, SubgridRY(subgrid));
+              z = RealSpaceZ(k, SubgridRZ(subgrid));
 
-                           data[ips] = x * y * z - time * time * (y * y * z * z + x * x * z * z + x * x * y * y);
-                         });
+              data[ips] = x * y * z - time * time * (y * y * z * z + x * x * z * z + x * x * y * y);
+            });
             break;
           } /* End case 5 */
 
@@ -255,15 +255,15 @@ void Mannings(ProblemData *problem_data, Vector *mann, Vector *dummy)
                    *                                          K=(1; 2; 3) )*/
           {
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           x = RealSpaceX(i, SubgridRX(subgrid));
-                           y = RealSpaceY(j, SubgridRY(subgrid));
-                           z = RealSpaceZ(k, SubgridRZ(subgrid));
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              x = RealSpaceX(i, SubgridRX(subgrid));
+              y = RealSpaceY(j, SubgridRY(subgrid));
+              z = RealSpaceZ(k, SubgridRZ(subgrid));
 
-                           data[ips] = x * y * z
-                                       - time * time * (y * y * z * z + x * x * z * z * 2.0 + x * x * y * y * 3.0);
-                         });
+              data[ips] = x * y * z
+                          - time * time * (y * y * z * z + x * x * z * z * 2.0 + x * x * y * y * 3.0);
+            });
             break;
           } /* End case 6 */
         }   /* End switch statement on function_types */
@@ -302,13 +302,13 @@ void Mannings(ProblemData *problem_data, Vector *mann, Vector *dummy)
         m_values_dat = SubvectorData(m_values_sub);
 
         GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                     {
-                       ips = SubvectorEltIndex(ps_sub, i, j, 0);
-                       //  ipicv = SubvectorEltIndex(m_values_sub,i,j,k);
-                       // CMS, CPS 2D mannings only needed
-                       ipicv = SubvectorEltIndex(m_values_sub, i, j, 0);
-                       psdat[ips] = m_values_dat[ipicv];
-                     });
+        {
+          ips = SubvectorEltIndex(ps_sub, i, j, 0);
+          //  ipicv = SubvectorEltIndex(m_values_sub,i,j,k);
+          // CMS, CPS 2D mannings only needed
+          ipicv = SubvectorEltIndex(m_values_sub, i, j, 0);
+          psdat[ips] = m_values_dat[ipicv];
+        });
       }      /* End subgrid loop */
 
       break;

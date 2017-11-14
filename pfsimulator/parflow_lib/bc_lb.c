@@ -1,30 +1,30 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
 #include "parflow.h"
 
@@ -160,16 +160,16 @@ void LBInitializeBC(
 
             GrGeomPatchLoop(i, j, k, fdir, gr_domain, ipatch,
                             r, ix, iy, iz, nx, ny, nz,
-                            {
-                              ival = SubvectorEltIndex(sub_p, i, j, k);
-                              iel = (i - ix) + (j - iy) * nx;
-                              z = RealSpaceZ(k, 0) + fdir[2] * dz2;
+            {
+              ival = SubvectorEltIndex(sub_p, i, j, k);
+              iel = (i - ix) + (j - iy) * nx;
+              z = RealSpaceZ(k, 0) + fdir[2] * dz2;
 
-                              pp[ival] = BCPressureType0Value(bc_pressure_type0)
-                                         - rho_g * (z - elevations[is][iel]);
+              pp[ival] = BCPressureType0Value(bc_pressure_type0)
+                         - rho_g * (z - elevations[is][iel]);
 
-                              cellTypep[ival] = 0;
-                            });
+              cellTypep[ival] = 0;
+            });
 
             tfree(elevations[is]);
           }       /* End subgrid loop */
@@ -232,37 +232,37 @@ void LBInitializeBC(
 
             GrGeomPatchLoop(i, j, k, fdir, gr_domain, ipatch,
                             r, ix, iy, iz, nx, ny, nz,
-                            {
-                              ival = SubvectorEltIndex(sub_p, i, j, k);
+            {
+              ival = SubvectorEltIndex(sub_p, i, j, k);
 
-                              x = RealSpaceX(i, 0) + fdir[0] * dx2;
-                              y = RealSpaceY(j, 0) + fdir[1] * dy2;
-                              z = RealSpaceZ(k, 0) + fdir[2] * dz2;
+              x = RealSpaceX(i, 0) + fdir[0] * dx2;
+              y = RealSpaceY(j, 0) + fdir[1] * dy2;
+              z = RealSpaceZ(k, 0) + fdir[2] * dz2;
 
-                              /* project center of BC face onto piecewise line */
-                              xy = (x * unitx + y * unity - line_min) / line_length;
+              /* project center of BC face onto piecewise line */
+              xy = (x * unitx + y * unity - line_min) / line_length;
 
-                              /* find two neighboring points */
-                              ip = 1;
-                              /* Kludge; this needs to be fixed. */
-                              num_points = 2;
-                              for (; ip < (num_points - 1); ip++)
-                              {
-                                if (xy < BCPressureType1Point(bc_pressure_type1, ip))
-                                  break;
-                              }
+              /* find two neighboring points */
+              ip = 1;
+              /* Kludge; this needs to be fixed. */
+              num_points = 2;
+              for (; ip < (num_points - 1); ip++)
+              {
+                if (xy < BCPressureType1Point(bc_pressure_type1, ip))
+                  break;
+              }
 
-                              /* compute the slope */
-                              slope = ((BCPressureType1Value(bc_pressure_type1, ip) - BCPressureType1Value(bc_pressure_type1, (ip - 1)))
-                                       / (BCPressureType1Point(bc_pressure_type1, ip) - BCPressureType1Point(bc_pressure_type1, (ip - 1))));
+              /* compute the slope */
+              slope = ((BCPressureType1Value(bc_pressure_type1, ip) - BCPressureType1Value(bc_pressure_type1, (ip - 1)))
+                       / (BCPressureType1Point(bc_pressure_type1, ip) - BCPressureType1Point(bc_pressure_type1, (ip - 1))));
 
-                              pp[ival] = BCPressureType1Value(bc_pressure_type1, ip - 1)
-                                         + slope * (xy - BCPressureType1Point(
-                                                                              bc_pressure_type1, ip - 1))
-                                         - rho_g * z;
+              pp[ival] = BCPressureType1Value(bc_pressure_type1, ip - 1)
+                         + slope * (xy - BCPressureType1Point(
+                                                              bc_pressure_type1, ip - 1))
+                         - rho_g * z;
 
-                              cellTypep[ival] = 0;
-                            });
+              cellTypep[ival] = 0;
+            });
           }      /* End subgrid loop */
 
           break;
@@ -304,15 +304,15 @@ void LBInitializeBC(
 
             GrGeomPatchLoop(i, j, k, fdir, gr_domain, ipatch,
                             r, ix, iy, iz, nx, ny, nz,
-                            {
-                              ival = SubvectorEltIndex(sub_p, i, j, k);
-                              if (cellTypep[ival])
-                              {
-                                /* pp[ival] = BCPressureType2Value(bc_pressure_type2); */
-                                /* pp[ival] = 0.0; */
-                                cellTypep[ival] = 1;
-                              }
-                            });
+            {
+              ival = SubvectorEltIndex(sub_p, i, j, k);
+              if (cellTypep[ival])
+              {
+                /* pp[ival] = BCPressureType2Value(bc_pressure_type2); */
+                /* pp[ival] = 0.0; */
+                cellTypep[ival] = 1;
+              }
+            });
           }         /* End subgrid loop */
           break;
         }

@@ -1,30 +1,30 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
 #include "parflow.h"
 
@@ -201,18 +201,18 @@ void     Saturation(
           if (fcn == CALCFCN)
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           psdat[ips] = values[ir];
-                         });
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              psdat[ips] = values[ir];
+            });
           }
           else   /* fcn = CALCDER */
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           psdat[ips] = 0.0;
-                         });
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              psdat[ips] = 0.0;
+            });
           }     /* End else clause */
         }       /* End subgrid loop */
       }         /* End reion loop */
@@ -267,50 +267,50 @@ void     Saturation(
             if (fcn == CALCFCN)
             {
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                           {
-                             ips = SubvectorEltIndex(ps_sub, i, j, k);
-                             ipp = SubvectorEltIndex(pp_sub, i, j, k);
-                             ipd = SubvectorEltIndex(pd_sub, i, j, k);
+              {
+                ips = SubvectorEltIndex(ps_sub, i, j, k);
+                ipp = SubvectorEltIndex(pp_sub, i, j, k);
+                ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-                             alpha = alphas[ir];
-                             n = ns[ir];
-                             m = 1.0e0 - (1.0e0 / n);
-                             s_res = s_ress[ir];
-                             s_dif = s_difs[ir];
+                alpha = alphas[ir];
+                n = ns[ir];
+                m = 1.0e0 - (1.0e0 / n);
+                s_res = s_ress[ir];
+                s_dif = s_difs[ir];
 
-                             if (ppdat[ipp] >= 0.0)
-                               psdat[ips] = s_dif + s_res;
-                             else
-                             {
-                               head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                               psdat[ips] = s_dif / pow(1.0 + pow((alpha * head), n), m)
-                                            + s_res;
-                             }
-                           });
+                if (ppdat[ipp] >= 0.0)
+                  psdat[ips] = s_dif + s_res;
+                else
+                {
+                  head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                  psdat[ips] = s_dif / pow(1.0 + pow((alpha * head), n), m)
+                               + s_res;
+                }
+              });
             }    /* End if clause */
             else /* fcn = CALCDER */
             {
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                           {
-                             ips = SubvectorEltIndex(ps_sub, i, j, k);
-                             ipp = SubvectorEltIndex(pp_sub, i, j, k);
-                             ipd = SubvectorEltIndex(pd_sub, i, j, k);
+              {
+                ips = SubvectorEltIndex(ps_sub, i, j, k);
+                ipp = SubvectorEltIndex(pp_sub, i, j, k);
+                ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-                             alpha = alphas[ir];
-                             n = ns[ir];
-                             m = 1.0e0 - (1.0e0 / n);
-                             s_res = s_ress[ir];
-                             s_dif = s_difs[ir];
+                alpha = alphas[ir];
+                n = ns[ir];
+                m = 1.0e0 - (1.0e0 / n);
+                s_res = s_ress[ir];
+                s_dif = s_difs[ir];
 
-                             if (ppdat[ipp] >= 0.0)
-                               psdat[ips] = 0.0;
-                             else
-                             {
-                               head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                               psdat[ips] = (m * n * alpha * pow(alpha * head, (n - 1))) * s_dif
-                                            / (pow(1.0 + pow(alpha * head, n), m + 1));
-                             }
-                           });
+                if (ppdat[ipp] >= 0.0)
+                  psdat[ips] = 0.0;
+                else
+                {
+                  head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                  psdat[ips] = (m * n * alpha * pow(alpha * head, (n - 1))) * s_dif
+                               / (pow(1.0 + pow(alpha * head, n), m + 1));
+                }
+              });
             }   /* End else clause */
           }     /* End subgrid loop */
         }       /* End loop over regions */
@@ -357,62 +357,62 @@ void     Saturation(
           if (fcn == CALCFCN)
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           ipp = SubvectorEltIndex(pp_sub, i, j, k);
-                           ipd = SubvectorEltIndex(pd_sub, i, j, k);
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-                           n_index = SubvectorEltIndex(n_values_sub, i, j, k);
-                           alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
-                           s_res_index = SubvectorEltIndex(s_res_values_sub, i, j, k);
-                           s_sat_index = SubvectorEltIndex(s_sat_values_sub, i, j, k);
+              n_index = SubvectorEltIndex(n_values_sub, i, j, k);
+              alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
+              s_res_index = SubvectorEltIndex(s_res_values_sub, i, j, k);
+              s_sat_index = SubvectorEltIndex(s_sat_values_sub, i, j, k);
 
-                           alpha = alpha_values_dat[alpha_index];
-                           n = n_values_dat[n_index];
-                           m = 1.0e0 - (1.0e0 / n);
-                           s_res = s_res_values_dat[s_res_index];
-                           s_sat = s_sat_values_dat[s_sat_index];
+              alpha = alpha_values_dat[alpha_index];
+              n = n_values_dat[n_index];
+              m = 1.0e0 - (1.0e0 / n);
+              s_res = s_res_values_dat[s_res_index];
+              s_sat = s_sat_values_dat[s_sat_index];
 
-                           if (ppdat[ipp] >= 0.0)
-                             psdat[ips] = s_sat;
-                           else
-                           {
-                             head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                             psdat[ips] = (s_sat - s_res) /
-                                          pow(1.0 + pow((alpha * head), n), m)
-                                          + s_res;
-                           }
-                         });
+              if (ppdat[ipp] >= 0.0)
+                psdat[ips] = s_sat;
+              else
+              {
+                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                psdat[ips] = (s_sat - s_res) /
+                             pow(1.0 + pow((alpha * head), n), m)
+                             + s_res;
+              }
+            });
           }      /* End if clause */
           else   /* fcn = CALCDER */
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           ipp = SubvectorEltIndex(pp_sub, i, j, k);
-                           ipd = SubvectorEltIndex(pd_sub, i, j, k);
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-                           n_index = SubvectorEltIndex(n_values_sub, i, j, k);
-                           alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
-                           s_res_index = SubvectorEltIndex(s_res_values_sub, i, j, k);
-                           s_sat_index = SubvectorEltIndex(s_sat_values_sub, i, j, k);
+              n_index = SubvectorEltIndex(n_values_sub, i, j, k);
+              alpha_index = SubvectorEltIndex(alpha_values_sub, i, j, k);
+              s_res_index = SubvectorEltIndex(s_res_values_sub, i, j, k);
+              s_sat_index = SubvectorEltIndex(s_sat_values_sub, i, j, k);
 
-                           alpha = alpha_values_dat[alpha_index];
-                           n = n_values_dat[n_index];
-                           m = 1.0e0 - (1.0e0 / n);
-                           s_res = s_res_values_dat[s_res_index];
-                           s_sat = s_sat_values_dat[s_sat_index];
-                           s_dif = s_sat - s_res;
+              alpha = alpha_values_dat[alpha_index];
+              n = n_values_dat[n_index];
+              m = 1.0e0 - (1.0e0 / n);
+              s_res = s_res_values_dat[s_res_index];
+              s_sat = s_sat_values_dat[s_sat_index];
+              s_dif = s_sat - s_res;
 
-                           if (ppdat[ipp] >= 0.0)
-                             psdat[ips] = 0.0;
-                           else
-                           {
-                             head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                             psdat[ips] = (m * n * alpha * pow(alpha * head, (n - 1))) * s_dif
-                                          / (pow(1.0 + pow(alpha * head, n), m + 1));
-                           }
-                         });
+              if (ppdat[ipp] >= 0.0)
+                psdat[ips] = 0.0;
+              else
+              {
+                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                psdat[ips] = (m * n * alpha * pow(alpha * head, (n - 1))) * s_dif
+                             / (pow(1.0 + pow(alpha * head, n), m + 1));
+              }
+            });
           }     /* End else clause */
         }       /* End subgrid loop */
       }         /* End if data_from_file */
@@ -461,48 +461,48 @@ void     Saturation(
           if (fcn == CALCFCN)
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           ipp = SubvectorEltIndex(pp_sub, i, j, k);
-                           ipd = SubvectorEltIndex(pd_sub, i, j, k);
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-                           alpha = alphas[ir];
-                           beta = betas[ir];
-                           s_res = s_ress[ir];
-                           s_dif = s_difs[ir];
+              alpha = alphas[ir];
+              beta = betas[ir];
+              s_res = s_ress[ir];
+              s_dif = s_difs[ir];
 
-                           if (ppdat[ipp] >= 0.0)
-                             psdat[ips] = s_dif + s_res;
-                           else
-                           {
-                             head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                             psdat[ips] = alpha * s_dif / (alpha + pow(head, beta))
-                                          + s_res;
-                           }
-                         });
+              if (ppdat[ipp] >= 0.0)
+                psdat[ips] = s_dif + s_res;
+              else
+              {
+                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                psdat[ips] = alpha * s_dif / (alpha + pow(head, beta))
+                             + s_res;
+              }
+            });
           }      /* End if clause */
           else   /* fcn = CALCDER */
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           ipp = SubvectorEltIndex(pp_sub, i, j, k);
-                           ipd = SubvectorEltIndex(pd_sub, i, j, k);
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              ipp = SubvectorEltIndex(pp_sub, i, j, k);
+              ipd = SubvectorEltIndex(pd_sub, i, j, k);
 
-                           alpha = alphas[ir];
-                           beta = betas[ir];
-                           s_res = s_ress[ir];
-                           s_dif = s_difs[ir];
+              alpha = alphas[ir];
+              beta = betas[ir];
+              s_res = s_ress[ir];
+              s_dif = s_difs[ir];
 
-                           if (ppdat[ipp] >= 0.0)
-                             psdat[ips] = 0.0;
-                           else
-                           {
-                             head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
-                             psdat[ips] = alpha * s_dif * beta * pow(head, beta - 1)
-                                          / pow((alpha + pow(head, beta)), 2);
-                           }
-                         });
+              if (ppdat[ipp] >= 0.0)
+                psdat[ips] = 0.0;
+              else
+              {
+                head = fabs(ppdat[ipp]) / (pddat[ipd] * gravity);
+                psdat[ips] = alpha * s_dif * beta * pow(head, beta - 1)
+                             / pow((alpha + pow(head, beta)), 2);
+              }
+            });
           }     /* End else clause */
         }       /* End subgrid loop */
       }         /* End loop over regions */
@@ -563,41 +563,41 @@ void     Saturation(
           if (fcn == CALCFCN)
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           ipp = SubvectorEltIndex(pp_sub, i, j, k);
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              ipp = SubvectorEltIndex(pp_sub, i, j, k);
 
-                           if (ppdat[ipp] == 0.0)
-                             psdat[ips] = region_coeffs[0];
-                           else
-                           {
-                             psdat[ips] = 0.0;
-                             for (dg = 0; dg < degrees[ir] + 1; dg++)
-                             {
-                               psdat[ips] += region_coeffs[dg] * pow(ppdat[ipp], dg);
-                             }
-                           }
-                         });
+              if (ppdat[ipp] == 0.0)
+                psdat[ips] = region_coeffs[0];
+              else
+              {
+                psdat[ips] = 0.0;
+                for (dg = 0; dg < degrees[ir] + 1; dg++)
+                {
+                  psdat[ips] += region_coeffs[dg] * pow(ppdat[ipp], dg);
+                }
+              }
+            });
           }      /* End if clause */
           else   /* fcn = CALCDER */
           {
             GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           ipp = SubvectorEltIndex(pp_sub, i, j, k);
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              ipp = SubvectorEltIndex(pp_sub, i, j, k);
 
-                           if (ppdat[ipp] == 0.0)
-                             psdat[ips] = 0.0;
-                           else
-                           {
-                             psdat[ips] = 0.0;
-                             for (dg = 0; dg < degrees[ir] + 1; dg++)
-                             {
-                               psdat[ips] += region_coeffs[dg] * dg
-                                             * pow(ppdat[ipp], (dg - 1));
-                             }
-                           }
-                         });
+              if (ppdat[ipp] == 0.0)
+                psdat[ips] = 0.0;
+              else
+              {
+                psdat[ips] = 0.0;
+                for (dg = 0; dg < degrees[ir] + 1; dg++)
+                {
+                  psdat[ips] += region_coeffs[dg] * dg
+                                * pow(ppdat[ipp], (dg - 1));
+                }
+              }
+            });
           }     /* End else clause */
         }       /* End subgrid loop */
       }         /* End loop over regions */
@@ -637,22 +637,22 @@ void     Saturation(
         if (fcn == CALCFCN)
         {
           GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                       {
-                         ips = SubvectorEltIndex(ps_sub, i, j, k);
-                         ipRF = SubvectorEltIndex(satRF_sub, i, j, k);
+          {
+            ips = SubvectorEltIndex(ps_sub, i, j, k);
+            ipRF = SubvectorEltIndex(satRF_sub, i, j, k);
 
-                         psdat[ips] = satRFdat[ipRF];
-                       });
+            psdat[ips] = satRFdat[ipRF];
+          });
         }     /* End if clause */
         else  /* fcn = CALCDER */
         {
           GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                       {
-                         ips = SubvectorEltIndex(ps_sub, i, j, k);
-                         ipRF = SubvectorEltIndex(satRF_sub, i, j, k);
+          {
+            ips = SubvectorEltIndex(ps_sub, i, j, k);
+            ipRF = SubvectorEltIndex(satRF_sub, i, j, k);
 
-                         psdat[ips] = 0.0;
-                       });
+            psdat[ips] = 0.0;
+          });
         }    /* End else clause */
       }      /* End subgrid loop */
       break;

@@ -88,13 +88,13 @@ endif (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 # NetCDF
 #-----------------------------------------------------------------------------
 set (PARFLOW_ENABLE_NETCDF False CACHE BOOL "Build with NetCDF")
-if (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_LIBRARY OR DEFINED NETCDF_INCLUDE_DIR) 
+if (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_LIBRARY OR DEFINED NETCDF_INCLUDE_DIR)
   find_package (netCDF)
   if (${netCDF_FOUND})
     set(PARFLOW_HAVE_NETCDF "yes")
     set(HAVE_NETCDF ${PARFLOW_HAVE_NETCDF})
   endif (${netCDF_FOUND})
-endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_LIBRARY OR DEFINED NETCDF_INCLUDE_DIR) 
+endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_LIBRARY OR DEFINED NETCDF_INCLUDE_DIR)
 
 #-----------------------------------------------------------------------------
 # HDF5
@@ -354,6 +354,7 @@ configure_file (cmake/parflow_config.h.in include/parflow_config.h)
 configure_file (cmake/version.h.in include/version.h)
 
 configure_file (cmake/Makefile.config.in config/Makefile.config)
+configure_file (cmake/pf-cmake-env.sh.in config/pf-cmake-env.sh)
 
 if ( ${PARFLOW_HAVE_CLM} )
   configure_file (pfsimulator/clm/parflow_config.F90.in ${PROJECT_BINARY_DIR}/pfsimulator/clm/parflow_config.F90)

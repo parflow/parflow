@@ -1,30 +1,30 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
 #include "parflow.h"
 
@@ -309,9 +309,9 @@ Vector      *z_velocity;
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               ip, nx_f, ny_f, nz_f, 1, 1, 1,
               ipo, nx_po, ny_po, nz_po, 1, 1, 1,
-              {
-                fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol;
-              });
+    {
+      fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol;
+    });
   }
 #endif
 
@@ -365,10 +365,10 @@ Vector      *z_velocity;
 
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               ip, nx_f, ny_f, nz_f, 1, 1, 1,
-              {
-                fp[ip] += ss[ip] * vol * (pp[ip] * sp[ip] * dp[ip] - opp[ip] * osp[ip] * odp[ip]);
-                //press[i][j][k]=pp[ip];
-              });
+    {
+      fp[ip] += ss[ip] * vol * (pp[ip] * sp[ip] * dp[ip] - opp[ip] * osp[ip] * odp[ip]);
+      //press[i][j][k]=pp[ip];
+    });
   }
 #endif
 
@@ -415,9 +415,9 @@ Vector      *z_velocity;
 
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               ip, nx_f, ny_f, nz_f, 1, 1, 1,
-              {
-                fp[ip] -= vol * dt * (sp[ip] + et[ip]);
-              });
+    {
+      fp[ip] -= vol * dt * (sp[ip] + et[ip]);
+    });
   }
 #endif
 
@@ -453,11 +453,11 @@ Vector      *z_velocity;
         case DirichletBC:
         {
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                            {
-                              ip = SubvectorEltIndex(p_sub, i, j, k);
-                              value = bc_patch_values[ival];
-                              pp[ip + fdir[0] * 1 + fdir[1] * sy_p + fdir[2] * sz_p] = value;
-                            });
+          {
+            ip = SubvectorEltIndex(p_sub, i, j, k);
+            value = bc_patch_values[ival];
+            pp[ip + fdir[0] * 1 + fdir[1] * sy_p + fdir[2] * sz_p] = value;
+          });
           break;
         }
       }        /* End switch BCtype */
@@ -510,11 +510,11 @@ Vector      *z_velocity;
 
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               ip, nx_f, ny_f, nz_f, 1, 1, 1,
-              {
-                permxp[ip] = vp[ip] * permx25p[ip];
-                permyp[ip] = vp[ip] * permy25p[ip];
-                permzp[ip] = vp[ip] * permz25p[ip];
-              });
+    {
+      permxp[ip] = vp[ip] * permx25p[ip];
+      permyp[ip] = vp[ip] * permy25p[ip];
+      permzp[ip] = vp[ip] * permz25p[ip];
+    });
   }
 #endif
 
@@ -584,68 +584,68 @@ Vector      *z_velocity;
 
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               ip, nx_p, ny_p, nz_p, 1, 1, 1,
-              {
+    {
 //	   if(k==0) printf("i, j, t, io, qy %d %d %d %d %e\n",i,j,t,io,pp[ip]);
-                /* Calculate right face velocity.
-                 * diff >= 0 implies flow goes left to right */
-                diff = pp[ip] - pp[ip + 1];
-                u_right = ffx * PMean(pp[ip], pp[ip + 1],
-                                      permxp[ip], permxp[ip + 1])
-                          * (diff / dx)
-                          * RPMean(pp[ip], pp[ip + 1], rpp[ip] * dp[ip],
-                                   rpp[ip + 1] * dp[ip + 1]);
-                // xvp[ip] = 1.0/ffx * u_right / ( AMean(sp[ip], sp[ip+1]) * AMean(pop[ip],pop[ip+1]) );
-                xvp[ip] = 1.0 / ffx * u_right;
-                //if (i>=0 && j>=0 && k>=0) printf("Vel %d %d %d %e %e %e \n",i,j,k,xvp[ip],diff, RPMean(pp[ip], pp[ip+1], rpp[ip]*dp[ip],
-                //                        rpp[ip+1]*dp[ip+1]));
+      /* Calculate right face velocity.
+       * diff >= 0 implies flow goes left to right */
+      diff = pp[ip] - pp[ip + 1];
+      u_right = ffx * PMean(pp[ip], pp[ip + 1],
+                            permxp[ip], permxp[ip + 1])
+                * (diff / dx)
+                * RPMean(pp[ip], pp[ip + 1], rpp[ip] * dp[ip],
+                         rpp[ip + 1] * dp[ip + 1]);
+      // xvp[ip] = 1.0/ffx * u_right / ( AMean(sp[ip], sp[ip+1]) * AMean(pop[ip],pop[ip+1]) );
+      xvp[ip] = 1.0 / ffx * u_right;
+      //if (i>=0 && j>=0 && k>=0) printf("Vel %d %d %d %e %e %e \n",i,j,k,xvp[ip],diff, RPMean(pp[ip], pp[ip+1], rpp[ip]*dp[ip],
+      //                        rpp[ip+1]*dp[ip+1]));
 
-                /* Calculate front face velocity.
-                 * diff >= 0 implies flow goes back to front */
-                diff = pp[ip] - pp[ip + sy_p];
-                u_front = ffy * PMean(pp[ip], pp[ip + sy_p], permyp[ip],
-                                      permyp[ip + sy_p])
-                          * (diff / dy)
-                          * RPMean(pp[ip], pp[ip + sy_p], rpp[ip] * dp[ip],
-                                   rpp[ip + sy_p] * dp[ip + sy_p]);
-                yvp[ip] = 1.0 / ffy * u_front / (AMean(sp[ip], sp[ip + sy_p]) * AMean(pop[ip], pop[ip + sy_p]));
+      /* Calculate front face velocity.
+       * diff >= 0 implies flow goes back to front */
+      diff = pp[ip] - pp[ip + sy_p];
+      u_front = ffy * PMean(pp[ip], pp[ip + sy_p], permyp[ip],
+                            permyp[ip + sy_p])
+                * (diff / dy)
+                * RPMean(pp[ip], pp[ip + sy_p], rpp[ip] * dp[ip],
+                         rpp[ip + sy_p] * dp[ip + sy_p]);
+      yvp[ip] = 1.0 / ffy * u_front / (AMean(sp[ip], sp[ip + sy_p]) * AMean(pop[ip], pop[ip + sy_p]));
 
-                /* Calculate upper face velocity.
-                 * diff >= 0 implies flow goes lower to upper */
-                lower_cond = (pp[ip] / dz) - 0.5 * dp[ip] * gravity;
-                upper_cond = (pp[ip + sz_p] / dz) + 0.5 * dp[ip + sz_p] * gravity;
-                diff = lower_cond - upper_cond;
-                u_upper = ffz * PMean(pp[ip], pp[ip + sz_p],
-                                      permzp[ip], permzp[ip + sz_p])
-                          * diff
-                          * RPMean(lower_cond, upper_cond, rpp[ip] * dp[ip],
-                                   rpp[ip + sz_p] * dp[ip + sz_p]);
-                zvp[ip] = 1.0 / ffz * u_upper / (AMean(sp[ip], sp[ip + sz_p]) * AMean(pop[ip], pop[ip + sz_p]));
-                /*if (i>=0.0&&j>=0.0&&k>=0.0) printf ("%e %e %e\n",rpp[ip],dp[ip],
-                 *                                                 RPMean(lower_cond, upper_cond, rpp[ip]*dp[ip],
-                 *                                                  rpp[ip+sz_p]*dp[ip+sz_p]));
-                 * if (i>=0.0&&j>=0.0&&k>=0.0) printf ("zvp %e %e %e %e\n",zvp[ip],u_upper,lower_cond,upper_cond);*/
-                //zvp[ip] = 1/ffz * u_upper / ( AMean(sp[ip],sp[ip+sz_p]) );
+      /* Calculate upper face velocity.
+       * diff >= 0 implies flow goes lower to upper */
+      lower_cond = (pp[ip] / dz) - 0.5 * dp[ip] * gravity;
+      upper_cond = (pp[ip + sz_p] / dz) + 0.5 * dp[ip + sz_p] * gravity;
+      diff = lower_cond - upper_cond;
+      u_upper = ffz * PMean(pp[ip], pp[ip + sz_p],
+                            permzp[ip], permzp[ip + sz_p])
+                * diff
+                * RPMean(lower_cond, upper_cond, rpp[ip] * dp[ip],
+                         rpp[ip + sz_p] * dp[ip + sz_p]);
+      zvp[ip] = 1.0 / ffz * u_upper / (AMean(sp[ip], sp[ip + sz_p]) * AMean(pop[ip], pop[ip + sz_p]));
+      /*if (i>=0.0&&j>=0.0&&k>=0.0) printf ("%e %e %e\n",rpp[ip],dp[ip],
+       *                                                 RPMean(lower_cond, upper_cond, rpp[ip]*dp[ip],
+       *                                                  rpp[ip+sz_p]*dp[ip+sz_p]));
+       * if (i>=0.0&&j>=0.0&&k>=0.0) printf ("zvp %e %e %e %e\n",zvp[ip],u_upper,lower_cond,upper_cond);*/
+      //zvp[ip] = 1/ffz * u_upper / ( AMean(sp[ip],sp[ip+sz_p]) );
 
-                fp[ip] += dt * (u_right + u_front + u_upper);
-                fp[ip + 1] -= dt * u_right;
-                fp[ip + sy_p] -= dt * u_front;
-                fp[ip + sz_p] -= dt * u_upper;
-                /*
-                 * if ((k == 0) && (i == 7) && (j == 0))
-                 * printf("Update stencil contribution: fp[ip] %12.8f \n"
-                 * "  u_upper %14.10f u_right %14.10f u_front %14.10f\n"
-                 * "  pp[ip] %12.8f \n"
-                 * "  pp[ip+1] %12.8f pp[ip+sy_p] %12.8f pp[ip+sz_p] %12.8f\n"
-                 * "  pp[ip-1] %12.8f pp[ip-sy_p] %12.8f pp[ip-sz_p] %12.8f\n"
-                 * "   Rel perms:  ip  %f ip+1 %f ip+sy_p %f ip+sz_p %f \n"
-                 * "   Densities:  ip  %f ip+1 %f ip+sy_p %f ip+sz_p %f \n",
-                 * fp[ip], u_upper, u_right, u_front,
-                 * pp[ip], pp[ip+1], pp[ip+sy_p], pp[ip+sz_p],
-                 * pp[ip-1], pp[ip-sy_p], pp[ip-sz_p],
-                 * rpp[ip], rpp[ip+1], rpp[ip+sy_p], rpp[ip+sz_p],
-                 * dp[ip], dp[ip+1], dp[ip+sy_p], dp[ip+sz_p]);
-                 */
-              });
+      fp[ip] += dt * (u_right + u_front + u_upper);
+      fp[ip + 1] -= dt * u_right;
+      fp[ip + sy_p] -= dt * u_front;
+      fp[ip + sz_p] -= dt * u_upper;
+      /*
+       * if ((k == 0) && (i == 7) && (j == 0))
+       * printf("Update stencil contribution: fp[ip] %12.8f \n"
+       * "  u_upper %14.10f u_right %14.10f u_front %14.10f\n"
+       * "  pp[ip] %12.8f \n"
+       * "  pp[ip+1] %12.8f pp[ip+sy_p] %12.8f pp[ip+sz_p] %12.8f\n"
+       * "  pp[ip-1] %12.8f pp[ip-sy_p] %12.8f pp[ip-sz_p] %12.8f\n"
+       * "   Rel perms:  ip  %f ip+1 %f ip+sy_p %f ip+sz_p %f \n"
+       * "   Densities:  ip  %f ip+1 %f ip+sy_p %f ip+sz_p %f \n",
+       * fp[ip], u_upper, u_right, u_front,
+       * pp[ip], pp[ip+1], pp[ip+sy_p], pp[ip+sz_p],
+       * pp[ip-1], pp[ip-sy_p], pp[ip-sz_p],
+       * rpp[ip], rpp[ip+1], rpp[ip+sy_p], rpp[ip+sz_p],
+       * dp[ip], dp[ip+1], dp[ip+sy_p], dp[ip+sz_p]);
+       */
+    });
   }
 #endif
 
@@ -747,175 +747,175 @@ Vector      *z_velocity;
         case DirichletBC:
         {
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                            {
-                              ip = SubvectorEltIndex(p_sub, i, j, k);
+          {
+            ip = SubvectorEltIndex(p_sub, i, j, k);
 
-                              value = bc_patch_values[ival];
+            value = bc_patch_values[ival];
 
-                              /* Don't currently do upstream weighting on boundaries */
+            /* Don't currently do upstream weighting on boundaries */
 
-                              if (fdir[0])
-                              {
-                                switch (fdir[0])
-                                {
-                                  case -1:
-                                    dir = -1;
-                                    diff = pp[ip - 1] - pp[ip];
-                                    u_old = ffx
-                                            * PMean(pp[ip - 1], pp[ip], permxp[ip - 1], permxp[ip])
-                                            * (diff / dx)
-                                            * RPMean(pp[ip - 1], pp[ip],
-                                                     rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip]);
-                                    diff = value - pp[ip];
-                                    u_new = RPMean(value, pp[ip],
-                                                   rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip]);
-                                    xvp[ip - 1] = 2.0 * u_new * permxp[ip] * diff / dx;
-                                    break;
+            if (fdir[0])
+            {
+              switch (fdir[0])
+              {
+                case -1:
+                  dir = -1;
+                  diff = pp[ip - 1] - pp[ip];
+                  u_old = ffx
+                          * PMean(pp[ip - 1], pp[ip], permxp[ip - 1], permxp[ip])
+                          * (diff / dx)
+                          * RPMean(pp[ip - 1], pp[ip],
+                                   rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip]);
+                  diff = value - pp[ip];
+                  u_new = RPMean(value, pp[ip],
+                                 rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip]);
+                  xvp[ip - 1] = 2.0 * u_new * permxp[ip] * diff / dx;
+                  break;
 
-                                  case  1:
-                                    dir = 1;
-                                    diff = pp[ip] - pp[ip + 1];
-                                    u_old = ffx
-                                            * PMean(pp[ip], pp[ip + 1], permxp[ip], permxp[ip + 1])
-                                            * (diff / dx)
-                                            * RPMean(pp[ip], pp[ip + 1],
-                                                     rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1]);
-                                    diff = pp[ip] - value;
-                                    u_new = RPMean(pp[ip], value,
-                                                   rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1]);
-                                    xvp[ip] = 2.0 * u_new * permxp[ip] * diff / dx;
-                                    break;
-                                }
-                                u_new = u_new * ffx * permxp[ip] * 2.0 * (diff / dx);
-                                /*
-                                 * if ((k == 0) && (i == 7) && (j == 0))
-                                 * printf("Right BC u_new %12.8f u_old %12.8f value %12.8f "
-                                 *    "dir %i RPVal %f\n",
-                                 *    u_new, u_old, value, dir,(RPMean(pp[ip], value,
-                                 *                rpp[ip]*dp[ip], rpp[ip+1]*dp[ip+1])));
-                                 */
-                              }
-                              else if (fdir[1])
-                              {
-                                switch (fdir[1])
-                                {
-                                  case -1:
-                                    dir = -1;
-                                    diff = pp[ip - sy_p] - pp[ip];
-                                    u_old = ffy
-                                            * PMean(pp[ip - sy_p], pp[ip],
-                                                    permyp[ip - sy_p], permyp[ip])
-                                            * (diff / dy)
-                                            * RPMean(pp[ip - sy_p], pp[ip],
-                                                     rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip]);
-                                    diff = value - pp[ip];
-                                    u_new = RPMean(value, pp[ip],
-                                                   rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip]);
-                                    break;
+                case  1:
+                  dir = 1;
+                  diff = pp[ip] - pp[ip + 1];
+                  u_old = ffx
+                          * PMean(pp[ip], pp[ip + 1], permxp[ip], permxp[ip + 1])
+                          * (diff / dx)
+                          * RPMean(pp[ip], pp[ip + 1],
+                                   rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1]);
+                  diff = pp[ip] - value;
+                  u_new = RPMean(pp[ip], value,
+                                 rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1]);
+                  xvp[ip] = 2.0 * u_new * permxp[ip] * diff / dx;
+                  break;
+              }
+              u_new = u_new * ffx * permxp[ip] * 2.0 * (diff / dx);
+              /*
+               * if ((k == 0) && (i == 7) && (j == 0))
+               * printf("Right BC u_new %12.8f u_old %12.8f value %12.8f "
+               *    "dir %i RPVal %f\n",
+               *    u_new, u_old, value, dir,(RPMean(pp[ip], value,
+               *                rpp[ip]*dp[ip], rpp[ip+1]*dp[ip+1])));
+               */
+            }
+            else if (fdir[1])
+            {
+              switch (fdir[1])
+              {
+                case -1:
+                  dir = -1;
+                  diff = pp[ip - sy_p] - pp[ip];
+                  u_old = ffy
+                          * PMean(pp[ip - sy_p], pp[ip],
+                                  permyp[ip - sy_p], permyp[ip])
+                          * (diff / dy)
+                          * RPMean(pp[ip - sy_p], pp[ip],
+                                   rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip]);
+                  diff = value - pp[ip];
+                  u_new = RPMean(value, pp[ip],
+                                 rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip]);
+                  break;
 
-                                  case  1:
-                                    dir = 1;
-                                    diff = pp[ip] - pp[ip + sy_p];
-                                    u_old = ffy
-                                            * PMean(pp[ip], pp[ip + sy_p],
-                                                    permyp[ip], permyp[ip + sy_p])
-                                            * (diff / dy)
-                                            * RPMean(pp[ip], pp[ip + sy_p],
-                                                     rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p]);
-                                    diff = pp[ip] - value;
-                                    u_new = RPMean(pp[ip], value,
-                                                   rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p]);
-                                    break;
-                                }
-                                u_new = u_new * ffy * (permyp[ip])
-                                        * 2.0 * (diff / dy);
-                                /*
-                                 * if ((k == 0) && (i == 0) && (j == 0))
-                                 * printf("Front BC u_new %12.8f u_old %12.8f value %12.8f "
-                                 *    "dir %i\n",
-                                 *    u_new, u_old, value, dir);
-                                 */
-                              }
-                              else if (fdir[2])
-                              {
-                                switch (fdir[2])
-                                {
-                                  case -1:
-                                    {
-                                      dir = -1;
-                                      lower_cond = (pp[ip - sz_p] / dz)
-                                                   - 0.5 * dp[ip - sz_p] * gravity;
-                                      upper_cond = (pp[ip] / dz) + 0.5 * dp[ip] * gravity;
-                                      diff = lower_cond - upper_cond;
+                case  1:
+                  dir = 1;
+                  diff = pp[ip] - pp[ip + sy_p];
+                  u_old = ffy
+                          * PMean(pp[ip], pp[ip + sy_p],
+                                  permyp[ip], permyp[ip + sy_p])
+                          * (diff / dy)
+                          * RPMean(pp[ip], pp[ip + sy_p],
+                                   rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p]);
+                  diff = pp[ip] - value;
+                  u_new = RPMean(pp[ip], value,
+                                 rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p]);
+                  break;
+              }
+              u_new = u_new * ffy * (permyp[ip])
+                      * 2.0 * (diff / dy);
+              /*
+               * if ((k == 0) && (i == 0) && (j == 0))
+               * printf("Front BC u_new %12.8f u_old %12.8f value %12.8f "
+               *    "dir %i\n",
+               *    u_new, u_old, value, dir);
+               */
+            }
+            else if (fdir[2])
+            {
+              switch (fdir[2])
+              {
+                case -1:
+                  {
+                    dir = -1;
+                    lower_cond = (pp[ip - sz_p] / dz)
+                                 - 0.5 * dp[ip - sz_p] * gravity;
+                    upper_cond = (pp[ip] / dz) + 0.5 * dp[ip] * gravity;
+                    diff = lower_cond - upper_cond;
 
-                                      u_old = ffz
-                                              * PMean(pp[ip - sz_p], pp[ip],
-                                                      permzp[ip - sz_p], permzp[ip])
-                                              * diff
-                                              * RPMean(lower_cond, upper_cond,
-                                                       rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip]);
+                    u_old = ffz
+                            * PMean(pp[ip - sz_p], pp[ip],
+                                    permzp[ip - sz_p], permzp[ip])
+                            * diff
+                            * RPMean(lower_cond, upper_cond,
+                                     rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip]);
 
-                                      lower_cond = (value / dz) - 0.25 * dp[ip] * gravity;
-                                      upper_cond = (pp[ip] / dz) + 0.25 * dp[ip] * gravity;
-                                      diff = lower_cond - upper_cond;
-                                      u_new = RPMean(lower_cond, upper_cond,
-                                                     rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip]);
+                    lower_cond = (value / dz) - 0.25 * dp[ip] * gravity;
+                    upper_cond = (pp[ip] / dz) + 0.25 * dp[ip] * gravity;
+                    diff = lower_cond - upper_cond;
+                    u_new = RPMean(lower_cond, upper_cond,
+                                   rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip]);
 
-                                      zvp[ip] = permzp[ip] / (sp[ip] * pop[ip]) * 2.0 * diff * u_new;
-                                      break;
-                                    } /* End case -1 */
+                    zvp[ip] = permzp[ip] / (sp[ip] * pop[ip]) * 2.0 * diff * u_new;
+                    break;
+                  }      /* End case -1 */
 
-                                  case  1:
-                                    {
-                                      dir = 1;
-                                      lower_cond = (pp[ip] / dz) - 0.5 * dp[ip] * gravity;
-                                      upper_cond = (pp[ip + sz_p] / dz)
-                                                   - 0.5 * dp[ip + sz_p] * gravity;
-                                      diff = lower_cond - upper_cond;
-                                      u_old = ffz
-                                              * PMean(pp[ip], pp[ip + sz_p],
-                                                      permzp[ip], permzp[ip + sz_p])
-                                              * diff
-                                              * RPMean(lower_cond, upper_cond,
-                                                       rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p]);
-                                      lower_cond = (pp[ip] / dz) - 0.25 * dp[ip] * gravity;
-                                      upper_cond = (value / dz) + 0.25 * dp[ip] * gravity;
-                                      diff = lower_cond - upper_cond;
-                                      u_new = RPMean(lower_cond, upper_cond,
-                                                     rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p]);
+                case  1:
+                  {
+                    dir = 1;
+                    lower_cond = (pp[ip] / dz) - 0.5 * dp[ip] * gravity;
+                    upper_cond = (pp[ip + sz_p] / dz)
+                                 - 0.5 * dp[ip + sz_p] * gravity;
+                    diff = lower_cond - upper_cond;
+                    u_old = ffz
+                            * PMean(pp[ip], pp[ip + sz_p],
+                                    permzp[ip], permzp[ip + sz_p])
+                            * diff
+                            * RPMean(lower_cond, upper_cond,
+                                     rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p]);
+                    lower_cond = (pp[ip] / dz) - 0.25 * dp[ip] * gravity;
+                    upper_cond = (value / dz) + 0.25 * dp[ip] * gravity;
+                    diff = lower_cond - upper_cond;
+                    u_new = RPMean(lower_cond, upper_cond,
+                                   rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p]);
 
-                                      zvp[ip] = permzp[ip] / (sp[ip] * pop[ip]) * 2.0 * diff * u_new;
-                                      break;
-                                    } /* End case 1 */
-                                }
-                                u_new = u_new * ffz * (permzp[ip])
-                                        * 2.0 * diff;
-                                /*
-                                 * if ((k == 25) && (i==1) && (j == 0) )
-                                 * printf("Upper BC u_new %12.8f u_old %12.8f value %12.8f\n"
-                                 *    "   rpp[ip] %12.8f rpp[ip+sz_p] %12.8f "
-                                 *    "dp[ip] %12.8f\n"
-                                 *    "   dp[ip+sz_p] %12.8f diff %12.8f permp[ip] %12.8f\n",
-                                 *    u_new, u_old, value, rpp[ip], rpp[ip+sz_p],
-                                 *    dp[ip], dp[ip+sz_p], diff, permp[ip]);
-                                 */
-                              }
-                              /*
-                               * if ( (k == 25) && (i == 1) && (j == 0))
-                               * printf("f before BC additions: %12.8f \n", fp[ip]);
-                               */
+                    zvp[ip] = permzp[ip] / (sp[ip] * pop[ip]) * 2.0 * diff * u_new;
+                    break;
+                  }      /* End case 1 */
+              }
+              u_new = u_new * ffz * (permzp[ip])
+                      * 2.0 * diff;
+              /*
+               * if ((k == 25) && (i==1) && (j == 0) )
+               * printf("Upper BC u_new %12.8f u_old %12.8f value %12.8f\n"
+               *    "   rpp[ip] %12.8f rpp[ip+sz_p] %12.8f "
+               *    "dp[ip] %12.8f\n"
+               *    "   dp[ip+sz_p] %12.8f diff %12.8f permp[ip] %12.8f\n",
+               *    u_new, u_old, value, rpp[ip], rpp[ip+sz_p],
+               *    dp[ip], dp[ip+sz_p], diff, permp[ip]);
+               */
+            }
+            /*
+             * if ( (k == 25) && (i == 1) && (j == 0))
+             * printf("f before BC additions: %12.8f \n", fp[ip]);
+             */
 
-                              /* Remove the boundary term computed above */
-                              fp[ip] -= dt * dir * u_old;
+            /* Remove the boundary term computed above */
+            fp[ip] -= dt * dir * u_old;
 
-                              /* Add the correct boundary term */
-                              fp[ip] += dt * dir * u_new;
-                              /*
-                               * if ( (k == 25) && (i == 1) && (j == 0))
-                               * printf("f after BC additions: %12.8f \n\n",
-                               *        fp[ip]);
-                               */
-                            });
+            /* Add the correct boundary term */
+            fp[ip] += dt * dir * u_new;
+            /*
+             * if ( (k == 25) && (i == 1) && (j == 0))
+             * printf("f after BC additions: %12.8f \n\n",
+             *        fp[ip]);
+             */
+          });
 
           break;
         }
@@ -923,113 +923,113 @@ Vector      *z_velocity;
         case FluxBC:
         {
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                            {
-                              ip = SubvectorEltIndex(p_sub, i, j, k);
+          {
+            ip = SubvectorEltIndex(p_sub, i, j, k);
 
-                              if (fdir[0])
-                              {
-                                switch (fdir[0])
-                                {
-                                  case -1:
-                                    dir = -1;
-                                    diff = pp[ip - 1] - pp[ip];
-                                    u_old = ffx * PMean(pp[ip - 1], pp[ip],
-                                                        permxp[ip - 1], permxp[ip])
-                                            * (diff / dx)
-                                            * RPMean(pp[ip - 1], pp[ip],
-                                                     rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip]);
-                                    xvp[ip - 1] = bc_patch_values[ival];
-                                    break;
+            if (fdir[0])
+            {
+              switch (fdir[0])
+              {
+                case -1:
+                  dir = -1;
+                  diff = pp[ip - 1] - pp[ip];
+                  u_old = ffx * PMean(pp[ip - 1], pp[ip],
+                                      permxp[ip - 1], permxp[ip])
+                          * (diff / dx)
+                          * RPMean(pp[ip - 1], pp[ip],
+                                   rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip]);
+                  xvp[ip - 1] = bc_patch_values[ival];
+                  break;
 
-                                  case  1:
-                                    dir = 1;
-                                    diff = pp[ip] - pp[ip + 1];
-                                    u_old = ffx * PMean(pp[ip], pp[ip + 1],
-                                                        permxp[ip], permxp[ip + 1])
-                                            * (diff / dx)
-                                            * RPMean(pp[ip], pp[ip + 1],
-                                                     rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1]);
-                                    xvp[ip] = bc_patch_values[ival];
-                                    break;
-                                }
-                                u_new = ffx;
-                              }
-                              else if (fdir[1])
-                              {
-                                switch (fdir[1])
-                                {
-                                  case -1:
-                                    dir = -1;
-                                    diff = pp[ip - sy_p] - pp[ip];
-                                    u_old = ffy * PMean(pp[ip - sy_p], pp[ip],
-                                                        permyp[ip - sy_p], permyp[ip])
-                                            * (diff / dy)
-                                            * RPMean(pp[ip - sy_p], pp[ip],
-                                                     rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip]);
-                                    break;
+                case  1:
+                  dir = 1;
+                  diff = pp[ip] - pp[ip + 1];
+                  u_old = ffx * PMean(pp[ip], pp[ip + 1],
+                                      permxp[ip], permxp[ip + 1])
+                          * (diff / dx)
+                          * RPMean(pp[ip], pp[ip + 1],
+                                   rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1]);
+                  xvp[ip] = bc_patch_values[ival];
+                  break;
+              }
+              u_new = ffx;
+            }
+            else if (fdir[1])
+            {
+              switch (fdir[1])
+              {
+                case -1:
+                  dir = -1;
+                  diff = pp[ip - sy_p] - pp[ip];
+                  u_old = ffy * PMean(pp[ip - sy_p], pp[ip],
+                                      permyp[ip - sy_p], permyp[ip])
+                          * (diff / dy)
+                          * RPMean(pp[ip - sy_p], pp[ip],
+                                   rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip]);
+                  break;
 
-                                  case  1:
-                                    dir = 1;
-                                    diff = pp[ip] - pp[ip + sy_p];
-                                    u_old = ffy * PMean(pp[ip], pp[ip + sy_p],
-                                                        permyp[ip], permyp[ip + sy_p])
-                                            * (diff / dy)
-                                            * RPMean(pp[ip], pp[ip + sy_p],
-                                                     rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p]);
-                                    break;
-                                }
-                                u_new = ffy;
-                              }
-                              else if (fdir[2])
-                              {
-                                switch (fdir[2])
-                                {
-                                  case -1:
-                                    dir = -1;
-                                    lower_cond = (pp[ip - sz_p] / dz)
-                                                 - 0.5 * dp[ip - sz_p] * gravity;
-                                    upper_cond = (pp[ip] / dz) + 0.5 * dp[ip] * gravity;
-                                    diff = lower_cond - upper_cond;
-                                    u_old = ffz * PMean(pp[ip - sz_p], pp[ip],
-                                                        permzp[ip - sz_p], permzp[ip])
-                                            * diff
-                                            * RPMean(lower_cond, upper_cond,
-                                                     rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip]);
-                                    break;
+                case  1:
+                  dir = 1;
+                  diff = pp[ip] - pp[ip + sy_p];
+                  u_old = ffy * PMean(pp[ip], pp[ip + sy_p],
+                                      permyp[ip], permyp[ip + sy_p])
+                          * (diff / dy)
+                          * RPMean(pp[ip], pp[ip + sy_p],
+                                   rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p]);
+                  break;
+              }
+              u_new = ffy;
+            }
+            else if (fdir[2])
+            {
+              switch (fdir[2])
+              {
+                case -1:
+                  dir = -1;
+                  lower_cond = (pp[ip - sz_p] / dz)
+                               - 0.5 * dp[ip - sz_p] * gravity;
+                  upper_cond = (pp[ip] / dz) + 0.5 * dp[ip] * gravity;
+                  diff = lower_cond - upper_cond;
+                  u_old = ffz * PMean(pp[ip - sz_p], pp[ip],
+                                      permzp[ip - sz_p], permzp[ip])
+                          * diff
+                          * RPMean(lower_cond, upper_cond,
+                                   rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip]);
+                  break;
 
-                                  case  1:
-                                    dir = 1;
-                                    lower_cond = (pp[ip] / dz) - 0.5 * dp[ip] * gravity;
-                                    upper_cond = (pp[ip + sz_p] / dz)
-                                                 + 0.5 * dp[ip + sz_p] * gravity;
-                                    diff = lower_cond - upper_cond;
-                                    u_old = ffz * PMean(0, 0, permzp[ip], permzp[ip + sz_p])
-                                            * diff
-                                            * RPMean(lower_cond, upper_cond,
-                                                     rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p]);
-                                    break;
-                                }
-                                u_new = ffz;
+                case  1:
+                  dir = 1;
+                  lower_cond = (pp[ip] / dz) - 0.5 * dp[ip] * gravity;
+                  upper_cond = (pp[ip + sz_p] / dz)
+                               + 0.5 * dp[ip + sz_p] * gravity;
+                  diff = lower_cond - upper_cond;
+                  u_old = ffz * PMean(0, 0, permzp[ip], permzp[ip + sz_p])
+                          * diff
+                          * RPMean(lower_cond, upper_cond,
+                                   rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p]);
+                  break;
+              }
+              u_new = ffz;
 
-                                /* Velocity in z-direction */
-                                zvp[ip] = bc_patch_values[ival] / (sp[ip] * pop[ip]);
-                              }
+              /* Velocity in z-direction */
+              zvp[ip] = bc_patch_values[ival] / (sp[ip] * pop[ip]);
+            }
 
-                              /* Remove the boundary term computed above */
-                              fp[ip] -= dt * dir * u_old;
-                              /*
-                               * if ((fdir[2] > 0) && (i == 0) && (j == 0))
-                               * printf("f before flux BC additions: %12.8f \n", fp[ip]);
-                               */
-                              /* Add the correct boundary term */
-                              u_new = u_new * bc_patch_values[ival];
-                              fp[ip] += dt * dir * u_new;
-                              /*
-                               * if ((fdir[2] < 0) && (i == 0) && (j == 0))
-                               * printf("f after flux BC additions: %12.8f \n\n",
-                               *        fp[ip]);
-                               */
-                            });
+            /* Remove the boundary term computed above */
+            fp[ip] -= dt * dir * u_old;
+            /*
+             * if ((fdir[2] > 0) && (i == 0) && (j == 0))
+             * printf("f before flux BC additions: %12.8f \n", fp[ip]);
+             */
+            /* Add the correct boundary term */
+            u_new = u_new * bc_patch_values[ival];
+            fp[ip] += dt * dir * u_new;
+            /*
+             * if ((fdir[2] < 0) && (i == 0) && (j == 0))
+             * printf("f after flux BC additions: %12.8f \n\n",
+             *        fp[ip]);
+             */
+          });
 
           break;
         }      /* End fluxbc case */
@@ -1037,232 +1037,232 @@ Vector      *z_velocity;
         case OverlandBC:
         {
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                            {
-                              ip = SubvectorEltIndex(p_sub, i, j, k);
+          {
+            ip = SubvectorEltIndex(p_sub, i, j, k);
 
-                              if (fdir[0])
-                              {
-                                switch (fdir[0])
-                                {
-                                  case -1:
-                                    dir = -1;
-                                    diff = pp[ip - 1] - pp[ip];
-                                    u_old = ffx * PMean(pp[ip - 1], pp[ip],
-                                                        permxp[ip - 1], permxp[ip])
-                                            * (diff / dx)
-                                            * RPMean(pp[ip - 1], pp[ip],
-                                                     rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip]);
-                                    break;
+            if (fdir[0])
+            {
+              switch (fdir[0])
+              {
+                case -1:
+                  dir = -1;
+                  diff = pp[ip - 1] - pp[ip];
+                  u_old = ffx * PMean(pp[ip - 1], pp[ip],
+                                      permxp[ip - 1], permxp[ip])
+                          * (diff / dx)
+                          * RPMean(pp[ip - 1], pp[ip],
+                                   rpp[ip - 1] * dp[ip - 1], rpp[ip] * dp[ip]);
+                  break;
 
-                                  case  1:
-                                    dir = 1;
-                                    diff = pp[ip] - pp[ip + 1];
-                                    u_old = ffx * PMean(pp[ip], pp[ip + 1],
-                                                        permxp[ip], permxp[ip + 1])
-                                            * (diff / dx)
-                                            * RPMean(pp[ip], pp[ip + 1],
-                                                     rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1]);
-                                    break;
-                                }
-                                u_new = ffx;
-                              }
-                              else if (fdir[1])
-                              {
-                                switch (fdir[1])
-                                {
-                                  case -1:
-                                    dir = -1;
-                                    diff = pp[ip - sy_p] - pp[ip];
-                                    u_old = ffy * PMean(pp[ip - sy_p], pp[ip],
-                                                        permyp[ip - sy_p], permyp[ip])
-                                            * (diff / dy)
-                                            * RPMean(pp[ip - sy_p], pp[ip],
-                                                     rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip]);
-                                    break;
+                case  1:
+                  dir = 1;
+                  diff = pp[ip] - pp[ip + 1];
+                  u_old = ffx * PMean(pp[ip], pp[ip + 1],
+                                      permxp[ip], permxp[ip + 1])
+                          * (diff / dx)
+                          * RPMean(pp[ip], pp[ip + 1],
+                                   rpp[ip] * dp[ip], rpp[ip + 1] * dp[ip + 1]);
+                  break;
+              }
+              u_new = ffx;
+            }
+            else if (fdir[1])
+            {
+              switch (fdir[1])
+              {
+                case -1:
+                  dir = -1;
+                  diff = pp[ip - sy_p] - pp[ip];
+                  u_old = ffy * PMean(pp[ip - sy_p], pp[ip],
+                                      permyp[ip - sy_p], permyp[ip])
+                          * (diff / dy)
+                          * RPMean(pp[ip - sy_p], pp[ip],
+                                   rpp[ip - sy_p] * dp[ip - sy_p], rpp[ip] * dp[ip]);
+                  break;
 
-                                  case  1:
-                                    dir = 1;
-                                    diff = pp[ip] - pp[ip + sy_p];
-                                    u_old = ffy * PMean(pp[ip], pp[ip + sy_p],
-                                                        permyp[ip], permyp[ip + sy_p])
-                                            * (diff / dy)
-                                            * RPMean(pp[ip], pp[ip + sy_p],
-                                                     rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p]);
-                                    break;
-                                }
-                                u_new = ffy;
-                              }
-                              else if (fdir[2])
-                              {
-                                switch (fdir[2])
-                                {
-                                  case -1:
-                                    dir = -1;
-                                    lower_cond = (pp[ip - sz_p] / dz)
-                                                 - 0.5 * dp[ip - sz_p] * gravity;
-                                    upper_cond = (pp[ip] / dz) + 0.5 * dp[ip] * gravity;
-                                    diff = lower_cond - upper_cond;
-                                    u_old = ffz * PMean(pp[ip - sz_p], pp[ip],
-                                                        permzp[ip - sz_p], permzp[ip])
-                                            * diff
-                                            * RPMean(lower_cond, upper_cond,
-                                                     rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip]);
-                                    break;
+                case  1:
+                  dir = 1;
+                  diff = pp[ip] - pp[ip + sy_p];
+                  u_old = ffy * PMean(pp[ip], pp[ip + sy_p],
+                                      permyp[ip], permyp[ip + sy_p])
+                          * (diff / dy)
+                          * RPMean(pp[ip], pp[ip + sy_p],
+                                   rpp[ip] * dp[ip], rpp[ip + sy_p] * dp[ip + sy_p]);
+                  break;
+              }
+              u_new = ffy;
+            }
+            else if (fdir[2])
+            {
+              switch (fdir[2])
+              {
+                case -1:
+                  dir = -1;
+                  lower_cond = (pp[ip - sz_p] / dz)
+                               - 0.5 * dp[ip - sz_p] * gravity;
+                  upper_cond = (pp[ip] / dz) + 0.5 * dp[ip] * gravity;
+                  diff = lower_cond - upper_cond;
+                  u_old = ffz * PMean(pp[ip - sz_p], pp[ip],
+                                      permzp[ip - sz_p], permzp[ip])
+                          * diff
+                          * RPMean(lower_cond, upper_cond,
+                                   rpp[ip - sz_p] * dp[ip - sz_p], rpp[ip] * dp[ip]);
+                  break;
 
-                                  case  1:
-                                    dir = 1;
-                                    lower_cond = (pp[ip] / dz) - 0.5 * dp[ip] * gravity;
-                                    upper_cond = (pp[ip + sz_p] / dz)
-                                                 + 0.5 * dp[ip + sz_p] * gravity;
-                                    diff = lower_cond - upper_cond;
-                                    u_old = ffz * PMean(0, 0, permzp[ip], permzp[ip + sz_p])
-                                            * diff
-                                            * RPMean(lower_cond, upper_cond,
-                                                     rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p]);
-                                    break;
-                                }
-                                u_new = ffz;
-                              }
+                case  1:
+                  dir = 1;
+                  lower_cond = (pp[ip] / dz) - 0.5 * dp[ip] * gravity;
+                  upper_cond = (pp[ip + sz_p] / dz)
+                               + 0.5 * dp[ip + sz_p] * gravity;
+                  diff = lower_cond - upper_cond;
+                  u_old = ffz * PMean(0, 0, permzp[ip], permzp[ip + sz_p])
+                          * diff
+                          * RPMean(lower_cond, upper_cond,
+                                   rpp[ip] * dp[ip], rpp[ip + sz_p] * dp[ip + sz_p]);
+                  break;
+              }
+              u_new = ffz;
+            }
 
-                              /* Remove the boundary term computed above */
-                              fp[ip] -= dt * dir * u_old;
+            /* Remove the boundary term computed above */
+            fp[ip] -= dt * dir * u_old;
 
-                              /*
-                               * if ((fdir[2] > 0) && (i == 0) && (j == 0))
-                               * printf("f before flux BC additions: %12.8f \n", fp[ip]);
-                               */
-                              //printf("u_new %e %e %e %e\n",u_new,dx,dy,dz);
-                              u_new = u_new * bc_patch_values[ival]; //sk: here we go in and implement surface routing!
+            /*
+             * if ((fdir[2] > 0) && (i == 0) && (j == 0))
+             * printf("f before flux BC additions: %12.8f \n", fp[ip]);
+             */
+            //printf("u_new %e %e %e %e\n",u_new,dx,dy,dz);
+            u_new = u_new * bc_patch_values[ival];        //sk: here we go in and implement surface routing!
 
-                              fp[ip] += dt * dir * u_new;
-                              /*
-                               * if ((fdir[2] < 0) && (i == 0) && (j == 0))
-                               * printf("f after flux BC additions: %12.8f \n\n",
-                               *        fp[ip]);
-                               */
-                            });
+            fp[ip] += dt * dir * u_new;
+            /*
+             * if ((fdir[2] < 0) && (i == 0) && (j == 0))
+             * printf("f after flux BC additions: %12.8f \n\n",
+             *        fp[ip]);
+             */
+          });
 
 
           BCStructPatchLoopOvrlnd(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                                  {
-                                    if (fdir[2])
-                                    {
-                                      switch (fdir[2])
-                                      {
-                                        case 1:
-                                          io = SubvectorEltIndex(p_sub, i, j, 0);
-                                          ip = SubvectorEltIndex(p_sub, i, j, k);
-                                          io = SubvectorEltIndex(p_sub, i, j, 0);
+          {
+            if (fdir[2])
+            {
+              switch (fdir[2])
+              {
+                case 1:
+                  io = SubvectorEltIndex(p_sub, i, j, 0);
+                  ip = SubvectorEltIndex(p_sub, i, j, k);
+                  io = SubvectorEltIndex(p_sub, i, j, 0);
 
-                                          dir_x = 0.0;
-                                          dir_y = 0.0;
-                                          if (x_sl_dat[io] > 0.0)
-                                            dir_x = -1.0;
-                                          if (y_sl_dat[io] > 0.0)
-                                            dir_y = -1.0;
-                                          if (x_sl_dat[io] < 0.0)
-                                            dir_x = 1.0;
-                                          if (y_sl_dat[io] < 0.0)
-                                            dir_y = 1.0;
+                  dir_x = 0.0;
+                  dir_y = 0.0;
+                  if (x_sl_dat[io] > 0.0)
+                    dir_x = -1.0;
+                  if (y_sl_dat[io] > 0.0)
+                    dir_y = -1.0;
+                  if (x_sl_dat[io] < 0.0)
+                    dir_x = 1.0;
+                  if (y_sl_dat[io] < 0.0)
+                    dir_y = 1.0;
 
-                                          qx_[io] = dir_x * (RPowerR(fabs(x_sl_dat[io]), 0.5) / mann_dat[io]) * RPowerR(max((pp[ip]), 0.0), (5.0 / 3.0));
-                                          qy_[io] = dir_y * (RPowerR(fabs(y_sl_dat[io]), 0.5) / mann_dat[io]) * RPowerR(max((pp[ip]), 0.0), (5.0 / 3.0));
-                                          break;
-                                      }
-                                    }
-                                  });
+                  qx_[io] = dir_x * (RPowerR(fabs(x_sl_dat[io]), 0.5) / mann_dat[io]) * RPowerR(max((pp[ip]), 0.0), (5.0 / 3.0));
+                  qy_[io] = dir_y * (RPowerR(fabs(y_sl_dat[io]), 0.5) / mann_dat[io]) * RPowerR(max((pp[ip]), 0.0), (5.0 / 3.0));
+                  break;
+              }
+            }
+          });
 
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                            {
-                              if (fdir[2])
-                              {
-                                switch (fdir[2])
-                                {
-                                  case 1:
-                                    io = SubvectorEltIndex(p_sub, i, j, 0);
+          {
+            if (fdir[2])
+            {
+              switch (fdir[2])
+              {
+                case 1:
+                  io = SubvectorEltIndex(p_sub, i, j, 0);
 
-                                    ke_[io] = max(qx_[io], 0.0) - max(-qx_[io + 1], 0.0);
-                                    kw_[io] = max(qx_[io - 1], 0.0) - max(-qx_[io], 0.0);
+                  ke_[io] = max(qx_[io], 0.0) - max(-qx_[io + 1], 0.0);
+                  kw_[io] = max(qx_[io - 1], 0.0) - max(-qx_[io], 0.0);
 
-                                    kn_[io] = max(qy_[io], 0.0) - max(-qy_[io + sy_p], 0.0);
-                                    ks_[io] = max(qy_[io - sy_p], 0.0) - max(-qy_[io], 0.0);
+                  kn_[io] = max(qy_[io], 0.0) - max(-qy_[io + sy_p], 0.0);
+                  ks_[io] = max(qy_[io - sy_p], 0.0) - max(-qy_[io], 0.0);
 
-                                    break;
-                                }
-                              }
-                            });
+                  break;
+              }
+            }
+          });
 
 
           *outflow = 0.0;
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                            {
-                              if (fdir[2])
-                              {
-                                switch (fdir[2])
-                                {
-                                  case 1:
-                                    dir = 1;
-                                    ip = SubvectorEltIndex(p_sub, i, j, k);
-                                    io = SubvectorEltIndex(p_sub, i, j, 0);
+          {
+            if (fdir[2])
+            {
+              switch (fdir[2])
+              {
+                case 1:
+                  dir = 1;
+                  ip = SubvectorEltIndex(p_sub, i, j, k);
+                  io = SubvectorEltIndex(p_sub, i, j, 0);
 
-                                    q_overlnd = 0.0;
-                                    q_overlnd = vol * (max(pp[ip], 0.0) - max(opp[ip], 0.0)) / dz +
-                                                dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy) / dz;
+                  q_overlnd = 0.0;
+                  q_overlnd = vol * (max(pp[ip], 0.0) - max(opp[ip], 0.0)) / dz +
+                              dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy) / dz;
 
-                                    /*if ( i == 0 && j == 0){ //left-lower corner
-                                     * obf_dat[io]= fabs(kw_[io]) + fabs(ks_[io]);
-                                     * } else if (i == 0 && j > 0 && j < (gny-1)) { // west face
-                                     * obf_dat[io]= fabs(kw_[io]);
-                                     * } else if (i == (gnx-1) && j == (gny-1)) { //right-upper corner
-                                     * obf_dat[io]= fabs(ke_[io]) + fabs(kn_[io]);
-                                     * } else if (j == 0 && i > 0 && i < (gnx-1)) { //south face
-                                     * obf_dat[io]= fabs(ks_[io]);
-                                     * } else if ( i == (gnx-1) && j == 0 ) { //right-lower corner
-                                     * obf_dat[io] = fabs(ks_[io]) + fabs(ke_[io]);
-                                     * } else if (i == (gnx-1) && j > 0 && j < (gny-1)) { //east face
-                                     * obf_dat[io]= fabs(ke_[io]);
-                                     * } else if (i > 0 && i < (gnx-1) && j == (gny-1)) { //north face
-                                     * obf_dat[io] = kn_[io];
-                                     * } else if (i == 0 && j == (gny-1)) { //left-upper corner
-                                     * obf_dat[io] = fabs(kw_[io]) + fabs(kn_[io]);
-                                     * } else { //interior
-                                     * obf_dat[io] = qx_[io];
-                                     * }*/
+                  /*if ( i == 0 && j == 0){ //left-lower corner
+                   * obf_dat[io]= fabs(kw_[io]) + fabs(ks_[io]);
+                   * } else if (i == 0 && j > 0 && j < (gny-1)) { // west face
+                   * obf_dat[io]= fabs(kw_[io]);
+                   * } else if (i == (gnx-1) && j == (gny-1)) { //right-upper corner
+                   * obf_dat[io]= fabs(ke_[io]) + fabs(kn_[io]);
+                   * } else if (j == 0 && i > 0 && i < (gnx-1)) { //south face
+                   * obf_dat[io]= fabs(ks_[io]);
+                   * } else if ( i == (gnx-1) && j == 0 ) { //right-lower corner
+                   * obf_dat[io] = fabs(ks_[io]) + fabs(ke_[io]);
+                   * } else if (i == (gnx-1) && j > 0 && j < (gny-1)) { //east face
+                   * obf_dat[io]= fabs(ke_[io]);
+                   * } else if (i > 0 && i < (gnx-1) && j == (gny-1)) { //north face
+                   * obf_dat[io] = kn_[io];
+                   * } else if (i == 0 && j == (gny-1)) { //left-upper corner
+                   * obf_dat[io] = fabs(kw_[io]) + fabs(kn_[io]);
+                   * } else { //interior
+                   * obf_dat[io] = qx_[io];
+                   * }*/
 
-                                    obf_dat[io] = 0.0;
-                                    if (i >= 0 && i <= (gnx - 1) && j == 0 && qy_[io] < 0.0) //south face
-                                    {
-                                      obf_dat[io] += fabs(qy_[io]);
-                                    }
-                                    else if (i == 0 && j >= 0 && j <= (gny - 1) && qx_[io] < 0.0) // west face
-                                    {
-                                      obf_dat[io] += fabs(qx_[io]);
-                                    }
-                                    else if (i >= 0 && i <= (gnx - 1) && j == (gny - 1) && qy_[io] > 0.0) //north face
-                                    {
-                                      obf_dat[io] += fabs(qy_[io]);
-                                    }
-                                    else if (i == (gnx - 1) && j >= 0 && j <= (gny - 1) && qx_[io] > 0.0) //east face
-                                    {
-                                      obf_dat[io] += fabs(qx_[io]);
-                                    }
-                                    else if (i > 0 && i < (gnx - 1) && j > 0 && j < (gny - 1)) //interior
-                                    {
-                                      obf_dat[io] = qx_[io];
-                                    }
+                  obf_dat[io] = 0.0;
+                  if (i >= 0 && i <= (gnx - 1) && j == 0 && qy_[io] < 0.0)   //south face
+                  {
+                    obf_dat[io] += fabs(qy_[io]);
+                  }
+                  else if (i == 0 && j >= 0 && j <= (gny - 1) && qx_[io] < 0.0)    // west face
+                  {
+                    obf_dat[io] += fabs(qx_[io]);
+                  }
+                  else if (i >= 0 && i <= (gnx - 1) && j == (gny - 1) && qy_[io] > 0.0)  //north face
+                  {
+                    obf_dat[io] += fabs(qy_[io]);
+                  }
+                  else if (i == (gnx - 1) && j >= 0 && j <= (gny - 1) && qx_[io] > 0.0)  //east face
+                  {
+                    obf_dat[io] += fabs(qx_[io]);
+                  }
+                  else if (i > 0 && i < (gnx - 1) && j > 0 && j < (gny - 1))  //interior
+                  {
+                    obf_dat[io] = qx_[io];
+                  }
 
 
-                                    if (j == 0 && i == 0)
-                                    {
-                                      *outflow = fabs(ks_[io]) + fabs(kw_[io]);
-                                    }
+                  if (j == 0 && i == 0)
+                  {
+                    *outflow = fabs(ks_[io]) + fabs(kw_[io]);
+                  }
 
-                                    fp[ip] += q_overlnd;
+                  fp[ip] += q_overlnd;
 
-                                    break;
-                                }
-                              }
-                            });
+                  break;
+              }
+            }
+          });
 
           break;
         }      /* End OverlandBC case */
@@ -1307,10 +1307,10 @@ Vector      *z_velocity;
 
     GrGeomOutLoop(i, j, k, gr_domain,
                   r, ix, iy, iz, nx, ny, nz,
-                  {
-                    ip = SubvectorEltIndex(f_sub, i, j, k);
-                    fp[ip] = pp[ip];
-                  });
+    {
+      ip = SubvectorEltIndex(f_sub, i, j, k);
+      fp[ip] = pp[ip];
+    });
   }
 #endif
 

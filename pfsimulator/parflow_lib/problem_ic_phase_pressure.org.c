@@ -1,30 +1,30 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
 #include "parflow.h"
 
@@ -200,16 +200,16 @@ Problem     *problem;      /* General problem information */
 
           data = SubvectorData(ps_sub);
           GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                       {
-                         ips = SubvectorEltIndex(ps_sub, i, j, k); /*#define SubvectorEltIndex(subvector, x, y, z) \
-                                                                    *                                                     (((x) - SubvectorIX(subvector)) + \
-                                                                    *                                                     (((y) - SubvectorIY(subvector)) + \
-                                                                    *                                                     (((z) - SubvectorIZ(subvector))) * \
-                                                                    *                                                             SubvectorNY(subvector)) * \
-                                                                    *                                                             SubvectorNX(subvector))*/
+          {
+            ips = SubvectorEltIndex(ps_sub, i, j, k);    /*#define SubvectorEltIndex(subvector, x, y, z) \
+                                                          *                                                     (((x) - SubvectorIX(subvector)) + \
+                                                          *                                                     (((y) - SubvectorIY(subvector)) + \
+                                                          *                                                     (((z) - SubvectorIZ(subvector))) * \
+                                                          *                                                             SubvectorNY(subvector)) * \
+                                                          *                                                             SubvectorNX(subvector))*/
 
-                         data[ips] = values[ir];
-                       });
+            data[ips] = values[ir];
+          });
         }      /* End of subgrid loop */
       }        /* End of region loop */
       break;
@@ -296,21 +296,21 @@ Problem     *problem;      /* General problem information */
             if (iterations > -1)       /* Update pressure values */
             {
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                           {
-                             ips = SubvectorEltIndex(ps_sub, i, j, k);
-                             z = RealSpaceZ(k, SubgridRZ(subgrid));
-                             dtmp = 1.0 - 0.5 * new_density_der_data[ips] * gravity
-                                    * (z - reference_elevations[ir]);
-                             data[ips] = data[ips] - fcn_data[ips] / dtmp;
-                           });
+              {
+                ips = SubvectorEltIndex(ps_sub, i, j, k);
+                z = RealSpaceZ(k, SubgridRZ(subgrid));
+                dtmp = 1.0 - 0.5 * new_density_der_data[ips] * gravity
+                       * (z - reference_elevations[ir]);
+                data[ips] = data[ips] - fcn_data[ips] / dtmp;
+              });
             }
             else    /* Initialize stuff */
             {
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                           {
-                             ips = SubvectorEltIndex(ps_sub, i, j, k);
-                             data[ips] = pressure_values[ir];
-                           });
+              {
+                ips = SubvectorEltIndex(ps_sub, i, j, k);
+                data[ips] = pressure_values[ir];
+              });
             }
           }       /* End of subgrid loop */
         }         /* End of region loop */
@@ -351,26 +351,26 @@ Problem     *problem;      /* General problem information */
             if (iterations > -1)       /* Determine new nonlinear residual */
             {
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                           {
-                             ips = SubvectorEltIndex(tf_sub, i, j, k);
-                             z = RealSpaceZ(k, SubgridRZ(subgrid));
-                             fcn_data[ips] = data[ips] - pressure_values[ir]
-                                             - 0.5 * (new_density_data[ips] + ref_den[ir])
-                                             * gravity * (z - reference_elevations[ir]);
-                             nonlin_resid += fcn_data[ips] * fcn_data[ips];
-                           });
+              {
+                ips = SubvectorEltIndex(tf_sub, i, j, k);
+                z = RealSpaceZ(k, SubgridRZ(subgrid));
+                fcn_data[ips] = data[ips] - pressure_values[ir]
+                                - 0.5 * (new_density_data[ips] + ref_den[ir])
+                                * gravity * (z - reference_elevations[ir]);
+                nonlin_resid += fcn_data[ips] * fcn_data[ips];
+              });
             }
             else     /* Determine initial residual */
             {
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                           {
-                             ips = SubvectorEltIndex(tf_sub, i, j, k);
-                             z = RealSpaceZ(k, SubgridRZ(subgrid));
-                             ref_den[ir] = new_density_data[ips];
-                             fcn_data[ips] = -ref_den[ir] * gravity
-                                             * (z - reference_elevations[ir]);
-                             nonlin_resid += fcn_data[ips] * fcn_data[ips];
-                           });
+              {
+                ips = SubvectorEltIndex(tf_sub, i, j, k);
+                z = RealSpaceZ(k, SubgridRZ(subgrid));
+                ref_den[ir] = new_density_data[ips];
+                fcn_data[ips] = -ref_den[ir] * gravity
+                                * (z - reference_elevations[ir]);
+                nonlin_resid += fcn_data[ips] * fcn_data[ips];
+              });
             }
           }       /* End of subgrid loop */
         }         /* End of region loop */
@@ -482,22 +482,22 @@ Problem     *problem;      /* General problem information */
             if (iterations > -1)       /* Update pressure values */
             {
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                           {
-                             ips = SubvectorEltIndex(ps_sub, i, j, k);
-                             iel = (i - ix) + (j - iy) * nx;
-                             z = RealSpaceZ(k, SubgridRZ(subgrid));
-                             dtmp = 1.0 - 0.5 * new_density_der_data[ips] * gravity
-                                    * (z - elevations[ir][is][iel]);
-                             data[ips] = data[ips] - fcn_data[ips] / dtmp;
-                           });
+              {
+                ips = SubvectorEltIndex(ps_sub, i, j, k);
+                iel = (i - ix) + (j - iy) * nx;
+                z = RealSpaceZ(k, SubgridRZ(subgrid));
+                dtmp = 1.0 - 0.5 * new_density_der_data[ips] * gravity
+                       * (z - elevations[ir][is][iel]);
+                data[ips] = data[ips] - fcn_data[ips] / dtmp;
+              });
             }
             else    /* Initialize stuff */
             {
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                           {
-                             ips = SubvectorEltIndex(ps_sub, i, j, k);
-                             data[ips] = pressure_values[ir];
-                           });
+              {
+                ips = SubvectorEltIndex(ps_sub, i, j, k);
+                data[ips] = pressure_values[ir];
+              });
             }
           }       /* End of subgrid loop */
         }         /* End of region loop */
@@ -537,28 +537,28 @@ Problem     *problem;      /* General problem information */
             if (iterations > -1)
             {
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                           {
-                             ips = SubvectorEltIndex(tf_sub, i, j, k);
-                             iel = (i - ix) + (j - iy) * nx;
-                             z = RealSpaceZ(k, SubgridRZ(subgrid));
-                             fcn_data[ips] = data[ips] - pressure_values[ir]
-                                             - 0.5 * (new_density_data[ips] + ref_den[ir])
-                                             * gravity * (z - elevations[ir][is][iel]);
-                             nonlin_resid += fcn_data[ips] * fcn_data[ips];
-                           });
+              {
+                ips = SubvectorEltIndex(tf_sub, i, j, k);
+                iel = (i - ix) + (j - iy) * nx;
+                z = RealSpaceZ(k, SubgridRZ(subgrid));
+                fcn_data[ips] = data[ips] - pressure_values[ir]
+                                - 0.5 * (new_density_data[ips] + ref_den[ir])
+                                * gravity * (z - elevations[ir][is][iel]);
+                nonlin_resid += fcn_data[ips] * fcn_data[ips];
+              });
             }
             else
             {
               GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                           {
-                             ips = SubvectorEltIndex(tf_sub, i, j, k);
-                             iel = (i - ix) + (j - iy) * nx;
-                             z = RealSpaceZ(k, SubgridRZ(subgrid));
-                             ref_den[ir] = new_density_data[ips];
-                             fcn_data[ips] = -ref_den[ir] * gravity
-                                             * (z - elevations[ir][is][iel]);
-                             nonlin_resid += fcn_data[ips] * fcn_data[ips];
-                           });
+              {
+                ips = SubvectorEltIndex(tf_sub, i, j, k);
+                iel = (i - ix) + (j - iy) * nx;
+                z = RealSpaceZ(k, SubgridRZ(subgrid));
+                ref_den[ir] = new_density_data[ips];
+                fcn_data[ips] = -ref_den[ir] * gravity
+                                * (z - elevations[ir][is][iel]);
+                nonlin_resid += fcn_data[ips] * fcn_data[ips];
+              });
             }
           }       /* End of subgrid loop */
         }         /* End of region loop */
@@ -616,12 +616,12 @@ Problem     *problem;      /* General problem information */
         ic_values_dat = SubvectorData(ic_values_sub);
 
         GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                     {
-                       ips = SubvectorEltIndex(ps_sub, i, j, k);
-                       ipicv = SubvectorEltIndex(ic_values_sub, i, j, k);
+        {
+          ips = SubvectorEltIndex(ps_sub, i, j, k);
+          ipicv = SubvectorEltIndex(ic_values_sub, i, j, k);
 
-                       psdat[ips] = ic_values_dat[ipicv];
-                     });
+          psdat[ips] = ic_values_dat[ipicv];
+        });
       }        /* End subgrid loop */
       break;
     }          /* End case 3 */

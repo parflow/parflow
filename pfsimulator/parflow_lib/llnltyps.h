@@ -3,7 +3,7 @@
 * File          : llnltyps.h                                     *
 * Programmers   : Scott D. Cohen and Alan C. Hindmarsh @ LLNL    *
 * Version of    : 4 May 1998                                     *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * This header file exports three types: real, integer, and boole *
 * (short for boolean), as well as the constants TRUE and FALSE.  *
 *                                                                *
@@ -56,18 +56,26 @@
 *                                                                *
 ******************************************************************/
 
-#ifdef __cplusplus     /* wrapper to enable C++ usage */
-extern "C" {
-#endif
-
 #ifndef _llnltyps_h
 #define _llnltyps_h
 
+/* These macros are used to get around a parsing issue with uncrustify. */
+#ifdef __cplusplus
+/** *INDENT-OFF* */
+#define BEGIN_EXTERN_C extern "C" {
+#define END_EXTERN_C }
+/** *INDENT-ON* */
+#else
+#define BEGIN_EXTERN_C
+#define END_EXTERN_C
+#endif
+
+BEGIN_EXTERN_C
 
 /******************************************************************
 *                                                                *
 * Types : real, integer                                          *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * The types real and integer are currently set to double and     *
 * int, respectively. See the documentation at the top for        *
 * usage details and a description of associated constants and    *
@@ -99,7 +107,7 @@ typedef int integer;
 *                                                                *
 * Type : boole                                                   *
 * Constants : FALSE, TRUE                                        *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * ANSI C does not have a built-in boolean type. Below is the     *
 * definition for a new type boole. The advantage of using the    *
 * name boole (instead of int) is an increase in code readability.*
@@ -122,8 +130,7 @@ typedef int integer;
 #define TRUE 1
 #endif
 
+END_EXTERN_C
+
 #endif
 
-#ifdef __cplusplus
-}
-#endif

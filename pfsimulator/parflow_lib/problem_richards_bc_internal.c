@@ -1,39 +1,39 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
-/******************************************************************************
- *
- * Routine for setting up internal boundary conditions for the nonlinear
- * function evaluation in the Richards' solver.
- *
- **-----------------------------------------------------------------------------
- *
- *****************************************************************************/
+/*****************************************************************************
+*
+* Routine for setting up internal boundary conditions for the nonlinear
+* function evaluation in the Richards' solver.
+*
+*-----------------------------------------------------------------------------
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -221,19 +221,19 @@ void RichardsBCInternal(
 
           BoxLoopI0(i, j, k,
                     ix, iy, iz, nx, ny, nz,
-                    {
-                      /* Need to check if i,j,k is part of this subgrid or not */
-                      if (((i >= SubgridIX(subgrid)) &&
-                           (i < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
-                          ((j >= SubgridIY(subgrid)) &&
-                           (j < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
-                          ((k >= SubgridIZ(subgrid)) &&
-                           (k < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
-                      {
-                        ip = SubvectorEltIndex(f_sub, i, j, k);
-                        fp[ip] = pp[ip] - value;
-                      }
-                    });
+          {
+            /* Need to check if i,j,k is part of this subgrid or not */
+            if (((i >= SubgridIX(subgrid)) &&
+                 (i < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
+                ((j >= SubgridIY(subgrid)) &&
+                 (j < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
+                ((k >= SubgridIZ(subgrid)) &&
+                 (k < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
+            {
+              ip = SubvectorEltIndex(f_sub, i, j, k);
+              fp[ip] = pp[ip] - value;
+            }
+          });
         }
         else if (fcn == CALCDER)
         {
@@ -249,25 +249,25 @@ void RichardsBCInternal(
 
           BoxLoopI0(i, j, k,
                     ix, iy, iz, nx, ny, nz,
-                    {
-                      /* Need to check if i,j,k is part of this subgrid or not */
-                      if (((i >= SubgridIX(subgrid)) &&
-                           (i < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
-                          ((j >= SubgridIY(subgrid)) &&
-                           (j < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
-                          ((k >= SubgridIZ(subgrid)) &&
-                           (k < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
-                      {
-                        im = SubmatrixEltIndex(A_sub, i, j, k);
-                        cp[im] = 1.0;
-                        wp[im] = 0.0;
-                        ep[im] = 0.0;
-                        sp[im] = 0.0;
-                        np[im] = 0.0;
-                        lp[im] = 0.0;
-                        up[im] = 0.0;
-                      }
-                    });
+          {
+            /* Need to check if i,j,k is part of this subgrid or not */
+            if (((i >= SubgridIX(subgrid)) &&
+                 (i < SubgridIX(subgrid) + SubgridNX(subgrid))) &&
+                ((j >= SubgridIY(subgrid)) &&
+                 (j < SubgridIY(subgrid) + SubgridNY(subgrid))) &&
+                ((k >= SubgridIZ(subgrid)) &&
+                 (k < SubgridIZ(subgrid) + SubgridNZ(subgrid))))
+            {
+              im = SubmatrixEltIndex(A_sub, i, j, k);
+              cp[im] = 1.0;
+              wp[im] = 0.0;
+              ep[im] = 0.0;
+              sp[im] = 0.0;
+              np[im] = 0.0;
+              lp[im] = 0.0;
+              up[im] = 0.0;
+            }
+          });
         }
       }           /* End loop over conditions */
     }             /* End loop over processor subgrids */

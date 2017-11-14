@@ -18,7 +18,7 @@
 # define ANSI_PROTO(s) ()
 #endif
 
-Databox * CompSubBox ANSI_PROTO((Databox * fun,
+Databox * CompSubBox ANSI_PROTO((Databox *fun,
                                  int il, int jl, int kl,
                                  int iu, int ju, int ku));
 

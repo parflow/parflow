@@ -1,30 +1,30 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
 #ifndef _GRGEOM_OCTREE_HEADER
 #define _GRGEOM_OCTREE_HEADER
@@ -292,35 +292,35 @@ typedef struct grgeom_octree {
     PV_k = k; \
 \
     GrGeomOctreeLoop(PV_i, PV_j, PV_k, PV_l, node, octree, level, value_test, \
-                     { \
-                       if ((PV_i >= ix) && (PV_i < (ix + nx)) && \
-                           (PV_j >= iy) && (PV_j < (iy + ny)) && \
-                           (PV_k >= iz) && (PV_k < (iz + nz))) \
-                       { \
-                         i = PV_i; \
-                         j = PV_j; \
-                         k = PV_k; \
+    { \
+      if ((PV_i >= ix) && (PV_i < (ix + nx)) && \
+          (PV_j >= iy) && (PV_j < (iy + ny)) && \
+          (PV_k >= iz) && (PV_k < (iz + nz))) \
+      { \
+        i = PV_i; \
+        j = PV_j; \
+        k = PV_k; \
                  \
-                         body; \
-                       } \
-                     }, \
-                     { \
-                       /* find octree and region intersection */ \
-                       PV_ixl = pfmax(ix, PV_i); \
-                       PV_iyl = pfmax(iy, PV_j); \
-                       PV_izl = pfmax(iz, PV_k); \
-                       PV_ixu = pfmin((ix + nx), (PV_i + (int)PV_inc)); \
-                       PV_iyu = pfmin((iy + ny), (PV_j + (int)PV_inc)); \
-                       PV_izu = pfmin((iz + nz), (PV_k + (int)PV_inc)); \
+        body; \
+      } \
+    }, \
+    { \
+      /* find octree and region intersection */ \
+      PV_ixl = pfmax(ix, PV_i); \
+      PV_iyl = pfmax(iy, PV_j); \
+      PV_izl = pfmax(iz, PV_k); \
+      PV_ixu = pfmin((ix + nx), (PV_i + (int)PV_inc)); \
+      PV_iyu = pfmin((iy + ny), (PV_j + (int)PV_inc)); \
+      PV_izu = pfmin((iz + nz), (PV_k + (int)PV_inc)); \
                  \
-                       /* loop over indexes and execute the body */ \
-                       for (k = PV_izl; k < PV_izu; k++) \
-                         for (j = PV_iyl; j < PV_iyu; j++) \
-                           for (i = PV_ixl; i < PV_ixu; i++) \
-                           { \
-                             body; \
-                           } \
-                     }) \
+      /* loop over indexes and execute the body */ \
+      for (k = PV_izl; k < PV_izu; k++) \
+        for (j = PV_iyl; j < PV_iyu; j++) \
+          for (i = PV_ixl; i < PV_ixu; i++) \
+          { \
+            body; \
+          } \
+    }) \
   }
 
 /*--------------------------------------------------------------------------
@@ -341,52 +341,52 @@ typedef struct grgeom_octree {
     PV_k = k; \
 \
     GrGeomOctreeLoop(PV_i, PV_j, PV_k, PV_l, node, octree, level, value_test, \
-                     { \
-                       if ((PV_i >= ix) && (PV_i < (ix + nx)) && \
-                           (PV_j >= iy) && (PV_j < (iy + ny)) && \
-                           (PV_k >= iz) && (PV_k < (iz + nz)) && \
-                           ((PV_i - ix) % sx == 0) && \
-                           ((PV_j - iy) % sy == 0) && \
-                           ((PV_k - iz) % sz == 0)) \
-                       { \
-                         i = PV_i; \
-                         j = PV_j; \
-                         k = PV_k; \
+    { \
+      if ((PV_i >= ix) && (PV_i < (ix + nx)) && \
+          (PV_j >= iy) && (PV_j < (iy + ny)) && \
+          (PV_k >= iz) && (PV_k < (iz + nz)) && \
+          ((PV_i - ix) % sx == 0) && \
+          ((PV_j - iy) % sy == 0) && \
+          ((PV_k - iz) % sz == 0)) \
+      { \
+        i = PV_i; \
+        j = PV_j; \
+        k = PV_k; \
                  \
-                         body; \
-                       } \
-                     }, \
-                     { \
-                       /* find octree and region intersection */ \
-                       PV_ixl = pfmax(ix, PV_i); \
-                       PV_iyl = pfmax(iy, PV_j); \
-                       PV_izl = pfmax(iz, PV_k); \
-                       PV_ixu = pfmin((ix + nx), (PV_i + (int)PV_inc));    \
-                       PV_iyu = pfmin((iy + ny), (PV_j + (int)PV_inc));    \
-                       PV_izu = pfmin((iz + nz), (PV_k + (int)PV_inc));    \
+        body; \
+      } \
+    }, \
+    { \
+      /* find octree and region intersection */ \
+      PV_ixl = pfmax(ix, PV_i); \
+      PV_iyl = pfmax(iy, PV_j); \
+      PV_izl = pfmax(iz, PV_k); \
+      PV_ixu = pfmin((ix + nx), (PV_i + (int)PV_inc));    \
+      PV_iyu = pfmin((iy + ny), (PV_j + (int)PV_inc));    \
+      PV_izu = pfmin((iz + nz), (PV_k + (int)PV_inc));    \
                  \
-                       /* project intersection onto strided index space */ \
-                       PV_ixl = PV_ixl + ix; \
-                       PV_ixu = PV_ixu + ix; \
-                       PV_ixl = ((int)((PV_ixl + (sx - 1)) / sx)) * sx - ix; \
-                       PV_ixu = ((int)((PV_ixu + (sx - 1)) / sx)) * sx - ix; \
-                       PV_iyl = PV_iyl + iy; \
-                       PV_iyu = PV_iyu + iy; \
-                       PV_iyl = ((int)((PV_iyl + (sy - 1)) / sy)) * sy - iy; \
-                       PV_iyu = ((int)((PV_iyu + (sy - 1)) / sy)) * sy - iy; \
-                       PV_izl = PV_izl + iz; \
-                       PV_izu = PV_izu + iz; \
-                       PV_izl = ((int)((PV_izl + (sz - 1)) / sz)) * sz - iz; \
-                       PV_izu = ((int)((PV_izu + (sz - 1)) / sz)) * sz - iz; \
+      /* project intersection onto strided index space */ \
+      PV_ixl = PV_ixl + ix; \
+      PV_ixu = PV_ixu + ix; \
+      PV_ixl = ((int)((PV_ixl + (sx - 1)) / sx)) * sx - ix; \
+      PV_ixu = ((int)((PV_ixu + (sx - 1)) / sx)) * sx - ix; \
+      PV_iyl = PV_iyl + iy; \
+      PV_iyu = PV_iyu + iy; \
+      PV_iyl = ((int)((PV_iyl + (sy - 1)) / sy)) * sy - iy; \
+      PV_iyu = ((int)((PV_iyu + (sy - 1)) / sy)) * sy - iy; \
+      PV_izl = PV_izl + iz; \
+      PV_izu = PV_izu + iz; \
+      PV_izl = ((int)((PV_izl + (sz - 1)) / sz)) * sz - iz; \
+      PV_izu = ((int)((PV_izu + (sz - 1)) / sz)) * sz - iz; \
                  \
-                       /* loop over indexes and execute the body */ \
-                       for (k = PV_izl; k < PV_izu; k += sz) \
-                         for (j = PV_iyl; j < PV_iyu; j += sy) \
-                           for (i = PV_ixl; i < PV_ixu; i += sx) \
-                           { \
-                             body; \
-                           } \
-                     }) \
+      /* loop over indexes and execute the body */ \
+      for (k = PV_izl; k < PV_izu; k += sz) \
+        for (j = PV_iyl; j < PV_iyu; j += sy) \
+          for (i = PV_ixl; i < PV_ixu; i += sx) \
+          { \
+            body; \
+          } \
+    }) \
   }
 
 /*--------------------------------------------------------------------------
@@ -413,38 +413,38 @@ typedef struct grgeom_octree {
     GrGeomOctreeNodeLoop(i, j, k, node, octree, level, \
                          ix, iy, iz, nx, ny, nz, \
                          (GrGeomOctreeCellIsInside(node)), \
-                         { \
-                           for (PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++) \
-                             if (GrGeomOctreeHasFace(node, PV_f)) \
-                             { \
-                               switch (PV_f) \
-                               { \
-                                 case GrGeomOctreeFaceL: \
-                                   fdir[0] = -1; fdir[1] = 0; fdir[2] = 0; \
-                                   break; \
-                                 case GrGeomOctreeFaceR: \
-                                   fdir[0] = 1; fdir[1] = 0; fdir[2] = 0; \
-                                   break; \
-                                 case GrGeomOctreeFaceD: \
-                                   fdir[0] = 0; fdir[1] = -1; fdir[2] = 0; \
-                                   break; \
-                                 case GrGeomOctreeFaceU: \
-                                   fdir[0] = 0; fdir[1] = 1; fdir[2] = 0; \
-                                   break; \
-                                 case GrGeomOctreeFaceB: \
-                                   fdir[0] = 0; fdir[1] = 0; fdir[2] = -1; \
-                                   break; \
-                                 case GrGeomOctreeFaceF: \
-                                   fdir[0] = 0; fdir[1] = 0; fdir[2] = 1; \
-                                   break; \
-                                 default: \
-                                   fdir[0] = -9999; fdir[1] = -9999; fdir[2] = -99999; \
-                                   break; \
-                               } \
+    { \
+      for (PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++) \
+        if (GrGeomOctreeHasFace(node, PV_f)) \
+        { \
+          switch (PV_f) \
+          { \
+            case GrGeomOctreeFaceL: \
+              fdir[0] = -1; fdir[1] = 0; fdir[2] = 0; \
+              break; \
+            case GrGeomOctreeFaceR: \
+              fdir[0] = 1; fdir[1] = 0; fdir[2] = 0; \
+              break; \
+            case GrGeomOctreeFaceD: \
+              fdir[0] = 0; fdir[1] = -1; fdir[2] = 0; \
+              break; \
+            case GrGeomOctreeFaceU: \
+              fdir[0] = 0; fdir[1] = 1; fdir[2] = 0; \
+              break; \
+            case GrGeomOctreeFaceB: \
+              fdir[0] = 0; fdir[1] = 0; fdir[2] = -1; \
+              break; \
+            case GrGeomOctreeFaceF: \
+              fdir[0] = 0; fdir[1] = 0; fdir[2] = 1; \
+              break; \
+            default: \
+              fdir[0] = -9999; fdir[1] = -9999; fdir[2] = -99999; \
+              break; \
+          } \
 \
-                               body; \
-                             } \
-                         }) \
+          body; \
+        } \
+    }) \
   }
 
 /*==========================================================================
@@ -546,44 +546,44 @@ typedef struct grgeom_octree {
     GrGeomOctreeBoxLoop(PV_i, PV_j, PV_k, PV_l,                       \
                         node, octree, levels_in_octree,                           \
                         level_of_interest, value_test,                            \
-                        {                                                \
-                          /* find octree and region intersection */     \
-                          PV_ixl = pfmax(ix, PV_i);                     \
-                          PV_iyl = pfmax(iy, PV_j);                     \
-                          PV_izl = pfmax(iz, PV_k);                     \
-                          PV_ixu = pfmin((ix + nx), (PV_i + (int)PV_inc)); \
-                          PV_iyu = pfmin((iy + ny), (PV_j + (int)PV_inc)); \
-                          PV_izu = pfmin((iz + nz), (PV_k + (int)PV_inc)); \
+    {                                                \
+      /* find octree and region intersection */     \
+      PV_ixl = pfmax(ix, PV_i);                     \
+      PV_iyl = pfmax(iy, PV_j);                     \
+      PV_izl = pfmax(iz, PV_k);                     \
+      PV_ixu = pfmin((ix + nx), (PV_i + (int)PV_inc)); \
+      PV_iyu = pfmin((iy + ny), (PV_j + (int)PV_inc)); \
+      PV_izu = pfmin((iz + nz), (PV_k + (int)PV_inc)); \
                                                                         \
-                          i = PV_ixl;                                   \
-                          j = PV_iyl;                                   \
-                          k = PV_izl;                                   \
-                          num_i = PV_ixu - PV_ixl;                      \
-                          num_j = PV_iyu - PV_iyl;                      \
-                          num_k = PV_izu - PV_izl;                      \
-                          if (num_i > 0 && num_j > 0 && num_k > 0) {    \
-                            body;                                      \
-                          }                                             \
-                        },                                               \
-                        {                                                \
-                          /* find octree and region intersection */     \
-                          PV_ixl = pfmax(ix, PV_i);                     \
-                          PV_iyl = pfmax(iy, PV_j);                     \
-                          PV_izl = pfmax(iz, PV_k);                     \
-                          PV_ixu = pfmin((ix + nx), (PV_i + (int)PV_inc)); \
-                          PV_iyu = pfmin((iy + ny), (PV_j + (int)PV_inc)); \
-                          PV_izu = pfmin((iz + nz), (PV_k + (int)PV_inc)); \
+      i = PV_ixl;                                   \
+      j = PV_iyl;                                   \
+      k = PV_izl;                                   \
+      num_i = PV_ixu - PV_ixl;                      \
+      num_j = PV_iyu - PV_iyl;                      \
+      num_k = PV_izu - PV_izl;                      \
+      if (num_i > 0 && num_j > 0 && num_k > 0) {    \
+        body;                                      \
+      }                                             \
+    },                                               \
+    {                                                \
+      /* find octree and region intersection */     \
+      PV_ixl = pfmax(ix, PV_i);                     \
+      PV_iyl = pfmax(iy, PV_j);                     \
+      PV_izl = pfmax(iz, PV_k);                     \
+      PV_ixu = pfmin((ix + nx), (PV_i + (int)PV_inc)); \
+      PV_iyu = pfmin((iy + ny), (PV_j + (int)PV_inc)); \
+      PV_izu = pfmin((iz + nz), (PV_k + (int)PV_inc)); \
                                                                         \
-                          i = PV_ixl;                                   \
-                          j = PV_iyl;                                   \
-                          k = PV_izl;                                   \
-                          num_i = PV_ixu - PV_ixl;                      \
-                          num_j = PV_iyu - PV_iyl;                      \
-                          num_k = PV_izu - PV_izl;                      \
-                          if (num_i > 0 && num_j > 0 && num_k > 0) {    \
-                            body;                                      \
-                          }                                             \
-                        })                                               \
+      i = PV_ixl;                                   \
+      j = PV_iyl;                                   \
+      k = PV_izl;                                   \
+      num_i = PV_ixu - PV_ixl;                      \
+      num_j = PV_iyu - PV_iyl;                      \
+      num_k = PV_izu - PV_izl;                      \
+      if (num_i > 0 && num_j > 0 && num_k > 0) {    \
+        body;                                      \
+      }                                             \
+    })                                               \
   }
 
 

@@ -5,7 +5,7 @@
 
 #include "f2c.h"
 
-/*BHEADER**********************************************************************
+/*BHEADER*********************************************************************
  *
  * Copyright (c) 1995-2009, Lawrence Livermore National Security,
  * LLC. Produced at the Lawrence Livermore National Laboratory. Written
@@ -52,7 +52,7 @@ integer *lo, *hi, *dlo, *dhi;
 doublereal *hx, *dt;
 integer *fstord;
 doublereal *sbot, *stop, *sbotp, *sfrt, *sbck, *sleft, *sright, *sfluxz, *
-dxscr, *dyscr, *dzscr, *dzfrm;
+  dxscr, *dyscr, *dzscr, *dzfrm;
 {
   /* Initialized data */
 
@@ -85,7 +85,7 @@ dxscr, *dyscr, *dzscr, *dzfrm;
   extern /* Subroutine */ int slopexy_();
 
 /*     ::: argument declarations */
-  /* Parameter adjustments */
+/* Parameter adjustments */
   --lo;
   --hi;
   --dlo;

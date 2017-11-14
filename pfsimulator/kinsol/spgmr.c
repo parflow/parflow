@@ -2,7 +2,7 @@
 * File          : spgmr.c                                        *
 * Programmers   : Scott D. Cohen and Alan C. Hindmarsh @ LLNL    *
 * Version of    : 17 December 1999                               *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * This is the implementation file for the scaled preconditioned  *
 * GMRES (SPGMR) iterative linear solver.                         *
 *                                                                *
@@ -256,7 +256,7 @@ int SpgmrSolve(SpgmrMem mem, void *A_data, N_Vector x, N_Vector b,
   for (ntries = 0; ntries <= max_restarts; ntries++)
   {
     /* Initialize the Hessenberg matrix Hes and Givens rotation
-    *  product.  Normalize the initial vector V[0].             */
+     *  product.  Normalize the initial vector V[0].             */
 
     for (i = 0; i <= l_max; i++)
       for (j = 0; j < l_max; j++)

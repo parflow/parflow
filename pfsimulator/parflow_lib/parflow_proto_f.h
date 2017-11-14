@@ -1,40 +1,51 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-
-/******************************************************************************
- * C to Fortran interfacing macros
+/*BHEADER*********************************************************************
  *
- *****************************************************************************/
+ * Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ * LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ * by the Parflow Team (see the CONTRIBUTORS file)
+ * <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ * This file is part of Parflow. For details, see
+ * http://www.llnl.gov/casc/parflow
+ *
+ * Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ * for the GNU Lesser General Public License.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License (as published
+ * by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ * and conditions of the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ **********************************************************************EHEADER*/
 
-#ifdef __cplusplus     /* wrapper to enable C++ usage */
-extern "C" {
+/*****************************************************************************
+* C to Fortran interfacing macros
+*
+*****************************************************************************/
+
+#ifndef PARFLOW_PROTO_F_H
+#define PARFLOW_PROTO_F_H
+
+/* These macros are used to get around a parsing issue with uncrustify. */
+#ifdef __cplusplus
+/** *INDENT-OFF* */
+#define BEGIN_EXTERN_C extern "C" {
+#define END_EXTERN_C }
+/** *INDENT-ON* */
+#else
+#define BEGIN_EXTERN_C
+#define END_EXTERN_C
 #endif
 
+BEGIN_EXTERN_C
 
 /* advect.f */
 #if defined(_CRAYMPP)
@@ -154,6 +165,6 @@ void CLM_LSM(double *pressure_data, double *saturation_data, double *evap_trans_
 
 //    void CRUCHFLOW( );
 
-#ifdef __cplusplus     /* wrapper to enable C++ usage */
-}
+END_EXTERN_C
+
 #endif

@@ -1,11 +1,11 @@
-/*BHEADER**********************************************************************
- * (c) 1995   The Regents of the University of California
- *
- * See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
- * notice, contact person, and disclaimer.
- *
- * $Revision: 1.23 $
- *********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+* (c) 1995   The Regents of the University of California
+*
+* See the file COPYRIGHT_and_DISCLAIMER for a complete copyright
+* notice, contact person, and disclaimer.
+*
+* $Revision: 1.23 $
+*********************************************************************EHEADER*/
 
 #include "parflow.h"
 
@@ -142,11 +142,11 @@ void         PhaseSource(
 
           data = SubvectorData(ps_sub);
           GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
-                       {
-                         ips = SubvectorEltIndex(ps_sub, i, j, k);
+          {
+            ips = SubvectorEltIndex(ps_sub, i, j, k);
 
-                         data[ips] = value;
-                       });
+            data[ips] = value;
+          });
         }
       }
 
@@ -188,64 +188,64 @@ void         PhaseSource(
           case 1: /* p= x */
           {
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           x = RealSpaceX(i, SubgridRX(subgrid));
-                           /* nonlinear case -div(p grad p) = f */
-                           data[ips] = -1.0;
-                         });
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              x = RealSpaceX(i, SubgridRX(subgrid));
+              /* nonlinear case -div(p grad p) = f */
+              data[ips] = -1.0;
+            });
             break;
           } /* End case 1 */
 
           case 2: /* p= x+y+z */
           {
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           /* nonlinear case -div(p grad p) = f */
-                           data[ips] = -3.0;
-                         });
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              /* nonlinear case -div(p grad p) = f */
+              data[ips] = -3.0;
+            });
             break;
           } /* End case 2 */
 
           case 3: /* p= x^3y^2 + sinxy + 1 */
           {
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           x = RealSpaceX(i, SubgridRX(subgrid));
-                           y = RealSpaceY(j, SubgridRY(subgrid));
-                           /* nonlinear case -div(p grad p) = f */
-                           data[ips] = -pow((3 * x * x * y * y + y * cos(x * y)), 2) - pow((2 * x * x * x * y + x * cos(x * y)), 2) - (x * x * x * y * y + sin(x * y) + 1) * (6 * x * y * y + 2 * x * x * x - (x * x + y * y) * sin(x * y));
-                         });
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              x = RealSpaceX(i, SubgridRX(subgrid));
+              y = RealSpaceY(j, SubgridRY(subgrid));
+              /* nonlinear case -div(p grad p) = f */
+              data[ips] = -pow((3 * x * x * y * y + y * cos(x * y)), 2) - pow((2 * x * x * x * y + x * cos(x * y)), 2) - (x * x * x * y * y + sin(x * y) + 1) * (6 * x * y * y + 2 * x * x * x - (x * x + y * y) * sin(x * y));
+            });
             break;
           } /* End case 3 */
 
           case 4: /* f for p = x^3y^4 + x^2 + sinxy cosy + 1 */
           {
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           x = RealSpaceX(i, SubgridRX(subgrid));
-                           y = RealSpaceY(j, SubgridRY(subgrid));
-                           z = RealSpaceZ(k, SubgridRZ(subgrid));
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              x = RealSpaceX(i, SubgridRX(subgrid));
+              y = RealSpaceY(j, SubgridRY(subgrid));
+              z = RealSpaceZ(k, SubgridRZ(subgrid));
 
-                           data[ips] = -pow(3 * x * x * pow(y, 4) + 2 * x + y * cos(x * y) * cos(y), 2) - pow(4 * x * x * x * y * y * y + x * cos(x * y) * cos(y) - sin(x * y) * sin(y), 2) - (x * x * x * pow(y, 4) + x * x + sin(x * y) * cos(y) + 1) * (6 * x * pow(y, 4) + 2 - (x * x + y * y + 1) * sin(x * y) * cos(y) + 12 * x * x * x * y * y - 2 * x * cos(x * y) * sin(y));
-                         });
+              data[ips] = -pow(3 * x * x * pow(y, 4) + 2 * x + y * cos(x * y) * cos(y), 2) - pow(4 * x * x * x * y * y * y + x * cos(x * y) * cos(y) - sin(x * y) * sin(y), 2) - (x * x * x * pow(y, 4) + x * x + sin(x * y) * cos(y) + 1) * (6 * x * pow(y, 4) + 2 - (x * x + y * y + 1) * sin(x * y) * cos(y) + 12 * x * x * x * y * y - 2 * x * cos(x * y) * sin(y));
+            });
             break;
           } /* End case 4 */
 
           case 5: /* f = xyz-y^2z^2t^2-x^2z^2t^2-x^2y^2t^2 (p=xyzt+1)*/
           {
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           x = RealSpaceX(i, SubgridRX(subgrid));
-                           y = RealSpaceY(j, SubgridRY(subgrid));
-                           z = RealSpaceZ(k, SubgridRZ(subgrid));
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              x = RealSpaceX(i, SubgridRX(subgrid));
+              y = RealSpaceY(j, SubgridRY(subgrid));
+              z = RealSpaceZ(k, SubgridRZ(subgrid));
 
-                           data[ips] = x * y * z - time * time * (y * y * z * z + x * x * z * z + x * x * y * y);
-                         });
+              data[ips] = x * y * z - time * time * (y * y * z * z + x * x * z * z + x * x * y * y);
+            });
             break;
           } /* End case 5 */
 
@@ -253,15 +253,15 @@ void         PhaseSource(
                    *                                          K=(1; 2; 3) )*/
           {
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-                         {
-                           ips = SubvectorEltIndex(ps_sub, i, j, k);
-                           x = RealSpaceX(i, SubgridRX(subgrid));
-                           y = RealSpaceY(j, SubgridRY(subgrid));
-                           z = RealSpaceZ(k, SubgridRZ(subgrid));
+            {
+              ips = SubvectorEltIndex(ps_sub, i, j, k);
+              x = RealSpaceX(i, SubgridRX(subgrid));
+              y = RealSpaceY(j, SubgridRY(subgrid));
+              z = RealSpaceZ(k, SubgridRZ(subgrid));
 
-                           data[ips] = x * y * z
-                                       - time * time * (y * y * z * z + x * x * z * z * 2.0 + x * x * y * y * 3.0);
-                         });
+              data[ips] = x * y * z
+                          - time * time * (y * y * z * z + x * x * z * z * 2.0 + x * x * y * y * 3.0);
+            });
             break;
           } /* End case 6 */
         }   /* End switch statement on function_types */
@@ -359,26 +359,26 @@ void         PhaseSource(
           BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
                     ip, nx_p, ny_p, nz_p, 1, 1, 1,
                     ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
-                    {
-                      if (WellDataPhysicalMethod(well_data_physical)
-                          == FLUX_STANDARD)
-                      {
-                        weight = 1.0;
-                      }
-                      else if (WellDataPhysicalMethod(well_data_physical)
-                               == FLUX_WEIGHTED)
-                      {
-                        weight = (px[ip] / avg_x) * (area_x / area_sum)
-                                 + (py[ip] / avg_y) * (area_y / area_sum)
-                                 + (pz[ip] / avg_z) * (area_z / area_sum);
-                      }
-                      else if (WellDataPhysicalMethod(well_data_physical)
-                               == FLUX_PATTERNED)
-                      {
-                        weight = 0.0;
-                      }
-                      data[ips] += weight * flux;
-                    });
+          {
+            if (WellDataPhysicalMethod(well_data_physical)
+                == FLUX_STANDARD)
+            {
+              weight = 1.0;
+            }
+            else if (WellDataPhysicalMethod(well_data_physical)
+                     == FLUX_WEIGHTED)
+            {
+              weight = (px[ip] / avg_x) * (area_x / area_sum)
+                       + (py[ip] / avg_y) * (area_y / area_sum)
+                       + (pz[ip] / avg_z) * (area_z / area_sum);
+            }
+            else if (WellDataPhysicalMethod(well_data_physical)
+                     == FLUX_PATTERNED)
+            {
+              weight = 0.0;
+            }
+            data[ips] += weight * flux;
+          });
 
           /* done with this temporay subgrid */
           FreeSubgrid(tmp_subgrid);

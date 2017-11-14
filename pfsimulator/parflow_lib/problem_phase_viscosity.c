@@ -1,52 +1,52 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-/******************************************************************************
+/*BHEADER*********************************************************************
  *
- *  This module computes phase densities.  Currently, two types of densities
- *  are supported, constant (Type0) or a basic equation of state where density
- *  depends on pressure (Type1).
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
  *
- *  The equation of state used is:
- *  rho(p) = rho_ref exp(c p)
- *  where rho_ref is the density at atmoshperic pressure and c is the
- *  phase compressibility constant.
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
  *
- *  The density module can be invoked either expecting only a
- *  double array of densities back - where NULL Vectors are
- *  sent in for the phase pressure and the density return Vector - or a
- *  Vector of densities at each grid block.  Note that code using the
- *  Vector density option can also have a constant density.
- *  This "overloading" was provided so that the density module written
- *  for the Richards' solver modules would be backward compatible with
- *  the Impes modules and so that densities can be evaluated for pressures
- *  not necessarily associated with a grid (as in boundary patches).
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
  *
- *****************************************************************************/
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/*****************************************************************************
+*
+*  This module computes phase densities.  Currently, two types of densities
+*  are supported, constant (Type0) or a basic equation of state where density
+*  depends on pressure (Type1).
+*
+*  The equation of state used is:
+*  rho(p) = rho_ref exp(c p)
+*  where rho_ref is the density at atmoshperic pressure and c is the
+*  phase compressibility constant.
+*
+*  The density module can be invoked either expecting only a
+*  double array of densities back - where NULL Vectors are
+*  sent in for the phase pressure and the density return Vector - or a
+*  Vector of densities at each grid block.  Note that code using the
+*  Vector density option can also have a constant density.
+*  This "overloading" was provided so that the density module written
+*  for the Richards' solver modules would be backward compatible with
+*  the Impes modules and so that densities can be evaluated for pressures
+*  not necessarily associated with a grid (as in boundary patches).
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -152,17 +152,17 @@ void    PhaseViscosity(
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                     id, nx_d, ny_d, nz_d, 1, 1, 1,
-                    {
-                      vp[id] = constant;
-                    });
+          {
+            vp[id] = constant;
+          });
         }
         else     /* fcn = CALCDER */
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                     id, nx_d, ny_d, nz_d, 1, 1, 1,
-                    {
-                      vp[id] = 0.0;
-                    });
+          {
+            vp[id] = 0.0;
+          });
         }     /* End if fcn */
       }   /* End subgrid loop */
 
@@ -208,39 +208,39 @@ void    PhaseViscosity(
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                     ip, nx_p, ny_p, nz_p, 1, 1, 1,
-                    {
-                      temper = tp[ip] - 273.0;
-                      if (temper < 0.0)
-                        temper = 0.0;
-                      if (temper > 80.0)
-                        temper = 80.0;
-                      if (gravity < 9.0)
-                      {
-                        ex = 247.8 / (temper + 133.16);
-                        vp[ip] = 2.414e-5 * pow(10.0, ex);
-                        vp[ip] = vp[ip] / 1.0e-3;
-                      }
-                      else
-                      {
-                        ex = 247.8 / (temper + 133.16);
-                        vp[ip] = 2.414e-5 * pow(10.0, ex);
-                      }
-                    });
+          {
+            temper = tp[ip] - 273.0;
+            if (temper < 0.0)
+              temper = 0.0;
+            if (temper > 80.0)
+              temper = 80.0;
+            if (gravity < 9.0)
+            {
+              ex = 247.8 / (temper + 133.16);
+              vp[ip] = 2.414e-5 * pow(10.0, ex);
+              vp[ip] = vp[ip] / 1.0e-3;
+            }
+            else
+            {
+              ex = 247.8 / (temper + 133.16);
+              vp[ip] = 2.414e-5 * pow(10.0, ex);
+            }
+          });
         }
         else            /* fcn = CALCDER sjk: has to be inplemented still*/
         {
           BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
                     ip, nx_p, ny_p, nz_p, 1, 1, 1,
                     id, nx_d, ny_d, nz_d, 1, 1, 1,
-                    {
-                      temper = tp[ip] - 273.0;
-                      if (temper < 0.0)
-                        temper = 0.0;
-                      if (temper > 80.0)
-                        temper = 80.0;
-                      ex = 247.8 / (temper + 133.16);
-                      vp[id] = -247.8 * pow((temper + 133.16), -2.0) * log(10.0) * 2.414e-5 * pow(10.0, ex);
-                    });
+          {
+            temper = tp[ip] - 273.0;
+            if (temper < 0.0)
+              temper = 0.0;
+            if (temper > 80.0)
+              temper = 80.0;
+            ex = 247.8 / (temper + 133.16);
+            vp[id] = -247.8 * pow((temper + 133.16), -2.0) * log(10.0) * 2.414e-5 * pow(10.0, ex);
+          });
         }
       }
       break;

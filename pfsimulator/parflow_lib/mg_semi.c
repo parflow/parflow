@@ -1,35 +1,35 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-/******************************************************************************
+/*BHEADER*********************************************************************
  *
- * Multigrid with semi-coarsening strategy.
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
  *
- *****************************************************************************/
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/*****************************************************************************
+*
+* Multigrid with semi-coarsening strategy.
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -77,7 +77,7 @@ typedef struct {
 /*--------------------------------------------------------------------------
  * MGSemi:
  *   Solves A x = b.
- **--------------------------------------------------------------------------
+ *--------------------------------------------------------------------------
  *
  * We use the following convergence test:
  *
@@ -555,20 +555,20 @@ void              SetupCoarseOps(
         BoxLoopI2(ii, jj, kk, ix, iy, iz, nx, ny, nz,
                   iP, nx_P, ny_P, nz_P, 1, 1, 1,
                   iA, nx_A, ny_A, nz_A, sx, sy, sz,
-                  {
-                    ap0 = a0[iA] + a3[iA] + a4[iA] + a5[iA] + a6[iA];
+        {
+          ap0 = a0[iA] + a3[iA] + a4[iA] + a5[iA] + a6[iA];
 
-                    if (ap0)
-                    {
-                      p1[iP] = -a1[iA] / ap0;
-                      p2[iP] = -a2[iA] / ap0;
-                    }
-                    else
-                    {
-                      p1[iP] = 0.0;
-                      p2[iP] = 0.0;
-                    }
-                  });
+          if (ap0)
+          {
+            p1[iP] = -a1[iA] / ap0;
+            p2[iP] = -a2[iA] / ap0;
+          }
+          else
+          {
+            p1[iP] = 0.0;
+            p2[iP] = 0.0;
+          }
+        });
       }
     }
 
@@ -665,23 +665,23 @@ void              SetupCoarseOps(
                   iP1, nx_P, ny_P, nz_P, 1, 1, 1,
                   iA, nx_A, ny_A, nz_A, sx, sy, sz,
                   iAc, nx_Ac, ny_Ac, nz_Ac, 1, 1, 1,
-                  {
-                    iP2 = iP1 + dP12;
-                    iA1 = iA - dA12;
-                    iA2 = iA + dA12;
+        {
+          iP2 = iP1 + dP12;
+          iA1 = iA - dA12;
+          iA2 = iA + dA12;
 
-                    ac3[iAc] = a3[iA] + 0.5 * a3[iA1] + 0.5 * a3[iA2];
-                    ac4[iAc] = a4[iA] + 0.5 * a4[iA1] + 0.5 * a4[iA2];
-                    ac5[iAc] = a5[iA] + 0.5 * a5[iA1] + 0.5 * a5[iA2];
-                    ac6[iAc] = a6[iA] + 0.5 * a6[iA1] + 0.5 * a6[iA2];
+          ac3[iAc] = a3[iA] + 0.5 * a3[iA1] + 0.5 * a3[iA2];
+          ac4[iAc] = a4[iA] + 0.5 * a4[iA1] + 0.5 * a4[iA2];
+          ac5[iAc] = a5[iA] + 0.5 * a5[iA1] + 0.5 * a5[iA2];
+          ac6[iAc] = a6[iA] + 0.5 * a6[iA1] + 0.5 * a6[iA2];
 
-                    ac1[iAc] = a1[iA] * p1[iP1];
-                    ac2[iAc] = a2[iA] * p2[iP2];
+          ac1[iAc] = a1[iA] * p1[iP1];
+          ac2[iAc] = a2[iA] * p2[iP2];
 
-                    ac0[iAc] =
-                      a0[iA] + a3[iA] + a4[iA] + a5[iA] + a6[iA] +
-                      a1[iA] * p2[iP1] + a2[iA] * p1[iP2];
-                  });
+          ac0[iAc] =
+            a0[iA] + a3[iA] + a4[iA] + a5[iA] + a6[iA] +
+            a1[iA] * p2[iP1] + a2[iA] * p1[iP2];
+        });
       }
     }
 
@@ -729,10 +729,10 @@ void              SetupCoarseOps(
 
         BoxLoopI1(ii, jj, kk, ix, iy, iz, nx, ny, nz,
                   iAc, nx_Ac, ny_Ac, nz_Ac, 1, 1, 1,
-                  {
-                    ac0[iAc] -= (ac3[iAc] + ac4[iAc] +
-                                 ac5[iAc] + ac6[iAc]);
-                  });
+        {
+          ac0[iAc] -= (ac3[iAc] + ac4[iAc] +
+                       ac5[iAc] + ac6[iAc]);
+        });
       }
     }
   }

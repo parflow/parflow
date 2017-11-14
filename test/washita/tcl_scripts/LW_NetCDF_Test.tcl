@@ -23,8 +23,7 @@ exec mkdir "Outputs"
 cd "./Outputs"
 
 # ParFlow Inputs
-file copy -force "../../parflow_input/slopex.nc" .
-file copy -force "../../parflow_input/slopey.nc" .
+file copy -force "../../parflow_input/slopes.nc" .
 file copy -force "../../parflow_input/IndicatorFile_Gleeson.50z.pfb"   .
 file copy -force "../../parflow_input/press.init.nc"  .
 
@@ -32,6 +31,7 @@ file copy -force "../../parflow_input/press.init.nc"  .
 file copy -force "../../clm_input/drv_clmin.dat" .
 file copy -force "../../clm_input/drv_vegp.dat"  .
 file copy -force "../../clm_input/drv_vegm.alluv.dat"  . 
+file copy -force "../../clm_input/metForcing.nc"  . 
 
 puts "Files Copied"
 
@@ -286,14 +286,14 @@ pfset Patch.z-upper.BCPressure.alltime.Value	      0.0
 #-----------------------------------------------------------------------------
 pfset TopoSlopesX.Type                                "NCFile"
 pfset TopoSlopesX.GeomNames                           "domain"
-pfset TopoSlopesX.FileName                            "slopex.nc"
+pfset TopoSlopesX.FileName                            "slopes.nc"
 
 #-----------------------------------------------------------------------------
 # Topo slopes in y-direction
 #-----------------------------------------------------------------------------
 pfset TopoSlopesY.Type                                "NCFile"
 pfset TopoSlopesY.GeomNames                           "domain"
-pfset TopoSlopesY.FileName                            "slopey.nc"
+pfset TopoSlopesY.FileName                            "slopes.nc"
 
 #-----------------------------------------------------------------------------
 # Mannings coefficient
@@ -410,10 +410,10 @@ pfset Solver.CLM.Print1dOut                           False
 pfset Solver.BinaryOutDir                             False
 pfset Solver.CLM.CLMDumpInterval                      1
 
-pfset Solver.CLM.MetForcing                           3D
-pfset Solver.CLM.MetFileName                          "NLDAS"
-pfset Solver.CLM.MetFilePath                          "../../NLDAS/"
-pfset Solver.CLM.MetFileNT                            24
+pfset Solver.CLM.MetForcing                           NC
+pfset Solver.CLM.MetFileName                          "metForcing.nc"
+#pfset Solver.CLM.MetFilePath                          "../../NLDAS/"
+pfset Solver.CLM.MetFileNT                            1
 pfset Solver.CLM.IstepStart                           1
 
 pfset Solver.CLM.EvapBeta                             Linear
@@ -489,8 +489,19 @@ pfset Solver.Linear.Preconditioner                       PFMG
 pfset Solver.Linear.Preconditioner.PCMatrixType     FullJacobian
 
 pfset NetCDF.NumStepsPerFile			5
+pfset NetCDF.CLMNumStepsPerFile                 24
 pfset NetCDF.WritePressure			True
 pfset NetCDF.WriteSaturation			True
+pfset NetCDF.WriteMannings			True
+pfset NetCDF.WriteSubsurface			True
+pfset NetCDF.WriteSlopes			True
+pfset NetCDF.WriteMask				True
+pfset NetCDF.WriteDZMultiplier			True
+pfset NetCDF.WriteEvapTrans			True
+pfset NetCDF.WriteEvapTransSum			True
+pfset NetCDF.WriteOverlandSum			True
+pfset NetCDF.WriteOverlandBCFlux		True
+pfset NetCDF.WriteCLM				True
 
 #-----------------------------------------------------------------------------
 # Distribute inputs

@@ -1,52 +1,52 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-/******************************************************************************
+/*BHEADER*********************************************************************
  *
- *  This module computes phase densities.  Currently, two types of densities
- *  are supported, constant (Type0) or a basic equation of state where density
- *  depends on pressure (Type1).
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
  *
- *  The equation of state used is:
- *  rho(p) = rho_ref exp(c p)
- *  where rho_ref is the density at atmoshperic pressure and c is the
- *  phase compressibility constant.
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
  *
- *  The density module can be invoked either expecting only a
- *  double array of densities back - where NULL Vectors are
- *  sent in for the phase pressure and the density return Vector - or a
- *  Vector of densities at each grid block.  Note that code using the
- *  Vector density option can also have a constant density.
- *  This "overloading" was provided so that the density module written
- *  for the Richards' solver modules would be backward compatible with
- *  the Impes modules and so that densities can be evaluated for pressures
- *  not necessarily associated with a grid (as in boundary patches).
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
  *
- *****************************************************************************/
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/*****************************************************************************
+*
+*  This module computes phase densities.  Currently, two types of densities
+*  are supported, constant (Type0) or a basic equation of state where density
+*  depends on pressure (Type1).
+*
+*  The equation of state used is:
+*  rho(p) = rho_ref exp(c p)
+*  where rho_ref is the density at atmoshperic pressure and c is the
+*  phase compressibility constant.
+*
+*  The density module can be invoked either expecting only a
+*  double array of densities back - where NULL Vectors are
+*  sent in for the phase pressure and the density return Vector - or a
+*  Vector of densities at each grid block.  Note that code using the
+*  Vector density option can also have a constant density.
+*  This "overloading" was provided so that the density module written
+*  for the Richards' solver modules would be backward compatible with
+*  the Impes modules and so that densities can be evaluated for pressures
+*  not necessarily associated with a grid (as in boundary patches).
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -207,19 +207,19 @@ void    InternalEnergyDensity(
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                     ip, nx_d, ny_d, nz_d, 1, 1, 1,
-                    {
-                      pu[ip] = constant_energy;
-                      pd[ip] = constant_density;
-                    });
+          {
+            pu[ip] = constant_energy;
+            pd[ip] = constant_density;
+          });
         }
         else     /* fcn = CALCDER */
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                     ip, nx_d, ny_d, nz_d, 1, 1, 1,
-                    {
-                      pu[ip] = 0.0;
-                      pd[ip] = 0.0;
-                    });
+          {
+            pu[ip] = 0.0;
+            pd[ip] = 0.0;
+          });
         }     /* End if fcn */
       }      /* End subgrid loop */
 
@@ -255,82 +255,82 @@ void    InternalEnergyDensity(
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                     ip, nx_d, ny_d, nz_d, 1, 1, 1,
-                    {
-                      tkr = (pt[ip] + 273.15) / 647.3;
-                      tkr2 = tkr * tkr;
-                      tkr3 = tkr * tkr2;
-                      tkr4 = tkr2 * tkr2;
-                      tkr5 = tkr2 * tkr3;
-                      tkr6 = tkr4 * tkr2;
-                      tkr7 = tkr4 * tkr3;
-                      tkr8 = tkr4 * tkr4;
-                      tkr9 = tkr4 * tkr5;
-                      tkr10 = tkr4 * tkr6;
-                      tkr11 = tkr * tkr10;
-                      tkr19 = tkr8 * tkr11;
-                      tkr18 = tkr8 * tkr10;
-                      tkr20 = tkr10 * tkr10;
-                      pnmr = pp[ip] / 2.212e+7;
-                      pnmr2 = pnmr * pnmr;
-                      pnmr3 = pnmr * pnmr2;
-                      pnmr4 = pnmr * pnmr3;
-                      y = 1. - sa1 * tkr2 - sa2 / tkr6;
-                      zp = sa3 * y * y - 2. * sa4 * tkr + 2. * sa5 * pnmr;
+          {
+            tkr = (pt[ip] + 273.15) / 647.3;
+            tkr2 = tkr * tkr;
+            tkr3 = tkr * tkr2;
+            tkr4 = tkr2 * tkr2;
+            tkr5 = tkr2 * tkr3;
+            tkr6 = tkr4 * tkr2;
+            tkr7 = tkr4 * tkr3;
+            tkr8 = tkr4 * tkr4;
+            tkr9 = tkr4 * tkr5;
+            tkr10 = tkr4 * tkr6;
+            tkr11 = tkr * tkr10;
+            tkr19 = tkr8 * tkr11;
+            tkr18 = tkr8 * tkr10;
+            tkr20 = tkr10 * tkr10;
+            pnmr = pp[ip] / 2.212e+7;
+            pnmr2 = pnmr * pnmr;
+            pnmr3 = pnmr * pnmr2;
+            pnmr4 = pnmr * pnmr3;
+            y = 1. - sa1 * tkr2 - sa2 / tkr6;
+            zp = sa3 * y * y - 2. * sa4 * tkr + 2. * sa5 * pnmr;
 
-                      if (zp >= 0.)
-                      {
-                        z = y + sqrt(zp);
-                        cz = pow(z, (5. / 17.));
-                        par1 = a12 * sa5 / cz;
-                        cc1 = sa6 - tkr;
-                        cc2 = cc1 * cc1;
-                        cc4 = cc2 * cc2;
-                        cc8 = cc4 * cc4;
-                        cc10 = cc2 * cc8;
-                        aa1 = sa7 + tkr19;
-                        par2 = a13 + a14 * tkr + a15 * tkr2 + a16 * cc10 + a17 / aa1;
-                        par3 = (a18 + 2. * a19 * pnmr + 3. * a20 * pnmr2) / (sa8 + tkr11);
-                        dd1 = sa10 + pnmr;
-                        dd2 = dd1 * dd1;
-                        dd4 = dd2 * dd2;
-                        par4 = a21 * tkr18 * (sa9 + tkr2) * (-3. / dd4 + sa11);
-                        par5 = 3. * a22 * (sa12 - tkr) * pnmr2 + 4. * a23 / tkr20 * pnmr3;
-                        vmkr = par1 + par2 - par3 - par4 + par5;
-                        v = vmkr * 3.17e-3;
-                        pd[ip] = 1. / v;
-                        yd = -2. * sa1 * tkr + 6. * sa2 / tkr7;
-                        snum = a10 + a11 * tkr;
-                        snum = snum * tkr + a9;
-                        snum = snum * tkr + a8;
-                        snum = snum * tkr + a7;
-                        snum = snum * tkr + a6;
-                        snum = snum * tkr + a5;
-                        snum = snum * tkr + a4;
-                        snum = snum * tkr2 - a2;
-                        prt1 = a12 * (z * (17. * (z / 29. - y / 12.) + 5. * tkr * yd / 12.) + sa4 * tkr - (sa3 - 1.) * tkr * y * yd) / cz;
-                        prt2 = pnmr * (a13 - a15 * tkr2 + a16 * (9. * tkr + sa6) * cc8 * cc1 + a17 * (19. * tkr19 - aa1) / (aa1 * aa1));
-                        bb1 = sa8 + tkr11;
-                        bb2 = bb1 * bb1;
-                        prt3 = (11. * tkr11 + bb1) / bb2 * (a18 * pnmr + a19 * pnmr2 + a20 * pnmr3);
-                        ee1 = sa10 + pnmr;
-                        ee3 = ee1 * ee1 * ee1;
-                        prt4 = a21 * tkr18 * (17. * sa9 + 19. * tkr2) * (1. / ee3 + sa11 * pnmr);
-                        prt5 = a22 * sa12 * pnmr3 + 21. * a23 / tkr20 * pnmr4;
-                        entr = a1 * tkr - snum + prt1 + prt2 - prt3 + prt4 + prt5;
-                        h = entr * 70120.4;
-                        pu[ip] = h - pp[ip] * v;
-                      }
-                    });
+            if (zp >= 0.)
+            {
+              z = y + sqrt(zp);
+              cz = pow(z, (5. / 17.));
+              par1 = a12 * sa5 / cz;
+              cc1 = sa6 - tkr;
+              cc2 = cc1 * cc1;
+              cc4 = cc2 * cc2;
+              cc8 = cc4 * cc4;
+              cc10 = cc2 * cc8;
+              aa1 = sa7 + tkr19;
+              par2 = a13 + a14 * tkr + a15 * tkr2 + a16 * cc10 + a17 / aa1;
+              par3 = (a18 + 2. * a19 * pnmr + 3. * a20 * pnmr2) / (sa8 + tkr11);
+              dd1 = sa10 + pnmr;
+              dd2 = dd1 * dd1;
+              dd4 = dd2 * dd2;
+              par4 = a21 * tkr18 * (sa9 + tkr2) * (-3. / dd4 + sa11);
+              par5 = 3. * a22 * (sa12 - tkr) * pnmr2 + 4. * a23 / tkr20 * pnmr3;
+              vmkr = par1 + par2 - par3 - par4 + par5;
+              v = vmkr * 3.17e-3;
+              pd[ip] = 1. / v;
+              yd = -2. * sa1 * tkr + 6. * sa2 / tkr7;
+              snum = a10 + a11 * tkr;
+              snum = snum * tkr + a9;
+              snum = snum * tkr + a8;
+              snum = snum * tkr + a7;
+              snum = snum * tkr + a6;
+              snum = snum * tkr + a5;
+              snum = snum * tkr + a4;
+              snum = snum * tkr2 - a2;
+              prt1 = a12 * (z * (17. * (z / 29. - y / 12.) + 5. * tkr * yd / 12.) + sa4 * tkr - (sa3 - 1.) * tkr * y * yd) / cz;
+              prt2 = pnmr * (a13 - a15 * tkr2 + a16 * (9. * tkr + sa6) * cc8 * cc1 + a17 * (19. * tkr19 - aa1) / (aa1 * aa1));
+              bb1 = sa8 + tkr11;
+              bb2 = bb1 * bb1;
+              prt3 = (11. * tkr11 + bb1) / bb2 * (a18 * pnmr + a19 * pnmr2 + a20 * pnmr3);
+              ee1 = sa10 + pnmr;
+              ee3 = ee1 * ee1 * ee1;
+              prt4 = a21 * tkr18 * (17. * sa9 + 19. * tkr2) * (1. / ee3 + sa11 * pnmr);
+              prt5 = a22 * sa12 * pnmr3 + 21. * a23 / tkr20 * pnmr4;
+              entr = a1 * tkr - snum + prt1 + prt2 - prt3 + prt4 + prt5;
+              h = entr * 70120.4;
+              pu[ip] = h - pp[ip] * v;
+            }
+          });
         }
         else /* fcn = CALCDER */
         {
           ip = 0;
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                     ip, nx_d, ny_d, nz_d, 1, 1, 1,
-                    {
-                      pu[ip] = 0.0;
-                      pd[ip] = 0.0;
-                    });
+          {
+            pu[ip] = 0.0;
+            pd[ip] = 0.0;
+          });
         } /* End if fcn */
       }  /* End subgrid loop */
 

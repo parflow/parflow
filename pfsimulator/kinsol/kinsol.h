@@ -4,65 +4,63 @@
 * Programmers   : Allan G. Taylor and Alan C. Hindmarsh @ LLNL   *
 * Begun         :  14 Aug 1996                                   *
 * Version of    :  25 Mar 1999   Revised KINSol return values    *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * This is the interface file for the main KINSol solver          *
 *                                                                *
 ******************************************************************/
 
 
 /*......................................................................
-*
-*
-*                           LEGAL NOTICES
-*
-*
-*  1. NOTICE
-*
-*  This work was performed at the University of California, Lawrence
-*  Livermore National Laboratory (UC LLNL) under contract no.
-*  W-7405-ENG-48 (Contract 48) between the U.S. Department of Energy
-*  (DOE) and The Regents of the University of California (the University)
-*  for the operation of UC LLNL. The rights of the Federal Government are
-*  reserved under Contract 48 subject to the restrictions agreed upon by the
-*  DOE and University as allowed under DOE Acquisition Letter 97-1.
-*
-*
-*  2. DISCLAIMER
-*
-*  This work was prepared as an account of work sponsored by an agency of
-*  the United States Government.  Neither the United States Government
-*  nor the University of California nor any of their empolyees makes any
-*  warranty, express or implied, or assumes any liability or
-*  responsibility for the accuracy, completeness, or usefulness of any
-*  information, apparatus, product, or process disclosed, or represents
-*  that its use would not infringe privately owned rights.  Reference
-*  herein to any specific commercial products, process, or service by
-*  trade name, trademark, manufacturer, or otherwise, does not
-*  necessarily constitute or imply its endorsement, recommendation, or
-*  favoring by the United States Government or the University of
-*  California.  The views and opinions of authors expressed herein do not
-*  necessarily state or reflect those of the United States Government or
-*  the University of California, and shall not be used for advertising or
-*  product endorsement purposes.
-*
-*  ......................................................................*/
+ *
+ *
+ *                           LEGAL NOTICES
+ *
+ *
+ *  1. NOTICE
+ *
+ *  This work was performed at the University of California, Lawrence
+ *  Livermore National Laboratory (UC LLNL) under contract no.
+ *  W-7405-ENG-48 (Contract 48) between the U.S. Department of Energy
+ *  (DOE) and The Regents of the University of California (the University)
+ *  for the operation of UC LLNL. The rights of the Federal Government are
+ *  reserved under Contract 48 subject to the restrictions agreed upon by the
+ *  DOE and University as allowed under DOE Acquisition Letter 97-1.
+ *
+ *
+ *  2. DISCLAIMER
+ *
+ *  This work was prepared as an account of work sponsored by an agency of
+ *  the United States Government.  Neither the United States Government
+ *  nor the University of California nor any of their empolyees makes any
+ *  warranty, express or implied, or assumes any liability or
+ *  responsibility for the accuracy, completeness, or usefulness of any
+ *  information, apparatus, product, or process disclosed, or represents
+ *  that its use would not infringe privately owned rights.  Reference
+ *  herein to any specific commercial products, process, or service by
+ *  trade name, trademark, manufacturer, or otherwise, does not
+ *  necessarily constitute or imply its endorsement, recommendation, or
+ *  favoring by the United States Government or the University of
+ *  California.  The views and opinions of authors expressed herein do not
+ *  necessarily state or reflect those of the United States Government or
+ *  the University of California, and shall not be used for advertising or
+ *  product endorsement purposes.
+ *
+ *  ......................................................................*/
+
+#ifndef KINSOL_H
+#define KINSOL_H
 
 #include "vector.h"
-
-#ifdef __cplusplus     /* wrapper to enable C++ usage */
-extern "C" {
-#endif
-#ifndef _kinsol_h
-#define _kinsol_h
-
+#include "llnltyps.h"
 
 #include <stdio.h>
-#include "llnltyps.h"
+
+BEGIN_EXTERN_C
 
 /******************************************************************
 *                                                                *
 * Type : SysFn                                                   *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * The func function which defines the system to be solved :      *
 *              func(uu) = 0      must have type SysFn.           *
 * func takes as input the problem size Neq and the dependent     *
@@ -115,7 +113,7 @@ void *KINMalloc(integer Neq, FILE *msgfp, void *machEnv);
 /******************************************************************
  *                                                                *
  * Function : KINSol                                              *
- **----------------------------------------------------------------*
+ *----------------------------------------------------------------*
  * KINSol initializes memory for a problem previously allocated by*
  * a call to KINMalloc. It also checks the initial value of uu    *
  * (the initial guess) against the constraints and checks if the  *
@@ -227,7 +225,7 @@ enum { INEXACT_NEWTON, LINESEARCH };   /* globalstrategy */
 /******************************************************************
  *                                                                *
  * Optional Inputs and Outputs                                    *
- **----------------------------------------------------------------*
+ *----------------------------------------------------------------*
  * The user should declare two arrays for optional input and      *
  * output, an iopt array for optional integer input and output    *
  * and an ropt array for optional real input and output. These    *
@@ -479,7 +477,7 @@ enum { KINSOL_NO_MEM=-1, KINSOL_INPUT_ERROR=-2, KINSOL_LSOLV_NO_MEM=-3,
 /******************************************************************
 *                                                                *
 * Function : KINFree                                             *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * KINFree frees the problem memory kinsol_mem allocated by       *
 * KINMalloc.  Its only argument is the pointer kinsol_mem        *
 * returned by KINMalloc   .                                      *
@@ -507,7 +505,7 @@ enum { ETACHOICE1 = 0, ETACHOICE2, ETACONSTANT }; /* 3 methods to determine eta
 /******************************************************************
 *                                                                *
 * Types : struct KINMemRec, KINMem                               *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * The type KINMem is type pointer to struct KINMemRec. This      *
 * structure contains fields to keep track of problem status.     *
 *                                                                *
@@ -531,8 +529,8 @@ typedef struct KINMemRec {
   int kin_printfl;         /* print (output) option selected              */
   int kin_mxiter;          /*  max number of nonlinear iterations         */
   int kin_msbpre;          /*  max number of iterations without calling the
-                            *   preconditioner.  this variable set by the
-                            *   setup routine for the linear solver       */
+                           *   preconditioner.  this variable set by the
+                           *   setup routine for the linear solver       */
   int kin_etaflag;          /* eta computation choice                     */
   boole kin_ioptExists;     /* logical set when the array iopt is non-null*/
   boole kin_roptExists;     /* logical set when the array ropt is non-null*/
@@ -581,7 +579,7 @@ typedef struct KINMemRec {
   N_Vector kin_pp;         /* pointer to the incremental change vector
                             * for uu in this iteration--
                             * a.k.a. x in the solver */
-  N_Vector kin_constraints; /* pointer to user supplied constraints vector */
+  N_Vector kin_constraints;/* pointer to user supplied constraints vector */
   N_Vector kin_vtemp1;     /* scratch vector  # 1                         */
   N_Vector kin_vtemp2;     /* scratch vector  # 2                         */
 
@@ -618,7 +616,7 @@ typedef struct KINMemRec {
                            * in the global strategy routine and in KINForcingTerm */
 
   real kin_sJpnorm;       /* norm of scaled J p, as above, also used in
-                           * the KINForcingTerm routine               */
+                          * the KINForcingTerm routine               */
 
   /* in the above two comments, J is the jacobian matrix evaluated at the
    * last iterate u  and p is the current increment from the last iterate u.
@@ -644,7 +642,7 @@ typedef struct KINMemRec {
 /******************************************************************
 *                                                                *
 * Communication between kinsol.c and a KINSol Linear Solver      *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * (1) kin_linit return values                                    *
 *                                                                *
 * LINIT_OK    : The kin_linit routine succeeded.                 *
@@ -664,7 +662,7 @@ typedef struct KINMemRec {
 /*******************************************************************
 *                                                                 *
 * int (*kin_linit)(KINMem kin_mem, boole *setupNonNull);          *
-**-----------------------------------------------------------------*
+*-----------------------------------------------------------------*
 * The purpose of kin_linit is to perform any needed               *
 * initializations of solver-specific memory, such as              *
 * counters/statistics. Actual memory allocation should be done    *
@@ -682,7 +680,7 @@ typedef struct KINMemRec {
 /*******************************************************************
 *                                                                 *
 * int (*kin_lsetup)(KINMem kin_mem);                              *
-**-----------------------------------------------------------------*
+*-----------------------------------------------------------------*
 * The job of kin_lsetup is to prepare the linear solver for       *
 * subsequent calls to kin_lsolve.                                 *
 *                                                                 *
@@ -699,7 +697,7 @@ typedef struct KINMemRec {
 *                                                                 *
 * int (*kin_lsolve)(KINMem kin_mem, N_Vector bb, N_Vector xx,     *
 *                  real *res_norm);                               *
-**-----------------------------------------------------------------*
+*-----------------------------------------------------------------*
 * kin_lsolve must solve the linear equation J x = b, where        *
 * J is an approximate Jacobian matrix, x is the approximate system*
 * solution,  and the RHS vector b is input. The solution is to be *
@@ -712,19 +710,13 @@ typedef struct KINMemRec {
 /*******************************************************************
 *                                                                 *
 * void (*kin_lfree)(KINMem kin_mem);                              *
-**-----------------------------------------------------------------*
+*-----------------------------------------------------------------*
 * kin_lfree should free up any memory allocated by the linear     *
 * solver. This routine is called once a problem has been          *
 * completed and the linear solver is no longer needed.            *
 *                                                                 *
 *******************************************************************/
 
+END_EXTERN_C
 
 #endif
-#ifdef __cplusplus
-}
-#endif
-
-
-
-

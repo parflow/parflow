@@ -1,42 +1,42 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
-/******************************************************************************
- *
- *                               Description
- **-----------------------------------------------------------------------------
- * This file contains a parflow module that will assign values to the
- * field vector that is passed in. The values are specified in the
- * user-supplied input file. In particular, the user must specify permeability
- * data corresponding to the computational grid exactly.
- **-----------------------------------------------------------------------------
- *
- *****************************************************************************/
+/*****************************************************************************
+*
+*                               Description
+*-----------------------------------------------------------------------------
+* This file contains a parflow module that will assign values to the
+* field vector that is passed in. The values are specified in the
+* user-supplied input file. In particular, the user must specify permeability
+* data corresponding to the computational grid exactly.
+*-----------------------------------------------------------------------------
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -125,12 +125,12 @@ void    InputRF(
     fieldp = SubvectorData(field_sub);
     tmpRFp = SubvectorData(tmpRF_sub);
     GrGeomInLoop(i, j, k, gr_geounit, r, ix, iy, iz, nx, ny, nz,
-                 {
-                   indexfp = SubvectorEltIndex(field_sub, i, j, k);
-                   indextp = SubvectorEltIndex(tmpRF_sub, i, j, k);
+    {
+      indexfp = SubvectorEltIndex(field_sub, i, j, k);
+      indextp = SubvectorEltIndex(tmpRF_sub, i, j, k);
 
-                   fieldp[indexfp] = tmpRFp[indextp];
-                 });
+      fieldp[indexfp] = tmpRFp[indextp];
+    });
   }
 
   /*-----------------------------------------------------------------------

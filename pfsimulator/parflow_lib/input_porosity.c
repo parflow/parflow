@@ -93,12 +93,12 @@ void    InputPorosity(
     /* new subvector data to read from */
     ic_values_dat = SubvectorData(ic_values_sub);
     GrGeomInLoop(i, j, k, gr_geounit, r, ix, iy, iz, nx, ny, nz,
-                 {
-                   index = SubvectorEltIndex(field_sub, i, j, k);
-                   /* now assign the value from file to field */
-                   //                     fieldp[index] = field_value;
-                   fieldp[index] = ic_values_dat[index];
-                 });
+    {
+      index = SubvectorEltIndex(field_sub, i, j, k);
+      /* now assign the value from file to field */
+      //                     fieldp[index] = field_value;
+      fieldp[index] = ic_values_dat[index];
+    });
   }
 }
 /*--------------------------------------------------------------------------

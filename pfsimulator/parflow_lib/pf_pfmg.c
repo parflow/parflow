@@ -1,30 +1,30 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
 #include "parflow.h"
 
@@ -130,13 +130,13 @@ void         PFMG(
 
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
-              {
-                index[0] = i;
-                index[1] = j;
-                index[2] = k;
+    {
+      index[0] = i;
+      index[1] = j;
+      index[2] = k;
 
-                HYPRE_StructVectorSetValues(hypre_b, index, rhs_ptr[iv]);
-              });
+      HYPRE_StructVectorSetValues(hypre_b, index, rhs_ptr[iv]);
+    });
   }
   HYPRE_StructVectorAssemble(hypre_b);
 
@@ -202,17 +202,16 @@ void         PFMG(
 
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
-              {
-                index[0] = i;
-                index[1] = j;
-                index[2] = k;
+    {
+      index[0] = i;
+      index[1] = j;
+      index[2] = k;
 
-                HYPRE_StructVectorGetValues(hypre_x, index, &value);
-                soln_ptr[iv] = value;
-              });
+      HYPRE_StructVectorGetValues(hypre_x, index, &value);
+      soln_ptr[iv] = value;
+    });
   }
   EndTiming(public_xtra->time_index_copy_hypre);
-
 #else
   amps_Printf("Error: Parflow not compiled with hypre, can't use pfmg\n");
 #endif
@@ -422,41 +421,41 @@ PFModule  *PFMGInitInstanceXtra(
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                     im, nx_m, ny_m, nz_m, 1, 1, 1,
-                    {
-                      coeffs_symm[0] = cp[im];
-                      coeffs_symm[1] = ep[im];
-                      coeffs_symm[2] = np[im];
-                      coeffs_symm[3] = up[im];
-                      index[0] = i;
-                      index[1] = j;
-                      index[2] = k;
-                      HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
-                                                  index,
-                                                  stencil_size,
-                                                  stencil_indices_symm,
-                                                  coeffs_symm);
-                    });
+          {
+            coeffs_symm[0] = cp[im];
+            coeffs_symm[1] = ep[im];
+            coeffs_symm[2] = np[im];
+            coeffs_symm[3] = up[im];
+            index[0] = i;
+            index[1] = j;
+            index[2] = k;
+            HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
+                                        index,
+                                        stencil_size,
+                                        stencil_indices_symm,
+                                        coeffs_symm);
+          });
         }
         else
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                     im, nx_m, ny_m, nz_m, 1, 1, 1,
-                    {
-                      coeffs[0] = cp[im];
-                      coeffs[1] = wp[im];
-                      coeffs[2] = ep[im];
-                      coeffs[3] = sop[im];
-                      coeffs[4] = np[im];
-                      coeffs[5] = lp[im];
-                      coeffs[6] = up[im];
-                      index[0] = i;
-                      index[1] = j;
-                      index[2] = k;
-                      HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
-                                                  index,
-                                                  stencil_size,
-                                                  stencil_indices, coeffs);
-                    });
+          {
+            coeffs[0] = cp[im];
+            coeffs[1] = wp[im];
+            coeffs[2] = ep[im];
+            coeffs[3] = sop[im];
+            coeffs[4] = np[im];
+            coeffs[5] = lp[im];
+            coeffs[6] = up[im];
+            index[0] = i;
+            index[1] = j;
+            index[2] = k;
+            HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
+                                        index,
+                                        stencil_size,
+                                        stencil_indices, coeffs);
+          });
         }
       }   /* End subgrid loop */
     }
@@ -529,103 +528,103 @@ PFModule  *PFMGInitInstanceXtra(
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                     im, nx_m, ny_m, nz_m, 1, 1, 1,
-                    {
-                      itop = SubvectorEltIndex(top_sub, i, j, 0);
-                      ktop = (int)top_dat[itop];
-                      io = SubmatrixEltIndex(pfC_sub, i, j, iz);
-                      /* Since we are using a boxloop, we need to check for top index
-                       * to update with the surface contributions */
-                      if (ktop == k)
-                      {
-                        /* update diagonal coeff */
-                        coeffs_symm[0] = cp_c[io];     //cp[im] is zero
-                        /* update east coeff */
-                        coeffs_symm[1] = ep[im];
-                        /* update north coeff */
-                        coeffs_symm[2] = np[im];
-                        /* update upper coeff */
-                        coeffs_symm[3] = up[im];     // JB keeps upper term on surface. This should be zero
-                      }
-                      else
-                      {
-                        coeffs_symm[0] = cp[im];
-                        coeffs_symm[1] = ep[im];
-                        coeffs_symm[2] = np[im];
-                        coeffs_symm[3] = up[im];
-                      }
+          {
+            itop = SubvectorEltIndex(top_sub, i, j, 0);
+            ktop = (int)top_dat[itop];
+            io = SubmatrixEltIndex(pfC_sub, i, j, iz);
+            /* Since we are using a boxloop, we need to check for top index
+             * to update with the surface contributions */
+            if (ktop == k)
+            {
+              /* update diagonal coeff */
+              coeffs_symm[0] = cp_c[io];               //cp[im] is zero
+              /* update east coeff */
+              coeffs_symm[1] = ep[im];
+              /* update north coeff */
+              coeffs_symm[2] = np[im];
+              /* update upper coeff */
+              coeffs_symm[3] = up[im];               // JB keeps upper term on surface. This should be zero
+            }
+            else
+            {
+              coeffs_symm[0] = cp[im];
+              coeffs_symm[1] = ep[im];
+              coeffs_symm[2] = np[im];
+              coeffs_symm[3] = up[im];
+            }
 
-                      index[0] = i;
-                      index[1] = j;
-                      index[2] = k;
-                      HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
-                                                  index,
-                                                  stencil_size,
-                                                  stencil_indices_symm,
-                                                  coeffs_symm);
-                    });
+            index[0] = i;
+            index[1] = j;
+            index[2] = k;
+            HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
+                                        index,
+                                        stencil_size,
+                                        stencil_indices_symm,
+                                        coeffs_symm);
+          });
         }
         else
         {
           BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
                     im, nx_m, ny_m, nz_m, 1, 1, 1,
-                    {
-                      itop = SubvectorEltIndex(top_sub, i, j, 0);
-                      ktop = (int)top_dat[itop];
-                      io = SubmatrixEltIndex(pfC_sub, i, j, iz);
-                      /* Since we are using a boxloop, we need to check for top index
-                       * to update with the surface contributions */
-                      if (ktop == k)
-                      {
-                        /* update diagonal coeff */
-                        coeffs[0] = cp_c[io];     //cp[im] is zero
-                        /* update west coeff */
-                        k1 = (int)top_dat[itop - 1];
-                        if (k1 == ktop)
-                          coeffs[1] = wp_c[io];        //wp[im] is zero
-                        else
-                          coeffs[1] = wp[im];
-                        /* update east coeff */
-                        k1 = (int)top_dat[itop + 1];
-                        if (k1 == ktop)
-                          coeffs[2] = ep_c[io];        //ep[im] is zero
-                        else
-                          coeffs[2] = ep[im];
-                        /* update south coeff */
-                        k1 = (int)top_dat[itop - sy_v];
-                        if (k1 == ktop)
-                          coeffs[3] = sop_c[io];        //sop[im] is zero
-                        else
-                          coeffs[3] = sop[im];
-                        /* update north coeff */
-                        k1 = (int)top_dat[itop + sy_v];
-                        if (k1 == ktop)
-                          coeffs[4] = np_c[io];        //np[im] is zero
-                        else
-                          coeffs[4] = np[im];
-                        /* update upper coeff */
-                        coeffs[5] = lp[im];     // JB keeps lower term on surface.
-                        /* update upper coeff */
-                        coeffs[6] = up[im];     // JB keeps upper term on surface. This should be zero
-                      }
-                      else
-                      {
-                        coeffs[0] = cp[im];
-                        coeffs[1] = wp[im];
-                        coeffs[2] = ep[im];
-                        coeffs[3] = sop[im];
-                        coeffs[4] = np[im];
-                        coeffs[5] = lp[im];
-                        coeffs[6] = up[im];
-                      }
+          {
+            itop = SubvectorEltIndex(top_sub, i, j, 0);
+            ktop = (int)top_dat[itop];
+            io = SubmatrixEltIndex(pfC_sub, i, j, iz);
+            /* Since we are using a boxloop, we need to check for top index
+             * to update with the surface contributions */
+            if (ktop == k)
+            {
+              /* update diagonal coeff */
+              coeffs[0] = cp_c[io];               //cp[im] is zero
+              /* update west coeff */
+              k1 = (int)top_dat[itop - 1];
+              if (k1 == ktop)
+                coeffs[1] = wp_c[io];                  //wp[im] is zero
+              else
+                coeffs[1] = wp[im];
+              /* update east coeff */
+              k1 = (int)top_dat[itop + 1];
+              if (k1 == ktop)
+                coeffs[2] = ep_c[io];                  //ep[im] is zero
+              else
+                coeffs[2] = ep[im];
+              /* update south coeff */
+              k1 = (int)top_dat[itop - sy_v];
+              if (k1 == ktop)
+                coeffs[3] = sop_c[io];                  //sop[im] is zero
+              else
+                coeffs[3] = sop[im];
+              /* update north coeff */
+              k1 = (int)top_dat[itop + sy_v];
+              if (k1 == ktop)
+                coeffs[4] = np_c[io];                  //np[im] is zero
+              else
+                coeffs[4] = np[im];
+              /* update upper coeff */
+              coeffs[5] = lp[im];               // JB keeps lower term on surface.
+              /* update upper coeff */
+              coeffs[6] = up[im];               // JB keeps upper term on surface. This should be zero
+            }
+            else
+            {
+              coeffs[0] = cp[im];
+              coeffs[1] = wp[im];
+              coeffs[2] = ep[im];
+              coeffs[3] = sop[im];
+              coeffs[4] = np[im];
+              coeffs[5] = lp[im];
+              coeffs[6] = up[im];
+            }
 
-                      index[0] = i;
-                      index[1] = j;
-                      index[2] = k;
-                      HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
-                                                  index,
-                                                  stencil_size,
-                                                  stencil_indices, coeffs);
-                    });
+            index[0] = i;
+            index[1] = j;
+            index[2] = k;
+            HYPRE_StructMatrixSetValues(instance_xtra->hypre_mat,
+                                        index,
+                                        stencil_size,
+                                        stencil_indices, coeffs);
+          });
         }
       }   /* End subgrid loop */
     }  /* end if pf_Cmat==NULL */
@@ -662,7 +661,6 @@ PFModule  *PFMGInitInstanceXtra(
 
   PFModuleInstanceXtra(this_module) = instance_xtra;
   return this_module;
-
 #else
   return NULL;
 #endif

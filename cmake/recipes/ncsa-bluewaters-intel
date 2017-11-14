@@ -1,0 +1,123 @@
+# Illinois Blue Waters
+# smith84@llnl.gov
+# 2017/11/07
+
+# Appends to path if not path not already present
+function appendToPath {
+   echo $PATH | grep -q $1
+   if [ $? -ne 0 ]
+   then
+      PATH=${PATH}:${1}
+   fi
+}
+
+function prependToPath {
+   echo $PATH | grep -q $1
+   if [ $? -ne 0 ]
+   then
+      PATH=${1}:${PATH}
+   fi
+}
+
+function appendToLdPath {
+
+   if [[ -z ${LD_LIBRARY_PATH+x} ]]
+   then
+      export LD_LIBRARY_PATH=${1}
+   else
+      echo $LD_LIBRARY_PATH | grep -q $1
+      if [ $? -ne 0 ]
+      then
+	 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${1}
+      fi
+   fi
+}
+
+module load cray-hdf5-parallel
+module load cray-netcdf-hdf5parallel
+module load cray-tpsl
+module unload darshan
+module load cmake/3.9.4
+module load cray-tpsl
+module unload PrgEnv-cray
+module load PrgEnv-intel
+module load intel
+
+export PARFLOW_DIR=$HOME/install
+
+# Use some symbols set by Cray modules; hopefully a little more portable this way.
+export PARFLOW_HYPRE_DIR=${CRAY_TPSL_PREFIX_DIR}
+export PARFLOW_SUNDIALS_DIR=${CRAY_TPSL_PREFIX_DIR}
+export PARFLOW_NETCDF_DIR=${NETCDF_DIR}
+export PARFLOW_HDF5_DIR=${HDF5_DIR}
+export PARFLOW_TCL_DIR=/usr/
+
+#export PARFLOW_SILO_DIR=/usr/common/software/silo/4.10.2/hsw/intel
+#export PARFLOW_SLURM_DIR=/usr/
+
+# Parallel build fails in CLM
+# PARFLOW_MAKE_OPTIONS="-j 8"
+PARFLOW_MAKE_OPTIONS=""
+
+export PARFLOW_CC=cc 
+export PARFLOW_CXX=CC 
+export PARFLOW_F77=ftn 
+export PARFLOW_FC=ftn
+
+
+export PARFLOW_CFLAGS='-dynamic'
+
+appendToLdPath $PARFLOW_SLURM_DIR/lib
+appendToLdPath $PARFLOW_PFTOOLS_HDF5_DIR/lib
+appendToLdPath $PARFLOW_TCL_DIR/lib
+
+# Building in a directory parallel with parflow source tree
+SRC_DIR=parflow
+BUILD_DIR=build
+
+echo "*****************************************************************************"
+echo "Building in ${BUILD_DIR}"
+echo "*****************************************************************************"
+
+mkdir -p ${BUILD_DIR}
+pushd ${BUILD_DIR}
+
+echo "*****************************************************************************"
+echo "Running CMake"
+echo "*****************************************************************************"
+
+# Force shared library builds, by default Cori is doing static.  Need to set for both 
+# C and Fortran otherise Cmake will not build dynamic do to rules in the Cray cmake modules.
+# -parallel was needed due to way Hypre was compiled, unresolved symbols if not used.
+FC=${PARFLOW_F77} CC=${PARFLOW_CC} CXX=${PARFLOW_CXX} cmake ../parflow \
+   -DCMAKE_BUILD_TYPE=RELEASE \
+   -DPARFLOW_ENABLE_TIMING=TRUE \
+   -DPARFLOW_HAVE_CLM=ON \
+   -DPARFLOW_AMPS_LAYER=mpi1 \
+   -DPARFLOW_AMPS_SEQUENTIAL_IO=true \
+   -DHYPRE_ROOT=${PARFLOW_HYPRE_DIR} \
+   -DHDF5_ROOT=${PARFLOW_HDF5_DIR} \
+   -DTCL_TCLSH=${PARFLOW_TCL_DIR}/bin/tclsh \
+   -DNETCDF_INCLUDE_DIR=${PARFLOW_NETCDF_DIR}/include \
+   -DNETCDF_LIBRARY=${PARFLOW_NETCDF_DIR}/lib/libnetcdf.a \
+   -DCMAKE_C_FLAGS='-dynamic' -DCMAKE_Fortran_FLAGS='-dynamic' \
+   -DPARFLOW_LINKER_FLAGS='-parallel' \
+   -DMPIEXEC=$(which aprun) \
+   -DMPIEXEC_NUMPROC_FLAG='-n' \
+   -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR}
+
+#   -DSILO_ROOT=${PARFLOW_SILO_DIR} \
+#   -DPARFLOW_ENABLE_SLURM=true \
+
+
+echo "*****************************************************************************"
+echo "Running make"
+echo "*****************************************************************************"
+
+make
+
+echo "*****************************************************************************"
+echo "Running make install"
+echo "*****************************************************************************"
+
+make install

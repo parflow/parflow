@@ -1,36 +1,36 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-/******************************************************************************
+/*BHEADER*********************************************************************
  *
- * Routines for manipulating vector structures.
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
  *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
  *
- *****************************************************************************/
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/*****************************************************************************
+*
+* Routines for manipulating vector structures.
+*
+*
+*****************************************************************************/
 
 #include "parflow.h"
 #include "vector.h"
@@ -142,7 +142,7 @@ VectorUpdateCommHandle  *InitVectorUpdate(
     tbox::Dimension dim(GlobalsParflowSimulation->getDim(grid_type));
     if (vector->boundary_fill_refine_algorithm.isNull())
     {
-      tbox::Pointer<hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation->getPatchHierarchy(grid_type));
+      tbox::Pointer < hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation->getPatchHierarchy(grid_type));
       const int level_number = 0;
 
       vector->boundary_fill_refine_algorithm = new xfer::RefineAlgorithm(dim);
@@ -151,9 +151,9 @@ VectorUpdateCommHandle  *InitVectorUpdate(
                                                              vector->samrai_id,
                                                              vector->samrai_id,
                                                              vector->samrai_id,
-                                                             tbox::Pointer<xfer::RefineOperator>(NULL));
+                                                             tbox::Pointer < xfer::RefineOperator > (NULL));
 
-      tbox::Pointer< hier::PatchLevel > level =
+      tbox::Pointer < hier::PatchLevel > level =
         hierarchy->getPatchLevel(level_number);
 
       vector->boundary_fill_schedule = vector->boundary_fill_refine_algorithm
@@ -400,8 +400,7 @@ Vector  *NewVectorType(
   std::string variable_name("Vector_" + tbox::Utilities::intToString(grid_type, 1) + "_" +
                             tbox::Utilities::intToString(index, 4));
 
-  tbox::Pointer< hier::Variable > variable;
-
+  tbox::Pointer < hier::Variable > variable;
 #else
   type = vector_non_samrai;
   grid_type = invalid_grid_type;
@@ -415,43 +414,43 @@ Vector  *NewVectorType(
 #ifdef HAVE_SAMRAI
     case vector_cell_centered:
     {
-      variable = new pdat::CellVariable<double>(dim, variable_name, 1);
+      variable = new pdat::CellVariable < double > (dim, variable_name, 1);
       break;
     }
 
     case vector_cell_centered_2D:
     {
-      variable = new pdat::CellVariable<double>(dim, variable_name, 1);
+      variable = new pdat::CellVariable < double > (dim, variable_name, 1);
       break;
     }
 
     case vector_clm_topsoil:
     {
-      variable = new pdat::CellVariable<double>(dim, variable_name, 1);
+      variable = new pdat::CellVariable < double > (dim, variable_name, 1);
       break;
     }
 
     case vector_met:
     {
-      variable = new pdat::CellVariable<double>(dim, variable_name, 1);
+      variable = new pdat::CellVariable < double > (dim, variable_name, 1);
       break;
     }
 
     case vector_side_centered_x:
     {
-      variable = new pdat::SideVariable<double>(dim, variable_name, 1, true, 0);
+      variable = new pdat::SideVariable < double > (dim, variable_name, 1, true, 0);
       break;
     }
 
     case vector_side_centered_y:
     {
-      variable = new pdat::SideVariable<double>(dim, variable_name, 1, true, 1);
+      variable = new pdat::SideVariable < double > (dim, variable_name, 1, true, 1);
       break;
     }
 
     case vector_side_centered_z:
     {
-      variable = new pdat::SideVariable<double>(dim, variable_name, 1, true, 2);
+      variable = new pdat::SideVariable < double > (dim, variable_name, 1, true, 2);
       break;
     }
 #endif
@@ -481,10 +480,10 @@ Vector  *NewVectorType(
     case vector_clm_topsoil:
     case vector_met:
     {
-      tbox::Pointer<hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation->getPatchHierarchy(grid_type));
-      tbox::Pointer<hier::PatchLevel > level(hierarchy->getPatchLevel(0));
+      tbox::Pointer < hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation->getPatchHierarchy(grid_type));
+      tbox::Pointer < hier::PatchLevel > level(hierarchy->getPatchLevel(0));
 
-      tbox::Pointer<hier::PatchDescriptor> patch_descriptor(hierarchy->getPatchDescriptor());
+      tbox::Pointer < hier::PatchDescriptor > patch_descriptor(hierarchy->getPatchDescriptor());
 
       new_vector->samrai_id = patch_descriptor->definePatchDataComponent(
                                                                          variable_name,
@@ -523,8 +522,8 @@ Vector  *NewVectorType(
           case vector_clm_topsoil:
           case vector_met:
           {
-            tbox::Pointer< pdat::CellData<double> > patch_data(
-                                                               patch->getPatchData(new_vector->samrai_id));
+            tbox::Pointer < pdat::CellData < double >> patch_data(
+                                                                  patch->getPatchData(new_vector->samrai_id));
 
             // SGS from patchdata?
             SubvectorDataSize(subvector) = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
@@ -540,8 +539,8 @@ Vector  *NewVectorType(
           {
             const int side = 0;
 
-            tbox::Pointer< pdat::SideData<double> > patch_data(
-                                                               patch->getPatchData(new_vector->samrai_id));
+            tbox::Pointer < pdat::SideData < double >> patch_data(
+                                                                  patch->getPatchData(new_vector->samrai_id));
 
             // SGS from patchdata?
             SubvectorDataSize(subvector) = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
@@ -556,8 +555,8 @@ Vector  *NewVectorType(
           case vector_side_centered_y:
           {
             const int side = 1;
-            tbox::Pointer< pdat::SideData<double> > patch_data(
-                                                               patch->getPatchData(new_vector->samrai_id));
+            tbox::Pointer < pdat::SideData < double >> patch_data(
+                                                                  patch->getPatchData(new_vector->samrai_id));
 
             // SGS from patchdata?
             SubvectorDataSize(subvector) = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
@@ -572,8 +571,8 @@ Vector  *NewVectorType(
           case vector_side_centered_z:
           {
             const int side = 2;
-            tbox::Pointer< pdat::SideData<double> > patch_data(
-                                                               patch->getPatchData(new_vector->samrai_id));
+            tbox::Pointer < pdat::SideData < double >> patch_data(
+                                                                  patch->getPatchData(new_vector->samrai_id));
 
             // SGS from patchdata?
             SubvectorDataSize(subvector) = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
@@ -591,7 +590,6 @@ Vector  *NewVectorType(
       }
       break;
     }
-
 #else
     // No SAMRAI, do nothing
     case vector_cell_centered:
@@ -691,12 +689,12 @@ void     FreeVector(
         vector->boundary_fill_schedule.setNull();
       }
 
-      tbox::Pointer<hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation->getPatchHierarchy(grid_type));
-      tbox::Pointer<hier::PatchLevel > level(hierarchy->getPatchLevel(0));
+      tbox::Pointer < hier::PatchHierarchy > hierarchy(GlobalsParflowSimulation->getPatchHierarchy(grid_type));
+      tbox::Pointer < hier::PatchLevel > level(hierarchy->getPatchLevel(0));
 
       level->deallocatePatchData(vector->samrai_id);
 
-      tbox::Pointer<hier::PatchDescriptor> patch_descriptor(hierarchy->getPatchDescriptor());
+      tbox::Pointer < hier::PatchDescriptor > patch_descriptor(hierarchy->getPatchDescriptor());
       patch_descriptor->removePatchDataComponent(vector->samrai_id);
 
 
@@ -764,9 +762,9 @@ void    InitVector(
     iv = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
-              {
-                vp[iv] = value;
-              });
+    {
+      vp[iv] = value;
+    });
   }
 }
 
@@ -811,9 +809,9 @@ void    InitVectorAll(
     iv = 0;
     BoxLoopI1(i, j, k, ix_v, iy_v, iz_v, nx_v, ny_v, nz_v,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
-              {
-                vp[iv] = value;
-              });
+    {
+      vp[iv] = value;
+    });
   }
 
 #ifdef SHMEM_OBJECTS
@@ -871,9 +869,9 @@ void    InitVectorInc(
     iv = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
-              {
-                vp[iv] = value + (i + j + k) * inc;
-              });
+    {
+      vp[iv] = value + (i + j + k) * inc;
+    });
   }
 }
 
@@ -925,9 +923,9 @@ void    InitVectorRandom(
     iv = 0;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
-              {
-                vp[iv] = drand48();
-              });
+    {
+      vp[iv] = drand48();
+    });
   }
 }
 

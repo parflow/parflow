@@ -1,30 +1,30 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 /****************************************************************
 * File:	extrap_TIN.c
 *
@@ -74,8 +74,8 @@ char **argv;
   char         *end_of_file;
 
   float        *x_new,
-  *y_new,
-  *z_new;
+    *y_new,
+    *z_new;
 
   float A[9];
   float b[3];
@@ -86,9 +86,9 @@ char **argv;
 
 
   /*-----------------------------------------------
-  *  Statement about expected command line for this
-  *  program.
-  *  -----------------------------------------------*/
+   *  Statement about expected command line for this
+   *  program.
+   *  -----------------------------------------------*/
   if (argc != 3)
   {
     fprintf(stderr, "Usage:  extrapTIN infile.TIN outfile.TIN\n");
@@ -96,9 +96,9 @@ char **argv;
   }
 
   /*-----------------------------------------------
-  *  Define the x-y coordinates of the new points
-  *  that are desired.
-  *   -----------------------------------------------*/
+   *  Define the x-y coordinates of the new points
+   *  that are desired.
+   *   -----------------------------------------------*/
   x_new = (float*)malloc(N_NEW_PTS * sizeof(float));
   y_new = (float*)malloc(N_NEW_PTS * sizeof(float));
 
@@ -115,8 +115,8 @@ char **argv;
   z_new = (float*)malloc(N_NEW_PTS * sizeof(float));
 
   /*-----------------------------------------------
-  *  Open the i/o files and read in the data
-  *  -----------------------------------------------*/
+   *  Open the i/o files and read in the data
+   *  -----------------------------------------------*/
   infile = fopen(argv[1], "r");
   outfile = fopen(argv[2], "w");
 
@@ -175,9 +175,9 @@ char **argv;
     }
 
     /*-----------------------------------------------
-    *  Now that we have the data, compute a[i], where
-    *  z = a[0]*x + a[1]*y + a[2]
-    *  -----------------------------------------------*/
+     *  Now that we have the data, compute a[i], where
+     *  z = a[0]*x + a[1]*y + a[2]
+     *  -----------------------------------------------*/
     for (i = 0; i < 3; i++)
       b[i] = 0.0;
     for (i = 0; i < 9; i++)
@@ -223,8 +223,8 @@ char **argv;
     }
 
     /*-----------------------------------------------
-    *  Print out the original and new vertices
-    *  -----------------------------------------------*/
+     *  Print out the original and new vertices
+     *  -----------------------------------------------*/
     nv += N_NEW_PTS;
     fprintf(outfile, "VERT %d\n", nv);
 
@@ -264,10 +264,10 @@ char **argv;
 } /* end of extrapTIN function (main program) */
 
 /*================================================================
-*  Following are linpack routines that were converted to C using
-*  f2c. These general linear system solvers are called by extrapTIN
-*  and allow this file to be self-contained.
-*  ================================================================*/
+ *  Following are linpack routines that were converted to C using
+ *  f2c. These general linear system solvers are called by extrapTIN
+ *  and allow this file to be self-contained.
+ *  ================================================================*/
 
 /* sgefa.f -- translated by f2c (version 19940927).
  * You must link the resulting object file with the libraries:

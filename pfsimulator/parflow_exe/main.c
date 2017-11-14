@@ -1,35 +1,35 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
-/******************************************************************************
+/*BHEADER*********************************************************************
  *
- * The main routine
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
  *
- *****************************************************************************/
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+/*****************************************************************************
+*
+* The main routine
+*
+*****************************************************************************/
 
 #include "parflow.h"
 #include "amps.h"
@@ -151,13 +151,13 @@ int main(int argc, char *argv [])
 
     tbox::Dimension dim(3);
 
-    tbox::Pointer<tbox::Database> input_db(new tbox::InputDatabase("input_db"));
+    tbox::Pointer < tbox::Database > input_db(new tbox::InputDatabase("input_db"));
     tbox::InputManager::getManager()->parseInputFile(input_filename, input_db);
 
     /*
      * Parse input for options to control logging, visualization and restart.
      */
-    tbox::Pointer<tbox::Database> main_db = input_db->getDatabase("Main");
+    tbox::Pointer < tbox::Database > main_db = input_db->getDatabase("Main");
 
     std::string log_file_name = "life.log";
     if (main_db->keyExists("log_file_name"))
@@ -184,7 +184,7 @@ int main(int argc, char *argv [])
       viz_dump_interval = main_db->getInteger("viz_dump_interval");
     }
 
-    tbox::Array<std::string> viz_writer(1);
+    tbox::Array < std::string > viz_writer(1);
     std::string viz_dump_dirname;
     if (viz_dump_interval > 0)
     {
@@ -248,7 +248,7 @@ int main(int argc, char *argv [])
 #endif
 
     /*-----------------------------------------------------------------------
-     * read the users input deck
+     * Read the Users Input Deck
      *-----------------------------------------------------------------------*/
 
     amps_ThreadLocal(input_database) = IDB_NewDB(GlobalsInFileName);

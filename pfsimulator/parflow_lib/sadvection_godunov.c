@@ -1,38 +1,38 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
-/******************************************************************************
- *
- * Advection box to perform the godunov step.
- *
- **-----------------------------------------------------------------------------
- *
- *****************************************************************************/
+/*****************************************************************************
+*
+* Advection box to perform the godunov step.
+*
+*-----------------------------------------------------------------------------
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -134,15 +134,15 @@ void     SatGodunov(
   SubregionArray   *subregion_array;
 
   Subgrid          *subgrid,
-  *well_subgrid,
-  *tmp_subgrid;
+    *well_subgrid,
+    *tmp_subgrid;
   Subregion        *subregion;
   Subvector        *subvector,
-  *subvector_scal,
-  *subvector_rhs,
-  *subvector_xvel,
-  *subvector_yvel,
-  *subvector_zvel;
+    *subvector_scal,
+    *subvector_rhs,
+    *subvector_xvel,
+    *subvector_yvel,
+    *subvector_zvel;
 
   ComputePkg       *compute_pkg;
   Region           *compute_reg = NULL;
@@ -386,13 +386,13 @@ void     SatGodunov(
                       yi, nx_yv, ny_yv, nz_yv,
                       zi, nx_zv, ny_zv, nz_zv,
                       wi, nx_w, ny_w, nz_w,
-                      {
-                        flux = (xvel_u[xi] - xvel_l[xi]) / dx
-                               + (yvel_u[yi] - yvel_l[yi]) / dy
-                               + (zvel_u[zi] - zvel_l[zi]) / dz;
-                        scal[wi] = flux;
-                        rhs[wi] = -flux * input_s;
-                      });
+            {
+              flux = (xvel_u[xi] - xvel_l[xi]) / dx
+                     + (yvel_u[yi] - yvel_l[yi]) / dy
+                     + (zvel_u[zi] - zvel_l[zi]) / dz;
+              scal[wi] = flux;
+              rhs[wi] = -flux * input_s;
+            });
           }
           else if (WellDataPhysicalAction(well_data_physical) == EXTRACTION_WELL)
           {
@@ -403,13 +403,13 @@ void     SatGodunov(
                       yi, nx_yv, ny_yv, nz_yv,
                       zi, nx_zv, ny_zv, nz_zv,
                       wi, nx_w, ny_w, nz_w,
-                      {
-                        /*   compute flux for each cell and store it   */
-                        flux = (xvel_u[xi] - xvel_l[xi]) / dx
-                               + (yvel_u[yi] - yvel_l[yi]) / dy
-                               + (zvel_u[zi] - zvel_l[zi]) / dz;
-                        scal[wi] = flux;
-                      });
+            {
+              /*   compute flux for each cell and store it   */
+              flux = (xvel_u[xi] - xvel_l[xi]) / dx
+                     + (yvel_u[yi] - yvel_l[yi]) / dy
+                     + (zvel_u[zi] - zvel_l[zi]) / dz;
+              scal[wi] = flux;
+            });
           }
           FreeSubgrid(tmp_subgrid);        /* done with temporary subgrid */
         }
@@ -479,10 +479,10 @@ void     SatGodunov(
             BoxLoopI1(i, j, k,
                       ix, iy, iz, nx, ny, nz,
                       wi, nx_w, ny_w, nz_w, 1, 1, 1,
-                      {
-                        scal[wi] += flux;
-                        rhs[wi] -= flux * input_s;
-                      });
+            {
+              scal[wi] += flux;
+              rhs[wi] -= flux * input_s;
+            });
           }
           else if (WellDataPhysicalAction(well_data_physical) == EXTRACTION_WELL)
           {
@@ -490,9 +490,9 @@ void     SatGodunov(
             BoxLoopI1(i, j, k,
                       ix, iy, iz, nx, ny, nz,
                       wi, nx_w, ny_w, nz_w, 1, 1, 1,
-                      {
-                        scal[wi] -= flux;
-                      });
+            {
+              scal[wi] -= flux;
+            });
           }
           FreeSubgrid(tmp_subgrid);        /* done with temporary subgrid */
         }
@@ -541,9 +541,9 @@ void     SatGodunov(
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               wi, nx_w, ny_w, nz_w, 1, 1, 1,
               si, nx_s, ny_s, nz_s, 1, 1, 1,
-              {
-                sn[si] = (sn[si] - dt * rhs[wi]) / (1 + dt * scal[wi]);
-              });
+    {
+      sn[si] = (sn[si] - dt * rhs[wi]) / (1 + dt * scal[wi]);
+    });
   }
 
 
@@ -606,10 +606,10 @@ void     SatGodunov(
                       ix, iy, iz, nx, ny, nz,
                       wi, nx_w, ny_w, nz_w, 1, 1, 1,
                       si, nx_s, ny_s, nz_s, 1, 1, 1,
-                      {
-                        cell_change = -dt * (scal[wi] * sn[si] + rhs[wi]);
-                        well_stat += cell_change * cell_volume;
-                      });
+            {
+              cell_change = -dt * (scal[wi] * sn[si] + rhs[wi]);
+              well_stat += cell_change * cell_volume;
+            });
           }
           else if (WellDataPhysicalAction(well_data_physical) == EXTRACTION_WELL)
           {
@@ -618,10 +618,10 @@ void     SatGodunov(
                       ix, iy, iz, nx, ny, nz,
                       wi, nx_w, ny_w, nz_w, 1, 1, 1,
                       si, nx_s, ny_s, nz_s, 1, 1, 1,
-                      {
-                        cell_change = -dt * (scal[wi] * sn[si]);
-                        well_stat += cell_change * cell_volume;
-                      });
+            {
+              cell_change = -dt * (scal[wi] * sn[si]);
+              well_stat += cell_change * cell_volume;
+            });
           }
           FreeSubgrid(tmp_subgrid);        /* done with temporary subgrid */
         }
@@ -687,10 +687,10 @@ void     SatGodunov(
                       ix, iy, iz, nx, ny, nz,
                       wi, nx_w, ny_w, nz_w, 1, 1, 1,
                       si, nx_s, ny_s, nz_s, 1, 1, 1,
-                      {
-                        cell_change = -dt * (scal[wi] * sn[si] + rhs[wi]);
-                        well_stat += cell_change * cell_volume;
-                      });
+            {
+              cell_change = -dt * (scal[wi] * sn[si] + rhs[wi]);
+              well_stat += cell_change * cell_volume;
+            });
           }
           else if (WellDataPhysicalAction(well_data_physical) == EXTRACTION_WELL)
           {
@@ -699,10 +699,10 @@ void     SatGodunov(
                       ix, iy, iz, nx, ny, nz,
                       wi, nx_w, ny_w, nz_w, 1, 1, 1,
                       si, nx_s, ny_s, nz_s, 1, 1, 1,
-                      {
-                        cell_change = -dt * (scal[wi] * sn[si]);
-                        well_stat += cell_change * cell_volume;
-                      });
+            {
+              cell_change = -dt * (scal[wi] * sn[si]);
+              well_stat += cell_change * cell_volume;
+            });
           }
           FreeSubgrid(tmp_subgrid);        /* done with temporary subgrid */
         }

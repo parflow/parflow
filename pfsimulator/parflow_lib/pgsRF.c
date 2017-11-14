@@ -1,38 +1,38 @@
-/*BHEADER**********************************************************************
-*
-*  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-*  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-*  by the Parflow Team (see the CONTRIBUTORS file)
-*  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-*
-*  This file is part of Parflow. For details, see
-*  http://www.llnl.gov/casc/parflow
-*
-*  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-*  for the GNU Lesser General Public License.
-*
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License (as published
-*  by the Free Software Foundation) version 2.1 dated February 1999.
-*
-*  This program is distributed in the hope that it will be useful, but
-*  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-*  and conditions of the GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU Lesser General Public
-*  License along with this program; if not, write to the Free Software
-*  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-*  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
-/******************************************************************************
- *
- * Routines to generate a correlated normal or log-normal
- * random field using the sequential Gaussian simulator method.
- * The random path has been modified for parallel processors.
- *
- *****************************************************************************/
+/*****************************************************************************
+*
+* Routines to generate a correlated normal or log-normal
+* random field using the sequential Gaussian simulator method.
+* The random path has been modified for parallel processors.
+*
+*****************************************************************************/
 
 #include "parflow.h"
 
@@ -148,7 +148,7 @@ void         PGSRF(
   double A;
   double    *A_sub;             /* Sub-covariance matrix for external cond pts */
   double    *A11;               /* Submatrix; note that A11 is 1-dim */
-  double    **A12, **A21, **A22; /* Submatrices for external conditioning data */
+  double    **A12, **A21, **A22;/* Submatrices for external conditioning data */
   double    **M;                /* Used as a temporary matrix */
   double    *b;                 /* Covariance vector for conditioning points */
   double    *b_tmp, *b2;
@@ -419,10 +419,10 @@ void         PGSRF(
 
     /* Initialize tmpRF vector */
     GrGeomInLoop(i, j, k, gr_geounit, ref, ix, iy, iz, nx, ny, nz,
-                 {
-                   index2 = SubvectorEltIndex(sub_tmpRF, i, j, k);
-                   tmpRFp[index2] = 0.0;
-                 });
+    {
+      index2 = SubvectorEltIndex(sub_tmpRF, i, j, k);
+      tmpRFp[index2] = 0.0;
+    });
 
     /* Convert conditioning data to N(0,1)  distribution if
      * it's assumed to be lognormal. Then copy it into tmpRFp */
@@ -855,22 +855,22 @@ void         PGSRF(
     if ((dist_type == 1) || (dist_type == 3))
     {
       GrGeomInLoop(i, j, k, gr_geounit, ref, ix, iy, iz, nx, ny, nz,
-                   {
-                     index1 = SubvectorEltIndex(sub_field, i, j, k);
-                     index2 = SubvectorEltIndex(sub_tmpRF, i, j, k);
-                     fieldp[index1] = mean * exp((sigma) * tmpRFp[index2]);
-                   });
+      {
+        index1 = SubvectorEltIndex(sub_field, i, j, k);
+        index2 = SubvectorEltIndex(sub_tmpRF, i, j, k);
+        fieldp[index1] = mean * exp((sigma) * tmpRFp[index2]);
+      });
     }
 
     /* Shift the Gaussian distribution */
     else if ((dist_type == 0) || (dist_type == 2))
     {
       GrGeomInLoop(i, j, k, gr_geounit, ref, ix, iy, iz, nx, ny, nz,
-                   {
-                     index1 = SubvectorEltIndex(sub_field, i, j, k);
-                     index2 = SubvectorEltIndex(sub_tmpRF, i, j, k);
-                     fieldp[index1] = mean + sigma * tmpRFp[index2];
-                   });
+      {
+        index1 = SubvectorEltIndex(sub_field, i, j, k);
+        index2 = SubvectorEltIndex(sub_tmpRF, i, j, k);
+        fieldp[index1] = mean + sigma * tmpRFp[index2];
+      });
     }
   }  /* gridloop */
 

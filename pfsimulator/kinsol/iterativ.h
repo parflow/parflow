@@ -3,7 +3,7 @@
 * File          : iterativ.h                                     *
 * Programmers   : Scott D. Cohen and Alan C. Hindmarsh @ LLNL    *
 * Last Modified : 6 May 1998  Allan G Taylor  C/C++ interface    *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * This header file contains declarations intended for use by     *
 * generic iterative solvers of Ax = b. The enumeration gives     *
 * symbolic names for the type  of preconditioning to be used.    *
@@ -15,22 +15,19 @@
 *                                                                *
 ******************************************************************/
 
-
+#ifndef _iterativ_h
+#define _iterativ_h
 
 #include "llnltyps.h"
 #include "vector.h"
 
-#ifdef __cplusplus     /* wrapper to enable C++ usage */
-extern "C" {
-#endif
-#ifndef _iterativ_h
-#define _iterativ_h
+BEGIN_EXTERN_C
 
 
 /******************************************************************
 *                                                                *
 * enum : types of preconditioning                                *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * NONE  : The iterative linear solver should not use             *
 *         preconditioning.                                       *
 *                                                                *
@@ -51,7 +48,7 @@ enum precond_type { NONE, LEFT, RIGHT, BOTH };
 /******************************************************************
 *                                                                *
 * enum : types of Gram-Schmidt routines                          *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * MODIFIED_GS  : The iterative solver uses the modified          *
 *                Gram-Schmidt routine ModifiedGS listed in this  *
 *                file.                                           *
@@ -68,7 +65,7 @@ enum gs_type { MODIFIED_GS, CLASSICAL_GS };
 /******************************************************************
 *                                                                *
 * Type: ATimesFn                                                 *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * An ATimesFn multiplies Av and stores the result in z. The      *
 * caller is responsible for allocating memory for the z vector.  *
 * The parameter A_data is a pointer to any information about A   *
@@ -84,7 +81,7 @@ typedef int (*ATimesFn)(void *A_data, N_Vector v, N_Vector z);
 /******************************************************************
 *                                                                *
 * Type: PSolveFn                                                 *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * A PSolveFn solves the preconditioner equation Pz = r for the   *
 * vector z. The caller is responsible for allocating memory for  *
 * the z vector. The parameter P_data is a pointer to any         *
@@ -108,7 +105,7 @@ typedef int (*PSolveFn)(void *P_data, N_Vector r, N_Vector z, int lr);
 /******************************************************************
 *                                                                *
 * Function: ModifiedGS                                           *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * ModifiedGS performs a modified Gram-Schmidt orthogonalization  *
 * of the N_Vector v[k] against the p unit N_Vectors at           *
 * v[k-1], v[k-2], ..., v[k-p].                                   *
@@ -147,7 +144,7 @@ int ModifiedGS(N_Vector *v, real **h, int k, int p, real *new_vk_norm);
 /******************************************************************
 *                                                                *
 * Function: ClassicalGS                                          *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * ClassicalGS performs a classical Gram-Schmidt                  *
 * orthogonalization of the N_Vector v[k] against the p unit      *
 * N_Vectors at v[k-1], v[k-2], ..., v[k-p]. The parameters v, h, *
@@ -171,7 +168,7 @@ int ClassicalGS(N_Vector *v, real **h, int k, int p, real *new_vk_norm,
 /******************************************************************
 *                                                                *
 * Function: QRfact                                               *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * QRfact performs a QR factorization of the Hessenberg matrix H. *
 *                                                                *
 * n is the problem size; the matrix H is (n+1) by n.             *
@@ -206,7 +203,7 @@ int QRfact(int n, real **h, real *q, int job);
 /******************************************************************
 *                                                                *
 * Function: QRsol                                                *
-**----------------------------------------------------------------*
+*----------------------------------------------------------------*
 * QRsol solves the linear least squares problem                  *
 *                                                                *
 * min (b - H*x, b - H*x), x in R^n,                              *
@@ -237,8 +234,7 @@ int QRfact(int n, real **h, real *q, int job);
 
 int QRsol(int n, real **h, real *q, real *b);
 
-#endif
-#ifdef __cplusplus
-}
+END_EXTERN_C
+
 #endif
 
