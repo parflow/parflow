@@ -222,7 +222,7 @@ then
    fi
 fi
 
-echo "Running : $CMD" 
+pflog "executing command : $CMD" 
 eval $CMD
 exit $?
 

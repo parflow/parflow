@@ -4287,6 +4287,60 @@ pfset NetCDF.WritePressure    True
 pfset NetCDF.WriteSaturation    True
 \end{verbatim}\end{display}
 
+\pfkey{string}{NetCDF.WriteMannings}{False}
+{This key sets Mannings coefficients to be written in NetCDF4 file.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteMannings	    True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WriteSubsurface}{False}
+{This key sets subsurface data(permeabilities, porosity, specific storage) to be written in NetCDF4 file.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteSubsurface	    True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WriteSlopes}{False}
+{This key sets x and y slopes to be written in NetCDF4 file.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteSlopes	    True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WriteMask}{False}
+{This key sets mask to be written in NetCDF4 file.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteMask	    True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WriteDZMultiplier}{False}
+{This key sets DZ multipliers to be written in NetCDF4 file.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteDZMultiplier	    True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WriteEvapTrans}{False}
+{This key sets Evaptrans to be written in NetCDF4 file.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteEvapTrans	    True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WriteEvapTransSum}{False}
+{This key sets Evaptrans sum to be written in NetCDF4 file.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteEvapTransSum	    True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WriteOverlandSum}{False}
+{This key sets overland sum to be written in NetCDF4 file.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteOverlandSum	    True
+\end{verbatim}\end{display}
+
+\pfkey{string}{NetCDF.WriteOverlandBCFlux}{False}
+{This key sets overland bc flux to be written in NetCDF4 file.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteOverlandBCFlux	    True
+\end{verbatim}\end{display}
+
 \subsection{NetCDF4 Chunking}
 Chunking may have significant impact on I/O. If this key is not set, default chunking scheme will be used by NetCDF library. Chunks are hypercube(hyperslab) of any dimension. When chunking is used, chunks are written in single write operation which can reduce access times. For more information on chunking, refer to NetCDF4 user guide.
 
@@ -4335,7 +4389,7 @@ cb_buffer_size 33554432
 
 \subsection{Node Level Collective I/O}
 A node level collective strategy has been implemented for I/O. One process on each compute node gathers the data, indices and counts from the participating processes on same compute node. All the root processes from each compute node open a parallel NetCDF4 file and write the data. e.g. If ParFlow is running on 3 compute nodes where each node consists of 24 processors(cores); only 3 I/O streams to filesystem would be opened by each root processor each compute node. This strategy could be particularly useful when ParFlow is running on large number of processors and every processor participating in I/O may create a bottleneck.
-\textit{\textbf{Node level collective I/O is currently implemented for 2-D domain decomposition only. Moreover on speciality architectures, this may not be a portable feature. Users are advised to test this feature on their machine before putting into production.}}
+\textit{\textbf{Node level collective I/O is currently implemented for 2-D domain decomposition and variables Pressure and Saturation only. All the other ParFlow NetCDF output Tcl flags should be set to false(default value). CLM output is independently handled and not affected by this key.  Moreover on speciality architectures, this may not be a portable feature. Users are advised to test this feature on their machine before putting into production.}}
 
 \pfkey{string}{NetCDF.NodeLevelIO}{False}
 {This key sets flag for node level collective I/O.} 
@@ -4344,7 +4398,7 @@ pfset NetCDF.NodeLevelIO   True
 \end{verbatim}\end{display}
 
 \subsection{NetCDF4 Initial Conditions: Pressure}
-Analogues to ParFlow binary files, NetCDF4 based option can be used to set the initial conditions for pressure to be read from an ``nc" file containing single time step of pressure. The name of the variable in ``nc" file should be ``pressure". A sample NetCDF header of an initial condition file looks as follows.
+Analogues to ParFlow binary files, NetCDF4 based option can be used to set the initial conditions for pressure to be read from an ``nc" file containing single time step of pressure. The name of the variable in ``nc" file should be ``pressure". A sample NetCDF header of an initial condition file looks as follows. The names of the dimensions are not important. The order of dimensions is important e.g. \textit{(time, lev, lat, lon) or (time,z, y, x)}
 \begin{display}\begin{verbatim}
 netcdf initial_condition {
 dimensions:
@@ -4367,30 +4421,28 @@ pfset Geom.domain.ICPressure.FileName   "initial_condition.nc"
 \end{verbatim}\end{display}
 
 \subsection{NetCDF4 Slopes}
-NetCDF4 based option can be used slopes to be read from an ``nc" file containing single time step of slope values. The name of the variable in ``nc" file should be ``slopex" and ``slopey" A sample NetCDF header of slope file looks as follows.
+NetCDF4 based option can be used slopes to be read from an ``nc" file containing single time step of slope values. The name of the variable in ``nc" file should be ``slopex" and ``slopey" A sample NetCDF header of slope file looks as follows. The names of the dimensions are not important. The order of dimensions is important e.g. \textit{(time, lat, lon) or (time, y, x)}
 \begin{display}\begin{verbatim}
 netcdf slopex {
 dimensions:
 	time = UNLIMITED ; // (1 currently)
 	lon = 41 ;
 	lat = 41 ;
-	lev = 1 ;
 variables:
   	double time(time) ;
-	double slopex(time, lev, lat, lon) ;
+	double slopex(time, lat, lon) ;
 }
 netcdf slopey {
 dimensions:
 	time = UNLIMITED ; // (1 currently)
 	lon = 41 ;
 	lat = 41 ;
-	lev = 1 ;
 variables:
 	double time(time) ;
-	double slopey(time, lev, lat, lon) ;
+	double slopey(time, lat, lon) ;
 }
 \end{verbatim}\end{display}
-The two NetCDF files can be merged into one single file and can be used with tcl flags. The variable names should be exactly as mentioned above.
+The two NetCDF files can be merged into one single file and can be used with tcl flags. The variable names should be exactly as mentioned above. Please refer to ``slopes.nc" under Little Washita test case.
 \textit{\textbf{Node level collective I/O is currently not implemented for setting initial conditions.}}
 
 \pfkey{string}{TopoSlopesX.Type}{no default}
@@ -4407,7 +4459,7 @@ pfset TopoSlopesy.FileName   "slopey.nc"
 \end{verbatim}\end{display}
 
 \subsection{NetCDF4 Transient EvapTrans Forcing}
-Following keys can be used for NetCDF4 based transient evaptrans forcing. The file should contain forcing for all time steps. For a given time step, if the forcing is null, zero values could be filled for the given time step in the ``.nc" file. The format of the sample file looks as follows.
+Following keys can be used for NetCDF4 based transient evaptrans forcing. The file should contain forcing for all time steps. For a given time step, if the forcing is null, zero values could be filled for the given time step in the ``.nc" file. The format of the sample file looks as follows. The names of the dimensions are not important. The order of dimensions is important e.g. \textit{(time, lev, lat, lon) or (time,z, y, x)}
 \begin{display}\begin{verbatim}
 netcdf evap_trans {
 dimensions:
@@ -4433,14 +4485,81 @@ pfset NetCDF.EvapTransFileTransient   True
 pfset NetCDF.EvapTrans.FileName         "evap_trans.nc"
 \end{verbatim}\end{display}
 
-\subsection{NetCDF Testing Little Washita Test Case}
-The basic NetCDF functionality of output (pressure and saturation) and initial conditions (pressure) can be tested with following tcl script.
+\subsection{NetCDF4 CLM Output}
+Similar to ParFlow binary and silo, following keys can be used to write output CLM variables in a single NetCDF file containing multiple time steps.
+
+\pfkey{integer}{NetCDF.CLMNumStepsPerFile}{None}
+{This key sets number of time steps to be written to a single NetCDF file.} 
 \begin{display}\begin{verbatim}
-parflow/test/washita/tcl_scripts
+pfset NetCDF.CLMNumStepsPerFile 24
 \end{verbatim}\end{display}
-This test case will be initialized with following initial condition file.
+
+\pfkey{string}{NetCDF.WriteCLM}{False}
+{This key sets CLM variables to be written in a NetCDF file.} 
+\begin{display}\begin{verbatim}
+pfset NetCDF.WriteCLM         True
+\end{verbatim}\end{display}
+The output variables are:
+\begin{description}
+\item \file{eflx_lh_tot} for latent heat flux total $[W/m^2]$ using the silo variable {\em LatentHeat};
+\item \file{eflx_lwrad_out} for outgoing long-wave radiation $[W/m^2]$ using the silo variable {\em LongWave};
+\item \file{eflx_sh_tot} for sensible heat flux total $[W/m^2]$ using the silo variable {\em SensibleHeat};
+\item \file{eflx_soil_grnd} for ground heat flux $[W/m^2]$ using the silo variable {\em GroundHeat};
+\item \file{qflx_evap_tot} for total evaporation $[mm/s]$ using the silo variable {\em EvaporationTotal}; 
+\item \file{qflx_evap_grnd} for ground evaporation without condensation $[mm/s]$ using the silo variable {\em EvaporationGroundNoSublimation};
+\item \file{qflx_evap_soi} for soil evaporation $[mm/s]$ using the silo variable {\em EvaporationGround};
+\item \file{qflx_evap_veg} for vegetation evaporation $[mm/s]$ using the silo variable {\em EvaporationCanopy};
+\item \file{qflx_tran_veg} for vegetation transpiration $[mm/s]$ using the silo variable {\em Transpiration}; 
+\item \file{qflx_infl} for soil infiltration $[mm/s]$ using the silo variable {\em Infiltration};
+\item \file{swe_out} for snow water equivalent $[mm]$ using the silo variable {\em SWE};
+\item \file{t_grnd} for ground surface temperature $[K]$ using the silo variable {\em TemperatureGround}; and 
+\item \file{t_soil} for soil temperature over all layers $[K]$ using the silo variable {\em TemperatureSoil}.
+\end{description}
+
+\subsection{NetCDF4 CLM Input/Forcing}
+NetCDF based meteorological forcing can be used with following TCL keys. It is built similar to 2D forcing case for CLM with parflow binary files. All the required forcing variables must be present in one single NetCDF file spanning entire length of simulation. If the simulation ends before number of time steps in NetCDF forcing file, next cycle of simulation can be restarted with same forcing file provided it covers the time span of this cycle.\\
+e.g. If the NetCDF forcing file contains 100 time steps and simulation CLM-ParFlow simulation runs for 10 cycles containing 10 time steps in each cycle, the same forcing file can be reused. The user has to set correct value for the key \texttt{Solver.CLM.IstepStart}\\
+The format of input file looks as follows. The variable names should match exactly as follows. The names of the dimensions are not important. The order of dimensions is important e.g. \textit{(time, lev, lat, lon) or (time,z, y, x)}
+\begin{display}\begin{verbatim}
+netcdf metForcing {
+dimensions:
+	lon = 41 ;
+	lat = 41 ;
+	time = UNLIMITED ; // (72 currently)
+variables:
+	double time(time) ;
+	double APCP(time, lat, lon) ;
+	double DLWR(time, lat, lon) ;
+	double DSWR(time, lat, lon) ;
+	double Press(time, lat, lon) ;
+	double SPFH(time, lat, lon) ;
+	double Temp(time, lat, lon) ;
+	double UGRD(time, lat, lon) ;
+	double VGRD(time, lat, lon) ;
+\end{verbatim}\end{display}
+\textbf{\textit{Note: While using NetCDF based CLM forcing, \texttt{Solver.CLM.MetFileNT} should be set to its default value of 1}}
+
+\pfkey{string}{Solver.CLM.MetForcing}{no default}
+{This key sets meteorological forcing to be read from NetCDF file.} 
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.MetForcing     NC
+\end{verbatim}\end{display}
+Set the name of the input/forcing file as follows.
+\begin{display}\begin{verbatim}
+pfset Solver.CLM.MetFileName   "metForcing.nc"
+\end{verbatim}\end{display}
+This file should be present in experiment directory. User may create soft links in experiment directory in case where data can not be moved.
+
+\subsection{NetCDF Testing Little Washita Test Case}
+The basic NetCDF functionality of output (pressure and saturation) and initial conditions (pressure) can be tested with following tcl script. CLM input/output functionality can also be tested with this case.
+\begin{display}\begin{verbatim}
+parflow/test/washita/tcl_scripts/LW_NetCDF_Test.tcl
+\end{verbatim}\end{display}
+This test case will be initialized with following initial condition file, slopes and meteorological forcing.
 \begin{display}\begin{verbatim}
 parflow/test/washita/parflow_input/press.init.nc
+parflow/test/washita/parflow_input/slopes.nc
+parflow/test/washita/clm_input/metForcing.nc
 \end{verbatim}\end{display}
 
 \section{ParFlow Binary Files (.pfb)}

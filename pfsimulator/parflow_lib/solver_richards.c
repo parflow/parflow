@@ -172,8 +172,22 @@ typedef struct {
   /* KKu netcdf output flags */
   int write_netcdf_press;       /* write pressures? */
   int write_netcdf_satur;       /* write saturations? */
+  int write_netcdf_evaptrans;   /* write evaptrans? */
+  int write_netcdf_evaptrans_sum;       /* write evaptrans_sum? */
+  int write_netcdf_overland_sum;        /* write overland_sum? */
+  int write_netcdf_overland_bc_flux;    /* write overland_bc_flux? */
+  int write_netcdf_mask;        /* write mask? */
+  int write_netcdf_mannings;    /* write mask? */
+  int write_netcdf_subsurface;  /* write subsurface? */
+  int write_netcdf_slopes;      /* write subsurface? */
+  int write_netcdf_dzmult;      /* write subsurface? */
   int numVarTimeVariant;        /*This variable is added to keep track of number of
                                  * time variant variable in NetCDF file */
+  int numVarIni;                /*This variable is added to keep track of number of
+                                 * time invariant variable in NetCDF file */
+  int write_netcdf_clm;         /* Write CLM in NetCDF file? */
+  int numCLMVarTimeVariant;     /* Number of CLM variables to be written in NetCDF file */
+
   int nc_evap_trans_file_transient;     /* read NetCDF evap_trans as a transient file before advance richards timestep */
   char *nc_evap_trans_filename; /* NetCDF File name for evap trans */
 } PublicXtra;
@@ -647,7 +661,8 @@ SetupRichards(PFModule * this_module)
 
     if (public_xtra->write_silo_overland_sum
         || public_xtra->print_overland_sum
-        || public_xtra->write_silopmpio_overland_sum)
+        || public_xtra->write_silopmpio_overland_sum
+        || public_xtra->write_netcdf_overland_sum)
     {
       instance_xtra->overland_sum =
         NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
@@ -675,7 +690,7 @@ SetupRichards(PFModule * this_module)
     InitVectorAll(instance_xtra->z_velocity, 0.0);
 
 
-/* IMF: the following are only used w/ CLM */
+    /* IMF: the following are only used w/ CLM */
 #ifdef HAVE_CLM
     /* NBE: CLM single file output */
     if (public_xtra->single_clm_file)
@@ -1039,10 +1054,16 @@ SetupRichards(PFModule * this_module)
                  t, WELLDATA_WRITEHEADER);
     }
     sprintf(nc_postfix, "%05d", instance_xtra->file_number);
-    if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur)
+    if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur
+        || public_xtra->write_netcdf_mannings
+        || public_xtra->write_netcdf_subsurface
+        || public_xtra->write_netcdf_slopes
+        || public_xtra->write_netcdf_mask
+        || public_xtra->write_netcdf_dzmult)
     {
       WritePFNC(file_prefix, nc_postfix, t, instance_xtra->pressure,
-                public_xtra->numVarTimeVariant, "time", 1, 1);
+                public_xtra->numVarTimeVariant, "time", 1, true,
+                public_xtra->numVarIni);
     }
     /*-----------------------------------------------------------------
      * Print out the initial pressures?
@@ -1079,7 +1100,8 @@ SetupRichards(PFModule * this_module)
       sprintf(file_postfix, "press.%05d", instance_xtra->file_number);
       sprintf(nc_postfix, "%05d", instance_xtra->file_number);
       WritePFNC(file_prefix, nc_postfix, t, instance_xtra->pressure,
-                public_xtra->numVarTimeVariant, "pressure", 3, 1);
+                public_xtra->numVarTimeVariant, "pressure", 3, true,
+                public_xtra->numVarIni);
       any_file_dumped = 1;
     }
     /*-----------------------------------------------------------------
@@ -1118,9 +1140,82 @@ SetupRichards(PFModule * this_module)
       sprintf(file_postfix, "satur.%05d", instance_xtra->file_number);
       sprintf(nc_postfix, "%05d", instance_xtra->file_number);
       WritePFNC(file_prefix, nc_postfix, t, instance_xtra->saturation,
-                public_xtra->numVarTimeVariant, "saturation", 3, 1);
+                public_xtra->numVarTimeVariant, "saturation", 3, true,
+                public_xtra->numVarIni);
       any_file_dumped = 1;
     }
+
+    /*-----------------------------------------------------------------
+     * Print out Mannings in NetCDF?
+     *-----------------------------------------------------------------*/
+    if (public_xtra->write_netcdf_mannings)
+    {
+      sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+      WritePFNC(file_prefix, nc_postfix, t,
+                ProblemDataMannings(problem_data),
+                public_xtra->numVarTimeVariant, "mannings", 2, true,
+                public_xtra->numVarIni);
+      any_file_dumped = 1;
+    }
+
+    /*-----------------------------------------------------------------
+     * Print out Subsurface data in NetCDF?
+     *-----------------------------------------------------------------*/
+    if (public_xtra->write_netcdf_subsurface)
+    {
+      sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+      WritePFNC(file_prefix, nc_postfix, t,
+                ProblemDataPermeabilityX(problem_data),
+                public_xtra->numVarTimeVariant, "perm_x", 3, true,
+                public_xtra->numVarIni);
+      WritePFNC(file_prefix, nc_postfix, t,
+                ProblemDataPermeabilityY(problem_data),
+                public_xtra->numVarTimeVariant, "perm_y", 3, true,
+                public_xtra->numVarIni);
+      WritePFNC(file_prefix, nc_postfix, t,
+                ProblemDataPermeabilityZ(problem_data),
+                public_xtra->numVarTimeVariant, "perm_z", 3, true,
+                public_xtra->numVarIni);
+      WritePFNC(file_prefix, nc_postfix, t,
+                ProblemDataPorosity(problem_data),
+                public_xtra->numVarTimeVariant, "porosity", 3, true,
+                public_xtra->numVarIni);
+      WritePFNC(file_prefix, nc_postfix, t,
+                ProblemDataSpecificStorage(problem_data),
+                public_xtra->numVarTimeVariant, "specific_storage", 3,
+                true, public_xtra->numVarIni);
+      any_file_dumped = 1;
+    }
+
+    /*-----------------------------------------------------------------
+     * Print out Slopes in NetCDF?
+     *-----------------------------------------------------------------*/
+    if (public_xtra->write_netcdf_slopes)
+    {
+      sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+      WritePFNC(file_prefix, nc_postfix, t,
+                ProblemDataTSlopeX(problem_data),
+                public_xtra->numVarTimeVariant, "slopex", 2, true,
+                public_xtra->numVarIni);
+      WritePFNC(file_prefix, nc_postfix, t,
+                ProblemDataTSlopeY(problem_data),
+                public_xtra->numVarTimeVariant, "slopey", 2, true,
+                public_xtra->numVarIni);
+      any_file_dumped = 1;
+    }
+
+    /*-----------------------------------------------------------------
+     * Print out dz multipliers in NetCDF?
+     *-----------------------------------------------------------------*/
+    if (public_xtra->write_netcdf_dzmult)
+    {
+      sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+      WritePFNC(file_prefix, nc_postfix, t, instance_xtra->dz_mult,
+                public_xtra->numVarTimeVariant, "DZ_Multiplier", 3, true,
+                public_xtra->numVarIni);
+      any_file_dumped = 1;
+    }
+
     /*-----------------------------------------------------------------
      * Print out mask?
      *-----------------------------------------------------------------*/
@@ -1129,6 +1224,15 @@ SetupRichards(PFModule * this_module)
     {
       sprintf(file_postfix, "mask");
       WritePFBinary(file_prefix, file_postfix, instance_xtra->mask);
+      any_file_dumped = 1;
+    }
+
+    if (public_xtra->write_netcdf_mask)
+    {
+      sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+      WritePFNC(file_prefix, nc_postfix, t, instance_xtra->mask,
+                public_xtra->numVarTimeVariant, "mask", 3, true,
+                public_xtra->numVarIni);
       any_file_dumped = 1;
     }
 
@@ -1170,7 +1274,6 @@ SetupRichards(PFModule * this_module)
 
       any_file_dumped = 1;
     }
-
 
     /*-----------------------------------------------------------------
      * Log this step
@@ -1341,7 +1444,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
   sprintf(file_prefix, "%s", GlobalsOutFileName);
 
-//CPS oasis definition phase
+  //CPS oasis definition phase
 #ifdef HAVE_OAS3
   int p = GetInt("Process.Topology.P");
   int q = GetInt("Process.Topology.Q");
@@ -1428,7 +1531,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     {
       ct += cdt;
 
-//CPS oasis exchange
+      //CPS oasis exchange
 #ifdef HAVE_OAS3
       ForSubgridI(is, GridSubgrids(grid))
       {
@@ -1456,7 +1559,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         et = SubvectorData(et_sub);
         ms = SubvectorData(m_sub);
 
-//CPS       amps_Printf("Calling oasis send/receive for time  %3.1f \n", t);
+        //CPS       amps_Printf("Calling oasis send/receive for time  %3.1f \n", t);
         CALL_send_fld2_clm(pp, sp, ms, ix, iy, nx, ny, nz, nx_f, ny_f,
                            t);
         amps_Sync(amps_CommWorld);
@@ -1472,7 +1575,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       clm_file_dumped = 0;
       clm_dump_files = 0;
 
-/* IMF: The following are only used w/ CLM */
+      /* IMF: The following are only used w/ CLM */
 #ifdef HAVE_CLM
       BeginTiming(CLMTimingIndex);
 
@@ -1803,6 +1906,31 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
             }                   // end if/else clm_metsub==False
           }                     //end if (fstep==0)
         }                       //end if (clm_metforce==3)
+
+        /* KKu Added NetCDF based forcing option. Treated similar to 2D binary files where
+         * at every time step forcing data is read. */
+        if (public_xtra->clm_metforce == 4)
+        {
+          /* KKu Since NetCDF indices start at 0, istep-1 is supplied to read
+           * for the given time step*/
+          sprintf(filename, "%s", public_xtra->clm_metfile);
+          ReadPFNC(filename, instance_xtra->sw_forc, "DSWR",
+                   istep - 1, 2);
+          ReadPFNC(filename, instance_xtra->lw_forc, "DLWR",
+                   istep - 1, 2);
+          ReadPFNC(filename, instance_xtra->prcp_forc, "APCP",
+                   istep - 1, 2);
+          ReadPFNC(filename, instance_xtra->tas_forc, "Temp",
+                   istep - 1, 2);
+          ReadPFNC(filename, instance_xtra->u_forc, "UGRD",
+                   istep - 1, 2);
+          ReadPFNC(filename, instance_xtra->v_forc, "VGRD",
+                   istep - 1, 2);
+          ReadPFNC(filename, instance_xtra->patm_forc, "Press",
+                   istep - 1, 2);
+          ReadPFNC(filename, instance_xtra->qatm_forc, "SPFH",
+                   istep - 1, 2);
+        }
       }                         /* NBE - End of clm_reuse_count block */
 
 
@@ -1993,6 +2121,19 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           z0m_data = SubvectorElt(z0m_forc_sub, x, y, z);
           displa_data = SubvectorElt(displa_forc_sub, x, y, z);
         }
+        /* KKu NetCDF case similar to 2D Case */
+        if (public_xtra->clm_metforce == 4)
+        {
+          // Just need to grab SubvectorData's
+          sw_data = SubvectorData(sw_forc_sub);
+          lw_data = SubvectorData(lw_forc_sub);
+          prcp_data = SubvectorData(prcp_forc_sub);
+          tas_data = SubvectorData(tas_forc_sub);
+          u_data = SubvectorData(u_forc_sub);
+          v_data = SubvectorData(v_forc_sub);
+          patm_data = SubvectorData(patm_forc_sub);
+          qatm_data = SubvectorData(qatm_forc_sub);
+        }
 
         ip = SubvectorEltIndex(p_sub, ix, iy, iz);
         switch (public_xtra->lsm)
@@ -2056,7 +2197,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
 
 
-//#endif   //End of call to CLM
+      //#endif   //End of call to CLM
 
       /******************************************/
       /*    read transient evap trans flux file */
@@ -2067,7 +2208,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         /*KKu: evaptrans is the name of the variable expected in NetCDF file */
         /*Here looping similar to pfb is not implemented. All steps are assumed to be
          * present in the single NetCDF file*/
-        ReadPFNC(filename, evap_trans, "evaptrans", istep - 1);
+        ReadPFNC(filename, evap_trans, "evaptrans", istep - 1, 3);
         handle = InitVectorUpdate(evap_trans, VectorUpdateAll);
         FinalizeVectorUpdate(handle);
       }
@@ -2125,13 +2266,13 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
 
       /* =============================================================
-      *  NBE: It looks like the time step isn't really scaling the CLM
-      *  inputs, but the looping flag is working as intended as
-      *  of 2014-04-06.
-      *
-      *  It is using the different time step counter BUT then it
-      *  isn't scaling the inputs properly.
-      *  ============================================================= */
+       *  NBE: It looks like the time step isn't really scaling the CLM
+       *  inputs, but the looping flag is working as intended as
+       *  of 2014-04-06.
+       *
+       *  It is using the different time step counter BUT then it
+       *  isn't scaling the inputs properly.
+       *  ============================================================= */
 #endif
     }                           //Endif to check whether an entire dt is complete
 
@@ -2537,7 +2678,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
      * Compute running sum of evap trans for water balance
      **************************************************************/
     if (public_xtra->write_silo_evaptrans_sum
-        || public_xtra->print_evaptrans_sum)
+        || public_xtra->print_evaptrans_sum
+        || public_xtra->write_netcdf_evaptrans_sum)
     {
       EvapTransSum(problem_data, dt, evap_trans_sum, evap_trans);
     }
@@ -2546,7 +2688,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
      * Compute running sum of overland outflow for water balance
      **************************************************************/
     if (public_xtra->write_silo_overland_sum
-        || public_xtra->print_overland_sum)
+        || public_xtra->print_overland_sum
+        || public_xtra->write_netcdf_overland_sum)
     {
       OverlandSum(problem_data,
                   instance_xtra->pressure,
@@ -2564,10 +2707,15 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       sprintf(nc_postfix, "%05d", instance_xtra->file_number);
       /*KKU: Writing Current time variable value to NC file */
       if (public_xtra->write_netcdf_press
-          || public_xtra->write_netcdf_satur)
+          || public_xtra->write_netcdf_satur
+          || public_xtra->write_netcdf_evaptrans
+          || public_xtra->write_netcdf_evaptrans_sum
+          || public_xtra->write_netcdf_overland_sum
+          || public_xtra->write_netcdf_overland_bc_flux)
       {
         WritePFNC(file_prefix, nc_postfix, t, instance_xtra->pressure,
-                  public_xtra->numVarTimeVariant, "time", 1, 1);
+                  public_xtra->numVarTimeVariant, "time", 1, false,
+                  public_xtra->numVarIni);
       }
 
       instance_xtra->dump_index++;
@@ -2606,7 +2754,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                 instance_xtra->file_number);
         sprintf(nc_postfix, "%05d", instance_xtra->file_number);
         WritePFNC(file_prefix, nc_postfix, t, instance_xtra->pressure,
-                  public_xtra->numVarTimeVariant, "pressure", 3, 1);
+                  public_xtra->numVarTimeVariant, "pressure", 3, false,
+                  public_xtra->numVarIni);
         any_file_dumped = 1;
       }
 
@@ -2663,7 +2812,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         sprintf(nc_postfix, "%05d", instance_xtra->file_number);
         WritePFNC(file_prefix, nc_postfix, t,
                   instance_xtra->saturation,
-                  public_xtra->numVarTimeVariant, "saturation", 3, 1);
+                  public_xtra->numVarTimeVariant, "saturation", 3,
+                  false, public_xtra->numVarIni);
         any_file_dumped = 1;
       }
 
@@ -2695,9 +2845,29 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         any_file_dumped = 1;
       }
 
-      if (public_xtra->print_evaptrans_sum
-          || public_xtra->write_silo_evaptrans_sum)
+      if (public_xtra->write_netcdf_evaptrans)
       {
+        sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+        WritePFNC(file_prefix, nc_postfix, t, evap_trans,
+                  public_xtra->numVarTimeVariant, "evaptrans", 3,
+                  false, public_xtra->numVarIni);
+        any_file_dumped = 1;
+      }
+
+
+      if (public_xtra->print_evaptrans_sum
+          || public_xtra->write_silo_evaptrans_sum
+          || public_xtra->write_netcdf_evaptrans_sum)
+      {
+        if (public_xtra->write_netcdf_evaptrans_sum)
+        {
+          sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+          WritePFNC(file_prefix, nc_postfix, t, evap_trans_sum,
+                    public_xtra->numVarTimeVariant, "evaptrans_sum",
+                    3, false, public_xtra->numVarIni);
+          any_file_dumped = 1;
+        }
+
         if (public_xtra->print_evaptrans_sum)
         {
           sprintf(file_postfix, "evaptranssum.%05d",
@@ -2716,6 +2886,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           any_file_dumped = 1;
         }
 
+
         if (public_xtra->write_silopmpio_evaptrans_sum)
         {
           sprintf(file_postfix, "%05d", instance_xtra->file_number);
@@ -2731,8 +2902,18 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       }
 
       if (public_xtra->print_overland_sum
-          || public_xtra->write_silo_overland_sum)
+          || public_xtra->write_silo_overland_sum
+          || public_xtra->write_netcdf_overland_sum)
       {
+        if (public_xtra->write_netcdf_overland_sum)
+        {
+          sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+          WritePFNC(file_prefix, nc_postfix, t, overland_sum,
+                    public_xtra->numVarTimeVariant, "overland_sum",
+                    2, false, public_xtra->numVarIni);
+          any_file_dumped = 1;
+        }
+
         if (public_xtra->print_overland_sum)
         {
           sprintf(file_postfix, "overlandsum.%05d",
@@ -2771,6 +2952,16 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                 instance_xtra->file_number);
         WritePFBinary(file_prefix, file_postfix,
                       instance_xtra->ovrl_bc_flx);
+        any_file_dumped = 1;
+      }
+
+      if (public_xtra->write_netcdf_overland_bc_flux)
+      {
+        sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+        WritePFNC(file_prefix, nc_postfix, t,
+                  instance_xtra->ovrl_bc_flx,
+                  public_xtra->numVarTimeVariant, "overland_bc_flux",
+                  2, false, public_xtra->numVarIni);
         any_file_dumped = 1;
       }
 
@@ -2937,6 +3128,75 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           clm_file_dumped = 1;
         }
       }                         // end of if (write_silo_CLM)
+
+      if (public_xtra->write_netcdf_clm)
+      {
+        sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+        WriteCLMNC(file_prefix, nc_postfix, t,
+                   instance_xtra->eflx_lh_tot,
+                   public_xtra->numCLMVarTimeVariant, "time", 1);
+        WriteCLMNC(file_prefix, nc_postfix, t,
+                   instance_xtra->eflx_lh_tot,
+                   public_xtra->numCLMVarTimeVariant, "eflx_lh_tot",
+                   2);
+        WriteCLMNC(file_prefix, nc_postfix, t,
+                   instance_xtra->eflx_lwrad_out,
+                   public_xtra->numCLMVarTimeVariant, "eflx_lwrad_out",
+                   2);
+        WriteCLMNC(file_prefix, nc_postfix, t,
+                   instance_xtra->eflx_sh_tot,
+                   public_xtra->numCLMVarTimeVariant, "eflx_sh_tot",
+                   2);
+        WriteCLMNC(file_prefix, nc_postfix, t,
+                   instance_xtra->eflx_soil_grnd,
+                   public_xtra->numCLMVarTimeVariant, "eflx_soil_grnd",
+                   2);
+        WriteCLMNC(file_prefix, nc_postfix, t,
+                   instance_xtra->qflx_evap_tot,
+                   public_xtra->numCLMVarTimeVariant, "qflx_evap_tot",
+                   2);
+        WriteCLMNC(file_prefix, nc_postfix, t,
+                   instance_xtra->qflx_evap_grnd,
+                   public_xtra->numCLMVarTimeVariant, "qflx_evap_grnd",
+                   2);
+        WriteCLMNC(file_prefix, nc_postfix, t,
+                   instance_xtra->qflx_evap_soi,
+                   public_xtra->numCLMVarTimeVariant, "qflx_evap_soi",
+                   2);
+        WriteCLMNC(file_prefix, nc_postfix, t,
+                   instance_xtra->qflx_evap_veg,
+                   public_xtra->numCLMVarTimeVariant, "qflx_evap_veg",
+                   2);
+        WriteCLMNC(file_prefix, nc_postfix, t,
+                   instance_xtra->qflx_tran_veg,
+                   public_xtra->numCLMVarTimeVariant, "qflx_tran_veg",
+                   2);
+        WriteCLMNC(file_prefix, nc_postfix, t,
+                   instance_xtra->qflx_infl,
+                   public_xtra->numCLMVarTimeVariant, "qflx_infl", 2);
+        WriteCLMNC(file_prefix, nc_postfix, t, instance_xtra->swe_out,
+                   public_xtra->numCLMVarTimeVariant, "swe_out", 2);
+        WriteCLMNC(file_prefix, nc_postfix, t, instance_xtra->t_grnd,
+                   public_xtra->numCLMVarTimeVariant, "t_grnd", 2);
+        WriteCLMNC(file_prefix, nc_postfix, t, instance_xtra->tsoil,
+                   public_xtra->numCLMVarTimeVariant, "t_soil", 3);
+        if (public_xtra->clm_irr_type == 1
+            || public_xtra->clm_irr_type == 2)
+        {
+          WriteCLMNC(file_prefix, nc_postfix, t,
+                     instance_xtra->qflx_qirr,
+                     public_xtra->numCLMVarTimeVariant, "qflx_qirr",
+                     2);
+        }
+        if (public_xtra->clm_irr_type == 3)
+        {
+          WriteCLMNC(file_prefix, nc_postfix, t,
+                     instance_xtra->qflx_qirr_inst,
+                     public_xtra->numCLMVarTimeVariant,
+                     "qflx_qirr_inst", 3);
+        }
+        clm_file_dumped = 1;
+      }                         // end of if (write_netcdf_clm)
 
       if (public_xtra->print_CLM)
       {
@@ -3815,9 +4075,10 @@ SolverRichardsInitInstanceXtra()
                             (NULL, NULL, NULL, temp_data));
 
   /* renew velocity computation modules that take temporary data */
-  /*   PFModuleReNewInstance((instance_xtra -> phase_velocity_face),
-   * (NULL, NULL, NULL, NULL, NULL, temp_data)); */
-
+  /*   
+   *  PFModuleReNewInstance((instance_xtra -> phase_velocity_face),
+   *   (NULL, NULL, NULL, NULL, NULL, temp_data)); 
+   */
 
   /* renew concentration advection modules that take temporary data */
   temp_data_placeholder = temp_data;
@@ -4069,7 +4330,8 @@ SolverRichardsNewPublicXtra(char *name)
   }
 
   /* NBE - Allows disabling of the CLM output logs generated for each processor
-  *  Checking of the values is manual right not in case other options are added */
+   *  Checking of the values is manual right not in case other options are added 
+   */
   sprintf(key, "%s.CLM.WriteLogs", name);
   switch_name = GetStringDefault(key, "True");
   switch_value = NA_NameToIndex(switch_na, switch_name);
@@ -4219,8 +4481,9 @@ SolverRichardsNewPublicXtra(char *name)
   public_xtra->clm_metpath = GetStringDefault(key, ".");
 
   /* IMF Key for met vars in subdirectories
-   * If True  -- each variable in it's own subdirectory of MetFilePath (e.g., /Temp, /APCP, etc.)
-   * If False -- all files in MetFilePath */
+  * If True  -- each variable in it's own subdirectory of MetFilePath (e.g., /Temp, /APCP, etc.)
+  * If False -- all files in MetFilePath 
+  */
   sprintf(key, "%s.CLM.MetFileSubdir", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
@@ -4234,6 +4497,7 @@ SolverRichardsNewPublicXtra(char *name)
   /* IMF Key for CLM met file name...
    * for 1D forcing, is complete file name
    * for 2D/3D forcing, is base file name (w/o timestep extension) */
+  /* KKu NetCDF based forcing file name would be read here */
   sprintf(key, "%s.CLM.MetFileName", name);
   public_xtra->clm_metfile = GetStringDefault(key, "narr_1hr.sc3.txt");
 
@@ -4247,7 +4511,8 @@ SolverRichardsNewPublicXtra(char *name)
 
   /* IMF Switch for 1D (uniform) vs. 2D (distributed) met forcings */
   /* IMF Added 3D option (distributed w/ time axis -- nx*ny*nz; nz=nt) */
-  metforce_switch_na = NA_NewNameArray("none 1D 2D 3D");
+  /* KKu Added NetCDF meteorological forcing */
+  metforce_switch_na = NA_NewNameArray("none 1D 2D 3D NC");
   sprintf(key, "%s.CLM.MetForcing", name);
   switch_name = GetStringDefault(key, "none");
   switch_value = NA_NameToIndex(metforce_switch_na, switch_name);
@@ -4274,6 +4539,12 @@ SolverRichardsNewPublicXtra(char *name)
     case 3:
     {
       public_xtra->clm_metforce = 3;
+      break;
+    }
+
+    case 4:
+    {
+      public_xtra->clm_metforce = 4;
       break;
     }
 
@@ -4328,6 +4599,31 @@ SolverRichardsNewPublicXtra(char *name)
     }
   }
   NA_FreeNameArray(irrtype_switch_na);
+
+  /* KKu: Write CLM in NetCDF file */
+  /* This key is added here as depenedent on irrigation type
+   * an extra variable is written out*/
+  sprintf(key, "NetCDF.WriteCLM");
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  if (switch_value == 1)
+  {
+    /* KKu: Number of CLM variables + time in NetCDF file */
+    if (public_xtra->clm_irr_type > 0)
+    {
+      public_xtra->numCLMVarTimeVariant = 15;
+    }
+    else
+    {
+      public_xtra->numCLMVarTimeVariant = 14;
+    }
+  }
+  public_xtra->write_netcdf_clm = switch_value;
 
   /* IrrigationCycle -- Constant, Deficit (default == Deficit) */
   /* (Constant = irrigate based on specified time cycle [IrrigationStartTime,IrrigationEndTime];
@@ -4737,6 +5033,9 @@ SolverRichardsNewPublicXtra(char *name)
   public_xtra->numVarTimeVariant = 0;   /*Initializing to 0 and incremented
                                          * later depending on which and how many variables
                                          * are written */
+  public_xtra->numVarIni = 0;   /*Initializing to 0 and incremented
+                                 * later depending on which and how many static variables
+                                 * are written */
   sprintf(key, "NetCDF.WritePressure");
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
@@ -4748,6 +5047,7 @@ SolverRichardsNewPublicXtra(char *name)
   if (switch_value == 1)
   {
     public_xtra->numVarTimeVariant++;
+    public_xtra->numVarIni++;
   }
   public_xtra->write_netcdf_press = switch_value;
 
@@ -4763,23 +5063,141 @@ SolverRichardsNewPublicXtra(char *name)
   if (switch_value == 1)
   {
     public_xtra->numVarTimeVariant++;
+    public_xtra->numVarIni++;
   }
   public_xtra->write_netcdf_satur = switch_value;
+
+  sprintf(key, "NetCDF.WriteEvapTrans");
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  if (switch_value == 1)
+  {
+    public_xtra->numVarTimeVariant++;
+  }
+  public_xtra->write_netcdf_evaptrans = switch_value;
+
+  sprintf(key, "NetCDF.WriteEvapTransSum");
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  if (switch_value == 1)
+  {
+    public_xtra->numVarTimeVariant++;
+  }
+  public_xtra->write_netcdf_evaptrans_sum = switch_value;
+
+  sprintf(key, "NetCDF.WriteOverlandSum");
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  if (switch_value == 1)
+  {
+    public_xtra->numVarTimeVariant++;
+  }
+  public_xtra->write_netcdf_overland_sum = switch_value;
+
+  sprintf(key, "NetCDF.WriteOverlandBCFlux");
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  if (switch_value == 1)
+  {
+    public_xtra->numVarTimeVariant++;
+  }
+  public_xtra->write_netcdf_overland_bc_flux = switch_value;
+
+  sprintf(key, "NetCDF.WriteMannings");
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  if (switch_value == 1)
+  {
+    public_xtra->numVarIni++;
+  }
+  public_xtra->write_netcdf_mannings = switch_value;
+
+  sprintf(key, "NetCDF.WriteSubsurface");
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  if (switch_value == 1)
+  {
+    /*Increamenting by 5 for x, y, z permiability, porosity and specific storage */
+    public_xtra->numVarIni = public_xtra->numVarIni + 5;
+  }
+  public_xtra->write_netcdf_subsurface = switch_value;
+
+  sprintf(key, "NetCDF.WriteSlopes");
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  if (switch_value == 1)
+  {
+    /*Increamenting by 2 for x, y slopes */
+    public_xtra->numVarIni = public_xtra->numVarIni + 2;
+  }
+  public_xtra->write_netcdf_slopes = switch_value;
+
+  sprintf(key, "NetCDF.WriteDZMultiplier");
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  if (switch_value == 1)
+  {
+    public_xtra->numVarIni++;
+  }
+  public_xtra->write_netcdf_dzmult = switch_value;
+
+  sprintf(key, "NetCDF.WriteMask");
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  if (switch_value == 1)
+  {
+    public_xtra->numVarIni++;
+  }
+  public_xtra->write_netcdf_mask = switch_value;
 
   /* For future other vaiables, handle the TCL flags here
    * and modify the if condition below for time variable
    */
-
-  if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur)
-  {
-    /* KKu: Incrementing one for time variable in NC file only if one of
-     * the time variant variable is requested for output. This if statement
-     * will grow as number of vaiant variable will be added. Could be handled
-     * in a different way?
-     * This variable is added extra in NetCDF file for ease of post processing
-     * with tools such as CDO, NCL, python netcdf etc. */
-    public_xtra->numVarTimeVariant++;
-  }
 
   sprintf(key, "NetCDF.EvapTransFileTransient");
   switch_name = GetStringDefault(key, "False");
@@ -4793,6 +5211,32 @@ SolverRichardsNewPublicXtra(char *name)
 
   sprintf(key, "NetCDF.EvapTrans.FileName");
   public_xtra->nc_evap_trans_filename = GetStringDefault(key, "");
+
+  if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur
+      || public_xtra->write_netcdf_evaptrans
+      || public_xtra->write_netcdf_evaptrans_sum
+      || public_xtra->write_netcdf_overland_sum
+      || public_xtra->write_netcdf_overland_bc_flux)
+
+  {
+    /* KKu: Incrementing one for time variable in NC file only if one of
+     * the time variant variable is requested for output. This if statement
+     * will grow as number of vaiant variable will be added. Could be handled
+     * in a different way?
+     * This variable is added extra in NetCDF file for ease of post processing
+     * with tools such as CDO, NCL, python netcdf etc. */
+    public_xtra->numVarTimeVariant++;
+  }
+
+  if (public_xtra->write_netcdf_press || public_xtra->write_netcdf_satur
+      || public_xtra->write_netcdf_mask
+      || public_xtra->write_netcdf_subsurface
+      || public_xtra->write_netcdf_slopes || public_xtra->write_netcdf_dzmult)
+  {
+    /* KKu: Incrementing one for time variable for initial  NC file. */
+    public_xtra->numVarIni++;
+  }
+
 
   /*
    * ---------------------------

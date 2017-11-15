@@ -85,10 +85,15 @@ PARALLEL_2DTOPO_TESTS += \
 	default_overland.tcl \
 	default_overland.pfmg.jac.tcl \
 	default_overland.pfmg_octree.jac.tcl \
-	water_balance_x.hardflow.nojac.tcl \
-	water_balance_x.hardflow.jac.tcl \
 	LW_var_dz.tcl \
 	LW_var_dz_spinup.tcl
+
+ifeq (${PARFLOW_HAVE_SILO},yes)
+TESTS += \
+	water_balance_x.hardflow.nojac.tcl \
+	water_balance_x.hardflow.jac.tcl
+endif
+
 endif
 
 endif
