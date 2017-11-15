@@ -25,6 +25,9 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
   USA
 **********************************************************************EHEADER*/
+#ifndef _AMPS_HEADER
+#define _AMPS_HEADER
+
 #define new DEBUG_NEW
 
 #include <windows.h>
@@ -33,8 +36,6 @@
 #include <process.h>
 #include <limits.h>
 
-#ifndef _AMPS_HEADER
-#define _AMPS_HEADER
 
 extern HANDLE *amps_sync_ready;
 extern HANDLE *amps_sync_done;

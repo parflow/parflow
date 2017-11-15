@@ -10,20 +10,30 @@ proc pftestIsEqual {a b message} {
     }
 }
 
+proc eps {{base 1}} {
+    set eps 1e-20
+    while {$base-$eps==$base} {
+        set eps [expr {$eps+1e-22}]
+    }
+    set eps     [expr {$eps+1e-22}]
+}
+
 proc pftestFile {file message sig_digits} {
     if [file exists $file] {
 	set correct [pfload correct_output/$file]
 	set new     [pfload                $file]
 	set diff [pfmdiff $new $correct $sig_digits]
 	if {[string length $diff] != 0 } {
-	    puts "FAILED : $message"
 
 	    set mSigDigs [lindex $diff 0]
 	    set maxAbsDiff [lindex $diff 1]
 
 	    set i [lindex $mSigDigs 0]
 	    set j [lindex $mSigDigs 1]
-	    set k [lindex $mSigDigs 2] 
+	    set k [lindex $mSigDigs 2]
+
+	    puts "FAILED : $message"
+
 	    puts [format "\tMinimum significant digits at (% 3d, % 3d, % 3d) = %2d"\
 		      $i $j $k [lindex $mSigDigs 3]]
 

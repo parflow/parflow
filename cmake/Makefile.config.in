@@ -1,0 +1,24 @@
+##
+## Package:     PARFLOW makefile system
+## Copyright:   (c) 1997-2008 Lawrence Livermore National Security, LLC
+## Revision:    $LastChangedRevision: 2195 $
+## Modified:    $LastChangedDate: 2008-05-14 11:33:30 -0700 (Wed, 14 May 2008) $
+## Description: configuration makefile included by all PARFLOW makefiles
+##
+
+AMPS                   = @PARFLOW_AMPS_LAYER@
+
+PARFLOW_HAVE_CLM       = @PARFLOW_HAVE_CLM@
+PARFLOW_HAVE_SILO      = @PARFLOW_HAVE_SILO@
+PARFLOW_HAVE_NETCDF    = @PARFLOW_HAVE_NETCDF@
+PARFLOW_HAVE_HYPRE     = @PARFLOW_HAVE_HYPRE@
+PARFLOW_HAVE_SAMRAI    = @PARFLOW_HAVE_SAMRAI@
+PARFLOW_HAVE_OAS3      = @PARFLOW_HAVE_OAS3@
+
+######################################################################
+# Rules used in all directories.
+######################################################################
+
+PARFLOW_CLEAN=@$(RM) *.o *.ii *.int.c *.log *.log.* stamp-* core core.* stats -r ti_files ii_files
+
+

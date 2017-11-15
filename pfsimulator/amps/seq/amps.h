@@ -31,6 +31,8 @@
 
 #include "parflow_config.h"
 
+#include "amps_common.h"
+
 #include <stdio.h>
 #include <sys/times.h>
 
@@ -58,13 +60,6 @@
 #define amps_HostRank -1
 
 #define amps_CommWorld 0
-
-#ifdef CASC_HAVE_GETTIMEOFDAY
-#define AMPS_TICKS_PER_SEC 10000
-#endif 
-
-typedef clock_t amps_CPUClock_t;
-#define AMPS_CPU_TICKS_PER_SEC 100
 
 typedef int amps_Comm;
 typedef FILE *amps_File;
@@ -217,8 +212,6 @@ typedef struct amps_HandleObject
    amps_Package package;
 
 } *amps_Handle;
-
-typedef long amps_Clock_t;
 
 /*****************************************************************************
  *

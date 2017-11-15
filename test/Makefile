@@ -14,24 +14,24 @@ default: check
 
 TESTS := \
 	default_single.tcl \
-	default_richards.tcl \
 	default_richards_wells.tcl \
 	forsyth2.tcl \
 	harvey.flow.tcl \
 	harvey_flow_pgs.tcl \
-	default_overland.tcl \
 	crater2D.tcl \
 	crater2D_vangtable_spline.tcl \
 	crater2D_vangtable_linear.tcl \
 	small_domain.tcl \
-	richards_hydrostatic_equalibrium.tcl \
-	terrain_following_grid_overland.tcl \
-	var_dz_1D.tcl \
-	LW_var_dz.tcl \
-	LW_var_dz_spinup.tcl
+	richards_hydrostatic_equalibrium.tcl
 
 ifeq (${PARFLOW_HAVE_HYPRE},yes)
 TESTS += \
+	default_richards.tcl \
+	default_overland.tcl \
+	LW_var_dz.tcl \
+	LW_var_dz_spinup.tcl \
+	terrain_following_grid_overland.tcl \
+	var_dz_1D.tcl \
 	pfmg.tcl \
 	smg.tcl \
 	pfmg_octree.tcl
@@ -39,15 +39,21 @@ endif
 
 ifeq (${PARFLOW_HAVE_SILO},yes)
 TESTS += \
-	default_richards_with_silo.tcl \
-	indicator_field.tcl \
+	indicator_field.tcl
+
+ifeq (${PARFLOW_HAVE_HYPRE},yes)
+TESTS += \
 	water_balance_y.tcl \
-	water_balance_x.tcl 
+	water_balance_x.tcl \
+	default_richards_with_silo.tcl
+endif
 endif
 
 ifeq (${PARFLOW_HAVE_NETCDF},yes)
+ifeq (${PARFLOW_HAVE_HYPRE},yes)
 TESTS += \
 	default_richards_with_netcdf.tcl
+endif
 endif
 
 SAMRAI_TESTS :=
@@ -68,7 +74,11 @@ PARALLEL_2DTOPO_TESTS :=
 ifeq (${AMPS},mpi1)
 
 PARALLEL_3DTOPO_TESTS += \
-	default_single.tcl \
+	default_single.tcl
+
+ifeq (${PARFLOW_HAVE_HYPRE},yes)
+
+PARALLEL_3DTOPO_TESTS += \
 	default_richards.tcl 
 
 PARALLEL_2DTOPO_TESTS += \
@@ -79,10 +89,13 @@ PARALLEL_2DTOPO_TESTS += \
 	water_balance_x.hardflow.jac.tcl \
 	LW_var_dz.tcl \
 	LW_var_dz_spinup.tcl
+endif
 
 endif
 
 CHECK_TARGETS=check_sequential check_parallel check_samrai check_p4est
+
+test: check
 
 check:
 	@(logfile=check.$$$$.checklog; \
@@ -129,7 +142,7 @@ check_sequential:
 	        make --no-print-directory testclean; \
 		echo "*****************************************************************************"; \
 		echo "Running $$i"; \
-		/usr/bin/time -f "TIME,$$i 1 1 1,%e" tclsh $$i 1 1 1; \
+		tclsh $$i 1 1 1; \
 	done
 	@-for i in $(SUBDIRS); \
 	do \
@@ -144,7 +157,7 @@ check_parallel:
 		        make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			/usr/bin/time -f "TIME,$$i $$processor_topology,%e" time tclsh $$i $$processor_topology; \
+			tclsh $$i $$processor_topology; \
 		done \
 	done
 	@-for i in $(PARALLEL_2DTOPO_TESTS); \
@@ -154,7 +167,7 @@ check_parallel:
 		        make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			/usr/bin/time -f "TIME,$$i $$processor_topology,%e" tclsh $$i $$processor_topology; \
+			tclsh $$i $$processor_topology; \
 		done \
 	done
 	@-for i in $(SUBDIRS); \
@@ -171,14 +184,14 @@ check_samrai:
 			make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			/usr/bin/time -f "TIME,$$i $$processor_topology,%e" tclsh $$i $$processor_topology; \
+			tclsh $$i $$processor_topology; \
 		done; \
 		for processor_topology in "1 1 1" "1 2 1" "2 1 1" "2 2 1" "3 3 1" "1 4 1" "4 1 1"; \
 	 	do \
 			make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			/usr/bin/time -f "TIME,$$i $$processor_topology,%e" tclsh $$i $$processor_topology; \
+			tclsh $$i $$processor_topology; \
 		done \
 	done
 	@-for i in $(SAMRAI_TESTS_WITH_PATCH_COUNT); \
@@ -188,7 +201,7 @@ check_samrai:
 		        make --no-print-directory testclean; \
 			echo "*****************************************************************************"; \
 			echo "Running $$i on $$processor_topology"; \
-			/usr/bin/time -f "TIME $$processor_topology,$$i,%e" tclsh $$i $$processor_topology; \
+			tclsh $$i $$processor_topology; \
 		done \
 	done
 	@-for i in $(SUBDIRS); \

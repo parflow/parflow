@@ -1,0 +1,65 @@
+/*
+ * Parflow configure file.
+ */
+
+/* Use PARFLOW_ versions; other names are deprecated */
+/* TODO should get rid of non prefixed versions of these flags; CPP
+   symbols should be in PARFLOW namespace.  Should make naming consistent as well */
+
+
+#cmakedefine PARFLOW_AMPS_LAYER
+#cmakedefine AMPS
+
+#cmakedefine AMPS_SPLIT_FILE
+
+#cmakedefine PARFLOW_HAVE_TCL
+#cmakedefine HAVE_TCL
+
+#cmakedefine PARFLOW_HAVE_MPI
+#cmakedefine HAVE_MPI
+
+#cmakedefine PARFLOW_HAVE_GETTIMEOFDAY
+#cmakedefine CASC_HAVE_GETTIMEOFDAY
+
+#cmakedefine PARFLOW_HAVE_BIG_ENDIAN
+#cmakedefine CASC_HAVE_BIGENDIAN
+
+#cmakedefine PARFLOW_HAVE_CLM
+#cmakedefine HAVE_CLM
+
+#cmakedefine PARFLOW_HAVE_HYPRE
+#cmakedefine HAVE_HYPRE
+
+#define PARFLOW_HYPRE_VERSION_MAJOR @PARFLOW_HYPRE_VERSION_MAJOR@
+#define PARFLOW_HYPRE_VERSION_MINOR @PARFLOW_HYPRE_VERSION_MINOR@
+#define PARFLOW_HYPRE_VERSION_PATCH @PARFLOW_HYPRE_VERSION_PATCH@
+
+#cmakedefine PARFLOW_HAVE_SUNDIALS
+#cmakedefine HAVE_SUNDIALS
+
+#cmakedefine PARFLOW_ENABLE_TIMING
+#cmakedefine PF_TIMING
+
+#cmakedefine PARFLOW_HAVE_SILO
+#cmakedefine HAVE_SILO
+
+#cmakedefine PARFLOW_HAVE_SLURM
+#cmakedefine HAVE_SLURM
+
+#cmakedefine PARFLOW_HAVE_NETCDF
+
+#cmakedefine PARFLOW_HAVE_HDF5
+#cmakedefine HAVE_HDF5
+
+#cmakedefine PARFLOW_HAVE_OAS3
+#cmakedefine HAVE_OAS3
+
+#cmakedefine PARFLOW_HAVE_MALLOC_H
+#cmakedefine HAVE_MALLOC_H
+
+#cmakedefine PARFLOW_HAVE_MALLINFO
+#cmakedefine HAVE_MALLINFO
+
+
+
+
