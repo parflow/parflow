@@ -431,6 +431,20 @@ fi
 AC_SUBST(hdf5_LIBS)
 
 dnl
+dnl NetCDF support
+dnl
+PARFLOW_HAVE_NETCDF="no"
+AX_LIB_NETCDF4()
+if test "${with_netcdf4}" = "yes"; then
+  LIB_PATH="$NETCDF4_LDFLAGS $LIB_PATH"
+  LIB_NAME="$NETCDF4_LIBS $LIB_NAME"
+  INC_PATH="$NETCDF4_CFLAGS $NETCDF4_CPPFLAGS $INC_PATH"
+  AC_DEFINE(PARFLOW_HAVE_NETCDF,1,NetCDF library is available so use it)
+  PARFLOW_HAVE_NETCDF="yes"
+fi
+AC_SUBST(PARFLOW_HAVE_NETCDF)
+
+dnl
 dnl Silo support
 dnl
 PARFLOW_HAVE_SILO="no"

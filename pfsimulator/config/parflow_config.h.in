@@ -114,6 +114,13 @@
 #endif
 
 /*
+ * NETCDF
+ */
+#ifndef PARFLOW_HAVE_NETCDF
+#undef PARFLOW_HAVE_NETCDF
+#endif
+
+/*
  * Hypre 
  */
 
