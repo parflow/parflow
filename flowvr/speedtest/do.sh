@@ -13,7 +13,15 @@ P=3
 Q=2
 R=1
 
-python ./mpi.py $P $Q $R
+
+if [ -z "$START_TIME" ]; then
+  export START_TIME=0.0
+fi
+if [ -z "$STOP_TIME" ]; then
+  export STOP_TIME=0.01
+fi
+
+python ./mpi.py $P $Q $R $START_TIME $STOP_TIME
 #flowvrd -s 3G & # do not need this line!
 flowvrd &
 

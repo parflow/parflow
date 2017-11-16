@@ -11,6 +11,9 @@ rm *.nc
 rm -rf results
 mkdir results
 
+export START_TIME=0.0
+export STOP_TIME=0.01
+
 # put good results into results folder (run tclsh default_richards_witsh_netcdf.tcl 1 1 1 without flowvr once ;) )
 tclsh ./default_richards_with_netcdf.tcl 1 1 1
 
@@ -25,7 +28,7 @@ cp -r results results_noFlowVR
 echo "Now starting flowVR . this will take some time. When the output does not change further, wait a few seconds and type \"stop\" or \"s\" and hit [enter]"
 read -n1 -r -p "Press any key to continue..." key
 
-python ./parFlowVR.py
+python ./parFlowVR.py $START_TIME $STOP_TIME
 flowvrd -s 4M &
 
 # wait for flowvrd to startup

@@ -178,11 +178,11 @@ pfset Gravity				1.0
 #-----------------------------------------------------------------------------
 # Setup timing info
 #-----------------------------------------------------------------------------
-
 pfset TimingInfo.BaseUnit		1.0
 pfset TimingInfo.StartCount		0
 pfset TimingInfo.StartTime		0.0
-pfset TimingInfo.StopTime               0.010
+pfset TimingInfo.StartTime		$::env(START_TIME)
+pfset TimingInfo.StopTime               $::env(STOP_TIME)
 pfset TimingInfo.DumpInterval	       -1
 pfset TimeStep.Type                     Constant
 pfset TimeStep.Value                    0.001

@@ -1,5 +1,6 @@
 import flowvr
 import time
+import sys
 
 outport = flowvr.OutputPort("out")
 
@@ -26,9 +27,11 @@ while simplestarterModule.wait() :
     m = flowvr.MessageWrite(outport.stamps)
 
 
-    print("----setting stamp")
-    m.setStamp("stampStartTime", 0.0)
-    m.setStamp("stampStopTime",  0.1)
+    startTime = float(sys.argv[1])
+    stopTime = float(sys.argv[2])
+    print("----setting stamp %f - %f" % (startTime, stopTime))
+    m.setStamp("stampStartTime", startTime)
+    m.setStamp("stampStopTime",  stopTime)
 
     # we need to initizlize data also for stamps messages ;)
     m.data = simplestarterModule.alloc(0)

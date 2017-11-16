@@ -2,6 +2,8 @@
 # Preparations:
 RESULTFILE="warmup_test"
 NZ=8
+export START_TIME=0.001
+export STOP_TIME=0.01
 
 
 algos[0]="tclsh ./normal.tcl 4 2 1"

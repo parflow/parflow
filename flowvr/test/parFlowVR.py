@@ -1,11 +1,12 @@
 from flowvrapp import *
 from filters import *
+import sys
 
 
 #pres = FilterPreSignal("Time_PreSignal", messagetype='full')  # will be inited with one token for the beginning
 pres = FilterPreSignal("Time_PreSignal", nb=1)  # will be inited with one token for the beginning
 
-simplestarterModule = Module("simplestarter", cmdline = "python ../simplestarter/simplestarter.py")
+simplestarterModule = Module("simplestarter", cmdline = "python ../simplestarter/simplestarter.py %s %s" % tuple(sys.argv[1:3]))
 starter_inport  = simplestarterModule.getPort("beginIt")
 starter_outport = simplestarterModule.addPort("out", direction='out')
 

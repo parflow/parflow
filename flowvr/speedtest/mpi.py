@@ -53,7 +53,7 @@ class Simplestarter(Module):
   """Module Simplestarter kicks of a nonsteered simple parflow simulation"""
 
   def __init__(self, name):
-    Module.__init__(self, name, cmdline = "python ../simplestarter/simplestarter.py")
+    Module.__init__(self, name, cmdline = "python ../simplestarter/simplestarter.py %s %s" % (sys.argv[4], sys.argv[5]))
     #self.addPort("beginIt", direction = 'in')
     self.addPort("out", direction = 'out')
 

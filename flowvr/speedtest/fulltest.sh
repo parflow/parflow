@@ -2,6 +2,8 @@
 # Preparations:
 RESULTFILE="fulltest.results.csv"
 NZ=8
+export START_TIME=0.001
+export STOP_TIME=0.01
 
 rm $RESULTFILE
 # write header:
