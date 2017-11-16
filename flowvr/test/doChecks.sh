@@ -12,7 +12,7 @@ rm -rf results
 mkdir results
 
 export START_TIME=0.0
-export STOP_TIME=0.01
+export STOP_TIME=0.009
 
 # put good results into results folder (run tclsh default_richards_witsh_netcdf.tcl 1 1 1 without flowvr once ;) )
 tclsh ./default_richards_with_netcdf.tcl 1 1 1
@@ -44,8 +44,8 @@ tclsh ./scripts/_tests_noflowvr.tcl
 echo Compare results. Diffs in Time are ok up to now as we transmit timestamps as floats atm. So we loose some prec. Diffs in the other variables are not ok..
 
 ./scripts/compare_nc.py ./default_richards.out.00000.nc results/default_richards.out.00000.nc
-./scripts/compare_nc.py ./default_richards.out.00001.nc results/default_richards.out.00005.nc
+./scripts/compare_nc.py ./default_richards.out.00001.nc results/default_richards.out.00001.nc
 ./scripts/compare_nc.py ./default_richards.out.00000.nc results_noFlowVR/default_richards.out.00000.nc
-./scripts/compare_nc.py ./default_richards.out.00001.nc results_noFlowVR/default_richards.out.00005.nc
+./scripts/compare_nc.py ./default_richards.out.00001.nc results_noFlowVR/default_richards.out.00001.nc
 
 echo ------------ END! --------------

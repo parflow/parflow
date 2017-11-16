@@ -34,12 +34,12 @@ foreach i "00000 00001 00002 00003 00004 00005" {
 #
 
 if ![file exists default_richards.out.00000.nc] {
-    puts "NetCDF file was not created"
+    puts "NetCDF file was not created (00000)"
     set passed 0
 }
 
-if ![file exists default_richards.out.00005.nc] {
-    puts "NetCDF file was not created"
+if ![file exists default_richards.out.00001.nc] {
+    puts "NetCDF file was not created (00001)"
     set passed 0
 }
 
