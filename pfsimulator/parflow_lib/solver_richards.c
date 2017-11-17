@@ -1082,13 +1082,7 @@ SetupRichards(PFModule * this_module)
 
     sprintf(filename, "%s.%05d.nc", file_prefix, instance_xtra->file_number / userSpecSteps);
 
-    SimulationSnapshot sshot = {
-                         filename,
-                         t,
-                         instance_xtra->pressure,
-                         NULL,
-                         instance_xtra->saturation
-    };
+    SimulationSnapshot sshot = GetSimulationSnapshot;
     DumpRichardsToFlowVR(&sshot);
 #endif
 
@@ -2771,13 +2765,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     SimulationSnapshot sshot;
     if (FLOWVR_ACTIVE)
     {
-      sshot = (SimulationSnapshot){
-        NULL,
-        t,
-        instance_xtra->pressure,
-        NULL,
-        instance_xtra->saturation
-      };
+      sshot = GetSimulationSnapshot;
       FlowVRSendSnapshot(&sshot);
     }
 #endif
@@ -3563,14 +3551,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   while (take_more_time_steps);
 #ifdef HAVE_FLOWVR
 
-  SimulationSnapshot sshot;
-  sshot = (SimulationSnapshot){
-    NULL,
-      t,
-      instance_xtra->pressure,
-      NULL,
-      instance_xtra->saturation
-  };
+  SimulationSnapshot sshot = GetSimulationSnapshot;
   if (FLOWVR_ACTIVE)
   {
     FlowVRServeFinalState(&sshot);

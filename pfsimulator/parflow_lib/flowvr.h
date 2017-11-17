@@ -31,6 +31,17 @@
 
 #include "parflow.h"
 
+
+
+#define GetSimulationSnapshot \
+(SimulationSnapshot){ \
+  filename, \
+  t, \
+  instance_xtra->pressure, \
+  NULL, \
+  instance_xtra->saturation, \
+}
+
 extern int FLOWVR_ACTIVE;
 extern int FLOWVR_EVENT_ACTIVE;
 
