@@ -32,8 +32,9 @@
 #include "parflow.h"
 
 extern int FLOWVR_ACTIVE;
+extern int FLOWVR_EVENT_ACTIVE;
 
-void NewFlowVR();
+void NewFlowVR(void);
 
 #ifdef HAVE_FLOWVR
 
@@ -54,9 +55,21 @@ extern fca_module moduleParflow;
 // TODO: documentation
 
 int FlowVR_wait();
-void DumpRichardsToFlowVR(const char * filename, float time, Vector const * const pressure_out,
-                          Vector const * const porosity_out, Vector const * const saturation_out);
+
+typedef struct {
+  char * filename;
+  float time;
+  Vector * pressure_out;
+  Vector * porosity_out;
+  Vector * saturation_out;
+} SimulationSnapshot;
+
+void DumpRichardsToFlowVR(SimulationSnapshot const * const snapshot);
+void FlowVRSendSnapshot(SimulationSnapshot const * const snapshot);
+void FlowVRServeFinalState(SimulationSnapshot const * const snapshot);
+
 void FreeFlowVR();
+
 
 #endif
 #endif

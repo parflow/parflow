@@ -5,9 +5,12 @@
 #include <string.h>  // for memcpy
 #include <stdlib.h>  // for malloc
 
-
+FLOWVR_EVENT_ACTIVE = 0;
 FLOWVR_ACTIVE = 0;
 fca_module moduleParflow;
+
+static fca_module moduleParflowEvent;
+static fca_port triggerSnapPort;
 
 void fillGridMessageMetadata(Vector const * const v, GridMessageMetadata *m)
 {
@@ -35,19 +38,17 @@ void fillGridMessageMetadata(Vector const * const v, GridMessageMetadata *m)
 }
 
 
-void NewFlowVR()
+void NewFlowVR(void)
 {
-  const char *key = "FlowVR";
-
   // Refactor: shouldn't there be a GetBooleanDefault?
-  char* switch_name = GetStringDefault(key, "False");
   NameArray switch_na = NA_NewNameArray("False True");
+  char* switch_name = GetStringDefault("FlowVR", "False");
 
   FLOWVR_ACTIVE = NA_NameToIndex(switch_na, switch_name);
   if (FLOWVR_ACTIVE < 0)
   {
     InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
+               switch_name, "FlowVR");
     FLOWVR_ACTIVE = 0;
   }
 
@@ -56,18 +57,30 @@ void NewFlowVR()
     return;
   }
 
+  switch_name = GetStringDefault("FlowVR.Event", "False");
+  FLOWVR_EVENT_ACTIVE = NA_NameToIndex(switch_na, switch_name);
+  if (FLOWVR_ACTIVE < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, "FlowVR.Event");
+    FLOWVR_ACTIVE = 0;
+  }
+
 #ifndef HAVE_FLOWVR
   PARFLOW_ERROR("Parflow was not compiled with FlowVR but FlowVR was the input file was set to True");
   return;
 #else
+  D("Modname: %s, Parent: %s\n", getenv("FLOWVR_MODNAME"), getenv("FLOWVR_PARENT"));
   if (amps_size > 1)
   {
     fca_init_parallel(amps_rank, amps_size);  // TODO: amps size or amps_node_size
   }
+  D("Modname: %s, Parent: %s\n", getenv("FLOWVR_MODNAME"), getenv("FLOWVR_PARENT"));
   const char* outportnamelist[] = {
     "pressure",
     "porosity",    // REM: does not really change..
-    "saturation"
+    "saturation",
+    "pressureSnap"
     /*"subsurf_data",         [> permeability/porosity <]*/
     /*"press",                [> pressures <]*/
     /*"slopes",               [> slopes <]*/
@@ -121,19 +134,32 @@ void NewFlowVR()
   fca_register_stamp(beginItPort, "stampStartTime", fca_FLOAT);
   fca_register_stamp(beginItPort, "stampStopTime", fca_FLOAT);
   // TODO ^^good idea to use float? or should we put the double in the messages payload??
-  D("flowvr initialisiert.");
   fca_append_port(moduleParflow, beginItPort);
+  if (!fca_init_module(moduleParflow))
+  {
+    PARFLOW_ERROR("ERROR : init_module for moduleParflow failed!\n");
+  }
 
+  if (FLOWVR_EVENT_ACTIVE)
+  {
+    moduleParflowEvent = fca_new_empty_module();
+    triggerSnapPort = fca_new_port("triggerSnap", fca_IN, fca_NON_BLOCKING, NULL);
+    fca_append_port(moduleParflowEvent, triggerSnapPort);
+    fca_set_modulename(moduleParflowEvent, "Event");
+    if (!fca_init_module(moduleParflowEvent))
+    {
+      PARFLOW_ERROR("ERROR : init_module for moduleParflowEvent failed!\n");
+    }
+    // show that we are there. this call should be nonblocking as no blocking ports are connected
+    fca_wait(moduleParflowEvent);
+  }
+
+  D("flowvr initialisiert.");
 //  char modulename[256];
 //
 //  sprintf(modulename, "parflow/%d", amps_Rank(amps_CommWorld));
 //
 //  fca_set_modulename(moduleParflow, modulename);
-
-  if (!fca_init_module(moduleParflow))
-  {
-    PARFLOW_ERROR("ERROR : init_module failed!\n");
-  }
 
 
   /*fca_trace testTrace = fca_get_trace(modulePut,"beginTrace");*/
@@ -143,11 +169,13 @@ void NewFlowVR()
 
 #ifdef HAVE_FLOWVR
 
+
 int FlowVR_wait()
 {
   if (FLOWVR_ACTIVE)
   {
     D("now waiting");
+    if (FLOWVR_EVENT_ACTIVE) fca_wait(moduleParflowEvent);
     return fca_wait(moduleParflow);
   }
   else
@@ -159,6 +187,8 @@ void FreeFlowVR()
   if (!FLOWVR_ACTIVE)
     return;
   fca_free(moduleParflow);
+  if (FLOWVR_EVENT_ACTIVE)
+    fca_free(moduleParflowEvent);
 }
 
 void vectorToMessage(Vector* v, fca_message *result, fca_port *port)
@@ -211,29 +241,14 @@ void vectorToMessage(Vector* v, fca_message *result, fca_port *port)
 }
 // TODO: implement swap: do not do the memcpy but have to buffers one for read and wone for write. Change the buffers after one simulation step! (here a simulation step consists of multiple timesteps!
 
+// Build data
+typedef struct {
+  const char *name;
+  Vector const * const data;
+} PortNameData;
 
-// REM: We are better than the nodelevel netcdf feature because during file write the other nodes are already calculating ;)
-// REM: structure of nodelevel netcdf: one process per node gathers everything that has to be written and does the filesystem i/o
-void DumpRichardsToFlowVR(const char * filename, float time, Vector const * const pressure_out,
-                          Vector const * const porosity_out, Vector const * const saturation_out)
+void CreateAndSendMessage (SimulationSnapshot const * const snapshot, const PortNameData portnamedatas[], size_t n_portnamedata)
 {
-  if (!FLOWVR_ACTIVE)
-    return;
-
-  // Build data
-  typedef struct {
-    const char *name;
-    Vector const * const data;
-  } PortNameData;
-
-  const PortNameData portnamedatas[] =
-  {
-    { "pressure", pressure_out },
-    { "porosity", porosity_out },
-    { "saturation", saturation_out }
-  };
-#define n_portnamedata (sizeof(portnamedatas) / sizeof(const PortNameData))
-
   for (unsigned int i = 0; i < n_portnamedata; ++i)
   {
     // Sometimes we do not have values for all the data...
@@ -250,10 +265,14 @@ void DumpRichardsToFlowVR(const char * filename, float time, Vector const * cons
 
 
     const fca_stamp stampTime = fca_get_stamp(port, "stampTime");
-    const fca_stamp stampFileName = fca_get_stamp(port, "stampFileName");
-    D("writing float: %f\n", time);
-    fca_write_stamp(msg, stampTime, (void*)&time);
-    fca_write_stamp(msg, stampFileName, (void*)filename);
+    fca_write_stamp(msg, stampTime, (void*)&snapshot->time);
+    D("writing float: %f\n", snapshot->time);
+    fca_stamp stampFileName;
+    if (snapshot->filename != NULL) {
+      stampFileName = fca_get_stamp(port, "stampFileName");
+      fca_write_stamp(msg, stampFileName, (void*)snapshot->filename);
+    }
+
 
     // finally send message!
     if (!fca_put(port, msg))
@@ -261,11 +280,78 @@ void DumpRichardsToFlowVR(const char * filename, float time, Vector const * cons
       PARFLOW_ERROR("Could not send FlowVR-Message!");
     }
     fca_free(msg);
-    D("put message!%.8f\n", time);
+    D("put message!%.8f\n", snapshot->time);
 
-    //fca_free(buffer);  // TODO: do we really have to do this? I guess no. Example shows that it should be fine to free messages.
   }
 }
 
+// REM: We are better than the nodelevel netcdf feature because during file write the other nodes are already calculating ;)
+// REM: structure of nodelevel netcdf: one process per node gathers everything that has to be written and does the filesystem i/o
+void DumpRichardsToFlowVR(SimulationSnapshot const * const snapshot)
+{
+  if (!FLOWVR_ACTIVE)
+    return;
+
+  const PortNameData portnamedatas[] =
+  {
+    { "pressure", snapshot->pressure_out },
+    { "porosity", snapshot->porosity_out },
+    { "saturation", snapshot->saturation_out }
+  };
+#define n_portnamedata_ (sizeof(portnamedatas) / sizeof(const PortNameData))
+  CreateAndSendMessage(snapshot, portnamedatas, n_portnamedata_);
+}
+
+void FlowVRSendSnapshot(SimulationSnapshot const * const snapshot)
+{
+  if (!FLOWVR_ACTIVE || !FLOWVR_EVENT_ACTIVE)
+    return;
+
+
+  /*fca_wait(moduleParflowEvents);*/
+  // TODO: do we have to call fca_wait before we can receive the next nonblocking message?
+                // TODO: wenn wait noetig: brauchen nen extra modul! weils sonst ja immer blockt :(
+  /*D("Checking for a trigger");*/
+  if (!fca_wait(moduleParflowEvent)) return;  // something bad happened... TODO: debug the case...
+  fca_message msg = fca_get(triggerSnapPort);
+  size_t s = fca_get_segment_size(msg, 0);
+  fca_free(msg);
+  if (s == 0) return;
+  D("Got a trigger!");
+
+  // send snapshot!
+  const PortNameData portnamedatas[] =
+  {
+    { "pressureSnap", snapshot->pressure_out }//,
+    /*{ "porosity", porosity_out },*/
+    /*{ "saturation", saturation_out }*/
+  };
+#define n_portnamesnapdata (sizeof(portnamedatas) / sizeof(const PortNameData))
+  CreateAndSendMessage(snapshot, portnamedatas, n_portnamesnapdata);
+}
+
+void FlowVRServeFinalState(SimulationSnapshot const * const snapshot)
+{
+  NameArray switch_na = NA_NewNameArray("False True");
+  char* switch_name = GetStringDefault("FlowVR.ServeFinalState", "False");
+
+
+  int serve_final_state = NA_NameToIndex(switch_na, switch_name);
+  if (serve_final_state < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+        switch_name, "FlowVR.ServeFinalState");
+    serve_final_state = 0;
+  }
+
+  if (serve_final_state)
+  {
+    while(true)
+    {
+      FlowVRSendSnapshot(snapshot);
+      usleep(100000);
+    }
+  }
+}
 
 #endif

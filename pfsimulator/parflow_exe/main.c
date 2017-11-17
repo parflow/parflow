@@ -63,6 +63,7 @@ using namespace SAMRAI;
 
 #include <unistd.h>
 
+
 int main(int argc, char *argv [])
 {
   FILE *file = NULL;
@@ -259,8 +260,8 @@ int main(int argc, char *argv [])
 
 #ifdef HAVE_FLOWVR
 #ifdef __DEBUG
-    printf("for easier debugger attach: now waiting 5 seconds.\n");
-    sleep(5); // we want some time to attach the debugger ;)
+    /*printf("for easier debugger attach: now waiting 5 seconds.\n");*/
+    /*sleep(5); // we want some time to attach the debugger ;)*/
 #endif
 #endif
 

@@ -37,6 +37,8 @@
 *****************************************************************************/
 
 #include <fca/fca.h>
+#include "parflow_config.h"
+#include "../../pfsimulator/parflow_lib/GridMessage.h"
 #include <VisItControlInterface_V2.h>
 #include <VisItDataInterface_V2.h>
 #include <stdio.h>
@@ -44,13 +46,16 @@
 #include <stdlib.h>
 #include <math.h>
 
-/*#include "SimulationExample.h"*/
 
 #ifdef __DEBUG
 #define D(x ...) printf("oooooooo "); printf(x); printf(" %s:%d\n", __FILE__, __LINE__)
 #else
 #define D(...)
 #endif
+
+
+
+
 /* Data Access Function prototypes */
 visit_handle SimGetMetaData(void *);
 visit_handle SimGetMesh(int, const char *, void *);
@@ -70,25 +75,95 @@ typedef struct {
   int done;
 } simulation_data;
 
-void
-simulation_data_ctor(simulation_data *sim)
+const char *cmd_names[] = { "trigger snap" };
+
+static double lastTime;
+static fca_module flowvr;
+static fca_stamp stampTime;
+static fca_port portPressureIn;
+static fca_port portTriggerSnap;
+static double* snapshot=NULL;
+static size_t nX = 0;
+static size_t nY = 0;
+static size_t nZ = 0;
+static float *mesh_x;
+static float *mesh_y;
+static float *mesh_z;
+static int inited = 0;
+
+void triggerSnap(void)  // TODO: execute reload here in visit automatically
 {
-  sim->cycle = 0;
-  sim->time = 0.;
-  sim->runMode = SIM_STOPPED;
-  sim->done = 0;
+  fca_message msgOut = fca_new_message(flowvr, 1);
+  // TODO: really the only way to transmit messages of size !=0 that are nonblocking?
+  fca_put(portTriggerSnap, msgOut);
+  fca_free(msgOut);
+  D("waiting...");
+  fca_wait(flowvr);
+  D("got an answer");
+
+  // TODO: might happen that we are getting different timesteps?!! I think so as sometimes one mpi process is behind and one is before the wait for the event module...
+  fca_message msgIn = fca_get(portPressureIn);
+  double lastTime = (double)*((float*)fca_read_stamp(msgIn, stampTime));
+  const void* buffer = fca_get_read_access(msgIn, 0);
+  void* end = buffer + fca_get_segment_size(msgIn, 0);
+
+  GridMessageMetadata* m = (GridMessageMetadata*)buffer;
+  nX = m->nX;
+  nY = m->nY;
+  nZ = m->nZ;
+
+  if (snapshot != NULL) {
+    free(snapshot);
+  }
+
+  snapshot = (double*)malloc(sizeof(double)*m->nX*m->nY*m->nZ);
+
+  // populate snapshot:
+  while (buffer < end)
+  {
+    buffer += sizeof(GridMessageMetadata);
+    const double * data = (double*)buffer;
+    for (int z = 0; z < m->nz; ++z) {  // TODO: unroll?
+      for (int y = 0; y < m->ny; ++y) {
+        for (int x = 0; x < m->nx; ++x) {
+          int snapindex = x+m->ix + (y+m->iy) * nX + (z+m->iz) * nX * nY;
+          snapshot[snapindex] = *data;
+          ++data;
+        }
+      }
+    }
+
+    // get next...
+    buffer += sizeof(double) * m->nx * m->ny * m->nz;
+    m = (GridMessageMetadata*)buffer;
+    D("copied buffers!");
+  }
+  fca_free(msgIn);
 }
 
-void
-simulation_data_dtor(simulation_data *sim)
+void wait_for_init(void)
 {
-}
+  if (inited)
+  {
+    return;
+  }
+  else
+  {
+    triggerSnap();
 
-const char *cmd_names[] = { "halt", "step", "run" };
+    // populate mesh:
+    mesh_x = (float*) malloc(nX*sizeof(float));
+    mesh_y = (float*) malloc(nY*sizeof(float));
+    mesh_z = (float*) malloc(nZ*sizeof(float));
+    for (size_t i=0; i<nX || i<nY || i<nZ; ++i)
+    {
+      if (i<nX) mesh_x[i] = (float)i;
+      if (i<nY) mesh_y[i] = (float)i;
+      if (i<nZ) mesh_z[i] = (float)i;
+    }
 
-void simulate_one_timestep(simulation_data *sim);
-void read_input_deck(void)
-{
+    inited = 1;
+  }
 }
 
 /******************************************************************************
@@ -106,57 +181,12 @@ void read_input_deck(void)
  * Modifications:
  *
  *****************************************************************************/
-
 void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
 {
   simulation_data *sim = (simulation_data*)cbdata;
-
-  if (strcmp(cmd, "halt") == 0)
-    sim->runMode = SIM_STOPPED;
-  else if (strcmp(cmd, "step") == 0)
-    simulate_one_timestep(sim);
-  else if (strcmp(cmd, "run") == 0)
-    sim->runMode = SIM_RUNNING;
-}
-
-/* Called to handle case 3 from VisItDetectInput where we have console
- * input that needs to be processed in order to accomplish an action.
- */
-void
-ProcessConsoleCommand(simulation_data *sim)
-{
-  /* Read A Command */
-  char cmd[1000];
-
-  int iseof = (fgets(cmd, 1000, stdin) == NULL);
-
-  if (iseof)
-  {
-    sprintf(cmd, "quit");
-    printf("quit\n");
+  if (strcmp(cmd, "trigger snap") == 0) {
+    triggerSnap();
   }
-
-  if (strlen(cmd) > 0 && cmd[strlen(cmd) - 1] == '\n')
-    cmd[strlen(cmd) - 1] = '\0';
-
-  if (strcmp(cmd, "quit") == 0)
-    sim->done = 1;
-  else if (strcmp(cmd, "halt") == 0)
-    sim->runMode = SIM_STOPPED;
-  else if (strcmp(cmd, "step") == 0)
-    simulate_one_timestep(sim);
-  else if (strcmp(cmd, "run") == 0)
-    sim->runMode = SIM_RUNNING;
-}
-
-/* SIMULATE ONE TIME STEP */
-#include <unistd.h>
-void simulate_one_timestep(simulation_data *sim)
-{
-  ++sim->cycle;
-  sim->time += 0.0134;
-  printf("Simulating time step: cycle=%d, time=%lg\n", sim->cycle, sim->time);
-  sleep(1);
 }
 
 /******************************************************************************
@@ -172,21 +202,17 @@ void simulate_one_timestep(simulation_data *sim)
 
 void mainloop(void)
 {
-  int blocking, visitstate, err = 0;
+  int visitstate, err = 0;
 
-  /* Set up some simulation data. */
   simulation_data sim;
 
-  simulation_data_ctor(&sim);
-
   /* main loop */
-  fprintf(stderr, "command> ");
-  fflush(stderr);
   do
   {
-    blocking = (sim.runMode == SIM_RUNNING) ? 0 : 1;
     /* Get input from VisIt or timeout so the simulation can run. */
-    visitstate = VisItDetectInput(blocking, fileno(stdin));
+    /*visitstate = VisItDetectInput(1, fileno(stdin)); // blocking*/
+    usleep(100000);
+    visitstate = VisItDetectInput(0, fileno(stdin)); // nonblocking
 
     /* Do different things depending on the output from VisItDetectInput. */
     if (visitstate >= -5 && visitstate <= -1)
@@ -196,8 +222,7 @@ void mainloop(void)
     }
     else if (visitstate == 0)
     {
-      /* There was no input from VisIt, return control to sim. */
-      simulate_one_timestep(&sim);
+      /* There was no input from VisIt, do nothing. */
     }
     else if (visitstate == 1)
     {
@@ -222,8 +247,6 @@ void mainloop(void)
       {
         /* Disconnect on an error or closed connection. */
         VisItDisconnect();
-        /* Start running again if VisIt closes. */
-        sim.runMode = SIM_RUNNING;
       }
     }
     else if (visitstate == 3)
@@ -232,15 +255,13 @@ void mainloop(void)
        * NOTE: you can't get here unless you pass a file descriptor to
        * VisItDetectInput instead of -1.
        */
-      ProcessConsoleCommand(&sim);
-      fprintf(stderr, "command> ");
-      fflush(stderr);
     }
   }
-  while (!sim.done && err == 0);
+  while (err == 0);
 
-  /* Clean up */
-  simulation_data_dtor(&sim);
+  if (snapshot != NULL) {
+    free(snapshot);
+  }
 }
 
 /******************************************************************************
@@ -260,20 +281,49 @@ void mainloop(void)
 
 int main(int argc, char **argv)
 {
+  D("Startup VisIt Connector");
+
+#ifdef __DEBUG
+  VisItOpenTraceFile("visitconnector.trace");
+#endif
+
   /* Initialize environment variables. */
   VisItSetupEnvironment();
 
   /* Write out .sim2 file that VisIt uses to connect. */
   VisItInitializeSocketAndDumpSimFile("scalar",
                                       "Demonstrates scalar data access function",
-                                      "/path/to/where/sim/was/started",
+                                      ".",  // Path to where sim was started...
                                       NULL, NULL, NULL);
 
-  /* Read input problem setup, geometry, data. */
-  read_input_deck();
+
+  /***********************
+   * init FlowVR Module
+   */
+  flowvr = fca_new_empty_module();
+  portPressureIn = fca_new_port("pressureIn", fca_IN, 0, NULL);
+  fca_append_port(flowvr, portPressureIn);
+
+  portTriggerSnap = fca_new_port("triggerSnap", fca_OUT, 0, NULL);
+  fca_append_port(flowvr, portTriggerSnap);
+
+  stampTime = fca_register_stamp(portPressureIn, "stampTime", fca_FLOAT); // TODO good idea to use float? or should we put the double in the messages payload??
+// TODO: does it work without stampFileName?
+  if (!fca_init_module(flowvr))
+  {
+    printf("ERROR : fca_init_module failed!\n");
+  }
 
   /* Call the main loop. */
   mainloop();
+
+  fca_free(flowvr);
+  if (inited) {
+    free(mesh_x);
+    free(mesh_y);
+    free(mesh_z);
+    free(snapshot);
+  }
 
   return 0;
 }
@@ -294,6 +344,8 @@ int main(int argc, char **argv)
 visit_handle
 SimGetMetaData(void *cbdata)
 {
+  D("SimGetMetaData");
+  wait_for_init();
   visit_handle md = VISIT_INVALID_HANDLE;
   simulation_data *sim = (simulation_data*)cbdata;
 
@@ -301,7 +353,8 @@ SimGetMetaData(void *cbdata)
   if (VisIt_SimulationMetaData_alloc(&md) == VISIT_OKAY)
   {
     int i;
-    visit_handle m1 = VISIT_INVALID_HANDLE, m2 = VISIT_INVALID_HANDLE;
+    visit_handle m1 = VISIT_INVALID_HANDLE, m2 = VISIT_INVALID_HANDLE,
+                 m3 = VISIT_INVALID_HANDLE;
     visit_handle vmd = VISIT_INVALID_HANDLE;
     visit_handle cmd = VISIT_INVALID_HANDLE;
 
@@ -344,6 +397,23 @@ SimGetMetaData(void *cbdata)
       VisIt_SimulationMetaData_addMesh(md, m2);
     }
 
+
+    char meshname3[100];
+    sprintf(meshname3, "mesh%dx%dx%d", nX, nY, nZ);
+    if (VisIt_MeshMetaData_alloc(&m3) == VISIT_OKAY)
+    {
+      /* Set the mesh's properties.*/
+      VisIt_MeshMetaData_setName(m3, meshname3);
+      VisIt_MeshMetaData_setMeshType(m3, VISIT_MESHTYPE_RECTILINEAR);
+      VisIt_MeshMetaData_setTopologicalDimension(m3, 3);
+      VisIt_MeshMetaData_setSpatialDimension(m3, 3);
+      VisIt_MeshMetaData_setXLabel(m3, "x");
+      VisIt_MeshMetaData_setYLabel(m3, "y");
+      VisIt_MeshMetaData_setZLabel(m3, "z");
+
+      VisIt_SimulationMetaData_addMesh(md, m3);
+    }
+
     /* Add a zonal scalar variable on mesh2d. */
     if (VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
     {
@@ -360,6 +430,18 @@ SimGetMetaData(void *cbdata)
     {
       VisIt_VariableMetaData_setName(vmd, "nodal");
       VisIt_VariableMetaData_setMeshName(vmd, "mesh3d");
+      VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_SCALAR);
+      VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_NODE);
+
+      VisIt_SimulationMetaData_addVariable(md, vmd);
+    }
+
+    /* Add a nodal scalar variable without mesh */
+    if (VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
+    {
+      VisIt_VariableMetaData_setName(vmd, "pressure");
+      VisIt_VariableMetaData_setMeshName(vmd, meshname3);
+
       VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_SCALAR);
       VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_NODE);
 
@@ -388,6 +470,15 @@ float rmesh_y[] = { 0., 2., 2.25, 2.55, 5. };
 int rmesh_dims[] = { 4, 5, 1 };
 int rmesh_ndims = 2;
 float zonal[] = { 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11., 12. };
+
+/*float rmesh_x[] = { 0., 1., 2., 3., 4., 5., 6., 7., 8., 9. };*/
+/*float rmesh_y[] = { 0., 1., 2., 3., 4., 5., 6., 7., 8., 9. };*/
+
+
+/*int rmesh_dims[] = { 10, 10, 1 };*/
+/*int rmesh_ndims = 2;*/
+
+/*float zonal[] = { 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11., 12. };*/
 float zonal_vector[][2] = {
   { 1., 2. }, { 3., 4. }, { 5., 6. }, { 7., 8. }, { 9., 10. }, { 11., 12. },
   { 13., 14. }, { 15., 16. }, { 17., 18. }, { 19., 20. }, { 21., 22. }, { 23., 24. }
@@ -437,6 +528,8 @@ double nodal_vector[2][3][4][3] = {
 visit_handle
 SimGetMesh(int domain, const char *name, void *cbdata)
 {
+  D("SimGetMesh");
+  wait_for_init();
   visit_handle h = VISIT_INVALID_HANDLE;
 
   if (strcmp(name, "mesh2d") == 0)
@@ -467,6 +560,22 @@ SimGetMesh(int domain, const char *name, void *cbdata)
       VisIt_CurvilinearMesh_setCoordsXYZ(h, cmesh_dims, hxc, hyc, hzc);
     }
   }
+  else
+  {
+    // nX, nY, nZ mesh...
+    if (VisIt_RectilinearMesh_alloc(&h) != VISIT_ERROR)
+    {
+      visit_handle hxc, hyc, hzc;
+      VisIt_VariableData_alloc(&hxc);
+      VisIt_VariableData_alloc(&hyc);
+      VisIt_VariableData_alloc(&hzc);
+      VisIt_VariableData_setDataF(hxc, VISIT_OWNER_SIM, 1, nX, mesh_x);
+      VisIt_VariableData_setDataF(hyc, VISIT_OWNER_SIM, 1, nY, mesh_y);
+      VisIt_VariableData_setDataF(hzc, VISIT_OWNER_SIM, 1, nZ, mesh_z);
+      D("%dx%dx%d", nX, nY, nZ);
+      VisIt_RectilinearMesh_setCoordsXYZ(h, hxc, hyc, hzc);
+    }
+  }
 
   return h;
 }
@@ -485,6 +594,8 @@ SimGetMesh(int domain, const char *name, void *cbdata)
 visit_handle
 SimGetVariable(int domain, const char *name, void *cbdata)
 {
+  D("SimGetVariable");
+  wait_for_init();
   visit_handle h = VISIT_INVALID_HANDLE;
   int nComponents = 1, nTuples = 0;
 
@@ -502,6 +613,12 @@ SimGetVariable(int domain, const char *name, void *cbdata)
                 cmesh_dims[2];
       VisIt_VariableData_setDataD(h, VISIT_OWNER_SIM, nComponents,
                                   nTuples, (double*)nodal);
+    }
+    else if (strcmp(name, "pressure") == 0)
+    {
+      nTuples = nX * nY * nZ;
+      VisIt_VariableData_setDataD(h, VISIT_OWNER_SIM, nComponents,
+                                  nTuples, snapshot);
     }
   }
   return h;

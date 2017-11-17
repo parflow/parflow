@@ -1075,18 +1075,21 @@ SetupRichards(PFModule * this_module)
 
 #ifdef HAVE_FLOWVR
     // TODO FIXME: allowed to send message before first wait?
-    // or should we wait a bit here? -- does not work...
+    // or should we wait a bit here? -- does not work... s. eTODO
 //      if (!FlowVR_wait()) PARFLOW_ERROR("FlowVR was aborted!");
     char filename[1024];     // low: reuse other string variable here?
     int userSpecSteps = GetInt("NetCDF.NumStepsPerFile");
 
     sprintf(filename, "%s.%05d.nc", file_prefix, instance_xtra->file_number / userSpecSteps);
-    DumpRichardsToFlowVR(
+
+    SimulationSnapshot sshot = {
                          filename,
                          t,
                          instance_xtra->pressure,
                          NULL,
-                         instance_xtra->saturation);
+                         instance_xtra->saturation
+    };
+    DumpRichardsToFlowVR(&sshot);
 #endif
 
     /*-----------------------------------------------------------------
@@ -2764,6 +2767,21 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                   dt, instance_xtra->overland_sum);
     }
 
+#ifdef HAVE_FLOWVR
+    SimulationSnapshot sshot;
+    if (FLOWVR_ACTIVE)
+    {
+      sshot = (SimulationSnapshot){
+        NULL,
+        t,
+        instance_xtra->pressure,
+        NULL,
+        instance_xtra->saturation
+      };
+      FlowVRSendSnapshot(&sshot);
+    }
+#endif
+
     /***************************************************************/
     /*                 Print the pressure and saturation           */
     /***************************************************************/
@@ -2779,13 +2797,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
      int userSpecSteps = GetInt("NetCDF.NumStepsPerFile");
      D("steps per file: %d, filenumber: %d", userSpecSteps, instance_xtra->file_number);
 
-     sprintf(filename, "%s.%05d.nc", file_prefix, instance_xtra->file_number / userSpecSteps);
-     DumpRichardsToFlowVR(
-         filename,
-         t,
-         instance_xtra->pressure,
-         porosity,
-         instance_xtra->saturation);
+     sprintf(filename, "%s.%05d.nc", file_prefix, 1+(instance_xtra->file_number - 1) / userSpecSteps);
+     sshot.filename = filename;
+     DumpRichardsToFlowVR(&sshot);
      any_file_dumped = 1;
 #endif
 
@@ -3548,8 +3562,19 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   }                             /* ends do for time loop */
   while (take_more_time_steps);
 #ifdef HAVE_FLOWVR
+
+  SimulationSnapshot sshot;
+  sshot = (SimulationSnapshot){
+    NULL,
+      t,
+      instance_xtra->pressure,
+      NULL,
+      instance_xtra->saturation
+  };
   if (FLOWVR_ACTIVE)
   {
+    FlowVRServeFinalState(&sshot);
+
     D("Aborting now!");
     fca_abort(moduleParflow);
     break;
