@@ -59,20 +59,22 @@ void triggerSnap(SimulationData *sim)  // TODO: execute reload here in visit aut
 
   // TODO: might happen that we are getting different timesteps?!! I think so as sometimes one mpi process is behind and one is before the wait for the event module...
   fca_message msgIn = fca_get(portPressureIn);
-  double lastTime = (double)*((float*)fca_read_stamp(msgIn, stampTime));
+  sim->time = (double)*((float*)fca_read_stamp(msgIn, stampTime));
   const void* buffer = fca_get_read_access(msgIn, 0);
   void* end = buffer + fca_get_segment_size(msgIn, 0);
-
   GridMessageMetadata* m = (GridMessageMetadata*)buffer;
+
+  if (!sim->inited || sim->nX*sim->nY*sim->nZ != m->nX*m->nY*m->nZ)
+  {
+    if (sim->inited) free(sim->snapshot);
+    sim->snapshot = (double*)malloc(sizeof(double)*m->nX*m->nY*m->nZ);
+  }
+
   sim->nX = m->nX;
   sim->nY = m->nY;
   sim->nZ = m->nZ;
 
-  if (sim->inited) {
-    free(sim->snapshot);
-  }
 
-  sim->snapshot = (double*)malloc(sizeof(double)*m->nX*m->nY*m->nZ);
 
   // populate snapshot:
   while (buffer < end)
@@ -129,6 +131,15 @@ void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
   if (strcmp(cmd, "trigger snap") == 0) {
     D("trigger snap command");
     triggerSnap(sim);
+
+#ifdef __DEBUG
+    // generate some random data to see the change for now...
+    for(size_t i=0; i < sim->nX*sim->nY*sim->nZ; ++i)
+      sim->snapshot[i] = (rand()*10./RAND_MAX) - 5.;
+#endif
+
+    // Redraw!
+    VisItUpdatePlots();
   }
 }
 
@@ -138,6 +149,7 @@ void mainloop(void)
 
   SimulationData sim;
   sim.inited = 0;
+  sim.cycle = 0;
   // TODO: populatesimulationdatafunction?
 
   /* main loop */
