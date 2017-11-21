@@ -25,7 +25,7 @@ j=tile(t)%row
      if(clm(t)%planar_mask == 1) then
       clm(t)%pf_vol_liq(k) = saturation(l) * clm(t)%watsat(k)
       clm(t)%pf_press(k)   = pressure(l) * 1000.d0
-      clm(t)%h2osoi_liq(k) = clm(t)%pf_vol_liq(k)*clm(t)%dz(1)*denh2o
+      clm(t)%h2osoi_liq(k) = clm(t)%pf_vol_liq(k)*clm(t)%dz(k)*denh2o  !  @RMM fixed dz
       endif
   end do !k
   

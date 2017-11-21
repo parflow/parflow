@@ -430,7 +430,7 @@ subroutine clm_thermal (clm)
 !           temp = ((-150000.0d0 - clm%pf_press(i))/(-150000.0d0) )
 !@RMM
 ! added beta-type formulation depending on soil moisture, the lower value is hard-wired
-! to 0.1, this should either be set to the residual saturation for that layer
+! to 0.01, this should either be set to the residual saturation for that layer
 ! or made a user input via PF
 ! a root zone average is taken here
            select case (clm%vegwaterstresstype)
@@ -445,19 +445,24 @@ subroutine clm_thermal (clm)
            if (temp < 0.) temp = 0.
            if (temp > 1.) temp = 1.
            temp_rz = temp ** clm%vw
+           clm%soil_resistance(i) = temp_rz    !! @RMM, we store each soil resistnace factor over the soil layers
         else
            temp2 = 0.01d0
         endif
 !       temp_rz = temp_rz / float(nlevsoi)
-        clm%btran = clm%btran + clm%rootfr(i)*temp_rz
+        !!@RMM, T is still based upon the total soil resistance but the option is provided to limit layer-by-layer T over the RZ
+        clm%btran = clm%btran + clm%rootfr(i)*clm%soil_resistance(i)
      enddo
 
 !@RMM
-! added a transpiration cutoff depending on soil moisture, the value is hard-wired
-! to 0.1, this should either be set to the residual saturation for that layer
-! or made a user input via PF
+! transpiration cutoff depending on soil moisture, the default is only the top soil layer
+! if this is distributed (rzwaterstress=1) then clm%soil_resistance(i) set above is used to limit
+!  T in each soil layer individually
+! option set from a user input via PF
+     if (clm%rzwaterstress == 0) then
      if ( (clm%vegwaterstresstype == 1).and.(clm%pf_press(1)<=(clm%wilting_point*1000.d0)) ) clm%btran = 0.0d0
      if ( (clm%vegwaterstresstype == 2).and.(clm%pf_vol_liq(1)<=clm%wilting_point*clm%watsat(1)) ) clm%btran = 0.0d0
+     end if
 
      call clm_leaftem(z0mv,z0hv,z0qv,thm,th,thv,tg,qg,dqgdT,htvp,sfacx,     &
           dqgmax,emv,emg,dlrad,ulrad,cgrnds,cgrndl,cgrnd,temp_alpha,clm)

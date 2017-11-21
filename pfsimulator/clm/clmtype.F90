@@ -97,6 +97,8 @@ module clmtype
       real(r8) :: tkdry (nlevsoi) ! thermal conductivity, dry soil       (W/m/Kelvin)
       real(r8) :: tksatu(nlevsoi) ! thermal conductivity, saturated soil [W/m-K]  
       real(r8) :: rootfr(nlevsoi) ! fraction of roots in each soil layer
+      real(r8) :: soil_resistance(nlevsoi) ! soil resistance factor for each soil layer  @RMM
+
 
 ! Forcing
 
@@ -233,6 +235,8 @@ module clmtype
      real(r8) :: wilting_point  ! wilting point from PF in m or [-] depending @RMM
      real(r8) :: field_capacity ! field capacity from PF in m or [-] depending @RMM
      integer  :: vegwaterstresstype ! water stress formution type from PF @RMM
+     integer  :: rzwaterstress  ! water stress averaged over RZ (default=0) or variable @RMM
+
      integer  :: beta_type      ! evap/beta formution type from PF @RMM
      real(r8) :: res_sat        ! residual saturation from PF [-] for use in beta @RMM
 
