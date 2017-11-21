@@ -3,6 +3,8 @@ import sys
 from flowvrapp import *
 from filters import *
 
+
+#  TODO: Module in module file auslagern!
 class Parflow(Component):
     def __init__(self, prefix, index, run, host):
         Component.__init__(self)

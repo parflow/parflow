@@ -32,18 +32,7 @@
 #include "parflow.h"
 
 
-
-#define GetSimulationSnapshot \
-(SimulationSnapshot){ \
-  filename, \
-  t, \
-  instance_xtra->pressure, \
-  NULL, \
-  instance_xtra->saturation, \
-}
-
 extern int FLOWVR_ACTIVE;
-extern int FLOWVR_EVENT_ACTIVE;
 
 void NewFlowVR(void);
 
@@ -51,21 +40,11 @@ void NewFlowVR(void);
 
 #include <fca/fca.h>
 
-
 #ifdef __DEBUG  //TODO: add filename and line number
 #define D(x ...) printf("=======%d:", amps_Rank(amps_CommWorld)); printf(x); printf("\n") //printf(" %s:%d\n",  __FILE__, __LINE__)
 #else
 #define D(...)
 #endif
-
-
-
-extern fca_module moduleParflow;
-
-// PFModule that is used here: solver_richards.
-// TODO: documentation
-
-int FlowVR_wait();
 
 typedef struct {
   char * filename;
@@ -74,6 +53,25 @@ typedef struct {
   Vector * porosity_out;
   Vector * saturation_out;
 } SimulationSnapshot;
+
+#define GetSimulationSnapshot \
+  (SimulationSnapshot){ \
+    filename, \
+    t, \
+    instance_xtra->pressure, \
+    NULL, \
+    instance_xtra->saturation, \
+  }
+
+extern int FLOWVR_EVENT_ACTIVE;
+
+extern fca_module moduleParflow;
+
+// PFModule that is used here: solver_richards.
+// TODO: documentation
+
+int FlowVR_wait();
+
 
 void DumpRichardsToFlowVR(SimulationSnapshot const * const snapshot);
 void FlowVRSendSnapshot(SimulationSnapshot const * const snapshot);

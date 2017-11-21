@@ -47,9 +47,10 @@ static fca_stamp stampTime;
 static fca_port portPressureIn;
 static fca_port portTriggerSnap;
 
-void triggerSnap(SimulationData *sim)  // TODO: execute reload here in visit automatically
+void triggerSnap(SimulationData *sim)
 {
   fca_message msgOut = fca_new_message(flowvr, 1);
+
   // TODO: really the only way to transmit messages of size !=0 that are nonblocking?
   fca_put(portTriggerSnap, msgOut);
   fca_free(msgOut);
@@ -64,10 +65,11 @@ void triggerSnap(SimulationData *sim)  // TODO: execute reload here in visit aut
   void* end = buffer + fca_get_segment_size(msgIn, 0);
   GridMessageMetadata* m = (GridMessageMetadata*)buffer;
 
-  if (!sim->inited || sim->nX*sim->nY*sim->nZ != m->nX*m->nY*m->nZ)
+  if (!sim->inited || sim->nX * sim->nY * sim->nZ != m->nX * m->nY * m->nZ)
   {
-    if (sim->inited) free(sim->snapshot);
-    sim->snapshot = (double*)malloc(sizeof(double)*m->nX*m->nY*m->nZ);
+    if (sim->inited)
+      free(sim->snapshot);
+    sim->snapshot = (double*)malloc(sizeof(double) * m->nX * m->nY * m->nZ);
   }
 
   sim->nX = m->nX;
@@ -81,13 +83,13 @@ void triggerSnap(SimulationData *sim)  // TODO: execute reload here in visit aut
   {
     buffer += sizeof(GridMessageMetadata);
     const double * data = (double*)buffer;
-    for (int z = 0; z < m->nz; ++z) {  // TODO: unroll?
-      for (int y = 0; y < m->ny; ++y) {
-        for (int x = 0; x < m->nx; ++x) {
-          int snapindex = x+m->ix + (y+m->iy) * sim->nX + (z+m->iz) * sim->nX * sim->nY;
-          sim->snapshot[snapindex] = *data;
-          ++data;
-        }
+    for (int z = 0; z < m->nz; ++z)
+    {
+      for (int y = 0; y < m->ny; ++y)
+      {
+        int snapindex = m->ix + (y + m->iy) * sim->nX + (z + m->iz) * sim->nX * sim->nY;
+        memcpy(sim->snapshot + snapindex, data, m->nx * sizeof(double));
+        data += m->nx;
       }
     }
 
@@ -110,14 +112,17 @@ void wait_for_init(SimulationData *sim)
     triggerSnap(sim);
 
     // populate mesh:
-    sim->mesh_x = (float*) malloc(sim->nX*sizeof(float));
-    sim->mesh_y = (float*) malloc(sim->nY*sizeof(float));
-    sim->mesh_z = (float*) malloc(sim->nZ*sizeof(float));
-    for (size_t i=0; i<sim->nX || i<sim->nY || i<sim->nZ; ++i)
+    sim->mesh_x = (float*)malloc(sim->nX * sizeof(float));
+    sim->mesh_y = (float*)malloc(sim->nY * sizeof(float));
+    sim->mesh_z = (float*)malloc(sim->nZ * sizeof(float));
+    for (size_t i = 0; i < sim->nX || i < sim->nY || i < sim->nZ; ++i)
     {
-      if (i<sim->nX) sim->mesh_x[i] = (float)i;
-      if (i<sim->nY) sim->mesh_y[i] = (float)i;
-      if (i<sim->nZ) sim->mesh_z[i] = (float)i;
+      if (i < sim->nX)
+        sim->mesh_x[i] = (float)i;
+      if (i < sim->nY)
+        sim->mesh_y[i] = (float)i;
+      if (i < sim->nZ)
+        sim->mesh_z[i] = (float)i;
     }
 
     sim->inited = 1;
@@ -128,14 +133,15 @@ void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
 {
   D("Executing %s", cmd);
   SimulationData *sim = (SimulationData*)cbdata;
-  if (strcmp(cmd, "trigger snap") == 0) {
+  if (strcmp(cmd, "trigger snap") == 0)
+  {
     D("trigger snap command");
     triggerSnap(sim);
 
 #ifdef __DEBUG
     // generate some random data to see the change for now...
-    for(size_t i=0; i < sim->nX*sim->nY*sim->nZ; ++i)
-      sim->snapshot[i] = (rand()*10./RAND_MAX) - 5.;
+    for (size_t i = 0; i < sim->nX * sim->nY * sim->nZ; ++i)
+      sim->snapshot[i] = (rand() * 10. / RAND_MAX) - 5.;
 #endif
 
     // Redraw!
@@ -148,9 +154,9 @@ void mainloop(void)
   int visitstate, err = 0;
 
   SimulationData sim;
+
   sim.inited = 0;
   sim.cycle = 0;
-  // TODO: populatesimulationdatafunction?
 
   /* main loop */
   do
@@ -204,7 +210,8 @@ void mainloop(void)
   }
   while (err == 0);
 
-  if (sim.inited) {
+  if (sim.inited)
+  {
     free(sim.snapshot);
     free(sim.mesh_x);
     free(sim.mesh_y);
@@ -273,7 +280,7 @@ SimGetMetaData(void *cbdata)
 
     /* Set the simulation state. */
     /*VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?*/
-                                     /*VISIT_SIMMODE_STOPPED : VISIT_SIMMODE_RUNNING);*/
+    /*VISIT_SIMMODE_STOPPED : VISIT_SIMMODE_RUNNING);*/
     VisIt_SimulationMetaData_setCycleTime(md, sim->cycle, sim->time);
 
     char meshname[100];
@@ -325,10 +332,10 @@ visit_handle
 SimGetMesh(int domain, const char *name, void *cbdata)
 {
   D("SimGetMesh");
-  wait_for_init((SimulationData *) cbdata);
+  wait_for_init((SimulationData*)cbdata);
   visit_handle h = VISIT_INVALID_HANDLE;
 
-  SimulationData const * const sim = (SimulationData*) cbdata;
+  SimulationData const * const sim = (SimulationData*)cbdata;
   // nX, nY, nZ mesh...
   if (VisIt_RectilinearMesh_alloc(&h) != VISIT_ERROR)
   {
@@ -348,7 +355,8 @@ SimGetMesh(int domain, const char *name, void *cbdata)
 visit_handle
 SimGetVariable(int domain, const char *name, void *cbdata)
 {
-  SimulationData const * const sim = (SimulationData*) cbdata;
+  SimulationData const * const sim = (SimulationData*)cbdata;
+
   D("SimGetVariable");
   wait_for_init(sim);
   visit_handle h = VISIT_INVALID_HANDLE;

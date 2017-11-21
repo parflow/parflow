@@ -111,8 +111,6 @@ void NewFlowVR(void)
     fca_port port = fca_new_port(outportnamelist[i], fca_OUT, 0, NULL);
     fca_register_stamp(port, "stampTime", fca_FLOAT);
     fca_register_stamp(port, "stampFileName", fca_STRING);
-    /*fca_register_stamp(port, "stampMetadata", fca_BINARY, sizeof(GridMessageMetadata));*/
-    //    fca_register_stamp(port, "N", fca_INT);  // always 1 to count in merge ;)
 
     fca_append_port(moduleParflow, port);
   }
@@ -175,7 +173,8 @@ int FlowVR_wait()
   if (FLOWVR_ACTIVE)
   {
     D("now waiting");
-    if (FLOWVR_EVENT_ACTIVE) fca_wait(moduleParflowEvent);
+    if (FLOWVR_EVENT_ACTIVE)
+      fca_wait(moduleParflowEvent);
     return fca_wait(moduleParflow);
   }
   else
@@ -247,7 +246,7 @@ typedef struct {
   Vector const * const data;
 } PortNameData;
 
-void CreateAndSendMessage (SimulationSnapshot const * const snapshot, const PortNameData portnamedatas[], size_t n_portnamedata)
+void CreateAndSendMessage(SimulationSnapshot const * const snapshot, const PortNameData portnamedatas[], size_t n_portnamedata)
 {
   for (unsigned int i = 0; i < n_portnamedata; ++i)
   {
@@ -264,28 +263,29 @@ void CreateAndSendMessage (SimulationSnapshot const * const snapshot, const Port
     vectorToMessage(portnamedatas[i].data, &msg, &port);
 
 
+    // Create Stamps...
     const fca_stamp stampTime = fca_get_stamp(port, "stampTime");
     fca_write_stamp(msg, stampTime, (void*)&snapshot->time);
-    D("writing float: %f\n", snapshot->time);
+
     fca_stamp stampFileName;
-    if (snapshot->filename != NULL) {
+    if (snapshot->filename != NULL)
+    {
       stampFileName = fca_get_stamp(port, "stampFileName");
       fca_write_stamp(msg, stampFileName, (void*)snapshot->filename);
     }
 
 
-    // finally send message!
+    // Finally send message!
     if (!fca_put(port, msg))
     {
       PARFLOW_ERROR("Could not send FlowVR-Message!");
     }
     fca_free(msg);
     D("put message!%.8f\n", snapshot->time);
-
   }
 }
 
-// REM: We are better than the nodelevel netcdf feature because during file write the other nodes are already calculating ;)
+// REM: we are better than the nodelevel netcdf feature because during file write the other nodes are already calculating ;)
 // REM: structure of nodelevel netcdf: one process per node gathers everything that has to be written and does the filesystem i/o
 void DumpRichardsToFlowVR(SimulationSnapshot const * const snapshot)
 {
@@ -307,16 +307,15 @@ void FlowVRSendSnapshot(SimulationSnapshot const * const snapshot)
   if (!FLOWVR_ACTIVE || !FLOWVR_EVENT_ACTIVE)
     return;
 
-
-  /*fca_wait(moduleParflowEvents);*/
   // TODO: do we have to call fca_wait before we can receive the next nonblocking message?
-                // TODO: wenn wait noetig: brauchen nen extra modul! weils sonst ja immer blockt :(
-  /*D("Checking for a trigger");*/
-  if (!fca_wait(moduleParflowEvent)) return;  // something bad happened... TODO: debug the case...
+  // TODO: wenn wait noetig: brauchen nen extra modul! weils sonst ja immer blockt :(
+  if (!fca_wait(moduleParflowEvent))
+    return;                                   // something bad happened... TODO: debug the case...
   fca_message msg = fca_get(triggerSnapPort);
   size_t s = fca_get_segment_size(msg, 0);
   fca_free(msg);
-  if (s == 0) return;
+  if (s == 0)
+    return;
   D("Got a trigger!");
 
   // send snapshot!
@@ -337,16 +336,17 @@ void FlowVRServeFinalState(SimulationSnapshot const * const snapshot)
 
 
   int serve_final_state = NA_NameToIndex(switch_na, switch_name);
+
   if (serve_final_state < 0)
   {
     InputError("Error: invalid print switch value <%s> for key <%s>\n",
-        switch_name, "FlowVR.ServeFinalState");
+               switch_name, "FlowVR.ServeFinalState");
     serve_final_state = 0;
   }
 
   if (serve_final_state)
   {
-    while(true)
+    while (1)
     {
       FlowVRSendSnapshot(snapshot);
       usleep(100000);

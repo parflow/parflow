@@ -59,7 +59,7 @@ int CreateFile(const char* file_name, size_t nX, size_t nY, size_t nZ, int *pxID
   getDim(ncID, "x", nX, pxID);
   getDim(ncID, "y", nY, pyID);
   getDim(ncID, "z", nZ, pzID);
-  getDim(ncID, "time", NC_UNLIMITED, ptimeID);  // unlimited dim should be first?! TODO?
+  getDim(ncID, "time", NC_UNLIMITED, ptimeID);
 
 
   return ncID;
@@ -69,6 +69,7 @@ int main(int argc, char *argv [])
 {
   printf("starting netcdf-writer\n");
   MPI_Init(&argc, &argv);
+  // TODO: probably we will need to call flowvr fca_init_parallel here too ;)
 
 
   /***********************
@@ -104,7 +105,6 @@ int main(int argc, char *argv [])
     int pressureVarID;
     int timeVarID;
 
-    // FIXME: todo  put filename in metadata as otherwise it will be eaten by nto1 .. ne sollt quatsch sein, da nto1 ja immer nur ausloest wenn von allen was da ist ;)
     D("number of segments: %d", fca_number_of_segments(msg));
     D("size: %d", fca_get_segment_size(msg, 0));
     D("writing to %s", file_name);
