@@ -1078,7 +1078,7 @@ SetupRichards(PFModule * this_module)
     // or should we wait a bit here? -- does not work... s. eTODO
 //      if (!FlowVR_wait()) PARFLOW_ERROR("FlowVR was aborted!");
     char filename[1024];     // low: reuse other string variable here?
-    int userSpecSteps = GetInt("NetCDF.NumStepsPerFile");
+    int userSpecSteps = GetIntDefault("NetCDF.NumStepsPerFile", 1);
 
     sprintf(filename, "%s.%05d.nc", file_prefix, instance_xtra->file_number / userSpecSteps);
 
