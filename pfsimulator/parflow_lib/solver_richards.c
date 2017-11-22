@@ -159,8 +159,9 @@ typedef struct
    int                clm_reuse_count;  /* NBE: Number of times to use each CLM input */
    int                clm_write_logs;   /* NBE: Write the processor logs for CLM or not */
    int                clm_last_rst;     /* NBE: Only write/overwrite one rst file or write a lot of them */
-   int                clm_daily_rst;    /* NBE: Write daily RST files or hourly */
-#endif
+    int                clm_daily_rst;    /* NBE: Write daily RST files or hourly */
+   int               clm_water_stress_type;    /* @RMM: switch for different RZ distribution after Ferguson et al EES 2016 */
+  #endif
 
    int                print_lsm_sink;     /* print LSM sink term? */
    int                write_silo_CLM;     /* write CLM output as silo? */
@@ -1201,6 +1202,7 @@ void AdvanceRichards(PFModule *this_module,
    int           clm_skip = public_xtra -> clm_reuse_count;       // NBE:defaults to 1
    int           clm_write_logs = public_xtra -> clm_write_logs;  // NBE: defaults to 1, disables log file writing if 0
    int           clm_last_rst = public_xtra -> clm_last_rst;      // Reuse of the RST file
+   int           clm_water_stress_type = public_xtra -> clm_water_stress_type;      // Water stress RZ
    int           clm_daily_rst = public_xtra -> clm_daily_rst;    // Daily or hourly RST files, defaults to daily
     
    int           fstep = INT_MIN;
@@ -1866,7 +1868,7 @@ void AdvanceRichards(PFModule *this_module,
                                public_xtra -> clm_irr_threshold,
                                qirr, qirr_inst, iflag, 
                                public_xtra -> clm_irr_thresholdtype,
-                               soi_z,clm_next,clm_write_logs,clm_last_rst,clm_daily_rst);
+                               soi_z,clm_next,clm_write_logs,clm_last_rst,clm_daily_rst,clm_water_stress_type);
 
 		  break;		  
 	       }
@@ -3762,6 +3764,10 @@ PFModule   *SolverRichardsNewPublicXtra(char *name)
   }
   public_xtra -> clm_last_rst = switch_value;
 
+    /* @RMM - CLM water tress dist over RZ*/
+    sprintf(key, "%s.CLM.RZWaterStress", name);
+    public_xtra -> clm_water_stress_type = GetIntDefault(key, 0);
+    
   /* NBE - Option to write daily or hourly outputs from CLM */
   sprintf(key, "%s.CLM.DailyRST", name);
   switch_name = GetStringDefault(key, "True");
