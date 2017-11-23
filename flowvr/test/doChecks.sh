@@ -1,7 +1,7 @@
 #!/bin/bash -x
 
 
-./scripts/cleanup.sh
+../scripts/cleanup.sh
 
 killall flowvrd
 flowvr-kill
@@ -43,9 +43,9 @@ tclsh ./scripts/_tests_noflowvr.tcl
 # and compare the results!
 echo Compare results. Diffs in Time are ok up to now as we transmit timestamps as floats atm. So we loose some prec. Diffs in the other variables are not ok..
 
-./scripts/compare_nc.py ./default_richards.out.00000.nc results/default_richards.out.00000.nc
-./scripts/compare_nc.py ./default_richards.out.00001.nc results/default_richards.out.00001.nc
-./scripts/compare_nc.py ./default_richards.out.00000.nc results_noFlowVR/default_richards.out.00000.nc
-./scripts/compare_nc.py ./default_richards.out.00001.nc results_noFlowVR/default_richards.out.00001.nc
+../scripts/compare_nc.py ./default_richards.out.00000.nc results/default_richards.out.00000.nc
+../scripts/compare_nc.py ./default_richards.out.00001.nc results/default_richards.out.00001.nc
+../scripts/compare_nc.py ./default_richards.out.00000.nc results_noFlowVR/default_richards.out.00000.nc
+../scripts/compare_nc.py ./default_richards.out.00001.nc results_noFlowVR/default_richards.out.00001.nc
 
 echo ------------ END! --------------

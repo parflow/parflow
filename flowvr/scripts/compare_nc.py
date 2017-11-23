@@ -1,4 +1,5 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
+
 import netCDF4 as nc
 import numpy as np
 import sys
