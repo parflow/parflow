@@ -1,8 +1,9 @@
 #include <fca/fca.h>
 #include "parflow_config.h"
-#include "../../pfsimulator/parflow_lib/parflow.h"
-#include "../../pfsimulator/parflow_lib/parflow_netcdf.h"
-#include "../../pfsimulator/parflow_lib/GridMessage.h"
+// TODO: those paths could be changed right?:
+#include <parflow.h>
+#include <parflow_netcdf.h>
+#include <messages.h>
 #include <netcdf_par.h>
 #include <netcdf.h>
 #include <stdio.h>

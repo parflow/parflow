@@ -15,7 +15,6 @@ pfset NetCDF.WritePressure			False
 pfset NetCDF.WritePressure			False
 
 pfset FlowVR                    True
-pfset FlowVR.Event              True
 pfset FlowVR.ServeFinalState    True
 
 #-----------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 ADD_EXECUTABLE(netcdf-writer main.c)
-target_link_libraries(netcdf-writer pfsimulator amps)
+target_link_libraries(netcdf-writer pfcommon pfsimulator amps)
 
 FIND_PACKAGE (netCDF REQUIRED)  # we are really dependent from netcdf!
 FIND_LIBRARY(FCA_LIBRARY fca)

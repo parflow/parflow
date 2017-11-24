@@ -384,6 +384,7 @@ endif ()
 
 set (PARFLOW_ENABLE_FLOWVR_TOOLS True CACHE BOOL "Enable building of the FlowVR tools")
 if ( ${PARFLOW_ENABLE_FLOWVR_TOOLS} )
+  add_subdirectory (pfcommon)
   add_subdirectory (flowvr)
 endif ()
 

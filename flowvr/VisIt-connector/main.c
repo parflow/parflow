@@ -1,6 +1,6 @@
 #include <fca/fca.h>
 #include "parflow_config.h"
-#include "../../pfsimulator/parflow_lib/GridMessage.h"
+#include <messages.h>
 #include <VisItControlInterface_V2.h>
 #include <VisItDataInterface_V2.h>
 #include <stdio.h>
@@ -31,9 +31,9 @@ typedef struct {
   int cycle;
   double time;
   double* snapshot;
-  size_t nX;
-  size_t nY;
-  size_t nZ;
+  int nX;
+  int nY;
+  int nZ;
   float *mesh_x;
   float *mesh_y;
   float *mesh_z;
@@ -47,58 +47,91 @@ static fca_stamp stampTime;
 static fca_port portPressureIn;
 static fca_port portTriggerSnap;
 
-void triggerSnap(SimulationData *sim)
+
+void FreeSim(SimulationData *sim)
 {
-  fca_message msgOut = fca_new_message(flowvr, 1);
+  if (sim->inited)
+  {
+    free(sim->snapshot);
+    free(sim->mesh_x);
+    free(sim->mesh_y);
+    free(sim->mesh_z);
+    //sim.inited = 0;  unused atm
+  }
+}
 
-  // TODO: really the only way to transmit messages of size !=0 that are nonblocking?
-  fca_put(portTriggerSnap, msgOut);
-  fca_free(msgOut);
-  D("waiting...");
-  fca_wait(flowvr);
-  D("got an answer");
+void CreateMesh(SimulationData *sim)
+{
+  sim->mesh_x = (float*)malloc(sim->nX * sizeof(float));
+  sim->mesh_y = (float*)malloc(sim->nY * sizeof(float));
+  sim->mesh_z = (float*)malloc(sim->nZ * sizeof(float));
 
-  // TODO: might happen that we are getting different timesteps?!! I think so as sometimes one mpi process is behind and one is before the wait for the event module...
-  fca_message msgIn = fca_get(portPressureIn);
-  sim->time = (double)*((float*)fca_read_stamp(msgIn, stampTime));
-  const void* buffer = fca_get_read_access(msgIn, 0);
-  void* end = buffer + fca_get_segment_size(msgIn, 0);
+  // populate mesh:
+  for (int i = 0; i < sim->nX || i < sim->nY || i < sim->nZ; ++i)
+  {
+    if (i < sim->nX)
+      sim->mesh_x[i] = (float)i;
+    if (i < sim->nY)
+      sim->mesh_y[i] = (float)i;
+    if (i < sim->nZ)
+      sim->mesh_z[i] = (float)i;
+  }
+}
+
+size_t setSnapshot(const void *buffer, void *cbdata)
+{
   GridMessageMetadata* m = (GridMessageMetadata*)buffer;
+  SimulationData *sim = (SimulationData*)cbdata;
+
+  size_t s = sizeof(double) * m->nX * m->nY * m->nZ;
+
+  sim->time = m->time;
 
   if (!sim->inited || sim->nX * sim->nY * sim->nZ != m->nX * m->nY * m->nZ)
   {
-    if (sim->inited)
-      free(sim->snapshot);
-    sim->snapshot = (double*)malloc(sizeof(double) * m->nX * m->nY * m->nZ);
+    FreeSim(sim);
+
+    sim->snapshot = (double*)malloc(s);
+
+    // recreate mesh
+    CreateMesh(sim);
+
+    sim->inited = 1;
   }
 
   sim->nX = m->nX;
   sim->nY = m->nY;
   sim->nZ = m->nZ;
 
-
-
   // populate snapshot:
-  while (buffer < end)
+  buffer += sizeof(GridMessageMetadata);
+  const double * data = (double*)buffer;
+  for (int z = 0; z < m->nz; ++z)
   {
-    buffer += sizeof(GridMessageMetadata);
-    const double * data = (double*)buffer;
-    for (int z = 0; z < m->nz; ++z)
+    for (int y = 0; y < m->ny; ++y)
     {
-      for (int y = 0; y < m->ny; ++y)
-      {
-        int snapindex = m->ix + (y + m->iy) * sim->nX + (z + m->iz) * sim->nX * sim->nY;
-        memcpy(sim->snapshot + snapindex, data, m->nx * sizeof(double));
-        data += m->nx;
-      }
+      int snapindex = m->ix + (y + m->iy) * sim->nX + (z + m->iz) * sim->nX * sim->nY;
+      memcpy(sim->snapshot + snapindex, data, m->nx * sizeof(double));
+      data += m->nx;
     }
-
-    // get next...
-    buffer += sizeof(double) * m->nx * m->ny * m->nz;
-    m = (GridMessageMetadata*)buffer;
-    D("copied buffers!");
   }
-  fca_free(msgIn);
+
+  D("copied buffers!");
+  return s;
+}
+
+void triggerSnap(SimulationData *sim)
+{
+  // TODO: allow to access more than just pressure
+  SendActionMessage(flowvr, portTriggerSnap, ACTION_TRIGGER_SNAPSHOT,
+                    VARIABLE_PRESSURE, NULL, 0);
+
+  D("waiting...");
+  fca_wait(flowvr);
+  D("got an answer");
+
+  // low: we could play with lambdas here when we were using cpp ;)
+  ParseMergedMessage(portPressureIn, setSnapshot, (void*)sim);
 }
 
 void wait_for_init(SimulationData *sim)
@@ -110,22 +143,6 @@ void wait_for_init(SimulationData *sim)
   else
   {
     triggerSnap(sim);
-
-    // populate mesh:
-    sim->mesh_x = (float*)malloc(sim->nX * sizeof(float));
-    sim->mesh_y = (float*)malloc(sim->nY * sizeof(float));
-    sim->mesh_z = (float*)malloc(sim->nZ * sizeof(float));
-    for (size_t i = 0; i < sim->nX || i < sim->nY || i < sim->nZ; ++i)
-    {
-      if (i < sim->nX)
-        sim->mesh_x[i] = (float)i;
-      if (i < sim->nY)
-        sim->mesh_y[i] = (float)i;
-      if (i < sim->nZ)
-        sim->mesh_z[i] = (float)i;
-    }
-
-    sim->inited = 1;
   }
 }
 
@@ -210,13 +227,7 @@ void mainloop(void)
   }
   while (err == 0);
 
-  if (sim.inited)
-  {
-    free(sim.snapshot);
-    free(sim.mesh_x);
-    free(sim.mesh_y);
-    free(sim.mesh_z);
-  }
+  FreeSim(&sim);
 }
 
 int main(int argc, char **argv)

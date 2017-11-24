@@ -44,7 +44,7 @@ if( ${PARFLOW_HAVE_FLOWVR} )
   INCLUDE(MacroLogFeature)
   FIND_PACKAGE(fca REQUIRED)
   MACRO_LOG_FEATURE(fca_FOUND "FlowVR fca contrib" "fca is needed to run ${CMAKE_PROJECT_NAME} application (compile and install flowvr again making sure to build with the fca lib)" " " TRUE " ")
-  target_link_libraries(parflow ${fca_LIBRARY})
+  target_link_libraries(parflow ${fca_LIBRARY} pfcommon)
 endif( ${PARFLOW_HAVE_FLOWVR} )
 
 if( ${PARFLOW_ENABLE_PROFILING} )
@@ -55,5 +55,5 @@ if ( DEFINED PARFLOW_LINKER_FLAGS)
    set_target_properties(parflow PROPERTIES LINK_FLAGS ${PARFLOW_LINKER_FLAGS})
 endif ( DEFINED PARFLOW_LINKER_FLAGS)
 
-  
+
 install(TARGETS parflow DESTINATION bin)

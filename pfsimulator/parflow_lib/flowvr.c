@@ -1,16 +1,15 @@
 #include "flowvr.h"
-#include "GridMessage.h"
+#include "messages.h"
 #include <fca/fca.h>
 
 #include <string.h>  // for memcpy
 #include <stdlib.h>  // for malloc
 
-FLOWVR_EVENT_ACTIVE = 0;
 FLOWVR_ACTIVE = 0;
 fca_module moduleParflow;
 
 static fca_module moduleParflowEvent;
-static fca_port triggerSnapPort;
+static fca_port portIn;
 
 void fillGridMessageMetadata(Vector const * const v, GridMessageMetadata *m)
 {
@@ -55,15 +54,6 @@ void NewFlowVR(void)
   if (!FLOWVR_ACTIVE)
   {
     return;
-  }
-
-  switch_name = GetStringDefault("FlowVR.Event", "False");
-  FLOWVR_EVENT_ACTIVE = NA_NameToIndex(switch_na, switch_name);
-  if (FLOWVR_ACTIVE < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, "FlowVR.Event");
-    FLOWVR_ACTIVE = 0;
   }
 
 #ifndef HAVE_FLOWVR
@@ -127,38 +117,14 @@ void NewFlowVR(void)
   /*fca_append_trace(modulePut, trace2);*/
 
 
-  // in-port beginPort
-  fca_port beginItPort = fca_new_port("in", fca_IN, 0, NULL);
-  fca_register_stamp(beginItPort, "stampStartTime", fca_FLOAT);
-  fca_register_stamp(beginItPort, "stampStopTime", fca_FLOAT);
-  // TODO ^^good idea to use float? or should we put the double in the messages payload??
-  fca_append_port(moduleParflow, beginItPort);
+  portIn = fca_new_port("in", fca_IN, 0, NULL);
+  fca_append_port(moduleParflow, portIn);
   if (!fca_init_module(moduleParflow))
   {
     PARFLOW_ERROR("ERROR : init_module for moduleParflow failed!\n");
   }
 
-  if (FLOWVR_EVENT_ACTIVE)
-  {
-    moduleParflowEvent = fca_new_empty_module();
-    triggerSnapPort = fca_new_port("triggerSnap", fca_IN, fca_NON_BLOCKING, NULL);
-    fca_append_port(moduleParflowEvent, triggerSnapPort);
-    fca_set_modulename(moduleParflowEvent, "Event");
-    if (!fca_init_module(moduleParflowEvent))
-    {
-      PARFLOW_ERROR("ERROR : init_module for moduleParflowEvent failed!\n");
-    }
-    // show that we are there. this call should be nonblocking as no blocking ports are connected
-    fca_wait(moduleParflowEvent);
-  }
-
   D("flowvr initialisiert.");
-//  char modulename[256];
-//
-//  sprintf(modulename, "parflow/%d", amps_Rank(amps_CommWorld));
-//
-//  fca_set_modulename(moduleParflow, modulename);
-
 
   /*fca_trace testTrace = fca_get_trace(modulePut,"beginTrace");*/
   /*if(testTrace == NULL) printf("ERROR : Test Trace FAIL!!\n"); else printf("Test Trace OK.\n");*/
@@ -167,18 +133,41 @@ void NewFlowVR(void)
 
 #ifdef HAVE_FLOWVR
 
+size_t Interact(const void *buffer, void *cbdata)
+{
+  SimulationSnapshot *snapshot = (SimulationSnapshot*)cbdata;
+  ActionMessageMetadata *amm = (ActionMessageMetadata*)buffer;
+  size_t s = sizeof(ActionMessageMetadata);
 
-int FlowVR_wait()
+  switch (amm->action)
+  {
+    case ACTION_TRIGGER_SNAPSHOT:
+      s = SendSnapshot(snapshot, amm->variable);
+      break;
+
+    default:
+      PARFLOW_ERROR("TODO: Unimplemented");
+      //  TODO: add other actions!
+  }
+
+  return s;
+}
+
+/**
+ * Executes a flowvr wait. Does the requested changes on the simulation state.
+ * Returns 0 if abort was requested.
+ */
+int FlowVRInteract(SimulationSnapshot *snapshot)
 {
   if (FLOWVR_ACTIVE)
   {
     D("now waiting");
-    if (FLOWVR_EVENT_ACTIVE)
-      fca_wait(moduleParflowEvent);
-    return fca_wait(moduleParflow);
+    if (!fca_wait(moduleParflow))
+      return 0;
+    ParseMergedMessage(portIn, Interact, (void*)snapshot);
+    // TODO: read out message on in port. do all actions that are listed there(steerings, trigger snaps...)
   }
-  else
-    return 0;
+  return 1;
 }
 
 void FreeFlowVR()
@@ -186,8 +175,6 @@ void FreeFlowVR()
   if (!FLOWVR_ACTIVE)
     return;
   fca_free(moduleParflow);
-  if (FLOWVR_EVENT_ACTIVE)
-    fca_free(moduleParflowEvent);
 }
 
 void vectorToMessage(Vector* v, fca_message *result, fca_port *port)
@@ -229,7 +216,7 @@ void vectorToMessage(Vector* v, fca_message *result, fca_port *port)
 
 
   double* buffer_double = (double*)buffer;
-
+// TODO: abstract message reader with multiple messages...
   double *data;
   data = SubvectorElt(subvector, m.ix, m.iy, m.iz);
 
@@ -289,35 +276,21 @@ void CreateAndSendMessage(SimulationSnapshot const * const snapshot, const PortN
 // REM: structure of nodelevel netcdf: one process per node gathers everything that has to be written and does the filesystem i/o
 void DumpRichardsToFlowVR(SimulationSnapshot const * const snapshot)
 {
-  if (!FLOWVR_ACTIVE)
-    return;
-
   const PortNameData portnamedatas[] =
   {
     { "pressure", snapshot->pressure_out },
     { "porosity", snapshot->porosity_out },
     { "saturation", snapshot->saturation_out }
   };
+
 #define n_portnamedata_ (sizeof(portnamedatas) / sizeof(const PortNameData))
+  // TODO: only for those that are really connected!
   CreateAndSendMessage(snapshot, portnamedatas, n_portnamedata_);
 }
 
-void FlowVRSendSnapshot(SimulationSnapshot const * const snapshot)
+void SendSnapshot(SimulationSnapshot const * const snapshot, Variable var)
 {
-  if (!FLOWVR_ACTIVE || !FLOWVR_EVENT_ACTIVE)
-    return;
-
-  // TODO: do we have to call fca_wait before we can receive the next nonblocking message?
-  // TODO: wenn wait noetig: brauchen nen extra modul! weils sonst ja immer blockt :(
-  if (!fca_wait(moduleParflowEvent))
-    return;                                   // something bad happened... TODO: debug the case...
-  fca_message msg = fca_get(triggerSnapPort);
-  size_t s = fca_get_segment_size(msg, 0);
-  fca_free(msg);
-  if (s == 0)
-    return;
-  D("Got a trigger!");
-
+  // TODO: extract var from snapshot
   // send snapshot!
   const PortNameData portnamedatas[] =
   {
@@ -325,11 +298,12 @@ void FlowVRSendSnapshot(SimulationSnapshot const * const snapshot)
     /*{ "porosity", porosity_out },*/
     /*{ "saturation", saturation_out }*/
   };
+
 #define n_portnamesnapdata (sizeof(portnamedatas) / sizeof(const PortNameData))
   CreateAndSendMessage(snapshot, portnamedatas, n_portnamesnapdata);
 }
 
-void FlowVRServeFinalState(SimulationSnapshot const * const snapshot)
+void FlowVRServeFinalState(SimulationSnapshot *snapshot)
 {
   NameArray switch_na = NA_NewNameArray("False True");
   char* switch_name = GetStringDefault("FlowVR.ServeFinalState", "False");
@@ -346,11 +320,8 @@ void FlowVRServeFinalState(SimulationSnapshot const * const snapshot)
 
   if (serve_final_state)
   {
-    while (1)
-    {
-      FlowVRSendSnapshot(snapshot);
-      usleep(100000);
-    }
+    while (FlowVRInteract(snapshot))
+      ;
   }
 }
 

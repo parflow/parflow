@@ -30,6 +30,7 @@
 #define _FLOWVR_HEADER
 
 #include "parflow.h"
+#include <messages.h>
 
 
 extern int FLOWVR_ACTIVE;
@@ -63,19 +64,19 @@ typedef struct {
     instance_xtra->saturation, \
   }
 
-extern int FLOWVR_EVENT_ACTIVE;
-
 extern fca_module moduleParflow;
 
 // PFModule that is used here: solver_richards.
-// TODO: documentation
+// TODO: documentation, also in other c files
 
-int FlowVR_wait();
+// do all the in message handlinge
+int FlowVRInteract(SimulationSnapshot *sshot);
 
 
+// needed for writer:
 void DumpRichardsToFlowVR(SimulationSnapshot const * const snapshot);
-void FlowVRSendSnapshot(SimulationSnapshot const * const snapshot);
-void FlowVRServeFinalState(SimulationSnapshot const * const snapshot);
+
+void FlowVRServeFinalState(SimulationSnapshot *snapshot);
 
 void FreeFlowVR();
 

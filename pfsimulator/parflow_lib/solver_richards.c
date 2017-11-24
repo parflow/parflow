@@ -1074,16 +1074,16 @@ SetupRichards(PFModule * this_module)
 
 
 #ifdef HAVE_FLOWVR
-    // TODO FIXME: allowed to send message before first wait?
-    // or should we wait a bit here? -- does not work... s. eTODO
-//      if (!FlowVR_wait()) PARFLOW_ERROR("FlowVR was aborted!");
-    char filename[1024];     // low: reuse other string variable here?
-    int userSpecSteps = GetIntDefault("NetCDF.NumStepsPerFile", 1);
+    if (FLOWVR_ACTIVE)
+    {
+      char filename[1024];     // low: reuse other string variable here?
+      int userSpecSteps = GetIntDefault("NetCDF.NumStepsPerFile", 1);
 
-    sprintf(filename, "%s.%05d.nc", file_prefix, instance_xtra->file_number / userSpecSteps);
+      sprintf(filename, "%s.%05d.nc", file_prefix, instance_xtra->file_number / userSpecSteps);
 
-    SimulationSnapshot sshot = GetSimulationSnapshot;
-    DumpRichardsToFlowVR(&sshot);
+      SimulationSnapshot sshot = GetSimulationSnapshot;
+      DumpRichardsToFlowVR(&sshot);
+    }
 #endif
 
     /*-----------------------------------------------------------------
@@ -1495,61 +1495,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   amps_Sync(amps_CommWorld);
 #endif // end to HAVE_OAS3 CALL
 
-#ifdef HAVE_FLOWVR
-  fca_port beginItPort;
-  if (FLOWVR_ACTIVE)
-  {
-    beginItPort = fca_get_port(moduleParflow, "in");
-  }
-  int hasRun = 0;
-  // For Wait if we get some mor FlowVR Messages...
-  while (FlowVR_wait() || (!FLOWVR_ACTIVE && !hasRun))
-  {
-    hasRun = 1;
-
-    if (FLOWVR_ACTIVE)
-    {
-      D("========= now simulating\n");
-      fca_stamp stampStartTime;
-      fca_stamp stampStopTime;
-      fca_message msg;
-
-      void *pstart_time;
-      void *pstop_time;
-      stampStartTime = fca_get_stamp(beginItPort, "stampStartTime");
-      stampStopTime = fca_get_stamp(beginItPort, "stampStopTime");
-      if (stampStartTime == NULL || stampStopTime == NULL)
-        PARFLOW_ERROR("Could not register Stamps!");
-      msg = fca_get(beginItPort);
-
-//       char *tmp;
-//       fca_stamp stampSource = fca_get_stamp(beginItPort, "source");
-//       tmp = (char*)fca_read_stamp(msg, stampSource);
-//       D("source: %s", tmp);
-
-      // extract from FlowVR-messages...
-      pstart_time = fca_read_stamp(msg, stampStartTime);
-      pstop_time = fca_read_stamp(msg, stampStopTime);
-      // ignore start and stop time from parameter ;)
-      D("pstart:%d, pstop:%d\n", pstart_time, pstop_time);
-      if (pstart_time && pstop_time)
-      {
-        D("============ extracting time from stamps!\n");
-        start_time = (double)*((float*)pstart_time);
-        stop_time = (double)*((float*)pstop_time);
-        fca_free(msg);
-      }
-      else
-      {
-        D("===== got invalid stamp value so continuing!");
-        fca_free(msg);
-        continue;
-      }
-      D("============ start_time: %.8f, stop_time: %.8f\n", start_time, stop_time);
-      if (stop_time - start_time <= 0.000001)   // do not allow negative simulation. REM: 0 simulation is just resend state ;) TODO: implement that 0 timediff works
-        continue;
-    }
-#endif
   /***********************************************************************/
   /*                                                                     */
   /*                Begin the main computational section                 */
@@ -1598,8 +1543,21 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   fstop = 0;                    // init to something, only used with 3D met forcing
 #endif
 
+#ifdef HAVE_FLOWVR
+  SimulationSnapshot sshot;
+  sshot = GetSimulationSnapshot;
+#endif
+
   do                            /* while take_more_time_steps */
   {
+#ifdef HAVE_FLOWVR
+    if (!FlowVRInteract(&sshot))
+      break;
+    // TODO: or maybe do at the end so that we can dump at the same time?
+
+    // TODO: move all the dumps into an extra function! split all this loop into more functions!
+#endif
+
     if (t == ct)
     {
       ct += cdt;
@@ -2760,15 +2718,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                   dt, instance_xtra->overland_sum);
     }
 
-#ifdef HAVE_FLOWVR
-    SimulationSnapshot sshot;
-    if (FLOWVR_ACTIVE)
-    {
-      sshot = GetSimulationSnapshot;
-      FlowVRSendSnapshot(&sshot);
-    }
-#endif
-
     /***************************************************************/
     /*                 Print the pressure and saturation           */
     /***************************************************************/
@@ -2780,14 +2729,17 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       instance_xtra->dump_index++;
 
 #ifdef HAVE_FLOWVR
-      char filename[1024];
-      int userSpecSteps = GetInt("NetCDF.NumStepsPerFile");
-      D("steps per file: %d, filenumber: %d", userSpecSteps, instance_xtra->file_number);
+      if (FLOWVR_ACTIVE)
+      {
+        char filename[1024];
+        int userSpecSteps = GetIntDefault("NetCDF.NumStepsPerFile", 5);
+        D("steps per file: %d, filenumber: %d", userSpecSteps, instance_xtra->file_number);
 
-      sprintf(filename, "%s.%05d.nc", file_prefix, 1 + (instance_xtra->file_number - 1) / userSpecSteps);
-      sshot.filename = filename;
-      DumpRichardsToFlowVR(&sshot);
-      any_file_dumped = 1;
+        sprintf(filename, "%s.%05d.nc", file_prefix, 1 + (instance_xtra->file_number - 1) / userSpecSteps);
+        sshot.filename = filename;
+        DumpRichardsToFlowVR(&sshot);
+        any_file_dumped = 1;
+      }
 #endif
 
       sprintf(nc_postfix, "%05d", instance_xtra->file_number);
@@ -3549,16 +3501,13 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   }                             /* ends do for time loop */
   while (take_more_time_steps);
 #ifdef HAVE_FLOWVR
-  SimulationSnapshot sshot = GetSimulationSnapshot;
   if (FLOWVR_ACTIVE)
   {
+    // TODO: or do we need to reload sshot here??
     FlowVRServeFinalState(&sshot);
-
     D("Aborting now!");
     fca_abort(moduleParflow);
-    break;
   }
-}    /*  ends while (FlowVR_wait())  */
 #endif
 
 
