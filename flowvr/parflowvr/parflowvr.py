@@ -12,7 +12,9 @@ from parFlowVR_modules import *
 
 P, Q, R = sys.argv[1:4]
 
-simplestarter = Simplestarter("simplestarter", sys.argv[4], sys.argv[5])
+pres = FilterPreSignal("PreSignal", nb=1)  # will be inited with one token for the beginning. TODO set nb to 2 later!
+mergeIt = FilterMergeIt("parflow-controller")
+
 # Hostlist: comma separated for openmpi.  Add more hosts for more parallelism
 # run all on localhost for the moment:
 parflowmpi = ParflowMPI(("localhost,"*int(P)*int(Q)*int(R))[:-1])  # cut last ,
@@ -26,10 +28,6 @@ visit = VisIt("visit")
 
 # SIMULATION TIME FRAME DATA TRANSFER
 
-#simplestarter.getPort("out").link(spymodule.getPort("in"))
-simplestarter.getPort("out").link(parflowmpi.getPort("in"))
-
-
 # PRESSURE DATA TRANSFER
 # link parflow (port pressure)  to netcdfwriter.   Comunication N to 1. Using MergeFilter to merge results
 
@@ -41,13 +39,17 @@ simplestarter.getPort("out").link(parflowmpi.getPort("in"))
 
 treePressureSnap = generateNto1(prefix="comNto1PressureSnapMerge", in_ports = parflowmpi.getPort("pressureSnap"), arity = 2)
 treePressureSnap.link(visit.getPort("pressureIn"))
-visit.getPort("triggerSnap").link(parflowmpi.getPort("triggerSnap"))
+visit.getPort("triggerSnap").link(mergeIt.getPort("in"))
+
+parflowmpi.getPort("endIt")[0].link(pres.getPort("in"))
+
+pres.getPort("out").link(mergeIt.getPort("order"))
+mergeIt.getPort("out").link(parflowmpi.getPort("in"))
 
 
 #for p in parflowmpi.getPort("pressure"):
         #p.link(netcdfwriter.getPort("pressureIn"))
 
-#pres = FilterPreSignal("Time_PreSignal", nb=1)  # will be inited with one token for the beginning. TODO set nb to 2 later!
 #pres.getPort("out").link(simplestarter.getPort("beginIt"))
 #netcdfwriter.getPort("out").link(pres.getPort("in"))
 

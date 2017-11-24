@@ -1,27 +1,20 @@
 from flowvrapp import *
 
-class Parflow(Component):
+class Parflow(Module):
     def __init__(self, prefix, index, run, host):
-        Component.__init__(self)
-        pf = Module(prefix + "/" + str(index), run = run, host = host)
+        Module.__init__(self, prefix + "/" + str(index), run = run, host = host)
 
-
-        pfEvent = Module(prefix + "/Event/" + str(index), run = run, host = host)
-        p = pfEvent.addPort("triggerSnap", direction = 'in')
-        #p = pf.addPort("triggerSnap", direction = 'in')
-        p.blockstate='non blocking'
-        self.ports["triggerSnap"] = p
-
-        inportnames = ["in", "steerIn"]
+        inportnames = ["in"]
         outportnames = ["pressure", "porosity", "saturation", "pressureSnap"]
 
         for inportname in inportnames:
-            p = pf.addPort(inportname, direction = 'in') # TODO: unimplemented?, blockstate = 'nonblocking' if inportname=="triggerSnap" else 'blocking')
-            self.ports[inportname] = p
+            p = self.addPort(inportname, direction = 'in') # TODO: unimplemented?, blockstate = 'nonblocking' if inportname=="triggerSnap" else 'blocking')
+            #self.ports[inportname] = p
 
         for outportname in outportnames:
-            p = pf.addPort(outportname, direction = 'out')
-            self.ports[outportname] = p
+            p = self.addPort(outportname, direction = 'out')
+            #self.ports[outportname] = p
+
 
 
 class ParflowMPI(Composite):
@@ -51,6 +44,7 @@ class ParflowMPI(Composite):
                 if not pname in self.ports:
                     self.ports[pname] = list()
                 self.ports[pname].append(p)
+
 
 class VisIt(Module):
     """Module that will abstract VisIt later"""
