@@ -11,7 +11,7 @@ fca_module moduleParflow;
 static fca_module moduleParflowEvent;
 static fca_port portIn;
 
-void fillGridMessageMetadata(Vector const * const v, GridMessageMetadata *m)
+void fillGridMessageMetadata(Vector const * const v, double const * const time, GridMessageMetadata *m)
 {
   Grid *grid = VectorGrid(v);
   SubgridArray *subgrids = GridSubgrids(grid);
@@ -34,6 +34,8 @@ void fillGridMessageMetadata(Vector const * const v, GridMessageMetadata *m)
   m->nX = SubgridNX(GridBackground(grid));
   m->nY = SubgridNY(GridBackground(grid));
   m->nZ = SubgridNZ(GridBackground(grid));
+
+  m->time = *time;
 }
 
 
@@ -177,7 +179,7 @@ void FreeFlowVR()
   fca_free(moduleParflow);
 }
 
-void vectorToMessage(Vector* v, fca_message *result, fca_port *port)
+void vectorToMessage(Vector* v, double const * const time, fca_message *result, fca_port *port)
 {
   // normally really generic. low: in common with write_parflow_netcdf
   Grid *grid = VectorGrid(v);
@@ -200,7 +202,7 @@ void vectorToMessage(Vector* v, fca_message *result, fca_port *port)
   /*fca_write_stamp(result, stampN, 1);*/
   // write to the beginning of our memory segment
   GridMessageMetadata m;
-  fillGridMessageMetadata(v, &m);
+  fillGridMessageMetadata(v, time, &m);
   size_t vector_size = sizeof(double) * m.nx * m.ny * m.nz;
   *result = fca_new_message(moduleParflow, sizeof(GridMessageMetadata) + vector_size);
   if (result == NULL)
@@ -247,12 +249,13 @@ void CreateAndSendMessage(SimulationSnapshot const * const snapshot, const PortN
 
     // Prepare the Message
     fca_message msg;
-    vectorToMessage(portnamedatas[i].data, &msg, &port);
+    vectorToMessage(portnamedatas[i].data, snapshot->time, &msg, &port);
 
 
     // Create Stamps...
     const fca_stamp stampTime = fca_get_stamp(port, "stampTime");
-    fca_write_stamp(msg, stampTime, (void*)&snapshot->time);
+    float time = (float)*(snapshot->time);
+    fca_write_stamp(msg, stampTime, (void*)&time);
 
     fca_stamp stampFileName;
     if (snapshot->filename != NULL)
@@ -268,7 +271,7 @@ void CreateAndSendMessage(SimulationSnapshot const * const snapshot, const PortN
       PARFLOW_ERROR("Could not send FlowVR-Message!");
     }
     fca_free(msg);
-    D("put message!%.8f\n", snapshot->time);
+    D("put message!%.8f\n", *(snapshot->time));
   }
 }
 

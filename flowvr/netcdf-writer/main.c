@@ -95,11 +95,10 @@ int main(int argc, char *argv [])
   int currentFileID;
   int xID, yID, zID, timeID;
   D("now Waiting\n");
-  while (fca_wait(moduleNetCDFWriter))
+  while (fca_wait(moduleNetCDFWriter))  // TODO: use our reader loop here maybe?
   {
     D("got some stuff to write\n");
     fca_message msg = fca_get(portPressureIn);
-    double time = (double)*((float*)fca_read_stamp(msg, stampTime));
     char *file_name = (char*)fca_read_stamp(msg, stampFileName);
 
     // to access the variables in the ncFile...
@@ -124,9 +123,9 @@ int main(int argc, char *argv [])
     size_t start[1], count[1];
     nc_var_par_access(currentFileID, timeVarID, NC_COLLECTIVE);
     find_variable_length(currentFileID, timeVarID, start);
-    D("start writing timestep %f into file %s at %d\n", time, file_name, start[0]);
+    D("start writing timestep %f into file %s at %d\n", m->time, file_name, start[0]);
     count[0] = 1;  // writing one value
-    int status = nc_put_vara_double(currentFileID, timeVarID, start, count, &time);
+    int status = nc_put_vara_double(currentFileID, timeVarID, start, count, &(m->time));
 
     while (buffer < end)
     {

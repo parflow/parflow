@@ -49,7 +49,7 @@ void NewFlowVR(void);
 
 typedef struct {
   char * filename;
-  float time;
+  double * time;
   Vector * pressure_out;
   Vector * porosity_out;
   Vector * saturation_out;
@@ -58,7 +58,7 @@ typedef struct {
 #define GetSimulationSnapshot \
   (SimulationSnapshot){ \
     filename, \
-    t, \
+    &t, \
     instance_xtra->pressure, \
     NULL, \
     instance_xtra->saturation, \
