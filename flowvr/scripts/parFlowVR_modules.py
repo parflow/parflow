@@ -28,8 +28,9 @@ class FilterMergeItExt(Filter):
     self.parameters["forwardPresignal"] = "False"
 
 class Parflow(Module):
-    def __init__(self, prefix, index, run, host):
-        Module.__init__(self, prefix + "/" + str(index), run = run, host = host)
+    def __init__(self, prefix, index=None, run=None, host=None, cmdline=None):
+        name = prefix + "/" + str(index) if index else prefix
+        Module.__init__(self, name, run = run, host = host, cmdline = cmdline)
 
         inportnames = ["in"]
         outportnames = ["pressure", "porosity", "saturation", "pressureSnap"]
