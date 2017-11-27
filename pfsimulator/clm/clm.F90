@@ -676,7 +676,7 @@ end do !k
 ! if ( (drv%gmt==0.0).or.(drv%endtime==1) ) call drv_restart(2,drv,tile,clm,rank,istep_pf)
   ! ----------------------------------
   ! NBE: Added more control over writing of the RST files
-    if (clm_next == 1) then
+  !  if (clm_next == 1) then
      if (clm_last_rst==1) then
       d_stp=0
      else
@@ -699,7 +699,7 @@ end do !k
        call drv_restart(2,drv,tile,clm,rank,d_stp)
       endif
 
-    endif
+   ! endif
   ! ---------------------------------
 
   !=== Call routine to calculate CLM flux passed to PF
