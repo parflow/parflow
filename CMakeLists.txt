@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.4)
 
-project (PARFLOW C Fortran)
+project (PARFLOW C CXX Fortran)
 
 #-----------------------------------------------------------------------------
 # Version number

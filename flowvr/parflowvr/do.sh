@@ -2,12 +2,13 @@
 
 # for fancy logs: ./doChecks.sh >log 2>&1
 
-../test/scripts/cleanup.sh
-
 killall flowvrd
 flowvr-kill
 
 rm *.nc
+rm parflowvr.net.xml
+rm parflowvr.run.xml
+rm parflowvr.cmd.xml
 
 # TODO: if other simulation data provider for visit are running this will probably cause problems!?
 rm ~/.visit/simulations/*.sim2

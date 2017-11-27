@@ -1,5 +1,32 @@
 from flowvrapp import *
 
+class FilterMergeItExt(Filter):
+  """Merges messages received on input port into one message sent on output port.
+
+  More precisely, when it receives a message on the 'order' port, it
+  inspects the incoming message queue ('in' port), discard all
+  messages with a non null 'scratch' stamp value, concatenate all
+  other messages in one message sent on 'out' port. This message has
+  its 'scratch' stamp set to 0 and its 'stamp' stamp set to the sum of
+  all 'stamp' stamps of the concatenated messages. The name of the
+  'scratch' and 'stamp' stamps is set from the component parameter.
+  If forwardEmpty is set to "True" even empty mesages will be forwarded or if no message
+  is available on the 'in' port an empty message will be generated.
+  If forwardPresignal is set to "True" even Presignal messages (and messages with an it
+  stamp < 0) will be forwarded
+  """
+
+  def __init__(self, name, host = ''):
+    Filter.__init__(self, name, run = 'flowvr.plugins.MergeItExt', host = host)
+    self.addPort("in", direction = 'in')
+    self.addPort("order", direction = 'in', messagetype = 'stamps')
+    self.addPort("out", direction = 'out')
+
+    self.parameters["stamp"] = ""
+    self.parameters["scratch"] = ""
+    self.parameters["forwardEmpty"] = "False"
+    self.parameters["forwardPresignal"] = "False"
+
 class Parflow(Module):
     def __init__(self, prefix, index, run, host):
         Module.__init__(self, prefix + "/" + str(index), run = run, host = host)
@@ -14,8 +41,6 @@ class Parflow(Module):
         for outportname in outportnames:
             p = self.addPort(outportname, direction = 'out')
             #self.ports[outportname] = p
-
-
 
 class ParflowMPI(Composite):
     """several instances of parflow module that generate pressure, porosity... for the
@@ -74,6 +99,13 @@ class Simplestarter(Module):
     """Module Simplestarter kicks of a nonsteered simple parflow simulation"""
     def __init__(self, name, starttime, stoptime):
         Module.__init__(self, name, cmdline = "python ../simplestarter/simplestarter.py %s %s" % (starttime, stoptime))
+        #self.addPort("beginIt", direction = 'in')
+        self.addPort("out", direction = 'out')
+
+class Ticker(Module):
+    """Module sends a message every second"""
+    def __init__(self, name):
+        Module.__init__(self, name, cmdline = "python ../scripts/ticker.py")
         #self.addPort("beginIt", direction = 'in')
         self.addPort("out", direction = 'out')
 

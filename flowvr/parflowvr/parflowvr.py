@@ -12,8 +12,10 @@ from parFlowVR_modules import *
 
 P, Q, R = sys.argv[1:4]
 
-pres = FilterPreSignal("PreSignal", nb=1)  # will be inited with one token for the beginning. TODO set nb to 2 later!
-mergeIt = FilterMergeIt("parflow-controller")
+#rn = RoutingNode("RoutingNode")
+pres = FilterPreSignal("PreSignal", nb=2)  # will be inited with one token for the beginning. TODO set nb to 2 later!
+
+mergeIt = FilterMergeItExt("parflow-controller")
 
 # Hostlist: comma separated for openmpi.  Add more hosts for more parallelism
 # run all on localhost for the moment:
@@ -24,7 +26,11 @@ visit = VisIt("visit")
 #netcdfwriter = NetCDFWriter("netcdfwriter")
 #analyzer = Analyzer("analyzer")
 
-#spymodule = SpyModule("spy_module")
+#spymodule = SpyModule("filter out")
+#spymodule2 = SpyModule("presignal out")
+
+
+#mergeIt.getPort("out").link(spymodule.getPort("in"))
 
 # SIMULATION TIME FRAME DATA TRANSFER
 
@@ -39,12 +45,22 @@ visit = VisIt("visit")
 
 treePressureSnap = generateNto1(prefix="comNto1PressureSnapMerge", in_ports = parflowmpi.getPort("pressureSnap"), arity = 2)
 treePressureSnap.link(visit.getPort("pressureIn"))
-visit.getPort("triggerSnap").link(mergeIt.getPort("in"))
+#visit.getPort("triggerSnap").link(mergeIt.getPort("in"))
 
 parflowmpi.getPort("endIt")[0].link(pres.getPort("in"))
 
 pres.getPort("out").link(mergeIt.getPort("order"))
+#rn.getPort("out").link(mergeIt.getPort("in"))
+#visit.getPort("triggerSnap").link(rn.getPort("in"))
+visit.getPort("triggerSnap").link(mergeIt.getPort("in"))
+#pres.getPort("out").link(spymodule2.getPort("in"))
 mergeIt.getPort("out").link(parflowmpi.getPort("in"))
+mergeIt.parameters["forwardEmpty"] = "True"
+mergeIt.parameters["forwardPresignal"] = "True"
+
+#simplestarter = Simplestarter("simplestarter", 0, 0.1)
+#simplestarter.getPort("out").link(mergeIt.getPort("in"))
+
 
 
 #for p in parflowmpi.getPort("pressure"):
