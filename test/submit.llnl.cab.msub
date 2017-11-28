@@ -1,0 +1,13 @@
+#!/bin/sh
+##### These lines are for Moab
+#MSUB -l nodes=1
+#MSUB -l walltime=0:20:00
+#MSUB -A gridopt
+#MSUB -q pbatch
+#MSUB -V
+
+##### These are shell commands
+date
+make check
+
+echo 'Done'

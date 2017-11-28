@@ -18,6 +18,6 @@ extern unsigned short _rand48_seed[3];
 double
 drand48(void)
 {
-	return erand48(_rand48_seed);
+  return erand48(_rand48_seed);
 }
-	
+

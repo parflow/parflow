@@ -1,36 +1,36 @@
-/*BHEADER**********************************************************************
-
-  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-  by the Parflow Team (see the CONTRIBUTORS file)
-  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-
-  This file is part of Parflow. For details, see
-  http://www.llnl.gov/casc/parflow
-
-  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-  for the GNU Lesser General Public License.
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License (as published
-  by the Free Software Foundation) version 2.1 dated February 1999.
-
-  This program is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-  and conditions of the GNU General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-  USA
-**********************************************************************EHEADER*/
-
-/******************************************************************************
+/*BHEADER*********************************************************************
  *
- * Various general routines used within ParFlow.
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
  *
- *****************************************************************************/
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
+
+/*****************************************************************************
+*
+* Various general routines used within ParFlow.
+*
+*****************************************************************************/
 
 
 #include "parflow.h"
@@ -59,26 +59,26 @@ amps_ThreadLocalDcl(int, s_max_memory);
  *--------------------------------------------------------------------------*/
 
 char  *malloc_chk(size, file, line)
-int    size;
+int size;
 char  *file;
-int    line;
+int line;
 {
-   char  *ptr;
+  char  *ptr;
 
 
-   if (size)
-   {
-      ptr = malloc(size);
+  if (size)
+  {
+    ptr = malloc(size);
 
-      if (ptr == NULL)
-	 amps_Printf("Error: out of memory in %s at line %d\n", file, line);
-   }
-   else
-   {
-      ptr = NULL;
-   }
+    if (ptr == NULL)
+      amps_Printf("Error: out of memory in %s at line %d\n", file, line);
+  }
+  else
+  {
+    ptr = NULL;
+  }
 
-   return ptr;
+  return ptr;
 }
 
 
@@ -87,28 +87,28 @@ int    line;
  *--------------------------------------------------------------------------*/
 
 char  *calloc_chk(count, elt_size, file, line)
-int    count;
-int    elt_size;
+int count;
+int elt_size;
 char  *file;
-int    line;
+int line;
 {
-   char  *ptr;
-   int    size = count*elt_size;
+  char  *ptr;
+  int size = count * elt_size;
 
 
-   if (size)
-   {
-      ptr = calloc(count, elt_size);
+  if (size)
+  {
+    ptr = calloc(count, elt_size);
 
-      if (ptr == NULL)
-	 amps_Printf("Error: out of memory in %s at line %d\n", file, line);
-   }
-   else
-   {
-      ptr = NULL;
-   }
+    if (ptr == NULL)
+      amps_Printf("Error: out of memory in %s at line %d\n", file, line);
+  }
+  else
+  {
+    ptr = NULL;
+  }
 
-   return ptr;
+  return ptr;
 }
 
 #endif
@@ -120,141 +120,143 @@ int    line;
  *   If no such integer e exists, return -1.
  *--------------------------------------------------------------------------*/
 
-int  Exp2(int  p)
+int  Exp2(int p)
 {
-   int  e = 0;
+  int e = 0;
 
 
-   while (p > 1)
-   {
-      if (p % 2)
-         return -1;
-      else
-      {
-         e += 1;
-         p /= 2;
-      }
-   }
+  while (p > 1)
+  {
+    if (p % 2)
+      return -1;
+    else
+    {
+      e += 1;
+      p /= 2;
+    }
+  }
 
-   return  e;
+  return e;
 }
 
 
 
 /*
  *************************************************************************
- *                                                                       
+ *
  * Records memory usage
- *                                                                       
+ *
  *************************************************************************
-*/
+ */
 
-void recordMemoryInfo() 
+void recordMemoryInfo()
 {
 #ifdef HAVE_MALLINFO
-   /*
-    * Access information from mallinfo
-    */   
-   struct mallinfo my_mallinfo = mallinfo();
+  /*
+   * Access information from mallinfo
+   */
+  struct mallinfo my_mallinfo = mallinfo();
 
-   /* Get all the memory currently allocated to user by malloc, etc. */
-   int used_mem = my_mallinfo.hblkhd + my_mallinfo.usmblks
-      + my_mallinfo.uordblks;
+  /* Get all the memory currently allocated to user by malloc, etc. */
+  int used_mem = my_mallinfo.hblkhd + my_mallinfo.usmblks
+                 + my_mallinfo.uordblks;
 
-   /* Record high-water mark for memory used. */
-   if(amps_ThreadLocal(s_max_memory) < used_mem) 
-   {
-      amps_ThreadLocal(s_max_memory) = used_mem;
-   }
+  /* Record high-water mark for memory used. */
+  if (amps_ThreadLocal(s_max_memory) < used_mem)
+  {
+    amps_ThreadLocal(s_max_memory) = used_mem;
+  }
 #endif
 }
 
 
 /*
-*************************************************************************
-*                                                                       *
-* Prints maximum memory used (i.e. high-water mark).  The max is        *
-* determined each time the "printMemoryInfo" or "recordMemoryInfo"      *
-* functions are called.                                                 *
-*                                                                       *
-*************************************************************************
-*/
-void printMaxMemory(FILE *log_file)  
+ *************************************************************************
+ *                                                                       *
+ * Prints maximum memory used (i.e. high-water mark).  The max is        *
+ * determined each time the "printMemoryInfo" or "recordMemoryInfo"      *
+ * functions are called.                                                 *
+ *                                                                       *
+ *************************************************************************
+ */
+void printMaxMemory(FILE *log_file)
 {
 #ifdef HAVE_MALLINFO
+  /*
+   * Step through all nodes (>0) and send max memory to processor 0,
+   * which subsequently writes it out.
+   */
+  int maxmem = 0;
 
+  recordMemoryInfo();
 
+  amps_Invoice invoice = amps_NewInvoice("%i", &maxmem);
 
-   /*
-    * Step through all nodes (>0) and send max memory to processor 0,
-    * which subsequently writes it out.
-    */
-   int maxmem = 0;
+  if (amps_Rank(amps_CommWorld) != 0)
+  {
+    maxmem = (int)amps_ThreadLocal(s_max_memory);
+    amps_Send(amps_CommWorld, 0, invoice);
+  }
+  else
+  {
+    int p = 0;
 
-   recordMemoryInfo();
+    if (log_file)
+    {
+      fprintf(log_file,
+              "Maximum memory used on processor %d : %d MB\n",
+              p,
+              (int)amps_ThreadLocal(s_max_memory) / (1024 * 1024));
+    }
 
-   amps_Invoice invoice = amps_NewInvoice("%i", &maxmem);
-
-   if (amps_Rank(amps_CommWorld) != 0) {
-	 maxmem = (int)amps_ThreadLocal(s_max_memory);
-	 amps_Send(amps_CommWorld, 0, invoice);
-   } else {
-
-      int p = 0;
-
-      if(log_file) {
-	 fprintf(log_file, 
-		 "Maximum memory used on processor %d : %d MB\n", 
-		 p, 
-		 (int)amps_ThreadLocal(s_max_memory)/(1024*1024) );
+    for (p = 1; p < amps_Size(amps_CommWorld); p++)
+    {
+      amps_Recv(amps_CommWorld, p, invoice);
+      if (log_file)
+      {
+        fprintf(log_file,
+                "Maximum memory used on processor %d : %d MB\n",
+                p,
+                maxmem / (1024 * 1024));
       }
-	 
-      for (p = 1; p < amps_Size(amps_CommWorld); p++) {
-	 amps_Recv(amps_CommWorld, p, invoice);
-	 if(log_file) {
-	    fprintf(log_file, 
-		    "Maximum memory used on processor %d : %d MB\n", 
-		    p, 
-		    maxmem/(1024*1024) );
-	 }
-      }
-      
-   }
-   
-   amps_FreeInvoice(invoice);
+    }
+  }
 
+  amps_FreeInvoice(invoice);
 #endif
 
-   /*
-    * Print out info from Linux proc file.
-    */
+  /*
+   * Print out info from Linux proc file.
+   */
 
 #ifdef __linux__
-   if (!amps_Rank(amps_CommWorld)) {
-      char procfilename[2056];
+  if (!amps_Rank(amps_CommWorld))
+  {
+    char procfilename[2056];
 
-      sprintf(procfilename, "/proc/%d/status", getpid());
+    sprintf(procfilename, "/proc/%d/status", getpid());
 
-      fprintf(log_file, "\n\nBEGIN(Contents of %s)\n", procfilename); 
+    fprintf(log_file, "\n\nBEGIN(Contents of %s)\n", procfilename);
 
-      struct stat stats;
-      if(!stat(procfilename, &stats)) {
-	 FILE *file;
-	 int c;
+    struct stat stats;
+    if (!stat(procfilename, &stats))
+    {
+      FILE *file;
+      int c;
 
-	 file = fopen(procfilename, "r");
-      
-	 while((c = fgetc(file)) != EOF) {
-	    fputc(c, log_file);
-	 }
-      
-	 fclose(file);
+      file = fopen(procfilename, "r");
 
-	 fprintf(log_file, "\n\nEND(Contents of %s)\n", procfilename); 
+      while ((c = fgetc(file)) != EOF)
+      {
+        fputc(c, log_file);
       }
-   }
-#endif
 
+      fclose(file);
+
+      fprintf(log_file, "\n\nEND(Contents of %s)\n", procfilename);
+    }
+  }
+#endif
 }
 
 
@@ -268,49 +270,49 @@ void printMaxMemory(FILE *log_file)
  *                                                                       *
  * where                                                                 *
  *                                                                       *
- *    253.0MB is how many megabytes your current allocation has malloced.* 
+ *    253.0MB is how many megabytes your current allocation has malloced.*
  *    2653346688 is the precise size (in bytes) of your current alloc.   *
  *    615 is the number of items allocated with malloc.                  *
  *    253.9MB is the current memory reserved by the system for mallocs.  *
  *    871952 is the bytes currently not used in this reserved memory.    *
  *                                                                       *
  *************************************************************************
-*/
-void printMemoryInfo(FILE *log_file) 
+ */
+void printMemoryInfo(FILE *log_file)
 {
-   (void) log_file;
+  (void)log_file;
 
 #ifdef HAVE_MALLINFO
-   /* Get malloc info structure */
-   struct mallinfo my_mallinfo = mallinfo();
-   
-   /* Get total memory reserved by the system for malloc currently*/
-   int reserved_mem = my_mallinfo.arena;
-   
-   /* Get all the memory currently allocated to user by malloc, etc. */
-   int used_mem = my_mallinfo.hblkhd + my_mallinfo.usmblks +
-      my_mallinfo.uordblks;
-   
-   /* Get memory not currently allocated to user but malloc controls */
-   int free_mem = my_mallinfo.fsmblks + my_mallinfo.fordblks;
-   
-   /* Get number of items currently allocated */
-   int number_allocated = my_mallinfo.ordblks + my_mallinfo.smblks;
+  /* Get malloc info structure */
+  struct mallinfo my_mallinfo = mallinfo();
 
-   (void) log_file;
-   
-   /* Record high-water mark for memory used. */
-   if(amps_ThreadLocal(s_max_memory) < used_mem) 
-   {
-      amps_ThreadLocal(s_max_memory) = used_mem;
-   }
-   
-   /* Print out concise malloc info line */
-   fprintf(log_file, 
-	   "Memory in use : %d MB in %d allocs, %d MB reserved ( %d unused)\n",
-	   used_mem/(1024*1024), 
-	   number_allocated, 
-	   reserved_mem/(1024*1024), 
-	   free_mem/(1024*1024));
+  /* Get total memory reserved by the system for malloc currently*/
+  int reserved_mem = my_mallinfo.arena;
+
+  /* Get all the memory currently allocated to user by malloc, etc. */
+  int used_mem = my_mallinfo.hblkhd + my_mallinfo.usmblks +
+                 my_mallinfo.uordblks;
+
+  /* Get memory not currently allocated to user but malloc controls */
+  int free_mem = my_mallinfo.fsmblks + my_mallinfo.fordblks;
+
+  /* Get number of items currently allocated */
+  int number_allocated = my_mallinfo.ordblks + my_mallinfo.smblks;
+
+  (void)log_file;
+
+  /* Record high-water mark for memory used. */
+  if (amps_ThreadLocal(s_max_memory) < used_mem)
+  {
+    amps_ThreadLocal(s_max_memory) = used_mem;
+  }
+
+  /* Print out concise malloc info line */
+  fprintf(log_file,
+          "Memory in use : %d MB in %d allocs, %d MB reserved ( %d unused)\n",
+          used_mem / (1024 * 1024),
+          number_allocated,
+          reserved_mem / (1024 * 1024),
+          free_mem / (1024 * 1024));
 #endif
 }

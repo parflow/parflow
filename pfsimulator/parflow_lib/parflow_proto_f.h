@@ -1,43 +1,54 @@
-/*BHEADER**********************************************************************
-
-  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-  by the Parflow Team (see the CONTRIBUTORS file)
-  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-
-  This file is part of Parflow. For details, see
-  http://www.llnl.gov/casc/parflow
-
-  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-  for the GNU Lesser General Public License.
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License (as published
-  by the Free Software Foundation) version 2.1 dated February 1999.
-
-  This program is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-  and conditions of the GNU General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-  USA
-**********************************************************************EHEADER*/
-
-/******************************************************************************
- * C to Fortran interfacing macros
+/*BHEADER*********************************************************************
  *
- *****************************************************************************/
+ * Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ * LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ * by the Parflow Team (see the CONTRIBUTORS file)
+ * <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ * This file is part of Parflow. For details, see
+ * http://www.llnl.gov/casc/parflow
+ *
+ * Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ * for the GNU Lesser General Public License.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License (as published
+ * by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ * and conditions of the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ **********************************************************************EHEADER*/
 
-#ifdef __cplusplus     /* wrapper to enable C++ usage */
-extern "C" {
+/*****************************************************************************
+* C to Fortran interfacing macros
+*
+*****************************************************************************/
+
+#ifndef PARFLOW_PROTO_F_H
+#define PARFLOW_PROTO_F_H
+
+/* These macros are used to get around a parsing issue with uncrustify. */
+#ifdef __cplusplus
+/** *INDENT-OFF* */
+#define BEGIN_EXTERN_C extern "C" {
+#define END_EXTERN_C }
+/** *INDENT-ON* */
+#else
+#define BEGIN_EXTERN_C
+#define END_EXTERN_C
 #endif
 
+BEGIN_EXTERN_C
 
 /* advect.f */
-#if defined(_CRAYMPP) 
+#if defined(_CRAYMPP)
 #define ADVECT ADVECT
 #elif defined(__bg__)
 #define ADVECT advect
@@ -45,16 +56,16 @@ extern "C" {
 #define ADVECT advect_
 #endif
 
-#define CALL_ADVECT(s, sn, uedge, vedge, wedge, phi,\
-                    slx, sly, slz,\
-                    lo, hi, dlo, dhi, hx, dt, fstord,\
-                    sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,\
+#define CALL_ADVECT(s, sn, uedge, vedge, wedge, phi, \
+                    slx, sly, slz, \
+                    lo, hi, dlo, dhi, hx, dt, fstord, \
+                    sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz, \
                     dxscr, dyscr, dzscr, dzfrm) \
-             ADVECT(s, sn, uedge, vedge, wedge, phi,\
-                    slx, sly, slz,\
-                    lo, hi, dlo, dhi, hx, &dt, &fstord,\
-                    sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,\
-                    dxscr, dyscr, dzscr, dzfrm)
+  ADVECT(s, sn, uedge, vedge, wedge, phi, \
+         slx, sly, slz, \
+         lo, hi, dlo, dhi, hx, &dt, &fstord, \
+         sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz, \
+         dxscr, dyscr, dzscr, dzfrm)
 
 void ADVECT(double *s, double *sn,
             double *uedge, double *vedge, double *wedge, double *phi,
@@ -74,18 +85,18 @@ void ADVECT(double *s, double *sn,
 #define SADVECT sadvect_
 #endif
 
-#define CALL_SADVECT(s, sn, uedge, vedge, wedge, betaedge, phi,\
-                     viscosity, density, gravity,\
-                     slx, sly, slz,\
+#define CALL_SADVECT(s, sn, uedge, vedge, wedge, betaedge, phi, \
+                     viscosity, density, gravity, \
+                     slx, sly, slz, \
                      lohi, dlohi, hx, dt, \
-                     sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,\
+                     sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz, \
                      dxscr, dyscr, dzscr, dzfrm) \
-             SADVECT(s, sn, uedge, vedge, wedge, betaedge, phi,\
-                     viscosity, density, &gravity,\
-                     slx, sly, slz,\
-                     lohi, dlohi, hx, &dt, \
-                     sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz,\
-                     dxscr, dyscr, dzscr, dzfrm)
+  SADVECT(s, sn, uedge, vedge, wedge, betaedge, phi, \
+          viscosity, density, &gravity, \
+          slx, sly, slz, \
+          lohi, dlohi, hx, &dt, \
+          sbot, stop, sbotp, sfrt, sbck, sleft, sright, sfluxz, \
+          dxscr, dyscr, dzscr, dzfrm)
 
 void SADVECT(double *s, double *sn,
              double *uedge, double *vedge, double *wedge, double *betaedge, double *phi,
@@ -101,7 +112,7 @@ void SADVECT(double *s, double *sn,
 /* sk: clm.F90*/
 
 
-#if defined(_CRAYMPP) 
+#if defined(_CRAYMPP)
 #define CLM_LSM CLM_LSM
 #elif defined(__bg__)
 #define CLM_LSM clm_lsm
@@ -109,15 +120,15 @@ void SADVECT(double *s, double *sn,
 #define CLM_LSM clm_lsm_
 #endif
 
-#define CALL_CLM_LSM(pressure_data,saturation_data,evap_trans_data,mask,porosity_data, \
+#define CALL_CLM_LSM(pressure_data, saturation_data, evap_trans_data, mask, porosity_data, \
                      dz_mult_data, istep, dt, t, start_time, dx, dy, dz, ix, iy, nx, ny, nz, \
-		     nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx, gny, rank,		\
+                     nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx, gny, rank,              \
                      sw_data, lw_data, prcp_data, tas_data, u_data, v_data, patm_data, qatm_data, \
-					 lai_data,sai_data,z0m_data,displa_data, \
+                     lai_data, sai_data, z0m_data, displa_data, \
                      eflx_lh_tot_data, eflx_lwrad_out_data, eflx_sh_tot_data, eflx_soil_grnd_data, \
                      qflx_evap_tot_data, qflx_evap_grnd_data, qflx_evap_soi_data, qflx_evap_veg_data, qflx_tran_veg_data, \
                      qflx_infl_data, swe_out_data, t_grnd_data, t_soil_data, \
-                     clm_dump_interval, clm_1d_out, clm_forc_veg, clm_file_dir , clm_file_dir_length, clm_bin_out_dir, write_CLM_binary,  \
+                     clm_dump_interval, clm_1d_out, clm_forc_veg, clm_file_dir, clm_file_dir_length, clm_bin_out_dir, write_CLM_binary,  \
                      clm_beta_function, clm_veg_function, clm_veg_wilting, clm_veg_fieldc, clm_res_sat, \
                      clm_irr_type, clm_irr_cycle, clm_irr_rate, clm_irr_start, clm_irr_stop, \
                      clm_irr_threshold, qirr, qirr_inst, iflag, clm_irr_thresholdtype, soi_z, clm_next, clm_write_logs, clm_last_rst, clm_daily_rst, clm_water_stress_type) \
@@ -151,9 +162,9 @@ void CLM_LSM( double *pressure_data, double *saturation_data, double *evap_trans
     /* @RMM CRUNCHFLOW.F90*/
 //#define CRUNCHFLOW crunchflow_
 //#define CALL_CRUNCHFLOW();
-    
-//    void CRUCHFLOW( );    
-    
-#ifdef __cplusplus     /* wrapper to enable C++ usage */
-}
+
+//    void CRUCHFLOW( );
+
+END_EXTERN_C
+
 #endif
