@@ -1,460 +1,470 @@
-/*BHEADER**********************************************************************
-
-  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-  by the Parflow Team (see the CONTRIBUTORS file)
-  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-
-  This file is part of Parflow. For details, see
-  http://www.llnl.gov/casc/parflow
-
-  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-  for the GNU Lesser General Public License.
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License (as published
-  by the Free Software Foundation) version 2.1 dated February 1999.
-
-  This program is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-  and conditions of the GNU General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-  USA
-  **********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
 #include "parflow.h"
 
 #include <math.h>
 
-void OverlandSum(ProblemData *problem_data, 
-		 Vector      *pressure,       /* Current pressure values */
-		 double dt, 
-		 Vector *overland_sum)
+void OverlandSum(ProblemData *problem_data,
+                 Vector *     pressure,       /* Current pressure values */
+                 double       dt,
+                 Vector *     overland_sum)
 {
-   GrGeomSolid *gr_domain         = ProblemDataGrDomain(problem_data);
+  GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
 
-   double       dx, dy, dz;
-   int          i, j, r, is;
-   int          ix, iy, iz;
-   int          nx, ny;
+  double dx, dy, dz;
+  int i, j, r, is;
+  int ix, iy, iz;
+  int nx, ny;
 
-   Subgrid     *subgrid;
-   Grid        *grid              = VectorGrid(pressure);
+  Subgrid     *subgrid;
+  Grid        *grid = VectorGrid(pressure);
 
-   Vector      *slope_x           = ProblemDataTSlopeX(problem_data); 
-   Vector      *slope_y           = ProblemDataTSlopeY(problem_data);
-   Vector      *mannings          = ProblemDataMannings(problem_data);
-   Vector      *top               = ProblemDataIndexOfDomainTop(problem_data);
+  Vector      *slope_x = ProblemDataTSlopeX(problem_data);
+  Vector      *slope_y = ProblemDataTSlopeY(problem_data);
+  Vector      *mannings = ProblemDataMannings(problem_data);
+  Vector      *top = ProblemDataIndexOfDomainTop(problem_data);
 
-   Subvector   *overland_sum_subvector;
-   Subvector   *slope_x_subvector;
-   Subvector   *slope_y_subvector;
-   Subvector   *mannings_subvector;
-   Subvector   *pressure_subvector;
-   Subvector   *top_subvector;
-   
-   int index_overland_sum;
-   int index_slope_x;
-   int index_slope_y;
-   int index_mannings;
-   int index_pressure;
-   int index_top;
+  Subvector   *overland_sum_subvector;
+  Subvector   *slope_x_subvector;
+  Subvector   *slope_y_subvector;
+  Subvector   *mannings_subvector;
+  Subvector   *pressure_subvector;
+  Subvector   *top_subvector;
 
-   double *overland_sum_ptr;
-   double *slope_x_ptr;
-   double *slope_y_ptr;
-   double *mannings_ptr;
-   double *pressure_ptr;
-   double *top_ptr;
+  int index_overland_sum;
+  int index_slope_x;
+  int index_slope_y;
+  int index_mannings;
+  int index_pressure;
+  int index_top;
 
-   int ipatch;
-   
-   BCStruct    *bc_struct;
+  double *overland_sum_ptr;
+  double *slope_x_ptr;
+  double *slope_y_ptr;
+  double *mannings_ptr;
+  double *pressure_ptr;
+  double *top_ptr;
 
-   BCPressureData *bc_pressure_data = ProblemDataBCPressureData(problem_data);
-   int num_patches                  = BCPressureDataNumPatches(bc_pressure_data);
+  int ipatch;
 
-   bc_struct = NewBCStruct(GridSubgrids(grid), 
-			   gr_domain,
-			   num_patches,
-			   BCPressureDataPatchIndexes(bc_pressure_data),
-			   BCPressureDataBCTypes(bc_pressure_data),
-			   NULL);
+  BCStruct    *bc_struct;
 
-   if (num_patches > 0)
-   {
-      for (ipatch = 0; ipatch < num_patches; ipatch++)
+  BCPressureData *bc_pressure_data = ProblemDataBCPressureData(problem_data);
+  int num_patches = BCPressureDataNumPatches(bc_pressure_data);
+
+  bc_struct = NewBCStruct(GridSubgrids(grid),
+                          gr_domain,
+                          num_patches,
+                          BCPressureDataPatchIndexes(bc_pressure_data),
+                          BCPressureDataBCTypes(bc_pressure_data),
+                          NULL);
+
+  if (num_patches > 0)
+  {
+    for (ipatch = 0; ipatch < num_patches; ipatch++)
+    {
+      switch (BCPressureDataType(bc_pressure_data, ipatch))
       {
-	 switch(BCPressureDataType(bc_pressure_data,ipatch))
-         {
-	    case 7:
-	    {
+        case 7:
+        {
+          ForSubgridI(is, GridSubgrids(grid))
+          {
+            subgrid = GridSubgrid(grid, is);
 
-	       ForSubgridI(is, GridSubgrids(grid))
-	       {
-	       
-		  subgrid = GridSubgrid(grid, is);
-		  
-		  overland_sum_subvector = VectorSubvector(overland_sum, is);
-		  slope_x_subvector      = VectorSubvector(slope_x, is);
-		  slope_y_subvector      = VectorSubvector(slope_y, is);
-		  mannings_subvector     = VectorSubvector(mannings, is);
-		  pressure_subvector     = VectorSubvector(pressure, is);
-		  top_subvector          = VectorSubvector(top, is);
-		  
-		  r = SubgridRX(subgrid);
-		  
-		  ix = SubgridIX(subgrid);
-		  iy = SubgridIY(subgrid);
-		  iz = SubgridIZ(subgrid);
+            overland_sum_subvector = VectorSubvector(overland_sum, is);
+            slope_x_subvector = VectorSubvector(slope_x, is);
+            slope_y_subvector = VectorSubvector(slope_y, is);
+            mannings_subvector = VectorSubvector(mannings, is);
+            pressure_subvector = VectorSubvector(pressure, is);
+            top_subvector = VectorSubvector(top, is);
 
-		  nx = SubgridNX(subgrid);
-		  ny = SubgridNY(subgrid);
+            r = SubgridRX(subgrid);
 
-		  dx = SubgridDX(subgrid);
-		  dy = SubgridDY(subgrid);
-		  dz = SubgridDZ(subgrid);
-		  
-		  overland_sum_ptr = SubvectorData(overland_sum_subvector);
-		  slope_x_ptr      = SubvectorData(slope_x_subvector);
-		  slope_y_ptr      = SubvectorData(slope_y_subvector);
-		  mannings_ptr     = SubvectorData(mannings_subvector);
-		  pressure_ptr     = SubvectorData(pressure_subvector);
-		  top_ptr          = SubvectorData(top_subvector);
+            ix = SubgridIX(subgrid);
+            iy = SubgridIY(subgrid);
+            iz = SubgridIZ(subgrid);
 
-		  int state;
-		  const int inactive = -1;
-		  const int active = 1;
+            nx = SubgridNX(subgrid);
+            ny = SubgridNY(subgrid);
 
-		  for(i = ix; i < ix + nx; i++) 
-		  {
-		     j = iy - 1;
+            dx = SubgridDX(subgrid);
+            dy = SubgridDY(subgrid);
+            dz = SubgridDZ(subgrid);
 
-		     index_top = SubvectorEltIndex(top_subvector, i, j, 0);
-		     int k = (int)top_ptr[index_top];
+            overland_sum_ptr = SubvectorData(overland_sum_subvector);
+            slope_x_ptr = SubvectorData(slope_x_subvector);
+            slope_y_ptr = SubvectorData(slope_y_subvector);
+            mannings_ptr = SubvectorData(mannings_subvector);
+            pressure_ptr = SubvectorData(pressure_subvector);
+            top_ptr = SubvectorData(top_subvector);
 
-		     if( k < 0 ) {
-			state = inactive;
-		     } else {
-			state = active;
-		     }
+            int state;
+            const int inactive = -1;
+            const int active = 1;
 
-		     while( j < iy + ny) {
-			
-			if( state == inactive) {
-			   index_top = SubvectorEltIndex(top_subvector, i, j, 0);
-			   k = (int)top_ptr[index_top];
-			   while( k < 0 && j <= iy + ny) {
-			      j++;
-			      index_top = SubvectorEltIndex(top_subvector, i, j, 0);
-			      k = (int)top_ptr[index_top];
-			   }
+            for (i = ix; i < ix + nx; i++)
+            {
+              j = iy - 1;
 
-			   // If still in interior
-			   if( j < iy + ny) {
+              index_top = SubvectorEltIndex(top_subvector, i, j, 0);
+              int k = (int)top_ptr[index_top];
 
-			      if ( k >=0 ) {
-				 
-				 // inactive to active
-				 
-				 index_slope_y         = SubvectorEltIndex(slope_y_subvector, i, j, 0);
-				 
-				 // sloping to inactive active from active
-				 if( slope_y_ptr[index_slope_y] > 0) {
-				    index_pressure        = SubvectorEltIndex(pressure_subvector, i, j, k);
-				    
-				    if(pressure_ptr[index_pressure] > 0) 
-				    {
-				       index_overland_sum    = SubvectorEltIndex(overland_sum_subvector,  i, j, 0);
-				       index_mannings        = SubvectorEltIndex(mannings_subvector, i, j, 0);
-				       
-				       overland_sum_ptr[index_overland_sum] += 
-					  (sqrt( fabs(slope_y_ptr[index_slope_y]) ) / mannings_ptr[index_mannings] ) *
-					  pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dx * dt;
-				    }
-				 }
-			      }
+              if (k < 0)
+              {
+                state = inactive;
+              }
+              else
+              {
+                state = active;
+              }
 
-			      state = active;
-			   }
+              while (j < iy + ny)
+              {
+                if (state == inactive)
+                {
+                  index_top = SubvectorEltIndex(top_subvector, i, j, 0);
+                  k = (int)top_ptr[index_top];
+                  while (k < 0 && j <= iy + ny)
+                  {
+                    j++;
+                    index_top = SubvectorEltIndex(top_subvector, i, j, 0);
+                    k = (int)top_ptr[index_top];
+                  }
 
-			} else {
-			   index_top = SubvectorEltIndex(top_subvector, i, j+1, 0);
-			   k = (int)top_ptr[index_top];
-			   while( k >= 0 && j <= iy + ny) {
-			      j++;
-			      index_top = SubvectorEltIndex(top_subvector, i, j+1, 0);
-			      k = (int)top_ptr[index_top];
-			   }
+                  // If still in interior
+                  if (j < iy + ny)
+                  {
+                    if (k >= 0)
+                    {
+                      // inactive to active
 
-			   // If still in interior
-			   if( j < iy + ny) {
+                      index_slope_y = SubvectorEltIndex(slope_y_subvector, i, j, 0);
 
-			      index_top     = SubvectorEltIndex(top_subvector, i, j, 0);
-			      k = (int)top_ptr[index_top];
+                      // sloping to inactive active from active
+                      if (slope_y_ptr[index_slope_y] > 0)
+                      {
+                        index_pressure = SubvectorEltIndex(pressure_subvector, i, j, k);
 
-			      // active to inactive
+                        if (pressure_ptr[index_pressure] > 0)
+                        {
+                          index_overland_sum = SubvectorEltIndex(overland_sum_subvector, i, j, 0);
+                          index_mannings = SubvectorEltIndex(mannings_subvector, i, j, 0);
 
-			      
-			      index_slope_y         = SubvectorEltIndex(slope_y_subvector, i, j, 0);
+                          overland_sum_ptr[index_overland_sum] +=
+                            (sqrt(fabs(slope_y_ptr[index_slope_y])) / mannings_ptr[index_mannings]) *
+                            pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dx * dt;
+                        }
+                      }
+                    }
 
-			      // sloping from active to inactive
-			      if( slope_y_ptr[index_slope_y] < 0) {
-				 index_pressure        = SubvectorEltIndex(pressure_subvector, i, j, k);
+                    state = active;
+                  }
+                }
+                else
+                {
+                  index_top = SubvectorEltIndex(top_subvector, i, j + 1, 0);
+                  k = (int)top_ptr[index_top];
+                  while (k >= 0 && j <= iy + ny)
+                  {
+                    j++;
+                    index_top = SubvectorEltIndex(top_subvector, i, j + 1, 0);
+                    k = (int)top_ptr[index_top];
+                  }
 
-				 if(pressure_ptr[index_pressure] > 0) 
-				 {
-				    index_overland_sum    = SubvectorEltIndex(overland_sum_subvector,  i, j, 0);
-				    index_mannings        = SubvectorEltIndex(mannings_subvector, i, j, 0);
-				    
-				    overland_sum_ptr[index_overland_sum] += 
-				    (sqrt( fabs(slope_y_ptr[index_slope_y]) ) / mannings_ptr[index_mannings] ) *
-				       pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dx * dt;
-				 }
-			      }
-			   }
+                  // If still in interior
+                  if (j < iy + ny)
+                  {
+                    index_top = SubvectorEltIndex(top_subvector, i, j, 0);
+                    k = (int)top_ptr[index_top];
 
-			   state = inactive;
-			}
-			j++;
-		     }
-		  }
+                    // active to inactive
+
+
+                    index_slope_y = SubvectorEltIndex(slope_y_subvector, i, j, 0);
+
+                    // sloping from active to inactive
+                    if (slope_y_ptr[index_slope_y] < 0)
+                    {
+                      index_pressure = SubvectorEltIndex(pressure_subvector, i, j, k);
+
+                      if (pressure_ptr[index_pressure] > 0)
+                      {
+                        index_overland_sum = SubvectorEltIndex(overland_sum_subvector, i, j, 0);
+                        index_mannings = SubvectorEltIndex(mannings_subvector, i, j, 0);
+
+                        overland_sum_ptr[index_overland_sum] +=
+                          (sqrt(fabs(slope_y_ptr[index_slope_y])) / mannings_ptr[index_mannings]) *
+                          pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dx * dt;
+                      }
+                    }
+                  }
+
+                  state = inactive;
+                }
+                j++;
+              }
+            }
 
 #if 0
-		  for(i = ix; i < ix + nx; i++) 
-		  {
-		     for(j = iy; j < iy + ny; j++) 
-		     {
-			index_top             = SubvectorEltIndex(top_subvector, i, j, 0);
+            for (i = ix; i < ix + nx; i++)
+            {
+              for (j = iy; j < iy + ny; j++)
+              {
+                index_top = SubvectorEltIndex(top_subvector, i, j, 0);
 
-			int k = (int)top_ptr[index_top];
-			if ( !(k < 0)) 
-			{
-			   /*
-			     Compute runnoff if slope is running off of active region
-			   */
-			   index_overland_sum    = SubvectorEltIndex(overland_sum_subvector,  i, j, 0);
-			   index_slope_x         = SubvectorEltIndex(slope_x_subvector, i, j, 0);
-			   index_slope_y         = SubvectorEltIndex(slope_y_subvector, i, j, 0);
-			   index_mannings        = SubvectorEltIndex(mannings_subvector, i, j, 0);
-			   index_pressure        = SubvectorEltIndex(pressure_subvector, i, j, k);
+                int k = (int)top_ptr[index_top];
+                if (!(k < 0))
+                {
+                  /*
+                   * Compute runnoff if slope is running off of active region
+                   */
+                  index_overland_sum = SubvectorEltIndex(overland_sum_subvector, i, j, 0);
+                  index_slope_x = SubvectorEltIndex(slope_x_subvector, i, j, 0);
+                  index_slope_y = SubvectorEltIndex(slope_y_subvector, i, j, 0);
+                  index_mannings = SubvectorEltIndex(mannings_subvector, i, j, 0);
+                  index_pressure = SubvectorEltIndex(pressure_subvector, i, j, k);
 
-			   if( slope_y_ptr[index_slope_y] > 0 ) 
-			   {
-			      if(pressure_ptr[index_pressure] > 0) 
-			      {
-				 overland_sum_ptr[index_overland_sum] += 
-				    (sqrt( fabs(slope_y_ptr[index_slope_y]) ) / mannings_ptr[index_mannings] ) *
-				    pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dx * dt;
-			      }
-			   }
-			   
-			   /*
-			     Loop until going back outside of active area 
-			   */
-			   while( (j + 1 < iy + ny) && !(top_ptr[SubvectorEltIndex(top_subvector, i, j+1, 0)] < 0) ) 
-			   {
-			      j++;
-			   }
-			   
-			   /* 
-			      Found either domain boundary or outside of active area.
-			      Compute runnoff if slope is running off of active region.
-			   */
+                  if (slope_y_ptr[index_slope_y] > 0)
+                  {
+                    if (pressure_ptr[index_pressure] > 0)
+                    {
+                      overland_sum_ptr[index_overland_sum] +=
+                        (sqrt(fabs(slope_y_ptr[index_slope_y])) / mannings_ptr[index_mannings]) *
+                        pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dx * dt;
+                    }
+                  }
 
-			   index_top             = SubvectorEltIndex(top_subvector, i, j, 0);
-			   k = (int)top_ptr[index_top];
-			   index_overland_sum    = SubvectorEltIndex(overland_sum_subvector,  i, j, 0);
-			   index_slope_x         = SubvectorEltIndex(slope_x_subvector, i, j, 0);
-			   index_slope_y         = SubvectorEltIndex(slope_y_subvector, i, j, 0);
-			   index_mannings        = SubvectorEltIndex(mannings_subvector, i, j, 0);
-			   index_pressure        = SubvectorEltIndex(pressure_subvector, i, j, k);
+                  /*
+                   * Loop until going back outside of active area
+                   */
+                  while ((j + 1 < iy + ny) && !(top_ptr[SubvectorEltIndex(top_subvector, i, j + 1, 0)] < 0))
+                  {
+                    j++;
+                  }
 
-			   if( slope_y_ptr[index_slope_y] < 0 ) 
-			   {
-			      if(pressure_ptr[index_pressure] > 0) 
-			      {
+                  /*
+                   * Found either domain boundary or outside of active area.
+                   * Compute runnoff if slope is running off of active region.
+                   */
 
-				 overland_sum_ptr[index_overland_sum] += 
-				    (sqrt( fabs(slope_y_ptr[index_slope_y]) ) / mannings_ptr[index_mannings] ) *
-				    pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dx * dt;
-			      }
-			   }
-			}
-		     }
-		  }
+                  index_top = SubvectorEltIndex(top_subvector, i, j, 0);
+                  k = (int)top_ptr[index_top];
+                  index_overland_sum = SubvectorEltIndex(overland_sum_subvector, i, j, 0);
+                  index_slope_x = SubvectorEltIndex(slope_x_subvector, i, j, 0);
+                  index_slope_y = SubvectorEltIndex(slope_y_subvector, i, j, 0);
+                  index_mannings = SubvectorEltIndex(mannings_subvector, i, j, 0);
+                  index_pressure = SubvectorEltIndex(pressure_subvector, i, j, k);
+
+                  if (slope_y_ptr[index_slope_y] < 0)
+                  {
+                    if (pressure_ptr[index_pressure] > 0)
+                    {
+                      overland_sum_ptr[index_overland_sum] +=
+                        (sqrt(fabs(slope_y_ptr[index_slope_y])) / mannings_ptr[index_mannings]) *
+                        pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dx * dt;
+                    }
+                  }
+                }
+              }
+            }
 #endif
 
 
-		  for(j = iy; j < iy + ny; j++) 
-		  {
-		     i = ix - 1;
+            for (j = iy; j < iy + ny; j++)
+            {
+              i = ix - 1;
 
-		     index_top = SubvectorEltIndex(top_subvector, i, j, 0);
-		     int k = (int)top_ptr[index_top];
+              index_top = SubvectorEltIndex(top_subvector, i, j, 0);
+              int k = (int)top_ptr[index_top];
 
-		     if( k < 0 ) {
-			state = inactive;
-		     } else {
-			state = active;
-		     }
+              if (k < 0)
+              {
+                state = inactive;
+              }
+              else
+              {
+                state = active;
+              }
 
-		     while( i < ix + nx) {
-			
-			if( state == inactive) {
-			   index_top = SubvectorEltIndex(top_subvector, i, j, 0);
-			   k = (int)top_ptr[index_top];
-			   while( k < 0 && i <= ix + nx) {
-			      i++;
-			      index_top = SubvectorEltIndex(top_subvector, i, j, 0);
-			      k = (int)top_ptr[index_top];
-			   }
+              while (i < ix + nx)
+              {
+                if (state == inactive)
+                {
+                  index_top = SubvectorEltIndex(top_subvector, i, j, 0);
+                  k = (int)top_ptr[index_top];
+                  while (k < 0 && i <= ix + nx)
+                  {
+                    i++;
+                    index_top = SubvectorEltIndex(top_subvector, i, j, 0);
+                    k = (int)top_ptr[index_top];
+                  }
 
-			   // If still in interior
-			   if( i < ix + nx) {
+                  // If still in interior
+                  if (i < ix + nx)
+                  {
+                    if (k >= 0)
+                    {
+                      // inactive to active
 
-			      if ( k >=0 ) {
-				 
-				 // inactive to active
-				 
-				 index_slope_x         = SubvectorEltIndex(slope_x_subvector, i, j, 0);
-				 
-				 // sloping to inactive active from active
-				 if( slope_x_ptr[index_slope_x] > 0) {
-				    index_pressure        = SubvectorEltIndex(pressure_subvector, i, j, k);
-				    
-				    if(pressure_ptr[index_pressure] > 0) 
-				    {
-				       index_overland_sum    = SubvectorEltIndex(overland_sum_subvector,  i, j, 0);
-				       index_mannings        = SubvectorEltIndex(mannings_subvector, i, j, 0);
-				       
-				       overland_sum_ptr[index_overland_sum] += 
-					  (sqrt( fabs(slope_x_ptr[index_slope_x]) ) / mannings_ptr[index_mannings] ) *
-					  pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dy * dt;
-				    }
-				 }
-			      }
+                      index_slope_x = SubvectorEltIndex(slope_x_subvector, i, j, 0);
 
-			      state = active;
-			   }
+                      // sloping to inactive active from active
+                      if (slope_x_ptr[index_slope_x] > 0)
+                      {
+                        index_pressure = SubvectorEltIndex(pressure_subvector, i, j, k);
 
-			} else {
-			   index_top = SubvectorEltIndex(top_subvector, i+1, j, 0);
-			   k = (int)top_ptr[index_top];
-			   while( k >= 0 && i <= ix + nx) {
-			      i++;
-			      index_top = SubvectorEltIndex(top_subvector, i+1, j, 0);
-			      k = (int)top_ptr[index_top];
-			   }
+                        if (pressure_ptr[index_pressure] > 0)
+                        {
+                          index_overland_sum = SubvectorEltIndex(overland_sum_subvector, i, j, 0);
+                          index_mannings = SubvectorEltIndex(mannings_subvector, i, j, 0);
 
-			   // If still in interior
-			   if( i < ix + nx) {
+                          overland_sum_ptr[index_overland_sum] +=
+                            (sqrt(fabs(slope_x_ptr[index_slope_x])) / mannings_ptr[index_mannings]) *
+                            pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dy * dt;
+                        }
+                      }
+                    }
 
-			      index_top     = SubvectorEltIndex(top_subvector, i, j, 0);
-			      k = (int)top_ptr[index_top];
+                    state = active;
+                  }
+                }
+                else
+                {
+                  index_top = SubvectorEltIndex(top_subvector, i + 1, j, 0);
+                  k = (int)top_ptr[index_top];
+                  while (k >= 0 && i <= ix + nx)
+                  {
+                    i++;
+                    index_top = SubvectorEltIndex(top_subvector, i + 1, j, 0);
+                    k = (int)top_ptr[index_top];
+                  }
 
-			      // active to inactive
-			      index_slope_x         = SubvectorEltIndex(slope_x_subvector, i, j, 0);
+                  // If still in interior
+                  if (i < ix + nx)
+                  {
+                    index_top = SubvectorEltIndex(top_subvector, i, j, 0);
+                    k = (int)top_ptr[index_top];
 
-			      // sloping from active to inactive
-			      if( slope_x_ptr[index_slope_x] < 0) {
-				 index_pressure        = SubvectorEltIndex(pressure_subvector, i, j, k);
+                    // active to inactive
+                    index_slope_x = SubvectorEltIndex(slope_x_subvector, i, j, 0);
 
-				 if(pressure_ptr[index_pressure] > 0) 
-				 {
-				    index_overland_sum    = SubvectorEltIndex(overland_sum_subvector,  i, j, 0);
-				    index_mannings        = SubvectorEltIndex(mannings_subvector, i, j, 0);
-				    
-				    overland_sum_ptr[index_overland_sum] += 
-				    (sqrt( fabs(slope_x_ptr[index_slope_x]) ) / mannings_ptr[index_mannings] ) *
-				       pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dy * dt;
-				 }
-			      }
-			   }
+                    // sloping from active to inactive
+                    if (slope_x_ptr[index_slope_x] < 0)
+                    {
+                      index_pressure = SubvectorEltIndex(pressure_subvector, i, j, k);
 
-			   state = inactive;
-			}
-			i++;
-		     }
-		  }
+                      if (pressure_ptr[index_pressure] > 0)
+                      {
+                        index_overland_sum = SubvectorEltIndex(overland_sum_subvector, i, j, 0);
+                        index_mannings = SubvectorEltIndex(mannings_subvector, i, j, 0);
+
+                        overland_sum_ptr[index_overland_sum] +=
+                          (sqrt(fabs(slope_x_ptr[index_slope_x])) / mannings_ptr[index_mannings]) *
+                          pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dy * dt;
+                      }
+                    }
+                  }
+
+                  state = inactive;
+                }
+                i++;
+              }
+            }
 
 #if 0
+            for (j = iy; j < iy + ny; j++)
+            {
+              for (i = ix; i < ix + nx; i++)
+              {
+                index_top = SubvectorEltIndex(top_subvector, i, j, 0);
 
-		  for(j = iy; j < iy + ny; j++) 
-		  {
-		     for(i = ix; i < ix + nx; i++) 
-		     {
-			
-			index_top             = SubvectorEltIndex(top_subvector, i, j, 0);
+                int k = (int)top_ptr[index_top];
+                if (!(k < 0))
+                {
+                  /*
+                   * Compute runnoff if slope is running off of active region
+                   */
+                  index_overland_sum = SubvectorEltIndex(overland_sum_subvector, i, j, 0);
+                  index_slope_x = SubvectorEltIndex(slope_x_subvector, i, j, 0);
+                  index_slope_y = SubvectorEltIndex(slope_y_subvector, i, j, 0);
+                  index_mannings = SubvectorEltIndex(mannings_subvector, i, j, 0);
+                  index_pressure = SubvectorEltIndex(pressure_subvector, i, j, k);
 
-			int k = (int)top_ptr[index_top];
-			if ( !(k < 0)) 
-			{
+                  if (slope_x_ptr[index_slope_x] > 0)
+                  {
+                    if (pressure_ptr[index_pressure] > 0)
+                    {
+                      overland_sum_ptr[index_overland_sum] +=
+                        (sqrt(fabs(slope_x_ptr[index_slope_y])) / mannings_ptr[index_mannings]) *
+                        pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dy * dt;
+                    }
+                  }
 
-			   /*
-			     Compute runnoff if slope is running off of active region
-			   */
-			   index_overland_sum    = SubvectorEltIndex(overland_sum_subvector,  i, j, 0);
-			   index_slope_x         = SubvectorEltIndex(slope_x_subvector, i, j, 0);
-			   index_slope_y         = SubvectorEltIndex(slope_y_subvector, i, j, 0);
-			   index_mannings        = SubvectorEltIndex(mannings_subvector, i, j, 0);
-			   index_pressure        = SubvectorEltIndex(pressure_subvector, i, j, k);
+                  /*
+                   * Loop until going back outside of active area
+                   */
+                  while ((i + 1 < ix + nx) && !(top_ptr[SubvectorEltIndex(top_subvector, i + 1, j, 0)] < 0))
+                  {
+                    i++;
+                  }
 
-			   if( slope_x_ptr[index_slope_x] > 0 ) 
-			   {
-			      if(pressure_ptr[index_pressure] > 0) 
-			      {
-				 overland_sum_ptr[index_overland_sum] += 
-				    (sqrt( fabs(slope_x_ptr[index_slope_y]) ) / mannings_ptr[index_mannings] ) *
-				    pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dy * dt;
-			      }
-			   }
-			   
-			   /*
-			     Loop until going back outside of active area 
-			   */
-			   while( (i + 1 < ix + nx) && !(top_ptr[SubvectorEltIndex(top_subvector, i+1, j, 0)] < 0) ) 
-			   {
-			      i++;
-			   }
-			   
-			   /* 
-			      Found either domain boundary or outside of active area.
-			      Compute runnoff if slope is running off of active region.
-			   */
-			   index_top             = SubvectorEltIndex(top_subvector, i, j, 0);
-			   k = (int)top_ptr[index_top];
-			   index_overland_sum    = SubvectorEltIndex(overland_sum_subvector,  i, j, 0);
-			   index_slope_x         = SubvectorEltIndex(slope_x_subvector, i, j, 0);
-			   index_slope_y         = SubvectorEltIndex(slope_y_subvector, i, j, 0);
-			   index_mannings        = SubvectorEltIndex(mannings_subvector, i, j, 0);
-			   index_pressure        = SubvectorEltIndex(pressure_subvector, i, j, k);
+                  /*
+                   * Found either domain boundary or outside of active area.
+                   * Compute runnoff if slope is running off of active region.
+                   */
+                  index_top = SubvectorEltIndex(top_subvector, i, j, 0);
+                  k = (int)top_ptr[index_top];
+                  index_overland_sum = SubvectorEltIndex(overland_sum_subvector, i, j, 0);
+                  index_slope_x = SubvectorEltIndex(slope_x_subvector, i, j, 0);
+                  index_slope_y = SubvectorEltIndex(slope_y_subvector, i, j, 0);
+                  index_mannings = SubvectorEltIndex(mannings_subvector, i, j, 0);
+                  index_pressure = SubvectorEltIndex(pressure_subvector, i, j, k);
 
-			   if( slope_x_ptr[index_slope_x] < 0 ) 
-			   {
-			      if(pressure_ptr[index_pressure] > 0) 
-			      {
-				 overland_sum_ptr[index_overland_sum] += 
-				    (sqrt( fabs(slope_x_ptr[index_slope_x]) ) / mannings_ptr[index_mannings] ) *
-				    pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dy * dt;
-			      }
-			   }
-			}
-		     }
-		  }
+                  if (slope_x_ptr[index_slope_x] < 0)
+                  {
+                    if (pressure_ptr[index_pressure] > 0)
+                    {
+                      overland_sum_ptr[index_overland_sum] +=
+                        (sqrt(fabs(slope_x_ptr[index_slope_x])) / mannings_ptr[index_mannings]) *
+                        pow(pressure_ptr[index_pressure], 5.0 / 3.0) * dy * dt;
+                    }
+                  }
+                }
+              }
+            }
 #endif
-
-
-	       }
-	    }
-	 }
+          }
+        }
       }
-   }
+    }
+  }
 
-   FreeBCStruct(bc_struct);
+  FreeBCStruct(bc_struct);
 }
 

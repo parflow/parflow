@@ -12,31 +12,27 @@ typedef struct parflow_p4est_grid parflow_p4est_grid_t;
 typedef struct parflow_p4est_qiter parflow_p4est_qiter_t;
 
 typedef enum parflow_p4est_iter_type {
-    PARFLOW_P4EST_QUAD = 0x01,
-    PARFLOW_P4EST_GHOST = 0x02
+  PARFLOW_P4EST_QUAD = 0x01,
+  PARFLOW_P4EST_GHOST = 0x02
 } parflow_p4est_iter_type_t;
 
 typedef struct parflow_p4est_quad_data {
-
-    Subgrid *pf_subgrid;
-
+  Subgrid *pf_subgrid;
 } parflow_p4est_quad_data_t;
 
 typedef parflow_p4est_quad_data_t parflow_p4est_ghost_data_t;
 
-typedef struct parflow_p4est_sg_param{
-
+typedef struct parflow_p4est_sg_param {
   /** These values are set just once **/
-  int       N[3];   /** Input number of grid points per coord. direction */
-  int       P[3];   /** Computed number of subgrids per coord. direction */
-  int       m[3];   /** Input number of subgrid points per coord. direction */
-  int       l[3];   /** Residual N % m **/
+  int N[3];         /** Input number of grid points per coord. direction */
+  int P[3];         /** Computed number of subgrids per coord. direction */
+  int m[3];         /** Input number of subgrid points per coord. direction */
+  int l[3];         /** Residual N % m **/
 
   /** These values are to be updated
-   ** when looping over p4est quadrants */
-  int       p[3];         /** Computed number of subgrid points per coord. direction */
-  int       icorner[3];   /** Bottom left corner in index space */
-
+  ** when looping over p4est quadrants */
+  int p[3];               /** Computed number of subgrid points per coord. direction */
+  int icorner[3];         /** Bottom left corner in index space */
 }parflow_p4est_sg_param_t;
 
 
@@ -46,7 +42,7 @@ parflow_p4est_sg_param_init(parflow_p4est_sg_param_t *sp);
 
 /** Update parameter structure */
 void
-parflow_p4est_sg_param_update(parflow_p4est_qiter_t * qiter,
+parflow_p4est_sg_param_update(parflow_p4est_qiter_t *   qiter,
                               parflow_p4est_sg_param_t *sp);
 
 /** Create a parflow_p4est_grid structure.
@@ -80,9 +76,9 @@ void            parflow_p4est_grid_mesh_destroy(parflow_p4est_grid_t *
  *          the top and bottom neighbors of \subgrid, if no neighbors
  *          exist then those members are filled with -1.
  */
-void            parflow_p4est_get_zneigh(Subgrid * subgrid,
+void            parflow_p4est_get_zneigh(Subgrid *               subgrid,
                                          parflow_p4est_qiter_t * qiter,
-                                         parflow_p4est_grid_t * pfgrid);
+                                         parflow_p4est_grid_t *  pfgrid);
 
 /** Create an iterator over all local or ghost quadrants.
  * \param [in] pfg      Pointer to a valid parflow_p4est_grid structure.
@@ -109,11 +105,11 @@ parflow_p4est_qiter_t *parflow_p4est_qiter_next(parflow_p4est_qiter_t *
  * \param [out] v       Coordinates of the quadrant in the passed iterator.
  */
 void            parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter,
-                                            double v[3]);
+                                            double                  v[3]);
 
 /** Retrieve a pointer to the information placed on each quadrant */
 parflow_p4est_quad_data_t
-    * parflow_p4est_get_quad_data(parflow_p4est_qiter_t * qiter);
+* parflow_p4est_get_quad_data(parflow_p4est_qiter_t * qiter);
 
 /** Get owner rank of the quadrant in the passed iterator */
 int             parflow_p4est_qiter_get_owner_rank(parflow_p4est_qiter_t *
@@ -121,18 +117,18 @@ int             parflow_p4est_qiter_get_owner_rank(parflow_p4est_qiter_t *
 
 /** Get index in the owner processor of quadrant in the passed iterator */
 int             parflow_p4est_qiter_get_local_idx(parflow_p4est_qiter_t *
-                                                   qiter);
+                                                  qiter);
 
 /** Get owner tree of the quadrant in the passed iterator */
 int             parflow_p4est_qiter_get_tree(parflow_p4est_qiter_t * qiter);
 
 /** Get index in the ghost layer of the quadrant in the passed iterator */
-int             parflow_p4est_qiter_get_ghost_idx (parflow_p4est_qiter_t * qiter);
+int             parflow_p4est_qiter_get_ghost_idx(parflow_p4est_qiter_t * qiter);
 
 /** Retrieve a pointer to the information placed on each ghost quadrant */
 parflow_p4est_ghost_data_t
-   * parflow_p4est_get_ghost_data(parflow_p4est_grid_t * pfgrid,
-                                  parflow_p4est_qiter_t * qiter);
+* parflow_p4est_get_ghost_data(parflow_p4est_grid_t *  pfgrid,
+                               parflow_p4est_qiter_t * qiter);
 
 /** Returns 1 if there are no trees in this processor, 0 otherwise */
 int             parflow_p4est_rank_is_empty(parflow_p4est_grid_t * pfgrid);
@@ -149,8 +145,8 @@ int             parflow_p4est_rank_is_empty(parflow_p4est_grid_t * pfgrid);
  *                           distiguish columns in mpi communication.
  */
 void
-parflow_p4est_get_projection_info (Subgrid *subgrid, int z_level,
-                                   parflow_p4est_grid_t *pfgrid, int info[2]);
+parflow_p4est_get_projection_info(Subgrid *subgrid, int z_level,
+                                  parflow_p4est_grid_t *pfgrid, int info[2]);
 
 /** Get array with number of subgrids per rank.
  * \param [in] pfgrid        Pointer to a valid parflow_p4est_grid structure.
@@ -158,7 +154,7 @@ parflow_p4est_get_projection_info (Subgrid *subgrid, int z_level,
  *                           Pointer to a int array of mpisize elements.
  */
 void             parflow_p4est_nquads_per_rank(parflow_p4est_grid_t *pfgrid,
-                                               int *quads_per_rank);
+                                               int *                 quads_per_rank);
 
 /** If owned, get the coorner in in the p4est brick coordinates.
  * of the tree containing this subgrid.
@@ -172,8 +168,8 @@ void             parflow_p4est_nquads_per_rank(parflow_p4est_grid_t *pfgrid,
  *                           \Subgrid.
  */
 void
-parflow_p4est_get_brick_coord (Subgrid *subgrid,
-                               parflow_p4est_grid_t *pfgrid, p4est_gloidx_t bcoord[3]);
+parflow_p4est_get_brick_coord(Subgrid *subgrid,
+                              parflow_p4est_grid_t *pfgrid, p4est_gloidx_t bcoord[3]);
 
 SC_EXTERN_C_END;
 
