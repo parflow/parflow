@@ -64,7 +64,7 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
 
   int i, j, k, ai;
   double         *data;
-  double mult, z_coord;           //@RMM dz scale info
+  double mult, z_coord;            //@RMM dz scale info
 
   int err;
 
@@ -125,9 +125,7 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
     coords[2][k] = SubgridZ(subgrid) + SubgridDZ(subgrid) * ((float)k - 0.5);
   }
 
-
   sprintf(meshname, "%s_%06u_%06u", "mesh", p, loc_idx);
-
 
   err = DBPutQuadmesh(db_file, meshname, NULL, coords, dims,
                       3, DB_FLOAT, DB_COLLINEAR, NULL);
@@ -357,6 +355,7 @@ void     WriteSilo(char *  file_prefix,
 
 #ifdef HAVE_SILO
   p = amps_Rank(amps_CommWorld);
+
   mpisize = amps_Size(amps_CommWorld);
 
   if (USE_P4EST)

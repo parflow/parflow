@@ -511,7 +511,6 @@ void         ICPhasePressure(
       for (ir = 0; ir < num_regions; ir++)
       {
         ref_solid = ProblemDataSolid(problem_data, geom_indices[ir]);
-
         if (!USE_P4EST)
         {
           elevations[ir] = CalcElevations(ref_solid, patch_indices[ir],
