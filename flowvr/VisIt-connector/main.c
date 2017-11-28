@@ -78,20 +78,24 @@ void CreateMesh(SimulationData *sim)
   }
 }
 
-size_t setSnapshot(const void *buffer, void *cbdata)
+size_t setSnapshot(const void *buffer, size_t size, void *cbdata)
 {
   GridMessageMetadata* m = (GridMessageMetadata*)buffer;
   SimulationData *sim = (SimulationData*)cbdata;
 
-  size_t s = sizeof(double) * m->nX * m->nY * m->nZ;
-
   sim->time = m->time;
 
-  if (!sim->inited || sim->nX * sim->nY * sim->nZ != m->nX * m->nY * m->nZ)
+  if (!sim->inited || sim->nX != m->nX || sim->nY != m->nY || sim->nZ != m->nZ)
   {
+    D("init sim on grid: %d %d %d", m->nX, m->nY, m->nZ);
+
     FreeSim(sim);
 
-    sim->snapshot = (double*)malloc(s);
+    sim->snapshot = (double*)malloc(sizeof(double) * m->nX * m->nY * m->nZ);
+
+    sim->nX = m->nX;
+    sim->nY = m->nY;
+    sim->nZ = m->nZ;
 
     // recreate mesh
     CreateMesh(sim);
@@ -99,9 +103,6 @@ size_t setSnapshot(const void *buffer, void *cbdata)
     sim->inited = 1;
   }
 
-  sim->nX = m->nX;
-  sim->nY = m->nY;
-  sim->nZ = m->nZ;
 
   // populate snapshot:
   buffer += sizeof(GridMessageMetadata);
@@ -117,7 +118,7 @@ size_t setSnapshot(const void *buffer, void *cbdata)
   }
 
   D("copied buffers!");
-  return s;
+  return m->nx * m->ny * m->nz * sizeof(double) + sizeof(GridMessageMetadata);
 }
 
 void triggerSnap(SimulationData *sim)
