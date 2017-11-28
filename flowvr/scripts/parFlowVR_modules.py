@@ -29,7 +29,7 @@ class FilterMergeItExt(Filter):
 
 class Parflow(Module):
     def __init__(self, prefix, index=None, run=None, host=None, cmdline=None):
-        name = prefix + "/" + str(index) if index else prefix
+        name = prefix + "/" + str(index) if index is not None else prefix
         Module.__init__(self, name, run = run, host = host, cmdline = cmdline)
 
         inportnames = ["in"]
@@ -62,7 +62,7 @@ class ParflowMPI(Composite):
         ninstance = len(hosts_list)
 
         for i in range(ninstance):
-            parflow = Parflow(prefix, i, parflowrun, hosts_list[i])
+            parflow = Parflow(prefix, index=i, run=parflowrun, host=hosts_list[i])
 
             # collect ports
             for pname in parflow.ports:
@@ -105,8 +105,8 @@ class Simplestarter(Module):
 
 class Ticker(Module):
     """Module sends a message every second"""
-    def __init__(self, name):
-        Module.__init__(self, name, cmdline = "python ../scripts/ticker.py")
+    def __init__(self, name, size=0, T=0.5):
+        Module.__init__(self, name, cmdline = "python ../scripts/ticker.py %d %f" % (size, T))
         #self.addPort("beginIt", direction = 'in')
         self.addPort("out", direction = 'out')
 

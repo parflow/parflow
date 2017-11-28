@@ -15,6 +15,14 @@ v.append(outport)
 
 tickerModule = flowvr.initModule(v)
 
+size = 1
+T = 0.5
+
+if len(sys.argv) > 1:
+    size = int(sys.argv[1])
+
+if len(sys.argv) > 2:
+    T = float(sys.argv[2])
 
 print ("tttttt ticker now waiting!")
 while tickerModule.wait() :
@@ -27,15 +35,15 @@ while tickerModule.wait() :
     m = flowvr.MessageWrite(outport.stamps)
 
 
-    print("tttttttt setting stamp %f - %f" % (startTime, stopTime))
 
-    m.data = tickerModule.alloc(0)
+    print(size)
+    m.data = tickerModule.alloc(size)
     outport.put(m)
 
     m.clear()
 
     print ("tttttt putting message")
-    time.sleep(0.5)
+    time.sleep(T)
 
 
 
