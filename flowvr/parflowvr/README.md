@@ -5,7 +5,7 @@ This folder holds a complicated flowVR - parflow - workflow.
 
 ## for debugging:
 - `./watch.sh` (will restart do.sh when parflow was rebuilt ;)
-- `./visit_loader.py` (opens in visit. to reload after d.sh was restarted jsut type `reload()` in the ipython console!)
+- `./visit_loader.py` (opens in visit. to reload after do.sh was restarted just type `reload()` in the ipython console!)
 
 
 

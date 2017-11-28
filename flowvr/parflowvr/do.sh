@@ -21,9 +21,12 @@ R=1
 export START_TIME=0.0
 export STOP_TIME=0.001
 
+DEBUGFLAGS="-v -v -v"
+DEBUGFLAGS=""
+
 python ./parflowvr.py $P $Q $R $START_TIME $STOP_TIME
 #flowvrd -s 3G & # do not need this line!
-flowvrd &
+flowvrd $DEBUGFLAGS &
 
 # wait for flowvrd to startup
 sleep 1
@@ -36,7 +39,7 @@ tclsh ./mpi.tcl $P $Q $R --FlowVR # does all the preparation...
 sh $PARFLOW_DIR/bin/bootmc $NumProcs
 sh $PARFLOW_DIR/bin/getmc $NumProcs
 
-flowvr parflowvr
+flowvr parflowvr --batch-mode $DEBUGFLAGS
 
 sh $PARFLOW_DIR/bin/freemc
 sh $PARFLOW_DIR/bin/killmc

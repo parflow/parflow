@@ -12,13 +12,13 @@ void SendActionMessage(fca_module mod, fca_port port, Action action, Variable va
   amm->action = action;
   amm->variable = variable;
   memcpy((void*)(++amm), parameter, parameterSize);
+
   fca_put(port, msg);
   fca_free(msg);
 }
 
-void ParseMergedMessage(fca_port port, size_t (*cb)(const void *buffer, void *cbdata), void *cbdata)
+void ParseMergedMessage(fca_port port, size_t (*cb)(const void *buffer, size_t size, void *cbdata), void *cbdata)
 {
-  // TODO: probably we need to obtain one parameter for the callback too to make it more clean
   fca_message msg = fca_get(port);
   size_t s = fca_get_segment_size(msg, 0);
 
@@ -28,7 +28,8 @@ void ParseMergedMessage(fca_port port, size_t (*cb)(const void *buffer, void *cb
     void* end = buffer + s;
     while (buffer < end)
     {
-      buffer += cb(buffer, cbdata);
+      buffer += cb(buffer, s, cbdata);
+//      printf("--buffer: %#010x/%#010x\n", buffer, end);
     }
     if (buffer > end)
     {

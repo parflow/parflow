@@ -135,8 +135,13 @@ void NewFlowVR(void)
 
 #ifdef HAVE_FLOWVR
 
-size_t Interact(const void *buffer, void *cbdata)
+size_t Interact(const void *buffer, size_t size, void *cbdata)
 {
+  D("Interact %d < %d ?", size, sizeof(ActionMessageMetadata));
+
+  if (size < sizeof(ActionMessageMetadata))
+    return size;  // does not contain an action.
+
   SimulationSnapshot *snapshot = (SimulationSnapshot*)cbdata;
   ActionMessageMetadata *amm = (ActionMessageMetadata*)buffer;
   size_t s = sizeof(ActionMessageMetadata);
@@ -144,7 +149,7 @@ size_t Interact(const void *buffer, void *cbdata)
   switch (amm->action)
   {
     case ACTION_TRIGGER_SNAPSHOT:
-      s = SendSnapshot(snapshot, amm->variable);
+      SendSnapshot(snapshot, amm->variable);
       break;
 
     default:
@@ -204,6 +209,7 @@ void vectorToMessage(Vector* v, double const * const time, fca_message *result, 
   GridMessageMetadata m;
   fillGridMessageMetadata(v, time, &m);
   size_t vector_size = sizeof(double) * m.nx * m.ny * m.nz;
+  D("Sending Vector %d %d %d", m.nx, m.ny, m.nz);
   *result = fca_new_message(moduleParflow, sizeof(GridMessageMetadata) + vector_size);
   if (result == NULL)
   {
@@ -295,8 +301,10 @@ void SendSnapshot(SimulationSnapshot const * const snapshot, Variable var)
 {
   // TODO: extract var from snapshot
   // send snapshot!
+  D("SendSnapshot");
   const PortNameData portnamedatas[] =
   {
+
     { "pressureSnap", snapshot->pressure_out }//,
     /*{ "porosity", porosity_out },*/
     /*{ "saturation", saturation_out }*/
@@ -323,8 +331,9 @@ void FlowVRServeFinalState(SimulationSnapshot *snapshot)
 
   if (serve_final_state)
   {
+    D("now serving final state.");
     while (FlowVRInteract(snapshot))
-      ;
+      usleep(100000);
   }
 }
 

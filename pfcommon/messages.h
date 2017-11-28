@@ -86,5 +86,5 @@ typedef struct {
 
 void SendActionMessage(fca_module mod, fca_port port, Action action, Variable variable,
                        void *parameter, size_t parameterSize);
-void ParseMergedMessage(fca_port port, size_t (*cb)(const void *buffer, void *cbdata), void *cbdata);
+void ParseMergedMessage(fca_port port, size_t (*cb)(const void *buffer, size_t size, void *cbdata), void *cbdata);
 #endif
