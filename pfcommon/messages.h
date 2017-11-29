@@ -49,7 +49,7 @@ typedef struct {
 // TODO: rename this file into something more fitting!
 typedef enum {
   /// just for trigger:
-  VARIABLE_PRESSURE,
+  VARIABLE_PRESSURE = 0,
   VARIABLE_SATURATION,
 
   // to steer:
@@ -57,7 +57,9 @@ typedef enum {
   VARIABLE_KS,
   VARIABLE_POROSITY,
   VARIABLE_MANNING,
-  VARIABLE_PERMEABILITY
+  VARIABLE_PERMEABILITY_X,
+  VARIABLE_PERMEABILITY_Y,
+  VARIABLE_PERMEABILITY_Z
 } Variable;
 
 typedef enum {
@@ -86,5 +88,7 @@ typedef struct {
 
 void SendActionMessage(fca_module mod, fca_port port, Action action, Variable variable,
                        void *parameter, size_t parameterSize);
-void ParseMergedMessage(fca_port port, size_t (*cb)(const void *buffer, size_t size, void *cbdata), void *cbdata);
+void ParseMergedMessage(fca_port port,
+                        size_t (*cb)(const void *buffer, size_t size, void *cbdata),
+                        void *cbdata);
 #endif

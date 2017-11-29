@@ -53,6 +53,7 @@ typedef struct {
   Vector * pressure_out;
   Vector * porosity_out;
   Vector * saturation_out;
+  ProblemData * problem_data;
 } SimulationSnapshot;
 
 #define GetSimulationSnapshot \
@@ -62,6 +63,7 @@ typedef struct {
     instance_xtra->pressure, \
     NULL, \
     instance_xtra->saturation, \
+    problem_data \
   }
 
 extern fca_module moduleParflow;
@@ -70,6 +72,7 @@ extern fca_module moduleParflow;
 // TODO: documentation, also in other c files
 
 // do all the in message handlinge
+void FlowVRinitTranslation(SimulationSnapshot *snapshot);
 int FlowVRInteract(SimulationSnapshot *sshot);
 
 

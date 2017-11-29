@@ -1546,6 +1546,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #ifdef HAVE_FLOWVR
   SimulationSnapshot sshot;
   sshot = GetSimulationSnapshot;
+  FlowVRinitTranslation(&sshot);
 #endif
 
   do                            /* while take_more_time_steps */

@@ -135,6 +135,80 @@ void NewFlowVR(void)
 
 #ifdef HAVE_FLOWVR
 
+static void* translation[6];
+void FlowVRinitTranslation(SimulationSnapshot *snapshot)  // TODO: macht eigentlich die uebergabe von sshot an vielen anderen stellen sinnlos!
+{
+  translation[VARIABLE_PRESSURE] = snapshot->pressure_out;
+  translation[VARIABLE_SATURATION] = snapshot->saturation_out;
+  translation[VARIABLE_KS] = NULL;  // TODO: who the fuck is KS?
+  translation[VARIABLE_POROSITY] = ProblemDataPorosity(snapshot->problem_data);
+  translation[VARIABLE_MANNING] = ProblemDataMannings(snapshot->problem_data);
+  translation[VARIABLE_PERMEABILITY_X] = ProblemDataPermeabilityX(snapshot->problem_data);
+  translation[VARIABLE_PERMEABILITY_Y] = ProblemDataPermeabilityY(snapshot->problem_data);
+  translation[VARIABLE_PERMEABILITY_Z] = ProblemDataPermeabilityZ(snapshot->problem_data);
+}
+
+
+/// returns how much we read from buffer
+size_t Steer(Variable var, Action action, const void *buffer)
+{
+  D("Steer");
+  SteerMessageMetadata *s = (SteerMessageMetadata*)buffer;
+  double *operand = (double*)(buffer + sizeof(SteerMessageMetadata));
+
+  Vector *v = translation[var];
+
+  Grid *grid = VectorGrid(v);
+  SubgridArray *subgrids = GridSubgrids(grid);
+  Subvector *subvector;
+
+  int g;
+
+  ForSubgridI(g, subgrids)
+  {
+    subvector = VectorSubvector(v, g);
+  }
+
+  int nx_v = SubvectorNX(subvector);
+  int ny_v = SubvectorNY(subvector);
+
+  // TODO:speedoptimize this loop. switch to outside. maybe I can do iit with avx on whole oxes? maybe I have to change 1,1,1
+  int i, j, k, d = 0, ai = 0;
+  double *data;
+  data = SubvectorElt(subvector, s->ix, s->iy, s->iz);
+  BoxLoopI1(i, j, k, s->ix, s->iy, s->iz, s->nx, s->ny, s->nz, ai, nx_v, ny_v, nz_v, 1, 1, 1, {
+    switch (action)
+    {
+      // TODO: log steering!
+      case ACTION_SET:
+        data[ai] = operand[d];
+        break;
+
+      case ACTION_ADD:
+        data[ai] += operand[d];
+        break;
+
+      case ACTION_MULTIPLY:
+        data[ai] *= operand[d];
+        /*D("op%f", operand[d]);*/
+        break;
+
+      default:
+        PARFLOW_ERROR("unknown Steer Action!");
+    }
+    d++;
+  });
+
+  // InitVectorUpdate!
+  // TODO: necessary?:
+  VectorUpdateCommHandle *handle;
+  handle = InitVectorUpdate(v, VectorUpdateAll);
+  FinalizeVectorUpdate(handle);
+
+  return sizeof(SteerMessageMetadata) + sizeof(double) * s->nx * s->ny * s->nz;
+}
+
+/// returns how much we read from buffer
 size_t Interact(const void *buffer, size_t size, void *cbdata)
 {
   D("Interact %d < %d ?", size, sizeof(ActionMessageMetadata));
@@ -146,10 +220,19 @@ size_t Interact(const void *buffer, size_t size, void *cbdata)
   ActionMessageMetadata *amm = (ActionMessageMetadata*)buffer;
   size_t s = sizeof(ActionMessageMetadata);
 
+  const void *data = buffer + s;
+
   switch (amm->action)
   {
     case ACTION_TRIGGER_SNAPSHOT:
       SendSnapshot(snapshot, amm->variable);
+      // s += 0;
+      break;
+
+    case ACTION_SET:
+    case ACTION_ADD:
+    case ACTION_MULTIPLY:
+      s += Steer(amm->variable, amm->action, data);
       break;
 
     default:
@@ -304,7 +387,6 @@ void SendSnapshot(SimulationSnapshot const * const snapshot, Variable var)
   D("SendSnapshot");
   const PortNameData portnamedatas[] =
   {
-
     { "pressureSnap", snapshot->pressure_out }//,
     /*{ "porosity", porosity_out },*/
     /*{ "saturation", saturation_out }*/

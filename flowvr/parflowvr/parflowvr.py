@@ -15,7 +15,7 @@ P, Q, R = sys.argv[1:4]
 #rn = RoutingNode("RoutingNode")
 pres = FilterPreSignal("PreSignal", nb=1)  # will be inited with one token for the beginning. TODO set nb to 2 later!
 
-mergeIt = FilterMergeItExt("parflow-controller")
+mergeIt = FilterMergeItExt("parflow-controller", 2)
 
 # Hostlist: comma separated for openmpi.  Add more hosts for more parallelism
 # run all on localhost for the moment:
@@ -23,8 +23,8 @@ parflowmpi = ParflowMPI(("localhost,"*int(P)*int(Q)*int(R))[:-1])  # cut last ,
 
 visit = VisIt("visit")
 
-#netcdfwriter = NetCDFWriter("netcdfwriter")
-#analyzer = Analyzer("analyzer")
+netcdfwriter = NetCDFWriter("netcdfwriter")
+analyzer = Analyzer("analyzer")
 
 #spymodule = SpyModule("visitout")
 #spymodule2 = SpyModule("presignal out")
@@ -37,11 +37,11 @@ visit = VisIt("visit")
 # PRESSURE DATA TRANSFER
 # link parflow (port pressure)  to netcdfwriter.   Comunication N to 1. Using MergeFilter to merge results
 
-#treePressure = generateNto1(prefix="comNto1PressureMerge", in_ports = parflowmpi.getPort("pressure"), arity = 2)
-#treePressure.link(netcdfwriter.getPort("pressureIn"))
-#treePressure.link(analyzer.getPort("pressureIn"))
+treePressure = generateNto1(prefix="comNto1PressureMerge", in_ports = parflowmpi.getPort("pressure"), arity = 2)
+treePressure.link(netcdfwriter.getPort("pressureIn"))
+treePressure.link(analyzer.getPort("pressureIn"))
 
-#analyzer.getPort("steerOut").link(parflowmpi.getPort("steerIn"))
+analyzer.getPort("steerOut").link(mergeIt.getPort("in1"))
 
 treePressureSnap = generateNto1(prefix="comNto1PressureSnapMerge", in_ports = parflowmpi.getPort("pressureSnap"), arity = 2)
 treePressureSnap.link(visit.getPort("pressureIn"))
@@ -52,7 +52,7 @@ parflowmpi.getPort("endIt")[0].link(pres.getPort("in"))
 pres.getPort("out").link(mergeIt.getPort("order"))
 #rn.getPort("out").link(mergeIt.getPort("in"))
 #visit.getPort("triggerSnap").link(spymodule.getPort("in"))
-visit.getPort("triggerSnap").link(mergeIt.getPort("in"))
+visit.getPort("triggerSnap").link(mergeIt.getPort("in0"))
 #mergeIt.getPort("out").link(spymodule.getPort("in"))
 #pres.getPort("out").link(spymodule2.getPort("in"))
 mergeIt.getPort("out").link(parflowmpi.getPort("in"))

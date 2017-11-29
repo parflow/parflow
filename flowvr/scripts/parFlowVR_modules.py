@@ -18,9 +18,9 @@ class FilterMergeItExt(Filter):
 
   def __init__(self, name, nbIn = 1, host = ''):
     Filter.__init__(self, name, run = 'flowvr.plugins.MergeItExt', host = host)
+    self.parameters["nbIn"] = nbIn
     self.addPort("order", direction = 'in', messagetype = 'stamps')
     self.addPort("out", direction = 'out')
-    self.parameters["nbIn"] = nbIn
 
     for i in range(nbIn):
         self.addPort("in%d"%i, direction = 'in')
@@ -88,7 +88,7 @@ class Controller(Module):
 class Analyzer(Module):
     """Module that will analyze and give a Steer Proposition"""
     def __init__(self, name):
-        Module.__init__(self, name, cmdline = "echo TODO")
+        Module.__init__(self, name, cmdline = "$PARFLOW_DIR/bin/analyzer")
         self.addPort("pressureIn", direction = 'in')
         p = self.addPort("steerOut", direction = 'out')#, blockstate='nonblocking') # send out thaat I need a trigger ;)
         p.blockstate='non blocking'
