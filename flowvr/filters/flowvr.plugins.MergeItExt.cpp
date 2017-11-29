@@ -111,10 +111,13 @@ namespace flowvr
       flowvr::plugd::Result result = Filter::init(xmlRoot, dispatcher);
       if (result.error()) return result;
 
-      xml::DOMNodeList* lnbIn = xmlRoot->getElementsByTagName("lnbIn");
+      xml::DOMNodeList* lnbIn = xmlRoot->getElementsByTagName("nbIn");
       if (lnbIn->getLength()>=1)
       {
         nbIn = atoi(lnbIn->item(0)->getTextContent().c_str());
+#ifdef __DEBUG
+        std::cout << objectID() << ": nbIn=" << nbIn << std::endl;
+#endif
         if (nbIn < 0) nbIn = 1;
       }
       delete lnbIn;
@@ -123,16 +126,14 @@ namespace flowvr
       //inputs[IDPORT_IN]->storeSpecification();
       inputs[IDPORT_ORDER]->setName("order");
 
-
-      if (nbIn == 1) {
-        inputs[1]->setName("in");
-      } else {
-        for (int i = 1; i <= nbIn; ++i)
-        {
-          char buf[10];
-          sprintf(buf, "%d", i);
-          inputs[i]->setName(std::string("in") + std::string(buf));
-        }
+      for (int i = 1; i <= nbIn; ++i)
+      {
+        char buf[10];
+        sprintf(buf, "in%d", i-1);  // start counting at 0
+#ifdef __DEBUG
+        std::cout << objectID() << ": init port " << buf << std::endl;
+#endif
+        inputs[i]->setName(buf);
       }
 
       //only one outputmessagequeue for this filter
@@ -166,7 +167,7 @@ namespace flowvr
         //give the Stamplist to the outputmessage queue
         if (nbIn > 0)
         {
-          outputs[0]->stamps  = inputs[1]->getStampList();
+          outputs[0]->stamps = inputs[1]->getStampList();
           outputs[0]->newStampSpecification(dispatcher);
         }
 

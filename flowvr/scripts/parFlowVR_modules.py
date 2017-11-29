@@ -16,16 +16,14 @@ class FilterMergeItExt(Filter):
   stamp < 0) will be forwarded
   """
 
-  def __init__(self, name, host = ''):
+  def __init__(self, name, nbIn = 1, host = ''):
     Filter.__init__(self, name, run = 'flowvr.plugins.MergeItExt', host = host)
-    self.addPort("in", direction = 'in')
     self.addPort("order", direction = 'in', messagetype = 'stamps')
     self.addPort("out", direction = 'out')
+    self.parameters["nbIn"] = nbIn
 
-    self.parameters["stamp"] = ""
-    self.parameters["scratch"] = ""
-    self.parameters["forwardEmpty"] = "False"
-    self.parameters["forwardPresignal"] = "False"
+    for i in range(nbIn):
+        self.addPort("in%d"%i, direction = 'in')
 
 class Parflow(Module):
     def __init__(self, prefix, index=None, run=None, host=None, cmdline=None):
