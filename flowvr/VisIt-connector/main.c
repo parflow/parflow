@@ -5,7 +5,9 @@
 #include <VisItDataInterface_V2.h>
 #include <stdio.h>
 #include <string.h>
+#ifdef __DEBUG
 #include <stdlib.h>
+#endif
 #include <math.h>
 
 
@@ -56,7 +58,7 @@ void FreeSim(SimulationData *sim)
     free(sim->mesh_x);
     free(sim->mesh_y);
     free(sim->mesh_z);
-    //sim.inited = 0;  unused atm
+    //sim->inited = 0;  unused atm
   }
 }
 
@@ -78,29 +80,34 @@ void CreateMesh(SimulationData *sim)
   }
 }
 
-size_t setSnapshot(const void *buffer, size_t size, void *cbdata)
+void initSim(SimulationData *sim, GridDefinition const *const grid)
+{
+  D("init sim on grid: %d %d %d", grid->nX, grid->nY, grid->nZ);
+
+  FreeSim(sim);  // try to free sim
+
+  sim->snapshot = (double*)malloc(sizeof(double) * grid->nX * grid->nY * grid->nZ);
+
+  sim->nX = grid->nX;
+  sim->nY = grid->nY;
+  sim->nZ = grid->nZ;
+
+  // recreate mesh
+  CreateMesh(sim);
+
+  sim->inited = 1;
+}
+
+MergeMessageParser(setSnapshot)
 {
   GridMessageMetadata* m = (GridMessageMetadata*)buffer;
   SimulationData *sim = (SimulationData*)cbdata;
 
   sim->time = m->time;
 
-  if (!sim->inited || sim->nX != m->nX || sim->nY != m->nY || sim->nZ != m->nZ)
+  if (!sim->inited || sim->nX != m->grid.nX || sim->nY != m->grid.nY || sim->nZ != m->grid.nZ)
   {
-    D("init sim on grid: %d %d %d", m->nX, m->nY, m->nZ);
-
-    FreeSim(sim);
-
-    sim->snapshot = (double*)malloc(sizeof(double) * m->nX * m->nY * m->nZ);
-
-    sim->nX = m->nX;
-    sim->nY = m->nY;
-    sim->nZ = m->nZ;
-
-    // recreate mesh
-    CreateMesh(sim);
-
-    sim->inited = 1;
+    initSim(sim, &(m->grid));
   }
 
 
@@ -123,6 +130,7 @@ size_t setSnapshot(const void *buffer, size_t size, void *cbdata)
 
 void triggerSnap(SimulationData *sim)
 {
+  D("triggerSnap");
   // TODO: allow to access more than just pressure
   SendActionMessage(flowvr, portTriggerSnap, ACTION_TRIGGER_SNAPSHOT,
                     VARIABLE_PRESSURE, NULL, 0);
@@ -135,6 +143,16 @@ void triggerSnap(SimulationData *sim)
   ParseMergedMessage(portPressureIn, setSnapshot, (void*)sim);
 }
 
+
+MergeMessageParser(setGrid)
+{
+  GridDefinition *grid = (GridDefinition*)buffer;
+  SimulationData *sim = (SimulationData*)cbdata;
+
+  initSim(sim, grid);
+  return sizeof(GridDefinition);
+}
+
 void wait_for_init(SimulationData *sim)
 {
   if (sim->inited)
@@ -143,7 +161,12 @@ void wait_for_init(SimulationData *sim)
   }
   else
   {
-    triggerSnap(sim);
+    SendActionMessage(flowvr, portTriggerSnap, ACTION_GET_GRID_DEFINITION, -1, NULL, 0);
+
+    fca_wait(flowvr);
+
+    // low: we could play with lambdas here when we were using cpp ;)
+    ParseMergedMessage(portPressureIn, setGrid, (void*)sim);
   }
 }
 
@@ -371,6 +394,7 @@ SimGetVariable(int domain, const char *name, void *cbdata)
 
   D("SimGetVariable");
   wait_for_init(sim);
+  triggerSnap(sim);
   visit_handle h = VISIT_INVALID_HANDLE;
   int nComponents = 1, nTuples = 0;
 

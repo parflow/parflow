@@ -13,17 +13,22 @@
 #include <fca/fca.h>
 
 typedef struct {
+  int nX;
+  int nY;
+  int nZ;
+} GridDefinition;
+
+typedef struct {
   int nx;
   int ny;
   int nz;
   int ix;
   int iy;
   int iz;
-  int nX;
-  int nY;
-  int nZ;
+  GridDefinition grid;
   double time; //TODO: set it
 } GridMessageMetadata;
+
 
 
 // someof the most interesting variables
@@ -63,6 +68,7 @@ typedef enum {
 } Variable;
 
 typedef enum {
+  ACTION_GET_GRID_DEFINITION,
   ACTION_TRIGGER_SNAPSHOT,
   ACTION_SET,
   ACTION_ADD,
@@ -88,6 +94,9 @@ typedef struct {
 
 void SendActionMessage(fca_module mod, fca_port port, Action action, Variable variable,
                        void *parameter, size_t parameterSize);
+
+#define MergeMessageParser(function_name) \
+  size_t function_name(const void *buffer, size_t size, void *cbdata)
 void ParseMergedMessage(fca_port port,
                         size_t (*cb)(const void *buffer, size_t size, void *cbdata),
                         void *cbdata);

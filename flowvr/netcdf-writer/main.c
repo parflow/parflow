@@ -113,7 +113,7 @@ int main(int argc, char *argv [])
     void* end = buffer + fca_get_segment_size(msg, 0);
 
     GridMessageMetadata* m = (GridMessageMetadata*)buffer;
-    currentFileID = CreateFile(file_name, m->nX, m->nY, m->nZ, &xID, &yID, &zID, &timeID);
+    currentFileID = CreateFile(file_name, m->grid.nX, m->grid.nY, m->grid.nZ, &xID, &yID, &zID, &timeID);
     // add variable Time and pressure:
     nc_def_var(currentFileID, "time", NC_DOUBLE, 1, &timeID, &timeVarID);
     int pressure_dims[4] = { timeID, zID, yID, xID }; // low: why in this order? I guess so it will count in the right order ;)

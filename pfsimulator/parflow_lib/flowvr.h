@@ -53,6 +53,7 @@ typedef struct {
   Vector * pressure_out;
   Vector * porosity_out;
   Vector * saturation_out;
+  Grid * grid;
   ProblemData * problem_data;
 } SimulationSnapshot;
 
@@ -63,6 +64,7 @@ typedef struct {
     instance_xtra->pressure, \
     NULL, \
     instance_xtra->saturation, \
+    instance_xtra->grid, \
     problem_data \
   }
 

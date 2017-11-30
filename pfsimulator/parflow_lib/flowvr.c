@@ -11,6 +11,13 @@ fca_module moduleParflow;
 static fca_module moduleParflowEvent;
 static fca_port portIn;
 
+void fillGridDefinition(Grid const * const grid, GridDefinition *grid_def)
+{
+  grid_def->nX = SubgridNX(GridBackground(grid));
+  grid_def->nY = SubgridNY(GridBackground(grid));
+  grid_def->nZ = SubgridNZ(GridBackground(grid));
+}
+
 void fillGridMessageMetadata(Vector const * const v, double const * const time, GridMessageMetadata *m)
 {
   Grid *grid = VectorGrid(v);
@@ -31,9 +38,9 @@ void fillGridMessageMetadata(Vector const * const v, double const * const time, 
   m->ny = SubgridNY(subgrid);
   m->nz = SubgridNZ(subgrid);
 
-  m->nX = SubgridNX(GridBackground(grid));
-  m->nY = SubgridNY(GridBackground(grid));
-  m->nZ = SubgridNZ(GridBackground(grid));
+  m->grid.nX = SubgridNX(GridBackground(grid));
+  m->grid.nY = SubgridNY(GridBackground(grid));
+  m->grid.nZ = SubgridNZ(GridBackground(grid));
 
   m->time = *time;
 }
@@ -208,10 +215,23 @@ size_t Steer(Variable var, Action action, const void *buffer)
   return sizeof(SteerMessageMetadata) + sizeof(double) * s->nx * s->ny * s->nz;
 }
 
-/// returns how much we read from buffer
-size_t Interact(const void *buffer, size_t size, void *cbdata)
+size_t SendGridDefinition(SimulationSnapshot const * const snapshot)
 {
-  D("Interact %d < %d ?", size, sizeof(ActionMessageMetadata));
+  size_t size = sizeof(GridDefinition);
+  fca_message msg = fca_new_message(moduleParflow, size);
+  GridDefinition *g = (GridDefinition*)fca_get_write_access(msg, 0);
+
+  fillGridDefinition(snapshot->grid, g);
+  fca_put(fca_get_port(moduleParflow, "pressureSnap"), msg);
+  fca_free(msg);
+  return size;
+}
+
+
+/// returns how much we read from buffer
+MergeMessageParser(Interact)
+{
+  /*D("Interact %d < %d ?", size, sizeof(ActionMessageMetadata));*/
 
   if (size < sizeof(ActionMessageMetadata))
     return size;  // does not contain an action.
@@ -224,6 +244,10 @@ size_t Interact(const void *buffer, size_t size, void *cbdata)
 
   switch (amm->action)
   {
+    case ACTION_GET_GRID_DEFINITION:
+      s += SendGridDefinition(snapshot);
+      break;
+
     case ACTION_TRIGGER_SNAPSHOT:
       SendSnapshot(snapshot, amm->variable);
       // s += 0;
@@ -251,7 +275,7 @@ int FlowVRInteract(SimulationSnapshot *snapshot)
 {
   if (FLOWVR_ACTIVE)
   {
-    D("now waiting");
+    /*D("now waiting");*/
     if (!fca_wait(moduleParflow))
       return 0;
     ParseMergedMessage(portIn, Interact, (void*)snapshot);
