@@ -53,4 +53,4 @@ errorcount=`echo $errors | bc`
 echo -------- $errorcount errors! -------
 echo ------------ END! --------------
 
-exit $errors
+exit $errorcount
