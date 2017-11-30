@@ -110,9 +110,9 @@ for {set i 1} {$i < 4} {incr i} {
 	#run each example
 	puts "Running step0_2d_test $i"
 	cd  output_2d_test${i}/
-        exec mpirun -np $np_arr($i) parflow test_brick_2d
+        exec mpirun -np $np_arr($i) $Parflow::PARFLOW_DIR/bin/parflow test_brick_2d
 	#We will run them in serial with p4est
-        exec mpirun -np 1 parflow test_brick_2d_with_p4est
+        exec mpirun -np 1 $Parflow::PARFLOW_DIR/bin/parflow test_brick_2d_with_p4est
 
 	#Colapse paralell output in single files
 	pfundist test_brick_2d
