@@ -30,8 +30,25 @@ def reload():
     unload()
     load()
 
+def triggerSnap():
+    SendSimulationCommand("localhost", simname, "trigger snap")
+
+def h():
+    print("""
+------------------------------------------------------------------------------
+    h()           - print this help text
+    triggerSnap() - trigger snap
+    load()        - open latest sim file and draw pressure in Pseudocolor
+    unload()      - delete plots and close sim file
+
+    reload()      - use this to refresh view. does unload() and load()
+------------------------------------------------------------------------------
+    """)
+
+
 
 load()
+h()
 
 
 

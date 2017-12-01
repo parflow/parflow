@@ -1,6 +1,5 @@
 #include <fca/fca.h>
 #include "parflow_config.h"
-// TODO: those paths could be changed right?:
 #include <parflow.h>
 #include <parflow_netcdf.h>
 #include <messages.h>
@@ -9,8 +8,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <unistd.h>
-
-#include "../../pfsimulator/amps/mpi1/amps.h"
+#include <amps.h>
 
 #ifdef __DEBUG
 #define D(x ...) printf("++++++++ "); printf(x); printf(" %s:%d\n", __FILE__, __LINE__)
@@ -84,7 +82,6 @@ int main(int argc, char *argv [])
   fca_port portOut = fca_new_port("out", fca_OUT, 0, NULL);
   fca_append_port(moduleNetCDFWriter, portOut);
 
-  const fca_stamp stampTime = fca_register_stamp(portPressureIn, "stampTime", fca_FLOAT); // TODO good idea to use float? or should we put the double in the messages payload??
   const fca_stamp stampFileName = fca_register_stamp(portPressureIn, "stampFileName", fca_STRING);
 
   if (!fca_init_module(moduleNetCDFWriter))
@@ -95,7 +92,7 @@ int main(int argc, char *argv [])
   int currentFileID;
   int xID, yID, zID, timeID;
   D("now Waiting\n");
-  while (fca_wait(moduleNetCDFWriter))  // TODO: use our reader loop here maybe?
+  while (fca_wait(moduleNetCDFWriter))  // low: use our reader loop here maybe? Not atm as this version should be faster ;)
   {
     D("got some stuff to write\n");
     fca_message msg = fca_get(portPressureIn);

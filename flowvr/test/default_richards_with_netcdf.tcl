@@ -181,8 +181,8 @@ pfset Gravity				1.0
 pfset TimingInfo.BaseUnit		1.0
 pfset TimingInfo.StartCount		0
 pfset TimingInfo.StartTime		0.0
-pfset TimingInfo.StartTime		$::env(START_TIME)
-pfset TimingInfo.StopTime               $::env(STOP_TIME)
+pfset TimingInfo.StartTime		0.0
+pfset TimingInfo.StopTime       0.01
 pfset TimingInfo.DumpInterval	       -1
 pfset TimeStep.Type                     Constant
 pfset TimeStep.Value                    0.001
@@ -348,5 +348,7 @@ pfset NetCDF.WritePressure			True
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
+#pfwritedb default_richards
+#exec xterm -e gdb $::env(PARFLOW_DIR)/bin/parflow
 pfrun default_richards
 pfundist default_richards

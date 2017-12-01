@@ -1,9 +1,9 @@
 
 pfset FileVersion 4
 
-pfset Process.Topology.P        [lindex $argv 0]
-pfset Process.Topology.Q        [lindex $argv 1]
-pfset Process.Topology.R        [lindex $argv 2]
+pfset Process.Topology.P        [lindex $argv 1]
+pfset Process.Topology.Q        [lindex $argv 2]
+pfset Process.Topology.R        [lindex $argv 3]
 
 
 #---------------------------------------------------------
@@ -160,8 +160,8 @@ pfset Gravity				1.0
 pfset TimingInfo.BaseUnit		0.0001
 pfset TimingInfo.StartCount		0
 pfset TimeStep.Value                    0.0001
-pfset TimingInfo.StartTime		$::env(START_TIME)
-pfset TimingInfo.StopTime               $::env(STOP_TIME)
+pfset TimingInfo.StartTime	0.0
+pfset TimingInfo.StopTime   0.001
 pfset TimingInfo.DumpInterval	       -1
 pfset TimeStep.Type                     Constant
 

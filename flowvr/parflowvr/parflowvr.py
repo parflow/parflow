@@ -10,7 +10,7 @@ from parFlowVR_modules import *
 
 # Main starts here ###########
 
-P, Q, R = sys.argv[1:4]
+problemName, P, Q, R = sys.argv[1:5]
 
 #rn = RoutingNode("RoutingNode")
 pres = FilterPreSignal("PreSignal", nb=1)  # will be inited with one token for the beginning. TODO set nb to 2 later!
@@ -19,7 +19,7 @@ mergeIt = FilterMergeItExt("parflow-controller", 2)
 
 # Hostlist: comma separated for openmpi.  Add more hosts for more parallelism
 # run all on localhost for the moment:
-parflowmpi = ParflowMPI(("localhost,"*int(P)*int(Q)*int(R))[:-1])  # cut last ,
+parflowmpi = ParflowMPI(("localhost,"*int(P)*int(Q)*int(R))[:-1], problemName)  # cut last ,
 
 visit = VisIt("visit")
 

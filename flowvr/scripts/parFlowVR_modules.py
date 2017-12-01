@@ -35,22 +35,20 @@ class Parflow(Module):
 
         for inportname in inportnames:
             p = self.addPort(inportname, direction = 'in') # TODO: unimplemented?, blockstate = 'nonblocking' if inportname=="triggerSnap" else 'blocking')
-            #self.ports[inportname] = p
 
         for outportname in outportnames:
             p = self.addPort(outportname, direction = 'out')
-            #self.ports[outportname] = p
 
 class ParflowMPI(Composite):
     """several instances of parflow module that generate pressure, porosity... for the
     next timeframe"""
 
-    def __init__(self, hosts):
+    def __init__(self, hosts, problemName):
         Composite.__init__(self)
 
         prefix = "parflow"
         # hosts: string with host names, separated by spaces
-        parflowrun = FlowvrRunOpenMPI("$PARFLOW_DIR/bin/parflow %s" % "mpi", hosts = hosts, prefix = prefix)
+        parflowrun = FlowvrRunOpenMPI("$PARFLOW_DIR/bin/parflow %s" % problemName, hosts = hosts, prefix = prefix)
         #parflowrun = FlowvrRunOpenMPI("xterm -e gdb $PARFLOW_DIR/bin/parflow", hosts = hosts, prefix = prefix)
 
         # hosts_list: convert hosts to a list

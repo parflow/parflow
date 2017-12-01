@@ -1,37 +1,3 @@
-/******* COPYRIGHT ************************************************
- *                                                                 *
- *                             FlowVR                              *
- *                     Daemon and Base Plugins                     *
- *                                                                 *
- *-----------------------------------------------------------------*
- * COPYRIGHT (C) 2003-2011                by                       *
- * INRIA and                                                       *
- * Laboratoire d'Informatique Fondamentale d'Orleans               *
- * (FRE 2490) ALL RIGHTS RESERVED.                                 *
- *                                                                 *
- * This source is covered by the GNU GPL, please refer to the      *
- * COPYING file for further information.                           *
- *                                                                 *
- *-----------------------------------------------------------------*
- *                                                                 *
- *  Original Contributors:                                         *
- *    Jeremie Allard,                                              *
- *    Ronan Gaugne,                                                *
- *    Valerie Gouranton,                                           *
- *    Loick Lecointre,                                             *
- *    Sebastien Limet,                                             *
- *    Bruno Raffin,                                                *
- *    Sophie Robert,                                               *
- *    Emmanuel Melin.                                              *
- *                                                                 *
- *******************************************************************
- *                                                                 *
- * File: src/plugins/flowvr.plugins.MergeItExt.cpp                    *
- *                                                                 *
- * Contacts:                                                       *
- *  12/10/2003 Jeremie Allard <Jeremie.Allard@imag.fr>             *
- *                                                                 *
- ******************************************************************/
 #include "parflow_config.h"  // for __DEBUG
 #include "flowvr/daemon.h"
 #include "flowvr/plugins/filter.h"
@@ -50,7 +16,7 @@ namespace flowvr
 
     using namespace flowvr::plugd;
 
-    /// \brief A filter which sends ALWAYS a message (sometimes containing just a byte
+    /// \brief A filter which sends ALWAYS a message (sometimes containing an empty buffer)
     /// with random content) if order is called. If possible the Message consists of the
     /// concatenation of all messages waiting on the in-ports. The stamps of the first
     /// found message are hereby copied.
@@ -139,7 +105,6 @@ namespace flowvr
       //only one outputmessagequeue for this filter
       initOutputs(1);
       outputs[0]->setName("out");
-      //outputs[0]->msgtype=Message::FULL;  /TODO: test, see other todo
 
       return result;
     }
@@ -147,10 +112,10 @@ namespace flowvr
     void MergeItExt::newMessageNotification(int mqid, int msgnum, const Message& msg, Dispatcher* dispatcher)
     {
 #ifdef __DEBUG
-      if (mqid == IDPORT_ORDER)
-        std::cout << objectID()<<": new order "<<msgnum<<" queue size "<<inputs[mqid]->size()<<std::endl;
-      else
-        std::cout << objectID()<<": new input "<<msgnum<<" queue size "<<inputs[mqid]->size()<<std::endl;
+      //if (mqid == IDPORT_ORDER)
+        //std::cout << objectID()<<": new order "<<msgnum<<" queue size "<<inputs[mqid]->size()<<std::endl;
+      //else
+        //std::cout << objectID()<<": new input "<<msgnum<<" queue size "<<inputs[mqid]->size()<<std::endl;
 #endif
       sendPendingOrders(dispatcher);
     }
@@ -224,14 +189,15 @@ namespace flowvr
           }
           size += msg.data.getSize();
 
-      std::cout<<objectID()<<": found a message of "<< msg.data.getSize() << " bytes" << std::endl;
+#ifdef __DEBUG
+          std::cout<<objectID()<<": found a message of "<< msg.data.getSize() << " bytes" << std::endl;
+#endif
         }
       }
 
 
-      // HACK: make sure to create a FULL message TODO: check if works without too...
-      // by not specifying FULL ;)
-      BufferWrite newdata = poolout.alloc(getAllocator(), size > 0 ? size : 1);
+      // make sure to create a FULL message. Yes, sometimes size = 0
+      BufferWrite newdata = poolout.alloc(getAllocator(), size);
 
       // concatenate data.
       size_t pos = 0;
@@ -246,29 +212,8 @@ namespace flowvr
       }
       newmsg.data = newdata;
 
-
-
-
-      //while(!inputs[IDPORT_IN]->empty())
-      //{
-      //if (inputs[IDPORT_IN]->frontMsg().valid())
-      //inputs[IDPORT_IN]->eraseFront();
-      //}
-
-      /*
-         for(unsigned i=first;i<msgs.size();i++)
-         {
-         int num=-2;
-         int it=-2;
-         msgs[i].stamps.read(inputs[IDPORT_IN]->getStampList().num,num);
-         msgs[i].stamps.read(inputs[IDPORT_IN]->getStampList().it,it);
-         std::string source;
-         msgs[i].stamps.read(inputs[IDPORT_IN]->getStampList().source,source);
-         std::cout << "MERGEIT"<<source<<": msgs["<<i<<"] num="<<num<<" it="<<it<<std::endl;
-         }
-         */
 #ifdef __DEBUG
-      std::cout<<objectID()<<": sending message "<<size<<" bytes"<<std::endl;
+      //std::cout<<objectID()<<": sending message "<<size<<" bytes"<<std::endl;
 #endif
       outputs[0]->put(newmsg, dispatcher);
       newmsg.clear();
