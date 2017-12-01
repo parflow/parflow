@@ -215,23 +215,21 @@ size_t Steer(Variable var, Action action, const void *buffer)
   return sizeof(SteerMessageMetadata) + sizeof(double) * s->nx * s->ny * s->nz;
 }
 
-size_t SendGridDefinition(SimulationSnapshot const * const snapshot)
+void SendGridDefinition(SimulationSnapshot const * const snapshot)
 {
-  size_t size = sizeof(GridDefinition);
-  fca_message msg = fca_new_message(moduleParflow, size);
+  fca_message msg = fca_new_message(moduleParflow, sizeof(GridDefinition));
   GridDefinition *g = (GridDefinition*)fca_get_write_access(msg, 0);
 
   fillGridDefinition(snapshot->grid, g);
   fca_put(fca_get_port(moduleParflow, "pressureSnap"), msg);
   fca_free(msg);
-  return size;
 }
 
 
 /// returns how much we read from buffer
 MergeMessageParser(Interact)
 {
-  /*D("Interact %d < %d ?", size, sizeof(ActionMessageMetadata));*/
+  /*D("Interact %d > %d ?", size, sizeof(ActionMessageMetadata));*/
 
   if (size < sizeof(ActionMessageMetadata))
     return size;  // does not contain an action.
@@ -245,7 +243,8 @@ MergeMessageParser(Interact)
   switch (amm->action)
   {
     case ACTION_GET_GRID_DEFINITION:
-      s += SendGridDefinition(snapshot);
+      SendGridDefinition(snapshot);
+      // s+= 0
       break;
 
     case ACTION_TRIGGER_SNAPSHOT:
@@ -260,10 +259,10 @@ MergeMessageParser(Interact)
       break;
 
     default:
-      PARFLOW_ERROR("TODO: Unimplemented");
+      PARFLOW_ERROR("TODO: Unimplemented Probably somewhere adding the wrong size to s!");
       //  TODO: add other actions!
   }
-
+  /*D("processed %d / %d", s, size);*/
   return s;
 }
 
