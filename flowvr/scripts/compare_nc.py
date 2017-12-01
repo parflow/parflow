@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# exits with 0 when 2 netCDF files contain the same datasets.
+
 import netCDF4 as nc
 import numpy as np
 import sys

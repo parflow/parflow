@@ -1,4 +1,7 @@
 #!/usr/local/bin/ipython2 -i
+
+# will open visit with the first simulation that is found in ~/.visit/simulations
+
 from visit import *
 import os
 

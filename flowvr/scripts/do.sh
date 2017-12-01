@@ -1,4 +1,6 @@
 #!/bin/bash
+# generates a FlowVR dataflow graph and runs it
+
 killall flowvrd
 flowvr-kill
 rm $1.net.xml

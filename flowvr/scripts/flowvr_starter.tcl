@@ -1,4 +1,4 @@
-# This is the FlowVR starter to run problem.tcl within FlowVR
+# This is the FlowVR starter to run .tcl's within FlowVR
 #
 #
 # Import the ParFlow TCL package
@@ -7,7 +7,7 @@ lappend auto_path $env(PARFLOW_DIR)/bin
 package require parflow
 namespace import Parflow::*
 
-source ./problem.tcl
+source ./[lindex $argv 0].tcl
 pfset NetCDF.WritePressure			False
 
 pfset FlowVR                    True
