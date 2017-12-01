@@ -175,13 +175,13 @@ namespace flowvr
       bool hasStamps = false;
 
       // figure out size and set stamps
+      std::vector<Message> newmsgs;
       size_t size = 0;
       for (int i = 1; i <= nbIn; ++i)
       {
-        // TODO: iterate into queue too!
-        const Message &msg = inputs[i]->frontMsg();
-        if (msg.valid())
+        while (inputs[i]->frontMsg().valid())
         {
+          const Message &msg = inputs[i]->frontMsg();
           if (!hasStamps)
           {
             newmsg.stamps.clone(msg.stamps, &inputs[i]->getStampList());
@@ -192,6 +192,8 @@ namespace flowvr
 #ifdef __DEBUG
           std::cout<<objectID()<<": found a message of "<< msg.data.getSize() << " bytes" << std::endl;
 #endif
+          newmsgs.push_back(msg);  // low: copying of messages has impact on performance?
+          inputs[i]->eraseFront();
         }
       }
 
@@ -201,14 +203,11 @@ namespace flowvr
 
       // concatenate data.
       size_t pos = 0;
-      for (int i = 1; i <= nbIn; ++i)
+
+      for (std::vector<Message>::iterator it = newmsgs.begin(); it != newmsgs.end(); ++it)
       {
-        const Message &msg = inputs[i]->frontMsg();
-        if (msg.valid()) {
-          memcpy(newdata.writeAccess() + pos, msg.data.readAccess(), msg.data.getSize());
-          pos += msg.data.getSize();
-          inputs[i]->eraseFront();
-        }
+          memcpy(newdata.writeAccess() + pos, it->data.readAccess(), it->data.getSize());
+          pos += it->data.getSize();
       }
       newmsg.data = newdata;
 
@@ -218,6 +217,7 @@ namespace flowvr
       outputs[0]->put(newmsg, dispatcher);
       newmsg.clear();
       newdata.clear();
+      newmsgs.clear();
     }
     //}
 
