@@ -1,4 +1,5 @@
-ADD_EXECUTABLE(analyzer random_pressure_steer.c)
+#ADD_EXECUTABLE(analyzer random_pressure_steer.c)
+ADD_EXECUTABLE(analyzer find_hillslope_K.c)
 
 FIND_LIBRARY(FCA_LIBRARY fca)
 
