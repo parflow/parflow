@@ -2,8 +2,8 @@
 # Run the uncrustify code formatter on Parflow code
 
 
-files=$(find . -name \*.[ch])
+files=$(find . -name \*.[ch] | grep -v './build')
 for i in $files
 do
-   uncrustify -l C --replace --no-backup -c bin/parflow.cfg $i 
+  uncrustify -l C --replace --no-backup -c bin/parflow.cfg $i
 done
