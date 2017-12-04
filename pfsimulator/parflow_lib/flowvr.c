@@ -168,42 +168,54 @@ size_t Steer(Variable var, Action action, const void *buffer)
   Grid *grid = VectorGrid(v);
   SubgridArray *subgrids = GridSubgrids(grid);
   Subvector *subvector;
-
+  Subgrid *subgrid;
   int g;
 
   ForSubgridI(g, subgrids)
   {
     subvector = VectorSubvector(v, g);
+    subgrid = SubgridArraySubgrid(subgrids, g);
   }
 
   int nx_v = SubvectorNX(subvector);
   int ny_v = SubvectorNY(subvector);
 
   // TODO:speedoptimize this loop. switch to outside. maybe I can do iit with avx on whole oxes? maybe I have to change 1,1,1
-  int i, j, k, d = 0, ai = 0;
+  int ix = SubgridIX(subgrid);
+  int iy = SubgridIY(subgrid);
+  int iz = SubgridIZ(subgrid);
+
+  int nx = SubgridNX(subgrid);
+  int ny = SubgridNY(subgrid);
+  int nz = SubgridNZ(subgrid);
+
+  int i, j, k, ai = 0;
   double *data;
-  data = SubvectorElt(subvector, s->ix, s->iy, s->iz);
-  BoxLoopI1(i, j, k, s->ix, s->iy, s->iz, s->nx, s->ny, s->nz, ai, nx_v, ny_v, nz_v, 1, 1, 1, {
+  data = SubvectorElt(subvector, ix, iy, iz);
+  BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz, ai, nx_v, ny_v, nz_v, 1, 1, 1, {
+    size_t index = i - s->ix + (j - s->iy) * s->nx + (k - s->iz) * s->nx * s->ny;
     switch (action)
     {
       // TODO: log steering!
       case ACTION_SET:
-        data[ai] = operand[d];
+        if (data[ai] != operand[index])
+        {
+          /*D("set (%d, %d, %d) %f -> %f", i, j, k, data[ai], operand[index]);*/
+        }
+        data[ai] = operand[index];
         break;
 
       case ACTION_ADD:
-        data[ai] += operand[d];
+        data[ai] += operand[index];
         break;
 
       case ACTION_MULTIPLY:
-        data[ai] *= operand[d];
-        /*D("op%f", operand[d]);*/
+        data[ai] *= operand[index];
         break;
 
       default:
         PARFLOW_ERROR("unknown Steer Action!");
     }
-    d++;
   });
 
   // InitVectorUpdate!
@@ -260,7 +272,6 @@ MergeMessageParser(Interact)
 
     default:
       PARFLOW_ERROR("TODO: Unimplemented Probably somewhere adding the wrong size to s!");
-      //  TODO: add other actions!
   }
   /*D("processed %d / %d", s, size);*/
   return s;
@@ -330,7 +341,6 @@ void vectorToMessage(Vector* v, double const * const time, fca_message *result, 
 
 
   double* buffer_double = (double*)buffer;
-// TODO: abstract message reader with multiple messages...
   double *data;
   data = SubvectorElt(subvector, m.ix, m.iy, m.iz);
 

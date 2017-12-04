@@ -190,7 +190,7 @@ namespace flowvr
           size += msg.data.getSize();
 
 #ifdef __DEBUG
-          std::cout<<objectID()<<": found a message of "<< msg.data.getSize() << " bytes" << std::endl;
+          std::cout<<objectID()<<": found a message of "<< msg.data.getSize() << " bytes on port " << (i-1) << std::endl;
 #endif
           newmsgs.push_back(msg);  // low: copying of messages has impact on performance?
           inputs[i]->eraseFront();

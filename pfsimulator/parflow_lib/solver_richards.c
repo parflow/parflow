@@ -183,10 +183,10 @@ typedef struct {
   int write_netcdf_overland_sum;        /* write overland_sum? */
   int write_netcdf_overland_bc_flux;    /* write overland_bc_flux? */
   int write_netcdf_mask;        /* write mask? */
-  int write_netcdf_mannings;    /* write mask? */
+  int write_netcdf_mannings;    /* write mannings? */
   int write_netcdf_subsurface;  /* write subsurface? */
-  int write_netcdf_slopes;      /* write subsurface? */
-  int write_netcdf_dzmult;      /* write subsurface? */
+  int write_netcdf_slopes;      /* write slopes? */
+  int write_netcdf_dzmult;      /* write dzmult? */
   int numVarTimeVariant;        /*This variable is added to keep track of number of
                                  * time variant variable in NetCDF file */
   int numVarIni;                /*This variable is added to keep track of number of
