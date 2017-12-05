@@ -90,7 +90,13 @@ class Analyzer(Module):
         self.addPort("pressureIn", direction = 'in')
         p = self.addPort("steerOut", direction = 'out')#, blockstate='nonblocking') # send out thaat I need a trigger ;)
         p.blockstate='non blocking'
+        p = self.addPort("log", direction = 'out')
 
+class Logger(Module):
+    """Module that will log the given stamp value in a graph."""
+    def __init__(self, name, stampName):
+        Module.__init__(self, name, cmdline = "python ../scripts/logger.py %s" % stampName)
+        self.addPort("in", direction = 'in')
 
 class Simplestarter(Module):
     """Module Simplestarter kicks of a nonsteered simple parflow simulation"""
