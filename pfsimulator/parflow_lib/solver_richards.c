@@ -1079,7 +1079,7 @@ SetupRichards(PFModule * this_module)
       char filename[1024];     // low: reuse other string variable here?
       int userSpecSteps = GetIntDefault("NetCDF.NumStepsPerFile", 1);
 
-      sprintf(filename, "%s.%05d.nc", file_prefix, instance_xtra->file_number / userSpecSteps);
+      sprintf(filename, "_%s.%05d.nc", file_prefix, instance_xtra->file_number / userSpecSteps);
 
       SimulationSnapshot sshot = GetSimulationSnapshot;
       DumpRichardsToFlowVR(&sshot);
@@ -2736,7 +2736,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         int userSpecSteps = GetIntDefault("NetCDF.NumStepsPerFile", 5);
         D("steps per file: %d, filenumber: %d", userSpecSteps, instance_xtra->file_number);
 
-        sprintf(filename, "%s.%05d.nc", file_prefix, 1 + (instance_xtra->file_number - 1) / userSpecSteps);
+        sprintf(filename, "_%s.%05d.nc", file_prefix, 1 + (instance_xtra->file_number - 1) / userSpecSteps);
         sshot.filename = filename;
         DumpRichardsToFlowVR(&sshot);
         any_file_dumped = 1;
