@@ -52,22 +52,26 @@ port = flowvr.InputPort('in')
 ports.push_back(port)
 
 module = flowvr.initModule(ports)
-while module.wait():
-  message = port.get()
-  #print ("will log it!")
+with open("logger.log", 'w+', 1) as f:  # bufsize=1 to be line buffered ;)
+  while module.wait():
+    message = port.get()
+    print ("will log it!")
 
-  stamps = message.getStamps()
+    stamps = message.getStamps()
 
-  xdata.append(nextX)
-  nextX += 1
-  for name in names:
-    val = float(stamps[name])
-    datas[name].append(val)
-    print("%s:%f" % (name, val))
-    du = updaters[name]
-    du.on_running(xdata, datas[name])
+    xdata.append(nextX)
+    nextX += 1
+    for name in names:
+      val = float(stamps[name])
+      datas[name].append(val)
+      text = "%s: %f" % (name, val)
+      print(text)
+      f.write(text)
+      f.write('\n')
+      du = updaters[name]
+      du.on_running(xdata, datas[name])
 
-  #print(datas)
+    #print(datas)
 
 
 module.close()
