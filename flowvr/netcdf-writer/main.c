@@ -115,7 +115,7 @@ int main(int argc, char *argv [])
     nc_def_var(currentFileID, "time", NC_DOUBLE, 1, &timeID, &timeVarID);
     int pressure_dims[4] = { timeID, zID, yID, xID }; // low: why in this order? I guess so it will count in the right order ;)
     nc_def_var(currentFileID, "pressure", NC_DOUBLE, 4, pressure_dims, &pressureVarID);
-    D("Adding Time");
+    D("Adding Time %f for %dx%dx%d", m->time, m->grid.nX, m->grid.nY, m->grid.nZ);
 
     size_t start[1], count[1];
     nc_var_par_access(currentFileID, timeVarID, NC_COLLECTIVE);

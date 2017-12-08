@@ -268,23 +268,26 @@ pfset Cycle.constant.Repeat              -1
 #pfset Cycle.rainrec.Repeat               -1
 
 
-pfset Cycle.rainrec.Names              "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15"
+#pfset Cycle.rainrec.Names              "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15"
+pfset Cycle.rainrec.Names "0 1"
+#0: raintime, 1: drytime
 pfset Cycle.rainrec.0.Length              1
-pfset Cycle.rainrec.1.Length              1
-pfset Cycle.rainrec.2.Length              1
-pfset Cycle.rainrec.3.Length              1
-pfset Cycle.rainrec.4.Length              1
-pfset Cycle.rainrec.5.Length              1
-pfset Cycle.rainrec.6.Length              1
-pfset Cycle.rainrec.7.Length              1
-pfset Cycle.rainrec.8.Length              1
-pfset Cycle.rainrec.9.Length              1
-pfset Cycle.rainrec.10.Length              1
-pfset Cycle.rainrec.11.Length              1
-pfset Cycle.rainrec.12.Length              1
-pfset Cycle.rainrec.13.Length              1
-pfset Cycle.rainrec.14.Length              1
-pfset Cycle.rainrec.15.Length              100
+pfset Cycle.rainrec.1.Length              9
+#pfset Cycle.rainrec.2.Length              1
+#pfset Cycle.rainrec.3.Length              1
+#pfset Cycle.rainrec.4.Length              1
+#pfset Cycle.rainrec.5.Length              1
+#pfset Cycle.rainrec.6.Length              1
+#pfset Cycle.rainrec.7.Length              1
+#pfset Cycle.rainrec.8.Length              1
+#pfset Cycle.rainrec.9.Length              1
+#pfset Cycle.rainrec.10.Length              1
+#pfset Cycle.rainrec.11.Length              1
+#pfset Cycle.rainrec.12.Length              1
+#pfset Cycle.rainrec.13.Length              1
+#pfset Cycle.rainrec.14.Length              1
+#pfset Cycle.rainrec.15.Length              1
+#pfset Cycle.rainrec.15.Length              100
 pfset Cycle.rainrec.Repeat               -1
 
 #-----------------------------------------------------------------------------
@@ -318,23 +321,25 @@ pfset Patch.z-upper.BCPressure.alltime.Value          0.0
 
 pfset Patch.z-upper.BCPressure.Cycle                  "rainrec"
 
-pfset Patch.z-upper.BCPressure.0.Value                 0.0
 pfset Patch.z-upper.BCPressure.1.Value                 0.0
-pfset Patch.z-upper.BCPressure.2.Value                 0.0
-pfset Patch.z-upper.BCPressure.3.Value                 0.0
-pfset Patch.z-upper.BCPressure.4.Value                 0.0
-pfset Patch.z-upper.BCPressure.5.Value                 0.0
-pfset Patch.z-upper.BCPressure.6.Value                 0.0
-# m / minutes during 15 minutes: 10mm / 15mn that's a 40mm/hr, pretty decent
-pfset Patch.z-upper.BCPressure.7.Value                 -0.01
-pfset Patch.z-upper.BCPressure.8.Value                 0.0
-pfset Patch.z-upper.BCPressure.9.Value                 0.0
-pfset Patch.z-upper.BCPressure.10.Value                0.0
-pfset Patch.z-upper.BCPressure.11.Value                0.0
-pfset Patch.z-upper.BCPressure.12.Value                0.0
-pfset Patch.z-upper.BCPressure.13.Value                0.0
-pfset Patch.z-upper.BCPressure.14.Value                0.0
-pfset Patch.z-upper.BCPressure.15.Value                0.0
+pfset Patch.z-upper.BCPressure.0.Value                 -0.01
+#pfset Patch.z-upper.BCPressure.1.Value                 0.0
+#pfset Patch.z-upper.BCPressure.2.Value                 0.0
+#pfset Patch.z-upper.BCPressure.3.Value                 0.0
+#pfset Patch.z-upper.BCPressure.4.Value                 0.0
+#pfset Patch.z-upper.BCPressure.5.Value                 0.0
+#pfset Patch.z-upper.BCPressure.6.Value                 0.0
+## m / minutes during 15 minutes: 10mm / 15mn that's a 40mm/hr, pretty decent
+#pfset Patch.z-upper.BCPressure.7.Value                 -0.01
+#pfset Patch.z-upper.BCPressure.8.Value                 0.0
+#pfset Patch.z-upper.BCPressure.9.Value                 0.0
+#pfset Patch.z-upper.BCPressure.10.Value                0.0
+#pfset Patch.z-upper.BCPressure.11.Value                0.0
+#pfset Patch.z-upper.BCPressure.12.Value                0.0
+#pfset Patch.z-upper.BCPressure.13.Value                0.0
+#pfset Patch.z-upper.BCPressure.14.Value                0.0
+#pfset Patch.z-upper.BCPressure.15.Value                0.0
+#pfset Patch.z-upper.BCPressure.15.Value                0.0
 
 #---------------------------------------------------------
 # Topo slopes in x-direction
@@ -603,7 +608,10 @@ pfset Solver.CLM.ForceVegetation			 False
 #-----------------------------------------------------------------------------
 # Run and Unload the Parflow output files
 #-----------------------------------------------------------------------------
-pfset Solver.WriteSiloSubsurfData True
+#pfset Solver.WriteSiloSubsurfData True
 #pfset Solver.WriteSiloPressure True
+pfset NetCDF.WritePressure True
+pfset NetCDF.NumStepsPerFile 1
+
 
 pfwritedb hillslope_sens

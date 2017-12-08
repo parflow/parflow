@@ -28,6 +28,7 @@ analyzer = Analyzer("analyzer")
 
 #spymodule = SpyModule("visitout")
 #spymodule2 = SpyModule("presignal out")
+logger = Logger("logger", "K E M")
 
 
 #mergeIt.getPort("out").link(spymodule.getPort("in"))
@@ -42,6 +43,7 @@ treePressure.link(netcdfwriter.getPort("pressureIn"))
 treePressure.link(analyzer.getPort("pressureIn"))
 
 analyzer.getPort("steerOut").link(mergeIt.getPort("in1"))
+analyzer.getPort("log").link(logger.getPort("in"))
 
 treePressureSnap = generateNto1(prefix="comNto1PressureSnapMerge", in_ports = parflowmpi.getPort("pressureSnap"), arity = 2)
 treePressureSnap.link(visit.getPort("pressureIn"))

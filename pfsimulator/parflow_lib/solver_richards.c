@@ -2733,7 +2733,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       if (FLOWVR_ACTIVE)
       {
         char filename[1024];
-        int userSpecSteps = GetIntDefault("NetCDF.NumStepsPerFile", 5);
+        int userSpecSteps = GetIntDefault("NetCDF.NumStepsPerFile", 1);
         D("steps per file: %d, filenumber: %d", userSpecSteps, instance_xtra->file_number);
 
         sprintf(filename, "_%s.%05d.nc", file_prefix, 1 + (instance_xtra->file_number - 1) / userSpecSteps);
