@@ -7,5 +7,6 @@ TARGET_INCLUDE_DIRECTORIES(analyzer PUBLIC "../../pfcommon")
 
 TARGET_LINK_LIBRARIES(analyzer ${FCA_LIBRARY})
 TARGET_LINK_LIBRARIES(analyzer pfcommon)
+TARGET_LINK_LIBRARIES(analyzer m)  # we need math
 
 INSTALL(TARGETS analyzer DESTINATION bin)
