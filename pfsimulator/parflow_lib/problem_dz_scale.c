@@ -305,6 +305,7 @@ PFModule   *dzScaleNewPublicXtra()
   switch_na = NA_NewNameArray("False True");
   switch_name = GetStringDefault(name, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
+  NA_FreeNameArray(switch_na);
 
   if (switch_value < 0)
   {
@@ -319,12 +320,12 @@ PFModule   *dzScaleNewPublicXtra()
     switch_na = NA_NewNameArray("Constant PFBFile nzList");
     switch_name = GetString(name);
     public_xtra->type = NA_NameToIndex(switch_na, switch_name);
+    NA_FreeNameArray(switch_na);
 
     name = "dzScale.GeomNames";
     switch_name = GetString(name);
     public_xtra->regions = NA_NewNameArray(switch_name);
     num_regions = NA_Sizeof(public_xtra->regions);
-
 
     // switch for dzScale.Type
     // Constant = 0; PFBFile = 1;
@@ -395,8 +396,6 @@ PFModule   *dzScaleNewPublicXtra()
     }
   }
 
-  NA_FreeNameArray(switch_na);
-
   PFModulePublicXtra(this_module) = public_xtra;
   return this_module;
 }
@@ -414,39 +413,40 @@ void  dzScaleFreePublicXtra()
   Type1       *dummy1;
   Type2       *dummy2;
 
-
-  if (public_xtra->variable_dz)
+  if (public_xtra)
   {
-    NA_FreeNameArray(public_xtra->regions);
-
-    switch ((public_xtra->type))
+    if (public_xtra->variable_dz)
     {
-      case 0:
+      NA_FreeNameArray(public_xtra->regions);
+      
+      switch ((public_xtra->type))
       {
-        dummy0 = (Type0*)(public_xtra->data);
-        tfree(dummy0->region_indices);
-        tfree(dummy0->values);
-        tfree(dummy0);
-        break;
-      }
-
-      case 1:
-      {
-        dummy1 = (Type1*)(public_xtra->data);
-        tfree(dummy1);
-        break;
-      }
-
-      case 2:
-      {
-        dummy2 = (Type2*)(public_xtra->data);
-        tfree(dummy2);
-        break;
+	case 0:
+	{
+	  dummy0 = (Type0*)(public_xtra->data);
+	  tfree(dummy0->region_indices);
+	  tfree(dummy0->values);
+	  tfree(dummy0);
+	  break;
+	}
+	
+	case 1:
+	{
+	  dummy1 = (Type1*)(public_xtra->data);
+	  tfree(dummy1);
+	  break;
+	}
+	
+	case 2:
+	{
+	  dummy2 = (Type2*)(public_xtra->data);
+	  tfree(dummy2->values);
+	  tfree(dummy2);
+	  break;
+	}
       }
     }
-  }
-  else
-  {
+    
     tfree(public_xtra);
   }
 }
