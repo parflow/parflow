@@ -15,7 +15,7 @@ problemName, P, Q, R = sys.argv[1:5]
 #rn = RoutingNode("RoutingNode")
 pres = FilterPreSignal("PreSignal", nb=1)  # will be inited with one token for the beginning. TODO set nb to 2 later!
 
-mergeIt = FilterMergeItExt("parflow-controller", 2)
+mergeIt = FilterMergeItExt("parflow-controller", 3)
 
 # Hostlist: comma separated for openmpi.  Add more hosts for more parallelism
 # run all on localhost for the moment:
@@ -59,6 +59,13 @@ visit.getPort("triggerSnap").link(mergeIt.getPort("in0"))
 #pres.getPort("out").link(spymodule2.getPort("in"))
 mergeIt.getPort("out").link(parflowmpi.getPort("in"))
 
+
+# TODO: for testing: banalyzer: TODO: move into parflowvr_modules.py
+banalyzer = Module("banalyzer", "python2 ../analyzer/test_python_analyzer.py")
+banalyzer.addPort("out", direction="out");
+banalyzer.addPort("in", direction="in");
+treePressure.link(banalyzer.getPort("in"))
+banalyzer.getPort("out").link(mergeIt.getPort("in2"))
 #simplestarter = Simplestarter("simplestarter", 0, 0.1)
 #simplestarter.getPort("out").link(mergeIt.getPort("in"))
 

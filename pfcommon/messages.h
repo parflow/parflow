@@ -12,6 +12,7 @@
 
 #include <fca/fca.h>
 
+// TODO: could be optimized to be only sent once and not in all GridMessageMetadatas.!
 typedef struct {
   int nX;
   int nY;
@@ -26,7 +27,7 @@ typedef struct {
   int iy;
   int iz;
   GridDefinition grid;
-  double time; //TODO: set it
+  double time;
 } GridMessageMetadata;
 
 
@@ -92,12 +93,14 @@ typedef struct {
 } SteerMessageMetadata;
 
 
-void SendActionMessage(fca_module mod, fca_port port, Action action, Variable variable,
-                       void *parameter, size_t parameterSize);
+extern void SendActionMessage(fca_module mod, fca_port port, Action action, Variable variable,
+                              void *parameter, size_t parameterSize);
 
 #define MergeMessageParser(function_name) \
   size_t function_name(const void *buffer, size_t size, void *cbdata)
-void ParseMergedMessage(fca_port port,
-                        size_t (*cb)(const void *buffer, size_t size, void *cbdata),
-                        void *cbdata);
+extern void ParseMergedMessage(fca_port port,
+                               size_t (*cb)(const void *buffer, size_t size, void *cbdata),
+                               void *cbdata);
+
+
 #endif

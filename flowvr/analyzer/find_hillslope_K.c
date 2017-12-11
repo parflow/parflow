@@ -102,8 +102,6 @@ int main(int argc, char *argv [])
     printf("ERROR : init_module failed!\n");
   }
 
-  int currentFileID;
-  int xID, yID, zID, timeID;
   D("now waiting\n");
   while (fca_wait(flowvr))
   {
