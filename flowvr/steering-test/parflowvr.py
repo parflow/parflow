@@ -15,7 +15,7 @@ problemName, P, Q, R = sys.argv[1:5]
 #rn = RoutingNode("RoutingNode")
 pres = FilterPreSignal("PreSignal", nb=1)  # will be inited with one token for the beginning. TODO set nb to 2 later!
 
-mergeIt = FilterMergeItExt("parflow-controller", 3)
+mergeIt = FilterMergeItExt("parflow-controller", 2)
 
 # Hostlist: comma separated for openmpi.  Add more hosts for more parallelism
 # run all on localhost for the moment:
@@ -24,14 +24,12 @@ parflowmpi = ParflowMPI(("localhost,"*int(P)*int(Q)*int(R))[:-1], problemName)  
 visit = VisIt("visit")
 
 netcdfwriter = NetCDFWriter("netcdfwriter")
-analyzer = Analyzer("analyzer")
+#analyzer = Analyzer("analyzer")
 
 #spymodule = SpyModule("visitout")
-#spymodule2 = SpyModule("presignal out")
-logger = Logger("logger", "K E M")
+#spymodule2 = SpyModule("logger in")
+logger = Logger("logger", "a b cc")
 
-
-#mergeIt.getPort("out").link(spymodule.getPort("in"))
 
 # SIMULATION TIME FRAME DATA TRANSFER
 
@@ -40,10 +38,10 @@ logger = Logger("logger", "K E M")
 
 treePressure = generateNto1(prefix="comNto1PressureMerge", in_ports = parflowmpi.getPort("pressure"), arity = 2)
 treePressure.link(netcdfwriter.getPort("pressureIn"))
-treePressure.link(analyzer.getPort("pressureIn"))
+#treePressure.link(analyzer.getPort("pressureIn"))
 
-analyzer.getPort("steerOut").link(mergeIt.getPort("in1"))
-analyzer.getPort("log").link(logger.getPort("in"))
+#analyzer.getPort("steerOut").link(mergeIt.getPort("in1"))
+#analyzer.getPort("log").link(logger.getPort("in"))
 
 treePressureSnap = generateNto1(prefix="comNto1PressureSnapMerge", in_ports = parflowmpi.getPort("pressureSnap"), arity = 2)
 treePressureSnap.link(visit.getPort("pressureIn"))
@@ -61,11 +59,13 @@ mergeIt.getPort("out").link(parflowmpi.getPort("in"))
 
 
 # TODO: for testing: banalyzer: TODO: move into parflowvr_modules.py
-banalyzer = Module("banalyzer", "python2 ../analyzer/test_python_analyzer.py")
+banalyzer = Module("banalyzer", "xterm_gdb python2 ../analyzer/test_python_analyzer.py")
 banalyzer.addPort("out", direction="out");
+banalyzer.addPort("log", direction="out");
 banalyzer.addPort("in", direction="in");
 treePressure.link(banalyzer.getPort("in"))
-banalyzer.getPort("out").link(mergeIt.getPort("in2"))
+banalyzer.getPort("out").link(mergeIt.getPort("in1"))
+banalyzer.getPort("log").link(logger.getPort("in"))
 #simplestarter = Simplestarter("simplestarter", 0, 0.1)
 #simplestarter.getPort("out").link(mergeIt.getPort("in"))
 

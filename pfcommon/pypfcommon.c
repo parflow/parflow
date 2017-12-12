@@ -1,7 +1,7 @@
 #include "messages.h"
 #include <fca/fca.h>
 #include <assert.h>
-
+#include "parflow_config.h"
 
 MergeMessageParser(preparser);
 
@@ -16,6 +16,7 @@ MergeMessageParser(preparser);
 static fca_module flowvr;
 static fca_port in;
 static fca_port out;
+static fca_port log;
 
 void SendSteerMessage(const Action action, const Variable variable,
                       int ix, int iy, int iz,
@@ -41,8 +42,14 @@ void SendSteerMessage(const Action action, const Variable variable,
   fca_free(msg);
 }
 
+void SendLog(StampLog slog[], size_t n)
+{
+  SendLogMessage(flowvr, log, slog, n);
+}
+
+
 // TODO: add documentation!
-void _run()
+void _run(char *logstamps[], size_t logstampsc)
 {
   /***********************
    * init FlowVR Module
@@ -54,6 +61,14 @@ void _run()
 
   out = fca_new_port("out", fca_OUT, 0, NULL);
   fca_append_port(flowvr, out);
+
+  log = fca_new_port("log", fca_OUT, 0, NULL);
+  while (logstampsc--)
+  {
+    D("Register stamp %s for logging", logstamps[logstampsc]);
+    fca_register_stamp(log, logstamps[logstampsc], fca_FLOAT);
+  }
+  fca_append_port(flowvr, log);
 
   if (!fca_init_module(flowvr))
   {

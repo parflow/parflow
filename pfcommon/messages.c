@@ -39,3 +39,17 @@ void ParseMergedMessage(fca_port port, size_t (*cb)(const void *buffer, size_t s
   fca_free(msg);
 }
 
+void SendLogMessage(fca_module mod, fca_port port, StampLog log[], size_t n)
+{
+  fca_message msg = fca_new_message(mod, 0);
+
+  printf("Send %d stamps\n", n);  // TODO: remove printfs
+  while (n--)
+  {
+    printf("Send Stamp %s: %f\n", log[n].stampName, log[n].value);
+    fca_stamp stamp = fca_get_stamp(port, log[n].stampName);
+    fca_write_stamp(msg, stamp, (void*)&(log[n].value));
+  }
+  fca_put(port, msg);
+  fca_free(msg);
+}

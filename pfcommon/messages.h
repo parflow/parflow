@@ -30,6 +30,10 @@ typedef struct {
   double time;
 } GridMessageMetadata;
 
+typedef struct {
+  const char *stampName;
+  float value;
+} StampLog;
 
 
 // someof the most interesting variables
@@ -102,5 +106,6 @@ extern void ParseMergedMessage(fca_port port,
                                size_t (*cb)(const void *buffer, size_t size, void *cbdata),
                                void *cbdata);
 
+extern void SendLogMessage(fca_module mod, fca_port port, StampLog log[], size_t n);
 
 #endif

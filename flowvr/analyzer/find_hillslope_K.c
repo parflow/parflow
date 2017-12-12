@@ -241,6 +241,7 @@ int main(int argc, char *argv [])
     /*double K1 = K;*/
 
 #ifdef __DEBUG
+    // TODO: use SendLogMessage here!
     fca_message msgLog = fca_new_message(flowvr, 0);
     float stampData = (float)K;
     float stampError = (float)last_error;

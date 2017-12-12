@@ -59,11 +59,11 @@
     return sizeof(GridMessageMetadata) + sizeof(double) * m->nx * m->ny * m->nz;
   }
 
-  void run()
+  void run(char *logstamps[], size_t logstampsc)
   {
     // be sure the parser was set before we call run.
     assert(parser);
-    _run();
+    _run(logstamps, logstampsc);
   }
 
 %}
@@ -76,11 +76,60 @@
     $result = $1;
 }
 
+%typemap(in) (char *logstamps[], size_t logstampsc) {
+  assert($input != Py_None);
+  int i;
+  if (!PyList_Check($input)) {
+    PyErr_SetString(PyExc_ValueError, "Expecting a list");
+    return NULL;
+  }
+  $2 = PyList_Size($input);
+  $1 = (char **) malloc($2 * sizeof(char *));
+  for (i = 0; i < $2; i++) {
+    PyObject *s = PyList_GetItem($input,i);
+    if (!PyString_Check(s)) {
+        free($1);
+        PyErr_SetString(PyExc_ValueError, "List items must be strings");
+        return NULL;
+    }
+    $1[i] = PyString_AsString(s);
+  }
+}
+
+%typemap(freearg) (char *logstamps[], size_t logstampsc) {
+   if ($1) free($1);  // REM: if some error in this line occurs, see if everything in the python was correct!
+}
+
+%typemap(in) (StampLog slog[], size_t n) {
+  printf("Mapping SendLog\n");
+  assert($input != Py_None);
+  int i;
+  if (!PyList_Check($input)) {
+    PyErr_SetString(PyExc_ValueError, "Expecting a list");
+    return NULL;
+  }
+  $2 = PyList_Size($input);
+  $1 = (StampLog *) malloc(($2)*sizeof(StampLog));
+  for (i = 0; i < $2; i++) {
+    PyObject *s = PyList_GetItem($input,i);
+    StampLog * tmp;
+    if (SWIG_ConvertPtr(s, (void **) &tmp, SWIGTYPE_p_StampLog, SWIG_POINTER_EXCEPTION) == -1) {
+      free($1);
+      PyErr_SetString(PyExc_ValueError, "List items must be StampLogs");
+      return NULL;
+    }
+    memcpy(&($1[i]), tmp, sizeof(StampLog));
+  }
+}
+
+%typemap(freearg) (StampLog slog[], size_t n) {
+   if ($1) free($1);
+}
+
 // exports:
 void SetGridMessageParser(PyObject *cb);
 void SendSteerMessage(const Action action, const Variable variable,
     int ix, int iy, int iz,
     double *IN_ARRAY3, int DIM1, int DIM2, int DIM3);
-void run();
-
-
+void run(char *logstamps[], size_t logstampsc);
+void SendLog(StampLog slog[], size_t n);
