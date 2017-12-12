@@ -11,8 +11,7 @@
 %}
 
 /* Parse the header file to generate wrappers */
-// TODO we need to copy this into pfcommon/ - directory manually before compiling
-%include "numpy.i"
+%include <numpy.i>
 
 %init %{
   import_array();
