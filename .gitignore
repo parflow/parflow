@@ -95,6 +95,9 @@ test/clm/t_grnd/
 *.out
 *.app
 
+### Python ###
+__pycache__
+*.pyc
 
 ### C ###
 # Object files

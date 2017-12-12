@@ -56,7 +56,7 @@
     Py_DECREF(arglist);
     Py_XDECREF(result);
 
-    return sizeof(double) * m->nx * m->ny * m->nz;
+    return sizeof(GridMessageMetadata) + sizeof(double) * m->nx * m->ny * m->nz;
   }
 
   void run()
