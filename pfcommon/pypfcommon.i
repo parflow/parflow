@@ -47,7 +47,7 @@
     PyObject * arr = PyArray_SimpleNewFromData(3, dims, NPY_DOUBLE, (void*)(m+1));
     PyTuple_SET_ITEM(arglist, 0, arr);
 
-    PyObject * it = SWIG_NewPointerObj((void*)m, SWIGTYPE_p_GridDefinition, 0);
+    PyObject * it = SWIG_NewPointerObj((void*)m, SWIGTYPE_p_GridMessageMetadata, 0);
     PyTuple_SET_ITEM(arglist, 1, it );
     // REM: typenames cann be looked up in the _wrap.c file
 
