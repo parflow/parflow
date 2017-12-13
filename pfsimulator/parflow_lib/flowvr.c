@@ -190,10 +190,25 @@ size_t Steer(Variable var, Action action, const void *buffer)
   int nz = SubgridNZ(subgrid);
 
   int i, j, k, ai = 0;
+  D("operand[0]: %f", operand[0]);
   double *data;
   data = SubvectorElt(subvector, ix, iy, iz);
+
+  size_t result = sizeof(SteerMessageMetadata) + sizeof(double) * s->nx * s->ny * s->nz;
+  // TODO Check if box in this thread! only then start box loop!
+  /*if (ix <= ix */
+
   BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz, ai, nx_v, ny_v, nz_v, 1, 1, 1, {
-    size_t index = i - s->ix + (j - s->iy) * s->nx + (k - s->iz) * s->nx * s->ny;
+    int xn = i - s->ix;
+    int yn = j - s->iy;
+    int zn = k - s->iz;
+    // is the requested point in this chunk?
+    if (xn < 0 || yn < 0 || zn < 0)
+      continue;                                  // too small.
+    if (xn >= s->nx || yn >= s->ny || zn >= s->nz)
+      continue;                                              // too big.
+
+    size_t index = xn + yn * s->nx + zn * s->nx * s->ny;
     switch (action)
     {
       // TODO: log steering!
@@ -210,6 +225,7 @@ size_t Steer(Variable var, Action action, const void *buffer)
         break;
 
       case ACTION_MULTIPLY:
+        D("diff to one: %f", operand[index] - 1.);
         data[ai] *= operand[index];
         break;
 
@@ -224,7 +240,8 @@ size_t Steer(Variable var, Action action, const void *buffer)
   handle = InitVectorUpdate(v, VectorUpdateAll);
   FinalizeVectorUpdate(handle);
 
-  return sizeof(SteerMessageMetadata) + sizeof(double) * s->nx * s->ny * s->nz;
+  D("Applied SendSteerMessage (%d) + %d + %d", sizeof(ActionMessageMetadata), sizeof(SteerMessageMetadata), sizeof(double) * s->nx * s->ny * s->nz);
+  return result;
 }
 
 void SendGridDefinition(SimulationSnapshot const * const snapshot)
@@ -241,7 +258,7 @@ void SendGridDefinition(SimulationSnapshot const * const snapshot)
 /// returns how much we read from buffer
 MergeMessageParser(Interact)
 {
-  /*D("Interact %d > %d ?", size, sizeof(ActionMessageMetadata));*/
+  D("Interact %d > %d ?", size, sizeof(ActionMessageMetadata));
 
   if (size < sizeof(ActionMessageMetadata))
     return size;  // does not contain an action.
