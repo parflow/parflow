@@ -72,10 +72,6 @@ double findValueAt(void *gridMessages, int x, int y, int z)
   }
 }
 
-double *initial_pressure;
-//dump initial pressure... Very experimental: TODO
-
-
 int main(int argc, char *argv [])
 {
   /***********************
@@ -116,35 +112,7 @@ int main(int argc, char *argv [])
     D("analyzing timestep %f", m->time);
     // only have a look after the rain after....
     int timestep = (int)round(m->time / 15.);
-    if (timestep == 0)
-    {
-      // dump pressure...
-      // TODO: put into function
-
-      initial_pressure = (double*)malloc(sizeof(double) * m->grid.nX * m->grid.nY * m->grid.nZ);
-      void *buffer = (void*)m;
-      void *end = buffer + fca_get_segment_size(msg, 0);
-      while (buffer < end)
-      {
-        buffer += sizeof(GridMessageMetadata);
-        double* data = (double*)buffer;
-
-        // TODO:  use reader module here!
-        for (int z = 0; z < m->nz; ++z)
-        {
-          for (int y = 0; y < m->ny; ++y)
-          {
-            int index = m->ix + (y + m->iy) * m->grid.nX + (z + m->iz) * m->grid.nX * m->grid.nY;
-            memcpy(initial_pressure + index, data, m->nx * sizeof(double));
-            data += m->nx;
-          }
-        }
-
-        buffer += sizeof(double) * m->nx * m->ny * m->nz;
-        m = (GridMessageMetadata*)buffer;
-      }
-    }
-    else if ((timestep - 5) % 10 != 0)
+    if ((timestep - 5) % 10 != 0)
     {
       fca_free(msg);
       D("NO");
