@@ -39,13 +39,54 @@ setenv SPACK_ROOT `pwd`/spack
 source spack/share/spack/setup-env.csh
 ```
 
+## Building GNU compiler suite
+
+This step is optional for Linux systems but is currently critical on
+Mac platforms.  We have found issues with some releases of Clang
+producing executables that do not yield correct results.  Clang is the
+compiler used by Apple XCode so running Parflow on MacOS shows this
+issues.  We are currently investigating the issue, a work-around is to
+compile the GNU compiler suite under Spack and avoid using Clang.
+Builing GCC will take considerable amount of time.
+
+```shell
+spack install gcc@7.2.0 languages="fortran,c,c++"
+```
+
+Add the compiler to the set of compilers Spack can use:
+
+```shell
+spack compiler add $(spack location --install-dir gcc@7.2.0)
+```
+
+Make the Spack built GCC the default for compiling by adding the
+following to the Spack package config file (~/.spack/packages.yaml):
+
+```shell
+packages:
+  all:
+    compiler: [gcc@7.2.0]
+```
+
+Side note: We have found that Clang/LLVM versions in the 4.* release
+set exhibit large numerical differences in the results of a running
+Parflow.  This occurs on both MacOS and Linux systems.  The 3.* and
+5.0.0 releases do not show this problem.  Note MacOS versioning is
+different from the standard version of Clang.  We are not certain that
+this is a Clang issue or some odd Parflow bug.  We are leaning to a
+Clang problem since Parflow works under multiple other compilers and
+the issue seems to confined to a limited set of Clang releases.
+However that is a bit of a handy-wavy conclusion since we have not
+narrowed down the problem, we will continue to investigate as time
+permits.
+
 ## Building ParFlow
 
 First download, configure, and build ParFlow and all of the libraries
 ParFlow depends on.  Spack does all of this for you!  This step will
-take a considerable amount of time to be prepared to wait.  You must
-be connected to the internet so Spack can download everything.  You
-must have a compiler suite (C/C++/Fortran) installed.
+take a considerable amount of time; be prepared to wait.  You must be
+connected to the internet so Spack can download everything.  You must
+have a compiler suite (C/C++/Fortran) installed.  
 
 ```shell
 spack install parflow@develop
