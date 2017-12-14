@@ -49,7 +49,6 @@ class ParflowMPI(Composite):
         prefix = "parflow"
         # hosts: string with host names, separated by spaces
         parflowrun = FlowvrRunOpenMPI("$PARFLOW_DIR/bin/parflow %s" % problemName, hosts = hosts, prefix = prefix)
-        #parflowrun = FlowvrRunOpenMPI("xterm -e gdb $PARFLOW_DIR/bin/parflow", hosts = hosts, prefix = prefix)
 
         # hosts_list: convert hosts to a list
         hosts_list = hosts.split(",")
@@ -95,12 +94,13 @@ class Analyzer(Module):
 class Logger(Module):
     """Module that will log the given stamp value in a graph."""
     def __init__(self, name, stampName):
-        Module.__init__(self, name, cmdline = "python ../scripts/logger.py %s" % stampName)
+        Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/logger.py %s" % stampName)
         self.addPort("in", direction = 'in')
 
 class Simplestarter(Module):
     """Module Simplestarter kicks of a nonsteered simple parflow simulation"""
     def __init__(self, name, starttime, stoptime):
+        # TODO: change path here!: relative path not good ;)
         Module.__init__(self, name, cmdline = "python ../simplestarter/simplestarter.py %s %s" % (starttime, stoptime))
         #self.addPort("beginIt", direction = 'in')
         self.addPort("out", direction = 'out')
@@ -108,7 +108,7 @@ class Simplestarter(Module):
 class Ticker(Module):
     """Module sends a message every second"""
     def __init__(self, name, size=0, T=0.5):
-        Module.__init__(self, name, cmdline = "python ../scripts/ticker.py %d %f" % (size, T))
+        Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/ticker.py %d %f" % (size, T))
         #self.addPort("beginIt", direction = 'in')
         self.addPort("out", direction = 'out')
 

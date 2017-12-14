@@ -30,7 +30,7 @@ flowvrd $DEBUGFLAGS &
 sleep 1
 NumProcs=`echo $P*$Q*$R | bc`
 
-tclsh ../scripts/flowvr_starter.tcl $PROBLEMNAME $P $Q $R  # does all the preparation...
+tclsh $PARFLOW_DIR/bin/parflowvr/flowvr_starter.tcl $PROBLEMNAME $P $Q $R  # does all the preparation...
 
 
 # replaces the call to pfrun:
@@ -44,7 +44,7 @@ sh $PARFLOW_DIR/bin/killmc
 
 
 # replaces the call to pfundist
-tclsh ../scripts/undist.tcl $PROBLEMNAME
+tclsh $PARFLOW_DIR/bin/parflowvr/undist.tcl $PROBLEMNAME
 
 
 

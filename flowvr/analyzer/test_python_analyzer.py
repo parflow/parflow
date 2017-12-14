@@ -1,6 +1,7 @@
 #!/usr/local/bin/ipython2 -u -i
 import pypfcommon as pf
 import numpy as np
+import random
 
 a = np.array([[[1,2,3],[4,5,6]],[[2,2,2],[3,3,3]]])
 
@@ -18,18 +19,19 @@ def onGridMessage(arr, gm):
     #cc = pf.StampLog()
     #cc.stampName = 'cc'
     #cc.value = 44.0
-    print("sending log now")
+    #print("sending log now")
     #pf.SendLog([a,b,cc])
 
-    print("send steer message now")
-    print(arr.shape)
-    print(gm)
-    shape = (gm.grid.nX, gm.grid.nY, gm.grid.nZ)
-    print(shape)
-    operator = np.ones(arr.shape)
-    print(operator.sum())
+    #print("send steer message now")
+    operand = np.ones(arr.shape)
+
+    ##r = random.random()* 0.2 - 0.4
+    r = 0
+    print ((1 + r))
+    operator += r
+
     pf.SendSteerMessage(pf.ACTION_MULTIPLY, pf.VARIABLE_PRESSURE,
-            gm.ix, gm.iy, gm.iz, operator)
+            gm.ix, gm.iy, gm.iz, operand)
     print("nice")
 
 

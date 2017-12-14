@@ -1,3 +1,4 @@
+#!/usr/bin/tclsh
 # This is the FlowVR starter to run .tcl's within FlowVR
 #
 #
@@ -8,10 +9,8 @@ package require parflow
 namespace import Parflow::*
 
 source ./[lindex $argv 0].tcl
-pfset NetCDF.WritePressure			False
 
 pfset FlowVR                    True
-pfset FlowVR.ServeFinalState    True
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files

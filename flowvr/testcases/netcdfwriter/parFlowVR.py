@@ -1,8 +1,10 @@
 import sys
+import os
 
 from filters import *
 
-sys.path.append('../scripts')
+parflow_dir = os.getenv('PARFLOW_DIR')
+sys.path.append(parflow_dir + '/bin/parflowvr')
 from parFlowVR_modules import *
 
 

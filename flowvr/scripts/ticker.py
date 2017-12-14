@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import flowvr
 import time
 import sys
