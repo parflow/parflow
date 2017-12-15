@@ -145,6 +145,7 @@ clm_last_rst,clm_daily_rst)
   integer, allocatable :: counter(:,:) 
   real(r8) :: total
   character*100 :: RI
+  real(r8) :: u         ! Tempoary UNDEF Variable  
 
   save
 
@@ -193,6 +194,12 @@ clm_last_rst,clm_daily_rst)
      allocate (grid(drv%nc,drv%nr),stat=ierr) ; call drv_astp(ierr) 
      do r=1,drv%nr                              ! rows
         do c=1,drv%nc                           ! columns
+           grid(c,r)%smpmax = u                 ! SGS Added initialization to address valgrind issues
+           grid(c,r)%scalez = u
+           grid(c,r)%hkdepth = u
+           grid(c,r)%wtfact = u
+           grid(c,r)%trsmx0 = u
+           grid(c,r)%pondmx = u
            allocate (grid(c,r)%fgrd(drv%nt))
            allocate (grid(c,r)%pveg(drv%nt))
         enddo                                   ! columns
