@@ -8,16 +8,21 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/"
 # Version number
 #-----------------------------------------------------------------------------
 include (Version)
-file (STRINGS "VERSION" PARFLOW_VERSION)
-version_create_variables (PARFLOW)
-
 #
 # Make a version file containing the current version from git.
 #
-#include(GetGitRevisionDescription)
-#git_describe(VERSION --tags --dirty=-dirty)
 
-#message("VERSION ${VERSION}")
+include(GetGitRevisionDescription)
+#git_describe(PARFLOW_VERSION --tags)
+git_describe(PARFLOW_VERSION --tags)
+
+# If not building with git then get version from file
+if (NOT PARFLOW_VERSION)
+  file (STRINGS "VERSION" PARFLOW_VERSION)
+endif ()
+  
+message("Configuring version : ${PARFLOW_VERSION}")
+version_create_variables (PARFLOW)
 
 # enable testing
 enable_testing ()

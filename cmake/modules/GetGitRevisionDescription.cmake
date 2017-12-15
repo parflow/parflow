@@ -87,6 +87,12 @@ function(get_git_head_revision _refspecvar _hashvar)
 endfunction()
 
 function(git_describe _var)
+
+        if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git")
+          set(${_var} "GIT-REPOSITORY-NOTFOUND" PARENT_SCOPE)
+	  return()
+	endif()
+    
 	if(NOT GIT_FOUND)
 		find_package(Git QUIET)
 	endif()
