@@ -147,7 +147,6 @@ void FlowVRinitTranslation(SimulationSnapshot *snapshot)  // TODO: macht eigentl
 {
   translation[VARIABLE_PRESSURE] = snapshot->pressure_out;
   translation[VARIABLE_SATURATION] = snapshot->saturation_out;
-  translation[VARIABLE_KS] = NULL;  // TODO: who the fuck is KS?
   translation[VARIABLE_POROSITY] = ProblemDataPorosity(snapshot->problem_data);
   translation[VARIABLE_MANNING] = ProblemDataMannings(snapshot->problem_data);
   translation[VARIABLE_PERMEABILITY_X] = ProblemDataPermeabilityX(snapshot->problem_data);
@@ -155,6 +154,23 @@ void FlowVRinitTranslation(SimulationSnapshot *snapshot)  // TODO: macht eigentl
   translation[VARIABLE_PERMEABILITY_Z] = ProblemDataPermeabilityZ(snapshot->problem_data);
 }
 
+static inline int simple_intersect(int ix1, int nx1, int ix2, int nx2,
+                                   int iy1, int ny1, int iy2, int ny2,
+                                   int iz1, int nz1, int iz2, int nz2)
+{
+  int d;
+
+  d = ix2 - ix1;
+  if (-nx2 > d || d > nx1)
+    return 0;
+  d = iy2 - iy1;
+  if (-ny2 > d || d > ny1)
+    return 0;
+  d = iz2 - iz1;
+  if (-nz2 > d || d > nz1)
+    return 0;
+  return 1;
+}
 
 /// returns how much we read from buffer
 size_t Steer(Variable var, Action action, const void *buffer)
@@ -180,7 +196,8 @@ size_t Steer(Variable var, Action action, const void *buffer)
   int nx_v = SubvectorNX(subvector);
   int ny_v = SubvectorNY(subvector);
 
-  // TODO:speedoptimize this loop. switch to outside. maybe I can do iit with avx on whole oxes? maybe I have to change 1,1,1
+  // TODO:speedoptimize the BoxLoop! loop. switch to outside. maybe I can do it with avx on whole oxes? maybe I have to change 1,1,1
+  // probably one can use IntersectSubgrids and loop only over intersction! Maybe this could influence the vectorupdate too!
   int ix = SubgridIX(subgrid);
   int iy = SubgridIY(subgrid);
   int iz = SubgridIZ(subgrid);
@@ -190,13 +207,16 @@ size_t Steer(Variable var, Action action, const void *buffer)
   int nz = SubgridNZ(subgrid);
 
   int i, j, k, ai = 0;
-  D("operand[0]: %f", operand[0]);
   double *data;
   data = SubvectorElt(subvector, ix, iy, iz);
 
-  size_t result = sizeof(SteerMessageMetadata) + sizeof(double) * s->nx * s->ny * s->nz;
-  // TODO Check if box in this thread! only then start box loop!
-  /*if (ix <= ix */
+  size_t read_out_size = sizeof(SteerMessageMetadata) + sizeof(double) * s->nx * s->ny * s->nz;
+
+  // Check if box in this thread! only then start box loop!
+  if (!simple_intersect(ix, nx, s->ix, s->nx,
+                        iy, ny, s->iy, s->ny,
+                        iz, nz, s->iz, s->nz))
+    return read_out_size;
 
   BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz, ai, nx_v, ny_v, nz_v, 1, 1, 1, {
     int xn = i - s->ix;
@@ -213,10 +233,10 @@ size_t Steer(Variable var, Action action, const void *buffer)
     {
       // TODO: log steering!
       case ACTION_SET:
-        if (data[ai] != operand[index])
-        {
-          /*D("set (%d, %d, %d) %f -> %f", i, j, k, data[ai], operand[index]);*/
-        }
+        /*if (data[ai] != operand[index])*/
+        /*{*/
+        /*D("set (%d, %d, %d) %f -> %f", i, j, k, data[ai], operand[index]);*/
+        /*}*/
         data[ai] = operand[index];
         break;
 
@@ -241,7 +261,7 @@ size_t Steer(Variable var, Action action, const void *buffer)
   FinalizeVectorUpdate(handle);
 
   D("Applied SendSteerMessage (%d) + %d + %d", sizeof(ActionMessageMetadata), sizeof(SteerMessageMetadata), sizeof(double) * s->nx * s->ny * s->nz);
-  return result;
+  return read_out_size;
 }
 
 void SendGridDefinition(SimulationSnapshot const * const snapshot)
