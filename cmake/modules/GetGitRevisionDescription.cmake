@@ -44,12 +44,12 @@ set(__get_git_revision_description YES)
 # We must run the following at "include" time, not at function call time,
 # to find the path to this module rather than the path to a calling list file
 get_filename_component(_gitdescmoddir ${CMAKE_CURRENT_LIST_FILE} PATH)
-
+${GIT_EXECUTABLE}
 function(get_git_head_revision _refspecvar _hashvar)
 	set(GIT_PARENT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 	set(GIT_DIR "${GIT_PARENT_DIR}/.git")
 	while(NOT EXISTS "${GIT_DIR}")	# .git dir not found, search parent directories
-		set(GIT_PREVIOUS_PARENT "${GIT_PARENT_DIR}")
+		set(GIT_PREVIOUS_PARENT "${GIT_PARENT_DIR}")${GIT_EXECUTABLE}
 		get_filename_component(GIT_PARENT_DIR ${GIT_PARENT_DIR} PATH)
 		if(GIT_PARENT_DIR STREQUAL GIT_PREVIOUS_PARENT)
 			# We have reached the root directory, we are not in git
@@ -110,6 +110,8 @@ function(git_describe _var)
 
 	#message(STATUS "Arguments to execute_process: ${ARGN}")
 
+	message("${GIT_EXECUTABLE}")
+
 	execute_process(COMMAND
 		"${GIT_EXECUTABLE}"
 		describe
@@ -127,8 +129,6 @@ function(git_describe _var)
 	endif()
 
 	set(${_var} "${out}" PARENT_SCOPE)
-
-	message("SGS ${out}")
 
 endfunction()
 
@@ -153,7 +153,7 @@ function(git_local_changes _var)
 
 	execute_process(COMMAND
 		"${GIT_EXECUTABLE}"
-		diff-index --quiet HEAD --
+		diff-index HEAD --
 		WORKING_DIRECTORY
 		"${CMAKE_CURRENT_SOURCE_DIR}"
 		RESULT_VARIABLE
