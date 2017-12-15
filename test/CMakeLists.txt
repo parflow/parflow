@@ -47,11 +47,6 @@ if(${PARFLOW_HAVE_NETCDF})
   endif()
 endif()
 
-if(${PARFLOW_HAVE_NETCDF})
-  list(APPEND TESTS
-    default_richards_with_netcdf.tcl)
-endif()
-
 set(SAMRAI_TESTS)
 set(SAMRAI_TESTS_WITH_PATCH_COUNT)
 

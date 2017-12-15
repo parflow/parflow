@@ -51,5 +51,4 @@ before_script:
 script:
   - "[[ $PF_BUILD != 'cmake' ]]    || (cd build && make test)"
   - "[[ $PF_BUILD != 'autoconf' ]] || (cd test && make)"
-
   

@@ -42,10 +42,10 @@ void CreateNCFile(char *file_name, int *netCDFIDs);
 void NCDefDimensions(Vector *v, int dimensionality, int *netCDFIDs);
 void CloseNC(int ncID);
 int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs);
-void PutDataInNC(int varID, Vector *vpfsimulator/parflow_lib/parflow_netcdf.h, double t, varNCData *myVarNCData, int dimensionality, int *netCDFIDs);
+void PutDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData, int dimensionality, int *netCDFIDs);
 void find_variable_length(int nid, int varid, long dim_lengths[MAX_NC_VARS]);
 void CreateNCFileNode(char *file_name, Vector *v, int *netCDFIDs);
-void PutDataInNCNode(int varID, double *data_nc_node, int *nodeXIndices, int *nodeYIndices, int *nodeZIndices,pfsimulator/parflow_lib/parflow_netcdf.h
+void PutDataInNCNode(int varID, double *data_nc_node, int *nodeXIndices, int *nodeYIndices, int *nodeZIndices,
                      int *nodeXCount, int *nodeYCount, int *nodeZCount, double t, varNCData *myVarNCData, int *netCDFIDs);
 void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep, int dimensionality);
 void OpenNCFile(char *file_name, int *ncRID);
