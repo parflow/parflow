@@ -99,6 +99,9 @@ xl             !leaf/stem orientation index
 vw             !btran exponent:[(h2osoi_vol-watdry)/(watopt-watdry)]**vw
 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. -99. 1. -99. -99.
 !
+irrig          !(irrig=0 -> no irrigation, irrig=1 -> irrigate)
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+!
 
 
 

@@ -88,13 +88,13 @@ endif (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 # NetCDF
 #-----------------------------------------------------------------------------
 set (PARFLOW_ENABLE_NETCDF False CACHE BOOL "Build with NetCDF")
-if (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_LIBRARY OR DEFINED NETCDF_INCLUDE_DIR)
-  find_package (netCDF)
-  if (${netCDF_FOUND})
+if (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR OR DEFINED NETCDF_LIBRARY)
+  find_package (NetCDF)
+  if (${NETCDF_FOUND})
     set(PARFLOW_HAVE_NETCDF "yes")
     set(HAVE_NETCDF ${PARFLOW_HAVE_NETCDF})
-  endif (${netCDF_FOUND})
-endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_LIBRARY OR DEFINED NETCDF_INCLUDE_DIR)
+  endif (${NETCDF_FOUND})
+endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR OR DEFINED NETCDF_LIBRARY)
 
 #-----------------------------------------------------------------------------
 # HDF5
@@ -181,6 +181,18 @@ if (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
     set(HAVE_SLURM ${PARFLOW_HAVE_SLURM})
   endif (${SLURM_FOUND})
 endif (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
+
+#-----------------------------------------------------------------------------
+# Valgrind
+#-----------------------------------------------------------------------------
+
+set (PARFLOW_ENABLE_VALGRIND False CACHE BOOL "Build with Valgrind support")
+if (${PARFLOW_ENABLE_VALGRIND} )
+  find_program( PARFLOW_MEMORYCHECK_COMMAND valgrind)
+  set(PARFLOW_HAVE_MEMORYCHECK "yes")
+  set(PARFLOW_MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/bin/valgrind.sup")
+  set(PARFLOW_MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --suppressions=${PARFLOW_MEMORYCHECK_SUPPRESSIONS_FILE}")
+endif (${PARFLOW_ENABLE_VALGRIND})
 
 #-----------------------------------------------------------------------------
 # Fortran checks
