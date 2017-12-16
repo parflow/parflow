@@ -19,7 +19,7 @@ SUBDIR        = docs
 VPATH	      =	@srcdir@
 OBJECT        = ..
 
-SUBDIRS       = usr_manual dev_manual amps_manual
+SUBDIRS       = usr_manual
 
 include $(OBJECT)/config/Makefile.config
 

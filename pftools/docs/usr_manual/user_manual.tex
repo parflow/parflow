@@ -1,4 +1,9 @@
-\documentstyle[11pt,makeidx,html,parflow]{book}
+\documentclass{book}
+%\documentstyle[11pt,makeidx,html,parflow]{book}
+
+\usepackage{makeidx}
+\usepackage{parflow}
+\usepackage{graphicx}
 
 %=============================================================================
 % Preamble:
@@ -35,7 +40,9 @@
 \Title{\parflow{} User's Manual} \SubTitle{GMWI 2016-01 \PFVersion}
 \SubTitle{Sep, 2017}
 %\InputPS{IGWMC-logo-new.eps}(0, 0)(620,94)(0.6)
-\InputPS{IGWMC-logo-new.eps}(0, 0)(620,230)(0.55)
+% This does not render with pdflatex
+%\InputPS{IGWMC-logo-new.eps}(0, 0)(620,230)(0.55)
+\includegraphics[scale=0.55]{IGWMC-logo-new.pdf}
  \Author{ 
 Reed M. Maxwell\footnote{ {\em Department of Geology and Geological Engineering and Integrated GroundWater Modeling Center, Colorado School of Mines, Golden, CO, USA.} \textsf{rmaxwell@mines.edu}}, 
 Stefan J. Kollet\footnote{{\em Institute for Bio- and Geosciences, Agrosphere (IBG-3) and Centre for High-Performance Scientific Computing in Terrestrial Systems, Research Centre J{\a"u}lich, J{\a"u}lich, Germany.} \textsf{s.kollet@fz-juelich.de}}, 
@@ -117,10 +124,10 @@ advertising or product endorsement purposes.}
 %\input{glossary}
 
 %=============== Print the References here
-\input{bib}
 %\input{bib}
-%\bibliographystyle{plain}
-%\bibliography{newRefs_ParFlowManual}
+\input{bib}
+\bibliographystyle{plain}
+\bibliography{newRefs_ParFlowManual}
 
 %=============== Print the Index here
 

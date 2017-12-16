@@ -2,11 +2,27 @@ cmake_minimum_required (VERSION 3.4)
 
 project (PARFLOW C Fortran)
 
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+
 #-----------------------------------------------------------------------------
 # Version number
 #-----------------------------------------------------------------------------
-set (PARFLOW_VERSION_MAJOR 3)
-set (PARFLOW_VERSION_MINOR 0)
+include (Version)
+#
+# Make a version file containing the current version from git.
+#
+
+include(GetGitRevisionDescription)
+#git_describe(PARFLOW_VERSION --tags)
+git_describe(PARFLOW_VERSION --tags)
+
+# If not building with git then get version from file
+if (NOT PARFLOW_VERSION)
+  file (STRINGS "VERSION" PARFLOW_VERSION)
+endif ()
+  
+message("Configuring version : ${PARFLOW_VERSION}")
+version_create_variables (PARFLOW)
 
 # enable testing
 enable_testing ()
@@ -14,12 +30,9 @@ enable_testing ()
 #-----------------------------------------------------------------------------
 # General project wide configuration
 #-----------------------------------------------------------------------------
-set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 # TODO should get rid of non-prefix versions of flags; preprocessor flags should be in PARFLOW namespace
 
 # TODO replace CASC macro names with PARFLOW when completed.
-
-include (Version)
 
 # Use RPATH in install, many mpicc scripts use RPATH so default
 # behavior of CMAKE to remove RPATH from installed executables is not
@@ -341,11 +354,8 @@ include_directories ("${PROJECT_BINARY_DIR}/include")
 #-----------------------------------------------------------------------------
 # Setup configure.h file for accessing configure options
 # -----------------------------------------------------------------------------
-# TODO These files should be moved once cmake conversion is completed,
-# placed in cmake to avoid confusion with autoconf versions
 configure_file (cmake/parflow_config.h.in include/parflow_config.h)
 
-# TODO need to setup script logic got correctly generate version file.
 configure_file (cmake/version.h.in include/version.h)
 
 configure_file (cmake/Makefile.config.in config/Makefile.config)
@@ -382,4 +392,10 @@ endif ()
 #-----------------------------------------------------------------------------
 include (CTest)
 
+set (PARFLOW_ENABLE_LATEX False CACHE BOOL "Enable LaTEX and building of documentation")
+if ( ${PARFLOW_ENABLE_LATEX} )
+  add_subdirectory(pftools/docs/usr_manual)
+endif()
+
 install (DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION config)
+
