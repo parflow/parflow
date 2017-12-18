@@ -5,7 +5,6 @@ SET(SCRIPT_FILES
   doMPI.sh
   do.sh
   flowvr_starter.tcl
-  launchDaemon.sh
   logger.py
   parFlowVR_modules.py
   ticker.py
