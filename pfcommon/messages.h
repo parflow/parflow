@@ -64,7 +64,6 @@ typedef enum {
 
   // to steer:
   // et plus, see ProblemData struct.
-  VARIABLE_KS,
   VARIABLE_POROSITY,
   VARIABLE_MANNING,
   VARIABLE_PERMEABILITY_X,

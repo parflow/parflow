@@ -188,10 +188,11 @@ endif (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
 set (PARFLOW_ENABLE_FLOWVR False CACHE BOOL "Build with FlowVR support")
 if (${PARFLOW_ENABLE_FLOWVR} OR DEFINED FLOWVR_ROOT)
   find_package(FlowVR)
-  if (${FLOWVR_FOUND})
+  find_package(fca)
+  if (${FLOWVR_FOUND} AND ${fca_FOUND})
     set(PARFLOW_HAVE_FLOWVR "yes")
     set(HAVE_FLOWVR ${PARFLOW_HAVE_FLOWVR})
-  endif (${FLOWVR_FOUND})
+  endif (${FLOWVR_FOUND} AND ${fca_FOUND})
 endif (${PARFLOW_ENABLE_FLOWVR} OR DEFINED FLOWVR_ROOT)
 
 #-----------------------------------------------------------------------------

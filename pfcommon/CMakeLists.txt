@@ -1,10 +1,10 @@
 set (SRC_FILES messages.c)
 
+FIND_LIBRARY(FCA_LIBRARY fca)
+
 add_library(pfcommon ${SRC_FILES})
 
 install (TARGETS pfcommon DESTINATION lib)
-
-target_include_directories (pfcommon PUBLIC "${FLOWVR_INCLUDE_DIRS}")
 
 set (BUILD_PYTHON_ANALYZER_API True CACHE BOOL
   "Build Python Analyzer API to build analyzer modules in python")
@@ -28,13 +28,13 @@ IF( BUILD_PYTHON_ANALYZER_API )
 
     INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH}
       ${CMAKE_CURRENT_SOURCE_DIR}
-      ${FLOWVR_PREFIX}/include  # TODO: FLOWVR_INCLUDE_DIRS exists or not?
+      ${FCA_INCLUDE_DIRECTORY}/..
       ${NUMPY_I_PATH}
       )
 
     SET(CMAKE_SWIG_FLAGS "")
     SWIG_ADD_LIBRARY(pypfcommon LANGUAGE python SOURCES pypfcommon.i pypfcommon.c)
-    SWIG_LINK_LIBRARIES(pypfcommon ${PYTHON_LIBRARIES} pfcommon fca)
+    SWIG_LINK_LIBRARIES(pypfcommon ${PYTHON_LIBRARIES} pfcommon ${FCA_LIBRARY})
     # low: performance better if we compile wit ${PYTHON_LIBRARIES} and if we do not use
     # the previously linked version of pfcommon but include ${SRC_FILES}
 
