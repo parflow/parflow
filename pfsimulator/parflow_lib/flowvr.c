@@ -5,7 +5,7 @@
 #include <string.h>  // for memcpy
 #include <stdlib.h>  // for malloc
 
-FLOWVR_ACTIVE = 0;
+int FLOWVR_ACTIVE;
 fca_module moduleParflow;
 
 static fca_module moduleParflowEvent;
