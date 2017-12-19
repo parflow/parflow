@@ -34,5 +34,27 @@ endif (${PARFLOW_HAVE_SZLIB})
 install(TARGETS pftools DESTINATION bin)
 
 file (GLOB TCL_SRC *.tcl)
-
 install(FILES ${TCL_SRC} DESTINATION bin)
+
+set(SCRIPTS pfhelp pfmvio pfbtosa pfbtovis pfsbtosa pfstrip)
+install(FILES ${SCRIPTS} DESTINATION bin)
+
+add_executable(pfwell_cat pfwell_cat.c well.c)
+install(TARGETS pfwell_cat DESTINATION bin)
+
+add_executable(pfwell_data pfwell_data.c well.c)
+install(TARGETS pfwell_data DESTINATION bin)
+
+add_executable(gmssol2pfsol gmsSOL2pfsol.c gmsreadSOL.c geom_sort_vertices.c)
+install(TARGETS gmssol2pfsol DESTINATION bin)
+
+add_executable(gmstinvertices gmsTINvertices.c gmsreadTIN.c gmswriteTIN.c geom_sort_xy_vertices.c)
+install(TARGETS gmstinvertices DESTINATION bin)
+
+add_executable(gmstriangulatex gmstriangulate.c gmsreadTIN.c gmswriteTIN.c geom_sort_xy_vertices.c)
+install(TARGETS gmstriangulatex DESTINATION bin)
+
+add_executable(projecttin projecttin.c gmsreadTIN.c)
+target_link_libraries(projecttin ${PARFLOW_LIBM})
+install(TARGETS projecttin DESTINATION bin)
+
