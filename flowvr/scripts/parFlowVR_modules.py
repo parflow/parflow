@@ -1,4 +1,5 @@
 from flowvrapp import *
+import socket
 
 class FilterMergeItExt(Filter):
   """Merges messages received on input port into one message sent on output port.
@@ -48,7 +49,11 @@ class ParflowMPI(Composite):
 
         prefix = "parflow"
         # hosts: string with host names, separated by spaces
-        parflowrun = FlowvrRunOpenMPI("$PARFLOW_DIR/bin/parflow %s" % problemName, hosts = hosts, prefix = prefix)
+        if socket.gethostname().find('frog') == 0:
+            # I bet I'm on froggy ;)
+            parflowrun = FlowvrRunOpenMPI("$PARFLOW_DIR/bin/parflow %s" % problemName, hosts = hosts, prefix = prefix, mpirunargs="--mca btl_sm_use_knem 0 --mca btl_vader_single_copy_mechanism none")
+        else:
+            parflowrun = FlowvrRunMPI("$PARFLOW_DIR/bin/parflow %s" % problemName, hosts = hosts, prefix = prefix, mpistack="openmpi")
 
         # hosts_list: convert hosts to a list
         hosts_list = hosts.split(",")
