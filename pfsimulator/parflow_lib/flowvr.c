@@ -142,7 +142,7 @@ void NewFlowVR(void)
 
 #ifdef HAVE_FLOWVR
 
-static void* translation[6];
+static void* translation[7];
 void FlowVRinitTranslation(SimulationSnapshot *snapshot)  // TODO: macht eigentlich die uebergabe von sshot an vielen anderen stellen sinnlos!
 {
   translation[VARIABLE_PRESSURE] = snapshot->pressure_out;
