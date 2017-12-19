@@ -72,7 +72,7 @@ $(PARFLOW_TOOLS_BIN_DIR)/gmstinvertices: Makefile $(GMSTINVERTICES_HDRS) $(GMSTI
 GMSTRIANGULATE_HDRS = general.h geometry.h gms.h
 GMSTRIANGULATE_OBJS = gmstriangulate.o \
 	gmsreadTIN.o gmswriteTIN.o geom_sort_xy_vertices.o
-$(PARFLOW_TOOLS_BIN_DIR)/gmstriangulatex: Makefile $(GMSTRIANGULATE_HDRS) $(GMSTRIANGULATE_OBJS)
+$(PARFLOW_TOOLS_BIN_DIR)/gmstriangulate: Makefile $(GMSTRIANGULATE_HDRS) $(GMSTRIANGULATE_OBJS)
 	$(CC) $(CFLAGS) -o $(PARFLOW_TOOLS_BIN_DIR)/gmstriangulate $(GMSTRIANGULATE_OBJS)
 
 $(PARFLOW_TOOLS_BIN_DIR)/projecttin: gms.h general.h projecttin.o gmsreadTIN.o

@@ -51,8 +51,8 @@ install(TARGETS gmssol2pfsol DESTINATION bin)
 add_executable(gmstinvertices gmsTINvertices.c gmsreadTIN.c gmswriteTIN.c geom_sort_xy_vertices.c)
 install(TARGETS gmstinvertices DESTINATION bin)
 
-add_executable(gmstriangulatex gmstriangulate.c gmsreadTIN.c gmswriteTIN.c geom_sort_xy_vertices.c)
-install(TARGETS gmstriangulatex DESTINATION bin)
+add_executable(gmstriangulate gmstriangulate.c gmsreadTIN.c gmswriteTIN.c geom_sort_xy_vertices.c)
+install(TARGETS gmstriangulate DESTINATION bin)
 
 add_executable(projecttin projecttin.c gmsreadTIN.c)
 target_link_libraries(projecttin ${PARFLOW_LIBM})
