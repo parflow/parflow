@@ -1,30 +1,32 @@
 from flowvrapp import *
+from filters import *
 import socket
 
-class FilterMergeItExt(Filter):
-  """Merges messages received on input port into one message sent on output port.
 
-  More precisely, when it receives a message on the 'order' port, it
-  inspects the incoming message queue ('in' port), discard all
-  messages with a non null 'scratch' stamp value, concatenate all
-  other messages in one message sent on 'out' port. This message has
-  its 'scratch' stamp set to 0 and its 'stamp' stamp set to the sum of
-  all 'stamp' stamps of the concatenated messages. The name of the
-  'scratch' and 'stamp' stamps is set from the component parameter.
-  If forwardEmpty is set to "True" even empty mesages will be forwarded or if no message
-  is available on the 'in' port an empty message will be generated.
-  If forwardPresignal is set to "True" even Presignal messages (and messages with an it
-  stamp < 0) will be forwarded
-  """
+class FilterMergeItExt(FilterWithManyInputs):
+    """Merges messages received on input port into one message sent on output port.
 
-  def __init__(self, name, nbIn = 1, host = ''):
-    Filter.__init__(self, name, run = 'flowvr.plugins.MergeItExt', host = host)
-    self.parameters["nbIn"] = nbIn
-    self.addPort("order", direction = 'in', messagetype = 'stamps')
-    self.addPort("out", direction = 'out')
+    More precisely, when it receives a message on the 'order' port, it
+    inspects the incoming message queue ('in' port), discard all
+    messages with a non null 'scratch' stamp value, concatenate all
+    other messages in one message sent on 'out' port. This message has
+    its 'scratch' stamp set to 0 and its 'stamp' stamp set to the sum of
+    all 'stamp' stamps of the concatenated messages. The name of the
+    'scratch' and 'stamp' stamps is set from the component parameter.
+    If forwardEmpty is set to "True" even empty mesages will be forwarded or if no message
+    is available on the 'in' port an empty message will be generated.
+    If forwardPresignal is set to "True" even Presignal messages (and messages with an it
+    stamp < 0) will be forwarded
 
-    for i in range(nbIn):
-        self.addPort("in%d"%i, direction = 'in')
+    Use newInputPort() to get a new input port (instead of getPort()).
+    """
+
+    def __init__(self, name, host = ''):
+        self.messagetype = 'full'
+        self.plugin_name = 'flowvr.plugins.MergeItExt'
+        FilterWithManyInputs.__init__(self, name, host = host)
+        self.addPort("order", direction = 'in', messagetype = 'stamps')
+
 
 class Parflow(Module):
     def __init__(self, prefix, index=None, run=None, host=None, cmdline=None, outports=[]):

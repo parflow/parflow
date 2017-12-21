@@ -13,7 +13,7 @@ problemName, P, Q, R = sys.argv[1:5]
 
 pres = FilterPreSignal("PreSignal", nb=1)  # will be inited with one token for the beginning. TODO set nb to 2 later!
 
-mergeIt = FilterMergeItExt("parflow-controller", 2 if use_visit else 1)
+mergeIt = FilterMergeItExt("parflow-controller")
 
 # Hostlist: comma separated for openmpi.  Add more hosts for more parallelism
 # run all on localhost for the moment:
@@ -30,7 +30,7 @@ treePressure = generateNto1(prefix="comNto1PressureMerge", in_ports = parflowmpi
 treePressure.link(netcdfwriter.getPort("in"))
 treePressure.link(analyzer.getPort("pressureIn"))
 
-analyzer.getPort("steerOut").link(mergeIt.getPort("in0"))
+analyzer.getPort("steerOut").link(mergeIt.newInputPort())
 treePressureSnap = generateNto1(prefix="comNto1PressureSnapMerge", in_ports = parflowmpi.getPort("pressureSnap"), arity = 2)
 
 logger = Logger("logger", "E M K")
@@ -39,7 +39,7 @@ analyzer.getPort("log").link(logger.getPort("in"))
 if use_visit:
     visit = VisIt("visit")
     treePressureSnap.link(visit.getPort("pressureIn"))
-    visit.getPort("triggerSnap").link(mergeIt.getPort("in1"))
+    visit.getPort("triggerSnap").link(mergeIt.newInputPort())
 
 
 parflowmpi.getPort("endIt")[0].link(pres.getPort("in"))

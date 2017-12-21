@@ -12,7 +12,7 @@ f = FilterMergeItExt("Mi")
 spy = SpyModule("filter out")
 spy2 = SpyModule("ticker out")
 
-t.getPort("out").link(f.getPort("in0"))
+t.getPort("out").link(f.newInputPort())
 maxfreq.getPort("out").link(f.getPort("order"))
 
 f.getPort("out").link(spy.getPort("in"))

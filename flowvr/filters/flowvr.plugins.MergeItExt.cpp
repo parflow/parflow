@@ -22,7 +22,7 @@ namespace flowvr
     /// found message are hereby copied.
     ///
     /// <b>Init parameters:</b>
-    /// \<nbIn\>1\<nbIn\>  <i>optional</i>:  number of input ports.  default 1
+    /// \<nb\>1\<nb\>  <i>optional</i>:  number of input ports.  default 1
     //
     /// <b>Input ports:</b>
     /// -  <b>in</b>: Messages to be filtered.
@@ -52,7 +52,7 @@ namespace flowvr
         };
 
       protected:
-        int nbIn;  /// number of input ports
+        int nb;  /// number of input ports
 
         BufferPool poolout;
 
@@ -64,7 +64,7 @@ namespace flowvr
 
     /// Constructor.
     MergeItExt::MergeItExt(const std::string objID)
-      : Filter(objID), nbIn(1)
+      : Filter(objID), nb(1)
     {
     }
 
@@ -77,22 +77,22 @@ namespace flowvr
       flowvr::plugd::Result result = Filter::init(xmlRoot, dispatcher);
       if (result.error()) return result;
 
-      xml::DOMNodeList* lnbIn = xmlRoot->getElementsByTagName("nbIn");
-      if (lnbIn->getLength()>=1)
+      xml::DOMNodeList* lnb = xmlRoot->getElementsByTagName("nb");
+      if (lnb->getLength()>=1)
       {
-        nbIn = atoi(lnbIn->item(0)->getTextContent().c_str());
+        nb = atoi(lnb->item(0)->getTextContent().c_str());
 #ifdef __DEBUG
-        std::cout << objectID() << ": nbIn=" << nbIn << std::endl;
+        std::cout << objectID() << ": nb=" << nb << std::endl;
 #endif
-        if (nbIn < 0) nbIn = 1;
+        if (nb < 0) nb = 1;
       }
-      delete lnbIn;
+      delete lnb;
 
-      initInputs(nbIn+1);
+      initInputs(nb+1);
       //inputs[IDPORT_IN]->storeSpecification();
       inputs[IDPORT_ORDER]->setName("order");
 
-      for (int i = 1; i <= nbIn; ++i)
+      for (int i = 1; i <= nb; ++i)
       {
         char buf[10];
         sprintf(buf, "in%d", i-1);  // start counting at 0
@@ -130,7 +130,7 @@ namespace flowvr
 #endif
 
         //give the Stamplist to the outputmessage queue
-        if (nbIn > 0)
+        if (nb > 0)
         {
           outputs[0]->stamps = inputs[1]->getStampList();
           outputs[0]->newStampSpecification(dispatcher);
@@ -142,7 +142,7 @@ namespace flowvr
 
     bool MergeItExt::hasStampSpecification()
     {
-      for (int i = 1; i <= nbIn; ++i)
+      for (int i = 1; i <= nb; ++i)
       {
         if (!inputs[i]->stampsReceived())
         {
@@ -177,7 +177,7 @@ namespace flowvr
       // figure out size and set stamps
       std::vector<Message> newmsgs;
       size_t size = 0;
-      for (int i = 1; i <= nbIn; ++i)
+      for (int i = 1; i <= nb; ++i)
       {
         while (inputs[i]->frontMsg().valid())
         {
