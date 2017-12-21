@@ -1077,12 +1077,13 @@ SetupRichards(PFModule * this_module)
     if (FLOWVR_ACTIVE)
     {
       char filename[1024];     // low: reuse other string variable here?
-      int userSpecSteps = GetIntDefault("NetCDF.NumStepsPerFile", 1);
+      int userSpecSteps = GetIntDefault("FlowVR.NumStepsPerFile", 1);
 
-      sprintf(filename, "_%s.%05d.nc", file_prefix, instance_xtra->file_number / userSpecSteps);
+      sprintf(filename, "%s.%05d", file_prefix, instance_xtra->file_number / userSpecSteps);
 
       SimulationSnapshot sshot = GetSimulationSnapshot;
-      DumpRichardsToFlowVR(&sshot);
+      FlowVRinitTranslation(&sshot);
+      any_file_dumped = FlowVRFullFillContracts(0, &sshot);
     }
 #endif
 
@@ -2727,19 +2728,21 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     any_file_dumped = 0;
     if (dump_files)
     {
-      instance_xtra->dump_index++;
+      instance_xtra->dump_index++;  // REFACTOR: shouldn't we only set this higher if we dumped out something
 
 #ifdef HAVE_FLOWVR
+      /***************************************************************
+       * FlowVR output
+       **************************************************************/
       if (FLOWVR_ACTIVE)
       {
         char filename[1024];
-        int userSpecSteps = GetIntDefault("NetCDF.NumStepsPerFile", 1);
+        int userSpecSteps = GetIntDefault("FlowVR.NumStepsPerFile", 1);
         D("steps per file: %d, filenumber: %d", userSpecSteps, instance_xtra->file_number);
 
-        sprintf(filename, "_%s.%05d.nc", file_prefix, 1 + (instance_xtra->file_number - 1) / userSpecSteps);
+        sprintf(filename, "%s.%05d", file_prefix, 1 + (instance_xtra->file_number - 1) / userSpecSteps);
         sshot.filename = filename;
-        DumpRichardsToFlowVR(&sshot);
-        any_file_dumped = 1;
+        any_file_dumped = FlowVRFullFillContracts(instance_xtra->dump_index, &sshot);
       }
 #endif
 
@@ -3507,6 +3510,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     // TODO: or do we need to reload sshot here??
     FlowVRServeFinalState(&sshot);
     D("Aborting now!");
+    // TODO: FIXME: don't sleep. need for a mechanism that knows when to stop, or to check if a module is still online. speak with bruno on that!
+    usleep(2000000);
     fca_abort(moduleParflow);
   }
 #endif

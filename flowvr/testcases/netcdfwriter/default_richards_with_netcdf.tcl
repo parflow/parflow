@@ -13,6 +13,24 @@ file delete -force results
 file mkdir results
 cd results
 
+pfset FileVersion 4
+
+#---------------------------------------------------------
+# FlowVR parameters
+#---------------------------------------------------------
+pfset FlowVR [if {[lindex $argv 3] == "--FlowVR"} {list True} {list False}]
+
+pfset FlowVR.NumStepsPerFile 5
+pfset FlowVR.Outports.Names "pressure saturation"
+
+pfset FlowVR.Outports.pressure.Periodicity  1
+pfset FlowVR.Outports.pressure.Variable  "pressure"
+pfset FlowVR.Outports.pressure.Offset  0
+
+pfset FlowVR.Outports.saturation.Periodicity  1
+pfset FlowVR.Outports.saturation.Variable  "saturation"
+pfset FlowVR.Outports.saturation.Offset  0
+
 # Examples of compression options for SILO
 # Note compression only works for HDF5
 #pfset SILO.Filetype "HDF5"
@@ -21,13 +39,9 @@ cd results
 #pfset SILO.CompressionOptions "METHOD=FPZIP"
 #pfset SILO.CompressionOptions "ERRMODE=FALLBACK METHOD=GZIP"
 
-pfset FileVersion 4
-
 pfset Process.Topology.P        [lindex $argv 0]
 pfset Process.Topology.Q        [lindex $argv 1]
 pfset Process.Topology.R        [lindex $argv 2]
-
-pfset FlowVR [if {[lindex $argv 3] == "--FlowVR"} {list True} {list False}]
 
 #---------------------------------------------------------
 # Computational Grid
@@ -340,15 +354,12 @@ pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      100
 
 pfset NetCDF.NumStepsPerFile			5
 pfset NetCDF.WritePressure			True
-#pfset NetCDF.WriteSaturation			True
-
-#pfset NetCDF.NumStepsPerFile			1
-#pfset NetCDF.WritePressure			True
+pfset NetCDF.WriteSaturation			True
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-#pfwritedb default_richards
-#exec xterm -e gdb $::env(PARFLOW_DIR)/bin/parflow
+pfwritedb default_richards
+#exec xterm_gdb $::env(PARFLOW_DIR)/bin/parflow default_richards
 pfrun default_richards
 pfundist default_richards

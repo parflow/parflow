@@ -44,13 +44,25 @@ errors=$errors+$?
 # and compare the results!
 echo Compare results. Diffs in Time are ok up to now as we transmit timestamps as floats atm. So we loose some prec. Diffs in the other variables are not ok..
 
-$PARFLOW_DIR/bin/parflowvr/compare_nc.py ./_default_richards.out.00000.nc results/default_richards.out.00000.nc
+$PARFLOW_DIR/bin/parflowvr/compare_nc.py ./pressure.default_richards.out.00000.nc results/default_richards.out.00000.nc -vague
 errors=$errors+$?
-$PARFLOW_DIR/bin/parflowvr/compare_nc.py ./_default_richards.out.00001.nc results/default_richards.out.00001.nc
+$PARFLOW_DIR/bin/parflowvr/compare_nc.py ./pressure.default_richards.out.00001.nc results/default_richards.out.00001.nc -vague
 errors=$errors+$?
-$PARFLOW_DIR/bin/parflowvr/compare_nc.py ./_default_richards.out.00000.nc results_noFlowVR/default_richards.out.00000.nc
+$PARFLOW_DIR/bin/parflowvr/compare_nc.py ./pressure.default_richards.out.00000.nc results_noFlowVR/default_richards.out.00000.nc -vague
 errors=$errors+$?
-$PARFLOW_DIR/bin/parflowvr/compare_nc.py ./_default_richards.out.00001.nc results_noFlowVR/default_richards.out.00001.nc
+$PARFLOW_DIR/bin/parflowvr/compare_nc.py ./pressure.default_richards.out.00001.nc results_noFlowVR/default_richards.out.00001.nc -vague
+errors=$errors+$?
+$PARFLOW_DIR/bin/parflowvr/compare_nc.py ./saturation.default_richards.out.00000.nc results/default_richards.out.00000.nc -vague
+errors=$errors+$?
+$PARFLOW_DIR/bin/parflowvr/compare_nc.py ./saturation.default_richards.out.00001.nc results/default_richards.out.00001.nc -vague
+errors=$errors+$?
+$PARFLOW_DIR/bin/parflowvr/compare_nc.py ./saturation.default_richards.out.00000.nc results_noFlowVR/default_richards.out.00000.nc -vague
+errors=$errors+$?
+$PARFLOW_DIR/bin/parflowvr/compare_nc.py ./saturation.default_richards.out.00001.nc results_noFlowVR/default_richards.out.00001.nc -vague
+errors=$errors+$?
+$PARFLOW_DIR/bin/parflowvr/compare_nc.py ./multi.default_richards.out.00000.nc results_noFlowVR/default_richards.out.00000.nc
+errors=$errors+$?
+$PARFLOW_DIR/bin/parflowvr/compare_nc.py ./multi.default_richards.out.00001.nc results_noFlowVR/default_richards.out.00001.nc
 errors=$errors+$?
 
 

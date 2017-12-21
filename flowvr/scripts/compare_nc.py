@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # exits with 0 when 2 netCDF files contain the same datasets.
+# 3rd parameter: if -vague: returns true if datasets of A in B or B in A
 
 import netCDF4 as nc
 import numpy as np
@@ -12,7 +13,11 @@ B = nc.Dataset(sys.argv[2])
 
 if len(A.variables) != len(B.variables):
     print ("they differ in the variables amount!")
-    exit(1)
+    if sys.argv[-1] != "-vague":
+        result = 1
+    # make sure A is the one with the less variables so the following will work
+    if len(A.variables) > len(B.variables):
+        A, B = B, A
 
 
 result = 0

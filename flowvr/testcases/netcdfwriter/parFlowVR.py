@@ -8,11 +8,24 @@ sys.path.append(parflow_dir + '/bin/parflowvr')
 from parFlowVR_modules import *
 
 
-pres = FilterPreSignal("PreSignal", nb=1)
-parflow = Parflow("parflow", cmdline = "tclsh ./default_richards_with_netcdf.tcl 1 1 1 --FlowVR")
-parflow.getPort("endIt").link(pres.getPort("in"))
+# outports must be the same as specified in the tcl!
+parflow = Parflow("parflow",
+        cmdline = "tclsh ./default_richards_with_netcdf.tcl 1 1 1 --FlowVR",
+        outports=["pressure", "saturation"])
+# As nothing is connected to the parflow input ports, it will just run the simulation
+# cycles as specified within the tcl file and parflow is not waiting for interaction
 
-netcdfwriter = NetCDFWriter("netcdfwriter")
-parflow.getPort("pressure").link(netcdfwriter.getPort("pressureIn"))
+saturationwriter = NetCDFWriter("saturationwriter", "saturation.");
+parflow.getPort("saturation").link(saturationwriter.getPort("in"))
+
+pressurewriter = NetCDFWriter("pressurewriter", "pressure.")
+parflow.getPort("pressure").link(pressurewriter.getPort("in"))
+
+merge = FilterMerge("merge")
+parflow.getPort("pressure").link(merge.newInputPort())
+parflow.getPort("saturation").link(merge.newInputPort())
+
+multiwriter = NetCDFWriter("multiwriter", "multi.")
+merge.getPort("out").link(multiwriter.getPort("in"))
 
 app.generate_xml("parflowvr")

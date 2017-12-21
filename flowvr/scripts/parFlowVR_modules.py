@@ -27,15 +27,15 @@ class FilterMergeItExt(Filter):
         self.addPort("in%d"%i, direction = 'in')
 
 class Parflow(Module):
-    def __init__(self, prefix, index=None, run=None, host=None, cmdline=None):
+    def __init__(self, prefix, index=None, run=None, host=None, cmdline=None, outports=[]):
         name = prefix + "/" + str(index) if index is not None else prefix
         Module.__init__(self, name, run = run, host = host, cmdline = cmdline)
 
         inportnames = ["in"]
-        outportnames = ["pressure", "porosity", "saturation", "pressureSnap"]
+        outportnames = outports + ["pressureSnap"]
 
         for inportname in inportnames:
-            p = self.addPort(inportname, direction = 'in') # TODO: unimplemented?, blockstate = 'nonblocking' if inportname=="triggerSnap" else 'blocking')
+            p = self.addPort(inportname, direction = 'in')
 
         for outportname in outportnames:
             p = self.addPort(outportname, direction = 'out')
@@ -44,7 +44,7 @@ class ParflowMPI(Composite):
     """several instances of parflow module that generate pressure, porosity... for the
     next timeframe"""
 
-    def __init__(self, hosts, problemName):
+    def __init__(self, hosts, problemName, outports=[]):
         Composite.__init__(self)
 
         prefix = "parflow"
@@ -62,7 +62,8 @@ class ParflowMPI(Composite):
         ninstance = len(hosts_list)
 
         for i in range(ninstance):
-            parflow = Parflow(prefix, index=i, run=parflowrun, host=hosts_list[i])
+            parflow = Parflow(prefix, index=i, run=parflowrun, host=hosts_list[i],
+                    outports=outports)
 
             # collect ports
             for pname in parflow.ports:
@@ -119,9 +120,7 @@ class Ticker(Module):
 
 class NetCDFWriter(Module):
     """Module NetCDFWriter writes parflow output into netCDF files."""
-    def __init__(self, name):
+    def __init__(self, name, fileprefix=""):
         # TODO: works with mpi too?!
-        Module.__init__(self, name, cmdline = "$PARFLOW_DIR/bin/netcdf-writer")
-        self.addPort("pressureIn", direction = 'in');
-        self.addPort("out", direction = 'out');
-        #self.run.options += '-x DISPLAY'
+        Module.__init__(self, name, cmdline = "$PARFLOW_DIR/bin/netcdf-writer %s" % fileprefix)
+        self.addPort("in", direction = 'in');

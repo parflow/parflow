@@ -3,6 +3,19 @@
 
 #include "messages.h"
 
+#include <assert.h>
+
+// TODO: works like this: ?
+const char *VARIABLE_TO_NAME[VARIABLE_LAST] = {
+  "pressure",
+  "saturation",
+  "porosity",
+  "manning",
+  "permeability_x",
+  "permeability_y",
+  "permeability_z"
+};
+
 void SendActionMessage(fca_module mod, fca_port port, Action action, Variable variable,
                        void *parameter, size_t parameterSize)
 {
@@ -52,4 +65,15 @@ void SendLogMessage(fca_module mod, fca_port port, StampLog log[], size_t n)
   }
   fca_put(port, msg);
   fca_free(msg);
+}
+
+Variable NameToVariable(const char *name)
+{
+  for (Variable res = VARIABLE_PRESSURE; res < VARIABLE_LAST; ++res)
+  {
+    if (strcmp(VARIABLE_TO_NAME[res], name) == 0)
+      return res;
+  }
+  assert(0 && "Could not convert to a Variable!");
+  return VARIABLE_LAST;
 }

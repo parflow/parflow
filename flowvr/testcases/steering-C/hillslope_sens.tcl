@@ -12,6 +12,15 @@ namespace import Parflow::*
 #-----------------------------------------------------------------------------
 pfset FileVersion 4
 
+#---------------------------------------------------------
+# FlowVR parameters
+#---------------------------------------------------------
+pfset FlowVR.Outports.Names "out0"
+
+pfset FlowVR.Outports.out0.Periodicity  1
+pfset FlowVR.Outports.out0.Variable  "pressure"
+pfset FlowVR.Outports.out0.Offset  0
+
 #-----------------------------------------------------------------------------
 # Process Topology
 #-----------------------------------------------------------------------------

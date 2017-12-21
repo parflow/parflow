@@ -20,17 +20,6 @@ typedef struct {
 } GridDefinition;
 
 typedef struct {
-  int nx;
-  int ny;
-  int nz;
-  int ix;
-  int iy;
-  int iz;
-  GridDefinition grid;
-  double time;
-} GridMessageMetadata;
-
-typedef struct {
   const char *stampName;
   float value;
 } StampLog;
@@ -68,8 +57,26 @@ typedef enum {
   VARIABLE_MANNING,
   VARIABLE_PERMEABILITY_X,
   VARIABLE_PERMEABILITY_Y,
-  VARIABLE_PERMEABILITY_Z
+  VARIABLE_PERMEABILITY_Z,
+
+  VARIABLE_LAST
 } Variable;
+
+extern const char *VARIABLE_TO_NAME[VARIABLE_LAST];
+Variable NameToVariable(const char *name);
+
+typedef struct {
+  double time;
+  Variable variable;
+  GridDefinition grid;
+  int nx;
+  int ny;
+  int nz;
+  int ix;
+  int iy;
+  int iz;
+} GridMessageMetadata;
+
 
 typedef enum {
   ACTION_GET_GRID_DEFINITION,

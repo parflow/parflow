@@ -73,13 +73,13 @@ extern fca_module moduleParflow;
 // PFModule that is used here: solver_richards.
 // TODO: documentation, also in other c files
 
-// do all the in message handlinge
 void FlowVRinitTranslation(SimulationSnapshot *snapshot);
+
+// do all the in message handlinge
 int FlowVRInteract(SimulationSnapshot *sshot);
 
 
-// needed for writer:
-void DumpRichardsToFlowVR(SimulationSnapshot const * const snapshot);
+int FlowVRFullFillContracts(int timestep, SimulationSnapshot const * const sshot);
 
 void FlowVRServeFinalState(SimulationSnapshot *snapshot);
 

@@ -17,15 +17,17 @@ mergeIt = FilterMergeItExt("parflow-controller", 2 if use_visit else 1)
 
 # Hostlist: comma separated for openmpi.  Add more hosts for more parallelism
 # run all on localhost for the moment:
-parflowmpi = ParflowMPI(("localhost,"*int(P)*int(Q)*int(R))[:-1], problemName)  # cut last ,
+parflowmpi = ParflowMPI(("localhost,"*int(P)*int(Q)*int(R))[:-1],  # cut last ,
+        problemName,
+        ["out0"])  # ports as specified in tcl file
 
 
-netcdfwriter = NetCDFWriter("netcdfwriter")
+netcdfwriter = NetCDFWriter("netcdfwriter", fileprefix="_")
 analyzer = Analyzer("analyzer")
 
 
-treePressure = generateNto1(prefix="comNto1PressureMerge", in_ports = parflowmpi.getPort("pressure"), arity = 2)
-treePressure.link(netcdfwriter.getPort("pressureIn"))
+treePressure = generateNto1(prefix="comNto1PressureMerge", in_ports = parflowmpi.getPort("out0"), arity = 2)
+treePressure.link(netcdfwriter.getPort("in"))
 treePressure.link(analyzer.getPort("pressureIn"))
 
 analyzer.getPort("steerOut").link(mergeIt.getPort("in0"))

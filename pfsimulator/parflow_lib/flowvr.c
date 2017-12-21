@@ -5,6 +5,7 @@
 #include <string.h>  // for memcpy
 #include <stdlib.h>  // for malloc
 
+
 int FLOWVR_ACTIVE;
 fca_module moduleParflow;
 
@@ -18,7 +19,7 @@ void fillGridDefinition(Grid const * const grid, GridDefinition *grid_def)
   grid_def->nZ = SubgridNZ(GridBackground(grid));
 }
 
-void fillGridMessageMetadata(Vector const * const v, double const * const time, GridMessageMetadata *m)
+void fillGridMessageMetadata(Vector const * const v, double const * const time, const Variable variable, GridMessageMetadata *m)
 {
   Grid *grid = VectorGrid(v);
   SubgridArray *subgrids = GridSubgrids(grid);
@@ -43,8 +44,45 @@ void fillGridMessageMetadata(Vector const * const v, double const * const time, 
   m->grid.nZ = SubgridNZ(GridBackground(grid));
 
   m->time = *time;
+  m->variable = variable;
 }
 
+typedef struct {
+  const char * port_name;
+  Variable variable;
+  int offset;
+  int periodicity;
+} Contract;
+
+Contract *contracts;
+size_t n_contracts;
+
+/**
+ * Will init out ports and create contracts from it.
+ */
+void InitContracts()
+{
+  NameArray port_names = NA_NewNameArray(GetString("FlowVR.Outports.Names"));
+
+  n_contracts = NA_Sizeof(port_names);
+  contracts = ctalloc(Contract, n_contracts);
+
+  char key[256];
+  for (size_t i = 0; i < n_contracts; ++i)
+  {
+    contracts[i].port_name = NA_IndexToName(port_names, i);
+    sprintf(key, "FlowVR.Outports.%s.Periodicity", contracts[i].port_name);
+    contracts[i].periodicity = GetInt(key);
+    sprintf(key, "FlowVR.Outports.%s.Offset", contracts[i].port_name);
+    contracts[i].offset = GetInt(key);
+    sprintf(key, "FlowVR.Outports.%s.Variable", contracts[i].port_name);
+    contracts[i].variable = NameToVariable(GetString(key));
+
+    D("Add Contract %s executed with periodicity: %d (offset: %d)",
+      contracts[i].port_name, contracts[i].periodicity, contracts[i].offset);
+    // REM we do not need to free Strings obtained by GetString as they are just requestet from a database that was already cached.
+  }
+}
 
 void NewFlowVR(void)
 {
@@ -69,45 +107,44 @@ void NewFlowVR(void)
   PARFLOW_ERROR("Parflow was not compiled with FlowVR but FlowVR was the input file was set to True");
   return;
 #else
+  InitContracts();
   D("Modname: %s, Parent: %s\n", getenv("FLOWVR_MODNAME"), getenv("FLOWVR_PARENT"));
   if (amps_size > 1)
   {
     fca_init_parallel(amps_rank, amps_size);  // TODO: amps size or amps_node_size
   }
   D("Modname: %s, Parent: %s\n", getenv("FLOWVR_MODNAME"), getenv("FLOWVR_PARENT"));
-  const char* outportnamelist[] = {
-    "pressure",
-    "porosity",    // REM: does not really change..
-    "saturation",
-    "pressureSnap"
-    /*"subsurf_data",         [> permeability/porosity <]*/
-    /*"press",                [> pressures <]*/
-    /*"slopes",               [> slopes <]*/
-    /*"mannings",             [> mannings <]*/
-    /*"top",                  [> top <]*/
-    /*"velocities",           [> velocities <]*/
-    /*"satur",                [> saturations <]*/
-    /*"mask",                 [> mask <]*/
-    /*"concen",               [> concentrations <]*/
-    /*"wells",                [> well data <]*/
-    /*"dzmult",               [> dz multiplier<]*/
-    /*"evaptrans",            [> evaptrans <]*/
-    /*"evaptrans_sum",        [> evaptrans_sum <]*/
-    /*"overland_sum",         [> overland_sum <]*/
-    /*"overland_bc_flux"      [> overland outflow boundary condition flux <]*/
-    // TODO: ask BH: porosity is missing?
-  };
-
-#define n_outportnamelist (sizeof(outportnamelist) / sizeof(const char *))
+  /*"pressure",*/
+  /*"porosity",    // REM: does not really change..*/
+  /*"saturation",*/
+  /*"pressureSnap"*/
+  /*"subsurf_data",         [> permeability/porosity <]*/
+  /*"press",                [> pressures <]*/
+  /*"slopes",               [> slopes <]*/
+  /*"mannings",             [> mannings <]*/
+  /*"top",                  [> top <]*/
+  /*"velocities",           [> velocities <]*/
+  /*"satur",                [> saturations <]*/
+  /*"mask",                 [> mask <]*/
+  /*"concen",               [> concentrations <]*/
+  /*"wells",                [> well data <]*/
+  /*"dzmult",               [> dz multiplier<]*/
+  /*"evaptrans",            [> evaptrans <]*/
+  /*"evaptrans_sum",        [> evaptrans_sum <]*/
+  /*"overland_sum",         [> overland_sum <]*/
+  /*"overland_bc_flux"      [> overland outflow boundary condition flux <]*/
 
 
   moduleParflow = fca_new_empty_module();
 
+  fca_port portPressureSnap = fca_new_port("pressureSnap", fca_OUT, 0, NULL);
+  fca_register_stamp(portPressureSnap, "stampTime", fca_FLOAT);
+  fca_register_stamp(portPressureSnap, "stampFileName", fca_STRING);
 
-
-  for (unsigned int i = 0; i < n_outportnamelist; ++i)
+  for (size_t i = 0; i < n_contracts; ++i)
   {
-    fca_port port = fca_new_port(outportnamelist[i], fca_OUT, 0, NULL);
+    D("Add outport %s", contracts[i].port_name);
+    fca_port port = fca_new_port(contracts[i].port_name, fca_OUT, 0, NULL);
     fca_register_stamp(port, "stampTime", fca_FLOAT);
     fca_register_stamp(port, "stampFileName", fca_STRING);
 
@@ -142,7 +179,7 @@ void NewFlowVR(void)
 
 #ifdef HAVE_FLOWVR
 
-static void* translation[7];
+static void* translation[VARIABLE_LAST];
 void FlowVRinitTranslation(SimulationSnapshot *snapshot)  // TODO: macht eigentlich die uebergabe von sshot an vielen anderen stellen sinnlos!
 {
   translation[VARIABLE_PRESSURE] = snapshot->pressure_out;
@@ -335,11 +372,14 @@ void FreeFlowVR()
 {
   if (!FLOWVR_ACTIVE)
     return;
+
   fca_free(moduleParflow);
+  tfree(contracts);
 }
 
-void vectorToMessage(Vector* v, double const * const time, fca_message *result, fca_port *port)
+void vectorToMessage(const Variable variable, double const * const time, fca_message *result, fca_port *port)
 {
+  Vector *v = translation[variable];
   // normally really generic. low: in common with write_parflow_netcdf
   Grid *grid = VectorGrid(v);
   SubgridArray *subgrids = GridSubgrids(grid);
@@ -361,7 +401,7 @@ void vectorToMessage(Vector* v, double const * const time, fca_message *result, 
   /*fca_write_stamp(result, stampN, 1);*/
   // write to the beginning of our memory segment
   GridMessageMetadata m;
-  fillGridMessageMetadata(v, time, &m);
+  fillGridMessageMetadata(v, time, variable, &m);
   size_t vector_size = sizeof(double) * m.nx * m.ny * m.nz;
   D("Sending Vector %d %d %d", m.nx, m.ny, m.nz);
   *result = fca_new_message(moduleParflow, sizeof(GridMessageMetadata) + vector_size);
@@ -388,82 +428,50 @@ void vectorToMessage(Vector* v, double const * const time, fca_message *result, 
 }
 // TODO: implement swap: do not do the memcpy but have to buffers one for read and wone for write. Change the buffers after one simulation step! (here a simulation step consists of multiple timesteps!
 
-// Build data
-typedef struct {
-  const char *name;
-  Vector const * const data;
-} PortNameData;
 
-void CreateAndSendMessage(SimulationSnapshot const * const snapshot, const PortNameData portnamedatas[], size_t n_portnamedata)
+void CreateAndSendMessage(SimulationSnapshot const * const snapshot, const char * portname, Variable var)
 {
-  for (unsigned int i = 0; i < n_portnamedata; ++i)
+  // Prepare the port
+  fca_port port = fca_get_port(moduleParflow, portname); // TODO: maybe save all this in an array for faster acc
+
+  // Prepare the Message
+  fca_message msg;
+
+  vectorToMessage(var, snapshot->time, &msg, &port);
+
+
+  // Create Stamps...
+  const fca_stamp stampTime = fca_get_stamp(port, "stampTime");
+  float time = (float)*(snapshot->time);
+  fca_write_stamp(msg, stampTime, (void*)&time);
+
+  fca_stamp stampFileName;
+  if (snapshot->filename != NULL)
   {
-    // Sometimes we do not have values for all the data...
-    if (portnamedatas[i].data == NULL)
-      continue;
-
-
-    // Prepare the port
-    fca_port port = fca_get_port(moduleParflow, portnamedatas[i].name); // TODO: maybe save all this in an array for faster acc
-
-    // Prepare the Message
-    fca_message msg;
-    vectorToMessage(portnamedatas[i].data, snapshot->time, &msg, &port);
-
-
-    // Create Stamps...
-    const fca_stamp stampTime = fca_get_stamp(port, "stampTime");
-    float time = (float)*(snapshot->time);
-    fca_write_stamp(msg, stampTime, (void*)&time);
-
-    fca_stamp stampFileName;
-    if (snapshot->filename != NULL)
-    {
-      stampFileName = fca_get_stamp(port, "stampFileName");
-      fca_write_stamp(msg, stampFileName, (void*)snapshot->filename);
-    }
-
-
-    // Finally send message!
-    if (!fca_put(port, msg))
-    {
-      PARFLOW_ERROR("Could not send FlowVR-Message!");
-    }
-    fca_free(msg);
-    D("put message!%.8f\n", *(snapshot->time));
+    stampFileName = fca_get_stamp(port, "stampFileName");
+    fca_write_stamp(msg, stampFileName, (void*)snapshot->filename);
   }
+
+
+  // Finally send message!
+  if (!fca_put(port, msg))
+  {
+    PARFLOW_ERROR("Could not send FlowVR-Message!");
+  }
+  fca_free(msg);
+  D("put message!%.8f\n", *(snapshot->time));
 }
 
 // REM: we are better than the nodelevel netcdf feature because during file write the other nodes are already calculating ;)
 // REM: structure of nodelevel netcdf: one process per node gathers everything that has to be written and does the filesystem i/o
-void DumpRichardsToFlowVR(SimulationSnapshot const * const snapshot)
-{
-  const PortNameData portnamedatas[] =
-  {
-    { "pressure", snapshot->pressure_out },
-    { "porosity", snapshot->porosity_out },
-    { "saturation", snapshot->saturation_out }
-  };
-
-#define n_portnamedata_ (sizeof(portnamedatas) / sizeof(const PortNameData))
-  // TODO: only for those that are really connected!
-  CreateAndSendMessage(snapshot, portnamedatas, n_portnamedata_);
-}
 
 void SendSnapshot(SimulationSnapshot const * const snapshot, Variable var)
 {
   // TODO: extract var from snapshot
   // send snapshot!
   D("SendSnapshot");
-  const PortNameData portnamedatas[] =
-  {
-    { "pressureSnap", snapshot->pressure_out }//,
-    /*{ "porosity", porosity_out },*/
-    /*{ "saturation", saturation_out }*/
-  };
 
-#define n_portnamesnapdata (sizeof(portnamedatas) / sizeof(const PortNameData))
-  CreateAndSendMessage(snapshot, portnamedatas, n_portnamesnapdata);
+  CreateAndSendMessage(snapshot, "pressureSnap", VARIABLE_PRESSURE);
 }
 
 void FlowVRServeFinalState(SimulationSnapshot *snapshot)
@@ -487,6 +495,25 @@ void FlowVRServeFinalState(SimulationSnapshot *snapshot)
     while (FlowVRInteract(snapshot))
       usleep(100000);
   }
+}
+// TODO: gross/kleinschreibung von function names!
+
+/**
+ * Dumps data if it has to since a contract.
+ */
+int FlowVRFullFillContracts(int timestep, SimulationSnapshot const * const sshot)
+{
+  int res = 0;
+
+  for (size_t i = 0; i < n_contracts; ++i)
+  {
+    if ((abs(timestep - contracts[i].offset) % contracts[i].periodicity) == 0)
+    {
+      res = 1;
+      CreateAndSendMessage(sshot, contracts[i].port_name, contracts[i].variable);
+    }
+  }
+  return res;
 }
 
 #endif
