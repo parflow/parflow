@@ -7,6 +7,7 @@
  /* Includes the header in the wrapper code */
  #include "pypfcommon.h"
  #include "messages.h"
+ #include <signal.h>
 
 %}
 
@@ -52,6 +53,14 @@
     // REM: typenames cann be looked up in the _wrap.c file
 
     PyObject *result = PyEval_CallObject(parser, arglist);
+    PyObject *error =  PyErr_Occurred();
+
+    if (error != NULL)
+    {
+      PyErr_Print();
+
+      raise(SIGABRT);
+    }
 
     Py_DECREF(arglist);
     Py_XDECREF(result);
