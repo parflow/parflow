@@ -3,9 +3,12 @@ import matplotlib.pyplot as plt
 import sys
 import flowvr
 
-# https://stackoverflow.com/questions/10944621/dynamically-updating-plot-in-matplotlib
+showWindows = sys.argv[-1] == "--show-windows"
 
-plt.ion()
+# https://stackoverflow.com/questions/10944621/dynamically-updating-plot-in-matplotlib
+if showWindows:
+    plt.ion()
+
 class DynamicUpdate():
     #Suppose we know the x range
     #min_x = 0
@@ -39,10 +42,14 @@ class DynamicUpdate():
 datas = {}
 updaters = {}
 names = sys.argv[1:]
+if showWindows:
+  # cut the --show-windows argument
+  names = sys.argv[1:-1]
 for name in names:
- datas[name] = []
- updaters[name] = DynamicUpdate(name)
- print ("Add name %s" % name)
+    datas[name] = []
+    if showWindows:
+        updaters[name] = DynamicUpdate(name)
+    print ("Add name %s" % name)
 
 nextX = 0
 
@@ -69,11 +76,13 @@ with open("logger.log", 'w+', 1) as f:  # bufsize=1 to be line buffered ;)
       print(text)
       f.write(text)
       f.write('\n')
-      du = updaters[name]
-      du.on_running(xdata, datas[name])
+      if showWindows:
+          du = updaters[name]
+          du.on_running(xdata, datas[name])
 
     #print(datas)
 
 
 module.close()
-plt.close()
+if showWindows:
+    plt.close()

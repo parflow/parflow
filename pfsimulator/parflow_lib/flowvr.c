@@ -282,7 +282,7 @@ size_t Steer(Variable var, Action action, const void *buffer)
         break;
 
       case ACTION_MULTIPLY:
-        D("diff to one: %f", operand[index] - 1.);
+        /*D("diff to one: %f", operand[index] - 1.);*/
         data[ai] *= operand[index];
         break;
 

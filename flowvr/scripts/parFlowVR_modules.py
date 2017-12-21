@@ -101,8 +101,8 @@ class Analyzer(Module):
 
 class Logger(Module):
     """Module that will log the given stamp value in a graph."""
-    def __init__(self, name, stampName):
-        Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/logger.py %s" % stampName)
+    def __init__(self, name, stampName, showWindows=True):
+        Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/logger.py %s %s" % (stampName, "--show-windows" if showWindows else ""))
         self.addPort("in", direction = 'in')
 
 class Simplestarter(Module):
