@@ -10,6 +10,8 @@
 #endif
 #include <math.h>
 
+#include <assert.h>
+
 
 #ifdef __DEBUG
 #define D(x ...) printf("oooooooo "); printf(x); printf(" %s:%d\n", __FILE__, __LINE__)
@@ -102,6 +104,8 @@ MergeMessageParser(setSnapshot)
 {
   GridMessageMetadata* m = (GridMessageMetadata*)buffer;
   SimulationData *sim = (SimulationData*)cbdata;
+
+  assert(m->variable == VARIABLE_PRESSURE);  // low: atm we can only show pressures ;)
 
   sim->time = m->time;
 
