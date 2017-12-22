@@ -15,6 +15,8 @@ pfset FileVersion 4
 #---------------------------------------------------------
 # FlowVR parameters
 #---------------------------------------------------------
+pfset FlowVR.SteerLogMode "VerySimple"
+
 pfset FlowVR.Outports.Names "out0 out1 out2"
 
 pfset FlowVR.Outports.out0.Periodicity  1

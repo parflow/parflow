@@ -84,6 +84,30 @@ void InitContracts()
   }
 }
 
+typedef enum {
+  STEER_LOG_NONE = 0,
+  STEER_LOG_VERY_SIMPLE,
+  STEER_LOG_SIMPLE,
+  STEER_LOG_FULL
+} SteerLogMode;
+static SteerLogMode steer_log_mode;
+
+void InitSteerLogMode(void)
+{
+  NameArray switch_na = NA_NewNameArray("None VerySimple Simple Full");
+  char* switch_name = GetStringDefault("FlowVR.SteerLogMode", "None");
+
+  steer_log_mode = NA_NameToIndex(switch_na, switch_name);
+  if (steer_log_mode < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, "FlowVR.SteerLogMode");
+    steer_log_mode = STEER_LOG_NONE;
+  }
+  NA_FreeNameArray(switch_na);
+  D("steer_log_mode: %d", steer_log_mode);
+}
+
 void NewFlowVR(void)
 {
   // Refactor: shouldn't there be a GetBooleanDefault?
@@ -97,6 +121,8 @@ void NewFlowVR(void)
                switch_name, "FlowVR");
     FLOWVR_ACTIVE = 0;
   }
+  NA_FreeNameArray(switch_na);
+
 
   if (!FLOWVR_ACTIVE)
   {
@@ -107,6 +133,7 @@ void NewFlowVR(void)
   PARFLOW_ERROR("Parflow was not compiled with FlowVR but FlowVR was the input file was set to True");
   return;
 #else
+  InitSteerLogMode();
   InitContracts();
   D("Modname: %s, Parent: %s\n", getenv("FLOWVR_MODNAME"), getenv("FLOWVR_PARENT"));
   if (amps_size > 1)
@@ -209,8 +236,71 @@ static inline int simple_intersect(int ix1, int nx1, int ix2, int nx2,
   return 1;
 }
 
+static inline LogSteer(Variable var, Action action, SteerMessageMetadata * s,
+                       double *operand, double const * const ptime)
+{
+  ////////////////////////////////////////////////////////
+  // Log:
+  if (steer_log_mode != STEER_LOG_NONE)
+  {
+    const char * action_text;
+    switch (action)
+    {
+      case ACTION_SET:
+        action_text = "SET";
+        break;
+
+      case ACTION_ADD:
+        action_text = "ADD";
+        break;
+
+      case ACTION_MULTIPLY:
+        action_text = "MUL";
+        break;
+
+      default:
+        PARFLOW_ERROR("unknown Steer Action!");
+    }
+    switch (steer_log_mode)
+    {
+      case STEER_LOG_VERY_SIMPLE:
+        printf("Steer at %f: %s on %s\n", *ptime, action_text,
+               VARIABLE_TO_NAME[var]);
+        break;
+
+      case STEER_LOG_SIMPLE:
+        printf("Steer at %f: %s on %s\nfrom (%d, %d, %d): (%d, %d, %d) counts.\n",
+               *ptime, action_text, VARIABLE_TO_NAME[var],
+               s->ix, s->iy, s->iz, s->nx, s->ny, s->nz);
+        break;
+
+      case STEER_LOG_FULL:
+        printf("Steer at %f: %s on %s\nfrom (%d, %d, %d): (%d, %d, %d) counts.\n",
+               *ptime, action_text, VARIABLE_TO_NAME[var],
+               s->ix, s->iy, s->iz, s->nx, s->ny, s->nz);
+        for (size_t i = 0; i < s->nx * s->ny * s->nz; ++i)
+        {
+          if (i % s->nx == 0)
+            printf("[");
+          if (i % (s->nx * s->ny) == 0)
+            printf("[");
+          if (i % (s->nx * s->ny * s->nz) == 0)
+            printf("[");
+          printf("%f,", *(operand++));
+          if ((i + 1) % s->nx == 0)
+            printf("],");
+          if ((i + 1) % (s->nx * s->ny) == 0)
+            printf("],\n");
+          if ((i + 1) % (s->nx * s->ny * s->nz) == 0)
+            printf("],\n\n");
+        }
+        break;
+    }
+  }
+}
+
 /// returns how much we read from buffer
-size_t Steer(Variable var, Action action, const void *buffer)
+size_t Steer(Variable var, Action action, const void *buffer, double const * const ptime)
 {
   D("Steer");
   SteerMessageMetadata *s = (SteerMessageMetadata*)buffer;
@@ -268,12 +358,7 @@ size_t Steer(Variable var, Action action, const void *buffer)
     size_t index = xn + yn * s->nx + zn * s->nx * s->ny;
     switch (action)
     {
-      // TODO: log steering!
       case ACTION_SET:
-        /*if (data[ai] != operand[index])*/
-        /*{*/
-        /*D("set (%d, %d, %d) %f -> %f", i, j, k, data[ai], operand[index]);*/
-        /*}*/
         data[ai] = operand[index];
         break;
 
@@ -282,7 +367,6 @@ size_t Steer(Variable var, Action action, const void *buffer)
         break;
 
       case ACTION_MULTIPLY:
-        /*D("diff to one: %f", operand[index] - 1.);*/
         data[ai] *= operand[index];
         break;
 
@@ -298,8 +382,10 @@ size_t Steer(Variable var, Action action, const void *buffer)
   FinalizeVectorUpdate(handle);
 
   D("Applied SendSteerMessage (%d) + %d + %d", sizeof(ActionMessageMetadata), sizeof(SteerMessageMetadata), sizeof(double) * s->nx * s->ny * s->nz);
+  LogSteer(var, action, s, operand, ptime);
   return read_out_size;
 }
+
 
 void SendGridDefinition(SimulationSnapshot const * const snapshot)
 {
@@ -341,7 +427,7 @@ MergeMessageParser(Interact)
     case ACTION_SET:
     case ACTION_ADD:
     case ACTION_MULTIPLY:
-      s += Steer(amm->variable, amm->action, data);
+      s += Steer(amm->variable, amm->action, data, snapshot->time);
       break;
 
     default:
@@ -362,8 +448,10 @@ int FlowVRInteract(SimulationSnapshot *snapshot)
     /*D("now waiting");*/
     if (!fca_wait(moduleParflow))
       return 0;
+
+    // Read out message on in port.
+    // Do all actions that are listed there(steerings, trigger snaps...)
     ParseMergedMessage(portIn, Interact, (void*)snapshot);
-    // TODO: read out message on in port. do all actions that are listed there(steerings, trigger snaps...)
   }
   return 1;
 }
@@ -488,6 +576,7 @@ void FlowVRServeFinalState(SimulationSnapshot *snapshot)
                switch_name, "FlowVR.ServeFinalState");
     serve_final_state = 0;
   }
+  NA_FreeNameArray(switch_na);
 
   if (serve_final_state)
   {

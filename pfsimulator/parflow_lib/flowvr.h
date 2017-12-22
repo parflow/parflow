@@ -41,8 +41,9 @@ void NewFlowVR(void);
 
 #include <fca/fca.h>
 
-#ifdef __DEBUG  //TODO: add filename and line number
-#define D(x ...) printf("=======%d:", amps_Rank(amps_CommWorld)); printf(x); printf("\n") //printf(" %s:%d\n",  __FILE__, __LINE__)
+#ifdef __DEBUG
+#define D(x ...) printf("=======%d:", amps_Rank(amps_CommWorld)); printf(x); \
+  printf("\n"); printf(" %s:%d\n", __FILE__, __LINE__)
 #else
 #define D(...)
 #endif
