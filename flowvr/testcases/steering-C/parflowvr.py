@@ -23,7 +23,7 @@ parflowmpi = ParflowMPI(("localhost,"*int(P)*int(Q)*int(R))[:-1],  # cut last ,
 
 
 netcdfwriter = NetCDFWriter("netcdfwriter", fileprefix="_")
-analyzer = Analyzer("analyzer")
+analyzer = Analyzer("C-Analyzer")
 
 
 treePressure = generateNto1(prefix="comNto1PressureMerge", in_ports = parflowmpi.getPort("out0"), arity = 2)
