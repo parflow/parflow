@@ -1,11 +1,11 @@
 // vim: set syntax=cpp:
 
-/* pypfcommon.i */
-%module pypfcommon
+/* pypfAnalyzer.i */
+%module pypfAnalyzer
 %{
   #define SWIG_FILE_WITH_INIT
  /* Includes the header in the wrapper code */
- #include "pypfcommon.h"
+ #include "pypfAnalyzer.h"
  #include "messages.h"
  #include <signal.h>
 

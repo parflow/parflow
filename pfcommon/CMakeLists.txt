@@ -33,15 +33,15 @@ IF( BUILD_PYTHON_ANALYZER_API )
       )
 
     SET(CMAKE_SWIG_FLAGS "")
-    SWIG_ADD_LIBRARY(pypfcommon LANGUAGE python SOURCES pypfcommon.i pypfcommon.c)
-    SWIG_LINK_LIBRARIES(pypfcommon ${PYTHON_LIBRARIES} pfcommon ${FCA_LIBRARY})
+    SWIG_ADD_LIBRARY(pypfAnalyzer LANGUAGE python SOURCES pypfAnalyzer.i pypfAnalyzer.c)
+    SWIG_LINK_LIBRARIES(pypfAnalyzer ${PYTHON_LIBRARIES} pfcommon ${FCA_LIBRARY})
     # low: performance better if we compile wit ${PYTHON_LIBRARIES} and if we do not use
     # the previously linked version of pfcommon but include ${SRC_FILES}
 
     #execute_process ( COMMAND
       #python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"
       #OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
-    #INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/pypfcommon.py DESTINATION ${PYTHON_SITE_PACKAGES})
+    #INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/pypfAnalyzer.py DESTINATION ${PYTHON_SITE_PACKAGES})
 
     STRING(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.[0-9]+" "\\1;\\2"
       RESULT ${PYTHONLIBS_VERSION_STRING})
@@ -49,8 +49,8 @@ IF( BUILD_PYTHON_ANALYZER_API )
     list(GET RESULT 0 PYTHON_MAJOR_VERSION)
     list(GET RESULT 1 PYTHON_MINOR_VERSION)
 
-    INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/_pypfcommon.so
-      ${CMAKE_CURRENT_BINARY_DIR}/pypfcommon.py
+    INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/_pypfAnalyzer.so
+      ${CMAKE_CURRENT_BINARY_DIR}/pypfAnalyzer.py
       DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION})
 
   ENDIF( PYTHONLIBS_FOUND  AND SWIG_FOUND AND NUMPY_FOUND )
