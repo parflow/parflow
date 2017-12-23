@@ -19,7 +19,8 @@ void fillGridDefinition(Grid const * const grid, GridDefinition *grid_def)
   grid_def->nZ = SubgridNZ(GridBackground(grid));
 }
 
-void fillGridMessageMetadata(Vector const * const v, double const * const time, const Variable variable, GridMessageMetadata *m)
+void fillGridMessageMetadata(Vector const * const v, double const * const time,
+                             const Variable variable, GridMessageMetadata *m)
 {
   Grid *grid = VectorGrid(v);
   SubgridArray *subgrids = GridSubgrids(grid);
