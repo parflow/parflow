@@ -15,6 +15,8 @@ pfset FileVersion 4
 #---------------------------------------------------------
 # FlowVR parameters
 #---------------------------------------------------------
+pfset FlowVR.ServeFinalState    False
+
 pfset FlowVR.Outports.Names "out0"
 
 pfset FlowVR.Outports.out0.Periodicity  1
@@ -621,8 +623,5 @@ pfset Solver.CLM.ForceVegetation			 False
 #pfset Solver.WriteSiloPressure True
 pfset NetCDF.WritePressure True
 pfset NetCDF.NumStepsPerFile 1
-
-# for FlowVR mode:
-pfset FlowVR.ServeFinalState    False
 
 pfwritedb hillslope_sens

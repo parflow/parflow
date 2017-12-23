@@ -6,9 +6,6 @@ parflow_dir = os.getenv('PARFLOW_DIR')
 sys.path.append(parflow_dir + '/bin/parflowvr')
 from parFlowVR_modules import *
 
-use_visit = socket.gethostname().find("frog") != 0
-
-
 problemName, P, Q, R = sys.argv[1:5]
 
 pres = FilterPreSignal("PreSignal", nb=1)  # will be inited with one token for the beginning. TODO set nb to 2 later!
@@ -35,12 +32,6 @@ treePressureSnap = generateNto1(prefix="comNto1PressureSnapMerge", in_ports = pa
 
 logger = Logger("logger", "E M K")
 analyzer.getPort("log").link(logger.getPort("in"))
-
-if use_visit:
-    visit = VisIt("visit")
-    treePressureSnap.link(visit.getPort("pressureIn"))
-    visit.getPort("triggerSnap").link(mergeIt.newInputPort())
-
 
 parflowmpi.getPort("endIt")[0].link(pres.getPort("in"))
 
