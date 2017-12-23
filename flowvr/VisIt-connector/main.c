@@ -102,34 +102,32 @@ void initSim(SimulationData *sim, GridDefinition const *const grid)
 
 MergeMessageParser(setSnapshot)
 {
-  GridMessageMetadata* m = (GridMessageMetadata*)buffer;
+  GridMessage gm = ReadGridMessage(buffer);
   SimulationData *sim = (SimulationData*)cbdata;
 
-  assert(m->variable == VARIABLE_PRESSURE);  // low: atm we can only show pressures ;)
+  assert(gm.m->variable == VARIABLE_PRESSURE);  // low: atm we can only show pressures ;)
 
-  sim->time = m->time;
+  sim->time = gm.m->time;
 
-  if (!sim->inited || sim->nX != m->grid.nX || sim->nY != m->grid.nY || sim->nZ != m->grid.nZ)
+  if (!sim->inited || sim->nX != gm.m->grid.nX || sim->nY != gm.m->grid.nY || sim->nZ != gm.m->grid.nZ)
   {
-    initSim(sim, &(m->grid));
+    initSim(sim, &(gm.m->grid));
   }
 
 
   // populate snapshot:
-  buffer += sizeof(GridMessageMetadata);
-  const double * data = (double*)buffer;
-  for (int z = 0; z < m->nz; ++z)
+  for (int z = 0; z < gm.m->nz; ++z)
   {
-    for (int y = 0; y < m->ny; ++y)
+    for (int y = 0; y < gm.m->ny; ++y)
     {
-      int snapindex = m->ix + (y + m->iy) * sim->nX + (z + m->iz) * sim->nX * sim->nY;
-      memcpy(sim->snapshot + snapindex, data, m->nx * sizeof(double));
-      data += m->nx;
+      int snapindex = gm.m->ix + (y + gm.m->iy) * sim->nX + (z + gm.m->iz) * sim->nX * sim->nY;
+      memcpy(sim->snapshot + snapindex, gm.data, gm.m->nx * sizeof(double));
+      gm.data += gm.m->nx;
     }
   }
 
   D("copied buffers!");
-  return m->nx * m->ny * m->nz * sizeof(double) + sizeof(GridMessageMetadata);
+  return gm.m->nx * gm.m->ny * gm.m->nz * sizeof(double) + sizeof(GridMessageMetadata);
 }
 
 void triggerSnap(SimulationData *sim)
@@ -165,7 +163,8 @@ void wait_for_init(SimulationData *sim)
   }
   else
   {
-    SendActionMessage(flowvr, portTriggerSnap, ACTION_GET_GRID_DEFINITION, -1, NULL, 0);
+    SendActionMessage(flowvr, portTriggerSnap, ACTION_GET_GRID_DEFINITION, VARIABLE_LAST,
+                      NULL, 0);
 
     fca_wait(flowvr);
 
@@ -286,7 +285,7 @@ int main(int argc, char **argv)
   portTriggerSnap = fca_new_port("triggerSnap", fca_OUT, 0, NULL);
   fca_append_port(flowvr, portTriggerSnap);
 
-  stampTime = fca_register_stamp(portPressureIn, "stampTime", fca_FLOAT); // TODO good idea to use float? or should we put the double in the messages payload??
+  stampTime = fca_register_stamp(portPressureIn, "stampTime", fca_FLOAT);
   if (!fca_init_module(flowvr))
   {
     D("ERROR : fca_init_module failed!");

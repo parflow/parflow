@@ -60,9 +60,9 @@ size_t n_contracts;
 /**
  * Will init out ports and create contracts from it.
  */
-void InitContracts()
+void initContracts()
 {
-  NameArray port_names = NA_NewNameArray(GetString("FlowVR.Outports.Names"));
+  NameArray port_names = NA_NewNameArray(GetStringDefault("FlowVR.Outports.Names", ""));
 
   n_contracts = NA_Sizeof(port_names);
   contracts = ctalloc(Contract, n_contracts);
@@ -92,7 +92,7 @@ typedef enum {
 } SteerLogMode;
 static SteerLogMode steer_log_mode;
 
-void InitSteerLogMode(void)
+void initSteerLogMode(void)
 {
   NameArray switch_na = NA_NewNameArray("None VerySimple Simple Full");
   char* switch_name = GetStringDefault("FlowVR.SteerLogMode", "None");
@@ -133,8 +133,8 @@ void NewFlowVR(void)
   PARFLOW_ERROR("Parflow was not compiled with FlowVR but FlowVR was the input file was set to True");
   return;
 #else
-  InitSteerLogMode();
-  InitContracts();
+  initSteerLogMode();
+  initContracts();
   D("Modname: %s, Parent: %s\n", getenv("FLOWVR_MODNAME"), getenv("FLOWVR_PARENT"));
   if (amps_size > 1)
   {
@@ -167,6 +167,7 @@ void NewFlowVR(void)
   fca_port portPressureSnap = fca_new_port("pressureSnap", fca_OUT, 0, NULL);
   fca_register_stamp(portPressureSnap, "stampTime", fca_FLOAT);
   fca_register_stamp(portPressureSnap, "stampFileName", fca_STRING);
+  fca_append_port(moduleParflow, portPressureSnap);
 
   for (size_t i = 0; i < n_contracts; ++i)
   {
@@ -303,8 +304,7 @@ static inline LogSteer(Variable var, Action action, SteerMessageMetadata * s,
 size_t Steer(Variable var, Action action, const void *buffer, double const * const ptime)
 {
   D("Steer");
-  SteerMessageMetadata *s = (SteerMessageMetadata*)buffer;
-  double *operand = (double*)(buffer + sizeof(SteerMessageMetadata));
+  SteerMessage sm = ReadSteerMessage(buffer);
 
   Vector *v = translation[var];
 
@@ -337,37 +337,37 @@ size_t Steer(Variable var, Action action, const void *buffer, double const * con
   double *data;
   data = SubvectorElt(subvector, ix, iy, iz);
 
-  size_t read_out_size = sizeof(SteerMessageMetadata) + sizeof(double) * s->nx * s->ny * s->nz;
+  size_t read_out_size = sizeof(SteerMessageMetadata) + sizeof(double) * sm.m->nx * sm.m->ny * sm.m->nz;
 
   // Check if box in this thread! only then start box loop!
-  if (!simple_intersect(ix, nx, s->ix, s->nx,
-                        iy, ny, s->iy, s->ny,
-                        iz, nz, s->iz, s->nz))
+  if (!simple_intersect(ix, nx, sm.m->ix, sm.m->nx,
+                        iy, ny, sm.m->iy, sm.m->ny,
+                        iz, nz, sm.m->iz, sm.m->nz))
     return read_out_size;
 
   BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz, ai, nx_v, ny_v, nz_v, 1, 1, 1, {
-    int xn = i - s->ix;
-    int yn = j - s->iy;
-    int zn = k - s->iz;
+    int xn = i - sm.m->ix;
+    int yn = j - sm.m->iy;
+    int zn = k - sm.m->iz;
     // is the requested point in this chunk?
     if (xn < 0 || yn < 0 || zn < 0)
       continue;                                  // too small.
-    if (xn >= s->nx || yn >= s->ny || zn >= s->nz)
+    if (xn >= sm.m->nx || yn >= sm.m->ny || zn >= sm.m->nz)
       continue;                                              // too big.
 
-    size_t index = xn + yn * s->nx + zn * s->nx * s->ny;
+    size_t index = xn + yn * sm.m->nx + zn * sm.m->nx * sm.m->ny;
     switch (action)
     {
       case ACTION_SET:
-        data[ai] = operand[index];
+        data[ai] = sm.data[index];
         break;
 
       case ACTION_ADD:
-        data[ai] += operand[index];
+        data[ai] += sm.data[index];
         break;
 
       case ACTION_MULTIPLY:
-        data[ai] *= operand[index];
+        data[ai] *= sm.data[index];
         break;
 
       default:
@@ -381,8 +381,8 @@ size_t Steer(Variable var, Action action, const void *buffer, double const * con
   handle = InitVectorUpdate(v, VectorUpdateAll);
   FinalizeVectorUpdate(handle);
 
-  D("Applied SendSteerMessage (%d) + %d + %d", sizeof(ActionMessageMetadata), sizeof(SteerMessageMetadata), sizeof(double) * s->nx * s->ny * s->nz);
-  LogSteer(var, action, s, operand, ptime);
+  D("Applied SendSteerMessage (%d) + %d + %d", sizeof(ActionMessageMetadata), sizeof(SteerMessageMetadata), sizeof(double) * sm.m->nx * sm.m->ny * sm.m->nz);
+  LogSteer(var, action, sm.m, sm.data, ptime);
   return read_out_size;
 }
 
@@ -407,12 +407,10 @@ MergeMessageParser(Interact)
     return size;  // does not contain an action.
 
   SimulationSnapshot *snapshot = (SimulationSnapshot*)cbdata;
-  ActionMessageMetadata *amm = (ActionMessageMetadata*)buffer;
+  ActionMessage am = ReadActionMessage(buffer);
   size_t s = sizeof(ActionMessageMetadata);
 
-  const void *data = buffer + s;
-
-  switch (amm->action)
+  switch (am.m->action)
   {
     case ACTION_GET_GRID_DEFINITION:
       SendGridDefinition(snapshot);
@@ -420,14 +418,14 @@ MergeMessageParser(Interact)
       break;
 
     case ACTION_TRIGGER_SNAPSHOT:
-      SendSnapshot(snapshot, amm->variable);
+      SendSnapshot(snapshot, am.m->variable);
       // s += 0;
       break;
 
     case ACTION_SET:
     case ACTION_ADD:
     case ACTION_MULTIPLY:
-      s += Steer(amm->variable, amm->action, data, snapshot->time);
+      s += Steer(am.m->variable, am.m->action, am.data, snapshot->time);
       break;
 
     default:
@@ -514,13 +512,14 @@ void vectorToMessage(const Variable variable, double const * const time, fca_mes
   BoxLoopI1(i, j, k, m.ix, m.iy, m.iz, m.nx, m.ny, m.nz, ai, nx_v, ny_v, nz_v, 1, 1, 1, { buffer_double[d] = data[ai]; d++; });
   // TODO: would be more performant if we could read the things not cell by cell I guess
 }
-// TODO: implement swap: do not do the memcpy but have to buffers one for read and wone for write. Change the buffers after one simulation step! (here a simulation step consists of multiple timesteps!
+// TODO: implement swap: do not do the memcpy but have two buffers one for read and wone for write. Change the buffers after one simulation step! (here a simulation step consists of multiple timesteps!
 
 
 void CreateAndSendMessage(SimulationSnapshot const * const snapshot, const char * portname, Variable var)
 {
   // Prepare the port
-  fca_port port = fca_get_port(moduleParflow, portname); // TODO: maybe save all this in an array for faster acc
+  fca_port port = fca_get_port(moduleParflow, portname);
+  // Perormance: maybe save all the ports in an array for faster access times
 
   // Prepare the Message
   fca_message msg;

@@ -12,7 +12,6 @@
 
 #include <fca/fca.h>
 
-// TODO: could be optimized to be only sent once and not in all GridMessageMetadatas.!
 typedef struct {
   int nX;
   int nY;
@@ -112,6 +111,31 @@ extern void ParseMergedMessage(fca_port port,
                                size_t (*cb)(const void *buffer, size_t size, void *cbdata),
                                void *cbdata);
 
+
 extern void SendLogMessage(fca_module mod, fca_port port, StampLog log[], size_t n);
+
+
+// Some Fancy Reader code generation:
+#define GenerateMessageReaderH(type) \
+  typedef struct { \
+    type ## MessageMetadata * m; \
+    double *data; \
+  } type ## Message; \
+\
+\
+  extern inline type ## Message Read ## type ## Message(void *buffer)
+
+#define GenerateMessageReaderC(type) \
+  type ## Message Read ## type ## Message(void *buffer) \
+  { \
+    type ## Message res; \
+    res.m = (type ## MessageMetadata*)buffer; \
+    res.data = (double*)(res.m + 1); \
+    return res; \
+  }
+
+GenerateMessageReaderH(Grid);
+GenerateMessageReaderH(Steer);
+GenerateMessageReaderH(Action);
 
 #endif

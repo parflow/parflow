@@ -14,20 +14,25 @@
 #define D(...)
 #endif
 
-// TODO: there must be a very similar code in the pfsimulator code. use it?!
-void setInBox(double *data, SteerMessageMetadata const * const s, double value, double lower_x, double lower_y, double lower_z,
+// low: it is fascinating that I could not find a function like this in the original pf
+// code. pf does a very similar thing for initing all the variable vectors...
+// (See e.g. in problem_porosity.c: They solve it with an intersect and a Boxloop over
+// the intersection)
+void setInBox(double *data, SteerMessageMetadata const * const s, double value,
+              double lower_x, double lower_y, double lower_z,
               double upper_x, double upper_y, double upper_z)
 {
+  // some problem consts, defined here for testing
   const int dx = 10;
   const int dy = 10;
   const int dz = 1;
 
-  // TODO:  better information transmission..., too much hard coded
+  // kind of a boxloop but for my datatype...
   for (int x = (int)lower_x / dx; x < (int)upper_x / dx; ++x)
   {
     for (int y = (int)lower_y / dy; y < (int)upper_y / dy; ++y)
     {
-      for (int z = (int)lower_z / dz; z < (int)upper_z / dz; ++z)  // TODO: probably we can use a classic boxloop here ...
+      for (int z = (int)lower_z / dz; z < (int)upper_z / dz; ++z)
       {
         if (x >= s->ix && x < s->ix + s->nx &&
             y >= s->iy && y < s->iy + s->ny &&
@@ -46,7 +51,7 @@ void setInBox(double *data, SteerMessageMetadata const * const s, double value, 
  */
 double findValueAt(void *gridMessages, int x, int y, int z)
 {
-  // TODO: not pointer safe!
+  // WARNING: not pointer safe! - we do not check that we might get out of gridMessages
   int xn, yn, zn;  // normalized coords (coords in grid part)
   void *pos = gridMessages;
 

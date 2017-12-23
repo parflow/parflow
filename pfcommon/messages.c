@@ -5,7 +5,7 @@
 
 #include <assert.h>
 
-// TODO: works like this: ?
+// TODO: works like this: ? --> test on froggy
 const char *VARIABLE_TO_NAME[VARIABLE_LAST] = {
   "pressure",
   "saturation",
@@ -56,10 +56,8 @@ void SendLogMessage(fca_module mod, fca_port port, StampLog log[], size_t n)
 {
   fca_message msg = fca_new_message(mod, 0);
 
-  printf("Send %d stamps\n", n);  // TODO: remove printfs
   while (n--)
   {
-    printf("Send Stamp %s: %f\n", log[n].stampName, log[n].value);
     fca_stamp stamp = fca_get_stamp(port, log[n].stampName);
     fca_write_stamp(msg, stamp, (void*)&(log[n].value));
   }
@@ -77,3 +75,7 @@ Variable NameToVariable(const char *name)
   assert(0 && "Could not convert to a Variable!");
   return VARIABLE_LAST;
 }
+
+GenerateMessageReaderC(Grid);
+GenerateMessageReaderC(Steer);
+GenerateMessageReaderC(Action);
