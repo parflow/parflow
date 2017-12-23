@@ -20,6 +20,7 @@
 #endif
 
 
+static Variable lastVar = VARIABLE_PRESSURE;
 
 
 /* Data Access Function prototypes */
@@ -105,7 +106,7 @@ MergeMessageParser(setSnapshot)
   GridMessage gm = ReadGridMessage(buffer);
   SimulationData *sim = (SimulationData*)cbdata;
 
-  assert(gm.m->variable == VARIABLE_PRESSURE);  // low: atm we can only show pressures ;)
+  assert(gm.m->variable == lastVar);
 
   sim->time = gm.m->time;
 
@@ -130,12 +131,10 @@ MergeMessageParser(setSnapshot)
   return gm.m->nx * gm.m->ny * gm.m->nz * sizeof(double) + sizeof(GridMessageMetadata);
 }
 
-void triggerSnap(SimulationData *sim)
+void triggerSnap(SimulationData *sim, Variable var)
 {
   D("triggerSnap");
-  // TODO: allow to access more than just pressure
-  SendActionMessage(flowvr, portTriggerSnap, ACTION_TRIGGER_SNAPSHOT,
-                    VARIABLE_PRESSURE, NULL, 0);
+  SendActionMessage(flowvr, portTriggerSnap, ACTION_TRIGGER_SNAPSHOT, var, NULL, 0);
 
   D("waiting...");
   fca_wait(flowvr);
@@ -180,7 +179,7 @@ void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
   if (strcmp(cmd, "trigger snap") == 0)
   {
     D("trigger snap command");
-    triggerSnap(sim);
+    triggerSnap(sim, lastVar);
 
 #ifdef __DEBUG
     // generate some random data to see the change for now...
@@ -279,7 +278,7 @@ int main(int argc, char **argv)
    * init FlowVR Module
    */
   flowvr = fca_new_empty_module();
-  portPressureIn = fca_new_port("pressureIn", fca_IN, 0, NULL);
+  portPressureIn = fca_new_port("in", fca_IN, 0, NULL);
   fca_append_port(flowvr, portPressureIn);
 
   portTriggerSnap = fca_new_port("triggerSnap", fca_OUT, 0, NULL);
@@ -337,16 +336,19 @@ SimGetMetaData(void *cbdata)
       VisIt_SimulationMetaData_addMesh(md, m);
     }
 
-    /* Add a nodal scalar variable without mesh */
-    if (VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
+    for (int var = 0; var < VARIABLE_LAST; ++var)
     {
-      VisIt_VariableMetaData_setName(vmd, "pressure");
-      VisIt_VariableMetaData_setMeshName(vmd, meshname);
+      if (VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
+      {
+        // TODO: check for manning!
+        VisIt_VariableMetaData_setName(vmd, VARIABLE_TO_NAME[var]);
+        VisIt_VariableMetaData_setMeshName(vmd, meshname);
 
-      VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_SCALAR);
-      VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_NODE);
+        VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_SCALAR);
+        VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_NODE);
 
-      VisIt_SimulationMetaData_addVariable(md, vmd);
+        VisIt_SimulationMetaData_addVariable(md, vmd);
+      }
     }
 
 
@@ -397,18 +399,16 @@ SimGetVariable(int domain, const char *name, void *cbdata)
 
   D("SimGetVariable");
   wait_for_init(sim);
-  triggerSnap(sim);
   visit_handle h = VISIT_INVALID_HANDLE;
   int nComponents = 1, nTuples = 0;
 
   if (VisIt_VariableData_alloc(&h) == VISIT_OKAY)
   {
-    if (strcmp(name, "pressure") == 0)
-    {
-      nTuples = sim->nX * sim->nY * sim->nZ;
-      VisIt_VariableData_setDataD(h, VISIT_OWNER_SIM, nComponents,
-                                  nTuples, sim->snapshot);
-    }
+    lastVar = NameToVariable(name);
+    triggerSnap(sim, lastVar);
+    nTuples = sim->nX * sim->nY * sim->nZ;
+    VisIt_VariableData_setDataD(h, VISIT_OWNER_SIM, nComponents,
+                                nTuples, sim->snapshot);
   }
   return h;
 }

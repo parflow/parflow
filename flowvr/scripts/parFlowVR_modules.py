@@ -34,7 +34,7 @@ class Parflow(Module):
         Module.__init__(self, name, run = run, host = host, cmdline = cmdline)
 
         inportnames = ["in"]
-        outportnames = outports + ["pressureSnap"]
+        outportnames = outports + ["snap"]
 
         for inportname in inportnames:
             p = self.addPort(inportname, direction = 'in')
@@ -81,14 +81,7 @@ class VisIt(Module):
         Module.__init__(self, name, cmdline = "$PARFLOW_DIR/bin/visit-connector")
         #Module.__init__(self, name, cmdline = "xterm -e gdb $PARFLOW_DIR/bin/visit-connector")
         self.addPort("triggerSnap", direction = 'out')
-        self.addPort("pressureIn", direction = 'in')
-
-class Controller(Module):
-    """Module that will replace the simple starter"""
-    def __init__(self, name):
-        Module.__init__(self, name, cmdline = "echo TODO")
-        self.addPort("out", direction = 'out')
-        self.addPort("pressureIn", direction = 'in')
+        self.addPort("in", direction = 'in')
 
 class Analyzer(Module):
     """Module that will analyze and give a Steer Proposition"""

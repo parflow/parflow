@@ -28,7 +28,6 @@ treePressure.link(netcdfwriter.getPort("in"))
 treePressure.link(analyzer.getPort("pressureIn"))
 
 analyzer.getPort("steerOut").link(mergeIt.newInputPort())
-treePressureSnap = generateNto1(prefix="comNto1PressureSnapMerge", in_ports = parflowmpi.getPort("pressureSnap"), arity = 2)
 
 logger = Logger("logger", "E M K")
 analyzer.getPort("log").link(logger.getPort("in"))

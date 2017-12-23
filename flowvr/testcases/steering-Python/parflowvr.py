@@ -22,17 +22,12 @@ mergeTasks = FilterMergeItExt("parflow-controller")
 parflowmpi = ParflowMPI(("localhost,"*int(P)*int(Q)*int(R))[:-1], problemName,
         ["out0", "out1", "out2"])  # cut last ,
 
-visit = VisIt("visit")
 
 logger = Logger("logger", "t zweiundvierzig", False)
-
-treePressureSnap = generateNto1(prefix="comNto1PressureSnapMerge", in_ports = parflowmpi.getPort("pressureSnap"), arity = 2)
-treePressureSnap.link(visit.getPort("pressureIn"))
 
 parflowmpi.getPort("endIt")[0].link(pres.getPort("in"))
 
 pres.getPort("out").link(mergeTasks.getPort("order"))
-visit.getPort("triggerSnap").link(mergeTasks.newInputPort())
 mergeTasks.getPort("out").link(parflowmpi.getPort("in"))
 
 analyzer = Module("Python-Analyzer",

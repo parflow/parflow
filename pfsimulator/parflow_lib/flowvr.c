@@ -144,7 +144,6 @@ void NewFlowVR(void)
   /*"pressure",*/
   /*"porosity",    // REM: does not really change..*/
   /*"saturation",*/
-  /*"pressureSnap"*/
   /*"subsurf_data",         [> permeability/porosity <]*/
   /*"press",                [> pressures <]*/
   /*"slopes",               [> slopes <]*/
@@ -164,7 +163,7 @@ void NewFlowVR(void)
 
   moduleParflow = fca_new_empty_module();
 
-  fca_port portPressureSnap = fca_new_port("pressureSnap", fca_OUT, 0, NULL);
+  fca_port portPressureSnap = fca_new_port("snap", fca_OUT, 0, NULL);
   fca_register_stamp(portPressureSnap, "stampTime", fca_FLOAT);
   fca_register_stamp(portPressureSnap, "stampFileName", fca_STRING);
   fca_append_port(moduleParflow, portPressureSnap);
@@ -393,7 +392,7 @@ void SendGridDefinition(SimulationSnapshot const * const snapshot)
   GridDefinition *g = (GridDefinition*)fca_get_write_access(msg, 0);
 
   fillGridDefinition(snapshot->grid, g);
-  fca_put(fca_get_port(moduleParflow, "pressureSnap"), msg);
+  fca_put(fca_get_port(moduleParflow, "snap"), msg);
   fca_free(msg);
 }
 
@@ -554,11 +553,8 @@ void CreateAndSendMessage(SimulationSnapshot const * const snapshot, const char 
 
 void SendSnapshot(SimulationSnapshot const * const snapshot, Variable var)
 {
-  // TODO: extract var from snapshot
-  // send snapshot!
   D("SendSnapshot");
-
-  CreateAndSendMessage(snapshot, "pressureSnap", VARIABLE_PRESSURE);
+  CreateAndSendMessage(snapshot, "snap", var);
 }
 
 void FlowVRServeFinalState(SimulationSnapshot *snapshot)
