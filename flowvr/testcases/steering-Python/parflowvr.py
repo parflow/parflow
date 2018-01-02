@@ -30,11 +30,7 @@ parflowmpi.getPort("endIt")[0].link(pres.getPort("in"))
 pres.getPort("out").link(mergeTasks.getPort("order"))
 mergeTasks.getPort("out").link(parflowmpi.getPort("in"))
 
-analyzer = Module("Python-Analyzer",
-        "python ../../analyzer/test_python_analyzer.py")
-analyzer.addPort("out", direction="out");
-analyzer.addPort("log", direction="out");
-analyzer.addPort("in", direction="in");
+analyzer = Analyzer("Python-Analyzer", "python ./analyzer.py")
 analyzer.getPort("out").link(mergeTasks.newInputPort())
 analyzer.getPort("log").link(logger.getPort("in"))
 

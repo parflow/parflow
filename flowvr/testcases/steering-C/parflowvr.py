@@ -20,14 +20,14 @@ parflowmpi = ParflowMPI(("localhost,"*int(P)*int(Q)*int(R))[:-1],  # cut last ,
 
 
 netcdfwriter = NetCDFWriter("netcdfwriter", fileprefix="_")
-analyzer = Analyzer("C-Analyzer")
+analyzer = Analyzer("C-Analyzer", "$PARFLOW_DIR/bin/parflowvr/analyzer_find_hillslope_K")
 
 
 treePressure = generateNto1(prefix="comNto1PressureMerge", in_ports = parflowmpi.getPort("out0"), arity = 2)
 treePressure.link(netcdfwriter.getPort("in"))
-treePressure.link(analyzer.getPort("pressureIn"))
+treePressure.link(analyzer.getPort("in"))
 
-analyzer.getPort("steerOut").link(mergeIt.newInputPort())
+analyzer.getPort("out").link(mergeIt.newInputPort())
 
 logger = Logger("logger", "E M K")
 analyzer.getPort("log").link(logger.getPort("in"))

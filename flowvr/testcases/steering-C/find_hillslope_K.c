@@ -83,11 +83,11 @@ int main(int argc, char *argv [])
    * init FlowVR Module
    */
   fca_module flowvr = fca_new_empty_module();
-  fca_port portPressureIn = fca_new_port("pressureIn", fca_IN, 0, NULL);
+  fca_port portPressureIn = fca_new_port("in", fca_IN, 0, NULL);
 
   fca_append_port(flowvr, portPressureIn);
 
-  fca_port portSteerOut = fca_new_port("steerOut", fca_OUT, 0, NULL);
+  fca_port portSteerOut = fca_new_port("out", fca_OUT, 0, NULL);
   fca_append_port(flowvr, portSteerOut);
 
 #ifdef __DEBUG

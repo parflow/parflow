@@ -84,13 +84,15 @@ class VisIt(Module):
         self.addPort("in", direction = 'in')
 
 class Analyzer(Module):
-    """Module that will analyze and give a Steer Proposition"""
-    def __init__(self, name):
-        Module.__init__(self, name, cmdline = "$PARFLOW_DIR/bin/analyzer")
-        self.addPort("pressureIn", direction = 'in')
-        p = self.addPort("steerOut", direction = 'out')#, blockstate='nonblocking') # send out thaat I need a trigger ;)
-        p.blockstate='non blocking'
-        p = self.addPort("log", direction = 'out')
+    """Module that will analyze GridMessages on the in Port and give a Steer Proposition
+    on the out port. The log port can be used with the logger module to log and plot
+    floating point outputs in realtime."""
+    def __init__(self, name, cmdline):
+        Module.__init__(self, name, cmdline = cmdline)
+        self.addPort("in", direction = 'in')
+        p = self.addPort("out", direction = 'out')#, blockstate='nonblocking') # send out thaat I need a trigger ;)
+        #p.blockstate='non blocking'
+        self.addPort("log", direction = 'out')
 
 class Logger(Module):
     """Module that will log the given stamp value in a graph."""
