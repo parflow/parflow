@@ -5,6 +5,16 @@ import random
 
 
 def onGridMessage(arr, gm):
+    # here we test if the contract timing is correct.
+    # we want to have times like 5, 20, 35 ...
+    print(gm.time)
+    if gm.variable == pfa.VARIABLE_PERMEABILITY_Y:
+        timestep = round(gm.time / 15.)
+        if ((timestep - 5) % 10 != 0):
+            print("NO")
+            raise
+        print("YES")
+
     print("Epic cool grid message! Let's do some stuff now!")
     t = pfa.StampLog()
     t.stampName = 't'

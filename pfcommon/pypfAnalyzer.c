@@ -36,6 +36,7 @@ void SendSteerMessage(const Action action, const Variable variable,
   m->nz = DIM3;
 
   // low: would be cooler if we could work directly in the message from python...
+  // but: every approach would diminish the flexibility you have with python arrays.
   memcpy((void*)(m + 1), IN_ARRAY3, sizeof(double) * DIM1 * DIM2 * DIM3);
 
   fca_put(out, msg);

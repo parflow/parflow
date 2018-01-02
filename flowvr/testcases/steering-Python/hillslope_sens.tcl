@@ -23,9 +23,9 @@ pfset FlowVR.Outports.out0.Periodicity  1
 pfset FlowVR.Outports.out0.Variable  "permeability_x"
 pfset FlowVR.Outports.out0.Offset  0
 
-pfset FlowVR.Outports.out1.Periodicity  1
+pfset FlowVR.Outports.out1.Periodicity  10
 pfset FlowVR.Outports.out1.Variable  "permeability_y"
-pfset FlowVR.Outports.out1.Offset  1
+pfset FlowVR.Outports.out1.Offset  5
 
 pfset FlowVR.Outports.out2.Periodicity  2
 pfset FlowVR.Outports.out2.Variable  "permeability_z"

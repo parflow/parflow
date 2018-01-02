@@ -2742,7 +2742,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
         sprintf(filename, "%s.%05d", file_prefix, 1 + (instance_xtra->file_number - 1) / userSpecSteps);
         sshot.filename = filename;
-        any_file_dumped = FlowVRFullFillContracts(instance_xtra->dump_index, &sshot);
+        int timestep = instance_xtra->dump_index - 1;  // we also printed 0 ;)
+        any_file_dumped = FlowVRFullFillContracts(timestep, &sshot);
       }
 #endif
 

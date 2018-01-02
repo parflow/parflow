@@ -2,7 +2,7 @@
 
 __[under construction]__
 
-- Before committing make sure to run `bin/pfformat` from the projects root.
+- Before committing make sure to run `bin/pfformat` from the project's root.
 Alternatively add this to your `parflow/.git/hooks/pre-commit` file:
 ```bash
 #!/bin/bash
