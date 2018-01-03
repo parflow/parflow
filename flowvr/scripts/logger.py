@@ -72,7 +72,7 @@ with open("logger.log", 'w+', 1) as f:  # bufsize=1 to be line buffered ;)
     for name in names:
       val = float(stamps[name])
       datas[name].append(val)
-      text = "%s: %f" % (name, val)
+      text = "%s: %.2E" % (name, val)
       print(text)
       f.write(text)
       f.write('\n')

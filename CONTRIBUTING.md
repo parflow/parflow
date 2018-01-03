@@ -24,10 +24,14 @@ done
 
 ## Coding Style
 - 2 space indentation
-- CamelCase for external *function names* and *struct typedef's* starting uppercase:
+- `{` on a new line
+- CamelCase for external **function names** and **struct typedef's** starting uppercase:
+- lower case with `_` separator is used for variable names
 ```C
-DoSomething();
-SuperCoolStruct object;
+if (42)
+{
+  SuperCoolStruct cool_object = SuperCoolStructCreator();
+}
 ```
 
 see also this issue:
