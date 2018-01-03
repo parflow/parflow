@@ -2,11 +2,27 @@ cmake_minimum_required (VERSION 3.4)
 
 project (PARFLOW C CXX Fortran)
 
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+
 #-----------------------------------------------------------------------------
 # Version number
 #-----------------------------------------------------------------------------
-set (PARFLOW_VERSION_MAJOR 3)
-set (PARFLOW_VERSION_MINOR 0)
+include (Version)
+#
+# Make a version file containing the current version from git.
+#
+
+include(GetGitRevisionDescription)
+#git_describe(PARFLOW_VERSION --tags)
+git_describe(PARFLOW_VERSION --tags)
+
+# If not building with git then get version from file
+if (NOT PARFLOW_VERSION)
+  file (STRINGS "VERSION" PARFLOW_VERSION)
+endif ()
+  
+message("Configuring version : ${PARFLOW_VERSION}")
+version_create_variables (PARFLOW)
 
 # enable testing
 enable_testing ()
@@ -14,12 +30,9 @@ enable_testing ()
 #-----------------------------------------------------------------------------
 # General project wide configuration
 #-----------------------------------------------------------------------------
-set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 # TODO should get rid of non-prefix versions of flags; preprocessor flags should be in PARFLOW namespace
 
 # TODO replace CASC macro names with PARFLOW when completed.
-
-include (Version)
 
 # Use RPATH in install, many mpicc scripts use RPATH so default
 # behavior of CMAKE to remove RPATH from installed executables is not
@@ -88,13 +101,13 @@ endif (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 # NetCDF
 #-----------------------------------------------------------------------------
 set (PARFLOW_ENABLE_NETCDF False CACHE BOOL "Build with NetCDF")
-if (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_LIBRARY OR DEFINED NETCDF_INCLUDE_DIR)
-  find_package (netCDF)
-  if (${netCDF_FOUND})
+if (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR OR DEFINED NETCDF_LIBRARY)
+  find_package (NetCDF)
+  if (${NETCDF_FOUND})
     set(PARFLOW_HAVE_NETCDF "yes")
     set(HAVE_NETCDF ${PARFLOW_HAVE_NETCDF})
-  endif (${netCDF_FOUND})
-endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_LIBRARY OR DEFINED NETCDF_INCLUDE_DIR)
+  endif (${NETCDF_FOUND})
+endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR OR DEFINED NETCDF_LIBRARY)
 
 #-----------------------------------------------------------------------------
 # HDF5
@@ -181,6 +194,24 @@ if (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
     set(HAVE_SLURM ${PARFLOW_HAVE_SLURM})
   endif (${SLURM_FOUND})
 endif (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
+
+
+#-----------------------------------------------------------------------------
+# libm
+#-----------------------------------------------------------------------------
+find_library(PARFLOW_LIBM m)
+
+#-----------------------------------------------------------------------------
+# Valgrind
+#-----------------------------------------------------------------------------
+
+set (PARFLOW_ENABLE_VALGRIND False CACHE BOOL "Build with Valgrind support")
+if (${PARFLOW_ENABLE_VALGRIND} )
+  find_program( PARFLOW_MEMORYCHECK_COMMAND valgrind)
+  set(PARFLOW_HAVE_MEMORYCHECK "yes")
+  set(PARFLOW_MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/bin/valgrind.sup")
+  set(PARFLOW_MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --suppressions=${PARFLOW_MEMORYCHECK_SUPPRESSIONS_FILE}")
+endif (${PARFLOW_ENABLE_VALGRIND})
 
 #-----------------------------------------------------------------------------
 # FLOWVR
@@ -347,11 +378,8 @@ endif ()
 #-----------------------------------------------------------------------------
 # Setup configure.h file for accessing configure options
 # -----------------------------------------------------------------------------
-# TODO These files should be moved once cmake conversion is completed,
-# placed in cmake to avoid confusion with autoconf versions
 configure_file (cmake/parflow_config.h.in include/parflow_config.h)
 
-# TODO need to setup script logic got correctly generate version file.
 configure_file (cmake/version.h.in include/version.h)
 
 configure_file (cmake/Makefile.config.in config/Makefile.config)
@@ -394,4 +422,10 @@ endif ()
 #-----------------------------------------------------------------------------
 include (CTest)
 
+set (PARFLOW_ENABLE_LATEX False CACHE BOOL "Enable LaTEX and building of documentation")
+if ( ${PARFLOW_ENABLE_LATEX} )
+  add_subdirectory(pftools/docs/usr_manual)
+endif()
+
 install (DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION config)
+

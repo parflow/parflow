@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.4)
 
 # Execute command with error check
 macro(pf_exec_check cmd)
+
   execute_process (COMMAND ${${cmd}} RESULT_VARIABLE cmdResult OUTPUT_VARIABLE stdout ERROR_VARIABLE stdout)
   message(${stdout})
   if (cmdResult)
@@ -9,16 +10,26 @@ macro(pf_exec_check cmd)
   endif()
 
   # If FAIL is present test fails
-  string(FIND ${stdout} "FAIL" test)
+  string(FIND "${stdout}" "FAIL" test)
   if (NOT ${test} EQUAL -1)
     message (FATAL_ERROR "Test Failed")
   endif()
 
   # Test must say PASSED to pass
-  string(FIND ${stdout} "PASSED" test)
+  string(FIND "${stdout}" "PASSED" test)
   if (${test} LESS 0)
     message (FATAL_ERROR "Test Failed")
   endif()
+
+  string(FIND "${stdout}" "Using Valgrind" test)
+  if (NOT ${test} EQUAL -1)
+    # Using valgrind
+    string(FIND "${stdout}" "ERROR SUMMARY: 0 errors" test)
+    if (${test} LESS 0)
+      message (FATAL_ERROR "Valgrind Errors Found")
+    endif()
+  endif()
+
 endmacro()
 
 # Clean a parflow directory
@@ -39,7 +50,16 @@ pf_test_clean ()
 list(APPEND CMD tclsh)
 list(APPEND CMD ${PARFLOW_TEST})
 
+if (${PARFLOW_HAVE_MEMORYCHECK})
+  SET(ENV{PARFLOW_MEMORYCHECK_COMMAND} ${PARFLOW_MEMORYCHECK_COMMAND})
+  SET(ENV{PARFLOW_MEMORYCHECK_COMMAND_OPTIONS} ${PARFLOW_MEMORYCHECK_COMMAND_OPTIONS})
+endif()
+
 pf_exec_check(CMD)
 
+if (${PARFLOW_HAVE_MEMORYCHECK})
+  UNSET(ENV{PARFLOW_MEMORYCHECK_COMMAND})
+  UNSET(ENV{PARFLOW_MEMORYCHECK_COMMAND_OPTIONS})
+endif()
 
 

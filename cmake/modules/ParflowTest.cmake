@@ -23,6 +23,11 @@ function (pf_add_parallel_test inputfile topology)
   list(APPEND args ${targs})
 
   add_test (NAME ${testname}_${postfix} COMMAND ${CMAKE_COMMAND} "-DPARFLOW_TEST=${args}" -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunParallelTest.cmake WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+  if( ${PARFLOW_HAVE_MEMORYCHECK} )
+    add_test (NAME ${testname}_${postfix}_memcheck COMMAND ${CMAKE_COMMAND} -DPARFLOW_HAVE_MEMORYCHECK=${PARFLOW_HAVE_MEMORYCHECK} -DPARFLOW_MEMORYCHECK_COMMAND=${PARFLOW_MEMORYCHECK_COMMAND} -DPARFLOW_MEMORYCHECK_COMMAND_OPTIONS=${PARFLOW_MEMORYCHECK_COMMAND_OPTIONS} "-DPARFLOW_TEST=${args}" -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunParallelTest.cmake WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  endif ()
+
 endfunction()
 
 #
@@ -37,5 +42,10 @@ function (pf_add_sequential_test inputfile)
   list(APPEND args 1 1 1)
 
   add_test (NAME ${testname} COMMAND ${CMAKE_COMMAND} "-DPARFLOW_TEST=${args}" -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunParallelTest.cmake WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+  if( ${PARFLOW_HAVE_MEMORYCHECK} )
+    add_test (NAME ${testname}_memcheck COMMAND ${CMAKE_COMMAND} -DPARFLOW_HAVE_MEMORYCHECK=${PARFLOW_HAVE_MEMORYCHECK} -DPARFLOW_MEMORYCHECK_COMMAND=${PARFLOW_MEMORYCHECK_COMMAND} -DPARFLOW_MEMORYCHECK_COMMAND_OPTIONS=${PARFLOW_MEMORYCHECK_COMMAND_OPTIONS} "-DPARFLOW_TEST=${args}" -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunParallelTest.cmake WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  endif()
+
 endfunction()
 

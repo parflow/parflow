@@ -65,6 +65,9 @@ int amps_Finalize()
 {
   if (amps_mpi_initialized)
   {
+    MPI_Comm_free(&amps_CommNode);
+    MPI_Comm_free(&amps_CommWrite);
+
     MPI_Finalize();
   }
 

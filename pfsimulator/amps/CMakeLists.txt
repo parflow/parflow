@@ -1,5 +1,10 @@
 
-file(GLOB_RECURSE COMMON_SRC_FILES common/*.c)
+# Common AMPS files
+set(COMMON_SRC_FILES amps_abort.c amps_clear.c amps_clock.c
+  amps_exchange.c amps_ffopen.c amps_find_powers.c amps_fopen.c
+  amps_invoice.c amps_io.c amps_newhandle.c amps_newpackage.c
+  amps_sfbcast.c amps_sfclose.c amps_sfopen.c amps_wait.c signal.c)
+string(REGEX REPLACE "([^;]+)" "common/\\1" COMMON_SRC_FILES "${COMMON_SRC_FILES}")
 
 # Sets AMPS_SRC_FILES for AMPS transport layer being used in build
 include("${PARFLOW_AMPS_LAYER}/CMakeLists.cmake")
