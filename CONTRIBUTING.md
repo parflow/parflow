@@ -20,3 +20,21 @@ do
   fi
 done
 ```
+
+
+## Coding Style
+- 2 space indentation
+- CamelCase for external *function names* and *struct typedef's* starting uppercase:
+```C
+DoSomething();
+SuperCoolStruct object;
+```
+
+see also this issue:
+https://github.com/parflow/parflow/issues/63
+
+## Documentation
+- there is the parflow-manual.pdf
+- there is also the outdated developer manual that is useful.
+
+
