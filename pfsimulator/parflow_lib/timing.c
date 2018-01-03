@@ -61,6 +61,8 @@ void  NewTiming()
 #ifdef VECTOR_UPDATE_TIMING
   RegisterTiming("VectorUpdate");
 #endif
+  RegisterTiming("FlowVR Interact");
+  RegisterTiming("FlowVR Fullfill Contracts");
 }
 
 

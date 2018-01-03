@@ -1553,8 +1553,10 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   do                            /* while take_more_time_steps */
   {
 #ifdef HAVE_FLOWVR
+    BeginTiming(FlowVRInteractTimingIndex);
     if (!FlowVRInteract(&sshot))
       break;
+    EndTiming(FlowVRInteractTimingIndex);
     // TODO: or maybe do at the end so that we can dump at the same time?
 
     // TODO: move all the dumps into an extra function! split all this loop into more functions!
@@ -2734,6 +2736,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       /***************************************************************
        * FlowVR output
        **************************************************************/
+      BeginTiming(FlowVRInteractTimingIndex);
       if (FLOWVR_ACTIVE)
       {
         char filename[1024];
@@ -2745,6 +2748,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         int timestep = instance_xtra->dump_index - 1;  // we also printed 0 ;)
         any_file_dumped = FlowVRFullFillContracts(timestep, &sshot);
       }
+      EndTiming(FlowVRInteractTimingIndex);
 #endif
 
       sprintf(nc_postfix, "%05d", instance_xtra->file_number);
