@@ -30,7 +30,6 @@
 #define _FLOWVR_HEADER
 
 #include "parflow.h"
-#include <messages.h>
 
 
 extern int FLOWVR_ACTIVE;
@@ -40,6 +39,7 @@ void NewFlowVR(void);
 #ifdef HAVE_FLOWVR
 
 #include <fca/fca.h>
+#include <messages.h>
 
 #ifdef __DEBUG
 #define D(x ...) printf("=======%d:", amps_Rank(amps_CommWorld)); printf(x); \

@@ -33,6 +33,7 @@
 
 #include "parflow.h"
 #include "amps.h"
+#include "flowvr.h"
 
 #ifdef HAVE_SAMRAI
 #include "SAMRAI/SAMRAI_config.h"

@@ -1,14 +1,13 @@
 #include "flowvr.h"
-#include "messages.h"
-#include <fca/fca.h>
 
 #include <string.h>  // for memcpy
 #include <stdlib.h>  // for malloc
 
 
 int FLOWVR_ACTIVE;
-fca_module moduleParflow;
 
+#ifdef HAVE_FLOWVR
+fca_module moduleParflow;
 static fca_module moduleParflowEvent;
 static fca_port portIn;
 
@@ -108,6 +107,7 @@ void initSteerLogMode(void)
   NA_FreeNameArray(switch_na);
   D("steer_log_mode: %d", steer_log_mode);
 }
+#endif
 
 void NewFlowVR(void)
 {
@@ -602,3 +602,4 @@ int FlowVRFullFillContracts(int timestep, SimulationSnapshot const * const sshot
 }
 
 #endif
+// TODO: refactor ifdefs!
