@@ -77,8 +77,8 @@ class ParflowMPI(Composite):
 
 class VisIt(Module):
     """Module that will abstract VisIt later"""
-    def __init__(self, name):
-        Module.__init__(self, name, cmdline = "$PARFLOW_DIR/bin/visit-connector")
+    def __init__(self, name, host=""):
+        Module.__init__(self, name, cmdline = "$PARFLOW_DIR/bin/visit-connector", host=host)
         #Module.__init__(self, name, cmdline = "xterm -e gdb $PARFLOW_DIR/bin/visit-connector")
         self.addPort("triggerSnap", direction = 'out')
         self.addPort("in", direction = 'in')
@@ -87,8 +87,8 @@ class Analyzer(Module):
     """Module that will analyze GridMessages on the in Port and give a Steer Proposition
     on the out port. The log port can be used with the logger module to log and plot
     floating point outputs in realtime."""
-    def __init__(self, name, cmdline):
-        Module.__init__(self, name, cmdline = cmdline)
+    def __init__(self, name, cmdline, host=""):
+        Module.__init__(self, name, cmdline = cmdline, host=host)
         self.addPort("in", direction = 'in')
         p = self.addPort("out", direction = 'out')#, blockstate='nonblocking') # send out thaat I need a trigger ;)
         #p.blockstate='non blocking'
@@ -96,28 +96,28 @@ class Analyzer(Module):
 
 class Logger(Module):
     """Module that will log the given stamp value in a graph."""
-    def __init__(self, name, stampName, showWindows=True):
-        Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/logger.py %s %s" % (stampName, "--show-windows" if showWindows else ""))
+    def __init__(self, name, stampName, showWindows=True, host=""):
+        Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/logger.py %s %s" % (stampName, "--show-windows" if showWindows else ""), host=host)
         self.addPort("in", direction = 'in')
 
 class Simplestarter(Module):
     """Module Simplestarter kicks of a nonsteered simple parflow simulation"""
-    def __init__(self, name, starttime, stoptime):
+    def __init__(self, name, starttime, stoptime, host=""):
         # TODO: change path here!: relative path not good ;)
-        Module.__init__(self, name, cmdline = "python ../simplestarter/simplestarter.py %s %s" % (starttime, stoptime))
+        Module.__init__(self, name, cmdline = "python ../simplestarter/simplestarter.py %s %s" % (starttime, stoptime), host=host)
         #self.addPort("beginIt", direction = 'in')
         self.addPort("out", direction = 'out')
 
 class Ticker(Module):
     """Module sends a message every second"""
-    def __init__(self, name, size=0, T=0.5):
-        Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/ticker.py %d %f" % (size, T))
+    def __init__(self, name, size=0, T=0.5, host=""):
+        Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/ticker.py %d %f" % (size, T), host=host)
         #self.addPort("beginIt", direction = 'in')
         self.addPort("out", direction = 'out')
 
 class NetCDFWriter(Module):
     """Module NetCDFWriter writes parflow output into netCDF files."""
-    def __init__(self, name, fileprefix=""):
+    def __init__(self, name, fileprefix="", host=""):
         # TODO: works with mpi too?!
-        Module.__init__(self, name, cmdline = "$PARFLOW_DIR/bin/netcdf-writer %s" % fileprefix)
+        Module.__init__(self, name, cmdline = "$PARFLOW_DIR/bin/netcdf-writer %s" % fileprefix, host=host)
         self.addPort("in", direction = 'in');
