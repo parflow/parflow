@@ -53,7 +53,7 @@ class ParflowMPI(Composite):
         # hosts: string with host names, separated by spaces
         if socket.gethostname().find('frog') == 0:
             # I bet I'm on froggy ;)
-            parflowrun = FlowvrRunOpenMPI("$PARFLOW_DIR/bin/parflow %s" % problemName, hosts = hosts, prefix = prefix, mpirunargs="--mca btl_sm_use_knem 0 --mca btl_vader_single_copy_mechanism none")
+            parflowrun = FlowvrRunOpenMPI("$HOME/bin/froggy_parflow %s" % problemName, hosts = hosts, prefix = prefix, mpirunargs="--mca btl_sm_use_knem 0 --mca btl_vader_single_copy_mechanism none")
         else:
             parflowrun = FlowvrRunMPI("$PARFLOW_DIR/bin/parflow %s" % problemName, hosts = hosts, prefix = prefix, mpistack="openmpi")
 
