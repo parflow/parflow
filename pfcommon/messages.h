@@ -13,12 +13,6 @@
 #include <fca/fca.h>
 
 typedef struct {
-  int nX;
-  int nY;
-  int nZ;
-} GridDefinition;
-
-typedef struct {
   const char *stampName;
   float value;
 } StampLog;
@@ -61,8 +55,37 @@ typedef enum {
   VARIABLE_LAST
 } Variable;
 
+typedef enum {
+  ACTION_GET_GRID_DEFINITION,
+  ACTION_TRIGGER_SNAPSHOT,
+  ACTION_SET,
+  ACTION_ADD,
+  ACTION_MULTIPLY
+} Action;
+
 extern const char *VARIABLE_TO_NAME[VARIABLE_LAST];
 Variable NameToVariable(const char *name);
+
+typedef struct {
+  Variable variable;
+  Action action;
+  // REM: parameter size is parsed by type ;)
+} ActionMessageMetadata;
+
+typedef struct {
+  int nx;
+  int ny;
+  int nz;
+  int ix;
+  int iy;
+  int iz;
+} SteerMessageMetadata;
+
+typedef struct {
+  int nX;
+  int nY;
+  int nZ;
+} GridDefinition;
 
 typedef struct {
   double time;
@@ -75,31 +98,6 @@ typedef struct {
   int iy;
   int iz;
 } GridMessageMetadata;
-
-
-typedef enum {
-  ACTION_GET_GRID_DEFINITION,
-  ACTION_TRIGGER_SNAPSHOT,
-  ACTION_SET,
-  ACTION_ADD,
-  ACTION_MULTIPLY
-} Action;
-
-typedef struct {
-  Variable variable;
-  Action action;
-  // REM: parameter size is parsed by type ;)
-} ActionMessageMetadata;
-
-
-typedef struct {
-  int nx;
-  int ny;
-  int nz;
-  int ix;
-  int iy;
-  int iz;
-} SteerMessageMetadata;
 
 
 extern void SendActionMessage(fca_module mod, fca_port port, Action action, Variable variable,
