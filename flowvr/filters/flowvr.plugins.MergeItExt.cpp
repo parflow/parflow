@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <unistd.h>
+#include <cassert>
 
 namespace flowvr
 {
@@ -64,7 +65,7 @@ namespace flowvr
 
     /// Constructor.
     MergeItExt::MergeItExt(const std::string objID)
-      : Filter(objID), nb(1)
+      : Filter(objID), nb(0)
     {
     }
 
@@ -84,9 +85,10 @@ namespace flowvr
 #ifdef __DEBUG
         std::cout << objectID() << ": nb=" << nb << std::endl;
 #endif
-        if (nb < 0) nb = 1;
       }
       delete lnb;
+
+      assert(nb>0);
 
       initInputs(nb+1);
       //inputs[IDPORT_IN]->storeSpecification();
