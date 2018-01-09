@@ -20,7 +20,7 @@ git_describe(PARFLOW_VERSION --tags)
 if (NOT PARFLOW_VERSION)
   file (STRINGS "VERSION" PARFLOW_VERSION)
 endif ()
-
+  
 message("Configuring version : ${PARFLOW_VERSION}")
 version_create_variables (PARFLOW)
 
@@ -104,11 +104,11 @@ endif (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 #-----------------------------------------------------------------------------
 set (PARFLOW_ENABLE_NETCDF False CACHE BOOL "Build with NetCDF")
 if (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR OR DEFINED NETCDF_LIBRARY)
-  find_package (netCDF)
-  if (${netCDF_FOUND})
+  find_package (NetCDF)
+  if (${NETCDF_FOUND})
     set(PARFLOW_HAVE_NETCDF "yes")
     set(HAVE_NETCDF ${PARFLOW_HAVE_NETCDF})
-  endif (${netCDF_FOUND})
+  endif (${NETCDF_FOUND})
 endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR OR DEFINED NETCDF_LIBRARY)
 
 #-----------------------------------------------------------------------------
