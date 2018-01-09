@@ -27,6 +27,8 @@ version_create_variables (PARFLOW)
 # enable testing
 enable_testing ()
 
+include(CMakeDependentOption)
+
 #-----------------------------------------------------------------------------
 # General project wide configuration
 #-----------------------------------------------------------------------------
@@ -216,7 +218,8 @@ endif (${PARFLOW_ENABLE_VALGRIND})
 #-----------------------------------------------------------------------------
 # FLOWVR
 #-----------------------------------------------------------------------------
-set (PARFLOW_ENABLE_FLOWVR False CACHE BOOL "Build with FlowVR support")
+#set (PARFLOW_ENABLE_FLOWVR False CACHE BOOL "Build with FlowVR support")
+cmake_dependent_option (PARFLOW_ENABLE_FLOWVR "Build with FlowVR support" OFF "PARFLOW_ENABLE_NETCDF" OFF)
 if (${PARFLOW_ENABLE_FLOWVR} OR DEFINED FLOWVR_ROOT)
   find_package(FlowVR)
   find_package(fca)
@@ -411,7 +414,7 @@ if ( ${PARFLOW_ENABLE_TOOLS} )
   add_subdirectory (pftools)
 endif ()
 
-set (PARFLOW_ENABLE_FLOWVR_TOOLS True CACHE BOOL "Enable building of the FlowVR tools")
+cmake_dependent_option (PARFLOW_ENABLE_FLOWVR_TOOLS "Enable building of the FlowVR tools" ON PARFLOW_ENABLE_FLOWVR OFF)
 if ( ${PARFLOW_ENABLE_FLOWVR_TOOLS} )
   add_subdirectory (pfcommon)
   add_subdirectory (flowvr)

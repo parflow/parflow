@@ -19,7 +19,7 @@ IF( BUILD_PYTHON_ANALYZER_API )
   IF( PYTHONLIBS_FOUND AND SWIG_FOUND AND NUMPY_FOUND)
     SET(NUMPY_I_PATH ${NUMPY_INCLUDE_DIRS}/../../../instant/swig CACHE PATH "Path to numpy.i")
     IF(NOT EXISTS ${NUMPY_I_PATH}/numpy.i)
-      Message(SEND_ERROR "Cannot find numpy.i in ${NUMPY_I} which needed for the Python Analyzer API")
+      Message(SEND_ERROR "Cannot find numpy.i in ${NUMPY_I} which is needed for the Python Analyzer API")
     ENDIF(NOT EXISTS ${NUMPY_I_PATH}/numpy.i)
 
 
