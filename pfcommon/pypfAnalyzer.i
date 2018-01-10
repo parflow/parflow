@@ -43,7 +43,7 @@
     GridMessageMetadata *m = (GridMessageMetadata*) buffer;
 
     PyObject *arglist = PyTuple_New(2);
-    npy_intp dims[3] = {m->nx, m->ny, m->nz};
+    npy_intp dims[3] = {m->nz, m->ny, m->nx};
 
     PyObject * arr = PyArray_SimpleNewFromData(3, dims, NPY_DOUBLE, (void*)(m+1));
     PyTuple_SET_ITEM(arglist, 0, arr);
