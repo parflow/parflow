@@ -29,12 +29,17 @@ class FilterMergeItExt(FilterWithManyInputs):
 
 
 class Parflow(Module):
-    def __init__(self, prefix, index=None, run=None, host=None, cmdline=None, outports=[]):
+    def __init__(self, prefix, index=None, run=None, host=None, cmdline=None, outports=[], problemName=None):
         name = prefix + "/" + str(index) if index is not None else prefix
+
+        if cmdline is None:
+            cmdline = "$PARFLOW_DIR/bin/parflow %s" % problemName
+
         Module.__init__(self, name, run = run, host = host, cmdline = cmdline)
 
         inportnames = ["in"]
         outportnames = outports + ["snap"]
+
 
         for inportname in inportnames:
             p = self.addPort(inportname, direction = 'in')
