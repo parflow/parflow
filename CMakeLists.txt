@@ -103,13 +103,23 @@ endif (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 # NetCDF
 #-----------------------------------------------------------------------------
 set (PARFLOW_ENABLE_NETCDF False CACHE BOOL "Build with NetCDF")
-if (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR OR DEFINED NETCDF_LIBRARY)
-  find_package (NetCDF)
-  if (${NETCDF_FOUND})
+if (${PARFLOW_ENABLE_NETCDF})
+
+  # first try original package (installed with cmake ;) )
+  find_package(netCDF)
+  if (${netCDF_FOUND})
     set(PARFLOW_HAVE_NETCDF "yes")
     set(HAVE_NETCDF ${PARFLOW_HAVE_NETCDF})
-  endif (${NETCDF_FOUND})
-endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR OR DEFINED NETCDF_LIBRARY)
+    set(NETCDF_INCLUDE_DIRS ${netCDF_INCLUDE_DIR})
+    set(NETCDF_LIBRARIES ${netCDF_LIBRARIES})
+  else()
+    find_package (NetCDF)
+    if (${NETCDF_FOUND})
+      set(PARFLOW_HAVE_NETCDF "yes")
+      set(HAVE_NETCDF ${PARFLOW_HAVE_NETCDF})
+    endif (${NETCDF_FOUND})
+  endif()
+endif (${PARFLOW_ENABLE_NETCDF})
 
 #-----------------------------------------------------------------------------
 # HDF5
@@ -414,9 +424,12 @@ if ( ${PARFLOW_ENABLE_TOOLS} )
   add_subdirectory (pftools)
 endif ()
 
+if (${PARFLOW_ENABLE_FLOWVR} )
+  add_subdirectory (pfcommon)
+endif ()
+
 cmake_dependent_option (PARFLOW_ENABLE_FLOWVR_TOOLS "Enable building of the FlowVR tools" ON PARFLOW_ENABLE_FLOWVR OFF)
 if ( ${PARFLOW_ENABLE_FLOWVR_TOOLS} )
-  add_subdirectory (pfcommon)
   add_subdirectory (flowvr)
 endif ()
 
