@@ -586,7 +586,7 @@ void FlowVRServeFinalState(SimulationSnapshot *snapshot)
 /**
  * Dumps data if it has to since a contract.
  */
-int FlowVRFullFillContracts(int timestep, SimulationSnapshot const * const sshot)
+int FlowVRFulFillContracts(int timestep, SimulationSnapshot const * const sshot)
 {
   int res = 0;
 

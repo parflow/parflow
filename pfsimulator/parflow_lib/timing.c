@@ -62,7 +62,7 @@ void  NewTiming()
   RegisterTiming("VectorUpdate");
 #endif
   RegisterTiming("FlowVR Interact");
-  RegisterTiming("FlowVR Fullfill Contracts");
+  RegisterTiming("FlowVR Fulfill Contracts");
 }
 
 

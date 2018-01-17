@@ -51,7 +51,7 @@
 #define VectorUpdateTimingIndex  8
 #endif
 #define FlowVRInteractTimingIndex  9
-#define FlowVRFullFillContractsTimingIndex  10
+#define FlowVRFulFillContractsTimingIndex  10
 
 
 #if defined(PF_TIMING)
