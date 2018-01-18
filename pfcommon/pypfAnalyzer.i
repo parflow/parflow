@@ -33,6 +33,8 @@
     assert(cb != NULL);
     assert(cb != 0);
 
+    // low: assert cb is an function object!
+
     parser = cb;
 
     Py_XINCREF(cb);
@@ -66,6 +68,42 @@
     Py_XDECREF(result);
 
     return sizeof(GridMessageMetadata) + sizeof(double) * m->nx * m->ny * m->nz;
+  }
+
+  extern PyObject *onInit = NULL;
+  void SetOnInit(PyObject *cb)
+  {
+    if (onInit != NULL)
+      Py_XDECREF(onInit);
+
+    assert(cb != Py_None);
+    assert(cb != NULL);
+    assert(cb != 0);
+
+    // low: assert cb is an function object!
+
+    onInit = cb;
+
+    Py_XINCREF(cb);
+  }
+
+  void callOnInit()
+  {
+    if (onInit == NULL)
+      return;
+
+    // call onInit!
+    PyObject *result = PyEval_CallObject(onInit, NULL);
+    PyObject *error =  PyErr_Occurred();
+
+    if (error != NULL)
+    {
+      PyErr_Print();
+
+      raise(SIGABRT);
+    }
+
+    Py_XDECREF(result);
   }
 
   void run(char *logstamps[], size_t logstampsc)
@@ -137,6 +175,7 @@
 
 // exports:
 void SetGridMessageParser(PyObject *cb);
+void SetOnInit(PyObject *cb);
 void SendSteerMessage(const Action action, const Variable variable,
     int ix, int iy, int iz,
     double *IN_ARRAY3, int DIM1, int DIM2, int DIM3);

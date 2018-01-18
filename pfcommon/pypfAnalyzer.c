@@ -4,6 +4,7 @@
 #include "parflow_config.h"
 
 MergeMessageParser(preparser);
+void callOnInit();
 
 // Python Wrapper with NumpyDataTypes:
 
@@ -75,6 +76,9 @@ void _run(char *logstamps[], size_t logstampsc)
   {
     printf("ERROR : init_module failed!\n");
   }
+
+  D("calling onInit now!");
+  callOnInit();
 
   D("now waiting\n");
   while (fca_wait(flowvr))
