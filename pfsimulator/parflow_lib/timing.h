@@ -47,11 +47,11 @@
 #define PFBTimingIndex  5
 #define CLMTimingIndex  6
 #define PFSOLReadTimingIndex  7
+#define FlowVRInteractTimingIndex  8
+#define FlowVRFulFillContractsTimingIndex  9
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  8
+#define VectorUpdateTimingIndex  10
 #endif
-#define FlowVRInteractTimingIndex  9
-#define FlowVRFulFillContractsTimingIndex  10
 
 
 #if defined(PF_TIMING)
