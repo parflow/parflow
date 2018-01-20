@@ -1074,6 +1074,7 @@ SetupRichards(PFModule * this_module)
 
 
 #ifdef HAVE_FLOWVR
+    BeginTiming(FlowVRFulFillContractsTimingIndex);
     if (FLOWVR_ACTIVE)
     {
       char filename[1024];     // low: reuse other string variable here?
@@ -1083,8 +1084,9 @@ SetupRichards(PFModule * this_module)
 
       SimulationSnapshot sshot = GetSimulationSnapshot;
       FlowVRinitTranslation(&sshot);
-      any_file_dumped = FlowVRFullFillContracts(0, &sshot);
+      any_file_dumped = FlowVRFulFillContracts(0, &sshot);
     }
+    EndTiming(FlowVRFulFillContractsTimingIndex);
 #endif
 
     /*-----------------------------------------------------------------
@@ -2736,7 +2738,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       /***************************************************************
        * FlowVR output
        **************************************************************/
-      BeginTiming(FlowVRInteractTimingIndex);
+      BeginTiming(FlowVRFulFillContractsTimingIndex);
       if (FLOWVR_ACTIVE)
       {
         char filename[1024];
@@ -2746,9 +2748,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         sprintf(filename, "%s.%05d", file_prefix, 1 + (instance_xtra->file_number - 1) / userSpecSteps);
         sshot.filename = filename;
         int timestep = instance_xtra->dump_index - 1;  // we also printed 0 ;)
-        any_file_dumped = FlowVRFullFillContracts(timestep, &sshot);
+        any_file_dumped = FlowVRFulFillContracts(timestep, &sshot);
       }
-      EndTiming(FlowVRInteractTimingIndex);
+      EndTiming(FlowVRFulFillContractsTimingIndex);
 #endif
 
       sprintf(nc_postfix, "%05d", instance_xtra->file_number);

@@ -4,6 +4,7 @@
 #include "parflow_config.h"
 
 MergeMessageParser(preparser);
+void callOnInit();
 
 // Python Wrapper with NumpyDataTypes:
 
@@ -31,9 +32,9 @@ void SendSteerMessage(const Action action, const Variable variable,
   m->ix = ix;
   m->iy = iy;
   m->iz = iz;
-  m->nx = DIM1;
+  m->nz = DIM1;
   m->ny = DIM2;
-  m->nz = DIM3;
+  m->nx = DIM3;
 
   // low: would be cooler if we could work directly in the message from python...
   // but: every approach would diminish the flexibility you have with python arrays.
@@ -75,6 +76,9 @@ void _run(char *logstamps[], size_t logstampsc)
   {
     printf("ERROR : init_module failed!\n");
   }
+
+  D("calling onInit now!");
+  callOnInit();
 
   D("now waiting\n");
   while (fca_wait(flowvr))

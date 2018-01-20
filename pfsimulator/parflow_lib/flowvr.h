@@ -80,7 +80,7 @@ void FlowVRinitTranslation(SimulationSnapshot *snapshot);
 int FlowVRInteract(SimulationSnapshot *sshot);
 
 
-int FlowVRFullFillContracts(int timestep, SimulationSnapshot const * const sshot);
+int FlowVRFulFillContracts(int timestep, SimulationSnapshot const * const sshot);
 
 void FlowVRServeFinalState(SimulationSnapshot *snapshot);
 

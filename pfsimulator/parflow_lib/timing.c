@@ -58,11 +58,11 @@ void  NewTiming()
   RegisterTiming("PFB I/O");
   RegisterTiming("CLM");
   RegisterTiming("PFSOL Read");
+  RegisterTiming("FlowVR Interact");
+  RegisterTiming("FlowVR Fulfill Contracts");
 #ifdef VECTOR_UPDATE_TIMING
   RegisterTiming("VectorUpdate");
 #endif
-  RegisterTiming("FlowVR Interact");
-  RegisterTiming("FlowVR Fullfill Contracts");
 }
 
 
