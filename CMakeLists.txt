@@ -106,7 +106,7 @@ set (PARFLOW_ENABLE_NETCDF False CACHE BOOL "Build with NetCDF")
 if (${PARFLOW_ENABLE_NETCDF})
 
   # first try original package (installed with cmake ;) )
-  find_package(netCDF)
+  find_package(netCDF QUIET)
   if (${netCDF_FOUND})
     set(PARFLOW_HAVE_NETCDF "yes")
     set(HAVE_NETCDF ${PARFLOW_HAVE_NETCDF})
