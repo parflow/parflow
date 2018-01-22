@@ -8,7 +8,7 @@ from parFlowVR_modules import *
 
 problemName, P, Q, R = sys.argv[1:5]
 
-pres = FilterPreSignal("PreSignal", nb=1)  # will be inited with one token for the beginning. TODO set nb to 2 later!
+pres = FilterPreSignal("PreSignal", nb=1)  # will be inited with one token for the beginning. one could set nb to 2 later!
 
 mergeIt = FilterMergeItExt("parflow-controller")
 
