@@ -183,6 +183,7 @@ void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
 
 #ifdef __DEBUG
     // generate some random data to see the change for now...
+    printf("DEBUG MODE! Generate some random data to see the change for now...\n");
     for (size_t i = 0; i < sim->nX * sim->nY * sim->nZ; ++i)
       sim->snapshot[i] = (rand() * 10. / RAND_MAX) - 5.;
 #endif
