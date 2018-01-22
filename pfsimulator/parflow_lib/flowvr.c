@@ -139,7 +139,7 @@ void NewFlowVR(void)
   D("Modname: %s, Parent: %s\n", getenv("FLOWVR_MODNAME"), getenv("FLOWVR_PARENT"));
   if (amps_size > 1)
   {
-    fca_init_parallel(amps_rank, amps_size);  // TODO: amps size or amps_node_size
+    fca_init_parallel(amps_Rank(amps_CommWorld), amps_Size(amps_CommWorld));
   }
   D("Modname: %s, Parent: %s\n", getenv("FLOWVR_MODNAME"), getenv("FLOWVR_PARENT"));
   /*"pressure",*/

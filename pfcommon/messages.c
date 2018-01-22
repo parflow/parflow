@@ -5,7 +5,6 @@
 
 #include <assert.h>
 
-// TODO: works like this: ? --> test on froggy
 const char *VARIABLE_TO_NAME[VARIABLE_LAST] = {
   "pressure",
   "saturation",

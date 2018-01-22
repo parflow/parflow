@@ -52,7 +52,7 @@
 
     PyObject * it = SWIG_NewPointerObj((void*)m, SWIGTYPE_p_GridMessageMetadata, 0);
     PyTuple_SET_ITEM(arglist, 1, it );
-    // REM: typenames cann be looked up in the _wrap.c file
+    // REM: typenames can be looked up in the _wrap.c file
 
     PyObject *result = PyEval_CallObject(parser, arglist);
     PyObject *error =  PyErr_Occurred();

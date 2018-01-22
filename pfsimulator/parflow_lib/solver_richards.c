@@ -1559,8 +1559,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     if (!FlowVRInteract(&sshot))
       break;
     EndTiming(FlowVRInteractTimingIndex);
-    // TODO: or maybe do at the end so that we can dump at the same time?
-
     // TODO: move all the dumps into an extra function! split all this loop into more functions!
 #endif
 
@@ -3514,7 +3512,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #ifdef HAVE_FLOWVR
   if (FLOWVR_ACTIVE)
   {
-    // TODO: or do we need to reload sshot here??
     FlowVRServeFinalState(&sshot);
     D("Aborting now!");
     // TODO: FIXME: don't sleep. need for a mechanism that knows when to stop, or to check if a module is still online. speak with bruno on that!
