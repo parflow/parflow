@@ -32,6 +32,5 @@ analyzer.getPort("out").link(mergeTasks.newInputPort())
 analyzer.getPort("log").link(logger.getPort("in"))
 
 parflow.getPort("pressure").link(analyzer.getPort("in"))
-# TODO: maybe change finish time!
 
 app.generate_xml("hillslope_sens")

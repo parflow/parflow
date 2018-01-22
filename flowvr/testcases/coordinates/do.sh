@@ -25,8 +25,8 @@ flowvr-kill
 
 echo .
 echo .
-err=`cat logger.log | tail -n1`
-if [ "$err" != "error: 0.00E+00" ];
+err=`cat logger.log`
+if [ "$err" != "error: 0.00000000E+00" ];
 then
   echo ERROR!
   echo $err
