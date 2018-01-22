@@ -103,15 +103,7 @@ class Logger(Module):
     """Module that will log the given stamp value in a graph."""
     def __init__(self, name, stampName, showWindows=True, host=""):
         Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/logger.py %s %s" % (stampName, "--show-windows" if showWindows else ""), host=host)
-        self.addPort("in", direction = 'in')
-
-class Simplestarter(Module):
-    """Module Simplestarter kicks of a nonsteered simple parflow simulation"""
-    def __init__(self, name, starttime, stoptime, host=""):
-        # TODO: change path here!: relative path not good ;)
-        Module.__init__(self, name, cmdline = "python ../simplestarter/simplestarter.py %s %s" % (starttime, stoptime), host=host)
-        #self.addPort("beginIt", direction = 'in')
-        self.addPort("out", direction = 'out')
+        self.addPort("in", direction = 'in')  #, messagetype='stamps')
 
 class Ticker(Module):
     """Module sends a message every second"""
