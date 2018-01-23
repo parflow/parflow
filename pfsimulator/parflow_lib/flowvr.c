@@ -7,9 +7,8 @@
 int FLOWVR_ACTIVE;
 
 #ifdef HAVE_FLOWVR
-fca_module moduleParflow;
-static fca_module moduleParflowEvent;
-static fca_port portIn;
+fca_module module_parflow;
+static fca_port port_in;
 
 void fillGridDefinition(Grid const * const grid, GridDefinition *grid_def)
 {
@@ -162,12 +161,12 @@ void NewFlowVR(void)
   /*"overland_bc_flux"      [> overland outflow boundary condition flux <]*/
 
 
-  moduleParflow = fca_new_empty_module();
+  module_parflow = fca_new_empty_module();
 
-  fca_port portPressureSnap = fca_new_port("snap", fca_OUT, 0, NULL);
-  fca_register_stamp(portPressureSnap, "stampTime", fca_FLOAT);
-  fca_register_stamp(portPressureSnap, "stampFileName", fca_STRING);
-  fca_append_port(moduleParflow, portPressureSnap);
+  fca_port port_pressure_snap = fca_new_port("snap", fca_OUT, 0, NULL);
+  fca_register_stamp(port_pressure_snap, "stampTime", fca_FLOAT);
+  fca_register_stamp(port_pressure_snap, "stampFileName", fca_STRING);
+  fca_append_port(module_parflow, port_pressure_snap);
 
   for (size_t i = 0; i < n_contracts; ++i)
   {
@@ -176,7 +175,7 @@ void NewFlowVR(void)
     fca_register_stamp(port, "stampTime", fca_FLOAT);
     fca_register_stamp(port, "stampFileName", fca_STRING);
 
-    fca_append_port(moduleParflow, port);
+    fca_append_port(module_parflow, port);
   }
   // low: name ports? pressureOut...
   /*fca_trace trace = fca_new_trace("beginTrace", fca_trace_INT, NULL);*/
@@ -191,11 +190,11 @@ void NewFlowVR(void)
   /*fca_append_trace(modulePut, trace2);*/
 
 
-  portIn = fca_new_port("in", fca_IN, 0, NULL);
-  fca_append_port(moduleParflow, portIn);
-  if (!fca_init_module(moduleParflow))
+  port_in = fca_new_port("in", fca_IN, 0, NULL);
+  fca_append_port(module_parflow, port_in);
+  if (!fca_init_module(module_parflow))
   {
-    PARFLOW_ERROR("ERROR : init_module for moduleParflow failed!\n");
+    PARFLOW_ERROR("ERROR : init_module for module_parflow failed!\n");
   }
 
   D("flowvr initialisiert.");
@@ -343,7 +342,10 @@ size_t Steer(Variable var, Action action, const void *buffer, double const * con
   if (!simple_intersect(ix, nx, sm.m->ix, sm.m->nx,
                         iy, ny, sm.m->iy, sm.m->ny,
                         iz, nz, sm.m->iz, sm.m->nz))
+  {
+    D("No intersect found!");
     return read_out_size;
+  }
 
   BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz, ai, nx_v, ny_v, nz_v, 1, 1, 1, {
     int xn = i - sm.m->ix;
@@ -359,6 +361,7 @@ size_t Steer(Variable var, Action action, const void *buffer, double const * con
     switch (action)
     {
       case ACTION_SET:
+        //printf("err? %.12e == %.12e\n", data[ai], sm.data[index]);
         data[ai] = sm.data[index];
         break;
 
@@ -389,11 +392,11 @@ size_t Steer(Variable var, Action action, const void *buffer, double const * con
 
 void SendGridDefinition(SimulationSnapshot const * const snapshot)
 {
-  fca_message msg = fca_new_message(moduleParflow, sizeof(GridDefinition));
+  fca_message msg = fca_new_message(module_parflow, sizeof(GridDefinition));
   GridDefinition *g = (GridDefinition*)fca_get_write_access(msg, 0);
 
   fillGridDefinition(snapshot->grid, g);
-  fca_put(fca_get_port(moduleParflow, "snap"), msg);
+  fca_put(fca_get_port(module_parflow, "snap"), msg);
   fca_free(msg);
 }
 
@@ -444,12 +447,12 @@ int FlowVRInteract(SimulationSnapshot *snapshot)
   if (FLOWVR_ACTIVE)
   {
     /*D("now waiting");*/
-    if (!fca_wait(moduleParflow))
+    if (!fca_wait(module_parflow))
       return 0;
 
     // Read out message on in port.
     // Do all actions that are listed there(steerings, trigger snaps...)
-    ParseMergedMessage(portIn, Interact, (void*)snapshot);
+    ParseMergedMessage(port_in, Interact, (void*)snapshot);
   }
   return 1;
 }
@@ -459,7 +462,7 @@ void FreeFlowVR()
   if (!FLOWVR_ACTIVE)
     return;
 
-  fca_free(moduleParflow);
+  fca_free(module_parflow);
   tfree(contracts);
 }
 
@@ -489,8 +492,8 @@ void vectorToMessage(const Variable variable, double const * const time, fca_mes
   GridMessageMetadata m;
   fillGridMessageMetadata(v, time, variable, &m);
   size_t vector_size = sizeof(double) * m.nx * m.ny * m.nz;
-  D("Sending Vector %d %d %d", m.nx, m.ny, m.nz);
-  *result = fca_new_message(moduleParflow, sizeof(GridMessageMetadata) + vector_size);
+  D("Sending Vector %d %d %d at t = %f", m.nx, m.ny, m.nz, *time);
+  *result = fca_new_message(module_parflow, sizeof(GridMessageMetadata) + vector_size);
   if (result == NULL)
   {
     D("Message_size: %d\n", sizeof(GridMessageMetadata) + vector_size);
@@ -518,7 +521,7 @@ void vectorToMessage(const Variable variable, double const * const time, fca_mes
 void CreateAndSendMessage(SimulationSnapshot const * const snapshot, const char * portname, Variable var)
 {
   // Prepare the port
-  fca_port port = fca_get_port(moduleParflow, portname);
+  fca_port port = fca_get_port(module_parflow, portname);
   // Perormance: maybe save all the ports in an array for faster access times
 
   // Prepare the Message
@@ -528,15 +531,15 @@ void CreateAndSendMessage(SimulationSnapshot const * const snapshot, const char 
 
 
   // Create Stamps...
-  const fca_stamp stampTime = fca_get_stamp(port, "stampTime");
+  const fca_stamp stamp_time = fca_get_stamp(port, "stampTime");
   float time = (float)*(snapshot->time);
-  fca_write_stamp(msg, stampTime, (void*)&time);
+  fca_write_stamp(msg, stamp_time, (void*)&time);
 
-  fca_stamp stampFileName;
+  fca_stamp stamp_file_name;
   if (snapshot->filename != NULL)
   {
-    stampFileName = fca_get_stamp(port, "stampFileName");
-    fca_write_stamp(msg, stampFileName, (void*)snapshot->filename);
+    stamp_file_name = fca_get_stamp(port, "stampFileName");
+    fca_write_stamp(msg, stamp_file_name, (void*)snapshot->filename);
   }
 
 

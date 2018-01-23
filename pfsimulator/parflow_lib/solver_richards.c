@@ -1078,13 +1078,13 @@ SetupRichards(PFModule * this_module)
     if (FLOWVR_ACTIVE)
     {
       char filename[1024];     // low: reuse other string variable here?
-      int userSpecSteps = GetIntDefault("FlowVR.NumStepsPerFile", 1);
+      int user_spec_steps = GetIntDefault("FlowVR.NumStepsPerFile", 1);
 
-      sprintf(filename, "%s.%05d", file_prefix, instance_xtra->file_number / userSpecSteps);
+      sprintf(filename, "%s.%05d", file_prefix, instance_xtra->file_number / user_spec_steps);
 
-      SimulationSnapshot sshot = GetSimulationSnapshot;
-      FlowVRinitTranslation(&sshot);
-      any_file_dumped = FlowVRFulFillContracts(0, &sshot);
+      SimulationSnapshot snapshot = GetSimulationSnapshot;
+      FlowVRinitTranslation(&snapshot);
+      any_file_dumped = FlowVRFulFillContracts(0, &snapshot);
     }
     EndTiming(FlowVRFulFillContractsTimingIndex);
 #endif
@@ -1547,16 +1547,16 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #endif
 
 #ifdef HAVE_FLOWVR
-  SimulationSnapshot sshot;
-  sshot = GetSimulationSnapshot;
-  FlowVRinitTranslation(&sshot);
+  SimulationSnapshot snapshot;
+  snapshot = GetSimulationSnapshot;
+  FlowVRinitTranslation(&snapshot);
 #endif
 
   do                            /* while take_more_time_steps */
   {
 #ifdef HAVE_FLOWVR
     BeginTiming(FlowVRInteractTimingIndex);
-    if (!FlowVRInteract(&sshot))
+    if (!FlowVRInteract(&snapshot))
       break;
     EndTiming(FlowVRInteractTimingIndex);
     // TODO: move all the dumps into an extra function! split all this loop into more functions!
@@ -2740,13 +2740,13 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       if (FLOWVR_ACTIVE)
       {
         char filename[1024];
-        int userSpecSteps = GetIntDefault("FlowVR.NumStepsPerFile", 1);
-        D("steps per file: %d, filenumber: %d", userSpecSteps, instance_xtra->file_number);
+        int user_spec_steps = GetIntDefault("FlowVR.NumStepsPerFile", 1);
+        D("steps per file: %d, filenumber: %d", user_spec_steps, instance_xtra->file_number);
 
-        sprintf(filename, "%s.%05d", file_prefix, 1 + (instance_xtra->file_number - 1) / userSpecSteps);
-        sshot.filename = filename;
+        sprintf(filename, "%s.%05d", file_prefix, 1 + (instance_xtra->file_number - 1) / user_spec_steps);
+        snapshot.filename = filename;
         int timestep = instance_xtra->dump_index - 1;  // we also printed 0 ;)
-        any_file_dumped = FlowVRFulFillContracts(timestep, &sshot);
+        any_file_dumped = FlowVRFulFillContracts(timestep, &snapshot);
       }
       EndTiming(FlowVRFulFillContractsTimingIndex);
 #endif
@@ -3512,11 +3512,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #ifdef HAVE_FLOWVR
   if (FLOWVR_ACTIVE)
   {
-    FlowVRServeFinalState(&sshot);
+    FlowVRServeFinalState(&snapshot);
     D("Aborting now!");
     // TODO: FIXME: don't sleep. need for a mechanism that knows when to stop, or to check if a module is still online. speak with bruno on that!
     usleep(2000000);
-    fca_abort(moduleParflow);
+    fca_abort(module_parflow);
   }
 #endif
 

@@ -17,11 +17,11 @@ def onGridMessage(arr, gm):
 
     print("Epic cool grid message! Let's do some stuff now!")
     t = pfa.StampLog()
-    t.stampName = 't'
+    t.stamp_name = 't'
     t.value = gm.time
     print(gm.variable)
     b = pfa.StampLog()
-    b.stampName = 'zweiundvierzig'
+    b.stamp_name = 'zweiundvierzig'
     b.value = 42.0
     pfa.SendLog([t,b])
 

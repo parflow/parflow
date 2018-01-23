@@ -100,9 +100,13 @@ class Analyzer(Module):
         self.addPort("log", direction = 'out')
 
 class Logger(Module):
-    """Module that will log the given stamp value in a graph."""
-    def __init__(self, name, stampName, showWindows=True, host=""):
-        Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/logger.py %s %s" % (stampName, "--show-windows" if showWindows else ""), host=host)
+    """Module that will log the given stamp value in a graph.
+    stampNames: space seperated line of stamp names. Must be float stamps.
+    The float content of those stamps will be logged and also plotted if showWindows is
+    true.
+    """
+    def __init__(self, name, stampNames, showWindows=True, host=""):
+        Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/logger.py %s %s" % (stampNames, "--show-windows" if showWindows else ""), host=host)
         self.addPort("in", direction = 'in')  #, messagetype='stamps')
 
 class Ticker(Module):

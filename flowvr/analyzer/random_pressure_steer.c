@@ -19,12 +19,12 @@ int main(int argc, char *argv [])
    * init FlowVR Module
    */
   fca_module flowvr = fca_new_empty_module();
-  fca_port portPressureIn = fca_new_port("pressureIn", fca_IN, 0, NULL);
+  fca_port port_pressure_in = fca_new_port("pressureIn", fca_IN, 0, NULL);
 
-  fca_append_port(flowvr, portPressureIn);
+  fca_append_port(flowvr, port_pressure_in);
 
-  fca_port portSteerOut = fca_new_port("steerOut", fca_OUT, 0, NULL);
-  fca_append_port(flowvr, portSteerOut);
+  fca_port port_steer_out = fca_new_port("steerOut", fca_OUT, 0, NULL);
+  fca_append_port(flowvr, port_steer_out);
 
   if (!fca_init_module(flowvr))
   {
@@ -34,7 +34,7 @@ int main(int argc, char *argv [])
   D("now waiting\n");
   while (fca_wait(flowvr))
   {
-    fca_message msg = fca_get(portPressureIn);
+    fca_message msg = fca_get(port_pressure_in);
     GridMessageMetadata *m;
     m = (GridMessageMetadata*)fca_get_read_access(msg, 0);
 
@@ -57,7 +57,7 @@ int main(int argc, char *argv [])
 
 
     D("Send steer!");
-    SendActionMessage(flowvr, portSteerOut, ACTION_MULTIPLY,
+    SendActionMessage(flowvr, port_steer_out, ACTION_MULTIPLY,
                       VARIABLE_PRESSURE, parameter, size);
 
     free(parameter);

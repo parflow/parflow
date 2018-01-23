@@ -13,7 +13,7 @@
 #include <fca/fca.h>
 
 typedef struct {
-  const char *stampName;
+  const char *stamp_name;
   float value;
 } StampLog;
 
@@ -101,7 +101,7 @@ typedef struct {
 
 
 extern void SendActionMessage(fca_module mod, fca_port port, Action action, Variable variable,
-                              void *parameter, size_t parameterSize);
+                              void *parameter, size_t parameter_size);
 
 #define MergeMessageParser(function_name) \
   size_t function_name(const void *buffer, size_t size, void *cbdata)

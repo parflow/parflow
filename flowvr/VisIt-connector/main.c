@@ -20,7 +20,7 @@
 #endif
 
 
-static Variable lastVar = VARIABLE_PRESSURE;
+static Variable last_var = VARIABLE_PRESSURE;
 
 
 /* Data Access Function prototypes */
@@ -48,9 +48,9 @@ typedef struct {
 const char *cmd_names[] = { "trigger snap" };
 
 static fca_module flowvr;
-static fca_stamp stampTime;
-static fca_port portPressureIn;
-static fca_port portTriggerSnap;
+static fca_stamp stamp_time;
+static fca_port port_pressure_in;
+static fca_port port_trigger_snap;
 
 
 void FreeSim(SimulationData *sim)
@@ -106,7 +106,7 @@ MergeMessageParser(setSnapshot)
   GridMessage gm = ReadGridMessage(buffer);
   SimulationData *sim = (SimulationData*)cbdata;
 
-  assert(gm.m->variable == lastVar);
+  assert(gm.m->variable == last_var);
 
   sim->time = gm.m->time;
 
@@ -134,14 +134,14 @@ MergeMessageParser(setSnapshot)
 void triggerSnap(SimulationData *sim, Variable var)
 {
   D("triggerSnap");
-  SendActionMessage(flowvr, portTriggerSnap, ACTION_TRIGGER_SNAPSHOT, var, NULL, 0);
+  SendActionMessage(flowvr, port_trigger_snap, ACTION_TRIGGER_SNAPSHOT, var, NULL, 0);
 
   D("waiting...");
   fca_wait(flowvr);
   D("got an answer");
 
   // low: we could play with lambdas here when we were using cpp ;)
-  ParseMergedMessage(portPressureIn, setSnapshot, (void*)sim);
+  ParseMergedMessage(port_pressure_in, setSnapshot, (void*)sim);
 }
 
 
@@ -162,13 +162,13 @@ void wait_for_init(SimulationData *sim)
   }
   else
   {
-    SendActionMessage(flowvr, portTriggerSnap, ACTION_GET_GRID_DEFINITION, VARIABLE_LAST,
+    SendActionMessage(flowvr, port_trigger_snap, ACTION_GET_GRID_DEFINITION, VARIABLE_LAST,
                       NULL, 0);
 
     fca_wait(flowvr);
 
     // low: we could play with lambdas here when we were using cpp ;)
-    ParseMergedMessage(portPressureIn, setGrid, (void*)sim);
+    ParseMergedMessage(port_pressure_in, setGrid, (void*)sim);
   }
 }
 
@@ -179,7 +179,7 @@ void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
   if (strcmp(cmd, "trigger snap") == 0)
   {
     D("trigger snap command");
-    triggerSnap(sim, lastVar);
+    triggerSnap(sim, last_var);
 
 #ifdef __DEBUG
     // generate some random data to see the change for now...
@@ -279,13 +279,13 @@ int main(int argc, char **argv)
    * init FlowVR Module
    */
   flowvr = fca_new_empty_module();
-  portPressureIn = fca_new_port("in", fca_IN, 0, NULL);
-  fca_append_port(flowvr, portPressureIn);
+  port_pressure_in = fca_new_port("in", fca_IN, 0, NULL);
+  fca_append_port(flowvr, port_pressure_in);
 
-  portTriggerSnap = fca_new_port("triggerSnap", fca_OUT, 0, NULL);
-  fca_append_port(flowvr, portTriggerSnap);
+  port_trigger_snap = fca_new_port("triggerSnap", fca_OUT, 0, NULL);
+  fca_append_port(flowvr, port_trigger_snap);
 
-  stampTime = fca_register_stamp(portPressureIn, "stampTime", fca_FLOAT);
+  stamp_time = fca_register_stamp(port_pressure_in, "stampTime", fca_FLOAT);
   if (!fca_init_module(flowvr))
   {
     D("ERROR : fca_init_module failed!");
@@ -401,15 +401,15 @@ SimGetVariable(int domain, const char *name, void *cbdata)
   D("SimGetVariable");
   wait_for_init(sim);
   visit_handle h = VISIT_INVALID_HANDLE;
-  int nComponents = 1, nTuples = 0;
+  int n_components = 1, n_tuples = 0;
 
   if (VisIt_VariableData_alloc(&h) == VISIT_OKAY)
   {
-    lastVar = NameToVariable(name);
-    triggerSnap(sim, lastVar);
-    nTuples = sim->nX * sim->nY * sim->nZ;
-    VisIt_VariableData_setDataD(h, VISIT_OWNER_SIM, nComponents,
-                                nTuples, sim->snapshot);
+    last_var = NameToVariable(name);
+    triggerSnap(sim, last_var);
+    n_tuples = sim->nX * sim->nY * sim->nZ;
+    VisIt_VariableData_setDataD(h, VISIT_OWNER_SIM, n_components,
+                                n_tuples, sim->snapshot);
   }
   return h;
 }

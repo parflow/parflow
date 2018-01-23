@@ -69,7 +69,7 @@ typedef struct {
     problem_data \
   }
 
-extern fca_module moduleParflow;
+extern fca_module module_parflow;
 
 // PFModule that is used here: solver_richards.
 // TODO: documentation, also in other c files

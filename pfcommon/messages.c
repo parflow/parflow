@@ -16,14 +16,14 @@ const char *VARIABLE_TO_NAME[VARIABLE_LAST] = {
 };
 
 void SendActionMessage(fca_module mod, fca_port port, Action action, Variable variable,
-                       void *parameter, size_t parameterSize)
+                       void *parameter, size_t parameter_size)
 {
-  fca_message msg = fca_new_message(mod, sizeof(ActionMessageMetadata) + parameterSize);
+  fca_message msg = fca_new_message(mod, sizeof(ActionMessageMetadata) + parameter_size);
   ActionMessageMetadata *amm = (ActionMessageMetadata*)fca_get_write_access(msg, 0);
 
   amm->action = action;
   amm->variable = variable;
-  memcpy((void*)(++amm), parameter, parameterSize);
+  memcpy((void*)(++amm), parameter, parameter_size);
 
   fca_put(port, msg);
   fca_free(msg);
@@ -57,7 +57,7 @@ void SendLogMessage(fca_module mod, fca_port port, StampLog log[], size_t n)
 
   while (n--)
   {
-    fca_stamp stamp = fca_get_stamp(port, log[n].stampName);
+    fca_stamp stamp = fca_get_stamp(port, log[n].stamp_name);
     fca_write_stamp(msg, stamp, (void*)&(log[n].value));
   }
   fca_put(port, msg);

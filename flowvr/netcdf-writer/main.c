@@ -47,7 +47,7 @@ void getVar(int ncID, const char *name, int ndims, const int dimids[], int *idp)
   }
 }
 
-int CreateFile(const char* file_name, size_t nX, size_t nY, size_t nZ, int *pxID, int *pyID, int *pzID, int *ptimeID)
+int CreateFile(const char* file_name, size_t nX, size_t nY, size_t nZ, int *pxID, int *pyID, int *pzID, int *ptime_id)
 {
   // Opens/ creates file if not already there.  REFACTOR: rename
   int ncID = 0;
@@ -77,7 +77,7 @@ int CreateFile(const char* file_name, size_t nX, size_t nY, size_t nZ, int *pxID
   getDim(ncID, "x", nX, pxID);
   getDim(ncID, "y", nY, pyID);
   getDim(ncID, "z", nZ, pzID);
-  getDim(ncID, "time", NC_UNLIMITED, ptimeID);
+  getDim(ncID, "time", NC_UNLIMITED, ptime_id);
 
 
   return ncID;
@@ -101,30 +101,30 @@ int main(int argc, char *argv [])
    * init FlowVR Module
    */
   fca_module flowvr = fca_new_empty_module();
-  fca_port portIn = fca_new_port("in", fca_IN, 0, NULL);
+  fca_port port_in = fca_new_port("in", fca_IN, 0, NULL);
 
-  fca_append_port(flowvr, portIn);
+  fca_append_port(flowvr, port_in);
 
-  const fca_stamp stampFileName = fca_register_stamp(portIn, "stampFileName", fca_STRING);
+  const fca_stamp stamp_file_name = fca_register_stamp(port_in, "stampFileName", fca_STRING);
 
   if (!fca_init_module(flowvr))
   {
     printf("ERROR : init_module failed!\n");
   }
 
-  int currentFileID;
-  int xID, yID, zID, timeID;
+  int current_file_id;
+  int xID, yID, zID, time_id;
   D("now Waiting\n");
   while (fca_wait(flowvr))  // low: use our reader loop here maybe? Not atm as this version should be faster ;)
   {
     D("got some stuff to write\n");
-    fca_message msg = fca_get(portIn);
+    fca_message msg = fca_get(port_in);
     char file_name[1024];
-    sprintf(file_name, "%s%s.nc", prefix, (char*)fca_read_stamp(msg, stampFileName));
+    sprintf(file_name, "%s%s.nc", prefix, (char*)fca_read_stamp(msg, stamp_file_name));
 
     // to access the variables in the ncFile...
-    int variableVarID;
-    int timeVarID;
+    int variable_var_id;
+    int time_var_id;
 
     D("number of segments: %d", fca_number_of_segments(msg));
     D("size: %d", fca_get_segment_size(msg, 0));
@@ -138,18 +138,18 @@ int main(int argc, char *argv [])
     GridDefinition *file_grid = &(m->grid);
     double curTime = m->time;
     Variable last_var = VARIABLE_LAST;
-    currentFileID = CreateFile(file_name, m->grid.nX, m->grid.nY, m->grid.nZ, &xID, &yID, &zID, &timeID);
+    current_file_id = CreateFile(file_name, m->grid.nX, m->grid.nY, m->grid.nZ, &xID, &yID, &zID, &time_id);
     // add variable Time and variable "variable":
-    nc_def_var(currentFileID, "time", NC_DOUBLE, 1, &timeID, &timeVarID);
-    int variable_dims[4] = { timeID, zID, yID, xID }; // low: why in this order? I guess so it will count in the right order ;)
+    nc_def_var(current_file_id, "time", NC_DOUBLE, 1, &time_id, &time_var_id);
+    int variable_dims[4] = { time_id, zID, yID, xID }; // low: why in this order? I guess so it will count in the right order ;)
     D("Adding Time %f for %dx%dx%d, variable %s", m->time, m->grid.nX, m->grid.nY, m->grid.nZ, VARIABLE_TO_NAME[m->variable]);
 
     size_t start[1], count[1];
-    nc_var_par_access(currentFileID, timeVarID, NC_COLLECTIVE);
-    find_variable_length(currentFileID, timeVarID, start);
+    nc_var_par_access(current_file_id, time_var_id, NC_COLLECTIVE);
+    find_variable_length(current_file_id, time_var_id, start);
     D("start writing timestep %f into file %s at %d\n", m->time, file_name, start[0]);
     count[0] = 1;  // writing one value
-    int status = nc_put_vara_double(currentFileID, timeVarID, start, count, &(m->time));
+    int status = nc_put_vara_double(current_file_id, time_var_id, start, count, &(m->time));
 
     while (buffer < end)
     {
@@ -160,27 +160,27 @@ int main(int argc, char *argv [])
       assert(curTime == m->time);
       if (last_var != m->variable)
       {
-        getVar(currentFileID, VARIABLE_TO_NAME[m->variable], 4, variable_dims,
-               &variableVarID);
+        getVar(current_file_id, VARIABLE_TO_NAME[m->variable], 4, variable_dims,
+               &variable_var_id);
       }
 
       buffer += sizeof(GridMessageMetadata);
-      nc_var_par_access(currentFileID, variableVarID, NC_COLLECTIVE);
+      nc_var_par_access(current_file_id, variable_var_id, NC_COLLECTIVE);
       // write next timestep
       size_t start[4] = { 0, m->iz, m->iy, m->ix };
       size_t count[4] = { 1, m->nz, m->ny, m->nx };
-      find_variable_length(currentFileID, timeVarID, &(start[0]));
+      find_variable_length(current_file_id, time_var_id, &(start[0]));
       start[0] = start[0] - 1;
       double const * const data = (double*)buffer;
       // now do a write to the cdf! (! all the preparations up there are necessary!
-      int status = nc_put_vara_double(currentFileID, variableVarID, start, count, data);
+      int status = nc_put_vara_double(current_file_id, variable_var_id, start, count, data);
       D("putting doubles");
 
       buffer += sizeof(double) * m->nx * m->ny * m->nz;
       m = (GridMessageMetadata*)buffer;
     }
 
-    nc_close(currentFileID);
+    nc_close(current_file_id);
     D("wrote %s\n", file_name);
 
     fca_free(msg);
