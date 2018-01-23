@@ -19,29 +19,11 @@ static fca_port in;
 static fca_port out;
 static fca_port log;
 
-void SendSteerMessage(const Action action, const Variable variable,
-                      int ix, int iy, int iz,
-                      double *IN_ARRAY3, int DIM1, int DIM2, int DIM3)
+void SendSteer(const Action action, const Variable variable,
+               int ix, int iy, int iz,
+               double *IN_ARRAY3, int DIM1, int DIM2, int DIM3)
 {
-  fca_message msg = fca_new_message(flowvr, sizeof(ActionMessageMetadata) + sizeof(SteerMessageMetadata) + sizeof(double) * DIM1 * DIM2 * DIM3);
-  ActionMessageMetadata *amm = (ActionMessageMetadata*)fca_get_write_access(msg, 0);
-
-  amm->action = action;
-  amm->variable = variable;
-  SteerMessageMetadata *m = (SteerMessageMetadata*)(amm + 1);
-  m->ix = ix;
-  m->iy = iy;
-  m->iz = iz;
-  m->nz = DIM1;
-  m->ny = DIM2;
-  m->nx = DIM3;
-
-  // low: would be cooler if we could work directly in the message from python...
-  // but: every approach would diminish the flexibility you have with python arrays.
-  memcpy((void*)(m + 1), IN_ARRAY3, sizeof(double) * DIM1 * DIM2 * DIM3);
-
-  fca_put(out, msg);
-  fca_free(msg);
+  SendSteerMessage(flowvr, out, action, variable, ix, iy, iz, IN_ARRAY3, DIM3, DIM2, DIM1);
 }
 
 void SendLog(StampLog slog[], size_t n)

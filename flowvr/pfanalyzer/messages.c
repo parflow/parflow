@@ -51,6 +51,34 @@ void ParseMergedMessage(fca_port port, size_t (*cb)(const void *buffer, size_t s
   fca_free(msg);
 }
 
+void SendSteerMessage(fca_module flowvr, fca_port out, const Action action,
+                      const Variable variable,
+                      int ix, int iy, int iz,
+                      double *data, int nx, int ny, int nz)
+{
+  fca_message msg = fca_new_message(flowvr, sizeof(ActionMessageMetadata) +
+                                    sizeof(SteerMessageMetadata) + sizeof(double) * nx * ny * nz);
+  ActionMessageMetadata *amm = (ActionMessageMetadata*)fca_get_write_access(msg, 0);
+
+  amm->action = action;
+  amm->variable = variable;
+  SteerMessageMetadata *m = (SteerMessageMetadata*)(amm + 1);
+  m->ix = ix;
+  m->iy = iy;
+  m->iz = iz;
+  m->nz = nz;
+  m->ny = ny;
+  m->nx = nx;
+
+  // low: would be cooler if we could work directly in the message from python...
+  // but: every approach would diminish the flexibility you have with python arrays.
+  memcpy((void*)(m + 1), data, sizeof(double) * nx * ny * nz);
+
+  fca_put(out, msg);
+  fca_free(msg);
+}
+
+
 void SendLogMessage(fca_module mod, fca_port port, StampLog log[], size_t n)
 {
   fca_message msg = fca_new_message(mod, 0);

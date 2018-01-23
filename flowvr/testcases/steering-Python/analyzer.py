@@ -28,7 +28,7 @@ def onGridMessage(arr, gm):
     #r = 1 + random.random()* 0.2 - 0.4
     #arr *= r
 
-    pfa.SendSteerMessage(pfa.ACTION_SET, gm.variable,
+    pfa.SendSteer(pfa.ACTION_SET, gm.variable,
             gm.ix, gm.iy, gm.iz, arr)
     print("check")
 

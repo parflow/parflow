@@ -109,6 +109,10 @@ extern void ParseMergedMessage(fca_port port,
                                size_t (*cb)(const void *buffer, size_t size, void *cbdata),
                                void *cbdata);
 
+extern void SendSteerMessage(fca_module flowvr, fca_port out, const Action action,
+                             const Variable variable,
+                             int ix, int iy, int iz,
+                             double *data, int nx, int ny, int nz);
 
 extern void SendLogMessage(fca_module mod, fca_port port, StampLog log[], size_t n);
 
@@ -121,10 +125,10 @@ extern void SendLogMessage(fca_module mod, fca_port port, StampLog log[], size_t
   } type ## Message; \
 \
 \
-  extern inline type ## Message Read ## type ## Message(void *buffer)
+  extern inline type ## Message Read ## type ## Message(void const * const buffer)
 
 #define GenerateMessageReaderC(type) \
-  type ## Message Read ## type ## Message(void *buffer) \
+  type ## Message Read ## type ## Message(void const * const buffer) \
   { \
     type ## Message res; \
     res.m = (type ## MessageMetadata*)buffer; \

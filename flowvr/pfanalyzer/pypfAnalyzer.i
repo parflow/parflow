@@ -176,7 +176,7 @@
 // exports:
 void SetGridMessageParser(PyObject *cb);
 void SetOnInit(PyObject *cb);
-void SendSteerMessage(const Action action, const Variable variable,
+void SendSteer(const Action action, const Variable variable,
     int ix, int iy, int iz,
     double *IN_ARRAY3, int DIM1, int DIM2, int DIM3);
 void run(char *logstamps[], size_t logstampsc);
