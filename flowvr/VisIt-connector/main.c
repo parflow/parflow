@@ -1,4 +1,4 @@
-#include <fca/fca.h>
+#include <fca.h>
 #include "parflow_config.h"
 #include <messages.h>
 #include <VisItControlInterface_V2.h>

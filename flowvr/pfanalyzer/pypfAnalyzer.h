@@ -1,5 +1,5 @@
-#ifndef __PYPFCOMMON_H__
-#define __PYPFCOMMON_H__
+#ifndef __PYPFANALYZER_H__
+#define __PYPFANALYZER_H__
 
 #include "messages.h"
 

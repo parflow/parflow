@@ -174,7 +174,8 @@ endif (${PARFLOW_HAVE_SILO})
 
 if (${PARFLOW_HAVE_FLOWVR})
   target_include_directories (pfsimulator PUBLIC "${FLOWVR_INCLUDE_DIRS}")
-  target_include_directories (pfsimulator PUBLIC "../../pfcommon")
+  target_include_directories (pfsimulator PUBLIC "../../flowvr/pfanalyzer")
+  target_include_directories (pfsimulator PUBLIC "${fca_INCLUDE_DIRECTORY}")
 endif (${PARFLOW_HAVE_FLOWVR})
 
 if (${PARFLOW_HAVE_NETCDF})

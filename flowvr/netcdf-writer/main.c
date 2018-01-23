@@ -1,4 +1,4 @@
-#include <fca/fca.h>
+#include <fca.h>
 #include "parflow_config.h"
 #include <parflow.h>
 #include <parflow_netcdf.h>

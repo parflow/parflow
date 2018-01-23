@@ -2,7 +2,7 @@
 
 errors=0
 p=$PWD
-for t in contracts netcdfwriter steering-C steering-Python coordnates ;
+for t in contracts netcdfwriter steering-C steering-Python coordinates ;
 do
   cd $p
   cd $t

@@ -425,7 +425,7 @@ if ( ${PARFLOW_ENABLE_TOOLS} )
 endif ()
 
 if (${PARFLOW_ENABLE_FLOWVR} )
-  add_subdirectory (pfcommon)
+  add_subdirectory (flowvr/pfanalyzer)
 endif ()
 
 cmake_dependent_option (PARFLOW_ENABLE_FLOWVR_TOOLS "Enable building of the FlowVR tools" ON PARFLOW_ENABLE_FLOWVR OFF)

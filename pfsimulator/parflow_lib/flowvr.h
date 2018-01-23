@@ -38,7 +38,7 @@ void NewFlowVR(void);
 
 #ifdef HAVE_FLOWVR
 
-#include <fca/fca.h>
+#include <fca.h>
 #include <messages.h>
 
 #ifdef __DEBUG

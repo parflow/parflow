@@ -2,9 +2,9 @@ set (SRC_FILES messages.c)
 
 FIND_LIBRARY(FCA_LIBRARY fca)
 
-add_library(pfcommon ${SRC_FILES})
+add_library(pfanalyzer ${SRC_FILES})
 
-install (TARGETS pfcommon DESTINATION lib)
+install (TARGETS pfanalyzer DESTINATION lib)
 
 set (BUILD_PYTHON_ANALYZER_API True CACHE BOOL
   "Build Python Analyzer API to build analyzer modules in python")
@@ -34,9 +34,9 @@ IF( BUILD_PYTHON_ANALYZER_API )
 
     SET(CMAKE_SWIG_FLAGS "")
     SWIG_ADD_LIBRARY(pypfAnalyzer LANGUAGE python SOURCES pypfAnalyzer.i pypfAnalyzer.c)
-    SWIG_LINK_LIBRARIES(pypfAnalyzer ${PYTHON_LIBRARIES} pfcommon ${FCA_LIBRARY})
+    SWIG_LINK_LIBRARIES(pypfAnalyzer ${PYTHON_LIBRARIES} pfanalyzer ${FCA_LIBRARY})
     # low: performance better if we compile wit ${PYTHON_LIBRARIES} and if we do not use
-    # the previously linked version of pfcommon but include ${SRC_FILES}
+    # the previously linked version of pfanalyzer but include ${SRC_FILES}
 
     #execute_process ( COMMAND
       #python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"
