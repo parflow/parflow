@@ -51,16 +51,21 @@ class ParflowMPI(Composite):
     """several instances of parflow module that generate pressure, porosity... for the
     next timeframe"""
 
-    def __init__(self, hosts, problemName, outports=[]):
+    def __init__(self, hosts, problemName, outports=[], debugprefix=None):
         Composite.__init__(self)
+
+        if debugprefix is None:
+            debugprefix=''
+        else:
+            debugprefix+=' '
 
         prefix = "parflow"
         # hosts: string with host names, separated by spaces
         if socket.gethostname().find('frog') == 0:
             # I bet I'm on froggy ;)
-            parflowrun = FlowvrRunOpenMPI("$HOME/bin/froggy_parflow %s" % problemName, hosts = hosts, prefix = prefix, mpirunargs="--mca btl_sm_use_knem 0 --mca btl_vader_single_copy_mechanism none")
+            parflowrun = FlowvrRunOpenMPI("%s$HOME/bin/froggy_parflow %s" % (debugprefix, problemName), hosts = hosts, prefix = prefix, mpirunargs="--mca btl_sm_use_knem 0 --mca btl_vader_single_copy_mechanism none")
         else:
-            parflowrun = FlowvrRunMPI("$PARFLOW_DIR/bin/parflow %s" % problemName, hosts = hosts, prefix = prefix, mpistack="openmpi")
+            parflowrun = FlowvrRunMPI("%s$PARFLOW_DIR/bin/parflow %s" % (debugprefix, problemName), hosts = hosts, prefix = prefix, mpistack="openmpi")
 
         # hosts_list: convert hosts to a list
         hosts_list = hosts.split(",")
