@@ -49,7 +49,7 @@ const char *cmd_names[] = { "trigger snap" };
 
 static fca_module flowvr;
 static fca_stamp stamp_time;
-static fca_port port_pressure_in;
+static fca_port port_in;
 static fca_port port_trigger_snap;
 
 
@@ -141,7 +141,7 @@ void triggerSnap(SimulationData *sim, Variable var)
   D("got an answer");
 
   // low: we could play with lambdas here when we were using cpp ;)
-  ParseMergedMessage(port_pressure_in, setSnapshot, (void*)sim);
+  ParseMergedMessage(port_in, setSnapshot, (void*)sim);
 }
 
 
@@ -168,7 +168,7 @@ void wait_for_init(SimulationData *sim)
     fca_wait(flowvr);
 
     // low: we could play with lambdas here when we were using cpp ;)
-    ParseMergedMessage(port_pressure_in, setGrid, (void*)sim);
+    ParseMergedMessage(port_in, setGrid, (void*)sim);
   }
 }
 
@@ -279,13 +279,13 @@ int main(int argc, char **argv)
    * init FlowVR Module
    */
   flowvr = fca_new_empty_module();
-  port_pressure_in = fca_new_port("in", fca_IN, 0, NULL);
-  fca_append_port(flowvr, port_pressure_in);
+  port_in = fca_new_port("in", fca_IN, 0, NULL);
+  fca_append_port(flowvr, port_in);
 
   port_trigger_snap = fca_new_port("triggerSnap", fca_OUT, 0, NULL);
   fca_append_port(flowvr, port_trigger_snap);
 
-  stamp_time = fca_register_stamp(port_pressure_in, "stampTime", fca_FLOAT);
+  stamp_time = fca_register_stamp(port_in, "stampTime", fca_FLOAT);
   if (!fca_init_module(flowvr))
   {
     D("ERROR : fca_init_module failed!");
@@ -317,9 +317,10 @@ SimGetMetaData(void *cbdata)
     visit_handle cmd = VISIT_INVALID_HANDLE;
 
     /* Set the simulation state. */
-    /*VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?*/
-    /*VISIT_SIMMODE_STOPPED : VISIT_SIMMODE_RUNNING);*/
-    VisIt_SimulationMetaData_setCycleTime(md, sim->cycle, sim->time);
+    VisIt_SimulationMetaData_setMode(md, VISIT_SIMMODE_RUNNING);
+    /*VisIt_SimulationMetaData_setCycleTime(md, sim->cycle, sim->time);*/
+    // We do not set CycleTime as this makes no sense here. sim->cycle and sim->time
+    // change whenever a ne w snapshot is received.
 
     char meshname[100];
     sprintf(meshname, "mesh%dx%dx%d", sim->nX, sim->nY, sim->nZ);
@@ -407,6 +408,7 @@ SimGetVariable(int domain, const char *name, void *cbdata)
   {
     last_var = NameToVariable(name);
     triggerSnap(sim, last_var);
+    VisIt_SimulationMetaData_setCycleTime(h, sim->cycle, sim->time);
     n_tuples = sim->nX * sim->nY * sim->nZ;
     VisIt_VariableData_setDataD(h, VISIT_OWNER_SIM, n_components,
                                 n_tuples, sim->snapshot);
