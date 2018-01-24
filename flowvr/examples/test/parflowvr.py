@@ -14,8 +14,13 @@ parflowmpi = ParflowMPI(("localhost,"*int(P)*int(Q)*int(R))[:-1],  # cut last ,
         problemName,
         ["out0"])  # ports as specified in tcl file
 
-#analyzer = Analyzer("Analyzer", "../a.out")
-analyzer = Analyzer("Analyzer", "../Python-analyzer-template.py")
+analyzercmd = os.getenv('ANALYZER')
+
+if analyzercmd:
+    analyzer = Analyzer("Analyzer", analyzercmd)
+else:
+    #analyzer = Analyzer("Analyzer", "../a.out")
+    analyzer = Analyzer("Analyzer", "../Python-analyzer-template.py")
 
 # Connections:
 controller = FilterMergeItExt("Controller")

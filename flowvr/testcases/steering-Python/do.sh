@@ -1,8 +1,8 @@
 #!/bin/bash
 
 rm $PROBLEMNAME*.out.*
-export P=2
-export Q=1
+export P=1
+export Q=2
 export R=1
 export PROBLEMNAME=hillslope_sens
 export DEBUGFLAGS="-v -v -v"

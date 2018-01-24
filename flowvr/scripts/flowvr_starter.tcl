@@ -8,13 +8,13 @@ lappend auto_path $env(PARFLOW_DIR)/bin
 package require parflow
 namespace import Parflow::*
 
-source ./[lindex $argv 0].tcl
+source ./[lindex $argv 3].tcl
 
 pfset FlowVR                    True
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-pfwritedb [lindex $argv 0]
+pfwritedb [lindex $argv 3]
 # pfrun - done in do.sh by flowvr
 # pfundist - done in scripts/undist.tcl:
