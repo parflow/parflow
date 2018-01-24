@@ -1,5 +1,6 @@
 #!/bin/bash -x
 
+#export P=1
 export P=2
 export Q=1
 export R=1
