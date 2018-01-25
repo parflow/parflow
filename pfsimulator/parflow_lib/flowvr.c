@@ -7,7 +7,7 @@
 int FLOWVR_ACTIVE;
 
 #ifdef HAVE_FLOWVR
-fca_module module_parflow;
+static fca_module module_parflow;
 static fca_port port_in;
 
 void fillGridDefinition(Grid const * const grid, GridDefinition *grid_def)
@@ -602,6 +602,11 @@ int FlowVRFulFillContracts(int timestep, SimulationSnapshot const * const sshot)
     }
   }
   return res;
+}
+
+void FlowVRAbort()
+{
+  fca_abort(module_parflow);
 }
 
 #endif

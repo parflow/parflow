@@ -3516,7 +3516,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     D("Aborting now!");
     // TODO: FIXME: don't sleep. need for a mechanism that knows when to stop, or to check if a module is still online. speak with bruno on that!
     usleep(2000000);
-    fca_abort(module_parflow);
+    FlowVRAbort();
   }
 #endif
 

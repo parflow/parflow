@@ -31,9 +31,15 @@
 
 #include "parflow.h"
 
-
+/**
+ * If FLOWVR_ACTIVE is not 0 parflow will act as FlowVR module.
+ */
 extern int FLOWVR_ACTIVE;
 
+/**
+ * Sets FLOWVR_ACTIVE depending on compile options in the input database.
+ * If FLOWVR_ACTIVE inits the FlowVR module
+ */
 void NewFlowVR(void);
 
 #ifdef HAVE_FLOWVR
@@ -58,6 +64,10 @@ typedef struct {
   ProblemData * problem_data;
 } SimulationSnapshot;
 
+/**
+ * GetSimulationSnapshot is used to comfortably fill a SimulationSnapshot data structure
+ * in the AdvanceRichards() or the SetupRichards() context in richards_solver.c
+ */
 #define GetSimulationSnapshot \
   (SimulationSnapshot){ \
     filename, \
@@ -69,7 +79,6 @@ typedef struct {
     problem_data \
   }
 
-extern fca_module module_parflow;
 
 // PFModule that is used here: solver_richards.
 // TODO: documentation, also in other c files
@@ -85,6 +94,8 @@ int FlowVRFulFillContracts(int timestep, SimulationSnapshot const * const sshot)
 void FlowVRServeFinalState(SimulationSnapshot *snapshot);
 
 void FreeFlowVR();
+
+extern inline void FlowVRAbort();
 
 
 #endif
