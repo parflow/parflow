@@ -1,6 +1,5 @@
 #include <fca.h>
 #include <messages.h>
-#include <signal.h>
 
 // compile with:
 // gcc -L$PARFLOW_DIR/lib -I../pfanalyzer -I/usr/local/include/fca C-analyzer-template.c -lfca -lpfanalyzer
@@ -69,5 +68,6 @@ int main(int argc, char *argv [])
   {
     ParseMergedMessage(port_in, onGridMessage, NULL);
   }
+
   fca_free(flowvr);
 }
