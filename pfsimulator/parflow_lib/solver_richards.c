@@ -1073,6 +1073,9 @@ SetupRichards(PFModule * this_module)
     }
 
 
+    /*-----------------------------------------------------------------
+     * Dump initial values to FlowVR?
+     *-----------------------------------------------------------------*/
 #ifdef HAVE_FLOWVR
     BeginTiming(FlowVRFulFillContractsTimingIndex);
     if (FLOWVR_ACTIVE)
@@ -1083,7 +1086,7 @@ SetupRichards(PFModule * this_module)
       sprintf(filename, "%s.%05d", file_prefix, instance_xtra->file_number / user_spec_steps);
 
       SimulationSnapshot snapshot = GetSimulationSnapshot;
-      FlowVRinitTranslation(&snapshot);
+      FlowVRInitTranslation(&snapshot);
       any_file_dumped = FlowVRFulFillContracts(0, &snapshot);
     }
     EndTiming(FlowVRFulFillContractsTimingIndex);
@@ -1549,19 +1552,20 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #ifdef HAVE_FLOWVR
   SimulationSnapshot snapshot;
   snapshot = GetSimulationSnapshot;
-  FlowVRinitTranslation(&snapshot);
+  FlowVRInitTranslation(&snapshot);
 #endif
 
   do                            /* while take_more_time_steps */
   {
 #ifdef HAVE_FLOWVR
+    // Something to steer? A snapshot was triggered?
     BeginTiming(FlowVRInteractTimingIndex);
     if (!FlowVRInteract(&snapshot))
       break;
     EndTiming(FlowVRInteractTimingIndex);
-    // TODO: move all the dumps into an extra function! split all this loop into more functions!
 #endif
 
+    // TODO: move all the dumps into an extra function! split all this loop into more functions!
     if (t == ct)
     {
       ct += cdt;
@@ -2733,9 +2737,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       instance_xtra->dump_index++;  // REFACTOR: shouldn't we only set this higher if we dumped out something
 
 #ifdef HAVE_FLOWVR
-      /***************************************************************
-       * FlowVR output
-       **************************************************************/
+      /**************************************************************/
+      /* FlowVR output                                              */
+      /**************************************************************/
       BeginTiming(FlowVRFulFillContractsTimingIndex);
       if (FLOWVR_ACTIVE)
       {

@@ -38,7 +38,8 @@ extern int FLOWVR_ACTIVE;
 
 /**
  * Sets FLOWVR_ACTIVE depending on compile options in the input database.
- * If FLOWVR_ACTIVE inits the FlowVR module
+ * If FLOWVR_ACTIVE initializes the FlowVR module. In this case also the contracts and
+ * the according out ports.
  */
 void NewFlowVR(void);
 
@@ -79,24 +80,39 @@ typedef struct {
     problem_data \
   }
 
+/**
+ * Tell FlowVR which Variable is on which place in the memory.
+ * Needs to be called before FlowVRInteract and FlowVRFulFillContracts.
+ */
+void FlowVRInitTranslation(SimulationSnapshot *snapshot);
 
-// PFModule that is used here: solver_richards.
-// TODO: documentation, also in other c files
+/**
+ * Check for steer and trigger snapshot requests. If so performs them.
+ */
+int FlowVRInteract(SimulationSnapshot *snapshot);
 
-void FlowVRinitTranslation(SimulationSnapshot *snapshot);
+/**
+ * Check if some data needs to be sent now.
+ * If so sends the data to the correct out port
+ */
+int FlowVRFulFillContracts(int timestep, SimulationSnapshot const * const snapshot);
 
-// do all the in message handlinge
-int FlowVRInteract(SimulationSnapshot *sshot);
-
-
-int FlowVRFulFillContracts(int timestep, SimulationSnapshot const * const sshot);
-
+/**
+ * Checks if the FlowVR.ServeFinalState option is True. If so serves the final simulation
+ * state to stay accessible for e.g. online VisIt visualization.
+ */
 void FlowVRServeFinalState(SimulationSnapshot *snapshot);
 
+/**
+ * Frees memory allocated by NewFlowVR()
+ */
 void FreeFlowVR();
 
+/**
+ * Abort the FlowVR application this parflow module runs in
+ */
 extern inline void FlowVRAbort();
 
+#endif  // HAVE_FLOWVR
 
-#endif
 #endif

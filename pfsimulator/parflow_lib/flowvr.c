@@ -207,7 +207,7 @@ void NewFlowVR(void)
 #ifdef HAVE_FLOWVR
 
 static void* translation[VARIABLE_LAST];
-void FlowVRinitTranslation(SimulationSnapshot *snapshot)  // TODO: macht eigentlich die uebergabe von sshot an vielen anderen stellen sinnlos!
+void FlowVRInitTranslation(SimulationSnapshot *snapshot)
 {
   translation[VARIABLE_PRESSURE] = snapshot->pressure_out;
   translation[VARIABLE_SATURATION] = snapshot->saturation_out;
@@ -584,12 +584,11 @@ void FlowVRServeFinalState(SimulationSnapshot *snapshot)
       usleep(100000);
   }
 }
-// TODO: gross/kleinschreibung von function names!
 
 /**
  * Dumps data if it has to since a contract.
  */
-int FlowVRFulFillContracts(int timestep, SimulationSnapshot const * const sshot)
+int FlowVRFulFillContracts(int timestep, SimulationSnapshot const * const snapshot)
 {
   int res = 0;
 
@@ -598,7 +597,7 @@ int FlowVRFulFillContracts(int timestep, SimulationSnapshot const * const sshot)
     if ((abs(timestep - contracts[i].offset) % contracts[i].periodicity) == 0)
     {
       res = 1;
-      CreateAndSendMessage(sshot, contracts[i].port_name, contracts[i].variable);
+      CreateAndSendMessage(snapshot, contracts[i].port_name, contracts[i].variable);
     }
   }
   return res;
