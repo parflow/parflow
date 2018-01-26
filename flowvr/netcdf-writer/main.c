@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <amps.h>
+#include <time.h>
 
 // REM: when it receives a message:
 // take first gridmessage found in it and get nX, nY, nZ, time, variable name from it.
@@ -115,8 +116,16 @@ int main(int argc, char *argv [])
   int current_file_id;
   int xID, yID, zID, time_id;
   D("now Waiting\n");
+
+#ifdef PF_TIMING
+  clock_t start, diff = 0;
+#endif
   while (fca_wait(flowvr))  // low: use our reader loop here maybe? Not atm as this version should be faster ;)
   {
+#ifdef PF_TIMING
+    start = clock();
+#endif
+
     D("got some stuff to write\n");
     fca_message msg = fca_get(port_in);
     char file_name[1024];
@@ -184,7 +193,14 @@ int main(int argc, char *argv [])
     D("wrote %s\n", file_name);
 
     fca_free(msg);
+#ifdef PF_TIMING
+    diff += (clock() - diff);
+#endif
   }
+#ifdef PF_TIMING
+  double sec = 1.0 * diff / CLOCKS_PER_SEC;
+  printf("Wall clock time taken for file writes: %f seconds\n", sec);
+#endif
 
   fca_free(flowvr);
   MPI_Finalize();
