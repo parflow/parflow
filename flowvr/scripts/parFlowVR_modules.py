@@ -59,7 +59,7 @@ class ParflowMPI(Composite):
         else:
             debugprefix+=' '
 
-        prefix = "parflow"
+        prefix = "parflow_"+problemName
         parflowrun=None
         cmdline=None
 

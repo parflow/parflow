@@ -1080,11 +1080,6 @@ SetupRichards(PFModule * this_module)
     BeginTiming(FlowVRFulFillContractsTimingIndex);
     if (FLOWVR_ACTIVE)
     {
-      char filename[1024];     // low: reuse other string variable here?
-      int user_spec_steps = GetIntDefault("FlowVR.NumStepsPerFile", 1);
-
-      sprintf(filename, "%s.%05d", file_prefix, instance_xtra->file_number / user_spec_steps);
-
       SimulationSnapshot snapshot = GetSimulationSnapshot;
       FlowVRInitTranslation(&snapshot);
       any_file_dumped = FlowVRFulFillContracts(0, &snapshot);
@@ -2743,12 +2738,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       BeginTiming(FlowVRFulFillContractsTimingIndex);
       if (FLOWVR_ACTIVE)
       {
-        char filename[1024];
-        int user_spec_steps = GetIntDefault("FlowVR.NumStepsPerFile", 1);
-        D("steps per file: %d, filenumber: %d", user_spec_steps, instance_xtra->file_number);
-
-        sprintf(filename, "%s.%05d", file_prefix, 1 + (instance_xtra->file_number - 1) / user_spec_steps);
-        snapshot.filename = filename;
         int timestep = instance_xtra->dump_index - 1;  // we also printed 0 ;)
         any_file_dumped = FlowVRFulFillContracts(timestep, &snapshot);
       }

@@ -97,6 +97,7 @@ typedef struct {
   int ix;
   int iy;
   int iz;
+  char run_name[128];
 } GridMessageMetadata;
 
 

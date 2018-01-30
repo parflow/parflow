@@ -3,6 +3,8 @@
 #include <string.h>  // for memcpy
 #include <stdlib.h>  // for malloc
 
+#include "globals.h"
+
 
 int FLOWVR_ACTIVE;
 
@@ -44,6 +46,8 @@ void fillGridMessageMetadata(Vector const * const v, double const * const time,
 
   m->time = *time;
   m->variable = variable;
+
+  strcpy(m->run_name, GlobalsRunName);
 }
 
 typedef struct {
@@ -466,7 +470,7 @@ void FreeFlowVR()
   tfree(contracts);
 }
 
-void vectorToMessage(const Variable variable, double const * const time, fca_message *result, fca_port *port)
+static inline void vectorToMessage(const Variable variable, double const * const time, fca_message *result, fca_port *port)
 {
   Vector *v = translation[variable];
   // normally really generic. low: in common with write_parflow_netcdf
@@ -484,10 +488,6 @@ void vectorToMessage(const Variable variable, double const * const time, fca_mes
   int nx_v = SubvectorNX(subvector);
   int ny_v = SubvectorNY(subvector);
 
-  /*const fca_stamp stampMetadata = fca_get_stamp(*port, "Metadata");*/
-  /*fca_write_stamp(result, stampMetadata, (void*) &stampMetadata);*/
-  /*const fca_stamp stampN = fca_get_stamp(*port, "N");*/
-  /*fca_write_stamp(result, stampN, 1);*/
   // write to the beginning of our memory segment
   GridMessageMetadata m;
   fillGridMessageMetadata(v, time, variable, &m);
@@ -536,11 +536,20 @@ void CreateAndSendMessage(SimulationSnapshot const * const snapshot, const char 
   fca_write_stamp(msg, stamp_time, (void*)&time);
 
   fca_stamp stamp_file_name;
-  if (snapshot->filename != NULL)
+  char filename[128];
+  int user_spec_steps = GetIntDefault("FlowVR.NumStepsPerFile", 1);
+  int number = 1 + (*snapshot->file_number - 1) / user_spec_steps;
+
+  // Handle special case
+  if (*snapshot->file_number == 0)
   {
-    stamp_file_name = fca_get_stamp(port, "stampFileName");
-    fca_write_stamp(msg, stamp_file_name, (void*)snapshot->filename);
+    number = 0;
   }
+
+  sprintf(filename, "%s.%05d", GlobalsOutFileName, number);
+
+  stamp_file_name = fca_get_stamp(port, "stampFileName");
+  fca_write_stamp(msg, stamp_file_name, (void*)filename);
 
 
   // Finally send message!

@@ -589,41 +589,6 @@ pfset Solver.Linear.Preconditioner.PCMatrixType     FullJacobian
 
 pfset OverlandFlowSpinUp				 0
 
-
-
-#-----------------------------------------------------------------------------
-# Set CLM parameters
-#-----------------------------------------------------------------------------
-
-#pfset Solver.LSM                                         CLM
-
-
-
-#pfset Solver.CLM.MetForcing                              1D
-#pfset Solver.CLM.MetFileName                             forcagePF.txt.0
-#pfset Solver.CLM.MetFilePath                             ./
-
-pfset Solver.CLM.CLMDumpInterval                         15
-
-#pfset Solver.CLM.ForceVegetation			 True
-pfset Solver.CLM.ForceVegetation			 False
-#pfset Solver.CLM.RootZoneNZ				 22
-#pfset Solver.CLM.BinaryOutDir				 False
-
-#pfset Solver.CLM.SingleFile				 True
-
-#pfset Solver.PrintCLM                                    True
-#pfset Solver.WriteCLMBinary				 False
-
-#pfset Solver.CLM.WriteLogs				 True
-#pfset Solver.CLM.WriteLastRST				 True
-
-#pfset Solver.CLM.EvapBeta				 "none"
-#pfset Solver.CLM.ResSat					 0.1
-
-
-
-
 #-----------------------------------------------------------------------------
 # Run and Unload the Parflow output files
 #-----------------------------------------------------------------------------
