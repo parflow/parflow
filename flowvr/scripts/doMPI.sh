@@ -24,7 +24,7 @@ rm ~/.visit/simulations/*.sim2
 
 python ./parflowvr.py $PROBLEMNAME $P $Q $R
 #flowvrd -s 3G & # do not need this line!
-flowvrd $DEBUGFLAGS &
+flowvrd $DAEMONFLAGS $DEBUGFLAGS &
 
 # wait for flowvrd to startup
 sleep 1
