@@ -37,8 +37,6 @@ function appendToLdPath {
 # -----------------------------------------------------------------------------
 # Cheyenne environment settings
 # -----------------------------------------------------------------------------
-module load impi
-module load intel
 module load cmake/3.9.1
 
 export PARFLOW_PROJECT_DIR=/glade/p/ucsm0002
