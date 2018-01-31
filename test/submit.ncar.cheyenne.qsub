@@ -1,0 +1,17 @@
+#!/bin/bash
+#PBS -N parflow-regression
+#PBS -A UCSM0002
+#PBS -q regular 
+#PBS -l walltime=00:30:00  
+#PBS -l select=1:ncpus=36:mpiprocs=36
+#PBS -j oe
+#PBS -o parflow-regression.out
+
+setenv TMPDIR /glade/scratch/username/temp
+mkdir -p $TMPDIR
+
+export PARFLOW_DIR=${HOME}/work/smith84/parflow/install
+
+cd /glade/u/home/smith84/work/smith84/build/test
+
+make test
