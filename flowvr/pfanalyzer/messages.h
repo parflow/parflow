@@ -38,34 +38,45 @@ typedef struct {
 /*"evaptrans_sum",        [> evaptrans_sum <]*/
 /*"overland_sum",         [> overland_sum <]*/
 
-// TODO: rename this file into something more fitting!
+/**
+ * Variables that can be used for snapshots, to be defined as outports in contracts or
+ * to be Steered
+ */
 typedef enum {
-  /// just for trigger:
+  // REM: to find the position of the variables in the memory the ProblemData struct is
+  // helpful.
   VARIABLE_PRESSURE = 0,
   VARIABLE_SATURATION,
-
-  // to steer:
-  // et plus, see ProblemData struct.
   VARIABLE_POROSITY,
+
   VARIABLE_MANNING,
   VARIABLE_PERMEABILITY_X,
   VARIABLE_PERMEABILITY_Y,
   VARIABLE_PERMEABILITY_Z,
 
+
   VARIABLE_LAST
 } Variable;
 
+/**
+ * Actions that can be requested by action messages
+ */
 typedef enum {
-  ACTION_GET_GRID_DEFINITION,
-  ACTION_TRIGGER_SNAPSHOT,
-  ACTION_SET,
-  ACTION_ADD,
-  ACTION_MULTIPLY
+  ACTION_GET_GRID_DEFINITION,   // send message with grid definition on snapshot port
+  ACTION_TRIGGER_SNAPSHOT,      // request snapshot on snapshot port
+  ACTION_SET,                   // set a variable to the attached grid message's content
+  ACTION_ADD,                   // add attached grid message's content to a variable
+  ACTION_MULTIPLY               // multiply a variable by attached grid message content
 } Action;
 
+// Conversion between variable names like "pressure" and the according constants like
+// VARIABLE_PRESSURE
 extern const char *VARIABLE_TO_NAME[VARIABLE_LAST];
 Variable NameToVariable(const char *name);
 
+/**
+ * Data structures defining the message (header) format of FlowVR messages
+ */
 typedef struct {
   Variable variable;
   Action action;
@@ -100,17 +111,38 @@ typedef struct {
   char run_name[128];
 } GridMessageMetadata;
 
-
+/**
+ * Sends an action message from the FlowVR module \p mod, outport \p out to perform
+ * \p action on \p variable
+ */
 extern void SendActionMessage(fca_module mod, fca_port port, Action action, Variable variable,
                               void *parameter, size_t parameter_size);
 
+/**
+ * Macro to simplify the declaration of callback functions for ParseMergedMessage
+ * \p buffer specifies where to read out data.
+ * \p size specifies the overall of the merged message buffer is a part of
+ * \p cbdata user data
+ */
 #define MergeMessageParser(function_name) \
   size_t function_name(const void *buffer, size_t size, void *cbdata)
+
+/**
+ * Gets the last message on \p port. Assuming it is a message produced by the FlowVR
+ * merge Filter or by its derivatives. Calls \p cb with the current read out position as
+ * \p buffer parameter to the callback function until the complete message is processed.
+ * Thus buffer must always return how many bytes it read out.
+ * \p cbdata can be used to transfer user data to the callback
+ */
 extern void ParseMergedMessage(fca_port port,
                                size_t (*cb)(const void *buffer, size_t size, void *cbdata),
                                void *cbdata);
 
-extern void SendSteerMessage(fca_module flowvr, fca_port out, const Action action,
+/**
+ * Sends a steer message from the FlowVR module \p mod, outport \p out to perform
+ * steer action \p action on \p variable
+ */
+extern void SendSteerMessage(fca_module mod, fca_port out, const Action action,
                              const Variable variable,
                              int ix, int iy, int iz,
                              double *data, int nx, int ny, int nz);

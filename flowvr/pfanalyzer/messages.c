@@ -15,7 +15,7 @@ const char *VARIABLE_TO_NAME[VARIABLE_LAST] = {
   "permeability_z"
 };
 
-void SendActionMessage(fca_module mod, fca_port port, Action action, Variable variable,
+void SendActionMessage(fca_module mod, fca_port out, Action action, Variable variable,
                        void *parameter, size_t parameter_size)
 {
   fca_message msg = fca_new_message(mod, sizeof(ActionMessageMetadata) + parameter_size);
@@ -25,7 +25,7 @@ void SendActionMessage(fca_module mod, fca_port port, Action action, Variable va
   amm->variable = variable;
   memcpy((void*)(++amm), parameter, parameter_size);
 
-  fca_put(port, msg);
+  fca_put(out, msg);
   fca_free(msg);
 }
 
@@ -51,12 +51,12 @@ void ParseMergedMessage(fca_port port, size_t (*cb)(const void *buffer, size_t s
   fca_free(msg);
 }
 
-void SendSteerMessage(fca_module flowvr, fca_port out, const Action action,
+void SendSteerMessage(fca_module mod, fca_port out, const Action action,
                       const Variable variable,
                       int ix, int iy, int iz,
                       double *data, int nx, int ny, int nz)
 {
-  fca_message msg = fca_new_message(flowvr, sizeof(ActionMessageMetadata) +
+  fca_message msg = fca_new_message(mod, sizeof(ActionMessageMetadata) +
                                     sizeof(SteerMessageMetadata) + sizeof(double) * nx * ny * nz);
   ActionMessageMetadata *amm = (ActionMessageMetadata*)fca_get_write_access(msg, 0);
 
