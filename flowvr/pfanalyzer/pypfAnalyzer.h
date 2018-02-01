@@ -15,4 +15,6 @@ extern void _run(char *logstamps[], size_t logstampsc);  /// needs to be called 
 
 extern void SendLog(StampLog slog[], size_t n);
 
+extern void SendEmpty();
+
 #endif

@@ -103,6 +103,15 @@ Variable NameToVariable(const char *name)
   return VARIABLE_LAST;
 }
 
+void SendEmptyMessage(fca_module mod, fca_port port)
+{
+  fca_message msg = fca_new_message(mod, 0);
+
+  fca_put(port, msg);
+  fca_free(msg);
+}
+
+// Autogenerate the Reader functions
 GenerateMessageReaderC(Grid);
 GenerateMessageReaderC(Steer);
 GenerateMessageReaderC(Action);

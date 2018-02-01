@@ -12,6 +12,9 @@
 
 #include <fca/fca.h>
 
+/**
+ * Struct used to transmit logs to logger modules
+ */
 typedef struct {
   const char *stamp_name;
   float value;
@@ -69,8 +72,10 @@ typedef enum {
   ACTION_MULTIPLY               // multiply a variable by attached grid message content
 } Action;
 
-// Conversion between variable names like "pressure" and the according constants like
-// VARIABLE_PRESSURE
+/**
+ * Conversion between variable names like "pressure" and the according constants like
+ * VARIABLE_PRESSURE
+ */
 extern const char *VARIABLE_TO_NAME[VARIABLE_LAST];
 Variable NameToVariable(const char *name);
 
@@ -147,8 +152,17 @@ extern void SendSteerMessage(fca_module mod, fca_port out, const Action action,
                              int ix, int iy, int iz,
                              double *data, int nx, int ny, int nz);
 
+/**
+ * Sends a log message logging all the \p n variables in  \log from FlowVR module \p mod,
+ * port \p port
+ */
 extern void SendLogMessage(fca_module mod, fca_port port, StampLog log[], size_t n);
 
+/**
+ * Sends an empty message. Useful when analyzer need to send a message each timestep to
+ * not deadlock the workflow.
+ */
+extern void SendEmptyMessage(fca_module mod, fca_port port);
 
 // Some Fancy Reader code generation:
 #define GenerateMessageReaderH(type) \
@@ -168,6 +182,19 @@ extern void SendLogMessage(fca_module mod, fca_port port, StampLog log[], size_t
     res.data = (double*)(res.m + 1); \
     return res; \
   }
+
+
+/**
+ * Call ReadGridMesssage(buffer), ReadSteerMessage(buffer) or ReadActionMessage(buffer)
+ * on a buffer containing a message of the according type. This will create a struct
+ * giving access to the message's meta data via the _m_ member and to it's data via the
+ * data member.
+ *
+ * Example:
+ * {Grid|Steer|Action}Message res = Read{Grid|Steer|Action}Message(buffer);
+ * res.m;     // pointer to message meta data
+ * res.data;  // pointer to message data
+ */
 
 GenerateMessageReaderH(Grid);
 GenerateMessageReaderH(Steer);

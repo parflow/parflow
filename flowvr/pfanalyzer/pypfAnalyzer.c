@@ -70,3 +70,10 @@ void _run(char *logstamps[], size_t logstampsc)
 
   fca_free(flowvr);
 }
+
+void SendEmpty()
+{
+  SendEmptyMessage(flowvr, out);
+}
+
+
