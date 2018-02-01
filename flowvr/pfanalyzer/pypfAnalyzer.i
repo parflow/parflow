@@ -24,6 +24,9 @@
 //  https://gist.github.com/oliora/3607799
 %{
   extern PyObject *parser = NULL;
+  /**
+   * Set the function that will parse each grid message received by the python analyzer
+   */
   void SetGridMessageParser(PyObject *cb)
   {
     if (parser != NULL)
@@ -71,6 +74,10 @@
   }
 
   extern PyObject *onInit = NULL;
+  /**
+   * Set the callback that will be called after the FlowVR module was initialized with
+   * all its ports.
+   */
   void SetOnInit(PyObject *cb)
   {
     if (onInit != NULL)
@@ -106,6 +113,11 @@
     Py_XDECREF(result);
   }
 
+  /**
+   * Initializes a python analyzer.
+   *
+   * \p logstamps a list of the elements that will be logged later
+   */
   void run(char *logstamps[], size_t logstampsc)
   {
     // be sure the parser was set before we call run.

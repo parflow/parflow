@@ -365,7 +365,7 @@ size_t Steer(Variable var, Action action, const void *buffer, double const * con
     switch (action)
     {
       case ACTION_SET:
-        //printf("err? %.12e == %.12e\n", data[ai], sm.data[index]);
+        /*printf("err? %.12e == %.12e\n", data[ai], sm.data[index]);*/
         data[ai] = sm.data[index];
         break;
 
@@ -450,10 +450,11 @@ int FlowVRInteract(SimulationSnapshot *snapshot)
 {
   if (FLOWVR_ACTIVE)
   {
-    /*D("now waiting");*/
+    D("now waiting");
     if (!fca_wait(module_parflow))
       return 0;
 
+    D("now simulating");
     // Read out message on in port.
     // Do all actions that are listed there(steerings, trigger snaps...)
     ParseMergedMessage(port_in, Interact, (void*)snapshot);

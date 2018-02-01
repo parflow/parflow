@@ -1545,6 +1545,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #endif
 
 #ifdef HAVE_FLOWVR
+  // Prepare the access to the problem variables
   SimulationSnapshot snapshot;
   snapshot = GetSimulationSnapshot;
   FlowVRInitTranslation(&snapshot);
@@ -3505,6 +3506,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #ifdef HAVE_FLOWVR
   if (FLOWVR_ACTIVE)
   {
+    // serve final state for visit to connect?
     FlowVRServeFinalState(&snapshot);
     D("Aborting now!");
     // TODO: FIXME: don't sleep. need for a mechanism that knows when to stop, or to check if a module is still online. speak with bruno on that!

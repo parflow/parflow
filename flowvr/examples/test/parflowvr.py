@@ -26,7 +26,7 @@ else:
 controller = FilterMergeItExt("Controller")
 analyzer.getPort("out").link(controller.newInputPort())
 
-# this works as all the parflow instances are synchron.
+# This works as all the parflow instances are synchron
 parflowmpi.getPort("endIt")[0].link(pres.getPort("in"))
 pres.getPort("out").link(controller.getPort("order"))
 controller.getPort("out").link(parflowmpi.getPort("in"))

@@ -5,6 +5,9 @@
 
 #include <assert.h>
 
+/**
+ * Translates Variables into variable names
+ */
 const char *VARIABLE_TO_NAME[VARIABLE_LAST] = {
   "pressure",
   "saturation",

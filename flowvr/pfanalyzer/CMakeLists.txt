@@ -35,13 +35,6 @@ IF( BUILD_PYTHON_ANALYZER_API )
     SET(CMAKE_SWIG_FLAGS "")
     SWIG_ADD_LIBRARY(pypfAnalyzer LANGUAGE python SOURCES pypfAnalyzer.i pypfAnalyzer.c)
     SWIG_LINK_LIBRARIES(pypfAnalyzer ${PYTHON_LIBRARIES} pfanalyzer ${FCA_LIBRARY})
-    # low: performance better if we compile wit ${PYTHON_LIBRARIES} and if we do not use
-    # the previously linked version of pfanalyzer but include ${SRC_FILES}
-
-    #execute_process ( COMMAND
-      #python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"
-      #OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
-    #INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/pypfAnalyzer.py DESTINATION ${PYTHON_SITE_PACKAGES})
 
     STRING(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.[0-9]+" "\\1;\\2"
       RESULT ${PYTHONLIBS_VERSION_STRING})

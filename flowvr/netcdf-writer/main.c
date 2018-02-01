@@ -11,10 +11,7 @@
 #include <amps.h>
 #include <time.h>
 
-// REM: when it receives a message:
-// take first gridmessage found in it and get nX, nY, nZ, time, variable name from it.
-// for the first and all further grid messages: copy all the data in the netcdf file specified by the filename stamp.
-// REM: you cannot have multiple writers for one file!
+// REM: You cannot have multiple writers for one file!
 
 #ifdef __DEBUG
 #define D(x ...) printf("++++++++ "); printf(x); printf(" %s:%d\n", __FILE__, __LINE__)
@@ -22,7 +19,9 @@
 #define D(...)
 #endif
 
-// creates dimension or only returns its id if already existent.
+/**
+ * Creates dimension or only returns its id if already existent.
+ */
 int getDim(int ncID, const char *name, size_t len, int *idp)
 {
   int res = nc_def_dim(ncID, name, len, idp);
@@ -34,7 +33,9 @@ int getDim(int ncID, const char *name, size_t len, int *idp)
   return res;
 }
 
-// creates dimension or only returns its id if already existent.
+/**
+ * Creates dimension or only returns its id if already existent.
+ */
 void getVar(int ncID, const char *name, int ndims, const int dimids[], int *idp)
 {
   int res = nc_def_var(ncID, name, NC_DOUBLE, ndims, dimids, idp);
@@ -48,9 +49,11 @@ void getVar(int ncID, const char *name, int ndims, const int dimids[], int *idp)
   }
 }
 
+/**
+ * Opens/ creates file if not already there
+ */
 int CreateFile(const char* file_name, size_t nX, size_t nY, size_t nZ, int *pxID, int *pyID, int *pzID, int *ptime_id)
 {
-  // Opens/ creates file if not already there.  REFACTOR: rename
   int ncID = 0;
 
   if (access(file_name, F_OK) == -1)
@@ -88,6 +91,7 @@ int main(int argc, char *argv [])
 {
   char * prefix = "";
 
+  // use first argument (if exists) as file name prefix
   if (argc > 1)
   {
     prefix = argv[1];

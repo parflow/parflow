@@ -133,7 +133,7 @@ extern void SendActionMessage(fca_module mod, fca_port port, Action action, Vari
   size_t function_name(const void *buffer, size_t size, void *cbdata)
 
 /**
- * Gets the last message on \p port. Assuming it is a message produced by the FlowVR
+ * Gets the last message on inport \p port. Assuming it is a message produced by the FlowVR
  * merge Filter or by its derivatives. Calls \p cb with the current read out position as
  * \p buffer parameter to the callback function until the complete message is processed.
  * Thus buffer must always return how many bytes it read out.
@@ -187,7 +187,7 @@ extern void SendEmptyMessage(fca_module mod, fca_port port);
 /**
  * Call ReadGridMesssage(buffer), ReadSteerMessage(buffer) or ReadActionMessage(buffer)
  * on a buffer containing a message of the according type. This will create a struct
- * giving access to the message's meta data via the _m_ member and to it's data via the
+ * giving access to the message's meta data via the m member and to it's data via the
  * data member.
  *
  * Example:

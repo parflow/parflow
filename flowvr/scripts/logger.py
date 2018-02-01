@@ -10,7 +10,7 @@ if showWindows:
     plt.ion()
 
 class DynamicUpdate():
-    #Suppose we know the x range
+    # Suppose we know the x range
     #min_x = 0
     #max_x = 10
 
@@ -19,22 +19,22 @@ class DynamicUpdate():
         self.figure, self.ax = plt.subplots()
         self.figure.canvas.set_window_title(title)
         self.lines, = self.ax.plot([],[], 'o')
-        #Autoscale on unknown axis and known lims on the other
+        # Autoscale on unknown axis and known lims on the other
         self.ax.set_autoscaley_on(True)
         #self.ax.set_xlim(self.min_x, self.max_x)
         self.ax.set_ylabel(title)
         self.ax.set_xlabel('iteration');
-        #Other stuff
+        # Other stuff
         self.ax.grid()
 
     def on_running(self, xdata, ydata):
         #Update data (with the new _and_ the old points)
         self.lines.set_xdata(xdata)
         self.lines.set_ydata(ydata)
-        #Need both of these in order to rescale
+        # Need both of these in order to rescale
         self.ax.relim()
         self.ax.autoscale_view()
-        #We need to draw *and* flush
+        # We need to draw *and* flush
         self.figure.canvas.draw()
         self.figure.canvas.flush_events()
 
@@ -54,6 +54,7 @@ for name in names:
 nextX = 0
 
 xdata = []
+
 
 ports = flowvr.vectorPort()
 port = flowvr.InputPort('in')

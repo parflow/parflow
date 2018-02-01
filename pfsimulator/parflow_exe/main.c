@@ -259,13 +259,6 @@ int main(int argc, char *argv [])
      * Try to run as flowvr module?
      *-----------------------------------------------------------------------*/
 
-#ifdef HAVE_FLOWVR
-#ifdef __DEBUG
-    /*printf("for easier debugger attach: now waiting 5 seconds.\n");*/
-    /*sleep(5); // we want some time to attach the debugger ;)*/
-#endif
-#endif
-
     NewFlowVR();
 
 

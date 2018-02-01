@@ -19,10 +19,6 @@ def onGridMessage(arr, gm):
 
 
 
-
-
-
-
 print("setting it up!")
 pfa.SetGridMessageParser(onGridMessage)
 
