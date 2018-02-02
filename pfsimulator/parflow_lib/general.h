@@ -138,10 +138,12 @@
 #define GetInt(key) IDB_GetInt(amps_ThreadLocal(input_database), (key))
 #define GetDouble(key) IDB_GetDouble(amps_ThreadLocal(input_database), (key))
 #define GetString(key) IDB_GetString(amps_ThreadLocal(input_database), (key))
+#define GetBoolean(key) IDB_GetBoolean(amps_ThreadLocal(input_database), (key))
 
 #define GetIntDefault(key, default) IDB_GetIntDefault(amps_ThreadLocal(input_database), (key), (default))
 #define GetDoubleDefault(key, default) IDB_GetDoubleDefault(amps_ThreadLocal(input_database), (key), (default))
 #define GetStringDefault(key, default) IDB_GetStringDefault(amps_ThreadLocal(input_database), (key), (default))
+#define GetBooleanDefault(key, default) IDB_GetBooleanDefault(amps_ThreadLocal(input_database), (key), (default))
 
 #define TIME_EPSILON (FLT_EPSILON * 10)
 

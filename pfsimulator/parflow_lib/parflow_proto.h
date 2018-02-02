@@ -308,6 +308,8 @@ double IDB_GetDoubleDefault(IDB *database, const char *key, double default_value
 double IDB_GetDouble(IDB *database, const char *key);
 int IDB_GetIntDefault(IDB *database, const char *key, int default_value);
 int IDB_GetInt(IDB *database, const char *key);
+int IDB_GetBooleanDefault(IDB *database, const char *key, int default_value);
+int IDB_GetBoolean(IDB *database, const char *key);
 NameArray NA_NewNameArray(char *string);
 int NA_AppendToArray(NameArray name_array, char *string);
 void NA_FreeNameArray(NameArray name_array);
