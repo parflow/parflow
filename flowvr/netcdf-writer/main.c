@@ -130,8 +130,17 @@ int main(int argc, char *argv [])
     start = clock();
 #endif
 
-    D("got some stuff to write\n");
     fca_message msg = fca_get(port_in);
+    if (fca_get_segment_size(msg, 0) == 0)
+    {
+      D("Ending it!");
+      fca_free(msg);
+      fca_abort(flowvr);
+      break;
+    }
+
+    D("got some stuff to write\n");
+
     char file_name[1024];
     sprintf(file_name, "%s%s.nc", prefix, (char*)fca_read_stamp(msg, stamp_file_name));
 
@@ -201,6 +210,7 @@ int main(int argc, char *argv [])
     diff += (clock() - diff);
 #endif
   }
+
 #ifdef PF_TIMING
   double sec = 1.0 * diff / CLOCKS_PER_SEC;
   printf("Wall clock time taken for file writes: %f seconds\n", sec);

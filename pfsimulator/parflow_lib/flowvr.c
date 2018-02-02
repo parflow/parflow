@@ -114,19 +114,7 @@ void initSteerLogMode(void)
 
 void NewFlowVR(void)
 {
-  // Refactor: shouldn't there be a GetBooleanDefault?
-  NameArray switch_na = NA_NewNameArray("False True");
-  char* switch_name = GetStringDefault("FlowVR", "False");
-
-  FLOWVR_ACTIVE = NA_NameToIndex(switch_na, switch_name);
-  if (FLOWVR_ACTIVE < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, "FlowVR");
-    FLOWVR_ACTIVE = 0;
-  }
-  NA_FreeNameArray(switch_na);
-
+  FLOWVR_ACTIVE = GetBooleanDefault("FlowVR", 0);
 
   if (!FLOWVR_ACTIVE)
   {
@@ -573,19 +561,7 @@ void SendSnapshot(SimulationSnapshot const * const snapshot, Variable var)
 
 void FlowVRServeFinalState(SimulationSnapshot *snapshot)
 {
-  NameArray switch_na = NA_NewNameArray("False True");
-  char* switch_name = GetStringDefault("FlowVR.ServeFinalState", "False");
-
-
-  int serve_final_state = NA_NameToIndex(switch_na, switch_name);
-
-  if (serve_final_state < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, "FlowVR.ServeFinalState");
-    serve_final_state = 0;
-  }
-  NA_FreeNameArray(switch_na);
+  int serve_final_state = GetBooleanDefault("FlowVR.ServeFinalState", 0);
 
   if (serve_final_state)
   {
@@ -613,9 +589,22 @@ int FlowVRFulFillContracts(int timestep, SimulationSnapshot const * const snapsh
   return res;
 }
 
-void FlowVRAbort()
+void FlowVREnd()
 {
-  fca_abort(module_parflow);
+  int abort_on_end = GetBooleanDefault("FlowVR.AbortOnEnd", 1);
+
+  if (abort_on_end)
+  {
+    fca_abort(module_parflow);
+  }
+  else
+  {
+    for (size_t i = 0; i < n_contracts; ++i)
+    {
+      fca_port port = fca_get_port(module_parflow, contracts[i].port_name);
+      SendEmptyMessage(module_parflow, port);
+    }
+  }
 }
 
 #endif

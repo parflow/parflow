@@ -3508,10 +3508,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   {
     // serve final state for visit to connect?
     FlowVRServeFinalState(&snapshot);
-    D("Aborting now!");
-    // TODO: FIXME: don't sleep. need for a mechanism that knows when to stop, or to check if a module is still online. speak with bruno on that!
-    usleep(2000000);
-    FlowVRAbort();
+
+    D("Ending now!");
+    FlowVREnd();
   }
 #endif
 

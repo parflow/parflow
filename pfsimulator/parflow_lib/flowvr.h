@@ -109,9 +109,10 @@ void FlowVRServeFinalState(SimulationSnapshot *snapshot);
 void FreeFlowVR();
 
 /**
- * Abort the FlowVR application this parflow module runs in
+ * End the FlowVR application this parflow module runs in. Thus on every outport an empty
+ * message is sent and we exit.
  */
-extern inline void FlowVRAbort();
+extern inline void FlowVREnd();
 
 #endif  // HAVE_FLOWVR
 

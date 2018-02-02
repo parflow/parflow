@@ -19,6 +19,7 @@ pfset FileVersion 4
 # FlowVR parameters
 #---------------------------------------------------------
 pfset FlowVR [if {[lindex $argv 3] == "--FlowVR"} {list True} {list False}]
+pfset FlowVR.AbortOnEnd False
 
 pfset FlowVR.NumStepsPerFile 5
 pfset FlowVR.Outports.Names "pressure saturation"
