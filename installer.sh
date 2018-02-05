@@ -1,5 +1,8 @@
 #!/bin/bash
 # This script can be seen as a reference on how to install parflow and its dependencies.
+# It is recommended to not start it but rather take it as guideline which option to
+# use for which dependency to get a running setup.
+
 # In the following we define some install options:
 export PREFIX=$HOME/test
 export PYTHON="python2.7"
@@ -22,8 +25,8 @@ export PARFLOW_DIR=$PREFIX
 
 export PYTHONPATH=$PREFIX/python:$PYTHONPATH
 
-# When running with FlowVR this is needed too:
-# Attention: The followin line will fail if FlowVR is not yet installed.
+# When running with FlowVR this is needed too during runtime:
+# Attention: The following line will fail if FlowVR is not yet installed.
 source flowvr-suite-config.sh
 
 
@@ -104,7 +107,7 @@ fi
 
 cd $SRC
 if [ ! -d "pnetcdf" ]; then
-# we are not using the git version here as thebootstrap does not work on froggy.
+# we are not using the git version here as the bootstrap does not work on froggy.
 $WGET http://cucis.ece.northwestern.edu/projects/PnetCDF/Release/parallel-netcdf-1.8.1.tar.gz
 tar xvf parallel-netcdf-1.8.1.tar.gz
 mv parallel-netcdf-1.8.1 pnetcdf
@@ -279,5 +282,5 @@ cmake .. -DBUILD_TESTING:BOOL=ON \
 make -j$N && make install -j$N
 fi
 
-echo do not forget to add the upper section of this script to your setenv.sh script / ypur .bashrc
+echo do not forget to add the upper section of this script to your setenv.sh script / your .bashrc
 echo ------END!-------
