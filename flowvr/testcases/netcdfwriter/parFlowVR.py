@@ -15,17 +15,17 @@ parflow = Parflow("parflow",
 # As nothing is connected to the parflow input ports, it will just run the simulation
 # cycles as specified within the tcl file and parflow is not waiting for interaction
 
-saturationwriter = NetCDFWriter("saturationwriter", "saturation.");
+saturationwriter = NetCDFWriter("saturationwriter", "saturation.", abortOnEnd=False);
 parflow.getPort("saturation").link(saturationwriter.getPort("in"))
 
-pressurewriter = NetCDFWriter("pressurewriter", "pressure.")
+pressurewriter = NetCDFWriter("pressurewriter", "pressure.", abortOnEnd=False)
 parflow.getPort("pressure").link(pressurewriter.getPort("in"))
 
 merge = FilterMerge("merge")
 parflow.getPort("pressure").link(merge.newInputPort())
 parflow.getPort("saturation").link(merge.newInputPort())
 
-multiwriter = NetCDFWriter("multiwriter", "multi.")
+multiwriter = NetCDFWriter("multiwriter", "multi.", abortOnEnd=True)
 merge.getPort("out").link(multiwriter.getPort("in"))
 
 app.generate_xml("parflowvr")

@@ -132,7 +132,8 @@ class Ticker(Module):
 
 class NetCDFWriter(Module):
     """Module NetCDFWriter writes parflow output into netCDF files."""
-    def __init__(self, name, fileprefix="", host=""):
+    def __init__(self, name, fileprefix="", host="", abortOnEnd=True):
         # TODO: works with mpi too?!
-        Module.__init__(self, name, cmdline = "$PARFLOW_DIR/bin/netcdf-writer %s" % fileprefix, host=host)
+        Module.__init__(self, name, cmdline = "$PARFLOW_DIR/bin/netcdf-writer %s %s" %
+                (fileprefix, "--no-abort" if not abortOnEnd else ""), host=host)
         self.addPort("in", direction = 'in');
