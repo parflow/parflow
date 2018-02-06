@@ -148,7 +148,7 @@ namespace flowvr
       {
         if (!inputs[i]->stampsReceived())
         {
-          printf("waiting for stamp specs");
+          std::cout << "waiting for stamp specs" << std::endl;
 
           return false;
         }

@@ -2,6 +2,24 @@ from flowvrapp import *
 from filters import *
 import socket
 
+class FilterMergeGridMessages(flowvrapp.Filter):
+    """A filter converting concatenated gridmessages into one big grid message
+    containing the full grid (nX,nY,nZ)
+    of timestep t as soon as he got all the necessary data.
+
+    WARNING: we abort if not all the data necessary were found!
+
+    Input ports:
+    -  in: Grid messages to be joined.
+
+    Output Ports:
+    - out: Big grid messages.
+    """
+
+    def __init__(self, name, host = ''):
+        flowvrapp.Filter.__init__(self, name, run = 'flowvr.plugins.MergeGridMessages', host = host)
+        self.addPort('in', direction = 'in')
+        self.addPort('out', direction = 'out')
 
 class FilterMergeItExt(FilterWithManyInputs):
     """Merges messages received on input port into one message sent on output port.

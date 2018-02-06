@@ -2,14 +2,22 @@ INCLUDE(CheckFunctionExists)
 INCLUDE(CheckSymbolExists)
 
 # plugins
-SET(plugins-filters-SRC flowvr.plugins.MergeItExt.cpp)
+SET(plugins-filters-SRC
+  flowvr.plugins.MergeItExt.cpp
+  flowvr.plugins.MergeGridMessages.cpp
+  )
 
 FOREACH(type sys sync filters)
   FOREACH(plugin-src ${plugins-${type}-SRC})
     STRING(REPLACE ".cpp" "" plugin ${plugin-src})
     ADD_LIBRARY(${plugin} MODULE ${plugin-src})
     TARGET_INCLUDE_DIRECTORIES(${plugin} PUBLIC ${FLOWVR_base_INCLUDE_DIR}
-${FLOWVR_plugd_INCLUDE_DIR})
+      ${FLOWVR_plugd_INCLUDE_DIR})
+
+    # for merge grid messgage:
+    TARGET_INCLUDE_DIRECTORIES(${plugin} PUBLIC "../pfanalyzer")
+    TARGET_INCLUDE_DIRECTORIES(${plugin} PUBLIC ${fca_INCLUDE_DIRECTORY})
+
     SET_TARGET_PROPERTIES(${plugin} PROPERTIES PREFIX "")
     TARGET_LINK_LIBRARIES(${plugin} ${FLOWVR_base_LIBRARY}
 ${FLOWVR_plugd_LIBRARY})
