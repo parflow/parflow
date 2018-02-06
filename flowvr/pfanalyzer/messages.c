@@ -1,4 +1,3 @@
-#include <fca/fca.h>
 #include <string.h>
 
 #include "messages.h"
@@ -48,7 +47,7 @@ void ParseMergedMessage(fca_port port, size_t (*cb)(const void *buffer, size_t s
     }
     if (buffer > end)
     {
-      printf("Probably a message parsing error occured!");
+      printf("Probably a message parsing error occured!\n");
     }
   }
   fca_free(msg);
