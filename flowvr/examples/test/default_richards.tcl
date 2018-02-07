@@ -331,7 +331,6 @@ pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      100
 # FlowVR parameters
 #---------------------------------------------------------
 pfset FlowVR.SteerLogMode "VerySimple"
-pfset FlowVR.ServeFinalState    False
 pfset FlowVR.Outports.Names "out0"
 
 pfset FlowVR.Outports.out0.Periodicity 1

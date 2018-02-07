@@ -3506,11 +3506,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #ifdef HAVE_FLOWVR
   if (FLOWVR_ACTIVE)
   {
-    // serve final state for visit to connect?
-    FlowVRServeFinalState(&snapshot);
-
     D("Ending now!");
-    FlowVREnd();
+    FlowVREnd(&snapshot);
   }
 #endif
 

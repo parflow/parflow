@@ -597,7 +597,4 @@ pfset OverlandFlowSpinUp				 0
 pfset NetCDF.WritePressure True
 pfset NetCDF.NumStepsPerFile 1
 
-# for FlowVR mode:
-pfset FlowVR.ServeFinalState    False
-
 pfwritedb hillslope_sens

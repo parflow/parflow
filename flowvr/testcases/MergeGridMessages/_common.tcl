@@ -8,8 +8,7 @@ pfset Process.Topology.R        [lindex $argv 2]
 #---------------------------------------------------------
 # Settings FlowVR
 #---------------------------------------------------------
-pfset FlowVR.ServeFinalState    False
-pfset FlowVR.AbortOnEnd         False
+pfset FlowVR.OnEnd         SendEmpty
 pfset FlowVR.Outports.Names "pressure"
 pfset FlowVR.Outports.pressure.Periodicity 1
 pfset FlowVR.Outports.pressure.Variable "pressure"

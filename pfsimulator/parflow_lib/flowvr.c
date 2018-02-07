@@ -564,16 +564,11 @@ void SendSnapshot(SimulationSnapshot const * const snapshot, Variable var)
   CreateAndSendMessage(snapshot, "snap", var);
 }
 
-void FlowVRServeFinalState(SimulationSnapshot *snapshot)
+void serveFinalState(SimulationSnapshot *snapshot)
 {
-  int serve_final_state = GetBooleanDefault("FlowVR.ServeFinalState", 0);
-
-  if (serve_final_state)
-  {
-    D("now serving final state.");
-    while (FlowVRInteract(snapshot))
-      usleep(100000);
-  }
+  D("now serving final state.");
+  while (FlowVRInteract(snapshot))
+    usleep(100000);
 }
 
 /**
@@ -594,21 +589,43 @@ int FlowVRFulFillContracts(int timestep, SimulationSnapshot const * const snapsh
   return res;
 }
 
-void FlowVREnd()
+void sendEmpties()
 {
-  int abort_on_end = GetBooleanDefault("FlowVR.AbortOnEnd", 1);
-
-  if (abort_on_end)
+  for (size_t i = 0; i < n_contracts; ++i)
   {
-    fca_abort(module_parflow);
+    fca_port port = fca_get_port(module_parflow, contracts[i].port_name);
+    SendEmptyMessage(module_parflow, port);
   }
-  else
+}
+
+void FlowVREnd(SimulationSnapshot *snapshot)
+{
+  NameArray switch_na = NA_NewNameArray("Abort SendEmpty ServeFinalState");
+  const char *key = "FlowVR.OnEnd";
+
+  char *switch_name = GetStringDefault(key, "Abort");
+
+  int on_end = NA_NameToIndex(switch_na, switch_name);
+
+  NA_FreeNameArray(switch_na);
+
+  switch (on_end)
   {
-    for (size_t i = 0; i < n_contracts; ++i)
-    {
-      fca_port port = fca_get_port(module_parflow, contracts[i].port_name);
-      SendEmptyMessage(module_parflow, port);
-    }
+    case 0:
+      fca_abort(module_parflow);
+      break;
+
+    case 1:
+      sendEmpties();
+      break;
+
+    case 2:
+      serveFinalState(snapshot);
+      break;
+
+    default:
+      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
+                 key);
   }
 }
 

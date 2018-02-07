@@ -19,8 +19,7 @@ pfset FlowVR.SteerLogMode "VerySimple"
 #pfset FlowVR.SteerLogMode "Full"
 
 
-# for FlowVR mode:
-pfset FlowVR.ServeFinalState    False
+pfset FlowVR.OnEnd    SendEmpty
 
 pfset FlowVR.Outports.Names "pressure"
 

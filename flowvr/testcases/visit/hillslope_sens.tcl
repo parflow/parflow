@@ -1,5 +1,3 @@
-#Using parflow_BH
-
 
 # Import the ParFlow TCL package
 #
@@ -15,7 +13,7 @@ pfset FileVersion 4
 #---------------------------------------------------------
 # FlowVR parameters
 #---------------------------------------------------------
-pfset FlowVR.ServeFinalState    True
+pfset FlowVR.OnEnd    ServeFinalState
 
 #-----------------------------------------------------------------------------
 # Process Topology

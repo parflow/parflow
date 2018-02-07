@@ -98,19 +98,13 @@ int FlowVRInteract(SimulationSnapshot *snapshot);
 int FlowVRFulFillContracts(int timestep, SimulationSnapshot const * const snapshot);
 
 /**
- * Checks if the FlowVR.ServeFinalState option is True. If so serves the final simulation
- * state to stay accessible for e.g. online VisIt visualization.
- */
-void FlowVRServeFinalState(SimulationSnapshot *snapshot);
-
-/**
  * Frees memory allocated by NewFlowVR()
  */
 void FreeFlowVR();
 
 /**
- * End the FlowVR application this parflow module runs in. Thus on every outport an empty
- * message is sent and we exit.
+ * End the FlowVR application this parflow module runs in. Thus processes the
+ * FlowVR.OnEnd value in the input database
  */
 extern inline void FlowVREnd();
 
