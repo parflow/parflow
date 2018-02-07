@@ -125,6 +125,11 @@ void NewFlowVR(void)
   PARFLOW_ERROR("Parflow was not compiled with FlowVR but FlowVR was the input file was set to True");
   return;
 #else
+  if (strcmp(GetString("Solver"), "Richards") != 0)
+  {
+    PARFLOW_ERROR("To use as parflow module in parFlowVR the Richards solver must be chosen!");
+    return;
+  }
   initSteerLogMode();
   initContracts();
   D("Modname: %s, Parent: %s\n", getenv("FLOWVR_MODNAME"), getenv("FLOWVR_PARENT"));
