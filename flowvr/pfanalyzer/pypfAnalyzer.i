@@ -116,7 +116,7 @@
   /**
    * Initializes a python analyzer.
    *
-   * \p logstamps a list of the elements that will be logged later
+   * @param logstamps a list of the elements that will be logged later
    */
   void run(char *logstamps[], size_t logstampsc)
   {

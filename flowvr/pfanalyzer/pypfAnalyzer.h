@@ -9,8 +9,20 @@
 /**
  * Send a steer message.
  *
- * \p ix, iy, iz start indices of where to steer
- * \p IN_ARRAY3 the steer operand
+ * @param action the steer action to perform
+ * @param variable the variable on which to perform the steer action
+ * @param ix, iy, iz start indices of where to start applying the steer
+ * @param IN_ARRAY3 the steer operand
+ *
+ * Python Example:
+ * import pypfAnalyzer as pfa
+ *
+ * pfa.SendSteer(pfa.ACTION_SET, pfa.VARIABLE_PRESSURE, 0, 0, 0, [[[42, 42],
+ *                                                                 [42, 42]]])
+ *
+ *  ==> ParFlow pressure = [[[42, 42, ...],
+ *                           [42, 42, ...],
+ *                           ...], ...]
  */
 extern void SendSteer(const Action action, const Variable variable,
                       int ix, int iy, int iz,
@@ -20,7 +32,9 @@ extern void SendSteer(const Action action, const Variable variable,
 extern void _run(char *logstamps[], size_t logstampsc);
 
 /**
- * Send a log message logging the elements in \p slog
+ * Send a log message logging the elements in @param slog
+ *
+ * @param slog[] the elements to log.
  */
 extern void SendLog(StampLog slog[], size_t n);
 

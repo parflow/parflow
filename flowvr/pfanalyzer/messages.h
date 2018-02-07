@@ -117,35 +117,63 @@ typedef struct {
 } GridMessageMetadata;
 
 /**
- * Sends an action message from the FlowVR module \p mod, outport \p out to perform
- * \p action on \p variable
+ * Sends an action message
+ *
+ * @param mod FlowVR module to send the action message from
+ * @param out the outport
+ * @param action action to perform
+ * @param variable variable on which to perform @param action
  */
 extern void SendActionMessage(fca_module mod, fca_port port, Action action, Variable variable,
                               void *parameter, size_t parameter_size);
 
 /**
  * Macro to simplify the declaration of callback functions for ParseMergedMessage
- * \p buffer specifies where to read out data.
- * \p size specifies the overall of the merged message buffer is a part of
- * \p cbdata user data
+ *
+ * @param buffer specifies where to read out data.
+ * @param size specifies the overall of the merged message buffer is a part of
+ * @param cbdata user data
  */
 #define MergeMessageParser(function_name) \
   size_t function_name(const void *buffer, size_t size, void *cbdata)
 
 /**
- * Gets the last message on inport \p port. Assuming it is a message produced by the FlowVR
- * merge Filter or by its derivatives. Calls \p cb with the current read out position as
- * \p buffer parameter to the callback function until the complete message is processed.
+ * Gets the last message on inport @param port. Assuming it is a message produced by the FlowVR
+ * merge Filter or by its derivatives. Calls @param cb with the current read out position as
+ * @param buffer parameter to the callback function until the complete message is processed.
  * Thus buffer must always return how many bytes it read out.
- * \p cbdata can be used to transfer user data to the callback
+ * @param cbdata can be used to transfer user data to the callback
+ *
+ * @param port message where the merged message arrived
+ * @param cb call back to call with extracted message as parameter
+ * @param buffer extracted message
+ * @param size size of the overall merged message
+ * @param cbdata user data
  */
 extern void ParseMergedMessage(fca_port port,
                                size_t (*cb)(const void *buffer, size_t size, void *cbdata),
                                void *cbdata);
 
 /**
- * Sends a steer message from the FlowVR module \p mod, outport \p out to perform
- * steer action \p action on \p variable
+ * Sends a steer message
+ *
+ * @param mod the FlowVR module to send the steer message from
+ * @param out the outport
+ * @param action the steer action to perform
+ * @param variable the variable to steer
+ * @param ix, iy, iz start indices of where to steer
+ * @param data steer operand
+ * @param nx, ny, nz the dimensiions of operand
+ *
+ *
+ * Example:
+ *
+ * double operand[4] = {42, 42, 42, 42};
+ * SendSteerMessage(mod, out, ACTION_SET, VARIABLE_PRESSURE, 0, 0, 0, operand, 2, 2, 1);
+ *
+ *  ==> ParFlow pressure = [[[42, 42, ...],
+ *                           [42, 42, ...],
+ *                           ...], ...]
  */
 extern void SendSteerMessage(fca_module mod, fca_port out, const Action action,
                              const Variable variable,
@@ -153,14 +181,21 @@ extern void SendSteerMessage(fca_module mod, fca_port out, const Action action,
                              double *data, int nx, int ny, int nz);
 
 /**
- * Sends a log message logging all the \p n variables in  \log from FlowVR module \p mod,
- * port \p port
+ * Sends a log message logging
+ *
+ * @param mod FlowVR module that will send the log
+ * @param port outport on which the log shall be sent
+ * @param n variables in  @param log
+ * @param log[] array of variables to log
  */
 extern void SendLogMessage(fca_module mod, fca_port port, StampLog log[], size_t n);
 
 /**
  * Sends an empty message. Useful when analyzer need to send a message each timestep to
  * not deadlock the workflow.
+ *
+ * @param mod FlowVR module that will send the empty message
+ * @param port outport on which the empty message shall be sent
  */
 extern void SendEmptyMessage(fca_module mod, fca_port port);
 
