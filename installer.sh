@@ -5,7 +5,7 @@
 
 # In the following we define some install options:
 export PREFIX=$HOME/test
-export PYTHON="python2.7"
+export PYTHON="python2.6"
 
 export MPICC=`which mpicc`
 export MPICXX=`which mpicxx`
@@ -39,18 +39,27 @@ source flowvr-suite-config.sh
 mkdir -p $SRC
 
 mkdir -p $PREFIX/bin
+cd $PREFIX
+$WGET https://raw.githubusercontent.com/numpy/numpy/master/tools/swig/numpy.i
 cd $PREFIX/bin
-ln -s `which python2.7` python
+#ln -s `which $PYTHON` python
+
+#$WGET http://www.python.org/ftp/python/2.7.12/Python-2.7.12.tgz
+#tar xzvf Python-2.7.12.tgz
+#cd Python-2.7.12
+#./configure --prefix=$PREFIX --enable-shared
+#make
+#make install -j$N
 
 # numpy and netCDF4 are already installed?
-#cd $PREFIX
-#if [ ! -d "python" ]; then
-#  mkdir python
-#  cd python
-#  $WGET https://bootstrap.pypa.io/get-pip.py
-#  $PYTHON get-pip.py -t .
-#  $PYTHON pip install numpy netCDF4 -t .
-#fi
+cd $PREFIX
+if [ ! -d "python" ]; then
+  mkdir python
+  cd python
+  $WGET https://bootstrap.pypa.io/get-pip.py
+  $PYTHON get-pip.py -t .
+  $PYTHON pip install numpy netCDF4 -t .
+fi
 
 #openmpi is already installed?
 #cd $SRC
@@ -278,6 +287,7 @@ cmake .. -DBUILD_TESTING:BOOL=ON \
   -DFLOWVR_PREFIX:PATH=$PREFIX \
   -DPARFLOW_ENABLE_FLOWVR:BOOL=ON \
   -DPARFLOW_ENABLE_FLOWVR_TOOLS:BOOL=True
+  -DNUMPY_I_PATH $PREFIX  # not always necessary...
 
 make -j$N && make install -j$N
 fi
