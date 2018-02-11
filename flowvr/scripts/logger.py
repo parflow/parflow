@@ -1,9 +1,14 @@
 #!/usr/bin/python
-import matplotlib.pyplot as plt
+
 import sys
 import flowvr
 
 showWindows = sys.argv[-1] == "--show-windows"
+try:
+  import matplotlib.pyplot as plt
+except:
+  showWindows = False
+  print("not plotting as matplotlib was not found!")
 
 # https://stackoverflow.com/questions/10944621/dynamically-updating-plot-in-matplotlib
 if showWindows:
