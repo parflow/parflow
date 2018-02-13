@@ -1557,7 +1557,10 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     // Something to steer? A snapshot was triggered?
     BeginTiming(FlowVRInteractTimingIndex);
     if (!FlowVRInteract(&snapshot))
+    {
+      EndTiming(FlowVRInteractTimingIndex);
       break;
+    }
     EndTiming(FlowVRInteractTimingIndex);
 #endif
 
