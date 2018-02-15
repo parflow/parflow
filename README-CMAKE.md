@@ -131,10 +131,10 @@ is a minimal example of an MPI build with CLM:
    	 -DPARFLOW_HAVE_CLM=ON \
 	 -DPARFLOW_AMPS_LAYER=mpi1
 ```
-*often you also want to set some mpi options defining communication used 
+**Often you also want to set some mpi options defining communication used 
 and so on. Thus refer to 
 [How to specify command to run MPI applications](#how-to-specify-command-to-run-mpi-applications)
-at the end of this document!*
+at the end of this document!**
 
 Here is a more complex example where location of various external
 packages are being specified and some features are being enabled:
