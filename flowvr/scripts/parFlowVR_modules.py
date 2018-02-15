@@ -1,6 +1,7 @@
 from flowvrapp import *
 from filters import *
 import socket
+import subprocess
 
 class FilterMergeGridMessages(flowvrapp.Filter):
     """A filter converting concatenated gridmessages into one big grid message
@@ -81,16 +82,23 @@ class ParflowMPI(Composite):
         parflowrun=None
         cmdline=None
 
+
         # hosts: string with host names, separated by spaces
         if hosts.find(',') == -1:
             cmdline = "%s$PARFLOW_DIR/bin/parflow %s" % (debugprefix, problemName)
             # only one host. start locally!
         else:
-            if socket.gethostname().find('frog') == 0:
-                # I bet I'm on froggy ;)
-                parflowrun = FlowvrRunOpenMPI("%s$HOME/bin/froggy_parflow %s" % (debugprefix, problemName), hosts = hosts, prefix = prefix, mpirunargs="--mca btl_sm_use_knem 0 --mca btl_vader_single_copy_mechanism none")
-            else:
-                parflowrun = FlowvrRunMPI("%s$PARFLOW_DIR/bin/parflow %s" % (debugprefix, problemName), hosts = hosts, prefix = prefix, mpistack="openmpi")
+            # load runargs from file...
+            command = ['bash', '-c', '. $PARFLOW_DIR/config/pf-cmake-env.sh && echo \"$MPIEXEC_PREFLAGS $MPIEXEC_POSTFLAGS\"']
+            
+            proc = subprocess.Popen(command, stdout = subprocess.PIPE)
+            mpirunargs = ''
+            
+            for line in proc.stdout:
+                mpirunargs += line
+            
+            proc.communicate()
+	    parflowrun = FlowvrRunOpenMPI("$PARFLOW_DIR/bin/parflow %s" % problemName, prefixcmd=debugprefix, hosts = hosts, prefix = prefix, mpirunargs=mpirunargs)
 
 
         # hosts_list: convert hosts to a list
