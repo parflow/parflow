@@ -9,6 +9,7 @@ SET(SCRIPT_FILES
   ticker.py
   undist.tcl
   visit_loader.py
+  abort-on-empty.py
   )
 
 INSTALL(FILES ${SCRIPT_FILES}

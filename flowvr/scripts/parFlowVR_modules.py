@@ -13,7 +13,7 @@ class FilterMergeGridMessages(flowvrapp.Filter):
     Input ports:
     -  in: Grid messages to be joined.
 
-    Output Ports:
+    Output ports:
     - out: Big grid messages.
     """
 
@@ -85,7 +85,7 @@ class ParflowMPI(Composite):
 
         # hosts: string with host names, separated by spaces
         if hosts.find(',') == -1:
-            cmdline = "%s$PARFLOW_DIR/bin/parflow %s" % (debugprefix, problemName)
+            cmdline = "%s $PARFLOW_DIR/bin/parflow %s" % (debugprefix, problemName)
             # only one host. start locally!
         else:
             # load runargs from file...
@@ -98,7 +98,7 @@ class ParflowMPI(Composite):
                 mpirunargs += line
             
             proc.communicate()
-	    parflowrun = FlowvrRunOpenMPI("$PARFLOW_DIR/bin/parflow %s" % problemName, prefixcmd=debugprefix, hosts = hosts, prefix = prefix, mpirunargs=mpirunargs)
+	    parflowrun = FlowvrRunOpenMPI("%s $PARFLOW_DIR/bin/parflow %s" % (debugprefix, problemName), hosts = hosts, prefix = prefix, mpirunargs=mpirunargs)
 
 
         # hosts_list: convert hosts to a list
@@ -148,6 +148,16 @@ class Logger(Module):
     def __init__(self, name, stampNames, showWindows=True, host=""):
         Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/logger.py %s %s" % (stampNames, "--show-windows" if showWindows else ""), host=host)
         self.addPort("in", direction = 'in')  #, messagetype='stamps')
+
+class AbortOnEmpty(Module):
+    """Module that will abort the FlowVR application when receiving an empty message.
+
+    Input ports: 
+    - in receives messages that when empty will lead to an abort of the FlowVR application
+    """
+    def __init__(self, name, host=""):
+        Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/abort-on-empty.py", host=host)
+        self.addPort("in", direction = 'in')
 
 class Ticker(Module):
     """Module sends a message every second"""
