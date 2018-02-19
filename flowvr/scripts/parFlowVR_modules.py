@@ -70,7 +70,8 @@ class ParflowMPI(Composite):
     """several instances of parflow module that generate pressure, porosity... for the
     next timeframe"""
 
-    def __init__(self, hosts, problemName, outports=[], debugprefix=None):
+    def __init__(self, hosts, problemName, outports=[], debugprefix=None, rankfile='',
+            easyPinning=True):
         Composite.__init__(self)
 
         if debugprefix is None:
@@ -90,13 +91,19 @@ class ParflowMPI(Composite):
         else:
             # load runargs from file...
             command = ['bash', '-c', '. $PARFLOW_DIR/config/pf-cmake-env.sh && echo \"$MPIEXEC_PREFLAGS $MPIEXEC_POSTFLAGS\"']
-            
+
             proc = subprocess.Popen(command, stdout = subprocess.PIPE)
-            mpirunargs = ''
-            
+            mpirunargs = '--report-bindings'  # -mca plm_rsh_no_tree_spawn 1 '
+            if rankfile != '':
+                mpirunargs = ' -rankfile '+rankfile + ' '
+            elif easyPinning:
+                mpirunargs += ' --map-by core --bind-to core '
+
+
+
             for line in proc.stdout:
-                mpirunargs += line
-            
+                mpirunargs += ' ' + line
+
             proc.communicate()
 	    parflowrun = FlowvrRunOpenMPI("%s $PARFLOW_DIR/bin/parflow %s" % (debugprefix, problemName), hosts = hosts, prefix = prefix, mpirunargs=mpirunargs)
 
@@ -152,7 +159,7 @@ class Logger(Module):
 class AbortOnEmpty(Module):
     """Module that will abort the FlowVR application when receiving an empty message.
 
-    Input ports: 
+    Input ports:
     - in receives messages that when empty will lead to an abort of the FlowVR application
     """
     def __init__(self, name, host=""):
@@ -168,8 +175,13 @@ class Ticker(Module):
 
 class NetCDFWriter(Module):
     """Module NetCDFWriter writes parflow output into netCDF files."""
-    def __init__(self, name, fileprefix="", host="", abortOnEnd=True):
+    def __init__(self, name, fileprefix="", host="", abortOnEnd=True, lastCore=True, cores=''):
+# last core property is nice for pinning ;)
         # TODO: works with mpi too?!
+        if lastCore and cores == '':
+            import multiprocessing
+            cores=str(multiprocessing.cpu_count()-1)
+            # test by running taskset -p `pgrep netcdf-writer | head -n1`
         Module.__init__(self, name, cmdline = "$PARFLOW_DIR/bin/netcdf-writer %s %s" %
-                (fileprefix, "--no-abort" if not abortOnEnd else ""), host=host)
+                (fileprefix, "--no-abort" if not abortOnEnd else ""), host=host, cores=cores)
         self.addPort("in", direction = 'in');
