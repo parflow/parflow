@@ -2735,6 +2735,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     {
       instance_xtra->dump_index++;  // REFACTOR: shouldn't we only set this higher if we dumped out something
 
+      // This allows us to measure the time needed to calculate one dumpinterval:
+      PrintTimeCount("Dump");
+
 #ifdef HAVE_FLOWVR
       /**************************************************************/
       /* FlowVR output                                              */
