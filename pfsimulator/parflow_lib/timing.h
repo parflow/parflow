@@ -129,6 +129,19 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
   }
 #endif
 
+#define ALL_ITERATIONS_TIMING
+#ifdef ALL_ITERATIONS_TIMING
+#define EndTiming(i) \
+  { \
+    StopTiming(); \
+    TimingTime(i) += TimingTimeCount; \
+    TimingCPUTime(i) += TimingCPUCount; \
+    TimingFLOPS(i) += TimingFLOPCount; \
+    if (!amps_Rank(amps_CommWorld)) \
+      printf("Wall time (Rank 0) %d: %d ticks\n", (i), TimingTimeCount); \
+    StartTiming(); \
+  }
+#else
 #define EndTiming(i) \
   { \
     StopTiming(); \
@@ -137,6 +150,7 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
     TimingFLOPS(i) += TimingFLOPCount; \
     StartTiming(); \
   }
+#endif
 
 #ifdef VECTOR_UPDATE_TIMING
 

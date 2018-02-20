@@ -129,7 +129,13 @@ void  PrintTiming()
   max_invoice = amps_NewInvoice("%d%d", &time_ticks, &cpu_ticks);
 
   IfLogging(0)
-  file = OpenLogFile("Timing");
+  {
+    file = OpenLogFile("Timing");
+
+#ifdef ALL_ITERATIONS_TIMING
+    amps_Fprintf(file, "AMPS_TICKS_PER_SEC (Rank 0): %d\n\n", AMPS_TICKS_PER_SEC);
+#endif
+  }
 
   for (i = 0; i < (timing->size); i++)
   {
