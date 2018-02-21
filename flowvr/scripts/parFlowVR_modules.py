@@ -3,6 +3,16 @@ from filters import *
 import socket
 import subprocess
 
+# helper function:
+def preferLastCore(lastCore, cores):
+    if lastCore and cores == '':
+        import multiprocessing
+        return str(multiprocessing.cpu_count()-1)
+        # test by running taskset -p `pgrep netcdf-writer | head -n1`
+    return cores
+
+
+# Modules:
 class FilterMergeGridMessages(flowvrapp.Filter):
     """A filter converting concatenated gridmessages into one big grid message
     containing the full grid (nX,nY,nZ)
@@ -139,8 +149,9 @@ class Analyzer(Module):
     """Module that will analyze GridMessages on the in Port and give a Steer Proposition
     on the out port. The log port can be used with the logger module to log and plot
     floating point outputs in realtime."""
-    def __init__(self, name, cmdline, host=""):
-        Module.__init__(self, name, cmdline = cmdline, host=host)
+    def __init__(self, name, cmdline, host="", lastCore=True, cores=''):
+        cores = preferLastCore(lastCore, cores)
+        Module.__init__(self, name, cmdline = cmdline, host=host, cores=cores)
         self.addPort("in", direction = 'in')
         p = self.addPort("out", direction = 'out')#, blockstate='nonblocking') # send out thaat I need a trigger ;)
         #p.blockstate='non blocking'
@@ -178,10 +189,8 @@ class NetCDFWriter(Module):
     def __init__(self, name, fileprefix="", host="", abortOnEnd=True, lastCore=True, cores=''):
 # last core property is nice for pinning ;)
         # TODO: works with mpi too?!
-        if lastCore and cores == '':
-            import multiprocessing
-            cores=str(multiprocessing.cpu_count()-1)
-            # test by running taskset -p `pgrep netcdf-writer | head -n1`
+
+        cores = preferLastCore(lastCore, cores)
         Module.__init__(self, name, cmdline = "$PARFLOW_DIR/bin/netcdf-writer %s %s" %
                 (fileprefix, "--no-abort" if not abortOnEnd else ""), host=host, cores=cores)
         self.addPort("in", direction = 'in');
