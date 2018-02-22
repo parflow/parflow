@@ -2,6 +2,7 @@ from flowvrapp import *
 from filters import *
 import socket
 import subprocess
+import os
 
 # helper function:
 def preferLastCore(lastCore, cores):
@@ -62,7 +63,8 @@ class Parflow(Module):
         name = prefix + "/" + str(index) if index is not None else prefix
 
         if cmdline is None:
-            cmdline = "$PARFLOW_DIR/bin/parflow %s" % problemName
+            pf_cmd = os.getenv('PARFLOW_EXE') or '$PARFLOW_DIR/bin/parflow'
+            cmdline = "%s %s" % (pf_cmd, problemName)
 
         Module.__init__(self, name, run = run, host = host, cmdline = cmdline)
 
@@ -115,7 +117,10 @@ class ParflowMPI(Composite):
                 mpirunargs += ' ' + line
 
             proc.communicate()
-	    parflowrun = FlowvrRunOpenMPI("%s $PARFLOW_DIR/bin/parflow %s" % (debugprefix, problemName), hosts = hosts, prefix = prefix, mpirunargs=mpirunargs)
+            pf_cmd = os.getenv('PARFLOW_EXE') or '$PARFLOW_DIR/bin/parflow'
+	    parflowrun = FlowvrRunOpenMPI("%s %s %s" %
+                    (debugprefix, pf_cmd, problemName), hosts = hosts, prefix = prefix,
+                    mpirunargs=mpirunargs)
 
 
         # hosts_list: convert hosts to a list
