@@ -580,7 +580,8 @@ int FlowVRFulFillContracts(int timestep, SimulationSnapshot const * const snapsh
 
   for (size_t i = 0; i < n_contracts; ++i)
   {
-    if ((abs(timestep - contracts[i].offset) % contracts[i].periodicity) == 0)
+    if (timestep >= contracts[i].offset &&
+        ((timestep - contracts[i].offset) % contracts[i].periodicity) == 0)
     {
       res = 1;
       CreateAndSendMessage(snapshot, contracts[i].port_name, contracts[i].variable);

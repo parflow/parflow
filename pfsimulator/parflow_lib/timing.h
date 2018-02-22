@@ -146,7 +146,7 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
   { \
     StopTiming(); \
     if (!amps_Rank(amps_CommWorld)) \
-    printf("Event %s (Rank 0) at wall time: %d ticks\n", event, TimingTimeCount); \
+      printf("Event %s (Rank 0) at wall time: %d ticks\n", event, TimingTimeCount); \
     StartTiming(); \
   }
 
