@@ -196,6 +196,7 @@ class NetCDFWriter(Module):
         # TODO: works with mpi too?!
 
         cores = preferLastCore(lastCore, cores)
-        Module.__init__(self, name, cmdline = "$PARFLOW_DIR/bin/netcdf-writer %s %s" %
-                (fileprefix, "--no-abort" if not abortOnEnd else ""), host=host, cores=cores)
+        nw_cmd = os.getenv('NETCDF_WRITER_EXE') or '$PARFLOW_DIR/bin/netcdf-writer'
+        Module.__init__(self, name, cmdline = "%s %s %s" %
+                (nw_cmd, fileprefix, "--no-abort" if not abortOnEnd else ""), host=host, cores=cores)
         self.addPort("in", direction = 'in');
