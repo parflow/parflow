@@ -17,8 +17,8 @@ namespace flowvr
 
     using namespace flowvr::plugd;
 
-    /// \brief A filter which sends ALWAYS a message (sometimes containing an empty buffer)
-    /// with random content) if order is called. If possible the Message consists of the
+    /// \brief A filter which sends ALWAYS a message (sometimes containing an empty buffer
+    /// if order receives a message. If possible the Message consists of the
     /// concatenation of all messages waiting on the in-ports. The stamps of the first
     /// found message are hereby copied.
     ///
@@ -30,7 +30,7 @@ namespace flowvr
     /// -  <b>order</b>:  Filtering orders  (from a  synchronizer  such as
     /// flowvr::plugins::GreedySynchronizor).
     ///
-    /// <b>Output Ports:</b>
+    /// <b>Output ports:</b>
     /// - <b>out</b>: Filtered messages.
 
     class MergeItExt : public Filter

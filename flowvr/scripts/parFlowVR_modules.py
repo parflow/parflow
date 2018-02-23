@@ -15,11 +15,11 @@ def preferLastCore(lastCore, cores):
 
 # Modules:
 class FilterMergeGridMessages(flowvrapp.Filter):
-    """A filter converting concatenated gridmessages into one big grid message
+    """A filter converting concatenated grid messages into one big grid message
     containing the full grid (nX,nY,nZ)
     of timestep t as soon as he got all the necessary data.
 
-    WARNING: we abort if not all the data necessary were found!
+    WARNING: we abort if not all the data necessary was found!
 
     Input ports:
     -  in: Grid messages to be joined.
@@ -34,19 +34,21 @@ class FilterMergeGridMessages(flowvrapp.Filter):
         self.addPort('out', direction = 'out')
 
 class FilterMergeItExt(FilterWithManyInputs):
-    """Merges messages received on input port into one message sent on output port.
+    """Merges messages received on input port into one message sent on output port if
+    a message on the order port is received.
 
-    More precisely, when it receives a message on the 'order' port, it
-    inspects the incoming message queue ('in' port), discard all
-    messages with a non null 'scratch' stamp value, concatenate all
-    other messages in one message sent on 'out' port. This message has
-    its 'scratch' stamp set to 0 and its 'stamp' stamp set to the sum of
-    all 'stamp' stamps of the concatenated messages. The name of the
-    'scratch' and 'stamp' stamps is set from the component parameter.
-    If forwardEmpty is set to "True" even empty mesages will be forwarded or if no message
-    is available on the 'in' port an empty message will be generated.
-    If forwardPresignal is set to "True" even Presignal messages (and messages with an it
-    stamp < 0) will be forwarded
+    A filter which sends ALWAYS a message (sometimes containing an empty buffer)
+    if a message on the order port is received. If possible the Message consists of the
+    concatenation of all messages waiting on the in-ports. The stamps of the first
+    found message are hereby copied.
+
+    Input ports:
+    -  in: Messages to be filtered.
+    -  order: Filtering orders  (from a  synchronizer  such as
+    flowvr::plugins::GreedySynchronizer).
+
+    Output ports:
+    - out: Filtered messages.
 
     Use newInputPort() to get a new input port (instead of getPort()).
     """
@@ -59,6 +61,21 @@ class FilterMergeItExt(FilterWithManyInputs):
 
 
 class Parflow(Module):
+    """Instantiate a single core parflow instance. Use outports parameter to
+    set an array of out ports according to this parflow instances tcl file
+    (see pfset Flowvr.Outports.Names).
+    The parameter problemName is the problem's name specifying the pfidb file to load
+    (must be the same as the pfidb file name without extension).
+
+    Input ports:
+    - in: receives action messages
+
+    Output ports:
+    - snap: sends snapshot data to a visualizer when requested of an incoming
+      action message
+    - ...: output ports according to outports parameter
+    """
+
     def __init__(self, prefix, index=None, run=None, host=None, cmdline=None, outports=[], problemName=None):
         name = prefix + "/" + str(index) if index is not None else prefix
 
@@ -80,7 +97,13 @@ class Parflow(Module):
 
 class ParflowMPI(Composite):
     """several instances of parflow module that generate pressure, porosity... for the
-    next timeframe"""
+    next timestep. The hosts parameter defines how many instances to launch and on which
+    node. Alternatively this can be specified with a rankfile.
+    If no rankfile is found and easyPinning is True, the parflow processes get pinned on
+    the first cores per node. debugprefix can be used to set a debugger command that is
+    prepended. MPI run args are loaded as defined during CMAKE build.
+    MPIEXEC_PREFLAGS and MPIEXEC_POSTFLAGS have impact. The PARFLOW_EXE environment
+    variable can be used to specify the path to use for the parflow executable"""
 
     def __init__(self, hosts, problemName, outports=[], debugprefix=None, rankfile='',
             easyPinning=True):
@@ -143,54 +166,37 @@ class ParflowMPI(Composite):
 
 
 class VisIt(Module):
-    """Module that will abstract VisIt later"""
+    """Module creating a visit simualation  host in ~/.visit/simulations that can be
+    opened and interacted from VisIt
+
+    Input ports:
+    - in: gets grid messages and grid definition messages. Must be connected to ParFlow's
+      snap port
+
+    Output ports:
+    - triggerSnap: sends action messages requesting snapshot data from ParFlow. Thus must
+      be connected to ParFlow's in port"""
+
     def __init__(self, name, host=""):
         Module.__init__(self, name, cmdline = "$PARFLOW_DIR/bin/visit-connector", host=host)
         #Module.__init__(self, name, cmdline = "xterm -e gdb $PARFLOW_DIR/bin/visit-connector")
         self.addPort("triggerSnap", direction = 'out')
         self.addPort("in", direction = 'in')
 
-class Analyzer(Module):
-    """Module that will analyze GridMessages on the in Port and give a Steer Proposition
-    on the out port. The log port can be used with the logger module to log and plot
-    floating point outputs in realtime."""
-    def __init__(self, name, cmdline, host="", lastCore=True, cores=''):
-        cores = preferLastCore(lastCore, cores)
-        Module.__init__(self, name, cmdline = cmdline, host=host, cores=cores)
-        self.addPort("in", direction = 'in')
-        p = self.addPort("out", direction = 'out')#, blockstate='nonblocking') # send out thaat I need a trigger ;)
-        #p.blockstate='non blocking'
-        self.addPort("log", direction = 'out')
-
-class Logger(Module):
-    """Module that will log the given stamp value in a graph.
-    stampNames: space seperated line of stamp names. Must be float stamps.
-    The float content of those stamps will be logged and also plotted if showWindows is
-    true.
-    """
-    def __init__(self, name, stampNames, showWindows=True, host=""):
-        Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/logger.py %s %s" % (stampNames, "--show-windows" if showWindows else ""), host=host)
-        self.addPort("in", direction = 'in')  #, messagetype='stamps')
-
-class AbortOnEmpty(Module):
-    """Module that will abort the FlowVR application when receiving an empty message.
+class NetCDFWriter(Module):
+    """Module NetCDFWriter writes parflow output into netCDF files.
+    If lastCore parameter is True it will be
+    pinned on the last CPU core. Thus it is not interfering with the running ParFlow
+    instances if there is a core left.
+    If abortOnEnd parameter is set to true it will abort the workflow if an empty message
+    is received.
+    fileprefix will be the prefix of written files. This is especially useful when more
+    than one NetCDFWriter is used.
+    The NETCDF_WRITER_EXE environment variable can be used to specify the path to use
+    for the NetCDFWriter executable
 
     Input ports:
-    - in receives messages that when empty will lead to an abort of the FlowVR application
-    """
-    def __init__(self, name, host=""):
-        Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/abort-on-empty.py", host=host)
-        self.addPort("in", direction = 'in')
-
-class Ticker(Module):
-    """Module sends a message every second"""
-    def __init__(self, name, size=0, T=0.5, host=""):
-        Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/ticker.py %d %f" % (size, T), host=host)
-        #self.addPort("beginIt", direction = 'in')
-        self.addPort("out", direction = 'out')
-
-class NetCDFWriter(Module):
-    """Module NetCDFWriter writes parflow output into netCDF files."""
+    - in: receiving grid messages that will be written into a file"""
     def __init__(self, name, fileprefix="", host="", abortOnEnd=True, lastCore=True, cores=''):
 # last core property is nice for pinning ;)
         # TODO: works with mpi too?!
@@ -200,3 +206,62 @@ class NetCDFWriter(Module):
         Module.__init__(self, name, cmdline = "%s %s %s" %
                 (nw_cmd, fileprefix, "--no-abort" if not abortOnEnd else ""), host=host, cores=cores)
         self.addPort("in", direction = 'in');
+
+class Analyzer(Module):
+    """Module that will analyze grid messages on the in Port and give a Steer Proposition
+    on the out port. The log port can be used with the logger module to log and plot
+    floating point outputs in real time. If lastCore parameter is True it will be
+    pinned on the last CPU core. Thus it is not interfering with the running ParFlow
+    instances if there is a core left.
+
+    Input ports:
+    - in: receiving grid messages, typically from one of ParFlow's out ports
+
+    Output ports:
+    - out: sends action messages (steer messages) to typically ParFlow's in port"""
+
+    def __init__(self, name, cmdline, host="", lastCore=True, cores=''):
+        cores = preferLastCore(lastCore, cores)
+        Module.__init__(self, name, cmdline = cmdline, host=host, cores=cores)
+        self.addPort("in", direction = 'in')
+        p = self.addPort("out", direction = 'out')#, blockstate='nonblocking') # send out thaat I need a trigger ;)
+        #p.blockstate='non blocking'
+        self.addPort("log", direction = 'out')
+
+class Logger(Module):
+    """Module that will log the given stamp value in a graph. Used mainly for debugging.
+    stampNames: space separated line of stamp names. Must be float stamps.
+    The float content of those stamps will be logged and also plotted if showWindows is
+    True.
+
+    Input ports:
+    - in: receives stamp messages whose float stamps are logged according to the
+      stampNames given on module initialization
+    """
+    def __init__(self, name, stampNames, showWindows=True, host=""):
+        Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/logger.py %s %s" % (stampNames, "--show-windows" if showWindows else ""), host=host)
+        self.addPort("in", direction = 'in')  #, messagetype='stamps')
+
+class AbortOnEmpty(Module):
+    """Module that will abort the FlowVR application when receiving an empty message.
+
+    Input ports:
+    - in: receives messages that when empty will lead to an abort of the FlowVR application
+    """
+    def __init__(self, name, host=""):
+        Module.__init__(self, name,
+                cmdline = "python $PARFLOW_DIR/bin/parflowvr/abort-on-empty.py",
+                host=host)
+        self.addPort("in", direction = 'in')
+
+class Ticker(Module):
+    """Module that sends an empty message every T seconds. Used for debugging and module
+    testing.
+
+    Output ports:
+    - out: port that sends the message
+    """
+    def __init__(self, name, size=0, T=0.5, host=""):
+        Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/ticker.py %d %f" % (size, T), host=host)
+        #self.addPort("beginIt", direction = 'in')
+        self.addPort("out", direction = 'out')
