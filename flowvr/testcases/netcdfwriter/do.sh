@@ -25,7 +25,7 @@ mv results results_noFlowVR
 
 # now lets run it with parflow
 
-python ./parFlowVR.py
+python ./parflowvr.py
 flowvrd -s 4M &
 
 # wait for flowvrd to startup
