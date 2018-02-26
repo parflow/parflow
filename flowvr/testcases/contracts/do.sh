@@ -1,6 +1,6 @@
 #!/bin/bash
 rm $PROBLEMNAME*.out.*
-export PROBLEMNAME=default_richards
+PROBLEMNAME=default_richards
 $PARFLOW_DIR/bin/parflowvr/do.sh $PROBLEMNAME --batch-mode >log
 echo .
 echo .

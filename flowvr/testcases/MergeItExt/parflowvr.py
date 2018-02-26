@@ -19,5 +19,4 @@ f.getPort("out").link(spy.getPort("in"))
 t.getPort("out").link(spy2.getPort("in"))
 
 
-app.generate_xml("MergeItExt")
-
+app.generate_xml("parflowvr")

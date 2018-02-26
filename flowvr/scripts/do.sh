@@ -6,9 +6,10 @@
 
 killall flowvrd
 flowvr-kill
-rm $1.net.xml
-rm $1.run.xml
-rm $1.cmd.xml
-python $1.py
+rm parflowvr.net.xml
+rm parflowvr.run.xml
+rm parflowvr.cmd.xml
+tclsh $1.tcl
+python parflowvr.py
 flowvrd&
-flowvr $@
+flowvr parflowvr "${@:2}"

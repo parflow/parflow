@@ -19,4 +19,4 @@ parflow.getPort("out1").link(analyzer1.getPort("in"))
 analyzer2 = Analyzer("analyzer2", "python -u ./analyzer.py 1 2")
 parflow.getPort("out2").link(analyzer2.getPort("in"))
 
-app.generate_xml("default_richards")
+app.generate_xml("parflowvr")
