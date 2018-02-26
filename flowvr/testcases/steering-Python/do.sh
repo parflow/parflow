@@ -1,13 +1,11 @@
 #!/bin/bash
 
 rm $PROBLEMNAME*.out.*
-export P=1
-export Q=2
-export R=1
-export PROBLEMNAME=hillslope_sens
-export DEBUGFLAGS="-v -v -v"
-export DEBUGFLAGS=""
-$PARFLOW_DIR/bin/parflowvr/doMPI.sh
+P=1
+Q=2
+R=1
+PROBLEMNAME=hillslope_sens
+$PARFLOW_DIR/bin/parflowvr/doMPI.sh $PROBLEMNAME $P $Q $R
 $PARFLOW_DIR/bin/parflowvr/undist.tcl veg_map.pfb
 
 echo .

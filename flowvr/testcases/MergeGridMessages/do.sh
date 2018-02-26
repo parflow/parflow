@@ -1,15 +1,15 @@
 #!/bin/bash
-export R=1
-export P=2
-export Q=2
-export PROBLEMNAME=default_richards
+R=1
+P=2
+Q=2
+PROBLEMNAME=default_richards
 export DAEMONFLAGS="-s 3G"
 export DEBUGFLAGS=""
 
 rm -f *.nc
 
 # run it
-$PARFLOW_DIR/bin/parflowvr/doMPI.sh
+$PARFLOW_DIR/bin/parflowvr/doMPI.sh $PROBLEMNAME $P $Q $R
 
 
 #some tests:

@@ -3,11 +3,22 @@
 # run parflow in MPI with flowvr.
 #
 #
-# need to set PROBLEMNAME, P, Q and R before as environment variables!
+# need to get PROBLEMNAME, P, Q and R from parameters!
 #
 # for fancy logs: ./doMPI.sh >log 2>&1
 #
 #
+
+if [ -z "$4" ];
+then
+  echo Error! could not find the needed amount of parameters!
+  exit 1
+fi
+
+PROBLEMNAME=$1
+P=$2
+Q=$3
+R=$4
 
 killall flowvrd
 flowvr-kill

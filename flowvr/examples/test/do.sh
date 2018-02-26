@@ -1,15 +1,15 @@
 #!/bin/bash -x
 
-#export P=1
-export P=2
-export Q=1
-export R=1
-export PROBLEMNAME=default_richards
+#P=1
+P=2
+Q=1
+R=1
+PROBLEMNAME=default_richards
 export DEBUGFLAGS=""
 
 # Python as reference:
 export ANALYZER=../Python-analyzer-template.py
-$PARFLOW_DIR/bin/parflowvr/doMPI.sh
+$PARFLOW_DIR/bin/parflowvr/doMPI.sh $PROBLEMNAME $P $Q $R
 
 rm -rf correct_output
 mkdir correct_output
@@ -20,6 +20,6 @@ cd ..
 gcc -L$PARFLOW_DIR/lib -I../pfanalyzer -I/usr/local/include/fca C-analyzer-template.c -lfca -lpfanalyzer
 cd test
 export ANALYZER=../a.out
-$PARFLOW_DIR/bin/parflowvr/doMPI.sh
+$PARFLOW_DIR/bin/parflowvr/doMPI.sh $PROBLEMNAME $P $Q $R
 
 tclsh test.tcl
