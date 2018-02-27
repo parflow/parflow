@@ -4307,7 +4307,7 @@ dumps a specified {\bf variable} at a specified {\bf periodicity} with a specifi
 {\bf periodicity} and {\bf offset} are given in {\bf DumpInterval}s.
 An out port dumps at the $n$-th {\bf DumpInterval} the {\bf variable} if the two conditions
 \begin{eqnarray}
-    n \leq \textbf{offset}\\
+    n \geq \textbf{offset}\\
     ( n - \textbf{offset} ) ~~~mod~~~ \textbf{periodicity} = 0
 \end{eqnarray}
 hold true.
