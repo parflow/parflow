@@ -19,9 +19,11 @@ scale.
 
 In the following we show how to make use of \parflow{} in a FlowVR workflow with the tools
 provided in this \parflow{} distribution. These tools build up a framework denoted as
-parFlowVR.
+parFlowVR. This allows to run \parflow{} and other tools of the parFlowVR ecosystem
+as a distributed parallel application.
 
 \section{Installation}
+\subsection{Dependencies}
 When installing the parFlowVR framework you will need to install
 FlowVR first.
 It can be retrieved from \\\code{https://gitlab.inria.fr/flowvr/flowvr-ex}%
@@ -32,6 +34,7 @@ VisIt (\code{https://wci.llnl.gov/simulation/computer-codes/visit/}) and
 Python with the NumPy and netCDF packages installed too. To learn how to get all those
 dependencies have a look in the \code{installer.sh} script of your \parflow{} distribution.
 
+\subsection{Compiling}
 The parFlowVR framework is only available in the CMake build system. We recommend to set the following
 CMake switches:
 \begin{display}\begin{verbatim}
@@ -47,7 +50,38 @@ CMake switches:
 # Needed for the visit connector
 -DVISIT_LIBRARY_LIBSIM=<Path to libsim (V2)>
 -DVISIT_INCLUDE_DIR=<Path to visit include directory>
+\end{verbatim}\end{display}
 
+\subsection{The Runtime Environment}
+Especially when working on high performance platforms, the parFlowVR framework's runtime
+environment must be carefully set up.
+In the following we give an example for setting environment variables impacting the
+parFlowVR behavior.
+\begin{display}\begin{verbatim}
+# set this to easily import the Python analyzer API. The python version (here 2.7)
+# should match your system's python version.
+export PYTHONPATH=$PYTHONPATH:$PARFLOW_DIR/lib/python2.7
+
+# The following line should be in your bashrc file as otherwise FlowVR modules cannot be
+# started remotely
+export PATH=$PATH:<path to flowvr binaries>
+
+# Load the FlowVR environment:
+source flowvr-suite-config.sh
+
+# optional:
+
+# If your high performance platform is using an alternative to ssh for remote shells
+# specify it like this:
+export FLOWVR_SSH="oarsh"
+
+# In some cases you want to use a different version of parFlowVR modules in your
+# distributed applications. Especially on some high performance platforms it might not be
+# possible to directly start e.g. ParFlow or the netcdf writer module as for isntance
+# some modules must be loaded before startup.
+# If the following variables are set to point to an executable it is executed instead.
+export PARFLOW_EXE=<path to the parflow starter script>
+export NETCDFWRITER_EXE<path to the netcdf writer starter script>
 \end{verbatim}\end{display}
 
 \section{Setting up a FlowVR workflow}
@@ -113,7 +147,7 @@ problemName, P, Q, R, hostlist = sys.argv[1:6]
 hosts = hostlist.split(',')
 
 
-# Add all your out ports as in FlowVR.Outports.Names here that you want to dump
+# Add all your out ports as in FlowVR.Outports.Names here that one wants to dump
 # Remember to not add two outports dumping the same variable as this leads to undefined
 # behavior.
 outports = ["pressure", "saturation"]
