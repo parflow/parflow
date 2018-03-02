@@ -60,6 +60,7 @@ void  NewTiming()
   RegisterTiming("PFSOL Read");
   RegisterTiming("FlowVR Interact");
   RegisterTiming("FlowVR Fulfill Contracts");
+  RegisterTiming("FlowVR Wait");
   RegisterTiming("NetCDF I/O");
 #ifdef VECTOR_UPDATE_TIMING
   RegisterTiming("VectorUpdate");

@@ -444,7 +444,10 @@ int FlowVRInteract(SimulationSnapshot *snapshot)
   if (FLOWVR_ACTIVE)
   {
     D("now waiting");
-    if (!fca_wait(module_parflow))
+    BeginTiming(FlowVRWaitTimingIndex);
+    int wait_res = fca_wait(module_parflow);
+    EndTiming(FlowVRWaitTimingIndex);
+    if (!wait_res)
       return 0;
 
     D("now simulating");

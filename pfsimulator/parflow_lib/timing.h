@@ -49,9 +49,10 @@
 #define PFSOLReadTimingIndex  7
 #define FlowVRInteractTimingIndex  8
 #define FlowVRFulFillContractsTimingIndex  9
-#define NetCDFTimingIndex  10
+#define FlowVRWaitTimingIndex  10
+#define NetCDFTimingIndex  11
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  11
+#define VectorUpdateTimingIndex  12
 #endif
 
 
