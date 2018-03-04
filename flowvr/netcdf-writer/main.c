@@ -59,6 +59,7 @@ int CreateFile(const char* file_name, size_t nX, size_t nY, size_t nZ, int *pxID
 
   if (access(file_name, F_OK) == -1)
   {
+    // TODO: race condition? who opens it first?
     if (nc_create_par(file_name, NC_NETCDF4 | NC_MPIIO, amps_CommWorld, MPI_INFO_NULL, &ncID) != NC_NOERR)
     {
       D("Error creating file!");
@@ -116,8 +117,12 @@ int main(int argc, char *argv [])
 
 
   printf("starting netcdf-writer\n");
-  MPI_Init(&argc, &argv);
-  // TODO: probably we will need to call flowvr fca_init_parallel here too ;)
+  amps_Init(argc, argv); // MPI_Init(&argc, &argv);
+  int amps_size = amps_Size(amps_CommWorld);
+  if (amps_size > 1)
+  {
+    fca_init_parallel(amps_Rank(amps_CommWorld), amps_size);
+  }
 
 
   /***********************
@@ -153,6 +158,9 @@ int main(int argc, char *argv [])
     {
       D("Ending it!");
       fca_free(msg);
+      // sync with all running netcdf writers so nobody aborts while another one is still
+      // writing.
+      amps_Sync(amps_CommWorld);
       fca_abort(flowvr);
       break;
     }
@@ -212,7 +220,7 @@ int main(int argc, char *argv [])
       find_variable_length(current_file_id, time_var_id, &(start[0]));
       start[0] = start[0] - 1;
       double const * const data = (double*)buffer;
-      // now do a write to the cdf! (! all the preparations up there are necessary!
+      // now do a write to the cdf! (! all the preparations up there are necessary!)
       int status = nc_put_vara_double(current_file_id, variable_var_id, start, count, data);
       D("putting doubles");
 
@@ -235,5 +243,5 @@ int main(int argc, char *argv [])
 #endif
 
   fca_free(flowvr);
-  MPI_Finalize();
+  amps_Finalize();  // MPI_finalize()
 }

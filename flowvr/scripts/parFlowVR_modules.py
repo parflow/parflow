@@ -57,7 +57,7 @@ class FilterMergeItExt(FilterWithManyInputs):
         self.messagetype = 'full'
         self.plugin_name = 'flowvr.plugins.MergeItExt'
         FilterWithManyInputs.__init__(self, name, host = host)
-        self.addPort("order", direction = 'in', messagetype = 'stamps')
+        self.addPort('order', direction = 'in', messagetype = 'stamps')
 
 
 class Parflow(Module):
@@ -77,26 +77,26 @@ class Parflow(Module):
     """
 
     def __init__(self, prefix, index=None, run=None, host=None, cmdline=None, outports=[], problemName=None):
-        name = prefix + "/" + str(index) if index is not None else prefix
+        name = prefix + '/' + str(index) if index is not None else prefix
 
         if cmdline is None:
             pf_cmd = os.getenv('PARFLOW_EXE') or '$PARFLOW_DIR/bin/parflow'
-            cmdline = "%s %s" % (pf_cmd, problemName)
+            cmdline = '%s %s' % (pf_cmd, problemName)
 
         Module.__init__(self, name, run = run, host = host, cmdline = cmdline)
 
-        inportnames = ["in"]
-        outportnames = outports + ["snap"]
+        inportnames = ['in']
+        outportnames = outports + ['snap']
 
 
         for inportname in inportnames:
-            p = self.addPort(inportname, direction = 'in')
+            self.addPort(inportname, direction = 'in')
 
         for outportname in outportnames:
-            p = self.addPort(outportname, direction = 'out')
+            self.addPort(outportname, direction = 'out')
 
 class ParflowMPI(Composite):
-    """several instances of parflow module that generate pressure, porosity... for the
+    """Several instances of parflow module that generate pressure, porosity... for the
     next timestep. The hosts parameter defines how many instances to launch and on which
     node. Alternatively this can be specified with a rankfile.
     If no rankfile is found and easyPinning is True, the parflow processes get pinned on
@@ -114,15 +114,17 @@ class ParflowMPI(Composite):
         else:
             debugprefix+=' '
 
-        prefix = "parflow_"+problemName
+        prefix = 'parflow_'+problemName
         parflowrun=None
         cmdline=None
 
+        pf_cmd = os.getenv('PARFLOW_EXE') or '$PARFLOW_DIR/bin/parflow'
 
         # hosts: string with host names, separated by spaces
         if hosts.find(',') == -1:
-            cmdline = "%s $PARFLOW_DIR/bin/parflow %s" % (debugprefix, problemName)
             # only one host. start locally!
+            #pf_cmd = '$PARFLOW_DIR/bin/parflow'
+            cmdline = '%s %s %s' % (debugprefix, pf_cmd, problemName)
         else:
             # load runargs from file...
             command = ['bash', '-c', '. $PARFLOW_DIR/config/pf-cmake-env.sh && echo \"$MPIEXEC_PREFLAGS $MPIEXEC_POSTFLAGS\"']
@@ -140,14 +142,13 @@ class ParflowMPI(Composite):
                 mpirunargs += ' ' + line
 
             proc.communicate()
-            pf_cmd = os.getenv('PARFLOW_EXE') or '$PARFLOW_DIR/bin/parflow'
-	    parflowrun = FlowvrRunOpenMPI("%s %s %s" %
+	    parflowrun = FlowvrRunOpenMPI('%s %s %s' %
                     (debugprefix, pf_cmd, problemName), hosts = hosts, prefix = prefix,
                     mpirunargs=mpirunargs)
 
 
         # hosts_list: convert hosts to a list
-        hosts_list = hosts.split(",")
+        hosts_list = hosts.split(',')
 
         # nb of instances
         ninstance = len(hosts_list)
@@ -177,11 +178,11 @@ class VisIt(Module):
     - triggerSnap: sends action messages requesting snapshot data from ParFlow. Thus must
       be connected to ParFlow's in port"""
 
-    def __init__(self, name, host=""):
-        Module.__init__(self, name, cmdline = "$PARFLOW_DIR/bin/visit-connector", host=host)
-        #Module.__init__(self, name, cmdline = "xterm -e gdb $PARFLOW_DIR/bin/visit-connector")
-        self.addPort("triggerSnap", direction = 'out')
-        self.addPort("in", direction = 'in')
+    def __init__(self, name, host=''):
+        Module.__init__(self, name, cmdline = '$PARFLOW_DIR/bin/visit-connector', host=host)
+        #Module.__init__(self, name, cmdline = 'xterm -e gdb $PARFLOW_DIR/bin/visit-connector')
+        self.addPort('triggerSnap', direction = 'out')
+        self.addPort('in', direction = 'in')
 
 class NetCDFWriter(Module):
     """Module NetCDFWriter writes parflow output into netCDF files.
@@ -197,15 +198,95 @@ class NetCDFWriter(Module):
 
     Input ports:
     - in: receiving grid messages that will be written into a file"""
-    def __init__(self, name, fileprefix="", host="", abortOnEnd=True, lastCore=True, cores=''):
+    def __init__(self, name, fileprefix='', host='', abortOnEnd=True, lastCore=True, cores=''):
 # last core property is nice for pinning ;)
         # TODO: works with mpi too?!
 
         cores = preferLastCore(lastCore, cores)
         nw_cmd = os.getenv('NETCDF_WRITER_EXE') or '$PARFLOW_DIR/bin/netcdf-writer'
-        Module.__init__(self, name, cmdline = "%s %s %s" %
-                (nw_cmd, fileprefix, "--no-abort" if not abortOnEnd else ""), host=host, cores=cores)
-        self.addPort("in", direction = 'in');
+        Module.__init__(self, name, cmdline = '%s %s %s' %
+                (nw_cmd, fileprefix, '--no-abort' if not abortOnEnd else ''), host=host, cores=cores)
+        self.addPort('in', direction = 'in');
+
+class NetCDFWriterMPI(Composite):
+    """Module NetCDFWriterMPI writes parflow output into netCDF files.
+    Used for node level fileIO. Runs on each host given in hosts a NetCDF Writer module.
+    All of those share a MPI world and thus parallel netCDF is supported: multiple processes
+    can open and change the same file at the same time.
+    If lastCore parameter is True it will be
+    pinned on the last CPU core of each node. Thus it is not interfering with the running ParFlow
+    instances if there is a core left.
+    If abortOnEnd parameter is set to true it will abort the workflow if an empty message
+    is received.
+    fileprefix will be the prefix of written files. This is especially useful when more
+    than one NetCDFWriter is used.
+    The NETCDF_WRITER_EXE environment variable can be used to specify the path to use
+    for the NetCDFWriter executable
+
+    Input ports:
+    - in: Receiving grid messages that will be written into a file.
+          One in port for each instance. getPort('in') will return a list of in ports
+          with the index number corresponding to instances defined in the hosts list.
+    """
+
+    def __init__(self, prefix, hosts=[], fileprefix='', abortOnEnd=True, lastCore=True,
+            rankfile=''):
+        Composite.__init__(self)
+
+        netcdfwriterrun=None
+        cmdline=None
+
+        nw_cmd = os.getenv('NETCDF_WRITER_EXE') or '$PARFLOW_DIR/bin/netcdf-writer'
+
+        # hosts: string with host names, separated by spaces
+        if hosts.find(',') == -1:
+            # only one host. start locally!
+            #nw_cmd = '$PARFLOW_DIR/bin/netcdf-writer'
+            cmdline = '%s %s %s' % (nw_cmd, fileprefix, '--no-abort' if not abortOnEnd else '')
+        else:
+            # load runargs from file...
+            command = ['bash', '-c', '. $PARFLOW_DIR/config/pf-cmake-env.sh && echo \'$MPIEXEC_PREFLAGS $MPIEXEC_POSTFLAGS\'']
+
+            proc = subprocess.Popen(command, stdout = subprocess.PIPE)
+            mpirunargs = '--report-bindings'  # -mca plm_rsh_no_tree_spawn 1 '
+            if rankfile != '':
+                mpirunargs = ' -rankfile '+rankfile + ' '
+            elif lastCore:
+                mpirunargs += ' --map-by core --bind-to core '
+
+            for line in proc.stdout:
+                mpirunargs += ' ' + line
+
+            proc.communicate()
+	    netcdfwriterrun = FlowvrRunOpenMPI('%s %s %s' %
+                    (nw_cmd, fileprefix, '--no-abort' if not abortOnEnd else ''),
+                    hosts=hosts,
+                    prefix=prefix,
+                    mpirunargs=mpirunargs)
+
+
+        # hosts_list: convert hosts to a list
+        hosts_list = hosts.split(',')
+
+        # nb of instances
+        ninstance = len(hosts_list)
+
+        for i in range(ninstance):
+            netcdfwriter = NetCDFWriter(prefix, index=i, run=parflowrun, host=hosts_list[i],
+                    cmdline=cmdline)
+
+            name = '%s/%d' % (prefix, i)
+
+            netcdfwriter = Module(name, cmdline=cmdline, run=netcdfwriterrun,
+                    host=hosts_list[i])
+            netcdfwriter.addPort('in', direction = 'in');
+
+            # collect ports
+            for pname in netcdfwriter.ports:
+                p = parflow.ports[pname]
+                if not pname in self.ports:
+                    self.ports[pname] = list()
+                self.ports[pname].append(p)
 
 class Analyzer(Module):
     """Module that will analyze grid messages on the in Port and give a Steer Proposition
@@ -220,13 +301,13 @@ class Analyzer(Module):
     Output ports:
     - out: sends action messages (steer messages) to typically ParFlow's in port"""
 
-    def __init__(self, name, cmdline, host="", lastCore=True, cores=''):
+    def __init__(self, name, cmdline, host='', lastCore=True, cores=''):
         cores = preferLastCore(lastCore, cores)
         Module.__init__(self, name, cmdline = cmdline, host=host, cores=cores)
-        self.addPort("in", direction = 'in')
-        p = self.addPort("out", direction = 'out')#, blockstate='nonblocking') # send out thaat I need a trigger ;)
+        self.addPort('in', direction = 'in')
+        p = self.addPort('out', direction = 'out')#, blockstate='nonblocking') # send out thaat I need a trigger ;)
         #p.blockstate='non blocking'
-        self.addPort("log", direction = 'out')
+        self.addPort('log', direction = 'out')
 
 class Logger(Module):
     """Module that will log the given stamp value in a graph. Used mainly for debugging.
@@ -238,9 +319,9 @@ class Logger(Module):
     - in: receives stamp messages whose float stamps are logged according to the
       stampNames given on module initialization
     """
-    def __init__(self, name, stampNames, showWindows=True, host=""):
-        Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/logger.py %s %s" % (stampNames, "--show-windows" if showWindows else ""), host=host)
-        self.addPort("in", direction = 'in')  #, messagetype='stamps')
+    def __init__(self, name, stampNames, showWindows=True, host=''):
+        Module.__init__(self, name, cmdline = 'python $PARFLOW_DIR/bin/parflowvr/logger.py %s %s' % (stampNames, '--show-windows' if showWindows else ''), host=host)
+        self.addPort('in', direction = 'in')  #, messagetype='stamps')
 
 class AbortOnEmpty(Module):
     """Module that will abort the FlowVR application when receiving an empty message.
@@ -248,11 +329,11 @@ class AbortOnEmpty(Module):
     Input ports:
     - in: receives messages that when empty will lead to an abort of the FlowVR application
     """
-    def __init__(self, name, host=""):
+    def __init__(self, name, host=''):
         Module.__init__(self, name,
-                cmdline = "python $PARFLOW_DIR/bin/parflowvr/abort-on-empty.py",
+                cmdline = 'python $PARFLOW_DIR/bin/parflowvr/abort-on-empty.py',
                 host=host)
-        self.addPort("in", direction = 'in')
+        self.addPort('in', direction = 'in')
 
 class Ticker(Module):
     """Module that sends an empty message every T seconds. Used for debugging and module
@@ -261,7 +342,7 @@ class Ticker(Module):
     Output ports:
     - out: port that sends the message
     """
-    def __init__(self, name, size=0, T=0.5, host=""):
-        Module.__init__(self, name, cmdline = "python $PARFLOW_DIR/bin/parflowvr/ticker.py %d %f" % (size, T), host=host)
-        #self.addPort("beginIt", direction = 'in')
-        self.addPort("out", direction = 'out')
+    def __init__(self, name, size=0, T=0.5, host=''):
+        Module.__init__(self, name, cmdline = 'python $PARFLOW_DIR/bin/parflowvr/ticker.py %d %f' % (size, T), host=host)
+        #self.addPort('beginIt', direction = 'in')
+        self.addPort('out', direction = 'out')
