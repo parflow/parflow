@@ -150,11 +150,8 @@ class ParflowMPI(Composite):
         # hosts_list: convert hosts to a list
         hosts_list = hosts.split(',')
 
-        # nb of instances
-        ninstance = len(hosts_list)
-
-        for i in range(ninstance):
-            parflow = Parflow(prefix, index=i, run=parflowrun, host=hosts_list[i],
+        for i, host in enumerate(hosts_list):
+            parflow = Parflow(prefix, index=i, run=parflowrun, host=host,
                     cmdline=cmdline,
                     outports=outports)
 
@@ -238,6 +235,9 @@ class NetCDFWriterMPI(Composite):
 
         nw_cmd = os.getenv('NETCDF_WRITER_EXE') or '$PARFLOW_DIR/bin/netcdf-writer'
 
+        # hosts_list: convert hosts to a list
+        hosts_list = hosts.split(',')
+
         # hosts: string with host names, separated by spaces
         if hosts.find(',') == -1:
             # only one host. start locally!
@@ -249,15 +249,28 @@ class NetCDFWriterMPI(Composite):
 
             proc = subprocess.Popen(command, stdout = subprocess.PIPE)
             mpirunargs = '--report-bindings'  # -mca plm_rsh_no_tree_spawn 1 '
+            if rankfile == '' and lastCore:
+                rankfile = 'rankfile.txt'
+                with open(rankfile, 'w+') as f:
+                    import multiprocessing
+                    for i, host in enumerate(hosts_list):
+                        bind_to = multiprocessing.cpu_count()-1
+                        f.write('rank %d=%s slot=%d\n' % (i, host, bind_to))
+
+                        # bind everything to the last core ;)
+                        #rank 0=aa slot=15
+                        #rank 1=bb slot=15
+                        #rank 2=cc slot=15
+
             if rankfile != '':
-                mpirunargs = ' -rankfile '+rankfile + ' '
-            elif lastCore:
-                mpirunargs += ' --map-by core --bind-to core '
+                mpirunargs = ' -rankfile ' + rankfile + ' '
 
             for line in proc.stdout:
                 mpirunargs += ' ' + line
 
             proc.communicate()
+
+
 	    netcdfwriterrun = FlowvrRunOpenMPI('%s %s %s' %
                     (nw_cmd, fileprefix, '--no-abort' if not abortOnEnd else ''),
                     hosts=hosts,
@@ -265,20 +278,13 @@ class NetCDFWriterMPI(Composite):
                     mpirunargs=mpirunargs)
 
 
-        # hosts_list: convert hosts to a list
-        hosts_list = hosts.split(',')
 
-        # nb of instances
-        ninstance = len(hosts_list)
 
-        for i in range(ninstance):
-            netcdfwriter = NetCDFWriter(prefix, index=i, run=parflowrun, host=hosts_list[i],
-                    cmdline=cmdline)
-
+        for i, host in enumerate(host_list):
             name = '%s/%d' % (prefix, i)
 
             netcdfwriter = Module(name, cmdline=cmdline, run=netcdfwriterrun,
-                    host=hosts_list[i])
+                    host=host)
             netcdfwriter.addPort('in', direction = 'in');
 
             # collect ports
