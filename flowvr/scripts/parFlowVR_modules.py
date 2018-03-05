@@ -280,7 +280,7 @@ class NetCDFWriterMPI(Composite):
 
 
 
-        for i, host in enumerate(host_list):
+        for i, host in enumerate(hosts_list):
             name = '%s/%d' % (prefix, i)
 
             netcdfwriter = Module(name, cmdline=cmdline, run=netcdfwriterrun,
@@ -289,7 +289,7 @@ class NetCDFWriterMPI(Composite):
 
             # collect ports
             for pname in netcdfwriter.ports:
-                p = parflow.ports[pname]
+                p = netcdfwriter.ports[pname]
                 if not pname in self.ports:
                     self.ports[pname] = list()
                 self.ports[pname].append(p)
