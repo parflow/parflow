@@ -4,7 +4,7 @@
 %=============================================================================
 % Preamble:
 %=============================================================================
- 
+
 % set margins
 \setlength{\oddsidemargin}{0in}
 \setlength{\evensidemargin}{0in}
@@ -14,31 +14,31 @@
 
 % define the version number
 \input{version}
- 
+
 % write out the index entries in the `.idx' file
 \makeindex
- 
+
 %=============================================================================
 % Body:
 %=============================================================================
- 
+
 \begin{document}
 
 %==================== Title Page
- 
+
 \begin{TitlePage}
- 
+
 \Title{AMPS Manual: Draft}
 \SubTitle{Another Message Passing System}
 \SubTitle{Software \PFVersion}
 \Author{Steven Smith}
- 
+
 \end{TitlePage}
- 
+
 %=============== Copyright Page
- 
+
 \begin{CopyrightPage}
- 
+
 \noindent
 Copyright \copyright{} 1995 The Regents of the University of California.
 
@@ -46,7 +46,7 @@ Copyright \copyright{} 1995 The Regents of the University of California.
 Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
 preserved on all copies.
- 
+
 \end{CopyrightPage}
 
 % **end of header
@@ -79,7 +79,7 @@ designed to maintain independence from any specific message-passing
 system.
 
 Why develop this when other systems already exist?  We were in a
-situation were we had implemented our code on using {\em Zipcode} 
+situation were we had implemented our code on using {\em Zipcode}
 \cite{SkLe90,skjellum.smith.ea.93,smith.falgout.ea.93} but
 were looking to move to {\em MPI}.  Unfortunately, {\em MPI} was not
 yet available, support was lacking from several computer vendors, and we
@@ -95,7 +95,7 @@ You will find that, by-in-large, {\em AMPS} is very similar to most
 other message passing systems.  The major difference is in how the
 content of messages is specified.  In addition to the standard message
 passing functions, {\em AMPS} provides I/O functions to provide
-portable parallel file operations. 
+portable parallel file operations.
 
 {\em AMPS} has features to enable multi-threaded programs to be
 written.  Macros are provided for creating and accessing "thread local"
@@ -110,7 +110,7 @@ codes that run slower than multi-process versions.  We continue to
 experiment with different libraries and techniques to see if we can
 improve this.  In order to use threaded versions of {\em AMPS} you will
 have to ensure that you program is thread safe.  The implies careful
-use of global and static variables.  The macros provided by {\em AMPS} 
+use of global and static variables.  The macros provided by {\em AMPS}
 enable declarations and use of "thread local" variables.  These should
 be used whenever you wish to have global data or static data that needs
 to be specific to a particular node.  Of course redesign an application
@@ -186,7 +186,7 @@ Information about compiling and executing AMPS programs is given in
 \label{Hello World}
 
 This section contains an example of the ubiquitous "hello world" program.
-Each node prints the message "Hello World". 
+Each node prints the message "Hello World".
 
 This example shows the basic outline of an {\em AMPS} program.
 First you must call \code{amps_Init}.  This function performs any
@@ -275,7 +275,7 @@ communication; the {\em SHMEM} library is used for the
 \code{amps_Package} and for small collective operations (i.e.
 \code{amps_AllReduce}.  This split came about since {\em PVM} was for
 the initial port and the {\em SHMEM} addition was made in the most
-time critical operations for \parflow{}.  
+time critical operations for \parflow{}.
 
 Because the {\em SHMEM} operations must access memory addresses that
 are valid on the local as well as the remote node, the use of {\em
@@ -292,7 +292,7 @@ pre-allocated.  The size of this regions is controlled using the the
 \code{AMPS_SHMEM_SIZE} environment variable.  This variable is the
 total number of bytes that can be used by the {\em AMPS} memory
 allocation routines during the course of your program.  By default
-\parflow{} uses a size of 43200000 bytes.  
+\parflow{} uses a size of 43200000 bytes.
 
 Currently the \code{amps_TFree} routine does not return the memory
 allocated back to a free pool.  Once memory is allocated it can NOT be
@@ -342,7 +342,7 @@ This port is very similar to the SGI IRIX port except it uses
 the \code{sproc} call rather than \code{fork} to create the multiple
 ``threads of control''.  This is not really a multi-threaded version
 in a technical sense but I will refer to it in that way since it is
-close.  
+close.
 
 So far this experiment has not been very successful.  The reason is the
 time spent in a lock around the Standard C Library routines.  Since
@@ -439,7 +439,7 @@ few important structures, and some constants that are available for use.
 
 \index{\findex{amps\_AllReduce}}
 \begin{deftypefn}{Library Function}{int}{amps\_AllReduce}
-(amps_Comm \var{comm}, amps_Invoice \var{invoice}, int \var{operation}) 
+(amps_Comm \var{comm}, amps_Invoice \var{invoice}, int \var{operation})
 
 %=========================== DESCRIPTION =====================================
 \DESCRIPTION
@@ -492,12 +492,12 @@ operations.
 
 \index{\findex{amps\_BCast}}
 \begin{deftypefn}{Library Function}{int}{amps\_BCast}
-(amps_Comm \var{comm}, int \var{Rank}, amps_Invoice \var{invoice}) 
+(amps_Comm \var{comm}, int \var{Rank}, amps_Invoice \var{invoice})
 
 %=========================== DESCRIPTION =====================================
 \DESCRIPTION
 
-The collective operation \code{amps_BCast} is used to communicate 
+The collective operation \code{amps_BCast} is used to communicate
 information from one node to all the other nodes who are members
 of a context.  \var{rank} is the rank of the node that contains
 the information to be communicated.  \var{comm} is the communication
@@ -901,7 +901,7 @@ UNIX programmers do not use this feature of the ANSI C standard.
 
 Every {\em AMPS} program must call this function to exit from the
 message passing environment.  This must be the last call to an
-{\em AMPS} routine.  \code{amps_Finalize} might synchronize the 
+{\em AMPS} routine.  \code{amps_Finalize} might synchronize the
 of the node programs;  this might be necessary to correctly free up
 memory resources and communication structures.
 
@@ -910,10 +910,10 @@ memory resources and communication structures.
 
 \begin{display}\begin{verbatim}
 
-int main( int argc, char *argv)
+int main( int argc, char *argv [])
 {
-   amps_Init(argc, argv);
-   
+   amps_Init(&argc, &argv);
+
    amps_Printf("Hello World");
 
    amps_Finalize();
@@ -986,7 +986,7 @@ amps_Fclose(file);
 
 There should be some commands to take a normal file and distribute it
 to the nodes.  This presents a problem since {\em AMPS} does not
-know how you want to split up the file to the nodes.  This is being 
+know how you want to split up the file to the nodes.  This is being
 worked on; basically the {\em AMPS} I/O calls are a hack until some standard
 can be arrived at.  The functionality is sufficient for \parflow{} at
 the current time.
@@ -1018,7 +1018,7 @@ the current time.
 
 \index{\findex{amps\_Fprintf}}
 \begin{deftypefn}{Library Function}{int}{amps\_Fprintf}
-(amps_File \var{file}, char *\var{fmt}, ...) 
+(amps_File \var{file}, char *\var{fmt}, ...)
 
 %=========================== DESCRIPTION =====================================
 \DESCRIPTION
@@ -1123,7 +1123,7 @@ amps_FreeInvoice(invoice);
 associated with \var{package}.  The \var{package} should not be freed
 until all communication operations on that object have been completed
 (in most cases this will imply some synchronization).  The invoices are
-not deleted and must be freed with calls to \code{amps_FreeInvoice}. 
+not deleted and must be freed with calls to \code{amps_FreeInvoice}.
 
 \begin{display}\begin{verbatim}
 Need example here
@@ -1156,7 +1156,7 @@ Need example here
 
 \index{\findex{amps\_Fscanf}}
 \begin{deftypefn}{Library Function}{int}{amps\_Fscanf}
-(amps_File \var{file}, char *\var{fmt}, ...) 
+(amps_File \var{file}, char *\var{fmt}, ...)
 
 %=========================== DESCRIPTION =====================================
 \DESCRIPTION
@@ -1217,13 +1217,13 @@ invoices found in the \var{package} structure that is passed in.  Once a
 \code{amps_IExchangePackage} it is illegal to access the
 variables that are being communicated.  An \code{amps_IExchangePackage}
 is always followed by an \code{amps_Wait} on the \var{handle} that is
-returned. 
+returned.
 
 \begin{display}\begin{verbatim}
 
       /* Initialize exchange of boundary points */
       handle = amps_IExchangePackage(package);
- 
+
       /* Compute on the "interior points" */
 
       /* Wait for the exchange to complete */
@@ -1253,7 +1253,7 @@ returned.
 \index{\cindex{initialization}}
 
 \index{\findex{amps\_Init}}
-\begin{deftypefn}{Library Function}{int}{amps\_Init}(int \var{argc}, char \var{argv}[])
+\begin{deftypefn}{Library Function}{int}{amps\_Init}(int *\var{argc}, char **\var{argv}[])
 %=========================== DESCRIPTION =====================================
 \DESCRIPTION
 
@@ -1271,10 +1271,10 @@ message passing system.  For example, on {\em Chameleon} the
 
 \begin{display}\begin{verbatim}
 
-int main( int argc, char *argv)
+int main( int argc, char *argv [])
 {
-   amps_Init(argc, argv);
-   
+   amps_Init(&argc, &argv);
+
    amps_Printf("Hello World");
 
    amps_Finalize();
@@ -1302,7 +1302,7 @@ int main( int argc, char *argv)
 
 \index{\findex{amps\_IRecv}}
 \begin{deftypefn}{Library Function}{amps_Handle}{amps\_IRecv}
-(amps_Comm \var{comm}, int \var{rank}, amps_Invoice \var{invoice}) 
+(amps_Comm \var{comm}, int \var{rank}, amps_Invoice \var{invoice})
 
 %=========================== DESCRIPTION =====================================
 \DESCRIPTION
@@ -1317,7 +1317,7 @@ After a test succeeds or the wait returns it is legal to access
 variables within the \var{invoice}.  Any attempt to access variables
 used in the \var{invoice} between the posting of the \code{amps_IRecv}
 command and the successful \code{amps_Test} or \code{amps_Wait} is not
-permitted (since these variables might be changing).  Every \code{amps_IRecv} 
+permitted (since these variables might be changing).  Every \code{amps_IRecv}
 must have an associated \code{amps_Wait} to finalize the receive.
 
 
@@ -1376,7 +1376,7 @@ routine.
 
 \index{\findex{amps\_ISend}}
 \begin{deftypefn}{Library Function}{amps_Handle}{amps\_ISend}
-(amps_Comm \var{comm}, int \var{rank}, amps_Invoice \var{invoice}) 
+(amps_Comm \var{comm}, int \var{rank}, amps_Invoice \var{invoice})
 
 %=========================== DESCRIPTION =====================================
 \DESCRIPTION
@@ -1516,7 +1516,7 @@ stride factor and then attempt to pass this invoice out and use it
 elsewhere, since the stride factor points at a variable that no longer
 is in scope.
 
-The built-in types are: 
+The built-in types are:
 
 \begin{tabular}{ll}
 c & character \\
@@ -1550,7 +1550,7 @@ the \code{amps_Clear} function.
 \begin{display}\begin{verbatim}
 amps_Invoice invoice;
 int i[10];
-double d[10]; 
+double d[10];
 
 invoice = amps_NewInvoice("%10i %5.2d", i, d);
 \end{verbatim}\end{display}
@@ -1562,7 +1562,7 @@ integer array \var{i} and the even elements of the double array \var{d}.
 \begin{display}\begin{verbatim}
 amps_Invoice invoice;
 int i[10];
-double d[10]; 
+double d[10];
 int length;
 
 length = 10;
@@ -1576,7 +1576,7 @@ the `\code{*}' operator to control the length of the integer array.
 \begin{display}\begin{verbatim}
 amps_Invoice invoice;
 int i[10];
-double d[10]; 
+double d[10];
 int length;
 
 invoice = amps_NewInvoice("%&i %5.2d", &length, i, d);
@@ -1593,14 +1593,14 @@ packed.
 \begin{display}\begin{verbatim}
 amps_Invoice invoice;
 int *i;
-double d[10]; 
+double d[10];
 
 invoice = amps_NewInvoice("%10\\i %5.2d", &i, d);
 
 \end{verbatim}\end{display}
 
 
-% \begin{figure} 
+% \begin{figure}
 % \epsfxsize=3.2in
 % \epsfbox[0 0 634 431]{overlay.eps}
 % \caption{Overlay example for an invoice ``10\i\ \%5.2d''}
@@ -1721,12 +1721,12 @@ source or destination.
 The invoices used in \code{amps_Package}s are more restrictive to
 achieve better performance.  All length and stride information must be
 fully specified at the time of the \code{amps_NewPackage} call.  This
-impacts the use of the deferred sizing capabilities of invoices.  
+impacts the use of the deferred sizing capabilities of invoices.
 
 All data to be communicated must be located in "shared address space".
 The only way to do this is by allocating the space using the
 \code{amps_TAlloc} and \code{amps_CTAlloc} routines.  This restriction
-is due to the implementation of shared memory on some platforms. 
+is due to the implementation of shared memory on some platforms.
 
 The \code{amps_NewPackage} call may contain communication to exchange
 information about items contained in the invoices.  This allows for
@@ -1746,7 +1746,7 @@ amps_Invoice recv_invoice[2];
 
 int length[2];
 int stride[2];
- 
+
 int src[2];
 int dest[2];
 
@@ -1755,26 +1755,26 @@ length[1] = size+2;
 stride[0] = size+2;
 stride[1] = (size+2);
 
-/* a is the array to be communicated so it must be allocated with 
-   amps_CTAlloc */ 
+/* a is the array to be communicated so it must be allocated with
+   amps_CTAlloc */
 a = amps_CTAlloc(double, (size+2)*(size+2)*(size+2));
 
 send_invoice[0] = amps_NewInvoice("%&.&D(2)", length, stride, a+0+0+1);
 recv_invoice[0] = amps_NewInvoice("%&.&D(2)", length, stride, a+0+0+0);
 
-/* ????? this does not look correct */      
+/* ????? this does not look correct */
 send_invoice[1] = amps_NewInvoice("%&.&D(2)", length, stride, a+0+0+size);
 recv_invoice[1] = amps_NewInvoice("%&.&D(2)", length, stride, a+0+0+size+1);
-      
+
 src[0] = me-1;
 dest[0] = me-1;
-      
+
 src[1] = me+1;
 dest[1] = me+1;
-      
+
 package = amps_NewPackage(amps_CommWorld,
                              2, dest, send_invoice, 2, src, recv_invoice);
- 
+
 \end{verbatim}\end{display}
 
 %=========================== SEE ALSO ========================================
@@ -1815,10 +1815,10 @@ are the same as for the standard C \code{printf} function.
 %=========================== EXAMPLES ========================================
 \EXAMPLE
 \begin{display}\begin{verbatim}
-int main( int argc, char *argv)
+int main( int argc, char *argv [])
 {
-   amps_Init(argc, argv);
-   
+   amps_Init(&argc, &argv);
+
    amps_Printf("Hello World");
 
    amps_Finalize();
@@ -1897,7 +1897,7 @@ Currently there is only a single communicator, \code{amps_CommWorld}.
 
 \index{\findex{amps\_Read\var{type}}}
 \begin{deftypefn}{Library Function}{int}{amps\_Read\var{type}}
-(amps_File \var{file}, \var{type} *\var{ptr}, int \var{len}) 
+(amps_File \var{file}, \var{type} *\var{ptr}, int \var{len})
 
 %=========================== DESCRIPTION =====================================
 \DESCRIPTION
@@ -1949,7 +1949,7 @@ amps_Fclose(file);
 
 \index{\findex{amps\_Recv}}
 \begin{deftypefn}{Library Function}{int}{amps\_Recv}
-(amps_Comm \var{comm}, int \var{rank}, amps_Invoice \var{invoice}) 
+(amps_Comm \var{comm}, int \var{rank}, amps_Invoice \var{invoice})
 
 %=========================== DESCRIPTION =====================================
 \DESCRIPTION
@@ -2003,7 +2003,7 @@ amps_FreeInvoice(invoice);
 
 \index{\findex{amps\_Send}}
 \begin{deftypefn}{Library Function}{int}{amps\_Send}
-(amps_Comm \var{comm}, int \var{rank}, amps_Invoice invoice) 
+(amps_Comm \var{comm}, int \var{rank}, amps_Invoice invoice)
 
 %=========================== DESCRIPTION =====================================
 \DESCRIPTION
@@ -2012,7 +2012,7 @@ Sends a message to the node with \var{rank} in the \var{comm} context.
 The contents of the message are described by the \var{invoice} as
 indicated in \vref{amps_NewInvoice}{amps\_NewInvoice}.  After a return
 from send it is invalid to access any overlaid variables.  This
-version of send is possibly blocking.  
+version of send is possibly blocking.
 
 %=========================== EXAMPLES ========================================
 \EXAMPLE
@@ -2066,7 +2066,7 @@ node specified by \var{rank}.
 
 \index{\findex{amps\_SFBCast}}
 \begin{deftypefn}{Library Function}{int}{amps\_SFBCast}
-(amps_Comm \var{comm} , amps_File \var{file} , amps_Invoice \var{invoice}) 
+(amps_Comm \var{comm} , amps_File \var{file} , amps_Invoice \var{invoice})
 
 %=========================== DESCRIPTION =====================================
 \DESCRIPTION
@@ -2125,7 +2125,7 @@ some systems with local disk space the shared files might reside on node
 
 \index{\findex{amps\_SFclose}}
 \begin{deftypefn}{Library Function}{int}{amps\_SFclose}
-(amps_Comm \var{comm}, amps_File \var{file}, amps_Invoice \var{invoice}) 
+(amps_Comm \var{comm}, amps_File \var{file}, amps_Invoice \var{invoice})
 
 %=========================== DESCRIPTION =====================================
 \DESCRIPTION
@@ -2433,8 +2433,8 @@ amps_FreeInvoice(invoice);
 %=========================== DESCRIPTION =====================================
 \DESCRIPTION
 
-\code{amps_TFree} is used to deallocate memory for objects 
-that were allocated by \code{amps_TAlloc} or 
+\code{amps_TFree} is used to deallocate memory for objects
+that were allocated by \code{amps_TAlloc} or
 \code{amps_TCalloc}.
 
 %=========================== SEE ALSO ========================================
@@ -2721,7 +2721,7 @@ operations on that context.
 
 Currently there is only a single communicator, \code{amps_CommWorld}.
 (\vref{amps_CommWorld}{amps\_CommWorld}).  There is no function to create a new
-communicator.  
+communicator.
 
 %=========================== SEE ALSO ========================================
 \SEEALSO
@@ -2865,7 +2865,7 @@ shared memory machines.
 \label{Variables}
 
 This section outlines the variables that are defined by {\em AMPS} for
-use by users.  
+use by users.
 
 
 % ****************************************************************************
@@ -2901,10 +2901,10 @@ This section describes the constants that are defined in {\em AMPS}.
 \begin{deftypevr}{Reduction Operation}{int}{amps\_Add}
 \DESCRIPTION
 
-The \code{amps_Add} value is as a flag in calls to \code{amps_AllReduce} to 
+The \code{amps_Add} value is as a flag in calls to \code{amps_AllReduce} to
 specify the reduction operation that is to be invoked.  The \code{amps_Add}
 operation computes the addition of each of the elements of the
-invoice passed into \code{amps_AllReduce}.  
+invoice passed into \code{amps_AllReduce}.
 
 %=========================== NOTES ===========================================
 \NOTES
@@ -2938,7 +2938,7 @@ context that includes all the nodes.  It is created by the
 
 %=========================== NOTES ===========================================
 \NOTES
-Currently there is only the global communication context. 
+Currently there is only the global communication context.
 
 %=========================== SEE ALSO ========================================
 \SEEALSO
@@ -2961,10 +2961,10 @@ Currently there is only the global communication context.
 \begin{deftypevr}{Reduction Operation}{int}{amps\_Max}
 \DESCRIPTION
 
-The \code{amps_Max} is used in calls to \code{amps_AllReduce} to 
+The \code{amps_Max} is used in calls to \code{amps_AllReduce} to
 specify the reduction operation that is to be invoked.  The \code{amps_Max}
 operation computes the maximum of each of the elements of the
-invoice.  
+invoice.
 
 %=========================== NOTES ===========================================
 \NOTES

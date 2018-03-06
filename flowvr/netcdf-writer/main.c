@@ -103,8 +103,8 @@ int main(int argc, char *argv [])
   printf("starting netcdf-writer\n");
   if (amps_Init(&argc, &argv))
   {
-	  amps_Printf("Error: amps_Init initalization failed\n");
-	  exit(1);
+    amps_Printf("Error: amps_Init initalization failed\n");
+    exit(1);
   }
 
   int abort_on_end = 1;
