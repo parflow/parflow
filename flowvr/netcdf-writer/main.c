@@ -15,7 +15,7 @@
 // REM: You cannot have multiple writers for one file!
 
 #ifdef __DEBUG
-#define D(x ...) printf("++++++++ "); printf(x); printf(" %s:%d\n", __FILE__, __LINE__)
+#define D(x ...) printf("++++++++%d:", amps_Rank(amps_CommWorld)); printf(x); printf(" %s:%d\n", __FILE__, __LINE__)
 #else
 #define D(...)
 #endif
@@ -100,6 +100,13 @@ int CreateFile(const char* file_name, size_t nX, size_t nY, size_t nZ, int *pxID
  */
 int main(int argc, char *argv [])
 {
+  printf("starting netcdf-writer\n");
+  if (amps_Init(&argc, &argv))
+  {
+	  amps_Printf("Error: amps_Init initalization failed\n");
+	  exit(1);
+  }
+
   int abort_on_end = 1;
   char * prefix = "";
 
@@ -116,12 +123,11 @@ int main(int argc, char *argv [])
   }
 
 
-  printf("starting netcdf-writer\n");
-  amps_Init(argc, argv); // MPI_Init(&argc, &argv);
-  int amps_size = amps_Size(amps_CommWorld);
-  if (amps_size > 1)
+  int num = amps_Size(amps_CommWorld);
+  D("ampssize: %d", num);
+  if (num > 1)
   {
-    fca_init_parallel(amps_Rank(amps_CommWorld), amps_size);
+    fca_init_parallel(amps_Rank(amps_CommWorld), num);
   }
 
 
@@ -152,7 +158,6 @@ int main(int argc, char *argv [])
 #ifdef PF_TIMING
     start = clock();
 #endif
-
     fca_message msg = fca_get(port_in);
     if (fca_get_segment_size(msg, 0) == 0 && abort_on_end)
     {

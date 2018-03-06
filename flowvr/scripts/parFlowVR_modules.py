@@ -131,9 +131,7 @@ class ParflowMPI(Composite):
 
             proc = subprocess.Popen(command, stdout = subprocess.PIPE)
             mpirunargs = '--report-bindings'  # -mca plm_rsh_no_tree_spawn 1 '
-            if rankfile != '':
-                mpirunargs = ' -rankfile '+rankfile + ' '
-            elif easyPinning:
+            if rankfile == '' and easyPinning:
                 mpirunargs += ' --map-by core --bind-to core '
 
 
@@ -144,7 +142,8 @@ class ParflowMPI(Composite):
             proc.communicate()
 	    parflowrun = FlowvrRunOpenMPI('%s %s %s' %
                     (debugprefix, pf_cmd, problemName), hosts = hosts, prefix = prefix,
-                    mpirunargs=mpirunargs)
+                    mpirunargs=mpirunargs,
+                    rankfile=rankfile)
 
 
         # hosts_list: convert hosts to a list
@@ -245,12 +244,12 @@ class NetCDFWriterMPI(Composite):
             cmdline = '%s %s %s' % (nw_cmd, fileprefix, '--no-abort' if not abortOnEnd else '')
         else:
             # load runargs from file...
-            command = ['bash', '-c', '. $PARFLOW_DIR/config/pf-cmake-env.sh && echo \'$MPIEXEC_PREFLAGS $MPIEXEC_POSTFLAGS\'']
+            command = ['bash', '-c', '. $PARFLOW_DIR/config/pf-cmake-env.sh && echo \"$MPIEXEC_PREFLAGS $MPIEXEC_POSTFLAGS\"']
 
             proc = subprocess.Popen(command, stdout = subprocess.PIPE)
             mpirunargs = '--report-bindings'  # -mca plm_rsh_no_tree_spawn 1 '
             if rankfile == '' and lastCore:
-                rankfile = 'rankfile.txt'
+                rankfile = os.getcwd() + '/rankfile_writer.txt'
                 with open(rankfile, 'w+') as f:
                     import multiprocessing
                     for i, host in enumerate(hosts_list):
@@ -262,9 +261,6 @@ class NetCDFWriterMPI(Composite):
                         #rank 1=bb slot=15
                         #rank 2=cc slot=15
 
-            if rankfile != '':
-                mpirunargs = ' -rankfile ' + rankfile + ' '
-
             for line in proc.stdout:
                 mpirunargs += ' ' + line
 
@@ -275,7 +271,8 @@ class NetCDFWriterMPI(Composite):
                     (nw_cmd, fileprefix, '--no-abort' if not abortOnEnd else ''),
                     hosts=hosts,
                     prefix=prefix,
-                    mpirunargs=mpirunargs)
+                    mpirunargs=mpirunargs,
+                    rankfile=rankfile)
 
 
 
