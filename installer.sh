@@ -4,8 +4,8 @@
 # use for which dependency to get a running setup.
 
 # In the following we define some install options:
-export PREFIX=$HOME/test
-export PYTHON="python2.6"
+export PREFIX=/home/hectorb/PARFLOW/SOURCES/PFVR
+export PYTHON="python2.7"
 
 export MPICC=`which mpicc`
 export MPICXX=`which mpicxx`
@@ -38,6 +38,21 @@ source flowvr-suite-config.sh
 
 mkdir -p $SRC
 
+#openmpi is already installed?
+cd $SRC
+if [ ! -d "openmpi" ]; then
+  $WGET https://www.open-mpi.org/software/ompi/v3.0/downloads/openmpi-3.0.0.tar.gz
+  tar xvf openmpi-3.0.0.tar.gz
+  mv  openmpi-3.0.0 openmpi
+  cd openmpi
+  ./configure --prefix=$PREFIX
+  make -j$N all install
+fi
+
+export MPICC=`which mpicc`
+export MPICXX=`which mpicxx`
+export MPIF90=`which mpif90`
+
 mkdir -p $PREFIX/bin
 cd $PREFIX
 $WGET https://raw.githubusercontent.com/numpy/numpy/master/tools/swig/numpy.i
@@ -58,19 +73,12 @@ if [ ! -d "python" ]; then
   cd python
   $WGET https://bootstrap.pypa.io/get-pip.py
   $PYTHON get-pip.py -t .
-  $PYTHON pip install numpy netCDF4 -t .
+  # to install netCDF4 only:
+  $PYTHON pip install netCDF4 -t .
+  # to install netCDF4 and numpy uncomment the following line:
+  #$PYTHON pip install numpy netCDF4 -t .
 fi
 
-#openmpi is already installed?
-#cd $SRC
-#if [ ! -d "openmpi" ]; then
-#  $WGET https://www.open-mpi.org/software/ompi/v3.0/downloads/openmpi-3.0.0.tar.gz
-#  tar xvf openmpi-3.0.0.tar.gz
-#  mv  openmpi-3.0.0 openmpi
-#  cd openmpi
-#  ./configure --prefix=$PREFIX
-#  make -j$N all install
-#fi
 
 # install a recent cmake version
 cd $SRC
@@ -219,9 +227,17 @@ fi
 
 cd $SRC
 if [ ! -d "flowvr" ]; then
-  svn co https://wiki-flowvr.imag.fr/svn/flowvr-suite/branches/dev
-  mv dev flowvr
+  # To get flowvr you need an account at gitlab.inria.fr with access to this project:
+  # https://gitlab.inria.fr/flowvr/flowvr-ex . In the next days this will open sourced
+  # making account creation obsolete.
+  # Furthermore the dev branch containing needed changes to run with parFlowVR will be
+  # pulled into master. At the moment we recommend the version
+  # downloaded by the commands below:
+  git clone https://gitlab.inria.fr/flowvr/flowvr-ex.git
+  mv flowvr-ex flowvr
   cd flowvr
+  git checkout dev
+  git checkout 628fd3b7348c3fb4e282360f90da1e2636b9e42a
   mkdir build
   cd build
   cmake .. -DBUILD_CONTRIB:BOOL=ON \
@@ -249,8 +265,8 @@ if [ ! -d "flowvr" ]; then
 
   make -j$N && make install -j$N
 fi
-
-
+#
+#
 cd $SRC
 if [ ! -d "parflow" ]; then
 git clone https://github.com/xy124/parflow
@@ -277,7 +293,7 @@ cmake .. -DBUILD_TESTING:BOOL=ON \
   -DPARFLOW_ENABLE_SLURM:BOOL=False \
   -DPARFLOW_ENABLE_SUNDIALS:BOOL=False \
   -DPARFLOW_ENABLE_SZLIB:BOOL=False \
-  -DPARFLOW_ENABLE_TIMING:BOOL=False \
+  -DPARFLOW_ENABLE_TIMING:BOOL=True \
   -DPARFLOW_ENABLE_TOOLS:BOOL=True \
   -DPARFLOW_ENABLE_ZLIB:BOOL=False \
   -DPARFLOW_HAVE_CLM:BOOL=ON \
@@ -286,8 +302,8 @@ cmake .. -DBUILD_TESTING:BOOL=ON \
   -DCMAKE_C_FLAGS:STRING=-std=gnu99 \
   -DFLOWVR_PREFIX:PATH=$PREFIX \
   -DPARFLOW_ENABLE_FLOWVR:BOOL=ON \
-  -DPARFLOW_ENABLE_FLOWVR_TOOLS:BOOL=True
-  -DNUMPY_I_PATH $PREFIX  # not always necessary...
+  -DPARFLOW_ENABLE_FLOWVR_TOOLS:BOOL=True \
+  -DNUMPY_I_PATH:PATH=$PREFIX
 
 make -j$N && make install -j$N
 fi
