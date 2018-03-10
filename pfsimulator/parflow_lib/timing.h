@@ -200,6 +200,7 @@ extern EventTiming[][6];
 #define RegisterTiming(name) 0
 #define PrintTiming()
 #define FreeTiming()
+#define PrintTimeCount(event)
 
 #endif
 
