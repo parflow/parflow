@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
-# exits with 0 when 2 netCDF files contain the same datasets.
-# 3rd parameter: if -vague: returns true if datasets of A in B or B in A
+# usage: compare_nc.py a.nc b.nc [-vague]
+
+# exits with 0 (and no output) if 2 netCDF files contain the same datasets otherwise gives an error.
+# 3rd parameter: if -vague is given as command line parameter: exits 0 if datasets of A in B or B in A
 
 import netCDF4 as nc
 import numpy as np
