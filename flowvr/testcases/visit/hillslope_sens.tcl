@@ -217,6 +217,7 @@ pfset TimeStep.Type              Constant
 pfset TimeStep.Value             15.0
 
 pfset TimingInfo.StopTime	 300
+pfset TimingInfo.StopTime	 30000000
 
 #-----------------------------------------------------------------------------
 # Porosity
