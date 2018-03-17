@@ -255,6 +255,7 @@ Enable building Python Analyzer API. Highly recommended.
 ```shell
 -DBUILD_PYTHON_ANALYZER_API=ON
 -DNUMPY_I_PATH=<Directory where to find numpy.i>
+```
 
 Enable building of the Visit Connector (visit libsim is needed!). This is optional.
 ```shell
