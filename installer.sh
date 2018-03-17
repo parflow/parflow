@@ -4,7 +4,9 @@
 # use for which dependency to get a running setup.
 
 # In the following we define some install options:
-export PREFIX=/home/hectorb/PARFLOW/SOURCES/PFVR
+# Especially PREFIX should be changed!
+# It will download and install dependencies and parFlowVR in a folder structure under $PREFIX
+export PREFIX=$HOME/PFR_PREFIX
 export PYTHON="python2.7"
 
 export MPICC=`which mpicc`
@@ -57,7 +59,7 @@ mkdir -p $PREFIX/bin
 cd $PREFIX
 $WGET https://raw.githubusercontent.com/numpy/numpy/master/tools/swig/numpy.i
 cd $PREFIX/bin
-#ln -s `which $PYTHON` python
+ln -s `which $PYTHON` python
 
 #$WGET http://www.python.org/ftp/python/2.7.12/Python-2.7.12.tgz
 #tar xzvf Python-2.7.12.tgz
