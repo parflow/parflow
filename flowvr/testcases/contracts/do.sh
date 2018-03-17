@@ -1,4 +1,5 @@
 #!/bin/bash
+rm log
 rm $PROBLEMNAME*.out.*
 PROBLEMNAME=default_richards
 $PARFLOW_DIR/bin/parflowvr/do.sh $PROBLEMNAME --batch-mode >log

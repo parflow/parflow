@@ -654,4 +654,3 @@ void FlowVREnd(SimulationSnapshot *snapshot)
 }
 
 #endif
-// TODO: refactor ifdefs!

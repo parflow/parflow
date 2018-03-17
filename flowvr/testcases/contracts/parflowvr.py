@@ -7,7 +7,7 @@ sys.path.append(parflow_dir + '/bin/parflowvr')
 from parFlowVR_modules import *
 
 parflow = Parflow("parflow",
-        cmdline = "tclsh ./default_richards.tcl",
+        cmdline = "bash $PARFLOW_DIR/bin/run default_richards 1",
         outports = ["out0", "out1", "out2"])
 
 analyzer0 = Analyzer("analyzer0", "python -u ./analyzer.py 0 3")

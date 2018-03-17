@@ -370,7 +370,6 @@ pfset Solver.PrintSpecificStorage 		                   False
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-pfrun default_richards
-pfundist default_richards
+pfwritedb default_richards
 
 
