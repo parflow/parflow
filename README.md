@@ -15,7 +15,7 @@ the mesoscale, meteorological code ARPS and the NCAR code WRF.
 See the "User's Manual" for info on "Getting Started" in ParFlow.
 
 # ParFlowVR
-ParFlowVR is parflow extended by the FlowVR package to enable in-situ analysis and
+ParFlowVR is parflow extended by the FlowVR middleware to enable In Situ analysis and
 computational steering.
 
 ### Citing Parflow
@@ -62,9 +62,9 @@ processors/OS/compilers for the compute nodes and login nodes Parflow
 supports building the main simulation executable with a different set
 compilers than the TCL libraries used for problem setup.
 
-### Step 1: Setup
+**If you plan to build Parflow with FlowVR (parFlowVR) Refer to README.cmake as parFlowVR an only be built with the CMake build system!**
 
-**The instructions here are DEPRECATED! Refer to README.cmake to build this branch please!**
+### Step 1: Setup
 
 Decide where you wish to install Parflow and associated libraries.
 

@@ -39,12 +39,9 @@ CMake switches:
 \begin{display}\begin{verbatim}
 -DPARFLOW_ENABLE_FLOWVR=ON
 
-# Needed to have access to useful scripts and tools of the parFlowVR framework
--DPARFLOW_ENABLE_FLOWVR_TOOLS=ON
-
 # Needed for the Python analyzer API
 -DBUILD_PYTHON_ANALYZER_API=ON
--DNUMPY_I_PATH=<Path to numpy.i>
+-DNUMPY_I_PATH=<Directory where to find numpy.i>
 
 # Needed for the visit connector
 -DVISIT_LIBRARY_LIBSIM=<Path to libsim (V2)>

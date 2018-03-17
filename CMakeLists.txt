@@ -229,7 +229,7 @@ endif (${PARFLOW_ENABLE_VALGRIND})
 # FLOWVR
 #-----------------------------------------------------------------------------
 #set (PARFLOW_ENABLE_FLOWVR False CACHE BOOL "Build with FlowVR support")
-cmake_dependent_option (PARFLOW_ENABLE_FLOWVR "Build with FlowVR support" OFF "PARFLOW_ENABLE_NETCDF" OFF)
+cmake_dependent_option (PARFLOW_ENABLE_FLOWVR "Build with FlowVR support" OFF "PARFLOW_ENABLE_NETCDF;PARFLOW_ENABLE_SIMULATOR" OFF)
 if (${PARFLOW_ENABLE_FLOWVR} OR DEFINED FLOWVR_ROOT)
   find_package(FlowVR)
   find_package(fca)

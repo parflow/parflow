@@ -31,7 +31,7 @@ For bash:
 
 ```shell
    export PARFLOW_DIR=/home/snoopy/parflow
-```   
+```
 
 For csh and tcsh:
 
@@ -51,8 +51,8 @@ and extract the release.  Here we assume you are building in new
 subdirectory in your home directory:
 
 ```shell
-   mkdir ~/parflow 
-   cd ~/parflow 
+   mkdir ~/parflow
+   cd ~/parflow
    tar -xvf ../parflow.tar.gz
 ```
 
@@ -63,8 +63,8 @@ If you are not using GNU tar or have a very old version GNU tar you
 will need to uncompress the file first:
 
 ```shell
-   mkdir ~/parflow 
-   cd ~/parflow 
+   mkdir ~/parflow
+   cd ~/parflow
    gunzip ../parflow.tar.gz
    tar -xvf ../parflow.tar
 ```
@@ -85,7 +85,7 @@ You can control build options for ParFlow using the ccmake GUI.
 ```shell
    mkdir build
    cd build
-   ccmake ../parflow 
+   ccmake ../parflow
 ```
 At a minimum, you will want to set the CMAKE_INSTALL_PREFIX value to the same thing
 as PARFLOW_DIR was set to above.  Other variables should be set as desired.
@@ -131,8 +131,8 @@ is a minimal example of an MPI build with CLM:
    	 -DPARFLOW_HAVE_CLM=ON \
 	 -DPARFLOW_AMPS_LAYER=mpi1
 ```
-**Often you also want to set some mpi options defining communication used 
-and so on. Thus refer to 
+**Often you also want to set some mpi options defining communication used
+and so on. Thus refer to
 [How to specify command to run MPI applications](#how-to-specify-command-to-run-mpi-applications)
 at the end of this document!**
 
@@ -161,7 +161,7 @@ easy:
 
 ```shell
    cd build
-   make 
+   make
    make install
 ```
 
@@ -192,7 +192,7 @@ in standard locations.  Explicitly setting the location using the ROOT
 variable for a package automatically enables it, you don't need to
 specify both values.
 
-### How to specify command to run MPI applications
+### How to specify the command to run MPI applications
 
 There are multiple ways to run MPI applications such as mpiexec,
 mpirun, srun, and aprun.  The command used is dependent on the job
@@ -200,10 +200,12 @@ submission system used.  By default CMake will attempt to determine an
 appropriate tool; a process that does not always yield the correct result.
 
 You may overwride the MPI launcher using
+```shell
 -DMPIEXEC="<launcher-name>"
 -DMPIEXEC_NUMPROC_FLAG="<flag used to set number of tasks>"
 -DMPIEXEC_POSTFLAGS="<post flags>"
 -DMPIEXEC_PREFLAGS="<pre flags>"
+```
 
 
 An example for mpiexec is -DMPIEXEC="mpiexec" -DMPIEXEC_NUMPROC_FLAG="-n".
@@ -224,3 +226,37 @@ build the simulator and tools components separately. By specifying
 different compilers and options for each, one can target different
 architectures for each component.
 
+
+## Building with parFlowVR
+
+The following options can be activated to build with parFlowVR support:
+Build with FlowVR support this option must be activated for all the following.
+```shell
+PARFLOW_ENABLE_FLOWVR=ON
+```
+
+Enable building of the FlowVR tools. It is absolutely recommended to built them as
+otherwise starting of parFlowVR distributed applications will become a nightmare.
+```shell
+-DPARFLOW_ENABLE_FLOWVR_TOOLS=True
+```
+
+Build with NetCDF. This is necessary to use the netcdf writer module in parFlowVR
+```shell
+-DPARFLOW_ENABLE_NETCDF=ON
+```
+
+Enable building of the Parflow simulator. Only the Simulator can be uses in parFlowVR
+```shell
+-DPARFLOW_ENABLE_SIMULATOR=True
+```
+
+Enable building Python Analyzer API. Highly recommended.
+```shell
+-DBUILD_PYTHON_ANALYZER_API=ON
+-DNUMPY_I_PATH=<Directory where to find numpy.i>
+
+Enable building of the Visit Connector (visit libsim is needed!). This is optional.
+```shell
+-DPARFLOW_ENABLE_VISIT_CONNECTOR=ON
+```
