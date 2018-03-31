@@ -181,7 +181,7 @@ or by starting a parallel interactive session.
 ## Configure options
 
 A number of packages are optional for building ParFlow.  The optional
-packages are enabled by PARFLOW_<package>_ENABLE value to be `TRUE` or
+packages are enabled by PARFLOW_ENABLE_<package> value to be `TRUE` or
 setting the <package>_ROOT=<directory> value.  If a package is enabled
 with the using an ENABLE flag CMake will attempt to find the package
 in standard locations.  Explicitly setting the location using the ROOT
