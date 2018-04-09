@@ -181,7 +181,7 @@ or by starting a parallel interactive session.
 ## Configure options
 
 A number of packages are optional for building ParFlow.  The optional
-packages are enabled by PARFLOW_<package>_ENABLE value to be true or
+packages are enabled by PARFLOW_ENABLE_<package> value to be `TRUE` or
 setting the <package>_ROOT=<directory> value.  If a package is enabled
 with the using an ENABLE flag CMake will attempt to find the package
 in standard locations.  Explicitly setting the location using the ROOT
@@ -211,7 +211,7 @@ nodes and a set of TCL libraries used for problem setup that can be
 run on the login node for problem setup.
 
 The CMake variables PARFLOW_ENABLE_SIMULATOR and PARFLOW_ENABLE_TOOLS
-control which component is configured.  By default both are true.  To
+control which component is configured.  By default both are `TRUE`.  To
 build separately use two build directories and run cmake in each to
 build the simulator and tools components separately. By specifying
 different compilers and options for each, one can target different
