@@ -264,8 +264,12 @@ int main(int argc, char *argv [])
      * Solve the problem
      *-----------------------------------------------------------------------*/
     Solve();
-    printf("Problem solved \n");
-    fflush(NULL);
+
+    if (!amps_Rank(amps_CommWorld))
+    {
+      amps_Printf("Problem solved \n");
+      fflush(NULL);
+    }
 
     /*-----------------------------------------------------------------------
      * Log global information

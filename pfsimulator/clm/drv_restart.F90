@@ -201,7 +201,9 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
      enddo
 
      close(40)
-     write(*,*)'CLM Restart File Read: ',drv%rstf
+     if(rank.eq.0)then
+        write(*,*)'CLM Restart File Read: ',drv%rstf
+     endif
 
      !=== Establish Model Restart Time  
 
@@ -214,7 +216,9 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
         drv%ss = ss
         call drv_date2time(drv%time,drv%doy,drv%day,drv%gmt,yr,mo,da,hr,mn,ss) 
         drv%ctime = drv%time !@ assign restart time "ctime"
-        write(*,*)'CLM Restart File Time Used: ',drv%rstf
+        if(rank.eq.0)then
+           write(*,*)'CLM Restart File Time Used: ',drv%rstf
+        endif
      endif
 
      !=== Rectify Restart Tile Space to DRV Tile Space =====================
@@ -238,7 +242,9 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
         ! Transfer Restart tile space to DRV tile space
 
         if(nch.ne.drv%nch)then
-           write(*,*)'Restart Tile Space Mismatch-Transfer in Progress'
+           if(rank.eq.0)then
+              write(*,*)'Restart Tile Space Mismatch-Transfer in Progress'
+           endif
 
            !  Start by finding grid averages
 
@@ -279,8 +285,12 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
            c = 0
            do 555 t = 1,drv%nch 
 
-              if(amod(float(t),10000.0).eq.0.0)write(*,23)'  Transferred ', &
-                   100.0*float(t)/float(drv%nch),' Percent of Tiles'
+              if(amod(float(t),10000.0).eq.0.0)then
+                 if(rank.eq.0)then
+                    write(*,23)'  Transferred ', &
+                         100.0*float(t)/float(drv%nch),' Percent of Tiles'
+                 endif
+              endif
 
 23            format(a14,f5.2,a17)
               found = 0
@@ -353,10 +363,12 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
                  c = 0
               endif
 555           continue
-              write(*,*)'Tile Space Transfer Complete'
-              write(*,*)'CLM Restart NCH:',nch,'Current NCH:',drv%nch
-              write(*,*) c, ' Tiles not found in old CLM restart'        
-              write(*,*)
+              if(rank.eq.0)then
+                 write(*,*)'Tile Space Transfer Complete'
+                 write(*,*)'CLM Restart NCH:',nch,'Current NCH:',drv%nch
+                 write(*,*) c, ' Tiles not found in old CLM restart'        
+                 write(*,*)
+              endif
 
            else  !The number of tiles is a match
 
@@ -417,12 +429,16 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
         drv%ss = drv%sss
         call drv_date2time(drv%time,drv%doy,drv%day,drv%gmt, &
              drv%yr,drv%mo,drv%da,drv%hr,drv%mn,drv%ss) 
-        write(*,*)'Using drv_clmin.dat start time ',drv%time
+        if(rank.eq.0)then
+           write(*,*)'Using drv_clmin.dat start time ',drv%time
+        endif
      endif
 
      if(rw.eq.1)then
-        write(*,*)'CLM Start Time: ',drv%yr,drv%mo,drv%da,drv%hr,drv%mn,drv%ss
-        write(*,*)
+        if(rank.eq.0)then
+           write(*,*)'CLM Start Time: ',drv%yr,drv%mo,drv%da,drv%hr,drv%mn,drv%ss
+           write(*,*)
+        endif
      endif
 
 
@@ -431,7 +447,9 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
 
      if(rw.eq.2)then
 
-        write(*,*)'Write CLM Active Restart: istep_pf = ',istep_pf
+        if(rank.eq.0)then
+           write(*,*)'Write CLM Active Restart: istep_pf = ',istep_pf
+        endif
 
         ! IMF -- add time stamp (istep) to restart file
         !        NOTE: READ from istep-1 (previous time)
@@ -501,8 +519,9 @@ subroutine drv_restart (rw, drv, tile, clm, rank, istep_pf)
 
         close(40)
 
-        write(*,*)'CLM Active Restart Written: ',drv%rstf
-
+        if(rank.eq.0)then
+           write(*,*)'CLM Active Restart Written: ',drv%rstf
+        endif
      endif
 
      return
