@@ -63,7 +63,6 @@ subroutine drv_pout (drv, tile, clm,rank)
   n=5
 !! @== RMM 8-08 added parallel IO to parameter output file to fix possible atlas bug
   write(RI,'(i10)') rank
-  print*, 'rank ',ri, rank
   !!open(n,file=trim(drv%poutf1d)//trim(adjustl(RI)),form='formatted')
   open(n,file=trim(adjustl(drv%poutf1d))//'.'//trim(adjustl(RI)),form='formatted')
 
