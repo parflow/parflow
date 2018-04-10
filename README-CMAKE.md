@@ -201,6 +201,17 @@ You may overwride the MPI launcher using
 
 An example for mpiexec is -DMPIEXEC="mpiexec" -DMPIEXEC_NUMPROC_FLAG="-n".
 
+The ParFlow script to run MPI applications will also include options
+specified in the environment variable PARFLOW_MPIEXEC_EXTRA_FLAGS on
+the MPI execution command line.  For example when running with OpenMPI
+on a single workstation the following will enable running more MPI
+tasks than cores and disable the busy loop waiting to
+improve performance:
+
+```shell
+   export PARFLOW_MPIEXEC_EXTRA_FLAGS="--mca mpi_yield_when_idle 1 --oversubscribe"
+```
+
 ## Building simulator and tools support separately
 
 ParFlow is composed of two main components that maybe configured and
