@@ -71,7 +71,7 @@ fi
 VERBOSE=0
 PROGRAM=""
 DEBUG=""
-while getopts vhpg: c
+while getopts vmhpg: c
 do
    case $c in
       h)
@@ -143,12 +143,17 @@ fi
 
 CMD=""
 
-# If CMake was used then use 
+# If CMake was used then use setting from file for MPI commands
 if [ -f $PARFLOW_DIR/config/pf-cmake-env.sh ]
 then
-  . $PARFLOW_DIR/config/pf-cmake-env.sh
+   . $PARFLOW_DIR/config/pf-cmake-env.sh
 
-  CMD="${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${NUMPROCS} ${MPIEXEC_POSTFLAGS} ${MPIEXEC_PREFLAGS} ${PARFLOW_DIR}/bin/${PROGRAM} ${PFSCRIPT} $DEBUG_OPT $DEBUG 2>&1 > ${PFSCRIPT}.out.txt"
+   if [ -z ${PARFLOW_MEMORYCHECK_COMMAND} ]
+   then
+      CMD="${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${NUMPROCS} ${MPIEXEC_POSTFLAGS} ${PARFLOW_MPIEXEC_EXTRA_FLAGS} ${MPIEXEC_PREFLAGS} ${PARFLOW_DIR}/bin/${PROGRAM} ${PFSCRIPT} $DEBUG_OPT $DEBUG 2>&1 > ${PFSCRIPT}.out.txt"
+   else
+      CMD="${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${NUMPROCS} ${MPIEXEC_POSTFLAGS} ${PARFLOW_MPIEXEC_EXTRA_FLAGS} ${MPIEXEC_PREFLAGS} ${PARFLOW_MEMORYCHECK_COMMAND} ${PARFLOW_MEMORYCHECK_COMMAND_OPTIONS} ${PARFLOW_DIR}/bin/${PROGRAM} ${PFSCRIPT} $DEBUG_OPT $DEBUG 2>&1 > ${PFSCRIPT}.out.txt"
+   fi
 fi
 
 #

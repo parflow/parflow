@@ -39,7 +39,6 @@ cd ..
 
 # Clone repo
 git clone git://github.com/parflow/parflow.git
-(cd parflow && git checkout cmake)
 
 # Setup the installation directory
 export PARFLOW_DIR=$(pwd)/install

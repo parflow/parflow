@@ -63,17 +63,21 @@ list(APPEND PARALLEL_2DTOPO_TESTS "")
 
 if(${PARFLOW_AMPS_LAYER} STREQUAL "mpi1")
   list(APPEND PARALLEL_3DTOPO_TESTS 
-    default_single.tcl
-    default_richards.tcl)
+    default_single.tcl)
 
-  list(APPEND PARALLEL_2DTOPO_TESTS
-    default_overland.tcl
-    default_overland.pfmg.jac.tcl
-    default_overland.pfmg_octree.jac.tcl
-    water_balance_x.hardflow.nojac.tcl
-    water_balance_x.hardflow.jac.tcl
-    LW_var_dz.tcl
-    LW_var_dz_spinup.tcl)
+  if(${PARFLOW_HAVE_HYPRE})
+    list(APPEND PARALLEL_3DTOPO_TESTS 
+      default_richards.tcl)
+
+    list(APPEND PARALLEL_2DTOPO_TESTS
+      default_overland.tcl
+      default_overland.pfmg.jac.tcl
+      default_overland.pfmg_octree.jac.tcl
+      water_balance_x.hardflow.nojac.tcl
+      water_balance_x.hardflow.jac.tcl
+      LW_var_dz.tcl
+      LW_var_dz_spinup.tcl)
+  endif()
 
 endif()
 

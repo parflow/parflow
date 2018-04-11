@@ -420,7 +420,8 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
     iopt = instance_xtra->int_optional_input;
     ropt = instance_xtra->real_optional_input;
 
-    iopt[PRINTFL] = print_flag;
+    // Only print on rank 0
+    iopt[PRINTFL] = amps_Rank(amps_CommWorld) ? 0 : print_flag;
     iopt[MXITER] = max_iter;
     iopt[PRECOND_NO_INIT] = 0;
     iopt[NNI] = 0;

@@ -289,11 +289,12 @@ int main(int argc, char *argv [])
      * Solve the problem
      *-----------------------------------------------------------------------*/
     Solve();
+
     if (!amps_Rank(amps_CommWorld))
     {
-      printf("Problem solved \n");
+      amps_Printf("Problem solved \n");
+      fflush(NULL);
     }
-    fflush(NULL);
 
     /*-----------------------------------------------------------------------
      * Log global information
