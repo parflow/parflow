@@ -146,12 +146,21 @@ set (SRC_FILES advect.F
   input_checks.c
   )
 
+if (${PARFLOW_HAVE_P4EST})
+  include("${PARFLOW_P4EST_DIR}/CMakeLists.cmake")
+  string(REGEX REPLACE "([^;]+)" "${PARFLOW_P4EST_DIR}/\\1" PARFLOW_P4EST_FILES "${PARFLOW_P4EST_FILES}")
+  list(APPEND SRC_FILES ${PARFLOW_P4EST_FILES} calc_elevations_with_p4est.c )
+endif (${PARFLOW_HAVE_P4EST})
+
 add_library(pfsimulator ${SRC_FILES})
 
 if (${PARFLOW_HAVE_MPI})
   target_include_directories (pfsimulator PUBLIC "${MPI_C_INCLUDE_PATH}")
-endif (${PARFLOW_HAVE_MPI})
 
+  if (${PARFLOW_HAVE_P4EST})
+    target_include_directories (pfsimulator PUBLIC "${P4EST_INCLUDE_DIRS}")
+  endif (${PARFLOW_HAVE_P4EST})
+endif (${PARFLOW_HAVE_MPI})
 
 install (TARGETS pfsimulator DESTINATION lib)
 

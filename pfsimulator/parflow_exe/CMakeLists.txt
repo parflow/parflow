@@ -12,6 +12,10 @@ endif (${PARFLOW_HAVE_HYPRE})
 
 if (${PARFLOW_HAVE_MPI})
   target_link_libraries (parflow ${MPI_LIBRARIES})
+
+  if (${PARFLOW_HAVE_P4EST})
+    target_link_libraries (parflow  ${P4EST_LIBRARIES})
+  endif (${PARFLOW_HAVE_P4EST})
 endif (${PARFLOW_HAVE_MPI})
 
 if (${PARFLOW_HAVE_SILO})

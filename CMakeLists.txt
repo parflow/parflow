@@ -195,6 +195,31 @@ if (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
   endif (${SLURM_FOUND})
 endif (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
 
+#-----------------------------------------------------------------------------
+# P4EST
+#-----------------------------------------------------------------------------
+# TODO Execute test program to check p4est runs
+set (PARFLOW_ENABLE_P4EST False CACHE BOOL "Build with p4est")
+if (${PARFLOW_ENABLE_P4EST} OR DEFINED P4EST_ROOT)
+  find_package(P4EST)
+  if (${P4EST_FOUND})
+    set(PARFLOW_HAVE_P4EST "yes")
+    set(HAVE_P4EST ${PARFLOW_HAVE_P4EST})
+    set(PARFLOW_P4EST_DIR "${CMAKE_SOURCE_DIR}/pfsimulator/p4est_wrap")
+
+    # Check if p4est was compiled parallel
+    set(P4EST_COMPILED_WITH_MPI FALSE)
+    file(STRINGS "${P4EST_INCLUDE_DIRS}/p4est_config.h" P4EST_ENABLE_MPI_DEFINE REGEX "P4EST_ENABLE_MPI 1")
+    if( P4EST_ENABLE_MPI_DEFINE )
+      set( P4EST_COMPILED_WITH_MPI TRUE )
+    endif()
+    unset(P4EST_ENABLE_MPI_DEFINE)
+
+    if(NOT P4EST_COMPILED_WITH_MPI)
+      message(FATAL_ERROR "P4EST  must be compiled with MPI")
+    endif()
+  endif (${P4EST_FOUND})
+endif (${PARFLOW_ENABLE_P4EST} OR DEFINED P4EST_ROOT)
 
 #-----------------------------------------------------------------------------
 # libm
