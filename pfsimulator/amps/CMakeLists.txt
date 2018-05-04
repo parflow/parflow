@@ -10,7 +10,13 @@ string(REGEX REPLACE "([^;]+)" "common/\\1" COMMON_SRC_FILES "${COMMON_SRC_FILES
 include("${PARFLOW_AMPS_LAYER}/CMakeLists.cmake")
 string(REGEX REPLACE "([^;]+)" "${PARFLOW_AMPS_LAYER}/\\1" AMPS_SRC_FILES "${AMPS_SRC_FILES}")
 
-add_library(amps STATIC ${COMMON_SRC_FILES} ${AMPS_SRC_FILES})
+if(NOT ${PARFLOW_HAVE_P4EST})
+  add_library(amps STATIC ${COMMON_SRC_FILES} ${AMPS_SRC_FILES})
+else()
+  # Hack: with p4est enabled, linking the executable fails when the
+  # common object appear first in libamps.a
+  add_library(amps STATIC ${AMPS_SRC_FILES}  ${COMMON_SRC_FILES})
+endif()
 
 if (${PARFLOW_HAVE_MPI})
   target_include_directories (amps PUBLIC "${MPI_C_INCLUDE_PATH}")
