@@ -3848,11 +3848,11 @@ SolverRichardsInitInstanceXtra()
   }
   new_subgrids = GetGridSubgrids(new_all_subgrids);
   x_grid = NewGrid(new_subgrids, new_all_subgrids);
-  CreateComputePkgs(x_grid);
 #ifdef HAVE_P4EST
   GridParflowP4estObj(x_grid) = GridParflowP4estObj(grid);
   GridParflowP4estObjIsOwned(x_grid) = 0;
 #endif
+  CreateComputePkgs(x_grid);
 
   /* Create the y velocity grid */
   all_subgrids = GridAllSubgrids(grid);
@@ -3868,11 +3868,11 @@ SolverRichardsInitInstanceXtra()
   }
   new_subgrids = GetGridSubgrids(new_all_subgrids);
   y_grid = NewGrid(new_subgrids, new_all_subgrids);
-  CreateComputePkgs(y_grid);
 #ifdef HAVE_P4EST
   GridParflowP4estObj(y_grid) = GridParflowP4estObj(grid);
   GridParflowP4estObjIsOwned(y_grid) = 0;
 #endif
+  CreateComputePkgs(y_grid);
 
   /* Create the z velocity grid */
   all_subgrids = GridAllSubgrids(grid);
@@ -3888,11 +3888,11 @@ SolverRichardsInitInstanceXtra()
   }
   new_subgrids = GetGridSubgrids(new_all_subgrids);
   z_grid = NewGrid(new_subgrids, new_all_subgrids);
-  CreateComputePkgs(z_grid);
 #ifdef HAVE_P4EST
   GridParflowP4estObj(z_grid) = GridParflowP4estObj(grid);
   GridParflowP4estObjIsOwned(z_grid) = 0;
 #endif
+  CreateComputePkgs(z_grid);
 
   (instance_xtra->grid) = grid;
   (instance_xtra->grid2d) = grid2d;

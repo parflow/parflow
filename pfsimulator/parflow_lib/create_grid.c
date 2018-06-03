@@ -90,7 +90,7 @@ Grid           *CreateGrid(
   parflow_p4est_quad_data_t  *quad_data = NULL;
   parflow_p4est_ghost_data_t *ghost_data = NULL;
   int                        *z_levels;
-  int lz, pz, offset;
+  int                         lz, pz, offset;
 #endif
 
   if (!USE_P4EST)

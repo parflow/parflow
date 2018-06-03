@@ -156,6 +156,9 @@ parflow_p4est_get_projection_info(Subgrid *subgrid, int z_level,
 void             parflow_p4est_nquads_per_rank(parflow_p4est_grid_t *pfgrid,
                                                int *                 quads_per_rank);
 
+/** Get the level of the passed subgrid in the pfgrid */
+int             parflow_p4est_get_subgrid_level(Subgrid *sg, parflow_p4est_grid_t *  pfgrid);
+
 /** If owned, get the coorner in in the p4est brick coordinates.
  * of the tree containing this subgrid.
  * \param [in] Subgrid       Pointer to a valid Subgrid.

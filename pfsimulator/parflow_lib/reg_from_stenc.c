@@ -253,20 +253,29 @@ void  CommRegFromStencil(
   int r, p, i, j, k;
 
 #ifdef HAVE_P4EST
+  Subgrid       *s;
   SubgridArray  *sa2_loc;
   int tt, num_trees;
   int num_loc_idxs;
+  int lev1, lev0;
   int           *tree_array = NULL;
   int           *loc_idx_array = NULL;
   int           *ghost_idx_array = NULL;
 #endif
 
-
   /*------------------------------------------------------
-   * Determine neighbors
+   * Determine neighbors: When p4est is enabled the array
+   * all_subgrids already contain the neighbors.
    *------------------------------------------------------*/
-
-  neighbors = GetGridNeighbors(subgrids, GridAllSubgrids(grid), stencil);
+  if(!USE_P4EST){
+      neighbors = GetGridNeighbors(subgrids, GridAllSubgrids(grid), stencil);
+  }else{
+#ifdef HAVE_P4EST
+      neighbors = GridAllSubgrids(grid);
+#else
+    PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
+  }
 
   /*------------------------------------------------------
    * Determine subgrid_region and neighbor_region
@@ -365,8 +374,6 @@ void  CommRegFromStencil(
 #ifdef HAVE_P4EST
               if (GridIsProjected(grid))
                 SubregionIZ(subgrid2) = 0;
-#else
-              PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif
             }
             switch (r)
@@ -599,10 +606,10 @@ void  CommRegFromStencil(
   /*------------------------------------------------------
    * Return
    *------------------------------------------------------*/
-
-  SubregionArraySize(neighbors) = 0;
-  FreeSubgridArray(neighbors);
-
+  if(!USE_P4EST){
+      SubregionArraySize(neighbors) = 0;
+      FreeSubgridArray(neighbors);
+  }
   *send_region_ptr = send_region;
   *recv_region_ptr = recv_region;
 }

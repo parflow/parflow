@@ -9,6 +9,7 @@ SC_EXTERN_C_BEGIN;
 
 typedef struct parflow_p4est_grid_3d {
   int dim;
+  int initial_level;
   int Tx, Ty, Tz;                /*Number of trees in each coordinate direction*/
   p8est_t        *forest;
   p8est_connectivity_t *connect;
@@ -93,6 +94,9 @@ void parflow_p4est_get_projection_info_3d(Subgrid *subgrid, int z_level,
 
 void            parflow_p4est_nquads_per_rank_3d(parflow_p4est_grid_3d_t *pfg,
                                                  int *                    quads_per_rank);
+
+int             parflow_p4est_subgrid_level_3d (Subgrid *subgrid,
+                                                parflow_p4est_grid_3d_t * pfg);
 
 void            parflow_p4est_get_brick_coord_3d(Subgrid *                subgrid,
                                                  parflow_p4est_grid_3d_t *pfg,

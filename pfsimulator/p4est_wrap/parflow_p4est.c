@@ -62,7 +62,7 @@ parflow_p4est_sg_param_update(parflow_p4est_qiter_t *   qiter,
     sp->p[t] = (sp->icorner[t] < sp->l[t]) ? sp->m[t] + 1 : sp->m[t];
     offset = (sp->icorner[t] >= sp->l[t]) ? sp->l[t] : 0;
     sp->icorner[t] = sp->icorner[t] * sp->p[t] + offset;
-    P4EST_ASSERT(sp->icorner[t] + sp->p[t] <= sp->N[t]);
+    //P4EST_ASSERT(sp->icorner[t] + sp->p[t] <= sp->N[t]);
   }
 }
 
@@ -155,6 +155,22 @@ parflow_p4est_get_zneigh(Subgrid *               subgrid,
     P4EST_ASSERT(dim == 3);
     parflow_p4est_get_zneigh_3d(subgrid,
                                 qiter->q.qiter_3d, pfgrid->p.p8);
+  }
+}
+
+int
+parflow_p4est_get_subgrid_level(Subgrid *sg, parflow_p4est_grid_t *  pfgrid)
+{
+  int dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
+
+  if (dim == 2)
+  {
+    return parflow_p4est_subgrid_level_2d (sg, pfgrid->p.p4);
+  }
+  else
+  {
+    P4EST_ASSERT(dim == 3);
+    return parflow_p4est_subgrid_level_3d (sg, pfgrid->p.p8);
   }
 }
 
@@ -341,6 +357,22 @@ parflow_p4est_qiter_get_ghost_idx(parflow_p4est_qiter_t * qiter)
   {
     P4EST_ASSERT(dim == 3);
     return qiter->q.qiter_3d->g;
+  }
+}
+
+int
+parflow_p4est_qiter_get_level(parflow_p4est_qiter_t * qiter)
+{
+  int dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);
+
+  if (dim == 2)
+  {
+    return qiter->q.qiter_2d->quad->level;
+  }
+  else
+  {
+    P4EST_ASSERT(dim == 3);
+    return qiter->q.qiter_3d->quad->level;
   }
 }
 
