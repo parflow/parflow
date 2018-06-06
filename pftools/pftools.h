@@ -70,7 +70,7 @@ typedef struct {
   Tcl_HashTable members;
   GridType grid_type;
   int total_members;
-  int num;
+  unsigned long num;
 } Data;
 
 #define DataMembers(data)   ((data)->members)
