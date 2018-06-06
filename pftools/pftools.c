@@ -563,16 +563,15 @@ int       AddData(
                   char *   hashkey)
 {
   Tcl_HashEntry *entryPtr;   /* Points to new hash table entry         */
-  int new_data;                   /* 1 if the hashkey already exists        */
-  int num;                   /* The number of the data set to be added */
+  int new_data;              /* 1 if the hashkey already exists        */
+  unsigned long num;          /* The number of the data set to be added */
 
   num = DataNum(data);
 
   /* Keep tring to find a unique hash key */
-
   do
   {
-    sprintf(hashkey, "dataset%d", num);
+    sprintf(hashkey, "dataset%lu", num);
     if ((entryPtr = Tcl_CreateHashEntry(&DataMembers(data), hashkey, &new_data))
         == NULL)
       return(0);
@@ -3039,6 +3038,8 @@ int               SetGridCommand(
   double x, y, z;
   double dx, dy, dz;
 
+  int return_code = TCL_ERROR;
+
   /* Five arguments must be given */
   if (argc != 5)
   {
@@ -3046,9 +3047,9 @@ int               SetGridCommand(
     return TCL_ERROR;
   }
 
-  npoints = argv[1];
-  origin = argv[2];
-  intervals = argv[3];
+  npoints = strdup(argv[1]);
+  origin = strdup(argv[2]);
+  intervals = strdup(argv[3]);
   hashkey = argv[4];
 
   /* Make sure that the number of points along each axis are all */
@@ -3058,14 +3059,14 @@ int               SetGridCommand(
       !(num = strtok(NULL, WS)) || (sscanf(num, "%d", &nz) != 1))
   {
     NotAnIntError(interp, 1, SETGRIDUSAGE);
-    return TCL_ERROR;
+    goto exit;
   }
 
   /* there should only be three numbers in the npoints list */
   if (strtok(NULL, WS))
   {
     InvalidArgError(interp, 1, SETGRIDUSAGE);
-    return TCL_ERROR;
+    goto exit;
   }
 
   /* Make sure that the origin is given in floating point numbers */
@@ -3074,7 +3075,7 @@ int               SetGridCommand(
       !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &z) != 1))
   {
     NotADoubleError(interp, 2, SETGRIDUSAGE);
-    return TCL_ERROR;
+    goto exit;
   }
 
   /* There should only be three numbers in the origin list */
@@ -3090,26 +3091,35 @@ int               SetGridCommand(
       !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &dz) != 1))
   {
     NotADoubleError(interp, 3, SETGRIDUSAGE);
-    return TCL_ERROR;
+    goto exit;
   }
 
   /* There should only be three numbers in the intervals list */
   if (strtok(NULL, WS))
   {
     InvalidArgError(interp, 3, SETGRIDUSAGE);
-    return TCL_ERROR;
+    goto exit;
   }
 
   /* Make sure dataset exists */
   if ((databox = DataMember(data, hashkey, entryPtr)) == NULL)
   {
     SetNonExistantError(interp, hashkey);
-    return TCL_ERROR;
+    goto exit;
   }
 
   /* Swap grid values */
   SetDataboxGrid(databox, nx, ny, nz, x, y, z, dx, dy, dz);
-  return TCL_OK;
+
+  return_code = TCL_OK;
+
+  exit:
+  
+  free(npoints);
+  free(origin);
+  free(intervals);
+
+  return return_code;
 }
 
 
@@ -4861,7 +4871,7 @@ int            ComputeDomainCommand(
 
   if (num_procs_z > 1)
   {
-    // SGS Add error message here!
+    fprintf(stderr, "Error: Process.Topology.R must be 1 for pfcomputedomain to work\n");
     return TCL_ERROR;
   }
 
