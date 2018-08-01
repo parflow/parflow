@@ -256,7 +256,7 @@ subroutine drv_clmini (drv, grid, tile, clm, istep_pf)
   clm%akc    =  2.1      ! q10 for kc25                                            
   clm%avcmx  =  2.4      ! q10 for vcmx25                                          
   clm%bp     =  2000.    ! minimum leaf conductance (umol/m**2/s)                  
-  clm%mp     =  9.       ! slope for conductance-to-photosynthesis relationship    
+  clm%mp     =  7.       ! slope for conductance-to-photosynthesis relationship    !BH
   clm%folnmx =  1.5      ! foliage nitrogen concentration when f(n)=1 (%)          
   clm%folnvt =  2.       ! foliage nitrogen concentration (%)                      
   clm%c3psn  =  1.       ! photosynthetic pathway: 0. = c4, 1. = c3                

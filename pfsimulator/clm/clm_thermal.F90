@@ -107,6 +107,11 @@ subroutine clm_thermal (clm)
        dzm,                        & ! used in computing tridiagonal matrix
        dzp                           ! used in computing tridiagonal matrix
 
+  real(r8) D0,                     & ! BH: molecular diffusion coefficient of water vapor in the air
+       L,                          & ! BH:  thickness of the dry part of the soil
+       D,                          & ! BH:  reduced vapor diffusivity within the soil
+       rg                            ! BH: ground resistance
+
   integer &
        niters,                     & ! maximum number of iterations for surface temperature
        iter,                       & ! iteration index
@@ -374,7 +379,29 @@ subroutine clm_thermal (clm)
 
      ram    = 1./(ustar*ustar/um)
      rah    = 1./(temp1*ustar) 
-     raw    = 1./(temp2*ustar) 
+     !raw    = 1./(temp2*ustar) BH
+
+! *************** Add by BH ***********************
+     D0=2.2e-5
+!     L=clm%dz(1)*(exp((1-clm%pf_vol_liq(1)/clm%watsat(1))**5.)-1.)/(2.718-1.)
+     !L=clm%dz(1)*(exp((1-clm%pf_vol_liq(1)/clm%watsat(1))**7.)-1.)/(2.718-1.)
+     L=0.01*(exp((1.-clm%pf_vol_liq(1)/clm%watsat(1))**9.)-1.)/(2.718-1.)
+     D=D0*(clm%watsat(1)**2.)*(1-clm%res_sat*clm%watsat(1)/clm%watsat(1))**(2.+3.*4.38)
+     rg=L/D
+     !rg=100.
+     raw =rg+1./(temp2*ustar)
+     !print*, 'L:',L
+     !print*, 'D:',D
+     !print*, 'th:',clm%pf_vol_liq(1)
+     !print*, 'thr:',clm%res_sat*clm%watsat(1)
+     !print*, 'thS:',clm%watsat(1)
+     !print*, 'thS^2:'
+     !print*, 'rg:',rg
+     !print*, 'rah:',rah
+     !print*, 'raw:',raw(2)
+     !print*, 'thickness layer 1:',clm%dz(1)
+! *************** End by BH ***********************
+
      raih   = (1-clm%frac_veg_nosno)*clm%forc_rho*cpair/rah
      raiw   = (1-clm%frac_veg_nosno)*clm%forc_rho/raw          
      cgrnds = raih

@@ -60,6 +60,7 @@ subroutine clm_typini (ntiles, clm, istep_pf)
      clm(k)%zlnd      = NaN      ! Roughness length for soil [m]
      clm(k)%zsno      = NaN      ! Roughness length for snow [m]
      clm(k)%csoilc    = NaN      ! Drag coefficient for soil under canopy [-]
+     clm(k)%csoilcn   = NaN      ! BH added to account for JMC modif in clm_leaftem
 
      ! hydraulic constants of soil (read into 2-D grid module variables)
      clm(k)%wtfact    = NaN      ! Fraction of model area with high water table

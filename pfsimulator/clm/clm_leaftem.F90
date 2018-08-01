@@ -152,6 +152,10 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
        dc1,dc2,           & ! derivative of energy flux [W/m2/K]
        w, csoilcn           ! weight function and revised csoilc - declare  @RMM
 
+  real(r8) D0,            & ! BH: molecular diffusion coefficient of water vapor in the air
+       L,                 & ! BH:  thickness of the dry part of the soil
+       D,                 & ! BH:  reduced vapor diffusivity within the soil
+       rg                   ! BH: ground resistance
 
   real(r8) delt,          & ! temporary
        delq                 ! temporary
@@ -197,6 +201,14 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
   real(r8) foln                ! foliage nitrogen (%)
 
   real(r8) :: mpe = 1.e-6      ! prevents overflow error if division by zero
+
+!****************** add by JMC ***********************************
+  real(r8) ri,               & !Zeng W parameter
+       ria,                  &
+       ricsoilc,             &
+       csoilb                  ! Bare soil turb. transfert  coef. csoilcn ! combined turb. transfert  coef.
+!****************** end add by JMC ***********************************
+
 
 !=== End Variable List ===================================================
 
@@ -290,6 +302,40 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
      cf = 0.01/(sqrt(uaf)*sqrt(clm%dleaf))
      rb = 1./(cf*uaf)
 
+! **************** Add by JMC *****************
+  
+! Parameterization for variation of csoilc with canopy density from
+! X. Zeng, University of Arizona
+
+     w = exp(-2.*(clm%elai+clm%esai))
+
+! changed by K.Sakaguchi from here
+! transfer coefficient over bare soil is changed to a local variable
+! just for readability of the code (from line 680)
+
+     csoilb = (vkc/(0.13*(clm%zlnd*uaf/1.5e-5)**0.45))
+
+!compute the stability parameter for ricsoilc  ("S" in Sakaguchi&Zeng,2008)
+
+     ri = (grav*(clm%displa/0.67)*(taf-tg))/(taf*uaf**2.00)
+     ria=0.5
+
+!! modify csoilc value (0.004) if the under-canopy is in stable condition
+
+     if ( (taf-tg) > 0.) then
+! decrease the value of csoilc by dividing it with (1+gamma*min(S, 10.0))
+! ria ("gmanna" in Sakaguchi&Zeng, 2008) is a constant (=0.5)
+               
+         ricsoilc = clm%csoilc / (1.00+ria*min(ri, 10.0) )
+         csoilcn = csoilb*w + ricsoilc*(1.-w)
+     else
+         csoilcn = csoilb*w + clm%csoilc*(1.-w)
+     end if
+
+!! Sakaguchi changes for stability formulation ends here
+
+! **************** end of Add by JMC *****************	 
+
 ! Aerodynamic resistances raw and rah between heights zpd+z0h and z0hg.
 ! if no vegetation, rah(2)=0 because zpd+z0h = z0hg.
 ! (Dickinson et al., 1993, pp.54)
@@ -299,10 +345,33 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
 ! @CLM Dry Bias
 
      w = exp(-2*(clm%elai+clm%esai))     !## added this line @RMM
-     csoilcn = (vkc/(0.13*(clm%zlnd*uaf/1.5e-5)**0.45))*w + clm%csoilc*(1.-w)  !@RMM
+!	BH: commented:
+!     csoilcn = (vkc/(0.13*(clm%zlnd*uaf/1.5e-5)**0.45))*w + clm%csoilc*(1.-w)  !@RMM
      ram(2) = 0.               ! not used
      rah(2) = 1./(csoilcn*uaf)  !### Changed clm%csoilc to csoilcn
-     raw(2) = rah(2)
+
+!     raw(2) = rah(2) 		!commented (BH)
+
+! *************** Add by BH ***********************
+     D0=2.2e-5
+!     L=clm%dz(1)*(exp((1-clm%pf_vol_liq(1)/clm%watsat(1))**5.)-1.)/(2.718-1.)
+     !L=clm%dz(1)*(exp((1-clm%pf_vol_liq(1)/clm%watsat(1))**7.)-1.)/(2.718-1.)
+     L=0.01*(exp((1.-clm%pf_vol_liq(1)/clm%watsat(1))**9.)-1.)/(2.718-1.)
+     D=D0*(clm%watsat(1)**2.)*(1-clm%res_sat*clm%watsat(1)/clm%watsat(1))**(2.+3.*4.38)
+     rg=L/D
+     !rg=100.
+     raw(2) = rah(2)+rg
+     !print*, 'L:',L
+     !print*, 'D:',D
+     !print*, 'th:',clm%pf_vol_liq(1)
+     !print*, 'thr:',clm%res_sat*clm%watsat(1)
+     !print*, 'thS:',clm%watsat(1)
+     !print*, 'thS^2:'
+     !print*, 'rg:',rg
+     !print*, 'rah:',rah
+     !print*, 'raw:',raw(2)
+     !print*, 'thickness layer 1:',clm%dz(1)
+! *************** End by BH ***********************
 
 ! Stomatal resistances for sunlit and shaded fractions of canopy.
 ! should do each iteration to account for differences in eah, tv.
@@ -498,6 +567,7 @@ subroutine clm_leaftem (z0mv,       z0hv,       z0qv,           &
   clm%tauy  = clm%tauy - clm%frac_veg_nosno*clm%forc_rho*clm%forc_v/ram(1)
   clm%eflx_sh_grnd = clm%eflx_sh_grnd + cpair*clm%forc_rho*wtg*delt
   clm%qflx_evap_soi = clm%qflx_evap_soi +   temp_alpha*clm%forc_rho*wtgq*delq
+!  clm%qflx_evap_soi = clm%qflx_evap_soi +   clm%forc_rho*wtgq*delq !BH
 !!print*, 'temp_alpha:',temp_alpha
 ! 2 m height air temperature
 

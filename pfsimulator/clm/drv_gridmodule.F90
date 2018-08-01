@@ -36,6 +36,7 @@ module drv_gridmodule
      real(r8) :: zlnd      ! Roughness length for soil [m]
      real(r8) :: zsno      ! Roughness length for snow [m]
      real(r8) :: csoilc    ! Drag coefficient for soil under canopy [-]
+     real(r8) :: csoilcn    ! BH added to account for JMC modif in clm_leaftem
 
 ! Soil parameters
 

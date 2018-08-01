@@ -73,6 +73,7 @@ subroutine drv_g2clm(u,drv,grid,tile,clm)
   if (grid(c,r)%zlnd            /= u) clm%zlnd       =grid(c,r)%zlnd    
   if (grid(c,r)%zsno            /= u) clm%zsno       =grid(c,r)%zsno    
   if (grid(c,r)%csoilc          /= u) clm%csoilc     =grid(c,r)%csoilc    
+  if (grid(c,r)%csoilcn         /= u) clm%csoilcn     =grid(c,r)%csoilcn ! BH added to account for JMC modif in clm_leaftem
 
 ! Numerical finite-difference parameters (read into 2-D grid module variables)
 

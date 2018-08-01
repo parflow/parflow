@@ -58,6 +58,7 @@ module clmtype
      real(r8) :: zlnd      ! Roughness length for soil [m]
      real(r8) :: zsno      ! Roughness length for snow [m]
      real(r8) :: csoilc    ! Drag coefficient for soil under canopy [-]
+     real(r8) :: csoilcn    ! BH added to account for JMC modif in clmleaf_tem
 
 ! Hydraulic constants of soil (read into 2-D grid module variables)
 

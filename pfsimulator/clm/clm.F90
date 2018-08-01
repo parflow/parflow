@@ -139,7 +139,12 @@ clm_last_rst,clm_daily_rst)
 
   ! local indices & counters
   integer  :: i,j,k,k1,j1,l1                     ! indices for local looping
-  integer  :: bj,bl                              ! indices for local looping !BH
+  integer  :: bj,bl,bk                           ! indices for local looping !BH
+  real(r8) maxd                                  !max chosen depth for tree root fraction !BH
+  real(r8) mind                                  !min chosen depth for tree root fraction !BH
+  real(r8) maxzi                                 !max depth for tree root fraction !BH
+  real(r8) minzi                                 !min depth for tree root fraction !BH
+
 
   integer  :: j_incr,k_incr                      ! increment for j and k to convert 1D vector to 3D i,j,k array
   integer, allocatable :: counter(:,:) 
@@ -169,7 +174,7 @@ clm_last_rst,clm_daily_rst)
   drv%dz = pdz
   drv%nc = nx
   drv%nr = ny                   
-  drv%nt = 18                  ! 18 IGBP land cover classes
+  drv%nt = 19                  ! 18 IGBP land cover classes: BH add 1 class
   drv%ts = dt*3600.d0          ! Assume PF in hours, CLM in seconds
   j_incr = nx_f
   k_incr = nx_f*ny_f
@@ -422,6 +427,22 @@ clm_last_rst,clm_daily_rst)
            enddo
            clm(t)%rootfr(nlevsoi)=.5*( exp(-tile(t)%roota*clm(t)%zi(nlevsoi-1))&
                                + exp(-tile(t)%rootb*clm(t)%zi(nlevsoi-1)))
+           ! account for vertical root fraction distribution for trees !BH
+           if (tile(t)%vegt == 7) then
+              maxd=3
+              do bj = 1, nlevsoi
+                 if (clm(t)%zi(bj)<=maxd) then
+                    bk=bj
+                    maxzi=clm(t)%zi(bj)
+                 endif
+              enddo
+              do bj = 1, bk
+                 clm(t)%rootfr(bj) = clm(t)%dz(bj)/maxzi
+              enddo 
+              do bj = bk+1, nlevsoi
+                 clm(t)%rootfr(bj) = 0.0
+              enddo
+           endif
 
            ! reset depth variables assigned by user in clmin file 
            do bl=1,nlevsoi

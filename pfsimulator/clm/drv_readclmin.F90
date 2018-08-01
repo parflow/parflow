@@ -157,6 +157,7 @@ subroutine drv_readclmin(drv,grid,rank,clm_write_logs)
       if (vname == 'zlnd')        call drv_get2drvar(c,r,grid%zlnd)
       if (vname == 'zsno')        call drv_get2drvar(c,r,grid%zsno)
       if (vname == 'csoilc')      call drv_get2drvar(c,r,grid%csoilc)
+      if (vname == 'csoilcn')     call drv_get2drvar(c,r,grid%csoilcn) !BH added to account for JMC modif in clm_leaftem
 
       ! Numerical finite-difference parameters (read into 2-D grid module variables)
       if (vname == 'capr')        call drv_get2drvar(c,r,grid%capr)

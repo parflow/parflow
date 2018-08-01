@@ -87,14 +87,20 @@ subroutine drv_getforce (drv,tile,clm,nx,ny,sw_pf,lw_pf,prcp_pf,tas_pf,u_pf,v_pf
      clm(t)%forc_v          = v_pf(l)
      clm(t)%forc_pbot       = patm_pf(l)
      clm(t)%forc_q          = qatm_pf(l)
-	 ! BH: added the option for forcing or not the vegetation
-	if  (clm_forc_veg== 1) then 
-		clm(t)%elai	        = lai_pf(l)
-		clm(t)%esai	        = sai_pf(l)	
-		clm(t)%z0m	        = z0m_pf(l) 
-		clm(t)%displa	    = displa_pf(l)     
-	endif
-	 
+     ! BH: added the option for forcing or not the vegetation
+     if  (clm_forc_veg== 1) then 
+          clm(t)%elai = lai_pf(l)
+          clm(t)%esai = sai_pf(l)	
+          clm(t)%z0m = z0m_pf(l) 
+          clm(t)%displa	= displa_pf(l)     
+      endif
+     !clm(t)%c3psn = min(1.0,19.0-tile(t)%vegt) ! JMC 0 (BH: no 1) for all tiles except 19 !
+
+     !clm(t)%c3psn = min(1.0,abs(7.0-tile(t)%vegt)) ! BH:  c3psn = 0 (C4 class) for class 7
+     !clm(t)%c3psn = min(1.0,abs(8.0-tile(t)%vegt)) ! BH:  c3psn = 0 (C4 class) for class 8
+
+     ! BH: c3psn = 0 (C4 class) for classes 7, 8 and 19 	 
+     clm(t)%c3psn = min(1.0,19.0-tile(t)%vegt,abs(7.0-tile(t)%vegt),abs(8.0-tile(t)%vegt)) 
      !Treat air density
      clm(t)%forc_rho        = clm(t)%forc_pbot/(clm(t)%forc_t*2.8704e2)
 
