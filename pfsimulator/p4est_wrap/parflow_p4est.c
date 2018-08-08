@@ -51,17 +51,22 @@ void
 parflow_p4est_sg_param_update(parflow_p4est_qiter_t *   qiter,
                               parflow_p4est_sg_param_t *sp)
 {
-  int t;
+  int t,p;
   int offset;
-  double v[3];
+  double v[3], pv[3];
 
-  parflow_p4est_qiter_qcorner(qiter, v);
+  parflow_p4est_qiter_qcorner(qiter, v, pv);
   for (t = 0; t < 3; ++t)
   {
     sp->icorner[t] = (int)v[t];
+    sp->pcorner[t] = (int)pv[t];
     sp->p[t] = (sp->icorner[t] < sp->l[t]) ? sp->m[t] + 1 : sp->m[t];
+    p = (sp->pcorner[t] < sp->l[t]) ? sp->m[t] + 1 : sp->m[t];
     offset = (sp->icorner[t] >= sp->l[t]) ? sp->l[t] : 0;
     sp->icorner[t] = sp->icorner[t] * sp->p[t] + offset;
+    offset = (sp->pcorner[t] >= sp->l[t]) ? sp->l[t] : 0;
+    sp->pcorner[t] = sp->pcorner[t] * p + offset;
+    /*TODO: This assertion should be active for the uniform case only*/
     //P4EST_ASSERT(sp->icorner[t] + sp->p[t] <= sp->N[t]);
   }
 }
@@ -236,7 +241,8 @@ parflow_p4est_qiter_next(parflow_p4est_qiter_t * qiter)
 }
 
 void
-parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter, double v[3])
+parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter,
+                            double v[3], double pv[3])
 {
   int k;
   int dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);
@@ -244,23 +250,31 @@ parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter, double v[3])
 
   if (dim == 2)
   {
-    parflow_p4est_qcoord_to_vertex_2d(qiter->q.qiter_2d->connect,
+    parflow_p4est_quad_to_vertex_2d(qiter->q.qiter_2d->connect,
                                       qiter->q.qiter_2d->which_tree,
                                       qiter->q.qiter_2d->quad, v);
+    parflow_p4est_parent_to_vertex_2d(qiter->q.qiter_2d->connect,
+                                      qiter->q.qiter_2d->which_tree,
+                                      qiter->q.qiter_2d->quad, pv);
+
     level = qiter->q.qiter_2d->quad->level;
   }
   else
   {
     P4EST_ASSERT(dim == 3);
-    parflow_p4est_qcoord_to_vertex_3d(qiter->q.qiter_3d->connect,
+    parflow_p4est_quad_to_vertex_3d(qiter->q.qiter_3d->connect,
                                       qiter->q.qiter_3d->which_tree,
                                       qiter->q.qiter_3d->quad, v);
+    parflow_p4est_parent_to_vertex_3d(qiter->q.qiter_3d->connect,
+                                      qiter->q.qiter_3d->which_tree,
+                                      qiter->q.qiter_3d->quad, pv);
     level = qiter->q.qiter_3d->quad->level;
   }
 
   for (k = 0; k < 3; ++k)
   {
     v[k] *= sc_intpow(2, level);
+    pv[k] *= sc_intpow(2, level - 1);
   }
 }
 

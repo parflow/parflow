@@ -3,6 +3,7 @@
 #include <sc_functions.h>
 #ifndef P4_TO_P8
 #include "parflow_p4est_2d.h"
+#include <p4est_bits.h>
 #include <p4est_vtk.h>
 #else
 #include "parflow_p4est_3d.h"
@@ -450,16 +451,41 @@ parflow_p4est_get_ghost_data_2d(parflow_p4est_grid_2d_t *  pfg,
  * END: Quadrant iterator routines
  */
 
-void
+static void
 parflow_p4est_qcoord_to_vertex_2d(p4est_connectivity_t * connect,
+                                  p4est_topidx_t treeid,
+                                  p4est_quadrant_t * quad, double v[3],
+                                  int do_parent)
+{
+  p4est_quadrant_t qp;
+
+  if(do_parent){
+      p4est_quadrant_parent(quad, &qp);
+  }else{
+      qp = *quad;
+  }
+
+  p4est_qcoord_to_vertex(connect, treeid, qp.x, qp.y,
+#ifdef P4_TO_P8
+                         qp.z,
+#endif
+                         v);
+}
+
+void
+parflow_p4est_quad_to_vertex_2d(p4est_connectivity_t * connect,
+                                p4est_topidx_t treeid,
+                                p4est_quadrant_t * quad, double v[3])
+{
+    parflow_p4est_qcoord_to_vertex_2d(connect, treeid, quad, v, 0);
+}
+
+void
+parflow_p4est_parent_to_vertex_2d(p4est_connectivity_t * connect,
                                   p4est_topidx_t treeid,
                                   p4est_quadrant_t * quad, double v[3])
 {
-  p4est_qcoord_to_vertex(connect, treeid, quad->x, quad->y,
-#ifdef P4_TO_P8
-                         quad->z,
-#endif
-                         v);
+    parflow_p4est_qcoord_to_vertex_2d(connect, treeid, quad, v, 1);
 }
 
 void
@@ -633,7 +659,7 @@ parflow_p4est_get_brick_coord_2d(Subgrid *                 subgrid,
                                  (size_t)which_ghost);
   }
 
-  parflow_p4est_qcoord_to_vertex_2d(pfg->connect, which_tree, quad, v);
+  parflow_p4est_quad_to_vertex_2d(pfg->connect, which_tree, quad, v);
 
   qcoord[0] = quad->x;
   qcoord[1] = quad->y;

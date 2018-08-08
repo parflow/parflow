@@ -32,7 +32,8 @@ typedef struct parflow_p4est_sg_param {
   /** These values are to be updated
   ** when looping over p4est quadrants */
   int p[3];               /** Computed number of subgrid points per coord. direction */
-  int icorner[3];         /** Bottom left corner in index space */
+  int icorner[3];         /** Bottom left corner of current subgrid in index space */
+  int pcorner[3];         /** Bottom left corner of current subgrid parent index space */
 }parflow_p4est_sg_param_t;
 
 
@@ -105,7 +106,8 @@ parflow_p4est_qiter_t *parflow_p4est_qiter_next(parflow_p4est_qiter_t *
  * \param [out] v       Coordinates of the quadrant in the passed iterator.
  */
 void            parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter,
-                                            double                  v[3]);
+                                            double                  v[3],
+                                            double                  pv[3]);
 
 /** Retrieve a pointer to the information placed on each quadrant */
 parflow_p4est_quad_data_t

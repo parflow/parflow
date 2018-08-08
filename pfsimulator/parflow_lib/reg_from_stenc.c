@@ -265,7 +265,7 @@ void  CommRegFromStencil(
 
   /*------------------------------------------------------
    * Determine neighbors: When p4est is enabled the array
-   * all_subgrids already contain the neighbors.
+   * all_subgrids contain the local subgrids plus its neighbors.
    *------------------------------------------------------*/
   if(!USE_P4EST){
       neighbors = GetGridNeighbors(subgrids, GridAllSubgrids(grid), stencil);

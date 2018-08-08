@@ -12,7 +12,8 @@
 #define parflow_p4est_grid_2d_mesh_init     parflow_p4est_grid_3d_mesh_init
 #define parflow_p4est_grid_2d_mesh_destroy  parflow_p4est_grid_3d_mesh_destroy
 #define parflow_p4est_get_zneigh_2d         parflow_p4est_get_zneigh_3d
-#define parflow_p4est_qcoord_to_vertex_2d   parflow_p4est_qcoord_to_vertex_3d
+#define parflow_p4est_quad_to_vertex_2d     parflow_p4est_quad_to_vertex_3d
+#define parflow_p4est_parent_to_vertex_2d   parflow_p4est_parent_to_vertex_3d
 
 #define parflow_p4est_qiter_init_2d       parflow_p4est_qiter_init_3d
 #define parflow_p4est_qiter_isvalid_2d    parflow_p4est_qiter_isvalid_3d

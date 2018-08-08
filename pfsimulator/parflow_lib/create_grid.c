@@ -90,7 +90,7 @@ Grid           *CreateGrid(
   parflow_p4est_quad_data_t  *quad_data = NULL;
   parflow_p4est_ghost_data_t *ghost_data = NULL;
   int                        *z_levels;
-  int                         lz, pz, offset;
+  int                         i,lz, pz, offset;
 #endif
 
   if (!USE_P4EST)
@@ -130,7 +130,7 @@ Grid           *CreateGrid(
     for (lz = 0; lz < GlobalsNumProcsZ; ++lz)
     {
       pz = lz < sp->l[2]  ? sp->m[2] + 1 : sp->m[2];
-      offset = lz >= sp->l[2] ? sp->l[2] : 0;
+      offset = (lz >= sp->l[2]) ? sp->l[2] : 0;
       z_levels[lz] = lz * pz + offset;
     }
 
@@ -169,6 +169,10 @@ Grid           *CreateGrid(
       /*Retrieve -z and +z neighborhood information*/
       parflow_p4est_get_zneigh(quad_data->pf_subgrid, qiter, pfgrid);
 
+      /* Remember parent's coorner */
+      for (i=0;i<3;i++)
+          quad_data->pf_subgrid->pcorner[i] =  sp->pcorner[i];
+
       AppendSubgrid(quad_data->pf_subgrid, subgrids);
       AppendSubgrid(quad_data->pf_subgrid, all_subgrids);
     }
@@ -200,6 +204,10 @@ Grid           *CreateGrid(
       /* Remember tree that owns this subgrid */
       SubgridOwnerTree(ghost_data->pf_subgrid) =
         (int32_t)parflow_p4est_qiter_get_tree(qiter);
+
+      /* Remember parent's coorner */
+      for (i=0;i<3;i++)
+         ghost_data->pf_subgrid->pcorner[i] =  sp->pcorner[i];
 
       AppendSubgrid(ghost_data->pf_subgrid, all_subgrids);
     }
