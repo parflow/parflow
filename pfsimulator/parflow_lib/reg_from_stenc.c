@@ -255,9 +255,10 @@ void  CommRegFromStencil(
 #ifdef HAVE_P4EST
   Subgrid       *s;
   SubgridArray  *sa2_loc;
-  int tt, num_trees;
-  int num_loc_idxs;
-  int lev1, lev0;
+  int           tt, num_trees;
+  int           num_loc_idxs;
+  int           ix,iy,iz;
+  int           tweak, lev1, lev0;
   int           *tree_array = NULL;
   int           *loc_idx_array = NULL;
   int           *ghost_idx_array = NULL;
@@ -358,7 +359,9 @@ void  CommRegFromStencil(
     ForSubgridI(i, sa0)
     {
       subgrid0 = SubgridArraySubgrid(sa0, i);
-
+#ifdef HAVE_P4EST
+      lev0 = parflow_p4est_get_subgrid_level(subgrid0, grid->pfgrid);
+#endif
       ForSubregionArrayI(j, region0)
       {
         sa2 = RegionSubregionArray(region0, j);
@@ -366,8 +369,82 @@ void  CommRegFromStencil(
         ForSubgridI(k, sa2)
         {
           subgrid1 = SubgridArraySubgrid(sa2, k);
+          if (USE_P4EST){
+#ifdef HAVE_P4EST
+              lev1 = parflow_p4est_get_subgrid_level(subgrid1, grid->pfgrid);
 
-          if ((subgrid2 = IntersectSubgrids(subgrid0, subgrid1)))
+              tweak = (lev0 == lev1) ? 0 : lev0 < lev1 ? -1 : +1;
+              switch (tweak)
+              {
+              case -1:
+                  /* We try to intersect a coarse subgrid 'sc' with a fine shifted
+                   * one 'sf'. To get the right values we replace sf by its
+                   * shifted parent and perform the intersection. */
+
+                  if (parflow_p4est_check_neigh(subgrid1, subgrid0, grid->pfgrid)){
+                      ix = SubgridIX(subgrid1);
+                      iy = SubgridIY(subgrid1);
+                      iz = SubgridIZ(subgrid1);
+
+                      s = parflow_p4est_fetch_subgrid(grid->subgrids,
+                                                      grid->all_subgrids,
+                                                      SubgridLocIdx(subgrid1),
+                                                      SubgridGhostIdx(subgrid1));
+                      SubgridIX(subgrid1) =
+                              ix - SubgridIX(s) + s->pcorner[0];
+                      SubgridIY(subgrid1) =
+                              iy - SubgridIY(s) + s->pcorner[1];
+                      SubgridIZ(subgrid1) =
+                              iz - SubgridIZ(s) + s->pcorner[2];
+
+                      subgrid2 = IntersectSubgrids(subgrid0, subgrid1);
+
+                      SubgridIX(subgrid1) = ix;
+                      SubgridIY(subgrid1) = iy;
+                      SubgridIZ(subgrid1) = iz;
+                  }
+                  break;
+              case +1:
+                  /* We try to intersect a fine subgrid 'sf' with a coarse shifted
+                   * one 'sc'. To get the right values we replace sf by its parent
+                   * and then map the result of the intersection to sf. */
+
+                  if (parflow_p4est_check_neigh(subgrid0, subgrid1, grid->pfgrid)){
+                      ix = SubgridIX(subgrid0);
+                      iy = SubgridIY(subgrid0);
+                      iz = SubgridIZ(subgrid0);
+
+                      SubgridIX(subgrid0)=subgrid0->pcorner[0];
+                      SubgridIY(subgrid0)=subgrid0->pcorner[1];
+                      SubgridIZ(subgrid0)=subgrid0->pcorner[2];
+
+                      subgrid2 = IntersectSubgrids(subgrid0, subgrid1);
+
+                      SubgridIX(subgrid0) = ix;
+                      SubgridIY(subgrid0) = iy;
+                      SubgridIZ(subgrid0) = iz;
+
+                      if(subgrid2){
+                          SubgridIX(subgrid2) =
+                                  SubgridIX(subgrid2) - subgrid0->pcorner[0] + ix;
+                          SubgridIY(subgrid2) =
+                                  SubgridIY(subgrid2) - subgrid0->pcorner[1] + iy;
+                          SubgridIZ(subgrid2) =
+                                  SubgridIZ(subgrid2) - subgrid0->pcorner[2] + iz;
+                      }
+                  }
+                  break;
+              default:
+                  /* Same size neighbors, proceed as normal*/
+                  P4EST_ASSERT(tweak == 0);
+                  subgrid2 = IntersectSubgrids(subgrid0, subgrid1);
+                  break;
+              }
+#endif
+          }else{
+              subgrid2 = IntersectSubgrids(subgrid0, subgrid1);
+          }
+          if ((subgrid2))
           {
             if (USE_P4EST)
             {
