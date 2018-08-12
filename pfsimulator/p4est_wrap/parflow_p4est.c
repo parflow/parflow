@@ -483,3 +483,40 @@ parflow_p4est_get_brick_coord(Subgrid *subgrid, parflow_p4est_grid_t *pfgrid,
                                      bcoord);
   }
 }
+
+int parflow_p4est_check_neigh(Subgrid *sfine, Subgrid *scoarse,
+                              parflow_p4est_grid_t * pfgrid)
+{
+    int dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
+
+    if (dim == 2)
+    {
+      return parflow_p4est_check_neigh_2d(sfine, scoarse,
+                                         pfgrid->p.p4);
+    }
+    else
+    {
+      P4EST_ASSERT(dim == 3);
+      return parflow_p4est_check_neigh_3d(sfine, scoarse,
+                                          pfgrid->p.p8);
+    }
+}
+
+Subgrid *parflow_p4est_fetch_subgrid(SubgridArray *subgrids,
+                                     SubgridArray *all_subgrids,
+                                     int local_idx, int ghost_idx)
+{
+    int num_local = SubgridArraySize(subgrids);
+    int num_ghost = SubgridArraySize(all_subgrids) - num_local;
+    Subgrid *s = NULL;
+
+    if(ghost_idx == -1){
+        P4EST_ASSERT(local_idx >=0 && local_idx < num_local);
+        s = SubgridArraySubgrid(subgrids, local_idx);
+    }else{
+        P4EST_ASSERT(ghost_idx >= 0 && ghost_idx < num_ghost);
+        s = SubgridArraySubgrid(all_subgrids, num_ghost + ghost_idx);
+    }
+
+    return s;
+}

@@ -8,6 +8,7 @@
 SC_EXTERN_C_BEGIN;
 
 typedef Subregion Subgrid;
+typedef SubregionArray SubgridArray;
 typedef struct parflow_p4est_grid parflow_p4est_grid_t;
 typedef struct parflow_p4est_qiter parflow_p4est_qiter_t;
 
@@ -104,6 +105,7 @@ parflow_p4est_qiter_t *parflow_p4est_qiter_next(parflow_p4est_qiter_t *
 /** Get coorner of a quadrant in the brick coordinate system
  * \param [in] pfg      Pointer to a valid iterator structure.
  * \param [out] v       Coordinates of the quadrant in the passed iterator.
+ * \param [out] pv      Coordinates of the quadrant's parent in the passed iterator.
  */
 void            parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter,
                                             double                  v[3],
@@ -176,6 +178,12 @@ void
 parflow_p4est_get_brick_coord(Subgrid *subgrid,
                               parflow_p4est_grid_t *pfgrid, p4est_gloidx_t bcoord[3]);
 
+int             parflow_p4est_check_neigh(Subgrid *sfine, Subgrid *scoarse,
+                                          parflow_p4est_grid_t * pfgrid);
+
+Subgrid         *parflow_p4est_fetch_subgrid(SubgridArray *subgrids,
+                                             SubgridArray *all_subgrids,
+                                             int local_idx, int ghost_idx);
 SC_EXTERN_C_END;
 
 #endif                          /* !PARLOW_P4EST_H */

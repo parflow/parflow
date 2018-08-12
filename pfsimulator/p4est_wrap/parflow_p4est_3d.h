@@ -106,6 +106,8 @@ int             parflow_p4est_subgrid_level_3d (Subgrid *subgrid,
 void            parflow_p4est_get_brick_coord_3d(Subgrid *                subgrid,
                                                  parflow_p4est_grid_3d_t *pfg,
                                                  p4est_gloidx_t           bcoord[3]);
+int             parflow_p4est_check_neigh_3d(Subgrid *sfine, Subgrid *scoarse,
+                                             parflow_p4est_grid_3d_t * pfg);
 SC_EXTERN_C_END;
 
 #endif                          /* !PARLOW_P4EST_3D_H */

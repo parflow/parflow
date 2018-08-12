@@ -99,6 +99,9 @@ int             parflow_p4est_subgrid_level_2d (Subgrid *subgrid,
 void            parflow_p4est_get_brick_coord_2d(Subgrid *                subgrid,
                                                  parflow_p4est_grid_2d_t *pfg,
                                                  p4est_gloidx_t           bcoord[3]);
+
+int             parflow_p4est_check_neigh_2d(Subgrid *sfine, Subgrid *scoarse,
+                                             parflow_p4est_grid_2d_t * pfg);
 SC_EXTERN_C_END;
 
 #endif                          /* !PARLOW_P4EST_2D_H */
