@@ -62,6 +62,7 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
   int nx_v = SubvectorNX(subvector);
   int ny_v = SubvectorNY(subvector);
 
+  int level = SubgridLevel(subgrid);
   int i, j, k, ai;
   double         *data;
   double mult, z_coord;            //@RMM dz scale info
@@ -99,13 +100,13 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
   coords[0] = ctalloc(float, dims[0]);
   for (i = 0; i < dims[0]; i++)
   {
-    coords[0][i] = SubgridX(subgrid) + SubgridDX(subgrid) * ((float)i - 0.5);
+    coords[0][i] = RealSpaceX(ix, level) + (SubgridDX(subgrid) * ((float)i - 0.5)) / pow(2.0, (double)level);
   }
 
   coords[1] = ctalloc(float, dims[1]);
   for (j = 0; j < dims[1]; j++)
   {
-    coords[1][j] = SubgridY(subgrid) + SubgridDY(subgrid) * ((float)j - 0.5);
+    coords[1][j] = RealSpaceY(iy, level) + (SubgridDY(subgrid) * ((float)j - 0.5)) / pow(2.0, (double)level);
   }
 
   coords[2] = ctalloc(float, dims[2]);
