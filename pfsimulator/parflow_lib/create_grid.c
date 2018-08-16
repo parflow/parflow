@@ -248,6 +248,8 @@ Grid           *CreateGrid(
   // SGS Debug
   globals->grid3d = grid;
 
+  parflow_p4est_vector_test(grid);
+
   return grid;
 }
 

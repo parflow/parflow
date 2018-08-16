@@ -632,7 +632,6 @@ parflow_p4est_get_brick_coord_2d(Subgrid *                 subgrid,
                                  p4est_gloidx_t            bcoord[P4EST_DIM])
 {
   int k;
-  int rank = amps_Rank(amps_CommWorld);
   double v[3];
   p4est_qcoord_t qcoord[3];
   p4est_topidx_t which_tree  = SubgridOwnerTree(subgrid);
