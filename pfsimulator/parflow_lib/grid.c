@@ -408,10 +408,14 @@ Subgrid  *ExtractSubgrid(
   SubgridLocIdx(new_subgrid) = SubgridLocIdx(subgrid);
 
 #ifdef HAVE_P4EST
-  SubregionMinusZneigh(new_subgrid) = SubregionMinusZneigh(subgrid);
-  SubregionPlusZneigh(new_subgrid) = SubregionPlusZneigh(subgrid);
+  SubgridLevel(new_subgrid) = SubgridLevel(subgrid);
+  SubgridMinusZneigh(new_subgrid) = SubgridMinusZneigh(subgrid);
+  SubgridPlusZneigh(new_subgrid) = SubgridPlusZneigh(subgrid);
   SubgridOwnerTree(new_subgrid) = SubgridOwnerTree(subgrid);
   SubgridGhostIdx(new_subgrid) = SubgridGhostIdx(subgrid);
+  SubgridParentIX(new_subgrid) = SubgridParentIX(subgrid);
+  SubgridParentIY(new_subgrid) = SubgridParentIY(subgrid);
+  SubgridParentIZ(new_subgrid) = SubgridParentIZ(subgrid);
 #endif
 
   return new_subgrid;

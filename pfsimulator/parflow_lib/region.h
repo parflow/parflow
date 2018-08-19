@@ -77,7 +77,9 @@ typedef struct {
   int nx, ny, nz;        /* Size */
   int sx, sy, sz;        /* Striding factors */
   int rx, ry, rz;        /* Refinement over the background grid */
-  int level;             /* Refinement level = rx + ry + rz */
+  int level;             /* Refinement level = rx + ry + rz. When p4est
+                          * is enabled it holds the refinement level in
+                          * the p4est_brick structure */
 
   int process;           /* Process containing this subgrid */
   int locidx;            /* Index of this subregion in owned process*/
@@ -145,6 +147,9 @@ typedef struct {
 #define SubregionPlusZneigh(subregion)  ((subregion)->plus_z_neigh)
 #define SubregionOwnerTree(subregion)  ((subregion)->owner_tree)
 #define SubregionGhostIdx(subregion) ((subregion)->ghostidx)
+#define SubregionParentIX(subregion) ((subregion)->pcorner[0])
+#define SubregionParentIY(subregion) ((subregion)->pcorner[1])
+#define SubregionParentIZ(subregion) ((subregion)->pcorner[2])
 #endif
 
 /*--------------------------------------------------------------------------

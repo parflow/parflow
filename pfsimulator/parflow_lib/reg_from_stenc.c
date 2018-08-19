@@ -360,7 +360,7 @@ void  CommRegFromStencil(
     {
       subgrid0 = SubgridArraySubgrid(sa0, i);
 #ifdef HAVE_P4EST
-      lev0 = parflow_p4est_get_subgrid_level(subgrid0, grid->pfgrid);
+      lev0 = SubgridLevel(subgrid0);
 #endif
       ForSubregionArrayI(j, region0)
       {
@@ -371,8 +371,7 @@ void  CommRegFromStencil(
           subgrid1 = SubgridArraySubgrid(sa2, k);
           if (USE_P4EST){
 #ifdef HAVE_P4EST
-              lev1 = parflow_p4est_get_subgrid_level(subgrid1, grid->pfgrid);
-
+              lev1 = SubgridLevel(subgrid1);
               tweak = (lev0 == lev1) ? 0 : lev0 < lev1 ? -1 : +1;
               switch (tweak)
               {
@@ -621,7 +620,7 @@ void  CommRegFromStencil(
               /*Union of subgrids in sa2_loc*/
               sa3 = UnionSubgridArray(sa2_loc);
 
-              /*Rembember processor, tree and local indx*/
+              /*Rembember processor, tree ghost and local indx*/
               ForSubgridI(j, sa3)
               {
                 subgrid0 = SubgridArraySubgrid(sa3, j);
@@ -629,6 +628,14 @@ void  CommRegFromStencil(
                 SubgridOwnerTree(subgrid0) = tree_array[tt];
                 SubgridLocIdx(subgrid0) = loc_idx_array[k];
                 SubgridGhostIdx(subgrid0) = ghost_idx_array[k];
+
+                /* Remember level and parent corner */
+                subgrid1 = parflow_p4est_fetch_subgrid(subgrids, neighbors,
+                                                       loc_idx_array[k], ghost_idx_array[k]);
+                SubgridLevel(subgrid0) = SubgridLevel(subgrid1);
+                SubgridParentIX(subgrid0) = SubgridParentIX(subgrid1);
+                SubgridParentIY(subgrid0) = SubgridParentIY(subgrid1);
+                SubgridParentIZ(subgrid0) = SubgridParentIZ(subgrid1);
               }
               AppendSubgridArray(sa3, sa1);
 

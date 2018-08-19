@@ -116,6 +116,9 @@ typedef struct {
 #define SubgridPlusZneigh(subgrid)  ((subgrid)->plus_z_neigh)
 #define SubgridOwnerTree(subgrid)  ((subgrid)->owner_tree)
 #define SubgridGhostIdx(subgrid) ((subgrid)->ghostidx)
+#define SubgridParentIX(subgrid) SubregionParentIX(subgrid)
+#define SubgridParentIY(subgrid) SubregionParentIY(subgrid)
+#define SubgridParentIZ(subgrid) SubregionParentIZ(subgrid)
 #endif
 
 /*--------------------------------------------------------------------------

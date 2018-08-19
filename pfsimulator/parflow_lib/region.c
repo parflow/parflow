@@ -208,10 +208,14 @@ Subregion  *DuplicateSubregion(
   SubregionLocIdx(new_subregion) = SubregionLocIdx(subregion);
 
 #ifdef HAVE_P4EST
+  SubregionLevel(new_subregion) = SubregionLevel(subregion);
   SubregionOwnerTree(new_subregion) = SubregionOwnerTree(subregion);
   SubregionMinusZneigh(new_subregion) = SubregionMinusZneigh(subregion);
   SubregionPlusZneigh(new_subregion) = SubregionPlusZneigh(subregion);
   SubregionGhostIdx(new_subregion) = SubregionGhostIdx(subregion);
+  SubregionParentIX(new_subregion) = SubregionParentIX(subregion);
+  SubregionParentIY(new_subregion) = SubregionParentIY(subregion);
+  SubregionParentIZ(new_subregion) = SubregionParentIZ(subregion);
 #endif
 
   return new_subregion;

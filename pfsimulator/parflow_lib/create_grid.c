@@ -89,6 +89,7 @@ Grid           *CreateGrid(
   parflow_p4est_qiter_t      *qiter;
   parflow_p4est_quad_data_t  *quad_data = NULL;
   parflow_p4est_ghost_data_t *ghost_data = NULL;
+  int                         initial_level;
   int                        *z_levels;
   int                         i,lz, pz, offset;
 #endif
@@ -138,7 +139,9 @@ Grid           *CreateGrid(
     pfgrid = parflow_p4est_grid_new(GlobalsNumProcsX, GlobalsNumProcsY,
                                     GlobalsNumProcsZ);
 
+    initial_level = parflow_p4est_get_initial_level(pfgrid);
     /* Allocate p4est mesh structure if required*/
+
     parflow_p4est_grid_mesh_init(pfgrid);
 
     /* Loop on the quadrants (leafs) of this forest
@@ -156,6 +159,10 @@ Grid           *CreateGrid(
         NewSubgrid(sp->icorner[0], sp->icorner[1], sp->icorner[2],
                    sp->p[0], sp->p[1], sp->p[2], 0, 0, 0,
                    parflow_p4est_qiter_get_owner_rank(qiter));
+
+      SubgridLevel(quad_data->pf_subgrid) =
+              parflow_p4est_qiter_get_level(qiter) - initial_level;
+
       SubgridLocIdx(quad_data->pf_subgrid) =
         parflow_p4est_qiter_get_local_idx(qiter);
 
@@ -195,6 +202,10 @@ Grid           *CreateGrid(
         NewSubgrid(sp->icorner[0], sp->icorner[1], sp->icorner[2],
                    sp->p[0], sp->p[1], sp->p[2], 0, 0, 0,
                    parflow_p4est_qiter_get_owner_rank(qiter));
+
+      SubgridLevel(quad_data->pf_subgrid) =
+              parflow_p4est_qiter_get_level(qiter) - initial_level;
+
       SubgridLocIdx(ghost_data->pf_subgrid) =
         parflow_p4est_qiter_get_local_idx(qiter);
 
