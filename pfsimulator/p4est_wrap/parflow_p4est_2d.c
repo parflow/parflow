@@ -616,16 +616,6 @@ parflow_p4est_fetch_quad_from_subgrid(Subgrid *subgrid,
     return quad;
 }
 
-int
-parflow_p4est_subgrid_level_2d (Subgrid *subgrid,
-                                parflow_p4est_grid_2d_t * pfg)
-{
-    p4est_quadrant_t *quad =
-            parflow_p4est_fetch_quad_from_subgrid(subgrid, pfg);
-
-    return (quad->level - pfg->initial_level);
-}
-
 void
 parflow_p4est_get_brick_coord_2d(Subgrid *                 subgrid,
                                  parflow_p4est_grid_2d_t * pfg,
@@ -663,8 +653,7 @@ int parflow_p4est_check_neigh_2d(Subgrid *sfine, Subgrid *scoarse,
     qfine = parflow_p4est_fetch_quad_from_subgrid(sfine, pfg);
     qcoarse = parflow_p4est_fetch_quad_from_subgrid(scoarse, pfg);
 
-    P4EST_ASSERT(parflow_p4est_subgrid_level_2d (sfine, pfg) >
-                 parflow_p4est_subgrid_level_2d (scoarse,pfg));
+    P4EST_ASSERT(SubgridLevel(sfine) > SubgridLevel(scoarse));
 
     chidx = p4est_quadrant_child_id(qfine);
 

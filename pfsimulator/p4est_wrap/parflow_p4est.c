@@ -164,18 +164,18 @@ parflow_p4est_get_zneigh(Subgrid *               subgrid,
 }
 
 int
-parflow_p4est_get_subgrid_level(Subgrid *sg, parflow_p4est_grid_t *  pfgrid)
+parflow_p4est_get_initial_level(parflow_p4est_grid_t *  pfgrid)
 {
   int dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
 
   if (dim == 2)
   {
-    return parflow_p4est_subgrid_level_2d (sg, pfgrid->p.p4);
+    return pfgrid->p.p4->initial_level;
   }
   else
   {
     P4EST_ASSERT(dim == 3);
-    return parflow_p4est_subgrid_level_3d (sg, pfgrid->p.p8);
+    return pfgrid->p.p8->initial_level;
   }
 }
 

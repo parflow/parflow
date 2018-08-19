@@ -93,9 +93,6 @@ void parflow_p4est_get_projection_info_2d(Subgrid *subgrid, int info[2]);
 void            parflow_p4est_nquads_per_rank_2d(parflow_p4est_grid_2d_t *pfg,
                                                  int *                    quads_per_rank);
 
-int             parflow_p4est_subgrid_level_2d (Subgrid *subgrid,
-                                                parflow_p4est_grid_2d_t * pfg);
-
 void            parflow_p4est_get_brick_coord_2d(Subgrid *                subgrid,
                                                  parflow_p4est_grid_2d_t *pfg,
                                                  p4est_gloidx_t           bcoord[3]);

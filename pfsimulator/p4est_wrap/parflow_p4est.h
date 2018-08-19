@@ -82,6 +82,8 @@ void            parflow_p4est_get_zneigh(Subgrid *               subgrid,
                                          parflow_p4est_qiter_t * qiter,
                                          parflow_p4est_grid_t *  pfgrid);
 
+int             parflow_p4est_get_initial_level(parflow_p4est_grid_t *  pfgrid);
+
 /** Create an iterator over all local or ghost quadrants.
  * \param [in] pfg      Pointer to a valid parflow_p4est_grid structure.
  * \param [in] itype    Flag determining the type of iterator.
@@ -129,6 +131,8 @@ int             parflow_p4est_qiter_get_tree(parflow_p4est_qiter_t * qiter);
 /** Get index in the ghost layer of the quadrant in the passed iterator */
 int             parflow_p4est_qiter_get_ghost_idx(parflow_p4est_qiter_t * qiter);
 
+int             parflow_p4est_qiter_get_level(parflow_p4est_qiter_t * qiter);
+
 /** Retrieve a pointer to the information placed on each ghost quadrant */
 parflow_p4est_ghost_data_t
 * parflow_p4est_get_ghost_data(parflow_p4est_grid_t *  pfgrid,
@@ -159,9 +163,6 @@ parflow_p4est_get_projection_info(Subgrid *subgrid, int z_level,
  */
 void             parflow_p4est_nquads_per_rank(parflow_p4est_grid_t *pfgrid,
                                                int *                 quads_per_rank);
-
-/** Get the level of the passed subgrid in the pfgrid */
-int             parflow_p4est_get_subgrid_level(Subgrid *sg, parflow_p4est_grid_t *  pfgrid);
 
 /** If owned, get the coorner in in the p4est brick coordinates.
  * of the tree containing this subgrid.
