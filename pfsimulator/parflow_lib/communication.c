@@ -199,6 +199,7 @@ CommPkg         *NewCommPkg(
   int dim;
 
 #ifdef HAVE_P4EST
+  int ix,iy,iz;
   int tag;
 #endif
 
@@ -288,8 +289,25 @@ CommPkg         *NewCommPkg(
       recv_sr = SubregionArraySubregion(recv_sra, j);
       new_comm_pkg->recv_ranks[p] = SubregionProcess(recv_sr);
 
+      if(SubregionLevel(data_sr) < SubregionLevel(recv_sr)){
+          ix = SubregionIX(recv_sr);
+          iy = SubregionIY(recv_sr);
+          iz = SubregionIZ(recv_sr);
+
+          SubregionIX(recv_sr) = SubregionParentIX(recv_sr);
+          SubregionIY(recv_sr) = SubregionParentIY(recv_sr);
+          SubregionIZ(recv_sr) = SubregionParentIZ(recv_sr);
+      }
+
       dim = NewCommPkgInfo(data_sr, recv_sr, 0, num_vars,
                            loop_array);
+
+      if(SubregionLevel(data_sr) < SubregionLevel(recv_sr)){
+          SubregionIX(recv_sr) = ix;
+          SubregionIY(recv_sr) = iy;
+          SubregionIZ(recv_sr) = iz;
+      }
+
       invoice =
         amps_NewInvoice("%&.&D(*)",
                         loop_array + 1,
