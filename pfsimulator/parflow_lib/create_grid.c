@@ -203,7 +203,7 @@ Grid           *CreateGrid(
                    sp->p[0], sp->p[1], sp->p[2], 0, 0, 0,
                    parflow_p4est_qiter_get_owner_rank(qiter));
 
-      SubgridLevel(quad_data->pf_subgrid) =
+      SubgridLevel(ghost_data->pf_subgrid) =
         parflow_p4est_qiter_get_level(qiter) - initial_level;
 
       SubgridLocIdx(ghost_data->pf_subgrid) =
