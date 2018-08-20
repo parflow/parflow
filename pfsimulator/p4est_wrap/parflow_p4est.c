@@ -52,7 +52,7 @@ void
 parflow_p4est_sg_param_update(parflow_p4est_qiter_t *   qiter,
                               parflow_p4est_sg_param_t *sp)
 {
-  int t,p;
+  int t, p;
   int offset;
   double v[3], pv[3];
 
@@ -165,7 +165,7 @@ parflow_p4est_get_zneigh(Subgrid *               subgrid,
 }
 
 int
-parflow_p4est_get_initial_level(parflow_p4est_grid_t *  pfgrid)
+parflow_p4est_get_initial_level(parflow_p4est_grid_t * pfgrid)
 {
   int dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
 
@@ -254,11 +254,12 @@ parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter,
   if (dim == 2)
   {
     parflow_p4est_quad_to_vertex_2d(qiter->q.qiter_2d->connect,
-                                      qiter->q.qiter_2d->which_tree,
-                                      qiter->q.qiter_2d->quad, v);
+                                    qiter->q.qiter_2d->which_tree,
+                                    qiter->q.qiter_2d->quad, v);
     parflow_p4est_parent_to_vertex_2d(qiter->q.qiter_2d->connect,
                                       qiter->q.qiter_2d->which_tree,
-                                      qiter->q.qiter_2d->quad, pv);
+                                      qiter->q.qiter_2d->quad,
+                                      qiter->initial_level, pv);
 
     level = qiter->q.qiter_2d->quad->level;
   }
@@ -266,18 +267,19 @@ parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter,
   {
     P4EST_ASSERT(dim == 3);
     parflow_p4est_quad_to_vertex_3d(qiter->q.qiter_3d->connect,
-                                      qiter->q.qiter_3d->which_tree,
-                                      qiter->q.qiter_3d->quad, v);
+                                    qiter->q.qiter_3d->which_tree,
+                                    qiter->q.qiter_3d->quad, v);
     parflow_p4est_parent_to_vertex_3d(qiter->q.qiter_3d->connect,
                                       qiter->q.qiter_3d->which_tree,
-                                      qiter->q.qiter_3d->quad, pv);
+                                      qiter->q.qiter_3d->quad,
+                                      qiter->initial_level, pv);
     level = qiter->q.qiter_3d->quad->level;
   }
 
   for (k = 0; k < 3; ++k)
   {
     v[k] *= sc_intpow(2, level);
-    pv[k] *= sc_intpow(2, level - 1);
+    pv[k] *= sc_intpow(2, level > 0 ? level - 1 : level);
   }
 }
 
@@ -490,36 +492,39 @@ parflow_p4est_get_brick_coord(Subgrid *subgrid, parflow_p4est_grid_t *pfgrid,
 int parflow_p4est_check_neigh(Subgrid *sfine, Subgrid *scoarse,
                               parflow_p4est_grid_t * pfgrid)
 {
-    int dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
+  int dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
 
-    if (dim == 2)
-    {
-      return parflow_p4est_check_neigh_2d(sfine, scoarse,
-                                         pfgrid->p.p4);
-    }
-    else
-    {
-      P4EST_ASSERT(dim == 3);
-      return parflow_p4est_check_neigh_3d(sfine, scoarse,
-                                          pfgrid->p.p8);
-    }
+  if (dim == 2)
+  {
+    return parflow_p4est_check_neigh_2d(sfine, scoarse,
+                                        pfgrid->p.p4);
+  }
+  else
+  {
+    P4EST_ASSERT(dim == 3);
+    return parflow_p4est_check_neigh_3d(sfine, scoarse,
+                                        pfgrid->p.p8);
+  }
 }
 
 Subgrid *parflow_p4est_fetch_subgrid(SubgridArray *subgrids,
                                      SubgridArray *all_subgrids,
                                      int local_idx, int ghost_idx)
 {
-    int num_local = SubgridArraySize(subgrids);
-    int num_ghost = SubgridArraySize(all_subgrids) - num_local;
-    Subgrid *s = NULL;
+  int num_local = SubgridArraySize(subgrids);
+  int num_ghost = SubgridArraySize(all_subgrids) - num_local;
+  Subgrid *s = NULL;
 
-    if(ghost_idx == -1){
-        P4EST_ASSERT(local_idx >=0 && local_idx < num_local);
-        s = SubgridArraySubgrid(subgrids, local_idx);
-    }else{
-        P4EST_ASSERT(ghost_idx >= 0 && ghost_idx < num_ghost);
-        s = SubgridArraySubgrid(all_subgrids, num_local + ghost_idx);
-    }
+  if (ghost_idx == -1)
+  {
+    P4EST_ASSERT(local_idx >= 0 && local_idx < num_local);
+    s = SubgridArraySubgrid(subgrids, local_idx);
+  }
+  else
+  {
+    P4EST_ASSERT(ghost_idx >= 0 && ghost_idx < num_ghost);
+    s = SubgridArraySubgrid(all_subgrids, num_local + ghost_idx);
+  }
 
-    return s;
+  return s;
 }

@@ -1,7 +1,7 @@
 #include <parflow.h>
 
 
-static void    myInitVector(Vector *v )
+static void    myInitVector(Vector *v)
 {
   Grid       *grid = VectorGrid(v);
 
@@ -42,29 +42,29 @@ static void    myInitVector(Vector *v )
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
-      vp[iv] = (double) (SubgridLocIdx(subgrid));
+      vp[iv] = (double)(SubgridLocIdx(subgrid));
     });
   }
 }
 
-void parflow_p4est_vector_test(Grid  *grid)
+void parflow_p4est_vector_test(Grid *grid)
 {
-    Vector      *vector;
-    VectorUpdateCommHandle  *handle;
+  Vector      *vector;
+  VectorUpdateCommHandle  *handle;
 
-    /* Create a vector */
-    vector =  NewVectorType(grid, 1, 1, vector_cell_centered );
+  /* Create a vector */
+  vector = NewVectorType(grid, 1, 1, vector_cell_centered);
 
-    /* Put some values on it: including ghost points */
-    InitVectorAll(vector, -1);
+  /* Put some values on it: including ghost points */
+  InitVectorAll(vector, -1);
 
-    /* Change the values in the interior nodes */
-    myInitVector(vector);
+  /* Change the values in the interior nodes */
+  myInitVector(vector);
 
-    /* Try to do a parallel update*/
-    handle = InitVectorUpdate(vector, VectorUpdateAll);
-    FinalizeVectorUpdate(handle);
+  /* Try to do a parallel update*/
+  handle = InitVectorUpdate(vector, VectorUpdateAll);
+  FinalizeVectorUpdate(handle);
 
-    /* Finalize everything */
-    FreeVector(vector);
+  /* Finalize everything */
+  FreeVector(vector);
 }

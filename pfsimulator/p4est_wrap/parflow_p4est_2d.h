@@ -60,17 +60,16 @@ void            parflow_p4est_grid_2d_mesh_destroy(parflow_p4est_grid_2d_t *
 
 void            parflow_p4est_get_zneigh_2d(Subgrid * subgrid);
 
-void            parflow_p4est_quad_to_vertex_2d(p4est_connectivity_t *
-                                                  connect,
-                                                  p4est_topidx_t treeid,
-                                                  p4est_quadrant_t *
-                                                  quad, double v[3]);
+void            parflow_p4est_quad_to_vertex_2d(p4est_connectivity_t * connect,
+                                                p4est_topidx_t         treeid,
+                                                p4est_quadrant_t *     quad,
+                                                double                 v[3]);
 
-void            parflow_p4est_parent_to_vertex_2d(p4est_connectivity_t *
-                                                  connect,
-                                                  p4est_topidx_t treeid,
-                                                  p4est_quadrant_t *
-                                                  quad, double pv[3]);
+void            parflow_p4est_parent_to_vertex_2d(p4est_connectivity_t * connect,
+                                                  p4est_topidx_t         treeid,
+                                                  p4est_quadrant_t *     quad,
+                                                  int                    initial_level,
+                                                  double                 pv[3]);
 parflow_p4est_qiter_2d_t
 * parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
                               parflow_p4est_iter_type_t itype);

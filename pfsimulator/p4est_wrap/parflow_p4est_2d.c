@@ -40,8 +40,8 @@ parflow_p4est_morton(int w[2])
 
 
 static int
-refine_fn (p4est_t * p4est, p4est_topidx_t which_tree,
-                         p4est_quadrant_t * quadrant)
+refine_fn(p4est_t * p4est, p4est_topidx_t which_tree,
+          p4est_quadrant_t * quadrant)
 {
   double distsqr, v[3];
 
@@ -52,12 +52,12 @@ refine_fn (p4est_t * p4est, p4est_topidx_t which_tree,
 #endif
                          v);
 
-  distsqr = (v[0] - 1.)*(v[0] - 1.) + (v[1] - 1.)*(v[1] - 1.);
+  distsqr = (v[0] - 1.) * (v[0] - 1.) + (v[1] - 1.) * (v[1] - 1.);
 #ifdef P4_TO_P8
-  distsqr += (v[2] - 2.)*(v[2] - 2.);
+  distsqr += (v[2] - 2.) * (v[2] - 2.);
 #endif
 
-  return (distsqr < 1.);
+  return(distsqr < 1.);
 }
 
 parflow_p4est_grid_2d_t *
@@ -113,19 +113,20 @@ parflow_p4est_grid_2d_new(int Px, int Py
                               0, initial_level, 1,
                               quad_data_size, NULL, NULL);
 
-  for (level = initial_level; level < initial_level + 1; ++level) {
-     p4est_refine_ext (pfg->forest, 0, -1, refine_fn,
-                   NULL, NULL);
+  for (level = initial_level; level < initial_level + 1; ++level)
+  {
+    p4est_refine_ext(pfg->forest, 0, -1, refine_fn,
+                     NULL, NULL);
 
-     /* Face balance */
-     p4est_balance_ext (pfg->forest, P4EST_CONNECT_FACE, NULL, NULL);
+    /* Face balance */
+    p4est_balance_ext(pfg->forest, P4EST_CONNECT_FACE, NULL, NULL);
 
-     /* Resdistribute new quads */
-     p4est_partition(pfg->forest, 1, NULL);
-   }
+    /* Resdistribute new quads */
+    p4est_partition(pfg->forest, 1, NULL);
+  }
 
   /* write the brick in vtk file for visualization */
-  p4est_vtk_write_file (pfg->forest, NULL, P4EST_STRING "_brick");
+  p4est_vtk_write_file(pfg->forest, NULL, P4EST_STRING "_brick");
 
   /** allocate ghost storage */
   pfg->ghost = p4est_ghost_new(pfg->forest, P4EST_CONNECT_CORNER);
@@ -218,9 +219,9 @@ parflow_p4est_grid_2d_mesh_destroy(parflow_p4est_grid_2d_t * pfgrid)
 
 void
 parflow_p4est_get_zneigh_2d(Subgrid * subgrid
-#ifdef P4_TO_P8
+#ifdef                                                   P4_TO_P8
                             , parflow_p4est_qiter_2d_t * qiter,
-                            parflow_p4est_grid_2d_t * pfgrid
+                            parflow_p4est_grid_2d_t *    pfgrid
 #endif
                             )
 {
@@ -451,50 +452,50 @@ parflow_p4est_get_ghost_data_2d(parflow_p4est_grid_2d_t *  pfg,
  * END: Quadrant iterator routines
  */
 
-static void
-parflow_p4est_qcoord_to_vertex_2d(p4est_connectivity_t * connect,
+void
+parflow_p4est_quad_to_vertex_2d(p4est_connectivity_t * connect,
+                                p4est_topidx_t         treeid,
+                                p4est_quadrant_t *     quad,
+                                double                 v[3])
+{
+  p4est_qcoord_to_vertex(connect, treeid, quad->x, quad->y,
+#ifdef P4_TO_P8
+                         quad->z,
+#endif
+                         v);
+}
+
+void
+parflow_p4est_parent_to_vertex_2d(p4est_connectivity_t * connect,
                                   p4est_topidx_t treeid,
-                                  p4est_quadrant_t * quad, double v[3],
-                                  int do_parent)
+                                  p4est_quadrant_t * quad,
+                                  int initial_level, double pv[3])
 {
   p4est_quadrant_t qp;
 
-  if(do_parent){
-      p4est_quadrant_parent(quad, &qp);
-  }else{
-      qp = *quad;
+  if (quad->level > initial_level)
+  {
+    p4est_quadrant_parent(quad, &qp);
+  }
+  else
+  {
+    qp = *quad;
   }
 
   p4est_qcoord_to_vertex(connect, treeid, qp.x, qp.y,
 #ifdef P4_TO_P8
                          qp.z,
 #endif
-                         v);
-}
-
-void
-parflow_p4est_quad_to_vertex_2d(p4est_connectivity_t * connect,
-                                p4est_topidx_t treeid,
-                                p4est_quadrant_t * quad, double v[3])
-{
-    parflow_p4est_qcoord_to_vertex_2d(connect, treeid, quad, v, 0);
-}
-
-void
-parflow_p4est_parent_to_vertex_2d(p4est_connectivity_t * connect,
-                                  p4est_topidx_t treeid,
-                                  p4est_quadrant_t * quad, double v[3])
-{
-    parflow_p4est_qcoord_to_vertex_2d(connect, treeid, quad, v, 1);
+                         pv);
 }
 
 void
 parflow_p4est_get_projection_info_2d(Subgrid * subgrid
-#ifdef P4_TO_P8
-                                     , int zl_idx,
+#ifdef                                                         P4_TO_P8
+                                     , int                     zl_idx,
                                      parflow_p4est_grid_2d_t * pfg
 #endif
-                                     , int info[2])
+                                     , int                     info[2])
 {
 #ifdef P4_TO_P8
   double v[3];
@@ -579,41 +580,41 @@ parflow_p4est_nquads_per_rank_2d(parflow_p4est_grid_2d_t * pfg,
 }
 
 static p4est_quadrant_t *
-parflow_p4est_fetch_quad_from_subgrid(Subgrid *subgrid,
+parflow_p4est_fetch_quad_from_subgrid(Subgrid *                 subgrid,
                                       parflow_p4est_grid_2d_t * pfg)
 {
-    int rank = amps_Rank(amps_CommWorld);
-    p4est_topidx_t which_tree = SubgridOwnerTree(subgrid);
-    p4est_locidx_t which_quad, which_ghost;
-    p4est_tree_t *tree;
-    p4est_quadrant_t *quad;
+  int rank = amps_Rank(amps_CommWorld);
+  p4est_topidx_t which_tree = SubgridOwnerTree(subgrid);
+  p4est_locidx_t which_quad, which_ghost;
+  p4est_tree_t *tree;
+  p4est_quadrant_t *quad;
 
-    if (rank == subgrid->process)
-    {
-      /** We own the subgrid, fetch local quadrant associated to it */
-      tree = p4est_tree_array_index(pfg->forest->trees, which_tree);
-      which_quad = SubgridLocIdx(subgrid) - tree->quadrants_offset;
-      P4EST_ASSERT(0 <= which_quad &&
-                   which_quad <
-                   (p4est_locidx_t)tree->quadrants.elem_count);
-      quad =
-        p4est_quadrant_array_index(&tree->quadrants,
-                                   (size_t)which_quad);
-    }
-    else
-    {
-      /** We do not own the subgrid, we fetch ghost quadrant
-       * associated  to it */
-      which_ghost = SubgridGhostIdx(subgrid);
-      P4EST_ASSERT(which_ghost >= 0 &&
-                   which_ghost <
-                   (p4est_locidx_t)pfg->ghost->ghosts.elem_count);
-      quad =
-        p4est_quadrant_array_index(&pfg->ghost->ghosts,
-                                   (size_t)which_ghost);
-    }
+  if (rank == subgrid->process)
+  {
+    /** We own the subgrid, fetch local quadrant associated to it */
+    tree = p4est_tree_array_index(pfg->forest->trees, which_tree);
+    which_quad = SubgridLocIdx(subgrid) - tree->quadrants_offset;
+    P4EST_ASSERT(0 <= which_quad &&
+                 which_quad <
+                 (p4est_locidx_t)tree->quadrants.elem_count);
+    quad =
+      p4est_quadrant_array_index(&tree->quadrants,
+                                 (size_t)which_quad);
+  }
+  else
+  {
+    /** We do not own the subgrid, we fetch ghost quadrant
+     * associated  to it */
+    which_ghost = SubgridGhostIdx(subgrid);
+    P4EST_ASSERT(which_ghost >= 0 &&
+                 which_ghost <
+                 (p4est_locidx_t)pfg->ghost->ghosts.elem_count);
+    quad =
+      p4est_quadrant_array_index(&pfg->ghost->ghosts,
+                                 (size_t)which_ghost);
+  }
 
-    return quad;
+  return quad;
 }
 
 void
@@ -624,9 +625,9 @@ parflow_p4est_get_brick_coord_2d(Subgrid *                 subgrid,
   int k;
   double v[3];
   p4est_qcoord_t qcoord[3];
-  p4est_topidx_t which_tree  = SubgridOwnerTree(subgrid);
+  p4est_topidx_t which_tree = SubgridOwnerTree(subgrid);
   p4est_quadrant_t *quad =
-          parflow_p4est_fetch_quad_from_subgrid(subgrid, pfg);
+    parflow_p4est_fetch_quad_from_subgrid(subgrid, pfg);
 
   parflow_p4est_quad_to_vertex_2d(pfg->connect, which_tree, quad, v);
   qcoord[0] = quad->x;
@@ -645,24 +646,25 @@ parflow_p4est_get_brick_coord_2d(Subgrid *                 subgrid,
 int parflow_p4est_check_neigh_2d(Subgrid *sfine, Subgrid *scoarse,
                                  parflow_p4est_grid_2d_t * pfg)
 {
-    int k, chidx;
-    int is_neighbor = 0;
-    p4est_quadrant_t  nq[2 * P4EST_DIM];
-    p4est_quadrant_t *qfine, *qcoarse;
+  int k, chidx;
+  int is_neighbor = 0;
+  p4est_quadrant_t nq[2 * P4EST_DIM];
+  p4est_quadrant_t *qfine, *qcoarse;
 
-    qfine = parflow_p4est_fetch_quad_from_subgrid(sfine, pfg);
-    qcoarse = parflow_p4est_fetch_quad_from_subgrid(scoarse, pfg);
+  qfine = parflow_p4est_fetch_quad_from_subgrid(sfine, pfg);
+  qcoarse = parflow_p4est_fetch_quad_from_subgrid(scoarse, pfg);
 
-    P4EST_ASSERT(SubgridLevel(sfine) > SubgridLevel(scoarse));
+  P4EST_ASSERT(SubgridLevel(sfine) > SubgridLevel(scoarse));
 
-    chidx = p4est_quadrant_child_id(qfine);
+  chidx = p4est_quadrant_child_id(qfine);
 
-    for (k=0; k < P4EST_DIM; k++){
-        p4est_quadrant_all_face_neighbors (qfine,
-                                           p4est_corner_faces[chidx][k], nq);
-        is_neighbor +=
-                p4est_quadrant_is_equal(qcoarse, &nq[2*P4EST_DIM - 1]);
-    }
+  for (k = 0; k < P4EST_DIM; k++)
+  {
+    p4est_quadrant_all_face_neighbors(qfine,
+                                      p4est_corner_faces[chidx][k], nq);
+    is_neighbor +=
+      p4est_quadrant_is_equal(qcoarse, &nq[2 * P4EST_DIM - 1]);
+  }
 
-    return is_neighbor;
+  return is_neighbor;
 }

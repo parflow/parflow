@@ -82,7 +82,7 @@ void            parflow_p4est_get_zneigh(Subgrid *               subgrid,
                                          parflow_p4est_qiter_t * qiter,
                                          parflow_p4est_grid_t *  pfgrid);
 
-int             parflow_p4est_get_initial_level(parflow_p4est_grid_t *  pfgrid);
+int             parflow_p4est_get_initial_level(parflow_p4est_grid_t * pfgrid);
 
 /** Create an iterator over all local or ghost quadrants.
  * \param [in] pfg      Pointer to a valid parflow_p4est_grid structure.
