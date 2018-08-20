@@ -89,9 +89,9 @@ Grid           *CreateGrid(
   parflow_p4est_qiter_t      *qiter;
   parflow_p4est_quad_data_t  *quad_data = NULL;
   parflow_p4est_ghost_data_t *ghost_data = NULL;
-  int                         initial_level;
+  int initial_level;
   int                        *z_levels;
-  int                         i,lz, pz, offset;
+  int i, lz, pz, offset;
 #endif
 
   if (!USE_P4EST)
@@ -140,8 +140,8 @@ Grid           *CreateGrid(
                                     GlobalsNumProcsZ);
 
     initial_level = parflow_p4est_get_initial_level(pfgrid);
-    /* Allocate p4est mesh structure if required*/
 
+    /* Allocate p4est mesh structure if required*/
     parflow_p4est_grid_mesh_init(pfgrid);
 
     /* Loop on the quadrants (leafs) of this forest
@@ -161,7 +161,7 @@ Grid           *CreateGrid(
                    parflow_p4est_qiter_get_owner_rank(qiter));
 
       SubgridLevel(quad_data->pf_subgrid) =
-              parflow_p4est_qiter_get_level(qiter) - initial_level;
+        parflow_p4est_qiter_get_level(qiter) - initial_level;
 
       SubgridLocIdx(quad_data->pf_subgrid) =
         parflow_p4est_qiter_get_local_idx(qiter);
@@ -177,8 +177,8 @@ Grid           *CreateGrid(
       parflow_p4est_get_zneigh(quad_data->pf_subgrid, qiter, pfgrid);
 
       /* Remember parent's coorner */
-      for (i=0;i<3;i++)
-          quad_data->pf_subgrid->pcorner[i] =  sp->pcorner[i];
+      for (i = 0; i < 3; i++)
+        quad_data->pf_subgrid->pcorner[i] = sp->pcorner[i];
 
       AppendSubgrid(quad_data->pf_subgrid, subgrids);
       AppendSubgrid(quad_data->pf_subgrid, all_subgrids);
@@ -204,7 +204,7 @@ Grid           *CreateGrid(
                    parflow_p4est_qiter_get_owner_rank(qiter));
 
       SubgridLevel(quad_data->pf_subgrid) =
-              parflow_p4est_qiter_get_level(qiter) - initial_level;
+        parflow_p4est_qiter_get_level(qiter) - initial_level;
 
       SubgridLocIdx(ghost_data->pf_subgrid) =
         parflow_p4est_qiter_get_local_idx(qiter);
@@ -217,8 +217,8 @@ Grid           *CreateGrid(
         (int32_t)parflow_p4est_qiter_get_tree(qiter);
 
       /* Remember parent's coorner */
-      for (i=0;i<3;i++)
-         ghost_data->pf_subgrid->pcorner[i] =  sp->pcorner[i];
+      for (i = 0; i < 3; i++)
+        ghost_data->pf_subgrid->pcorner[i] = sp->pcorner[i];
 
       AppendSubgrid(ghost_data->pf_subgrid, all_subgrids);
     }

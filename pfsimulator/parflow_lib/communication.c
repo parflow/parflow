@@ -164,6 +164,72 @@ static int ComputeTag(Subregion *sender, Subregion *receiver)
 
   return tag;
 }
+
+static void CornerTweak(Subregion *data_sr, Subregion *recv_sr,
+                        int t[3])
+{
+  int tweak;
+  const int lev0 = SubregionLevel(data_sr);
+  const int lev1 = SubregionLevel(recv_sr);
+
+  tweak = (lev0 == lev1) ? 0 : lev0 < lev1 ? -1 : +1;
+
+  switch (tweak)
+  {
+    case -1:
+      t[0] = SubregionIX(recv_sr);
+      t[1] = SubregionIY(recv_sr);
+      t[2] = SubregionIZ(recv_sr);
+
+      SubregionIX(recv_sr) = SubregionParentIX(recv_sr);
+      SubregionIY(recv_sr) = SubregionParentIY(recv_sr);
+      SubregionIZ(recv_sr) = SubregionParentIZ(recv_sr);
+      break;
+
+    case +1:
+      t[0] = SubregionIX(data_sr);
+      t[1] = SubregionIY(data_sr);
+      t[2] = SubregionIZ(data_sr);
+
+      SubregionIX(data_sr) = SubregionParentIX(data_sr) - 1;
+      SubregionIY(data_sr) = SubregionParentIY(data_sr) - 1;
+      SubregionIZ(data_sr) = SubregionParentIZ(data_sr) - 1;
+      break;
+
+    default:
+      P4EST_ASSERT(lev0 == lev1);
+      break;
+  }
+}
+
+static void UndoCornerTweak(Subregion *data_sr, Subregion *recv_sr,
+                            int t[3])
+{
+  int tweak;
+  const int lev0 = SubregionLevel(data_sr);
+  const int lev1 = SubregionLevel(recv_sr);
+
+  tweak = (lev0 == lev1) ? 0 : lev0 < lev1 ? -1 : +1;
+
+  switch (tweak)
+  {
+    case -1:
+      SubregionIX(recv_sr) = t[0];
+      SubregionIY(recv_sr) = t[1];
+      SubregionIZ(recv_sr) = t[2];
+      break;
+
+    case +1:
+      SubregionIX(data_sr) = t[0];
+      SubregionIY(data_sr) = t[1];
+      SubregionIZ(data_sr) = t[2];
+      break;
+
+    default:
+      P4EST_ASSERT(lev0 == lev1);
+      break;
+  }
+}
 #endif
 
 /*--------------------------------------------------------------------------
@@ -199,7 +265,7 @@ CommPkg         *NewCommPkg(
   int dim;
 
 #ifdef HAVE_P4EST
-  int ix,iy,iz;
+  int t[3];
   int tag;
 #endif
 
@@ -245,7 +311,6 @@ CommPkg         *NewCommPkg(
 
       dim = NewCommPkgInfo(data_sr, send_sr, 0, num_vars,
                            loop_array);
-
       invoice =
         amps_NewInvoice("%&.&D(*)",
                         loop_array + 1,
@@ -289,24 +354,12 @@ CommPkg         *NewCommPkg(
       recv_sr = SubregionArraySubregion(recv_sra, j);
       new_comm_pkg->recv_ranks[p] = SubregionProcess(recv_sr);
 
-      if(SubregionLevel(data_sr) < SubregionLevel(recv_sr)){
-          ix = SubregionIX(recv_sr);
-          iy = SubregionIY(recv_sr);
-          iz = SubregionIZ(recv_sr);
-
-          SubregionIX(recv_sr) = SubregionParentIX(recv_sr);
-          SubregionIY(recv_sr) = SubregionParentIY(recv_sr);
-          SubregionIZ(recv_sr) = SubregionParentIZ(recv_sr);
-      }
+      CornerTweak(data_sr, recv_sr, t);
 
       dim = NewCommPkgInfo(data_sr, recv_sr, 0, num_vars,
                            loop_array);
 
-      if(SubregionLevel(data_sr) < SubregionLevel(recv_sr)){
-          SubregionIX(recv_sr) = ix;
-          SubregionIY(recv_sr) = iy;
-          SubregionIZ(recv_sr) = iz;
-      }
+      UndoCornerTweak(data_sr, recv_sr, t);
 
       invoice =
         amps_NewInvoice("%&.&D(*)",
@@ -361,12 +414,12 @@ void FreeCommPkg(
 
     amps_FreePackage(pkg->package);
 
-    for (i = pkg->num_send_invoices; i--; )
+    for (i = pkg->num_send_invoices; i--;)
     {
       amps_FreeInvoice(pkg->send_invoices[i]);
     }
 
-    for (i = pkg->num_recv_invoices; i--; )
+    for (i = pkg->num_recv_invoices; i--;)
     {
       amps_FreeInvoice(pkg->recv_invoices[i]);
     }
