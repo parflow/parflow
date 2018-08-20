@@ -13,6 +13,7 @@ struct parflow_p4est_grid {
 
 struct parflow_p4est_qiter {
   int dim;
+  int initial_level;
   union {
     parflow_p4est_qiter_2d_t *qiter_2d;
     parflow_p4est_qiter_3d_t *qiter_3d;
@@ -195,6 +196,7 @@ parflow_p4est_qiter_init(parflow_p4est_grid_t *    pfgrid,
     {
       qiter = P4EST_ALLOC(parflow_p4est_qiter_t, 1);
       qiter->dim = dim;
+      qiter->initial_level = parflow_p4est_get_initial_level(pfgrid);
       qiter->q.qiter_2d = qit_2d;
     }
   }
@@ -206,6 +208,7 @@ parflow_p4est_qiter_init(parflow_p4est_grid_t *    pfgrid,
     {
       qiter = P4EST_ALLOC(parflow_p4est_qiter_t, 1);
       qiter->dim = dim;
+      qiter->initial_level = parflow_p4est_get_initial_level(pfgrid);
       qiter->q.qiter_3d = qit_3d;
     }
   }

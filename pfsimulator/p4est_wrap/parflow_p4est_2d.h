@@ -32,7 +32,6 @@ typedef struct parflow_p4est_qiter_2d {
   p4est_quadrant_t *quad;              /* current quadrant */
   int owner_rank;               /* processor owning current quadrant */
   int local_idx;                /* number of subgrid relative to the owner processor */
-  int level;
 
   /** Fields used only for local quadrant iterator */
   p4est_t        *forest;
