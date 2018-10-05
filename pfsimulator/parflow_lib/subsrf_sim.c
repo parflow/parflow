@@ -683,7 +683,7 @@ PFModule   *SubsrfSimNewPublicXtra()
 
   geo_index_names = GetString("Geom.Perm.Names");
   geo_index_na = (public_xtra->geo_indexes_na) =
-                   NA_NewNameArray(geo_index_names);
+    NA_NewNameArray(geo_index_names);
   num_geo_indexes = NA_Sizeof(geo_index_na);
 
   (public_xtra->num_geo_indexes) = num_geo_indexes;

@@ -233,7 +233,7 @@ PFModule  *RetardationNewPublicXtra(
 
     geo_index_names = GetString("Geom.Retardation.GeomNames");
     geo_index_na = (public_xtra->geo_indexes_na) =
-                     NA_NewNameArray(geo_index_names);
+      NA_NewNameArray(geo_index_names);
     num_geo_unit_indexes = NA_Sizeof(geo_index_na);
 
     (public_xtra->num_geo_unit_indexes) = num_geo_unit_indexes;

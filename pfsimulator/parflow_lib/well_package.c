@@ -973,7 +973,7 @@ PFModule  *WellPackageNewPublicXtra(
           dummy0->cycle_number = i;
 
           interval_division = public_xtra->interval_divisions[i] =
-                                GlobalsIntervalDivisions[global_cycle];
+            GlobalsIntervalDivisions[global_cycle];
 
           public_xtra->repeat_counts[i] =
             GlobalsRepeatCounts[global_cycle];
@@ -1206,7 +1206,7 @@ PFModule  *WellPackageNewPublicXtra(
           dummy1->cycle_number = i;
 
           interval_division = public_xtra->interval_divisions[i] =
-                                GlobalsIntervalDivisions[global_cycle];
+            GlobalsIntervalDivisions[global_cycle];
 
           public_xtra->repeat_counts[i] =
             GlobalsRepeatCounts[global_cycle];

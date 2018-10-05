@@ -368,7 +368,7 @@ Databox         *ReadParflowB(
   }
 
   /* read in the databox data */
-  for (nsg = num_subgrids; nsg--; )
+  for (nsg = num_subgrids; nsg--;)
   {
     tools_ReadInt(fp, &x, 1);
     tools_ReadInt(fp, &y, 1);
@@ -450,7 +450,7 @@ Databox         *ReadParflowSB(
   }
 
   /* read in the databox data */
-  for (nsg = num_subgrids; nsg--; )
+  for (nsg = num_subgrids; nsg--;)
   {
     tools_ReadInt(fp, &x, 1);
     tools_ReadInt(fp, &y, 1);
@@ -517,7 +517,7 @@ Databox         *ReadSimpleA(
 
   /* read in the databox data */
   ptr = DataboxCoeffs(v);
-  for (m = nx * ny * nz; m--; )
+  for (m = nx * ny * nz; m--;)
     fscanf(fp, "%lf", ptr++);
 
   fclose(fp);
@@ -1075,7 +1075,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
         SDreaddata(sds_id, start, NULL, edges, data);
 
         convert_ptr = data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *double_ptr++ = *convert_ptr++;
       }
 
@@ -1100,7 +1100,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
         SDreaddata(sds_id, start, NULL, edges, data);
 
         convert_ptr = data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *double_ptr++ = *convert_ptr++;
       }
 
@@ -1125,7 +1125,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
         SDreaddata(sds_id, start, NULL, edges, data);
 
         convert_ptr = data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *double_ptr++ = *convert_ptr++;
       }
 
@@ -1150,7 +1150,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
         SDreaddata(sds_id, start, NULL, edges, data);
 
         convert_ptr = data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *double_ptr++ = *convert_ptr++;
       }
 
@@ -1175,7 +1175,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
         SDreaddata(sds_id, start, NULL, edges, data);
 
         convert_ptr = data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *double_ptr++ = *convert_ptr++;
       }
 
@@ -1200,7 +1200,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
         SDreaddata(sds_id, start, NULL, edges, data);
 
         convert_ptr = data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *double_ptr++ = *convert_ptr++;
       }
 
@@ -1225,7 +1225,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
         SDreaddata(sds_id, start, NULL, edges, data);
 
         convert_ptr = data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *double_ptr++ = *convert_ptr++;
       }
 
@@ -1250,7 +1250,7 @@ Databox         *ReadSDS(char *filename, int ds_num,
         SDreaddata(sds_id, start, NULL, edges, data);
 
         convert_ptr = data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *double_ptr++ = *convert_ptr++;
       }
 
