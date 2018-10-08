@@ -127,7 +127,7 @@ int len;
   } a, b;
 
   /* write out each double with bytes swaped                               */
-  for (i = len, data = ptr; i--; )
+  for (i = len, data = ptr; i--;)
   {
     a.number = *data++;
     b.buf[0] = a.buf[7];
@@ -157,7 +157,7 @@ int len;
 
 
   /* write out int with bytes swaped                                       */
-  for (i = len, data = ptr; i--; )
+  for (i = len, data = ptr; i--;)
   {
     a.number = *data++;
     b.buf[0] = a.buf[3];
@@ -182,7 +182,7 @@ int len;
   } a, b;
 
   /* read in each double with bytes swaped                               */
-  for (i = len, data = ptr; i--; )
+  for (i = len, data = ptr; i--;)
   {
     fread(&a.number, sizeof(double), 1, (FILE*)file);
 
@@ -212,7 +212,7 @@ int len;
 
 
   /* write out int with bytes swaped                                       */
-  for (i = len, data = ptr; i--; )
+  for (i = len, data = ptr; i--;)
   {
     fread(&a.number, sizeof(int), 1, (FILE*)file);
     b.buf[0] = a.buf[3];

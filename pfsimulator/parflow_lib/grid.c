@@ -673,7 +673,7 @@ SubgridArray  *UnionSubgridArray(
 
   new_sa = NewSubgridArray();
 
-  for (l = num_levels; l--; )
+  for (l = num_levels; l--;)
   {
     old_sa = new_sa;
 

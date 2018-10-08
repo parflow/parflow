@@ -203,7 +203,7 @@ CommPkg         *NewCommPkg(
   if (num_send_subregions)
   {
     new_comm_pkg->send_ranks = send_proc_array =
-                                 talloc(int, num_send_subregions);
+      talloc(int, num_send_subregions);
 
     for (i = 0; i < num_send_subregions; i++)
       send_proc_array[i] = -1;
@@ -370,12 +370,12 @@ void FreeCommPkg(
 
     amps_FreePackage(pkg->package);
 
-    for (i = pkg->num_send_invoices; i--; )
+    for (i = pkg->num_send_invoices; i--;)
     {
       amps_FreeInvoice(pkg->send_invoices[i]);
     }
 
-    for (i = pkg->num_recv_invoices; i--; )
+    for (i = pkg->num_recv_invoices; i--;)
     {
       amps_FreeInvoice(pkg->recv_invoices[i]);
     }
