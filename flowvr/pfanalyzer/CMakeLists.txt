@@ -28,13 +28,21 @@ ENDIF(NOT EXISTS ${NUMPY_I_PATH}/numpy.i)
 set_source_files_properties(${SRC_FILES} PROPERTIES COMPILE_FLAGS -fPIC)
 INCLUDE(UseSWIG)
 
+  set(ADDITIONAL_NUMPY_INCLUDE_PATH "" CACHE PATH
+      "The path where e.g. numpy/arrayobject.h is found")
+
   INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH}
+      ${ADDITIONAL_NUMPY_INCLUDE_PATH}
       ${CMAKE_CURRENT_SOURCE_DIR}
       ${NUMPY_I_PATH}
       )
 
   SET(CMAKE_SWIG_FLAGS "")
+IF (COMMAND SWIG_ADD_LIBRARY)
   SWIG_ADD_LIBRARY(pypfAnalyzer LANGUAGE python SOURCES pypfAnalyzer.i pypfAnalyzer.c)
+ELSE (COMMAND SWIG_ADD_LIBRARY)
+  SWIG_ADD_MODULE(pypfAnalyzer python pypfAnalyzer.i pypfAnalyzer.c)
+ENDIF (COMMAND SWIG_ADD_LIBRARY)
 SWIG_LINK_LIBRARIES(pypfAnalyzer ${PYTHON_LIBRARIES} pfanalyzer ${FCA_LIBRARY})
 
   STRING(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.[0-9]+" "\\1;\\2"
