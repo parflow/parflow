@@ -84,8 +84,8 @@ amps_Package amps_NewPackage(amps_Comm     comm,
 
           /* Store the dim of the vector */
           dim = items[item].dim =
-                  (ptr->dim_type == AMPS_INVOICE_POINTER) ?
-                  *(ptr->ptr_dim) : ptr->dim;
+            (ptr->dim_type == AMPS_INVOICE_POINTER) ?
+            *(ptr->ptr_dim) : ptr->dim;
 
           /* Pack the vector len and strides into following package
            * items */

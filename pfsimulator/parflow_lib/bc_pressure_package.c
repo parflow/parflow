@@ -595,7 +595,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
 
       interval_division = public_xtra->interval_divisions[i] =
-                            GlobalsIntervalDivisions[global_cycle];
+        GlobalsIntervalDivisions[global_cycle];
 
       public_xtra->repeat_counts[i] =
         GlobalsRepeatCounts[global_cycle];

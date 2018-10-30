@@ -3113,8 +3113,8 @@ int               SetGridCommand(
 
   return_code = TCL_OK;
 
-  exit:
-  
+exit:
+
   free(npoints);
   free(origin);
   free(intervals);
