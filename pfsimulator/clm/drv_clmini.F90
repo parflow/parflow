@@ -104,6 +104,11 @@ subroutine drv_clmini (drv, grid, tile, clm, istep_pf)
         stop
      endif
 
+!     if (nlevlak < 10) then
+!        write(6,*) ' probably you want to remove some lines in the following code!'
+!        stop
+!     endif
+
      dzlak(1) = 1.               
      dzlak(2) = 2.               
      dzlak(3) = 3.               
@@ -111,9 +116,9 @@ subroutine drv_clmini (drv, grid, tile, clm, istep_pf)
      dzlak(5) = 5.
      dzlak(6) = 7.
      dzlak(7) = 7.
-     dzlak(8) = 7.
-     dzlak(9) = 7.
-     dzlak(10)= 7.
+!     dzlak(8) = 7.
+!     dzlak(9) = 7.
+!     dzlak(10)= 7.
 
      zlak(1) =  0.5
      zlak(2) =  1.5
@@ -122,9 +127,9 @@ subroutine drv_clmini (drv, grid, tile, clm, istep_pf)
      zlak(5) = 12.5
      zlak(6) = 18.5
      zlak(7) = 25.5
-     zlak(8) = 32.5
-     zlak(9) = 39.5
-     zlak(10)= 46.5
+!     zlak(8) = 32.5
+!     zlak(9) = 39.5
+!     zlak(10)= 46.5
 
      do j = 1,nlevlak
         clm%z(j) = zlak(j)
