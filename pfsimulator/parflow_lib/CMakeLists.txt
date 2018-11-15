@@ -24,6 +24,7 @@ set (SRC_FILES advect.F
   distribute_usergrid.c
   dpofa.c
   dposl.c
+  flowvr.c
   gauinv.c
   general.c
   geom_t_solid.c
@@ -148,10 +149,10 @@ set (SRC_FILES advect.F
 
 add_library(pfsimulator ${SRC_FILES})
 
+
 if (${PARFLOW_HAVE_MPI})
   target_include_directories (pfsimulator PUBLIC "${MPI_C_INCLUDE_PATH}")
 endif (${PARFLOW_HAVE_MPI})
-
 
 install (TARGETS pfsimulator DESTINATION lib)
 
@@ -171,7 +172,13 @@ if (${PARFLOW_HAVE_SILO})
   target_include_directories (pfsimulator PUBLIC "${SILO_INCLUDE_DIRS}")
 endif (${PARFLOW_HAVE_SILO})
 
+if (${PARFLOW_HAVE_FLOWVR})
+  target_include_directories (pfsimulator PUBLIC "${FLOWVR_INCLUDE_DIRS}")
+  target_include_directories (pfsimulator PUBLIC "../../flowvr/pfanalyzer")
+  target_include_directories (pfsimulator PUBLIC "${fca_INCLUDE_DIRECTORY}")
+endif (${PARFLOW_HAVE_FLOWVR})
+
 if (${PARFLOW_HAVE_NETCDF})
-  target_include_directories (pfsimulator PUBLIC "${netCDF_INCLUDE_DIRS}")
+  target_include_directories (pfsimulator PUBLIC "${NETCDF_INCLUDE_DIRS}")
 endif (${PARFLOW_HAVE_NETCDF})
 

@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.4)
 
-project (PARFLOW C Fortran)
+project (PARFLOW C CXX Fortran)
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
@@ -20,12 +20,14 @@ git_describe(PARFLOW_VERSION --tags)
 if (NOT PARFLOW_VERSION)
   file (STRINGS "VERSION" PARFLOW_VERSION)
 endif ()
-  
+
 message("Configuring version : ${PARFLOW_VERSION}")
 version_create_variables (PARFLOW)
 
 # enable testing
 enable_testing ()
+
+include(CMakeDependentOption)
 
 #-----------------------------------------------------------------------------
 # General project wide configuration
@@ -101,13 +103,23 @@ endif (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 # NetCDF
 #-----------------------------------------------------------------------------
 set (PARFLOW_ENABLE_NETCDF False CACHE BOOL "Build with NetCDF")
-if (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR OR DEFINED NETCDF_LIBRARY)
-  find_package (NetCDF)
-  if (${NETCDF_FOUND})
+if (${PARFLOW_ENABLE_NETCDF})
+
+  # first try original package (installed with cmake ;) )
+  find_package(netCDF QUIET)
+  if (${netCDF_FOUND})
     set(PARFLOW_HAVE_NETCDF "yes")
     set(HAVE_NETCDF ${PARFLOW_HAVE_NETCDF})
-  endif (${NETCDF_FOUND})
-endif (${PARFLOW_ENABLE_NETCDF} OR DEFINED NETCDF_DIR OR DEFINED NETCDF_INCLUDE_DIR OR DEFINED NETCDF_LIBRARY)
+    set(NETCDF_INCLUDE_DIRS ${netCDF_INCLUDE_DIR})
+    set(NETCDF_LIBRARIES ${netCDF_LIBRARIES})
+  else()
+    find_package (NetCDF)
+    if (${NETCDF_FOUND})
+      set(PARFLOW_HAVE_NETCDF "yes")
+      set(HAVE_NETCDF ${PARFLOW_HAVE_NETCDF})
+    endif (${NETCDF_FOUND})
+  endif()
+endif (${PARFLOW_ENABLE_NETCDF})
 
 #-----------------------------------------------------------------------------
 # HDF5
@@ -212,6 +224,20 @@ if (${PARFLOW_ENABLE_VALGRIND} )
   set(PARFLOW_MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/bin/valgrind.sup")
   set(PARFLOW_MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --suppressions=${PARFLOW_MEMORYCHECK_SUPPRESSIONS_FILE}")
 endif (${PARFLOW_ENABLE_VALGRIND})
+
+#-----------------------------------------------------------------------------
+# FLOWVR
+#-----------------------------------------------------------------------------
+#set (PARFLOW_ENABLE_FLOWVR False CACHE BOOL "Build with FlowVR support")
+cmake_dependent_option (PARFLOW_ENABLE_FLOWVR "Build with FlowVR support" OFF "PARFLOW_ENABLE_NETCDF;PARFLOW_ENABLE_SIMULATOR" OFF)
+if (${PARFLOW_ENABLE_FLOWVR} OR DEFINED FLOWVR_ROOT)
+  find_package(FlowVR)
+  find_package(fca)
+  if (${FLOWVR_FOUND} AND ${fca_FOUND})
+    set(PARFLOW_HAVE_FLOWVR "yes")
+    set(HAVE_FLOWVR ${PARFLOW_HAVE_FLOWVR})
+  endif (${FLOWVR_FOUND} AND ${fca_FOUND})
+endif (${PARFLOW_ENABLE_FLOWVR} OR DEFINED FLOWVR_ROOT)
 
 #-----------------------------------------------------------------------------
 # Fortran checks
@@ -357,6 +383,11 @@ include_directories ("${PROJECT_SOURCE_DIR}/pfsimulator/amps/common")
 
 include_directories ("${PROJECT_BINARY_DIR}/include")
 
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+  set(__DEBUG "yes")
+    message("debugmode")
+endif ()
+
 #-----------------------------------------------------------------------------
 # Setup configure.h file for accessing configure options
 # -----------------------------------------------------------------------------
@@ -391,6 +422,15 @@ endif ()
 set (PARFLOW_ENABLE_TOOLS True CACHE BOOL "Enable building of the Parflow tools")
 if ( ${PARFLOW_ENABLE_TOOLS} )
   add_subdirectory (pftools)
+endif ()
+
+if (${PARFLOW_ENABLE_FLOWVR} )
+  add_subdirectory (flowvr/pfanalyzer)
+endif ()
+
+cmake_dependent_option (PARFLOW_ENABLE_FLOWVR_TOOLS "Enable building of the FlowVR tools" ON PARFLOW_ENABLE_FLOWVR OFF)
+if ( ${PARFLOW_ENABLE_FLOWVR_TOOLS} )
+  add_subdirectory (flowvr)
 endif ()
 
 #-----------------------------------------------------------------------------

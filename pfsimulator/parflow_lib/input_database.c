@@ -282,6 +282,123 @@ char *IDB_GetStringDefault(IDB *       database,
 }
 
 /**
+ * Get a boolean value from the input database.  If the key is not
+ * found use the default value.
+ *
+ * The program halts if the value is not a valid boolean.
+ *
+ * @memo Get a boolean value from the input database
+ * @param database The database to search
+ * @param key The key to search for
+ * @param default_value The default to use if not found
+ * @return The boolean which matches the search key
+ */
+int IDB_GetBooleanDefault(IDB *       database,
+                          const char *key,
+                          int         default_value)
+{
+  IDB_Entry lookup_entry;
+  IDB_Entry *result;
+  int value;
+
+  lookup_entry.key = (char*)key;
+
+  result = (IDB_Entry*)HBT_lookup(database, &lookup_entry);
+
+  if (result)
+  {
+    if (strcmp(result->value, "True") == 0)
+    {
+      value = 1;
+    }
+    else if (strcmp(result->value, "False") == 0)
+    {
+      value = 0;
+    }
+    else
+    {
+      InputError("Error: The key <%s> is not a valid boolean: value is <%s>\n",
+                 key, result->value);
+    }
+
+    result->used = 1;
+    return value;
+  }
+  else
+  {
+    char default_string[IDB_MAX_KEY_LEN];
+    IDB_Entry *entry;
+
+    /* Create a string to insert into the database */
+    /* This is used so only a single default value can be found
+     * for a given key */
+    if (default_value)
+    {
+      strcpy(default_string, "True");
+    }
+    else
+    {
+      strcpy(default_string, "False");
+    }
+
+    /* Create an new entry */
+    entry = IDB_NewEntry((char*)key, default_string);
+    entry->used = 1;
+
+    /* Insert into the height balanced tree */
+    HBT_insert(database, entry, 0);
+
+    return default_value;
+  }
+}
+
+/**
+ * Get a boolean value from the input database.  If the key is not
+ * found print an error and exit.
+ *
+ * @memo Get a boolean from the input database
+ * @param database The database to search
+ * @param key The key to search for
+ * @return The boolean which matches the search key
+ */
+int IDB_GetBoolean(IDB *database, const char *key)
+{
+  // TODO
+  IDB_Entry lookup_entry;
+  IDB_Entry *result;
+  int value;
+
+  lookup_entry.key = (char*)key;
+
+  result = (IDB_Entry*)HBT_lookup(database, &lookup_entry);
+
+  if (result)
+  {
+    if (strcmp(result->value, "True") == 0)
+    {
+      value = 1;
+    }
+    else if (strcmp(result->value, "False") == 0)
+    {
+      value = 0;
+    }
+    else
+    {
+      InputError("Error: The key <%s> is not a valid boolean: value is <%s>\n",
+                 key, result->value);
+    }
+
+    result->used = 1;
+    return value;
+  }
+  else
+  {
+    InputError("Input Error: Can't find required key <%s>%s\n", key, "");
+    return 0;
+  }
+}
+
+/**
  * Get an double value from the input database.  If the key is not
  * found use the default value.
  *

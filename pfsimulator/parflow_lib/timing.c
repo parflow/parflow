@@ -58,6 +58,10 @@ void  NewTiming()
   RegisterTiming("PFB I/O");
   RegisterTiming("CLM");
   RegisterTiming("PFSOL Read");
+  RegisterTiming("FlowVR Interact");
+  RegisterTiming("FlowVR Fulfill Contracts");
+  RegisterTiming("FlowVR Wait");
+  RegisterTiming("NetCDF I/O");
 #ifdef VECTOR_UPDATE_TIMING
   RegisterTiming("VectorUpdate");
 #endif
@@ -126,7 +130,13 @@ void  PrintTiming()
   max_invoice = amps_NewInvoice("%d%d", &time_ticks, &cpu_ticks);
 
   IfLogging(0)
-  file = OpenLogFile("Timing");
+  {
+    file = OpenLogFile("Timing");
+
+#ifdef ALL_ITERATIONS_TIMING
+    amps_Fprintf(file, "AMPS_TICKS_PER_SEC (Rank 0): %d\n\n", AMPS_TICKS_PER_SEC);
+#endif
+  }
 
   for (i = 0; i < (timing->size); i++)
   {

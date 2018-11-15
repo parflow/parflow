@@ -43,6 +43,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
                char *varName, int dimensionality, bool init, int numVarIni)
 {
 #ifdef PARFLOW_HAVE_NETCDF
+  BeginTiming(NetCDFTimingIndex);
   char *default_val = "False";
   char *switch_name;
   char key[IDB_MAX_KEY_LEN];
@@ -254,6 +255,7 @@ void WritePFNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int
       }
     }
   }
+  EndTiming(NetCDFTimingIndex);
 #else
   amps_Printf("Parflow not compiled with NetCDF, can't create NetCDF file\n");
 #endif

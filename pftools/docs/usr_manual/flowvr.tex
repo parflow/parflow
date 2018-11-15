@@ -1,0 +1,398 @@
+\chapter{FlowVR}
+\label{FlowVR}
+
+This version of \parflow{} can be used as a FlowVR module in FlowVR workflows
+\cite{dreherflexible2014}
+permitting
+In Situ and In Transit File I/O, analysis, monitoring and steering of running simulations.
+See \cite{thesisFriedemann2018} for further background information.
+The motivation for In Situ and In Transit in high performance computation is mainly to avoid
+blocking file I/O by either completely avoiding file I/O (In Situ/ In Transit analysis,
+monitoring and steering) or performing it in parallel to the numerical calculations.
+As seen in \cite{thesisFriedemann2018} already In Situ file output for \parflow{} gives performance
+boost especially
+for dump intensive problems on multiple nodes of a high performance computing platform.
+In Situ and In Transit analysis, monitoring and steering allow completely new scientific
+workflows already useful on small domains but becoming necessary on the continental problem
+scale.
+
+In the following we show how to make use of \parflow{} in a FlowVR workflow with the tools
+provided in this \parflow{} distribution. These tools build up a framework denoted as
+parFlowVR. This allows to run \parflow{} and other tools of the parFlowVR ecosystem
+as a distributed parallel application.
+
+\section{Installation}
+\subsection{Dependencies}
+When installing the parFlowVR framework you will need to install
+FlowVR first.
+It can be retrieved from \\\code{https://gitlab.inria.fr/flowvr/flowvr-ex}%
+\footnote{The public access will be opened soon. We recommend using the version
+with the git hash \code{628fd3b7348c3fb4e282360f90da1e2636b9e42a} or a newer one.}.
+We highly recommend to have Swig (\code{http://www.swig.org}),
+VisIt (\code{https://wci.llnl.gov/simulation/computer-codes/visit/}) and
+Python with the NumPy and netCDF packages installed too. To learn how to get all those
+dependencies have a look in the \code{installer.sh} script of your \parflow{} distribution.
+
+\subsection{Compiling}
+The parFlowVR framework is only available in the CMake build system. We recommend to set the following
+CMake switches:
+\begin{display}\begin{verbatim}
+-DPARFLOW_ENABLE_FLOWVR=ON
+
+# Needed for the Python analyzer API
+-DBUILD_PYTHON_ANALYZER_API=ON
+-DNUMPY_I_PATH=<Directory where to find numpy.i>
+
+# Needed for the visit connector
+-DVISIT_LIBRARY_LIBSIM=<Path to libsim (V2)>
+-DVISIT_INCLUDE_DIR=<Path to visit include directory>
+\end{verbatim}\end{display}
+
+\subsection{The Runtime Environment}
+Especially when working on high performance platforms, the parFlowVR framework's runtime
+environment must be carefully set up.
+In the following we give an example for setting environment variables impacting the
+parFlowVR behavior.
+\begin{display}\begin{verbatim}
+# set this to easily import the Python analyzer API. The python version (here 2.7)
+# should match your system's python version.
+export PYTHONPATH=$PYTHONPATH:$PARFLOW_DIR/lib/python2.7
+
+# The following line should be in your bashrc file as otherwise FlowVR modules cannot be
+# started remotely
+export PATH=$PATH:<path to flowvr binaries>
+
+# Load the FlowVR environment:
+source flowvr-suite-config.sh
+
+# optional:
+
+# If your high performance platform is using an alternative to ssh for remote shells
+# specify it like this:
+export FLOWVR_SSH="oarsh"
+
+# In some cases you want to use a different version of parFlowVR modules in your
+# distributed applications. Especially on some high performance platforms it might not be
+# possible to directly start e.g. ParFlow or the netcdf writer module as for isntance
+# some modules must be loaded before startup.
+# If the following variables are set to point to an executable it is executed instead.
+export PARFLOW_EXE=<path to the parflow starter script>
+export NETCDFWRITER_EXE<path to the netcdf writer starter script>
+\end{verbatim}\end{display}
+
+\section{Setting up a FlowVR workflow}
+Normally 3 files, all placed in the same folder, are used to describe a workflow using the parFlowVR framework:
+\begin{itemize}
+\item a \code{.py} file describing the parFlowVR workflow. Typically it is named
+\code{parflowvr.py}.
+\item a \code{.tcl} script defining the \parflow{} problem as described in
+Section~\ref{Main Input File (.tcl)}
+\item a \code{do.sh} file. If executed it runs the problem as a distributed application.
+\end{itemize}
+\subsection{The do.sh file}
+To run a distributed application using parFlowVR, 4 steps are needed:
+\begin{enumerate}
+\item create the \parflow{} input database and prepare the input files (\code{tclsh <problemname>.tcl})
+\item run the FlowVR Daemon on all participating nodes (\code{flowvrd})
+\item create the xml files defining the application (typically a call to \code{python parflowvr.py})
+\item run the distributed application (\code{flowvr parflowvr})
+\end{enumerate}
+All this is abstracted by the \code{do.sh} scripts.
+Thus to start a well configured parFlowVR application it is enough to run this script.
+Typically the process topology and the \parflow{} problem name are defined in the \code{do.sh} script.
+
+There are prepared scripts for multi core (\code{\$PARFLOW\_DIR/bin/parflowvr/doMPI.sh})
+and single core \\(\code{\$PARFLOW\_DIR/bin/parflowvr/do.sh}) parFlowVR applications.
+To use them the following constraints need to be fulfilled:
+\begin{itemize}
+\item the \code{<problemname>.tcl} file produces an input database named
+  \code{<problemname>.pfidb} with the \code{pfwritedb} command (This is a classical
+    \parflow{} \code{.tcl} script thus it defines problems according to
+    Section~\ref{Main Input File (.tcl)}.
+\item the \code{.py} script is named \code{parflowvr.py}
+\item \code{parflowvr.py} has to
+  accept the following parameters: \code{<problemname> <P> <Q> <R>}
+\item in case of multi core the \code{.tcl} file needs to accept the following parameters:
+  \code{<P> <Q> <R>}
+\end{itemize}
+  \code{<P> <Q> <R>} denote the process topology as in Section~\ref{Computing Topology}.
+\subsection{The .py File}
+To write these files ground up, a knowledge of the FlowVR middleware and the modules backing
+parFlowVR is needed. This can be obtained from the FlowVR documentation, especially from
+the chapters on the FlowVR-Appy (see \code{http://flowvr.sourceforge.net/FlowVRDoc.html})
+and \cite{thesisFriedemann2018}. The FlowVR-Appy is the framework to define distributed
+FlowVR applications data flows in Python
+
+In contrast we propose to adapt the \code{parflowvr.py} files from the examples given in the following
+and from the test cases given in \code{flowvr/testcases}.
+\section{In Situ File Write}
+To benefit from In Situ file write, a \parflow{} module's out port needs to be connected to
+a netcdf writer module's in port. This is done by the following \code{parflowvr.py} script:
+
+\begin{display}\begin{verbatim}
+import sys, os
+
+from filters import *
+
+parflow_dir = os.getenv('PARFLOW_DIR')
+sys.path.append(parflow_dir + '/bin/parflowvr')
+from parFlowVR_modules import *
+
+# We are working with a hostlist to support multi node too.
+problemName, P, Q, R, hostlist = sys.argv[1:6]
+hosts = hostlist.split(',')
+
+
+# Add all your out ports as in FlowVR.Outports.Names here that one wants to dump
+# Remember to not add two outports dumping the same variable as this leads to undefined
+# behavior.
+outports = ["pressure", "saturation"]
+
+# here: one writer over all...1
+parflowmpi = ParflowMPI(','.join(hosts[1:]),
+        problemName=problemName,
+        outports=outports) # ports as specified in tcl file
+
+netcdfwriter = NetCDFWriter("netcdfwriter", host=hosts[0])
+
+all_ports=[]
+for portname in outports:
+  all_ports += parflowmpi.getPort(portname)
+
+treePressure = generateNto1(prefix="comNto1PressureMerge", in_ports=all_ports
+  , arity = 2)
+treePressure.link(netcdfwriter.getPort("in"))
+
+app.generate_xml("parflowvr")
+\end{verbatim}\end{display}
+
+To our problem's \code{.tcl} file (named \code{flowvr.tcl}) we add:
+\begin{display}\begin{verbatim}
+[...]
+pfset Process.Topology.P        [lindex $argv 0]
+pfset Process.Topology.Q        [lindex $argv 1]
+pfset Process.Topology.R        [lindex $argv 2]
+
+pfset FlowVR True
+pfset FlowVR.OnEnd         SendEmpty
+pfset FlowVR.Outports.Names "pressure saturation"
+pfset FlowVR.Outports.pressure.Periodicity 1
+pfset FlowVR.Outports.pressure.Variable "pressure"
+pfset FlowVR.Outports.pressure.Offset 0
+pfset FlowVR.Outports.saturation.Periodicity 1
+pfset FlowVR.Outports.saturation.Variable "saturation"
+pfset FlowVR.Outports.saturation.Offset 0
+
+# instead of pfrun:
+pfwritedb flowvr
+\end{verbatim}\end{display}
+You can add even more out ports to the \code{.tcl} file dumping other variables. Remember
+to connect them all to the same netCDF writer module to write all the variables in the same netCDF file.
+This is done by adding them to the \code{outports} list in \code{parflowvr.py}. Furthermore it is important to
+give them all the same periodicity and offset as the merge tree we are using awaits messages
+on all input ports at the same time to begin its work.
+\footnote{Other workflows e.g. dumping different variables with different periodicities
+are possible but would need big changes in the \code{parflowvr.py} script.}
+
+And the \code{do.sh} contains:
+\begin{display}\begin{verbatim}
+P=`echo $(cat $MACHINEFILE | wc -l) -1 | bc`
+Q=1
+R=1
+PROBLEMNAME=flowvr
+
+# run it:
+$HOME/bin/froggy_doMPI.sh $PROBLEMNAME $P $Q $R
+\end{verbatim}\end{display}
+Where the \code{MACHINEFILE} environment variable is the filepath of a file containing
+all participating nodes formatted like this (here: 3 cores per node. Such a file is
+normally retrieved from the job scheduler on high performance platforms):
+\begin{display}\begin{verbatim}
+host1
+host1
+host1
+host2
+host2
+host2
+.
+.
+.
+\end{verbatim}\end{display}
+
+\section{In Situ Analysis and Steering}
+There is an API to write analysis in C or in Python. The C API gives more performance but you will
+need to understand the FlowVR C-API (fca) too and writing analyzers in C is very error
+prone. As shown in
+\cite{thesisFriedemann2018} even the Python analyzer API
+(provided by the \code{pypfAnalyzer}-Python module) runs performant and thus is recommended to
+use for creating analyzers. To use the Python analyzer API \parflow{} must have been compiled with
+the \code{-DBUILD\_PYTHON\_ANALYZER\_API:BOOL=ON} switch.
+How to write own analyzers can be easily understood regarding the following example. We construct a
+\code{analyzer.py} script that is in the same folder as the other project files with the
+following content:
+\begin{display}\begin{verbatim}
+#!/usr/bin/python2 -u
+import pypfAnalyzer as pfa
+import numpy as np
+
+# If receiving a merged grid message (this typically happens when using more than one
+# ParFlow instances dumping data to a single analyzer module through merge filters)
+# onGridMessage is called for every part! Thus ix, iy and iz are given in the
+# GridMessageMetadata object m.
+# They point to the starting position of the grid message's grid in the domain.
+# If you need to react to the whole grid at once you can either use a
+# MergeGridMessages filter or cache the array in python.
+def onGridMessage(arr, m):
+    operand = np.ones(shape = arr.shape) * 42.
+    for k in range(arr.shape[0]):
+        for j in range(arr.shape[1]):
+            for i in range(arr.shape[2]):
+                # The coordinates x, y and z are grid coordinates in the problem domain
+                x = i + m.ix;
+                y = j + m.iy;
+                z = k + m.iz;
+
+                # Doing sample analysis and calculate the operand
+                # Attention: the coordinates are not in the obvious order!
+                operand[k,j,i] += x + y + z
+    # Steer the simulation with the operand.
+    # Depending on the FlowVR graph it is sometimes not guaranteed that the Steer
+    # is performed for the next Simulation step already.
+    pfa.SendSteer(pfa.ACTION_SET, pfa.VARIABLE_PRESSURE, m.ix, m.iy, m.iz, operand)
+
+# Set our onGridMessage function as listener to react to incoming grid messages containing
+# a variable dump from the parflow simulation
+pfa.SetGridMessageParser(onGridMessage)
+
+# Run as a FlowVR module
+pfa.run([])
+\end{verbatim}\end{display}
+
+The \code{SendSteer} command allows to induce a set
+(\code{ACTION\_SET}), add (\code{ACTION\_ADD}) or multiplication
+(\code{ACTION\_MULTIPLY}) on the simulations data grid of one of the variables
+\begin{display}\begin{verbatim}
+  VARIABLE_PRESSURE
+  VARIABLE_SATURATION
+  VARIABLE_POROSITY
+  VARIABLE_MANNING
+  VARIABLE_PERMEABILITY_X
+  VARIABLE_PERMEABILITY_Y
+  VARIABLE_PERMEABILITY_Z
+\end{verbatim}\end{display}
+The steer action can also be performed on only a part of the variable grid held by \parflow{}.
+Thus the parameters \code{ix}, \code{iy} and \code{iz} are used to give the starting point.
+More information on this topic can be found in the documentation comments especially in
+\code{flowvr/pfanalyzer/pypfAnalyzer.h}.
+
+The \code{parflowvr.py} in our example contains:
+\begin{display}\begin{verbatim}
+from filters import *
+import os, sys
+
+parflow_dir = os.getenv('PARFLOW_DIR')
+sys.path.append(parflow_dir + '/bin/parflowvr')
+from parFlowVR_modules import *
+
+problemName, P, Q, R = sys.argv[1:5]
+
+# Components:
+pres = FilterPreSignal("PreSignal", nb=1)
+
+parflowmpi = ParflowMPI(("localhost,"*int(P)*int(Q)*int(R))[:-1],  # cut last ,
+        problemName,
+        ["out0"])  # ports as specified in tcl file
+
+analyzer = Analyzer("Analyzer", "python -u analyzer.py")
+
+# Connections:
+controller = FilterMergeItExt("Controller")
+analyzer.getPort("out").link(controller.newInputPort())
+
+# This works as all the parflow instances are synchron
+parflowmpi.getPort("endIt")[0].link(pres.getPort("in"))
+pres.getPort("out").link(controller.getPort("order"))
+controller.getPort("out").link(parflowmpi.getPort("in"))
+
+treePressure = generateNto1(prefix="comNto1PressureMerge",
+  in_ports = parflowmpi.getPort("out0"), arity = 2)
+treePressure.link(analyzer.getPort("in"))
+
+
+app.generate_xml("parflowvr")
+\end{verbatim}\end{display}
+
+The problems \code{.tcl} file (\code{flowvr.tcl}) contains:
+\begin{display}\begin{verbatim}
+[...]
+pfset Process.Topology.P        [lindex $argv 0]
+pfset Process.Topology.Q        [lindex $argv 1]
+pfset Process.Topology.R        [lindex $argv 2]
+
+pfset FlowVR True
+pfset FlowVR.SteerLogMode "VerySimple"
+pfset FlowVR.Outports.Names "out0"
+
+pfset FlowVR.Outports.out0.Periodicity 1
+pfset FlowVR.Outports.out0.Variable  "pressure"
+pfset FlowVR.Outports.out0.Offset 0
+
+# instead of pfrun:
+pfwritedb flowvr
+\end{verbatim}\end{display}
+
+And we launch it with the \code{do.sh}:
+\begin{display}\begin{verbatim}
+P=2
+Q=1
+R=1
+PROBLEMNAME=flowvr
+$PARFLOW_DIR/bin/parflowvr/doMPI.sh $PROBLEMNAME $P $Q $R
+\end{verbatim}\end{display}
+
+This example runs on one node only. but you can change the \code{<P> <Q> <R>} values in the \code{do.sh}
+script to profit from multiple cores.
+
+\section{In Situ Visualization}
+For this \parflow{} must be compiled with the \code{-DPARFLOW\_ENABLE\_VISIT\_CONNECTOR:BOOL=ON}
+switch and libsim and the libsim include files must be set, for example like this:
+\begin{display}\begin{verbatim}
+-DVISIT_INCLUDE_DIR:PATH=<path to VisIt>/linux-x86_64/libsim/V2/include
+-DVISIT_LIBRARY_LIBSIM:FILEPATH=<path to VisIt>/linux-x86_64/libsim/V2/lib/libsimV2.a
+\end{verbatim}\end{display}
+
+If you want to connect to a running simulation with VisIt\footnote{\code{https://wci.llnl.gov/simulation/computer-codes/visit/}}
+without intermediate file write
+we propose to add a visit connector module to your \code{parflowvr.py} file.
+This is done by the following lines (to be inserted before the
+\code{app.generate\_xml} statement. Works only with workflows using the \code{FilterMergeItExt}).
+\begin{display}\begin{verbatim}
+[...]
+visit = VisIt("visit-connector")
+treeSnap.link(visit.getPort("in"))
+
+# connect to the FilterMergeItExt object to make it assynchronous (do not
+# wait for a snapshot request every iteration)
+visit.getPort("triggerSnap").link(controller.newInputPort())
+
+app.generate_xml("parflowvr")
+\end{verbatim}\end{display}
+After starting the parFlowVR application you can open the simulation in VisIt:\\
+\code{File > Open File > ~/.visit/simulations/<simulation file>.sim2}. Now add the variable's
+chart you want to see and click \code{Draw}. In the current implementation it takes up to 3 time steps of
+simulation until you retrieve the data and VisIt begins
+to render it. You can request new snapshots of the simulation's state by clicking
+\code{trigger snap} under \code{File > Simulations} in VisIt.
+
+See \code{flowvr/testcases/visit} for further reference.
+
+\section{Further Information}
+There are many things not yet explained in this version of the documentation.
+% for example analyzer and steering with multiple nodes...
+Some of them
+will be added in later versions but it is still highly recommended, to regard the source codes in e.g.
+the \code{flowvr/scripts} \code{flowvr/examples}, \code{flowvr/testcases}
+and \code{flowvr/filters} folders as they are well documented and show what is possible with In Situ and In Transit.
+
+Also the developer tools from the FlowVR package for example \code{flowvr-glgraph} to
+visualize FlowVR- and thus also parFlowVR workflows are very useful.

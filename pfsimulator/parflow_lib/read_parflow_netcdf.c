@@ -39,6 +39,7 @@
 void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep, int dimensionality)
 {
 #ifdef PARFLOW_HAVE_NETCDF
+  BeginTiming(NetCDFTimingIndex);
   Grid           *grid = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);
   Subgrid        *subgrid;
@@ -63,6 +64,7 @@ void ReadPFNC(char *fileName, Vector *v, char *varName, int tStep, int dimension
     ReadNCFile(ncRID, varID, subvector, subgrid, varName, tStep, dimensionality);
   }
   nc_close(ncRID);
+  EndTiming(NetCDFTimingIndex);
 }
 
 

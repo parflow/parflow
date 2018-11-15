@@ -41,6 +41,12 @@
 #include <slurm/slurm.h>
 #endif
 
+#ifdef HAVE_FLOWVR
+#include <fca/fca.h>
+#include "flowvr.h"
+#endif
+
+
 #include <unistd.h>
 #include <string.h>
 #include <float.h>
@@ -177,10 +183,10 @@ typedef struct {
   int write_netcdf_overland_sum;        /* write overland_sum? */
   int write_netcdf_overland_bc_flux;    /* write overland_bc_flux? */
   int write_netcdf_mask;        /* write mask? */
-  int write_netcdf_mannings;    /* write mask? */
+  int write_netcdf_mannings;    /* write mannings? */
   int write_netcdf_subsurface;  /* write subsurface? */
-  int write_netcdf_slopes;      /* write subsurface? */
-  int write_netcdf_dzmult;      /* write subsurface? */
+  int write_netcdf_slopes;      /* write slopes? */
+  int write_netcdf_dzmult;      /* write dzmult? */
   int numVarTimeVariant;        /*This variable is added to keep track of number of
                                  * time variant variable in NetCDF file */
   int numVarIni;                /*This variable is added to keep track of number of
@@ -1065,6 +1071,22 @@ SetupRichards(PFModule * this_module)
                 public_xtra->numVarTimeVariant, "time", 1, true,
                 public_xtra->numVarIni);
     }
+
+
+    /*-----------------------------------------------------------------
+     * Dump initial values to FlowVR?
+     *-----------------------------------------------------------------*/
+#ifdef HAVE_FLOWVR
+    BeginTiming(FlowVRFulFillContractsTimingIndex);
+    if (FLOWVR_ACTIVE)
+    {
+      SimulationSnapshot snapshot = GetSimulationSnapshot;
+      FlowVRInitTranslation(&snapshot);
+      any_file_dumped = FlowVRFulFillContracts(0, &snapshot);
+    }
+    EndTiming(FlowVRFulFillContractsTimingIndex);
+#endif
+
     /*-----------------------------------------------------------------
      * Print out the initial pressures?
      *-----------------------------------------------------------------*/
@@ -1445,9 +1467,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
   //CPS oasis definition phase
 #ifdef HAVE_OAS3
-  int p = GetInt("Process.Topology.P");
-  int q = GetInt("Process.Topology.Q");
-  int r = GetInt("Process.Topology.R");
   int nlon = GetInt("ComputationalGrid.NX");
   int nlat = GetInt("ComputationalGrid.NY");
   double pfl_step = GetDouble("TimeStep.Value");
@@ -1524,8 +1543,27 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   fstop = 0;                    // init to something, only used with 3D met forcing
 #endif
 
+#ifdef HAVE_FLOWVR
+  // Prepare the access to the problem variables
+  SimulationSnapshot snapshot;
+  snapshot = GetSimulationSnapshot;
+  FlowVRInitTranslation(&snapshot);
+#endif
+
   do                            /* while take_more_time_steps */
   {
+#ifdef HAVE_FLOWVR
+    // Something to steer? A snapshot was triggered?
+    BeginTiming(FlowVRInteractTimingIndex);
+    if (!FlowVRInteract(&snapshot))
+    {
+      EndTiming(FlowVRInteractTimingIndex);
+      break;
+    }
+    EndTiming(FlowVRInteractTimingIndex);
+#endif
+
+    // TODO: move all the dumps into an extra function! split all this loop into more functions!
     if (t == ct)
     {
       ct += cdt;
@@ -1578,13 +1616,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #ifdef HAVE_CLM
       BeginTiming(CLMTimingIndex);
 
-      // SGS FIXME this should not be here, should not be reading input at this point
-      // Should get these values from somewhere else.
-      /* sk: call to the land surface model/subroutine */
-      /* sk: For the couple with CLM */
-      int p = GetInt("Process.Topology.P");
-      int q = GetInt("Process.Topology.Q");
-      int r = GetInt("Process.Topology.R");
+      // TODO: should be inited here??
       /* @RMM get grid from global (assuming this is comp grid) to pass to CLM */
       int gnx = BackgroundNX(GlobalsBackground);
       int gny = BackgroundNY(GlobalsBackground);
@@ -2146,16 +2178,13 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           {
             /*BH: added vegetation forcings and associated option (clm_forc_veg) */
             clm_file_dir_length = strlen(public_xtra->clm_file_dir);
-            CALL_CLM_LSM(pp, sp, et, ms, po_dat, dz_dat, istep, cdt, t,
-                         start_time, dx, dy, dz, ix, iy, nx, ny, nz,
-                         nx_f, ny_f, nz_f, nz_rz, ip, p, q, r, gnx,
-                         gny, rank, sw_data, lw_data, prcp_data,
-                         tas_data, u_data, v_data, patm_data,
-                         qatm_data, lai_data, sai_data, z0m_data,
-                         displa_data, eflx_lh, eflx_lwrad, eflx_sh,
-                         eflx_grnd, qflx_tot, qflx_grnd, qflx_soi,
-                         qflx_eveg, qflx_tveg, qflx_in, swe, t_g,
-                         t_soi, public_xtra->clm_dump_interval,
+            CALL_CLM_LSM(pp, sp, et, ms, po_dat, dz_dat, istep, cdt, t, start_time,
+                         dx, dy, dz, ix, iy, nx, ny, nz, nx_f, ny_f, nz_f, nz_rz, ip, GlobalsP, GlobalsQ, GlobalsR, gnx, gny, rank,
+                         sw_data, lw_data, prcp_data, tas_data, u_data, v_data, patm_data, qatm_data,
+                         lai_data, sai_data, z0m_data, displa_data,
+                         eflx_lh, eflx_lwrad, eflx_sh, eflx_grnd, qflx_tot, qflx_grnd,
+                         qflx_soi, qflx_eveg, qflx_tveg, qflx_in, swe, t_g, t_soi,
+                         public_xtra->clm_dump_interval,
                          public_xtra->clm_1d_out,
                          public_xtra->clm_forc_veg,
                          public_xtra->clm_file_dir,
@@ -2702,6 +2731,24 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     any_file_dumped = 0;
     if (dump_files)
     {
+      instance_xtra->dump_index++;  // REFACTOR: shouldn't we only set this higher if we dumped out something
+
+      // This allows us to measure the time needed to calculate one dumpinterval:
+      PrintTimeCount("Dump");
+
+#ifdef HAVE_FLOWVR
+      /**************************************************************/
+      /* FlowVR output                                              */
+      /**************************************************************/
+      BeginTiming(FlowVRFulFillContractsTimingIndex);
+      if (FLOWVR_ACTIVE)
+      {
+        int timestep = instance_xtra->dump_index - 1;  // we also printed 0 ;)
+        any_file_dumped = FlowVRFulFillContracts(timestep, &snapshot);
+      }
+      EndTiming(FlowVRFulFillContractsTimingIndex);
+#endif
+
       sprintf(nc_postfix, "%05d", instance_xtra->file_number);
       /*KKU: Writing Current time variable value to NC file */
       if (public_xtra->write_netcdf_press
@@ -2715,8 +2762,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                   public_xtra->numVarTimeVariant, "time", 1, false,
                   public_xtra->numVarIni);
       }
-
-      instance_xtra->dump_index++;
 
       if (public_xtra->print_press)
       {
@@ -3004,6 +3049,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
 #ifdef HAVE_CLM
     int k;
+
+    // TODO: put clm print also in flowvr?!
 
     /* Dump the fluxes, infiltration, etc. at this time-step */
     clm_file_dumped = 0;
@@ -3464,6 +3511,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 #endif
   }                             /* ends do for time loop */
   while (take_more_time_steps);
+#ifdef HAVE_FLOWVR
+  if (FLOWVR_ACTIVE)
+  {
+    D("Ending now!");
+    FlowVREnd(&snapshot);
+  }
+#endif
+
 
   /***************************************************************/
   /*                 Print the pressure and saturation           */

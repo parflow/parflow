@@ -93,10 +93,10 @@ typedef struct _Globals {
 } Globals;
 
 #ifdef PARFLOW_GLOBALS
-amps_ThreadLocalDcl(Globals  *, globals_ptr);
+amps_ThreadLocalDcl(Globals *, globals_ptr);
 amps_ThreadLocalDcl(IDB *, input_database);
 #else
-amps_ThreadLocalDcl(extern Globals  *, globals_ptr);
+amps_ThreadLocalDcl(extern Globals *, globals_ptr);
 amps_ThreadLocalDcl(extern IDB *, input_database);
 #endif
 

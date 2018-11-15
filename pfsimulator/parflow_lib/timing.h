@@ -47,8 +47,12 @@
 #define PFBTimingIndex  5
 #define CLMTimingIndex  6
 #define PFSOLReadTimingIndex  7
+#define FlowVRInteractTimingIndex  8
+#define FlowVRFulFillContractsTimingIndex  9
+#define FlowVRWaitTimingIndex  10
+#define NetCDFTimingIndex  11
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  8
+#define VectorUpdateTimingIndex  12
 #endif
 
 
@@ -126,6 +130,28 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
   }
 #endif
 
+#define ALL_ITERATIONS_TIMING
+#ifdef ALL_ITERATIONS_TIMING
+#define EndTiming(i) \
+  { \
+    StopTiming(); \
+    TimingTime(i) += TimingTimeCount; \
+    TimingCPUTime(i) += TimingCPUCount; \
+    TimingFLOPS(i) += TimingFLOPCount; \
+    if (!amps_Rank(amps_CommWorld)) \
+      printf("Wall time (Rank 0) %d: %d ticks\n", i, TimingTime(i)); \
+    StartTiming(); \
+  }
+
+#define PrintTimeCount(event) \
+  { \
+    StopTiming(); \
+    if (!amps_Rank(amps_CommWorld)) \
+      printf("Event %s (Rank 0) at wall time: %d ticks\n", event, TimingTimeCount); \
+    StartTiming(); \
+  }
+
+#else
 #define EndTiming(i) \
   { \
     StopTiming(); \
@@ -134,6 +160,10 @@ amps_ThreadLocalDcl(extern TimingType *, timing_ptr);
     TimingFLOPS(i) += TimingFLOPCount; \
     StartTiming(); \
   }
+
+#define PrintTimeCount(event)
+
+#endif
 
 #ifdef VECTOR_UPDATE_TIMING
 
@@ -170,6 +200,7 @@ extern EventTiming[][6];
 #define RegisterTiming(name) 0
 #define PrintTiming()
 #define FreeTiming()
+#define PrintTimeCount(event)
 
 #endif
 

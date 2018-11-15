@@ -33,6 +33,7 @@
 
 #include "parflow.h"
 #include "amps.h"
+#include "flowvr.h"
 
 #ifdef HAVE_SAMRAI
 #include "SAMRAI/SAMRAI_config.h"
@@ -61,6 +62,9 @@ using namespace SAMRAI;
 
 #include <string.h>
 
+#include <unistd.h>
+
+
 int main(int argc, char *argv [])
 {
   FILE *file = NULL;
@@ -68,6 +72,9 @@ int main(int argc, char *argv [])
   FILE *log_file = NULL;
 
   amps_Clock_t wall_clock_time;
+
+
+
 
   /*-----------------------------------------------------------------------
    * Initialize tbox::MPI and SAMRAI, enable logging, and process
@@ -249,6 +256,13 @@ int main(int argc, char *argv [])
     amps_ThreadLocal(input_database) = IDB_NewDB(GlobalsInFileName);
 
     /*-----------------------------------------------------------------------
+     * Try to run as flowvr module?
+     *-----------------------------------------------------------------------*/
+
+    NewFlowVR();
+
+
+    /*-----------------------------------------------------------------------
      * Setup log printing
      *-----------------------------------------------------------------------*/
 
@@ -290,6 +304,10 @@ int main(int argc, char *argv [])
     FreeLogging();
 
     FreeTiming();
+
+#ifdef HAVE_FLOWVR
+    FreeFlowVR();
+#endif
 
     /*-----------------------------------------------------------------------
      * Finalize AMPS and exit
