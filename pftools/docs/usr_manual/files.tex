@@ -3806,7 +3806,7 @@ pfset Solver.Nonlinear.Globalization   LineSearch
 
 \pfkey{string}{Solver.Linear.Preconditioner}{MGSemi}
 {This key specifies which preconditioner to use.  Currently, the three choices
-are {\bf NoPC, MGSemi, PFMGOctree} and {\bf SMG}.  The choice {\bf NoPC} specifies that no
+are {\bf NoPC, MGSemi, PFMG, PFMGOctree} and {\bf SMG}.  The choice {\bf NoPC} specifies that no
 preconditioner should be used.  The choice {\bf MGSemi} specifies 
 a semi-coarsening multigrid algorithm which uses a point relaxation method. 
 The choice {\bf SMG} specifies a semi-coarsening multigrid algorithm which uses
@@ -3857,6 +3857,13 @@ the SMG multigrid preconditioner.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.Linear.Preconditioner.SMG.NumPostRelax    0
+\end{verbatim}\end{display}
+
+\pfkey{string}{Solver.Linear.Preconditioner.PFMG.RAPType}{NonGalerkin} {For the
+  PFMG solver, this key specifies the {\em Hypre} RAP type.  Valid values
+  are {\bf Galerkin} or {\bf NonGalerkin} }
+\begin{display}\begin{verbatim}
+pfset Solver.Linear.Preconditioner.PFMG.RAPType    Galerkin
 \end{verbatim}\end{display}
 
 
