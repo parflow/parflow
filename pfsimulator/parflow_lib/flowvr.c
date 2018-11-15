@@ -142,7 +142,7 @@ void NewFlowVR(void)
   }
 
 #ifndef HAVE_FLOWVR
-  PARFLOW_ERROR("Parflow was not compiled with FlowVR but FlowVR was the input file was set to True");
+  PARFLOW_ERROR("Parflow was not compiled with FlowVR but FlowVR in the input file was set to True");
   return;
 #else
   if (strcmp(GetString("Solver"), "Richards") != 0)
@@ -214,7 +214,7 @@ void NewFlowVR(void)
     PARFLOW_ERROR("ERROR : init_module for module_parflow failed!\n");
   }
 
-  D("flowvr initialisiert.");
+  D("flowvr initialized.");
 
   /*fca_trace testTrace = fca_get_trace(modulePut,"beginTrace");*/
   /*if(testTrace == NULL) printf("ERROR : Test Trace FAIL!!\n"); else printf("Test Trace OK.\n");*/
@@ -532,14 +532,14 @@ static inline void vectorToMessage(const Variable variable, double const * const
   BoxLoopI1(i, j, k, m.ix, m.iy, m.iz, m.nx, m.ny, m.nz, ai, nx_v, ny_v, nz_v, 1, 1, 1, { buffer_double[d] = data[ai]; d++; });
   // TODO: would be more performant if we could read the things not cell by cell I guess
 }
-// TODO: implement swap: do not do the memcpy but have two buffers one for read and wone for write. Change the buffers after one simulation step! (here a simulation step consists of multiple timesteps!
+// TODO: implement swap: do not do the memcpy but have two buffers one for read and one for write. Change the buffers after one simulation step! (here a simulation step consists of multiple timesteps!
 
 
 void CreateAndSendMessage(SimulationSnapshot const * const snapshot, const char * portname, Variable var)
 {
   // Prepare the port
   fca_port port = fca_get_port(module_parflow, portname);
-  // Perormance: maybe save all the ports in an array for faster access times
+  // Performance: maybe save all the ports in an array for faster access times
 
   // Prepare the Message
   fca_message msg;

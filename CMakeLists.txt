@@ -100,6 +100,23 @@ if (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 endif (${PARFLOW_ENABLE_SILO} OR DEFINED SILO_ROOT)
 
 #-----------------------------------------------------------------------------
+# Melissa
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_MELISSA False CACHE BOOL "Build with Melissa")
+if (${PARFLOW_ENABLE_MELISSA} OR DEFINED Melissa_ROOT)
+  find_package(Melissa)
+  if (${Melissa_FOUND})
+
+    # Melissa brings its own config file.
+    set(MELISSA_LIBRARIES ${Melissa_LIBRARY})
+    set(MELISSA_INCLUDE_DIRS ${Melissa_INCLUDE_DIR})
+
+    set(PARFLOW_HAVE_MELISSA "yes")
+    set(HAVE_MELISSA ${PARFLOW_HAVE_MELISSA})
+  endif (${Melissa_FOUND})
+endif (${PARFLOW_ENABLE_MELISSA} OR DEFINED Melissa_ROOT)
+
+#-----------------------------------------------------------------------------
 # NetCDF
 #-----------------------------------------------------------------------------
 set (PARFLOW_ENABLE_NETCDF False CACHE BOOL "Build with NetCDF")

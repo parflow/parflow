@@ -46,6 +46,9 @@
 #include "flowvr.h"
 #endif
 
+#ifdef HAVE_MELISSA
+#include "melissa.h"
+#endif
 
 #include <unistd.h>
 #include <string.h>
@@ -131,7 +134,7 @@ typedef struct {
   char *clm_file_dir;           /* directory location for CLM files */
   int clm_dump_interval;        /* time interval, integer, for CLM output */
   int clm_1d_out;               /* boolean 0-1, integer, for CLM 1-d output */
-  int clm_forc_veg;             /* boolean 0-1, integer, for CLM vegetation forcing option BH */ 
+  int clm_forc_veg;             /* boolean 0-1, integer, for CLM vegetation forcing option BH */
   int clm_bin_out_dir;   /* boolean 0-1, integer, for sep dirs for each clm binary output */
   // int                clm_dump_files;     /* boolean 0-1, integer, for write CLM output from PF */
 
@@ -1088,6 +1091,19 @@ SetupRichards(PFModule * this_module)
 #endif
 
     /*-----------------------------------------------------------------
+     * Dump initial values to Melissa?
+     *-----------------------------------------------------------------*/
+#ifdef HAVE_MELISSA
+    BeginTiming(MelissaTimingIndex);
+    if (MELISSA_ACTIVE)
+    {
+      MelissaInit(instance_xtra->pressure);
+      any_file_dumped = MelissaSend(instance_xtra->pressure);
+    }
+    EndTiming(MelissaTimingIndex);
+#endif
+
+    /*-----------------------------------------------------------------
      * Print out the initial pressures?
      *-----------------------------------------------------------------*/
 
@@ -1413,9 +1429,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   double *patm_data = NULL;
   double *qatm_data = NULL;
   double *lai_data = NULL; /*BH*/
-  double *sai_data = NULL; /*BH*/ 
-  double *z0m_data = NULL; /*BH*/ 
-  double *displa_data = NULL; /*BH*/ 
+  double *sai_data = NULL; /*BH*/
+  double *z0m_data = NULL; /*BH*/
+  double *displa_data = NULL; /*BH*/
   double *veg_map_data = NULL;/*BH*/			/*will fail if veg_map_data is declared as int */
   char filename[2048];          // IMF: 1D input file name *or* 2D/3D input file base name
   Subvector *sw_forc_sub, *lw_forc_sub, *prcp_forc_sub, *tas_forc_sub, *u_forc_sub, *v_forc_sub, *patm_forc_sub, *qatm_forc_sub, *lai_forc_sub, *sai_forc_sub, *z0m_forc_sub, *displa_forc_sub, *veg_map_forc_sub;      /*BH: added LAI/SAI/Z0M/DISPLA/vegmap */
@@ -2749,6 +2765,18 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       EndTiming(FlowVRFulFillContractsTimingIndex);
 #endif
 
+    /*-----------------------------------------------------------------
+     * Send values to Melissa
+     *-----------------------------------------------------------------*/
+#ifdef HAVE_MELISSA
+    BeginTiming(MelissaTimingIndex);
+    if (MELISSA_ACTIVE)
+    {
+      any_file_dumped = MelissaSend(instance_xtra->pressure);
+    }
+    EndTiming(MelissaTimingIndex);
+#endif
+
       sprintf(nc_postfix, "%05d", instance_xtra->file_number);
       /*KKU: Writing Current time variable value to NC file */
       if (public_xtra->write_netcdf_press
@@ -3276,7 +3304,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           nz = SubgridNZ(subgrid);/*BH: number of z layers for extracting surface pressure*/
           /*BH: add surface pressure (pp, layer nz-1) to CLM pfb output (for higher sampling)*/
           /*BH: modify subsequent indices... :*/
-          PFVLayerCopy(12, nz-1, instance_xtra -> clm_out_grid, instance_xtra -> pressure);/*BH*/			 
+          PFVLayerCopy(12, nz-1, instance_xtra -> clm_out_grid, instance_xtra -> pressure);/*BH*/
           if (public_xtra->clm_irr_type == 1
               || public_xtra->clm_irr_type == 2)
           {

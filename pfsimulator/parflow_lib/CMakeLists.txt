@@ -49,6 +49,7 @@ set (SRC_FILES advect.F
   matrix.c
   matvec.c
   max_field_value.c
+  melissa.c
   mg_semi.c
   mg_semi_prolong.c
   mg_semi_restrict.c
@@ -177,6 +178,10 @@ if (${PARFLOW_HAVE_FLOWVR})
   target_include_directories (pfsimulator PUBLIC "../../flowvr/pfanalyzer")
   target_include_directories (pfsimulator PUBLIC "${fca_INCLUDE_DIRECTORY}")
 endif (${PARFLOW_HAVE_FLOWVR})
+
+if (${PARFLOW_HAVE_MELISSA})
+  target_include_directories (pfsimulator PUBLIC "${MELISSA_INCLUDE_DIRS}")
+endif (${PARFLOW_HAVE_MELISSA})
 
 if (${PARFLOW_HAVE_NETCDF})
   target_include_directories (pfsimulator PUBLIC "${NETCDF_INCLUDE_DIRS}")

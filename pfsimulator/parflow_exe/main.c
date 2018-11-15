@@ -34,6 +34,7 @@
 #include "parflow.h"
 #include "amps.h"
 #include "flowvr.h"
+#include "melissa.h"
 
 #ifdef HAVE_SAMRAI
 #include "SAMRAI/SAMRAI_config.h"
@@ -261,6 +262,12 @@ int main(int argc, char *argv [])
 
     NewFlowVR();
 
+    /*-----------------------------------------------------------------------
+     * Try to run with Melissa
+     *-----------------------------------------------------------------------*/
+
+    NewMelissa();
+
 
     /*-----------------------------------------------------------------------
      * Setup log printing
@@ -307,6 +314,11 @@ int main(int argc, char *argv [])
 
 #ifdef HAVE_FLOWVR
     FreeFlowVR();
+#endif
+
+#ifdef HAVE_MELISSA
+    // TODO: Not a good idea to do this here if we finalize with segmentation faults! (see https://github.com/parflow/parflow/issues/87)
+    FreeMelissa();
 #endif
 
     /*-----------------------------------------------------------------------

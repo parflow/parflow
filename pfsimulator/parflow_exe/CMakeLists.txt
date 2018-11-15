@@ -18,6 +18,10 @@ if (${PARFLOW_HAVE_SILO})
   target_link_libraries (parflow ${SILO_LIBRARIES})
 endif (${PARFLOW_HAVE_SILO})
 
+if (${PARFLOW_HAVE_MELISSA})
+  target_link_libraries (parflow ${MELISSA_LIBRARIES})
+endif (${PARFLOW_HAVE_MELISSA})
+
 if (${PARFLOW_HAVE_NETCDF})
   target_link_libraries (parflow ${NETCDF_LIBRARIES})
 endif (${PARFLOW_HAVE_NETCDF})

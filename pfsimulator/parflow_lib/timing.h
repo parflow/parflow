@@ -50,9 +50,10 @@
 #define FlowVRInteractTimingIndex  8
 #define FlowVRFulFillContractsTimingIndex  9
 #define FlowVRWaitTimingIndex  10
-#define NetCDFTimingIndex  11
+#define MelissaTimingIndex  11
+#define NetCDFTimingIndex  12
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  12
+#define VectorUpdateTimingIndex  13
 #endif
 
 

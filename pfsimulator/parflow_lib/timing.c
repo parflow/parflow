@@ -61,6 +61,7 @@ void  NewTiming()
   RegisterTiming("FlowVR Interact");
   RegisterTiming("FlowVR Fulfill Contracts");
   RegisterTiming("FlowVR Wait");
+  RegisterTiming("Melissa");
   RegisterTiming("NetCDF I/O");
 #ifdef VECTOR_UPDATE_TIMING
   RegisterTiming("VectorUpdate");

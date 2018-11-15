@@ -44,6 +44,9 @@
 #cmakedefine PARFLOW_HAVE_SILO
 #cmakedefine HAVE_SILO
 
+#cmakedefine PARFLOW_HAVE_MELISSA
+#cmakedefine HAVE_MELISSA
+
 #cmakedefine PARFLOW_HAVE_SLURM
 #cmakedefine HAVE_SLURM
 
