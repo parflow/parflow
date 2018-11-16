@@ -17,7 +17,6 @@ set(TESTS
 if(${PARFLOW_HAVE_HYPRE})
   list(APPEND TESTS 
     default_richards.tcl
-    default_richards.tcl
     LW_var_dz.tcl
     LW_var_dz_spinup.tcl
     terrain_following_grid_overland.tcl
