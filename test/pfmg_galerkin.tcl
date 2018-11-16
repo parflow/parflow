@@ -321,7 +321,7 @@ pfset Solver.Nonlinear.DerivativeEpsilon                 1e-2
 pfset Solver.Linear.KrylovDimension                      10
 
 pfset Solver.Linear.Preconditioner                       PFMG
-
+pfset Solver.Linear.Preconditioner.PFMG.Smoother         WJacobi
 pfset Solver.Linear.Preconditioner.PFMG.RAPType          Galerkin
 
 #-----------------------------------------------------------------------------
