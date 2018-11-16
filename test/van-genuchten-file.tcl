@@ -207,10 +207,18 @@ pfset Geom.domain.RelPerm.N.Filename       van-genuchten-n.pfb
 
 pfset Phase.Saturation.Type            VanGenuchten
 pfset Phase.Saturation.GeomNames       domain
+
 pfset Geom.domain.Saturation.Alpha     0.005
 pfset Geom.domain.Saturation.N         2.0
 pfset Geom.domain.Saturation.SRes      0.2
 pfset Geom.domain.Saturation.SSat      0.99
+
+pfset Geom.domain.Saturation.VanGenuchten.File        1 
+pfset Geom.domain.Saturation.Alpha.Filename           van-genuchten-alpha.pfb
+pfset Geom.domain.Saturation.N.Filename               van-genuchten-n.pfb
+pfset Geom.domain.Saturation.SRes.Filename            van-genuchten-sr.pfb 
+pfset Geom.domain.Saturation.SSat.Filename            van-genuchten-ssat.pfb 
+
 
 #-----------------------------------------------------------------------------
 # Wells
@@ -333,10 +341,11 @@ pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      100
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-file copy -force input/van-genuchten-alpha.pfb van-genuchten-alpha.pfb
-file copy -force input/van-genuchten-n.pfb van-genuchten-n.pfb
-pfdist van-genuchten-alpha.pfb
-pfdist van-genuchten-n.pfb
+foreach i {van-genuchten-alpha van-genuchten-n van-genuchten-sr van-genuchten-ssat } {
+    file copy -force input/$i.pfb $i.pfb
+    pfdist $i.pfb
+}
+
 pfrun default_richards
 pfundist default_richards
 
