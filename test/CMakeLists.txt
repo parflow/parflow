@@ -25,7 +25,8 @@ if(${PARFLOW_HAVE_HYPRE})
     pfmg.tcl
     pfmg_galerkin.tcl
     smg.tcl
-    pfmg_octree.tcl)
+    pfmg_octree.tcl
+    van-genuchten-file.tcl)
 endif()
 
 if(${PARFLOW_HAVE_SILO})
