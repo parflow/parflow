@@ -32,9 +32,11 @@ void MelissaInit(Vector const * const pressure)
   const int local_vect_size = nx * ny * nz;
   const int rank = amps_Rank(amps_CommWorld);
   const int num = amps_Size(amps_CommWorld);
-  // TODO: does it work with amps_CommWorld
-  melissa_init("pressure", &local_vect_size, &num, &rank, &melissa_simu_id, amps_CommWorld,
-    MELISSA_COUPLING_FLOWVR);
+  MPI_Comm comm = amps_CommWorld;
+  int coupling = MELISSA_COUPLING_FLOWVR;
+  melissa_init("pressure", &local_vect_size, &num, &rank, &melissa_simu_id, &comm,
+    &coupling);
+
 
   D("melissa initialized.");
 }
@@ -50,13 +52,15 @@ int MelissaSend(Vector const * const pressure)
   ForSubgridI(g, subgrids)
   {
     subgrid = SubgridArraySubgrid(subgrids, g);
+    subvector = VectorSubvector(pressure, g);
   }
 
   int ix = SubgridIX(subgrid);
   int iy = SubgridIY(subgrid);
   int iz = SubgridIZ(subgrid);
 
-  double const * const data = SubvectorElt(subvector, ix, iy, iz);
+  //double const * const data = SubvectorElt(subvector, ix, iy, iz);
+  double * data = SubvectorData(subvector);
 
   // TODO: How to know later which part of the array we got at which place?
   // how is the order of the ranks?
