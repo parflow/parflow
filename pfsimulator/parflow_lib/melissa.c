@@ -33,7 +33,8 @@ void MelissaInit(Vector const * const pressure)
   const int rank = amps_Rank(amps_CommWorld);
   const int num = amps_Size(amps_CommWorld);
   MPI_Comm comm = amps_CommWorld;
-  int coupling = MELISSA_COUPLING_FLOWVR;
+  //int coupling = MELISSA_COUPLING_FLOWVR;
+  int coupling = MELISSA_COUPLING_ZMQ;
   melissa_init("pressure", &local_vect_size, &num, &rank, &melissa_simu_id, &comm,
     &coupling);
 
@@ -58,14 +59,32 @@ int MelissaSend(Vector const * const pressure)
   int ix = SubgridIX(subgrid);
   int iy = SubgridIY(subgrid);
   int iz = SubgridIZ(subgrid);
+  int nx = SubgridNX(subgrid);
+  int ny = SubgridNY(subgrid);
+  int nz = SubgridNZ(subgrid);
 
-  //double const * const data = SubvectorElt(subvector, ix, iy, iz);
-  double * data = SubvectorData(subvector);
+  int nx_v = SubvectorNX(subvector);
+  int ny_v = SubvectorNY(subvector);
+
+  // some iterators
+  int i, j, k, ai = 0, d = 0;
+  double buffer[nx*ny*nz];
+
+  double *data;
+  data = SubvectorElt(subvector, ix, iy, iz);
+
+  BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz, ai, nx_v, ny_v, nz_v, 1, 1, 1, {
+      buffer[d] = data[ai]; d++;
+  });
+  // TODO: would be more performant if we could read the things not cell by cell I guess
+  // REM: if plotting all the ai-s one sees that there are steps... ai does not increase
+  // linear!
 
   // TODO: How to know later which part of the array we got at which place?
   // how is the order of the ranks?
   // TODO: FIXME: possibly that is not in the good order here!
-  melissa_send("pressure", (double*) data);
+  melissa_send("pressure", (double*) buffer);
+  return 1;
 }
 
 #endif

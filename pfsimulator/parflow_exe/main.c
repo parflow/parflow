@@ -317,7 +317,6 @@ int main(int argc, char *argv [])
 #endif
 
 #ifdef HAVE_MELISSA
-    // TODO: Not a good idea to do this here if we finalize with segmentation faults! (see https://github.com/parflow/parflow/issues/87)
     FreeMelissa();
 #endif
 
