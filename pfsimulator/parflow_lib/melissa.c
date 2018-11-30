@@ -12,7 +12,6 @@ static int melissa_simu_id;
 
 void MelissaInit(Vector const * const pressure)
 {
-  // TODO: only pressure for now.
   Grid *grid = VectorGrid(pressure);
   SubgridArray *subgrids = GridSubgrids(grid);
   Subgrid *subgrid;
@@ -28,6 +27,8 @@ void MelissaInit(Vector const * const pressure)
   int ny = SubgridNY(subgrid);
   int nz = SubgridNZ(subgrid);
 
+  // TODO: get nx, ny, nz directly as parameters!! don't read a vector like this!
+
 
   const int local_vect_size = nx * ny * nz;
   const int rank = amps_Rank(amps_CommWorld);
@@ -37,14 +38,16 @@ void MelissaInit(Vector const * const pressure)
   int coupling = MELISSA_COUPLING_ZMQ;
   melissa_init("pressure", &local_vect_size, &num, &rank, &melissa_simu_id, &comm,
     &coupling);
+  melissa_init("saturation", &local_vect_size, &num, &rank, &melissa_simu_id, &comm,
+    &coupling);
 
 
   D("melissa initialized.");
 }
 
-int MelissaSend(Vector const * const pressure)
+void sendIt(const char * name, Vector const * const vec)
 {
-  Grid *grid = VectorGrid(pressure);
+  Grid *grid = VectorGrid(vec);
   SubgridArray *subgrids = GridSubgrids(grid);
   Subvector *subvector;
   Subgrid *subgrid;
@@ -53,7 +56,7 @@ int MelissaSend(Vector const * const pressure)
   ForSubgridI(g, subgrids)
   {
     subgrid = SubgridArraySubgrid(subgrids, g);
-    subvector = VectorSubvector(pressure, g);
+    subvector = VectorSubvector(vec, g);
   }
 
   int ix = SubgridIX(subgrid);
@@ -83,7 +86,13 @@ int MelissaSend(Vector const * const pressure)
   // TODO: How to know later which part of the array we got at which place?
   // how is the order of the ranks?
   // TODO: FIXME: possibly that is not in the good order here!
-  melissa_send("pressure", (double*) buffer);
+  melissa_send(name, (double*) buffer);
+}
+
+int MelissaSend(Vector const * const pressure, Vector const * const saturation)
+{
+  sendIt("pressure", pressure);
+  sendIt("saturation", saturation);
   return 1;
 }
 

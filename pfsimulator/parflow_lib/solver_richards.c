@@ -1098,7 +1098,7 @@ SetupRichards(PFModule * this_module)
     if (MELISSA_ACTIVE)
     {
       MelissaInit(instance_xtra->pressure);
-      any_file_dumped = MelissaSend(instance_xtra->pressure);
+      any_file_dumped = MelissaSend(instance_xtra->pressure, instance_xtra->saturation);
     }
     EndTiming(MelissaTimingIndex);
 #endif
@@ -2772,7 +2772,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     BeginTiming(MelissaTimingIndex);
     if (MELISSA_ACTIVE)
     {
-      any_file_dumped = MelissaSend(instance_xtra->pressure);
+      any_file_dumped = MelissaSend(instance_xtra->pressure, instance_xtra->saturation);
     }
     EndTiming(MelissaTimingIndex);
 #endif

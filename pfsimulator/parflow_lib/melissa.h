@@ -40,12 +40,14 @@ void NewMelissa(void);
 /**
  * Tell Melissa how many bytes of which variable it will receive.
  * must be called once.
+ * We transmit also saturation data. We assume that saturation and pressure data are of the 
+ * same shape.
  */
 void MelissaInit(Vector const * const pressure);
 /**
  * Send pressure to Melissa
  */
-int MelissaSend(Vector const * const pressure);
+int MelissaSend(Vector const * const pressure, Vector const * const saturation);
 
 /**
  * Frees memory allocated by NewMelissa()
