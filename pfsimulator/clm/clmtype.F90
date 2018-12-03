@@ -86,17 +86,17 @@ module clmtype
      real(r8) :: bkmult    ! beetle kill multiplier for stomatal resistance @CAP 2014-02-24
 ! Soil physical parameters
 
-      real(r8) :: bsw   (nlevsoi) ! Clapp and Hornberger "b"  --- NOT USED in PF.CLM COUPLE  @RMM
-      real(r8) :: watsat(nlevsoi) !@ volumetric soil water at saturation (porosity) over intersection between domians (Parflow and CLM)  -- PASSED in FROM PF @RMM
-      real(r8) :: hksat (nlevsoi) ! hydraulic conductivity at saturation (mm H2O /s)  --- NOT USED IN PF.CLM COUPLE @RMM
-      real(r8) :: sucsat(nlevsoi) ! minimum soil suction (mm)
-      real(r8) :: watdry(nlevsoi) ! water content when evapotranspiration stops (new)
-      real(r8) :: watopt(nlevsoi) ! optimal water content for evapotranspiration (new)
-      real(r8) :: csol  (nlevsoi) ! heat capacity, soil solids (J/m**3/Kelvin)
-      real(r8) :: tkmg  (nlevsoi) ! thermal conductivity, soil minerals  [W/m-K]  
-      real(r8) :: tkdry (nlevsoi) ! thermal conductivity, dry soil       (W/m/Kelvin)
-      real(r8) :: tksatu(nlevsoi) ! thermal conductivity, saturated soil [W/m-K]  
-      real(r8) :: rootfr(nlevsoi) ! fraction of roots in each soil layer
+      real(r8) :: bsw   (max_nlevsoi) ! Clapp and Hornberger "b"  --- NOT USED in PF.CLM COUPLE  @RMM
+      real(r8) :: watsat(max_nlevsoi) !@ volumetric soil water at saturation (porosity) over intersection between domians (Parflow and CLM)  -- PASSED in FROM PF @RMM
+      real(r8) :: hksat (max_nlevsoi) ! hydraulic conductivity at saturation (mm H2O /s)  --- NOT USED IN PF.CLM COUPLE @RMM
+      real(r8) :: sucsat(max_nlevsoi) ! minimum soil suction (mm)
+      real(r8) :: watdry(max_nlevsoi) ! water content when evapotranspiration stops (new)
+      real(r8) :: watopt(max_nlevsoi) ! optimal water content for evapotranspiration (new)
+      real(r8) :: csol  (max_nlevsoi) ! heat capacity, soil solids (J/m**3/Kelvin)
+      real(r8) :: tkmg  (max_nlevsoi) ! thermal conductivity, soil minerals  [W/m-K]  
+      real(r8) :: tkdry (max_nlevsoi) ! thermal conductivity, dry soil       (W/m/Kelvin)
+      real(r8) :: tksatu(max_nlevsoi) ! thermal conductivity, saturated soil [W/m-K]  
+      real(r8) :: rootfr(max_nlevsoi) ! fraction of roots in each soil layer
 
 ! Forcing
 
@@ -118,13 +118,13 @@ module clmtype
      integer ::  snl              ! number of snow layers
      integer frac_veg_nosno       ! fraction of veg cover, excluding snow-covered veg (now 0 OR 1) [-]
 
-     real(r8) :: zi(-nlevsno+0:nlevsoi)          !interface level below a "z" level (m)
-     real(r8) :: dz(-nlevsno+1:nlevsoi)          !layer thickness (m)
-     real(r8) :: dz_mult(nlevsoi)                !IMF: dz multiplier from parflow
-     real(r8) :: z (-nlevsno+1:nlevsoi)          !layer depth (m)
-     real(r8) :: t_soisno  (-nlevsno+1:nlevsoi)  !soil temperature (Kelvin)
-     real(r8) :: h2osoi_liq(-nlevsno+1:nlevsoi)  !liquid water (kg/m2) (new)
-     real(r8) :: h2osoi_ice(-nlevsno+1:nlevsoi)  !ice lens (kg/m2) (new)
+     real(r8) :: zi(-nlevsno+0:max_nlevsoi)          !interface level below a "z" level (m)
+     real(r8) :: dz(-nlevsno+1:max_nlevsoi)          !layer thickness (m)
+     real(r8) :: dz_mult(max_nlevsoi)                !IMF: dz multiplier from parflow
+     real(r8) :: z (-nlevsno+1:max_nlevsoi)          !layer depth (m)
+     real(r8) :: t_soisno  (-nlevsno+1:max_nlevsoi)  !soil temperature (Kelvin)
+     real(r8) :: h2osoi_liq(-nlevsno+1:max_nlevsoi)  !liquid water (kg/m2) (new)
+     real(r8) :: h2osoi_ice(-nlevsno+1:max_nlevsoi)  !ice lens (kg/m2) (new)
 
      real(r8) :: frac_sno        ! fractional snow cover
      real(r8) :: t_veg           ! leaf temperature [K]
@@ -166,8 +166,8 @@ module clmtype
 
 ! hydrology 
 
-     integer  :: imelt      (-nlevsno+1:nlevsoi) ! Flag for melting (=1), freezing (=2), Not=0 
-     real(r8) :: frac_iceold(-nlevsno+1:nlevsoi) ! fraction of ice relative to the total water 
+     integer  :: imelt      (-nlevsno+1:max_nlevsoi) ! Flag for melting (=1), freezing (=2), Not=0 
+     real(r8) :: frac_iceold(-nlevsno+1:max_nlevsoi) ! fraction of ice relative to the total water 
 
      real(r8) :: sfact            ! term for implicit correction to evaporation
      real(r8) :: sfactmax         ! maximim of "sfact"
@@ -212,11 +212,11 @@ module clmtype
 
 !hydrology
 
-     real(r8) :: h2osoi_vol(nlevsoi)     ! volumetric soil water (0<=h2osoi_vol<=watsat) [m3/m3]  -- PASSED IN FROM PF @RMM
-     real(r8) :: eff_porosity(nlevsoi)   ! effective porosity = porosity - vol_ice   --- P
-     real(r8) :: pf_flux(nlevsoi)        !@ sink/source flux for Parlfow couple for each CLM soil layer
-     real(r8) :: pf_vol_liq(nlevsoi)    !@ partial volume of liquid water in layer from Parflow over entire domain (Parflow and CLM)	 real(r8) :: pf_press(parfl_nlevsoi)  !@ pressure values from parflow
-     real(r8) :: pf_press(nlevsoi) !@ old pressure values from parflow    
+     real(r8) :: h2osoi_vol(max_nlevsoi)     ! volumetric soil water (0<=h2osoi_vol<=watsat) [m3/m3]  -- PASSED IN FROM PF @RMM
+     real(r8) :: eff_porosity(max_nlevsoi)   ! effective porosity = porosity - vol_ice   --- P
+     real(r8) :: pf_flux(max_nlevsoi)        !@ sink/source flux for Parlfow couple for each CLM soil layer
+     real(r8) :: pf_vol_liq(max_nlevsoi)    !@ partial volume of liquid water in layer from Parflow over entire domain (Parflow and CLM)	 real(r8) :: pf_press(parfl_nlevsoi)  !@ pressure values from parflow
+     real(r8) :: pf_press(max_nlevsoi) !@ old pressure values from parflow    
 
      real(r8) :: qflx_infl      ! infiltration (mm H2O /s) 
      real(r8) :: qflx_infl_old
@@ -225,7 +225,7 @@ module clmtype
      real(r8) :: qflx_prec_intr ! interception of precipitation [mm/s]
      real(r8) :: qflx_prec_grnd ! water onto ground including canopy runoff [kg/(m2 s)]
      real(r8) :: qflx_qirr      ! qflx_surf directed to irrig (mm H2O/s)    **IMF irrigation applied at surface [mm/s] (added to rain or throughfall, depending)
-     real(r8) :: qflx_qirr_inst(nlevsoi)   ! new                            **IMF irrigation applied by 'instant' method [mm/s] (added to pf_flux)
+     real(r8) :: qflx_qirr_inst(max_nlevsoi)   ! new                            **IMF irrigation applied by 'instant' method [mm/s] (added to pf_flux)
      real(r8) :: qflx_qrgwl     ! qflx_surf at glaciers, wetlands, lakes
      real(r8) :: btran          ! transpiration wetness factor (0 to 1) 
      real(r8) :: smpmax         ! !@RMM not used, replaced below: wilting point potential in mm (new)
@@ -301,7 +301,7 @@ module clmtype
 ! Variables needed for ALMA output
 
      real(r8) :: diffusion                 !heat diffusion through layer zero interface 
-     real(r8) :: h2osoi_liq_old(1:nlevsoi) !liquid water from previous timestep
+     real(r8) :: h2osoi_liq_old(1:max_nlevsoi) !liquid water from previous timestep
      real(r8) :: h2ocan_old                !depth of water on foliage from previous timestep
      real(r8) :: acond                     !aerodynamic conductance (m/s)
 
@@ -317,10 +317,10 @@ module clmtype
 
 !@ Intermediate variables used in ParFlow - CLM couple, pass from parflow to CLM or passed back from CLM to ParFlow
 
-     real(r8) :: saturation_data(1:nlevsoi)  ! saturation (-) over top-10 layers in parflow mapped to CLM grid (1-nlevsoi)
-     real(r8) :: pressure_data(1:nlevsoi)    ! pressure-head (m) over top-10 layers in parflow mapped to CLM grid (1-nlevsoi)
-     real(r8) :: evap_trans_data(1:nlevsoi)  ! ET-Flux over top-10 layers in CLM grid (1-nlevsoi) to be mapped back to ParFlow (m/d)
-     real(r8) :: porosity_data(1:nlevsoi)    ! porosity (-) over top-10 layers in parflow mapped to CLM grid (1-nlevsoi) - only done during init routine
+     real(r8) :: saturation_data(1:max_nlevsoi)  ! saturation (-) over top-10 layers in parflow mapped to CLM grid (1-nlevsoi)
+     real(r8) :: pressure_data(1:max_nlevsoi)    ! pressure-head (m) over top-10 layers in parflow mapped to CLM grid (1-nlevsoi)
+     real(r8) :: evap_trans_data(1:max_nlevsoi)  ! ET-Flux over top-10 layers in CLM grid (1-nlevsoi) to be mapped back to ParFlow (m/d)
+     real(r8) :: porosity_data(1:max_nlevsoi)    ! porosity (-) over top-10 layers in parflow mapped to CLM grid (1-nlevsoi) - only done during init routine
 
      integer :: soi_z ! NBE added
 
