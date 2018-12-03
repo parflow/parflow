@@ -33,11 +33,11 @@ pfset ComputationalGrid.Lower.Z                 0.0
 
 pfset ComputationalGrid.DX	               1000.
 pfset ComputationalGrid.DY                     1000. 
-pfset ComputationalGrid.DZ	                 0.5
+pfset ComputationalGrid.DZ	                  1.25
 
 pfset ComputationalGrid.NX                      5
 pfset ComputationalGrid.NY                      5
-pfset ComputationalGrid.NZ                     10 
+pfset ComputationalGrid.NZ                      4
 
 #-----------------------------------------------------------------------------
 # The Names of the GeomInputs
