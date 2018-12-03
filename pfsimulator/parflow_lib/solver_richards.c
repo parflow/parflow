@@ -155,6 +155,9 @@ typedef struct {
   double clm_irr_threshold;     /* CLM irrigation schedule -- soil moisture threshold for deficit cycle */
   int clm_irr_thresholdtype;    /* Deficit-based saturation criteria (top, bottom, column avg) */
 
+  int clm_nlevsoi;              /* Number of soil levels */
+  int clm_nlevlak;              /* Number of lake levels */
+
   int clm_reuse_count;          /* NBE: Number of times to use each CLM input */
   int clm_write_logs;           /* NBE: Write the processor logs for CLM or not */
   int clm_last_rst;             /* NBE: Only write/overwrite one rst file or write a lot of them */
@@ -2178,7 +2181,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          qirr_inst, iflag,
                          public_xtra->clm_irr_thresholdtype, soi_z,
                          clm_next, clm_write_logs, clm_last_rst,
-                         clm_daily_rst);
+                         clm_daily_rst,
+			 public_xtra->clm_nlevsoi,
+			 public_xtra->clm_nlevlak);
 
             break;
           }
@@ -4745,6 +4750,28 @@ SolverRichardsNewPublicXtra(char *name)
     }
   }
   NA_FreeNameArray(irrthresholdtype_switch_na);
+
+  sprintf(key, "%s.CLM.SoilLevels", name);
+  public_xtra->clm_nlevsoi = GetIntDefault(key, 10);
+
+  /* Should match what is set in CLM for max */
+  if ( public_xtra->clm_nlevsoi > 20 )
+  {
+    char tmp_str[100];
+    sprintf(tmp_str, "%d", public_xtra->clm_nlevsoi);
+    InputError("Error: Invalid value <%s> for key <%s>, must be <= 20\n", tmp_str, key);
+  }
+
+  sprintf(key, "%s.CLM.LakeLevels", name);
+  public_xtra->clm_nlevlak = GetIntDefault(key, 10);
+
+  if ( public_xtra->clm_nlevlak > 20 )
+  {
+    char tmp_str[100];
+    sprintf(tmp_str, "%d", public_xtra->clm_nlevlak);
+    InputError("Error: Invalid value <%s> for key <%s>, must be <= 20\n", tmp_str, key);
+  }
+
 #endif
 
   //CPS

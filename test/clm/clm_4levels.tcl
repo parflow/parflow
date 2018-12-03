@@ -280,9 +280,8 @@ pfset Solver.CLM.MetForcing                              1D
 pfset Solver.CLM.MetFileName                             narr_1hr.sc3.txt.0
 pfset Solver.CLM.MetFilePath                             ./
 
-pfset Solver.CLM.SoilLevels                              10
-pfset Solver.CLM.LakeLevels                              10
-
+pfset Solver.CLM.SoilLevels                              4
+pfset Solver.CLM.LakeLevels                              4
 
 pfset Solver.WriteSiloEvapTrans                          True
 pfset Solver.WriteSiloOverlandBCFlux                     True
@@ -313,8 +312,8 @@ for {set i 0} { $i <= $num_processors } {incr i} {
 #-----------------------------------------------------------------------------
 
 
-pfrun clm 
-pfundist clm 
+pfrun clm_4levels
+pfundist clm_4levels
 
 #
 # Tests 
@@ -322,51 +321,49 @@ pfundist clm
 source ../pftest.tcl
 set passed 1
 
-if ![pftestFile clm.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
+if ![pftestFile clm_4levels.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
     set passed 0
 }
-if ![pftestFile clm.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
+if ![pftestFile clm_4levels.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
     set passed 0
 }
-if ![pftestFile clm.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
+if ![pftestFile clm_4levels.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
     set passed 0
 }
 
 for {set i 0} { $i <= 5 } {incr i} {
     set i_string [format "%05d" $i]
-    if ![pftestFile clm.out.press.$i_string.pfb "Max difference in Pressure for timestep $i_string" $sig_digits] {
+    if ![pftestFile clm_4levels.out.press.$i_string.pfb "Max difference in Pressure for timestep $i_string" $sig_digits] {
     set passed 0
     }
-    if ![pftestFile clm.out.satur.$i_string.pfb "Max difference in Saturation for timestep $i_string" $sig_digits] {
+    if ![pftestFile clm_4levels.out.satur.$i_string.pfb "Max difference in Saturation for timestep $i_string" $sig_digits] {
     set passed 0
     }
 }
 
-set mask [pfload clm.out.mask.pfb]
+set mask [pfload clm_4levels.out.mask.pfb]
 set top [Parflow::pfcomputetop $mask]
 
-pfsave $top -pfb "clm.out.top_index.pfb"
+pfsave $top -pfb "clm_4levels.out.top_index.pfb"
 
-set data [pfload clm.out.press.00000.pfb]
+set data [pfload clm_4levels.out.press.00000.pfb]
 set top_data [Parflow::pfextracttop $top $data]
 
-pfsave $data -pfb "clm.out.press.00000.pfb"
-pfsave $top_data -pfb "clm.out.top.press.00000.pfb"
+pfsave $data -pfb "clm_4levels.out.press.00000.pfb"
+pfsave $top_data -pfb "clm_4levels.out.top.press.00000.pfb"
 
 pfdelete $mask
 pfdelete $top
 pfdelete $data
 pfdelete $top_data
 
-if ![pftestFile clm.out.top_index.pfb "Max difference in top_index" $sig_digits] {
+if ![pftestFile clm_4levels.out.top_index.pfb "Max difference in top_index" $sig_digits] {
     set passed 0
 }
 
-if ![pftestFile clm.out.top.press.00000.pfb "Max difference in top_clm.out.press.00000.pfb" $sig_digits] {
+if ![pftestFile clm_4levels.out.top.press.00000.pfb "Max difference in top_clm_4levels.out.press.00000.pfb" $sig_digits] {
     set passed 0
 }
-
-
 
 if $passed {
     puts "clm : PASSED"
