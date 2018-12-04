@@ -281,6 +281,7 @@ pfset Solver.CLM.MetFileName                             narr_1hr.sc3.txt.0
 pfset Solver.CLM.MetFilePath                             ./
 
 pfset Solver.CLM.RootZoneNZ                              4
+pfset Solver.CLM.SoiLayer                                4
 
 pfset Solver.WriteSiloEvapTrans                          True
 pfset Solver.WriteSiloOverlandBCFlux                     True
