@@ -96,6 +96,14 @@ int MelissaSend(Vector const * const pressure, Vector const * const saturation)
   return 1;
 }
 
+void FreeMelissa(void)
+{
+  if (MELISSA_ACTIVE)
+  {
+    melissa_finalize();
+  }
+}
+
 #endif
 void NewMelissa(void)
 {
@@ -120,13 +128,4 @@ void NewMelissa(void)
   D("Melissa running with simuid %d", melissa_simu_id);
 
 #endif
-}
-
-
-void FreeMelissa(void)
-{
-  if (MELISSA_ACTIVE)
-  {
-    melissa_finalize();
-  }
 }
