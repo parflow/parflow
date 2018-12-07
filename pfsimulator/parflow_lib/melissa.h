@@ -24,6 +24,8 @@
 
 #include "parflow.h"
 
+#include "simulation_snapshot.h"
+
 /**
  * If MELISSA_ACTIVE is not 0 parflow will try to communicate with a Melissa server
  */
@@ -40,14 +42,14 @@ void NewMelissa(void);
 /**
  * Tell Melissa how many bytes of which variable it will receive.
  * must be called once.
- * We transmit also saturation data. We assume that saturation and pressure data are of the 
+ * We transmit also saturation data. We assume that saturation and pressure data are of the
  * same shape.
  */
 void MelissaInit(Vector const * const pressure);
 /**
  * Send pressure to Melissa
  */
-int MelissaSend(Vector const * const pressure, Vector const * const saturation);
+int MelissaSend(const SimulationSnapshot * snapshot);
 
 /**
  * Frees memory allocated by NewMelissa()

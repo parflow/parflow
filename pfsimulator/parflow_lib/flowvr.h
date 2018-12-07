@@ -24,6 +24,8 @@
 
 #include "parflow.h"
 
+#include "simulation_snapshot.h"
+
 /**
  * If FLOWVR_ACTIVE is not 0 parflow will act as FlowVR module.
  */
@@ -47,31 +49,6 @@ void NewFlowVR(void);
 #else
 #define D(...)
 #endif
-
-typedef struct {
-  int * file_number;
-  double * time;
-  Vector * pressure_out;
-  Vector * porosity_out;
-  Vector * saturation_out;
-  Grid * grid;
-  ProblemData * problem_data;
-} SimulationSnapshot;
-
-/**
- * GetSimulationSnapshot is used to comfortably fill a SimulationSnapshot data structure
- * in the AdvanceRichards() or the SetupRichards() context in richards_solver.c
- */
-#define GetSimulationSnapshot \
-  (SimulationSnapshot){ \
-    &(instance_xtra->file_number), \
-    &t, \
-    instance_xtra->pressure, \
-    NULL, \
-    instance_xtra->saturation, \
-    instance_xtra->grid, \
-    problem_data \
-  }
 
 /**
  * Tell FlowVR which Variable is on which place in the memory.

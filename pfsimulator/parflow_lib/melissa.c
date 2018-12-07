@@ -40,7 +40,11 @@ void MelissaInit(Vector const * const pressure)
     &coupling);
   melissa_init("saturation", &local_vect_size, &num, &rank, &melissa_simu_id, &comm,
     &coupling);
-
+  const int local_vect_size2D = nx * ny;
+  melissa_init("evap_trans_sum", &local_vect_size2D, &num, &rank, &melissa_simu_id, &comm,
+    &coupling);
+  //melissa_init("evap_trans_sum", &local_vect_size, &num, &rank, &melissa_simu_id, &comm,
+    //&coupling);
 
   D("melissa initialized.");
 }
@@ -65,6 +69,11 @@ void sendIt(const char * name, Vector const * const vec)
   int nx = SubgridNX(subgrid);
   int ny = SubgridNY(subgrid);
   int nz = SubgridNZ(subgrid);
+  if (0 == strcmp("evap_trans_sum", name))
+  {
+      nz = 1;
+  }
+
 
   int nx_v = SubvectorNX(subvector);
   int ny_v = SubvectorNY(subvector);
@@ -75,6 +84,8 @@ void sendIt(const char * name, Vector const * const vec)
 
   double *data;
   data = SubvectorElt(subvector, ix, iy, iz);
+
+  printf("shape: %d %d %d", nx, ny, nz);
 
   BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz, ai, nx_v, ny_v, nz_v, 1, 1, 1, {
       buffer[d] = data[ai]; d++;
@@ -89,10 +100,12 @@ void sendIt(const char * name, Vector const * const vec)
   melissa_send(name, (double*) buffer);
 }
 
-int MelissaSend(Vector const * const pressure, Vector const * const saturation)
+int MelissaSend(const SimulationSnapshot * snapshot)
 {
-  sendIt("pressure", pressure);
-  sendIt("saturation", saturation);
+  sendIt("pressure", snapshot->pressure_out);
+  sendIt("saturation", snapshot->saturation_out);
+  //sendIt("evap_trans", snapshot->evap_trans);
+  sendIt("evap_trans_sum", snapshot->evap_trans_sum);
   return 1;
 }
 

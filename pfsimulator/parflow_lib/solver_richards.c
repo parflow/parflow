@@ -1098,7 +1098,7 @@ SetupRichards(PFModule * this_module)
     if (MELISSA_ACTIVE)
     {
       MelissaInit(instance_xtra->pressure);
-      any_file_dumped = MelissaSend(instance_xtra->pressure, instance_xtra->saturation);
+      // we do not do a melissa send here as evap trans is not yet accessible!
     }
     EndTiming(MelissaTimingIndex);
 #endif
@@ -1559,11 +1559,13 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   fstop = 0;                    // init to something, only used with 3D met forcing
 #endif
 
-#ifdef HAVE_FLOWVR
+#if defined(HAVE_FLOWVR) || defined(HAVE_MELISSA)
   // Prepare the access to the problem variables
   SimulationSnapshot snapshot;
   snapshot = GetSimulationSnapshot;
+#ifdef HAVE_FLOWVR
   FlowVRInitTranslation(&snapshot);
+#endif
 #endif
 
   do                            /* while take_more_time_steps */
@@ -2722,7 +2724,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
      **************************************************************/
     if (public_xtra->write_silo_evaptrans_sum
         || public_xtra->print_evaptrans_sum
-        || public_xtra->write_netcdf_evaptrans_sum)
+        || public_xtra->write_netcdf_evaptrans_sum
+        || MELISSA_ACTIVE)
     {
       EvapTransSum(problem_data, dt, evap_trans_sum, evap_trans);
     }
@@ -2772,7 +2775,10 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     BeginTiming(MelissaTimingIndex);
     if (MELISSA_ACTIVE)
     {
-      any_file_dumped = MelissaSend(instance_xtra->pressure, instance_xtra->saturation);
+        snapshot.evap_trans = evap_trans;
+        snapshot.evap_trans_sum = evap_trans_sum;
+
+        any_file_dumped = MelissaSend(&snapshot);
     }
     EndTiming(MelissaTimingIndex);
 #endif
