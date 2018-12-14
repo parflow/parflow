@@ -2762,6 +2762,10 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       if (FLOWVR_ACTIVE)
       {
         int timestep = instance_xtra->dump_index - 1;  // we also printed 0 ;)
+
+        snapshot.evap_trans = evap_trans;
+        snapshot.evap_trans_sum = evap_trans_sum;
+
         any_file_dumped = FlowVRFulFillContracts(timestep, &snapshot);
       }
       EndTiming(FlowVRFulFillContractsTimingIndex);

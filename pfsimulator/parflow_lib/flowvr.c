@@ -233,6 +233,8 @@ void FlowVRInitTranslation(SimulationSnapshot *snapshot)
   translation[VARIABLE_PERMEABILITY_X] = ProblemDataPermeabilityX(snapshot->problem_data);
   translation[VARIABLE_PERMEABILITY_Y] = ProblemDataPermeabilityY(snapshot->problem_data);
   translation[VARIABLE_PERMEABILITY_Z] = ProblemDataPermeabilityZ(snapshot->problem_data);
+  translation[VARIABLE_EVAP_TRANS] = snapshot->evap_trans;
+  translation[VARIABLE_EVAP_TRANS_SUM] = snapshot->evap_trans_sum;
 }
 
 static inline int simple_intersect(int ix1, int nx1, int ix2, int nx2,
@@ -490,6 +492,11 @@ void FreeFlowVR()
 static inline void vectorToMessage(const Variable variable, double const * const time, fca_message *result, fca_port *port)
 {
   Vector *v = translation[variable];
+  if (v == NULL)
+  {
+      printf("The variable with the id %d is not yet available. Maybe set an offset in the tcl file!", variable);
+      PARFLOW_ERROR("One or more variables were requested in a timestep where they do not exist yet (e.g. evap_trans_sum does not exist on initialization...)!");
+  }
   // normally really generic. low: in common with write_parflow_netcdf
   Grid *grid = VectorGrid(v);
   SubgridArray *subgrids = GridSubgrids(grid);

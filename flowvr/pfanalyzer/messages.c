@@ -34,7 +34,9 @@ const char *VARIABLE_TO_NAME[VARIABLE_LAST] = {
   "manning",
   "permeability_x",
   "permeability_y",
-  "permeability_z"
+  "permeability_z",
+  "evap_trans",
+  "evap_trans_sum"
 };
 
 void SendActionMessage(fca_module mod, fca_port out, Action action, Variable variable,
