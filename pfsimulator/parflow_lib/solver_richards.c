@@ -43,12 +43,11 @@
 
 #ifdef HAVE_FLOWVR
 #include <fca/fca.h>
-#include "flowvr.h"
 #endif
 
-#ifdef HAVE_MELISSA
+#include "flowvr.h"
+
 #include "melissa.h"
-#endif
 
 #include <unistd.h>
 #include <string.h>

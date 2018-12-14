@@ -5,7 +5,6 @@ int MELISSA_ACTIVE;
 
 #ifdef HAVE_MELISSA
 
-#define BUILD_WITH_MPI
 #include <melissa_api.h>
 
 static int melissa_simu_id;
