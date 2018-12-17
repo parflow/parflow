@@ -48,7 +48,7 @@ tclsh $PARFLOW_DIR/bin/parflowvr/flowvr_starter.tcl $P $Q $R $PROBLEMNAME # does
 sh $PARFLOW_DIR/bin/bootmc $NumProcs
 sh $PARFLOW_DIR/bin/getmc $NumProcs
 
-flowvr parflowvr --batch-mode $DEBUGFLAGS
+flowvr parflowvr --batch $DEBUGFLAGS
 
 sh $PARFLOW_DIR/bin/freemc
 sh $PARFLOW_DIR/bin/killmc
