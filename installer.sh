@@ -3,6 +3,11 @@
 # It is recommended to not start it but rather take it as guideline which option to
 # use for which dependency to get a running setup.
 
+# to run with logfile
+# ./installer_parflowvr_from_srv12.sh &> log.txt &
+#watch tail log.txt
+
+
 # In the following we define some install options:
 # Especially PREFIX should be changed!
 # It will download and install dependencies and parFlowVR in a folder structure under $PREFIX
@@ -14,6 +19,7 @@ export MPICXX=`which mpicxx`
 export MPIF90=`which mpif90`
 export WGET="wget -c --no-check-certificate"
 export SRC=$PREFIX/src
+export N=2
 
 
 
@@ -26,10 +32,13 @@ export PKG_CONFIG_PATH=$PREFIX/lib64/pkgconfig:$PKG_CONFIG_PATH
 export PARFLOW_DIR=$PREFIX
 
 export PYTHONPATH=$PREFIX/python:$PYTHONPATH
+export PYTHONPATH=$PREFIX/lib/$PYTHON:$PYTHONPATH
+
 
 # When running with FlowVR this is needed too during runtime:
 # Attention: The following line will fail if FlowVR is not yet installed.
 source flowvr-suite-config.sh
+
 
 
 
@@ -38,6 +47,7 @@ source flowvr-suite-config.sh
 # HINT: check if all the svn co commands run without user interaction before run this
 # script ;)
 
+set -e
 mkdir -p $SRC
 
 #openmpi is already installed?
@@ -59,7 +69,7 @@ mkdir -p $PREFIX/bin
 cd $PREFIX
 $WGET https://raw.githubusercontent.com/numpy/numpy/master/tools/swig/numpy.i
 cd $PREFIX/bin
-ln -s `which $PYTHON` python
+ln -f -s `which $PYTHON` python
 
 #$WGET http://www.python.org/ftp/python/2.7.12/Python-2.7.12.tgz
 #tar xzvf Python-2.7.12.tgz
@@ -165,7 +175,7 @@ cmake .. -DBUILD_SHARED_LIBS:BOOL=OFF \
   -DENABLE_DISKLESS:BOOL=ON \
   -DENABLE_DOXYGEN:BOOL=OFF \
   -DENABLE_DYNAMIC_LOADING:BOOL=ON \
-  -DENABLE_ERANGE_FILL:BOOL=OFF \
+  -DENABLE_ERANGE_FILL:BOOL=ON \
   -DENABLE_EXAMPLES:BOOL=ON \
   -DENABLE_EXAMPLE_TESTS:BOOL=OFF \
   -DENABLE_EXTRA_TESTS:BOOL=OFF \
@@ -239,7 +249,6 @@ if [ ! -d "flowvr" ]; then
   mv flowvr-ex flowvr
   cd flowvr
   git checkout dev
-  git checkout 628fd3b7348c3fb4e282360f90da1e2636b9e42a
   mkdir build
   cd build
   cmake .. -DBUILD_CONTRIB:BOOL=ON \
@@ -285,7 +294,7 @@ cmake .. -DBUILD_TESTING:BOOL=ON \
   -DHYPRE_LIBRARY_LS:FILEPATH=$PREFIX/lib/libHYPRE.a \
   -DHYPRE_LIBRARY_MV:FILEPATH=$PREFIX/lib/libHYPRE.a \
   -DPARFLOW_AMPS_LAYER:STRING=mpi1 \
-  -DPARFLOW_AMPS_SEQUENTIAL_IO:BOOL=OFF \
+  -DPARFLOW_AMPS_SEQUENTIAL_IO:BOOL=ON \
   -DPARFLOW_ENABLE_HDF5:BOOL=ON \
   -DPARFLOW_ENABLE_HYPRE:BOOL=ON \
   -DPARFLOW_ENABLE_NETCDF:BOOL=ON \
@@ -295,7 +304,7 @@ cmake .. -DBUILD_TESTING:BOOL=ON \
   -DPARFLOW_ENABLE_SLURM:BOOL=False \
   -DPARFLOW_ENABLE_SUNDIALS:BOOL=False \
   -DPARFLOW_ENABLE_SZLIB:BOOL=False \
-  -DPARFLOW_ENABLE_TIMING:BOOL=True \
+  -DPARFLOW_ENABLE_TIMING:BOOL=False \
   -DPARFLOW_ENABLE_TOOLS:BOOL=True \
   -DPARFLOW_ENABLE_ZLIB:BOOL=False \
   -DPARFLOW_HAVE_CLM:BOOL=ON \
