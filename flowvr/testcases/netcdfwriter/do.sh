@@ -31,7 +31,7 @@ flowvrd -s 4M &
 # wait for flowvrd to startup
 sleep 1
 
-flowvr --batch-mode parflowvr
+flowvr --batch parflowvr
 
 
 killall flowvrd
