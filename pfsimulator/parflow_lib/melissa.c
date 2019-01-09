@@ -84,7 +84,7 @@ void sendIt(const char * name, Vector const * const vec)
   double *data;
   data = SubvectorElt(subvector, ix, iy, iz);
 
-  printf("shape: %d %d %d", nx, ny, nz);
+  //printf("shape: %d %d %d\n", nx, ny, nz);
 
   BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz, ai, nx_v, ny_v, nz_v, 1, 1, 1, {
       buffer[d] = data[ai]; d++;
