@@ -171,6 +171,7 @@ typedef struct {
 #endif
 
   int print_lsm_sink;           /* print LSM sink term? */
+  int print_subsurf_storage;  /* print subsurface storage */
   int write_silo_CLM;           /* write CLM output as silo? */
   int write_silopmpio_CLM;      /* write CLM output as silo as PMPIO? */
   int print_CLM;                /* print CLM output as PFB? */
@@ -2774,19 +2775,19 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       EndTiming(FlowVRFulFillContractsTimingIndex);
 #endif
 
-    /*-----------------------------------------------------------------
-     * Send values to Melissa
-     *-----------------------------------------------------------------*/
+      /*-----------------------------------------------------------------
+       * Send values to Melissa
+       *-----------------------------------------------------------------*/
 #ifdef HAVE_MELISSA
-    BeginTiming(MelissaTimingIndex);
-    if (MELISSA_ACTIVE)
-    {
+      BeginTiming(MelissaTimingIndex);
+      if (MELISSA_ACTIVE)
+      {
         snapshot.evap_trans = evap_trans;
         snapshot.evap_trans_sum = evap_trans_sum;
 
         any_file_dumped = MelissaSend(&snapshot);
-    }
-    EndTiming(MelissaTimingIndex);
+      }
+      EndTiming(MelissaTimingIndex);
 #endif
 
       sprintf(nc_postfix, "%05d", instance_xtra->file_number);
@@ -3081,6 +3082,18 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                       instance_xtra->ovrl_bc_flx);
         any_file_dumped = 1;
       }
+
+      if (public_xtra->print_subsurf_storage)
+      {
+        double waterstorage = WaterStorage(problem_data, instance_xtra->pressure, instance_xtra->saturation);
+        if (!rank)
+        {
+          // Only main process prints this...
+          printf("Waterstorage(t=%g) = %g\n", t, waterstorage);
+        }
+        // TODO: maybe write it to a file too...
+        // TODO: print at beginning and end too...
+      }
     }                           // End of if (dump_files)
 
     /***************************************************************/
@@ -3316,11 +3329,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           nz = SubgridNZ(subgrid);/*BH: number of z layers for extracting surface pressure*/
           /*BH: add surface pressure (pp, layer nz-1) to CLM pfb output (for higher sampling)*/
           /*BH: modify subsequent indices... :*/
-          PFVLayerCopy(12, nz-1, instance_xtra -> clm_out_grid, instance_xtra -> pressure);/*BH*/
+          PFVLayerCopy(12, nz - 1, instance_xtra->clm_out_grid, instance_xtra->pressure);  /*BH*/
           if (public_xtra->clm_irr_type == 1
               || public_xtra->clm_irr_type == 2)
           {
-            PFVLayerCopy(13, 0, instance_xtra -> clm_out_grid,
+            PFVLayerCopy(13, 0, instance_xtra->clm_out_grid,
                          instance_xtra->qflx_qirr); /*BH (ind 12->13)*/
           }
           if (public_xtra->clm_irr_type == 3)
@@ -4030,7 +4043,7 @@ SolverRichardsInitInstanceXtra()
       subgrid = SubgridArraySubgrid(all_subgrids, i);
       new_subgrid = DuplicateSubgrid(subgrid);
       SubgridIZ(new_subgrid) = 0;
-      SubgridNZ(new_subgrid) = 14 + public_xtra -> clm_nz; /*BH ind 13->14 for adding top pressure output*/
+      SubgridNZ(new_subgrid) = 14 + public_xtra->clm_nz;   /*BH ind 13->14 for adding top pressure output*/
       AppendSubgrid(new_subgrid, new_all_subgrids);
     }
     new_subgrids = GetGridSubgrids(new_all_subgrids);
@@ -4896,7 +4909,7 @@ SolverRichardsNewPublicXtra(char *name)
   public_xtra->drop_tol = GetDoubleDefault(key, 1E-8);
 
   sprintf(key, "%s.PrintSubsurfData", name);
-  switch_name = GetStringDefault(key, "True");
+  switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
   if (switch_value < 0)
   {
@@ -5005,6 +5018,7 @@ SolverRichardsNewPublicXtra(char *name)
   }
   public_xtra->print_mask = switch_value;
 
+// TODO: undocumented in manual pdf!
   sprintf(key, "%s.PrintEvapTrans", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
@@ -5015,6 +5029,7 @@ SolverRichardsNewPublicXtra(char *name)
   }
   public_xtra->print_evaptrans = switch_value;
 
+// TODO: undocumented in manual pdf!
   sprintf(key, "%s.PrintEvapTransSum", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
@@ -5066,6 +5081,17 @@ SolverRichardsNewPublicXtra(char *name)
                switch_name, key);
   }
   public_xtra->print_lsm_sink = switch_value;
+
+  // TODO: document this feature
+  sprintf(key, "%s.PrintSubsurfStorage", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->print_subsurf_storage = switch_value;
 
 #ifndef HAVE_CLM
   if (public_xtra->print_lsm_sink)

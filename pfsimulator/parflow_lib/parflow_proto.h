@@ -1305,6 +1305,11 @@ int CheckTime(Problem *problem, char *key, double time);
 /* evaptranssum.c */
 void EvapTransSum(ProblemData *problem_data, double dt, Vector *evap_trans_sum, Vector *evap_trans);
 
+/* waterstorage.c */
+double WaterStorage(ProblemData *problem_data,
+                    Vector *     pressure,    /* Current pressure values */
+                    Vector *     saturation); /* Current saturation values */
+
 void OverlandSum(ProblemData *problem_data,
                  Vector *     pressure,       /* Current pressure values */
                  double       dt,
