@@ -36,14 +36,14 @@ void MelissaInit(Vector const * const pressure)
   //int coupling = MELISSA_COUPLING_FLOWVR;
   int coupling = MELISSA_COUPLING_ZMQ;
   melissa_init("pressure", &local_vect_size, &num, &rank, &melissa_simu_id, &comm,
-    &coupling);
+               &coupling);
   melissa_init("saturation", &local_vect_size, &num, &rank, &melissa_simu_id, &comm,
-    &coupling);
+               &coupling);
   const int local_vect_size2D = nx * ny;
   melissa_init("evap_trans_sum", &local_vect_size2D, &num, &rank, &melissa_simu_id, &comm,
-    &coupling);
+               &coupling);
   //melissa_init("evap_trans_sum", &local_vect_size, &num, &rank, &melissa_simu_id, &comm,
-    //&coupling);
+  //&coupling);
 
   D("melissa initialized.");
 }
@@ -70,7 +70,7 @@ void sendIt(const char * name, Vector const * const vec)
   int nz = SubgridNZ(subgrid);
   if (0 == strcmp("evap_trans_sum", name))
   {
-      nz = 1;
+    nz = 1;
   }
 
 
@@ -79,7 +79,7 @@ void sendIt(const char * name, Vector const * const vec)
 
   // some iterators
   int i, j, k, ai = 0, d = 0;
-  double buffer[nx*ny*nz];
+  double buffer[nx * ny * nz];
 
   double *data;
   data = SubvectorElt(subvector, ix, iy, iz);
@@ -87,7 +87,7 @@ void sendIt(const char * name, Vector const * const vec)
   //printf("shape: %d %d %d\n", nx, ny, nz);
 
   BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz, ai, nx_v, ny_v, nz_v, 1, 1, 1, {
-      buffer[d] = data[ai]; d++;
+    buffer[d] = data[ai]; d++;
   });
   // TODO: would be more performant if we could read the things not cell by cell I guess
   // REM: if plotting all the ai-s one sees that there are steps... ai does not increase
@@ -96,7 +96,7 @@ void sendIt(const char * name, Vector const * const vec)
   // TODO: How to know later which part of the array we got at which place?
   // how is the order of the ranks?
   // TODO: FIXME: possibly that is not in the good order here!
-  melissa_send(name, (double*) buffer);
+  melissa_send(name, (double*)buffer);
 }
 
 int MelissaSend(const SimulationSnapshot * snapshot)
@@ -119,7 +119,6 @@ void FreeMelissa(void)
 #endif
 void NewMelissa(void)
 {
-
   MELISSA_ACTIVE = GetBooleanDefault("Melissa", 0);
 
   if (!MELISSA_ACTIVE)
@@ -138,6 +137,5 @@ void NewMelissa(void)
 
   melissa_simu_id = GetInt("Melissa.SimuID");
   D("Melissa running with simuid %d", melissa_simu_id);
-
 #endif
 }
