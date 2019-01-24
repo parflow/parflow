@@ -45,7 +45,7 @@ void NewMelissa(void);
  * We transmit also saturation data. We assume that saturation and pressure data are of the
  * same shape.
  */
-void MelissaInit(Vector const * const pressure);
+void MelissaInit(Vector const * const pressure, Vector const * const saturation, Vector const * const evap_trans_sum);
 /**
  * Send pressure to Melissa
  */

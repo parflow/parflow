@@ -9,9 +9,10 @@ int MELISSA_ACTIVE;
 
 static int melissa_simu_id;
 
-void MelissaInit(Vector const * const pressure)
+
+int getVectSize(Vector const * const vec)
 {
-  Grid *grid = VectorGrid(pressure);
+  Grid *grid = VectorGrid(vec);
   SubgridArray *subgrids = GridSubgrids(grid);
   Subgrid *subgrid;
   int g;
@@ -26,29 +27,37 @@ void MelissaInit(Vector const * const pressure)
   int ny = SubgridNY(subgrid);
   int nz = SubgridNZ(subgrid);
 
-  // TODO: get nx, ny, nz directly as parameters!! don't read a vector like this!
+  D("Vect Size: %d", nx*ny*nz);
 
+  return nx * ny * nz;
+}
 
-  const int local_vect_size = nx * ny * nz;
+void MelissaInit(Vector const * const pressure,
+Vector const * const saturation,
+Vector const * const evap_trans_sum)
+{
   const int rank = amps_Rank(amps_CommWorld);
   const int num = amps_Size(amps_CommWorld);
   MPI_Comm comm = amps_CommWorld;
   //int coupling = MELISSA_COUPLING_FLOWVR;
   int coupling = MELISSA_COUPLING_ZMQ;
+  int local_vect_size;
+  local_vect_size = getVectSize(pressure);
   melissa_init("pressure", &local_vect_size, &num, &rank, &melissa_simu_id, &comm,
                &coupling);
+  local_vect_size = getVectSize(saturation);
   melissa_init("saturation", &local_vect_size, &num, &rank, &melissa_simu_id, &comm,
                &coupling);
-  const int local_vect_size2D = nx * ny;
-  melissa_init("evap_trans_sum", &local_vect_size2D, &num, &rank, &melissa_simu_id, &comm,
-               &coupling);
-  //melissa_init("evap_trans_sum", &local_vect_size, &num, &rank, &melissa_simu_id, &comm,
-  //&coupling);
+  //const int local_vect_size2D = nx * ny;
+  //melissa_init("evap_trans_sum", &local_vect_size2D, &num, &rank, &melissa_simu_id, &comm,
+  //             &coupling);
+  local_vect_size = getVectSize(evap_trans_sum);
+  melissa_init("evap_trans_sum", &local_vect_size, &num, &rank, &melissa_simu_id, &comm, &coupling);
 
   D("melissa initialized.");
 }
 
-void sendIt(const char * name, Vector const * const vec)
+void send_vec(const char * name, Vector const * const vec)
 {
   Grid *grid = VectorGrid(vec);
   SubgridArray *subgrids = GridSubgrids(grid);
@@ -68,10 +77,10 @@ void sendIt(const char * name, Vector const * const vec)
   int nx = SubgridNX(subgrid);
   int ny = SubgridNY(subgrid);
   int nz = SubgridNZ(subgrid);
-  if (0 == strcmp("evap_trans_sum", name))
-  {
-    nz = 1;
-  }
+  //if (0 == strcmp("evap_trans_sum", name))
+  //{
+    //nz = 1;
+  //}
 
 
   int nx_v = SubvectorNX(subvector);
@@ -91,20 +100,18 @@ void sendIt(const char * name, Vector const * const vec)
   });
   // TODO: would be more performant if we could read the things not cell by cell I guess
   // REM: if plotting all the ai-s one sees that there are steps... ai does not increase
-  // linear!
+  // linear! ... but as there are maybe patches that mask out some cells... etc...
 
-  // TODO: How to know later which part of the array we got at which place?
-  // how is the order of the ranks?
-  // TODO: FIXME: possibly that is not in the good order here!
   melissa_send(name, (double*)buffer);
 }
 
 int MelissaSend(const SimulationSnapshot * snapshot)
 {
-  sendIt("pressure", snapshot->pressure_out);
-  sendIt("saturation", snapshot->saturation_out);
+  send_vec("pressure", snapshot->pressure_out);
+  send_vec("saturation", snapshot->saturation_out);
   //sendIt("evap_trans", snapshot->evap_trans);
-  sendIt("evap_trans_sum", snapshot->evap_trans_sum);
+  send_vec("evap_trans_sum", snapshot->evap_trans_sum);
+
   return 1;
 }
 

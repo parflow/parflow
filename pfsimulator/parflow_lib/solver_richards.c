@@ -1098,7 +1098,7 @@ SetupRichards(PFModule * this_module)
     BeginTiming(MelissaTimingIndex);
     if (MELISSA_ACTIVE)
     {
-      MelissaInit(instance_xtra->pressure);
+      MelissaInit(instance_xtra->pressure, instance_xtra->saturation, instance_xtra->evap_trans_sum);
       // we do not do a melissa send here as evap trans is not yet accessible!
     }
     EndTiming(MelissaTimingIndex);
