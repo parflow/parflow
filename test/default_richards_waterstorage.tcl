@@ -358,26 +358,28 @@ foreach i "00000 00001 00002 00003 00004 00005" {
 }
     if ![pftestFile default_richards.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
     set passed 0
-}
-}
-puts "Compare the following values to the logged values in the default_richards.out.txt by hand:"
-set saturation [pfload default_richards.out.satur.00001.pfb]
-set pressure [pfload default_richards.out.press.00001.pfb]
-set specific_storage [pfload default_richards.out.specific_storage.pfb]
-set porosity [pfload default_richards.out.porosity.pfb]
-set mask [pfload default_richards.out.mask.pfb]
-set subsurface_storage [pfsubsurfacestorage $mask $porosity $pressure $saturation $specific_storage]
-set total_subsurface_storage [pfsum $subsurface_storage]
-puts [format "t=0.001: Subsurface storage\t\t\t\t : %.16e" $total_subsurface_storage]
 
-set saturation [pfload default_richards.out.satur.00005.pfb]
-set pressure [pfload default_richards.out.press.00005.pfb]
+}
+
+set saturation [pfload default_richards.out.satur.$i.pfb]
+set pressure [pfload default_richards.out.press.$i.pfb]
 set specific_storage [pfload default_richards.out.specific_storage.pfb]
 set porosity [pfload default_richards.out.porosity.pfb]
 set mask [pfload default_richards.out.mask.pfb]
 set subsurface_storage [pfsubsurfacestorage $mask $porosity $pressure $saturation $specific_storage]
 set total_subsurface_storage [pfsum $subsurface_storage]
-puts [format "t=0.005: Subsurface storage\t\t\t\t : %.16e" $total_subsurface_storage]
+set str [format "Waterstorage(t=%g) = %g" [format "0.00%d" $i] $total_subsurface_storage]
+set f "default_richards.out.txt"
+
+# puts [exec echo grep $str $f]
+#  puts "grep \'$str\' $f"
+  #catch {exec bash -c "grep \'$str\' $f && echo $?"} results
+  #catch {exec bash -c "grep \'$str\' $f"} results
+ set results [exec bash -c "grep \'$str\' $f"]
+
+ puts $results
+ #puts $options
+}
 
 
 if $passed {

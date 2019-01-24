@@ -1314,6 +1314,19 @@ SetupRichards(PFModule * this_module)
       any_file_dumped = 1;
     }
 
+
+
+    if (public_xtra->print_subsurf_storage)
+    {
+      double waterstorage = WaterStorage(problem_data, instance_xtra->pressure, instance_xtra->saturation);
+      if (!amps_Rank(amps_CommWorld))
+      {
+        // Only main process prints this...
+        printf("Waterstorage(t=%g) = %g\n", t, waterstorage);
+      }
+      // TODO: maybe write it to a file too...
+    }
+
     /*-----------------------------------------------------------------
      * Log this step
      *-----------------------------------------------------------------*/
@@ -3092,7 +3105,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           printf("Waterstorage(t=%g) = %g\n", t, waterstorage);
         }
         // TODO: maybe write it to a file too...
-        // TODO: print at beginning and end too...
       }
     }                           // End of if (dump_files)
 
