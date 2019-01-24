@@ -398,7 +398,7 @@ size_t Steer(Variable var, Action action, const void *buffer, double const * con
   });
 
   // InitVectorUpdate!
-  // TODO: necessary?:
+  /* Pass new vector values to neighbors.  */
   VectorUpdateCommHandle *handle;
   handle = InitVectorUpdate(v, VectorUpdateAll);
   FinalizeVectorUpdate(handle);
