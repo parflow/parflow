@@ -39,7 +39,6 @@ Vector const * const evap_trans_sum)
   const int rank = amps_Rank(amps_CommWorld);
   const int num = amps_Size(amps_CommWorld);
   MPI_Comm comm = amps_CommWorld;
-  //int coupling = MELISSA_COUPLING_FLOWVR;
   int coupling = MELISSA_COUPLING_ZMQ;
   int local_vect_size;
   local_vect_size = getVectSize(pressure);
@@ -53,6 +52,9 @@ Vector const * const evap_trans_sum)
   //             &coupling);
   local_vect_size = getVectSize(evap_trans_sum);
   melissa_init("evap_trans_sum", &local_vect_size, &num, &rank, &melissa_simu_id, &comm, &coupling);
+
+  local_vect_size = 1;
+  melissa_init("subsurf_storage", &local_vect_size, &num, &rank, &melissa_simu_id, &comm, &coupling);
 
   D("melissa initialized.");
 }
@@ -112,6 +114,7 @@ int MelissaSend(const SimulationSnapshot * snapshot)
   //sendIt("evap_trans", snapshot->evap_trans);
   send_vec("evap_trans_sum", snapshot->evap_trans_sum);
 
+  melissa_send("subsurf_storage", &snapshot->subsurf_storage);
   return 1;
 }
 

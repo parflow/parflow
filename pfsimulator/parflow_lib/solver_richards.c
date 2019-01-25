@@ -2797,6 +2797,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       {
         snapshot.evap_trans = evap_trans;
         snapshot.evap_trans_sum = evap_trans_sum;
+        //double waterstorage = WaterStorage(problem_data, instance_xtra->pressure, instance_xtra->saturation);
+        //snapshot.subsurf_storage = waterstorage;
+        snapshot.subsurf_storage = WaterStorage(problem_data, instance_xtra->pressure, instance_xtra->saturation);
 
         any_file_dumped = MelissaSend(&snapshot);
       }

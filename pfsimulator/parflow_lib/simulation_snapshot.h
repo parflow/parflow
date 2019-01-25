@@ -13,6 +13,8 @@ typedef struct {
   Vector * evap_trans;
   Vector * evap_trans_sum;
 
+  double subsurf_storage;
+
   Grid * grid;
   ProblemData * problem_data;
 } SimulationSnapshot;
@@ -30,6 +32,7 @@ typedef struct {
     instance_xtra->saturation, \
     NULL, \
     NULL, \
+    42., \
     instance_xtra->grid, \
     problem_data \
   }
@@ -37,4 +40,5 @@ typedef struct {
 // porosity ... has to be set later
 // evap_trans ... has to be set later  TODO: actually should be accessible with instance_xtra too!
 // evap_trans_sum ... has to be set later
+// subsurf_storage ... has to be set later
 #endif
