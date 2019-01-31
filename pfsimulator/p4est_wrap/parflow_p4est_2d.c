@@ -54,10 +54,10 @@ refine_fn(p4est_t * p4est, p4est_topidx_t which_tree,
 
   distsqr = (v[0] - 1.) * (v[0] - 1.) + (v[1] - 1.) * (v[1] - 1.);
 #ifdef P4_TO_P8
-  distsqr += (v[2] - 2.) * (v[2] - 2.);
+  distsqr += (v[2] - 1.) * (v[2] - 1.);
 #endif
 
-  return(distsqr < 1.);
+  return distsqr < 1;//(v[0] == v[1]);
 }
 
 parflow_p4est_grid_2d_t *
@@ -129,7 +129,7 @@ parflow_p4est_grid_2d_new(int Px, int Py
   p4est_vtk_write_file(pfg->forest, NULL, P4EST_STRING "_brick");
 
   /** allocate ghost storage */
-  pfg->ghost = p4est_ghost_new(pfg->forest, P4EST_CONNECT_CORNER);
+  pfg->ghost = p4est_ghost_new(pfg->forest, P4EST_CONNECT_FACE);
 
   EndTiming(P4ESTimingIndex);
 

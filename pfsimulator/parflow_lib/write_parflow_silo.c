@@ -123,7 +123,7 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
      * }
      * z_coord +=  SubgridDZ(subgrid)*mult;
      * coords[2][k] =  z_coord; */
-    coords[2][k] = SubgridZ(subgrid) + SubgridDZ(subgrid) * ((float)k - 0.5);
+    coords[2][k] = RealSpaceZ(iz, 0) + (SubgridDZ(subgrid) * ((float)k - 0.5)) / pow(2.0, (double)0); ;
   }
 
   sprintf(meshname, "%s_%06u_%06u", "mesh", p, loc_idx);

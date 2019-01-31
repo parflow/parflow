@@ -150,7 +150,7 @@ NewSolver()
 
   GlobalsNumProcs = amps_Size(amps_CommWorld);
 
-#ifdef HAVE_P4EST
+#ifndef HAVE_P4EST
   /** Support for empty processors not yet implemented.
    *  Print an error message and quit the program */
   if (GlobalsNumProcs >

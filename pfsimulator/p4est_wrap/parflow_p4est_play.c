@@ -4,7 +4,7 @@
 static void    myInitVector(Vector *v)
 {
   Grid       *grid = VectorGrid(v);
-
+  int rank = amps_Rank(amps_CommWorld);
   Subvector  *v_sub;
   double     *vp;
 
@@ -43,6 +43,7 @@ static void    myInitVector(Vector *v)
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       vp[iv] = (double)(SubgridLocIdx(subgrid));
+      //vp[iv] = (double)(1 << rank);
     });
   }
 }
