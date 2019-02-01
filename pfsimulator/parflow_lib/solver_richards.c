@@ -54,6 +54,7 @@
 #include <float.h>
 #include <limits.h>
 
+#define PF_CLM_MAX_ROOT_NZ 20
 
 /*--------------------------------------------------------------------------
  * Structures
@@ -2222,7 +2223,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          qirr_inst, iflag,
                          public_xtra->clm_irr_thresholdtype, soi_z,
                          clm_next, clm_write_logs, clm_last_rst,
-                         clm_daily_rst);
+                         clm_daily_rst,
+			 public_xtra->clm_nz,
+			 public_xtra->clm_nz);
 
             break;
           }
@@ -4448,6 +4451,14 @@ SolverRichardsNewPublicXtra(char *name)
   sprintf(key, "%s.CLM.RootZoneNZ", name);
   public_xtra->clm_nz = GetIntDefault(key, 10);
 
+  /* Should match what is set in CLM for max */
+  if ( public_xtra->clm_nz > PF_CLM_MAX_ROOT_NZ )
+  {
+    char tmp_str[100];
+    sprintf(tmp_str, "%d", public_xtra->clm_nz);
+    InputError("Error: Invalid value <%s> for key <%s>, must be <= 20\n", tmp_str, key);
+  }
+
   /* NBE added key to specify layer for t_soisno in clm_dynvegpar */
   sprintf(key, "%s.CLM.SoiLayer", name);
   public_xtra->clm_SoiLayer = GetIntDefault(key, 7);
@@ -4839,6 +4850,7 @@ SolverRichardsNewPublicXtra(char *name)
     }
   }
   NA_FreeNameArray(irrthresholdtype_switch_na);
+
 #endif
 
   //CPS

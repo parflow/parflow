@@ -40,6 +40,7 @@ typedef struct {
   int num_pre_relax;
   int num_post_relax;
   int smoother;
+  int raptype;
 
   int time_index_pfmg;
   int time_index_copy_hypre;
@@ -238,6 +239,7 @@ PFModule  *PFMGInitInstanceXtra(
   int num_pre_relax = public_xtra->num_pre_relax;
   int num_post_relax = public_xtra->num_post_relax;
   int smoother = public_xtra->smoother;
+  int raptype = public_xtra->raptype;
 
   Grid               *mat_grid;
   Subgrid            *subgrid;
@@ -646,8 +648,8 @@ PFModule  *PFMGInitInstanceXtra(
     /* Jacobi = 0; weighted Jacobi = 1; red-black GS symmetric = 2; red-black GS non-symmetric = 3 */
     HYPRE_StructPFMGSetRelaxType(instance_xtra->hypre_pfmg_data, smoother);
 
-    /* Use non-Galkerkin option */
-    HYPRE_StructPFMGSetRAPType(instance_xtra->hypre_pfmg_data, 1);
+    /* Galerkin=0; non-Galkerkin=1 */
+    HYPRE_StructPFMGSetRAPType(instance_xtra->hypre_pfmg_data, raptype);
 
     HYPRE_StructPFMGSetSkipRelax(instance_xtra->hypre_pfmg_data, 1);
 
@@ -706,13 +708,13 @@ PFModule  *PFMGNewPublicXtra(char *name)
 #ifdef HAVE_HYPRE
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra;
-
   char key[IDB_MAX_KEY_LEN];
   char          *smoother_name;
-
   NameArray smoother_switch_na;
-
   int smoother;
+  char          *raptype_name;
+  NameArray raptype_switch_na;
+  int raptype;
 
   public_xtra = ctalloc(PublicXtra, 1);
 
@@ -727,14 +729,14 @@ PFModule  *PFMGNewPublicXtra(char *name)
 
   /* Use a dummy place holder so that cardinalities match
    * with what HYPRE expects */
-  smoother_switch_na = NA_NewNameArray("Dummy Jacobi WJacobi RBGaussSeidelSymmetric RBGaussSeidelNonSymmetric");
+  smoother_switch_na = NA_NewNameArray("Jacobi WJacobi RBGaussSeidelSymmetric RBGaussSeidelNonSymmetric");
   sprintf(key, "%s.Smoother", name);
   smoother_name = GetStringDefault(key, "RBGaussSeidelNonSymmetric");
   smoother = NA_NameToIndex(smoother_switch_na, smoother_name);
-  if (smoother != 0)
+  if (smoother >= 0)
   {
     public_xtra->smoother = NA_NameToIndex(smoother_switch_na,
-                                           smoother_name) - 1;
+                                           smoother_name);
   }
   else
   {
@@ -742,6 +744,27 @@ PFModule  *PFMGNewPublicXtra(char *name)
                smoother_name, key);
   }
   NA_FreeNameArray(smoother_switch_na);
+
+  raptype_switch_na = NA_NewNameArray("Galerkin NonGalerkin");
+  sprintf(key, "%s.RAPType", name);
+  raptype_name = GetStringDefault(key, "NonGalerkin");
+  raptype = NA_NameToIndex(raptype_switch_na, raptype_name);
+  if (raptype >= 0)
+  {
+     public_xtra->raptype = raptype;
+  }
+  else
+  {
+    InputError("Error: Invalid value <%s> for key <%s>.\n",
+               raptype_name, key);
+  }
+  NA_FreeNameArray(raptype_switch_na);
+
+  if(raptype == 0 && smoother > 1)
+  {
+     InputError("Error: Galerkin RAPType is not compatible with Smoother <%s>.\n",
+		smoother_name, key);
+  }
 
   public_xtra->time_index_pfmg = RegisterTiming("PFMG");
   public_xtra->time_index_copy_hypre = RegisterTiming("HYPRE_Copies");

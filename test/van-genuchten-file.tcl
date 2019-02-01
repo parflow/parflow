@@ -1,4 +1,4 @@
-#  This runs the basic pfmg test case based off of default richards
+#  This runs the basic default_richards test case.
 #  This run, as written in this input file, should take
 #  3 nonlinear iterations.
 
@@ -11,9 +11,9 @@ namespace import Parflow::*
 
 pfset FileVersion 4
 
-pfset Process.Topology.P 1
-pfset Process.Topology.Q 1
-pfset Process.Topology.R 1
+pfset Process.Topology.P        [lindex $argv 0]
+pfset Process.Topology.Q        [lindex $argv 1]
+pfset Process.Topology.R        [lindex $argv 2]
 
 #---------------------------------------------------------
 # Computational Grid
@@ -193,8 +193,13 @@ pfset Domain.GeomName domain
 
 pfset Phase.RelPerm.Type               VanGenuchten
 pfset Phase.RelPerm.GeomNames          domain
-pfset Geom.domain.RelPerm.Alpha        0.005
-pfset Geom.domain.RelPerm.N            2.0    
+
+# pfset Geom.domain.RelPerm.Alpha        0.005
+# pfset Geom.domain.RelPerm.N            2.0
+
+pfset Phase.RelPerm.VanGenuchten.File      1 
+pfset Geom.domain.RelPerm.Alpha.Filename   van-genuchten-alpha.pfb
+pfset Geom.domain.RelPerm.N.Filename       van-genuchten-n.pfb
 
 #---------------------------------------------------------
 # Saturation
@@ -202,10 +207,18 @@ pfset Geom.domain.RelPerm.N            2.0
 
 pfset Phase.Saturation.Type            VanGenuchten
 pfset Phase.Saturation.GeomNames       domain
+
 pfset Geom.domain.Saturation.Alpha     0.005
 pfset Geom.domain.Saturation.N         2.0
 pfset Geom.domain.Saturation.SRes      0.2
 pfset Geom.domain.Saturation.SSat      0.99
+
+pfset Geom.domain.Saturation.VanGenuchten.File        1 
+pfset Geom.domain.Saturation.Alpha.Filename           van-genuchten-alpha.pfb
+pfset Geom.domain.Saturation.N.Filename               van-genuchten-n.pfb
+pfset Geom.domain.Saturation.SRes.Filename            van-genuchten-sr.pfb 
+pfset Geom.domain.Saturation.SSat.Filename            van-genuchten-ssat.pfb 
+
 
 #-----------------------------------------------------------------------------
 # Wells
@@ -320,19 +333,21 @@ pfset Solver.Nonlinear.DerivativeEpsilon                 1e-2
 
 pfset Solver.Linear.KrylovDimension                      10
 
-pfset Solver.Linear.Preconditioner                       PFMG
-pfset Solver.Linear.Preconditioner.PFMG.Smoother         WJacobi
-
-#pfset Solver.Linear.Preconditioner.PFMG.MaxIter          1
-#pfset Solver.Linear.Preconditioner.PFMG.NumPreRelax      100
-#pfset Solver.Linear.Preconditioner.PFMG.NumPostRelax     100
-
+pfset Solver.Linear.Preconditioner                       PFMG 
+pfset Solver.Linear.Preconditioner.MGSemi.MaxIter        1
+pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      100
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-pfrun pfmg
-pfundist pfmg
+
+foreach i {van-genuchten-alpha van-genuchten-n van-genuchten-sr van-genuchten-ssat } {
+    file copy -force input/$i.pfb $i.pfb
+    pfdist $i.pfb
+}
+
+pfrun default_richards
+pfundist default_richards
 
 #
 # Tests 
@@ -340,28 +355,28 @@ pfundist pfmg
 source pftest.tcl
 set passed 1
 
-if ![pftestFile pfmg.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
+if ![pftestFile default_richards.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
     set passed 0
 }
-if ![pftestFile pfmg.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
+if ![pftestFile default_richards.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
     set passed 0
 }
-if ![pftestFile pfmg.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
+if ![pftestFile default_richards.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
     set passed 0
 }
 
 foreach i "00000 00001 00002 00003 00004 00005" {
-    if ![pftestFile pfmg.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
+    if ![pftestFile default_richards.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
     set passed 0
 }
-    if ![pftestFile pfmg.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
+    if ![pftestFile default_richards.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
     set passed 0
 }
 }
 
 
 if $passed {
-    puts "pfmg : PASSED"
+    puts "default_richards : PASSED"
 } {
-    puts "pfmg : FAILED"
+    puts "default_richards : FAILED"
 }

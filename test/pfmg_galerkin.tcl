@@ -322,17 +322,13 @@ pfset Solver.Linear.KrylovDimension                      10
 
 pfset Solver.Linear.Preconditioner                       PFMG
 pfset Solver.Linear.Preconditioner.PFMG.Smoother         WJacobi
-
-#pfset Solver.Linear.Preconditioner.PFMG.MaxIter          1
-#pfset Solver.Linear.Preconditioner.PFMG.NumPreRelax      100
-#pfset Solver.Linear.Preconditioner.PFMG.NumPostRelax     100
-
+pfset Solver.Linear.Preconditioner.PFMG.RAPType          Galerkin
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-pfrun pfmg
-pfundist pfmg
+pfrun pfmg_galerkin
+pfundist pfmg_galerkin
 
 #
 # Tests 
@@ -340,28 +336,28 @@ pfundist pfmg
 source pftest.tcl
 set passed 1
 
-if ![pftestFile pfmg.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
+if ![pftestFile pfmg_galerkin.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
     set passed 0
 }
-if ![pftestFile pfmg.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
+if ![pftestFile pfmg_galerkin.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
     set passed 0
 }
-if ![pftestFile pfmg.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
+if ![pftestFile pfmg_galerkin.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
     set passed 0
 }
 
 foreach i "00000 00001 00002 00003 00004 00005" {
-    if ![pftestFile pfmg.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
+    if ![pftestFile pfmg_galerkin.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
     set passed 0
 }
-    if ![pftestFile pfmg.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
+    if ![pftestFile pfmg_galerkin.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
     set passed 0
 }
 }
 
 
 if $passed {
-    puts "pfmg : PASSED"
+    puts "pfmg_galerkin : PASSED"
 } {
-    puts "pfmg : FAILED"
+    puts "pfmg_galerkin : FAILED"
 }
