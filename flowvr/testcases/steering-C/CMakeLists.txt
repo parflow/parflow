@@ -1,6 +1,6 @@
 ADD_EXECUTABLE(analyzer_find_hillslope_K find_hillslope_K.c)
 
-FIND_LIBRARY(FCA_LIBRARY fca)
+FIND_PACKAGE(fca REQUIRED)
 
 TARGET_INCLUDE_DIRECTORIES(analyzer_find_hillslope_K PUBLIC "../../pfanalyzer")
 TARGET_INCLUDE_DIRECTORIES(analyzer_find_hillslope_K PUBLIC "${fca_INCLUDE_DIRECTORY}")

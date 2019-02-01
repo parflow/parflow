@@ -1,7 +1,7 @@
 set (SRC_FILES messages.c)
 
 
-FIND_LIBRARY(FCA_LIBRARY fca REQUIRED)
+FIND_PACKAGE(fca REQUIRED)
 INCLUDE_DIRECTORIES(${fca_INCLUDE_DIRECTORY})
 
 add_library(pfanalyzer ${SRC_FILES})
@@ -20,7 +20,7 @@ FIND_PACKAGE(NumPy REQUIRED)
 
   SET(NUMPY_I_PATH ${NUMPY_INCLUDE_DIRS}/../../../instant/swig CACHE PATH "Path to numpy.i")
 IF(NOT EXISTS ${NUMPY_I_PATH}/numpy.i)
-  Message(SEND_ERROR "Cannot find numpy.i in ${NUMPY_I} which is needed for the Python Analyzer API")
+	Message(SEND_ERROR "Cannot find numpy.i in ${NUMPY_I_PATH} which is needed for the Python Analyzer API")
 ENDIF(NOT EXISTS ${NUMPY_I_PATH}/numpy.i)
 
 
@@ -28,8 +28,10 @@ ENDIF(NOT EXISTS ${NUMPY_I_PATH}/numpy.i)
 set_source_files_properties(${SRC_FILES} PROPERTIES COMPILE_FLAGS -fPIC)
 INCLUDE(UseSWIG)
 
-  set(ADDITIONAL_NUMPY_INCLUDE_PATH "" CACHE PATH
-      "The path where e.g. numpy/arrayobject.h is found")
+IF ("${ADDITIONAL_NUMPY_INCLUDE_PATH}" STREQUAL "")
+	FIND_PATH(ADDITIONAL_NUMPY_INCLUDE_PATH:PATH "numpy/arrayobject.h" HINTS ${PYTHON_INCLUDE_PATH})
+ENDIF()
+
 
   INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH}
       ${ADDITIONAL_NUMPY_INCLUDE_PATH}

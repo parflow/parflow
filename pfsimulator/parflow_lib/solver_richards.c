@@ -42,7 +42,7 @@
 #endif
 
 #ifdef HAVE_FLOWVR
-#include <fca/fca.h>
+#include <fca.h>
 #endif
 
 #include "flowvr.h"
