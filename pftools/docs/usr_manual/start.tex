@@ -16,22 +16,21 @@ we describe the solver options available for use with \parflow{} applications.
 \section{Installing ParFlow}
 \label{Installing ParFlow}
 
-\parflow{} is distributed as source code only and must be configured and built
-(compiled) on each machine on which you would like to run simulations. 
-\parflow{} uses a configure/make system based on the standard
-\code{GNU autoconf} configure system.  This replaces the home grown
-set of scripts used in previous versions and is much more portable to
-a range of machines.  Though we will cover some basic guidelines for the installation
-of \parflow{} here, many tips and tricks for building \parflow{} on a 
-range of systems may be found at the \parflow{} blog: \file{http://parflow.blogspot.com}
+\parflow{} is distributed as source code only and must be configured
+and built (compiled) on each machine on which you would like to run
+simulations.  \parflow{} uses the CMake for configuration.  Though we
+will cover some basic guidelines for the installation of \parflow{}
+here, many tips and tricks for building \parflow{} on a range of
+systems may be found at the \parflow{} blog:
+\file{http://parflow.blogspot.com}
 
-For greater portability the \parflow{} build process separates
-configuration and compilation of the simulator and associated tools.
+For greater portability the \parflow{} build process allows separate
+configuration and compilation of the simulator and support tools.
 This separation allows easier porting to platforms where the
 architecture is different on the nodes and the front-end.
 
 These instructions are for building \parflow{} on a range of serial
-and parallel linux, unix and OSX machines, including stand-alone
+and parallel Linux, Unix and OSX machines, including stand-alone
 single and multi-core to large parallel clusters.  These instructions
 do \emph{NOT} include compilation on Windows machines.
 
