@@ -46,6 +46,7 @@
 #include <float.h>
 #include <limits.h>
 
+#define PF_CLM_MAX_ROOT_NZ 20
 
 /*--------------------------------------------------------------------------
  * Structures
@@ -154,9 +155,6 @@ typedef struct {
   double clm_irr_stop;          /* CLM irrigation schedule -- stop time of constant cyle [GMT] */
   double clm_irr_threshold;     /* CLM irrigation schedule -- soil moisture threshold for deficit cycle */
   int clm_irr_thresholdtype;    /* Deficit-based saturation criteria (top, bottom, column avg) */
-
-  int clm_nlevsoi;              /* Number of soil levels */
-  int clm_nlevlak;              /* Number of lake levels */
 
   int clm_reuse_count;          /* NBE: Number of times to use each CLM input */
   int clm_write_logs;           /* NBE: Write the processor logs for CLM or not */
@@ -2182,8 +2180,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          public_xtra->clm_irr_thresholdtype, soi_z,
                          clm_next, clm_write_logs, clm_last_rst,
                          clm_daily_rst,
-			 public_xtra->clm_nlevsoi,
-			 public_xtra->clm_nlevlak);
+			 public_xtra->clm_nz,
+			 public_xtra->clm_nz);
 
             break;
           }
@@ -4359,6 +4357,14 @@ SolverRichardsNewPublicXtra(char *name)
   sprintf(key, "%s.CLM.RootZoneNZ", name);
   public_xtra->clm_nz = GetIntDefault(key, 10);
 
+  /* Should match what is set in CLM for max */
+  if ( public_xtra->clm_nz > PF_CLM_MAX_ROOT_NZ )
+  {
+    char tmp_str[100];
+    sprintf(tmp_str, "%d", public_xtra->clm_nz);
+    InputError("Error: Invalid value <%s> for key <%s>, must be <= 20\n", tmp_str, key);
+  }
+
   /* NBE added key to specify layer for t_soisno in clm_dynvegpar */
   sprintf(key, "%s.CLM.SoiLayer", name);
   public_xtra->clm_SoiLayer = GetIntDefault(key, 7);
@@ -4750,27 +4756,6 @@ SolverRichardsNewPublicXtra(char *name)
     }
   }
   NA_FreeNameArray(irrthresholdtype_switch_na);
-
-  sprintf(key, "%s.CLM.SoilLevels", name);
-  public_xtra->clm_nlevsoi = GetIntDefault(key, 10);
-
-  /* Should match what is set in CLM for max */
-  if ( public_xtra->clm_nlevsoi > 20 )
-  {
-    char tmp_str[100];
-    sprintf(tmp_str, "%d", public_xtra->clm_nlevsoi);
-    InputError("Error: Invalid value <%s> for key <%s>, must be <= 20\n", tmp_str, key);
-  }
-
-  sprintf(key, "%s.CLM.LakeLevels", name);
-  public_xtra->clm_nlevlak = GetIntDefault(key, 10);
-
-  if ( public_xtra->clm_nlevlak > 20 )
-  {
-    char tmp_str[100];
-    sprintf(tmp_str, "%d", public_xtra->clm_nlevlak);
-    InputError("Error: Invalid value <%s> for key <%s>, must be <= 20\n", tmp_str, key);
-  }
 
 #endif
 

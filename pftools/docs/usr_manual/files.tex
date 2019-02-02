@@ -4253,9 +4253,13 @@ pfset Solver.CLM.SingleFile   True
 \end{verbatim}\end{display}
 
 \pfkey{integer}{Solver.CLM.RootZoneNZ}{10}
-{This key sets the number of soil layers the \parflow{} expects from \code{CLM}.  It will allocate and format all the arrays for passing variables to and from \code{CLM} accordingly.  Note that this does not set the soil layers in \code{CLM} 
-to do that the user needs to change the value of the parameter \code{nlevsoi} in the file  
-\file{clm\_varpar.F90} in the \file{\emph{PARFLOW\_DIR}\textbackslash pfsimulator\textbackslash clm} directory to reflect the desired numnber of soil layers and recompile. Most likely the key \code{Solver.CLM.SoiLayer}, described below, will also need to be changed.} 
+
+{This key sets the number of soil layers the \parflow{} expects from
+  \code{CLM}.  It will allocate and format all the arrays for passing
+  variables to and from \code{CLM} accordingly.  This value now sets 
+  the \code{CLM} number as well so recompilation is not required anymore.
+  Most likely the key \code{Solver.CLM.SoiLayer}, described
+  below, will also need to be changed.}
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.RootZoneNZ      4
 \end{verbatim}\end{display}
@@ -4264,18 +4268,6 @@ pfset Solver.CLM.RootZoneNZ      4
 {This key sets the soil layer, and thus the soil depth, that \code{CLM} uses for the seasonal temperature adjustment for all leaf and stem area indices.} 
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.SoiLayer      4
-\end{verbatim}\end{display}
-
-\pfkey{integer}{Solver.CLM.SoilLevels}{10}
-{This key sets the number of soil levels for CLM.} 
-\begin{display}\begin{verbatim}
-pfset Solver.CLM.SoilLevels      4
-\end{verbatim}\end{display}
-
-\pfkey{integer}{Solver.CLM.LakeLevels}{10}
-{This key sets the number of lake levels for CLM.} 
-\begin{display}\begin{verbatim}
-pfset Solver.CLM.LakeLevels      4
 \end{verbatim}\end{display}
 
 %=============================================================================
