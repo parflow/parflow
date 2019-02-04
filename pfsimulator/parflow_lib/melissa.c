@@ -33,8 +33,11 @@ int getVectSize(Vector const * const vec)
 }
 
 void MelissaInit(Vector const * const pressure,
-Vector const * const saturation,
-Vector const * const evap_trans_sum)
+    Vector const * const saturation,
+    Vector const * const evap_trans_sum,
+    Vector const * const evap_trans_sum_kumul,
+    Vector const * const overland_sum,
+    Vector const * const overland_sum_kumul)
 {
   const int rank = amps_Rank(amps_CommWorld);
   const int num = amps_Size(amps_CommWorld);
@@ -47,14 +50,20 @@ Vector const * const evap_trans_sum)
   local_vect_size = getVectSize(saturation);
   melissa_init("saturation", &local_vect_size, &num, &rank, &melissa_simu_id, &comm,
                &coupling);
-  //const int local_vect_size2D = nx * ny;
-  //melissa_init("evap_trans_sum", &local_vect_size2D, &num, &rank, &melissa_simu_id, &comm,
-  //             &coupling);
   local_vect_size = getVectSize(evap_trans_sum);
   melissa_init("evap_trans_sum", &local_vect_size, &num, &rank, &melissa_simu_id, &comm, &coupling);
+  local_vect_size = getVectSize(evap_trans_sum_kumul);
+  melissa_init("evap_trans_sum_kumul", &local_vect_size, &num, &rank, &melissa_simu_id, &comm, &coupling);
+
+  local_vect_size = getVectSize(overland_sum);
+  melissa_init("overland_sum", &local_vect_size, &num, &rank, &melissa_simu_id, &comm, &coupling);
+  local_vect_size = getVectSize(overland_sum_kumul);
+  melissa_init("overland_sum_kumul", &local_vect_size, &num, &rank, &melissa_simu_id, &comm, &coupling);
 
   local_vect_size = 1;
   melissa_init("subsurf_storage", &local_vect_size, &num, &rank, &melissa_simu_id, &comm, &coupling);
+  melissa_init("subsurf_storage_rel", &local_vect_size, &num, &rank, &melissa_simu_id, &comm, &coupling);
+  melissa_init("iwsc", &local_vect_size, &num, &rank, &melissa_simu_id, &comm, &coupling);
 
   D("melissa initialized.");
 }
@@ -113,8 +122,13 @@ int MelissaSend(const SimulationSnapshot * snapshot)
   send_vec("saturation", snapshot->saturation_out);
   //sendIt("evap_trans", snapshot->evap_trans);
   send_vec("evap_trans_sum", snapshot->evap_trans_sum);
+  send_vec("evap_trans_sum_kumul", snapshot->evap_trans_sum_kumul);
+  send_vec("overland_sum", snapshot->overland_sum);
+  send_vec("overland_sum_kumul", snapshot->overland_sum_kumul);
 
   melissa_send("subsurf_storage", &snapshot->subsurf_storage);
+  melissa_send("subsurf_storage_rel", &snapshot->subsurf_storage_rel);
+  melissa_send("iwsc", &snapshot->iwsc);
   return 1;
 }
 

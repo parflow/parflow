@@ -241,6 +241,10 @@ typedef struct {
   Vector *evap_trans_sum;       /* running sum of evaporation and transpiration */
   Vector *overland_sum;
   Vector *ovrl_bc_flx;          /* vector containing outflow at the boundary */
+#ifdef HAVE_MELISSA
+  Vector *evap_trans_sum_kumul;
+  Vector *overland_sum_kumul;
+#endif
   Vector *dz_mult;              /* vector containing dz multplier values for all cells */
   Vector *x_velocity, *y_velocity, *z_velocity; /* vectors to hold velocity face values for pfbs - jjb */
 #ifdef HAVE_CLM
@@ -672,12 +676,25 @@ SetupRichards(PFModule * this_module)
     if (public_xtra->write_silo_overland_sum
         || public_xtra->print_overland_sum
         || public_xtra->write_silopmpio_overland_sum
-        || public_xtra->write_netcdf_overland_sum)
+        || public_xtra->write_netcdf_overland_sum
+        || MELISSA_ACTIVE)
     {
       instance_xtra->overland_sum =
         NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
       InitVectorAll(instance_xtra->overland_sum, 0.0);
     }
+
+#ifdef HAVE_MELISSA
+    if (MELISSA_ACTIVE) {
+      instance_xtra->evap_trans_sum_kumul =
+        NewVectorType(grid, 1, 0, vector_cell_centered_2D);
+      InitVectorAll(instance_xtra->evap_trans_sum_kumul, 0.0);
+
+      instance_xtra->overland_sum_kumul =
+        NewVectorType(grid2d, 1, 0, vector_cell_centered_2D);
+      InitVectorAll(instance_xtra->overland_sum_kumul, 0.0);
+    }
+#endif
 
     instance_xtra->mask = NewVectorType(grid, 1, 1, vector_cell_centered);
     InitVectorAll(instance_xtra->mask, 0.0);
@@ -1098,8 +1115,10 @@ SetupRichards(PFModule * this_module)
     BeginTiming(MelissaTimingIndex);
     if (MELISSA_ACTIVE)
     {
-      MelissaInit(instance_xtra->pressure, instance_xtra->saturation, instance_xtra->evap_trans_sum);
-      // we do not do a melissa send here as evap trans is not yet accessible!
+      MelissaInit(instance_xtra->pressure, instance_xtra->saturation,
+        instance_xtra->evap_trans_sum, instance_xtra->evap_trans_sum_kumul,
+        instance_xtra->overland_sum, instance_xtra->overland_sum_kumul);
+      // we do not do a melissa send here as evap trans and overland is not yet accessible!
     }
     EndTiming(MelissaTimingIndex);
 #endif
@@ -1482,6 +1501,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   double dtmp, err_norm;
   double gravity = ProblemGravity(problem);
 
+
   VectorUpdateCommHandle *handle;
 
   char dt_info;
@@ -1577,6 +1597,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   // Prepare the access to the problem variables
   SimulationSnapshot snapshot;
   snapshot = GetSimulationSnapshot;
+  double old_waterstorage = 0.0;
+  double waterstorage0 = WaterStorage(problem_data, instance_xtra->pressure, instance_xtra->saturation);
 #ifdef HAVE_FLOWVR
   FlowVRInitTranslation(&snapshot);
 #endif
@@ -2738,10 +2760,10 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     /***************************************************************
      * Compute running sum of evap trans for water balance
      **************************************************************/
-    if (public_xtra->write_silo_evaptrans_sum
+    if (public_xtra->write_silo_evaptrans_sum  // TODO: same names! insert underscore!
         || public_xtra->print_evaptrans_sum
         || public_xtra->write_netcdf_evaptrans_sum
-        || MELISSA_ACTIVE)
+        || MELISSA_ACTIVE)  // TODO: use other variable (variable in instance_xtra??)
     {
       EvapTransSum(problem_data, dt, evap_trans_sum, evap_trans);
     }
@@ -2751,7 +2773,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
      **************************************************************/
     if (public_xtra->write_silo_overland_sum
         || public_xtra->print_overland_sum
-        || public_xtra->write_netcdf_overland_sum)
+        || public_xtra->write_netcdf_overland_sum
+        || MELISSA_ACTIVE)
     {
       OverlandSum(problem_data,
                   instance_xtra->pressure,
@@ -2795,11 +2818,23 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       BeginTiming(MelissaTimingIndex);
       if (MELISSA_ACTIVE)
       {
+
+        // Calculate kumuls...
         snapshot.evap_trans = evap_trans;
         snapshot.evap_trans_sum = evap_trans_sum;
-        //double waterstorage = WaterStorage(problem_data, instance_xtra->pressure, instance_xtra->saturation);
-        //snapshot.subsurf_storage = waterstorage;
+        snapshot.overland_sum = overland_sum;
+
+        snapshot.evap_trans_sum_kumul = instance_xtra->evap_trans_sum_kumul;
+        snapshot.overland_sum_kumul = instance_xtra->overland_sum_kumul;
+        PFVSum(evap_trans_sum, snapshot.evap_trans_sum_kumul, snapshot.evap_trans_sum_kumul);
+        PFVSum(overland_sum, snapshot.overland_sum_kumul, snapshot.overland_sum_kumul);
+
+
         snapshot.subsurf_storage = WaterStorage(problem_data, instance_xtra->pressure, instance_xtra->saturation);
+        snapshot.subsurf_storage_rel = waterstorage0 - snapshot.subsurf_storage;
+        snapshot.iwsc = old_waterstorage - snapshot.subsurf_storage;
+
+        old_waterstorage = snapshot.subsurf_storage;
 
         any_file_dumped = MelissaSend(&snapshot);
       }
