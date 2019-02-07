@@ -1,0 +1,6 @@
+#!/bin/bash
+export VISIT=@VISIT_INCLUDE_DIR@/../../..
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$VISIT/lib
+export VISITPLUGINDIR=$VISIT/plugins
+$PARFLOW_DIR/bin/visit-connector
+

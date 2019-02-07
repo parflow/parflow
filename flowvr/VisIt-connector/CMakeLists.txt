@@ -14,4 +14,16 @@ TARGET_LINK_LIBRARIES(visit-connector ${VISIT_LIBRARY_LIBSIM})
 TARGET_LINK_LIBRARIES(visit-connector dl)
 TARGET_LINK_LIBRARIES(visit-connector pfanalyzer)
 
+
 INSTALL(TARGETS visit-connector DESTINATION bin)
+
+configure_file(visit-connector-starter.sh.in ${CMAKE_BINARY_DIR}/visit-connector-starter.sh @ONLY)
+
+INSTALL(FILES ${CMAKE_BINARY_DIR}/visit-connector-starter.sh DESTINATION bin
+	PERMISSIONS OWNER_WRITE
+	OWNER_READ
+	OWNER_EXECUTE
+	GROUP_READ
+	GROUP_EXECUTE
+	WORLD_READ
+	WORLD_EXECUTE)

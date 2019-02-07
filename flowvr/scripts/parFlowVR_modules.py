@@ -175,7 +175,7 @@ class VisIt(Module):
       be connected to ParFlow's in port"""
 
     def __init__(self, name, host=''):
-        Module.__init__(self, name, cmdline = '$PARFLOW_DIR/bin/visit-connector', host=host)
+        Module.__init__(self, name, cmdline = '$PARFLOW_DIR/bin/visit-connector-starter.sh', host=host)
         #Module.__init__(self, name, cmdline = 'xterm -e gdb $PARFLOW_DIR/bin/visit-connector')
         self.addPort('triggerSnap', direction = 'out')
         self.addPort('in', direction = 'in')

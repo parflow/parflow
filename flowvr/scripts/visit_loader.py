@@ -5,7 +5,9 @@
 from visit import *
 import os
 
-Launch()
+if not Launch():
+    print("Cannot start visit!")
+    exit()
 
 prepath = os.environ.get('HOME')+'/.visit/simulations'
 
@@ -28,7 +30,6 @@ def unload():
     DeleteAllPlots()
     CloseDatabase(simname)
 
-
 def reload():
     unload()
     load()
@@ -45,6 +46,8 @@ def h():
     unload()      - delete plots and close sim file
 
     reload()      - use this to refresh view. does unload() and load()
+
+    exit()        - to exit.
 ------------------------------------------------------------------------------
     """)
 
@@ -52,6 +55,3 @@ def h():
 
 load()
 h()
-
-
-
