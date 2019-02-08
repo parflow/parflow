@@ -208,11 +208,14 @@ button.  Once the pull request is done, the ParFlow automated test  system will
 run through all regression tests in the test suite.  The success or failure of 
 this run will be made known to the pull request reviewer.
 
-When a pull request addresses one or more issues that are tracked in the GitHub 
-issue tracker, the final commit message should indicate which issue(s) are being 
-addressed by the pull request.  This practices enables easy access to the reason 
-for the change and any discussion history.  In the commit message use one of the 
-standard GitHub keywords, for example:
+When a pull request addresses one or more issues that are tracked in
+the GitHub issue tracker, the final commit message should indicate
+which issue(s) are being addressed by the pull request.  This
+practices enables easy access to the reason for the change and any
+discussion history.  Limit the first line of the commit message to 72
+characters or less (this formats better when looking at the list of
+commits).  In the commit message use one of the standard GitHub
+keywords, for example:
  
 Closes #issueid
 
@@ -226,7 +229,6 @@ closes #issueid1, closes #issueid2, and closes #issueidN.
 
 For more details on good practices for commit messages, see 
 <https://help.github.com/articles/closing-issues-via-commit-messages/>.
-
 
 ### 3.2. Long-Living Technical Tasks
 
