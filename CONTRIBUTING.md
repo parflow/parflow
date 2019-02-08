@@ -11,7 +11,7 @@ and feel free to propose changes to this document in a pull request.
 
 #### Table Of Contents
 
-[I just have a question, where can I ask it?](#I have a question)
+[I just have a question, where can I ask it?](#i-have-a-question)
 
 [How Can I Contribute?](#how-can-i-contribute)
   * [Reporting Bugs](#reporting-bugs)
@@ -58,16 +58,13 @@ To report Parflow bugs or make change requests, please use the GitHub issue trac
 
 This section guides you through submitting a bug report for
 Parflow. Following these guidelines helps maintainers and the community
-understand your report :pencil:, reproduce the behavior :computer:
-:computer:, and find related reports :mag_right:.
+understand your report, reproduce the behavior, and find related reports.
 
 Before creating bug reports, please check [this
 list](#before-submitting-a-bug-report) as you might find out that you
 don't need to create one. When you are creating a bug report, please
 [include as many details as
-possible](#how-do-i-submit-a-good-bug-report). Fill out [the required
-template](ISSUE_TEMPLATE.md), the information it asks for helps us
-resolve issues faster.
+possible](#how-do-i-submit-a-good-bug-report).
 
 #### Before Submitting A Bug Report
 
@@ -81,10 +78,9 @@ link to the original issue in the body of your new one.
 #### How Do I Submit A (Good) Bug Report?
 
 Bugs are tracked as [GitHub
-issues](https://guides.github.com/features/issues/). Create an issue and provide the following
-information by filling in [the template](ISSUE_TEMPLATE.md).
-
-Explain the problem and include additional details to help maintainers reproduce the problem:
+issues](https://guides.github.com/features/issues/). Create an issue
+and as much detail as possible.  Explain the problem and include
+additional details to help maintainers reproduce the problem:
 
 * **Use a clear and descriptive title** for the issue to identify the problem.
 * **Describe the exact steps which reproduce the problem** in as many details as possible. 
@@ -112,8 +108,8 @@ Include details about your configuration and environment:
 This section guides you through submitting an enhancement suggestion
 for Parflow, including completely new features and minor improvements to
 existing functionality. Following these guidelines helps maintainers
-and the community understand your suggestion :pencil: and find related
-suggestions :mag_right:.
+and the community understand your suggestion and find related
+suggestions.
 
 Before creating enhancement suggestions, please check [this
 list](#before-submitting-an-enhancement-suggestion) as you might find
@@ -124,8 +120,6 @@ possible](#how-do-i-submit-a-good-enhancement-suggestion). Fill in
 imagine you would take if the feature you're requesting existed.
 
 #### Before Submitting An Enhancement Suggestion
-
-* **Perform a [cursory search](https://github.com/parflow/parflow/issues)** to see if the problem has already been reported. If it has **and the issue is still open**, add a comment to the existing issue instead of opening a new one.
 
 * **Perform a [cursory search](https://github.com/parflow/parflow/issues)** to see if the enhancement has already been suggested. If it has, add a comment to the existing issue instead of opening a new one.
 
