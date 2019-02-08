@@ -32,7 +32,9 @@
 *****************************************************************************/
 
 #include "parflow.h"
+#include "pfversion.h"
 #include "amps.h"
+#include "fgetopt.h"  /* getopt replacement since getopt is not available on Windows */
 
 #ifdef HAVE_SAMRAI
 #include "SAMRAI/SAMRAI_config.h"
@@ -60,6 +62,7 @@ using namespace SAMRAI;
 #endif
 
 #include <string.h>
+#include <ctype.h>
 
 int main(int argc, char *argv [])
 {
@@ -115,6 +118,33 @@ int main(int argc, char *argv [])
     char *restart_read_dirname = NULL;
     int is_from_restart = FALSE;
     int restore_num = 0;
+    int c;
+    int index;
+
+    opterr = 0;
+    while ((c = getopt (argc, argv, "v")) != -1)
+    switch (c)
+      {
+      case 'v':
+	PrintVersionInfo(stdout);
+	return 0;
+        break;
+      case '?':
+	if (isprint (optopt))
+          fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+        else
+          fprintf (stderr,
+                   "Unknown option character `\\x%x'.\n",
+                   optopt);
+        return 1;
+      default:
+        abort ();
+      }
+
+    for (index = optind; index < argc; index++)
+      printf ("Non-option argument %s\n", argv[index]);
+
+    int non_opt_argc = argc - index;
 
     if ((argc != 2) && (argc != 4))
     {
