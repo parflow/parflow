@@ -49,69 +49,44 @@ AVS_HELP_PATH=$PARFLOW_DIR/avs/help
 \section{Writing Manuals}
 \label{Writing Manuals}
 
-The \parflow{} manuals are written in LaTeX and converted to HTML
-(via the package {\em LaTeX2HTML}) to be used online.
-The source for these manuals is located in subdirectories of the
-directory \file{\$PARFLOW_SRC/docs}.
-Various style files used to build the \parflow{} manuals are located
-in the directory \file{\$PARFLOW_SRC/docs/lib}.
-Files ending in \code{.sty} are used in LaTeX to create printed
-versions of the manuals, and files ending in \code{.perl} (these files
-are perl scripts) are used by LaTeX2HTML to create online versions
-of the manuals.
-The files \file{html.sty} and \file{html.perl}
-define various commands that are part of the LaTeX2HTML package.
-With these commands, one can do things such as add hyperlinks to
-the online document which are ignored by LaTeX when creating
-the printed document.
-The files \file{parflow.sty} and \file{parflow.perl}
-define various commands and environments to be used by \parflow{}
-developers when writing documentation.
-They are discussed more fully in \S~\ref{ParFlow Style Files}.
+The \parflow{} manuals are written in LaTeX and converted to PDF for
+easier viewing.  The source for these manuals is located in
+subdirectories of the directory \file{\$PARFLOW_SRC/docs}.  Various
+style files used to build the \parflow{} manuals are located in the
+directory \file{\$PARFLOW_SRC/docs/}.  The files \file{html.sty}
+define various commands that are part of the LaTeX2HTML package.  With
+these commands, one can do things such as add hyperlinks to the online
+document which are ignored by LaTeX when creating the printed
+document.  The file \file{parflow.sty} define various commands and
+environments to be used by \parflow{} developers when writing
+documentation.  They are discussed more fully in \S~\ref{ParFlow Style
+  Files}.  The CMakeText.txt file contains the CMake rules used to
+build the documenation when LaTex is specified during the CMake
+configure.
 
 To write and install \parflow{} manuals, do the following:
 \begin{enumerate}
 
 \item
-Checkout and lock the manual files before editing.
-
-\item
 Modify or add new \file{.tex} files to the document.
 Note: make sure that new files are added to the
-\file{Makefile}.
+\file{CMakeLists.txt}.
+Note that the CMake LaTex build rules copy the files from the source docs directory to 
+the build directory.   Make sure to edit the files in the source directory.
 
 \item
-Build the online and printed versions, by typing
+Build the online and printed versions, by running
 \begin{display}\begin{verbatim}
-build
+make
 \end{verbatim}\end{display}
-Note: the online version may take some time to build, so it may
-be advisable to invoke the \file{Makefile} directly to build
-just the printed version first.
+in the directory where CMake was configured.
 
 \item
-Check the printed version by doing either of the following:
+Check the printed version by looking at the generated PDF file.
 \begin{display}\begin{verbatim}
-xdvi manual
-ghostview manual.ps
+<pdf-viewer> user_manual.pdf
 \end{verbatim}\end{display}
-Check the online version by doing
-\begin{display}\begin{verbatim}
-netscape manual/manual.html
-\end{verbatim}\end{display}
-Note: when debugging the online version, it is a good idea to do a
-\kbd{build veryclean} between builds; there are times when 
-LaTeX2HTML will hang if the directory has not been cleaned.
-
-\item
-If both the online and printed versions check out, type
-\begin{display}\begin{verbatim}
-build install
-\end{verbatim}\end{display}
-This will first insure that both documents are built, then copy them
-into the appropriate subdirectories of \file{\$PARFLOW_HELP}.
-The install also changes the group and permissions on the files so
-that others may read them using \code{pfhelp}.
+Use any PDF viewer installed, {\em evince} and {\em acroread} are two common applications on Linux.
 
 \item
 Finally, use \code{cvs commit} to check the document source back
