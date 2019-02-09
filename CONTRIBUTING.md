@@ -1,6 +1,8 @@
 # Contributing to ParFlow
 
-This file is heavily inspired by Atom's CONTRIBUTING.md file.
+**This is a DRAFT but should hopefully provide some helpful pointers**
+
+This file is inspired by Atom's CONTRIBUTING.md file.
 
 :+1::tada: First off, thanks for taking the time to contribute! :tada::+1:
 
@@ -17,7 +19,6 @@ and feel free to propose changes to this document in a pull request.
   * [Reporting Bugs](#reporting-bugs)
   * [Suggesting Enhancements](#suggesting-enhancements)
   * [Your First Code Contribution](#your-first-code-contribution)
-  * [Pull Requests](#pull-requests)
 
 [What should I know before I get started?](#what-should-i-know-before-i-get-started)
 
@@ -78,7 +79,7 @@ additional details to help maintainers reproduce the problem:
 * **Describe the behavior you observed after following the steps** and point out what exactly is the problem with that behavior.
 * **Explain which behavior you expected to see instead and why.**
 * **If you're reporting that Parflow crashed**, include a stack trace if available. 
-* **If you're reporting that CMake doesn't configure or Parflow doesn't compile**, include the output from the CMake configure and the compiler output.  "It doesn't compile" is not enough information.
+* **If you're reporting that CMake doesn't configure or Parflow doesn't compile**, include the output from the CMake configure and the compiler output.  "It doesn't compile" is not enough information for the team to help determine what has gone wrong.
 * **Large files** can be attached to the issue via a [file attachment](https://help.github.com/articles/file-attachments-on-issues-and-pull-requests/), or put it in a [gist](https://gist.github.com/) and provide link to that gist.
 
 Provide more context by answering these questions:
@@ -105,9 +106,7 @@ Before creating enhancement suggestions, please check [this
 list](#before-submitting-an-enhancement-suggestion) as you might find
 out that you don't need to create one. When you are creating an
 enhancement suggestion, please [include as many details as
-possible](#how-do-i-submit-a-good-enhancement-suggestion). Fill in
-[the template](ISSUE_TEMPLATE.md), including the steps that you
-imagine you would take if the feature you're requesting existed.
+possible](#how-do-i-submit-a-good-enhancement-suggestion).
 
 #### Before Submitting An Enhancement Suggestion
 
@@ -134,7 +133,7 @@ library so it can be embedded inside other applications; the code for
 the library is in in the pfsimulator/parflow_lib directory.  For
 stand-along execution an executable ('main') is also supplied; the
 code for the stand-alone application is in pfsimulator/parflow_exe.
-Parflow can be linked to CLM; the code for for CLM is in
+Parflow can optionally be linked with CLM; the code for for CLM is in
 pfsimulator/clm.  Parflow has an embedded a copy of KINSOL which is in
 the pfsimulator/kinsol directory.
 
