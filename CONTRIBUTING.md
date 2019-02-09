@@ -21,16 +21,6 @@ and feel free to propose changes to this document in a pull request.
 
 [What should I know before I get started?](#what-should-i-know-before-i-get-started)
 
-[Styleguides](#styleguides)
-  * [Git Commit Messages](#git-commit-messages)
-  * [JavaScript Styleguide](#javascript-styleguide)
-  * [CoffeeScript Styleguide](#coffeescript-styleguide)
-  * [Specs Styleguide](#specs-styleguide)
-  * [Documentation Styleguide](#documentation-styleguide)
-
-[Additional Notes](#additional-notes)
-  * [Issue and Pull Request Labels](#issue-and-pull-request-labels)
-
 ## I have a question
 
 > **Note:** Please don't file an issue to ask a question. You'll get
