@@ -1,51 +1,49 @@
-			Parflow/SAMRAI Notes
+# Parflow with SAMRAI Notes
 
-WARNING!  The SAMRAI version of Parflow is still beta and there may be 
-issues with it.
+**WARNING!** The SAMRAI version of Parflow is still beta and there may
+be issues with it.
 
 The Paflow/SAMRAI version may use significantly less memory for some
 problems due to a more flexible computation domain.  In Parflow the
-computation domain is specified as a single parallel piped in the TCL
+computation domain is specified as a single parallelepiped in the TCL
 input script.  Parflow/SAMRAI will also accept this input but in
 addition supports specifying the computation domain as a set of
-subgrides.  You may have more than one subgrid per processor.  This
-enables the computation domain to more closely match the active
-region.
+parallelepiped subgrids.  You may have more than one subgrid per
+processor.  This enables the computation domain to more closely match
+the active region of the problem.
 
 Note for CLM and WRF runs only a single subgrid is allowed per
 processor since CLM and WRF only decompose problems in X and Y.  Also
 the subgrids will need to match the decomposition that WRF is using in
 X and Y.
 
-=============================================================================
-Configuration
-=============================================================================
 
-Use of SAMRAI is an optional specified in the configure process using the
+## Configuration
 
-		     --with-samrai=<SAMRAI_DIR>
+Building with SAMRAI is an optional specified in the configure process
+using the '--with-samrai=<SAMRAI_DIR>' option.  Where <SAMRAI_DIR> is
+the installed location of SAMRAI; should match the
+'--prefix=<SAMRAI_DIR>' specified during the SAMRAI configure.
 
-Where <SAMRAI_DIR> is the installed location of SAMRAI; what was used
-during the SAMRAI configure for the --prefix=<SAMRAI_DIR> option.
+The same compilers should be used to build Parflow and SAMRAI to avoid
+compilation issues.  The same HDF and other options in both the SAMRAI
+and Parflow configures should be used to avoid library incompatibility
+issues.
 
-You should use the same HDF and other options in both the SAMRAI and
-Parflow configures to avoid library incompatiblity issues.  Using the
-same compilers is also recommended.
-
-You also need to compile Parflow/SAMRAI with a C++ compiler rather
-than the C compiler.  This can be done by setting the CC variable used
-to specify the compiler to Parflow.
+Parflow should be built with the C++ compiler when building for use
+with SAMRAI.  This can be done by setting the CC variable used to
+specify the compiler to Parflow.
 
 So a minimal configure which includes SAMRAI would be:
 
+```shell
 CC=g++ ./configure --with-samrai=<SAMRAI_DIR>
+```
 
 If you fail to use a C++ compiler with the SAMRAI option Parflow will
 not compile.
 
-=============================================================================
-Running Parflow with SAMRAI
-=============================================================================
+## Running Parflow with SAMRAI
 
 You can run any existing input script with Parflow/SAMRAI; no changes
 are necessary.  This should produce the same output as the non-SAMRAI
@@ -56,9 +54,7 @@ specification is more complicated.  Each subgrid must be specified.
 Second you must use pfdistondomain instead of pfdist to distribute
 input files.
 
-=============================================================================
-File distribution
-=============================================================================
+### File distribution
 
 All of the grid based input files to Parflow must be specified on the
 SAMRAI grid.  The "pfdistondomain" command distributes a file onto a
@@ -67,13 +63,12 @@ fields etc will need to be distributed using this utility.  Basically
 if you used pfdist on something before, you must use pfdistondomain
 with the SAMRAI version.
 
-=============================================================================
-Input file changes for running with a SAMRAI grid
-=============================================================================
+### Input file changes for running with a SAMRAI grid
 
 This simplest example of specifying a SAMRAI grid is a single subgrid
 run on a single processor:
 
+```tcl
 	pfset ProcessGrid.NumSubgrids 1
 	pfset ProcessGrid.0.P 0
 	pfset ProcessGrid.0.IX 0
@@ -83,6 +78,7 @@ run on a single processor:
 	pfset ProcessGrid.0.NX 10
 	pfset ProcessGrid.0.NY 10
 	pfset ProcessGrid.0.NZ 8
+```
 
 NumSubgrids is the total number of subgrids in the specification
 (across all processors).  For each subgrid you must specify the
@@ -92,6 +88,7 @@ each dimension.
 To run the previous problem on 2 processors the input
 might look like:
 
+```tcl
 	pfset ProcessGrid.NumSubgrids 2
 	pfset ProcessGrid.0.P 0
 	pfset ProcessGrid.0.IX 0
@@ -108,13 +105,14 @@ might look like:
 	pfset ProcessGrid.1.NX 10
 	pfset ProcessGrid.1.NY 5
 	pfset ProcessGrid.1.NZ 8
+```
 
 Which specifies a split of the domain along the Y axis at Y=5.
 
 See the test script "samrai.tcl" for some examples on different
 processor topologies and using more than one subgrid per processor.
 
-If your manually building the grid for a CLM run you need to specify
+If you are manually building the grid for a CLM run you need to specify
 subgrid extents to include overlap for the active region ghost layer.
 Basically you need to make sure that the IZ and NZ values are such
 that they cover the active domain for each processor plus the active
@@ -128,7 +126,7 @@ neighbors.
 Manually building this grid is obviously less than ideal so some
 automated support is provided to help build a computation grid that
 follows the terrain.  Emphasis on "some"; we realize this is a
-somewhat anoying procedure to have to do and hopefully we can automate
+somewhat annoying procedure to have to do and hopefully we can automate
 this in the future.
 
 The automated approach first requires running Paflow using the
@@ -159,6 +157,7 @@ Note that if you change the processor topology you need to rerun this
 script as the subgrids are processor dependent but you do not need to
 recompute the mask file.
 
+```tcl
 set P  [lindex $argv 0]
 set Q  [lindex $argv 1]
 set R  [lindex $argv 2]
@@ -196,7 +195,4 @@ set out [pfprintdomain $domain]
 set grid_file [open samrai_grid.tcl w]
 puts $grid_file $out
 close $grid_file
-
-
-
-
+```
