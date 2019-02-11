@@ -71,7 +71,7 @@ void            PrintSimpleA(
   fprintf(fp, "%d %d %d\n", nx, ny, nz);
 
   ptr = DataboxCoeffs(v);
-  for (m = nx * ny * nz; m--; )
+  for (m = nx * ny * nz; m--;)
     fprintf(fp, "% e\n", *ptr++);
 }
 
@@ -100,7 +100,7 @@ void            PrintSimpleA2D(
   fprintf(fp, "%d %d %d\n", nx, ny, nz);
 
   ptr = DataboxCoeffs(v);
-  for (m = nx * ny * nz; m--; )
+  for (m = nx * ny * nz; m--;)
     fprintf(fp, "% e\n", *ptr++);
 }
 
@@ -278,7 +278,7 @@ Databox         *v;
       for (z = 0; z < DataboxNz(v); z++)
       {
         convert_ptr = (float32*)data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *convert_ptr++ = *double_ptr++;
 
         start[0] = z;
@@ -299,7 +299,7 @@ Databox         *v;
       for (z = 0; z < DataboxNz(v); z++)
       {
         convert_ptr = (float64*)data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *convert_ptr++ = *double_ptr++;
 
         start[0] = z;
@@ -320,7 +320,7 @@ Databox         *v;
       for (z = 0; z < DataboxNz(v); z++)
       {
         convert_ptr = (int8*)data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *convert_ptr++ = *double_ptr++;
 
         start[0] = z;
@@ -341,7 +341,7 @@ Databox         *v;
       for (z = 0; z < DataboxNz(v); z++)
       {
         convert_ptr = (uint8*)data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *convert_ptr++ = *double_ptr++;
 
         start[0] = z;
@@ -362,7 +362,7 @@ Databox         *v;
       for (z = 0; z < DataboxNz(v); z++)
       {
         convert_ptr = (int16*)data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *convert_ptr++ = *double_ptr++;
 
         start[0] = z;
@@ -383,7 +383,7 @@ Databox         *v;
       for (z = 0; z < DataboxNz(v); z++)
       {
         convert_ptr = (uint16*)data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *convert_ptr++ = *double_ptr++;
 
         start[0] = z;
@@ -404,7 +404,7 @@ Databox         *v;
       for (z = 0; z < DataboxNz(v); z++)
       {
         convert_ptr = (int32*)data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *convert_ptr++ = *double_ptr++;
 
         start[0] = z;
@@ -425,7 +425,7 @@ Databox         *v;
       for (z = 0; z < DataboxNz(v); z++)
       {
         convert_ptr = (uint32*)data;
-        for (i = dim[1] * dim[2]; i--; )
+        for (i = dim[1] * dim[2]; i--;)
           *convert_ptr++ = *double_ptr++;
 
         start[0] = z;

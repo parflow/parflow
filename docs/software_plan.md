@@ -22,7 +22,7 @@ enable detailed simulations for use in the assessment and management of groundwa
 and surface water, to investigate system physics and feedbacks and to understand 
 interactions at a range of scales.  This is a living document, and its markdown 
 source is located in the docs directory of the ParFlow github repo: 
-<https://github.com/parflow/parflow/tree/master/pftools/docs/software_plan.md>.
+<https://github.com/parflow/parflow/tree/master/docs/software_plan.md>.
 
 ParFlow includes fully-integrated overland flow, the ability to simulate complex 
 topography, geology and heterogeneity and coupled land-surface processes including 
@@ -56,7 +56,7 @@ approach for implementing it must be documented.  These Requirements and Design
 documents will be stored in the github repository so that all team members will 
 be able to access them and contribute as appropriate.  The Requirments and Design 
 documents are maintained in the ParFlow repository at 
-<https://github.com/parflow/parflow/tree/master/pftools/docs/design_documents>.
+<https://github.com/parflow/parflow/tree/master/docs/design_documents>.
 
 The git issue tracker and pull request model will be used to facilitate and 
 record discussions on these documents and the proposed changes.  Once discussion 
@@ -75,7 +75,7 @@ target the proposed new capability must also be described in the R&D document.
 The Requirements and Design Document is viewed as a living document that 
 evolves with the team’s understanding of its tasks and needs. 
 A template for teh R&D document is located at:
-<https://github.com/parflow/parflow/blob/master/pftools/docs/design_documents/0000-template.md>.
+<https://github.com/parflow/parflow/blob/master/pftools/design_documents/0000-template.md>.
 
 A requirement should be expressed succinctly in the form of some definite 
 statement, and some set of victory conditions that specify when a requirement 
@@ -208,11 +208,14 @@ button.  Once the pull request is done, the ParFlow automated test  system will
 run through all regression tests in the test suite.  The success or failure of 
 this run will be made known to the pull request reviewer.
 
-When a pull request addresses one or more issues that are tracked in the GitHub 
-issue tracker, the final commit message should indicate which issue(s) are being 
-addressed by the pull request.  This practices enables easy access to the reason 
-for the change and any discussion history.  In the commit message use one of the 
-standard GitHub keywords, for example:
+When a pull request addresses one or more issues that are tracked in
+the GitHub issue tracker, the final commit message should indicate
+which issue(s) are being addressed by the pull request.  This
+practices enables easy access to the reason for the change and any
+discussion history.  Limit the first line of the commit message to 72
+characters or less (this formats better when looking at the list of
+commits).  In the commit message use one of the standard GitHub
+keywords, for example:
  
 Closes #issueid
 
@@ -226,7 +229,6 @@ closes #issueid1, closes #issueid2, and closes #issueidN.
 
 For more details on good practices for commit messages, see 
 <https://help.github.com/articles/closing-issues-via-commit-messages/>.
-
 
 ### 3.2. Long-Living Technical Tasks
 
@@ -280,7 +282,7 @@ The recommended format is:
 
 ParFlow also includes three main manuals for users and developers.  These 
 manuals are located in the “pftools” directory under a docs 
-subdirectory, <https://github.com/parflow/parflow/tree/master/pftools/docs>.  
+subdirectory, <https://github.com/parflow/parflow/tree/master/docs>.  
 All manuals are written in the LaTex word processing language.  **_It is expected 
 that any new capability or feature be documented in these manuals as appropriate._**
 The most critical manual is the ParFlow User Manual, which describes all input and 

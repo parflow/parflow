@@ -1,6 +1,6 @@
 # File: UseLATEX.cmake
 # CMAKE commands to actually use the LaTeX compiler
-# Version: 2.4.4
+# Version: 2.4.9
 # Author: Kenneth Moreland <kmorel@sandia.gov>
 #
 # Copyright 2004, 2015 Sandia Corporation.
@@ -114,6 +114,17 @@
 #       in the multibib package.
 #
 # History:
+#
+# 2.4.9 Use biblatex.cfg file if it exists and the USE_BIBLATEX option is ON.
+#
+# 2.4.8 Fix synctex issue with absolute paths not being converted.
+#
+# 2.4.7 Fix some issues with spaces in the path of the working directory where
+#       LaTeX is executed.
+#
+# 2.4.6 Fix parse issue with older versions of CMake.
+#
+# 2.4.5 Fix issues with files and paths containing spaces.
 #
 # 2.4.4 Improve error reporting message when LaTeX fails.
 #
@@ -437,14 +448,31 @@ function(latex_execute_latex)
   endif()
 
   set(full_command_original "${LATEX_FULL_COMMAND}")
-  separate_arguments(LATEX_FULL_COMMAND)
+
+  # Chose the native method for parsing command arguments. Newer versions of
+  # CMake allow you to just use NATIVE_COMMAND.
+  if (CMAKE_VERSION VERSION_GREATER 3.8)
+    set(separate_arguments_mode NATIVE_COMMAND)
+  else()
+    if (WIN32)
+      set(separate_arguments_mode WINDOWS_COMMAND)
+    else()
+      set(separate_arguments_mode UNIX_COMMAND)
+    endif()
+  endif()
+
+  # Preps variables for use in execute_process.
+  # Even though we expect LATEX_WORKING_DIRECTORY to have a single "argument,"
+  # we also want to make sure that we strip out any escape characters that can
+  # foul up the WORKING_DIRECTORY argument.
+  separate_arguments(LATEX_FULL_COMMAND UNIX_COMMAND "${LATEX_FULL_COMMAND}")
+  separate_arguments(LATEX_WORKING_DIRECTORY_SEP UNIX_COMMAND "${LATEX_WORKING_DIRECTORY}")
+
   execute_process(
     COMMAND ${LATEX_FULL_COMMAND}
-    WORKING_DIRECTORY ${LATEX_WORKING_DIRECTORY}
+    WORKING_DIRECTORY "${LATEX_WORKING_DIRECTORY_SEP}"
     RESULT_VARIABLE execute_result
     )
-
-  message("${full_command_original}")
 
   if(NOT ${execute_result} EQUAL 0)
     # LaTeX tends to write a file when a failure happens. Delete that file so
@@ -454,7 +482,7 @@ function(latex_execute_latex)
     message("\n\nLaTeX command failed")
     message("${full_command_original}")
     message("Log output:")
-    file(READ ${LATEX_WORKING_DIRECTORY}/${LATEX_TARGET}.log log_output)
+    file(READ "${LATEX_WORKING_DIRECTORY}/${LATEX_TARGET}.log" log_output)
     message("${log_output}")
     message(FATAL_ERROR
       "Successfully executed LaTeX, but LaTeX returned an error.")
@@ -656,6 +684,8 @@ function(latex_correct_synctex)
   if(NOT LATEX_BINARY_DIRECTORY)
     message(SEND_ERROR "Need to define LATEX_BINARY_DIRECTORY")
   endif()
+  message("${LATEX_BINARY_DIRECTORY}")
+  message("${LATEX_SOURCE_DIRECTORY}")
 
   set(synctex_file ${LATEX_BINARY_DIRECTORY}/${LATEX_TARGET}.synctex)
   set(synctex_file_gz ${synctex_file}.gz)
@@ -673,13 +703,24 @@ function(latex_correct_synctex)
     message("Reading synctex file.")
     file(READ ${synctex_file} synctex_data)
 
-    message("Replacing relative with absolute paths.")
-    string(REGEX REPLACE
-      "(Input:[0-9]+:)([^/\n][^\n]*)"
-      "\\1${LATEX_SOURCE_DIRECTORY}/\\2"
-      synctex_data
-      "${synctex_data}"
-      )
+    message("Replacing output paths with input paths.")
+    foreach(extension tex cls bst clo sty ist fd)
+      # Relative paths
+      string(REGEX REPLACE
+        "(Input:[0-9]+:)([^/\n][^\n]\\.${extension}*)"
+        "\\1${LATEX_SOURCE_DIRECTORY}/\\2"
+        synctex_data
+        "${synctex_data}"
+        )
+
+      # Absolute paths
+      string(REGEX REPLACE
+        "(Input:[0-9]+:)${LATEX_BINARY_DIRECTORY}([^\n]*\\.${extension})"
+        "\\1${LATEX_SOURCE_DIRECTORY}\\2"
+        synctex_data
+        "${synctex_data}"
+        )
+    endforeach(extension)
 
     message("Writing synctex file.")
     file(WRITE ${synctex_file} "${synctex_data}")
@@ -1141,10 +1182,15 @@ function(latex_convert_image
 
   # Check input filename for potential problems with LaTeX.
   latex_get_filename_component(name "${input_file}" NAME_WE)
-  if(name MATCHES ".*\\..*")
-    string(REPLACE "." "-" suggested_name "${name}")
-    set(suggested_name "${suggested_name}${extension}")
-    message(WARNING "Some LaTeX distributions have problems with image file names with multiple extensions.  Consider changing ${name}${extension} to something like ${suggested_name}.")
+  set(suggested_name "${name}")
+  if(suggested_name MATCHES ".*\\..*")
+    string(REPLACE "." "-" suggested_name "${suggested_name}")
+  endif()
+  if(suggested_name MATCHES ".* .*")
+    string(REPLACE " " "-" suggested_name "${suggested_name}")
+  endif()
+  if(NOT suggested_name STREQUAL name)
+    message(WARNING "Some LaTeX distributions have problems with image file names with multiple extensions or spaces. Consider changing ${name}${extension} to something like ${suggested_name}${extension}.")
   endif()
 
   string(REGEX REPLACE "\\.[^.]*\$" ${output_extension} output_file
@@ -1247,45 +1293,32 @@ function(latex_copy_globbed_files pattern dest)
 endfunction(latex_copy_globbed_files)
 
 function(latex_copy_input_file file)
-
-  message("Copy ${file}")
-  
   latex_get_output_path(output_dir)
 
-  # Copy files from directories into current
-  latex_get_filename_component(output_file ${file} NAME)
-
-  message("output_file=${output_file}")
-
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${file})
-
-    message("exists ${file}")
-
     latex_get_filename_component(path ${file} PATH)
     file(MAKE_DIRECTORY ${output_dir}/${path})
 
     latex_list_contains(use_config ${file} ${LATEX_CONFIGURE})
     if(use_config)
-      message("use_config ${file}")
       configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${file}
-        ${output_dir}/${output_file}
+        ${output_dir}/${file}
         @ONLY
         )
-      add_custom_command(OUTPUT ${output_dir}/${output_file}
+      add_custom_command(OUTPUT ${output_dir}/${file}
         COMMAND ${CMAKE_COMMAND}
         ARGS ${CMAKE_BINARY_DIR}
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${file}
         )
     else()
-      message("copy ${file} ${CMAKE_CURRENT_SOURCE_DIR}/${file} ${output_dir}/${output_file}")
-      add_custom_command(OUTPUT ${output_dir}/${output_file}
+      add_custom_command(OUTPUT ${output_dir}/${file}
         COMMAND ${CMAKE_COMMAND}
-        ARGS -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${file} ${output_dir}/${output_file}
+        ARGS -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${file} ${output_dir}/${file}
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${file}
         )
     endif()
   else()
-    if(EXISTS ${output_dir}/${output_file})
+    if(EXISTS ${output_dir}/${file})
       # Special case: output exists but input does not.  Assume that it was
       # created elsewhere and skip the input file copy.
     else()
@@ -1378,6 +1411,8 @@ function(parse_add_latex_arguments command latex_main_input)
 endfunction(parse_add_latex_arguments)
 
 function(add_latex_targets_internal)
+  latex_get_output_path(output_dir)
+
   if(LATEX_USE_SYNCTEX)
     set(synctex_flags ${LATEX_SYNCTEX_ARGS})
   else()
@@ -1419,7 +1454,9 @@ function(add_latex_targets_internal)
   endif()
 
   if(NOT LATEX_TARGET_NAME)
-    set(LATEX_TARGET_NAME ${LATEX_TARGET})
+    # Use the main filename (minus the .tex) as the target name. Remove any
+    # spaces since CMake cannot have spaces in its target names.
+    string(REPLACE " " "_" LATEX_TARGET_NAME ${LATEX_TARGET})
   endif()
 
   # Some LaTeX commands may need to be modified (or may not work) if the main
@@ -1569,6 +1606,12 @@ function(add_latex_targets_internal)
       endif()
       set(bib_compiler ${BIBER_COMPILER})
       set(bib_compiler_flags ${BIBER_COMPILER_ARGS})
+
+      if (LATEX_USE_BIBLATEX_CONFIG)
+        list(APPEND auxiliary_clean_files ${output_dir}/biblatex.cfg)
+        list(APPEND make_dvi_depends ${output_dir}/biblatex.cfg)
+        list(APPEND make_pdf_depends ${output_dir}/biblatex.cfg)
+      endif()
     else()
       set(bib_compiler ${BIBTEX_COMPILER})
       set(bib_compiler_flags ${BIBTEX_COMPILER_ARGS})
@@ -1860,6 +1903,11 @@ function(add_latex_document latex_main_input)
     foreach (bib_file ${LATEX_BIBFILES})
       latex_copy_input_file(${bib_file})
     endforeach (bib_file)
+
+    if (LATEX_USE_BIBLATEX AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/biblatex.cfg)
+      latex_copy_input_file(biblatex.cfg)
+      set(LATEX_USE_BIBLATEX_CONFIG TRUE)
+    endif()
 
     foreach (input ${LATEX_INPUTS})
       latex_copy_input_file(${input})

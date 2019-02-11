@@ -951,7 +951,7 @@ DEPENDS_51:=\
 	nl_function_eval.h parflow.h parflow_proto.h parflow_proto_f.h	\
 	pf_module.h problem.h problem_bc.h problem_eval.h region.h	\
 	solver.h time_cycle_data.h timing.h vector.h                    \
-	$(ABS_TOP_BUILDDIR)/include/version.h well.h
+	$(ABS_TOP_BUILDDIR)/include/pfversion.h well.h
 
 ifeq (${DEPENDS_ON_TEMPLATE_IMPLEMENTATION},yes)
 DEPENDS_51 +=\

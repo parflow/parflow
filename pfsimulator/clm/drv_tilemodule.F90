@@ -20,7 +20,7 @@ module drv_tilemodule
 !=========================================================================
 
   use precision
-  use clm_varpar, only : nlevsoi
+  use clm_varpar, only : max_nlevsoi
   implicit none
 
   public tiledec
@@ -34,8 +34,8 @@ module drv_tilemodule
      integer  :: pveg          ! Predominance of vegetation clas in grid
      real(r8) :: fgrd          ! Fraction of grid covered by a given veg type (%/100)
 
-     real(r8) :: sand(nlevsoi) ! Percent sand in soil (vertically average)
-     real(r8) :: clay(nlevsoi) ! Percent clay in soil (vertically average)
+     real(r8) :: sand(max_nlevsoi) ! Percent sand in soil (vertically average)
+     real(r8) :: clay(max_nlevsoi) ! Percent clay in soil (vertically average)
 
      real(r8) :: scalez        ! Soil layer thickness discretization (m)
      real(r8) :: hkdepth       ! length scale for Ksat decrease(m)
