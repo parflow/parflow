@@ -10,15 +10,9 @@ include $(PARFLOW_DIR)/config/Makefile.config
 
 default: check
 
-TESTS := well_01.tcl well_00.tcl test_X.tcl test_XYZTPlus1.tcl test_XPlusYPlusZ.tcl test_X3Y2PlusSinXYPlus1.tcl 
+TESTS := bc.00.tcl cond.tcl default_richards.tcl default_single.tcl forsyth2.tcl forsyth5.tcl impes.internalbc.tcl impes.plinear.tcl impes.simple.tcl llnl.tcl llnl-perm.tcl richards.plinear.tcl test_X3Y2PlusSinXYPlus1.tcl test_XPlusYPlusZ.tcl test_X.tcl test_XYZTPlus1.tcl well_00.tcl well_01.tcl
 
-#llnl-perm.tcl
-
-# bc.00.tcl cond.tcl default_richards.tcl default_single.tcl forsyth2.tcl forsyth5.tcl impes.internalbc.tcl impes.plinear.tcl impes.simple.tcl llnl.tcl richards.plinear.tcl
-
-
-
-CHECK_TARGETS=check_sequential check_parallel check_samrai
+CHECK_TARGETS=check_sequential 
 
 test: check
 
@@ -72,57 +66,6 @@ check_sequential:
 		tclsh $$i 1 1 1; \
 	done
 
-check_parallel:
-	@-for i in $(PARALLEL_3DTOPO_TESTS); \
-	do \
-		for processor_topology in "1 1 2" "1 2 1" "2 1 1" "2 2 2" "3 3 3" "1 1 4" "1 4 1" "4 1 1"; \
-		do \
-		        make --no-print-directory testclean; \
-			echo "*****************************************************************************"; \
-			echo "Running $$i on $$processor_topology"; \
-			tclsh $$i $$processor_topology; \
-		done \
-	done
-	@-for i in $(PARALLEL_2DTOPO_TESTS); \
-	do \
-		for processor_topology in "1 2 1" "2 1 1" "1 4 1" "4 1 1"; \
-		do \
-		        make --no-print-directory testclean; \
-			echo "*****************************************************************************"; \
-			echo "Running $$i on $$processor_topology"; \
-			tclsh $$i $$processor_topology; \
-		done \
-	done
-
-
-check_samrai:
-	 @-for i in $(SAMRAI_TESTS); \
-	 do \
-		for processor_topology in "2 2 1" "2 2 1" "2 2 1" "2 2 1" "2 2 1" "2 2 1" "2 2 1"; \
-	 	do \
-			make --no-print-directory testclean; \
-			echo "*****************************************************************************"; \
-			echo "Running $$i on $$processor_topology"; \
-			tclsh $$i $$processor_topology; \
-		done; \
-		for processor_topology in "1 1 1" "1 2 1" "2 1 1" "2 2 1" "3 3 1" "1 4 1" "4 1 1"; \
-	 	do \
-			make --no-print-directory testclean; \
-			echo "*****************************************************************************"; \
-			echo "Running $$i on $$processor_topology"; \
-			tclsh $$i $$processor_topology; \
-		done \
-	done
-	@-for i in $(SAMRAI_TESTS_WITH_PATCH_COUNT); \
-	do \
-		for processor_topology in "1 1 1 1" "1 1 1 2" "1 1 1 3" "2 1 1 2" "1 2 1 2" "1 1 2 2" "2 1 1 3" "1 2 1 3" "1 1 2 3" "2 1 1 4" "1 2 1 4" "1 1 2 4" ; \
-		do \
-		        make --no-print-directory testclean; \
-			echo "*****************************************************************************"; \
-			echo "Running $$i on $$processor_topology"; \
-			tclsh $$i $$processor_topology; \
-		done \
-	done
 
 
 clean: testclean
