@@ -10,7 +10,7 @@ include $(PARFLOW_DIR)/config/Makefile.config
 
 default: check
 
-TESTS := test_X3Y2PlusSinXYPlus1.tcl 
+TESTS := test_XPlusYPlusZ.tcl test_X3Y2PlusSinXYPlus1.tcl 
 
 #llnl-perm.tcl
 
