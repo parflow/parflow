@@ -407,10 +407,9 @@ pfset Geom.domain.ICTemperature.RefPatch                   bottom
 #-----------------------------------------------------------------------------
 # Phase sources:
 #-----------------------------------------------------------------------------
-pfset PhaseSources.Type                         Constant
-pfset PhaseSources.GeomNames                   "domain"
-pfset PhaseSources.Geom.domain.FluxValue               0.0
-pfset PhaseSources.Geom.domain.TemperatureValue        0.0
+pfset PhaseSources.water.Type                         Constant
+pfset PhaseSources.water.GeomNames                   "domain"
+pfset PhaseSources.water.Geom.domain.Value            0.0
 
 #-----------------------------------------------------------------------------
 # Temperature sources:
@@ -433,45 +432,58 @@ pfset Solver                                             Richards
 pfset Solver.MaxIter                                     50000 
 pfset Solver.Nonlinear.PrintFlag                         HighVerbosity
 
-# pass 
 pfset Solver.Nonlinear.MaxIter                           500
 
 pfset Solver.Nonlinear.ResidualTol                       1.e-2
-#pfset Solver.Nonlinear.ResidualTol                       1.e-3
-#pfset Solver.Nonlinear.ResidualTol                       1.e-3
-# passed
 pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaChoice                         Walker1
-#pfset Solver.Nonlinear.EtaChoice                         Walker2
 pfset Solver.Nonlinear.EtaValue                          1.0e-6
 pfset Solver.Nonlinear.EtaValue                          1.0e-4
 pfset Solver.Nonlinear.UseJacobian                       False
-#pass
 pfset Solver.Nonlinear.DerivativeEpsilon                 1e-16
 pfset Solver.Nonlinear.StepTol                           1.e-16
-#pfset Solver.Nonlinear.StepTol                           1.e-10
 pfset Solver.Nonlinear.Globalization                     LineSearch
-#pfset Solver.Nonlinear.Globalization                      InexactNewton 
-#pfset Solver.Linear.KrylovDimension                      20 
-#pfset Solver.Linear.MaxRestart                           1 
- 
-#pfset Solver.Linear.Preconditioner                       NoPC
-#pfset Solver.Linear.Preconditioner                       MGSemi
-#pfset Solver.Linear.Preconditioner.MGSemi.MaxIter        1
-#pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      10
-#pfset Solver.PrintSubsurf                               False
-#pfset  Solver.Drop                                      1E-20
-#pfset Solver.AbsTol                                     1E-18
 
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-#file copy -force ptest.press.dp2.pa.pfb.org ptest.press.dp2.pfb
-#file copy -force temp3d.C.in.pfb.org temp3d.C.in.pfb
 #pfdist ptest.press.dp2.pfb
 #pfdist temp3d.C.in.pfb
 #pfdist heat.out.press.00050.pfb
 #pfdist heat.out.temp.00040.pfb
-pfrun heat.$py
-pfundist heat.$py
+pfrun cond
+pfundist cond
+
+
+#-----------------------------------------------------------------------------
+# If running as test; check output.
+# You do not need this for normal PF input files; this is done so the examples
+# are run and checked as part of our testing process.
+#-----------------------------------------------------------------------------
+if { [info exists ::env(PF_TEST) ] } {
+    set TEST cond
+    source pftest.tcl
+    set sig_digits 4
+
+    set passed 1
+
+    #
+    # Tests 
+    #
+    foreach i "00000 00001 00002 00003 00004 00005" {
+	if ![pftestFile $TEST.out.press.$i.pfb "Max difference in press timestep $i" $sig_digits] {
+	    set passed 0
+	}
+
+	if ![pftestFile $TEST.out.satur.$i.pfb "Max difference in satur timestep $i" $sig_digits] {
+	    set passed 0
+	}
+    }
+
+    if $passed {
+	puts "$TEST : PASSED"
+    } {
+	puts "$TEST : FAILED"
+    }
+}
