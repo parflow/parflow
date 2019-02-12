@@ -5,10 +5,18 @@ lappend auto_path $env(PARFLOW_DIR)/bin
 package require parflow
 namespace import Parflow::*
 
-# This test input is based on the llnl problem
-# This tests the Parallel Gaussian Simulator and input from a file
+#-----------------------------------------------------------------------------
+# This test input is based on the llnl problem.
+# This tests the Parallel Gaussian Simulator and input from a file.
 # You need to run llnl problem first since this reads in the 
-# perm output from that run
+# perm output from that run.
+#-----------------------------------------------------------------------------
+
+# Run LLNL problem if running test so llnl perm file exists.  This test requires
+# file from llnl.tcl run.
+if { [info exists ::env(PF_TEST) ] } {
+    exec tclsh llnl.tcl > llnl-out.log
+}
 
 #-----------------------------------------------------------------------------
 # File input version number
@@ -134,6 +142,8 @@ pfset Geom.layer1b.Perm.LogNormal LogTruncated
 pfset Geom.layer1b.Perm.StratType Bottom
 pfset Geom.layer1b.Perm.LowCutoff    0.0
 pfset Geom.layer1b.Perm.HighCutoff 100.0
+pfset Geom.layer1b.Perm.MaxSearchRad 4.0
+
 
 pfset Perm.TensorType               TensorByGeom
 
@@ -154,6 +164,38 @@ pfset Phase.water.Density.Value	1.0
 
 pfset Phase.water.Viscosity.Type	Constant
 pfset Phase.water.Viscosity.Value	1.0
+
+#-----------------------------------------------------------------------------
+# Specific Storage
+#-----------------------------------------------------------------------------
+
+pfset SpecificStorage.Type            Constant
+pfset SpecificStorage.GeomNames       "background"
+pfset Geom.background.SpecificStorage.Value          1.0e-5
+
+#---------------------------------------------------------
+# Topo slopes in x-direction
+#---------------------------------------------------------
+
+pfset TopoSlopesX.Type "Constant"
+pfset TopoSlopesX.GeomNames "domain"
+pfset TopoSlopesX.Geom.domain.Value 0.0
+
+#---------------------------------------------------------
+# Topo slopes in y-direction
+#---------------------------------------------------------
+
+pfset TopoSlopesY.Type "Constant"
+pfset TopoSlopesY.GeomNames "domain"
+pfset TopoSlopesY.Geom.domain.Value 0.0
+
+#---------------------------------------------------------
+# Mannings coefficient 
+#---------------------------------------------------------
+
+pfset Mannings.Type "Constant"
+pfset Mannings.GeomNames "domain"
+pfset Mannings.Geom.domain.Value 2.3e-7
 
 #-----------------------------------------------------------------------------
 # Contaminants
@@ -415,15 +457,57 @@ pfset PhaseConcen.water.tce1.Geom.concen_region.Value 0.8
 # Distribute the perm file from the previous run
 pfdist llnl.out.perm_x.pfb
 
-pfrun perm.00
-pfundist perm.00
+pfrun llnl-perm
+pfundist llnl-perm
 
-set new [pfload -pfb perm.00.out.perm_x.pfb]
+set new [pfload -pfb llnl-perm.out.perm_x.pfb]
 set old [pfload -pfb llnl.out.perm_x.pfb]
 set save [pfaxpy -1 $new $old]
 #
 # Should only diff in layer1b
 #
-pfsave $save -pfb perm.00.out.diff.perm.pfb
+pfsave $save -pfb llnl-perm.out.diff.perm.pfb
 
+#-----------------------------------------------------------------------------
+# If running as test; check output.
+# You do not need this for normal PF input files; this is done so the examples
+# are run and checked as part of our testing process.
+#-----------------------------------------------------------------------------
+if { [info exists ::env(PF_TEST) ] } {
+    set TEST llnl-perm
+    source pftest.tcl
+    set sig_digits 4
 
+    set passed 1
+
+    #
+    # Tests 
+    #
+    if ![pftestFile $TEST.out.press.pfb "Max difference in Pressure" $sig_digits] {
+	set passed 0
+    }
+
+    if ![pftestFile $TEST.out.porosity.pfb "Max difference in porosity" $sig_digits] {
+	set passed 0
+    }
+
+    if ![pftestFile $TEST.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
+	set passed 0
+    }
+    if ![pftestFile $TEST.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
+	set passed 0
+    }
+    if ![pftestFile $TEST.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
+	set passed 0
+    }
+
+    if ![pftestFile llnl-perm.out.diff.perm.pfb "Max difference in perm difference" $sig_digits] {
+	set passed 0
+    }
+
+    if $passed {
+	puts "$TEST : PASSED"
+    } {
+	puts "$TEST : FAILED"
+    }
+}

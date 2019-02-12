@@ -10,9 +10,10 @@ include $(PARFLOW_DIR)/config/Makefile.config
 
 default: check
 
-TESTS := bc.00.tcl cond.tcl default_richards.tcl default_single.tcl forsyth2.tcl forsyth5.tcl impes.internalbc.tcl impes.plinear.tcl impes.simple.tcl llnl.tcl richards.plinear.tcl
+TESTS := llnl-perm.tcl
 
-#	richards.plinear.tcl \
+# bc.00.tcl cond.tcl default_richards.tcl default_single.tcl forsyth2.tcl forsyth5.tcl impes.internalbc.tcl impes.plinear.tcl impes.simple.tcl llnl.tcl richards.plinear.tcl
+
 
 
 CHECK_TARGETS=check_sequential check_parallel check_samrai
