@@ -122,6 +122,38 @@ pfset Phase.water.Viscosity.Type	Constant
 pfset Phase.water.Viscosity.Value	1.0
 
 #-----------------------------------------------------------------------------
+# Specific Storage
+#-----------------------------------------------------------------------------
+
+pfset SpecificStorage.Type            Constant
+pfset SpecificStorage.GeomNames       "background"
+pfset Geom.background.SpecificStorage.Value          1.0e-5
+
+#---------------------------------------------------------
+# Topo slopes in x-direction
+#---------------------------------------------------------
+
+pfset TopoSlopesX.Type "Constant"
+pfset TopoSlopesX.GeomNames "domain"
+pfset TopoSlopesX.Geom.domain.Value 0.0
+
+#---------------------------------------------------------
+# Topo slopes in y-direction
+#---------------------------------------------------------
+
+pfset TopoSlopesY.Type "Constant"
+pfset TopoSlopesY.GeomNames "domain"
+pfset TopoSlopesY.Geom.domain.Value 0.0
+
+#---------------------------------------------------------
+# Mannings coefficient 
+#---------------------------------------------------------
+
+pfset Mannings.Type "Constant"
+pfset Mannings.GeomNames "domain"
+pfset Mannings.Geom.domain.Value 2.3e-7
+
+#-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
 pfset Contaminants.Names			"tce1 tce2"
@@ -231,8 +263,8 @@ pfset Wells.rec_test.ExtractionZLower	     3.5
 pfset Wells.rec_test.ExtractionZUpper	     4.5
 pfset Wells.rec_test.InjectionZLower	     7.5
 pfset Wells.rec_test.InjectionZUpper	     7.5
-pfset Wells.rec_test.ExtractionType	    Standard
-pfset Wells.rec_test.InjectionType          Standard
+pfset Wells.rec_test.ExtractionMethod	    Standard
+pfset Wells.rec_test.InjectionMethod        Standard
 pfset Wells.rec_test.alltime.Extraction.Flux.water.Value       	       20.0
 pfset Wells.rec_test.alltime.Injection.Flux.water.Value		       40.0
 pfset Wells.rec_test.alltime.Injection.Concentration.water.tce1.Fraction   0.001
@@ -304,3 +336,51 @@ pfset PhaseConcen.water.tce2.Geom.concen_region.Value 0.0
 pfrun well.01
 pfundist well.01
 
+#-----------------------------------------------------------------------------
+# If running as test; check output.
+# You do not need this for normal PF input files; this is done so the examples
+# are run and checked as part of our testing process.
+#-----------------------------------------------------------------------------
+if { [info exists ::env(PF_TEST) ] } {
+    set TEST well.01
+    source pftest.tcl
+    set sig_digits 4
+
+    set passed 1
+
+    #
+    # Tests 
+    #
+    if ![pftestFile $TEST.out.press.00045.pfb "Max difference in Pressure" $sig_digits] {
+	set passed 0
+    }
+
+    if ![pftestFile $TEST.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
+	set passed 0
+    }
+    if ![pftestFile $TEST.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
+	set passed 0
+    }
+    if ![pftestFile $TEST.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
+	set passed 0
+    }
+
+    if ![pftestFile $TEST.out.porosity.pfb "Max difference in porosity" $sig_digits] {
+	set passed 0
+    }
+
+    if ![pftestFile $TEST.out.concen.0.00.00050.pfsb "Max difference in concen" $sig_digits] {
+	set passed 0
+    }
+
+    if ![pftestFile $TEST.out.concen.0.01.00050.pfsb "Max difference in concen" $sig_digits] {
+	set passed 0
+    }
+
+    
+    if $passed {
+	puts "$TEST : PASSED"
+    } {
+	puts "$TEST : FAILED"
+    }
+}
