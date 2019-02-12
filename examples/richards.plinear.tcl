@@ -143,12 +143,18 @@ pfset Gravity				1.0
 #-----------------------------------------------------------------------------
 
 pfset TimingInfo.BaseUnit		1.0
-pfset TimingInfo.StartCount	 0	
+pfset TimingInfo.StartCount             0	
 pfset TimingInfo.StartTime		0.0
-pfset TimingInfo.StopTime            10.0
+
+# If testing only solve 2 timesteps, example runs for 20 timesteps
+if { [info exists ::env(PF_TEST) ] } {
+    pfset TimingInfo.StopTime           1.0
+} {
+    pfset TimingInfo.StopTime          10.0
+}
 pfset TimingInfo.DumpInterval	       -1
-pfset TimeStep.Type              Constant
-pfset TimeStep.Value       0.5
+pfset TimeStep.Type                    Constant
+pfset TimeStep.Value                    0.5
 
 #-----------------------------------------------------------------------------
 # Porosity
@@ -363,9 +369,12 @@ if { [info exists ::env(PF_TEST) ] } {
 	set passed 0
     }
     
-    for {set i 0} {$i < 21} {incr i} {
+    for {set i 0} {$i < 2} {incr i} {
     	set fi [format "%05d" $i]
 	if ![pftestFile $TEST.out.press.$fi.pfb "Max difference in pressure timestep $i" $sig_digits] {
+	    set passed 0
+	}
+	if ![pftestFile $TEST.out.satur.$fi.pfb "Max difference in saturation timestep $i" $sig_digits] {
 	    set passed 0
 	}
     }
