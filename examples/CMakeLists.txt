@@ -12,7 +12,7 @@ foreach(inputfile ${TESTS})
 endforeach()
 
 foreach(inputfile ${PARALLEL_TESTS})
-  pf_add_parallel_test(${inputfile})
+  pf_add_parallel_test(${inputfile} "2 1 1")
 endforeach()
 
 
