@@ -110,6 +110,38 @@ pfset Phase.water.Viscosity.Type	Constant
 pfset Phase.water.Viscosity.Value	1.0
 
 #-----------------------------------------------------------------------------
+# Specific Storage
+#-----------------------------------------------------------------------------
+
+pfset SpecificStorage.Type            Constant
+pfset SpecificStorage.GeomNames       "background"
+pfset Geom.background.SpecificStorage.Value          1.0e-5
+
+#---------------------------------------------------------
+# Topo slopes in x-direction
+#---------------------------------------------------------
+
+pfset TopoSlopesX.Type "Constant"
+pfset TopoSlopesX.GeomNames "domain"
+pfset TopoSlopesX.Geom.domain.Value 0.0
+
+#---------------------------------------------------------
+# Topo slopes in y-direction
+#---------------------------------------------------------
+
+pfset TopoSlopesY.Type "Constant"
+pfset TopoSlopesY.GeomNames "domain"
+pfset TopoSlopesY.Geom.domain.Value 0.0
+
+#---------------------------------------------------------
+# Mannings coefficient 
+#---------------------------------------------------------
+
+pfset Mannings.Type "Constant"
+pfset Mannings.GeomNames "domain"
+pfset Mannings.Geom.domain.Value 2.3e-7
+
+#-----------------------------------------------------------------------------
 # Contaminants
 #-----------------------------------------------------------------------------
 pfset Contaminants.Names			"tce"
@@ -264,9 +296,57 @@ pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      100
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-pfrun test_X
-# pfrun test_X -g {0}
-pfundist test_X
+pfrun test_$TestName
+pfundist test_$TestName
+
+#-----------------------------------------------------------------------------
+# If running as test; check output.
+# You do not need this for normal PF input files; this is done so the examples
+# are run and checked as part of our testing process.
+#-----------------------------------------------------------------------------
+if { [info exists ::env(PF_TEST) ] } {
+    set TEST test_$TestName
+    source pftest.tcl
+    set sig_digits 4
+
+    set passed 1
+
+    #
+    # Tests 
+    #
+    if ![pftestFile $TEST.out.press.00001.pfb "Max difference in Pressure" $sig_digits] {
+	set passed 0
+    }
+
+    if ![pftestFile $TEST.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
+	set passed 0
+    }
+    if ![pftestFile $TEST.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
+	set passed 0
+    }
+    if ![pftestFile $TEST.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
+	set passed 0
+    }
+
+    if ![pftestFile $TEST.out.porosity.pfb "Max difference in porosity" $sig_digits] {
+	set passed 0
+    }
+
+    if ![pftestFile $TEST.out.satur.00001.pfb "Max difference in concen" $sig_digits] {
+	set passed 0
+    }
+
+    if ![pftestFile $TEST.out.specific_storage.pfb "Max difference in specific storage" $sig_digits] {
+	set passed 0
+    }
+    
+    if $passed {
+	puts "$TEST : PASSED"
+    } {
+	puts "$TEST : FAILED"
+    }
+}
+
 
 
 
