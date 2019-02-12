@@ -11,6 +11,7 @@ include $(PARFLOW_DIR)/config/Makefile.config
 default: check
 
 TESTS := \
+	default_richards.tcl \
 	bc.00.tcl \
 	default_single.tcl \
         cond.tcl \

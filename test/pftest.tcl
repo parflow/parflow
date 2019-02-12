@@ -20,35 +20,40 @@ proc eps {{base 1}} {
 
 proc pftestFile {file message sig_digits} {
     if [file exists $file] {
-	set correct [pfload correct_output/$file]
-	set new     [pfload                $file]
-	set diff [pfmdiff $new $correct $sig_digits]
-	if {[string length $diff] != 0 } {
+	if [file exists correct_output/$file] {
 
-	    set mSigDigs [lindex $diff 0]
-	    set maxAbsDiff [lindex $diff 1]
-
-	    set i [lindex $mSigDigs 0]
-	    set j [lindex $mSigDigs 1]
-	    set k [lindex $mSigDigs 2]
-
-	    puts "FAILED : $message"
-
-	    puts [format "\tMinimum significant digits at (% 3d, % 3d, % 3d) = %2d"\
-		      $i $j $k [lindex $mSigDigs 3]]
-
-	    puts [format "\tCorrect value %e" [pfgetelt $correct $i $j $k]]
-	    puts [format "\tComputed value %e" [pfgetelt $new $i $j $k]]
-
-	    set elt_diff [expr abs([pfgetelt $correct $i $j $k] - [pfgetelt $new $i $j $k])]
-
-	    puts [format "\tDifference %e" $elt_diff]
-
-	    puts [format "\tMaximum absolute difference = %e" $maxAbsDiff]
-
-	    return 0
+	    set correct [pfload correct_output/$file]
+	    set new     [pfload                $file]
+	    set diff [pfmdiff $new $correct $sig_digits]
+	    if {[string length $diff] != 0 } {
+		
+		set mSigDigs [lindex $diff 0]
+		set maxAbsDiff [lindex $diff 1]
+		
+		set i [lindex $mSigDigs 0]
+		set j [lindex $mSigDigs 1]
+		set k [lindex $mSigDigs 2]
+		
+		puts "FAILED : $message"
+		
+		puts [format "\tMinimum significant digits at (% 3d, % 3d, % 3d) = %2d"\
+			  $i $j $k [lindex $mSigDigs 3]]
+		
+		puts [format "\tCorrect value %e" [pfgetelt $correct $i $j $k]]
+		puts [format "\tComputed value %e" [pfgetelt $new $i $j $k]]
+		
+		set elt_diff [expr abs([pfgetelt $correct $i $j $k] - [pfgetelt $new $i $j $k])]
+		
+		puts [format "\tDifference %e" $elt_diff]
+		
+		puts [format "\tMaximum absolute difference = %e" $maxAbsDiff]
+		
+		return 0
+	    } {
+		return 1
+	    }
 	} {
-	    return 1
+	    puts "FAILED : regression check output file <correct_output/$file> does not exist"
 	}
     } {
 	puts "FAILED : output file <$file> not created"

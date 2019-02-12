@@ -5,7 +5,6 @@ lappend auto_path $env(PARFLOW_DIR)/bin
 package require parflow
 namespace import Parflow::*
 
-
 #-----------------------------------------------------------------------------
 # File input version number
 #-----------------------------------------------------------------------------
@@ -38,7 +37,6 @@ pfset ComputationalGrid.NZ                       8
 # The Names of the GeomInputs
 #-----------------------------------------------------------------------------
 pfset GeomInput.Names "domain_input background_input source_region_input concen_region_input"
-
 
 #-----------------------------------------------------------------------------
 # Domain Geometry Input
@@ -75,7 +73,6 @@ pfset Geom.background.Lower.Z -99999999.0
 pfset Geom.background.Upper.X  99999999.0
 pfset Geom.background.Upper.Y  99999999.0
 pfset Geom.background.Upper.Z  99999999.0
-
 
 #-----------------------------------------------------------------------------
 # Source_Region Geometry Input
@@ -294,7 +291,6 @@ pfset Patch.top.BCTemperature.alltime.Value              0.0
 # Phase sources:
 #-----------------------------------------------------------------------------
 
-# SGS why was this changed?
 pfset PhaseSources.water.Type                         Constant
 pfset PhaseSources.water.GeomNames                    background
 pfset PhaseSources.water.Geom.background.Value        0.0
