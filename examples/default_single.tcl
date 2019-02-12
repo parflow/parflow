@@ -301,8 +301,7 @@ pfset PhaseSources.water.Geom.background.Value        0.0
 
 pfset PhaseSources.Type                         Constant
 pfset PhaseSources.GeomNames                    background
-pfset PhaseSources.Geom.background.FluxValue               0.0
-pfset PhaseSources.Geom.background.TemperatureValue        0.0
+pfset PhaseSources.Geom.background.Value               0.0
 
 pfset PhaseConcen.water.tce.Type                      Constant
 pfset PhaseConcen.water.tce.GeomNames                 concen_region
@@ -368,6 +367,44 @@ pfset Solver.MaxIter 5
 pfrun default_single
 pfundist default_single
 
-# To run with debugging
-# pfrun default_single -g {0 1}
-# will debug process 0 and 1
+#-----------------------------------------------------------------------------
+# If running as test; check output.
+# You do not need this for normal PF input files; this is done so the examples
+# are run and checked as part of our testing process.
+#-----------------------------------------------------------------------------
+if { [info exists ::env(PF_TEST) ] } {
+    set TEST default_single
+    source pftest.tcl
+    set sig_digits 4
+
+    set passed 1
+
+    #
+    # Tests 
+    #
+    if ![pftestFile $TEST.out.press.00000.pfb "Max difference in Pressure" $sig_digits] {
+	set passed 0
+    }
+
+    if ![pftestFile $TEST.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
+	set passed 0
+    }
+    if ![pftestFile $TEST.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
+	set passed 0
+    }
+    if ![pftestFile $TEST.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
+	set passed 0
+    }
+    
+    foreach i "00000 00001 00002 00003 00004 00005" {
+	if ![pftestFile $TEST.out.concen.0.00.$i.pfsb "Max difference in concen timestep $i" $sig_digits] {
+	    set passed 0
+	}
+    }
+
+    if $passed {
+	puts "$TEST : PASSED"
+    } {
+	puts "$TEST : FAILED"
+    }
+}
