@@ -2,13 +2,7 @@
 include(ParflowTest)
 
 set(TESTS 
-  bc.00.tcl
-  default_single.tcl
-  cond.tcl
-  impes.simple.tcl
-  impes.internalbc.tcl
-  impes.plinear.tcl
-  richards.plinear.tcl
+bc.00.tcl cond.tcl default_richards.tcl default_single.tcl forsyth2.tcl forsyth5.tcl impes.internalbc.tcl impes.plinear.tcl impes.simple.tcl llnl.tcl richards.plinear.tcl
 )
 
 foreach(inputfile ${TESTS})
