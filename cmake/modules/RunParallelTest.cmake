@@ -3,9 +3,9 @@ cmake_minimum_required(VERSION 3.4)
 # Execute command with error check
 macro(pf_exec_check cmd)
 
-  set( ENV{PF_TEST "yes" )
+  set( ENV{PF_TEST} "yes" )
   if (${PARFLOW_HAVE_SILO})
-    set( ENV{PARFLOW_HAVE_SILO "yes")
+    set( ENV{PARFLOW_HAVE_SILO} "yes")
   endif()
 
   execute_process (COMMAND ${${cmd}} RESULT_VARIABLE cmdResult OUTPUT_VARIABLE stdout ERROR_VARIABLE stdout)

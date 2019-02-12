@@ -385,7 +385,7 @@ enable_testing ()
 set (PARFLOW_ENABLE_SIMULATOR True CACHE BOOL "Enable building of the Parflow simulator")
 if ( ${PARFLOW_ENABLE_SIMULATOR} )
   add_subdirectory (pfsimulator)
-  #add_subdirectory (test)
+  add_subdirectory (test)
   add_subdirectory (examples)
 endif ()
 
