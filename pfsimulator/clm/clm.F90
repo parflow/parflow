@@ -47,6 +47,9 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
   ! integer, parameter :: numrad      =   2   !number of solar radiation bands: vis, nir
   ! integer, parameter :: numcol      =   8   !number of soil color types
 
+  integer  :: pf_nlevsoi                         ! number of soil levels, passed from PF
+  integer  :: pf_nlevlak                         ! number of lake levels, passed from PF
+ 
   !=== Local Variables =====================================================
 
   ! basic indices, counters
@@ -136,11 +139,6 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
   real(r8) :: irr_stoppf                         ! irrigation daily stop tie for constant cycle
   real(r8) :: irr_thresholdpf                    ! irrigation threshold criteria for deficit cycle (units of soil moisture content)
   integer  :: irr_thresholdtypepf                ! irrigation threshold criteria type -- top layer, bottom layer, column avg
-
-  ! 
-  integer  :: pf_nlevsoi                         ! number of soil levels, passed from PF
-  integer  :: pf_nlevlak                         ! number of lake levels, passed from PF
-
 
   ! local indices & counters
   integer  :: i,j,k,k1,j1,l1                     ! indices for local looping
