@@ -1,7 +1,10 @@
 ADD_EXECUTABLE(netcdf-writer main.c)
 target_link_libraries(netcdf-writer pfanalyzer pfsimulator amps)
 
-FIND_PACKAGE (NetCDF REQUIRED)  # we are really dependent from netcdf!
+if (NOT(${NETCDF_FOUND}))
+  message( FATAL_ERROR "NetCDF not found!" )
+endif()
+
 FIND_PACKAGE(fca REQUIRED)
 
 TARGET_LINK_LIBRARIES(netcdf-writer ${fca_LIBRARY})
@@ -16,5 +19,6 @@ endif (${PARFLOW_HAVE_MPI})
 if (${PARFLOW_HAVE_HDF5})
   target_link_libraries (netcdf-writer ${HDF5_LIBRARIES})
 endif (${PARFLOW_HAVE_HDF5})
+
 
 INSTALL(TARGETS netcdf-writer DESTINATION bin)
