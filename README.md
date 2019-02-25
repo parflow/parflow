@@ -238,9 +238,14 @@ mpirun, srun, and aprun.  The command used is dependent on the job
 submission system used.  By default CMake will attempt to determine an
 appropriate tool; a process that does not always yield the correct result.
 
-You may overwride the MPI launcher using
--DMPIEXEC="<launcher-name>"
--DMPIEXEC_NUMPROC_FLAG="<flag used to set number of tasks>"
+There are several ways to modify the CMake guess on how applications
+should be run.  At configure time you may overwride the MPI launcher
+using:
+
+```shell 
+   -DMPIEXEC="<launcher-name>"
+   -DMPIEXEC_NUMPROC_FLAG="<flag used to set number of tasks>"
+```
 
 An example for mpiexec is -DMPIEXEC="mpiexec" -DMPIEXEC_NUMPROC_FLAG="-n".
 
@@ -248,13 +253,33 @@ The ParFlow script to run MPI applications will also include options
 specified in the environment variable PARFLOW_MPIEXEC_EXTRA_FLAGS on
 the MPI execution command line.  For example when running with OpenMPI
 on a single workstation the following will enable running more MPI
-tasks than cores and disable the busy loop waiting to
-improve performance:
+tasks than cores and disable the busy loop waiting to improve
+performance:
 
 ```shell
    export PARFLOW_MPIEXEC_EXTRA_FLAGS="--mca mpi_yield_when_idle 1 --oversubscribe"
 ```
 
+Last the TCL script can explicity set the command to invoke for
+running ParFlow.  This is done by setting the Process.Command key in
+the input database.  For example to use the mpiexec command and
+control the cpu set used the following command string can be used:
+
+```shell
+   pfset Process.Command "mpiexec -cpu-set 1 -n %d parflow %s"
+```
+
+The '%d' will be replaced with the number of processes (computed using
+the Process.Topology values : P * Q * R) and the '%s' will be replaced
+by the name supplied to the pfrun command for the input database name.
+The following shows how the default_single.tcl script could be
+modified to use the custom command string:
+
+```shell
+   pfset Process.Command "mpiexec -cpu-set 1 -n %d parflow %s"
+   pfrun default_single
+   pfundist default_single
+```
 ## Building simulator and tools support separately
 
 ParFlow is composed of two main components that maybe configured and

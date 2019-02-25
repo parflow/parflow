@@ -250,22 +250,6 @@ proc Parflow::pfrun { runname args } {
     
     pfwritedb $runname
 
-    #
-    # If user does not set the hostname then use this machine
-    # as the default
-    # 
-    if [pfexists Process.Hostnames] {
-	set machines [pfget Process.Hostnames]
-    } {
-	set machines [info hostname]
-    }
-
-    set file [open .hostfile "w" ]
-    foreach name "$machines" {
-	puts $file $name
-    }
-    close $file
-
     if [pfexists Process.Topology.P] {
 	set P [pfget Process.Topology.P]
     } {
@@ -285,11 +269,16 @@ proc Parflow::pfrun { runname args } {
     }
     
     set NumProcs [expr $P * $Q * $R]
-    set NumNodes [expr round(($NumProcs+.01) / 2) ]
 
-    puts [eval exec sh $Parflow::PARFLOW_DIR/bin/run  $runname $NumProcs $NumNodes]
-    
-    # Need to add stuff to run parflow here
+    # Run parflow
+    if [pfexists Process.Command] {
+	set command [pfget Process.Command]
+	puts [format "Using command : %s" [format $command $NumProcs $runname]]
+	puts [eval exec [format $command $NumProcs $runname]]
+    } {
+	puts [eval exec sh $Parflow::PARFLOW_DIR/bin/run  $runname $NumProcs]
+    }
+
 }
 
 
