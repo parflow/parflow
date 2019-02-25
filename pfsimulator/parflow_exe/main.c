@@ -120,6 +120,7 @@ int main(int argc, char *argv [])
     int restore_num = 0;
     int c;
     int index;
+    char * input_name = NULL;
 
     opterr = 0;
     while ((c = getopt (argc, argv, "v")) != -1)
@@ -141,12 +142,9 @@ int main(int argc, char *argv [])
         abort ();
       }
 
-    for (index = optind; index < argc; index++)
-      printf ("Non-option argument %s\n", argv[index]);
+    int non_opt_argc = argc - optind;
 
-    int non_opt_argc = argc - index;
-
-    if ((argc != 2) && (argc != 4))
+    if ((non_opt_argc != 1) && (non_opt_argc != 3))
     {
       fprintf(stderr, "USAGE: %s <input pfidb filename> <restart dir> <restore number>\n",
               argv[0]);
@@ -154,10 +152,12 @@ int main(int argc, char *argv [])
     }
     else
     {
-      if (argc == 4)
+      input_name = argv[optind];
+
+      if (non_opt_argc == 3)
       {
-        restart_read_dirname = strdup(argv[2]);
-        restore_num = atoi(argv[3]);
+        restart_read_dirname = strdup(argv[optind + 1]);
+        restore_num = atoi(argv[optind + 2]);
 
         is_from_restart = TRUE;
       }
@@ -265,7 +265,7 @@ int main(int argc, char *argv [])
      * Set up globals structure
      *-----------------------------------------------------------------------*/
 
-    NewGlobals(argv[1]);
+    NewGlobals(input_name);
 
 #ifdef HAVE_SAMRAI
     GlobalsParflowSimulation = new Parflow("Parflow",
