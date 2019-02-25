@@ -19,7 +19,7 @@ endif (${PARFLOW_HAVE_MPI})
 install(TARGETS amps DESTINATION lib)
 
 # Install the AMPS transport layer specific scripts
-set(AMPS_SCRIPTS batchmc bootmc freemc getmc killmc peekmc run)
+set(AMPS_SCRIPTS run)
 string(REGEX REPLACE "([^;]+)" "${PARFLOW_AMPS_LAYER}/\\1" AMPS_SCRIPTS "${AMPS_SCRIPTS}")
 install(FILES ${AMPS_SCRIPTS} DESTINATION bin)
 

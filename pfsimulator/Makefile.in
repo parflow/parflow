@@ -52,7 +52,7 @@ install: all
 	@for i in config/*; do				        \
 	   $(INSTALL) -c -m 644 $$i $(PARFLOW_INSTALL_DIR)/config; \
 	done
-	@for i in batchmc bootmc freemc getmc killmc peekmc run; do           \
+	@for i in run; do           \
 	   $(INSTALL) -c -m 755 $(PARFLOW)/amps/$(AMPS)/$$i $(PARFLOW_INSTALL_DIR)/bin; \
 	done			
 
