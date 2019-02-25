@@ -29,11 +29,12 @@ void setInBox(double *data, SteerMessageMetadata const * const s, double value,
   const int dz = 1;
 
   // kind of a boxloop but for my datatype...
-  for (int x = (int)lower_x / dx; x < (int)upper_x / dx; ++x)
+  int x, y, z;
+  for (x = (int)lower_x / dx; x < (int)upper_x / dx; ++x)
   {
-    for (int y = (int)lower_y / dy; y < (int)upper_y / dy; ++y)
+    for (y = (int)lower_y / dy; y < (int)upper_y / dy; ++y)
     {
-      for (int z = (int)lower_z / dz; z < (int)upper_z / dz; ++z)
+      for (z = (int)lower_z / dz; z < (int)upper_z / dz; ++z)
       {
         if (x >= s->ix && x < s->ix + s->nx &&
             y >= s->iy && y < s->iy + s->ny &&

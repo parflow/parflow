@@ -118,7 +118,8 @@ void SendLogMessage(fca_module mod, fca_port port, StampLog log[], size_t n)
 
 Variable NameToVariable(const char *name)
 {
-  for (Variable res = VARIABLE_PRESSURE; res < VARIABLE_LAST; ++res)
+  Variable res;
+  for (res = VARIABLE_PRESSURE; res < VARIABLE_LAST; ++res)
   {
     if (strcmp(VARIABLE_TO_NAME[res], name) == 0)
       return res;

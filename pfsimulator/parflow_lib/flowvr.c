@@ -91,7 +91,8 @@ void initContracts()
   contracts = ctalloc(Contract, n_contracts);
 
   char key[256];
-  for (size_t i = 0; i < n_contracts; ++i)
+  size_t i;
+  for (i = 0; i < n_contracts; ++i)
   {
     contracts[i].port_name = NA_IndexToName(port_names, i);
     sprintf(key, "FlowVR.Outports.%s.Periodicity", contracts[i].port_name);
@@ -185,7 +186,8 @@ void NewFlowVR(void)
   fca_register_stamp(port_pressure_snap, "stampFileName", fca_STRING);
   fca_append_port(module_parflow, port_pressure_snap);
 
-  for (size_t i = 0; i < n_contracts; ++i)
+  size_t i;
+  for (i = 0; i < n_contracts; ++i)
   {
     D("Add outport %s", contracts[i].port_name);
     fca_port port = fca_new_port(contracts[i].port_name, fca_OUT, 0, NULL);
@@ -297,7 +299,8 @@ static inline LogSteer(Variable var, Action action, SteerMessageMetadata * s,
         printf("Steer at %f: %s on %s\nfrom (%d, %d, %d): (%d, %d, %d) counts.\n",
                *ptime, action_text, VARIABLE_TO_NAME[var],
                s->ix, s->iy, s->iz, s->nx, s->ny, s->nz);
-        for (size_t i = 0; i < s->nx * s->ny * s->nz; ++i)
+        size_t i;
+        for (i = 0; i < s->nx * s->ny * s->nz; ++i)
         {
           if (i % s->nx == 0)
             printf("[");
@@ -608,8 +611,8 @@ void serveFinalState(SimulationSnapshot *snapshot)
 int FlowVRFulFillContracts(int timestep, SimulationSnapshot const * const snapshot)
 {
   int res = 0;
-
-  for (size_t i = 0; i < n_contracts; ++i)
+  size_t i;
+  for (i = 0; i < n_contracts; ++i)
   {
     if (timestep >= contracts[i].offset &&
         ((timestep - contracts[i].offset) % contracts[i].periodicity) == 0)
@@ -623,7 +626,8 @@ int FlowVRFulFillContracts(int timestep, SimulationSnapshot const * const snapsh
 
 void sendEmpties()
 {
-  for (size_t i = 0; i < n_contracts; ++i)
+  size_t i;
+  for (i = 0; i < n_contracts; ++i)
   {
     fca_port port = fca_get_port(module_parflow, contracts[i].port_name);
     SendEmptyMessage(module_parflow, port);
