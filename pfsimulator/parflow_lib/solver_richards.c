@@ -677,7 +677,7 @@ SetupRichards(PFModule * this_module)
         || public_xtra->print_overland_sum
         || public_xtra->write_silopmpio_overland_sum
         || public_xtra->write_netcdf_overland_sum
-        || MELISSA_ACTIVE)
+        || MELISSA_ACTIVE || FLOWVR_ACTIVE)
     {
       instance_xtra->overland_sum =
         NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
@@ -2763,7 +2763,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     if (public_xtra->write_silo_evaptrans_sum  // TODO: same names! insert underscore!
         || public_xtra->print_evaptrans_sum
         || public_xtra->write_netcdf_evaptrans_sum
-        || MELISSA_ACTIVE)  // TODO: use other variable (variable in instance_xtra??)
+        || MELISSA_ACTIVE || FLOWVR_ACTIVE)  // TODO: use other variable (variable in instance_xtra??)
     {
       EvapTransSum(problem_data, dt, evap_trans_sum, evap_trans);
     }
@@ -2774,7 +2774,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     if (public_xtra->write_silo_overland_sum
         || public_xtra->print_overland_sum
         || public_xtra->write_netcdf_overland_sum
-        || MELISSA_ACTIVE)
+        || MELISSA_ACTIVE || FLOWVR_ACTIVE)
     {
       OverlandSum(problem_data,
                   instance_xtra->pressure,
@@ -2819,7 +2819,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       if (MELISSA_ACTIVE)
       {
 
-        // Calculate kumuls...
         snapshot.evap_trans = evap_trans;
         snapshot.evap_trans_sum = evap_trans_sum;
         snapshot.overland_sum = overland_sum;
@@ -2830,6 +2829,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         PFVSum(overland_sum, snapshot.overland_sum_kumul, snapshot.overland_sum_kumul);
 
 
+        // Calculate kumuls...
         snapshot.subsurf_storage = WaterStorage(problem_data, instance_xtra->pressure, instance_xtra->saturation);
         snapshot.subsurf_storage_rel = waterstorage0 - snapshot.subsurf_storage;
         snapshot.iwsc = old_waterstorage - snapshot.subsurf_storage;
