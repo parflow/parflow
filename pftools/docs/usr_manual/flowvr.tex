@@ -73,7 +73,7 @@ export FLOWVR_SSH="oarsh"
 
 # In some cases you want to use a different version of parFlowVR modules in your
 # distributed applications. Especially on some high performance platforms it might not be
-# possible to directly start e.g. ParFlow or the netcdf writer module as for isntance
+# possible to directly start e.g. ParFlow or the netcdf writer module as for instance
 # some modules must be loaded before startup.
 # If the following variables are set to point to an executable it is executed instead.
 export PARFLOW_EXE=<path to the parflow starter script>
@@ -350,7 +350,7 @@ PROBLEMNAME=flowvr
 $PARFLOW_DIR/bin/parflowvr/doMPI.sh $PROBLEMNAME $P $Q $R
 \end{verbatim}\end{display}
 
-This example runs on one node only. but you can change the \code{<P> <Q> <R>} values in the \code{do.sh}
+This example runs on one node only. But you can change the \code{<P> <Q> <R>} values in the \code{do.sh}
 script to profit from multiple cores.
 
 \section{In Situ Visualization}
@@ -385,6 +385,13 @@ to render it. You can request new snapshots of the simulation's state by clickin
 \code{trigger snap} under \code{File > Simulations} in VisIt.
 
 See \code{flowvr/testcases/visit} for further reference.
+
+\section{Properly Ending parFlowVR Applications}
+\label{section-Properly-ending-parFlowVR-applications}
+When setting \code{FlowVR.OnEnd SendEmpty} in the \code{.tcl} file, ParFlow will send an
+empty message when all times have been simulated. This way other modules can react to this
+properly. At the moment Python Analyzer API modules as well as netcdf writer modules
+shut down the whole workflow as soon as they try to process such an empty grid message.
 
 \section{Further Information}
 There are many things not yet explained in this version of the documentation.

@@ -84,7 +84,16 @@ void _run(char *logstamps[], size_t logstampsc)
   D("now waiting\n");
   while (fca_wait(flowvr))
   {
-    ParseMergedMessage(in, &preparser, NULL);
+    size_t s = ParseMergedMessage(in, &preparser, NULL);
+
+    // Abort on empty message!
+    if (s == 0)
+    {
+      D("Ending it!");
+      fca_abort(flowvr);
+      break;
+    }
+
   }
 
   fca_free(flowvr);

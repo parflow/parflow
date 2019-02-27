@@ -53,7 +53,7 @@ void SendActionMessage(fca_module mod, fca_port out, Action action, Variable var
   fca_free(msg);
 }
 
-void ParseMergedMessage(fca_port port, size_t (*cb)(const void *buffer, size_t size, void *cbdata), void *cbdata)
+size_t ParseMergedMessage(fca_port port, size_t (*cb)(const void *buffer, size_t size, void *cbdata), void *cbdata)
 {
   fca_message msg = fca_get(port);
   size_t s = fca_get_segment_size(msg, 0);
@@ -73,6 +73,8 @@ void ParseMergedMessage(fca_port port, size_t (*cb)(const void *buffer, size_t s
     }
   }
   fca_free(msg);
+
+  return s;
 }
 
 void SendSteerMessage(fca_module mod, fca_port out, const Action action,

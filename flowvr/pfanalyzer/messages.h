@@ -164,8 +164,9 @@ extern void SendActionMessage(fca_module mod, fca_port port, Action action, Vari
  * @param buffer extracted message
  * @param size size of the overall merged message
  * @param cbdata user data
+ * @return size of parsed message
  */
-extern void ParseMergedMessage(fca_port port,
+extern size_t ParseMergedMessage(fca_port port,
                                size_t (*cb)(const void *buffer, size_t size, void *cbdata),
                                void *cbdata);
 
