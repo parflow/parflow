@@ -181,10 +181,10 @@ void NewFlowVR(void)
 
   module_parflow = fca_new_empty_module();
 
-  fca_port port_pressure_snap = fca_new_port("snap", fca_OUT, 0, NULL);
-  fca_register_stamp(port_pressure_snap, "stampTime", fca_FLOAT);
-  fca_register_stamp(port_pressure_snap, "stampFileName", fca_STRING);
-  fca_append_port(module_parflow, port_pressure_snap);
+  fca_port port_snap = fca_new_port("snap", fca_OUT, 0, NULL);
+  fca_register_stamp(port_snap, "stampTime", fca_FLOAT);
+  fca_register_stamp(port_snap, "stampFileName", fca_STRING);
+  fca_append_port(module_parflow, port_snap);
 
   size_t i;
   for (i = 0; i < n_contracts; ++i)
