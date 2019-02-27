@@ -2,7 +2,7 @@
 # generates a FlowVR dataflow graph and runs it
 # first parameter: the  problemm name.
 # all further parameters are forwarded to the execution of flowvr.
-# so e.g. --batch-mode is possible
+# so e.g. --batch is possible
 
 killall flowvrd
 flowvr-kill

@@ -13,12 +13,12 @@ cd $here
 killall flowvrd
 flowvr-kill
 python hillslope_sens.py
-tclsh $PARFLOW_DIR/bin/parflowvr/flowvr_starter.tcl hillslope_sens 1 1 1  # does all the preparation...
+tclsh $PARFLOW_DIR/bin/parflowvr/flowvr_starter.tcl 1 1 1 hillslope_sens  # does all the preparation...
 
 flowvrd &
 
 
-flowvr hillslope_sens --batch-mode
+flowvr hillslope_sens --batch
 
 killall flowvrd
 flowvr-kill
