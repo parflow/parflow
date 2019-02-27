@@ -1600,6 +1600,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   double old_waterstorage = 0.0;
   double waterstorage0 = WaterStorage(problem_data, instance_xtra->pressure, instance_xtra->saturation);
 #ifdef HAVE_FLOWVR
+  snapshot.evap_trans = evap_trans;
+  snapshot.evap_trans_sum = evap_trans_sum;
+  snapshot.overland_sum = overland_sum;
   FlowVRInitTranslation(&snapshot);
 #endif
 #endif
@@ -2802,9 +2805,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       if (FLOWVR_ACTIVE)
       {
         int timestep = instance_xtra->dump_index - 1;  // we also printed 0 ;)
-
-        snapshot.evap_trans = evap_trans;
-        snapshot.evap_trans_sum = evap_trans_sum;
 
         any_file_dumped = FlowVRFulFillContracts(timestep, &snapshot);
       }
