@@ -171,7 +171,7 @@ amps_Invoice amps_NewInvoice(const char *fmt0, ...)
   fmt = (char*)fmt0;
   ret = 0;
 
-  for (;; )
+  for (;;)
   {
     for (cp = fmt; (ch = *fmt) != '\0' && ch != '%'; fmt++)
     {

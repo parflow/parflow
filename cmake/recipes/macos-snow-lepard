@@ -1,0 +1,34 @@
+Configure build for ra.mines.edu.
+
+--------------------------------------
+Compiling on Mac OSX 10.6.x Snow Leopard
+--------------------------------------
+SILO:
+./configure CC=gcc -arch x86_64 CXX=g++ -arch x86_64 F77=gfortran -arch x86_64 FC=gfortran -arch x86_64 r_arch=x86_64 --disable-silex
+
+HYPRE
+./configure CC=gcc -arch x86_64 CXX=g++ -arch x86_64 F77=gfortran -arch x86_64 FC=gfortran -arch x86_64 r_arch=x86_64 --prefix=/APPS/hypre-2.4.0b/
+
+PARFLOW
+./configure CC='gcc -arch x86_64' F77='gfortran -arch x86_64' FC='gfortran -arch x86_64' --prefix=$PARFLOW_DIR --with-clm --enable-timing --with-silo=$SILO_DIR --with-hypre=$HYPRE_DIR --with-amps=mpi1
+
+make install
+it goes fine all the way to the very end, then errors out w/
+ld: duplicate symbol start in /usr/lib/crt1.o and /usr/lib/crt1.10.6.o
+cd config
+manually edit Makefile.config to change crt1.o in LDLIBS to 10.6.o
+cd ..
+make install, works fine
+
+in pftools
+same thing, errors out on same linking step/error duplicate libraries
+in config, change Makefile.config to reflect crt1.10.5.o to 10.6.o this time in two places in the LDLIBS line
+make install now almost seems to work, but odd messages at the end
+
+then it errors out on dynlib
+
+Manually add the -arch x86_64 to the end of the tools linking step to link as:
+
+ld -dylib pftappinit.o printdatabox.o readdatabox.o databox.o error.o velocity.o head.o flux.o diff.o stats.o tools_io.o axpy.o getsubbox.o enlargebox.o load.o usergrid.o grid.o region.o file.o pftools.o top.o water_balance.o water_table.o sum.o -o ./bin/parflow.dylib -L/usr/lib -L/Users/reed/parflow/parflow.9-09/lib -lparflow -L/opt/local/silo/silo-4.7/lib -lsilo -ltcl -lc -arch x86_64
+
+from the command line.  Then I can make again, it doesn't re-link but does install. 

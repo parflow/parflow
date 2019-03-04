@@ -37,7 +37,7 @@
 #
 #-----------------------------------------------------------------------------
 usage () {
-   echo "usage: $0 run [-hvpg] pfidb_file num_procs [process_group]"
+   echo "usage: $0 run [-hvpg] pfidb_file num_procs"
    echo "    -h               help"
    echo "    -v               verbose"
    echo "    -p executable    executable to run"
@@ -94,14 +94,13 @@ do
    esac
 done
 
-if [ ! \( "$#" -eq 2 -o "$#" -eq 3 \) ]; then
+if [ ! \( "$#" -eq 2 \) ]; then
   usage
   exit 1
 fi
 
 PFSCRIPT=$1
 NUMPROCS=$2
-PROCESS_GROUP=$3
 
 if ! [ -e "${PFSCRIPT}.pfidb" ]; then
   echo "pfidb file \"${PFSCRIPT}.pfidb\" not found" >&2

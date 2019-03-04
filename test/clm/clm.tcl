@@ -280,7 +280,6 @@ pfset Solver.CLM.MetForcing                              1D
 pfset Solver.CLM.MetFileName                             narr_1hr.sc3.txt.0
 pfset Solver.CLM.MetFilePath                             ./
 
-
 pfset Solver.WriteSiloEvapTrans                          True
 pfset Solver.WriteSiloOverlandBCFlux                     True
 pfset Solver.PrintCLM  True

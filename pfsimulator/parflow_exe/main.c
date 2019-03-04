@@ -32,7 +32,9 @@
 *****************************************************************************/
 
 #include "parflow.h"
+#include "pfversion.h"
 #include "amps.h"
+#include "fgetopt.h"  /* getopt replacement since getopt is not available on Windows */
 
 #ifdef HAVE_SAMRAI
 #include "SAMRAI/SAMRAI_config.h"
@@ -60,6 +62,7 @@ using namespace SAMRAI;
 #endif
 
 #include <string.h>
+#include <ctype.h>
 
 int main(int argc, char *argv [])
 {
@@ -115,8 +118,33 @@ int main(int argc, char *argv [])
     char *restart_read_dirname = NULL;
     int is_from_restart = FALSE;
     int restore_num = 0;
+    int c;
+    int index;
+    char * input_name = NULL;
 
-    if ((argc != 2) && (argc != 4))
+    opterr = 0;
+    while ((c = getopt (argc, argv, "v")) != -1)
+    switch (c)
+      {
+      case 'v':
+	PrintVersionInfo(stdout);
+	return 0;
+        break;
+      case '?':
+	if (isprint (optopt))
+          fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+        else
+          fprintf (stderr,
+                   "Unknown option character `\\x%x'.\n",
+                   optopt);
+        return 1;
+      default:
+        abort ();
+      }
+
+    int non_opt_argc = argc - optind;
+
+    if ((non_opt_argc != 1) && (non_opt_argc != 3))
     {
       fprintf(stderr, "USAGE: %s <input pfidb filename> <restart dir> <restore number>\n",
               argv[0]);
@@ -124,10 +152,12 @@ int main(int argc, char *argv [])
     }
     else
     {
-      if (argc == 4)
+      input_name = argv[optind];
+
+      if (non_opt_argc == 3)
       {
-        restart_read_dirname = strdup(argv[2]);
-        restore_num = atoi(argv[3]);
+        restart_read_dirname = strdup(argv[optind + 1]);
+        restore_num = atoi(argv[optind + 2]);
 
         is_from_restart = TRUE;
       }
@@ -235,7 +265,7 @@ int main(int argc, char *argv [])
      * Set up globals structure
      *-----------------------------------------------------------------------*/
 
-    NewGlobals(argv[1]);
+    NewGlobals(input_name);
 
 #ifdef HAVE_SAMRAI
     GlobalsParflowSimulation = new Parflow("Parflow",
