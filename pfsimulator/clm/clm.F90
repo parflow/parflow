@@ -645,7 +645,7 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
     endif
     
     if (clm_daily_rst==1) then
-       ! Restarts occur at daily bourndaries and at end of the run.
+       ! Restarts occur at daily boundaries and at end of the run.
        if ( (drv%gmt==0.0).or.(drv%endtime==1) ) then
           write(*,*) '    SGS Writing restart time =', time, 'gmt =', drv%gmt, 'istep_pf =',istep_pf
           
