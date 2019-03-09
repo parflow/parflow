@@ -649,7 +649,7 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
        if ( (drv%gmt==0.0).or.(drv%endtime==1) ) then
           write(*,*) '    SGS Writing restart time =', time, 'gmt =', drv%gmt, 'istep_pf =',istep_pf
           
-          if (rank==0) write(9919,*) 'Writing restart at day bourndary time =', time, 'gmt =', drv%gmt, 'istep_pf =',istep_pf
+          if (rank==0) write(9919,*) 'Writing restart at day boundary time =', time, 'gmt =', drv%gmt, 'istep_pf =',istep_pf
           !! @RMM/LEC  add in a TCL file that sets an istep value to better automate restarts
           if (rank==0) then
              open(393, file="clm_restart.tcl",action="write")
