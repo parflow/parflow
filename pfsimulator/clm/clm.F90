@@ -174,7 +174,6 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
   drv%nr = ny                   
   drv%nt = 18                  ! 18 IGBP land cover classes
   drv%ts = dt*3600.d0          ! Assume PF in hours, CLM in seconds
-  write(*,*) " drv%ss ", drv%ss
   j_incr = nx_f
   k_incr = nx_f*ny_f
 
@@ -632,12 +631,9 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
     write(9919,*) 'time =', time, 'gmt =', drv%gmt, 'endtime =', drv%endtime
  end if !! rank 0, write log info
 
-! if ( (drv%gmt==0.0).or.(drv%endtime==1) ) call drv_restart(2,drv,tile,clm,rank,istep_pf)
+  ! if ( (drv%gmt==0.0).or.(drv%endtime==1) ) call drv_restart(2,drv,tile,clm,rank,istep_pf)
   ! ----------------------------------
   ! NBE: Added more control over writing of the RST files
-    write(*,*) "SGS clm_next ", clm_next, " clm_last_rst ", clm_last_rst
-    write(*,*) "SGS drv%gmt ", drv%gmt, " drv%endtime ", drv%endtime
-
     if (clm_last_rst==1) then
        d_stp=0
     else
@@ -645,26 +641,39 @@ clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
     endif
     
     if (clm_daily_rst==1) then
+
        ! Restarts occur at daily boundaries and at end of the run.
        if ( (drv%gmt==0.0).or.(drv%endtime==1) ) then
-          write(*,*) '    SGS Writing restart time =', time, 'gmt =', drv%gmt, 'istep_pf =',istep_pf
-          
-          if (rank==0) write(9919,*) 'Writing restart at day boundary time =', time, 'gmt =', drv%gmt, 'istep_pf =',istep_pf
+
           !! @RMM/LEC  add in a TCL file that sets an istep value to better automate restarts
           if (rank==0) then
+             write(9919,*) 'Writing restart time =', time, 'gmt =', drv%gmt, 'istep_pf =',istep_pf
+
              open(393, file="clm_restart.tcl",action="write")
              write(393,*) "set istep ",istep_pf
              close(393)
           end if  !  write istep corresponding to restart step
              
           call drv_restart(2,drv,tile,clm,rank,d_stp)
+
        end if
     else
        ! Restarts occur at start of each CLM reuse sequence.
        if (clm_next == 1) then
-          write(*,*) '    SGS Writing restart clm_next = 1, time =', time, 'gmt =', drv%gmt, 'istep_pf =',istep_pf
+
+          !! @RMM/LEC  add in a TCL file that sets an istep value to better automate restarts
+          if (rank==0) then
+             write(9919,*) 'Writing restart time =', time, 'gmt =', drv%gmt, 'istep_pf =',istep_pf
+
+             open(393, file="clm_restart.tcl",action="write")
+             write(393,*) "set istep ",istep_pf
+             close(393)
+          end if  !  write istep corresponding to restart step
+             
           call drv_restart(2,drv,tile,clm,rank,d_stp)
+
        end if
+
     end if
   ! ---------------------------------
 
