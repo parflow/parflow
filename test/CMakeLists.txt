@@ -118,3 +118,7 @@ endforeach()
 if (${PARFLOW_HAVE_CLM})
   add_subdirectory (clm)
 endif(${PARFLOW_HAVE_CLM})
+
+if (${PARFLOW_HAVE_P4EST})
+  add_subdirectory (p4est)
+endif(${PARFLOW_HAVE_P4EST})

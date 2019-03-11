@@ -2,15 +2,19 @@ lappend auto_path $env(PARFLOW_DIR)/bin
 package require parflow
 namespace import Parflow::*
 
-# Test cases for step 1 in parflow-p4est integration.
-#
-# The "test_brick_3d" script sets up the database for
-# to execute the default version of Parflow and take
-# the number of grid points (Nx,Ny,Nz) and the Processor
+# Test cases for step 0 in ParFlow+p4est integration.
+# The goal of this step is to enable ParFlow to
+# run in serial with multiple subgrids. To run this test
+# suite just execute tclsh step0_tests.tcl in the current
+# directory.
+
+# The "test_brick_3d" script sets up the database
+# to execute the default version of ParFlow and take
+# the number of grid points (Nx,Ny,Nz) and the processor
 # grid (P,Q,R) as argument.
 #
-# The "test_brick_3d_with_p4est"  sets up the database to execute
-# the Parflow version with p4est integrated and
+# The "test_brick_3d_with_p4est" script sets up the database to execute
+# the ParFlow version with p4est integrated and
 # take as arguments the number of grid points (Nx,Ny,Nz) and
 # subgrid points in each coordinate direction (Mx, My, Mz).
 
