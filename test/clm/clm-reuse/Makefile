@@ -14,37 +14,11 @@ TESTS := \
 
 ifeq (${PARFLOW_HAVE_CLM},yes)
 ifeq (${PARFLOW_HAVE_HYPRE},yes)
-TESTS += clm.tcl \
-         clm_forc_veg.tcl \
-	 clm_varDZ.tcl
+TESTS += clm-reuse.tcl
 endif
 endif
 
-PARALLEL_TESTS =
-
-ifeq (${AMPS},mpi1)
-ifeq (${PARFLOW_HAVE_CLM},yes)
-ifeq (${PARFLOW_HAVE_HYPRE},yes)
-	PARALLEL_TESTS += \
-		clm.tcl \
-		clm.jac.tcl \
-        clm_forc_veg.tcl \
-		clm_varDZ.tcl
-endif
-endif
-endif
-
-SAMRAI_TESTS :=
-ifeq (${PARFLOW_HAVE_CLM},yes)
-ifeq (${PARFLOW_HAVE_SAMRAI},yes)
-ifeq (${PARFLOW_HAVE_HYPRE},yes)
-SAMRAI_TESTS += \
-	clm_samrai.tcl
-endif
-endif
-endif
-
-check: check_samrai check_sequential check_parallel
+check: check_sequential
 
 check_sequential:
 	@-for i in $(TESTS); \
@@ -54,33 +28,6 @@ check_sequential:
 		echo "Running $$i on 1 1 1"; \
 		tclsh $$i 1 1 1; \
 	done
-
-check_parallel:
-	@-for i in $(PARALLEL_TESTS); \
-	do \
-		for processor_topology in "1 2 1" "2 1 1" "2 2 1" "3 3 1" "1 4 1" "4 1 1"; \
-		do \
-		        make --no-print-directory testclean; \
-			echo "*****************************************************************************"; \
-			echo "Running $$i on $$processor_topology"; \
-			tclsh $$i $$processor_topology; \
-		done \
-	done
-
-
-check_samrai:
-	@-for i in $(SAMRAI_TESTS); \
-	do \
-		for processor_topology in "1 1 1 1" "2 1 1 1"; \
-		do \
-		        make --no-print-directory testclean; \
-			echo "*****************************************************************************"; \
-			echo "Running $$i on $$processor_topology"; \
-			tclsh $$i $$processor_topology; \
-		done \
-	done
-
-
 
 clean: testclean
 
