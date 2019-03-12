@@ -18,3 +18,8 @@ ADD_LATEX_DOCUMENT(
     )
 
 configure_file (version.tex.in version.tex)
+
+install(FILES ${CMAKE_BINARY_DIR}/docs/manuals/user_manual.pdf DESTINATION docs)
+install(FILES ${CMAKE_BINARY_DIR}/docs/manuals/amps_manual.pdf DESTINATION docs)
+install(FILES ${CMAKE_BINARY_DIR}/docs/manuals/dev_manual.pdf DESTINATION docs)
+
