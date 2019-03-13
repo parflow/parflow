@@ -1,8 +1,12 @@
-This is the README file for parflow-p4est integration.
+This is the README file for parflow+p4est integration.
 
 Parflow can be compiled against the p4est software library
-such that the latter functions as mesh manager of the former.
+such that the latter functions as mesh manager of the former. The
+algorithmic approach of the coupling is described in the following
+reference
 
+C. Burstedde, J. A. Fonseca, and S. Kollet, Enhancing speed and scalability of
+the ParFlow simulation code, Computational Geosciences, 22 (2018), pp. 347–361.
 
 1. Installing p4est.
 
@@ -11,29 +15,35 @@ p4est is
 
 		http://www.p4est.org/ 
 
-p4est uses the GNU autoconf/automake/libtool build system. We
+p4est uses the GNU autotools build system. We
 require the code to be compiled with parallel functionality.
 (e.g. --enable-mpi)
 
-Please see the official documentation for details.
+Please, see the official documentation for more details.
 
-2. Compiling ParFlow against p4est.
+2. Compiling ParFlow against p4est with CMake
 
-GNU autotools must be invoked to generate the
-necessary configuration files and the configure script.
-A bootstrap script is provided for this purpose: give the
-shell command './bootstrap' and then proceed with the normal
-installation instructions of ParFlow, for example:
+Proceed with the CMake installation instructions for ParFlow
+with the additional option -DP4EST_ROOT=$(P4EST_DIR), for example:
 
 ```shell
-   cd $PARFLOW_DIR
-   cd pfsimulator
-   ./configure --prefix=$PARFLOW_DIR --with-amps=mpi1 --with-p4est=$P4EST_DIR
-   make 
-   make install
+   mkdir build
+   cd build
+   cmake ../parflow \
+         -DCMAKE_INSTALL_PREFIX=$(PARFLOW_DIR) \
+         -DPARFLOW_AMPS_LAYER=mpi1 \
+         -DP4EST_ROOT=$(P4EST_DIR)
 ```
 
-We require ParFlow to be compiled with parallel functionality enabled.
+We require ParFlow to be compiled with MPI enabled. Make sure to use
+the same MPI compiler employed to build p4est.
+After this step is completed, building and installing can be done with:
+
+```shell
+   cd build
+   make
+   make install
+```
 
 2. Using p4est as mesh manager in a ParFlow simulation.
 
