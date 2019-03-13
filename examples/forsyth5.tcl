@@ -80,10 +80,8 @@ pfset ComputationalGrid.DZ	          [expr ($UpperZ - $LowerZ) / $NZ]
 # The Names of the GeomInputs
 #---------------------------------------------------------
 set   Zones                           "zone1 zone2 zone3above4 zone3left4 \
-                                      zone3right4right5 zone3above5 
-                                      zone3below5 zone3behindmain5
-                                      zone3behindtail5 zone3behind4 
-                                      zone3front4 zone4 zone5main zone5tail"
+zone3right4right5 zone3above5 zone3below5 zone3behindmain5 zone3behindtail5 \
+zone3behind4 zone3front4 zone4 zone5main zone5tail"
 
 pfset GeomInput.Names                 "solidinput $Zones background"
 
