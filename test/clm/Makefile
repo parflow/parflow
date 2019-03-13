@@ -130,3 +130,4 @@ testclean:
 	@rm -fr clm_forc_veg.out
 	@rm -f clm_forc_veg.out.pftcl
 	@rm -f clm_forc_veg_elog.txt.*	
+	@rm -fr clm-reuse-ts-* swe.out.csv

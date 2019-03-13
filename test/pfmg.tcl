@@ -321,11 +321,12 @@ pfset Solver.Nonlinear.DerivativeEpsilon                 1e-2
 pfset Solver.Linear.KrylovDimension                      10
 
 pfset Solver.Linear.Preconditioner                       PFMG
+pfset Solver.Linear.Preconditioner.PFMG.Smoother         WJacobi
 
 #pfset Solver.Linear.Preconditioner.PFMG.MaxIter          1
 #pfset Solver.Linear.Preconditioner.PFMG.NumPreRelax      100
 #pfset Solver.Linear.Preconditioner.PFMG.NumPostRelax     100
-#pfset Solver.Linear.Preconditioner.PFMG.Smoother         100
+
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files

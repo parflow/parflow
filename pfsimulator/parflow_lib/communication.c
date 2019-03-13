@@ -343,12 +343,12 @@ void FreeCommPkg(
 
     amps_FreePackage(pkg->package);
 
-    for (i = pkg->num_send_invoices; i--; )
+    for (i = pkg->num_send_invoices; i--;)
     {
       amps_FreeInvoice(pkg->send_invoices[i]);
     }
 
-    for (i = pkg->num_recv_invoices; i--; )
+    for (i = pkg->num_recv_invoices; i--;)
     {
       amps_FreeInvoice(pkg->recv_invoices[i]);
     }

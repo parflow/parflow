@@ -331,8 +331,8 @@ PFModule  *PFMGOctreeInitInstanceXtra(
   double             *cp, *wp, *ep, *sop, *np, *lp, *up;
   double             *cp_c, *wp_c = NULL, *ep_c = NULL, *sop_c = NULL, *np_c = NULL, *top_dat;
 
-  double coeffs[7] = {0, 0, 0, 0, 0, 0, 0};
-  double coeffs_symm[4] = {0, 0, 0, 0};
+  double coeffs[7] = { 0, 0, 0, 0, 0, 0, 0 };
+  double coeffs_symm[4] = { 0, 0, 0, 0 };
 
   int i, j, k;
   int num_i, num_j, num_k;

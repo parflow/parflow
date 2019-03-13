@@ -50,3 +50,6 @@ foreach(inputfile ${SAMRAI_TESTS})
   endforeach()
 endforeach()
 
+add_subdirectory (clm-reuse)
+
+

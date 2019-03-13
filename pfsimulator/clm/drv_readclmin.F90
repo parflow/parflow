@@ -97,7 +97,11 @@ subroutine drv_readclmin(drv,grid,rank,clm_write_logs)
 
       ! Run timing parameters
       if (vname == 'startcode')   call drv_get1divar(drv%startcode)  
-      if (vname == 'ts')          call drv_get1divar(drv%ts)  
+      if (vname == 'ts') then
+         print *,"CLM Error : ts value specified in drv_clmin.dat file."
+         print *,"        ts should not be specified in drv_clmin.dat file for Parflow/CLM runs."
+         call abort
+      endif
       if (vname == 'sss')         call drv_get1divar(drv%sss)  
       if (vname == 'smn')         call drv_get1divar(drv%smn)  
       if (vname == 'shr')         call drv_get1divar(drv%shr)  

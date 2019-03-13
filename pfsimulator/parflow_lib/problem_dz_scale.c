@@ -418,35 +418,35 @@ void  dzScaleFreePublicXtra()
     if (public_xtra->variable_dz)
     {
       NA_FreeNameArray(public_xtra->regions);
-      
+
       switch ((public_xtra->type))
       {
-	case 0:
-	{
-	  dummy0 = (Type0*)(public_xtra->data);
-	  tfree(dummy0->region_indices);
-	  tfree(dummy0->values);
-	  tfree(dummy0);
-	  break;
-	}
-	
-	case 1:
-	{
-	  dummy1 = (Type1*)(public_xtra->data);
-	  tfree(dummy1);
-	  break;
-	}
-	
-	case 2:
-	{
-	  dummy2 = (Type2*)(public_xtra->data);
-	  tfree(dummy2->values);
-	  tfree(dummy2);
-	  break;
-	}
+        case 0:
+        {
+          dummy0 = (Type0*)(public_xtra->data);
+          tfree(dummy0->region_indices);
+          tfree(dummy0->values);
+          tfree(dummy0);
+          break;
+        }
+
+        case 1:
+        {
+          dummy1 = (Type1*)(public_xtra->data);
+          tfree(dummy1);
+          break;
+        }
+
+        case 2:
+        {
+          dummy2 = (Type2*)(public_xtra->data);
+          tfree(dummy2->values);
+          tfree(dummy2);
+          break;
+        }
       }
     }
-    
+
     tfree(public_xtra);
   }
 }

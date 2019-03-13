@@ -23,8 +23,10 @@ if(${PARFLOW_HAVE_HYPRE})
     terrain_following_grid_overland.tcl
     var_dz_1D.tcl
     pfmg.tcl
+    pfmg_galerkin.tcl
     smg.tcl
-    pfmg_octree.tcl)
+    pfmg_octree.tcl
+    van-genuchten-file.tcl)
 endif()
 
 if(${PARFLOW_HAVE_SILO})

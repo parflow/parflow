@@ -367,6 +367,8 @@ void NewLogging(void);
 void FreeLogging(void);
 FILE *OpenLogFile(char *module_name);
 int CloseLogFile(FILE *log_file);
+void PrintVersionInfo(FILE *log_file);
+
 
 typedef void (*MatrixDiagScaleInvoke) (Vector *x, Matrix *A, Vector *b, int flag);
 typedef PFModule *(*MatrixDiagScaleInitInstanceXtraInvoke) (Grid *grid);

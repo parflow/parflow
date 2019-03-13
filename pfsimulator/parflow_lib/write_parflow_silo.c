@@ -473,7 +473,7 @@ void     WriteSilo(char *  file_prefix,
     DBAddOption(optlist, DBOPT_CYCLE, &step);
     DBAddOption(optlist, DBOPT_DTIME, &time);
 
-    err = DBPutMultimesh(db_file, "mesh", P, (const char * const*)meshnames, meshtypes, optlist);
+    err = DBPutMultimesh(db_file, "mesh", P, (const char*const*)meshnames, meshtypes, optlist);
     if (err < 0)
     {
       amps_Printf("Error: Silo put multimesh failed %s\n", filename);
@@ -487,7 +487,7 @@ void     WriteSilo(char *  file_prefix,
     DBAddOption(optlist, DBOPT_DTIME, &time);
 
     /* Multimesh information; one file per processor */
-    err = DBPutMultivar(db_file, variable_name, P, (const char * const*)varnames, vartypes, optlist);
+    err = DBPutMultivar(db_file, variable_name, P, (const char*const*)varnames, vartypes, optlist);
     if (err < 0)
     {
       amps_Printf("Error: Silo put multivar failed %s\n", filename);

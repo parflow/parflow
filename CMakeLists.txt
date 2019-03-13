@@ -387,7 +387,7 @@ include_directories ("${PROJECT_BINARY_DIR}/include")
 # -----------------------------------------------------------------------------
 configure_file (cmake/parflow_config.h.in include/parflow_config.h)
 
-configure_file (cmake/version.h.in include/version.h)
+configure_file (cmake/pfversion.h.in include/pfversion.h)
 
 configure_file (cmake/Makefile.config.in config/Makefile.config)
 configure_file (cmake/pf-cmake-env.sh.in config/pf-cmake-env.sh)
@@ -411,6 +411,7 @@ set (PARFLOW_ENABLE_SIMULATOR True CACHE BOOL "Enable building of the Parflow si
 if ( ${PARFLOW_ENABLE_SIMULATOR} )
   add_subdirectory (pfsimulator)
   add_subdirectory (test)
+  add_subdirectory (examples)
 endif ()
 
 set (PARFLOW_ENABLE_TOOLS True CACHE BOOL "Enable building of the Parflow tools")
@@ -425,7 +426,7 @@ include (CTest)
 
 set (PARFLOW_ENABLE_LATEX False CACHE BOOL "Enable LaTEX and building of documentation")
 if ( ${PARFLOW_ENABLE_LATEX} )
-  add_subdirectory(pftools/docs/usr_manual)
+  add_subdirectory(docs/manuals)
 endif()
 
 install (DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION config)

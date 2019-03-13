@@ -9,7 +9,7 @@ t_soi_pf,clm_dump_interval,clm_1d_out,clm_forc_veg,clm_output_dir,clm_output_dir
 write_CLM_binary,beta_typepf,veg_water_stress_typepf,wilting_pointpf,field_capacitypf,                 &
 res_satpf,irr_typepf, irr_cyclepf, irr_ratepf, irr_startpf, irr_stoppf, irr_thresholdpf,               &
 qirr_pf,qirr_inst_pf,irr_flag_pf,irr_thresholdtypepf,soi_z,clm_next,clm_write_logs,                    &
-clm_last_rst,clm_daily_rst)
+clm_last_rst,clm_daily_rst, pf_nlevsoi, pf_nlevlak)
 
   !=========================================================================
   !
@@ -47,6 +47,9 @@ clm_last_rst,clm_daily_rst)
   ! integer, parameter :: numrad      =   2   !number of solar radiation bands: vis, nir
   ! integer, parameter :: numcol      =   8   !number of soil color types
 
+  integer  :: pf_nlevsoi                         ! number of soil levels, passed from PF
+  integer  :: pf_nlevlak                         ! number of lake levels, passed from PF
+ 
   !=== Local Variables =====================================================
 
   ! basic indices, counters
@@ -95,7 +98,7 @@ clm_last_rst,clm_daily_rst)
   real(r8) :: qflx_in_pf((nx+2)*(ny+2)*3)        ! h2o_flux (infil) output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
   real(r8) :: swe_pf((nx+2)*(ny+2)*3)            ! swe              output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
   real(r8) :: t_g_pf((nx+2)*(ny+2)*3)            ! t_grnd           output var to send to ParFlow, on grid w/ ghost nodes for current proc but nz=1 (2D)
-  real(r8) :: t_soi_pf((nx+2)*(ny+2)*(nlevsoi+2))!tsoil             output var to send to ParFlow, on grid w/ ghost nodes for current proc, but nz=10 (3D)
+  real(r8) :: t_soi_pf((nx+2)*(ny+2)*(pf_nlevsoi+2))!tsoil             output var to send to ParFlow, on grid w/ ghost nodes for current proc, but nz=10 (3D)
   real(r8) :: sw_pf((nx+2)*(ny+2)*3)             ! SW rad, passed from PF
   real(r8) :: lw_pf((nx+2)*(ny+2)*3)             ! LW rad, passed from PF
   real(r8) :: prcp_pf((nx+2)*(ny+2)*3)           ! Precip, passed from PF
@@ -110,7 +113,7 @@ clm_last_rst,clm_daily_rst)
   real(r8) :: displa_pf((nx+2)*(ny+2)*3)         ! BH: displacement height, passed from PF
   real(r8) :: irr_flag_pf((nx+2)*(ny+2)*3)       ! irrigation flag for deficit-based scheduling -- 1 = irrigate, 0 = no-irrigate
   real(r8) :: qirr_pf((nx+2)*(ny+2)*3)           ! irrigation applied above ground -- spray or drip (2D)
-  real(r8) :: qirr_inst_pf((nx+2)*(ny+2)*(nlevsoi+2))! irrigation applied below ground -- 'instant' (3D)
+  real(r8) :: qirr_inst_pf((nx+2)*(ny+2)*(pf_nlevsoi+2))! irrigation applied below ground -- 'instant' (3D)
 
   ! output keys
   real(r8) :: clm_dump_interval                  ! dump inteval for CLM output, passed from PF, always in interval of CLM timestep, not time
@@ -173,7 +176,11 @@ clm_last_rst,clm_daily_rst)
   drv%ts = dt*3600.d0          ! Assume PF in hours, CLM in seconds
   j_incr = nx_f
   k_incr = nx_f*ny_f
- 
+
+  !=== levels passed from PF
+  nlevsoi = pf_nlevsoi
+  nlevlak = pf_nlevlak
+
   !=== Check if initialization is necessary
   if (time == start_time) then 
      
@@ -624,33 +631,50 @@ clm_last_rst,clm_daily_rst)
     write(9919,*) 'time =', time, 'gmt =', drv%gmt, 'endtime =', drv%endtime
  end if !! rank 0, write log info
 
-! if ( (drv%gmt==0.0).or.(drv%endtime==1) ) call drv_restart(2,drv,tile,clm,rank,istep_pf)
+  ! if ( (drv%gmt==0.0).or.(drv%endtime==1) ) call drv_restart(2,drv,tile,clm,rank,istep_pf)
   ! ----------------------------------
   ! NBE: Added more control over writing of the RST files
-    if (clm_next == 1) then
-     if (clm_last_rst==1) then
-      d_stp=0
-     else
-      d_stp = istep_pf
-     endif
+    if (clm_last_rst==1) then
+       d_stp=0
+    else
+       d_stp = istep_pf
+    endif
+    
+    if (clm_daily_rst==1) then
 
-      if (clm_daily_rst==1) then
+       ! Restarts occur at daily boundaries and at end of the run.
        if ( (drv%gmt==0.0).or.(drv%endtime==1) ) then
-         if (rank==0) write(9919,*) 'Writing restart time =', time, 'gmt =', drv%gmt, 'istep_pf =',istep_pf
+
           !! @RMM/LEC  add in a TCL file that sets an istep value to better automate restarts
           if (rank==0) then
-                open(393, file="clm_restart.tcl",action="write")
-                write(393,*) "set istep ",istep_pf
-                close(393)
+             write(9919,*) 'Writing restart time =', time, 'gmt =', drv%gmt, 'istep_pf =',istep_pf
+
+             open(393, file="clm_restart.tcl",action="write")
+             write(393,*) "set istep ",istep_pf
+             close(393)
           end if  !  write istep corresponding to restart step
+             
+          call drv_restart(2,drv,tile,clm,rank,d_stp)
 
-            call drv_restart(2,drv,tile,clm,rank,d_stp)
-             end if
-      else
-       call drv_restart(2,drv,tile,clm,rank,d_stp)
-      endif
+       end if
+    else
+       ! Restarts occur at start of each CLM reuse sequence.
+       if (clm_next == 1) then
 
-    endif
+          !! @RMM/LEC  add in a TCL file that sets an istep value to better automate restarts
+          if (rank==0) then
+             write(9919,*) 'Writing restart time =', time, 'gmt =', drv%gmt, 'istep_pf =',istep_pf
+
+             open(393, file="clm_restart.tcl",action="write")
+             write(393,*) "set istep ",istep_pf
+             close(393)
+          end if  !  write istep corresponding to restart step
+             
+          call drv_restart(2,drv,tile,clm,rank,d_stp)
+
+       end if
+
+    end if
   ! ---------------------------------
 
   !=== Call routine to calculate CLM flux passed to PF

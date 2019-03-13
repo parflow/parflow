@@ -346,7 +346,7 @@ PFModule  *RichardsBCInternalNewPublicXtra()
   public_xtra->internal_bc_names = NA_NewNameArray(internal_bc_names);
 
   (public_xtra->num_conditions) = num_conditions =
-                                    NA_Sizeof(public_xtra->internal_bc_names);
+    NA_Sizeof(public_xtra->internal_bc_names);
 
   if (num_conditions > 0)
   {
