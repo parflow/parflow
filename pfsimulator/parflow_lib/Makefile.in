@@ -172,7 +172,9 @@ OBJS = \
 	compute_top.o \
 	input_checks.o \
 	clustering.o \
-	index_space.o
+	index_space.o \
+	cJSON.o \
+	metadata.o
 
 $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB): $(OBJS) $(CXXOBJS) $(AMPS_LIB_DEPEND)
 	@AR@ rus $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB) $(OBJS) $(CXXOBJS)

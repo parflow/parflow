@@ -5,6 +5,7 @@ set (SRC_FILES advect.F
   bc_lb.c
   bc_pressure.c
   bc_pressure_package.c
+  cJSON.c
   calc_elevations.c
   cghs.c
   char_vector.c
@@ -53,6 +54,7 @@ set (SRC_FILES advect.F
   matrix.c
   matvec.c
   max_field_value.c
+  metadata.c
   mg_semi.c
   mg_semi_prolong.c
   mg_semi_restrict.c
