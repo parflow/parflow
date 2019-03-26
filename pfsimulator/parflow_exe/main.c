@@ -51,6 +51,10 @@
 #include "SAMRAI/tbox/SAMRAI_MPI.h"
 #include "SAMRAI/tbox/RestartManager.h"
 
+#ifdef PARFLOW_HAVE_GPERF_PROFILING
+#include <gperftools/profiler.h>
+#endif
+
 using namespace SAMRAI;
 
 #endif
@@ -107,6 +111,14 @@ int main(int argc, char *argv [])
       amps_Printf("Error: amps_Init initalization failed\n");
       exit(1);
     }
+#endif
+
+
+#ifdef PARFLOW_HAVE_GPERF_PROFILING
+  if (!amps_Rank(amps_CommWorld))
+  {
+    ProfilerStart("parflow-rank0.prof");
+  }
 #endif
 
 #ifdef HAVE_CEGDB
@@ -327,6 +339,13 @@ int main(int argc, char *argv [])
     wall_clock_time = amps_Clock() - wall_clock_time;
 
 
+#ifdef PARFLOW_HAVE_GPERF_PROFILING
+  if (!amps_Rank(amps_CommWorld))
+  {
+    ProfilerStop();
+  }
+#endif
+
     IfLogging(0)
     {
       if (!amps_Rank(amps_CommWorld))
@@ -383,6 +402,7 @@ int main(int argc, char *argv [])
   tbox::SAMRAIManager::finalize();
   tbox::SAMRAI_MPI::finalize();
 #endif
+
 
   return 0;
 }

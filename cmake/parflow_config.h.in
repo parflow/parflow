@@ -70,5 +70,7 @@
 #cmakedefine PARFLOW_HAVE_NETCDF
 #cmakedefine HAVE_NETCDF
 
+#cmakedefine PARFLOW_HAVE_GPERF_PROFILING
+
 #cmakedefine __DEBUG
 

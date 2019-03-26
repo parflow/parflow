@@ -395,6 +395,15 @@ else( ${PARFLOW_ENABLE_PROFILING} )
   set (PARFLOW_PROFILE_OPTS "")
 endif( ${PARFLOW_ENABLE_PROFILING} )
 
+# GPerfTools Profiling
+set (PARFLOW_ENABLE_GPERF_PROFILING False CACHE BOOL "Enable realtime profiling using
+gperf tools; will slow down performance")
+if( ${PARFLOW_ENABLE_GPERF_PROFILING} )
+  find_package(Gperftools REQUIRED)
+  set( CMAKE_EXE_LINKER_FLAGS  "${GPERFTOOLS_PROFILER} ${CMAKE_EXE_LINKER_FLAGS}" )
+  set( PARFLOW_HAVE_GPERF_PROFILING "yes" )
+endif( ${PARFLOW_ENABLE_GPERF_PROFILING} )
+
 include_directories ("${CMAKE_SOURCE_DIR}/pfsimulator/parflow_lib")
 
 include_directories ("${PROJECT_SOURCE_DIR}/pfsimulator/amps/${PARFLOW_AMPS_LAYER}")

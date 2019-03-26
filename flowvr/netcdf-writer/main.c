@@ -12,7 +12,16 @@
 #include <time.h>
 #include <string.h>
 
+#ifdef PARFLOW_HAVE_GPERF_PROFILING
+#include <gperftools/profiler.h>
+
+// to get the pid for the filename:
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
 // REM: You cannot have multiple writers for one file!
+//#define __DEBUG
 
 #ifdef __DEBUG
 #define D(x ...) printf("++++++++%d:", amps_Rank(amps_CommWorld)); printf(x); printf(" %s:%d\n", __FILE__, __LINE__)
@@ -20,16 +29,32 @@
 #define D(...)
 #endif
 
+#ifdef PF_TIMING1  // remove the 1 to activate this.
+clock_t tmp_clock=0;
+#define START_TIMING tmp_clock=clock();
+#define STOP_TIMING(NAME) printf("Timing(%s): %f s\n", NAME, 1.0*(clock()-tmp_clock) / CLOCKS_PER_SEC.);
+#else
+#define START_TIMING
+#define STOP_TIMING(...)
+
+#endif
+
+
+
 /**
  * Creates dimension or only returns its id if already existent.
  */
 int getDim(int ncID, const char *name, size_t len, int *idp)
 {
+  START_TIMING
   int res = nc_def_dim(ncID, name, len, idp);
+  STOP_TIMING("nc_def_dim");
 
   if (res == NC_ENAMEINUSE)
   {
+    START_TIMING
     res = nc_inq_varid(ncID, name, idp);
+    STOP_TIMING("nc_inq_varid");
   }
   return res;
 }
@@ -39,14 +64,18 @@ int getDim(int ncID, const char *name, size_t len, int *idp)
  */
 void getVar(int ncID, const char *name, int ndims, const int dimids[], int *idp)
 {
+  START_TIMING
   int res = nc_def_var(ncID, name, NC_DOUBLE, ndims, dimids, idp);
+  STOP_TIMING("nc_def_var");
 
   if (res == NC_ENAMEINUSE)
   {
+    START_TIMING
     if (nc_inq_varid(ncID, name, idp) != NC_NOERR)
     {
       PARFLOW_ERROR("Could not find variable");
     }
+  STOP_TIMING("nc_inq_varid");
   }
 }
 
@@ -59,22 +88,34 @@ int CreateFile(const char* file_name, size_t nX, size_t nY, size_t nZ, int *pxID
 
   if (access(file_name, F_OK) == -1)
   {
-    // TODO: race condition? who opens it first?
-    if (nc_create_par(file_name, NC_NETCDF4 | NC_MPIIO, amps_CommWorld, MPI_INFO_NULL, &ncID) != NC_NOERR)
+    // TODO: race condition? who opens it first? exactly!
+    // wait for everybody!
+    amps_Sync(amps_CommWorld);
+
+    // then open together
+    START_TIMING
+    int status = nc_create_par(file_name, NC_NETCDF4 | NC_MPIIO, amps_CommWorld, MPI_INFO_NULL, &ncID);
+    //int status = nc_create_par(file_name, NC_NETCDF4, amps_CommWorld, MPI_INFO_NULL, &ncID);
+    if (status != NC_NOERR)
     {
       D("Error creating file!");
+      printf("Netcdf error: %d\n", status);
+      printf("Error String: %s\n",  nc_strerror(status));
       PARFLOW_ERROR("Could not create file!");
     }
+  STOP_TIMING("nc_create_par");
   }
   else
   {
     // open it
     D("file exists already. Opening it!");
-    if (nc_open_par(file_name, NC_MPIIO | NC_WRITE, amps_CommWorld, MPI_INFO_NULL, &ncID) != NC_NOERR)
+    START_TIMING
+    if (nc_open_par(file_name, NC_NETCDF4 | NC_MPIIO | NC_WRITE, amps_CommWorld, MPI_INFO_NULL, &ncID) != NC_NOERR)
     {
       D("Error opening existing file file!");
       PARFLOW_ERROR("Could not open file!");
     }
+  STOP_TIMING("nc_open_par");
   }
 
   // create file. if it exists already, just load it.
@@ -107,6 +148,20 @@ int main(int argc, char *argv [])
     exit(1);
   }
 
+  int num = amps_Size(amps_CommWorld);
+  int rank = amps_Rank(amps_CommWorld);
+
+#ifdef PARFLOW_HAVE_GPERF_PROFILING
+  if (!rank)
+  {
+    char name[1024];
+
+    pid_t pid = getpid();
+    sprintf(name, "netcdf-rank0.prof.%d", pid);
+    ProfilerStart(name);
+  }
+#endif
+
   int abort_on_end = 1;
   char * prefix = "";
 
@@ -123,7 +178,6 @@ int main(int argc, char *argv [])
   }
 
 
-  int num = amps_Size(amps_CommWorld);
   D("ampssize: %d", num);
   if (num > 1)
   {
@@ -151,7 +205,7 @@ int main(int argc, char *argv [])
   D("now Waiting\n");
 
 #ifdef PF_TIMING
-  clock_t start, diff = 0;
+  clock_t start, diff = 0, ddiff;
 #endif
   while (fca_wait(flowvr))  // low: use our reader loop here maybe? Not atm as this version should be faster ;)
   {
@@ -159,18 +213,30 @@ int main(int argc, char *argv [])
     start = clock();
 #endif
     fca_message msg = fca_get(port_in);
-    if (fca_get_segment_size(msg, 0) == 0 && abort_on_end)
+    size_t received_bytes = fca_get_segment_size(msg, 0);
+    if (received_bytes == 0)
     {
-      D("Ending it!");
-      fca_free(msg);
-      // sync with all running netcdf writers so nobody aborts while another one is still
-      // writing.
-      amps_Sync(amps_CommWorld);
-      fca_abort(flowvr);
-      break;
+      if (abort_on_end)
+      {
+        D("Ending it!");
+        fca_free(msg);
+        // sync with all running netcdf writers so nobody aborts while another one is still
+        // writing.
+        amps_Sync(amps_CommWorld);
+        fca_abort(flowvr);
+        break;
+      }
+      else
+      {
+        printf("WARNING: netcdfwriter received 0 Bytes! Ignoring it! \n");
+        fca_free(msg);
+        continue;
+      }
     }
 
-    D("got some stuff to write\n");
+
+    D("got some stuff (%d bytes) to write\n", fca_get_segment_size(msg, 0));
+
 
     char file_name[1024];
     sprintf(file_name, "%s%s.nc", prefix, (char*)fca_read_stamp(msg, stamp_file_name));
@@ -193,16 +259,22 @@ int main(int argc, char *argv [])
     Variable last_var = VARIABLE_LAST;
     current_file_id = CreateFile(file_name, m->grid.nX, m->grid.nY, m->grid.nZ, &xID, &yID, &zID, &time_id);
     // add variable Time and variable "variable":
+    START_TIMING
     nc_def_var(current_file_id, "time", NC_DOUBLE, 1, &time_id, &time_var_id);
+    STOP_TIMING("nc_def_var")
     int variable_dims[4] = { time_id, zID, yID, xID }; // low: why in this order? I guess so it will count in the right order ;)
     D("Adding Time %f for %dx%dx%d, variable %s", m->time, m->grid.nX, m->grid.nY, m->grid.nZ, VARIABLE_TO_NAME[m->variable]);
 
     size_t start[1], count[1];
+    START_TIMING
     nc_var_par_access(current_file_id, time_var_id, NC_COLLECTIVE);
+    STOP_TIMING("nc_var_par_access");
     find_variable_length(current_file_id, time_var_id, start);
     D("start writing timestep %f into file %s at %d\n", m->time, file_name, start[0]);
     count[0] = 1;  // writing one value
+    START_TIMING
     int status = nc_put_vara_double(current_file_id, time_var_id, start, count, &(m->time));
+    STOP_TIMING("nc_put_vara_double1");
 
     while (buffer < end)
     {
@@ -218,7 +290,9 @@ int main(int argc, char *argv [])
       }
 
       buffer += sizeof(GridMessageMetadata);
+      START_TIMING
       nc_var_par_access(current_file_id, variable_var_id, NC_COLLECTIVE);
+      STOP_TIMING("nc_var_par_access");
       // write next timestep
       size_t start[4] = { 0, m->iz, m->iy, m->ix };
       size_t count[4] = { 1, m->nz, m->ny, m->nx };
@@ -226,19 +300,25 @@ int main(int argc, char *argv [])
       start[0] = start[0] - 1;
       double const * const data = (double*)buffer;
       // now do a write to the cdf! (! all the preparations up there are necessary!)
+      START_TIMING
       int status = nc_put_vara_double(current_file_id, variable_var_id, start, count, data);
-      D("putting doubles");
+      STOP_TIMING("nc_put_vara_double2");
+      D("putting %d doubles", count[0]*count[1]*count[2]*count[3]);
 
       buffer += sizeof(double) * m->nx * m->ny * m->nz;
       m = (GridMessageMetadata*)buffer;
     }
 
+    START_TIMING
     nc_close(current_file_id);
+    STOP_TIMING("nc_close");
     D("wrote %s\n", file_name);
 
     fca_free(msg);
 #ifdef PF_TIMING
-    diff += (clock() - diff);
+    ddiff = (clock() - diff);
+    diff += ddiff;
+    printf("Wall time (Rank %d) 0: %d ticks\n", rank, ddiff);
 #endif
   }
 
@@ -247,6 +327,15 @@ int main(int argc, char *argv [])
   printf("Wall clock time taken for file writes: %f seconds\n", sec);
 #endif
 
+#ifdef PARFLOW_HAVE_GPERF_PROFILING
+  if (!rank)
+  {
+    ProfilerStop();
+  }
+#endif
+
   fca_free(flowvr);
   amps_Finalize();  // MPI_finalize()
+
+  return 0;
 }
