@@ -202,6 +202,18 @@ typedef struct grgeom_octree {
     (GrGeomOctreeFlag(octree) & GrGeomOctreeNodeLeaf) | flag_value
 
 /**
+ * @brief Set branch flag
+ * 
+ * Sets value of a branch flag to the specified value.
+ *
+ * @param octree node to set
+ * @param flag_value flag to set on node
+*/
+#define GrGeomOctreeSetBranchFlag(octree, flag_value) \
+  GrGeomOctreeFlag(octree) = \
+    (GrGeomOctreeFlag(octree) | flag_value)
+
+/**
  * @brief Set branch node flag value
  * 
  * Adds flag to a branch node.  Branch flags may have more than one
@@ -314,9 +326,6 @@ typedef struct grgeom_octree {
   ((GrGeomOctreeFaces(octree) & GrGeomOctreeFaceValue(face_index)) == \
    ((unsigned char)0x00))
 /** @} */
-
-/*==========================================================================
- *==========================================================================*/
 
 /**
  * @brief Internal generic octree looping 

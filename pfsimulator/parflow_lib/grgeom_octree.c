@@ -1940,6 +1940,107 @@ void    GrGeomOctreeFromInd(
   *solid_octree_ptr = solid_octree;
 }
 
+/**
+ * @brief Set the branch node states in an octree.
+ *
+ * Branch nodes flags are not set during octree construction this
+ * function sets flags.  This function traverses an octree to and sets the branch
+ * nodes to correct flags based on status of leaf nodes.
+ *
+ * @param [in,out] octree 
+ */
+void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level)
+{
+
+  if (octree != NULL)
+  {
+
+    int it;
+    int l = 0;
+    GrGeomOctree *node;
+    int *PV_visiting = ctalloc(int, level + 2);
+    int PV_visit_child;
+    PV_visiting++;
+    PV_visiting[0] = 0;
+
+    int *outside = ctalloc(int, level);
+    int *inside = ctalloc(int, level);
+    int *full = ctalloc(int, level);
+    for(it = 0; it < level; ++it)
+    {
+      full[it] = TRUE;
+    }
+
+    node = octree;			    
+    while (l >= 0) 
+    { 
+      /* if this is a leaf node */
+      if (GrGeomOctreeNodeIsLeaf(node))	     
+      {
+	{
+	  outside[l] |= GrGeomOctreeNodeIsOutside(node);
+	  inside[l] |= GrGeomOctreeNodeIsInside(node);
+	  full[l] &= GrGeomOctreeNodeIsInside(node) | GrGeomOctreeNodeIsFull(node);
+	}
+	PV_visit_child = FALSE;			
+      }
+      /* have I visited all of the children? */		 
+      else if (PV_visiting[l] < GrGeomOctreeNumChildren)
+      {
+        PV_visit_child = TRUE;
+      }
+      else
+      {
+        PV_visit_child = FALSE;
+      }
+
+      /* visit either a child or the parent node */
+      if (PV_visit_child)
+      {
+        node = GrGeomOctreeChild(node, PV_visiting[l]);
+        l++;
+        PV_visiting[l] = 0;
+      } 
+      else
+      { 
+        node = GrGeomOctreeParent(node);
+	{
+	  if(full[l]) 
+	  {
+	    GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeFull);
+	  }
+	  if(inside[l]) 
+	  {
+	    GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeInside);
+	  }
+	  if(outside[l]) 
+	  {
+	    GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeOutside);
+	  }
+	  // Reset level just visited.
+	  inside[l] = FALSE;
+	  outside[l] = FALSE;
+	  full[l] = TRUE;
+	}
+
+        l--;
+
+	{
+	  outside[l] |= GrGeomOctreeNodeIsOutside(node);
+	  inside[l] |= GrGeomOctreeNodeIsInside(node);
+	  full[l] &= GrGeomOctreeNodeIsInside(node) | GrGeomOctreeNodeIsFull(node);
+	}
+
+        PV_visiting[l]++;
+      }
+    }
+    tfree(PV_visiting - 1);
+
+    tfree(outside);
+    tfree(inside);
+    tfree(full);
+  }    
+}
 
 /*--------------------------------------------------------------------------
  * GrGeomPrintOctreeStruc
