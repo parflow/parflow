@@ -127,7 +127,7 @@ typedef struct grgeom_octree {
 #define GrGeomOctreeNodeOutside   ((unsigned char)0x02)
 #define GrGeomOctreeNodeInside    ((unsigned char)0x04)
 #define GrGeomOctreeNodeFull      ((unsigned char)0x08)
-#define GrGeomOctreeNodeLeaf      ((unsigned char)0x16)
+#define GrGeomOctreeNodeLeaf      ((unsigned char)0x10)
 /** @} */
 
 /**
