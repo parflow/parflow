@@ -94,7 +94,7 @@ void  GrGeomFixOctree(
                                      level);
     if (new_level == level)
     {
-      if (GrGeomOctreeCellIsInside(neighbor_node))
+      if (GrGeomOctreeNodeIsInside(neighbor_node))
       {
         GrGeomOctreeClearFace(node, face_index);
 
@@ -124,8 +124,8 @@ GrGeomOctree *GrGeomNewOctree()
 
   grgeom_octree = ctalloc(GrGeomOctree, 1);
 
-  GrGeomOctreeSetCell(grgeom_octree, GrGeomOctreeCellEmpty);
-  GrGeomOctreeSetCellLeaf(grgeom_octree);
+  GrGeomOctreeSetLeafFlag(grgeom_octree, GrGeomOctreeNodeEmpty);
+  GrGeomOctreeSetNodeLeaf(grgeom_octree);
 
   GrGeomOctreeParent(grgeom_octree) = NULL;
 
@@ -160,7 +160,7 @@ void GrGeomNewOctreeChildren(
     }
 
     /* make into a non-leaf node */
-    GrGeomOctreeClearCellLeaf(grgeom_octree);
+    GrGeomOctreeClearNodeLeaf(grgeom_octree);
   }
 }
 
@@ -242,7 +242,7 @@ GrGeomOctree   *GrGeomOctreeFind(
      * Else if this is a leaf node, stop searching
      *----------------------------------------------------------*/
 
-    else if (GrGeomOctreeCellIsLeaf(new_node))
+    else if (GrGeomOctreeNodeIsLeaf(new_node))
     {
       searching = FALSE;
     }
@@ -352,8 +352,8 @@ GrGeomOctree   *GrGeomOctreeAddCell(
     if (l == 0)
     {
       /* don't overwrite "Inside" cells */
-      if (!GrGeomOctreeCellIsInside(current_node))
-        GrGeomOctreeSetCell(current_node, cell);
+      if (!GrGeomOctreeNodeIsInside(current_node))
+        GrGeomOctreeSetLeafFlag(current_node, cell);
 
       searching = FALSE;
     }
@@ -489,9 +489,9 @@ GrGeomOctree   *GrGeomOctreeAddFace(
     }
 
     if (normal_in_direction < 0)
-      cell = GrGeomOctreeCellOutside;
+      cell = GrGeomOctreeNodeOutside;
     else if (normal_in_direction > 0)
-      cell = GrGeomOctreeCellInside;
+      cell = GrGeomOctreeNodeInside;
 
     current_node = GrGeomOctreeAddCell(grgeom_octree_root,
                                        cell, ix, iy, iz, level);
@@ -520,9 +520,9 @@ GrGeomOctree   *GrGeomOctreeAddFace(
     }
 
     if (normal_in_direction < 0)
-      cell = GrGeomOctreeCellInside;
+      cell = GrGeomOctreeNodeInside;
     else if (normal_in_direction > 0)
-      cell = GrGeomOctreeCellOutside;
+      cell = GrGeomOctreeNodeOutside;
 
     current_node = GrGeomOctreeAddCell(grgeom_octree_root,
                                        cell, ix, iy, iz, level);
@@ -1384,7 +1384,7 @@ void GrGeomOctreeFromTIN(
               }
               else if (edge_tag[k + 1] == 0)
               {
-                interior_tag[k] = GrGeomOctreeCellFull;
+                interior_tag[k] = GrGeomOctreeNodeFull;
               }
             }
             else
@@ -1406,14 +1406,14 @@ void GrGeomOctreeFromTIN(
               grgeom_octree = GrGeomOctreeFind(&new_level, solid_octree, i, j, k, level);
 
               /* Only change non-`Full' cells */
-              if (!GrGeomOctreeCellIsFull(grgeom_octree))
+              if (!GrGeomOctreeNodeIsFull(grgeom_octree))
               {
                 if ((new_level == level) || (new_level < min_level))
                 {
                   /* Only change `Empty' cells */
-                  if (GrGeomOctreeCellIsEmpty(grgeom_octree))
+                  if (GrGeomOctreeNodeIsEmpty(grgeom_octree))
                   {
-                    GrGeomOctreeSetCell(grgeom_octree, GrGeomOctreeCellFull);
+                    GrGeomOctreeSetLeafFlag(grgeom_octree, GrGeomOctreeNodeFull);
                   }
                 }
                 else
@@ -1423,7 +1423,7 @@ void GrGeomOctreeFromTIN(
                   for (ic = 0; ic < GrGeomOctreeNumChildren; ic++)
                   {
                     grgeom_child = GrGeomOctreeChild(grgeom_octree, ic);
-                    GrGeomOctreeSetCell(grgeom_child, GrGeomOctreeCellFull);
+                    GrGeomOctreeSetLeafFlag(grgeom_child, GrGeomOctreeNodeFull);
                   }
                 }
               }
@@ -1891,14 +1891,14 @@ void    GrGeomOctreeFromInd(
                                                  level);
 
                 /* Only change non-`Full' cells */
-                if (!GrGeomOctreeCellIsFull(grgeom_octree))
+                if (!GrGeomOctreeNodeIsFull(grgeom_octree))
                 {
                   if ((new_level == level) || (new_level < min_l))
                   {
                     /* Only change `Empty' cells */
-                    if (GrGeomOctreeCellIsEmpty(grgeom_octree))
+                    if (GrGeomOctreeNodeIsEmpty(grgeom_octree))
                     {
-                      GrGeomOctreeSetCell(grgeom_octree, GrGeomOctreeCellFull);
+                      GrGeomOctreeSetLeafFlag(grgeom_octree, GrGeomOctreeNodeFull);
                     }
                   }
                   else
@@ -1908,7 +1908,7 @@ void    GrGeomOctreeFromInd(
                     for (ic = 0; ic < GrGeomOctreeNumChildren; ic++)
                     {
                       grgeom_child = GrGeomOctreeChild(grgeom_octree, ic);
-                      GrGeomOctreeSetCell(grgeom_child, GrGeomOctreeCellFull);
+                      GrGeomOctreeSetLeafFlag(grgeom_child, GrGeomOctreeNodeFull);
                     }
                   }
                 }
@@ -1953,7 +1953,7 @@ void          GrGeomPrintOctreeStruc(
 
   if (grgeom_octree != NULL)
   {
-    if (GrGeomOctreeCellIsEmpty(grgeom_octree))
+    if (GrGeomOctreeNodeIsEmpty(grgeom_octree))
     {
       amps_Fprintf(file, " E ");
     }
@@ -1962,7 +1962,7 @@ void          GrGeomPrintOctreeStruc(
       amps_Fprintf(file, " - ");
     }
 
-    if (GrGeomOctreeCellIsOutside(grgeom_octree))
+    if (GrGeomOctreeNodeIsOutside(grgeom_octree))
     {
       amps_Fprintf(file, " O ");
     }
@@ -1972,7 +1972,7 @@ void          GrGeomPrintOctreeStruc(
     }
 
 
-    if (GrGeomOctreeCellIsInside(grgeom_octree))
+    if (GrGeomOctreeNodeIsInside(grgeom_octree))
     {
       amps_Fprintf(file, " I ");
     }
@@ -1981,7 +1981,7 @@ void          GrGeomPrintOctreeStruc(
       amps_Fprintf(file, " - ");
     }
 
-    if (GrGeomOctreeCellIsFull(grgeom_octree))
+    if (GrGeomOctreeNodeIsFull(grgeom_octree))
     {
       amps_Fprintf(file, " F ");
     }
@@ -1990,7 +1990,7 @@ void          GrGeomPrintOctreeStruc(
       amps_Fprintf(file, " - ");
     }
 
-    if (GrGeomOctreeCellIsLeaf(grgeom_octree))
+    if (GrGeomOctreeNodeIsLeaf(grgeom_octree))
     {
       amps_Fprintf(file, " L ");
     }
@@ -2163,23 +2163,23 @@ void          GrGeomPrintOctreeCells(
     {
       amps_Fprintf(file, "%d %d %d %d: ", i, j, k, l);
 
-      cell = GrGeomOctreeCell(node) & ~GrGeomOctreeCellLeaf;
+      cell = GrGeomOctreeFlag(node) & ~GrGeomOctreeNodeLeaf;
 
       switch (cell)
       {
-        case GrGeomOctreeCellEmpty:
+        case GrGeomOctreeNodeEmpty:
           amps_Fprintf(file, "Empty\n");
           break;
 
-        case GrGeomOctreeCellOutside:
+        case GrGeomOctreeNodeOutside:
           amps_Fprintf(file, "Outside\n");
           break;
 
-        case GrGeomOctreeCellInside:
+        case GrGeomOctreeNodeInside:
           amps_Fprintf(file, "Inside\n");
           break;
 
-        case GrGeomOctreeCellFull:
+        case GrGeomOctreeNodeFull:
           amps_Fprintf(file, "Full\n");
           break;
       }
@@ -2187,23 +2187,23 @@ void          GrGeomPrintOctreeCells(
     {
       amps_Fprintf(file, "%d %d %d %d: ", i, j, k, l);
 
-      cell = GrGeomOctreeCell(node) & ~GrGeomOctreeCellLeaf;
+      cell = GrGeomOctreeFlag(node) & ~GrGeomOctreeNodeLeaf;
 
       switch (cell)
       {
-        case GrGeomOctreeCellEmpty:
+        case GrGeomOctreeNodeEmpty:
           amps_Fprintf(file, "Empty\n");
           break;
 
-        case GrGeomOctreeCellOutside:
+        case GrGeomOctreeNodeOutside:
           amps_Fprintf(file, "Outside\n");
           break;
 
-        case GrGeomOctreeCellInside:
+        case GrGeomOctreeNodeInside:
           amps_Fprintf(file, "Inside\n");
           break;
 
-        case GrGeomOctreeCellFull:
+        case GrGeomOctreeNodeFull:
           amps_Fprintf(file, "Full\n");
           break;
       }
