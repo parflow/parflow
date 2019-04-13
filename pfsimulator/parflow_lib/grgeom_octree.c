@@ -1518,11 +1518,13 @@ void GrGeomOctreeFromTIN(
   tfree(patch_table_len);
 
   /*-------------------------------------------------------------
+   * Label branch nodes in octrees
+   *-------------------------------------------------------------*/
+  GrGeomOctreeSetBranchNodeFlags(solid_octree, max_level);
+
+  /*-------------------------------------------------------------
    * Return the octrees
    *-------------------------------------------------------------*/
-
-  GrGeomOctreeSetBranchNodeFlags(solid_octree, max_level);
-  GrGeomPrintOctree("solid.out.txt", solid_octree);
 
   *solid_octree_ptr = solid_octree;
   *patch_octrees_ptr = patch_octrees;
@@ -1937,6 +1939,10 @@ void    GrGeomOctreeFromInd(
     }
   }
 
+  /*-------------------------------------------------------------
+   * Label branch nodes in octrees
+   *-------------------------------------------------------------*/
+  GrGeomOctreeSetBranchNodeFlags(solid_octree, max_l);
 
   /*-------------------------------------------------------------
    * Return the octree
@@ -1948,18 +1954,18 @@ void    GrGeomOctreeFromInd(
 /**
  * @brief Set the branch node states in an octree.
  *
- * Branch nodes flags are not set during octree construction this
- * function sets flags.  This function traverses an octree to and sets the branch
- * nodes to correct flags based on status of leaf nodes.
+ * Branch nodes flags are not set during octree construction.  This
+ * function sets branch flags.  An octree traversal is done and flags
+ * are set on the branch nodes to correct on status of leaf nodes.
+ * This function assumes the leaf nodes are properly labeled.
  *
- * @param [in,out] octree 
+ * @param [in,out] octree to setup
+ * @param [in] level Maximum level in the octree
  */
 void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level)
 {
-
   if (octree != NULL)
   {
-
     int it;
     int l = 0;
     GrGeomOctree *node;
@@ -1983,17 +1989,18 @@ void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level)
     node = octree;			    
     while (l >= 0) 
     { 
-      /* if this is a leaf node */
+
       if (GrGeomOctreeNodeIsLeaf(node))	     
       {
+	/* Leaf node */
 	{
 	  outside[l] |= GrGeomOctreeNodeIsOutside(node);
 	  inside[l] |= GrGeomOctreeNodeIsInside(node);
-	  full[l] &= (GrGeomOctreeNodeIsInside(node) | GrGeomOctreeNodeIsFull(node));
+	  full[l] &= GrGeomOctreeNodeIsFull(node);
 	}
 	PV_visit_child = FALSE;			
       }
-      /* have I visited all of the children? */		 
+      /* Branch node */
       else if (PV_visiting[l] < GrGeomOctreeNumChildren)
       {
         PV_visit_child = TRUE;
@@ -2001,6 +2008,51 @@ void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level)
       else
       {
         PV_visit_child = FALSE;
+
+	// Post order traversal
+	{
+	  // Child nodes have been visited on a branch node.  Update this
+	  // node and this level information.
+	  int child_level = l + 1;
+	  if(full[child_level]) 
+	  {
+	    GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeFull);
+	    GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeEmpty);
+	  }
+	  else
+	  {
+	    GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeFull);
+	  }
+	    
+	  // Inside/Outside is | of children
+	  if(inside[child_level]) 
+	  {
+	    GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeInside);
+	  }
+	  else
+	  {
+	    GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeInside);
+	  }
+
+	  if(outside[child_level]) 
+	  {
+	    GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeOutside);
+	  }
+	  else
+	  {
+	    GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeOutside);
+	  }
+
+	  outside[l] |= outside[child_level];
+	  inside[l] |= inside[child_level];
+	  full[l] &= ( (inside[child_level] | full[child_level])
+		       & !outside[child_level] );
+
+	  // Reset child level just visited for next traversal to that level
+	  outside[child_level] = FALSE;
+	  inside[child_level] = FALSE;
+	  full[child_level] = TRUE;
+	}
       }
 
       /* visit either a child or the parent node */
@@ -2013,44 +2065,7 @@ void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level)
       else
       { 
         node = GrGeomOctreeParent(node);
-
-	if(node)
-	{
-	  if(full[l]) 
-	  {
-	    GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeFull);
-	    GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeEmpty);
-	  }
-	  else
-	  {
-	    GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeFull);
-	  }
-
-	  // Inside/Outside is | of children
-	  if(inside[l]) 
-	  {
-	    GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeInside);
-	  }
-	  if(outside[l]) 
-	  {
-	    GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeOutside);
-	  }
-
-	  // Reset level just visited.
-	  inside[l] = FALSE;
-	  outside[l] = FALSE;
-	  full[l] = TRUE;
-	}
-
         l--;
-
-	if(node)
-	{
-	  outside[l] |= GrGeomOctreeNodeIsOutside(node);
-	  inside[l] |= GrGeomOctreeNodeIsInside(node);
-	  full[l] &= (GrGeomOctreeNodeIsInside(node) | GrGeomOctreeNodeIsFull(node));
-	}
-
         PV_visiting[l]++;
       }
     }

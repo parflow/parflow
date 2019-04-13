@@ -98,6 +98,7 @@ typedef struct {
  *   Macro for looping over the inside of a solid.
  *--------------------------------------------------------------------------*/
 
+// \todo SGS can remove tests with new macro
 #define GrGeomInLoop(i, j, k, grgeom, \
                      r, ix, iy, iz, nx, ny, nz, body) \
   { \
@@ -108,13 +109,13 @@ typedef struct {
     i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref; \
     j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref; \
     k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref; \
-    GrGeomOctreeNodeLoop(i, j, k, PV_node, \
-                         GrGeomSolidData(grgeom), \
-                         GrGeomSolidOctreeBGLevel(grgeom) + r, \
-                         ix, iy, iz, nx, ny, nz, \
-                         (GrGeomOctreeNodeIsInside(PV_node) || \
-                          GrGeomOctreeNodeIsFull(PV_node)), \
-                         body); \
+    GrGeomOctreeInteriorNodeLoop(i, j, k, PV_node, \
+				 GrGeomSolidData(grgeom),      \
+				 GrGeomSolidOctreeBGLevel(grgeom) + r,	\
+				 ix, iy, iz, nx, ny, nz,		\
+				 (GrGeomOctreeNodeIsInside(PV_node) ||	\
+				  GrGeomOctreeNodeIsFull(PV_node)),	\
+				 body);					\
   }
 
 /*--------------------------------------------------------------------------
@@ -122,6 +123,7 @@ typedef struct {
  *   Macro for looping over the inside of a solid with non-unitary strides.
  *--------------------------------------------------------------------------*/
 
+// \todo SGS can remove tests with new macro
 #define GrGeomInLoop2(i, j, k, grgeom,                                  \
                       r, ix, iy, iz, nx, ny, nz, sx, sy, sz, body) \
   { \
