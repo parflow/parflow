@@ -28,6 +28,8 @@
 
 #include "parflow.h"
 
+void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level);
+
 /*****************************************************************************
 *
 * The functions in this file are for manipulating the Octree structure.
@@ -1519,6 +1521,9 @@ void GrGeomOctreeFromTIN(
    * Return the octrees
    *-------------------------------------------------------------*/
 
+  GrGeomOctreeSetBranchNodeFlags(solid_octree, max_level);
+  GrGeomPrintOctree("solid.out.txt", solid_octree);
+
   *solid_octree_ptr = solid_octree;
   *patch_octrees_ptr = patch_octrees;
 }
@@ -1958,14 +1963,18 @@ void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level)
     int it;
     int l = 0;
     GrGeomOctree *node;
+
+    // \todo These sizes seem odd, why padding for PV_visiting at front?
+    // shouldn't size be level+1?
     int *PV_visiting = ctalloc(int, level + 2);
     int PV_visit_child;
     PV_visiting++;
     PV_visiting[0] = 0;
 
-    int *outside = ctalloc(int, level);
-    int *inside = ctalloc(int, level);
-    int *full = ctalloc(int, level);
+    int *outside = ctalloc(int, level+2);
+    int *inside = ctalloc(int, level+2);
+    int *full = ctalloc(int, level+2);
+
     for(it = 0; it < level; ++it)
     {
       full[it] = TRUE;
@@ -1980,7 +1989,7 @@ void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level)
 	{
 	  outside[l] |= GrGeomOctreeNodeIsOutside(node);
 	  inside[l] |= GrGeomOctreeNodeIsInside(node);
-	  full[l] &= GrGeomOctreeNodeIsInside(node) | GrGeomOctreeNodeIsFull(node);
+	  full[l] &= (GrGeomOctreeNodeIsInside(node) | GrGeomOctreeNodeIsFull(node));
 	}
 	PV_visit_child = FALSE;			
       }
@@ -2004,11 +2013,20 @@ void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level)
       else
       { 
         node = GrGeomOctreeParent(node);
+
+	if(node)
 	{
 	  if(full[l]) 
 	  {
 	    GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeFull);
+	    GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeEmpty);
 	  }
+	  else
+	  {
+	    GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeFull);
+	  }
+
+	  // Inside/Outside is | of children
 	  if(inside[l]) 
 	  {
 	    GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeInside);
@@ -2017,6 +2035,7 @@ void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level)
 	  {
 	    GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeOutside);
 	  }
+
 	  // Reset level just visited.
 	  inside[l] = FALSE;
 	  outside[l] = FALSE;
@@ -2025,17 +2044,18 @@ void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level)
 
         l--;
 
+	if(node)
 	{
 	  outside[l] |= GrGeomOctreeNodeIsOutside(node);
 	  inside[l] |= GrGeomOctreeNodeIsInside(node);
-	  full[l] &= GrGeomOctreeNodeIsInside(node) | GrGeomOctreeNodeIsFull(node);
+	  full[l] &= (GrGeomOctreeNodeIsInside(node) | GrGeomOctreeNodeIsFull(node));
 	}
 
         PV_visiting[l]++;
       }
     }
-    tfree(PV_visiting - 1);
 
+    tfree(PV_visiting - 1);
     tfree(outside);
     tfree(inside);
     tfree(full);
@@ -2223,7 +2243,7 @@ void          GrGeomPrintOctree(
   level = 0;
   while (still_more_levels)
   {
-    amps_Fprintf(file, "\n\nlevel = %d:\n", level);
+    amps_Fprintf(file, "\n\nlevel = %d root = %p:\n", level, grgeom_octree_root);
 
     still_more_levels =
       GrGeomPrintOctreeLevel(file, grgeom_octree_root, level, 0);
