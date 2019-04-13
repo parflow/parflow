@@ -487,17 +487,16 @@ typedef struct grgeom_octree {
       /* if at the level of interest */					\
       if (l == PV_level)						\
       {									\
-        if (value_test)							\
+	if ((GrGeomOctreeNodeIsInside(node) || GrGeomOctreeNodeIsFull(node)) && (value_test)) \
           level_body;							\
 									\
         PV_visit_child = FALSE;						\
       }									\
 									\
       /* if this is a full node or a leaf node */			\
-      else if (GrGeomOctreeNodeIsLeaf(node) |				\
-	       GrGeomOctreeNodeIsFull(node))				\
+      else if (GrGeomOctreeNodeIsLeaf(node))				\
       {									\
-        if (value_test)							\
+	if ((GrGeomOctreeNodeIsInside(node) || GrGeomOctreeNodeIsFull(node)) && (value_test)) \
           leaf_body;							\
 									\
         PV_visit_child = FALSE;						\
@@ -614,7 +613,27 @@ typedef struct grgeom_octree {
     }) \
   }
 
-
+/**
+ * @brief Loop over the interior index space of an octree.
+ *
+ * A more efficient GrGeomOctreeNodeLoop that loops over interior
+ * indices only.  
+ *
+ * @param[in,out] i X index
+ * @param[in,out] j Y index
+ * @param[in,out] k k index
+ * @param[out] node octree node
+ * @param[in] octree octree to traverse
+ * @param[in] level level to limit tree traversal
+ * @param[in] ix x lower bound of index space to process
+ * @param[in] iy y lower bound of index space to process
+ * @param[in] iz z lower bound of index space to process
+ * @param[in] nx x upper bound of index space to process
+ * @param[in] ny y upper bound of index space to process
+ * @param[in] nz z upper bound of index space to process
+ * @param[in] value_test boolean if tests evaluated before body execution
+ * @param[in] body code to execute 
+ */
 #define GrGeomOctreeInteriorNodeLoop(i, j, k, node, octree, level, \
                              ix, iy, iz, nx, ny, nz, value_test, \
                              body) \

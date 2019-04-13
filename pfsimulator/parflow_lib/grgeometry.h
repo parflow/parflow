@@ -113,8 +113,7 @@ typedef struct {
 				 GrGeomSolidData(grgeom),      \
 				 GrGeomSolidOctreeBGLevel(grgeom) + r,	\
 				 ix, iy, iz, nx, ny, nz,		\
-				 (GrGeomOctreeNodeIsInside(PV_node) ||	\
-				  GrGeomOctreeNodeIsFull(PV_node)),	\
+                                 TRUE,					\
 				 body);					\
   }
 
@@ -123,7 +122,8 @@ typedef struct {
  *   Macro for looping over the inside of a solid with non-unitary strides.
  *--------------------------------------------------------------------------*/
 
-// \todo SGS can remove tests with new macro
+// \todo Interior version of this would improve speed; but this loop is not
+// currently used.
 #define GrGeomInLoop2(i, j, k, grgeom,                                  \
                       r, ix, iy, iz, nx, ny, nz, sx, sy, sz, body) \
   { \
