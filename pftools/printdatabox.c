@@ -725,7 +725,7 @@ void            PrintVTK(
     int j;
     double *DTd;
     float *DTf;
-    DTf = (float*)malloc(tools_SizeofFloat * nxyzp * 3);
+    DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
     DTd = DataboxCoeffs(v);
     for (j = 0; j < (NX * NY * NZ); ++j)
     {
@@ -798,7 +798,7 @@ void            PrintTFG_VTK(
     int j;
     double *DTd;
     float *DTf;
-    DTf = (float*)malloc(tools_SizeofFloat * nxyzp * 3);
+    DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
     DTd = DataboxCoeffs(v);
 
     for (j = 0; j < (NX * NY * NZ); ++j)
