@@ -1520,7 +1520,16 @@ void GrGeomOctreeFromTIN(
   /*-------------------------------------------------------------
    * Label branch nodes in octrees
    *-------------------------------------------------------------*/
+
+#if SGS_DEBUG
+  GrGeomPrintOctree("pre-solid.txt", solid_octree);
+#endif
+
   GrGeomOctreeSetBranchNodeFlags(solid_octree, max_level);
+
+#if SGS_DEBUG
+  GrGeomPrintOctree("post-solid.txt", solid_octree);
+#endif
 
   /*-------------------------------------------------------------
    * Return the octrees

@@ -494,7 +494,7 @@ typedef struct grgeom_octree {
       }									\
 									\
       /* if this is a full node or a leaf node */			\
-      else if (GrGeomOctreeNodeIsLeaf(node))				\
+      else if (GrGeomOctreeNodeIsLeaf(node) || GrGeomOctreeNodeIsFull(node)) \
       {									\
 	if ((GrGeomOctreeNodeIsInside(node) || GrGeomOctreeNodeIsFull(node)) && (value_test)) \
           leaf_body;							\
