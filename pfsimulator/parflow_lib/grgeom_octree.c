@@ -1951,7 +1951,16 @@ void    GrGeomOctreeFromInd(
   /*-------------------------------------------------------------
    * Label branch nodes in octrees
    *-------------------------------------------------------------*/
-  GrGeomOctreeSetBranchNodeFlags(solid_octree, max_l);
+
+#ifdef SGS_DEBUG
+  GrGeomPrintOctree("pre-solid.txt", solid_octree);
+#endif
+
+  GrGeomOctreeSetBranchNodeFlags(solid_octree, octree_bg_level);
+
+#ifdef SGS_DEBUG
+  GrGeomPrintOctree("post-solid.txt", solid_octree);
+#endif
 
   /*-------------------------------------------------------------
    * Return the octree
@@ -2083,7 +2092,7 @@ void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level)
     tfree(outside);
     tfree(inside);
     tfree(full);
-  }    
+  } /* octree != NULL */
 }
 
 /*--------------------------------------------------------------------------
