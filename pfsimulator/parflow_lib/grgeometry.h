@@ -98,7 +98,6 @@ typedef struct {
  *   Macro for looping over the inside of a solid.
  *--------------------------------------------------------------------------*/
 
-// \todo SGS can remove tests with new macro
 #define GrGeomInLoop(i, j, k, grgeom, \
                      r, ix, iy, iz, nx, ny, nz, body) \
   { \
@@ -148,6 +147,7 @@ typedef struct {
  *   Macro for looping over the outside of a solid.
  *--------------------------------------------------------------------------*/
 
+// \todo Remove extra tests here
 #define GrGeomOutLoop(i, j, k, grgeom, \
                       r, ix, iy, iz, nx, ny, nz, body) \
   { \
@@ -158,7 +158,7 @@ typedef struct {
     i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref; \
     j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref; \
     k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref; \
-    GrGeomOctreeNodeLoop(i, j, k, PV_node, \
+    GrGeomOctreeExteriorNodeLoop(i, j, k, PV_node, \
                          GrGeomSolidData(grgeom), \
                          GrGeomSolidOctreeBGLevel(grgeom) + r, \
                          ix, iy, iz, nx, ny, nz, \
