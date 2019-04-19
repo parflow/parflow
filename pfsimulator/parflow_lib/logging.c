@@ -135,11 +135,10 @@ void PrintVersionInfo(FILE *log_file)
 #ifdef CFLAGS
   fprintf(log_file, "\tWith C flags   : %s\n", CFLAGS);
 #endif
-  
+
 #ifdef FFLAGS
   fprintf(log_file, "\tWith F77 flags : %s\n", FFLAGS);
 #endif
-
 }
 
 

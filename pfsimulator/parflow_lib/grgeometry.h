@@ -109,11 +109,11 @@ typedef struct {
     j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref; \
     k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref; \
     GrGeomOctreeInteriorNodeLoop(i, j, k, PV_node, \
-				 GrGeomSolidData(grgeom),      \
-				 GrGeomSolidOctreeBGLevel(grgeom) + r,	\
-				 ix, iy, iz, nx, ny, nz,		\
-                                 TRUE,					\
-				 body);					\
+                                 GrGeomSolidData(grgeom),      \
+                                 GrGeomSolidOctreeBGLevel(grgeom) + r,  \
+                                 ix, iy, iz, nx, ny, nz,                \
+                                 TRUE,                                  \
+                                 body);                                 \
   }
 
 /*--------------------------------------------------------------------------
@@ -149,22 +149,21 @@ typedef struct {
 
 // \todo Remove extra tests here
 #define GrGeomOutLoop(i, j, k, grgeom, \
-                      r, ix, iy, iz, nx, ny, nz, body) \
-  { \
-    GrGeomOctree  *PV_node; \
-    double PV_ref = pow(2.0, r); \
-\
-\
-    i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref; \
-    j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref; \
-    k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref; \
-    GrGeomOctreeExteriorNodeLoop(i, j, k, PV_node, \
-                         GrGeomSolidData(grgeom), \
-                         GrGeomSolidOctreeBGLevel(grgeom) + r, \
-                         ix, iy, iz, nx, ny, nz, \
-                         (GrGeomOctreeNodeIsOutside(PV_node) || \
-                          GrGeomOctreeNodeIsEmpty(PV_node)), \
-                         body); \
+                      r, ix, iy, iz, nx, ny, nz, body)  \
+  {                                                     \
+    GrGeomOctree  *PV_node;                             \
+    double PV_ref = pow(2.0, r);                        \
+                                                        \
+                                                        \
+    i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref;      \
+    j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;      \
+    k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref;      \
+    GrGeomOctreeExteriorNodeLoop(i, j, k, PV_node,      \
+                                 GrGeomSolidData(grgeom),      \
+                                 GrGeomSolidOctreeBGLevel(grgeom) + r,  \
+                                 ix, iy, iz, nx, ny, nz,                \
+                                 TRUE,                                  \
+                                 body);                                 \
   }
 
 /*--------------------------------------------------------------------------

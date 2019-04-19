@@ -1523,7 +1523,6 @@ void GrGeomOctreeFromTIN(
 #define SGS_DEBUG 0
 #if SGS_DEBUG
   GrGeomPrintOctree("pre-solid.txt", solid_octree);
-
 #endif
 
   GrGeomOctreeSetBranchNodeFlags(solid_octree, max_level);
@@ -2001,31 +2000,30 @@ void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level)
     PV_visiting++;
     PV_visiting[0] = 0;
 
-    int *empty = ctalloc(int, level+2);
-    int *outside = ctalloc(int, level+2);
-    int *inside = ctalloc(int, level+2);
-    int *full = ctalloc(int, level+2);
+    int *empty = ctalloc(int, level + 2);
+    int *outside = ctalloc(int, level + 2);
+    int *inside = ctalloc(int, level + 2);
+    int *full = ctalloc(int, level + 2);
 
-    for(it = 0; it < level; ++it)
+    for (it = 0; it < level; ++it)
     {
       empty[it] = TRUE;
       full[it] = TRUE;
     }
 
-    node = octree;			    
-    while (l >= 0) 
-    { 
-
-      if (GrGeomOctreeNodeIsLeaf(node))	     
+    node = octree;
+    while (l >= 0)
+    {
+      if (GrGeomOctreeNodeIsLeaf(node))
       {
-	/* Leaf node */
-	{
-	  empty[l] &= GrGeomOctreeNodeIsEmpty(node);
-	  outside[l] |= GrGeomOctreeNodeIsOutside(node);
-	  inside[l] |= GrGeomOctreeNodeIsInside(node);
-	  full[l] &= GrGeomOctreeNodeIsFull(node);
-	}
-	PV_visit_child = FALSE;			
+        /* Leaf node */
+        {
+          empty[l] &= GrGeomOctreeNodeIsEmpty(node);
+          outside[l] |= GrGeomOctreeNodeIsOutside(node);
+          inside[l] |= GrGeomOctreeNodeIsInside(node);
+          full[l] &= GrGeomOctreeNodeIsFull(node);
+        }
+        PV_visit_child = FALSE;
       }
       /* Branch node */
       else if (PV_visiting[l] < GrGeomOctreeNumChildren)
@@ -2036,64 +2034,64 @@ void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level)
       {
         PV_visit_child = FALSE;
 
-	// Post order traversal
-	{
-	  // Child nodes have been visited on a branch node.  Update this
-	  // node and this level information.
-	  int child_level = l + 1;
-	  if(full[child_level]) 
-	  {
-	    GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeFull);
-	    GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeEmpty);
-	  }
-	  else
-	  {
-	    GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeFull);
-	  }
+        // Post order traversal
+        {
+          // Child nodes have been visited on a branch node.  Update this
+          // node and this level information.
+          int child_level = l + 1;
+          if (full[child_level])
+          {
+            GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeFull);
+            GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeEmpty);
+          }
+          else
+          {
+            GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeFull);
+          }
 
-	  if(empty[child_level]) 
-	  {
-	    GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeEmpty);
-	    GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeFull);
-	  }
-	  else
-	  {
-	    GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeEmpty);
-	  }
-	    
-	  // Inside/Outside is | of children
-	  if(inside[child_level]) 
-	  {
-	    GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeInside);
-	  }
-	  else
-	  {
-	    GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeInside);
-	  }
+          if (empty[child_level])
+          {
+            GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeEmpty);
+            GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeFull);
+          }
+          else
+          {
+            GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeEmpty);
+          }
 
-	  if(outside[child_level]) 
-	  {
-	    GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeOutside);
-	  }
-	  else
-	  {
-	    GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeOutside);
-	  }
+          // Inside/Outside is | of children
+          if (inside[child_level])
+          {
+            GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeInside);
+          }
+          else
+          {
+            GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeInside);
+          }
 
-	  empty[l] &= ( (outside[child_level] | empty[child_level])
-		       & !inside[child_level] );
+          if (outside[child_level])
+          {
+            GrGeomOctreeSetBranchFlag(node, GrGeomOctreeNodeOutside);
+          }
+          else
+          {
+            GrGeomOctreeClearBranchFlag(node, GrGeomOctreeNodeOutside);
+          }
 
-	  outside[l] |= outside[child_level];
-	  inside[l] |= inside[child_level];
-	  full[l] &= ( (inside[child_level] | full[child_level])
-		       & !outside[child_level] );
+          empty[l] &= ((outside[child_level] | empty[child_level])
+                       & !inside[child_level]);
 
-	  // Reset child level just visited for next traversal to that level
-	  empty[child_level] = TRUE;
-	  outside[child_level] = FALSE;
-	  inside[child_level] = FALSE;
-	  full[child_level] = TRUE;
-	}
+          outside[l] |= outside[child_level];
+          inside[l] |= inside[child_level];
+          full[l] &= ((inside[child_level] | full[child_level])
+                      & !outside[child_level]);
+
+          // Reset child level just visited for next traversal to that level
+          empty[child_level] = TRUE;
+          outside[child_level] = FALSE;
+          inside[child_level] = FALSE;
+          full[child_level] = TRUE;
+        }
       }
 
       /* visit either a child or the parent node */
@@ -2102,9 +2100,9 @@ void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level)
         node = GrGeomOctreeChild(node, PV_visiting[l]);
         l++;
         PV_visiting[l] = 0;
-      } 
+      }
       else
-      { 
+      {
         node = GrGeomOctreeParent(node);
         l--;
         PV_visiting[l]++;
@@ -2116,7 +2114,6 @@ void GrGeomOctreeSetBranchNodeFlags(GrGeomOctree *octree, int level)
     tfree(outside);
     tfree(inside);
     tfree(full);
-
   } /* octree != NULL */
 }
 

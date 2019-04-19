@@ -751,7 +751,7 @@ PFModule  *PFMGNewPublicXtra(char *name)
   raptype = NA_NameToIndex(raptype_switch_na, raptype_name);
   if (raptype >= 0)
   {
-     public_xtra->raptype = raptype;
+    public_xtra->raptype = raptype;
   }
   else
   {
@@ -760,10 +760,10 @@ PFModule  *PFMGNewPublicXtra(char *name)
   }
   NA_FreeNameArray(raptype_switch_na);
 
-  if(raptype == 0 && smoother > 1)
+  if (raptype == 0 && smoother > 1)
   {
-     InputError("Error: Galerkin RAPType is not compatible with Smoother <%s>.\n",
-		smoother_name, key);
+    InputError("Error: Galerkin RAPType is not compatible with Smoother <%s>.\n",
+               smoother_name, key);
   }
 
   public_xtra->time_index_pfmg = RegisterTiming("PFMG");
