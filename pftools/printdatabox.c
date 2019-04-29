@@ -725,17 +725,16 @@ void            PrintVTK(
     int j;
     double *DTd;
     float *DTf;
-    DTd = (double*)malloc(tools_SizeofDouble * nxyzp * 3);
-    DTf = (float*)malloc(tools_SizeofFloat * nxyzp * 3);
+    DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
     DTd = DataboxCoeffs(v);
     for (j = 0; j < (NX * NY * NZ); ++j)
     {
       DTf[j] = (float)DTd[j];
     }
-    free(DTd);
     fprintf(fp, "SCALARS %s float\n", varname);
     fprintf(fp, "LOOKUP_TABLE default\n");
     tools_WriteFloat(fp, DTf, NX * NY * NZ);
+    free(DTf);
   }
   else
   {
@@ -782,6 +781,7 @@ void            PrintTFG_VTK(
   }
   fprintf(fp, "POINTS %i float\n", nxyzp);
   tools_WriteFloat(fp, pnt, nxyzp * 3);
+  free(pnt);
 
 // COMMENT THE PREVIOUS 8 AND UNCOMMENT THE FOLLOWING 3 TO FORCE DOUBLE WRITE
 //        /* Write points as double */
@@ -798,8 +798,7 @@ void            PrintTFG_VTK(
     int j;
     double *DTd;
     float *DTf;
-    DTd = (double*)malloc(tools_SizeofDouble * nxyzp * 3);
-    DTf = (float*)malloc(tools_SizeofFloat * nxyzp * 3);
+    DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
     DTd = DataboxCoeffs(v);
 
     for (j = 0; j < (NX * NY * NZ); ++j)
@@ -810,6 +809,7 @@ void            PrintTFG_VTK(
     fprintf(fp, "SCALARS %s float\n", varname);
     fprintf(fp, "LOOKUP_TABLE default\n");
     tools_WriteFloat(fp, DTf, NX * NY * NZ);
+    free(DTf);
   }
   else
   {
@@ -877,7 +877,6 @@ void            PrintCLMVTK(
     double *DTd;
     float  *DTf;
     float  *val;
-    DTd = (double*)malloc(tools_SizeofDouble * nxyzp);
     DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
     DTd = DataboxCoeffs(v);
     for (j = 0; j < (NX * NY * NZ); ++j)
@@ -915,6 +914,7 @@ void            PrintCLMVTK(
         }
       }
     }
+    free(DTf);
   }
   else
   {
@@ -1003,6 +1003,7 @@ void            PrintTFG_CLMVTK(
   }
   fprintf(fp, "POINTS %i float\n", nxyzp);
   tools_WriteFloat(fp, pnt, nxyzp * 3);
+  free(pnt);
 
   // COMMENT THE PREVIOUS 8 AND UNCOMMENT THE FOLLOWING 3 TO FORCE DOUBLE WRITE
   //        /* Write points as double */
@@ -1022,7 +1023,6 @@ void            PrintTFG_CLMVTK(
     double *DTd;
     float  *DTf;
     float  *val;
-    DTd = (double*)malloc(tools_SizeofDouble * nxyzp);
     DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
     DTd = DataboxCoeffs(v);
     for (j = 0; j < (NX * NY * NZ); ++j)
@@ -1060,6 +1060,7 @@ void            PrintTFG_CLMVTK(
         }
       }
     }
+    free(DTf);
   }
   else
   {

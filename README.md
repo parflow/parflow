@@ -12,7 +12,10 @@ multi-institutional development history and is now a collaborative
 effort between CSM, LLNL, UniBonn and UCB. ParFlow has been coupled to
 the mesoscale, meteorological code ARPS and the NCAR code WRF.
 
-See the "User's Manual" for info on "Getting Started" in ParFlow.
+The Parflow User Manual is available at [Parflow Users
+Manual](https://github.com/parflow/parflow/blob/master/parflow-manual.pdf).
+The manual contains additional documentation on how to use ParFlow and
+setup input files.  A quick start is included below.
 
 ### Citing Parflow
 
@@ -221,6 +224,27 @@ Some parallel machines do not allow launching a parallel executable
 from the login node; you may need to run this command in a batch file
 or by starting a parallel interactive session.
 
+## Building documentation
+
+The documentation for Parflow may be built as part of the build when Latex is
+available on the system. Adding the -DPARFLOW_ENABLE_LATEX=TRUE option to the CMake configure
+will enable building of the documentation.
+
+
+```shell
+   mkdir build
+   cd build
+   cmake ../parflow \
+        <other cmake options> \
+	-DPARFLOW_ENABLE_LATEX=TRUE \
+	-DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR)
+```
+
+When make is run the documenation will be built and installed in
+$(INSTALL_DIR)/docs/user_manual.pdf.
+
+A version of the user manual is also available at github : [Parflow Users Manual](https://github.com/parflow/parflow/blob/master/parflow-manual.pdf)
+
 ## Configure options
 
 A number of packages are optional for building ParFlow.  The optional
@@ -281,6 +305,8 @@ modified to use the custom command string:
    pfundist default_single
 ```
 ## Building simulator and tools support separately
+
+This section is for advanced users runing on heterogenous HPC architectures.
 
 ParFlow is composed of two main components that maybe configured and
 built separately.  Some HPC platforms are heterogeneous with the login
