@@ -28,6 +28,10 @@
 #ifndef FILE_HEADER
 #define FILE_HEADER
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*-----------------------------------------------------------------------
  * Supported File types
  *-----------------------------------------------------------------------*/
@@ -35,17 +39,12 @@
 #define SimpleA      2
 #define SimpleB      3
 
-#ifdef __STDC__
-# define        ANSI_PROTO(s) s
-#else
-# define ANSI_PROTO(s) ()
-#endif
-
-
 /* file.c */
-int FileType ANSI_PROTO((char *filename));
-Databox *Read ANSI_PROTO((int type, char *filename));
+int FileType (char *filename);
+Databox *Read (int type, char *filename);
 
-#undef ANSI_PROTO
+#ifdef __cplusplus
+}
+#endif
 
 #endif

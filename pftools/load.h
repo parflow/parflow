@@ -32,17 +32,15 @@
 #include "grid.h"
 #include "usergrid.h"
 
-
-#ifdef __STDC__
-# define        ANSI_PROTO(s) s
-#else
-# define ANSI_PROTO(s) ()
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-
 /* load.c */
-void LoadParflowB ANSI_PROTO((char *filename, SubgridArray *all_subgrids, Background *background, Databox *databox));
+void LoadParflowB(char *filename, SubgridArray *all_subgrids, Background *background, Databox *databox);
 
-#undef ANSI_PROTO
+#ifdef __cplusplus
+}
+#endif
 
 #endif

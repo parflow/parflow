@@ -28,7 +28,6 @@
 #include <stdlib.h>
 #include "enlargebox.h"
 
-
 Databox       *EnlargeBox(Databox *inbox,
                           int new_nx, int new_ny, int new_nz)
 {

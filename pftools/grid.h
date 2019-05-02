@@ -30,6 +30,10 @@
 
 #include "region.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*--------------------------------------------------------------------------
  * Terminology:
  *   See region.h
@@ -137,18 +141,13 @@ typedef struct {
                        (SubregionArray**)subgrid_array_1)
 
 
-#ifdef __STDC__
-# define        ANSI_PROTO(s) s
-#else
-# define ANSI_PROTO(s) ()
-#endif
-
-
 /* grid.c */
-Grid * NewGrid ANSI_PROTO((SubgridArray *subgrids, SubgridArray *all_subgrids, SubgridArray *neighbors));
-void FreeGrid ANSI_PROTO((Grid *grid));
+Grid * NewGrid(SubgridArray *subgrids, SubgridArray *all_subgrids, SubgridArray *neighbors);
+void FreeGrid(Grid *grid);
 
-#undef ANSI_PROTO
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
