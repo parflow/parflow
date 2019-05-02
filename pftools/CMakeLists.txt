@@ -1,3 +1,5 @@
+include(PftoolsTest)
+
 # TODO many little tools not included yet.  See Makefile.in
 
 set (TOOLS_SRC_FILES pftappinit.c printdatabox.c readdatabox.c databox.c
@@ -60,7 +62,7 @@ install(TARGETS projecttin DESTINATION bin)
 #-----------------------------------------------------------------------------
 # Mask utilities
 #-----------------------------------------------------------------------------
-add_executable(pfmask-to-pfsol mask-to-pfsol.cpp)
+add_executable(pfmask-to-pfsol pfmask-to-pfsol.cpp)
 target_include_directories(pfmask-to-pfsol PUBLIC third-party)
 target_link_libraries(pfmask-to-pfsol pftools)
 install(TARGETS pfmask-to-pfsol DESTINATION bin)
@@ -71,3 +73,5 @@ install(TARGETS pfsol-to-vtk DESTINATION bin)
 add_executable(pfmaskdownsize pfmaskdownsize.cpp)
 target_include_directories(pfmaskdownsize PUBLIC third-party)
 install(TARGETS pfmaskdownsize DESTINATION bin)
+
+add_subdirectory (test)
