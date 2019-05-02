@@ -23,7 +23,7 @@ function (pf_add_mask_test testname inputfile)
   string(REGEX REPLACE "\.asc" "\.vtk" vtkname ${inputfile})
   string(REGEX REPLACE "\.asc" "\.pfsol" pfsolname ${inputfile})
 
-  list(APPEND cmd "pfmask-to-pfsol")
+  list(APPEND cmd "${CMAKE_BINARY_DIR}/pftools/pfmask-to-pfsol")
   list(APPEND cmd "--mask")
   list(APPEND cmd ${inputfile})
   
@@ -51,7 +51,7 @@ function (pf_add_multi_mask_test testname inputfile)
   string(REGEX REPLACE "\.asc" "\.vtk" vtkname ${inputfile})
   string(REGEX REPLACE "\.asc" "\.pfsol" pfsolname ${inputfile})
 
-  list(APPEND cmd "pfmask-to-pfsol")
+  list(APPEND cmd "${CMAKE_BINARY_DIR}/pftools/pfmask-to-pfsol")
 
   foreach(dir "top" "bottom" "left" "right" "front" "back")
     list(APPEND cmd "--mask-${dir}")
