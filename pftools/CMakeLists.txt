@@ -32,7 +32,10 @@ if (${PARFLOW_HAVE_SZLIB})
   target_link_libraries (pftools ${SZLIB_LIBRARIES})
 endif (${PARFLOW_HAVE_SZLIB})
 
+# Install to bin is for TCL which seem to prefer shared libraries
+# there for some installs.
 install(TARGETS pftools DESTINATION bin)
+install(TARGETS pftools DESTINATION lib)
 
 file (GLOB TCL_SRC *.tcl)
 install(FILES ${TCL_SRC} DESTINATION bin)
