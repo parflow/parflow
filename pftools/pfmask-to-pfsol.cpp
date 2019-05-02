@@ -248,20 +248,24 @@ Databox         *ReadASCMask(
 
   string text;
 
+  // X/Y size
   mask >> text >> nx;
   mask >> text >> ny;
   nz = 1;
 
-  mask >> text >> text;
-  mask >> text >> text;
-  
+  // X/Y corner
+  mask >> text >> sx;
+  mask >> text >> sy;
+
+  // Cell size
   mask >> text >> dx;
   dy = dz = dx;
-  
+
+  // NoData value
   mask >> text >> text;
 
   /* create the new databox structure */
-  if ((v = NewDataboxDefault(nx, ny, nz, 0, 0, 0, dx, dy, dz, default_value)) == NULL)
+  if ((v = NewDataboxDefault(nx, ny, nz, sx, sy, 0, dx, dy, dz, default_value)) == NULL)
   {
     return((Databox*)NULL);
   }
@@ -328,7 +332,7 @@ int main(int argc, char **argv)
   string pfsolOutFilename;
   int bottom;
   int side;
-  float depth;
+  float zTop,zBot;
 
   try {  
 
@@ -350,8 +354,11 @@ int main(int argc, char **argv)
     TCLAP::ValueArg<int> sideArg("","side-patch-label","Side index",false,3,"int");
     cmd.add( sideArg );
 
-    TCLAP::ValueArg<float> depthArg("","depth","Override depth from mask file",false,NAN,"float");
-    cmd.add( depthArg );
+    TCLAP::ValueArg<float> zTopArg("","z-top","Set top of domain",false,NAN,"float");
+    cmd.add( zTopArg );
+
+    TCLAP::ValueArg<float> zBotArg("","z-bottom","Set bottom of domain",false,NAN,"float");
+    cmd.add( zBotArg );
 
     TCLAP::ValueArg<string>* maskFilenamesArgs[g_maskNames.size()];
 
@@ -386,7 +393,8 @@ int main(int argc, char **argv)
     pfsolOutFilename = pfsolOutFilenameArg.getValue();
     bottom = bottomArg.getValue();
     side = sideArg.getValue();;
-    depth = depthArg.getValue();;
+    zTop = zTopArg.getValue();;
+    zBot = zBotArg.getValue();;
 
   }
   catch (TCLAP::ArgException &e)  // catch any exceptions
@@ -420,18 +428,33 @@ int main(int argc, char **argv)
   ny = DataboxNy(databox[0]);
   nz = DataboxNz(databox[0]);
 
+  sx = DataboxX(databox[0]);
+  sy = DataboxY(databox[0]);
+
   dx = DataboxDx(databox[0]);
   dy = DataboxDy(databox[0]);
 
-  if(isnan(depth))
+  // If user specifies Top/Bottom on command line override defaults
+  if(isnan(zTop))
+  {
+    sz = 0.0;
+  }
+  else
+  {
+    sz = zTop;
+  }
+
+  if(isnan(zBot))
   {
     dz = DataboxDz(databox[0]);
   }
   else
   {
-    dz = depth;
+    dz = zBot - sz;
   }
+
   cout << "Domain Size = (" << nx << "," << ny << "," << nz << ")" << std::endl;
+  cout << "Starting corner = (" << sx << "," << sy << "," << sz << ")" << std::endl;
   cout << "Cell Size = (" << dx << "," << dy << "," << dz << ")" << std::endl;
   cout << "Bottom patch = " << bottom << std::endl;
   cout << "Side patch = " << side << std::endl;

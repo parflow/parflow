@@ -60,6 +60,16 @@ Back   +Y
 Each mask file should be the same dimensions in X and Y and have
 number of points in Z = 1.
 
+#### Setting Top/Bottom of domain
+
+The mask file is typically coming from a 2D file so does not have any
+depth information.  By default the top is 0 and bottom is 1000.0.  The
+top and bottom can be set using the "--z-top" and "--z-bottom" flags:
+
+```shell
+pfmask-to-pfsol --z-top 10.0 --z-top 200.0
+```
+
 ### Mask ASC file format
 
 The input mask is an ASC file format with the following format:
