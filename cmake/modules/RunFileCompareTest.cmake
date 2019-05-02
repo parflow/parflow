@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.4)
 macro(pf_exec_check cmd files)
 
   execute_process (COMMAND ${${cmd}} RESULT_VARIABLE cmdResult OUTPUT_VARIABLE stdout ERROR_VARIABLE stdout)
-  message(${stdout})
+  message(STATUS ${stdout})
   if (cmdResult)
     message (FATAL_ERROR "Error running ${${cmd}}")
   endif()
@@ -28,4 +28,4 @@ macro(pf_exec_check cmd files)
 
 endmacro()
 
-pf_exec_check(PFCMD PFFILES)
+pf_exec_check(PFCMD PFFILES PFTEST_ARGS)

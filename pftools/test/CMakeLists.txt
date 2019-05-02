@@ -1,2 +1,16 @@
 
-pf_add_mask_test("mask-test-1" "mask-test-1.asc")
+#-----------------------------------------------------------------------------
+# Mask utilities tests
+#-----------------------------------------------------------------------------
+foreach(testname mask-test-1 mask-test-2 mask-test-3 mask-test-4 mask-test-5 mask-test-6 mask-test-7 mask-test-8 mask-test-9 mask-test-10 mask-test-11)
+  pf_add_mask_test(${testname} "${testname}.asc" TEST_ARGS "--bottom-patch-label" "2" "--side-patch-label" "3")
+endforeach()
+
+foreach(testname depth-test-1)
+  pf_add_mask_test(${testname} "${testname}.asc" TEST_ARGS "--bottom-patch-label" "2" "--side-patch-label" "3" "--depth" "1000.0")
+endforeach()
+
+foreach(testname multiple-mask-test-1)
+  pf_add_multi_mask_test(${testname} "${testname}.asc")
+endforeach()
+
