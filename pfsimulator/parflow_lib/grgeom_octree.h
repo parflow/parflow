@@ -79,6 +79,12 @@
  * children of a branch node with mixed state to find only the nodes
  * marked as Inside.
  *
+ * The following images illustrate the octree label in along a single dimension.
+ *
+ * \image html Octree-1.png
+ *
+ * \image html Octree-2.png
+ *
  * Spacial accessors are consistent with the labeling in the literature :
  *
  * Short Name | Name  | Description
