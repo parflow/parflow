@@ -121,8 +121,10 @@ typedef struct {
  *   Macro for looping over the inside of a solid with non-unitary strides.
  *--------------------------------------------------------------------------*/
 
-// \todo Interior version of this would improve speed; but this loop is not
-// currently used.
+/**
+ *  Interior version of this would improve speed; but this loop is not
+ * currently used.
+ */
 #define GrGeomInLoop2(i, j, k, grgeom,                                  \
                       r, ix, iy, iz, nx, ny, nz, sx, sy, sz, body) \
   { \
@@ -147,7 +149,6 @@ typedef struct {
  *   Macro for looping over the outside of a solid.
  *--------------------------------------------------------------------------*/
 
-// \todo Remove extra tests here
 #define GrGeomOutLoop(i, j, k, grgeom, \
                       r, ix, iy, iz, nx, ny, nz, body)  \
   {                                                     \
