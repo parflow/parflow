@@ -252,7 +252,15 @@ $(INSTALL_DIR)/docs/user_manual.pdf.
 Parflow is moving to using Doxygen for code documenation.  The documentation is currently very sparse.
 
 Adding the -DPARFLOW_ENABLE_DOXYGEN=TRUE option to the CMake configure
-will enable building of the code documentation.
+will enable building of the code documentation.  After CMake has been
+run the Doxygen code documenation is built with:
+
+```shell
+   cd build
+   make doxygen
+```
+
+HTML pages are generated in the build/docs/doxygen/html directory.
 
 ## Configure options
 
