@@ -407,9 +407,8 @@ enable_testing ()
 set (PARFLOW_ENABLE_SIMULATOR True CACHE BOOL "Enable building of the Parflow simulator")
 if ( ${PARFLOW_ENABLE_SIMULATOR} )
   add_subdirectory (pfsimulator)
-# SGS add these back in when done with pftools test
-#  add_subdirectory (test)
-#  add_subdirectory (examples)
+  add_subdirectory (test)
+  add_subdirectory (examples)
 endif ()
 
 set (PARFLOW_ENABLE_TOOLS True CACHE BOOL "Enable building of the Parflow tools")
