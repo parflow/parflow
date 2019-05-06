@@ -77,6 +77,7 @@ if(${PARFLOW_AMPS_LAYER} STREQUAL "mpi1")
       default_overland.tcl
       default_overland.pfmg.jac.tcl
       default_overland.pfmg_octree.jac.tcl
+      default_overland.pfmg_octree.fulljac.tcl
       water_balance_x.hardflow.nojac.tcl
       water_balance_x.hardflow.jac.tcl
       LW_var_dz.tcl

@@ -837,7 +837,7 @@ PFModule  *PFMGOctreeInitInstanceXtra(
           });
 
           hypre_BoxDestroy(value_box);
-        }
+        } // if (symmetric)
         else
         {
           int outside = 0;
@@ -848,12 +848,12 @@ PFModule  *PFMGOctreeInitInstanceXtra(
           hypre_Box          *set_box;
           hypre_Box          *value_box;
 
-          ilo[0] = ix;
-          ilo[1] = iy;
-          ilo[2] = iz;
-          ihi[0] = ilo[0] + nx - 1;
-          ihi[1] = ilo[1] + ny - 1;
-          ihi[2] = ilo[2] + nz - 1;
+          ilo[0] = SubmatrixIX(pfB_sub);
+          ilo[1] = SubmatrixIY(pfB_sub);
+          ilo[2] = SubmatrixIZ(pfB_sub);
+          ihi[0] = ilo[0] + nx_m - 1;
+          ihi[1] = ilo[1] + ny_m - 1;
+          ihi[2] = ilo[2] + nz_m - 1;
 
           value_box = hypre_BoxCreate(PARFLOW_HYPRE_DIM);
           hypre_BoxSetExtents(value_box, ilo, ihi);
