@@ -29,7 +29,7 @@ before_install:
   - sudo apt-get install -y libhdf5-openmpi-dev libhdf5-openmpi-7 hdf5-helpers
   - sudo apt-get install -y tcl-dev tk-dev
   - sudo apt-get install -y openmpi-bin openmpi-doc libopenmpi-dev
-  - "[[ $PF_BUILD != 'cmake' ]] || if [[ ! -f cmake-3.4.3-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate http://cmake.org/files/v3.4/cmake-3.4.3-Linux-x86_64.tar.gz && tar -xvf cmake-3.4.3-Linux-x86_64.tar.gz; fi"
+  - "[[ $PF_BUILD != 'cmake' ]] || if [[ ! -f cmake-3.9.0-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate http://cmake.org/files/v3.9/cmake-3.9.0-Linux-x86_64.tar.gz && tar -xvf cmake-3.9.0-Linux-x86_64.tar.gz; fi"
 
 before_script:
   - cd $TRAVIS_BUILD_DIR
@@ -41,7 +41,7 @@ before_script:
   - export F77=mpif77
   - export FC=mpif90
   - echo "PF_BUILD = $PF_BUILD"
-  - "[[ $PF_BUILD != 'cmake' ]] || (mkdir -p build && cd build && ../cmake-3.4.3-Linux-x86_64/bin/cmake -DCMAKE_BUILD_TYPE=Release -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DPARFLOW_ENABLE_HYPRE=true -DPARFLOW_ENABLE_HDF5=true -DPARFLOW_ENABLE_SILO=true -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR .. )"
+  - "[[ $PF_BUILD != 'cmake' ]] || (mkdir -p build && cd build && ../cmake-3.9.0-Linux-x86_64/bin/cmake -DCMAKE_BUILD_TYPE=Release -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DPARFLOW_ENABLE_HYPRE=true -DPARFLOW_ENABLE_HDF5=true -DPARFLOW_ENABLE_SILO=true -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR .. )"
   - "[[ $PF_BUILD != 'cmake' ]] || (cd build && make && make install)"
   - "[[ $PF_BUILD != 'autoconf' ]] || (mkdir -p build.pfsimulator && cd build.pfsimulator && ../pfsimulator/configure --prefix=$PARFLOW_DIR --with-amps=mpi1 --with-hypre --with-silo --with-clm)"
   - "[[ $PF_BUILD != 'autoconf' ]] || (mkdir -p build.pftools && cd build.pftools  && ../pftools/configure --prefix=$PARFLOW_DIR --with-amps=mpi1 --with-silo)"

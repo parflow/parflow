@@ -2180,8 +2180,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          public_xtra->clm_irr_thresholdtype, soi_z,
                          clm_next, clm_write_logs, clm_last_rst,
                          clm_daily_rst,
-			 public_xtra->clm_nz,
-			 public_xtra->clm_nz);
+                         public_xtra->clm_nz,
+                         public_xtra->clm_nz);
 
             break;
           }
@@ -4358,7 +4358,7 @@ SolverRichardsNewPublicXtra(char *name)
   public_xtra->clm_nz = GetIntDefault(key, 10);
 
   /* Should match what is set in CLM for max */
-  if ( public_xtra->clm_nz > PF_CLM_MAX_ROOT_NZ )
+  if (public_xtra->clm_nz > PF_CLM_MAX_ROOT_NZ)
   {
     char tmp_str[100];
     sprintf(tmp_str, "%d", public_xtra->clm_nz);
@@ -4756,7 +4756,6 @@ SolverRichardsNewPublicXtra(char *name)
     }
   }
   NA_FreeNameArray(irrthresholdtype_switch_na);
-
 #endif
 
   //CPS

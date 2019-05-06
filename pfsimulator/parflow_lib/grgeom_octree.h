@@ -57,12 +57,12 @@
  *  GrGeomOctreeNodeInside  | Inside boundary
  *  GrGeomOctreeNodeFull    | Interior to the geomery, not on inside boundary
  *
- * 
+ *
  * In most cases the leaf nodes with inside/outside boundary flags
  * will be single points due to the boundary being a single layer.  It
  * will be rare for a cube of 8 points to all lie on a boundary.
  *
- * A branch node can have one or more flags set to indicate the state of 
+ * A branch node can have one or more flags set to indicate the state of
  * children in the subtree.
  *
  *  Flags                | Subtree index space state(s)
@@ -71,13 +71,19 @@
  *  Empty & Outside      | subtree is exterior and has at least one outside boundary index
  *  Full                 | subtree is interior to the geometry
  *  Full & Inside        | subtree is interior to the geometry and has at least one inside boundary index
- * 
+ *
  * Branch node flags are used to improve tree searching speed.  For
  * example searching for interior points (Full | Inside boundary) can
  * stop as soon as a branch subtree flag state is marked as Full &
  * Inside.  Searching for inside boundary only will require searching
- * children of a branch node with mixed state to find only the nodes 
+ * children of a branch node with mixed state to find only the nodes
  * marked as Inside.
+ *
+ * The following images illustrate the octree label in along a single dimension.
+ *
+ * \image html Octree-1.png
+ *
+ * \image html Octree-2.png
  *
  * Spacial accessors are consistent with the labeling in the literature :
  *
@@ -92,17 +98,17 @@
  */
 typedef struct grgeom_octree {
   /** State flags for this node */
-  unsigned char flags;  
+  unsigned char flags;
 
   /** Faces for this node */
-  unsigned char faces; 
+  unsigned char faces;
 
   /** Pointer to the parent node */
   struct grgeom_octree   *parent;
 
   /** Array of pointers to children of this node.  Order of children is
-      well defined using octant constants */
-  struct grgeom_octree  **children; 
+   *  well defined using octant constants */
+  struct grgeom_octree  **children;
 } GrGeomOctree;
 
 /**
@@ -119,7 +125,7 @@ typedef struct grgeom_octree {
  * @name GrGeomOctreeFlags
  * @brief Octree flag constants.
  *
- * Used to access bits in the GrGeomOctree#flags field.  Indicates states 
+ * Used to access bits in the GrGeomOctree#flags field.  Indicates states
  * in the subtree or leaf node.
  * @{
  */
@@ -134,7 +140,7 @@ typedef struct grgeom_octree {
  * @name GrGeomOctreeFaces
  * @brief Octree face index constants.
  *
- * Used to access index the GrGeomOctree#faces array.  
+ * Used to access index the GrGeomOctree#faces array.
  * @{
  */
 #define GrGeomOctreeFaceL 0
@@ -149,7 +155,7 @@ typedef struct grgeom_octree {
  * @name GrGeomOctreeOctants
  * @brief Octree children index constants.
  *
- * Used to access index the GrGeomOctree#children array.  
+ * Used to access index the GrGeomOctree#children array.
  * @{
  */
 #define GrGeomOctreeOctantLDB 0
@@ -189,40 +195,64 @@ typedef struct grgeom_octree {
 
 /**
  * @brief Set leaf flag
- * 
+ *
  * Sets value of a leaf flag to the specified value and overrides
  * previous values.  A leaf flag can only be in one state either
  * Inside, Outside, Full, or Empty.  This method enforces this constraint.
  *
  * @param octree node to set
  * @param flag_value flag to set on node
-*/
+ */
 #define GrGeomOctreeSetLeafFlag(octree, flag_value) \
   GrGeomOctreeFlag(octree) = \
-    (GrGeomOctreeFlag(octree) & GrGeomOctreeNodeLeaf) | flag_value
+    (GrGeomOctreeFlag(octree) & GrGeomOctreeNodeLeaf) | (flag_value)
+
+/**
+ * @brief Set branch flag
+ *
+ * Sets specified branch flag.
+ *
+ * @param octree node to set
+ * @param flag_value flag to set on node
+ */
+#define GrGeomOctreeSetBranchFlag(octree, flag_value) \
+  GrGeomOctreeFlag(octree) = \
+    (GrGeomOctreeFlag(octree) | (flag_value))
+
+/**
+ * @brief Clear branch flag
+ *
+ * Clear the specified branch flag
+ *
+ * @param octree node to set
+ * @param flag_value flag to set clear node
+ */
+#define GrGeomOctreeClearBranchFlag(octree, flag_value) \
+  GrGeomOctreeFlag(octree) = \
+    (GrGeomOctreeFlag(octree) &= ~(flag_value))
 
 /**
  * @brief Set branch node flag value
- * 
+ *
  * Adds flag to a branch node.  Branch flags may have more than one
  * value set: Inside, Outside, Full, or Empty.
  *
  * @param octree node to set
  * @param flag_value flag to set on node
  */
-#define GrGeomOctreeSetBranchNode(octree, flag_value)	\
-  GrGeomOctreeFlag(octree) =				\
-    (GrGeomOctreeFlag(octree) | flag_value
+#define GrGeomOctreeSetBranchNode(octree, flag_value)   \
+  GrGeomOctreeFlag(octree) =                            \
+    (GrGeomOctreeFlag(octree) | (flag_value)
 
 /**
  * @brief Clear the branch flag value
- * 
+ *
  * @param octree node to set
  * @param flag_value flag to clear
-*/
+ */
 #define GrGeomOctreeClearBranchNode(octree, flag_value) \
   GrGeomOctreeFlag(octree) = \
-    (GrGeomOctreeFlag(octree) &= ~flag_value
+    (GrGeomOctreeFlag(octree) &= ~(flag_value)
 
 /**
  * @brief Set leaf indicator
@@ -262,13 +292,13 @@ typedef struct grgeom_octree {
 
 /**
  * @brief Return face index from offsets.
- * 
+ *
  * Compute the face index based on the supplied offsets.
  *
  * @param i offset in x (-1, 1)
  * @param j offset in y (-1, 1)
  * @param k offset in z (-1, 1)
- * @return face index 
+ * @return face index
  */
 #define GrGeomOctreeFaceIndex(i, j, k) \
   (int)(((i * (2 * i + 1)) + (j * (6 * j + 1)) + (k * (10 * k + 1))) / 2)
@@ -315,11 +345,8 @@ typedef struct grgeom_octree {
    ((unsigned char)0x00))
 /** @} */
 
-/*==========================================================================
- *==========================================================================*/
-
 /**
- * @brief Internal generic octree looping 
+ * @brief Internal generic octree looping
  *
  * @note Do not call directly!  Not intended for use code.
  *
@@ -327,12 +354,12 @@ typedef struct grgeom_octree {
  * level_body when a node is at the supplied level of interest and
  * executing the leaf_body when a leaf node is reached.  value_test is
  * evaluated to determine if the bodies should be executed.
- * 
- * i,j,k should be initialized to the starting indices and modified as the 
+ *
+ * i,j,k should be initialized to the starting indices and modified as the
  * tree is traversed to the starting offset of the current octree node.
  *
  * The current level is maintained in the l parmeter.
- * 
+ *
  *
  * @param[in,out] i X index
  * @param[in,out] j Y index
@@ -345,92 +372,378 @@ typedef struct grgeom_octree {
  * @param[in] level_body code to execute if level has been reached.
  * @param[in] leaf_body code to execute for leaf nodes
  */
-#define GrGeomOctreeLoop(i, j, k, l, node, octree, level, value_test, \
-                         level_body, leaf_body) \
-  { \
-    int PV_level = level; \
-    unsigned int PV_inc; \
-    int           *PV_visiting; \
-    int PV_visit_child; \
-\
-\
-    node = octree; \
-\
-    l = 0; \
-    PV_inc = 1 << PV_level; \
-    PV_visiting = ctalloc(int, PV_level + 2); \
-    PV_visiting++; \
-    PV_visiting[0] = 0; \
-\
-    while (l >= 0) \
-    { \
-      /* if at the level of interest */ \
-      if (l == PV_level) \
-      { \
-        if (value_test) \
-          level_body; \
-\
-        PV_visit_child = FALSE; \
-      } \
-\
-      /* if this is a leaf node */ \
-      else if (GrGeomOctreeNodeIsLeaf(node)) \
-      { \
-        if (value_test) \
-          leaf_body; \
-\
-        PV_visit_child = FALSE; \
-      } \
-\
-      /* have I visited all of the children? */ \
-      else if (PV_visiting[l] < GrGeomOctreeNumChildren) \
-        PV_visit_child = TRUE; \
-      else \
-        PV_visit_child = FALSE; \
-\
-      /* visit either a child or the parent node */ \
-      if (PV_visit_child) \
-      { \
-        node = GrGeomOctreeChild(node, PV_visiting[l]); \
-        PV_inc = PV_inc >> 1; \
-        i += (int)(PV_inc) * ((PV_visiting[l] & 1) ? 1 : 0); \
-        j += (int)(PV_inc) * ((PV_visiting[l] & 2) ? 1 : 0); \
-        k += (int)(PV_inc) * ((PV_visiting[l] & 4) ? 1 : 0); \
-        l++; \
-        PV_visiting[l] = 0; \
-      } \
-      else \
-      { \
-        l--; \
-        i -= (int)(PV_inc) * ((PV_visiting[l] & 1) ? 1 : 0); \
-        j -= (int)(PV_inc) * ((PV_visiting[l] & 2) ? 1 : 0); \
-        k -= (int)(PV_inc) * ((PV_visiting[l] & 4) ? 1 : 0); \
-        PV_inc = PV_inc << 1; \
-        node = GrGeomOctreeParent(node); \
-        PV_visiting[l]++; \
-      } \
-    } \
-\
-    tfree(PV_visiting - 1); \
+#define GrGeomOctreeLoop(i, j, k, l, node, octree, level, value_test,   \
+                         level_body, leaf_body)                         \
+  {                                                                     \
+    int PV_level = level;                                               \
+    unsigned int PV_inc;                                                \
+    int           *PV_visiting;                                         \
+    int PV_visit_child;                                                 \
+                                                                        \
+                                                                        \
+    node = octree;                                                      \
+                                                                        \
+    l = 0;                                                              \
+    PV_inc = 1 << PV_level;                                             \
+    PV_visiting = ctalloc(int, PV_level + 2);                           \
+    PV_visiting++;                                                      \
+    PV_visiting[0] = 0;                                                 \
+                                                                        \
+    while (l >= 0)                                                      \
+    {                                                                   \
+      /* if at the level of interest */                                 \
+      if (l == PV_level)                                                \
+      {                                                                 \
+        if (value_test)                                                 \
+          level_body;                                                   \
+                                                                        \
+        PV_visit_child = FALSE;                                         \
+      }                                                                 \
+                                                                        \
+      /* if this is a leaf node */                                      \
+      else if (GrGeomOctreeNodeIsLeaf(node))                            \
+      {                                                                 \
+        if (value_test)                                                 \
+          leaf_body;                                                    \
+                                                                        \
+        PV_visit_child = FALSE;                                         \
+      }                                                                 \
+                                                                        \
+      /* have I visited all of the children? */                         \
+      else if (PV_visiting[l] < GrGeomOctreeNumChildren)                \
+        PV_visit_child = TRUE;                                          \
+      else                                                              \
+        PV_visit_child = FALSE;                                         \
+                                                                        \
+      /* visit either a child or the parent node */                     \
+      if (PV_visit_child)                                               \
+      {                                                                 \
+        node = GrGeomOctreeChild(node, PV_visiting[l]);                 \
+        PV_inc = PV_inc >> 1;                                           \
+        i += (int)(PV_inc) * ((PV_visiting[l] & 1) ? 1 : 0);            \
+        j += (int)(PV_inc) * ((PV_visiting[l] & 2) ? 1 : 0);            \
+        k += (int)(PV_inc) * ((PV_visiting[l] & 4) ? 1 : 0);            \
+        l++;                                                            \
+        PV_visiting[l] = 0;                                             \
+      }                                                                 \
+      else                                                              \
+      {                                                                 \
+        l--;                                                            \
+        i -= (int)(PV_inc) * ((PV_visiting[l] & 1) ? 1 : 0);            \
+        j -= (int)(PV_inc) * ((PV_visiting[l] & 2) ? 1 : 0);            \
+        k -= (int)(PV_inc) * ((PV_visiting[l] & 4) ? 1 : 0);            \
+        PV_inc = PV_inc << 1;                                           \
+        node = GrGeomOctreeParent(node);                                \
+        PV_visiting[l]++;                                               \
+      }                                                                 \
+    }                                                                   \
+                                                                        \
+    tfree(PV_visiting - 1);                                             \
   }
 
 /**
- * @brief Loop over the index space of an octree.
+ * @brief Internal generic octree looping
+ *
+ * @note Do not call directly!  Not intended for use code.
+ *
+ * Basic Octree looping template macro for interiror and exterior
+ * looping.  Traversal is stopped when the traversal_stop_test
+ * expression is true.  body_test is evaluated before the code block
+ * is exectued on leaf nodes or branch nodes that meet the traversal_stop_test
+ * criteria.
+ *
+ * value_test is evaluated to determine if the bodies should be
+ * executed.
+ *
+ * i,j,k should be initialized to the starting indices and modified as the
+ * tree is traversed to the starting offset of the current octree node.
+ *
+ * The current level is maintained in the l parmeter.
+ *
+ * @param[in,out] i X index
+ * @param[in,out] j Y index
+ * @param[in,out] k k index
+ * @param[out] l current octree level
+ * @param[out] node octree node
+ * @param[in] octree octree to traverse
+ * @param[in] level level of interest to limit tree traversal
+ * @param[in] value_test boolean if tests evaluated before body execution
+ * @param[in] level_body code to execute if level has been reached.
+ * @param[in] code_body code to execute for leaf nodes or branch nodes
+ * @param[in] traversal_stop_test boolean expression evalutated to determine if a branch node should terminate traversal
+ *  @param[in] body_test boolean expression evalutated to determine if code_body should be executed.
+ */
+#define GrGeomOctreeLoopTemplate(i, j, k, l, node, octree, level, value_test, \
+                                 level_body, code_body, traversal_stop_test, body_test) \
+  {                                                                     \
+    int PV_level = level;                                               \
+    unsigned int PV_inc;                                                \
+    int           *PV_visiting;                                         \
+    int PV_visit_child;                                                 \
+                                                                        \
+    node = octree;                                                      \
+                                                                        \
+    l = 0;                                                              \
+    PV_inc = 1 << PV_level;                                             \
+    PV_visiting = ctalloc(int, PV_level + 2);                           \
+    PV_visiting++;                                                      \
+    PV_visiting[0] = 0;                                                 \
+                                                                        \
+    while (l >= 0)                                                      \
+    {                                                                   \
+      /* if at the level of interest */                                 \
+      if (l == PV_level)                                                \
+      {                                                                 \
+        if ((body_test) && (value_test))                                \
+          level_body;                                                   \
+                                                                        \
+        PV_visit_child = FALSE;                                         \
+      }                                                                 \
+                                                                        \
+      /* if this is a full node or a leaf node */                       \
+      else if (GrGeomOctreeNodeIsLeaf(node) || (traversal_stop_test))   \
+      {                                                                 \
+        if ((body_test) && (value_test))                                \
+          code_body;                                                    \
+                                                                        \
+        PV_visit_child = FALSE;                                         \
+      }                                                                 \
+                                                                        \
+      /* have I visited all of the children? */                         \
+      else if (PV_visiting[l] < GrGeomOctreeNumChildren)                \
+        PV_visit_child = TRUE;                                          \
+      else                                                              \
+        PV_visit_child = FALSE;                                         \
+                                                                        \
+      /* visit either a child or the parent node */                     \
+      if (PV_visit_child)                                               \
+      {                                                                 \
+        node = GrGeomOctreeChild(node, PV_visiting[l]);                 \
+        PV_inc = PV_inc >> 1;                                           \
+        i += (int)(PV_inc) * ((PV_visiting[l] & 1) ? 1 : 0);            \
+        j += (int)(PV_inc) * ((PV_visiting[l] & 2) ? 1 : 0);            \
+        k += (int)(PV_inc) * ((PV_visiting[l] & 4) ? 1 : 0);            \
+        l++;                                                            \
+        PV_visiting[l] = 0;                                             \
+      }                                                                 \
+      else                                                              \
+      {                                                                 \
+        l--;                                                            \
+        i -= (int)(PV_inc) * ((PV_visiting[l] & 1) ? 1 : 0);            \
+        j -= (int)(PV_inc) * ((PV_visiting[l] & 2) ? 1 : 0);            \
+        k -= (int)(PV_inc) * ((PV_visiting[l] & 4) ? 1 : 0);            \
+        PV_inc = PV_inc << 1;                                           \
+        node = GrGeomOctreeParent(node);                                \
+        PV_visiting[l]++;                                               \
+      }                                                                 \
+    }                                                                   \
+                                                                        \
+    tfree(PV_visiting - 1);                                             \
+  }
+
+
+/**
+ * @brief Internal use generic octree looping for interior indices only.
+ *
+ * @note Do not call directly!  Not intended for use code.
+ *
+ * Basic Octree looping macro for interior (Full and Inside) indices
+ * only.  This is more efficient than the GrGeomOctreeLoop looping.
+ * It will stop the octree traversel at nodes that are fully in the interior
+ * without distingishing inside indices.
+ *
+ * Octree is traversed executing the level_body when a node is at the
+ * supplied level of interest and executing the code_body when a node
+ * with points in the interior is reached.  value_test is evaluated to
+ * determine if the bodies should be executed.
+ *
+ * i,j,k should be initialized to the starting indices and modified as the
+ * tree is traversed to the starting offset of the current octree node.
+ *
+ * The current level is maintained in the l parmeter.
+ *
+ * @param[in,out] i X index
+ * @param[in,out] j Y index
+ * @param[in,out] k k index
+ * @param[out] l current octree level
+ * @param[out] node octree node
+ * @param[in] octree octree to traverse
+ * @param[in] level level of interest to limit tree traversal
+ * @param[in] value_test boolean if tests evaluated before body execution
+ * @param[in] level_body code to execute if level has been reached.
+ * @param[in] code_body code to execute for interior nodes
+ */
+#define GrGeomOctreeInteriorLoop(i, j, k, l, node, octree, level, value_test, \
+                                 level_body, code_body)                 \
+  {                                                                     \
+    GrGeomOctreeLoopTemplate(i, j, k, l, node, octree, level, value_test, \
+                             level_body, code_body,                     \
+                             GrGeomOctreeNodeIsFull(node),              \
+                             (GrGeomOctreeNodeIsInside(node) || GrGeomOctreeNodeIsFull(node))); \
+  }
+
+/**
+ * @brief Internal use generic octree looping for Exteriror indices only.
+ *
+ * @note Do not call directly!  Not intended for use code.
+ *
+ * Basic Octree looping macro for exteriorr (Empty and Outside) indices
+ * only.  This is more efficient than the GrGeomOctreeLoop looping.
+ * It will stop the octree traversel at nodes that are fully in the interior
+ * without distingishing inside indices.
+ *
+ * Octree is traversed executing the level_body when a node is at the
+ * supplied level of interest and executing the code_body when a node
+ * with points in in interior is reached.  value_test is evaluated to
+ * determine if the bodies should be executed.
+ *
+ * i,j,k should be initialized to the starting indices and modified as the
+ * tree is traversed to the starting offset of the current octree node.
+ *
+ * The current level is maintained in the l parmeter.
+ *
+ * @param[in,out] i X index
+ * @param[in,out] j Y index
+ * @param[in,out] k k index
+ * @param[out] l current octree level
+ * @param[out] node octree node
+ * @param[in] octree octree to traverse
+ * @param[in] level level of interest to limit tree traversal
+ * @param[in] value_test boolean if tests evaluated before body execution
+ * @param[in] level_body code to execute if level has been reached.
+ * @param[in] code_body code to execute for exterior nodes
+ */
+#define GrGeomOctreeExteriorLoop(i, j, k, l, node, octree, level, value_test, \
+                                 level_body, code_body)                 \
+  {                                                                     \
+    GrGeomOctreeLoopTemplate(i, j, k, l, node, octree, level, value_test, \
+                             level_body, code_body,                     \
+                             GrGeomOctreeNodeIsEmpty(node),             \
+                             (GrGeomOctreeNodeIsOutside(node) || GrGeomOctreeNodeIsEmpty(node))); \
+  }
+
+/**
+ * @brief Internal use generic octree looping for Inside indices only.
+ *
+ * @note Do not call directly!  Not intended for use code.
+ *
+ * Basic Octree looping macro for Inside indices
+ * only.  This is more efficient than the GrGeomOctreeLoop looping.
+ * It will stop the octree traversel at nodes that do not contain
+ * any Inside indices.
+ *
+ * Octree is traversed executing the level_body when a node is at the
+ * supplied level of interest and executing the code_body when a node
+ * with points in in interior is reached.  value_test is evaluated to
+ * determine if the bodies should be executed.
+ *
+ * i,j,k should be initialized to the starting indices and modified as the
+ * tree is traversed to the starting offset of the current octree node.
+ *
+ * The current level is maintained in the l parmeter.
+ *
+ * @param[in,out] i X index
+ * @param[in,out] j Y index
+ * @param[in,out] k k index
+ * @param[out] l current octree level
+ * @param[out] node octree node
+ * @param[in] octree octree to traverse
+ * @param[in] level level of interest to limit tree traversal
+ * @param[in] value_test boolean if tests evaluated before body execution
+ * @param[in] level_body code to execute if level has been reached.
+ * @param[in] code_body code to execute for inside nodes
+ */
+#define GrGeomOctreeInsideLoop(i, j, k, l, node, octree, level, value_test, \
+                               level_body, code_body)                   \
+  {                                                                     \
+    int PV_level = level;                                               \
+    unsigned int PV_inc;                                                \
+    int           *PV_visiting;                                         \
+    int PV_visit_child;                                                 \
+                                                                        \
+    node = octree;                                                      \
+                                                                        \
+    l = 0;                                                              \
+    PV_inc = 1 << PV_level;                                             \
+    PV_visiting = ctalloc(int, PV_level + 2);                           \
+    PV_visiting++;                                                      \
+    PV_visiting[0] = 0;                                                 \
+                                                                        \
+    while (l >= 0)                                                      \
+    {                                                                   \
+      /* if at the level of interest */                                 \
+      if (l == PV_level)                                                \
+      {                                                                 \
+        if ((GrGeomOctreeNodeIsInside(node)) && (value_test))           \
+          level_body;                                                   \
+                                                                        \
+        PV_visit_child = FALSE;                                         \
+      }                                                                 \
+                                                                        \
+      /* if this is a full node or a leaf node */                       \
+      else if (GrGeomOctreeNodeIsLeaf(node))                            \
+      {                                                                 \
+        if (GrGeomOctreeNodeIsInside(node) && (value_test))             \
+          code_body;                                                    \
+                                                                        \
+        PV_visit_child = FALSE;                                         \
+      }                                                                 \
+                                                                        \
+      /* Branch node and not inside, don't need to continue traversal */ \
+      else if (!GrGeomOctreeNodeIsInside(node))                         \
+      {                                                                 \
+        PV_visit_child = FALSE;                                         \
+      }                                                                 \
+                                                                        \
+      /* have I visited all of the children? */                         \
+      else if (PV_visiting[l] < GrGeomOctreeNumChildren)                \
+        PV_visit_child = TRUE;                                          \
+      else                                                              \
+        PV_visit_child = FALSE;                                         \
+                                                                        \
+      /* visit either a child or the parent node */                     \
+      if (PV_visit_child)                                               \
+      {                                                                 \
+        node = GrGeomOctreeChild(node, PV_visiting[l]);                 \
+        PV_inc = PV_inc >> 1;                                           \
+        i += (int)(PV_inc) * ((PV_visiting[l] & 1) ? 1 : 0);            \
+        j += (int)(PV_inc) * ((PV_visiting[l] & 2) ? 1 : 0);            \
+        k += (int)(PV_inc) * ((PV_visiting[l] & 4) ? 1 : 0);            \
+        l++;                                                            \
+        PV_visiting[l] = 0;                                             \
+      }                                                                 \
+      else                                                              \
+      {                                                                 \
+        l--;                                                            \
+        i -= (int)(PV_inc) * ((PV_visiting[l] & 1) ? 1 : 0);            \
+        j -= (int)(PV_inc) * ((PV_visiting[l] & 2) ? 1 : 0);            \
+        k -= (int)(PV_inc) * ((PV_visiting[l] & 4) ? 1 : 0);            \
+        PV_inc = PV_inc << 1;                                           \
+        node = GrGeomOctreeParent(node);                                \
+        PV_visiting[l]++;                                               \
+      }                                                                 \
+    }                                                                   \
+                                                                        \
+    tfree(PV_visiting - 1);                                             \
+  }
+
+/**
+ * @brief Loop over the interior index space of an octree.
  *
  * General octree macro to loop over the index space (i,j,k values) in the octree.
  * Octree is traversed executing the code specified in body for
  * indices at the supplied level of interest or indices leaf nodes.
  * value_test is evaluated to determine if the body should be
  * executed.
- * 
+ *
  * i,j,k should be initialized to the starting indices and will
  * modified as the tree is traversed to the starting offset of the
- * current octree node.  
+ * current octree node.
  *
  * ix,iy,iz and nx,ny,nz specify a bounding box to constrain the the iteration.
  *
  * The current level is maintained in the l parmeter.
- * 
+ *
  * @note Level of interest doesn't seem to make sense.  The body will
  * be executed for the first point (i,j,k) in the octree nodes at the
  * level of interest.
@@ -448,11 +761,11 @@ typedef struct grgeom_octree {
  * @param[in] ny y upper bound of index space to process
  * @param[in] nz z upper bound of index space to process
  * @param[in] value_test boolean if tests evaluated before body execution
- * @param[in] body code to execute 
+ * @param[in] body code to execute
  */
-#define GrGeomOctreeNodeLoop(i, j, k, node, octree, level, \
-                             ix, iy, iz, nx, ny, nz, value_test, \
-                             body) \
+#define GrGeomOctreeInteriorNodeLoop(i, j, k, node, octree, level, \
+                                     ix, iy, iz, nx, ny, nz, value_test, \
+                                     body) \
   { \
     int PV_i, PV_j, PV_k, PV_l; \
     int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu; \
@@ -462,7 +775,7 @@ typedef struct grgeom_octree {
     PV_j = j; \
     PV_k = k; \
 \
-    GrGeomOctreeLoop(PV_i, PV_j, PV_k, PV_l, node, octree, level, value_test, \
+    GrGeomOctreeInteriorLoop(PV_i, PV_j, PV_k, PV_l, node, octree, level, value_test, \
     { \
       if ((PV_i >= ix) && (PV_i < (ix + nx)) && \
           (PV_j >= iy) && (PV_j < (iy + ny)) && \
@@ -471,7 +784,6 @@ typedef struct grgeom_octree {
         i = PV_i; \
         j = PV_j; \
         k = PV_k; \
-                 \
         body; \
       } \
     }, \
@@ -492,6 +804,165 @@ typedef struct grgeom_octree {
             body; \
           } \
     }) \
+  }
+
+
+/**
+ * @brief Loop over the exterior index space of an octree.
+ *
+ * General octree macro to loop over the index space (i,j,k values) in the octree.
+ * Octree is traversed executing the code specified in body for
+ * indices at the supplied level of interest or indices leaf nodes.
+ * value_test is evaluated to determine if the body should be
+ * executed.
+ *
+ * i,j,k should be initialized to the starting indices and will
+ * modified as the tree is traversed to the starting offset of the
+ * current octree node.
+ *
+ * ix,iy,iz and nx,ny,nz specify a bounding box to constrain the the iteration.
+ *
+ * The current level is maintained in the l parmeter.
+ *
+ * @note Level of interest doesn't seem to make sense.  The body will
+ * be executed for the first point (i,j,k) in the octree nodes at the
+ * level of interest.
+ *
+ * @param[in,out] i X index
+ * @param[in,out] j Y index
+ * @param[in,out] k k index
+ * @param[out] node octree node
+ * @param[in] octree octree to traverse
+ * @param[in] level level to limit tree traversal
+ * @param[in] ix x lower bound of index space to process
+ * @param[in] iy y lower bound of index space to process
+ * @param[in] iz z lower bound of index space to process
+ * @param[in] nx x upper bound of index space to process
+ * @param[in] ny y upper bound of index space to process
+ * @param[in] nz z upper bound of index space to process
+ * @param[in] value_test boolean if tests evaluated before body execution
+ * @param[in] body code to execute
+ */
+#define GrGeomOctreeExteriorNodeLoop(i, j, k, node, octree, level, \
+                                     ix, iy, iz, nx, ny, nz, value_test, \
+                                     body) \
+  { \
+    int PV_i, PV_j, PV_k, PV_l; \
+    int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu; \
+\
+\
+    PV_i = i; \
+    PV_j = j; \
+    PV_k = k; \
+\
+    GrGeomOctreeExteriorLoop(PV_i, PV_j, PV_k, PV_l, node, octree, level, value_test, \
+    { \
+      if ((PV_i >= ix) && (PV_i < (ix + nx)) && \
+          (PV_j >= iy) && (PV_j < (iy + ny)) && \
+          (PV_k >= iz) && (PV_k < (iz + nz))) \
+      { \
+        i = PV_i; \
+        j = PV_j; \
+        k = PV_k; \
+        body; \
+      } \
+    }, \
+    { \
+      /* find octree and region intersection */ \
+      PV_ixl = pfmax(ix, PV_i); \
+      PV_iyl = pfmax(iy, PV_j); \
+      PV_izl = pfmax(iz, PV_k); \
+      PV_ixu = pfmin((ix + nx), (PV_i + (int)PV_inc)); \
+      PV_iyu = pfmin((iy + ny), (PV_j + (int)PV_inc)); \
+      PV_izu = pfmin((iz + nz), (PV_k + (int)PV_inc)); \
+                 \
+      /* loop over indexes and execute the body */ \
+      for (k = PV_izl; k < PV_izu; k++) \
+        for (j = PV_iyl; j < PV_iyu; j++) \
+          for (i = PV_ixl; i < PV_ixu; i++) \
+          { \
+            body; \
+          } \
+    }) \
+  }
+
+/**
+ * @brief Loop over the inside index space of an octree.
+ *
+ * General octree macro to loop over the index space (i,j,k values) in the octree.
+ * Octree is traversed executing the code specified in body for
+ * indices at the supplied level of interest or indices leaf nodes.
+ * value_test is evaluated to determine if the body should be
+ * executed.
+ *
+ * i,j,k should be initialized to the starting indices and will
+ * modified as the tree is traversed to the starting offset of the
+ * current octree node.
+ *
+ * ix,iy,iz and nx,ny,nz specify a bounding box to constrain the the iteration.
+ *
+ * The current level is maintained in the l parmeter.
+ *
+ * @note Level of interest doesn't seem to make sense.  The body will
+ * be executed for the first point (i,j,k) in the octree nodes at the
+ * level of interest.
+ *
+ * @param[in,out] i X index
+ * @param[in,out] j Y index
+ * @param[in,out] k k index
+ * @param[out] node octree node
+ * @param[in] octree octree to traverse
+ * @param[in] level level to limit tree traversal
+ * @param[in] ix x lower bound of index space to process
+ * @param[in] iy y lower bound of index space to process
+ * @param[in] iz z lower bound of index space to process
+ * @param[in] nx x upper bound of index space to process
+ * @param[in] ny y upper bound of index space to process
+ * @param[in] nz z upper bound of index space to process
+ * @param[in] value_test boolean if tests evaluated before body execution
+ * @param[in] body code to execute
+ */
+#define GrGeomOctreeInsideNodeLoop(i, j, k, node, octree, level,       \
+                                   ix, iy, iz, nx, ny, nz, value_test,                                  \
+                                   body)                                                                \
+  {                                                                    \
+    int PV_i, PV_j, PV_k, PV_l; \
+    int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu; \
+                                                        \
+                                                        \
+    PV_i = i;                                           \
+    PV_j = j;                                           \
+    PV_k = k;                                           \
+                                                                        \
+    GrGeomOctreeInsideLoop(PV_i, PV_j, PV_k, PV_l, node, octree, level, value_test, \
+    {                                                                   \
+      if ((PV_i >= ix) && (PV_i < (ix + nx)) &&                           \
+          (PV_j >= iy) && (PV_j < (iy + ny)) &&                             \
+          (PV_k >= iz) && (PV_k < (iz + nz)))                               \
+      {                                                                   \
+        i = PV_i;                                                         \
+        j = PV_j;                                                         \
+        k = PV_k;                                                         \
+        body;                                                             \
+      }                                                                   \
+    },                                                                  \
+    { \
+      /* find octree and region intersection */ \
+      PV_ixl = pfmax(ix, PV_i);                 \
+      PV_iyl = pfmax(iy, PV_j);                 \
+      PV_izl = pfmax(iz, PV_k);                        \
+      PV_ixu = pfmin((ix + nx), (PV_i + (int)PV_inc)); \
+      PV_iyu = pfmin((iy + ny), (PV_j + (int)PV_inc)); \
+      PV_izu = pfmin((iz + nz), (PV_k + (int)PV_inc)); \
+                                                       \
+      /* loop over indexes and execute the body */     \
+      for (k = PV_izl; k < PV_izu; k++)                \
+        for (j = PV_iyl; j < PV_iyu; j++)              \
+          for (i = PV_ixl; i < PV_ixu; i++)            \
+          {                                            \
+            body;                                      \
+          }                                            \
+    })                                                 \
   }
 
 /**
@@ -579,13 +1050,13 @@ typedef struct grgeom_octree {
     }) \
   }
 
-// SGS 12/3/2008 TODO: can optimize fdir by using 1 assignment to static.  Should
+// \todo SGS 2019/04/18 Currently faces are stored on single point leaf nodes.
+// Would be better to store planes.
+
+//  \todo SGS 12/3/2008 can optimize fdir by using 1 assignment to static.  Should
 // elimiate 2 assignment statements and switch and replace with table:
 // fdir = FDIR[PV_f] type of thing.
 //
-
-// SGS 12/3/2008 TODO:  How about storing if a node has a face rather than
-// looping over all 6 faces to figure that out?
 
 /**
  * @brief Loop over the faces of an octree.
@@ -594,14 +1065,14 @@ typedef struct grgeom_octree {
  * is traversed executing the code specified in body for indices at
  * the supplied level interest or in leaf nodes.  value_test is
  * evaluated to determine if the body should be executed.
-
+ *
  * General octree face looping macro.  Octree is traversed executing the
  * code specified in body for indices at the supplied level or in leaf
  * nodes.
- * 
+ *
  * i,j,k should be initialized to the starting indices and will
  * modified as the tree is traversed to the starting offset of the
- * current octree node.  
+ * current octree node.
  *
  * The fdir int[3] array indicates the face direction.  Array is
  * indexed by 0 (x), 1 (y), or 2 (z).  Value is -1 for face on left
@@ -610,12 +1081,12 @@ typedef struct grgeom_octree {
  * point may be iterated over multiple times if the cell has multiple
  * faces.
  *
- * ix,iy,iz and nx,ny,nz specify a bounding box for the iteration 
+ * ix,iy,iz and nx,ny,nz specify a bounding box for the iteration
  * for cases when the entire index space should not be iterated.
  *
  * The current level is maintained in the l parmeter.
- * 
- * @note level_of_intest doesn't make a lot of sense, only leaf nodes 
+ *
+ * @note level_of_intest doesn't make a lot of sense, only leaf nodes
  * have faces.
  *
  * @param[in,out] i X index
@@ -641,9 +1112,9 @@ typedef struct grgeom_octree {
 \
 \
     fdir = PV_fdir; \
-    GrGeomOctreeNodeLoop(i, j, k, node, octree, level_of_interest, \
-                         ix, iy, iz, nx, ny, nz, \
-                         (GrGeomOctreeNodeIsInside(node)), \
+    GrGeomOctreeInsideNodeLoop(i, j, k, node, octree, level_of_interest, \
+                               ix, iy, iz, nx, ny, nz,                  \
+                               TRUE,    \
     { \
       for (PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++) \
         if (GrGeomOctreeHasFace(node, PV_f)) \
@@ -695,10 +1166,10 @@ typedef struct grgeom_octree {
  * supplied level interest or in leaf nodes.  value_test is evaluated
  * to determine if the body should be executed.  Bodies execute per
  * octree node traversed (a box), not over the index space.
- * 
+ *
  * i,j,k should be initialized to the starting indices and will
  * modified as the tree is traversed to the starting offset of the
- * current octree node.  
+ * current octree node.
  *
  * The current level is maintained in the l parmeter.
  *
@@ -819,7 +1290,7 @@ typedef struct grgeom_octree {
  * @param[in] ny y upper bound of index space to process
  * @param[in] nz z upper bound of index space to process
  * @param[in] value_test boolean if tests evaluated before body execution
- * @param[in] body code to execute 
+ * @param[in] body code to execute
  */
 #define GrGeomOctreeNodeBoxLoop(i, j, k,                                \
                                 num_i, num_j, num_k,                    \

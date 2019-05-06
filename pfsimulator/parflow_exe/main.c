@@ -123,23 +123,25 @@ int main(int argc, char *argv [])
     char * input_name = NULL;
 
     opterr = 0;
-    while ((c = getopt (argc, argv, "v")) != -1)
-    switch (c)
+    while ((c = getopt(argc, argv, "v")) != -1)
+      switch (c)
       {
-      case 'v':
-	PrintVersionInfo(stdout);
-	return 0;
-        break;
-      case '?':
-	if (isprint (optopt))
-          fprintf (stderr, "Unknown option `-%c'.\n", optopt);
-        else
-          fprintf (stderr,
-                   "Unknown option character `\\x%x'.\n",
-                   optopt);
-        return 1;
-      default:
-        abort ();
+        case 'v':
+          PrintVersionInfo(stdout);
+          return 0;
+          break;
+
+        case '?':
+          if (isprint(optopt))
+            fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+          else
+            fprintf(stderr,
+                    "Unknown option character `\\x%x'.\n",
+                    optopt);
+          return 1;
+
+        default:
+          abort();
       }
 
     int non_opt_argc = argc - optind;
