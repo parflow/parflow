@@ -120,4 +120,5 @@ endforeach()
     
 if (${PARFLOW_HAVE_CLM})
   add_subdirectory (clm)
+  add_subdirectory (washita/tcl_scripts)
 endif(${PARFLOW_HAVE_CLM})
