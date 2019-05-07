@@ -488,7 +488,7 @@ pfset Solver.Nonlinear.Globalization                     LineSearch
 pfset Solver.Linear.KrylovDimension                      70
 pfset Solver.Linear.MaxRestarts                           2
 
-pfset Solver.Linear.Preconditioner                       PFMG
+pfset Solver.Linear.Preconditioner                       PFMGOctree
 pfset Solver.Linear.Preconditioner.PCMatrixType          FullJacobian
 
 
