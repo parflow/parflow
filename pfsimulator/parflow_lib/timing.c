@@ -116,52 +116,55 @@ void  PrintTiming()
   amps_File file = NULL;
   amps_Invoice max_invoice;
 
-  double time_ticks;
-  double cpu_ticks;
-  double mflops;
+  double time_ticks[timing ->size];
+  double cpu_ticks[timing ->size];
+  double mflops[timing ->size];
 
   int i;
 
-
-  max_invoice = amps_NewInvoice("%d%d", &time_ticks, &cpu_ticks);
-
-  IfLogging(0)
-  file = OpenLogFile("Timing");
+  max_invoice = amps_NewInvoice("%*d%*d", timing->size, &time_ticks, timing->size, &cpu_ticks);
 
   for (i = 0; i < (timing->size); i++)
   {
-    time_ticks = (double)((timing->time)[i]);
-    cpu_ticks = (double)((timing->cpu_time)[i]);
-    amps_AllReduce(amps_CommWorld, max_invoice, amps_Max);
+    time_ticks[i] = (double)((timing->time)[i]);
+    cpu_ticks[i] = (double)((timing->cpu_time)[i]);
+  }
 
-    IfLogging(0)
+  amps_AllReduce(amps_CommWorld, max_invoice, amps_Max);
+
+  for (i = 0; i < (timing->size); i++)
+  {
+    mflops[i] = time_ticks ?
+      ((timing->flops)[i] / (time_ticks[i] / AMPS_TICKS_PER_SEC)) / 1.0E6
+      : 0.0;
+  }
+
+  IfLogging(0)
+  {
+    file = OpenLogFile("Timing");
+
+    for (i = 0; i < (timing->size); i++)
     {
       amps_Fprintf(file, "%s:\n", (timing->name)[i]);
       amps_Fprintf(file, "  wall clock time   = %f seconds\n",
-                   time_ticks / AMPS_TICKS_PER_SEC);
-
-      mflops = time_ticks ?
-               ((timing->flops)[i] / (time_ticks / AMPS_TICKS_PER_SEC)) / 1.0E6
-               : 0.0;
-
-      amps_Fprintf(file, "  wall MFLOPS = %f (%g)\n", mflops,
+		   time_ticks[i] / AMPS_TICKS_PER_SEC);
+      amps_Fprintf(file, "  wall MFLOPS = %f (%g)\n", mflops[i],
                    (timing->flops)[i]);
 #ifdef CPUTiming
       if (AMPS_CPU_TICKS_PER_SEC)
       {
         amps_Fprintf(file, "  CPU  clock time   = %f seconds\n",
-                     cpu_ticks / AMPS_CPU_TICKS_PER_SEC);
-        if (cpu_ticks)
+                     cpu_ticks[i] / AMPS_CPU_TICKS_PER_SEC);
+        if (cpu_ticks[i])
           amps_Fprintf(file, "  cpu  MFLOPS = %f (%g)\n",
-                       ((timing->flops)[i] / (cpu_ticks / AMPS_CPU_TICKS_PER_SEC)) / 1.0E6,
+                       ((timing->flops)[i] / (cpu_ticks[i] / AMPS_CPU_TICKS_PER_SEC)) / 1.0E6,
                        (timing->flops)[i]);
       }
 #endif
     }
-  }
 
-  IfLogging(0)
-  CloseLogFile(file);
+    CloseLogFile(file);
+  }
 
 #ifdef VECTOR_UPDATE_TIMING
   {
