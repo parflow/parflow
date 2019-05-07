@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.4)
+cmake_minimum_required (VERSION 3.9)
 
 project (PARFLOW C Fortran CXX)
 
@@ -428,3 +428,24 @@ endif()
 
 install (DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION config)
 
+#-----------------------------------------------------------------------------
+# Doxygen 
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_DOXYGEN False CACHE BOOL "Enable Doxygen and building of code documentation")
+
+if ( ${PARFLOW_ENABLE_DOXYGEN} )
+  find_package(Doxygen)
+  if (DOXYGEN_FOUND)
+    set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/docs/doxygen)
+    set(DOXYGEN_IMAGE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/docs/doxygen/images)
+    
+    message("Doxygen build started")
+
+    doxygen_add_docs(doxygen
+      COMMENT "Generating API documentation with Doxygen"
+      ${PROJECT_SOURCE_DIR})
+
+  else (DOXYGEN_FOUND)
+    message("Doxygen need to be installed to generate the doxygen documentation")
+  endif (DOXYGEN_FOUND)
+endif()

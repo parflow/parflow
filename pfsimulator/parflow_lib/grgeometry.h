@@ -108,13 +108,12 @@ typedef struct {
     i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref; \
     j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref; \
     k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref; \
-    GrGeomOctreeNodeLoop(i, j, k, PV_node, \
-                         GrGeomSolidData(grgeom), \
-                         GrGeomSolidOctreeBGLevel(grgeom) + r, \
-                         ix, iy, iz, nx, ny, nz, \
-                         (GrGeomOctreeCellIsInside(PV_node) || \
-                          GrGeomOctreeCellIsFull(PV_node)), \
-                         body); \
+    GrGeomOctreeInteriorNodeLoop(i, j, k, PV_node, \
+                                 GrGeomSolidData(grgeom),      \
+                                 GrGeomSolidOctreeBGLevel(grgeom) + r,  \
+                                 ix, iy, iz, nx, ny, nz,                \
+                                 TRUE,                                  \
+                                 body);                                 \
   }
 
 /*--------------------------------------------------------------------------
@@ -122,6 +121,10 @@ typedef struct {
  *   Macro for looping over the inside of a solid with non-unitary strides.
  *--------------------------------------------------------------------------*/
 
+/**
+ *  Interior version of this would improve speed; but this loop is not
+ * currently used.
+ */
 #define GrGeomInLoop2(i, j, k, grgeom,                                  \
                       r, ix, iy, iz, nx, ny, nz, sx, sy, sz, body) \
   { \
@@ -136,8 +139,8 @@ typedef struct {
                           GrGeomSolidData(grgeom), \
                           GrGeomSolidOctreeBGLevel(grgeom) + r, \
                           ix, iy, iz, nx, ny, nz, sx, sy, sz, \
-                          (GrGeomOctreeCellIsInside(PV_node) || \
-                           GrGeomOctreeCellIsFull(PV_node)), \
+                          (GrGeomOctreeNodeIsInside(PV_node) || \
+                           GrGeomOctreeNodeIsFull(PV_node)), \
                           body); \
   }
 
@@ -147,22 +150,21 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 #define GrGeomOutLoop(i, j, k, grgeom, \
-                      r, ix, iy, iz, nx, ny, nz, body) \
-  { \
-    GrGeomOctree  *PV_node; \
-    double PV_ref = pow(2.0, r); \
-\
-\
-    i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref; \
-    j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref; \
-    k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref; \
-    GrGeomOctreeNodeLoop(i, j, k, PV_node, \
-                         GrGeomSolidData(grgeom), \
-                         GrGeomSolidOctreeBGLevel(grgeom) + r, \
-                         ix, iy, iz, nx, ny, nz, \
-                         (GrGeomOctreeCellIsOutside(PV_node) || \
-                          GrGeomOctreeCellIsEmpty(PV_node)), \
-                         body); \
+                      r, ix, iy, iz, nx, ny, nz, body)  \
+  {                                                     \
+    GrGeomOctree  *PV_node;                             \
+    double PV_ref = pow(2.0, r);                        \
+                                                        \
+                                                        \
+    i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref;      \
+    j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;      \
+    k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref;      \
+    GrGeomOctreeExteriorNodeLoop(i, j, k, PV_node,      \
+                                 GrGeomSolidData(grgeom),      \
+                                 GrGeomSolidOctreeBGLevel(grgeom) + r,  \
+                                 ix, iy, iz, nx, ny, nz,                \
+                                 TRUE,                                  \
+                                 body);                                 \
   }
 
 /*--------------------------------------------------------------------------
@@ -184,8 +186,8 @@ typedef struct {
                           GrGeomSolidData(grgeom), \
                           GrGeomSolidOctreeBGLevel(grgeom) + r, \
                           ix, iy, iz, nx, ny, nz, sx, sy, sz, \
-                          (GrGeomOctreeCellIsOutside(PV_node) || \
-                           GrGeomOctreeCellIsEmpty(PV_node)), \
+                          (GrGeomOctreeNodeIsOutside(PV_node) || \
+                           GrGeomOctreeNodeIsEmpty(PV_node)), \
                           body); \
   }
 
@@ -285,8 +287,8 @@ typedef struct {
                             PV_level_of_interest,                        \
                             ix, iy, iz, nx, ny, nz,                      \
                             (GrGeomOctreeHasChildren(PV_node) ||         \
-                             GrGeomOctreeCellIsInside(PV_node) ||        \
-                             GrGeomOctreeCellIsFull(PV_node)),           \
+                             GrGeomOctreeNodeIsInside(PV_node) ||        \
+                             GrGeomOctreeNodeIsFull(PV_node)),           \
     {                                            \
       body;                                     \
     });                                          \

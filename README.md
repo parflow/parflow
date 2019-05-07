@@ -226,10 +226,14 @@ or by starting a parallel interactive session.
 
 ## Building documentation
 
-The documentation for Parflow may be built as part of the build when Latex is
-available on the system. Adding the -DPARFLOW_ENABLE_LATEX=TRUE option to the CMake configure
-will enable building of the documentation.
+### User Manual
 
+A version of the user manual is available at github : [Parflow Users Manual](https://github.com/parflow/parflow/blob/master/parflow-manual.pdf)
+
+The user manual for Parflow may be built as part of the build when
+Latex is available on the system. Adding the
+-DPARFLOW_ENABLE_LATEX=TRUE option to the CMake configure will enable
+building of the documentation.
 
 ```shell
    mkdir build
@@ -243,7 +247,20 @@ will enable building of the documentation.
 When make is run the documenation will be built and installed in
 $(INSTALL_DIR)/docs/user_manual.pdf.
 
-A version of the user manual is also available at github : [Parflow Users Manual](https://github.com/parflow/parflow/blob/master/parflow-manual.pdf)
+### Code documentation
+
+Parflow is moving to using Doxygen for code documenation.  The documentation is currently very sparse.
+
+Adding the -DPARFLOW_ENABLE_DOXYGEN=TRUE option to the CMake configure
+will enable building of the code documentation.  After CMake has been
+run the Doxygen code documenation is built with:
+
+```shell
+   cd build
+   make doxygen
+```
+
+HTML pages are generated in the build/docs/doxygen/html directory.
 
 ## Configure options
 

@@ -19,7 +19,7 @@ pfset Process.Topology.R 1
 #-----------------------------------------------------------------------------
 # Make a directory for the simulation and copy inputs into it
 #-----------------------------------------------------------------------------
-exec mkdir "Outputs"
+file mkdir "Outputs"
 cd "./Outputs"
 
 # ParFlow Inputs
@@ -32,6 +32,9 @@ file copy -force "../../parflow_input/press.init.pfb"  .
 file copy -force "../../clm_input/drv_clmin.dat" .
 file copy -force "../../clm_input/drv_vegp.dat"  .
 file copy -force "../../clm_input/drv_vegm.alluv.dat"  . 
+
+file delete correct_output
+file link -symbolic correct_output "../correct_output" 
 
 puts "Files Copied"
 
@@ -188,7 +191,7 @@ pfset Gravity                             1.0
 pfset TimingInfo.BaseUnit                 1.0
 pfset TimingInfo.StartCount               0.0
 pfset TimingInfo.StartTime                0.0
-pfset TimingInfo.StopTime                 72.0
+pfset TimingInfo.StopTime                 12.0
 pfset TimingInfo.DumpInterval             24.0
 pfset TimeStep.Type                       Constant
 pfset TimeStep.Value                      1.0
@@ -480,13 +483,13 @@ pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaValue                          0.001
 pfset Solver.Nonlinear.UseJacobian                       True 
 pfset Solver.Nonlinear.DerivativeEpsilon                 1e-16
-pfset Solver.Nonlinear.StepTol				 			1e-30
+pfset Solver.Nonlinear.StepTol				 1e-30
 pfset Solver.Nonlinear.Globalization                     LineSearch
 pfset Solver.Linear.KrylovDimension                      70
 pfset Solver.Linear.MaxRestarts                           2
 
-pfset Solver.Linear.Preconditioner                       PFMG
-pfset Solver.Linear.Preconditioner.PCMatrixType     FullJacobian
+pfset Solver.Linear.Preconditioner                       PFMGOctree
+pfset Solver.Linear.Preconditioner.PCMatrixType          FullJacobian
 
 
 #-----------------------------------------------------------------------------
@@ -521,5 +524,38 @@ pfundist LW.slopey.pfb
 pfundist IndicatorFile_Gleeson.50z.pfb
 
 puts "ParFlow run Complete"
+
+source ../../../pftest.tcl
+
+set sig_digits 4
+
+set passed 1
+
+if ![pftestFile $runname.out.press.00000.pfb "Max difference in Pressure" $sig_digits] {
+    set passed 0
+}
+
+if ![pftestFile $runname.out.satur.00000.pfb "Max difference in Pressure" $sig_digits] {
+    set passed 0
+}
+
+foreach file "LW.out.eflx_lh_tot.00012.pfb
+    LW.out.qflx_evap_soi.00012.pfb LW.out.swe_out.00012.pfb
+    LW.out.eflx_lwrad_out.00012.pfb LW.out.qflx_evap_tot.00012.pfb
+    LW.out.t_grnd.00012.pfb LW.out.eflx_sh_tot.00012.pfb
+    LW.out.qflx_evap_veg.00012.pfb LW.out.t_soil.00012.pfb
+    LW.out.eflx_soil_grnd.00012.pfb LW.out.qflx_infl.00012.pfb
+    LW.out.qflx_evap_grnd.00012.pfb LW.out.qflx_tran_veg.00012.pfb" {
+
+    if ![pftestFile $file "Max difference in $file" $sig_digits] { 
+	set passed 0 
+    } 
+}
+
+if $passed {
+    puts "default_single : PASSED"
+} {
+    puts "default_single : FAILED"
+}
 
 
