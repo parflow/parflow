@@ -338,6 +338,23 @@ int main(int argc, char *argv [])
 
         fprintf(log_file, "Total Run Time: %f seconds\n\n",
                 (double)wall_clock_time / (double)AMPS_TICKS_PER_SEC);
+
+
+	{
+	  char filename[2048];
+	  sprintf(filename, "%s.timing.csv", GlobalsOutFileName);
+	  
+	  if ((file = fopen(filename, "a")) == NULL)
+	  {
+	    InputError("Error: can't open output file %s%s\n", filename, "");
+	  }
+	  
+	    fprintf(file, "%s,%f,%s,%s\n", "Total Runtime", 
+		    (double)wall_clock_time / (double)AMPS_TICKS_PER_SEC,
+		    "-nan", "0");
+	  }
+	  
+	  fclose(file);
       }
     }
 

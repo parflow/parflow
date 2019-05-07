@@ -110,6 +110,7 @@ testclean:
 	@rm -f *.silo*
 	@rm -f *.pfsb*
 	@rm -f *.log
+	@rm -f *.out.timing.csv	
 	@rm -f .hostfile
 	@rm -f .amps.*
 	@rm -f *.out.pftcl

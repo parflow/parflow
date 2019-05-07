@@ -164,6 +164,24 @@ void  PrintTiming()
     }
 
     CloseLogFile(file);
+
+    char filename[2048];
+    sprintf(filename, "%s.timing.csv", GlobalsOutFileName);
+
+    if ((file = fopen(filename, "w")) == NULL)
+    {
+      InputError("Error: can't open output file %s%s\n", filename, "");
+    }
+
+    fprintf(file, "Timer,Time (s),MFLOPS (mops/s),FLOP (op)\n");
+    for (i = 0; i < (timing->size); i++)
+    {
+      fprintf(file, "%s,%f,%f,%g\n", timing->name[i], 
+	      time_ticks[i] / AMPS_TICKS_PER_SEC,
+	      mflops[i], (timing->flops)[i]);
+    }
+    
+    fclose(file);
   }
 
 #ifdef VECTOR_UPDATE_TIMING
