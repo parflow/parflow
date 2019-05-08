@@ -67,7 +67,7 @@ depth information.  By default the top is 0 and bottom is 1000.0.  The
 top and bottom can be set using the "--z-top" and "--z-bottom" flags:
 
 ```shell
-pfmask-to-pfsol --z-top 10.0 --z-top 200.0
+pfmask-to-pfsol --z-top 10.0 --z-bottom 200.0
 ```
 
 ### Mask ASC file format
