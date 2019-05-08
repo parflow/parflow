@@ -30,6 +30,10 @@
 
 #include "databox.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*-----------------------------------------------------------------------
  * function prototypes
  *-----------------------------------------------------------------------*/
@@ -37,6 +41,10 @@
 void ComputeTop(Databox *mask, Databox  *top);
 void ComputeBottom(Databox *mask, Databox  *bottom);
 void ExtractTop(Databox *v1, Databox *v2, Databox *v3);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

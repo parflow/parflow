@@ -52,6 +52,10 @@
 
 #include "well.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*----------------------------------------------------------------
  * Well List Member structure
  *----------------------------------------------------------------*/
@@ -93,14 +97,10 @@ typedef struct well_list_member {
  * function prototypes
  *-----------------------------------------------------------------------*/
 
-#ifdef __STDC__
-# define        ANSI_PROTO(s) s
-#else
-# define ANSI_PROTO(s) ()
+void WriteWellListData(FILE *fd, double time, WellDataStat *well_data_stat, int num_phases, int num_components);
+
+#ifdef __cplusplus
+}
 #endif
-
-void WriteWellListData ANSI_PROTO((FILE *fd, double time, WellDataStat *well_data_stat, int num_phases, int num_components));
-
-#undef ANSI_PROTO
 
 #endif

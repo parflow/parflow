@@ -27,6 +27,13 @@
  **********************************************************************EHEADER*/
 /* Basic I/O routines */
 
+#ifndef TOOLS_IO_HEADER
+#define TOOLS_IO_HEADER
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef MAXPATHLEN
 #ifdef MAX_PATH
 #define MAXPATHLEN MAX_PATH
@@ -135,3 +142,9 @@ void tools_ReadDouble(
 #endif
 #endif
 #endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif 

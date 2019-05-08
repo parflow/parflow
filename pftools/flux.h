@@ -43,25 +43,24 @@
 #ifndef FLUX_HEADER
 #define FLUX_HEADER
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "databox.h"
 
 #include <stdio.h>
 #include <math.h>
 
-
 /*-----------------------------------------------------------------------
  * function prototypes
  *-----------------------------------------------------------------------*/
 
-#ifdef __STDC__
-# define        ANSI_PROTO(s) s
-#else
-# define ANSI_PROTO(s) ()
-#endif
-
 /* flux.c */
-Databox * CompFlux ANSI_PROTO((Databox *k, Databox *h));
+Databox * CompFlux (Databox *k, Databox *h);
 
-#undef ANSI_PROTO
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #endif

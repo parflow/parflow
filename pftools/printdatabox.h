@@ -41,13 +41,17 @@
 
 #include "parflow_config.h"
 
+#include "databox.h"
+
 #ifdef HAVE_HDF4
 #include <hdf.h>
 #endif
 
 #include <stdio.h>
 
-#include "databox.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*-----------------------------------------------------------------------
  * function prototypes
@@ -65,9 +69,10 @@ void PrintTFG_CLMVTK(FILE *fp, Databox *v, double *pnts, char *varname, int flt)
 void PrintAVSField(FILE *fp, Databox *v);
 int  PrintSDS(char *filename, int type, Databox *v);
 void PrintVizamrai(FILE *fp, Databox *v);
-void            PrintSilo(
-                          char *   filename,
-                          Databox *v);
+void PrintSilo(char *   filename, Databox *v);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
