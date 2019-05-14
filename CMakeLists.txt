@@ -150,6 +150,17 @@ if (${PARFLOW_ENABLE_HYPRE} OR DEFINED HYPRE_ROOT)
 endif (${PARFLOW_ENABLE_HYPRE} OR DEFINED HYPRE_ROOT)
 
 #-----------------------------------------------------------------------------
+# CURL
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_CURL False CACHE BOOL "Build with Curl library")
+if (${PARFLOW_ENABLE_CURL} OR DEFINED CURL_ROOT)
+  find_package(CURL)
+  if (${CURL_FOUND})
+    set(PARFLOW_HAVE_CURL "yes")
+  endif (${CURL_FOUND})
+endif (${PARFLOW_ENABLE_CURL} OR DEFINED CURL_ROOT)
+
+#-----------------------------------------------------------------------------
 # ZLIB
 #-----------------------------------------------------------------------------
 set (PARFLOW_ENABLE_ZLIB False CACHE BOOL "Build with Zlib compression library")
