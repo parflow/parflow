@@ -24,6 +24,9 @@ endif (${PARFLOW_HAVE_SILO})
 
 if (${PARFLOW_HAVE_NETCDF})
   target_link_libraries (parflow ${NETCDF_LIBRARIES})
+  if (${PARFLOW_HAVE_CURL})
+    target_link_libraries (parflow ${CURL_LIBRARIES})
+  endif (${PARFLOW_HAVE_CURL})
 endif (${PARFLOW_HAVE_NETCDF})
 
 if (${PARFLOW_HAVE_HDF5})
