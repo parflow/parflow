@@ -33,7 +33,7 @@
 
 #include "parflow.h"
 #include "grgeometry.h"
-
+#include "clustering.h"
 
 /*--------------------------------------------------------------------------
  * GrGeomGetOctreeInfo:
@@ -294,6 +294,9 @@ GrGeomSolid   *GrGeomNewSolid(
   (new_grgeomsolid->octree_iy) = octree_iy;
   (new_grgeomsolid->octree_iz) = octree_iz;
 
+  printf("SGSDEBUG clustering\n");
+  ComputeBoxes(new_grgeomsolid);
+
   return new_grgeomsolid;
 }
 
@@ -344,6 +347,9 @@ void             GrGeomSolidFromInd(
                       octree_bg_level, ix, iy, iz);
 
   *solid_ptr = GrGeomNewSolid(solid_octree, NULL, 0, octree_bg_level, ix, iy, iz);
+
+  printf("SGSDEBUG clustering\n");
+  ComputeBoxes(*solid_ptr);
 }
 
 
