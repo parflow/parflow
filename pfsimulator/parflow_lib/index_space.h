@@ -27,7 +27,7 @@
  *  USA
  **********************************************************************EHEADER*/
 
-#ifndef _INDEX_SPACE_BOX_HEADER
+#ifndef _INDEX_SPACE_HEADER
 #define _INDEX_SPACE_HEADER
 
 /**

@@ -101,6 +101,7 @@ void BoxListConcatenate(BoxList *box_list, BoxList *concatenate_list)
     BoxListAppend(box_list, &(element -> box));
     element = element -> next;
   }
+  box_list -> size += concatenate_list -> size;
 }
 
 void BoxListClearItems(BoxList* box_list)

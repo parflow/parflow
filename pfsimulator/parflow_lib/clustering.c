@@ -38,6 +38,16 @@ typedef struct
   int *histogram[DIM];
 } HistogramBox;
 
+int HistogramBoxGetTags(HistogramBox *histogram_box, int dim, int global_index)
+{
+  return histogram_box -> histogram[dim][global_index - histogram_box -> box.lo[dim]];
+}
+
+void HistogramBoxAddTags(HistogramBox *histogram_box, int dim, int global_index, int tag_count)
+{
+  histogram_box -> histogram[dim][global_index - histogram_box -> box.lo[dim]] += tag_count;
+}
+
 /**
  * Reset the histogram.
  */
@@ -92,13 +102,13 @@ void BoundTagHistogram(HistogramBox *histogram_box,
    if (width > min_size) {
 
      while ( ((*box_lo) <= (*box_up)) &&
-	     (histogram_box -> histogram[dim][(*box_lo)] == 0) )
+	     (HistogramBoxGetTags(histogram_box, dim, *box_lo) == 0) )
      {
        (*box_lo)++;
      }
 
      while ( ((*box_up) >= (*box_lo)) &&
-	     (histogram_box -> histogram[dim][(*box_up)] == 0) ) 
+	     (HistogramBoxGetTags(histogram_box, dim, *box_up) == 0) ) 
      {
        (*box_up)--;
      }
@@ -228,7 +238,8 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim)
 	});
       }
 	  
-      histogram_box -> histogram[dim][ic_sb] += tag_count;
+      HistogramBoxAddTags(histogram_box, dim, ic_sb, tag_count);
+      // SGS remove histogram_box -> histogram[dim][ic_sb] += tag_count;
     }
   }
 }
@@ -288,12 +299,12 @@ int FindZeroCutPoint( int* cut_pt,
 
   for (int ic = 0; ((cut_mid-ic>=cut_lo) && (cut_mid+ic<=cut_hi)); ic++) 
   {
-    if (hist_box -> histogram[dim, cut_mid-ic] == 0) 
+    if (HistogramBoxGetTags(hist_box, dim, cut_mid-ic) == 0) 
     {
       (*cut_pt) = cut_mid-ic;
       return TRUE;
     }
-    if (hist_box -> histogram[dim, cut_mid+ic] == 0) 
+    if (HistogramBoxGetTags(hist_box, dim, cut_mid+ic) == 0) 
     {
       (*cut_pt) = cut_mid+ic;
       return TRUE;
@@ -334,15 +345,15 @@ void CutAtLaplacian(int* cut_pt,
       int infpt_lo = MIN(lo + min_size - 1, lo + 1);  
       int infpt_hi = MIN(hi - min_size, hi - 2);  
 
-      int last_lap = hist_box -> histogram[dim][infpt_lo - 1]
-	- 2 * hist_box->histogram[dim][infpt_lo]
-	+ hist_box -> histogram[dim][infpt_lo + 1];
+      int last_lap = HistogramBoxGetTags(hist_box,dim,infpt_lo - 1)
+	- 2 * HistogramBoxGetTags(hist_box, dim, infpt_lo)
+	+ HistogramBoxGetTags(hist_box, dim, infpt_lo + 1);
 
       for (int ic = infpt_lo+1; ic <= infpt_hi+1; ic++) 
       {
-	int new_lap = hist_box -> histogram[dim][ic - 1]
-	  - 2 * hist_box->histogram[dim][ic]
-	  + hist_box -> histogram[dim][ic + 1];
+	int new_lap = HistogramBoxGetTags(hist_box, dim, ic - 1)
+	  - 2 * HistogramBoxGetTags(hist_box, dim, ic)
+	  + HistogramBoxGetTags(hist_box, dim, ic + 1);
 
 	if ( ((new_lap < 0) && (last_lap >= 0)) ||
 	     ((new_lap >= 0) && (last_lap < 0)) ) {
@@ -389,7 +400,7 @@ int SplitTagBoundBox(Box* box_lft,
 {
   int cut_pt = INT_MIN;
   int tmp_dim = -1; 
-  int id = -1;
+  int dim = -1;
   
   Index num_cells;
   
@@ -405,7 +416,7 @@ int SplitTagBoundBox(Box* box_lft,
    * Sort the bound box dimensions from largest to smallest.
    */
   Index sorted;
-  for (int dim = 0; dim < DIM; dim++) 
+  for (dim = 0; dim < DIM; dim++) 
   {
     sorted[dim] = dim;
   }
@@ -452,7 +463,7 @@ int SplitTagBoundBox(Box* box_lft,
    * Check each splittable direction, from largest to smallest, until
    * zero point found.
    */
-  for (int dim = 0; dim < nsplit; dim++) 
+  for (dim = 0; dim < nsplit; dim++) 
   {
     tmp_dim = sorted[dim];
     if ( FindZeroCutPoint(&cut_pt, 
@@ -467,7 +478,7 @@ int SplitTagBoundBox(Box* box_lft,
    * If no zero point found, try Laplacian on longest side of bound box.
    */
 
-  if (id == nsplit) 
+  if (dim == nsplit) 
   {
     tmp_dim = sorted[0];
 
@@ -532,26 +543,26 @@ void FindBoxesContainingTags(BoxList* boxes,
 	  * boxes, "box_lft" and "box_rgt".  Now, attempt to recursively
 	  * split these boxes further.
 	  */
-	 BoxList box_list_lft;
-	 BoxList box_list_rgt;
+	 BoxList* box_list_lft = NewBoxList();
+	 BoxList* box_list_rgt = NewBoxList();
 
-	 FindBoxesContainingTags(&box_list_lft, 
+	 FindBoxesContainingTags(box_list_lft, 
 				 vector,
 				 &box_lft, min_box,
 				 efficiency_tol, combine_tol);
-	 FindBoxesContainingTags(&box_list_rgt, 
+	 FindBoxesContainingTags(box_list_rgt, 
 				 vector,
 				 &box_rgt, min_box,
 				 efficiency_tol, combine_tol);
 
-	 if ( (( BoxListSize(&box_list_lft) > 1) ||
-	       ( BoxListSize(&box_list_rgt) > 1)) ||
-	      ( (double) (BoxSize(BoxListFront(&box_list_lft))
-			  + BoxSize(BoxListFront(&box_list_rgt)))
+	 if ( (( BoxListSize(box_list_lft) > 1) ||
+	       ( BoxListSize(box_list_rgt) > 1)) ||
+	      ( (double) (BoxSize(BoxListFront(box_list_lft))
+			  + BoxSize(BoxListFront(box_list_rgt)))
 		< ((double) BoxSize(&tag_bound_box))*combine_tol ) )
 	 {
-	   BoxListConcatenate(boxes, &box_list_lft);
-	   BoxListConcatenate(boxes, &box_list_rgt);
+	   BoxListConcatenate(boxes, box_list_lft);
+	   BoxListConcatenate(boxes, box_list_rgt);
 	 }
        }
      }
@@ -646,26 +657,26 @@ void BergerRigoutsos(Vector* vector,
 	  * boxes, "box_lft" and "box_rgt".  Now, attempt to recursively
 	  * split these boxes further.
 	  */
-	 BoxList box_list_lft;
-	 BoxList box_list_rgt;
+	 BoxList* box_list_lft = NewBoxList();
+	 BoxList* box_list_rgt = NewBoxList();
 
-	 FindBoxesContainingTags(&box_list_lft, 
+	 FindBoxesContainingTags(box_list_lft, 
 				 vector,
 				 &box_lft, min_box,
 				 efficiency_tol, combine_tol);
-	 FindBoxesContainingTags(&box_list_rgt, 
+	 FindBoxesContainingTags(box_list_rgt, 
 				 vector,
 				 &box_rgt, min_box,
 				 efficiency_tol, combine_tol);
 
-	 if ( (( BoxListSize(&box_list_lft) > 1) ||
-	       ( BoxListSize(&box_list_rgt) > 1)) ||
-	      ( (double) (BoxSize(BoxListFront(&box_list_lft))
-			  + BoxSize(BoxListFront(&box_list_rgt)))
+	 if ( (( BoxListSize(box_list_lft) > 1) ||
+	       ( BoxListSize(box_list_rgt) > 1)) ||
+	      ( (double) (BoxSize(BoxListFront(box_list_lft))
+			  + BoxSize(BoxListFront(box_list_rgt)))
 		< ((double) BoxSize(&tag_bound_box))*combine_tol ) )
 	 {
-	   BoxListConcatenate(boxes, &box_list_lft);
-	   BoxListConcatenate(boxes, &box_list_rgt);
+	   BoxListConcatenate(boxes, box_list_lft);
+	   BoxListConcatenate(boxes, box_list_rgt);
 	 }
        }
      }
@@ -740,6 +751,8 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
       
       dp = SubvectorData(d_sub);
 
+      printf("Subgrid : (%d,%d,%d) (%d,%d,%d)\n", ix, iy, iz, nx, ny, nz);
+
       GrGeomInLoop(i, j, k, geom_solid, r, ix, iy, iz, nx, ny, nz,
       {
 	ip = SubvectorEltIndex(d_sub, i, j, k);
@@ -770,8 +783,7 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
 
   printf("SGS OctreeComputeBoxes BR clustering : \n");
   BoxListPrint(boxes);
+  GrGeomSolidInteriorBoxes(geom_solid) = boxes;
   printf("SGS End\n");
-
-  
 }
 

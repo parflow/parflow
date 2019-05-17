@@ -318,6 +318,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     pop = SubvectorData(po_sub);
     fp = SubvectorData(f_sub);
 
+#if 0
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
       ip = SubvectorEltIndex(f_sub, i, j, k);
@@ -331,7 +332,69 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
       fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip];
     });
+#else
+
+#if 0
+    GrGeomInLoopBoxes(i, j, k, gr_domain, ix, iy, iz, nx, ny, nz,
+    {
+      ip = SubvectorEltIndex(f_sub, i, j, k);
+      ipo = SubvectorEltIndex(po_sub, i, j, k);
+      io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
+      
+      /*     del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
+       *   del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
+      del_x_slope = 1.0;
+      del_y_slope = 1.0;
+      
+      fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip];
+    });
+#else
+    {
+      //Assumes r = 0
+
+      int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu; 
+      
+      BoxList* boxes = GrGeomSolidInteriorBoxes(gr_domain);
+      
+      BoxListElement* element = boxes -> head;
+
+      printf("SGS using clustering box list\n");
+
+      /* find octree and region intersection */ 
+      PV_ixl = pfmax(ix, element -> box.lo[0]); 
+      PV_iyl = pfmax(iy, element -> box.lo[1]); 
+      PV_izl = pfmax(iz, element -> box.lo[2]); 
+      PV_ixu = pfmin((ix + nx - 1), element -> box.up[0]);
+      PV_iyu = pfmin((iy + ny - 1), element -> box.up[1]);
+      PV_izu = pfmin((iz + nz - 1), element -> box.up[2]);
+
+      while(element)
+      {
+	for(k = PV_izl; k <= PV_izu; k++)
+	  for(j =PV_iyl; j <= PV_iyu; j++)
+	    for(i = PV_ixl; i <= PV_ixu; i++)
+	    {
+	      ip = SubvectorEltIndex(f_sub, i, j, k);
+	      ipo = SubvectorEltIndex(po_sub, i, j, k);
+	      io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
+	      
+	      /*     del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
+	       *   del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
+	      del_x_slope = 1.0;
+	      del_y_slope = 1.0;
+	      
+	      fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip];
+	    }
+
+	element = element -> next;
+      }
+    }
+
+#endif
+
+#endif
   }
+
 
   /*@ Add in contributions from compressible storage */
 
