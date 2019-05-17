@@ -57,12 +57,14 @@ HistogramBox* NewHistogramBox(Box *box)
 
   BoxCopy(&(histogram_box -> box), box);
 
-  int size =  BoxSize(box);  
+  int size =  BoxSize(&(histogram_box -> box));  
 
   for (int dim = 0; dim < DIM; dim++)
   {
     histogram_box -> histogram[dim] = ctalloc(int, size);
   }
+
+  return histogram_box;
 }
 
 /**
@@ -157,6 +159,7 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim)
 {
 
   Box intersection;
+  BoxClear(&intersection);
 
   BoxCopy(&intersection, &(histogram_box -> box));
   
@@ -170,6 +173,8 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim)
     int tag_count = 0;
 
     Box src_box;
+    BoxClear(&src_box);
+
     BoxCopy(&src_box, &intersection);
 
     src_box.lo[dim] = ic_sb;
@@ -190,6 +195,7 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim)
       int i, j, k, iv;
 
       Box bounding_box;
+      BoxClear(&bounding_box);
       Index lo, up;
 
       // SGS TODO this loop is not very efficient, should move the
@@ -239,7 +245,6 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim)
       }
 	  
       HistogramBoxAddTags(histogram_box, dim, ic_sb, tag_count);
-      // SGS remove histogram_box -> histogram[dim][ic_sb] += tag_count;
     }
   }
 }
@@ -249,6 +254,9 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim)
  */
 int ComputeTagHistogram(HistogramBox *histogram_box, Vector* vector)
 {
+   int num_tags = 0;
+   Index num_cells;
+
    ResetHistogram(histogram_box);
 
    for(int dim = 0; dim < DIM; dim++)
@@ -256,10 +264,6 @@ int ComputeTagHistogram(HistogramBox *histogram_box, Vector* vector)
      ReduceTags(histogram_box, vector, dim);
    }
 
-   int num_tags = 0;
-
-   Index num_cells;
-   
    BoxNumberCells(&(histogram_box -> box), &num_cells);
 
    int dim = 0;
@@ -500,7 +504,7 @@ int SplitTagBoundBox(Box* box_lft,
   BoxSet(box_lft, box_lo, lft_hi);
   BoxSet(box_rgt, rgt_lo, box_up);
 
-  return 1;
+  return TRUE;
 }
 
 void FindBoxesContainingTags(BoxList* boxes, 
@@ -521,6 +525,8 @@ void FindBoxesContainingTags(BoxList* boxes,
   else 
   {
     Box tag_bound_box;
+    BoxClear(&tag_bound_box);
+
     FindBoundBoxForTags(hist_box, &tag_bound_box, min_box);
 
      int num_cells = BoxSize(&tag_bound_box);
@@ -528,10 +534,14 @@ void FindBoxesContainingTags(BoxList* boxes,
      double efficiency = ( num_cells == 0 ? 1.e0 :
 			   ((double) num_tags)/((double) num_cells) );
 
+     printf("SGS \tefficiency %f\n", efficiency);
+
      if (efficiency <= efficiency_tol) 
      {
        Box box_lft;
        Box box_rgt;
+       BoxClear(&box_lft);
+       BoxClear(&box_rgt);
 
        int is_split = SplitTagBoundBox(&box_lft, &box_rgt, &tag_bound_box, 
 				       hist_box, min_box);
@@ -594,6 +604,8 @@ void BergerRigoutsos(Vector* vector,
   int i_s;
 
   Box bounding_box;
+  BoxClear(&bounding_box);
+
   Index lo, up;
 
   ForSubgridI(i_s, GridSubgrids(grid))
@@ -624,28 +636,35 @@ void BergerRigoutsos(Vector* vector,
   }
 
   BoxSet(&bounding_box, lo, up);
+
   HistogramBox* histogram_box = NewHistogramBox(&bounding_box);
 
   int num_tags = ComputeTagHistogram(histogram_box, vector);
 
-   if ( num_tags == 0 ) {
-      BoxListClearItems(boxes);
-   } 
-   else
-   {
+  if ( num_tags == 0 ) {
+    BoxListClearItems(boxes);
+  } 
+  else
+  {
      Box tag_bound_box;
-
+     BoxClear(&tag_bound_box);
+     
      FindBoundBoxForTags(histogram_box, &tag_bound_box, min_box);
-
+     
      int num_cells = BoxSize(&tag_bound_box);
 
      double efficiency = ( num_cells == 0 ? 1.e0 :
                           ((double) num_tags)/((double) num_cells) );
+
+     printf("SGS efficiency %f\n", efficiency);
      
      if (efficiency <= efficiency_tol) 
      {
        Box box_lft;
        Box box_rgt;
+       
+       BoxClear(&box_lft);
+       BoxClear(&box_rgt);
 
        int is_split = SplitTagBoundBox(&box_lft, &box_rgt, &tag_bound_box, 
 				       histogram_box, min_box);
@@ -688,7 +707,7 @@ void BergerRigoutsos(Vector* vector,
      {
        BoxListAppend(boxes, &tag_bound_box);
      }
-   }
+  }
 }
 
 /**
@@ -707,7 +726,6 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
 
   Grid *grid =  CreateGrid(GlobalsUserGrid);
 
-  printf("SGS OctreeComputeBoxes\n");
   Vector* indicator =  NewVectorType(grid, 1, 0, vector_cell_centered);
   InitVectorAll(indicator, 0.0);
 
@@ -751,8 +769,6 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
       
       dp = SubvectorData(d_sub);
 
-      printf("Subgrid : (%d,%d,%d) (%d,%d,%d)\n", ix, iy, iz, nx, ny, nz);
-
       GrGeomInLoop(i, j, k, geom_solid, r, ix, iy, iz, nx, ny, nz,
       {
 	ip = SubvectorEltIndex(d_sub, i, j, k);
@@ -761,8 +777,6 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
 	tag_count++;
       });
     }
-    
-    printf("SGSDEBUG: Tag Count set %d\n", tag_count);
   }
 
   Index min_box;

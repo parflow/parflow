@@ -69,6 +69,7 @@ typedef struct _BoxList
 void IndexCopy(Index index, Index src);
 int BoxSize(Box *box);
 void BoxNumberCells(Box* box, Index* number_cells);
+void BoxClear(Box *box);
 void BoxSet(Box *box, Index lo, Index up);
 void BoxCopy(Box *dst, Box *src);
 void BoxPrint(Box* box);

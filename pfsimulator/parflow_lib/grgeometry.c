@@ -286,13 +286,15 @@ GrGeomSolid   *GrGeomNewSolid(
 
   new_grgeomsolid = talloc(GrGeomSolid, 1);
 
-  (new_grgeomsolid->data) = data;
-  (new_grgeomsolid->patches) = patches;
-  (new_grgeomsolid->num_patches) = num_patches;
-  (new_grgeomsolid->octree_bg_level) = octree_bg_level;
-  (new_grgeomsolid->octree_ix) = octree_ix;
-  (new_grgeomsolid->octree_iy) = octree_iy;
-  (new_grgeomsolid->octree_iz) = octree_iz;
+  new_grgeomsolid->data = data;
+  new_grgeomsolid->patches = patches;
+  new_grgeomsolid->num_patches = num_patches;
+  new_grgeomsolid->octree_bg_level = octree_bg_level;
+  new_grgeomsolid->octree_ix = octree_ix;
+  new_grgeomsolid->octree_iy = octree_iy;
+  new_grgeomsolid->octree_iz = octree_iz;
+
+  new_grgeomsolid->interior_boxes = NULL;
 
   printf("SGSDEBUG clustering\n");
   ComputeBoxes(new_grgeomsolid);

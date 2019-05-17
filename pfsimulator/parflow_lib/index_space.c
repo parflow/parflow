@@ -2,6 +2,8 @@
 #include "parflow.h"
 #include "index_space.h"
 
+#include <limits.h>
+
 void IndexCopy(Index index, Index src)
 {
   for(int dim = 0; dim < DIM; dim++)
@@ -20,6 +22,15 @@ void BoxNumberCells(Box* box, Index* number_cells)
   for(int dim = 0; dim < DIM; dim++)
   {
     (*number_cells)[dim] = box->up[dim] - box->lo[dim] + 1;
+  }
+}
+
+void BoxClear(Box *box)
+{
+  for(int dim = 0; dim < DIM; dim++)
+  {
+    box -> lo[dim] = INT_MAX;
+    box -> up[dim] = INT_MAX;
   }
 }
 
