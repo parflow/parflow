@@ -32,6 +32,8 @@
 #include "parflow.h"
 #include "llnlmath.h"
 
+int num_ghost = 4;
+
 typedef struct 
 {
   Box box;
@@ -196,7 +198,7 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim)
 
       Box bounding_box;
       BoxClear(&bounding_box);
-      Index lo, up;
+      //      Index lo, up;
 
       // SGS TODO this loop is not very efficient, should move the
       // src_box intersection check into loop bounds.
@@ -206,25 +208,25 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim)
 	
 	v_sub = VectorSubvector(vector, i_s);
 	
-	ix = SubgridIX(subgrid);
-	iy = SubgridIY(subgrid);
-	iz = SubgridIZ(subgrid);
+	ix = SubgridIX(subgrid) - num_ghost;
+	iy = SubgridIY(subgrid) - num_ghost;
+	iz = SubgridIZ(subgrid) - num_ghost;
 	
-	nx = SubgridNX(subgrid);
-	ny = SubgridNY(subgrid);
-	nz = SubgridNZ(subgrid);
+	nx = SubgridNX(subgrid) + 2 * num_ghost;
+	ny = SubgridNY(subgrid) + 2 * num_ghost;
+	nz = SubgridNZ(subgrid) + 2 * num_ghost;
 	
 	nx_v = SubvectorNX(v_sub);
 	ny_v = SubvectorNY(v_sub);
 	nz_v = SubvectorNZ(v_sub);
 	
-	lo[0] = ix;
-	lo[1] = iy;
-	lo[2] = iz;
+	/* lo[0] = ix; */
+	/* lo[1] = iy; */
+	/* lo[2] = iz; */
 	
-	up[0] = ix + nx - 1;
-	up[1] = iy + ny - 1;
-	up[2] = iz + nz - 1;
+	/* up[0] = ix + nx - 1; */
+	/* up[1] = iy + ny - 1; */
+	/* up[2] = iz + nz - 1; */
 	
 	vp = SubvectorElt(v_sub, ix, iy, iz);
 	
@@ -614,13 +616,13 @@ void BergerRigoutsos(Vector* vector,
 
     v_sub = VectorSubvector(vector, i_s);
 
-    ix = SubgridIX(subgrid);
-    iy = SubgridIY(subgrid);
-    iz = SubgridIZ(subgrid);
-
-    nx = SubgridNX(subgrid);
-    ny = SubgridNY(subgrid);
-    nz = SubgridNZ(subgrid);
+    ix = SubgridIX(subgrid) - num_ghost;
+    iy = SubgridIY(subgrid) - num_ghost;
+    iz = SubgridIZ(subgrid) - num_ghost;
+    
+    nx = SubgridNX(subgrid) + 2 * num_ghost;
+    ny = SubgridNY(subgrid) + 2 * num_ghost;
+    nz = SubgridNZ(subgrid) + 2 * num_ghost;
 
     nx_v = SubvectorNX(v_sub);
     ny_v = SubvectorNY(v_sub);
@@ -726,7 +728,7 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
 
   Grid *grid =  CreateGrid(GlobalsUserGrid);
 
-  Vector* indicator =  NewVectorType(grid, 1, 0, vector_cell_centered);
+  Vector* indicator =  NewVectorType(grid, 1, num_ghost, vector_cell_centered);
   InitVectorAll(indicator, 0.0);
 
   {
@@ -755,13 +757,13 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
       /* RDF: assumes resolutions are the same in all 3 directions */
       r = SubgridRX(subgrid);
 
-      ix = SubgridIX(subgrid);
-      iy = SubgridIY(subgrid);
-      iz = SubgridIZ(subgrid);
+      ix = SubgridIX(subgrid) - num_ghost;
+      iy = SubgridIY(subgrid) - num_ghost;
+      iz = SubgridIZ(subgrid) - num_ghost;
 
-      nx = SubgridNX(subgrid);
-      ny = SubgridNY(subgrid);
-      nz = SubgridNZ(subgrid);
+      nx = SubgridNX(subgrid) + 2 * num_ghost;
+      ny = SubgridNY(subgrid) + 2 * num_ghost;
+      nz = SubgridNZ(subgrid) + 2 * num_ghost;
       
       dx = SubgridDX(subgrid);
       dy = SubgridDY(subgrid);
