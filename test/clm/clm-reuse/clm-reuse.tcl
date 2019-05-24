@@ -10,7 +10,8 @@ package require parflow
 namespace import Parflow::*
 
 # Total runtime of simulation
-set stopt 7762
+#set stopt 7762
+set stopt 100
 # Reuse values to run with
 set reuseValues {1 4}
 
@@ -37,9 +38,9 @@ pfset ComputationalGrid.Lower.X                0.0
 pfset ComputationalGrid.Lower.Y                0.0
 pfset ComputationalGrid.Lower.Z                0.0
 
-pfset ComputationalGrid.DX	                 2.0
+pfset ComputationalGrid.DX	               2.0
 pfset ComputationalGrid.DY                     2.0
-pfset ComputationalGrid.DZ	                 0.1
+pfset ComputationalGrid.DZ	               0.1
 
 pfset ComputationalGrid.NX                     1
 pfset ComputationalGrid.NY                     1
@@ -413,9 +414,8 @@ for {set k 1} {$k <=$stopt} {incr k} {
 	if [string equal $reuseCount $compareReuse] {
 	    set norm($compareReuse) [expr { $norm($compareReuse) + ([pfgetelt $ds($compareReuse) 0 0 10] * [pfgetelt $ds($compareReuse) 0 0 10]) } ]
 	} {
-	    set  norm($reuseCount) [expr { $norm($reuseCount) + ([pfgetelt $ds($compareReuse) 0 0 10] - [pfgetelt $ds($reuseCount) 0 0 10] ) * ([pfgetelt $ds($compareReuse) 0 0 10] - [pfgetelt $ds($reuseCount) 0 0 10] ) } ]
+	    set norm($reuseCount) [expr { $norm($reuseCount) + ([pfgetelt $ds($compareReuse) 0 0 10] - [pfgetelt $ds($reuseCount) 0 0 10] ) * ([pfgetelt $ds($compareReuse) 0 0 10] - [pfgetelt $ds($reuseCount) 0 0 10] ) } ]
 	}
-	
     }
     puts $sweFile ""
     
@@ -438,7 +438,7 @@ set passed 1
 
 # Test each 2-norm
 foreach reuseCount [lrange $reuseValues 1 end] {
-    set relerror($reuseCount) [expr $norm($reuseCount) / $norm($compareReuse) ]
+    set relerror($reuseCount) [expr $norm($reuseCount)  / $norm($compareReuse) ]
     if [expr $relerror($reuseCount) > $relativeErrorTolerance] {
 	puts "FAILED : relative error for reuse count = $reuseCount exceeds error tolerance ( $relerror($reuseCount) > $relativeErrorTolerance)"
 	set passed = 
