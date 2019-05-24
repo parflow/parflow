@@ -62,6 +62,19 @@ BoxList* NewBoxList(void)
   return ctalloc(BoxList, 1);
 }
 
+void FreeBoxList(BoxList *box_list)
+{
+  BoxListElement* element = box_list -> head;
+  while(element)
+  {
+    BoxListElement* next = element -> next;
+    tfree(element);
+    element = next;
+  }
+  
+  tfree(box_list);
+}
+
 int BoxListSize(BoxList *box_list)
 {
   return box_list -> size;

@@ -312,6 +312,8 @@ void          GrGeomFreeSolid(
 {
   int i;
 
+  FreeBoxList(GrGeomSolidInteriorBoxes(solid));
+
   GrGeomFreeOctree(GrGeomSolidData(solid));
   for (i = 0; i < GrGeomSolidNumPatches(solid); i++)
     GrGeomFreeOctree(GrGeomSolidPatch(solid, i));

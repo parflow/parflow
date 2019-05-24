@@ -74,6 +74,7 @@ void BoxSet(Box *box, Index lo, Index up);
 void BoxCopy(Box *dst, Box *src);
 void BoxPrint(Box* box);
 BoxList* NewBoxList(void);
+void FreeBoxList(BoxList *box_list);
 int BoxListSize(BoxList *box_list);
 int BoxListIsEmpty(BoxList *box_list);
 Box* BoxListFront(BoxList *box_list);

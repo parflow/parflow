@@ -69,6 +69,16 @@ HistogramBox* NewHistogramBox(Box *box)
   return histogram_box;
 }
 
+void FreeHistogramBox(HistogramBox* histogram_box)
+{
+   for (int dim = 0; dim < DIM; dim++)
+   {
+      tfree(histogram_box -> histogram[dim]);
+   }
+	
+   tfree(histogram_box);
+}
+
 /**
  * Reset the histogram.
  */
@@ -585,6 +595,8 @@ void FindBoxesContainingTags(BoxList* boxes,
        BoxListAppend(boxes, &tag_bound_box);
      }
   }
+
+  FreeHistogramBox(hist_box);
 }
 
 void BergerRigoutsos(Vector* vector,
@@ -706,6 +718,8 @@ void BergerRigoutsos(Vector* vector,
        BoxListAppend(boxes, &tag_bound_box);
      }
   }
+
+  FreeHistogramBox(histogram_box);
 }
 
 /**
@@ -784,6 +798,7 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
      handle = InitVectorUpdate(indicator, VectorUpdateAll);
      FinalizeVectorUpdate(handle);
   }
+  
 
   if(0)
   {
@@ -814,6 +829,9 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
   BoxListPrint(boxes);
   GrGeomSolidInteriorBoxes(geom_solid) = boxes;
   printf("SGS End\n");
+
+  FreeVector(indicator);
+  FreeGrid(grid);
 
   EndTiming(ClusteringTimingIndex);
 }
