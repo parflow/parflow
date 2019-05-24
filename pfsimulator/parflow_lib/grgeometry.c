@@ -349,9 +349,6 @@ void             GrGeomSolidFromInd(
                       octree_bg_level, ix, iy, iz);
 
   *solid_ptr = GrGeomNewSolid(solid_octree, NULL, 0, octree_bg_level, ix, iy, iz);
-
-  printf("SGSDEBUG clustering\n");
-  ComputeBoxes(*solid_ptr);
 }
 
 

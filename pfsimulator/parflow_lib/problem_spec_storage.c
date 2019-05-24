@@ -120,7 +120,7 @@ void SpecStorage(ProblemData *problem_data, Vector *specific_storage)
           r = SubgridRX(subgrid);
 
           data = SubvectorData(ps_sub);
-          GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+          GrGeomInLoopNEW(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
           {
             ips = SubvectorEltIndex(ps_sub, i, j, k);
             data[ips] = value;

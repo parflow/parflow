@@ -82,24 +82,24 @@ void BoxListAppend(BoxList* box_list, Box* box)
   if(box_list -> size == 0)
   {
     box_list -> head = ctalloc(BoxListElement, 1);
-    box_list -> tail = box_list -> head;
+    BoxCopy(&(box_list -> head -> box), box);
     
+    box_list -> tail = box_list -> head;
     box_list -> head -> next = NULL;
     box_list -> head -> prev = NULL;
-    BoxCopy(&(box_list -> head -> box), box);
     
     box_list -> size = 1;
   }
   else
   {
     BoxListElement* new_element = ctalloc(BoxListElement, 1);
+    BoxCopy(&(new_element -> box), box);
     
     new_element -> next = NULL;
     new_element -> prev = box_list -> tail;
-    
-    BoxCopy(&(new_element -> box), box);
-    
+    box_list -> tail -> next = new_element;
     box_list -> tail = new_element;
+    
     box_list -> size++;
   }
 }
@@ -112,7 +112,6 @@ void BoxListConcatenate(BoxList *box_list, BoxList *concatenate_list)
     BoxListAppend(box_list, &(element -> box));
     element = element -> next;
   }
-  box_list -> size += concatenate_list -> size;
 }
 
 void BoxListClearItems(BoxList* box_list)

@@ -111,7 +111,6 @@ typedef struct {
   BoxListElement* element = boxes -> head;				\
   while(element)							\
   {									\
-    printf("SGS using clustering box list\n");				\
     /* find octree and region intersection */				\
     PV_ixl = pfmax(ix, element -> box.lo[0]);				\
     PV_iyl = pfmax(iy, element -> box.lo[1]);				\
@@ -128,7 +127,7 @@ typedef struct {
 	}								\
     element = element -> next;						\
   }									\
-  }									
+  }
 
 #define GrGeomInLoopNEW(i, j, k, grgeom,			\
 			r, ix, iy, iz, nx, ny, nz, body)	\
@@ -155,6 +154,14 @@ typedef struct {
    }									\
   }
 
+#if 0
+
+#define GrGeomInLoop(i, j, k, grgeom,		      \
+                     r, ix, iy, iz, nx, ny, nz, body)		\
+   GrGeomInLoopNEW(i, j, k, grgeom,				\
+		   r, ix, iy, iz, nx, ny, nz, body)
+#else
+
 #define GrGeomInLoop(i, j, k, grgeom,		      \
                      r, ix, iy, iz, nx, ny, nz, body) \
   {						      \
@@ -171,6 +178,8 @@ typedef struct {
                                  TRUE,                                  \
                                  body);                                 \
   }
+
+#endif
 
 
 /*--------------------------------------------------------------------------

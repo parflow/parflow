@@ -786,8 +786,8 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
   min_box[1] = 1;
   min_box[2] = 1;
 
-  double efficiency_tol = 0.99;
-  double combine_tol = 0.1;
+  double efficiency_tol = 0.9999;
+  double combine_tol = 2.0;
 
   BoxList* boxes = NewBoxList();
 
