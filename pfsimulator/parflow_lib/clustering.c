@@ -536,8 +536,6 @@ void FindBoxesContainingTags(BoxList* boxes,
      double efficiency = ( num_cells == 0 ? 1.e0 :
 			   ((double) num_tags)/((double) num_cells) );
 
-     printf("SGS \tefficiency %f\n", efficiency);
-
      if (efficiency <= efficiency_tol) 
      {
        Box box_lft;
@@ -658,8 +656,6 @@ void BergerRigoutsos(Vector* vector,
      double efficiency = ( num_cells == 0 ? 1.e0 :
                           ((double) num_tags)/((double) num_cells) );
 
-     printf("SGS efficiency %f\n", efficiency);
-     
      if (efficiency <= efficiency_tol) 
      {
        Box box_lft;
@@ -726,6 +722,8 @@ void BergerRigoutsos(Vector* vector,
 void ComputeBoxes(GrGeomSolid *geom_solid)
 {
 
+  BeginTiming(ClusteringTimingIndex);
+
   Grid *grid =  CreateGrid(GlobalsUserGrid);
 
   Vector* indicator =  NewVectorType(grid, 1, num_ghost, vector_cell_centered);
@@ -757,13 +755,13 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
       /* RDF: assumes resolutions are the same in all 3 directions */
       r = SubgridRX(subgrid);
 
-      ix = SubgridIX(subgrid) - num_ghost;
-      iy = SubgridIY(subgrid) - num_ghost;
-      iz = SubgridIZ(subgrid) - num_ghost;
+      ix = SubgridIX(subgrid);
+      iy = SubgridIY(subgrid);
+      iz = SubgridIZ(subgrid);
 
-      nx = SubgridNX(subgrid) + 2 * num_ghost;
-      ny = SubgridNY(subgrid) + 2 * num_ghost;
-      nz = SubgridNZ(subgrid) + 2 * num_ghost;
+      nx = SubgridNX(subgrid);
+      ny = SubgridNY(subgrid);
+      nz = SubgridNZ(subgrid);
       
       dx = SubgridDX(subgrid);
       dy = SubgridDY(subgrid);
@@ -779,6 +777,21 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
 	tag_count++;
       });
     }
+  }
+
+  {
+     VectorUpdateCommHandle   *handle;
+     handle = InitVectorUpdate(indicator, VectorUpdateAll);
+     FinalizeVectorUpdate(handle);
+  }
+
+  if(0)
+  {
+     char file_postfix[2048];
+     static int count = 0;
+     sprintf(file_postfix, "%02d", count);
+     WritePFBinary("debug-cluster", file_postfix, indicator);
+     count++;
   }
 
   Index min_box;
@@ -801,5 +814,7 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
   BoxListPrint(boxes);
   GrGeomSolidInteriorBoxes(geom_solid) = boxes;
   printf("SGS End\n");
+
+  EndTiming(ClusteringTimingIndex);
 }
 

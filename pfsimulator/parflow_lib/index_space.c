@@ -54,7 +54,7 @@ void BoxCopy(Box *dst, Box *src)
 
 void BoxPrint(Box* box)
 {
-  printf("[%d,%d,%d][%d,%d,%d]", box->lo[0], box->lo[1], box->lo[2], box->up[0], box->up[1], box->up[2]);
+  printf("[%04d,%04d,%04d][%04d,%04d,%04d]", box->lo[0], box->lo[1], box->lo[2], box->up[0], box->up[1], box->up[2]);
 }
 
 BoxList* NewBoxList(void)

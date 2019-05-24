@@ -154,7 +154,7 @@ typedef struct {
    }									\
   }
 
-#if 0
+#if 1
 
 #define GrGeomInLoop(i, j, k, grgeom,		      \
                      r, ix, iy, iz, nx, ny, nz, body)		\
