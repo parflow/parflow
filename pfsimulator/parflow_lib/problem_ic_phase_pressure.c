@@ -219,7 +219,7 @@ void         ICPhasePressure(
           r = SubgridRX(subgrid);
 
           data = SubvectorData(ps_sub);
-          GrGeomInLoopNEW(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+          GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
           {
             ips = SubvectorEltIndex(ps_sub, i, j, k);    /*#define SubvectorEltIndex(subvector, x, y, z) \
                                                           *                                                     (((x) - SubvectorIX(subvector)) + \
@@ -308,7 +308,7 @@ void         ICPhasePressure(
             /* RDF: assume resolution is the same in all 3 directions */
             r = SubgridRX(subgrid);
 
-            GrGeomInLoopNEW(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+            GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
             {
               ips = SubvectorEltIndex(m_sub, i, j, k);
               m_dat[ips] = region_indices[ir] + 1;
@@ -347,7 +347,7 @@ void         ICPhasePressure(
 
             if (iterations > -1)       /* Update pressure values */
             {
-              GrGeomInLoopNEW(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+              GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
               {
                 ips = SubvectorEltIndex(ps_sub, i, j, k);
                 ival = SubvectorEltIndex(rsz_sub, i, j, k);
@@ -358,7 +358,7 @@ void         ICPhasePressure(
             }
             else    /* Initialize stuff */
             {
-              GrGeomInLoopNEW(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+              GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
               {
                 ips = SubvectorEltIndex(ps_sub, i, j, k);
                 data[ips] = pressure_values[ir];
@@ -405,7 +405,7 @@ void         ICPhasePressure(
 
             if (iterations > -1)       /* Determine new nonlinear residual */
             {
-              GrGeomInLoopNEW(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+              GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
               {
                 ips = SubvectorEltIndex(tf_sub, i, j, k);
                 ival = SubvectorEltIndex(rsz_sub, i, j, k);
@@ -417,7 +417,7 @@ void         ICPhasePressure(
             }
             else     /* Determine initial residual */
             {
-              GrGeomInLoopNEW(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+              GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
               {
                 ips = SubvectorEltIndex(tf_sub, i, j, k);
                 ival = SubvectorEltIndex(rsz_sub, i, j, k);
@@ -498,7 +498,7 @@ void         ICPhasePressure(
           /* RDF: assume resolution is the same in all 3 directions */
           r = SubgridRX(subgrid);
 
-          GrGeomInLoopNEW(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+          GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
           {
             ips = SubvectorEltIndex(m_sub, i, j, k);
             m_dat[ips] = region_indices[ir] + 1;
@@ -569,7 +569,7 @@ void         ICPhasePressure(
 
             if (iterations > -1)       /* Update pressure values */
             {
-              GrGeomInLoopNEW(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+              GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
               {
                 ips = SubvectorEltIndex(ps_sub, i, j, k);
                 iel = (i - ix) + (j - iy) * nx;
@@ -627,7 +627,7 @@ void         ICPhasePressure(
 
             if (iterations > -1)
             {
-              GrGeomInLoopNEW(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+              GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
               {
                 ips = SubvectorEltIndex(tf_sub, i, j, k);
                 iel = (i - ix) + (j - iy) * nx;
@@ -640,7 +640,7 @@ void         ICPhasePressure(
             }
             else
             {
-              GrGeomInLoopNEW(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+              GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
               {
                 ips = SubvectorEltIndex(tf_sub, i, j, k);
                 iel = (i - ix) + (j - iy) * nx;
@@ -707,7 +707,7 @@ void         ICPhasePressure(
         psdat = SubvectorData(ps_sub);
         ic_values_dat = SubvectorData(ic_values_sub);
 
-        GrGeomInLoopNEW(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+        GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
         {
           ips = SubvectorEltIndex(ps_sub, i, j, k);
           ipicv = SubvectorEltIndex(ic_values_sub, i, j, k);
@@ -753,7 +753,7 @@ void         ICPhasePressure(
         psdat = SubvectorData(ps_sub);
         ic_values_dat = SubvectorData(ic_values_sub);
 
-        GrGeomInLoopNEW(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+        GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
         {
           ips = SubvectorEltIndex(ps_sub, i, j, k);
           ipicv = SubvectorEltIndex(ic_values_sub, i, j, k);

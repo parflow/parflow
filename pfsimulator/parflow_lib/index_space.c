@@ -64,15 +64,18 @@ BoxList* NewBoxList(void)
 
 void FreeBoxList(BoxList *box_list)
 {
-  BoxListElement* element = box_list -> head;
-  while(element)
+  if(box_list)
   {
-    BoxListElement* next = element -> next;
-    tfree(element);
-    element = next;
-  }
+     BoxListElement* element = box_list -> head;
+     while(element)
+     {
+	BoxListElement* next = element -> next;
+	tfree(element);
+	element = next;
+     }
   
-  tfree(box_list);
+     tfree(box_list);
+  }
 }
 
 int BoxListSize(BoxList *box_list)

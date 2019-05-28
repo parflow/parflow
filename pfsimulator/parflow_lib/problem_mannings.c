@@ -144,7 +144,7 @@ void Mannings(ProblemData *problem_data, Vector *mann, Vector *dummy)
           r = SubgridRX(subgrid);
 
           data = SubvectorData(ps_sub);
-          GrGeomInLoopNEW(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
+          GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
           {
             ips = SubvectorEltIndex(ps_sub, i, j, 0);
             data[ips] = value;
@@ -189,7 +189,7 @@ void Mannings(ProblemData *problem_data, Vector *mann, Vector *dummy)
         {
           case 1: /* p= x */
           {
-            GrGeomInLoopNEW(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+            GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
             {
               ips = SubvectorEltIndex(ps_sub, i, j, k);
               x = RealSpaceX(i, SubgridRX(subgrid));
@@ -201,7 +201,7 @@ void Mannings(ProblemData *problem_data, Vector *mann, Vector *dummy)
 
           case 2: /* p= x+y+z */
           {
-            GrGeomInLoopNEW(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+            GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
             {
               ips = SubvectorEltIndex(ps_sub, i, j, k);
               /* nonlinear case -div(p grad p) = f */
@@ -212,7 +212,7 @@ void Mannings(ProblemData *problem_data, Vector *mann, Vector *dummy)
 
           case 3: /* p= x^3y^2 + sinxy + 1 */
           {
-            GrGeomInLoopNEW(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+            GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
             {
               ips = SubvectorEltIndex(ps_sub, i, j, k);
               x = RealSpaceX(i, SubgridRX(subgrid));
@@ -225,7 +225,7 @@ void Mannings(ProblemData *problem_data, Vector *mann, Vector *dummy)
 
           case 4: /* f for p = x^3y^4 + x^2 + sinxy cosy + 1 */
           {
-            GrGeomInLoopNEW(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+            GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
             {
               ips = SubvectorEltIndex(ps_sub, i, j, k);
               x = RealSpaceX(i, SubgridRX(subgrid));
@@ -239,7 +239,7 @@ void Mannings(ProblemData *problem_data, Vector *mann, Vector *dummy)
 
           case 5: /* f = xyz-y^2z^2t^2-x^2z^2t^2-x^2y^2t^2 (p=xyzt+1)*/
           {
-            GrGeomInLoopNEW(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+            GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
             {
               ips = SubvectorEltIndex(ps_sub, i, j, k);
               x = RealSpaceX(i, SubgridRX(subgrid));
@@ -254,7 +254,7 @@ void Mannings(ProblemData *problem_data, Vector *mann, Vector *dummy)
           case 6: /* f = xyz-y^2z^2t^2-2x^2z^2t^2-3x^2y^2t^2 (p=xyzt+1,
                    *                                          K=(1; 2; 3) )*/
           {
-            GrGeomInLoopNEW(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+            GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
             {
               ips = SubvectorEltIndex(ps_sub, i, j, k);
               x = RealSpaceX(i, SubgridRX(subgrid));
@@ -301,7 +301,7 @@ void Mannings(ProblemData *problem_data, Vector *mann, Vector *dummy)
         psdat = SubvectorData(ps_sub);
         m_values_dat = SubvectorData(m_values_sub);
 
-        GrGeomInLoopNEW(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+        GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
         {
           ips = SubvectorEltIndex(ps_sub, i, j, 0);
           //  ipicv = SubvectorEltIndex(m_values_sub,i,j,k);

@@ -129,7 +129,7 @@ typedef struct {
   }									\
   }
 
-#define GrGeomInLoopNEW(i, j, k, grgeom,			\
+#define GrGeomInLoop(i, j, k, grgeom,				\
 			r, ix, iy, iz, nx, ny, nz, body)	\
   {								\
    if(r == 0 && GrGeomSolidInteriorBoxes(grgeom))		\
@@ -153,34 +153,6 @@ typedef struct {
 				  body);				\
    }									\
   }
-
-#if 1
-
-#define GrGeomInLoop(i, j, k, grgeom,		      \
-                     r, ix, iy, iz, nx, ny, nz, body)		\
-   GrGeomInLoopNEW(i, j, k, grgeom,				\
-		   r, ix, iy, iz, nx, ny, nz, body)
-#else
-
-#define GrGeomInLoop(i, j, k, grgeom,		      \
-                     r, ix, iy, iz, nx, ny, nz, body) \
-  {						      \
-    GrGeomOctree  *PV_node;			      \
-    double PV_ref = pow(2.0, r);		      \
-						      \
-    i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref;    \
-    j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;    \
-    k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref;    \
-    GrGeomOctreeInteriorNodeLoop(i, j, k, PV_node,	       \
-                                 GrGeomSolidData(grgeom),		\
-                                 GrGeomSolidOctreeBGLevel(grgeom) + r,  \
-                                 ix, iy, iz, nx, ny, nz,                \
-                                 TRUE,                                  \
-                                 body);                                 \
-  }
-
-#endif
-
 
 /*--------------------------------------------------------------------------
  * GrGeomSolid looping macro:

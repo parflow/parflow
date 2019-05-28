@@ -296,8 +296,11 @@ GrGeomSolid   *GrGeomNewSolid(
 
   new_grgeomsolid->interior_boxes = NULL;
 
-  printf("SGSDEBUG clustering\n");
-  ComputeBoxes(new_grgeomsolid);
+  if(GlobalsUseClustering)
+  {
+     printf("SGSDEBUG clustering\n");
+     ComputeBoxes(new_grgeomsolid);
+  }
 
   return new_grgeomsolid;
 }
