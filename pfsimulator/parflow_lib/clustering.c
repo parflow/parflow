@@ -210,8 +210,6 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim)
       BoxClear(&bounding_box);
       //      Index lo, up;
 
-      // SGS TODO this loop is not very efficient, should move the
-      // src_box intersection check into loop bounds.
       ForSubgridI(i_s, GridSubgrids(grid))
       {
 	subgrid = GridSubgrid(grid, i_s);
@@ -230,14 +228,13 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim)
 	ny_v = SubvectorNY(v_sub);
 	nz_v = SubvectorNZ(v_sub);
 	
-	/* lo[0] = ix; */
-	/* lo[1] = iy; */
-	/* lo[2] = iz; */
-	
-	/* up[0] = ix + nx - 1; */
-	/* up[1] = iy + ny - 1; */
-	/* up[2] = iz + nz - 1; */
-	
+	ix = pfmax(ix,src_box.lo[0]);
+	iy = pfmax(iy,src_box.lo[1]);
+	iz = pfmax(iz,src_box.lo[2]);
+
+	nx = pfmin(nx, src_box.up[0] - src_box.lo[0] + 1);
+	ny = pfmin(ny, src_box.up[1] - src_box.lo[1] + 1);
+	nz = pfmin(nz, src_box.up[2] - src_box.lo[2] + 1);
 	vp = SubvectorElt(v_sub, ix, iy, iz);
 	
 	iv = 0;
@@ -800,7 +797,7 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
   }
   
 
-  if(0)
+#if 0
   {
      char file_postfix[2048];
      static int count = 0;
@@ -808,6 +805,7 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
      WritePFBinary("debug-cluster", file_postfix, indicator);
      count++;
   }
+#endif
 
   Index min_box;
   min_box[0] = 1;
@@ -824,11 +822,14 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
 		  efficiency_tol, 
 		  combine_tol,
 		  boxes);
-
+#if 0
   printf("SGS OctreeComputeBoxes BR clustering : \n");
   BoxListPrint(boxes);
+#endif
   GrGeomSolidInteriorBoxes(geom_solid) = boxes;
+#if 0
   printf("SGS End\n");
+#endif
 
   FreeVector(indicator);
   FreeGrid(grid);
