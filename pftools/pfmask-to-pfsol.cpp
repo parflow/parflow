@@ -38,6 +38,7 @@
 #include <fstream>
 #include <cassert>
 #include <cmath>
+#include <limits>
 
 /*
  * The mask directions.
