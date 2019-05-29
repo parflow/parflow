@@ -113,7 +113,7 @@ parflow_p4est_grid_2d_new(int Px, int Py
                               0, initial_level, 1,
                               quad_data_size, NULL, NULL);
 
-  for (level = initial_level; level < initial_level + 1; ++level)
+  for (level = initial_level; level < initial_level  + 1; ++level)
   {
     p4est_refine_ext(pfg->forest, 0, -1, refine_fn,
                      NULL, NULL);
@@ -272,6 +272,42 @@ parflow_p4est_get_zneigh_2d(Subgrid * subgrid
 
   subgrid->minus_z_neigh = z_neighs[0];
   subgrid->plus_z_neigh = z_neighs[1];
+}
+
+void
+parflow_p4est_inner_ghost_create_2d (Subgrid * subgrid,
+                                     parflow_p4est_qiter_2d_t * qiter,
+                                     parflow_p4est_grid_2d_t *    pfgrid
+                                     )
+{
+  p4est_mesh_t   *mesh = pfgrid->mesh;
+  int8_t qtof;
+  p4est_locidx_t qtoq;
+  int f, lidx;
+
+  P4EST_ASSERT(qiter->itype == PARFLOW_P4EST_QUAD);
+  lidx = qiter->local_idx; //SubgridLocIdx(subgrid);
+
+  /** Inspect mesh structure to decide if an "internal ghost"
+   *  subgrid should be allocated **/
+  for (f = 0; f < P4EST_FACES; ++f)
+  {
+    qtoq = mesh->quad_to_quad[P4EST_FACES * lidx + f];
+    P4EST_ASSERT(qtoq >= 0);
+    qtof = mesh->quad_to_face[P4EST_FACES * lidx + f];
+
+    if (qtoq == lidx && qtof == f)
+    {
+      /** this face lies on the domain boundary, nothing to do **/
+    }
+    else
+    {
+      /** Check if we have half-size neighbors across this face */
+        if (qtof < 0){
+            printf("Quadrant %i tiene en la face %i \n", lidx, f);
+        }
+    }
+  }
 }
 
 /*

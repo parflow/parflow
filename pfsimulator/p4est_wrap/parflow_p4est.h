@@ -164,6 +164,8 @@ parflow_p4est_get_projection_info(Subgrid *subgrid, int z_level,
 void             parflow_p4est_nquads_per_rank(parflow_p4est_grid_t *pfgrid,
                                                int *                 quads_per_rank);
 
+int              parflow_p4est_local_num_quads(parflow_p4est_grid_t * pfgrid);
+
 /** If owned, get the coorner in in the p4est brick coordinates.
  * of the tree containing this subgrid.
  * \param [in] Subgrid       Pointer to a valid Subgrid.
@@ -181,6 +183,11 @@ parflow_p4est_get_brick_coord(Subgrid *subgrid,
 
 int             parflow_p4est_check_neigh(Subgrid *sfine, Subgrid *scoarse,
                                           parflow_p4est_grid_t * pfgrid);
+
+void            parflow_p4est_inner_ghost_create(Subgrid * subgrid,
+                                     parflow_p4est_qiter_t * qiter,
+                                     parflow_p4est_grid_t * pfgrid
+                                     );
 
 Subgrid         *parflow_p4est_fetch_subgrid(SubgridArray *subgrids,
                                              SubgridArray *all_subgrids,

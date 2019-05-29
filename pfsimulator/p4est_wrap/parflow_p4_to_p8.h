@@ -25,4 +25,6 @@
 #define parflow_p4est_nquads_per_rank_2d  parflow_p4est_nquads_per_rank_3d
 #define parflow_p4est_get_brick_coord_2d  parflow_p4est_get_brick_coord_3d
 #define parflow_p4est_check_neigh_2d      parflow_p4est_check_neigh_3d
+#define parflow_p4est_inner_ghost_create_2d parflow_p4est_inner_ghost_create_3d
+
 #endif                          /* !PARFLOW_P4_TO_P8_H */

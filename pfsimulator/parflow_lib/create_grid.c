@@ -90,6 +90,7 @@ Grid           *CreateGrid(
   parflow_p4est_quad_data_t  *quad_data = NULL;
   parflow_p4est_ghost_data_t *ghost_data = NULL;
   int initial_level;
+  int num_local_quads;
   int                        *z_levels;
   int i, lz, pz, offset;
 #endif
@@ -140,11 +141,12 @@ Grid           *CreateGrid(
                                     GlobalsNumProcsZ);
 
     initial_level = parflow_p4est_get_initial_level(pfgrid);
+    num_local_quads = parflow_p4est_local_num_quads(pfgrid);
 
     /* Allocate p4est mesh structure if required*/
     parflow_p4est_grid_mesh_init(pfgrid);
 
-    /* Loop on the quadrants (leafs) of this forest
+    /* Loop over the quadrants (leaves) of this forest
      * and attach a subgrid on each */
     for (qiter = parflow_p4est_qiter_init(pfgrid, PARFLOW_P4EST_QUAD);
          qiter != NULL;
@@ -182,7 +184,12 @@ Grid           *CreateGrid(
 
       AppendSubgrid(quad_data->pf_subgrid, subgrids);
       AppendSubgrid(quad_data->pf_subgrid, all_subgrids);
+
+      parflow_p4est_inner_ghost_create(quad_data->pf_subgrid, qiter, pfgrid);
     }
+
+    /* Check that all local quadrants were visited */
+    P4EST_ASSERT(num_local_quads == SubgridArraySize(subgrids));
 
     /*Destroy p4est mesh structure */
     parflow_p4est_grid_mesh_destroy(pfgrid);

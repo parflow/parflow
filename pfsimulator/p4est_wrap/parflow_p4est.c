@@ -118,9 +118,7 @@ parflow_p4est_grid_mesh_init(parflow_p4est_grid_t *pfgrid)
 
   if (dim == 2)
   {
-    /* At the moment the mesh structure is
-     * required only for 3D problems*/
-    pfgrid->p.p4->mesh = NULL;
+    parflow_p4est_grid_2d_mesh_init(pfgrid->p.p4);
   }
   else
   {
@@ -415,7 +413,7 @@ parflow_p4est_get_ghost_data(parflow_p4est_grid_t *  pfgrid,
 }
 
 int
-parflow_p4est_rank_is_empty(parflow_p4est_grid_t * pfgrid)
+parflow_p4est_local_num_quads(parflow_p4est_grid_t * pfgrid)
 {
   int K;
   int dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
@@ -429,6 +427,14 @@ parflow_p4est_rank_is_empty(parflow_p4est_grid_t * pfgrid)
     P4EST_ASSERT(dim == 3);
     K = pfgrid->p.p8->forest->local_num_quadrants;
   }
+
+  return K;
+}
+
+int
+parflow_p4est_rank_is_empty(parflow_p4est_grid_t * pfgrid)
+{
+  int K = parflow_p4est_local_num_quads(pfgrid);
 
   return K > 0 ? 0 : 1;
 }
@@ -506,6 +512,27 @@ int parflow_p4est_check_neigh(Subgrid *sfine, Subgrid *scoarse,
                                         pfgrid->p.p8);
   }
 }
+
+void            parflow_p4est_inner_ghost_create(Subgrid * subgrid,
+                                     parflow_p4est_qiter_t * qiter,
+                                     parflow_p4est_grid_t * pfgrid
+                                     )
+{
+  int dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
+
+  if (dim == 2)
+  {
+    parflow_p4est_inner_ghost_create_2d(subgrid, qiter,
+                                        pfgrid->p.p4);
+  }
+  else
+  {
+    P4EST_ASSERT(dim == 3);
+    parflow_p4est_inner_ghost_create_3d(subgrid, qiter,
+                                        pfgrid->p.p8);
+  }
+}
+
 
 Subgrid *parflow_p4est_fetch_subgrid(SubgridArray *subgrids,
                                      SubgridArray *all_subgrids,
