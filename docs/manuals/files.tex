@@ -4607,9 +4607,12 @@ END
 \section{ParFlow CLM Single Output Binary Files (.c.pfb)}
 \label{ParFlow Binary Files (.c.pfb)}
 
-The \file{.pfb} file format is a binary file format which is used
-to store \code{CLM} output data in a single file.  It is written as BIG ENDIAN binary bit ordering \cite{endian}.
-The format for the file is:
+The \file{.pfb} file format is a binary file format which is used to
+store \code{CLM} output data in a single file.  It is written as BIG
+ENDIAN binary bit ordering \cite{endian}.  Each field is written as a
+contigious 2D array; one can think of the Z axis as representing
+field.  The number of fields depends on CLM options used.  The format
+for the file is:
 
 \begin{display}\begin{verbatim}
 <double : X>    <double : Y>    <double : Z>
@@ -4622,29 +4625,35 @@ BEGIN
    <integer : ix>  <integer : iy>  <integer : iz>
    <integer : nx>  <integer : ny>  <integer : nz>
    <integer : rx>  <integer : ry>  <integer : rz>
-      FOR j = iy TO iy + <ny> - 1
-      BEGIN
-         FOR i = ix TO ix + <nx> - 1
-         BEGIN
-            eflx_lh_tot_ij
-	    eflx_lwrad_out_ij
-	    eflx_sh_tot_ij
-	    eflx_soil_grnd_ij
-	    qflx_evap_tot_ij
-	    qflx_evap_grnd_ij
-	    qflx_evap_soi_ij
-	    qflx_evap_veg_ij
-	    qflx_infl_ij
-	    swe_out_ij
-	    t_grnd_ij
-     IF (clm_irr_type == 1)  qflx_qirr_ij 
-ELSE IF (clm_irr_type == 3)  qflx_qirr_inst_ij
-ELSE                         NULL
-	    FOR k = 1 TO clm_nz
-	    tsoil_ijk
-	    END
-         END
-      END
+
+   fields = [ eflx_lh_tot
+              eflx_lwrad_out
+              eflx_sh_tot
+              eflx_soil_grnd
+              qflx_evap_tot
+              qflx_evap_grnd
+              qflx_evap_soi
+              qflx_evap_veg
+              qflx_tran_veg
+              qflx_infl
+              swe_out
+              t_grnd
+              IF (clm_irr_type == 1)  qflx_qirr 
+              ELSE IF (clm_irr_type == 3)  qflx_qirr_inst
+              ELSE                         NULL
+              FOR k = 1 TO clm_nz
+                tsoilk
+              END
+            ]
+   FOREACH f in fields
+     FOR j = iy TO iy + <ny> - 1
+     BEGIN
+       FOR i = ix TO ix + <nx> - 1
+       BEGIN
+          <f>_ij
+       END
+     END
+   END_FOREACH
 END
 \end{verbatim}\end{display}
 
