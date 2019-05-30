@@ -34,6 +34,12 @@
 
 int num_ghost = 4;
 
+typedef union
+{
+   double as_double;
+   unsigned int as_tags;
+} DoubleTags;
+
 typedef struct 
 {
   Box box;
@@ -167,7 +173,7 @@ void FindBoundBoxForTags(HistogramBox* histogram_box, Box* bound_box, Index min_
   BoxSet(bound_box, box_lo, box_hi);
 }
 
-void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim)
+void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim, DoubleTags tag)
 {
 
   Box intersection;
@@ -241,7 +247,10 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim)
 	BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
 		  iv, nx_v, ny_v, nz_v, 1, 1, 1,
 	{
-	  if(vp[iv] != 0)
+          DoubleTags v;
+	  v.as_double = vp[iv];
+
+	  if(v.as_tags & tag.as_tags)
 	  {
 	    if( ( (src_box.lo[0] <= i) &&  (i <= src_box.up[0]) ) &&
 		( (src_box.lo[1] <= j) &&  (j <= src_box.up[1]) ) &&
@@ -261,7 +270,7 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim)
 /**
  * Compute Tag Histogram 
  */
-int ComputeTagHistogram(HistogramBox *histogram_box, Vector* vector)
+int ComputeTagHistogram(HistogramBox *histogram_box, Vector* vector, DoubleTags tag)
 {
    int num_tags = 0;
    Index num_cells;
@@ -270,7 +279,7 @@ int ComputeTagHistogram(HistogramBox *histogram_box, Vector* vector)
 
    for(int dim = 0; dim < DIM; dim++)
    {
-     ReduceTags(histogram_box, vector, dim);
+     ReduceTags(histogram_box, vector, dim, tag);
    }
 
    BoxNumberCells(&(histogram_box -> box), &num_cells);
@@ -521,11 +530,12 @@ void FindBoxesContainingTags(BoxList* boxes,
 			     Box* bound_box, 
 			     Index min_box,
 			     double efficiency_tol, 
-			     double combine_tol)
+			     double combine_tol,
+                             DoubleTags tag)
 {
   HistogramBox* hist_box = NewHistogramBox(bound_box);  
 
-  int num_tags = ComputeTagHistogram(hist_box, vector);
+  int num_tags = ComputeTagHistogram(hist_box, vector, tag);
 
   if ( num_tags == 0 ) 
   {
@@ -566,11 +576,11 @@ void FindBoxesContainingTags(BoxList* boxes,
 	 FindBoxesContainingTags(box_list_lft, 
 				 vector,
 				 &box_lft, min_box,
-				 efficiency_tol, combine_tol);
+				 efficiency_tol, combine_tol, tag);
 	 FindBoxesContainingTags(box_list_rgt, 
 				 vector,
 				 &box_rgt, min_box,
-				 efficiency_tol, combine_tol);
+				 efficiency_tol, combine_tol, tag);
 
 	 if ( (( BoxListSize(box_list_lft) > 1) ||
 	       ( BoxListSize(box_list_rgt) > 1)) ||
@@ -600,6 +610,7 @@ void BergerRigoutsos(Vector* vector,
 		     Index min_box,
 		     double efficiency_tol, 
 		     double combine_tol,
+		     DoubleTags tag,
 		     BoxList* boxes)
 {
   Grid* grid = VectorGrid(vector);
@@ -648,7 +659,7 @@ void BergerRigoutsos(Vector* vector,
 
   HistogramBox* histogram_box = NewHistogramBox(&bounding_box);
 
-  int num_tags = ComputeTagHistogram(histogram_box, vector);
+  int num_tags = ComputeTagHistogram(histogram_box, vector, tag);
 
   if ( num_tags == 0 ) {
     BoxListClearItems(boxes);
@@ -689,11 +700,11 @@ void BergerRigoutsos(Vector* vector,
 	 FindBoxesContainingTags(box_list_lft, 
 				 vector,
 				 &box_lft, min_box,
-				 efficiency_tol, combine_tol);
+				 efficiency_tol, combine_tol, tag);
 	 FindBoxesContainingTags(box_list_rgt, 
 				 vector,
 				 &box_rgt, min_box,
-				 efficiency_tol, combine_tol);
+				 efficiency_tol, combine_tol, tag);
 
 	 if ( (( BoxListSize(box_list_lft) > 1) ||
 	       ( BoxListSize(box_list_rgt) > 1)) ||
@@ -719,12 +730,14 @@ void BergerRigoutsos(Vector* vector,
   FreeHistogramBox(histogram_box);
 }
 
-BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch, int face)
+BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
 {
   Grid *grid =  CreateGrid(GlobalsUserGrid);
 
   Vector* indicator =  NewVectorType(grid, 1, num_ghost, vector_cell_centered);
   InitVectorAll(indicator, 0.0);
+
+  DoubleTags tag;
 
   {
     Grid        *grid = VectorGrid(indicator);
@@ -772,11 +785,12 @@ BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch, int face)
       {
 	ip = SubvectorEltIndex(d_sub, i, j, k);
 
-	if( PV_f == face)
-	{
-	   dp[ip] = 1;
-	   tag_count++;
-	}
+	int this_face_tag = 1 << PV_f;
+	tag.as_double = dp[ip];
+	tag.as_tags = tag.as_tags | this_face_tag;
+	dp[ip] = tag.as_double;
+
+	tag_count++;
       });
     }
   }
@@ -795,36 +809,35 @@ BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch, int face)
   double efficiency_tol = 0.9999;
   double combine_tol = 2.0;
 
-  BoxList* boxes = NewBoxList();
+  for(int face = 0; face < GrGeomOctreeNumFaces; face++)
+  {
+     BoxList* boxes = NewBoxList();
 
-  BergerRigoutsos(indicator,
-		  min_box,
-		  efficiency_tol, 
-		  combine_tol,
-		  boxes);
+     tag.as_tags = 1 << face;
      
-#if 0
-  printf("SGS OctreeComputePatchBoxes clustering [%d][%d]: \n", patch, face);
-  BoxListPrint(boxes);
-#endif
-  GrGeomSolidPatchBoxes(geom_solid, patch, face) = boxes;
-#if 0
-  printf("SGS End\n");
-#endif
+     BergerRigoutsos(indicator,
+		     min_box,
+		     efficiency_tol, 
+		     combine_tol,
+		     tag,
+		     boxes);
 
+     GrGeomSolidPatchBoxes(geom_solid, patch, face) = boxes;
+  }
+  
   FreeVector(indicator);
   FreeGrid(grid);
-
-  return boxes;
 }
 
 
-BoxList* ComputeSurfaceBoxes(GrGeomSolid *geom_solid, int face)
+void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
 {
   Grid *grid =  CreateGrid(GlobalsUserGrid);
 
   Vector* indicator =  NewVectorType(grid, 1, num_ghost, vector_cell_centered);
   InitVectorAll(indicator, 0.0);
+
+  DoubleTags tag;
 
   {
     Grid        *grid = VectorGrid(indicator);
@@ -871,11 +884,12 @@ BoxList* ComputeSurfaceBoxes(GrGeomSolid *geom_solid, int face)
       {
 	ip = SubvectorEltIndex(d_sub, i, j, k);
 
-	if( PV_f == face)
-	{
-	   dp[ip] = 1;
-	   tag_count++;
-	}
+	int this_face_tag = 1 << PV_f;
+	tag.as_double = dp[ip];
+	tag.as_tags = tag.as_tags | this_face_tag;
+	dp[ip] = tag.as_double;
+	   
+	tag_count++;
       });
     }
   }
@@ -886,7 +900,6 @@ BoxList* ComputeSurfaceBoxes(GrGeomSolid *geom_solid, int face)
      FinalizeVectorUpdate(handle);
   }
   
-
   Index min_box;
   min_box[0] = 1;
   min_box[1] = 1;
@@ -895,33 +908,32 @@ BoxList* ComputeSurfaceBoxes(GrGeomSolid *geom_solid, int face)
   double efficiency_tol = 0.9999;
   double combine_tol = 2.0;
 
-  BoxList* boxes = NewBoxList();
+  for(int face = 0; face < GrGeomOctreeNumFaces; face++)
+  {
+     BoxList* boxes = NewBoxList();
 
-  BergerRigoutsos(indicator,
-		  min_box,
-		  efficiency_tol, 
-		  combine_tol,
-		  boxes);
+     tag.as_tags = 1 << face;
 
-
+     BergerRigoutsos(indicator,
+		     min_box,
+		     efficiency_tol, 
+		     combine_tol,
+		     tag,
+		     boxes);
      
-#if 0
-  printf("SGS OctreeComputeSurfaceBoxes clustering [%d]: \n", face);
-  BoxListPrint(boxes);
-#endif
-  GrGeomSolidSurfaceBoxes(geom_solid, face) = boxes;
-#if 0
-  printf("SGS End\n");
-#endif
+     GrGeomSolidSurfaceBoxes(geom_solid, face) = boxes;
+  }
 
   FreeVector(indicator);
   FreeGrid(grid);
-
-  return boxes;
 }
 
 void ComputeInteriorBoxes(GrGeomSolid *geom_solid)
 {
+
+  DoubleTags tag;
+  tag.as_tags = 1;
+
   Grid *grid =  CreateGrid(GlobalsUserGrid);
 
   Vector* indicator =  NewVectorType(grid, 1, num_ghost, vector_cell_centered);
@@ -971,7 +983,7 @@ void ComputeInteriorBoxes(GrGeomSolid *geom_solid)
       {
 	ip = SubvectorEltIndex(d_sub, i, j, k);
 
-	dp[ip] = 1;
+	dp[ip] = tag.as_double;
 	tag_count++;
       });
     }
@@ -983,17 +995,6 @@ void ComputeInteriorBoxes(GrGeomSolid *geom_solid)
      FinalizeVectorUpdate(handle);
   }
   
-
-#if 0
-  {
-     char file_postfix[2048];
-     static int count = 0;
-     sprintf(file_postfix, "%02d", count);
-     WritePFBinary("debug-cluster", file_postfix, indicator);
-     count++;
-  }
-#endif
-
   Index min_box;
   min_box[0] = 1;
   min_box[1] = 1;
@@ -1003,20 +1004,15 @@ void ComputeInteriorBoxes(GrGeomSolid *geom_solid)
   double combine_tol = 2.0;
 
   BoxList* boxes = NewBoxList();
-
+  
   BergerRigoutsos(indicator,
 		  min_box,
 		  efficiency_tol, 
 		  combine_tol,
+		  tag,
 		  boxes);
-#if 0
-  printf("SGS OctreeComputeBoxes BR clustering : \n");
-  BoxListPrint(boxes);
-#endif
+  
   GrGeomSolidInteriorBoxes(geom_solid) = boxes;
-#if 0
-  printf("SGS End\n");
-#endif
 
   FreeVector(indicator);
   FreeGrid(grid);
@@ -1040,17 +1036,11 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
 
   ComputeInteriorBoxes(geom_solid);
 
-  for(int f = 0; f < GrGeomOctreeNumFaces; f++)
-  {
-     GrGeomSolidSurfaceBoxes(geom_solid, f) = ComputeSurfaceBoxes(geom_solid,f);
+  ComputeSurfaceBoxes(geom_solid);
 
-#if 1
-     for(int patch = 0 ; patch < GrGeomSolidNumPatches(geom_solid); patch++)
-     {
-	GrGeomSolidPatchBoxes(geom_solid, patch, f) = NULL;
-	GrGeomSolidPatchBoxes(geom_solid, patch, f) = ComputePatchBoxes(geom_solid, patch, f);
-     }
-#endif
+  for(int patch = 0 ; patch < GrGeomSolidNumPatches(geom_solid); patch++)
+  {
+     ComputePatchBoxes(geom_solid, patch);
   }
   
   EndTiming(ClusteringTimingIndex);
