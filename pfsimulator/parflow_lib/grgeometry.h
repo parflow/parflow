@@ -67,7 +67,8 @@ typedef struct {
   /* Boxes for iteration */
 
   BoxList* interior_boxes;
-  BoxList* surface_boxes[GrGeomOctreeNumFaces]; 
+  BoxList* surface_boxes[GrGeomOctreeNumFaces];
+  BoxList** patch_boxes[GrGeomOctreeNumFaces]; 
 } GrGeomSolid;
 
 
@@ -95,7 +96,7 @@ typedef struct {
 #define GrGeomSolidPatch(solid, i)      ((solid)->patches[(i)])
 #define GrGeomSolidInteriorBoxes(solid) ((solid)->interior_boxes)
 #define GrGeomSolidSurfaceBoxes(solid, i)  ((solid)->surface_boxes[(i)])
-
+#define GrGeomSolidPatchBoxes(solid, patch, i)  ((solid)->patch_boxes[(i)][(patch)])
 
 /*==========================================================================
  *==========================================================================*/
@@ -348,6 +349,92 @@ typedef struct {
  *   Macro for looping over the faces of a solid patch.
  *--------------------------------------------------------------------------*/
 
+#if 1
+
+#define GrGeomPatchLoopBoxes(i, j, k, fdir, grgeom, patch_num, ix, iy, iz, nx, ny, nz, body) \
+  {									\
+  int PV_fdir[3];							\
+									\
+  fdir = PV_fdir;							\
+  int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;			\
+  int *PV_visiting = NULL;						\
+  for(int PV_f=0; PV_f < GrGeomOctreeNumFaces; PV_f++)			\
+  {									\
+    switch (PV_f)							\
+    {									\
+       case GrGeomOctreeFaceL:						\
+	  fdir[0] = -1; fdir[1] = 0; fdir[2] = 0;			\
+	  break;							\
+       case GrGeomOctreeFaceR:						\
+	  fdir[0] = 1; fdir[1] = 0; fdir[2] = 0;			\
+	  break;							\
+       case GrGeomOctreeFaceD:						\
+	  fdir[0] = 0; fdir[1] = -1; fdir[2] = 0;			\
+	  break;							\
+       case GrGeomOctreeFaceU:						\
+	  fdir[0] = 0; fdir[1] = 1; fdir[2] = 0;			\
+	  break;							\
+       case GrGeomOctreeFaceB:						\
+	  fdir[0] = 0; fdir[1] = 0; fdir[2] = -1;			\
+	  break;							\
+       case GrGeomOctreeFaceF:						\
+	  fdir[0] = 0; fdir[1] = 0; fdir[2] = 1;			\
+	  break;							\
+       default:								\
+	  fdir[0] = -9999; fdir[1] = -9999; fdir[2] = -99999;		\
+	  break;							\
+    }									\
+									\
+    BoxList* boxes = GrGeomSolidPatchBoxes(grgeom, patch_num, PV_f);	\
+    BoxListElement* element = boxes -> head;				\
+									\
+    while(element)							\
+    {									\
+       /* find octree and region intersection */			\
+       PV_ixl = pfmax(ix, element -> box.lo[0]);			\
+       PV_iyl = pfmax(iy, element -> box.lo[1]);			\
+       PV_izl = pfmax(iz, element -> box.lo[2]);			\
+       PV_ixu = pfmin((ix + nx - 1), element -> box.up[0]);		\
+       PV_iyu = pfmin((iy + ny - 1), element -> box.up[1]);		\
+       PV_izu = pfmin((iz + nz - 1), element -> box.up[2]);		\
+       									\
+       for(k = PV_izl; k <= PV_izu; k++)				\
+	  for(j =PV_iyl; j <= PV_iyu; j++)				\
+	     for(i = PV_ixl; i <= PV_ixu; i++)				\
+	     {								\
+		body;							\
+	     }								\
+       element = element -> next;					\
+    }									\
+  }									\
+  }
+
+#define GrGeomPatchLoop(i, j, k, fdir, grgeom, patch_num,		\
+                        r, ix, iy, iz, nx, ny, nz, body)		\
+  {									\
+  if(r == 0 && GrGeomSolidPatchBoxes(grgeom, patch_num, GrGeomOctreeNumFaces-1)) \
+  {									\
+     GrGeomPatchLoopBoxes(i, j, k, fdir, grgeom, patch_num,		\
+			  ix, iy, iz, nx, ny, nz, body);		\
+  }									\
+  else									\
+  {									\
+     GrGeomOctree  *PV_node;						\
+     double PV_ref = pow(2.0, r);					\
+									\
+									\
+     i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref;			\
+     j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;			\
+     k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref;			\
+     GrGeomOctreeFaceLoop(i, j, k, fdir, PV_node,			\
+			  GrGeomSolidPatch(grgeom, patch_num),		\
+			  GrGeomSolidOctreeBGLevel(grgeom) + r,		\
+			  ix, iy, iz, nx, ny, nz, body);		\
+  }									\
+  }
+
+#else
+
 #define GrGeomPatchLoop(i, j, k, fdir, grgeom, patch_num, \
                         r, ix, iy, iz, nx, ny, nz, body) \
   { \
@@ -363,6 +450,8 @@ typedef struct {
                          GrGeomSolidOctreeBGLevel(grgeom) + r, \
                          ix, iy, iz, nx, ny, nz, body); \
   }
+
+#endif
 
 
 /*--------------------------------------------------------------------------

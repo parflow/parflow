@@ -299,6 +299,13 @@ GrGeomSolid   *GrGeomNewSolid(
   for(int f = 0; f < GrGeomOctreeNumFaces; f++)
   {
      GrGeomSolidSurfaceBoxes(new_grgeomsolid, f) = NULL;
+
+     new_grgeomsolid -> patch_boxes[f] = talloc(BoxList *, num_patches);
+	
+     for(int patch = 0 ; patch < num_patches; patch++)
+     {
+	GrGeomSolidPatchBoxes(new_grgeomsolid, patch, f) = NULL;
+     }
   }
 
   if(GlobalsUseClustering)
@@ -331,6 +338,16 @@ void          GrGeomFreeSolid(
      {
 	FreeBoxList(GrGeomSolidSurfaceBoxes(solid, f));
      }
+
+     for(int patch = 0 ; patch < GrGeomSolidNumPatches(solid); patch++)
+     {
+	if(GrGeomSolidPatchBoxes(solid, patch, f))
+	{
+	   FreeBoxList(GrGeomSolidPatchBoxes(solid, patch, f));
+	}
+     }
+
+     tfree(solid -> patch_boxes[f]);
   }
 
   GrGeomFreeOctree(GrGeomSolidData(solid));
