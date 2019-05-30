@@ -296,6 +296,11 @@ GrGeomSolid   *GrGeomNewSolid(
 
   new_grgeomsolid->interior_boxes = NULL;
 
+  for(int f = 0; f < GrGeomOctreeNumFaces; f++)
+  {
+     GrGeomSolidSurfaceBoxes(new_grgeomsolid, f) = NULL;
+  }
+
   if(GlobalsUseClustering)
   {
      printf("SGSDEBUG clustering\n");
@@ -315,7 +320,18 @@ void          GrGeomFreeSolid(
 {
   int i;
 
-  FreeBoxList(GrGeomSolidInteriorBoxes(solid));
+  if(GrGeomSolidInteriorBoxes(solid))
+  {
+     FreeBoxList(GrGeomSolidInteriorBoxes(solid));
+  }
+
+  for(int f = 0; f < GrGeomOctreeNumFaces; f++)
+  {
+     if(GrGeomSolidSurfaceBoxes(solid, f))
+     {
+	FreeBoxList(GrGeomSolidSurfaceBoxes(solid, f));
+     }
+  }
 
   GrGeomFreeOctree(GrGeomSolidData(solid));
   for (i = 0; i < GrGeomSolidNumPatches(solid); i++)

@@ -719,6 +719,107 @@ void BergerRigoutsos(Vector* vector,
   FreeHistogramBox(histogram_box);
 }
 
+BoxList* ComputeSurfaceBoxes(GrGeomSolid *geom_solid, int face)
+{
+  Grid *grid =  CreateGrid(GlobalsUserGrid);
+
+  Vector* indicator =  NewVectorType(grid, 1, num_ghost, vector_cell_centered);
+  InitVectorAll(indicator, 0.0);
+
+  {
+    Grid        *grid = VectorGrid(indicator);
+    Subgrid     *subgrid;
+
+    Subvector   *d_sub;
+
+    int ip;
+
+    int i, j, k, r, is;
+    int ix, iy, iz;
+    int nx, ny, nz;
+    double  dx, dy, dz;
+
+    double *dp;
+
+    int tag_count = 0;
+
+    ForSubgridI(is, GridSubgrids(grid))
+    {
+      subgrid = GridSubgrid(grid, is);
+
+      d_sub = VectorSubvector(indicator, is);
+
+      /* RDF: assumes resolutions are the same in all 3 directions */
+      r = SubgridRX(subgrid);
+
+      ix = SubgridIX(subgrid);
+      iy = SubgridIY(subgrid);
+      iz = SubgridIZ(subgrid);
+
+      nx = SubgridNX(subgrid);
+      ny = SubgridNY(subgrid);
+      nz = SubgridNZ(subgrid);
+      
+      dx = SubgridDX(subgrid);
+      dy = SubgridDY(subgrid);
+      dz = SubgridDZ(subgrid);
+      
+      dp = SubvectorData(d_sub);
+
+      int *fdir;
+      GrGeomSurfLoop(i, j, k, fdir, geom_solid, r, ix, iy, iz, nx, ny, nz,
+      {
+	ip = SubvectorEltIndex(d_sub, i, j, k);
+
+	if( PV_f == face)
+	{
+	   dp[ip] = 1;
+	   tag_count++;
+	}
+      });
+    }
+  }
+
+  {
+     VectorUpdateCommHandle   *handle;
+     handle = InitVectorUpdate(indicator, VectorUpdateAll);
+     FinalizeVectorUpdate(handle);
+  }
+  
+
+  Index min_box;
+  min_box[0] = 1;
+  min_box[1] = 1;
+  min_box[2] = 1;
+
+  double efficiency_tol = 0.9999;
+  double combine_tol = 2.0;
+
+  BoxList* boxes = NewBoxList();
+
+  BergerRigoutsos(indicator,
+		  min_box,
+		  efficiency_tol, 
+		  combine_tol,
+		  boxes);
+
+
+     
+#if 0
+  printf("SGS OctreeComputeSurfaceBoxes clustering [%d]: \n", face);
+  BoxListPrint(boxes);
+#endif
+  GrGeomSolidSurfaceBoxes(geom_solid, face) = boxes;
+#if 0
+  printf("SGS End\n");
+#endif
+
+  FreeVector(indicator);
+  FreeGrid(grid);
+
+  return boxes;
+}
+
 /**
  * Compute set of boxes that exactly cover the GeomSolid.
  *
@@ -833,6 +934,12 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
 
   FreeVector(indicator);
   FreeGrid(grid);
+
+  for(int f = 0; f < GrGeomOctreeNumFaces; f++)
+  {
+     GrGeomSolidSurfaceBoxes(geom_solid, f) = NULL;
+     GrGeomSolidSurfaceBoxes(geom_solid, f) = ComputeSurfaceBoxes(geom_solid,f);
+  }
 
   EndTiming(ClusteringTimingIndex);
 }
