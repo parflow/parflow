@@ -157,10 +157,10 @@ void BoundTagHistogram(HistogramBox *histogram_box,
  * Compute smallest box bounding non-zero histogram elements in
  * histogram box.
  */
-void FindBoundBoxForTags(HistogramBox* histogram_box, Box* bound_box, Index min_box)
+void FindBoundBoxForTags(HistogramBox* histogram_box, Box* bound_box, Point min_box)
 {
-  Index box_lo;
-  Index box_hi;
+  Point box_lo;
+  Point box_hi;
 
   /*
    * Compute extent of bounding box in each coordinate direction.
@@ -214,7 +214,7 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim, DoubleTags
 
       Box bounding_box;
       BoxClear(&bounding_box);
-      //      Index lo, up;
+      //      Point lo, up;
 
       ForSubgridI(i_s, GridSubgrids(grid))
       {
@@ -273,7 +273,7 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim, DoubleTags
 int ComputeTagHistogram(HistogramBox *histogram_box, Vector* vector, DoubleTags tag)
 {
    int num_tags = 0;
-   Index num_cells;
+   Point num_cells;
 
    ResetHistogram(histogram_box);
 
@@ -418,26 +418,26 @@ int SplitTagBoundBox(Box* box_lft,
 		     Box* box_rgt,
 		     Box* bound_box, 
 		     HistogramBox* hist_box, 
-		     Index min_box)
+		     Point min_box)
 {
   int cut_pt = INT_MIN;
   int tmp_dim = -1; 
   int dim = -1;
   
-  Index num_cells;
+  Point num_cells;
   
   BoxNumberCells(bound_box, &num_cells);
   
-  Index box_lo; 
-  Index box_up; 
+  Point box_lo; 
+  Point box_up; 
   
-  IndexCopy(box_lo, bound_box -> lo);
-  IndexCopy(box_up, bound_box -> up);
+  PointCopy(box_lo, bound_box -> lo);
+  PointCopy(box_up, bound_box -> up);
   
   /*
    * Sort the bound box dimensions from largest to smallest.
    */
-  Index sorted;
+  Point sorted;
   for (dim = 0; dim < DIM; dim++) 
   {
     sorted[dim] = dim;
@@ -512,10 +512,10 @@ int SplitTagBoundBox(Box* box_lft,
   /*
    * Split bound box at cut_pt; tmp_dim is splitting dimension.
    */
-  Index lft_hi;
-  IndexCopy(lft_hi, box_up); 
-  Index rgt_lo;
-  IndexCopy(rgt_lo, box_lo);
+  Point lft_hi;
+  PointCopy(lft_hi, box_up); 
+  Point rgt_lo;
+  PointCopy(rgt_lo, box_lo);
   lft_hi[tmp_dim] = cut_pt;
   rgt_lo[tmp_dim] = cut_pt + 1;
 
@@ -528,7 +528,7 @@ int SplitTagBoundBox(Box* box_lft,
 void FindBoxesContainingTags(BoxList* boxes, 
 			     Vector* vector,
 			     Box* bound_box, 
-			     Index min_box,
+			     Point min_box,
 			     double efficiency_tol, 
 			     double combine_tol,
                              DoubleTags tag)
@@ -607,7 +607,7 @@ void FindBoxesContainingTags(BoxList* boxes,
 }
 
 void BergerRigoutsos(Vector* vector,
-		     Index min_box,
+		     Point min_box,
 		     double efficiency_tol, 
 		     double combine_tol,
 		     DoubleTags tag,
@@ -626,7 +626,7 @@ void BergerRigoutsos(Vector* vector,
   Box bounding_box;
   BoxClear(&bounding_box);
 
-  Index lo, up;
+  Point lo, up;
 
   ForSubgridI(i_s, GridSubgrids(grid))
   {
@@ -801,7 +801,7 @@ BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
      FinalizeVectorUpdate(handle);
   }
 
-  Index min_box;
+  Point min_box;
   min_box[0] = 1;
   min_box[1] = 1;
   min_box[2] = 1;
@@ -902,7 +902,7 @@ void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
      FinalizeVectorUpdate(handle);
   }
   
-  Index min_box;
+  Point min_box;
   min_box[0] = 1;
   min_box[1] = 1;
   min_box[2] = 1;
@@ -999,7 +999,7 @@ void ComputeInteriorBoxes(GrGeomSolid *geom_solid)
      FinalizeVectorUpdate(handle);
   }
   
-  Index min_box;
+  Point min_box;
   min_box[0] = 1;
   min_box[1] = 1;
   min_box[2] = 1;

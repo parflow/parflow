@@ -4,11 +4,11 @@
 
 #include <limits.h>
 
-void IndexCopy(Index index, Index src)
+void PointCopy(Point point, Point src)
 {
   for(int dim = 0; dim < DIM; dim++)
   {
-    index[dim] = src[dim];
+    point[dim] = src[dim];
   }  
 }
 
@@ -17,7 +17,7 @@ int BoxSize(Box *box)
   return (box->up[0] - box->lo[0] + 1) * (box->up[1] - box->lo[1] + 1) * (box->up[2] - box->lo[2] + 1);
 }
 
-void BoxNumberCells(Box* box, Index* number_cells)
+void BoxNumberCells(Box* box, Point* number_cells)
 {
   for(int dim = 0; dim < DIM; dim++)
   {
@@ -34,7 +34,7 @@ void BoxClear(Box *box)
   }
 }
 
-void BoxSet(Box *box, Index lo, Index up)
+void BoxSet(Box *box, Point lo, Point up)
 {
   for(int dim = 0; dim < DIM; dim++)
   {
