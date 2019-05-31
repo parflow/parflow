@@ -66,6 +66,12 @@ typedef struct _BoxList
 } BoxList;
 
 
+typedef struct _BoxArray
+{
+  Box* boxes;
+  unsigned int size;
+} BoxArray;
+
 void IndexCopy(Index index, Index src);
 int BoxSize(Box *box);
 void BoxNumberCells(Box* box, Index* number_cells);
@@ -82,6 +88,12 @@ void BoxListAppend(BoxList* box_list, Box* box);
 void BoxListConcatenate(BoxList *box_list, BoxList *concatenate_list);
 void BoxListClearItems(BoxList* box_list);
 void BoxListPrint(BoxList* box_list);
+
+BoxArray* NewBoxArray(BoxList *box_list);
+void FreeBoxArray(BoxArray* box_arrry);
+
+#define BoxArrayGetBox(box_array, i) (box_array -> boxes[i])
+#define BoxArraySize(box_array) (box_array -> size)
 
 #endif 
 

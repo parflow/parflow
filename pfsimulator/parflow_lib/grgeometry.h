@@ -66,9 +66,9 @@ typedef struct {
 
   /* Boxes for iteration */
 
-  BoxList* interior_boxes;
-  BoxList* surface_boxes[GrGeomOctreeNumFaces];
-  BoxList** patch_boxes[GrGeomOctreeNumFaces]; 
+  BoxArray* interior_boxes;
+  BoxArray* surface_boxes[GrGeomOctreeNumFaces];
+  BoxArray** patch_boxes[GrGeomOctreeNumFaces]; 
 } GrGeomSolid;
 
 
@@ -110,17 +110,17 @@ typedef struct {
   {									\
   int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;			\
   int *PV_visiting = NULL;						\
-  BoxList* boxes = GrGeomSolidInteriorBoxes(grgeom);			\
-  BoxListElement* element = boxes -> head;				\
-  while(element)							\
+  BoxArray* boxes = GrGeomSolidInteriorBoxes(grgeom);			\
+  for(int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)		\
   {									\
+    Box box = BoxArrayGetBox(boxes, PV_box);				\
     /* find octree and region intersection */				\
-    PV_ixl = pfmax(ix, element -> box.lo[0]);				\
-    PV_iyl = pfmax(iy, element -> box.lo[1]);				\
-    PV_izl = pfmax(iz, element -> box.lo[2]);				\
-    PV_ixu = pfmin((ix + nx - 1), element -> box.up[0]);		\
-    PV_iyu = pfmin((iy + ny - 1), element -> box.up[1]);		\
-    PV_izu = pfmin((iz + nz - 1), element -> box.up[2]);		\
+    PV_ixl = pfmax(ix, box.lo[0]);					\
+    PV_iyl = pfmax(iy, box.lo[1]);					\
+    PV_izl = pfmax(iz, box.lo[2]);					\
+    PV_ixu = pfmin((ix + nx - 1), box.up[0]);				\
+    PV_iyu = pfmin((iy + ny - 1), box.up[1]);				\
+    PV_izu = pfmin((iz + nz - 1), box.up[2]);				\
 									\
     for(k = PV_izl; k <= PV_izu; k++)					\
       for(j =PV_iyl; j <= PV_iyu; j++)					\
@@ -128,7 +128,6 @@ typedef struct {
 	{								\
 	  body;								\
 	}								\
-    element = element -> next;						\
   }									\
   }
 
@@ -293,17 +292,17 @@ typedef struct {
 	  break;							\
     }									\
 									\
-    BoxList* boxes = GrGeomSolidSurfaceBoxes(grgeom, PV_f);		\
-    BoxListElement* element = boxes -> head;				\
-    while(element)							\
+    BoxArray* boxes = GrGeomSolidSurfaceBoxes(grgeom, PV_f);		\
+    for(int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)		\
     {									\
+       Box box = BoxArrayGetBox(boxes, PV_box);				\
        /* find octree and region intersection */			\
-       PV_ixl = pfmax(ix, element -> box.lo[0]);			\
-       PV_iyl = pfmax(iy, element -> box.lo[1]);			\
-       PV_izl = pfmax(iz, element -> box.lo[2]);			\
-       PV_ixu = pfmin((ix + nx - 1), element -> box.up[0]);		\
-       PV_iyu = pfmin((iy + ny - 1), element -> box.up[1]);		\
-       PV_izu = pfmin((iz + nz - 1), element -> box.up[2]);		\
+       PV_ixl = pfmax(ix, box.lo[0]);					\
+       PV_iyl = pfmax(iy, box.lo[1]);					\
+       PV_izl = pfmax(iz, box.lo[2]);					\
+       PV_ixu = pfmin((ix + nx - 1), box.up[0]);			\
+       PV_iyu = pfmin((iy + ny - 1), box.up[1]);			\
+       PV_izu = pfmin((iz + nz - 1), box.up[2]);			\
        									\
        for(k = PV_izl; k <= PV_izu; k++)				\
 	  for(j =PV_iyl; j <= PV_iyu; j++)				\
@@ -311,7 +310,6 @@ typedef struct {
 	     {								\
 		body;							\
 	     }								\
-       element = element -> next;					\
     }									\
   }									\
   }
@@ -385,18 +383,17 @@ typedef struct {
 	  break;							\
     }									\
 									\
-    BoxList* boxes = GrGeomSolidPatchBoxes(grgeom, patch_num, PV_f);	\
-    BoxListElement* element = boxes -> head;				\
-									\
-    while(element)							\
+    BoxArray* boxes = GrGeomSolidPatchBoxes(grgeom, patch_num, PV_f);	\
+    for(int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)		\
     {									\
+       Box box = BoxArrayGetBox(boxes, PV_box);				\
        /* find octree and region intersection */			\
-       PV_ixl = pfmax(ix, element -> box.lo[0]);			\
-       PV_iyl = pfmax(iy, element -> box.lo[1]);			\
-       PV_izl = pfmax(iz, element -> box.lo[2]);			\
-       PV_ixu = pfmin((ix + nx - 1), element -> box.up[0]);		\
-       PV_iyu = pfmin((iy + ny - 1), element -> box.up[1]);		\
-       PV_izu = pfmin((iz + nz - 1), element -> box.up[2]);		\
+       PV_ixl = pfmax(ix, box.lo[0]);					\
+       PV_iyl = pfmax(iy, box.lo[1]);					\
+       PV_izl = pfmax(iz, box.lo[2]);					\
+       PV_ixu = pfmin((ix + nx - 1), box.up[0]);			\
+       PV_iyu = pfmin((iy + ny - 1), box.up[1]);			\
+       PV_izu = pfmin((iz + nz - 1), box.up[2]);			\
        									\
        for(k = PV_izl; k <= PV_izu; k++)				\
 	  for(j =PV_iyl; j <= PV_iyu; j++)				\
@@ -404,7 +401,6 @@ typedef struct {
 	     {								\
 		body;							\
 	     }								\
-       element = element -> next;					\
     }									\
   }									\
   }

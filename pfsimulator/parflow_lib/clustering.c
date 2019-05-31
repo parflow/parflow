@@ -822,7 +822,9 @@ BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
 		     tag,
 		     boxes);
 
-     GrGeomSolidPatchBoxes(geom_solid, patch, face) = boxes;
+     GrGeomSolidPatchBoxes(geom_solid, patch, face) = NewBoxArray(boxes);
+
+     FreeBoxList(boxes);
   }
   
   FreeVector(indicator);
@@ -921,7 +923,9 @@ void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
 		     tag,
 		     boxes);
      
-     GrGeomSolidSurfaceBoxes(geom_solid, face) = boxes;
+     GrGeomSolidSurfaceBoxes(geom_solid, face) = NewBoxArray(boxes);
+
+     FreeBoxList(boxes);
   }
 
   FreeVector(indicator);
@@ -1012,8 +1016,9 @@ void ComputeInteriorBoxes(GrGeomSolid *geom_solid)
 		  tag,
 		  boxes);
   
-  GrGeomSolidInteriorBoxes(geom_solid) = boxes;
+  GrGeomSolidInteriorBoxes(geom_solid) = NewBoxArray(boxes);
 
+  FreeBoxList(boxes);
   FreeVector(indicator);
   FreeGrid(grid);
 }

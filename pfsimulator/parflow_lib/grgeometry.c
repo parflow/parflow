@@ -300,7 +300,7 @@ GrGeomSolid   *GrGeomNewSolid(
   {
      GrGeomSolidSurfaceBoxes(new_grgeomsolid, f) = NULL;
 
-     new_grgeomsolid -> patch_boxes[f] = talloc(BoxList *, num_patches);
+     new_grgeomsolid -> patch_boxes[f] = talloc(BoxArray *, num_patches);
 	
      for(int patch = 0 ; patch < num_patches; patch++)
      {
@@ -329,21 +329,21 @@ void          GrGeomFreeSolid(
 
   if(GrGeomSolidInteriorBoxes(solid))
   {
-     FreeBoxList(GrGeomSolidInteriorBoxes(solid));
+     FreeBoxArray(GrGeomSolidInteriorBoxes(solid));
   }
 
   for(int f = 0; f < GrGeomOctreeNumFaces; f++)
   {
      if(GrGeomSolidSurfaceBoxes(solid, f))
      {
-	FreeBoxList(GrGeomSolidSurfaceBoxes(solid, f));
+	FreeBoxArray(GrGeomSolidSurfaceBoxes(solid, f));
      }
 
      for(int patch = 0 ; patch < GrGeomSolidNumPatches(solid); patch++)
      {
 	if(GrGeomSolidPatchBoxes(solid, patch, f))
 	{
-	   FreeBoxList(GrGeomSolidPatchBoxes(solid, patch, f));
+	   FreeBoxArray(GrGeomSolidPatchBoxes(solid, patch, f));
 	}
      }
 

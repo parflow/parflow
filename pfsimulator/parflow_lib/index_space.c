@@ -57,6 +57,41 @@ void BoxPrint(Box* box)
   printf("[%04d,%04d,%04d][%04d,%04d,%04d]", box->lo[0], box->lo[1], box->lo[2], box->up[0], box->up[1], box->up[2]);
 }
 
+BoxArray* NewBoxArray(BoxList *box_list)
+{
+   BoxArray* box_array = ctalloc(BoxArray,1);
+
+   if(box_list)
+   {
+      box_array -> size = BoxListSize(box_list);
+      box_array -> boxes = ctalloc(Box, box_array -> size);
+
+      int i = 0;
+      BoxListElement* element = box_list -> head;
+      while(element)
+      {
+	 BoxCopy(&(box_array -> boxes[i++]), &(element -> box));
+	 element = element -> next;
+      }
+
+   }
+   
+   return box_array;
+}
+
+void FreeBoxArray(BoxArray* box_array)
+{
+  if(box_array)
+  {
+     if(box_array -> boxes)
+     {
+	tfree(box_array -> boxes);
+     }
+
+     tfree(box_array);
+  }
+}
+
 BoxList* NewBoxList(void)
 {
   return ctalloc(BoxList, 1);
