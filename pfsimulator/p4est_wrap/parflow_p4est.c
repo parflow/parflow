@@ -522,13 +522,13 @@ void            parflow_p4est_inner_ghost_create(Subgrid * subgrid,
 
   if (dim == 2)
   {
-    parflow_p4est_inner_ghost_create_2d(subgrid, qiter,
+    parflow_p4est_inner_ghost_create_2d(subgrid, qiter->q.qiter_2d,
                                         pfgrid->p.p4);
   }
   else
   {
     P4EST_ASSERT(dim == 3);
-    parflow_p4est_inner_ghost_create_3d(subgrid, qiter,
+    parflow_p4est_inner_ghost_create_3d(subgrid, qiter->q.qiter_3d,
                                         pfgrid->p.p8);
   }
 }

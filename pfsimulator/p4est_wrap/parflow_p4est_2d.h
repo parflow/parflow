@@ -99,7 +99,7 @@ int             parflow_p4est_check_neigh_2d(Subgrid *sfine, Subgrid *scoarse,
                                              parflow_p4est_grid_2d_t * pfg);
 
 void            parflow_p4est_inner_ghost_create_2d (Subgrid * subgrid,
-                                     parflow_p4est_qiter_2d_t * qiter,
+                                     parflow_p4est_qiter_2d_t * qit_2d,
                                      parflow_p4est_grid_2d_t *    pfgrid
                                      );
 SC_EXTERN_C_END;

@@ -276,38 +276,44 @@ parflow_p4est_get_zneigh_2d(Subgrid * subgrid
 
 void
 parflow_p4est_inner_ghost_create_2d (Subgrid * subgrid,
-                                     parflow_p4est_qiter_2d_t * qiter,
+                                     parflow_p4est_qiter_2d_t * qit_2d,
                                      parflow_p4est_grid_2d_t *    pfgrid
                                      )
 {
-  p4est_mesh_t   *mesh = pfgrid->mesh;
-  int8_t qtof;
-  p4est_locidx_t qtoq;
-  int f, lidx;
+    p4est_mesh_t   *mesh = pfgrid->mesh;
+    p4est_locidx_t *qtoqs;
+    p4est_locidx_t qtoq;
+    int8_t qtof;
+    int nhalves;
+    int l, f, lidx;
 
-  P4EST_ASSERT(qiter->itype == PARFLOW_P4EST_QUAD);
-  lidx = qiter->local_idx; //SubgridLocIdx(subgrid);
+    P4EST_ASSERT(qit_2d->itype & PARFLOW_P4EST_QUAD);
+    lidx = SubgridLocIdx(subgrid);
 
-  /** Inspect mesh structure to decide if an "internal ghost"
+    /** Inspect mesh structure to decide if an "internal ghost"
    *  subgrid should be allocated **/
-  for (f = 0; f < P4EST_FACES; ++f)
-  {
-    qtoq = mesh->quad_to_quad[P4EST_FACES * lidx + f];
-    P4EST_ASSERT(qtoq >= 0);
-    qtof = mesh->quad_to_face[P4EST_FACES * lidx + f];
+    for (f = 0; f < P4EST_FACES; ++f)
+    {
+        qtoq = mesh->quad_to_quad[P4EST_FACES * lidx + f];
+        P4EST_ASSERT(qtoq >= 0);
+        qtof = mesh->quad_to_face[P4EST_FACES * lidx + f];
 
-    if (qtoq == lidx && qtof == f)
-    {
-      /** this face lies on the domain boundary, nothing to do **/
-    }
-    else
-    {
-      /** Check if we have half-size neighbors across this face */
+        /** Check if we have half-size neighbors across this face */
         if (qtof < 0){
-            printf("Quadrant %i tiene en la face %i \n", lidx, f);
+            nhalves = 1 << (P4EST_DIM - 1);
+            qtoqs = (p4est_locidx_t *) sc_array_index (mesh->quad_to_half,
+                                                       qtoq);
+            for (l = 0; l < nhalves; ++l) {
+                if (qtoqs[l] >= mesh->local_num_quadrants) {
+                    printf("Q  %i has G %i along face %i \n", lidx,
+                           qtoqs[l] - mesh->local_num_quadrants, f);
+                }else{
+
+                    printf("Q %i has Q %i along face %i \n", lidx, qtoqs[l], f);
+                }
+            }
         }
     }
-  }
 }
 
 /*
