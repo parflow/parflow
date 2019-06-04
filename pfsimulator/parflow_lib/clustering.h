@@ -34,13 +34,15 @@
 /**
  * Compute set of boxes that exactly cover the GeomSolid.
  *
- * Runs the Berger-Rigoutsos algorithm to compute an 
- * set of boxes that cover the iterations spaces 
- * in the octree for more efficient iteration.   The 
- * Octree boxes are not anywhere near a minimal set 
- * of boxes.
+ * Runs the Berger-Rigoutsos algorithm to compute a set of boxes that
+ * cover the iteration spaces in the octree for more efficient
+ * iteration. Fills in box array structures in provided geom_solid;
+ * the arrays in index space are used in the Loop macros for interior,
+ * surface and patches.
  *
  * This assumes Octree's are in background grid space.
+
+ * @param geom_solid solid to compute boxes for
  */
 void ComputeBoxes(GrGeomSolid *geom_solid);
 

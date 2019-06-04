@@ -26,38 +26,75 @@
  *  USA
  **********************************************************************EHEADER*/
 
+/**
+ * This implementation is derived from the SAMRAI Berger-Rigoutsos implementation also 
+ * developed by LLNL.
+ *
+ * https://computation.llnl.gov/projects/samrai
+ *
+ * The Berger-Rigoutsos algorithm is commonly used in AMR applications
+ * to cluster tagged cells into boxes.  This algorithm is described in
+ * Berger and Rigoutsos, IEEE Trans. on Sys, Man, and Cyber
+ * (21)5:1278-1286.
+ */
+
 #include "clustering.h"
 #include "index_space.h"
 
 #include "parflow.h"
 #include "llnlmath.h"
 
-int num_ghost = 4;
+/**
+ * Maximum number of ghost layers.  
+ *
+ * This needs to be the maximum number of ghost layers in any vector
+ * in the problem in order to correctly find the iteration spaces.   
+ *
+ * @TODO Obviously this is not a great constant to have; not sure how
+ * to address this.  The geometries are defined before all the vectors 
+ * have been created.
+ */
+static const int num_ghost = 4;
 
+/**
+ * Store tags in a double.
+ *
+ * Vectors can only store doubles but want to store tag values so
+ * use union to allow boolean operations on the doubles.
+ */
 typedef union
 {
    double as_double;
    unsigned int as_tags;
 } DoubleTags;
 
+/**
+ * Structure to store histogram for BR algorithm.
+ */
 typedef struct 
 {
   Box box;
   int *histogram[DIM];
 } HistogramBox;
 
+/**
+ * Get tags along the provided dimension for the global index along that dimension.
+ */
 int HistogramBoxGetTags(HistogramBox *histogram_box, int dim, int global_index)
 {
   return histogram_box -> histogram[dim][global_index - histogram_box -> box.lo[dim]];
 }
 
+/**
+ * Add tags along the provided dimension for the global index along that dimension.
+ */
 void HistogramBoxAddTags(HistogramBox *histogram_box, int dim, int global_index, int tag_count)
 {
   histogram_box -> histogram[dim][global_index - histogram_box -> box.lo[dim]] += tag_count;
 }
 
 /**
- * Reset the histogram.
+ * Create a new histogram box for the index space spanned by the provided box.
  */
 HistogramBox* NewHistogramBox(Box *box)
 {
@@ -75,6 +112,9 @@ HistogramBox* NewHistogramBox(Box *box)
   return histogram_box;
 }
 
+/**
+ * Free the histogram box.
+ */
 void FreeHistogramBox(HistogramBox* histogram_box)
 {
    for (int dim = 0; dim < DIM; dim++)
@@ -87,6 +127,8 @@ void FreeHistogramBox(HistogramBox* histogram_box)
 
 /**
  * Reset the histogram.
+ *
+ * Clears tag counts in the histogram box.
  */
 void ResetHistogram(HistogramBox *histogram_box)
 {
@@ -154,8 +196,8 @@ void BoundTagHistogram(HistogramBox *histogram_box,
 }
 
 /**
- * Compute smallest box bounding non-zero histogram elements in
- * histogram box.
+ * Compute smallest box bounding for the non-zero histogram elements
+ * in histogram box.
  */
 void FindBoundBoxForTags(HistogramBox* histogram_box, Box* bound_box, Point min_box)
 {
@@ -173,6 +215,13 @@ void FindBoundBoxForTags(HistogramBox* histogram_box, Box* bound_box, Point min_
   BoxSet(bound_box, box_lo, box_hi);
 }
 
+/**
+ * Reduces tag counts along an axis.
+ *
+ * Reduce (count) the number of cells that have the specified tag
+ * along the provided dimension and store into the provided histogram
+ * box.
+ */
 void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim, DoubleTags tag)
 {
 
@@ -268,7 +317,7 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim, DoubleTags
 }
 
 /**
- * Compute Tag Histogram 
+ * Compute Tag Histogram along all dimensions.
  */
 int ComputeTagHistogram(HistogramBox *histogram_box, Vector* vector, DoubleTags tag)
 {
@@ -293,21 +342,16 @@ int ComputeTagHistogram(HistogramBox *histogram_box, Vector* vector, DoubleTags 
    return(num_tags);
 }
 
-/*
-*************************************************************************
-*                                                                       *
-* Attempt to find a zero histogram value near the middle of the index   *
-* interval (lo, hi) in the given coordinate direction. Note that the    *
-* cut_pt is kept more than a minimium distance from the endpoints of    *
-* of the index interval. Since box indices are cell-centered, the cut   *
-* point value corresponds to the right edge of the cell whose index     *
-* is equal to the cut point.                                            *
-*                                                                       *
-* Note that it is assumed that box indices are cell indices.            *
-*                                                                       *
-*************************************************************************
+/**
+ * Attempt to find zero cut point.
+ *
+ * Attempt to find a zero histogram value near the middle of the index
+ * interval (lo, hi) in the given coordinate direction. Note that the
+ * cut_pt is kept more than a minimium distance from the endpoints of
+ * of the index interval. Since box indices are cell-centered, the cut
+ * point value corresponds to the right edge of the cell whose index
+ * is equal to the cut point.
 */
-
 int FindZeroCutPoint( int* cut_pt, 
 		      int dim, 
 		      int lo, 
@@ -336,22 +380,17 @@ int FindZeroCutPoint( int* cut_pt,
   return FALSE;
 }
 
-/*
-***************************************************************************
-*                                                                         *
-* Attempt to find a point in the given coordinate direction near an       *
-* inflection point in the histogram for that direction. Note that the     *
-* cut point is kept more than a minimium distance from the endpoints      *
-* of the index interval (lo, hi).  Also, the box must have at least       *
-* three cells along a side to apply the Laplacian test.  If no            *
-* inflection point is found, the mid-point of the interval is returned    *
-* as the cut point.                                                       *
-*                                                                         *
-* Note that it is assumed that box indices are cell indices.              *
-*                                                                         *
-***************************************************************************
+/**
+ * Attempt to find cut point.
+ *
+ * Attempt to find a point in the given coordinate direction near an
+ * inflection point in the histogram for that direction. Note that the
+ * cut point is kept more than a minimium distance from the endpoints
+ * of the index interval (lo, hi).  Also, the box must have at least
+ * three cells along a side to apply the Laplacian test.  If no
+ * inflection point is found, the mid-point of the interval is
+ * returned as the cut point.
 */
-
 void CutAtLaplacian(int* cut_pt, 
 		    int dim,
 		    int lo, 
@@ -399,21 +438,16 @@ void CutAtLaplacian(int* cut_pt,
   (*cut_pt) = loc_zero;
 }
 
-/*
-*************************************************************************
-*                                                                       *
-* Attempt to split the box bounding a collection of tagged cells into   *
-* two boxes. If an appropriate splitting is found, the two smaller      *
-* boxes are returned and the return value of the function is true.      *
-* Otherwise, false is returned. Note that the bounding box must be      *
-* contained in the histogram box and that the two splitting boxes must  *
-* be larger than some smallest box size.                                *
-*                                                                       *
-* Note that it is assumed that box indices are cell indices.            *
-*                                                                       *
-*************************************************************************
+/**
+ * Attempt to split box into two boxes.
+ *
+ * Attempt to split the box bounding a collection of tagged cells into
+ * two boxes. If an appropriate splitting is found, the two smaller
+ * boxes are returned and the return value of the function is true.
+ * Otherwise, false is returned. Note that the bounding box must be
+ * contained in the histogram box and that the two splitting boxes
+ * must be larger than some smallest box size.
 */
-
 int SplitTagBoundBox(Box* box_lft, 
 		     Box* box_rgt,
 		     Box* bound_box, 
@@ -525,6 +559,15 @@ int SplitTagBoundBox(Box* box_lft,
   return TRUE;
 }
 
+/**
+ * Recursive function to compute boxes that cover cells with the provided tag.
+ *
+ * Create a list of boxes that exactly cover all tags that match the
+ * specified tag value.
+ *
+ * @TODO should remove efficiency and combine tolerance since we need
+ * to cover exactly the cells that are tagged.
+ */
 void FindBoxesContainingTags(BoxList* boxes, 
 			     Vector* vector,
 			     Box* bound_box, 
@@ -606,6 +649,15 @@ void FindBoxesContainingTags(BoxList* boxes,
   FreeHistogramBox(hist_box);
 }
 
+/**
+ * Compute boxes that cover cells with the provided tag.
+ *
+ * Create a list of boxes that exactly cover all tags that match the
+ * specified tag value.
+ *
+ * @TODO should remove efficiency and combine tolerance since we need
+ * to cover exactly the cells that are tagged.
+ */
 void BergerRigoutsos(Vector* vector,
 		     Point min_box,
 		     double efficiency_tol, 
@@ -730,6 +782,16 @@ void BergerRigoutsos(Vector* vector,
   FreeHistogramBox(histogram_box);
 }
 
+
+/**
+ * Compute the patch loop iteration boxes.
+ *
+ * Compute the patch loop iteration boxes for the specified patch.  Patches 
+ * are looped over in each face direction so a box array is generated for 
+ * each face direction.
+ * 
+ * The computed box arrays are stored in the geom_solid.
+ */
 BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
 {
   Grid *grid =  CreateGrid(GlobalsUserGrid);
@@ -831,7 +893,15 @@ BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
   FreeGrid(grid);
 }
 
-
+/**
+ * Compute the surface loop iteration boxes.
+ *
+ * Compute the surface loop iteration boxes.  Surface loops are looped
+ * over in each face direction so a box array is generated for each
+ * face direction.
+ * 
+ * The computed box arrays are stored in the geom_solid.
+ */
 void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
 {
   Grid *grid =  CreateGrid(GlobalsUserGrid);
@@ -932,6 +1002,14 @@ void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
   FreeGrid(grid);
 }
 
+/**
+ * Compute the interior loop iteration boxes.
+ *
+ * Compute the interior loop iteration boxes.  Boxes will exactly cover
+ * all of interior of geom_solid in index space.
+ * 
+ * The computed box array is stored in the geom_solid.
+ */
 void ComputeInteriorBoxes(GrGeomSolid *geom_solid)
 {
 
@@ -1023,20 +1101,8 @@ void ComputeInteriorBoxes(GrGeomSolid *geom_solid)
   FreeGrid(grid);
 }
 
-/**
- * Compute set of boxes that exactly cover the GeomSolid.
- *
- * Runs the Berger-Rigoutsos algorithm to compute an 
- * set of boxes that cover the iterations spaces 
- * in the octree for more efficient iteration.   The 
- * Octree boxes are not anywhere near a minimal set 
- * of boxes.
- *
- * This assumes Octree's are in background grid space.
- */
 void ComputeBoxes(GrGeomSolid *geom_solid)
 {
-
   BeginTiming(ClusteringTimingIndex);
 
   ComputeInteriorBoxes(geom_solid);
