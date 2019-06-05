@@ -90,7 +90,8 @@ typedef struct {
   int32_t owner_tree;     /* Access to the p4est tree owning this subgrid */
   int ghostidx;            /* Index of this subregion in ghost layer */
   int pcorner[3];      /*Coorner of this subregion's parent*/
-  int ghostChildren[6];    /* Access to ghost children subregions */
+  int hasGhostCh;       /* Has this subregion associated ghost children */
+  int ghostChildren[8];    /* Access to ghost children subregions */
 #endif
 } Subregion;
 

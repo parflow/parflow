@@ -52,6 +52,13 @@ void parflow_p4est_vector_test(Grid *grid)
 {
   Vector      *vector;
   VectorUpdateCommHandle  *handle;
+#if 0
+  char file_prefix[2048], file_type[2048], file_postfix[2048];
+
+  sprintf(file_prefix, "vecTest");
+  sprintf(file_type, "press");
+  WriteSiloInit(file_prefix);
+#endif
 
   /* Create a vector */
   vector = NewVectorType(grid, 1, 1, vector_cell_centered);
@@ -62,10 +69,23 @@ void parflow_p4est_vector_test(Grid *grid)
   /* Change the values in the interior nodes */
   myInitVector(vector);
 
+  PrintVector("vecTest_before", vector);
+
   /* Try to do a parallel update*/
   handle = InitVectorUpdate(vector, VectorUpdateAll);
   FinalizeVectorUpdate(handle);
 
+#if 0
+  sprintf(file_postfix, "1");
+  WriteSilo(file_prefix, file_type, file_postfix, vector, 0.0, 0, "justNumbers");
+#endif
+
+  PrintVector("vecTest_after", vector);
+
   /* Finalize everything */
   FreeVector(vector);
+
+  /*Force to quit the program here*/
+  amps_Printf("Dummy vector test complete\n");
+  exit(0);
 }

@@ -84,6 +84,7 @@ Grid           *CreateGrid(
   SubgridArray  *all_subgrids;
 
 #ifdef HAVE_P4EST
+  SubgridArray  *innerGhostsubgrids;
   parflow_p4est_grid_t       *pfgrid;
   parflow_p4est_sg_param_t subgparam, *sp = &subgparam;
   parflow_p4est_qiter_t      *qiter;
@@ -121,6 +122,7 @@ Grid           *CreateGrid(
 
     all_subgrids = NewSubgridArray();
     subgrids = NewSubgridArray();
+    innerGhostsubgrids = NewSubgridArray();
 
     /* Initialize information to compute number of subgrids
      * and their corresponding dimensions */
@@ -185,7 +187,8 @@ Grid           *CreateGrid(
       AppendSubgrid(quad_data->pf_subgrid, subgrids);
       AppendSubgrid(quad_data->pf_subgrid, all_subgrids);
 
-      parflow_p4est_inner_ghost_create(quad_data->pf_subgrid, qiter, pfgrid);
+      parflow_p4est_inner_ghost_create(innerGhostsubgrids,
+                                       quad_data->pf_subgrid, qiter, pfgrid);
     }
 
     /* Check that all local quadrants were visited */

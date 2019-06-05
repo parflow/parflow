@@ -81,9 +81,13 @@ Subregion  *NewSubregion(
   (new_subregion->locidx) = 0;
 
 #ifdef HAVE_P4EST
+  int i;
   (new_subregion->minus_z_neigh) = -1;
   (new_subregion->plus_z_neigh) = -1;
   (new_subregion->owner_tree) = -1;
+  (new_subregion->hasGhostCh) = -1;
+  for (i=0; i<8; i++)
+      (new_subregion->ghostChildren[i]) = -1;
 #endif
 
   return new_subregion;

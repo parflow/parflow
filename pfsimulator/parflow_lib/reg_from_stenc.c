@@ -383,6 +383,7 @@ void  CommRegFromStencil(
                 /* We try to intersect a coarse subgrid 'sc' with a fine shifted
                  * one 'sf'. To get the right values we replace sf by its
                  * shifted parent and perform the intersection. */
+                /* TODO: replace sc by a suitable 'ghost children' instead */
 
                 if (parflow_p4est_check_neigh(subgrid1, subgrid0, grid->pfgrid))
                 {

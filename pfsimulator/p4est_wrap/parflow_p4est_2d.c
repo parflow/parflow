@@ -257,7 +257,7 @@ parflow_p4est_get_zneigh_2d(Subgrid * subgrid
         /** face neighbor is on a different processor,
          *  then qtoq contains its local index in the ghost layer */
         P4EST_ASSERT((qtoq - K) < G);
-        z_neighs[f] = qtoq;
+        z_neighs[f] = qtoq; /* TODO: assumes ghosts come directly after locals in Sall*/
       }
       else
       {
@@ -275,45 +275,79 @@ parflow_p4est_get_zneigh_2d(Subgrid * subgrid
 }
 
 void
-parflow_p4est_inner_ghost_create_2d (Subgrid * subgrid,
+parflow_p4est_inner_ghost_create_2d (SubgridArray * innerGhostsubgrids,
+                                     Subgrid * subgrid,
                                      parflow_p4est_qiter_2d_t * qit_2d,
                                      parflow_p4est_grid_2d_t *    pfgrid
                                      )
 {
+    Subgrid       *gs;
     p4est_mesh_t   *mesh = pfgrid->mesh;
-    p4est_locidx_t *qtoqs;
-    p4est_locidx_t qtoq;
+    p4est_quadrant_t  r = *qit_2d->quad;
     int8_t qtof;
-    int nhalves;
-    int l, f, lidx;
+    int nhalves = 1 << (P4EST_DIM - 1);
+    int *child_exists, child_id;
+    int offset[3];
+    int k, l, face;
+    double p[3], icorner[3], v[3];
 
     P4EST_ASSERT(qit_2d->itype & PARFLOW_P4EST_QUAD);
-    lidx = SubgridLocIdx(subgrid);
 
-    /** Inspect mesh structure to decide if an "internal ghost"
-   *  subgrid should be allocated **/
-    for (f = 0; f < P4EST_FACES; ++f)
+    icorner[0] = SubgridIX(subgrid);
+    icorner[1] = SubgridIY(subgrid);
+    icorner[2] = SubgridIZ(subgrid);
+
+    p[0] = SubgridNX(subgrid);
+    p[1] = SubgridNY(subgrid);
+    p[2] = SubgridNZ(subgrid);
+
+    child_exists = P4EST_ALLOC_ZERO(int, P4EST_CHILDREN);
+
+    /* Inspect mesh structure to decide if an "internal ghost"
+     *  subgrid should be allocated */
+    for (face = 0; face < P4EST_FACES; ++face)
     {
-        qtoq = mesh->quad_to_quad[P4EST_FACES * lidx + f];
-        P4EST_ASSERT(qtoq >= 0);
-        qtof = mesh->quad_to_face[P4EST_FACES * lidx + f];
+        qtof = mesh->quad_to_face[P4EST_FACES * qit_2d->local_idx + face];
 
-        /** Check if we have half-size neighbors across this face */
-        if (qtof < 0){
+        /* Check if we have half-size neighbors across this face */
+        if (qtof < 0)
+        {
             nhalves = 1 << (P4EST_DIM - 1);
-            qtoqs = (p4est_locidx_t *) sc_array_index (mesh->quad_to_half,
-                                                       qtoq);
-            for (l = 0; l < nhalves; ++l) {
-                if (qtoqs[l] >= mesh->local_num_quadrants) {
-                    printf("Q  %i has G %i along face %i \n", lidx,
-                           qtoqs[l] - mesh->local_num_quadrants, f);
-                }else{
 
-                    printf("Q %i has Q %i along face %i \n", lidx, qtoqs[l], f);
+            /* For each face having half size neighbors, we create
+             * a temporary child quadrant that will be used to allocate
+             * an "internal ghost subgrid" */
+            for (l = 0; l < nhalves; ++l)
+            {
+                child_id = p4est_face_corners[face][l];
+                if (!child_exists[child_id])
+                {
+                    gs = DuplicateSubgrid(subgrid);
+                    parflow_p4est_quad_to_vertex_2d(qit_2d->connect,
+                                                    qit_2d->which_tree,
+                                                    qit_2d->quad, v);
+                    for (k=0; k<3; k++)
+                        offset[k] = icorner[k] - v[k] *
+                                sc_intpow(2, qit_2d->quad->level) * p[k];
+
+                    p4est_quadrant_child (qit_2d->quad, &r, child_id);
+                    parflow_p4est_quad_to_vertex_2d(qit_2d->connect,
+                                                    qit_2d->which_tree,
+                                                    &r, v);
+
+                    SubgridIX(gs) = v[0] * sc_intpow(2, r.level) * p[0] + offset[0];
+                    SubgridIY(gs) = v[1] * sc_intpow(2, r.level) * p[1] + offset[1];
+                    SubgridIZ(gs) = v[2] * sc_intpow(2, r.level) * p[2] + offset[2];
+                    SubgridLevel(gs) = SubgridLevel(subgrid) + 1;
+                    AppendSubgrid(gs, innerGhostsubgrids);
+
+                    /*avoid repetition of this subgrid*/
+                    child_exists[child_id] = 1;
                 }
-            }
+           }
         }
     }
+    P4EST_FREE(child_exists);
 }
 
 /*

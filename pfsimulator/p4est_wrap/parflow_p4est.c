@@ -27,7 +27,7 @@ struct parflow_p4est_qiter {
 #define PARFLOW_P4EST_GET_QITER_DIM(qiter) ((qiter)->dim)
 
 /*
- * A globals structure muss exist prior calling this function
+ * A globals structure must exist prior calling this function
  */
 void
 parflow_p4est_sg_param_init(parflow_p4est_sg_param_t *sp)
@@ -41,6 +41,8 @@ parflow_p4est_sg_param_init(parflow_p4est_sg_param_t *sp)
   sp->m[0] = GetIntDefault("ComputationalSubgrid.MX", 1);
   sp->m[1] = GetIntDefault("ComputationalSubgrid.MY", 1);
   sp->m[2] = GetIntDefault("ComputationalSubgrid.MZ", 1);
+
+  sp->dim = (sp->N[2] > 1) ? 3 : 2;
 
   for (t = 0; t < 3; ++t)
   {
@@ -73,7 +75,7 @@ parflow_p4est_sg_param_update(parflow_p4est_qiter_t *   qiter,
 }
 
 /*
- * A globals structure muss exist prior calling this function
+ * A globals structure must exist prior calling this function
  */
 parflow_p4est_grid_t *
 parflow_p4est_grid_new(int Px, int Py, int Pz)
@@ -244,6 +246,45 @@ parflow_p4est_qiter_next(parflow_p4est_qiter_t * qiter)
 void
 parflow_p4est_qiter_qcorner(parflow_p4est_qiter_t * qiter,
                             double v[3], double pv[3])
+{
+  int k;
+  int dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);
+  int level;
+
+  if (dim == 2)
+  {
+    parflow_p4est_quad_to_vertex_2d(qiter->q.qiter_2d->connect,
+                                    qiter->q.qiter_2d->which_tree,
+                                    qiter->q.qiter_2d->quad, v);
+    parflow_p4est_parent_to_vertex_2d(qiter->q.qiter_2d->connect,
+                                      qiter->q.qiter_2d->which_tree,
+                                      qiter->q.qiter_2d->quad,
+                                      qiter->initial_level, pv);
+
+    level = qiter->q.qiter_2d->quad->level;
+  }
+  else
+  {
+    P4EST_ASSERT(dim == 3);
+    parflow_p4est_quad_to_vertex_3d(qiter->q.qiter_3d->connect,
+                                    qiter->q.qiter_3d->which_tree,
+                                    qiter->q.qiter_3d->quad, v);
+    parflow_p4est_parent_to_vertex_3d(qiter->q.qiter_3d->connect,
+                                      qiter->q.qiter_3d->which_tree,
+                                      qiter->q.qiter_3d->quad,
+                                      qiter->initial_level, pv);
+    level = qiter->q.qiter_3d->quad->level;
+  }
+
+  for (k = 0; k < 3; ++k)
+  {
+    v[k] *= sc_intpow(2, level);
+    pv[k] *= sc_intpow(2, level > 0 ? level - 1 : level);
+  }
+}
+
+parflow_p4est_qcorner(parflow_p4est_qiter_t * qiter,
+                      double v[3], double pv[3])
 {
   int k;
   int dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);
@@ -513,7 +554,8 @@ int parflow_p4est_check_neigh(Subgrid *sfine, Subgrid *scoarse,
   }
 }
 
-void            parflow_p4est_inner_ghost_create(Subgrid * subgrid,
+void            parflow_p4est_inner_ghost_create(SubgridArray * innerGhostsubgrids,
+                                                 Subgrid * subgrid,
                                      parflow_p4est_qiter_t * qiter,
                                      parflow_p4est_grid_t * pfgrid
                                      )
@@ -522,13 +564,15 @@ void            parflow_p4est_inner_ghost_create(Subgrid * subgrid,
 
   if (dim == 2)
   {
-    parflow_p4est_inner_ghost_create_2d(subgrid, qiter->q.qiter_2d,
+    parflow_p4est_inner_ghost_create_2d(innerGhostsubgrids,
+                                        subgrid, qiter->q.qiter_2d,
                                         pfgrid->p.p4);
   }
   else
   {
     P4EST_ASSERT(dim == 3);
-    parflow_p4est_inner_ghost_create_3d(subgrid, qiter->q.qiter_3d,
+    parflow_p4est_inner_ghost_create_3d(innerGhostsubgrids,
+                                        subgrid, qiter->q.qiter_3d,
                                         pfgrid->p.p8);
   }
 }

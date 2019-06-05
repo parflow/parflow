@@ -106,7 +106,8 @@ void            parflow_p4est_get_brick_coord_3d(Subgrid *                subgri
 int             parflow_p4est_check_neigh_3d(Subgrid *sfine, Subgrid *scoarse,
                                              parflow_p4est_grid_3d_t * pfg);
 
-void            parflow_p4est_inner_ghost_create_3d (Subgrid * subgrid,
+void            parflow_p4est_inner_ghost_create_3d (SubgridArray * innerGhostsubgrids,
+                                                     Subgrid * subgrid,
                                      parflow_p4est_qiter_3d_t * qit_3d,
                                      parflow_p4est_grid_3d_t *    pfgrid
                                      );

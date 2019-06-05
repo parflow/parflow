@@ -25,6 +25,7 @@ typedef parflow_p4est_quad_data_t parflow_p4est_ghost_data_t;
 
 typedef struct parflow_p4est_sg_param {
   /** These values are set just once **/
+  int dim;          /** Dimension of the underlying p4est object. */
   int N[3];         /** Input number of grid points per coord. direction */
   int P[3];         /** Computed number of subgrids per coord. direction */
   int m[3];         /** Input number of subgrid points per coord. direction */
@@ -184,7 +185,8 @@ parflow_p4est_get_brick_coord(Subgrid *subgrid,
 int             parflow_p4est_check_neigh(Subgrid *sfine, Subgrid *scoarse,
                                           parflow_p4est_grid_t * pfgrid);
 
-void            parflow_p4est_inner_ghost_create(Subgrid * subgrid,
+void            parflow_p4est_inner_ghost_create(SubgridArray * innerGhostsubgrids,
+                                                 Subgrid * subgrid,
                                      parflow_p4est_qiter_t * qiter,
                                      parflow_p4est_grid_t * pfgrid
                                      );

@@ -118,12 +118,12 @@ void        PrintSubvector(
   int i, j, k;
 
 
-  ix = SubgridIX(subgrid);
-  iy = SubgridIY(subgrid);
+  ix = SubvectorIX(subvector);
+  iy = SubvectorIY(subvector);
   iz = SubgridIZ(subgrid);
 
-  nx = SubgridNX(subgrid);
-  ny = SubgridNY(subgrid);
+  nx = SubvectorNX(subvector);
+  ny = SubvectorNY(subvector);
   nz = SubgridNZ(subgrid);
 
   amps_Fprintf(file, "\t\tPosition(%d,%d,%d), Size (%d,%d,%d)\n",
