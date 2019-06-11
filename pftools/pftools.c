@@ -124,6 +124,7 @@ int            PFDistCommand(
   int num_procs_y;
   int num_procs_z;
   int num_procs;
+  int nz_manual=0;
 
   Background    *background;
   Grid          *user_grid;
@@ -133,9 +134,27 @@ int            PFDistCommand(
 
   char command[1024];
 
-  if (argc != 2)
+  // Setup and error checking for manual nz spec
+  if ((argc == 2)||(argc == 4))
   {
-    WrongNumArgsError(interp, LOADPFUSAGE);
+    if (argc == 4) /* Check that third argument is -nz */
+    {
+      if (strcmp(argv[2],"-nz")!=0)
+      {
+        printf("Error: Expected optional argument is: -nz \n");
+        printf("  arg read as: %s \n",argv[2]);
+        return TCL_ERROR;
+      }
+      nz_manual=atoi(argv[3]);
+      if (nz_manual<1)
+      {
+        printf("Error: -nz must be greater than 0 \n");
+        return TCL_ERROR;
+      }
+    }
+  } else {
+    /*WrongNumArgsError(interp, LOADPFUSAGE); */
+    printf("Error: Invalid number of arguments passed to pfdist \n");
     return TCL_ERROR;
   }
 
@@ -167,6 +186,13 @@ int            PFDistCommand(
     background = ReadBackground(interp);
     user_grid = ReadUserGrid(interp);
 
+    int nz_in;
+    Subgrid     *user_subgrid = GridSubgrid(user_grid, 0);
+    if (nz_manual!=0)
+    {
+      nz_in = SubgridNZ(user_subgrid); // Save the correct nz
+      SubgridNZ(user_subgrid)=nz_manual; // Set the manual nz
+    }
     /*--------------------------------------------------------------------
      * Get inbox from input_filename
      *--------------------------------------------------------------------*/
@@ -179,7 +205,10 @@ int            PFDistCommand(
 
     all_subgrids = DistributeUserGrid(user_grid, num_procs,
                                       num_procs_x, num_procs_y, num_procs_z);
-
+    if (nz_manual!=0)
+    {
+      SubgridNZ(user_subgrid)=nz_in;  // Restore the correct nz
+    }
     if (!all_subgrids)
     {
       printf("Incorrect process allocation input\n");
