@@ -724,8 +724,9 @@ parflow_p4est_get_brick_coord_2d(Subgrid *                 subgrid,
 int parflow_p4est_check_neigh_2d(Subgrid *sfine, Subgrid *scoarse,
                                  parflow_p4est_grid_2d_t * pfg)
 {
-  int k, chidx;
-  int is_neighbor = 0;
+  int child_id;
+  int face;
+  int is_neighbor;
   p4est_quadrant_t nq[2 * P4EST_DIM];
   p4est_quadrant_t *qfine, *qcoarse;
 
@@ -734,15 +735,16 @@ int parflow_p4est_check_neigh_2d(Subgrid *sfine, Subgrid *scoarse,
 
   P4EST_ASSERT(SubgridLevel(sfine) > SubgridLevel(scoarse));
 
-  chidx = p4est_quadrant_child_id(qfine);
+  child_id = p4est_quadrant_child_id(qfine);
 
-  for (k = 0; k < P4EST_DIM; k++)
+  for (face = 0; face < P4EST_DIM; face++)
   {
     p4est_quadrant_all_face_neighbors(qfine,
-                                      p4est_corner_faces[chidx][k], nq);
-    is_neighbor +=
-      p4est_quadrant_is_equal(qcoarse, &nq[2 * P4EST_DIM - 1]);
+                                      p4est_corner_faces[child_id][face],
+                                      nq);
+    if (is_neighbor = p4est_quadrant_is_equal(qcoarse, &nq[2 * P4EST_DIM - 1]))
+       break;
   }
 
-  return is_neighbor;
+  return is_neighbor ? ( child_id ^ (face + 1) ) : -1;
 }
