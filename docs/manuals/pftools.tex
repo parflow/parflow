@@ -265,15 +265,24 @@ digits and the difference is greater than the absolute zero given
 by `zero'.
 
 
-\item{\begin{verbatim}pfdist filename \end{verbatim}}
-Distribute the file onto the virtual file system. This utility must be used to 
-create files which ParFlow can use as input. ParFlow uses a virtual file system 
-which allows each node of the parallel machine to read from the input file independently. 
-The utility does the inverse of the pfundist command. If you are using a ParFlow binary 
+\item{\begin{verbatim}pfdist filename [options] \end{verbatim}}
+Distribute the file onto the virtual file system. This utility must be used to
+create files which ParFlow can use as input. ParFlow uses a virtual file system
+which allows each node of the parallel machine to read from the input file independently.
+The utility does the inverse of the pfundist command. If you are using a ParFlow binary
 file for input you should do a pfdist just before you do the pfrun. This command
-requires that the processor topology and computational grid be set in the input 
-file so that it knows how to distribute the data. NOTE: When distributing slope
-files the  NZ must be set to 1 to indicate a two dimensional file.  
+requires that the processor topology and computational grid be set in the input
+file so that it knows how to distribute the data. Note that the old syntax for
+pfdist required the NZ key be set to 1 to indicate a two dimensional file but this can now be
+specified manually when pfdist is called by using the optional argument -nz followed by the number of layers in the file to be distributed.
+If the -nz argument is absent the NZ key is used by default for the processor topology.
+
+For example,
+\begin{display}
+\begin{verbatim}
+pfdist slopex.pfb -nz 1
+\end{verbatim}
+\end{display}
 
 \item{\begin{verbatim}pfdistondomain filename domain\end{verbatim}}
  Distribute the file onto the virtual file system based on the domain
