@@ -189,6 +189,7 @@ void  FreeGrid(
       P4EST_FREE(grid->z_levels);
     }
     EndTiming(P4ESTCleanupTimingIndex);
+    FreeSubgridArray(grid->innerGhostSubgrids);
 #endif
     tfree(grid);
   }

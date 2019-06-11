@@ -84,7 +84,8 @@ Grid           *CreateGrid(
   SubgridArray  *all_subgrids;
 
 #ifdef HAVE_P4EST
-  SubgridArray  *innerGhostsubgrids;
+  Subgrid       *s0, *gs0;
+  SubgridArray  *inner_ghost_subgrids;
   parflow_p4est_grid_t       *pfgrid;
   parflow_p4est_sg_param_t subgparam, *sp = &subgparam;
   parflow_p4est_qiter_t      *qiter;
@@ -122,7 +123,7 @@ Grid           *CreateGrid(
 
     all_subgrids = NewSubgridArray();
     subgrids = NewSubgridArray();
-    innerGhostsubgrids = NewSubgridArray();
+    inner_ghost_subgrids = NewSubgridArray();
 
     /* Initialize information to compute number of subgrids
      * and their corresponding dimensions */
@@ -187,12 +188,25 @@ Grid           *CreateGrid(
       AppendSubgrid(quad_data->pf_subgrid, subgrids);
       AppendSubgrid(quad_data->pf_subgrid, all_subgrids);
 
-      parflow_p4est_inner_ghost_create(innerGhostsubgrids,
+      parflow_p4est_inner_ghost_create(inner_ghost_subgrids,
                                        quad_data->pf_subgrid, qiter, pfgrid);
     }
 
     /* Check that all local quadrants were visited */
     P4EST_ASSERT(num_local_quads == SubgridArraySize(subgrids));
+
+    /* If any, append inner ghost subgrids to subgrids array */
+    ForSubgridI(i, inner_ghost_subgrids)
+    {
+        gs0 = SubgridArraySubgrid(inner_ghost_subgrids, i);
+        s0 =  SubgridArraySubgrid(subgrids, SubgridLocIdx(gs0));
+        SubgridLocIdx(gs0) = num_local_quads  + i;
+        s0->ghostChildren[SubgridGhostIdx(gs0)] = SubgridLocIdx(gs0);
+        AppendSubgrid(gs0, subgrids);
+    }
+
+    /* TODO: mask loops to avoid this HACK */
+    SubgridArraySize(subgrids) = num_local_quads;
 
     /*Destroy p4est mesh structure */
     parflow_p4est_grid_mesh_destroy(pfgrid);
@@ -255,6 +269,7 @@ Grid           *CreateGrid(
     grid->z_levels = z_levels;
     grid->proj_flag = 0;
     grid->owns_pfgrid = 1;
+    grid->innerGhostSubgrids  = inner_ghost_subgrids;
 #else
     PARFLOW_ERROR("ParFlow compiled without p4est");
 #endif
