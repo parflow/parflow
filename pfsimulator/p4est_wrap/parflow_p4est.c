@@ -588,12 +588,12 @@ Subgrid *parflow_p4est_fetch_subgrid(SubgridArray *subgrids,
 
   if (ghost_idx == -1)
   {
-    P4EST_ASSERT(local_idx >= 0 && local_idx < num_local);
+    //P4EST_ASSERT(local_idx >= 0 && local_idx < num_local);
     s = SubgridArraySubgrid(subgrids, local_idx);
   }
   else
   {
-    P4EST_ASSERT(ghost_idx >= 0 && ghost_idx < num_ghost);
+    //P4EST_ASSERT(ghost_idx >= 0 && ghost_idx < num_ghost);
     s = SubgridArraySubgrid(all_subgrids, num_local + ghost_idx);
   }
 
