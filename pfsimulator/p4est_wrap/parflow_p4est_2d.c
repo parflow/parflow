@@ -286,7 +286,7 @@ parflow_p4est_inner_ghost_create_2d (SubgridArray * innerGhostsubgrids,
     p4est_quadrant_t  r = *qit_2d->quad;
     int8_t qtof;
     int nhalves = 1 << (P4EST_DIM - 1);
-    int *child_exists, child_id;
+    int child_id;
     int offset[3];
     int k, l, face;
     double p[3], icorner[3], v[3];
@@ -300,8 +300,6 @@ parflow_p4est_inner_ghost_create_2d (SubgridArray * innerGhostsubgrids,
     p[0] = SubgridNX(subgrid);
     p[1] = SubgridNY(subgrid);
     p[2] = SubgridNZ(subgrid);
-
-    child_exists = P4EST_ALLOC_ZERO(int, P4EST_CHILDREN);
 
     /* Inspect mesh structure to decide if an "internal ghost"
      *  subgrid should be allocated */
@@ -320,7 +318,9 @@ parflow_p4est_inner_ghost_create_2d (SubgridArray * innerGhostsubgrids,
             for (l = 0; l < nhalves; ++l)
             {
                 child_id = p4est_face_corners[face][l];
-                if (!child_exists[child_id])
+
+                /* A ghost subgrid correspoding to this child has not been allocated */
+                if (subgrid->ghostChildren[child_id] < 0)
                 {
                     gs = DuplicateSubgrid(subgrid);
                     parflow_p4est_quad_to_vertex_2d(qit_2d->connect,
@@ -338,16 +338,18 @@ parflow_p4est_inner_ghost_create_2d (SubgridArray * innerGhostsubgrids,
                     SubgridIX(gs) = v[0] * sc_intpow(2, r.level) * p[0] + offset[0];
                     SubgridIY(gs) = v[1] * sc_intpow(2, r.level) * p[1] + offset[1];
                     SubgridIZ(gs) = v[2] * sc_intpow(2, r.level) * p[2] + offset[2];
+
+                    SubgridGhostIdx(gs) = child_id;
                     SubgridLevel(gs) = SubgridLevel(subgrid) + 1;
+
                     AppendSubgrid(gs, innerGhostsubgrids);
 
-                    /*avoid repetition of this subgrid*/
-                    child_exists[child_id] = 1;
+                    /*avoid double allocation of this subgrid*/
+                    subgrid->ghostChildren[child_id] = child_id;
                 }
            }
         }
     }
-    P4EST_FREE(child_exists);
 }
 
 /*
