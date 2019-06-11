@@ -255,7 +255,7 @@ void  CommRegFromStencil(
 #ifdef HAVE_P4EST
   Subgrid       *s;
   SubgridArray  *sa2_loc;
-  int tt, num_trees;
+  int which_child, tt, num_trees;
   int num_loc_idxs;
   int ix, iy, iz;
   int tweak, lev1, lev0;
@@ -380,33 +380,14 @@ void  CommRegFromStencil(
             switch (tweak)
             {
               case -1:
-                /* We try to intersect a coarse subgrid 'sc' with a fine shifted
-                 * one 'sf'. To get the right values we replace sf by its
-                 * shifted parent and perform the intersection. */
-                /* TODO: replace sc by a suitable 'ghost children' instead */
+                /* Replace sc by a suitable 'ghost children' */
 
-                if (parflow_p4est_check_neigh(subgrid1, subgrid0, grid->pfgrid))
+                which_child = parflow_p4est_check_neigh(subgrid1, subgrid0, grid->pfgrid);
+                if (which_child > 0)
                 {
-                  ix = SubgridIX(subgrid1);
-                  iy = SubgridIY(subgrid1);
-                  iz = SubgridIZ(subgrid1);
-
-                  s = parflow_p4est_fetch_subgrid(grid->subgrids,
-                                                  grid->all_subgrids,
-                                                  SubgridLocIdx(subgrid1),
-                                                  SubgridGhostIdx(subgrid1));
-                  SubgridIX(subgrid1) =
-                    ix - SubgridIX(s) + SubgridParentIX(s);
-                  SubgridIY(subgrid1) =
-                    iy - SubgridIY(s) + SubgridParentIY(s);
-                  SubgridIZ(subgrid1) =
-                    iz - SubgridIZ(s) + SubgridParentIZ(s);
-
-                  subgrid2 = IntersectSubgrids(subgrid0, subgrid1);
-
-                  SubgridIX(subgrid1) = ix;
-                  SubgridIY(subgrid1) = iy;
-                  SubgridIZ(subgrid1) = iz;
+                  parflow_p4est_check_neigh(subgrid1, subgrid0, grid->pfgrid);
+                  s = SubgridArraySubgrid(subgrids, subgrid0->ghostChildren[which_child]);
+                  subgrid2 = IntersectSubgrids(s, subgrid1);
                 }
                 break;
 
@@ -415,7 +396,7 @@ void  CommRegFromStencil(
                  * one 'sc'. To get the right values we replace sf by its parent
                  * and then map the result of the intersection to sf. */
 
-                if (parflow_p4est_check_neigh(subgrid0, subgrid1, grid->pfgrid))
+                if (parflow_p4est_check_neigh(subgrid0, subgrid1, grid->pfgrid) > 0)
                 {
                   ix = SubgridIX(subgrid0);
                   iy = SubgridIY(subgrid0);
@@ -485,7 +466,8 @@ void  CommRegFromStencil(
                 if (USE_P4EST)
                 {
 #ifdef HAVE_P4EST
-                  SubgridLocIdx(subgrid2) = SubgridLocIdx(subgrid0);
+                  SubgridLocIdx(subgrid2) = (which_child > 0) ?
+                              SubgridLocIdx(s) : SubgridLocIdx(subgrid0);
                   SubgridGhostIdx(subgrid2) = SubgridGhostIdx(subgrid0);
                   SubgridOwnerTree(subgrid2) = SubgridOwnerTree(subgrid0);
 #endif
