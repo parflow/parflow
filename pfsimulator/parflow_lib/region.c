@@ -192,7 +192,9 @@ Subregion  *DuplicateSubregion(
                                Subregion *subregion)
 {
   Subregion *new_subregion;
-
+#ifdef HAVE_P4EST
+  int i;
+#endif
 
   new_subregion = NewSubregion(SubregionIX(subregion),
                                SubregionIY(subregion),
@@ -219,6 +221,8 @@ Subregion  *DuplicateSubregion(
   SubregionParentIX(new_subregion) = SubregionParentIX(subregion);
   SubregionParentIY(new_subregion) = SubregionParentIY(subregion);
   SubregionParentIZ(new_subregion) = SubregionParentIZ(subregion);
+  for (i=0; i<8; i++)
+      (new_subregion->ghostChildren[i]) = subregion->ghostChildren[i];
 #endif
 
   return new_subregion;
