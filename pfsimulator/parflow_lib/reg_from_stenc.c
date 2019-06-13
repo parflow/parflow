@@ -449,17 +449,24 @@ void  CommRegFromStencil(
                       SubgridIY(subgrid2) - SubgridParentIY(subgrid0) + iy;
                     SubgridIZ(subgrid2) =
                       SubgridIZ(subgrid2) - SubgridParentIZ(subgrid0) + iz;
-                  }
 
-                  /* Remember 'ghost children' for later use*/
-                  if (r==0)
-                      s = SubgridArraySubgrid(subgrids, subgrid1->ghostChildren[which_child]);
+                    /* Remember 'ghost children' for later use if we are  computing
+                     * the send region */
+                    switch (r) {
+                    case 0:
+                        s = SubgridArraySubgrid(subgrids, subgrid1->ghostChildren[which_child]);
+                        break;
+                    case 1:
+                        s = subgrid0;
+                        break;
+                    }
+                  }
                 }
                 break;
 
               default:
-                which_child = -1;
                 /* Same size neighbors, proceed as normal*/
+                which_child = -1;
                 P4EST_ASSERT(tweak == 0);
                 subgrid2 = IntersectSubgrids(subgrid0, subgrid1);
                 break;
