@@ -139,13 +139,13 @@ int            PFDistCommand(
   {
     if (argc == 4) /* Check that third argument is -nz */
     {
-      if (strcmp(argv[2],"-nz")!=0)
+      if (strcmp(argv[1],"-nz")!=0)
       {
         printf("Error: Expected optional argument is: -nz \n");
-        printf("  arg read as: %s \n",argv[2]);
+        printf("  argument read as: %s \n",argv[1]);
         return TCL_ERROR;
       }
-      nz_manual=atoi(argv[3]);
+      nz_manual=atoi(argv[2]);
       if (nz_manual<1)
       {
         printf("Error: -nz must be greater than 0 \n");
@@ -155,13 +155,18 @@ int            PFDistCommand(
   } else {
     /*WrongNumArgsError(interp, LOADPFUSAGE); */
     printf("Error: Invalid number of arguments passed to pfdist \n");
+    printf("       2 or 4 allowed, %d passed by user \n",argc);
     return TCL_ERROR;
   }
 
-  filename = argv[1];
+  if (argc > 2)
+  {
+    filename = argv[3];
+  } else {
+    filename = argv[1];
+  }
 
   /* Make sure the file extension is valid */
-
   if ((filetype = GetValidFileExtension(filename)) == (char*)NULL)
   {
     InvalidFileExtensionError(interp, 1, LOADPFUSAGE);
@@ -7816,4 +7821,3 @@ int            HydroStatFromWTCommand(
   }
   return TCL_OK;
 }
-
