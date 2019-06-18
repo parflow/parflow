@@ -726,25 +726,35 @@ int parflow_p4est_check_neigh_2d(Subgrid *sfine, Subgrid *scoarse,
 {
   int child_id;
   int face;
-  int is_neighbor;
-  p4est_quadrant_t nq[2 * P4EST_DIM];
+  int is_neigh = 0;
+  p4est_topidx_t rt;
+  p4est_quadrant_t qp, r;
   p4est_quadrant_t *qfine, *qcoarse;
 
+  /* Extract supporting quadrants */
   qfine = parflow_p4est_fetch_quad_from_subgrid(sfine, pfg);
   qcoarse = parflow_p4est_fetch_quad_from_subgrid(scoarse, pfg);
 
   P4EST_ASSERT(SubgridLevel(sfine) > SubgridLevel(scoarse));
 
+  /* Remember child_id of finner quad */
   child_id = p4est_quadrant_child_id(qfine);
+
+  /* Construct parent of qfine */
+  p4est_quadrant_parent(qfine, &qp);
 
   for (face = 0; face < P4EST_DIM; face++)
   {
-    p4est_quadrant_all_face_neighbors(qfine,
-                                      p4est_corner_faces[child_id][face],
-                                      nq);
-    if (is_neighbor = p4est_quadrant_is_equal(qcoarse, &nq[2 * P4EST_DIM - 1]))
-       break;
+    /* qfine neighbors qcoarse across this face
+     * if its parent, qp does. Construct qp's neighbor across this face
+     * and check if it coincides with qcoarse */
+    rt = p4est_quadrant_face_neighbor_extra(&qp, SubgridOwnerTree(sfine),
+                                       p4est_corner_faces[child_id][face], &r,
+                                       NULL, pfg->connect);
+    if ( (rt == SubgridOwnerTree(scoarse)) &&
+         (is_neigh = p4est_quadrant_is_equal(qcoarse, &r)))
+            break;
   }
 
-  return is_neighbor ? ( child_id ^ (face + 1) ) : -1;
+  return is_neigh ? ( child_id ^ (face + 1) ) : -1;
 }
