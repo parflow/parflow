@@ -55,7 +55,10 @@ Subregion  *NewSubregion(
                          int process)
 {
   Subregion *new_subregion;
-
+#ifdef HAVE_P4EST
+  int i;
+  int nchildren = GlobalsNumProcsZ > 1 ? 8 : 4;
+#endif
 
   new_subregion = talloc(Subregion, 1);
 
@@ -81,12 +84,12 @@ Subregion  *NewSubregion(
   (new_subregion->locidx) = 0;
 
 #ifdef HAVE_P4EST
-  int i;
   (new_subregion->minus_z_neigh) = -1;
   (new_subregion->plus_z_neigh) = -1;
   (new_subregion->owner_tree) = -1;
-  for (i=0; i<8; i++)
-      (new_subregion->ghostChildren[i]) = -1;
+  (new_subregion->ghostChildren) = P4EST_ALLOC(int, nchildren);
+  for (i=0; i < nchildren; i++)
+      new_subregion->ghostChildren[i] = -1;
 #endif
 
   return new_subregion;
@@ -141,6 +144,9 @@ Region  *NewRegion(
 
 void        FreeSubregion(Subregion *subregion)
 {
+#ifdef HAVE_P4EST
+  P4EST_FREE(subregion->ghostChildren);
+#endif
   tfree(subregion);
 }
 
@@ -194,6 +200,7 @@ Subregion  *DuplicateSubregion(
   Subregion *new_subregion;
 #ifdef HAVE_P4EST
   int i;
+  int nchildren = GlobalsNumProcsZ > 1 ? 8 : 4;
 #endif
 
   new_subregion = NewSubregion(SubregionIX(subregion),
@@ -221,7 +228,7 @@ Subregion  *DuplicateSubregion(
   SubregionParentIX(new_subregion) = SubregionParentIX(subregion);
   SubregionParentIY(new_subregion) = SubregionParentIY(subregion);
   SubregionParentIZ(new_subregion) = SubregionParentIZ(subregion);
-  for (i=0; i<8; i++)
+  for (i=0; i<nchildren; i++)
       (new_subregion->ghostChildren[i]) = subregion->ghostChildren[i];
 #endif
 
