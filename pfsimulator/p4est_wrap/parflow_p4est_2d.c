@@ -757,5 +757,5 @@ int parflow_p4est_check_neigh_2d(Subgrid *sfine, Subgrid *scoarse,
             break;
   }
 
-  return is_neigh ? ( child_id ^ (face + 1) ) : -1;
+  return is_neigh ? ( child_id ^ (1 << face) ) : -1;
 }

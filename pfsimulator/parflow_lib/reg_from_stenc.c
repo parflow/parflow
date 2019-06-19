@@ -375,6 +375,7 @@ void  CommRegFromStencil(
           if (USE_P4EST)
           {
 #ifdef HAVE_P4EST
+            subgrid2 = NULL;
             lev1 = SubgridLevel(subgrid1);
             tweak = (lev0 == lev1) ? 0 : lev0 < lev1 ? -1 : +1;
             switch (tweak)
@@ -473,7 +474,7 @@ void  CommRegFromStencil(
             }
 #endif
           }
-          else
+          else /* !USE_P4EST */
           {
             subgrid2 = IntersectSubgrids(subgrid0, subgrid1);
           }
