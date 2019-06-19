@@ -98,6 +98,7 @@ parflow_p4est_grid_2d_new(int Px, int Py
 #ifdef P4_TO_P8
   pfg->Tz = tz / g;
 #endif
+  pfg->dim = P4EST_DIM;
 
   BeginTiming(P4ESTimingIndex);
 
