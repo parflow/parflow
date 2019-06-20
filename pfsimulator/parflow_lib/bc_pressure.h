@@ -69,6 +69,11 @@ typedef struct {
   char  *filename;
 } BCPressureType8;
 
+/* New example BC type */
+typedef struct {
+  char  *filename;
+} BCPressureType9;
+
 /*----------------------------------------------------------------
  * BCPressure Data structure
  *----------------------------------------------------------------*/

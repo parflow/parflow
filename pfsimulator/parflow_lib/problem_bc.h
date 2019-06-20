@@ -36,6 +36,8 @@
 #define FluxBC       1
 #define OverlandBC   2   //sk
 #define ConstHeadRiver   3   //rm
+/* new example BC type */
+#define DebuggingBC 4 //mcb
 
 /*----------------------------------------------------------------
  * BCStruct structure

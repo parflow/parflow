@@ -973,6 +973,11 @@ BCStruct    *BCPressure(
           }              /* End subgrid loop */
           break;
         }
+
+        case 9:
+        {
+          // Set up patch values here?
+        }
       }
     }
   }

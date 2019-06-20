@@ -105,6 +105,11 @@ typedef struct {
 } Type8;               /* //RM Flux, given in "filenames".pfb but for overland flow */
 
 
+/* New Type for use in BCPressurePackageNewPublicXtra */
+typedef struct {
+  char ***filenames; // Should be a type of whatever the BC needs (files, values, etc)
+} Type9;
+
 
 /*--------------------------------------------------------------------------
  * BCPressurePackage
@@ -128,6 +133,8 @@ void         BCPressurePackage(
   Type6            *dummy6;
   Type7            *dummy7;
   Type8            *dummy8;
+  /* Add a new dummy pointer */
+  Type9            *dummy9;
 
 
   TimeCycleData    *time_cycle_data;
@@ -428,6 +435,30 @@ void         BCPressurePackage(
 
             break;
           }
+
+          /* Test BC for debugging */
+          // mcb
+          case 9:
+          {
+            BCPressureType9 *bc_pressure_type9;
+
+            // Set BC type
+            // Define BC types in problem_bc.h
+            BCPressureDataBCType(bc_pressure_data, i) = DebuggingBC;
+
+            // Cast and read the dummy struct set up in BCPressurePackageNewPublicXtra
+            dummy9 = (Type9*)(public_xtra->data[i]);
+
+            // Allocate BCPressureType struct
+            bc_pressure_type9 = ctalloc(BCPressureType9, 1);
+
+            /* Set stuff up for this timestep to be set up later in
+               problem_bc_pressure.c:BCPressure */
+
+            // Store the struct in bc_pressure_data
+            BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
+              = (void*)bc_pressure_type9;
+          }
         }
       }
     }
@@ -514,15 +545,21 @@ PFModule  *BCPressurePackageNewPublicXtra(
   Type6         *dummy6;
   Type7         *dummy7;
   Type8         *dummy8;
-
+  /* Set a new dummy pointer for the new case */
+  Type9         *dummy9;
 
   int i, interval_number, interval_division;
 
   NameArray type_na;
   NameArray function_na;
 
+  /* Edit the string in NA_NewNameArray and add in the new boundary condition name
+     (Whatever it's going to be called in the tcl script) */
   //sk
-  type_na = NA_NewNameArray("DirEquilRefPatch DirEquilPLinear FluxConst FluxVolumetric PressureFile FluxFile ExactSolution OverlandFlow OverlandFlowPFB");
+  /* Previous */
+  //type_na = NA_NewNameArray("DirEquilRefPatch DirEquilPLinear FluxConst FluxVolumetric PressureFile FluxFile ExactSolution OverlandFlow OverlandFlowPFB");
+  /* With new BC Type added */
+  type_na = NA_NewNameArray("DirEquilRefPatch DirEquilPLinear FluxConst FluxVolumetric PressureFile FluxFile ExactSolution OverlandFlow OverlandFlowPFB TestBC");
 
   function_na = NA_NewNameArray("dum0 X XPlusYPlusZ X3Y2PlusSinXYPlus1 X3Y4PlusX2PlusSinXYCosYPlus1 XYZTPlus1 XYZTPlus1PermTensor");
 
@@ -925,6 +962,19 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
           (public_xtra->data[i]) = (void*)dummy8;
           break;
+        }
+
+        /* New BC case */
+        case 9:
+        {
+          /* Allocate the dummy struct */
+          dummy9 = ctalloc(Type9, 1);
+
+          /* Set up everything needed for each interval */
+          // do stuff
+
+          /* Store the dummy struct into public_xtra for reading in BCPressurePackage later */
+          (public_xtra->data[i]) = (void*)dummy9;
         }
       }      /* End switch statement */
     }
