@@ -494,10 +494,10 @@ void  CommRegFromStencil(
                 if (USE_P4EST)
                 {
 #ifdef HAVE_P4EST
-                  SubgridLocIdx(subgrid2) = (which_child > 0) ?
-                              SubgridLocIdx(s) : SubgridLocIdx(subgrid1);
-                  SubgridGhostIdx(subgrid2) = SubgridGhostIdx(subgrid1);
-                  SubgridOwnerTree(subgrid2) = SubgridOwnerTree(subgrid1);
+                  s = (which_child > 0) ? s : subgrid1;
+                  SubgridLocIdx(subgrid2) = SubgridLocIdx(s);
+                  SubgridGhostIdx(subgrid2) = SubgridGhostIdx(s);
+                  SubgridOwnerTree(subgrid2) = SubgridOwnerTree(s);
 #endif
                 }
                 AppendSubgrid(subgrid2,
@@ -509,10 +509,10 @@ void  CommRegFromStencil(
                 if (USE_P4EST)
                 {
 #ifdef HAVE_P4EST
-                  SubgridLocIdx(subgrid2) = (which_child > 0) ?
-                              SubgridLocIdx(s) : SubgridLocIdx(subgrid0);
-                  SubgridGhostIdx(subgrid2) = SubgridGhostIdx(subgrid0);
-                  SubgridOwnerTree(subgrid2) = SubgridOwnerTree(subgrid0);
+                  s = (which_child > 0) ? s : subgrid0;
+                  SubgridLocIdx(subgrid2) = SubgridLocIdx(s);
+                  SubgridGhostIdx(subgrid2) = SubgridGhostIdx(s);
+                  SubgridOwnerTree(subgrid2) = SubgridOwnerTree(s);
 #endif
                 }
                 AppendSubgrid(subgrid2,
