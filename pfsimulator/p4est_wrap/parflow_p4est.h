@@ -39,6 +39,9 @@ typedef struct parflow_p4est_sg_param {
 }parflow_p4est_sg_param_t;
 
 
+/** Return dimension of the pfgrid object */
+int parflow_p4est_dim (parflow_p4est_grid_t *pfgrid);
+
 /** Init parameter structure */
 void
 parflow_p4est_sg_param_init(parflow_p4est_sg_param_t *sp);

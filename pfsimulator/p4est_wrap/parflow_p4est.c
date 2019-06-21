@@ -26,6 +26,11 @@ struct parflow_p4est_qiter {
 #define PARFLOW_P4EST_GET_GRID_DIM(pfgrid) ((pfgrid)->dim)
 #define PARFLOW_P4EST_GET_QITER_DIM(qiter) ((qiter)->dim)
 
+int parflow_p4est_dim (parflow_p4est_grid_t *pfgrid)
+{
+    return PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
+}
+
 /*
  * A globals structure must exist prior calling this function
  */
