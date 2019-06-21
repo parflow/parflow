@@ -57,21 +57,6 @@
     })
 
 
-#define TOSTR_(x) #x
-#define TOSTR(x) TOSTR_(x)
-
-
-#define BC_TYPE_NAMES                           \
-  DirEquilRefPatch                              \
-  DirEquilPLinear                               \
-  FluxConst                                     \
-  FluxVolumetric                                \
-  PressureFile                                  \
-  FluxFile                                      \
-  ExactSolution                                 \
-  OverlandFlow                                  \
-  OverlandFlowPFB
-
 #define NewTypeStruct(type, var)                  \
   Type ## type * var = ctalloc((Type ## type), 1)
 #define StoreTypeStruct(public_xtra, var, i)                  \

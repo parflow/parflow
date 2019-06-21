@@ -26,15 +26,10 @@
  *  USA
  **********************************************************************EHEADER*/
 
-//#include "parflow.h"
-
-#include <string.h>
+#include "parflow.h"
 
 #include "bc_pressure_package.h"
-
-#define BC_TYPE(type, values) typedef struct values Type ## type;
-BC_TYPE_TABLE
-#undef BC_TYPE
+#include <string.h>
 
 
 /*--------------------------------------------------------------------------
@@ -64,6 +59,14 @@ typedef struct {
 typedef struct {
   Problem *problem;
 } InstanceXtra;
+
+/*--------------------------------------------------------------------------
+ * Generate BC Type Structures from header file
+ * These are what used to be the Type0 Type1 ... structs
+ *--------------------------------------------------------------------------*/
+#define BC_TYPE(type, values) typedef struct values Type ## type;
+BC_TYPE_TABLE
+#undef BC_TYPE
 
 /*--------------------------------------------------------------------------
  * BCPressurePackage
