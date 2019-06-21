@@ -313,6 +313,14 @@ parflow_p4est_inner_ghost_create_2d (SubgridArray * innerGhostsubgrids,
         {
             nhalves = 1 << (P4EST_DIM - 1);
 
+            /* Allocate storage to save 'ghost children location' */
+            if(!subgrid->ghostChildren){
+                subgrid->ghostChildren = P4EST_ALLOC(int, P4EST_CHILDREN);
+                for  (l = 0; l < P4EST_CHILDREN; ++l)
+                    subgrid->ghostChildren[l] = -1;
+            }
+            P4EST_ASSERT(subgrid->ghostChildren);
+
             /* For each face having half size neighbors, we create
              * a temporary child quadrant that will be used to allocate
              * an "internal ghost subgrid" */
@@ -324,6 +332,15 @@ parflow_p4est_inner_ghost_create_2d (SubgridArray * innerGhostsubgrids,
                 if (subgrid->ghostChildren[child_id] < 0)
                 {
                     gs = DuplicateSubgrid(subgrid);
+
+                    /* The DuplicateSubgrid routine copies the ghostChildren
+                     * member from the input subgrid by default, it is necessary
+                     * for other routines. A 'ghost child' should not reference other
+                     * 'ghost children' subgrids so we free its corresponding
+                     * ghostChildren inmediatly */
+                    P4EST_FREE(gs->ghostChildren);
+                    gs->ghostChildren = NULL;
+
                     parflow_p4est_quad_to_vertex_2d(qit_2d->connect,
                                                     qit_2d->which_tree,
                                                     qit_2d->quad, v);
