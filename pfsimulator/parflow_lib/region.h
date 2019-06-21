@@ -92,7 +92,10 @@ typedef struct {
                             * A negative value of -1 indicates that this is a local
                             * subregion, a value of v=-2, -3, ...  means
                             * this is a 'ghost child' subregion and its child
-                            * number is decoded as -(v+2) */
+                            * number and the local index of its parent subgrid are
+                            * decoded as (2-v) % (1 << dim) and (2-v) / (1 << dim)
+                            * respectively, where dim is the dimension of the underlying
+                            * p4est object. */
   int pcorner[3];          /* Coorner of this subregion's parent*/
   int *ghostChildren;      /* Access to 'ghost children' subregions */
 #endif

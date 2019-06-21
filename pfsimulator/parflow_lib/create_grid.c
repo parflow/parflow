@@ -95,6 +95,7 @@ Grid           *CreateGrid(
   int num_local_quads;
   int                        *z_levels;
   int i, lz, pz, offset;
+  int nchildren;
 #endif
 
   if (!USE_P4EST)
@@ -145,6 +146,7 @@ Grid           *CreateGrid(
 
     initial_level = parflow_p4est_get_initial_level(pfgrid);
     num_local_quads = parflow_p4est_local_num_quads(pfgrid);
+    nchildren =  1 << parflow_p4est_dim (pfgrid);
 
     /* Allocate p4est mesh structure if required*/
     parflow_p4est_grid_mesh_init(pfgrid);
@@ -209,12 +211,14 @@ Grid           *CreateGrid(
          * position it will occupy in the local subgrids array */
         SubgridLocIdx(gs0) = num_local_quads  + i;
 
-        /* Give access to its parent */
+        /* Parent subgrid gets access to this child */
         s0->ghostChildren[SubgridGhostIdx(gs0)] = SubgridLocIdx(gs0);
 
         /* For an inner subgrid, its ghost index stores its child_id.
-         * We will enconde it as  (-child_id + 2). See region.h */
-        SubgridGhostIdx(gs0) = -(SubgridGhostIdx(gs0) + 2);
+         * We will encode it together with its parent local index as
+         * -(nchildren * parent_local_index + child_id) + 2; See region.h */
+        SubgridGhostIdx(gs0) =
+                - (nchildren * SubgridLocIdx(s0) + SubgridGhostIdx(gs0)) + 2;
 
         AppendSubgrid(gs0, subgrids);
     }
