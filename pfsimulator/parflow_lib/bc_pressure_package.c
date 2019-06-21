@@ -181,7 +181,9 @@ void         BCPressurePackage(
           SetupPatchInterval(DirEquilPLinear,
           {
             BCPressureType1   *bc_pressure_type1;
-            int point, phase;
+            int point;
+            int phase;
+
             int num_points;
             int num_phases = BCPressureDataNumPhases(bc_pressure_data);
 
@@ -358,8 +360,6 @@ void         BCPressurePackage(
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
               = (void*)bc_pressure_type8;
-
-            break;
           });
         }); /* End Do_SetupPatchIntervals */
       } /* End ForEachInterval */
@@ -445,7 +445,9 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
   //sk
   //type_na = NA_NewNameArray("DirEquilRefPatch DirEquilPLinear FluxConst FluxVolumetric PressureFile FluxFile ExactSolution OverlandFlow OverlandFlowPFB");
-  type_na = NA_NewNameArray(TOSTR(BC_TYPE_NAMES));
+#define BC_TYPE(a, b) #a
+  type_na = NA_NewNameArray(BC_TYPE_TABLE);
+#undef BC_TYPE
 
   function_na = NA_NewNameArray("dum0 X XPlusYPlusZ X3Y2PlusSinXYPlus1 X3Y4PlusX2PlusSinXYCosYPlus1 XYZTPlus1 XYZTPlus1PermTensor");
 
@@ -609,7 +611,9 @@ PFModule  *BCPressurePackageNewPublicXtra(
 
         SetupPatchType(DirEquilPLinear,
         {
-          int k, num_points, size;
+          int k;
+          int num_points;
+          int size;
 
           NewTypeStruct(DirEquilPLinear, data);
 
