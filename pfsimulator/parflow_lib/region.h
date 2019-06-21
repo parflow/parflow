@@ -91,7 +91,7 @@ typedef struct {
   int ghostidx;            /* If positive, index of this subregion in the ghost layer.
                             * A negative value of -1 indicates that this is a local
                             * subregion, a value of v=-2, -3, ...  means
-                            * this is a 'ghost child' subregion and its child
+                            * this is a 'ghost child' subregion. Its child
                             * number and the local index of its parent subgrid are
                             * decoded as (2-v) % (1 << dim) and (2-v) / (1 << dim)
                             * respectively, where dim is the dimension of the underlying

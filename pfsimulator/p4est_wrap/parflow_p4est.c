@@ -591,7 +591,7 @@ Subgrid *parflow_p4est_fetch_subgrid(SubgridArray *subgrids,
   int num_ghost = SubgridArraySize(all_subgrids) - num_local;
   Subgrid *s = NULL;
 
-  if (ghost_idx == -1)
+  if (ghost_idx < 0)
   {
     //P4EST_ASSERT(local_idx >= 0 && local_idx < num_local);
     s = SubgridArraySubgrid(subgrids, local_idx);
