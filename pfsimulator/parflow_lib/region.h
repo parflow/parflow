@@ -85,12 +85,16 @@ typedef struct {
   int locidx;            /* Index of this subregion in owned process*/
 
 #ifdef HAVE_P4EST
-  int minus_z_neigh;       /* Access to -z neighbor to this subgrid */
-  int plus_z_neigh;        /* Access to +z neighbor to this subgrid */
-  int32_t owner_tree;      /* Access to the p4est tree owning this subgrid */
-  int ghostidx;            /* Index of this subregion in ghost layer */
+  int minus_z_neigh;       /* Access to -z neighbor to this subregion */
+  int plus_z_neigh;        /* Access to +z neighbor to this subregion */
+  int32_t owner_tree;      /* Access to the p4est tree owning this subregion */
+  int ghostidx;            /* If positive, index of this subregion in the ghost layer.
+                            * A negative value of -1 indicates that this is a local
+                            * subregion, a value of v=-2, -3, ...  means
+                            * this is a 'ghost child' subregion and its child
+                            * number is decoded as -(v+2) */
   int pcorner[3];          /* Coorner of this subregion's parent*/
-  int *ghostChildren;    /* Access to 'ghost children' subregions */
+  int *ghostChildren;      /* Access to 'ghost children' subregions */
 #endif
 } Subregion;
 

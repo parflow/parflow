@@ -195,13 +195,27 @@ Grid           *CreateGrid(
     /* Check that all local quadrants were visited */
     P4EST_ASSERT(num_local_quads == SubgridArraySize(subgrids));
 
-    /* If any, append inner ghost subgrids to subgrids array */
+    /* If any, append 'ghost children' to the local subgrids array */
     ForSubgridI(i, inner_ghost_subgrids)
     {
+        /* fetch a 'ghost child' subgrid */
         gs0 = SubgridArraySubgrid(inner_ghost_subgrids, i);
+
+        /* After construction, the local index of a 'ghost child'
+         * is the the local index of its parent; fetch parent */
         s0 =  SubgridArraySubgrid(subgrids, SubgridLocIdx(gs0));
+
+        /* Update local index of this 'ghost child' subgrid to the
+         * position it will occupy in the local subgrids array */
         SubgridLocIdx(gs0) = num_local_quads  + i;
+
+        /* Give access to its parent */
         s0->ghostChildren[SubgridGhostIdx(gs0)] = SubgridLocIdx(gs0);
+
+        /* For an inner subgrid, its ghost index stores its child_id.
+         * We will enconde it as  (-child_id + 2). See region.h */
+        SubgridGhostIdx(gs0) = -(SubgridGhostIdx(gs0) + 2);
+
         AppendSubgrid(gs0, subgrids);
     }
 
