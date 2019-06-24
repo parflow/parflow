@@ -719,15 +719,32 @@ parflow_p4est_get_brick_coord_2d(Subgrid *                 subgrid,
                                  p4est_gloidx_t            bcoord[P4EST_DIM])
 {
   int k;
-  p4est_qcoord_t qcoord[3];
+  int parent_lidx, child_id;
   p4est_topidx_t which_tree = SubgridOwnerTree(subgrid);
+  p4est_locidx_t which_quad;
+  p4est_qcoord_t qcoord[3];
+  p4est_tree_t *tree;
   p4est_quadrant_t *quad, tquad;
+
 
   /* This is a 'ghost child' subgrid, there is no quadrant
    * associated to it, so it has to be created */
   if (SubgridGhostIdx(subgrid) < -1)
   {
-      /*TODO: add code to construct parent here */
+     child_id = (2-SubgridGhostIdx(subgrid)) % (1 << P4EST_DIM);
+     parent_lidx = (2-SubgridGhostIdx(subgrid)) / (1 << P4EST_DIM);
+     tree = p4est_tree_array_index(pfg->forest->trees, which_tree);
+     which_quad = parent_lidx - tree->quadrants_offset;
+
+     P4EST_ASSERT(0 <= which_quad &&
+                   which_quad <
+                   (p4est_locidx_t)tree->quadrants.elem_count);
+     quad =
+        p4est_quadrant_array_index(&tree->quadrants,
+                                   (size_t)which_quad);
+
+     p4est_quadrant_child(quad, &tquad, child_id);
+
      quad = &tquad;
   }
   else
