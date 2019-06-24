@@ -85,7 +85,7 @@ typedef struct {
   int                  *z_levels;
   int proj_flag;                     /* Flag identifying if this grid comes
                                       * from projecting an existing 3D grid to 2D */
-   SubgridArray  *innerGhostSubgrids;
+  SubgridArray         *innerGhostSubgrids;
 #endif
 } Grid;
 
@@ -151,6 +151,7 @@ typedef struct {
 #define GridParflowP4estObj(grid) ((grid)->pfgrid)
 #define GridParflowP4estObjIsOwned(grid) ((grid)->owns_pfgrid)
 #define GridIsProjected(grid) ((grid)->proj_flag)
+#define GridInnerGhostSubgrids(grid)    ((grid)->innerGhostSubgrids)
 #endif
 
 /*--------------------------------------------------------------------------
