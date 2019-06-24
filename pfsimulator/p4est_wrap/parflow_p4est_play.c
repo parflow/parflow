@@ -42,7 +42,7 @@ static void    myInitVector(Vector *v)
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
-      vp[iv] = (double)(SubgridLocIdx(subgrid));
+      vp[iv] = (double)(1 << SubgridLocIdx(subgrid));
       //vp[iv] = (double)(1 << rank);
     });
   }
@@ -60,11 +60,8 @@ void parflow_p4est_vector_test(Grid *grid)
   WriteSiloInit(file_prefix);
 #endif
 
-  /* Create a vector */
+  /* Create a vector, by default all its entries are zero */
   vector = NewVectorType(grid, 1, 1, vector_cell_centered);
-
-  /* Put some values on it: including ghost points */
-  InitVectorAll(vector, -1);
 
   /* Change the values in the interior nodes */
   myInitVector(vector);
