@@ -104,86 +104,78 @@ void FreeBCPressureData(
             {
               switch (BCPressureDataType(bc_pressure_data, i))
               {
-                case 0:
+                case DirEquilRefPatch:
                 {
-                  BCPressureType0 *bc_pressure_type0;
+                  GetBCPressureTypeStruct(DirEquilRefPatch, interval_data, bc_pressure_data,
+                                          i, interval_number);
 
-                  bc_pressure_type0 = (BCPressureType0*)BCPressureDataIntervalValue(
-                                                                                    bc_pressure_data, i, interval_number);
                   if (BCPressureType0ValueAtInterfaces(
-                                                       bc_pressure_type0))
+                                                       interval_data))
                   {
                     tfree(BCPressureType0ValueAtInterfaces(
-                                                           bc_pressure_type0));
+                                                           interval_data));
                   }
                   break;
                 }
 
-                case 1:
+                case DirEquilPLinear:
                 {
-                  BCPressureType1 *bc_pressure_type1;
+                  GetBCPressureTypeStruct(DirEquilPLinear, interval_data, bc_pressure_data,
+                                          i, interval_number);
 
-                  bc_pressure_type1 = (BCPressureType1*)BCPressureDataIntervalValue(
-                                                                                    bc_pressure_data, i, interval_number);
-                  if (BCPressureType1Points(bc_pressure_type1))
+                  if (BCPressureType1Points(interval_data))
                   {
-                    tfree(BCPressureType1Points(bc_pressure_type1));
+                    tfree(BCPressureType1Points(interval_data));
                   }
-                  if (BCPressureType1Values(bc_pressure_type1))
+                  if (BCPressureType1Values(interval_data))
                   {
-                    tfree(BCPressureType1Values(bc_pressure_type1));
+                    tfree(BCPressureType1Values(interval_data));
                   }
                   if (BCPressureType1ValueAtInterfaces(
-                                                       bc_pressure_type1))
+                                                       interval_data))
                   {
                     tfree(BCPressureType1ValueAtInterfaces(
-                                                           bc_pressure_type1));
+                                                           interval_data));
                   }
                   break;
                 }
 
-                case 2:
+                // @MCB: Doesn't appear to do anything?
+                case FluxConst:
                 {
-                  BCPressureType2 *bc_pressure_type2;
-
-                  bc_pressure_type2 = (BCPressureType2*)BCPressureDataIntervalValue(
-                                                                                    bc_pressure_data, i, interval_number);
-
+                  GetBCPressureTypeStruct(FluxConst, interval_data, bc_pressure_data,
+                                          i, interval_number);
                   break;
                 }
 
-                case 3:
+                // @MCB: Doesn't appear to do anything?
+                case FluxVolumetric:
                 {
-                  BCPressureType3 *bc_pressure_type3;
-
-                  bc_pressure_type3 = (BCPressureType3*)BCPressureDataIntervalValue(
-                                                                                    bc_pressure_data, i, interval_number);
-
+                  GetBCPressureTypeStruct(FluxVolumetric, interval_data, bc_pressure_data,
+                                          i, interval_number);
                   break;
                 }
 
-                case 4:
+                case PressureFile:
                 {
-                  BCPressureType4 *bc_pressure_type4;
+                  GetBCPressureTypeStruct(PressureFile, interval_data, bc_pressure_data,
+                                          i, interval_number);
 
-                  bc_pressure_type4 = (BCPressureType4*)BCPressureDataIntervalValue(
-                                                                                    bc_pressure_data, i, interval_number);
-                  if (BCPressureType4FileName(bc_pressure_type4))
+                  if (BCPressureType4FileName(interval_data))
                   {
-                    tfree(BCPressureType4FileName(bc_pressure_type4));
+                    tfree(BCPressureType4FileName(interval_data));
                   }
                   break;
                 }
 
-                case 5:
+                case FluxFile:
                 {
-                  BCPressureType5 *bc_pressure_type5;
+                  GetBCPressureTypeStruct(FluxFile, interval_data, bc_pressure_data,
+                                          i, interval_number);
 
-                  bc_pressure_type5 = (BCPressureType5*)BCPressureDataIntervalValue(
-                                                                                    bc_pressure_data, i, interval_number);
-                  if (BCPressureType5FileName(bc_pressure_type5))
+                  if (BCPressureType5FileName(interval_data))
                   {
-                    tfree(BCPressureType5FileName(bc_pressure_type5));
+                    tfree(BCPressureType5FileName(interval_data));
                   }
                   break;
                 }

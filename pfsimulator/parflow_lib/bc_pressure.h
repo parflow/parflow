@@ -73,7 +73,7 @@
  * Constructor, getter, and setter for Type structs in BCPressurePackage
  *----------------------------------------------------------------*/
 #define NewTypeStruct(type, var)                  \
-  Type ## type * var = ctalloc((Type ## type), 1)
+  Type ## type * var = ctalloc(Type ## type, 1)
 #define StoreTypeStruct(public_xtra, var, i)                  \
   (public_xtra)->data[(i)] = (void*)(var);
 #define GetTypeStruct(type, var, public_xtra, i)              \
@@ -83,7 +83,7 @@
 #define ForEachPatch(num_patches, i)           \
   for (i = 0; i < num_patches; i++)
 #define ForEachInterval(interval_division, interval_number)  \
-  for (internval_number = 0; interval_number < interval_division; interval_number++)
+  for (interval_number = 0; interval_number < interval_division; interval_number++)
 
 
 /*----------------------------------------------------------------
@@ -92,23 +92,25 @@
 #define InputType(public_xtra, i)               \
   ((public_xtra)->input_types[(i)])
 
-#define Do_SetupPatchTypes(public_xtra, interval, i, ...)      \
+/* Send cases wrapped in {} for sanity */
+#define Do_SetupPatchTypes(public_xtra, interval, i, cases)    \
   switch(InputType(public_xtra, i))                            \
   {                                                            \
-    __VA_ARGS__;                                               \
+    cases;                                                     \
   }
 
-#define SetupPatchType(type, body)                             \
-  case type:                                                   \
-  {                                                            \
-    body;                                                      \
-    break;                                                     \
+#define SetupPatchType(type, body)                               \
+  case type:                                                     \
+  {                                                              \
+    body;                                                        \
+    break;                                                       \
   }
 
-#define Do_SetupPatchIntervals(public_xtra, interval, i, ...)  \
+
+#define Do_SetupPatchIntervals(public_xtra, interval, i, cases)  \
   switch(InputType(public_xtra, i))                            \
   {                                                            \
-    __VA_ARGS__;                                               \
+    cases;                                               \
   }
 
 #define SetupPatchInterval(type, body)          \
@@ -153,7 +155,7 @@
       int    num_points;                            \
       double *points;                               \
       double *values;                               \
-      double *value_at_interface;                   \
+      double *value_at_interfaces;                  \
     })                                              \
   BC_TYPE(FluxConst, {                              \
       double value;                                 \
@@ -184,7 +186,7 @@ BC_INTERVAL_TYPE_TABLE
 #undef BC_TYPE
 
 #define NewBCPressureTypeStruct(type, varname)  \
-  BCPressureType ## type * varname = ctalloc((BCPressureType ## type), 1)
+  BCPressureType ## type * varname = ctalloc(BCPressureType ## type, 1)
 #define GetBCPressureTypeStruct(type, varname, bc_pressure_data, ipatch, interval_number) \
   BCPressureType ## type * varname \
   = (BCPressureType ## type *)BCPressureDataIntervalValue(bc_pressure_data, \

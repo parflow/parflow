@@ -28,7 +28,6 @@
 
 #include "parflow.h"
 
-#include "bc_pressure_package.h"
 #include <string.h>
 
 
@@ -140,7 +139,7 @@ void         BCPressurePackage(
       BCPressureDataIntervalValues(bc_pressure_data, i) = ctalloc(void *, interval_division);
       ForEachInterval(interval_division, interval_number)
       {
-        Do_SetupPatchIntervals(public_xtra, interval, i,
+        Do_SetupPatchIntervals(public_xtra, interval_number, i,
         {
           /* Setup a fixed pressure condition structure */
           SetupPatchInterval(DirEquilRefPatch,
@@ -178,16 +177,17 @@ void         BCPressurePackage(
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number) = (void*)interval_data;
           });
-
           /* Setup a piecewise linear pressure condition structure */
+
           SetupPatchInterval(DirEquilPLinear,
           {
-            NewBCPressureTypeStruct(DirEquilRefPatch, interval_data);
             int point;
             int phase;
 
             int num_points;
             int num_phases = BCPressureDataNumPhases(bc_pressure_data);
+
+            NewBCPressureTypeStruct(DirEquilPLinear, interval_data);
 
             BCPressureDataBCType(bc_pressure_data, i) = DirichletBC;
 
@@ -322,11 +322,11 @@ void         BCPressurePackage(
 
             GetTypeStruct(OverlandFlow, data, public_xtra, i);
 
-            BCPressureType7Value(OverlandFlow)
+            BCPressureType7Value(interval_data)
               = (data->values[interval_number]);
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
-              = (void*)OverlandFlow;
+              = (void*)interval_data;
           });
 
           /* Setup a file defined flux condition structure for overland flow BC*/
@@ -518,7 +518,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
           GlobalsIntervals[global_cycle][interval_number];
       }
 
-      Do_SetupPatchTypes(public_xtra, interval, i,
+      Do_SetupPatchTypes(public_xtra, interval_number, i,
       {
         SetupPatchType(DirEquilRefPatch,
         {
@@ -810,7 +810,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
           StoreTypeStruct(public_xtra, data, i);
         });
 
-        SetupPatchType(OverlandFlowPfB,
+        SetupPatchType(OverlandFlowPFB,
         {
           NewTypeStruct(OverlandFlowPFB, data);
 
@@ -849,17 +849,6 @@ void  BCPressurePackageFreePublicXtra()
   PFModule    *this_module = ThisPFModule;
   PublicXtra  *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
 
-  Type0         *dummy0;
-  Type1         *dummy1;
-  Type2         *dummy2;
-  Type3         *dummy3;
-  Type4         *dummy4;
-  Type5         *dummy5;
-  Type6         *dummy6;
-  Type7         *dummy7;
-  Type8         *dummy8;
-
-
   int num_patches, num_cycles;
   int i, interval_number, interval_division;
 
@@ -880,7 +869,7 @@ void  BCPressurePackageFreePublicXtra()
           {
             GetTypeStruct(DirEquilRefPatch, data, public_xtra, i);
 
-            ForEachInterval(interval_division, interval)
+            ForEachInterval(interval_division, interval_number)
             {
               tfree((data->value_at_interface[interval_number]));
             }
@@ -897,7 +886,7 @@ void  BCPressurePackageFreePublicXtra()
 
             GetTypeStruct(DirEquilPLinear, data, public_xtra, i);
 
-            ForEachInterval(interval_division, interval)
+            ForEachInterval(interval_division, interval_number)
             {
               tfree((data->value_at_interface[interval_number]));
               tfree((data->values[interval_number]));
@@ -937,7 +926,7 @@ void  BCPressurePackageFreePublicXtra()
             int interval_number;
             GetTypeStruct(PressureFile, data, public_xtra, i);
 
-            ForEachInterval(interval_division, interval)
+            ForEachInterval(interval_division, interval_number)
             {
               tfree(((data->filenames)[interval_number]));
             }
@@ -950,7 +939,7 @@ void  BCPressurePackageFreePublicXtra()
           {
             int interval_number;
             GetTypeStruct(FluxFile, data, public_xtra, i);
-            ForEachInterval(interval_division, interval)
+            ForEachInterval(interval_division, interval_number)
             {
               tfree(((data->filenames)[interval_number]));
             }

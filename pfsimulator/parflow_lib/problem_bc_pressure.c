@@ -137,9 +137,9 @@ BCStruct    *BCPressure(
       interval_number = TimeCycleDataComputeIntervalNumber(
                                                            problem, time, time_cycle_data, cycle_number);
 
-      switch (BCPressureDataType(bc_pressure_data, ipatch))
+      switch(BCPressureDataType(bc_pressure_data, ipatch))
       {
-        case 0:
+        case DirEquilRefPatch:
         {
           /* Constant pressure value specified on a reference patch.
            * Calculate hydrostatic conditions along boundary patch for
@@ -147,10 +147,7 @@ BCStruct    *BCPressure(
            * Hydrostatic condition is:
            * grad p - rho g grad z = 0 */
 
-          BCPressureType0 *bc_pressure_type0;
-
           GeomSolid       *ref_solid;
-
           double z, dz2, dtmp;
           double offset, interface_press, interface_den;
           double ref_den, ref_press, nonlin_resid;
@@ -165,7 +162,8 @@ BCStruct    *BCPressure(
 
           double         **elevations;
 
-          bc_pressure_type0 = (BCPressureType0*)BCPressureDataIntervalValue(bc_pressure_data, ipatch, interval_number);
+          GetBCPressureTypeStruct(DirEquilRefPatch, interval_data, bc_pressure_data,
+                                  ipatch, interval_number);
 
           if (instance_xtra->elevations == NULL)
           {
@@ -177,8 +175,8 @@ BCStruct    *BCPressure(
           if (instance_xtra->elevations[ipatch] == NULL)
           {
             ref_solid = ProblemDataSolid(problem_data,
-                                         BCPressureType0RefSolid(bc_pressure_type0));
-            ref_patch = BCPressureType0RefPatch(bc_pressure_type0);
+                                         BCPressureType0RefSolid(interval_data));
+            ref_patch = BCPressureType0RefPatch(interval_data);
 
             /* Calculate elevations at (x,y) points on reference patch. */
             instance_xtra->elevations[ipatch] = CalcElevations(ref_solid, ref_patch, subgrids, problem_data);
@@ -221,7 +219,7 @@ BCStruct    *BCPressure(
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct,
                               ipatch, is,
             {
-              ref_press = BCPressureType0Value(bc_pressure_type0);
+              ref_press = BCPressureType0Value(interval_data);
               PFModuleInvokeType(PhaseDensityInvoke, phase_density,
                                  (0, NULL, NULL, &ref_press, &ref_den,
                                   CALCFCN));
@@ -289,7 +287,7 @@ BCStruct    *BCPressure(
               for (phase = 1; phase < num_phases; phase++)
               {
                 interface_press = BCPressureType0ValueAtInterface(
-                                                                  bc_pressure_type0, phase);
+                                                                  interval_data, phase);
                 PFModuleInvokeType(PhaseDensityInvoke, phase_density,
                                    (phase - 1, NULL, NULL, &interface_press,
                                     &interface_den, CALCFCN));
@@ -352,7 +350,7 @@ BCStruct    *BCPressure(
           break;
         }                        /* End case 0 */
 
-        case 1:
+        case DirEquilPLinear:
         {
           /* Piecewise linear pressure value specified on reference
            * patch.
@@ -360,8 +358,6 @@ BCStruct    *BCPressure(
            * elevations different from reference patch elevations.
            * Hydrostatic condition is:
            *             grad p - rho g grad z = 0 */
-
-          BCPressureType1 *bc_pressure_type1;
 
           int num_points;
           int ip;
@@ -378,8 +374,8 @@ BCStruct    *BCPressure(
           int max_its = 10;
           int iterations;
 
-          bc_pressure_type1 = (BCPressureType1*)BCPressureDataIntervalValue(
-                                                                            bc_pressure_data, ipatch, interval_number);
+          GetBCPressureTypeStruct(DirEquilPLinear, interval_data, bc_pressure_data,
+                                  ipatch, interval_number);
 
           ForSubgridI(is, subgrids)
           {
@@ -405,15 +401,15 @@ BCStruct    *BCPressure(
             dz2 = SubgridDZ(subgrid) / 2.0;
 
             /* compute unit direction vector for piecewise linear line */
-            unitx = BCPressureType1XUpper(bc_pressure_type1)
-                    - BCPressureType1XLower(bc_pressure_type1);
-            unity = BCPressureType1YUpper(bc_pressure_type1)
-                    - BCPressureType1YLower(bc_pressure_type1);
+            unitx = BCPressureType1XUpper(interval_data)
+                    - BCPressureType1XLower(interval_data);
+            unity = BCPressureType1YUpper(interval_data)
+                    - BCPressureType1YLower(interval_data);
             line_length = sqrt(unitx * unitx + unity * unity);
             unitx /= line_length;
             unity /= line_length;
-            line_min = BCPressureType1XLower(bc_pressure_type1) * unitx
-                       + BCPressureType1YLower(bc_pressure_type1) * unity;
+            line_min = BCPressureType1XLower(interval_data) * unitx
+                       + BCPressureType1YLower(interval_data) * unity;
 
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
             {
@@ -427,21 +423,21 @@ BCStruct    *BCPressure(
 
               /* find two neighboring points */
               ip = 1;
-              num_points = BCPressureType1NumPoints(bc_pressure_type1);
+              num_points = BCPressureType1NumPoints(interval_data);
               for (; ip < (num_points - 1); ip++)
               {
-                if (xy < BCPressureType1Point(bc_pressure_type1, ip))
+                if (xy < BCPressureType1Point(interval_data, ip))
                   break;
               }
 
               /* compute the slope */
-              slope = ((BCPressureType1Value(bc_pressure_type1, ip)
-                        - BCPressureType1Value(bc_pressure_type1, (ip - 1)))
-                       / (BCPressureType1Point(bc_pressure_type1, ip)
-                          - BCPressureType1Point(bc_pressure_type1, (ip - 1))));
+              slope = ((BCPressureType1Value(interval_data, ip)
+                        - BCPressureType1Value(interval_data, (ip - 1)))
+                       / (BCPressureType1Point(interval_data, ip)
+                          - BCPressureType1Point(interval_data, (ip - 1))));
 
-              ref_press = BCPressureType1Value(bc_pressure_type1, ip - 1)
-                          + slope * (xy - BCPressureType1Point(bc_pressure_type1, ip - 1));
+              ref_press = BCPressureType1Value(interval_data, ip - 1)
+                          + slope * (xy - BCPressureType1Point(interval_data, ip - 1));
               PFModuleInvokeType(PhaseDensityInvoke, phase_density,
                                  (0, NULL, NULL, &ref_press, &ref_den,
                                   CALCFCN));
@@ -503,7 +499,7 @@ BCStruct    *BCPressure(
               for (phase = 1; phase < num_phases; phase++)
               {
                 interface_press = BCPressureType1ValueAtInterface(
-                                                                  bc_pressure_type1, phase);
+                                                                  interval_data, phase);
                 PFModuleInvokeType(PhaseDensityInvoke, phase_density,
                                    (phase - 1, NULL, NULL, &interface_press,
                                     &interface_den, CALCFCN));
@@ -563,16 +559,15 @@ BCStruct    *BCPressure(
           break;
         }
 
-        case 2:
+        case FluxConst:
         {
           /* Constant flux rate value on patch */
-          BCPressureType2 *bc_pressure_type2;
           double flux;
 
-          bc_pressure_type2 = (BCPressureType2*)BCPressureDataIntervalValue(
-                                                                            bc_pressure_data, ipatch, interval_number);
+          GetBCPressureTypeStruct(FluxConst, interval_data, bc_pressure_data,
+                                  ipatch, interval_number);
 
-          flux = BCPressureType2Value(bc_pressure_type2);
+          flux = BCPressureType2Value(interval_data);
           ForSubgridI(is, subgrids)
           {
             subgrid = SubgridArraySubgrid(subgrids, is);
@@ -595,15 +590,15 @@ BCStruct    *BCPressure(
           break;
         }
 
-        case 3:
+        case FluxVolumetric:
         {
           /* Constant volumetric flux value on patch */
-          BCPressureType3 *bc_pressure_type3;
           double dx, dy, dz;
           double area, volumetric_flux;
 
-          bc_pressure_type3 = (BCPressureType3*)BCPressureDataIntervalValue(
-                                                                            bc_pressure_data, ipatch, interval_number);
+          GetBCPressureTypeStruct(FluxVolumetric, interval_data, bc_pressure_data,
+                                  ipatch, interval_number);
+
 
           ForSubgridI(is, subgrids)
           {
@@ -649,7 +644,7 @@ BCStruct    *BCPressure(
 
             if (area > 0.0)
             {
-              volumetric_flux = BCPressureType3Value(bc_pressure_type3)
+              volumetric_flux = BCPressureType3Value(interval_data)
                                 / area;
               BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
               {
@@ -660,13 +655,11 @@ BCStruct    *BCPressure(
           break;
         }
 
-        case 4:
+        case PressureFile:
         {
           /* Read input pressures from file (temporary).
            * This case assumes hydraulic head input conditions and
            * a constant density.  */
-
-          BCPressureType4 *bc_pressure_type4;
           Vector          *tmp_vector;
           Subvector       *subvector;
           char            *filename;
@@ -682,8 +675,9 @@ BCStruct    *BCPressure(
           PFModuleInvokeType(PhaseDensityInvoke, phase_density,
                              (0, NULL, NULL, &dtmp, &density, CALCFCN));
 
-          bc_pressure_type4 = (BCPressureType4*)BCPressureDataIntervalValue(
-                                                                            bc_pressure_data, ipatch, interval_number);
+          GetBCPressureTypeStruct(PressureFile, interval_data, bc_pressure_data,
+                                  ipatch, interval_number);
+
 
           ForSubgridI(is, subgrids)
           {
@@ -708,7 +702,7 @@ BCStruct    *BCPressure(
 
             tmp_vector = NewVectorType(grid, 1, 0, vector_cell_centered);
 
-            filename = BCPressureType4FileName(bc_pressure_type4);
+            filename = BCPressureType4FileName(interval_data);
             ReadPFBinary(filename, tmp_vector);
 
             subvector = VectorSubvector(tmp_vector, is);
@@ -729,18 +723,18 @@ BCStruct    *BCPressure(
           break;
         }
 
-        case 5:
+        case FluxFile:
         {
           /* Read input fluxes from file (temporary) */
-          BCPressureType5 *bc_pressure_type5;
           Vector          *tmp_vector;
           Subvector       *subvector;
           char            *filename;
           double          *tmpp;
           int itmp;
 
-          bc_pressure_type5 = (BCPressureType5*)BCPressureDataIntervalValue(
-                                                                            bc_pressure_data, ipatch, interval_number);
+          GetBCPressureTypeStruct(FluxFile, interval_data, bc_pressure_data,
+                                  ipatch, interval_number);
+
 
           ForSubgridI(is, subgrids)
           {
@@ -756,7 +750,7 @@ BCStruct    *BCPressure(
 
             tmp_vector = NewVectorType(grid, 1, 0, vector_cell_centered);
 
-            filename = BCPressureType5FileName(bc_pressure_type5);
+            filename = BCPressureType5FileName(interval_data);
             ReadPFBinary(filename, tmp_vector);
 
             subvector = VectorSubvector(tmp_vector, is);
@@ -774,15 +768,14 @@ BCStruct    *BCPressure(
           break;
         }
 
-        case 6:
+        case ExactSolution:
         {
           /* Calculate pressure based on pre-defined functions */
-          BCPressureType6 *bc_pressure_type6;
           double x, y, z, dx2, dy2, dz2;
           int fcn_type;
 
-          bc_pressure_type6 = (BCPressureType6*)BCPressureDataIntervalValue(
-                                                                            bc_pressure_data, ipatch, interval_number);
+          GetBCPressureTypeStruct(ExactSolution, interval_data, bc_pressure_data,
+                                  ipatch, interval_number);
 
           ForSubgridI(is, subgrids)
           {
@@ -807,7 +800,7 @@ BCStruct    *BCPressure(
             patch_values = ctalloc(double, patch_values_size);
             values[ipatch][is] = patch_values;
 
-            fcn_type = BCPressureType6FunctionType(bc_pressure_type6);
+            fcn_type = BCPressureType6FunctionType(interval_data);
 
             switch (fcn_type)
             {
@@ -892,16 +885,16 @@ BCStruct    *BCPressure(
           break;
         }
 
-        case 7:
+        case OverlandFlow:
         {
           /* Constant "rainfall" rate value on patch */
-          BCPressureType7 *bc_pressure_type7;
           double flux;
 
-          bc_pressure_type7 = (BCPressureType7*)BCPressureDataIntervalValue(
-                                                                            bc_pressure_data, ipatch, interval_number);
+          GetBCPressureTypeStruct(FluxConst, interval_data, bc_pressure_data,
+                                  ipatch, interval_number);
 
-          flux = BCPressureType7Value(bc_pressure_type7);
+
+          flux = BCPressureType7Value(interval_data);
           ForSubgridI(is, subgrids)
           {
             subgrid = SubgridArraySubgrid(subgrids, is);
@@ -924,10 +917,9 @@ BCStruct    *BCPressure(
           break;
         }
 
-        case 8:
+        case OverlandFlowPFB:
         {
           /* Read input fluxes from file (overland) */
-          BCPressureType8 *bc_pressure_type8;
           Vector          *tmp_vector;
           Subvector       *subvector;
           //double          *data;
@@ -936,7 +928,8 @@ BCStruct    *BCPressure(
           int itmp;
           double dtmp;
 
-          bc_pressure_type8 = (BCPressureType8*)BCPressureDataIntervalValue(bc_pressure_data, ipatch, interval_number);
+          GetBCPressureTypeStruct(OverlandFlowPFB, interval_data, bc_pressure_data,
+                                  ipatch, interval_number);
 
           ForSubgridI(is, subgrids)
           {
@@ -955,7 +948,7 @@ BCStruct    *BCPressure(
             //SetTempVectorData(tmp_vector, data);
 
             printf("reading overland file \n");
-            filename = BCPressureType8FileName(bc_pressure_type8);
+            filename = BCPressureType8FileName(interval_data);
             ReadPFBinary(filename, tmp_vector);
 
             subvector = VectorSubvector(tmp_vector, is);
@@ -972,11 +965,6 @@ BCStruct    *BCPressure(
             FreeVector(tmp_vector);
           }              /* End subgrid loop */
           break;
-        }
-
-        case 9:
-        {
-          // Set up patch values here?
         }
       }
     }
