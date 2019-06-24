@@ -429,8 +429,9 @@ PFModule  *BCPressurePackageNewPublicXtra(
   NameArray type_na;
   NameArray function_na;
 
-  /* MCB: Generate the magic string that determines indexing */
-#define BC_TYPE(a, b) #a
+  /* @MCB: Generate the magic string that determines indexing
+   * This will stringify the type names and the compiler will concat for us */
+#define BC_TYPE(a, b) #a " "
   type_na = NA_NewNameArray(BC_TYPE_TABLE);
 #undef BC_TYPE
 
