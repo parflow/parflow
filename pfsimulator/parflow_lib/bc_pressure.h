@@ -14,7 +14,8 @@
 /*----------------------------------------------------------------
  * Procedure for adding new Boundary Condition Types (@MCB: 06/24/2019)
  *
- * 1) Add the new type as a constant integer below.
+ * 1) Add the new type as a constant integer below, using the same
+ *     name as it would appear in the TCL file.
  *
  * 2) Add two new struct definitions using the BC_TYPE_TABLE and
  *     BC_INTERVAL_TYPE_TABLE macros.  Do not include a comma between
