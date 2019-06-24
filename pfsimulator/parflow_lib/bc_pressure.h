@@ -10,6 +10,38 @@
 #ifndef _BC_PRESSURE_HEADER
 #define _BC_PRESSURE_HEADER
 
+
+/*----------------------------------------------------------------
+ * Procedure for adding new Boundary Condition Types (@MCB: 06/24/2019)
+ *
+ * 1) Add the new type as a constant integer below.
+ *
+ * 2) Add two new struct definitions using the BC_TYPE_TABLE and
+ *     BC_INTERVAL_TYPE_TABLE macros.  Do not include a comma between
+ *     the previous and new definition.  The BC_TYPE macro takes two
+ *     parameters: The type you defined in Step 1, and the members of
+ *     the struct to be created, wrapped inside {}.
+ *  NOTE: The order in which you defined the boundary condition types
+ *     must match the order in which you define them in the tables! These
+ *     are used at the beginning of BCPressurePackageNewPublicXtra to
+ *     populate the name array that is later branched on.
+ *     So if FluxConst is defined as 2, it must be the third (0 indexing)
+ *     entry in both the tables.
+ *
+ * 3) Add new branches for the new type in the following functions:
+ *      bc_pressure_pacakge.c:BCPressurePackage
+ *      bc_pressure_pacakge.c:BCPressurePackageNewPublicXtra
+ *      bc_pressure_pacakge.c:BCPressurePackageFreePublicXtra (if applicable)
+ *      problem_bc_pressure:BCStruct
+ *      And any other relevant files that will deal with this pressure type
+ *
+ * 4) If applicable, add a new #define type in problem_bc.h for branching
+ *     inside BCStructPatchLoop calls.
+ *-----------------------------------------------------------------*/
+
+
+
+
 /*----------------------------------------------------------------
  * BCPressure Types
  * NOTE: These are not the values used to branch inside of
@@ -29,6 +61,7 @@
 /*----------------------------------------------------------------
  * Table to generate Type structs used in BCPressurePackage functions
  * These contain information for all interval steps to be read later
+ * These structs will be local to the BCPressurePackage source file only
  *----------------------------------------------------------------*/
 #define BC_TYPE_TABLE                               \
   BC_TYPE(DirEquilRefPatch, {                       \
