@@ -11,68 +11,184 @@
 #define _BC_PRESSURE_HEADER
 
 /*----------------------------------------------------------------
- * BCPressure Values
+ * BCPressure Types
+ * NOTE: These are not the values used to branch inside of
+ *       BCStructPatchLoops, those are defined in problem_bc.h
  *----------------------------------------------------------------*/
+#define DirEquilRefPatch 0
+#define DirEquilPLinear  1
+#define FluxConst        2
+#define FluxVolumetric   3
+#define PressureFile     4
+#define FluxFile         5
+#define ExactSolution    6
+#define OverlandFlow     7
+#define OverlandFlowPFB  8
 
-/* Pressure condition, constant */
-typedef struct {
-  int reference_solid;
-  int reference_patch;
-  double value;
-  double *value_at_interfaces;
-} BCPressureType0;
 
-/* Pressure condition, piecewise linear */
-typedef struct {
-  double xlower;
-  double ylower;
-  double xupper;
-  double yupper;
-  int num_points;
-  double  *points;
-  double  *values;
-  double  *value_at_interfaces;
-} BCPressureType1;
+/*----------------------------------------------------------------
+ * Table to generate Type structs used in BCPressurePackage functions
+ * These contain information for all interval steps to be read later
+ *----------------------------------------------------------------*/
+#define BC_TYPE_TABLE                               \
+  BC_TYPE(DirEquilRefPatch, {                       \
+      int reference_solid;                          \
+      int reference_patch;                          \
+      double *values;                               \
+      double **value_at_interface;                  \
+    })                                              \
+  BC_TYPE(DirEquilPLinear, {                        \
+      double *xlower;                               \
+      double *ylower;                               \
+      double *xupper;                               \
+      double *yupper;                               \
+      int    *num_points;                           \
+      double **points;                              \
+      double **values;                              \
+      double **value_at_interface;                  \
+    })                                              \
+  BC_TYPE(FluxConst, {                              \
+      double *values;                               \
+    })                                              \
+  BC_TYPE(FluxVolumetric, {                         \
+      double *values;                               \
+    })                                              \
+  BC_TYPE(PressureFile, {                           \
+      char **filenames;                             \
+    })                                              \
+  BC_TYPE(FluxFile, {                               \
+      char **filenames;                             \
+    })                                              \
+  BC_TYPE(ExactSolution, {                          \
+      int function_type;                            \
+    })                                              \
+  BC_TYPE(OverlandFlow, {                           \
+      double *values;                               \
+    })                                              \
+  BC_TYPE(OverlandFlowPFB, {                        \
+      char **filenames;                             \
+    })
 
-/* Flux condition, constant flux rate */
-typedef struct {
-  double value;
-} BCPressureType2;
+/*----------------------------------------------------------------
+ * Constructor, getter, and setter for Type structs in BCPressurePackage
+ *----------------------------------------------------------------*/
+#define NewTypeStruct(type, var)                  \
+  Type ## type * var = ctalloc((Type ## type), 1)
+#define StoreTypeStruct(public_xtra, var, i)                  \
+  (public_xtra)->data[(i)] = (void*)(var);
+#define GetTypeStruct(type, var, public_xtra, i)              \
+  Type ## type * var = (Type ## type *)(public_xtra->data[i])
 
-/* Flux condition, constant volumetric rate */
-typedef struct {
-  double value;
-} BCPressureType3;
+// MCB: These two macros aren't really necessary but they do make the code cleaner
+#define ForEachPatch(num_patches, i)           \
+  for (i = 0; i < num_patches; i++)
+#define ForEachInterval(interval_division, interval_number)  \
+  for (internval_number = 0; interval_number < interval_division; interval_number++)
 
-/* Pressure condition, read from file (temporary) */
-typedef struct {
-  char  *filename;
-} BCPressureType4;
 
-/* Flux condition, read from file (temporary) */
-typedef struct {
-  char  *filename;
-} BCPressureType5;
+/*----------------------------------------------------------------
+ * BCPressurePackage Actions
+ *----------------------------------------------------------------*/
+#define InputType(public_xtra, i)               \
+  ((public_xtra)->input_types[(i)])
 
-/* Pressure Dir. condition for MATH problems */
-typedef struct {
-  int function_type;
-} BCPressureType6;
+#define Do_SetupPatchTypes(public_xtra, interval, i, ...)      \
+  switch(InputType(public_xtra, i))                            \
+  {                                                            \
+    __VA_ARGS__;                                               \
+  }
 
-/* //sk Overland flow, constant rain*/
-typedef struct {
-  double value;
-} BCPressureType7;
+#define SetupPatchType(type, body)                             \
+  case type:                                                   \
+  {                                                            \
+    body;                                                      \
+    break;                                                     \
+  }
 
-/* Flux condition, read from file (temporary) + overland RMM */
-typedef struct {
-  char  *filename;
-} BCPressureType8;
+#define Do_SetupPatchIntervals(public_xtra, interval, i, ...)  \
+  switch(InputType(public_xtra, i))                            \
+  {                                                            \
+    __VA_ARGS__;                                               \
+  }
 
-/* New example BC type */
-typedef struct {
-  char  *filename;
-} BCPressureType9;
+#define SetupPatchInterval(type, body)          \
+  case type:                                    \
+  {                                             \
+    body;                                       \
+    break;                                      \
+  }
+
+#define Do_FreePatches(public_xtra, i, ...)                   \
+  switch(InputType(public_xtra, i))                           \
+  {                                                           \
+    __VA_ARGS__;                                              \
+  }
+
+#define FreePatch(type, body)                   \
+  case type:                                    \
+  {                                             \
+    body;                                       \
+    break;                                      \
+  }
+
+/*----------------------------------------------------------------
+ * BCPressure Values
+ * These contain information for a particular interval
+ * @MCB: Is there a way we could generate these based on BC_TYPE_TABLE?
+ *       Would remove the need to define what is basically the same
+ *       struct twice.
+ *----------------------------------------------------------------*/
+#define BC_INTERVAL_TYPE_TABLE                      \
+  BC_TYPE(DirEquilRefPatch, {                       \
+      int reference_solid;                          \
+      int reference_patch;                          \
+      double value;                                 \
+      double *value_at_interfaces;                  \
+    })                                              \
+  BC_TYPE(DirEquilPLinear, {                        \
+      double xlower;                                \
+      double ylower;                                \
+      double xupper;                                \
+      double yupper;                                \
+      int    num_points;                            \
+      double *points;                               \
+      double *values;                               \
+      double *value_at_interface;                   \
+    })                                              \
+  BC_TYPE(FluxConst, {                              \
+      double value;                                 \
+    })                                              \
+  BC_TYPE(FluxVolumetric, {                         \
+      double value;                                 \
+    })                                              \
+  BC_TYPE(PressureFile, {                           \
+      char *filename;                               \
+    })                                              \
+  BC_TYPE(FluxFile, {                               \
+      char *filename;                               \
+    })                                              \
+  BC_TYPE(ExactSolution, {                          \
+      int function_type;                            \
+    })                                              \
+  BC_TYPE(OverlandFlow, {                           \
+      double value;                                 \
+    })                                              \
+  BC_TYPE(OverlandFlowPFB, {                        \
+      char *filename;                               \
+    })
+
+
+/* @MCB: Interval structs are used in multiple C files, generate the definitions in the header */
+#define BC_TYPE(type, values) typedef struct values BCPressureType ## type;
+BC_INTERVAL_TYPE_TABLE
+#undef BC_TYPE
+
+#define NewBCPressureTypeStruct(type, varname)  \
+  BCPressureType ## type * varname = ctalloc((BCPressureType ## type), 1)
+#define GetBCPressureTypeStruct(type, varname, bc_pressure_data, ipatch, interval_number) \
+  BCPressureType ## type * varname \
+  = (BCPressureType ## type *)BCPressureDataIntervalValue(bc_pressure_data, \
+                                                          (ipatch), (interval_number))
 
 /*----------------------------------------------------------------
  * BCPressure Data structure
@@ -95,6 +211,7 @@ typedef struct {
 
 /*--------------------------------------------------------------------------
  * Accessor macros: BCPressureValues
+ * @MCB: With the new macro system these don't make as much sense, replace/deprecate?
  *--------------------------------------------------------------------------*/
 #define BCPressureType0Value(type0) \
   ((type0)->value)
