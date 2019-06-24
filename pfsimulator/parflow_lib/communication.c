@@ -156,7 +156,7 @@ static int ComputeTag(Subregion *sender, Subregion *receiver)
   parflow_p4est_get_brick_coord(receiver, globals->grid3d->pfgrid, rcoord);
 
   for (k = 0; k < P4EST_DIM; k++)
-    t[k] = parflow_p4est_int_compare(scoord[k], rcoord[k]) + 1;
+    t[k] = parflow_p4est_int_compare(scoord[k], rcoord[k]);
 
   tag = 9 * t[2] + 3 * t[1] + t[0];
 
@@ -293,6 +293,7 @@ CommPkg         *NewCommPkg(
                    = talloc(int, (num_send_subregions + num_recv_subregions) * 9);
 
   /* set up send info */
+  printf("Subgrid %i \n", s_idx);
   if (num_send_subregions)
   {
     new_comm_pkg->send_ranks =
@@ -323,6 +324,7 @@ CommPkg         *NewCommPkg(
 #ifdef HAVE_P4EST
         BeginTiming(P4ESTSetupTimingIndex);
         tag = ComputeTag(data_sr, send_sr);
+        printf("    send %i, tag %i \n", j, tag);
         amps_SetInvoiceTag(invoice, tag);
         EndTiming(P4ESTSetupTimingIndex);
 #else
@@ -339,6 +341,7 @@ CommPkg         *NewCommPkg(
   }
 
   /* set up recv info */
+  printf("Subgrid %i \n", s_idx);
   if (num_recv_subregions)
   {
     new_comm_pkg->recv_ranks = talloc(int, num_recv_subregions);
@@ -373,6 +376,7 @@ CommPkg         *NewCommPkg(
 #ifdef HAVE_P4EST
         BeginTiming(P4ESTSetupTimingIndex);
         tag = ComputeTag(recv_sr, data_sr);
+        printf("    recv %i, tag %i \n", j, tag);
         amps_SetInvoiceTag(invoice, tag);
         EndTiming(P4ESTSetupTimingIndex);
 #else

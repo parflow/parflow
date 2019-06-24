@@ -146,8 +146,8 @@ VectorUpdateCommHandle  *InitVectorUpdate(
 #ifdef NO_VECTOR_UPDATE
     amps_com_handle = NULL;
 #else
-    ForSubregionI(i, VectorDataSpace(vector))
-    amps_com_handle[i] = InitCommunication(VectorSubvectorCommPkg(vector, i, update_mode));
+    ForSubregionI(i, GridSubgrids(VectorGrid(vector)))
+            amps_com_handle[i] = InitCommunication(VectorSubvectorCommPkg(vector, i, update_mode));
 #endif
 #endif
   }
@@ -220,7 +220,7 @@ void         FinalizeVectorUpdate(
 #ifdef NO_VECTOR_UPDATE
 #else
       ForSubregionI(i, VectorDataSpace(handle->vector))
-      FinalizeCommunication(handle->comm_handle[i]);
+              FinalizeCommunication(handle->comm_handle[i]);
 #endif
 #endif
 
@@ -253,10 +253,15 @@ static Vector  *NewTempVector(
 
   (void)nc;
 
+#ifdef HAVE_P4EST
+  int numLocalSubs = SubgridArraySize(GridSubgrids(grid));
+  int numInnerGhosts = SubgridArraySize(GridInnerGhostSubgrids(grid));
+#endif
+
   new_vector = ctalloc(Vector, 1);  /*address of storage is assigned to the ptr "new_" of type Vector, which is also
                                      *                      the return value of this function */
 
-  (new_vector->subvectors) = ctalloc(Subvector *, GridNumSubgrids(grid));    /* 1st arg.: variable type;
+  (new_vector->subvectors) = ctalloc(Subvector *, numLocalSubs + numInnerGhosts);    /* 1st arg.: variable type;
                                                                               *                                                               2nd arg.: # of elements to be allocated*/
 
   new_vector->comm_pkg = ctalloc(CommPkg *, GridNumSubgrids(grid) * NumUpdateModes);
@@ -264,7 +269,11 @@ static Vector  *NewTempVector(
   data_size = 0;
 
   VectorDataSpace(new_vector) = NewSubgridArray();
+#ifndef HAVE_P4EST
   ForSubgridI(i, GridSubgrids(grid))
+#else
+  for (i = 0; i < numLocalSubs + numInnerGhosts; i++)
+#endif
   {
     new_sub = ctalloc(Subvector, 1);
 
@@ -327,16 +336,21 @@ static void     AllocateVectorData(
   double     *data;
   int i, j;
   int data_size;
+  Subvector *subvector;
+#ifdef HAVE_P4EST
+  int numLocalSubs = SubgridArraySize(GridSubgrids(grid));
+  int numInnerGhosts = SubgridArraySize(GridInnerGhostSubgrids(grid));
+#endif
 
   ForSubgridI(i, GridSubgrids(grid))
   {
     /* if necessary, free old CommPkg's */
-    for (j = 0; j < NumUpdateModes; j++)
+    for (j = 0; j < 1; j++)
     {
       FreeCommPkg(VectorSubvectorCommPkg(vector, i, j));
     }
 
-    Subvector *subvector = VectorSubvector(vector, i);
+    subvector = VectorSubvector(vector, i);
 
     data_size = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
     SubvectorDataSize(subvector) = data_size;
@@ -346,11 +360,28 @@ static void     AllocateVectorData(
 
     SubvectorData(VectorSubvector(vector, i)) = data;
 
-    for (j = 0; j < NumUpdateModes; j++)
+    for (j = 0; j < 1; j++)
     {
       VectorSubvectorCommPkg(vector, i, j) =
         NewVectorCommPkg(vector, i, GridComputePkg(grid, j));
     }
+  }
+
+  if (USE_P4EST)
+  {
+#ifdef HAVE_P4EST
+    for(i = numLocalSubs; i < numLocalSubs + numInnerGhosts; i++)
+    {
+        subvector = VectorSubvector(vector, i);
+        data_size = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
+        SubvectorDataSize(subvector) = data_size;
+        data = amps_CTAlloc(double, data_size);
+        VectorSubvector(vector, i)->allocated = TRUE;
+        SubvectorData(VectorSubvector(vector, i)) = data;
+    }
+#else
+    PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
   }
 }
 
@@ -670,14 +701,29 @@ void FreeSubvector(Subvector *subvector)
 void FreeTempVector(Vector *vector)
 {
   int i, j;
+#ifdef HAVE_P4EST
+  Grid       *grid = VectorGrid(vector);
+  int numLocalSubs = SubgridArraySize(GridSubgrids(grid));
+  int numInnerGhosts = SubgridArraySize(GridInnerGhostSubgrids(grid));
+#endif
 
   ForSubgridI(i, GridSubgrids(VectorGrid(vector)))
   {
     FreeSubvector(VectorSubvector(vector, i));
-    for (j = 0; j < NumUpdateModes; j++)
+    for (j = 0; j < 1; j++)
     {
       FreeCommPkg(VectorSubvectorCommPkg(vector, i, j));
     }
+  }
+
+  if (USE_P4EST)
+  {
+#ifdef HAVE_P4EST
+    for(i = numLocalSubs; i < numLocalSubs + numInnerGhosts; i++)
+        FreeSubvector(VectorSubvector(vector, i));
+#else
+    PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
   }
 
   FreeSubgridArray(VectorDataSpace(vector));

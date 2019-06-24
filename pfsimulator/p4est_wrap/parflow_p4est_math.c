@@ -30,5 +30,5 @@ parflow_p4est_powtwo_div(int a)
 
 int parflow_p4est_int_compare(int64_t a, int64_t b)
 {
-  return a == b ? 0 : a < b ? -1 : +1;
+  return a == b ? 0 : a < b ? 1 : 2;
 }
