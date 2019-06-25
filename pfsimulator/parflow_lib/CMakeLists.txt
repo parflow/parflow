@@ -9,10 +9,12 @@ set (SRC_FILES advect.F
   cghs.c
   char_vector.c
   chebyshev.c
+  clustering.c
   comm_pkg.c
   communication.c
   computation.c
   compute_maximums.c
+  compute_top.c
   compute_total_concentration.c
   constantRF.c
   constant_porosity.c
@@ -24,6 +26,7 @@ set (SRC_FILES advect.F
   distribute_usergrid.c
   dpofa.c
   dposl.c
+  evaptranssum.c
   gauinv.c
   general.c
   geom_t_solid.c
@@ -34,11 +37,13 @@ set (SRC_FILES advect.F
   grgeometry.c
   grid.c
   hbt.c
+  index_space.c
   infinity_norm.c
   innerprod.c
-  input_porosity.c
   inputRF.c
+  input_checks.c
   input_database.c
+  input_porosity.c
   kinsol_nonlin_solver.c
   kinsol_pc.c
   l2_error_norm.c
@@ -51,20 +56,25 @@ set (SRC_FILES advect.F
   mg_semi.c
   mg_semi_prolong.c
   mg_semi_restrict.c
+  n_vector.c
   new_endpts.c
+  nl_function_eval.c
+  nl_function_eval.c
   nodiag_scale.c
+  overlandflow_eval.c
+  overlandflow_eval_diffusive.c
+  overlandsum.c
   pcg.c
   permeability_face.c
   perturb_lb.c
   pf_module.c
-  pfield.c
   pf_pfmg.c
   pf_pfmg_octree.c
   pf_smg.c
+  pfield.c
   pgsRF.c
   phase_velocity_face.c
   ppcg.c
-  nl_function_eval.c
   printgrid.c
   printmatrix.c
   printvector.c
@@ -75,14 +85,15 @@ set (SRC_FILES advect.F
   problem_bc_pressure.c
   problem_capillary_pressure.c
   problem_domain.c
+  problem_dz_scale.c
   problem_eval.c
   problem_geometries.c
-  problem_phase_heat_capacity.c
   problem_ic_phase_concen.c
   problem_ic_phase_pressure.c
   problem_ic_phase_satur.c
   problem_mannings.c
   problem_phase_density.c
+  problem_phase_heat_capacity.c
   problem_phase_internal_energy.c
   problem_phase_mobility.c
   problem_phase_rel_perm.c
@@ -93,10 +104,9 @@ set (SRC_FILES advect.F
   problem_retardation.c
   problem_richards_bc_internal.c
   problem_saturation.c
-  problem_thermal_conductivity.c
   problem_saturation_constitutive.c
   problem_spec_storage.c
-  problem_dz_scale.c
+  problem_thermal_conductivity.c
   problem_toposlope_x.c
   problem_toposlope_y.c
   process_grid.c
@@ -130,20 +140,12 @@ set (SRC_FILES advect.F
   well.c
   well_package.c
   wells_lb.c
+  wrf_parflow.c
+  write_clm_netcdf.c
   write_parflow_binary.c
   write_parflow_netcdf.c
-  write_clm_netcdf.c
   write_parflow_silo.c
   write_parflow_silo_pmpio.c
-  wrf_parflow.c
-  n_vector.c
-  nl_function_eval.c
-  evaptranssum.c
-  overlandsum.c
-  overlandflow_eval.c
-  overlandflow_eval_diffusive.c
-  compute_top.c
-  input_checks.c
   )
 
 add_library(pfsimulator ${SRC_FILES})

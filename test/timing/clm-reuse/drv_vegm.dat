@@ -1,0 +1,4 @@
+ x  y  lat    lon    sand clay color  fractional coverage of grid by vegetation class (Must/Should Add to 1.0)
+       (Deg)     (Deg)  (%/100)   index  1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18
+1 1 38.9868733248296 -107.004524802073 0.16 0.26 2 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0
+

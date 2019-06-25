@@ -169,7 +169,9 @@ OBJS = \
 	overlandflow_eval.o \
 	overlandflow_eval_diffusive.o \
 	compute_top.o \
-	input_checks.o
+	input_checks.o \
+	clustering.o \
+	index_space.o
 
 $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB): $(OBJS) $(CXXOBJS) $(AMPS_LIB_DEPEND)
 	@AR@ rus $(PARFLOW_LIB_DIR)/$(PARFLOW_LIB) $(OBJS) $(CXXOBJS)
