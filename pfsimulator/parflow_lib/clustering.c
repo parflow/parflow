@@ -26,23 +26,27 @@
  *  USA
  **********************************************************************EHEADER*/
 
+#include "parflow.h"
+#include "clustering.h"
+#include "index_space.h"
+#include "llnlmath.h"
+
 /**
- * This implementation is derived from the SAMRAI Berger-Rigoutsos implementation also 
- * developed by LLNL.
+ * This implementation is derived from the SAMRAI Berger-Rigoutsos
+ * implementation developed by LLNL.
  *
  * https://computation.llnl.gov/projects/samrai
  *
  * The Berger-Rigoutsos algorithm is commonly used in AMR applications
- * to cluster tagged cells into boxes.  This algorithm is described in
- * Berger and Rigoutsos, IEEE Trans. on Sys, Man, and Cyber
- * (21)5:1278-1286.
+ * to cluster tagged cells into boxes.  This implementation was 
+ * modified to compute an exact covering of tagged cells.  The traditional
+ * BR algorithm allows for boxes that cover tagged cells and some untagged cells to
+ * some percentage.  For the looping the boxes should cover exactly the tagged cells.
+ *
+ * The algorithm is described in Berger and Rigoutsos, IEEE Trans. on
+ * Sys, Man, and Cyber (21)5:1278-1286.
  */
 
-#include "clustering.h"
-#include "index_space.h"
-
-#include "parflow.h"
-#include "llnlmath.h"
 
 /**
  * Maximum number of ghost layers.  

@@ -53,7 +53,6 @@ typedef struct
   Point up;
 } Box;
 
-
 /**
  * Element in a box list.
  *

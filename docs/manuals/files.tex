@@ -330,7 +330,7 @@ pfset ComputationalGrid.DY		10.0
 pfset ComputationalGrid.DZ		1.0
 \end{verbatim}
 
-\pfkey{string}{UseClustering}{False}
+\pfkey{string}{UseClustering}{True}
 {
 Run a clustering algorithm to create boxes in index space for
 iteration. By default an octree representation is used for iteration,
@@ -347,7 +347,7 @@ significantly based on the geometries in the problem.
 The Berger-Rigoutsos algorithm is currently used for clustering.
 }
 \begin{display}\begin{verbatim} 
-pfset  UseClustering  True
+pfset  UseClustering  False
 \end{verbatim}\end{display} 
 
 %=============================================================================

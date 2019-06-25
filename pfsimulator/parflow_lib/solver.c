@@ -98,16 +98,9 @@ NewSolver()
   {
      NameArray switch_na;
      switch_na = NA_NewNameArray("False True");
-     switch_name = GetStringDefault("UseClustering", "False");
+     switch_name = GetStringDefault("UseClustering", "True");
      GlobalsUseClustering = NA_NameToIndex(switch_na, switch_name);
      NA_FreeNameArray(switch_na);
-
-     char *env_use_clustering = getenv("PARFLOW_USE_CLUSTERING");
-     if(env_use_clustering)
-     {
-	printf("Overriding input; using clustering\n");
-	GlobalsUseClustering = TRUE;	
-     }
   }
 
   /*-----------------------------------------------------------------------
