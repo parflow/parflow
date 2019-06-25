@@ -120,8 +120,8 @@ void LBInitializeBC(
                                   ipatch, interval_number);
 
           ref_solid = ProblemDataSolid(problem_data,
-                                       BCPressureType0RefSolid(interval_data));
-          ref_patch = BCPressureType0RefPatch(interval_data);
+                                       DirEquilRefPatchRefSolid(interval_data));
+          ref_patch = DirEquilRefPatchRefPatch(interval_data);
 
           /* Calculate elevations at (x,y) points on reference patch. */
           elevations = CalcElevations(ref_solid, ref_patch, subgrids, problem_data);
@@ -164,7 +164,7 @@ void LBInitializeBC(
               iel = (i - ix) + (j - iy) * nx;
               z = RealSpaceZ(k, 0) + fdir[2] * dz2;
 
-              pp[ival] = BCPressureType0Value(interval_data)
+              pp[ival] = DirEquilRefPatchValue(interval_data)
                          - rho_g * (z - elevations[is][iel]);
 
               cellTypep[ival] = 0;
@@ -221,13 +221,13 @@ void LBInitializeBC(
             dz2 = RealSpaceDZ(0) / 2.0;
 
             /* compute unit direction vector for piecewise linear line */
-            unitx = BCPressureType1XUpper(interval_data) - BCPressureType1XLower(interval_data);
-            unity = BCPressureType1YUpper(interval_data) - BCPressureType1YLower(interval_data);
+            unitx = DirEquilPLinearXUpper(interval_data) - DirEquilPLinearXLower(interval_data);
+            unity = DirEquilPLinearYUpper(interval_data) - DirEquilPLinearYLower(interval_data);
             line_length = sqrt(unitx * unitx + unity * unity);
             unitx /= line_length;
             unity /= line_length;
-            line_min = BCPressureType1XLower(interval_data) * unitx
-                       + BCPressureType1YLower(interval_data) * unity;
+            line_min = DirEquilPLinearXLower(interval_data) * unitx
+                       + DirEquilPLinearYLower(interval_data) * unity;
 
             GrGeomPatchLoop(i, j, k, fdir, gr_domain, ipatch,
                             r, ix, iy, iz, nx, ny, nz,
@@ -247,16 +247,16 @@ void LBInitializeBC(
               num_points = 2;
               for (; ip < (num_points - 1); ip++)
               {
-                if (xy < BCPressureType1Point(interval_data, ip))
+                if (xy < DirEquilPLinearPoint(interval_data, ip))
                   break;
               }
 
               /* compute the slope */
-              slope = ((BCPressureType1Value(interval_data, ip) - BCPressureType1Value(interval_data, (ip - 1)))
-                       / (BCPressureType1Point(interval_data, ip) - BCPressureType1Point(interval_data, (ip - 1))));
+              slope = ((DirEquilPLinearValue(interval_data, ip) - DirEquilPLinearValue(interval_data, (ip - 1)))
+                       / (DirEquilPLinearPoint(interval_data, ip) - DirEquilPLinearPoint(interval_data, (ip - 1))));
 
-              pp[ival] = BCPressureType1Value(interval_data, ip - 1)
-                         + slope * (xy - BCPressureType1Point(
+              pp[ival] = DirEquilPLinearValue(interval_data, ip - 1)
+                         + slope * (xy - DirEquilPLinearPoint(
                                                               interval_data, ip - 1))
                          - rho_g * z;
 
@@ -308,7 +308,7 @@ void LBInitializeBC(
               ival = SubvectorEltIndex(sub_p, i, j, k);
               if (cellTypep[ival])
               {
-                /* pp[ival] = BCPressureType2Value(interval_data); */
+                /* pp[ival] = FluxConstValue(interval_data); */
                 /* pp[ival] = 0.0; */
                 cellTypep[ival] = 1;
               }

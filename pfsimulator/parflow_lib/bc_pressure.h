@@ -249,73 +249,73 @@ typedef struct {
  * Accessor macros: BCPressureValues
  * @MCB: With the new macro system these don't make as much sense, replace/deprecate?
  *--------------------------------------------------------------------------*/
-#define BCPressureType0Value(type0) \
-  ((type0)->value)
+#define DirEquilRefPatchValue(patch) \
+  ((patch)->value)
 
-#define BCPressureType0RefSolid(type0) \
-  ((type0)->reference_solid)
-#define BCPressureType0RefPatch(type0) \
-  ((type0)->reference_patch)
+#define DirEquilRefPatchRefSolid(patch)         \
+  ((patch)->reference_solid)
+#define DirEquilRefPatchRefPatch(patch)         \
+  ((patch)->reference_patch)
 
-#define BCPressureType0ValueAtInterfaces(type0) \
-  ((type0)->value_at_interfaces)
-#define BCPressureType0ValueAtInterface(type0, i) \
-  ((type0)->value_at_interfaces[i - 1])
+#define DirEquilRefPatchValueAtInterfaces(patch) \
+  ((patch)->value_at_interfaces)
+#define DirEquilRefPatchValueAtInterface(patch, i) \
+  ((patch)->value_at_interfaces[i - 1])
 /*--------------------------------------------------------------------------*/
-#define BCPressureType1XLower(type1) \
-  ((type1)->xlower)
+#define DirEquilPLinearXLower(patch) \
+  ((patch)->xlower)
 
-#define BCPressureType1YLower(type1) \
-  ((type1)->ylower)
+#define DirEquilPLinearYLower(patch) \
+  ((patch)->ylower)
 
-#define BCPressureType1XUpper(type1) \
-  ((type1)->xupper)
+#define DirEquilPLinearXUpper(patch) \
+  ((patch)->xupper)
 
-#define BCPressureType1YUpper(type1) \
-  ((type1)->yupper)
+#define DirEquilPLinearYUpper(patch) \
+  ((patch)->yupper)
 
-#define BCPressureType1NumPoints(type1) \
-  ((type1)->num_points)
+#define DirEquilPLinearNumPoints(patch) \
+  ((patch)->num_points)
 
-#define BCPressureType1Points(type1) \
-  ((type1)->points)
-#define BCPressureType1Point(type1, i) \
-  ((type1)->points[i])
+#define DirEquilPLinearPoints(patch) \
+  ((patch)->points)
+#define DirEquilPLinearPoint(patch, i) \
+  ((patch)->points[i])
 
-#define BCPressureType1Values(type1) \
-  ((type1)->values)
-#define BCPressureType1Value(type1, i) \
-  ((type1)->values[i])
+#define DirEquilPLinearValues(patch) \
+  ((patch)->values)
+#define DirEquilPLinearValue(patch, i) \
+  ((patch)->values[i])
 
-#define BCPressureType1ValueAtInterfaces(type1) \
-  ((type1)->value_at_interfaces)
-#define BCPressureType1ValueAtInterface(type1, i) \
-  ((type1)->value_at_interfaces[i - 1])
+#define DirEquilPLinearValueAtInterfaces(patch) \
+  ((patch)->value_at_interfaces)
+#define DirEquilPLinearValueAtInterface(patch, i) \
+  ((patch)->value_at_interfaces[i - 1])
 /*--------------------------------------------------------------------------*/
-#define BCPressureType2Value(type2) \
-  ((type2)->value)
+#define FluxConstValue(patch) \
+  ((patch)->value)
 /*--------------------------------------------------------------------------*/
-#define BCPressureType3Value(type3) \
-  ((type3)->value)
-
-/*--------------------------------------------------------------------------*/
-#define BCPressureType4FileName(type4) \
-  ((type4)->filename)
+#define FluxVolumetricValue(patch) \
+  ((patch)->value)
 
 /*--------------------------------------------------------------------------*/
-#define BCPressureType5FileName(type5) \
-  ((type5)->filename)
+#define PressureFileName(patch) \
+  ((patch)->filename)
 
 /*--------------------------------------------------------------------------*/
-#define BCPressureType6FunctionType(type6) \
-  ((type6)->function_type)
+#define FluxFileName(patch) \
+  ((patch)->filename)
 
 /*--------------------------------------------------------------------------*/
-#define BCPressureType7Value(type7) \
-  ((type7)->value)
+#define ExactSolutionFunctionType(patch) \
+  ((patch)->function_type)
+
 /*--------------------------------------------------------------------------*/
-#define BCPressureType8FileName(type8) \
-  ((type8)->filename)
+#define OverlandFlowValue(patch) \
+  ((patch)->value)
+/*--------------------------------------------------------------------------*/
+#define OverlandFlowPFBFileName(patch) \
+  ((patch)->filename)
 
 /*--------------------------------------------------------------------------
  * Accessor macros: BCPressureData

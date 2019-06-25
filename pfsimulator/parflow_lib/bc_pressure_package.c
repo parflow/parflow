@@ -153,26 +153,26 @@ void         BCPressurePackage(
 
             GetTypeStruct(DirEquilRefPatch, data, public_xtra, i);
 
-            BCPressureType0RefSolid(interval_data) =
+            DirEquilRefPatchRefSolid(interval_data) =
               (data->reference_solid);
 
-            BCPressureType0RefPatch(interval_data) =
+            DirEquilRefPatchRefPatch(interval_data) =
               (data->reference_patch);
 
-            BCPressureType0Value(interval_data) = (data->values[interval_number]);
+            DirEquilRefPatchValue(interval_data) = (data->values[interval_number]);
 
             if (num_phases > 1)
             {
-              BCPressureType0ValueAtInterfaces(interval_data) = ctalloc(double, (num_phases - 1));
+              DirEquilRefPatchValueAtInterfaces(interval_data) = ctalloc(double, (num_phases - 1));
               for (phase = 1; phase < num_phases; phase++)
               {
-                BCPressureType0ValueAtInterface(interval_data, phase)
+                DirEquilRefPatchValueAtInterface(interval_data, phase)
                   = ((data->value_at_interface[interval_number])[phase - 1]);
               }
             }
             else
             {
-              BCPressureType0ValueAtInterfaces(interval_data) = NULL;
+              DirEquilRefPatchValueAtInterfaces(interval_data) = NULL;
             }
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number) = (void*)interval_data;
@@ -195,33 +195,33 @@ void         BCPressurePackage(
 
             num_points = (data->num_points[interval_number]);
 
-            BCPressureType1XLower(interval_data) = (data->xlower[interval_number]);
-            BCPressureType1YLower(interval_data) = (data->ylower[interval_number]);
-            BCPressureType1XUpper(interval_data) = (data->xupper[interval_number]);
-            BCPressureType1YUpper(interval_data) = (data->yupper[interval_number]);
-            BCPressureType1NumPoints(interval_data) = (data->num_points[interval_number]);
+            DirEquilPLinearXLower(interval_data) = (data->xlower[interval_number]);
+            DirEquilPLinearYLower(interval_data) = (data->ylower[interval_number]);
+            DirEquilPLinearXUpper(interval_data) = (data->xupper[interval_number]);
+            DirEquilPLinearYUpper(interval_data) = (data->yupper[interval_number]);
+            DirEquilPLinearNumPoints(interval_data) = (data->num_points[interval_number]);
 
-            BCPressureType1Points(interval_data) = ctalloc(double, num_points);
-            BCPressureType1Values(interval_data) = ctalloc(double, num_points);
+            DirEquilPLinearPoints(interval_data) = ctalloc(double, num_points);
+            DirEquilPLinearValues(interval_data) = ctalloc(double, num_points);
 
             for (point = 0; point < num_points; point++)
             {
-              BCPressureType1Point(interval_data, point) = ((data->points[interval_number])[point]);
-              BCPressureType1Value(interval_data, point) = ((data->values[interval_number])[point]);
+              DirEquilPLinearPoint(interval_data, point) = ((data->points[interval_number])[point]);
+              DirEquilPLinearValue(interval_data, point) = ((data->values[interval_number])[point]);
             }
 
             if (num_phases > 1)
             {
-              BCPressureType1ValueAtInterfaces(interval_data) = ctalloc(double, (num_phases - 1));
+              DirEquilPLinearValueAtInterfaces(interval_data) = ctalloc(double, (num_phases - 1));
 
               for (phase = 1; phase < num_phases; phase++)
               {
-                BCPressureType1ValueAtInterface(interval_data, phase) = ((data->value_at_interface[interval_number])[phase - 1]);
+                DirEquilPLinearValueAtInterface(interval_data, phase) = ((data->value_at_interface[interval_number])[phase - 1]);
               }
             }
             else
             {
-              BCPressureType1ValueAtInterfaces(interval_data) = NULL;
+              DirEquilPLinearValueAtInterfaces(interval_data) = NULL;
             }
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number) = (void*)interval_data;
@@ -236,7 +236,7 @@ void         BCPressurePackage(
 
             GetTypeStruct(FluxConst, data, public_xtra, i);
 
-            BCPressureType2Value(interval_data)
+            FluxConstValue(interval_data)
               = (data->values[interval_number]);
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
@@ -252,7 +252,7 @@ void         BCPressurePackage(
 
             GetTypeStruct(FluxVolumetric, data, public_xtra, i);
 
-            BCPressureType3Value(interval_data)
+            FluxVolumetricValue(interval_data)
               = (data->values[interval_number]);
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
@@ -268,10 +268,10 @@ void         BCPressurePackage(
 
             GetTypeStruct(PressureFile, data, public_xtra, i);
 
-            BCPressureType4FileName(interval_data)
+            PressureFileName(interval_data)
               = ctalloc(char, strlen((data->filenames)[interval_number]) + 1);
 
-            strcpy(BCPressureType4FileName(interval_data),
+            strcpy(PressureFileName(interval_data),
                    ((data->filenames)[interval_number]));
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
@@ -287,10 +287,10 @@ void         BCPressurePackage(
 
             GetTypeStruct(FluxFile, data, public_xtra, i);
 
-            BCPressureType5FileName(interval_data)
+            FluxFileName(interval_data)
               = ctalloc(char, strlen((data->filenames)[interval_number]) + 1);
 
-            strcpy(BCPressureType5FileName(interval_data),
+            strcpy(FluxFileName(interval_data),
                    ((data->filenames)[interval_number]));
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
@@ -306,7 +306,7 @@ void         BCPressurePackage(
 
             GetTypeStruct(ExactSolution, data, public_xtra, i);
 
-            BCPressureType6FunctionType(interval_data)
+            ExactSolutionFunctionType(interval_data)
               = (data->function_type);
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
@@ -322,7 +322,7 @@ void         BCPressurePackage(
 
             GetTypeStruct(OverlandFlow, data, public_xtra, i);
 
-            BCPressureType7Value(interval_data)
+            OverlandFlowValue(interval_data)
               = (data->values[interval_number]);
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
@@ -338,10 +338,10 @@ void         BCPressurePackage(
 
             GetTypeStruct(OverlandFlowPFB, data, public_xtra, i);
 
-            BCPressureType8FileName(interval_data)
+            OverlandFlowPFBFileName(interval_data)
               = ctalloc(char, strlen((data->filenames)[interval_number]) + 1);
 
-            strcpy(BCPressureType8FileName(interval_data),
+            strcpy(OverlandFlowPFBFileName(interval_data),
                    ((data->filenames)[interval_number]));
 
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)

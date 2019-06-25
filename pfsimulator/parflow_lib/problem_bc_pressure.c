@@ -175,8 +175,8 @@ BCStruct    *BCPressure(
           if (instance_xtra->elevations[ipatch] == NULL)
           {
             ref_solid = ProblemDataSolid(problem_data,
-                                         BCPressureType0RefSolid(interval_data));
-            ref_patch = BCPressureType0RefPatch(interval_data);
+                                         DirEquilRefPatchRefSolid(interval_data));
+            ref_patch = DirEquilRefPatchRefPatch(interval_data);
 
             /* Calculate elevations at (x,y) points on reference patch. */
             instance_xtra->elevations[ipatch] = CalcElevations(ref_solid, ref_patch, subgrids, problem_data);
@@ -219,7 +219,7 @@ BCStruct    *BCPressure(
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct,
                               ipatch, is,
             {
-              ref_press = BCPressureType0Value(interval_data);
+              ref_press = DirEquilRefPatchValue(interval_data);
               PFModuleInvokeType(PhaseDensityInvoke, phase_density,
                                  (0, NULL, NULL, &ref_press, &ref_den,
                                   CALCFCN));
@@ -286,7 +286,7 @@ BCStruct    *BCPressure(
 
               for (phase = 1; phase < num_phases; phase++)
               {
-                interface_press = BCPressureType0ValueAtInterface(
+                interface_press = DirEquilRefPatchValueAtInterface(
                                                                   interval_data, phase);
                 PFModuleInvokeType(PhaseDensityInvoke, phase_density,
                                    (phase - 1, NULL, NULL, &interface_press,
@@ -401,15 +401,15 @@ BCStruct    *BCPressure(
             dz2 = SubgridDZ(subgrid) / 2.0;
 
             /* compute unit direction vector for piecewise linear line */
-            unitx = BCPressureType1XUpper(interval_data)
-                    - BCPressureType1XLower(interval_data);
-            unity = BCPressureType1YUpper(interval_data)
-                    - BCPressureType1YLower(interval_data);
+            unitx = DirEquilPLinearXUpper(interval_data)
+                    - DirEquilPLinearXLower(interval_data);
+            unity = DirEquilPLinearYUpper(interval_data)
+                    - DirEquilPLinearYLower(interval_data);
             line_length = sqrt(unitx * unitx + unity * unity);
             unitx /= line_length;
             unity /= line_length;
-            line_min = BCPressureType1XLower(interval_data) * unitx
-                       + BCPressureType1YLower(interval_data) * unity;
+            line_min = DirEquilPLinearXLower(interval_data) * unitx
+                       + DirEquilPLinearYLower(interval_data) * unity;
 
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
             {
@@ -423,21 +423,21 @@ BCStruct    *BCPressure(
 
               /* find two neighboring points */
               ip = 1;
-              num_points = BCPressureType1NumPoints(interval_data);
+              num_points = DirEquilPLinearNumPoints(interval_data);
               for (; ip < (num_points - 1); ip++)
               {
-                if (xy < BCPressureType1Point(interval_data, ip))
+                if (xy < DirEquilPLinearPoint(interval_data, ip))
                   break;
               }
 
               /* compute the slope */
-              slope = ((BCPressureType1Value(interval_data, ip)
-                        - BCPressureType1Value(interval_data, (ip - 1)))
-                       / (BCPressureType1Point(interval_data, ip)
-                          - BCPressureType1Point(interval_data, (ip - 1))));
+              slope = ((DirEquilPLinearValue(interval_data, ip)
+                        - DirEquilPLinearValue(interval_data, (ip - 1)))
+                       / (DirEquilPLinearPoint(interval_data, ip)
+                          - DirEquilPLinearPoint(interval_data, (ip - 1))));
 
-              ref_press = BCPressureType1Value(interval_data, ip - 1)
-                          + slope * (xy - BCPressureType1Point(interval_data, ip - 1));
+              ref_press = DirEquilPLinearValue(interval_data, ip - 1)
+                          + slope * (xy - DirEquilPLinearPoint(interval_data, ip - 1));
               PFModuleInvokeType(PhaseDensityInvoke, phase_density,
                                  (0, NULL, NULL, &ref_press, &ref_den,
                                   CALCFCN));
@@ -498,7 +498,7 @@ BCStruct    *BCPressure(
 
               for (phase = 1; phase < num_phases; phase++)
               {
-                interface_press = BCPressureType1ValueAtInterface(
+                interface_press = DirEquilPLinearValueAtInterface(
                                                                   interval_data, phase);
                 PFModuleInvokeType(PhaseDensityInvoke, phase_density,
                                    (phase - 1, NULL, NULL, &interface_press,
@@ -567,7 +567,7 @@ BCStruct    *BCPressure(
           GetBCPressureTypeStruct(FluxConst, interval_data, bc_pressure_data,
                                   ipatch, interval_number);
 
-          flux = BCPressureType2Value(interval_data);
+          flux = FluxConstValue(interval_data);
           ForSubgridI(is, subgrids)
           {
             subgrid = SubgridArraySubgrid(subgrids, is);
@@ -644,7 +644,7 @@ BCStruct    *BCPressure(
 
             if (area > 0.0)
             {
-              volumetric_flux = BCPressureType3Value(interval_data)
+              volumetric_flux = FluxVolmetricValue(interval_data)
                                 / area;
               BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
               {
@@ -702,7 +702,7 @@ BCStruct    *BCPressure(
 
             tmp_vector = NewVectorType(grid, 1, 0, vector_cell_centered);
 
-            filename = BCPressureType4FileName(interval_data);
+            filename = PressureFileName(interval_data);
             ReadPFBinary(filename, tmp_vector);
 
             subvector = VectorSubvector(tmp_vector, is);
@@ -750,7 +750,7 @@ BCStruct    *BCPressure(
 
             tmp_vector = NewVectorType(grid, 1, 0, vector_cell_centered);
 
-            filename = BCPressureType5FileName(interval_data);
+            filename = FluxFileName(interval_data);
             ReadPFBinary(filename, tmp_vector);
 
             subvector = VectorSubvector(tmp_vector, is);
@@ -800,7 +800,7 @@ BCStruct    *BCPressure(
             patch_values = ctalloc(double, patch_values_size);
             values[ipatch][is] = patch_values;
 
-            fcn_type = BCPressureType6FunctionType(interval_data);
+            fcn_type = ExactSolutionFunctionType(interval_data);
 
             switch (fcn_type)
             {
@@ -894,7 +894,7 @@ BCStruct    *BCPressure(
                                   ipatch, interval_number);
 
 
-          flux = BCPressureType7Value(interval_data);
+          flux = OverlandFlowValue(interval_data);
           ForSubgridI(is, subgrids)
           {
             subgrid = SubgridArraySubgrid(subgrids, is);
@@ -948,7 +948,7 @@ BCStruct    *BCPressure(
             //SetTempVectorData(tmp_vector, data);
 
             printf("reading overland file \n");
-            filename = BCPressureType8FileName(interval_data);
+            filename = OverlandFlowPFBFileName(interval_data);
             ReadPFBinary(filename, tmp_vector);
 
             subvector = VectorSubvector(tmp_vector, is);
