@@ -1,9 +1,12 @@
 # Configuring with Autoconf
 
-Building Parflow with Autoconf (configure) is being deprecated.  CMake
-is the prefered method for building Parflow.  See the README.md file
-for CMake instructions.  The configure script build is still being
-tested for basic configurations but is not being actively maintained.
+__IMPORTANT WARNING : Building Parflow with Autoconf (configure) is being deprecated;
+support will be dropped in next release.__
+
+CMake is the prefered method for building Parflow.  See the
+README.md file for CMake instructions.  The configure script build is
+still being tested for basic configurations but is not being actively
+maintained.
 
 Parflow is composed of two main components that are configured and
 built seperately.  The main Parflow executable is built first then a
