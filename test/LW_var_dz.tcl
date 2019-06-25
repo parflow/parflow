@@ -292,13 +292,10 @@ pfset TopoSlopesY.FileName lw.1km.slope_y.10x.pfb
 
 pfset ComputationalGrid.NX                45
 pfset ComputationalGrid.NY                32
-
-# Standard pfdist syntax
-pfset ComputationalGrid.NZ                1
-pfdist lw.1km.slope_x.10x.pfb
 pfset ComputationalGrid.NZ                6
 
-# Testing pfdist manual override syntax
+# Slope files 1D files so distribute with -nz 1
+pfdist -nz 1 lw.1km.slope_x.10x.pfb
 pfdist -nz 1 lw.1km.slope_y.10x.pfb
 
 #---------------------------------------------------------
