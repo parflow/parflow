@@ -570,7 +570,6 @@ void FindBoxesContainingTags(BoxList* boxes,
 			     Vector* vector,
 			     Box* bound_box, 
 			     Point min_box,
-			     double combine_tol,
                              DoubleTags tag)
 {
   HistogramBox* hist_box = NewHistogramBox(bound_box);  
@@ -613,17 +612,17 @@ void FindBoxesContainingTags(BoxList* boxes,
 	 FindBoxesContainingTags(box_list_lft, 
 				 vector,
 				 &box_lft, min_box,
-				 combine_tol, tag);
+				 tag);
 	 FindBoxesContainingTags(box_list_rgt, 
 				 vector,
 				 &box_rgt, min_box,
-				 combine_tol, tag);
+				 tag);
 
 	 if ( (( BoxListSize(box_list_lft) > 1) ||
 	       ( BoxListSize(box_list_rgt) > 1)) ||
 	      ( (double) (BoxSize(BoxListFront(box_list_lft))
 			  + BoxSize(BoxListFront(box_list_rgt)))
-		< ((double) BoxSize(&tag_bound_box))*combine_tol ) )
+		< ((double) BoxSize(&tag_bound_box)) ) )
 	 {
 	   BoxListConcatenate(boxes, box_list_lft);
 	   BoxListConcatenate(boxes, box_list_rgt);
@@ -652,7 +651,6 @@ void FindBoxesContainingTags(BoxList* boxes,
  */
 void BergerRigoutsos(Vector* vector,
 		     Point min_box,
-		     double combine_tol,
 		     DoubleTags tag,
 		     BoxList* boxes)
 {
@@ -740,17 +738,17 @@ void BergerRigoutsos(Vector* vector,
 	 FindBoxesContainingTags(box_list_lft, 
 				 vector,
 				 &box_lft, min_box,
-				 combine_tol, tag);
+				 tag);
 	 FindBoxesContainingTags(box_list_rgt, 
 				 vector,
 				 &box_rgt, min_box,
-				 combine_tol, tag);
+				 tag);
 
 	 if ( (( BoxListSize(box_list_lft) > 1) ||
 	       ( BoxListSize(box_list_rgt) > 1)) ||
 	      ( (double) (BoxSize(BoxListFront(box_list_lft))
 			  + BoxSize(BoxListFront(box_list_rgt)))
-		< ((double) BoxSize(&tag_bound_box))*combine_tol ) )
+		< ((double) BoxSize(&tag_bound_box)) ) )
 	 {
 	   BoxListConcatenate(boxes, box_list_lft);
 	   BoxListConcatenate(boxes, box_list_rgt);
@@ -856,8 +854,6 @@ BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
   min_box[1] = 1;
   min_box[2] = 1;
 
-  double combine_tol = 2.0;
-
   for(int face = 0; face < GrGeomOctreeNumFaces; face++)
   {
      BoxList* boxes = NewBoxList();
@@ -866,7 +862,6 @@ BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
      
      BergerRigoutsos(indicator,
 		     min_box,
-		     combine_tol,
 		     tag,
 		     boxes);
 
@@ -963,8 +958,6 @@ void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
   min_box[1] = 1;
   min_box[2] = 1;
 
-  double combine_tol = 2.0;
-
   for(int face = 0; face < GrGeomOctreeNumFaces; face++)
   {
      BoxList* boxes = NewBoxList();
@@ -973,7 +966,6 @@ void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
 
      BergerRigoutsos(indicator,
 		     min_box,
-		     combine_tol,
 		     tag,
 		     boxes);
      
@@ -1066,13 +1058,10 @@ void ComputeInteriorBoxes(GrGeomSolid *geom_solid)
   min_box[1] = 1;
   min_box[2] = 1;
 
-  double combine_tol = 2.0;
-
   BoxList* boxes = NewBoxList();
   
   BergerRigoutsos(indicator,
 		  min_box,
-		  combine_tol,
 		  tag,
 		  boxes);
   
