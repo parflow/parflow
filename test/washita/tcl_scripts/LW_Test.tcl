@@ -497,15 +497,12 @@ pfset Solver.Linear.Preconditioner.PCMatrixType          FullJacobian
 #-----------------------------------------------------------------------------
 pfset ComputationalGrid.NX                41 
 pfset ComputationalGrid.NY                41 
-pfset ComputationalGrid.NZ                1
-pfdist LW.slopex.pfb
-pfdist LW.slopey.pfb
+pfset ComputationalGrid.NZ                50
 
-pfset ComputationalGrid.NX                41 
-pfset ComputationalGrid.NY                41 
-pfset ComputationalGrid.NZ                50 
+pfdist -nz 1 LW.slopex.pfb
+pfdist -nz 1 LW.slopey.pfb
+
 pfdist IndicatorFile_Gleeson.50z.pfb
-pfdist press.init.pfb
 
 #-----------------------------------------------------------------------------
 # Run Simulation 
