@@ -149,6 +149,8 @@ static int ComputeTag(Subregion *sender, Subregion *receiver)
 {
   int k;
   int tag;
+  int gidx = SubgridGhostIdx(sender);
+  int sender_lidx;
   p4est_gloidx_t scoord[P4EST_DIM], rcoord[P4EST_DIM];
   int t[3] = { 0, 0, 0 };
 
@@ -160,75 +162,11 @@ static int ComputeTag(Subregion *sender, Subregion *receiver)
 
   tag = 9 * t[2] + 3 * t[1] + t[0];
 
-  tag += 27 * SubgridLocIdx(sender);
+  sender_lidx = (gidx < -1) ?  (2-gidx)  / 4 : SubgridLocIdx(sender);
+
+  tag += 27*sender_lidx;
 
   return tag;
-}
-
-static void CornerTweak(Subregion *data_sr, Subregion *recv_sr,
-                        int t[3])
-{
-  int tweak;
-  const int lev0 = SubregionLevel(data_sr);
-  const int lev1 = SubregionLevel(recv_sr);
-
-  tweak = (lev0 == lev1) ? 0 : lev0 < lev1 ? -1 : +1;
-
-  switch (tweak)
-  {
-    case -1:
-      t[0] = SubregionIX(recv_sr);
-      t[1] = SubregionIY(recv_sr);
-      t[2] = SubregionIZ(recv_sr);
-
-      SubregionIX(recv_sr) = SubregionParentIX(recv_sr);
-      SubregionIY(recv_sr) = SubregionParentIY(recv_sr);
-      SubregionIZ(recv_sr) = SubregionParentIZ(recv_sr);
-      break;
-
-    case +1:
-      t[0] = SubregionIX(data_sr);
-      t[1] = SubregionIY(data_sr);
-      t[2] = SubregionIZ(data_sr);
-
-      SubregionIX(data_sr) = SubregionParentIX(data_sr) - 1;
-      SubregionIY(data_sr) = SubregionParentIY(data_sr) - 1;
-      SubregionIZ(data_sr) = SubregionParentIZ(data_sr) - 1;
-      break;
-
-    default:
-      P4EST_ASSERT(lev0 == lev1);
-      break;
-  }
-}
-
-static void UndoCornerTweak(Subregion *data_sr, Subregion *recv_sr,
-                            int t[3])
-{
-  int tweak;
-  const int lev0 = SubregionLevel(data_sr);
-  const int lev1 = SubregionLevel(recv_sr);
-
-  tweak = (lev0 == lev1) ? 0 : lev0 < lev1 ? -1 : +1;
-
-  switch (tweak)
-  {
-    case -1:
-      SubregionIX(recv_sr) = t[0];
-      SubregionIY(recv_sr) = t[1];
-      SubregionIZ(recv_sr) = t[2];
-      break;
-
-    case +1:
-      SubregionIX(data_sr) = t[0];
-      SubregionIY(data_sr) = t[1];
-      SubregionIZ(data_sr) = t[2];
-      break;
-
-    default:
-      P4EST_ASSERT(lev0 == lev1);
-      break;
-  }
 }
 #endif
 
@@ -357,13 +295,8 @@ CommPkg         *NewCommPkg(
       recv_sr = SubregionArraySubregion(recv_sra, j);
       new_comm_pkg->recv_ranks[p] = SubregionProcess(recv_sr);
 
-      CornerTweak(data_sr, recv_sr, t);
-
       dim = NewCommPkgInfo(data_sr, recv_sr, 0, num_vars,
                            loop_array);
-
-      UndoCornerTweak(data_sr, recv_sr, t);
-
       invoice =
         amps_NewInvoice("%&.&D(*)",
                         loop_array + 1,
