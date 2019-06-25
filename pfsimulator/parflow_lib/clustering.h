@@ -36,8 +36,8 @@
  *
  * Runs the Berger-Rigoutsos algorithm to compute a set of boxes that
  * cover the iteration spaces in the octree for more efficient
- * iteration. Fills in box array structures in provided geom_solid;
- * the arrays in index space are used in the Loop macros for interior,
+ * iteration. Fills in box array structures in provided geom_solid.
+ * The arrays in index space are used in the Loop macros for interior,
  * surface and patches.
  *
  * This assumes Octree's are in background grid space.

@@ -60,7 +60,7 @@ static const int num_ghost = 4;
  * Store tags in a double.
  *
  * Vectors can only store doubles but want to store tag values so
- * use union to allow boolean operations on the doubles.
+ * use union to overlay tags on the double.
  */
 typedef union
 {
@@ -565,14 +565,11 @@ int SplitTagBoundBox(Box* box_lft,
  * Create a list of boxes that exactly cover all tags that match the
  * specified tag value.
  *
- * @TODO should remove efficiency and combine tolerance since we need
- * to cover exactly the cells that are tagged.
  */
 void FindBoxesContainingTags(BoxList* boxes, 
 			     Vector* vector,
 			     Box* bound_box, 
 			     Point min_box,
-			     double efficiency_tol, 
 			     double combine_tol,
                              DoubleTags tag)
 {
@@ -593,10 +590,7 @@ void FindBoxesContainingTags(BoxList* boxes,
 
      int num_cells = BoxSize(&tag_bound_box);
 
-     double efficiency = ( num_cells == 0 ? 1.e0 :
-			   ((double) num_tags)/((double) num_cells) );
-
-     if (efficiency <= efficiency_tol) 
+     if (num_tags < num_cells)
      {
        Box box_lft;
        Box box_rgt;
@@ -619,11 +613,11 @@ void FindBoxesContainingTags(BoxList* boxes,
 	 FindBoxesContainingTags(box_list_lft, 
 				 vector,
 				 &box_lft, min_box,
-				 efficiency_tol, combine_tol, tag);
+				 combine_tol, tag);
 	 FindBoxesContainingTags(box_list_rgt, 
 				 vector,
 				 &box_rgt, min_box,
-				 efficiency_tol, combine_tol, tag);
+				 combine_tol, tag);
 
 	 if ( (( BoxListSize(box_list_lft) > 1) ||
 	       ( BoxListSize(box_list_rgt) > 1)) ||
@@ -655,12 +649,9 @@ void FindBoxesContainingTags(BoxList* boxes,
  * Create a list of boxes that exactly cover all tags that match the
  * specified tag value.
  *
- * @TODO should remove efficiency and combine tolerance since we need
- * to cover exactly the cells that are tagged.
  */
 void BergerRigoutsos(Vector* vector,
 		     Point min_box,
-		     double efficiency_tol, 
 		     double combine_tol,
 		     DoubleTags tag,
 		     BoxList* boxes)
@@ -725,10 +716,7 @@ void BergerRigoutsos(Vector* vector,
      
      int num_cells = BoxSize(&tag_bound_box);
 
-     double efficiency = ( num_cells == 0 ? 1.e0 :
-                          ((double) num_tags)/((double) num_cells) );
-
-     if (efficiency <= efficiency_tol) 
+     if (num_tags < num_cells)
      {
        Box box_lft;
        Box box_rgt;
@@ -752,11 +740,11 @@ void BergerRigoutsos(Vector* vector,
 	 FindBoxesContainingTags(box_list_lft, 
 				 vector,
 				 &box_lft, min_box,
-				 efficiency_tol, combine_tol, tag);
+				 combine_tol, tag);
 	 FindBoxesContainingTags(box_list_rgt, 
 				 vector,
 				 &box_rgt, min_box,
-				 efficiency_tol, combine_tol, tag);
+				 combine_tol, tag);
 
 	 if ( (( BoxListSize(box_list_lft) > 1) ||
 	       ( BoxListSize(box_list_rgt) > 1)) ||
@@ -868,7 +856,6 @@ BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
   min_box[1] = 1;
   min_box[2] = 1;
 
-  double efficiency_tol = 0.9999;
   double combine_tol = 2.0;
 
   for(int face = 0; face < GrGeomOctreeNumFaces; face++)
@@ -879,7 +866,6 @@ BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
      
      BergerRigoutsos(indicator,
 		     min_box,
-		     efficiency_tol, 
 		     combine_tol,
 		     tag,
 		     boxes);
@@ -977,7 +963,6 @@ void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
   min_box[1] = 1;
   min_box[2] = 1;
 
-  double efficiency_tol = 0.9999;
   double combine_tol = 2.0;
 
   for(int face = 0; face < GrGeomOctreeNumFaces; face++)
@@ -988,7 +973,6 @@ void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
 
      BergerRigoutsos(indicator,
 		     min_box,
-		     efficiency_tol, 
 		     combine_tol,
 		     tag,
 		     boxes);
@@ -1082,14 +1066,12 @@ void ComputeInteriorBoxes(GrGeomSolid *geom_solid)
   min_box[1] = 1;
   min_box[2] = 1;
 
-  double efficiency_tol = 0.9999;
   double combine_tol = 2.0;
 
   BoxList* boxes = NewBoxList();
   
   BergerRigoutsos(indicator,
 		  min_box,
-		  efficiency_tol, 
 		  combine_tol,
 		  tag,
 		  boxes);
