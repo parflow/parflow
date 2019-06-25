@@ -724,7 +724,7 @@ parflow_p4est_get_brick_coord_2d(Subgrid *                 subgrid,
   p4est_locidx_t which_quad;
   p4est_qcoord_t qcoord[3];
   p4est_tree_t *tree;
-  p4est_quadrant_t *quad, tquad;
+  p4est_quadrant_t *quad;
 
 
   /* This is a 'ghost child' subgrid, there is no quadrant
@@ -743,9 +743,6 @@ parflow_p4est_get_brick_coord_2d(Subgrid *                 subgrid,
         p4est_quadrant_array_index(&tree->quadrants,
                                    (size_t)which_quad);
 
-     p4est_quadrant_child(quad, &tquad, child_id);
-
-     quad = &tquad;
   }
   else
   {
