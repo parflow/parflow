@@ -60,6 +60,32 @@ refine_fn(p4est_t * p4est, p4est_topidx_t which_tree,
   return distsqr < 1;//(v[0] == v[1]);
 }
 
+
+static int
+refine_rand (p4est_t * p4est, p4est_topidx_t which_tree,
+             p4est_quadrant_t * quadrant)
+{
+    int r;
+    double distsqr, v[3];
+
+    p4est_qcoord_to_vertex(p4est->connectivity, which_tree,
+                           quadrant->x, quadrant->y,
+                       #ifdef P4_TO_P8
+                           quadrant->z,
+                       #endif
+                           v);
+
+    distsqr = v[0]*v[0] + v[1]*v[1];
+#ifdef P4_TO_P8
+    distsqr += v[2]*v[2];
+#endif
+
+    srand((unsigned) (distsqr * time(NULL)) );
+    r = rand() % 17;
+
+    return (r < 5) ;
+}
+
 parflow_p4est_grid_2d_t *
 parflow_p4est_grid_2d_new(int Px, int Py
 #ifdef P4_TO_P8
