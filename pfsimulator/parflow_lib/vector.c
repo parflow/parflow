@@ -244,7 +244,7 @@ static Vector  *NewTempVector(
                               int   num_ghost)
 {
   Vector    *new_vector;
-  Subvector *new_sub;
+  Subvector *new_subvector;
 
   Subgrid   *subgrid;
 
@@ -254,8 +254,10 @@ static Vector  *NewTempVector(
   (void)nc;
 
 #ifdef HAVE_P4EST
+  int k;
+  int nchildren = GlobalsNumProcsZ > 1 ? 8 : 4;
   int numLocalSubs = SubgridArraySize(GridSubgrids(grid));
-  int numInnerGhosts = SubgridArraySize(GridInnerGhostSubgrids(grid));
+  int numInnerGhosts = USE_P4EST ? SubgridArraySize(GridInnerGhostSubgrids(grid)) : 0;
 #endif
 
   new_vector = ctalloc(Vector, 1);  /*address of storage is assigned to the ptr "new_" of type Vector, which is also
@@ -275,38 +277,24 @@ static Vector  *NewTempVector(
   for (i = 0; i < numLocalSubs + numInnerGhosts; i++)
 #endif
   {
-    new_sub = ctalloc(Subvector, 1);
+    new_subvector = ctalloc(Subvector, 1);
 
-    subgrid = GridSubgrid(grid, i);
+    subgrid = SubvectorDataSpace(new_subvector) =
+            DuplicateSubgrid(GridSubgrid(grid, i));
 
-    SubvectorDataSpace(new_sub) =
-      NewSubgrid(SubgridIX(subgrid) - num_ghost,
-                 SubgridIY(subgrid) - num_ghost,
-                 SubgridIZ(subgrid) - num_ghost,
-                 SubgridNX(subgrid) + 2 * num_ghost,
-                 SubgridNY(subgrid) + 2 * num_ghost,
-                 SubgridNZ(subgrid) + 2 * num_ghost,
-                 SubgridRX(subgrid),
-                 SubgridRY(subgrid),
-                 SubgridRZ(subgrid),
-                 SubgridProcess(subgrid));
-    AppendSubgrid(SubvectorDataSpace(new_sub),
-                  VectorDataSpace(new_vector));
-#ifdef HAVE_P4EST
-    SubgridLevel(SubvectorDataSpace(new_sub)) = SubgridLevel(subgrid);
-    SubgridOwnerTree(SubvectorDataSpace(new_sub)) = SubgridOwnerTree(subgrid);
-    SubgridLocIdx(SubvectorDataSpace(new_sub)) = SubgridLocIdx(subgrid);
-    SubgridGhostIdx(SubvectorDataSpace(new_sub)) = SubgridGhostIdx(subgrid);
-    SubgridParentIX(SubvectorDataSpace(new_sub)) = SubgridParentIX(subgrid);
-    SubgridParentIY(SubvectorDataSpace(new_sub)) = SubgridParentIY(subgrid);
-    SubgridParentIZ(SubvectorDataSpace(new_sub)) = SubgridParentIZ(subgrid);
-#endif
+    SubgridIX(subgrid) -= num_ghost;
+    SubgridIY(subgrid) -= num_ghost;
+    SubgridIZ(subgrid) -= num_ghost;
+    SubgridNX(subgrid) += 2 * num_ghost;
+    SubgridNY(subgrid) += 2 * num_ghost;
+    SubgridNZ(subgrid) += 2 * num_ghost;
+    AppendSubgrid(subgrid, VectorDataSpace(new_vector));
 
-    n = SubvectorNX(new_sub) * SubvectorNY(new_sub) * SubvectorNZ(new_sub);
+    n = SubvectorNX(new_subvector) * SubvectorNY(new_subvector) * SubvectorNZ(new_subvector);
 
     data_size += n;
 
-    VectorSubvector(new_vector, i) = new_sub;
+    VectorSubvector(new_vector, i) = new_subvector;
   }
 
   (new_vector->data_size) = data_size;    /* data_size is sie of data inclduing ghost points */
@@ -342,6 +330,23 @@ static void     AllocateVectorData(
   int numInnerGhosts = SubgridArraySize(GridInnerGhostSubgrids(grid));
 #endif
 
+  if (USE_P4EST)
+  {
+#ifdef HAVE_P4EST
+    for(i = numLocalSubs; i < numLocalSubs + numInnerGhosts; i++)
+    {
+        subvector = VectorSubvector(vector, i);
+        data_size = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
+        SubvectorDataSize(subvector) = data_size;
+        data = amps_CTAlloc(double, data_size);
+        VectorSubvector(vector, i)->allocated = TRUE;
+        SubvectorData(VectorSubvector(vector, i)) = data;
+    }
+#else
+    PARFLOW_ERROR("ParFlow compiled without p4est");
+#endif
+  }
+
   ForSubgridI(i, GridSubgrids(grid))
   {
     /* if necessary, free old CommPkg's */
@@ -360,28 +365,11 @@ static void     AllocateVectorData(
 
     SubvectorData(VectorSubvector(vector, i)) = data;
 
-    for (j = 0; j < 1; j++)
+    for (j = 0; j < NumUpdateModes; j++)
     {
       VectorSubvectorCommPkg(vector, i, j) =
         NewVectorCommPkg(vector, i, GridComputePkg(grid, j));
     }
-  }
-
-  if (USE_P4EST)
-  {
-#ifdef HAVE_P4EST
-    for(i = numLocalSubs; i < numLocalSubs + numInnerGhosts; i++)
-    {
-        subvector = VectorSubvector(vector, i);
-        data_size = SubvectorNX(subvector) * SubvectorNY(subvector) * SubvectorNZ(subvector);
-        SubvectorDataSize(subvector) = data_size;
-        data = amps_CTAlloc(double, data_size);
-        VectorSubvector(vector, i)->allocated = TRUE;
-        SubvectorData(VectorSubvector(vector, i)) = data;
-    }
-#else
-    PARFLOW_ERROR("ParFlow compiled without p4est");
-#endif
   }
 }
 
@@ -710,7 +698,7 @@ void FreeTempVector(Vector *vector)
   ForSubgridI(i, GridSubgrids(VectorGrid(vector)))
   {
     FreeSubvector(VectorSubvector(vector, i));
-    for (j = 0; j < 1; j++)
+    for (j = 0; j < NumUpdateModes; j++)
     {
       FreeCommPkg(VectorSubvectorCommPkg(vector, i, j));
     }
