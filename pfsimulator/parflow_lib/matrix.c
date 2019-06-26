@@ -123,8 +123,13 @@ CommPkg   *NewMatrixUpdatePkg(
 
 
   new_commpkg = NewCommPkg(send_reg, recv_reg,
-                           MatrixDataSpace(matrix), submatrix_idx, n, SubmatrixData(submatrix));
-
+                           MatrixDataSpace(matrix), submatrix_idx, n, SubmatrixData(submatrix)
+#ifndef HAVE_P4EST
+                            );
+#else
+                            ,
+                            NULL );
+#endif
   FreeRegion(send_reg);
   FreeRegion(recv_reg);
 

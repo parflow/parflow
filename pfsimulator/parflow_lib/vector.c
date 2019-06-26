@@ -81,7 +81,14 @@ CommPkg  *NewVectorCommPkg(
                            VectorDataSpace(vector),
                            subgrid_idx,
                            1,
-                           SubvectorData(VectorSubvector(vector, subgrid_idx)));
+                           SubvectorData(VectorSubvector(vector, subgrid_idx))
+#ifndef HAVE_P4EST
+                           );
+#else
+                           ,
+                           vector);
+#endif
+
   return new_commpkg;
 }
 

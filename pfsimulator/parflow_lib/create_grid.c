@@ -214,7 +214,7 @@ Grid           *CreateGrid(
         /* Parent subgrid gets access to this child */
         s0->ghostChildren[SubgridGhostIdx(gs0)] = SubgridLocIdx(gs0);
 
-        /* For an inner subgrid, its ghost index stores its child_id.
+        /* For a 'ghost child' subgrid, its ghost index stores its child_id.
          * We will encode it together with its parent local index as
          * -(nchildren * parent_local_index + child_id) + 2; See region.h */
         SubgridGhostIdx(gs0) =

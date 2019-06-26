@@ -58,8 +58,13 @@ CommPkg  *NewCharVectorUpdatePkg(
                             ComputePkgRecvRegion(compute_pkg),
                             CharVectorDataSpace(charvector), 0,
                             CharVectorNC(charvector),
-                            (double*)CharVectorData(charvector));
-
+                            (double*)CharVectorData(charvector)
+#ifndef HAVE_P4EST
+                            );
+#else
+                            ,
+                            NULL );
+#endif
   return new_comm_pkg;
 }
 
