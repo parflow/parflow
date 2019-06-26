@@ -387,7 +387,7 @@ void  CommRegFromStencil(
                 /* We try to intersect a coarse subgrid 'sc' with a fine shifted
                  * one 'sf'. To get the right values we replace sf by its
                  * shifted parent and perform the intersection. */
-                if (which_child > 0 && r==0)
+                if (which_child >= 0 && r==0)
                 {
                   ix = SubgridIX(subgrid1);
                   iy = SubgridIY(subgrid1);
@@ -412,7 +412,7 @@ void  CommRegFromStencil(
                 }
 
                 /* Replace sc by a suitable 'ghost children' */
-                if (which_child > 0 && r==1)
+                if (which_child >= 0 && r==1)
                 {
                   s = SubgridArraySubgrid(subgrids, subgrid0->ghostChildren[which_child]);
                   subgrid2 = IntersectSubgrids(s, subgrid1);
@@ -426,7 +426,7 @@ void  CommRegFromStencil(
                 /* We try to intersect a fine subgrid 'sf' with a coarse shifted
                  * one 'sc'. To get the right values we replace sf by its parent
                  * and then map the result of the intersection to sf. */
-                if (which_child > 0)
+                if (which_child >= 0)
                 {
                   ix = SubgridIX(subgrid0);
                   iy = SubgridIY(subgrid0);
@@ -494,7 +494,7 @@ void  CommRegFromStencil(
                 if (USE_P4EST)
                 {
 #ifdef HAVE_P4EST
-                  s = (which_child > 0) ? s : subgrid1;
+                  s = (which_child >= 0) ? s : subgrid1;
                   SubgridLocIdx(subgrid2) = SubgridLocIdx(s);
                   SubgridGhostIdx(subgrid2) = SubgridGhostIdx(s);
                   SubgridOwnerTree(subgrid2) = SubgridOwnerTree(s);
@@ -509,7 +509,7 @@ void  CommRegFromStencil(
                 if (USE_P4EST)
                 {
 #ifdef HAVE_P4EST
-                  s = (which_child > 0) ? s : subgrid0;
+                  s = (which_child >= 0) ? s : subgrid0;
                   SubgridLocIdx(subgrid2) = SubgridLocIdx(s);
                   SubgridGhostIdx(subgrid2) = SubgridGhostIdx(s);
                   SubgridOwnerTree(subgrid2) = SubgridOwnerTree(s);
