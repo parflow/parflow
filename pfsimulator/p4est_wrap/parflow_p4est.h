@@ -21,7 +21,10 @@ typedef struct parflow_p4est_quad_data {
   Subgrid *pf_subgrid;
 } parflow_p4est_quad_data_t;
 
-typedef parflow_p4est_quad_data_t parflow_p4est_ghost_data_t;
+typedef struct parflow_p4est_ghost_data {
+  Subgrid *pf_subgrid;
+  int     ghost_children[8];
+} parflow_p4est_ghost_data_t;
 
 typedef struct parflow_p4est_sg_param {
   /** These values are set just once **/
@@ -135,7 +138,25 @@ int             parflow_p4est_qiter_get_tree(parflow_p4est_qiter_t * qiter);
 /** Get index in the ghost layer of the quadrant in the passed iterator */
 int             parflow_p4est_qiter_get_ghost_idx(parflow_p4est_qiter_t * qiter);
 
+/** Get level of the current quadrant in the passed iterator */
 int             parflow_p4est_qiter_get_level(parflow_p4est_qiter_t * qiter);
+
+/** Get mirror status of the current quadrant in the passed iterator */
+int             parflow_p4est_qiter_is_mirror (parflow_p4est_qiter_t * qiter);
+
+/** Get mirror index of the current quadrant in the passed iterator */
+int             parflow_p4est_qiter_mirror_idx (parflow_p4est_qiter_t * qiter);
+
+/** Retrieve number of mirrors in this process */
+int             parflow_p4est_qiter_num_mirrors (parflow_p4est_qiter_t * qiter);
+
+/** If the  current quadrant is a mirror sets data to communicate to neighbors */
+void   parflow_p4est_ghost_prepare_exchange (parflow_p4est_grid_t * pfgrid,
+                                             parflow_p4est_qiter_t * qiter,
+                                             int * g_children_info);
+
+/** Share inner ghosts information */
+void parflow_p4est_ghost_exchange (parflow_p4est_grid_t * pfgrid);
 
 /** Retrieve a pointer to the information placed on each ghost quadrant */
 parflow_p4est_ghost_data_t

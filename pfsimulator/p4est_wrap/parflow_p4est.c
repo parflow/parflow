@@ -150,6 +150,22 @@ parflow_p4est_grid_mesh_destroy(parflow_p4est_grid_t *pfgrid)
   }
 }
 
+int
+parflow_p4est_get_nmirrors (parflow_p4est_grid_t * pfgrid)
+{
+  int dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
+
+  if (dim == 2)
+  {
+    return (int) pfgrid->p.p4->ghost->mirrors.elem_count;
+  }
+  else
+  {
+    P4EST_ASSERT(dim == 3);
+    return (int) pfgrid->p.p4->ghost->mirrors.elem_count;
+  }
+}
+
 void
 parflow_p4est_get_zneigh(Subgrid *               subgrid,
                          parflow_p4est_qiter_t * qiter,
@@ -424,6 +440,93 @@ parflow_p4est_qiter_get_ghost_idx(parflow_p4est_qiter_t * qiter)
 }
 
 int
+parflow_p4est_qiter_is_mirror (parflow_p4est_qiter_t * qiter)
+{
+  int dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);
+
+  if (dim == 2)
+  {
+    return qiter->q.qiter_2d->is_mirror;
+  }
+  else
+  {
+    P4EST_ASSERT(dim == 3);
+    return qiter->q.qiter_3d->is_mirror;
+  }
+}
+
+void
+parflow_p4est_ghost_prepare_exchange (parflow_p4est_grid_t * pfgrid,
+                                      parflow_p4est_qiter_t * qiter,
+                                      int * g_children_info)
+{
+  parflow_p4est_grid_2d_t * pfg2d;
+  parflow_p4est_grid_3d_t * pfg3d;
+  parflow_p4est_ghost_data_t   *gd;
+  int cmidx;
+  int dim = PARFLOW_P4EST_GET_QITER_DIM(pfgrid);
+
+  if (parflow_p4est_qiter_is_mirror(qiter)){
+      switch (dim) {
+      case 2:
+          cmidx = qiter->q.qiter_2d->current_mirror_idx;
+          pfg2d = pfgrid->p.p4;
+          gd = &pfg2d->mirror_data[cmidx];
+          pfg2d->mpointer[cmidx] = gd;
+          if (g_children_info != NULL)
+              memcpy (gd->ghost_children, g_children_info,
+                      P4EST_CHILDREN * sizeof (int));
+          break;
+      case 3:
+          cmidx = qiter->q.qiter_3d->current_mirror_idx;
+          pfg3d = pfgrid->p.p8;
+          gd = &pfg3d->mirror_data[cmidx];
+          pfg3d->mpointer[cmidx] = gd;
+          if (g_children_info != NULL)
+              memcpy (gd->ghost_children, g_children_info,
+                      P8EST_CHILDREN * sizeof (int));
+          break;
+      default:
+          SC_ABORT_NOT_REACHED ();
+          break;
+      }
+  }
+}
+
+
+int
+parflow_p4est_qiter_mirror_idx (parflow_p4est_qiter_t * qiter)
+{
+  int dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);
+
+  if (dim == 2)
+  {
+    return qiter->q.qiter_2d->current_mirror_idx;
+  }
+  else
+  {
+    P4EST_ASSERT(dim == 3);
+    return qiter->q.qiter_3d->current_mirror_idx;
+  }
+}
+
+int
+parflow_p4est_qiter_num_mirrors (parflow_p4est_qiter_t * qiter)
+{
+  int dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);
+
+  if (dim == 2)
+  {
+    return qiter->q.qiter_2d->num_mirrors;
+  }
+  else
+  {
+    P4EST_ASSERT(dim == 3);
+    return qiter->q.qiter_3d->num_mirrors;
+  }
+}
+
+int
 parflow_p4est_qiter_get_level(parflow_p4est_qiter_t * qiter)
 {
   int dim = PARFLOW_P4EST_GET_QITER_DIM(qiter);
@@ -456,6 +559,21 @@ parflow_p4est_get_ghost_data(parflow_p4est_grid_t *  pfgrid,
     return parflow_p4est_get_ghost_data_3d(pfgrid->p.p8,
                                            qiter->q.qiter_3d);
   }
+}
+
+void parflow_p4est_ghost_exchange (parflow_p4est_grid_t * pfgrid)
+{
+    int dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
+
+    if (dim == 2)
+    {
+        parflow_p4est_ghost_exchange_2d (pfgrid->p.p4);
+    }
+    else
+    {
+        P4EST_ASSERT(dim == 3);
+        parflow_p4est_ghost_exchange_3d (pfgrid->p.p8);
+    }
 }
 
 int

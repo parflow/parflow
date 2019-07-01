@@ -160,9 +160,15 @@ parflow_p4est_grid_2d_new(int Px, int Py
 
   EndTiming(P4ESTimingIndex);
 
-  pfg->ghost_data =
-    sc_array_new_count(sizeof(parflow_p4est_ghost_data_t),
-                       pfg->ghost->ghosts.elem_count);
+  /* Allocate storage for ghost quadrants (ghost Subgrids) */
+  pfg->ghost_data = P4EST_ALLOC_ZERO (parflow_p4est_ghost_data_t,
+                                      pfg->ghost->ghosts.elem_count);
+
+  /* Allocate storage to share information between ghost and mirror quadrants */
+  pfg->mpointer = P4EST_ALLOC (void *, pfg->ghost->mirrors.elem_count);
+
+  pfg->mirror_data = P4EST_ALLOC_ZERO (parflow_p4est_ghost_data_t,
+                                       pfg->ghost->mirrors.elem_count);
 
   num_trees = pfg->Tx * pfg->Ty;
 #ifdef P4_TO_P8
@@ -217,11 +223,13 @@ parflow_p4est_grid_2d_destroy(parflow_p4est_grid_2d_t * pfg)
   P4EST_ASSERT(pfg->mesh == NULL);
 
   p4est_ghost_destroy(pfg->ghost);
-  sc_array_destroy(pfg->ghost_data);
   p4est_destroy(pfg->forest);
   p4est_connectivity_destroy(pfg->connect);
   P4EST_FREE(pfg->lexic_to_tree);
   P4EST_FREE(pfg->tree_to_lexic);
+  P4EST_FREE(pfg->ghost_data);
+  P4EST_FREE(pfg->mpointer);
+  P4EST_FREE(pfg->mirror_data);
   P4EST_FREE(pfg);
 }
 
@@ -405,6 +413,7 @@ static parflow_p4est_qiter_2d_t *
 parflow_p4est_qiter_info_2d(parflow_p4est_qiter_2d_t * qit_2d)
 {
   int rank;
+  p4est_quadrant_t   *mirror;
 
   P4EST_ASSERT(qit_2d != NULL);
   if (qit_2d->itype & PARFLOW_P4EST_QUAD)
@@ -412,6 +421,25 @@ parflow_p4est_qiter_info_2d(parflow_p4est_qiter_2d_t * qit_2d)
     qit_2d->quad =
       p4est_quadrant_array_index(qit_2d->tquadrants,
                                  (size_t)qit_2d->q);
+
+    if (qit_2d->local_idx == qit_2d->next_mirror_idx)
+    {
+      if (++qit_2d->current_mirror_idx + 1 < qit_2d->num_mirrors)
+      {
+        mirror = p4est_quadrant_array_index (&qit_2d->ghost->mirrors,
+                                             qit_2d->current_mirror_idx + 1);
+        qit_2d->next_mirror_idx = (int) mirror->p.piggy3.local_num;
+      }
+      else
+      {
+        qit_2d->next_mirror_idx = -1;
+      }
+      qit_2d->is_mirror = 1;
+    }
+    else
+    {
+      qit_2d->is_mirror = 0;
+    }
   }
   else
   {
@@ -421,6 +449,7 @@ parflow_p4est_qiter_info_2d(parflow_p4est_qiter_2d_t * qit_2d)
                                  (size_t)qit_2d->g);
     qit_2d->which_tree = qit_2d->quad->p.piggy3.which_tree;
     qit_2d->local_idx = qit_2d->quad->p.piggy3.local_num;
+
     /** Update owner rank **/
     rank = 0;
     while (qit_2d->ghost->proc_offsets[rank + 1] <= qit_2d->g)
@@ -440,6 +469,7 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
                             parflow_p4est_iter_type_t itype)
 {
   parflow_p4est_qiter_2d_t *qit_2d;
+  p4est_quadrant_t   *mirror;
 
   /** This processor is empty */
   if (pfg->forest->local_num_quadrants == 0)
@@ -453,6 +483,7 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
   qit_2d = P4EST_ALLOC_ZERO(parflow_p4est_qiter_2d_t, 1);
   qit_2d->itype = itype;
   qit_2d->connect = pfg->connect;
+  qit_2d->ghost = pfg->ghost;
 
   if (itype & PARFLOW_P4EST_QUAD)
   {
@@ -466,6 +497,17 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
     qit_2d->tquadrants = &qit_2d->tree->quadrants;
     qit_2d->Q = (int)qit_2d->tquadrants->elem_count;
 
+    /** mirror tracking */
+    qit_2d->current_mirror_idx = qit_2d->next_mirror_idx = -1;
+
+    if(qit_2d->ghost != NULL)
+        qit_2d->num_mirrors = (int) qit_2d->ghost->mirrors.elem_count;
+
+    if (qit_2d->num_mirrors > 0) {
+      mirror = p4est_quadrant_array_index (&qit_2d->ghost->mirrors, 0);
+      qit_2d->next_mirror_idx = (int) mirror->p.piggy3.local_num;
+    }
+
     /** Populate ghost fields with invalid values **/
     qit_2d->G = -1;
     qit_2d->g = -1;
@@ -475,7 +517,6 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
     P4EST_ASSERT(itype & PARFLOW_P4EST_GHOST);
 
     /** Populate necesary fields **/
-    qit_2d->ghost = pfg->ghost;
     qit_2d->ghost_layer = &qit_2d->ghost->ghosts;
     qit_2d->G = (int)qit_2d->ghost_layer->elem_count;
     P4EST_ASSERT(qit_2d->G >= 0);
@@ -491,6 +532,10 @@ parflow_p4est_qiter_init_2d(parflow_p4est_grid_2d_t * pfg,
     /** Populate quad fields with invalid values **/
     qit_2d->Q = -1;
     qit_2d->q = -1;
+
+    /** By definition, ghost quads are never mirrors */
+    qit_2d->is_mirror = 0;
+    qit_2d->current_mirror_idx=qit_2d->next_mirror_idx = -1;
   }
 
   P4EST_ASSERT(qit_2d != NULL);
@@ -552,22 +597,22 @@ parflow_p4est_qiter_next_2d(parflow_p4est_qiter_2d_t * qit_2d)
   return parflow_p4est_qiter_info_2d(qit_2d);
 }
 
+
 parflow_p4est_quad_data_t *
 parflow_p4est_get_quad_data_2d(parflow_p4est_qiter_2d_t * qit_2d)
 {
-  return (parflow_p4est_quad_data_t*)qit_2d->quad->p.user_data;
+  P4EST_ASSERT (qit_2d->itype & PARFLOW_P4EST_QUAD);
+
+  return (parflow_p4est_quad_data_t*) qit_2d->quad->p.user_data;
 }
 
 parflow_p4est_ghost_data_t *
 parflow_p4est_get_ghost_data_2d(parflow_p4est_grid_2d_t *  pfg,
-                                parflow_p4est_qiter_2d_t * qit_2d)
+                               parflow_p4est_qiter_2d_t * qit_2d)
 {
-  sc_array_t     *gdata = pfg->ghost_data;
-
   P4EST_ASSERT(qit_2d->itype & PARFLOW_P4EST_GHOST);
 
-  return (parflow_p4est_ghost_data_t*)sc_array_index_int(gdata,
-                                                         qit_2d->g);
+  return &pfg->ghost_data[qit_2d->g];
 }
 
 /*
@@ -757,8 +802,8 @@ parflow_p4est_get_brick_coord_2d(Subgrid *                 subgrid,
    * associated to it, so it has to be created */
   if (SubgridGhostIdx(subgrid) < -1)
   {
-     child_id = (2-SubgridGhostIdx(subgrid)) % (1 << P4EST_DIM);
-     parent_lidx = (2-SubgridGhostIdx(subgrid)) / (1 << P4EST_DIM);
+     child_id = (-2-SubgridGhostIdx(subgrid)) % (1 << P4EST_DIM);
+     parent_lidx = (-2-SubgridGhostIdx(subgrid)) / (1 << P4EST_DIM);
      tree = p4est_tree_array_index(pfg->forest->trees, which_tree);
      which_quad = parent_lidx - tree->quadrants_offset;
 
@@ -825,4 +870,11 @@ int parflow_p4est_check_neigh_2d(Subgrid *sfine, Subgrid *scoarse,
   }
 
   return is_neigh ? ( child_id ^ (1 << face) ) : -1;
+}
+
+void parflow_p4est_ghost_exchange_2d (parflow_p4est_grid_2d_t * pfg_2d)
+{
+    p4est_ghost_exchange_custom (pfg_2d->forest, pfg_2d->ghost,
+                                 sizeof (parflow_p4est_ghost_data_t),
+                                 pfg_2d->mpointer, pfg_2d->ghost_data);
 }

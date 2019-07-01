@@ -94,6 +94,7 @@ Grid           *CreateGrid(
   int initial_level;
   int num_local_quads;
   int                        *z_levels;
+  int                        *g_exchange_info;
   int i, lz, pz, offset;
   int nchildren;
 #endif
@@ -192,9 +193,13 @@ Grid           *CreateGrid(
 
       parflow_p4est_inner_ghost_create(inner_ghost_subgrids,
                                        quad_data->pf_subgrid, qiter, pfgrid);
+
+      g_exchange_info = quad_data->pf_subgrid->ghostChildren;
+
+      parflow_p4est_ghost_prepare_exchange (pfgrid, qiter, g_exchange_info);
     }
 
-    /* Check that all local quadrants were visited */
+    /* Assert that all local quadrants were visited */
     P4EST_ASSERT(num_local_quads == SubgridArraySize(subgrids));
 
     /* If any, append 'ghost children' to the local subgrids array */
@@ -223,11 +228,11 @@ Grid           *CreateGrid(
         AppendSubgrid(gs0, subgrids);
     }
 
-    /* TODO: mask loops to avoid this HACK */
+    /* ParFlow should not see or loop over the inner ghost subgrids*/
     SubgridArraySize(subgrids) = num_local_quads;
 
-    /*Destroy p4est mesh structure */
-    parflow_p4est_grid_mesh_destroy(pfgrid);
+    /* Share ghost information */
+    parflow_p4est_ghost_exchange (pfgrid);
 
     /* Loop over the ghost layer */
     for (qiter = parflow_p4est_qiter_init(pfgrid, PARFLOW_P4EST_GHOST);
@@ -264,6 +269,9 @@ Grid           *CreateGrid(
 
       AppendSubgrid(ghost_data->pf_subgrid, all_subgrids);
     }
+
+    /*Destroy p4est mesh structure */
+    parflow_p4est_grid_mesh_destroy(pfgrid);
 
     /*There is no PxQxR processor arrange with p4est, set invalid values*/
     GlobalsP = GlobalsQ = GlobalsR = -1;

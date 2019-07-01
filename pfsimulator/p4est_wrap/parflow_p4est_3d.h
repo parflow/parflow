@@ -14,11 +14,13 @@ typedef struct parflow_p4est_grid_3d {
   p8est_t        *forest;
   p8est_connectivity_t *connect;
   p8est_ghost_t  *ghost;
-  sc_array_t     *ghost_data;
+  parflow_p4est_ghost_data_t     *ghost_data;
 
   p8est_mesh_t   *mesh;         /* Allocated only during ParFlow grid
                                  * initialization and destroyed inmediatly
                                  * afterwards */
+  void          **mpointer;
+  parflow_p4est_ghost_data_t *mirror_data;
 
   p4est_topidx_t *lexic_to_tree;   /* lexicographical order to brick order */
   p4est_topidx_t *tree_to_lexic;   /* brick order to lexicographical order */
@@ -28,6 +30,7 @@ typedef struct parflow_p4est_qiter_3d {
   /** Fields used by both types of iterators */
   parflow_p4est_iter_type_t itype;   /* Flag identifiying iterator type*/
   p8est_connectivity_t *connect;
+  p8est_ghost_t  *ghost;
   p4est_topidx_t which_tree;        /* owner tree of the current quadrant */
   p8est_quadrant_t *quad;           /* current quadrant */
   int owner_rank;               /* processor owning current quadrant */
@@ -40,8 +43,13 @@ typedef struct parflow_p4est_qiter_3d {
   int Q;                        /* quadrants in this tree */
   int q;                        /* index of current quad in this tree */
 
+  int is_mirror;                /* touches the current quad the parallel bdry
+                                 * from the inside? */
+  int current_mirror_idx;
+  int next_mirror_idx;
+  int num_mirrors;
+
   /** Fields used only for ghost iterator */
-  p8est_ghost_t  *ghost;
   sc_array_t     *ghost_layer;
   int G;                        /* ghosts quadrants in this layer */
   int g;                        /* index of current quad in this layer */
