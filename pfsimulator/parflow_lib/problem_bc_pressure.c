@@ -644,7 +644,7 @@ BCStruct    *BCPressure(
 
             if (area > 0.0)
             {
-              volumetric_flux = FluxVolmetricValue(interval_data)
+              volumetric_flux = FluxVolumetricValue(interval_data)
                                 / area;
               BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
               {

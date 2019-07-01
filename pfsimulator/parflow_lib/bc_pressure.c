@@ -109,10 +109,10 @@ void FreeBCPressureData(
                   GetBCPressureTypeStruct(DirEquilRefPatch, interval_data, bc_pressure_data,
                                           i, interval_number);
 
-                  if (BCPressureType0ValueAtInterfaces(
+                  if (DirEquilRefPatchValueAtInterfaces(
                                                        interval_data))
                   {
-                    tfree(BCPressureType0ValueAtInterfaces(
+                    tfree(DirEquilRefPatchValueAtInterfaces(
                                                            interval_data));
                   }
                   break;
@@ -123,18 +123,18 @@ void FreeBCPressureData(
                   GetBCPressureTypeStruct(DirEquilPLinear, interval_data, bc_pressure_data,
                                           i, interval_number);
 
-                  if (BCPressureType1Points(interval_data))
+                  if (DirEquilPLinearPoints(interval_data))
                   {
-                    tfree(BCPressureType1Points(interval_data));
+                    tfree(DirEquilPLinearPoints(interval_data));
                   }
-                  if (BCPressureType1Values(interval_data))
+                  if (DirEquilPLinearValues(interval_data))
                   {
-                    tfree(BCPressureType1Values(interval_data));
+                    tfree(DirEquilPLinearValues(interval_data));
                   }
-                  if (BCPressureType1ValueAtInterfaces(
+                  if (DirEquilPLinearValueAtInterfaces(
                                                        interval_data))
                   {
-                    tfree(BCPressureType1ValueAtInterfaces(
+                    tfree(DirEquilPLinearValueAtInterfaces(
                                                            interval_data));
                   }
                   break;
@@ -161,9 +161,9 @@ void FreeBCPressureData(
                   GetBCPressureTypeStruct(PressureFile, interval_data, bc_pressure_data,
                                           i, interval_number);
 
-                  if (BCPressureType4FileName(interval_data))
+                  if (PressureFileName(interval_data))
                   {
-                    tfree(BCPressureType4FileName(interval_data));
+                    tfree(PressureFileName(interval_data));
                   }
                   break;
                 }
@@ -173,9 +173,9 @@ void FreeBCPressureData(
                   GetBCPressureTypeStruct(FluxFile, interval_data, bc_pressure_data,
                                           i, interval_number);
 
-                  if (BCPressureType5FileName(interval_data))
+                  if (FluxFileName(interval_data))
                   {
-                    tfree(BCPressureType5FileName(interval_data));
+                    tfree(FluxFileName(interval_data));
                   }
                   break;
                 }
