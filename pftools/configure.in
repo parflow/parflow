@@ -60,12 +60,12 @@ if test -n "$with_CC"; then
    CC=$with_CC
 else
    AC_PROG_CC
+   AC_PROG_CC_STDC
 fi
 
 AC_PROG_CPP
 
 AC_ISC_POSIX
-
 
 dnl
 dnl Find ar for archiving

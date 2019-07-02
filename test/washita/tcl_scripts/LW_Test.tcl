@@ -495,15 +495,9 @@ pfset Solver.Linear.Preconditioner.PCMatrixType          FullJacobian
 #-----------------------------------------------------------------------------
 # Distribute inputs
 #-----------------------------------------------------------------------------
-pfset ComputationalGrid.NX                41 
-pfset ComputationalGrid.NY                41 
-pfset ComputationalGrid.NZ                1
-pfdist LW.slopex.pfb
-pfdist LW.slopey.pfb
+pfdist -nz 1 LW.slopex.pfb
+pfdist -nz 1 LW.slopey.pfb
 
-pfset ComputationalGrid.NX                41 
-pfset ComputationalGrid.NY                41 
-pfset ComputationalGrid.NZ                50 
 pfdist IndicatorFile_Gleeson.50z.pfb
 pfdist press.init.pfb
 
