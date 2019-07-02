@@ -57,6 +57,7 @@
 #define ExactSolution    6
 #define OverlandFlow     7
 #define OverlandFlowPFB  8
+#define SeepageFace      9
 
 
 /*----------------------------------------------------------------
@@ -101,6 +102,9 @@
     })                                              \
   BC_TYPE(OverlandFlowPFB, {                        \
       char **filenames;                             \
+    })                                              \
+  BC_TYPE(SeepageFace, {                            \
+      double *values;                               \
     })
 
 /*----------------------------------------------------------------
@@ -119,53 +123,6 @@
 #define ForEachInterval(interval_division, interval_number)  \
   for (interval_number = 0; interval_number < interval_division; interval_number++)
 
-
-/*----------------------------------------------------------------
- * BCPressurePackage Actions
- *----------------------------------------------------------------*/
-#define InputType(public_xtra, i)               \
-  ((public_xtra)->input_types[(i)])
-
-/* Send cases wrapped in {} for sanity */
-#define Do_SetupPatchTypes(public_xtra, interval, i, cases)    \
-  switch(InputType(public_xtra, i))                            \
-  {                                                            \
-    cases;                                                     \
-  }
-
-#define SetupPatchType(type, body)                               \
-  case type:                                                     \
-  {                                                              \
-    body;                                                        \
-    break;                                                       \
-  }
-
-
-#define Do_SetupPatchIntervals(public_xtra, interval, i, cases)  \
-  switch(InputType(public_xtra, i))                            \
-  {                                                            \
-    cases;                                               \
-  }
-
-#define SetupPatchInterval(type, body)          \
-  case type:                                    \
-  {                                             \
-    body;                                       \
-    break;                                      \
-  }
-
-#define Do_FreePatches(public_xtra, i, ...)                   \
-  switch(InputType(public_xtra, i))                           \
-  {                                                           \
-    __VA_ARGS__;                                              \
-  }
-
-#define FreePatch(type, body)                   \
-  case type:                                    \
-  {                                             \
-    body;                                       \
-    break;                                      \
-  }
 
 /*----------------------------------------------------------------
  * BCPressure Values
@@ -211,6 +168,9 @@
     })                                              \
   BC_TYPE(OverlandFlowPFB, {                        \
       char *filename;                               \
+    })                                              \
+  BC_TYPE(SeepageFace, {                            \
+      double value;                                 \
     })
 
 
@@ -316,6 +276,9 @@ typedef struct {
 /*--------------------------------------------------------------------------*/
 #define OverlandFlowPFBFileName(patch) \
   ((patch)->filename)
+/*--------------------------------------------------------------------------*/
+#define SeepageFaceValue(patch)                 \
+  ((patch)->value)
 
 /*--------------------------------------------------------------------------
  * Accessor macros: BCPressureData
@@ -359,5 +322,54 @@ typedef struct {
 /*--------------------------------------------------------------------------
  * BCPressure Data constants used in the program.
  *--------------------------------------------------------------------------*/
+
+
+/*----------------------------------------------------------------
+ * BCPressurePackage Actions
+ *----------------------------------------------------------------*/
+#define InputType(public_xtra, i)               \
+  ((public_xtra)->input_types[(i)])
+
+/* Send cases wrapped in {} for sanity */
+#define Do_SetupPatchTypes(public_xtra, interval, i, cases)    \
+  switch(InputType(public_xtra, i))                            \
+  {                                                            \
+    cases;                                                     \
+  }
+
+#define SetupPatchType(type, body)                               \
+  case type:                                                     \
+  {                                                              \
+    body;                                                        \
+    break;                                                       \
+  }
+
+
+#define Do_SetupPatchIntervals(public_xtra, interval, i, cases)  \
+  switch(InputType(public_xtra, i))                            \
+  {                                                            \
+    cases;                                               \
+  }
+
+#define SetupPatchInterval(type, body)          \
+  case type:                                    \
+  {                                             \
+    body;                                       \
+    break;                                      \
+  }
+
+#define Do_FreePatches(public_xtra, i, ...)                   \
+  switch(InputType(public_xtra, i))                           \
+  {                                                           \
+    __VA_ARGS__;                                              \
+  }
+
+#define FreePatch(type, body)                   \
+  case type:                                    \
+  {                                             \
+    body;                                       \
+    break;                                      \
+  }
+
 
 #endif

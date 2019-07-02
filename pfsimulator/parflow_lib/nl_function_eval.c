@@ -1516,6 +1516,114 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
           break;
         }         /* End OverlandBC case */
+
+        case SeepageFaceBC:
+        {
+          BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is
+          {
+            ip = SubvectorEltIndex(p_sub, i, j, k);
+            io = SubmatrixEltIndex(x_ssl_sub, i, j, grid2d_iz);
+
+            x_dir_g = 0.0;
+            y_dir_g = 0.0;
+            z_dir_g = 1.0;
+
+            del_x_slope = 1.0;
+            del_y_slope = 1.0;
+
+            if (fdir[0])
+            {
+              switch(fdir[0])
+              {
+                case -1:
+                {
+                  dir = -1;
+                  u_old = 0.0;
+                  break;
+                }
+
+                case 1:
+                {
+                  dir = 1;
+                  u_old = 0.0;
+                  break;
+                }
+              }
+              u_new = z_mult_dat[ip] * ffx * del_y_slope;
+            } /* End if (fdir[0]) */
+            else if (fdir[1])
+            {
+              switch (fdir[1])
+              {
+                case -1:
+                {
+                  dir = -1;
+                  u_old = 0.0;
+                  break;
+                }
+
+                case 1:
+                {
+                  dir = 1;
+                  u_old = 0.0;
+                  break;
+                }
+              }
+              u_new = z_mult_dat[ip] * ffy * del_x_slope;
+            } /* End else if (fdir[1]) */
+            else if (fdir[2])
+            {
+              switch (fdir[2])
+              {
+                case -1:
+                {
+                  dir = -1;
+                  u_old = 0.0;
+                  break;
+                }
+
+                case 1:
+                {
+                  dir = 1;
+                  u_old = 0.0;
+                  break;
+                }
+              }
+              u_new = ffz * del_x_slope * del_y_slope;
+            } /* End else if (fdir[2]) */
+
+            /* Remove the boundary condition computed above */
+            fp[ip] -= dt * dir * u_old;
+            // add source boundary terms
+            u_new = u_new * bc_patch_values[ival];
+            fp[ip] += dt * dir * u_new;
+          }); /* End BCStructPatchLoop */
+
+          BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+          {
+            if (fdir[2])
+            {
+              switch (fdir[2])
+              {
+                case 1:
+                {
+                  dir = 1;
+
+                  ip = SubvectorEltIndex(p_sub, i, j, k);
+                  io = SubmatrixEltIndex(x_sl_sub, i, j, 0);
+
+                  /* add flux loss equal to excess head that overwrites the prior overland flux */
+                  q_overlnd = (vol / dz) * dt * (pfmax(pp[ip], 0.0) - 0.0); //@RMM
+
+                  fp[ip] += q_overlnd;
+                  break;
+                }
+              }
+            } /* End if (fdir[2]) */
+          }); /* End BCStructPatchLoop */
+
+          break;
+        } /* End SeepageFaceBC case */
       }        /* End switch BCtype */
     }          /* End ipatch loop */
   }            /* End subgrid loop */
@@ -1732,6 +1840,3 @@ int  NlFunctionEvalSizeOfTempData()
 {
   return 0;
 }
-
-
-

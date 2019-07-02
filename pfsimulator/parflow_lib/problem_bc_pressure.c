@@ -348,7 +348,7 @@ BCStruct    *BCPressure(
 
 
           break;
-        }                        /* End case 0 */
+        } /* End DirEquilRefPatch */
 
         case DirEquilPLinear:
         {
@@ -557,7 +557,7 @@ BCStruct    *BCPressure(
             });                  /* End BCStructPatchLoop body */
           }
           break;
-        }
+        } /* End DirEquilPLinear */
 
         case FluxConst:
         {
@@ -588,7 +588,7 @@ BCStruct    *BCPressure(
             });
           }       /* End subgrid loop */
           break;
-        }
+        } /* End FluxConst */
 
         case FluxVolumetric:
         {
@@ -653,7 +653,7 @@ BCStruct    *BCPressure(
             }
           }           /* End subgrid loop */
           break;
-        }
+        } /* End FluxVolumetric */
 
         case PressureFile:
         {
@@ -721,7 +721,7 @@ BCStruct    *BCPressure(
             FreeVector(tmp_vector);
           }             /* End subgrid loop */
           break;
-        }
+        } /* End PressureFile */
 
         case FluxFile:
         {
@@ -766,7 +766,7 @@ BCStruct    *BCPressure(
             FreeVector(tmp_vector);
           }         /* End subgrid loop */
           break;
-        }
+        } /* End FluxFile */
 
         case ExactSolution:
         {
@@ -883,7 +883,7 @@ BCStruct    *BCPressure(
             }       /* End switch */
           }         /* End subgrid loop */
           break;
-        }
+        } /* End ExactSolution */
 
         case OverlandFlow:
         {
@@ -915,7 +915,7 @@ BCStruct    *BCPressure(
             });
           }       /* End subgrid loop */
           break;
-        }
+        } /* End OverlandFlow */
 
         case OverlandFlowPFB:
         {
@@ -965,7 +965,36 @@ BCStruct    *BCPressure(
             FreeVector(tmp_vector);
           }              /* End subgrid loop */
           break;
-        }
+        } /* End OverlandFlowPFB */
+
+        case SeepageFace:
+        {
+          GetBCPressureTypeStruct(SeepageFace, interval_data, bc_pressure_data,
+                                  ipatch, interval_number);
+          double flux;
+
+          flux = SeepageFaceValue(interval_data);
+          ForSubgridI(is, subgrids)
+          {
+            subgrid = SubgridArraySubgrid(subgrids, is);
+
+            patch_values_size = 0;
+            BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+            {
+              patch_values_size++;
+            });
+
+            patch_values = ctalloc(double, patch_values_size);
+            values[ipatch][is] = patch_values;
+
+            BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+            {
+              patch_values[ival] = flux;
+            });
+          }
+
+          break;
+        } /* End SeepageFace */
       }
     }
   }
