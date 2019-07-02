@@ -1519,7 +1519,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
         case SeepageFaceBC:
         {
-          BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is
+          BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
             ip = SubvectorEltIndex(p_sub, i, j, k);
             io = SubmatrixEltIndex(x_ssl_sub, i, j, grid2d_iz);
