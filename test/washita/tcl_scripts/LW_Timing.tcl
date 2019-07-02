@@ -19,19 +19,22 @@ pfset Process.Topology.R 1
 #-----------------------------------------------------------------------------
 # Make a directory for the simulation and copy inputs into it
 #-----------------------------------------------------------------------------
-exec mkdir "Outputs"
+file mkdir "Outputs"
 cd "./Outputs"
 
 # ParFlow Inputs
-file copy -force "../../parflow_input/slopes.nc" .
+file copy -force "../../parflow_input/LW.slopex.pfb" .
+file copy -force "../../parflow_input/LW.slopey.pfb" .
 file copy -force "../../parflow_input/IndicatorFile_Gleeson.50z.pfb"   .
-file copy -force "../../parflow_input/press.init.nc"  .
+file copy -force "../../parflow_input/press.init.pfb"  .
 
 #CLM Inputs
 file copy -force "../../clm_input/drv_clmin.dat" .
 file copy -force "../../clm_input/drv_vegp.dat"  .
 file copy -force "../../clm_input/drv_vegm.alluv.dat"  . 
-file copy -force "../../clm_input/metForcing.nc"  . 
+
+file delete correct_output
+file link -symbolic correct_output "../correct_output" 
 
 puts "Files Copied"
 
@@ -188,8 +191,8 @@ pfset Gravity                             1.0
 pfset TimingInfo.BaseUnit                 1.0
 pfset TimingInfo.StartCount               0.0
 pfset TimingInfo.StartTime                0.0
-pfset TimingInfo.StopTime                 72.0
-pfset TimingInfo.DumpInterval             3.0
+pfset TimingInfo.StopTime                 100.0
+pfset TimingInfo.DumpInterval             10000.0
 pfset TimeStep.Type                       Constant
 pfset TimeStep.Value                      1.0
 
@@ -284,16 +287,16 @@ pfset Patch.z-upper.BCPressure.alltime.Value	      0.0
 #-----------------------------------------------------------------------------
 # Topo slopes in x-direction
 #-----------------------------------------------------------------------------
-pfset TopoSlopesX.Type                                "NCFile"
+pfset TopoSlopesX.Type                                "PFBFile"
 pfset TopoSlopesX.GeomNames                           "domain"
-pfset TopoSlopesX.FileName                            "slopes.nc"
+pfset TopoSlopesX.FileName                            "LW.slopex.pfb"
 
 #-----------------------------------------------------------------------------
 # Topo slopes in y-direction
 #-----------------------------------------------------------------------------
-pfset TopoSlopesY.Type                                "NCFile"
+pfset TopoSlopesY.Type                                "PFBFile"
 pfset TopoSlopesY.GeomNames                           "domain"
-pfset TopoSlopesY.FileName                            "slopes.nc"
+pfset TopoSlopesY.FileName                            "LW.slopey.pfb"
 
 #-----------------------------------------------------------------------------
 # Mannings coefficient
@@ -408,12 +411,12 @@ pfset Solver.LSM                                      CLM
 pfset Solver.CLM.CLMFileDir                           "clm_output/"
 pfset Solver.CLM.Print1dOut                           False
 pfset Solver.BinaryOutDir                             False
-pfset Solver.CLM.CLMDumpInterval                      1
+pfset Solver.CLM.CLMDumpInterval                      1000000
 
-pfset Solver.CLM.MetForcing                           NC
-pfset Solver.CLM.MetFileName                          "metForcing.nc"
-#pfset Solver.CLM.MetFilePath                          "../../NLDAS/"
-pfset Solver.CLM.MetFileNT                            1
+pfset Solver.CLM.MetForcing                           3D
+pfset Solver.CLM.MetFileName                          "NLDAS"
+pfset Solver.CLM.MetFilePath                          "../../NLDAS/"
+pfset Solver.CLM.MetFileNT                            24
 pfset Solver.CLM.IstepStart                           1
 
 pfset Solver.CLM.EvapBeta                             Linear
@@ -426,22 +429,22 @@ pfset Solver.CLM.IrrigationType                       none
 #---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------
-pfset ICPressure.Type                                 NCFile
+pfset ICPressure.Type                                 PFBFile
 pfset ICPressure.GeomNames                            domain
 pfset Geom.domain.ICPressure.RefPatch                   z-upper
-pfset Geom.domain.ICPressure.FileName                   press.init.nc
+pfset Geom.domain.ICPressure.FileName                   press.init.pfb
 
 #----------------------------------------------------------------
 # Outputs
 # ------------------------------------------------------------
 #Writing output (all pfb):
 pfset Solver.PrintSubsurfData                         False
-pfset Solver.PrintPressure                            False
-pfset Solver.PrintSaturation                          False
-pfset Solver.PrintMask                                False
+pfset Solver.PrintPressure                            True
+pfset Solver.PrintSaturation                          True
+pfset Solver.PrintMask                                True
 
 pfset Solver.WriteCLMBinary                           False
-pfset Solver.PrintCLM                                 False
+pfset Solver.PrintCLM                                 True
 pfset Solver.WriteSiloSpecificStorage                 False
 pfset Solver.WriteSiloMannings                        False
 pfset Solver.WriteSiloMask                            False
@@ -480,37 +483,24 @@ pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaValue                          0.001
 pfset Solver.Nonlinear.UseJacobian                       True 
 pfset Solver.Nonlinear.DerivativeEpsilon                 1e-16
-pfset Solver.Nonlinear.StepTol				 			1e-30
+pfset Solver.Nonlinear.StepTol				 1e-30
 pfset Solver.Nonlinear.Globalization                     LineSearch
 pfset Solver.Linear.KrylovDimension                      70
 pfset Solver.Linear.MaxRestarts                           2
 
-pfset Solver.Linear.Preconditioner                       PFMG
-pfset Solver.Linear.Preconditioner.PCMatrixType     FullJacobian
+pfset Solver.Linear.Preconditioner                       PFMGOctree
+pfset Solver.Linear.Preconditioner.PCMatrixType          FullJacobian
 
-pfset NetCDF.NumStepsPerFile			5
-pfset NetCDF.CLMNumStepsPerFile                 24
-pfset NetCDF.WritePressure			True
-pfset NetCDF.WriteSaturation			True
-pfset NetCDF.WriteMannings			True
-pfset NetCDF.WriteSubsurface			True
-pfset NetCDF.WriteSlopes			True
-pfset NetCDF.WriteMask				True
-pfset NetCDF.WriteDZMultiplier			True
-pfset NetCDF.WriteEvapTrans			True
-pfset NetCDF.WriteEvapTransSum			True
-pfset NetCDF.WriteOverlandSum			True
-pfset NetCDF.WriteOverlandBCFlux		True
-pfset NetCDF.WriteCLM				True
 
 #-----------------------------------------------------------------------------
 # Distribute inputs
 #-----------------------------------------------------------------------------
-pfset ComputationalGrid.NX                41 
-pfset ComputationalGrid.NY                41 
-pfset ComputationalGrid.NZ                50 
+
+pfdist -nz 1 LW.slopex.pfb
+pfdist -nz 1 LW.slopey.pfb
 
 pfdist IndicatorFile_Gleeson.50z.pfb
+pfdist press.init.pfb
 
 #-----------------------------------------------------------------------------
 # Run Simulation 
@@ -519,15 +509,48 @@ set runname "LW"
 puts $runname
 pfrun    $runname
 
-#
-##-----------------------------------------------------------------------------
-## Undistribute outputs
-##-----------------------------------------------------------------------------
-#pfundist $runname
-#pfundist press.init.pfb
-#pfundist LW.slopex.pfb
-#pfundist LW.slopey.pfb
-#pfundist IndicatorFile_Gleeson.50z.pfb
-#
+#-----------------------------------------------------------------------------
+# Undistribute outputs
+#-----------------------------------------------------------------------------
+pfundist $runname
+pfundist press.init.pfb
+pfundist LW.slopex.pfb
+pfundist LW.slopey.pfb
+pfundist IndicatorFile_Gleeson.50z.pfb
+
 puts "ParFlow run Complete"
+
+source ../../../pftest.tcl
+
+set sig_digits 4
+
+set passed 1
+
+if ![pftestFile $runname.out.press.00000.pfb "Max difference in Pressure" $sig_digits] {
+    set passed 0
+}
+
+if ![pftestFile $runname.out.satur.00000.pfb "Max difference in Pressure" $sig_digits] {
+    set passed 0
+}
+
+foreach file "LW.out.eflx_lh_tot.00012.pfb
+    LW.out.qflx_evap_soi.00012.pfb LW.out.swe_out.00012.pfb
+    LW.out.eflx_lwrad_out.00012.pfb LW.out.qflx_evap_tot.00012.pfb
+    LW.out.t_grnd.00012.pfb LW.out.eflx_sh_tot.00012.pfb
+    LW.out.qflx_evap_veg.00012.pfb LW.out.t_soil.00012.pfb
+    LW.out.eflx_soil_grnd.00012.pfb LW.out.qflx_infl.00012.pfb
+    LW.out.qflx_evap_grnd.00012.pfb LW.out.qflx_tran_veg.00012.pfb" {
+
+    if ![pftestFile $file "Max difference in $file" $sig_digits] { 
+	set passed 0 
+    } 
+}
+
+if $passed {
+    puts "default_single : PASSED"
+} {
+    puts "default_single : FAILED"
+}
+
 
