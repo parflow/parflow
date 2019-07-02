@@ -10,8 +10,7 @@ package require parflow
 namespace import Parflow::*
 
 # Total runtime of simulation
-#set stopt 7762
-set stopt 100
+set stopt 7762
 # Reuse values to run with
 set reuseValues {1 4}
 

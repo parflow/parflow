@@ -8,6 +8,8 @@ lappend auto_path $env(PARFLOW_DIR)/bin
 package require parflow
 namespace import Parflow::*
 
+set runname richards.plinear 
+
 if { [info exists ::env(PARFLOW_HAVE_SILO) ] } {
     set HaveSilo 1
 } else {
@@ -337,8 +339,8 @@ if $HaveSilo {
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-pfrun richards.plinear 
-pfundist richards.plinear
+pfrun $runname 
+pfundist $runname
 
 #-----------------------------------------------------------------------------
 # If running as test; check output.

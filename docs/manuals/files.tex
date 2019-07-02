@@ -330,6 +330,25 @@ pfset ComputationalGrid.DY		10.0
 pfset ComputationalGrid.DZ		1.0
 \end{verbatim}
 
+\pfkey{string}{UseClustering}{True}
+{
+Run a clustering algorithm to create boxes in index space for
+iteration. By default an octree representation is used for iteration,
+this may result in iterating over many nodes in the octree.
+Th UseClustering key will run a clustering algorithm to build a set of boxes
+for iteration.
+
+This does not always have a signiciant impact on performance and the
+clustering algorithm can be expensive to compute.  For small problems
+and short running problems clustering is not recommended.  Long
+running problems may or may not see a benifit.  The result varies
+significantly based on the geometries in the problem.
+
+The Berger-Rigoutsos algorithm is currently used for clustering.
+}
+\begin{display}\begin{verbatim} 
+pfset  UseClustering  False
+\end{verbatim}\end{display} 
 
 %=============================================================================
 %=
