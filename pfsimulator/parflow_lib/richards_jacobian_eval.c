@@ -1259,7 +1259,7 @@ void    RichardsJacobianEval(
                     if ((pp[ip]) >= 0.0)
                     {
                       cp[im] += (vol / dz) * dt * (1.0 + 0.0);                     //LEC
-                      printf("Jac SU: CP=%f im=%d  \n", cp[im], im);
+//                      printf("Jac SU: CP=%f im=%d  \n", cp[im], im);
                     }
                     else
                     {
@@ -1311,12 +1311,12 @@ void    RichardsJacobianEval(
                 ip = SubvectorEltIndex(p_sub, i, j, k);
                 io = SubvectorEltIndex(p_sub, i, j, 0);
                 im = SubmatrixEltIndex(J_sub, i, j, k);
-                vol = dx * dy * dz;
+                vol = dx * dy * dz;   //@RMM:  need to add var dz to vol
 
                 if ((pp[ip]) >= 0.0)
                 {
-                  cp[im] += (vol / dz) * dt * (1.0 + 0.0);                     //LEC
-                  printf("Jac SF: CP=%f im=%d  \n", cp[im], im);
+                  cp[im] += (vol / dz) * dt * (1.0 + 0.0);                     //@RMM
+//                  printf("Jac SF: CP=%f im=%d  \n", cp[im], im);
 
                 }
                 else
