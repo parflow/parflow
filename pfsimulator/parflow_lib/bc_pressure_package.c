@@ -905,7 +905,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
           NewTypeStruct(SeepageFace, data);
 
           /* MCB: Need to setup values for patch */
-          /* Something akin to
+          /* Something akin to */
 
              (data->values) = ctalloc(double, interval_division);
 
@@ -919,8 +919,6 @@ PFModule  *BCPressurePackageNewPublicXtra(
                data->values[interval_number] = GetDouble(key);
              }
 
-
-          */
 
           StoreTypeStruct(public_xtra, data, i);
         }); /* End SeepageFace */
