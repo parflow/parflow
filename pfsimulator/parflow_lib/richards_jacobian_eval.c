@@ -54,7 +54,8 @@ enum JacobianType {
   no_nonlinear_jacobian,
   not_set,
   simple,
-  overland_flow
+  overland_flow //,
+//  seepage_face
 };
 
 typedef struct {
@@ -331,6 +332,11 @@ void    RichardsJacobianEval(
             public_xtra->type = overland_flow;
           }
           break;
+///          case 9:
+///          {
+///            public_xtra->type = seepage_face;
+///          }
+///          break;
         }
       }
     }
@@ -1253,6 +1259,7 @@ void    RichardsJacobianEval(
                     if ((pp[ip]) >= 0.0)
                     {
                       cp[im] += (vol / dz) * dt * (1.0 + 0.0);                     //LEC
+                      printf("Jac SU: CP=%f im=%d  \n", cp[im], im);
                     }
                     else
                     {
@@ -1290,7 +1297,45 @@ void    RichardsJacobianEval(
               break;
             }
           }
+
         }         /* End overland flow case */
+
+        case SeepageFaceBC:
+        {
+
+            /* add flux loss equal to excess head  that overwrites the prior overland flux */
+            BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+            {
+              if (fdir[2] == 1)
+              {
+                ip = SubvectorEltIndex(p_sub, i, j, k);
+                io = SubvectorEltIndex(p_sub, i, j, 0);
+                im = SubmatrixEltIndex(J_sub, i, j, k);
+                vol = dx * dy * dz;
+
+                if ((pp[ip]) >= 0.0)
+                {
+                  cp[im] += (vol / dz) * dt * (1.0 + 0.0);                     //LEC
+                  printf("Jac SF: CP=%f im=%d  \n", cp[im], im);
+
+                }
+                else
+                {
+                  cp[im] += 0.0;
+                }
+              }
+            });
+                      break;
+          }  // end case seepage face
+
+
+
+
+
+
+
+
+
       }        /* End switch BCtype */
     }          /* End ipatch loop */
   }            /* End subgrid loop */
@@ -1859,4 +1904,3 @@ int  RichardsJacobianEvalSizeOfTempData()
 
   return sz;
 }
-
