@@ -1331,9 +1331,261 @@ void    RichardsJacobianEval(
 
 
 
+        /* Duplicate of OverlandBC computations to be worked on */
+        case OverlandKinematicBC:
+        {
+          BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+          {
+            im = SubmatrixEltIndex(J_sub, i, j, k);
+
+            //remove contributions to this row corresponding to boundary
+            if (fdir[0] == -1)
+              op = wp;
+            else if (fdir[0] == 1)
+              op = ep;
+            else if (fdir[1] == -1)
+              op = sop;
+            else if (fdir[1] == 1)
+              op = np;
+            else if (fdir[2] == -1)
+              op = lp;
+            else       // (fdir[2] ==  1)
+            {
+              op = up;
+              /* check if overland flow kicks in */
+              if (!ovlnd_flag)
+              {
+                ip = SubvectorEltIndex(p_sub, i, j, k);
+                if ((pp[ip]) > 0.0)
+                {
+                  ovlnd_flag = 1;
+                }
+              }
+            }
+
+            cp[im] += op[im];
+            op[im] = 0.0;       //zero out entry in row of Jacobian
+          });
+
+          switch (public_xtra->type)
+          {
+            case no_nonlinear_jacobian:
+            case not_set:
+            {
+              assert(1);
+            }
+
+            case simple:
+            {
+              BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+              {
+                if (fdir[2] == 1)
+                {
+                  ip = SubvectorEltIndex(p_sub, i, j, k);
+                  io = SubvectorEltIndex(p_sub, i, j, 0);
+                  im = SubmatrixEltIndex(J_sub, i, j, k);
+
+                  if ((pp[ip]) > 0.0)
+                  {
+                    cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
+                  }
+                }
+              });
+              break;
+            }
+
+            case overland_flow:
+            {
+              /* Get overland flow contributions - DOK*/
+              // SGS can we skip this invocation if !overland_flow?
+              //PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
+              //		(grid, is, bc_struct, ipatch, problem_data, pressure,
+              //		 ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
+
+              if (overlandspinup == 1)
+              {
+                /* add flux loss equal to excess head  that overwrites the prior overland flux */
+                BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+                {
+                  if (fdir[2] == 1)
+                  {
+                    ip = SubvectorEltIndex(p_sub, i, j, k);
+                    io = SubvectorEltIndex(p_sub, i, j, 0);
+                    im = SubmatrixEltIndex(J_sub, i, j, k);
+                    vol = dx * dy * dz;
+
+                    if ((pp[ip]) >= 0.0)
+                    {
+                      cp[im] += (vol / dz) * dt * (1.0 + 0.0);                     //LEC
+//                      printf("Jac SU: CP=%f im=%d  \n", cp[im], im);
+                    }
+                    else
+                    {
+                      cp[im] += 0.0;
+                    }
+                  }
+                });
+              }
+              else
+              {
+                /* Get overland flow contributions for using kinematic or diffusive - LEC */
+                if (diffusive == 0)
+                {
+                  PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
+                                     (grid, is, bc_struct, ipatch, problem_data, pressure,
+                                      ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
+                }
+                else
+                {
+                  /* Test running Diffuisve calc FCN */
+                  //double *dummy1, *dummy2, *dummy3, *dummy4;
+                  //PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
+                  //                                             ke_der, kw_der, kn_der, ks_der,
+                  //       dummy1, dummy2, dummy3, dummy4,
+                  //                                                    NULL, NULL, CALCFCN));
+
+                  PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
+                                     (grid, is, bc_struct, ipatch, problem_data, pressure,
+                                      ke_der, kw_der, kn_der, ks_der,
+                                      kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
+                }
+              }
 
 
+              break;
+            }
+          }
 
+          break;
+        } /* End OverlandKinematicBC */
+
+        /* Duplicate of OverlandBC computations to be worked on */
+        case OverlandDiffusiveBC:
+        {
+          BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+          {
+            im = SubmatrixEltIndex(J_sub, i, j, k);
+
+            //remove contributions to this row corresponding to boundary
+            if (fdir[0] == -1)
+              op = wp;
+            else if (fdir[0] == 1)
+              op = ep;
+            else if (fdir[1] == -1)
+              op = sop;
+            else if (fdir[1] == 1)
+              op = np;
+            else if (fdir[2] == -1)
+              op = lp;
+            else       // (fdir[2] ==  1)
+            {
+              op = up;
+              /* check if overland flow kicks in */
+              if (!ovlnd_flag)
+              {
+                ip = SubvectorEltIndex(p_sub, i, j, k);
+                if ((pp[ip]) > 0.0)
+                {
+                  ovlnd_flag = 1;
+                }
+              }
+            }
+
+            cp[im] += op[im];
+            op[im] = 0.0;       //zero out entry in row of Jacobian
+          });
+
+          switch (public_xtra->type)
+          {
+            case no_nonlinear_jacobian:
+            case not_set:
+            {
+              assert(1);
+            }
+
+            case simple:
+            {
+              BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+              {
+                if (fdir[2] == 1)
+                {
+                  ip = SubvectorEltIndex(p_sub, i, j, k);
+                  io = SubvectorEltIndex(p_sub, i, j, 0);
+                  im = SubmatrixEltIndex(J_sub, i, j, k);
+
+                  if ((pp[ip]) > 0.0)
+                  {
+                    cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
+                  }
+                }
+              });
+              break;
+            }
+
+            case overland_flow:
+            {
+              /* Get overland flow contributions - DOK*/
+              // SGS can we skip this invocation if !overland_flow?
+              //PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
+              //		(grid, is, bc_struct, ipatch, problem_data, pressure,
+              //		 ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
+
+              if (overlandspinup == 1)
+              {
+                /* add flux loss equal to excess head  that overwrites the prior overland flux */
+                BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+                {
+                  if (fdir[2] == 1)
+                  {
+                    ip = SubvectorEltIndex(p_sub, i, j, k);
+                    io = SubvectorEltIndex(p_sub, i, j, 0);
+                    im = SubmatrixEltIndex(J_sub, i, j, k);
+                    vol = dx * dy * dz;
+
+                    if ((pp[ip]) >= 0.0)
+                    {
+                      cp[im] += (vol / dz) * dt * (1.0 + 0.0);                     //LEC
+//                      printf("Jac SU: CP=%f im=%d  \n", cp[im], im);
+                    }
+                    else
+                    {
+                      cp[im] += 0.0;
+                    }
+                  }
+                });
+              }
+              else
+              {
+                /* Get overland flow contributions for using kinematic or diffusive - LEC */
+                if (diffusive == 0)
+                {
+                  PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
+                                     (grid, is, bc_struct, ipatch, problem_data, pressure,
+                                      ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
+                }
+                else
+                {
+                  /* Test running Diffuisve calc FCN */
+                  //double *dummy1, *dummy2, *dummy3, *dummy4;
+                  //PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
+                  //                                             ke_der, kw_der, kn_der, ks_der,
+                  //       dummy1, dummy2, dummy3, dummy4,
+                  //                                                    NULL, NULL, CALCFCN));
+
+                  PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
+                                     (grid, is, bc_struct, ipatch, problem_data, pressure,
+                                      ke_der, kw_der, kn_der, ks_der,
+                                      kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
+                }
+              }
+
+
+              break;
+            }
+          }
+
+          break;
+        } /* End OverlandDiffusiveBC */
 
 
       }        /* End switch BCtype */
@@ -1462,6 +1714,9 @@ void    RichardsJacobianEval(
       {
         switch (BCStructBCType(bc_struct, ipatch))
         {
+          /* Fall through cases for new Overland types */
+          case OverlandKinematicBC:
+          case OverlandDiffusiveBC:
           case OverlandBC:
           {
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,

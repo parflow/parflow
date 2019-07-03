@@ -37,6 +37,10 @@
 #define OverlandBC   2   //sk
 #define SeepageFaceBC   3   //rmm
 
+/* @MCB: Additional overlandflow cases per LEC */
+#define OverlandKinematicBC 4
+#define OverlandDiffusiveBC 5
+
 /*----------------------------------------------------------------
  * BCStruct structure
  *----------------------------------------------------------------*/
