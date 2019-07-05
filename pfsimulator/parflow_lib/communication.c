@@ -162,9 +162,10 @@ static int ComputeTag(Subregion *sender, Subregion *receiver)
 
   tag = 9 * t[2] + 3 * t[1] + t[0];
 
-  sender_lidx = (gidx < -1) ?  (2-gidx)  / 4 : SubgridLocIdx(sender); /*TODO: fix for 3D*/
+  sender_lidx = (gidx < -1) ?
+              (-2-gidx) / (1 << P4EST_DIM) : SubgridLocIdx(sender);
 
-  tag += 27*sender_lidx;
+  tag += 27 * sender_lidx;
 
   return tag;
 }

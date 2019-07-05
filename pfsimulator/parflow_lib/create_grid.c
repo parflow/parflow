@@ -221,9 +221,9 @@ Grid           *CreateGrid(
 
         /* For a 'ghost child' subgrid, its ghost index stores its child_id.
          * We will encode it together with its parent local index as
-         * -(nchildren * parent_local_index + child_id) + 2; See region.h */
+         * -(nchildren * parent_local_index + child_id + 2); See region.h */
         SubgridGhostIdx(gs0) =
-                - (nchildren * SubgridLocIdx(s0) + SubgridGhostIdx(gs0)) + 2;
+                - (nchildren * SubgridLocIdx(s0) + SubgridGhostIdx(gs0) + 2);
 
         AppendSubgrid(gs0, subgrids);
     }
