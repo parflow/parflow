@@ -1348,9 +1348,6 @@ void    RichardsJacobianEval(
                       break;
           }  // end case seepage face
 
-
-
-
         /*  OverlandBC for KWE with upwinding, call module */
         case OverlandKinematicBC:
         {
@@ -1387,64 +1384,13 @@ void    RichardsJacobianEval(
             op[im] = 0.0;       //zero out entry in row of Jacobian
           });
 
-          switch (public_xtra->type)
-          {
-            case no_nonlinear_jacobian:
-            case not_set:
-            {
-              assert(1);
-            }
 
-            case simple:
-            {
-              BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-              {
-                if (fdir[2] == 1)
-                {
-                  ip = SubvectorEltIndex(p_sub, i, j, k);
-                  io = SubvectorEltIndex(p_sub, i, j, 0);
-                  im = SubmatrixEltIndex(J_sub, i, j, k);
-
-                  if ((pp[ip]) > 0.0)
-                  {
-                    cp[im] += (vol * z_mult_dat[ip]) / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * (dt + 1);
-                  }
-                }
-              });
-              break;
-            }
-
-            case overland_flow:
-            {
-              /* Get overland flow contributions - DOK*/
-              // SGS can we skip this invocation if !overland_flow?
-              //PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
-              //		(grid, is, bc_struct, ipatch, problem_data, pressure,
-              //		 ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
-
-
-
-                /* Get overland flow contributions for using kinematic or diffusive - LEC */
-
-                  /* Test running Diffuisve calc FCN */
-                  //double *dummy1, *dummy2, *dummy3, *dummy4;
-                  //PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
-                  //                                             ke_der, kw_der, kn_der, ks_der,
-                  //       dummy1, dummy2, dummy3, dummy4,
-                  //                                                    NULL, NULL, CALCFCN));
-
+ printf("Case overland_flow \n");
                   PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
                                      (grid, is, bc_struct, ipatch, problem_data, pressure,
                                       ke_der, kw_der, kn_der, ks_der,
                                       kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
 
-
-
-              break;
-            }
-          }
-
-          break;
         } /* End OverlandKinematicBC */
 
         /* Duplicate of OverlandBC computations to be worked on */
