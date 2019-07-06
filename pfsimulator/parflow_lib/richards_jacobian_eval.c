@@ -1115,10 +1115,18 @@ void    RichardsJacobianEval(
                     upper_cond = (pp[ip]) + 0.5 * dz * z_mult_dat[ip] * dp[ip] * gravity;
                     diff = lower_cond - upper_cond;
 
-                    o_temp = coeff
-                             * (diff * RPMean(lower_cond, upper_cond, 0.0, prod_der)
-                                + ((-1.0 - gravity * 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_v]) * ddp[ip])
-                                   * RPMean(lower_cond, upper_cond, prod_val, prod)));
+//                    o_temp = coeff
+//                             * (diff * RPMean(lower_cond, upper_cond, 0.0, prod_der)
+//                                + ((-1.0 - gravity * 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_v]) * ddp[ip])
+//                                   * RPMean(lower_cond, upper_cond, prod_val, prod)));
+
+                   o_temp = coeff
+                      * (diff * RPMean(lower_cond, upper_cond, 0.0, prod_der)
+                     + ((-1.0 - gravity * 0.5 * dz * z_mult_dat[ip] * ddp[ip])
+                        * RPMean(lower_cond, upper_cond, prod_val, prod)));
+
+//printf("jacobian lower BC: o_temp=%f prod_der=%f op=%f \n",o_temp, prod_der, op);
+
                     break;
                   }
 
@@ -1127,14 +1135,24 @@ void    RichardsJacobianEval(
                     op = up;
                     prod_val = rpp[ip + sz_v] * den_d;
 
-                    lower_cond = (pp[ip]) - 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v]) * dp[ip] * gravity;
-                    upper_cond = (value) + 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v]) * den_d * gravity;
-                    diff = lower_cond - upper_cond;
+//                    lower_cond = (pp[ip]) - 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v]) * dp[ip] * gravity;
+//                    upper_cond = (value) + 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v]) * den_d * gravity;
+//                    diff = lower_cond - upper_cond;
+//
+//                    o_temp = -coeff
+//                             * (diff * RPMean(lower_cond, upper_cond, prod_der, 0.0)
+//                                + ((1.0 - gravity * 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v]) * ddp[ip])
+//                                   * RPMean(lower_cond, upper_cond, prod, prod_val)));
 
-                    o_temp = -coeff
-                             * (diff * RPMean(lower_cond, upper_cond, prod_der, 0.0)
-                                + ((1.0 - gravity * 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v]) * ddp[ip])
-                                   * RPMean(lower_cond, upper_cond, prod, prod_val)));
+                 lower_cond = (pp[ip]) - 0.5 * dz * z_mult_dat[ip] * dp[ip] * gravity;
+                 upper_cond = (value) + 0.5 * dz * z_mult_dat[ip] * den_d * gravity;
+                  diff = lower_cond - upper_cond;
+
+                 o_temp = -coeff* (diff * RPMean(lower_cond, upper_cond, prod_der, 0.0)
+                        + ((1.0 - gravity * 0.5 * dz * z_mult_dat[ip] * ddp[ip])
+                                                  * RPMean(lower_cond, upper_cond, prod, prod_val)));
+
+
                     break;
                   }
               }          /* End switch on fdir[2] */
@@ -1142,6 +1160,8 @@ void    RichardsJacobianEval(
 
             cp[im] += op[im];
             cp[im] -= o_temp;
+//            printf("jacobian: cp[im]+=%f cp[im]-=%f \n",op[im], o_temp);
+
             op[im] = 0.0;
           });
 
@@ -1311,7 +1331,7 @@ void    RichardsJacobianEval(
                 ip = SubvectorEltIndex(p_sub, i, j, k);
                 io = SubvectorEltIndex(p_sub, i, j, 0);
                 im = SubmatrixEltIndex(J_sub, i, j, k);
-                vol = dx * dy * dz;   //@RMM:  need to add var dz to vol
+                vol = dx * dy * dz;
 
                 if ((pp[ip]) >= 0.0)
                 {
@@ -1331,7 +1351,7 @@ void    RichardsJacobianEval(
 
 
 
-        /* Duplicate of OverlandBC computations to be worked on */
+        /*  OverlandBC for KWE with upwinding, call module */
         case OverlandKinematicBC:
         {
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
@@ -1402,41 +1422,10 @@ void    RichardsJacobianEval(
               //		(grid, is, bc_struct, ipatch, problem_data, pressure,
               //		 ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
 
-              if (overlandspinup == 1)
-              {
-                /* add flux loss equal to excess head  that overwrites the prior overland flux */
-                BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                {
-                  if (fdir[2] == 1)
-                  {
-                    ip = SubvectorEltIndex(p_sub, i, j, k);
-                    io = SubvectorEltIndex(p_sub, i, j, 0);
-                    im = SubmatrixEltIndex(J_sub, i, j, k);
-                    vol = dx * dy * dz;
 
-                    if ((pp[ip]) >= 0.0)
-                    {
-                      cp[im] += (vol / dz) * dt * (1.0 + 0.0);                     //LEC
-//                      printf("Jac SU: CP=%f im=%d  \n", cp[im], im);
-                    }
-                    else
-                    {
-                      cp[im] += 0.0;
-                    }
-                  }
-                });
-              }
-              else
-              {
+
                 /* Get overland flow contributions for using kinematic or diffusive - LEC */
-                if (diffusive == 0)
-                {
-                  PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
-                                     (grid, is, bc_struct, ipatch, problem_data, pressure,
-                                      ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
-                }
-                else
-                {
+
                   /* Test running Diffuisve calc FCN */
                   //double *dummy1, *dummy2, *dummy3, *dummy4;
                   //PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
@@ -1448,8 +1437,7 @@ void    RichardsJacobianEval(
                                      (grid, is, bc_struct, ipatch, problem_data, pressure,
                                       ke_der, kw_der, kn_der, ks_der,
                                       kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
-                }
-              }
+
 
 
               break;
