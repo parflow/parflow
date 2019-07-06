@@ -46,7 +46,9 @@ typedef void PublicXtra;
 
 typedef void InstanceXtra;
 
-//@RMM, can use this macro instead of your upstream weight routine
+/*---------------------------------------------------------------------
+ * Define macros for function evaluation
+ *---------------------------------------------------------------------*/
 #define RPMean(a, b, c, d)   UpstreamMean(a, b, c, d)
 
 /*-------------------------------------------------------------------------
@@ -95,12 +97,13 @@ void    OverlandFlowEvalDiff(
   double slope_fy_lo, slope_fy_hi, slope_fy_mid, dx, dy;
   double coeff, Pmean, P2, P3, Pdel, Pcen;
   double slope_mean, manning, s1, s2;
+  double Press_x, Press_y, Sf_x, Sf_y, Sf_xo, Sf_yo;
 
   int ival, sy_v, step;
   int            *fdir;
 
   int i, ii, j, k, ip, ip2, ip3, ip4, ip0, io, itop;
-  int i1, j1, k1, iojm1, iojp1, ioip1, ioim1;
+  int i1, j1, k1, k0x, k0y, iojm1, iojp1, ioip1, ioim1;
   /* @RMM get grid from global (assuming this is comp grid) to pass to CLM */
   int gnx = BackgroundNX(GlobalsBackground);
   int gny = BackgroundNY(GlobalsBackground);
@@ -137,201 +140,88 @@ void    OverlandFlowEvalDiff(
       if (fdir[2] == 1)
       {
         io = SubvectorEltIndex(sx_sub, i, j, 0);
-        ioim1 = SubvectorEltIndex(sx_sub, (i - 1), j, 0);
-        iojm1 = SubvectorEltIndex(sx_sub, i, (j - 1), 0);
         itop = SubvectorEltIndex(top_sub, i, j, 0);
-        /* compute east and west faces */
-        /* First initialize velocities, q_v, for inactive region */
-        q_v[0] = 0.0;
-        q_v[1] = 0.0;
 
-        /* precompute some data for current node, to be reused */
         k1 = (int)top_dat[itop];
-        ip0 = SubvectorEltIndex(p_sub, i, j, k1);
+        k0x = (int)top_dat[itop - 1];
+        k0y = (int)top_dat[itop - sy_v];
+        double ov_epsilon= 1.0e-5;
+        //printf("i=%d j=%d k=%d k1=%d k0x=%d k0y=%d\n",i,j,k,k1, k0x, k0y);
 
 
-        /* Dealing with Kw - look at nodes i-1 and i */
-        k1 = (int)top_dat[itop - 1];
-        ip = SubvectorEltIndex(p_sub, (i - 1), j, k1);
+        if (k1 >= 0)
+        {
+          ip = SubvectorEltIndex(p_sub, i, j, k1);
+          Sf_x = sx_dat[io];
+          Sf_y = sy_dat[io];
 
-        /* compute the friction slope for west node
-         * this handles the pressure gradient correction
-         * for the slope in Manning's equation
-         */
+          double Sf_mag = RPowerR(Sf_x*Sf_x+Sf_y*Sf_y,0.5); //+ov_epsilon;
+          if (Sf_mag < ov_epsilon)
+          Sf_mag = ov_epsilon;
 
-        if (i > 0)
-        {
-          slope_mean = sx_dat[io - 1];
-          slope_fx_lo = slope_mean + (((pfmax((pp[ip0]), 0.0)) - (pfmax((pp[ip]), 0.0))) / dx);
-        }
-        else
-        {
-          slope_mean = sx_dat[io];
-          slope_fx_lo = slope_mean;
-        }
+          Press_x = RPMean(-Sf_x, 0.0, pfmax((pp[ip]), 0.0), pfmax((pp[ip+1]), 0.0));
+          Press_y = RPMean(-Sf_y, 0.0, pfmax((pp[ip]), 0.0),pfmax((pp[ip+sy_v]), 0.0));
 
-        //@RMM upwind pressure based on slope direction, else we take mean of heads
-        Pmean = pfmax(pp[ip0], 0.0);
-        if (slope_fx_lo > 0.0)
-        {
-          Pmean = pfmax(pp[ip0], 0.0);
-          xdir = -1.0;
-        }
-        else if (slope_fx_lo < 0.0)
-        {
-          xdir = 1.0;
-          Pmean = pfmax(pp[ip], 0.0);
-        }
-        else
-        {
-          xdir = 0.0;
+          qx_v[io] = -(Sf_x / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_x, (5.0 / 3.0));
+          qy_v[io] = -(Sf_y / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
+
         }
 
-        manning = mann_dat[io];
+        //fix for lower x boundary
+        if (k0x < 0.0) {
+            if (k1 >= 0.0) {
+              Sf_x = sx_dat[io];
+              Sf_y = sy_dat[io];
 
-        q_v[0] = xdir * (RPowerR(fabs(slope_fx_lo), 0.5) / ((1.0 + 0.0000001 / fabs(slope_fx_lo)) * manning))     //mann_dat[io]))
-                 * RPowerR(Pmean, (5.0 / 3.0));
+              double Sf_mag = RPowerR(Sf_x*Sf_x+Sf_y*Sf_y,0.5); //+ov_epsilon;
+              if (Sf_mag < ov_epsilon)
+              Sf_mag = ov_epsilon;
 
-        /* compute kw - NOTE: io is for current cell */
-        kw_v[io] = q_v[0];
+              if (Sf_x > 0.0) {
+                ip = SubvectorEltIndex(p_sub, i, j, k1);
+                Press_x = pfmax((pp[ip]), 0.0);
+                qx_v[io-1] = -(Sf_x / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_x, (5.0 / 3.0));
+                //printf("i=%d j=%d k=%d k1=%d k0x=%d k0y=%d Sf_y=%f qx_v=%f\n",i,j,k,k1, k0x, k0y, Sf_x, qx_v[io-1]);
+              }
+            }
+          }
 
-        /* Dealing with Ke - look at nodes i and i+1 */
-        k1 = (int)top_dat[itop + 1];
-        ip2 = SubvectorEltIndex(p_sub, (i + 1), j, k1);
-        ioip1 = SubvectorEltIndex(p_sub, (i + 1), j, 0);
+          //fix for lower y boundary
+          if (k0y < 0.0) {
+              if (k1 >= 0.0) {
 
+                Sf_x = sx_dat[io];
+                Sf_y = sy_dat[io];
 
-        /* compute the friction slope for east node
-         * this handles the pressure gradient correction
-         * for the slope in Manning's equation
-         * @RMM take PP(i+1)=PP(i)       */
-        if (i < gnx - 1)
-        {
-          slope_mean = sx_dat[io];
-          slope_fx_hi = slope_mean + (((pfmax((pp[ip2]), 0.0)) - (pfmax((pp[ip0]), 0.0))) / dx);
-        }
-        else
-        {
-          slope_mean = sx_dat[io];
-          slope_fx_hi = slope_mean;
-        }
+                double Sf_mag = RPowerR(Sf_x*Sf_x+Sf_y*Sf_y,0.5); //+ov_epsilon;
+                if (Sf_mag < ov_epsilon)
+                Sf_mag = ov_epsilon;
 
+                if (Sf_y > 0.0) {
+                  ip = SubvectorEltIndex(p_sub, i, j, k1);
+                  Press_y = pfmax((pp[ip]), 0.0);
+                  qy_v[io-sy_v] = -(Sf_y / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
+                  //printf("i=%d j=%d k=%d k1=%d k0x=%d k0y=%d Sf_y=%f qy_v=%f\n",i,j,k,k1, k0x, k0y, Sf_y, qy_v[io-sy_v]);
 
-        Pmean = pfmax(pp[ip2], 0);
-        if (slope_fx_hi > 0.0)
-        {
-          xdir = -1.0;
-          Pmean = pfmax(pp[ip2], 0.0);
-        }
-        else if (slope_fx_hi < 0.0)
-        {
-          xdir = 1.0;
-          Pmean = pfmax(pp[ip0], 0.0);
-        }
-        else
-        {
-          xdir = 0.0;
-        }
-
-        manning = mann_dat[io];
-        q_v[1] = xdir * (RPowerR(fabs(slope_fx_hi), 0.5) / ((1.0 + 0.0000001 / fabs(slope_fx_hi)) * manning))
-                 * RPowerR(Pmean, (5.0 / 3.0));
-
-
-
-        /* compute ke - NOTE: @RMM modified stencil to not upwind Q's but to upwind pressure-head */
-        ke_v[io] = q_v[1];
-
-        /* compute north and south faces */
-        /* First initialize velocities, q_v, for inactive region */
-        q_v[2] = 0.0;
-        q_v[3] = 0.0;
-
-        /* Dealing with Ks - look at nodes j-1 and j */
-        k1 = (int)top_dat[itop - sy_v];
-        ip3 = SubvectorEltIndex(p_sub, i, (j - 1), k1);
-
-
-
-        /* compute the friction slope for south node
-         * this handles the pressure gradient correction
-         * for the slope in Manning's equation
-         *     now take slope based on PP(j)-PP(j-1)    */
-        if (j > 0)
-        {
-          slope_mean = sy_dat[io - sy_v];
-          slope_fy_lo = slope_mean + (((pfmax((pp[ip0]), 0.0)) - (pfmax((pp[ip3]), 0.0))) / dy);
-        }
-        else
-        {
-          slope_mean = sy_dat[io];
-          slope_fy_lo = slope_mean;
-        }
-
-
-        Pmean = pfmax(pp[ip0], 0.0);
-
-        if (slope_fy_lo > 0.0)
-        {
-          ydir = -1.0;
-          Pmean = pfmax(pp[ip0], 0.0);
-        }
-        else if (slope_fy_lo < 0.0)
-        {
-          ydir = 1.0;
-          Pmean = pfmax(pp[ip3], 0.0);
-        }
-        else
-          ydir = 0.0;
-
-
-        q_v[2] = ydir * (RPowerR(fabs(slope_fy_lo), 0.5) / ((1.0 + 0.0000001 / fabs(slope_fy_lo)) * mann_dat[io]))
-                 * RPowerR(pfmax(Pmean, 0.0), (5.0 / 3.0));
-
-
-        /* compute ks - NOTE: io is for  current cell */
-        ks_v[io] = q_v[2];                    //@RMM
-
-        /* Dealing with Ke - look at nodes i and i+1 */
-        k1 = (int)top_dat[itop + sy_v];
-        ip4 = SubvectorEltIndex(p_sub, i, (j + 1), k1);
-        iojp1 = SubvectorEltIndex(sx_sub, i, (j + 1), 0);
-
-
-        if (j < gny - 1)
-        {
-          slope_mean = sy_dat[io];
-          slope_fy_hi = slope_mean + (((pfmax((pp[ip4]), 0.0)) - (pfmax((pp[ip0]), 0.0))) / dy);
-        }
-        else
-        {
-          slope_mean = sy_dat[io];
-          slope_fy_hi = slope_mean;
-        }
-
-        Pmean = pfmax(pp[ip4], 0.0);
-
-        if (slope_fy_hi > 0.0)
-        {
-          ydir = -1.0;
-          Pmean = pfmax(pp[ip4], 0.0);
-        }
-        else if (slope_fy_hi < 0.0)
-        {
-          ydir = 1.0;
-          Pmean = pfmax(pp[ip0], 0.0);
-        }
-        else
-          ydir = 0.0;
-
-
-        q_v[3] = ydir * (RPowerR(fabs(slope_fy_hi), 0.5) / ((1.0 + 0.0000001 / fabs(slope_fy_hi)) * mann_dat[io]))
-                 * RPowerR(pfmax(Pmean, 0.0), (5.0 / 3.0));
-      }
-
-      /* compute kn - NOTE: io is for current cell */
-      kn_v[io] = q_v[3];
+                }
+              }
+            }
+       }
     });
+
+    BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, sg,
+    {
+      if (fdir[2] == 1)
+      {
+        io = SubvectorEltIndex(sx_sub, i, j, 0);
+        ke_v[io] = qx_v[io];
+        kw_v[io] = qx_v[io-1];
+        kn_v[io] = qy_v[io];
+        ks_v[io] = qy_v[io-sy_v];
+        //printf("i=%d j=%d k=%d ke_v=%d kw_v=%d kn_v=%d ks_v=%f\n",i,j,k,ke_v[io],kw_v[io],kn_v[io],ks_v[io]);
+      }
+    });
+
   }
   else          //fcn = CALCDER calculates the derivs of KE KW KN KS wrt to current cell (i,j,k)
   {
