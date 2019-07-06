@@ -1800,8 +1800,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                                                                                       dummy1, dummy2, dummy3, dummy4,
                                                                                       qx_, qy_, CALCFCN));
 
-
-
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
             if (fdir[2])
@@ -1819,7 +1817,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                   q_overlnd = vol
                               * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz +
                               dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy)
-                              / dz + vol * dt / dz ;
+                              / dz;
 
 
                   fp[ip] += q_overlnd;
