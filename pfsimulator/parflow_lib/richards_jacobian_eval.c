@@ -74,6 +74,7 @@ typedef struct {
   PFModule     *bc_internal;
   PFModule     *overlandflow_module;  //DOK
   PFModule     *overlandflow_module_diff;  //@LEC
+  PFModule     *overlandflow_module_kin;
 
   /* The analytic Jacobian matrix is decomposed as follows:
    *
@@ -210,6 +211,7 @@ void    RichardsJacobianEval(
   PFModule    *bc_internal = (instance_xtra->bc_internal);
   PFModule    *overlandflow_module = (instance_xtra->overlandflow_module);
   PFModule    *overlandflow_module_diff = (instance_xtra->overlandflow_module_diff);
+  PFModule    *overlandflow_module_kin = (instance_xtra->overlandflow_module_kin);
 
   Matrix      *J = (instance_xtra->J);
   Matrix      *JC = (instance_xtra->JC);
@@ -1293,6 +1295,8 @@ void    RichardsJacobianEval(
                 /* Get overland flow contributions for using kinematic or diffusive - LEC */
                 if (diffusive == 0)
                 {
+                  // @MCB: Need to validate this is not needed under the OverlandBC case,
+                  // should instead be moved to the OverlandKinematicBC case
                   PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
                                      (grid, is, bc_struct, ipatch, problem_data, pressure,
                                       ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
@@ -1345,8 +1349,8 @@ void    RichardsJacobianEval(
                 }
               }
             });
-                      break;
-          }  // end case seepage face
+            break;
+        }  // end case seepage face
 
         /*  OverlandBC for KWE with upwinding, call module */
         case OverlandKinematicBC:
@@ -1384,10 +1388,10 @@ void    RichardsJacobianEval(
             op[im] = 0.0;       //zero out entry in row of Jacobian
           });
 
-                  PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
-                                     (grid, is, bc_struct, ipatch, problem_data, pressure,
-                                      ke_der, kw_der, kn_der, ks_der,
-                                      kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
+          PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
+                             (grid, is, bc_struct, ipatch, problem_data, pressure,
+                              ke_der, kw_der, kn_der, ks_der,
+                              kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
 
         } /* End OverlandKinematicBC */
 
@@ -1961,6 +1965,8 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
       PFModuleNewInstance(ProblemOverlandFlowEval(problem), ());     //DOK
     (instance_xtra->overlandflow_module_diff) =
       PFModuleNewInstance(ProblemOverlandFlowEvalDiff(problem), ());   //RMM-LEC
+    (instance_xtra->overlandflow_module_kin)
+      = PFModuleNewInstance(ProblemOverlandFlowEvalKin(problem), ());
   }
   else
   {
@@ -1973,6 +1979,7 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
     PFModuleReNewInstance((instance_xtra->bc_internal), ());
     PFModuleReNewInstance((instance_xtra->overlandflow_module), ());     //DOK
     PFModuleReNewInstance((instance_xtra->overlandflow_module_diff), ());      //RMM-LEC
+    PFModuleReNewInstance((instance_xtra->overlandflow_module_kin), ());
   }
 
 
@@ -1999,6 +2006,7 @@ void  RichardsJacobianEvalFreeInstanceXtra()
     PFModuleFreeInstance(instance_xtra->bc_internal);
     PFModuleFreeInstance(instance_xtra->overlandflow_module);     //DOK
     PFModuleFreeInstance(instance_xtra->overlandflow_module_diff);       //RMM-LEC
+    PFModuleFreeInstance(instance_xtra->overlandflow_module_kin);
 
     FreeMatrix(instance_xtra->J);
 

@@ -53,6 +53,7 @@ typedef struct {
   PFModule     *bc_internal;
   PFModule     *overlandflow_module;  //DOK
   PFModule     *overlandflow_module_diff;  //@RMM
+  PFModule     *overlandflow_module_kin;
 } InstanceXtra;
 
 /*---------------------------------------------------------------------
@@ -136,6 +137,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   PFModule    *bc_internal = (instance_xtra->bc_internal);
   PFModule    *overlandflow_module = (instance_xtra->overlandflow_module);
   PFModule    *overlandflow_module_diff = (instance_xtra->overlandflow_module_diff);
+  PFModule    *overlandflow_module_kin = (instance_xtra->overlandflow_module_kin);
 
 
   /* Re-use saturation vector to save memory */
@@ -1795,10 +1797,11 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
             /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
              * routing added */
             double *dummy1, *dummy2, *dummy3, *dummy4;
-            PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
-                                                                                      ke_, kw_, kn_, ks_,
-                                                                                      dummy1, dummy2, dummy3, dummy4,
-                                                                                      qx_, qy_, CALCFCN));
+            PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
+                               (grid, is, bc_struct, ipatch, problem_data, pressure,
+                                ke_, kw_, kn_, ks_,
+                                dummy1, dummy2, dummy3, dummy4,
+                                qx_, qy_, CALCFCN));
 
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
@@ -2223,6 +2226,8 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem *problem,
       PFModuleNewInstance(ProblemOverlandFlowEval(problem), ());     //DOK
     (instance_xtra->overlandflow_module_diff) =
       PFModuleNewInstance(ProblemOverlandFlowEvalDiff(problem), ());   //@RMM
+    (instance_xtra->overlandflow_module_kin) =
+      PFModuleNewInstance(ProblemOverlandFlowEvalKin(problem), ());
   }
   else
   {
@@ -2240,6 +2245,7 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem *problem,
     PFModuleReNewInstance((instance_xtra->bc_internal), ());
     PFModuleReNewInstance((instance_xtra->overlandflow_module), ());     //DOK
     PFModuleReNewInstance((instance_xtra->overlandflow_module_diff), ());      //@RMM
+    PFModuleReNewInstance((instance_xtra->overlandflow_module_kin), ());
   }
 
   PFModuleInstanceXtra(this_module) = instance_xtra;
@@ -2266,6 +2272,7 @@ void  NlFunctionEvalFreeInstanceXtra()
     PFModuleFreeInstance(instance_xtra->bc_internal);
     PFModuleFreeInstance(instance_xtra->overlandflow_module);     //DOK
     PFModuleFreeInstance(instance_xtra->overlandflow_module_diff);      //@RMM
+    PFModuleFreeInstance(instance_xtra->overlandflow_module_kin);
 
     tfree(instance_xtra);
   }

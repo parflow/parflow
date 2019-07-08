@@ -55,7 +55,7 @@ typedef void InstanceXtra;
  * OverlandFlowEval
  *-------------------------------------------------------------------------*/
 
-void    OverlandFlowEvalDiff(
+void    OverlandFlowEvalKin(
                              Grid *       grid, /* data struct for computational grid */
                              int          sg, /* current subgrid */
                              BCStruct *   bc_struct, /* data struct of boundary patch values */
@@ -1073,10 +1073,10 @@ void    OverlandFlowEvalDiff(
 
 //*/
 /*--------------------------------------------------------------------------
- * OverlandFlowEvalInitInstanceXtra
+ * OverlandFlowEvalKinInitInstanceXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *OverlandFlowEvalDiffInitInstanceXtra()
+PFModule  *OverlandFlowEvalKinInitInstanceXtra()
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;
@@ -1089,10 +1089,10 @@ PFModule  *OverlandFlowEvalDiffInitInstanceXtra()
 
 
 /*--------------------------------------------------------------------------
- * OverlandFlowEvalFreeInstanceXtra
+ * OverlandFlowEvalKinFreeInstanceXtra
  *--------------------------------------------------------------------------*/
 
-void  OverlandFlowEvalDiffFreeInstanceXtra()
+void  OverlandFlowEvalKinFreeInstanceXtra()
 {
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
@@ -1104,10 +1104,10 @@ void  OverlandFlowEvalDiffFreeInstanceXtra()
 }
 
 /*--------------------------------------------------------------------------
- * OverlandFlowEvalNewPublicXtra
+ * OverlandFlowEvalKinNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule  *OverlandFlowEvalDiffNewPublicXtra()
+PFModule  *OverlandFlowEvalKinNewPublicXtra()
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra;
@@ -1119,10 +1119,10 @@ PFModule  *OverlandFlowEvalDiffNewPublicXtra()
 }
 
 /*-------------------------------------------------------------------------
- * OverlandFlowEvalFreePublicXtra
+ * OverlandFlowEvalKinFreePublicXtra
  *-------------------------------------------------------------------------*/
 
-void  OverlandFlowEvalDiffFreePublicXtra()
+void  OverlandFlowEvalKinFreePublicXtra()
 {
   PFModule    *this_module = ThisPFModule;
   PublicXtra  *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -1134,10 +1134,10 @@ void  OverlandFlowEvalDiffFreePublicXtra()
 }
 
 /*--------------------------------------------------------------------------
- * OverlandFlowEvalSizeOfTempData
+ * OverlandFlowEvalKinSizeOfTempData
  *--------------------------------------------------------------------------*/
 
-int  OverlandFlowEvalDiffSizeOfTempData()
+int  OverlandFlowEvalKinSizeOfTempData()
 {
   return 0;
 }
