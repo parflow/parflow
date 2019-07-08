@@ -604,9 +604,9 @@ void  CommRegFromStencil(
 #ifdef HAVE_P4EST
           BeginTiming(P4ESTSetupTimingIndex);
 
-          tree_array = talloc(int, SubgridArraySize(neighbors));
-          loc_idx_array = talloc(int, SubgridArraySize(neighbors));
-          ghost_idx_array = talloc(int, SubgridArraySize(neighbors));
+          tree_array = talloc(int, SubregionArraySize(sa2));
+          loc_idx_array = talloc(int, SubregionArraySize(sa2));
+          ghost_idx_array = talloc(int, SubregionArraySize(sa2));
 
           /* Determine loc_idx_array, tree_array and num of
            * different local indexes and trees in sa2 */
