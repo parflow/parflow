@@ -107,9 +107,11 @@ int             parflow_p4est_check_neigh_2d(Subgrid *sfine, Subgrid *scoarse,
 
 void            parflow_p4est_inner_ghost_create_2d (SubgridArray * innerGhostsubgrids,
                                                      Subgrid * subgrid,
-                                     parflow_p4est_qiter_2d_t * qit_2d,
-                                     parflow_p4est_grid_2d_t *    pfgrid
-                                     );
+                                                     parflow_p4est_qiter_2d_t * qit_2d,
+                                                     parflow_p4est_grid_2d_t *    pfgrid);
+
+void            parflow_p4est_ghost_exchange_2d (parflow_p4est_grid_2d_t * pfg_2d);
+
 SC_EXTERN_C_END;
 
 #endif                          /* !PARLOW_P4EST_2D_H */
