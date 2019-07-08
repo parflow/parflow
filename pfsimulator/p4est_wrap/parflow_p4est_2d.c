@@ -106,6 +106,7 @@ parflow_p4est_grid_2d_new(int Px, int Py
   int level, initial_level;
   size_t quad_data_size;
   parflow_p4est_grid_2d_t *pfg;
+  parflow_p4est_ghost_data_t *gd;
 
   pfg = P4EST_ALLOC_ZERO(parflow_p4est_grid_2d_t, 1);
   tx = pfmax(Px, 1);
@@ -161,14 +162,19 @@ parflow_p4est_grid_2d_new(int Px, int Py
   EndTiming(P4ESTimingIndex);
 
   /* Allocate storage for ghost quadrants (ghost Subgrids) */
-  pfg->ghost_data = P4EST_ALLOC_ZERO (parflow_p4est_ghost_data_t,
-                                      pfg->ghost->ghosts.elem_count);
+  pfg->ghost_data = P4EST_ALLOC (parflow_p4est_ghost_data_t,
+                                pfg->ghost->ghosts.elem_count);
 
   /* Allocate storage to share information between ghost and mirror quadrants */
   pfg->mpointer = P4EST_ALLOC (void *, pfg->ghost->mirrors.elem_count);
 
   pfg->mirror_data = P4EST_ALLOC_ZERO (parflow_p4est_ghost_data_t,
                                        pfg->ghost->mirrors.elem_count);
+  for (i = 0; i < pfg->ghost->mirrors.elem_count; ++i)
+  {
+    gd =  &pfg->mirror_data[i];
+    memset((void *) gd->which_inner_ghostCh, -1, 8 * sizeof(int));
+  }
 
   num_trees = pfg->Tx * pfg->Ty;
 #ifdef P4_TO_P8
@@ -309,24 +315,15 @@ parflow_p4est_get_zneigh_2d(Subgrid * subgrid
   subgrid->plus_z_neigh = z_neighs[1];
 }
 
-void
-parflow_p4est_inner_ghost_create_2d (SubgridArray * innerGhostsubgrids,
-                                     Subgrid * subgrid,
-                                     parflow_p4est_qiter_2d_t * qit_2d,
-                                     parflow_p4est_grid_2d_t *    pfgrid
-                                     )
+static Subgrid *
+parflow_p4est_child_ghost_from_father(Subgrid * subgrid, int child_id,
+                                      parflow_p4est_qiter_2d_t * qit_2d)
 {
     Subgrid       *gs;
-    p4est_mesh_t   *mesh = pfgrid->mesh;
     p4est_quadrant_t  r = *qit_2d->quad;
-    int8_t qtof;
-    int nhalves = 1 << (P4EST_DIM - 1);
-    int child_id;
     int offset[3];
-    int k, l, face;
+    int k;
     double p[3], icorner[3], v[3];
-
-    P4EST_ASSERT(qit_2d->itype & PARFLOW_P4EST_QUAD);
 
     icorner[0] = SubgridIX(subgrid);
     icorner[1] = SubgridIY(subgrid);
@@ -335,71 +332,107 @@ parflow_p4est_inner_ghost_create_2d (SubgridArray * innerGhostsubgrids,
     p[0] = SubgridNX(subgrid);
     p[1] = SubgridNY(subgrid);
     p[2] = SubgridNZ(subgrid);
+    gs = DuplicateSubgrid(subgrid);
+
+   /* The DuplicateSubgrid routine copies the ghostChildren
+    * member from the input subgrid by default, it is necessary
+    * for other routines. A 'ghost child' should not reference other
+    * 'ghost children' subgrids so we free its corresponding
+    * ghostChildren inmediatly */
+    P4EST_FREE(gs->ghostChildren);
+    gs->ghostChildren = NULL;
+
+    parflow_p4est_quad_to_vertex_2d(qit_2d->connect,
+                                    qit_2d->which_tree,
+                                    qit_2d->quad, v);
+    for (k=0; k<3; k++)
+        offset[k] = icorner[k] - v[k] *
+                sc_intpow(2, qit_2d->quad->level) * p[k];
+
+    p4est_quadrant_child (qit_2d->quad, &r, child_id);
+    parflow_p4est_quad_to_vertex_2d(qit_2d->connect,
+                                    qit_2d->which_tree,
+                                    &r, v);
+
+    SubgridIX(gs) = v[0] * sc_intpow(2, r.level) * p[0] + offset[0];
+    SubgridIY(gs) = v[1] * sc_intpow(2, r.level) * p[1] + offset[1];
+    SubgridIZ(gs) = v[2] * sc_intpow(2, r.level) * p[2] + offset[2];
+
+    SubgridGhostIdx(gs) = child_id;
+    SubgridLevel(gs) = SubgridLevel(subgrid) + 1;
+
+    return gs;
+}
+
+void
+parflow_p4est_inner_ghost_create_2d (SubgridArray * innerGhostsubgrids,
+                                     Subgrid * subgrid,
+                                     parflow_p4est_qiter_2d_t * qit_2d,
+                                     parflow_p4est_grid_2d_t *    pfgrid
+                                     )
+{
+    Subgrid       *gs;
+    parflow_p4est_ghost_data_t gdata;
+    p4est_mesh_t   *mesh = pfgrid->mesh;
+    int8_t qtof;
+    //p4est_locidx_t      *qtoqs;
+    int nhalves = 1 << (P4EST_DIM - 1);
+    int child_id;
+    int l, face;
 
     /* Inspect mesh structure to decide if an "internal ghost"
      *  subgrid should be allocated */
-    for (face = 0; face < P4EST_FACES; ++face)
+    if (qit_2d->itype & PARFLOW_P4EST_QUAD)
     {
-        qtof = mesh->quad_to_face[P4EST_FACES * qit_2d->local_idx + face];
-
-        /* Check if we have half-size neighbors across this face */
-        if (qtof < 0)
+        for (face = 0; face < P4EST_FACES; ++face)
         {
-            nhalves = 1 << (P4EST_DIM - 1);
+            qtof = mesh->quad_to_face[P4EST_FACES * qit_2d->local_idx + face];
 
-            /* Allocate storage to save 'ghost children location' */
-            if(!subgrid->ghostChildren){
-                subgrid->ghostChildren = P4EST_ALLOC(int, P4EST_CHILDREN);
-                for  (l = 0; l < P4EST_CHILDREN; ++l)
-                    subgrid->ghostChildren[l] = -1;
-            }
-            P4EST_ASSERT(subgrid->ghostChildren);
-
-            /* For each face having half size neighbors, we create
-             * a temporary child quadrant that will be used to allocate
-             * an "internal ghost subgrid" */
-            for (l = 0; l < nhalves; ++l)
+            /* Check if we have half-size neighbors across this face */
+            if (qtof < 0)
             {
-                child_id = p4est_face_corners[face][l];
+                //qtoqs = (p4est_locidx_t *) sc_array_index (mesh->quad_to_half, qtoq);
+                nhalves = 1 << (P4EST_DIM - 1);
 
-                /* A ghost subgrid correspoding to this child has not been allocated */
-                if (subgrid->ghostChildren[child_id] < 0)
-                {
-                    gs = DuplicateSubgrid(subgrid);
-
-                    /* The DuplicateSubgrid routine copies the ghostChildren
-                     * member from the input subgrid by default, it is necessary
-                     * for other routines. A 'ghost child' should not reference other
-                     * 'ghost children' subgrids so we free its corresponding
-                     * ghostChildren inmediatly */
-                    P4EST_FREE(gs->ghostChildren);
-                    gs->ghostChildren = NULL;
-
-                    parflow_p4est_quad_to_vertex_2d(qit_2d->connect,
-                                                    qit_2d->which_tree,
-                                                    qit_2d->quad, v);
-                    for (k=0; k<3; k++)
-                        offset[k] = icorner[k] - v[k] *
-                                sc_intpow(2, qit_2d->quad->level) * p[k];
-
-                    p4est_quadrant_child (qit_2d->quad, &r, child_id);
-                    parflow_p4est_quad_to_vertex_2d(qit_2d->connect,
-                                                    qit_2d->which_tree,
-                                                    &r, v);
-
-                    SubgridIX(gs) = v[0] * sc_intpow(2, r.level) * p[0] + offset[0];
-                    SubgridIY(gs) = v[1] * sc_intpow(2, r.level) * p[1] + offset[1];
-                    SubgridIZ(gs) = v[2] * sc_intpow(2, r.level) * p[2] + offset[2];
-
-                    SubgridGhostIdx(gs) = child_id;
-                    SubgridLevel(gs) = SubgridLevel(subgrid) + 1;
-
-                    AppendSubgrid(gs, innerGhostsubgrids);
-
-                    /*avoid double allocation of this subgrid*/
-                    subgrid->ghostChildren[child_id] = child_id;
+                /* Allocate storage to save 'ghost children location' */
+                if(!subgrid->ghostChildren){
+                    subgrid->ghostChildren = P4EST_ALLOC(int, P4EST_CHILDREN);
+                    for  (l = 0; l < P4EST_CHILDREN; ++l)
+                        subgrid->ghostChildren[l] = -1;
                 }
-           }
+                P4EST_ASSERT(subgrid->ghostChildren);
+
+               /* For each face having half size neighbors, we create
+                * a temporary child quadrant that will be used to allocate
+                * an "internal ghost subgrid" */
+                for (l = 0; l < nhalves; ++l)
+                {
+                    child_id = p4est_face_corners[face][l];
+
+                    /* A ghost subgrid correspoding to this child has not been allocated */
+                    if (subgrid->ghostChildren[child_id] < 0)
+                    {
+                        gs = parflow_p4est_child_ghost_from_father(subgrid, child_id, qit_2d);
+                        AppendSubgrid(gs, innerGhostsubgrids);
+
+                        /* avoid double allocation of this subgrid*/
+                        subgrid->ghostChildren[child_id] = child_id;
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        P4EST_ASSERT(qit_2d->itype & PARFLOW_P4EST_GHOST);
+        gdata = pfgrid->ghost_data[qit_2d->g];
+        for (l = 0; l < P4EST_CHILDREN; ++l)
+        {
+            child_id = gdata.which_inner_ghostCh[l];
+            if ( child_id >= 0){
+                gs = parflow_p4est_child_ghost_from_father(subgrid, child_id, qit_2d);
+                AppendSubgrid(gs, innerGhostsubgrids);
+            }
         }
     }
 }

@@ -474,7 +474,7 @@ parflow_p4est_ghost_prepare_exchange (parflow_p4est_grid_t * pfgrid,
           gd = &pfg2d->mirror_data[cmidx];
           pfg2d->mpointer[cmidx] = gd;
           if (g_children_info != NULL)
-              memcpy (gd->ghost_children, g_children_info,
+              memcpy (gd->which_inner_ghostCh, g_children_info,
                       P4EST_CHILDREN * sizeof (int));
           break;
       case 3:
@@ -483,7 +483,7 @@ parflow_p4est_ghost_prepare_exchange (parflow_p4est_grid_t * pfgrid,
           gd = &pfg3d->mirror_data[cmidx];
           pfg3d->mpointer[cmidx] = gd;
           if (g_children_info != NULL)
-              memcpy (gd->ghost_children, g_children_info,
+              memcpy (gd->which_inner_ghostCh, g_children_info,
                       P8EST_CHILDREN * sizeof (int));
           break;
       default:

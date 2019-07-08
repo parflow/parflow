@@ -199,37 +199,11 @@ Grid           *CreateGrid(
       parflow_p4est_ghost_prepare_exchange (pfgrid, qiter, g_exchange_info);
     }
 
+    /*Destroy p4est mesh structure */
+    parflow_p4est_grid_mesh_destroy(pfgrid);
+
     /* Assert that all local quadrants were visited */
     P4EST_ASSERT(num_local_quads == SubgridArraySize(subgrids));
-
-    /* If any, append 'ghost children' to the local subgrids array */
-    ForSubgridI(i, inner_ghost_subgrids)
-    {
-        /* fetch a 'ghost child' subgrid */
-        gs0 = SubgridArraySubgrid(inner_ghost_subgrids, i);
-
-        /* After construction, the local index of a 'ghost child'
-         * is the the local index of its parent; fetch parent */
-        s0 =  SubgridArraySubgrid(subgrids, SubgridLocIdx(gs0));
-
-        /* Update local index of this 'ghost child' subgrid to the
-         * position it will occupy in the local subgrids array */
-        SubgridLocIdx(gs0) = num_local_quads  + i;
-
-        /* Parent subgrid gets access to this child */
-        s0->ghostChildren[SubgridGhostIdx(gs0)] = SubgridLocIdx(gs0);
-
-        /* For a 'ghost child' subgrid, its ghost index stores its child_id.
-         * We will encode it together with its parent local index as
-         * -(nchildren * parent_local_index + child_id + 2); See region.h */
-        SubgridGhostIdx(gs0) =
-                - (nchildren * SubgridLocIdx(s0) + SubgridGhostIdx(gs0) + 2);
-
-        AppendSubgrid(gs0, subgrids);
-    }
-
-    /* ParFlow should not see or loop over the inner ghost subgrids*/
-    SubgridArraySize(subgrids) = num_local_quads;
 
     /* Share ghost information */
     parflow_p4est_ghost_exchange (pfgrid);
@@ -268,10 +242,39 @@ Grid           *CreateGrid(
         ghost_data->pf_subgrid->pcorner[i] = sp->pcorner[i];
 
       AppendSubgrid(ghost_data->pf_subgrid, all_subgrids);
+
+      parflow_p4est_inner_ghost_create(inner_ghost_subgrids,
+                                       ghost_data->pf_subgrid, qiter, pfgrid);
     }
 
-    /*Destroy p4est mesh structure */
-    parflow_p4est_grid_mesh_destroy(pfgrid);
+    /* If any, append local 'ghost children' to the local subgrids array */
+    ForSubgridI(i, inner_ghost_subgrids)
+    {
+        /* fetch a 'ghost child' subgrid */
+        gs0 = SubgridArraySubgrid(inner_ghost_subgrids, i);
+
+        /* After construction, the local index of a 'ghost child'
+         * is the the local index of its parent; fetch parent */
+        s0 =  SubgridArraySubgrid(subgrids, SubgridLocIdx(gs0));
+
+        /* Update local index of this 'ghost child' subgrid to the
+         * position it will occupy in the local subgrids array */
+        SubgridLocIdx(gs0) = num_local_quads  + i;
+
+        /* Parent subgrid gets access to this child */
+        s0->ghostChildren[SubgridGhostIdx(gs0)] = SubgridLocIdx(gs0);
+
+        /* For a 'ghost child' subgrid, its ghost index stores its child_id.
+         * We will encode it together with its parent local index as
+         * -(nchildren * parent_local_index + child_id + 2); See region.h */
+        SubgridGhostIdx(gs0) =
+                - (nchildren * SubgridLocIdx(s0) + SubgridGhostIdx(gs0) + 2);
+
+        AppendSubgrid(gs0, subgrids);
+    }
+
+    /* ParFlow should not see or loop over the inner ghost subgrids*/
+    SubgridArraySize(subgrids) = num_local_quads;
 
     /*There is no PxQxR processor arrange with p4est, set invalid values*/
     GlobalsP = GlobalsQ = GlobalsR = -1;

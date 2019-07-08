@@ -23,7 +23,7 @@ typedef struct parflow_p4est_quad_data {
 
 typedef struct parflow_p4est_ghost_data {
   Subgrid *pf_subgrid;
-  int     ghost_children[8];
+  int     which_inner_ghostCh[8];
 } parflow_p4est_ghost_data_t;
 
 typedef struct parflow_p4est_sg_param {
