@@ -1384,8 +1384,6 @@ void    RichardsJacobianEval(
             op[im] = 0.0;       //zero out entry in row of Jacobian
           });
 
-
- printf("Case overland_flow \n");
                   PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
                                      (grid, is, bc_struct, ipatch, problem_data, pressure,
                                       ke_der, kw_der, kn_der, ks_der,
