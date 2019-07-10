@@ -1358,7 +1358,7 @@ void    RichardsJacobianEval(
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
             im = SubmatrixEltIndex(J_sub, i, j, k);
-
+                  public_xtra->type = overland_flow;
             //remove contributions to this row corresponding to boundary
             if (fdir[0] == -1)
               op = wp;
@@ -1391,7 +1391,7 @@ void    RichardsJacobianEval(
           PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
                              (grid, is, bc_struct, ipatch, problem_data, pressure,
                               ke_der, kw_der, kn_der, ks_der,
-                              kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
+                              NULL, NULL, NULL, NULL, NULL, NULL, CALCDER));
 
         } /* End OverlandKinematicBC */
 
@@ -1652,6 +1652,91 @@ void    RichardsJacobianEval(
         {
           /* Fall through cases for new Overland types */
           case OverlandKinematicBC:
+          {
+            BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+            {
+              if (fdir[2] == 1)
+              {
+                /* Loop over boundary patches to build JC matrix.
+                 */
+                io = SubmatrixEltIndex(J_sub, i, j, iz);
+                io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+                itop = SubvectorEltIndex(top_sub, i, j, 0);
+
+                /* Update JC */
+                ip = SubvectorEltIndex(p_sub, i, j, k);
+                im = SubmatrixEltIndex(J_sub, i, j, k);
+
+                /* First put contributions from subsurface diagonal onto diagonal of JC */
+                cp_c[io] = cp[im];
+                cp[im] = 0.0;         // update JB
+                /* Now check off-diagonal nodes to see if any surface-surface connections exist */
+                /* West */
+                k1 = (int)top_dat[itop - 1];
+
+                if (k1 >= 0)
+                {
+                  if (k1 == k)         /*west node is also surface node */
+                  {
+                    wp_c[io] += wp[im];
+                    wp[im] = 0.0;           // update JB
+                  }
+                }
+                /* East */
+                k1 = (int)top_dat[itop + 1];
+                if (k1 >= 0)
+                {
+                  if (k1 == k)         /*east node is also surface node */
+                  {
+                    ep_c[io] += ep[im];
+                    ep[im] = 0.0;           //update JB
+                  }
+                }
+                /* South */
+                k1 = (int)top_dat[itop - sy_v];
+                if (k1 >= 0)
+                {
+                  if (k1 == k)         /*south node is also surface node */
+                  {
+                    sop_c[io] += sop[im];
+                    sop[im] = 0.0;           //update JB
+                  }
+                }
+                /* North */
+                k1 = (int)top_dat[itop + sy_v];
+                if (k1 >= 0)
+                {
+                  if (k1 == k)         /*north node is also surface node */
+                  {
+                    np_c[io] += np[im];
+                    np[im] = 0.0;           // Update JB
+                  }
+                }
+
+                /* Now add overland contributions to JC */
+                if ((pp[ip]) > 0.0)
+                {
+                  /*diagonal term */
+                  cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                              + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+                }
+
+                  /*west term */
+                  wp_c[io] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
+
+                  /*East term */
+                  ep_c[io] += (vol / ffy) * dt * (kw_der[io1 + 1]);
+
+                  /*south term */
+                  sop_c[io] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+
+                  /*north term */
+                  np_c[io] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+
+              }
+            });
+            break;
+          }
           case OverlandDiffusiveBC:
           case OverlandBC:
           {

@@ -28,12 +28,12 @@
 /*****************************************************************************
 *
 *  This module computes the contributions for the spatial discretization of the
-*  diffusive wave approximation for the overland flow boundary condition:KE,KW,KN,KS.
+*  kinematic wave approximation for the overland flow boundary condition:KE,KW,KN,KS.
 *
 *  It also computes the derivatives of these terms for inclusion in the Jacobian.
 *
 * Could add a switch statement to handle the Kinemative wave approx. also.
-* -DOK
+* @LEC, @RMM
 *****************************************************************************/
 #include "parflow.h"
 #include "llnlmath.h"
@@ -92,11 +92,11 @@ void    OverlandFlowEvalKin(
   double        *sx_dat, *sy_dat, *mann_dat, *top_dat, *pp;
 
   double xdir, ydir;
-  double q_lo, q_mid, q_hi;
+  double q_lo, q_mid, q_hi, qx_temp, qy_temp;
   double q_v[4], slope_fx_lo, slope_fx_hi, slope_fx_mid;
   double slope_fy_lo, slope_fy_hi, slope_fy_mid, dx, dy;
   double coeff, Pmean, P2, P3, Pdel, Pcen;
-  double slope_mean, manning, s1, s2;
+  double slope_mean, manning, s1, s2, Sf_mag;
   double Press_x, Press_y, Sf_x, Sf_y, Sf_xo, Sf_yo;
 
   int ival, sy_v, step;
@@ -132,9 +132,7 @@ void    OverlandFlowEvalKin(
 
   if (fcn == CALCFCN)
   {
-    // printf("Overland_Diffusive --CACLFCN\n");
-    //    if(qx_v == NULL || qy_v == NULL) /* do not return velocity fluxes */
-    //       {
+
     BCStructPatchLoopOvrlnd(i, j, k, fdir, ival, bc_struct, ipatch, sg,
     {
       if (fdir[2] == 1)
@@ -146,7 +144,6 @@ void    OverlandFlowEvalKin(
         k0x = (int)top_dat[itop - 1];
         k0y = (int)top_dat[itop - sy_v];
         double ov_epsilon= 1.0e-5;
-        //printf("i=%d j=%d k=%d k1=%d k0x=%d k0y=%d\n",i,j,k,k1, k0x, k0y);
 
 
         if (k1 >= 0)
@@ -155,7 +152,7 @@ void    OverlandFlowEvalKin(
           Sf_x = sx_dat[io];
           Sf_y = sy_dat[io];
 
-          double Sf_mag = RPowerR(Sf_x*Sf_x+Sf_y*Sf_y,0.5); //+ov_epsilon;
+          Sf_mag = RPowerR(Sf_x*Sf_x+Sf_y*Sf_y,0.5); //+ov_epsilon;
           if (Sf_mag < ov_epsilon)
           Sf_mag = ov_epsilon;
 
@@ -164,6 +161,7 @@ void    OverlandFlowEvalKin(
 
           qx_v[io] = -(Sf_x / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_x, (5.0 / 3.0));
           qy_v[io] = -(Sf_y / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
+
 
         }
 
@@ -223,853 +221,111 @@ void    OverlandFlowEvalKin(
     });
 
   }
-  else          //fcn = CALCDER calculates the derivs of KE KW KN KS wrt to current cell (i,j,k)
+  else          //fcn = CALCDER calculates the derivs
   {
-    //     printf("ELSE... CALCDER");
-    //  if(qx_v == NULL || qy_v == NULL) /* do not return velocity fluxes */
-    // {
-    BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, sg,
-    {
-      if (fdir[2] == 1)
-      {
-        //printf("Made it inside CALCDER");
 
-        io = SubvectorEltIndex(sx_sub, i, j, 0);
-        itop = SubvectorEltIndex(top_sub, i, j, 0);
-        /* Current node */
-        k1 = (int)top_dat[itop];
-        ip0 = SubvectorEltIndex(p_sub, i, j, k1);
-        manning = mann_dat[io];
-
-        /*KW  - look at nodes i-1 and i*/
-        k1 = (int)top_dat[itop - 1];
-        ip = SubvectorEltIndex(p_sub, (i - 1), j, k1);
-
-
-        /*Calcualte Friction Slope */
-        if (i > 0)
+        BCStructPatchLoopOvrlnd(i, j, k, fdir, ival, bc_struct, ipatch, sg,
         {
-          slope_mean = sx_dat[io - 1];
-          slope_fx_lo = slope_mean + (((pfmax((pp[ip0]), 0.0)) - (pfmax((pp[ip]), 0.0))) / dx);
-        }
-        else
-        {
-          slope_mean = sx_dat[io];
-          slope_fx_lo = slope_mean;
-        }
 
-        manning = (1.0 + 0.0000001 / fabs(slope_fx_lo)) * mann_dat[io];
-        Pcen = pfmax(pp[ip0], 0.0);                 //pressure of current cell
-        Pdel = pfmax(pp[ip], 0.0);                  // pressure cell to the west
+          if (fdir[2] == 1)
+          {
 
-        /* Caluculate Derivative */
-        if (fabs(slope_fx_lo) < 0.0000001)
-        {
-          kw_vns[io] = 0;
-          kw_v[io] = 0;
-        }
+            io = SubvectorEltIndex(sx_sub, i, j, 0);
+            itop = SubvectorEltIndex(top_sub, i, j, 0);
 
-        else if (slope_fx_lo > 0.0)
-        {
-          xdir = -1.0;
-          kw_vns[io] = xdir * (-1 / (2 * dx * manning)) * RPowerR(fabs(slope_fx_lo), -0.5) * RPowerR(Pcen, (5.0 / 3.0));
+            k1 = (int)top_dat[itop];
+            k0x = (int)top_dat[itop - 1];
+            k0y = (int)top_dat[itop - sy_v];
+            double ov_epsilon= 1.0e-5;
 
-          kw_v[io] = xdir * ((5 / (3 * manning)) * RPowerR(fabs(slope_fx_lo), 0.5) * RPowerR(Pcen, (2.0 / 3.0)) +
-                             1 / (2 * dx * manning) * RPowerR(fabs(slope_fx_lo), -0.5) * RPowerR(Pcen, (5.0 / 3.0)));
-        }
-        else if (slope_fx_lo < 0.0)
-        {
-          xdir = 1.0;
-          /*This is dfi-1/di-1 East*/
-          kw_vns[io] = xdir * ((5 / (3 * manning)) * RPowerR(fabs(slope_fx_lo), 0.5) * RPowerR(Pdel, (2.0 / 3.0)) -
-                               1 / (2 * dx * manning) * RPowerR(fabs(slope_fx_lo), -0.5) * RPowerR(Pdel, (5.0 / 3.0)));
-          /* This is dfi-1/di East */
-          kw_v[io] = xdir * ((1 / (2 * dx * manning)) * RPowerR(fabs(slope_fx_lo), -0.5) * RPowerR(Pdel, (5.0 / 3.0)));
-          //kw_v[io]=0;
-        }
-        //else{
-        //  kw_vns[io]=0;
-        // kw_v[io]=0;
-        //}
+            if (k1 >= 0)
+            {
+              ip = SubvectorEltIndex(p_sub, i, j, k1);
+              Sf_x = sx_dat[io];
+              Sf_y = sy_dat[io];
 
-        //printf("WEST: i %d j %d %4.5e %4.5e %4.5e %4.5e %4.5e %4.5e \n", i, j, Pcen, Pdel, slope_fx_lo, slope_mean, kw_v[io], kw_vns[io]);
+             Sf_mag = RPowerR(Sf_x*Sf_x+Sf_y*Sf_y,0.5); //+ov_epsilon;
+              if (Sf_mag < ov_epsilon)
+              Sf_mag = ov_epsilon;
 
+              Press_x = RPMean(-Sf_x, 0.0, pfmax((pp[ip]), 0.0), pfmax((pp[ip+1]), 0.0));
+              Press_y = RPMean(-Sf_y, 0.0, pfmax((pp[ip]), 0.0),pfmax((pp[ip+sy_v]), 0.0));
 
-        /* KE - look at nodes i+1 and i */
-        k1 = (int)top_dat[itop + 1];
-        ip2 = SubvectorEltIndex(p_sub, (i + 1), j, k1);
+              qx_temp = -(5.0/3.0)*(Sf_x / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_x, (2.0 / 3.0));
+              qy_temp = -(5.0/3.0)*(Sf_y / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_y, (2.0 / 3.0));
 
-        /*Calcualte Friction Slope */
-        if (i < gnx - 1)
-        {
-          slope_mean = sx_dat[io];
-          slope_fx_hi = slope_mean + (((pfmax((pp[ip2]), 0.0)) - (pfmax((pp[ip0]), 0.0))) / dx);
-        }
-        else
-        {
-          slope_mean = sx_dat[io];
-          slope_fx_hi = slope_mean;
-        }
+              ke_v[io] = qx_temp;
+              kw_v[io+1] = qx_temp;
+              kn_v[io] = qy_temp;
+              ks_v[io-sy_v] = qy_temp;
 
-        manning = (1.0 + 0.0000001 / fabs(slope_fx_hi)) * mann_dat[io];
-        Pcen = pfmax(pp[ip0], 0.0);                 //pressure of current cel
-        Pdel = pfmax(pp[ip2], 0.0);                  // pressure cell to the east
+            }
 
-        /* Caluculate Derivative */
-        if (fabs(slope_fx_hi) < 0.0000001)
-        {
-          ke_vns[io] = 0;
-          ke_v[io] = 0;
-        }
+            //fix for lower x boundary
+            if (k0x < 0.0) {
+                if (k1 >= 0.0) {
+                  Sf_x = sx_dat[io];
+                  Sf_y = sy_dat[io];
 
-        else if (slope_fx_hi > 0.0)
-        {
-          xdir = -1.0;
-          /*This is dfi+1/di+1 for kw */
-          ke_vns[io] = xdir * ((5 / (3 * manning)) * RPowerR(fabs(slope_fx_hi), 0.5) * RPowerR(Pdel, (2.0 / 3.0)) +
-                               1 / (2 * dx * manning) * RPowerR(fabs(slope_fx_hi), -0.5) * RPowerR(Pdel, (5.0 / 3.0)));
+                  double Sf_mag = RPowerR(Sf_x*Sf_x+Sf_y*Sf_y,0.5); //+ov_epsilon;
+                  if (Sf_mag < ov_epsilon)
+                  Sf_mag = ov_epsilon;
 
-          /* This is dfi+1/di for kw */
-          ke_v[io] = xdir * ((-1 / (2 * dx * manning)) * RPowerR(fabs(slope_fx_hi), -0.5) * RPowerR(Pdel, (5.0 / 3.0)));
-          //  ke_v[io]=0;
-        }
-        else if (slope_fx_hi < 0.0)
-        {
-          xdir = 1.0;
-          ke_vns[io] = xdir * ((1 / (2 * dx * manning)) * RPowerR(fabs(slope_fx_hi), -0.5) * RPowerR(Pcen, (5.0 / 3.0)));
+                  if (Sf_x > 0.0) {
+                    ip = SubvectorEltIndex(p_sub, i, j, k1);
+                    Press_x = pfmax((pp[ip]), 0.0);
+//                    qx[io-1] = -(5.0/3.0)*(Sf_x / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_x, (2.0 / 3.0));
+                  qx_temp = -(5.0/3.0)*(Sf_x / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_x, (2.0 / 3.0));
 
-          ke_v[io] = xdir * ((5 / (3 * manning)) * RPowerR(fabs(slope_fx_hi), 0.5) * RPowerR(Pcen, (2.0 / 3.0)) -
-                             1 / (2 * dx * manning) * RPowerR(fabs(slope_fx_hi), -0.5) * RPowerR(Pcen, (5.0 / 3.0)));
-        }
-        // else{
-        //   ke_vns[io]=0;
-        //  ke_v[io]=0;
-        //}
+                    kw_v[io] = qx_temp;
+                    ke_v[io-1] = qx_temp;
+//                    printf("io=%d Ke=%f Kw=%f \n",io,ke_v[io],kw_v[io]);
+                  }
+                }
+              }
 
-        // printf("i %d j %d %4.5f %4.5f %4.5f %4.5f %4.5e %4.5e %4.5e %4.5e \n", i, j, slope_mean, slope_fx_lo, Pcen, Pdel, kw_v[io], kw_vns[io], ke_v[io], ke_vns[io]);
-        //printf("EAST: i %d j %d %4.5e %4.5e %4.5e %4.5e %4.5e %4.5e \n", i, j,  Pcen, Pdel, slope_fx_hi, slope_mean, ke_v[io], ke_vns[io]);
+              //fix for lower y boundary
+              if (k0y < 0.0) {
+                  if (k1 >= 0.0) {
 
+                    Sf_x = sx_dat[io];
+                    Sf_y = sy_dat[io];
 
-        /*KS  - look at nodes j-1 and j*/
-        k1 = (int)top_dat[itop - sy_v];
-        ip3 = SubvectorEltIndex(p_sub, i, (j - 1), k1);
+                    double Sf_mag = RPowerR(Sf_x*Sf_x+Sf_y*Sf_y,0.5); //+ov_epsilon;
+                    if (Sf_mag < ov_epsilon)
+                    Sf_mag = ov_epsilon;
 
-        /*Calcualte Friction Slope */
-        if (j > 0)
-        {
-          slope_mean = sy_dat[io - sy_v];
-          slope_fy_lo = slope_mean + (((pfmax((pp[ip0]), 0.0)) - (pfmax((pp[ip3]), 0.0))) / dy);
-        }
-        else
-        {
-          slope_mean = sy_dat[io];
-          slope_fy_lo = slope_mean;
-        }
-        manning = (1.0 + 0.0000001 / fabs(slope_fy_lo)) * mann_dat[io];
-        Pcen = pfmax(pp[ip0], 0.0);                 //pressure of current cel
-        Pdel = pfmax(pp[ip3], 0.0);                  // pressure cell to the south
+                    if (Sf_y > 0.0) {
+                      ip = SubvectorEltIndex(p_sub, i, j, k1);
+                      Press_y = pfmax((pp[ip]), 0.0);
+//                      qy[io-sy_v] = -(5.0/3.0)*(Sf_y / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_y, (2.0 / 3.0));
+                    qy_temp = -(5.0/3.0)*(Sf_y / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_y, (2.0 / 3.0));
 
-        /* Caluculate Derivative */
-        if (fabs(slope_fy_lo) < 0.0000001)
-        {
-          ks_vns[io] = 0;
-          ks_v[io] = 0;
-        }
-        else if (slope_fy_lo > 0.0)
-        {
-          ydir = -1.0;
-          ks_vns[io] = ydir * ((-1 / (2 * dy * manning)) * RPowerR(fabs(slope_fy_lo), -0.5) * RPowerR(Pcen, (5.0 / 3.0)));
+                    ks_v[io] = qy_temp;
+                    kn_v[io-sy_v] = qy_temp;
+//                    printf("io=%d Kn=%f Ks=%f \n",io,kn_v[io],ks_v[io]);
+                    }
+                  }
+                }
+          }
+        });
 
-          ks_v[io] = ydir * ((5 / (3 * manning)) * RPowerR(fabs(slope_fy_lo), 0.5) * RPowerR(Pcen, (2.0 / 3.0)) +
-                             1 / (2 * dy * manning) * RPowerR(fabs(slope_fy_lo), -0.5) * RPowerR(Pcen, (5.0 / 3.0)));
-        }
-        else if (slope_fy_lo < 0.0)
-        {
-          ydir = 1.0;
-          ks_vns[io] = ydir * (5 / (3 * manning) * RPowerR(fabs(slope_fy_lo), 0.5) * RPowerR(Pdel, (2.0 / 3.0)) -
-                               1 / (2 * dy * manning) * RPowerR(fabs(slope_fy_lo), -0.5) * RPowerR(Pdel, (5.0 / 3.0)));
+//        BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, sg,
+//        {
+//          if (fdir[2] == 1)
+//          {
+//            io = SubvectorEltIndex(sx_sub, i, j, 0);
+//            ke_v[io] = qx_v[io];
+//            kw_v[io] = qx_v[io-1];
+//            kn_v[io] = qy_v[io];
+//            ks_v[io] = qy_v[io-sy_v];
+//          }
+//        });
 
-          //ks_v[io]=0.0;
-          ks_v[io] = ydir * ((1 / (2 * dy * manning)) * RPowerR(fabs(slope_fy_lo), -0.5) * RPowerR(Pdel, (5.0 / 3.0)));
-        }
-        //else{
-        //  ks_vns[io]=0;
-        // ks_v[io]=0;
-        // }
+    } // else calcder
 
-        //printf("SOUTH: i %d j %d %4.5e %4.5e %4.5e %4.5e %4.5e %4.5e \n", i, j,  Pcen, Pdel, slope_fy_lo, slope_mean,  ks_v[io], ks_vns[io]);
+  }   // function
 
-
-        /* KN - look at nodes j+1 and j */
-        k1 = (int)top_dat[itop + sy_v];
-        ip4 = SubvectorEltIndex(p_sub, i, (j + 1), k1);
-
-        /*Calcualte Friction Slope */
-        if (j < gny - 1)
-        {
-          slope_mean = sy_dat[io];
-          slope_fy_hi = slope_mean + (((pfmax((pp[ip4]), 0.0)) - (pfmax((pp[ip0]), 0.0))) / dy);
-        }
-        else
-        {
-          slope_mean = sy_dat[io];
-          slope_fy_hi = slope_mean;
-        }
-
-        manning = (1.0 + 0.0000001 / fabs(slope_fy_hi)) * mann_dat[io];
-        Pcen = pfmax(pp[ip0], 0.0);                 //pressure of current cel
-        Pdel = pfmax(pp[ip4], 0.0);                  // pressure cell to the east
-
-        /* Caluculate Derivative */
-        if (fabs(slope_fy_hi) < 0.0000001)
-        {
-          kn_vns[io] = 0;
-          kn_v[io] = 0;
-        }
-
-        else if (slope_fy_hi > 0.0)
-        {
-          ydir = -1.0;
-          kn_vns[io] = ydir * ((5 / (3 * manning)) * RPowerR(fabs(slope_fy_hi), 0.5) * RPowerR(Pdel, (2.0 / 3.0)) +
-                               1 / (2 * dy * manning) * RPowerR(fabs(slope_fy_hi), -0.5) * RPowerR(Pdel, (5.0 / 3.0)));
-
-          //kn_v[io]=0.0;
-
-          kn_v[io] = ydir * ((-1 / (2 * dy * manning)) * RPowerR(fabs(slope_fy_hi), -0.5) * RPowerR(Pdel, (5.0 / 3.0)));
-        }
-        else if (slope_fy_hi < 0.0)
-        {
-          ydir = 1.0;
-          kn_vns[io] = ydir * ((1 / (2 * dy * manning)) * RPowerR(fabs(slope_fy_hi), -0.5) * RPowerR(Pcen, (5.0 / 3.0)));
-
-          kn_v[io] = ydir * ((5 / (3 * manning)) * RPowerR(fabs(slope_fy_hi), 0.5) * RPowerR(Pcen, (2.0 / 3.0)) -
-                             1 / (2 * dy * manning) * RPowerR(fabs(slope_fy_hi), -0.5) * RPowerR(Pcen, (5.0 / 3.0)));
-        }
-        //else{
-        //   kn_vns[io]=0;
-        //   kn_v[io]=0;
-        //}
-        //printf("NORTH: i %d j %d %4.5e %4.5e %4.5e %4.5e %4.5e %4.5e \n", i, j,  Pcen, Pdel, slope_fy_hi, slope_mean,  kn_v[io], kn_vns[io]);
-      }
-    });
-    //}
-  }
-
-  //  else /* return velocity fluxes */
-  //  {
-  //       printf("returning velocity fluxes \n");
-  //  }
-
-//	    BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, sg,
-//	    {
-//	       if (fdir[2] == 1)
-//	       {
-//	                   io = SubvectorEltIndex(sx_sub,i, j, 0);
-//	                   itop = SubvectorEltIndex(top_sub, i, j, 0);
-//
-//	                   /* compute east and west faces */
-//	                   /* First initialize velocities, q_v, for inactive region */
-//	                   q_v[0] = 0.0;
-//	                   q_v[1] = 0.0;
-//	                   q_v[2] = 0.0;
-//			   q_v[3] = 0.0;
-//
-//                          /* precompute some data for current node, to be reused */
-//                         ip0 = SubvectorEltIndex(p_sub, i, j, k);
-//                         //coeff = RPowerR(pfmax((pp[ip0]),0.0),(5.0/3.0));
-//
-//                        /* Dealing with Kw - look at nodes i-1 and i */
-//                         k1 = (int)top_dat[itop-1];
-//                         if(k1 >= 0)
-//                         {                                //@RMM - moved down one line
-//
-//                                 ip = SubvectorEltIndex(p_sub,(i-1), j, k1);
-//
-//			  /* compute the friction slope for west node
-//			   * this handles the pressure gradient correction
-//			   * for the slope in Manning's equation
-//			  */
-//                           // @RMM  slope is PP(i)-PP(i-1)
-//			      slope_fx_lo = sx_dat[io-1] - (((pfmax((pp[ip0]),0.0)) - (pfmax((pp[ip]),0.0)))/dx);
-//                           //@RMM upwind pressure based on slope direction
-//			      if(slope_fx_lo > 0.0) {
-//				     w = pp[ip];
-//		                    xdir = -1.0;
-//			      }
-//			      else if(slope_fx_lo < 0.0) {
-//                                  xdir = 1.0;
-//			            w = pp[ip0];
-//			      }
-//                               else
-//                                  xdir = 0.0;
-//
-//			      q_v[0] = xdir * (RPowerR(fabs(slope_fx_lo),0.5) / mann_dat[io-1]) * RPowerR(pfmax(w,0.0),(5.0/3.0));  //@RMM could use PMean here in place of w
-//			   }
-//
-//			  /* compute the friction slope for center node */
-//
-//			    /*  slope_fx_mid = sx_dat[io] - (((pfmax((pp[ip0]),0.0)) - (pfmax((pp[ip]),0.0)))/dx);
-//			      if(slope_fx_mid > 0.0) {
-//		                    xdir = -1.0;
-//			      }
-//			      else if(slope_fx_mid < 0.0) {
-//	                            xdir = 1.0;
-//			      }
-//                            else
-//                                  xdir = 0.0;
-//
-//			      q_v[1] = xdir * (RPowerR(fabs(slope_fx_mid),0.5) / mann_dat[io]) * RPowerR(pfmax(pp[ip0],0.0),(5.0/3.0));
-//			      @RMM  */
-//
-//
-//	                   /* compute kw - NOTE: io is for current cell */
-//			   kw_v[io] = q_v[0];  //@RMM-- just i - (i-1) quantities
-//
-//			   /* initially set velocity flux */
-//                         qx_v[io] = q_v[0];
-//
-//                        /* Dealing with Ke - look at nodes i and i+1 */
-//                         /* Dealing with Ke - look at nodes i and i+1 */
-//                         k1 = (int)top_dat[itop+1];
-//			   ip2 = SubvectorEltIndex(p_sub,(i+1), j, k1);
-//
-//                         if(k1 >= 0)
-//                         {
-//
-//			  /* compute the friction slope for east node
-//			   * this handles the pressure gradient correction
-//			   * for the slope in Manning's equation
-//			        @RMM take PP(i+1)=PP(i)       */
-//			      slope_fx_hi = sx_dat[io] - (((pfmax((pp[ip2]),0.0)) - (pfmax((pp[ip0]),0.0)))/dx);  //@RMM
-//			      if(slope_fx_hi > 0.0) {
-//		                    xdir = -1.0;
-//				    w = pp[ip0];
-//			      }
-//			      else if(slope_fx_hi < 0.0) {
-//                                  xdir = 1.0;
-//				    w = pp[ip2];
-//			      }
-//                            else
-//                                  xdir = 0.0;
-//
-//			      q_v[2] = xdir * (RPowerR(fabs(slope_fx_hi),0.5) / mann_dat[io+1]) * RPowerR(pfmax(w,0.0),(5.0/3.0));
-//			   }
-//
-//			   /* compute the friction slope for center node */
-//			   /*  @RMM
-//			      slope_fx_mid = sx_dat[io] - (((pfmax((pp[ip2]),0.0)) - (pfmax((pp[ip0]),0.0)))/dx);
-//
-//			      if(slope_fx_mid > 0.0) {
-//		                    xdir = -1.0;
-//			      }
-//			      else if(slope_fx_mid < 0.0) {
-//	                            xdir = 1.0;
-//			      }
-//			      else
-//                                  xdir = 0.0;
-//
-//			      q_v[3] = xdir * (RPowerR(fabs(slope_fx_mid),0.5) / mann_dat[io]) * RPowerR(pfmax(pp[ip0],0.0),(5.0/3.0));
-//				*/
-//
-//	                   /* compute ke - NOTE: @RMM modified stencil to not upwind Q's but to upwind pressure-head */
-//			   ke_v[io] = q_v[2];
-//
-//			   /* update velocity flux to take on upwinded value or else
-//			    * the value associated with evaluating the pressure gradient
-//			    * using nodes i and i+1
-//			    */
-//			   if(pfmax(q_v[2], 0.0))
-//			      qx_v[io] = q_v[2];
-//
-//	               /* compute north and south faces */
-//	               /* First initialize velocities, q_v, for inactive region */
-//	                   q_v[4] = 0.0;
-//		           q_v[5] = 0.0;
-//	                   q_v[6] = 0.0;
-//	                   q_v[7] = 0.0;
-//
-//                        /* Dealing with Ks - look at nodes j-1 and j */
-//                         k1 = (int)top_dat[itop-sy_v];
-//                         ip3 = SubvectorEltIndex(p_sub,i, (j-1), k1);
-//
-//			   if(k1 >= 0)
-//                         {
-//
-//			  /* compute the friction slope for south node
-//			   * this handles the pressure gradient correction
-//			   * for the slope in Manning's equation
-//			         now take slope based on PP(j)-PP(j-1)    */
-//			      slope_fy_lo = sy_dat[io-sy_v] - (((pfmax((pp[ip0]),0.0)) - (pfmax((pp[ip3]),0.0)))/dy);
-//			      if(slope_fy_lo > 0.0) {
-//		                    ydir = -1.0;
-//				    w = pp[ip3];
-//			      }
-//			      else if(slope_fy_lo < 0.0) {
-//                               ydir = 1.0;
-//				 w = pp[ip0];
-//			      }
-//                            else
-//                                  ydir = 0.0;
-//
-//			      q_v[4] = ydir * (RPowerR(fabs(slope_fy_lo),0.5) / mann_dat[io-sy_v]) * RPowerR(pfmax(w,0.0),(5.0/3.0));
-//			        }
-//			  /* compute the friction slope for center node */
-//			     /* slope_fy_mid = sy_dat[io] - (((pfmax((pp[ip0]),0.0)) - (pfmax((pp[ip3]),0.0)))/dy);
-//			      if(slope_fy_mid > 0.0) {
-//		                    ydir = -1.0;
-//			      }
-//			      else if(slope_fy_mid < 0.0) {
-//                                  ydir = 1.0;
-//			      }
-//			      else
-//                                  ydir = 0.0;
-//
-//			      q_v[5] = ydir * (RPowerR(fabs(slope_fy_mid),0.5) / mann_dat[io]) * RPowerR(pfmax(pp[ip0],0.0),(5.0/3.0));
-//				*/
-//
-//	                   /* compute ks - NOTE: io is for current cell */
-//			   ks_v[io] = q_v[4]; //@RMM
-//
-//			   /* initially set velocity flux */
-//                         qy_v[io] = q_v[4];
-//
-//                        /* Dealing with Ke - look at nodes i and i+1 */
-//                         k1 = (int)top_dat[itop+sy_v];
-//                          ip4 = SubvectorEltIndex(p_sub,i, (j+1), k1);
-//			   if(k1 >= 0)
-//                         {
-//
-//			  /* compute the friction slope for east node
-//			   * this handles the pressure gradient correction
-//			   * for the slope in Manning's equation
-//			  */
-//			      slope_fy_hi = sy_dat[io+sy_v] - (((pfmax((pp[ip4]),0.0)) - (pfmax((pp[ip0]),0.0)))/dy);
-//			      if(slope_fy_hi > 0.0) {
-//		                    ydir = -1.0;
-//				    w = pp[ip0];
-//			      }
-//			      else if(slope_fy_hi < 0.0) {
-//	                            ydir = 1.0;
-//				    w = pp[ip4];
-//			      }
-//			      else
-//                                  ydir = 0.0;
-//
-//			      q_v[6] = ydir * (RPowerR(fabs(slope_fy_hi),0.5) / mann_dat[io+sy_v]) * RPowerR(pfmax(w,0.0),(5.0/3.0));
-//			   }
-//			  /* compute the friction slope for center node */
-//			    /*  slope_fy_mid = sy_dat[io] - (((pfmax((pp[ip0]),0.0)) - (pfmax((pp[ip4]),0.0)))/dy);
-//			      if(slope_fy_mid > 0.0) {
-//		                    ydir = -1.0;
-//			      }
-//			      else if(slope_fy_mid < 0.0) {
-//	                            ydir = 1.0;
-//			      }
-//                               else
-//                                  ydir = 0.0;
-//
-//			      q_v[7] = ydir * (RPowerR(fabs(slope_fy_mid),0.5) / mann_dat[io]) * RPowerR(pfmax(pp[ip0],0.0),(5.0/3.0));
-//				*/
-//
-//	                   /* compute kn - NOTE: io is for current cell */
-//			   kn_v[io] = q_v[6]; //@RMM
-//
-//			   printf(" %4.5f %4.5f %4.5f %4.5f \n", q_v[0], q_v[2],q_v[4], q_v[6]);
-//
-//			   /* update velocity flux to take on upwinded value or else
-//			    * the value associated with evaluating the pressure gradient
-//			    * using nodes i and i+1
-//			    */
-//			   if(pfmax(q_v[6], 0.0))
-//			    qy_v[io] = q_v[6];
-//
-//	         }
-//
-//	     });
-//
-//	  }
-//      }
-/* ***********************************************************************
- * Still working on the jacobian!!!!
- ************************************************************************** */
-//      else // fcn = CALCDER calculates the derivs of KE KW KN KS wrt to current cell (i,j,k)
-//      {
-//              if(qx_v == NULL || qy_v == NULL) /* do not return velocity fluxes */
-//         {
-//          BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, sg,
-//	    {
-//	       if (fdir[2] == 1)
-//	       {
-//	                   /* First initialize velocities, q_v, for inactive region */
-//	                   q_v[0] = 0.0;
-//	                   q_v[1] = 0.0;
-//	                   q_v[2] = 0.0;
-//	                   //printf("set velocities \n");
-//	                   io = SubvectorEltIndex(sx_sub,i, j, 0);
-//	                   ip = SubvectorEltIndex(top_sub, i, j, 0);
-//
-//                          /* precompute some data for current node, to be reused */
-//                         ip0 = SubvectorEltIndex(p_sub, i, j, k);
-//
-//                         //   printf("initial data is recorded \n");
-//		      //   ***********************************************************
-//		      //
-//	              /* compute east and  west face */
-//	              //
-//	              //   ***********************************************************
-//
-//                        /* Dealing with Kw - look at nodes i-1 and i */
-//                         //printf("Why doesn't this work \n");
-//                         //k1 = fabs((int)top_dat[itop-1]);
-//                         //printf(" %4.2f \n", top_dat[itop-1]);
-//                         //if(k1 >= 0)
-//                         //{
-//                            ip = SubvectorEltIndex(p_sub,(i-1), j, k);
-//                        /* Compute the derivative wrt to node i,j,k  */
-//                        // printf("calculating slope \n");
-//                        slope_fx_lo = sx_dat[io] - (((pfmax((pp[ip0]),0.0)) - (pfmax((pp[ip]),0.0)))/dx);
-//		      if(slope_fx_lo > 0.0)
-//		                    xdir = -1.0;
-//				 else if(slope_fx_lo < 0.0)
-//                                  xdir = 1.0;
-//                               else
-//                                  xdir = 0.0;
-//
-//                         q_v[0] = xdir * (1.0 / mann_dat[io]) * (((5.0/3.0)*RPowerR(pfmax((pp[ip0]),0.0),(2.0/3.0)) *(RPowerR(fabs(slope_fx_lo),0.5)))- ((1.0 / (2.0 * dx)) * RPowerR(pfmax((pp[ip0]),0.0),(5.0/3.0)) *(RPowerR(fabs(slope_fx_lo),-0.5))));
-//
-//
-//			  /* compute the derivative wrt to node i-1,j,k */
-//			      slope_fx_mid = sx_dat[io-1] - (((pfmax((pp[ip0]),0.0)) - (pfmax((pp[ip]),0.0)))/dx);
-//			      if(slope_fx_mid > 0.0)
-//	                    xdir = -1.0;
-//				 else if(slope_fx_mid < 0.0)
-//                                  xdir = 1.0;
-//                               else
-//                                  xdir = 0.0;
-//
-//			      q_v[1] = xdir * (1.0 / mann_dat[io]) * (1.0 / (2.0 * dx)) * RPowerR(pfmax((pp[ip0]),0.0),(5.0/3.0)) *(RPowerR(fabs(slope_fx_mid),-0.5));
-
-  //}
-  /* compute kw - NOTE: io is for current cell */
-
-//			   kw_v[io] = pfmax(q_v[1],0.0) - pfmax(-q_v[0],0.0);
-
-  /* Dealing with EAST NODE Ke - look at nodes i and i+1 */
-//
-//                         //k1 = fabs((int)top_dat[itop+1]);
-//                         //if(k1 >= 0)
-//                         //{
-//                            ip2 = SubvectorEltIndex(p_sub,(i+1), j, k);
-//
-//                            /* compute the derivative wrt i,j,k*/
-//			      slope_fx_hi = sx_dat[io] - (((pfmax((pp[ip2]),0.0)) - (pfmax((pp[ip0]),0.0)))/dx);
-//			      if(slope_fx_hi > 0.0)
-//		                    xdir = -1.0;
-//				 else if(slope_fx_hi < 0.0)
-//                                  xdir = 1.0;
-//                               else
-//                                  xdir = 0.0;
-//
-//			   q_v[2] = xdir * (1.0 / mann_dat[io]) * (((5.0/3.0)*RPowerR(pfmax((pp[ip0]),0.0),(2.0/3.0)) *(RPowerR(fabs(slope_fx_hi),0.5)))- ((1.0 / (2.0 * dx)) * RPowerR(pfmax((pp[ip0]),0.0),(5.0/3.0)) *(RPowerR(fabs(slope_fx_hi),-0.5))));
-//
-//			   /* Computer the derivative for the i+1,j,k */
-//
-//			   slope_fx_mid = sx_dat[io+1] - (((pfmax((pp[ip2]),0.0)) - (pfmax((pp[ip0]),0.0)))/dx);
-//			      if(slope_fx_mid > 0.0)
-//		                    xdir = -1.0;
-//				 else if(slope_fx_mid < 0.0)
-//                                  xdir = 1.0;
-//                               else
-//                                  xdir = 0.0;
-//
-//			   q_v[1] = xdir * (1.0 / mann_dat[io]) * (1.0 / (2.0 * dx)) * RPowerR(pfmax((pp[ip0]),0.0),(5.0/3.0)) *(RPowerR(fabs(slope_fx_mid),-0.5));
-//
-//			   //}
-//			   /* compute ke - NOTE: io is for current cell */
-//
-//			   ke_v[io] = pfmax(q_v[2],0.0) - pfmax(-q_v[1],0.0);
-//
-//
-//		      //   ***********************************************************
-//		      //
-//	              /* compute north and south faces */
-//	              //
-//	              //   ***********************************************************
-//
-//	               /* First initialize velocities, q_v, for inactive region */
-//	                   q_v[3] = 0.0;
-//	                   q_v[4] = 0.0;
-//	                   q_v[5] = 0.0;
-//
-//
-//	                  /* Dealing with SOUTH NODE Ks - look at nodes j-1 and j */
-//                         //k1 = fabs((int)top_dat[itop-sy_v]);
-//                         //if(k1 >= 0)
-//                         //{
-//                            ip3 = SubvectorEltIndex(p_sub,i, (j-1), k);
-//
-//			  /* compute the derivative wrt to i,j,k */
-//
-//			      slope_fy_lo = sy_dat[io] - (((pfmax((pp[ip0]),0.0)) -(pfmax((pp[ip3]),0.0)))/dy);
-//			      if(slope_fy_lo > 0.0)
-//		                    ydir = -1.0;
-//				 else if(slope_fy_lo < 0.0)
-//                                  ydir = 1.0;
-//                               else
-//                                  ydir = 0.0;
-//
-//			      q_v[3] = ydir * (1.0 / mann_dat[io]) * (((5.0/3.0)*RPowerR(pfmax((pp[ip0]),0.0),(2.0/3.0)) *(RPowerR(fabs(slope_fy_lo),0.5)))- ((1.0 / (2.0 * dy)) * RPowerR(pfmax((pp[ip0]),0.0),(5.0/3.0)) *(RPowerR(fabs(slope_fy_lo),-0.5))));
-//
-//			     /* compute the derivative wrt to i, j-1 ,k */
-//
-//			      slope_fy_mid = sy_dat[io-sy_v] - (((pfmax((pp[ip0]),0.0)) -(pfmax((pp[ip3]),0.0)))/dy);
-//			      if(slope_fy_mid > 0.0)
-//		                    ydir = -1.0;
-//				 else if(slope_fy_mid < 0.0)
-//                                  ydir = 1.0;
-//                               else
-//                                  ydir = 0.0;
-//
-//			      q_v[4] = ydir * (1.0 / mann_dat[io]) * (1.0 / (2.0 * dy)) * RPowerR(pfmax((pp[ip0]),0.0),(5.0/3.0)) *(RPowerR(fabs(slope_fy_mid),-0.5));
-//
-//			   //}
-//
-//	                   /* compute SOUTH NODE KS - NOTE: io is for current cell */
-//			   ks_v[io] = pfmax(q_v[4],0.0)- pfmax(-q_v[3],0.0);
-//
-//                        /* Dealing with Ke - look at nodes i and i+1 */
-//                         //k1 = fabs((int)top_dat[itop+sy_v]);
-//                         //if(k1 >= 0)
-//                         //{
-//                            ip4 = SubvectorEltIndex(p_sub,i, (j+1), k);
-//
-//			  /* compute the derivative wrt to i j k */
-//
-//			      slope_fy_hi = sy_dat[io] - (((pfmax((pp[ip4]),0.0)) - (pfmax((pp[ip0]),0.0)))/dy);
-//			      if(slope_fy_hi > 0.0)
-//		                    ydir = -1.0;
-//				 else if(slope_fy_hi < 0.0)
-//                                  ydir = 1.0;
-//                               else
-//                                  ydir = 0.0;
-//
-//			      q_v[5] =ydir * (1.0 / mann_dat[io]) * (((5.0/3.0)*RPowerR(pfmax((pp[ip0]),0.0),(2.0/3.0)) *(RPowerR(fabs(slope_fy_hi),0.5)))- ((1.0 / (2.0 * dy)) * RPowerR(pfmax((pp[ip0]),0.0),(5.0/3.0)) *(RPowerR(fabs(slope_fy_hi),-0.5))));
-//
-//			    /* compute the derivative wrt to i j+1 k */
-//
-//			      slope_fy_mid = sy_dat[io+sy_v] - (((pfmax((pp[ip4]),0.0)) - (pfmax((pp[ip0]),0.0)))/dy);
-//			      if(slope_fy_mid > 0.0)
-//		                    ydir = -1.0;
-//				 else if(slope_fy_mid < 0.0)
-//                                  ydir = 1.0;
-//                               else
-//                                  ydir = 0.0;
-//
-//                          q_v[4] = ydir * (1.0 / mann_dat[io]) * (1.0 / (2.0 * dy)) * RPowerR(pfmax((pp[ip0]),0.0),(5.0/3.0)) *(RPowerR(fabs(slope_fy_mid),-0.5));
-//
-//			   //}
-//	                   /* compute kn - NOTE: io is for current cell */
-//	                   printf(" %4.5f %4.5f %4.5f %4.5f %4.5f %4.5f %4.5f %4.5f %4.5f %4.5f %4.5f %4.5f %4.5f   %4.5f %4.5f %4.5f %4.5f %4.5f %4.5f %4.5f %4.5f \n ",(pfmax(pp[ip0],0.0)), (pfmax(pp[ip],0.0)), (pfmax(pp[ip2],0.0)), (pfmax(pp[ip3],0.0)),(pfmax(pp[ip4],0.0)), slope_fy_lo, slope_fy_mid, slope_fy_hi, slope_fx_lo, slope_fx_mid, slope_fx_hi, q_v[0], q_v[1], q_v[2], q_v[3], q_v[4], q_v[5], kn_v[io], ke_v[io], ks_v[io],kw_v[io] );
-//			   kn_v[io] = pfmax(q_v[5],0.0) - pfmax(-q_v[4],0.0) ;
-//	         }
-//
-//	     });
-//
-//	 }
-//	 else
-//	 {
-//              if(qx_v == NULL || qy_v == NULL) /* do not return velocity fluxes */
-//         {
-//            BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, sg,
-//	    {
-//	       if (fdir[2] == 1)
-//	       {
-//	                   /* First initialize velocities, q_v, for inactive region */
-//	                   q_v[0] = 0.0;
-//	                   q_v[1] = 0.0;
-//	                   q_v[2] = 0.0;
-//
-//	                   io = SubvectorEltIndex(sx_sub,i, j, 0);
-//	                   ip = SubvectorEltIndex(top_sub, i, j, 0);
-//
-//                          /* precompute some data for current node, to be reused */
-//                         ip0 = SubvectorEltIndex(p_sub, i, j, k);
-//                         coeff = RPowerR(pfmax((pp[ip0]),0.0),(5.0/3.0));
-//
-//
-//		      //   ***********************************************************
-//		      //
-//	              /* compute east and west faces */
-//	              //
-//	              //   ***********************************************************
-//
-//
-//                         /* Dealing with WEST NODE, Kw - look at nodes i-1 and i */
-//                         //k1 = fabs((int)top_dat[itop-1]);
-//                         //if(k1 >= 0)
-//                         //{
-//                            ip = SubvectorEltIndex(p_sub,(i-1), j, k);
-//
-//                            /* Compute the derivative wrt to node i,j,k  */
-//
-//                        slope_fx_lo = sx_dat[io] - (((pfmax((pp[ip0]),0.0)) - (pfmax((pp[ip]),0.0)))/dx);
-//			      if(slope_fx_lo > 0.0)
-//		                    xdir = -1.0;
-//				 else if(slope_fx_lo < 0.0)
-//                                  xdir = 1.0;
-//                               else
-//                                  xdir = 0.0;
-//
-//                         q_v[0] = xdir * (1.0 / mann_dat[io]) * (((5.0/3.0) * RPowerR(pfmax((pp[ip0]),0.0),(2.0/3.0)) * (RPowerR(fabs(slope_fx_lo),0.5)))- ((1.0 / (2.0 * dx)) * RPowerR(pfmax((pp[ip0]),0.0),(5.0/3.0)) * (RPowerR(fabs(slope_fx_lo),-0.5))));
-//
-//
-//			  /* compute the derivative wrt to node i-1,j,k */
-//			      slope_fx_mid = sx_dat[io-1] - (((pfmax((pp[ip0]),0.0)) - (pfmax((pp[ip]),0.0)))/dx);
-//			      if(slope_fx_mid > 0.0)
-//		                    xdir = -1.0;
-//				 else if(slope_fx_mid < 0.0)
-//                                  xdir = 1.0;
-//                               else
-//                                  xdir = 0.0;
-//
-//			      q_v[1] = xdir * (1.0 / mann_dat[io]) * (1.0 / (2.0 * dx)) * RPowerR(pfmax((pp[ip0]),0.0),(5.0/3.0)) * (RPowerR(fabs(slope_fx_mid),-0.5));
-//
-//			   //}
-//	                   /* compute kw - NOTE: io is for current cell */
-//			   kw_v[io] = pfmax(q_v[1],0.0) - pfmax(-q_v[0],0.0);
-//			   qx_v[io] = q_v[0];					// IS THIS RIGHT????
-//
-//
-//                        /* Dealing with EAST NODE, Ke - look at nodes i and i+1 */
-//
-//                         k1 = fabs((int)top_dat[itop+1]);
-//                         if(k1 >= 0)
-//                         {
-//                            ip = SubvectorEltIndex(p_sub,(i+1), j, k);
-//
-//                            /* compute the derivative wrt i,j,k*/
-//			      slope_fx_hi = sx_dat[io] - (((pfmax((pp[ip]),0.0)) - (pfmax((pp[ip0]),0.0)))/dx);
-//			      if(slope_fx_hi > 0.0)
-//		                    xdir = -1.0;
-//				 else if(slope_fx_hi < 0.0)
-//                                  xdir = 1.0;
-//                               else
-//                                  xdir = 0.0;
-//
-//			   q_v[2] = xdir * (1.0 / mann_dat[io]) * (((5.0/3.0) * RPowerR(pfmax((pp[ip0]),0.0),(2.0/3.0)) * (RPowerR(fabs(slope_fx_hi),0.5)))- ((1.0 / (2.0 * dx)) * RPowerR(pfmax((pp[ip0]),0.0),(5.0/3.0)) *(RPowerR(fabs(slope_fx_hi),-0.5))));
-//
-//			   /* Computer the derivative for the i+1,j,k */
-//
-//			   slope_fx_mid = sx_dat[io+1] - (((pfmax((pp[ip]),0.0)) - (pfmax((pp[ip0]),0.0)))/dx);
-//			      if(slope_fx_mid > 0.0)
-//		                    xdir = -1.0;
-//				 else if(slope_fx_mid < 0.0)
-//                                  xdir = 1.0;
-//                               else
-//                                  xdir = 0.0;
-//
-//			   q_v[1] = xdir * (1.0 / mann_dat[io]) * (1.0 / (2.0 * dx)) * RPowerR(pfmax((pp[ip0]),0.0),(5.0/3.0)) *(RPowerR(fabs(slope_fx_mid),-0.5));
-//
-//			   }
-//			   /* compute ke - NOTE: io is for current cell */
-//			    ke_v[io] = pfmax(q_v[2],0.0) - pfmax(-q_v[1],0.0);
-//
-//			    if (pfmax(q_v[2],0.0))
-//			            qx_v[io] = q_v[2];					//WHAT DO I PUT HERE??????????
-//
-//
-//		      //   ***********************************************************
-//		      //
-//	              /* compute north and south faces */
-//	              //
-//	              //   ***********************************************************
-//
-//	               /* First initialize velocities, q_v, for inactive region */
-//	                   q_v[3] = 0.0;
-//	                   q_v[4] = 0.0;
-//	                   q_v[5] = 0.0;
-//
-//
-//	                  /* Dealing with SOUTH NODE Ks - look at nodes j-1 and j */
-//                        // k1 = fabs((int)top_dat[itop-sy_v]);
-//                        // if(k1 >= 0)
-//                        // {
-//                            ip = SubvectorEltIndex(p_sub,i, (j-1), k);
-//
-//			  /* compute the derivative wrt to i,j,k */
-//
-//			      slope_fy_lo = sy_dat[io] - (((pfmax((pp[ip0]),0.0)) -(pfmax((pp[ip]),0.0)))/dy);
-//			      if(slope_fy_lo > 0.0)
-//		                    ydir = -1.0;
-//				 else if(slope_fy_lo < 0.0)
-//                                  ydir = 1.0;
-//                               else
-//                                  ydir = 0.0;
-//
-//			      q_v[3] = ydir * (1.0 / mann_dat[io]) * (((5.0/3.0) * RPowerR(pfmax((pp[ip0]),0.0),(2.0/3.0)) * (RPowerR(fabs(slope_fy_lo),0.5))) - ((1.0 / (2.0 * dy)) * RPowerR(pfmax((pp[ip0]),0.0),(5.0/3.0)) * (RPowerR(fabs(slope_fy_lo),-0.5))));
-//
-//			     /* compute the derivative wrt to i, j-1 ,k */
-//
-//			      slope_fy_mid = sy_dat[io-sy_v] - (((pfmax((pp[ip0]),0.0)) -(pfmax((pp[ip]),0.0)))/dy);
-//			      if(slope_fy_mid > 0.0)
-//		                    ydir = -1.0;
-//				 else if(slope_fy_mid < 0.0)
-//                                  ydir = 1.0;
-//                               else
-//                                  ydir = 0.0;
-//
-//			      q_v[4] = ydir * (1.0 / mann_dat[io]) * (1.0 / (2.0 * dy)) * RPowerR(pfmax((pp[ip0]),0.0),(5.0/3.0)) *(RPowerR(fabs(slope_fy_mid),-0.5));
-//
-//			  // }
-//
-//	                   /* compute SOUTH NODE KS - NOTE: io is for current cell */
-//			   ks_v[io] = pfmax(q_v[4],0.0) - pfmax(-q_v[3],0.0);
-//			   qy_v[io] = q_v[3];							//WHAT DO I PUT HERE??????????
-//
-//                        /* Dealing with Ke - look at nodes i and i+1 */
-//                         //k1 = fabs((int)top_dat[itop+sy_v]);
-//                         //if(k1 >= 0)
-//                         //{
-//                            ip = SubvectorEltIndex(p_sub,i, (j+1), k);
-//
-//			  /* compute the derivative wrt to i j k */
-//
-//			      slope_fy_hi = sy_dat[io] - (((pfmax((pp[ip]),0.0)) - (pfmax((pp[ip0]),0.0)))/dy);
-//			      if(slope_fy_hi > 0.0)
-//		                    ydir = -1.0;
-//				 else if(slope_fy_hi < 0.0)
-//                                  ydir = 1.0;
-//                               else
-//                                  ydir = 0.0;
-//
-//			      q_v[5] =ydir * (1.0 / mann_dat[io]) * (((5.0/3.0)*RPowerR(pfmax((pp[ip0]),0.0),(2.0/3.0)) * (RPowerR(fabs(slope_fy_hi),0.5)))- ((1.0 / (2.0 * dy)) * RPowerR(pfmax((pp[ip0]),0.0),(5.0/3.0)) * (RPowerR(fabs(slope_fy_hi),-0.5))));
-//
-//			    /* compute the derivative wrt to i j+1 k */
-//
-//			      slope_fy_mid = sy_dat[io+sy_v] - (((pfmax((pp[ip]),0.0)) - (pfmax((pp[ip0]),0.0)))/dy);
-//			      if(slope_fy_mid > 0.0)
-//		                    ydir = -1.0;
-//				 else if(slope_fy_mid < 0.0)
-//                                  ydir = 1.0;
-//                               else
-//                                  ydir = 0.0;
-//
-//                          q_v[4] = ydir * (1.0 / mann_dat[io]) * (1.0 / (2.0 * dy)) * RPowerR(pfmax((pp[ip0]),0.0),(5.0/3.0)) *(RPowerR(fabs(slope_fy_mid),-0.5));
-//
-//			   //}
-//
-//	                   /* compute kn - NOTE: io is for current cell */
-//			   kn_v[io] = pfmax(q_v[5],0.0) - pfmax(-q_v[4],0.0);
-//
-//			   if (pfmax(q_v[4],0.0))
-//			           qy_v[io] = q_v[4];
-//	         }
-//
-//	     });
-//
-//	 }
-//      }
-}
 
 //*/
 /*--------------------------------------------------------------------------
