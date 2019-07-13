@@ -153,6 +153,7 @@ int WaterTableDepthCommand (ClientData clientData, Tcl_Interp *interp, int argc,
 
 //NBE: Adding a new write tool
 int SavePFVTKCommand (ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
+int MakePatchySolidCommand (ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
 
 void Axpy(double alpha, Databox *X, Databox *Y);
 void Sum(Databox *X, double *sum);
@@ -193,4 +194,3 @@ int HydroStatFromWTCommand      (ClientData clientData, Tcl_Interp *interp, int 
 #endif
 
 #endif
-

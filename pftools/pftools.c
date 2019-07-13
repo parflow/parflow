@@ -57,6 +57,7 @@
 
 #include "readdatabox.h"
 #include "printdatabox.h"
+#include "solidtools.h"
 #include "velocity.h"
 #include "head.h"
 #include "flux.h"
@@ -1879,6 +1880,377 @@ int SavePFVTKCommand(
 }
 
 // END of PFVsave
+/* -------------------------------------------------------------------------------------- */
+
+/*-----------------------------------------------------------------------
+ * routine for `pfpatchysolid' command
+ * Description: INCOMPLETE INCOMPLETE INCOMPLETE INCOMPLETE
+ *
+ * Cmd. syntax: pftkvsave dataset -filetype filename [-flt -dem demname -var variable name]
+ * NBE: July 2019
+
+ * NOT COMPLETE: Basic idea is adding a new PFtool that builds any number of patches
+ *               around the edges of a solid file for COMPLEX terrain. This means
+ *               when top and/or bottom surfaces are not flat.
+ *
+ * BASED on PFVTKSAVE
+ *-----------------------------------------------------------------------*/
+
+int MakePatchySolidCommand(
+                     ClientData  clientData,
+                     Tcl_Interp *interp,
+                     int         argc,
+                     char *      argv[])
+{
+  Data          *data = (Data*)clientData;
+
+  char          *filename, *vtk_filename;
+  int           i;
+
+  FILE          *fp = NULL;
+  FILE          *fp_vtk = NULL;
+  char          *maskkey, *tophash, *bothash;
+  Tcl_HashEntry *entryPtr;
+  Databox       *databox, *top_databox, *bot_databox;
+
+  // Fail based on an invalid number of arguments
+  if ((argc < 7) || (argc > 11))
+  {
+    printf("\n ERROR (pfpatchysolid): Invalid number of arguments\n");
+    return TCL_ERROR;
+  }
+
+  // Initialize
+  filename = "SolidFile.pfsol";
+  vtk_filename = NULL;
+  maskkey = NULL;
+  tophash = NULL;
+  bothash = NULL;
+
+  int msk=0, top=0, bot=0, vtk=0, outfl=0, bin_out=0;  //Initalize flags for the options
+  // Note: bin_out is a place holder for a yet to be added BINARY solid file...
+  //       vtk is a flag for writing a BINARY VTK of the solid file too
+
+  // Scan through the argument list and match up the options
+  for (i = 1; i < argc; ++i)
+  {
+    if ((strcmp(argv[i], "-msk") == 0) || (strcmp(argv[i], "–msk") == 0))
+    {
+      msk = 1;
+      maskkey = argv[i + 1];
+    }
+    if ((strcmp(argv[i], "-top") == 0) || (strcmp(argv[i], "–top") == 0))
+    {
+      top = 1;
+      tophash = argv[i + 1];
+    }
+    if ((strcmp(argv[i], "-bot") == 0) || (strcmp(argv[i], "–bot") == 0))
+    {
+      bot = 1;
+      bothash = argv[i + 1];
+    }
+    if ((strcmp(argv[i], "-vtk") == 0) || (strcmp(argv[i], "–vtk") == 0))
+    {
+      vtk = 1;
+      vtk_filename = argv[i + 1];
+    }
+    if ((strcmp(argv[i], "-pfsol") == 0) || (strcmp(argv[i], "–pfsol") == 0))
+    {
+      filename = argv[i + 1];
+    }
+    else if ((strcmp(argv[i], "-pfsolb") == 0) || (strcmp(argv[i], "–pfsolb") == 0))
+    {
+      printf("\n ERROR (pfpatchysolid): Binary solid file not yet enabled, use -pfsol \n");
+      return TCL_ERROR;
+      bin_out=1;
+      filename = argv[i + 1];
+    }
+  }
+
+  if ((msk==0) || (top==0) || (bot==0))
+  {
+    printf("\n ERROR (pfpatchysolid): Missing required arguments. Please add:\n");
+    if (msk==0)
+    {
+      printf("      -msk <Mask_dataset_ID>\n");
+    }
+    if (top==0)
+    {
+      printf("      -top <Top_surface_dataset_ID>\n");
+    }
+    if (top==0)
+    {
+      printf("      -bot <Bottom_surface_dataset_ID>\n");
+    }
+    return TCL_ERROR;
+  }
+
+  if (strcmp(filename,"SolidFile.pfsol")==0)
+  {
+    printf("WARNING (pfpatchysolid): No solid file name specified, default is: SolidFile.pfsol\n");
+  }
+
+  /* Make sure the MAIN datasets exists */
+  if ((databox = DataMember(data, maskkey, entryPtr)) == NULL)
+  {
+    SetNonExistantError(interp, maskkey);
+    return TCL_ERROR;
+  }
+  if ((top_databox = DataMember(data, tophash, entryPtr)) == NULL)
+  {
+    SetNonExistantError(interp, maskkey);
+    return TCL_ERROR;
+  }
+  if ((bot_databox = DataMember(data, bothash, entryPtr)) == NULL)
+  {
+    SetNonExistantError(interp, maskkey);
+    return TCL_ERROR;
+  }
+
+  if ((fp = fopen(filename, "wb")) == NULL)
+  {
+    ReadWriteError(interp);
+    return TCL_ERROR;
+  }
+  if (vtk==1)
+  {
+    if ((fp_vtk = fopen(vtk_filename, "wb")) == NULL)
+    {
+      ReadWriteError(interp);
+      return TCL_ERROR;
+    }
+  }
+
+  // // REMOVE THESE
+  // printf("DEBUGGING: -- Checking inputs -- \n");
+  // printf("Output file: %s \n",filename);
+  // printf("Mask dataset ID: %s \n",maskkey);
+  // printf("Top dataset ID: %s \n",tophash);
+  // printf("Bot dataset ID: %s \n",bothash);
+
+  PrintPatchySolid(fp, fp_vtk, databox, top_databox, bot_databox, bin_out);
+
+  printf("\n Bailing here for debugging\n");
+
+/* ALL THE OLD STUFF IS HERE, but is also in pfvtksave */
+
+  // if (argc == 4)     //ARGC LOGICAL
+  // {     // Basic write, structured points
+  //   if ((fp = fopen(filename, "wb")) == NULL)
+  //   {
+  //     ReadWriteError(interp);
+  //     return TCL_ERROR;
+  //   }
+  //
+  //   if ((strcmp(argv[2], "-vtk") == 0))
+  //   {
+  //     printf("Hit the first one (0)\n");
+  //     PrintVTK(fp, databox, varname, flt);
+  //   }
+  //   else if ((strcmp(argv[2], "-clmvtk") == 0))
+  //   {
+  //     PrintCLMVTK(fp, databox, varname, flt);
+  //   }
+  //   else
+  //   {
+  //     printf("ERROR: Invalid filetype \n");
+  //     return TCL_ERROR;
+  //   }
+  //   fclose(fp);
+  //
+  //   return TCL_OK;
+  // }
+  // else
+  // {
+  //   if (strcmp(argv[2], tophash) == 0)  // Only a variable name was found
+  //   {
+  //     if ((fp = fopen(filename, "wb")) == NULL)
+  //     {
+  //       ReadWriteError(interp);
+  //       return TCL_ERROR;
+  //     }
+  //     if ((strcmp(argv[2], "-vtk") == 0))
+  //     {
+  //       printf("Hit this one (1)\n");
+  //       PrintVTK(fp, databox, varname, flt);
+  //     }
+  //     else if ((strcmp(argv[2], "-clmvtk") == 0))
+  //     {
+  //       PrintCLMVTK(fp, databox, varname, flt);
+  //     }
+  //     else
+  //     {
+  //       printf("ERROR: Invalid filetype \n");
+  //       return TCL_ERROR;
+  //     }
+  //     fclose(fp);
+  //
+  //     return TCL_OK;
+  //   }
+  //
+  //   if ((tophash == NULL) || ((databox2 = DataMember(data, tophash, entryPtr)) == NULL))
+  //   {
+  //     printf("WARNING: dem not found, reverting to structured point VTK \n");
+  //     if ((fp = fopen(filename, "wb")) == NULL)
+  //     {
+  //       ReadWriteError(interp);
+  //       return TCL_ERROR;
+  //     }
+  //     if ((strcmp(argv[2], "-vtk") == 0))
+  //     {
+  //       printf("Hit this other one (2)\n");
+  //       PrintVTK(fp, databox, varname, flt);
+  //     }
+  //     else if ((strcmp(argv[2], "-clmvtk") == 0))
+  //     {
+  //       PrintCLMVTK(fp, databox, varname, flt);
+  //     }
+  //     else
+  //     {
+  //       printf("ERROR: Invalid filetype \n");
+  //       return TCL_ERROR;
+  //     }
+  //     fclose(fp);
+  //     return TCL_OK;
+  //   }
+  //
+  //   /* Since the dem was found, use it to shift the vertical */
+  //
+  //   // Make sure the grids are same size
+  //   int nx = DataboxNx(databox);        // Data
+  //   int ny = DataboxNy(databox);
+  //   int nz = DataboxNz(databox);
+  //   int nx2 = DataboxNx(databox2);        // DEM
+  //   int ny2 = DataboxNy(databox2);
+  //   int nz2 = DataboxNz(databox2);
+  //
+  //   if ((nx != nx2) || (ny != ny2))
+  //   {
+  //     printf("ERROR: Grid dimensions do not match! \n");
+  //     return TCL_ERROR;
+  //   }
+  //
+  //   double x = DataboxX(databox);
+  //   double y = DataboxY(databox);
+  //
+  //   double dx = DataboxDx(databox);
+  //   double dy = DataboxDy(databox);
+  //   double dz = DataboxDz(databox);
+  //
+  //   int nxp = nx + 1;
+  //   int nyp = ny + 1;
+  //   int nzp = nz + 1;
+  //   int nxyzp = nxp * nyp * nzp;
+  //   int n = 0;
+  //
+  //   double *Xp;
+  //
+  //   double elev = 0;
+  //   double zoffset = nz * dz;
+  //
+  //   /* CLM mode uses 1-layer, adjust accordingly */
+  //   int nzl = 0;
+  //
+  //   int imn, jmn, imx, jmx;
+  //
+  //   if ((strcmp(argv[2], "-clmvtk") == 0))
+  //   {
+  //     printf("BLOCK DISABLED\n");
+  //   }
+  //   else
+  //   {
+  //
+  //     // SHOULD really move this into the function, just do flag checking here
+  //
+  //     Xp = (double*)malloc(sizeof(double) * nxyzp * 3);
+  //     // XpTop = (double*)malloc(sizeof(double) * nxyzp * 3);
+  //     // XpBot = (double*)malloc(sizeof(double) * nxyzp * 3);
+  //
+  //     /* compute point locations */
+  //     for (k = nzl; k < nzp; ++k)
+  //     {
+  //       for (j = 0; j < nyp; ++j)
+  //       {
+  //         for (i = 0; i < nxp; ++i)
+  //         {
+  //           Xp[n] = x + i * dx;
+  //           Xp[n + 1] = y + j * dy;
+  //
+  //             /*  Simple interpolation */
+  //             imn = -1;
+  //             jmn = -1;
+  //             imx = 0;
+  //             jmx = 0;
+  //             if (i == 0)
+  //             {
+  //               imn = 0;
+  //             }
+  //             if (i >= nx)
+  //             {
+  //               imx = -1;
+  //             }
+  //             if (j == 0)
+  //             {
+  //               jmn = 0;
+  //             }
+  //             if (j >= ny)
+  //             {
+  //               jmx = -1;
+  //             }
+  //             elev = (*DataboxCoeff(databox2, i + imn, j + jmn, nz2 - 1) + *DataboxCoeff(databox2, i + imx, j + jmn, nz2 - 1) +
+  //                     *DataboxCoeff(databox2, i + imn, j + jmx, nz2 - 1) + *DataboxCoeff(databox2, i + imx, j + jmx, nz2 - 1)) / 4.0;
+  //             //                        Xp[n+2] = elev - zoffset + dz*(double)k; // NBE commented
+  //             Xp[n + 2] = elev - zoffset; // + c_dz[k];
+  //
+  //           n = n + 3;
+  //         }
+  //       }
+  //     }
+  //
+  //     // End of normal block
+  //   }
+  //
+  //   /* Make sure the file could be opened, then write to it */
+  //   if ((fp = fopen(filename, "wb")) == NULL)
+  //   {
+  //     ReadWriteError(interp);
+  //     return TCL_ERROR;
+  //   }
+  //   if ((strcmp(argv[2], "-vtk") == 0))
+  //   {
+  //     printf("Hit this TFG one (a)\n");
+  //     PrintTFG_VTK(fp, databox, Xp, varname, flt);
+  //
+  //     PrintPatchySolid(fp, databox, databox, databox,vtk,bin_out);
+  //     return TCL_OK;
+  //   }
+  //   else if ((strcmp(argv[2], "-clmvtk") == 0))
+  //   {
+  //     PrintTFG_CLMVTK(fp, databox, Xp, varname, flt);
+  //     return TCL_OK;
+  //   }
+  //   else
+  //   {
+  //     printf("ERROR: Invalid filetype \n");
+  //     return TCL_ERROR;
+  //   }
+  //   fclose(fp);
+  //   return TCL_OK;
+  // }   // END OF ARGC LOGICAL
+
+  /* Close the file, if still opened */
+  if (fp)
+  {
+    fclose(fp);
+  }
+  if (fp_vtk)
+  {
+    fclose(fp_vtk);
+  }
+  return TCL_OK;
+}
+
+// END of PFPATCHYSOLID
 /* -------------------------------------------------------------------------------------- */
 
 #ifdef HAVE_HDF4

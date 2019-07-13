@@ -272,9 +272,9 @@ EXPORT(int, Parflow_Init)(Tcl_Interp * interp)
                     (ClientData)data, (Tcl_CmdDeleteProc*)NULL);
   Tcl_CreateCommand(interp, "Parflow::pfflintslawbybasin", (Tcl_CmdProc*)FlintsLawByBasinCommand,
                     (ClientData)data, (Tcl_CmdDeleteProc*)NULL);
-
-  //NBE: Adding another write module
   Tcl_CreateCommand(interp, "Parflow::pfvtksave", (Tcl_CmdProc*)SavePFVTKCommand,
+                    (ClientData)data, (Tcl_CmdDeleteProc*)NULL);
+  Tcl_CreateCommand(interp, "Parflow::pfpatchysolid", (Tcl_CmdProc*)MakePatchySolidCommand,
                     (ClientData)data, (Tcl_CmdDeleteProc*)NULL);
 
 #ifdef SGS
@@ -286,7 +286,3 @@ EXPORT(int, Parflow_Init)(Tcl_Interp * interp)
 
   return Tcl_PkgProvide(interp, "parflow", "1.0");
 }
-
-
-
-
