@@ -22,8 +22,11 @@ typedef struct parflow_p4est_quad_data {
 } parflow_p4est_quad_data_t;
 
 typedef struct parflow_p4est_ghost_data {
-  Subgrid *pf_subgrid;
-  int     which_inner_ghostCh[8];
+
+  Subgrid *pf_subgrid; /** Parflow's subgrid to be attach to a ghost quad */
+
+  int     has_inner_ghosts;       /** Do we require inner ghost subgrids in this quad?*/
+  int     which_inner_ghostCh[8]; /** If required, save inner ghost children idx */
 } parflow_p4est_ghost_data_t;
 
 typedef struct parflow_p4est_sg_param {
@@ -190,6 +193,8 @@ void             parflow_p4est_nquads_per_rank(parflow_p4est_grid_t *pfgrid,
                                                int *                 quads_per_rank);
 
 int              parflow_p4est_local_num_quads(parflow_p4est_grid_t * pfgrid);
+
+int              parflow_p4est_ghost_num_quads(parflow_p4est_grid_t * pfgrid);
 
 /** If owned, get the coorner in in the p4est brick coordinates.
  * of the tree containing this subgrid.

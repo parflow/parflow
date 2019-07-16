@@ -358,7 +358,11 @@ parflow_p4est_child_ghost_from_father(Subgrid * subgrid, int child_id,
     SubgridIY(gs) = v[1] * sc_intpow(2, r.level) * p[1] + offset[1];
     SubgridIZ(gs) = v[2] * sc_intpow(2, r.level) * p[2] + offset[2];
 
-    SubgridGhostIdx(gs) = child_id;
+    /* For a 'ghost child' subgrid we use the GhostIdx field to encode
+     * its child_id together with its parent local index as
+     * -(nchildren * parent_local_index + child_id + 2); See region.h */
+    SubgridGhostIdx(gs) = -(P4EST_CHILDREN * SubgridLocIdx(subgrid) + child_id + 2);
+
     SubgridLevel(gs) = SubgridLevel(subgrid) + 1;
 
     return gs;
@@ -426,14 +430,20 @@ parflow_p4est_inner_ghost_create_2d (SubgridArray * innerGhostsubgrids,
     {
         P4EST_ASSERT(qit_2d->itype & PARFLOW_P4EST_GHOST);
         gdata = pfgrid->ghost_data[qit_2d->g];
-        for (l = 0; l < P4EST_CHILDREN; ++l)
-        {
-            child_id = gdata.which_inner_ghostCh[l];
-            if ( child_id >= 0){
-                gs = parflow_p4est_child_ghost_from_father(subgrid, child_id, qit_2d);
-                AppendSubgrid(gs, innerGhostsubgrids);
+        if (gdata.has_inner_ghosts){
+            subgrid->ghostChildren = P4EST_ALLOC(int, P4EST_CHILDREN);
+
+            for (l = 0; l < P4EST_CHILDREN; ++l)
+            {
+                child_id = gdata.which_inner_ghostCh[l];
+                subgrid->ghostChildren[l] = child_id;
+                if (child_id >= 0){
+                    gs = parflow_p4est_child_ghost_from_father(subgrid, child_id, qit_2d);
+                    SubgridLocIdx(gs) = SubgridGhostIdx(subgrid);
+                    AppendSubgrid(gs, innerGhostsubgrids);
+                }
             }
-        }
+       }
     }
 }
 
@@ -823,9 +833,10 @@ parflow_p4est_get_brick_coord_2d(Subgrid *                 subgrid,
                                  p4est_gloidx_t            bcoord[P4EST_DIM])
 {
   int k;
-  int parent_lidx, child_id;
+  int parent_lidx;
+  int rank = amps_Rank(amps_CommWorld);
   p4est_topidx_t which_tree = SubgridOwnerTree(subgrid);
-  p4est_locidx_t which_quad;
+  p4est_locidx_t which_quad, which_ghost;
   p4est_qcoord_t qcoord[3];
   p4est_tree_t *tree;
   p4est_quadrant_t *quad;
@@ -835,18 +846,34 @@ parflow_p4est_get_brick_coord_2d(Subgrid *                 subgrid,
    * associated to it, so it has to be created */
   if (SubgridGhostIdx(subgrid) < -1)
   {
-     child_id = (-2-SubgridGhostIdx(subgrid)) % (1 << P4EST_DIM);
-     parent_lidx = (-2-SubgridGhostIdx(subgrid)) / (1 << P4EST_DIM);
-     tree = p4est_tree_array_index(pfg->forest->trees, which_tree);
-     which_quad = parent_lidx - tree->quadrants_offset;
+      /* Decode parent index */
+      parent_lidx = (-2-SubgridGhostIdx(subgrid)) / (1 << P4EST_DIM);
 
-     P4EST_ASSERT(0 <= which_quad &&
-                   which_quad <
-                   (p4est_locidx_t)tree->quadrants.elem_count);
-     quad =
-        p4est_quadrant_array_index(&tree->quadrants,
-                                   (size_t)which_quad);
+      /* We own the this subgrid, its parent is attached to a local quadrant */
+      if(rank == subgrid->process)
+      {
+          tree = p4est_tree_array_index(pfg->forest->trees, which_tree);
+          which_quad = parent_lidx - tree->quadrants_offset;
 
+          P4EST_ASSERT(0 <= which_quad &&
+                       which_quad <
+                       (p4est_locidx_t)tree->quadrants.elem_count);
+          quad =
+                  p4est_quadrant_array_index(&tree->quadrants,
+                                             (size_t)which_quad);
+      }
+      else
+      {
+          /* This subgrid is on a foreign process,
+           * its parent is attached to a quadrant in the ghost layer */
+          which_ghost = SubgridLocIdx(subgrid);
+          P4EST_ASSERT(which_ghost >= 0 &&
+                      which_ghost <
+                      (p4est_locidx_t)pfg->ghost->ghosts.elem_count);
+          quad =
+            p4est_quadrant_array_index(&pfg->ghost->ghosts,
+                                       which_ghost);
+      }
   }
   else
   {

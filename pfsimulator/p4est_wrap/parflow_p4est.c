@@ -473,18 +473,22 @@ parflow_p4est_ghost_prepare_exchange (parflow_p4est_grid_t * pfgrid,
           pfg2d = pfgrid->p.p4;
           gd = &pfg2d->mirror_data[cmidx];
           pfg2d->mpointer[cmidx] = gd;
-          if (g_children_info != NULL)
+          if (g_children_info != NULL){
+              gd->has_inner_ghosts = 1;
               memcpy (gd->which_inner_ghostCh, g_children_info,
                       P4EST_CHILDREN * sizeof (int));
+          }
           break;
       case 3:
           cmidx = qiter->q.qiter_3d->current_mirror_idx;
           pfg3d = pfgrid->p.p8;
           gd = &pfg3d->mirror_data[cmidx];
           pfg3d->mpointer[cmidx] = gd;
-          if (g_children_info != NULL)
+          if (g_children_info != NULL){
+              gd->has_inner_ghosts = 1;
               memcpy (gd->which_inner_ghostCh, g_children_info,
                       P8EST_CHILDREN * sizeof (int));
+          }
           break;
       default:
           SC_ABORT_NOT_REACHED ();
@@ -594,6 +598,26 @@ parflow_p4est_local_num_quads(parflow_p4est_grid_t * pfgrid)
 
   return K;
 }
+
+int
+parflow_p4est_ghost_num_quads(parflow_p4est_grid_t * pfgrid)
+{
+  int G;
+  int dim = PARFLOW_P4EST_GET_GRID_DIM(pfgrid);
+
+  if (dim == 2)
+  {
+    G = pfgrid->p.p4->ghost->ghosts.elem_count;
+  }
+  else
+  {
+    P4EST_ASSERT(dim == 3);
+    G = pfgrid->p.p8->ghost->ghosts.elem_count;
+  }
+
+  return G;
+}
+
 
 int
 parflow_p4est_rank_is_empty(parflow_p4est_grid_t * pfgrid)

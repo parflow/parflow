@@ -92,11 +92,12 @@ Grid           *CreateGrid(
   parflow_p4est_quad_data_t  *quad_data = NULL;
   parflow_p4est_ghost_data_t *ghost_data = NULL;
   int initial_level;
-  int num_local_quads;
+  int num_local_quads, num_nonlocal_quads;
+  int num_ghost_children;
   int                        *z_levels;
   int                        *g_exchange_info;
   int i, lz, pz, offset;
-  int nchildren;
+  int nchildren, child_id;
 #endif
 
   if (!USE_P4EST)
@@ -147,6 +148,7 @@ Grid           *CreateGrid(
 
     initial_level = parflow_p4est_get_initial_level(pfgrid);
     num_local_quads = parflow_p4est_local_num_quads(pfgrid);
+    num_nonlocal_quads = parflow_p4est_ghost_num_quads(pfgrid);
     nchildren =  1 << parflow_p4est_dim (pfgrid);
 
     /* Allocate p4est mesh structure if required*/
@@ -199,11 +201,33 @@ Grid           *CreateGrid(
       parflow_p4est_ghost_prepare_exchange (pfgrid, qiter, g_exchange_info);
     }
 
+    /* Assert that all local quadrants were visited */
+    P4EST_ASSERT(num_local_quads == SubgridArraySize(subgrids));
+
     /*Destroy p4est mesh structure */
     parflow_p4est_grid_mesh_destroy(pfgrid);
 
-    /* Assert that all local quadrants were visited */
-    P4EST_ASSERT(num_local_quads == SubgridArraySize(subgrids));
+    /* If any, append local 'ghost children' to the local subgrids array */
+    num_ghost_children = SubgridArraySize(inner_ghost_subgrids);
+    for(i=0; i < num_ghost_children; i++)
+    {
+        /* fetch a 'ghost child' subgrid */
+        gs0 = SubgridArraySubgrid(inner_ghost_subgrids, i);
+
+        /* After construction, the local index of a 'ghost child'
+         * is the the local index of its parent; fetch parent */
+        s0 =  SubgridArraySubgrid(subgrids, SubgridLocIdx(gs0));
+
+        /* Update local index of this 'ghost child' subgrid to the
+         * position it will occupy in the local subgrids array */
+        SubgridLocIdx(gs0) = num_local_quads  + i;
+
+        /* Parent subgrid gets access to this child */
+        child_id = (-2-SubgridGhostIdx(gs0)) % nchildren;
+        s0->ghostChildren[child_id] = SubgridLocIdx(gs0);
+
+        AppendSubgrid(gs0, subgrids);
+    }
 
     /* Share ghost information */
     parflow_p4est_ghost_exchange (pfgrid);
@@ -247,28 +271,20 @@ Grid           *CreateGrid(
                                        ghost_data->pf_subgrid, qiter, pfgrid);
     }
 
-    /* If any, append local 'ghost children' to the local subgrids array */
-    ForSubgridI(i, inner_ghost_subgrids)
+    /* If any, append 'ghost children' from subgrids in the ghost layer
+     * subgrids array */
+    for(i = num_ghost_children; i < SubgridArraySize(inner_ghost_subgrids); i++)
     {
         /* fetch a 'ghost child' subgrid */
         gs0 = SubgridArraySubgrid(inner_ghost_subgrids, i);
 
         /* After construction, the local index of a 'ghost child'
-         * is the the local index of its parent; fetch parent */
-        s0 =  SubgridArraySubgrid(subgrids, SubgridLocIdx(gs0));
-
-        /* Update local index of this 'ghost child' subgrid to the
-         * position it will occupy in the local subgrids array */
-        SubgridLocIdx(gs0) = num_local_quads  + i;
+         * is the the index of its parent in the ghost layer; fetch parent */
+        s0 =  SubgridArraySubgrid(all_subgrids, num_local_quads + SubgridLocIdx(gs0));
 
         /* Parent subgrid gets access to this child */
-        s0->ghostChildren[SubgridGhostIdx(gs0)] = SubgridLocIdx(gs0);
-
-        /* For a 'ghost child' subgrid, its ghost index stores its child_id.
-         * We will encode it together with its parent local index as
-         * -(nchildren * parent_local_index + child_id + 2); See region.h */
-        SubgridGhostIdx(gs0) =
-                - (nchildren * SubgridLocIdx(s0) + SubgridGhostIdx(gs0) + 2);
+        child_id = (-2-SubgridGhostIdx(gs0)) % nchildren;
+        s0->ghostChildren[child_id] = num_local_quads + i;
 
         AppendSubgrid(gs0, subgrids);
     }
