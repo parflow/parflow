@@ -51,8 +51,8 @@ extern "C" {
  * function prototypes
  *-----------------------------------------------------------------------*/
 
-/* patchysolid.c */
-void PrintPatchySolid(FILE *fp,FILE *fp_vtk, Databox *msk, Databox *top, Databox *bot, int bin_out);
+/* solidtools.c */
+int MakePatchySolid(FILE *fp,FILE *fp_vtk, Databox *msk, Databox *top, Databox *bot, int bin_out);
 
 #ifdef __cplusplus
 }
