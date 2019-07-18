@@ -141,6 +141,7 @@ int       KINSolMatVec(
   PFModule    *richards_jacobian_eval = StateJacEval(((State*)current_state));
   Matrix      *J = StateJac(((State*)current_state));
   Matrix      *JC = StateJacC(((State*)current_state));
+  Vector      *old_pressure = StateOldPressure(((State*)current_state));
   Vector      *saturation = StateSaturation(((State*)current_state));
   Vector      *density = StateDensity(((State*)current_state));
   ProblemData *problem_data = StateProblemData(((State*)current_state));
@@ -161,7 +162,7 @@ int       KINSolMatVec(
   if (*recompute)
   {
     PFModuleInvokeType(RichardsJacobianEvalInvoke, richards_jacobian_eval,
-                       (pressure, &J, &JC, saturation, density, problem_data,
+                       (pressure, old_pressure, &J, &JC, saturation, density, problem_data,
                         dt, time, 0));
 
     *recompute = 0;
@@ -183,6 +184,7 @@ int       KINSolMatVec(
 
 void    RichardsJacobianEval(
                              Vector *     pressure, /* Current pressure values */
+			     Vector *     old_pressure, /* Pressure values at previous timestep */
                              Matrix **    ptr_to_J, /* Pointer to the J pointer - this will be set
                                                      * to instance_xtra pointer at end */
                              Matrix **    ptr_to_JC, /* Pointer to the JC pointer - this will be set
@@ -1267,7 +1269,7 @@ void    RichardsJacobianEval(
                 if (diffusive == 0)
                 {
                   PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
-                                     (grid, is, bc_struct, ipatch, problem_data, pressure,
+                                     (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                       ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
                 }
                 else
@@ -1280,7 +1282,7 @@ void    RichardsJacobianEval(
                   //                                                    NULL, NULL, CALCFCN));
 
                   PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
-                                     (grid, is, bc_struct, ipatch, problem_data, pressure,
+                                     (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                       ke_der, kw_der, kn_der, ks_der,
                                       kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
                 }

@@ -310,7 +310,6 @@ GrGeomSolid   *GrGeomNewSolid(
 
   if(GlobalsUseClustering)
   {
-     printf("SGSDEBUG clustering\n");
      ComputeBoxes(new_grgeomsolid);
   }
 
