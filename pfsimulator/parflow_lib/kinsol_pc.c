@@ -88,6 +88,7 @@ PFModule  *KinsolPCInitInstanceXtra(
                                     ProblemData *problem_data,
                                     double *     temp_data,
                                     Vector *     pressure,
+				    Vector *     old_pressure,
                                     Vector *     saturation,
                                     Vector *     density,
                                     double       dt,
@@ -145,7 +146,7 @@ PFModule  *KinsolPCInitInstanceXtra(
   else if (pressure != NULL)
   {
     PFModuleInvokeType(RichardsJacobianEvalInvoke, (instance_xtra->discretization),
-                       (pressure, &PC, &JC, saturation, density, problem_data, dt,
+                       (pressure, old_pressure, &PC, &JC, saturation, density, problem_data, dt,
                         time, pc_matrix_type));
     PFModuleReNewInstanceType(PrecondInitInstanceXtraInvoke,
                               (instance_xtra->precond),
