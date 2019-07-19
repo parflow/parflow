@@ -198,3 +198,56 @@
    fun:mca_pml_base_select
    fun:ompi_mpi_init
 }
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:PMPI_Init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:MPIR_Init_thread
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:MPID_Init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:mv2_get_arch_hca_type
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   unlink(pathname)
+   ...
+   fun:PMPI_Finalize
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:MPIR_Init_thread
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:PMPI_Init
+}
