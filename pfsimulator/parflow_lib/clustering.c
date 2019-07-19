@@ -631,6 +631,9 @@ void FindBoxesContainingTags(BoxList* boxes,
 	   BoxListConcatenate(boxes, box_list_lft);
 	   BoxListConcatenate(boxes, box_list_rgt);
 	 }
+
+	 FreeBoxList(box_list_lft);
+	 FreeBoxList(box_list_rgt);
        }
      }
 
@@ -757,6 +760,9 @@ void BergerRigoutsos(Vector* vector,
 	   BoxListConcatenate(boxes, box_list_lft);
 	   BoxListConcatenate(boxes, box_list_rgt);
 	 }
+
+	 FreeBoxList(box_list_lft);
+	 FreeBoxList(box_list_rgt);
        }
      }
 
