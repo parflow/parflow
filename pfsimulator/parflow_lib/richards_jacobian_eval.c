@@ -1323,7 +1323,7 @@ void    RichardsJacobianEval(
               break;
             }
           }
-
+		  break;
         }         /* End overland flow case */
 
         case SeepageFaceBC:
@@ -1394,7 +1394,7 @@ void    RichardsJacobianEval(
                              (grid, is, bc_struct, ipatch, problem_data, pressure,
                               ke_der, kw_der, kn_der, ks_der,
                               NULL, NULL, NULL, NULL, NULL, NULL, CALCDER));
-
+		  break;
         } /* End OverlandKinematicBC */
 
         /* Duplicate of OverlandBC computations to be worked on */
@@ -1498,7 +1498,7 @@ void    RichardsJacobianEval(
                 if (diffusive == 0)
                 {
                   PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
-                                     (grid, is, bc_struct, ipatch, problem_data, pressure,
+                                     (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                       ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
                 }
                 else
@@ -1511,7 +1511,7 @@ void    RichardsJacobianEval(
                   //                                                    NULL, NULL, CALCFCN));
 
                   PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
-                                     (grid, is, bc_struct, ipatch, problem_data, pressure,
+                                     (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                       ke_der, kw_der, kn_der, ks_der,
                                       kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
                 }
