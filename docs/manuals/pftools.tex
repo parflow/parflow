@@ -156,6 +156,8 @@ and whether the command is compatible with a terrain following grid domain formu
 	pfsavesds & Save dataset in an HDF format &  & X \\ \hline
 	pfvtksave & Save dataset in VTK format using DEM & X & X \\ \hline
 	pfwritedb & Write the settings for a PF run to a database &  & X  \\ \hline
+	\multicolumn{4}{|c|}{Solid file operations} \\ \hline
+	pfpatchysolid & Build a solid file between two complex surfaces and assign user-defined patches around the edges &  & X \\ \hline
 \end{tabular}
 \label{pftools3}
 \end{table}
@@ -283,7 +285,7 @@ For example,
 \begin{verbatim}
 pfdist -nz 1 slopex.pfb
 \end{verbatim}
-\end{display} 
+\end{display}
 
 \item{\begin{verbatim}pfdistondomain filename domain\end{verbatim}}
  Distribute the file onto the virtual file system based on the domain
@@ -521,6 +523,36 @@ This command changes the label of the data set `dataset' to
 This command computes the pressure head from the hydraulic head
 represented by the identifier `hhead'.  An identifier for the pressure
 head is returned upon successful completion.
+
+\item{\begin{verbatim}pfpatchysolid -msk emaskdata -top topdata -bot botdata [optional args] \end{verbatim}}
+Creates a solid file with complex upper and lower surfaces from an enhanced mask dataset (emaskdata), a top surface elevation dataset (topdata), and
+a bottom elevation dataset (botdata), all of which must be passed as handles to 2-d datasets that share a common size and origin. The solid is built as the volume between the top and bottom surfaces using the mask to deactivate other regions. The ``enhanced mask" used here is a gridded dataset containing integers where all
+active cells have values of one but inactive cells may be given an positive integer value that identifies
+a patch along the model edge or set to zero. Any mask cell with value 0 is omitted from the active domain and \textit{is not} written to a patch.
+If an active cell is adjacent to a non-zero mask cell, the face between the active and inactive cell is assigned to the
+patch with the integer value of the adjacent inactive cell. The exception to this is that any active cells along a model edge are
+written to the default edge patches. Bottom and Top patches are always written for every active cell and the West, East, South, and North
+edges are written automatically anytime active cells touch the edges of the mask dataset. Up to 30 user defined patches can be specified with arbitrary integer values that are \textit{greater than} 1.
+
+The -msk -top -bot flags MUST
+each be followed by the dataset handle for the relevant dataset. Optional argument flag-name pairs include:
+\begin{itemize}
+\item{-pfsol}  <file name>.pfsol
+\item{-vtk}  <file name>.vtk
+\end{itemize}
+
+where <file name> is replaced by the desired text string. If -pfsol is not specified the
+default name "SolidFile.pfsol" will be used. If -vtk is omitted, no vtk file will be created. The vtk attributes will contain mean patch elevations and patch IDs from the enhanced mask. Edge patch IDs are shown as negative values in the vtk.
+The tool also outputs an ordered list of the patch names, which can be directly copied into a ParFlow TCL script.
+
+For example, assuming \$Msk, \$Top, and \$Bot are valid dataset handles:
+\begin{display}
+\begin{verbatim}
+pfpatchysolid -msk $Msk -top $Top -bot $Bot -pfsol "MySolid.pfsol" -vtk "MySolid.vtk"
+\end{verbatim}
+\end{display}
+Note that all flag-name pairs may be specified in any order for this tool as long as the required argument immediately follows the flag. To use with a terrain following grid, you will need to subtract the surface elevations from the top and bottom datasets (this makes the top flat) then add back in the total thickness of your grid, which can be done using ``pfcelldiff" and ``pfcellsumconst".
+
 
 \item{\begin{verbatim}pfpitfilldem dem dpit maxiter \end{verbatim}}
 This command fills sinks in the digital elevation model dem by a standard iterative

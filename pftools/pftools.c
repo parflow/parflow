@@ -1960,7 +1960,7 @@ int MakePatchySolidCommand(
     }
     else if ((strcmp(argv[i], "-pfsolb") == 0) || (strcmp(argv[i], "–pfsolb") == 0))
     {
-      printf("\n ERROR (pfpatchysolid): Binary solid file not yet enabled, use -pfsol \n");
+      printf("\n ERROR (pfpatchysolid): Binary solid file not yet enabled, please use -pfsol \n");
       return TCL_ERROR;
       bin_out=1;
       filename = argv[i + 1];
@@ -2009,6 +2009,7 @@ int MakePatchySolidCommand(
 
   if ((fp = fopen(filename, "wb")) == NULL)
   {
+    printf("\n ERROR (pfpatchysolid): pfsol output file could not be opened\n");
     ReadWriteError(interp);
     return TCL_ERROR;
   }
@@ -2016,6 +2017,7 @@ int MakePatchySolidCommand(
   {
     if ((fp_vtk = fopen(vtk_filename, "wb")) == NULL)
     {
+      printf("\n ERROR (pfpatchysolid): vtk output file could not be opened\n");
       ReadWriteError(interp);
       return TCL_ERROR;
     }
@@ -2029,14 +2031,9 @@ int MakePatchySolidCommand(
     {
       printf("\n ERROR (pfpatchysolid): Error with inputs\n");
     }
-    else if (i==1)
-    {
-      printf("\n  NOTICE: Reached the end of the routine (debugging mode)\n");
-    }
     else  // Everything else...
     {
     printf("\n ERROR (pfpatchysolid): Other internal error\n");
-    printf("\n   ...which in this case is just under development\n");
     }
   }
 
