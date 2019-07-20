@@ -254,10 +254,10 @@ void    OverlandFlowEvalKin(
               qx_temp = -(5.0/3.0)*(Sf_x / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_x, (2.0 / 3.0));
               qy_temp = -(5.0/3.0)*(Sf_y / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_y, (2.0 / 3.0));
 
-              ke_v[io] = qx_temp;
-              kw_v[io+1] = qx_temp;
-              kn_v[io] = qy_temp;
-              ks_v[io-sy_v] = qy_temp;
+              ke_v[io] = pfmax(qx_temp,0);
+              kw_v[io+1] =-pfmax(-qx_temp,0);
+              kn_v[io] = pfmax(qy_temp,0);
+              ks_v[io+sy_v] = -pfmax(-qy_temp,0);
 
             }
 
