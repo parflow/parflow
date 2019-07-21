@@ -686,6 +686,9 @@ int            MakePatchySolid(
   printf("\n \n");
 
   // ====== Now write out the solid =====
+
+  if (bin_out==0)
+  {
   fprintf(fp,"1 \n"); // VERSION #
   fprintf(fp,"%i \n",np_act+1);   // # of POINTS/VERTICIES
   for (i=0; i<=np_act; ++i)
@@ -693,10 +696,7 @@ int            MakePatchySolid(
     fprintf(fp,"%17.4f %17.4f %17.4f\n",Xp_Act[i][0],Xp_Act[i][1],Xp_Act[i][2]);
   }
   fprintf(fp,"1 \n"); // Number of SOLIDS (only one allowed here)
-  fprintf(fp,"%i \n",(cell_faces)*2);
-
-  int p_id[cell_faces*2];
-  for (k=0; k<cell_faces*2; ++k) {p_id[k]=k;}
+  fprintf(fp,"%i \n",(cell_faces)*2); // Total number of triangles
 
   for (i=0; i<cell_faces; ++i)
   {
@@ -709,13 +709,65 @@ int            MakePatchySolid(
   {
     if ((AllPatches[i].patch_cell_count>0)&(AllPatches[i].value!=0))
     {
-    fprintf(fp,"%i \n",AllPatches[i].patch_cell_count*2);
-    for (j=2*AllPatches[i].start_idx; j<=2*AllPatches[i].end_idx+1; ++j)
-    {
-      fprintf(fp,"%i \n",j);
-    }
+      fprintf(fp,"%i \n",AllPatches[i].patch_cell_count*2);
+      for (j=2*AllPatches[i].start_idx; j<=2*AllPatches[i].end_idx+1; ++j)
+      {
+        fprintf(fp,"%i \n",j);
+      }
     }
   }
+  } else {
+    /* ---------- PLACE HOLDER for future feature ---------- */
+    // Write a binary pfsolid file
+    printf("ERROR (pfpatchysolid): Binary solid file not currently enabled\n");
+    return -2;
+
+    // This writes a BINARY solid file. The file can be written now but as of
+    //  July 20, 2019 ParFlow support for the binary solid is not completed
+
+    int write_int=1;
+    double write_dbl=1.0;
+
+    tools_WriteInt(fp,&write_int, 1); // VERSION #
+    write_int=np_act+1;
+    tools_WriteInt(fp,&write_int, 1); // # of POINTS/VERTICIES
+    for (i=0; i<=np_act; ++i)
+    {
+      tools_WriteDouble(fp,&Xp_Act[i][0], 1);
+      tools_WriteDouble(fp,&Xp_Act[i][1], 1);
+      tools_WriteDouble(fp,&Xp_Act[i][2], 1);
+    }
+    write_int=np_act+1;
+    tools_WriteInt(fp,&write_int, 1); // Number of SOLIDS (only one allowed here)
+    write_int=cell_faces*2;
+    tools_WriteInt(fp,&write_int, 1); // Total number of triangles
+    for (i=0; i<cell_faces; ++i)
+    {
+      tools_WriteInt(fp,&Patch[i][0], 1);
+      tools_WriteInt(fp,&Patch[i][1], 1);
+      tools_WriteInt(fp,&Patch[i][2], 1);
+      tools_WriteInt(fp,&Patch[i][3], 1);
+      tools_WriteInt(fp,&Patch[i][4], 1);
+      tools_WriteInt(fp,&Patch[i][5], 1);
+    }
+
+    write_int=non_blanks-1;
+    tools_WriteInt(fp,&write_int, 1); // -1 since zero is omitted
+
+    for (i=0; i<(6+np_usr+1); ++i)
+    {
+      if ((AllPatches[i].patch_cell_count>0)&(AllPatches[i].value!=0))
+      {
+        write_int=AllPatches[i].patch_cell_count*2;
+        tools_WriteInt(fp,&write_int, 1);
+        for (j=2*AllPatches[i].start_idx; j<=2*AllPatches[i].end_idx+1; ++j)
+        {
+          write_int=j;
+          tools_WriteInt(fp,&write_int, 1);
+        }
+      }
+    }
+  }  // End of ascii/binary solid file test
 
   // --------------------------------------------------------------------------
   //        ===== Write the VTK if the file ID is not NULL =====
@@ -873,3 +925,24 @@ int            MakePatchySolid(
   return out_status;
 
 }  // End of MakePatchySolid
+
+int         ConvertPfsolBin2Ascii(FILE *fp_bin,FILE *fp_asc)
+{
+  int i=0;
+  i=i+1;
+
+  printf("ERROR (pfsolbin2ascii): Routine not enabled");
+
+  return 0;
+}
+
+
+int         ConvertPfsolAscii2Bin(FILE *fp_asc,FILE *fp_bin)
+{
+  int i=0;
+  i=i+1;
+
+  printf("ERROR (pfsolascii2bin): Routine not enabled");
+
+  return 0;
+}

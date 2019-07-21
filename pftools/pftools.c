@@ -1884,16 +1884,6 @@ int SavePFVTKCommand(
 
 /*-----------------------------------------------------------------------
  * routine for `pfpatchysolid' command
- * Description: INCOMPLETE INCOMPLETE INCOMPLETE INCOMPLETE
- *
- * Cmd. syntax: pftkvsave dataset -filetype filename [-flt -dem demname -var variable name]
- * NBE: July 2019
-
- * NOT COMPLETE: Basic idea is adding a new PFtool that builds any number of patches
- *               around the edges of a solid file for COMPLEX terrain. This means
- *               when top and/or bottom surfaces are not flat.
- *
- * BASED on PFVTKSAVE
  *-----------------------------------------------------------------------*/
 
 int MakePatchySolidCommand(
@@ -2050,6 +2040,54 @@ int MakePatchySolidCommand(
 }
 
 // END of PFPATCHYSOLID
+
+// ----------------------------------------------------------------------------
+//  Convert a binary solid file (.pfsolb) to an ascii solid (.pfsol)
+// ----------------------------------------------------------------------------
+int pfsolBin2Ascii(
+                     ClientData  clientData,
+                     Tcl_Interp *interp,
+                     int         argc,
+                     char *      argv[])
+{
+  Data          *data = (Data*)clientData;
+
+  char          *bin_filename, *ascii_filename;
+  int           i;
+
+  FILE          *fp_bin = NULL;
+  FILE          *fp_ascii = NULL;
+  Tcl_HashEntry *entryPtr;
+
+  // Perform a few checks before calling the routine in solidtools.c
+
+  return TCL_OK;
+
+}
+// ----------------------------------------------------------------------------
+//  Convert an ascii solid file (.pfsol) to a binary solid (.pfsolb)
+// ----------------------------------------------------------------------------
+int pfsolAscii2Bin(
+                     ClientData  clientData,
+                     Tcl_Interp *interp,
+                     int         argc,
+                     char *      argv[])
+{
+  Data          *data = (Data*)clientData;
+
+  char          *bin_filename, *ascii_filename;
+  int           i;
+
+  FILE          *fp_bin = NULL;
+  FILE          *fp_ascii = NULL;
+  Tcl_HashEntry *entryPtr;
+
+  // Perform a few checks before calling the routine in solidtools.c
+
+  return TCL_OK;
+
+}
+
 /* -------------------------------------------------------------------------------------- */
 
 #ifdef HAVE_HDF4

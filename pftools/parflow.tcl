@@ -77,6 +77,8 @@ namespace eval Parflow {
     namespace export pfsave
     namespace export pfvtksave
     namespace export pfpatchysolid
+    namespace export pfsolbin2ascii
+    namespace export pfsolascii2bin
     namespace export pfgetelt
     namespace export pfgridtype
     namespace export pfgetgrid
