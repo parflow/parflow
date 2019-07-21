@@ -158,6 +158,7 @@ and whether the command is compatible with a terrain following grid domain formu
 	pfwritedb & Write the settings for a PF run to a database &  & X  \\ \hline
 	\multicolumn{4}{|c|}{Solid file operations} \\ \hline
 	pfpatchysolid & Build a solid file between two complex surfaces and assign user-defined patches around the edges &  & X \\ \hline
+	pfsolidfmtconvert & Converts back and forth between ascii and binary formats for solid files &  & X  \\ \hline
 \end{tabular}
 \label{pftools3}
 \end{table}
@@ -537,11 +538,11 @@ edges are written automatically anytime active cells touch the edges of the mask
 The -msk -top -bot flags MUST
 each be followed by the dataset handle for the relevant dataset. Optional argument flag-name pairs include:
 \begin{itemize}
-\item{-pfsol}  <file name>.pfsol
-\item{-vtk}  <file name>.vtk
+\item{-pfsol} <file name>.pfsol  (or -pfsolb <file name>.pfsolb)
+\item{-vtk} <file name>.vtk
 \end{itemize}
 
-where <file name> is replaced by the desired text string. If -pfsol is not specified the
+where <file name> is replaced by the desired text string. The -pfsolb option creates a compact binary solid file; pfsolb cannot currently be read directly by ParFlow but it can be converted with \textit{pfsolidfmtconvert} and full support is under development. If -pfsol (or -pfsolb) is not specified the
 default name "SolidFile.pfsol" will be used. If -vtk is omitted, no vtk file will be created. The vtk attributes will contain mean patch elevations and patch IDs from the enhanced mask. Edge patch IDs are shown as negative values in the vtk.
 The tool also outputs an ordered list of the patch names, which can be directly copied into a ParFlow TCL script.
 
@@ -733,6 +734,22 @@ specified using the pfsetgrid command.
 This command computes the slope in the y-direction for all [i,j] using a four point (D4) method.
 The slope is set to the maximum downward slope to the lowest adjacent neighbor. If [i,j] is a local
 minima the slope is set to zero (i.e. no drainage).
+
+
+\item{\begin{verbatim}pfsolidfmtconvert filename1 filename2 \end{verbatim}}
+This command converts solid files back and forth between the ascii .pfsol format and the binary .pfsolb format.
+The tool automatically detects the conversion mode based on the extensions of the input file names.
+The \textit{filename1} is the name of source file and \textit{filename2} is the target output file to be created or overwritten.
+Support to directly use a binary solid (.pfsolb) is under development but this allows a significant reduction in file sizes.
+
+For example, to convert from ascii to binary, then back to ascii:
+\begin{display}
+\begin{verbatim}
+pfsolidfmtconvert "MySolid.pfsol" "MySolid.pfsolb"
+pfsolidfmtconvert "MySolid.pfsolb" "NewSolid.pfsol"
+\end{verbatim}
+\end{display}
+
 
 \item{\begin{verbatim}pfstats dataset\end{verbatim}}
 This command prints various statistics for the data set represented by

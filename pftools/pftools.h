@@ -154,8 +154,7 @@ int WaterTableDepthCommand (ClientData clientData, Tcl_Interp *interp, int argc,
 //NBE: Adding a new write tool
 int SavePFVTKCommand (ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
 int MakePatchySolidCommand (ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
-int pfsolBin2Ascii (ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
-int pfsolAscii2Bin (ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
+int pfsolFmtConvert (ClientData clientData, Tcl_Interp *interp, int argc, char *argv []);
 
 void Axpy(double alpha, Databox *X, Databox *Y);
 void Sum(Databox *X, double *sum);

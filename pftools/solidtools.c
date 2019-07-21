@@ -719,8 +719,8 @@ int            MakePatchySolid(
   } else {
     /* ---------- PLACE HOLDER for future feature ---------- */
     // Write a binary pfsolid file
-    printf("ERROR (pfpatchysolid): Binary solid file not currently enabled\n");
-    return -2;
+    // printf("ERROR (pfpatchysolid): Binary solid file not currently enabled\n");
+    // return -2;
 
     // This writes a BINARY solid file. The file can be written now but as of
     //  July 20, 2019 ParFlow support for the binary solid is not completed
@@ -737,7 +737,7 @@ int            MakePatchySolid(
       tools_WriteDouble(fp,&Xp_Act[i][1], 1);
       tools_WriteDouble(fp,&Xp_Act[i][2], 1);
     }
-    write_int=np_act+1;
+    write_int=1;
     tools_WriteInt(fp,&write_int, 1); // Number of SOLIDS (only one allowed here)
     write_int=cell_faces*2;
     tools_WriteInt(fp,&write_int, 1); // Total number of triangles
@@ -926,23 +926,171 @@ int            MakePatchySolid(
 
 }  // End of MakePatchySolid
 
-int         ConvertPfsolBin2Ascii(FILE *fp_bin,FILE *fp_asc)
+// ****************************************************************************
+//  ConvertPfsolAscii2Bin (part of pfsolidfmtconvert command)
+//  Conversion function for ASCII solid file to Binary solid file
+// ****************************************************************************
+int         ConvertPfsolAscii2Bin(FILE *fp_asc,
+                                  FILE *fp_bin)
 {
-  int i=0;
-  i=i+1;
+  int out_status=-1;
 
-  printf("ERROR (pfsolbin2ascii): Routine not enabled");
+  int debug=0;
 
-  return 0;
-}
+  if (debug) printf("\n * * Debugging for Ascii2Bin converter * * \n");
 
+  int read_int,read_ivec[3],i,j;
+  float read_fltV[3];
+  double read_dble;
 
-int         ConvertPfsolAscii2Bin(FILE *fp_asc,FILE *fp_bin)
+  int n_vertex,n_tins,n_patches,n_obj;
+
+  fscanf(fp_asc,"%i",&read_int); // Read VERSION #
+  tools_WriteInt(fp_bin,&read_int, 1); // Write VERSION #
+  if (debug) printf("\n--> Version %i \n",read_int);
+
+  fscanf(fp_asc,"%i",&n_vertex); // Read # of POINTS/VERTICIES
+  tools_WriteInt(fp_bin,&n_vertex, 1); //
+  if (debug) printf("--> N-Vertices %i \n",n_vertex);
+
+  for (i=0; i<n_vertex; ++i)
+  {
+    fscanf(fp_asc,"%f %f %f",&read_fltV[0],&read_fltV[1],&read_fltV[2]);
+
+    for (j=0; j<3; ++j)
+    {
+      read_dble=(double)read_fltV[j];
+      tools_WriteDouble(fp_bin,&read_dble, 1);
+    }
+  }
+
+  fscanf(fp_asc,"%i",&read_int); // Read Number of SOLIDS (only one allowed here)
+  if (read_int>1)
+  {
+    printf("ERROR (pfsolascii2asc): More than one solid object detected. Only one is allowed");
+  } else if (read_int<1) {
+    printf("ERROR (pfsolascii2asc): No one solid objects detected in pfsol");
+  }
+
+  tools_WriteInt(fp_bin,&read_int, 1);
+  if (debug) printf("--> N-Solids %i \n",read_int);
+
+  fscanf(fp_asc,"%i",&n_tins); // Total number of triangles
+  tools_WriteInt(fp_bin,&n_tins, 1);
+  if (debug) printf("--> N-tins %i \n",n_tins);
+
+  for (i=0; i<n_tins; ++i)
+  {
+    fscanf(fp_asc,"%i %i %i",&read_ivec[0],&read_ivec[1],&read_ivec[2]);
+    // printf("%i %i %i\n",read_ivec[0],read_ivec[1],read_ivec[2]);
+    for (j=0; j<3; ++j)
+    {
+      read_int=read_ivec[j];
+      tools_WriteInt(fp_bin,&read_int, 1);
+      // printf(" %i ",read_int);
+    }
+    // printf("\n");
+  }
+
+  fscanf(fp_asc,"%i",&n_patches); // Total number of triangles
+  tools_WriteInt(fp_bin,&n_patches, 1);
+  if (debug) printf("--> N-patch %i \n",n_patches);
+
+  for (i=0; i<n_patches; ++i)
+  {
+    fscanf(fp_asc,"%i",&n_obj); // Elements in this patch
+    tools_WriteInt(fp_bin,&n_obj, 1);
+    if (debug) printf("--> Patch members: %i\n",n_obj);
+    for (j=0; j<n_obj; ++j)
+    {
+      fscanf(fp_asc,"%i",&read_int);
+      tools_WriteInt(fp_bin,&read_int, 1);
+    }
+  }
+
+  out_status=0;
+  return out_status;
+} // End of ascii 2 binary solid file conversion
+
+// ****************************************************************************
+//  ConvertPfsolBin2Ascii (part of pfsolidfmtconvert command)
+//  Conversion function for Binary solid file to ASCII solid file
+// ****************************************************************************
+int         ConvertPfsolBin2Ascii(FILE *fp_bin,
+                                  FILE *fp_asc)
 {
-  int i=0;
-  i=i+1;
+  // printf("\n ERROR (pfsolbin2ascii): Routine not enabled\n");
 
-  printf("ERROR (pfsolascii2bin): Routine not enabled");
+  int out_status=-1;
 
-  return 0;
-}
+  int debug=0;
+
+  if (debug) printf("\n * * Debugging for Bin2Ascii converter * * \n");
+
+  int read_int,read_ivec[3],i,j;
+  float read_fltV[3];
+  double read_dble;
+
+  int n_vertex,n_tins,n_patches,n_obj;
+
+  tools_ReadInt(fp_bin,&read_int, 1); // Read VERSION #
+  fprintf(fp_asc,"%i\n",read_int); // Write VERSION #
+  if (debug) printf("\n--> Version %i \n",read_int);
+
+  tools_ReadInt(fp_bin,&n_vertex, 1); // Read # of POINTS/VERTICIES
+  fprintf(fp_asc,"%i\n",n_vertex); //
+  if (debug) printf("--> N-Vertices %i \n",n_vertex);
+  for (i=0; i<n_vertex; ++i)
+  {
+    for (j=0; j<3; ++j)
+    {
+      tools_ReadDouble(fp_bin,&read_dble, 1);
+      read_fltV[j]=read_dble;
+    }
+    fprintf(fp_asc,"%17.4f %17.4f %17.4f\n",read_fltV[0],read_fltV[1],read_fltV[2]);
+  }
+
+  tools_ReadInt(fp_bin,&read_int, 1); // Read Number of SOLIDS (only one allowed here)
+  if (read_int>1)
+  {
+    printf("ERROR (pfsolascii2asc): More than one solid object detected. Only one is allowed");
+  } else if (read_int<1) {
+    printf("ERROR (pfsolascii2asc): No one solid objects detected in pfsol");
+  }
+  fprintf(fp_asc,"%i\n",read_int);
+  if (debug) printf("--> N-Solids %i \n",read_int);
+
+  tools_ReadInt(fp_bin,&n_tins, 1); // Total number of triangles
+  fprintf(fp_asc,"%i\n",n_tins);
+  if (debug) printf("--> N-tins %i \n",n_tins);
+
+  for (i=0; i<n_tins; ++i)
+  {
+    for (j=0; j<3; ++j)
+    {
+      tools_ReadInt(fp_bin,&read_int, 1);
+      read_ivec[j]=read_int;
+    }
+    fprintf(fp_asc,"%i %i %i\n",read_ivec[0],read_ivec[1],read_ivec[2]);
+  }
+
+  tools_ReadInt(fp_bin,&n_patches, 1);  // Total number of triangles
+  fprintf(fp_asc,"%i\n",n_patches);
+  if (debug) printf("--> N-patch %i \n",n_patches);
+
+  for (i=0; i<n_patches; ++i)
+  {
+    tools_ReadInt(fp_bin,&n_obj, 1);  // Elements in this patch
+    fprintf(fp_asc,"%i\n",n_obj);
+    if (debug) printf("--> Patch members: %i\n",n_obj);
+
+    for (j=0; j<n_obj; ++j)
+    {
+      tools_ReadInt(fp_bin,&read_int, 1);
+      fprintf(fp_asc,"%i\n",read_int);
+    }
+  }
+
+  out_status=0;
+  return out_status;
+} // End of binary 2 ascii solid file conversion

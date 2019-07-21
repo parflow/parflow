@@ -276,9 +276,7 @@ EXPORT(int, Parflow_Init)(Tcl_Interp * interp)
                     (ClientData)data, (Tcl_CmdDeleteProc*)NULL);
   Tcl_CreateCommand(interp, "Parflow::pfpatchysolid", (Tcl_CmdProc*)MakePatchySolidCommand,
                     (ClientData)data, (Tcl_CmdDeleteProc*)NULL);
-  Tcl_CreateCommand(interp, "Parflow::pfsolbin2ascii", (Tcl_CmdProc*)pfsolBin2Ascii,
-                    (ClientData)data, (Tcl_CmdDeleteProc*)NULL);
-  Tcl_CreateCommand(interp, "Parflow::pfsolascii2bin", (Tcl_CmdProc*)pfsolAscii2Bin,
+  Tcl_CreateCommand(interp, "Parflow::pfsolidfmtconvert", (Tcl_CmdProc*)pfsolFmtConvert,
                     (ClientData)data, (Tcl_CmdDeleteProc*)NULL);
 
 #ifdef SGS

@@ -1939,21 +1939,40 @@ int MakePatchySolidCommand(
       bot = 1;
       bothash = argv[i + 1];
     }
+
+    char          *file1_ext;
     if ((strcmp(argv[i], "-vtk") == 0) || (strcmp(argv[i], "–vtk") == 0))
     {
       vtk = 1;
       vtk_filename = argv[i + 1];
+      file1_ext = strrchr(vtk_filename, '.');
+      if (strcmp(file1_ext+1,"vtk")!=0) {
+        printf("ERROR (pfpatchysolid): vtk file extension must be .vtk\n");
+        printf("                       detected %s\n",file1_ext+1);
+        return TCL_ERROR;
+      }
     }
+
     if ((strcmp(argv[i], "-pfsol") == 0) || (strcmp(argv[i], "–pfsol") == 0))
     {
       filename = argv[i + 1];
+      file1_ext = strrchr(filename, '.');
+      if (strcmp(file1_ext+1,"pfsol")!=0) {
+        printf("ERROR (pfpatchysolid): ASCII file extension must be .pfsol\n");
+        printf("                       detected %s\n",file1_ext+1);
+        return TCL_ERROR;
+      }
     }
     else if ((strcmp(argv[i], "-pfsolb") == 0) || (strcmp(argv[i], "–pfsolb") == 0))
     {
-      printf("\n ERROR (pfpatchysolid): Binary solid file not yet enabled, please use -pfsol \n");
-      return TCL_ERROR;
       bin_out=1;
       filename = argv[i + 1];
+      file1_ext = strrchr(filename, '.');
+      if (strcmp(file1_ext+1,"pfsolb")!=0) {
+        printf("ERROR (pfpatchysolid): Binary file extension must be .pfsolb\n");
+        printf("                       detected %s\n",file1_ext+1);
+        return TCL_ERROR;
+      }
     }
   }
 
@@ -2042,9 +2061,11 @@ int MakePatchySolidCommand(
 // END of PFPATCHYSOLID
 
 // ----------------------------------------------------------------------------
-//  Convert a binary solid file (.pfsolb) to an ascii solid (.pfsol)
+//  Convert an ascii solid file (.pfsol) to a binary solid (.pfsolb)or vice versa
+//   order of specified files determines function based on file extension. Converts
+//   from first filename format to the second filename format
 // ----------------------------------------------------------------------------
-int pfsolBin2Ascii(
+int pfsolFmtConvert(
                      ClientData  clientData,
                      Tcl_Interp *interp,
                      int         argc,
@@ -2053,39 +2074,110 @@ int pfsolBin2Ascii(
   Data          *data = (Data*)clientData;
 
   char          *bin_filename, *ascii_filename;
-  int           i;
+  char          *file1_name, *file2_name,*file1_ext, *file2_ext;
+  int           i,bin2asc;
 
   FILE          *fp_bin = NULL;
   FILE          *fp_ascii = NULL;
   Tcl_HashEntry *entryPtr;
 
-  // Perform a few checks before calling the routine in solidtools.c
+  // Perform some checks before calling the appropriate routine in solidtools.c
+
+  if (argc!=3)
+  {
+    printf("ERROR (pfsolidfmtconvert): Two input file names are required\n");
+    return TCL_ERROR;
+  }
+
+  file1_name=argv[1];
+  file2_name=argv[2];
+
+  file1_ext = strrchr(file1_name, '.');
+  file2_ext = strrchr(file2_name, '.');
+
+  if (!file1_ext) {
+    printf("ERROR (pfsolidfmtconvert): Missing extension on file 1, must be .pfsol or .pfsolb\n");
+    return TCL_ERROR;
+  }
+  if (!file2_ext) {
+    printf("ERROR (pfsolidfmtconvert): Missing extension on file 2, must be .pfsol or .pfsolb\n");
+    return TCL_ERROR;
+  }
+  if ((strcmp(file1_ext+1,"pfsol")!=0)&(strcmp(file1_ext+1,"pfsolb")!=0)) {
+    printf("ERROR (pfsolidfmtconvert): File extension on file 1 must be .pfsol or .pfsolb\n");
+    printf("                           detected .%s\n",file1_ext+1);
+    return TCL_ERROR;
+  }
+  if ((strcmp(file2_ext+1,"pfsol")!=0)&(strcmp(file2_ext+1,"pfsolb")!=0)) {
+    printf("ERROR (pfsolidfmtconvert): File extension on file 2 must be .pfsol or .pfsolb\n");
+    printf("                           detected .%s\n",file2_ext+1);
+    return TCL_ERROR;
+  }
+  if (strcmp(file2_ext+1,file1_ext+1)==0) {
+    printf("ERROR (pfsolidfmtconvert): File extensions must be different\n");
+    return TCL_ERROR;
+  }
+
+  if (strcmp(file1_ext+1,"pfsol")==0)
+  {
+    ascii_filename=file1_name;
+    bin_filename=file2_name;
+    bin2asc=0;
+
+    if ((fp_ascii = fopen(ascii_filename, "r")) == NULL)
+    {
+      printf("\n ERROR (pfsolidfmtconvert): ascii file file could not be opened\n");
+      ReadWriteError(interp);
+      return TCL_ERROR;
+    }
+    if ((fp_bin = fopen(bin_filename, "wb")) == NULL)
+    {
+      printf("\n ERROR (pfsolidfmtconvert): binary file file could not be opened\n");
+      ReadWriteError(interp);
+      return TCL_ERROR;
+    }
+  } else {
+    ascii_filename=file2_name;
+    bin_filename=file1_name;
+    bin2asc=1;
+
+    if ((fp_ascii = fopen(ascii_filename, "w")) == NULL)
+    {
+      printf("\n ERROR (pfsolidfmtconvert): ascii file file could not be opened\n");
+      ReadWriteError(interp);
+      return TCL_ERROR;
+    }
+    if ((fp_bin = fopen(bin_filename, "rb")) == NULL)
+    {
+      printf("\n ERROR (pfsolidfmtconvert): binary file file could not be opened\n");
+      ReadWriteError(interp);
+      return TCL_ERROR;
+    }
+  }
+
+  int out_status=0;
+  if (bin2asc==0){
+    out_status=ConvertPfsolAscii2Bin(fp_ascii,fp_bin);
+  } else {
+    out_status=ConvertPfsolBin2Ascii(fp_bin,fp_ascii);
+  }
+
+  if (fp_ascii)
+  {
+    fclose(fp_ascii);
+  }
+  if (fp_bin)
+  {
+    fclose(fp_bin);
+  }
+
+  if (out_status!=0)
+  {
+    printf("\n ERROR (pfsolidfmtconvert): Problem during file conversion\n");
+    return TCL_ERROR;
+  }
 
   return TCL_OK;
-
-}
-// ----------------------------------------------------------------------------
-//  Convert an ascii solid file (.pfsol) to a binary solid (.pfsolb)
-// ----------------------------------------------------------------------------
-int pfsolAscii2Bin(
-                     ClientData  clientData,
-                     Tcl_Interp *interp,
-                     int         argc,
-                     char *      argv[])
-{
-  Data          *data = (Data*)clientData;
-
-  char          *bin_filename, *ascii_filename;
-  int           i;
-
-  FILE          *fp_bin = NULL;
-  FILE          *fp_ascii = NULL;
-  Tcl_HashEntry *entryPtr;
-
-  // Perform a few checks before calling the routine in solidtools.c
-
-  return TCL_OK;
-
 }
 
 /* -------------------------------------------------------------------------------------- */
