@@ -1,57 +1,35 @@
-# Parflow Release Notes
+# ParFlow Release Notes
 
 ## Overview of Changes
 
-* Performance improvements in ParFlow looping
+* Critical bug fixes
+* Initial Docker support added
 
 ## User Visible Changes
 
-### Added option to pfdist to enable distribution of datasets with different NZ points
+### Critical bug fixes
 
-The pfdist utility in pftools now has an option to distribute data
-that has a different number points in Z than the default grid NZ
-value.  Previously one had to set the ComputationalGrid.NZ value
-before the pfdist when distributing 1D data.  The '-nz' option enables
-setting NZ for the pfdist call.
+Two bugs were fixed that caused segmentation faults.  One was in the
+new clustering algorithm and the other was in CLM changes to support
+setting number of soil levels at run-time.
 
-For example, the kludge:
+### Initial Docker support added
 
-```
-pfset ComputationalGrid.NX 40
-pfset ComputationalGrid.NY 40
-pfset ComputationalGrid.NZ 1
+Support for Docker is being added to make deployment easier for users
+who are running ParFlow on PC and workstation environments.  Docker
+images ParFlow will be available at DockerHub and should be
+automatically built when ParFlow is updated.  We are still testing
+this.
 
-pfdist file.pfb
-
-pfset ComputationalGrid.NZ 40
-```
-
-can be replaced with:
-
-```
-pfset ComputationalGrid.NX 40
-pfset ComputationalGrid.NY 40
-pfset ComputationalGrid.NZ 40
-
-pfdist -nz 1 file.pfb
-```
-
-### Performance improvements in ParFlow looping
-
-Previously ParFlow was using an octree structure for looping over
-geometries defined on the domain.  This was changed to loop over a set
-of boxes in index space.  The new method should be faster for larger
-problems but does introduce a performance hit for very small domains
-due to the setup costs of running a clustering algorithm.  The
-clustering is controllable using the "UseClustering" key.  Setting to
-False will revert to the original octree looping.
-
-```
-   pfset  UseClustering  False
-```
+See the https://github.com/parflow/docker repository on GitHub for
+instructions on running and a sample problem setup.
 
 ## Internal Changes
 
+### Memory leaks
+
+Several memory leaks have been fixed.  Regression tests are running
+cleanly with Valgrind.
 
 ## Known Issues
 
