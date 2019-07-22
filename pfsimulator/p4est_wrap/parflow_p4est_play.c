@@ -84,5 +84,5 @@ void parflow_p4est_vector_test(Grid *grid)
 
   /*Force to quit the program here*/
   amps_Printf("Dummy vector test complete\n");
-  exit(0);
+  //exit(0);
 }

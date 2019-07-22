@@ -184,6 +184,11 @@ NewSolver()
   switch_name = GetStringDefault("Solver", "Impes");
   solver = NA_NameToIndex(solver_na, switch_name);
 
+#ifdef HAVE_P4EST
+  if (USE_P4EST && solver)
+        PARFLOW_ERROR("Only Richards solver is supported with p4est");
+#endif
+
   switch (solver)
   {
     case 0:

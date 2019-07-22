@@ -314,6 +314,7 @@ Grid           *CreateGrid(
     grid->z_levels = z_levels;
     grid->proj_flag = 0;
     grid->owns_pfgrid = 1;
+    grid->numInnerGhosts = SubgridArraySize(inner_ghost_subgrids);
     grid->innerGhostSubgrids  = inner_ghost_subgrids;
 #else
     PARFLOW_ERROR("ParFlow compiled without p4est");

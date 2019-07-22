@@ -399,12 +399,11 @@ parflow_p4est_inner_ghost_create_2d (SubgridArray * innerGhostsubgrids,
                 nhalves = 1 << (P4EST_DIM - 1);
 
                 /* Allocate storage to save 'ghost children location' */
-                if(!subgrid->ghostChildren){
+                if(subgrid->ghostChildren == NULL ){
                     subgrid->ghostChildren = P4EST_ALLOC(int, P4EST_CHILDREN);
                     for  (l = 0; l < P4EST_CHILDREN; ++l)
                         subgrid->ghostChildren[l] = -1;
                 }
-                P4EST_ASSERT(subgrid->ghostChildren);
 
                /* For each face having half size neighbors, we create
                 * a temporary child quadrant that will be used to allocate

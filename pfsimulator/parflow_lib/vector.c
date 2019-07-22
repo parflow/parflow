@@ -264,7 +264,7 @@ static Vector  *NewTempVector(
   int k;
   int nchildren = GlobalsNumProcsZ > 1 ? 8 : 4;
   int numLocalSubs = SubgridArraySize(GridSubgrids(grid));
-  int numInnerGhosts = USE_P4EST ? SubgridArraySize(GridInnerGhostSubgrids(grid)) : 0;
+  int numInnerGhosts = USE_P4EST ? grid->numInnerGhosts : 0;
 #endif
 
   new_vector = ctalloc(Vector, 1);  /*address of storage is assigned to the ptr "new_" of type Vector, which is also
@@ -334,7 +334,7 @@ static void     AllocateVectorData(
   Subvector *subvector;
 #ifdef HAVE_P4EST
   int numLocalSubs = SubgridArraySize(GridSubgrids(grid));
-  int numInnerGhosts = SubgridArraySize(GridInnerGhostSubgrids(grid));
+  int numInnerGhosts = grid->numInnerGhosts;
 #endif
 
   if (USE_P4EST)

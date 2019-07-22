@@ -3819,6 +3819,10 @@ SolverRichardsInitInstanceXtra()
   int nonlin_sz, parameter_sz;
   int i;
 
+#ifdef HAVE_P4EST
+  int numLocalSubs, numInnerGhosts;
+#endif
+
   if (PFModuleInstanceXtra(this_module) == NULL)
     instance_xtra = ctalloc(InstanceXtra, 1);
   else
@@ -3830,6 +3834,12 @@ SolverRichardsInitInstanceXtra()
 
   /* Create the flow grid */
   grid = CreateGrid(GlobalsUserGrid);
+
+#ifdef HAVE_P4EST
+  numLocalSubs = SubgridArraySize(GridSubgrids(grid));
+  numInnerGhosts = USE_P4EST ?
+              SubgridArraySize(GridInnerGhostSubgrids(grid)) : 0;
+#endif
 
   /*sk: Create a two-dimensional grid for later use */
   grid2d = CreateZprojectedGrid(grid, 1);
@@ -3849,6 +3859,15 @@ SolverRichardsInitInstanceXtra()
   new_subgrids = GetGridSubgrids(new_all_subgrids);
   x_grid = NewGrid(new_subgrids, new_all_subgrids);
 #ifdef HAVE_P4EST
+  for (i = 0; i < numInnerGhosts; i++)
+  {
+      subgrid = SubgridArraySubgrid(GridSubgrids(grid), numLocalSubs + i);
+      new_subgrid = DuplicateSubgrid(subgrid);
+      SubgridNX(new_subgrid) += 1;
+      AppendSubgrid(new_subgrid, new_subgrids);
+  }
+  SubgridArraySize(new_subgrids) = numLocalSubs;
+
   GridParflowP4estObj(x_grid) = GridParflowP4estObj(grid);
   GridParflowP4estObjIsOwned(x_grid) = 0;
 #endif
@@ -3869,6 +3888,15 @@ SolverRichardsInitInstanceXtra()
   new_subgrids = GetGridSubgrids(new_all_subgrids);
   y_grid = NewGrid(new_subgrids, new_all_subgrids);
 #ifdef HAVE_P4EST
+  for (i = 0; i < numInnerGhosts; i++)
+  {
+      subgrid = SubgridArraySubgrid(GridSubgrids(grid), numLocalSubs + i);
+      new_subgrid = DuplicateSubgrid(subgrid);
+      SubgridNX(new_subgrid) += 1;
+      AppendSubgrid(new_subgrid, new_subgrids);
+  }
+  SubgridArraySize(new_subgrids) = numLocalSubs;
+
   GridParflowP4estObj(y_grid) = GridParflowP4estObj(grid);
   GridParflowP4estObjIsOwned(y_grid) = 0;
 #endif
@@ -3889,6 +3917,15 @@ SolverRichardsInitInstanceXtra()
   new_subgrids = GetGridSubgrids(new_all_subgrids);
   z_grid = NewGrid(new_subgrids, new_all_subgrids);
 #ifdef HAVE_P4EST
+  for (i = 0; i < numInnerGhosts; i++)
+  {
+      subgrid = SubgridArraySubgrid(GridSubgrids(grid), numLocalSubs + i);
+      new_subgrid = DuplicateSubgrid(subgrid);
+      SubgridNX(new_subgrid) += 1;
+      AppendSubgrid(new_subgrid, new_subgrids);
+  }
+  SubgridArraySize(new_subgrids) = numLocalSubs;
+
   GridParflowP4estObj(z_grid) = GridParflowP4estObj(grid);
   GridParflowP4estObjIsOwned(z_grid) = 0;
 #endif
