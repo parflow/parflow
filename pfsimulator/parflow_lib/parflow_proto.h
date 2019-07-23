@@ -462,6 +462,7 @@ void NlFunctionEval(Vector *pressure, Vector *fval, ProblemData *problem_data, V
 PFModule *NlFunctionEvalInitInstanceXtra(Problem *problem, Grid *grid, double *temp_data);
 void NlFunctionEvalFreeInstanceXtra(void);
 PFModule *NlFunctionEvalNewPublicXtra(char *name);
+
 void NlFunctionEvalFreePublicXtra(void);
 int NlFunctionEvalSizeOfTempData(void);
 

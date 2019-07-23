@@ -681,7 +681,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       y_dir_g_c = 1.0;
       break;
       }
-
+}
       /* Calculate right face velocity.
        * diff >= 0 implies flow goes left to right */
 
@@ -2333,7 +2333,7 @@ PFModule   *NlFunctionEvalNewPublicXtra(char *name)
   sprintf(key, "OverlandSpinupDampP2");
   public_xtra->SpinupDampP2 = GetDoubleDefault(key, 0.0);    //NBE
 
-/* parameters for upwinding formulation for TFG */
+///* parameters for upwinding formulation for TFG */
 upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");
 sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation", name);
 switch_name = GetStringDefault(key, "Original");
