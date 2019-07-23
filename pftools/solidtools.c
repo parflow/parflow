@@ -100,6 +100,7 @@ int            MakePatchySolid(
   /* ---------- Max number of patches ---------- */
   int np_tot=30;        // Max number of patches allowed (CAN BE INCREASED IF NEEDED)
 
+  int debugger=1;
 
   // Default patches (flagged as negatives here)
   int DefPatches[] = {-1,-2,-3,-4,-5,-6}; // Bottom, Top, West, East, South, North
@@ -288,8 +289,8 @@ int            MakePatchySolid(
   int np=0;
   int cell_faces=0;
   // Count up all the cell faces
-  for (i=0; i<6; ++i) cell_faces=cell_faces+DefPCounts[i];
 
+  for (i=0; i<6; ++i) {cell_faces=cell_faces+DefPCounts[i];}
   for (i=0; i<np_tot; ++i)
   {
     cell_faces=cell_faces+UsrPCounts[i];
@@ -346,6 +347,14 @@ int            MakePatchySolid(
     }
   }
 
+
+  if (debugger==1) {
+  for (i=0;i<6+np_usr+1; ++i)
+  {
+  printf("%i %i %i %i %i \n",i,AllPatches[i].value,AllPatches[i].patch_cell_count,AllPatches[i].start_idx,AllPatches[i].end_idx);
+  }
+  }
+
   // Used to easily find the ID of user patches and zeros later
   int patch_values[6+np_usr];
   for (i=0; i<(6+np_usr+1); ++i)
@@ -353,28 +362,29 @@ int            MakePatchySolid(
     patch_values[i]=AllPatches[i].value;
   }
 
-  // Create 2-d array to hold the vertex ID numbers, [cell_faces][6] since 6 per face
-  int *Patch[cell_faces];
-  for (i=0; i<cell_faces; i++) {Patch[i] = (int*)malloc(7 * sizeof(int));}
-  // And initialize to -1
-  for (i=0;i<cell_faces; i++) for (j=0;j<7; j++) {Patch[i][j]=-1111;}
+  int Patch[cell_faces*7];
+  for (i=0;i<(cell_faces*7); i++) {Patch[i]=-1111;}
+
+  if (debugger==1)
+  {printf(" *** Cell faces: %i *** \n",cell_faces);
+  printf("Should be: %i\n",NX*2 + NY*2 + (NX*NY)*2);
+  printf("NX,NY: %i %i\n\n",NX, NY);}
 
   // ==========================================================================
   // Build a 2-d array to hold the active points
-  double *Xp_Act[nxyzp];
-  for (i=0; i<nxyzp; i++) Xp_Act[i] = (double*)malloc(3 * sizeof(double));
-  // And initialize to very distinct values to catch errors
-  for (i=0;i<nxyzp; i++) for (j=0;j<3; j++) Xp_Act[i][j]=(j+1)*-11111.11;
+
+  double Xp_Act[nxyzp*6];
+  for (i=0;i<nxyzp; i++) {for (j=0;j<3; j++) {Xp_Act[3*i + j]=-11111.11;}}
 
   // Which corners of the cell to add to the Xp_Act dBase, who belongs to this cell
   int add_pnt[8],our_pnts[8];
   int i_off=0, j_off=0;
-  int km,n_t;
+  int km,n_t,iijj;
   int np_act=-1;
   // Build the point database, not efficient to loop again but oh well
-  for (j=0; j<NY; ++j)
+  for (j=0; j<NY; ++j) //NY
   {
-  for (i=0; i<NX; ++i)
+  for (i=0; i<NX; ++i) //NX
   {
     mask_val = *DataboxCoeff(msk, i, j, 0);
     if (mask_val==1)
@@ -414,8 +424,9 @@ int            MakePatchySolid(
               our_pnts[km]=np_act;
               if ((km==1)|(km==3)|(km==5)|(km==7)) {i_off=1;}
               if ((km==2)|(km==3)|(km==6)|(km==7)) {j_off=1;}
-              Xp_Act[np_act][0]= X + (i+i_off)*DX;
-              Xp_Act[np_act][1]= Y + (j+j_off)*DY;
+
+              Xp_Act[3*np_act]= X + (i+i_off)*DX;
+              Xp_Act[3*np_act+1]= Y + (j+j_off)*DY;
 
               // The simple linear interpolation
               z_bot=-3333.33;
@@ -470,7 +481,7 @@ int            MakePatchySolid(
                     if ((km==6)|(km==7)) {dy_b=-dy_b;}
                     z_bot=*DataboxCoeff(top, i, j, 0) - dx_b*DX/2.0 - dy_b*DY/2.0;
               }
-              Xp_Act[np_act][2]=z_bot;   // BOTTOM elevation
+              Xp_Act[3*np_act+2]=z_bot;   // BOTTOM elevation
 
       } else {
         // Point already exists so go find its index
@@ -482,23 +493,34 @@ int            MakePatchySolid(
 
       for (m=0; m<np_act; ++m)
       {
-        if ((Xp_Act[m][0]==x_test)&(Xp_Act[m][1]==y_test))
+        if ((Xp_Act[3*m]==x_test)&(Xp_Act[3*m+1]==y_test))
         {
           break;
         }
       }
+      if (m>nxyzp*2)
+      {
+        printf("ERROR town 1: %i %f %f %i %i \n",m,x_test,y_test,np_act,nxyzp);
+        return -1;
+      }
+
       // If it's a top point find the next instance of the x-y coodrinates
       if (km>3) {
         m=m+1;
-        for (m=m; m<np_act; ++m)
+        for (m=m; m<=np_act; ++m)
         {
-          if ((Xp_Act[m][0]==x_test)&(Xp_Act[m][1]==y_test))
+          if ((Xp_Act[3*m]==x_test)&(Xp_Act[3*m+1]==y_test))
           {
             break;
           }
         }
       }
       our_pnts[km]=m;
+      if (m>nxyzp*2)
+      {
+        printf("ERROR town 2: %i %f %f %i \n",m,x_test,y_test,np_act);
+        return -1;
+      }
       }
     }
 
@@ -506,38 +528,39 @@ int            MakePatchySolid(
     /* ----- BOTTOM patch ----- */
     AllPatches[0].p_write=AllPatches[0].p_write+1;
     n_t=AllPatches[0].start_idx+AllPatches[0].p_write;
-    Patch[n_t][0]=our_pnts[1]; // First triangle of the cell face
-    Patch[n_t][1]=our_pnts[0];
-    Patch[n_t][2]=our_pnts[2];
+    Patch[7*n_t]=our_pnts[1]; // First triangle of the cell face
+    Patch[7*n_t + 1]=our_pnts[0];
+    Patch[7*n_t + 2]=our_pnts[2];
 
-    Patch[n_t][3]=our_pnts[2]; // Second triangle of the cell face
-    Patch[n_t][4]=our_pnts[3];
-    Patch[n_t][5]=our_pnts[1];
-    Patch[n_t][6]=-1;
+    Patch[7*n_t + 3]=our_pnts[2]; // Second triangle of the cell face
+    Patch[7*n_t + 4]=our_pnts[3];
+    Patch[7*n_t + 5]=our_pnts[1];
+    Patch[7*n_t + 6]=-1;
 
     /* ----- TOP patch ----- */
     AllPatches[1].p_write=AllPatches[1].p_write+1;
     n_t=AllPatches[1].start_idx+AllPatches[1].p_write;
-    Patch[n_t][0]=our_pnts[6];
-    Patch[n_t][1]=our_pnts[4];
-    Patch[n_t][2]=our_pnts[5];
+    Patch[7*n_t + 0]=our_pnts[6];
+    Patch[7*n_t + 1]=our_pnts[4];
+    Patch[7*n_t + 2]  =our_pnts[5];
 
-    Patch[n_t][3]=our_pnts[5];
-    Patch[n_t][4]=our_pnts[7];
-    Patch[n_t][5]=our_pnts[6];
-    Patch[n_t][6]=-2;
+    Patch[7*n_t + 3]=our_pnts[5];
+    Patch[7*n_t + 4]=our_pnts[7];
+    Patch[7*n_t + 5]=our_pnts[6];
+    Patch[7*n_t + 6]=-2;
+
 
     if (i==0) // Write a WEST EDGE patch
     {
       AllPatches[2].p_write=AllPatches[2].p_write+1;
       n_t=AllPatches[2].start_idx+AllPatches[2].p_write;
-      Patch[n_t][0]=our_pnts[6];
-      Patch[n_t][1]=our_pnts[2];
-      Patch[n_t][2]=our_pnts[0];
-      Patch[n_t][3]=our_pnts[0];
-      Patch[n_t][4]=our_pnts[4];
-      Patch[n_t][5]=our_pnts[6];
-      Patch[n_t][6]=-3;
+      Patch[7*n_t]=our_pnts[6];
+      Patch[7*n_t + 1]=our_pnts[2];
+      Patch[7*n_t + 2]=our_pnts[0];
+      Patch[7*n_t + 3]=our_pnts[0];
+      Patch[7*n_t + 4]=our_pnts[4];
+      Patch[7*n_t + 5]=our_pnts[6];
+      Patch[7*n_t + 6]=-3;
     }
 
     if (i>0) // Check for an WEST facing user patch
@@ -550,13 +573,13 @@ int            MakePatchySolid(
         if (idx<0) {return -1;} // Error so bail
         AllPatches[idx].p_write=AllPatches[idx].p_write+1;
         n_t=AllPatches[idx].start_idx+AllPatches[idx].p_write;
-        Patch[n_t][0]=our_pnts[6];
-        Patch[n_t][1]=our_pnts[2];
-        Patch[n_t][2]=our_pnts[0];
-        Patch[n_t][3]=our_pnts[0];
-        Patch[n_t][4]=our_pnts[4];
-        Patch[n_t][5]=our_pnts[6];
-        Patch[n_t][6]=test_val;
+        Patch[7*n_t]=our_pnts[6];
+        Patch[7*n_t + 1]=our_pnts[2];
+        Patch[7*n_t + 2]=our_pnts[0];
+        Patch[7*n_t + 3]=our_pnts[0];
+        Patch[7*n_t + 4]=our_pnts[4];
+        Patch[7*n_t + 5]=our_pnts[6];
+        Patch[7*n_t + 6]=test_val;
       }
     }
 
@@ -564,13 +587,13 @@ int            MakePatchySolid(
     {
       AllPatches[3].p_write=AllPatches[3].p_write+1;
       n_t=AllPatches[3].start_idx+AllPatches[3].p_write;
-      Patch[n_t][0]=our_pnts[1];
-      Patch[n_t][1]=our_pnts[3];
-      Patch[n_t][2]=our_pnts[7];
-      Patch[n_t][3]=our_pnts[7];
-      Patch[n_t][4]=our_pnts[5];
-      Patch[n_t][5]=our_pnts[1];
-      Patch[n_t][6]=-4;
+      Patch[7*n_t]=our_pnts[1];
+      Patch[7*n_t + 1]=our_pnts[3];
+      Patch[7*n_t + 2]=our_pnts[7];
+      Patch[7*n_t + 3]=our_pnts[7];
+      Patch[7*n_t + 4]=our_pnts[5];
+      Patch[7*n_t + 5]=our_pnts[1];
+      Patch[7*n_t + 6]=-4;
     }
 
     if (i<(NX-1)) // Check for an EAST facing user patch
@@ -583,13 +606,13 @@ int            MakePatchySolid(
         if (idx<0) {return -1;} // Error so bail
         AllPatches[idx].p_write=AllPatches[idx].p_write+1;
         n_t=AllPatches[idx].start_idx+AllPatches[idx].p_write;
-        Patch[n_t][0]=our_pnts[1];
-        Patch[n_t][1]=our_pnts[3];
-        Patch[n_t][2]=our_pnts[7];
-        Patch[n_t][3]=our_pnts[7];
-        Patch[n_t][4]=our_pnts[5];
-        Patch[n_t][5]=our_pnts[1];
-        Patch[n_t][6]=test_val;
+        Patch[7*n_t]=our_pnts[1];
+        Patch[7*n_t + 1]=our_pnts[3];
+        Patch[7*n_t + 2]=our_pnts[7];
+        Patch[7*n_t + 3]=our_pnts[7];
+        Patch[7*n_t + 4]=our_pnts[5];
+        Patch[7*n_t + 5]=our_pnts[1];
+        Patch[7*n_t + 6]=test_val;
       }
     }
 
@@ -597,13 +620,13 @@ int            MakePatchySolid(
     {
       AllPatches[4].p_write=AllPatches[4].p_write+1;
       n_t=AllPatches[4].start_idx+AllPatches[4].p_write;
-      Patch[n_t][0]=our_pnts[4];
-      Patch[n_t][1]=our_pnts[0];
-      Patch[n_t][2]=our_pnts[1];
-      Patch[n_t][3]=our_pnts[1];
-      Patch[n_t][4]=our_pnts[5];
-      Patch[n_t][5]=our_pnts[4];
-      Patch[n_t][6]=-5;
+      Patch[7*n_t]=our_pnts[4];
+      Patch[7*n_t + 1]=our_pnts[0];
+      Patch[7*n_t + 2]=our_pnts[1];
+      Patch[7*n_t + 3]=our_pnts[1];
+      Patch[7*n_t + 4]=our_pnts[5];
+      Patch[7*n_t + 5]=our_pnts[4];
+      Patch[7*n_t + 6]=-5;
     }
 
     if (j>0) // Check for an SOUTH facing user patch
@@ -616,13 +639,13 @@ int            MakePatchySolid(
         if (idx<0) {return -1;} // Error so bail
         AllPatches[idx].p_write=AllPatches[idx].p_write+1;
         n_t=AllPatches[idx].start_idx+AllPatches[idx].p_write;
-        Patch[n_t][0]=our_pnts[4];
-        Patch[n_t][1]=our_pnts[0];
-        Patch[n_t][2]=our_pnts[1];
-        Patch[n_t][3]=our_pnts[1];
-        Patch[n_t][4]=our_pnts[5];
-        Patch[n_t][5]=our_pnts[4];
-        Patch[n_t][6]=test_val;
+        Patch[7*n_t]=our_pnts[4];
+        Patch[7*n_t + 1]=our_pnts[0];
+        Patch[7*n_t + 2]=our_pnts[1];
+        Patch[7*n_t + 3]=our_pnts[1];
+        Patch[7*n_t + 4]=our_pnts[5];
+        Patch[7*n_t + 5]=our_pnts[4];
+        Patch[7*n_t + 6]=test_val;
       }
     }
 
@@ -630,14 +653,14 @@ int            MakePatchySolid(
     {
       AllPatches[5].p_write=AllPatches[5].p_write+1;
       n_t=AllPatches[5].start_idx+AllPatches[5].p_write;
-      Patch[n_t][0]=our_pnts[3];
-      Patch[n_t][1]=our_pnts[2];
-      Patch[n_t][2]=our_pnts[6];
+      Patch[7*n_t]=our_pnts[3];
+      Patch[7*n_t + 1]=our_pnts[2];
+      Patch[7*n_t + 2]=our_pnts[6];
 
-      Patch[n_t][3]=our_pnts[6];
-      Patch[n_t][4]=our_pnts[7];
-      Patch[n_t][5]=our_pnts[3];
-      Patch[n_t][6]=-6;
+      Patch[7*n_t + 3]=our_pnts[6];
+      Patch[7*n_t + 4]=our_pnts[7];
+      Patch[7*n_t + 5]=our_pnts[3];
+      Patch[7*n_t + 6]=-6;
     }
 
     if (j<(NY-1)) // Check for an NORTH facing user patch
@@ -650,15 +673,16 @@ int            MakePatchySolid(
         if (idx<0) {return -1;} // Error so bail
         AllPatches[idx].p_write=AllPatches[idx].p_write+1;
         n_t=AllPatches[idx].start_idx+AllPatches[idx].p_write;
-        Patch[n_t][0]=our_pnts[3];
-        Patch[n_t][1]=our_pnts[2];
-        Patch[n_t][2]=our_pnts[6];
-        Patch[n_t][3]=our_pnts[6];
-        Patch[n_t][4]=our_pnts[7];
-        Patch[n_t][5]=our_pnts[3];
-        Patch[n_t][6]=test_val;
+        Patch[7*n_t]=our_pnts[3];
+        Patch[7*n_t + 1]=our_pnts[2];
+        Patch[7*n_t + 2]=our_pnts[6];
+        Patch[7*n_t + 3]=our_pnts[6];
+        Patch[7*n_t + 4]=our_pnts[7];
+        Patch[7*n_t + 5]=our_pnts[3];
+        Patch[7*n_t + 6]=test_val;
       }
     }
+
     test_val=0;
 
     } // End of mask_val==1 block
@@ -686,22 +710,21 @@ int            MakePatchySolid(
   printf("\n \n");
 
   // ====== Now write out the solid =====
-
   if (bin_out==0)
   {
   fprintf(fp,"1 \n"); // VERSION #
   fprintf(fp,"%i \n",np_act+1);   // # of POINTS/VERTICIES
   for (i=0; i<=np_act; ++i)
   {
-    fprintf(fp,"%17.4f %17.4f %17.4f\n",Xp_Act[i][0],Xp_Act[i][1],Xp_Act[i][2]);
+    fprintf(fp,"%17.4f %17.4f %17.4f\n",Xp_Act[3*i],Xp_Act[3*i+1],Xp_Act[3*i+2]);
   }
   fprintf(fp,"1 \n"); // Number of SOLIDS (only one allowed here)
   fprintf(fp,"%i \n",(cell_faces)*2); // Total number of triangles
 
   for (i=0; i<cell_faces; ++i)
   {
-  fprintf(fp," %i %i %i\n",Patch[i][0],Patch[i][1],Patch[i][2]);
-  fprintf(fp," %i %i %i\n",Patch[i][3],Patch[i][4],Patch[i][5]);
+  fprintf(fp," %i %i %i\n",Patch[7*i],Patch[7*i + 1],Patch[7*i + 2]);
+  fprintf(fp," %i %i %i\n",Patch[7*i + 3],Patch[7*i + 4],Patch[7*i + 5]);
   }
 
   fprintf(fp,"%i \n",non_blanks-1); // -1 since zero is omitted
@@ -733,22 +756,22 @@ int            MakePatchySolid(
     tools_WriteInt(fp,&write_int, 1); // # of POINTS/VERTICIES
     for (i=0; i<=np_act; ++i)
     {
-      tools_WriteDouble(fp,&Xp_Act[i][0], 1);
-      tools_WriteDouble(fp,&Xp_Act[i][1], 1);
-      tools_WriteDouble(fp,&Xp_Act[i][2], 1);
+      tools_WriteDouble(fp,&Xp_Act[3*i], 1);
+      tools_WriteDouble(fp,&Xp_Act[3*i+1], 1);
+      tools_WriteDouble(fp,&Xp_Act[3*i+2], 1);
     }
     write_int=1;
     tools_WriteInt(fp,&write_int, 1); // Number of SOLIDS (only one allowed here)
     write_int=cell_faces*2;
     tools_WriteInt(fp,&write_int, 1); // Total number of triangles
-    for (i=0; i<cell_faces; ++i)
+    for (i=0; i<(cell_faces); ++i)
     {
-      tools_WriteInt(fp,&Patch[i][0], 1);
-      tools_WriteInt(fp,&Patch[i][1], 1);
-      tools_WriteInt(fp,&Patch[i][2], 1);
-      tools_WriteInt(fp,&Patch[i][3], 1);
-      tools_WriteInt(fp,&Patch[i][4], 1);
-      tools_WriteInt(fp,&Patch[i][5], 1);
+      tools_WriteInt(fp,&Patch[7*i], 1);
+      tools_WriteInt(fp,&Patch[7*i + 1], 1);
+      tools_WriteInt(fp,&Patch[7*i + 2], 1);
+      tools_WriteInt(fp,&Patch[7*i + 3], 1);
+      tools_WriteInt(fp,&Patch[7*i + 4], 1);
+      tools_WriteInt(fp,&Patch[7*i + 5], 1);
     }
 
     write_int=non_blanks-1;
@@ -774,44 +797,41 @@ int            MakePatchySolid(
   // --------------------------------------------------------------------------
   if (fp_vtk!=NULL) {
 
-
   // If an ASCII is preferred you can easily change that here
   int write_ascii=0;      // Default is 0 to write a binary
-  int write_float=1;      // Only compatible with BINARY, but writes data as float to save space
-
+  int write_float=0;      // Only compatible with BINARY, but writes data as float to save space
 
   double PatchEl[cell_faces*2];   // Array to hold patch elevations
-  double *PatchVal;
-  PatchVal=(double*)malloc(tools_SizeofDouble * cell_faces*2);
+  int PatchVal[cell_faces*2];
 
   k=0;
   for (i=0; i<cell_faces*2; i=i+2)
   {
-    PatchEl[i]=(Xp_Act[Patch[k][0]][2]+Xp_Act[Patch[k][1]][2]+Xp_Act[Patch[k][2]][2])/3.0;
-    PatchEl[i+1]=(Xp_Act[Patch[k][3]][2]+Xp_Act[Patch[k][4]][2]+Xp_Act[Patch[k][5]][2])/3.0;
+    PatchEl[i]=(Xp_Act[3*Patch[7*k]+2]+Xp_Act[3*Patch[7*k+1]+2]+Xp_Act[3*Patch[7*k+2]+2])/3.0;
+    PatchEl[i+1]=(Xp_Act[3*Patch[7*k+3]+2]+Xp_Act[3*Patch[7*k+4]+2]+Xp_Act[3*Patch[7*k+5]+2])/3.0;
 
-    PatchVal[i]=Patch[k][6];
-    PatchVal[i+1]=Patch[k][6];
+    PatchVal[i]=Patch[7*k + 6];
+    PatchVal[i+1]=Patch[7*k + 6];
     k=k+1;
   }
 
-  float *fPatchEl,*fPatchVal,*fXp_Act[nxyzp];
+  float fPatchEl[cell_faces*2];
+  int fPatchVal[cell_faces*2];
+  float fXp_Act[(np_act+1)*3];
+
   if (write_float==1)
   {
-    fPatchEl = (float*)malloc(tools_SizeofFloat * cell_faces*2);
-    fPatchVal = (float*)malloc(tools_SizeofFloat * cell_faces*2);
-
-    for (i=0; i<nxyzp; i++) {fXp_Act[i] = (float*)malloc(3 * tools_SizeofFloat);}
-    for (i=0; i<nxyzp; i++)
+    for (i=0; i<=(np_act); i++)
     {
-      fXp_Act[i][0]=(float)Xp_Act[i][0];
-      fXp_Act[i][1]=(float)Xp_Act[i][1];
-      fXp_Act[i][2]=(float)Xp_Act[i][2];
+      fXp_Act[3*i]=(float)Xp_Act[3*i];
+      fXp_Act[3*i+1]=(float)Xp_Act[3*i+1];
+      fXp_Act[3*i+2]=(float)Xp_Act[3*i+2];
     }
+
     for (i=0; i<cell_faces*2; ++i)
     {
       fPatchEl[i]=(float)PatchEl[i];
-      fPatchVal[i]=(float)PatchVal[i];
+      fPatchVal[i]=(int)PatchVal[i];
     }
   }
 
@@ -824,7 +844,7 @@ int            MakePatchySolid(
   fprintf(fp_vtk,"%s %i %s\n","POINTS",np_act+1,"float");
     for (i=0; i<=np_act; ++i)
     {
-      fprintf(fp_vtk,"%17.4f %17.4f %17.4f\n",Xp_Act[i][0],Xp_Act[i][1],Xp_Act[i][2]);
+      fprintf(fp_vtk,"%17.4f %17.4f %17.4f\n",Xp_Act[3*i],Xp_Act[3*i+1],Xp_Act[3*i+2]);
     }
   } else {
   // BINARY VTK
@@ -834,7 +854,7 @@ int            MakePatchySolid(
     {
       for (j=0; j<3; ++j)
       {
-        tools_WriteFloat(fp_vtk,&fXp_Act[i][j], 1);
+        tools_WriteFloat(fp_vtk,&fXp_Act[3*i+j], 1);
       }
     }
   } else {
@@ -843,7 +863,7 @@ int            MakePatchySolid(
     {
       for (j=0; j<3; ++j)
       {
-        tools_WriteDouble(fp_vtk,&Xp_Act[i][j], 1);
+        tools_WriteDouble(fp_vtk,&Xp_Act[3*i+j], 1);
       }
     }
   }
@@ -855,8 +875,8 @@ int            MakePatchySolid(
   if (write_ascii==1) { // ASCII VTK
     for (i=0; i<cell_faces; ++i)
     {
-    fprintf(fp_vtk," %i %i %i %i\n",*nvrtx,Patch[i][0],Patch[i][1],Patch[i][2]);
-    fprintf(fp_vtk," %i %i %i %i\n",*nvrtx,Patch[i][3],Patch[i][4],Patch[i][5]);
+    fprintf(fp_vtk," %i %i %i %i\n",*nvrtx,Patch[7*i],Patch[7*i+1],Patch[7*i+2]);
+    fprintf(fp_vtk," %i %i %i %i\n",*nvrtx,Patch[7*i+3],Patch[7*i+4],Patch[7*i+5]);
     }
   } else {
   // BINARY VTK
@@ -865,12 +885,12 @@ int            MakePatchySolid(
     tools_WriteInt(fp_vtk,nvrtx, 1);
     for (j=0; j<3; ++j)
     {
-      tools_WriteInt(fp_vtk,&Patch[i][j], 1);
+      tools_WriteInt(fp_vtk,&Patch[7*i+j], 1);
     }
     tools_WriteInt(fp_vtk,nvrtx, 1);
     for (j=3; j<6; ++j)
     {
-      tools_WriteInt(fp_vtk,&Patch[i][j], 1);
+      tools_WriteInt(fp_vtk,&Patch[7*i+j], 1);
     }
   }
   }
@@ -884,40 +904,46 @@ int            MakePatchySolid(
     {
       fprintf(fp_vtk,"%17.4f \n",PatchEl[i]);
     }
+
+    fprintf(fp_vtk,"%s %s %s\n","SCALARS","Patch","integer");
+    fprintf(fp_vtk,"LOOKUP_TABLE default\n");
+    for (i=0; i<cell_faces*2; ++i)
+    {
+      fprintf(fp_vtk,"%i \n",PatchVal[i]);
+    }
   } else {
     if (write_float)
     {
-      fprintf(fp_vtk,"%s %s %s\n","SCALARS","Elev","float");
+      fprintf(fp_vtk,"\n%s %s %s\n","SCALARS","Elev","float");
       fprintf(fp_vtk,"LOOKUP_TABLE default\n");
       for (i=0; i<cell_faces*2; ++i)
       {
         tools_WriteFloat(fp_vtk,&fPatchEl[i], 1);
       }
 
-      fprintf(fp_vtk,"%s %s %s\n","SCALARS","Patch","float");
+      fprintf(fp_vtk,"%s %s %s\n","SCALARS","Patch","integer");
       fprintf(fp_vtk,"LOOKUP_TABLE default\n");
       for (i=0; i<cell_faces*2; ++i)
       {
-        tools_WriteFloat(fp_vtk,&fPatchVal[i], 1);
+        if (PatchVal[i] > 0) { printf("ERROR: %i %i \n",i,fPatchVal[i]); return -2;}
+        tools_WriteInt(fp_vtk,&fPatchVal[i], 1);
       }
-
     } else
     {
-      fprintf(fp_vtk,"%s %s %s\n","SCALARS","Elev","double");
+      fprintf(fp_vtk,"\n%s %s %s\n","SCALARS","Elev","double");
       fprintf(fp_vtk,"LOOKUP_TABLE default\n");
       for (i=0; i<cell_faces*2; ++i)
       {
         tools_WriteDouble(fp_vtk,&PatchEl[i], 1);
       }
 
-      fprintf(fp_vtk,"%s %s %s\n","SCALARS","Patch","double");
+      fprintf(fp_vtk,"%s %s %s\n","SCALARS","Patch","integer");
       fprintf(fp_vtk,"LOOKUP_TABLE default\n");
       for (i=0; i<cell_faces*2; ++i)
       {
-        tools_WriteDouble(fp_vtk,&PatchVal[i], 1);
+        tools_WriteInt(fp_vtk,&PatchVal[i], 1);
       }
     }
-
   }
 
   } // End of VTK write
