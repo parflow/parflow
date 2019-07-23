@@ -40,6 +40,7 @@ typedef struct {
   int time_index;
   double SpinupDampP1;      // NBE
   double SpinupDampP2;      // NBE
+  int tfgupwind;           //@RMM added for TFG formulation switch
 } PublicXtra;
 
 typedef struct {
@@ -634,23 +635,52 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
        * 1. x dir terrain tendency:  gravity*sin(atan(x_ssl_dat[io]))
        * 2. y dir terrain tendency:  gravity*sin(atan(y_ssl_dat[io]))
        * 3. change in delta-x due to slope: (1.0/cos(atan(x_ssl_dat[io])))
-       * 4. change in delta-y due to slope: (1.0/cos(atan(y_ssl_dat[io]))) */
+       * 4. change in delta-y due to slope: (1.0/cos(atan(y_ssl_dat[io])))
+       * Depending on formulation chosen slopes are either assumed to be cell-centered or
+       * upwind
+       */
 
       /* velocity subvector indices jjb */
       vxi = SubvectorEltIndex(vx_sub, i + 1, j, k);
       vyi = SubvectorEltIndex(vy_sub, i, j + 1, k);
       vzi = SubvectorEltIndex(vz_sub, i, j, k + 1);
 
+      z_dir_g = 1.0;
+      del_x_slope = 1.0;
+      del_y_slope = 1.0;
 
+//@RMM  tfgupwind == 0 (default) should give original behavior
+// tfgupwind 1 should still use sine but upwind
+// tfgupwdin 2 just upwind
+      switch (public_xtra->tfgupwind)
+      {
+        case 0:
+        {
+          // default formulation in Maxwell 2013
       x_dir_g = Mean(gravity * sin(atan(x_ssl_dat[io])), gravity * sin(atan(x_ssl_dat[io + 1])));
       x_dir_g_c = Mean(gravity * cos(atan(x_ssl_dat[io])), gravity * cos(atan(x_ssl_dat[io + 1])));
       y_dir_g = Mean(gravity * sin(atan(y_ssl_dat[io])), gravity * sin(atan(y_ssl_dat[io + sy_p])));
       y_dir_g_c = Mean(gravity * cos(atan(y_ssl_dat[io])), gravity * cos(atan(y_ssl_dat[io + sy_p])));
-
-      z_dir_g = 1.0;
-
-      del_x_slope = 1.0;
-      del_y_slope = 1.0;
+      break;
+    }
+    case 1:
+    {
+      // direct upwinding, no averaging with sines
+      x_dir_g =  gravity * sin(atan(x_ssl_dat[io]));
+      x_dir_g_c = gravity * cos(atan(x_ssl_dat[io]));
+      y_dir_g = gravity * sin(atan(y_ssl_dat[io]));
+      y_dir_g_c = gravity * cos(atan(y_ssl_dat[io]));
+      break;
+      }
+      case 2:
+     {
+      // direct upwinding, no averaging no sines
+      x_dir_g =  x_ssl_dat[io];
+      x_dir_g_c = 1.0;
+      y_dir_g = y_ssl_dat[io];
+      y_dir_g_c = 1.0;
+      break;
+      }
 
       /* Calculate right face velocity.
        * diff >= 0 implies flow goes left to right */
@@ -2283,11 +2313,15 @@ void  NlFunctionEvalFreeInstanceXtra()
  * NlFunctionEvalNewPublicXtra
  *--------------------------------------------------------------------------*/
 
-PFModule   *NlFunctionEvalNewPublicXtra()
+PFModule   *NlFunctionEvalNewPublicXtra(char *name)
 {
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra;
   char key[IDB_MAX_KEY_LEN];
+  char *switch_name;
+  int switch_value;
+  NameArray switch_na;
+  NameArray upwind_switch_na;
 
 
   public_xtra = ctalloc(PublicXtra, 1);
@@ -2298,6 +2332,38 @@ PFModule   *NlFunctionEvalNewPublicXtra()
   public_xtra->SpinupDampP1 = GetDoubleDefault(key, 0.0);
   sprintf(key, "OverlandSpinupDampP2");
   public_xtra->SpinupDampP2 = GetDoubleDefault(key, 0.0);    //NBE
+
+/* parameters for upwinding formulation for TFG */
+upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");
+sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation", name);
+switch_name = GetStringDefault(key, "Original");
+switch_value = NA_NameToIndex(upwind_switch_na, switch_name);
+switch (switch_value)
+{
+  case 0:
+  {
+    public_xtra->tfgupwind = 0;
+    break;
+  }
+
+  case 1:
+  {
+    public_xtra->tfgupwind = 1;
+    break;
+  }
+
+  case 2:
+  {
+    public_xtra->tfgupwind = 2;
+    break;
+  }
+
+  default:
+  {
+    InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
+               key);
+  }
+}
 
   (public_xtra->time_index) = RegisterTiming("NL_F_Eval");
 
