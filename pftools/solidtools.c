@@ -100,7 +100,7 @@ int            MakePatchySolid(
   /* ---------- Max number of patches ---------- */
   int np_tot=30;        // Max number of patches allowed (CAN BE INCREASED IF NEEDED)
 
-  int debugger=1;
+  int debugger=0;
 
   // Default patches (flagged as negatives here)
   int DefPatches[] = {-1,-2,-3,-4,-5,-6}; // Bottom, Top, West, East, South, North
