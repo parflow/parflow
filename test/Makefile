@@ -34,7 +34,9 @@ TESTS += \
 	var_dz_1D.tcl \
 	pfmg.tcl \
 	smg.tcl \
-	pfmg_octree.tcl
+	pfmg_octree.tcl \
+        overland_slopingslab_KWE.tcl \
+	overland_tiltedV_KWE.tcl 
 endif
 
 ifeq (${PARFLOW_HAVE_SILO},yes)

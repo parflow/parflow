@@ -309,6 +309,7 @@ foreach xslope [list 0.01 -0.01] yslope [list 0.01 -0.01] name [list posxposy ne
   pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
   set runname Slab.$name.OverlandModule
+  puts "##########"
   puts $runname
   pfrun $runname
   pfundist $runname
@@ -334,6 +335,7 @@ pfset Solver.Nonlinear.UseJacobian                       True
 pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
 set runname Slab.$name.OverlandModule
+puts "##########"
 puts "$runname Jacobian True"
 pfrun $runname
 pfundist $runname
@@ -354,11 +356,12 @@ if $runcheck==1 {
   }
 }
 
-# turn on non-symmetric Preconditionerand re-test
+# turn on non-symmetric Preconditioner and re-test
 pfset Solver.Linear.Preconditioner.PCMatrixType         FullJacobian
 
 set runname Slab.$name.OverlandModule
-puts "$runname Jacobian True Nonsymetric Preconditioner"
+puts "##########"
+puts "$runname Jacobian True Nonsymmetric Preconditioner"
 pfrun $runname
 pfundist $runname
 if $runcheck==1 {
@@ -384,6 +387,7 @@ pfset Solver.Nonlinear.UseJacobian                       False
 pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
   set runname Slab.$name.OverlandKin
+  puts "##########"
   puts $runname
   pfrun $runname
   pfundist $runname
@@ -410,6 +414,7 @@ pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
   pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
     set runname Slab.$name.OverlandKin
+    puts "##########"
     puts "$runname Jacobian True"
     pfrun $runname
     pfundist $runname
@@ -430,13 +435,14 @@ pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
       }
     }
 
-    # run with KWE upwinding jacobian true
+    # run with KWE upwinding jacobian true and nonsymmetric preconditioner
     pfset Patch.z-upper.BCPressure.Type		      OverlandKinematic
     pfset Solver.Nonlinear.UseJacobian                       True
     pfset Solver.Linear.Preconditioner.PCMatrixType FullJacobian
 
       set runname Slab.$name.OverlandKin
-      puts "$runname Jacobian True Nonsymetric Preconditioner"
+      puts "##########"
+      puts "$runname Jacobian True Nonsymmetric Preconditioner"
       pfrun $runname
       pfundist $runname
       if $runcheck==1 {

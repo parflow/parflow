@@ -336,6 +336,7 @@ pfset Solver.Nonlinear.UseJacobian          False
 pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
 set runname TiltedV_Overland
+puts "##########"
 puts $runname
 pfrun $runname
 pfundist $runname
@@ -356,8 +357,59 @@ if $runcheck==1 {
   }
 }
 
+#original approach from K&M AWR 2006 with analytical jacobian
+pfset Patch.z-upper.BCPressure.Type		      OverlandFlow
+pfset Solver.Nonlinear.UseJacobian          True
+pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
+set runname TiltedV_Overland
+puts "##########"
+puts "$runname Jacobian True"
+pfrun $runname
+pfundist $runname
+if $runcheck==1 {
+  set passed 1
+  foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
+    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
+      set passed 0
+    }
+    if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
+      set passed 0
+    }
+  }
+  if $passed {
+    puts "$runname : PASSED"
+  } {
+    puts "$runname : FAILED"
+  }
+}
 
+#original approach from K&M AWR 2006 with analytical jacobian and nonsymmetric preconditioner
+pfset Patch.z-upper.BCPressure.Type		      OverlandFlow
+pfset Solver.Nonlinear.UseJacobian          True
+pfset Solver.Linear.Preconditioner.PCMatrixType FullJacobian
+
+set runname TiltedV_Overland
+puts "##########"
+puts "$runname Jacobian True Nonsymmetric Preconditioner"
+pfrun $runname
+pfundist $runname
+if $runcheck==1 {
+  set passed 1
+  foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
+    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
+      set passed 0
+    }
+    if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
+      set passed 0
+    }
+  }
+  if $passed {
+    puts "$runname : PASSED"
+  } {
+    puts "$runname : FAILED"
+  }
+}
 
 #-----------------------------------------------------------------------------
 # New kinematic formulations without the zero channel
@@ -381,7 +433,62 @@ pfset Solver.Nonlinear.UseJacobian                       False
 pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
 set runname TiltedV_OverlandKin
+puts "##########"
 puts $runname
+pfrun $runname
+pfundist $runname
+if $runcheck==1 {
+  set passed 1
+  foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
+    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
+      set passed 0
+    }
+    if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
+      set passed 0
+    }
+  }
+  if $passed {
+    puts "$runname : PASSED"
+  } {
+    puts "$runname : FAILED"
+  }
+}
+
+# run with KWE upwinding and analytical jacobian
+pfset Patch.z-upper.BCPressure.Type		      OverlandKinematic
+pfset Solver.Nonlinear.UseJacobian                       True
+pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
+
+set runname TiltedV_OverlandKin
+puts "##########"
+puts "$runname Jacobian True"
+pfrun $runname
+pfundist $runname
+if $runcheck==1 {
+  set passed 1
+  foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
+    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
+      set passed 0
+    }
+    if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
+      set passed 0
+    }
+  }
+  if $passed {
+    puts "$runname : PASSED"
+  } {
+    puts "$runname : FAILED"
+  }
+}
+
+# run with KWE upwinding and analytical jacobian and nonsymmetric preconditioner
+pfset Patch.z-upper.BCPressure.Type		      OverlandKinematic
+pfset Solver.Nonlinear.UseJacobian                       True
+pfset Solver.Linear.Preconditioner.PCMatrixType FullJacobian
+
+set runname TiltedV_OverlandKin
+puts "##########"
+puts "$runname Jacobian True Nonsymmetric Preconditioner"
 pfrun $runname
 pfundist $runname
 if $runcheck==1 {
