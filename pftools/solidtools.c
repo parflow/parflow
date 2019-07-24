@@ -963,7 +963,6 @@ int            MakePatchySolid(
       fprintf(fp_vtk,"LOOKUP_TABLE default\n");
       for (i=0; i<cell_faces*2; ++i)
       {
-        // if (PatchVal[i] > 0) { printf("ERROR: %i %i \n",i,fPatchVal[i]); return -2;}
         tools_WriteInt(fp_vtk,&fPatchVal[i], 1);
       }
     } else
