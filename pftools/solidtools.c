@@ -40,7 +40,6 @@
 #include "unistd.h"
 
 
-
 // Structure to hold information about the patches
 typedef struct {
   int active;
@@ -101,6 +100,10 @@ int            MakePatchySolid(
   int np_tot=30;        // Max number of patches allowed (CAN BE INCREASED IF NEEDED)
 
   int debugger=0;
+
+  // #include "time.h"
+  // clock_t start_time, end_time;
+  // double run_time;
 
   // Default patches (flagged as negatives here)
   int DefPatches[] = {-1,-2,-3,-4,-5,-6}; // Bottom, Top, West, East, South, North
@@ -347,13 +350,12 @@ int            MakePatchySolid(
     }
   }
 
-
-  if (debugger==1) {
-  for (i=0;i<6+np_usr+1; ++i)
-  {
-  printf("%i %i %i %i %i \n",i,AllPatches[i].value,AllPatches[i].patch_cell_count,AllPatches[i].start_idx,AllPatches[i].end_idx);
-  }
-  }
+  // if (debugger==1) {
+  // for (i=0;i<6+np_usr+1; ++i)
+  // {
+  // printf("%i %i %i %i %i \n",i,AllPatches[i].value,AllPatches[i].patch_cell_count,AllPatches[i].start_idx,AllPatches[i].end_idx);
+  // }
+  // }
 
   // Used to easily find the ID of user patches and zeros later
   int patch_values[6+np_usr];
@@ -362,18 +364,28 @@ int            MakePatchySolid(
     patch_values[i]=AllPatches[i].value;
   }
 
-  int Patch[cell_faces*7];
+  // int Patch[cell_faces*7];
+  int *Patch;
+  Patch=(int*)calloc(cell_faces*7,sizeof(int));
+
   for (i=0;i<(cell_faces*7); i++) {Patch[i]=-1111;}
 
   if (debugger==1)
-  {printf(" *** Cell faces: %i *** \n",cell_faces);
-  printf("Should be: %i\n",NX*2 + NY*2 + (NX*NY)*2);
-  printf("NX,NY: %i %i\n\n",NX, NY);}
+  {
+    printf(" *** Cell faces: %i *** \n",cell_faces);
+    printf("Should be: %i\n",NX*2 + NY*2 + (NX*NY)*2);
+    printf("NX,NY: %i %i\n",NX, NY);
+  }
 
   // ==========================================================================
   // Build a 2-d array to hold the active points
 
-  double Xp_Act[nxyzp*6];
+  if (debugger==1) printf("NXY points: %i\n",nxyzp);
+
+  // double Xp_Act[nxyzp*6];
+  double *Xp_Act;
+  Xp_Act=(double*)calloc(nxyzp*6,sizeof(double));
+
   for (i=0;i<nxyzp; i++) {for (j=0;j<3; j++) {Xp_Act[3*i + j]=-11111.11;}}
 
   // Which corners of the cell to add to the Xp_Act dBase, who belongs to this cell
@@ -381,11 +393,16 @@ int            MakePatchySolid(
   int i_off=0, j_off=0;
   int km,n_t,iijj;
   int np_act=-1;
+
+  // if (debugger==1) start_time=clock(); // Enable <time.h> at top of function
+
   // Build the point database, not efficient to loop again but oh well
   for (j=0; j<NY; ++j) //NY
   {
   for (i=0; i<NX; ++i) //NX
   {
+    // if (debugger==1) printf("Current i,j,np_act: %i, %i, %i\n",i,j,np_act);
+
     mask_val = *DataboxCoeff(msk, i, j, 0);
     if (mask_val==1)
     {
@@ -491,23 +508,18 @@ int            MakePatchySolid(
       x_test = X + (i+i_off)*DX;
       y_test = Y + (j+j_off)*DY;
 
-      for (m=0; m<np_act; ++m)
+      /* Loop last to first since points will be closer */
+      for (m=np_act; m>0; m=m-1)
       {
         if ((Xp_Act[3*m]==x_test)&(Xp_Act[3*m+1]==y_test))
         {
           break;
         }
       }
-      if (m>nxyzp*2)
-      {
-        printf("ERROR town 1: %i %f %f %i %i \n",m,x_test,y_test,np_act,nxyzp);
-        return -1;
-      }
-
-      // If it's a top point find the next instance of the x-y coodrinates
-      if (km>3) {
-        m=m+1;
-        for (m=m; m<=np_act; ++m)
+      // If it's a bottom point keep going to find the next instance of the x-y coodrinates
+      if (km<=3) {
+        m=m-1;
+        for (m=m; m>0; m=m-1)
         {
           if ((Xp_Act[3*m]==x_test)&(Xp_Act[3*m+1]==y_test))
           {
@@ -515,12 +527,9 @@ int            MakePatchySolid(
           }
         }
       }
+
       our_pnts[km]=m;
-      if (m>nxyzp*2)
-      {
-        printf("ERROR town 2: %i %f %f %i \n",m,x_test,y_test,np_act);
-        return -1;
-      }
+
       }
     }
 
@@ -688,6 +697,15 @@ int            MakePatchySolid(
     } // End of mask_val==1 block
   } // End of i loop
   } // End of j loop
+  
+  // if (debugger==1) {
+  //   // To use this, uncomment this AND 1) the line with start_time, and 2) the declarations up top
+  //   end_time=clock();
+  //   run_time=(double)(end_time-start_time) / CLOCKS_PER_SEC;
+  //   printf("Elapsed time: %f\n", run_time);
+  // }
+
+  if (debugger==1) printf("DBG: Done building point-patch database\n");
 
   // --------------------------------------------------------------------------
   //              ===== Write out the solid file =====
@@ -739,6 +757,7 @@ int            MakePatchySolid(
       }
     }
   }
+  if (debugger==1) printf("DBG: Done writing ASCII solid\n");
   } else {
     /* ---------- PLACE HOLDER for future feature ---------- */
     // Write a binary pfsolid file
@@ -790,6 +809,7 @@ int            MakePatchySolid(
         }
       }
     }
+    if (debugger==1) printf("DBG: Done writing BINARY solid\n");
   }  // End of ascii/binary solid file test
 
   // --------------------------------------------------------------------------
@@ -799,10 +819,14 @@ int            MakePatchySolid(
 
   // If an ASCII is preferred you can easily change that here
   int write_ascii=0;      // Default is 0 to write a binary
-  int write_float=0;      // Only compatible with BINARY, but writes data as float to save space
+  int write_float=1;      // Only compatible with BINARY, but writes data as float to save space
 
-  double PatchEl[cell_faces*2];   // Array to hold patch elevations
-  int PatchVal[cell_faces*2];
+  if (debugger==1) printf("DBG: ASCII=%i, float=%i\n",write_ascii,write_float);
+
+  double *PatchEl;   // Array to hold patch elevations
+  int *PatchVal;
+  PatchEl=(double*)calloc(cell_faces*2,sizeof(double));
+  PatchVal=(int*)calloc(cell_faces*2,sizeof(int));
 
   k=0;
   for (i=0; i<cell_faces*2; i=i+2)
@@ -815,12 +839,16 @@ int            MakePatchySolid(
     k=k+1;
   }
 
-  float fPatchEl[cell_faces*2];
-  int fPatchVal[cell_faces*2];
-  float fXp_Act[(np_act+1)*3];
+  float *fPatchEl;
+  int *fPatchVal;
+  float *fXp_Act;
 
   if (write_float==1)
   {
+    fPatchEl=(float*)calloc(cell_faces*2,sizeof(float));
+    fXp_Act=(float*)calloc((np_act+1)*3,sizeof(float));
+    fPatchVal=(int*)calloc(cell_faces*2,sizeof(int));
+
     for (i=0; i<=(np_act); i++)
     {
       fXp_Act[3*i]=(float)Xp_Act[3*i];
@@ -834,6 +862,8 @@ int            MakePatchySolid(
       fPatchVal[i]=(int)PatchVal[i];
     }
   }
+
+  if (debugger==1) printf("DBG: Done with VTK prep, writing file...\n");
 
   //This uses the mixed VTK BINARY legacy format, writes as either double or float
   fprintf(fp_vtk, "# vtk DataFile Version 2.0\n");
