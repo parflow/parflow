@@ -62,6 +62,7 @@ typedef struct {
   enum JacobianType type;
   double SpinupDampP1; // NBE
   double SpinupDampP2; // NBE
+  int tfgupwind;  // @RMM
 } PublicXtra;
 
 typedef struct {
@@ -624,10 +625,45 @@ void    RichardsJacobianEval(
                     + rpp[ip + sz_v] * ddp[ip + sz_v];
 
       //@RMM
-      x_dir_g = Mean(gravity * sin(atan(x_ssl_dat[ioo])), gravity * sin(atan(x_ssl_dat[ioo + 1])));
-      x_dir_g_c = Mean(gravity * cos(atan(x_ssl_dat[ioo])), gravity * cos(atan(x_ssl_dat[ioo + 1])));
-      y_dir_g = Mean(gravity * sin(atan(y_ssl_dat[ioo])), gravity * sin(atan(y_ssl_dat[ioo + sy_v])));
-      y_dir_g_c = Mean(gravity * cos(atan(y_ssl_dat[ioo])), gravity * cos(atan(y_ssl_dat[ioo + sy_v])));
+//      x_dir_g = Mean(gravity * sin(atan(x_ssl_dat[ioo])), gravity * sin(atan(x_ssl_dat[ioo + 1])));
+//      x_dir_g_c = Mean(gravity * cos(atan(x_ssl_dat[ioo])), gravity * cos(atan(x_ssl_dat[ioo + 1])));
+//      y_dir_g = Mean(gravity * sin(atan(y_ssl_dat[ioo])), gravity * sin(atan(y_ssl_dat[ioo + sy_v])));
+//      y_dir_g_c = Mean(gravity * cos(atan(y_ssl_dat[ioo])), gravity * cos(atan(y_ssl_dat[ioo + sy_v])));
+
+      //@RMM  tfgupwind == 0 (default) should give original behavior
+      // tfgupwind 1 should still use sine but upwind
+      // tfgupwdin 2 just upwind
+            switch (public_xtra->tfgupwind)
+            {
+              case 0:
+              {
+                // default formulation in Maxwell 2013
+            x_dir_g = Mean(gravity * sin(atan(x_ssl_dat[ioo])), gravity * sin(atan(x_ssl_dat[ioo + 1])));
+            x_dir_g_c = Mean(gravity * cos(atan(x_ssl_dat[ioo])), gravity * cos(atan(x_ssl_dat[ioo + 1])));
+            y_dir_g = Mean(gravity * sin(atan(y_ssl_dat[ioo])), gravity * sin(atan(y_ssl_dat[ioo + sy_v])));
+            y_dir_g_c = Mean(gravity * cos(atan(y_ssl_dat[ioo])), gravity * cos(atan(y_ssl_dat[ioo + sy_v])));
+            break;
+          }
+          case 1:
+          {
+            // direct upwinding, no averaging with sines
+            x_dir_g =  gravity * sin(atan(x_ssl_dat[ioo]));
+            x_dir_g_c = gravity * cos(atan(x_ssl_dat[ioo]));
+            y_dir_g = gravity * sin(atan(y_ssl_dat[ioo]));
+            y_dir_g_c = gravity * cos(atan(y_ssl_dat[ioo]));
+            break;
+            }
+            case 2:
+           {
+            // direct upwinding, no averaging no sines
+            x_dir_g =  x_ssl_dat[ioo];
+            x_dir_g_c = 1.0;
+            y_dir_g = y_ssl_dat[ioo];
+            y_dir_g_c = 1.0;
+            break;
+            }
+      }
+
 
       /* diff >= 0 implies flow goes left to right */
       diff = pp[ip] - pp[ip + 1];
@@ -2116,6 +2152,7 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   char          *switch_name;
   int switch_value;
   NameArray switch_na;
+  NameArray upwind_switch_na;
 
 
   (void)name;
@@ -2127,6 +2164,39 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   public_xtra->SpinupDampP1 = GetDoubleDefault(key, 0.0);
   sprintf(key, "OverlandSpinupDampP2");
   public_xtra->SpinupDampP2 = GetDoubleDefault(key, 0.0);    // NBE
+
+  ///* parameters for upwinding formulation for TFG */
+  upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");
+  sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation", name);
+  switch_name = GetStringDefault(key, "Original");
+  switch_value = NA_NameToIndex(upwind_switch_na, switch_name);
+  switch (switch_value)
+  {
+    case 0:
+    {
+      public_xtra->tfgupwind = 0;
+      break;
+    }
+
+    case 1:
+    {
+      public_xtra->tfgupwind = 1;
+      break;
+    }
+
+    case 2:
+    {
+      public_xtra->tfgupwind = 2;
+      break;
+    }
+
+    default:
+    {
+      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
+                 key);
+    }
+  }
+
 
   switch_na = NA_NewNameArray("False True");
   sprintf(key, "Solver.Nonlinear.UseJacobian");
