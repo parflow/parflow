@@ -697,7 +697,7 @@ int            MakePatchySolid(
     } // End of mask_val==1 block
   } // End of i loop
   } // End of j loop
-  
+
   // if (debugger==1) {
   //   // To use this, uncomment this AND 1) the line with start_time, and 2) the declarations up top
   //   end_time=clock();
@@ -760,12 +760,9 @@ int            MakePatchySolid(
   if (debugger==1) printf("DBG: Done writing ASCII solid\n");
   } else {
     /* ---------- PLACE HOLDER for future feature ---------- */
-    // Write a binary pfsolid file
-    // printf("ERROR (pfpatchysolid): Binary solid file not currently enabled\n");
-    // return -2;
-
-    // This writes a BINARY solid file. The file can be written now but as of
-    //  July 20, 2019 ParFlow support for the binary solid is not completed
+    // This writes a BINARY solid file. The file can be written and read with
+    // ParFlow BUT a bug limits this to a processor topology of (1,1,1)
+    //  * * A fix is coming so just use ASCII solid files for now * *
 
     int write_int=1;
     double write_dbl=1.0;
@@ -821,10 +818,21 @@ int            MakePatchySolid(
   int write_ascii=0;      // Default is 0 to write a binary
   int write_float=1;      // Only compatible with BINARY, but writes data as float to save space
 
-  if (debugger==1) printf("DBG: ASCII=%i, float=%i\n",write_ascii,write_float);
+  if (debugger==1) {
+    if (write_ascii==1) {
+       printf("DBG: Writing ASCII vtk\n");
+     } else {
+       printf("DBG: Writing BINARY vtk \n");
+       if (write_float==1) {
+         printf("DBG: -> Storing vtk points as FLOAT \n");
+       } else {
+         printf("DBG: -> Storing vtk points as DOUBLE \n");
+       }
+     }
+   }
 
-  double *PatchEl;   // Array to hold patch elevations
-  int *PatchVal;
+  double *PatchEl;   // patch mean elevations
+  int *PatchVal;    // patch ID numbers
   PatchEl=(double*)calloc(cell_faces*2,sizeof(double));
   PatchVal=(int*)calloc(cell_faces*2,sizeof(int));
 
@@ -955,7 +963,7 @@ int            MakePatchySolid(
       fprintf(fp_vtk,"LOOKUP_TABLE default\n");
       for (i=0; i<cell_faces*2; ++i)
       {
-        if (PatchVal[i] > 0) { printf("ERROR: %i %i \n",i,fPatchVal[i]); return -2;}
+        // if (PatchVal[i] > 0) { printf("ERROR: %i %i \n",i,fPatchVal[i]); return -2;}
         tools_WriteInt(fp_vtk,&fPatchVal[i], 1);
       }
     } else
