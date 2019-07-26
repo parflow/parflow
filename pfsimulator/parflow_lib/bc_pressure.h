@@ -59,6 +59,7 @@
 #define OverlandFlowPFB  8
 #define SeepageFace      9
 #define OverlandKinematic 10
+#define OverlandDiffusive 11
 
 
 
@@ -110,7 +111,10 @@
     })                                              \
     BC_TYPE(OverlandKinematic, {                    \
         double *values;                             \
-      })
+      })                                            \
+    BC_TYPE(OverlandDiffusive, {                    \
+          double *values;                           \
+        })
 /*----------------------------------------------------------------
  * Constructor, getter, and setter for Type structs in BCPressurePackage
  *----------------------------------------------------------------*/
@@ -178,8 +182,10 @@
     })                                              \
   BC_TYPE(OverlandKinematic, {                      \
      double value;                                  \
-      })
-
+   })                                               \
+  BC_TYPE(OverlandDiffusive, {                      \
+         double value;                                  \
+          })
 /* @MCB: Interval structs are used in multiple C files, generate the definitions in the header */
 #define BC_TYPE(type, values) typedef struct values BCPressureType ## type;
 BC_INTERVAL_TYPE_TABLE
@@ -289,6 +295,9 @@ typedef struct {
   /*--------------------------------------------------------------------------*/
   #define OverlandKinematicValue(patch)                 \
     ((patch)->value)
+/*--------------------------------------------------------------------------*/
+    #define OverlandDiffusiveValue(patch)                 \
+      ((patch)->value)
 /*--------------------------------------------------------------------------
  * Accessor macros: BCPressureData
  *--------------------------------------------------------------------------*/

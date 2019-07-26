@@ -2031,76 +2031,15 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
           // SGS Fix this up later after things are a bit more stable.   Probably should
           // Use this loop inside the overland flow eval as it is more efficient.
-#if 1
-          if (diffusive == 0)
-          {
-            /* Call overlandflow_eval to compute fluxes across the east, west, north, and south faces */
-			  PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module, (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
-                                                                             ke_, kw_, kn_, ks_, qx_, qy_, CALCFCN));
-          }
-          else
-          {
-            /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
-             * routing added */
+
+            /*  @RMM this is a new module for diffusive wave
+              */
+
             double *dummy1, *dummy2, *dummy3, *dummy4;
             PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                                                                       ke_, kw_, kn_, ks_,
                                                                                       dummy1, dummy2, dummy3, dummy4,
                                                                                       qx_, qy_, CALCFCN));
-          }
-#else
-          // SGS TODO can these loops be merged?
-          BCStructPatchLoopOvrlnd(i, j, k, fdir, ival, bc_struct, ipatch, is,
-          {
-            if (fdir[2])
-            {
-              switch (fdir[2])
-              {
-                case 1:
-                  io = SubvectorEltIndex(qx_sub, i, j, 0);
-                  ip = SubvectorEltIndex(p_sub, i, j, k);
-
-                  double dir_x = 0.0;
-                  double dir_y = 0.0;
-                  if (x_sl_dat[io] > 0.0)
-                    dir_x = -1.0;
-                  if (y_sl_dat[io] > 0.0)
-                    dir_y = -1.0;
-                  if (x_sl_dat[io] < 0.0)
-                    dir_x = 1.0;
-                  if (y_sl_dat[io] < 0.0)
-                    dir_y = 1.0;
-
-                  qx_[io] = dir_x * (RPowerR(fabs(x_sl_dat[io]), 0.5) / mann_dat[io]) * RPowerR(pfmax((pp[ip]), 0.0), (5.0 / 3.0));
-
-                  qy_[io] = dir_y * (RPowerR(fabs(y_sl_dat[io]), 0.5) / mann_dat[io]) * RPowerR(pfmax((pp[ip]), 0.0), (5.0 / 3.0));
-
-                  break;
-              }
-            }
-          });
-
-          BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-          {
-            if (fdir[2])
-            {
-              switch (fdir[2])
-              {
-                case 1:
-                  io = SubvectorEltIndex(ke_sub, i, j, 0);
-
-                  ke_[io] = pfmax(qx_[io], 0.0) - pfmax(-qx_[io + 1], 0.0);
-                  kw_[io] = pfmax(qx_[io - 1], 0.0) - pfmax(-qx_[io], 0.0);
-
-                  kn_[io] = pfmax(qy_[io], 0.0) - pfmax(-qy_[io + sy_p], 0.0);
-                  ks_[io] = pfmax(qy_[io - sy_p], 0.0) - pfmax(-qy_[io], 0.0);
-
-                  break;
-              }
-            }
-          });
-#endif
-
 
 
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
@@ -2120,18 +2059,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                   q_overlnd = vol
                               * (pfmax(pp[ip], 0.0) - pfmax(opp[ip], 0.0)) / dz +
                               dt * vol * ((ke_[io] - kw_[io]) / dx + (kn_[io] - ks_[io]) / dy)
-                              / dz + vol * dt / dz * (exp(pfmin(pp[ip], 0.0) * public_xtra->SpinupDampP1) * public_xtra->SpinupDampP2);
-                  //NBE
-
-
-                  if (overlandspinup == 1)
-                  {
-                    /* add flux loss equal to excess head  that overwrites the prior overland flux */
-                    q_overlnd = (vol / dz) * dt * ((pfmax(pp[ip], 0.0) - 0.0) + exp(pfmin(pp[ip], 0.0) *
-                                                                                    public_xtra->SpinupDampP1) * public_xtra->SpinupDampP2); //@RMM
-                  }
-
-
+                              / dz;
 
                   fp[ip] += q_overlnd;
 

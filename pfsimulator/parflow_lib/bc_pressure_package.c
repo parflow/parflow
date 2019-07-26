@@ -388,7 +388,7 @@ void         BCPressurePackage(
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
               = (void*)interval_data;
           }); /* End SeepageFace */
-          /* Set up a seepage face condition structure */
+          /* Set up overland OverlandKinematic condition structure */
           SetupPatchInterval(OverlandKinematic,
           {
             NewBCPressureTypeStruct(OverlandKinematic, interval_data);
@@ -403,6 +403,21 @@ void         BCPressurePackage(
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
               = (void*)interval_data;
           }); /* End OverlandKinematic */
+          /* Set up overland OverlandDiffusive condition structure */
+          SetupPatchInterval(OverlandDiffusive,
+          {
+            NewBCPressureTypeStruct(OverlandDiffusive, interval_data);
+
+            BCPressureDataBCType(bc_pressure_data, i) = OverlandDiffusiveBC;
+
+            GetTypeStruct(OverlandDiffusive, data, public_xtra, i);
+
+            OverlandDiffusiveValue(interval_data)
+              = (data->values[interval_number]);
+
+            BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
+              = (void*)interval_data;
+          }); /* End OverlandDiffusive */
         }); /* End Do_SetupPatchIntervals */
       } /* End ForEachInterval */
     } /* End ForEachPatch */
@@ -953,6 +968,24 @@ PFModule  *BCPressurePackageNewPublicXtra(
              }
           StoreTypeStruct(public_xtra, data, i);
         }); /* End OverlandKinematic */
+
+        SetupPatchType(OverlandDiffusive,
+        {
+          /* Constant "rainfall" rate value on patch */
+          NewTypeStruct(OverlandDiffusive, data);
+             (data->values) = ctalloc(double, interval_division);
+
+             ForEachInterval(interval_division, interval_number)
+             {
+               sprintf(key, "Patch.%s.BCPressure.%s.Value",
+                 patch_name,
+                 NA_IndexToName(GlobalsIntervalNames[global_cycle],
+                                interval_number));
+
+               data->values[interval_number] = GetDouble(key);
+             }
+          StoreTypeStruct(public_xtra, data, i);
+        }); /* End OverlandDiffusive */
 
       });      /* End Do_SetupPatchTypes */
     }
