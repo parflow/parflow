@@ -1904,7 +1904,7 @@ int MakePatchySolidCommand(
   Databox       *databox, *top_databox, *bot_databox;
 
   // Fail based on an invalid number of arguments
-  if ((argc < 7) || (argc > 11))
+  if ((argc < 5) || (argc > 11))
   {
     printf("\n ERROR (pfpatchysolid): Invalid number of arguments\n");
     return TCL_ERROR;
@@ -1994,7 +1994,6 @@ int MakePatchySolidCommand(
     return TCL_ERROR;
   }
 
-
   if (strcmp(filename,"SolidFile.pfsol")==0)
   {
     printf("WARNING (pfpatchysolid): No solid file name specified, default is: SolidFile.pfsol\n");
@@ -2011,8 +2010,6 @@ int MakePatchySolidCommand(
     SetNonExistantError(interp, maskkey);
     return TCL_ERROR;
   }
-
-
 
   if (msk==1) {
     if ((databox = DataMember(data, maskkey, entryPtr)) == NULL)
