@@ -1002,7 +1002,7 @@ int         ConvertPfsolAscii2Bin(FILE *fp_asc,
 
   if (debug) printf("\n * * Debugging for Ascii2Bin converter * * \n");
 
-  int read_int,read_ivec[3],i,j;
+  int read_int,read_ivec[3],i,j,k;
   float read_fltV[3];
   double read_dble;
 
@@ -1027,17 +1027,18 @@ int         ConvertPfsolAscii2Bin(FILE *fp_asc,
     }
   }
 
-  fscanf(fp_asc,"%i",&read_int); // Read Number of SOLIDS (only one allowed here)
-  if (read_int>1)
-  {
-    printf("ERROR (pfsolascii2asc): More than one solid object detected. Only one is allowed");
-  } else if (read_int<1) {
-    printf("ERROR (pfsolascii2asc): No one solid objects detected in pfsol");
-  }
+  int nS;
+  fscanf(fp_asc,"%i",&nS); // Read Number of SOLIDS (only one allowed here)
+  // if (nS>1)
+  // {
+  //   printf("ERROR (pfsolascii2asc): More than one solid object detected. Only one is allowed");
+  // } else if (nS<1) {
+  //   printf("ERROR (pfsolascii2asc): No one solid objects detected in pfsol");
+  // }
+  tools_WriteInt(fp_bin,&nS, 1);
+  if (debug) printf("--> N-Solids %i \n",nS);
 
-  tools_WriteInt(fp_bin,&read_int, 1);
-  if (debug) printf("--> N-Solids %i \n",read_int);
-
+  for (k=0; k<nS; ++k) {
   fscanf(fp_asc,"%i",&n_tins); // Total number of triangles
   tools_WriteInt(fp_bin,&n_tins, 1);
   if (debug) printf("--> N-tins %i \n",n_tins);
@@ -1070,6 +1071,7 @@ int         ConvertPfsolAscii2Bin(FILE *fp_asc,
       tools_WriteInt(fp_bin,&read_int, 1);
     }
   }
+  } // End of loop over solids
 
   out_status=0;
   return out_status;
@@ -1090,7 +1092,7 @@ int         ConvertPfsolBin2Ascii(FILE *fp_bin,
 
   if (debug) printf("\n * * Debugging for Bin2Ascii converter * * \n");
 
-  int read_int,read_ivec[3],i,j;
+  int read_int,read_ivec[3],i,j,k;
   float read_fltV[3];
   double read_dble;
 
@@ -1113,16 +1115,18 @@ int         ConvertPfsolBin2Ascii(FILE *fp_bin,
     fprintf(fp_asc,"%17.4f %17.4f %17.4f\n",read_fltV[0],read_fltV[1],read_fltV[2]);
   }
 
-  tools_ReadInt(fp_bin,&read_int, 1); // Read Number of SOLIDS (only one allowed here)
-  if (read_int>1)
-  {
-    printf("ERROR (pfsolascii2asc): More than one solid object detected. Only one is allowed");
-  } else if (read_int<1) {
-    printf("ERROR (pfsolascii2asc): No one solid objects detected in pfsol");
-  }
-  fprintf(fp_asc,"%i\n",read_int);
-  if (debug) printf("--> N-Solids %i \n",read_int);
+  int nS;
+  tools_ReadInt(fp_bin,&nS, 1); // Read Number of SOLIDS (only one allowed here)
+  // if (nS>1)
+  // {
+  //   printf("ERROR (pfsolascii2asc): More than one solid object detected. Only one is allowed");
+  // } else if (nS<1) {
+  //   printf("ERROR (pfsolascii2asc): No one solid objects detected in pfsol");
+  // }
+  fprintf(fp_asc,"%i\n",nS);
+  if (debug) printf("--> N-Solids %i \n",nS);
 
+  for (k=0; k<nS; ++k) {
   tools_ReadInt(fp_bin,&n_tins, 1); // Total number of triangles
   fprintf(fp_asc,"%i\n",n_tins);
   if (debug) printf("--> N-tins %i \n",n_tins);
@@ -1153,6 +1157,7 @@ int         ConvertPfsolBin2Ascii(FILE *fp_bin,
       fprintf(fp_asc,"%i\n",read_int);
     }
   }
+  } // End of loop over solids
 
   out_status=0;
   return out_status;

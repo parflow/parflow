@@ -1895,7 +1895,7 @@ int MakePatchySolidCommand(
   Data          *data = (Data*)clientData;
 
   char          *filename, *vtk_filename;
-  int           i;
+  int           i,j;
 
   FILE          *fp = NULL;
   FILE          *fp_vtk = NULL;
@@ -1976,13 +1976,13 @@ int MakePatchySolidCommand(
     }
   }
 
-  if ((msk==0) || (top==0) || (bot==0))
+  if ( (top==0) || (bot==0)) // (msk==0) ||
   {
     printf("\n ERROR (pfpatchysolid): Missing required arguments. Please add:\n");
-    if (msk==0)
-    {
-      printf("      -msk <Mask_dataset_ID>\n");
-    }
+    // if (msk==0)
+    // {
+    //   printf("      -msk <Mask_dataset_ID>\n");
+    // }
     if (top==0)
     {
       printf("      -top <Top_surface_dataset_ID>\n");
@@ -1994,17 +1994,13 @@ int MakePatchySolidCommand(
     return TCL_ERROR;
   }
 
+
   if (strcmp(filename,"SolidFile.pfsol")==0)
   {
     printf("WARNING (pfpatchysolid): No solid file name specified, default is: SolidFile.pfsol\n");
   }
 
   /* Make sure the MAIN datasets exists */
-  if ((databox = DataMember(data, maskkey, entryPtr)) == NULL)
-  {
-    SetNonExistantError(interp, maskkey);
-    return TCL_ERROR;
-  }
   if ((top_databox = DataMember(data, tophash, entryPtr)) == NULL)
   {
     SetNonExistantError(interp, maskkey);
@@ -2014,6 +2010,29 @@ int MakePatchySolidCommand(
   {
     SetNonExistantError(interp, maskkey);
     return TCL_ERROR;
+  }
+
+
+
+  if (msk==1) {
+    if ((databox = DataMember(data, maskkey, entryPtr)) == NULL)
+    {
+      SetNonExistantError(interp, maskkey);
+      return TCL_ERROR;
+    }
+  } else {
+    // No mask provided so make one of all ones matching the size of top
+    int NX = DataboxNx(top_databox);
+    int NY = DataboxNy(top_databox);
+    int NZ = DataboxNz(top_databox);
+    double X = DataboxX(top_databox);
+    double Y = DataboxY(top_databox);
+    double Z = DataboxZ(top_databox);
+    double DX = DataboxDx(top_databox);
+    double DY = DataboxDy(top_databox);
+    double DZ = DataboxDz(top_databox);
+
+    databox=NewDataboxDefault(NX,NY,NZ,X,Y,Z,DX,DY,DZ,1.0);
   }
 
   if ((fp = fopen(filename, "wb")) == NULL)
@@ -2032,7 +2051,16 @@ int MakePatchySolidCommand(
     }
   }
 
+  // #include <time.h>
+  // clock_t start_time, end_time;
+  // start_time=clock();
+  // double run_time;
+
   i=MakePatchySolid(fp, fp_vtk, databox, top_databox, bot_databox, bin_out);
+
+  // end_time=clock();
+  // run_time=(double)(end_time-start_time) / CLOCKS_PER_SEC;
+  // printf("Elapsed time: %f\n", run_time);
 
   if (i!=0)
   {
