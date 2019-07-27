@@ -223,7 +223,7 @@ void    OverlandFlowEvalDiff(
                 if(k0x < 0.0){
                   if (Sf_x > 0.0) {
                     qx_v[io-1] = -(Sf_x / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_x, (5.0 / 3.0));
-                    printf("New LL q: i=%d j=%d Sf_x=%f Sf_y=%f Sf_mag=%f press_x=%f press_y=%f  pressx_old=%f pressy_old=%f qx_v=%f\n",i,j,Sf_x, Sf_y, Sf_mag, Press_x, Press_y, Pupox, Pupoy, qx_v[io-1]);
+                  //  printf("New LL q: i=%d j=%d Sf_x=%f Sf_y=%f Sf_mag=%f press_x=%f press_y=%f  pressx_old=%f pressy_old=%f qx_v=%f\n",i,j,Sf_x, Sf_y, Sf_mag, Press_x, Press_y, Pupox, Pupoy, qx_v[io-1]);
                   }
                 }
             }
