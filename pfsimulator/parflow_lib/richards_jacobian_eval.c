@@ -1498,62 +1498,11 @@ void    RichardsJacobianEval(
 
             case overland_flow:
             {
-              /* Get overland flow contributions - DOK*/
-              // SGS can we skip this invocation if !overland_flow?
-              //PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
-              //		(grid, is, bc_struct, ipatch, problem_data, pressure,
-              //		 ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
-
-              if (overlandspinup == 1)
-              {
-                /* add flux loss equal to excess head  that overwrites the prior overland flux */
-                BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
-                {
-                  if (fdir[2] == 1)
-                  {
-                    ip = SubvectorEltIndex(p_sub, i, j, k);
-                    io = SubvectorEltIndex(p_sub, i, j, 0);
-                    im = SubmatrixEltIndex(J_sub, i, j, k);
-                    vol = dx * dy * dz;
-
-                    if ((pp[ip]) >= 0.0)
-                    {
-                      cp[im] += (vol / dz) * dt * (1.0 + 0.0);                     //LEC
-//                      printf("Jac SU: CP=%f im=%d  \n", cp[im], im);
-                    }
-                    else
-                    {
-                      cp[im] += 0.0;
-                    }
-                  }
-                });
-              }
-              else
-              {
-                /* Get overland flow contributions for using kinematic or diffusive - LEC */
-                if (diffusive == 0)
-                {
-                  PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
-                                     (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
-                                      ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
-                }
-                else
-                {
-                  /* Test running Diffuisve calc FCN */
-                  //double *dummy1, *dummy2, *dummy3, *dummy4;
-                  //PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
-                  //                                             ke_der, kw_der, kn_der, ks_der,
-                  //       dummy1, dummy2, dummy3, dummy4,
-                  //                                                    NULL, NULL, CALCFCN));
 
                   PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
                                      (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                       ke_der, kw_der, kn_der, ks_der,
                                       kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
-                }
-              }
-
-
               break;
             }
           }
@@ -1844,18 +1793,31 @@ void    RichardsJacobianEval(
                   cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
                               + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
                 }
+                /*west term */
+                wp_c[io] -= (vol / ffy) * dt * (kwns_der[io1]);
 
+                /*East term */
+                ep_c[io] += (vol / ffy) * dt * (kens_der[io1]);
+
+                /*south term */
+                sop_c[io] -= (vol / ffx) * dt * (ksns_der[io1]);
+
+                /*north term */
+                np_c[io] += (vol / ffx) * dt * (knns_der[io1]);
+
+                //
                   /*west term */
-                  wp_c[io] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
+                //  wp_c[io] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
 
                   /*East term */
-                  ep_c[io] += (vol / ffy) * dt * (kw_der[io1 + 1]);
+                //  ep_c[io] += (vol / ffy) * dt * (kw_der[io1 + 1]);
 
                   /*south term */
-                  sop_c[io] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+                //  sop_c[io] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
 
                   /*north term */
-                  np_c[io] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+                //  np_c[io] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+            
 
               }
             });
