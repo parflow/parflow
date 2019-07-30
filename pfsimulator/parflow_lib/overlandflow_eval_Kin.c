@@ -98,6 +98,7 @@ void    OverlandFlowEvalKin(
   double coeff, Pmean, P2, P3, Pdel, Pcen;
   double slope_mean, manning, s1, s2, Sf_mag;
   double Press_x, Press_y, Sf_x, Sf_y, Sf_xo, Sf_yo;
+  double ov_epsilon;
 
   int ival, sy_v, step;
   int            *fdir;
@@ -128,6 +129,8 @@ void    OverlandFlowEvalKin(
 
   sy_v = SubvectorNX(top_sub);
 
+  //ov_epsilon= 1.0e-5;
+  ov_epsilon = GetDoubleDefault("Solver.OverlandKinematic.Epsilon", 1.0e-5);
 
 
   if (fcn == CALCFCN)
@@ -143,7 +146,7 @@ void    OverlandFlowEvalKin(
         k1 = (int)top_dat[itop];
         k0x = (int)top_dat[itop - 1];
         k0y = (int)top_dat[itop - sy_v];
-        double ov_epsilon= 1.0e-5;
+        //double ov_epsilon= 1.0e-5;
 
 
         if (k1 >= 0)
@@ -236,7 +239,7 @@ void    OverlandFlowEvalKin(
             k1 = (int)top_dat[itop];
             k0x = (int)top_dat[itop - 1];
             k0y = (int)top_dat[itop - sy_v];
-            double ov_epsilon= 1.0e-5;
+            //double ov_epsilon= 1.0e-5;
 
             if (k1 >= 0)
             {
