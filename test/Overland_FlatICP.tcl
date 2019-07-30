@@ -362,14 +362,66 @@ if $runcheck==1 {
 #-----------------------------------------------------------------------------
 # Diffusive formulation
 #-----------------------------------------------------------------------------
-#Run New Diffusive Module
+#run with Jacobian False
 pfset Patch.z-upper.BCPressure.Type		      OverlandDiffusive
-#pfset Patch.z-upper.BCPressure.Type		      Overland
-#pfset OverlandFlowDiffusive 1
-
+pfset Solver.Nonlinear.UseJacobian                       False
+pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
 set runname FlatICP_OverlandDif
 puts $runname
+pfrun $runname
+pfundist $runname
+if $runcheck==1 {
+  set passed 1
+  foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
+    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
+      set passed 0
+    }
+    if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
+      set passed 0
+    }
+  }
+  if $passed {
+    puts "$runname : PASSED"
+  } {
+    puts "$runname : FAILED"
+  }
+}
+
+# run with analytical jacobian
+pfset Patch.z-upper.BCPressure.Type		      OverlandDiffusive
+pfset Solver.Nonlinear.UseJacobian                       True
+pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
+
+set runname FlatICP_OverlandDif
+puts "$runname Jacobian True"
+pfrun $runname
+pfundist $runname
+if $runcheck==1 {
+  set passed 1
+  foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
+    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
+      set passed 0
+    }
+    if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
+      set passed 0
+    }
+  }
+  if $passed {
+    puts "$runname : PASSED"
+  } {
+    puts "$runname : FAILED"
+  }
+}
+
+
+# run with analytical jacobian and nonsymmetric preconditioner
+pfset Patch.z-upper.BCPressure.Type		      OverlandDiffusive
+pfset Solver.Nonlinear.UseJacobian                       True
+pfset Solver.Linear.Preconditioner.PCMatrixType FullJacobian
+
+set runname FlatICP_OverlandDif
+puts "$runname Jacobian True Nonsymmetric Preconditioner"
 pfrun $runname
 pfundist $runname
 if $runcheck==1 {
