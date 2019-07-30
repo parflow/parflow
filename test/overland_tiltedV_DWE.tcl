@@ -312,110 +312,16 @@ pfset Geom.domain.ICPressure.RefPatch                   z-upper
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-### For all cases set the formulation sfmag of the upwind on or off
-pfset SFmagFormulation 0
+#set runcheck to 1 if you want to run the pass fail tests
 set runcheck 1
 source pftest.tcl
 
 #-----------------------------------------------------------------------------
-# Oringial formulation with a zero value channel
-#-----------------------------------------------------------------------------
-pfset TopoSlopesX.Type "Constant"
-pfset TopoSlopesX.GeomNames "left right channel"
-pfset TopoSlopesX.Geom.left.Value -0.01
-pfset TopoSlopesX.Geom.right.Value 0.01
-pfset TopoSlopesX.Geom.channel.Value 0.00
-
-pfset TopoSlopesY.Type "Constant"
-pfset TopoSlopesY.GeomNames "domain"
-pfset TopoSlopesY.Geom.domain.Value 0.01
-
-#original approach from K&M AWR 2006
-pfset Patch.z-upper.BCPressure.Type		      OverlandFlow
-pfset Solver.Nonlinear.UseJacobian          False
-pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
-
-set runname TiltedV_Overland
-puts "##########"
-puts $runname
-pfrun $runname
-pfundist $runname
-if $runcheck==1 {
-  set passed 1
-  foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-      set passed 0
-    }
-    if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-      set passed 0
-    }
-  }
-  if $passed {
-    puts "$runname : PASSED"
-  } {
-    puts "$runname : FAILED"
-  }
-}
-
-#original approach from K&M AWR 2006 with analytical jacobian
-pfset Patch.z-upper.BCPressure.Type		      OverlandFlow
-pfset Solver.Nonlinear.UseJacobian          True
-pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
-
-set runname TiltedV_Overland
-puts "##########"
-puts "$runname Jacobian True"
-pfrun $runname
-pfundist $runname
-if $runcheck==1 {
-  set passed 1
-  foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-      set passed 0
-    }
-    if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-      set passed 0
-    }
-  }
-  if $passed {
-    puts "$runname : PASSED"
-  } {
-    puts "$runname : FAILED"
-  }
-}
-
-#original approach from K&M AWR 2006 with analytical jacobian and nonsymmetric preconditioner
-pfset Patch.z-upper.BCPressure.Type		      OverlandFlow
-pfset Solver.Nonlinear.UseJacobian          True
-pfset Solver.Linear.Preconditioner.PCMatrixType FullJacobian
-
-set runname TiltedV_Overland
-puts "##########"
-puts "$runname Jacobian True Nonsymmetric Preconditioner"
-pfrun $runname
-pfundist $runname
-if $runcheck==1 {
-  set passed 1
-  foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-      set passed 0
-    }
-    if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-      set passed 0
-    }
-  }
-  if $passed {
-    puts "$runname : PASSED"
-  } {
-    puts "$runname : FAILED"
-  }
-}
-
-#-----------------------------------------------------------------------------
-# New kinematic formulations without the zero channel
+# New diffusive formulations without the zero channel (as compared to the first
+#    tests in overland_tiltedV_KWE.tcl)
 # Note: The difference in configuration here is to be consistent with the way
 #   the upwinding is handled for the new and original fomulations.
-#   These two results should be almost identiacl for the new and old formulations
+#   These two results should be almost identical for the new and old formulations
 #-----------------------------------------------------------------------------
 pfset TopoSlopesX.Type "Constant"
 pfset TopoSlopesX.GeomNames "left right channel"
@@ -427,12 +333,12 @@ pfset TopoSlopesY.Type "Constant"
 pfset TopoSlopesY.GeomNames "domain"
 pfset TopoSlopesY.Geom.domain.Value 0.01
 
-# run with KWE upwinding
-pfset Patch.z-upper.BCPressure.Type		      OverlandKinematic
+# run with DWE
+pfset Patch.z-upper.BCPressure.Type		      OverlandDiffusive
 pfset Solver.Nonlinear.UseJacobian                       False
 pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
-set runname TiltedV_OverlandKin
+set runname TiltedV_OverlandDif
 puts "##########"
 puts $runname
 pfrun $runname
@@ -455,11 +361,11 @@ if $runcheck==1 {
 }
 
 # run with KWE upwinding and analytical jacobian
-pfset Patch.z-upper.BCPressure.Type		      OverlandKinematic
+pfset Patch.z-upper.BCPressure.Type		      OverlandDiffusive
 pfset Solver.Nonlinear.UseJacobian                       True
 pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
-set runname TiltedV_OverlandKin
+set runname TiltedV_OverlandDif
 puts "##########"
 puts "$runname Jacobian True"
 pfrun $runname
@@ -482,11 +388,11 @@ if $runcheck==1 {
 }
 
 # run with KWE upwinding and analytical jacobian and nonsymmetric preconditioner
-pfset Patch.z-upper.BCPressure.Type		      OverlandKinematic
+pfset Patch.z-upper.BCPressure.Type		      OverlandDiffusive
 pfset Solver.Nonlinear.UseJacobian                       True
 pfset Solver.Linear.Preconditioner.PCMatrixType FullJacobian
 
-set runname TiltedV_OverlandKin
+set runname TiltedV_OverlandDif
 puts "##########"
 puts "$runname Jacobian True Nonsymmetric Preconditioner"
 pfrun $runname

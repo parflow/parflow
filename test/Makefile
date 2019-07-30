@@ -37,7 +37,8 @@ TESTS += \
 	pfmg_octree.tcl \
   overland_slopingslab_KWE.tcl \
 	overland_tiltedV_KWE.tcl \
-  overland_slopingslab_KWE.tcl
+  overland_slopingslab_KWE.tcl \
+	overland_tiltedV_DWE.tcl
 endif
 
 ifeq (${PARFLOW_HAVE_SILO},yes)
