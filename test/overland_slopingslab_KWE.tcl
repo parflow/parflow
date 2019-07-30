@@ -283,8 +283,7 @@ pfset Geom.domain.ICPressure.RefPatch                   z-upper
 # Run and Unload the ParFlow output files
 # Running all 8 direction combinations with the upwind formulation on and off (i.e. 16 total)
 #-----------------------------------------------------------------------------
-
-#set to 1 if you want to run the pass fail tests
+#set runcheck to 1 if you want to run the pass fail tests
 set runcheck 1
 source pftest.tcl
 

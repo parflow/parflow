@@ -313,8 +313,7 @@ pfset Geom.domain.ICPressure.RefPatch                   z-upper
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
-### For all cases set the formulation sfmag of the upwind on or off
-pfset SFmagFormulation 0
+#set runcheck to 1 if you want to run the pass fail tests
 set runcheck 1
 source pftest.tcl
 
