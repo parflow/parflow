@@ -311,10 +311,10 @@ void    OverlandFlowEvalDiff(
             ks_vns[io+sy_v]= kn_v[io];
           }
 
-          if(Sf_x >= 0){
-            ke_v[io] = RPowerR(Pupy, (5.0 / 3.0))/(RPowerR(fabs(Sf_mag),0.5)*mann_dat[io] *dy);
+          if(Sf_y >= 0){
+            kn_v[io] = RPowerR(Pupy, (5.0 / 3.0))/(RPowerR(fabs(Sf_mag),0.5)*mann_dat[io] *dy);
 
-            kw_v[io+sy_v] = (5.0/3.0) * (-Sf_y+(Pdown/dy))/(RPowerR(fabs(Sf_mag),0.5)*mann_dat[io]) * RPowerR(Pupy, (2.0 / 3.0)) -
+            ks_v[io+sy_v] = (5.0/3.0) * (-Sf_y+(Pdown/dy))/(RPowerR(fabs(Sf_mag),0.5)*mann_dat[io]) * RPowerR(Pupy, (2.0 / 3.0)) -
                        (8.0/3.0) * RPowerR(Pupy, (5.0 / 3.0))/(RPowerR(fabs(Sf_mag),0.5)*mann_dat[io] * dy) ;
 
             kn_vns[io] = ks_v[io+sy_v];
