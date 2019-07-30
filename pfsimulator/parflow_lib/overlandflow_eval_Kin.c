@@ -130,7 +130,7 @@ void    OverlandFlowEvalKin(
   sy_v = SubvectorNX(top_sub);
 
   //ov_epsilon= 1.0e-5;
-  ov_epsilon = GetDoubleDefault("Solver.OverlandKinetic.Epsilon", 1.0e-5);
+  ov_epsilon = GetDoubleDefault("Solver.OverlandKinematic.Epsilon", 1.0e-5);
 
 
   if (fcn == CALCFCN)
