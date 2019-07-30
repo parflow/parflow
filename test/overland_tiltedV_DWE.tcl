@@ -297,6 +297,8 @@ pfset Solver.WriteSiloSlopes                            False
 pfset Solver.WriteSiloSaturation                        False
 pfset Solver.WriteSiloConcentration                     False
 
+pfset Solver.OverlandDiffusive.Epsilon                  1E-5  
+
 #---------------------------------------------------------
 # Initial conditions: water pressure
 #---------------------------------------------------------

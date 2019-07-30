@@ -284,6 +284,7 @@ pfset Solver.Nonlinear.StepTol				                   1e-20
 pfset Solver.Nonlinear.Globalization                     LineSearch
 pfset Solver.Linear.KrylovDimension                      50
 pfset Solver.Linear.MaxRestart                           2
+pfset Solver.OverlandKinematic.Epsilon                  1E-5
 
 pfset Solver.Linear.Preconditioner                       PFMG
 pfset Solver.PrintSubsurf				                         False

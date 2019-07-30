@@ -257,6 +257,7 @@ pfset Solver.PrintSubsurf				False
 pfset  Solver.Drop                                      1E-20
 pfset Solver.AbsTol                                     1E-10
 
+pfset Solver.OverlandKinematic.Epsilon                 1E-5
 
 
 pfset Solver.WriteSiloSubsurfData False

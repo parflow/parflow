@@ -258,6 +258,8 @@ pfset Solver.PrintSubsurf				False
 pfset  Solver.Drop                                      1E-20
 pfset Solver.AbsTol                                     1E-10
 
+pfset Solver.OverlandDiffusive.Epsilon                  1E-5
+
 #pfset Solver.Linear.Preconditioner.PCMatrixType         FullJacobian
 
 pfset Solver.WriteSiloSubsurfData False
