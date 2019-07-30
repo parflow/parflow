@@ -100,6 +100,7 @@ void    OverlandFlowEvalDiff(
   double slope_mean, manning, s1, s2, Sf_mag;
   double Press_x, Press_y, Sf_x, Sf_y, Sf_xo, Sf_yo;
   double Pupx, Pupy, Pupox, Pupoy, Pdown, Pdowno;
+  double ov_epsilon;
 
   int ival, sy_v, step;
   int            *fdir;
@@ -131,7 +132,8 @@ void    OverlandFlowEvalDiff(
 
   sy_v = SubvectorNX(top_sub);
 
-
+  //ov_epsilon= 1.0e-5;
+  ov_epsilon = GetDoubleDefault("Solver.OverlandDiffusive.Epsilon", 1.0e-5);
 
   if (fcn == CALCFCN)
   {
@@ -146,7 +148,7 @@ void    OverlandFlowEvalDiff(
         k1 = (int)top_dat[itop];
         k0x = (int)top_dat[itop - 1];
         k0y = (int)top_dat[itop - sy_v];
-        double ov_epsilon= 1.0e-5;
+
         //printf("i=%d j=%d k=%d k1=%d k0x=%d k0y=%d\n",i,j,k,k1, k0x, k0y);
 
 
@@ -256,7 +258,7 @@ void    OverlandFlowEvalDiff(
         k1 = (int)top_dat[itop];
         k0x = (int)top_dat[itop - 1];
         k0y = (int)top_dat[itop - sy_v];
-        double ov_epsilon= 1.0e-5;
+        //double ov_epsilon= 1.0e-5;
         if (k1 >= 0)
         {
           ip = SubvectorEltIndex(p_sub, i, j, k1);
