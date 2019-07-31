@@ -31,8 +31,7 @@
 *  kinematic wave approximation for the overland flow boundary condition:KE,KW,KN,KS.
 *
 *  It also computes the derivatives of these terms for inclusion in the Jacobian.
-*
-* Could add a switch statement to handle the Kinemative wave approx. also.
+
 * @LEC, @RMM
 *****************************************************************************/
 #include "parflow.h"
@@ -146,8 +145,6 @@ void    OverlandFlowEvalKin(
         k1 = (int)top_dat[itop];
         k0x = (int)top_dat[itop - 1];
         k0y = (int)top_dat[itop - sy_v];
-        //double ov_epsilon= 1.0e-5;
-
 
         if (k1 >= 0)
         {
@@ -155,7 +152,7 @@ void    OverlandFlowEvalKin(
           Sf_x = sx_dat[io];
           Sf_y = sy_dat[io];
 
-          Sf_mag = RPowerR(Sf_x*Sf_x+Sf_y*Sf_y,0.5); //+ov_epsilon;
+          Sf_mag = RPowerR(Sf_x*Sf_x+Sf_y*Sf_y,0.5);
           if (Sf_mag < ov_epsilon)
           Sf_mag = ov_epsilon;
 
@@ -174,7 +171,7 @@ void    OverlandFlowEvalKin(
               Sf_x = sx_dat[io];
               Sf_y = sy_dat[io];
 
-              double Sf_mag = RPowerR(Sf_x*Sf_x+Sf_y*Sf_y,0.5); //+ov_epsilon;
+              double Sf_mag = RPowerR(Sf_x*Sf_x+Sf_y*Sf_y,0.5);
               if (Sf_mag < ov_epsilon)
               Sf_mag = ov_epsilon;
 
@@ -182,7 +179,6 @@ void    OverlandFlowEvalKin(
                 ip = SubvectorEltIndex(p_sub, i, j, k1);
                 Press_x = pfmax((pp[ip]), 0.0);
                 qx_v[io-1] = -(Sf_x / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_x, (5.0 / 3.0));
-                //printf("i=%d j=%d k=%d k1=%d k0x=%d k0y=%d Sf_y=%f qx_v=%f\n",i,j,k,k1, k0x, k0y, Sf_x, qx_v[io-1]);
               }
             }
           }
@@ -194,7 +190,7 @@ void    OverlandFlowEvalKin(
                 Sf_x = sx_dat[io];
                 Sf_y = sy_dat[io];
 
-                double Sf_mag = RPowerR(Sf_x*Sf_x+Sf_y*Sf_y,0.5); //+ov_epsilon;
+                double Sf_mag = RPowerR(Sf_x*Sf_x+Sf_y*Sf_y,0.5);
                 if (Sf_mag < ov_epsilon)
                 Sf_mag = ov_epsilon;
 
@@ -202,8 +198,6 @@ void    OverlandFlowEvalKin(
                   ip = SubvectorEltIndex(p_sub, i, j, k1);
                   Press_y = pfmax((pp[ip]), 0.0);
                   qy_v[io-sy_v] = -(Sf_y / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
-                  //printf("i=%d j=%d k=%d k1=%d k0x=%d k0y=%d Sf_y=%f qy_v=%f\n",i,j,k,k1, k0x, k0y, Sf_y, qy_v[io-sy_v]);
-
                 }
               }
             }
@@ -239,7 +233,6 @@ void    OverlandFlowEvalKin(
             k1 = (int)top_dat[itop];
             k0x = (int)top_dat[itop - 1];
             k0y = (int)top_dat[itop - sy_v];
-            //double ov_epsilon= 1.0e-5;
 
             if (k1 >= 0)
             {
@@ -247,7 +240,7 @@ void    OverlandFlowEvalKin(
               Sf_x = sx_dat[io];
               Sf_y = sy_dat[io];
 
-             Sf_mag = RPowerR(Sf_x*Sf_x+Sf_y*Sf_y,0.5); //+ov_epsilon;
+             Sf_mag = RPowerR(Sf_x*Sf_x+Sf_y*Sf_y,0.5);
               if (Sf_mag < ov_epsilon)
               Sf_mag = ov_epsilon;
 
@@ -270,19 +263,17 @@ void    OverlandFlowEvalKin(
                   Sf_x = sx_dat[io];
                   Sf_y = sy_dat[io];
 
-                  double Sf_mag = RPowerR(Sf_x*Sf_x+Sf_y*Sf_y,0.5); //+ov_epsilon;
+                  double Sf_mag = RPowerR(Sf_x*Sf_x+Sf_y*Sf_y,0.5);
                   if (Sf_mag < ov_epsilon)
                   Sf_mag = ov_epsilon;
 
                   if (Sf_x > 0.0) {
                     ip = SubvectorEltIndex(p_sub, i, j, k1);
                     Press_x = pfmax((pp[ip]), 0.0);
-//                    qx[io-1] = -(5.0/3.0)*(Sf_x / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_x, (2.0 / 3.0));
                   qx_temp = -(5.0/3.0)*(Sf_x / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_x, (2.0 / 3.0));
 
                     kw_v[io] = qx_temp;
                     ke_v[io-1] = qx_temp;
-//                    printf("io=%d Ke=%f Kw=%f \n",io,ke_v[io],kw_v[io]);
                   }
                 }
               }
@@ -301,29 +292,15 @@ void    OverlandFlowEvalKin(
                     if (Sf_y > 0.0) {
                       ip = SubvectorEltIndex(p_sub, i, j, k1);
                       Press_y = pfmax((pp[ip]), 0.0);
-//                      qy[io-sy_v] = -(5.0/3.0)*(Sf_y / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_y, (2.0 / 3.0));
                     qy_temp = -(5.0/3.0)*(Sf_y / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_y, (2.0 / 3.0));
 
                     ks_v[io] = qy_temp;
                     kn_v[io-sy_v] = qy_temp;
-//                    printf("io=%d Kn=%f Ks=%f \n",io,kn_v[io],ks_v[io]);
                     }
                   }
                 }
           }
         });
-
-//        BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, sg,
-//        {
-//          if (fdir[2] == 1)
-//          {
-//            io = SubvectorEltIndex(sx_sub, i, j, 0);
-//            ke_v[io] = qx_v[io];
-//            kw_v[io] = qx_v[io-1];
-//            kn_v[io] = qy_v[io];
-//            ks_v[io] = qy_v[io-sy_v];
-//          }
-//        });
 
     } // else calcder
 
