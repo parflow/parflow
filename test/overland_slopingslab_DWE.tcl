@@ -291,7 +291,7 @@ set runcheck 1
 source pftest.tcl
 
 ###############################
-# Looping over slop configurations
+# Looping over slab configurations
 ###############################
 foreach xslope [list 0.01 -0.01] yslope [list 0.01 -0.01] name [list posxposy negxnegy] {
   puts "$xslope $yslope $name"
@@ -377,6 +377,7 @@ foreach xslope [list 0.01 -0.01] yslope [list 0.01 -0.01] name [list posxposy ne
        puts "$runname : FAILED"
      }
    }
+
 
 }
 

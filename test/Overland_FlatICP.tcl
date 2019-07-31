@@ -274,6 +274,7 @@ pfset Solver.Nonlinear.StepTol				                   1e-30
 pfset Solver.Nonlinear.Globalization                     LineSearch
 pfset Solver.Linear.KrylovDimension                      20
 pfset Solver.Linear.MaxRestart                           2
+pfset Solver.OverlandDiffusive.Epsilon                  1E-5
 
 pfset Solver.Linear.Preconditioner                       PFMG
 pfset Solver.PrintSubsurf				                         False
@@ -413,7 +414,6 @@ if $runcheck==1 {
     puts "$runname : FAILED"
   }
 }
-
 
 # run with analytical jacobian and nonsymmetric preconditioner
 pfset Patch.z-upper.BCPressure.Type		      OverlandDiffusive

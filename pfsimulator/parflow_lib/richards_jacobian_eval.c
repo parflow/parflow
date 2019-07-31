@@ -1773,20 +1773,6 @@ void    RichardsJacobianEval(
                 /*north term */
                 np_c[io] += (vol / ffx) * dt * (knns_der[io1]);
 
-                //
-                  /*west term */
-                //  wp_c[io] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
-
-                  /*East term */
-                //  ep_c[io] += (vol / ffy) * dt * (kw_der[io1 + 1]);
-
-                  /*south term */
-                //  sop_c[io] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
-
-                  /*north term */
-                //  np_c[io] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
-
-
               }
             });
             break;
