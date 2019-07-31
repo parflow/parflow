@@ -184,7 +184,6 @@
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
-   match-leak-kinds: definite
    fun:malloc
    obj:*
    obj:*
@@ -197,4 +196,103 @@
    obj:*
    fun:mca_pml_base_select
    fun:ompi_mpi_init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:PMPI_Init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:MPIR_Init_thread
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:MPID_Init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:mv2_get_arch_hca_type
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   unlink(pathname)
+   ...
+   fun:PMPI_Finalize
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:MPIR_Init_thread
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:PMPI_Init
+}
+
+
+###############################################################
+#
+# Intel F90
+#
+###############################################################
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:for_read_seq_lis
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:for_write_seq_lis
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:for_read_seq_fmt
+   ...
+}
+
+##############################################################################
+#
+# CLM allocates but does not free
+#
+##############################################################################
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:clm_lsm_
+   fun:AdvanceRichards
+   fun:SolverRichards
+   fun:Solve
+   fun:main
 }
