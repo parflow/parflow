@@ -31,8 +31,6 @@
 *  diffusive wave approximation for the overland flow boundary condition:KE,KW,KN,KS.
 *
 *  It also computes the derivatives of these terms for inclusion in the Jacobian.
-*
-* Could add a switch statement to handle the Kinemative wave approx. also.
 * @LEC, @RMM
 *****************************************************************************/
 #include "parflow.h"
@@ -132,7 +130,6 @@ void    OverlandFlowEvalDiff(
 
   sy_v = SubvectorNX(top_sub);
 
-  //ov_epsilon= 1.0e-5;
   ov_epsilon = GetDoubleDefault("Solver.OverlandDiffusive.Epsilon", 1.0e-5);
 
   if (fcn == CALCFCN)
@@ -148,9 +145,6 @@ void    OverlandFlowEvalDiff(
         k1 = (int)top_dat[itop];
         k0x = (int)top_dat[itop - 1];
         k0y = (int)top_dat[itop - sy_v];
-
-        //printf("i=%d j=%d k=%d k1=%d k0x=%d k0y=%d\n",i,j,k,k1, k0x, k0y);
-
 
         if (k1 >= 0)
         {
@@ -168,10 +162,7 @@ void    OverlandFlowEvalDiff(
           Sf_xo = sx_dat[io] +(Pupox - Pdowno)/dx;
           Sf_yo = sy_dat[io] +(Pupoy - Pdowno)/dy;
 
-          //printf("i=%d j=%d k=%d k1=%d pdown=%f pupx=%f \n",i,j,k,k1,Pdown, Pupx);
-          //printf("i=%d j=%d k=%d k1=%d P=%f oldP=%f \n",i,j,k,k1,Pdown, Pdowno);
-
-          Sf_mag = RPowerR(Sf_xo*Sf_xo+Sf_yo*Sf_yo,0.5); //+ov_epsilon;
+          Sf_mag = RPowerR(Sf_xo*Sf_xo+Sf_yo*Sf_yo,0.5);
           if (Sf_mag < ov_epsilon)
           Sf_mag = ov_epsilon;
 
@@ -194,10 +185,8 @@ void    OverlandFlowEvalDiff(
               double Sf_mag = RPowerR(Sf_xo*Sf_xo+Sf_yo*Sf_yo,0.5); //+ov_epsilon;
               if (Sf_mag < ov_epsilon)
               Sf_mag = ov_epsilon;
-              //printf("Left: i=%d j=%d k=%d k1=%d k0x=%d k0y=%d Sf_x=%f Sf_y=%f Sf_mag=%f \n",i,j,k,k1, k0x, k0y, Sf_x, Sf_y, Sf_mag);
               if (Sf_x > 0.0) {
                 qx_v[io-1] = -(Sf_x / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_x, (5.0 / 3.0));
-                //printf("New Left q: i=%d j=%d k=%d k1=%d k0x=%d k0y=%d Sf_x=%f Sf_y=%f Sf_mag=%f press_x=%f press_y=%f pressx_old=%f pressy_old=%f qx_v=%f\n",i,j,k,k1, k0x, k0y, Sf_x, Sf_y, Sf_mag, Press_x, Press_y, Pupox, Pupoy, qx_v[io-1]);
             }
           }
 
@@ -212,20 +201,17 @@ void    OverlandFlowEvalDiff(
                 double Sf_mag = RPowerR(Sf_xo*Sf_xo+Sf_yo*Sf_yo,0.5); //Note that the sf_xo was already corrected above
                 if (Sf_mag < ov_epsilon)
                 Sf_mag = ov_epsilon;
-                //printf("Bottom: i=%d j=%d k=%d k1=%d k0x=%d k0y=%d Sf_x=%f Sf_y=%f Sf_mag=%f \n",i,j,k,k1, k0x, k0y, Sf_x, Sf_y, Sf_mag);
 
                 if (Sf_y > 0.0) {
                   qy_v[io-sy_v] = -(Sf_y / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
-                  //printf("New Bottom q: i=%d j=%d k=%d k1=%d k0x=%d k0y=%d Sf_x=%f Sf_y=%f Sf_mag=%f press_x=%f press_y=%f pressx_old=%f pressy_old=%f qy_v=%f\n",i,j,k,k1, k0x, k0y, Sf_x, Sf_y, Sf_mag, Press_x, Press_y, Pupox, Pupoy, qy_v[io-sy_v]);
                 }
 
-                // Recalculating the x flow in the case whith both the lower and left boundaries
+                // Recalculating the x flow in the case with both the lower and left boundaries
                 // This is exactly the same as the q_x in the left boundary conditional above but
                 // recalculating qx_v here again becuase the sf_mag will be adjusted with the new sf_yo above
                 if(k0x < 0.0){
                   if (Sf_x > 0.0) {
                     qx_v[io-1] = -(Sf_x / (RPowerR(fabs(Sf_mag),0.5)*mann_dat[io])) * RPowerR(Press_x, (5.0 / 3.0));
-                  //  printf("New LL q: i=%d j=%d Sf_x=%f Sf_y=%f Sf_mag=%f press_x=%f press_y=%f  pressx_old=%f pressy_old=%f qx_v=%f\n",i,j,Sf_x, Sf_y, Sf_mag, Press_x, Press_y, Pupox, Pupoy, qx_v[io-1]);
                   }
                 }
             }
@@ -258,7 +244,6 @@ void    OverlandFlowEvalDiff(
         k1 = (int)top_dat[itop];
         k0x = (int)top_dat[itop - 1];
         k0y = (int)top_dat[itop - sy_v];
-        //double ov_epsilon= 1.0e-5;
         if (k1 >= 0)
         {
           ip = SubvectorEltIndex(p_sub, i, j, k1);
@@ -274,9 +259,6 @@ void    OverlandFlowEvalDiff(
 
           Sf_xo = sx_dat[io] +(Pupox - Pdowno)/dx;
           Sf_yo = sy_dat[io] +(Pupoy - Pdowno)/dy;
-
-          //printf("i=%d j=%d k=%d k1=%d pdown=%f pdowno=%f \n",i,j,k,k1, k0x, k0y, Pdown, Pdowno);
-          //printf("i=%d j=%d k=%d k1=%d P=%f oldP=%f \n",i,j,k,k1,Pdown, Pdowno);
 
           Sf_mag = RPowerR(Sf_xo*Sf_xo+Sf_yo*Sf_yo,0.5); //+ov_epsilon;
           if (Sf_mag < ov_epsilon)
@@ -332,7 +314,7 @@ void    OverlandFlowEvalDiff(
               Pupox = pfmax(opp[ip],0.0);
               Sf_xo = sx_dat[io] +(Pupox - 0.0)/dx;
 
-              double Sf_mag = RPowerR(Sf_xo*Sf_xo+Sf_yo*Sf_yo,0.5); //+ov_epsilon;
+              double Sf_mag = RPowerR(Sf_xo*Sf_xo+Sf_yo*Sf_yo,0.5);
               if (Sf_mag < ov_epsilon)
               Sf_mag = ov_epsilon;
 
@@ -347,7 +329,6 @@ void    OverlandFlowEvalDiff(
                 ke_v[io-1] = RPowerR(Pupx, (5.0 / 3.0))/(RPowerR(fabs(Sf_mag),0.5)*mann_dat[io] *dx);
                 kw_v[io] = (5.0/3.0) * (-sx_dat[io]+ 0.0)/(RPowerR(fabs(Sf_mag),0.5)*mann_dat[io]) * RPowerR(Pupx, (2.0 / 3.0)) -
                            (8.0/3.0) * RPowerR(Pupx, (5.0 / 3.0))/(RPowerR(fabs(Sf_mag),0.5)*mann_dat[io] * dx) ;
-                //kw_vns[io]= RPowerR(Pupy, (5.0 / 3.0))/(RPowerR(fabs(Sf_mag),0.5)*mann_dat[io] *dx);
                 ke_vns[io-1] = kw_v[io];
                 kw_vns[io]=ke_v[io-1];
               }
@@ -376,12 +357,11 @@ void    OverlandFlowEvalDiff(
                   kn_vns[io-sy_v]= RPowerR(Pupy, (5.0 / 3.0))/(RPowerR(fabs(Sf_mag),0.5)*mann_dat[io] *dy);
                   ks_v[io] = (5.0/3.0) * (-sy_dat[io]+ 0.0)/(RPowerR(fabs(Sf_mag),0.5)*mann_dat[io]) * RPowerR(Pupy, (2.0 / 3.0)) -
                              (8.0/3.0) * RPowerR(Pupy, (5.0 / 3.0))/(RPowerR(fabs(Sf_mag),0.5)*mann_dat[io] * dy) ;
-                  //ks_vns[io]= RPowerR(Pupy, (5.0 / 3.0))/(RPowerR(fabs(Sf_mag),0.5)*mann_dat[io] *dy);
                   kn_vns[io-sy_v] = ks_v[io];
                   ks_vns[io]=kn_v[io-sy_v];
                 }
 
-                // Recalculating the x flow in the case whith both the lower and left boundaries
+                // Recalculating the x flow in the case with both the lower and left boundaries
                 // This is exactly the same as the q_x in the left boundary conditional above but
                 // recalculating qx_v here again becuase the sf_mag will be adjusted with the new sf_yo above
                 if(k0x < 0.0){
@@ -396,7 +376,6 @@ void    OverlandFlowEvalDiff(
                     ke_v[io-1] = RPowerR(Pupx, (5.0 / 3.0))/(RPowerR(fabs(Sf_mag),0.5)*mann_dat[io] *dx);
                     kw_v[io] = (5.0/3.0) * (-sx_dat[io]+ 0.0)/(RPowerR(fabs(Sf_mag),0.5)*mann_dat[io]) * RPowerR(Pupx, (2.0 / 3.0)) -
                                (8.0/3.0) * RPowerR(Pupx, (5.0 / 3.0))/(RPowerR(fabs(Sf_mag),0.5)*mann_dat[io] * dx) ;
-                    //kw_vns[io]= RPowerR(Pupy, (5.0 / 3.0))/(RPowerR(fabs(Sf_mag),0.5)*mann_dat[io] *dx);
                     ke_vns[io-1] = kw_v[io];
                     kw_vns[io]=ke_v[io-1];
                   }
