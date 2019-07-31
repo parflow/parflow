@@ -2414,14 +2414,14 @@ The key {\bf OverlandFlow} corresponds to a {\bf Value} key with a positive or n
 to indicate uniform fluxes (such as rainfall or evapotranspiration) over the entire domain
 while the key {\bf OverlandFlowPFB} allows a \code{.pfb} file to contain grid-based,
 spatially-variable fluxes. The {\bf OverlandKinematic} and {\bf OverlandDiffusive} both turn on
-an upwinded kinematic and diffusive wave overland flow routing boundary that solve equation \ref{eq:manningsnew}. The key {\bf SeepageFace} simulates a boundary that allows flow to exit but keeps the surface pressure at zero.
+an kinematic and diffusive wave overland flow routing boundary that solve equation \ref{eq:manningsnew} and do the upwinding internally (i.e. assuming that the user provides cell face slopes, as opposed to the traditional cell centered slopes). The key {\bf SeepageFace} simulates a boundary that allows flow to exit but keeps the surface pressure at zero.
 The choice {\bf ExactSolution} specifies that an exact known solution
 is to be applied as a
 Dirichlet boundary condition on the respective patch.  Note that this does not
 change according to any cycle.  Instead, time dependence is handled by
 evaluating at the time the boundary condition value is desired.
 The solution is specified by using a predefined function (choices are described
-below).  NOTE: These last three types of boundary condition input is for
+below).  NOTE: These last six types of boundary condition input is for
 {\em Richards' equation cases only!}
 }
 \begin{display}\begin{verbatim}
@@ -3423,7 +3423,7 @@ pfset Solver.Drop 1E-6
 
 \pfkey{double}{Solver.OverlandDiffusive.Epsilon}{1E-5}
 {
-This key provides a lower value for the $\bar{S_{f}}$ for the diffusive wave boundary condition.
+This key provides a lower value for the $\bar{S_{f}}$ for the {\bf OverlandDiffusive} boundary condition.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.OverlandDiffusive.Epsilon 1E-7
@@ -3431,7 +3431,7 @@ pfset Solver.OverlandDiffusive.Epsilon 1E-7
 
 \pfkey{double}{Solver.OverlandKinematic.Epsilon}{1E-5}
 {
-This key provides a lower value for the $\bar{S_{f}}$ for the kinematic wave boundary condition.
+This key provides a lower value for the $\bar{S_{f}}$ for the {\bf OverlandKinematic} boundary condition.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.OverlandKinematic.Epsilon 1E-7
@@ -3638,9 +3638,18 @@ These slopes are used in the Darcy fluxes to add a density, gravity -dependent t
 }
 
 \begin{display}\begin{verbatim}
-pfset Solver.TerrainFollowingGrid                        True
+pfset Solver.TerrainFollowingGrid.                        True
 \end{verbatim}\end{display}
 
+\pfkey{string}{Solver.TerrainFollowingGrid.SlopeUpwindFormulation}{Original}
+{
+This key specifies optional modifications to the terrain following grid formulation (Equation \ref{eq:darcyTFG}) .  Choices for this key are {\bf Original, Upwind, UpwindSine}.
+{\bf Original} is the original TFG formulation shown in Equation \ref{eq:darcyTFG} and documented in \cite{M13}.  The {\bf Original} option calculates the $\theta_x$ and $\theta_y$ for a cell face as the average of the two adjacent cell slopes (i.e. assuming a cell centered slope calculation). The {\bf Upwind} option uses the the $\theta_x$ and $\theta_y$ of a cell directly without averaging (i.e. assuming a face centered slope calculation). The {\bf UpwindSine} is the same as the {\bf Upwind} option but it also removes the Sine term from \ref{eq:darcyTFG}. Note the {\bf UpwindSine} option is for experimental purposes only and should not be used in standard simulations.  Also note that the choice of {\bf upwind} or{\bf Original} formulation should consistent with the choice of overland flow boundary condition if overland flow is being used.  The {\bf upwind} and {\bf UpwindSine} are consistent with {\bf OverlandDiffusive} and {\bf OverlandKinematic} while {\bf Original} is consistent with {\bf OverlandFow}
+}
+
+\begin{display}\begin{verbatim}
+pfset Solver.TerrainFollowingGrid.SlopeUpwindFormulation   Upwind
+\end{verbatim}\end{display}
 
 %=============================================================================
 %=============================================================================
@@ -3946,7 +3955,7 @@ for these initialization periods, {\bf not} for regular runtime.
 
 \pfkey{integer}{OverlandFlowSpinUp}{0}
 {This key specifies that a \emph{simplified} form of the overland flow boundary condition (Equation \ref{eq:overland_bc}) be used in place of the full equation.
-This formulation \emph{removes lateral flow} and drives and ponded water pressures to zero.  While this can be helpful in spinning up the subsurface,
+This formulation \emph{removes lateral flow} and drives and ponded water pressures to zero using a {\bf SeepageFace} boundary condition.  While this can be helpful in spinning up the subsurface,
 this is no longer coupled subsurface-surface flow.  If set to zero (the default) this key behaves normally.
 }
 \begin{display}\begin{verbatim}
