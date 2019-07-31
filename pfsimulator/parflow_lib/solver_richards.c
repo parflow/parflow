@@ -3652,6 +3652,12 @@ TeardownRichards(PFModule * this_module)
 #ifdef HAVE_CLM
   if (instance_xtra->eflx_lh_tot)
   {
+
+    if (instance_xtra->clm_out_grid)
+    {
+      FreeVector(instance_xtra->clm_out_grid);
+    }
+    
     FreeVector(instance_xtra->eflx_lh_tot);
     FreeVector(instance_xtra->eflx_lwrad_out);
     FreeVector(instance_xtra->eflx_sh_tot);
