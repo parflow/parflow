@@ -407,7 +407,7 @@ void CutAtLaplacian(int* cut_pt,
   if ( (hi - lo + 1) >= 3 ) 
   {
       int max_zero = 0;
-      int infpt_lo = MIN(lo + min_size - 1, lo + 1);  
+      int infpt_lo = MAX(lo + min_size - 1, lo + 1);  
       int infpt_hi = MIN(hi - min_size, hi - 2);  
 
       int last_lap = HistogramBoxGetTags(hist_box,dim,infpt_lo - 1)
@@ -631,6 +631,9 @@ void FindBoxesContainingTags(BoxList* boxes,
 	   BoxListConcatenate(boxes, box_list_lft);
 	   BoxListConcatenate(boxes, box_list_rgt);
 	 }
+
+	 FreeBoxList(box_list_lft);
+	 FreeBoxList(box_list_rgt);
        }
      }
 
@@ -757,6 +760,9 @@ void BergerRigoutsos(Vector* vector,
 	   BoxListConcatenate(boxes, box_list_lft);
 	   BoxListConcatenate(boxes, box_list_rgt);
 	 }
+
+	 FreeBoxList(box_list_lft);
+	 FreeBoxList(box_list_rgt);
        }
      }
 
