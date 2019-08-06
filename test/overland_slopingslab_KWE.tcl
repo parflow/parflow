@@ -336,7 +336,7 @@ pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
 set runname Slab.$name.OverlandModule
 puts "##########"
-puts "$runname Jacobian True"
+puts "Running $runname Jacobian True"
 pfrun $runname
 pfundist $runname
 if $runcheck==1 {
@@ -361,7 +361,7 @@ pfset Solver.Linear.Preconditioner.PCMatrixType         FullJacobian
 
 set runname Slab.$name.OverlandModule
 puts "##########"
-puts "$runname Jacobian True Nonsymmetric Preconditioner"
+puts "Running $runname Jacobian True Nonsymmetric Preconditioner"
 pfrun $runname
 pfundist $runname
 if $runcheck==1 {
@@ -415,7 +415,7 @@ pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
     set runname Slab.$name.OverlandKin
     puts "##########"
-    puts "$runname Jacobian True"
+    puts "Running $runname Jacobian True"
     pfrun $runname
     pfundist $runname
     if $runcheck==1 {
@@ -442,7 +442,7 @@ pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
       set runname Slab.$name.OverlandKin
       puts "##########"
-      puts "$runname Jacobian True Nonsymmetric Preconditioner"
+      puts "Running $runname Jacobian True Nonsymmetric Preconditioner"
       pfrun $runname
       pfundist $runname
       if $runcheck==1 {
