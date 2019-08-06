@@ -340,7 +340,7 @@ pfset Patch.z-upper.BCPressure.Type		      OverlandKinematic
 pfset Solver.Nonlinear.UseJacobian          False
 pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 set runname FlatICP_OverlandKin
-puts $runname
+puts "Running $runname"
 pfrun $runname
 pfundist $runname
 if $runcheck==1 {
@@ -369,7 +369,7 @@ pfset Solver.Nonlinear.UseJacobian                       False
 pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
 set runname FlatICP_OverlandDif
-puts $runname
+puts "Running $runname"
 pfrun $runname
 pfundist $runname
 if $runcheck==1 {
@@ -395,7 +395,7 @@ pfset Solver.Nonlinear.UseJacobian                       True
 pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
 set runname FlatICP_OverlandDif
-puts "$runname Jacobian True"
+puts "Running $runname Jacobian True"
 pfrun $runname
 pfundist $runname
 if $runcheck==1 {
@@ -421,7 +421,7 @@ pfset Solver.Nonlinear.UseJacobian                       True
 pfset Solver.Linear.Preconditioner.PCMatrixType FullJacobian
 
 set runname FlatICP_OverlandDif
-puts "$runname Jacobian True Nonsymmetric Preconditioner"
+puts "Running $runname Jacobian True Nonsymmetric Preconditioner"
 pfrun $runname
 pfundist $runname
 if $runcheck==1 {

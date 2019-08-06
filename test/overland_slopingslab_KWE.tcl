@@ -285,6 +285,7 @@ pfset Geom.domain.ICPressure.RefPatch                   z-upper
 #-----------------------------------------------------------------------------
 #set runcheck to 1 if you want to run the pass fail tests
 set runcheck 1
+set first 1
 source pftest.tcl
 
 ###############################
@@ -308,9 +309,15 @@ foreach xslope [list 0.01 -0.01] yslope [list 0.01 -0.01] name [list posxposy ne
   pfset Solver.Nonlinear.UseJacobian          False
   pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
+
   set runname Slab.$name.OverlandModule
   puts "##########"
-  puts $runname
+  if $first==1 {
+    puts $runname
+    set first 0
+  } else {
+    puts "Running $runname Jacobian True"
+  }
   pfrun $runname
   pfundist $runname
   if $runcheck==1 {
@@ -388,7 +395,7 @@ pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
   set runname Slab.$name.OverlandKin
   puts "##########"
-  puts $runname
+  puts "Running $runname"
   pfrun $runname
   pfundist $runname
   if $runcheck==1 {
