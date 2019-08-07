@@ -1,8 +1,5 @@
 # Created by https://www.gitignore.io
 
-/test/*
-/examples/*
-
 ### Fortran ###
 # Compiled Object files
 *.slo

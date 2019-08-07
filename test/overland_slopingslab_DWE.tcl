@@ -289,6 +289,7 @@ pfset Geom.domain.ICPressure.RefPatch                   z-upper
 #set runcheck to 1 if you want to run the pass fail tests
 set runcheck 1
 source pftest.tcl
+set first 1
 
 ###############################
 # Looping over slab configurations
@@ -311,7 +312,12 @@ foreach xslope [list 0.01 -0.01] yslope [list 0.01 -0.01] name [list posxposy ne
    #pfset Solver.Linear.Preconditioner.PCMatrixType         FullJacobian
 
    set runname Slab.$name.OverlandDif
-   puts "$runname OverlandDiffusive"
+   if $first==1 {
+     puts $runname
+     set first 0
+   } else {
+     puts "Running $runname OverlandDiffusive"
+   }
    pfrun $runname
    pfundist $runname
    if $runcheck==1 {
@@ -358,7 +364,7 @@ foreach xslope [list 0.01 -0.01] yslope [list 0.01 -0.01] name [list posxposy ne
    #pfset Solver.Linear.Preconditioner.PCMatrixType         FullJacobian
 
    set runname Slab.$name.OverlandDif
-   puts "$runname OverlandDiffusive Jacobian True"
+   puts "Running $runname OverlandDiffusive Jacobian True"
    pfrun $runname
    pfundist $runname
    if $runcheck==1 {
@@ -406,7 +412,7 @@ foreach xslope [list 0.01 -0.01] yslope [list 0.01 -0.01] name [list posxposy ne
    pfset Solver.Linear.Preconditioner.PCMatrixType         FullJacobian
 
    set runname Slab.$name.OverlandDif
-   puts "$runname OverlandDiffusive Jacobian True Nonsymmetric Preconditioner"
+   puts "Running $runname OverlandDiffusive Jacobian True Nonsymmetric Preconditioner"
    pfrun $runname
    pfundist $runname
    if $runcheck==1 {

@@ -297,7 +297,7 @@ pfset Solver.WriteSiloSlopes                            False
 pfset Solver.WriteSiloSaturation                        False
 pfset Solver.WriteSiloConcentration                     False
 
-pfset Solver.OverlandDiffusive.Epsilon                  1E-5  
+pfset Solver.OverlandDiffusive.Epsilon                  1E-5
 
 #---------------------------------------------------------
 # Initial conditions: water pressure
@@ -369,7 +369,7 @@ pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
 set runname TiltedV_OverlandDif
 puts "##########"
-puts "$runname Jacobian True"
+puts "Running $runname Jacobian True"
 pfrun $runname
 pfundist $runname
 if $runcheck==1 {
@@ -396,7 +396,7 @@ pfset Solver.Linear.Preconditioner.PCMatrixType FullJacobian
 
 set runname TiltedV_OverlandDif
 puts "##########"
-puts "$runname Jacobian True Nonsymmetric Preconditioner"
+puts "Running $runname Jacobian True Nonsymmetric Preconditioner"
 pfrun $runname
 pfundist $runname
 if $runcheck==1 {

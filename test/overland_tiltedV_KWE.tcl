@@ -364,7 +364,7 @@ pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
 set runname TiltedV_Overland
 puts "##########"
-puts "$runname Jacobian True"
+puts "Running $runname Jacobian True"
 pfrun $runname
 pfundist $runname
 if $runcheck==1 {
@@ -391,7 +391,7 @@ pfset Solver.Linear.Preconditioner.PCMatrixType FullJacobian
 
 set runname TiltedV_Overland
 puts "##########"
-puts "$runname Jacobian True Nonsymmetric Preconditioner"
+puts "Running $runname Jacobian True Nonsymmetric Preconditioner"
 pfrun $runname
 pfundist $runname
 if $runcheck==1 {
@@ -434,7 +434,7 @@ pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
 set runname TiltedV_OverlandKin
 puts "##########"
-puts $runname
+puts "Running $runname"
 pfrun $runname
 pfundist $runname
 if $runcheck==1 {
@@ -461,7 +461,7 @@ pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
 set runname TiltedV_OverlandKin
 puts "##########"
-puts "$runname Jacobian True"
+puts "Running $runname Jacobian True"
 pfrun $runname
 pfundist $runname
 if $runcheck==1 {
@@ -488,7 +488,7 @@ pfset Solver.Linear.Preconditioner.PCMatrixType FullJacobian
 
 set runname TiltedV_OverlandKin
 puts "##########"
-puts "$runname Jacobian True Nonsymmetric Preconditioner"
+puts "Running $runname Jacobian True Nonsymmetric Preconditioner"
 pfrun $runname
 pfundist $runname
 if $runcheck==1 {

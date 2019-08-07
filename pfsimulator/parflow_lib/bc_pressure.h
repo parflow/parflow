@@ -48,6 +48,13 @@
  * NOTE: These are not the values used to branch inside of
  *       BCStructPatchLoops, those are defined in problem_bc.h
  *----------------------------------------------------------------*/
+/**
+ * @name BCPressure Types
+ *
+ * @brief List of BCPressure type names as they appear in the TCL file
+ *
+ * @{
+ */
 #define DirEquilRefPatch 0
 #define DirEquilPLinear  1
 #define FluxConst        2
@@ -60,7 +67,7 @@
 #define SeepageFace      9
 #define OverlandKinematic 10
 #define OverlandDiffusive 11
-
+/** @} */
 
 
 /*----------------------------------------------------------------
@@ -115,15 +122,41 @@
     BC_TYPE(OverlandDiffusive, {                    \
           double *values;                           \
         })
-/*----------------------------------------------------------------
- * Constructor, getter, and setter for Type structs in BCPressurePackage
- *----------------------------------------------------------------*/
+
+
+/**
+ * @name TypeStruct Allocator
+ * @brief Will allocate a new variable of the specified TypeStruct
+ *
+ * @param type Type of TypeStruct to allocate
+ * @param var Variable name for newly declared and allocated TypeStruct pointer
+ */
 #define NewTypeStruct(type, var)                  \
   Type ## type * var = ctalloc(Type ## type, 1)
+
+/**
+ * @name TypeStruct Setter
+ * @brief Stores an allocated TypeStruct pointer into public_xtra
+ *
+ * @param public_xtra The public_xtra pointer for the module
+ * @param var Name of the variable to be stored (Should match name used in NewTypeStruct)
+ * @param i Patch index
+ */
 #define StoreTypeStruct(public_xtra, var, i)                  \
   (public_xtra)->data[(i)] = (void*)(var);
+
+/**
+ * @name TypeStruct Accessor
+ * @brief Declares and assigns a variable to the given TypeStruct type
+ *
+ * @param type Type of TypeStruct to cast to
+ * @param var Name of the variable that will be declared
+ * @param public_xtra Pointer to the modules public_xtra
+ * @param i Patch index
+ */
 #define GetTypeStruct(type, var, public_xtra, i)              \
   Type ## type * var = (Type ## type *)(public_xtra->data[i])
+
 
 // MCB: These two macros aren't really necessary but they do make the code cleaner
 #define ForEachPatch(num_patches, i)           \
@@ -186,13 +219,34 @@
   BC_TYPE(OverlandDiffusive, {                      \
          double value;                                  \
           })
+
+
 /* @MCB: Interval structs are used in multiple C files, generate the definitions in the header */
 #define BC_TYPE(type, values) typedef struct values BCPressureType ## type;
 BC_INTERVAL_TYPE_TABLE
 #undef BC_TYPE
 
+
+/**
+ * @name BCPresssureType Allocator
+ * @brief Allocates a new BCPressureType struct
+ *
+ * @param type BCPressureType to allocate
+ * @param varname Name of the variable to declare and allocate
+ */
 #define NewBCPressureTypeStruct(type, varname)  \
   BCPressureType ## type * varname = ctalloc(BCPressureType ## type, 1)
+
+/**
+ * @name BCPressureType Accessor
+ * @brief Declares and assignes a variable to the specified BCPressureType struct
+ *
+ * @param type BCPressureType to cast to
+ * @param varname Name of variable to declare and assign
+ * @param bc_pressure_data Struct to load data from
+ * @param ipatch Patch index
+ * @param interval_number Interval index
+ */
 #define GetBCPressureTypeStruct(type, varname, bc_pressure_data, ipatch, interval_number) \
   BCPressureType ## type * varname \
   = (BCPressureType ## type *)BCPressureDataIntervalValue(bc_pressure_data, \
@@ -345,49 +399,55 @@ typedef struct {
 /*----------------------------------------------------------------
  * BCPressurePackage Actions
  *----------------------------------------------------------------*/
+/**
+ * @name InputType Accessor
+ * @brief Gets the input type at the specified index from BCPressurePackage public_xtra
+ *
+ * @param public_xtra public_xtra for module
+ * @param i Index for input type
+ */
 #define InputType(public_xtra, i)               \
   ((public_xtra)->input_types[(i)])
 
 /* Send cases wrapped in {} for sanity */
+/**
+ * @name BC Patch control flow wrappers
+ * @brief Wraps switch-case control flow inside self-describing macro names
+ * @{
+ */
 #define Do_SetupPatchTypes(public_xtra, interval, i, cases)    \
   switch(InputType(public_xtra, i))                            \
   {                                                            \
     cases;                                                     \
   }
-
 #define SetupPatchType(type, body)                               \
   case type:                                                     \
   {                                                              \
     body;                                                        \
     break;                                                       \
   }
-
-
 #define Do_SetupPatchIntervals(public_xtra, interval, i, cases)  \
   switch(InputType(public_xtra, i))                            \
   {                                                            \
     cases;                                               \
   }
-
 #define SetupPatchInterval(type, body)          \
   case type:                                    \
   {                                             \
     body;                                       \
     break;                                      \
   }
-
 #define Do_FreePatches(public_xtra, i, ...)                   \
   switch(InputType(public_xtra, i))                           \
   {                                                           \
     __VA_ARGS__;                                              \
   }
-
 #define FreePatch(type, body)                   \
   case type:                                    \
   {                                             \
     body;                                       \
     break;                                      \
   }
-
+/** @} */
 
 #endif

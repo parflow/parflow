@@ -54,8 +54,7 @@ enum JacobianType {
   no_nonlinear_jacobian,
   not_set,
   simple,
-  overland_flow //,
-//  seepage_face
+  overland_flow 
 };
 
 typedef struct {
@@ -337,11 +336,6 @@ void    RichardsJacobianEval(
             public_xtra->type = overland_flow;
           }
           break;
-///          case 9:
-///          {
-///            public_xtra->type = seepage_face;
-///          }
-///          break;
         }
       }
     }
@@ -623,12 +617,6 @@ void    RichardsJacobianEval(
       prod_up = rpp[ip + sz_v] * dp[ip + sz_v];
       prod_up_der = rpdp[ip + sz_v] * dp[ip + sz_v]
                     + rpp[ip + sz_v] * ddp[ip + sz_v];
-
-      //@RMM
-//      x_dir_g = Mean(gravity * sin(atan(x_ssl_dat[ioo])), gravity * sin(atan(x_ssl_dat[ioo + 1])));
-//      x_dir_g_c = Mean(gravity * cos(atan(x_ssl_dat[ioo])), gravity * cos(atan(x_ssl_dat[ioo + 1])));
-//      y_dir_g = Mean(gravity * sin(atan(y_ssl_dat[ioo])), gravity * sin(atan(y_ssl_dat[ioo + sy_v])));
-//      y_dir_g_c = Mean(gravity * cos(atan(y_ssl_dat[ioo])), gravity * cos(atan(y_ssl_dat[ioo + sy_v])));
 
       //@RMM  tfgupwind == 0 (default) should give original behavior
       // tfgupwind 1 should still use sine but upwind
@@ -1174,15 +1162,6 @@ void    RichardsJacobianEval(
                   {
                     op = up;
                     prod_val = rpp[ip + sz_v] * den_d;
-
-//                    lower_cond = (pp[ip]) - 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v]) * dp[ip] * gravity;
-//                    upper_cond = (value) + 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v]) * den_d * gravity;
-//                    diff = lower_cond - upper_cond;
-//
-//                    o_temp = -coeff
-//                             * (diff * RPMean(lower_cond, upper_cond, prod_der, 0.0)
-//                                + ((1.0 - gravity * 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v]) * ddp[ip])
-//                                   * RPMean(lower_cond, upper_cond, prod, prod_val)));
 
                  lower_cond = (pp[ip]) - 0.5 * dz * z_mult_dat[ip] * dp[ip] * gravity;
                  upper_cond = (value) + 0.5 * dz * z_mult_dat[ip] * den_d * gravity;
