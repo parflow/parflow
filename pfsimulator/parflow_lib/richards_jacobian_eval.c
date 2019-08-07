@@ -54,13 +54,14 @@ enum JacobianType {
   no_nonlinear_jacobian,
   not_set,
   simple,
-  overland_flow
+  overland_flow 
 };
 
 typedef struct {
   enum JacobianType type;
   double SpinupDampP1; // NBE
   double SpinupDampP2; // NBE
+  int tfgupwind;  // @RMM
 } PublicXtra;
 
 typedef struct {
@@ -73,6 +74,7 @@ typedef struct {
   PFModule     *bc_internal;
   PFModule     *overlandflow_module;  //DOK
   PFModule     *overlandflow_module_diff;  //@LEC
+  PFModule     *overlandflow_module_kin;
 
   /* The analytic Jacobian matrix is decomposed as follows:
    *
@@ -211,6 +213,7 @@ void    RichardsJacobianEval(
   PFModule    *bc_internal = (instance_xtra->bc_internal);
   PFModule    *overlandflow_module = (instance_xtra->overlandflow_module);
   PFModule    *overlandflow_module_diff = (instance_xtra->overlandflow_module_diff);
+  PFModule    *overlandflow_module_kin = (instance_xtra->overlandflow_module_kin);
 
   Matrix      *J = (instance_xtra->J);
   Matrix      *JC = (instance_xtra->JC);
@@ -615,11 +618,40 @@ void    RichardsJacobianEval(
       prod_up_der = rpdp[ip + sz_v] * dp[ip + sz_v]
                     + rpp[ip + sz_v] * ddp[ip + sz_v];
 
-      //@RMM
-      x_dir_g = Mean(gravity * sin(atan(x_ssl_dat[ioo])), gravity * sin(atan(x_ssl_dat[ioo + 1])));
-      x_dir_g_c = Mean(gravity * cos(atan(x_ssl_dat[ioo])), gravity * cos(atan(x_ssl_dat[ioo + 1])));
-      y_dir_g = Mean(gravity * sin(atan(y_ssl_dat[ioo])), gravity * sin(atan(y_ssl_dat[ioo + sy_v])));
-      y_dir_g_c = Mean(gravity * cos(atan(y_ssl_dat[ioo])), gravity * cos(atan(y_ssl_dat[ioo + sy_v])));
+      //@RMM  tfgupwind == 0 (default) should give original behavior
+      // tfgupwind 1 should still use sine but upwind
+      // tfgupwdin 2 just upwind
+            switch (public_xtra->tfgupwind)
+            {
+              case 0:
+              {
+                // default formulation in Maxwell 2013
+            x_dir_g = Mean(gravity * sin(atan(x_ssl_dat[ioo])), gravity * sin(atan(x_ssl_dat[ioo + 1])));
+            x_dir_g_c = Mean(gravity * cos(atan(x_ssl_dat[ioo])), gravity * cos(atan(x_ssl_dat[ioo + 1])));
+            y_dir_g = Mean(gravity * sin(atan(y_ssl_dat[ioo])), gravity * sin(atan(y_ssl_dat[ioo + sy_v])));
+            y_dir_g_c = Mean(gravity * cos(atan(y_ssl_dat[ioo])), gravity * cos(atan(y_ssl_dat[ioo + sy_v])));
+            break;
+          }
+          case 1:
+          {
+            // direct upwinding, no averaging with sines
+            x_dir_g =  gravity * sin(atan(x_ssl_dat[ioo]));
+            x_dir_g_c = gravity * cos(atan(x_ssl_dat[ioo]));
+            y_dir_g = gravity * sin(atan(y_ssl_dat[ioo]));
+            y_dir_g_c = gravity * cos(atan(y_ssl_dat[ioo]));
+            break;
+            }
+            case 2:
+           {
+            // direct upwinding, no averaging no sines
+            x_dir_g =  x_ssl_dat[ioo];
+            x_dir_g_c = 1.0;
+            y_dir_g = y_ssl_dat[ioo];
+            y_dir_g_c = 1.0;
+            break;
+            }
+      }
+
 
       /* diff >= 0 implies flow goes left to right */
       diff = pp[ip] - pp[ip + 1];
@@ -1111,10 +1143,18 @@ void    RichardsJacobianEval(
                     upper_cond = (pp[ip]) + 0.5 * dz * z_mult_dat[ip] * dp[ip] * gravity;
                     diff = lower_cond - upper_cond;
 
-                    o_temp = coeff
-                             * (diff * RPMean(lower_cond, upper_cond, 0.0, prod_der)
-                                + ((-1.0 - gravity * 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_v]) * ddp[ip])
-                                   * RPMean(lower_cond, upper_cond, prod_val, prod)));
+//                    o_temp = coeff
+//                             * (diff * RPMean(lower_cond, upper_cond, 0.0, prod_der)
+//                                + ((-1.0 - gravity * 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_v]) * ddp[ip])
+//                                   * RPMean(lower_cond, upper_cond, prod_val, prod)));
+
+                   o_temp = coeff
+                      * (diff * RPMean(lower_cond, upper_cond, 0.0, prod_der)
+                     + ((-1.0 - gravity * 0.5 * dz * z_mult_dat[ip] * ddp[ip])
+                        * RPMean(lower_cond, upper_cond, prod_val, prod)));
+
+//printf("jacobian lower BC: o_temp=%f prod_der=%f op=%f \n",o_temp, prod_der, op);
+
                     break;
                   }
 
@@ -1123,14 +1163,15 @@ void    RichardsJacobianEval(
                     op = up;
                     prod_val = rpp[ip + sz_v] * den_d;
 
-                    lower_cond = (pp[ip]) - 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v]) * dp[ip] * gravity;
-                    upper_cond = (value) + 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v]) * den_d * gravity;
-                    diff = lower_cond - upper_cond;
+                 lower_cond = (pp[ip]) - 0.5 * dz * z_mult_dat[ip] * dp[ip] * gravity;
+                 upper_cond = (value) + 0.5 * dz * z_mult_dat[ip] * den_d * gravity;
+                  diff = lower_cond - upper_cond;
 
-                    o_temp = -coeff
-                             * (diff * RPMean(lower_cond, upper_cond, prod_der, 0.0)
-                                + ((1.0 - gravity * 0.5 * dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v]) * ddp[ip])
-                                   * RPMean(lower_cond, upper_cond, prod, prod_val)));
+                 o_temp = -coeff* (diff * RPMean(lower_cond, upper_cond, prod_der, 0.0)
+                        + ((1.0 - gravity * 0.5 * dz * z_mult_dat[ip] * ddp[ip])
+                                                  * RPMean(lower_cond, upper_cond, prod, prod_val)));
+
+
                     break;
                   }
               }          /* End switch on fdir[2] */
@@ -1138,6 +1179,8 @@ void    RichardsJacobianEval(
 
             cp[im] += op[im];
             cp[im] -= o_temp;
+//            printf("jacobian: cp[im]+=%f cp[im]-=%f \n",op[im], o_temp);
+
             op[im] = 0.0;
           });
 
@@ -1255,6 +1298,7 @@ void    RichardsJacobianEval(
                     if ((pp[ip]) >= 0.0)
                     {
                       cp[im] += (vol / dz) * dt * (1.0 + 0.0);                     //LEC
+//                      printf("Jac SU: CP=%f im=%d  \n", cp[im], im);
                     }
                     else
                     {
@@ -1268,6 +1312,8 @@ void    RichardsJacobianEval(
                 /* Get overland flow contributions for using kinematic or diffusive - LEC */
                 if (diffusive == 0)
                 {
+                  // @MCB: Need to validate this is not needed under the OverlandBC case,
+                  // should instead be moved to the OverlandKinematicBC case
                   PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module,
                                      (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                       ke_der, kw_der, kn_der, ks_der, NULL, NULL, CALCDER));
@@ -1292,7 +1338,126 @@ void    RichardsJacobianEval(
               break;
             }
           }
+		  break;
         }         /* End overland flow case */
+
+        case SeepageFaceBC:
+        {
+
+            /* add flux loss equal to excess head  that overwrites the prior overland flux */
+            BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+            {
+              if (fdir[2] == 1)
+              {
+                ip = SubvectorEltIndex(p_sub, i, j, k);
+                io = SubvectorEltIndex(p_sub, i, j, 0);
+                im = SubmatrixEltIndex(J_sub, i, j, k);
+                vol = dx * dy * dz;
+
+                if ((pp[ip]) >= 0.0)
+                {
+                  cp[im] += (vol / dz) * dt * (1.0 + 0.0);                     //@RMM
+//                  printf("Jac SF: CP=%f im=%d  \n", cp[im], im);
+
+                }
+                else
+                {
+                  cp[im] += 0.0;
+                }
+              }
+            });
+            break;
+        }  // end case seepage face
+
+        /*  OverlandBC for KWE with upwinding, call module */
+        case OverlandKinematicBC:
+        {
+          BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+          {
+            im = SubmatrixEltIndex(J_sub, i, j, k);
+                  public_xtra->type = overland_flow;
+            //remove contributions to this row corresponding to boundary
+            if (fdir[0] == -1)
+              op = wp;
+            else if (fdir[0] == 1)
+              op = ep;
+            else if (fdir[1] == -1)
+              op = sop;
+            else if (fdir[1] == 1)
+              op = np;
+            else if (fdir[2] == -1)
+              op = lp;
+            else       // (fdir[2] ==  1)
+            {
+              op = up;
+              /* check if overland flow kicks in */
+              if (!ovlnd_flag)
+              {
+                ip = SubvectorEltIndex(p_sub, i, j, k);
+                if ((pp[ip]) > 0.0)
+                {
+                  ovlnd_flag = 1;
+                }
+              }
+            }
+
+            cp[im] += op[im];
+            op[im] = 0.0;       //zero out entry in row of Jacobian
+          });
+
+          PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
+                             (grid, is, bc_struct, ipatch, problem_data, pressure,
+                              ke_der, kw_der, kn_der, ks_der,
+                              NULL, NULL, NULL, NULL, NULL, NULL, CALCDER));
+		  break;
+        } /* End OverlandKinematicBC */
+
+        /* OverlandDiffusiveBC */
+        case OverlandDiffusiveBC:
+        {
+          BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+          {
+            im = SubmatrixEltIndex(J_sub, i, j, k);
+                public_xtra->type = overland_flow;
+
+            //remove contributions to this row corresponding to boundary
+            if (fdir[0] == -1)
+              op = wp;
+            else if (fdir[0] == 1)
+              op = ep;
+            else if (fdir[1] == -1)
+              op = sop;
+            else if (fdir[1] == 1)
+              op = np;
+            else if (fdir[2] == -1)
+              op = lp;
+            else       // (fdir[2] ==  1)
+            {
+              op = up;
+              /* check if overland flow kicks in */
+              if (!ovlnd_flag)
+              {
+                ip = SubvectorEltIndex(p_sub, i, j, k);
+                if ((pp[ip]) > 0.0)
+                {
+                  ovlnd_flag = 1;
+                }
+              }
+            }
+
+            cp[im] += op[im];
+            op[im] = 0.0;       //zero out entry in row of Jacobian
+          });
+
+          PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff,
+                          (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
+                            ke_der, kw_der, kn_der, ks_der,
+                            kens_der, kwns_der, knns_der, ksns_der, NULL, NULL, CALCDER));
+
+          break;
+        } /* End OverlandDiffusiveBC */
+
+
       }        /* End switch BCtype */
     }          /* End ipatch loop */
   }            /* End subgrid loop */
@@ -1419,6 +1584,178 @@ void    RichardsJacobianEval(
       {
         switch (BCStructBCType(bc_struct, ipatch))
         {
+          /* Fall through cases for new Overland types */
+          case OverlandKinematicBC:
+          {
+            BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+            {
+              if (fdir[2] == 1)
+              {
+                /* Loop over boundary patches to build JC matrix.
+                 */
+                io = SubmatrixEltIndex(J_sub, i, j, iz);
+                io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+                itop = SubvectorEltIndex(top_sub, i, j, 0);
+
+                /* Update JC */
+                ip = SubvectorEltIndex(p_sub, i, j, k);
+                im = SubmatrixEltIndex(J_sub, i, j, k);
+
+                /* First put contributions from subsurface diagonal onto diagonal of JC */
+                cp_c[io] = cp[im];
+                cp[im] = 0.0;         // update JB
+                /* Now check off-diagonal nodes to see if any surface-surface connections exist */
+                /* West */
+                k1 = (int)top_dat[itop - 1];
+
+                if (k1 >= 0)
+                {
+                  if (k1 == k)         /*west node is also surface node */
+                  {
+                    wp_c[io] += wp[im];
+                    wp[im] = 0.0;           // update JB
+                  }
+                }
+                /* East */
+                k1 = (int)top_dat[itop + 1];
+                if (k1 >= 0)
+                {
+                  if (k1 == k)         /*east node is also surface node */
+                  {
+                    ep_c[io] += ep[im];
+                    ep[im] = 0.0;           //update JB
+                  }
+                }
+                /* South */
+                k1 = (int)top_dat[itop - sy_v];
+                if (k1 >= 0)
+                {
+                  if (k1 == k)         /*south node is also surface node */
+                  {
+                    sop_c[io] += sop[im];
+                    sop[im] = 0.0;           //update JB
+                  }
+                }
+                /* North */
+                k1 = (int)top_dat[itop + sy_v];
+                if (k1 >= 0)
+                {
+                  if (k1 == k)         /*north node is also surface node */
+                  {
+                    np_c[io] += np[im];
+                    np[im] = 0.0;           // Update JB
+                  }
+                }
+
+                /* Now add overland contributions to JC */
+                if ((pp[ip]) > 0.0)
+                {
+                  /*diagonal term */
+                  cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                              + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+                }
+
+                  /*west term */
+                  wp_c[io] -= (vol / ffy) * dt * (ke_der[io1 - 1]);
+
+                  /*East term */
+                  ep_c[io] += (vol / ffy) * dt * (kw_der[io1 + 1]);
+
+                  /*south term */
+                  sop_c[io] -= (vol / ffx) * dt * (kn_der[io1 - sy_v]);
+
+                  /*north term */
+                  np_c[io] += (vol / ffx) * dt * (ks_der[io1 + sy_v]);
+
+              }
+            });
+            break;
+          }
+          case OverlandDiffusiveBC:
+          {
+            BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+            {
+              if (fdir[2] == 1)
+              {
+                /* Loop over boundary patches to build JC matrix.
+                 */
+                io = SubmatrixEltIndex(J_sub, i, j, iz);
+                io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+                itop = SubvectorEltIndex(top_sub, i, j, 0);
+
+                /* Update JC */
+                ip = SubvectorEltIndex(p_sub, i, j, k);
+                im = SubmatrixEltIndex(J_sub, i, j, k);
+
+                /* First put contributions from subsurface diagonal onto diagonal of JC */
+                cp_c[io] = cp[im];
+                cp[im] = 0.0;         // update JB
+                /* Now check off-diagonal nodes to see if any surface-surface connections exist */
+                /* West */
+                k1 = (int)top_dat[itop - 1];
+
+                if (k1 >= 0)
+                {
+                  if (k1 == k)         /*west node is also surface node */
+                  {
+                    wp_c[io] += wp[im];
+                    wp[im] = 0.0;           // update JB
+                  }
+                }
+                /* East */
+                k1 = (int)top_dat[itop + 1];
+                if (k1 >= 0)
+                {
+                  if (k1 == k)         /*east node is also surface node */
+                  {
+                    ep_c[io] += ep[im];
+                    ep[im] = 0.0;           //update JB
+                  }
+                }
+                /* South */
+                k1 = (int)top_dat[itop - sy_v];
+                if (k1 >= 0)
+                {
+                  if (k1 == k)         /*south node is also surface node */
+                  {
+                    sop_c[io] += sop[im];
+                    sop[im] = 0.0;           //update JB
+                  }
+                }
+                /* North */
+                k1 = (int)top_dat[itop + sy_v];
+                if (k1 >= 0)
+                {
+                  if (k1 == k)         /*north node is also surface node */
+                  {
+                    np_c[io] += np[im];
+                    np[im] = 0.0;           // Update JB
+                  }
+                }
+
+                /* Now add overland contributions to JC */
+                if ((pp[ip]) > 0.0)
+                {
+                  /*diagonal term */
+                  cp_c[io] += (vol / dz) + (vol / ffy) * dt * (ke_der[io1] - kw_der[io1])
+                              + (vol / ffx) * dt * (kn_der[io1] - ks_der[io1]);
+                }
+                /*west term */
+                wp_c[io] -= (vol / ffy) * dt * (kwns_der[io1]);
+
+                /*East term */
+                ep_c[io] += (vol / ffy) * dt * (kens_der[io1]);
+
+                /*south term */
+                sop_c[io] -= (vol / ffx) * dt * (ksns_der[io1]);
+
+                /*north term */
+                np_c[io] += (vol / ffx) * dt * (knns_der[io1]);
+
+              }
+            });
+            break;
+          }
           case OverlandBC:
           {
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
@@ -1731,6 +2068,8 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
       PFModuleNewInstance(ProblemOverlandFlowEval(problem), ());     //DOK
     (instance_xtra->overlandflow_module_diff) =
       PFModuleNewInstance(ProblemOverlandFlowEvalDiff(problem), ());   //RMM-LEC
+    (instance_xtra->overlandflow_module_kin)
+      = PFModuleNewInstance(ProblemOverlandFlowEvalKin(problem), ());
   }
   else
   {
@@ -1743,6 +2082,7 @@ PFModule    *RichardsJacobianEvalInitInstanceXtra(
     PFModuleReNewInstance((instance_xtra->bc_internal), ());
     PFModuleReNewInstance((instance_xtra->overlandflow_module), ());     //DOK
     PFModuleReNewInstance((instance_xtra->overlandflow_module_diff), ());      //RMM-LEC
+    PFModuleReNewInstance((instance_xtra->overlandflow_module_kin), ());
   }
 
 
@@ -1769,6 +2109,7 @@ void  RichardsJacobianEvalFreeInstanceXtra()
     PFModuleFreeInstance(instance_xtra->bc_internal);
     PFModuleFreeInstance(instance_xtra->overlandflow_module);     //DOK
     PFModuleFreeInstance(instance_xtra->overlandflow_module_diff);       //RMM-LEC
+    PFModuleFreeInstance(instance_xtra->overlandflow_module_kin);
 
     FreeMatrix(instance_xtra->J);
 
@@ -1791,6 +2132,7 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   char          *switch_name;
   int switch_value;
   NameArray switch_na;
+  NameArray upwind_switch_na;
 
 
   (void)name;
@@ -1802,6 +2144,39 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
   public_xtra->SpinupDampP1 = GetDoubleDefault(key, 0.0);
   sprintf(key, "OverlandSpinupDampP2");
   public_xtra->SpinupDampP2 = GetDoubleDefault(key, 0.0);    // NBE
+
+  ///* parameters for upwinding formulation for TFG */
+  upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");
+  sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation", name);
+  switch_name = GetStringDefault(key, "Original");
+  switch_value = NA_NameToIndex(upwind_switch_na, switch_name);
+  switch (switch_value)
+  {
+    case 0:
+    {
+      public_xtra->tfgupwind = 0;
+      break;
+    }
+
+    case 1:
+    {
+      public_xtra->tfgupwind = 1;
+      break;
+    }
+
+    case 2:
+    {
+      public_xtra->tfgupwind = 2;
+      break;
+    }
+
+    default:
+    {
+      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
+                 key);
+    }
+  }
+
 
   switch_na = NA_NewNameArray("False True");
   sprintf(key, "Solver.Nonlinear.UseJacobian");
@@ -1861,4 +2236,3 @@ int  RichardsJacobianEvalSizeOfTempData()
 
   return sz;
 }
-

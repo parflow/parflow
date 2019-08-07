@@ -461,7 +461,8 @@ void KINSolFunctionEval(int size, N_Vector pressure, N_Vector fval, void *curren
 void NlFunctionEval(Vector *pressure, Vector *fval, ProblemData *problem_data, Vector *saturation, Vector *old_saturation, Vector *density, Vector *old_density, double dt, double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity);
 PFModule *NlFunctionEvalInitInstanceXtra(Problem *problem, Grid *grid, double *temp_data);
 void NlFunctionEvalFreeInstanceXtra(void);
-PFModule *NlFunctionEvalNewPublicXtra(void);
+PFModule *NlFunctionEvalNewPublicXtra(char *name);
+
 void NlFunctionEvalFreePublicXtra(void);
 int NlFunctionEvalSizeOfTempData(void);
 
@@ -809,6 +810,49 @@ void OverlandFlowEvalDiffFreeInstanceXtra(void);
 PFModule *OverlandFlowEvalDiffNewPublicXtra(void);
 void OverlandFlowEvalDiffFreePublicXtra(void);
 int OverlandFlowEvalDiffSizeOfTempData(void);
+
+
+/* overlandflow_eval_kin.c */
+typedef void (*OverlandFlowEvalKinInvoke) (Grid *       grid,
+                                            int          sg,
+                                            BCStruct *   bc_struct,
+                                            int          ipatch,
+                                            ProblemData *problem_data,
+                                            Vector *     pressure,
+                                            double *     ke_v,
+                                            double *     kw_v,
+                                            double *     kn_v,
+                                            double *     ks_v,
+                                            double *     ke_vns,
+                                            double *     kw_vns,
+                                            double *     kn_vns,
+                                            double *     ks_vns,
+                                            double *     qx_v,
+                                            double *     qy_v,
+                                            int          fcn);
+
+void OverlandFlowEvalKin(Grid *       grid,
+                          int          sg,
+                          BCStruct *   bc_struct,
+                          int          ipatch,
+                          ProblemData *problem_data,
+                          Vector *     pressure,
+                          double *     ke_v,
+                          double *     kw_v,
+                          double *     kn_v,
+                          double *     ks_v,
+                          double *     ke_vns,
+                          double *     kw_vns,
+                          double *     kn_vns,
+                          double *     ks_vns,
+                          double *     qx_v,
+                          double *     qy_v,
+                          int          fcn);
+PFModule *OverlandFlowEvalKinInitInstanceXtra(void);
+void OverlandFlowEvalKinFreeInstanceXtra(void);
+PFModule *OverlandFlowEvalKinNewPublicXtra(void);
+void OverlandFlowEvalKinFreePublicXtra(void);
+int OverlandFlowEvalKinSizeOfTempData(void);
 
 typedef void (*ICPhaseSaturInvoke) (Vector *ic_phase_satur, int phase, ProblemData *problem_data);
 typedef PFModule *(*ICPhaseSaturNewPublicXtraInvoke) (int num_phases);

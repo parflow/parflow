@@ -168,6 +168,7 @@ OBJS = \
 	overlandsum.o \
 	overlandflow_eval.o \
 	overlandflow_eval_diffusive.o \
+	overlandflow_eval_Kin.o \
 	compute_top.o \
 	input_checks.o \
 	clustering.o \
