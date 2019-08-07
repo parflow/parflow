@@ -316,23 +316,22 @@ pfundist $runname
 #
 # Tests
 #
-###source pftest.tcl
-###set passed 1
-###
-###
-###foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-###    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-###    set passed 0
-###}
-###    if ![pftestFile $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-###    set passed 0
-###}
-###}
-###
-###
-###if $passed {
-###    puts "$runname : PASSED"
-###} {
-###    puts "$runname : FAILED"
-###}
-###
+source pftest.tcl
+set passed 1
+
+
+foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
+    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
+    set passed 0
+}
+    if ![pftestFile $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
+    set passed 0
+}
+}
+
+
+if $passed {
+    puts "$runname : PASSED"
+} {
+    puts "$runname : FAILED"
+}
