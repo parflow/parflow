@@ -705,7 +705,7 @@ void    RichardsJacobianEval(
 
 
       /* multiply y_coeff by FB in y */
-      y_coeff = FBx_dat[ip]*dt * ffy * (1.0 / dy) * z_mult_dat[ip]
+      y_coeff = FBy_dat[ip]*dt * ffy * (1.0 / dy) * z_mult_dat[ip]
                 * PMean(pp[ip], pp[ip + sy_v], permyp[ip], permyp[ip + sy_v])
                 / viscosity;
 
