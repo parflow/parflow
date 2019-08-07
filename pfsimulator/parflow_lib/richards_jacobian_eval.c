@@ -54,7 +54,7 @@ enum JacobianType {
   no_nonlinear_jacobian,
   not_set,
   simple,
-  overland_flow 
+  overland_flow
 };
 
 typedef struct {
@@ -251,6 +251,13 @@ void    RichardsJacobianEval(
   Vector      *z_mult = ProblemDataZmult(problem_data);              //@RMM
   Subvector   *z_mult_sub;    //@RMM
   double      *z_mult_dat;    //@RMM
+
+  /* @RMM Flow Barrier / Boundary values */
+  Vector      *FBx = ProblemDataFBx(problem_data);
+  Vector      *FBy = ProblemDataFBy(problem_data);
+  Vector      *FBz = ProblemDataFBz(problem_data);
+  Subvector   *FBx_sub, *FBy_sub, *FBz_sub;    //@RMM
+  double      *FBx_dat, *FBy_dat, *FBz_dat;     //@RMM
 
   Subgrid     *subgrid;
 
@@ -598,6 +605,16 @@ void    RichardsJacobianEval(
     permyp = SubvectorData(permy_sub);
     permzp = SubvectorData(permz_sub);
 
+    /* @RMM added to provide access FB values */
+    FBx_sub = VectorSubvector(FBx, is);
+    FBy_sub = VectorSubvector(FBy, is);
+    FBz_sub = VectorSubvector(FBz, is);
+
+    /* @RMM added to provide FB values */
+    FBx_dat = SubvectorData(FBx_sub);
+    FBy_dat = SubvectorData(FBy_sub);
+    FBz_dat = SubvectorData(FBz_sub);
+
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
       ip = SubvectorEltIndex(p_sub, i, j, k);
@@ -657,9 +674,11 @@ void    RichardsJacobianEval(
       diff = pp[ip] - pp[ip + 1];
       updir = (diff / dx) * x_dir_g_c - x_dir_g;
 
-      x_coeff = dt * ffx * (1.0 / dx) * z_mult_dat[ip]
+      /* multiply X_coeff by FB in x */
+      x_coeff = FBx_dat[ip]*dt * ffx * (1.0 / dx) * z_mult_dat[ip]
                 * PMean(pp[ip], pp[ip + 1], permxp[ip], permxp[ip + 1])
                 / viscosity;
+
 
       sym_west_temp = (-x_coeff
                        * RPMean(updir, 0.0, prod, prod_rt)) * x_dir_g_c; //@RMM TFG contributions, sym
@@ -684,7 +703,9 @@ void    RichardsJacobianEval(
       diff = pp[ip] - pp[ip + sy_v];
       updir = (diff / dy) * y_dir_g_c - y_dir_g;
 
-      y_coeff = dt * ffy * (1.0 / dy) * z_mult_dat[ip]
+
+      /* multiply y_coeff by FB in y */
+      y_coeff = FBx_dat[ip]*dt * ffy * (1.0 / dy) * z_mult_dat[ip]
                 * PMean(pp[ip], pp[ip + sy_v], permyp[ip], permyp[ip + sy_v])
                 / viscosity;
 
@@ -719,7 +740,8 @@ void    RichardsJacobianEval(
 
       diff = lower_cond - upper_cond;
 
-      z_coeff = dt * ffz
+      /* multiply z_coeff by FB in z */
+      z_coeff = FBz_dat[ip]*dt * ffz
                 * PMeanDZ(permzp[ip], permzp[ip + sz_v], z_mult_dat[ip], z_mult_dat[ip + sz_v])
                 / viscosity;
 

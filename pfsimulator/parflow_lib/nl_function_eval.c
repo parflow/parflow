@@ -177,6 +177,14 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   Subvector   *z_mult_sub;    //@RMM
   double      *z_mult_dat;    //@RMM
 
+/* @RMM Flow Barrier / Boundary values */
+Vector      *FBx = ProblemDataFBx(problem_data);
+Vector      *FBy = ProblemDataFBy(problem_data);
+Vector      *FBz = ProblemDataFBz(problem_data);
+Subvector   *FBx_sub, *FBy_sub, *FBz_sub;    //@RMM
+double      *FBx_dat, *FBy_dat, *FBz_dat;     //@RMM
+
+
   double gravity = ProblemGravity(problem);
   double viscosity = ProblemPhaseViscosity(problem, 0);
 
@@ -286,6 +294,16 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     /* @RMM  added to provide slopes to terrain fns */
     x_ssl_dat = SubvectorData(x_ssl_sub);
     y_ssl_dat = SubvectorData(y_ssl_sub);
+
+    /* @RMM added to provide access FB values */
+    FBx_sub = VectorSubvector(FBx, is);
+    FBy_sub = VectorSubvector(FBy, is);
+    FBz_sub = VectorSubvector(FBz, is);
+
+    /* @RMM added to provide FB values */
+    FBx_dat = SubvectorData(FBx_sub);
+    FBy_dat = SubvectorData(FBy_sub);
+    FBz_dat = SubvectorData(FBz_sub);
 
     /* RDF: assumes resolutions are the same in all 3 directions */
     r = SubgridRX(subgrid);
@@ -461,6 +479,16 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     z_mult_sub = VectorSubvector(z_mult, is);
     /* @RMM added to provide variable dz */
     z_mult_dat = SubvectorData(z_mult_sub);
+    /* @RMM added to provide access FB values */
+    FBx_sub = VectorSubvector(FBx, is);
+    FBy_sub = VectorSubvector(FBy, is);
+    FBz_sub = VectorSubvector(FBz, is);
+
+    /* @RMM added to provide FB values */
+    FBx_dat = SubvectorData(FBx_sub);
+    FBy_dat = SubvectorData(FBy_sub);
+    FBz_dat = SubvectorData(FBz_sub);
+
 
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
@@ -758,6 +786,13 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                 * RPMean(lower_cond, upper_cond, rpp[ip] * dp[ip],
                          rpp[ip + sz_p] * dp[ip + sz_p])
                 / viscosity;
+
+/*  add in flow barrier values
+ * assumes that ip is the cell face between ip and ip+1
+ * ip and ip+sy_p and ip and ip+sz_p in x, y, z directions */
+       u_right = u_right * FBx_dat[ip];
+       u_front = u_front * FBy_dat[ip];
+       u_upper = u_upper * FBz_dat[ip];
 
       /* velocity data jjb */
       vx[vxi] = u_right / ffx;
