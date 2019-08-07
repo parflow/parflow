@@ -12,9 +12,9 @@ namespace import Parflow::*
 
 pfset FileVersion 4
 
-pfset Process.Topology.P 1
-pfset Process.Topology.Q 1
-pfset Process.Topology.R 1
+pfset Process.Topology.P        [lindex $argv 0]
+pfset Process.Topology.Q        [lindex $argv 1]
+pfset Process.Topology.R        [lindex $argv 2]
 
 #---------------------------------------------------------
 # Computational Grid
@@ -157,15 +157,15 @@ pfset Geom.domain.Saturation.SRes      0.1
 pfset Geom.domain.Saturation.SSat      1.0
 
 #---------------------------------------------------------
-# Flow Boundary in X between cells 10 and 11 in all Z
+# Flow Barrier in Y between cells 10 and 11 in all Z
 #---------------------------------------------------------
 
 pfset Solver.Nonlinear.FlowBarrierY True
 pfset FBy.Type PFBFile
-pfset Geom.domain.FBy.FileName Flow_Boundary_Y.pfb
+pfset Geom.domain.FBy.FileName Flow_Barrier_Y.pfb
 
-## write flow boundary file
-set fileId [open flow_boundary_Y.sa w]
+## write flow barrier file
+set fileId [open Flow_Barrier_Y.sa w]
 puts $fileId "20 20 20"
 for { set kk 0 } { $kk < 20 } { incr kk } {
 for { set jj 0 } { $jj < 20 } { incr jj } {
@@ -173,7 +173,7 @@ for { set ii 0 } { $ii < 20 } { incr ii } {
 
 	if {$jj == 9} {
 		# from cell 10 (index 9) to cell 11
-		# reduction of 1E-4
+		# reduction of 1E-3
 		puts $fileId "0.001"
 	} else {
 		puts $fileId "1.0"  }
@@ -182,11 +182,11 @@ for { set ii 0 } { $ii < 20 } { incr ii } {
 }
 close $fileId
 
-set       FBy         [pfload -sa Flow_Boundary_Y.sa]
+set       FBy         [pfload -sa Flow_Barrier_Y.sa]
 pfsetgrid {20 20 20} {0.0 0.0 0.0} {1.0 1.0 1.0} $FBy
-pfsave $FBy -pfb Flow_Boundary_Y.pfb
+pfsave $FBy -pfb Flow_Barrier_Y.pfb
 
-pfdist  Flow_Boundary_Y.pfb
+pfdist  Flow_Barrier_Y.pfb
 
 #-----------------------------------------------------------------------------
 # Wells
