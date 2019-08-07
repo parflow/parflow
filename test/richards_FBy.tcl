@@ -1,7 +1,7 @@
 # This runs a test case with the Richards' solver
 # with simple flow domains, like a wall or a fault.
 
-set runname richards_FBx
+set runname richards_FBy
 set tcl_precision 17
 
 # Import the ParFlow TCL package
@@ -160,18 +160,18 @@ pfset Geom.domain.Saturation.SSat      1.0
 # Flow Boundary in X between cells 10 and 11 in all Z
 #---------------------------------------------------------
 
-pfset Solver.Nonlinear.FlowBarrierX True
-pfset FBx.Type PFBFile
-pfset Geom.domain.FBx.FileName Flow_Boundary_X.pfb
+pfset Solver.Nonlinear.FlowBarrierY True
+pfset FBy.Type PFBFile
+pfset Geom.domain.FBy.FileName Flow_Boundary_Y.pfb
 
 ## write flow boundary file
-set fileId [open flow_boundary_X.sa w]
+set fileId [open flow_boundary_Y.sa w]
 puts $fileId "20 20 20"
 for { set kk 0 } { $kk < 20 } { incr kk } {
 for { set jj 0 } { $jj < 20 } { incr jj } {
 for { set ii 0 } { $ii < 20 } { incr ii } {
 
-	if {$ii == 9} {
+	if {$jj == 9} {
 		# from cell 10 (index 9) to cell 11
 		# reduction of 1E-4
 		puts $fileId "0.001"
@@ -182,11 +182,11 @@ for { set ii 0 } { $ii < 20 } { incr ii } {
 }
 close $fileId
 
-set       FBx         [pfload -sa Flow_Boundary_X.sa]
-pfsetgrid {20 20 20} {0.0 0.0 0.0} {1.0 1.0 1.0} $FBx
-pfsave $FBx -pfb Flow_Boundary_X.pfb
+set       FBy         [pfload -sa Flow_Boundary_Y.sa]
+pfsetgrid {20 20 20} {0.0 0.0 0.0} {1.0 1.0 1.0} $FBy
+pfsave $FBy -pfb Flow_Boundary_Y.pfb
 
-pfdist  Flow_Boundary_X.pfb
+pfdist  Flow_Boundary_Y.pfb
 
 #-----------------------------------------------------------------------------
 # Wells
@@ -208,25 +208,25 @@ pfset Cycle.constant.Repeat		-1
 
 pfset BCPressure.PatchNames "left right front back bottom top"
 
-pfset Patch.left.BCPressure.Type			DirEquilRefPatch
-pfset Patch.left.BCPressure.Cycle			"constant"
-pfset Patch.left.BCPressure.RefGeom			domain
-pfset Patch.left.BCPressure.RefPatch			bottom
-pfset Patch.left.BCPressure.alltime.Value		11.0
-
-pfset Patch.right.BCPressure.Type			DirEquilRefPatch
-pfset Patch.right.BCPressure.Cycle			"constant"
-pfset Patch.right.BCPressure.RefGeom			domain
-pfset Patch.right.BCPressure.RefPatch			bottom
-pfset Patch.right.BCPressure.alltime.Value		15.0
-
-pfset Patch.front.BCPressure.Type			FluxConst
+pfset Patch.front.BCPressure.Type			DirEquilRefPatch
 pfset Patch.front.BCPressure.Cycle			"constant"
-pfset Patch.front.BCPressure.alltime.Value		0.0
+pfset Patch.front.BCPressure.RefGeom			domain
+pfset Patch.front.BCPressure.RefPatch			bottom
+pfset Patch.front.BCPressure.alltime.Value		11.0
 
-pfset Patch.back.BCPressure.Type			FluxConst
+pfset Patch.back.BCPressure.Type			DirEquilRefPatch
 pfset Patch.back.BCPressure.Cycle			"constant"
-pfset Patch.back.BCPressure.alltime.Value		0.0
+pfset Patch.back.BCPressure.RefGeom			domain
+pfset Patch.back.BCPressure.RefPatch			bottom
+pfset Patch.back.BCPressure.alltime.Value		15.0
+
+pfset Patch.left.BCPressure.Type			FluxConst
+pfset Patch.left.BCPressure.Cycle			"constant"
+pfset Patch.left.BCPressure.alltime.Value		0.0
+
+pfset Patch.right.BCPressure.Type			FluxConst
+pfset Patch.right.BCPressure.Cycle			"constant"
+pfset Patch.right.BCPressure.alltime.Value		0.0
 
 pfset Patch.bottom.BCPressure.Type			FluxConst
 pfset Patch.bottom.BCPressure.Cycle			"constant"
