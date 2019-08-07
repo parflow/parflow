@@ -44,22 +44,24 @@
 #include <stdio.h>
 #include <math.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*-----------------------------------------------------------------------
  * function prototypes
  *-----------------------------------------------------------------------*/
 
-#ifdef __STDC__
-# define        ANSI_PROTO(s) s
-#else
-# define ANSI_PROTO(s) ()
-#endif
-
-
 /* stats.c */
-void Stats ANSI_PROTO((Databox *databox, double *min, double *max, double *mean,
-                       double *sum, double *variance, double *stdev));
+void Stats(Databox *databox, double *min, double *max, double *mean,
+	   double *sum, double *variance, double *stdev);
 
-#undef ANSI_PROTO
+#ifdef __cplusplus
+}
+#endif
 
 #endif

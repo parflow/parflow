@@ -32,6 +32,9 @@
 #include "general.h"
 #include "geometry.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*--------------------------------------------------------------------------
  * Structures:
@@ -66,23 +69,17 @@ typedef struct {
  * Prototypes:
  *--------------------------------------------------------------------------*/
 
-#ifdef __STDC__
-# define        P(s) s
-#else
-# define P(s) ()
-#endif
-
-
 /* gmsreadSOL.c */
-void gms_ReadSolids P((gms_Solid * **solids_ptr, int *nsolids_ptr, char *filename));
+void gms_ReadSolids(gms_Solid * **solids_ptr, int *nsolids_ptr, char *filename);
 
 /* gmsreadTIN.c */
-void gms_ReadTINs P((gms_TIN * **TINs_ptr, int *nTINs_ptr, char *filename));
+void gms_ReadTINs(gms_TIN * **TINs_ptr, int *nTINs_ptr, char *filename);
 
 /* gmswriteTIN.c */
-void gms_WriteTINs P((gms_TIN * *TINs, int nTINs, char *filename));
+void gms_WriteTINs(gms_TIN * *TINs, int nTINs, char *filename);
 
-#undef P
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif

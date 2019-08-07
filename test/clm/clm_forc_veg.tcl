@@ -43,10 +43,9 @@ pfset ComputationalGrid.DZ	                 0.5
 
 pfset ComputationalGrid.NX                      5
 pfset ComputationalGrid.NY                      5
-pfset ComputationalGrid.NZ                     1 
-
-pfdist veg_map.pfb
 pfset ComputationalGrid.NZ                     10 
+
+pfdist -nz 1 veg_map.pfb
 
 #-----------------------------------------------------------------------------
 # The Names of the GeomInputs

@@ -48,6 +48,10 @@
 
 #include <tcl.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef NULL
 #define NULL ((void*)0)
 #endif
@@ -113,6 +117,10 @@ void GetDataboxGrid(Tcl_Interp *interp, Databox *databox);
 void SetDataboxGrid(Databox *databox, int nx, int ny, int nz, double x, double y, double z,
                     double dx, double dy, double dz);
 void FreeDatabox(Databox *databox);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

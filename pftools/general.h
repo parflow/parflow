@@ -32,6 +32,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*--------------------------------------------------------------------------
  * Define memory allocation routines
  *--------------------------------------------------------------------------*/
@@ -79,6 +83,9 @@
 #define ON  1
 #define OFF 0
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

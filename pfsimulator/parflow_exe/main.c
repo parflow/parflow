@@ -123,23 +123,25 @@ int main(int argc, char *argv [])
     char * input_name = NULL;
 
     opterr = 0;
-    while ((c = getopt (argc, argv, "v")) != -1)
-    switch (c)
+    while ((c = getopt(argc, argv, "v")) != -1)
+      switch (c)
       {
-      case 'v':
-	PrintVersionInfo(stdout);
-	return 0;
-        break;
-      case '?':
-	if (isprint (optopt))
-          fprintf (stderr, "Unknown option `-%c'.\n", optopt);
-        else
-          fprintf (stderr,
-                   "Unknown option character `\\x%x'.\n",
-                   optopt);
-        return 1;
-      default:
-        abort ();
+        case 'v':
+          PrintVersionInfo(stdout);
+          return 0;
+          break;
+
+        case '?':
+          if (isprint(optopt))
+            fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+          else
+            fprintf(stderr,
+                    "Unknown option character `\\x%x'.\n",
+                    optopt);
+          return 1;
+
+        default:
+          abort();
       }
 
     int non_opt_argc = argc - optind;
@@ -336,6 +338,23 @@ int main(int argc, char *argv [])
 
         fprintf(log_file, "Total Run Time: %f seconds\n\n",
                 (double)wall_clock_time / (double)AMPS_TICKS_PER_SEC);
+
+
+	{
+	  char filename[2048];
+	  sprintf(filename, "%s.timing.csv", GlobalsOutFileName);
+	  
+	  if ((file = fopen(filename, "a")) == NULL)
+	  {
+	    InputError("Error: can't open output file %s%s\n", filename, "");
+	  }
+	  
+	    fprintf(file, "%s,%f,%s,%s\n", "Total Runtime", 
+		    (double)wall_clock_time / (double)AMPS_TICKS_PER_SEC,
+		    "-nan", "0");
+	  }
+	  
+	  fclose(file);
       }
     }
 

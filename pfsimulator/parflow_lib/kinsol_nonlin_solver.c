@@ -107,6 +107,7 @@ int  KINSolInitPC(
   ProblemData *problem_data = StateProblemData(((State*)current_state));
   Vector      *saturation = StateSaturation(((State*)current_state));
   Vector      *density = StateDensity(((State*)current_state));
+  Vector      *old_pressure = StateOldPressure(((State*)current_state));
   double dt = StateDt(((State*)current_state));
   double time = StateTime(((State*)current_state));
 
@@ -124,7 +125,7 @@ int  KINSolInitPC(
    * itself */
 
   PFModuleReNewInstanceType(KinsolPCInitInstanceXtraInvoke, precond, (NULL, NULL, problem_data, NULL,
-                                                                      pressure, saturation, density, dt, time));
+                                                                      pressure, old_pressure, saturation, density, dt, time));
   return(0);
 }
 
@@ -351,7 +352,7 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
       instance_xtra->precond =
         PFModuleNewInstanceType(KinsolPCInitInstanceXtraInvoke, public_xtra->precond,
                                 (problem, grid, problem_data, temp_data,
-                                 NULL, NULL, NULL, 0, 0));
+                                 NULL, NULL, NULL, NULL, 0, 0));
     else
       instance_xtra->precond = NULL;
 
@@ -373,7 +374,7 @@ PFModule  *KinsolNonlinSolverInitInstanceXtra(
       PFModuleReNewInstanceType(KinsolPCInitInstanceXtraInvoke,
                                 instance_xtra->precond,
                                 (problem, grid, problem_data, temp_data,
-                                 NULL, NULL, NULL, 0, 0));
+                                 NULL, NULL, NULL, NULL, 0, 0));
 
     PFModuleReNewInstanceType(NlFunctionEvalInitInstanceXtraInvoke, instance_xtra->nl_function_eval,
                               (problem, grid, temp_data));

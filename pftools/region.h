@@ -29,6 +29,9 @@
 #ifndef _REGION_HEADER
 #define _REGION_HEADER
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*--------------------------------------------------------------------------
  * Terminology:
@@ -150,23 +153,18 @@ typedef struct {
   for (i = 0; i < RegionSize(region); i++)
 
 
-#ifdef __STDC__
-# define        ANSI_PROTO(s) s
-#else
-# define ANSI_PROTO(s) ()
-#endif
-
-
 /* region.c */
-Subregion * NewSubregion ANSI_PROTO((int ix, int iy, int iz, int nx, int ny, int nz, int sx, int sy, int sz, int rx, int ry, int rz, int process));
-SubregionArray *NewSubregionArray ANSI_PROTO((void));
-SGSRegion *NewRegion ANSI_PROTO((int size));
-void FreeSubregion ANSI_PROTO((Subregion *subregion));
-void FreeSubregionArray ANSI_PROTO((SubregionArray *subregion_array));
-void FreeRegion ANSI_PROTO((SGSRegion *region));
-void AppendSubregion ANSI_PROTO((Subregion *subregion, SubregionArray * *subregion_array));
-void AppendSubregionArray ANSI_PROTO((SubregionArray *subregion_array_0, SubregionArray * *subregion_array_1));
+Subregion * NewSubregion (int ix, int iy, int iz, int nx, int ny, int nz, int sx, int sy, int sz, int rx, int ry, int rz, int process);
+SubregionArray *NewSubregionArray (void);
+SGSRegion *NewRegion (int size);
+void FreeSubregion (Subregion *subregion);
+void FreeSubregionArray (SubregionArray *subregion_array);
+void FreeRegion (SGSRegion *region);
+void AppendSubregion (Subregion *subregion, SubregionArray * *subregion_array);
+void AppendSubregionArray (SubregionArray *subregion_array_0, SubregionArray * *subregion_array_1);
 
-#undef ANSI_PROTO
+#ifdef __cplusplus
+}
+#endif
 
 #endif

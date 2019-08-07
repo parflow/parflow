@@ -30,6 +30,10 @@
 
 #include "databox.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*-----------------------------------------------------------------------
  * function prototypes
  *-----------------------------------------------------------------------*/
@@ -38,6 +42,10 @@ void ComputeWaterTableDepth(
                             Databox *top,
                             Databox *saturation,
                             Databox *surface_storage);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

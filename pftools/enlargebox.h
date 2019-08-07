@@ -34,20 +34,19 @@
 #include <stdio.h>
 #include <math.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*-----------------------------------------------------------------------
  * function prototypes
  *-----------------------------------------------------------------------*/
 
-#ifdef __STDC__
-# define        ANSI_PROTO(s) s
-#else
-# define ANSI_PROTO(s) ()
+Databox * EnlargeBox (Databox *inbox, int new_nx, int new_nj, int new_nz);
+
+#ifdef __cplusplus
+}
 #endif
-
-Databox * EnlargeBox ANSI_PROTO((Databox *inbox,
-                                 int new_nx, int new_nj, int new_nz));
-
-#undef ANSI_PROTO
 
 #endif
 

@@ -331,12 +331,12 @@ void KinsolNonlinSolverFreePublicXtra(void);
 int KinsolNonlinSolverSizeOfTempData(void);
 
 typedef void (*KinsolPCInvoke) (Vector *rhs);
-typedef PFModule * (*KinsolPCInitInstanceXtraInvoke) (Problem *problem, Grid *grid, ProblemData *problem_data, double *temp_data, Vector *pressure, Vector *saturation, Vector *density, double dt, double time);
+typedef PFModule * (*KinsolPCInitInstanceXtraInvoke) (Problem *problem, Grid *grid, ProblemData *problem_data, double *temp_data, Vector *pressure, Vector *old_pressure, Vector *saturation, Vector *density, double dt, double time);
 typedef PFModule *(*KinsolPCNewPublicXtraInvoke) (char *name, char *pc_name);
 
 /* kinsol_pc.c */
 void KinsolPC(Vector *rhs);
-PFModule *KinsolPCInitInstanceXtra(Problem *problem, Grid *grid, ProblemData *problem_data, double *temp_data, Vector *pressure, Vector *saturation, Vector *density, double dt, double time);
+PFModule *KinsolPCInitInstanceXtra(Problem *problem, Grid *grid, ProblemData *problem_data, double *temp_data, Vector *pressure, Vector *old_pressure, Vector *saturation, Vector *density, double dt, double time);
 void KinsolPCFreeInstanceXtra(void);
 PFModule *KinsolPCNewPublicXtra(char *name, char *pc_name);
 void KinsolPCFreePublicXtra(void);
@@ -461,7 +461,8 @@ void KINSolFunctionEval(int size, N_Vector pressure, N_Vector fval, void *curren
 void NlFunctionEval(Vector *pressure, Vector *fval, ProblemData *problem_data, Vector *saturation, Vector *old_saturation, Vector *density, Vector *old_density, double dt, double time, Vector *old_pressure, Vector *evap_trans, Vector *ovrl_bc_flx, Vector *x_velocity, Vector *y_velocity, Vector *z_velocity);
 PFModule *NlFunctionEvalInitInstanceXtra(Problem *problem, Grid *grid, double *temp_data);
 void NlFunctionEvalFreeInstanceXtra(void);
-PFModule *NlFunctionEvalNewPublicXtra(void);
+PFModule *NlFunctionEvalNewPublicXtra(char *name);
+
 void NlFunctionEvalFreePublicXtra(void);
 int NlFunctionEvalSizeOfTempData(void);
 
@@ -737,6 +738,7 @@ typedef void (*OverlandFlowEvalInvoke) (Grid *       grid,
                                         int          ipatch,
                                         ProblemData *problem_data,
                                         Vector *     pressure,
+                                        Vector *     old_pressure,
                                         double *     ke_v,
                                         double *     kw_v,
                                         double *     kn_v,
@@ -751,6 +753,7 @@ void OverlandFlowEval(Grid *       grid,
                       int          ipatch,
                       ProblemData *problem_data,
                       Vector *     pressure,
+                      Vector *     old_pressure,
                       double *     ke_v,
                       double *     kw_v,
                       double *     kn_v,
@@ -771,6 +774,7 @@ typedef void (*OverlandFlowEvalDiffInvoke) (Grid *       grid,
                                             int          ipatch,
                                             ProblemData *problem_data,
                                             Vector *     pressure,
+					    Vector *     old_pressure,
                                             double *     ke_v,
                                             double *     kw_v,
                                             double *     kn_v,
@@ -789,6 +793,7 @@ void OverlandFlowEvalDiff(Grid *       grid,
                           int          ipatch,
                           ProblemData *problem_data,
                           Vector *     pressure,
+			  Vector *     old_pressure,
                           double *     ke_v,
                           double *     kw_v,
                           double *     kn_v,
@@ -805,6 +810,49 @@ void OverlandFlowEvalDiffFreeInstanceXtra(void);
 PFModule *OverlandFlowEvalDiffNewPublicXtra(void);
 void OverlandFlowEvalDiffFreePublicXtra(void);
 int OverlandFlowEvalDiffSizeOfTempData(void);
+
+
+/* overlandflow_eval_kin.c */
+typedef void (*OverlandFlowEvalKinInvoke) (Grid *       grid,
+                                            int          sg,
+                                            BCStruct *   bc_struct,
+                                            int          ipatch,
+                                            ProblemData *problem_data,
+                                            Vector *     pressure,
+                                            double *     ke_v,
+                                            double *     kw_v,
+                                            double *     kn_v,
+                                            double *     ks_v,
+                                            double *     ke_vns,
+                                            double *     kw_vns,
+                                            double *     kn_vns,
+                                            double *     ks_vns,
+                                            double *     qx_v,
+                                            double *     qy_v,
+                                            int          fcn);
+
+void OverlandFlowEvalKin(Grid *       grid,
+                          int          sg,
+                          BCStruct *   bc_struct,
+                          int          ipatch,
+                          ProblemData *problem_data,
+                          Vector *     pressure,
+                          double *     ke_v,
+                          double *     kw_v,
+                          double *     kn_v,
+                          double *     ks_v,
+                          double *     ke_vns,
+                          double *     kw_vns,
+                          double *     kn_vns,
+                          double *     ks_vns,
+                          double *     qx_v,
+                          double *     qy_v,
+                          int          fcn);
+PFModule *OverlandFlowEvalKinInitInstanceXtra(void);
+void OverlandFlowEvalKinFreeInstanceXtra(void);
+PFModule *OverlandFlowEvalKinNewPublicXtra(void);
+void OverlandFlowEvalKinFreePublicXtra(void);
+int OverlandFlowEvalKinSizeOfTempData(void);
 
 typedef void (*ICPhaseSaturInvoke) (Vector *ic_phase_satur, int phase, ProblemData *problem_data);
 typedef PFModule *(*ICPhaseSaturNewPublicXtraInvoke) (int num_phases);
@@ -978,12 +1026,12 @@ void DeleteSubregion(SubregionArray *sr_array, int index);
 void AppendSubregionArray(SubregionArray *sr_array_0, SubregionArray *sr_array_1);
 
 
-typedef void (*RichardsJacobianEvalInvoke) (Vector *pressure, Matrix **ptr_to_J, Matrix **ptr_to_JC, Vector *saturation, Vector *density, ProblemData *problem_data, double dt, double time, int symm_part);
+typedef void (*RichardsJacobianEvalInvoke) (Vector *pressure, Vector *old_pressure, Matrix **ptr_to_J, Matrix **ptr_to_JC, Vector *saturation, Vector *density, ProblemData *problem_data, double dt, double time, int symm_part);
 typedef PFModule *(*RichardsJacobianEvalInitInstanceXtraInvoke) (Problem *problem, Grid *grid, ProblemData *problem_data, double *temp_data, int symmetric_jac);
 typedef PFModule *(*RichardsJacobianEvalNewPublicXtraInvoke) (char *name);
 /* richards_jacobian_eval.c */
 int KINSolMatVec(void *current_state, N_Vector x, N_Vector y, int *recompute, N_Vector pressure);
-void RichardsJacobianEval(Vector *pressure, Matrix **ptr_to_J, Matrix **ptr_to_JC, Vector *saturation, Vector *density, ProblemData *problem_data, double dt, double time, int symm_part);
+void RichardsJacobianEval(Vector *pressure, Vector *old_pressure, Matrix **ptr_to_J, Matrix **ptr_to_JC, Vector *saturation, Vector *density, ProblemData *problem_data, double dt, double time, int symm_part);
 PFModule *RichardsJacobianEvalInitInstanceXtra(Problem *problem, Grid *grid, ProblemData *problem_data, double *temp_data, int symmetric_jac);
 void RichardsJacobianEvalFreeInstanceXtra(void);
 PFModule *RichardsJacobianEvalNewPublicXtra(char *name);

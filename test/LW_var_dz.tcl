@@ -1,6 +1,6 @@
 #  This runs the a Little Washita Test Problem with variable dz
-#  and a constant rain forcing.  The full Jacobian is use and there is no dampening in the 
-#  overland flow. 
+#  and a constant rain forcing.  The full Jacobian is use and there is no dampening in the
+#  overland flow.
 
 set tcl_precision 17
 
@@ -9,7 +9,7 @@ set runname LW_var_dz
 #
 # Import the ParFlow TCL package
 #
-lappend auto_path $env(PARFLOW_DIR)/bin 
+lappend auto_path $env(PARFLOW_DIR)/bin
 package require parflow
 namespace import Parflow::*
 
@@ -28,15 +28,15 @@ pfset ComputationalGrid.Lower.Z           0.0
 
 pfset ComputationalGrid.NX                45
 pfset ComputationalGrid.NY                32
-pfset ComputationalGrid.NZ               25 
-pfset ComputationalGrid.NZ               10 
-pfset ComputationalGrid.NZ               6 
+pfset ComputationalGrid.NZ               25
+pfset ComputationalGrid.NZ               10
+pfset ComputationalGrid.NZ               6
 
 pfset ComputationalGrid.DX	         1000.0
 pfset ComputationalGrid.DY               1000.0
-#"native" grid resolution is 2m everywhere X NZ=25 for 50m 
+#"native" grid resolution is 2m everywhere X NZ=25 for 50m
 #computational domain.
-pfset ComputationalGrid.DZ		2.0        
+pfset ComputationalGrid.DZ		2.0
 
 #---------------------------------------------------------
 # The Names of the GeomInputs
@@ -44,25 +44,25 @@ pfset ComputationalGrid.DZ		2.0
 pfset GeomInput.Names                 "domaininput"
 
 pfset GeomInput.domaininput.GeomName  domain
-pfset GeomInput.domaininput.InputType  Box 
+pfset GeomInput.domaininput.InputType  Box
 
 #---------------------------------------------------------
-# Domain Geometry 
+# Domain Geometry
 #---------------------------------------------------------
 pfset Geom.domain.Lower.X                        0.0
 pfset Geom.domain.Lower.Y                        0.0
 pfset Geom.domain.Lower.Z                        0.0
- 
+
 pfset Geom.domain.Upper.X                        45000.0
 pfset Geom.domain.Upper.Y                        32000.0
 # this upper is synched to computational grid, not linked w/ Z multipliers
-pfset Geom.domain.Upper.Z                        12.0 
+pfset Geom.domain.Upper.Z                        12.0
 pfset Geom.domain.Patches             "x-lower x-upper y-lower y-upper z-lower z-upper"
 
 #--------------------------------------------
 # variable dz assignments
 #------------------------------------------
-pfset Solver.Nonlinear.VariableDz   True 
+pfset Solver.Nonlinear.VariableDz   True
 pfset dzScale.GeomNames            domain
 pfset dzScale.Type            nzList
 pfset dzScale.nzListNumber       6
@@ -188,7 +188,7 @@ pfset Phase.RelPerm.GeomNames          "domain"
 
 pfset Geom.domain.RelPerm.Alpha         1.
 pfset Geom.domain.RelPerm.Alpha         1.0
-pfset Geom.domain.RelPerm.N             3. 
+pfset Geom.domain.RelPerm.N             3.
 #pfset Geom.domain.RelPerm.NumSamplePoints   10000
 #pfset Geom.domain.RelPerm.MinPressureHead   -200
 #pfset Geom.domain.RelPerm.InterpolationMethod   "Linear"
@@ -228,7 +228,7 @@ pfset Cycle.rainrec.Names                 "rain rec"
 pfset Cycle.rainrec.rain.Length           10
 pfset Cycle.rainrec.rec.Length            20
 pfset Cycle.rainrec.Repeat                14
- 
+
 #-----------------------------------------------------------------------------
 # Boundary Conditions: Pressure
 #-----------------------------------------------------------------------------
@@ -244,7 +244,7 @@ pfset Patch.y-lower.BCPressure.alltime.Value	      0.0
 
 pfset Patch.z-lower.BCPressure.Type		      FluxConst
 pfset Patch.z-lower.BCPressure.Cycle		      "constant"
-pfset Patch.z-lower.BCPressure.alltime.Value	       0.0 
+pfset Patch.z-lower.BCPressure.alltime.Value	       0.0
 
 pfset Patch.x-upper.BCPressure.Type		      FluxConst
 pfset Patch.x-upper.BCPressure.Cycle		      "constant"
@@ -254,11 +254,11 @@ pfset Patch.y-upper.BCPressure.Type		      FluxConst
 pfset Patch.y-upper.BCPressure.Cycle		      "constant"
 pfset Patch.y-upper.BCPressure.alltime.Value	      0.0
 
-## overland flow boundary condition with very heavy rainfall 
+## overland flow boundary condition with very heavy rainfall
 pfset Patch.z-upper.BCPressure.Type		      OverlandFlow
 pfset Patch.z-upper.BCPressure.Cycle		      "constant"
 # constant recharge at 100 mm / y
-pfset Patch.z-upper.BCPressure.alltime.Value	      -0.005 
+pfset Patch.z-upper.BCPressure.alltime.Value	      -0.005
 
 #---------------
 # Copy slopes to working dir
@@ -292,22 +292,19 @@ pfset TopoSlopesY.FileName lw.1km.slope_y.10x.pfb
 
 pfset ComputationalGrid.NX                45
 pfset ComputationalGrid.NY                32
-pfset ComputationalGrid.NZ                1 
+pfset ComputationalGrid.NZ                6
 
-
-pfdist lw.1km.slope_x.10x.pfb
-pfdist lw.1km.slope_y.10x.pfb
-
-
-pfset ComputationalGrid.NZ                6 
+# Slope files 1D files so distribute with -nz 1
+pfdist -nz 1 lw.1km.slope_x.10x.pfb
+pfdist -nz 1 lw.1km.slope_y.10x.pfb
 
 #---------------------------------------------------------
-# Mannings coefficient 
+# Mannings coefficient
 #---------------------------------------------------------
 
 pfset Mannings.Type "Constant"
 pfset Mannings.GeomNames "domain"
-pfset Mannings.Geom.domain.Value 0.00005 
+pfset Mannings.Geom.domain.Value 0.00005
 
 
 #-----------------------------------------------------------------------------
@@ -335,7 +332,7 @@ pfset Solver.MaxIter                                     2500
 pfset Solver.TerrainFollowingGrid                        True
 
 
-pfset Solver.Nonlinear.MaxIter                           80 
+pfset Solver.Nonlinear.MaxIter                           80
 pfset Solver.Nonlinear.ResidualTol                       1e-5
 pfset Solver.Nonlinear.EtaValue                          0.001
 
@@ -347,8 +344,8 @@ pfset Solver.AbsTol                                     1E-10
 
 pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaValue                          0.001
-pfset Solver.Nonlinear.UseJacobian                       True 
-#pfset Solver.Nonlinear.UseJacobian                       False 
+pfset Solver.Nonlinear.UseJacobian                       True
+#pfset Solver.Nonlinear.UseJacobian                       False
 pfset Solver.Nonlinear.DerivativeEpsilon                 1e-14
 pfset Solver.Nonlinear.StepTol				 1e-25
 pfset Solver.Nonlinear.Globalization                     LineSearch
@@ -382,7 +379,7 @@ pfset Geom.domain.ICPressure.RefPatch                   z-upper
 #spinup key
 # True=skim pressures, False = regular (default)
 #pfset Solver.Spinup           True
-pfset Solver.Spinup           False 
+pfset Solver.Spinup           False
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
@@ -427,4 +424,3 @@ if $passed {
 
 #puts "[exec tail $runname.out.kinsol.log]"
 #puts "[exec tail $runname.out.log]"
-

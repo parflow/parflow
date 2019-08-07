@@ -144,8 +144,12 @@ SubgridArray   *DistributeUserGrid(
 
     if ((P * Q * R) == num_procs)
     {
-      if (!amps_Rank(amps_CommWorld))
-        amps_Printf("Using process grid (%d,%d,%d)\n", P, Q, R);
+      static char first_call = 1;
+      if (first_call && !amps_Rank(amps_CommWorld))
+      {
+	 amps_Printf("Using process grid (%d,%d,%d)\n", P, Q, R);
+	 first_call = 0;
+      }
     }
     else
       return NULL;

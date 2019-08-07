@@ -1,6 +1,9 @@
-cmake_minimum_required (VERSION 3.4)
+cmake_minimum_required (VERSION 3.9)
 
-project (PARFLOW C Fortran)
+project (PARFLOW C Fortran CXX)
+
+set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_C_STANDARD 11)
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
@@ -37,7 +40,27 @@ enable_testing ()
 # Use RPATH in install, many mpicc scripts use RPATH so default
 # behavior of CMAKE to remove RPATH from installed executables is not
 # so good.
+#SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+# use, i.e. don't skip the full RPATH for the build tree
+SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+
+# when building, don't use the install RPATH already
+# (but later on when installing)
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+
+SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+# add the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+
+# the RPATH to be used when installing, but only if it's not a system directory
+LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+IF("${isSystemDir}" STREQUAL "-1")
+   SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+ENDIF("${isSystemDir}" STREQUAL "-1")
 
 # Set AMPS communication layer
 set(PARFLOW_AMPS_LAYER "seq" CACHE STRING "Set the Communications layer to use")
@@ -210,7 +233,7 @@ if (${PARFLOW_ENABLE_VALGRIND} )
   find_program( PARFLOW_MEMORYCHECK_COMMAND valgrind)
   set(PARFLOW_HAVE_MEMORYCHECK "yes")
   set(PARFLOW_MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/bin/valgrind.sup")
-  set(PARFLOW_MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --suppressions=${PARFLOW_MEMORYCHECK_SUPPRESSIONS_FILE}")
+  set(PARFLOW_MEMORYCHECK_COMMAND_OPTIONS "--gen-suppressions=all --leak-check=full --suppressions=${PARFLOW_MEMORYCHECK_SUPPRESSIONS_FILE}")
 endif (${PARFLOW_ENABLE_VALGRIND})
 
 #-----------------------------------------------------------------------------
@@ -406,3 +429,24 @@ endif()
 
 install (DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION config)
 
+#-----------------------------------------------------------------------------
+# Doxygen 
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_DOXYGEN False CACHE BOOL "Enable Doxygen and building of code documentation")
+
+if ( ${PARFLOW_ENABLE_DOXYGEN} )
+  find_package(Doxygen)
+  if (DOXYGEN_FOUND)
+    set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/docs/doxygen)
+    set(DOXYGEN_IMAGE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/docs/doxygen/images)
+    
+    message("Doxygen build started")
+
+    doxygen_add_docs(doxygen
+      COMMENT "Generating API documentation with Doxygen"
+      ${PROJECT_SOURCE_DIR})
+
+  else (DOXYGEN_FOUND)
+    message("Doxygen need to be installed to generate the doxygen documentation")
+  endif (DOXYGEN_FOUND)
+endif()

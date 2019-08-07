@@ -2180,8 +2180,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
                          public_xtra->clm_irr_thresholdtype, soi_z,
                          clm_next, clm_write_logs, clm_last_rst,
                          clm_daily_rst,
-			 public_xtra->clm_nz,
-			 public_xtra->clm_nz);
+                         public_xtra->clm_nz,
+                         public_xtra->clm_nz);
 
             break;
           }
@@ -3652,6 +3652,12 @@ TeardownRichards(PFModule * this_module)
 #ifdef HAVE_CLM
   if (instance_xtra->eflx_lh_tot)
   {
+
+    if (instance_xtra->clm_out_grid)
+    {
+      FreeVector(instance_xtra->clm_out_grid);
+    }
+    
     FreeVector(instance_xtra->eflx_lh_tot);
     FreeVector(instance_xtra->eflx_lwrad_out);
     FreeVector(instance_xtra->eflx_sh_tot);
@@ -4358,7 +4364,7 @@ SolverRichardsNewPublicXtra(char *name)
   public_xtra->clm_nz = GetIntDefault(key, 10);
 
   /* Should match what is set in CLM for max */
-  if ( public_xtra->clm_nz > PF_CLM_MAX_ROOT_NZ )
+  if (public_xtra->clm_nz > PF_CLM_MAX_ROOT_NZ)
   {
     char tmp_str[100];
     sprintf(tmp_str, "%d", public_xtra->clm_nz);
@@ -4756,7 +4762,6 @@ SolverRichardsNewPublicXtra(char *name)
     }
   }
   NA_FreeNameArray(irrthresholdtype_switch_na);
-
 #endif
 
   //CPS

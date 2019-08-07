@@ -80,6 +80,7 @@ testclean:
 	@rm -f *.out.pftcl
 	@rm -f *.pfidb
 	@rm -f *.out.txt
+	@rm -f *.out.timing.csv
 	@rm -fr default_richards.out 
 	@rm -fr *.out.wells
 	@rm -fr indicator_field.out

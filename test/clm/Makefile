@@ -110,6 +110,7 @@ testclean:
 	@rm -f *.silo*
 	@rm -f *.pfsb*
 	@rm -f *.log
+	@rm -f *.out.timing.csv	
 	@rm -f .hostfile
 	@rm -f .amps.*
 	@rm -f *.out.pftcl
@@ -130,3 +131,4 @@ testclean:
 	@rm -fr clm_forc_veg.out
 	@rm -f clm_forc_veg.out.pftcl
 	@rm -f clm_forc_veg_elog.txt.*	
+	@rm -fr clm-reuse-ts-* swe.out.csv

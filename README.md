@@ -12,7 +12,10 @@ multi-institutional development history and is now a collaborative
 effort between CSM, LLNL, UniBonn and UCB. ParFlow has been coupled to
 the mesoscale, meteorological code ARPS and the NCAR code WRF.
 
-See the "User's Manual" for info on "Getting Started" in ParFlow.
+The Parflow User Manual is available at [Parflow Users
+Manual](https://github.com/parflow/parflow/blob/master/parflow-manual.pdf).
+The manual contains additional documentation on how to use ParFlow and
+setup input files.  A quick start is included below.
 
 ### Citing Parflow
 
@@ -221,6 +224,44 @@ Some parallel machines do not allow launching a parallel executable
 from the login node; you may need to run this command in a batch file
 or by starting a parallel interactive session.
 
+## Building documentation
+
+### User Manual
+
+A version of the user manual is available at github : [Parflow Users Manual](https://github.com/parflow/parflow/blob/master/parflow-manual.pdf)
+
+The user manual for Parflow may be built as part of the build when
+Latex is available on the system. Adding the
+-DPARFLOW_ENABLE_LATEX=TRUE option to the CMake configure will enable
+building of the documentation.
+
+```shell
+   mkdir build
+   cd build
+   cmake ../parflow \
+        <other cmake options> \
+	-DPARFLOW_ENABLE_LATEX=TRUE \
+	-DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR)
+```
+
+When make is run the documenation will be built and installed in
+$(INSTALL_DIR)/docs/user_manual.pdf.
+
+### Code documentation
+
+Parflow is moving to using Doxygen for code documenation.  The documentation is currently very sparse.
+
+Adding the -DPARFLOW_ENABLE_DOXYGEN=TRUE option to the CMake configure
+will enable building of the code documentation.  After CMake has been
+run the Doxygen code documenation is built with:
+
+```shell
+   cd build
+   make doxygen
+```
+
+HTML pages are generated in the build/docs/doxygen/html directory.
+
 ## Configure options
 
 A number of packages are optional for building ParFlow.  The optional
@@ -282,6 +323,8 @@ modified to use the custom command string:
 ```
 ## Building simulator and tools support separately
 
+This section is for advanced users runing on heterogenous HPC architectures.
+
 ParFlow is composed of two main components that maybe configured and
 built separately.  Some HPC platforms are heterogeneous with the login
 node being different than the compute nodes.  The ParFlow system has
@@ -295,6 +338,42 @@ build separately use two build directories and run cmake in each to
 build the simulator and tools components separately. By specifying
 different compilers and options for each, one can target different
 architectures for each component.
+
+# Using Docker
+
+ParFlow includes a Docker file for configuring a Docker image for
+running ParFlow.
+
+## Pre-built Docker Image
+
+A Docker image for ParFlow is available on Docker hub.  See the
+following section for how to run the Docker image.  The Docker
+latest image is automatically downloaded by Docker when run.
+
+## Running ParFlow with Docker
+
+The https://github.com/parflow/docker repository contains an example
+setup for running ParFlow in a Docker instance.  See the README.md
+file in this repository for more information.
+
+## Building the Docker image
+
+If you want to build a Docker image, the build script in the bin
+directory will build an image using the latest ParFlow source in the
+master branch.  If you want to build a different version of ParFlow
+you will need to modify the 'Dockerfile' file.
+
+### Unix/Linux/MacOS
+
+```bash
+./bin/docker-build.sh
+```
+
+### Windows
+
+```PowerShell
+.\bin\docker-build.bat
+```
 
 ## Release
 
