@@ -54,7 +54,7 @@ enum JacobianType {
   no_nonlinear_jacobian,
   not_set,
   simple,
-  overland_flow
+  overland_flow 
 };
 
 typedef struct {
