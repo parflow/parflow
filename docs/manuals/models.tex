@@ -72,6 +72,15 @@ q_x=\textbf{K}(p)\rho(p)(\frac{\partial p}{\partial x}\cos \theta_x + \sin \thet
 \end{eqnarray}
 where $\theta_x = \arctan(S_0,x)$ and $\theta_y = \arctan(S_0,y)$ which are assumed to be the same as the {\bf TopoSlope} keys assigned for overland flow, described below.  The terrain following grid formulation can be very useful for coupled surface-subsurface flow problems where groundwater flow follows the topography.  As cells are distributed near the ground surface and can be combined with the variable $\delta Z$ capability, the number of cells in the problem can be reduced dramatically over the orthogonal formulation. For complete details on this formulation, the stencil used and the function evaluation developed, please see \cite{M13}. NOTE: in the original formulation, $\theta_x$ and $\theta_y$ for a cell face is calculated as the average of the two adjacent cell slopes (i.e. assuming a cell centered slope calculation). The {\bf TerrainFollowingGrid.SlopeUpwindFormulation} key provide options to use the slope of a grid cell directly (i.e. assuming face centered slope calculations) and removing the sine term from  \ref{eq:darcyTFG}. The {\bf Upwind} and {\bf UpwindSine} options for this key will provide consistent results with {\bf OverlandKinematic} and {\bf OverlandDiffusive} boundary conditions while the {\bf Original} option is consistent with the standard {\bf OverlandFlow} boundary condition.
 
+\section{Flow Barriers}
+\label{FB}
+The the flow barrier multipliers allow for the reduction in flow across a cell face. This slightly alters Darcy's law to include a flow reduction in each direction, show here in x:
+\begin{eqnarray}
+q_x=FB_x\textbf{K}(p)\rho(p)(\frac{\partial p}{\partial x}\cos \theta_x + \sin \theta_x)
+\label{eq:qFBx}
+\end{eqnarray}
+where $FB_x$, $FB_y$ and $FB_z$ are a dimensionless multipliers specified by the {\bf FBx}, {\bf FBy} and {\bf FBz} keys. This creates behavior equivalent to the Hydraulic Flow Barrier (HFB) or {\em ITFC} (flow and transport parameters at interfaces) conditions in other models.
+
 \section{Overland Flow}
 \label{Overland Flow}
 As detailed in \cite{KM06}, \parflow{} may simulate fully-coupled surface and subsurface flow via an overland flow boundary condition.  While complete details of this approach are given in that paper, a brief summary of the equations solved are presented here.  Shallow overland flow is now represented in \parflow{} by the kinematic wave equation.   In two spatial dimensions, the continuity equation can be written as:
