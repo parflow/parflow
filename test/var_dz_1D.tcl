@@ -3,7 +3,7 @@
 
 # Import the ParFlow TCL package
 #
-lappend auto_path $env(PARFLOW_DIR)/bin 
+lappend auto_path $env(PARFLOW_DIR)/bin
 package require parflow
 namespace import Parflow::*
 
@@ -26,7 +26,7 @@ pfset ComputationalGrid.DZ	                 0.1
 
 pfset ComputationalGrid.NX                      1
 pfset ComputationalGrid.NY                      1
-pfset ComputationalGrid.NZ                     14 
+pfset ComputationalGrid.NZ                     14
 
 #---------------------------------------------------------
 # The Names of the GeomInputs
@@ -49,7 +49,7 @@ pfset GeomInput.het_input2.GeomName            het2
 # Geometry
 #---------------------------------------------------------
 #domain
-pfset Geom.domain.Lower.X                        0.0 
+pfset Geom.domain.Lower.X                        0.0
 pfset Geom.domain.Lower.Y                         0.0
 pfset Geom.domain.Lower.Z                          0.0
 
@@ -60,7 +60,7 @@ pfset Geom.domain.Upper.Z                          1.4
 pfset Geom.domain.Patches "left right front back bottom top"
 
 #het1
-pfset Geom.het1.Lower.X                        0.0 
+pfset Geom.het1.Lower.X                        0.0
 pfset Geom.het1.Lower.Y                         0.0
 pfset Geom.het1.Lower.Z                          1.3
 
@@ -71,7 +71,7 @@ pfset Geom.het1.Upper.Z                          1.4
 #het2
 pfset Geom.het2.Lower.X                        0.0
 pfset Geom.het2.Lower.Y                        0.0
-pfset Geom.het2.Lower.Z                        0.0 
+pfset Geom.het2.Lower.Z                        0.0
 
 pfset Geom.het2.Upper.X                        1.0
 pfset Geom.het2.Upper.Y                        1.0
@@ -81,7 +81,7 @@ pfset Geom.het2.Upper.Z                        0.1
 # variable dz assignments
 #------------------------------------------
 pfset Solver.Nonlinear.VariableDz     True
-#pfset Solver.Nonlinear.VariableDz     False 
+#pfset Solver.Nonlinear.VariableDz     False
 pfset dzScale.GeomNames            domain
 pfset dzScale.Type            nzList
 pfset dzScale.nzListNumber       14
@@ -191,7 +191,7 @@ pfset Domain.GeomName domain
 pfset Phase.RelPerm.Type               VanGenuchten
 pfset Phase.RelPerm.GeomNames          domain
 pfset Geom.domain.RelPerm.Alpha        2.7
-pfset Geom.domain.RelPerm.N            3.8    
+pfset Geom.domain.RelPerm.N            3.8
 
 #---------------------------------------------------------
 # Saturation
@@ -242,21 +242,21 @@ pfset Patch.back.BCPressure.Type			FluxConst
 pfset Patch.back.BCPressure.Cycle			"constant"
 pfset Patch.back.BCPressure.alltime.Value		0.0
 
-pfset Patch.bottom.BCPressure.Type		 DirEquilRefPatch	
-pfset Patch.bottom.BCPressure.Type		 FluxConst	
+pfset Patch.bottom.BCPressure.Type		 DirEquilRefPatch
+pfset Patch.bottom.BCPressure.Type		 FluxConst
 pfset Patch.bottom.BCPressure.Cycle			"constant"
 pfset Patch.bottom.BCPressure.RefGeom			domain
 pfset Patch.bottom.BCPressure.RefPatch			bottom
 pfset Patch.bottom.BCPressure.alltime.Value		0.0
 
-pfset Patch.top.BCPressure.Type			       DirEquilRefPatch 
-pfset Patch.top.BCPressure.Type			      FluxConst 
-pfset Patch.top.BCPressure.Type			      OverlandFlow 
+pfset Patch.top.BCPressure.Type			       DirEquilRefPatch
+pfset Patch.top.BCPressure.Type			      FluxConst
+#pfset Patch.top.BCPressure.Type			      OverlandFlow 
 pfset Patch.top.BCPressure.Cycle			"constant"
 pfset Patch.top.BCPressure.RefGeom			domain
-pfset Patch.top.BCPressure.RefPatch		 	bottom	
+pfset Patch.top.BCPressure.RefPatch		 	bottom
 pfset Patch.top.BCPressure.alltime.Value		-0.0001
-	
+
 
 #---------------------------------------------------------
 # Topo slopes in x-direction
@@ -277,7 +277,7 @@ pfset TopoSlopesY.GeomNames ""
 pfset TopoSlopesY.Geom.domain.Value 0.0
 
 #---------------------------------------------------------
-# Mannings coefficient 
+# Mannings coefficient
 #---------------------------------------------------------
 
 pfset Mannings.Type "Constant"
@@ -292,14 +292,14 @@ pfset ICPressure.Type                                   Constant
 pfset ICPressure.GeomNames                              domain
 pfset Geom.domain.ICPressure.Value                      -10.0
 pfset Geom.domain.ICPressure.RefGeom                    domain
-pfset Geom.domain.ICPressure.RefPatch                   top 
+pfset Geom.domain.ICPressure.RefPatch                   top
 
 #-----------------------------------------------------------------------------
 # Phase sources:
 #-----------------------------------------------------------------------------
 
 pfset PhaseSources.water.Type                         Constant
-pfset PhaseSources.water.GeomNames                    domain 
+pfset PhaseSources.water.GeomNames                    domain
 pfset PhaseSources.water.Geom.domain.Value        0.0
 
 #-----------------------------------------------------------------------------
@@ -316,16 +316,16 @@ pfset Solver.MaxIter                                     2500
 
 pfset Solver.Nonlinear.MaxIter                           200
 pfset Solver.Nonlinear.ResidualTol                       1e-9
-pfset Solver.Nonlinear.EtaChoice                         Walker1 
+pfset Solver.Nonlinear.EtaChoice                         Walker1
 pfset Solver.Nonlinear.EtaValue                          1e-5
-pfset Solver.Nonlinear.UseJacobian                      True 
-#pfset Solver.Nonlinear.UseJacobian                     False 
+pfset Solver.Nonlinear.UseJacobian                      True
+#pfset Solver.Nonlinear.UseJacobian                     False
 pfset Solver.Nonlinear.DerivativeEpsilon                 1e-10
 
 pfset Solver.Linear.KrylovDimension                      10
 
 pfset Solver.Linear.Preconditioner                       MGSemi
-pfset Solver.Linear.Preconditioner                       PFMG 
+pfset Solver.Linear.Preconditioner                       PFMG
 pfset Solver.Linear.Preconditioner.MGSemi.MaxIter        1
 pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      10
 
@@ -377,4 +377,3 @@ if $passed {
 #		set outk1 [pfgetelt $k1 0 0 $k]
 #	puts stdout "$k $outp1 $outp2 $outp3 $outk1"
 #}
-
