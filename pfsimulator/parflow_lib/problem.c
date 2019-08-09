@@ -395,6 +395,7 @@ void      FreeProblem(
 
   PFModuleFreeModule(ProblemOverlandFlowEval(problem));  //DOK
   PFModuleFreeModule(ProblemOverlandFlowEvalDiff(problem));   //@RMM
+  PFModuleFreeModule(ProblemOverlandFlowEvalKin(problem));
 
   PFModuleFreeModule(ProblemDomain(problem));
 

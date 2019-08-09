@@ -2296,37 +2296,38 @@ PFModule   *NlFunctionEvalNewPublicXtra(char *name)
   sprintf(key, "OverlandSpinupDampP2");
   public_xtra->SpinupDampP2 = GetDoubleDefault(key, 0.0);    //NBE
 
-///* parameters for upwinding formulation for TFG */
-upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");
-sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation", name);
-switch_name = GetStringDefault(key, "Original");
-switch_value = NA_NameToIndex(upwind_switch_na, switch_name);
-switch (switch_value)
-{
-  case 0:
+  ///* parameters for upwinding formulation for TFG */
+  upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");
+  sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation", name);
+  switch_name = GetStringDefault(key, "Original");
+  switch_value = NA_NameToIndex(upwind_switch_na, switch_name);
+  switch (switch_value)
   {
-    public_xtra->tfgupwind = 0;
-    break;
-  }
+    case 0:
+    {
+      public_xtra->tfgupwind = 0;
+      break;
+    }
 
-  case 1:
-  {
-    public_xtra->tfgupwind = 1;
-    break;
-  }
+    case 1:
+    {
+      public_xtra->tfgupwind = 1;
+      break;
+    }
 
-  case 2:
-  {
-    public_xtra->tfgupwind = 2;
-    break;
-  }
+    case 2:
+    {
+      public_xtra->tfgupwind = 2;
+      break;
+    }
 
-  default:
-  {
-    InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-               key);
+    default:
+    {
+      InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
+		 key);
+    }
   }
-}
+  NA_FreeNameArray(upwind_switch_na);
 
   (public_xtra->time_index) = RegisterTiming("NL_F_Eval");
 

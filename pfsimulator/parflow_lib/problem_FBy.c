@@ -278,11 +278,10 @@ void  FByFreePublicXtra()
           break;
         }
 
+      }
     }
-
     tfree(public_xtra);
   }
-}
 }
 /*--------------------------------------------------------------------------
  * FBySizeOfTempData

@@ -253,14 +253,12 @@ PFModule   *FBzNewPublicXtra()
 /*--------------------------------------------------------------------------
  * FBzFreePublicXtra
  *--------------------------------------------------------------------------*/
-
 void  FBzFreePublicXtra()
 {
   PFModule    *this_module = ThisPFModule;
   PublicXtra  *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
 
   Type0       *dummy0;
-
 
   if (public_xtra)
   {
@@ -277,17 +275,16 @@ void  FBzFreePublicXtra()
           tfree(dummy0);
           break;
         }
-
+      }
     }
 
     tfree(public_xtra);
   }
 }
-}
+
 /*--------------------------------------------------------------------------
  * FBzSizeOfTempData
  *--------------------------------------------------------------------------*/
-
 int  FBzSizeOfTempData()
 {
   return 0;

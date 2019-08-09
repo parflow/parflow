@@ -2198,9 +2198,9 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
                  key);
     }
   }
+  NA_FreeNameArray(upwind_switch_na);
 
-
-  switch_na = NA_NewNameArray("False True");
+    switch_na = NA_NewNameArray("False True");
   sprintf(key, "Solver.Nonlinear.UseJacobian");
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
