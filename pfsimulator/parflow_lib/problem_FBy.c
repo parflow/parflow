@@ -127,9 +127,10 @@ void FBy(ProblemData *problem_data, Vector *FBy)
           });
         }      /* End subgrid loop */
 
+	FreeTempVector(values);
+
         break;
       }
-
     }
   }
   handle = InitVectorUpdate(FBy, VectorUpdateAll);
@@ -146,12 +147,6 @@ PFModule  *FByInitInstanceXtra()
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;
 
-#if 0
-  if (PFModuleInstanceXtra(this_module) == NULL)
-    instance_xtra = ctalloc(InstanceXtra, 1);
-  else
-    instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
-#endif
   instance_xtra = NULL;
 
   PFModuleInstanceXtra(this_module) = instance_xtra;
