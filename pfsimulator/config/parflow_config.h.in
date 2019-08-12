@@ -155,6 +155,10 @@
 #undef HAVE_MPI
 #endif
 
+#ifndef PARFLOW_HAVE_MPI
+#undef PARFLOW_HAVE_MPI
+#endif
+
 /*
  * Sundials solver package
  */
