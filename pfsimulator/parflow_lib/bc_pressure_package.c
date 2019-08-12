@@ -1137,6 +1137,29 @@ void  BCPressurePackageFreePublicXtra()
             tfree((data->filenames));
             tfree(data);
           });
+
+	  FreePatch(SeepageFace,
+          {
+	    GetTypeStruct(SeepageFace, data, public_xtra, i);
+
+	    tfree(data -> values);
+	    tfree(data);
+          });  /* End SeepageFace */
+
+	  FreePatch(OverlandKinematic,
+          {
+	    GetTypeStruct(OverlandKinematic, data, public_xtra, i);
+	    tfree(data -> values);
+	    tfree(data);
+          }); /* End OverlandKinematic */
+
+	  FreePatch(OverlandDiffusive,
+          {
+	    GetTypeStruct(OverlandDiffusive, data, public_xtra, i);
+	    tfree(data->values);
+	    tfree(data);
+          });
+
         }); /* End Do_FreePatches */
       } /* End ForEachPatch */
 

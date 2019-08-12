@@ -90,6 +90,9 @@ set (SRC_FILES advect.F
   problem_domain.c
   problem_dz_scale.c
   problem_eval.c
+  problem_FBx.c
+  problem_FBy.c
+  problem_FBz.c
   problem_geometries.c
   problem_ic_phase_concen.c
   problem_ic_phase_pressure.c

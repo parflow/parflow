@@ -39,7 +39,9 @@ TESTS += \
 	overland_tiltedV_KWE.tcl \
   overland_slopingslab_DWE.tcl \
 	overland_tiltedV_DWE.tcl\
-	overland_FlatICP.tcl
+	overland_FlatICP.tcl \
+	richards_FBx.tcl \
+	richards_FBy.tcl 
 endif
 
 ifeq (${PARFLOW_HAVE_SILO},yes)
