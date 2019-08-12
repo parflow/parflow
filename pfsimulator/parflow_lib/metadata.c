@@ -51,7 +51,9 @@ void MetadataAddParflowDomainInfo(cJSON* pf, PFModule* solver, Grid* localGrid)
   int ni = GetInt("Process.Topology.P");
   int nj = GetInt("Process.Topology.Q");
   int nk = GetInt("Process.Topology.R");
-  int rr = amps_node_rank;
+
+  int my_rank = amps_Rank(amps_CommWorld);
+  int rr = my_rank;
   // int ss = amps_node_size;
   int* idivs = (int*) malloc(sizeof(int) * ni);
   int* jdivs = (int*) malloc(sizeof(int) * nj);
@@ -105,11 +107,31 @@ void MetadataAddParflowDomainInfo(cJSON* pf, PFModule* solver, Grid* localGrid)
   if (yj >= 0) { jdivs[yj] = origin_j; }
   if (zk >= 0) { kdivs[zk] = origin_k; }
 
+#ifdef PARFLOW_HAVE_MPI
+  /* Optimization would be to make this a single reduction operation */
   MPI_Reduce(idivs, gidivs, ni, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
   MPI_Reduce(jdivs, gjdivs, nj, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
   MPI_Reduce(kdivs, gkdivs, nk, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#else
+  /* This is broken for parallel layers other than MPI.  AMPS does not
+     have a Reduce operation; only ReduceAll */
+  for(int i = 0; i < ni; i++)
+  {
+    gidivs[i] = idivs[i];
+  }
 
-  if (amps_node_rank == 0)
+  for(int j = 0; j < nj; j++)
+  {
+    gjdivs[j] = jdivs[j];
+  }
+
+  for(int k = 0; k < nk; k++)
+  {
+    gkdivs[k] = kdivs[k];
+  }
+#endif
+
+  if (my_rank == 0)
   {
     /* now add trailing entry for "final" offset: */
     gidivs[ni] = extent[0];
