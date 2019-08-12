@@ -1545,7 +1545,96 @@ pfset Cell.3.dzScale.Value 0.45
 pfset Cell.4.dzScale.Value 0.05
 \end{verbatim}\end{display}
 
+%%
+%% == @RMM Flow Barriers
+%%
+\subsection{Flow Barriers}
+\label{Flow Barrier Keys}
+\pfaddanchor{pfindFB}
 
+Here, the values for Flow Barriers described in \ref{FB} can be input.  These are only available with Solver {\bf Richards} and can be specified in X, Y or Z directions independently using PFB files.  These barriers are appied at the cell face at the location $i+1/2$.  That is a value of $FB_x$ specified at $i$ will be applied to the cell face at $i+1/2$ or {/em between} cells $i$ and $i+1$.  The same goes for $FB_y$ ($j+1/2$) and $FB_z$ ($k+1/2$). The flow barrier values are unitless and mulitply the flux equation as shown in \ref{eq:qFBx}.
+
+The format for this section of input is:
+
+\pfkey{string}{ Solver.Nonlinear.FlowBarrierX}{False}
+{
+This key specifies whether Flow Barriers are to be used in the X direction, the default is False.
+The default indicates a false or $FB_x$ value of one [-] everywhere in the domain.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Nonlinear.FlowBarrierX     True
+\end{verbatim}\end{display}
+
+\pfkey{string}{ Solver.Nonlinear.FlowBarrierY}{False}
+{
+This key specifies whether Flow Barriers are to be used in the Y direction, the default is False.
+The default indicates a false or $FB_y$ value of one [-] everywhere in the domain.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Nonlinear.FlowBarrierY     True
+\end{verbatim}\end{display}
+
+\pfkey{string}{ Solver.Nonlinear.FlowBarrierZ}{False}
+{
+This key specifies whether Flow Barriers are to be used in the Z direction, the default is False.
+The default indicates a false or $FB_z$ value of one [-] everywhere in the domain.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Nonlinear.FlowBarrierZ     True
+\end{verbatim}\end{display}
+
+\pfkey{string}{FBx.Type}{no default}
+{
+This key specifies which method is to be used to assign flow barriers in X.  The only choice currently
+available is {\bf PFBFile} which reads in values from a distributed pfb file.
+}
+\begin{display}\begin{verbatim}
+pfset FBx.Type            PFBFile
+\end{verbatim}\end{display}
+
+\pfkey{string}{FBy.Type}{no default}
+{
+This key specifies which method is to be used to assign flow barriers in Y.  The only choice currently
+available is {\bf PFBFile} which reads in values from a distributed pfb file.
+}
+\begin{display}\begin{verbatim}
+pfset FBy.Type            PFBFile
+\end{verbatim}\end{display}
+
+\pfkey{string}{FBz.Type}{no default}
+{
+This key specifies which method is to be used to assign flow barriers in Z.  The only choice currently
+available is {\bf PFBFile} which reads in values from a distributed pfb file.
+}
+\begin{display}\begin{verbatim}
+pfset FBz.Type            PFBFile
+\end{verbatim}\end{display}
+
+The Flow Barrier values may be read in from a PFB file over the entire domain.  This is done as follows:
+
+\pfkey{string}{Geom.domain.FBx.FileName}{no default}
+{
+This key specifies file to be read in for the X flow barrier values for the domain, if the type was set to {\bf PFBFile}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.FBx.FileName  Flow_Barrier_X.pfb
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.domain.FBy.FileName}{no default}
+{
+This key specifies file to be read in for the Y flow barrier values for the domain, if the type was set to {\bf PFBFile}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.FBy.FileName  Flow_Barrier_Y.pfb
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.domain.FBz.FileName}{no default}
+{
+This key specifies file to be read in for the Z flow barrier values for the domain, if the type was set to {\bf PFBFile}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.FBz.FileName  Flow_Barrier_Z.pfb
+\end{verbatim}\end{display}
 
 %%
 %% == mannings roughness

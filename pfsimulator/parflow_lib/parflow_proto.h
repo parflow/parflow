@@ -717,6 +717,39 @@ PFModule *dzScaleNewPublicXtra(void);
 void dzScaleFreePublicXtra(void);
 int dzScaleSizeOfTempData(void);
 
+/* RMM patterned FB (flow boundary) input from DZ scale,
+   three modules called  */
+typedef void (*FBxInvoke) (ProblemData *problem_data, Vector *FBx);
+
+/* problem_FBx.c */
+void FBx(ProblemData *problem_data, Vector *FBx);
+PFModule *FBxInitInstanceXtra(void);
+void FBxFreeInstanceXtra(void);
+PFModule *FBxNewPublicXtra(void);
+void FBxFreePublicXtra(void);
+int FBxSizeOfTempData(void);
+
+typedef void (*FByInvoke) (ProblemData *problem_data, Vector *FBy);
+
+/* problem_FBy.c */
+void FBy(ProblemData *problem_data, Vector *FBy);
+PFModule *FByInitInstanceXtra(void);
+void FByFreeInstanceXtra(void);
+PFModule *FByNewPublicXtra(void);
+void FByFreePublicXtra(void);
+int FBySizeOfTempData(void);
+
+typedef void (*FBzInvoke) (ProblemData *problem_data, Vector *FBz);
+
+/* problem_FBz.c */
+void FBz(ProblemData *problem_data, Vector *FBz);
+PFModule *FBzInitInstanceXtra(void);
+void FBzFreeInstanceXtra(void);
+PFModule *FBzNewPublicXtra(void);
+void FBzFreePublicXtra(void);
+int FBzSizeOfTempData(void);
+
+
 
 typedef void (*realSpaceZInvoke) (ProblemData *problem_data, Vector *rsz);
 
