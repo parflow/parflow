@@ -4,8 +4,6 @@ include(ParflowTest)
 set(TESTS
   default_single.tcl
   default_richards_wells.tcl
-  octree-simple.tcl
-  octree-large-domain.tcl
   forsyth2.tcl
   harvey.flow.tcl
   harvey_flow_pgs.tcl
@@ -21,6 +19,8 @@ if(${PARFLOW_HAVE_HYPRE})
     default_richards.tcl
     default_richards_nocluster.tcl
     default_overland.tcl
+    octree-simple.tcl
+    octree-large-domain.tcl
     LW_var_dz.tcl
     LW_var_dz_spinup.tcl
     terrain_following_grid_overland.tcl
