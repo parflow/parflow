@@ -77,82 +77,82 @@ amps_ThreadLocalDcl(extern PFModule *, global_ptr_this_pf_module);
  *--------------------------------------------------------------------------*/
 
 #define PFModuleInvoke(type, pf_module, args) \
-  ( \
-   ThisPFModule = pf_module, \
-   (*(type (*)())(ThisPFModule->call))args \
+  (                                           \
+   ThisPFModule = pf_module,                  \
+   (*(type (*)())(ThisPFModule->call))args    \
   )
 
 #define PFModuleInvokeType(type, pf_module, args) \
-  ( \
-   ThisPFModule = pf_module, \
-   (*(type)(ThisPFModule->call))args \
+  (                                               \
+   ThisPFModule = pf_module,                      \
+   (*(type)(ThisPFModule->call))args              \
   )
 
-#define PFModuleNewInstance(pf_module, args) \
-  ( \
-   ThisPFModule = DupPFModule(pf_module), \
+#define PFModuleNewInstance(pf_module, args)                   \
+  (                                                            \
+   ThisPFModule = DupPFModule(pf_module),                      \
    (*(PFModule * (*)())(ThisPFModule->init_instance_xtra))args \
   )
 
-#define PFModuleNewInstanceType(type, pf_module, args)  \
-  ( \
-   ThisPFModule = DupPFModule(pf_module), \
-   (*(type)(ThisPFModule->init_instance_xtra))args \
+#define PFModuleNewInstanceType(type, pf_module, args) \
+  (                                                    \
+   ThisPFModule = DupPFModule(pf_module),              \
+   (*(type)(ThisPFModule->init_instance_xtra))args     \
   )
 
-#define PFModuleReNewInstance(pf_module, args) \
-  ( \
-   ThisPFModule = pf_module, \
+#define PFModuleReNewInstance(pf_module, args)                 \
+  (                                                            \
+   ThisPFModule = pf_module,                                   \
    (*(PFModule * (*)())(ThisPFModule->init_instance_xtra))args \
   )
 
-#define PFModuleReNewInstanceType(type, pf_module, args)        \
-  ( \
-   ThisPFModule = pf_module, \
-   (*(type)(ThisPFModule->init_instance_xtra))args \
+#define PFModuleReNewInstanceType(type, pf_module, args) \
+  (                                                      \
+   ThisPFModule = pf_module,                             \
+   (*(type)(ThisPFModule->init_instance_xtra))args       \
   )
 
-#define PFModuleFreeInstance(pf_module) \
-  ( \
-   ThisPFModule = pf_module, \
+#define PFModuleFreeInstance(pf_module)                 \
+  (                                                     \
+   ThisPFModule = pf_module,                            \
    (*(void (*)())(ThisPFModule->free_instance_xtra))(), \
-   FreePFModule(pf_module) \
+   FreePFModule(pf_module)                              \
   )
 
-#define PFModuleNewModule(name, args) \
-  ( \
-   ThisPFModule = NewPFModule((void*)name, \
+#define PFModuleNewModule(name, args)                          \
+  (                                                            \
+   ThisPFModule = NewPFModule((void*)name,                     \
                               (void*)name ## InitInstanceXtra, \
                               (void*)name ## FreeInstanceXtra, \
-                              (void*)name ## NewPublicXtra, \
-                              (void*)name ## FreePublicXtra, \
-                              (void*)name ## SizeOfTempData, \
-                              NULL, NULL), \
-   (*(PFModule * (*)())(ThisPFModule->new_public_xtra))args \
+                              (void*)name ## NewPublicXtra,    \
+                              (void*)name ## FreePublicXtra,   \
+                              (void*)name ## SizeOfTempData,   \
+                              NULL, NULL),                     \
+   (*(PFModule * (*)())(ThisPFModule->new_public_xtra))args    \
   )
 
-#define PFModuleNewModuleType(type, name, args) \
-  ( \
-   ThisPFModule = NewPFModule((void*)name, \
+#define PFModuleNewModuleType(type, name, args)                \
+  (                                                            \
+   ThisPFModule = NewPFModule((void*)name,                     \
                               (void*)name ## InitInstanceXtra, \
                               (void*)name ## FreeInstanceXtra, \
-                              (void*)name ## NewPublicXtra, \
-                              (void*)name ## FreePublicXtra, \
-                              (void*)name ## SizeOfTempData, \
-                              NULL, NULL), \
-   (*(type)(ThisPFModule->new_public_xtra))args \
+                              (void*)name ## NewPublicXtra,    \
+                              (void*)name ## FreePublicXtra,   \
+                              (void*)name ## SizeOfTempData,   \
+                              NULL, NULL),                     \
+   (*(type)(ThisPFModule->new_public_xtra))args                \
   )
 
-#define PFModuleFreeModule(pf_module) \
-  ( \
-   ThisPFModule = pf_module, \
+#define PFModuleFreeModule(pf_module)                 \
+  (                                                   \
+   ThisPFModule = pf_module,                          \
    (*(void (*)())(ThisPFModule->free_public_xtra))(), \
-   FreePFModule(pf_module) \
+   FreePFModule(pf_module)                            \
   )
 
-#define PFModuleSizeOfTempData(pf_module) \
-  ( \
-   ThisPFModule = pf_module, \
+#define PFModuleSizeOfTempData(pf_module)           \
+  (                                                 \
+   ThisPFModule = pf_module,                        \
    (*(int (*)())(ThisPFModule->sizeof_temp_data))() \
   )
 

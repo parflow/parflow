@@ -16,9 +16,9 @@ extern "C" {
  * function prototypes
  *-----------------------------------------------------------------------*/
 
-Databox * CompSubBox (Databox *fun,
-		      int il, int jl, int kl,
-		      int iu, int ju, int ku);
+Databox * CompSubBox(Databox *fun,
+                     int il, int jl, int kl,
+                     int iu, int ju, int ku);
 
 #ifdef __cplusplus
 }

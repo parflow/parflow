@@ -140,11 +140,11 @@ typedef struct {
 #define SubmatrixSY(submatrix)   (SubregionSY(SubmatrixDataSpace(submatrix)))
 #define SubmatrixSZ(submatrix)   (SubregionSZ(SubmatrixDataSpace(submatrix)))
 
-#define SubmatrixEltIndex(submatrix, x, y, z) \
-  (((x) - SubmatrixIX(submatrix)) / SubmatrixSX(submatrix) + \
-   (((y) - SubmatrixIY(submatrix)) / SubmatrixSY(submatrix) + \
+#define SubmatrixEltIndex(submatrix, x, y, z)                   \
+  (((x) - SubmatrixIX(submatrix)) / SubmatrixSX(submatrix) +    \
+   (((y) - SubmatrixIY(submatrix)) / SubmatrixSY(submatrix) +   \
     (((z) - SubmatrixIZ(submatrix)) / SubmatrixSZ(submatrix)) * \
-    SubmatrixNY(submatrix)) * \
+    SubmatrixNY(submatrix)) *                                   \
    SubmatrixNX(submatrix))
 
 #define SubmatrixElt(submatrix, s, x, y, z) \

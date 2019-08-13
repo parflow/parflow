@@ -27,11 +27,11 @@
  **********************************************************************EHEADER*/
 /*****************************************************************************
 *
-* FILE:	nodiag_scale.c
+* FILE: nodiag_scale.c
 *
-* WRITTEN BY:	Bill Bosl
-*		phone: (510) 423-2873
-*		e-mail: wjbosl@llnl.gov
+* WRITTEN BY:   Bill Bosl
+*               phone: (510) 423-2873
+*               e-mail: wjbosl@llnl.gov
 *
 * FUNCTIONS IN THIS FILE:
 * NoDiagScale, InitNoDiagScale, FreeNoDiagScale, NewNoDiagScale
