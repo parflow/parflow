@@ -342,6 +342,32 @@ standard C language delimiters using /* and */.  You don't need to
 state the obvious, focus on intent and purpose to help guide others
 reading your code.
 
+#### Testing
+
+Contributions with feature addtions should include tests for that
+feature.  Submissions that do not pass the test suite will not be
+accepted.  A major goal is to ensure the master branch of ParFlow
+always builds and successfully runs the test suite.
+
+You can run the tests by going to the directory where you ran CMake
+and running:
+
+```
+make check
+```
+
+The test suite will run using CTest and results will show how many
+tests pass and fail.
+
+Automated ParFlow testing is done with every pull request using the
+TravisCI continuous integration system.  The results will appear on
+the pull request page on GitHub.  You can view the TravisCI results by
+selecting "Show all checks".  The test system runs serial as well as
+parallel problems.  The current ParFlow regression test suite is
+limited but includes tests on saturated and unsaturated subsurface
+flow and coupled ParFlow CLM systems.  The TravisCI test is run in a
+Linux image based on Ubuntu.  The testing setup is included in the
+.travis.yaml file located in the root ParFlow directory.
 
 
 
