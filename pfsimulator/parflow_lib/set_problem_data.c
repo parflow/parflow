@@ -236,11 +236,11 @@ PFModule  *SetProblemDataInitInstanceXtra(
                                PFModuleNewInstance(ProblemdzScale(problem), ());
 
     (instance_xtra->FBx) =                                      //RMM
-                           PFModuleNewInstance(ProblemFBx(problem), ());
+                               PFModuleNewInstance(ProblemFBx(problem), ());
     (instance_xtra->FBy) =                                      //RMM
-                           PFModuleNewInstance(ProblemFBy(problem), ());
+                               PFModuleNewInstance(ProblemFBy(problem), ());
     (instance_xtra->FBz) =                                      //RMM
-                           PFModuleNewInstance(ProblemFBz(problem), ());
+                               PFModuleNewInstance(ProblemFBz(problem), ());
 
     (instance_xtra->real_space_z) =
       PFModuleNewInstance(ProblemRealSpaceZ(problem), ());

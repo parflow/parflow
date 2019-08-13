@@ -1396,7 +1396,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   /*BH*/ double *z0m_data = NULL;
   /*BH*/ double *displa_data = NULL;
   /*BH*/ double *veg_map_data = NULL;
-  /*BH*/                        /*will fail if veg_map_data is declared as int */
+  /*BH*/			/*will fail if veg_map_data is declared as int */
   char filename[2048];          // IMF: 1D input file name *or* 2D/3D input file base name
   Subvector *sw_forc_sub, *lw_forc_sub, *prcp_forc_sub, *tas_forc_sub, *u_forc_sub, *v_forc_sub, *patm_forc_sub, *qatm_forc_sub, *lai_forc_sub, *sai_forc_sub, *z0m_forc_sub, *displa_forc_sub, *veg_map_forc_sub;      /*BH: added LAI/SAI/Z0M/DISPLA/vegmap */
 
@@ -3652,11 +3652,12 @@ TeardownRichards(PFModule * this_module)
 #ifdef HAVE_CLM
   if (instance_xtra->eflx_lh_tot)
   {
+
     if (instance_xtra->clm_out_grid)
     {
       FreeVector(instance_xtra->clm_out_grid);
     }
-
+    
     FreeVector(instance_xtra->eflx_lh_tot);
     FreeVector(instance_xtra->eflx_lwrad_out);
     FreeVector(instance_xtra->eflx_sh_tot);

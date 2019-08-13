@@ -141,7 +141,9 @@ void         BCPressurePackage(
       {
         Do_SetupPatchIntervals(public_xtra, interval_number, i,
         {
+
 #if 0 /* @MCB: Do not uncomment this block, it is example code */
+
           SetupPatchInterval(MyNewPatchType,
           {
             /* Allocate the struct for an interval */
@@ -161,6 +163,7 @@ void         BCPressurePackage(
             BCPressureDataIntervalValue(bc_pressure_data, i, interval_number)
               = (void*)interval_data;
           }); /* End example */
+
 #endif // #if 0
 
           /* Setup a fixed pressure condition structure */
@@ -624,15 +627,15 @@ PFModule  *BCPressurePackageNewPublicXtra(
           NewTypeStruct(DirEquilRefPatch, data);
 
           (data->values) = ctalloc(double,
-                                   interval_division);
+                                     interval_division);
           (data->value_at_interface) = ctalloc(double *,
-                                               interval_division);
+                                                 interval_division);
 
           sprintf(key, "Patch.%s.BCPressure.RefGeom", patch_name);
           switch_name = GetString(key);
 
           data->reference_solid = NA_NameToIndex(GlobalsGeomNames,
-                                                 switch_name);
+                                                   switch_name);
 
           if (data->reference_solid < 0)
           {
@@ -872,7 +875,7 @@ PFModule  *BCPressurePackageNewPublicXtra(
             switch_name = GetString(key);
 
             data->function_type = NA_NameToIndex(function_na,
-                                                 switch_name);
+                                                   switch_name);
 
             if (data->function_type < 0)
             {
@@ -934,17 +937,17 @@ PFModule  *BCPressurePackageNewPublicXtra(
           /* MCB: Need to setup values for patch */
           /* Something akin to */
 
-          (data->values) = ctalloc(double, interval_division);
+             (data->values) = ctalloc(double, interval_division);
 
-          ForEachInterval(interval_division, interval_number)
-          {
-            sprintf(key, "Patch.%s.BCPressure.%s.Value",
-                    patch_name,
-                    NA_IndexToName(GlobalsIntervalNames[global_cycle],
-                                   interval_number));
+             ForEachInterval(interval_division, interval_number)
+             {
+               sprintf(key, "Patch.%s.BCPressure.%s.Value",
+                 patch_name,
+                 NA_IndexToName(GlobalsIntervalNames[global_cycle],
+                                interval_number));
 
-            data->values[interval_number] = GetDouble(key);
-          }
+               data->values[interval_number] = GetDouble(key);
+             }
           StoreTypeStruct(public_xtra, data, i);
         }); /* End SeepageFace */
 
@@ -952,17 +955,17 @@ PFModule  *BCPressurePackageNewPublicXtra(
         {
           /* Constant "rainfall" rate value on patch */
           NewTypeStruct(OverlandKinematic, data);
-          (data->values) = ctalloc(double, interval_division);
+             (data->values) = ctalloc(double, interval_division);
 
-          ForEachInterval(interval_division, interval_number)
-          {
-            sprintf(key, "Patch.%s.BCPressure.%s.Value",
-                    patch_name,
-                    NA_IndexToName(GlobalsIntervalNames[global_cycle],
-                                   interval_number));
+             ForEachInterval(interval_division, interval_number)
+             {
+               sprintf(key, "Patch.%s.BCPressure.%s.Value",
+                 patch_name,
+                 NA_IndexToName(GlobalsIntervalNames[global_cycle],
+                                interval_number));
 
-            data->values[interval_number] = GetDouble(key);
-          }
+               data->values[interval_number] = GetDouble(key);
+             }
           StoreTypeStruct(public_xtra, data, i);
         }); /* End OverlandKinematic */
 
@@ -970,19 +973,20 @@ PFModule  *BCPressurePackageNewPublicXtra(
         {
           /* Constant "rainfall" rate value on patch */
           NewTypeStruct(OverlandDiffusive, data);
-          (data->values) = ctalloc(double, interval_division);
+             (data->values) = ctalloc(double, interval_division);
 
-          ForEachInterval(interval_division, interval_number)
-          {
-            sprintf(key, "Patch.%s.BCPressure.%s.Value",
-                    patch_name,
-                    NA_IndexToName(GlobalsIntervalNames[global_cycle],
-                                   interval_number));
+             ForEachInterval(interval_division, interval_number)
+             {
+               sprintf(key, "Patch.%s.BCPressure.%s.Value",
+                 patch_name,
+                 NA_IndexToName(GlobalsIntervalNames[global_cycle],
+                                interval_number));
 
-            data->values[interval_number] = GetDouble(key);
-          }
+               data->values[interval_number] = GetDouble(key);
+             }
           StoreTypeStruct(public_xtra, data, i);
         }); /* End OverlandDiffusive */
+
       });      /* End Do_SetupPatchTypes */
     }
   }
@@ -1134,27 +1138,28 @@ void  BCPressurePackageFreePublicXtra()
             tfree(data);
           });
 
-          FreePatch(SeepageFace,
+	  FreePatch(SeepageFace,
           {
-            GetTypeStruct(SeepageFace, data, public_xtra, i);
+	    GetTypeStruct(SeepageFace, data, public_xtra, i);
 
-            tfree(data->values);
-            tfree(data);
+	    tfree(data -> values);
+	    tfree(data);
           });  /* End SeepageFace */
 
-          FreePatch(OverlandKinematic,
+	  FreePatch(OverlandKinematic,
           {
-            GetTypeStruct(OverlandKinematic, data, public_xtra, i);
-            tfree(data->values);
-            tfree(data);
+	    GetTypeStruct(OverlandKinematic, data, public_xtra, i);
+	    tfree(data -> values);
+	    tfree(data);
           }); /* End OverlandKinematic */
 
-          FreePatch(OverlandDiffusive,
+	  FreePatch(OverlandDiffusive,
           {
-            GetTypeStruct(OverlandDiffusive, data, public_xtra, i);
-            tfree(data->values);
-            tfree(data);
+	    GetTypeStruct(OverlandDiffusive, data, public_xtra, i);
+	    tfree(data->values);
+	    tfree(data);
           });
+
         }); /* End Do_FreePatches */
       } /* End ForEachPatch */
 
