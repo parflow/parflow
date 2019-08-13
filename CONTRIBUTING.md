@@ -228,10 +228,149 @@ pfuncrustify tool to maintain consistency.
 
 ### Your First Code Contribution
 
-See the [ParFlow Software Productivity and Sustainability
-Plan](https://github.com/parflow/parflow/blob/master/pftools/docs/software_plan.md)
-for notes on how to make code submissions (section 3.1) and
-documentation (section 3.3).
+The ParFlow reviewers will be looking for several specific items
+on submitted code contributions.   
+
+#### License and Copyright
+
+ParFlow is released under the GNU Lesser General Public License
+(LGPL).  The full text of the license is included in the ParFlow
+LICENSE.txt file located at:
+<https://github.com/parflow/parflow/blob/master/LICENSE.txt>.  All
+contributions to ParFlow must be compatible with the LGPL.  It is
+strongly preferred to use GNU General Public License version 2.1 for
+contributions since other licenses will have to be checked to see if
+including them is allowed.  If a contributor has a particular reason
+to provide new work with a license other than GPLv2, they should
+contact the code maintainers before contributing a pull request.
+
+All new source files must contain a license statement, and all
+modifications to source files must conform to the the license in the
+original file.  You must make sure that the licensing attribution is
+correct and that the code is suitable for ParFLow inclusion. No
+contributions will be accepted if they include code (even snippets)
+from sources that have incompatible licenses.
+
+In addition to the license you should include a copyright
+statement in the header if that is required by your employer, such as:
+Copyright 2009 John Doe.  If the you work for an employer or a
+university, the you should check with how to properly identify the
+copyright holder (which may not be the contributor as an individual).
+
+Please use a header similiar to this example in ALL new code files.
+
+We will not accept code without a proper license statement.
+
+```c
+/**********************************************************************
+ *
+ *  Your Copyright statement if needed.
+ *
+ *  Please read the LICENSE file for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ ***********************************************************************/
+
+```
+
+#### Source Code Documentation
+
+ParFlow has historically had inadaquate source code documenation.   We are
+working to address this by requiring new code submissions to have
+documenation to aid others in understanding the code.  The team has
+selected to use Doxygen for code documenation.
+
+All new source code file header files should document EVERY user
+visiable structure, function, and macro.   Reviewers will reject
+submissions that do not do this.
+
+Target comments at new users to the code, focus on intent and purpose
+of the method/structure.
+
+Format for documenting a function/macro:
+
+```c
+/** @brief brief single line description of function.
+ * 
+ * Longer description of function
+ *
+ * @param arg1 description of arg1
+ * @param arg2 description of arg2
+ * ...
+ * @param argN description of argN
+ *
+ * @return description of return value
+ */
+```
+
+All structures should have documenation for the purpose of the structure and a description of the fields
+in the structure.
+
+```c
+/**
+ * @brief brief single line description of the structure.
+ *
+ * Longer description of structure
+ *
+ */
+typedef struct mystruct {
+  /** Field1 description */
+  unsigned char field1;
+
+  /** Field2 description */
+  unsigned char faces;
+
+} MyStruct;
+```
+
+In addition, it is expected that code sections are documented with
+functionality information and explanations of any nonintuitive code.
+Documentation information should be set off from the code through
+standard C language delimiters using /* and */.  You don't need to
+state the obvious, focus on intent and purpose to help guide others
+reading your code.
+
+#### Testing
+
+Contributions with feature addtions should include tests for that
+feature.  Submissions that do not pass the test suite will not be
+accepted.  A major goal is to ensure the master branch of ParFlow
+always builds and successfully runs the test suite.
+
+You can run the tests by going to the directory where you ran CMake
+and running:
+
+```
+make check
+```
+
+The test suite will run using CTest and results will show how many
+tests pass and fail.
+
+Automated ParFlow testing is done with every pull request using the
+TravisCI continuous integration system.  The results will appear on
+the pull request page on GitHub.  You can view the TravisCI results by
+selecting "Show all checks".  The test system runs serial as well as
+parallel problems.  The current ParFlow regression test suite is
+limited but includes tests on saturated and unsaturated subsurface
+flow and coupled ParFlow CLM systems.  The TravisCI test is run in a
+Linux image based on Ubuntu.  The testing setup is included in the
+.travis.yaml file located in the root ParFlow directory.
+
+
+
 
 
 
