@@ -42,7 +42,7 @@ extern "C" {
  * function prototypes
  *-----------------------------------------------------------------------*/
 
-Databox * EnlargeBox (Databox *inbox, int new_nx, int new_nj, int new_nz);
+Databox * EnlargeBox(Databox *inbox, int new_nx, int new_nj, int new_nz);
 
 #ifdef __cplusplus
 }

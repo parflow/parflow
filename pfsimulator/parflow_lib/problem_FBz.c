@@ -129,7 +129,6 @@ void FBz(ProblemData *problem_data, Vector *FBz)
 
         break;
       }
-
     }
   }
   handle = InitVectorUpdate(FBz, VectorUpdateAll);
@@ -224,7 +223,6 @@ PFModule   *FBzNewPublicXtra()
     //  PFBFile = 0;
     switch ((public_xtra->type))
     {
-
       // Read from PFB file
       case 0:
       {
@@ -268,7 +266,6 @@ void  FBzFreePublicXtra()
 
       switch ((public_xtra->type))
       {
-
         case 0:
         {
           dummy0 = (Type0*)(public_xtra->data);

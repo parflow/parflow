@@ -110,10 +110,10 @@ void FreeBCPressureData(
                                           i, interval_number);
 
                   if (DirEquilRefPatchValueAtInterfaces(
-                                                       interval_data))
+                                                        interval_data))
                   {
                     tfree(DirEquilRefPatchValueAtInterfaces(
-                                                           interval_data));
+                                                            interval_data));
                   }
                   break;
                 }

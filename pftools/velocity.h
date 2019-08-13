@@ -75,10 +75,10 @@ extern "C" {
  *-----------------------------------------------------------------------*/
 
 /* velocity.c */
-Databox * *CompBFCVel (Databox *k, Databox *h);
-Databox **CompCellVel (Databox *k, Databox *h);
-Databox **CompVertVel (Databox *k, Databox *h);
-Databox *CompVMag (Databox *vx, Databox *vy, Databox *vz);
+Databox * *CompBFCVel(Databox *k, Databox *h);
+Databox **CompCellVel(Databox *k, Databox *h);
+Databox **CompVertVel(Databox *k, Databox *h);
+Databox *CompVMag(Databox *vx, Databox *vy, Databox *vz);
 
 #ifdef __cplusplus
 }

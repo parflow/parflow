@@ -94,14 +94,14 @@ typedef struct _CharVector {
 #define SubcharvectorNC(subcharvector)   ((subcharvector)->nc)
 
 #define SubcharvectorEltIndex(subcharvector, x, y, z) \
-  (((x) - SubcharvectorIX(subcharvector)) + \
-   (((y) - SubcharvectorIY(subcharvector)) + \
-    (((z) - SubcharvectorIZ(subcharvector))) * \
-    SubcharvectorNY(subcharvector)) * \
+  (((x) - SubcharvectorIX(subcharvector)) +           \
+   (((y) - SubcharvectorIY(subcharvector)) +          \
+    (((z) - SubcharvectorIZ(subcharvector))) *        \
+    SubcharvectorNY(subcharvector)) *                 \
    SubcharvectorNX(subcharvector))
 
 #define SubcharvectorElt(subcharvector, ci, x, y, z) \
-  (SubcharvectorCompData(subcharvector, ci) + \
+  (SubcharvectorCompData(subcharvector, ci) +        \
    SubcharvectorEltIndex(subcharvector, x, y, z))
 
 /*--------------------------------------------------------------------------

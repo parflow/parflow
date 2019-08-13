@@ -129,10 +129,10 @@ typedef struct _VectorUpdateCommHandle {
 #define SubvectorNZ(subvector)   (SubgridNZ(SubvectorDataSpace(subvector)))
 
 #define SubvectorEltIndex(subvector, x, y, z) \
-  (((x) - SubvectorIX(subvector)) + \
-   (((y) - SubvectorIY(subvector)) + \
-    (((z) - SubvectorIZ(subvector))) * \
-    SubvectorNY(subvector)) * \
+  (((x) - SubvectorIX(subvector)) +           \
+   (((y) - SubvectorIY(subvector)) +          \
+    (((z) - SubvectorIZ(subvector))) *        \
+    SubvectorNY(subvector)) *                 \
    SubvectorNX(subvector))
 
 #define SubvectorElt(subvector, x, y, z) \

@@ -60,19 +60,19 @@ typedef struct {
  * The actual functions in use.
  *--------------------------------------------------------------------------*/
 
-#define Fprime_OF_S(s, a, b)  (2.0 * (a) * (b) * \
-                               (-pow((s), 2.0) + (s)) \
-                               / \
+#define Fprime_OF_S(s, a, b)  (2.0 * (a) * (b) *                                             \
+                               (-pow((s), 2.0) + (s))                                        \
+                               /                                                             \
                                pow(((a) * pow((s), 2.0) + (b) * pow((1.0 - (s)), 2.0)), 2.0) \
                                )
 
-#define Hprime_OF_S(s, a, b)  (2.0 * (a) * (b) *  \
-                               (((a) + (b)) * pow((s), 5.0) \
-                                - ((a) + 4.0 * (b)) * pow((s), 4.0) \
-                                + 6 * (b) * pow((s), 3.0) \
-                                - 4 * (b) * pow((s), 2.0) \
-                                + (b) * (s)) \
-                               / \
+#define Hprime_OF_S(s, a, b)  (2.0 * (a) * (b) *                                           \
+                               (((a) + (b)) * pow((s), 5.0)                                \
+                                - ((a) + 4.0 * (b)) * pow((s), 4.0)                        \
+                                + 6 * (b) * pow((s), 3.0)                                  \
+                                - 4 * (b) * pow((s), 2.0)                                  \
+                                + (b) * (s))                                               \
+                               /                                                           \
                                pow(((a) * pow((s), 2) + (b) * pow((1.0 - (s)), 2.0)), 2.0) \
                                )
 

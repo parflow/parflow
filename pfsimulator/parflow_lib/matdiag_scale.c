@@ -27,11 +27,11 @@
  **********************************************************************EHEADER*/
 /*****************************************************************************
 *
-* FILE:	matdiag_scale.c
+* FILE: matdiag_scale.c
 *
-* WRITTEN BY:	Bill Bosl
-*		phone: (510) 423-2873
-*		e-mail: wjbosl@llnl.gov
+* WRITTEN BY:   Bill Bosl
+*               phone: (510) 423-2873
+*               e-mail: wjbosl@llnl.gov
 *
 * DESCRIPTION:
 * Routine for computing the diagonal scaling vector D by taking
@@ -39,11 +39,11 @@
 * DiagScale is then called to scale or unscale the matrix A.
 * The scaling operation that is carried out is:
 *
-*		A~ = D^(-1/2) A D^(-1/2)
+*               A~ = D^(-1/2) A D^(-1/2)
 *
-*		x~ = D^(1/2) x
+*               x~ = D^(1/2) x
 *
-*		b~ = D^(-1/2) b
+*               b~ = D^(-1/2) b
 *
 * Unscaling is accomplished by inverting the vector
 * D that was previously computed, then calling DiagScale.

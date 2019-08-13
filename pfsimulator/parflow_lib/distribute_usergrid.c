@@ -147,8 +147,8 @@ SubgridArray   *DistributeUserGrid(
       static char first_call = 1;
       if (first_call && !amps_Rank(amps_CommWorld))
       {
-	 amps_Printf("Using process grid (%d,%d,%d)\n", P, Q, R);
-	 first_call = 0;
+        amps_Printf("Using process grid (%d,%d,%d)\n", P, Q, R);
+        first_call = 0;
       }
     }
     else

@@ -117,9 +117,9 @@ void  PrintTiming()
   amps_File file = NULL;
   amps_Invoice max_invoice;
 
-  double time_ticks[timing ->size];
-  double cpu_ticks[timing ->size];
-  double mflops[timing ->size];
+  double time_ticks[timing->size];
+  double cpu_ticks[timing->size];
+  double mflops[timing->size];
 
   int i;
 
@@ -136,8 +136,8 @@ void  PrintTiming()
   for (i = 0; i < (timing->size); i++)
   {
     mflops[i] = time_ticks ?
-      ((timing->flops)[i] / (time_ticks[i] / AMPS_TICKS_PER_SEC)) / 1.0E6
-      : 0.0;
+                ((timing->flops)[i] / (time_ticks[i] / AMPS_TICKS_PER_SEC)) / 1.0E6
+                : 0.0;
   }
 
   IfLogging(0)
@@ -148,7 +148,7 @@ void  PrintTiming()
     {
       amps_Fprintf(file, "%s:\n", (timing->name)[i]);
       amps_Fprintf(file, "  wall clock time   = %f seconds\n",
-		   time_ticks[i] / AMPS_TICKS_PER_SEC);
+                   time_ticks[i] / AMPS_TICKS_PER_SEC);
       amps_Fprintf(file, "  wall MFLOPS = %f (%g)\n", mflops[i],
                    (timing->flops)[i]);
 #ifdef CPUTiming
@@ -177,11 +177,11 @@ void  PrintTiming()
     fprintf(file, "Timer,Time (s),MFLOPS (mops/s),FLOP (op)\n");
     for (i = 0; i < (timing->size); i++)
     {
-      fprintf(file, "%s,%f,%f,%g\n", timing->name[i], 
-	      time_ticks[i] / AMPS_TICKS_PER_SEC,
-	      mflops[i], (timing->flops)[i]);
+      fprintf(file, "%s,%f,%f,%g\n", timing->name[i],
+              time_ticks[i] / AMPS_TICKS_PER_SEC,
+              mflops[i], (timing->flops)[i]);
     }
-    
+
     fclose(file);
   }
 
