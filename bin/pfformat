@@ -88,7 +88,7 @@ function main() {
 
    check_version
 
-   files=$(find . -name \*.[ch] | grep -v './build')
+   files=$(find . -name \*.[ch] | grep -v './build\|third-party')
    for i in $files
    do
       uncrustify -l C --replace --no-backup -c bin/parflow.cfg $i 
