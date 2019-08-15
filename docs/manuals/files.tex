@@ -1,5 +1,5 @@
-\newcommand{\pfkey}[4]{\vspace{0.15in} {\noindent{\normalsize {\sl #1} 
-\hspace{0.2in}{\bfseries #2}\hspace{0.2in}[#3]}} \newline \indent #4 \newline 
+\newcommand{\pfkey}[4]{\vspace{0.15in} {\noindent{\normalsize {\sl #1}
+\hspace{0.2in}{\bfseries #2}\hspace{0.2in}[#3]}} \newline \indent #4 \newline
 Example Useage: \newline \vspace{-0.25in}}
 
 %=============================================================================
@@ -187,16 +187,16 @@ indeed consistent.
 \pfkey{integer}{FileVersion}{no default}
 {This gives the value of
 the input file version number that this file fits.}
-\begin{display}\begin{verbatim} 
+\begin{display}\begin{verbatim}
 pfset FileVersion 4
-\end{verbatim}\end{display} 
+\end{verbatim}\end{display}
 
 As development of the \parflow{} code continues, the input file format
 will vary.  We have thus included an input file format number as a way
 of verifying that the correct format type is being used.  The user can
 check in the \code{parflow/config/file_versions.h} file to verify that
 the format number specified in the input file matches the defined
-value of \kbd{PFIN_VERSION}. 
+value of \kbd{PFIN_VERSION}.
 
 %=============================================================================
 %=============================================================================
@@ -208,28 +208,28 @@ This section describes how processors are assigned in order to solve the domain
 in parallel. “P” allocates the number of processes to the grid-cells in x. “Q” allocates
 the number of processes to the grid-cells in y. “R” allocates the number of processes to
 the grid-cells in z. Please note “R” should always be 1 if you are running with Solver
-Richards \cite{Jones-Woodward01} unless you’re running a totally saturated domain (solver 
+Richards \cite{Jones-Woodward01} unless you’re running a totally saturated domain (solver
 IMPES).
 
 \pfkey{integer}{Process.Topology.P}{no default}
 {This assigns the process splits in the \emph{x} direction.}
-\begin{display}\begin{verbatim} 
+\begin{display}\begin{verbatim}
 pfset Process.Topology.P        2
-\end{verbatim}\end{display} 
+\end{verbatim}\end{display}
 
 \pfkey{integer}{Process.Topology.Q}{no default}
 {This assigns the process splits in the \emph{y} direction.}
-\begin{display}\begin{verbatim} 
+\begin{display}\begin{verbatim}
 pfset Process.Topology.Q        1
-\end{verbatim}\end{display} 
+\end{verbatim}\end{display}
 
 \pfkey{integer}{Process.Topology.P}{no default}
 {This assigns the process splits in the \emph{z} direction.}
-\begin{display}\begin{verbatim} 
+\begin{display}\begin{verbatim}
 pfset Process.Topology.R        1
-\end{verbatim}\end{display} 
+\end{verbatim}\end{display}
 
-In addition, you can assign the computing topology when you initiate your parflow script using tcl. 
+In addition, you can assign the computing topology when you initiate your parflow script using tcl.
 You must include the topology allocation when using tclsh and the parflow script.
 
 Example Usage: \begin{verbatim}
@@ -250,67 +250,67 @@ pfset Process.Topology.R        1 \end{verbatim}
 \label{Computational Grid}
 
 The computational grid is briefly described in \S~\ref{Defining the Problem}. The computational grid keys set
-the bottom left corner of the domain to a specific point in space. If using 
+the bottom left corner of the domain to a specific point in space. If using
 a .pfsol file, the bottom left corner location of the .pfsol file must be the points
-designated in the computational grid. The user can also assign the \emph{x}, \emph{y} 
+designated in the computational grid. The user can also assign the \emph{x}, \emph{y}
 and \emph{z} location to correspond to a specific coordinate system (i.e. UTM).
 
 \pfkey{double}{ComputationalGrid.Lower.X}{no default}
 {This assigns the lower \emph{x} coordinate location for the computational grid.}
-\begin{display}\begin{verbatim} 
+\begin{display}\begin{verbatim}
 pfset   ComputationalGrid.Lower.X  0.0
-\end{verbatim}\end{display} 
+\end{verbatim}\end{display}
 
 \pfkey{double}{ComputationalGrid.Lower.Y}{no default}
 {This assigns the lower \emph{y} coordinate location for the computational grid.}
-\begin{display}\begin{verbatim} 
+\begin{display}\begin{verbatim}
 pfset   ComputationalGrid.Lower.Y  0.0
-\end{verbatim}\end{display} 
+\end{verbatim}\end{display}
 
 \pfkey{double}{ComputationalGrid.Lower.Z}{no default}
 {This assigns the lower \emph{z} coordinate location for the computational grid.}
-\begin{display}\begin{verbatim} 
+\begin{display}\begin{verbatim}
 pfset   ComputationalGrid.Lower.Z  0.0
-\end{verbatim}\end{display} 
+\end{verbatim}\end{display}
 
 \pfkey{integer}{ComputationalGrid.NX}{no default}
 {This assigns the number of grid cells in the \emph{x} direction for the computational grid.}
-\begin{display}\begin{verbatim} 
-pfset  ComputationalGrid.NX  10 
-\end{verbatim}\end{display} 
+\begin{display}\begin{verbatim}
+pfset  ComputationalGrid.NX  10
+\end{verbatim}\end{display}
 
 \pfkey{integer}{ComputationalGrid.NY}{no default}
 {This assigns the number of grid cells in the \emph{y} direction for the computational grid.}
-\begin{display}\begin{verbatim} 
-pfset  ComputationalGrid.NY  10 
-\end{verbatim}\end{display} 
+\begin{display}\begin{verbatim}
+pfset  ComputationalGrid.NY  10
+\end{verbatim}\end{display}
 
 \pfkey{integer}{ComputationalGrid.NZ}{no default}
 {This assigns the number of grid cells in the \emph{z} direction for the computational grid.}
-\begin{display}\begin{verbatim} 
-pfset  ComputationalGrid.NZ  10 
-\end{verbatim}\end{display} 
+\begin{display}\begin{verbatim}
+pfset  ComputationalGrid.NZ  10
+\end{verbatim}\end{display}
 
 \pfkey{real}{ComputationalGrid.DX}{no default}
-{This defines the size of grid cells in the \emph{x} direction. Units are \emph{L} and are 
+{This defines the size of grid cells in the \emph{x} direction. Units are \emph{L} and are
 defined by the units of the hydraulic conductivity used in the problem.}
-\begin{display}\begin{verbatim} 
-pfset  ComputationalGrid.DX  10.0 
-\end{verbatim}\end{display} 
+\begin{display}\begin{verbatim}
+pfset  ComputationalGrid.DX  10.0
+\end{verbatim}\end{display}
 
 \pfkey{real}{ComputationalGrid.DY}{no default}
-{This defines the size of grid cells in the \emph{y} direction. Units are \emph{L} and are 
+{This defines the size of grid cells in the \emph{y} direction. Units are \emph{L} and are
 defined by the units of the hydraulic conductivity used in the problem.}
-\begin{display}\begin{verbatim} 
-pfset  ComputationalGrid.DY  10.0 
-\end{verbatim}\end{display} 
+\begin{display}\begin{verbatim}
+pfset  ComputationalGrid.DY  10.0
+\end{verbatim}\end{display}
 
 \pfkey{real}{ComputationalGrid.DZ}{no default}
-{This defines the size of grid cells in the \emph{z} direction. Units are \emph{L} and are 
+{This defines the size of grid cells in the \emph{z} direction. Units are \emph{L} and are
 defined by the units of the hydraulic conductivity used in the problem.}
-\begin{display}\begin{verbatim} 
-pfset  ComputationalGrid.DZ  1.0 
-\end{verbatim}\end{display} 
+\begin{display}\begin{verbatim}
+pfset  ComputationalGrid.DZ  1.0
+\end{verbatim}\end{display}
 
 
 Example Usage: \begin{verbatim}
@@ -346,9 +346,9 @@ significantly based on the geometries in the problem.
 
 The Berger-Rigoutsos algorithm is currently used for clustering.
 }
-\begin{display}\begin{verbatim} 
+\begin{display}\begin{verbatim}
 pfset  UseClustering  False
-\end{verbatim}\end{display} 
+\end{verbatim}\end{display}
 
 %=============================================================================
 %=
@@ -380,7 +380,7 @@ pfset GeomInput.Names    "solidinput indinput boxinput"
 \pfkey{string}{GeomInput.{\em geom\_input\_name}.InputType}{no default}
 {
 This defines the input type for the geometry input with
-{\em geom\_input\_name}.  
+{\em geom\_input\_name}.
 This key must be one of: {\bf SolidFile, IndicatorField}, {\bf Box}.
 }
 \begin{display}\begin{verbatim}
@@ -476,7 +476,7 @@ SolidFile.  For a Box the order is fixed (left right front back bottom
 top) but you can name the sides anything you want.
 
 For SolidFiles the order is printed by the conversion routine that
-converts GMS to SolidFile format.  
+converts GMS to SolidFile format.
 }
 \begin{display}\begin{verbatim}
 pfset Geom.background.Patches   "left right front back bottom top"
@@ -497,7 +497,7 @@ pfset GeomInput.Names 			"solidinput indinput boxinput"
 pfset GeomInput.solidinput.InputType	SolidFile
 
 # The names of the geometries contained in the solid file. Order is
-# important and defines the mapping. First geometry gets the first name. 
+# important and defines the mapping. First geometry gets the first name.
 pfset GeomInput.solidinput.GeomNames	"domain"
 #
 # Filename that contains the geometry
@@ -506,8 +506,8 @@ pfset GeomInput.solidinput.GeomNames	"domain"
 pfset GeomInput.solidinput.FileName 	ocwd.pfsol
 
 #
-# An indicator field is a 3D field of values. 
-# The values within the field can be mapped 
+# An indicator field is a 3D field of values.
+# The values within the field can be mapped
 # to ParFlow geometries. Indicator fields must match the
 # computation grid exactly!
 #
@@ -518,7 +518,7 @@ pfset GeomInput.indinput.FileName		ocwd.pfb
 
 #
 # Within the indicator.pfb file, assign the values to each GeomNames
-# 
+#
 pfset GeomInput.sourceregion.Value 	11
 pfset GeomInput.concenregion.Value 	12
 
@@ -536,8 +536,8 @@ pfset Geom.background.Upper.Y 		171.0
 pfset Geom.background.Upper.Z 		11.0
 
 #
-# The patch order is fixed in the .pfsol file, but you 
-# can call the patch name anything you 
+# The patch order is fixed in the .pfsol file, but you
+# can call the patch name anything you
 # want (i.e. left right front back bottom top)
 #
 
@@ -578,7 +578,7 @@ on when data is printed out.
   the cycles in those sections will be integer multiples of this
   value, therefore it needs to be the smallest divisor which produces
   an integral result for every ``real time'' cycle interval length
-  needed.  
+  needed.
 }
 \begin{display}\begin{verbatim}
 pfset TimingInfo.BaseUnit      1.0
@@ -651,7 +651,7 @@ selection.  Input for this section is given as follows:
 This key must be one of: {\bf Constant} or {\bf Growth}.  The value
 {\bf Constant} defines a constant time step.  The value {\bf Growth}
 defines a time step that starts as $dt_0$ and is defined for
-other steps as $dt^{new} = \gamma dt^{old}$ such that $dt^{new} \leq 
+other steps as $dt^{new} = \gamma dt^{old}$ such that $dt^{new} \leq
 dt_{max}$ and $dt^{new} \geq dt_{min}$.
 }
 \begin{display}\begin{verbatim}
@@ -670,7 +670,7 @@ pfset TimeStep.Value      0.001
 \pfkey{double}{TimeStep.InitialStep}{no default}
 {
 This key specifies the initial time step $dt_0$ if the {\bf Growth} type time
-step is selected. 
+step is selected.
 }
 \begin{display}\begin{verbatim}
 pfset TimeStep.InitialStep    0.001
@@ -680,7 +680,7 @@ pfset TimeStep.InitialStep    0.001
 {
 This key specifies the growth factor $\gamma$ by which a time step will be
 multiplied to get the new time step when the {\bf Growth} type time step is
-selected. 
+selected.
 }
 \begin{display}\begin{verbatim}
 pfset TimeStep.GrowthFactor      1.5
@@ -749,7 +749,7 @@ pfset Cycle.Names constant onoff
 
 \pfkey{list}{Cycle.{\em cycle\_name}.Names}{no default}
 {
-This key is used to specify the named time intervals for each cycle.  It is a list of names and each name defines a time interval when a specific boundary condition is applied and the number of items determines the total number of intervals in that time cycle. 
+This key is used to specify the named time intervals for each cycle.  It is a list of names and each name defines a time interval when a specific boundary condition is applied and the number of items determines the total number of intervals in that time cycle.
 }
 \begin{display}\begin{verbatim}
 pfset Cycle.onoff.Names "on off"
@@ -821,7 +821,7 @@ pfset Domain.GeomName    domain
 \label{Phases and Contaminants}
 
 \pfkey{list}{Phase.Names}{no default}
-{This specifies the names of phases to be modeled. 
+{This specifies the names of phases to be modeled.
 Currently only 1 or 2 phases may be modeled.}
 \begin{display}\begin{verbatim}
 pfset Phase.Names    "water"
@@ -847,8 +847,8 @@ pfset Gravity	1.0
 \end{verbatim}\end{display}
 
 \pfkey{string}{Phase.{\em phase\_name}.Density.Type}{no default}
-{This key specifies whether density will be a constant value or if 
-it will be given by an equation of state of the form $(rd)exp(cP)$, 
+{This key specifies whether density will be a constant value or if
+it will be given by an equation of state of the form $(rd)exp(cP)$,
 where $P$ is pressure, $rd$ is
 the density at atmospheric pressure, and $c$ is the phase
 compressibility constant.
@@ -874,7 +874,7 @@ pfset Phase.water.Density.ReferenceDensity   1.0
 
 \pfkey{double}{Phase.{\em phase\_name}.Density.CompressibilityConstant}
 {no default}
-{This key specifies the phase compressibility constant 
+{This key specifies the phase compressibility constant
 if an equation of state density function is specified for the phase
 {\em phase|-name}.}
 \begin{display}\begin{verbatim}
@@ -924,13 +924,13 @@ In this section, permeability property values are assigned to grid
 points within geometries (specified in \S~\ref{Geometries} above)
 using one of the methods described below.  Permeabilities are assumed to be a
 diagonal tensor with entries given as,
-\[ 
-\left( 
+\[
+\left(
 \begin{array}{ccc}
 k_x({\bf x}) & 0 & 0 \\
 0 & k_y({\bf x}) & 0 \\
-0 & 0 & k_z({\bf x}) 
-\end{array} \right) 
+0 & 0 & k_z({\bf x})
+\end{array} \right)
 K({\bf x}),
 \]
 where $K({\bf x})$ is the permeability field given below.  Specification of the
@@ -966,18 +966,18 @@ xn yn zn valuen
 \end{verbatim}\end{display}
 
 The value of {\em nlines} is just the number
-of lines to follow in the file, which 
+of lines to follow in the file, which
 is equal to the number of data points.
 
 The variables {\em xi,yi,zi} are the real space coordinates (in the
 units used for the given parflow run) of
 a point at which a fixed permeability value
 is to be assigned. The variable {\em valuei} is the actual permeability
-value that is known. 
+value that is known.
 
 Note that the coordinates
 are not related to the grid in any way. Conditioning
-does not require that fixed values be on a 
+does not require that fixed values be on a
 grid. The PGS algorithm
 will map the given value to the closest grid point
 and that will be fixed. This is done for speed reasons.
@@ -995,7 +995,7 @@ The general format for the permeability input is as follows:
 
 \pfkey{list}{Geom.Perm.Names}{no default}
 {
-This key specifies all of the geometries to which a permeability field 
+This key specifies all of the geometries to which a permeability field
 will be assigned.  These geometries must cover the entire computational
 domain.
 }
@@ -1011,7 +1011,7 @@ data to the named geometry, {\em geometry\_name}.  It must be either
 {\bf Constant} value indicates that a constant is to be assigned to all
 grid cells within a geometry.  The {\bf TurnBand} value indicates that
 Tompson's Turning Bands method is to be used to assign permeability data
-to all grid cells within a geometry \cite{TAG89}.  
+to all grid cells within a geometry \cite{TAG89}.
 The {\bf ParGauss} value indicates
 that a Parallel Gaussian Simulator method is to be used to assign
 permeability data to all grid cells within a geometry.  The
@@ -1247,9 +1247,9 @@ pfset Geom.domain.Perm.FileName "domain_perm.pfb"
 {
 This key specifies whether the permeability tensor entries $k_x, k_y$ and $k_z$
 will be specified as three constants within a set of regions covering the
-domain or whether the entries will be specified cell-wise by files.  
+domain or whether the entries will be specified cell-wise by files.
 The choices
-for this key are {\bf TensorByGeom} and {\bf TensorByFile}.  
+for this key are {\bf TensorByGeom} and {\bf TensorByFile}.
 }
 \begin{display}\begin{verbatim}
 pfset Perm.TensorType     TensorByGeom
@@ -1262,7 +1262,7 @@ will be assigned.  These geometries must cover the entire computational
 domain.
 }
 \begin{display}\begin{verbatim}
-pfset Geom.Perm.TensorByGeom.Names   "background domain" 
+pfset Geom.Perm.TensorByGeom.Names   "background domain"
 \end{verbatim}\end{display}
 
 \pfkey{double}{Geom.{\em geometry\_name}.Perm.TensorValX}{no default}
@@ -1342,7 +1342,7 @@ pfset Geom.domain.Perm.TensorByFileZ   "perm_z.pfb"
 %  0
 %input field:
 %  15 3
-%  17 
+%  17
 %  perm_geounit1.pfb
 %\end{verbatim}\end{display}
 
@@ -1361,7 +1361,7 @@ The format for this section of input is:
 
 \pfkey{list}{Geom.Porosity.GeomNames}{no default}
 {
-This key specifies all of the geometries on which a porosity will be 
+This key specifies all of the geometries on which a porosity will be
 assigned.  These geometries must cover the entire computational domain.
 }
 \begin{display}\begin{verbatim}
@@ -1399,7 +1399,7 @@ The format for this section of input is:
 
 \pfkey{list}{Specific Storage.GeomNames}{no default}
 {
-This key specifies all of the geometries on which a different specific storage value will be 
+This key specifies all of the geometries on which a different specific storage value will be
 assigned.  These geometries must cover the entire computational domain.
 }
 \begin{display}\begin{verbatim}
@@ -1469,7 +1469,7 @@ pfset dzScale.Type            Constant
 
 \pfkey{list}{Specific dzScale.GeomNames}{no default}
 {
-This key specifies all of the geometries on which a different dz scaling value will be 
+This key specifies all of the geometries on which a different dz scaling value will be
 assigned.  These geometries must cover the entire computational domain.
 }
 \begin{display}\begin{verbatim}
@@ -1487,7 +1487,7 @@ pfset Geom.domain.dzScale.Value 1.0
 
 \pfkey{string}{Geom.{\em geometry\_name}.dzScale.FileName}{no default}
 {
-This key specifies file to be read in for variable dz values for the given 
+This key specifies file to be read in for variable dz values for the given
 geometry, {\em geometry\_name}, if the type was set to {\bf PFBFile}.
 }
 \begin{display}\begin{verbatim}
@@ -1507,7 +1507,7 @@ pfset dzScale.nzListNumber  10
 \pfkey{double}{Cell.{\em nzListNumber}.dzScale.Value}{no default}
 {
 This key assigns the thickness of each layer defined by nzListNumber.
-ParFlow assigns the layers from the bottom-up (i.e. the bottom 
+ParFlow assigns the layers from the bottom-up (i.e. the bottom
 of the domain is layer 0, the top is layer NZ-1). The total domain depth
 (\emph{Geom.domain.Upper.Z}) does not change with variable dz. The layer thickness
 is calculated by \emph{ComputationalGrid.DZ *dZScale}.
@@ -1516,7 +1516,7 @@ is calculated by \emph{ComputationalGrid.DZ *dZScale}.
 pfset Cell.0.dzScale.Value 1.0
 \end{verbatim}\end{display}
 
-Example Usage: 
+Example Usage:
 \begin{display}\begin{verbatim}
 
 #--------------------------------------------
@@ -1524,7 +1524,7 @@ Example Usage:
 #------------------------------------------
 # Set VariableDz to be true
 # Indicate number of layers (nzlistnumber), which is the same as nz
-# (1) There is nz*dz = total depth to allocate,  
+# (1) There is nz*dz = total depth to allocate,
 # (2) Each layer’s thickness is dz*dzScale, and
 # (3) Assign the layer thickness from the bottom up.
 # In this example nz = 5; dz = 10; total depth 40;
@@ -1532,7 +1532,7 @@ Example Usage:
 # 0 		15 			Bottom layer
 # 1		15
 # 2		5
-# 3		4.5			
+# 3		4.5
 # 4 		0.5			Top layer
 pfset Solver.Nonlinear.VariableDz     True
 pfset dzScale.GeomNames            domain
@@ -1545,7 +1545,96 @@ pfset Cell.3.dzScale.Value 0.45
 pfset Cell.4.dzScale.Value 0.05
 \end{verbatim}\end{display}
 
+%%
+%% == @RMM Flow Barriers
+%%
+\subsection{Flow Barriers}
+\label{Flow Barrier Keys}
+\pfaddanchor{pfindFB}
 
+Here, the values for Flow Barriers described in \ref{FB} can be input.  These are only available with Solver {\bf Richards} and can be specified in X, Y or Z directions independently using PFB files.  These barriers are appied at the cell face at the location $i+1/2$.  That is a value of $FB_x$ specified at $i$ will be applied to the cell face at $i+1/2$ or {/em between} cells $i$ and $i+1$.  The same goes for $FB_y$ ($j+1/2$) and $FB_z$ ($k+1/2$). The flow barrier values are unitless and mulitply the flux equation as shown in \ref{eq:qFBx}.
+
+The format for this section of input is:
+
+\pfkey{string}{ Solver.Nonlinear.FlowBarrierX}{False}
+{
+This key specifies whether Flow Barriers are to be used in the X direction, the default is False.
+The default indicates a false or $FB_x$ value of one [-] everywhere in the domain.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Nonlinear.FlowBarrierX     True
+\end{verbatim}\end{display}
+
+\pfkey{string}{ Solver.Nonlinear.FlowBarrierY}{False}
+{
+This key specifies whether Flow Barriers are to be used in the Y direction, the default is False.
+The default indicates a false or $FB_y$ value of one [-] everywhere in the domain.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Nonlinear.FlowBarrierY     True
+\end{verbatim}\end{display}
+
+\pfkey{string}{ Solver.Nonlinear.FlowBarrierZ}{False}
+{
+This key specifies whether Flow Barriers are to be used in the Z direction, the default is False.
+The default indicates a false or $FB_z$ value of one [-] everywhere in the domain.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.Nonlinear.FlowBarrierZ     True
+\end{verbatim}\end{display}
+
+\pfkey{string}{FBx.Type}{no default}
+{
+This key specifies which method is to be used to assign flow barriers in X.  The only choice currently
+available is {\bf PFBFile} which reads in values from a distributed pfb file.
+}
+\begin{display}\begin{verbatim}
+pfset FBx.Type            PFBFile
+\end{verbatim}\end{display}
+
+\pfkey{string}{FBy.Type}{no default}
+{
+This key specifies which method is to be used to assign flow barriers in Y.  The only choice currently
+available is {\bf PFBFile} which reads in values from a distributed pfb file.
+}
+\begin{display}\begin{verbatim}
+pfset FBy.Type            PFBFile
+\end{verbatim}\end{display}
+
+\pfkey{string}{FBz.Type}{no default}
+{
+This key specifies which method is to be used to assign flow barriers in Z.  The only choice currently
+available is {\bf PFBFile} which reads in values from a distributed pfb file.
+}
+\begin{display}\begin{verbatim}
+pfset FBz.Type            PFBFile
+\end{verbatim}\end{display}
+
+The Flow Barrier values may be read in from a PFB file over the entire domain.  This is done as follows:
+
+\pfkey{string}{Geom.domain.FBx.FileName}{no default}
+{
+This key specifies file to be read in for the X flow barrier values for the domain, if the type was set to {\bf PFBFile}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.FBx.FileName  Flow_Barrier_X.pfb
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.domain.FBy.FileName}{no default}
+{
+This key specifies file to be read in for the Y flow barrier values for the domain, if the type was set to {\bf PFBFile}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.FBy.FileName  Flow_Barrier_Y.pfb
+\end{verbatim}\end{display}
+
+\pfkey{string}{Geom.domain.FBz.FileName}{no default}
+{
+This key specifies file to be read in for the Z flow barrier values for the domain, if the type was set to {\bf PFBFile}.
+}
+\begin{display}\begin{verbatim}
+pfset Geom.domain.FBz.FileName  Flow_Barrier_Z.pfb
+\end{verbatim}\end{display}
 
 %%
 %% == mannings roughness
@@ -1560,7 +1649,7 @@ The format for this section of input is:
 
 \pfkey{list}{Mannings.GeomNames}{no default}
 {
-This key specifies all of the geometries on which a different Mannings roughness value will be 
+This key specifies all of the geometries on which a different Mannings roughness value will be
 assigned.  Mannings values may be assigned by {\bf PFBFile} or as {\bf Constant} by geometry.  These geometries must cover the entire upper surface of the computational domain.
 }
 \begin{display}\begin{verbatim}
@@ -1614,7 +1703,7 @@ The format for this section of input is:
 
 \pfkey{list}{ToposlopesX.GeomNames}{no default}
 {
-This key specifies all of the geometries on which a different $x$ topographic slope values will be 
+This key specifies all of the geometries on which a different $x$ topographic slope values will be
 assigned.  Topographic slopes may be assigned by {\bf PFBFile} or as {\bf Constant} by geometry.  These geometries must cover the entire upper surface of the computational domain.
 }
 \begin{display}\begin{verbatim}
@@ -1623,7 +1712,7 @@ pfset ToposlopesX.GeomNames       "domain"
 
 \pfkey{list}{ToposlopesY.GeomNames}{no default}
 {
-This key specifies all of the geometries on which a different $y$ topographic slope values will be 
+This key specifies all of the geometries on which a different $y$ topographic slope values will be
 assigned.  Topographic slopes may be assigned by {\bf PFBFile} or as {\bf Constant} by geometry.  These geometries must cover the entire upper surface of the computational domain.
 }
 \begin{display}\begin{verbatim}
@@ -1740,13 +1829,13 @@ pfset Geom.domain.Retardation.Value   0.2
 Here we define phase mobilities by specifying the
 relative permeability function.  Input is specified differently depending on
 what problem is being specified.  For full multi-phase problems, the following
-input keys are used.  See the next section for the correct Richards' equation 
+input keys are used.  See the next section for the correct Richards' equation
 input format.
 
 \pfkey{string}{Phase.{\em phase\_name}.Mobility.Type}{no default}
 {
 This key specifies whether the mobility for {\em phase\_name} will be a given
-constant or a polynomial of the form,  
+constant or a polynomial of the form,
 $(S - S_0)^{a}$, where $S$ is saturation, $S_0$ is
 irreducible saturation, and $a$ is some exponent.
 The possibilities for this key are {\bf Constant} and {\bf Polynomial}.
@@ -1767,7 +1856,7 @@ pfset Phase.water.Mobility.Value   1.0
 {
 This key specifies the exponent used in a polynomial representation of the
 relative permeability.  Currently, only a value of $2.0$ is allowed for this
-key. 
+key.
 }
 \begin{display}\begin{verbatim}
 pfset Phase.water.Mobility.Exponent   2.0
@@ -1776,7 +1865,7 @@ pfset Phase.water.Mobility.Exponent   2.0
 \pfkey{double}{Phase.{\em phase\_name}.Mobility.IrreducibleSaturation}
 {0.0}
 {
-This key specifies the irreducible saturation 
+This key specifies the irreducible saturation
 used in a polynomial representation of the relative permeability.
 Currently, only a value of 0.0 is allowed for this key.
 }
@@ -1801,7 +1890,7 @@ that type in different geometries.  For instance, if the problem consists of
 three geometries, then {\bf VanGenuchten} may be specified with three different
 sets of parameters for the three different goemetries.  However, once {\bf
 VanGenuchten} is specified, one geometry cannot later be specified to have {\bf
-Data} as its relative permeability.  The possible values for this key 
+Data} as its relative permeability.  The possible values for this key
 are {\bf Constant, VanGenuchten, Haverkamp, Data,} and {\bf  Polynomial}.
 }
 \begin{display}\begin{verbatim}
@@ -1829,7 +1918,7 @@ data points for the relative permeability curve will be given and \parflow{}
 will set up the proper interpolation coefficients to get values between the
 given data points.
 The {\bf Polynomial} specification
-defines a polynomial relative permeability function for each 
+defines a polynomial relative permeability function for each
 region of the form,
 \begin{eqnarray}
 k_r(p) = \sum_{i=0}^{degree} c_ip^i.
@@ -1895,7 +1984,7 @@ pfset Geom.domain.RelPerm.N   2.0
 
 \pfkey{int}{Geom.{\em geom\_name}.RelPerm.NumSamplePoints}{0}
 {This key specifies the number of sample points for a spline base interpolation table
-for the Van Genuchten function specified on {\em geom\_name}.   If this number is 0 (the default) 
+for the Van Genuchten function specified on {\em geom\_name}.   If this number is 0 (the default)
 then the function is evaluated directly.   Using the interpolation table is faster but is less
 accurate.
 }
@@ -1948,7 +2037,7 @@ pfset Geom.domain.RelPerm.Coeff.1  1.0
 \end{verbatim}\end{display}
 
 NOTE: For all these cases, if only one region is to be used (the domain),
-the background region should NOT be set as that single region.  
+the background region should NOT be set as that single region.
 Using the background will prevent the
 upstream weighting from being correct near Dirichlet boundaries.
 
@@ -1968,13 +2057,13 @@ multiplied by density.
 
 \pfkey{string}{PhaseSources.{\em phase\_name}.Type}
 {no default}
-{This key specifies the type of source to use for phase {\em phase\_name}.  
+{This key specifies the type of source to use for phase {\em phase\_name}.
 Possible values for this key are {\bf Constant} and {\bf PredefinedFunction}.
-{\bf Constant} type phase sources specify a constant phase source 
-value for a given set of regions.  
+{\bf Constant} type phase sources specify a constant phase source
+value for a given set of regions.
 {\bf PredefinedFunction} type phase sources use a preset function
 (choices are listed below) to specify the source.  Note that the
-{\bf PredefinedFunction} type can only be used to set a single source 
+{\bf PredefinedFunction} type can only be used to set a single source
 over the entire domain and not separate sources over different regions.
 }
 \begin{display}\begin{verbatim}
@@ -2019,33 +2108,33 @@ The choices for this key correspond to sources as follows:
 \item[{\bf XPlusYPlusX}: ] ${\rm source}\; = 0.0$
 
 \item[{\bf X3Y2PlusSinXYPlus1}:]
-${\rm source}\; = -(3x^2 y^2 + y\cos(xy))^2 - (2x^3 y + x\cos(xy))^2 
+${\rm source}\; = -(3x^2 y^2 + y\cos(xy))^2 - (2x^3 y + x\cos(xy))^2
 - (x^3 y^2 + \sin(xy) + 1) (6x y^2 + 2x^3 -(x^2 +y^2) \sin(xy))$ \\
 This function type specifies that the source applied over the entire domain is
-as noted above.  This corresponds to $p=x^{3}y^{2}+\sin(xy)+1$ in the problem 
+as noted above.  This corresponds to $p=x^{3}y^{2}+\sin(xy)+1$ in the problem
 $-\nabla\cdot (p\nabla p)=f$.
 
-\item[{\bf X3Y4PlusX2PlusSinXYCosYPlus1}:] 
-${\rm source}\; = -(3x^22 y^4 + 2x + y\cos(xy)\cos(y))^2 
-- (4x^3 y^3 + x\cos(xy)\cos(y) - \sin(xy)\sin(y))^2 
+\item[{\bf X3Y4PlusX2PlusSinXYCosYPlus1}:]
+${\rm source}\; = -(3x^22 y^4 + 2x + y\cos(xy)\cos(y))^2
+- (4x^3 y^3 + x\cos(xy)\cos(y) - \sin(xy)\sin(y))^2
 - (x^3 y^4 + x^2 + \sin(xy)\cos(y) + 1)
-(6xy^4 + 2 - (x^2 + y^2 + 1)\sin(xy)\cos(y) 
+(6xy^4 + 2 - (x^2 + y^2 + 1)\sin(xy)\cos(y)
 + 12x^3 y^2 - 2x\cos(xy)\sin(y))$ \\
 This function type specifies that the source applied over the entire domain is
-as noted above.  This corresponds to $p=x^{3}y^{4}+x^{2}+\sin (xy)\cos(y) +1$ 
+as noted above.  This corresponds to $p=x^{3}y^{4}+x^{2}+\sin (xy)\cos(y) +1$
 in the problem $-\nabla\cdot (p\nabla p)=f$.
 
 \item[{\bf XYZTPlus1}: ]
 ${\rm source}\; = xyz - t^2 (x^2 y^2 +x^2 z^2 +y^2 z^2)$ \\
 This function type specifies that the source applied over the entire domain is
-as noted above.  This corresponds to $p = xyzt + 1$ in the problem 
+as noted above.  This corresponds to $p = xyzt + 1$ in the problem
 $\frac{\partial p}{\partial t}-\nabla\cdot (p\nabla p)=f$.
 
 \item[{\bf XYZTPlus1PermTensor}: ]
 ${\rm source}\; = xyz - t^2 (x^2 y^2 3 + x^2 z^2 2 + y^2 z^2)$ \\
 This function type specifies that the source applied over the entire domain is
-as noted above.  This corresponds to $p = xyzt + 1$ in the problem 
-$\frac{\partial p}{\partial t}-\nabla\cdot (Kp\nabla p)=f$, where 
+as noted above.  This corresponds to $p = xyzt + 1$ in the problem
+$\frac{\partial p}{\partial t}-\nabla\cdot (Kp\nabla p)=f$, where
 $K = diag(1 \;\; 2 \;\; 3)$.
 
 \end{description}
@@ -2121,8 +2210,8 @@ that type in different geometries.  For instance, if the problem consists of
 three geometries, then {\bf VanGenuchten} may be specified with three different
 sets of parameters for the three different goemetries.  However, once {\bf
 VanGenuchten} is specified, one geometry cannot later be specified to have {\bf
-Data} as its saturation.  The possible values for this key 
-are {\bf Constant, VanGenuchten, Haverkamp, Data, Polynomial} and 
+Data} as its saturation.  The possible values for this key
+are {\bf Constant, VanGenuchten, Haverkamp, Data, Polynomial} and
 {\bf PFBFile}.
 }
 \begin{display}\begin{verbatim}
@@ -2132,12 +2221,12 @@ pfset Phase.Saturation.Type   Constant
 The various possible functions are defined as follows.
 The {\bf Constant} specification means that the saturation will be
 constant on the specified geounit.  The {\bf VanGenuchten} specification means
-that the saturation will be given as a Van Genuchten function 
+that the saturation will be given as a Van Genuchten function
 \cite{VanGenuchten80} with the form,
 \begin{eqnarray}
 s(p) = \frac{s_{sat} - s_{res}}{(1 + (\alpha p)^n)^m} + s_{res},
 \end{eqnarray}
-where $s_{sat}$ is the saturation at saturated conditions, 
+where $s_{sat}$ is the saturation at saturated conditions,
 $s_{res}$ is the residual saturation, and
 $\alpha$ and $n$ are soil parameters with $m = 1 - 1/n$, on each region.
 The {\bf Haverkamp} specification means that the saturation will be
@@ -2157,7 +2246,7 @@ s(p) = \sum_{i=0}^{degree} c_ip^i.
 \end{eqnarray}
 The {\bf PFBFile} specification means that the saturation will be taken as a
 spatially varying but constant in pressure function given by data in a
-\parflow{} binary (.pfb) file.  
+\parflow{} binary (.pfb) file.
 
 \pfkey{list}{Phase.Saturation.GeomNames}{no default}
 {This key specifies the geometries on which saturation will be given.
@@ -2167,7 +2256,7 @@ pfset Phase.Saturation.Geonames   domain
 \end{verbatim}\end{display}
 
 \pfkey{double}{Geom.{\em geom\_name}.Saturation.Value}{no default}
-{This key specifies the constant saturation value on the {\em geom\_name} 
+{This key specifies the constant saturation value on the {\em geom\_name}
 region. }
 \begin{display}\begin{verbatim}
 pfset Geom.domain.Saturation.Value    0.5
@@ -2259,7 +2348,7 @@ pfset Geom.domain.Saturation.A   1.0
 \end{verbatim}\end{display}
 
 \pfkey{double}{Geom.{\em geom\_name}.Saturation.Gamma}{no default}
-{This key specifies the the $\gamma$ parameter for the Haverkamp saturation 
+{This key specifies the the $\gamma$ parameter for the Haverkamp saturation
 on {\em geom\_name}.
 }
 \begin{display}\begin{verbatim}
@@ -2267,7 +2356,7 @@ pfset Geom.domain.Saturation.Gamma   1.0
 \end{verbatim}\end{display}
 
 \pfkey{integer}{Geom.{\em geom\_name}.Saturation.Degree}{no default}
-{This key specifies the degree of the polynomial for the Polynomial 
+{This key specifies the degree of the polynomial for the Polynomial
 saturation given on {\em geom\_name}.
 }
 \begin{display}\begin{verbatim}
@@ -2365,7 +2454,7 @@ Here we define the pressure boundary conditions.
 The Dirichlet conditions below are hydrostatic conditions, and it
 is assumed that at each phase interface the pressure is constant.
 {\em It is also assumed here that all phases
-are distributed within the domain at all times such that the lighter phases 
+are distributed within the domain at all times such that the lighter phases
 are vertically higher than the heavier phases.}
 
 Boundary condition input is associated with domain patches
@@ -2383,16 +2472,16 @@ pfset BCPressure.PatchNames    "left right front back top bottom"
 \end{verbatim}\end{display}
 
 \pfkey{string}{Patch.{\em patch\_name}.BCPressure.Type}{no default}
-{This key specifies the type of boundary condition data given for patch 
-{\em patch\_name}.  Possible values for this key are {\bf DirEquilRefPatch, 
-DirEquilPLinear, FluxConst, FluxVolumetric, PressureFile, FluxFile, OverlandFow, OverlandFlowPFB} and 
+{This key specifies the type of boundary condition data given for patch
+{\em patch\_name}.  Possible values for this key are {\bf DirEquilRefPatch,
+DirEquilPLinear, FluxConst, FluxVolumetric, PressureFile, FluxFile, OverlandFow, OverlandFlowPFB, SeepageFace, OverlandKinematic, OverlandDiffusive} and
 {\bf ExactSolution}.  The choice {\bf DirEquilRefPatch} specifies that the
 pressure on the specified patch will be in hydrostatic equilibrium with a
 constant reference pressure given on a reference patch.
 The choice {\bf DirEquilPLinear} specifies that the pressure on the specified
 patch will be in hydrostatic equilibrium with pressure given along a piecewise
-line at elevation $z=0$.  The choice {\bf FluxConst} defines a constant normal 
-flux boundary condition through the domain patch.  
+line at elevation $z=0$.  The choice {\bf FluxConst} defines a constant normal
+flux boundary condition through the domain patch.
 This flux must be specified in units of $[L]/[T]$.
 For {\em Richards' equation}, fluxes must be specified as a mass flux and given
 as the above flux multiplied by the density.  Thus, this choice of input type
@@ -2408,20 +2497,21 @@ patch are used.
 The choice {\bf FluxFile} defines a flux boundary condition that is read form a
 properly distributed .pfb file defined on a grid consistent with the pressure
 field grid.  Only the values needed for the patch are used.
-The choices {\bf OverlandFlow} and {\bf OverlandFlowPFB} both turn on 
-fully-coupled overland flow routing as described in \cite{KM06} and in \S~\ref{Overland Flow}.  
-The key {\bf OverlandFlow} corresponds to a {\bf Value} key with a positive or negative value, 
-to indicate uniform fluxes (such as rainfall or evapotranspiration) over the entire domain 
-while the key {\bf OverlandFlowPFB} allows a \code{.pfb} file to contain grid-based, 
-spatially-variable fluxes.
-The choice {\bf ExactSolution} specifies that an exact known solution 
+The choices {\bf OverlandFlow} and {\bf OverlandFlowPFB} both turn on
+fully-coupled overland flow routing as described in \cite{KM06} and in \S~\ref{Overland Flow}.
+The key {\bf OverlandFlow} corresponds to a {\bf Value} key with a positive or negative value,
+to indicate uniform fluxes (such as rainfall or evapotranspiration) over the entire domain
+while the key {\bf OverlandFlowPFB} allows a \code{.pfb} file to contain grid-based,
+spatially-variable fluxes. The {\bf OverlandKinematic} and {\bf OverlandDiffusive} both turn on
+an kinematic and diffusive wave overland flow routing boundary that solve equation \ref{eq:manningsnew} and do the upwinding internally (i.e. assuming that the user provides cell face slopes, as opposed to the traditional cell centered slopes). The key {\bf SeepageFace} simulates a boundary that allows flow to exit but keeps the surface pressure at zero.
+The choice {\bf ExactSolution} specifies that an exact known solution
 is to be applied as a
 Dirichlet boundary condition on the respective patch.  Note that this does not
 change according to any cycle.  Instead, time dependence is handled by
-evaluating at the time the boundary condition value is desired.  
+evaluating at the time the boundary condition value is desired.
 The solution is specified by using a predefined function (choices are described
-below).  NOTE: These last three types of boundary condition input is for 
-{\em Richards' equation cases only!} 
+below).  NOTE: These last six types of boundary condition input is for
+{\em Richards' equation cases only!}
 }
 \begin{display}\begin{verbatim}
 pfset Patch.top.BCPressure.Type  DirEquilRefPatch
@@ -2429,7 +2519,7 @@ pfset Patch.top.BCPressure.Type  DirEquilRefPatch
 
 \pfkey{string}{Patch.{\em patch\_name}.BCPressure.Cycle}{no default}
 {This key specifies the time cycle to which boundary condition data for patch
-{\em patch\_name} corresponds. 
+{\em patch\_name} corresponds.
 }
 \begin{display}\begin{verbatim}
 pfset Patch.top.BCPressure.Cycle   Constant
@@ -2439,14 +2529,14 @@ pfset Patch.top.BCPressure.Cycle   Constant
 {This key specifies the name of the solid on which the reference patch for the
 {\bf DirEquilRefPatch} boundary condition data is given.
 Care should be taken to
-make sure the correct solid is specified in cases of layered domains.  
+make sure the correct solid is specified in cases of layered domains.
 }
 \begin{display}\begin{verbatim}
 pfset Patch.top.BCPressure.RefGeom   domain
 \end{verbatim}\end{display}
 
 \pfkey{string}{Patch.{\em patch\_name}.BCPressure.RefPatch}{no default}
-{This key specifies the reference patch on which the 
+{This key specifies the reference patch on which the
 {\bf DirEquilRefPatch} boundary condition data is given.  This patch must be on
 the reference solid specified by the Patch.{\em patch\_name}.BCPressure.RefGeom
 key.
@@ -2457,7 +2547,7 @@ pfset Patch.top.BCPressure.RefPatch    bottom
 
 \pfkey{double}{Patch.{\em patch\_name}.BCPressure.{\em interval\_name}.Value}
 {no default}
-{This key specifies the reference pressure value for the 
+{This key specifies the reference pressure value for the
 {\bf DirEquilRefPatch} boundary condition or the constant flux value for the
 {\bf FluxConst} boundary condition, or the constant volumetric flux for the
 {\bf FluxVolumetric} boundary condition.
@@ -2469,9 +2559,9 @@ pfset Patch.top.BCPressure.alltime.Value  -14.0
 \pfkey{double}
 {Patch.{\em patch\_name}.BCPressure.{\em interval\_name}.{\em phase\_name}.IntValue}
 {no default}
-{Note that the reference conditions for types {\bf DirEquilPLinear} and 
+{Note that the reference conditions for types {\bf DirEquilPLinear} and
 {\bf DirEquilRefPatch}
-boundary conditions are for phase 0 {\em only}.  
+boundary conditions are for phase 0 {\em only}.
 This key specifies the constant pressure value
 along the interface with phase {\em phase\_name} for cases with two phases
 present.
@@ -2530,7 +2620,7 @@ pfset Patch.top.BCPressure.alltime.NumPoints   2
 {Patch.{\em patch\_name}.BCPressure.{\em interval\_name}.{\em point\_number}.Location}
 {no default}
 {This key specifies a number between 0 and 1 which represents
-the location of a point on the line on which data is given for 
+the location of a point on the line on which data is given for
 type {\bf DirEquilPLinear} boundary conditions.
 Here 0 corresponds to the lower end of the line, and 1 corresponds to
 the upper end.
@@ -2542,7 +2632,7 @@ pfset Patch.top.BCPressure.alltime.0.Location   0.0
 \pfkey{double}
 {Patch.{\em patch\_name}.BCPressure.{\em interval\_name}.{\em point\_number}.Value}
 {no default}
-{This key specifies the pressure value for phase 0 at point number 
+{This key specifies the pressure value for phase 0 at point number
 {\em point\_number} and $z=0$ for
 type {\bf DirEquilPLinear} boundary conditions.
 All pressure values on the patch are determined by first projecting the
@@ -2556,10 +2646,10 @@ pfset Patch.top.BCPressure.alltime.0.Value   14.0
 \pfkey{string}
 {Patch.{\em patch\_name}.BCPressure.{\em interval\_name}.FileName}
 {no default}
-{This key specifies the name of a properly distributed \code{.pfb} file 
-that contains boundary data to be read for types {\bf PressureFile} 
-and {\bf FluxFile}.  For flux data, the data must be defined over a grid 
-consistent with the pressure field.  In both cases, only the values needed 
+{This key specifies the name of a properly distributed \code{.pfb} file
+that contains boundary data to be read for types {\bf PressureFile}
+and {\bf FluxFile}.  For flux data, the data must be defined over a grid
+consistent with the pressure field.  In both cases, only the values needed
 for the patch will be used.  The rest of the data is ignored.
 }
 \begin{display}\begin{verbatim}
@@ -2576,7 +2666,7 @@ Dirichlet boundary conditions on patch {\em patch\_name}.
 Note that this does not change according to any cycle.
 Instead, time dependence is handled by
 evaluating at the time the boundary condition value is desired.
-Choices for this key include {\bf X, XPlusYPlusZ, X3Y2PlusSinXYPlus1, 
+Choices for this key include {\bf X, XPlusYPlusZ, X3Y2PlusSinXYPlus1,
 X3Y4PlusX2PlusSinXYCosYPlus1, XYZTPlus1} and {\bf XYZTPlus1PermTensor}.
 }
 \begin{display}\begin{verbatim}
@@ -2587,7 +2677,7 @@ The choices for this key correspond to pressures as follows.
 \item[{\bf X}: ] $p = x$
 \item[{\bf XPlusYPlusZ}: ] $p = x + y + z$
 \item[{\bf X3Y2PlusSinXYPlus1}: ] $p = x^3 y^2 + \sin(xy) + 1$
-\item[{\bf X3Y4PlusX2PlusSinXYCosYPlus1}: ] 
+\item[{\bf X3Y4PlusX2PlusSinXYCosYPlus1}: ]
 $p = x^3 y^4 + x^2 + \sin(xy)\cos y + 1$
 \item[{\bf XYZTPlus1}: ] $p = xyzt + 1$
 \item[{\bf XYZTPlus1PermTensor}: ] $p = xyzt + 1$
@@ -2629,7 +2719,7 @@ pfset Geom.domain.ICPressure.RefPatch	z-upper
 
 Note: this section needs to be defined {\em only} for multi-phase flow
 and should {\em not} be defined for the single phase and Richards'
-equation cases. 
+equation cases.
 
 Here we define the boundary conditions for the saturations.  Boundary
 condition input is associated with domain patches (see \S~\ref{Domain}).
@@ -2739,7 +2829,7 @@ pfset Patch.left.BCPressure.water.0.Location 0.333
 {
 This key specifies the water-table height for the given point if type
 {\bf DirEquilPLinear} boundary conditions are selected.  All saturation
-values on the patch are determined by first projecting the water-table 
+values on the patch are determined by first projecting the water-table
 height value onto the line, then linearly interpolating between the
 neighboring water-table height values onto the line.
 }
@@ -2765,7 +2855,7 @@ The format for this section of input is:
 This key specifies the type of initial condition that will be applied
 to different geometries for given phase, {\em phase\_name}.  The only
 key currently available is {\bf Constant}.  The choice {\bf Constant}
-will apply constants values within geometries for the phase. 
+will apply constants values within geometries for the phase.
 }
 \begin{display}\begin{verbatim}
 ICSaturation.water.Type Constant
@@ -2798,7 +2888,7 @@ Geom.domain.ICSaturation.water.Value 1.0
 \subsection{Initial Conditions: Pressure}
 \label{Initial Conditions: Pressure}
 
-The keys in this section are used to specify pressure initial conditions for 
+The keys in this section are used to specify pressure initial conditions for
 Richards' equation cases {\em only}.  These keys will be ignored if any other
 case is run.
 
@@ -2807,17 +2897,17 @@ case is run.
 key are {\bf Constant, HydroStaticDepth, HydroStaticPatch} and {\bf PFBFile}.
 The choice {\bf Constant} specifies that the initial pressure will be constant
 over the regions given.  The choice {\bf HydroStaticDepth} specifies that the
-initial pressure within a region 
+initial pressure within a region
 will be in hydrostatic equilibrium with a given pressure
 specified at a given depth.  The choice {\bf HydroStaticPatch} specifies that
-the initial pressure within a region 
+the initial pressure within a region
 will be in hydrostatic equilibrium with a given pressure on a specified patch.
 Note that all regions must have the same type of initial data - different
 regions cannot have different types of initial data.  However, the parameters
 for the type may be different.
-The {\bf PFBFile} specification means that the initial pressure 
+The {\bf PFBFile} specification means that the initial pressure
 will be taken as a spatially varying function given by data in a
-\parflow{} binary (.pfb) file.  
+\parflow{} binary (.pfb) file.
 }
 \begin{display}\begin{verbatim}
 pfset ICPressure.Type   Constant
@@ -2934,14 +3024,14 @@ PhaseConcen.water.tce.FileName "initial_concen_tce.pfb"
 \label{ExactSolution}
 
 For {\em Richards equation cases only} we allow specification of an exact
-solution to be used for testing the code.  
+solution to be used for testing the code.
 Only types that have been coded and predefined are allowed.
 Note that if this is speccified as something other than no known solution,
 corresponding boundary conditions and phase sources should also be specified.
 
 \pfkey{string}{KnownSolution}{no default}
 {This specifies the predefined function that will be used as the known
-solution.  Possible choices for this key are {\bf NoKnownSolution, Constant, 
+solution.  Possible choices for this key are {\bf NoKnownSolution, Constant,
 X, XPlusYPlusZ, X3Y2PlusSinXYPlus1, X3Y4PlusX2PlusSinXYCosYPlus1, XYZTPlus1}
 and {\bf XYZTPlus1PermTensor}.
 }
@@ -2955,14 +3045,14 @@ Choices for this key correspond to solutions as follows.
 \item[{\bf X}: ] $p = x$
 \item[{\bf XPlusYPlusZ}: ] $p = x + y + z$
 \item[{\bf X3Y2PlusSinXYPlus1}: ] $p = x^3 y^2 + sin(xy) + 1$
-\item[{\bf X3Y4PlusX2PlusSinXYCosYPlus1}: ] 
+\item[{\bf X3Y4PlusX2PlusSinXYCosYPlus1}: ]
 $p = x^3 y^4 + x^2 + \sin(xy)\cos y + 1$
 \item[{\bf XYZTPlus1}: ] $p = xyzt + 1$
 \item[{\bf XYZTPlus1}: ] $p = xyzt + 1$
 \end{description}
 
 \pfkey{double}{KnownSolution.Value}{no default}
-{This key specifies the constant value of the known solution for type 
+{This key specifies the constant value of the known solution for type
 {\bf Constant} known solutions.
 }
 \begin{display}\begin{verbatim}
@@ -2993,7 +3083,7 @@ Wells.Names "test_well inj_well ext_well"
 
 \pfkey{string}{Wells.{\em well\_name}.InputType}{no default}
 {
-This key specifies the type of well to be defined for the given well, 
+This key specifies the type of well to be defined for the given well,
 {\em well\_name}.  This key can be either {\bf Vertical} or
 {\bf Recirc}.  The value {\bf Vertical} indicates that this is a
 single segmented well whose action will be specified by the user.
@@ -3059,7 +3149,7 @@ Wells.ext_well.ExtractionType Pressure
 
 \pfkey{string}{Wells.{\em well\_name}.InjectionType}{no default}
 {
-This key specfies the mechanism by which the injection well works (how
+This key specifies the mechanism by which the injection well works (how
 \parflow{} works with the well data) if the input type key is set to
 {\bf Recirc}.  This key can be either {\bf Pressure} or {\bf Flux}.  A
 value of {\bf Pressure} indicates that the data provided for the well is
@@ -3202,7 +3292,7 @@ Wells.inj_well.InjectionMethod Standard
 \pfkey{string}{Wells.{\em well\_name}.Cycle}{no default}
 {
 This key specifies the time cycles to which data for the well
-{\em well\_name} corresponds. 
+{\em well\_name} corresponds.
 }
 \begin{display}\begin{verbatim}
 Wells.test_well.Cycle "all_time"
@@ -3420,6 +3510,22 @@ and not written to PFSB files.
 pfset Solver.Drop 1E-6
 \end{verbatim}\end{display}
 
+\pfkey{double}{Solver.OverlandDiffusive.Epsilon}{1E-5}
+{
+This key provides a minimum value for the $\bar{S_{f}}$ used in the {\bf OverlandDiffusive} boundary condition.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.OverlandDiffusive.Epsilon 1E-7
+\end{verbatim}\end{display}
+
+\pfkey{double}{Solver.OverlandKinematic.Epsilon}{1E-5}
+{
+This key provides a minimum value for the $\bar{S_{f}}$ used in the {\bf OverlandKinematic} boundary condition.
+}
+\begin{display}\begin{verbatim}
+pfset Solver.OverlandKinematic.Epsilon 1E-7
+\end{verbatim}\end{display}
+
 \pfkey{string}{Solver.PrintSubsurf}{True}
 {
 This key is used to turn on printing of the subsurface data,
@@ -3478,7 +3584,7 @@ pfset Solver.PrintConcentration False
 This key is used to turn on collection and printing of the
 well data.  The data is collected at intervals given by values
 in the timing information section.  Printing occurs at the
-end of the run when all collected data is written. 
+end of the run when all collected data is written.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.PrintWells False
@@ -3487,7 +3593,7 @@ pfset Solver.PrintWells False
 \pfkey{string}{Solver.PrintLSMSink}{False}
 {
 This key is used to turn on printing of the
-flux array passed from \code{CLM} to \parflow{}.   Printing occurs at each {\bf DumpInterval} time. 
+flux array passed from \code{CLM} to \parflow{}.   Printing occurs at each {\bf DumpInterval} time.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.PrintLSMSink True
@@ -3518,7 +3624,7 @@ pfset Solver.WriteSiloPressure True
 {
 This key is used to specify printing of the saturation data using silo binary format.
 The printing of the data is controlled by values in the
-timing information section.  
+timing information section.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.WriteSiloSaturation True
@@ -3548,7 +3654,7 @@ pfset Solver.WriteSiloVelocities True
 {
 This key is used to specify printing of the x and y slope data using silo binary format.
 The printing of the data is controlled by values in the
-timing information section.  
+timing information section.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.WriteSiloSlopes  True
@@ -3576,9 +3682,9 @@ pfset Solver.WriteSiloSpecificStorage True
 
 \pfkey{string}{Solver.WriteSiloMask}{False}
 {
-This key is used to specify printing of the mask data using silo binary format.  The mask contains values equal to one for active cells and zero for inactive cells. 
+This key is used to specify printing of the mask data using silo binary format.  The mask contains values equal to one for active cells and zero for inactive cells.
 The printing of the data is controlled by values in the
-timing information section.  
+timing information section.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.WriteSiloMask  True
@@ -3588,7 +3694,7 @@ pfset Solver.WriteSiloMask  True
 {
 This key is used to specify printing of the evaporation and rainfall flux data using silo binary format.  This data comes from either \code{clm} or from external calls to \parflow{} such as \emph{WRF}.  This data is in units of $[L^3 T^{-1}]$.
 The printing of the data is controlled by values in the
-timing information section.  
+timing information section.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.WriteSiloEvapTrans  True
@@ -3598,7 +3704,7 @@ pfset Solver.WriteSiloEvapTrans  True
 {
 This key is used to specify printing of the evaporation and rainfall flux data using silo binary format as a running, cumulative amount.  This data comes from either \code{clm} or from external calls to \parflow{} such as \emph{WRF}.  This data is in units of $[L^3]$.
 The printing of the data is controlled by values in the
-timing information section.  
+timing information section.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.WriteSiloEvapTransSum  True
@@ -3608,7 +3714,7 @@ pfset Solver.WriteSiloEvapTransSum  True
 {
 This key is used to specify calculation and printing of the total overland outflow from the domain using silo binary format as a running cumulative amount.   This is integrated along all domain boundaries and is calculated any location that slopes at the edge of the domain point outward. This data is in units of $[L^3]$.
 The printing of the data is controlled by values in the
-timing information section.  
+timing information section.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.WriteSiloOverlandSum  True
@@ -3617,13 +3723,22 @@ pfset Solver.WriteSiloOverlandSum  True
 \pfkey{string}{Solver.TerrainFollowingGrid}{False}
 {
 This key specifies that a terrain-following coordinate transform is used for solver Richards. This key sets x and y subsurface slopes to be the same as the Topographic slopes (a value of False sets these subsurface slopes to zero).
-These slopes are used in the Darcy fluxes to add a density, gravity -dependent term.  This key will not change the output files (that is the output is still orthogonal) or the geometries (they will still follow the computational grid)-- these two things are both to do items.  This key only changes solver Richards, not solver Impes. 
+These slopes are used in the Darcy fluxes to add a density, gravity -dependent term.  This key will not change the output files (that is the output is still orthogonal) or the geometries (they will still follow the computational grid)-- these two things are both to do items.  This key only changes solver Richards, not solver Impes.
 }
 
 \begin{display}\begin{verbatim}
-pfset Solver.TerrainFollowingGrid                        True
+pfset Solver.TerrainFollowingGrid.                        True
 \end{verbatim}\end{display}
 
+\pfkey{string}{Solver.TerrainFollowingGrid.SlopeUpwindFormulation}{Original}
+{
+This key specifies optional modifications to the terrain following grid formulation (Equation \ref{eq:darcyTFG}) .  Choices for this key are {\bf Original, Upwind, UpwindSine}.
+{\bf Original} is the original TFG formulation shown in Equation \ref{eq:darcyTFG} and documented in \cite{M13}.  The {\bf Original} option calculates the $\theta_x$ and $\theta_y$ for a cell face as the average of the two adjacent cell slopes (i.e. assuming a cell centered slope calculation). The {\bf Upwind} option uses the the $\theta_x$ and $\theta_y$ of a cell directly without averaging (i.e. assuming a face centered slope calculation). The {\bf UpwindSine} is the same as the {\bf Upwind} option but it also removes the Sine term from \ref{eq:darcyTFG}. Note the {\bf UpwindSine} option is for experimental purposes only and should not be used in standard simulations.  Also note that the choice of {\bf upwind} or{\bf Original} formulation should consistent with the choice of overland flow boundary condition if overland flow is being used.  The {\bf upwind} and {\bf UpwindSine} are consistent with {\bf OverlandDiffusive} and {\bf OverlandKinematic} while {\bf Original} is consistent with {\bf OverlandFow}
+}
+
+\begin{display}\begin{verbatim}
+pfset Solver.TerrainFollowingGrid.SlopeUpwindFormulation   Upwind
+\end{verbatim}\end{display}
 
 %=============================================================================
 %=============================================================================
@@ -3634,7 +3749,7 @@ pfset Solver.TerrainFollowingGrid                        True
 The following keys are used to control how SILO writes data.  SILO
  allows writing to PDB and HDF5 file formats.  SILO also allows data
  compression to be used, which can save signicant amounts of disk
- space for some problems.  
+ space for some problems.
 
 \pfkey{string}{SILO.Filetype}{PDB}
 {
@@ -3661,13 +3776,13 @@ pfset SILO.CompressionOptions  ``METHOD=GZIP''
 
 The following keys are used to specify various parameters used by the linear
 and nonlinear solvers in the Richards' equation implementation.
-For information about these solvers, see 
+For information about these solvers, see
 \cite{Woodward98} and \cite{Ashby-Falgout90}.
 
 \pfkey{double}{Solver.Nonlinear.ResidualTol}{1e-7}
-{This key specifies the tolerance that measures how much the relative 
-reduction in the nonlinear residual should be before nonlinear 
-iterations stop.  The magnitude of the residual is measured with 
+{This key specifies the tolerance that measures how much the relative
+reduction in the nonlinear residual should be before nonlinear
+iterations stop.  The magnitude of the residual is measured with
 the $l^1$ (max) norm.
 }
 \begin{display}\begin{verbatim}
@@ -3675,8 +3790,8 @@ pfset Solver.Nonlinear.ResidualTol   1e-4
 \end{verbatim}\end{display}
 
 \pfkey{double}{Solver.Nonlinear.StepTol}{1e-7}
-{This key specifies the tolerance that measures how small the 
-difference between two consecutive nonlinear steps can be before 
+{This key specifies the tolerance that measures how small the
+difference between two consecutive nonlinear steps can be before
 nonlinear iterations stop.
 }
 \begin{display}\begin{verbatim}
@@ -3714,11 +3829,11 @@ pfset Solver.Linear.MaxRestarts   2
 
 \pfkey{integer}{Solver.MaxConvergencFailures}{3}
 {This key gives the maximum number of convergence failures
-allowed.   Each convergence failure cuts the timestep 
+allowed.   Each convergence failure cuts the timestep
 in half and the solver tries to advance the solution with the reduced
 timestep.
 
-The default value is 3.   
+The default value is 3.
 
 Note that setting this value to a value greater than 9 may result in
 errors in how time cycles are calculated.  Time is discretized in
@@ -3734,14 +3849,14 @@ pfset Solver.MaxConvergenceFailures 4
 
 \pfkey{string}{Solver.Nonlinear.PrintFlag}{HighVerbosity}
 {This key specifies the amount of informational data that is printed to the
-\code{*.out.kinsol.log} file.  Choices for this key are {\bf NoVerbosity, 
-LowVerbosity, NormalVerbosity} and {\bf  HighVerbosity}.  The choice 
+\code{*.out.kinsol.log} file.  Choices for this key are {\bf NoVerbosity,
+LowVerbosity, NormalVerbosity} and {\bf  HighVerbosity}.  The choice
 {\bf NoVerbosity} prints no statistics about the nonlinear convergence
-process.  The choice {\bf LowVerbosity} outputs the nonlinear iteration count, 
+process.  The choice {\bf LowVerbosity} outputs the nonlinear iteration count,
 the scaled norm of the nonlinear function, and the number of function calls.
-The choice {\bf NormalVerbosity} prints the same as for {\bf LowVerbosity} 
+The choice {\bf NormalVerbosity} prints the same as for {\bf LowVerbosity}
 and also the global strategy statistics.  The choice {\bf HighVerbosity} prints
-the same as for {\bf NormalVerbosity} with the addition of further Krylov 
+the same as for {\bf NormalVerbosity} with the addition of further Krylov
 iteration statistics.
 }
 \begin{display}\begin{verbatim}
@@ -3749,10 +3864,10 @@ pfset Solver.Nonlinear.PrintFlag   NormalVerbosity
 \end{verbatim}\end{display}
 
 \pfkey{string}{Solver.Nonlinear.EtaChoice}{Walker2}
-{This key specifies how the linear system tolerance will be selected.  
-The linear system is solved until a relative residual reduction of $\eta$ 
+{This key specifies how the linear system tolerance will be selected.
+The linear system is solved until a relative residual reduction of $\eta$
 is achieved.  Linear residuall norms are measured in the $l^2$ norm.
-Choices for this key include {\bf EtaConstant, Walker1} and 
+Choices for this key include {\bf EtaConstant, Walker1} and
 {\bf Walker2}.  If the choice {\bf EtaConstant} is specified, then $\eta$ will
 be taken as constant.  The choices {\bf Walker1} and {\bf Walker2} specify
 choices for $\eta$ developed by Eisenstat and Walker \cite{EW96}.  The choice
@@ -3776,8 +3891,8 @@ pfset Solver.Nonlinear.EtaValue   1e-7
 \end{verbatim}\end{display}
 
 \pfkey{double}{Solver.Nonlinear.EtaAlpha}{2.0}
-{This key specifies the value of $\alpha$ for the case of EtaChoice being 
-{\bf Walker2}. 
+{This key specifies the value of $\alpha$ for the case of EtaChoice being
+{\bf Walker2}.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.Nonlinear.EtaAlpha   1.0
@@ -3793,7 +3908,7 @@ pfset Solver.Nonlinear.EtaGamma   0.7
 
 \pfkey{string}{Solver.Nonlinear.UseJacobian}{False}
 {This key specifies whether the Jacobian will be used in matrix-vector products
-or whether a matrix-free version of the code will run.  Choices for this key 
+or whether a matrix-free version of the code will run.  Choices for this key
 are {\bf False} and {\bf True}.
 Using the Jacobian will most likely decrease the number of nonlinear iterations
 but require more memory to run.
@@ -3826,8 +3941,8 @@ pfset Solver.Nonlinear.Globalization   LineSearch
 \pfkey{string}{Solver.Linear.Preconditioner}{MGSemi}
 {This key specifies which preconditioner to use.  Currently, the three choices
 are {\bf NoPC, MGSemi, PFMG, PFMGOctree} and {\bf SMG}.  The choice {\bf NoPC} specifies that no
-preconditioner should be used.  The choice {\bf MGSemi} specifies 
-a semi-coarsening multigrid algorithm which uses a point relaxation method. 
+preconditioner should be used.  The choice {\bf MGSemi} specifies
+a semi-coarsening multigrid algorithm which uses a point relaxation method.
 The choice {\bf SMG} specifies a semi-coarsening multigrid algorithm which uses
 plane relaxations.  This method is more robust than {\bf MGSemi}, but generally
 requires more memory and compute time. The choice {\bf PFMGOctree} can be more efficient for problems with large numbers of inactive cells.
@@ -3844,14 +3959,14 @@ The choice {\bf Symmetric} specifies that the symmetric part of the Jacobian
 will be used as the preconditioning matrix.  The choice {\bf Nonsymmetric}
 specifies that the full Jacobian will be used as the preconditioning matrix.
 NOTE: ONLY {\bf Symmetric} CAN BE USED IF MGSemi IS THE SPECIFIED
-PRECONDITIONER! 
+PRECONDITIONER!
 }
 \begin{display}\begin{verbatim}
 pfset Solver.Linear.Preconditioner.SymmetricMat     Symmetric
 \end{verbatim}\end{display}
 
 \pfkey{integer}{Solver.Linear.Preconditioner.{\em precond\_method}.MaxIter}{1}
-{This key specifies the maximum number of iterations to take in solving the 
+{This key specifies the maximum number of iterations to take in solving the
 preconditioner system with {\em precond\_method} solver.
 }
 \begin{display}\begin{verbatim}
@@ -3904,7 +4019,7 @@ pfset Solver.EvapTransFileTransient    True
 
 \pfkey{string}{Solver.EvapTrans.FileName}{no default}
 {This key specifies specifies filename for the distributed \file{.pfb} file that contains the flux values for Richards' equation.  This file has $[T^-1]$
-units.  For the steady-state option (\emph{Solver.EvapTransFile=\bf{True}}) this key should be the complete filename.  For the transient option 
+units.  For the steady-state option (\emph{Solver.EvapTransFile=\bf{True}}) this key should be the complete filename.  For the transient option
 (\emph{Solver.EvapTransFileTransient=\bf{True}} then the filename is a header and \parflow{} will load one file per timestep, with the form \file{filename.00000.pfb}.}
 \begin{display}\begin{verbatim}
 pfset Solver.EvapTrans.FileName   evap.trans.test.pfb
@@ -3925,26 +4040,26 @@ pfset Solver.LSM CLM
 \label{Spinup Options}
 
 These keys allow for \emph{reduced or dampened physics} during model spinup or initialization. They are {\bf only} intended
-for these initialization periods, {\bf not} for regular runtime. 
+for these initialization periods, {\bf not} for regular runtime.
 
 \pfkey{integer}{OverlandFlowSpinUp}{0}
 {This key specifies that a \emph{simplified} form of the overland flow boundary condition (Equation \ref{eq:overland_bc}) be used in place of the full equation.
-This formulation \emph{removes lateral flow} and drives and ponded water pressures to zero.  While this can be helpful in spinning up the subsurface,
-this is no longer coupled subsurface-surface flow.  If set to zero (the default) this key behaves normally. 
+This formulation \emph{removes lateral flow} and drives and ponded water pressures to zero using a {\bf SeepageFace} boundary condition.  While this can be helpful in spinning up the subsurface,
+this is no longer coupled subsurface-surface flow.  If set to zero (the default) this key behaves normally.
 }
 \begin{display}\begin{verbatim}
 pfset OverlandFlowSpinUp   1
 \end{verbatim}\end{display}
 
 \pfkey{double}{OverlandFlowSpinUpDampP1}{0.0}
-{This key sets $P_1$ and provides exponential dampening to the pressure relationship in the overland flow equation by adding the 
+{This key sets $P_1$ and provides exponential dampening to the pressure relationship in the overland flow equation by adding the
 following term: $P_2*exp(\psi*P_2)$}
 \begin{display}\begin{verbatim}
 pfset OverlandSpinupDampP1  10.0
 \end{verbatim}\end{display}
 
 \pfkey{double}{OverlandFlowSpinUpDampP2}{0.0}
-{This key sets $P_2$ and provides exponential dampening to the pressure relationship in the overland flow equation adding the 
+{This key sets $P_2$ and provides exponential dampening to the pressure relationship in the overland flow equation adding the
 following term: $P_2*exp(\psi*P_2)$ }
 \begin{display}\begin{verbatim}
 pfset OverlandSpinupDampP2  0.1
@@ -3957,7 +4072,7 @@ pfset OverlandSpinupDampP2  0.1
 \label{CLM Solver Parameters}
 
 \pfkey{string}{Solver.CLM.Print1dOut}{False}
-{This key specifies whether the \code{CLM} one dimensional (averaged over each processor) output file is written or not. 
+{This key specifies whether the \code{CLM} one dimensional (averaged over each processor) output file is written or not.
 Choices for this key include {\bf True} and {\bf False}. Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
 }
 \begin{display}\begin{verbatim}
@@ -3969,17 +4084,17 @@ pfset Solver.CLM.Print1dOut   False
 {This key specifies the value of the counter, {\em istep} in \code{CLM}.  This key primarily determines the start of the output counter for \code{CLM}.It is used to restart a run by setting the key to the ending step of the previous run plus one. Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
 }
 \begin{display}\begin{verbatim}
-pfset Solver.CLM.IstepStart     8761      
+pfset Solver.CLM.IstepStart     8761
 \end{verbatim}\end{display}
 
 
 \pfkey{String}{Solver.CLM.MetForcing}{no default}
-{This key specifies defines whether 1D (uniform over  
-the domain), 2D (spatially distributed) or 3D (spatially distributed with multiple timesteps per \code{.pfb} forcing file) forcing data is used.  Choices for this key are {\bf 1D}, {\bf 2D} and {\bf 3D}. This key  
+{This key specifies defines whether 1D (uniform over
+the domain), 2D (spatially distributed) or 3D (spatially distributed with multiple timesteps per \code{.pfb} forcing file) forcing data is used.  Choices for this key are {\bf 1D}, {\bf 2D} and {\bf 3D}. This key
 has no default so the user {\em must} set it to 1D, 2D or 3D. Failure to set this key will cause \code{CLM} to still be run but with unpredictable values causing \code{CLM} to eventually crash. 1D meteorological forcing files are text files with single columns for each variable and each timestep per row, while 2D forcing files are distributed \parflow{} binary files, one for each variable and timestep.  File names are specified in the {\bf Solver.CLM.MetFileName} variable below. Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
 }
 \begin{display}\begin{verbatim}
-pfset Solver.CLM.MetForcing   2D       
+pfset Solver.CLM.MetForcing   2D
 \end{verbatim}\end{display}
 
 \pfkey{String}{Solver.CLM.MetFileName}{no default}
@@ -4002,8 +4117,8 @@ pfset Solver.CLM.MetFileName                             narr.1hr.txt
 \end{verbatim}\end{display}
 
 \pfkey{String}{Solver.CLM.MetFilePath}{no default}
-{This key specifies defines the location of 1D, 2D or 3D forcing data. For 1D cases, this is the path to a single forcing file ({\em e.g.}  
-\code{narr.1hr.txt}). For 2D and 3D cases, this is the path to the directory  
+{This key specifies defines the location of 1D, 2D or 3D forcing data. For 1D cases, this is the path to a single forcing file ({\em e.g.}
+\code{narr.1hr.txt}). For 2D and 3D cases, this is the path to the directory
 containing all forcing files. Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
 }
 \begin{display}\begin{verbatim}
@@ -4011,10 +4126,10 @@ pfset Solver.CLM.MetFilePath		"path/to/met/forcing/data/"
 \end{verbatim}\end{display}
 
 \pfkey{integer}{Solver.CLM.MetFileNT}{no default}
-{This key specifies the number of timesteps per file for 3D forcing data. 
+{This key specifies the number of timesteps per file for 3D forcing data.
 }
 \begin{display}\begin{verbatim}
-pfset Solver.CLM.MetFileNT	24	
+pfset Solver.CLM.MetFileNT	24
 \end{verbatim}\end{display}
 
 %====
@@ -4029,7 +4144,7 @@ pfset Solver.CLM.MetFileNT	24
 \item[{\bf DISPLA}: ] Displacement height $[m]$
 \label{clm_forcing}
 \end{description}
-In the case of 1D meteorological forcings, \code{CLM} requires four files for vegetation time series and one vegetation map. The four files should be named respectively \code{lai.dat}, \code{sai.dat}, \code{z0m.dat}, \code{displa.dat}. They are ASCII files and contain 18 time-series columns (one per IGBP vegetation class, and each timestep per row). The vegetation map should be a properly distributed 2D \parflow{} binary file (\code{.pfb}) which contains vegetation indices (from 1 to 18). The vegetation map filename is \code{veg\_map.pfb}. \parflow{} uses the vegetation map to pass to \code{CLM} a 2D map for each vegetation variable at each time step. 
+In the case of 1D meteorological forcings, \code{CLM} requires four files for vegetation time series and one vegetation map. The four files should be named respectively \code{lai.dat}, \code{sai.dat}, \code{z0m.dat}, \code{displa.dat}. They are ASCII files and contain 18 time-series columns (one per IGBP vegetation class, and each timestep per row). The vegetation map should be a properly distributed 2D \parflow{} binary file (\code{.pfb}) which contains vegetation indices (from 1 to 18). The vegetation map filename is \code{veg\_map.pfb}. \parflow{} uses the vegetation map to pass to \code{CLM} a 2D map for each vegetation variable at each time step.
 In the case of 3D meteorological forcings, \parflow{} expects four distincts properly distributed \parflow{} binary file (\code{.pfb}), the third dimension being the timesteps. The files should be named \code{LAI.pfb}, \code{SAI.pfb}, \code{Z0M.pfb}, \code{DISPLA.pfb}. No vegetation map is needed in this case.
 }
 \begin{display}\begin{verbatim}
@@ -4037,7 +4152,7 @@ pfset Solver.CLM.ForceVegetation  True
 \end{verbatim}\end{display}
 
 \pfkey{string}{Solver.WriteSiloCLM}{False}
-{This key specifies whether the \code{CLM} writes two dimensional binary output files to a silo binary format. This data may be read in by VisIT and other visualization packages.  Note that \code{CLM} and silo must be compiled and linked at runtime for this option to be active. These files are all written according to the standard format used for all \parflow{} variables, using the {\em runname}, and {\em istep}.  Variables are either two-dimensional or over the number of \code{CLM} layers (default of ten). 
+{This key specifies whether the \code{CLM} writes two dimensional binary output files to a silo binary format. This data may be read in by VisIT and other visualization packages.  Note that \code{CLM} and silo must be compiled and linked at runtime for this option to be active. These files are all written according to the standard format used for all \parflow{} variables, using the {\em runname}, and {\em istep}.  Variables are either two-dimensional or over the number of \code{CLM} layers (default of ten).
 }
 \begin{display}\begin{verbatim}
 pfset Solver.WriteSiloCLM True
@@ -4048,19 +4163,19 @@ The output variables are:
 \item \file{eflx_lwrad_out} for outgoing long-wave radiation $[W/m^2]$ using the silo variable {\em LongWave};
 \item \file{eflx_sh_tot} for sensible heat flux total $[W/m^2]$ using the silo variable {\em SensibleHeat};
 \item \file{eflx_soil_grnd} for ground heat flux $[W/m^2]$ using the silo variable {\em GroundHeat};
-\item \file{qflx_evap_tot} for total evaporation $[mm/s]$ using the silo variable {\em EvaporationTotal}; 
+\item \file{qflx_evap_tot} for total evaporation $[mm/s]$ using the silo variable {\em EvaporationTotal};
 \item \file{qflx_evap_grnd} for ground evaporation without condensation $[mm/s]$ using the silo variable {\em EvaporationGroundNoSublimation};
 \item \file{qflx_evap_soi} for soil evaporation $[mm/s]$ using the silo variable {\em EvaporationGround};
 \item \file{qflx_evap_veg} for vegetation evaporation $[mm/s]$ using the silo variable {\em EvaporationCanopy};
-\item \file{qflx_tran_veg} for vegetation transpiration $[mm/s]$ using the silo variable {\em Transpiration}; 
+\item \file{qflx_tran_veg} for vegetation transpiration $[mm/s]$ using the silo variable {\em Transpiration};
 \item \file{qflx_infl} for soil infiltration $[mm/s]$ using the silo variable {\em Infiltration};
 \item \file{swe_out} for snow water equivalent $[mm]$ using the silo variable {\em SWE};
-\item \file{t_grnd} for ground surface temperature $[K]$ using the silo variable {\em TemperatureGround}; and 
+\item \file{t_grnd} for ground surface temperature $[K]$ using the silo variable {\em TemperatureGround}; and
 \item \file{t_soil} for soil temperature over all layers $[K]$ using the silo variable {\em TemperatureSoil}.
 \end{description}
 
 \pfkey{string}{Solver.PrintCLM}{False}
-{This key specifies whether the \code{CLM} writes two dimensional binary output files to a \file{PFB} binary format. Note that \code{CLM} must be compiled and linked at runtime for this option to be active. These files are all written according to the standard format used for all \parflow{} variables, using the {\em runname}, and {\em istep}.  Variables are either two-dimensional or over the number of \code{CLM} layers (default of ten). 
+{This key specifies whether the \code{CLM} writes two dimensional binary output files to a \file{PFB} binary format. Note that \code{CLM} must be compiled and linked at runtime for this option to be active. These files are all written according to the standard format used for all \parflow{} variables, using the {\em runname}, and {\em istep}.  Variables are either two-dimensional or over the number of \code{CLM} layers (default of ten).
 }
 \begin{display}\begin{verbatim}
 pfset Solver.PrintCLM True
@@ -4071,19 +4186,19 @@ The output variables are:
 \item \file{eflx_lwrad_out} for outgoing long-wave radiation $[W/m^2]$ using the silo variable {\em LongWave};
 \item \file{eflx_sh_tot} for sensible heat flux total $[W/m^2]$ using the silo variable {\em SensibleHeat};
 \item \file{eflx_soil_grnd} for ground heat flux $[W/m^2]$ using the silo variable {\em GroundHeat};
-\item \file{qflx_evap_tot} for total evaporation $[mm/s]$ using the silo variable {\em EvaporationTotal}; 
+\item \file{qflx_evap_tot} for total evaporation $[mm/s]$ using the silo variable {\em EvaporationTotal};
 \item \file{qflx_evap_grnd} for ground evaporation without sublimation $[mm/s]$ using the silo variable {\em EvaporationGroundNoSublimation};
 \item \file{qflx_evap_soi} for soil evaporation $[mm/s]$ using the silo variable {\em EvaporationGround};
 \item \file{qflx_evap_veg} for vegetation evaporation $[mm/s]$ using the silo variable {\em EvaporationCanopy};
-\item \file{qflx_tran_veg} for vegetation transpiration $[mm/s]$ using the silo variable {\em Transpiration}; 
+\item \file{qflx_tran_veg} for vegetation transpiration $[mm/s]$ using the silo variable {\em Transpiration};
 \item \file{qflx_infl} for soil infiltration $[mm/s]$ using the silo variable {\em Infiltration};
 \item \file{swe_out} for snow water equivalent $[mm]$ using the silo variable {\em SWE};
-\item \file{t_grnd} for ground surface temperature $[K]$ using the silo variable {\em TemperatureGround}; and 
+\item \file{t_grnd} for ground surface temperature $[K]$ using the silo variable {\em TemperatureGround}; and
 \item \file{t_soil} for soil temperature over all layers $[K]$ using the silo variable {\em TemperatureSoil}.
 \end{description}
 
 \pfkey{string}{Solver.WriteCLMBinary}{True}
-{This key specifies whether the \code{CLM} writes two dimensional binary output files in a generic binary format.  
+{This key specifies whether the \code{CLM} writes two dimensional binary output files in a generic binary format.
  Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
 }
 \begin{display}\begin{verbatim}
@@ -4091,13 +4206,13 @@ pfset Solver.WriteCLMBinary False
 \end{verbatim}\end{display}
 
 \pfkey{string}{Solver.CLM.BinaryOutDir}{True}
-{This key specifies whether the \code{CLM} writes each set of two dimensional binary output files to a corresponding directory.  
+{This key specifies whether the \code{CLM} writes each set of two dimensional binary output files to a corresponding directory.
 These directories my be created before \parflow{} is run (using the tcl script, for example).  Choices for this key include {\bf True} and {\bf False}. Note that \code{CLM} must be compiled and linked at runtime for this option to be active.
 }
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.BinaryOutDir True
 \end{verbatim}\end{display}
-These directories are: 
+These directories are:
 \begin{description}
 \item \file{/qflx_top_soil} for soil flux;
 \item \file{/qflx_infl} for infiltration;
@@ -4105,14 +4220,14 @@ These directories are:
 \item \file{/eflx_soil_grnd} for ground heat flux;
 \item \file{/qflx_evap_veg} for vegetation evaporation;
 \item \file{/eflx_sh_tot} for sensible heat flux;
-\item \file{/eflx_lh_tot} for latent heat flux; 
-\item \file{/qflx_evap_tot} for total evaporation; 
-\item \file{/t_grnd} for ground surface temperature; 
-\item \file{/qflx_evap_soi} for soil evaporation; 
-\item \file{/qflx_tran_veg} for vegetation transpiration; 
+\item \file{/eflx_lh_tot} for latent heat flux;
+\item \file{/qflx_evap_tot} for total evaporation;
+\item \file{/t_grnd} for ground surface temperature;
+\item \file{/qflx_evap_soi} for soil evaporation;
+\item \file{/qflx_tran_veg} for vegetation transpiration;
 \item \file{/eflx_lwrad_out} for outgoing long-wave radiation;
 \item \file{/swe_out} for snow water equivalent; and
-\item \file{/diag_out} for diagnostics. 
+\item \file{/diag_out} for diagnostics.
 \end{description}
 
 \pfkey{string}{Solver.CLM.CLMFileDir}{no default}
@@ -4178,62 +4293,62 @@ pfset Solver.CLM.FieldCapacity  0.95
 %=====
 \pfkey{string}{Solver.CLM.IrrigationTypes}{none}
 {This key specifies the form of the irrigation in \code{CLM}.  The valid types for this key are {\bf none, Spray, Drip, Instant}.
-} 
+}
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.IrrigationTypes Drip
 \end{verbatim}\end{display}
 
 \pfkey{string}{Solver.CLM.IrrigationCycle}{Constant}
 {This key specifies the cycle of the irrigation in \code{CLM}.  The valid types for this key are {\bf Constant, Deficit}. Note only {\bf Constant} is currently implemented.  Constant cycle applies irrigation each day from IrrigationStartTime to IrrigationStopTime in GMT.
-} 
+}
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.IrrigationCycle Constant
 \end{verbatim}\end{display}
 
 \pfkey{double}{Solver.CLM.IrrigationRate}{no default}
-{This key specifies the rate of the irrigation in \code{CLM} in [mm/s].  
-} 
+{This key specifies the rate of the irrigation in \code{CLM} in [mm/s].
+}
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.IrrigationRate 10.
 \end{verbatim}\end{display}
 
 \pfkey{double}{Solver.CLM.IrrigationStartTime}{no default}
-{This key specifies the start time of the irrigation in \code{CLM} GMT.  
-} 
+{This key specifies the start time of the irrigation in \code{CLM} GMT.
+}
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.IrrigationStartTime 0800
 \end{verbatim}\end{display}
 
 \pfkey{double}{Solver.CLM.IrrigationStopTime}{no default}
-{This key specifies the stop time of the irrigation in \code{CLM} GMT.  
-} 
+{This key specifies the stop time of the irrigation in \code{CLM} GMT.
+}
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.IrrigationStopTime 1200
 \end{verbatim}\end{display}
 
 \pfkey{double}{Solver.CLM.IrrigationThreshold}{0.5}
-{This key specifies the threshold value for the irrigation in \code{CLM} [-].  
-} 
+{This key specifies the threshold value for the irrigation in \code{CLM} [-].
+}
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.IrrigationThreshold 0.2
 \end{verbatim}\end{display}
 
 \pfkey{integer}{Solver.CLM.ReuseCount}{1}
-{How many times to reuse a \code{CLM} atmospheric forcing file input. For example timestep=1, 
-reuse =1 is normal behavior but reuse=2 and timestep=0.5 subdivides 
+{How many times to reuse a \code{CLM} atmospheric forcing file input. For example timestep=1,
+reuse =1 is normal behavior but reuse=2 and timestep=0.5 subdivides
 the time step using the same \code{CLM} input for both halves instead of needing two files.
 This is particually useful for large, distributed runs when the user wants to run \parflow{}
 at a smaller timestep than the \code{CLM} forcing.  Forcing files will be re-used and
-total fluxes adjusted accordingly without needing duplicate files.} 
+total fluxes adjusted accordingly without needing duplicate files.}
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.ReuseCount      5
 \end{verbatim}\end{display}
 
 \pfkey{string}{Solver.CLM.WriteLogs}{True}
-{When {\bf False}, this disables writing of the CLM output log files for each processor. 
-For example, in the clm.tcl test case, if this flag is added {\bf False}, 
+{When {\bf False}, this disables writing of the CLM output log files for each processor.
+For example, in the clm.tcl test case, if this flag is added {\bf False},
 washita.output.txt.\emph{p} and washita.para.out.dat.\emph{p} (were \emph{p} is the processor \#)
-are not created, assuming \emph{washita} is the run name.} 
+are not created, assuming \emph{washita} is the run name.}
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.WriteLogs    False
 \end{verbatim}\end{display}
@@ -4241,32 +4356,32 @@ pfset Solver.CLM.WriteLogs    False
 \pfkey{string}{Solver.CLM.WriteLastRST}{False}
 {Controls whether CLM restart files are sequentially written or whether a single
 file \emph{restart file name}.00000.\emph{p} is overwritten each time the restart file is output,
-where \emph{p} is the processor number. If "True" only one file is written/overwritten and if 
+where \emph{p} is the processor number. If "True" only one file is written/overwritten and if
 "False" outputs are written more frequently. Compatible with DailyRST and ReuseCount;
-for the latter, outputs are written every n steps where n is the value of ReuseCount.} 
+for the latter, outputs are written every n steps where n is the value of ReuseCount.}
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.WriteLastRST   True
 \end{verbatim}\end{display}
 
 \pfkey{string}{Solver.CLM.DailyRST}{True}
-{Controls whether CLM writes daily restart files (default) or at every time step when set 
-to False; outputs are numbered according to the istep from ParFlow. If {\bf ReuseCount=n}, 
-with n greater than 1, the output will be written every n steps (i.e. it still writes hourly 
+{Controls whether CLM writes daily restart files (default) or at every time step when set
+to False; outputs are numbered according to the istep from ParFlow. If {\bf ReuseCount=n},
+with n greater than 1, the output will be written every n steps (i.e. it still writes hourly
 restart files if your time step is 0.5 or 0.25, etc...). Fully compatible with {\bf WriteLastRST=False}
-so that each daily output is overwritten to time 00000 in \emph{restart file name}.00000.p 
-where \emph{p} is the processor number.} 
+so that each daily output is overwritten to time 00000 in \emph{restart file name}.00000.p
+where \emph{p} is the processor number.}
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.DailyRST    False
 \end{verbatim}\end{display}
 
 \pfkey{string}{Solver.CLM.SingleFile}{False}
 {Controls whether \parflow{} writes all \code{CLM} output variables as a single file per time step.
-When "True", this combines the output of all the CLM output variables into a special multi-layer 
+When "True", this combines the output of all the CLM output variables into a special multi-layer
 PFB with the file extension ".C.pfb". The first 13 layers correspond to the 2-D CLM
-outputs and the remaining layers are the soil temperatures in each layer. For example, 
+outputs and the remaining layers are the soil temperatures in each layer. For example,
 a model with 4 soil layers will create a SingleFile CLM output with 17 layers at each time step. The
 file pseudo code is given below in \S~\ref{ParFlow Binary Files (.c.pfb)} and the variables and units
-are as specified in the multiple \code{PFB} and \code{SILO} formats as above.} 
+are as specified in the multiple \code{PFB} and \code{SILO} formats as above.}
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.SingleFile   True
 \end{verbatim}\end{display}
@@ -4274,7 +4389,7 @@ pfset Solver.CLM.SingleFile   True
 \pfkey{integer}{Solver.CLM.RootZoneNZ}{10}
 {This key sets the number of soil layers the \parflow{} expects from
   \code{CLM}.  It will allocate and format all the arrays for passing
-  variables to and from \code{CLM} accordingly.  This value now sets 
+  variables to and from \code{CLM} accordingly.  This value now sets
   the \code{CLM} number as well so recompilation is not required anymore.
   Most likely the key \code{Solver.CLM.SoiLayer}, described
   below, will also need to be changed.}
@@ -4283,7 +4398,7 @@ pfset Solver.CLM.RootZoneNZ      4
 \end{verbatim}\end{display}
 
 \pfkey{integer}{Solver.CLM.SoiLayer}{7}
-{This key sets the soil layer, and thus the soil depth, that \code{CLM} uses for the seasonal temperature adjustment for all leaf and stem area indices.} 
+{This key sets the soil layer, and thus the soil depth, that \code{CLM} uses for the seasonal temperature adjustment for all leaf and stem area indices.}
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.SoiLayer      4
 \end{verbatim}\end{display}
@@ -4298,73 +4413,73 @@ Naming convention of output files is analogues to binary file names. Following o
 \textbf{\textit{HDF5 Library version 1.8.16 or higher is required for NetCDF4 parallel I/O}}
 
 \pfkey{integer}{NetCDF.NumStepsPerFile}{ }
-{This key sets number of time steps user wishes to output in a NetCDF4 file. Once the time step count increases beyond this number, a new file is automatically created.} 
+{This key sets number of time steps user wishes to output in a NetCDF4 file. Once the time step count increases beyond this number, a new file is automatically created.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.NumStepsPerFile    5
 \end{verbatim}\end{display}
 
 \pfkey{string}{NetCDF.WritePressure}{False}
-{This key sets pressure variable to be written in NetCDF4 file.} 
+{This key sets pressure variable to be written in NetCDF4 file.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.WritePressure    True
 \end{verbatim}\end{display}
 
 \pfkey{string}{NetCDF.WriteSaturation}{False}
-{This key sets saturation variable to be written in NetCDF4 file.} 
+{This key sets saturation variable to be written in NetCDF4 file.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.WriteSaturation    True
 \end{verbatim}\end{display}
 
 \pfkey{string}{NetCDF.WriteMannings}{False}
-{This key sets Mannings coefficients to be written in NetCDF4 file.} 
+{This key sets Mannings coefficients to be written in NetCDF4 file.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.WriteMannings	    True
 \end{verbatim}\end{display}
 
 \pfkey{string}{NetCDF.WriteSubsurface}{False}
-{This key sets subsurface data(permeabilities, porosity, specific storage) to be written in NetCDF4 file.} 
+{This key sets subsurface data(permeabilities, porosity, specific storage) to be written in NetCDF4 file.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.WriteSubsurface	    True
 \end{verbatim}\end{display}
 
 \pfkey{string}{NetCDF.WriteSlopes}{False}
-{This key sets x and y slopes to be written in NetCDF4 file.} 
+{This key sets x and y slopes to be written in NetCDF4 file.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.WriteSlopes	    True
 \end{verbatim}\end{display}
 
 \pfkey{string}{NetCDF.WriteMask}{False}
-{This key sets mask to be written in NetCDF4 file.} 
+{This key sets mask to be written in NetCDF4 file.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.WriteMask	    True
 \end{verbatim}\end{display}
 
 \pfkey{string}{NetCDF.WriteDZMultiplier}{False}
-{This key sets DZ multipliers to be written in NetCDF4 file.} 
+{This key sets DZ multipliers to be written in NetCDF4 file.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.WriteDZMultiplier	    True
 \end{verbatim}\end{display}
 
 \pfkey{string}{NetCDF.WriteEvapTrans}{False}
-{This key sets Evaptrans to be written in NetCDF4 file.} 
+{This key sets Evaptrans to be written in NetCDF4 file.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.WriteEvapTrans	    True
 \end{verbatim}\end{display}
 
 \pfkey{string}{NetCDF.WriteEvapTransSum}{False}
-{This key sets Evaptrans sum to be written in NetCDF4 file.} 
+{This key sets Evaptrans sum to be written in NetCDF4 file.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.WriteEvapTransSum	    True
 \end{verbatim}\end{display}
 
 \pfkey{string}{NetCDF.WriteOverlandSum}{False}
-{This key sets overland sum to be written in NetCDF4 file.} 
+{This key sets overland sum to be written in NetCDF4 file.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.WriteOverlandSum	    True
 \end{verbatim}\end{display}
 
 \pfkey{string}{NetCDF.WriteOverlandBCFlux}{False}
-{This key sets overland bc flux to be written in NetCDF4 file.} 
+{This key sets overland bc flux to be written in NetCDF4 file.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.WriteOverlandBCFlux	    True
 \end{verbatim}\end{display}
@@ -4373,27 +4488,27 @@ pfset NetCDF.WriteOverlandBCFlux	    True
 Chunking may have significant impact on I/O. If this key is not set, default chunking scheme will be used by NetCDF library. Chunks are hypercube(hyperslab) of any dimension. When chunking is used, chunks are written in single write operation which can reduce access times. For more information on chunking, refer to NetCDF4 user guide.
 
 \pfkey{string}{NetCDF.Chunking}{False}
-{This key sets chunking for each time varying 3-D variable in NetCDF4 file.} 
+{This key sets chunking for each time varying 3-D variable in NetCDF4 file.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.Chunking    True
 \end{verbatim}\end{display}
 
 Following keys are used only when \textbf{NetCDF.Chunking} is set to true. These keys are used to set chunk sizes in x, y and z direction. A typical size of chunk in each direction should be equal to number of grid points in each direction for each processor. e.g. If we are using a grid of 400(x)X400(y)X30(z) with 2-D domain decomposition of 8X8, then each core has 50(x)X50(y)X30(z) grid points. These values can be used to set chunk sizes each direction. For unequal distribution, chunk sizes should as large as largest value of grid points on the processor. e.g. If one processor has grid distribution of 40(x)X40(y)X30(z) and another has 50(x)X50(y)X30(z), the later values should be used to set chunk sizes in each direction.
- 
+
 \pfkey{integer}{NetCDF.ChunkX}{None}
-{This key sets chunking size in x-direction.} 
+{This key sets chunking size in x-direction.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.ChunkX    50
 \end{verbatim}\end{display}
 
 \pfkey{integer}{NetCDF.ChunkY}{None}
-{This key sets chunking size in y-direction.} 
+{This key sets chunking size in y-direction.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.ChunkY    50
 \end{verbatim}\end{display}
 
 \pfkey{integer}{NetCDF.ChunkZ}{None}
-{This key sets chunking size in z-direction.} 
+{This key sets chunking size in z-direction.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.ChunkZ    30
 \end{verbatim}\end{display}
@@ -4402,7 +4517,7 @@ pfset NetCDF.ChunkZ    30
 ROMIO is a poratable MPI-IO implementation developed at Argonne National Laboratory, USA. Currently it is released as a part of MPICH. ROMIO sets hints to optimize I/O operations for MPI-IO layer through MPI\_Info object. This object is passed on to NetCDF4 while creating a file. ROMIO hints are set in a text file in "key" and "value" pair. \textit{For correct settings contact your HPC site administrator}. As in chunking, ROMIO hints can have significant performance impact on I/O.
 
 \pfkey{string}{NetCDF.ROMIOhints}{None}
-{This key sets ROMIO hints file to be passed on to NetCDF4 interface.If this key is set, the file must be present and readable in experiment directory.} 
+{This key sets ROMIO hints file to be passed on to NetCDF4 interface.If this key is set, the file must be present and readable in experiment directory.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.ROMIOhints    romio.hints
 \end{verbatim}\end{display}
@@ -4420,7 +4535,7 @@ A node level collective strategy has been implemented for I/O. One process on ea
 \textit{\textbf{Node level collective I/O is currently implemented for 2-D domain decomposition and variables Pressure and Saturation only. All the other ParFlow NetCDF output Tcl flags should be set to false(default value). CLM output is independently handled and not affected by this key.  Moreover on speciality architectures, this may not be a portable feature. Users are advised to test this feature on their machine before putting into production.}}
 
 \pfkey{string}{NetCDF.NodeLevelIO}{False}
-{This key sets flag for node level collective I/O.} 
+{This key sets flag for node level collective I/O.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.NodeLevelIO   True
 \end{verbatim}\end{display}
@@ -4442,7 +4557,7 @@ variables:
 \textit{\textbf{Node level collective I/O is currently not implemented for setting initial conditions.}}
 
 \pfkey{string}{ICPressure.Type}{no default}
-{This key sets flag for initial conditions to be read from a NetCDF file.} 
+{This key sets flag for initial conditions to be read from a NetCDF file.}
 \begin{display}\begin{verbatim}
 pfset ICPressure.Type   NCFile
 pfset Geom.domain.ICPressure.FileName   "initial_condition.nc"
@@ -4474,13 +4589,13 @@ The two NetCDF files can be merged into one single file and can be used with tcl
 \textit{\textbf{Node level collective I/O is currently not implemented for setting initial conditions.}}
 
 \pfkey{string}{TopoSlopesX.Type}{no default}
-{This key sets flag for slopes in x direction to be read from a NetCDF file.} 
+{This key sets flag for slopes in x direction to be read from a NetCDF file.}
 \begin{display}\begin{verbatim}
 pfset TopoSlopesX.Type   NCFile
 pfset TopoSlopesX.FileName   "slopex.nc"
 \end{verbatim}\end{display}
 \pfkey{string}{TopoSlopesY.Type}{no default}
-{This key sets flag for slopes in y direction to be read from a NetCDF file.} 
+{This key sets flag for slopes in y direction to be read from a NetCDF file.}
 \begin{display}\begin{verbatim}
 pfset TopoSlopesY.Type   NCFile
 pfset TopoSlopesy.FileName   "slopey.nc"
@@ -4502,13 +4617,13 @@ variables:
 \textit{\textbf{Node level collective I/O is currently not implemented for transient evaptrans forcing.}}
 
 \pfkey{string}{NetCDF.EvapTransFileTransient}{False}
-{This key sets flag for transient evaptrans forcing to be read from a NetCDF file.} 
+{This key sets flag for transient evaptrans forcing to be read from a NetCDF file.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.EvapTransFileTransient   True
 \end{verbatim}\end{display}
 
 \pfkey{string}{NetCDF.EvapTrans.FileName}{no default}
-{This key sets the name of the NetCDF transient evaptrans forcing file.} 
+{This key sets the name of the NetCDF transient evaptrans forcing file.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.EvapTrans.FileName         "evap_trans.nc"
 \end{verbatim}\end{display}
@@ -4517,13 +4632,13 @@ pfset NetCDF.EvapTrans.FileName         "evap_trans.nc"
 Similar to ParFlow binary and silo, following keys can be used to write output CLM variables in a single NetCDF file containing multiple time steps.
 
 \pfkey{integer}{NetCDF.CLMNumStepsPerFile}{None}
-{This key sets number of time steps to be written to a single NetCDF file.} 
+{This key sets number of time steps to be written to a single NetCDF file.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.CLMNumStepsPerFile 24
 \end{verbatim}\end{display}
 
 \pfkey{string}{NetCDF.WriteCLM}{False}
-{This key sets CLM variables to be written in a NetCDF file.} 
+{This key sets CLM variables to be written in a NetCDF file.}
 \begin{display}\begin{verbatim}
 pfset NetCDF.WriteCLM         True
 \end{verbatim}\end{display}
@@ -4533,14 +4648,14 @@ The output variables are:
 \item \file{eflx_lwrad_out} for outgoing long-wave radiation $[W/m^2]$ using the silo variable {\em LongWave};
 \item \file{eflx_sh_tot} for sensible heat flux total $[W/m^2]$ using the silo variable {\em SensibleHeat};
 \item \file{eflx_soil_grnd} for ground heat flux $[W/m^2]$ using the silo variable {\em GroundHeat};
-\item \file{qflx_evap_tot} for total evaporation $[mm/s]$ using the silo variable {\em EvaporationTotal}; 
+\item \file{qflx_evap_tot} for total evaporation $[mm/s]$ using the silo variable {\em EvaporationTotal};
 \item \file{qflx_evap_grnd} for ground evaporation without condensation $[mm/s]$ using the silo variable {\em EvaporationGroundNoSublimation};
 \item \file{qflx_evap_soi} for soil evaporation $[mm/s]$ using the silo variable {\em EvaporationGround};
 \item \file{qflx_evap_veg} for vegetation evaporation $[mm/s]$ using the silo variable {\em EvaporationCanopy};
-\item \file{qflx_tran_veg} for vegetation transpiration $[mm/s]$ using the silo variable {\em Transpiration}; 
+\item \file{qflx_tran_veg} for vegetation transpiration $[mm/s]$ using the silo variable {\em Transpiration};
 \item \file{qflx_infl} for soil infiltration $[mm/s]$ using the silo variable {\em Infiltration};
 \item \file{swe_out} for snow water equivalent $[mm]$ using the silo variable {\em SWE};
-\item \file{t_grnd} for ground surface temperature $[K]$ using the silo variable {\em TemperatureGround}; and 
+\item \file{t_grnd} for ground surface temperature $[K]$ using the silo variable {\em TemperatureGround}; and
 \item \file{t_soil} for soil temperature over all layers $[K]$ using the silo variable {\em TemperatureSoil}.
 \end{description}
 
@@ -4568,7 +4683,7 @@ variables:
 \textbf{\textit{Note: While using NetCDF based CLM forcing, \texttt{Solver.CLM.MetFileNT} should be set to its default value of 1}}
 
 \pfkey{string}{Solver.CLM.MetForcing}{no default}
-{This key sets meteorological forcing to be read from NetCDF file.} 
+{This key sets meteorological forcing to be read from NetCDF file.}
 \begin{display}\begin{verbatim}
 pfset Solver.CLM.MetForcing     NC
 \end{verbatim}\end{display}
@@ -4657,7 +4772,7 @@ BEGIN
               qflx_infl
               swe_out
               t_grnd
-              IF (clm_irr_type == 1)  qflx_qirr 
+              IF (clm_irr_type == 1)  qflx_qirr
               ELSE IF (clm_irr_type == 3)  qflx_qirr_inst
               ELSE                         NULL
               FOR k = 1 TO clm_nz
@@ -4731,7 +4846,7 @@ The solids are represented by closed triangulated surfaces,
 and surface ``patches'' may be associated with each solid.
 
 Note that unlike the user input files, the solid file cannot contain comment
-lines. 
+lines.
 
 The format for the file is:
 
@@ -4999,5 +5114,3 @@ The format for the file is:
       END
    END
 \end{verbatim}\end{display}
-
-

@@ -7,10 +7,10 @@
 
 In this chapter, we discuss the model equations used by \parflow{} for its
 fully and variably saturated flow, overland flow, and multiphase flow and transport models.
-First, section \ref{Steady-State, Saturated Groundwater Flow} describes steady-state, groundwater flow (specified by solver {\bf IMPES}). Next, section \ref{Richards' Equation} 
-describes the Richards' equation model (specified by solver {\bf RICHARDS}) for variably saturated flow as 
-implemented in \parflow{}. Section \ref{TFG} describes the terrain following grid formulation. Next, the overland flow 
-equations are presented in section \ref{Overland Flow}. 
+First, section \ref{Steady-State, Saturated Groundwater Flow} describes steady-state, groundwater flow (specified by solver {\bf IMPES}). Next, section \ref{Richards' Equation}
+describes the Richards' equation model (specified by solver {\bf RICHARDS}) for variably saturated flow as
+implemented in \parflow{}. Section \ref{TFG} describes the terrain following grid formulation. Next, the overland flow
+equations are presented in section \ref{Overland Flow}.
 In section \ref{Multi-Phase Flow Equations} we describe the multi-phase
 flow equations (specified by solver {\bf IMPES}), and in section \ref{Transport Equations} we describe
 the transport equations. Finally, section \ref{Notation and Units} presents some notation and units and section \ref{Water Balance}
@@ -35,8 +35,8 @@ where $\textbf{K}$ is the saturated, hydraulic conductivity tensor $[LT^{-1}]$ a
 The form of Richards' equation implemented in \parflow{} is given as,
 \begin{eqnarray}
 S(p)S_s\frac{\partial p}{\partial t} -
-\frac{\partial (S(p)\rho(p)\phi)}{\partial t} 
-- \dvop (\textbf{K}(p)\rho(p)(\nabla p - \rho(p) \Xg)) = Q, \;  {\rm in} \; \Omega, 
+\frac{\partial (S(p)\rho(p)\phi)}{\partial t}
+- \dvop (\textbf{K}(p)\rho(p)(\nabla p - \rho(p) \Xg)) = Q, \;  {\rm in} \; \Omega,
 \label{eq:richard}
 \end{eqnarray}
 where $\Omega$ is the flow domain, $p$ is the pressure-head of water $[L]$, $S$ is the water
@@ -49,15 +49,15 @@ K(p) =  \frac{\Xk k_r(p)}{\mu}
 Boundary conditions can be stated as,
 \begin{eqnarray}
 p & = & p_D, \; {\rm on} \; \Gamma^D, \label{eq:bcd} \\
--K(p)\nabla p \cdot {\bf n} & = & 
+-K(p)\nabla p \cdot {\bf n} & = &
 g_N, \; {\rm on} \; \Gamma^N, \label{eq:bcn}
 \end{eqnarray}
 where $\Gamma^D \cup \Gamma^N = \partial \Omega$, $\Gamma^D \neq \emptyset$,
 and ${\bf n}$ is an outward pointing, unit, normal vector to $\Omega$.
-This is the mixed form of Richards' equation. 
+This is the mixed form of Richards' equation.
 Note here that due to the constant (or passive) air phase pressure assumption,
 Richards' equation ignores the air phase except through its
-effects on the hydraulic conductivity, $K$.  
+effects on the hydraulic conductivity, $K$.
 An initial condition,
 \begin{eqnarray}
 p = p^0(x), \; t = 0,
@@ -67,10 +67,20 @@ completes the specification of the problem.
 \label{TFG}
 The terrain following grid formulation transforms the \parflow{} grid to conform to topography \cite{M13}. This alters the form of Darcy's law to include a topographic slope component:
 \begin{eqnarray}
-q_x=\textbf{K}(p)\rho(p)(\frac{\partial p}{\partial x}\cos \theta_x + \sin \theta_x) 
+q_x=\textbf{K}(p)\rho(p)(\frac{\partial p}{\partial x}\cos \theta_x + \sin \theta_x)
 \label{eq:darcyTFG}
 \end{eqnarray}
-where $\theta_x = \arctan(S_0,x)$ and $\theta_y = \arctan(S_0,y)$ which are assumed to be the same as the {\bf TopoSlope} keys assigned for overland flow, described below.  The terrain following grid formulation can be very useful for coupled surface-subsurface flow problems where groundwater flow follows the topography.  As cells are distributed near the ground surface and can be combined with the variable $\delta Z$ capability, the number of cells in the problem can be reduced dramatically over the orthogonal formulation. For complete details on this formulation, the stencil used and the function evaluation developed, please see \cite{M13}.
+where $\theta_x = \arctan(S_0,x)$ and $\theta_y = \arctan(S_0,y)$ which are assumed to be the same as the {\bf TopoSlope} keys assigned for overland flow, described below.  The terrain following grid formulation can be very useful for coupled surface-subsurface flow problems where groundwater flow follows the topography.  As cells are distributed near the ground surface and can be combined with the variable $\delta Z$ capability, the number of cells in the problem can be reduced dramatically over the orthogonal formulation. For complete details on this formulation, the stencil used and the function evaluation developed, please see \cite{M13}. NOTE: in the original formulation, $\theta_x$ and $\theta_y$ for a cell face is calculated as the average of the two adjacent cell slopes (i.e. assuming a cell centered slope calculation). The {\bf TerrainFollowingGrid.SlopeUpwindFormulation} key provide options to use the slope of a grid cell directly (i.e. assuming face centered slope calculations) and removing the sine term from  \ref{eq:darcyTFG}. The {\bf Upwind} and {\bf UpwindSine} options for this key will provide consistent results with {\bf OverlandKinematic} and {\bf OverlandDiffusive} boundary conditions while the {\bf Original} option is consistent with the standard {\bf OverlandFlow} boundary condition.
+
+\section{Flow Barriers}
+\label{FB}
+The the flow barrier multipliers allow for the reduction in flow across a cell face. This slightly alters Darcy's law to include a flow reduction in each direction, show here in x:
+\begin{eqnarray}
+q_x=FB_x\textbf{K}(p)\rho(p)(\frac{\partial p}{\partial x}\cos \theta_x + \sin \theta_x)
+\label{eq:qFBx}
+\end{eqnarray}
+where $FB_x$, $FB_y$ and $FB_z$ are a dimensionless multipliers specified by the {\bf FBx}, {\bf FBy} and {\bf FBz} keys. This creates behavior equivalent to the Hydraulic Flow Barrier (HFB) or {\em ITFC} (flow and transport parameters at interfaces) conditions in other models.
+
 \section{Overland Flow}
 \label{Overland Flow}
 As detailed in \cite{KM06}, \parflow{} may simulate fully-coupled surface and subsurface flow via an overland flow boundary condition.  While complete details of this approach are given in that paper, a brief summary of the equations solved are presented here.  Shallow overland flow is now represented in \parflow{} by the kinematic wave equation.   In two spatial dimensions, the continuity equation can be written as:
@@ -84,7 +94,7 @@ where $\Xv$ is the depth averaged velocity vector $[LT^{-1}]$; $\psi_s$ is the s
 S_{f,i} = S_{o,i}
 \label{eq:ovmom}
 \end{eqnarray}
-which is commonly referred to as the kinematic wave approximation. In Equation \ref{eq:ovmom} $S_{o,i}$ is the bed slope (gravity forcing term) $[-]$, which is equal to the friction slope $S_{f,i}$ $[L]$; $i$ stands for the $x$- and $y$-direction. ManningÕs equation is used to establish a flow depth-discharge relationship:
+which is commonly referred to as the kinematic wave approximation. In Equation \ref{eq:ovmom} $S_{o,i}$ is the bed slope (gravity forcing term) $[-]$, which is equal to the friction slope $S_{f,i}$ $[L]$; $i$ stands for the $x$- and $y$-direction. Manningï¿½s equation is used to establish a flow depth-discharge relationship:
 \begin{eqnarray}
 v_x=- \frac{\sqrt{S_{f,x}}}{n}\psi_{s}^{2/3}
 \label{eq:manningsx}
@@ -119,6 +129,15 @@ Where the $\parallel\psi,0\parallel$ operator chooses the greater of the two qua
 \label{eq:overland_bc}
 \end{eqnarray}
 This results a version of the kinematic wave equation that is only active when the pressure at the top cell of the subsurface domain has a ponded depth and is thus greater than zero.  This method solves both systems, where active in the domain, over common grids in a fully-integrated, fully-mass conservative manner.
+
+
+The depth-discharge relationship can also be written as
+\begin{eqnarray}
+v_x=- \frac{S_{f,x}}{n\sqrt{\overline{S_{f}}}}\psi_{s}^{2/3}
+\label{eq:manningsnew}
+\end{eqnarray}
+where $\overline{S_{f}}$ is the magnitude of the friction slope. This formulation for
+overland flow is used in the {\bf OverlandKinematic} and {\bf OverlandDiffusive} boundary conditions.  In {\bf OverlandKinematic} case the friction slope equals the bed slope following Equation \ref{eq:ovmom}. For the {\bf OverlandDiffusive} case the friction slope also includes the pressure gradient. The solution for both of these options is formulated to do the upwinding internally and assumes that the user provides face centered bedslopes ($S_{o,i}$). This is different from the original formulation which assumes the user provides grid cenered bedslopes.
 
 \section{Multi-Phase Flow Equations}
 \label{Multi-Phase Flow Equations}
@@ -404,10 +423,10 @@ S(\psi)(\psi)\phi \Delta x \Delta y \Delta z]
 \end{eqnarray}
 The surface storage is calculated over the upper surface boundary cells in the domain, $\Gamma$, as computed by the mask and contains based on Equation \ref{eq:kinematic}. This is again computed on a cell-by-cell basis (with the result being an array of balances over the domain) as follows:
 \begin{eqnarray}
-Vol_{surface} =  \sum_\Gamma \psi \Delta x \Delta y  
+Vol_{surface} =  \sum_\Gamma \psi \Delta x \Delta y
 \label{eq:surf_store}
 \end{eqnarray}
-For the overland flow outflow from the domain, any cell at the top boundary that has a slope that points out of the domain and is ponded will remove water from the domain.  This is calculated, for example in the y-direction, as the multiple of Equation \ref{eq:manningsy} and the area: 
+For the overland flow outflow from the domain, any cell at the top boundary that has a slope that points out of the domain and is ponded will remove water from the domain.  This is calculated, for example in the y-direction, as the multiple of Equation \ref{eq:manningsy} and the area:
 \begin{eqnarray}
 Q_{overland}=vA= -\frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{2/3}\psi \Delta x=- \frac{\sqrt{S_{f,y}}}{n}\psi_{s}^{5/3}\Delta x
 \label{eq:outflow}

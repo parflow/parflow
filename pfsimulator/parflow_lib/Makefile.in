@@ -125,6 +125,9 @@ OBJS = \
         problem_dz_scale.o\
         problem_toposlope_x.o\
         problem_toposlope_y.o\
+	problem_FBx.o\
+	problem_FBy.o\
+	problem_FBz.o\
 	process_grid.o \
 	random.o\
 	ratqr.o\
@@ -168,6 +171,7 @@ OBJS = \
 	overlandsum.o \
 	overlandflow_eval.o \
 	overlandflow_eval_diffusive.o \
+	overlandflow_eval_Kin.o \
 	compute_top.o \
 	input_checks.o \
 	clustering.o \
@@ -185,5 +189,3 @@ veryclean: clean
 	@$(RM) Makefile
 
 include $(SRCDIR)/Makefile.depend
-
-

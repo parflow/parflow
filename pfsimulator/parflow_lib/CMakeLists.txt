@@ -63,6 +63,7 @@ set (SRC_FILES advect.F
   nodiag_scale.c
   overlandflow_eval.c
   overlandflow_eval_diffusive.c
+  overlandflow_eval_Kin.c
   overlandsum.c
   pcg.c
   permeability_face.c
@@ -87,6 +88,9 @@ set (SRC_FILES advect.F
   problem_domain.c
   problem_dz_scale.c
   problem_eval.c
+  problem_FBx.c
+  problem_FBy.c
+  problem_FBz.c
   problem_geometries.c
   problem_ic_phase_concen.c
   problem_ic_phase_pressure.c
@@ -177,4 +181,3 @@ if (${PARFLOW_HAVE_NETCDF})
   target_include_directories (pfsimulator PUBLIC "${netCDF_INCLUDE_DIRS}")
   target_include_directories (pfsimulator PUBLIC "${NETCDF_INCLUDE_DIRS}")
 endif (${PARFLOW_HAVE_NETCDF})
-

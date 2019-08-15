@@ -339,6 +339,42 @@ build the simulator and tools components separately. By specifying
 different compilers and options for each, one can target different
 architectures for each component.
 
+# Using Docker
+
+ParFlow includes a Docker file for configuring a Docker image for
+running ParFlow.
+
+## Pre-built Docker Image
+
+A Docker image for ParFlow is available on Docker hub.  See the
+following section for how to run the Docker image.  The Docker
+latest image is automatically downloaded by Docker when run.
+
+## Running ParFlow with Docker
+
+The https://github.com/parflow/docker repository contains an example
+setup for running ParFlow in a Docker instance.  See the README.md
+file in this repository for more information.
+
+## Building the Docker image
+
+If you want to build a Docker image, the build script in the bin
+directory will build an image using the latest ParFlow source in the
+master branch.  If you want to build a different version of ParFlow
+you will need to modify the 'Dockerfile' file.
+
+### Unix/Linux/MacOS
+
+```bash
+./bin/docker-build.sh
+```
+
+### Windows
+
+```PowerShell
+.\bin\docker-build.bat
+```
+
 ## Release
 
 Copyright (c) 1995-2019, Lawrence Livermore National Security LLC. 

@@ -40,31 +40,31 @@
 
 \begin{TitlePage}
 \Title{\parflow{} User's Manual} \SubTitle{GMWI 2016-01 \PFVersion}
-\SubTitle{Sep, 2017}
+\SubTitle{July, 2019}
 %\InputPS{IGWMC-logo-new.eps}(0, 0)(620,94)(0.6)
 % This does not render with pdflatex
 %\InputPS{IGWMC-logo-new.eps}(0, 0)(620,230)(0.55)
 \includegraphics[scale=0.55]{IGWMC-logo-new.pdf}
- \Author{ 
-Reed M. Maxwell\footnote{ {\em Department of Geology and Geological Engineering and Integrated GroundWater Modeling Center, Colorado School of Mines, Golden, CO, USA.} \textsf{rmaxwell@mines.edu}}, 
-Stefan J. Kollet\footnote{{\em Institute for Bio- and Geosciences, Agrosphere (IBG-3) and Centre for High-Performance Scientific Computing in Terrestrial Systems, Research Centre J{\a"u}lich, J{\a"u}lich, Germany.} \textsf{s.kollet@fz-juelich.de}}, 
-Steven G. Smith\footnote {\em Center for Applied Scientific Computing, Lawrence Livermore National Laboratory, Livermore, CA. USA.}, 
-Carol S. Woodward\footnote{{\em Center for Applied Scientific Computing, Lawrence Livermore National Laboratory, Livermore, CA, USA.} \textsf{cswoodward@llnl.gov}}, 
-Robert D. Falgout\footnote{\em Center for Applied Scientific Computing, Lawrence Livermore National Laboratory, Livermore, CA, USA.},  
+ \Author{
+Reed M. Maxwell\footnote{ {\em Department of Geology and Geological Engineering and Integrated GroundWater Modeling Center, Colorado School of Mines, Golden, CO, USA.} \textsf{rmaxwell@mines.edu}},
+Stefan J. Kollet\footnote{{\em Institute for Bio- and Geosciences, Agrosphere (IBG-3) and Centre for High-Performance Scientific Computing in Terrestrial Systems, Research Centre J{\a"u}lich, J{\a"u}lich, Germany.} \textsf{s.kollet@fz-juelich.de}},
+Laura E. Condon\footnote{{\em Department of Hydrology and Atmospheric Sciences, University of Arizona, Tucson, USA.} \textsf{lecondon@email.arizona.edu}},
+Steven G. Smith\footnote {\em Center for Applied Scientific Computing, Lawrence Livermore National Laboratory, Livermore, CA. USA.},
+Carol S. Woodward\footnote{{\em Center for Applied Scientific Computing, Lawrence Livermore National Laboratory, Livermore, CA, USA.} \textsf{cswoodward@llnl.gov}},
+Robert D. Falgout\footnote{\em Center for Applied Scientific Computing, Lawrence Livermore National Laboratory, Livermore, CA, USA.},
 Ian M. Ferguson\footnote{\em US Bureau of Reclamation, Denver, CO, USA.},
-Nicholas Engdahl\footnote{{\em Civil and Environmental Engineering, Washington State University, Pullman, WA, USA.} \textsf{nick.engdahl@wsu.edu} }, 
-Laura E. Condon\footnote{{\em Civil and Environmental Engineering, Syracuse University, Syracuse, NY, USA.} \textsf{lecondon@syr.edu}}, 
-Basile Hector\footnote{\em LTHE, Grenoble, FR.}, 
-Sonya Lopez\footnote{\em California State University, Los Angeles, CA, USA.}, 
-James Gilbert\textsuperscript{1}, 
-Lindsay Bearup\textsuperscript{1}, 
+Nicholas Engdahl\footnote{{\em Civil and Environmental Engineering, Washington State University, Pullman, WA, USA.} \textsf{nick.engdahl@wsu.edu} },
+Basile Hector\footnote{\em LTHE, Grenoble, FR.},
+Sonya Lopez\footnote{\em California State University, Los Angeles, CA, USA.},
+James Gilbert\textsuperscript{1},
+Lindsay Bearup\textsuperscript{1},
 Jennifer Jefferson\textsuperscript{1},
-Caitlin Collins\textsuperscript{1}, 
-Inge de Graaf\textsuperscript{1}, 
+Caitlin Collins\textsuperscript{1},
+Inge de Graaf\textsuperscript{1},
 Christine Pribulick\textsuperscript{1},
-Chuck Baldwin, 
-William J. Bosl \footnote{{\em Children's Hospital Informatics Program, Harvard Medical School, Boston, MA, USA.}}, 
-Richard Hornung\footnote{{\em Center for Applied Scientific Computing, Lawrence Livermore National Laboratory, Livermore, CA, USA.}}, 
+Chuck Baldwin,
+William J. Bosl \footnote{{\em Children's Hospital Informatics Program, Harvard Medical School, Boston, MA, USA.}},
+Richard Hornung\footnote{{\em Center for Applied Scientific Computing, Lawrence Livermore National Laboratory, Livermore, CA, USA.}},
 Steven Ashby\footnote{{\em Pacific Northwest National Laboratory, Richland, WA, USA.}}
 Ketan B. Kulkarni \footnote{{\em J{\a"u}lich Supercomputing Centre and Centre for High-Performance Scientific Computing in Terrestrial Systems, Research Centre J{\a"u}lich, J{\a"u}lich, Germany. }}
 }
@@ -73,7 +73,7 @@ Ketan B. Kulkarni \footnote{{\em J{\a"u}lich Supercomputing Centre and Centre fo
 %=============== Copyright Page
 
 \begin{CopyrightPage}
-{\em Suggested citation: }Maxwell, R.M., S.J. Kollet, S.G. Smith, C.S. Woodward, R.D. Falgout, I.M. Ferguson, N. Engdahl, L.E. Condon, B. Hector, S.R. Lopez, J. Gilbert, L. Bearup, J. Jefferson, C. Collins, I. de Graaf, C. Prubilick, C. Baldwin, W.J. Bosl, R. Hornung, S. Ashby, \parflow{} User's Manual. Integrated GroundWater Modeling Center Report GWMI 2016-01, \pageref{end}p.\newline
+{\em Suggested citation: }Maxwell, R.M., S.J. Kollet,  L.E. Condon, S.G. Smith, C.S. Woodward, R.D. Falgout, I.M. Ferguson, N. Engdahl, B. Hector, S.R. Lopez, J. Gilbert, L. Bearup, J. Jefferson, C. Collins, I. de Graaf, C. Prubilick, C. Baldwin, W.J. Bosl, R. Hornung, S. Ashby, \parflow{} User's Manual. Integrated GroundWater Modeling Center Report, 2019 \pageref{end}p.\newline
 
 { \scriptsize
 \noindent ParFlow is released under the GNU LPGL License \newline
@@ -81,7 +81,7 @@ Ketan B. Kulkarni \footnote{{\em J{\a"u}lich Supercomputing Centre and Centre fo
 \noindent Copyright \copyright{} 2000, 2001, 2002, 2007, 2008  Free Software Foundation, Inc.\newline
 \code{http://fsf.org/}\newline
 This manual is licensed under the GNU Free Documentation License.\newline%\vspace{1em}
-Copyright \copyright{} 2014  Reed M. Maxwell, Stefan J. Kollet, Ian M. Ferguson, Steven G. Smith, Carol S. Woodward, Nicholas Engdahl, Laura E. Condon. 
+Copyright \copyright{} 2019  Reed M. Maxwell, Stefan J. Kollet, Laura E. Condon, Ian M. Ferguson, Steven G. Smith, Carol S. Woodward, Nicholas Engdahl.
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3
 or any later version published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A copy of the license is included in the section entitled "GNU Free Documentation License".
