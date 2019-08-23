@@ -8,6 +8,26 @@ set (CMAKE_C_STANDARD 11)
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
 #-----------------------------------------------------------------------------
+# GPU-Acceleration (CUDA)
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_CUDA False)
+set (PARFLOW_ENABLE_CUDA CACHE BOOL "Enable CUDA")
+if( ${PARFLOW_ENABLE_CUDA} )
+  include(CheckLanguage)
+  check_language(CUDA)
+  if(CMAKE_CUDA_COMPILER)
+    enable_language(CUDA)
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode arch=compute_70,code=sm_70")
+    #message(STATUS "Found CUDA ${CUDA_VERSION_STRING} at ${CUDA_TOOLKIT_ROOT_DIR}")
+    message(STATUS "Found CUDA ${CMAKE_CUDA_COMPILER_VERSION} at ${CUDA_TOOLKIT_ROOT_DIR}")
+    set(PARFLOW_HAVE_CUDA "yes")
+    set(HAVE_CUDA ${PARFLOW_HAVE_CUDA})
+  else(CMAKE_CUDA_COMPILER)
+    message( FATAL_ERROR "ERROR: CUDA installation not found" )
+  endif(CMAKE_CUDA_COMPILER)
+endif( ${PARFLOW_ENABLE_CUDA} )
+
+#-----------------------------------------------------------------------------
 # Version number
 #-----------------------------------------------------------------------------
 include (Version)

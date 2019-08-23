@@ -102,3 +102,7 @@
 ### Emacs ###
 *~
 \#*\#
+
+# Ignore these for now in CUDA branch
+examples/
+test/

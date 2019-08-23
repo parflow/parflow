@@ -1,5 +1,3 @@
-
-
 if (${PARFLOW_HAVE_MPI})
   set(CMAKE_C_COMPILE_FLAGS "${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS}")
   set(CMAKE_C_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS}")
@@ -17,3 +15,6 @@ if( ${PARFLOW_HAVE_CLM} )
   add_subdirectory (clm)
 endif( ${PARFLOW_HAVE_CLM} )
 
+if( ${PARFLOW_HAVE_CUDA} )
+  add_subdirectory (cuda)
+endif( ${PARFLOW_HAVE_CUDA} )

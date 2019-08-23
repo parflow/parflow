@@ -64,8 +64,18 @@ using namespace SAMRAI;
 #include <string.h>
 #include <ctype.h>
 
+void hello_test();
+void cublas_test();
+
 int main(int argc, char *argv [])
 {
+
+  printf("Starting main() ...\n");
+#ifdef HAVE_CUDA
+  hello_test();
+  cublas_test();
+#endif
+
   FILE *file = NULL;
 
   FILE *log_file = NULL;
