@@ -22,27 +22,27 @@ void cublas_test() {
     int i, j;
     float* devPtrA;
     float* a = 0;
-    a = (float *)malloc (M * N * sizeof (*a));
-    if (!a) {
-        printf ("host memory allocation failed");
+    // a = (float *)malloc (M * N * sizeof (*a));
+    // if (!a) {
+    //     printf ("host memory allocation failed");
+    //     return;
+    // }
+    cudaStat = cudaMallocManaged ((void**)&devPtrA, M*N*sizeof(float));
+    if (cudaStat != cudaSuccess) {
+        printf ("device memory allocation failed");
         return;
     }
     for (j = 0; j < N; j++) {
         for (i = 0; i < M; i++) {
-            a[IDX2C(i,j,M)] = (float)(i * M + j + 1);
+            devPtrA[IDX2C(i,j,M)] = (float)(i * M + j + 1);
         }
-    }
-    cudaStat = cudaMalloc ((void**)&devPtrA, M*N*sizeof(*a));
-    if (cudaStat != cudaSuccess) {
-        printf ("device memory allocation failed");
-        return;
     }
     stat = cublasCreate(&handle);
     if (stat != CUBLAS_STATUS_SUCCESS) {
         printf ("CUBLAS initialization failed\n");
         return;
     }
-    stat = cublasSetMatrix (M, N, sizeof(*a), a, M, devPtrA, M);
+    // stat = cublasSetMatrix (M, N, sizeof(*a), a, M, devPtrA, M);
     if (stat != CUBLAS_STATUS_SUCCESS) {
         printf ("data download failed");
         cudaFree (devPtrA);
@@ -50,20 +50,22 @@ void cublas_test() {
         return;
     }
     modify (handle, devPtrA, M, N, 1, 2, 16.0f, 12.0f);
-    stat = cublasGetMatrix (M, N, sizeof(*a), devPtrA, M, a, M);
+    // stat = cublasGetMatrix (M, N, sizeof(*a), devPtrA, M, a, M);
     if (stat != CUBLAS_STATUS_SUCCESS) {
         printf ("data upload failed");
         cudaFree (devPtrA);
         cublasDestroy(handle);
         return;
     }
-    cudaFree (devPtrA);
-    cublasDestroy(handle);
+    cudaDeviceSynchronize();
     for (j = 0; j < N; j++) {
         for (i = 0; i < M; i++) {
-            printf ("%7.0f", a[IDX2C(i,j,M)]);
+            printf ("%7.0f", devPtrA[IDX2C(i,j,M)]);
         }
         printf ("\n");
     }
+    cudaFree (devPtrA);
+    cublasDestroy(handle);
+    // free(a);
     printf("CUDA cublas_test finished!\n\n"); 
 }

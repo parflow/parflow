@@ -18,8 +18,7 @@ if( ${PARFLOW_ENABLE_CUDA} )
   if(CMAKE_CUDA_COMPILER)
     enable_language(CUDA)
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode arch=compute_70,code=sm_70")
-    #message(STATUS "Found CUDA ${CUDA_VERSION_STRING} at ${CUDA_TOOLKIT_ROOT_DIR}")
-    message(STATUS "Found CUDA ${CMAKE_CUDA_COMPILER_VERSION} at ${CUDA_TOOLKIT_ROOT_DIR}")
+    message(STATUS "Found CUDA ${CMAKE_CUDA_COMPILER_VERSION} at ${CMAKE_CUDA_COMPILER}")
     set(PARFLOW_HAVE_CUDA "yes")
     set(HAVE_CUDA ${PARFLOW_HAVE_CUDA})
   else(CMAKE_CUDA_COMPILER)
@@ -36,7 +35,6 @@ include (Version)
 #
 
 include(GetGitRevisionDescription)
-#git_describe(PARFLOW_VERSION --tags)
 git_describe(PARFLOW_VERSION --tags)
 
 # If not building with git then get version from file

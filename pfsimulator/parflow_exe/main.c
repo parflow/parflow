@@ -70,11 +70,12 @@ void cublas_test();
 int main(int argc, char *argv [])
 {
 
-  printf("Starting main() ...\n");
+  printf("main.c: Starting Cuda tests ...\n");
 #ifdef HAVE_CUDA
   hello_test();
   cublas_test();
 #endif
+printf("main.c: Cuda tests finished ...\n");
 
   FILE *file = NULL;
 
