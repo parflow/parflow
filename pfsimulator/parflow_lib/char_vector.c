@@ -63,7 +63,7 @@ CommPkg  *NewCharVectorUpdatePkg(
                             );
 #else
                             ,
-                            NULL );
+                            NULL, parflow_p4est_vector);
 #endif
   return new_comm_pkg;
 }

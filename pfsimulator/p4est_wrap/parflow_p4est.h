@@ -44,6 +44,12 @@ typedef struct parflow_p4est_sg_param {
   int pcorner[3];         /** Bottom left corner of current subgrid parent index space */
 }parflow_p4est_sg_param_t;
 
+typedef enum parflow_p4est_container_type
+{
+  parflow_p4est_vector = 1,
+  parflow_p4est_matrix = 2
+}
+parflow_p4est_container_type_t;
 
 /** Return dimension of the pfgrid object */
 int parflow_p4est_dim (parflow_p4est_grid_t *pfgrid);

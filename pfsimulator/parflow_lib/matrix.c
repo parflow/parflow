@@ -44,6 +44,10 @@ using namespace SAMRAI;
 
 #endif
 
+#ifdef HAVE_P4EST
+#include "parflow_p4est_dependences.h"
+#endif
+
 static int samrai_matrix_ids[4][2048];
 
 
@@ -128,7 +132,7 @@ CommPkg   *NewMatrixUpdatePkg(
                             );
 #else
                             ,
-                            NULL );
+                            (void *) matrix, parflow_p4est_matrix);
 #endif
   FreeRegion(send_reg);
   FreeRegion(recv_reg);
@@ -274,6 +278,10 @@ Matrix          *NewMatrixType(
   int            *data_stencil;
   int data_stencil_size;
 
+#ifdef HAVE_P4EST
+  int numLocalSubs = SubgridArraySize(GridSubgrids(grid));
+  int numInnerGhosts = USE_P4EST ? grid->numInnerGhosts : 0;
+#endif
 
   new_matrix = ctalloc(Matrix, 1);
 
@@ -453,10 +461,14 @@ Matrix          *NewMatrixType(
 
 
   new_matrix->comm_pkg = ctalloc(CommPkg *, GridNumSubgrids(grid));
-  (new_matrix->submatrices) = ctalloc(Submatrix *, GridNumSubgrids(grid));
+  (new_matrix->submatrices) = ctalloc(Submatrix *, numLocalSubs + numInnerGhosts);
 
   MatrixDataSpace(new_matrix) = NewSubregionArray();
+#ifndef HAVE_P4EST
   ForSubgridI(i, GridSubgrids(grid))
+#else
+  for (i = 0; i < numLocalSubs + numInnerGhosts; i++)
+#endif
   {
     new_sub = ctalloc(Submatrix, 1);
 

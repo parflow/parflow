@@ -46,6 +46,10 @@ using namespace SAMRAI;
 
 #include <stdlib.h>
 
+#ifdef HAVE_P4EST
+#include "parflow_p4est_dependences.h"
+#endif
+
 static int samrai_vector_ids[5][2048];
 
 /*--------------------------------------------------------------------------
@@ -86,7 +90,7 @@ CommPkg  *NewVectorCommPkg(
                            );
 #else
                            ,
-                           vector);
+                           (void *) vector, parflow_p4est_vector);
 #endif
 
   return new_commpkg;
@@ -261,8 +265,6 @@ static Vector  *NewTempVector(
   (void)nc;
 
 #ifdef HAVE_P4EST
-  int k;
-  int nchildren = GlobalsNumProcsZ > 1 ? 8 : 4;
   int numLocalSubs = SubgridArraySize(GridSubgrids(grid));
   int numInnerGhosts = USE_P4EST ? grid->numInnerGhosts : 0;
 #endif

@@ -169,6 +169,34 @@ static int ComputeTag(Subregion *sender, Subregion *receiver)
 
   return tag;
 }
+
+static double* FetchData(void *container, parflow_p4est_container_type_t ctype,
+                         int s_idx)
+{
+    double *data;
+    Vector *V;
+    Matrix *M;
+
+    switch (ctype)
+    {
+    case parflow_p4est_vector:
+        V = (Vector *) container;
+        M = NULL;
+        data = SubvectorData(VectorSubvector(V, s_idx));
+        break;
+
+    case parflow_p4est_matrix:
+        V = NULL;
+        M = (Matrix *) container;
+        data = SubmatrixData(MatrixSubmatrix(M, s_idx));
+        break;
+
+    default:
+        SC_ABORT_NOT_REACHED ();
+    }
+
+    return  data;
+}
 #endif
 
 /*--------------------------------------------------------------------------
@@ -187,7 +215,7 @@ CommPkg         *NewCommPkg(
                             )
 #else
                             ,
-                            void *numericalObject
+                            void *numericalObject, parflow_p4est_container_type_t ctype
                             )
 #endif
 {
@@ -215,8 +243,7 @@ CommPkg         *NewCommPkg(
   int tag;
   int which_child, which_ghost;
   double * g_data;
-  Vector * thisVector = (Vector *) numericalObject;
-  parflow_p4est_grid_t *pfgrid = VectorGrid(thisVector)->pfgrid;
+  parflow_p4est_grid_t *pfgrid = globals->grid3d->pfgrid;
   Subregion *g_data_sr;
 #endif
 
@@ -315,7 +342,7 @@ CommPkg         *NewCommPkg(
           which_child = parflow_p4est_check_neigh(recv_sr, data_sr, pfgrid);
           which_ghost = data_sr->ghostChildren[which_child];
           g_data_sr = SubregionArraySubregion(data_space, which_ghost);
-          g_data = SubvectorData(VectorSubvector(thisVector, which_ghost));
+          g_data = FetchData(numericalObject,ctype, which_ghost);
       }
 #endif
 

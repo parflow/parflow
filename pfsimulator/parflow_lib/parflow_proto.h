@@ -94,12 +94,13 @@ void FreeComputePkgs(Grid *grid);
 /* communication.c */
 int NewCommPkgInfo(Subregion *data_sr, Subregion *comm_sr, int index, int num_vars, int *loop_array);
 CommPkg *NewCommPkg(Region *send_region, Region *recv_region, SubregionArray *data_space, int s_idx, int num_vars, double *data
-                    #ifndef HAVE_P4EST
-                                                );
-                    #else
-                                                ,
-                                                void *numericalObject);
-                    #endif
+#ifndef HAVE_P4EST
+                    );
+#else
+                    ,
+                    void *numericalObject,
+                    parflow_p4est_container_type_t ctype);
+#endif
 
 void FreeCommPkg(CommPkg *pkg);
 // SGS what's up with this?
