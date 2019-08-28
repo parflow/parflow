@@ -331,6 +331,7 @@ Grid           *CreateGrid(
   globals->grid3d = grid;
 
   parflow_p4est_vector_test(grid);
+  parflow_p4est_matrix_test(grid);
 
   return grid;
 }

@@ -42,9 +42,65 @@ static void    myInitVector(Vector *v)
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
-      vp[iv] = (double)(1 << SubgridLocIdx(subgrid));
-      //vp[iv] = (double)(1 << rank);
+      //vp[iv] = (double)(1 << SubgridLocIdx(subgrid));
+      vp[iv] = (double)(1 << rank);
     });
+  }
+}
+
+static void    myInitMatrix(Matrix *A)
+{
+  Grid       *grid = MatrixGrid(A);
+
+  Submatrix  *A_sub;
+  double     *Ap;
+  int im;
+
+  SubgridArray  *subgrids;
+  Subgrid       *subgrid;
+
+  Stencil       *stencil;
+
+  int is, s;
+
+  int ix, iy, iz;
+  int nx, ny, nz;
+  int nx_m, ny_m, nz_m;
+
+  int i, j, k;
+
+
+  subgrids = GridSubgrids(grid);
+  ForSubgridI(is, subgrids)
+  {
+    subgrid = SubgridArraySubgrid(subgrids, is);
+
+    A_sub = MatrixSubmatrix(A, is);
+
+    ix = SubgridIX(subgrid);
+    iy = SubgridIY(subgrid);
+    iz = SubgridIZ(subgrid);
+
+    nx = SubgridNX(subgrid);
+    ny = SubgridNY(subgrid);
+    nz = SubgridNZ(subgrid);
+
+    nx_m = SubmatrixNX(A_sub);
+    ny_m = SubmatrixNY(A_sub);
+    nz_m = SubmatrixNZ(A_sub);
+
+    stencil = MatrixStencil(A);
+    for (s = 0; s < StencilSize(stencil); s++)
+    {
+      Ap = SubmatrixElt(A_sub, s, ix, iy, iz);
+
+      im = 0;
+      BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+                im, nx_m, ny_m, nz_m, 1, 1, 1,
+      {
+        Ap[im] = (double)(1 << SubgridLocIdx(subgrid));
+      });
+    }
   }
 }
 
@@ -85,4 +141,35 @@ void parflow_p4est_vector_test(Grid *grid)
   /*Force to quit the program here*/
   amps_Printf("Dummy vector test complete\n");
   //exit(0);
+}
+
+static int seven_pt_shape[7][3] = { { 0, 0, 0 },
+                             { -1, 0, 0 },
+                             { 1, 0, 0 },
+                             { 0, -1, 0 },
+                             { 0, 1, 0 },
+                             { 0, 0, -1 },
+                             { 0, 0, 1 } };
+
+void parflow_p4est_matrix_test(Grid *grid)
+{
+  Matrix      *matrix;
+  MatrixUpdateCommHandle  *handle;
+  Stencil       *stencil = NewStencil(seven_pt_shape, 7);
+
+  /* Create a matrix */
+  matrix = NewMatrix(grid, NULL, stencil, ON, stencil);
+
+  /* Put some values on it*/
+  myInitMatrix(matrix);
+
+  /* Try to do a parallel update*/
+  handle = InitMatrixUpdate(matrix);
+  FinalizeMatrixUpdate(handle);
+
+  /* Finalize everything */
+  FreeMatrix(matrix);
+
+  /* Dummy message */
+  amps_Printf("Dummy matrix test complete\n");
 }
