@@ -174,7 +174,7 @@ MatrixUpdateCommHandle  *InitMatrixUpdate(
   amps_comm_handle = ctalloc(CommHandle *, MatrixDataSpace(matrix)->size);;
   if (grid_type == invalid_grid_type)
   {
-    ForSubregionI(i, MatrixDataSpace(matrix))
+    ForSubregionI(i, GridSubgrids(MatrixGrid(matrix)))
     amps_comm_handle[i] = InitCommunication(MatrixCommPkg(matrix, i));
   }
   else
