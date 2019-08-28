@@ -3870,6 +3870,7 @@ SolverRichardsInitInstanceXtra()
 
   GridParflowP4estObj(x_grid) = GridParflowP4estObj(grid);
   GridParflowP4estObjIsOwned(x_grid) = 0;
+  x_grid->numInnerGhosts = grid->numInnerGhosts;
 #endif
   CreateComputePkgs(x_grid);
 
@@ -3899,6 +3900,7 @@ SolverRichardsInitInstanceXtra()
 
   GridParflowP4estObj(y_grid) = GridParflowP4estObj(grid);
   GridParflowP4estObjIsOwned(y_grid) = 0;
+  y_grid->numInnerGhosts = grid->numInnerGhosts;
 #endif
   CreateComputePkgs(y_grid);
 
@@ -3928,6 +3930,7 @@ SolverRichardsInitInstanceXtra()
 
   GridParflowP4estObj(z_grid) = GridParflowP4estObj(grid);
   GridParflowP4estObjIsOwned(z_grid) = 0;
+  z_grid->numInnerGhosts = grid->numInnerGhosts;
 #endif
   CreateComputePkgs(z_grid);
 
