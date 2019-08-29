@@ -701,7 +701,7 @@ void FreeTempVector(Vector *vector)
 #ifdef HAVE_P4EST
   Grid       *grid = VectorGrid(vector);
   int numLocalSubs = SubgridArraySize(GridSubgrids(grid));
-  int numInnerGhosts = SubgridArraySize(GridInnerGhostSubgrids(grid));
+  int numInnerGhosts = grid->numInnerGhosts;
 #endif
 
   ForSubgridI(i, GridSubgrids(VectorGrid(vector)))

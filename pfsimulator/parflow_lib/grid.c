@@ -190,7 +190,8 @@ void  FreeGrid(
       /* Destroy z level array */
       P4EST_FREE(grid->z_levels);
     }
-    FreeSubgridArray(grid->innerGhostSubgrids);
+    if (grid->innerGhostSubgrids != NULL)
+        FreeSubgridArray(grid->innerGhostSubgrids);
     EndTiming(P4ESTCleanupTimingIndex);
 #endif
     tfree(grid);
