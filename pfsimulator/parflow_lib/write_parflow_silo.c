@@ -61,8 +61,11 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
 
   int nx_v = SubvectorNX(subvector);
   int ny_v = SubvectorNY(subvector);
+  int nz_v = SubvectorNZ(subvector);
 
-  int level = SubgridLevel(subgrid);
+  int rx = (double) SubgridLevel(subgrid);
+  int ry = rx;
+  int rz = GlobalsNumProcsZ > 1 ? rx : 0;
   int i, j, k, ai;
   double         *data;
   double mult, z_coord;            //@RMM dz scale info
@@ -100,13 +103,13 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
   coords[0] = ctalloc(float, dims[0]);
   for (i = 0; i < dims[0]; i++)
   {
-    coords[0][i] = RealSpaceX(ix, level) + (SubgridDX(subgrid) * ((float)i - 0.5)) / pow(2.0, (double)level);
+    coords[0][i] = RealSpaceX(ix, rx) + (SubgridDX(subgrid) * ((float)i - 0.5)) / pow(2.0, (double)rx);
   }
 
   coords[1] = ctalloc(float, dims[1]);
   for (j = 0; j < dims[1]; j++)
   {
-    coords[1][j] = RealSpaceY(iy, level) + (SubgridDY(subgrid) * ((float)j - 0.5)) / pow(2.0, (double)level);
+    coords[1][j] = RealSpaceY(iy, ry) + (SubgridDY(subgrid) * ((float)j - 0.5)) / pow(2.0, (double)ry);
   }
 
   coords[2] = ctalloc(float, dims[2]);
@@ -123,7 +126,7 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
      * }
      * z_coord +=  SubgridDZ(subgrid)*mult;
      * coords[2][k] =  z_coord; */
-    coords[2][k] = RealSpaceZ(iz, 0) + (SubgridDZ(subgrid) * ((float)k - 0.5)) / pow(2.0, (double)0); ;
+    coords[2][k] = RealSpaceZ(iz, rz) + (SubgridDZ(subgrid) * ((float)k - 0.5)) / pow(2.0, (double)rz);
   }
 
   sprintf(meshname, "%s_%06u_%06u", "mesh", p, loc_idx);
