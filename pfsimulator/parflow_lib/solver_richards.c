@@ -3893,7 +3893,7 @@ SolverRichardsInitInstanceXtra()
   {
       subgrid = SubgridArraySubgrid(GridSubgrids(grid), numLocalSubs + i);
       new_subgrid = DuplicateSubgrid(subgrid);
-      SubgridNX(new_subgrid) += 1;
+      SubgridNY(new_subgrid) += 1;
       AppendSubgrid(new_subgrid, new_subgrids);
   }
   SubgridArraySize(new_subgrids) = numLocalSubs;
@@ -3923,7 +3923,7 @@ SolverRichardsInitInstanceXtra()
   {
       subgrid = SubgridArraySubgrid(GridSubgrids(grid), numLocalSubs + i);
       new_subgrid = DuplicateSubgrid(subgrid);
-      SubgridNX(new_subgrid) += 1;
+      SubgridNZ(new_subgrid) += 1;
       AppendSubgrid(new_subgrid, new_subgrids);
   }
   SubgridArraySize(new_subgrids) = numLocalSubs;
