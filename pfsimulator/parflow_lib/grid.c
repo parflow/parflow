@@ -147,7 +147,6 @@ Grid  *NewGrid(
   new_grid->z_levels = NULL;
   new_grid->proj_flag = 0;
   new_grid->owns_pfgrid = 0;
-  new_grid->numInnerGhosts = 0;
   new_grid->innerGhostSubgrids = NULL;
 #endif
 
@@ -190,8 +189,10 @@ void  FreeGrid(
       /* Destroy z level array */
       P4EST_FREE(grid->z_levels);
     }
-    if (grid->innerGhostSubgrids != NULL)
+
+    if(grid->innerGhostSubgrids)
         FreeSubgridArray(grid->innerGhostSubgrids);
+
     EndTiming(P4ESTCleanupTimingIndex);
 #endif
     tfree(grid);
@@ -1069,7 +1070,8 @@ Grid * CreateZprojectedGrid(Grid *input_grid, int new_nz)
   /** Is this two dimensional grid comming from a 3D one ? */
   int proj_flag = GlobalsNumProcsZ > 1 ? 1 : 0;
   int numLocalSubs = SubgridArraySize(GridSubgrids(input_grid));
-  int numInnerGhosts = USE_P4EST ? input_grid->numInnerGhosts : 0;
+  int numInnerGhosts = SubgridArraySize(input_grid->innerGhostSubgrids);
+  SubgridArray * new_ighosts = NewSubgridArray();
 #endif
 
   all_subgrids = GridAllSubgrids(input_grid);
@@ -1108,6 +1110,7 @@ Grid * CreateZprojectedGrid(Grid *input_grid, int new_nz)
 
           SubgridNZ(new_subgrid) = new_nz;
           AppendSubgrid(new_subgrid, new_subgrids);
+          AppendSubgrid(new_subgrid, new_ighosts);
       }
 
       SubgridArraySize(new_subgrids) = numLocalSubs;
@@ -1119,7 +1122,7 @@ Grid * CreateZprojectedGrid(Grid *input_grid, int new_nz)
   if (USE_P4EST)
   {
 #ifdef HAVE_P4EST
-    proj_grid->numInnerGhosts = input_grid->numInnerGhosts;
+    proj_grid->innerGhostSubgrids = new_ighosts;
 
     /** Set projection flag for the two dimensional grid */
     GridIsProjected(proj_grid) = proj_flag;

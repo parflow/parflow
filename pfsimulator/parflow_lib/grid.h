@@ -85,7 +85,6 @@ typedef struct {
   int                  *z_levels;
   int proj_flag;                     /* Flag identifying if this grid comes
                                       * from projecting an existing 3D grid to 2D */
-  int                   numInnerGhosts;
   SubgridArray         *innerGhostSubgrids;
 #endif
 } Grid;

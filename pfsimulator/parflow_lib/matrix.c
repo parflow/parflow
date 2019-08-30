@@ -280,7 +280,7 @@ Matrix          *NewMatrixType(
 
 #ifdef HAVE_P4EST
   int numLocalSubs = SubgridArraySize(GridSubgrids(grid));
-  int numInnerGhosts = USE_P4EST ? grid->numInnerGhosts : 0;
+  int numInnerGhosts = SubgridArraySize(grid->innerGhostSubgrids);
 #endif
 
   new_matrix = ctalloc(Matrix, 1);
@@ -685,6 +685,11 @@ void FreeMatrix(
   Submatrix  *submatrix;
 
   int i;
+#ifdef HAVE_P4EST
+  Grid *grid = MatrixGrid(matrix);
+  int numLocalSubs = GridNumSubgrids(grid);
+  int numInnerGhosts = SubgridArraySize(grid->innerGhostSubgrids);;
+#endif
 
   switch (matrix->type)
   {
@@ -736,6 +741,20 @@ void FreeMatrix(
     if (MatrixCommPkg(matrix, i))
       FreeCommPkg(MatrixCommPkg(matrix, i));
   }
+
+#ifdef HAVE_P4EST
+  for (i = 0; i < numInnerGhosts; i++)
+  {
+      submatrix = MatrixSubmatrix(matrix, numLocalSubs + i);
+      if (submatrix->allocated)
+      {
+        tfree(submatrix->data);
+      }
+
+      tfree(submatrix->data_index);
+      tfree(submatrix);
+  }
+#endif
 
   FreeStencil(MatrixStencil(matrix));
   tfree(MatrixDataStencil(matrix));

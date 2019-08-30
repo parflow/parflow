@@ -3859,18 +3859,19 @@ SolverRichardsInitInstanceXtra()
   new_subgrids = GetGridSubgrids(new_all_subgrids);
   x_grid = NewGrid(new_subgrids, new_all_subgrids);
 #ifdef HAVE_P4EST
+  x_grid->innerGhostSubgrids = NewSubgridArray();
   for (i = 0; i < numInnerGhosts; i++)
   {
       subgrid = SubgridArraySubgrid(GridSubgrids(grid), numLocalSubs + i);
       new_subgrid = DuplicateSubgrid(subgrid);
       SubgridNX(new_subgrid) += 1;
       AppendSubgrid(new_subgrid, new_subgrids);
+      AppendSubgrid(new_subgrid, x_grid->innerGhostSubgrids);
   }
   SubgridArraySize(new_subgrids) = numLocalSubs;
 
   GridParflowP4estObj(x_grid) = GridParflowP4estObj(grid);
   GridParflowP4estObjIsOwned(x_grid) = 0;
-  x_grid->numInnerGhosts = grid->numInnerGhosts;
 #endif
   CreateComputePkgs(x_grid);
 
@@ -3889,18 +3890,19 @@ SolverRichardsInitInstanceXtra()
   new_subgrids = GetGridSubgrids(new_all_subgrids);
   y_grid = NewGrid(new_subgrids, new_all_subgrids);
 #ifdef HAVE_P4EST
+  y_grid->innerGhostSubgrids = NewSubgridArray();
   for (i = 0; i < numInnerGhosts; i++)
   {
       subgrid = SubgridArraySubgrid(GridSubgrids(grid), numLocalSubs + i);
       new_subgrid = DuplicateSubgrid(subgrid);
       SubgridNY(new_subgrid) += 1;
       AppendSubgrid(new_subgrid, new_subgrids);
+      AppendSubgrid(new_subgrid, y_grid->innerGhostSubgrids);
   }
   SubgridArraySize(new_subgrids) = numLocalSubs;
 
   GridParflowP4estObj(y_grid) = GridParflowP4estObj(grid);
   GridParflowP4estObjIsOwned(y_grid) = 0;
-  y_grid->numInnerGhosts = grid->numInnerGhosts;
 #endif
   CreateComputePkgs(y_grid);
 
@@ -3919,18 +3921,19 @@ SolverRichardsInitInstanceXtra()
   new_subgrids = GetGridSubgrids(new_all_subgrids);
   z_grid = NewGrid(new_subgrids, new_all_subgrids);
 #ifdef HAVE_P4EST
+  z_grid->innerGhostSubgrids = NewSubgridArray();
   for (i = 0; i < numInnerGhosts; i++)
   {
       subgrid = SubgridArraySubgrid(GridSubgrids(grid), numLocalSubs + i);
       new_subgrid = DuplicateSubgrid(subgrid);
       SubgridNZ(new_subgrid) += 1;
       AppendSubgrid(new_subgrid, new_subgrids);
+      AppendSubgrid(new_subgrid, z_grid->innerGhostSubgrids);
   }
   SubgridArraySize(new_subgrids) = numLocalSubs;
 
   GridParflowP4estObj(z_grid) = GridParflowP4estObj(grid);
   GridParflowP4estObjIsOwned(z_grid) = 0;
-  z_grid->numInnerGhosts = grid->numInnerGhosts;
 #endif
   CreateComputePkgs(z_grid);
 
