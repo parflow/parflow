@@ -457,7 +457,7 @@ pfset Geom.domain.ICPressure.RefPatch                   z-upper
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-#pfwritedb $runname
+pfwritedb $runname
 #exec ../opf $runname
 pfrun $runname
 pfundist $runname

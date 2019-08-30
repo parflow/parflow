@@ -105,6 +105,32 @@ typedef struct {
  * GrGeomSolid looping macro:
  *   Macro for looping over the inside of a solid.
  *--------------------------------------------------------------------------*/
+#ifdef __CUDACC__
+#define GrGeomInLoopBoxes(i, j, k, grgeom, ix, iy, iz, nx, ny, nz, body)	\
+  {									\
+  int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;			\
+  int *PV_visiting = NULL;						\
+  BoxArray* boxes = GrGeomSolidInteriorBoxes(grgeom);			\
+  for(int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)		\
+  {									\
+    Box box = BoxArrayGetBox(boxes, PV_box);				\
+    /* find octree and region intersection */				\
+    PV_ixl = pfmax(ix, box.lo[0]);					\
+    PV_iyl = pfmax(iy, box.lo[1]);					\
+    PV_izl = pfmax(iz, box.lo[2]);					\
+    PV_ixu = pfmin((ix + nx - 1), box.up[0]);				\
+    PV_iyu = pfmin((iy + ny - 1), box.up[1]);				\
+    PV_izu = pfmin((iz + nz - 1), box.up[2]);				\
+									\
+    for(k = PV_izl; k <= PV_izu; k++)					\
+      for(j =PV_iyl; j <= PV_iyu; j++)					\
+	for(i = PV_ixl; i <= PV_ixu; i++)				\
+	{								\
+	  body;								\
+	}								\
+  }									\
+  }
+#else
 
 #define GrGeomInLoopBoxes(i, j, k, grgeom, ix, iy, iz, nx, ny, nz, body)	\
   {									\
@@ -130,6 +156,7 @@ typedef struct {
 	}								\
   }									\
   }
+#endif
 
 #define GrGeomInLoop(i, j, k, grgeom,				\
 			r, ix, iy, iz, nx, ny, nz, body)	\

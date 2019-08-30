@@ -20,7 +20,7 @@ void hello_test() {
 //   data = (int*)malloc(sizeof(int) * nt); 
   cudaMallocManaged(&data, sizeof(int) * nt);
 
-  kernel<<<(nt+8)/8,8>>>(data,nt);
+  kernel<<<(nt+7)/8,8>>>(data,nt);
   cudaDeviceSynchronize();
   for(unsigned int i = 0; i < nt; i++){
     printf("data[%u]: %d\n",i,data[i]);

@@ -58,8 +58,8 @@ set (SRC_FILES advect.F
   mg_semi_restrict.c
   n_vector.c
   new_endpts.c
-  nl_function_eval.c
-  nl_function_eval.c
+  #nl_function_eval.c
+  nl_function_eval.cu
   nodiag_scale.c
   overlandflow_eval.c
   overlandflow_eval_diffusive.c
@@ -153,11 +153,11 @@ set (SRC_FILES advect.F
   )
 
 add_library(pfsimulator ${SRC_FILES})
+set_target_properties(pfsimulator PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 if (${PARFLOW_HAVE_MPI})
   target_include_directories (pfsimulator PUBLIC "${MPI_C_INCLUDE_PATH}")
 endif (${PARFLOW_HAVE_MPI})
-
 
 install (TARGETS pfsimulator DESTINATION lib)
 

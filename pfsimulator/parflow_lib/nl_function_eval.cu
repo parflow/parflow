@@ -26,6 +26,8 @@
  *  USA
  **********************************************************************EHEADER*/
 
+extern "C"{
+
 #include "parflow.h"
 #include "llnlmath.h"
 #include "llnltyps.h"
@@ -69,7 +71,7 @@ typedef struct {
 
 /*  This routine provides the interface between KINSOL and ParFlow
  *  for function evaluations.  */
-
+extern "C"
 void     KINSolFunctionEval(
                             int      size,
                             N_Vector pressure,
@@ -2249,7 +2251,6 @@ PFModule    *NlFunctionEvalInitInstanceXtra(Problem *problem,
 /*--------------------------------------------------------------------------
  * NlFunctionEvalFreeInstanceXtra
  *--------------------------------------------------------------------------*/
-
 void  NlFunctionEvalFreeInstanceXtra()
 {
   PFModule      *this_module = ThisPFModule;
@@ -2340,7 +2341,6 @@ PFModule   *NlFunctionEvalNewPublicXtra(char *name)
 /*--------------------------------------------------------------------------
  * NlFunctionEvalFreePublicXtra
  *--------------------------------------------------------------------------*/
-
 void  NlFunctionEvalFreePublicXtra()
 {
   PFModule    *this_module = ThisPFModule;
@@ -2357,8 +2357,8 @@ void  NlFunctionEvalFreePublicXtra()
 /*--------------------------------------------------------------------------
  * NlFunctionEvalSizeOfTempData
  *--------------------------------------------------------------------------*/
-
 int  NlFunctionEvalSizeOfTempData()
 {
   return 0;
+}
 }
