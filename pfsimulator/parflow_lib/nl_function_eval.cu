@@ -71,8 +71,8 @@ typedef struct {
 
 /*  This routine provides the interface between KINSOL and ParFlow
  *  for function evaluations.  */
-extern "C"
-void     KINSolFunctionEval(
+
+ void     KINSolFunctionEval(
                             int      size,
                             N_Vector pressure,
                             N_Vector fval,
