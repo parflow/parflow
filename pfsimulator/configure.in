@@ -366,6 +366,7 @@ else
    if test -n "$MPIINCLUDE" -o -n "$MPILIBS" -o -n "$MPILIBDIRS"; then
       with_mpi=yes
       AC_DEFINE(HAVE_MPI)
+      AC_DEFINE(PARFLOW_HAVE_MPI)
       INC_PATH="$MPIINCLUDE $INC_PATH"
       LIB_NAME="$MPILIBS $LIB_NAME"
       LIB_PATH="$MPILIBDIRS $LIB_PATH"
