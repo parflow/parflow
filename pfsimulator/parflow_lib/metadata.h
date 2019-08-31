@@ -12,11 +12,11 @@
  * * Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
-
+ *
  * * Neither name of Kitware nor the names of any contributors may be used to
  *   endorse or promote products derived from this software without specific prior
  *   written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -54,44 +54,44 @@ void FinalizeMetadata(PFModule* solver, const char* prefix);
 int MetaDataHasField(MetadataItem node, const char* field_name);
 
 int MetadataAddStaticField(
-  MetadataItem parent,
-  const char* file_prefix,
-  const char* field_name,
-  const char* field_units,
-  const char* field_placement,
-  const char* field_domain,
-  int num_field_components,
-  const char** field_component_postfixes);
+                           MetadataItem parent,
+                           const char*  file_prefix,
+                           const char*  field_name,
+                           const char*  field_units,
+                           const char*  field_placement,
+                           const char*  field_domain,
+                           int          num_field_components,
+                           const char** field_component_postfixes);
 int MetadataAddDynamicField(
-  MetadataItem parent,
-  const char* file_prefix,
-  double t,
-  int step,
-  const char* field_name,
-  const char* field_units,
-  const char* field_placement,
-  const char* field_domain,
-  int num_field_components,
-  const char** field_component_postfixes);
+                            MetadataItem parent,
+                            const char*  file_prefix,
+                            double       t,
+                            int          step,
+                            const char*  field_name,
+                            const char*  field_units,
+                            const char*  field_placement,
+                            const char*  field_domain,
+                            int          num_field_components,
+                            const char** field_component_postfixes);
 int MetadataAddForcingField(
-  cJSON* parent,
-  const char* field_name,
-  const char* field_units,
-  const char* field_place,
-  const char* field_domain,
-  int clm_metforce,
-  int clm_metsub,
-  const char* clm_metpath,
-  const char* clm_metfile,
-  int clm_istep_start,
-  int clm_fstep_start,
-  int clm_metnt,
-  size_t num_field_components,
-  const char** field_component_postfixes);
+                            cJSON*       parent,
+                            const char*  field_name,
+                            const char*  field_units,
+                            const char*  field_place,
+                            const char*  field_domain,
+                            int          clm_metforce,
+                            int          clm_metsub,
+                            const char*  clm_metpath,
+                            const char*  clm_metfile,
+                            int          clm_istep_start,
+                            int          clm_fstep_start,
+                            int          clm_metnt,
+                            size_t       num_field_components,
+                            const char** field_component_postfixes);
 int MetadataUpdateForcingField(
-  cJSON* parent,
-  const char* field_name,
-  int update_timestep
-);
+                               cJSON*      parent,
+                               const char* field_name,
+                               int         update_timestep
+                               );
 
 #endif /* pf_metadata_h */

@@ -12,11 +12,11 @@
  * * Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
-
+ *
  * * Neither name of Kitware nor the names of any contributors may be used to
  *   endorse or promote products derived from this software without specific prior
  *   written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -48,11 +48,12 @@ cJSON* js_domains = NULL;
 static void MetadataAddParflowBuildInfo(cJSON* pf)
 {
   cJSON* build = cJSON_CreateObject();
+
   cJSON_AddItemToObject(pf, "build", build);
   cJSON_AddItemToObject(build, "version",
-    cJSON_CreateString(PARFLOW_VERSION_STRING));
+                        cJSON_CreateString(PARFLOW_VERSION_STRING));
   cJSON_AddItemToObject(build, "compiled",
-    cJSON_CreateString(__DATE__ " " __TIME__));
+                        cJSON_CreateString(__DATE__ " " __TIME__));
 }
 
 void MetadataAddParflowDomainInfo(cJSON* pf, PFModule* solver, Grid* localGrid)
@@ -87,12 +88,12 @@ void MetadataAddParflowDomainInfo(cJSON* pf, PFModule* solver, Grid* localGrid)
   int my_rank = amps_Rank(amps_CommWorld);
   int rr = my_rank;
   // int ss = amps_node_size;
-  int* idivs = (int*) malloc(sizeof(int) * ni);
-  int* jdivs = (int*) malloc(sizeof(int) * nj);
-  int* kdivs = (int*) malloc(sizeof(int) * nk);
-  int* gidivs = rr == 0 ? (int*) malloc(sizeof(int) * (ni + 1)) : NULL;
-  int* gjdivs = rr == 0 ? (int*) malloc(sizeof(int) * (nj + 1)) : NULL;
-  int* gkdivs = rr == 0 ? (int*) malloc(sizeof(int) * (nk + 1)) : NULL;
+  int* idivs = (int*)malloc(sizeof(int) * ni);
+  int* jdivs = (int*)malloc(sizeof(int) * nj);
+  int* kdivs = (int*)malloc(sizeof(int) * nk);
+  int* gidivs = rr == 0 ? (int*)malloc(sizeof(int) * (ni + 1)) : NULL;
+  int* gjdivs = rr == 0 ? (int*)malloc(sizeof(int) * (nj + 1)) : NULL;
+  int* gkdivs = rr == 0 ? (int*)malloc(sizeof(int) * (nk + 1)) : NULL;
   int xi = (rr < ni ? rr : -1);
   int yj = (rr / ni < nj && rr % ni == 0 ? rr / ni : -1);
   int zk = (rr / ni / nj < nk && rr % (ni * nj) == 0 ? rr / ni / nj : -1);
@@ -112,22 +113,22 @@ void MetadataAddParflowDomainInfo(cJSON* pf, PFModule* solver, Grid* localGrid)
   cJSON* topsurf = cJSON_CreateObject();
   cJSON_AddItemToObject(pf, "surface", topsurf);
   cJSON_AddItemToObject(topsurf, "cell-extent",
-    cJSON_CreateIntArray(extent, 2));
+                        cJSON_CreateIntArray(extent, 2));
   cJSON_AddItemToObject(topsurf, "spacing",
-    cJSON_CreateDoubleArray(spacing, 3));
+                        cJSON_CreateDoubleArray(spacing, 3));
   cJSON_AddItemToObject(topsurf, "origin",
-    cJSON_CreateDoubleArray(topOrigin, 3));
+                        cJSON_CreateDoubleArray(topOrigin, 3));
   cJSON* topSGD = cJSON_CreateArray();
   cJSON_AddItemToObject(topsurf, "subgrid-divisions", topSGD);
 
   cJSON* subsurf = cJSON_CreateObject();
   cJSON_AddItemToObject(pf, "subsurface", subsurf);
   cJSON_AddItemToObject(subsurf, "cell-extent",
-    cJSON_CreateIntArray(extent, 3));
+                        cJSON_CreateIntArray(extent, 3));
   cJSON_AddItemToObject(subsurf, "spacing",
-    cJSON_CreateDoubleArray(spacing, 3));
+                        cJSON_CreateDoubleArray(spacing, 3));
   cJSON_AddItemToObject(subsurf, "origin",
-    cJSON_CreateDoubleArray(subOrigin, 3));
+                        cJSON_CreateDoubleArray(subOrigin, 3));
   cJSON* subSGD = cJSON_CreateArray();
   cJSON_AddItemToObject(subsurf, "subgrid-divisions", subSGD);
 
@@ -135,9 +136,18 @@ void MetadataAddParflowDomainInfo(cJSON* pf, PFModule* solver, Grid* localGrid)
   memset(jdivs, 0, sizeof(int) * nj);
   memset(kdivs, 0, sizeof(int) * nk);
   /* Have nodes along axes fill in offsets; others leave empty */
-  if (xi >= 0) { idivs[xi] = origin_i; }
-  if (yj >= 0) { jdivs[yj] = origin_j; }
-  if (zk >= 0) { kdivs[zk] = origin_k; }
+  if (xi >= 0)
+  {
+    idivs[xi] = origin_i;
+  }
+  if (yj >= 0)
+  {
+    jdivs[yj] = origin_j;
+  }
+  if (zk >= 0)
+  {
+    kdivs[zk] = origin_k;
+  }
 
 #ifdef PARFLOW_HAVE_MPI
   /* Optimization would be to make this a single reduction operation */
@@ -146,18 +156,18 @@ void MetadataAddParflowDomainInfo(cJSON* pf, PFModule* solver, Grid* localGrid)
   MPI_Reduce(kdivs, gkdivs, nk, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 #else
   /* This is broken for parallel layers other than MPI.  AMPS does not
-     have a Reduce operation; only ReduceAll */
-  for(int i = 0; i < ni; i++)
+   * have a Reduce operation; only ReduceAll */
+  for (int i = 0; i < ni; i++)
   {
     gidivs[i] = idivs[i];
   }
 
-  for(int j = 0; j < nj; j++)
+  for (int j = 0; j < nj; j++)
   {
     gjdivs[j] = jdivs[j];
   }
 
-  for(int k = 0; k < nk; k++)
+  for (int k = 0; k < nk; k++)
   {
     gkdivs[k] = kdivs[k];
   }
@@ -198,6 +208,7 @@ static void cJSON_AddIDBEntries(cJSON* json, HBT_element* info, int onlyUsed)
 static cJSON* cJSON_CreateIDBDict(IDB* info, int onlyUsed)
 {
   cJSON* dict = cJSON_CreateObject();
+
   cJSON_AddIDBEntries(dict, info->root, onlyUsed);
   return dict;
 }
@@ -280,7 +291,7 @@ void NewMetadata(PFModule* solver)
   js_outputs = cJSON_CreateObject();
   cJSON_AddItemToObject(metadata, "parflow", js_parflow);
   cJSON_AddItemToObject(metadata, "domains", js_domains);
-  cJSON_AddItemToObject(metadata, "inputs",  js_inputs);
+  cJSON_AddItemToObject(metadata, "inputs", js_inputs);
   cJSON_AddItemToObject(metadata, "outputs", js_outputs);
 
   MetadataAddParflowBuildInfo(js_parflow);
@@ -330,21 +341,22 @@ int MetaDataHasField(cJSON* node, const char* fieldName)
 }
 
 int MetadataAddStaticField(
-  MetadataItem parent,
-  const char* file_prefix,
-  const char* field_name,
-  const char* field_units,
-  const char* field_placement,
-  const char* field_domain,
-  int num_field_components,
-  const char** field_component_postfixes)
+                           MetadataItem parent,
+                           const char*  file_prefix,
+                           const char*  field_name,
+                           const char*  field_units,
+                           const char*  field_placement,
+                           const char*  field_domain,
+                           int          num_field_components,
+                           const char** field_component_postfixes)
 {
   int ii;
+
   if (
-    num_field_components <= 0 ||
-    !file_prefix || !field_name ||
-    !field_placement || !field_domain ||
-    !field_component_postfixes)
+      num_field_components <= 0 ||
+      !file_prefix || !field_name ||
+      !field_placement || !field_domain ||
+      !field_component_postfixes)
   {
     return 0;
   }
@@ -384,23 +396,23 @@ int MetadataAddStaticField(
 }
 
 int MetadataAddDynamicField(
-  MetadataItem parent,
-  const char* file_prefix,
-  double time,
-  int step,
-  const char* field_name,
-  const char* field_units,
-  const char* field_placement,
-  const char* field_domain,
-  int num_field_components,
-  const char** field_component_postfixes)
+                            MetadataItem parent,
+                            const char*  file_prefix,
+                            double       time,
+                            int          step,
+                            const char*  field_name,
+                            const char*  field_units,
+                            const char*  field_placement,
+                            const char*  field_domain,
+                            int          num_field_components,
+                            const char** field_component_postfixes)
 {
   (void)time;
 
   int ii;
   if (
-    !file_prefix || !field_name ||
-    !field_placement || !field_domain)
+      !file_prefix || !field_name ||
+      !field_placement || !field_domain)
   {
     return 0;
   }
@@ -408,12 +420,12 @@ int MetadataAddDynamicField(
   if (!field_item)
   { // We truly are adding the field for the first time:
     if (
-      num_field_components <= 0 ||
-      !field_component_postfixes)
+        num_field_components <= 0 ||
+        !field_component_postfixes)
     {
       fprintf(stderr,
-        "No components provided for initial addition of field \"%s\"\n",
-        field_name);
+              "No components provided for initial addition of field \"%s\"\n",
+              field_name);
       return 0;
     }
     field_item = cJSON_CreateObject();
@@ -463,48 +475,48 @@ int MetadataAddDynamicField(
     cJSON* fdata;
     cJSON* fentry;
     if (
-      !(checkType = cJSON_GetObjectItem(field_item, "type")) ||
-      checkType->type != cJSON_String ||
-      !checkType->valuestring ||
-      strcmp(checkType->valuestring, "pfb"))
+        !(checkType = cJSON_GetObjectItem(field_item, "type")) ||
+        checkType->type != cJSON_String ||
+        !checkType->valuestring ||
+        strcmp(checkType->valuestring, "pfb"))
     {
       fprintf(stderr, "Trying to change type from %s to pfb\n", checkType->valuestring);
       return 0;
     }
 
     if (
-      !(checkPlace = cJSON_GetObjectItem(field_item, "place")) ||
-      checkPlace->type != cJSON_String ||
-      !checkPlace->valuestring ||
-      strcmp(checkPlace->valuestring, field_placement))
+        !(checkPlace = cJSON_GetObjectItem(field_item, "place")) ||
+        checkPlace->type != cJSON_String ||
+        !checkPlace->valuestring ||
+        strcmp(checkPlace->valuestring, field_placement))
     {
       fprintf(stderr, "Trying to change type from \"%s\" to \"%s\"\n",
-        checkPlace->valuestring, field_placement);
+              checkPlace->valuestring, field_placement);
       return 0;
     }
 
     if (
-      !(checkDomain = cJSON_GetObjectItem(field_item, "domain")) ||
-      checkDomain->type != cJSON_String ||
-      !checkDomain->valuestring ||
-      strcmp(checkDomain->valuestring, field_domain))
+        !(checkDomain = cJSON_GetObjectItem(field_item, "domain")) ||
+        checkDomain->type != cJSON_String ||
+        !checkDomain->valuestring ||
+        strcmp(checkDomain->valuestring, field_domain))
     {
       fprintf(stderr, "Trying to change type from \"%s\" to \"%s\"\n",
-        checkDomain->valuestring, field_domain);
+              checkDomain->valuestring, field_domain);
       return 0;
     }
 
     if (
-      !(checkTimeVarying = cJSON_GetObjectItem(field_item, "time-varying")) ||
-      checkTimeVarying->type != cJSON_True)
+        !(checkTimeVarying = cJSON_GetObjectItem(field_item, "time-varying")) ||
+        checkTimeVarying->type != cJSON_True)
     {
       fprintf(stderr, "Trying to change field from static to time-varying\n");
       return 0;
     }
 
     if (
-      !(fdata = cJSON_GetObjectItem(field_item, "data")) ||
-      fdata->type != cJSON_Array)
+        !(fdata = cJSON_GetObjectItem(field_item, "data")) ||
+        fdata->type != cJSON_Array)
     {
       fprintf(stderr, "File data not present or wrong type\n");
       return 0;
@@ -515,13 +527,13 @@ int MetadataAddDynamicField(
     {
       cJSON* times;
       if (
-        fentry->type != cJSON_Object ||
-        !cJSON_GetObjectItem(fentry, "file-series") ||
-        !(times = cJSON_GetObjectItem(fentry, "time-range")) ||
-        times->type != cJSON_Array ||
-        !times->child || !times->child->next ||
-        times->child->next->type != cJSON_Number
-        )
+          fentry->type != cJSON_Object ||
+          !cJSON_GetObjectItem(fentry, "file-series") ||
+          !(times = cJSON_GetObjectItem(fentry, "time-range")) ||
+          times->type != cJSON_Array ||
+          !times->child || !times->child->next ||
+          times->child->next->type != cJSON_Number
+          )
       {
         continue;
       }
@@ -539,32 +551,33 @@ int MetadataAddDynamicField(
 // ahead of time which time steps are available (or at least
 // have been specified as available).
 int MetadataAddForcingField(
-  cJSON* parent,
-  const char* field_name,
-  const char* field_units,
-  const char* field_placement,
-  const char* field_domain,
-  int clm_metforce,
-  int clm_metsub,
-  const char* clm_metpath,
-  const char* clm_metfile,
-  int clm_istep_start,
-  int clm_fstep_start,
-  int clm_metnt,
-  size_t num_field_components,
-  const char** field_component_postfixes
-)
+                            cJSON*       parent,
+                            const char*  field_name,
+                            const char*  field_units,
+                            const char*  field_placement,
+                            const char*  field_domain,
+                            int          clm_metforce,
+                            int          clm_metsub,
+                            const char*  clm_metpath,
+                            const char*  clm_metfile,
+                            int          clm_istep_start,
+                            int          clm_fstep_start,
+                            int          clm_metnt,
+                            size_t       num_field_components,
+                            const char** field_component_postfixes
+                            )
 {
   int ii;
+
   if (
-    num_field_components <= 0 ||
-    !clm_metfile || !clm_metpath || !field_name ||
-    !field_placement || !field_domain ||
-    !field_component_postfixes ||
-    clm_metforce < 2 || clm_metforce > 3 ||
-    clm_metnt <= 0 ||
-    clm_istep_start > clm_metnt
-  )
+      num_field_components <= 0 ||
+      !clm_metfile || !clm_metpath || !field_name ||
+      !field_placement || !field_domain ||
+      !field_component_postfixes ||
+      clm_metforce < 2 || clm_metforce > 3 ||
+      clm_metnt <= 0 ||
+      clm_istep_start > clm_metnt
+      )
   {
     return 0;
   }
@@ -596,33 +609,33 @@ int MetadataAddForcingField(
       if (clm_metsub)
       {
         snprintf(temp, 2047, "%s/%s/%s.%s.%%06d.pfb",
-          clm_metpath, field_component_postfixes[ii],
-          clm_metfile, field_component_postfixes[ii]
-        );
+                 clm_metpath, field_component_postfixes[ii],
+                 clm_metfile, field_component_postfixes[ii]
+                 );
       }
       else
       {
         snprintf(temp, 2047, "%s/%s.%s.%%06d.pfb",
-          clm_metpath, clm_metfile, field_component_postfixes[ii]);
+                 clm_metpath, clm_metfile, field_component_postfixes[ii]);
       }
     }
     else // if clm_metforce == 3
     {
-      int timesBetween[] = { clm_fstep_start, clm_istep_start, clm_metnt }; 
+      int timesBetween[] = { clm_fstep_start, clm_istep_start, clm_metnt };
       time_key = "times-between";
       time_descr = cJSON_CreateIntArray(timesBetween, 3);
       if (clm_metsub)
       {
         snprintf(temp, 2047, "%s/%s/%s.%s.%%06d_to_%%06d.pfb",
-          clm_metpath, field_component_postfixes[ii],
-          clm_metfile, field_component_postfixes[ii]
-        );
+                 clm_metpath, field_component_postfixes[ii],
+                 clm_metfile, field_component_postfixes[ii]
+                 );
       }
       else
       {
         snprintf(temp, 2047, "%s/%s.%s.%%06d_to_%%06d.pfb",
-          clm_metpath, clm_metfile, field_component_postfixes[ii]
-        );
+                 clm_metpath, clm_metfile, field_component_postfixes[ii]
+                 );
       }
     }
     cJSON_AddItemToObject(file_descr, "file-series", cJSON_CreateString(temp));
@@ -648,12 +661,13 @@ int MetadataAddForcingField(
 }
 
 int MetadataUpdateForcingField(
-  cJSON* parent,
-  const char* field_name,
-  int update_timestep
-)
+                               cJSON*      parent,
+                               const char* field_name,
+                               int         update_timestep
+                               )
 {
   int ii;
+
   if (!parent || !field_name)
   {
     return 0;
@@ -668,8 +682,8 @@ int MetadataUpdateForcingField(
   cJSON* fdata;
   cJSON* fentry;
   if (
-    !(fdata = cJSON_GetObjectItem(field_item, "data")) ||
-    fdata->type != cJSON_Array)
+      !(fdata = cJSON_GetObjectItem(field_item, "data")) ||
+      fdata->type != cJSON_Array)
   {
     fprintf(stderr, "File data not present or wrong type\n");
     return 0;
@@ -680,19 +694,19 @@ int MetadataUpdateForcingField(
   {
     cJSON* times;
     if (
-      fentry->type != cJSON_Object ||
-      !cJSON_GetObjectItem(fentry, "file-series"))
+        fentry->type != cJSON_Object ||
+        !cJSON_GetObjectItem(fentry, "file-series"))
     {
       continue;
     }
     // FIXME: Handle skipped-step and variable-size steps/dumps?
     if (
-      (times = cJSON_GetObjectItem(fentry, "time-range")) &&
-      times->type == cJSON_Array &&
-      times->child && times->child->next &&
-      times->child->type == cJSON_Number &&
-      times->child->next->type == cJSON_Number
-    )
+        (times = cJSON_GetObjectItem(fentry, "time-range")) &&
+        times->type == cJSON_Array &&
+        times->child && times->child->next &&
+        times->child->type == cJSON_Number &&
+        times->child->next->type == cJSON_Number
+        )
     {
       // This is kinda hackish, but much more efficient than cJSON_ReplaceItemInArray():
       if (update_timestep < times->child->valueint)
@@ -707,12 +721,12 @@ int MetadataUpdateForcingField(
       }
     }
     else if (
-      (times = cJSON_GetObjectItem(fentry, "times-between")) &&
-      times->type == cJSON_Array &&
-      times->child && times->child->next && times->child->next->next &&
-      times->child->type == cJSON_Number &&
-      times->child->next->type == cJSON_Number
-    )
+             (times = cJSON_GetObjectItem(fentry, "times-between")) &&
+             times->type == cJSON_Array &&
+             times->child && times->child->next && times->child->next->next &&
+             times->child->type == cJSON_Number &&
+             times->child->next->type == cJSON_Number
+             )
     {
       // This is kinda hackish, but much more efficient than cJSON_ReplaceItemInArray():
       if (update_timestep < times->child->valueint)
