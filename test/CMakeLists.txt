@@ -36,7 +36,8 @@ if(${PARFLOW_HAVE_HYPRE})
     overland_tiltedV_DWE.tcl
     overland_FlatICP.tcl
     richards_FBx.tcl
-    richards_FBy.tcl)
+    richards_FBy.tcl
+    richards_box_proctest.tcl)
 endif()
 
 if(${PARFLOW_HAVE_SILO})

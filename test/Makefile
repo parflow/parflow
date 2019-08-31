@@ -41,7 +41,8 @@ TESTS += \
 	overland_tiltedV_DWE.tcl\
 	overland_FlatICP.tcl \
 	richards_FBx.tcl \
-	richards_FBy.tcl 
+	richards_FBy.tcl  \
+	richards_box_proctest.tcl
 endif
 
 ifeq (${PARFLOW_HAVE_SILO},yes)
@@ -93,7 +94,10 @@ PARALLEL_2DTOPO_TESTS += \
 	default_overland.pfmg.jac.tcl \
 	default_overland.pfmg_octree.jac.tcl \
 	LW_var_dz.tcl \
-	LW_var_dz_spinup.tcl
+	LW_var_dz_spinup.tcl \
+	richards_FBx.tcl \
+	richards_FBy.tcl  \
+	richards_box_proctest.tcl
 
 ifeq (${PARFLOW_HAVE_SILO},yes)
 TESTS += \
