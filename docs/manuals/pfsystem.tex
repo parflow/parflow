@@ -129,7 +129,12 @@ The general approach is as follows:
    to accomplish this is by reformatting the gridded outputs to the correct \parflow{}
    \file{.sa} order (\S~\ref{ParFlow Simple ASCII Files (.sa and .sb)}) and to convert
    the \file{.sa} file to \file{.pfb} using the conversion tools (see \S~\ref{common_pftcl}
-   Example 1)
+   Example 1). If you have an elevation file in \file{.pfb} format, you may wish to preserve
+   it as provenance for the slopes and for use in post-processing tools. You may point
+   ParFlow to the elevation:
+   \begin{display}\begin{verbatim}
+   pfset TopoSlopes.Elevation.FileName "elevation.pfb"
+   \end{verbatim}\end{display}
   
    \item Calculate slopes in the x and y directions from the elevation dataset. This can be 
    done with the built in tools as shown in \S~\ref{common_pftcl} Example 5. 
@@ -932,6 +937,11 @@ pfset TopoSlopesY.Type "Constant"
 pfset TopoSlopesY.GeomNames ""
 
 pfset TopoSlopesY.Geom.domain.Value 0.0
+
+# You may also indicate an elevation file used to derive the slopes.
+# This is optional but can be useful when post-processing terrain-
+# following grids:
+pfset TopoSlopes.Elevation.FileName "elevation.pfb"
 
 #---------------------------------------------------------
 # Mannings coefficient 

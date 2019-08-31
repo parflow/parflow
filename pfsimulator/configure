@@ -10369,6 +10369,8 @@ fi
       with_mpi=yes
       $as_echo "#define HAVE_MPI 1" >>confdefs.h
 
+      $as_echo "#define PARFLOW_HAVE_MPI 1" >>confdefs.h
+
       INC_PATH="$MPIINCLUDE $INC_PATH"
       LIB_NAME="$MPILIBS $LIB_NAME"
       LIB_PATH="$MPILIBDIRS $LIB_PATH"
