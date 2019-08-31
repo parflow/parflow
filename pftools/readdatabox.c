@@ -207,7 +207,7 @@ Databox         *ReadSilo(char *filename, double default_value)
       }
 
       DBfile *proc_db;
-//	 proc_db = DBOpen(proc_filename, DB_PDB, DB_READ);
+//       proc_db = DBOpen(proc_filename, DB_PDB, DB_READ);
       proc_db = DBOpen(proc_filename, DB_UNKNOWN, DB_READ);
       if (db == NULL)
       {

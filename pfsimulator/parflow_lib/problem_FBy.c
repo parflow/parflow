@@ -127,7 +127,7 @@ void FBy(ProblemData *problem_data, Vector *FBy)
           });
         }      /* End subgrid loop */
 
-	FreeTempVector(values);
+        FreeTempVector(values);
 
         break;
       }
@@ -219,7 +219,6 @@ PFModule   *FByNewPublicXtra()
     //  PFBFile = 0;
     switch ((public_xtra->type))
     {
-
       // Read from PFB file
       case 0:
       {
@@ -265,14 +264,12 @@ void  FByFreePublicXtra()
 
       switch ((public_xtra->type))
       {
-
         case 0:
         {
           dummy0 = (Type0*)(public_xtra->data);
           tfree(dummy0);
           break;
         }
-
       }
     }
     tfree(public_xtra);

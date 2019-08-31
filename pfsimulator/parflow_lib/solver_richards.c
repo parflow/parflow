@@ -402,24 +402,24 @@ SetupRichards(PFModule * this_module)
     for (ff = 0; ff < numForcingFields; ++ff)
     {
       if (
-        !clmForcingFields[ff].vegetative ||
-        (public_xtra->clm_metforce == 3 && public_xtra->clm_forc_veg == 1))
+          !clmForcingFields[ff].vegetative ||
+          (public_xtra->clm_metforce == 3 && public_xtra->clm_forc_veg == 1))
       {
         MetadataAddForcingField(
-          js_inputs,
-          clmForcingFields[ff].field_name,
-          clmForcingFields[ff].field_units,
-          "cell", "surface",
-          public_xtra->clm_metforce,
-          public_xtra->clm_metsub,
-          public_xtra->clm_metpath,
-          public_xtra->clm_metfile,
-          public_xtra->clm_istep_start,
-          public_xtra->clm_fstep_start,
-          public_xtra->clm_metnt,
-          clmForcingFields[ff].num_components,
-          clmForcingFields[ff].component_names
-        );
+                                js_inputs,
+                                clmForcingFields[ff].field_name,
+                                clmForcingFields[ff].field_units,
+                                "cell", "surface",
+                                public_xtra->clm_metforce,
+                                public_xtra->clm_metsub,
+                                public_xtra->clm_metpath,
+                                public_xtra->clm_metfile,
+                                public_xtra->clm_istep_start,
+                                public_xtra->clm_fstep_start,
+                                public_xtra->clm_metnt,
+                                clmForcingFields[ff].num_components,
+                                clmForcingFields[ff].component_names
+                                );
       }
     }
   }
@@ -499,17 +499,17 @@ SetupRichards(PFModule * this_module)
       "specific_storage"
     };
     MetadataAddStaticField(
-      js_inputs, file_prefix, "permeability", NULL, "cell", "subsurface",
-      sizeof(permeability_filenames) / sizeof(permeability_filenames[0]),
-      permeability_filenames);
+                           js_inputs, file_prefix, "permeability", NULL, "cell", "subsurface",
+                           sizeof(permeability_filenames) / sizeof(permeability_filenames[0]),
+                           permeability_filenames);
     MetadataAddStaticField(
-      js_inputs, file_prefix, "porosity", NULL, "cell", "subsurface",
-      sizeof(porosity_filenames) / sizeof(porosity_filenames[0]),
-      porosity_filenames);
+                           js_inputs, file_prefix, "porosity", NULL, "cell", "subsurface",
+                           sizeof(porosity_filenames) / sizeof(porosity_filenames[0]),
+                           porosity_filenames);
     MetadataAddStaticField(
-      js_inputs, file_prefix, "specific storage", "1/m", "cell", "subsurface",
-      sizeof(storage_filenames) / sizeof(storage_filenames[0]),
-      storage_filenames);
+                           js_inputs, file_prefix, "specific storage", "1/m", "cell", "subsurface",
+                           sizeof(storage_filenames) / sizeof(storage_filenames[0]),
+                           storage_filenames);
   }
 
 
@@ -586,9 +586,9 @@ SetupRichards(PFModule * this_module)
       "slope_x", "slope_y"
     };
     MetadataAddStaticField(
-      js_inputs, file_prefix, "slope", NULL, "cell", "surface",
-      sizeof(slope_filenames) / sizeof(slope_filenames[0]),
-      slope_filenames);
+                           js_inputs, file_prefix, "slope", NULL, "cell", "surface",
+                           sizeof(slope_filenames) / sizeof(slope_filenames[0]),
+                           slope_filenames);
   }
 
   if (public_xtra->write_silo_slopes)
@@ -625,9 +625,9 @@ SetupRichards(PFModule * this_module)
       "mannings"
     };
     MetadataAddStaticField(
-      js_inputs, file_prefix, "mannings", "s/m^(1/3)", "cell", "surface",
-      sizeof(mannings_filenames) / sizeof(mannings_filenames[0]),
-      mannings_filenames);
+                           js_inputs, file_prefix, "mannings", "s/m^(1/3)", "cell", "surface",
+                           sizeof(mannings_filenames) / sizeof(mannings_filenames[0]),
+                           mannings_filenames);
   }
 
   if (public_xtra->write_silo_mannings)
@@ -655,9 +655,9 @@ SetupRichards(PFModule * this_module)
       "dzmult"
     };
     MetadataAddStaticField(
-      js_inputs, file_prefix, "dz multiplier", NULL, "cell", "subsurface",
-      sizeof(dzmult_filenames) / sizeof(dzmult_filenames[0]),
-      dzmult_filenames);
+                           js_inputs, file_prefix, "dz multiplier", NULL, "cell", "subsurface",
+                           sizeof(dzmult_filenames) / sizeof(dzmult_filenames[0]),
+                           dzmult_filenames);
   }
 
   if (public_xtra->write_silo_dzmult)
@@ -692,9 +692,9 @@ SetupRichards(PFModule * this_module)
         "specific_storage"
       };
       MetadataAddStaticField(
-        js_inputs, file_prefix, "specific storage", "1/m", "cell", "subsurface",
-        sizeof(storage_filenames) / sizeof(storage_filenames[0]),
-        storage_filenames);
+                             js_inputs, file_prefix, "specific storage", "1/m", "cell", "subsurface",
+                             sizeof(storage_filenames) / sizeof(storage_filenames[0]),
+                             storage_filenames);
     }
   }
 
@@ -1213,9 +1213,9 @@ SetupRichards(PFModule * this_module)
         "press"
       };
       MetadataAddDynamicField(
-        js_outputs, file_prefix, t, 0, "pressure", "m", "cell", "subsurface",
-        sizeof(press_filenames) / sizeof(press_filenames[0]),
-        press_filenames);
+                              js_outputs, file_prefix, t, 0, "pressure", "m", "cell", "subsurface",
+                              sizeof(press_filenames) / sizeof(press_filenames[0]),
+                              press_filenames);
     }
 
     if (public_xtra->write_silo_press)
@@ -1261,9 +1261,9 @@ SetupRichards(PFModule * this_module)
         "satur"
       };
       MetadataAddDynamicField(
-        js_outputs, file_prefix, t, 0, "saturation", NULL, "cell", "subsurface",
-        sizeof(satur_filenames) / sizeof(satur_filenames[0]),
-        satur_filenames);
+                              js_outputs, file_prefix, t, 0, "saturation", NULL, "cell", "subsurface",
+                              sizeof(satur_filenames) / sizeof(satur_filenames[0]),
+                              satur_filenames);
     }
 
     if (public_xtra->write_silo_satur)
@@ -1380,9 +1380,9 @@ SetupRichards(PFModule * this_module)
         "mask"
       };
       MetadataAddStaticField(
-        js_inputs, file_prefix, "mask", NULL, "cell", "subsurface",
-        sizeof(mask_filenames) / sizeof(mask_filenames[0]),
-        mask_filenames);
+                             js_inputs, file_prefix, "mask", NULL, "cell", "subsurface",
+                             sizeof(mask_filenames) / sizeof(mask_filenames[0]),
+                             mask_filenames);
     }
 
     if (public_xtra->write_netcdf_mask)
@@ -1436,9 +1436,9 @@ SetupRichards(PFModule * this_module)
         "velx", "vely", "velz"
       };
       MetadataAddDynamicField(
-        js_outputs, file_prefix, t, 0, "velocity", "m/s", "cell", "subsurface",
-        sizeof(mask_filenames) / sizeof(mask_filenames[0]),
-        mask_filenames);
+                              js_outputs, file_prefix, t, 0, "velocity", "m/s", "cell", "subsurface",
+                              sizeof(mask_filenames) / sizeof(mask_filenames[0]),
+                              mask_filenames);
     }
 
     /*-----------------------------------------------------------------
@@ -1561,7 +1561,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   /*BH*/ double *z0m_data = NULL;
   /*BH*/ double *displa_data = NULL;
   /*BH*/ double *veg_map_data = NULL;
-  /*BH*/			/*will fail if veg_map_data is declared as int */
+  /*BH*/                        /*will fail if veg_map_data is declared as int */
   char filename[2048];          // IMF: 1D input file name *or* 2D/3D input file base name
   Subvector *sw_forc_sub, *lw_forc_sub, *prcp_forc_sub, *tas_forc_sub, *u_forc_sub, *v_forc_sub, *patm_forc_sub, *qatm_forc_sub, *lai_forc_sub, *sai_forc_sub, *z0m_forc_sub, *displa_forc_sub, *veg_map_forc_sub;      /*BH: added LAI/SAI/Z0M/DISPLA/vegmap */
 
@@ -2106,8 +2106,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         for (ff = 0; ff < numForcingFields; ++ff)
         {
           if (
-            !clmForcingFields[ff].vegetative ||
-            (public_xtra->clm_metforce == 3 && public_xtra->clm_forc_veg == 1))
+              !clmForcingFields[ff].vegetative ||
+              (public_xtra->clm_metforce == 3 && public_xtra->clm_forc_veg == 1))
           {
             MetadataUpdateForcingField(js_inputs, clmForcingFields[ff].field_name, istep);
           }
@@ -2912,8 +2912,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
         // Update with new timesteps
         MetadataAddDynamicField(
-          js_outputs, file_prefix, t, instance_xtra->file_number,
-          "pressure", "m", "cell", "subsurface", 0, NULL);
+                                js_outputs, file_prefix, t, instance_xtra->file_number,
+                                "pressure", "m", "cell", "subsurface", 0, NULL);
       }
 
       if (public_xtra->write_silo_press)
@@ -2963,8 +2963,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
         // Update with new timesteps
         MetadataAddDynamicField(
-          js_outputs, file_prefix, t, instance_xtra->file_number,
-          "velocity", "m/s", "cell", "subsurface", 0, NULL);
+                                js_outputs, file_prefix, t, instance_xtra->file_number,
+                                "velocity", "m/s", "cell", "subsurface", 0, NULL);
       }
 
 
@@ -2978,8 +2978,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
         // Update with new timesteps
         MetadataAddDynamicField(
-          js_outputs, file_prefix, t, instance_xtra->file_number,
-          "saturation", "1/m", "cell", "subsurface", 0, NULL);
+                                js_outputs, file_prefix, t, instance_xtra->file_number,
+                                "saturation", "1/m", "cell", "subsurface", 0, NULL);
       }
 
       if (public_xtra->write_silo_satur)
@@ -3022,10 +3022,10 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
         // Update with new timesteps
         /* No initial call to add the field
-        MetadataAddDynamicField(
-          js_outputs, file_prefix, t, instance_xtra->file_number,
-          "evapotranspiration", "mm", "cell", "subsurface", 0, NULL);
-          */
+         * MetadataAddDynamicField(
+         * js_outputs, file_prefix, t, instance_xtra->file_number,
+         * "evapotranspiration", "mm", "cell", "subsurface", 0, NULL);
+         */
       }
 
 
@@ -3159,9 +3159,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
         // Update with new timesteps
         /* No initial call to add the field
-        MetadataAddDynamicField(
-          js_outputs, file_prefix, t, instance_xtra->file_number,
-          "overland bc flux", "m", "cell", "subsurface", 0, NULL);
+         * MetadataAddDynamicField(
+         * js_outputs, file_prefix, t, instance_xtra->file_number,
+         * "overland bc flux", "m", "cell", "subsurface", 0, NULL);
          */
       }
 
@@ -3467,9 +3467,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           clm_file_dumped = 1;
           // Update with new timesteps
           /* No initial call to add the field and no support for .C.pfb files in vtkParFlowMetaReader yet.
-          MetadataAddDynamicField(
-            js_outputs, file_prefix, t, instance_xtra->file_number,
-            "CLM", "m", "cell", "subsurface", 0, NULL);
+           * MetadataAddDynamicField(
+           * js_outputs, file_prefix, t, instance_xtra->file_number,
+           * "CLM", "m", "cell", "subsurface", 0, NULL);
            */
           // End of CLM Single file output
         }
@@ -3871,12 +3871,11 @@ TeardownRichards(PFModule * this_module)
 #ifdef HAVE_CLM
   if (instance_xtra->eflx_lh_tot)
   {
-
     if (instance_xtra->clm_out_grid)
     {
       FreeVector(instance_xtra->clm_out_grid);
     }
-    
+
     FreeVector(instance_xtra->eflx_lh_tot);
     FreeVector(instance_xtra->eflx_lwrad_out);
     FreeVector(instance_xtra->eflx_sh_tot);

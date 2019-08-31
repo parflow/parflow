@@ -585,7 +585,7 @@ Vector      *z_velocity;
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               ip, nx_p, ny_p, nz_p, 1, 1, 1,
     {
-//	   if(k==0) printf("i, j, t, io, qy %d %d %d %d %e\n",i,j,t,io,pp[ip]);
+//         if(k==0) printf("i, j, t, io, qy %d %d %d %d %e\n",i,j,t,io,pp[ip]);
       /* Calculate right face velocity.
        * diff >= 0 implies flow goes left to right */
       diff = pp[ip] - pp[ip + 1];

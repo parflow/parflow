@@ -30,8 +30,8 @@
 * Physical constants          *
 *-----------------------------*/
 
-/*      name			value		MKS unit	*/
-/*      ----			-----		--------	*/
+/*      name                    value           MKS unit        */
+/*      ----                    -----           --------        */
 #define PERM_COMPLIANCE         400.0e-9        /* Pa^-1        */
 #define PORE_COMPRESSIBILITY    1.6e-9          /* Pa^-1        */
 #define FLUID_COMPRESSIBILITY   0.4e-9          /* Pa^-1        */

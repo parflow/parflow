@@ -75,53 +75,53 @@
  * These contain information for all interval steps to be read later
  * These structs will be local to the BCPressurePackage source file only
  *----------------------------------------------------------------*/
-#define BC_TYPE_TABLE                               \
-  BC_TYPE(DirEquilRefPatch, {                       \
-      int reference_solid;                          \
-      int reference_patch;                          \
-      double *values;                               \
-      double **value_at_interface;                  \
-    })                                              \
-  BC_TYPE(DirEquilPLinear, {                        \
-      double *xlower;                               \
-      double *ylower;                               \
-      double *xupper;                               \
-      double *yupper;                               \
-      int    *num_points;                           \
-      double **points;                              \
-      double **values;                              \
-      double **value_at_interface;                  \
-    })                                              \
-  BC_TYPE(FluxConst, {                              \
-      double *values;                               \
-    })                                              \
-  BC_TYPE(FluxVolumetric, {                         \
-      double *values;                               \
-    })                                              \
-  BC_TYPE(PressureFile, {                           \
-      char **filenames;                             \
-    })                                              \
-  BC_TYPE(FluxFile, {                               \
-      char **filenames;                             \
-    })                                              \
-  BC_TYPE(ExactSolution, {                          \
-      int function_type;                            \
-    })                                              \
-  BC_TYPE(OverlandFlow, {                           \
-      double *values;                               \
-    })                                              \
-  BC_TYPE(OverlandFlowPFB, {                        \
-      char **filenames;                             \
-    })                                              \
-  BC_TYPE(SeepageFace, {                            \
-      double *values;                               \
-    })                                              \
-    BC_TYPE(OverlandKinematic, {                    \
-        double *values;                             \
-      })                                            \
-    BC_TYPE(OverlandDiffusive, {                    \
-          double *values;                           \
-        })
+#define BC_TYPE_TABLE            \
+  BC_TYPE(DirEquilRefPatch, {    \
+    int reference_solid;         \
+    int reference_patch;         \
+    double *values;              \
+    double **value_at_interface; \
+  })                             \
+  BC_TYPE(DirEquilPLinear, {     \
+    double *xlower;              \
+    double *ylower;              \
+    double *xupper;              \
+    double *yupper;              \
+    int    *num_points;          \
+    double **points;             \
+    double **values;             \
+    double **value_at_interface; \
+  })                             \
+  BC_TYPE(FluxConst, {           \
+    double *values;              \
+  })                             \
+  BC_TYPE(FluxVolumetric, {      \
+    double *values;              \
+  })                             \
+  BC_TYPE(PressureFile, {        \
+    char **filenames;            \
+  })                             \
+  BC_TYPE(FluxFile, {            \
+    char **filenames;            \
+  })                             \
+  BC_TYPE(ExactSolution, {       \
+    int function_type;           \
+  })                             \
+  BC_TYPE(OverlandFlow, {        \
+    double *values;              \
+  })                             \
+  BC_TYPE(OverlandFlowPFB, {     \
+    char **filenames;            \
+  })                             \
+  BC_TYPE(SeepageFace, {         \
+    double *values;              \
+  })                             \
+  BC_TYPE(OverlandKinematic, {   \
+    double *values;              \
+  })                             \
+  BC_TYPE(OverlandDiffusive, {   \
+    double *values;              \
+  })
 
 
 /**
@@ -131,7 +131,7 @@
  * @param type Type of TypeStruct to allocate
  * @param var Variable name for newly declared and allocated TypeStruct pointer
  */
-#define NewTypeStruct(type, var)                  \
+#define NewTypeStruct(type, var) \
   Type ## type * var = ctalloc(Type ## type, 1)
 
 /**
@@ -142,7 +142,7 @@
  * @param var Name of the variable to be stored (Should match name used in NewTypeStruct)
  * @param i Patch index
  */
-#define StoreTypeStruct(public_xtra, var, i)                  \
+#define StoreTypeStruct(public_xtra, var, i) \
   (public_xtra)->data[(i)] = (void*)(var);
 
 /**
@@ -154,14 +154,14 @@
  * @param public_xtra Pointer to the modules public_xtra
  * @param i Patch index
  */
-#define GetTypeStruct(type, var, public_xtra, i)              \
-  Type ## type * var = (Type ## type *)(public_xtra->data[i])
+#define GetTypeStruct(type, var, public_xtra, i) \
+  Type ## type * var = (Type ## type*)(public_xtra->data[i])
 
 
 // MCB: These two macros aren't really necessary but they do make the code cleaner
-#define ForEachPatch(num_patches, i)           \
+#define ForEachPatch(num_patches, i) \
   for (i = 0; i < num_patches; i++)
-#define ForEachInterval(interval_division, interval_number)  \
+#define ForEachInterval(interval_division, interval_number) \
   for (interval_number = 0; interval_number < interval_division; interval_number++)
 
 
@@ -172,53 +172,53 @@
  *       Would remove the need to define what is basically the same
  *       struct twice.
  *----------------------------------------------------------------*/
-#define BC_INTERVAL_TYPE_TABLE                      \
-  BC_TYPE(DirEquilRefPatch, {                       \
-      int reference_solid;                          \
-      int reference_patch;                          \
-      double value;                                 \
-      double *value_at_interfaces;                  \
-    })                                              \
-  BC_TYPE(DirEquilPLinear, {                        \
-      double xlower;                                \
-      double ylower;                                \
-      double xupper;                                \
-      double yupper;                                \
-      int    num_points;                            \
-      double *points;                               \
-      double *values;                               \
-      double *value_at_interfaces;                  \
-    })                                              \
-  BC_TYPE(FluxConst, {                              \
-      double value;                                 \
-    })                                              \
-  BC_TYPE(FluxVolumetric, {                         \
-      double value;                                 \
-    })                                              \
-  BC_TYPE(PressureFile, {                           \
-      char *filename;                               \
-    })                                              \
-  BC_TYPE(FluxFile, {                               \
-      char *filename;                               \
-    })                                              \
-  BC_TYPE(ExactSolution, {                          \
-      int function_type;                            \
-    })                                              \
-  BC_TYPE(OverlandFlow, {                           \
-      double value;                                 \
-    })                                              \
-  BC_TYPE(OverlandFlowPFB, {                        \
-      char *filename;                               \
-    })                                              \
-  BC_TYPE(SeepageFace, {                            \
-      double value;                                 \
-    })                                              \
-  BC_TYPE(OverlandKinematic, {                      \
-     double value;                                  \
-   })                                               \
-  BC_TYPE(OverlandDiffusive, {                      \
-         double value;                                  \
-          })
+#define BC_INTERVAL_TYPE_TABLE   \
+  BC_TYPE(DirEquilRefPatch, {    \
+    int reference_solid;         \
+    int reference_patch;         \
+    double value;                \
+    double *value_at_interfaces; \
+  })                             \
+  BC_TYPE(DirEquilPLinear, {     \
+    double xlower;               \
+    double ylower;               \
+    double xupper;               \
+    double yupper;               \
+    int num_points;              \
+    double *points;              \
+    double *values;              \
+    double *value_at_interfaces; \
+  })                             \
+  BC_TYPE(FluxConst, {           \
+    double value;                \
+  })                             \
+  BC_TYPE(FluxVolumetric, {      \
+    double value;                \
+  })                             \
+  BC_TYPE(PressureFile, {        \
+    char *filename;              \
+  })                             \
+  BC_TYPE(FluxFile, {            \
+    char *filename;              \
+  })                             \
+  BC_TYPE(ExactSolution, {       \
+    int function_type;           \
+  })                             \
+  BC_TYPE(OverlandFlow, {        \
+    double value;                \
+  })                             \
+  BC_TYPE(OverlandFlowPFB, {     \
+    char *filename;              \
+  })                             \
+  BC_TYPE(SeepageFace, {         \
+    double value;                \
+  })                             \
+  BC_TYPE(OverlandKinematic, {   \
+    double value;                \
+  })                             \
+  BC_TYPE(OverlandDiffusive, {   \
+    double value;                \
+  })
 
 
 /* @MCB: Interval structs are used in multiple C files, generate the definitions in the header */
@@ -234,7 +234,7 @@ BC_INTERVAL_TYPE_TABLE
  * @param type BCPressureType to allocate
  * @param varname Name of the variable to declare and allocate
  */
-#define NewBCPressureTypeStruct(type, varname)  \
+#define NewBCPressureTypeStruct(type, varname) \
   BCPressureType ## type * varname = ctalloc(BCPressureType ## type, 1)
 
 /**
@@ -248,9 +248,9 @@ BC_INTERVAL_TYPE_TABLE
  * @param interval_number Interval index
  */
 #define GetBCPressureTypeStruct(type, varname, bc_pressure_data, ipatch, interval_number) \
-  BCPressureType ## type * varname \
-  = (BCPressureType ## type *)BCPressureDataIntervalValue(bc_pressure_data, \
-                                                          (ipatch), (interval_number))
+  BCPressureType ## type * varname                                                        \
+    = (BCPressureType ## type*)BCPressureDataIntervalValue(bc_pressure_data,              \
+                                                           (ipatch), (interval_number))
 
 /*----------------------------------------------------------------
  * BCPressure Data structure
@@ -278,9 +278,9 @@ typedef struct {
 #define DirEquilRefPatchValue(patch) \
   ((patch)->value)
 
-#define DirEquilRefPatchRefSolid(patch)         \
+#define DirEquilRefPatchRefSolid(patch) \
   ((patch)->reference_solid)
-#define DirEquilRefPatchRefPatch(patch)         \
+#define DirEquilRefPatchRefPatch(patch) \
   ((patch)->reference_patch)
 
 #define DirEquilRefPatchValueAtInterfaces(patch) \
@@ -343,15 +343,15 @@ typedef struct {
 #define OverlandFlowPFBFileName(patch) \
   ((patch)->filename)
 /*--------------------------------------------------------------------------*/
-#define SeepageFaceValue(patch)                 \
+#define SeepageFaceValue(patch) \
   ((patch)->value)
 
-  /*--------------------------------------------------------------------------*/
-  #define OverlandKinematicValue(patch)                 \
-    ((patch)->value)
 /*--------------------------------------------------------------------------*/
-    #define OverlandDiffusiveValue(patch)                 \
-      ((patch)->value)
+  #define OverlandKinematicValue(patch) \
+  ((patch)->value)
+/*--------------------------------------------------------------------------*/
+    #define OverlandDiffusiveValue(patch) \
+  ((patch)->value)
 /*--------------------------------------------------------------------------
  * Accessor macros: BCPressureData
  *--------------------------------------------------------------------------*/
@@ -406,7 +406,7 @@ typedef struct {
  * @param public_xtra public_xtra for module
  * @param i Index for input type
  */
-#define InputType(public_xtra, i)               \
+#define InputType(public_xtra, i) \
   ((public_xtra)->input_types[(i)])
 
 /* Send cases wrapped in {} for sanity */
@@ -415,38 +415,41 @@ typedef struct {
  * @brief Wraps switch-case control flow inside self-describing macro names
  * @{
  */
-#define Do_SetupPatchTypes(public_xtra, interval, i, cases)    \
-  switch(InputType(public_xtra, i))                            \
-  {                                                            \
-    cases;                                                     \
+#define Do_SetupPatchTypes(public_xtra, interval, i, cases) \
+  switch (InputType(public_xtra, i))                        \
+  {                                                         \
+    cases;                                                  \
   }
-#define SetupPatchType(type, body)                               \
-  case type:                                                     \
-  {                                                              \
-    body;                                                        \
-    break;                                                       \
+
+#define SetupPatchType(type, body) \
+  case type:                       \
+  {                                \
+    body;                          \
+    break;                         \
   }
-#define Do_SetupPatchIntervals(public_xtra, interval, i, cases)  \
-  switch(InputType(public_xtra, i))                            \
-  {                                                            \
-    cases;                                               \
+#define Do_SetupPatchIntervals(public_xtra, interval, i, cases) \
+  switch (InputType(public_xtra, i))                            \
+  {                                                             \
+    cases;                                                      \
   }
-#define SetupPatchInterval(type, body)          \
-  case type:                                    \
-  {                                             \
-    body;                                       \
-    break;                                      \
+
+#define SetupPatchInterval(type, body) \
+  case type:                           \
+  {                                    \
+    body;                              \
+    break;                             \
   }
-#define Do_FreePatches(public_xtra, i, ...)                   \
-  switch(InputType(public_xtra, i))                           \
-  {                                                           \
-    __VA_ARGS__;                                              \
+#define Do_FreePatches(public_xtra, i, ...) \
+  switch (InputType(public_xtra, i))        \
+  {                                         \
+    __VA_ARGS__;                            \
   }
-#define FreePatch(type, body)                   \
-  case type:                                    \
-  {                                             \
-    body;                                       \
-    break;                                      \
+
+#define FreePatch(type, body) \
+  case type:                  \
+  {                           \
+    body;                     \
+    break;                    \
   }
 /** @} */
 

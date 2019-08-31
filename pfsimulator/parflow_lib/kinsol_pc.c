@@ -88,7 +88,7 @@ PFModule  *KinsolPCInitInstanceXtra(
                                     ProblemData *problem_data,
                                     double *     temp_data,
                                     Vector *     pressure,
-				    Vector *     old_pressure,
+                                    Vector *     old_pressure,
                                     Vector *     saturation,
                                     Vector *     density,
                                     double       dt,

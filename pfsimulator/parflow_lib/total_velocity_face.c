@@ -692,7 +692,7 @@ void    TotalVelocityFace(
         h2 = ds[dir2];
 
 
-        /*	Apply a xero velocity condition on outer boundaries */
+        /*      Apply a xero velocity condition on outer boundaries */
         vel0_r[0] = 0.0;
 
         /*

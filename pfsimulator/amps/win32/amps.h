@@ -268,8 +268,8 @@ extern amps_Invoice *amps_PtrSyncInvoice;
 /* Functions to for align                                                    */
 /*---------------------------------------------------------------------------*/
 #define AMPS_ALIGN(type, src, dest, len, stride) \
-  ((sizeof(type) - \
-    ((unsigned long)(dest) % sizeof(type))) \
+  ((sizeof(type) -                               \
+    ((unsigned long)(dest) % sizeof(type)))      \
    % sizeof(type));
 
 #define AMPS_CALL_CHAR_ALIGN(_comm, _src, _dest, _len, _stride) \
@@ -319,16 +319,16 @@ extern amps_Invoice *amps_PtrSyncInvoice;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#define AMPS_CONVERT_OUT(type, cvt, comm, src, dest, len, stride) \
-  { \
-    type *ptr_src, *ptr_dest; \
-    if ((char*)(src) != (char*)(dest)) \
-      if ((stride) == 1) \
-        memcpy((dest), (src), (len) * sizeof(type)); \
-      else \
+#define AMPS_CONVERT_OUT(type, cvt, comm, src, dest, len, stride)                                         \
+  {                                                                                                       \
+    type *ptr_src, *ptr_dest;                                                                             \
+    if ((char*)(src) != (char*)(dest))                                                                    \
+      if ((stride) == 1)                                                                                  \
+        memcpy((dest), (src), (len) * sizeof(type));                                                      \
+      else                                                                                                \
         for (ptr_src = (type*)(src), ptr_dest = (type*)(dest); ptr_src < (type*)(src) + (len) * (stride); \
-             ptr_src += (stride), ptr_dest++) \
-          *ptr_dest = *ptr_src; \
+             ptr_src += (stride), ptr_dest++)                                                             \
+          *ptr_dest = *ptr_src;                                                                           \
   }
 
 #define AMPS_CALL_CHAR_OUT(_comm, _src, _dest, _len, _stride) \
@@ -351,16 +351,16 @@ extern amps_Invoice *amps_PtrSyncInvoice;
 
 
 
-#define AMPS_CONVERT_IN(type, cvt, comm, src, dest, len, stride) \
-  { \
-    type *ptr_src, *ptr_dest; \
-    if ((char*)(src) != (char*)(dest)) \
-      if ((stride) == 1) \
-        memcpy((dest), (src), (len) * sizeof(type)); \
-      else \
+#define AMPS_CONVERT_IN(type, cvt, comm, src, dest, len, stride)                                                \
+  {                                                                                                             \
+    type *ptr_src, *ptr_dest;                                                                                   \
+    if ((char*)(src) != (char*)(dest))                                                                          \
+      if ((stride) == 1)                                                                                        \
+        memcpy((dest), (src), (len) * sizeof(type));                                                            \
+      else                                                                                                      \
         for (ptr_src = (type*)(src), (ptr_dest) = (type*)(dest); (ptr_dest) < (type*)(dest) + (len) * (stride); \
-             (ptr_src)++, (ptr_dest) += (stride)) \
-          *(ptr_dest) = *(ptr_src); \
+             (ptr_src)++, (ptr_dest) += (stride))                                                               \
+          *(ptr_dest) = *(ptr_src);                                                                             \
   }
 
 
@@ -413,20 +413,20 @@ extern amps_Invoice *amps_PtrSyncInvoice;
 /* Internal macros used to clear buffer and letter spaces.                   */
 /*---------------------------------------------------------------------------*/
 
-#define AMPS_CLEAR_INVOICE(invoice) \
-  { \
+#define AMPS_CLEAR_INVOICE(invoice)                     \
+  {                                                     \
     (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED; \
-    amps_ClearInvoice(invoice); \
+    amps_ClearInvoice(invoice);                         \
   }
 
 #define AMPS_PACK_FREE_LETTER(comm, invoice, amps_letter) \
-  if ((invoice)->combuf_flags & AMPS_INVOICE_OVERLAYED) \
-    (invoice)->combuf_flags |= AMPS_INVOICE_ALLOCATED; \
-  else \
-  { \
-    (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED; \
-    amps_free((comm), (amps_letter)); \
-  } \
+  if ((invoice)->combuf_flags & AMPS_INVOICE_OVERLAYED)   \
+    (invoice)->combuf_flags |= AMPS_INVOICE_ALLOCATED;    \
+  else                                                    \
+  {                                                       \
+    (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED;   \
+    amps_free((comm), (amps_letter));                     \
+  }                                                       \
 
 
 /*****************************************************************************
