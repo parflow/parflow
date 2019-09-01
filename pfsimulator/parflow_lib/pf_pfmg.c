@@ -480,9 +480,9 @@ PFModule  *PFMGInitInstanceXtra(
           np = SubmatrixStencilData(pfB_sub, 4);
           up = SubmatrixStencilData(pfB_sub, 6);
 
-//	    cp_c    = SubmatrixStencilData(pfC_sub, 0);
-//	    ep_c    = SubmatrixStencilData(pfC_sub, 2);
-//	    np_c    = SubmatrixStencilData(pfC_sub, 4);
+//          cp_c    = SubmatrixStencilData(pfC_sub, 0);
+//          ep_c    = SubmatrixStencilData(pfC_sub, 2);
+//          np_c    = SubmatrixStencilData(pfC_sub, 4);
           cp_c = SubmatrixStencilData(pfC_sub, 0);
           wp_c = SubmatrixStencilData(pfC_sub, 1);
           ep_c = SubmatrixStencilData(pfC_sub, 2);

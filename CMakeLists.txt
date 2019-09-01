@@ -16,14 +16,13 @@ include (Version)
 #
 
 include(GetGitRevisionDescription)
-#git_describe(PARFLOW_VERSION --tags)
 git_describe(PARFLOW_VERSION --tags)
 
 # If not building with git then get version from file
 if (NOT PARFLOW_VERSION)
   file (STRINGS "VERSION" PARFLOW_VERSION)
 endif ()
-  
+ 
 message("Configuring version : ${PARFLOW_VERSION}")
 version_create_variables (PARFLOW)
 

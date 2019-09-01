@@ -91,7 +91,7 @@ typedef struct {
 #define DataboxLabel(databox)   ((databox)->label)
 
 #define DataboxCoeff(databox, i, j, k) \
-  (DataboxCoeffs(databox) + \
+  (DataboxCoeffs(databox) +            \
    (k) * DataboxNy(databox) * DataboxNx(databox) + (j) * DataboxNx(databox) + (i))
 
 

@@ -38,7 +38,7 @@
  * https://computation.llnl.gov/projects/samrai
  *
  * The Berger-Rigoutsos algorithm is commonly used in AMR applications
- * to cluster tagged cells into boxes.  This implementation was 
+ * to cluster tagged cells into boxes.  This implementation was
  * modified to compute an exact covering of tagged cells.  The traditional
  * BR algorithm allows for boxes that cover tagged cells and some untagged cells to
  * some percentage.  For the looping the boxes should cover exactly the tagged cells.
@@ -49,13 +49,13 @@
 
 
 /**
- * Maximum number of ghost layers.  
+ * Maximum number of ghost layers.
  *
  * This needs to be the maximum number of ghost layers in any vector
- * in the problem in order to correctly find the iteration spaces.   
+ * in the problem in order to correctly find the iteration spaces.
  *
  * @TODO Obviously this is not a great constant to have; not sure how
- * to address this.  The geometries are defined before all the vectors 
+ * to address this.  The geometries are defined before all the vectors
  * have been created.
  */
 static const int num_ghost = 4;
@@ -66,17 +66,15 @@ static const int num_ghost = 4;
  * Vectors can only store doubles but want to store tag values so
  * use union to overlay tags on the double.
  */
-typedef union
-{
-   double as_double;
-   unsigned int as_tags;
+typedef union {
+  double as_double;
+  unsigned int as_tags;
 } DoubleTags;
 
 /**
  * Structure to store histogram for BR algorithm.
  */
-typedef struct 
-{
+typedef struct {
   Box box;
   int *histogram[DIM];
 } HistogramBox;
@@ -86,7 +84,7 @@ typedef struct
  */
 int HistogramBoxGetTags(HistogramBox *histogram_box, int dim, int global_index)
 {
-  return histogram_box -> histogram[dim][global_index - histogram_box -> box.lo[dim]];
+  return histogram_box->histogram[dim][global_index - histogram_box->box.lo[dim]];
 }
 
 /**
@@ -94,7 +92,7 @@ int HistogramBoxGetTags(HistogramBox *histogram_box, int dim, int global_index)
  */
 void HistogramBoxAddTags(HistogramBox *histogram_box, int dim, int global_index, int tag_count)
 {
-  histogram_box -> histogram[dim][global_index - histogram_box -> box.lo[dim]] += tag_count;
+  histogram_box->histogram[dim][global_index - histogram_box->box.lo[dim]] += tag_count;
 }
 
 /**
@@ -104,13 +102,13 @@ HistogramBox* NewHistogramBox(Box *box)
 {
   HistogramBox* histogram_box = ctalloc(HistogramBox, 1);
 
-  BoxCopy(&(histogram_box -> box), box);
+  BoxCopy(&(histogram_box->box), box);
 
-  int size =  BoxSize(&(histogram_box -> box));  
+  int size = BoxSize(&(histogram_box->box));
 
   for (int dim = 0; dim < DIM; dim++)
   {
-    histogram_box -> histogram[dim] = ctalloc(int, size);
+    histogram_box->histogram[dim] = ctalloc(int, size);
   }
 
   return histogram_box;
@@ -121,12 +119,12 @@ HistogramBox* NewHistogramBox(Box *box)
  */
 void FreeHistogramBox(HistogramBox* histogram_box)
 {
-   for (int dim = 0; dim < DIM; dim++)
-   {
-      tfree(histogram_box -> histogram[dim]);
-   }
-	
-   tfree(histogram_box);
+  for (int dim = 0; dim < DIM; dim++)
+  {
+    tfree(histogram_box->histogram[dim]);
+  }
+
+  tfree(histogram_box);
 }
 
 /**
@@ -138,10 +136,10 @@ void ResetHistogram(HistogramBox *histogram_box)
 {
   for (int dim = 0; dim < DIM; dim++)
   {
-    int size =  BoxSize(&(histogram_box -> box));
-    for (int index = 0; index < size; index++) 
+    int size = BoxSize(&(histogram_box->box));
+    for (int index = 0; index < size; index++)
     {
-      histogram_box -> histogram[dim][index] = 0;
+      histogram_box->histogram[dim][index] = 0;
     }
   }
 }
@@ -152,51 +150,53 @@ void ResetHistogram(HistogramBox *histogram_box)
  * computed bounding interval must be larger than given min_size.
  */
 void BoundTagHistogram(HistogramBox *histogram_box,
-		       int* box_lo,
-		       int* box_up,
-		       int dim,
-		       int min_size)
+                       int*          box_lo,
+                       int*          box_up,
+                       int           dim,
+                       int           min_size)
 {
-  int hist_lo = histogram_box -> box.lo[dim];
-  int hist_up = histogram_box -> box.up[dim];
+  int hist_lo = histogram_box->box.lo[dim];
+  int hist_up = histogram_box->box.up[dim];
 
   *box_lo = hist_lo;
   *box_up = hist_up;
-  
-  int width = (*box_up)-(*box_lo)+1;  
 
-   if (width > min_size) {
+  int width = (*box_up) - (*box_lo) + 1;
 
-     while ( ((*box_lo) <= (*box_up)) &&
-	     (HistogramBoxGetTags(histogram_box, dim, *box_lo) == 0) )
-     {
-       (*box_lo)++;
-     }
+  if (width > min_size)
+  {
+    while (((*box_lo) <= (*box_up)) &&
+           (HistogramBoxGetTags(histogram_box, dim, *box_lo) == 0))
+    {
+      (*box_lo)++;
+    }
 
-     while ( ((*box_up) >= (*box_lo)) &&
-	     (HistogramBoxGetTags(histogram_box, dim, *box_up) == 0) ) 
-     {
-       (*box_up)--;
-     }
+    while (((*box_up) >= (*box_lo)) &&
+           (HistogramBoxGetTags(histogram_box, dim, *box_up) == 0))
+    {
+      (*box_up)--;
+    }
 
-     width = (*box_up)-(*box_lo)+1;  
+    width = (*box_up) - (*box_lo) + 1;
 
-     int pad = min_size - width;
+    int pad = min_size - width;
 
-     if (pad > 0) {
-       (*box_lo) -= (pad+1)/2;
-       if ((*box_lo) < hist_lo) 
-       {
-	 (*box_lo) = hist_lo;
-       }
+    if (pad > 0)
+    {
+      (*box_lo) -= (pad + 1) / 2;
+      if ((*box_lo) < hist_lo)
+      {
+        (*box_lo) = hist_lo;
+      }
 
-       (*box_up) = (*box_lo)+min_size-1;
-       if ((*box_up) > hist_up) {
-	 (*box_up) = hist_up;
-	 (*box_lo) = MAX(hist_lo, (*box_up)-min_size+1);
-       }
-     }
-   }
+      (*box_up) = (*box_lo) + min_size - 1;
+      if ((*box_up) > hist_up)
+      {
+        (*box_up) = hist_up;
+        (*box_lo) = MAX(hist_lo, (*box_up) - min_size + 1);
+      }
+    }
+  }
 }
 
 /**
@@ -211,7 +211,7 @@ void FindBoundBoxForTags(HistogramBox* histogram_box, Box* bound_box, Point min_
   /*
    * Compute extent of bounding box in each coordinate direction.
    */
-  for (int dim = 0; dim < DIM; dim++) 
+  for (int dim = 0; dim < DIM; dim++)
   {
     BoundTagHistogram(histogram_box, &box_lo[dim], &box_hi[dim], dim, min_box[dim]);
   }
@@ -228,19 +228,18 @@ void FindBoundBoxForTags(HistogramBox* histogram_box, Box* bound_box, Point min_
  */
 void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim, DoubleTags tag)
 {
-
   Box intersection;
+
   BoxClear(&intersection);
 
-  BoxCopy(&intersection, &(histogram_box -> box));
-  
+  BoxCopy(&intersection, &(histogram_box->box));
+
   int ilo = intersection.lo[dim];
   int ihi = intersection.up[dim];
 
 
-  for(int ic_sb = ilo; ic_sb <= ihi; ic_sb++)
+  for (int ic_sb = ilo; ic_sb <= ihi; ic_sb++)
   {
-
     int tag_count = 0;
 
     Box src_box;
@@ -255,9 +254,9 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim, DoubleTags
       Grid* grid = VectorGrid(vector);
       Subvector* v_sub;
       double     *vp;
-    
+
       Subgrid* subgrid;
-    
+
       int ix, iy, iz;
       int nx, ny, nz;
       int nx_v, ny_v, nz_v;
@@ -271,50 +270,50 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim, DoubleTags
 
       ForSubgridI(i_s, GridSubgrids(grid))
       {
-	subgrid = GridSubgrid(grid, i_s);
-	
-	v_sub = VectorSubvector(vector, i_s);
-	
-	ix = SubgridIX(subgrid) - num_ghost;
-	iy = SubgridIY(subgrid) - num_ghost;
-	iz = SubgridIZ(subgrid) - num_ghost;
-	
-	nx = SubgridNX(subgrid) + 2 * num_ghost;
-	ny = SubgridNY(subgrid) + 2 * num_ghost;
-	nz = SubgridNZ(subgrid) + 2 * num_ghost;
-	
-	nx_v = SubvectorNX(v_sub);
-	ny_v = SubvectorNY(v_sub);
-	nz_v = SubvectorNZ(v_sub);
-	
-	ix = pfmax(ix,src_box.lo[0]);
-	iy = pfmax(iy,src_box.lo[1]);
-	iz = pfmax(iz,src_box.lo[2]);
+        subgrid = GridSubgrid(grid, i_s);
 
-	nx = pfmin(nx, src_box.up[0] - src_box.lo[0] + 1);
-	ny = pfmin(ny, src_box.up[1] - src_box.lo[1] + 1);
-	nz = pfmin(nz, src_box.up[2] - src_box.lo[2] + 1);
-	vp = SubvectorElt(v_sub, ix, iy, iz);
-	
-	iv = 0;
-	BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
-		  iv, nx_v, ny_v, nz_v, 1, 1, 1,
-	{
+        v_sub = VectorSubvector(vector, i_s);
+
+        ix = SubgridIX(subgrid) - num_ghost;
+        iy = SubgridIY(subgrid) - num_ghost;
+        iz = SubgridIZ(subgrid) - num_ghost;
+
+        nx = SubgridNX(subgrid) + 2 * num_ghost;
+        ny = SubgridNY(subgrid) + 2 * num_ghost;
+        nz = SubgridNZ(subgrid) + 2 * num_ghost;
+
+        nx_v = SubvectorNX(v_sub);
+        ny_v = SubvectorNY(v_sub);
+        nz_v = SubvectorNZ(v_sub);
+
+        ix = pfmax(ix, src_box.lo[0]);
+        iy = pfmax(iy, src_box.lo[1]);
+        iz = pfmax(iz, src_box.lo[2]);
+
+        nx = pfmin(nx, src_box.up[0] - src_box.lo[0] + 1);
+        ny = pfmin(ny, src_box.up[1] - src_box.lo[1] + 1);
+        nz = pfmin(nz, src_box.up[2] - src_box.lo[2] + 1);
+        vp = SubvectorElt(v_sub, ix, iy, iz);
+
+        iv = 0;
+        BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+                  iv, nx_v, ny_v, nz_v, 1, 1, 1,
+        {
           DoubleTags v;
-	  v.as_double = vp[iv];
+          v.as_double = vp[iv];
 
-	  if(v.as_tags & tag.as_tags)
-	  {
-	    if( ( (src_box.lo[0] <= i) &&  (i <= src_box.up[0]) ) &&
-		( (src_box.lo[1] <= j) &&  (j <= src_box.up[1]) ) &&
-		( (src_box.lo[2] <= k) &&  (k <= src_box.up[2]) ) )
-	    {
-	      tag_count++;
-	    }
-	  }
-	});
+          if (v.as_tags & tag.as_tags)
+          {
+            if (((src_box.lo[0] <= i) && (i <= src_box.up[0])) &&
+                ((src_box.lo[1] <= j) && (j <= src_box.up[1])) &&
+                ((src_box.lo[2] <= k) && (k <= src_box.up[2])))
+            {
+              tag_count++;
+            }
+          }
+        });
       }
-	  
+
       HistogramBoxAddTags(histogram_box, dim, ic_sb, tag_count);
     }
   }
@@ -325,25 +324,25 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim, DoubleTags
  */
 int ComputeTagHistogram(HistogramBox *histogram_box, Vector* vector, DoubleTags tag)
 {
-   int num_tags = 0;
-   Point num_cells;
+  int num_tags = 0;
+  Point num_cells;
 
-   ResetHistogram(histogram_box);
+  ResetHistogram(histogram_box);
 
-   for(int dim = 0; dim < DIM; dim++)
-   {
-     ReduceTags(histogram_box, vector, dim, tag);
-   }
+  for (int dim = 0; dim < DIM; dim++)
+  {
+    ReduceTags(histogram_box, vector, dim, tag);
+  }
 
-   BoxNumberCells(&(histogram_box -> box), &num_cells);
+  BoxNumberCells(&(histogram_box->box), &num_cells);
 
-   int dim = 0;
-   for (int index = 0; index < num_cells[dim]; index++) 
-   {
-     num_tags += (histogram_box->histogram)[dim][index];
-   }
+  int dim = 0;
+  for (int index = 0; index < num_cells[dim]; index++)
+  {
+    num_tags += (histogram_box->histogram)[dim][index];
+  }
 
-   return(num_tags);
+  return(num_tags);
 }
 
 /**
@@ -355,32 +354,32 @@ int ComputeTagHistogram(HistogramBox *histogram_box, Vector* vector, DoubleTags 
  * of the index interval. Since box indices are cell-centered, the cut
  * point value corresponds to the right edge of the cell whose index
  * is equal to the cut point.
-*/
-int FindZeroCutPoint( int* cut_pt, 
-		      int dim, 
-		      int lo, 
-		      int hi, 
-		      HistogramBox* hist_box, 
-		      int min_size)
+ */
+int FindZeroCutPoint(int*          cut_pt,
+                     int           dim,
+                     int           lo,
+                     int           hi,
+                     HistogramBox* hist_box,
+                     int           min_size)
 {
   int cut_lo = lo + min_size - 1;
   int cut_hi = hi - min_size;
-  int cut_mid = (lo + hi)/2;
+  int cut_mid = (lo + hi) / 2;
 
-  for (int ic = 0; ((cut_mid-ic>=cut_lo) && (cut_mid+ic<=cut_hi)); ic++) 
+  for (int ic = 0; ((cut_mid - ic >= cut_lo) && (cut_mid + ic <= cut_hi)); ic++)
   {
-    if (HistogramBoxGetTags(hist_box, dim, cut_mid-ic) == 0) 
+    if (HistogramBoxGetTags(hist_box, dim, cut_mid - ic) == 0)
     {
-      (*cut_pt) = cut_mid-ic;
+      (*cut_pt) = cut_mid - ic;
       return TRUE;
     }
-    if (HistogramBoxGetTags(hist_box, dim, cut_mid+ic) == 0) 
+    if (HistogramBoxGetTags(hist_box, dim, cut_mid + ic) == 0)
     {
-      (*cut_pt) = cut_mid+ic;
+      (*cut_pt) = cut_mid + ic;
       return TRUE;
     }
   }
-   
+
   return FALSE;
 }
 
@@ -394,50 +393,52 @@ int FindZeroCutPoint( int* cut_pt,
  * three cells along a side to apply the Laplacian test.  If no
  * inflection point is found, the mid-point of the interval is
  * returned as the cut point.
-*/
-void CutAtLaplacian(int* cut_pt, 
-		    int dim,
-		    int lo, 
-		    int hi, 
-		    HistogramBox* hist_box,
-		    int min_size)
+ */
+void CutAtLaplacian(int*          cut_pt,
+                    int           dim,
+                    int           lo,
+                    int           hi,
+                    HistogramBox* hist_box,
+                    int           min_size)
 {
-  int loc_zero = (lo + hi)/2;
+  int loc_zero = (lo + hi) / 2;
 
-  if ( (hi - lo + 1) >= 3 ) 
+  if ((hi - lo + 1) >= 3)
   {
-      int max_zero = 0;
-      int infpt_lo = MAX(lo + min_size - 1, lo + 1);  
-      int infpt_hi = MIN(hi - min_size, hi - 2);  
+    int max_zero = 0;
+    int infpt_lo = MAX(lo + min_size - 1, lo + 1);
+    int infpt_hi = MIN(hi - min_size, hi - 2);
 
-      int last_lap = HistogramBoxGetTags(hist_box,dim,infpt_lo - 1)
-	- 2 * HistogramBoxGetTags(hist_box, dim, infpt_lo)
-	+ HistogramBoxGetTags(hist_box, dim, infpt_lo + 1);
+    int last_lap = HistogramBoxGetTags(hist_box, dim, infpt_lo - 1)
+                   - 2 * HistogramBoxGetTags(hist_box, dim, infpt_lo)
+                   + HistogramBoxGetTags(hist_box, dim, infpt_lo + 1);
 
-      for (int ic = infpt_lo+1; ic <= infpt_hi+1; ic++) 
+    for (int ic = infpt_lo + 1; ic <= infpt_hi + 1; ic++)
+    {
+      int new_lap = HistogramBoxGetTags(hist_box, dim, ic - 1)
+                    - 2 * HistogramBoxGetTags(hist_box, dim, ic)
+                    + HistogramBoxGetTags(hist_box, dim, ic + 1);
+
+      if (((new_lap < 0) && (last_lap >= 0)) ||
+          ((new_lap >= 0) && (last_lap < 0)))
       {
-	int new_lap = HistogramBoxGetTags(hist_box, dim, ic - 1)
-	  - 2 * HistogramBoxGetTags(hist_box, dim, ic)
-	  + HistogramBoxGetTags(hist_box, dim, ic + 1);
+        int delta = new_lap - last_lap;
 
-	if ( ((new_lap < 0) && (last_lap >= 0)) ||
-	     ((new_lap >= 0) && (last_lap < 0)) ) {
+        if (delta < 0)
+        {
+          delta = -delta;
+        }
 
-	  int delta = new_lap - last_lap;
-
-	  if ( delta < 0 ) {
-	    delta = -delta; 
-	  }
-
-	  if ( delta > max_zero ) {
-	    loc_zero = ic - 1;
-	    max_zero = delta;
-	  }
-	}
-     
-	last_lap = new_lap;
+        if (delta > max_zero)
+        {
+          loc_zero = ic - 1;
+          max_zero = delta;
+        }
       }
-   }
+
+      last_lap = new_lap;
+    }
+  }
 
   (*cut_pt) = loc_zero;
 }
@@ -451,45 +452,45 @@ void CutAtLaplacian(int* cut_pt,
  * Otherwise, false is returned. Note that the bounding box must be
  * contained in the histogram box and that the two splitting boxes
  * must be larger than some smallest box size.
-*/
-int SplitTagBoundBox(Box* box_lft, 
-		     Box* box_rgt,
-		     Box* bound_box, 
-		     HistogramBox* hist_box, 
-		     Point min_box)
+ */
+int SplitTagBoundBox(Box*          box_lft,
+                     Box*          box_rgt,
+                     Box*          bound_box,
+                     HistogramBox* hist_box,
+                     Point         min_box)
 {
   int cut_pt = INT_MIN;
-  int tmp_dim = -1; 
+  int tmp_dim = -1;
   int dim = -1;
-  
+
   Point num_cells;
-  
+
   BoxNumberCells(bound_box, &num_cells);
-  
-  Point box_lo; 
-  Point box_up; 
-  
-  PointCopy(box_lo, bound_box -> lo);
-  PointCopy(box_up, bound_box -> up);
-  
+
+  Point box_lo;
+  Point box_up;
+
+  PointCopy(box_lo, bound_box->lo);
+  PointCopy(box_up, bound_box->up);
+
   /*
    * Sort the bound box dimensions from largest to smallest.
    */
   Point sorted;
-  for (dim = 0; dim < DIM; dim++) 
+  for (dim = 0; dim < DIM; dim++)
   {
     sorted[dim] = dim;
   }
 
-  for (int dim0 = 0; dim0 < DIM-1; dim0++) 
+  for (int dim0 = 0; dim0 < DIM - 1; dim0++)
   {
-    for (int dim1 = dim0+1; dim1 < DIM; dim1++) 
+    for (int dim1 = dim0 + 1; dim1 < DIM; dim1++)
     {
-      if ( num_cells[sorted[dim0]] < num_cells[sorted[dim1]] ) 
+      if (num_cells[sorted[dim0]] < num_cells[sorted[dim1]])
       {
-	tmp_dim = sorted[dim0];
-	sorted[dim0] = sorted[dim1];
-	sorted[dim1] = tmp_dim; 
+        tmp_dim = sorted[dim0];
+        sorted[dim0] = sorted[dim1];
+        sorted[dim1] = tmp_dim;
       }
     }
   }
@@ -499,11 +500,11 @@ int SplitTagBoundBox(Box* box_lft,
    * that are splittable according to the minimum box size restriction.
    */
   int nsplit;
-  for (nsplit = 0; nsplit < DIM; nsplit++) 
+  for (nsplit = 0; nsplit < DIM; nsplit++)
   {
     tmp_dim = sorted[nsplit];
     // Which test??
-    if ( num_cells[tmp_dim] < 2*min_box[tmp_dim] ) 
+    if (num_cells[tmp_dim] < 2 * min_box[tmp_dim])
     {
       break;
     }
@@ -513,7 +514,7 @@ int SplitTagBoundBox(Box* box_lft,
     //    }
   }
 
-  if (nsplit == 0) 
+  if (nsplit == 0)
   {
     return FALSE;
   }
@@ -523,12 +524,12 @@ int SplitTagBoundBox(Box* box_lft,
    * Check each splittable direction, from largest to smallest, until
    * zero point found.
    */
-  for (dim = 0; dim < nsplit; dim++) 
+  for (dim = 0; dim < nsplit; dim++)
   {
     tmp_dim = sorted[dim];
-    if ( FindZeroCutPoint(&cut_pt, 
-			  tmp_dim, box_lo[tmp_dim], box_up[tmp_dim], 
-			  hist_box, min_box[tmp_dim]) )
+    if (FindZeroCutPoint(&cut_pt,
+                         tmp_dim, box_lo[tmp_dim], box_up[tmp_dim],
+                         hist_box, min_box[tmp_dim]))
     {
       break;
     }
@@ -538,20 +539,20 @@ int SplitTagBoundBox(Box* box_lft,
    * If no zero point found, try Laplacian on longest side of bound box.
    */
 
-  if (dim == nsplit) 
+  if (dim == nsplit)
   {
     tmp_dim = sorted[0];
 
-    CutAtLaplacian(&cut_pt, 
-		   tmp_dim, box_lo[tmp_dim], box_up[tmp_dim], 
-		   hist_box, min_box[tmp_dim]);
+    CutAtLaplacian(&cut_pt,
+                   tmp_dim, box_lo[tmp_dim], box_up[tmp_dim],
+                   hist_box, min_box[tmp_dim]);
   }
 
   /*
    * Split bound box at cut_pt; tmp_dim is splitting dimension.
    */
   Point lft_hi;
-  PointCopy(lft_hi, box_up); 
+  PointCopy(lft_hi, box_up);
   Point rgt_lo;
   PointCopy(rgt_lo, box_lo);
   lft_hi[tmp_dim] = cut_pt;
@@ -570,80 +571,80 @@ int SplitTagBoundBox(Box* box_lft,
  * specified tag value.
  *
  */
-void FindBoxesContainingTags(BoxList* boxes, 
-			     Vector* vector,
-			     Box* bound_box, 
-			     Point min_box,
+void FindBoxesContainingTags(BoxList*   boxes,
+                             Vector*    vector,
+                             Box*       bound_box,
+                             Point      min_box,
                              DoubleTags tag)
 {
-  HistogramBox* hist_box = NewHistogramBox(bound_box);  
+  HistogramBox* hist_box = NewHistogramBox(bound_box);
 
   int num_tags = ComputeTagHistogram(hist_box, vector, tag);
 
-  if ( num_tags == 0 ) 
+  if (num_tags == 0)
   {
     BoxListClearItems(boxes);
-  } 
-  else 
+  }
+  else
   {
     Box tag_bound_box;
     BoxClear(&tag_bound_box);
 
     FindBoundBoxForTags(hist_box, &tag_bound_box, min_box);
 
-     int num_cells = BoxSize(&tag_bound_box);
+    int num_cells = BoxSize(&tag_bound_box);
 
-     if (num_tags < num_cells)
-     {
-       Box box_lft;
-       Box box_rgt;
-       BoxClear(&box_lft);
-       BoxClear(&box_rgt);
+    if (num_tags < num_cells)
+    {
+      Box box_lft;
+      Box box_rgt;
+      BoxClear(&box_lft);
+      BoxClear(&box_rgt);
 
-       int is_split = SplitTagBoundBox(&box_lft, &box_rgt, &tag_bound_box, 
-				       hist_box, min_box);
-       
-       if ( is_split ) 
-       {
-	 /*
-	  * The bounding box "tag_bound_box" has been split into two
-	  * boxes, "box_lft" and "box_rgt".  Now, attempt to recursively
-	  * split these boxes further.
-	  */
-	 BoxList* box_list_lft = NewBoxList();
-	 BoxList* box_list_rgt = NewBoxList();
+      int is_split = SplitTagBoundBox(&box_lft, &box_rgt, &tag_bound_box,
+                                      hist_box, min_box);
 
-	 FindBoxesContainingTags(box_list_lft, 
-				 vector,
-				 &box_lft, min_box,
-				 tag);
-	 FindBoxesContainingTags(box_list_rgt, 
-				 vector,
-				 &box_rgt, min_box,
-				 tag);
+      if (is_split)
+      {
+        /*
+         * The bounding box "tag_bound_box" has been split into two
+         * boxes, "box_lft" and "box_rgt".  Now, attempt to recursively
+         * split these boxes further.
+         */
+        BoxList* box_list_lft = NewBoxList();
+        BoxList* box_list_rgt = NewBoxList();
 
-	 if ( (( BoxListSize(box_list_lft) > 1) ||
-	       ( BoxListSize(box_list_rgt) > 1)) ||
-	      ( (double) (BoxSize(BoxListFront(box_list_lft))
-			  + BoxSize(BoxListFront(box_list_rgt)))
-		< ((double) BoxSize(&tag_bound_box)) ) )
-	 {
-	   BoxListConcatenate(boxes, box_list_lft);
-	   BoxListConcatenate(boxes, box_list_rgt);
-	 }
+        FindBoxesContainingTags(box_list_lft,
+                                vector,
+                                &box_lft, min_box,
+                                tag);
+        FindBoxesContainingTags(box_list_rgt,
+                                vector,
+                                &box_rgt, min_box,
+                                tag);
 
-	 FreeBoxList(box_list_lft);
-	 FreeBoxList(box_list_rgt);
-       }
-     }
+        if (((BoxListSize(box_list_lft) > 1) ||
+             (BoxListSize(box_list_rgt) > 1)) ||
+            ((double)(BoxSize(BoxListFront(box_list_lft))
+                      + BoxSize(BoxListFront(box_list_rgt)))
+             < ((double)BoxSize(&tag_bound_box))))
+        {
+          BoxListConcatenate(boxes, box_list_lft);
+          BoxListConcatenate(boxes, box_list_rgt);
+        }
 
-     /*
-      * If no good splitting is found, add bounding box to list.
-      */
-     if ( BoxListIsEmpty(boxes) ) 
-     {
-       BoxListAppend(boxes, &tag_bound_box);
-     }
+        FreeBoxList(box_list_lft);
+        FreeBoxList(box_list_rgt);
+      }
+    }
+
+    /*
+     * If no good splitting is found, add bounding box to list.
+     */
+    if (BoxListIsEmpty(boxes))
+    {
+      BoxListAppend(boxes, &tag_bound_box);
+    }
   }
 
   FreeHistogramBox(hist_box);
@@ -656,10 +657,10 @@ void FindBoxesContainingTags(BoxList* boxes,
  * specified tag value.
  *
  */
-void BergerRigoutsos(Vector* vector,
-		     Point min_box,
-		     DoubleTags tag,
-		     BoxList* boxes)
+void BergerRigoutsos(Vector*    vector,
+                     Point      min_box,
+                     DoubleTags tag,
+                     BoxList*   boxes)
 {
   Grid* grid = VectorGrid(vector);
   Subvector* v_sub;
@@ -672,6 +673,7 @@ void BergerRigoutsos(Vector* vector,
   int i_s;
 
   Box bounding_box;
+
   BoxClear(&bounding_box);
 
   Point lo, up;
@@ -685,7 +687,7 @@ void BergerRigoutsos(Vector* vector,
     ix = SubgridIX(subgrid) - num_ghost;
     iy = SubgridIY(subgrid) - num_ghost;
     iz = SubgridIZ(subgrid) - num_ghost;
-    
+
     nx = SubgridNX(subgrid) + 2 * num_ghost;
     ny = SubgridNY(subgrid) + 2 * num_ghost;
     nz = SubgridNZ(subgrid) + 2 * num_ghost;
@@ -709,70 +711,71 @@ void BergerRigoutsos(Vector* vector,
 
   int num_tags = ComputeTagHistogram(histogram_box, vector, tag);
 
-  if ( num_tags == 0 ) {
+  if (num_tags == 0)
+  {
     BoxListClearItems(boxes);
-  } 
+  }
   else
   {
-     Box tag_bound_box;
-     BoxClear(&tag_bound_box);
-     
-     FindBoundBoxForTags(histogram_box, &tag_bound_box, min_box);
-     
-     int num_cells = BoxSize(&tag_bound_box);
+    Box tag_bound_box;
+    BoxClear(&tag_bound_box);
 
-     if (num_tags < num_cells)
-     {
-       Box box_lft;
-       Box box_rgt;
-       
-       BoxClear(&box_lft);
-       BoxClear(&box_rgt);
+    FindBoundBoxForTags(histogram_box, &tag_bound_box, min_box);
 
-       int is_split = SplitTagBoundBox(&box_lft, &box_rgt, &tag_bound_box, 
-				       histogram_box, min_box);
+    int num_cells = BoxSize(&tag_bound_box);
 
-       if ( is_split ) 
-       {
-	 /*
-	  * The bounding box "tag_bound_box" has been split into two
-	  * boxes, "box_lft" and "box_rgt".  Now, attempt to recursively
-	  * split these boxes further.
-	  */
-	 BoxList* box_list_lft = NewBoxList();
-	 BoxList* box_list_rgt = NewBoxList();
+    if (num_tags < num_cells)
+    {
+      Box box_lft;
+      Box box_rgt;
 
-	 FindBoxesContainingTags(box_list_lft, 
-				 vector,
-				 &box_lft, min_box,
-				 tag);
-	 FindBoxesContainingTags(box_list_rgt, 
-				 vector,
-				 &box_rgt, min_box,
-				 tag);
+      BoxClear(&box_lft);
+      BoxClear(&box_rgt);
 
-	 if ( (( BoxListSize(box_list_lft) > 1) ||
-	       ( BoxListSize(box_list_rgt) > 1)) ||
-	      ( (double) (BoxSize(BoxListFront(box_list_lft))
-			  + BoxSize(BoxListFront(box_list_rgt)))
-		< ((double) BoxSize(&tag_bound_box)) ) )
-	 {
-	   BoxListConcatenate(boxes, box_list_lft);
-	   BoxListConcatenate(boxes, box_list_rgt);
-	 }
+      int is_split = SplitTagBoundBox(&box_lft, &box_rgt, &tag_bound_box,
+                                      histogram_box, min_box);
 
-	 FreeBoxList(box_list_lft);
-	 FreeBoxList(box_list_rgt);
-       }
-     }
+      if (is_split)
+      {
+        /*
+         * The bounding box "tag_bound_box" has been split into two
+         * boxes, "box_lft" and "box_rgt".  Now, attempt to recursively
+         * split these boxes further.
+         */
+        BoxList* box_list_lft = NewBoxList();
+        BoxList* box_list_rgt = NewBoxList();
 
-     /*
-      * If no good splitting is found, add bounding box to list.
-      */
-     if ( BoxListIsEmpty(boxes) ) 
-     {
-       BoxListAppend(boxes, &tag_bound_box);
-     }
+        FindBoxesContainingTags(box_list_lft,
+                                vector,
+                                &box_lft, min_box,
+                                tag);
+        FindBoxesContainingTags(box_list_rgt,
+                                vector,
+                                &box_rgt, min_box,
+                                tag);
+
+        if (((BoxListSize(box_list_lft) > 1) ||
+             (BoxListSize(box_list_rgt) > 1)) ||
+            ((double)(BoxSize(BoxListFront(box_list_lft))
+                      + BoxSize(BoxListFront(box_list_rgt)))
+             < ((double)BoxSize(&tag_bound_box))))
+        {
+          BoxListConcatenate(boxes, box_list_lft);
+          BoxListConcatenate(boxes, box_list_rgt);
+        }
+
+        FreeBoxList(box_list_lft);
+        FreeBoxList(box_list_rgt);
+      }
+    }
+
+    /*
+     * If no good splitting is found, add bounding box to list.
+     */
+    if (BoxListIsEmpty(boxes))
+    {
+      BoxListAppend(boxes, &tag_bound_box);
+    }
   }
 
   FreeHistogramBox(histogram_box);
@@ -782,17 +785,18 @@ void BergerRigoutsos(Vector* vector,
 /**
  * Compute the patch loop iteration boxes.
  *
- * Compute the patch loop iteration boxes for the specified patch.  Patches 
- * are looped over in each face direction so a box array is generated for 
+ * Compute the patch loop iteration boxes for the specified patch.  Patches
+ * are looped over in each face direction so a box array is generated for
  * each face direction.
- * 
+ *
  * The computed box arrays are stored in the geom_solid.
  */
 BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
 {
-  Grid *grid =  CreateGrid(GlobalsUserGrid);
+  Grid *grid = CreateGrid(GlobalsUserGrid);
 
-  Vector* indicator =  NewVectorType(grid, 1, num_ghost, vector_cell_centered);
+  Vector* indicator = NewVectorType(grid, 1, num_ghost, vector_cell_centered);
+
   InitVectorAll(indicator, 0.0);
 
   DoubleTags tag;
@@ -808,7 +812,7 @@ BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
     int i, j, k, r, is;
     int ix, iy, iz;
     int nx, ny, nz;
-    double  dx, dy, dz;
+    double dx, dy, dz;
 
     double *dp;
 
@@ -830,33 +834,33 @@ BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
       nx = SubgridNX(subgrid);
       ny = SubgridNY(subgrid);
       nz = SubgridNZ(subgrid);
-      
+
       dx = SubgridDX(subgrid);
       dy = SubgridDY(subgrid);
       dz = SubgridDZ(subgrid);
-      
+
       dp = SubvectorData(d_sub);
 
       int *fdir;
       GrGeomPatchLoop(i, j, k, fdir, geom_solid, patch,
-		      r, ix, iy, iz, nx, ny, nz,
+                      r, ix, iy, iz, nx, ny, nz,
       {
-	ip = SubvectorEltIndex(d_sub, i, j, k);
+        ip = SubvectorEltIndex(d_sub, i, j, k);
 
-	int this_face_tag = 1 << PV_f;
-	tag.as_double = dp[ip];
-	tag.as_tags = tag.as_tags | this_face_tag;
-	dp[ip] = tag.as_double;
+        int this_face_tag = 1 << PV_f;
+        tag.as_double = dp[ip];
+        tag.as_tags = tag.as_tags | this_face_tag;
+        dp[ip] = tag.as_double;
 
-	tag_count++;
+        tag_count++;
       });
     }
   }
 
   {
-     VectorUpdateCommHandle   *handle;
-     handle = InitVectorUpdate(indicator, VectorUpdateAll);
-     FinalizeVectorUpdate(handle);
+    VectorUpdateCommHandle   *handle;
+    handle = InitVectorUpdate(indicator, VectorUpdateAll);
+    FinalizeVectorUpdate(handle);
   }
 
   Point min_box;
@@ -864,22 +868,22 @@ BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
   min_box[1] = 1;
   min_box[2] = 1;
 
-  for(int face = 0; face < GrGeomOctreeNumFaces; face++)
+  for (int face = 0; face < GrGeomOctreeNumFaces; face++)
   {
-     BoxList* boxes = NewBoxList();
+    BoxList* boxes = NewBoxList();
 
-     tag.as_tags = 1 << face;
-     
-     BergerRigoutsos(indicator,
-		     min_box,
-		     tag,
-		     boxes);
+    tag.as_tags = 1 << face;
 
-     GrGeomSolidPatchBoxes(geom_solid, patch, face) = NewBoxArray(boxes);
+    BergerRigoutsos(indicator,
+                    min_box,
+                    tag,
+                    boxes);
 
-     FreeBoxList(boxes);
+    GrGeomSolidPatchBoxes(geom_solid, patch, face) = NewBoxArray(boxes);
+
+    FreeBoxList(boxes);
   }
-  
+
   FreeVector(indicator);
   FreeGrid(grid);
 }
@@ -890,14 +894,15 @@ BoxList* ComputePatchBoxes(GrGeomSolid *geom_solid, int patch)
  * Compute the surface loop iteration boxes.  Surface loops are looped
  * over in each face direction so a box array is generated for each
  * face direction.
- * 
+ *
  * The computed box arrays are stored in the geom_solid.
  */
 void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
 {
-  Grid *grid =  CreateGrid(GlobalsUserGrid);
+  Grid *grid = CreateGrid(GlobalsUserGrid);
 
-  Vector* indicator =  NewVectorType(grid, 1, num_ghost, vector_cell_centered);
+  Vector* indicator = NewVectorType(grid, 1, num_ghost, vector_cell_centered);
+
   InitVectorAll(indicator, 0.0);
 
   DoubleTags tag;
@@ -913,7 +918,7 @@ void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
     int i, j, k, r, is;
     int ix, iy, iz;
     int nx, ny, nz;
-    double  dx, dy, dz;
+    double dx, dy, dz;
 
     double *dp;
 
@@ -935,53 +940,53 @@ void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
       nx = SubgridNX(subgrid);
       ny = SubgridNY(subgrid);
       nz = SubgridNZ(subgrid);
-      
+
       dx = SubgridDX(subgrid);
       dy = SubgridDY(subgrid);
       dz = SubgridDZ(subgrid);
-      
+
       dp = SubvectorData(d_sub);
 
       int *fdir;
       GrGeomSurfLoop(i, j, k, fdir, geom_solid, r, ix, iy, iz, nx, ny, nz,
       {
-	ip = SubvectorEltIndex(d_sub, i, j, k);
+        ip = SubvectorEltIndex(d_sub, i, j, k);
 
-	int this_face_tag = 1 << PV_f;
-	tag.as_double = dp[ip];
-	tag.as_tags = tag.as_tags | this_face_tag;
-	dp[ip] = tag.as_double;
-	   
-	tag_count++;
+        int this_face_tag = 1 << PV_f;
+        tag.as_double = dp[ip];
+        tag.as_tags = tag.as_tags | this_face_tag;
+        dp[ip] = tag.as_double;
+
+        tag_count++;
       });
     }
   }
 
   {
-     VectorUpdateCommHandle   *handle;
-     handle = InitVectorUpdate(indicator, VectorUpdateAll);
-     FinalizeVectorUpdate(handle);
+    VectorUpdateCommHandle   *handle;
+    handle = InitVectorUpdate(indicator, VectorUpdateAll);
+    FinalizeVectorUpdate(handle);
   }
-  
+
   Point min_box;
   min_box[0] = 1;
   min_box[1] = 1;
   min_box[2] = 1;
 
-  for(int face = 0; face < GrGeomOctreeNumFaces; face++)
+  for (int face = 0; face < GrGeomOctreeNumFaces; face++)
   {
-     BoxList* boxes = NewBoxList();
+    BoxList* boxes = NewBoxList();
 
-     tag.as_tags = 1 << face;
+    tag.as_tags = 1 << face;
 
-     BergerRigoutsos(indicator,
-		     min_box,
-		     tag,
-		     boxes);
-     
-     GrGeomSolidSurfaceBoxes(geom_solid, face) = NewBoxArray(boxes);
+    BergerRigoutsos(indicator,
+                    min_box,
+                    tag,
+                    boxes);
 
-     FreeBoxList(boxes);
+    GrGeomSolidSurfaceBoxes(geom_solid, face) = NewBoxArray(boxes);
+
+    FreeBoxList(boxes);
   }
 
   FreeVector(indicator);
@@ -993,18 +998,18 @@ void ComputeSurfaceBoxes(GrGeomSolid *geom_solid)
  *
  * Compute the interior loop iteration boxes.  Boxes will exactly cover
  * all of interior of geom_solid in index space.
- * 
+ *
  * The computed box array is stored in the geom_solid.
  */
 void ComputeInteriorBoxes(GrGeomSolid *geom_solid)
 {
-
   DoubleTags tag;
+
   tag.as_tags = 1;
 
-  Grid *grid =  CreateGrid(GlobalsUserGrid);
+  Grid *grid = CreateGrid(GlobalsUserGrid);
 
-  Vector* indicator =  NewVectorType(grid, 1, num_ghost, vector_cell_centered);
+  Vector* indicator = NewVectorType(grid, 1, num_ghost, vector_cell_centered);
   InitVectorAll(indicator, 0.0);
 
   {
@@ -1018,7 +1023,7 @@ void ComputeInteriorBoxes(GrGeomSolid *geom_solid)
     int i, j, k, r, is;
     int ix, iy, iz;
     int nx, ny, nz;
-    double  dx, dy, dz;
+    double dx, dy, dz;
 
     double *dp;
 
@@ -1040,41 +1045,41 @@ void ComputeInteriorBoxes(GrGeomSolid *geom_solid)
       nx = SubgridNX(subgrid);
       ny = SubgridNY(subgrid);
       nz = SubgridNZ(subgrid);
-      
+
       dx = SubgridDX(subgrid);
       dy = SubgridDY(subgrid);
       dz = SubgridDZ(subgrid);
-      
+
       dp = SubvectorData(d_sub);
 
       GrGeomInLoop(i, j, k, geom_solid, r, ix, iy, iz, nx, ny, nz,
       {
-	ip = SubvectorEltIndex(d_sub, i, j, k);
+        ip = SubvectorEltIndex(d_sub, i, j, k);
 
-	dp[ip] = tag.as_double;
-	tag_count++;
+        dp[ip] = tag.as_double;
+        tag_count++;
       });
     }
   }
 
   {
-     VectorUpdateCommHandle   *handle;
-     handle = InitVectorUpdate(indicator, VectorUpdateAll);
-     FinalizeVectorUpdate(handle);
+    VectorUpdateCommHandle   *handle;
+    handle = InitVectorUpdate(indicator, VectorUpdateAll);
+    FinalizeVectorUpdate(handle);
   }
-  
+
   Point min_box;
   min_box[0] = 1;
   min_box[1] = 1;
   min_box[2] = 1;
 
   BoxList* boxes = NewBoxList();
-  
+
   BergerRigoutsos(indicator,
-		  min_box,
-		  tag,
-		  boxes);
-  
+                  min_box,
+                  tag,
+                  boxes);
+
   GrGeomSolidInteriorBoxes(geom_solid) = NewBoxArray(boxes);
 
   FreeBoxList(boxes);
@@ -1090,11 +1095,11 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
 
   ComputeSurfaceBoxes(geom_solid);
 
-  for(int patch = 0 ; patch < GrGeomSolidNumPatches(geom_solid); patch++)
+  for (int patch = 0; patch < GrGeomSolidNumPatches(geom_solid); patch++)
   {
-     ComputePatchBoxes(geom_solid, patch);
+    ComputePatchBoxes(geom_solid, patch);
   }
-  
+
   EndTiming(ClusteringTimingIndex);
 }
 

@@ -28,7 +28,7 @@
 
 /*****************************************************************************
 *
-* FILE:	diag_scale.c
+* FILE: diag_scale.c
 *
 * FUNCTIONS IN THIS FILE:
 * DiagScale
@@ -39,9 +39,9 @@
 * as a vector. The following transformations are then applied
 * to the matrix A and the vectors x and b:
 *
-*		A~ = D*A*D
-*		x~ = D(-1)*x
-*		b~ = D*b
+*               A~ = D*A*D
+*               x~ = D(-1)*x
+*               b~ = D*b
 *
 * are computed.
 *

@@ -141,7 +141,7 @@ void *KINMalloc(integer Neq, FILE *msgfp, void *machEnv);
  *                                                                *
  * globalstrategy  is a variable which indicates which global     *
  *         strategy to apply the computed increment delta in the  *
- *	   solution uu.  Choices are given below.		  *
+ *         solution uu.  Choices are given below.                 *
  *                                                                *
  * uscale  is an array (type N_Vector) of diagonal elements of the*
  *         scaling matrix for uu. The elements of uscale must be  *

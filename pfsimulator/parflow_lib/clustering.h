@@ -41,9 +41,9 @@
  * surface and patches.
  *
  * This assumes Octree's are in background grid space.
-
+ *
  * @param geom_solid solid to compute boxes for
  */
 void ComputeBoxes(GrGeomSolid *geom_solid);
 
-#endif 
+#endif

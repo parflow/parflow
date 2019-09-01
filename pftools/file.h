@@ -40,8 +40,8 @@ extern "C" {
 #define SimpleB      3
 
 /* file.c */
-int FileType (char *filename);
-Databox *Read (int type, char *filename);
+int FileType(char *filename);
+Databox *Read(int type, char *filename);
 
 #ifdef __cplusplus
 }

@@ -269,13 +269,13 @@ int            GeomReadTSolids(
       patches[p] = talloc(int, num_patch_triangles[p]);
 
       /* Read in the triangle indices */
-//	 for (t = 0; t < num_patch_triangles[p]; t++)
-//	 {
+//       for (t = 0; t < num_patch_triangles[p]; t++)
+//       {
       /* FG: send all patch_triangles at once*/
       invoice = amps_NewInvoice("%*i", num_patch_triangles[p], patches[p]);
       amps_SFBCast(amps_CommWorld, solids_file, invoice);
       amps_FreeInvoice(invoice);
-//	 }
+//       }
     }
 
     solids_data[s] =

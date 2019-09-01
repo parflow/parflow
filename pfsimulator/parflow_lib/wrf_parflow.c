@@ -157,10 +157,10 @@ void wrfparflowadvance_(double *current_time,
 
   time_step_control = NewPFModule((void*)SelectTimeStep,
                                   (void*)WRFSelectTimeStepInitInstanceXtra, \
-                                  (void*)SelectTimeStepFreeInstanceXtra, \
-                                  (void*)WRFSelectTimeStepNewPublicXtra, \
-                                  (void*)WRFSelectTimeStepFreePublicXtra, \
-                                  (void*)SelectTimeStepSizeOfTempData, \
+                                  (void*)SelectTimeStepFreeInstanceXtra,    \
+                                  (void*)WRFSelectTimeStepNewPublicXtra,    \
+                                  (void*)WRFSelectTimeStepFreePublicXtra,   \
+                                  (void*)SelectTimeStepSizeOfTempData,      \
                                   NULL, NULL);
 
   ThisPFModule = time_step_control;
