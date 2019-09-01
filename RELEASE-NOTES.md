@@ -3,7 +3,7 @@
 ## Overview of Changes
 
 * New overland flow boundary conditions
-* Flow barrier was added
+* Flow barrier added
 * Support for metadata file
 * Boundary condition refactoring
 * Bug fixes
@@ -19,7 +19,7 @@ OverlandDiffusive and Seepage.
 OverlandKinematic is similar to the original OverlandFlow boundary
 condition but uses a slightly modified flux formulation that uses the
 slope magnitude and it is developed to use face centered slopes (as
-opposed to grid centered) and does the upwinding internally.x  See user
+opposed to grid centered) and does the upwinding internally.x.  See user
 manual for additional information on the new boundary conditions.
 
 New test cases were added exercising the new boundary conditions:
@@ -36,7 +36,7 @@ For both OverlandDiffusive and OverlandKinematic analytical jacobians
 were implemented in the new modules and these were tested and can be
 verified in the new test cases noted above.
 
-### Flow barrier was added
+### Flow barrier added
 
 Ability to create a flow barrier capability equivalent to the
 hydraulic flow barrier (HFB) or flow and transport parameters at
