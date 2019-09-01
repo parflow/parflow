@@ -1,4 +1,12 @@
 # ParFlow Release Notes
+---
+
+## IMPORTANT NOTE
+
+```
+Support for GNU Autoconf will be removed in the next release of
+ParFlow.  Future releases will only support configuration using CMake.
+```
 
 ## Overview of Changes
 
@@ -67,7 +75,7 @@ cases with processors is outside of the active domain.
 
 ### Boundary condition refactoring
 
-The framework for boundary conditions was significatnly refactored to provide a
+The framework for boundary conditions was significantly refactored to provide a
 macro system to simplify adding new boundary conditions. See
 bc_pressure.h for additional documentation.
 
