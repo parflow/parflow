@@ -66,25 +66,23 @@
 #include <stdio.h>
 #include <math.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*-----------------------------------------------------------------------
  * function prototypes
  *-----------------------------------------------------------------------*/
 
-#ifdef __STDC__
-# define        ANSI_PROTO(s) s
-#else
-# define ANSI_PROTO(s) ()
-#endif
-
-
 /* velocity.c */
-Databox * *CompBFCVel ANSI_PROTO((Databox *k, Databox *h));
-Databox **CompCellVel ANSI_PROTO((Databox *k, Databox *h));
-Databox **CompVertVel ANSI_PROTO((Databox *k, Databox *h));
-Databox *CompVMag ANSI_PROTO((Databox *vx, Databox *vy, Databox *vz));
+Databox * *CompBFCVel (Databox *k, Databox *h);
+Databox **CompCellVel (Databox *k, Databox *h);
+Databox **CompVertVel (Databox *k, Databox *h);
+Databox *CompVMag (Databox *vx, Databox *vy, Databox *vz);
 
-#undef ANSI_PROTO
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

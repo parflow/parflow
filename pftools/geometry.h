@@ -29,6 +29,9 @@
 #ifndef _GEOMETRY_HEADER
 #define _GEOMETRY_HEADER
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*--------------------------------------------------------------------------
  * Structures:
@@ -47,20 +50,14 @@ typedef struct {
  * Prototypes:
  *--------------------------------------------------------------------------*/
 
-#ifdef __STDC__
-# define        P(s) s
-#else
-# define P(s) ()
-#endif
-
-
 /* geom_sort_vertices.c */
-int *SortVertices P((Vertex * *vertices, int nvertices, int return_permute));
+int *SortVertices(Vertex * *vertices, int nvertices, int return_permute);
 
 /* geom_sort_xy_vertices.c */
-int *SortXYVertices P((Vertex * *vertices, int nvertices, int return_permute));
+int *SortXYVertices(Vertex * *vertices, int nvertices, int return_permute);
 
-#undef P
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif

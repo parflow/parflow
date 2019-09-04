@@ -96,6 +96,10 @@
 #include <tcl.h>
 #include "databox.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*-----------------------------------------------------------------------
  * Error messages
  *-----------------------------------------------------------------------*/
@@ -180,37 +184,32 @@ static char *DELETEUSAGE = "Usage: pfdelete dataset\n";
  * function prototypes
  *-----------------------------------------------------------------------*/
 
-#ifdef __STDC__
-# define        ANSI_PROTO(s) s
-#else
-# define ANSI_PROTO(s) ()
-#endif
-
 /* Function prototypes for error checking functions */
 
-int SameDimensions ANSI_PROTO((Databox *databoxp, Databox *databoxq));
-int InRange ANSI_PROTO((int i, int j, int k, Databox *databox));
-int IsValidFileType ANSI_PROTO((char *option));
-char *GetValidFileExtension ANSI_PROTO((char *filename));
+int SameDimensions (Databox *databoxp, Databox *databoxq);
+int InRange (int i, int j, int k, Databox *databox);
+int IsValidFileType (char *option);
+char *GetValidFileExtension (char *filename);
 
 /* Function prototypes for creating error messages  */
 
-void InvalidOptionError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
-void InvalidArgError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
-void WrongNumArgsError ANSI_PROTO((Tcl_Interp *interp, char *usage));
-void MissingOptionError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
-void MissingFilenameError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
-void InvalidFileExtensionError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
-void NotAnIntError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
-void NotADoubleError ANSI_PROTO((Tcl_Interp *interp, int argnum, char *usage));
-void NumberNotPositiveError ANSI_PROTO((Tcl_Interp *interp, int argnum));
-void SetNonExistantError ANSI_PROTO((Tcl_Interp *interp, char *hashkey));
-void MemoryError ANSI_PROTO((Tcl_Interp *interp));
-void ReadWriteError ANSI_PROTO((Tcl_Interp *interp));
-void OutOfRangeError ANSI_PROTO((Tcl_Interp *interp, int i, int j, int k));
-void DimensionError ANSI_PROTO((Tcl_Interp *interp));
+void InvalidOptionError (Tcl_Interp *interp, int argnum, char *usage);
+void InvalidArgError (Tcl_Interp *interp, int argnum, char *usage);
+void WrongNumArgsError (Tcl_Interp *interp, char *usage);
+void MissingOptionError (Tcl_Interp *interp, int argnum, char *usage);
+void MissingFilenameError (Tcl_Interp *interp, int argnum, char *usage);
+void InvalidFileExtensionError (Tcl_Interp *interp, int argnum, char *usage);
+void NotAnIntError (Tcl_Interp *interp, int argnum, char *usage);
+void NotADoubleError (Tcl_Interp *interp, int argnum, char *usage);
+void NumberNotPositiveError (Tcl_Interp *interp, int argnum);
+void SetNonExistantError (Tcl_Interp *interp, char *hashkey);
+void MemoryError (Tcl_Interp *interp);
+void ReadWriteError (Tcl_Interp *interp);
+void OutOfRangeError (Tcl_Interp *interp, int i, int j, int k);
+void DimensionError (Tcl_Interp *interp);
 
-#undef ANSI_PROTO
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif

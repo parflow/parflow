@@ -30,6 +30,10 @@
 
 #include "databox.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*-----------------------------------------------------------------------
  * function prototypes
  *-----------------------------------------------------------------------*/
@@ -62,6 +66,10 @@ void ComputeSurfaceRunoff(
                           Databox *mannings,
                           Databox *pressure,
                           Databox *surface_runoff);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

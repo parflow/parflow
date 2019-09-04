@@ -1,3 +1,4 @@
+include(PftoolsTest)
 
 # TODO many little tools not included yet.  See Makefile.in
 
@@ -31,7 +32,10 @@ if (${PARFLOW_HAVE_SZLIB})
   target_link_libraries (pftools ${SZLIB_LIBRARIES})
 endif (${PARFLOW_HAVE_SZLIB})
 
+# Install to bin is for TCL which seem to prefer shared libraries
+# there for some installs.
 install(TARGETS pftools DESTINATION bin)
+install(TARGETS pftools DESTINATION lib)
 
 file (GLOB TCL_SRC *.tcl)
 install(FILES ${TCL_SRC} DESTINATION bin)
@@ -58,3 +62,19 @@ add_executable(projecttin projecttin.c gmsreadTIN.c)
 target_link_libraries(projecttin ${PARFLOW_LIBM})
 install(TARGETS projecttin DESTINATION bin)
 
+#-----------------------------------------------------------------------------
+# Mask utilities
+#-----------------------------------------------------------------------------
+add_executable(pfmask-to-pfsol pfmask-to-pfsol.cpp)
+target_include_directories(pfmask-to-pfsol PUBLIC third-party)
+target_link_libraries(pfmask-to-pfsol pftools)
+install(TARGETS pfmask-to-pfsol DESTINATION bin)
+
+add_executable(pfsol-to-vtk pfsol-to-vtk.c)
+install(TARGETS pfsol-to-vtk DESTINATION bin)
+
+add_executable(pfmaskdownsize pfmaskdownsize.cpp)
+target_include_directories(pfmaskdownsize PUBLIC third-party)
+install(TARGETS pfmaskdownsize DESTINATION bin)
+
+add_subdirectory (test)

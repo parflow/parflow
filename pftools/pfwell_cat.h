@@ -44,8 +44,6 @@
 #ifndef PFWELL_CAT_HEADER
 #define PFWELL_CAT_HEADER
 
-
-
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>

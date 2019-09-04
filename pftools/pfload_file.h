@@ -39,7 +39,5 @@
 #include "grid.h"
 #include "usergrid.h"
 
-
-
 #endif
 
