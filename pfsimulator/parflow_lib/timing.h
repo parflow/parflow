@@ -48,14 +48,15 @@
 #define CLMTimingIndex  6
 #define PFSOLReadTimingIndex  7
 #define IDBReadTimingIndex  8
+#define ClusteringTimingIndex 9
 #ifdef HAVE_P4EST
-#define P4ESTimingIndex  9          /* Time p4est functions */
-#define P4ESTSetupTimingIndex  10   /* Time parflow_p4est setup functions */
-#define P4ESTSolveTimingIndex  11   /* Time parflow_p4est solve functions */
-#define P4ESTCleanupTimingIndex  12 /* Time parflow_p4est clean up functions */
+#define P4ESTimingIndex  10          /* Time p4est functions */
+#define P4ESTSetupTimingIndex  11   /* Time parflow_p4est setup functions */
+#define P4ESTSolveTimingIndex  12   /* Time parflow_p4est solve functions */
+#define P4ESTCleanupTimingIndex  13 /* Time parflow_p4est clean up functions */
 #endif
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  13
+#define VectorUpdateTimingIndex  14
 #endif
 
 #if defined(PF_TIMING)

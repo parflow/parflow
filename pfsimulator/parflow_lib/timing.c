@@ -62,6 +62,7 @@ void  NewTiming()
   RegisterTiming("CLM");
   RegisterTiming("PFSOL Read");
   RegisterTiming("IDB Read");
+  RegisterTiming("Clustering");
 #ifdef HAVE_P4EST
   RegisterTiming("P4EST_Setup");
   RegisterTiming("PF_P4EST_Setup");

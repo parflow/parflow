@@ -3,6 +3,7 @@ cmake_minimum_required (VERSION 3.9)
 project (PARFLOW C Fortran CXX)
 
 set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_C_STANDARD 11)
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
@@ -268,7 +269,7 @@ if (${PARFLOW_ENABLE_VALGRIND} )
   find_program( PARFLOW_MEMORYCHECK_COMMAND valgrind)
   set(PARFLOW_HAVE_MEMORYCHECK "yes")
   set(PARFLOW_MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/bin/valgrind.sup")
-  set(PARFLOW_MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --suppressions=${PARFLOW_MEMORYCHECK_SUPPRESSIONS_FILE}")
+  set(PARFLOW_MEMORYCHECK_COMMAND_OPTIONS "--gen-suppressions=all --leak-check=full --suppressions=${PARFLOW_MEMORYCHECK_SUPPRESSIONS_FILE}")
 endif (${PARFLOW_ENABLE_VALGRIND})
 
 #-----------------------------------------------------------------------------

@@ -36,7 +36,7 @@
 #include "geometry.h"
 #include "grgeom_octree.h"
 #include "grgeom_list.h"
-
+#include "index_space.h"
 
 /*--------------------------------------------------------------------------
  * Miscellaneous structures:
@@ -63,6 +63,12 @@ typedef struct {
   /* these fields are used to relate the background with the octree */
   int octree_bg_level;
   int octree_ix, octree_iy, octree_iz;
+
+  /* Boxes for iteration */
+
+  BoxArray* interior_boxes;
+  BoxArray* surface_boxes[GrGeomOctreeNumFaces];
+  BoxArray** patch_boxes[GrGeomOctreeNumFaces]; 
 } GrGeomSolid;
 
 
@@ -87,8 +93,10 @@ typedef struct {
 #define GrGeomSolidOctreeIX(solid)      ((solid)->octree_ix)
 #define GrGeomSolidOctreeIY(solid)      ((solid)->octree_iy)
 #define GrGeomSolidOctreeIZ(solid)      ((solid)->octree_iz)
-#define GrGeomSolidPatch(solid, i)      ((solid)->patches[i])
-
+#define GrGeomSolidPatch(solid, i)      ((solid)->patches[(i)])
+#define GrGeomSolidInteriorBoxes(solid) ((solid)->interior_boxes)
+#define GrGeomSolidSurfaceBoxes(solid, i)  ((solid)->surface_boxes[(i)])
+#define GrGeomSolidPatchBoxes(solid, patch, i)  ((solid)->patch_boxes[(i)][(patch)])
 
 /*==========================================================================
  *==========================================================================*/
@@ -98,22 +106,54 @@ typedef struct {
  *   Macro for looping over the inside of a solid.
  *--------------------------------------------------------------------------*/
 
-#define GrGeomInLoop(i, j, k, grgeom, \
-                     r, ix, iy, iz, nx, ny, nz, body) \
-  { \
-    GrGeomOctree  *PV_node; \
-    double PV_ref = pow(2.0, r); \
-\
-\
-    i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref; \
-    j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref; \
-    k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref; \
-    GrGeomOctreeInteriorNodeLoop(i, j, k, PV_node, \
-                                 GrGeomSolidData(grgeom),      \
-                                 GrGeomSolidOctreeBGLevel(grgeom) + r,  \
-                                 ix, iy, iz, nx, ny, nz,                \
-                                 TRUE,                                  \
-                                 body);                                 \
+#define GrGeomInLoopBoxes(i, j, k, grgeom, ix, iy, iz, nx, ny, nz, body)	\
+  {									\
+  int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;			\
+  int *PV_visiting = NULL;						\
+  BoxArray* boxes = GrGeomSolidInteriorBoxes(grgeom);			\
+  for(int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)		\
+  {									\
+    Box box = BoxArrayGetBox(boxes, PV_box);				\
+    /* find octree and region intersection */				\
+    PV_ixl = pfmax(ix, box.lo[0]);					\
+    PV_iyl = pfmax(iy, box.lo[1]);					\
+    PV_izl = pfmax(iz, box.lo[2]);					\
+    PV_ixu = pfmin((ix + nx - 1), box.up[0]);				\
+    PV_iyu = pfmin((iy + ny - 1), box.up[1]);				\
+    PV_izu = pfmin((iz + nz - 1), box.up[2]);				\
+									\
+    for(k = PV_izl; k <= PV_izu; k++)					\
+      for(j =PV_iyl; j <= PV_iyu; j++)					\
+	for(i = PV_ixl; i <= PV_ixu; i++)				\
+	{								\
+	  body;								\
+	}								\
+  }									\
+  }
+
+#define GrGeomInLoop(i, j, k, grgeom,				\
+			r, ix, iy, iz, nx, ny, nz, body)	\
+  {								\
+   if(r == 0 && GrGeomSolidInteriorBoxes(grgeom))		\
+   {								\
+     GrGeomInLoopBoxes(i, j, k, grgeom,				\
+		       ix, iy, iz, nx, ny, nz, body);		\
+   }								\
+   else								\
+   {								\
+     GrGeomOctree  *PV_node;					\
+     double PV_ref = pow(2.0, r);				\
+     								\
+     i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref;			\
+     j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;			\
+     k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref;			\
+     GrGeomOctreeInteriorNodeLoop(i, j, k, PV_node,			\
+				  GrGeomSolidData(grgeom),		\
+				  GrGeomSolidOctreeBGLevel(grgeom) + r,	\
+				  ix, iy, iz, nx, ny, nz,		\
+				  TRUE,					\
+				  body);				\
+   }									\
   }
 
 /*--------------------------------------------------------------------------
@@ -195,27 +235,201 @@ typedef struct {
  * GrGeomSolid looping macro:
  *   Macro for looping over the faces of a solid surface.
  *--------------------------------------------------------------------------*/
-
-#define GrGeomSurfLoop(i, j, k, fdir, grgeom, \
+#if 0
+#define GrGeomSurfLoop(i, j, k, fdir, grgeom,		\
                        r, ix, iy, iz, nx, ny, nz, body) \
-  { \
-    GrGeomOctree  *PV_node; \
-    double PV_ref = pow(2.0, r); \
-\
-\
-    i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref; \
-    j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref; \
-    k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref; \
-    GrGeomOctreeFaceLoop(i, j, k, fdir, PV_node, \
-                         GrGeomSolidData(grgeom), \
-                         GrGeomSolidOctreeBGLevel(grgeom) + r, \
-                         ix, iy, iz, nx, ny, nz, body); \
+   {							\
+      GrGeomOctree  *PV_node;				\
+      double PV_ref = pow(2.0, r);			\
+      							\
+      i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref;			\
+      j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;			\
+      k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref;			\
+      GrGeomOctreeFaceLoop(i, j, k, fdir, PV_node,			\
+			   GrGeomSolidData(grgeom),			\
+			   GrGeomSolidOctreeBGLevel(grgeom) + r,	\
+			   ix, iy, iz, nx, ny, nz, body);		\
+   }
+
+#else
+
+//  \todo SGS 12/3/2008 can optimize fdir by using 1 assignment to static.  Should
+// elimiate 2 assignment statements and switch and replace with table:
+// fdir = FDIR[PV_f] type of thing.
+//
+
+#define GrGeomSurfLoopBoxes(i, j, k, fdir, grgeom, ix, iy, iz, nx, ny, nz, body) \
+  {									\
+  int PV_fdir[3];							\
+									\
+  fdir = PV_fdir;							\
+  int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;			\
+  int *PV_visiting = NULL;						\
+  for(int PV_f=0; PV_f < GrGeomOctreeNumFaces; PV_f++)			\
+  {									\
+    switch (PV_f)							\
+    {									\
+       case GrGeomOctreeFaceL:						\
+	  fdir[0] = -1; fdir[1] = 0; fdir[2] = 0;			\
+	  break;							\
+       case GrGeomOctreeFaceR:						\
+	  fdir[0] = 1; fdir[1] = 0; fdir[2] = 0;			\
+	  break;							\
+       case GrGeomOctreeFaceD:						\
+	  fdir[0] = 0; fdir[1] = -1; fdir[2] = 0;			\
+	  break;							\
+       case GrGeomOctreeFaceU:						\
+	  fdir[0] = 0; fdir[1] = 1; fdir[2] = 0;			\
+	  break;							\
+       case GrGeomOctreeFaceB:						\
+	  fdir[0] = 0; fdir[1] = 0; fdir[2] = -1;			\
+	  break;							\
+       case GrGeomOctreeFaceF:						\
+	  fdir[0] = 0; fdir[1] = 0; fdir[2] = 1;			\
+	  break;							\
+       default:								\
+	  fdir[0] = -9999; fdir[1] = -9999; fdir[2] = -99999;		\
+	  break;							\
+    }									\
+									\
+    BoxArray* boxes = GrGeomSolidSurfaceBoxes(grgeom, PV_f);		\
+    for(int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)		\
+    {									\
+       Box box = BoxArrayGetBox(boxes, PV_box);				\
+       /* find octree and region intersection */			\
+       PV_ixl = pfmax(ix, box.lo[0]);					\
+       PV_iyl = pfmax(iy, box.lo[1]);					\
+       PV_izl = pfmax(iz, box.lo[2]);					\
+       PV_ixu = pfmin((ix + nx - 1), box.up[0]);			\
+       PV_iyu = pfmin((iy + ny - 1), box.up[1]);			\
+       PV_izu = pfmin((iz + nz - 1), box.up[2]);			\
+       									\
+       for(k = PV_izl; k <= PV_izu; k++)				\
+	  for(j =PV_iyl; j <= PV_iyu; j++)				\
+	     for(i = PV_ixl; i <= PV_ixu; i++)				\
+	     {								\
+		body;							\
+	     }								\
+    }									\
+  }									\
   }
+
+
+#define GrGeomSurfLoop(i, j, k, fdir, grgeom,			 \
+                       r, ix, iy, iz, nx, ny, nz, body)		 \
+   {									\
+      if(r == 0 && GrGeomSolidSurfaceBoxes(grgeom,GrGeomOctreeNumFaces-1)) \
+      {									\
+	 GrGeomSurfLoopBoxes(i, j, k, fdir, grgeom,			\
+			     ix, iy, iz, nx, ny, nz, body);		\
+      }									\
+      else								\
+      {									\
+	 GrGeomOctree  *PV_node;					\
+	 double PV_ref = pow(2.0, r);					\
+	 								\
+	 i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref;			\
+	 j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;			\
+	 k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref;			\
+	 GrGeomOctreeFaceLoop(i, j, k, fdir, PV_node,			\
+			      GrGeomSolidData(grgeom),			\
+			      GrGeomSolidOctreeBGLevel(grgeom) + r,	\
+			      ix, iy, iz, nx, ny, nz, body);		\
+      }									\
+   }
+
+#endif
+
+
 
 /*--------------------------------------------------------------------------
  * GrGeomSolid looping macro:
  *   Macro for looping over the faces of a solid patch.
  *--------------------------------------------------------------------------*/
+
+#if 1
+
+#define GrGeomPatchLoopBoxes(i, j, k, fdir, grgeom, patch_num, ix, iy, iz, nx, ny, nz, body) \
+  {									\
+  int PV_fdir[3];							\
+									\
+  fdir = PV_fdir;							\
+  int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;			\
+  int *PV_visiting = NULL;						\
+  for(int PV_f=0; PV_f < GrGeomOctreeNumFaces; PV_f++)			\
+  {									\
+    switch (PV_f)							\
+    {									\
+       case GrGeomOctreeFaceL:						\
+	  fdir[0] = -1; fdir[1] = 0; fdir[2] = 0;			\
+	  break;							\
+       case GrGeomOctreeFaceR:						\
+	  fdir[0] = 1; fdir[1] = 0; fdir[2] = 0;			\
+	  break;							\
+       case GrGeomOctreeFaceD:						\
+	  fdir[0] = 0; fdir[1] = -1; fdir[2] = 0;			\
+	  break;							\
+       case GrGeomOctreeFaceU:						\
+	  fdir[0] = 0; fdir[1] = 1; fdir[2] = 0;			\
+	  break;							\
+       case GrGeomOctreeFaceB:						\
+	  fdir[0] = 0; fdir[1] = 0; fdir[2] = -1;			\
+	  break;							\
+       case GrGeomOctreeFaceF:						\
+	  fdir[0] = 0; fdir[1] = 0; fdir[2] = 1;			\
+	  break;							\
+       default:								\
+	  fdir[0] = -9999; fdir[1] = -9999; fdir[2] = -99999;		\
+	  break;							\
+    }									\
+									\
+    BoxArray* boxes = GrGeomSolidPatchBoxes(grgeom, patch_num, PV_f);	\
+    for(int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)		\
+    {									\
+       Box box = BoxArrayGetBox(boxes, PV_box);				\
+       /* find octree and region intersection */			\
+       PV_ixl = pfmax(ix, box.lo[0]);					\
+       PV_iyl = pfmax(iy, box.lo[1]);					\
+       PV_izl = pfmax(iz, box.lo[2]);					\
+       PV_ixu = pfmin((ix + nx - 1), box.up[0]);			\
+       PV_iyu = pfmin((iy + ny - 1), box.up[1]);			\
+       PV_izu = pfmin((iz + nz - 1), box.up[2]);			\
+       									\
+       for(k = PV_izl; k <= PV_izu; k++)				\
+	  for(j =PV_iyl; j <= PV_iyu; j++)				\
+	     for(i = PV_ixl; i <= PV_ixu; i++)				\
+	     {								\
+		body;							\
+	     }								\
+    }									\
+  }									\
+  }
+
+#define GrGeomPatchLoop(i, j, k, fdir, grgeom, patch_num,		\
+                        r, ix, iy, iz, nx, ny, nz, body)		\
+  {									\
+  if(r == 0 && GrGeomSolidPatchBoxes(grgeom, patch_num, GrGeomOctreeNumFaces-1)) \
+  {									\
+     GrGeomPatchLoopBoxes(i, j, k, fdir, grgeom, patch_num,		\
+			  ix, iy, iz, nx, ny, nz, body);		\
+  }									\
+  else									\
+  {									\
+     GrGeomOctree  *PV_node;						\
+     double PV_ref = pow(2.0, r);					\
+									\
+									\
+     i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref;			\
+     j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;			\
+     k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref;			\
+     GrGeomOctreeFaceLoop(i, j, k, fdir, PV_node,			\
+			  GrGeomSolidPatch(grgeom, patch_num),		\
+			  GrGeomSolidOctreeBGLevel(grgeom) + r,		\
+			  ix, iy, iz, nx, ny, nz, body);		\
+  }									\
+  }
+
+#else
 
 #define GrGeomPatchLoop(i, j, k, fdir, grgeom, patch_num, \
                         r, ix, iy, iz, nx, ny, nz, body) \
@@ -232,6 +446,8 @@ typedef struct {
                          GrGeomSolidOctreeBGLevel(grgeom) + r, \
                          ix, iy, iz, nx, ny, nz, body); \
   }
+
+#endif
 
 
 /*--------------------------------------------------------------------------
