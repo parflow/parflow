@@ -29,10 +29,10 @@ before_install:
   - sudo apt-get install -y libhdf5-openmpi-dev libhdf5-openmpi-7 hdf5-helpers
   - sudo apt-get install -y tcl-dev tk-dev
   - sudo apt-get install -y openmpi-bin openmpi-doc libopenmpi-dev
+  - "[[ $PF_BUILD != 'cmake' ]] || if [[ ! -f cmake-3.9.0-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate http://cmake.org/files/v3.9/cmake-3.9.0-Linux-x86_64.tar.gz && tar -xvf cmake-3.9.0-Linux-x86_64.tar.gz; fi"
   - git clone https://github.com/cburstedde/p4est && cd p4est
   - git submodule init && git submodule update
   - ./bootstrap && ./configure --enable-mpi --prefix="/usr" && make && sudo make install
-  - "[[ $PF_BUILD != 'cmake' ]] || if [[ ! -f cmake-3.9.0-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate http://cmake.org/files/v3.9/cmake-3.9.0-Linux-x86_64.tar.gz && tar -xvf cmake-3.9.0-Linux-x86_64.tar.gz; fi"
 
 before_script:
   - cd $TRAVIS_BUILD_DIR/pfsimulator && ./bootstrap
