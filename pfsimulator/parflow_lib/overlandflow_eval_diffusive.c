@@ -103,7 +103,7 @@ void    OverlandFlowEvalDiff(
   int ival, sy_v, step;
   int            *fdir;
 
-  int i, ii, j, k, ip, ip2, ip3, ip4, ip0, io, itop;
+  int i, ii, j, k, ip, ip2, ip3, ip4, ip0, io, itop,k1x, k1y, ipp1, ippsy;
   int i1, j1, k1, k0x, k0y, iojm1, iojp1, ioip1, ioim1;
   /* @RMM get grid from global (assuming this is comp grid) to pass to CLM */
   int gnx = BackgroundNX(GlobalsBackground);
@@ -144,14 +144,18 @@ void    OverlandFlowEvalDiff(
         k1 = (int)top_dat[itop];
         k0x = (int)top_dat[itop - 1];
         k0y = (int)top_dat[itop - sy_v];
+        k1x = (int)top_dat[itop + 1];
+        k1y = (int)top_dat[itop + sy_v];
 
         if (k1 >= 0)
         {
           ip = SubvectorEltIndex(p_sub, i, j, k1);
-          Pupx = pfmax(pp[ip + 1], 0.0);
-          Pupy = pfmax(pp[ip + sy_v], 0.0);
-          Pupox = pfmax(opp[ip + 1], 0.0);
-          Pupoy = pfmax(opp[ip + sy_v], 0.0);
+          ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
+          ippsy = (int)SubvectorEltIndex(p_sub, i, j+sy_v, k1y);
+          Pupx = pfmax(pp[ipp1], 0.0);
+          Pupy = pfmax(pp[ippsy], 0.0);
+          Pupox = pfmax(opp[ipp1], 0.0);
+          Pupoy = pfmax(opp[ippsy], 0.0);
           Pdown = pfmax(pp[ip], 0.0);
           Pdowno = pfmax(opp[ip], 0.0);
 
@@ -165,8 +169,8 @@ void    OverlandFlowEvalDiff(
           if (Sf_mag < ov_epsilon)
             Sf_mag = ov_epsilon;
 
-          Press_x = RPMean(-Sf_x, 0.0, pfmax((pp[ip]), 0.0), pfmax((pp[ip + 1]), 0.0));
-          Press_y = RPMean(-Sf_y, 0.0, pfmax((pp[ip]), 0.0), pfmax((pp[ip + sy_v]), 0.0));
+          Press_x = RPMean(-Sf_x, 0.0, pfmax((pp[ip]), 0.0), pfmax((pp[ipp1]), 0.0));
+          Press_y = RPMean(-Sf_y, 0.0, pfmax((pp[ip]), 0.0), pfmax((pp[ippsy]), 0.0));
 
           qx_v[io] = -(Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_x, (5.0 / 3.0));
           qy_v[io] = -(Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
@@ -247,13 +251,18 @@ void    OverlandFlowEvalDiff(
         k1 = (int)top_dat[itop];
         k0x = (int)top_dat[itop - 1];
         k0y = (int)top_dat[itop - sy_v];
+        k1x = (int)top_dat[itop + 1];
+        k1y = (int)top_dat[itop + sy_v];
+
         if (k1 >= 0)
         {
           ip = SubvectorEltIndex(p_sub, i, j, k1);
-          Pupx = pfmax(pp[ip + 1], 0.0);
-          Pupy = pfmax(pp[ip + sy_v], 0.0);
-          Pupox = pfmax(opp[ip + 1], 0.0);
-          Pupoy = pfmax(opp[ip + sy_v], 0.0);
+          ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
+          ippsy = (int)SubvectorEltIndex(p_sub, i, j+sy_v, k1y);
+          Pupx = pfmax(pp[ipp1], 0.0);
+          Pupy = pfmax(pp[ippsy], 0.0);
+          Pupox = pfmax(opp[ipp1], 0.0);
+          Pupoy = pfmax(opp[ippsy], 0.0);
           Pdown = pfmax(pp[ip], 0.0);
           Pdowno = pfmax(opp[ip], 0.0);
 
