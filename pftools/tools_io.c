@@ -76,7 +76,7 @@ void tools_WriteInt(
   int number;
 
   /* write out each double with bytes swaped                               */
-  for (i = len, data = ptr; i--; )
+  for (i = len, data = ptr; i--;)
   {
     CRAY2IEG(&tools_Integer, &one, &number, &zero, data);
     fwrite(&number, 4, 1, file);
@@ -94,7 +94,7 @@ void tools_ReadDouble(
   double *data;
   double number;
 
-  for (i = len, data = ptr; i--; )
+  for (i = len, data = ptr; i--;)
   {
     fread(&number, 8, 1, file);
     IEG2CRAY(&tools_Double, &one, &number, &zero, data);
@@ -112,7 +112,7 @@ void tools_ReadInt(
   int *data;
   int number;
 
-  for (i = len, data = ptr; i--; )
+  for (i = len, data = ptr; i--;)
   {
     fread(&number, 4, 1, file);
     IEG2CRAY(&tools_Integer, &one, &number, &zero, data);
@@ -142,7 +142,7 @@ void tools_WriteFloat(
   } a, b;
 
   /* write out each double with bytes swaped                               */
-  for (i = len, data = ptr; i--; )
+  for (i = len, data = ptr; i--;)
   {
     a.number = *data++;
     b.buf[0] = a.buf[3];
@@ -168,7 +168,7 @@ void tools_WriteDouble(
   } a, b;
 
   /* write out each double with bytes swaped                               */
-  for (i = len, data = ptr; i--; )
+  for (i = len, data = ptr; i--;)
   {
     a.number = *data++;
     b.buf[0] = a.buf[7];
@@ -207,7 +207,7 @@ void tools_WriteInt(
 
 
   /* write out int with bytes swaped                                       */
-  for (i = len, data = ptr; i--; )
+  for (i = len, data = ptr; i--;)
   {
     a.number = *data++;
     b.buf[0] = a.buf[3];
@@ -233,7 +233,7 @@ void tools_ReadDouble(
   } a, b;
 
   /* read in each double with bytes swaped                               */
-  for (i = len, data = ptr; i--; )
+  for (i = len, data = ptr; i--;)
   {
     fread(&a.number, sizeof(double), 1, (FILE*)file);
 
@@ -263,7 +263,7 @@ void tools_ReadInt(
 
 
   /* write out int with bytes swaped                                       */
-  for (i = len, data = ptr; i--; )
+  for (i = len, data = ptr; i--;)
   {
     fread(&a.number, sizeof(int), 1, (FILE*)file);
 
@@ -292,7 +292,7 @@ int len;
   short number;
 
   /* write out int with bytes swaped                                       */
-  for (i = len, data = ptr; i--; )
+  for (i = len, data = ptr; i--;)
   {
     number = *data++;
     fwrite(&number, sizeof(short), 1, (FILE*)file);
@@ -308,7 +308,7 @@ int len;
   int *data;
   short number;
 
-  for (i = len, data = ptr; i--; )
+  for (i = len, data = ptr; i--;)
   {
     fread(&number, sizeof(short), 1, (FILE*)file);
     *data++ = number;

@@ -33,7 +33,7 @@
 *****************************************************************************/
 
 #include "parflow.h"
-#include "version.h"
+#include "pfversion.h"
 
 /*--------------------------------------------------------------------------
  * NewLogging
@@ -59,15 +59,9 @@ void   NewLogging()
 
     fprintf(log_file, "*****************************************************************************\n");
     fprintf(log_file, "ParFlow Output Log\n");
-    fprintf(log_file, "\t\t%s\n", PARFLOW_VERSION_STRING);
-    fprintf(log_file, "\tCompiled on    : %s %s\n", __DATE__, __TIME__);
-#ifdef CFLAGS
-    fprintf(log_file, "\tWith C flags   : %s\n", CFLAGS);
-#endif
 
-#ifdef FFLAGS
-    fprintf(log_file, "\tWith F77 flags : %s\n", FFLAGS);
-#endif
+    PrintVersionInfo(log_file);
+
     fprintf(log_file, "*****************************************************************************\n");
 
     fclose(log_file);
@@ -127,6 +121,24 @@ int  CloseLogFile(FILE *log_file)
   }
   else
     return 0;
+}
+
+/**
+ * Print version information to the specified file.
+ *
+ *  \param log_file File to print to
+ */
+void PrintVersionInfo(FILE *log_file)
+{
+  fprintf(log_file, "\tVersion        : %s\n", PARFLOW_VERSION_STRING);
+  fprintf(log_file, "\tCompiled on    : %s %s\n", __DATE__, __TIME__);
+#ifdef CFLAGS
+  fprintf(log_file, "\tWith C flags   : %s\n", CFLAGS);
+#endif
+
+#ifdef FFLAGS
+  fprintf(log_file, "\tWith F77 flags : %s\n", FFLAGS);
+#endif
 }
 
 

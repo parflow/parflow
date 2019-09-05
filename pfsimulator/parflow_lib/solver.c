@@ -76,14 +76,13 @@ NewSolver()
   char *switch_name;
 
   int solver;
-  NameArray solver_na;
 
 #ifdef HAVE_P4EST
   const char     *Nkey[3];
   const char     *mkey[3];
   int P[3], l, N, m, p, t, sum;
 #endif
-  solver_na = NA_NewNameArray("Richards Diffusion Impes");
+
 
   /*-----------------------------------------------------------------------
    * Read global solver input
@@ -168,7 +167,13 @@ NewSolver()
 
   GlobalsMaxRefLevel = 0;
 
-
+  {
+     NameArray switch_na;
+     switch_na = NA_NewNameArray("False True");
+     switch_name = GetStringDefault("UseClustering", "True");
+     GlobalsUseClustering = NA_NameToIndex(switch_na, switch_name);
+     NA_FreeNameArray(switch_na);
+  }
 
   /*-----------------------------------------------------------------------
    * Initialize SAMRAI hierarchy
@@ -181,8 +186,13 @@ NewSolver()
   GlobalsParflowSimulation->initializePatchHierarchy(time);
 #endif
 
-  switch_name = GetStringDefault("Solver", "Impes");
-  solver = NA_NameToIndex(solver_na, switch_name);
+  {
+     NameArray solver_na;
+     solver_na = NA_NewNameArray("Richards Diffusion Impes");
+     switch_name = GetStringDefault("Solver", "Impes");
+     solver = NA_NameToIndex(solver_na, switch_name);
+     NA_FreeNameArray(solver_na);
+  }
 
 #ifdef HAVE_P4EST
   if (USE_P4EST && solver)
@@ -215,7 +225,6 @@ NewSolver()
                  key);
     }
   }
-  NA_FreeNameArray(solver_na);
 }
 
 /*--------------------------------------------------------------------------

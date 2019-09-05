@@ -32,6 +32,10 @@
 #include "grid.h"
 #include "usergrid.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*-----------------------------------------------------------------------
  * function prototypes
  *-----------------------------------------------------------------------*/
@@ -46,6 +50,10 @@ void ComputeDomain(
 
 SubgridArray  *Extract2DDomain(
                                SubgridArray *all_subgrids);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

@@ -621,7 +621,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
     qx_sub = VectorSubvector(qx, is);
 
-
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
       ip = SubvectorEltIndex(p_sub, i, j, k);
@@ -1409,7 +1408,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           if (diffusive == 0)
           {
             /* Call overlandflow_eval to compute fluxes across the east, west, north, and south faces */
-            PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module, (grid, is, bc_struct, ipatch, problem_data, pressure,
+            PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module, (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                                                              ke_, kw_, kn_, ks_, qx_, qy_, CALCFCN));
           }
           else
@@ -1417,7 +1416,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
             /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
              * routing added */
             double *dummy1, *dummy2, *dummy3, *dummy4;
-            PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure,
+            PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                                                                       ke_, kw_, kn_, ks_,
                                                                                       dummy1, dummy2, dummy3, dummy4,
                                                                                       qx_, qy_, CALCFCN));

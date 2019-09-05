@@ -29,8 +29,13 @@
 #ifndef _USERGRID_HEADER
 #define _USERGRID_HEADER
 
-#include <tcl.h>
 #include "grid.h"
+
+#include <tcl.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*--------------------------------------------------------------------------
  * Background:
@@ -54,7 +59,6 @@ typedef struct {
 #define BackgroundDY(background)  ((background)->DY)
 #define BackgroundDZ(background)  ((background)->DZ)
 
-
 /* usergrid.c */
 Background *ReadBackground(Tcl_Interp *interp);
 void FreeBackground(Background *background);
@@ -62,8 +66,10 @@ Subgrid *ReadUserSubgrid(Tcl_Interp *interp);
 Grid *ReadUserGrid(Tcl_Interp *interp);
 void FreeUserGrid(Grid *user_grid);
 SubgridArray *DistributeUserGrid(Grid *user_grid, int num_procs, int P, int Q, int R);
-SubgridArray   *CopyGrid(
-                         SubgridArray *all_subgrids);
+SubgridArray *CopyGrid(SubgridArray *all_subgrids);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

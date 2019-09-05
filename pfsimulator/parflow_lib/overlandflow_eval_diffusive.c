@@ -60,6 +60,7 @@ void    OverlandFlowEvalDiff(
                              int          ipatch, /* current boundary patch */
                              ProblemData *problem_data, /* Geometry data for problem */
                              Vector *     pressure, /* Vector of phase pressures at each block */
+			     Vector *     old_pressure, /* Vector of phase pressures at previous time */
                              double *     ke_v, /* return array corresponding to the east face KE  */
                              double *     kw_v, /* return array corresponding to the west face KW */
                              double *     kn_v, /* return array corresponding to the north face KN */

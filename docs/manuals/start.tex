@@ -1,0 +1,530 @@
+%=============================================================================
+%=============================================================================
+
+\chapter{Getting Started}
+\label{Getting Started}
+
+This chapter is an introduction to setting up and running \parflow{}.
+In \S~\ref{Installing ParFlow}, we describe how to install \parflow{}.
+In \S~\ref{Running the Sample Problem}, we lead the user through a
+simple groundwater problem, supplied with the \parflow{} distribution. In \S~\ref{ParFlow Solvers}
+we describe the solver options available for use with \parflow{} applications.
+
+%=============================================================================
+%=============================================================================
+
+\section{Installing ParFlow}
+\label{Installing ParFlow}
+
+\parflow{} is distributed as source code only and must be configured
+and built (compiled) on each machine on which you would like to run
+simulations.  \parflow{} uses the CMake for configuration.  Though we
+will cover some basic guidelines for the installation of \parflow{}
+here, many tips and tricks for building \parflow{} on a range of
+systems may be found at the \parflow{} blog:
+\file{http://parflow.blogspot.com}
+
+For greater portability the \parflow{} build process allows separate
+configuration and compilation of the simulator and support tools.
+This separation allows easier porting to platforms where the
+architecture is different on the nodes and the front-end.
+
+These instructions are for building \parflow{} on a range of serial
+and parallel Linux, Unix and OSX machines, including stand-alone
+single and multi-core to large parallel clusters.  These instructions
+do \emph{NOT} include compilation on Windows machines.
+
+\parflow{} requires a Standard \emph{ANSI C} and \emph{FORTRAN 90/95}
+compiler to build code. Many versions of \code{C} and \code{Fortran} are
+compatible with \parflow{} (e.g. Intel or IBM).  However, \code{GCC} and \code{gFortran}, available for
+free on almost every platform, are good options. They may be found at:
+\begin{center}
+\code{http://gcc.gnu.org/}  
+\end{center}
+and
+\begin{center}
+\code{http://gcc.gnu.org/wiki/GFortran}
+\end{center}
+\parflow{} also requires \code{TCL/TK} version 8.0 (or higher).  \code{TCL/TK} can be obtained from:
+\begin{center}
+\code{http://www.tcl.tk/}
+\end{center}
+These three packages are often pre-installed on most computers and
+generally do not need to be installed by the user.  The following
+steps are designed to take you through the process of installing
+\parflow{} from a source distribution.  \parflow{} uses the \code{gnu}
+package \code{autoconf} to create a configuration file for building
+and installing the \parflow{} program.
+
+\begin{enumerate}
+\item {\bf Setup} \\
+
+We will use the \file{~/pfdir} directory as the root directory for the
+source, build and install directory in this user manual; you can use a
+different directory if you wish.
+
+Decide where you wish to install Parflow and
+associated libraries. The following environment variable should be
+set up in your \file{.profile}, \file{.cshrc}, or other file. Set
+the environment variable \code{PARFLOW_DIR} to your chosen location
+(if you are using \code{bash} or a bourne syntax shell):
+\begin{display}\begin{verbatim}
+export PARFLOW_DIR=~/pfdir/install
+\end{verbatim}\end{display}
+If you are using a \code{csh} like shell you will need the following in your
+\file{.cshrc} file:
+\begin{display}\begin{verbatim}
+setenv PARFLOW_DIR ~/pfdir/install
+\end{verbatim}\end{display}
+
+%------------------------------
+
+\item {\bf Extract the source}\\ Extract the source files from the
+distribution compressed tar file or by cloning the repository from
+the \parflow{} github repository.  This example assumes the
+\file{parflow.tar.Z} file is in your home directory and you are
+building it in a directory \file{~/parflow}.
+
+\begin{display}\begin{verbatim}
+mkdir ~/pfdir
+cd ~/pfdir
+tar -xvf ../parflow.tar.Z
+\end{verbatim}\end{display}
+
+%------------------------------
+
+\item {\bf Build and install \parflow{}} with \cmake{}\\ This step builds
+the \parflow{} and associated \pftools{} excutables.  A \parflow{}
+library is also built which can be used when \parflow{} is used as a
+component of another simulation (\emph{e.g.}  WRF).
+
+\cmake{} can be invoked using a command line only version \code{cmake}
+or terminal based GUI \code{ccmake}.  Most of the example below will
+use the command line version since it is easier to directly show the
+command.  The \code{ccmake} version will show all the variables you
+may set in an interactive GUI.
+
+The following commands configure and build a sequenital version of
+\parflow{}.  You can control build options for \parflow{} in the
+\cmake{} configure step by adding other options to that command-line.
+Note we build in a seperate directory from the source.  This keeps the
+source directory free of files created during the build.  Going back
+to a clean state can be done by removing the build directory and
+starting over.  This is fairly common \cmake{} practice.
+
+Here we only set the directory to install in the \cmake{} command.
+
+\begin{display}\begin{verbatim}
+cd ~/pfdir
+mkdir build
+cd build
+cmake ../parflow -DCMAKE_INSTALL_PREFIX=$(PARFLOW_DIR) 
+make 
+make install
+\end{verbatim}\end{display}
+
+For a list of \emph{all} the \cmake{} configure options, the easist
+method is to use the \code{ccmake} command:
+
+\begin{display}\begin{verbatim}
+ccmake ../parflow  -DCMAKE_INSTALL_PREFIX=$(PARFLOW_DIR)
+\end{verbatim}\end{display}
+
+\parflow{} defaults to building a sequential version; setting the
+\code{PARFLOW_AMPS_LAYER} variable is required to build a parallel
+version.  The easist way to use the MPI version to use is to ensure
+that the \code{mpicc} command is in your path and set the
+\code{PARFLOW_AMPS_LAYER} to ``mpi1''.  The \code{PARFLOW_AMPS_LAYER}
+variable controls \emph{AMPS} which stands for \emph{A}nother
+\emph{M}essage \emph{P}assing \emph{S}ytem.  \emph{AMPS} is a flexible
+message-passing adapter layer within \parflow{} that allows a common
+code core to be quickly and easily adapted to different parallel
+environments.
+
+Here is an example of the simplist MPI configuration:
+
+\begin{display}\begin{verbatim}
+cmake ../parflow -DCMAKE_INSTALL_PREFIX=$(PARFLOW_DIR) -DPARFLOW_AMPS_LAYER=mpi1
+\end{verbatim}\end{display}
+
+\code{TCL} is required for building \parflow{}.  If \code{TCL} is not
+installed in the system locations (\code{/usr} or \code{/usr/local})
+you need to specify the path with the
+\code{-DTCL_TCLSH=${PARFLOW_TCL_DIR}/bin/tclsh8.6} \code{cmake}
+option.
+
+\item {\bf Running a sample problem}\\ There is a test directory that
+contains not only example scripts of \parflow{} problems but the
+correct output for these scripts as well.  This may be used to test
+the compilation process and verify that \parflow{} is installed
+correctly.  If all went well a sample \parflow{} problem can be run
+using:
+
+\begin{display}\begin{verbatim}
+cd $PARFLOW_DIR
+cd test
+tclsh default_single.tcl 1 1 1
+\end{verbatim}\end{display}
+
+Note that \code{PAFLOW_DIR} must be set for this to work and it
+assumes tclsh is in your path.  Make sure to use the same \code{TCL}
+as was used in the \cmake{} configure. The entire suite of test
+cases may be run using \ctest{} to test a range of functionality in
+\parflow{}.  This may be done by:
+\begin{display}\begin{verbatim}
+cd build
+make test
+\end{verbatim}\end{display}
+
+\item {\bf Notes and other options:}\\ \parflow{} may be compiled with
+a number of options using the configure script.  Some common options
+are compiling \code{CLM} as in \cite{MM05,KM08a} to compile with
+timing and optimization or to use a compiler other than \code{gcc}.
+To compile with \code{CLM} add \code{-DPARFLOW_HAVE_CLM=ON} to the configure
+line such as:
+
+\begin{display}\begin{verbatim}
+cmake ../parflow -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_HAVE_CLM=ON -DCMAKE_INSTALL_PREFIX=$(PARFLOW_DIR)) 
+\end{verbatim}\end{display}
+
+Other common options are:
+
+\begin{itemize}
+\item to include the \code{CLM} module:  \code{-DPARFLOW_HAVE_CLM=ON}
+\item to include the \emph{SILO} 
+library which provides greater file output formats that are compatible
+with the \emph{VisIt} rendering package and must first be compiled 
+separately (see below): \code{-DSILO_ROOT=$(PARFLOW_SILO_DIR)}
+\item to include the \emph{HDF5} 
+library which provides greater file output formats'' \code{-DHDF5_ROOT=$(PARFLOW_HDF5_DIR)}
+\item to include the \emph{Hypre} library which provides greater solver
+flexibility and options and also needs to be downloaded and built separately:
+\code{-DHYPRE_ROOT=$(PARFLOW_HYPRE_DIR)}
+\item to write a single, undistributed \parflow{} binary file:
+\code{-DPARFLOW_AMPS_SEQUENTIAL_IO=true}
+\item to write timing information in the log file: \code{-DPARFLOW_ENABLE_TIMING=true }
+\end{itemize}
+
+All these options combined in the configure line would look like:
+
+\begin{display}\begin{verbatim}
+cd build
+cmake ../parflow \
+  -DPARFLOW_AMPS_LAYER=mpi1 \
+  -DPARFLOW_HAVE_CLM=ON \
+  -DSILO_ROOT=$(PARFLOW_SILO_DIR) \
+  -DHDF5_ROOT=$(PARFLOW_HDF5_DIR) \
+  -DHYPRE_ROOT=$(PARFLOW_HYPRE_DIR) \
+  -DCMAKE_INSTALL_PREFIX=$(PARFLOW_DIR)) 
+make 
+make install
+\end{verbatim}\end{display}
+
+To enable detailed timing of the performance of several different
+components within \parflow{} use the \code{--enable-timing} option.
+The standard \code{CMAKE_BUILD_TYPE} variable controls if a debug or
+release (with optimization) is built.
+\code{-DCMAKE_BUILD_TYPE=RELEASE} will build a release version.
+
+It is often desirable to use different C and F90/95 compilers (such as
+\emph{Intel} or \emph{Portland Group}) to generate optimized code for
+specific architectures or simply personal preference.  To change
+compilers, set the \code{CC}, \code{FC} and \code{F77} variables
+(these may include a path too).  For example, to change to the
+\emph{Intel} compilers in the \code{bash} shell:
+\begin{display}\begin{verbatim}
+export CC=icc
+export FC=ifort
+export F77=ifort
+\end{verbatim}\end{display}
+
+\item {\bf Build and install \parflow{}} with \code{GNU autoconf}\\
+
+In addition configuration with \code{cmake}, \parflow{} has deprecated
+support for \code{GNU autoconf}. \code{GNU autoconf} support will be
+maintained while the \code{cmake} support is fully tested.  Support
+will be removed in a future relase.  Please use \code{cmake} and
+report bugs.
+  
+This step builds the \parflow{} library and executable that runs on
+a serial or parallel machine.  The library is used when
+ \parflow{} is used as a component of another simulation (\emph{e.g.}
+ WRF).  
+
+\begin{display}\begin{verbatim}
+cd $PARFLOW_DIR
+cd pfsimulator
+./configure --prefix=$PARFLOW_DIR --with-amps=mpi1
+make 
+make install
+\end{verbatim}\end{display}
+
+This will build a parallel version of /parflow{} using the MPI1 
+libraries but no other options (a very basic installation with few features commonly used).
+You can control build options for /parflow{} in the configure step by adding other 
+options to that command-line. For a list of \emph{all} the configure options, use
+\begin{display}\begin{verbatim}
+./configure --help 
+\end{verbatim}\end{display} to list them.  Note that \parflow{} defaults to building a sequential version so
+\code{--with-amps} is needed when building for a parallel computer.
+  You can explicitly specify the path to the MPI to use with the
+ \code{--with-mpi} option to configure.  This controls \emph{AMPS}
+ which stands for \emph{A}nother \emph{M}essage \emph{P}assing
+ \emph{S}ytem.  \emph{AMPS} is a flexible message-passing layer within
+ \parflow{} that allows a common code core to be quickly and easily
+ adapted to different parallel environments. 
+
+\item {\bf Build and install pftools}\\ 
+\code{pftools} is a package of utilities and a \code{TCL} library that
+ is used to setup and postprocess Parflow files.  The input files to
+ \parflow{} are \code{TCL} scripts so \code{TCL} must be installed on
+ the system.
+
+The first command will build \parflow{} and the bundled tools and
+ install them in the \code{\$PARFLOW_DIR} directory.  The second
+ command will build and install the documentation.  A bare-bones
+ configure and build looks like:
+
+\begin{display}\begin{verbatim}
+cd $PARFLOW_DIR
+cd pftools
+./configure --prefix=$PARFLOW_DIR --with-amps=mpi1
+make 
+make install
+make doc_install
+\end{verbatim}\end{display}
+
+Note that \code{pftools} is \emph{NOT} parallel but some options for
+how files are written are based on the communication layer so pftools
+needs to have the same options that were used to build the \parflow{}
+library.
+
+If \code{TCL} is not installed in the system locations (\code{/usr} or
+\code{/usr/local}) you need to specify the path with the
+\code{--with-tcl=<PATH>} configure option.
+
+See \file{./configure --help} for additional configure options for \code{pftools}.
+
+\item {\bf Running a sample problem}\\ There is a test directory that
+  contains not only example scripts of \parflow{} problems but the
+  correct output for these scripts as well.  This may be used to test
+  the compilation process and verify that \parflow{} is installed
+  correctly.  If all went well a sample \parflow{} problem can be run
+  using:
+
+\begin{display}\begin{verbatim}
+cd $PARFLOW_DIR
+cd test
+tclsh default_single.tcl 1 1 1
+\end{verbatim}\end{display}
+
+Note that \code{PAFLOW_DIR} must be set for this to work and it assumes tclsh
+is in your path.  Make sure to use the same \code{TCL} as was used in the
+\code{pftools} configure. The entire suite of test cases may be run at once to test a range of functionality in \parflow{}.  This may be done by:
+\begin{display}\begin{verbatim}
+cd $PARFLOW_DIR
+cd test
+make check
+\end{verbatim}\end{display}
+
+\item {\bf Notes and other options:}\\ \parflow{} may be compiled with
+ a number of options using the configure script.  Some common options
+ are compiling \code{CLM} as in \cite{MM05,KM08a} to compile with
+ timing and optimization or to use a compiler other than \code{gcc}.
+  To compile with \code{CLM} add \code{--with-clm} to the configure
+ line such as:
+\begin{display}\begin{verbatim}
+./configure --prefix=$PARFLOW_DIR --with-amps=mpi1 --with-clm
+\end{verbatim}\end{display}
+
+Common options are:
+
+\begin{itemize}
+\item to include the \code{CLM} module:  \code{--with-clm}
+\item to include the \emph{SILO} 
+library which provides greater file output formats that are compatible
+with the \emph{VisIt} rendering package and must first be compiled 
+separately (see below): \code{--with-silo=$SILO_DIR}
+\item to include the \emph{Hypre} library which provides greater solver
+flexibility and options and also needs to be downloaded and built separately:
+\code{--with-hypre=$HYPRE_DIR}
+\item to write a single, undistributed \parflow{} binary file:
+\code{--with-amps-sequential-io}
+\item to write timing information in the log file: \code{--enable-timing }
+\end{itemize}
+
+All these options combined in the configure line would look like:
+
+\begin{display}\begin{verbatim}
+cd $PARFLOW_DIR
+cd pfsimulator
+./configure --prefix=$PARFLOW_DIR --with-amps=mpi1 --with-clm 
+--enable-timing --with-silo=$SILO_DIR --with-hypre=$HYPRE_DIR
+--with-amps-sequential-io
+make 
+make install
+\end{verbatim}\end{display}
+
+\code{pftools} needs to be compiled and built with compatible options
+that correspond to \parflow{}.  For the options above, \code{pftools} would
+be built as follows:
+
+\begin{display}\begin{verbatim}
+cd $PARFLOW_DIR
+cd pftools
+./configure --prefix=$PARFLOW_DIR --with-amps=mpi1 --with-silo=$SILO_DIR
+--with-amps-sequential-io
+
+make 
+make install
+make doc_install
+\end{verbatim}\end{display}
+
+Note that \code{CLM} and \emph{Hypre} are not used by \code{pftools} and
+those options do not need to be included, however the file formats (\emph{SILO} 
+and single file \code{PFB}) are very important and need to match exactly what is
+specified in \code{pfsimulator}.
+
+To enable detailed timing of the performance of several different
+components within \parflow{} use the \code{--enable-timing} option.
+To use compiler optimizations use the \code{--enable-opt=STRING} where
+the \code{=STRING} is an optional flag to specify the level and type
+of optimization.
+
+IMPORTANT NOTE: Optimization and debugging are controlled independent of one
+another.  So to compile with optimization and no debugging you need to
+specify both \code{--enable-opt=STRING} AND \code{--disable-debug}.
+
+It is often desirable to use different C and F90/95 compilers 
+(such as \emph{Intel} or \emph{Portland Group}) to match hardware specifics,
+for performance reasons or simply personal preference.  To change compilers,
+set the \code{CC}, \code{FC} and \code{F77} variables (these may include a path too). 
+For example, to change to the \emph{Intel} compilers in c-shell:
+\begin{display}\begin{verbatim}
+setenv CC icc
+setenv FC ifort
+setenv F77 ifort
+\end{verbatim}\end{display}
+\end{enumerate}
+
+\subsection{External Libraries}
+\label{External Libraries}
+Many of the features of \parflow{} use a file structure called Silo.  
+Silo is a free, open-source, format detailed at:
+\begin{center}
+\code{https://wci.llnl.gov/codes/silo/}
+\end{center}
+Support for Silo is integrated into \parflow{} but the Silo libraries 
+must be built separately and then linked into \parflow{} during the 
+build and configure process.   This may be done using the \code{--with-silo=PATH} 
+where the \code{PATH} is the location of the Silo libraries.
+
+Some features of \parflow{} need to call the solver package \emph{Hypre} externally.  
+These include the command options {\bf PFMG}, {\bf SMG} and  {\bf PFMGOctree}. \emph{Hypre} is a
+free, open-source, library detailed at:
+\begin{center}
+\code{https://computation.llnl.gov/casc/hypre/software.html}
+\end{center}
+Support for \emph{Hypre} 2.4.0b or later is integrated into \parflow{} but the libraries
+must be built separately and then linked into \parflow{} during the build and configure process. 
+This may be done using the \code{--with-hypre=PATH} where the \code{PATH} is the location of the
+\emph{Hypre} libraries.
+%=============================================================================
+%=============================================================================
+
+\section{Running the Sample Problem}
+\label{Running the Sample Problem}
+
+Here, we assume that \parflow{} is already built.  The following steps
+ will allow you to run a simple test problem supplied with the
+ distribution.
+\begin{enumerate}
+
+\item
+We first create a directory in which to run the problem,
+then copy into it some supplied default input files.
+So, do the following anywhere in your \file{\$HOME} directory:
+\begin{display}\begin{verbatim}
+mkdir foo
+cd foo
+cp $PARFLOW_DIR/examples/default_single.tcl .
+chmod 640 *
+\end{verbatim}\end{display}
+We used the directory name \file{foo} above;
+you may use any name you wish\footnote{We use \emph{foo} and \emph{bar} 
+just as placeholders for whatever directory you wish you use, 
+see also http://en.wikipedia.org/wiki/Foobar}.
+The last line changes the permissions of the files so that
+you may write to them.
+
+\item
+Run \parflow{} using the pftcl file as a TCL script
+\begin{display}\begin{verbatim}
+tclsh default_single.tcl
+\end{verbatim}\end{display}
+
+\end{enumerate}
+You have now successfully run a simple \parflow{} problem.
+For more information on running \parflow{},
+see \S~\ref{Running ParFlow}.
+
+
+%==============================
+\section{ParFlow Solvers}
+\label{ParFlow Solvers}
+
+\parflow{} can operate using a number of different solvers.  Two of these solvers, 
+IMPES (running in single-phase, fully-saturated mode, not multiphase) and RICHARDS 
+(running in variably-saturated mode, not multiphase, with the options of land surface
+processes and coupled overland flow) are detailed below. 
+This is a brief summary of solver settings used to simulate under three sets of conditions, fully-saturated,
+variably-saturated and variably-saturated with overland flow.  A complete, detailed explanation of the 
+solver parameters for ParFlow may be found later in this manual.
+To simulate fully saturated, steady-state conditions set the solver to IMPES, an example is given below. 
+This is also the default solver in ParFlow, so if no solver is specified the code solves using IMPES.
+
+\begin{verbatim}
+pfset Solver               Impes
+\end{verbatim}
+
+To simulate variably-saturated, transient conditions, using Richards' equation, 
+variably/fully saturated, transient with compressible storage set the solver to RICHARDS.  
+An example is below.  This is also the solver used to simulate surface flow or coupled 
+surface-subsurface flow.
+
+\begin{verbatim}
+pfset Solver             Richards
+\end{verbatim}
+
+To simulate overland flow, using the kinematic wave approximation to the shallow-wave 
+equations, set the solver to RICHARDS and set the upper patch boundary condition for the 
+domain geometry to OverlandFlow, an example is below.  This simulates overland flow, independently 
+or coupled to Richards' Equation as detailed in \cite{KM06}.  The overland flow boundary 
+condition can simulate both uniform and spatially-distributed sources, reading a distribution of
+fluxes from a binary file in the latter case. 
+\begin{verbatim}
+pfset Patch.z-upper.BCPressure.Type	OverlandFlow
+\end{verbatim}
+
+For this case, the solver needs to be set to RICHARDS: 
+\begin{verbatim}
+pfset Solver		Richards
+\end{verbatim}
+
+\parflow{} may also be coupled with the land surface model \code{CLM} \cite{Dai03}.  
+This version of \code{CLM} has been extensively modified to be called from within \parflow{} 
+as a subroutine, to support parallel infrastructure including I/O and most importantly with modified 
+physics to support coupled operation to best utilize the integrated hydrology
+ in \parflow{} \cite{MM05, KM08a}.  To couple \code{CLM} into \parflow{} first the
+ \code{--with-clm} option is needed in the \code{./configure} command as indicated in \S~\ref{Installing ParFlow}. 
+ Second, the \code{CLM} module needs to be called from within \parflow{}, this is done using the following 
+ solver key:
+\begin{verbatim}
+pfset Solver.LSM CLM
+\end{verbatim}
+Note that this key is used to call \code{CLM} from within the nonlinear solver time loop 
+and requires that the solver bet set to RICHARDS to work.  Note also that this key defaults to 
+\emph{not} call \code{CLM} so if this line is omitted \code{CLM} will not be called from within 
+\parflow{} even if compiled and linked.  Currently, \code{CLM} gets some of it's information from \parflow{} 
+such as grid, topology and discretization, but also has some of it's own input files for land cover, land cover
+types and atmospheric forcing.

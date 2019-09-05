@@ -72,7 +72,7 @@
 #else
 
 #define talloc(type, count) \
-  ((count) ? (type*)malloc(sizeof(type) * (size_t)(count)) : NULL)
+  ((count) ? (type*)malloc(sizeof(type) * (unsigned int)(count)) : NULL)
 
 #define ctalloc(type, count) \
   ((count) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)

@@ -1750,13 +1750,35 @@ PFModule  *PhaseRelPermInitInstanceXtra(
 
 void  PhaseRelPermFreeInstanceXtra()
 {
-  PFModule      *this_module = ThisPFModule;
-  InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
-
+  PFModule *this_module = ThisPFModule;
+  PublicXtra *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
+  InstanceXtra *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
   if (instance_xtra)
   {
+    switch ((public_xtra->type))
+    {
+      case 1:
+      {
+        Type1            *dummy1;
+
+        dummy1 = (Type1*)(public_xtra->data);
+
+        if (dummy1->data_from_file == 1)
+        {
+          if (dummy1->alpha_values)
+          {
+            FreeVector(dummy1->alpha_values);
+            dummy1->alpha_values = NULL;
+            FreeVector(dummy1->n_values);
+            dummy1->n_values = NULL;
+          }
+        }
+      }
+    }
+
     tfree(instance_xtra);
+    PFModuleInstanceXtra(this_module) = NULL;
   }
 }
 
@@ -2061,12 +2083,6 @@ void  PhaseRelPermFreePublicXtra()
       case 1:
       {
         dummy1 = (Type1*)(public_xtra->data);
-
-        if (dummy1->data_from_file == 1)
-        {
-          FreeVector(dummy1->alpha_values);
-          FreeVector(dummy1->n_values);
-        }
 
         tfree(dummy1->region_indices);
         tfree(dummy1->alphas);

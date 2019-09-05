@@ -322,7 +322,7 @@ pfset Solver.WriteSiloConcentration True
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-file copy input/small_domain_indicator_field.pfb small_domain_indicator_field.pfb
+file copy -force input/small_domain_indicator_field.pfb small_domain_indicator_field.pfb
 pfdist small_domain_indicator_field.pfb
 pfrun $name
 

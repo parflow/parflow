@@ -44,11 +44,15 @@
 #ifndef WELL_HEADER
 #define WELL_HEADER
 
+#include "general.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-#include "general.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*--------------------------------------------------------------------------
  * Data structure length constants
@@ -285,54 +289,50 @@ typedef struct {
  * function prototypes
  *-----------------------------------------------------------------------*/
 
-#ifdef __STDC__
-# define        ANSI_PROTO(s) s
-#else
-# define ANSI_PROTO(s) ()
-#endif
-
 /* well.c */
-Background * NewBackground ANSI_PROTO(());
-void FreeBackground ANSI_PROTO((Background *background));
-void ReadBackground ANSI_PROTO((FILE *fd, Background *background));
-void WriteBackground ANSI_PROTO((FILE *fd, Background *background));
-void PrintBackground ANSI_PROTO((Background *background));
+Background * NewBackground ();
+void FreeBackground (Background *background);
+void ReadBackground (FILE *fd, Background *background);
+void WriteBackground (FILE *fd, Background *background);
+void PrintBackground (Background *background);
 
-ProblemData *NewProblemData ANSI_PROTO(());
-void FreeProblemData ANSI_PROTO((ProblemData *problem_data));
-void ReadProblemData ANSI_PROTO((FILE *fd, ProblemData *problem_data));
-void WriteProblemData ANSI_PROTO((FILE *fd, ProblemData *problem_data));
-void PrintProblemData ANSI_PROTO((ProblemData *problem_data));
+ProblemData *NewProblemData ();
+void FreeProblemData (ProblemData *problem_data);
+void ReadProblemData (FILE *fd, ProblemData *problem_data);
+void WriteProblemData (FILE *fd, ProblemData *problem_data);
+void PrintProblemData (ProblemData *problem_data);
 
-WellDataHeader *NewWellDataHeader ANSI_PROTO(());
-void FreeWellDataHeader ANSI_PROTO((WellDataHeader *well_data_header));
-void ReadWellDataHeader ANSI_PROTO((FILE *fd, WellDataHeader *well_data_header));
-void WriteWellDataHeader ANSI_PROTO((FILE *fd, WellDataHeader *well_data_header));
-void PrintWellDataHeader ANSI_PROTO((WellDataHeader *well_data_header));
+WellDataHeader *NewWellDataHeader ();
+void FreeWellDataHeader (WellDataHeader *well_data_header);
+void ReadWellDataHeader (FILE *fd, WellDataHeader *well_data_header);
+void WriteWellDataHeader (FILE *fd, WellDataHeader *well_data_header);
+void PrintWellDataHeader (WellDataHeader *well_data_header);
 
-WellDataPhysical *NewWellDataPhysical ANSI_PROTO(());
-void FreeWellDataPhysical ANSI_PROTO((WellDataPhysical *well_data_physical));
-void ReadWellDataPhysical ANSI_PROTO((FILE *fd, WellDataPhysical *well_data_physical));
-void WriteWellDataPhysical ANSI_PROTO((FILE *fd, WellDataPhysical *well_data_physical));
-void PrintWellDataPhysical ANSI_PROTO((WellDataPhysical *well_data_physical));
-void CopyWellDataPhysical ANSI_PROTO((WellDataPhysical *updt_well_data_physical, WellDataPhysical *well_data_physical));
+WellDataPhysical *NewWellDataPhysical ();
+void FreeWellDataPhysical (WellDataPhysical *well_data_physical);
+void ReadWellDataPhysical (FILE *fd, WellDataPhysical *well_data_physical);
+void WriteWellDataPhysical (FILE *fd, WellDataPhysical *well_data_physical);
+void PrintWellDataPhysical (WellDataPhysical *well_data_physical);
+void CopyWellDataPhysical (WellDataPhysical *updt_well_data_physical, WellDataPhysical *well_data_physical);
 
-WellDataValue *NewWellDataValue ANSI_PROTO((int num_phases, int num_components));
-void FreeWellDataValue ANSI_PROTO((WellDataValue *well_data_value));
-void ReadWellDataValue ANSI_PROTO((FILE *fd, WellDataValue *well_data_value, int action, int type, int num_phases, int num_components));
-void WriteWellDataValue ANSI_PROTO((FILE *fd, WellDataValue *well_data_value, int action, int type, int num_phases, int num_components));
-void PrintWellDataValue ANSI_PROTO((WellDataValue *well_data_value, int action, int type, int num_phases, int num_components));
-void CopyWellDataValue ANSI_PROTO((WellDataValue *updt_well_data_value, WellDataValue *well_data_value, int action, int type, int num_phases, int num_components));
+WellDataValue *NewWellDataValue (int num_phases, int num_components);
+void FreeWellDataValue (WellDataValue *well_data_value);
+void ReadWellDataValue (FILE *fd, WellDataValue *well_data_value, int action, int type, int num_phases, int num_components);
+void WriteWellDataValue (FILE *fd, WellDataValue *well_data_value, int action, int type, int num_phases, int num_components);
+void PrintWellDataValue (WellDataValue *well_data_value, int action, int type, int num_phases, int num_components);
+void CopyWellDataValue (WellDataValue *updt_well_data_value, WellDataValue *well_data_value, int action, int type, int num_phases, int num_components);
 
-WellDataStat *NewWellDataStat ANSI_PROTO((int num_phases, int num_components));
-void FreeWellDataStat ANSI_PROTO((WellDataStat *well_data_stat));
-void ReadWellDataStat ANSI_PROTO((FILE *fd, WellDataStat *well_data_stat, int num_phases, int num_components));
-void WriteWellDataStat ANSI_PROTO((FILE *fd, WellDataStat *well_data_stat, int num_phases, int num_components));
-void PrintWellDataStat ANSI_PROTO((WellDataStat *well_data_stat, int num_phases, int num_components));
-void InitWellDataStat ANSI_PROTO((WellDataStat *well_data_stat, int num_phases, int num_components));
-void UpdateWellDataStat ANSI_PROTO((WellDataStat *updt_well_data_stat, WellDataStat *well_data_stat, int num_phases, int num_components));
-void CopyWellDataStat ANSI_PROTO((WellDataStat *updt_well_data_stat, WellDataStat *well_data_stat, int num_phases, int num_components));
+WellDataStat *NewWellDataStat (int num_phases, int num_components);
+void FreeWellDataStat (WellDataStat *well_data_stat);
+void ReadWellDataStat (FILE *fd, WellDataStat *well_data_stat, int num_phases, int num_components);
+void WriteWellDataStat (FILE *fd, WellDataStat *well_data_stat, int num_phases, int num_components);
+void PrintWellDataStat (WellDataStat *well_data_stat, int num_phases, int num_components);
+void InitWellDataStat (WellDataStat *well_data_stat, int num_phases, int num_components);
+void UpdateWellDataStat (WellDataStat *updt_well_data_stat, WellDataStat *well_data_stat, int num_phases, int num_components);
+void CopyWellDataStat (WellDataStat *updt_well_data_stat, WellDataStat *well_data_stat, int num_phases, int num_components);
 
-#undef ANSI_PROTO
+#ifdef __cplusplus
+}
+#endif
 
 #endif

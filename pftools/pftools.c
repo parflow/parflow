@@ -124,6 +124,7 @@ int            PFDistCommand(
   int num_procs_y;
   int num_procs_z;
   int num_procs;
+  int nz_manual=0;
 
   Background    *background;
   Grid          *user_grid;
@@ -133,16 +134,39 @@ int            PFDistCommand(
 
   char command[1024];
 
-  if (argc != 2)
+  // Setup and error checking for manual nz spec
+  if ((argc == 2)||(argc == 4))
   {
-    WrongNumArgsError(interp, LOADPFUSAGE);
+    if (argc == 4) /* Check that third argument is -nz */
+    {
+      if (strcmp(argv[1],"-nz")!=0)
+      {
+        printf("Error: Expected optional argument is: -nz \n");
+        printf("  argument read as: %s \n",argv[1]);
+        return TCL_ERROR;
+      }
+      nz_manual=atoi(argv[2]);
+      if (nz_manual<1)
+      {
+        printf("Error: -nz must be greater than 0 \n");
+        return TCL_ERROR;
+      }
+    }
+  } else {
+    /*WrongNumArgsError(interp, LOADPFUSAGE); */
+    printf("Error: Invalid number of arguments passed to pfdist \n");
+    printf("       2 or 4 allowed, %d passed by user \n",argc);
     return TCL_ERROR;
   }
 
-  filename = argv[1];
+  if (argc > 2)
+  {
+    filename = argv[3];
+  } else {
+    filename = argv[1];
+  }
 
   /* Make sure the file extension is valid */
-
   if ((filetype = GetValidFileExtension(filename)) == (char*)NULL)
   {
     InvalidFileExtensionError(interp, 1, LOADPFUSAGE);
@@ -167,6 +191,13 @@ int            PFDistCommand(
     background = ReadBackground(interp);
     user_grid = ReadUserGrid(interp);
 
+    int nz_in;
+    Subgrid     *user_subgrid = GridSubgrid(user_grid, 0);
+    if (nz_manual!=0)
+    {
+      nz_in = SubgridNZ(user_subgrid); // Save the correct nz
+      SubgridNZ(user_subgrid)=nz_manual; // Set the manual nz
+    }
     /*--------------------------------------------------------------------
      * Get inbox from input_filename
      *--------------------------------------------------------------------*/
@@ -179,7 +210,10 @@ int            PFDistCommand(
 
     all_subgrids = DistributeUserGrid(user_grid, num_procs,
                                       num_procs_x, num_procs_y, num_procs_z);
-
+    if (nz_manual!=0)
+    {
+      SubgridNZ(user_subgrid)=nz_in;  // Restore the correct nz
+    }
     if (!all_subgrids)
     {
       printf("Incorrect process allocation input\n");
@@ -563,16 +597,15 @@ int       AddData(
                   char *   hashkey)
 {
   Tcl_HashEntry *entryPtr;   /* Points to new hash table entry         */
-  int new_data;                   /* 1 if the hashkey already exists        */
-  int num;                   /* The number of the data set to be added */
+  int new_data;              /* 1 if the hashkey already exists        */
+  unsigned long num;          /* The number of the data set to be added */
 
   num = DataNum(data);
 
   /* Keep tring to find a unique hash key */
-
   do
   {
-    sprintf(hashkey, "dataset%d", num);
+    sprintf(hashkey, "dataset%lu", num);
     if ((entryPtr = Tcl_CreateHashEntry(&DataMembers(data), hashkey, &new_data))
         == NULL)
       return(0);
@@ -3039,6 +3072,8 @@ int               SetGridCommand(
   double x, y, z;
   double dx, dy, dz;
 
+  int return_code = TCL_ERROR;
+
   /* Five arguments must be given */
   if (argc != 5)
   {
@@ -3046,9 +3081,9 @@ int               SetGridCommand(
     return TCL_ERROR;
   }
 
-  npoints = argv[1];
-  origin = argv[2];
-  intervals = argv[3];
+  npoints = strdup(argv[1]);
+  origin = strdup(argv[2]);
+  intervals = strdup(argv[3]);
   hashkey = argv[4];
 
   /* Make sure that the number of points along each axis are all */
@@ -3058,14 +3093,14 @@ int               SetGridCommand(
       !(num = strtok(NULL, WS)) || (sscanf(num, "%d", &nz) != 1))
   {
     NotAnIntError(interp, 1, SETGRIDUSAGE);
-    return TCL_ERROR;
+    goto exit;
   }
 
   /* there should only be three numbers in the npoints list */
   if (strtok(NULL, WS))
   {
     InvalidArgError(interp, 1, SETGRIDUSAGE);
-    return TCL_ERROR;
+    goto exit;
   }
 
   /* Make sure that the origin is given in floating point numbers */
@@ -3074,7 +3109,7 @@ int               SetGridCommand(
       !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &z) != 1))
   {
     NotADoubleError(interp, 2, SETGRIDUSAGE);
-    return TCL_ERROR;
+    goto exit;
   }
 
   /* There should only be three numbers in the origin list */
@@ -3090,26 +3125,35 @@ int               SetGridCommand(
       !(num = strtok(NULL, WS)) || (sscanf(num, "%lf", &dz) != 1))
   {
     NotADoubleError(interp, 3, SETGRIDUSAGE);
-    return TCL_ERROR;
+    goto exit;
   }
 
   /* There should only be three numbers in the intervals list */
   if (strtok(NULL, WS))
   {
     InvalidArgError(interp, 3, SETGRIDUSAGE);
-    return TCL_ERROR;
+    goto exit;
   }
 
   /* Make sure dataset exists */
   if ((databox = DataMember(data, hashkey, entryPtr)) == NULL)
   {
     SetNonExistantError(interp, hashkey);
-    return TCL_ERROR;
+    goto exit;
   }
 
   /* Swap grid values */
   SetDataboxGrid(databox, nx, ny, nz, x, y, z, dx, dy, dz);
-  return TCL_OK;
+
+  return_code = TCL_OK;
+
+exit:
+
+  free(npoints);
+  free(origin);
+  free(intervals);
+
+  return return_code;
 }
 
 
@@ -4861,7 +4905,7 @@ int            ComputeDomainCommand(
 
   if (num_procs_z > 1)
   {
-    // SGS Add error message here!
+    fprintf(stderr, "Error: Process.Topology.R must be 1 for pfcomputedomain to work\n");
     return TCL_ERROR;
   }
 
@@ -7777,4 +7821,3 @@ int            HydroStatFromWTCommand(
   }
   return TCL_OK;
 }
-

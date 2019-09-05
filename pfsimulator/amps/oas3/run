@@ -44,7 +44,7 @@ while getopts hpg: c
 do
 	case $c in
 	hp) 
-		echo "usage: $0 run runname process_group"
+		echo "usage: $0 run runname"
 		echo "Runs parflow on the allocated cube."
 	        exit 0;;
 	p) 
@@ -63,8 +63,6 @@ done
 if [ "$DMALLOC_OPTIONS" ]; then
 	rm -f malloc.log.????
 fi
-
-HOST_FILE="./.hostfile"
 
 #
 # The following is a hack to deal with NFS temp mount problems
@@ -171,33 +169,8 @@ if [ "$DMALLOC_OPTIONS" ]; then
 	grep "^known" malloc.log.* 
 fi
 
-
 exit 0
 
-#
-# Junk below here for keeping around
-#
-
-MACHINE_NUM=`cat .amps.info.$2`
-
-MACHINE_LIST=""
-while [ $MACHINE_NUM -gt 1 ]
-do
-	echo "hello"
-	for i in `cat $HOST_FILE`
-	do
-		echo "hello"
-		if [ $MACHINE_NUM -gt 1 ] 
-		then 
-			MACHINE_LIST="$MACHINE_LIST -np 1 -machine $i"
-		fi
-		MACHINE_NUM=`echo $MACHINE_NUM-1 | bc`
-	done
-done
-
-echo MachineList $MACHINE_LIST
-
-echo mpirun  $MACHINE_LIST $PARFLOW_DIR/bin/$PROGRAM $1 2>&1 > $1.out.txt
 
 
 

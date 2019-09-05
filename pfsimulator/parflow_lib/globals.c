@@ -79,6 +79,8 @@ void   NewGlobals(char *run_name)
   globals_ptr->interval_divisions = 0;
   globals_ptr->intervals = 0;
   globals_ptr->repeat_counts = 0;
+
+  globals_ptr->use_clustering = 0;
 }
 
 

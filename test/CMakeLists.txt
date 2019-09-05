@@ -4,6 +4,8 @@ include(ParflowTest)
 set(TESTS 
   default_single.tcl
   default_richards_wells.tcl
+  octree-simple.tcl
+  octree-large-domain.tcl
   forsyth2.tcl
   harvey.flow.tcl
   harvey_flow_pgs.tcl
@@ -17,14 +19,17 @@ set(TESTS
 if(${PARFLOW_HAVE_HYPRE})
   list(APPEND TESTS 
     default_richards.tcl
+    default_richards_nocluster.tcl
     default_overland.tcl
     LW_var_dz.tcl
     LW_var_dz_spinup.tcl
     terrain_following_grid_overland.tcl
     var_dz_1D.tcl
     pfmg.tcl
+    pfmg_galerkin.tcl
     smg.tcl
-    pfmg_octree.tcl)
+    pfmg_octree.tcl
+    van-genuchten-file.tcl)
 endif()
 
 if(${PARFLOW_HAVE_SILO})
@@ -73,6 +78,7 @@ if(${PARFLOW_AMPS_LAYER} STREQUAL "mpi1")
       default_overland.tcl
       default_overland.pfmg.jac.tcl
       default_overland.pfmg_octree.jac.tcl
+      default_overland.pfmg_octree.fulljac.tcl
       water_balance_x.hardflow.nojac.tcl
       water_balance_x.hardflow.jac.tcl
       LW_var_dz.tcl
@@ -115,4 +121,9 @@ endforeach()
     
 if (${PARFLOW_HAVE_CLM})
   add_subdirectory (clm)
+  add_subdirectory (washita/tcl_scripts)
 endif(${PARFLOW_HAVE_CLM})
+
+if (${PARFLOW_HAVE_P4EST})
+  add_subdirectory (p4est)
+endif(${PARFLOW_HAVE_P4EST})

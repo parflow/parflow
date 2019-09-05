@@ -30,6 +30,10 @@
 
 #include "databox.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*-----------------------------------------------------------------------
  * function prototypes
  *-----------------------------------------------------------------------*/
@@ -224,6 +228,10 @@ void ComputeHydroStatFromWT(
                             Databox *top,
                             Databox *mask,
                             Databox *press0);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

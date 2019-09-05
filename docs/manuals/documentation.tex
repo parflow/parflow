@@ -1,0 +1,385 @@
+%=============================================================================
+% Chapter: Documentation
+%=============================================================================
+
+\chapter{Documentation}
+\label{Documentation}
+
+\parflow{} documentation is installed in the directory
+\begin{display}\begin{verbatim}
+$PARFLOW_HELP
+\end{verbatim}\end{display}
+There is a subdirectory for each manual.
+In \S~\ref{Writing Manuals}, we describe how to write and install
+\parflow{} manuals.
+In \S~\ref{Writing HTML Files} we describe how to write and install
+all other HTML files.
+
+The utility \file{pfhelp} provides online access to some or all
+of the above documents.
+It  uses the environment variable \code{PARFLOW_HTML_VIEWER} (which
+defaults to {\em netscape}) to determine the WWW viewer that
+will be used to view the online documentation.  
+The environment variable
+\code{PARFLOW_HELP} is used to determine the location of the
+help files.
+
+Developers on the NMG cluster should set \code{\$PARFLOW_HELP}
+as described in \S~\ref{The Developer's Environment}.
+Additional developer documentation is also provided via the CCSE Web server at
+\begin{display}\begin{verbatim}
+/home/parflow/html/index.html
+\end{verbatim}\end{display}
+This site is called the {\em ParFlow Info Exchange} (PFIX).
+
+
+In \S~\ref{Writing AVS Module Help}, we describe how to write and
+install \parflow{} AVS module help.
+This online help is made available within AVS in the same manner as
+that of the standard AVS module documentation.
+To access it, the following must be set:
+\begin{display}\begin{verbatim}
+AVS_HELP_PATH=$PARFLOW_DIR/avs/help
+\end{verbatim}\end{display}
+
+%=============================================================================
+% Section: Writing Manuals
+%=============================================================================
+
+\section{Writing Manuals}
+\label{Writing Manuals}
+
+The \parflow{} manuals are written in LaTeX and converted to PDF for
+easier viewing.  The source for these manuals is located in
+subdirectories of the directory \file{\$PARFLOW_SRC/docs}.  Various
+style files used to build the \parflow{} manuals are located in the
+directory \file{\$PARFLOW_SRC/docs/}.  The files \file{html.sty}
+define various commands that are part of the LaTeX2HTML package.  With
+these commands, one can do things such as add hyperlinks to the online
+document which are ignored by LaTeX when creating the printed
+document.  The file \file{parflow.sty} define various commands and
+environments to be used by \parflow{} developers when writing
+documentation.  They are discussed more fully in \S~\ref{ParFlow Style
+  Files}.  The CMakeText.txt file contains the CMake rules used to
+build the documenation when LaTex is specified during the CMake
+configure.
+
+To write and install \parflow{} manuals, do the following:
+\begin{enumerate}
+
+\item
+Modify or add new \file{.tex} files to the document.
+Note: make sure that new files are added to the
+\file{CMakeLists.txt}.
+Note that the CMake LaTex build rules copy the files from the source docs directory to 
+the build directory.   Make sure to edit the files in the source directory.
+
+\item
+Build the online and printed versions, by running
+\begin{display}\begin{verbatim}
+make
+\end{verbatim}\end{display}
+in the directory where CMake was configured.
+
+\item
+Check the printed version by looking at the generated PDF file.
+\begin{display}\begin{verbatim}
+<pdf-viewer> user_manual.pdf
+\end{verbatim}\end{display}
+Use any PDF viewer installed, {\em evince} and {\em acroread} are two common applications on Linux.
+
+\item
+Finally, use \code{cvs commit} to check the document source back
+into the repository.
+
+\end{enumerate}
+
+%=============================================================================
+% SubSection: ParFlow Style Files
+%=============================================================================
+
+\subsection{ParFlow Style Files}
+\label{ParFlow Style Files}
+
+In this section, we discuss the various commands and environments
+defined in \file{parflow.sty} and \file{parflow.perl}.
+Many of these were taken from the Texinfo package.
+
+The following commands are verbatim-like commands used to format
+different kinds of text:
+\begin{display}\begin{verbatim}
+\code{<sample-program-code>}
+\file{<file-name>}
+\kbd{<keyboard-input>}
+\key{<keyboard-key-name>}
+\samp{<literal-text>}
+\end{verbatim}\end{display}
+These commands handle the following special characters verbatim:
+\begin{display}\begin{verbatim}
+# & ~ _ ^
+\end{verbatim}\end{display}
+These special characters are {\em not} handled verbatim:
+\begin{display}\begin{verbatim}
+$ % \ { }
+\end{verbatim}\end{display}
+The special characters \verb@$ %@ may be printed by escaping with a \verb#\#.
+The special characters \verb@# & _@ are already handled verbatim, but may
+also be printed by escaping with a \verb#\#.
+The reason these environments are not fully verbatim is mainly
+due to limitations in the LaTeX2HTML package.
+
+The next commands are also used to format different kinds of text,
+but do not print any special characters verbatim:
+\begin{display}\begin{verbatim}
+\dfn{<term-being-defined>}
+\var{<metasyntactic-variable>}
+\end{verbatim}\end{display}
+
+The following environments are used to format descriptions of macros,
+data types, typed functions, and typed variables, respectively:
+\begin{display}\begin{verbatim}
+\defmac{<macro-name>}(<arguments>)
+\deftp{<category>}{<name-of-type>}{<attributes>}
+\deftypefn{<classification>}{<data-type>}{<name>}(<arguments>)
+\deftypevr{<classification>}{<data-type>}{<name>}
+\end{verbatim}\end{display}
+(More details may be found in the Texinfo documentation.)
+Within these \code{def*} environments, several description
+subsections are available.
+They are:
+\begin{display}\begin{verbatim}
+\DESCRIPTION
+\EXAMPLE
+\SEEALSO
+\NOTES
+\end{verbatim}\end{display}
+For example, the \code{NewRegion} reference (\S~\ref{NewRegion})
+in this manual was created by typing the following:
+\begin{display}\begin{verbatim}
+\begin{deftypefn}{Function}{Region *}{NewRegion}(int \var{size})
+
+%=========================== DESCRIPTION
+\DESCRIPTION
+Creates and returns a pointer to a new \code{Region} structure
+containing \var{size} pointers to new \code{SubregionArray} structures.
+
+%=========================== SEE ALSO
+\SEEALSO
+\vref{Grid Structures}{Grid Structures}\\
+\vref{NewSubregionArray}{NewSubregionArray}\\
+\vref{AppendSubregion}{AppendSubregion}\\
+\vref{AppendSubregionArray}{AppendSubregionArray}\\
+\vref{Gridding}{Gridding}
+
+\end{deftypefn}
+\end{verbatim}\end{display}
+The command
+\begin{display}\begin{verbatim}
+\vref{<label>}{<title>}
+\end{verbatim}\end{display}
+(for ``verbose reference'') in the example above, prints the reference
+number of \code{<label>}, the \code{<title>} text in brackets, and
+prints the page number in the printed manual.
+
+Several commands and environments also exist for formatting the title
+and coyright pages of the manuals.
+The title page is created via the \code{TitlePage} environment.
+Within this environment, the following commands are allowed:
+\begin{display}\begin{verbatim}
+\Title{<title}
+\SubTitle{<subtitle>}
+\Author{<authors>}
+\end{verbatim}\end{display}
+The copyright page is created via the \code{CopyrightPage} environment.
+
+The \code{index} commands of Texinfo will take some work to mimic in
+the \parflow{} style files.
+For the time being, the following placeholders exist:
+\begin{display}\begin{verbatim}
+\cindex{<index string>}
+\findex{<index string>}
+\kindex{<index string>}
+\pindex{<index string>}
+\tindex{<index string>}
+\vindex{<index string>}
+\end{verbatim}\end{display}
+These commands currently only change the font and are used {\em within}
+the \code{index} command as in the following example of a
+{\em function index} call:
+\begin{display}\begin{verbatim}
+\index{\findex{<index string>}}
+\end{verbatim}\end{display}
+
+There are also macros available for writing \parflow{}, \xparflow{},
+and \pftools{} in a consistent manner in both the printed and online
+versions of the manuals.
+These commands should be invoked as follows:
+\begin{display}\begin{verbatim}
+\parflow{}
+\xparflow{}
+\pftools{}
+\end{verbatim}\end{display}
+Leaving the \verb#{}# characters off may cause formatting problems,
+so it is strongly recommended that you invoke these commands in this
+manner.
+
+For information on how to use the command
+\begin{display}\begin{verbatim}
+\pfaddanchor{<unique tag>}
+\end{verbatim}\end{display}
+to provide help info for \parflow{} GUIs,
+see \S~\ref{Providing Online Help for GUIs}.
+
+%=============================================================================
+% SubSection: Providing Online Help for GUIs
+%=============================================================================
+
+\subsection{Providing Online Help for GUIs}
+\label{Providing Online Help for GUIs}
+
+A mechanism has been developed to provide online help for \parflow{} GUIs.
+The command
+\begin{display}\begin{verbatim}
+\pfaddanchor{<unique tag>}
+\end{verbatim}\end{display}
+must first be added to manual sections that are to be used as online help
+pages (see file \file{files.tex} of the User's Manual for examples).
+This command produces an anchor in the online html document and
+nothing in the printed version.
+The anchor name is created by prepending the string \code{PFAnchor}
+to the tag argument of the \code{pfaddanchor} command.
+
+After the online manual is created, the command \file{do_online}
+should be executed by the manual \file{Makefile}.
+This routine is located in the \file{\$PARFLOW_SRC/docs/lib}
+directory.
+It parses the online manuals for the string \code{name=PFAnchor},
+then creates the file \file{pfanchors} which contains a table of
+anchor names and the files in which they appear (note, the file
+is sorted by anchor name).
+In this way, \parflow{} GUIs need only search the \file{pfanchors}
+files to determine the location of appropriate help information.
+
+%=============================================================================
+% Section: Writing HTML Files
+%=============================================================================
+
+\section{Writing HTML Files}
+\label{Writing HTML Files}
+
+HTML files that are created ``by hand'' (i.e. not generated by a package
+such as LaTeX2HTML), are kept under resource control in the directory
+\file{\$PARFLOW_SRC/docs/html}.
+This directory mimics the \code{\$PARFLOW_HELP} directory.
+To modify and install an HTML file, do the following:
+\begin{enumerate}
+
+\item
+Check out and lock the file to be modified.
+
+\item
+Make modifications.
+
+\item
+In directory \file{\$PARFLOW_SRC/docs/html}, type
+\begin{display}\begin{verbatim}
+build install
+\end{verbatim}\end{display}
+This will copy the HTML files in the current directory tree
+to the appropriate place in the \file{\$PARFLOW_HELP} directory.
+
+\item
+Finally, use \kbd{xpfci} to check in the modified source.
+
+\end{enumerate}
+Note: if you are creating new HTML files or deleting old HTML
+files, you will need to modify the above \file{build} script.
+
+
+%=============================================================================
+% Section: Writing PFIX Files
+%=============================================================================
+
+\section{Writing PFIX Files}
+\label{Writing PFIX Files}
+
+The PFIX web pages are kept under RCS control in the
+\file{~parflow/html} directory.  The \file{public} directory is for
+information that is for local users (helios only servers local
+machines). \file{private} is used for internal use only documents for
+developers.  Items which are to be available to everyone should go on
+the \parflow{} home page.
+
+If you need to modify one of these files use the
+following procedure:
+
+\begin{enumerate}
+\item Go to the directory \file{~parflow/html}.
+\item Checkout (and lock) the HTML file.  If the file is already
+writable it is probably being updated by someone else!
+\item Make the changes you want
+\item Test the new page using the PFIX link
+\item Checkin the HTML file.
+\end{enumerate}
+
+%=============================================================================
+% Section: Writing AVS Module Help
+%=============================================================================
+
+\section{Writing AVS Module Help}
+\label{Writing AVS Module Help}
+
+This section describes how to write AVS module help.
+First, it is important that the names of module files be exactly the
+same as the module name, where in the file name we replace spaces by
+a \code{_} character.
+This convention is used by AVS to find online help files.
+AVS suggests that these names be no longer than 14 characters
+for portability reasons.
+We have already violated this in many cases, but should probably
+attempt to do this from now on.
+
+Assume we want to write online help for a module named ``foo~bar''
+(the source for which should be in a file called \file{foo_bar.c}).
+We then do the following:
+\begin{enumerate}
+
+\item
+Edit the file \file{foo_bar.txt} and type in the help info.
+We should try to propogate a standard format for these files,
+so use an existing file as a template.
+
+\item
+Type
+\begin{display}\begin{verbatim}
+build install
+\end{verbatim}\end{display}
+This installs the online help in the directory
+\file{\$PARFLOW_DIR/avs/help}.
+
+\item
+For help to work, you must have either the environment variable
+\code{AVS_HELP_PATH} set appropriately (see \S~\ref{Documentation}),
+or you must have a \code{HelpPath} line set in your \file{.avsrc} file.
+The former is recommended since it may be set using the
+\code{PARFLOW_DIR} variable.
+
+\end{enumerate}
+Of course, one should follow standard resource control system (CVS)
+procedures when updating or adding new help.
+
+
+%=============================================================================
+% Section: (Not) Writing AVS/Express Module Help
+%=============================================================================
+
+\section{(Not) Writing AVS/Express Module Help}
+\label{(Not) Writing AVS/Express Module Help}
+
+Since AVS/Express uses a proprietary help file format, it is not possible to
+write help files for your modules unless you buy a license from
+Bristol Help.  There is a documentation module in AVS/Express (the lighbulb
+in the Standard\_Objects/Parameters library), but I stongly advise against
+using it as it is poorly implemented.  For example, you can only type a
+single line of text into it, and Express seems to duplicate and move it
+within your application between saves and loads of the application file.

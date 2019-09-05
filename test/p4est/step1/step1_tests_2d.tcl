@@ -2,8 +2,12 @@ lappend auto_path $env(PARFLOW_DIR)/bin
 package require parflow
 namespace import Parflow::*
 
-# Test cases for step 1 in parflow-p4est integration.
-#
+# Test cases for step 1 in ParFlow+p4est integration.
+# The goal of this step is to run ParFlow with the
+# subgrid ordering stablished by pe4st. We keep a single subgrid
+# per process in all tests in order to be able to compare
+# with the upstream version.
+
 # The "test_brick_2d" script sets up the database for
 # to execute the default version of Parflow and take
 # the number of grid points (Nx,Ny) and the Processor

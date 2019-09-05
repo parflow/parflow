@@ -45,10 +45,18 @@
 #include <stdio.h>
 #include <math.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* diff.c */
 void SigDiff(Databox *v1, Databox *v2, int m, double absolute_zero, FILE *fp);
 double DiffElt(Databox *v1, Databox *v2, int i, int j, int k, int m, double absolute_zero);
 void MSigDiff(Tcl_Interp *interp, Databox *v1, Databox *v2, int m, double absolute_zero, Tcl_Obj *result);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

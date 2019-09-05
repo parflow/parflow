@@ -16,6 +16,9 @@ pfset Process.Topology.P 1
 pfset Process.Topology.Q 1
 pfset Process.Topology.R 1
 
+# Clustering causing problems when p4est enabled
+pfset UseClustering False
+
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------

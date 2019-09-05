@@ -60,23 +60,21 @@
 #include <stdio.h>
 #include <math.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*-----------------------------------------------------------------------
  * function prototypes
  *-----------------------------------------------------------------------*/
 
-#ifdef __STDC__
-# define        ANSI_PROTO(s) s
-#else
-# define ANSI_PROTO(s) ()
-#endif
-
-
 /* head.c */
-Databox * HHead ANSI_PROTO((Databox *h, GridType grid_type));
-Databox *PHead ANSI_PROTO((Databox *h, GridType grid_type));
+Databox * HHead(Databox *h, GridType grid_type);
+Databox *PHead(Databox *h, GridType grid_type);
 
-#undef ANSI_PROTO
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

@@ -149,7 +149,7 @@ Problem   *NewProblem(
   contaminants = GetString("Contaminants.Names");
   GlobalsContaminatNames = NA_NewNameArray(contaminants);
   num_contaminants = ProblemNumContaminants(problem) =
-                       NA_Sizeof(GlobalsContaminatNames);
+    NA_Sizeof(GlobalsContaminatNames);
 
   /*-----------------------------------------------------------------------
    * PDE coefficients

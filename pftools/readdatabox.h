@@ -42,14 +42,18 @@
 
 #include "parflow_config.h"
 
-#include <stdio.h>
+#include "databox.h"
 
 #ifdef HAVE_HDF4
 #include <hdf.h>
 #include <netcdf.h>
 #endif
 
-#include "databox.h"
+#include <stdio.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifndef NULL
 #define NULL ((void*)0)
@@ -68,5 +72,9 @@ Databox *ReadSimpleB(char *file_name, double default_value);
 Databox *ReadAVSField(char *filename, double default_value);
 Databox *ReadSDS(char *filename, int ds_num, double default_value);
 Databox *ReadSilo(char *filename, double default_value);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
