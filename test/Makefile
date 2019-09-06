@@ -35,9 +35,9 @@ TESTS += \
 	pfmg.tcl \
 	smg.tcl \
 	pfmg_octree.tcl \
-  overland_slopingslab_KWE.tcl \
+	overland_slopingslab_KWE.tcl \
 	overland_tiltedV_KWE.tcl \
-  overland_slopingslab_DWE.tcl \
+	overland_slopingslab_DWE.tcl \
 	overland_tiltedV_DWE.tcl\
 	overland_FlatICP.tcl \
 	richards_FBx.tcl \
@@ -257,3 +257,4 @@ testclean:
 	@rm -fr LW_var_dz_spinup.out
 	@rm -fr default_single.out
 	@rm -f *.nc
+	@rm -f *.pfmetadata

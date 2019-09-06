@@ -94,3 +94,4 @@ testclean:
 	@rm -fr LW_var_dz_spinup.out
 	@rm -fr default_single.out
 	@rm -f *.nc
+	@rm -f *.pfmetadata

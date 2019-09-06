@@ -67,7 +67,7 @@ void realSpaceZ(ProblemData *problem_data, Vector *rsz)
 
   GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
 
-k = 0;   //@RMM bug fix for processor outside active domain 
+  k = 0; //@RMM bug fix for processor outside active domain
 
   /*-----------------------------------------------------------------------
    * real_space_z

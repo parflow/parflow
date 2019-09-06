@@ -296,21 +296,21 @@ GrGeomSolid   *GrGeomNewSolid(
 
   new_grgeomsolid->interior_boxes = NULL;
 
-  for(int f = 0; f < GrGeomOctreeNumFaces; f++)
+  for (int f = 0; f < GrGeomOctreeNumFaces; f++)
   {
-     GrGeomSolidSurfaceBoxes(new_grgeomsolid, f) = NULL;
+    GrGeomSolidSurfaceBoxes(new_grgeomsolid, f) = NULL;
 
-     new_grgeomsolid -> patch_boxes[f] = talloc(BoxArray *, num_patches);
-	
-     for(int patch = 0 ; patch < num_patches; patch++)
-     {
-	GrGeomSolidPatchBoxes(new_grgeomsolid, patch, f) = NULL;
-     }
+    new_grgeomsolid->patch_boxes[f] = talloc(BoxArray *, num_patches);
+
+    for (int patch = 0; patch < num_patches; patch++)
+    {
+      GrGeomSolidPatchBoxes(new_grgeomsolid, patch, f) = NULL;
+    }
   }
 
-  if(GlobalsUseClustering)
+  if (GlobalsUseClustering)
   {
-     ComputeBoxes(new_grgeomsolid);
+    ComputeBoxes(new_grgeomsolid);
   }
 
   return new_grgeomsolid;
@@ -326,27 +326,27 @@ void          GrGeomFreeSolid(
 {
   int i;
 
-  if(GrGeomSolidInteriorBoxes(solid))
+  if (GrGeomSolidInteriorBoxes(solid))
   {
-     FreeBoxArray(GrGeomSolidInteriorBoxes(solid));
+    FreeBoxArray(GrGeomSolidInteriorBoxes(solid));
   }
 
-  for(int f = 0; f < GrGeomOctreeNumFaces; f++)
+  for (int f = 0; f < GrGeomOctreeNumFaces; f++)
   {
-     if(GrGeomSolidSurfaceBoxes(solid, f))
-     {
-	FreeBoxArray(GrGeomSolidSurfaceBoxes(solid, f));
-     }
+    if (GrGeomSolidSurfaceBoxes(solid, f))
+    {
+      FreeBoxArray(GrGeomSolidSurfaceBoxes(solid, f));
+    }
 
-     for(int patch = 0 ; patch < GrGeomSolidNumPatches(solid); patch++)
-     {
-	if(GrGeomSolidPatchBoxes(solid, patch, f))
-	{
-	   FreeBoxArray(GrGeomSolidPatchBoxes(solid, patch, f));
-	}
-     }
+    for (int patch = 0; patch < GrGeomSolidNumPatches(solid); patch++)
+    {
+      if (GrGeomSolidPatchBoxes(solid, patch, f))
+      {
+        FreeBoxArray(GrGeomSolidPatchBoxes(solid, patch, f));
+      }
+    }
 
-     tfree(solid -> patch_boxes[f]);
+    tfree(solid->patch_boxes[f]);
   }
 
   GrGeomFreeOctree(GrGeomSolidData(solid));

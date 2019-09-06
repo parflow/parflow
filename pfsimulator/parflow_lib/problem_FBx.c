@@ -125,11 +125,10 @@ void FBx(ProblemData *problem_data, Vector *FBx)
             ipicv = SubvectorEltIndex(val_sub, i, j, k);
             FBx_dat[ips] = val_dat[ipicv];
           });
-
         }      /* End subgrid loop */
 
-	FreeTempVector(values);
-	break;
+        FreeTempVector(values);
+        break;
       }
     }
   }
@@ -219,7 +218,6 @@ PFModule   *FBxNewPublicXtra()
     //  PFBFile = 0;
     switch ((public_xtra->type))
     {
-
       // Read from PFB file
       case 0:
       {
@@ -264,16 +262,13 @@ void  FBxFreePublicXtra()
 
       switch ((public_xtra->type))
       {
-
         case 0:
         {
           dummy0 = (Type0*)(public_xtra->data);
           tfree(dummy0);
           break;
         }
-
       }
-
     }
     tfree(public_xtra);
   }

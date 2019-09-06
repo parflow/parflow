@@ -147,21 +147,21 @@ typedef struct {
  *--------------------------------------------------------------------------*/
 
 #define ForSubregionI(i, subregion_array) \
-  for (i = 0; i < SubregionArraySize(subregion_array); i++)
+  for (i = 0; i < SubregionArraySize(subregion_array); i ++)
 
 #define ForSubregionArrayI(i, region) \
-  for (i = 0; i < RegionSize(region); i++)
+  for (i = 0; i < RegionSize(region); i ++)
 
 
 /* region.c */
-Subregion * NewSubregion (int ix, int iy, int iz, int nx, int ny, int nz, int sx, int sy, int sz, int rx, int ry, int rz, int process);
-SubregionArray *NewSubregionArray (void);
-SGSRegion *NewRegion (int size);
-void FreeSubregion (Subregion *subregion);
-void FreeSubregionArray (SubregionArray *subregion_array);
-void FreeRegion (SGSRegion *region);
-void AppendSubregion (Subregion *subregion, SubregionArray * *subregion_array);
-void AppendSubregionArray (SubregionArray *subregion_array_0, SubregionArray * *subregion_array_1);
+Subregion * NewSubregion(int ix, int iy, int iz, int nx, int ny, int nz, int sx, int sy, int sz, int rx, int ry, int rz, int process);
+SubregionArray *NewSubregionArray(void);
+SGSRegion *NewRegion(int size);
+void FreeSubregion(Subregion *subregion);
+void FreeSubregionArray(SubregionArray *subregion_array);
+void FreeRegion(SGSRegion *region);
+void AppendSubregion(Subregion *subregion, SubregionArray * *subregion_array);
+void AppendSubregionArray(SubregionArray *subregion_array_0, SubregionArray * *subregion_array_1);
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,5 @@
 
-add_test (NAME clm COMMAND tclsh clm.tcl 1 1 1 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+# add_test (NAME clm COMMAND tclsh clm.tcl 1 1 1 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(TESTS "")
 if(${PARFLOW_HAVE_CLM})

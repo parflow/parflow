@@ -26,26 +26,26 @@
  *  USA
  **********************************************************************EHEADER*/
 /****************************************************************
-* File:	extrap_TIN.c
+* File: extrap_TIN.c
 *
-* Written by:	Bill Bosl
+* Written by:   Bill Bosl
 *              Lawrence Livermore National Lab
-*		e-mail: wjbosl@llnl.gov
-*		phone:	(510) 423-2873
+*               e-mail: wjbosl@llnl.gov
+*               phone:  (510) 423-2873
 *
-* Purpose:	This program will take a gms TIN file that has
-*		NOT been triangulated and fit a least-squares
-*		plane through the surface(s) described by each set
-*		of points. It then creates new points, presumably
-*		points outside the original domain, using the
-*		computed plane. The primary use for this program
-*		will be to extrapolate reasonably linear surfaces
-*		defined by a set of points out to some larger domain.
+* Purpose:      This program will take a gms TIN file that has
+*               NOT been triangulated and fit a least-squares
+*               plane through the surface(s) described by each set
+*               of points. It then creates new points, presumably
+*               points outside the original domain, using the
+*               computed plane. The primary use for this program
+*               will be to extrapolate reasonably linear surfaces
+*               defined by a set of points out to some larger domain.
 *
-*		More than one surface may be present in the input TIN
-*		file. Each surface will be extrapolated to the same points
-*		in the order found in the input file, and a new TIN
-*		file will be written with the new points listed first.
+*               More than one surface may be present in the input TIN
+*               file. Each surface will be extrapolated to the same points
+*               in the order found in the input file, and a new TIN
+*               file will be written with the new points listed first.
 *
 ****************************************************************/
 

@@ -41,7 +41,7 @@ git_describe(PARFLOW_VERSION --tags)
 if (NOT PARFLOW_VERSION)
   file (STRINGS "VERSION" PARFLOW_VERSION)
 endif ()
-  
+ 
 message("Configuring version : ${PARFLOW_VERSION}")
 version_create_variables (PARFLOW)
 

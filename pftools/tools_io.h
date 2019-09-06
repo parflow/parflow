@@ -147,4 +147,4 @@ void tools_ReadDouble(
 }
 #endif
 
-#endif 
+#endif
