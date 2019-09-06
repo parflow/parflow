@@ -154,7 +154,7 @@ int            MakePatchySolid(
     {
       mask_val = *DataboxCoeff(msk, i, j, 0);
 
-      if {any_zeros==0 & mask_val==0}
+      if (any_zeros==0 & mask_val==0)
       {
         any_zeros=1;
       }
@@ -382,6 +382,8 @@ int            MakePatchySolid(
     printf(" *** Cell faces: %i *** \n",cell_faces);
     printf("Should be: %i\n",NX*2 + NY*2 + (NX*NY)*2);
     printf("NX,NY: %i %i\n",NX, NY);
+
+    printf("any_zeros value: %i\n",any_zeros);
   }
 
   // ==========================================================================
@@ -752,7 +754,14 @@ int            MakePatchySolid(
   fprintf(fp," %i %i %i\n",Patch[7*i + 3],Patch[7*i + 4],Patch[7*i + 5]);
   }
 
-  fprintf(fp,"%i \n",non_blanks-1); // -1 since zero is omitted
+  if (any_zeros==1)
+  {
+    fprintf(fp,"%i \n",non_blanks-1); // -1 since zero is omitted
+  } else {
+    fprintf(fp,"%i \n",non_blanks); // -1 since zero is omitted
+  }
+
+  // fprintf(fp,"%i \n",non_blanks-1); // -1 since zero is omitted
   for (i=0; i<(6+np_usr+1); ++i)
   {
     if ((AllPatches[i].patch_cell_count>0)&(AllPatches[i].value!=0))
@@ -797,7 +806,7 @@ int            MakePatchySolid(
       tools_WriteInt(fp,&Patch[7*i + 5], 1);
     }
 
-    if {any_zeros==1}
+    if (any_zeros==1)
     {
       write_int=non_blanks-1;
     } else {
