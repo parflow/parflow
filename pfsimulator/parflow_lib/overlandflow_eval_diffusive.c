@@ -151,7 +151,7 @@ void    OverlandFlowEvalDiff(
         {
           ip = SubvectorEltIndex(p_sub, i, j, k1);
           ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
-          ippsy = (int)SubvectorEltIndex(p_sub, i, j+sy_v, k1y);
+          ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
           Pupx = pfmax(pp[ipp1], 0.0);
           Pupy = pfmax(pp[ippsy], 0.0);
           Pupox = pfmax(opp[ipp1], 0.0);
@@ -258,7 +258,7 @@ void    OverlandFlowEvalDiff(
         {
           ip = SubvectorEltIndex(p_sub, i, j, k1);
           ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
-          ippsy = (int)SubvectorEltIndex(p_sub, i, j+sy_v, k1y);
+          ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
           Pupx = pfmax(pp[ipp1], 0.0);
           Pupy = pfmax(pp[ippsy], 0.0);
           Pupox = pfmax(opp[ipp1], 0.0);

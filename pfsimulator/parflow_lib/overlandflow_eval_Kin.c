@@ -131,8 +131,10 @@ void    OverlandFlowEvalKin(
         k1 = (int)top_dat[itop];
         k0x = (int)top_dat[itop - 1];
         k0y = (int)top_dat[itop - sy_v];
-        k1x = (int)top_dat[itop + 1];
-        k1y = (int)top_dat[itop + sy_v];
+        k1x = pfmax((int)top_dat[itop + 1],0);
+        k1y = pfmax((int)top_dat[itop + sy_v],0);
+        printf("i=%d j=%d k1=%d k1x=%d k1y=%d \n",i,j,k1,k1x,k1y);
+
 
         if (k1 >= 0)
         {
@@ -140,7 +142,7 @@ void    OverlandFlowEvalKin(
           Sf_x = sx_dat[io];
           Sf_y = sy_dat[io];
           ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
-          ippsy = (int)SubvectorEltIndex(p_sub, i, j+sy_v, k1y);
+          ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
 
           Sf_mag = RPowerR(Sf_x * Sf_x + Sf_y * Sf_y, 0.5);
           if (Sf_mag < ov_epsilon)
@@ -206,7 +208,6 @@ void    OverlandFlowEvalKin(
         kw_v[io] = qx_v[io - 1];
         kn_v[io] = qy_v[io];
         ks_v[io] = qy_v[io - sy_v];
-        //printf("i=%d j=%d k=%d ke_v=%d kw_v=%d kn_v=%d ks_v=%f\n",i,j,k,ke_v[io],kw_v[io],kn_v[io],ks_v[io]);
       }
     });
   }
@@ -229,7 +230,7 @@ void    OverlandFlowEvalKin(
         {
           ip = SubvectorEltIndex(p_sub, i, j, k1);
           ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
-          ippsy = (int)SubvectorEltIndex(p_sub, i, j+sy_v, k1y);
+          ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
 
           Sf_x = sx_dat[io];
           Sf_y = sy_dat[io];
