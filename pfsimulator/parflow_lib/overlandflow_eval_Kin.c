@@ -70,7 +70,6 @@ void    OverlandFlowEvalKin(
   Vector      *mannings = ProblemDataMannings(problem_data);
   Vector      *top = ProblemDataIndexOfDomainTop(problem_data);
 
-  // printf("overland_eval_diffusive called\n");
   Subvector     *sx_sub, *sy_sub, *mann_sub, *top_sub, *p_sub;
 
   Subgrid      *subgrid;
@@ -133,8 +132,6 @@ void    OverlandFlowEvalKin(
         k0y = (int)top_dat[itop - sy_v];
         k1x = pfmax((int)top_dat[itop + 1],0);
         k1y = pfmax((int)top_dat[itop + sy_v],0);
-        printf("i=%d j=%d k1=%d k1x=%d k1y=%d \n",i,j,k1,k1x,k1y);
-
 
         if (k1 >= 0)
         {
