@@ -146,4 +146,3 @@
 #define TIME_EPSILON (FLT_EPSILON * 10)
 
 #endif
-

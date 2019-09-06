@@ -34,6 +34,7 @@
 #include "grid.h"
 
 #include <math.h>
+#include "use_cudamalloc.h"
 
 /*--------------------------------------------------------------------------
  * NewSubregion
@@ -98,7 +99,6 @@ SubregionArray  *NewSubregionArray()
 
   return new_subregion_array;
 }
-
 
 /*--------------------------------------------------------------------------
  * NewRegion
@@ -370,4 +370,3 @@ void             AppendSubregionArray(
 /*--------------------------------------------------------------------------
  * CommRegFromStencil: RDF todo
  *--------------------------------------------------------------------------*/
-

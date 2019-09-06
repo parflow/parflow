@@ -1037,4 +1037,3 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #define AMPS_NEWPACKAGE_SPECIALIZED 1
 
 #endif
-

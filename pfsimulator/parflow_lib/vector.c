@@ -45,6 +45,7 @@ using namespace SAMRAI;
 #endif
 
 #include <stdlib.h>
+#include "use_cudamalloc.h"
 
 static int samrai_vector_ids[5][2048];
 
@@ -928,4 +929,3 @@ void    InitVectorRandom(
     });
   }
 }
-

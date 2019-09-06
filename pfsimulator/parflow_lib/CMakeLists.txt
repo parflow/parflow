@@ -60,8 +60,7 @@ set (SRC_FILES advect.F
   mg_semi_restrict.c
   n_vector.c
   new_endpts.c
-  #nl_function_eval.c
-  nl_function_eval.cu
+  nl_function_eval.c
   nodiag_scale.c
   overlandflow_eval.c
   overlandflow_eval_diffusive.c
@@ -153,6 +152,10 @@ set (SRC_FILES advect.F
   write_parflow_silo.c
   write_parflow_silo_pmpio.c
   )
+
+set_source_files_properties(nl_function_eval.c PROPERTIES LANGUAGE CUDA)
+#set_source_files_properties(vector.c PROPERTIES LANGUAGE CUDA)
+#set_source_files_properties(region.c PROPERTIES LANGUAGE CUDA)
 
 add_library(pfsimulator ${SRC_FILES})
 set_target_properties(pfsimulator PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
