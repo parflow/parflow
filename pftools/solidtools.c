@@ -142,6 +142,8 @@ int            MakePatchySolid(
 
   int nxyzp = (NX + 1) * (NY + 1); // NOTE: Z is NOT included here
 
+  int any_zeros=0;
+
   // Find the distinct patches in the mask and tally them up
   int mask_val=0;
   int test_val=0;
@@ -151,6 +153,11 @@ int            MakePatchySolid(
     for (i = 0; i < NX; ++i)
     {
       mask_val = *DataboxCoeff(msk, i, j, 0);
+
+      if {any_zeros==0 & mask_val==0}
+      {
+        any_zeros=1;
+      }
 
       if (mask_val==1)
       {
@@ -790,7 +797,12 @@ int            MakePatchySolid(
       tools_WriteInt(fp,&Patch[7*i + 5], 1);
     }
 
-    write_int=non_blanks-1;
+    if {any_zeros==1}
+    {
+      write_int=non_blanks-1;
+    } else {
+      write_int=non_blanks;
+    }
     tools_WriteInt(fp,&write_int, 1); // -1 since zero is omitted
 
     for (i=0; i<(6+np_usr+1); ++i)
