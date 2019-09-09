@@ -31,6 +31,7 @@ extern "C"{
 #include "llnltyps.h"
 //#include "math.h"
 #include "float.h"
+#include "use_cudaloops.h"
 
 /*---------------------------------------------------------------------
  * Define module structures
@@ -57,6 +58,18 @@ typedef struct {
   PFModule     *overlandflow_module_kin;
 } InstanceXtra;
 
+
+typedef struct {
+    
+    double *dp, *et, *fp, *odp, *opp, *osp, *pop, *pp, *sp, *ss, *z_mult_dat;
+    double dt, vol;
+    
+    int grid2d_iz;
+
+    Subvector *f_sub, *po_sub, *x_ssl_sub;
+
+} Kerneldata;
+
 /*---------------------------------------------------------------------
  * Define macros for function evaluation
  *---------------------------------------------------------------------*/
@@ -65,76 +78,6 @@ typedef struct {
 #define PMeanDZ(a, b, c, d)     HarmonicMeanDZ(a, b, c, d)
 #define RPMean(a, b, c, d)   UpstreamMean(a, b, c, d)
 #define Mean(a, b)            ArithmeticMean(a, b)
-
-#define CUDA_ERR( err ) (gpu_error( err, __FILE__, __LINE__ ))
-static void gpu_error(cudaError_t err, const char *file, int line) {
-	if (err != cudaSuccess) {
-		printf("\n\n%s in %s at line %d\n", cudaGetErrorString(err), file, line);
-		exit(1);
-	}
-}
-
-__global__ void forxyz_kernel1(double *pp, double *odp, double *sp, double *osp, double *pop, double *fp, 
-  double *dp, double *rpp, double *opp, double *ss, double *et, double *z_mult_dat, double vol, int grid2d_iz, 
-  Subvector *f_sub, Subvector *po_sub, Subvector *x_ssl_sub, const int PV_ixl, const int PV_iyl, const int PV_izl,
-  const int PV_ixu, const int PV_iyu, const int PV_izu)
-  {
-    int i = ((blockIdx.x*blockDim.x)+threadIdx.x) + PV_ixl;
-    if(i > PV_ixu)return;
-    int j = ((blockIdx.y*blockDim.y)+threadIdx.y) + PV_iyl;
-    if(j > PV_iyu)return;
-    int k = ((blockIdx.z*blockDim.z)+threadIdx.z) + PV_izl;
-    if(k > PV_izu)return;
-  
-    // printf("i: %d, j: %d, k: %d\n",i,j,k);
-    // __syncthreads();
-    int ip = SubvectorEltIndex(f_sub, i, j, k);
-    int ipo = SubvectorEltIndex(po_sub, i, j, k);
-    int io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
-    // printf("GPU: ip: %d, ipo: %d, io: %d\n",ip,ipo,io);
-    // printf("ipo: %d\n",ipo);
-    // printf("io: %d\n",io);
-    
-    /*     del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
-    *   del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
-    double del_x_slope = 1.0;
-    double del_y_slope = 1.0;
-  
-    fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip];
-
-    //loop_body(pp, odp, sp, osp, pop, fp, dp, rpp, opp, ss, et, z_mult_dat, vol, grid2d_iz, f_sub, po_sub, x_ssl__sub, i, j, k);
-  }
-
-  __global__ void forxyz_kernel2(double *pp, double *odp, double *sp, double *osp, double *pop, double *fp, 
-  double *dp, double *rpp, double *opp, double *ss, double *et, double *z_mult_dat, double vol, int grid2d_iz, 
-  Subvector *f_sub, Subvector *po_sub, Subvector *x_ssl_sub, const int PV_ixl, const int PV_iyl, const int PV_izl,
-  const int PV_ixu, const int PV_iyu, const int PV_izu)
-  {
-    int i = ((blockIdx.x*blockDim.x)+threadIdx.x) + PV_ixl;
-    if(i > PV_ixu)return;
-    int j = ((blockIdx.y*blockDim.y)+threadIdx.y) + PV_iyl;
-    if(j > PV_iyu)return;
-    int k = ((blockIdx.z*blockDim.z)+threadIdx.z) + PV_izl;
-    if(k > PV_izu)return;
-  
-    // printf("i: %d, j: %d, k: %d\n",i,j,k);
-    // __syncthreads();
-    int ip = SubvectorEltIndex(f_sub, i, j, k);
-    int ipo = SubvectorEltIndex(po_sub, i, j, k);
-    int io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
-    // printf("GPU: ip: %d, ipo: %d, io: %d\n",ip,ipo,io);
-    // printf("ipo: %d\n",ipo);
-    // printf("io: %d\n",io);
-    
-    /*     del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
-    *   del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
-    double del_x_slope = 1.0;
-    double del_y_slope = 1.0;
-
-    fp[ip] += ss[ip] * vol * del_x_slope * del_y_slope * z_mult_dat[ip] * (pp[ip] * sp[ip] * dp[ip] - opp[ip] * osp[ip] * odp[ip]);
-   
-    //loop_body(pp, odp, sp, osp, pop, fp, dp, rpp, opp, ss, et, z_mult_dat, vol, grid2d_iz, f_sub, po_sub, x_ssl__sub, i, j, k);
-  }
 
 /*  This routine provides the interface between KINSOL and ParFlow
  *  for function evaluations.  */
@@ -408,96 +351,35 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     pop = SubvectorData(po_sub);
     fp = SubvectorData(f_sub);
 
-    // GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-    // {
-    //   ip = SubvectorEltIndex(f_sub, i, j, k);
-    //   ipo = SubvectorEltIndex(po_sub, i, j, k);
-    //   io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
+    //Put loop stuff into a container
+    Kerneldata loop_data;
+    loop_data.fp = fp;
+    loop_data.sp = sp;
+    loop_data.dp = dp;
+    loop_data.osp = osp;
+    loop_data.odp = odp;
+    loop_data.pop = pop;
+    loop_data.z_mult_dat = z_mult_dat;
+    loop_data.vol = vol;
+    loop_data.grid2d_iz = grid2d_iz;
+    loop_data.f_sub = f_sub;
+    loop_data.po_sub = po_sub;
+    loop_data.x_ssl_sub = x_ssl_sub;
 
-    //   /*     del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
-    //    *   del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
-    //   del_x_slope = 1.0;
-    //   del_y_slope = 1.0;
+    //GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+    GrGeomInLoopGPU(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz, loop_data, GPU_LAMBDA(int i, int j, int k, Kerneldata loop_data)
+    {
+      int ip = SubvectorEltIndex(loop_data.f_sub, i, j, k);
+      int ipo = SubvectorEltIndex(loop_data.po_sub, i, j, k);
+      int io = SubvectorEltIndex(loop_data.x_ssl_sub, i, j, loop_data.grid2d_iz);
 
-    //   fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip];
-    // });
-     if(r == 0 && GrGeomSolidInteriorBoxes(gr_domain)){
-      int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;			
-      int *PV_visiting = NULL;						
-      BoxArray* boxes = GrGeomSolidInteriorBoxes(gr_domain);			
-      for(int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)		
-      {									
-        Box box = BoxArrayGetBox(boxes, PV_box);				
-        /* find octree and region intersection */				
-        PV_ixl = pfmax(ix, box.lo[0]);					
-        PV_iyl = pfmax(iy, box.lo[1]);					
-        PV_izl = pfmax(iz, box.lo[2]);					
-        PV_ixu = pfmin((ix + nx - 1), box.up[0]);				
-        PV_iyu = pfmin((iy + ny - 1), box.up[1]);				
-        PV_izu = pfmin((iz + nz - 1), box.up[2]);				
-                      
-        const int BLOCKSIZE = 8;
-        dim3 grid = dim3((PV_ixu - PV_ixl + BLOCKSIZE) / BLOCKSIZE, 
-                     (PV_iyu - PV_iyl + BLOCKSIZE) / BLOCKSIZE, 
-                     (PV_izu - PV_izl + BLOCKSIZE) / BLOCKSIZE); 
-        dim3 block = dim3(BLOCKSIZE, BLOCKSIZE, BLOCKSIZE); 
+      /*     del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
+       *   del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
+      int del_x_slope = 1.0;
+      int del_y_slope = 1.0;
 
-        int device;
-        CUDA_ERR(cudaGetDevice(&device));
-
-        // struct cudaDeviceProp props;
-        // CUDA_ERR(cudaGetDeviceProperties(&props, device));
-        // printf("\nGPU Model Name: %s\n", props.name);
-        // printf("GPU Compute Capability: %d.%d\n", props.major,props.minor);
-        // printf("GPU Maximum Threads Per Block: %d\n", props.maxThreadsPerBlock);
-        // printf("GPU Maximum Threads Per Dims: %d x %d x %d\n", props.maxThreadsDim[0], props.maxThreadsDim[1], props.maxThreadsDim[2]);
-
-        // printf("Grid : {%d, %d, %d} blocks. Blocks : {%d, %d, %d} threads.\n", grid.x, grid.y, grid.z, block.x, block.y, block.z);
-
-        // int ip = SubvectorEltIndex(f_sub, 1, 1, 1);
-        // int ipo = SubvectorEltIndex(po_sub, 1, 1, 1);
-        // int io = SubvectorEltIndex(x_ssl_sub, 1, 1, grid2d_iz);
-        // printf("CPU: ip: %d, ipo: %d, io: %d\n",ip,ipo,io);
-
-        // int *devcount;
-        // CUDA_ERR(cudaGetDeviceCount(devcount));
-        // printf("DeviceCount: %d\n", *devcount);
-
-        forxyz_kernel1<<<grid, block>>>(pp, odp, sp, osp, pop, fp,
-          dp, rpp, opp, ss, et, z_mult_dat, vol, grid2d_iz,
-          f_sub, po_sub, x_ssl_sub, PV_ixl, PV_iyl, PV_izl,
-          PV_ixu, PV_iyu, PV_izu);
-        CUDA_ERR( cudaPeekAtLastError() );
-        CUDA_ERR( cudaDeviceSynchronize() );
-      }
-    }								
-    else								
-    {						
-      printf("TEST: EXIT1!!!!!!");
-      exit(1);
-      GrGeomOctree  *PV_node;					
-      double PV_ref = pow(2.0, r);				
-                      
-      i = GrGeomSolidOctreeIX(gr_domain) * (int)PV_ref;			
-      j = GrGeomSolidOctreeIY(gr_domain) * (int)PV_ref;			
-      k = GrGeomSolidOctreeIZ(gr_domain) * (int)PV_ref;			
-      GrGeomOctreeInteriorNodeLoop(i, j, k, PV_node,			
-          GrGeomSolidData(gr_domain),		
-          GrGeomSolidOctreeBGLevel(gr_domain) + r,	
-          ix, iy, iz, nx, ny, nz,		
-          TRUE,{
-            ip = SubvectorEltIndex(f_sub, i, j, k);
-            ipo = SubvectorEltIndex(po_sub, i, j, k);
-            io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
-      
-            /*     del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
-             *   del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
-            del_x_slope = 1.0;
-            del_y_slope = 1.0;
-      
-            fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip];
-          });				
-    }		
+      loop_data.fp[ip] = (loop_data.sp[ip] * loop_data.dp[ip] - loop_data.osp[ip] * loop_data.odp[ip]) * loop_data.pop[ipo] * loop_data.vol * del_x_slope * del_y_slope * loop_data.z_mult_dat[ip];
+    });
   }
 
   /*@ Add in contributions from compressible storage */
@@ -560,91 +442,35 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     osp = SubvectorData(os_sub);
     fp = SubvectorData(f_sub);
 
+    //Put loop stuff into a container
+    Kerneldata loop_data;
+    loop_data.fp = fp;
+    loop_data.pp = pp;
+    loop_data.sp = sp;
+    loop_data.ss = ss;
+    loop_data.dp = dp;
+    loop_data.osp = osp;
+    loop_data.odp = odp;
+    loop_data.opp = opp;
+    loop_data.z_mult_dat = z_mult_dat;
+    loop_data.vol = vol;
+    loop_data.grid2d_iz = grid2d_iz;
+    loop_data.f_sub = f_sub;
+    loop_data.x_ssl_sub = x_ssl_sub;
 
-    // GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-    // {
-    //   ip = SubvectorEltIndex(f_sub, i, j, k);
-    //   io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
+    //GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+    GrGeomInLoopGPU(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz, loop_data, GPU_LAMBDA(int i, int j, int k, Kerneldata loop_data)
+    {
+      int ip = SubvectorEltIndex(loop_data.f_sub, i, j, k);
+      int io = SubvectorEltIndex(loop_data.x_ssl_sub, i, j, loop_data.grid2d_iz);
 
-    //   /*   del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
-    //    * del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
-    //   del_x_slope = 1.0;
-    //   del_y_slope = 1.0;
-    //   fp[ip] += ss[ip] * vol * del_x_slope * del_y_slope * z_mult_dat[ip] * (pp[ip] * sp[ip] * dp[ip] - opp[ip] * osp[ip] * odp[ip]);
-    // });
-        if(r == 0 && GrGeomSolidInteriorBoxes(gr_domain)){
-      int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;			
-      int *PV_visiting = NULL;						
-      BoxArray* boxes = GrGeomSolidInteriorBoxes(gr_domain);			
-      for(int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)		
-      {									
-        Box box = BoxArrayGetBox(boxes, PV_box);				
-        /* find octree and region intersection */				
-        PV_ixl = pfmax(ix, box.lo[0]);					
-        PV_iyl = pfmax(iy, box.lo[1]);					
-        PV_izl = pfmax(iz, box.lo[2]);					
-        PV_ixu = pfmin((ix + nx - 1), box.up[0]);				
-        PV_iyu = pfmin((iy + ny - 1), box.up[1]);				
-        PV_izu = pfmin((iz + nz - 1), box.up[2]);				
-                      
-        const int BLOCKSIZE = 8;
-        dim3 grid = dim3((PV_ixu - PV_ixl + BLOCKSIZE) / BLOCKSIZE, 
-                     (PV_iyu - PV_iyl + BLOCKSIZE) / BLOCKSIZE, 
-                     (PV_izu - PV_izl + BLOCKSIZE) / BLOCKSIZE); 
-        dim3 block = dim3(BLOCKSIZE, BLOCKSIZE, BLOCKSIZE); 
+      /*     del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
+       *   del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
+      int del_x_slope = 1.0;
+      int del_y_slope = 1.0;
 
-        int device;
-        CUDA_ERR(cudaGetDevice(&device));
-
-        // struct cudaDeviceProp props;
-        // CUDA_ERR(cudaGetDeviceProperties(&props, device));
-        // printf("\nGPU Model Name: %s\n", props.name);
-        // printf("GPU Compute Capability: %d.%d\n", props.major,props.minor);
-        // printf("GPU Maximum Threads Per Block: %d\n", props.maxThreadsPerBlock);
-        // printf("GPU Maximum Threads Per Dims: %d x %d x %d\n", props.maxThreadsDim[0], props.maxThreadsDim[1], props.maxThreadsDim[2]);
-
-        // printf("Grid : {%d, %d, %d} blocks. Blocks : {%d, %d, %d} threads.\n", grid.x, grid.y, grid.z, block.x, block.y, block.z);
-
-        // int ip = SubvectorEltIndex(f_sub, 1, 1, 1);
-        // int ipo = SubvectorEltIndex(po_sub, 1, 1, 1);
-        // int io = SubvectorEltIndex(x_ssl_sub, 1, 1, grid2d_iz);
-        // printf("CPU: ip: %d, ipo: %d, io: %d\n",ip,ipo,io);
-
-        forxyz_kernel2<<<grid, block>>>(pp, odp, sp, osp, pop, fp,
-          dp, rpp, opp, ss, et, z_mult_dat, vol, grid2d_iz,
-          f_sub, po_sub, x_ssl_sub, PV_ixl, PV_iyl, PV_izl,
-          PV_ixu, PV_iyu, PV_izu);
-        CUDA_ERR( cudaPeekAtLastError() );
-        CUDA_ERR( cudaDeviceSynchronize() );
-      }
-    }								
-    else								
-    {						
-      printf("TEST: EXIT1!!!!!!");
-      exit(1);
-      GrGeomOctree  *PV_node;					
-      double PV_ref = pow(2.0, r);				
-                      
-      i = GrGeomSolidOctreeIX(gr_domain) * (int)PV_ref;			
-      j = GrGeomSolidOctreeIY(gr_domain) * (int)PV_ref;			
-      k = GrGeomSolidOctreeIZ(gr_domain) * (int)PV_ref;			
-      GrGeomOctreeInteriorNodeLoop(i, j, k, PV_node,			
-          GrGeomSolidData(gr_domain),		
-          GrGeomSolidOctreeBGLevel(gr_domain) + r,	
-          ix, iy, iz, nx, ny, nz,		
-          TRUE,{
-            ip = SubvectorEltIndex(f_sub, i, j, k);
-            ipo = SubvectorEltIndex(po_sub, i, j, k);
-            io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
-      
-            /*     del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
-             *   del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
-            del_x_slope = 1.0;
-            del_y_slope = 1.0;
-      
-            fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip];
-          });				
-    }	
+      loop_data.fp[ip] += loop_data.ss[ip] * loop_data.vol * del_x_slope * del_y_slope * loop_data.z_mult_dat[ip] * (loop_data.pp[ip] * loop_data.sp[ip] * loop_data.dp[ip] - loop_data.opp[ip] * loop_data.osp[ip] * loop_data.odp[ip]);
+    });
   }
 
   /* Add in contributions from source terms - user specified sources and
@@ -708,17 +534,29 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     FBy_dat = SubvectorData(FBy_sub);
     FBz_dat = SubvectorData(FBz_sub);
 
+    //Put loop stuff into a container
+    Kerneldata loop_data;
+    loop_data.dt = dt;
+    loop_data.et = et;
+    loop_data.fp = fp;
+    loop_data.sp = sp;
+    loop_data.z_mult_dat = z_mult_dat;
+    loop_data.vol = vol;
+    loop_data.grid2d_iz = grid2d_iz;
+    loop_data.f_sub = f_sub;
+    loop_data.x_ssl_sub = x_ssl_sub;
 
-    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+    //GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+    GrGeomInLoopGPU(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz, loop_data, GPU_LAMBDA(int i, int j, int k, Kerneldata loop_data)
     {
-      ip = SubvectorEltIndex(f_sub, i, j, k);
-      io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
+      int ip = SubvectorEltIndex(loop_data.f_sub, i, j, k);
+      int io = SubvectorEltIndex(loop_data.x_ssl_sub, i, j, loop_data.grid2d_iz);
 
       /* del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
        * del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
-      del_x_slope = 1.0;
-      del_y_slope = 1.0;
-      fp[ip] -= vol * del_x_slope * del_y_slope * z_mult_dat[ip] * dt * (sp[ip] + et[ip]);
+      int del_x_slope = 1.0;
+      int del_y_slope = 1.0;
+      loop_data.fp[ip] -= loop_data.vol * del_x_slope * del_y_slope * loop_data.z_mult_dat[ip] * loop_data.dt * (loop_data.sp[ip] + loop_data.et[ip]);
     });
   }
 
