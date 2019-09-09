@@ -359,7 +359,7 @@ static void     AllocateVectorData(
   ForSubgridI(i, GridSubgrids(grid))
   {
     /* if necessary, free old CommPkg's */
-    for (j = 0; j < 1; j++)
+    for (j = 0; j < NumUpdateModes; j++)
     {
       FreeCommPkg(VectorSubvectorCommPkg(vector, i, j));
     }
