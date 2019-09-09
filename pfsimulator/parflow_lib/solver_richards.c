@@ -396,6 +396,7 @@ SetupRichards(PFModule * this_module)
   NewMetadata(this_module);
   MetadataAddParflowDomainInfo(js_domains, this_module, grid);
 
+#ifdef HAVE_CLM
   /* Add metadata for forcings */
   {
     int ff;
@@ -405,6 +406,7 @@ SetupRichards(PFModule * this_module)
           !clmForcingFields[ff].vegetative ||
           (public_xtra->clm_metforce == 3 && public_xtra->clm_forc_veg == 1))
       {
+
         MetadataAddForcingField(
                                 js_inputs,
                                 clmForcingFields[ff].field_name,
@@ -423,7 +425,7 @@ SetupRichards(PFModule * this_module)
       }
     }
   }
-
+#endif
 
   IfLogging(1)
   {
