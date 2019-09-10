@@ -45,7 +45,7 @@ using namespace SAMRAI;
 #endif
 
 #include <stdlib.h>
-#include "use_cudamalloc.h"
+#include "pfcudamalloc.h"
 
 static int samrai_vector_ids[5][2048];
 

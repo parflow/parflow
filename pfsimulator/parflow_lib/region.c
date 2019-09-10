@@ -34,7 +34,7 @@
 #include "grid.h"
 
 #include <math.h>
-#include "use_cudamalloc.h"
+#include "pfcudamalloc.h"
 
 /*--------------------------------------------------------------------------
  * NewSubregion

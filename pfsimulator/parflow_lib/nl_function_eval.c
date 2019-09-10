@@ -31,7 +31,7 @@ extern "C"{
 #include "llnltyps.h"
 //#include "math.h"
 #include "float.h"
-#include "use_cudaloops.h"
+#include "pfcudaloops.h"
 
 /*---------------------------------------------------------------------
  * Define module structures
@@ -57,18 +57,6 @@ typedef struct {
   PFModule     *overlandflow_module_diff;  //@RMM
   PFModule     *overlandflow_module_kin;
 } InstanceXtra;
-
-
-typedef struct {
-    
-    double *dp, *et, *fp, *odp, *opp, *osp, *pop, *pp, *sp, *ss, *z_mult_dat;
-    double dt, vol;
-    
-    int grid2d_iz;
-
-    Subvector *f_sub, *po_sub, *x_ssl_sub;
-
-} Kerneldata;
 
 /*---------------------------------------------------------------------
  * Define macros for function evaluation
@@ -351,34 +339,18 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     pop = SubvectorData(po_sub);
     fp = SubvectorData(f_sub);
 
-    //Put loop stuff into a container
-    Kerneldata loop_data;
-    loop_data.fp = fp;
-    loop_data.sp = sp;
-    loop_data.dp = dp;
-    loop_data.osp = osp;
-    loop_data.odp = odp;
-    loop_data.pop = pop;
-    loop_data.z_mult_dat = z_mult_dat;
-    loop_data.vol = vol;
-    loop_data.grid2d_iz = grid2d_iz;
-    loop_data.f_sub = f_sub;
-    loop_data.po_sub = po_sub;
-    loop_data.x_ssl_sub = x_ssl_sub;
-
-    //GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-    GrGeomInLoopGPU(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz, loop_data, GPU_LAMBDA(int i, int j, int k, Kerneldata loop_data)
+    GrGeomInLoopG(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
-      int ip = SubvectorEltIndex(loop_data.f_sub, i, j, k);
-      int ipo = SubvectorEltIndex(loop_data.po_sub, i, j, k);
-      int io = SubvectorEltIndex(loop_data.x_ssl_sub, i, j, loop_data.grid2d_iz);
+      int ip = SubvectorEltIndex(f_sub, i, j, k);
+      int ipo = SubvectorEltIndex(po_sub, i, j, k);
+      int io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 
       /*     del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
        *   del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
       int del_x_slope = 1.0;
       int del_y_slope = 1.0;
 
-      loop_data.fp[ip] = (loop_data.sp[ip] * loop_data.dp[ip] - loop_data.osp[ip] * loop_data.odp[ip]) * loop_data.pop[ipo] * loop_data.vol * del_x_slope * del_y_slope * loop_data.z_mult_dat[ip];
+      fp[ip] = (sp[ip] * dp[ip] - osp[ip] * odp[ip]) * pop[ipo] * vol * del_x_slope * del_y_slope * z_mult_dat[ip];
     });
   }
 
@@ -442,34 +414,17 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     osp = SubvectorData(os_sub);
     fp = SubvectorData(f_sub);
 
-    //Put loop stuff into a container
-    Kerneldata loop_data;
-    loop_data.fp = fp;
-    loop_data.pp = pp;
-    loop_data.sp = sp;
-    loop_data.ss = ss;
-    loop_data.dp = dp;
-    loop_data.osp = osp;
-    loop_data.odp = odp;
-    loop_data.opp = opp;
-    loop_data.z_mult_dat = z_mult_dat;
-    loop_data.vol = vol;
-    loop_data.grid2d_iz = grid2d_iz;
-    loop_data.f_sub = f_sub;
-    loop_data.x_ssl_sub = x_ssl_sub;
-
-    //GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-    GrGeomInLoopGPU(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz, loop_data, GPU_LAMBDA(int i, int j, int k, Kerneldata loop_data)
+    GrGeomInLoopG(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
-      int ip = SubvectorEltIndex(loop_data.f_sub, i, j, k);
-      int io = SubvectorEltIndex(loop_data.x_ssl_sub, i, j, loop_data.grid2d_iz);
+      int ip = SubvectorEltIndex(f_sub, i, j, k);
+      int io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 
       /*     del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
        *   del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
       int del_x_slope = 1.0;
       int del_y_slope = 1.0;
 
-      loop_data.fp[ip] += loop_data.ss[ip] * loop_data.vol * del_x_slope * del_y_slope * loop_data.z_mult_dat[ip] * (loop_data.pp[ip] * loop_data.sp[ip] * loop_data.dp[ip] - loop_data.opp[ip] * loop_data.osp[ip] * loop_data.odp[ip]);
+      fp[ip] += ss[ip] * vol * del_x_slope * del_y_slope * z_mult_dat[ip] * (pp[ip] * sp[ip] * dp[ip] - opp[ip] * osp[ip] * odp[ip]);
     });
   }
 
@@ -534,29 +489,17 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     FBy_dat = SubvectorData(FBy_sub);
     FBz_dat = SubvectorData(FBz_sub);
 
-    //Put loop stuff into a container
-    Kerneldata loop_data;
-    loop_data.dt = dt;
-    loop_data.et = et;
-    loop_data.fp = fp;
-    loop_data.sp = sp;
-    loop_data.z_mult_dat = z_mult_dat;
-    loop_data.vol = vol;
-    loop_data.grid2d_iz = grid2d_iz;
-    loop_data.f_sub = f_sub;
-    loop_data.x_ssl_sub = x_ssl_sub;
-
-    //GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-    GrGeomInLoopGPU(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz, loop_data, GPU_LAMBDA(int i, int j, int k, Kerneldata loop_data)
+    GrGeomInLoopG(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
-      int ip = SubvectorEltIndex(loop_data.f_sub, i, j, k);
-      int io = SubvectorEltIndex(loop_data.x_ssl_sub, i, j, loop_data.grid2d_iz);
+      int ip = SubvectorEltIndex(f_sub, i, j, k);
+      int io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 
       /* del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
        * del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
       int del_x_slope = 1.0;
       int del_y_slope = 1.0;
-      loop_data.fp[ip] -= loop_data.vol * del_x_slope * del_y_slope * loop_data.z_mult_dat[ip] * loop_data.dt * (loop_data.sp[ip] + loop_data.et[ip]);
+
+      fp[ip] -= vol * del_x_slope * del_y_slope * z_mult_dat[ip] * dt * (sp[ip] + et[ip]);
     });
   }
 
@@ -711,8 +654,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
-      ip = SubvectorEltIndex(p_sub, i, j, k);
-      io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
+      int ip = SubvectorEltIndex(p_sub, i, j, k);
+      int io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 
       /* @RMM: modified the terrain-following transform
        * to be swtichable in the UZ
@@ -726,13 +669,18 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
        */
 
       /* velocity subvector indices jjb */
-      vxi = SubvectorEltIndex(vx_sub, i + 1, j, k);
-      vyi = SubvectorEltIndex(vy_sub, i, j + 1, k);
-      vzi = SubvectorEltIndex(vz_sub, i, j, k + 1);
+      int vxi = SubvectorEltIndex(vx_sub, i + 1, j, k);
+      int vyi = SubvectorEltIndex(vy_sub, i, j + 1, k);
+      int vzi = SubvectorEltIndex(vz_sub, i, j, k + 1);
 
-      z_dir_g = 1.0;
-      del_x_slope = 1.0;
-      del_y_slope = 1.0;
+      double z_dir_g = 1.0;
+      double del_x_slope = 1.0;
+      double del_y_slope = 1.0;
+
+      double x_dir_g;
+      double x_dir_g_c;
+      double y_dir_g;
+      double y_dir_g_c;
 
 //@RMM  tfgupwind == 0 (default) should give original behavior
 // tfgupwind 1 should still use sine but upwind
@@ -772,10 +720,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       /* Calculate right face velocity.
        * diff >= 0 implies flow goes left to right */
 
-      diff = pp[ip] - pp[ip + 1];
-      updir = (diff / dx) * x_dir_g_c - x_dir_g;
+      double diff = pp[ip] - pp[ip + 1];
+      double updir = (diff / dx) * x_dir_g_c - x_dir_g;
 
-      u_right = z_mult_dat[ip] * ffx * del_y_slope * PMean(pp[ip], pp[ip + 1],
+      double u_right = z_mult_dat[ip] * ffx * del_y_slope * PMean(pp[ip], pp[ip + 1],
                                                            permxp[ip], permxp[ip + 1])
                 * (diff / (dx * del_x_slope)) * x_dir_g_c
                 * RPMean(updir, 0.0,
@@ -801,7 +749,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       diff = pp[ip] - pp[ip + sy_p];
       updir = (diff / dy) * y_dir_g_c - y_dir_g;
 
-      u_front = z_mult_dat[ip] * ffy * del_x_slope
+      double u_front = z_mult_dat[ip] * ffy * del_x_slope
                 * PMean(pp[ip], pp[ip + sy_p], permyp[ip], permyp[ip + sy_p])
                 * (diff / (dy * del_y_slope)) * y_dir_g_c
                 * RPMean(updir, 0.0,
@@ -825,21 +773,21 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       /* Calculate upper face velocity.
        * diff >= 0 implies flow goes lower to upper
        */
-      sep = dz * (Mean(z_mult_dat[ip], z_mult_dat[ip + sz_p]));
+      double sep = dz * (Mean(z_mult_dat[ip], z_mult_dat[ip + sz_p]));
 
 
-      lower_cond = pp[ip] / sep
+      double lower_cond = pp[ip] / sep
                    - (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p]))
                    * dp[ip] * gravity * z_dir_g;
 
-      upper_cond = pp[ip + sz_p] / sep
+      double upper_cond = pp[ip + sz_p] / sep
                    + (z_mult_dat[ip + sz_p] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p]))
                    * dp[ip + sz_p] * gravity * z_dir_g;
 
 
       diff = (lower_cond - upper_cond);
 
-      u_upper = ffz * del_x_slope * del_y_slope
+      double u_upper = ffz * del_x_slope * del_y_slope
                 * PMeanDZ(permzp[ip], permzp[ip + sz_p], z_mult_dat[ip], z_mult_dat[ip + sz_p])
                 * diff
                 * RPMean(lower_cond, upper_cond, rpp[ip] * dp[ip],

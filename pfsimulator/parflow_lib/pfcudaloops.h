@@ -1,3 +1,5 @@
+#ifdef HAVE_CUDA
+
 /*--------------------------------------------------------------------------
  * CUDA error handling macro
  *--------------------------------------------------------------------------*/
@@ -18,19 +20,23 @@ static void gpu_error(cudaError_t err, const char *file, int line) {
  * CUDA loop kernels (must be wrapped to extern "C++" due to template use)
  *--------------------------------------------------------------------------*/
 extern "C++"{ 
-template <typename T, typename LOOP_BODY>
-__global__ void forxyz_kernel(T loop_data, LOOP_BODY loop_body, const int PV_ixl, const int PV_iyl, const int PV_izl,
-const int PV_ixu, const int PV_iyu, const int PV_izu)
+template <typename LOOP_BODY>
+__global__ void forxyz_kernel(LOOP_BODY loop_body, const int PV_ixl, const int PV_iyl, const int PV_izl,
+const int PV_diff_x, const int PV_diff_y, const int PV_diff_z)
 {
 
-    int i = ((blockIdx.x*blockDim.x)+threadIdx.x) + PV_ixl;
-    if(i > PV_ixu)return;
-    int j = ((blockIdx.y*blockDim.y)+threadIdx.y) + PV_iyl;
-    if(j > PV_iyu)return;
-    int k = ((blockIdx.z*blockDim.z)+threadIdx.z) + PV_izl;
-    if(k > PV_izu)return;
+    int i = ((blockIdx.x*blockDim.x)+threadIdx.x);
+    if(i > PV_diff_x)return;
+    int j = ((blockIdx.y*blockDim.y)+threadIdx.y);
+    if(j > PV_diff_y)return;
+    int k = ((blockIdx.z*blockDim.z)+threadIdx.z);
+    if(k > PV_diff_z)return;
+
+    i += PV_ixl;
+    j += PV_iyl;
+    k += PV_izl;
   
-    loop_body(i, j, k, loop_data);
+    loop_body(i, j, k);
 }
 }
 
@@ -52,47 +58,50 @@ void printDeviceProperties(){
  *--------------------------------------------------------------------------*/
 
 //#undef GrGeomInLoopBoxes
-#define GrGeomInLoopBoxesGPU(grgeom, ix, iy, iz, nx, ny, nz, loop_data, loop_body) \
+#define GrGeomInLoopBoxesG(i, j, k, grgeom, ix, iy, iz, nx, ny, nz, loop_body)\
   {                                                                      \
-    int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;                  \
     int *PV_visiting = NULL;                                             \
     BoxArray* boxes = GrGeomSolidInteriorBoxes(grgeom);                  \
     for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)         \
     {                                                                    \
       Box box = BoxArrayGetBox(boxes, PV_box);                           \
       /* find octree and region intersection */                          \
-      PV_ixl = pfmax(ix, box.lo[0]);                                     \
-      PV_iyl = pfmax(iy, box.lo[1]);                                     \
-      PV_izl = pfmax(iz, box.lo[2]);                                     \
-      PV_ixu = pfmin((ix + nx - 1), box.up[0]);                          \
-      PV_iyu = pfmin((iy + ny - 1), box.up[1]);                          \
-      PV_izu = pfmin((iz + nz - 1), box.up[2]);                          \
+      int PV_ixl = pfmax(ix, box.lo[0]);                                 \
+      int PV_iyl = pfmax(iy, box.lo[1]);                                 \
+      int PV_izl = pfmax(iz, box.lo[2]);                                 \
+      int PV_ixu = pfmin((ix + nx - 1), box.up[0]);                      \
+      int PV_iyu = pfmin((iy + ny - 1), box.up[1]);                      \
+      int PV_izu = pfmin((iz + nz - 1), box.up[2]);                      \
+                                                                         \
+      int PV_diff_x = PV_ixu - PV_ixl;                                   \
+      int PV_diff_y = PV_iyu - PV_iyl;                                   \
+      int PV_diff_z = PV_izu - PV_izl;                                   \
                                                                          \
       const int BLOCKSIZE = 8;                                           \
-      dim3 grid = dim3((PV_ixu - PV_ixl + BLOCKSIZE) / BLOCKSIZE,        \
-        (PV_iyu - PV_iyl + BLOCKSIZE) / BLOCKSIZE,                       \
-        (PV_izu - PV_izl + BLOCKSIZE) / BLOCKSIZE);                      \
+      dim3 grid = dim3((PV_diff_x + BLOCKSIZE) / BLOCKSIZE,              \
+        (PV_diff_y + BLOCKSIZE) / BLOCKSIZE,                             \
+        (PV_diff_z + BLOCKSIZE) / BLOCKSIZE);                            \
       dim3 block = dim3(BLOCKSIZE, BLOCKSIZE, BLOCKSIZE);                \
                                                                          \
       int gpu_count = 1;                                                 \
       /* CUDA_ERR(cudaGetDeviceCount(&gpu_count));*/                     \
       /*printf("DeviceCount: %d\n", gpu_count);*/                        \
       for (int gpu = 0; gpu < gpu_count; gpu++){                         \
-        forxyz_kernel<<<grid, block>>>(loop_data, loop_body, PV_ixl,     \
-        PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu);                         \
+        forxyz_kernel<<<grid, block>>>(                                  \
+            GPU_LAMBDA(int i, int j, int k)loop_body,                    \
+            PV_ixl, PV_iyl, PV_izl, PV_diff_x, PV_diff_y, PV_diff_z);    \
       }                                                                  \
       CUDA_ERR( cudaPeekAtLastError() );                                 \
       CUDA_ERR( cudaDeviceSynchronize() );                               \
     }                                                                    \
   }
-//   #undef GrGeomInLoop
-  #define GrGeomInLoopGPU(i, j, k, grgeom,                               \
-                     r, ix, iy, iz, nx, ny, nz, loop_data, loop_body)    \
+//#undef GrGeomInLoop
+#define GrGeomInLoopG(i, j, k, grgeom,                                    \
+                     r, ix, iy, iz, nx, ny, nz, loop_body)               \
   {                                                                      \
     if (r == 0 && GrGeomSolidInteriorBoxes(grgeom))                      \
     {                                                                    \
-      GrGeomInLoopBoxesGPU(grgeom, ix, iy, iz, nx, ny, nz, loop_data,    \
-      loop_body);                                                        \
+      GrGeomInLoopBoxesG(i, j, k, grgeom, ix, iy, iz, nx, ny, nz, loop_body);   \
     }                                                                    \
     else                                                                 \
     {                                                                    \
@@ -102,8 +111,7 @@ void printDeviceProperties(){
       i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref;                     \
       j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;                     \
       k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref;                     \
-      printf("NO GPU SUPPORT FOR  GrGeomOctreeInteriorNodeLoop, exiting...");\
-      exit(1);                                                           \
+                                                                         \
       GrGeomOctreeInteriorNodeLoop(i, j, k, PV_node,                     \
                                    GrGeomSolidData(grgeom),              \
                                    GrGeomSolidOctreeBGLevel(grgeom) + r, \
@@ -112,3 +120,4 @@ void printDeviceProperties(){
                                    loop_body);                           \
     }                                                                    \
   }
+  #endif

@@ -154,8 +154,6 @@ set (SRC_FILES advect.F
   )
 
 set_source_files_properties(nl_function_eval.c PROPERTIES LANGUAGE CUDA)
-#set_source_files_properties(vector.c PROPERTIES LANGUAGE CUDA)
-#set_source_files_properties(region.c PROPERTIES LANGUAGE CUDA)
 
 add_library(pfsimulator ${SRC_FILES})
 set_target_properties(pfsimulator PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
