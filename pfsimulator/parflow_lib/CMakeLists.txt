@@ -153,10 +153,18 @@ set (SRC_FILES advect.F
   write_parflow_silo_pmpio.c
   )
 
+if( ${PARFLOW_HAVE_CUDA} )
 set_source_files_properties(nl_function_eval.c PROPERTIES LANGUAGE CUDA)
+endif( ${PARFLOW_HAVE_CUDA} )
 
 add_library(pfsimulator ${SRC_FILES})
-set_target_properties(pfsimulator PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+# Separable compilation is needed if .cu files access functions/globals 
+# defined in other .cu files (slight computational overhead)
+
+#if( ${PARFLOW_HAVE_CUDA} )
+#set_target_properties(pfsimulator PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+#endif( ${PARFLOW_HAVE_CUDA} )
 
 if (${PARFLOW_HAVE_MPI})
   target_include_directories (pfsimulator PUBLIC "${MPI_C_INCLUDE_PATH}")

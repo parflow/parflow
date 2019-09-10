@@ -14,7 +14,3 @@ add_subdirectory (parflow_exe)
 if( ${PARFLOW_HAVE_CLM} )
   add_subdirectory (clm)
 endif( ${PARFLOW_HAVE_CLM} )
-
-if( ${PARFLOW_HAVE_CUDA} )
-  add_subdirectory (cuda)
-endif( ${PARFLOW_HAVE_CUDA} )

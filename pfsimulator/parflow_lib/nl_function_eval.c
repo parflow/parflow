@@ -25,13 +25,20 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  *  USA
  **********************************************************************EHEADER*/
+
+#include "parflow_config.h"
+
+#ifdef HAVE_CUDA
 extern "C"{
+#endif
+
 #include "parflow.h"
 #include "llnlmath.h"
 #include "llnltyps.h"
 //#include "math.h"
 #include "float.h"
 #include "pfcudaloops.h"
+#include "pfcudamalloc.h"
 
 /*---------------------------------------------------------------------
  * Define module structures
@@ -339,11 +346,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     pop = SubvectorData(po_sub);
     fp = SubvectorData(f_sub);
 
-    GrGeomInLoopG(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
       int ip = SubvectorEltIndex(f_sub, i, j, k);
       int ipo = SubvectorEltIndex(po_sub, i, j, k);
-      int io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 
       /*     del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
        *   del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
@@ -414,7 +420,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     osp = SubvectorData(os_sub);
     fp = SubvectorData(f_sub);
 
-    GrGeomInLoopG(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
       int ip = SubvectorEltIndex(f_sub, i, j, k);
       int io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
@@ -489,10 +495,9 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     FBy_dat = SubvectorData(FBy_sub);
     FBz_dat = SubvectorData(FBz_sub);
 
-    GrGeomInLoopG(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
       int ip = SubvectorEltIndex(f_sub, i, j, k);
-      int io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 
       /* del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
        * del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
@@ -806,10 +811,17 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       vy[vyi] = u_front / ffy;
       vz[vzi] = u_upper / ffz;
 
+#ifdef HAVE_CUDA
+      PlusEquals(&fp[ip], dt * (u_right + u_front + u_upper));
+      PlusEquals(&fp[ip + 1], -dt * u_right);
+      PlusEquals(&fp[ip + sy_p], -dt * u_front);
+      PlusEquals(&fp[ip + sz_p], -dt * u_upper);
+#else
       fp[ip] += dt * (u_right + u_front + u_upper);
       fp[ip + 1] -= dt * u_right;
       fp[ip + sy_p] -= dt * u_front;
       fp[ip + sz_p] -= dt * u_upper;
+#endif
     });
   }
 
@@ -1489,7 +1501,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           {
             /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
              * routing added */
-            double *dummy1, *dummy2, *dummy3, *dummy4;
+            double *dummy1=NULL, *dummy2=NULL, *dummy3=NULL, *dummy4=NULL;
             PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                                                                       ke_, kw_, kn_, ks_,
                                                                                       dummy1, dummy2, dummy3, dummy4,
@@ -1860,7 +1872,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           //printf("Case overland_flow \n");
           /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
            * routing added */
-          double *dummy1, *dummy2, *dummy3, *dummy4;
+          double *dummy1=NULL, *dummy2=NULL, *dummy3=NULL, *dummy4=NULL;
           PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
                              (grid, is, bc_struct, ipatch, problem_data, pressure,
                               ke_, kw_, kn_, ks_,
@@ -2069,7 +2081,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           /*  @RMM this is a new module for diffusive wave
            */
 
-          double *dummy1, *dummy2, *dummy3, *dummy4;
+          double *dummy1=NULL, *dummy2=NULL, *dummy3=NULL, *dummy4=NULL;
           PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                                                                     ke_, kw_, kn_, ks_,
                                                                                     dummy1, dummy2, dummy3, dummy4,
@@ -2361,4 +2373,7 @@ int  NlFunctionEvalSizeOfTempData()
 {
   return 0;
 }
+
+#ifdef HAVE_CUDA
 }
+#endif

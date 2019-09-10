@@ -2,10 +2,6 @@ add_executable(parflow main.c)
 
 target_link_libraries(parflow pfsimulator pfkinsol amps)
 
-if( ${PARFLOW_HAVE_CUDA} )
-  target_link_libraries(parflow pfcuda -lcublas -lcurand)
-endif( ${PARFLOW_HAVE_CUDA} )
-
 if( ${PARFLOW_HAVE_CLM} )
   target_link_libraries(parflow pfclm)
 endif( ${PARFLOW_HAVE_CLM} )
