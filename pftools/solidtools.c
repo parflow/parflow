@@ -751,15 +751,15 @@ int            MakePatchySolid(
   //              ===== Write out the solid file =====
   // --------------------------------------------------------------------------
   // Write the patch order to the terminal so the user can copy them
-  printf("PFPATCHYSOLID: Patch write order is:\n\n");
-  if (AllPatches[0].patch_cell_count>0) {printf(" BOTTOM ");}
-  if (AllPatches[1].patch_cell_count>0) {printf(" TOP ");}
+  printf("PFPATCHYSOLID - Patch write order is:\n\n");
+  if (AllPatches[0].patch_cell_count>0) {printf(" Bottom ");}
+  if (AllPatches[1].patch_cell_count>0) {printf(" Top ");}
 
-  if (AllPatches[2].patch_cell_count>0) {printf(" WEST ");}
-  if (AllPatches[3].patch_cell_count>0) {printf(" EAST ");}
+  if (AllPatches[2].patch_cell_count>0) {printf(" Left ");}  // West
+  if (AllPatches[3].patch_cell_count>0) {printf(" Right ");} // East
 
-  if (AllPatches[4].patch_cell_count>0) {printf(" SOUTH ");}
-  if (AllPatches[5].patch_cell_count>0) {printf(" NORTH ");}
+  if (AllPatches[4].patch_cell_count>0) {printf(" Front ");} // South
+  if (AllPatches[5].patch_cell_count>0) {printf(" Back ");}  // North
   for (i=6; i<(6+np_usr+1); ++i)
   {
     if (sub_patches==1) {
