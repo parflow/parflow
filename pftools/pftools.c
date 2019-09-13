@@ -1908,7 +1908,7 @@ int MakePatchySolidCommand(
   Databox       *databox, *top_databox, *bot_databox;
 
   // Fail based on an invalid number of arguments
-  if ((argc < 5) || (argc > 11))
+  if ((argc < 5) || (argc > 13))
   {
     printf("\n ERROR (pfpatchysolid): Invalid number of arguments\n");
     return TCL_ERROR;
@@ -1921,7 +1921,7 @@ int MakePatchySolidCommand(
   tophash = NULL;
   bothash = NULL;
 
-  int msk=0, top=0, bot=0, vtk=0, outfl=0, bin_out=0;  //Initalize flags for the options
+  int msk=0, top=0, bot=0, vtk=0, outfl=0, sub_patch=0, bin_out=0;  //Initalize flags for the options
   // Note: bin_out is a place holder for a yet to be added BINARY solid file...
   //       vtk is a flag for writing a BINARY VTK of the solid file too
 
@@ -1942,6 +1942,11 @@ int MakePatchySolidCommand(
     {
       bot = 1;
       bothash = argv[i + 1];
+    }
+    if ((strcmp(argv[i], "-sub") == 0) || (strcmp(argv[i], "–sub") == 0))
+    {
+      /* Subdivide patches by face direction */
+      sub_patch = 1;
     }
 
     char          *file1_ext;
@@ -2057,7 +2062,7 @@ int MakePatchySolidCommand(
   // start_time=clock();
   // double run_time;
 
-  i=MakePatchySolid(fp, fp_vtk, databox, top_databox, bot_databox, bin_out);
+  i=MakePatchySolid(fp, fp_vtk, databox, top_databox, bot_databox, sub_patch, bin_out);
 
   // end_time=clock();
   // run_time=(double)(end_time-start_time) / CLOCKS_PER_SEC;

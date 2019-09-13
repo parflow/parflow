@@ -48,6 +48,8 @@ typedef struct {
   int patch_cell_count;
   int start_idx;
   int end_idx;
+  int total_patches;
+  int act_faces[6];
 } PatchInfo;
 
 /*-----------------------------------------------------------------------
@@ -82,6 +84,7 @@ int            MakePatchySolid(
                              Databox *msk,
                              Databox *top,
                              Databox *bot,
+                             int sub_patches,
                              int bin_out)
 {
   int out_status=-1;
@@ -323,6 +326,8 @@ int            MakePatchySolid(
       AllPatches[i].end_idx=np+AllPatches[i].patch_cell_count-1;
       np=AllPatches[i].end_idx+1;
       non_blanks=non_blanks+1;
+      for (j=0; j<6; ++j) {AllPatches[i].act_faces[j]=0;} // Bottom, Top, West, East, South, North
+      AllPatches[i].total_patches=0;
     } else {
       AllPatches[i].p_write=-1;
       AllPatches[i].active=0;
@@ -330,6 +335,7 @@ int            MakePatchySolid(
       AllPatches[i].patch_cell_count=0;
       AllPatches[i].start_idx=-1;
       AllPatches[i].end_idx=-1;
+      for (j=0; j<6; ++j) {AllPatches[i].act_faces[j]=0;} // Bottom, Top, West, East, South, North
     }
   }
   for (i=6; i<(6+np_usr+1); ++i)
@@ -344,6 +350,8 @@ int            MakePatchySolid(
       AllPatches[i].end_idx=np+AllPatches[i].patch_cell_count-1;
       np=AllPatches[i].end_idx+1;
       non_blanks=non_blanks+1;
+      for (j=0; j<6; ++j) {AllPatches[i].act_faces[j]=0;} // Bottom, Top, West, East, South, North
+      AllPatches[i].total_patches=0;
     } else {
       // AllPatches[i].active=0;
       // AllPatches[i].patch_cell_count=0;
@@ -373,9 +381,11 @@ int            MakePatchySolid(
 
   // int Patch[cell_faces*7];
   int *Patch;
-  Patch=(int*)calloc(cell_faces*7,sizeof(int));
+  // Patch=(int*)calloc(cell_faces*7,sizeof(int));
+  Patch=(int*)calloc(cell_faces*8,sizeof(int));
 
-  for (i=0;i<(cell_faces*7); i++) {Patch[i]=-1111;}
+  // for (i=0;i<(cell_faces*7); i++) {Patch[i]=-1111;}
+  for (i=0;i<(cell_faces*8); i++) {Patch[i]=-1111;}
 
   if (debugger==1)
   {
@@ -546,39 +556,44 @@ int            MakePatchySolid(
     /* ----- BOTTOM patch ----- */
     AllPatches[0].p_write=AllPatches[0].p_write+1;
     n_t=AllPatches[0].start_idx+AllPatches[0].p_write;
-    Patch[7*n_t]=our_pnts[1]; // First triangle of the cell face
-    Patch[7*n_t + 1]=our_pnts[0];
-    Patch[7*n_t + 2]=our_pnts[2];
+    Patch[8*n_t]=our_pnts[1]; // First triangle of the cell face
+    Patch[8*n_t + 1]=our_pnts[0];
+    Patch[8*n_t + 2]=our_pnts[2];
 
-    Patch[7*n_t + 3]=our_pnts[2]; // Second triangle of the cell face
-    Patch[7*n_t + 4]=our_pnts[3];
-    Patch[7*n_t + 5]=our_pnts[1];
-    Patch[7*n_t + 6]=-1;
+    Patch[8*n_t + 3]=our_pnts[2]; // Second triangle of the cell face
+    Patch[8*n_t + 4]=our_pnts[3];
+    Patch[8*n_t + 5]=our_pnts[1];
+    Patch[8*n_t + 6]=-1;
+    Patch[8*n_t + 7]=0;
+    AllPatches[0].act_faces[0]+=1;
 
     /* ----- TOP patch ----- */
     AllPatches[1].p_write=AllPatches[1].p_write+1;
     n_t=AllPatches[1].start_idx+AllPatches[1].p_write;
-    Patch[7*n_t + 0]=our_pnts[6];
-    Patch[7*n_t + 1]=our_pnts[4];
-    Patch[7*n_t + 2]  =our_pnts[5];
+    Patch[8*n_t + 0]=our_pnts[6];
+    Patch[8*n_t + 1]=our_pnts[4];
+    Patch[8*n_t + 2]=our_pnts[5];
 
-    Patch[7*n_t + 3]=our_pnts[5];
-    Patch[7*n_t + 4]=our_pnts[7];
-    Patch[7*n_t + 5]=our_pnts[6];
-    Patch[7*n_t + 6]=-2;
-
+    Patch[8*n_t + 3]=our_pnts[5];
+    Patch[8*n_t + 4]=our_pnts[7];
+    Patch[8*n_t + 5]=our_pnts[6];
+    Patch[8*n_t + 6]=-2;
+    Patch[8*n_t + 7]=1;
+    AllPatches[1].act_faces[1]+=1;
 
     if (i==0) // Write a WEST EDGE patch
     {
       AllPatches[2].p_write=AllPatches[2].p_write+1;
       n_t=AllPatches[2].start_idx+AllPatches[2].p_write;
-      Patch[7*n_t]=our_pnts[6];
-      Patch[7*n_t + 1]=our_pnts[2];
-      Patch[7*n_t + 2]=our_pnts[0];
-      Patch[7*n_t + 3]=our_pnts[0];
-      Patch[7*n_t + 4]=our_pnts[4];
-      Patch[7*n_t + 5]=our_pnts[6];
-      Patch[7*n_t + 6]=-3;
+      Patch[8*n_t]=our_pnts[6];
+      Patch[8*n_t + 1]=our_pnts[2];
+      Patch[8*n_t + 2]=our_pnts[0];
+      Patch[8*n_t + 3]=our_pnts[0];
+      Patch[8*n_t + 4]=our_pnts[4];
+      Patch[8*n_t + 5]=our_pnts[6];
+      Patch[8*n_t + 6]=-3;
+      Patch[8*n_t + 7]=2;
+      AllPatches[2].act_faces[2]+=1;
     }
 
     if (i>0) // Check for an WEST facing user patch
@@ -591,13 +606,15 @@ int            MakePatchySolid(
         if (idx<0) {return -1;} // Error so bail
         AllPatches[idx].p_write=AllPatches[idx].p_write+1;
         n_t=AllPatches[idx].start_idx+AllPatches[idx].p_write;
-        Patch[7*n_t]=our_pnts[6];
-        Patch[7*n_t + 1]=our_pnts[2];
-        Patch[7*n_t + 2]=our_pnts[0];
-        Patch[7*n_t + 3]=our_pnts[0];
-        Patch[7*n_t + 4]=our_pnts[4];
-        Patch[7*n_t + 5]=our_pnts[6];
-        Patch[7*n_t + 6]=test_val;
+        Patch[8*n_t]=our_pnts[6];
+        Patch[8*n_t + 1]=our_pnts[2];
+        Patch[8*n_t + 2]=our_pnts[0];
+        Patch[8*n_t + 3]=our_pnts[0];
+        Patch[8*n_t + 4]=our_pnts[4];
+        Patch[8*n_t + 5]=our_pnts[6];
+        Patch[8*n_t + 6]=test_val;
+        AllPatches[idx].act_faces[2]+=1;
+        Patch[8*n_t + 7]=2;
       }
     }
 
@@ -605,13 +622,15 @@ int            MakePatchySolid(
     {
       AllPatches[3].p_write=AllPatches[3].p_write+1;
       n_t=AllPatches[3].start_idx+AllPatches[3].p_write;
-      Patch[7*n_t]=our_pnts[1];
-      Patch[7*n_t + 1]=our_pnts[3];
-      Patch[7*n_t + 2]=our_pnts[7];
-      Patch[7*n_t + 3]=our_pnts[7];
-      Patch[7*n_t + 4]=our_pnts[5];
-      Patch[7*n_t + 5]=our_pnts[1];
-      Patch[7*n_t + 6]=-4;
+      Patch[8*n_t]=our_pnts[1];
+      Patch[8*n_t + 1]=our_pnts[3];
+      Patch[8*n_t + 2]=our_pnts[7];
+      Patch[8*n_t + 3]=our_pnts[7];
+      Patch[8*n_t + 4]=our_pnts[5];
+      Patch[8*n_t + 5]=our_pnts[1];
+      Patch[8*n_t + 6]=-4;
+      Patch[8*n_t + 7]=3;
+      AllPatches[3].act_faces[3]+=1;
     }
 
     if (i<(NX-1)) // Check for an EAST facing user patch
@@ -624,13 +643,15 @@ int            MakePatchySolid(
         if (idx<0) {return -1;} // Error so bail
         AllPatches[idx].p_write=AllPatches[idx].p_write+1;
         n_t=AllPatches[idx].start_idx+AllPatches[idx].p_write;
-        Patch[7*n_t]=our_pnts[1];
-        Patch[7*n_t + 1]=our_pnts[3];
-        Patch[7*n_t + 2]=our_pnts[7];
-        Patch[7*n_t + 3]=our_pnts[7];
-        Patch[7*n_t + 4]=our_pnts[5];
-        Patch[7*n_t + 5]=our_pnts[1];
-        Patch[7*n_t + 6]=test_val;
+        Patch[8*n_t]=our_pnts[1];
+        Patch[8*n_t + 1]=our_pnts[3];
+        Patch[8*n_t + 2]=our_pnts[7];
+        Patch[8*n_t + 3]=our_pnts[7];
+        Patch[8*n_t + 4]=our_pnts[5];
+        Patch[8*n_t + 5]=our_pnts[1];
+        Patch[8*n_t + 6]=test_val;
+        Patch[8*n_t + 7]=3;
+        AllPatches[idx].act_faces[3]+=1;
       }
     }
 
@@ -638,13 +659,15 @@ int            MakePatchySolid(
     {
       AllPatches[4].p_write=AllPatches[4].p_write+1;
       n_t=AllPatches[4].start_idx+AllPatches[4].p_write;
-      Patch[7*n_t]=our_pnts[4];
-      Patch[7*n_t + 1]=our_pnts[0];
-      Patch[7*n_t + 2]=our_pnts[1];
-      Patch[7*n_t + 3]=our_pnts[1];
-      Patch[7*n_t + 4]=our_pnts[5];
-      Patch[7*n_t + 5]=our_pnts[4];
-      Patch[7*n_t + 6]=-5;
+      Patch[8*n_t]=our_pnts[4];
+      Patch[8*n_t + 1]=our_pnts[0];
+      Patch[8*n_t + 2]=our_pnts[1];
+      Patch[8*n_t + 3]=our_pnts[1];
+      Patch[8*n_t + 4]=our_pnts[5];
+      Patch[8*n_t + 5]=our_pnts[4];
+      Patch[8*n_t + 6]=-5;
+      Patch[8*n_t + 7]=4;
+      AllPatches[4].act_faces[4]+=1;
     }
 
     if (j>0) // Check for an SOUTH facing user patch
@@ -657,13 +680,15 @@ int            MakePatchySolid(
         if (idx<0) {return -1;} // Error so bail
         AllPatches[idx].p_write=AllPatches[idx].p_write+1;
         n_t=AllPatches[idx].start_idx+AllPatches[idx].p_write;
-        Patch[7*n_t]=our_pnts[4];
-        Patch[7*n_t + 1]=our_pnts[0];
-        Patch[7*n_t + 2]=our_pnts[1];
-        Patch[7*n_t + 3]=our_pnts[1];
-        Patch[7*n_t + 4]=our_pnts[5];
-        Patch[7*n_t + 5]=our_pnts[4];
-        Patch[7*n_t + 6]=test_val;
+        Patch[8*n_t]=our_pnts[4];
+        Patch[8*n_t + 1]=our_pnts[0];
+        Patch[8*n_t + 2]=our_pnts[1];
+        Patch[8*n_t + 3]=our_pnts[1];
+        Patch[8*n_t + 4]=our_pnts[5];
+        Patch[8*n_t + 5]=our_pnts[4];
+        Patch[8*n_t + 6]=test_val;
+        Patch[8*n_t + 7]=4;
+        AllPatches[idx].act_faces[4]+=1;
       }
     }
 
@@ -671,14 +696,16 @@ int            MakePatchySolid(
     {
       AllPatches[5].p_write=AllPatches[5].p_write+1;
       n_t=AllPatches[5].start_idx+AllPatches[5].p_write;
-      Patch[7*n_t]=our_pnts[3];
-      Patch[7*n_t + 1]=our_pnts[2];
-      Patch[7*n_t + 2]=our_pnts[6];
+      Patch[8*n_t]=our_pnts[3];
+      Patch[8*n_t + 1]=our_pnts[2];
+      Patch[8*n_t + 2]=our_pnts[6];
 
-      Patch[7*n_t + 3]=our_pnts[6];
-      Patch[7*n_t + 4]=our_pnts[7];
-      Patch[7*n_t + 5]=our_pnts[3];
-      Patch[7*n_t + 6]=-6;
+      Patch[8*n_t + 3]=our_pnts[6];
+      Patch[8*n_t + 4]=our_pnts[7];
+      Patch[8*n_t + 5]=our_pnts[3];
+      Patch[8*n_t + 6]=-6;
+      Patch[8*n_t + 7]=5;
+      AllPatches[5].act_faces[5]+=1;
     }
 
     if (j<(NY-1)) // Check for an NORTH facing user patch
@@ -691,13 +718,15 @@ int            MakePatchySolid(
         if (idx<0) {return -1;} // Error so bail
         AllPatches[idx].p_write=AllPatches[idx].p_write+1;
         n_t=AllPatches[idx].start_idx+AllPatches[idx].p_write;
-        Patch[7*n_t]=our_pnts[3];
-        Patch[7*n_t + 1]=our_pnts[2];
-        Patch[7*n_t + 2]=our_pnts[6];
-        Patch[7*n_t + 3]=our_pnts[6];
-        Patch[7*n_t + 4]=our_pnts[7];
-        Patch[7*n_t + 5]=our_pnts[3];
-        Patch[7*n_t + 6]=test_val;
+        Patch[8*n_t]=our_pnts[3];
+        Patch[8*n_t + 1]=our_pnts[2];
+        Patch[8*n_t + 2]=our_pnts[6];
+        Patch[8*n_t + 3]=our_pnts[6];
+        Patch[8*n_t + 4]=our_pnts[7];
+        Patch[8*n_t + 5]=our_pnts[3];
+        Patch[8*n_t + 6]=test_val;
+        AllPatches[idx].act_faces[5]+=1;
+        Patch[8*n_t + 7]=5;
       }
     }
 
@@ -716,6 +745,8 @@ int            MakePatchySolid(
 
   if (debugger==1) printf("DBG: Done building point-patch database\n");
 
+  char *dir_labels[]={"Bottom","Top","Left","Right","Front","Back"};
+
   // --------------------------------------------------------------------------
   //              ===== Write out the solid file =====
   // --------------------------------------------------------------------------
@@ -731,8 +762,18 @@ int            MakePatchySolid(
   if (AllPatches[5].patch_cell_count>0) {printf(" NORTH ");}
   for (i=6; i<(6+np_usr+1); ++i)
   {
+    if (sub_patches==1) {
+      if ((AllPatches[i].patch_cell_count>0)&(AllPatches[i].value!=0))
+      {
+        for (j=0; j<6; ++j) {
+        if (AllPatches[i].act_faces[j]>0)
+        printf(" Usr_%i_%s ",AllPatches[i].value,dir_labels[j]);
+        }
+      }
+    } else {
     if ((AllPatches[i].patch_cell_count>0)&(AllPatches[i].value!=0))
     {printf(" User_%i ",AllPatches[i].value);}
+    }
   }
   printf("\n \n");
 
@@ -750,10 +791,47 @@ int            MakePatchySolid(
 
   for (i=0; i<cell_faces; ++i)
   {
-  fprintf(fp," %i %i %i\n",Patch[7*i],Patch[7*i + 1],Patch[7*i + 2]);
-  fprintf(fp," %i %i %i\n",Patch[7*i + 3],Patch[7*i + 4],Patch[7*i + 5]);
+  fprintf(fp," %i %i %i\n",Patch[8*i],Patch[8*i + 1],Patch[8*i + 2]);
+  fprintf(fp," %i %i %i\n",Patch[8*i + 3],Patch[8*i + 4],Patch[8*i + 5]);
   }
 
+  // NEED TO MODIFY FOR SUB PATCH OPTION
+  if (sub_patches==1) {
+    int all_faces=0;
+    // Count up all the ACTUAL patches
+    for (i=0; i<(6+np_usr+1); ++i) {
+      // printf("F%i, ",i);
+      for (j=0; j<6; ++j) {
+        // printf(" %i ",AllPatches[i].act_faces[j]);
+        if (AllPatches[i].value!=0 & AllPatches[i].act_faces[j]>0) {all_faces+=1;}
+      }
+      // printf("    Val=%i, Cnt=%i \n",AllPatches[i].value,AllPatches[i].patch_cell_count);
+    }
+
+    // printf("non_blanks=%i, all_faces=%i \n",non_blanks,all_faces);
+
+    fprintf(fp,"%i \n",all_faces); // -1 since zero is omitted
+
+    for (i=0; i<(6+np_usr+1); ++i)
+    {
+      if ((AllPatches[i].patch_cell_count>0)&(AllPatches[i].value!=0))
+      {
+        for (k=0; k<6; ++k) {
+          if (AllPatches[i].act_faces[k]>0) {
+            fprintf(fp,"%i \n",AllPatches[i].act_faces[k]*2);
+            for (j=AllPatches[i].start_idx; j<=AllPatches[i].end_idx; ++j)
+            {
+              if (Patch[8*j + 7]==k) {
+              fprintf(fp,"%i \n",2*j);
+              fprintf(fp,"%i \n",2*j+1);
+              }
+            }
+          }
+        } // End of k loop
+      }
+    }
+  // ----- End of sub patch section for ASCII write -----
+  } else {
   if (any_zeros==1)
   {
     fprintf(fp,"%i \n",non_blanks-1); // -1 since zero is omitted
@@ -761,7 +839,6 @@ int            MakePatchySolid(
     fprintf(fp,"%i \n",non_blanks); // -1 since zero is omitted
   }
 
-  // fprintf(fp,"%i \n",non_blanks-1); // -1 since zero is omitted
   for (i=0; i<(6+np_usr+1); ++i)
   {
     if ((AllPatches[i].patch_cell_count>0)&(AllPatches[i].value!=0))
@@ -772,6 +849,7 @@ int            MakePatchySolid(
         fprintf(fp,"%i \n",j);
       }
     }
+  }
   }
   if (debugger==1) printf("DBG: Done writing ASCII solid\n");
   } else {
@@ -798,14 +876,50 @@ int            MakePatchySolid(
     tools_WriteInt(fp,&write_int, 1); // Total number of triangles
     for (i=0; i<(cell_faces); ++i)
     {
-      tools_WriteInt(fp,&Patch[7*i], 1);
-      tools_WriteInt(fp,&Patch[7*i + 1], 1);
-      tools_WriteInt(fp,&Patch[7*i + 2], 1);
-      tools_WriteInt(fp,&Patch[7*i + 3], 1);
-      tools_WriteInt(fp,&Patch[7*i + 4], 1);
-      tools_WriteInt(fp,&Patch[7*i + 5], 1);
+      tools_WriteInt(fp,&Patch[8*i], 1);
+      tools_WriteInt(fp,&Patch[8*i + 1], 1);
+      tools_WriteInt(fp,&Patch[8*i + 2], 1);
+      tools_WriteInt(fp,&Patch[8*i + 3], 1);
+      tools_WriteInt(fp,&Patch[8*i + 4], 1);
+      tools_WriteInt(fp,&Patch[8*i + 5], 1);
     }
 
+    if (sub_patches==1) {
+        int all_faces=0;
+        // Count up all the ACTUAL patches
+        for (i=0; i<(6+np_usr+1); ++i) {
+          for (j=0; j<6; ++j) {
+            if (AllPatches[i].value!=0 & AllPatches[i].act_faces[j]>0) {all_faces+=1;}
+          }
+        }
+
+        write_int=all_faces;
+        tools_WriteInt(fp,&write_int, 1); // -1 since zero is omitted
+
+        for (i=0; i<(6+np_usr+1); ++i)
+        {
+          if ((AllPatches[i].patch_cell_count>0)&(AllPatches[i].value!=0))
+          {
+            for (k=0; k<6; ++k) {
+              if (AllPatches[i].act_faces[k]>0) {
+                write_int=AllPatches[i].act_faces[k]*2;
+                tools_WriteInt(fp,&write_int, 1);
+                for (j=AllPatches[i].start_idx; j<=AllPatches[i].end_idx; ++j)
+                {
+                  if (Patch[8*j + 7]==k) {
+                  write_int=2*j;
+                  tools_WriteInt(fp,&write_int, 1);
+                  write_int=2*j+1;
+                  tools_WriteInt(fp,&write_int, 1);
+                  }
+                }
+              }
+            } // End of k loop
+          }
+        }
+      // ----- End of sub patch section for BINARY write -----
+
+    } else {
     if (any_zeros==1)
     {
       write_int=non_blanks-1;
@@ -829,7 +943,7 @@ int            MakePatchySolid(
     }
     if (debugger==1) printf("DBG: Done writing BINARY solid\n");
   }  // End of ascii/binary solid file test
-
+  }
   // --------------------------------------------------------------------------
   //        ===== Write the VTK if the file ID is not NULL =====
   // --------------------------------------------------------------------------
@@ -860,11 +974,11 @@ int            MakePatchySolid(
   k=0;
   for (i=0; i<cell_faces*2; i=i+2)
   {
-    PatchEl[i]=(Xp_Act[3*Patch[7*k]+2]+Xp_Act[3*Patch[7*k+1]+2]+Xp_Act[3*Patch[7*k+2]+2])/3.0;
-    PatchEl[i+1]=(Xp_Act[3*Patch[7*k+3]+2]+Xp_Act[3*Patch[7*k+4]+2]+Xp_Act[3*Patch[7*k+5]+2])/3.0;
+    PatchEl[i]=(Xp_Act[3*Patch[8*k]+2]+Xp_Act[3*Patch[8*k+1]+2]+Xp_Act[3*Patch[8*k+2]+2])/3.0;
+    PatchEl[i+1]=(Xp_Act[3*Patch[8*k+3]+2]+Xp_Act[3*Patch[8*k+4]+2]+Xp_Act[3*Patch[8*k+5]+2])/3.0;
 
-    PatchVal[i]=Patch[7*k + 6];
-    PatchVal[i+1]=Patch[7*k + 6];
+    PatchVal[i]=Patch[8*k + 6];
+    PatchVal[i+1]=Patch[8*k + 6];
     k=k+1;
   }
 
@@ -934,8 +1048,8 @@ int            MakePatchySolid(
   if (write_ascii==1) { // ASCII VTK
     for (i=0; i<cell_faces; ++i)
     {
-    fprintf(fp_vtk," %i %i %i %i\n",*nvrtx,Patch[7*i],Patch[7*i+1],Patch[7*i+2]);
-    fprintf(fp_vtk," %i %i %i %i\n",*nvrtx,Patch[7*i+3],Patch[7*i+4],Patch[7*i+5]);
+    fprintf(fp_vtk," %i %i %i %i\n",*nvrtx,Patch[8*i],Patch[8*i+1],Patch[8*i+2]);
+    fprintf(fp_vtk," %i %i %i %i\n",*nvrtx,Patch[8*i+3],Patch[8*i+4],Patch[8*i+5]);
     }
   } else {
   // BINARY VTK
@@ -944,12 +1058,12 @@ int            MakePatchySolid(
     tools_WriteInt(fp_vtk,nvrtx, 1);
     for (j=0; j<3; ++j)
     {
-      tools_WriteInt(fp_vtk,&Patch[7*i+j], 1);
+      tools_WriteInt(fp_vtk,&Patch[8*i+j], 1);
     }
     tools_WriteInt(fp_vtk,nvrtx, 1);
     for (j=3; j<6; ++j)
     {
-      tools_WriteInt(fp_vtk,&Patch[7*i+j], 1);
+      tools_WriteInt(fp_vtk,&Patch[8*i+j], 1);
     }
   }
   }
