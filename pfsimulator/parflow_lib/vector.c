@@ -35,6 +35,10 @@
 #include "parflow.h"
 #include "vector.h"
 
+#ifdef HAVE_CUDA
+#include "pfcudamalloc.h"
+#endif
+
 #ifdef HAVE_SAMRAI
 #include "SAMRAI/hier/PatchDescriptor.h"
 #include "SAMRAI/pdat/CellVariable.h"
@@ -45,7 +49,6 @@ using namespace SAMRAI;
 #endif
 
 #include <stdlib.h>
-#include "pfcudamalloc.h"
 
 static int samrai_vector_ids[5][2048];
 

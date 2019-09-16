@@ -1,16 +1,8 @@
-#ifdef HAVE_CUDA
-
 /*--------------------------------------------------------------------------
  * CUDA error handling macro
  *--------------------------------------------------------------------------*/
 #ifndef CUDA_ERR
-#define CUDA_ERR( err ) (GpuError( err, __FILE__, __LINE__ ))
-static void GpuError(cudaError_t err, const char *file, int line) {
-	if (err != cudaSuccess) {
-		printf("\n\n%s in %s at line %d\n", cudaGetErrorString(err), file, line);
-		exit(1);
-	}
-}
+#include "pfcudaerr.h"
 #endif
 
 /*--------------------------------------------------------------------------
@@ -66,7 +58,7 @@ const int PV_diff_x, const int PV_diff_y, const int PV_diff_z)
     i += PV_ixl;
     j += PV_iyl;
     k += PV_izl;
-  
+    
     loop_body(i, j, k);
 }
 }
@@ -99,16 +91,10 @@ const int PV_diff_x, const int PV_diff_y, const int PV_diff_z)
         (PV_diff_z + BLOCKSIZE) / BLOCKSIZE);                                         \
       dim3 block = dim3(BLOCKSIZE, BLOCKSIZE, BLOCKSIZE);                             \
                                                                                       \
-      int gpu_count = 1;                                                              \
-      /* CUDA_ERR(cudaGetDeviceCount(&gpu_count));*/                                  \
-      /*printf("DeviceCount: %d\n", gpu_count);*/                                     \
-      for (int gpu = 0; gpu < gpu_count; gpu++){                                      \
-        ForxyzKernel<<<grid, block>>>(                                                \
-            GPU_LAMBDA(int i, int j, int k)loop_body,                                 \
-            PV_ixl, PV_iyl, PV_izl, PV_diff_x, PV_diff_y, PV_diff_z);                 \
-      }                                                                               \
+      ForxyzKernel<<<grid, block>>>(                                                  \
+          GPU_LAMBDA(int i, int j, int k)loop_body,                                   \
+          PV_ixl, PV_iyl, PV_izl, PV_diff_x, PV_diff_y, PV_diff_z);                   \
       CUDA_ERR( cudaPeekAtLastError() );                                              \
       CUDA_ERR( cudaDeviceSynchronize() );                                            \
     }                                                                                 \
   }
-  #endif

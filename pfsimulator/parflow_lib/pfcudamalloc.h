@@ -1,19 +1,8 @@
-#ifdef HAVE_CUDA
-
-#include "cuda.h"
-#include "cuda_runtime.h"
-
 /*--------------------------------------------------------------------------
  * CUDA error handling macro
  *--------------------------------------------------------------------------*/
 #ifndef CUDA_ERR
-#define CUDA_ERR( err ) (GpuError( err, __FILE__, __LINE__ ))
-static void GpuError(cudaError_t err, const char *file, int line) {
-	if (err != cudaSuccess) {
-		printf("\n\n%s in %s at line %d\n", cudaGetErrorString(err), file, line);
-		exit(1);
-	}
-}
+#include "pfcudaerr.h"
 #endif
 
 /*--------------------------------------------------------------------------
@@ -25,6 +14,8 @@ static inline void *tallocCUDA(size_t size)
    void *ptr = NULL;
 
    CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
+  //  CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
+  //  CUDA_ERR(cudaMallocHost((void**)&ptr, size));
 
    return ptr;
 }
@@ -34,6 +25,8 @@ static inline void *ctallocCUDA(size_t size)
    void *ptr = NULL;
 
    CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
+  //  CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
+  //  CUDA_ERR(cudaMallocHost((void**)&ptr, size));
    CUDA_ERR(cudaMemset(ptr, 0, size));
 
    return ptr;
@@ -41,6 +34,7 @@ static inline void *ctallocCUDA(size_t size)
 static inline void tfreeCUDA(void *ptr)
 {
    CUDA_ERR(cudaFree(ptr));
+  //  CUDA_ERR(cudaFreeHost(ptr));
 }
 
 /*--------------------------------------------------------------------------
@@ -70,5 +64,3 @@ static inline void tfreeCUDA(void *ptr)
 
 #undef tfree
 #define tfree(ptr) if (ptr) tfreeCUDA(ptr); else {}
-
-#endif

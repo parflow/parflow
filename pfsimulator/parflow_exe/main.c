@@ -61,6 +61,10 @@ using namespace SAMRAI;
 #include <cegdb.h>
 #endif
 
+#ifdef HAVE_CUDA
+#include "pfcudaerr.h"
+#endif
+
 #include <string.h>
 #include <ctype.h>
 
@@ -107,6 +111,35 @@ int main(int argc, char *argv [])
 
 #ifdef HAVE_CEGDB
     cegdb(&argc, &argv, amps_Rank(MPI_CommWorld));
+#endif
+
+/*-----------------------------------------------------------------------
+ * Check CUDA compute capability and set device
+ *-----------------------------------------------------------------------*/
+#ifdef HAVE_CUDA
+    {
+      int device;
+      CUDA_ERR(cudaGetDevice(&device));
+
+      struct cudaDeviceProp props;
+      CUDA_ERR(cudaGetDeviceProperties(&props, device));
+
+      if (props.major < 7)
+      {
+        amps_Printf("\nError: The GPU compute cabability %d.%d of %s is not sufficient.\n",props.major,props.minor,props.name);
+        amps_Printf("\nThe minimum required GPU compute capability is 7.0.\n");
+        exit(1);
+      }
+
+      int num_devices = 0;
+      CUDA_ERR(cudaGetDeviceCount(&num_devices));
+      // if(amps_node_rank >= num_devices){
+      //   amps_Printf("\nThe number of processes per node exceeds the number of GPU's per node.\n");
+      //   amps_Printf("Node-local process rank: %d >= Node-local GPU count: %d \n",amps_node_rank, num_devices);
+      // }
+      CUDA_ERR(cudaSetDevice(amps_node_rank % num_devices));
+      // amps_Printf("Global_rank :%d, Nodal_rank: %d, Num_devices: %d, Device_rank: %d \n",amps_rank, amps_node_rank, num_devices, amps_node_rank % num_devices);
+    }
 #endif
 
     wall_clock_time = amps_Clock();

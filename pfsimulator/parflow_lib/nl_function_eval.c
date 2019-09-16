@@ -30,6 +30,8 @@
 
 #ifdef HAVE_CUDA
 extern "C"{
+#include "pfcudaloops.h"
+#include "pfcudamalloc.h"
 #endif
 
 #include "parflow.h"
@@ -37,8 +39,6 @@ extern "C"{
 #include "llnltyps.h"
 //#include "math.h"
 #include "float.h"
-#include "pfcudaloops.h"
-#include "pfcudamalloc.h"
 
 /*---------------------------------------------------------------------
  * Define module structures

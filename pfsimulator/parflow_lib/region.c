@@ -33,8 +33,11 @@
 #include "parflow.h"
 #include "grid.h"
 
-#include <math.h>
+#ifdef HAVE_CUDA
 #include "pfcudamalloc.h"
+#endif
+
+#include <math.h>
 
 /*--------------------------------------------------------------------------
  * NewSubregion
