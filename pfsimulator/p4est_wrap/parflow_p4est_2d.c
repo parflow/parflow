@@ -1,6 +1,7 @@
 #include <parflow.h>
 #include "parflow_p4est_math.h"
 #include <sc_functions.h>
+#include <time.h>
 #ifndef P4_TO_P8
 #include "parflow_p4est_2d.h"
 #include <p4est_bits.h>
