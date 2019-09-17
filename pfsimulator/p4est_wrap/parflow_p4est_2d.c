@@ -142,7 +142,7 @@ parflow_p4est_grid_2d_new(int Px, int Py
                               0, initial_level, 1,
                               quad_data_size, NULL, NULL);
 
-  for (level = initial_level; level < initial_level  + 1; ++level)
+  for (level = initial_level; level < initial_level  + GlobalsMaxRefLevel; ++level)
   {
     p4est_refine_ext(pfg->forest, 0, -1, refine_fn,
                      NULL, NULL);

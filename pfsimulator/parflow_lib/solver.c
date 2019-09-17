@@ -165,7 +165,18 @@ NewSolver()
 
   SetBackgroundBounds(GlobalsBackground, GlobalsUserGrid);
 
-  GlobalsMaxRefLevel = 0;
+  if (!USE_P4EST)
+  {
+      GlobalsMaxRefLevel = 0;
+  }
+  else
+  {
+#ifdef HAVE_P4EST
+      GlobalsMaxRefLevel = GetIntDefault("MaxRefLevel", 0);
+      if (GlobalsMaxRefLevel < 0)
+          PARFLOW_ERROR("MaxRefLevel must be positive\n");
+#endif
+  }
 
   {
      NameArray switch_na;
