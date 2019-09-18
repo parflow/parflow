@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.9)
+cmake_minimum_required (VERSION 3.12)
 
 project (PARFLOW C Fortran CXX)
 
@@ -13,17 +13,35 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/"
 set (PARFLOW_ENABLE_CUDA False)
 set (PARFLOW_ENABLE_CUDA CACHE BOOL "Enable CUDA")
 if( ${PARFLOW_ENABLE_CUDA} )
+
+# Initialize CUDA
   include(CheckLanguage)
   check_language(CUDA)
   if(CMAKE_CUDA_COMPILER)
     enable_language(CUDA)
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xptxas -O3 -v -gencode arch=compute_70,code=sm_70 --expt-extended-lambda")
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xptxas -O3 -gencode arch=compute_70,code=sm_70 --expt-extended-lambda")
     message(STATUS "Found CUDA ${CMAKE_CUDA_COMPILER_VERSION} at ${CMAKE_CUDA_COMPILER}")
     set(PARFLOW_HAVE_CUDA "yes")
     set(HAVE_CUDA ${PARFLOW_HAVE_CUDA})
   else(CMAKE_CUDA_COMPILER)
     message( FATAL_ERROR "ERROR: CUDA installation not found" )
   endif(CMAKE_CUDA_COMPILER)
+
+# Include RapidsAI RMM allocator (for pool allocation)
+  find_path(RMM_INCLUDE "rmm" HINTS "$ENV{RMM_ROOT}/include")
+  find_library(RMM_LIBRARY "rmm" HINTS "$ENV{RMM_ROOT}/lib")
+
+  message(STATUS "RMM: RMM_LIBRARY set to ${RMM_LIBRARY}")
+  message(STATUS "RMM: RMM_INCLUDE set to ${RMM_INCLUDE}")
+
+  add_library(rmm SHARED IMPORTED ${RMM_LIBRARY})
+  if(RMM_INCLUDE AND RMM_LIBRARY)
+      set_target_properties(rmm PROPERTIES IMPORTED_LOCATION ${RMM_LIBRARY})
+  endif(RMM_INCLUDE AND RMM_LIBRARY)
+
+  include_directories ("${RMM_INCLUDE}")
+  link_directories("${RMM_LIBRARY}")
+
 endif( ${PARFLOW_ENABLE_CUDA} )
 
 #-----------------------------------------------------------------------------

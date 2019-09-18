@@ -1,9 +1,12 @@
+#ifndef PFCUDALOOPS_H
+#define PFCUDALOOPS_H
+
+extern "C++"{
 /*--------------------------------------------------------------------------
- * CUDA error handling macro
+ * Include RMM allocator and error handling headers
  *--------------------------------------------------------------------------*/
-#ifndef CUDA_ERR
+#include <rmm/rmm.h>
 #include "pfcudaerr.h"
-#endif
 
 /*--------------------------------------------------------------------------
  * CUDA lambda definition (visible for host and device functions)
@@ -11,9 +14,8 @@
 #define GPU_LAMBDA [=] __host__ __device__
 
 /*--------------------------------------------------------------------------
- * CUDA helper functions (must be wrapped to extern "C++" due to template use)
+ * CUDA helper functions
  *--------------------------------------------------------------------------*/
-extern "C++"{ 
 template <typename T>
 __host__ __device__ static inline void PlusEquals(T *array_loc, T value)
 {
@@ -23,7 +25,6 @@ __host__ __device__ static inline void PlusEquals(T *array_loc, T value)
 #else
     *array_loc += value;
 #endif
-}
 }
 
 static void PrintDeviceProperties(){
@@ -40,9 +41,8 @@ static void PrintDeviceProperties(){
 }
 
 /*--------------------------------------------------------------------------
- * CUDA loop kernels (must be wrapped to extern "C++" due to template use)
+ * CUDA loop kernels
  *--------------------------------------------------------------------------*/
-extern "C++"{ 
 template <typename LOOP_BODY>
 __global__ void ForxyzKernel(LOOP_BODY loop_body, const int PV_ixl, const int PV_iyl, const int PV_izl,
 const int PV_diff_x, const int PV_diff_y, const int PV_diff_z)
@@ -60,7 +60,6 @@ const int PV_diff_x, const int PV_diff_y, const int PV_diff_z)
     k += PV_izl;
     
     loop_body(i, j, k);
-}
 }
 
 /*--------------------------------------------------------------------------
@@ -98,3 +97,5 @@ const int PV_diff_x, const int PV_diff_y, const int PV_diff_z)
       CUDA_ERR( cudaDeviceSynchronize() );                                            \
     }                                                                                 \
   }
+}
+#endif // PFCUDALOOPS_H

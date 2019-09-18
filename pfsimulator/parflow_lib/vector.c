@@ -31,6 +31,11 @@
 *
 *
 *****************************************************************************/
+#include "parflow_config.h"
+
+#ifdef HAVE_CUDA
+extern "C"{
+#endif
 
 #include "parflow.h"
 #include "vector.h"
@@ -932,3 +937,7 @@ void    InitVectorRandom(
     });
   }
 }
+
+#ifdef HAVE_CUDA
+}
+#endif

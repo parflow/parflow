@@ -30,6 +30,12 @@
 * Member functions for Region class.
 *
 *****************************************************************************/
+#include "parflow_config.h"
+
+#ifdef HAVE_CUDA
+extern "C"{
+#endif
+
 #include "parflow.h"
 #include "grid.h"
 
@@ -373,3 +379,7 @@ void             AppendSubregionArray(
 /*--------------------------------------------------------------------------
  * CommRegFromStencil: RDF todo
  *--------------------------------------------------------------------------*/
+
+#ifdef HAVE_CUDA
+}
+#endif

@@ -30,7 +30,6 @@
 * The main routine
 *
 *****************************************************************************/
-
 #include "parflow.h"
 #include "pfversion.h"
 #include "amps.h"
@@ -62,7 +61,9 @@ using namespace SAMRAI;
 #endif
 
 #ifdef HAVE_CUDA
-#include "pfcudaerr.h"
+#include <stdbool.h>
+#include <rmm/rmm_api.h>
+#include <pfcudaerr.h>
 #endif
 
 #include <string.h>
@@ -70,7 +71,6 @@ using namespace SAMRAI;
 
 int main(int argc, char *argv [])
 {
-
   FILE *file = NULL;
 
   FILE *log_file = NULL;
@@ -114,7 +114,7 @@ int main(int argc, char *argv [])
 #endif
 
 /*-----------------------------------------------------------------------
- * Check CUDA compute capability and set device
+ * Check CUDA compute capability, set device, and initialize RMM allocator
  *-----------------------------------------------------------------------*/
 #ifdef HAVE_CUDA
     {
@@ -139,6 +139,17 @@ int main(int argc, char *argv [])
       // }
       CUDA_ERR(cudaSetDevice(amps_node_rank % num_devices));
       // amps_Printf("Global_rank :%d, Nodal_rank: %d, Num_devices: %d, Device_rank: %d \n",amps_rank, amps_node_rank, num_devices, amps_node_rank % num_devices);
+
+      rmmOptions_t rmmOptions;
+      rmmOptions.allocation_mode = PoolAllocation | CudaManagedMemory;
+      rmmOptions.initial_pool_size = 0;
+      rmmOptions.enable_logging = false;
+      RMM_ERR(rmmInitialize(&rmmOptions));
+      // rmmError_t rmmStatus = rmmInitialize(&rmmOptions);
+      // if (RMM_SUCCESS != rmmStatus) {
+      //   amps_Printf("\nERROR: Could not initialize RMM: %s\n", rmmGetErrorString(rmmStatus));
+      //   exit(1);
+      // }
     }
 #endif
 
@@ -440,4 +451,3 @@ int main(int argc, char *argv [])
 
   return 0;
 }
-
