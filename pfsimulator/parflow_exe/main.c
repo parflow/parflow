@@ -118,6 +118,11 @@ int main(int argc, char *argv [])
  *-----------------------------------------------------------------------*/
 #ifdef HAVE_CUDA
     {
+      // CUDA
+      int num_devices = 0;
+      CUDA_ERR(cudaGetDeviceCount(&num_devices));
+      CUDA_ERR(cudaSetDevice(amps_node_rank % num_devices));
+
       int device;
       CUDA_ERR(cudaGetDevice(&device));
 
@@ -131,25 +136,12 @@ int main(int argc, char *argv [])
         exit(1);
       }
 
-      int num_devices = 0;
-      CUDA_ERR(cudaGetDeviceCount(&num_devices));
-      // if(amps_node_rank >= num_devices){
-      //   amps_Printf("\nThe number of processes per node exceeds the number of GPU's per node.\n");
-      //   amps_Printf("Node-local process rank: %d >= Node-local GPU count: %d \n",amps_node_rank, num_devices);
-      // }
-      CUDA_ERR(cudaSetDevice(amps_node_rank % num_devices));
-      // amps_Printf("Global_rank :%d, Nodal_rank: %d, Num_devices: %d, Device_rank: %d \n",amps_rank, amps_node_rank, num_devices, amps_node_rank % num_devices);
-
+      // RMM
       rmmOptions_t rmmOptions;
-      rmmOptions.allocation_mode = PoolAllocation | CudaManagedMemory;
+      rmmOptions.allocation_mode = (rmmAllocationMode_t) (PoolAllocation | CudaManagedMemory);
       rmmOptions.initial_pool_size = 0;
       rmmOptions.enable_logging = false;
-      RMM_ERR(rmmInitialize(&rmmOptions));
-      // rmmError_t rmmStatus = rmmInitialize(&rmmOptions);
-      // if (RMM_SUCCESS != rmmStatus) {
-      //   amps_Printf("\nERROR: Could not initialize RMM: %s\n", rmmGetErrorString(rmmStatus));
-      //   exit(1);
-      // }
+      RMM_ERR(rmmInitialize(&rmmOptions));     
     }
 #endif
 
@@ -447,6 +439,13 @@ int main(int argc, char *argv [])
   tbox::SAMRAIManager::shutdown();
   tbox::SAMRAIManager::finalize();
   tbox::SAMRAI_MPI::finalize();
+#endif
+
+  /*-----------------------------------------------------------------------
+  * Shutdown RMM pool allocator
+  *-----------------------------------------------------------------------*/
+#ifdef HAVE_CUDA
+    RMM_ERR(rmmFinalize());
 #endif
 
   return 0;

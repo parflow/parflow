@@ -27,19 +27,6 @@ __host__ __device__ static inline void PlusEquals(T *array_loc, T value)
 #endif
 }
 
-static void PrintDeviceProperties(){
-      int device;
-      CUDA_ERR(cudaGetDevice(&device));
-
-      struct cudaDeviceProp props;
-      CUDA_ERR(cudaGetDeviceProperties(&props, device));
-      printf("\nGPU Model Name: %s\n", props.name);
-      printf("GPU Compute Capability: %d.%d\n", props.major,props.minor);
-      printf("GPU Maximum Threads Per Block: %d\n", props.maxThreadsPerBlock);
-      printf("GPU Maximum Threads Per Dims: %d x %d x %d\n", props.maxThreadsDim[0], props.maxThreadsDim[1], props.maxThreadsDim[2]);
-      //printf("Grid : {%d, %d, %d} blocks. Blocks : {%d, %d, %d} threads.\n", grid.x, grid.y, grid.z, block.x, block.y, block.z);
-}
-
 /*--------------------------------------------------------------------------
  * CUDA loop kernels
  *--------------------------------------------------------------------------*/

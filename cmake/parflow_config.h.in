@@ -1,3 +1,6 @@
+#ifndef PARFLOW_CONFIG_H
+#define PARFLOW_CONFIG_H
+
 /*
  * Parflow configure file.
  */
@@ -62,6 +65,4 @@
 #cmakedefine PARFLOW_HAVE_MALLINFO
 #cmakedefine HAVE_MALLINFO
 
-
-
-
+#endif // PARFLOW_CONFIG_H

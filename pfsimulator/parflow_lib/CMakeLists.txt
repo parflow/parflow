@@ -155,8 +155,8 @@ set (SRC_FILES advect.F
 
 if( ${PARFLOW_HAVE_CUDA} )
   set_source_files_properties(nl_function_eval.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(region.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(vector.c PROPERTIES LANGUAGE CUDA)
+  # set_source_files_properties(region.c PROPERTIES LANGUAGE CUDA)
+  # set_source_files_properties(vector.c PROPERTIES LANGUAGE CUDA)
 endif( ${PARFLOW_HAVE_CUDA} )
 
 add_library(pfsimulator ${SRC_FILES})
