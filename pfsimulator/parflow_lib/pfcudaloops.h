@@ -71,11 +71,12 @@ const int PV_diff_x, const int PV_diff_y, const int PV_diff_z)
       int PV_diff_y = PV_iyu - PV_iyl;                                                \
       int PV_diff_z = PV_izu - PV_izl;                                                \
                                                                                       \
-      const int BLOCKSIZE = 8;                                                        \
-      dim3 grid = dim3((PV_diff_x + BLOCKSIZE) / BLOCKSIZE,                           \
-        (PV_diff_y + BLOCKSIZE) / BLOCKSIZE,                                          \
-        (PV_diff_z + BLOCKSIZE) / BLOCKSIZE);                                         \
-      dim3 block = dim3(BLOCKSIZE, BLOCKSIZE, BLOCKSIZE);                             \
+      const int blocksize_h = 16;                                                     \
+      const int blocksize_v = 2;                                                      \
+      dim3 grid = dim3((PV_diff_x + blocksize_h) / blocksize_h,                       \
+        (PV_diff_y + blocksize_h) / blocksize_h,                                      \
+        (PV_diff_z + blocksize_v) / blocksize_v);                                     \
+      dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                       \
                                                                                       \
       ForxyzKernel<<<grid, block>>>(                                                  \
           GPU_LAMBDA(int i, int j, int k)loop_body,                                   \
