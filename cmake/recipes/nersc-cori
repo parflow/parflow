@@ -1,6 +1,7 @@
+#!/bin/bash
 # NERSC Cori
 # smith84@llnl.gov
-# 2017/10/22
+# 2019/09/21
 
 # Appends to path if not path not already present
 function appendToPath {
@@ -37,10 +38,9 @@ module load cray-hdf5-parallel
 module load cray-netcdf-hdf5parallel
 module load cray-tpsl
 module unload darshan
-module load cmake/3.5.2
 
 # Parflow installation directory
-export PARFLOW_DIR=/global/homes/u/u9563/m2421/parflow/cori-4layer-43321e5c
+export PARFLOW_DIR=/global/homes/u/u9563/m2421/parflow/cori-3.6.0-2019-09-20
 mkdir -p ${PARFLOW_DIR}
 
 # Use some symbols set by Cray modules; hopefully a little more portable this way.
@@ -48,9 +48,11 @@ export PARFLOW_HYPRE_DIR=${CRAY_TPSL_DIR}/INTEL/${PE_TPSL_GENCOMPILERS_INTEL_x86
 export PARFLOW_SUNDIALS_DIR=${CRAY_TPSL_DIR}/INTEL/${PE_TPSL_GENCOMPILERS_INTEL_x86_64}/haswell
 export PARFLOW_NETCDF_DIR=${CRAY_NETCDF_DIR}/INTEL/${PE_TPSL_GENCOMPILERS_INTEL_x86_64}
 export PARFLOW_HDF5_DIR=${CRAY_HDF5_DIR}/INTEL/${PE_TPSL_GENCOMPILERS_INTEL_x86_64}
-export PARFLOW_SILO_DIR=/usr/common/software/silo/4.10.2/hsw/intel
-export PARFLOW_TCL_DIR=/usr/common/software/tcl/8.6.4/gnu
-export PARFLOW_SLURM_DIR=/usr/
+export PARFLOW_SILO_DIR=${PARFLOW_DIR}
+export PARFLOW_SLURM_DIR=/usr
+export PARFLOW_TCL_DIR=/usr
+
+prependToPath ${PARFLOW_DIR}/bin
 
 # Parallel build fails in CLM
 # PARFLOW_MAKE_OPTIONS="-j 8"
@@ -65,11 +67,40 @@ export PARFLOW_CFLAGS='-dynamic'
 
 appendToLdPath $PARFLOW_SLURM_DIR/lib
 appendToLdPath $PARFLOW_PFTOOLS_HDF5_DIR/lib
-appendToLdPath $PARFLOW_TCL_DIR/lib
+#appendToLdPath $PARFLOW_TCL_DIR/lib
 
 # Building in a directory parallel with parflow source tree
 SRC_DIR=parflow
 BUILD_DIR=build
+
+# TCL doesn't load the pftools.so correctly on compute nodes.   This
+# was an attempt to build TCL from source.   It didn't work.
+# echo "*****************************************************************************"
+# echo "Building in TCL"
+# echo "*****************************************************************************"
+
+# wget https://prdownloads.sourceforge.net/tcl/tcl8.6.9-src.tar.gz
+# tar xf tcl8.6.9-src.tar.gz 
+# pushd tcl8.6.9/unix/
+# CC="${PARFLOW_CC} -dynamic" ./configure --prefix=${PARFLOW_DIR}
+# make 
+# make install
+# popd
+
+echo "*****************************************************************************"
+echo "Building in Silo"
+echo "*****************************************************************************"
+
+wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
+tar xf silo-4.10.2.tar.gz
+pushd silo-4.10.2
+CC=${PARFLOW_CC} CXX=${PARFLOW_CXX} ./configure --prefix=$PARFLOW_DIR \
+	    --enable-shared=no \
+	    --enable-hzip=no \
+            --enable-fpzip=no
+make
+make install
+popd
 
 echo "*****************************************************************************"
 echo "Building in ${BUILD_DIR}"
@@ -93,14 +124,19 @@ FC=${PARFLOW_F77} CC=${PARFLOW_CC} CXX=${PARFLOW_CXX} cmake ../parflow \
    -DPARFLOW_AMPS_SEQUENTIAL_IO=true \
    -DHYPRE_ROOT=${PARFLOW_HYPRE_DIR} \
    -DHDF5_ROOT=${PARFLOW_HDF5_DIR} \
+   -DHDF5_USE_STATIC_LIBRARIES=True \
+   -DPARFLOW_ENABLE_ZLIB=True \
    -DSILO_ROOT=${PARFLOW_SILO_DIR} \
-   -DTCL_TCLSH=${PARFLOW_TCL_DIR}/bin/tclsh8.6 \
    -DNETCDF_INCLUDE_DIR=${PARFLOW_NETCDF_DIR}/include \
    -DNETCDF_LIBRARY=${PARFLOW_NETCDF_DIR}/lib/libnetcdf.a \
-   -DCMAKE_C_FLAGS='-dynamic' -DCMAKE_Fortran_FLAGS='-dynamic' \
+   -DCMAKE_C_FLAGS='-dynamic' -DCMAKE_CXX_FLAGS='-dynamic' -DCMAKE_Fortran_FLAGS='-dynamic' \
    -DPARFLOW_LINKER_FLAGS='-parallel' \
    -DPARFLOW_ENABLE_SLURM=true \
+   -DTCL_TCLSH=${PARFLOW_TCL_DIR}/bin/tclsh8.6 \
+   -DTCL_LIBRARY=${PARFLOW_TCL_DIR}/lib/libtcl8.6.so \
+   -DPARFLOW_LIBM="-lm" \
    -DCMAKE_INSTALL_PREFIX=${PARFLOW_DIR}
+
 
 echo "*****************************************************************************"
 echo "Running make"
