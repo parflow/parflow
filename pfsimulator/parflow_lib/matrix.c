@@ -32,8 +32,11 @@
 *****************************************************************************/
 
 #include "parflow.h"
-
 #include "matrix.h"
+
+#ifdef HAVE_CUDA
+#include "pfcudamalloc.h"
+#endif
 
 #ifdef HAVE_SAMRAI
 #include "SAMRAI/hier/PatchDescriptor.h"
