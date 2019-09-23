@@ -259,7 +259,9 @@ endif (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
 #-----------------------------------------------------------------------------
 # libm
 #-----------------------------------------------------------------------------
-find_library(PARFLOW_LIBM m)
+if (NOT DEFINED PARFLOW_LIBM)
+  find_library(PARFLOW_LIBM m)
+endif (NOT DEFINED PARFLOW_LIBM)		    
 
 #-----------------------------------------------------------------------------
 # Valgrind
