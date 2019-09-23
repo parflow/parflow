@@ -200,6 +200,9 @@ void IntersectLineWithTriangle(unsigned int line_direction, double coord_0, doub
 void NewGlobals(char *run_name);
 void FreeGlobals(void);
 void LogGlobals(void);
+#ifdef HAVE_CUDA
+  void CopyGlobalsToDevice(void);
+#endif
 
 /* grgeom_list.c */
 ListMember *NewListMember(double value, int normal_component, int triangle_id);

@@ -30,6 +30,13 @@
 * Routines for manipulating global structures.
 *
 *****************************************************************************/
+#include "parflow_config.h"
+
+#ifdef HAVE_CUDA
+extern "C"{
+#include <stddef.h>
+#include <pfcudaerr.h>
+#endif
 
 #define PARFLOW_GLOBALS
 
@@ -38,11 +45,10 @@
 
 #include <limits.h>
 
-
+#ifndef __CUDA_ARCH__
 /*--------------------------------------------------------------------------
  * NewGlobals
  *--------------------------------------------------------------------------*/
-
 void   NewGlobals(char *run_name)
 {
   globals = ctalloc(Globals, 1);
@@ -119,5 +125,39 @@ void  LogGlobals()
     CloseLogFile(log_file);
   }
 }
+#endif // !__CUDA_ARCH__
 
+#ifdef HAVE_CUDA
+// Allocate __constant__ memory on GPU for the Globals struct
+__constant__ Globals dev_globals;
+__constant__ Background dev_background;
 
+// __global__ void cuda_hello(){
+//   printf("Hello World from GPU! IX: %d, NX: %d\n", dev_background.IX, dev_background.NX);
+//   printf("&dev_background: %p, dev_globals->background: %p \n", &dev_background, dev_globals.background);
+// }
+
+void CopyGlobalsToDevice()
+{
+  // A temporary pointers for getting the symbol addresses
+  Globals *tmp_globals_ptr;
+  Background *tmp_background_ptr;
+
+  // Get the symbol addresses from the __constant__ allocations
+  CUDA_ERR(cudaGetSymbolAddress((void**)&tmp_globals_ptr, dev_globals));
+  CUDA_ERR(cudaGetSymbolAddress((void**)&tmp_background_ptr, dev_background));
+
+  // Copy background data from host to device
+  CUDA_ERR(cudaMemcpy(tmp_background_ptr, globals->background, sizeof(Background), cudaMemcpyHostToDevice));
+
+  // Assign dev_background address to dev_globals.background
+  CUDA_ERR(cudaMemcpyToSymbol(dev_globals, &tmp_background_ptr, sizeof(Background*), offsetof(Globals, background), cudaMemcpyHostToDevice));
+
+  // Assign dev_globals address to dev_globals_ptr
+  CUDA_ERR(cudaMemcpyToSymbol(dev_globals_ptr, &tmp_globals_ptr, sizeof(Globals*), 0, cudaMemcpyHostToDevice));
+
+  // printf("Hello World from CPU! IX: %d, NX: %d\n", globals->background->IX, globals->background->NX);
+  // cuda_hello<<<1,1>>>(); 
+}
+}
+#endif // HAVE_CUDA

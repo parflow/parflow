@@ -2,10 +2,8 @@
 #define PFCUDAMALLOC_H
 
 /*--------------------------------------------------------------------------
- * Include RMM allocator and error handling headers
+ * Include CUDA error handling header
  *--------------------------------------------------------------------------*/
-#include <stdbool.h>
-#include <rmm/rmm_api.h>
 #include "pfcudaerr.h"
 
 /*--------------------------------------------------------------------------

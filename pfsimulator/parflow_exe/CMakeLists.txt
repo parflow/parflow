@@ -4,7 +4,6 @@ target_link_libraries(parflow pfsimulator pfkinsol amps)
 
 if( ${PARFLOW_HAVE_CUDA} )
   target_link_libraries(parflow rmm)
-  # set_target_properties(parflow PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 endif( ${PARFLOW_HAVE_CUDA} )
 
 if( ${PARFLOW_HAVE_CLM} )

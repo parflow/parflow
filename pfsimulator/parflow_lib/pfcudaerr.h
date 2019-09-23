@@ -3,6 +3,8 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <stdbool.h>
+#include <rmm/rmm_api.h>
 
 #define CUDA_ERR( err ) (gpuError( err, __FILE__, __LINE__ ))
 static inline void gpuError(cudaError_t err, const char *file, int line) {

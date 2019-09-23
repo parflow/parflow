@@ -61,8 +61,6 @@ using namespace SAMRAI;
 #endif
 
 #ifdef HAVE_CUDA
-#include <stdbool.h>
-#include <rmm/rmm_api.h>
 #include <pfcudaerr.h>
 #endif
 
