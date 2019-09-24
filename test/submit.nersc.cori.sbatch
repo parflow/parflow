@@ -6,10 +6,10 @@
 #SBATCH --tasks-per-node=32
 #SBATCH --constraint=haswell
 #SBATCH -t 02:00:00  
-#SBATCH -J my_job    
+#SBATCH -J pf-regression
 #SBATCH -L SCRATCH
 
-# source $PARFLOW_DIR/setenv.sh
+source $PARFLOW_DIR/setenv.sh
 
 export OMP_NUM_THREADS=1
 make check
