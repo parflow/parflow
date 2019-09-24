@@ -1,10 +1,11 @@
 #!/bin/bash -l
 
-#SBATCH -p debug     
+###SBATCH -p debug     
+#SBATCH -p regular     
 #SBATCH --nodes=2
 #SBATCH --tasks-per-node=32
 #SBATCH --constraint=haswell
-#SBATCH -t 00:30:00  
+#SBATCH -t 02:00:00  
 #SBATCH -J my_job    
 #SBATCH -L SCRATCH
 
