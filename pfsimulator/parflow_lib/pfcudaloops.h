@@ -29,30 +29,138 @@ __host__ __device__ static inline void PlusEquals(T *array_loc, T value)
 /*--------------------------------------------------------------------------
  * CUDA loop kernels
  *--------------------------------------------------------------------------*/
-template <typename LOOP_BODY>
-__global__ void ForxyzKernel(LOOP_BODY loop_body, const int PV_ixl, const int PV_iyl, const int PV_izl,
-const int PV_diff_x, const int PV_diff_y, const int PV_diff_z)
+template <typename LAMBDA_BODY>
+__global__ void BoxKernelI0(LAMBDA_BODY loop_body, 
+    const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
     int i = ((blockIdx.x*blockDim.x)+threadIdx.x);
-    if(i > PV_diff_x)return;
+    if(i >= nx)return;
     int j = ((blockIdx.y*blockDim.y)+threadIdx.y);
-    if(j > PV_diff_y)return;
+    if(j >= ny)return;
     int k = ((blockIdx.z*blockDim.z)+threadIdx.z);
-    if(k > PV_diff_z)return;
+    if(k >= nz)return;
 
-    i += PV_ixl;
-    j += PV_iyl;
-    k += PV_izl;
+    i += ix;
+    j += iy;
+    k += iz;
     
     loop_body(i, j, k);
+}
+
+template <typename LAMBDA_INIT, typename LAMBDA_BODY>
+__global__ void BoxKernelI1(LAMBDA_INIT loop_init, LAMBDA_BODY loop_body, 
+    const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
+{
+
+    int i = ((blockIdx.x*blockDim.x)+threadIdx.x);
+    if(i >= nx)return;
+    int j = ((blockIdx.y*blockDim.y)+threadIdx.y);
+    if(j >= ny)return;
+    int k = ((blockIdx.z*blockDim.z)+threadIdx.z);
+    if(k >= nz)return;
+
+    i += ix;
+    j += iy;
+    k += iz;
+    
+    loop_body(i, j, k, loop_init(i, j, k));       
+}
+
+template <typename LAMBDA_INIT1, typename LAMBDA_INIT2, typename LAMBDA_BODY>
+__global__ void BoxKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_BODY loop_body, 
+    const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
+{
+
+    int i = ((blockIdx.x*blockDim.x)+threadIdx.x);
+    if(i >= nx)return;
+    int j = ((blockIdx.y*blockDim.y)+threadIdx.y);
+    if(j >= ny)return;
+    int k = ((blockIdx.z*blockDim.z)+threadIdx.z);
+    if(k >= nz)return;
+
+    i += ix;
+    j += iy;
+    k += iz;
+    
+    loop_body(i, j, k, loop_init1(i, j, k), loop_init2(i, j, k));    
 }
 
 /*--------------------------------------------------------------------------
  * CUDA loop macro redefinitions
  *--------------------------------------------------------------------------*/
+#undef BoxLoopI1
+#define BoxLoopI1(i, j, k,                                                          \
+                  ix, iy, iz, nx, ny, nz,                                           \
+                  i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
+                  loop_body)                                                        \
+{                                                                                   \
+DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);         \
+                                                                                    \
+const int blocksize_h = 16;                                                         \
+const int blocksize_v = 2;                                                          \
+dim3 grid = dim3(((nx - 1) + blocksize_h) / blocksize_h,                            \
+    ((ny - 1) + blocksize_h) / blocksize_h,                                         \
+    ((nz - 1) + blocksize_v) / blocksize_v);                                        \
+dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                           \
+                                                                                    \
+auto lambda_init =                                                                  \
+    GPU_LAMBDA(const int i, const int j, const int k)                               \
+    {                                                                               \
+        return k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                             \
+        + (k * ny * nx + j * nx + i) * sx1 + i1;                                    \
+    };                                                                              \
+auto lambda_body =                                                                  \
+    GPU_LAMBDA(const int i, const int j, const int k, const int i1)                 \
+    loop_body;                                                                      \
+                                                                                    \
+BoxKernelI1<<<grid, block>>>(                                                       \
+    lambda_init, lambda_body, ix, iy, iz, nx, ny, nz);                              \
+CUDA_ERR( cudaPeekAtLastError() );                                                  \
+CUDA_ERR( cudaDeviceSynchronize() );                                                \
+}
+
+#undef BoxLoopI2
+#define BoxLoopI2(i, j, k,                                                          \
+                  ix, iy, iz, nx, ny, nz,                                           \
+                  i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
+                  i2, nx2, ny2, nz2, sx2, sy2, sz2,                                 \
+                  loop_body)                                                        \
+{                                                                                   \
+DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);         \
+DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2);         \
+                                                                                    \
+const int blocksize_h = 16;                                                         \
+const int blocksize_v = 2;                                                          \
+dim3 grid = dim3(((nx - 1) + blocksize_h) / blocksize_h,                            \
+    ((ny - 1) + blocksize_h) / blocksize_h,                                         \
+    ((nz - 1) + blocksize_v) / blocksize_v);                                        \
+dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                           \
+                                                                                    \
+auto lambda_init1 =                                                                 \
+    GPU_LAMBDA(const int i, const int j, const int k)                               \
+    {                                                                               \
+        return k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                             \
+        + (k * ny * nx + j * nx + i) * sx1 + i1;                                    \
+    };                                                                              \
+auto lambda_init2 =                                                                 \
+    GPU_LAMBDA(const int i, const int j, const int k)                               \
+    {                                                                               \
+        return k * PV_kinc_2 + (k * ny + j) * PV_jinc_2                             \
+        + (k * ny * nx + j * nx + i) * sx2 + i2;                                    \
+    };                                                                              \
+auto lambda_body =                                                                  \
+    GPU_LAMBDA(const int i, const int j, const int k, const int i1, const int i2)   \
+    loop_body;                                                                      \
+                                                                                    \
+BoxKernelI2<<<grid, block>>>(                                                       \
+    lambda_init1, lambda_init2, lambda_body, ix, iy, iz, nx, ny, nz);               \
+CUDA_ERR( cudaPeekAtLastError() );                                                  \
+CUDA_ERR( cudaDeviceSynchronize() );                                                \
+}
+
 #undef GrGeomInLoopBoxes
-#define GrGeomInLoopBoxes(i, j, k, grgeom, ix, iy, iz, nx, ny, nz, loop_body)         \
+#define GrGeomInLoopBoxes(i, j, k, grgeom, ix, iy, iz, nx, ny, nz, loop_body)       \
 {                                                                                   \
   BoxArray* boxes = GrGeomSolidInteriorBoxes(grgeom);                               \
   for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                      \
@@ -77,9 +185,13 @@ const int PV_diff_x, const int PV_diff_y, const int PV_diff_z)
       (PV_diff_z + blocksize_v) / blocksize_v);                                     \
     dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                       \
                                                                                     \
-    ForxyzKernel<<<grid, block>>>(                                                  \
-        GPU_LAMBDA(int i, int j, int k)loop_body,                                   \
-        PV_ixl, PV_iyl, PV_izl, PV_diff_x, PV_diff_y, PV_diff_z);                   \
+    int nx = PV_diff_x + 1;                                                         \
+    int ny = PV_diff_y + 1;                                                         \
+    int nz = PV_diff_z + 1;                                                         \
+                                                                                    \
+    BoxKernelI0<<<grid, block>>>(                                                   \
+        GPU_LAMBDA(const int i, const int j, const int k)loop_body,                 \
+        PV_ixl, PV_iyl, PV_izl, nx, ny, nz);                                        \
     CUDA_ERR( cudaPeekAtLastError() );                                              \
     CUDA_ERR( cudaDeviceSynchronize() );                                            \
   }                                                                                 \

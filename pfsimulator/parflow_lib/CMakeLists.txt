@@ -155,6 +155,7 @@ set (SRC_FILES advect.F
 
 if( ${PARFLOW_HAVE_CUDA} )
   set_source_files_properties(globals.c PROPERTIES LANGUAGE CUDA)
+  set_source_files_properties(matvec.c PROPERTIES LANGUAGE CUDA)
   set_source_files_properties(nl_function_eval.c PROPERTIES LANGUAGE CUDA)
   set_source_files_properties(problem_phase_rel_perm.c PROPERTIES LANGUAGE CUDA)
   set_source_files_properties(problem_phase_source.c PROPERTIES LANGUAGE CUDA)

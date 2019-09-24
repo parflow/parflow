@@ -100,7 +100,6 @@ void         PhaseSource(
 
 // SGS FIXME why is this needed?
 #undef max
-  double weight = -FLT_MAX;
   double area_x, area_y, area_z, area_sum;
   double avg_x, avg_y, avg_z;
   double dx, dy, dz;
@@ -369,6 +368,8 @@ void         PhaseSource(
                     ip, nx_p, ny_p, nz_p, 1, 1, 1,
                     ips, nx_ps, ny_ps, nz_ps, 1, 1, 1,
           {
+            double weight = -FLT_MAX;
+
             if (WellDataPhysicalMethod(well_data_physical)
                 == FLUX_STANDARD)
             {
