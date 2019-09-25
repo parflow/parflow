@@ -12,6 +12,7 @@ add_subdirectory (amps)
 add_subdirectory (kinsol)
 add_subdirectory (parflow_lib)
 add_subdirectory (parflow_exe)
+add_subdirectory (third_party)
 
 if( ${PARFLOW_HAVE_CLM} )
   add_subdirectory (clm)
