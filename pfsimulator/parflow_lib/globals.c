@@ -132,14 +132,9 @@ void  LogGlobals()
 __constant__ Globals dev_globals;
 __constant__ Background dev_background;
 
-// __global__ void cuda_hello(){
-//   printf("Hello World from GPU! IX: %d, NX: %d\n", dev_background.IX, dev_background.NX);
-//   printf("&dev_background: %p, dev_globals->background: %p \n", &dev_background, dev_globals.background);
-// }
-
 void CopyGlobalsToDevice()
 {
-  // A temporary pointers for getting the symbol addresses
+  // Temporary pointers for getting the symbol addresses
   Globals *tmp_globals_ptr;
   Background *tmp_background_ptr;
 
@@ -155,9 +150,6 @@ void CopyGlobalsToDevice()
 
   // Assign dev_globals address to dev_globals_ptr
   CUDA_ERR(cudaMemcpyToSymbol(dev_globals_ptr, &tmp_globals_ptr, sizeof(Globals*), 0, cudaMemcpyHostToDevice));
-
-  // printf("Hello World from CPU! IX: %d, NX: %d\n", globals->background->IX, globals->background->NX);
-  // cuda_hello<<<1,1>>>(); 
 }
 }
 #endif // HAVE_CUDA

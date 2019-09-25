@@ -60,11 +60,13 @@ __global__ void BoxKernelI1(LAMBDA_INIT loop_init, LAMBDA_BODY loop_body,
     int k = ((blockIdx.z*blockDim.z)+threadIdx.z);
     if(k >= nz)return;
 
+    const int i1 = loop_init(i, j, k);
+
     i += ix;
     j += iy;
     k += iz;
     
-    loop_body(i, j, k, loop_init(i, j, k));       
+    loop_body(i, j, k, i1);       
 }
 
 template <typename LAMBDA_INIT1, typename LAMBDA_INIT2, typename LAMBDA_BODY>
@@ -79,88 +81,98 @@ __global__ void BoxKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
     int k = ((blockIdx.z*blockDim.z)+threadIdx.z);
     if(k >= nz)return;
 
+    const int i1 = loop_init1(i, j, k);
+    const int i2 = loop_init2(i, j, k);
+
     i += ix;
     j += iy;
     k += iz;
     
-    loop_body(i, j, k, loop_init1(i, j, k), loop_init2(i, j, k));    
+    loop_body(i, j, k, i1, i2);    
 }
 
 /*--------------------------------------------------------------------------
  * CUDA loop macro redefinitions
  *--------------------------------------------------------------------------*/
 #undef BoxLoopI1
-#define BoxLoopI1(i, j, k,                                                          \
+#define BoxLoopI1(i_dummy, j_dummy, k_dummy,                                        \
                   ix, iy, iz, nx, ny, nz,                                           \
                   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
                   loop_body)                                                        \
 {                                                                                   \
-DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);         \
+  if(nx > 0 && ny > 0 && nz > 0)                                                    \
+  {                                                                                 \
+    DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);     \
                                                                                     \
-const int blocksize_h = 16;                                                         \
-const int blocksize_v = 2;                                                          \
-dim3 grid = dim3(((nx - 1) + blocksize_h) / blocksize_h,                            \
-    ((ny - 1) + blocksize_h) / blocksize_h,                                         \
-    ((nz - 1) + blocksize_v) / blocksize_v);                                        \
-dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                           \
+    const int blocksize_h = 16;                                                     \
+    const int blocksize_v = 2;                                                      \
+    dim3 grid = dim3(((nx - 1) + blocksize_h) / blocksize_h,                        \
+        ((ny - 1) + blocksize_h) / blocksize_h,                                     \
+        ((nz - 1) + blocksize_v) / blocksize_v);                                    \
+    dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                       \
                                                                                     \
-auto lambda_init =                                                                  \
-    GPU_LAMBDA(const int i, const int j, const int k)                               \
-    {                                                                               \
-        return k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                             \
-        + (k * ny * nx + j * nx + i) * sx1 + i1;                                    \
-    };                                                                              \
-auto lambda_body =                                                                  \
-    GPU_LAMBDA(const int i, const int j, const int k, const int i1)                 \
-    loop_body;                                                                      \
+    auto lambda_init =                                                              \
+        GPU_LAMBDA(const int i, const int j, const int k)                           \
+        {                                                                           \
+            return k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                         \
+            + (k * ny * nx + j * nx + i) * sx1 + i1;                                \
+        };                                                                          \
+    auto lambda_body =                                                              \
+        GPU_LAMBDA(const int i, const int j, const int k, const int i1)             \
+        loop_body;                                                                  \
                                                                                     \
-BoxKernelI1<<<grid, block>>>(                                                       \
-    lambda_init, lambda_body, ix, iy, iz, nx, ny, nz);                              \
-CUDA_ERR( cudaPeekAtLastError() );                                                  \
-CUDA_ERR( cudaDeviceSynchronize() );                                                \
+    BoxKernelI1<<<grid, block>>>(                                                   \
+        lambda_init, lambda_body, ix, iy, iz, nx, ny, nz);                          \
+    CUDA_ERR( cudaPeekAtLastError() );                                              \
+    CUDA_ERR( cudaDeviceSynchronize() );                                            \
+  }                                                                                 \
 }
 
 #undef BoxLoopI2
-#define BoxLoopI2(i, j, k,                                                          \
+#define BoxLoopI2(i_dummy, j_dummy, k_dummy,                                        \
                   ix, iy, iz, nx, ny, nz,                                           \
                   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
                   i2, nx2, ny2, nz2, sx2, sy2, sz2,                                 \
                   loop_body)                                                        \
 {                                                                                   \
-DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);         \
-DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2);         \
+  if(nx > 0 && ny > 0 && nz > 0)                                                    \
+  {                                                                                 \
+    DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);     \
+    DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2);     \
                                                                                     \
-const int blocksize_h = 16;                                                         \
-const int blocksize_v = 2;                                                          \
-dim3 grid = dim3(((nx - 1) + blocksize_h) / blocksize_h,                            \
-    ((ny - 1) + blocksize_h) / blocksize_h,                                         \
-    ((nz - 1) + blocksize_v) / blocksize_v);                                        \
-dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                           \
+    const int blocksize_h = 16;                                                     \
+    const int blocksize_v = 2;                                                      \
+    dim3 grid = dim3(((nx - 1) + blocksize_h) / blocksize_h,                        \
+        ((ny - 1) + blocksize_h) / blocksize_h,                                     \
+        ((nz - 1) + blocksize_v) / blocksize_v);                                    \
+    dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                       \
                                                                                     \
-auto lambda_init1 =                                                                 \
-    GPU_LAMBDA(const int i, const int j, const int k)                               \
-    {                                                                               \
-        return k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                             \
-        + (k * ny * nx + j * nx + i) * sx1 + i1;                                    \
-    };                                                                              \
-auto lambda_init2 =                                                                 \
-    GPU_LAMBDA(const int i, const int j, const int k)                               \
-    {                                                                               \
-        return k * PV_kinc_2 + (k * ny + j) * PV_jinc_2                             \
-        + (k * ny * nx + j * nx + i) * sx2 + i2;                                    \
-    };                                                                              \
-auto lambda_body =                                                                  \
-    GPU_LAMBDA(const int i, const int j, const int k, const int i1, const int i2)   \
-    loop_body;                                                                      \
+    auto lambda_init1 =                                                             \
+        GPU_LAMBDA(const int i, const int j, const int k)                           \
+        {                                                                           \
+            return k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                         \
+            + (k * ny * nx + j * nx + i) * sx1 + i1;                                \
+        };                                                                          \
+    auto lambda_init2 =                                                             \
+        GPU_LAMBDA(const int i, const int j, const int k)                           \
+        {                                                                           \
+            return k * PV_kinc_2 + (k * ny + j) * PV_jinc_2                         \
+            + (k * ny * nx + j * nx + i) * sx2 + i2;                                \
+        };                                                                          \
+    auto lambda_body =                                                              \
+        GPU_LAMBDA(const int i, const int j, const int k,                           \
+        const int i1, const int i2)loop_body;                                       \
                                                                                     \
-BoxKernelI2<<<grid, block>>>(                                                       \
-    lambda_init1, lambda_init2, lambda_body, ix, iy, iz, nx, ny, nz);               \
-CUDA_ERR( cudaPeekAtLastError() );                                                  \
-CUDA_ERR( cudaDeviceSynchronize() );                                                \
+    BoxKernelI2<<<grid, block>>>(                                                   \
+        lambda_init1, lambda_init2, lambda_body, ix, iy, iz, nx, ny, nz);           \
+    CUDA_ERR( cudaPeekAtLastError() );                                              \
+    CUDA_ERR( cudaDeviceSynchronize() );                                            \
+  }                                                                                 \
 }
 
 #undef GrGeomInLoopBoxes
-#define GrGeomInLoopBoxes(i, j, k, grgeom, ix, iy, iz, nx, ny, nz, loop_body)       \
+#define GrGeomInLoopBoxes(i_dummy, j_dummy, k_dummy,                                \
+                         grgeom, ix, iy, iz, nx, ny, nz, loop_body)                 \
 {                                                                                   \
   BoxArray* boxes = GrGeomSolidInteriorBoxes(grgeom);                               \
   for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                      \
