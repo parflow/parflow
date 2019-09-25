@@ -2300,7 +2300,7 @@ PFModule   *NlFunctionEvalNewPublicXtra(char *name)
 
   ///* parameters for upwinding formulation for TFG */
   upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");
-  sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation", name);
+  sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation");
   switch_name = GetStringDefault(key, "Original");
   switch_value = NA_NameToIndex(upwind_switch_na, switch_name);
   switch (switch_value)
