@@ -258,3 +258,4 @@ testclean:
 	@rm -fr default_single.out
 	@rm -f *.nc
 	@rm -f *.pfmetadata
+	@rm -f *.etrace
