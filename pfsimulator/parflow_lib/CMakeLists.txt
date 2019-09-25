@@ -155,7 +155,7 @@ set (SRC_FILES advect.F
 
 add_library(pfsimulator ${SRC_FILES})
 
-target_link_libraries(pfsimulator  pfkinsol amps cjson)
+target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})
 
 target_include_directories(pfsimulator PUBLIC "../third_party/cjson")
 
