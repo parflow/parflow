@@ -159,6 +159,7 @@ if( ${PARFLOW_HAVE_CUDA} )
   set_source_files_properties(nl_function_eval.c PROPERTIES LANGUAGE CUDA)
   set_source_files_properties(problem_phase_rel_perm.c PROPERTIES LANGUAGE CUDA)
   set_source_files_properties(problem_phase_source.c PROPERTIES LANGUAGE CUDA)
+  set_source_files_properties(problem_saturation.c PROPERTIES LANGUAGE CUDA)
   set_source_files_properties(richards_jacobian_eval.c PROPERTIES LANGUAGE CUDA)
 endif( ${PARFLOW_HAVE_CUDA} )
 
