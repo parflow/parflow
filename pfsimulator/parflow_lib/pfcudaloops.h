@@ -186,26 +186,29 @@ __global__ void BoxKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
     int PV_iyu = pfmin((iy + ny - 1), box.up[1]);                                   \
     int PV_izu = pfmin((iz + nz - 1), box.up[2]);                                   \
                                                                                     \
-    int PV_diff_x = PV_ixu - PV_ixl;                                                \
-    int PV_diff_y = PV_iyu - PV_iyl;                                                \
-    int PV_diff_z = PV_izu - PV_izl;                                                \
+    if(PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu)                    \
+    {                                                                               \
+      int PV_diff_x = PV_ixu - PV_ixl;                                              \
+      int PV_diff_y = PV_iyu - PV_iyl;                                              \
+      int PV_diff_z = PV_izu - PV_izl;                                              \
                                                                                     \
-    const int blocksize_h = 16;                                                     \
-    const int blocksize_v = 2;                                                      \
-    dim3 grid = dim3((PV_diff_x + blocksize_h) / blocksize_h,                       \
-      (PV_diff_y + blocksize_h) / blocksize_h,                                      \
-      (PV_diff_z + blocksize_v) / blocksize_v);                                     \
-    dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                       \
+      const int blocksize_h = 16;                                                   \
+      const int blocksize_v = 2;                                                    \
+      dim3 grid = dim3((PV_diff_x + blocksize_h) / blocksize_h,                     \
+        (PV_diff_y + blocksize_h) / blocksize_h,                                    \
+        (PV_diff_z + blocksize_v) / blocksize_v);                                   \
+      dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                     \
                                                                                     \
-    int nx = PV_diff_x + 1;                                                         \
-    int ny = PV_diff_y + 1;                                                         \
-    int nz = PV_diff_z + 1;                                                         \
+      int nx = PV_diff_x + 1;                                                       \
+      int ny = PV_diff_y + 1;                                                       \
+      int nz = PV_diff_z + 1;                                                       \
                                                                                     \
-    BoxKernelI0<<<grid, block>>>(                                                   \
-        GPU_LAMBDA(const int i, const int j, const int k)loop_body,                 \
-        PV_ixl, PV_iyl, PV_izl, nx, ny, nz);                                        \
-    CUDA_ERR( cudaPeekAtLastError() );                                              \
-    CUDA_ERR( cudaDeviceSynchronize() );                                            \
+      BoxKernelI0<<<grid, block>>>(                                                 \
+          GPU_LAMBDA(const int i, const int j, const int k)loop_body,               \
+          PV_ixl, PV_iyl, PV_izl, nx, ny, nz);                                      \
+      CUDA_ERR( cudaPeekAtLastError() );                                            \
+      CUDA_ERR( cudaDeviceSynchronize() );                                          \
+    }                                                                               \
   }                                                                                 \
 }
 }

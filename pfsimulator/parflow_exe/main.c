@@ -135,11 +135,11 @@ int main(int argc, char *argv [])
       }
 
       // RMM
-      rmmOptions_t rmmOptions;
-      rmmOptions.allocation_mode = (rmmAllocationMode_t) (PoolAllocation | CudaManagedMemory);
-      rmmOptions.initial_pool_size = 0;
-      rmmOptions.enable_logging = false;
-      RMM_ERR(rmmInitialize(&rmmOptions));     
+      // rmmOptions_t rmmOptions;
+      // rmmOptions.allocation_mode = (rmmAllocationMode_t) (PoolAllocation | CudaManagedMemory);
+      // rmmOptions.initial_pool_size = 0;
+      // rmmOptions.enable_logging = false;
+      // RMM_ERR(rmmInitialize(&rmmOptions));     
     }
 #endif
 
@@ -443,7 +443,7 @@ int main(int argc, char *argv [])
   * Shutdown RMM pool allocator
   *-----------------------------------------------------------------------*/
 #ifdef HAVE_CUDA
-    RMM_ERR(rmmFinalize());
+    // RMM_ERR(rmmFinalize());
 #endif
 
   return 0;
