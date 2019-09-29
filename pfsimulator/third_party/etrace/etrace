@@ -1,0 +1,94 @@
+#!/usr/bin/python
+# $Revision: 2.1 $
+
+# Script needs an older version of python
+#!/usr/bin/env python
+
+import string, os, sys, stat
+
+# Create a TRACE file if none exists
+def init_trace():
+    return
+
+# Remove TRACE if it exists
+def end_trace():
+    sys.exit(0)
+
+# Convert a hexadecimal string to an int
+def hex_conv_1_5(s):
+    return string.atoi(s, 16)
+
+def hex_conv_2_0(s):
+    return int(s, 16)
+
+# Load symbols
+def load_symbols(prog):
+    #f = os.popen("nm -Co "+prog)
+    f = os.popen("nm -Co --defined-only "+prog)
+    sym = {}
+    for line in f.readlines():
+        s = string.split(line)
+        val = hex_conv('0x'+string.split(s[0], ':')[1])
+        name = " ".join(s[2:])
+        sym[val]=name
+    f.close()
+    return sym
+
+# Print a program's trace
+def trace(prog, tracefile):
+    sym = load_symbols(prog)
+    tr = open(tracefile)
+    level = 0
+    prevname = ""
+    count=0
+    while 1:
+        l = tr.readline()
+        if l:
+            s = string.split(l)
+            if s[0]=="EXIT":
+                print "exit PID", s[1]
+                end_trace()
+            s1 = hex_conv(s[1])
+            if s1 in sym.keys():
+                name = sym[s1]
+            else:
+                name = "??"
+            if s[0]=="enter":
+                # Check if new name compared to previous input
+                if prevname==name:
+                    # was the counter counting?
+                    if count==0:
+                        # print function name
+                        print '\n    '+level*'   '+name,
+                    count=count+1
+                else:
+                    # New name received. Was the counter counting?
+                    if count>0:
+                        print "(total: %d times)" % (count+1),
+                        # re-initialize counter
+                        count=0
+                    print '\n    '+level*'   '+name,
+                level=level+1
+                prevname = name
+            else:
+                level=level-1
+                if name=="main":
+                    if count>0:
+                        print "(total: %d times)" % (count+1),
+                    end_trace()
+        else:
+            end_trace()
+    tr.close()
+
+# Main
+if __name__=="__main__":
+    if len(sys.argv)<3:
+        print "Usage: analysis <binary name> <trace file>"
+        sys.exit(1)
+    pyver = string.split(sys.version[:3], ".")
+    if pyver < ['2','0']:
+        hex_conv = hex_conv_1_5
+    else:
+        hex_conv = hex_conv_2_0
+    init_trace()
+    trace(sys.argv[1],sys.argv[2])

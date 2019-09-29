@@ -1,7 +1,6 @@
 env:
   matrix:
     - PF_BUILD=cmake
-    - PF_BUILD=autoconf
 
 language: cpp
 sudo: required

@@ -66,7 +66,7 @@ install(TARGETS projecttin DESTINATION bin)
 # Mask utilities
 #-----------------------------------------------------------------------------
 add_executable(pfmask-to-pfsol pfmask-to-pfsol.cpp)
-target_include_directories(pfmask-to-pfsol PUBLIC third-party)
+target_include_directories(pfmask-to-pfsol PUBLIC third_party)
 target_link_libraries(pfmask-to-pfsol pftools)
 install(TARGETS pfmask-to-pfsol DESTINATION bin)
 
@@ -74,7 +74,7 @@ add_executable(pfsol-to-vtk pfsol-to-vtk.c)
 install(TARGETS pfsol-to-vtk DESTINATION bin)
 
 add_executable(pfmaskdownsize pfmaskdownsize.cpp)
-target_include_directories(pfmaskdownsize PUBLIC third-party)
+target_include_directories(pfmaskdownsize PUBLIC third_party)
 install(TARGETS pfmaskdownsize DESTINATION bin)
 
 add_subdirectory (test)
