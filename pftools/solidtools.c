@@ -772,7 +772,7 @@ int            MakePatchySolid(
       }
     } else {
     if ((AllPatches[i].patch_cell_count>0)&(AllPatches[i].value!=0))
-    {printf(" User_%i ",AllPatches[i].value);}
+    {printf(" Usr_%i ",AllPatches[i].value);}
     }
   }
   printf("\n \n");
