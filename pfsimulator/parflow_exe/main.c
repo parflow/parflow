@@ -127,6 +127,10 @@ int main(int argc, char *argv [])
       struct cudaDeviceProp props;
       CUDA_ERR(cudaGetDeviceProperties(&props, device));
 
+      // int value;
+      // CUDA_ERR(cudaDeviceGetAttribute(&value, cudaDevAttrCanUseHostPointerForRegisteredMem, device));
+      // printf("cudaDevAttrCanUseHostPointerForRegisteredMem: %d\n", value);
+
       if (props.major < 7)
       {
         amps_Printf("\nError: The GPU compute cabability %d.%d of %s is not sufficient.\n",props.major,props.minor,props.name);
@@ -135,11 +139,11 @@ int main(int argc, char *argv [])
       }
 
       // RMM
-      // rmmOptions_t rmmOptions;
-      // rmmOptions.allocation_mode = (rmmAllocationMode_t) (PoolAllocation | CudaManagedMemory);
-      // rmmOptions.initial_pool_size = 0;
-      // rmmOptions.enable_logging = false;
-      // RMM_ERR(rmmInitialize(&rmmOptions));     
+      rmmOptions_t rmmOptions;
+      rmmOptions.allocation_mode = (rmmAllocationMode_t) (PoolAllocation | CudaManagedMemory);
+      rmmOptions.initial_pool_size = 0;
+      rmmOptions.enable_logging = false;
+      RMM_ERR(rmmInitialize(&rmmOptions));     
     }
 #endif
 
@@ -443,7 +447,7 @@ int main(int argc, char *argv [])
   * Shutdown RMM pool allocator
   *-----------------------------------------------------------------------*/
 #ifdef HAVE_CUDA
-    // RMM_ERR(rmmFinalize());
+    RMM_ERR(rmmFinalize());
 #endif
 
   return 0;

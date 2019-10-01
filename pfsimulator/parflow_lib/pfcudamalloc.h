@@ -1,9 +1,7 @@
 #ifndef PFCUDAMALLOC_H
 #define PFCUDAMALLOC_H
 
-/*--------------------------------------------------------------------------
- * Include CUDA error handling header
- *--------------------------------------------------------------------------*/
+#include <string.h>
 #include "pfcudaerr.h"
 
 /*--------------------------------------------------------------------------
@@ -14,9 +12,9 @@ static inline void *tallocCUDA(size_t size)
 {
    void *ptr = NULL;
 
-  //  RMM_ERR(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
+   RMM_ERR(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
   //  CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
-   CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
+  //  CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
 
    return ptr;
 }
@@ -25,19 +23,19 @@ static inline void *ctallocCUDA(size_t size)
 {
    void *ptr = NULL;
 
-  //  RMM_ERR(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
+   RMM_ERR(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
   //  CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
-   CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
+  //  CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
    
-   CUDA_ERR(cudaMemset(ptr, 0, size));
+   memset(ptr, 0, size);
 
    return ptr;
 }
 static inline void tfreeCUDA(void *ptr)
 {
-  //  RMM_ERR(rmmFree(ptr,0,__FILE__,__LINE__));
+   RMM_ERR(rmmFree(ptr,0,__FILE__,__LINE__));
   //  CUDA_ERR(cudaFree(ptr));
-   CUDA_ERR(cudaFreeHost(ptr));
+  //  CUDA_ERR(cudaFreeHost(ptr));
 }
 
 /*--------------------------------------------------------------------------
