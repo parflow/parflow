@@ -276,6 +276,20 @@ if (${PARFLOW_ENABLE_VALGRIND} )
 endif (${PARFLOW_ENABLE_VALGRIND})
 
 #-----------------------------------------------------------------------------
+# Ptrace
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_ETRACE False CACHE BOOL "Build with etrace")
+if (${PARFLOW_ENABLE_ETRACE})
+  set(PARFLOW_HAVE_ETRACE "yes")
+  
+  set(PARFLOW_ETRACE_COMPILE_FLAGS "-finstrument-functions")
+  set(PARFLOW_ETRACE_LIBRARY "etrace")
+else (${PARFLOW_ENABLE_ETRACE})
+  set(PARFLOW_ETRACE_COMPILE_FLAGS "")
+  set(PARFLOW_ETRACE_LIBRARY "")
+endif (${PARFLOW_ENABLE_ETRACE})
+
+#-----------------------------------------------------------------------------
 # Fortran checks
 #-----------------------------------------------------------------------------
 INCLUDE (CheckFortranSourceCompiles)

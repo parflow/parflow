@@ -5,7 +5,6 @@ set (SRC_FILES advect.F
   bc_lb.c
   bc_pressure.c
   bc_pressure_package.c
-  cJSON.c
   calc_elevations.c
   cghs.c
   char_vector.c
@@ -170,6 +169,10 @@ add_library(pfsimulator ${SRC_FILES})
 if( ${PARFLOW_HAVE_CUDA} )
   set_target_properties(pfsimulator PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 endif( ${PARFLOW_HAVE_CUDA} )
+
+target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})
+
+target_include_directories(pfsimulator PUBLIC "../third_party/cjson")
 
 if (${PARFLOW_HAVE_MPI})
   target_include_directories (pfsimulator PUBLIC "${MPI_C_INCLUDE_PATH}")

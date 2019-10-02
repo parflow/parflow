@@ -54,6 +54,7 @@ using namespace SAMRAI;
 
 #endif
 
+
 #include "Parflow.hxx"
 
 #ifdef HAVE_CEGDB
@@ -62,6 +63,10 @@ using namespace SAMRAI;
 
 #ifdef HAVE_CUDA
 #include "pfcudaerr.h"
+#endif
+
+#ifdef PARFLOW_HAVE_ETRACE
+#include "ptrace.h"
 #endif
 
 #include <string.h>
@@ -204,6 +209,15 @@ int main(int argc, char *argv [])
       }
     }
 
+#ifdef PARFLOW_HAVE_ETRACE
+    {
+      char filename[2048];
+      sprintf(filename, "%s.etrace", input_name);
+      init_tracefile (filename);
+    }
+#endif
+
+#ifdef HAVE_SAMRAI
     /*-----------------------------------------------------------------------
      * SAMRAI initialization.
      *-----------------------------------------------------------------------*/
@@ -212,7 +226,6 @@ int main(int argc, char *argv [])
      * Create input database and parse all data in input file.
      *-----------------------------------------------------------------------*/
 
-#ifdef HAVE_SAMRAI
     std::string input_filename("samrai.input");
 
     tbox::Dimension dim(3);

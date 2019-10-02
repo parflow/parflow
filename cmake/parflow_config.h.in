@@ -65,4 +65,6 @@
 #cmakedefine PARFLOW_HAVE_MALLINFO
 #cmakedefine HAVE_MALLINFO
 
+#cmakedefine PARFLOW_HAVE_ETRACE
+
 #endif // PARFLOW_CONFIG_H
