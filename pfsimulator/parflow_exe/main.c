@@ -61,7 +61,7 @@ using namespace SAMRAI;
 #endif
 
 #ifdef HAVE_CUDA
-#include <pfcudaerr.h>
+#include "pfcudaerr.h"
 #endif
 
 #include <string.h>
@@ -141,7 +141,7 @@ int main(int argc, char *argv [])
       // RMM
       rmmOptions_t rmmOptions;
       rmmOptions.allocation_mode = (rmmAllocationMode_t) (PoolAllocation | CudaManagedMemory);
-      rmmOptions.initial_pool_size = 0;
+      rmmOptions.initial_pool_size = 1; // size = 0 initializes half the device memory
       rmmOptions.enable_logging = false;
       RMM_ERR(rmmInitialize(&rmmOptions));     
     }

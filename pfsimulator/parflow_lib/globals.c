@@ -35,7 +35,7 @@
 #ifdef HAVE_CUDA
 extern "C"{
 #include <stddef.h>
-#include <pfcudaerr.h>
+#include "pfcudaerr.h"
 #endif
 
 #define PARFLOW_GLOBALS

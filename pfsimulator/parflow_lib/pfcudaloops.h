@@ -105,7 +105,7 @@ __global__ void BoxKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
     DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);     \
                                                                                     \
     const int blocksize_h = 16;                                                     \
-    const int blocksize_v = 2;                                                      \
+    const int blocksize_v = 4;                                                      \
     dim3 grid = dim3(((nx - 1) + blocksize_h) / blocksize_h,                        \
         ((ny - 1) + blocksize_h) / blocksize_h,                                     \
         ((nz - 1) + blocksize_v) / blocksize_v);                                    \
@@ -141,7 +141,7 @@ __global__ void BoxKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
     DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2);     \
                                                                                     \
     const int blocksize_h = 16;                                                     \
-    const int blocksize_v = 2;                                                      \
+    const int blocksize_v = 4;                                                      \
     dim3 grid = dim3(((nx - 1) + blocksize_h) / blocksize_h,                        \
         ((ny - 1) + blocksize_h) / blocksize_h,                                     \
         ((nz - 1) + blocksize_v) / blocksize_v);                                    \
@@ -193,7 +193,7 @@ __global__ void BoxKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
       int PV_diff_z = PV_izu - PV_izl;                                              \
                                                                                     \
       const int blocksize_h = 16;                                                   \
-      const int blocksize_v = 2;                                                    \
+      const int blocksize_v = 4;                                                    \
       dim3 grid = dim3((PV_diff_x + blocksize_h) / blocksize_h,                     \
         (PV_diff_y + blocksize_h) / blocksize_h,                                    \
         (PV_diff_z + blocksize_v) / blocksize_v);                                   \
