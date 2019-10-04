@@ -308,16 +308,16 @@ pfset Solver                                             Richards
 pfset Solver.MaxIter                                     50000
 
 pfset Solver.Nonlinear.MaxIter                           100
-pfset Solver.Nonlinear.ResidualTol                       1e-6
+pfset Solver.Nonlinear.ResidualTol                       1e-7
 
 pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaValue                          1e-2
 
 # used to test analytical and FD jacobian combinations
 pfset Solver.Nonlinear.UseJacobian                       True
-pfset Solver.Nonlinear.UseJacobian                       False
+#pfset Solver.Nonlinear.UseJacobian                       False
 
-pfset Solver.Nonlinear.DerivativeEpsilon                 1e-12
+pfset Solver.Nonlinear.DerivativeEpsilon                 1e-14
 
 pfset Solver.Linear.KrylovDimension                      100
 
