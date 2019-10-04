@@ -343,6 +343,16 @@ void    RichardsJacobianEval(
             public_xtra->type = overland_flow;
           }
           break;
+          case 10:
+          {
+            public_xtra->type = overland_flow;
+          }
+          break;
+          case 11:
+          {
+            public_xtra->type = overland_flow;
+          }
+          break;
         }
       }
     }
@@ -1397,7 +1407,7 @@ void    RichardsJacobianEval(
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
             im = SubmatrixEltIndex(J_sub, i, j, k);
-            public_xtra->type = overland_flow;
+            //public_xtra->type = overland_flow;
             //remove contributions to this row corresponding to boundary
             if (fdir[0] == -1)
               op = wp;
@@ -1440,7 +1450,7 @@ void    RichardsJacobianEval(
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
             im = SubmatrixEltIndex(J_sub, i, j, k);
-            public_xtra->type = overland_flow;
+            //public_xtra->type = overland_flow;
 
             //remove contributions to this row corresponding to boundary
             if (fdir[0] == -1)
