@@ -212,7 +212,7 @@ int main(int argc, char *argv [])
 #ifdef PARFLOW_HAVE_ETRACE
     {
       char filename[2048];
-      sprintf(filename, "%s.etrace", input_name);
+      sprintf(filename, "%s.%06d.etrace", input_name, amps_Rank(MPI_CommWorld));
       init_tracefile (filename);
     }
 #endif
