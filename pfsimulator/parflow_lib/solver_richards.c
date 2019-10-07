@@ -2496,6 +2496,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         PFVCopy(instance_xtra->saturation,
                 instance_xtra->old_saturation);
         PFVCopy(instance_xtra->pressure, instance_xtra->old_pressure);
+        handle = InitVectorUpdate(instance_xtra->old_pressure, VectorUpdateAll);
+        FinalizeVectorUpdate(handle);
       }
       else                      /* Not converged, so decrease time step */
       {

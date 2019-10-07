@@ -384,14 +384,14 @@ void    RichardsJacobianEval(
   KNns = NewVectorType(grid2d, 1, 1, vector_cell_centered);
   KSns = NewVectorType(grid2d, 1, 1, vector_cell_centered);
 
-  InitVector(KW, 0.0);
-  InitVector(KE, 0.0);
-  InitVector(KN, 0.0);
-  InitVector(KS, 0.0);
-  InitVector(KWns, 0.0);
-  InitVector(KEns, 0.0);
-  InitVector(KNns, 0.0);
-  InitVector(KSns, 0.0);
+  InitVectorAll(KW, 0.0);
+  InitVectorAll(KE, 0.0);
+  InitVectorAll(KN, 0.0);
+  InitVectorAll(KS, 0.0);
+  InitVectorAll(KWns, 0.0);
+  InitVectorAll(KEns, 0.0);
+  InitVectorAll(KNns, 0.0);
+  InitVectorAll(KSns, 0.0);
 
   // SGS set this to 1 since the off/on behavior does not work in
   // parallel.

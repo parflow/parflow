@@ -256,7 +256,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   KS = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   qx = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   qy = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
-
+  InitVectorAll(KW, 0.0);
+  InitVectorAll(KE, 0.0);
+  InitVectorAll(KN, 0.0);
+  InitVectorAll(KS, 0.0);
+  InitVectorAll(qx, 0.0);
+  InitVectorAll(qy, 0.0);
 
   /* Calculate pressure dependent properties: density and saturation */
 

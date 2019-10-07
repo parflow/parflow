@@ -241,7 +241,7 @@ void    OverlandFlowEvalDiff(
   }
   else          //fcn = CALCDER calculates the derivs of KE KW KN KS wrt to current cell (i,j,k)
   {
-    BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, sg,
+    BCStructPatchLoopOvrlnd(i, j, k, fdir, ival, bc_struct, ipatch, sg,
     {
       if (fdir[2] == 1)
       {
