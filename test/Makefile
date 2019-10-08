@@ -42,7 +42,8 @@ TESTS += \
 	overland_FlatICP.tcl \
 	richards_FBx.tcl \
 	richards_FBy.tcl  \
-	richards_box_proctest.tcl
+	richards_box_proctest.tcl \
+        richards_box_proctest.vardz.tcl
 endif
 
 ifeq (${PARFLOW_HAVE_SILO},yes)
@@ -97,7 +98,9 @@ PARALLEL_2DTOPO_TESTS += \
 	LW_var_dz_spinup.tcl \
 	richards_FBx.tcl \
 	richards_FBy.tcl  \
-	richards_box_proctest.tcl
+	richards_box_proctest.tcl \
+       richards_box_proctest.vardz.tcl \
+       overland_slopingslab_KWE.tcl
 
 ifeq (${PARFLOW_HAVE_SILO},yes)
 TESTS += \
