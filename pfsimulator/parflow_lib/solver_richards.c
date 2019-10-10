@@ -2496,7 +2496,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         PFVCopy(instance_xtra->saturation,
                 instance_xtra->old_saturation);
         PFVCopy(instance_xtra->pressure, instance_xtra->old_pressure);
-
+        /* Pass old pressure values to neighbors including diagonals.  */
+        handle = InitVectorUpdate(instance_xtra->old_pressure, VectorUpdatePGS1);
+        FinalizeVectorUpdate(handle);
       }
       else                      /* Not converged, so decrease time step */
       {

@@ -371,7 +371,7 @@ void    RichardsJacobianEval(
   rel_perm_der = saturation_der;
 
   /* Pass pressure values to neighbors.  */
-  vector_update_handle = InitVectorUpdate(pressure, VectorUpdateAll);
+  vector_update_handle = InitVectorUpdate(pressure, VectorUpdatePGS1);
   FinalizeVectorUpdate(vector_update_handle);
 
 /* Define grid for surface contribution */
@@ -1519,16 +1519,16 @@ void    RichardsJacobianEval(
     vector_update_handle = InitVectorUpdate(KN, VectorUpdateAll);
     FinalizeVectorUpdate(vector_update_handle);
     /* Pass KWns values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KWns, VectorUpdateAll);
+    vector_update_handle = InitVectorUpdate(KWns, VectorUpdatePGS1);
     FinalizeVectorUpdate(vector_update_handle);
     /* Pass KEns values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KEns, VectorUpdateAll);
+    vector_update_handle = InitVectorUpdate(KEns, VectorUpdatePGS1);
     FinalizeVectorUpdate(vector_update_handle);
     /* Pass KSns values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KSns, VectorUpdateAll);
+    vector_update_handle = InitVectorUpdate(KSns, VectorUpdatePGS1);
     FinalizeVectorUpdate(vector_update_handle);
     /* Pass KNns values to neighbors.  */
-    vector_update_handle = InitVectorUpdate(KNns, VectorUpdateAll);
+    vector_update_handle = InitVectorUpdate(KNns, VectorUpdatePGS1);
     FinalizeVectorUpdate(vector_update_handle);
   }
 

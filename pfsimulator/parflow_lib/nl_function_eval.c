@@ -247,7 +247,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   overlandspinup = GetIntDefault("OverlandFlowSpinUp", 0);
 
   /* Pass pressure values to neighbors.  */
-  handle = InitVectorUpdate(pressure, VectorUpdateAll);
+  handle = InitVectorUpdate(pressure, VectorUpdatePGS1);
   FinalizeVectorUpdate(handle);
 
   KW = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
@@ -2067,6 +2067,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
             fp[ip] -= dt * dir * u_old;
             //add source boundary terms
             u_new = u_new * bc_patch_values[ival];       //sk: here we go in and implement surface routing!
+            //printf(" u_new:  %e bc_patch_values: %e  ival: %d \n", u_new, bc_patch_values[ival], ival);
 
             fp[ip] += dt * dir * u_new;
           });
