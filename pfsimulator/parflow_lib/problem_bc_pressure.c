@@ -137,7 +137,7 @@ BCStruct    *BCPressure(
       interval_number = TimeCycleDataComputeIntervalNumber(
                                                            problem, time, time_cycle_data, cycle_number);
 
-      switch(BCPressureDataType(bc_pressure_data, ipatch))
+      switch (BCPressureDataType(bc_pressure_data, ipatch))
       {
         case DirEquilRefPatch:
         {
@@ -287,7 +287,7 @@ BCStruct    *BCPressure(
               for (phase = 1; phase < num_phases; phase++)
               {
                 interface_press = DirEquilRefPatchValueAtInterface(
-                                                                  interval_data, phase);
+                                                                   interval_data, phase);
                 PFModuleInvokeType(PhaseDensityInvoke, phase_density,
                                    (phase - 1, NULL, NULL, &interface_press,
                                     &interface_den, CALCFCN));
@@ -1023,7 +1023,6 @@ BCStruct    *BCPressure(
           }
 
           break;
-
         } /* End OverlandKinematic */
 
         case OverlandDiffusive:
@@ -1054,7 +1053,6 @@ BCStruct    *BCPressure(
 
           break;
         } /* End OverlandDiffusive */
-
       }
     }
   }

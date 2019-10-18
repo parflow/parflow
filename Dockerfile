@@ -10,21 +10,19 @@ MAINTAINER Steven Smith <smith84@llnl.gov>
 #  Package dependencies
 #-----------------------------------------------------------------------------
 RUN yum  install -y  \
-    build-essential \    
-    g++  \
+    build-essential \
+    curl \
+    libcurl-devel \
     gcc  \
     gcc-c++  \
     gcc-gfortran \
-    gdc \
     git \
-    hdf5-devel \
-    hdf5-openmpi \
-    hdf5-openmpi-devel \
-    hfd5 \
+    m4 \
     make \
     openmpi \
     openmpi-devel \
     tcl-devel \
+    tk-devel \
     wget \
     which \
     zlib \
@@ -41,6 +39,38 @@ ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/lib64/openmpi/lib
 #-----------------------------------------------------------------------------
 # Build libraries
 #-----------------------------------------------------------------------------
+
+#
+# HDF5
+#
+WORKDIR /home/parflow
+run wget -q https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.21/src/hdf5-1.8.21.tar.gz && \ 
+    tar -xf hdf5-1.8.21.tar.gz && \
+    source /etc/profile.d/modules.sh && \
+    module load mpi/openmpi-x86_64 && \
+    cd hdf5-1.8.21 && \
+    CC=mpicc ./configure \
+      --prefix=$PARFLOW_DIR \
+      --enable-parallel && \
+    make && make install && \
+    cd .. && \
+    rm -fr hdf5-1.8.21 hdf5-1.8.21.tar.gz
+
+#
+# NetCDF
+#
+WORKDIR /home/parflow
+run wget -q https://github.com/Unidata/netcdf-c/archive/v4.5.0.tar.gz && \ 
+    tar -xf v4.5.0.tar.gz && \
+    source /etc/profile.d/modules.sh && \
+    module load mpi/openmpi-x86_64 && \
+    cd netcdf-c-4.5.0 && \
+    CC=mpicc CPPFLAGS=-I${PARFLOW_DIR}/include LDFLAGS=-L${PARFLOW_DIR}/lib \
+    ./configure --disable-shared --prefix=${NCDIR} && \
+   make && \
+   make install && \
+   cd .. && \
+   rm -fr netcdf-c-4.5.0 v4.5.0.tar.gz
 
 #
 # SILO && CMake
@@ -62,12 +92,13 @@ RUN wget -nv --no-check-certificate http://cmake.org/files/v3.14/cmake-3.14.5-Li
 WORKDIR /home/parflow
 RUN source /etc/profile.d/modules.sh && \
    module load mpi/openmpi-x86_64 && \
-   git clone -b master --single-branch https://github.com/LLNL/hypre.git hypre && \
-   cd hypre/src && \
+   wget -q https://github.com/hypre-space/hypre/archive/v2.17.0.tar.gz && \
+   tar xf v2.17.0.tar.gz && \
+   cd hypre-2.17.0/src && \
    ./configure --prefix=$PARFLOW_DIR && \
    make install && \
    cd ../.. && \
-   rm -fr hypre
+   rm -fr hypre-2.17.0 v2.17.0.tar.gz
 
 #-----------------------------------------------------------------------------
 # Parflow configure and build
@@ -77,16 +108,19 @@ ENV PARFLOW_MPIEXEC_EXTRA_FLAGS "--mca mpi_yield_when_idle 1 --oversubscribe --a
 
 WORKDIR /home/parflow
 
-RUN git clone -b master --single-branch https://github.com/parflow/parflow.git parflow && \
-    mkdir -p build && \
+RUN git clone -b master --single-branch https://github.com/parflow/parflow.git parflow
+
+RUN mkdir -p build && \
     cd build && \
-    cmake ../parflow \
+    LDFLAGS="-lcurl" cmake ../parflow \
        -DPARFLOW_AMPS_LAYER=mpi1 \
        -DPARFLOW_AMPS_SEQUENTIAL_IO=TRUE \
-       -DHYPRE_ROOT=$HYPRE_DIR \
-       -DSILO_ROOT=$SILO_DIR \
+       -DHYPRE_ROOT=$PARFLOW_DIR \
+       -DSILO_ROOT=$PARFLOW_DIR \
+       -DPARFLOW_ENABLE_HDF5=TRUE \
+       -DPARFLOW_ENABLE_NETCDF=TRUE \
        -DPARFLOW_ENABLE_TIMING=TRUE \
-       -DPARFLOW_HAVE_CLM=ON \
+       -DPARFLOW_HAVE_CLM=TRUE \
        -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR && \
      make install && \
      cd .. && \
@@ -95,3 +129,4 @@ RUN git clone -b master --single-branch https://github.com/parflow/parflow.git p
 WORKDIR /data
 
 ENTRYPOINT ["tclsh"]
+

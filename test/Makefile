@@ -35,13 +35,15 @@ TESTS += \
 	pfmg.tcl \
 	smg.tcl \
 	pfmg_octree.tcl \
-  overland_slopingslab_KWE.tcl \
+	overland_slopingslab_KWE.tcl \
 	overland_tiltedV_KWE.tcl \
-  overland_slopingslab_DWE.tcl \
+	overland_slopingslab_DWE.tcl \
 	overland_tiltedV_DWE.tcl\
 	overland_FlatICP.tcl \
 	richards_FBx.tcl \
-	richards_FBy.tcl 
+	richards_FBy.tcl  \
+	richards_box_proctest.tcl \
+        richards_box_proctest.vardz.tcl
 endif
 
 ifeq (${PARFLOW_HAVE_SILO},yes)
@@ -93,7 +95,12 @@ PARALLEL_2DTOPO_TESTS += \
 	default_overland.pfmg.jac.tcl \
 	default_overland.pfmg_octree.jac.tcl \
 	LW_var_dz.tcl \
-	LW_var_dz_spinup.tcl
+	LW_var_dz_spinup.tcl \
+	richards_FBx.tcl \
+	richards_FBy.tcl  \
+	richards_box_proctest.tcl \
+       richards_box_proctest.vardz.tcl \
+       overland_slopingslab_KWE.tcl
 
 ifeq (${PARFLOW_HAVE_SILO},yes)
 TESTS += \
@@ -253,3 +260,5 @@ testclean:
 	@rm -fr LW_var_dz_spinup.out
 	@rm -fr default_single.out
 	@rm -f *.nc
+	@rm -f *.pfmetadata
+	@rm -f *.etrace

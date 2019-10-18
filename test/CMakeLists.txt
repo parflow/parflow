@@ -4,8 +4,6 @@ include(ParflowTest)
 set(TESTS
   default_single.tcl
   default_richards_wells.tcl
-  octree-simple.tcl
-  octree-large-domain.tcl
   forsyth2.tcl
   harvey.flow.tcl
   harvey_flow_pgs.tcl
@@ -21,6 +19,8 @@ if(${PARFLOW_HAVE_HYPRE})
     default_richards.tcl
     default_richards_nocluster.tcl
     default_overland.tcl
+    octree-simple.tcl
+    octree-large-domain.tcl
     LW_var_dz.tcl
     LW_var_dz_spinup.tcl
     terrain_following_grid_overland.tcl
@@ -36,7 +36,9 @@ if(${PARFLOW_HAVE_HYPRE})
     overland_tiltedV_DWE.tcl
     overland_FlatICP.tcl
     richards_FBx.tcl
-    richards_FBy.tcl)
+    richards_FBy.tcl
+    richards_box_proctest.tcl
+    richards_box_proctest.vardz.tcl)
 endif()
 
 if(${PARFLOW_HAVE_SILO})
@@ -89,7 +91,9 @@ if(${PARFLOW_AMPS_LAYER} STREQUAL "mpi1")
       water_balance_x.hardflow.nojac.tcl
       water_balance_x.hardflow.jac.tcl
       LW_var_dz.tcl
-      LW_var_dz_spinup.tcl)
+      LW_var_dz_spinup.tcl
+      overland_slopingslab_KWE.tcl
+      richards_box_proctest.vardz.tcl)
   endif()
 
 endif()

@@ -367,8 +367,8 @@ extern amps_Buffer *amps_BufferFreeList;
 /* Functions to for align                                                    */
 /*---------------------------------------------------------------------------*/
 #define AMPS_ALIGN(type, src, dest, len, stride) \
-  ((sizeof(type) - \
-    ((unsigned long)(dest) % sizeof(type))) \
+  ((sizeof(type) -                               \
+    ((unsigned long)(dest) % sizeof(type)))      \
    % sizeof(type));
 
 #define AMPS_CALL_CHAR_ALIGN(_comm, _src, _dest, _len, _stride) \
@@ -415,16 +415,16 @@ extern amps_Buffer *amps_BufferFreeList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#define AMPS_CONVERT_OUT(type, cvt, comm, src, dest, len, stride) \
-  { \
-    type *ptr_src, *ptr_dest; \
-    if ((char*)(src) != (char*)(dest)) \
-      if ((stride) == 1) \
-        bcopy((src), (dest), (len) * sizeof(type)); \
-      else \
+#define AMPS_CONVERT_OUT(type, cvt, comm, src, dest, len, stride)                                         \
+  {                                                                                                       \
+    type *ptr_src, *ptr_dest;                                                                             \
+    if ((char*)(src) != (char*)(dest))                                                                    \
+      if ((stride) == 1)                                                                                  \
+        bcopy((src), (dest), (len) * sizeof(type));                                                       \
+      else                                                                                                \
         for (ptr_src = (type*)(src), ptr_dest = (type*)(dest); ptr_src < (type*)(src) + (len) * (stride); \
-             ptr_src += (stride), ptr_dest++) \
-          bcopy((ptr_src), (ptr_dest), sizeof(type)); \
+             ptr_src += (stride), ptr_dest++)                                                             \
+          bcopy((ptr_src), (ptr_dest), sizeof(type));                                                     \
   }
 
 #define AMPS_CALL_CHAR_OUT(_comm, _src, _dest, _len, _stride) \
@@ -445,17 +445,17 @@ extern amps_Buffer *amps_BufferFreeList;
 #define AMPS_CALL_DOUBLE_OUT(_comm, _src, _dest, _len, _stride) \
   AMPS_CONVERT_OUT(double, ctohd, (_comm), (_src), (_dest), (_len), (_stride))
 
-#define AMPS_CONVERT_IN(type, cvt, comm, src, dest, len, stride) \
-  { \
-    char *ptr_src, *ptr_dest; \
-    if ((src) != (dest)) \
-      if ((stride) == 1) \
-        bcopy((src), (dest), (len) * sizeof(type)); \
-      else \
-        for (ptr_src = (char*)(src), (ptr_dest) = (char*)(dest); \
-             (ptr_dest) < (char*)(dest) + (len) * (stride) * sizeof(type); \
+#define AMPS_CONVERT_IN(type, cvt, comm, src, dest, len, stride)               \
+  {                                                                            \
+    char *ptr_src, *ptr_dest;                                                  \
+    if ((src) != (dest))                                                       \
+      if ((stride) == 1)                                                       \
+        bcopy((src), (dest), (len) * sizeof(type));                            \
+      else                                                                     \
+        for (ptr_src = (char*)(src), (ptr_dest) = (char*)(dest);               \
+             (ptr_dest) < (char*)(dest) + (len) * (stride) * sizeof(type);     \
              (ptr_src) += sizeof(type), (ptr_dest) += sizeof(type) * (stride)) \
-          bcopy((ptr_src), (ptr_dest), sizeof(type)); \
+          bcopy((ptr_src), (ptr_dest), sizeof(type));                          \
   }
 
 #define AMPS_CALL_CHAR_IN(_comm, _src, _dest, _len, _stride) \
@@ -506,20 +506,20 @@ extern amps_Buffer *amps_BufferFreeList;
 /* Internal macros used to clear buffer and letter spaces.                   */
 /*---------------------------------------------------------------------------*/
 
-#define AMPS_CLEAR_INVOICE(invoice) \
-  { \
+#define AMPS_CLEAR_INVOICE(invoice)                     \
+  {                                                     \
     (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED; \
-    amps_ClearInvoice(invoice); \
+    amps_ClearInvoice(invoice);                         \
   }
 
 #define AMPS_PACK_FREE_LETTER(comm, invoice, amps_letter) \
-  if ((invoice)->combuf_flags & AMPS_INVOICE_OVERLAYED) \
-    (invoice)->combuf_flags |= AMPS_INVOICE_ALLOCATED; \
-  else \
-  { \
-    (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED; \
-    amps_free((comm), (amps_letter)); \
-  } \
+  if ((invoice)->combuf_flags & AMPS_INVOICE_OVERLAYED)   \
+    (invoice)->combuf_flags |= AMPS_INVOICE_ALLOCATED;    \
+  else                                                    \
+  {                                                       \
+    (invoice)->combuf_flags &= ~AMPS_INVOICE_ALLOCATED;   \
+    amps_free((comm), (amps_letter));                     \
+  }                                                       \
 
 /**
  *      amps_Printf("Freeing letter: %x\n", amps_letter); \

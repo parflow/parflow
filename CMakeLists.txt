@@ -16,14 +16,13 @@ include (Version)
 #
 
 include(GetGitRevisionDescription)
-#git_describe(PARFLOW_VERSION --tags)
 git_describe(PARFLOW_VERSION --tags)
 
 # If not building with git then get version from file
 if (NOT PARFLOW_VERSION)
   file (STRINGS "VERSION" PARFLOW_VERSION)
 endif ()
-  
+ 
 message("Configuring version : ${PARFLOW_VERSION}")
 version_create_variables (PARFLOW)
 
@@ -222,7 +221,9 @@ endif (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
 #-----------------------------------------------------------------------------
 # libm
 #-----------------------------------------------------------------------------
-find_library(PARFLOW_LIBM m)
+if (NOT DEFINED PARFLOW_LIBM)
+  find_library(PARFLOW_LIBM m)
+endif (NOT DEFINED PARFLOW_LIBM)		    
 
 #-----------------------------------------------------------------------------
 # Valgrind
@@ -235,6 +236,20 @@ if (${PARFLOW_ENABLE_VALGRIND} )
   set(PARFLOW_MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/bin/valgrind.sup")
   set(PARFLOW_MEMORYCHECK_COMMAND_OPTIONS "--gen-suppressions=all --leak-check=full --suppressions=${PARFLOW_MEMORYCHECK_SUPPRESSIONS_FILE}")
 endif (${PARFLOW_ENABLE_VALGRIND})
+
+#-----------------------------------------------------------------------------
+# Ptrace
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_ETRACE False CACHE BOOL "Build with etrace")
+if (${PARFLOW_ENABLE_ETRACE})
+  set(PARFLOW_HAVE_ETRACE "yes")
+  
+  set(PARFLOW_ETRACE_COMPILE_FLAGS "-finstrument-functions")
+  set(PARFLOW_ETRACE_LIBRARY "etrace")
+else (${PARFLOW_ENABLE_ETRACE})
+  set(PARFLOW_ETRACE_COMPILE_FLAGS "")
+  set(PARFLOW_ETRACE_LIBRARY "")
+endif (${PARFLOW_ENABLE_ETRACE})
 
 #-----------------------------------------------------------------------------
 # Fortran checks

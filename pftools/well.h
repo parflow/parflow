@@ -290,46 +290,46 @@ typedef struct {
  *-----------------------------------------------------------------------*/
 
 /* well.c */
-Background * NewBackground ();
-void FreeBackground (Background *background);
-void ReadBackground (FILE *fd, Background *background);
-void WriteBackground (FILE *fd, Background *background);
-void PrintBackground (Background *background);
+Background * NewBackground();
+void FreeBackground(Background *background);
+void ReadBackground(FILE *fd, Background *background);
+void WriteBackground(FILE *fd, Background *background);
+void PrintBackground(Background *background);
 
-ProblemData *NewProblemData ();
-void FreeProblemData (ProblemData *problem_data);
-void ReadProblemData (FILE *fd, ProblemData *problem_data);
-void WriteProblemData (FILE *fd, ProblemData *problem_data);
-void PrintProblemData (ProblemData *problem_data);
+ProblemData *NewProblemData();
+void FreeProblemData(ProblemData *problem_data);
+void ReadProblemData(FILE *fd, ProblemData *problem_data);
+void WriteProblemData(FILE *fd, ProblemData *problem_data);
+void PrintProblemData(ProblemData *problem_data);
 
-WellDataHeader *NewWellDataHeader ();
-void FreeWellDataHeader (WellDataHeader *well_data_header);
-void ReadWellDataHeader (FILE *fd, WellDataHeader *well_data_header);
-void WriteWellDataHeader (FILE *fd, WellDataHeader *well_data_header);
-void PrintWellDataHeader (WellDataHeader *well_data_header);
+WellDataHeader *NewWellDataHeader();
+void FreeWellDataHeader(WellDataHeader *well_data_header);
+void ReadWellDataHeader(FILE *fd, WellDataHeader *well_data_header);
+void WriteWellDataHeader(FILE *fd, WellDataHeader *well_data_header);
+void PrintWellDataHeader(WellDataHeader *well_data_header);
 
-WellDataPhysical *NewWellDataPhysical ();
-void FreeWellDataPhysical (WellDataPhysical *well_data_physical);
-void ReadWellDataPhysical (FILE *fd, WellDataPhysical *well_data_physical);
-void WriteWellDataPhysical (FILE *fd, WellDataPhysical *well_data_physical);
-void PrintWellDataPhysical (WellDataPhysical *well_data_physical);
-void CopyWellDataPhysical (WellDataPhysical *updt_well_data_physical, WellDataPhysical *well_data_physical);
+WellDataPhysical *NewWellDataPhysical();
+void FreeWellDataPhysical(WellDataPhysical *well_data_physical);
+void ReadWellDataPhysical(FILE *fd, WellDataPhysical *well_data_physical);
+void WriteWellDataPhysical(FILE *fd, WellDataPhysical *well_data_physical);
+void PrintWellDataPhysical(WellDataPhysical *well_data_physical);
+void CopyWellDataPhysical(WellDataPhysical *updt_well_data_physical, WellDataPhysical *well_data_physical);
 
-WellDataValue *NewWellDataValue (int num_phases, int num_components);
-void FreeWellDataValue (WellDataValue *well_data_value);
-void ReadWellDataValue (FILE *fd, WellDataValue *well_data_value, int action, int type, int num_phases, int num_components);
-void WriteWellDataValue (FILE *fd, WellDataValue *well_data_value, int action, int type, int num_phases, int num_components);
-void PrintWellDataValue (WellDataValue *well_data_value, int action, int type, int num_phases, int num_components);
-void CopyWellDataValue (WellDataValue *updt_well_data_value, WellDataValue *well_data_value, int action, int type, int num_phases, int num_components);
+WellDataValue *NewWellDataValue(int num_phases, int num_components);
+void FreeWellDataValue(WellDataValue *well_data_value);
+void ReadWellDataValue(FILE *fd, WellDataValue *well_data_value, int action, int type, int num_phases, int num_components);
+void WriteWellDataValue(FILE *fd, WellDataValue *well_data_value, int action, int type, int num_phases, int num_components);
+void PrintWellDataValue(WellDataValue *well_data_value, int action, int type, int num_phases, int num_components);
+void CopyWellDataValue(WellDataValue *updt_well_data_value, WellDataValue *well_data_value, int action, int type, int num_phases, int num_components);
 
-WellDataStat *NewWellDataStat (int num_phases, int num_components);
-void FreeWellDataStat (WellDataStat *well_data_stat);
-void ReadWellDataStat (FILE *fd, WellDataStat *well_data_stat, int num_phases, int num_components);
-void WriteWellDataStat (FILE *fd, WellDataStat *well_data_stat, int num_phases, int num_components);
-void PrintWellDataStat (WellDataStat *well_data_stat, int num_phases, int num_components);
-void InitWellDataStat (WellDataStat *well_data_stat, int num_phases, int num_components);
-void UpdateWellDataStat (WellDataStat *updt_well_data_stat, WellDataStat *well_data_stat, int num_phases, int num_components);
-void CopyWellDataStat (WellDataStat *updt_well_data_stat, WellDataStat *well_data_stat, int num_phases, int num_components);
+WellDataStat *NewWellDataStat(int num_phases, int num_components);
+void FreeWellDataStat(WellDataStat *well_data_stat);
+void ReadWellDataStat(FILE *fd, WellDataStat *well_data_stat, int num_phases, int num_components);
+void WriteWellDataStat(FILE *fd, WellDataStat *well_data_stat, int num_phases, int num_components);
+void PrintWellDataStat(WellDataStat *well_data_stat, int num_phases, int num_components);
+void InitWellDataStat(WellDataStat *well_data_stat, int num_phases, int num_components);
+void UpdateWellDataStat(WellDataStat *updt_well_data_stat, WellDataStat *well_data_stat, int num_phases, int num_components);
+void CopyWellDataStat(WellDataStat *updt_well_data_stat, WellDataStat *well_data_stat, int num_phases, int num_components);
 
 #ifdef __cplusplus
 }

@@ -27,16 +27,16 @@
  **********************************************************************EHEADER*/
 #include "amps.h"
 
-#define AMPS_COPY(type, src, len, src_stride, dest, dest_stride) \
-  { \
-    type *ptr_src, *ptr_dest; \
-    if (((src_stride) == 1) && ((dest_stride == 1))) \
-      memcpy((dest), (src), (len) * sizeof(type)); \
-    else \
-      for (ptr_src = (type*)(src), (ptr_dest) = (type*)(dest); \
-           (ptr_dest) < (type*)(dest) + (len) * (dest_stride); \
+#define AMPS_COPY(type, src, len, src_stride, dest, dest_stride)   \
+  {                                                                \
+    type *ptr_src, *ptr_dest;                                      \
+    if (((src_stride) == 1) && ((dest_stride == 1)))               \
+      memcpy((dest), (src), (len) * sizeof(type));                 \
+    else                                                           \
+      for (ptr_src = (type*)(src), (ptr_dest) = (type*)(dest);     \
+           (ptr_dest) < (type*)(dest) + (len) * (dest_stride);     \
            (ptr_src) += (src_stride), (ptr_dest) += (dest_stride)) \
-        *(ptr_dest) = *(ptr_src); \
+        *(ptr_dest) = *(ptr_src);                                  \
   }
 
 

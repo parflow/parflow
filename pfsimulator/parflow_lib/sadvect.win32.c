@@ -2027,13 +2027,13 @@ doublereal *wc, *wrp;
 /*     this routine takes a vector of data of length jmax consisting of:
  */
 
-/*      wl		left states */
-/*      wr		right states */
-/*      alpha		total velocity */
-/*      beta		gravity */
-/*      visc0		viscosity of phase 0 */
-/*      visc1		viscosity of phase 1 */
-/*      wc		scratch array used by Riemann solver */
+/*      wl              left states */
+/*      wr              right states */
+/*      alpha           total velocity */
+/*      beta            gravity */
+/*      visc0           viscosity of phase 0 */
+/*      visc1           viscosity of phase 1 */
+/*      wc              scratch array used by Riemann solver */
 
 /*    the routine returns wrp which is the solution of the Riemann problem
  */

@@ -34,20 +34,20 @@
  * Compare macro
  *--------------------------------------------------------------------------*/
 
-#define Compare(result, vertex0, vertex1) \
-  { \
-    result = 0; \
-    if ((vertex0->y) < (vertex1->y)) \
-      result = -1; \
-    else if ((vertex0->y) > (vertex1->y)) \
-      result = 1; \
-    else \
-    { \
-      if ((vertex0->x) < (vertex1->x)) \
-        result = -1; \
+#define Compare(result, vertex0, vertex1)   \
+  {                                         \
+    result = 0;                             \
+    if ((vertex0->y) < (vertex1->y))        \
+      result = -1;                          \
+    else if ((vertex0->y) > (vertex1->y))   \
+      result = 1;                           \
+    else                                    \
+    {                                       \
+      if ((vertex0->x) < (vertex1->x))      \
+        result = -1;                        \
       else if ((vertex0->x) > (vertex1->x)) \
-        result = 1; \
-    } \
+        result = 1;                         \
+    }                                       \
   }
 
 

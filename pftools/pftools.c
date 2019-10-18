@@ -124,7 +124,7 @@ int            PFDistCommand(
   int num_procs_y;
   int num_procs_z;
   int num_procs;
-  int nz_manual=0;
+  int nz_manual = 0;
 
   Background    *background;
   Grid          *user_grid;
@@ -135,34 +135,38 @@ int            PFDistCommand(
   char command[1024];
 
   // Setup and error checking for manual nz spec
-  if ((argc == 2)||(argc == 4))
+  if ((argc == 2) || (argc == 4))
   {
     if (argc == 4) /* Check that third argument is -nz */
     {
-      if (strcmp(argv[1],"-nz")!=0)
+      if (strcmp(argv[1], "-nz") != 0)
       {
         printf("Error: Expected optional argument is: -nz \n");
-        printf("  argument read as: %s \n",argv[1]);
+        printf("  argument read as: %s \n", argv[1]);
         return TCL_ERROR;
       }
-      nz_manual=atoi(argv[2]);
-      if (nz_manual<1)
+      nz_manual = atoi(argv[2]);
+      if (nz_manual < 1)
       {
         printf("Error: -nz must be greater than 0 \n");
         return TCL_ERROR;
       }
     }
-  } else {
+  }
+  else
+  {
     /*WrongNumArgsError(interp, LOADPFUSAGE); */
     printf("Error: Invalid number of arguments passed to pfdist \n");
-    printf("       2 or 4 allowed, %d passed by user \n",argc);
+    printf("       2 or 4 allowed, %d passed by user \n", argc);
     return TCL_ERROR;
   }
 
   if (argc > 2)
   {
     filename = argv[3];
-  } else {
+  }
+  else
+  {
     filename = argv[1];
   }
 
@@ -193,10 +197,10 @@ int            PFDistCommand(
 
     int nz_in;
     Subgrid     *user_subgrid = GridSubgrid(user_grid, 0);
-    if (nz_manual!=0)
+    if (nz_manual != 0)
     {
       nz_in = SubgridNZ(user_subgrid); // Save the correct nz
-      SubgridNZ(user_subgrid)=nz_manual; // Set the manual nz
+      SubgridNZ(user_subgrid) = nz_manual; // Set the manual nz
     }
     /*--------------------------------------------------------------------
      * Get inbox from input_filename
@@ -210,9 +214,9 @@ int            PFDistCommand(
 
     all_subgrids = DistributeUserGrid(user_grid, num_procs,
                                       num_procs_x, num_procs_y, num_procs_z);
-    if (nz_manual!=0)
+    if (nz_manual != 0)
     {
-      SubgridNZ(user_subgrid)=nz_in;  // Restore the correct nz
+      SubgridNZ(user_subgrid) = nz_in;  // Restore the correct nz
     }
     if (!all_subgrids)
     {
@@ -503,7 +507,7 @@ double GetDouble(Tcl_Interp *interp, char *key)
 /* Function InitPFToolsData - This function is used to allocate memory          */
 /* for the structure used to store data set (databoxes).  Other values          */
 /* used to keep track of the databoxes are also initialized here.               */
-/*										*/
+/*                                                                              */
 /* Parameters - None                                                            */
 /*                                                                              */
 /* Return value - Data * - a pointer to the Data structure if one               */
@@ -638,8 +642,8 @@ int       AddData(
 /* ----------                                                                   */
 /* ClientData clientData - a pointer to the Data structure                      */
 /*                                                                              */
-/* Return value - void								*/
-/*								                */
+/* Return value - void                                                          */
+/*                                                                              */
 
 void               PFTExitProc(
                                ClientData clientData)
@@ -678,13 +682,13 @@ void               PFTExitProc(
 /*                                                                              */
 /* Parameters                                                                   */
 /* ----------                                                                   */
-/* char *key1 - A hash key to be compared					*/
-/* char *key2 - A hash key to be compared					*/
-/*										*/
+/* char *key1 - A hash key to be compared                                       */
+/* char *key2 - A hash key to be compared                                       */
+/*                                                                              */
 /* Return value - int - Note: hashkeys have the form: datasetn where n is an    */
 /*                            integer.                                          */
-/*                      -1 if n1 in key1 is less than n2 in key2		*/
-/*                       1 if n1 in key1 is greater than n2 in key2		*/
+/*                      -1 if n1 in key1 is less than n2 in key2                */
+/*                       1 if n1 in key1 is greater than n2 in key2             */
 /*                       0 if they are equal                                    */
 
 int keycompare(
@@ -711,7 +715,7 @@ int keycompare(
   while (*endnum1 != ' ')
   {
     /* Point number1 to the begining of the number */
-    /* substring.				    */
+    /* substring.                                   */
 
     if (!number1 && isdigit(*endnum1))
       number1 = endnum1;
@@ -767,14 +771,14 @@ int keycompare(
 /* The procedures below have the parameters necessary to make them Tcl commands.*/
 /* When a PFTools command is executed from within Tcl, Tcl will send four       */
 /* arguments to the procedure which implements the command.  They are described */
-/* here.									*/
-/*										*/
+/* here.                                                                        */
+/*                                                                              */
 /* ClientData clientData - Points to data that a Tcl command may need acess to. */
 /*                         In the case of the PFTools commands, it will point   */
 /*                         to the Data structure which contains the hash table  */
 /*                         of data box pointers.                                */
 /* Tcl_Interp *interp    - The interpreter being used to execute PFTools        */
-/*                         commands.						*/
+/*                         commands.                                            */
 /* int argc              - The number of agruments in the PFTools command       */
 /* char *argv            - each of the arguments in the command                 */
 
@@ -5696,7 +5700,7 @@ int            WaterTableDepthCommand(
  * Description: Compute slopes in x-direction at all [i,j] using 1st order
  *              upwind finite difference scheme
  *
- * Notes:	local maxima: slope set to max downward gradient
+ * Notes:       local maxima: slope set to max downward gradient
  *              local minima: slope set to zero (no drainage in x-dir)
  *              otherwise:    1st order upwind finite difference
  *

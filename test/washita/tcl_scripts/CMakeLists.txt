@@ -1,1 +1,4 @@
-add_test (NAME washita COMMAND tclsh LW_Test.tcl WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+if(${PARFLOW_HAVE_HYPRE})
+  add_test (NAME washita COMMAND tclsh LW_Test.tcl WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()

@@ -178,11 +178,11 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   double      *z_mult_dat;    //@RMM
 
 /* @RMM Flow Barrier / Boundary values */
-Vector      *FBx = ProblemDataFBx(problem_data);
-Vector      *FBy = ProblemDataFBy(problem_data);
-Vector      *FBz = ProblemDataFBz(problem_data);
-Subvector   *FBx_sub, *FBy_sub, *FBz_sub;    //@RMM
-double      *FBx_dat, *FBy_dat, *FBz_dat;     //@RMM
+  Vector      *FBx = ProblemDataFBx(problem_data);
+  Vector      *FBy = ProblemDataFBy(problem_data);
+  Vector      *FBz = ProblemDataFBz(problem_data);
+  Subvector   *FBx_sub, *FBy_sub, *FBz_sub;  //@RMM
+  double      *FBx_dat, *FBy_dat, *FBz_dat;   //@RMM
 
 
   double gravity = ProblemGravity(problem);
@@ -683,33 +683,35 @@ double      *FBx_dat, *FBy_dat, *FBz_dat;     //@RMM
       switch (public_xtra->tfgupwind)
       {
         case 0:
-        {
-          // default formulation in Maxwell 2013
-      x_dir_g = Mean(gravity * sin(atan(x_ssl_dat[io])), gravity * sin(atan(x_ssl_dat[io + 1])));
-      x_dir_g_c = Mean(gravity * cos(atan(x_ssl_dat[io])), gravity * cos(atan(x_ssl_dat[io + 1])));
-      y_dir_g = Mean(gravity * sin(atan(y_ssl_dat[io])), gravity * sin(atan(y_ssl_dat[io + sy_p])));
-      y_dir_g_c = Mean(gravity * cos(atan(y_ssl_dat[io])), gravity * cos(atan(y_ssl_dat[io + sy_p])));
-      break;
-    }
-    case 1:
-    {
-      // direct upwinding, no averaging with sines
-      x_dir_g =  gravity * sin(atan(x_ssl_dat[io]));
-      x_dir_g_c = gravity * cos(atan(x_ssl_dat[io]));
-      y_dir_g = gravity * sin(atan(y_ssl_dat[io]));
-      y_dir_g_c = gravity * cos(atan(y_ssl_dat[io]));
-      break;
+          {
+            // default formulation in Maxwell 2013
+            x_dir_g = Mean(gravity * sin(atan(x_ssl_dat[io])), gravity * sin(atan(x_ssl_dat[io + 1])));
+            x_dir_g_c = Mean(gravity * cos(atan(x_ssl_dat[io])), gravity * cos(atan(x_ssl_dat[io + 1])));
+            y_dir_g = Mean(gravity * sin(atan(y_ssl_dat[io])), gravity * sin(atan(y_ssl_dat[io + sy_p])));
+            y_dir_g_c = Mean(gravity * cos(atan(y_ssl_dat[io])), gravity * cos(atan(y_ssl_dat[io + sy_p])));
+            break;
+          }
+
+        case 1:
+          {
+            // direct upwinding, no averaging with sines
+            x_dir_g = gravity * sin(atan(x_ssl_dat[io]));
+            x_dir_g_c = gravity * cos(atan(x_ssl_dat[io]));
+            y_dir_g = gravity * sin(atan(y_ssl_dat[io]));
+            y_dir_g_c = gravity * cos(atan(y_ssl_dat[io]));
+            break;
+          }
+
+        case 2:
+          {
+            // direct upwinding, no averaging no sines
+            x_dir_g = x_ssl_dat[io];
+            x_dir_g_c = 1.0;
+            y_dir_g = y_ssl_dat[io];
+            y_dir_g_c = 1.0;
+            break;
+          }
       }
-      case 2:
-     {
-      // direct upwinding, no averaging no sines
-      x_dir_g =  x_ssl_dat[io];
-      x_dir_g_c = 1.0;
-      y_dir_g = y_ssl_dat[io];
-      y_dir_g_c = 1.0;
-      break;
-      }
-}
       /* Calculate right face velocity.
        * diff >= 0 implies flow goes left to right */
 
@@ -790,9 +792,9 @@ double      *FBx_dat, *FBy_dat, *FBz_dat;     //@RMM
 /*  add in flow barrier values
  * assumes that ip is the cell face between ip and ip+1
  * ip and ip+sy_p and ip and ip+sz_p in x, y, z directions */
-       u_right = u_right * FBx_dat[ip];
-       u_front = u_front * FBy_dat[ip];
-       u_upper = u_upper * FBz_dat[ip];
+      u_right = u_right * FBx_dat[ip];
+      u_front = u_front * FBy_dat[ip];
+      u_upper = u_upper * FBz_dat[ip];
 
       /* velocity data jjb */
       vx[vxi] = u_right / ffx;
@@ -1599,21 +1601,21 @@ double      *FBx_dat, *FBy_dat, *FBz_dat;     //@RMM
 
             if (fdir[0])
             {
-              switch(fdir[0])
+              switch (fdir[0])
               {
                 case -1:
-                {
-                  dir = -1;
-                  u_old = 0.0;
-                  break;
-                }
+                  {
+                    dir = -1;
+                    u_old = 0.0;
+                    break;
+                  }
 
                 case 1:
-                {
-                  dir = 1;
-                  u_old = 0.0;
-                  break;
-                }
+                  {
+                    dir = 1;
+                    u_old = 0.0;
+                    break;
+                  }
               }
               u_new = z_mult_dat[ip] * ffx * del_y_slope;
             } /* End if (fdir[0]) */
@@ -1622,18 +1624,18 @@ double      *FBx_dat, *FBy_dat, *FBz_dat;     //@RMM
               switch (fdir[1])
               {
                 case -1:
-                {
-                  dir = -1;
-                  u_old = 0.0;
-                  break;
-                }
+                  {
+                    dir = -1;
+                    u_old = 0.0;
+                    break;
+                  }
 
                 case 1:
-                {
-                  dir = 1;
-                  u_old = 0.0;
-                  break;
-                }
+                  {
+                    dir = 1;
+                    u_old = 0.0;
+                    break;
+                  }
               }
               u_new = z_mult_dat[ip] * ffy * del_x_slope;
             } /* End else if (fdir[1]) */
@@ -1642,18 +1644,18 @@ double      *FBx_dat, *FBy_dat, *FBz_dat;     //@RMM
               switch (fdir[2])
               {
                 case -1:
-                {
-                  dir = -1;
-                  u_old = 0.0;
-                  break;
-                }
+                  {
+                    dir = -1;
+                    u_old = 0.0;
+                    break;
+                  }
 
                 case 1:
-                {
-                  dir = 1;
-                  u_old = 0.0;
-                  break;
-                }
+                  {
+                    dir = 1;
+                    u_old = 0.0;
+                    break;
+                  }
               }
               u_new = ffz * del_x_slope * del_y_slope;
             } /* End else if (fdir[2]) */
@@ -1672,18 +1674,18 @@ double      *FBx_dat, *FBy_dat, *FBz_dat;     //@RMM
               switch (fdir[2])
               {
                 case 1:
-                {
-                  dir = 1;
+                  {
+                    dir = 1;
 
-                  ip = SubvectorEltIndex(p_sub, i, j, k);
-                  io = SubmatrixEltIndex(x_sl_sub, i, j, 0);
+                    ip = SubvectorEltIndex(p_sub, i, j, k);
+                    io = SubmatrixEltIndex(x_sl_sub, i, j, 0);
 
-                  /* add flux loss equal to excess head that overwrites the prior overland flux */
-                  q_overlnd = (vol / dz) * dt * (pfmax(pp[ip], 0.0) - 0.0); //@RMM
+                    /* add flux loss equal to excess head that overwrites the prior overland flux */
+                    q_overlnd = (vol / dz) * dt * (pfmax(pp[ip], 0.0) - 0.0); //@RMM
 
-                  fp[ip] += q_overlnd;
-                  break;
-                }
+                    fp[ip] += q_overlnd;
+                    break;
+                  }
               }
             } /* End if (fdir[2]) */
           }); /* End BCStructPatchLoop */
@@ -1858,15 +1860,15 @@ double      *FBx_dat, *FBy_dat, *FBz_dat;     //@RMM
           });
 
 
- //printf("Case overland_flow \n");
-            /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
-             * routing added */
-            double *dummy1, *dummy2, *dummy3, *dummy4;
-            PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
-                               (grid, is, bc_struct, ipatch, problem_data, pressure,
-                                ke_, kw_, kn_, ks_,
-                                dummy1, dummy2, dummy3, dummy4,
-                                qx_, qy_, CALCFCN));
+          //printf("Case overland_flow \n");
+          /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
+           * routing added */
+          double *dummy1, *dummy2, *dummy3, *dummy4;
+          PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
+                             (grid, is, bc_struct, ipatch, problem_data, pressure,
+                              ke_, kw_, kn_, ks_,
+                              dummy1, dummy2, dummy3, dummy4,
+                              qx_, qy_, CALCFCN));
 
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
@@ -2067,14 +2069,14 @@ double      *FBx_dat, *FBy_dat, *FBz_dat;     //@RMM
           // SGS Fix this up later after things are a bit more stable.   Probably should
           // Use this loop inside the overland flow eval as it is more efficient.
 
-            /*  @RMM this is a new module for diffusive wave
-              */
+          /*  @RMM this is a new module for diffusive wave
+           */
 
-            double *dummy1, *dummy2, *dummy3, *dummy4;
-            PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
-                                                                                      ke_, kw_, kn_, ks_,
-                                                                                      dummy1, dummy2, dummy3, dummy4,
-                                                                                      qx_, qy_, CALCFCN));
+          double *dummy1, *dummy2, *dummy3, *dummy4;
+          PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
+                                                                                    ke_, kw_, kn_, ks_,
+                                                                                    dummy1, dummy2, dummy3, dummy4,
+                                                                                    qx_, qy_, CALCFCN));
 
 
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
@@ -2298,7 +2300,7 @@ PFModule   *NlFunctionEvalNewPublicXtra(char *name)
 
   ///* parameters for upwinding formulation for TFG */
   upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");
-  sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation", name);
+  sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation");
   switch_name = GetStringDefault(key, "Original");
   switch_value = NA_NameToIndex(upwind_switch_na, switch_name);
   switch (switch_value)
@@ -2324,7 +2326,7 @@ PFModule   *NlFunctionEvalNewPublicXtra(char *name)
     default:
     {
       InputError("Error: Invalid value <%s> for key <%s>\n", switch_name,
-		 key);
+                 key);
     }
   }
   NA_FreeNameArray(upwind_switch_na);

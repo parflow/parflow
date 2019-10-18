@@ -67,6 +67,8 @@
 
 #include "parflow.h"
 
+#include <string.h>
+
 #define ZERO 0.0
 #define ONE  1.0
 
@@ -1322,61 +1324,34 @@ int PFVInvTest(
 
 /***************** Private Helper Functions **********************/
 
-void PFVCopy(
-/* Copy : y = x   */
-             Vector *x,
+/**
+ * Copies elements from vector X to vector Y.
+ *
+ * Includes ghost layer.
+ *
+ * Assumes X is same size as Y.
+ *
+ * @param x source vector
+ * @param Y destination vector
+ */
+void PFVCopy(Vector *x,
              Vector *y)
 {
-  Grid       *grid = VectorGrid(x);
-  Subgrid    *subgrid;
-
-  Subvector  *y_sub;
-  Subvector  *x_sub;
-
-  double     *yp, *xp;
-
-  int ix, iy, iz;
-  int nx, ny, nz;
-  int nx_x, ny_x, nz_x;
-  int nx_y, ny_y, nz_y;
-
-  int sg, i, j, k, i_x, i_y;
-
+  Grid *grid = VectorGrid(x);
+  int sg;
 
   ForSubgridI(sg, GridSubgrids(grid))
   {
-    subgrid = GridSubgrid(grid, sg);
+    Subgrid    *subgrid = GridSubgrid(grid, sg);
 
-    ix = SubgridIX(subgrid);
-    iy = SubgridIY(subgrid);
-    iz = SubgridIZ(subgrid);
+    int nx = SubgridNX(subgrid);
+    int ny = SubgridNY(subgrid);
+    int nz = SubgridNZ(subgrid);
 
-    nx = SubgridNX(subgrid);
-    ny = SubgridNY(subgrid);
-    nz = SubgridNZ(subgrid);
+    Subvector  *x_sub = VectorSubvector(x, sg);
+    Subvector  *y_sub = VectorSubvector(y, sg);
 
-    x_sub = VectorSubvector(x, sg);
-    y_sub = VectorSubvector(y, sg);
-
-    nx_x = SubvectorNX(x_sub);
-    ny_x = SubvectorNY(x_sub);
-    nz_x = SubvectorNZ(x_sub);
-
-    nx_y = SubvectorNX(y_sub);
-    ny_y = SubvectorNY(y_sub);
-    nz_y = SubvectorNZ(y_sub);
-
-    yp = SubvectorElt(y_sub, ix, iy, iz);
-    xp = SubvectorElt(x_sub, ix, iy, iz);
-
-    i_x = 0;
-    i_y = 0;
-    BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
-              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
-              i_y, nx_y, ny_y, nz_y, 1, 1, 1,
-    {
-      yp[i_y] = xp[i_x];
-    });
+    memcpy(SubvectorData(y_sub), SubvectorData(x_sub), SubvectorDataSize(y_sub)*sizeof(double));
   }
 }
 

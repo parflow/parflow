@@ -53,6 +53,7 @@ set (SRC_FILES advect.F
   matrix.c
   matvec.c
   max_field_value.c
+  metadata.c
   mg_semi.c
   mg_semi_prolong.c
   mg_semi_restrict.c
@@ -154,10 +155,13 @@ set (SRC_FILES advect.F
 
 add_library(pfsimulator ${SRC_FILES})
 
+target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})
+
+target_include_directories(pfsimulator PUBLIC "../third_party/cjson")
+
 if (${PARFLOW_HAVE_MPI})
   target_include_directories (pfsimulator PUBLIC "${MPI_C_INCLUDE_PATH}")
 endif (${PARFLOW_HAVE_MPI})
-
 
 install (TARGETS pfsimulator DESTINATION lib)
 
