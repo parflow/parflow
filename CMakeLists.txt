@@ -25,23 +25,22 @@ if( ${PARFLOW_ENABLE_CUDA} )
     set(PARFLOW_HAVE_CUDA "yes")
     set(HAVE_CUDA ${PARFLOW_HAVE_CUDA})
   else(CMAKE_CUDA_COMPILER)
-    message( FATAL_ERROR "ERROR: CUDA installation not found" )
+    message(FATAL_ERROR "ERROR: CUDA installation not found")
   endif(CMAKE_CUDA_COMPILER)
 
-# Include RapidsAI RMM allocator (for pool allocation)
+# Include RapidsAI Memory Manager (RMM) for pool allocation
   find_path(RMM_INCLUDE "rmm" HINTS "$ENV{RMM_ROOT}/include")
   find_library(RMM_LIBRARY "rmm" HINTS "$ENV{RMM_ROOT}/lib")
-
-  message(STATUS "RMM: RMM_LIBRARY set to ${RMM_LIBRARY}")
-  message(STATUS "RMM: RMM_INCLUDE set to ${RMM_INCLUDE}")
-
-  add_library(rmm SHARED IMPORTED ${RMM_LIBRARY})
   if(RMM_INCLUDE AND RMM_LIBRARY)
-      set_target_properties(rmm PROPERTIES IMPORTED_LOCATION ${RMM_LIBRARY})
+    message(STATUS "RMM: RMM_LIBRARY set to ${RMM_LIBRARY}")
+    message(STATUS "RMM: RMM_INCLUDE set to ${RMM_INCLUDE}")
+    add_library(rmm SHARED IMPORTED ${RMM_LIBRARY})
+    set_target_properties(rmm PROPERTIES IMPORTED_LOCATION ${RMM_LIBRARY})
+    include_directories ("${RMM_INCLUDE}")
+    link_directories("${RMM_LIBRARY}")
+  else(RMM_INCLUDE AND RMM_LIBRARY)
+    message(FATAL_ERROR "ERROR: RMM installation not found")
   endif(RMM_INCLUDE AND RMM_LIBRARY)
-
-  include_directories ("${RMM_INCLUDE}")
-  link_directories("${RMM_LIBRARY}")
 
 endif( ${PARFLOW_ENABLE_CUDA} )
 
