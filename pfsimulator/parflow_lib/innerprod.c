@@ -30,8 +30,18 @@
 *
 *****************************************************************************/
 
+#include "parflow_config.h"
+
+#ifdef HAVE_CUDA
+extern "C"{
+#endif
+
 #include "parflow.h"
 
+#ifdef HAVE_CUDA
+#include "pfcudaloops.h"
+#include "pfcudamalloc.h"
+#endif
 
 double   InnerProd(
                    Vector *x,
@@ -44,8 +54,7 @@ double   InnerProd(
   Subvector    *x_sub;
 
   double       *yp, *xp;
-
-  double result = 0.0;
+  double       result = 0.0;
 
   int ix, iy, iz;
   int nx, ny, nz;
@@ -55,8 +64,12 @@ double   InnerProd(
 
   amps_Invoice result_invoice;
 
-
   result_invoice = amps_NewInvoice("%d", &result);
+
+#ifdef HAVE_CUDA
+  double *dev_result; 
+  dev_result = ctalloc(double, 1);
+#endif
 
   ForSubgridI(i_s, GridSubgrids(grid))
   {
@@ -81,12 +94,22 @@ double   InnerProd(
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
     iv = 0;
+
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
-      result += yp[iv] * xp[iv];
+#ifdef HAVE_CUDA
+      PlusEquals(dev_result, yp[iv] * xp[iv]);
+#else
+      results += yp[iv] * xp[iv];
+#endif
     });
   }
+
+#ifdef HAVE_CUDA
+  result = *dev_result;
+  tfree(dev_result);
+#endif
 
   amps_AllReduce(amps_CommWorld, result_invoice, amps_Add);
 
@@ -96,3 +119,7 @@ double   InnerProd(
 
   return result;
 }
+
+#ifdef HAVE_CUDA
+}
+#endif

@@ -30,8 +30,18 @@
 * Operator induced prolongation for MGSemi module
 *
 *****************************************************************************/
+#include "parflow_config.h"
+
+#ifdef HAVE_CUDA
+extern "C"{
+#endif
 
 #include "parflow.h"
+
+#ifdef HAVE_CUDA
+#include "pfcudaloops.h"
+#include "pfcudamalloc.h"
+#endif
 
 
 /*--------------------------------------------------------------------------
@@ -246,3 +256,6 @@ ComputePkg   *NewMGSemiProlongComputePkg(
   return compute_pkg;
 }
 
+#ifdef HAVE_CUDA
+}
+#endif
