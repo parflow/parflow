@@ -66,10 +66,8 @@ double   InnerProd(
 
   result_invoice = amps_NewInvoice("%d", &result);
 
-#ifdef HAVE_CUDA
   double *dev_result; 
   dev_result = ctalloc(double, 1);
-#endif
 
   ForSubgridI(i_s, GridSubgrids(grid))
   {
@@ -98,18 +96,12 @@ double   InnerProd(
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
-#ifdef HAVE_CUDA
-      PlusEquals(dev_result, yp[iv] * xp[iv]);
-#else
-      results += yp[iv] * xp[iv];
-#endif
+      PlusEquals(dev_result[0], yp[iv] * xp[iv]);
     });
   }
 
-#ifdef HAVE_CUDA
-  result = *dev_result;
+  result = dev_result[0];
   tfree(dev_result);
-#endif
 
   amps_AllReduce(amps_CommWorld, result_invoice, amps_Add);
 

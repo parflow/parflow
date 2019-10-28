@@ -783,52 +783,27 @@ void    RichardsJacobianEval(
                                   prod_up)))
                    + sym_upper_temp;
 
-
-#ifdef HAVE_CUDA
-      PlusEquals(&cp[im], -(west_temp + south_temp + lower_temp));
-      PlusEquals(&cp[im + 1], -east_temp);
-      PlusEquals(&cp[im + sy_m], -north_temp);
-      PlusEquals(&cp[im + sz_m], -upper_temp);
+      PlusEquals(cp[im], -(west_temp + south_temp + lower_temp));
+      PlusEquals(cp[im + 1], -east_temp);
+      PlusEquals(cp[im + sy_m], -north_temp);
+      PlusEquals(cp[im + sz_m], -upper_temp);
 
       if (!symm_part)
       {
-        PlusEquals(&ep[im], east_temp);
-        PlusEquals(&np[im], north_temp);
-        PlusEquals(&up[im], upper_temp);
+        PlusEquals(ep[im], east_temp);
+        PlusEquals(np[im], north_temp);
+        PlusEquals(up[im], upper_temp);
 
-        PlusEquals(&wp[im + 1], west_temp);
-        PlusEquals(&sop[im + sy_m], south_temp);
-        PlusEquals(&lp[im + sz_m], lower_temp);
+        PlusEquals(wp[im + 1], west_temp);
+        PlusEquals(sop[im + sy_m], south_temp);
+        PlusEquals(lp[im + sz_m], lower_temp);
       }
       else     /* Symmetric matrix: just update upper coeffs */
       {
-        PlusEquals(&ep[im], sym_east_temp);
-        PlusEquals(&np[im], sym_north_temp);
-        PlusEquals(&up[im], sym_upper_temp);
+        PlusEquals(ep[im], sym_east_temp);
+        PlusEquals(np[im], sym_north_temp);
+        PlusEquals(up[im], sym_upper_temp);
       }
-#else
-      cp[im] -= west_temp + south_temp + lower_temp;
-      cp[im + 1] -= east_temp;
-      cp[im + sy_m] -= north_temp;
-      cp[im + sz_m] -= upper_temp;
-
-      if (!symm_part)
-      {
-        ep[im] += east_temp;
-        np[im] += north_temp;
-        up[im] += upper_temp;
-
-        wp[im + 1] += west_temp;
-        sop[im + sy_m] += south_temp;
-        lp[im + sz_m] += lower_temp;
-      }
-      else     /* Symmetric matrix: just update upper coeffs */
-      {
-        ep[im] += sym_east_temp;
-        np[im] += sym_north_temp;
-        up[im] += sym_upper_temp;
-      }
-#endif
     });
   }  //
 

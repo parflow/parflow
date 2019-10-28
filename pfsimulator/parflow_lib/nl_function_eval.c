@@ -164,7 +164,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   double      *x_sl_dat, *y_sl_dat, *mann_dat;
   double      *obf_dat;
   double q_overlnd;
-  double sep;          // scaling difference temp var @RMM
 
   Vector      *porosity = ProblemDataPorosity(problem_data);
   Vector      *permeability_x = ProblemDataPermeabilityX(problem_data);
@@ -221,8 +220,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   int diffusive;             //@RMM
 
   double dtmp, dx, dy, dz, vol, ffx, ffy, ffz;
-  double diff = 0.0e0;
-  double lower_cond, upper_cond;
 
   BCStruct    *bc_struct;
   GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
@@ -800,17 +797,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       vy[vyi] = u_front / ffy;
       vz[vzi] = u_upper / ffz;
 
-#ifdef HAVE_CUDA
-      PlusEquals(&fp[ip], dt * (u_right + u_front + u_upper));
-      PlusEquals(&fp[ip + 1], -dt * u_right);
-      PlusEquals(&fp[ip + sy_p], -dt * u_front);
-      PlusEquals(&fp[ip + sz_p], -dt * u_upper);
-#else
-      fp[ip] += dt * (u_right + u_front + u_upper);
-      fp[ip + 1] -= dt * u_right;
-      fp[ip + sy_p] -= dt * u_front;
-      fp[ip + sz_p] -= dt * u_upper;
-#endif
+      PlusEquals(fp[ip], dt * (u_right + u_front + u_upper));
+      PlusEquals(fp[ip + 1], -dt * u_right);
+      PlusEquals(fp[ip + sy_p], -dt * u_front);
+      PlusEquals(fp[ip + sz_p], -dt * u_upper);
     });
   }
 
@@ -920,6 +910,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
             int ip = SubvectorEltIndex(p_sub, i, j, k);
+
+            double diff = 0.0e0;
+            double sep;
+            
+            double lower_cond;
+            double upper_cond;
 
             value = bc_patch_values[ival];
             double x_dir_g = 0.0;
@@ -1142,6 +1138,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           {
             int ip = SubvectorEltIndex(p_sub, i, j, k);
 
+            double diff = 0.0e0;
+            double sep;
+            
+            double lower_cond;
+            double upper_cond;
+
             double x_dir_g = 0.0;
             double y_dir_g = 0.0;
             double z_dir_g = 1.0;
@@ -1314,6 +1316,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
             int ip = SubvectorEltIndex(p_sub, i, j, k);
+
+            double diff = 0.0e0;
+            double sep;
+            
+            double lower_cond;
+            double upper_cond;
 
             double x_dir_g = 0.0;
             double y_dir_g = 0.0;
@@ -1688,6 +1696,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           {
             int ip = SubvectorEltIndex(p_sub, i, j, k);
 
+            double diff = 0.0e0;
+            double sep;
+            
+            double lower_cond;
+            double upper_cond;
+
             double x_dir_g = 0.0;
             double y_dir_g = 0.0;
             double z_dir_g = 1.0;
@@ -1893,6 +1907,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
             int ip = SubvectorEltIndex(p_sub, i, j, k);
+
+            double diff = 0.0e0;
+            double sep;
+            
+            double lower_cond;
+            double upper_cond;
 
             double x_dir_g = 0.0;
             double y_dir_g = 0.0;

@@ -16,7 +16,7 @@ extern "C++"{
  * CUDA helper functions
  *--------------------------------------------------------------------------*/
 template <typename T>
-__host__ __device__ static inline void PlusEquals(T *array_loc, T value)
+__host__ __device__ static inline void PlusEqualsSwitch(T *array_loc, T value)
 {
     //Define this function depending on whether it runs on GPU or CPU
 #ifdef __CUDA_ARCH__
@@ -25,6 +25,12 @@ __host__ __device__ static inline void PlusEquals(T *array_loc, T value)
     *array_loc += value;
 #endif
 }
+
+/*--------------------------------------------------------------------------
+ * CUDA helper macro redefinitions
+ *--------------------------------------------------------------------------*/
+#undef PlusEquals
+#define PlusEquals(a, b) PlusEqualsSwitch(&(a), b)
 
 /*--------------------------------------------------------------------------
  * CUDA loop kernels
