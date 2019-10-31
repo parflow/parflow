@@ -155,10 +155,10 @@ int main(int argc, char *argv [])
       // CUDA_ERR(cudaDeviceGetAttribute(&value, cudaDevAttrCanUseHostPointerForRegisteredMem, device));
       // printf("cudaDevAttrCanUseHostPointerForRegisteredMem: %d\n", value);
 
-      if (props.major < 7)
+      if (props.major < 6)
       {
-        amps_Printf("\nError: The GPU compute cabability %d.%d of %s is not sufficient.\n",props.major,props.minor,props.name);
-        amps_Printf("\nThe minimum required GPU compute capability is 7.0.\n");
+        amps_Printf("\nError: The GPU compute capability %d.%d of %s is not sufficient.\n",props.major,props.minor,props.name);
+        amps_Printf("\nThe minimum required GPU compute capability is 6.0.\n");
         exit(1);
       }
 

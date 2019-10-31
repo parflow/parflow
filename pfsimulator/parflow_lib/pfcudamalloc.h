@@ -39,7 +39,7 @@ static inline void tfreeCUDA(void *ptr)
 }
 
 /*--------------------------------------------------------------------------
- * Refefine allocation macros for CUDA
+ * Redefine allocation macros for CUDA
  *--------------------------------------------------------------------------*/
 
 // Redefine amps.h definitions
