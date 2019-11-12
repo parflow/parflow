@@ -30,11 +30,17 @@
 * Constructors and destructors for matrix structure.
 *
 *****************************************************************************/
+#include "parflow_config.h"
+
+#ifdef HAVE_CUDA
+extern "C"{
+#endif
 
 #include "parflow.h"
 #include "matrix.h"
 
 #ifdef HAVE_CUDA
+#include "pfcudaloops.h"
 #include "pfcudamalloc.h"
 #endif
 
@@ -774,3 +780,7 @@ void    InitMatrix(
     }
   }
 }
+
+#ifdef HAVE_CUDA
+}
+#endif

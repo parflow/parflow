@@ -267,9 +267,7 @@ VanGTable *VanGComputeTable(
   return new_table;
 }
 
-#ifdef HAVE_CUDA
 __host__ __device__
-#endif 
 static inline double VanGLookupSpline(
                                       double     pressure_head,
                                       VanGTable *lookup_table,

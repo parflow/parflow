@@ -43,6 +43,9 @@ extern "C"{
 #include "pfcudamalloc.h"
 #endif
 
+/* This must be in the global scope due to __managed__ keyword */
+__managed__ static double result;
+
 double   InnerProd(
                    Vector *x,
                    Vector *y)
@@ -54,7 +57,6 @@ double   InnerProd(
   Subvector    *x_sub;
 
   double       *yp, *xp;
-  double       result = 0.0;
 
   int ix, iy, iz;
   int nx, ny, nz;
@@ -64,10 +66,8 @@ double   InnerProd(
 
   amps_Invoice result_invoice;
 
+  result = 0.0;
   result_invoice = amps_NewInvoice("%d", &result);
-
-  double *dev_result; 
-  dev_result = ctalloc(double, 1);
 
   ForSubgridI(i_s, GridSubgrids(grid))
   {
@@ -96,12 +96,9 @@ double   InnerProd(
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
-      PlusEquals(dev_result[0], yp[iv] * xp[iv]);
+      PlusEquals(result, yp[iv] * xp[iv]);
     });
   }
-
-  result = dev_result[0];
-  tfree(dev_result);
 
   amps_AllReduce(amps_CommWorld, result_invoice, amps_Add);
 

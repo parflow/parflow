@@ -282,7 +282,7 @@ void    RichardsJacobianEval(
 
   double      *pp, *sp, *sdp, *pop, *dp, *ddp, *rpp, *rpdp;
   double      *permxp, *permyp, *permzp;
-  double      *cp, *wp, *ep, *sop, *np, *lp, *up, *op = NULL, *ss;
+  double      *cp, *wp, *ep, *sop, *np, *lp, *up, *ss;
 
   double      *cp_c, *wp_c, *ep_c, *sop_c, *np_c, *top_dat;  //DOK
 
@@ -302,14 +302,14 @@ void    RichardsJacobianEval(
   int overlandspinup;              //@RMM
   overlandspinup = GetIntDefault("OverlandFlowSpinUp", 0);
 
-  int ovlnd_flag;           //DOK
+  int *ovlnd_flag;           //DOK
 
   double dtmp, dx, dy, dz, ffx, ffy, ffz;          //@RMM
 
   BCStruct    *bc_struct;
   GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
   double      *bc_patch_values;
-  double den_d, dend_d;
+
   int         *fdir;
   int ipatch, ival;
 
@@ -392,8 +392,8 @@ void    RichardsJacobianEval(
 
   // SGS set this to 1 since the off/on behavior does not work in
   // parallel.
-  ovlnd_flag = 1;  // determines whether or not to set up data structs for overland flow contribution
-
+  ovlnd_flag = ctalloc(int, 1);
+  ovlnd_flag[0] = 1;  // determines whether or not to set up data structs for overland flow contribution
 
   /* Initialize matrix values to zero. */
   InitMatrix(J, 0.0);
@@ -1100,12 +1100,43 @@ void    RichardsJacobianEval(
           {
             int ip = SubvectorEltIndex(p_sub, i, j, k);
 
+            double *op = NULL;
+            
+            double den_d; 
             double value = bc_patch_values[ival];
 
+            /* The cross-compilation-unit function call in PFModuleInvokeType is problematic for GPU 
+                 -> the required parts of the function are pasted here (yes, this is annoying) */
+#ifdef HAVE_CUDA
+            PublicXtraPhaseDensity *public_xtra_density = (PublicXtraPhaseDensity*)PFModulePublicXtra(density_module);
+            switch (public_xtra_density->type[0])
+            {
+              case 0:
+              {            
+                Type0PhaseDensity *dummy = (Type0PhaseDensity*)public_xtra_density->data[0];
+                den_d = dummy->constant;
+
+                break;
+              }        /* End case 0 */
+              case 1:
+              {
+                Type1PhaseDensity *dummy = (Type1PhaseDensity*)public_xtra_density->data[0];
+                double ref = dummy->reference_density;
+                double comp = dummy->compressibility_constant;
+                den_d = ref * exp(value * comp);
+
+                break;
+              }        /* End case 1 */
+            }          /* End switch */
+#else
             PFModuleInvokeType(PhaseDensityInvoke, density_module,
                                (0, NULL, NULL, &value, &den_d, CALCFCN));
-            PFModuleInvokeType(PhaseDensityInvoke, density_module,
-                               (0, NULL, NULL, &value, &dend_d, CALCDER));
+
+            /* This appears to do nothing */      
+            // double dend_d;
+            // PFModuleInvokeType(PhaseDensityInvoke, density_module,
+            //                    (0, NULL, NULL, &value, &dend_d, CALCDER));
+#endif
 
             ip = SubvectorEltIndex(p_sub, i, j, k);
             int im = SubmatrixEltIndex(J_sub, i, j, k);
@@ -1246,6 +1277,7 @@ void    RichardsJacobianEval(
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
             int im = SubmatrixEltIndex(J_sub, i, j, k);
+            double *op = NULL;
 
             if (fdir[0] == -1)
               op = wp;
@@ -1272,6 +1304,7 @@ void    RichardsJacobianEval(
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
             int im = SubmatrixEltIndex(J_sub, i, j, k);
+            double *op = NULL;
 
             //remove contributions to this row corresponding to boundary
             if (fdir[0] == -1)
@@ -1288,12 +1321,12 @@ void    RichardsJacobianEval(
             {
               op = up;
               /* check if overland flow kicks in */
-              if (!ovlnd_flag)
+              if (!ovlnd_flag[0])
               {
                 int ip = SubvectorEltIndex(p_sub, i, j, k);
                 if ((pp[ip]) > 0.0)
                 {
-                  ovlnd_flag = 1;
+                  ovlnd_flag[0] = 1;
                 }
               }
             }
@@ -1427,6 +1460,8 @@ void    RichardsJacobianEval(
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
             int im = SubmatrixEltIndex(J_sub, i, j, k);
+            double *op = NULL;
+
             //remove contributions to this row corresponding to boundary
             if (fdir[0] == -1)
               op = wp;
@@ -1442,12 +1477,12 @@ void    RichardsJacobianEval(
             {
               op = up;
               /* check if overland flow kicks in */
-              if (!ovlnd_flag)
+              if (!ovlnd_flag[0])
               {
                 int ip = SubvectorEltIndex(p_sub, i, j, k);
                 if ((pp[ip]) > 0.0)
                 {
-                  ovlnd_flag = 1;
+                  ovlnd_flag[0] = 1;
                 }
               }
             }
@@ -1469,6 +1504,7 @@ void    RichardsJacobianEval(
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
             int im = SubmatrixEltIndex(J_sub, i, j, k);
+            double *op = NULL;
 
             //remove contributions to this row corresponding to boundary
             if (fdir[0] == -1)
@@ -1485,12 +1521,12 @@ void    RichardsJacobianEval(
             {
               op = up;
               /* check if overland flow kicks in */
-              if (!ovlnd_flag)
+              if (!ovlnd_flag[0])
               {
                 int ip = SubvectorEltIndex(p_sub, i, j, k);
                 if ((pp[ip]) > 0.0)
                 {
-                  ovlnd_flag = 1;
+                  ovlnd_flag[0] = 1;
                 }
               }
             }
@@ -1553,7 +1589,7 @@ void    RichardsJacobianEval(
   }
 
   /* Build submatrix JC if overland flow case */
-  if (ovlnd_flag && public_xtra->type == overland_flow)
+  if (ovlnd_flag[0] && public_xtra->type == overland_flow)
   {
     /* begin loop to build JC */
     ForSubgridI(is, GridSubgrids(grid))
@@ -2030,6 +2066,8 @@ void    RichardsJacobianEval(
   FreeVector(KEns);
   FreeVector(KNns);
   FreeVector(KSns);
+
+  tfree(ovlnd_flag);
 
   return;
 }

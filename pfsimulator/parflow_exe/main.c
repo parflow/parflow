@@ -129,7 +129,7 @@ int main(int argc, char *argv [])
       if(mpi_debug == amps_Rank(amps_CommWorld)){
         volatile int i = 0;
         amps_Printf("MPI_DEBUG_RANK environment variable found.\n");
-        amps_Printf("Attach debugger to PID %ld (MPI rank %d) and set i = 1 to continue\n", (long)getpid(), mpi_debug);
+        amps_Printf("Attach debugger to PID %ld (MPI rank %d) and set var i = 1 to continue\n", (long)getpid(), mpi_debug);
         while(i == 0) {/*  change 'i' in the  debugger  */}
       }
       amps_Sync(amps_CommWorld);

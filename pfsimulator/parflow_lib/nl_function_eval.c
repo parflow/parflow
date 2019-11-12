@@ -161,9 +161,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   Subvector   *x_sl_sub, *y_sl_sub, *mann_sub;
   Subvector   *obf_sub;
   double      *kw_, *ke_, *kn_, *ks_, *qx_, *qy_;
-  double      *x_sl_dat, *y_sl_dat, *mann_dat;
-  double      *obf_dat;
-  double q_overlnd;
+  double      *x_sl_dat, *y_sl_dat, *mann_dat, *obf_dat;
 
   Vector      *porosity = ProblemDataPorosity(problem_data);
   Vector      *permeability_x = ProblemDataPermeabilityX(problem_data);
@@ -224,12 +222,9 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   BCStruct    *bc_struct;
   GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
   double      *bc_patch_values;
-  double u_old = 0.0e0;
-  double u_new = 0.0e0;
-  double value;
+
   int         *fdir;
   int ipatch, ival;
-  int dir = 0;
 
   VectorUpdateCommHandle  *handle;
 
@@ -551,7 +546,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
             int ip = SubvectorEltIndex(p_sub, i, j, k);
-            value = bc_patch_values[ival];
+            double value = bc_patch_values[ival];
             pp[ip + fdir[0] * 1 + fdir[1] * sy_p + fdir[2] * sz_p] = value;
           });
           break;
@@ -909,15 +904,18 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
         {
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
+            int dir = 0;
             int ip = SubvectorEltIndex(p_sub, i, j, k);
 
             double diff = 0.0e0;
             double sep;
+            double u_new = 0.0e0;
+            double u_old = 0.0e0;
             
             double lower_cond;
             double upper_cond;
 
-            value = bc_patch_values[ival];
+            double value = bc_patch_values[ival];
             double x_dir_g = 0.0;
             double y_dir_g = 0.0;
             double z_dir_g = 1.0;
@@ -927,7 +925,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
             double del_x_slope = 1.0;
             double del_y_slope = 1.0;
-
 
             /* Don't currently do upstream weighting on boundaries */
 
@@ -1136,10 +1133,13 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
         {
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
+            int dir = 0;
             int ip = SubvectorEltIndex(p_sub, i, j, k);
 
             double diff = 0.0e0;
             double sep;
+            double u_new = 0.0e0;
+            double u_old = 0.0e0;
             
             double lower_cond;
             double upper_cond;
@@ -1315,10 +1315,13 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
         {
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
+            int dir = 0;
             int ip = SubvectorEltIndex(p_sub, i, j, k);
 
             double diff = 0.0e0;
             double sep;
+            double u_new = 0.0e0;
+            double u_old = 0.0e0;
             
             double lower_cond;
             double upper_cond;
@@ -1553,11 +1556,11 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
               switch (fdir[2])
               {
                 case 1:
-                  dir = 1;
+                {
                   int ip = SubvectorEltIndex(p_sub, i, j, k);
                   int io = SubvectorEltIndex(x_sl_sub, i, j, 0);
 
-                  q_overlnd = 0.0;
+                  double q_overlnd = 0.0;
 
 
                   q_overlnd = vol
@@ -1579,6 +1582,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                   fp[ip] += q_overlnd;
 
                   break;
+                }
               }
             }
           });
@@ -1590,7 +1594,11 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
         {
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
+            int dir = 0;
             int ip = SubvectorEltIndex(p_sub, i, j, k);
+
+            double u_new = 0.0e0;
+            double u_old = 0.0e0;
 
             double del_x_slope = 1.0;
             double del_y_slope = 1.0;
@@ -1671,12 +1679,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
               {
                 case 1:
                   {
-                    dir = 1;
-
                     int ip = SubvectorEltIndex(p_sub, i, j, k);
 
                     /* add flux loss equal to excess head that overwrites the prior overland flux */
-                    q_overlnd = (vol / dz) * dt * (pfmax(pp[ip], 0.0) - 0.0); //@RMM
+                    double q_overlnd = (vol / dz) * dt * (pfmax(pp[ip], 0.0) - 0.0); //@RMM
 
                     fp[ip] += q_overlnd;
                     break;
@@ -1694,10 +1700,13 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
         {
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
+            int dir = 0;
             int ip = SubvectorEltIndex(p_sub, i, j, k);
 
             double diff = 0.0e0;
             double sep;
+            double u_new = 0.0e0;
+            double u_old = 0.0e0;
             
             double lower_cond;
             double upper_cond;
@@ -1877,11 +1886,11 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
               switch (fdir[2])
               {
                 case 1:
-                  dir = 1;
+                {
                   int ip = SubvectorEltIndex(p_sub, i, j, k);
                   int io = SubvectorEltIndex(x_sl_sub, i, j, 0);
 
-                  q_overlnd = 0.0;
+                  double q_overlnd = 0.0;
 
 
                   q_overlnd = vol
@@ -1893,6 +1902,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                   fp[ip] += q_overlnd;
 
                   break;
+                }
               }
             }
           });
@@ -1906,10 +1916,13 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
         {
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
+            int dir = 0;
             int ip = SubvectorEltIndex(p_sub, i, j, k);
 
             double diff = 0.0e0;
             double sep;
+            double u_new = 0.0e0;
+            double u_old = 0.0e0;
             
             double lower_cond;
             double upper_cond;
@@ -2091,11 +2104,11 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
               switch (fdir[2])
               {
                 case 1:
-                  dir = 1;
+                {
                   int ip = SubvectorEltIndex(p_sub, i, j, k);
                   int io = SubvectorEltIndex(x_sl_sub, i, j, 0);
 
-                  q_overlnd = 0.0;
+                  double q_overlnd = 0.0;
 
 
                   q_overlnd = vol
@@ -2106,6 +2119,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                   fp[ip] += q_overlnd;
 
                   break;
+                }
               }
             }
           });
@@ -2150,8 +2164,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
             int ip = SubvectorEltIndex(p_sub, i, j, k);
-            value = bc_patch_values[ival];
-// SGS FIXME why is this needed?
 //#undef max
             pp[ip + fdir[0] * 1 + fdir[1] * sy_p + fdir[2] * sz_p] = -FLT_MAX;
             fp[ip + fdir[0] * 1 + fdir[1] * sy_p + fdir[2] * sz_p] = 0.0;

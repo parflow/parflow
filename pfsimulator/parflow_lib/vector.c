@@ -31,10 +31,17 @@
 *
 *
 *****************************************************************************/
+#include "parflow_config.h"
+
+#ifdef HAVE_CUDA
+extern "C"{
+#endif
+
 #include "parflow.h"
 #include "vector.h"
 
 #ifdef HAVE_CUDA
+#include "pfcudaloops.h"
 #include "pfcudamalloc.h"
 #endif
 
@@ -927,7 +934,15 @@ void    InitVectorRandom(
     BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
+#ifdef HAVE_CUDA
+      vp[iv] = dev_drand48();
+#else
       vp[iv] = drand48();
+#endif
     });
   }
 }
+
+#ifdef HAVE_CUDA
+}
+#endif

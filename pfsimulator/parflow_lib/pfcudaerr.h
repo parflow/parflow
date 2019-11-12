@@ -29,4 +29,5 @@ static inline void rmmError(rmmError_t err, const char *file, int line) {
 		exit(1);
 	}
 }
+
 #endif // PFCUDAERR_H

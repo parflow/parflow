@@ -34,6 +34,9 @@
 #include "parflow.h"
 #include "pf_module.h"
 
+#ifdef HAVE_CUDA
+#include "pfcudamalloc.h"
+#endif
 
 /*--------------------------------------------------------------------------
  * NewPFModule
@@ -92,4 +95,3 @@ void            FreePFModule(PFModule *pf_module)
 {
   tfree(pf_module);
 }
-

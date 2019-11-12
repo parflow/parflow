@@ -103,13 +103,23 @@
 #define pfmin(a, b)  (((a) < (b)) ? (a) : (b))
 #endif
 
+#ifndef pfmax_atomic
+#define pfmax_atomic(a, b)  if(a < b) a = b
+#endif
+#ifndef pfmin_atomic
+#define pfmin_atomic(a, b)  if(a > b) a = b
+#endif
+
 #ifndef pfround
 #define pfround(x)  (((x) < 0.0) ? ((int)(x - 0.5)) : ((int)(x + 0.5)))
 #endif
 
+#ifndef PlusEquals
+#define PlusEquals(a, b) (a += b)
+#endif
+
 /* return 2^e, where e >= 0 is an integer */
 #define Pow2(e)   (((unsigned int)0x01) << (e))
-
 
 /*--------------------------------------------------------------------------
  * Define various flags
@@ -144,5 +154,14 @@
 #define GetStringDefault(key, default) IDB_GetStringDefault(amps_ThreadLocal(input_database), (key), (default))
 
 #define TIME_EPSILON (FLT_EPSILON * 10)
+
+/*--------------------------------------------------------------------------
+ * Define CUDA macros to do nothing if no GPU acceleration
+ *--------------------------------------------------------------------------*/
+#ifndef __CUDACC__
+#define __host__
+#define __device__
+#define __managed__
+#endif // __CUDACC__
 
 #endif

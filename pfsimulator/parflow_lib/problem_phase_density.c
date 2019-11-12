@@ -47,9 +47,28 @@
 *  not necessarily associated with a grid (as in boundary patches).
 *
 *****************************************************************************/
+#include "parflow_config.h"
+
+#ifdef HAVE_CUDA
+extern "C"{
+#endif
 
 #include "parflow.h"
 
+#ifdef HAVE_CUDA
+#include "pfcudaloops.h"
+#include "pfcudamalloc.h"
+
+/* The cross-compilation-unit function call to PhaseDensity in 
+  richards_jacobian_eval.c:1110 is problematic for the GPU kernel 
+      -> the following structures are defined in the pfcudamalloc.h          */
+
+typedef PublicXtraPhaseDensity PublicXtra;
+typedef void InstanceXtra;
+typedef Type0PhaseDensity Type0;
+typedef Type1PhaseDensity Type1;
+
+#else
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -71,7 +90,7 @@ typedef struct {
   double reference_density;
   double compressibility_constant;
 } Type1;                      /* rho_ref exp(compressibility*pressure) */
-
+#endif
 
 /*-------------------------------------------------------------------------
  * PhaseDensity
@@ -432,3 +451,7 @@ int  PhaseDensitySizeOfTempData()
 {
   return 0;
 }
+
+#ifdef HAVE_CUDA
+}
+#endif

@@ -31,6 +31,9 @@
 
 #include "parflow.h"
 
+#ifdef HAVE_CUDA
+#include "pfcudamalloc.h"
+#endif
 
 /*--------------------------------------------------------------------------
  * Structures

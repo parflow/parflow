@@ -31,6 +31,10 @@
 
 #include "parflow.h"
 
+#ifdef HAVE_CUDA
+#include "pfcudamalloc.h"
+#endif
+
 #include <assert.h>
 
 
@@ -230,7 +234,7 @@ double         **CalcElevations(
         }
       }
 
-      free(temp_array);
+      tfree(temp_array);
 
       /*
        * Original algorithm had default value of 0.0. This forces unset values to 0.0

@@ -66,4 +66,24 @@ static inline void tfreeCUDA(void *ptr)
 #undef tfree
 #define tfree(ptr) if (ptr) tfreeCUDA(ptr); else {}
 
+/*--------------------------------------------------------------------------
+ * Structures needed across CUDA compilation units
+ *--------------------------------------------------------------------------*/
+
+typedef struct {
+  int num_phases;
+
+  int    *type;  /* array of size num_phases of input types */
+  void  **data;  /* array of size num_phases of pointers to Type structures */
+} PublicXtraPhaseDensity;
+
+typedef struct {
+  double constant;
+} Type0PhaseDensity;
+
+typedef struct {
+  double reference_density;
+  double compressibility_constant;
+} Type1PhaseDensity;
+
 #endif // PFCUDAMALLOC_H

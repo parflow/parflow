@@ -32,6 +32,10 @@
 
 #include <float.h>
 
+#ifdef HAVE_CUDA
+#include "pfcudamalloc.h"
+#endif
+
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -880,7 +884,7 @@ void  ICPhasePressureFreeInstanceXtra()
 
     PFModuleFreeInstance(instance_xtra->phase_density);
 
-    free(instance_xtra);
+    tfree(instance_xtra);
   }
 }
 
