@@ -211,6 +211,8 @@ void    RichardsJacobianEval(
                                                       * symmetric part of the Jacobian (1), or the
                                                       * full Jacobian */
 {
+  PUSH_RANGE("RichardsJacobianEval",1)
+
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -2068,6 +2070,8 @@ void    RichardsJacobianEval(
   FreeVector(KSns);
 
   tfree(ovlnd_flag);
+
+  POP_RANGE
 
   return;
 }

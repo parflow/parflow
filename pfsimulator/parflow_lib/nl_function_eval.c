@@ -133,6 +133,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                     Vector *     y_velocity,
                     Vector *     z_velocity)
 {
+  PUSH_RANGE("NlFunctionEval",0)
+
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -2187,6 +2189,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   FreeVector(KS);
   FreeVector(qx);
   FreeVector(qy);
+
+  POP_RANGE
 
   return;
 }

@@ -106,6 +106,8 @@ void     MGSemi(
                 double  tol,
                 int     zero)
 {
+  PUSH_RANGE("MGSemi",2)
+  
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
@@ -168,6 +170,8 @@ void     MGSemi(
   /*-----------------------------------------------------------------------
    * Allocate temp vectors
    *-----------------------------------------------------------------------*/
+  PUSH_RANGE("MGSemi_mallocloop",3)
+
   x_l = talloc(Vector *, num_levels);
   b_l = talloc(Vector *, num_levels);
   temp_vec_l = talloc(Vector *, num_levels);
@@ -196,6 +200,7 @@ void     MGSemi(
       NewVectorCommPkg(temp_vec_l[l],
                        (instance_xtra->prolong_compute_pkg_l[l]));
   }
+  POP_RANGE
 
   /*-----------------------------------------------------------------------
    * Do V-cycles:
@@ -219,6 +224,7 @@ void     MGSemi(
   /* smooth (use `zero' to determine initial x) */
   PFModuleInvokeType(LinearSolverInvoke, smooth_l[0], (x, b, 0.0, zero));
 
+  PUSH_RANGE("MGSemi_solveloop",4)
   while (++i)
   {
     /*--------------------------------------------------------------------
@@ -366,6 +372,7 @@ void     MGSemi(
     /* smooth (non-zero initial x) */
     PFModuleInvokeType(LinearSolverInvoke, smooth_l[0], (x, b, 0.0, 0));
   }
+  POP_RANGE
 
   if (tol > 0.0)
   {
@@ -431,6 +438,7 @@ void     MGSemi(
       tfree(rel_norm_log);
     }
   }
+  POP_RANGE
 }
 
 

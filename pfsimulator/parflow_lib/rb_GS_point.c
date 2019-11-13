@@ -69,6 +69,8 @@ void     RedBlackGSPoint(
                          double  tol,
                          int     zero)
 {
+  PUSH_RANGE("RedBlackGSPoint",5)
+
   PFModule       *this_module = ThisPFModule;
   PublicXtra     *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
   InstanceXtra   *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
@@ -368,6 +370,8 @@ void     RedBlackGSPoint(
     IncFLOPCount(13 * (iter * VectorSize(x) + (VectorSize(x) / 2)));
   else
     IncFLOPCount(13 * (iter * VectorSize(x)));
+
+    POP_RANGE
 }
 
 

@@ -1367,7 +1367,11 @@ void PFVCopy(Vector *x,
     Subvector  *x_sub = VectorSubvector(x, sg);
     Subvector  *y_sub = VectorSubvector(y, sg);
 
+#ifdef HAVE_CUDA
+    CUDA_ERR(cudaMemcpy(SubvectorData(y_sub), SubvectorData(x_sub), SubvectorDataSize(y_sub)*sizeof(double), cudaMemcpyDeviceToDevice));
+#else
     memcpy(SubvectorData(y_sub), SubvectorData(x_sub), SubvectorDataSize(y_sub)*sizeof(double));
+#endif
   }
 }
 

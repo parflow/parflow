@@ -27,7 +27,8 @@ static inline void *ctallocCUDA(size_t size)
   //  CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   //  CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
    
-   memset(ptr, 0, size);
+  //  memset(ptr, 0, size);
+   CUDA_ERR(cudaMemset(ptr, 0, size));
 
    return ptr;
 }

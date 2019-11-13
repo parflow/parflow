@@ -113,7 +113,8 @@ void HistogramBoxAddTags(HistogramBox *histogram_box, int dim, int global_index,
  */
 HistogramBox* NewHistogramBox(Box *box)
 {
-  HistogramBox* histogram_box = ctalloc(HistogramBox, 1);
+  HistogramBox* histogram_box = talloc(HistogramBox, 1);
+  memset(histogram_box, 0, sizeof(HistogramBox));
 
   BoxCopy(&(histogram_box->box), box);
 
@@ -121,7 +122,8 @@ HistogramBox* NewHistogramBox(Box *box)
 
   for (int dim = 0; dim < DIM; dim++)
   {
-    histogram_box->histogram[dim] = ctalloc(int, size);
+    histogram_box->histogram[dim] = talloc(int, size);
+    memset(histogram_box->histogram[dim], 0, size * sizeof(int));
   }
 
   return histogram_box;
@@ -326,7 +328,9 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim, DoubleTags
           }
         });
       }
-
+#ifdef HAVE_CUDA
+      CUDA_ERR(cudaMemPrefetchAsync(&tag_count, sizeof(int), cudaCpuDeviceId, 0));
+#endif
       HistogramBoxAddTags(histogram_box, dim, ic_sb, tag_count);
     }
   }

@@ -158,6 +158,10 @@
 /*--------------------------------------------------------------------------
  * Define CUDA macros to do nothing if no GPU acceleration
  *--------------------------------------------------------------------------*/
+//NVTC Ranges
+#define PUSH_RANGE(name,cid)
+#define POP_RANGE
+
 #ifndef __CUDACC__
 #define __host__
 #define __device__

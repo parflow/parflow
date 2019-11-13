@@ -141,10 +141,15 @@ int main(int argc, char *argv [])
     *-----------------------------------------------------------------------*/
     {
       // CUDA
-      int num_devices = 0;
-      CUDA_ERR(cudaGetDeviceCount(&num_devices));
-      CUDA_ERR(cudaSetDevice(amps_node_rank % num_devices));
-
+      if (!amps_Rank(amps_CommWorld))
+      {
+        CUDA_ERR(cudaSetDevice(0));  
+      }else{
+        int num_devices = 0;
+        CUDA_ERR(cudaGetDeviceCount(&num_devices));
+        CUDA_ERR(cudaSetDevice(amps_node_rank % num_devices));
+      }
+    
       int device;
       CUDA_ERR(cudaGetDevice(&device));
 

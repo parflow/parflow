@@ -179,7 +179,8 @@ VectorUpdateCommHandle  *InitVectorUpdate(
 #endif
   }
 
-  VectorUpdateCommHandle *vector_update_comm_handle = ctalloc(VectorUpdateCommHandle, 1);
+  VectorUpdateCommHandle *vector_update_comm_handle = talloc(VectorUpdateCommHandle, 1);
+  memset(vector_update_comm_handle, 0, sizeof(VectorUpdateCommHandle));
   vector_update_comm_handle->vector = vector;
   vector_update_comm_handle->comm_handle = amps_com_handle;
 
@@ -247,18 +248,21 @@ static Vector  *NewTempVector(
 
   (void)nc;
 
-  new_vector = ctalloc(Vector, 1);  /*address of storage is assigned to the ptr "new_" of type Vector, which is also
-                                     *                      the return value of this function */
+  new_vector = talloc(Vector, 1);        /* address of storage is assigned to the ptr "new_" of type Vector,
+                                          *   which is also the return value of this function                */
+  memset(new_vector, 0, sizeof(Vector));
 
-  (new_vector->subvectors) = ctalloc(Subvector *, GridNumSubgrids(grid));    /* 1st arg.: variable type;
-                                                                              *                                                               2nd arg.: # of elements to be allocated*/
+  (new_vector->subvectors) = talloc(Subvector *, GridNumSubgrids(grid));    /* 1st arg.: variable type;
+                                                                              * 2nd arg.: # of elements to be allocated*/
+  memset(new_vector->subvectors, 0, GridNumSubgrids(grid) * sizeof(Subvector *));
 
   data_size = 0;
 
   VectorDataSpace(new_vector) = NewSubgridArray();
   ForSubgridI(i, GridSubgrids(grid))
   {
-    new_sub = ctalloc(Subvector, 1);
+    new_sub = talloc(Subvector, 1);
+    memset(new_sub, 0, sizeof(Subvector));
 
     subgrid = GridSubgrid(grid, i);
 
