@@ -725,12 +725,27 @@ double PFVDotProd(
 
     i_x = 0;
     i_y = 0;
+
+#ifdef HAVE_CUDA
+    auto loop_function = GPU_LAMBDA(
+      const double * __restrict__  xp, 
+      const double * __restrict__  yp, 
+      const int i_x, const int i_y)
+    {
+      return xp[i_x] * yp[i_y];
+    };
+    DotLoopGPU(i, j, k, ix, iy, iz, nx, ny, nz,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_y, nx_y, ny_y, nz_y, 1, 1, 1,
+              xp, yp, result, loop_function);
+#else
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_y, nx_y, ny_y, nz_y, 1, 1, 1,
     {
       PlusEquals(result, xp[i_x] * yp[i_y]);
     });
+#endif
   }
 
   result_invoice = amps_NewInvoice("%d", &result);
@@ -921,6 +936,21 @@ double PFVWL2Norm(
 
     i_x = 0;
     i_w = 0;
+
+#ifdef HAVE_CUDA
+    auto loop_function = GPU_LAMBDA(
+      const double * __restrict__  xp, 
+      const double * __restrict__  wp, 
+      const int i_x, const int i_w)
+    {
+      double prod = xp[i_x] * wp[i_w];
+      return prod * prod;
+    };
+    DotLoopGPU(i, j, k, ix, iy, iz, nx, ny, nz,
+              i_x, nx_x, ny_x, nz_x, 1, 1, 1,
+              i_w, nx_w, ny_w, nz_w, 1, 1, 1,
+              xp, wp, result, loop_function);
+#else
     BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_w, nx_w, ny_w, nz_w, 1, 1, 1,
@@ -928,6 +958,7 @@ double PFVWL2Norm(
       double prod = xp[i_x] * wp[i_w];
       PlusEquals(result, prod * prod);
     });
+#endif
   }
 
   result_invoice = amps_NewInvoice("%d", &result);

@@ -41,6 +41,8 @@ extern "C"{
 #include "pfcudamalloc.h"
 #endif
 
+#include <string.h>
+
 /**
  * This implementation is derived from the SAMRAI Berger-Rigoutsos
  * implementation developed by LLNL.

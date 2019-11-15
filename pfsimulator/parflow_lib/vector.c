@@ -55,6 +55,7 @@ using namespace SAMRAI;
 #endif
 
 #include <stdlib.h>
+#include <string.h>
 
 static int samrai_vector_ids[5][2048];
 

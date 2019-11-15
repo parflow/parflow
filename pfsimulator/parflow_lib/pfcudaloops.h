@@ -8,6 +8,13 @@
 
 extern "C++"{
 /*--------------------------------------------------------------------------
+ * CUDA block size definitions
+ *--------------------------------------------------------------------------*/
+#define BLOCKSIZE_H 16
+#define BLOCKSIZE_V 4
+#define BLOCKSIZE_TOTAL BLOCKSIZE_H * BLOCKSIZE_H * BLOCKSIZE_V
+
+/*--------------------------------------------------------------------------
  * CUDA lambda definition (visible for host and device functions)
  *--------------------------------------------------------------------------*/
 #define GPU_LAMBDA [=] __host__ __device__
@@ -228,6 +235,37 @@ __global__ void BoxKernelI3(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
     loop_body(i, j, k, i1, i2, i3);    
 }
 
+template <typename LAMBDA_INIT1, typename LAMBDA_INIT2, typename LAMBDA_FUN, typename T>
+__global__ void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_FUN loop_fun, 
+    const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ rslt,  
+    const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
+{
+    __shared__ T temp[BLOCKSIZE_TOTAL];
+    const int tid_local = blockDim.y * blockDim.x * threadIdx.z + blockDim.x * threadIdx.y + threadIdx.x;
+    temp[tid_local] = (T)0;
+
+    int i = ((blockIdx.x*blockDim.x)+threadIdx.x);
+    if(i >= nx)return;
+    int j = ((blockIdx.y*blockDim.y)+threadIdx.y);
+    if(j >= ny)return;
+    int k = ((blockIdx.z*blockDim.z)+threadIdx.z);
+    if(k >= nz)return;
+
+    const int i1 = loop_init1(i, j, k);
+    const int i2 = loop_init2(i, j, k);
+
+    temp[tid_local] = loop_fun(a, b, i1, i2);
+
+    __syncthreads(); 
+    
+    if(threadIdx.z == 0 && threadIdx.y == 0 && threadIdx.x == 0) 
+    {
+      T sum = 0;
+      for( int i = 0; i < BLOCKSIZE_TOTAL; i++ ) sum += temp[i];
+      atomicAdd(rslt, sum);
+    }
+}
+
 /*--------------------------------------------------------------------------
  * CUDA loop macro redefinitions
  *--------------------------------------------------------------------------*/
@@ -241,8 +279,8 @@ __global__ void BoxKernelI3(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
   {                                                                                 \
     DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);     \
                                                                                     \
-    const int blocksize_h = 16;                                                     \
-    const int blocksize_v = 4;                                                      \
+    const int blocksize_h = BLOCKSIZE_H;                                            \
+    const int blocksize_v = BLOCKSIZE_V;                                            \
     dim3 grid = dim3(((nx - 1) + blocksize_h) / blocksize_h,                        \
         ((ny - 1) + blocksize_h) / blocksize_h,                                     \
         ((nz - 1) + blocksize_v) / blocksize_v);                                    \
@@ -277,8 +315,8 @@ __global__ void BoxKernelI3(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
     DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);     \
     DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2);     \
                                                                                     \
-    const int blocksize_h = 16;                                                     \
-    const int blocksize_v = 4;                                                      \
+    const int blocksize_h = BLOCKSIZE_H;                                            \
+    const int blocksize_v = BLOCKSIZE_V;                                            \
     dim3 grid = dim3(((nx - 1) + blocksize_h) / blocksize_h,                        \
         ((ny - 1) + blocksize_h) / blocksize_h,                                     \
         ((nz - 1) + blocksize_v) / blocksize_v);                                    \
@@ -321,8 +359,8 @@ __global__ void BoxKernelI3(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
     DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2);     \
     DeclareInc(PV_jinc_3, PV_kinc_3, nx, ny, nz, nx3, ny3, nz3, sx3, sy3, sz3);     \
                                                                                     \
-    const int blocksize_h = 16;                                                     \
-    const int blocksize_v = 4;                                                      \
+    const int blocksize_h = BLOCKSIZE_H;                                            \
+    const int blocksize_v = BLOCKSIZE_V;                                            \
     dim3 grid = dim3(((nx - 1) + blocksize_h) / blocksize_h,                        \
         ((ny - 1) + blocksize_h) / blocksize_h,                                     \
         ((nz - 1) + blocksize_v) / blocksize_v);                                    \
@@ -357,6 +395,45 @@ __global__ void BoxKernelI3(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
   }                                                                                 \
 }
 
+#undef DotLoopGPU
+#define DotLoopGPU(i_dummy, j_dummy, k_dummy,                                       \
+                  ix, iy, iz, nx, ny, nz,                                           \
+                  i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
+                  i2, nx2, ny2, nz2, sx2, sy2, sz2,                                 \
+                  xp, yp, rslt, lambda_fun)                                         \
+{                                                                                   \
+  if(nx > 0 && ny > 0 && nz > 0)                                                    \
+  {                                                                                 \
+    DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);     \
+    DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2);     \
+                                                                                    \
+    const int blocksize_h = BLOCKSIZE_H;                                            \
+    const int blocksize_v = BLOCKSIZE_V;                                            \
+    dim3 grid = dim3(((nx - 1) + blocksize_h) / blocksize_h,                        \
+        ((ny - 1) + blocksize_h) / blocksize_h,                                     \
+        ((nz - 1) + blocksize_v) / blocksize_v);                                    \
+    dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                       \
+                                                                                    \
+    auto lambda_init1 =                                                             \
+        GPU_LAMBDA(const int i, const int j, const int k)                           \
+        {                                                                           \
+            return k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                         \
+            + (k * ny * nx + j * nx + i) * sx1 + i1;                                \
+        };                                                                          \
+    auto lambda_init2 =                                                             \
+        GPU_LAMBDA(const int i, const int j, const int k)                           \
+        {                                                                           \
+            return k * PV_kinc_2 + (k * ny + j) * PV_jinc_2                         \
+            + (k * ny * nx + j * nx + i) * sx2 + i2;                                \
+        };                                                                          \
+                                                                                    \
+    DotKernelI2<<<grid, block>>>(lambda_init1, lambda_init2, lambda_fun,            \
+        xp, yp, &rslt, ix, iy, iz, nx, ny, nz);                                     \
+    CUDA_ERR( cudaPeekAtLastError() );                                              \
+    CUDA_ERR( cudaDeviceSynchronize() );                                            \
+  }                                                                                 \
+}
+
 #undef GrGeomInLoopBoxes
 #define GrGeomInLoopBoxes(i_dummy, j_dummy, k_dummy,                                \
                          grgeom, ix, iy, iz, nx, ny, nz, loop_body)                 \
@@ -379,8 +456,8 @@ __global__ void BoxKernelI3(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
       int PV_diff_y = PV_iyu - PV_iyl;                                              \
       int PV_diff_z = PV_izu - PV_izl;                                              \
                                                                                     \
-      const int blocksize_h = 16;                                                   \
-      const int blocksize_v = 4;                                                    \
+      const int blocksize_h = BLOCKSIZE_H;                                          \
+      const int blocksize_v = BLOCKSIZE_V;                                          \
       dim3 grid = dim3((PV_diff_x + blocksize_h) / blocksize_h,                     \
         (PV_diff_y + blocksize_h) / blocksize_h,                                    \
         (PV_diff_z + blocksize_v) / blocksize_v);                                   \
@@ -450,8 +527,8 @@ __global__ void BoxKernelI3(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
         int PV_diff_y = PV_iyu - PV_iyl;                                            \
         int PV_diff_z = PV_izu - PV_izl;                                            \
                                                                                     \
-        const int blocksize_h = 16;                                                 \
-        const int blocksize_v = 4;                                                  \
+        const int blocksize_h = BLOCKSIZE_H;                                        \
+        const int blocksize_v = BLOCKSIZE_V;                                        \
         dim3 grid = dim3((PV_diff_x + blocksize_h) / blocksize_h,                   \
           (PV_diff_y + blocksize_h) / blocksize_h,                                  \
           (PV_diff_z + blocksize_v) / blocksize_v);                                 \
@@ -533,8 +610,8 @@ __global__ void BoxKernelI3(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
         int PV_diff_y = PV_iyu - PV_iyl;                                            \
         int PV_diff_z = PV_izu - PV_izl;                                            \
                                                                                     \
-        const int blocksize_h = 16;                                                 \
-        const int blocksize_v = 4;                                                  \
+        const int blocksize_h = BLOCKSIZE_H;                                        \
+        const int blocksize_v = BLOCKSIZE_V;                                        \
         dim3 grid = dim3((PV_diff_x + blocksize_h) / blocksize_h,                   \
           (PV_diff_y + blocksize_h) / blocksize_h,                                  \
           (PV_diff_z + blocksize_v) / blocksize_v);                                 \
