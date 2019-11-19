@@ -1,3 +1,9 @@
-sut:
+version: '3.3'
+
+services:
+
+  sut:
     image: parflow/parflow:${CACHE_TAG}
     command: parflow-docker-test
+
+
