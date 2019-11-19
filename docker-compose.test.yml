@@ -1,0 +1,3 @@
+sut:
+    image: parflow/parflow:${CACHE_TAG}
+    command: wget git clone https://github.com/parflow/docker.git && cd docker && tclsh default_single.tcl 1 1 1
