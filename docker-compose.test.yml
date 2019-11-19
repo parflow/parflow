@@ -3,7 +3,7 @@ version: '3.3'
 services:
 
   sut:
-    image: parflow/parflow:${DOCKER_TAG}
+    image: parflow/parflow
     command: parflow-docker-test
 
 
