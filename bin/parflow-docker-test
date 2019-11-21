@@ -1,0 +1,7 @@
+git clone https://github.com/parflow/docker.git
+
+cd docker
+
+parflow -version
+
+tclsh default_single.tcl 1 1 1

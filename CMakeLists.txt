@@ -481,6 +481,8 @@ if ( ${PARFLOW_ENABLE_LATEX} )
 endif()
 
 install (DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION config)
+# Test script for docker builds
+install(PROGRAMS bin/parflow-docker-test DESTINATION bin)
 
 #-----------------------------------------------------------------------------
 # Doxygen 
