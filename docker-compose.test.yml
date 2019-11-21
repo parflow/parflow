@@ -1,0 +1,9 @@
+version: '3.3'
+
+services:
+
+  sut:
+    image: ${DOCKER_REPO}
+    command: parflow-docker-test
+
+
