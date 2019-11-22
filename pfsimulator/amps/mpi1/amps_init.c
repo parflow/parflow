@@ -123,11 +123,16 @@ int amps_Init(int *argc, char **argv[])
 
   MPI_Comm_size(MPI_COMM_WORLD, &amps_size);
   MPI_Comm_rank(MPI_COMM_WORLD, &amps_rank);
-
+  
+#if MPI_VERSION >= 3
+  MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &amps_CommNode);
+#else
   /*Split the node level communicator based on Adler32 hash keys*/
   MPI_Get_processor_name(processor_name, &namelen);
   uint32_t checkSum = Adler32(processor_name, namelen);
   MPI_Comm_split(MPI_COMM_WORLD, checkSum, amps_rank, &amps_CommNode);
+#endif
+  
   MPI_Comm_rank(amps_CommNode, &amps_node_rank);
   MPI_Comm_size(amps_CommNode, &amps_node_size);
   int color;
