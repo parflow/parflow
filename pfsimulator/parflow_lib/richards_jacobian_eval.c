@@ -343,6 +343,16 @@ void    RichardsJacobianEval(
             public_xtra->type = overland_flow;
           }
           break;
+          case 10:
+          {
+            public_xtra->type = overland_flow;
+          }
+          break;
+          case 11:
+          {
+            public_xtra->type = overland_flow;
+          }
+          break;
         }
       }
     }
@@ -1397,7 +1407,6 @@ void    RichardsJacobianEval(
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
             im = SubmatrixEltIndex(J_sub, i, j, k);
-            public_xtra->type = overland_flow;
             //remove contributions to this row corresponding to boundary
             if (fdir[0] == -1)
               op = wp;
@@ -1440,7 +1449,6 @@ void    RichardsJacobianEval(
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
             im = SubmatrixEltIndex(J_sub, i, j, k);
-            public_xtra->type = overland_flow;
 
             //remove contributions to this row corresponding to boundary
             if (fdir[0] == -1)
@@ -2167,7 +2175,7 @@ PFModule   *RichardsJacobianEvalNewPublicXtra(char *name)
 
   ///* parameters for upwinding formulation for TFG */
   upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");
-  sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation", name);
+  sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation");
   switch_name = GetStringDefault(key, "Original");
   switch_value = NA_NameToIndex(upwind_switch_na, switch_name);
   switch (switch_value)

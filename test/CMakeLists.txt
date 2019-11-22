@@ -37,7 +37,8 @@ if(${PARFLOW_HAVE_HYPRE})
     overland_FlatICP.tcl
     richards_FBx.tcl
     richards_FBy.tcl
-    richards_box_proctest.tcl)
+    richards_box_proctest.tcl
+    richards_box_proctest.vardz.tcl)
 endif()
 
 if(${PARFLOW_HAVE_SILO})
@@ -90,7 +91,9 @@ if(${PARFLOW_AMPS_LAYER} STREQUAL "mpi1")
       water_balance_x.hardflow.nojac.tcl
       water_balance_x.hardflow.jac.tcl
       LW_var_dz.tcl
-      LW_var_dz_spinup.tcl)
+      LW_var_dz_spinup.tcl
+      overland_slopingslab_KWE.tcl
+      richards_box_proctest.vardz.tcl)
   endif()
 
 endif()
