@@ -40,7 +40,7 @@ static inline void tfreeCUDA(void *ptr)
 }
 
 /*--------------------------------------------------------------------------
- * Redefine allocation macros for CUDA
+ * Redefine macros for CUDA
  *--------------------------------------------------------------------------*/
 
 // Redefine amps.h definitions
@@ -66,6 +66,21 @@ static inline void tfreeCUDA(void *ptr)
 
 #undef tfree
 #define tfree(ptr) if (ptr) tfreeCUDA(ptr); else {}
+
+#undef MemPrefetchDeviceToHost
+#define MemPrefetchDeviceToHost(ptr, size, stream)                   \
+{                                                                    \
+  CUDA_ERR(cudaMemPrefetchAsync(ptr, size, cudaCpuDeviceId, stream));\
+  CUDA_ERR(cudaStreamSynchronize(stream));                           \
+}
+
+#undef MemPrefetchHostToDevice
+#define MemPrefetchHostToDevice(ptr, size, stream)                   \
+{                                                                    \
+  int device;                                                        \
+  CUDA_ERR(cudaGetDevice(&device));                                  \
+  CUDA_ERR(cudaMemPrefetchAsync(ptr, size, device, stream))          \
+}
 
 /*--------------------------------------------------------------------------
  * Structures needed across CUDA compilation units

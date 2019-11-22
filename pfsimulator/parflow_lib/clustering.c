@@ -330,9 +330,7 @@ void ReduceTags(HistogramBox *histogram_box, Vector *vector, int dim, DoubleTags
           }
         });
       }
-#ifdef HAVE_CUDA
-      CUDA_ERR(cudaMemPrefetchAsync(&tag_count, sizeof(int), cudaCpuDeviceId, 0));
-#endif
+      MemPrefetchDeviceToHost(&tag_count, sizeof(int), 0);
       HistogramBoxAddTags(histogram_box, dim, ic_sb, tag_count);
     }
   }

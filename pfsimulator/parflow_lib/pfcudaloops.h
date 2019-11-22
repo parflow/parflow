@@ -2,11 +2,15 @@
 #define PFCUDALOOPS_H
 
 /*--------------------------------------------------------------------------
- * Include CUDA error handling header
+ * Include CUDA headers
  *--------------------------------------------------------------------------*/
+
 #include "pfcudaerr.h"
 
 extern "C++"{
+
+#include "cub.cuh"
+
 /*--------------------------------------------------------------------------
  * CUDA block size definitions
  *--------------------------------------------------------------------------*/
@@ -240,29 +244,36 @@ __global__ void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
     const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ rslt,  
     const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
-    __shared__ T temp[BLOCKSIZE_TOTAL];
-    const int tid_local = blockDim.y * blockDim.x * threadIdx.z + blockDim.x * threadIdx.y + threadIdx.x;
-    temp[tid_local] = (T)0;
+    // Specialize BlockReduce for a 3D block of BLOCKSIZE_H * BLOCKSIZE_H * BLOCKSIZE_V threads on type T
+#ifdef __CUDA_ARCH__
+    typedef cub::BlockReduce<T, BLOCKSIZE_H, cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY, BLOCKSIZE_H, BLOCKSIZE_V, __CUDA_ARCH__> BlockReduce;
+#else
+    typedef cub::BlockReduce<T, BLOCKSIZE_H, cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY, BLOCKSIZE_H, BLOCKSIZE_V> BlockReduce;
+#endif
 
-    int i = ((blockIdx.x*blockDim.x)+threadIdx.x);
-    if(i >= nx)return;
-    int j = ((blockIdx.y*blockDim.y)+threadIdx.y);
-    if(j >= ny)return;
-    int k = ((blockIdx.z*blockDim.z)+threadIdx.z);
-    if(k >= nz)return;
+    __shared__ typename BlockReduce::TempStorage temp_storage;
 
-    const int i1 = loop_init1(i, j, k);
-    const int i2 = loop_init2(i, j, k);
+    const int i = ((blockIdx.x*blockDim.x)+threadIdx.x);
+    const int j = ((blockIdx.y*blockDim.y)+threadIdx.y);
+    const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);
 
-    temp[tid_local] = loop_fun(a, b, i1, i2);
+    T thread_data = {0};
+    if ( i < nx && j < ny && k < nz )
+    {
 
-    __syncthreads(); 
-    
+        const int i1 = loop_init1(i, j, k);
+        const int i2 = loop_init2(i, j, k);
+
+        thread_data = loop_fun(a, b, i1, i2);
+    }
+
+    // Compute the block-wide sum for thread0
+    const T aggregate = BlockReduce(temp_storage).Sum(thread_data);
+
+    // Store aggregate
     if(threadIdx.z == 0 && threadIdx.y == 0 && threadIdx.x == 0) 
     {
-      T sum = 0;
-      for( int i = 0; i < BLOCKSIZE_TOTAL; i++ ) sum += temp[i];
-      atomicAdd(rslt, sum);
+      atomicAdd(rslt, aggregate);
     }
 }
 
@@ -298,8 +309,8 @@ __global__ void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
                                                                                     \
     BoxKernelI1<<<grid, block>>>(                                                   \
         lambda_init, lambda_body, ix, iy, iz, nx, ny, nz);                          \
-    CUDA_ERR( cudaPeekAtLastError() );                                              \
-    CUDA_ERR( cudaDeviceSynchronize() );                                            \
+    CUDA_ERR(cudaPeekAtLastError());                                                \
+    CUDA_ERR(cudaStreamSynchronize(0));                                             \
   }                                                                                 \
 }
 
@@ -340,8 +351,8 @@ __global__ void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
                                                                                     \
     BoxKernelI2<<<grid, block>>>(                                                   \
         lambda_init1, lambda_init2, lambda_body, ix, iy, iz, nx, ny, nz);           \
-    CUDA_ERR( cudaPeekAtLastError() );                                              \
-    CUDA_ERR( cudaDeviceSynchronize() );                                            \
+    CUDA_ERR(cudaPeekAtLastError());                                                \
+    CUDA_ERR(cudaStreamSynchronize(0));                                             \
   }                                                                                 \
 }
 
@@ -390,8 +401,8 @@ __global__ void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
                                                                                     \
     BoxKernelI3<<<grid, block>>>(lambda_init1, lambda_init2, lambda_init3,          \
         lambda_body, ix, iy, iz, nx, ny, nz);                                       \
-    CUDA_ERR( cudaPeekAtLastError() );                                              \
-    CUDA_ERR( cudaDeviceSynchronize() );                                            \
+    CUDA_ERR(cudaPeekAtLastError());                                                \
+    CUDA_ERR(cudaStreamSynchronize(0));                                             \
   }                                                                                 \
 }
 
@@ -429,8 +440,8 @@ __global__ void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
                                                                                     \
     DotKernelI2<<<grid, block>>>(lambda_init1, lambda_init2, lambda_fun,            \
         xp, yp, &rslt, ix, iy, iz, nx, ny, nz);                                     \
-    CUDA_ERR( cudaPeekAtLastError() );                                              \
-    CUDA_ERR( cudaDeviceSynchronize() );                                            \
+    CUDA_ERR(cudaPeekAtLastError());                                                \
+    CUDA_ERR(cudaStreamSynchronize(0));                                             \
   }                                                                                 \
 }
 
@@ -470,8 +481,8 @@ __global__ void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
       BoxKernelI0<<<grid, block>>>(                                                 \
           GPU_LAMBDA(const int i, const int j, const int k)loop_body,               \
           PV_ixl, PV_iyl, PV_izl, nx, ny, nz);                                      \
-      CUDA_ERR( cudaPeekAtLastError() );                                            \
-      CUDA_ERR( cudaDeviceSynchronize() );                                          \
+      CUDA_ERR(cudaPeekAtLastError());                                              \
+      CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \
   }                                                                                 \
 }
@@ -551,8 +562,8 @@ __global__ void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
                                                                                     \
         BoxKernelI0<<<grid, block>>>(lambda_body,                                   \
             PV_ixl, PV_iyl, PV_izl, nx, ny, nz);                                    \
-        CUDA_ERR( cudaPeekAtLastError() );                                          \
-        CUDA_ERR( cudaDeviceSynchronize() );                                        \
+        CUDA_ERR(cudaPeekAtLastError());                                            \
+        CUDA_ERR(cudaStreamSynchronize(0));                                         \
       }                                                                             \
     }                                                                               \
   }                                                                                 \
@@ -641,11 +652,69 @@ __global__ void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
                                                                                     \
         BoxKernelI1<<<grid, block>>>(                                               \
             lambda_init, lambda_body, PV_ixl, PV_iyl, PV_izl, nx, ny, nz);          \
-        CUDA_ERR( cudaPeekAtLastError() );                                          \
-        CUDA_ERR( cudaDeviceSynchronize() );                                        \
+        CUDA_ERR(cudaPeekAtLastError());                                            \
+        CUDA_ERR(cudaStreamSynchronize(0));                                         \
       }                                                                             \
     }                                                                               \
   }                                                                                 \
+}
+
+#undef GrGeomOctreeExteriorNodeLoop
+#define GrGeomOctreeExteriorNodeLoop(i, j, k, node, octree, level,                  \
+                                     ix, iy, iz, nx, ny, nz, val_test, loop_body)   \
+{                                                                                   \
+  int PV_i, PV_j, PV_k, PV_l;                                                       \
+  int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;                               \
+                                                                                    \
+  PV_i = i;                                                                         \
+  PV_j = j;                                                                         \
+  PV_k = k;                                                                         \
+                                                                                    \
+  GrGeomOctreeExteriorLoop(PV_i, PV_j, PV_k, PV_l, node, octree, level, val_test,   \
+  {                                                                                 \
+    if ((PV_i >= ix) && (PV_i < (ix + nx)) &&                                       \
+        (PV_j >= iy) && (PV_j < (iy + ny)) &&                                       \
+        (PV_k >= iz) && (PV_k < (iz + nz)))                                         \
+    {                                                                               \
+      i = PV_i;                                                                     \
+      j = PV_j;                                                                     \
+      k = PV_k;                                                                     \
+      loop_body;                                                                    \
+    }                                                                               \
+  },                                                                                \
+  {                                                                                 \
+    /* find octree and region intersection */                                       \
+    PV_ixl = pfmax(ix, PV_i);                                                       \
+    PV_iyl = pfmax(iy, PV_j);                                                       \
+    PV_izl = pfmax(iz, PV_k);                                                       \
+    PV_ixu = pfmin((ix + nx), (PV_i + (int)PV_inc));                                \
+    PV_iyu = pfmin((iy + ny), (PV_j + (int)PV_inc));                                \
+    PV_izu = pfmin((iz + nz), (PV_k + (int)PV_inc));                                \
+                                                                                    \
+    if(PV_ixl < PV_ixu && PV_iyl < PV_iyu && PV_izl < PV_izu)                       \
+    {                                                                               \
+      const int PV_diff_x = PV_ixu - PV_ixl;                                        \
+      const int PV_diff_y = PV_iyu - PV_iyl;                                        \
+      const int PV_diff_z = PV_izu - PV_izl;                                        \
+                                                                                    \
+      const int blocksize_h = BLOCKSIZE_H;                                          \
+      const int blocksize_v = BLOCKSIZE_V;                                          \
+      dim3 grid = dim3(((PV_diff_x - 1) + blocksize_h) / blocksize_h,               \
+        ((PV_diff_y - 1) + blocksize_h) / blocksize_h,                              \
+        ((PV_diff_z - 1) + blocksize_v) / blocksize_v);                             \
+      dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                     \
+                                                                                    \
+      auto lambda_body = GPU_LAMBDA(const int i, const int j, const int k)loop_body;\
+                                                                                    \
+      (BoxKernelI0<<<grid, block>>>(lambda_body,                                    \
+          PV_ixl, PV_iyl, PV_izl, PV_diff_x, PV_diff_y, PV_diff_z));                \
+      CUDA_ERR(cudaPeekAtLastError());                                              \
+      CUDA_ERR(cudaStreamSynchronize(0));                                           \
+    }                                                                               \
+    i = PV_ixu;                                                                     \
+    j = PV_iyu;                                                                     \
+    k = PV_izu;                                                                     \
+  })                                                                                \
 }
 
 }
