@@ -8,14 +8,14 @@ namespace import Parflow::*
 pfset FileVersion 4
 
 
-pfset Process.Topology.P 1
+pfset Process.Topology.P 2
 pfset Process.Topology.Q 1
 pfset Process.Topology.R 1
 
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
-set n 200
+set n 50
 pfset ComputationalGrid.Lower.X           0.0
 pfset ComputationalGrid.Lower.Y           0.0
 pfset ComputationalGrid.Lower.Z           0.0

@@ -102,7 +102,7 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 
 # Set AMPS communication layer
 set(PARFLOW_AMPS_LAYER "seq" CACHE STRING "Set the Communications layer to use")
-set_property(CACHE PARFLOW_AMPS_LAYER PROPERTY STRINGS seq mpi1 smpi oas3 win32)
+set_property(CACHE PARFLOW_AMPS_LAYER PROPERTY STRINGS seq mpi1 cuda smpi oas3 win32)
 set(AMPS ${PARFLOW_AMPS_LAYER})
 
 option(PARFLOW_AMPS_SEQUENTIAL_IO "Use AMPS single file I/O model for output of PFB files" "FALSE")
@@ -122,7 +122,7 @@ if (${PARFLOW_HAVE_OAS3})
   set (HAVE_OAS3 ${PARFLOW_HAVE_OAS3})
 endif (${PARFLOW_HAVE_OAS3})
 
-set (PARFLOW_AMPS_LAYER_REQUIRE_MPI mpi1 smpi oas3)
+set (PARFLOW_AMPS_LAYER_REQUIRE_MPI mpi1 cuda smpi oas3)
 
 # Check for MPI only if AMPS requires it
 if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )

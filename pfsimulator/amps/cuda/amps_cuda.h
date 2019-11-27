@@ -1,0 +1,109 @@
+#ifndef AMPS_CUDA_H
+#define AMPS_CUDA_H
+
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <string.h>
+#include <stdbool.h>
+#include <rmm/rmm_api.h>
+
+#define CUDA_ERR( err ) (gpuError( err, __FILE__, __LINE__ ))
+static inline void gpuError(cudaError_t err, const char *file, int line) {
+	if (err != cudaSuccess) {
+		printf("\n\n%s in %s at line %d\n", cudaGetErrorString(err), file, line);
+		exit(1);
+	}
+}
+
+#define CUDA_ERR_ARG( err, arg1, arg2, arg3 ) (gpuErrorArg( err, __FILE__, __LINE__, arg1, arg2, arg3 ))
+static inline void gpuErrorArg(cudaError_t err, const char *file, int line, int arg1, int arg2, int arg3) {
+	if (err != cudaSuccess) {
+		printf("\n\n%s in %s at line %d; arg1: %d, arg2: %d, arg3: %d\n", cudaGetErrorString(err), file, line, arg1, arg2, arg3);
+		exit(1);
+	}
+}
+
+#define RMM_ERR( err ) (rmmError( err, __FILE__, __LINE__ ))
+static inline void rmmError(rmmError_t err, const char *file, int line) {
+	if (err != RMM_SUCCESS) {
+		printf("\n\n%s in %s at line %d\n", rmmGetErrorString(err), file, line);
+		exit(1);
+	}
+}
+
+/*--------------------------------------------------------------------------
+ * Define amps GPU kernels
+ *--------------------------------------------------------------------------*/
+
+#ifdef __CUDACC__
+
+extern "C++"{
+template <typename T>
+__global__ void StridedCopyKernel(T * __restrict__ dest, const int stride_dest, 
+                                  T * __restrict__ src, const int stride_src, const int len) 
+{
+    const int tid = ((blockIdx.x*blockDim.x)+threadIdx.x);
+    
+    if(tid < len)
+    { 
+      const int idx_dest = tid * stride_dest;
+      const int idx_src = tid * stride_src;
+
+      dest[idx_dest] = src[idx_src];
+    }
+}
+}
+#endif
+
+/*--------------------------------------------------------------------------
+ * Define unified memory allocation routines for CUDA
+ *--------------------------------------------------------------------------*/
+
+static inline void *tallocCUDA(size_t size)
+{
+   void *ptr = NULL;
+
+   RMM_ERR(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
+  //  CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
+  //  CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
+
+   return ptr;
+}
+
+static inline void *ctallocCUDA(size_t size)
+{
+   void *ptr = NULL;
+
+   RMM_ERR(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
+  //  CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
+  //  CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
+   
+  //  memset(ptr, 0, size);
+   CUDA_ERR(cudaMemset(ptr, 0, size));
+
+   return ptr;
+}
+static inline void tfreeCUDA(void *ptr)
+{
+   RMM_ERR(rmmFree(ptr,0,__FILE__,__LINE__));
+  //  CUDA_ERR(cudaFree(ptr));
+  //  CUDA_ERR(cudaFreeHost(ptr));
+}
+
+/*--------------------------------------------------------------------------
+ * Define allocation macros for CUDA
+ *--------------------------------------------------------------------------*/
+
+// Redefine general.h definitions
+#undef talloc
+#define talloc(type, count) \
+  ((count) ? (type*)tallocCUDA(sizeof(type) * (unsigned int)(count)) : NULL)
+
+#undef ctalloc
+#define ctalloc(type, count) \
+  ((count) ? (type*)ctallocCUDA(sizeof(type) * (unsigned int)(count)) : NULL)
+
+#undef tfree
+#define tfree(ptr) if (ptr) tfreeCUDA(ptr); else {}
+
+#endif // AMPS_CUDA_H
