@@ -41,15 +41,16 @@
  *--------------------------------------------------------------------------*/
 #define SolverSetupTimingIndex 0
 #define SolverTimingIndex 1
-#define SolverCleanupTimingIndex 2
-#define MatvecTimingIndex  3
-#define PFSBTimingIndex  4
-#define PFBTimingIndex  5
-#define CLMTimingIndex  6
-#define PFSOLReadTimingIndex  7
-#define ClusteringTimingIndex 8
+#define RichardsExclude1stTimeStepIndex 2
+#define SolverCleanupTimingIndex 3
+#define MatvecTimingIndex  4
+#define PFSBTimingIndex  5
+#define PFBTimingIndex  6
+#define CLMTimingIndex  7
+#define PFSOLReadTimingIndex  8
+#define ClusteringTimingIndex 9
 #ifdef VECTOR_UPDATE_TIMING
-#define VectorUpdateTimingIndex  9
+#define VectorUpdateTimingIndex  10
 #endif
 
 

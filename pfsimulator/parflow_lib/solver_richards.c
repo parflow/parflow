@@ -1610,6 +1610,8 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   Stepcount = 0;
   Loopcount = 0;
 
+  int first_tstep = 1;
+
   sprintf(file_prefix, "%s", GlobalsOutFileName);
 
   //CPS oasis definition phase
@@ -1683,8 +1685,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
   {
     take_more_time_steps = 1;
   }
-
-
 
 #ifdef HAVE_CLM
   istep = public_xtra->clm_istep_start; // IMF: initialize time counter for CLM
@@ -3682,8 +3682,15 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       }
     }
 #endif
+    if(first_tstep)
+    {
+      BeginTiming(RichardsExclude1stTimeStepIndex);
+      first_tstep = 0;
+    }
   }                             /* ends do for time loop */
   while (take_more_time_steps);
+
+  EndTiming(RichardsExclude1stTimeStepIndex);
 
   /***************************************************************/
   /*                 Print the pressure and saturation           */

@@ -8,20 +8,21 @@ namespace import Parflow::*
 pfset FileVersion 4
 
 
-pfset Process.Topology.P 2
+pfset Process.Topology.P 1
 pfset Process.Topology.Q 1
 pfset Process.Topology.R 1
 
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
-set n 50
+set nn 100
+set mm 100
 pfset ComputationalGrid.Lower.X           0.0
 pfset ComputationalGrid.Lower.Y           0.0
 pfset ComputationalGrid.Lower.Z           0.0
 
-pfset ComputationalGrid.NX            [expr [pfget Process.Topology.P] * $n] 
-pfset ComputationalGrid.NY            [expr [pfget Process.Topology.Q] * $n] 
+pfset ComputationalGrid.NX            [expr [pfget Process.Topology.P] * $nn] 
+pfset ComputationalGrid.NY            [expr [pfget Process.Topology.Q] * $mm] 
 pfset ComputationalGrid.NZ            240
 
 pfset ComputationalGrid.DX	         1.0
