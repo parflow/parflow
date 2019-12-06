@@ -155,7 +155,7 @@ __host__ __device__ __forceinline__ static void AtomicAdd(T *array_loc, T value)
  * CUDA loop kernels
  *--------------------------------------------------------------------------*/
 template <typename LAMBDA_BODY>
-__global__ void BoxKernelI0(LAMBDA_BODY loop_body, 
+__global__ static void BoxKernelI0(LAMBDA_BODY loop_body, 
     const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -174,7 +174,7 @@ __global__ void BoxKernelI0(LAMBDA_BODY loop_body,
 }
 
 template <typename LAMBDA_INIT, typename LAMBDA_BODY>
-__global__ void BoxKernelI1(LAMBDA_INIT loop_init, LAMBDA_BODY loop_body, 
+__global__ static void BoxKernelI1(LAMBDA_INIT loop_init, LAMBDA_BODY loop_body, 
     const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -195,7 +195,7 @@ __global__ void BoxKernelI1(LAMBDA_INIT loop_init, LAMBDA_BODY loop_body,
 }
 
 template <typename LAMBDA_INIT1, typename LAMBDA_INIT2, typename LAMBDA_BODY>
-__global__ void BoxKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_BODY loop_body, 
+__global__ static void BoxKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_BODY loop_body, 
     const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -217,7 +217,7 @@ __global__ void BoxKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
 }
 
 template <typename LAMBDA_INIT1, typename LAMBDA_INIT2, typename LAMBDA_INIT3, typename LAMBDA_BODY>
-__global__ void BoxKernelI3(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_INIT3 loop_init3, 
+__global__ static void BoxKernelI3(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_INIT3 loop_init3, 
     LAMBDA_BODY loop_body, const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -240,7 +240,7 @@ __global__ void BoxKernelI3(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LA
 }
 
 template <typename LAMBDA_INIT1, typename LAMBDA_INIT2, typename LAMBDA_FUN, typename T>
-__global__ void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_FUN loop_fun, 
+__global__ static void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_FUN loop_fun, 
     const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ rslt,  
     const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {

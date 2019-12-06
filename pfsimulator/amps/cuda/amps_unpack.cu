@@ -368,187 +368,93 @@ int amps_unpack_mpi1(
   return 0;
 }
 
+static void amps_unpack_check_cases(amps_Comm comm, int type, char **data, char **buf_ptr, int dim, int *len, int *stride)
+{
+  int i;
+
+  if (dim == 0)
+  {
+    switch (type)
+    {
+
+      case AMPS_INVOICE_DOUBLE_CTYPE:
+        //This case is supported
+        break;
+
+      default:
+        printf("ERROR at %s:%d: Only \"AMPS_INVOICE_DOUBLE_CTYPE\" is supported.", __FILE__, __LINE__);
+        exit(1);
+    }
+  }
+  else
+  {
+    for (i = 0; i < len[dim]; i++)
+    {
+      amps_unpack_check_cases(comm, type, data, buf_ptr, dim - 1, len, stride);
+    }
+  }
+}
+
 int amps_unpack(amps_Comm comm, amps_Invoice inv, char *buffer)
 {
   amps_InvoiceEntry *ptr;
-  char *cur_pos;
-  int len, stride;
-  int malloced = FALSE;
-  int size;
   char *data;
   char *temp_pos;
+
   int dim;
+  int malloced = FALSE;
+  int size;
 
   /* we are unpacking so signal this operation */
 
   inv->flags &= ~AMPS_PACKED;
 
+  int counter = 0;
+  const int num_streams = 10;
+  cudaStream_t stream[num_streams];
+
   /* for each entry in the invoice pack that entry into the letter         */
   ptr = inv->list;
-  cur_pos = buffer;
+
   while (ptr != NULL)
   {
-    /* invoke the packing convert out for the entry */
-    /* if user then call user ones */
-    /* else switch on builtin type */
-    if (ptr->len_type == AMPS_INVOICE_POINTER)
-      len = *(ptr->ptr_len);
-    else
-      len = ptr->len;
-
-    if (ptr->stride_type == AMPS_INVOICE_POINTER)
-      stride = *(ptr->ptr_stride);
-    else
-      stride = ptr->stride;
+    cudaStreamCreate(&(stream[counter % 10]));
 
     switch (ptr->type)
     {
       case AMPS_INVOICE_CHAR_CTYPE:
-        cur_pos += AMPS_CALL_CHAR_ALIGN(comm, NULL, cur_pos, len, stride);
-        if (!ptr->ignore)
-        {
-          if (ptr->data_type == AMPS_INVOICE_POINTER)
-          {
-            if (stride == 1 && AMPS_CHAR_OVERLAY(comm))
-              *((void**)(ptr->data)) = cur_pos;
-            else
-              // *((void**)(ptr->data)) = malloc(sizeof(char) * len * stride);
-              *((void**)(ptr->data)) = talloc(char, len * stride); 
-
-            malloced = TRUE;
-            AMPS_CALL_CHAR_IN(comm, cur_pos, *((void**)(ptr->data)),
-                              len, stride);
-          }
-          else
-            AMPS_CALL_CHAR_IN(comm, cur_pos, ptr->data, len, stride);
-        }
-        cur_pos += AMPS_CALL_CHAR_SIZEOF(comm, cur_pos, NULL, len, stride);
+        printf("ERROR at %s:%d: This case is not supported.", __FILE__, __LINE__);
+        exit(1);
         break;
 
       case AMPS_INVOICE_SHORT_CTYPE:
-        cur_pos += AMPS_CALL_SHORT_ALIGN(comm, NULL, cur_pos, len, stride);
-        if (!ptr->ignore)
-        {
-          if (ptr->data_type == AMPS_INVOICE_POINTER)
-          {
-            if (stride == 1 && AMPS_SHORT_OVERLAY(comm))
-              *((void**)(ptr->data)) = cur_pos;
-            else
-              // *((void**)(ptr->data)) = malloc(sizeof(short) * len * stride);
-              *((void**)(ptr->data)) = talloc(short, len * stride); 
-
-            malloced = TRUE;
-            AMPS_CALL_SHORT_IN(comm, cur_pos, *((void**)(ptr->data)),
-                               len, stride);
-          }
-          else
-            AMPS_CALL_SHORT_IN(comm, cur_pos, ptr->data, len, stride);
-        }
-        cur_pos += AMPS_CALL_SHORT_SIZEOF(comm, cur_pos, NULL, len, stride);
+        printf("ERROR at %s:%d: This case is not supported.", __FILE__, __LINE__);
+        exit(1);
         break;
 
       case AMPS_INVOICE_INT_CTYPE:
-        cur_pos += AMPS_CALL_INT_ALIGN(comm, NULL, cur_pos, len, stride);
-        if (!ptr->ignore)
-        {
-          if (ptr->data_type == AMPS_INVOICE_POINTER)
-          {
-            if (stride == 1 && AMPS_INT_OVERLAY(comm))
-              *((void**)(ptr->data)) = cur_pos;
-            else
-              // *((void**)(ptr->data)) = malloc(sizeof(int) * len * stride);
-              *((void**)(ptr->data)) = talloc(int, len * stride); 
-
-            malloced = TRUE;
-            AMPS_CALL_INT_IN(comm, cur_pos, *((void**)(ptr->data)),
-                             len, stride);
-          }
-          else
-            AMPS_CALL_INT_IN(comm, cur_pos, ptr->data, len, stride);
-        }
-        cur_pos += AMPS_CALL_INT_SIZEOF(comm, cur_pos, NULL, len, stride);
+        printf("ERROR at %s:%d: This case is not supported.", __FILE__, __LINE__);
+        exit(1);
         break;
 
       case AMPS_INVOICE_LONG_CTYPE:
-        cur_pos += AMPS_CALL_LONG_ALIGN(comm, NULL, cur_pos, len, stride);
-        if (!ptr->ignore)
-        {
-          if (ptr->data_type == AMPS_INVOICE_POINTER)
-          {
-            if (stride == 1 && AMPS_LONG_OVERLAY(comm))
-              *((void**)(ptr->data)) = cur_pos;
-            else
-              // *((void**)(ptr->data)) = malloc(sizeof(long) * len * stride);
-              *((void**)(ptr->data)) = talloc(long, len * stride); 
-
-            malloced = TRUE;
-            AMPS_CALL_LONG_IN(comm, cur_pos, *((void**)(ptr->data)),
-                              len, stride);
-          }
-          else
-            AMPS_CALL_LONG_IN(comm, cur_pos, ptr->data, len, stride);
-        }
-        cur_pos += AMPS_CALL_LONG_SIZEOF(comm, cur_pos, NULL, len, stride);
+        printf("ERROR at %s:%d: This case is not supported.", __FILE__, __LINE__);
+        exit(1);
         break;
 
       case AMPS_INVOICE_FLOAT_CTYPE:
-        cur_pos += AMPS_CALL_FLOAT_ALIGN(comm, NULL, cur_pos, len, stride);
-        if (!ptr->ignore)
-        {
-          if (ptr->data_type == AMPS_INVOICE_POINTER)
-          {
-            if (stride == 1 && AMPS_FLOAT_OVERLAY(comm))
-              *((void**)(ptr->data)) = cur_pos;
-            else
-              // *((void**)(ptr->data)) = malloc(sizeof(float) * len * stride);
-              *((void**)(ptr->data)) = talloc(float, len * stride); 
-
-            malloced = TRUE;
-
-            AMPS_CALL_FLOAT_IN(comm, cur_pos, *((void**)(ptr->data)),
-                               len, stride);
-          }
-          else
-            AMPS_CALL_FLOAT_IN(comm, cur_pos, ptr->data, len, stride);
-        }
-        cur_pos += AMPS_CALL_FLOAT_SIZEOF(comm, cur_pos, NULL, len, stride);
+        printf("ERROR at %s:%d: This case is not supported.", __FILE__, __LINE__);
+        exit(1);
         break;
 
       case AMPS_INVOICE_DOUBLE_CTYPE:
-        cur_pos += AMPS_CALL_DOUBLE_ALIGN(comm, NULL, cur_pos, len, stride);
-        if (!ptr->ignore)
-        {
-          if (ptr->data_type == AMPS_INVOICE_POINTER)
-          {
-            if (stride == 1 && AMPS_DOUBLE_OVERLAY(comm))
-              *((void**)(ptr->data)) = cur_pos;
-            else
-              // *((void**)(ptr->data)) = malloc(sizeof(double) * len * stride);
-              *((void**)(ptr->data)) = talloc(double, len * stride); 
-
-            malloced = TRUE;
-
-            AMPS_CALL_DOUBLE_IN(comm, cur_pos, *((void**)(ptr->data)),
-                                len, stride);
-          }
-          else
-            AMPS_CALL_DOUBLE_IN(comm, cur_pos, ptr->data, len, stride);
-        }
-        cur_pos += AMPS_CALL_DOUBLE_SIZEOF(comm, cur_pos, NULL, len, stride);
+        printf("ERROR at %s:%d: This case is not supported.", __FILE__, __LINE__);
+        exit(1);
         break;
 
       default:
         dim = (ptr->dim_type == AMPS_INVOICE_POINTER) ?
               *(ptr->ptr_dim) : ptr->dim;
-
-        cur_pos += amps_vector_align(comm,
-                                     ptr->type - AMPS_INVOICE_LAST_CTYPE,
-                                     NULL, &cur_pos, dim,
-                                     ptr->ptr_len, ptr->ptr_stride);
-        size = amps_vector_sizeof_local(comm,
-                                        ptr->type - AMPS_INVOICE_LAST_CTYPE,
-                                        NULL, &temp_pos, dim,
-                                        ptr->ptr_len, ptr->ptr_stride);
 
         if (ptr->data_type == AMPS_INVOICE_POINTER)
           // data = *(char**)(ptr->data) = (char*)malloc(size);
@@ -556,17 +462,59 @@ int amps_unpack(amps_Comm comm, amps_Invoice inv, char *buffer)
         else
           data = (char *)ptr->data;
 
-        temp_pos = cur_pos;
-        amps_vector_in(comm, ptr->type - AMPS_INVOICE_LAST_CTYPE,
+        amps_unpack_check_cases(comm, ptr->type - AMPS_INVOICE_LAST_CTYPE,
                        &data, &temp_pos, dim - 1, ptr->ptr_len,
                        ptr->ptr_stride);
-
-        cur_pos += amps_vector_sizeof_buffer(comm,
-                                             ptr->type - AMPS_INVOICE_LAST_CTYPE,
-                                             &data, &temp_pos, dim,
-                                             ptr->ptr_len, ptr->ptr_stride);
     }
+
+    // Preparations for the kernel launch
+    
+    int blocksize_x = 1;
+    int blocksize_y = 1;
+    int blocksize_z = 1;
+
+    int len_x = 1;
+    int len_y = 1;
+    int len_z = 1;
+
+    int stride_x = 0;
+    int stride_y = 0;
+    int stride_z = 0;
+
+    switch (dim)
+    {
+      case 3:
+        blocksize_z = 2;
+        len_z = ptr->ptr_len[2];
+        stride_z = ptr->ptr_stride[2];
+      case 2:
+        blocksize_y = 8;
+        len_y = ptr->ptr_len[1];
+        stride_y = ptr->ptr_stride[1];
+      case 1:
+        blocksize_x = 8;
+        len_x = ptr->ptr_len[0];
+        stride_x = ptr->ptr_stride[0];
+        break;
+      default:
+        printf("ERROR at %s:%d: Only dimensions 1 - 3 are supported.", __FILE__, __LINE__);
+        exit(1);
+    }
+    
+    dim3 grid = dim3(((len_x - 1) + blocksize_x) / blocksize_x, ((len_y - 1) + blocksize_y) / blocksize_y, ((len_z - 1) + blocksize_z) / blocksize_z);
+    dim3 block = dim3(blocksize_x, blocksize_y, blocksize_z);      
+    UnpackingKernel<<<grid, block, 0, stream[counter % 10]>>>((double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
+
+    buffer = (char*)((double*)buffer + len_x * len_y * len_z);
     ptr = ptr->next;
+    counter++;
+  }
+
+  CUDA_ERR(cudaPeekAtLastError());                                       
+  CUDA_ERR(cudaDeviceSynchronize()); 
+
+  for(int i = 0; i < counter; i++){
+    cudaStreamDestroy(stream[i]);
   }
 
   if (malloced)
@@ -575,6 +523,7 @@ int amps_unpack(amps_Comm comm, amps_Invoice inv, char *buffer)
     inv->combuf = buffer;
     inv->comm = comm;
   }
+
   return 0;
 }
 }

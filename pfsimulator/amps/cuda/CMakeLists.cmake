@@ -17,5 +17,5 @@ set(AMPS_SRC_FILES
   amps_sizeofinvoice.c
   amps_test.c
   amps_unpack.cu
-  amps_vector.cu
+  amps_vector.c
   )

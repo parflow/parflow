@@ -39,18 +39,58 @@ static inline void rmmError(rmmError_t err, const char *file, int line) {
 
 extern "C++"{
 template <typename T>
-__global__ void StridedCopyKernel(T * __restrict__ dest, const int stride_dest, 
+__global__ static void StridedCopyKernel(T * __restrict__ dest, const int stride_dest, 
                                   T * __restrict__ src, const int stride_src, const int len) 
 {
-    const int tid = ((blockIdx.x*blockDim.x)+threadIdx.x);
+  const int tid = ((blockIdx.x*blockDim.x)+threadIdx.x);
     
-    if(tid < len)
-    { 
-      const int idx_dest = tid * stride_dest;
-      const int idx_src = tid * stride_src;
+  if(tid < len)
+  { 
+    const int idx_dest = tid * stride_dest;
+    const int idx_src = tid * stride_src;
 
-      dest[idx_dest] = src[idx_src];
+    dest[idx_dest] = src[idx_src];
+  }
+}
+template <typename T>
+__global__ static void PackingKernel(T * __restrict__ ptr_buf, const T * __restrict__ ptr_data, 
+    const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z) 
+{
+  const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);   
+  if(k < len_z)
+  {
+    const int j = ((blockIdx.y*blockDim.y)+threadIdx.y);   
+    if(j < len_y)
+    {
+      const int i = ((blockIdx.x*blockDim.x)+threadIdx.x);   
+      if(i < len_x)
+      {
+        *(ptr_buf + k * len_y * len_x + j * len_x + i) = 
+          *(ptr_data + k * (stride_z + (len_y - 1) * stride_y + len_y * (len_x - 1) * stride_x) + 
+            j * (stride_y + (len_x - 1) * stride_x) + i * stride_x);
+      }
     }
+  }
+}
+template <typename T>
+__global__ static void UnpackingKernel(const T * __restrict__ ptr_buf, T * __restrict__  ptr_data, 
+    const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z) 
+{
+  const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);   
+  if(k < len_z)
+  {
+    const int j = ((blockIdx.y*blockDim.y)+threadIdx.y);   
+    if(j < len_y)
+    {
+      const int i = ((blockIdx.x*blockDim.x)+threadIdx.x);   
+      if(i < len_x)
+      {
+        *(ptr_data + k * (stride_z + (len_y - 1) * stride_y + len_y * (len_x - 1) * stride_x) + 
+          j * (stride_y + (len_x - 1) * stride_x) + i * stride_x) = 
+            *(ptr_buf + k * len_y * len_x + j * len_x + i);
+      }
+    }
+  }
 }
 }
 #endif

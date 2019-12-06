@@ -87,6 +87,7 @@ void amps_ClearInvoice(amps_Invoice inv)
   if (inv->combuf_flags & AMPS_INVOICE_ALLOCATED)
     // amps_free(comm, inv->combuf);
     tfree((char*)inv->combuf);
+    // cudaFree((char*)inv->combuf);
 
   /* set flag to unpack so free will occur if strange things happen */
   inv->flags &= ~AMPS_PACKED;
