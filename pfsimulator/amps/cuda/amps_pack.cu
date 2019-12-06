@@ -517,7 +517,7 @@ int amps_pack(amps_Comm comm, amps_Invoice inv, char **buffer)
 
   while (ptr != NULL)
   {
-    cudaStreamCreate(&(stream[counter % 10]));
+    cudaStreamCreate(&(stream[counter % num_streams]));
 
     switch (ptr->type)
     {
@@ -600,7 +600,7 @@ int amps_pack(amps_Comm comm, amps_Invoice inv, char **buffer)
     
     dim3 grid = dim3(((len_x - 1) + blocksize_x) / blocksize_x, ((len_y - 1) + blocksize_y) / blocksize_y, ((len_z - 1) + blocksize_z) / blocksize_z);
     dim3 block = dim3(blocksize_x, blocksize_y, blocksize_z);      
-    PackingKernel<<<grid, block, 0, stream[counter % 10]>>>((double*)*buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
+    PackingKernel<<<grid, block, 0, stream[counter % num_streams]>>>((double*)*buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
 
     *buffer = (char*)((double*)*buffer + len_x * len_y * len_z);
     ptr = ptr->next;
