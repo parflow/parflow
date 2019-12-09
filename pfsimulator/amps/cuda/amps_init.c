@@ -52,6 +52,11 @@ int amps_write_size;
 MPI_Comm nodeComm = MPI_COMM_NULL;
 MPI_Comm writeComm = MPI_COMM_NULL;
 
+char *amps_combuf_recv;
+char *amps_combuf_send;
+long amps_combuf_recv_size;
+long amps_combuf_send_size;
+
 #ifdef AMPS_F2CLIB_FIX
 int MAIN__()
 {
@@ -117,6 +122,8 @@ int amps_Init(int *argc, char **argv[])
   char processor_name[MPI_MAX_PROCESSOR_NAME];
   unsigned char processor_Name[MPI_MAX_PROCESSOR_NAME];
   int namelen;
+  amps_combuf_recv_size = 0;
+  amps_combuf_send_size = 0;
 
   MPI_Init(argc, argv);
   amps_mpi_initialized = TRUE;

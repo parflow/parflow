@@ -481,32 +481,15 @@ static void amps_pack_check_cases(amps_Comm comm, int type, char **data, char **
   }
 }
 
-int amps_pack(amps_Comm comm, amps_Invoice inv, char **buffer)
+int amps_pack(amps_Comm comm, amps_Invoice inv, char *buffer)
 {
   amps_InvoiceEntry *ptr;
   char *temp_pos;
   char *data;
 
-  int size;
   int dim;
 
-  size = amps_sizeof_invoice(comm, inv);
-
   inv->flags |= AMPS_PACKED;
-
-  /* check to see if this was already allocated                            */
-  if ((inv->combuf_flags & AMPS_INVOICE_ALLOCATED))
-  {
-    *buffer = (char *)inv->combuf;
-  }
-  else
-  {
-      // *buffer = (char*)amps_new(comm, size); 
-      *buffer = talloc(char, size);
-      // CUDA_ERR(cudaMalloc((void**)buffer, sizeof(char) * size));
-      inv->combuf_flags |= AMPS_INVOICE_ALLOCATED;
-      inv->combuf = *buffer;
-  }
 
   int counter = 0;
   const int num_streams = 10;
@@ -600,9 +583,9 @@ int amps_pack(amps_Comm comm, amps_Invoice inv, char **buffer)
     
     dim3 grid = dim3(((len_x - 1) + blocksize_x) / blocksize_x, ((len_y - 1) + blocksize_y) / blocksize_y, ((len_z - 1) + blocksize_z) / blocksize_z);
     dim3 block = dim3(blocksize_x, blocksize_y, blocksize_z);      
-    PackingKernel<<<grid, block, 0, stream[counter % num_streams]>>>((double*)*buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
+    PackingKernel<<<grid, block, 0, stream[counter % num_streams]>>>((double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
 
-    *buffer = (char*)((double*)*buffer + len_x * len_y * len_z);
+    buffer = (char*)((double*)buffer + len_x * len_y * len_z);
     ptr = ptr->next;
     counter++;
   }
@@ -614,7 +597,7 @@ int amps_pack(amps_Comm comm, amps_Invoice inv, char **buffer)
     cudaStreamDestroy(stream[i]);
   }
 
-  return size;
+  return 0;
 }
 
 }

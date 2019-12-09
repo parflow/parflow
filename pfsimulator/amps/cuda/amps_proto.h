@@ -77,7 +77,7 @@ void amps_FreePackage(amps_Package package);
 /* amps_pack.c */
 int amps_create_mpi_cont_send_type(amps_Comm comm, amps_Invoice inv);
 void amps_create_mpi_type(amps_Comm comm, amps_Invoice inv);
-int amps_pack(amps_Comm comm, amps_Invoice inv, char **buffer);
+int amps_pack(amps_Comm comm, amps_Invoice inv, char *buffer);
 
 /* amps_print.c */
 void amps_Printf(const char *fmt, ...);

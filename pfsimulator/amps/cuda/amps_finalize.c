@@ -26,7 +26,7 @@
  *  USA
  **********************************************************************EHEADER*/
 #include "amps.h"
-
+#include "amps_cuda.h"
 
 extern int amps_mpi_initialized;
 
@@ -70,6 +70,9 @@ int amps_Finalize()
 
     MPI_Finalize();
   }
+
+  if (amps_combuf_recv_size != 0) CUDA_ERR(cudaFree(amps_combuf_recv));
+  if (amps_combuf_send_size != 0) CUDA_ERR(cudaFree(amps_combuf_send));
 
 #ifdef AMPS_MALLOC_DEBUG
   /* check out the heap and shut everything down if we are in debug mode */

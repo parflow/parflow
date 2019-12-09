@@ -153,6 +153,12 @@ extern int amps_node_size;
 extern int amps_write_rank;
 extern int amps_write_size;
 
+/* Global communication buffers for pinned GPU memory allocation */
+extern char *amps_combuf_recv;
+extern char *amps_combuf_send;
+extern long amps_combuf_recv_size;
+extern long amps_combuf_send_size;
+
 /*===========================================================================*/
 /**
  *
@@ -257,7 +263,6 @@ typedef FILE *amps_File;
 extern int amps_tid;
 extern int amps_rank;
 extern int amps_size;
-
 
 /* This structure is used to keep track of the entries in an invoice         */
 typedef struct amps_invoicestruct {
