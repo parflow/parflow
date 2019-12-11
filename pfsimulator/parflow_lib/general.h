@@ -166,6 +166,10 @@
 #define MemPrefetchDeviceToHost(ptr, size, stream)
 #define MemPrefetchHostToDevice(ptr, size, gpuid, stream)
 
+//CUDA synchronizations
+#define GPU_NOSYNC
+#define GPU_SYNC
+
 //CUDA compiler specific keywords
 #ifndef __CUDACC__
 #define __host__

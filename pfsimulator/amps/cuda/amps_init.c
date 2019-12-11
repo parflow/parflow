@@ -36,6 +36,7 @@
 #include  <inttypes.h>
 
 #include "amps.h"
+#include "amps_cuda.h"
 
 int amps_mpi_initialized = FALSE;
 
@@ -52,10 +53,9 @@ int amps_write_size;
 MPI_Comm nodeComm = MPI_COMM_NULL;
 MPI_Comm writeComm = MPI_COMM_NULL;
 
-char *amps_combuf_recv;
-char *amps_combuf_send;
-long amps_combuf_recv_size;
-long amps_combuf_send_size;
+amps_Devicestruct amps_device_globals = {.combuf_recv_size = 0, 
+                                         .combuf_send_size = 0, 
+                                         .streams_created = 0};
 
 #ifdef AMPS_F2CLIB_FIX
 int MAIN__()
@@ -122,8 +122,6 @@ int amps_Init(int *argc, char **argv[])
   char processor_name[MPI_MAX_PROCESSOR_NAME];
   unsigned char processor_Name[MPI_MAX_PROCESSOR_NAME];
   int namelen;
-  amps_combuf_recv_size = 0;
-  amps_combuf_send_size = 0;
 
   MPI_Init(argc, argv);
   amps_mpi_initialized = TRUE;
@@ -151,7 +149,6 @@ int amps_Init(int *argc, char **argv[])
   {
     MPI_Comm_size(amps_CommWrite, &amps_write_size);
   }
-
 
 #ifdef AMPS_STDOUT_NOBUFF
   setbuf(stdout, NULL);

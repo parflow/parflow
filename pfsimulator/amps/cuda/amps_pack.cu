@@ -481,7 +481,7 @@ static void amps_pack_check_cases(amps_Comm comm, int type, char **data, char **
   }
 }
 
-int amps_pack(amps_Comm comm, amps_Invoice inv, char *buffer)
+int amps_pack(amps_Comm comm, amps_Invoice inv, char *buffer, int *streams_hired)
 {
   amps_InvoiceEntry *ptr;
   char *temp_pos;
@@ -491,17 +491,11 @@ int amps_pack(amps_Comm comm, amps_Invoice inv, char *buffer)
 
   inv->flags |= AMPS_PACKED;
 
-  int counter = 0;
-  const int num_streams = 10;
-  cudaStream_t stream[num_streams];
-
   /* for each entry in the invoice pack that entry into the letter         */
   ptr = inv->list;
 
   while (ptr != NULL)
   {
-    cudaStreamCreate(&(stream[counter % num_streams]));
-
     switch (ptr->type)
     {
       case AMPS_INVOICE_CHAR_CTYPE:
@@ -580,21 +574,24 @@ int amps_pack(amps_Comm comm, amps_Invoice inv, char *buffer)
         printf("ERROR at %s:%d: Only dimensions 1 - 3 are supported.", __FILE__, __LINE__);
         exit(1);
     }
+
+    (*streams_hired)++;
+    if(amps_device_globals.streams_created < *streams_hired)
+    {
+      if(amps_device_globals.streams_created < amps_device_max_streams)
+        {
+          CUDA_ERR(cudaStreamCreate(&(amps_device_globals.stream[*streams_hired - 1])));
+          amps_device_globals.streams_created++;
+        }
+    }
     
     dim3 grid = dim3(((len_x - 1) + blocksize_x) / blocksize_x, ((len_y - 1) + blocksize_y) / blocksize_y, ((len_z - 1) + blocksize_z) / blocksize_z);
     dim3 block = dim3(blocksize_x, blocksize_y, blocksize_z);      
-    PackingKernel<<<grid, block, 0, stream[counter % num_streams]>>>((double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
+    PackingKernel<<<grid, block, 0, amps_device_globals.stream[(*streams_hired - 1) % amps_device_max_streams]>>>((double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
+    // CUDA_ERR(cudaStreamSynchronize(amps_device_globals.stream[(*streams_hired - 1) % amps_device_max_streams])); 
 
     buffer = (char*)((double*)buffer + len_x * len_y * len_z);
     ptr = ptr->next;
-    counter++;
-  }
-
-  CUDA_ERR(cudaPeekAtLastError());                                       
-  CUDA_ERR(cudaDeviceSynchronize()); 
-
-  for(int i = 0; i < counter; i++){
-    cudaStreamDestroy(stream[i]);
   }
 
   return 0;

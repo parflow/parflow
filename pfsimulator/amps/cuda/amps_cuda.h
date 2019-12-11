@@ -146,4 +146,22 @@ static inline void tfreeCUDA(void *ptr)
 #undef tfree
 #define tfree(ptr) if (ptr) tfreeCUDA(ptr); else {}
 
+/*--------------------------------------------------------------------------
+ * Amps device struct for global amps variables
+ *--------------------------------------------------------------------------*/
+#define amps_device_max_streams 10
+typedef struct amps_devicestruct {
+
+  char *combuf_recv;
+  char *combuf_send;
+  long combuf_recv_size;
+  long combuf_send_size;
+
+  int streams_created;
+  cudaStream_t stream[amps_device_max_streams];
+
+} amps_Devicestruct;
+
+extern amps_Devicestruct amps_device_globals;
+
 #endif // AMPS_CUDA_H

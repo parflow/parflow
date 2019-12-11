@@ -27,6 +27,7 @@
  **********************************************************************EHEADER*/
 
 #include "amps.h"
+#include "amps_cuda.h"
 
 #include <strings.h>
 
@@ -137,6 +138,22 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
 
     in_buffer = (char*)malloc((size_t)(element_size * len));
     out_buffer = (char*)malloc((size_t)(element_size * len));
+
+    /* Prefetch device data into host memory */
+    struct cudaPointerAttributes attributes;
+    cudaPointerGetAttributes(&attributes, (void *)data);
+
+    if(cudaGetLastError() == cudaSuccess && attributes.type > 1){
+      if (stride == 1)
+        CUDA_ERR(cudaMemPrefetchAsync(data, (size_t)len * element_size, cudaCpuDeviceId, 0));
+      else
+        for (ptr_src = data;
+             ptr_src < data + len * stride * element_size;
+             ptr_src += stride * element_size)
+          CUDA_ERR(cudaMemPrefetchAsync(ptr_src, (size_t)element_size, cudaCpuDeviceId, 0));
+
+      CUDA_ERR(cudaStreamSynchronize(0)); 
+    }
 
     /* Copy into a contigous buffer */
     if (stride == 1)

@@ -280,6 +280,14 @@ __global__ static void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_in
 /*--------------------------------------------------------------------------
  * CUDA loop macro redefinitions
  *--------------------------------------------------------------------------*/
+static int gpu_sync = 1;
+
+#undef GPU_NOSYNC
+#define GPU_NOSYNC gpu_sync = 0;
+
+#undef GPU_SYNC
+#define GPU_SYNC CUDA_ERR(cudaStreamSynchronize(0)); 
+
 #undef BoxLoopI1
 #define BoxLoopI1(i_dummy, j_dummy, k_dummy,                                        \
                   ix, iy, iz, nx, ny, nz,                                           \
@@ -310,7 +318,7 @@ __global__ static void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_in
     BoxKernelI1<<<grid, block>>>(                                                   \
         lambda_init, lambda_body, ix, iy, iz, nx, ny, nz);                          \
     CUDA_ERR(cudaPeekAtLastError());                                                \
-    CUDA_ERR(cudaStreamSynchronize(0));                                             \
+    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
   }                                                                                 \
 }
 
@@ -352,7 +360,7 @@ __global__ static void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_in
     BoxKernelI2<<<grid, block>>>(                                                   \
         lambda_init1, lambda_init2, lambda_body, ix, iy, iz, nx, ny, nz);           \
     CUDA_ERR(cudaPeekAtLastError());                                                \
-    CUDA_ERR(cudaStreamSynchronize(0));                                             \
+    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
   }                                                                                 \
 }
 
@@ -402,7 +410,7 @@ __global__ static void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_in
     BoxKernelI3<<<grid, block>>>(lambda_init1, lambda_init2, lambda_init3,          \
         lambda_body, ix, iy, iz, nx, ny, nz);                                       \
     CUDA_ERR(cudaPeekAtLastError());                                                \
-    CUDA_ERR(cudaStreamSynchronize(0));                                             \
+    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
   }                                                                                 \
 }
 
@@ -441,7 +449,7 @@ __global__ static void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_in
     DotKernelI2<<<grid, block>>>(lambda_init1, lambda_init2, lambda_fun,            \
         xp, yp, &rslt, ix, iy, iz, nx, ny, nz);                                     \
     CUDA_ERR(cudaPeekAtLastError());                                                \
-    CUDA_ERR(cudaStreamSynchronize(0));                                             \
+    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
   }                                                                                 \
 }
 
@@ -482,7 +490,7 @@ __global__ static void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_in
           GPU_LAMBDA(const int i, const int j, const int k)loop_body,               \
           PV_ixl, PV_iyl, PV_izl, nx, ny, nz);                                      \
       CUDA_ERR(cudaPeekAtLastError());                                              \
-      CUDA_ERR(cudaStreamSynchronize(0));                                           \
+      if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                              \
     }                                                                               \
   }                                                                                 \
 }
@@ -563,7 +571,7 @@ __global__ static void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_in
         BoxKernelI0<<<grid, block>>>(lambda_body,                                   \
             PV_ixl, PV_iyl, PV_izl, nx, ny, nz);                                    \
         CUDA_ERR(cudaPeekAtLastError());                                            \
-        CUDA_ERR(cudaStreamSynchronize(0));                                         \
+        if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                            \
       }                                                                             \
     }                                                                               \
   }                                                                                 \
@@ -653,7 +661,7 @@ __global__ static void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_in
         BoxKernelI1<<<grid, block>>>(                                               \
             lambda_init, lambda_body, PV_ixl, PV_iyl, PV_izl, nx, ny, nz);          \
         CUDA_ERR(cudaPeekAtLastError());                                            \
-        CUDA_ERR(cudaStreamSynchronize(0));                                         \
+        if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                            \
       }                                                                             \
     }                                                                               \
   }                                                                                 \
@@ -709,7 +717,7 @@ __global__ static void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_in
       (BoxKernelI0<<<grid, block>>>(lambda_body,                                    \
           PV_ixl, PV_iyl, PV_izl, PV_diff_x, PV_diff_y, PV_diff_z));                \
       CUDA_ERR(cudaPeekAtLastError());                                              \
-      CUDA_ERR(cudaStreamSynchronize(0));                                           \
+      if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                              \
     }                                                                               \
     i = PV_ixu;                                                                     \
     j = PV_iyu;                                                                     \

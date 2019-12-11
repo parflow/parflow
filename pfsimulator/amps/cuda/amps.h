@@ -153,12 +153,6 @@ extern int amps_node_size;
 extern int amps_write_rank;
 extern int amps_write_size;
 
-/* Global communication buffers for pinned GPU memory allocation */
-extern char *amps_combuf_recv;
-extern char *amps_combuf_send;
-extern long amps_combuf_recv_size;
-extern long amps_combuf_send_size;
-
 /*===========================================================================*/
 /**
  *

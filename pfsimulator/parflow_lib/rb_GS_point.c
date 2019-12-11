@@ -216,6 +216,7 @@ void     RedBlackGSPoint(
           bp = SubvectorElt(b_sub, ix, iy, iz);
 
           iv = im = 0;
+          GPU_NOSYNC
           BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
                     iv, nx_v, ny_v, nz_v, sx, sy, sz,
                     im, nx_m, ny_m, nz_m, sx, sy, sz,
@@ -344,6 +345,7 @@ void     RedBlackGSPoint(
           bp = SubvectorElt(b_sub, ix, iy, iz);
 
           iv = im = 0;
+          GPU_NOSYNC
           BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
                     iv, nx_v, ny_v, nz_v, sx, sy, sz,
                     im, nx_m, ny_m, nz_m, sx, sy, sz,
@@ -370,6 +372,8 @@ void     RedBlackGSPoint(
     IncFLOPCount(13 * (iter * VectorSize(x) + (VectorSize(x) / 2)));
   else
     IncFLOPCount(13 * (iter * VectorSize(x)));
+
+    GPU_SYNC
 
     POP_RANGE
 }

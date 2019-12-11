@@ -29,6 +29,7 @@
 #include "amps.h"
 #include "amps_cuda.h"
 
+
 #ifdef AMPS_MPI_NOT_USE_PERSISTENT
 
 void _amps_wait_exchange(amps_Handle handle)
@@ -113,6 +114,7 @@ amps_Handle amps_IExchangePackage(amps_Package package)
 int _amps_send_sizes(amps_Package package, int **sizes)
 {
   int size_acc;
+  int streams_hired = 0;
 
   *sizes = (int*)calloc(package->num_send, sizeof(int));
 
@@ -124,24 +126,32 @@ int _amps_send_sizes(amps_Package package, int **sizes)
   }
 
   /* check to see if enough space is already allocated            */
-  if (amps_combuf_send_size < size_acc)
+  if (amps_device_globals.combuf_send_size < size_acc)
   {
-    if (amps_combuf_send_size != 0) CUDA_ERR(cudaFree(amps_combuf_send));
+    if (amps_device_globals.combuf_send_size != 0) CUDA_ERR(cudaFree(amps_device_globals.combuf_send));
 
-    CUDA_ERR(cudaMalloc((void**)&amps_combuf_send, size_acc));
-    amps_combuf_send_size = size_acc;
+    CUDA_ERR(cudaMalloc((void**)&amps_device_globals.combuf_send, size_acc));
+    amps_device_globals.combuf_send_size = size_acc;
   }
+
+  CUDA_ERR(cudaStreamSynchronize(0)); 
 
   size_acc = 0;
   for (int i = 0; i < package->num_send; i++)
   {
-    package->send_invoices[i]->combuf = &amps_combuf_send[size_acc];
-    amps_pack(amps_CommWorld, package->send_invoices[i], package->send_invoices[i]->combuf);
+    package->send_invoices[i]->combuf = &amps_device_globals.combuf_send[size_acc];
+    amps_pack(amps_CommWorld, package->send_invoices[i], package->send_invoices[i]->combuf, &streams_hired);
     
     MPI_Isend(&((*sizes)[i]), 1, MPI_INT, package->dest[i],
               0, amps_CommWorld,
               &(package->send_requests[i]));
     size_acc += (*sizes)[i];
+  }
+
+  for(int i = 0; i < streams_hired; i++)
+  {
+    if(i < amps_device_max_streams)
+      CUDA_ERR(cudaStreamSynchronize(amps_device_globals.stream[i])); 
   }
 
   return(0);
@@ -163,25 +173,24 @@ int _amps_recv_sizes(amps_Package package)
   }
 
   /* check to see if enough space is already allocated            */
-  if (amps_combuf_recv_size < size_acc)
+  if (amps_device_globals.combuf_recv_size < size_acc)
   {
-    if (amps_combuf_recv_size != 0) CUDA_ERR(cudaFree(amps_combuf_recv));
+    if (amps_device_globals.combuf_recv_size != 0) CUDA_ERR(cudaFree(amps_device_globals.combuf_recv));
 
-    CUDA_ERR(cudaMalloc((void**)&(amps_combuf_recv), size_acc));
-    CUDA_ERR(cudaMemset(amps_combuf_recv, 0, size_acc));
-    amps_combuf_recv_size = size_acc;
+    CUDA_ERR(cudaMalloc((void**)&(amps_device_globals.combuf_recv), size_acc));
+    CUDA_ERR(cudaMemset(amps_device_globals.combuf_recv, 0, size_acc));
+    amps_device_globals.combuf_recv_size = size_acc;
   }
 
   size_acc = 0;
   for (int i = 0; i < package->num_recv; i++)
   {
-    package->recv_invoices[i]->combuf = &amps_combuf_recv[size_acc];
+    package->recv_invoices[i]->combuf = &amps_device_globals.combuf_recv[size_acc];
     MPI_Recv_init(package->recv_invoices[i]->combuf, sizes[i],
                   MPI_BYTE, package->src[i], 1, amps_CommWorld,
                   &(package->recv_requests[i]));
     size_acc += sizes[i];
   }
-
   free(sizes);
 
   return(0);
@@ -191,6 +200,7 @@ void _amps_wait_exchange(amps_Handle handle)
 {
   int i;
   int num;
+  int streams_hired = 0;
 
   num = handle->package->num_send + handle->package->num_recv;
 
@@ -204,7 +214,12 @@ void _amps_wait_exchange(amps_Handle handle)
       for (i = 0; i < handle->package->num_recv; i++)
       {
         amps_unpack(amps_CommWorld, handle->package->recv_invoices[i],
-                    (char *)handle->package->recv_invoices[i]->combuf);
+                    (char *)handle->package->recv_invoices[i]->combuf, &streams_hired);
+      }
+      for(int i = 0; i < streams_hired; i++)
+      {
+        if(i < amps_device_max_streams)
+          CUDA_ERR(cudaStreamSynchronize(amps_device_globals.stream[i])); 
       }
     }
   }
