@@ -180,7 +180,6 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
 
     ptr = ptr->next;
   }
-
+  
   return 0;
 }
-

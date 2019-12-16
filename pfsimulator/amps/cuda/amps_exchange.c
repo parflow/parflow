@@ -29,88 +29,6 @@
 #include "amps.h"
 #include "amps_cuda.h"
 
-
-#ifdef AMPS_MPI_NOT_USE_PERSISTENT
-
-void _amps_wait_exchange(amps_Handle handle)
-{
-  int notdone;
-  int i;
-
-  MPI_Status *status;
-
-  if (handle->package->num_recv + handle->package->num_send)
-  {
-    status = (MPI_Status*)calloc((handle->package->num_recv +
-                                  handle->package->num_send), sizeof(MPI_Status));
-
-    MPI_Waitall(handle->package->num_recv + handle->package->num_send,
-                handle->package->requests,
-                status);
-
-    free(status);
-
-    for (i = 0; i < handle->package->num_recv; i++)
-    {
-      if (handle->package->recv_invoices[i]->mpi_type != MPI_DATATYPE_NULL)
-      {
-        MPI_Type_free(&(handle->package->recv_invoices[i]->mpi_type));
-      }
-
-      MPI_Request_free(&handle->package->requests[i]);
-    }
-
-    for (i = 0; i < handle->package->num_send; i++)
-    {
-      if (handle->package->send_invoices[i]->mpi_type != MPI_DATATYPE_NULL)
-      {
-        MPI_Type_free(&handle->package->send_invoices[i]->mpi_type);
-      }
-
-      MPI_Request_free(&handle->package->requests[handle->package->num_recv + i]);
-    }
-  }
-}
-
-amps_Handle amps_IExchangePackage(amps_Package package)
-{
-  int i;
-
-  /*--------------------------------------------------------------------
-   * post receives for data to get
-   *--------------------------------------------------------------------*/
-  package->recv_remaining = 0;
-
-  for (i = 0; i < package->num_recv; i++)
-  {
-    amps_create_mpi_type(MPI_COMM_WORLD, package->recv_invoices[i]);
-
-    MPI_Type_commit(&(package->recv_invoices[i]->mpi_type));
-
-    MPI_Irecv(MPI_BOTTOM, 1, package->recv_invoices[i]->mpi_type,
-              package->src[i], 0, MPI_COMM_WORLD,
-              &(package->requests[i]));
-  }
-
-  /*--------------------------------------------------------------------
-   * send out the data we have
-   *--------------------------------------------------------------------*/
-  for (i = 0; i < package->num_send; i++)
-  {
-    amps_create_mpi_type(MPI_COMM_WORLD, package->send_invoices[i]);
-
-    MPI_Type_commit(&(package->send_invoices[i]->mpi_type));
-
-    MPI_Isend(MPI_BOTTOM, 1, package->send_invoices[i]->mpi_type,
-              package->dest[i], 0, MPI_COMM_WORLD,
-              &(package->requests[package->num_recv + i]));
-  }
-
-  return(amps_NewHandle(NULL, 0, NULL, package));
-}
-
-#else
-
 int _amps_send_sizes(amps_Package package, int **sizes)
 {
   int size_acc;
@@ -204,11 +122,10 @@ void _amps_wait_exchange(amps_Handle handle)
 
   num = handle->package->num_send + handle->package->num_recv;
 
-  MPI_Waitall(num, handle->package->recv_requests,
-              handle->package->status);
-
   if (num)
   {
+    MPI_Waitall(num, handle->package->recv_requests,
+                handle->package->status);
     if (handle->package->num_recv)
     {
       for (i = 0; i < handle->package->num_recv; i++)
@@ -278,5 +195,3 @@ amps_Handle amps_IExchangePackage(amps_Package package)
 
   return(amps_NewHandle(NULL, 0, NULL, package));
 }
-
-#endif
