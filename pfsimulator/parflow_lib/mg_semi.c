@@ -170,7 +170,6 @@ void     MGSemi(
   /*-----------------------------------------------------------------------
    * Allocate temp vectors
    *-----------------------------------------------------------------------*/
-  PUSH_RANGE("MGSemi_mallocloop",3)
 
   x_l = talloc(Vector *, num_levels);
   b_l = talloc(Vector *, num_levels);
@@ -200,7 +199,6 @@ void     MGSemi(
       NewVectorCommPkg(temp_vec_l[l],
                        (instance_xtra->prolong_compute_pkg_l[l]));
   }
-  POP_RANGE
 
   /*-----------------------------------------------------------------------
    * Do V-cycles:
@@ -784,6 +782,8 @@ PFModule     *MGSemiInitInstanceXtra(
                                      Matrix *     A,
                                      double *     temp_data)
 {
+  PUSH_RANGE("MGSemiInitInstanceXtra",3)
+
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
   InstanceXtra  *instance_xtra;
@@ -1179,6 +1179,8 @@ PFModule     *MGSemiInitInstanceXtra(
   }
 
   PFModuleInstanceXtra(this_module) = instance_xtra;
+
+  POP_RANGE
   return this_module;
 }
 

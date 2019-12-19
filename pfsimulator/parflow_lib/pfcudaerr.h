@@ -30,7 +30,7 @@ static inline void rmmError(rmmError_t err, const char *file, int line) {
 	}
 }
 
-#ifndef NDEBUG
+// #ifndef NDEBUG
 #include "nvToolsExt.h"
 
 #undef PUSH_RANGE
@@ -50,6 +50,6 @@ static inline void rmmError(rmmError_t err, const char *file, int line) {
 }
 #undef POP_RANGE
 #define POP_RANGE nvtxRangePop();
-#endif
+// #endif
 
 #endif // PFCUDAERR_H
