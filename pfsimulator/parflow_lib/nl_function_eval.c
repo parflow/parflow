@@ -247,7 +247,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   overlandspinup = GetIntDefault("OverlandFlowSpinUp", 0);
 
   /* Pass pressure values to neighbors.  */
-  handle = InitVectorUpdate(pressure, VectorUpdateAll);
+  //handle = InitVectorUpdate(pressure, VectorUpdateAll);
+  handle = InitVectorUpdate(pressure, VectorUpdatePGS1);
   FinalizeVectorUpdate(handle);
 
   KW = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
@@ -2071,7 +2072,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
           /*  @RMM this is a new module for diffusive wave
            */
-
+          //printf("Case overland_flow_Diffusive \n");
           double *dummy1, *dummy2, *dummy3, *dummy4;
           PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                                                                     ke_, kw_, kn_, ks_,

@@ -1150,7 +1150,8 @@ SetupRichards(PFModule * this_module)
                        (instance_xtra->pressure, instance_xtra->mask,
                         problem_data, problem));
 
-    handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
+    //handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
+    handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdatePGS1);
     FinalizeVectorUpdate(handle);
 
     /* Set initial densities and pass around ghost data to start */
@@ -1168,7 +1169,8 @@ SetupRichards(PFModule * this_module)
                         instance_xtra->density, gravity, problem_data,
                         CALCFCN));
 
-    handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
+    //handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
+    handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdatePGS1);
     FinalizeVectorUpdate(handle);
 
 
@@ -2496,6 +2498,9 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
         PFVCopy(instance_xtra->saturation,
                 instance_xtra->old_saturation);
         PFVCopy(instance_xtra->pressure, instance_xtra->old_pressure);
+        /* Pass old pressure values to neighbors including diagonals.  */
+        handle = InitVectorUpdate(instance_xtra->old_pressure, VectorUpdatePGS1);
+        FinalizeVectorUpdate(handle);
       }
       else                      /* Not converged, so decrease time step */
       {

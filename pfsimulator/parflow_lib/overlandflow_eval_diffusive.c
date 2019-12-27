@@ -223,6 +223,9 @@ void    OverlandFlowEvalDiff(
             }
           }
         }
+        printf("i=%d j=%d, pupy=%f, pupx=%f, pupoy=%f, pupox=%f, sfmag=%f\n",i,j, Pupy, Pupx, Pupoy, Pupox, Sf_mag );
+        //printf("i=%d j=%d k=%d ke_v=%f kw_v=%f kn_v=%f ks_v=%f\n",i,j,k,ke_v[io],kw_v[io],kn_v[io],ks_v[io]);
+
       }
     });
 
@@ -235,7 +238,7 @@ void    OverlandFlowEvalDiff(
         kw_v[io] = qx_v[io - 1];
         kn_v[io] = qy_v[io];
         ks_v[io] = qy_v[io - sy_v];
-        //printf("i=%d j=%d k=%d ke_v=%d kw_v=%d kn_v=%d ks_v=%f\n",i,j,k,ke_v[io],kw_v[io],kn_v[io],ks_v[io]);
+        //printf("i=%d j=%d k=%d ke_v=%f kw_v=%f kn_v=%f ks_v=%f\n",i,j,k,ke_v[io],kw_v[io],kn_v[io],ks_v[io]);
       }
     });
   }
