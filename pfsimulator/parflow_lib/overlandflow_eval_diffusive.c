@@ -76,9 +76,6 @@ void    OverlandFlowEvalDiff(
                                                 * fcn = CALCDER => calculate the function
                                                 *                  derivative */
 {
-
-  static int sgs_count = 0;
-  
   PFModule      *this_module = ThisPFModule;
 
   Vector      *slope_x = ProblemDataTSlopeX(problem_data);
@@ -98,30 +95,15 @@ void    OverlandFlowEvalDiff(
   double slope_fy_lo, slope_fy_hi, slope_fy_mid, dx, dy;
   double coeff, Pmean, P2, P3, Pdel, Pcen;
   double slope_mean, manning, s1, s2, Sf_mag;
-  //double Press_x, Press_y,
-  // double Sf_x, Sf_y,
-  //double Sf_xo;
-  // double Sf_yo;
-  // double Pupx, Pupy, Pupox, Pupoy, Pdown, Pdowno;
   double ov_epsilon;
 
   int ival, sy_v, step;
   int            *fdir;
 
   int i, j, k;
-  //, ip2, ip3, ip4, ip0, io, itop,k1x, k1y;
-  // int i1, j1, k1, k0x, k0y, iojm1, iojp1, ioip1, ioim1;
   /* @RMM get grid from global (assuming this is comp grid) to pass to CLM */
   int gnx = BackgroundNX(GlobalsBackground);
   int gny = BackgroundNY(GlobalsBackground);
-
-  {
-    printf("SGS exchange\n");
-    VectorUpdateCommHandle *handle;
-    /* Update the boundary layers */
-    handle = InitVectorUpdate(pressure, VectorUpdatePGS1);
-    FinalizeVectorUpdate(handle);
-  }
 
   p_sub = VectorSubvector(pressure, sg);
   op_sub = VectorSubvector(old_pressure, sg);
@@ -208,6 +190,7 @@ void    OverlandFlowEvalDiff(
     {
       VectorUpdateCommHandle *handle;
 
+      // SGS TODO can this be an All exchange?
       handle = InitVectorUpdate(qx, VectorUpdatePGS1);
       FinalizeVectorUpdate(handle);
       
@@ -221,7 +204,15 @@ void    OverlandFlowEvalDiff(
       if (fdir[2] == 1)
       {
 
-	if(1)
+	/* 
+	   Apply fixes for lower x/y boundary.
+	   Note these calculations are being done in the ghost layer and thus
+	   the qx, qy vectors are left in an invalid state.  Doing this avoids
+	   another exchange.
+
+	   Using qx, qy to copy into k vectors which uses the same indexing so 
+	   inconsistent state of qx, qy are OK for this loop.
+	*/
 	{
 	  int io = SubvectorEltIndex(sx_sub, i, j, 0);
 	  int itop = SubvectorEltIndex(top_sub, i, j, 0);
@@ -301,6 +292,9 @@ void    OverlandFlowEvalDiff(
 	  }
 	}
 
+	/*
+	  Copy over q to appropriate k vectors.
+	*/
 	{
 	  int io = SubvectorEltIndex(sx_sub, i, j, 0);
 
@@ -314,7 +308,6 @@ void    OverlandFlowEvalDiff(
   }
   else          //fcn = CALCDER calculates the derivs of KE KW KN KS wrt to current cell (i,j,k)
   {
-    // BCStructPatchLoopOvrlnd(i, j, k, fdir, ival, bc_struct, ipatch, sg,
     BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, sg,
     {
       if (fdir[2] == 1)
@@ -397,9 +390,9 @@ void    OverlandFlowEvalDiff(
           }
         }
 
-	if(1)
-	{
 
+	// SGS TODO Does this loop suffer the same issue as the previous one, does it need to be split with an exchange between?
+	{
 	  int ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
           int ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
           double Pupx = pfmax(pp[ipp1], 0.0);
@@ -443,7 +436,7 @@ void    OverlandFlowEvalDiff(
 	      kw_vns[io] = ke_v[io - 1];
 	    }
 	  }
-	  
+
 	  //fix for lower y boundary
 	  if (k0y < 0.0)
 	  {
@@ -501,8 +494,6 @@ void    OverlandFlowEvalDiff(
     });
     //}
   }
-
-  sgs_count++;
 }
 
 //*/
