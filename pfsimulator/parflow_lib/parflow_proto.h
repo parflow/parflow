@@ -816,8 +816,8 @@ typedef void (*OverlandFlowEvalDiffInvoke) (Grid *       grid,
                                             double *     kw_vns,
                                             double *     kn_vns,
                                             double *     ks_vns,
-                                            double *     qx_v,
-                                            double *     qy_v,
+                                            Vector *     qx,
+                                            Vector *     qy,
                                             int          fcn);
 
 void OverlandFlowEvalDiff(Grid *       grid,
@@ -835,8 +835,8 @@ void OverlandFlowEvalDiff(Grid *       grid,
                           double *     kw_vns,
                           double *     kn_vns,
                           double *     ks_vns,
-                          double *     qx_v,
-                          double *     qy_v,
+                          Vector *     qx_v,
+                          Vector *     qy_v,
                           int          fcn);
 PFModule *OverlandFlowEvalDiffInitInstanceXtra(void);
 void OverlandFlowEvalDiffFreeInstanceXtra(void);

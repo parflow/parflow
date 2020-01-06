@@ -1150,8 +1150,7 @@ SetupRichards(PFModule * this_module)
                        (instance_xtra->pressure, instance_xtra->mask,
                         problem_data, problem));
 
-    //handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
-    handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdatePGS1);
+    handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
     FinalizeVectorUpdate(handle);
 
     /* Set initial densities and pass around ghost data to start */
@@ -1169,8 +1168,7 @@ SetupRichards(PFModule * this_module)
                         instance_xtra->density, gravity, problem_data,
                         CALCFCN));
 
-    //handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
-    handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdatePGS1);
+    handle = InitVectorUpdate(instance_xtra->pressure, VectorUpdateAll);
     FinalizeVectorUpdate(handle);
 
 

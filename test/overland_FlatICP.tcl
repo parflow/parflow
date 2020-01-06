@@ -121,7 +121,7 @@ pfset TimingInfo.BaseUnit        1.0
 pfset TimingInfo.StartCount      0
 pfset TimingInfo.StartTime       0.0
 pfset TimingInfo.StopTime        300.0
-pfset TimingInfo.DumpInterval    30.0
+pfset TimingInfo.DumpInterval    30
 pfset TimeStep.Type              Constant
 pfset TimeStep.Value             1.0
 
@@ -295,7 +295,8 @@ pfset Geom.domain.ICPressure.Value                      0.0
 pfset Geom.domain.ICPressure.RefGeom                    domain
 pfset Geom.domain.ICPressure.RefPatch                   z-upper
 
-pfset Geom.icsource.ICPressure.Value                     0.1
+#pfset Geom.icsource.ICPressure.Value                     0.1
+pfset Geom.icsource.ICPressure.Value                     1.0
 pfset Geom.icsource.ICPressure.RefGeom                    domain
 pfset Geom.icsource.ICPressure.RefPatch                   z-upper
 #-----------------------------------------------------------------------------
@@ -307,136 +308,202 @@ source pftest.tcl
 #-----------------------------------------------------------------------------
 #original approach from K&M AWR 2006
 #-----------------------------------------------------------------------------
-pfset Patch.z-upper.BCPressure.Type		      OverlandFlow
+pfset Patch.z-upper.BCPressure.Type		      OverlandDiffusive
 pfset Solver.Nonlinear.UseJacobian          False
-pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
+#pfset Solver.Linear.Preconditioner.PCMatrixType FullJacobian
+
+# set runname FlatICP_Overland.1
+# pfset Process.Topology.P        1
+# pfset Process.Topology.Q        1
+# pfset Process.Topology.R        1
+# puts $runname
+# pfrun $runname
+# pfundist $runname
+
+# set runname FlatICP_Overland.2.2
+# pfset Process.Topology.P        2
+# pfset Process.Topology.Q        2
+# pfset Process.Topology.R        1
+# puts $runname
+# pfrun $runname
+# pfundist $runname
+
+# set runname FlatICP_Overland.1.2
+# pfset Process.Topology.P        1
+# pfset Process.Topology.Q        2
+# pfset Process.Topology.R        1
+# puts $runname
+# pfrun $runname
+# pfundist $runname
+
+# set runname FlatICP_Overland.1.3
+# pfset Process.Topology.P        1
+# pfset Process.Topology.Q        3
+# pfset Process.Topology.R        1
+# puts $runname
+# pfrun $runname
+# pfundist $runname
+
+# set runname FlatICP_Overland.1.4
+# pfset Process.Topology.P        1
+# pfset Process.Topology.Q        4
+# pfset Process.Topology.R        1
+# puts $runname
+# pfrun $runname
+# pfundist $runname
+
+# set runname FlatICP_Overland.2.1
+# pfset Process.Topology.P        2
+# pfset Process.Topology.Q        1
+# pfset Process.Topology.R        1
+# puts $runname
+# pfrun $runname
+# pfundist $runname
+
+
+# set runname FlatICP_Overland.3.1
+# pfset Process.Topology.P        3
+# pfset Process.Topology.Q        1
+# pfset Process.Topology.R        1
+# puts $runname
+# pfrun $runname
+# pfundist $runname
+
+# set runname FlatICP_Overland.4.1
+# pfset Process.Topology.P        4
+# pfset Process.Topology.Q        1
+# pfset Process.Topology.R        1
+# puts $runname
+# pfrun $runname
+# pfundist $runname
 
 set runname FlatICP_Overland
-puts $runname
 pfrun $runname
 pfundist $runname
+
 if $runcheck==1 {
-  set passed 1
-  foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-      set passed 0
-    }
-    if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-      set passed 0
-    }
-  }
-  if $passed {
-    puts "$runname : PASSED"
-  } {
-    puts "$runname : FAILED"
-  }
+ set passed 1
+ foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
+   if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
+     set passed 0
+   }
+   if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
+     set passed 0
+   }
+ }
+ if $passed {
+   puts "$runname : PASSED"
+ } {
+   puts "$runname : FAILED"
+ }
 }
 
-#-----------------------------------------------------------------------------
-# New kinematic formulation - this should exactly match the original formulation
-#  for this flat test case
-#-----------------------------------------------------------------------------
-pfset Patch.z-upper.BCPressure.Type		      OverlandKinematic
-pfset Solver.Nonlinear.UseJacobian          False
-pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
-set runname FlatICP_OverlandKin
-puts "Running $runname"
-pfrun $runname
-pfundist $runname
-if $runcheck==1 {
-  set passed 1
-  foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-      set passed 0
-    }
-    if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-      set passed 0
-    }
-  }
-  if $passed {
-    puts "$runname : PASSED"
-  } {
-    puts "$runname : FAILED"
-  }
-}
+# #-----------------------------------------------------------------------------
+# # New kinematic formulation - this should exactly match the original formulation
+# # for this flat test case
+# #-----------------------------------------------------------------------------
+# pfset Patch.z-upper.BCPressure.Type		      OverlandKinematic
+# pfset Solver.Nonlinear.UseJacobian          False
+# pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
+# set runname FlatICP_OverlandKin
+# puts "Running $runname"
+# pfrun $runname
+# pfundist $runname
+# if $runcheck==1 {
+#  set passed 1
+#  foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
+#    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
+#      set passed 0
+#    }
+#    if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
+#      set passed 0
+#    }
+#  }
+#  if $passed {
+#    puts "$runname : PASSED"
+#  } {
+#    puts "$runname : FAILED"
+#  }
+# }
 
-#-----------------------------------------------------------------------------
-# Diffusive formulation
-#-----------------------------------------------------------------------------
-#run with Jacobian False
-pfset Patch.z-upper.BCPressure.Type		      OverlandDiffusive
-pfset Solver.Nonlinear.UseJacobian                       False
-pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
+# # -----------------------------------------------------------------------------
+# # Diffusive formulation
+# # -----------------------------------------------------------------------------
+# # run with Jacobian False
+# pfset Patch.z-upper.BCPressure.Type		      OverlandDiffusive
+# pfset Solver.Nonlinear.UseJacobian                       False
+# pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
-set runname FlatICP_OverlandDif
-puts "Running $runname"
-pfrun $runname
-pfundist $runname
-if $runcheck==1 {
-  set passed 1
-  foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-      set passed 0
-    }
-    if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-      set passed 0
-    }
-  }
-  if $passed {
-    puts "$runname : PASSED"
-  } {
-    puts "$runname : FAILED"
-  }
-}
+# set runname FlatICP_OverlandDif
+# puts "Running $runname"
+# pfrun $runname
+# pfundist $runname
+# if $runcheck==1 {
+#  set passed 1
+#  foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
+#    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
+#      set passed 0
+#    }
+#    if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
+#      set passed 0
+#    }
+#  }
+#  if $passed {
+#    puts "$runname : PASSED"
+#  } {
+#    puts "$runname : FAILED"
+#  }
+# }
 
-# run with analytical jacobian
-pfset Patch.z-upper.BCPressure.Type		      OverlandDiffusive
-pfset Solver.Nonlinear.UseJacobian                       True
-pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
+# # run with analytical jacobian
+# pfset Patch.z-upper.BCPressure.Type		      OverlandDiffusive
+# pfset Solver.Nonlinear.UseJacobian                       True
+# pfset Solver.Linear.Preconditioner.PCMatrixType PFSymmetric
 
-set runname FlatICP_OverlandDif
-puts "Running $runname Jacobian True"
-pfrun $runname
-pfundist $runname
-if $runcheck==1 {
-  set passed 1
-  foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-      set passed 0
-    }
-    if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-      set passed 0
-    }
-  }
-  if $passed {
-    puts "$runname : PASSED"
-  } {
-    puts "$runname : FAILED"
-  }
-}
+# set runname FlatICP_OverlandDif
+# puts "Running $runname Jacobian True"
+# pfrun $runname
+# pfundist $runname
+# if $runcheck==1 {
+#  set passed 1
+#  foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
+#    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
+#      set passed 0
+#    }
+#    if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
+#      set passed 0
+#    }
+#  }
+#  if $passed {
+#    puts "$runname : PASSED"
+#  } {
+#    puts "$runname : FAILED"
+#  }
+# }
 
-# run with analytical jacobian and nonsymmetric preconditioner
-pfset Patch.z-upper.BCPressure.Type		      OverlandDiffusive
-pfset Solver.Nonlinear.UseJacobian                       True
-pfset Solver.Linear.Preconditioner.PCMatrixType FullJacobian
+# # run with analytical jacobian and nonsymmetric preconditioner
+# pfset Patch.z-upper.BCPressure.Type		      OverlandDiffusive
+# pfset Solver.Nonlinear.UseJacobian                       True
+# pfset Solver.Linear.Preconditioner.PCMatrixType FullJacobian
 
-set runname FlatICP_OverlandDif
-puts "Running $runname Jacobian True Nonsymmetric Preconditioner"
-pfrun $runname
-pfundist $runname
-if $runcheck==1 {
-  set passed 1
-  foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
-    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
-      set passed 0
-    }
-    if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
-      set passed 0
-    }
-  }
-  if $passed {
-    puts "$runname : PASSED"
-  } {
-    puts "$runname : FAILED"
-  }
-}
+# set runname FlatICP_OverlandDif
+# puts "Running $runname Jacobian True Nonsymmetric Preconditioner"
+# pfrun $runname
+# pfundist $runname
+# if $runcheck==1 {
+#  set passed 1
+#  foreach i "00000 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010" {
+#    if ![pftestFile $runname.out.press.$i.pfb "Max difference in Pressure for timestep $i" $sig_digits] {
+#      set passed 0
+#    }
+#    if ![pftestFile  $runname.out.satur.$i.pfb "Max difference in Saturation for timestep $i" $sig_digits] {
+#      set passed 0
+#    }
+#  }
+#  if $passed {
+#    puts "$runname : PASSED"
+#  } {
+#    puts "$runname : FAILED"
+#  }
+# }
+
