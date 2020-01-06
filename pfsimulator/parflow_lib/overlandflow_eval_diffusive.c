@@ -190,11 +190,10 @@ void    OverlandFlowEvalDiff(
     {
       VectorUpdateCommHandle *handle;
 
-      // SGS TODO can this be an All exchange?
-      handle = InitVectorUpdate(qx, VectorUpdatePGS1);
+      handle = InitVectorUpdate(qx, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
       
-      handle = InitVectorUpdate(qy, VectorUpdatePGS1);
+      handle = InitVectorUpdate(qy, VectorUpdateAll);
       FinalizeVectorUpdate(handle);
     }
 
