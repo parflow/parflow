@@ -256,7 +256,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   /* SGS TODO these should not be allocated and freed every function call, should be in a data structure somewhere */
   KW = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   KE = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
-  printf("SGS new KE vector\n");
   KN = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   KS = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   qx = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
@@ -1478,7 +1477,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
           if (diffusive == 0)
           {
-	    printf("***** overland flow eval invoke l1478\n");
             /* Call overlandflow_eval to compute fluxes across the east, west, north, and south faces */
             PFModuleInvokeType(OverlandFlowEvalInvoke, overlandflow_module, (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                                                              ke_, kw_, kn_, ks_, qx_, qy_, CALCFCN));
@@ -1810,7 +1808,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           });
 
 
-          printf("************* Case overland_flow invoke 1866\n");
           /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
            * routing added */
           double *dummy1, *dummy2, *dummy3, *dummy4;
@@ -2018,7 +2015,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
           /*  @RMM this is a new module for diffusive wave
            */
-          printf("Case overland_flow_Diffusive 2122\n");
           double *dummy1 = 0, *dummy2 = 0, *dummy3 = 0, *dummy4 = 0;
           PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                                                                     ke_, kw_, kn_, ks_,
@@ -2102,32 +2098,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   }            /* End subgrid loop */
 
 
-
-  if(0)
-  {
-    static int sgs_count = 0;
-    char filename[1024];
-    sprintf(filename, "pressure-end.%d", sgs_count);
-    PrintVectorAll(filename, pressure);
-    
-    sprintf(filename, "kn-end.%d", sgs_count);
-    PrintVectorAll(filename, KN);
-    
-    sprintf(filename, "ks-end.%d", sgs_count);
-    PrintVectorAll(filename, KS);
-    
-    sprintf(filename, "ke-end.%d", sgs_count);
-    PrintVectorAll(filename, KE);
-    
-    sprintf(filename, "kw-end.%d", sgs_count);
-    PrintVectorAll(filename, KW);
-
-    sprintf(filename, "fval-end.%d", sgs_count);
-    PrintVectorAll(filename, fval);
-    
-    sgs_count++;
-  }
-
   FreeBCStruct(bc_struct);
 
   PFModuleInvokeType(RichardsBCInternalInvoke, bc_internal, (problem, problem_data, fval, NULL,
@@ -2137,7 +2107,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
   FreeVector(KW);
   FreeVector(KE);
-  printf("SGS free KE vector\n");
   FreeVector(KN);
   FreeVector(KS);
   FreeVector(qx);
