@@ -247,7 +247,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   overlandspinup = GetIntDefault("OverlandFlowSpinUp", 0);
 
   /* Pass pressure values to neighbors.  */
-  handle = InitVectorUpdate(pressure, VectorUpdateAll);
+  // SGS TODO should make this conditional based on overland flow, only need to standard All exchange
+  // if overland flow is not used.
+  // handle = InitVectorUpdate(pressure, VectorUpdateAll);
+  handle = InitVectorUpdate(pressure, VectorUpdatePGS1);
   FinalizeVectorUpdate(handle);
 
   /* SGS TODO these should not be allocated and freed every function call, should be in a data structure somewhere */
@@ -1482,35 +1485,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           }
           else
           {
-	    {
-	      printf("SGS exchange pre 1\n");
-	      VectorUpdateCommHandle *handle;
-	      /* Update the boundary layers */
-	      handle = InitVectorUpdate(pressure, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-	      
-	      handle = InitVectorUpdate(old_pressure, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      handle = InitVectorUpdate(KW, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      handle = InitVectorUpdate(KE, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      handle = InitVectorUpdate(KN, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      handle = InitVectorUpdate(KS, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      handle = InitVectorUpdate(qx, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      handle = InitVectorUpdate(qy, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-	    }
-
             /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
              * routing added */
 
@@ -1519,35 +1493,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                                                                                       ke_, kw_, kn_, ks_,
                                                                                       dummy1, dummy2, dummy3, dummy4,
                                                                                       qx, qy, CALCFCN));
-	    {
-	      printf("SGS exchange post 1\n");
-	      VectorUpdateCommHandle *handle;
-	      /* Update the boundary layers */
-	      handle = InitVectorUpdate(pressure, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-	      
-	      handle = InitVectorUpdate(old_pressure, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      handle = InitVectorUpdate(KW, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      handle = InitVectorUpdate(KE, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      handle = InitVectorUpdate(KN, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      handle = InitVectorUpdate(KS, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      handle = InitVectorUpdate(qx, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      handle = InitVectorUpdate(qy, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-	    }
-
           }
 	  
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
@@ -2071,65 +2016,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
             fp[ip] += dt * dir * u_new;
           });
 
-          // SGS Fix this up later after things are a bit more stable.   Probably should
-          // Use this loop inside the overland flow eval as it is more efficient.
-	  
-	  {
-	      printf("SGS exchange pre 2\n");
-	      VectorUpdateCommHandle *handle;
-	      /* Update the boundary layers */
-	      handle = InitVectorUpdate(pressure, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-	      
-	      handle = InitVectorUpdate(old_pressure, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      handle = InitVectorUpdate(KW, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      handle = InitVectorUpdate(KE, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      handle = InitVectorUpdate(KN, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      handle = InitVectorUpdate(KS, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      handle = InitVectorUpdate(qx, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      handle = InitVectorUpdate(qy, VectorUpdatePGS1);
-	      FinalizeVectorUpdate(handle);
-
-	      if(0)
-	      {
-		static int sgs_count = 0;
-		char filename[1024];
-		sprintf(filename, "pressure-pre.%d", sgs_count);
-		printf("Writing file %s\n", filename);
-		PrintVectorAll(filename, pressure);
-
-		sprintf(filename, "kn-pre.%d", sgs_count);
-		PrintVectorAll(filename, KN);
-		
-		sprintf(filename, "ks-pre.%d", sgs_count);
-		PrintVectorAll(filename, KS);
-
-		sprintf(filename, "ke-pre.%d", sgs_count);
-		PrintVectorAll(filename, KE);
-
-		sprintf(filename, "kw-pre.%d", sgs_count);
-		PrintVectorAll(filename, KW);
-
-		sprintf(filename, "fval-pre.%d", sgs_count);
-		PrintVectorAll(filename, fval);
-
-		sgs_count++;
-	    }
-
-	  }
-
           /*  @RMM this is a new module for diffusive wave
            */
           printf("Case overland_flow_Diffusive 2122\n");
@@ -2138,61 +2024,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                                                                                     ke_, kw_, kn_, ks_,
                                                                                     dummy1, dummy2, dummy3, dummy4,
                                                                                     qx, qy, CALCFCN));
-
-	  if (0)
-	  {
-	    printf("SGS exchange post 2\n");
-	    VectorUpdateCommHandle *handle;
-	    /* Update the boundary layers */
-	    handle = InitVectorUpdate(pressure, VectorUpdatePGS1);
-	    FinalizeVectorUpdate(handle);
-	    handle = InitVectorUpdate(old_pressure, VectorUpdatePGS1);
-	    FinalizeVectorUpdate(handle);
-	    
-	    handle = InitVectorUpdate(KW, VectorUpdatePGS1);
-	    FinalizeVectorUpdate(handle);
-	    
-	    handle = InitVectorUpdate(KE, VectorUpdatePGS1);
-	    FinalizeVectorUpdate(handle);
-	    
-	    handle = InitVectorUpdate(KN, VectorUpdatePGS1);
-	    FinalizeVectorUpdate(handle);
-	    
-	    handle = InitVectorUpdate(KS, VectorUpdatePGS1);
-	    FinalizeVectorUpdate(handle);
-	    
-	    handle = InitVectorUpdate(qx, VectorUpdatePGS1);
-	    FinalizeVectorUpdate(handle);
-	    
-	    handle = InitVectorUpdate(qy, VectorUpdatePGS1);
-	    FinalizeVectorUpdate(handle);
-
-	    handle = InitVectorUpdate(fval, VectorUpdatePGS1);
-	    FinalizeVectorUpdate(handle);
-
-	    if(0)
-	    {
-	      static int sgs_count = 0;
-	      char filename[1024];
-	      sprintf(filename, "pressure-post.%d", sgs_count);
-	      printf("Writing file %s\n", filename);
-	      PrintVectorAll(filename, pressure);
-
-	      sprintf(filename, "kn-post.%d", sgs_count);
-	      PrintVectorAll(filename, KN);
-	      
-	      sprintf(filename, "ks-post.%d", sgs_count);
-	      PrintVectorAll(filename, KS);
-	      
-	      sprintf(filename, "ke-post.%d", sgs_count);
-	      PrintVectorAll(filename, KE);
-	      
-	      sprintf(filename, "kw-post.%d", sgs_count);
-	      PrintVectorAll(filename, KW);
-	      
-	      sgs_count++;
-	    }
-	  }
 	    
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
@@ -2219,23 +2050,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
               }
             }
           });
-
-
-	  if(0)
-	  {
-	    handle = InitVectorUpdate(fval, VectorUpdatePGS1);
-	    FinalizeVectorUpdate(handle);
-
-	    if(0)
-	    {
-	      static int sgs_count = 0;
-	      char filename[1024];
-	      sprintf(filename, "fval-post.%d", sgs_count);
-	      PrintVectorAll(filename, fval);
-	      sgs_count++;
-	    }
-	  }
-
 
           break;
         } /* End OverlandDiffusiveBC */
