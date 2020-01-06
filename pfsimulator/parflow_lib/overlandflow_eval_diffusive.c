@@ -77,7 +77,6 @@ void    OverlandFlowEvalDiff(
                                                 *                  derivative */
 {
 
-  printf("SGS OverlandFlowEvalDiff\n");
   static int sgs_count = 0;
   
   PFModule      *this_module = ThisPFModule;
@@ -87,7 +86,6 @@ void    OverlandFlowEvalDiff(
   Vector      *mannings = ProblemDataMannings(problem_data);
   Vector      *top = ProblemDataIndexOfDomainTop(problem_data);
 
-  // printf("overland_eval_diffusive called\n");
   Subvector     *qx_sub, *qy_sub, *sx_sub, *sy_sub, *mann_sub, *top_sub, *p_sub, *op_sub;
 
   Subgrid      *subgrid;
@@ -124,9 +122,6 @@ void    OverlandFlowEvalDiff(
     handle = InitVectorUpdate(pressure, VectorUpdatePGS1);
     FinalizeVectorUpdate(handle);
   }
-
-  //PrintVectorAll("pressure", pressure);
-  //PrintVectorAll("top", top);
 
   p_sub = VectorSubvector(pressure, sg);
   op_sub = VectorSubvector(old_pressure, sg);
@@ -166,8 +161,6 @@ void    OverlandFlowEvalDiff(
     // BCStructPatchLoopOvrlnd(i, j, k, fdir, ival, bc_struct, ipatch, sg,
     BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, sg,
     {
-      //printf("CALCFCN call=%d i=%d, j=%d\n", sgs_count, i, j);
-      
       if (fdir[2] == 1)
       {
         int io = SubvectorEltIndex(sx_sub, i, j, 0);
@@ -185,11 +178,6 @@ void    OverlandFlowEvalDiff(
           int ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
           int ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
 
-	  if( i == 5 && j == 6)
-	  {
-	    printf("CALCFCN k1 >=0 call=%d ipp1=%d ippsy=%d k0x=%d, k0y=%d, k1x=%d, k1y=%d\n", sgs_count, ipp1, ippsy, k0x, k0y, k1x, k1y);
-	  }
-		  
           double Pupx = pfmax(pp[ipp1], 0.0);
           double Pupy = pfmax(pp[ippsy], 0.0);
           double Pupox = pfmax(opp[ipp1], 0.0);
@@ -213,31 +201,19 @@ void    OverlandFlowEvalDiff(
           qx_dat[io] = -(Sf_x / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_x, (5.0 / 3.0));
           qy_dat[io] = -(Sf_y / (RPowerR(fabs(Sf_mag), 0.5) * mann_dat[io])) * RPowerR(Press_y, (5.0 / 3.0));
         }
-
-	if( i == 5 && j == 6)
-	{
-	  printf("loop 1 qx_dat=%f,qy_dat=%f\n", qx_dat[io], qy_dat[io]);
-	}
-
-	if( i == 5 && j == 6)
-	{
-	  // printf("call=%d i=%d j=%d, pupy=%f, pupx=%f, pupoy=%f, pupox=%f, sfmag=%f\n", sgs_count, i, j, Pupy, Pupx, Pupoy, Pupox, Sf_mag );
-	  printf("i=%d j=%d k=%d ke_v=%f kw_v=%f kn_v=%f ks_v=%f\n",i,j,k,ke_v[io],kw_v[io],kn_v[io],ks_v[io]);
-	}
       }
     });
 
+    /* Update the ghost layers in qx and qy vectors */
     {
-      printf("SGS exchange post OVD\n");
       VectorUpdateCommHandle *handle;
-      /* Update the boundary layers */
+
       handle = InitVectorUpdate(qx, VectorUpdatePGS1);
       FinalizeVectorUpdate(handle);
       
       handle = InitVectorUpdate(qy, VectorUpdatePGS1);
       FinalizeVectorUpdate(handle);
     }
-
 
     // BCStructPatchLoopOvrlnd(i, j, k, fdir, ival, bc_struct, ipatch, sg,
     BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, sg,
@@ -294,11 +270,6 @@ void    OverlandFlowEvalDiff(
 	    }
 	  }
 
-	  if( i == 5 && j == 6)
-	  {
-	    printf("loop 2 qx_dat=%f,qy_dat=%f\n", qx_dat[io], qy_dat[io]);
-	  }
-
 	  //fix for lower y boundary
 	  if (k0y < 0.0)
 	  {
@@ -328,18 +299,6 @@ void    OverlandFlowEvalDiff(
 	      }
 	    }
 	  }
-
-	  if( i == 5 && j == 6)
-	  {
-	    printf("qx_dat=%f,qy_dat=%f\n", qx_dat[io], qy_dat[io]);
-	  }
-
-	  if( i == 5 && j == 6)
-	  {
-	    //printf("call=%d i=%d j=%d, pupy=%f, pupx=%f, pupoy=%f, pupox=%f, sfmag=%f\n", sgs_count, i, j, Pupy, Pupx, Pupoy, Pupox, Sf_mag );
-	    printf("call=%d ipp1=%d ippsy=%d\n", sgs_count, ipp1, ippsy);
-	    printf("i=%d j=%d k=%d ke_v=%f kw_v=%f kn_v=%f ks_v=%f\n",i,j,k,ke_v[io],kw_v[io],kn_v[io],ks_v[io]);
-	  }
 	}
 
 	{
@@ -349,11 +308,6 @@ void    OverlandFlowEvalDiff(
 	  kw_v[io] = qx_dat[io - 1];
 	  kn_v[io] = qy_dat[io];
 	  ks_v[io] = qy_dat[io - sy_v];
-
-	  if( i == 5 && j == 6)
-	  {
-	    printf("i=%d j=%d k=%d ke_v=%f kw_v=%f kn_v=%f ks_v=%f\n",i,j,k,ke_v[io],kw_v[io],kn_v[io],ks_v[io]);
-	  }
 	}
       }
     });
@@ -381,7 +335,6 @@ void    OverlandFlowEvalDiff(
 
           int ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
           int ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
-	  printf("CALCDER call=%d k1 >=0 ipp1=%d ippsy=%d\n", sgs_count, ipp1, ippsy);
           double Pupx = pfmax(pp[ipp1], 0.0);
           double Pupy = pfmax(pp[ippsy], 0.0);
           double Pupox = pfmax(opp[ipp1], 0.0);
@@ -449,7 +402,6 @@ void    OverlandFlowEvalDiff(
 
 	  int ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
           int ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
-	  //printf("CALCDER call=%d k1 >=0 ipp1=%d ippsy=%d\n", sgs_count, ipp1, ippsy);
           double Pupx = pfmax(pp[ipp1], 0.0);
           double Pupy = pfmax(pp[ippsy], 0.0);
           double Pupox = pfmax(opp[ipp1], 0.0);
