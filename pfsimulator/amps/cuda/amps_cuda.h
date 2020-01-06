@@ -34,12 +34,15 @@ static inline void rmmError(rmmError_t err, const char *file, int line) {
 /*--------------------------------------------------------------------------
  * Define amps GPU kernels
  *--------------------------------------------------------------------------*/
+#define BLOCKSIZE_MAX 1024
 
 #ifdef __CUDACC__
 
 extern "C++"{
 template <typename T>
-__global__ static void StridedCopyKernel(T * __restrict__ dest, const int stride_dest, 
+__global__ static void 
+__launch_bounds__(BLOCKSIZE_MAX)
+StridedCopyKernel(T * __restrict__ dest, const int stride_dest, 
                                   T * __restrict__ src, const int stride_src, const int len) 
 {
   const int tid = ((blockIdx.x*blockDim.x)+threadIdx.x);
@@ -53,7 +56,9 @@ __global__ static void StridedCopyKernel(T * __restrict__ dest, const int stride
   }
 }
 template <typename T>
-__global__ static void PackingKernel(T * __restrict__ ptr_buf, const T * __restrict__ ptr_data, 
+__global__ static void 
+__launch_bounds__(BLOCKSIZE_MAX)
+PackingKernel(T * __restrict__ ptr_buf, const T * __restrict__ ptr_data, 
     const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z) 
 {
   const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);   
@@ -73,7 +78,9 @@ __global__ static void PackingKernel(T * __restrict__ ptr_buf, const T * __restr
   }
 }
 template <typename T>
-__global__ static void UnpackingKernel(const T * __restrict__ ptr_buf, T * __restrict__  ptr_data, 
+__global__ static void 
+__launch_bounds__(BLOCKSIZE_MAX)
+UnpackingKernel(const T * __restrict__ ptr_buf, T * __restrict__  ptr_data, 
     const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z) 
 {
   const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);   

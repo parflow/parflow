@@ -14,9 +14,10 @@ extern "C++"{
 /*--------------------------------------------------------------------------
  * CUDA block size definitions
  *--------------------------------------------------------------------------*/
-#define BLOCKSIZE_H 16
-#define BLOCKSIZE_V 4
-#define BLOCKSIZE_TOTAL BLOCKSIZE_H * BLOCKSIZE_H * BLOCKSIZE_V
+#define BLOCKSIZE_MAX 1024
+#define BLOCKSIZE_X 32
+#define BLOCKSIZE_Y 8
+#define BLOCKSIZE_Z 4
 
 /*--------------------------------------------------------------------------
  * CUDA lambda definition (visible for host and device functions)
@@ -155,7 +156,9 @@ __host__ __device__ __forceinline__ static void AtomicAdd(T *array_loc, T value)
  * CUDA loop kernels
  *--------------------------------------------------------------------------*/
 template <typename LAMBDA_BODY>
-__global__ static void BoxKernelI0(LAMBDA_BODY loop_body, 
+__global__ static void 
+__launch_bounds__(BLOCKSIZE_MAX)
+BoxKernelI0(LAMBDA_BODY loop_body, 
     const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -174,7 +177,9 @@ __global__ static void BoxKernelI0(LAMBDA_BODY loop_body,
 }
 
 template <typename LAMBDA_INIT, typename LAMBDA_BODY>
-__global__ static void BoxKernelI1(LAMBDA_INIT loop_init, LAMBDA_BODY loop_body, 
+__global__ static void 
+__launch_bounds__(BLOCKSIZE_MAX)
+BoxKernelI1(LAMBDA_INIT loop_init, LAMBDA_BODY loop_body, 
     const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -195,7 +200,9 @@ __global__ static void BoxKernelI1(LAMBDA_INIT loop_init, LAMBDA_BODY loop_body,
 }
 
 template <typename LAMBDA_INIT1, typename LAMBDA_INIT2, typename LAMBDA_BODY>
-__global__ static void BoxKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_BODY loop_body, 
+__global__ static void 
+__launch_bounds__(BLOCKSIZE_MAX)
+BoxKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_BODY loop_body, 
     const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -217,7 +224,9 @@ __global__ static void BoxKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_in
 }
 
 template <typename LAMBDA_INIT1, typename LAMBDA_INIT2, typename LAMBDA_INIT3, typename LAMBDA_BODY>
-__global__ static void BoxKernelI3(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_INIT3 loop_init3, 
+__global__ static void 
+__launch_bounds__(BLOCKSIZE_MAX)
+BoxKernelI3(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_INIT3 loop_init3, 
     LAMBDA_BODY loop_body, const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -240,15 +249,17 @@ __global__ static void BoxKernelI3(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_in
 }
 
 template <typename LAMBDA_INIT1, typename LAMBDA_INIT2, typename LAMBDA_FUN, typename T>
-__global__ static void DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_FUN loop_fun, 
+__global__ static void 
+__launch_bounds__(BLOCKSIZE_MAX)
+DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_FUN loop_fun, 
     const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ rslt,  
     const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
-    // Specialize BlockReduce for a 3D block of BLOCKSIZE_H * BLOCKSIZE_H * BLOCKSIZE_V threads on type T
+    // Specialize BlockReduce for a 3D block of BLOCKSIZE_X * BLOCKSIZE_Y * BLOCKSIZE_Z threads on type T
 #ifdef __CUDA_ARCH__
-    typedef cub::BlockReduce<T, BLOCKSIZE_H, cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY, BLOCKSIZE_H, BLOCKSIZE_V, __CUDA_ARCH__> BlockReduce;
+    typedef cub::BlockReduce<T, BLOCKSIZE_X, cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY, BLOCKSIZE_Y, BLOCKSIZE_Z, __CUDA_ARCH__> BlockReduce;
 #else
-    typedef cub::BlockReduce<T, BLOCKSIZE_H, cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY, BLOCKSIZE_H, BLOCKSIZE_V> BlockReduce;
+    typedef cub::BlockReduce<T, BLOCKSIZE_X, cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY, BLOCKSIZE_Y, BLOCKSIZE_Z> BlockReduce;
 #endif
 
     __shared__ typename BlockReduce::TempStorage temp_storage;
@@ -288,6 +299,28 @@ static int gpu_sync = 1;
 #undef GPU_SYNC
 #define GPU_SYNC CUDA_ERR(cudaStreamSynchronize(0)); 
 
+#define FindDims(grid, block, nx, ny, nz, dyn_blocksize)                            \
+{                                                                                   \
+  int blocksize_x = BLOCKSIZE_X;                                                    \
+  int blocksize_y = BLOCKSIZE_Y;                                                    \
+  int blocksize_z = BLOCKSIZE_Z;                                                    \
+  grid = dim3(((nx - 1) + blocksize_x) / blocksize_x,                               \
+      ((ny - 1) + blocksize_y) / blocksize_y,                                       \
+      ((nz - 1) + blocksize_z) / blocksize_z);                                      \
+  while(dyn_blocksize && (grid.x*grid.y*grid.z < 80)                                \
+          && ((blocksize_y * blocksize_z) >= 4 ))                                   \
+  {                                                                                 \
+      if ( blocksize_z >= 2 )                                                       \
+          blocksize_z /= 2;                                                         \
+      else                                                                          \
+          blocksize_y /= 2;                                                         \
+      grid = dim3(((nx - 1) + blocksize_x) / blocksize_x,                           \
+      ((ny - 1) + blocksize_y) / blocksize_y,                                       \
+      ((nz - 1) + blocksize_z) / blocksize_z);                                      \
+  }                                                                                 \
+  block = dim3(blocksize_x, blocksize_y, blocksize_z);                              \
+}  
+
 #undef BoxLoopI1
 #define BoxLoopI1(i_dummy, j_dummy, k_dummy,                                        \
                   ix, iy, iz, nx, ny, nz,                                           \
@@ -298,12 +331,8 @@ static int gpu_sync = 1;
   {                                                                                 \
     DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);     \
                                                                                     \
-    const int blocksize_h = BLOCKSIZE_H;                                            \
-    const int blocksize_v = BLOCKSIZE_V;                                            \
-    dim3 grid = dim3(((nx - 1) + blocksize_h) / blocksize_h,                        \
-        ((ny - 1) + blocksize_h) / blocksize_h,                                     \
-        ((nz - 1) + blocksize_v) / blocksize_v);                                    \
-    dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                       \
+    dim3 block, grid;                                                               \
+    FindDims(grid, block, nx, ny, nz, 1);                                           \
                                                                                     \
     auto lambda_init =                                                              \
         GPU_LAMBDA(const int i, const int j, const int k)                           \
@@ -334,12 +363,8 @@ static int gpu_sync = 1;
     DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);     \
     DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2);     \
                                                                                     \
-    const int blocksize_h = BLOCKSIZE_H;                                            \
-    const int blocksize_v = BLOCKSIZE_V;                                            \
-    dim3 grid = dim3(((nx - 1) + blocksize_h) / blocksize_h,                        \
-        ((ny - 1) + blocksize_h) / blocksize_h,                                     \
-        ((nz - 1) + blocksize_v) / blocksize_v);                                    \
-    dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                       \
+    dim3 block, grid;                                                               \
+    FindDims(grid, block, nx, ny, nz, 1);                                           \
                                                                                     \
     auto lambda_init1 =                                                             \
         GPU_LAMBDA(const int i, const int j, const int k)                           \
@@ -378,12 +403,8 @@ static int gpu_sync = 1;
     DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2);     \
     DeclareInc(PV_jinc_3, PV_kinc_3, nx, ny, nz, nx3, ny3, nz3, sx3, sy3, sz3);     \
                                                                                     \
-    const int blocksize_h = BLOCKSIZE_H;                                            \
-    const int blocksize_v = BLOCKSIZE_V;                                            \
-    dim3 grid = dim3(((nx - 1) + blocksize_h) / blocksize_h,                        \
-        ((ny - 1) + blocksize_h) / blocksize_h,                                     \
-        ((nz - 1) + blocksize_v) / blocksize_v);                                    \
-    dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                       \
+    dim3 block, grid;                                                               \
+    FindDims(grid, block, nx, ny, nz, 1);                                           \
                                                                                     \
     auto lambda_init1 =                                                             \
         GPU_LAMBDA(const int i, const int j, const int k)                           \
@@ -426,12 +447,8 @@ static int gpu_sync = 1;
     DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);     \
     DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2);     \
                                                                                     \
-    const int blocksize_h = BLOCKSIZE_H;                                            \
-    const int blocksize_v = BLOCKSIZE_V;                                            \
-    dim3 grid = dim3(((nx - 1) + blocksize_h) / blocksize_h,                        \
-        ((ny - 1) + blocksize_h) / blocksize_h,                                     \
-        ((nz - 1) + blocksize_v) / blocksize_v);                                    \
-    dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                       \
+    dim3 block, grid;                                                               \
+    FindDims(grid, block, nx, ny, nz, 0);                                           \
                                                                                     \
     auto lambda_init1 =                                                             \
         GPU_LAMBDA(const int i, const int j, const int k)                           \
@@ -475,12 +492,8 @@ static int gpu_sync = 1;
       int PV_diff_y = PV_iyu - PV_iyl;                                              \
       int PV_diff_z = PV_izu - PV_izl;                                              \
                                                                                     \
-      const int blocksize_h = BLOCKSIZE_H;                                          \
-      const int blocksize_v = BLOCKSIZE_V;                                          \
-      dim3 grid = dim3((PV_diff_x + blocksize_h) / blocksize_h,                     \
-        (PV_diff_y + blocksize_h) / blocksize_h,                                    \
-        (PV_diff_z + blocksize_v) / blocksize_v);                                   \
-      dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                     \
+      dim3 block, grid;                                                             \
+      FindDims(grid, block, PV_diff_x + 1, PV_diff_y + 1, PV_diff_z + 1, 1);        \
                                                                                     \
       int nx = PV_diff_x + 1;                                                       \
       int ny = PV_diff_y + 1;                                                       \
@@ -546,12 +559,8 @@ static int gpu_sync = 1;
         int PV_diff_y = PV_iyu - PV_iyl;                                            \
         int PV_diff_z = PV_izu - PV_izl;                                            \
                                                                                     \
-        const int blocksize_h = BLOCKSIZE_H;                                        \
-        const int blocksize_v = BLOCKSIZE_V;                                        \
-        dim3 grid = dim3((PV_diff_x + blocksize_h) / blocksize_h,                   \
-          (PV_diff_y + blocksize_h) / blocksize_h,                                  \
-          (PV_diff_z + blocksize_v) / blocksize_v);                                 \
-        dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                   \
+        dim3 block, grid;                                                           \
+        FindDims(grid, block, PV_diff_x + 1, PV_diff_y + 1, PV_diff_z + 1, 1);      \
                                                                                     \
         int nx = PV_diff_x + 1;                                                     \
         int ny = PV_diff_y + 1;                                                     \
@@ -629,12 +638,8 @@ static int gpu_sync = 1;
         int PV_diff_y = PV_iyu - PV_iyl;                                            \
         int PV_diff_z = PV_izu - PV_izl;                                            \
                                                                                     \
-        const int blocksize_h = BLOCKSIZE_H;                                        \
-        const int blocksize_v = BLOCKSIZE_V;                                        \
-        dim3 grid = dim3((PV_diff_x + blocksize_h) / blocksize_h,                   \
-          (PV_diff_y + blocksize_h) / blocksize_h,                                  \
-          (PV_diff_z + blocksize_v) / blocksize_v);                                 \
-        dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                   \
+        dim3 block, grid;                                                           \
+        FindDims(grid, block, PV_diff_x + 1, PV_diff_y + 1, PV_diff_z + 1, 1);      \
                                                                                     \
         int nx = PV_diff_x + 1;                                                     \
         int ny = PV_diff_y + 1;                                                     \
@@ -705,12 +710,9 @@ static int gpu_sync = 1;
       const int PV_diff_y = PV_iyu - PV_iyl;                                        \
       const int PV_diff_z = PV_izu - PV_izl;                                        \
                                                                                     \
-      const int blocksize_h = BLOCKSIZE_H;                                          \
-      const int blocksize_v = BLOCKSIZE_V;                                          \
-      dim3 grid = dim3(((PV_diff_x - 1) + blocksize_h) / blocksize_h,               \
-        ((PV_diff_y - 1) + blocksize_h) / blocksize_h,                              \
-        ((PV_diff_z - 1) + blocksize_v) / blocksize_v);                             \
-      dim3 block = dim3(blocksize_h, blocksize_h, blocksize_v);                     \
+      dim3 block;                                                                   \
+      dim3 grid;                                                                    \
+      FindDims(grid, block, PV_diff_x, PV_diff_y, PV_diff_z, 1);                    \
                                                                                     \
       auto lambda_body = GPU_LAMBDA(const int i, const int j, const int k)loop_body;\
                                                                                     \
