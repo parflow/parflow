@@ -307,6 +307,9 @@ void    OverlandFlowEvalDiff(
   }
   else          //fcn = CALCDER calculates the derivs of KE KW KN KS wrt to current cell (i,j,k)
   {
+
+    // SGS FIXME this is broken in parallel.
+    // This loop suffer the same issue that plagued the previous case.   The logic here is a bit more complicated.   Needs be split with an exchange between?
     BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, sg,
     {
       if (fdir[2] == 1)
@@ -389,8 +392,6 @@ void    OverlandFlowEvalDiff(
           }
         }
 
-
-	// SGS TODO Does this loop suffer the same issue as the previous one, does it need to be split with an exchange between?
 	{
 	  int ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
           int ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
