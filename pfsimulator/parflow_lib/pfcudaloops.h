@@ -322,7 +322,7 @@ static int gpu_sync = 1;
 }  
 
 #undef BoxLoopI1
-#define BoxLoopI1(i_dummy, j_dummy, k_dummy,                                        \
+#define BoxLoopI1(i, j, k,                                                          \
                   ix, iy, iz, nx, ny, nz,                                           \
                   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
                   loop_body)                                                        \
@@ -352,7 +352,7 @@ static int gpu_sync = 1;
 }
 
 #undef BoxLoopI2
-#define BoxLoopI2(i_dummy, j_dummy, k_dummy,                                        \
+#define BoxLoopI2(i, j, k,                                                          \
                   ix, iy, iz, nx, ny, nz,                                           \
                   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
                   i2, nx2, ny2, nz2, sx2, sy2, sz2,                                 \
@@ -390,7 +390,7 @@ static int gpu_sync = 1;
 }
 
 #undef BoxLoopI3
-#define BoxLoopI3(i_dummy, j_dummy, k_dummy,                                        \
+#define BoxLoopI3(i, j, k,                                                          \
                   ix, iy, iz, nx, ny, nz,                                           \
                   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
                   i2, nx2, ny2, nz2, sx2, sy2, sz2,                                 \
@@ -436,7 +436,7 @@ static int gpu_sync = 1;
 }
 
 #undef DotLoopGPU
-#define DotLoopGPU(i_dummy, j_dummy, k_dummy,                                       \
+#define DotLoopGPU(i, j, k,                                                         \
                   ix, iy, iz, nx, ny, nz,                                           \
                   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
                   i2, nx2, ny2, nz2, sx2, sy2, sz2,                                 \
@@ -471,8 +471,8 @@ static int gpu_sync = 1;
 }
 
 #undef GrGeomInLoopBoxes
-#define GrGeomInLoopBoxes(i_dummy, j_dummy, k_dummy,                                \
-                         grgeom, ix, iy, iz, nx, ny, nz, loop_body)                 \
+#define GrGeomInLoopBoxes(i, j, k,                                                  \
+                          grgeom, ix, iy, iz, nx, ny, nz, loop_body)                \
 {                                                                                   \
   BoxArray* boxes = GrGeomSolidInteriorBoxes(grgeom);                               \
   for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                      \
@@ -509,7 +509,7 @@ static int gpu_sync = 1;
 }
 
 #undef GrGeomSurfLoopBoxes
-#define GrGeomSurfLoopBoxes(i_dummy, j_dummy, k_dummy, fdir, grgeom,                \
+#define GrGeomSurfLoopBoxes(i, j, k, fdir, grgeom,                                  \
                             ix, iy, iz, nx, ny, nz, loop_body)                      \
 {                                                                                   \
   int PV_fdir[3];                                                                   \
@@ -587,7 +587,7 @@ static int gpu_sync = 1;
 }
 
 #undef GrGeomPatchLoopBoxes
-#define GrGeomPatchLoopBoxes(i_dummy, j_dummy, k_dummy, fdir, grgeom, patch_num,    \
+#define GrGeomPatchLoopBoxes(i, j, k, fdir, grgeom, patch_num,                      \
                              ix, iy, iz, nx, ny, nz, loop_body)                     \
 {                                                                                   \
   int PV_fdir[3];                                                                   \
