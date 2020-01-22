@@ -118,6 +118,10 @@
 #define PlusEquals(a, b) (a += b)
 #endif
 
+#ifndef ReduceSum
+#define ReduceSum(a, b) (a += b)
+#endif
+
 /* return 2^e, where e >= 0 is an integer */
 #define Pow2(e)   (((unsigned int)0x01) << (e))
 
@@ -175,6 +179,7 @@
 #define __host__
 #define __device__
 #define __managed__
+#define __restrict__
 #endif // __CUDACC__
 
 #endif

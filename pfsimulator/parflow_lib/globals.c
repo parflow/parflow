@@ -45,13 +45,12 @@ extern "C"{
 
 #include <limits.h>
 
-#ifndef __CUDA_ARCH__
 /*--------------------------------------------------------------------------
  * NewGlobals
  *--------------------------------------------------------------------------*/
 void   NewGlobals(char *run_name)
 {
-  globals = ctalloc(Globals, 1);
+  globals_ptr = ctalloc(Globals, 1);
 
   sprintf(GlobalsRunName, "%s", run_name);
   sprintf(GlobalsInFileName, "%s.%s", run_name, "pfidb");
@@ -96,7 +95,7 @@ void   NewGlobals(char *run_name)
 
 void  FreeGlobals()
 {
-  free(globals);
+  free(globals_ptr);
 }
 
 /*--------------------------------------------------------------------------
@@ -125,7 +124,6 @@ void  LogGlobals()
     CloseLogFile(log_file);
   }
 }
-#endif // !__CUDA_ARCH__
 
 #ifdef HAVE_CUDA
 // Allocate __constant__ memory on GPU for the Globals struct

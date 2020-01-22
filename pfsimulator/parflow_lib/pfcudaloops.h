@@ -152,6 +152,9 @@ __host__ __device__ __forceinline__ static void AtomicAdd(T *array_loc, T value)
 #undef PlusEquals
 #define PlusEquals(a, b) AtomicAdd(&(a), b)
 
+#undef ReduceSum
+#define ReduceSum(a, b) (a += b)
+
 /*--------------------------------------------------------------------------
  * CUDA loop kernels
  *--------------------------------------------------------------------------*/
@@ -252,8 +255,8 @@ template <typename LAMBDA_INIT1, typename LAMBDA_INIT2, typename LAMBDA_FUN, typ
 __global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
 DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_FUN loop_fun, 
-    const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ rslt,  
-    const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
+    T * __restrict__ rslt, const int ix, const int iy, const int iz, 
+    const int nx, const int ny, const int nz)
 {
     // Specialize BlockReduce for a 3D block of BLOCKSIZE_X * BLOCKSIZE_Y * BLOCKSIZE_Z threads on type T
 #ifdef __CUDA_ARCH__
@@ -275,7 +278,7 @@ DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_FUN loop_fu
         const int i1 = loop_init1(i, j, k);
         const int i2 = loop_init2(i, j, k);
 
-        thread_data = loop_fun(a, b, i1, i2);
+        thread_data = loop_fun(i, j, k, i1, i2);
     }
 
     // Compute the block-wide sum for thread0
@@ -435,12 +438,12 @@ static int gpu_sync = 1;
   }                                                                                 \
 }
 
-#undef DotLoopGPU
-#define DotLoopGPU(i, j, k,                                                         \
+#undef BoxReduceI2
+#define BoxReduceI2(i, j, k,                                                        \
                   ix, iy, iz, nx, ny, nz,                                           \
                   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
                   i2, nx2, ny2, nz2, sx2, sy2, sz2,                                 \
-                  xp, yp, rslt, lambda_fun)                                         \
+                  loop_body, rslt)                                                  \
 {                                                                                   \
   if(nx > 0 && ny > 0 && nz > 0)                                                    \
   {                                                                                 \
@@ -462,9 +465,18 @@ static int gpu_sync = 1;
             return k * PV_kinc_2 + (k * ny + j) * PV_jinc_2                         \
             + (k * ny * nx + j * nx + i) * sx2 + i2;                                \
         };                                                                          \
+    auto zero = rslt;                                                               \
+    auto lambda_body =                                                              \
+        GPU_LAMBDA(const int i, const int j, const int k,                           \
+                   const int i1, const int i2)                                      \
+        {                                                                           \
+            auto rslt = zero;                                                       \
+            loop_body;                                                              \
+            return rslt;                                                            \
+        };                                                                          \
                                                                                     \
-    DotKernelI2<<<grid, block>>>(lambda_init1, lambda_init2, lambda_fun,            \
-        xp, yp, &rslt, ix, iy, iz, nx, ny, nz);                                     \
+    DotKernelI2<<<grid, block>>>(lambda_init1, lambda_init2, lambda_body,           \
+        &rslt, ix, iy, iz, nx, ny, nz);                                             \
     CUDA_ERR(cudaPeekAtLastError());                                                \
     if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
   }                                                                                 \
