@@ -459,6 +459,7 @@ pfdist llnl.out.perm_x.pfb
 
 pfrun llnl-perm
 pfundist llnl-perm
+pfundist llnl.out.perm_x.pfb
 
 #-----------------------------------------------------------------------------
 # If running as test; check output.
@@ -468,7 +469,7 @@ pfundist llnl-perm
 if { [info exists ::env(PF_TEST) ] } {
     set new [pfload -pfb llnl-perm.out.perm_x.pfb]
 
-    pfundist llnl.out.perm_x.pfb
+
     set old [pfload -pfb llnl.out.perm_x.pfb]
     set save [pfaxpy -1 $new $old]
     #
