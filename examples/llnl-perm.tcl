@@ -469,7 +469,6 @@ pfundist llnl.out.perm_x.pfb
 if { [info exists ::env(PF_TEST) ] } {
     set new [pfload -pfb llnl-perm.out.perm_x.pfb]
 
-
     set old [pfload -pfb llnl.out.perm_x.pfb]
     set save [pfaxpy -1 $new $old]
     #
@@ -477,7 +476,6 @@ if { [info exists ::env(PF_TEST) ] } {
     #
     pfsave $save -pfb llnl-perm.out.diff.perm.pfb
 
-    
     set TEST llnl-perm
     source pftest.tcl
     set sig_digits 4
