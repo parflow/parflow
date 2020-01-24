@@ -460,20 +460,23 @@ pfdist llnl.out.perm_x.pfb
 pfrun llnl-perm
 pfundist llnl-perm
 
-set new [pfload -pfb llnl-perm.out.perm_x.pfb]
-set old [pfload -pfb llnl.out.perm_x.pfb]
-set save [pfaxpy -1 $new $old]
-#
-# Should only diff in layer1b
-#
-pfsave $save -pfb llnl-perm.out.diff.perm.pfb
-
 #-----------------------------------------------------------------------------
 # If running as test; check output.
 # You do not need this for normal PF input files; this is done so the examples
 # are run and checked as part of our testing process.
 #-----------------------------------------------------------------------------
 if { [info exists ::env(PF_TEST) ] } {
+    set new [pfload -pfb llnl-perm.out.perm_x.pfb]
+
+    pfundist llnl.out.perm_x.pfb
+    set old [pfload -pfb llnl.out.perm_x.pfb]
+    set save [pfaxpy -1 $new $old]
+    #
+    # Should only diff in layer1b
+    #
+    pfsave $save -pfb llnl-perm.out.diff.perm.pfb
+
+    
     set TEST llnl-perm
     source pftest.tcl
     set sig_digits 4
