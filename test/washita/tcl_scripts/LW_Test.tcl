@@ -516,16 +516,27 @@ file link -symbolic correct_output "../correct_output"
 set runname "LW"
 pfrun    $runname
 
+puts "ParFlow run Complete"
+
 #-----------------------------------------------------------------------------
 # Undistribute outputs
 #-----------------------------------------------------------------------------
 pfundist $runname
-pfundist press.init.pfb
-pfundist LW.slopex.pfb
-pfundist LW.slopey.pfb
-pfundist IndicatorFile_Gleeson.50z.pfb
 
-puts "ParFlow run Complete"
+set StartTime [expr int([pfget TimingInfo.StartTime])]
+set StopTime [expr int([pfget TimingInfo.StopTime])]
+
+set ClmVariables [list "eflx_lh_tot" "qflx_evap_soi" "swe_out" "eflx_lwrad_out" "qflx_evap_tot" "t_grnd" "eflx_sh_tot" "qflx_evap_veg" "t_soil" "eflx_soil_grnd" "qflx_infl" "qflx_evap_grnd" "qflx_tran_veg" ]
+for {set i $StartTime} { $i <= $StopTime } {incr i} { 
+    set step [format "%05d" $i]
+    foreach variable $ClmVariables {
+        pfundist $runname.out.$variable.$step.pfb
+    }
+}
+
+#-----------------------------------------------------------------------------
+# Verify output
+#-----------------------------------------------------------------------------
 
 source ../../../pftest.tcl
 
@@ -533,24 +544,18 @@ set sig_digits 4
 
 set passed 1
 
-if ![pftestFile $runname.out.press.00000.pfb "Max difference in Pressure" $sig_digits] {
-    set passed 0
+set ParflowVariables [list "satur" "press"]
+set step [format "%05d" 0]
+foreach variable $ParflowVariables {
+    set file $runname.out.$variable.$step.pfb 
+    if ![pftestFile $file "Max difference in $file" $sig_digits] {
+	set passed 0
+    }
 }
 
-if ![pftestFile $runname.out.satur.00000.pfb "Max difference in Pressure" $sig_digits] {
-    set passed 0
-}
-
-foreach file "LW.out.eflx_lh_tot.00012.pfb
-    LW.out.qflx_evap_soi.00012.pfb LW.out.swe_out.00012.pfb
-    LW.out.eflx_lwrad_out.00012.pfb LW.out.qflx_evap_tot.00012.pfb
-    LW.out.t_grnd.00012.pfb LW.out.eflx_sh_tot.00012.pfb
-    LW.out.qflx_evap_veg.00012.pfb LW.out.t_soil.00012.pfb
-    LW.out.eflx_soil_grnd.00012.pfb LW.out.qflx_infl.00012.pfb
-    LW.out.qflx_evap_grnd.00012.pfb LW.out.qflx_tran_veg.00012.pfb" {
-
-    pfundist $file
-
+set step [format "%05d" 12]
+foreach variable $ClmVariables {
+    set file $runname.out.$variable.$step.pfb 
     if ![pftestFile $file "Max difference in $file" $sig_digits] { 
 	set passed 0 
     } 
