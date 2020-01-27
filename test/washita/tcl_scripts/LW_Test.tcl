@@ -504,7 +504,7 @@ foreach file "drv_clmin drv_vegp drv_vegm.alluv" {
 set path "../../NLDAS"
 foreach file "NLDAS.DSWR.000001_to_000024 NLDAS.DLWR.000001_to_000024 NLDAS.APCP.000001_to_000024 NLDAS.Temp.000001_to_000024 NLDAS.UGRD.000001_to_000024 NLDAS.VGRD.000001_to_000024 NLDAS.Press.000001_to_000024 NLDAS.SPFH.000001_to_000024" {
     file copy -force [format "%s/%s.pfb" $path $file] .
-    pfdist [format "%s.pfb" $file]
+    pfdist -nz 24 [format "%s.pfb" $file]
 }
 
 file delete correct_output

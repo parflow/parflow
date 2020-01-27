@@ -502,9 +502,23 @@ foreach file "drv_clmin drv_vegp drv_vegm.alluv" {
 }
 
 set path "../../NLDAS"
-foreach file "NLDAS.DSWR.000001_to_000024 NLDAS.DLWR.000001_to_000024 NLDAS.APCP.000001_to_000024 NLDAS.Temp.000001_to_000024 NLDAS.UGRD.000001_to_000024 NLDAS.VGRD.000001_to_000024 NLDAS.Press.000001_to_000024 NLDAS.SPFH.000001_to_000024" {
-    file copy -force [format "%s/%s.pfb" $path $file] .
-    pfdist [format "%s.pfb" $file]
+
+set files [glob "$path/NLDAS.DSWR.*.pfb"]
+
+set time_periods []
+foreach file $files {
+    regexp {NLDAS\.DSWR\.(.*)\.pfb} $file full time 
+    lappend time_periods $time
+}
+
+set NldasVariables [list "DSWR" "DLWR" "APCP" "Temp" "UGRD" "VGRD" "Press" "SPFH"]
+
+foreach time_period $time_periods {
+    foreach variable $NldasVariables {
+	set file NLDAS.$variable.$time_period.pfb
+	file copy -force [format "%s/%s" $path $file] .
+	pfdist -nz 24 $file
+    }
 }
 
 file delete correct_output
