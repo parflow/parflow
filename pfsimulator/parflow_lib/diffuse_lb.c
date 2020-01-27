@@ -85,7 +85,6 @@ void DiffuseLB(
   /* miscellaneous */
   char file_postfix[80];
   double epsilon = 1.0e-10;
-  double gamma;
   double next_stop;
 
   /* Communications */
@@ -110,7 +109,6 @@ void DiffuseLB(
   write_pressure_iteration = (int)dump;
   iter_flag = 1;
 
-  gamma = beta_perm - beta_pore;
   compressibility = beta_pore + beta_fluid;
 
   /*------------------------------------------------------------*
@@ -171,14 +169,8 @@ void DiffuseLB(
                 index_update = SubvectorEltIndex(sub_p, ii, jj, kk);
 
                 /* Update the pore pressure */
-/*
- *                D = c[a]*tscale*GeomMean(permp[index],permp[index_update]);
- */
                 D = c[a] * tscale * permp[index_update];
                 D /= (viscosity * compressibility * phip[index]);
-/*
- *                D *= exp(gamma*pp[index_update]);
- */
                 if (D > maxD)
                   maxD = D;
 

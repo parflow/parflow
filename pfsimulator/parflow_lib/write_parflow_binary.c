@@ -49,6 +49,7 @@ long SizeofPFBinarySubvector(
 
   int nx_v = SubvectorNX(subvector);
   int ny_v = SubvectorNY(subvector);
+  int nz_v = SubvectorNZ(subvector);
 
   int i, j, k, ai;
 
@@ -83,6 +84,7 @@ void       WritePFBinary_Subvector(
 
   int nx_v = SubvectorNX(subvector);
   int ny_v = SubvectorNY(subvector);
+  int nz_v = SubvectorNZ(subvector);
 
   int i, j, k, ai;
   double         *data;
@@ -223,6 +225,7 @@ long SizeofPFSBinarySubvector(
 
   int nx_v = SubvectorNX(subvector);
   int ny_v = SubvectorNY(subvector);
+  int nz_v = SubvectorNZ(subvector);
 
   int i, j, k, ai, n;
   double         *data;
@@ -266,6 +269,7 @@ void       WritePFSBinary_Subvector(
 
   int nx_v = SubvectorNX(subvector);
   int ny_v = SubvectorNY(subvector);
+  int nz_v = SubvectorNZ(subvector);
 
   int i, j, k, ai, n;
   double         *data;

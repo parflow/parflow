@@ -291,6 +291,7 @@ void     WriteSiloPMPIO(char *  file_prefix,
 
     int nx_v = SubvectorNX(subvector);
     int ny_v = SubvectorNY(subvector);
+    int nz_v = SubvectorNZ(subvector);
 
     dims[0] = nx + 1;
     dims[1] = ny + 1;

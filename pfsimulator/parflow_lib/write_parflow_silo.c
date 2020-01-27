@@ -57,6 +57,7 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
 
   int nx_v = SubvectorNX(subvector);
   int ny_v = SubvectorNY(subvector);
+  int nz_v = SubvectorNZ(subvector);
 
   int i, j, k, ai;
   double         *data;

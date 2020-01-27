@@ -49,4 +49,6 @@ extern long AMPS_CPU_TICKS_PER_SEC;
 
 #endif
 
+#define PF_UNUSED(expr) do { (void)(expr); } while (0)
+
 #endif
