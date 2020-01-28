@@ -33,9 +33,9 @@
 
 /**
  * Maximum length for the key (including the trailing NUL).
- * User can thus enter 256 characters.
+ * User can thus enter 1024 characters.
  */
-#define IDB_MAX_KEY_LEN 257
+#define IDB_MAX_KEY_LEN 1025
 
 /**
  * Maximum length for the value (including the trailing NUL).

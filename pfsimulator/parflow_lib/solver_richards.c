@@ -469,24 +469,24 @@ SetupRichards(PFModule * this_module)
   /* Write subsurface data */
   if (public_xtra->print_subsurf_data)
   {
-    sprintf(file_postfix, "perm_x");
+    strcpy(file_postfix, "perm_x");
     WritePFBinary(file_prefix, file_postfix,
                   ProblemDataPermeabilityX(problem_data));
 
-    sprintf(file_postfix, "perm_y");
+    strcpy(file_postfix, "perm_y");
     WritePFBinary(file_prefix, file_postfix,
                   ProblemDataPermeabilityY(problem_data));
 
-    sprintf(file_postfix, "perm_z");
+    strcpy(file_postfix, "perm_z");
     WritePFBinary(file_prefix, file_postfix,
                   ProblemDataPermeabilityZ(problem_data));
 
-    sprintf(file_postfix, "porosity");
+    strcpy(file_postfix, "porosity");
     WritePFBinary(file_prefix, file_postfix,
                   ProblemDataPorosity(problem_data));
 
     // IMF -- added specific storage to subsurface bundle
-    sprintf(file_postfix, "specific_storage");
+    strcpy(file_postfix, "specific_storage");
     WritePFBinary(file_prefix, file_postfix,
                   ProblemDataSpecificStorage(problem_data));
 
@@ -517,28 +517,28 @@ SetupRichards(PFModule * this_module)
 
   if (public_xtra->write_silo_subsurf_data)
   {
-    sprintf(file_postfix, "");
-    sprintf(file_type, "perm_x");
+    strcpy(file_postfix, "");
+    strcpy(file_type, "perm_x");
     WriteSilo(file_prefix, file_type, file_postfix,
               ProblemDataPermeabilityX(problem_data), t, 0,
               "PermeabilityX");
 
-    sprintf(file_type, "perm_y");
+    strcpy(file_type, "perm_y");
     WriteSilo(file_prefix, file_type, file_postfix,
               ProblemDataPermeabilityY(problem_data), t, 0,
               "PermeabilityY");
 
-    sprintf(file_type, "perm_z");
+    strcpy(file_type, "perm_z");
     WriteSilo(file_prefix, file_type, file_postfix,
               ProblemDataPermeabilityZ(problem_data), t, 0,
               "PermeabilityZ");
 
-    sprintf(file_type, "porosity");
+    strcpy(file_type, "porosity");
     WriteSilo(file_prefix, file_type, file_postfix,
               ProblemDataPorosity(problem_data), t, 0, "Porosity");
 
     // IMF -- added specific storage to subsurface bundle
-    sprintf(file_type, "specific_storage");
+    strcpy(file_type, "specific_storage");
     WriteSilo(file_prefix, file_type, file_postfix,
               ProblemDataSpecificStorage(problem_data), t, 0,
               "SpecificStorage");
@@ -546,28 +546,28 @@ SetupRichards(PFModule * this_module)
 
   if (public_xtra->write_silopmpio_subsurf_data)
   {
-    sprintf(file_postfix, "");
-    sprintf(file_type, "perm_x");
+    strcpy(file_postfix, "");
+    strcpy(file_type, "perm_x");
     WriteSiloPMPIO(file_prefix, file_type, file_postfix,
                    ProblemDataPermeabilityX(problem_data), t, 0,
                    "PermeabilityX");
 
-    sprintf(file_type, "perm_y");
+    strcpy(file_type, "perm_y");
     WriteSiloPMPIO(file_prefix, file_type, file_postfix,
                    ProblemDataPermeabilityY(problem_data), t, 0,
                    "PermeabilityY");
 
-    sprintf(file_type, "perm_z");
+    strcpy(file_type, "perm_z");
     WriteSiloPMPIO(file_prefix, file_type, file_postfix,
                    ProblemDataPermeabilityZ(problem_data), t, 0,
                    "PermeabilityZ");
 
-    sprintf(file_type, "porosity");
+    strcpy(file_type, "porosity");
     WriteSiloPMPIO(file_prefix, file_type, file_postfix,
                    ProblemDataPorosity(problem_data), t, 0, "Porosity");
 
     // IMF -- added specific storage to subsurface bundle
-    sprintf(file_type, "specific_storage");
+    strcpy(file_type, "specific_storage");
     WriteSiloPMPIO(file_prefix, file_type, file_postfix,
                    ProblemDataSpecificStorage(problem_data), t, 0,
                    "SpecificStorage");
@@ -576,11 +576,11 @@ SetupRichards(PFModule * this_module)
 
   if (public_xtra->print_slopes)
   {
-    sprintf(file_postfix, "slope_x");
+    strcpy(file_postfix, "slope_x");
     WritePFBinary(file_prefix, file_postfix,
                   ProblemDataTSlopeX(problem_data));
 
-    sprintf(file_postfix, "slope_y");
+    strcpy(file_postfix, "slope_y");
     WritePFBinary(file_prefix, file_postfix,
                   ProblemDataTSlopeY(problem_data));
 
@@ -595,31 +595,31 @@ SetupRichards(PFModule * this_module)
 
   if (public_xtra->write_silo_slopes)
   {
-    sprintf(file_postfix, "");
-    sprintf(file_type, "slope_x");
+    strcpy(file_postfix, "");
+    strcpy(file_type, "slope_x");
     WriteSilo(file_prefix, file_type, file_postfix,
               ProblemDataTSlopeX(problem_data), t, 0, "SlopeX");
 
-    sprintf(file_type, "slope_y");
+    strcpy(file_type, "slope_y");
     WriteSilo(file_prefix, file_type, file_postfix,
               ProblemDataTSlopeY(problem_data), t, 0, "SlopeY");
   }
 
   if (public_xtra->write_silopmpio_slopes)
   {
-    sprintf(file_postfix, "");
-    sprintf(file_type, "slope_x");
+    strcpy(file_postfix, "");
+    strcpy(file_type, "slope_x");
     WriteSiloPMPIO(file_prefix, file_type, file_postfix,
                    ProblemDataTSlopeX(problem_data), t, 0, "SlopeX");
 
-    sprintf(file_type, "slope_y");
+    strcpy(file_type, "slope_y");
     WriteSiloPMPIO(file_prefix, file_type, file_postfix,
                    ProblemDataTSlopeY(problem_data), t, 0, "SlopeY");
   }
 
   if (public_xtra->print_mannings)
   {
-    sprintf(file_postfix, "mannings");
+    strcpy(file_postfix, "mannings");
     WritePFBinary(file_prefix, file_postfix,
                   ProblemDataMannings(problem_data));
 
@@ -634,23 +634,23 @@ SetupRichards(PFModule * this_module)
 
   if (public_xtra->write_silo_mannings)
   {
-    sprintf(file_postfix, "");
-    sprintf(file_type, "mannings");
+    strcpy(file_postfix, "");
+    strcpy(file_type, "mannings");
     WriteSilo(file_prefix, file_type, file_postfix,
               ProblemDataMannings(problem_data), t, 0, "Mannings");
   }
 
   if (public_xtra->write_silopmpio_mannings)
   {
-    sprintf(file_postfix, "");
-    sprintf(file_type, "mannings");
+    strcpy(file_postfix, "");
+    strcpy(file_type, "mannings");
     WriteSiloPMPIO(file_prefix, file_type, file_postfix,
                    ProblemDataMannings(problem_data), t, 0, "Mannings");
   }
 
   if (public_xtra->print_dzmult)
   {
-    sprintf(file_postfix, "dz_mult");
+    strcpy(file_postfix, "dz_mult");
     WritePFBinary(file_prefix, file_postfix, instance_xtra->dz_mult);
 
     static const char* dzmult_filenames[] = {
@@ -664,16 +664,16 @@ SetupRichards(PFModule * this_module)
 
   if (public_xtra->write_silo_dzmult)
   {
-    sprintf(file_postfix, "");
-    sprintf(file_type, "dz_mult");
+    strcpy(file_postfix, "");
+    strcpy(file_type, "dz_mult");
     WriteSilo(file_prefix, file_type, file_postfix, instance_xtra->dz_mult,
               t, 0, "DZ_Multiplier");
   }
 
   if (public_xtra->write_silopmpio_dzmult)
   {
-    sprintf(file_postfix, "");
-    sprintf(file_type, "dz_mult");
+    strcpy(file_postfix, "");
+    strcpy(file_type, "dz_mult");
     WriteSiloPMPIO(file_prefix, file_type, file_postfix,
                    instance_xtra->dz_mult, t, 0, "DZ_Multiplier");
   }
@@ -683,7 +683,7 @@ SetupRichards(PFModule * this_module)
   // Left keys for individual printing for backward compatibility
   if (public_xtra->print_specific_storage)
   {
-    sprintf(file_postfix, "specific_storage");
+    strcpy(file_postfix, "specific_storage");
     WritePFBinary(file_prefix, file_postfix,
                   ProblemDataSpecificStorage(problem_data));
 
@@ -702,8 +702,8 @@ SetupRichards(PFModule * this_module)
 
   if (public_xtra->write_silo_specific_storage)
   {
-    sprintf(file_postfix, "");
-    sprintf(file_type, "specific_storage");
+    strcpy(file_postfix, "");
+    strcpy(file_type, "specific_storage");
     WriteSilo(file_prefix, file_type, file_postfix,
               ProblemDataSpecificStorage(problem_data), t, 0,
               "SpecificStorage");
@@ -712,15 +712,15 @@ SetupRichards(PFModule * this_module)
   if (public_xtra->print_top)
   {
     printf("PrintTop -- not yet implemented\n");
-    // sprintf(file_postfix, "top");
+    // strcpy(file_postfix, "top");
     // WritePFBinary(file_prefix, file_postfix, XXXXXXXXXXXXXXXX(problem_data));
   }
 
   if (public_xtra->write_silo_top)
   {
     printf("WriteSiloTop -- not yet implemented\n");
-    // sprintf(file_postfix, "");
-    // sprintf(file_type, "top");
+    // strcpy(file_postfix, "");
+    // strcpy(file_type, "top");
     // WriteSilo(file_prefix, file_type, file_postfix, XXXXXXXXXXXXXXXXXXXXX(problem_data),
     //          t, 0, "Top");
   }
@@ -1223,7 +1223,7 @@ SetupRichards(PFModule * this_module)
     if (public_xtra->write_silo_press)
     {
       sprintf(file_postfix, "%05d", instance_xtra->file_number);
-      sprintf(file_type, "press");
+      strcpy(file_type, "press");
       WriteSilo(file_prefix, file_type, file_postfix,
                 instance_xtra->pressure, t, instance_xtra->file_number,
                 "Pressure");
@@ -1233,7 +1233,7 @@ SetupRichards(PFModule * this_module)
     if (public_xtra->write_silopmpio_press)
     {
       sprintf(file_postfix, "%05d", instance_xtra->file_number);
-      sprintf(file_type, "press");
+      strcpy(file_type, "press");
       WriteSiloPMPIO(file_prefix, file_type, file_postfix,
                      instance_xtra->pressure, t,
                      instance_xtra->file_number, "Pressure");
@@ -1271,7 +1271,7 @@ SetupRichards(PFModule * this_module)
     if (public_xtra->write_silo_satur)
     {
       sprintf(file_postfix, "%05d", instance_xtra->file_number);
-      sprintf(file_type, "satur");
+      strcpy(file_type, "satur");
       WriteSilo(file_prefix, file_type, file_postfix,
                 instance_xtra->saturation, t, instance_xtra->file_number,
                 "Saturation");
@@ -1281,7 +1281,7 @@ SetupRichards(PFModule * this_module)
     if (public_xtra->write_silopmpio_satur)
     {
       sprintf(file_postfix, "%05d", instance_xtra->file_number);
-      sprintf(file_type, "satur");
+      strcpy(file_type, "satur");
       WriteSiloPMPIO(file_prefix, file_type, file_postfix,
                      instance_xtra->saturation, t,
                      instance_xtra->file_number, "Saturation");
@@ -1374,7 +1374,7 @@ SetupRichards(PFModule * this_module)
 
     if (public_xtra->print_mask)
     {
-      sprintf(file_postfix, "mask");
+      strcpy(file_postfix, "mask");
       WritePFBinary(file_prefix, file_postfix, instance_xtra->mask);
       any_file_dumped = 1;
 
@@ -1399,8 +1399,8 @@ SetupRichards(PFModule * this_module)
 
     if (public_xtra->write_silo_mask)
     {
-      sprintf(file_postfix, "");
-      sprintf(file_type, "mask");
+      strcpy(file_postfix, "");
+      strcpy(file_type, "mask");
       WriteSilo(file_prefix, file_type, file_postfix,
                 instance_xtra->mask, t, instance_xtra->file_number,
                 "Mask");
@@ -1409,8 +1409,8 @@ SetupRichards(PFModule * this_module)
 
     if (public_xtra->write_silopmpio_mask)
     {
-      sprintf(file_postfix, "");
-      sprintf(file_type, "mask");
+      strcpy(file_postfix, "");
+      strcpy(file_type, "mask");
       WriteSiloPMPIO(file_prefix, file_type, file_postfix,
                      instance_xtra->mask, t, instance_xtra->file_number,
                      "Mask");
@@ -1512,8 +1512,6 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
 
   int start_count = ProblemStartCount(problem);
   double dump_interval = ProblemDumpInterval(problem);
-  int dump_interval_execution_time_limit =
-    ProblemDumpIntervalExecutionTimeLimit(problem);
 
   Vector *porosity = ProblemDataPorosity(problem_data);
   Vector *evap_trans_sum = instance_xtra->evap_trans_sum;
@@ -3660,6 +3658,10 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
      * remaining time in job is less than user specified value.
      * Used to halt jobs gracefully when running on batch systems.
      */
+
+    int dump_interval_execution_time_limit =
+      ProblemDumpIntervalExecutionTimeLimit(problem);
+
     if (dump_files && dump_interval_execution_time_limit)
     {
       if (!amps_Rank(amps_CommWorld))

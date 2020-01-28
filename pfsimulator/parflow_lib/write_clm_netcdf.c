@@ -35,9 +35,11 @@
 #include <unistd.h>
 #include <stdbool.h>
 
+#ifdef PARFLOW_HAVE_NETCDF
 static bool isCLM2Ddefined = false;
 static bool isCLM3Ddefined = false;
 static bool isCLMTdefined = false;
+#endif
 
 void WriteCLMNC(char * file_prefix, char* file_postfix, double t, Vector  *v, int numVarTimeVariant,
                 char *varName, int dimensionality)
@@ -749,6 +751,8 @@ int LookUpCLMInventory(char * varName, varNCData **myVarNCData, int *clmIDs)
     }
     return qQirrInstCLMVarID;
   }
+#else
+  return 0;  
 #endif
 }
 

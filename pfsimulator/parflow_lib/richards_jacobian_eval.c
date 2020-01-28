@@ -278,9 +278,8 @@ void    RichardsJacobianEval(
   int i, j, k, r, is;
   int ix, iy, iz;
   int nx, ny, nz;
-  int nx_v, ny_v, nz_v;
-  int nx_m, ny_m, nz_m;
-  int nx_po, ny_po, nz_po;
+  int nx_v, ny_v;
+  int nx_m, ny_m;
   int sy_v, sz_v;
   int sy_m, sz_m;
   int ip, ipo, im, iv;
@@ -307,7 +306,7 @@ void    RichardsJacobianEval(
   double lower_cond, upper_cond;
 
   //@RMM : terms for gravity/terrain
-  double x_dir_g, y_dir_g, z_dir_g, del_x_slope, del_y_slope, x_dir_g_c, y_dir_g_c;
+  double x_dir_g, y_dir_g, x_dir_g_c, y_dir_g_c;
 
   BCStruct    *bc_struct;
   GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
@@ -460,15 +459,6 @@ void    RichardsJacobianEval(
 
     nx_v = SubvectorNX(d_sub);
     ny_v = SubvectorNY(d_sub);
-    nz_v = SubvectorNZ(d_sub);
-
-    nx_po = SubvectorNX(po_sub);
-    ny_po = SubvectorNY(po_sub);
-    nz_po = SubvectorNZ(po_sub);
-
-    nx_m = SubmatrixNX(J_sub);
-    ny_m = SubmatrixNY(J_sub);
-    nz_m = SubmatrixNZ(J_sub);
 
     pp = SubvectorData(p_sub);     //pressure
     dp = SubvectorData(d_sub);     // density
@@ -504,7 +494,6 @@ void    RichardsJacobianEval(
 
     nx_v = SubvectorNX(p_sub);
     ny_v = SubvectorNY(p_sub);
-    nz_v = SubvectorNZ(p_sub);
 
     sy_v = nx_v;
     sz_v = ny_v * nx_v;
@@ -587,11 +576,9 @@ void    RichardsJacobianEval(
 
     nx_v = SubvectorNX(p_sub);
     ny_v = SubvectorNY(p_sub);
-    nz_v = SubvectorNZ(p_sub);
 
     nx_m = SubmatrixNX(J_sub);
     ny_m = SubmatrixNY(J_sub);
-    nz_m = SubmatrixNZ(J_sub);
 
     sy_v = nx_v;
     sz_v = ny_v * nx_v;
@@ -842,7 +829,6 @@ void    RichardsJacobianEval(
 
       nx_v = SubvectorNX(p_sub);
       ny_v = SubvectorNY(p_sub);
-      nz_v = SubvectorNZ(p_sub);
 
       sy_v = nx_v;
       sz_v = ny_v * nx_v;
@@ -1044,7 +1030,6 @@ void    RichardsJacobianEval(
 
     nx_v = SubvectorNX(p_sub);
     ny_v = SubvectorNY(p_sub);
-    nz_v = SubvectorNZ(p_sub);
 
     sy_v = nx_v;
     sz_v = ny_v * nx_v;

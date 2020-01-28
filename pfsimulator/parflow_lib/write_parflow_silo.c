@@ -61,7 +61,6 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
 
   int i, j, k, ai;
   double         *data;
-  double mult, z_coord;            //@RMM dz scale info
 
   int err;
 
@@ -105,7 +104,7 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
   }
 
   coords[2] = ctalloc(float, dims[2]);
-  z_coord = SubgridZ(subgrid);
+  /* z_coord = SubgridZ(subgrid); */
 /*  @RMM-- bare bones testing
  * for implementing variable dz into silo output
  * need to brab the vardz vector out of problem data

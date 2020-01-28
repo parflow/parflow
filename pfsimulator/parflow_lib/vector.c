@@ -42,11 +42,11 @@
 
 using namespace SAMRAI;
 
+static int samrai_vector_ids[5][2048];
+
 #endif
 
 #include <stdlib.h>
-
-static int samrai_vector_ids[5][2048];
 
 /*--------------------------------------------------------------------------
  * NewVectorCommPkg:
@@ -341,9 +341,9 @@ Vector  *NewVectorType(
 
   new_vector = NewTempVector(grid, nc, num_ghost);
 
-  enum ParflowGridType grid_type = invalid_grid_type;
-
 #ifdef HAVE_SAMRAI
+  enum ParflowGridType grid_type = invalid_grid_type;
+  
   switch (type)
   {
     case vector_cell_centered:
@@ -403,7 +403,6 @@ Vector  *NewVectorType(
   tbox::Pointer < hier::Variable > variable;
 #else
   type = vector_non_samrai;
-  grid_type = invalid_grid_type;
 #endif
 
   new_vector->type = type;
@@ -781,8 +780,6 @@ void    InitVectorAll(
   Subvector  *v_sub;
   double     *vp;
 
-  Subgrid    *subgrid;
-
   int ix_v, iy_v, iz_v;
   int nx_v, ny_v, nz_v;
 
@@ -792,8 +789,6 @@ void    InitVectorAll(
 
   ForSubgridI(i_s, GridSubgrids(grid))
   {
-    subgrid = GridSubgrid(grid, i_s);
-
     v_sub = VectorSubvector(v, i_s);
 
     ix_v = SubvectorIX(v_sub);
