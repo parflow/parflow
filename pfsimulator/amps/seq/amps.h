@@ -103,7 +103,7 @@ typedef FILE *amps_File;
 #define amps_Wait(handle) 0
 
 /*---------------------------------------------------------------------------*/
-/* Macros for all commands that have no function in sequentail code.         */
+/* Macros for all commands that have no function in sequential code.         */
 /*---------------------------------------------------------------------------*/
 
 #define VOID_FUNC(amps_name) printf("AMPS Error: The %s function is not implemented\n", amps_name);

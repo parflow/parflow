@@ -42,9 +42,9 @@
 
 using namespace SAMRAI;
 
-#endif
-
 static int samrai_matrix_ids[4][2048];
+
+#endif
 
 
 /*--------------------------------------------------------------------------
@@ -353,8 +353,8 @@ Matrix          *NewMatrixType(
     }
   }
 
-  enum ParflowGridType grid_type = invalid_grid_type;
 #ifdef HAVE_SAMRAI
+  enum ParflowGridType grid_type = invalid_grid_type;
   switch (type)
   {
     case matrix_cell_centered:
@@ -611,6 +611,9 @@ Matrix          *NewMatrixType(
       if (ghost)
         MatrixCommPkg(new_matrix) = NewMatrixUpdatePkg(new_matrix, ghost);
 
+      break;
+    default:
+      PARFLOW_ERROR("invalid matrix type");
       break;
   }
 

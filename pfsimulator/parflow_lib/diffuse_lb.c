@@ -39,7 +39,6 @@ void DiffuseLB(
   Vector *pwork = (lattice->pwork);
   Vector *perm = (lattice->perm);
   Vector *phi = (lattice->phi);
-  double beta_perm = (lattice->beta_perm);
   double beta_pore = (lattice->beta_pore);
   double beta_fluid = (lattice->beta_fluid);
   double viscosity = (lattice->viscosity);
@@ -55,7 +54,6 @@ void DiffuseLB(
   Subgrid   *subgrid;
   int ix, iy, iz;
   int nx, ny, nz;
-  int nx_v, ny_v, nz_v;
 
   /* Physical variables and coefficients */
   Vector    *tmpVector;
@@ -144,10 +142,6 @@ void DiffuseLB(
       ix = SubgridIX(subgrid);
       iy = SubgridIY(subgrid);
       iz = SubgridIZ(subgrid);
-
-      nx_v = SubvectorNX(sub_p);
-      ny_v = SubvectorNY(sub_p);
-      nz_v = SubvectorNZ(sub_p);
 
       /* Update the pressures */
       for (i = ix; i < ix + nx; i++)

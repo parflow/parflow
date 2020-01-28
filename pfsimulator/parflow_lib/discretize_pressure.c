@@ -932,9 +932,6 @@ PFModule    *DiscretizePressureInitInstanceXtra(
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;
 
-  int num_phases;
-
-
   if (PFModuleInstanceXtra(this_module) == NULL)
     instance_xtra = ctalloc(InstanceXtra, 1);
   else
@@ -948,8 +945,6 @@ PFModule    *DiscretizePressureInitInstanceXtra(
   {
     (instance_xtra->problem) = problem;
   }
-
-  num_phases = ProblemNumPhases(instance_xtra->problem);
 
   /*-----------------------------------------------------------------------
    * Initialize data associated with argument `grid'
@@ -1022,13 +1017,8 @@ void  DiscretizePressureFreeInstanceXtra()
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
-  int num_phases;
-
-
   if (instance_xtra)
   {
-    num_phases = ProblemNumPhases(instance_xtra->problem);
-
     PFModuleFreeInstance(instance_xtra->bc_pressure);
     PFModuleFreeInstance(instance_xtra->phase_mobility);
     PFModuleFreeInstance(instance_xtra->phase_density_module);

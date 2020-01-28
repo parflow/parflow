@@ -666,8 +666,6 @@ int MetadataUpdateForcingField(
                                int         update_timestep
                                )
 {
-  int ii;
-
   if (!parent || !field_name)
   {
     return 0;
