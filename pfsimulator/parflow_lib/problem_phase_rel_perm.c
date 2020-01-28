@@ -421,7 +421,6 @@ void         PhaseRelPerm(
   Type0         *dummy0;
   Type1         *dummy1;
   Type2         *dummy2;
-  Type3         *dummy3;
   Type4         *dummy4;
 
   Subvector     *pr_sub;
@@ -1514,7 +1513,7 @@ void         PhaseRelPerm(
 
     case 3:  /* Data relative permeability */
     {
-      dummy3 = (Type3*)(public_xtra->data);
+      // dummy3 = (Type3*)(public_xtra->data);
 
       if (!amps_Rank(amps_CommWorld))
         printf("Data curves for rel perms not supported currently.\n");

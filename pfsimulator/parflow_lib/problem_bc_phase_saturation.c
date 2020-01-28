@@ -104,9 +104,7 @@ void          BCPhaseSaturation(
 
   BCStruct       *bc_struct;
 
-  int patch_index;
-
-  int nx_v, ny_v, nz_v;
+  int nx_v, ny_v;
   int sx_v, sy_v, sz_v;
 
   int            *fdir;
@@ -133,8 +131,6 @@ void          BCPhaseSaturation(
 
   for (ipatch = 0; ipatch < num_patches; ipatch++)
   {
-    patch_index = patch_indexes[ipatch];
-
     ForSubgridI(is, subgrids)
     {
       subgrid = SubgridArraySubgrid(subgrids, is);
@@ -144,7 +140,6 @@ void          BCPhaseSaturation(
 
       nx_v = SubvectorNX(sat_sub);
       ny_v = SubvectorNY(sat_sub);
-      nz_v = SubvectorNZ(sat_sub);
 
       sx_v = 1;
       sy_v = nx_v;

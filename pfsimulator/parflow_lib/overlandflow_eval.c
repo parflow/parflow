@@ -70,8 +70,6 @@ void    OverlandFlowEval(
                                             * fcn = CALCDER => calculate the function
                                             *                  derivative */
 {
-  PFModule      *this_module = ThisPFModule;
-
   Vector      *slope_x = ProblemDataTSlopeX(problem_data);
   Vector      *slope_y = ProblemDataTSlopeY(problem_data);
   Vector      *mannings = ProblemDataMannings(problem_data);
@@ -82,14 +80,14 @@ void    OverlandFlowEval(
   double        *sx_dat, *sy_dat, *mann_dat, *top_dat, *pp;
 
   double xdir, ydir;
-  double q_lo, q_mid, q_hi;
+  double q_mid;
   double q_v[3];
 
   int ival, sy_v, step;
   int            *fdir;
 
   int i, ii, j, k, ip, io, itop;
-  int i1, j1, k1;
+  int k1;
 
   p_sub = VectorSubvector(pressure, sg);
 
