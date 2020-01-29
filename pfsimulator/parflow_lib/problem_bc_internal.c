@@ -98,7 +98,7 @@ void BCInternal(
 
   double Z;
 
-  double dx, dy, dz;
+  double dz;
   int ix, iy, iz;
   int nx, ny, nz;
   int rx, ry, rz;
@@ -197,10 +197,6 @@ void BCInternal(
         ny = SubgridNY(ibc_subgrid);
         nz = SubgridNZ(ibc_subgrid);
 
-        dx = SubgridDX(ibc_subgrid);
-        dy = SubgridDY(ibc_subgrid);
-        dz = SubgridDZ(ibc_subgrid);
-
         Z = RealSpaceZ(0, SubgridRZ(ibc_subgrid));
 
         BoxLoopI0(i, j, k,
@@ -288,8 +284,6 @@ void BCInternal(
         ny = SubgridNY(well_subgrid);
         nz = SubgridNZ(well_subgrid);
 
-        dx = SubgridDX(well_subgrid);
-        dy = SubgridDY(well_subgrid);
         dz = SubgridDZ(well_subgrid);
 
         Z = RealSpaceZ(0, SubgridRZ(well_subgrid));

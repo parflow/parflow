@@ -189,7 +189,7 @@ void      SolverDiffusion()
   VectorUpdateCommHandle   *handle;
 
   char dt_info;
-  char file_prefix[64], file_postfix[64];
+  char file_prefix[PATH_MAX], file_postfix[64];
 
   double       *time_log = NULL, *dt_log = NULL;
   int          *seq_log = NULL, *dumped_log = NULL;

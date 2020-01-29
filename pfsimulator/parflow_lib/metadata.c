@@ -99,7 +99,7 @@ void MetadataAddParflowDomainInfo(cJSON* pf, PFModule* solver, Grid* localGrid)
   int zk = (rr / ni / nj < nk && rr % (ni * nj) == 0 ? rr / ni / nj : -1);
 
   SubgridArray* subgrids = GridSubgrids(localGrid);
-  Subgrid* subgrid;
+  Subgrid* subgrid = NULL;
   int g;
   ForSubgridI(g, subgrids)
   {
@@ -666,8 +666,6 @@ int MetadataUpdateForcingField(
                                int         update_timestep
                                )
 {
-  int ii;
-
   if (!parent || !field_name)
   {
     return 0;

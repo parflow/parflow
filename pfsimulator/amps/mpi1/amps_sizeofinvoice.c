@@ -38,6 +38,8 @@ long amps_sizeof_invoice(
   int len, stride;
   char *data;
 
+  PF_UNUSED(stride);
+
   ptr = inv->list;
 
   while (ptr != NULL)

@@ -54,8 +54,6 @@ int amps_create_mpi_cont_send_type(
 
   int element;
 
-  int element_size;
-
   MPI_Datatype *mpi_types;
   MPI_Aint     *mpi_displacements;
   int          *mpi_block_len;
@@ -148,7 +146,6 @@ int amps_create_mpi_cont_send_type(
             if (!ptr->ignore)
             {
               MPI_Type_vector(len, 1, 1, MPI_BYTE, base_type);
-              element_size = sizeof(char);
             }
             break;
 
@@ -156,7 +153,6 @@ int amps_create_mpi_cont_send_type(
             if (!ptr->ignore)
             {
               MPI_Type_vector(len, 1, 1, MPI_SHORT, base_type);
-              element_size = sizeof(short);
             }
             break;
 
@@ -164,7 +160,6 @@ int amps_create_mpi_cont_send_type(
             if (!ptr->ignore)
             {
               MPI_Type_vector(len, 1, 1, MPI_INT, base_type);
-              element_size = sizeof(int);
             }
             break;
 
@@ -172,7 +167,6 @@ int amps_create_mpi_cont_send_type(
             if (!ptr->ignore)
             {
               MPI_Type_vector(len, 1, 1, MPI_LONG, base_type);
-              element_size = sizeof(long);
             }
             break;
 
@@ -180,7 +174,6 @@ int amps_create_mpi_cont_send_type(
             if (!ptr->ignore)
             {
               MPI_Type_vector(len, 1, 1, MPI_FLOAT, base_type);
-              element_size = sizeof(float);
             }
             break;
 
@@ -188,7 +181,6 @@ int amps_create_mpi_cont_send_type(
             if (!ptr->ignore)
             {
               MPI_Type_vector(len, 1, 1, MPI_DOUBLE, base_type);
-              element_size = sizeof(double);
             }
             break;
         }

@@ -102,7 +102,7 @@ void    PhaseViscosity(
 
   Subvector     *p_sub, *v_sub, *t_sub;
 
-  double        *pp, *vp, *tp;
+  double        *vp, *tp;
 
   Subgrid       *subgrid;
 
@@ -197,7 +197,6 @@ void    PhaseViscosity(
         ny_d = SubvectorNY(v_sub);
         nz_d = SubvectorNZ(v_sub);
 
-        pp = SubvectorElt(p_sub, ix, iy, iz);
         vp = SubvectorElt(v_sub, ix, iy, iz);
         tp = SubvectorElt(t_sub, ix, iy, iz);
 
