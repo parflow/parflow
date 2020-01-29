@@ -124,7 +124,6 @@ int main(int argc, char *argv [])
     int is_from_restart = FALSE;
     int restore_num = 0;
     int c;
-    int index;
     char * input_name = NULL;
 
     opterr = 0;
@@ -274,6 +273,10 @@ int main(int argc, char *argv [])
       openRestartFile(restart_dir, restore_num,
                       amps_Size());
     }
+#else
+    PF_UNUSED(restore_num);
+    PF_UNUSED(is_from_restart);
+    PF_UNUSED(restart_read_dirname);
 #endif
 
     /*-----------------------------------------------------------------------

@@ -149,11 +149,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   Vector      *KW, *KE, *KN, *KS;
   Vector      *qx, *qy;
   Subvector   *kw_sub, *ke_sub, *kn_sub, *ks_sub, *qx_sub, *qy_sub;
-  Subvector   *x_sl_sub, *y_sl_sub, *mann_sub;
-  Subvector   *obf_sub;
+  Subvector   *x_sl_sub;
+  // Subvector *y_sl_sub;
+  // Subvector *mann_sub;
   double      *kw_, *ke_, *kn_, *ks_, *qx_, *qy_;
-  double      *x_sl_dat, *y_sl_dat, *mann_dat;
-  double      *obf_dat;
+  // double      *x_sl_dat, *y_sl_dat;
+  // double *mann_dat;
   double q_overlnd;
   double sep;          // scaling difference temp var @RMM
 
@@ -163,8 +164,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   Vector      *permeability_z = ProblemDataPermeabilityZ(problem_data);
   Vector      *sstorage = ProblemDataSpecificStorage(problem_data);            //sk
   Vector      *x_sl = ProblemDataTSlopeX(problem_data);                //sk
-  Vector      *y_sl = ProblemDataTSlopeY(problem_data);                //sk
-  Vector      *man = ProblemDataMannings(problem_data);                 //sk
+  // Vector      *y_sl = ProblemDataTSlopeY(problem_data);                //sk
+  //Vector      *man = ProblemDataMannings(problem_data);                 //sk
 
   /* @RMM terrain following grid slope variables */
   Vector      *x_ssl = ProblemDataSSlopeX(problem_data);               //@RMM
@@ -182,7 +183,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   Vector      *FBy = ProblemDataFBy(problem_data);
   Vector      *FBz = ProblemDataFBz(problem_data);
   Subvector   *FBx_sub, *FBy_sub, *FBz_sub;  //@RMM
-  double      *FBx_dat, *FBy_dat, *FBz_dat;   //@RMM
+  double      *FBx_dat=NULL, *FBy_dat=NULL, *FBz_dat=NULL;   //@RMM
 
 
   double gravity = ProblemGravity(problem);
@@ -205,10 +206,9 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
   int i, j, k, r, is;
   int ix, iy, iz;
-  int nx, ny, nz, gnx, gny;
-  int nx_f, ny_f, nz_f;
-  int nx_p, ny_p, nz_p;
-  int nx_po, ny_po, nz_po;
+  int nx, ny, nz;
+  int nx_p, ny_p;
+  
   int sy_p, sz_p;
   int ip, ipo, io;
   int diffusive;             //@RMM
@@ -219,7 +219,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   double updir = 0.0e0;
   double lower_cond, upper_cond;
   //@RMM : terms for gravity/terrain
-  double x_dir_g, y_dir_g, z_dir_g, del_x_slope, del_y_slope, x_dir_g_c, y_dir_g_c;
+  double x_dir_g=NAN, y_dir_g=NAN, z_dir_g=NAN, del_x_slope, del_y_slope, x_dir_g_c=NAN, y_dir_g_c=NAN;
 
   BCStruct    *bc_struct;
   GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
@@ -322,14 +322,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
     vol = dx * dy * dz;
 
-    nx_f = SubvectorNX(f_sub);
-    ny_f = SubvectorNY(f_sub);
-    nz_f = SubvectorNZ(f_sub);
-
-    nx_po = SubvectorNX(po_sub);
-    ny_po = SubvectorNY(po_sub);
-    nz_po = SubvectorNZ(po_sub);
-
     dp = SubvectorData(d_sub);
     odp = SubvectorData(od_sub);
     sp = SubvectorData(s_sub);
@@ -345,8 +337,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       ipo = SubvectorEltIndex(po_sub, i, j, k);
       io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 
-      /*     del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
-       *   del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
+      /*  del_x_slope = (1.0/cos(atan(x_ssl_dat[io])));
+       *  del_y_slope = (1.0/cos(atan(y_ssl_dat[io])));  */
       del_x_slope = 1.0;
       del_y_slope = 1.0;
 
@@ -399,10 +391,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     dz = SubgridDZ(subgrid);
 
     vol = dx * dy * dz;
-
-    nx_f = SubvectorNX(f_sub);
-    ny_f = SubvectorNY(f_sub);
-    nz_f = SubvectorNZ(f_sub);
 
     ss = SubvectorData(ss_sub);
 
@@ -460,10 +448,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     dz = SubgridDZ(subgrid);
 
     vol = dx * dy * dz;
-
-    nx_f = SubvectorNX(f_sub);
-    ny_f = SubvectorNY(f_sub);
-    nz_f = SubvectorNZ(f_sub);
 
     sp = SubvectorData(s_sub);
     fp = SubvectorData(f_sub);
@@ -542,7 +526,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
     nx_p = SubvectorNX(p_sub);
     ny_p = SubvectorNY(p_sub);
-    nz_p = SubvectorNZ(p_sub);
 
     sy_p = nx_p;
     sz_p = ny_p * nx_p;
@@ -625,7 +608,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
     nx_p = SubvectorNX(p_sub);
     ny_p = SubvectorNY(p_sub);
-    nz_p = SubvectorNZ(p_sub);
 
     sy_p = nx_p;
     sz_p = ny_p * nx_p;
@@ -839,16 +821,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     qx_sub = VectorSubvector(qx, is);
     qy_sub = VectorSubvector(qy, is);
     x_sl_sub = VectorSubvector(x_sl, is);
-    y_sl_sub = VectorSubvector(y_sl, is);
-    mann_sub = VectorSubvector(man, is);
-    /*
-     * SGS TODO This looks very wrong, why going to DB here, should
-     * come from DS
-     */
-    gnx = GetInt("ComputationalGrid.NX");
-    gny = GetInt("ComputationalGrid.NY");
-    obf_sub = VectorSubvector(ovrl_bc_flx, is);
-
+    // y_sl_sub = VectorSubvector(y_sl, is);
+    // mann_sub = VectorSubvector(man, is);
 
     dx = SubgridDX(subgrid);
     dy = SubgridDY(subgrid);
@@ -868,7 +842,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
     nx_p = SubvectorNX(p_sub);
     ny_p = SubvectorNY(p_sub);
-    nz_p = SubvectorNZ(p_sub);
 
     sy_p = nx_p;
     sz_p = ny_p * nx_p;
@@ -886,10 +859,9 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     ks_ = SubvectorData(ks_sub);
     qx_ = SubvectorData(qx_sub);
     qy_ = SubvectorData(qy_sub);
-    x_sl_dat = SubvectorData(x_sl_sub);
-    y_sl_dat = SubvectorData(y_sl_sub);
-    mann_dat = SubvectorData(mann_sub);
-    obf_dat = SubvectorData(obf_sub);
+    // x_sl_dat = SubvectorData(x_sl_sub);
+    // y_sl_dat = SubvectorData(y_sl_sub);
+    // mann_dat = SubvectorData(mann_sub);
 
     pp = SubvectorData(p_sub);
     opp = SubvectorData(op_sub);
@@ -1484,7 +1456,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           {
             /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
              * routing added */
-            double *dummy1, *dummy2, *dummy3, *dummy4;
+            double *dummy1 = NULL, *dummy2 = NULL , *dummy3 = NULL, *dummy4 = NULL;
             PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                                                                       ke_, kw_, kn_, ks_,
                                                                                       dummy1, dummy2, dummy3, dummy4,
@@ -1863,7 +1835,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           //printf("Case overland_flow \n");
           /*  @RMM this is modified to be kinematic wave routing, with a new module for diffusive wave
            * routing added */
-          double *dummy1, *dummy2, *dummy3, *dummy4;
+	  double *dummy1 = NULL, *dummy2 = NULL , *dummy3 = NULL, *dummy4 = NULL;
           PFModuleInvokeType(OverlandFlowEvalKinInvoke, overlandflow_module_kin,
                              (grid, is, bc_struct, ipatch, problem_data, pressure,
                               ke_, kw_, kn_, ks_,
@@ -2072,7 +2044,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           /*  @RMM this is a new module for diffusive wave
            */
 
-          double *dummy1, *dummy2, *dummy3, *dummy4;
+	  double *dummy1 = NULL, *dummy2 = NULL , *dummy3 = NULL, *dummy4 = NULL;		    
           PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                                                                     ke_, kw_, kn_, ks_,
                                                                                     dummy1, dummy2, dummy3, dummy4,
@@ -2126,7 +2098,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
     nx_p = SubvectorNX(p_sub);
     ny_p = SubvectorNY(p_sub);
-    nz_p = SubvectorNZ(p_sub);
 
     sy_p = nx_p;
     sz_p = ny_p * nx_p;
@@ -2285,7 +2256,6 @@ PFModule   *NlFunctionEvalNewPublicXtra(char *name)
   char key[IDB_MAX_KEY_LEN];
   char *switch_name;
   int switch_value;
-  NameArray switch_na;
   NameArray upwind_switch_na;
 
 
@@ -2300,7 +2270,7 @@ PFModule   *NlFunctionEvalNewPublicXtra(char *name)
 
   ///* parameters for upwinding formulation for TFG */
   upwind_switch_na = NA_NewNameArray("Original UpwindSine Upwind");
-  sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation", name);
+  sprintf(key, "Solver.TerrainFollowingGrid.SlopeUpwindFormulation");
   switch_name = GetStringDefault(key, "Original");
   switch_value = NA_NameToIndex(upwind_switch_na, switch_name);
   switch (switch_value)

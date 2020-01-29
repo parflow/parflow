@@ -135,7 +135,7 @@ void  PrintTiming()
 
   for (i = 0; i < (timing->size); i++)
   {
-    mflops[i] = time_ticks ?
+    mflops[i] = time_ticks[i] ?
                 ((timing->flops)[i] / (time_ticks[i] / AMPS_TICKS_PER_SEC)) / 1.0E6
                 : 0.0;
   }
