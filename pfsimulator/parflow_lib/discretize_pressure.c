@@ -144,18 +144,18 @@ void          DiscretizePressure(
   Subvector     **tc_sub;
   Subvector      *tv_sub;
 
-  double dx, dy, dz, d;
+  double dx, dy, dz, d=0.0;
 
   double         *cp, *wp, *ep, *sp, *np, *lp, *up, *op = NULL;
   double         *fp;
   double         *ttx_p, *tty_p, *ttz_p;
   double         *tmx_p, *tmy_p, *tmz_p;
-  double         *tm_p, *tt_p;
+  double         *tm_p, *tt_p=NULL;
   double        **tmx_pvec, **tmy_pvec, **tmz_pvec;
   double         *tc_p, **tc_pvec;
   double         *tv_p;
 
-  double scale, ffx, ffy, ffz, ff, vf;
+  double scale, ffx, ffy, ffz, ff=0.0, vf;
 
   double e_temp, n_temp, u_temp, f_temp;
   double o_temp;

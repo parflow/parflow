@@ -359,6 +359,7 @@ static inline double VanGLookupLinear(
   int num_sample_points = lookup_table->num_sample_points;
   double min_pressure_head = lookup_table->min_pressure_head;
   int max = num_sample_points + 1;
+  PF_UNUSED(max);
 
   // This table goes from 0 to fabs(min_pressure_head)
   assert(pressure_head >= 0);
@@ -718,6 +719,7 @@ void         PhaseRelPerm(
                     double min_pressure_head = lookup_table->min_pressure_head;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
+		    PF_UNUSED(max);
 
                     GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                                    nx, ny, nz,
@@ -829,6 +831,7 @@ void         PhaseRelPerm(
                     double min_pressure_head = lookup_table->min_pressure_head;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
+		    PF_UNUSED(max);
 
                     GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                                    nx, ny, nz,
@@ -1085,6 +1088,7 @@ void         PhaseRelPerm(
                     double min_pressure_head = lookup_table->min_pressure_head;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
+		    PF_UNUSED(max);
 
                     GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                     {
@@ -1188,6 +1192,7 @@ void         PhaseRelPerm(
                     double min_pressure_head = lookup_table->min_pressure_head;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
+		    PF_UNUSED(max);
 
                     GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                     {

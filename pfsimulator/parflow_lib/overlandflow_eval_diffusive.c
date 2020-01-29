@@ -90,14 +90,14 @@ void    OverlandFlowEvalDiff(
 
   double dx, dy;
   double Sf_mag;
-  double Press_x, Press_y, Sf_x, Sf_y, Sf_xo, Sf_yo;
+  double Press_x, Press_y, Sf_x, Sf_y, Sf_xo=NAN, Sf_yo=NAN;
   double Pupx, Pupy, Pupox, Pupoy, Pdown, Pdowno;
   double ov_epsilon;
 
   int ival, sy_v;
   int *fdir;
 
-  int i, j, k, ip, io, itop,k1x, k1y, ipp1, ippsy;
+  int i, j, k, ip=0, io, itop,k1x, k1y, ipp1, ippsy;
   int k1, k0x, k0y;
 
   p_sub = VectorSubvector(pressure, sg);

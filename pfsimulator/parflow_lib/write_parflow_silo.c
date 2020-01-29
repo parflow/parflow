@@ -205,8 +205,6 @@ void     WriteSiloInit(char *file_prefix)
   int i;
   int j;
 
-  int err;
-
   char key[IDB_MAX_KEY_LEN];
 
   /*
@@ -218,7 +216,7 @@ void     WriteSiloInit(char *file_prefix)
   if (strlen(compression_options))
   {
     DBSetCompression(compression_options);
-    if (err < 0)
+    if (db_errno < 0)
     {
       amps_Printf("Error: Compression options failed for SILO.CompressionOptions=%s\n", compression_options);
       amps_Printf("       This may mean SILO was not compiled with compression enabled\n");

@@ -183,7 +183,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   Vector      *FBy = ProblemDataFBy(problem_data);
   Vector      *FBz = ProblemDataFBz(problem_data);
   Subvector   *FBx_sub, *FBy_sub, *FBz_sub;  //@RMM
-  double      *FBx_dat, *FBy_dat, *FBz_dat;   //@RMM
+  double      *FBx_dat=NULL, *FBy_dat=NULL, *FBz_dat=NULL;   //@RMM
 
 
   double gravity = ProblemGravity(problem);
@@ -219,7 +219,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   double updir = 0.0e0;
   double lower_cond, upper_cond;
   //@RMM : terms for gravity/terrain
-  double x_dir_g, y_dir_g, z_dir_g, del_x_slope, del_y_slope, x_dir_g_c, y_dir_g_c;
+  double x_dir_g=NAN, y_dir_g=NAN, z_dir_g=NAN, del_x_slope, del_y_slope, x_dir_g_c=NAN, y_dir_g_c=NAN;
 
   BCStruct    *bc_struct;
   GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);

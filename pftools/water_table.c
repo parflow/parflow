@@ -50,14 +50,12 @@ void ComputeWaterTableDepth(
 {
   int i, j;
   int nx, ny, nz;
-  double dx, dy, dz;
+  double dz;
 
   nx = DataboxNx(saturation);
   ny = DataboxNy(saturation);
   nz = DataboxNz(saturation);
 
-  dx = DataboxDx(saturation);
-  dy = DataboxDy(saturation);
   dz = DataboxDz(saturation);
 
   for (j = 0; j < ny; j++)

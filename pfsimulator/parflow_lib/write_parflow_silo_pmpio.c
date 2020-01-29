@@ -36,7 +36,10 @@
 #if defined(HAVE_SILO) && defined(HAVE_MPI)
 #include "silo.h"
 #include <mpi.h>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
 #include <pmpio.h>
+#pragma GCC diagnostic pop
 #endif
 
 #include <string.h>
@@ -101,10 +104,6 @@ void     WriteSiloPMPIOInit(char *file_prefix)
 #if defined(HAVE_SILO) && defined(HAVE_MPI)
   int p = amps_Rank(amps_CommWorld);
   int P = amps_Size(amps_CommWorld);
-  int i;
-  int j;
-
-  int err;
 
   char key[IDB_MAX_KEY_LEN];
 
@@ -117,7 +116,7 @@ void     WriteSiloPMPIOInit(char *file_prefix)
   if (strlen(compression_options))
   {
     DBSetCompression(compression_options);
-    if (err < 0)
+    if (db_errno  < 0)
     {
       amps_Printf("Error: Compression options failed for SILO.CompressionOptions=%s\n", compression_options);
       amps_Printf("       This may mean SILO was not compiled with compression enabled\n");
@@ -213,7 +212,6 @@ void     WriteSiloPMPIO(char *  file_prefix,
   char nsName[256];
   int i, j, k, ai;
   double         *data;
-  double mult, z_coord;            //@RMM dz scale info
 
   int err;
   int origin_dims2[1];
@@ -230,7 +228,6 @@ void     WriteSiloPMPIO(char *  file_prefix,
   int driver = DB_PDB;
   int numGroups;
   PMPIO_baton_t *bat;
-  amps_Invoice invoice;
 
   DBfile *db_file;
   DBfile *db_header_file;
@@ -326,7 +323,6 @@ void     WriteSiloPMPIO(char *  file_prefix,
     }
 
     coords[2] = ctalloc(float, dims[2]);
-    z_coord = SubgridZ(subgrid);
     /*  @RMM-- bare bones testing
      * for implementing variable dz into silo output
      * need to brab the vardz vector out of problem data

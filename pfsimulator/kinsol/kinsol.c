@@ -1230,7 +1230,7 @@ static int  KINLineSearch(KINMem kin_mem, real *fnormp, real *f1normp,
 {
   int ret, ivio, nfesav, rladjust = 0;
   real pnorm, ratio, ratio1, slpi, rlmin, rlength, rl, rlmax, rldiff;
-  real rltmp, rlprev, pt1trl, rllo, rlincr, alpha, beta;
+  real rltmp, rlprev=0.0, pt1trl, rllo, rlincr, alpha, beta;
   real alpha_cond, beta_cond;
 
   *maxStepTaken = FALSE;

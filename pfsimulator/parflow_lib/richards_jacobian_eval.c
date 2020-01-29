@@ -245,7 +245,7 @@ void    RichardsJacobianEval(
   Vector      *x_ssl = ProblemDataSSlopeX(problem_data);               //@RMM
   Vector      *y_ssl = ProblemDataSSlopeY(problem_data);               //@RMM
   Subvector   *x_ssl_sub, *y_ssl_sub;    //@RMM
-  double      *x_ssl_dat, *y_ssl_dat;     //@RMM
+  double      *x_ssl_dat=NULL, *y_ssl_dat=NULL;     //@RMM
 
   /* @RMM variable dz multiplier */
   Vector      *z_mult = ProblemDataZmult(problem_data);              //@RMM
@@ -306,7 +306,7 @@ void    RichardsJacobianEval(
   double lower_cond, upper_cond;
 
   //@RMM : terms for gravity/terrain
-  double x_dir_g, y_dir_g, x_dir_g_c, y_dir_g_c;
+  double x_dir_g=NAN, y_dir_g=NAN, x_dir_g_c=NAN, y_dir_g_c=NAN;
 
   BCStruct    *bc_struct;
   GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);

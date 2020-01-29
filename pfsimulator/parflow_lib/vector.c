@@ -56,7 +56,7 @@ CommPkg  *NewVectorCommPkg(
                            Vector *    vector,
                            ComputePkg *compute_pkg)
 {
-  CommPkg     *new_commpkg;
+  CommPkg     *new_commpkg = NULL;
 
 
   Grid *grid = VectorGrid(vector);
