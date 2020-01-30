@@ -123,7 +123,8 @@ int amps_Init(int *argc, char **argv[])
 
   MPI_Comm_size(MPI_COMM_WORLD, &amps_size);
   MPI_Comm_rank(MPI_COMM_WORLD, &amps_rank);
-  
+
+  /* Create communicator with one rank per compute node */
 #if MPI_VERSION >= 3
   MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &amps_CommNode);
 #else
