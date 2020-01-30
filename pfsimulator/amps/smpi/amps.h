@@ -25,6 +25,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  *  USA
  **********************************************************************EHEADER*/
+#ifndef amps_include
+#define amps_include
 
 #include "parflow_config.h"
 
@@ -124,6 +126,10 @@
  * @memo Global communication context
  */
 #define amps_CommWorld MPI_COMM_WORLD
+
+/* Communicators for I/O */
+extern MPI_Comm amps_CommNode;
+extern MPI_Comm amps_CommWrite;
 
 extern int amps_rank;
 extern int amps_size;
@@ -419,12 +425,14 @@ extern amps_Buffer *amps_BufferFreeList;
   {                                                                                                       \
     type *ptr_src, *ptr_dest;                                                                             \
     if ((char*)(src) != (char*)(dest))                                                                    \
+    {									                                  \
       if ((stride) == 1)                                                                                  \
         bcopy((src), (dest), (len) * sizeof(type));                                                       \
       else                                                                                                \
         for (ptr_src = (type*)(src), ptr_dest = (type*)(dest); ptr_src < (type*)(src) + (len) * (stride); \
              ptr_src += (stride), ptr_dest++)                                                             \
           bcopy((ptr_src), (ptr_dest), sizeof(type));                                                     \
+    }									                                  \
   }
 
 #define AMPS_CALL_CHAR_OUT(_comm, _src, _dest, _len, _stride) \
@@ -449,6 +457,7 @@ extern amps_Buffer *amps_BufferFreeList;
   {                                                                            \
     char *ptr_src, *ptr_dest;                                                  \
     if ((src) != (dest))                                                       \
+    {									       \
       if ((stride) == 1)                                                       \
         bcopy((src), (dest), (len) * sizeof(type));                            \
       else                                                                     \
@@ -456,6 +465,7 @@ extern amps_Buffer *amps_BufferFreeList;
              (ptr_dest) < (char*)(dest) + (len) * (stride) * sizeof(type);     \
              (ptr_src) += sizeof(type), (ptr_dest) += sizeof(type) * (stride)) \
           bcopy((ptr_src), (ptr_dest), sizeof(type));                          \
+    }									       \
   }
 
 #define AMPS_CALL_CHAR_IN(_comm, _src, _dest, _len, _stride) \
@@ -574,9 +584,6 @@ extern amps_Buffer *amps_BufferFreeList;
 
 #define amps_new(comm, size) malloc(size)
 #define amps_free(comm, buf) free((char*)buf)
-
-
-#define amps_FreeHandle(handle) free((handle));
 
 /**
  *
@@ -993,11 +1000,11 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #define amps_TFree(ptr) if (ptr) free(ptr); else
 /* note: the `else' is required to guarantee termination of the `if' */
 
-#define amps_Error(name, type, comment, operation)
+// SGS FIXME this should do something more than this
+#define amps_Error(name, type, comment, operation) \
+  printf("%s : %s\n", name, comment)
+
 
 #include "amps_proto.h"
 
-
-
-
-
+#endif

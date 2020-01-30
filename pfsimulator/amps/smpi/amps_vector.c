@@ -28,6 +28,8 @@
 
 #include "amps.h"
 
+#include <limits.h>
+
 void amps_vector_in(comm, type, data, buf_ptr, dim, len, stride)
 amps_Comm comm;
 int type;
@@ -272,6 +274,10 @@ int *stride;
       align = AMPS_CALL_DOUBLE_ALIGN(comm, NULL, *buf_ptr, len[0],
                                      stride[0]);
       break;
+    default:
+      amps_Error("amps_pack", INVALID_INVOICE, "Invalid invoice type", HALT);
+      align = INT_MIN;
+      break;
   }
 
   return align;
@@ -314,6 +320,9 @@ int *stride;
     case AMPS_INVOICE_DOUBLE_CTYPE:
       size = AMPS_CALL_DOUBLE_SIZEOF(comm, *buf_ptr, NULL, len[0], 1);
       break;
+    default:
+      amps_Error("amps_pack", INVALID_INVOICE, "Invalid invoice type", HALT);
+      size = INT_MIN;
   }
 
   for (i = 1; i < dim; i++)
