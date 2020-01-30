@@ -135,9 +135,11 @@
  * @memo Global communication context
  */
 #define amps_CommWorld MPI_COMM_WORLD
-#define amps_CommNode  nodeComm
-#define amps_CommWrite writeComm
 
+extern MPI_Comm amps_CommNode;
+extern MPI_Comm amps_CommWrite;
+
+/* Communicators for I/O */
 extern MPI_Comm nodeComm;
 extern MPI_Comm writeComm;
 

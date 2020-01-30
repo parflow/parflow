@@ -35,7 +35,7 @@ amps_Invoice inv;
   amps_InvoiceEntry *ptr;
   char *cur_pos = 0;
   char *temp_pos = 0;
-  int len, stride;
+  int len;
   char *data;
 
   ptr = inv->list;
@@ -46,11 +46,6 @@ amps_Invoice inv;
       len = *(ptr->ptr_len);
     else
       len = ptr->len;
-
-    if (ptr->stride_type == AMPS_INVOICE_POINTER)
-      stride = *(ptr->ptr_stride);
-    else
-      stride = ptr->stride;
 
     if (ptr->data_type == AMPS_INVOICE_POINTER)
       data = *((char**)(ptr->data));

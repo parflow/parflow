@@ -84,6 +84,7 @@ if (${PARFLOW_HAVE_OAS3})
 endif (${PARFLOW_HAVE_OAS3})
 
 set (PARFLOW_AMPS_LAYER_REQUIRE_MPI mpi1 smpi oas3)
+set (PARFLOW_TEST_PARALLEL mpi1 smpi)
 
 # Check for MPI only if AMPS requires it
 if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )

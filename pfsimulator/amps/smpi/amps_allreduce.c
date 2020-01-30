@@ -27,6 +27,8 @@
  **********************************************************************EHEADER*/
 #include "amps.h"
 
+#include <string.h>
+
 #ifndef max
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #endif
@@ -302,11 +304,15 @@ int operation;
                    pos_dest += sizeof(double), pos_src += sizeof(double))
                 *(double*)pos_dest += *(double*)pos_src;
               break;
+	    default:
+	    {
+	      amps_Error("amps_pack", INVALID_INVOICE, "Invalid invoice type", HALT);
+	      pos_dest = 0;
+	      pos_src = 0;
+	    }
+	    break;
           }
           break;
-
-        default:
-          ;
       }
 
       ptr = ptr->next;

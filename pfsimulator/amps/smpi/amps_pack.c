@@ -26,11 +26,11 @@
  *  USA
  **********************************************************************EHEADER*/
 
-#include <string.h>
-#include <stdarg.h>
-
 #include "amps.h"
 
+#include <string.h>
+#include <stdarg.h>
+#include <limits.h>
 
 int amps_pack(comm, inv, buffer)
 amps_Comm comm;
@@ -313,6 +313,9 @@ amps_Invoice inv;
             MPI_Type_vector(len, 1, stride, MPI_DOUBLE, base_type);
             element_size = sizeof(double);
             break;
+	  default:
+	    amps_Error("amps_pack", INVALID_INVOICE, "Invalid invoice type", HALT);
+	    element_size = INT_MIN;
         }
 
         base_size = element_size * (len + (len - 1) * (stride - 1));

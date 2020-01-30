@@ -27,6 +27,9 @@
  **********************************************************************EHEADER*/
 #include "amps.h"
 
+
+extern int amps_mpi_initialized;
+
 /*===========================================================================*/
 /**
  *
@@ -60,12 +63,20 @@
 
 int amps_Finalize()
 {
-  MPI_Finalize();
+  if (amps_mpi_initialized)
+  {
+    MPI_Comm_free(&amps_CommNode);
+    MPI_Comm_free(&amps_CommWrite);
+
+    MPI_Finalize();
+  }
 
 #ifdef AMPS_MALLOC_DEBUG
   /* check out the heap and shut everything down if we are in debug mode */
-  malloc_verify(0);
-  malloc_shutdown();
+#if 0
+  dmalloc_verify(NULL);
+  dmalloc_shutdown();
+#endif
 #endif
   return 0;
 }
