@@ -373,7 +373,6 @@ double  MaxTotalFieldValue(
   int nx, ny, nz;
   int nx_v, ny_v, nz_v;
   int nx_s, ny_s, nz_s;
-  int nx_b, ny_b, nz_b;
   int nx_p, ny_p, nz_p;
   int stx = 0, sty = 0, stz = 0;
 
@@ -468,13 +467,6 @@ double  MaxTotalFieldValue(
       nx_s = SubvectorNX(s_sub);
       ny_s = SubvectorNY(s_sub);
       nz_s = SubvectorNZ(s_sub);
-
-      if (dir == 2)
-      {
-        nx_b = SubvectorNX(b_sub);
-        ny_b = SubvectorNY(b_sub);
-        nz_b = SubvectorNZ(b_sub);
-      }
 
       nx_p = SubvectorNX(p_sub);
       ny_p = SubvectorNY(p_sub);

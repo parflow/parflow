@@ -115,7 +115,6 @@ int amps_Init(int *argc, char **argv[])
 #endif
 
   char processor_name[MPI_MAX_PROCESSOR_NAME];
-  unsigned char processor_Name[MPI_MAX_PROCESSOR_NAME];
   int namelen;
 
   MPI_Init(argc, argv);
@@ -130,7 +129,7 @@ int amps_Init(int *argc, char **argv[])
 #else
   /*Split the node level communicator based on Adler32 hash keys*/
   MPI_Get_processor_name(processor_name, &namelen);
-  uint32_t checkSum = Adler32(processor_name, namelen);
+  uint32_t checkSum = Adler32((unsigned char*)processor_name, namelen);
   MPI_Comm_split(MPI_COMM_WORLD, checkSum, amps_rank, &amps_CommNode);
 #endif
   

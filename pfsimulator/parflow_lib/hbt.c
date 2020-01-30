@@ -191,14 +191,11 @@ void *HBT_replace(
                   int   sizeof_obj)
 {
   int test;
-  int father_dir;
   int found = FALSE;
   HBT_element *temp;
-  HBT_element *father_temp;
 
   (void)sizeof_obj;
 
-  father_temp = NULL;
   temp = tree->root;
 
   while (temp)
@@ -208,8 +205,6 @@ void *HBT_replace(
       /*---------------------------------------------------------------*/
       /* Go left.                                                      */
       /*---------------------------------------------------------------*/
-      father_dir = test;
-      father_temp = temp;
       temp = LEFT(temp);
     }
     else if (test > 0)
@@ -217,8 +212,6 @@ void *HBT_replace(
       /*---------------------------------------------------------------*/
       /* Go right.                                                     */
       /*---------------------------------------------------------------*/
-      father_dir = test;
-      father_temp = temp;
       temp = RIGHT(temp);
     }
     else

@@ -44,9 +44,6 @@ typedef void InstanceXtra;
  *--------------------------------------------------------------------------*/
 void realSpaceZ(ProblemData *problem_data, Vector *rsz)
 {
-  PFModule       *this_module = ThisPFModule;
-  PublicXtra     *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
-
   Grid           *grid = VectorGrid(rsz);
 
   SubgridArray   *subgrids = GridSubgrids(grid);
