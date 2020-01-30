@@ -187,6 +187,13 @@ void MetadataAddParflowDomainInfo(cJSON* pf, PFModule* solver, Grid* localGrid)
     cJSON_AddItemToArray(subSGD, cJSON_CreateIntArray(gjdivs, nj + 1));
     cJSON_AddItemToArray(subSGD, cJSON_CreateIntArray(gkdivs, nk + 1));
   }
+
+  free(idivs);
+  free(jdivs);
+  free(kdivs);
+  free(gidivs);
+  free(gjdivs);
+  free(gkdivs);
 }
 
 static void cJSON_AddIDBEntries(cJSON* json, HBT_element* info, int onlyUsed)
@@ -310,6 +317,7 @@ void WriteMetadata(PFModule* solver, const char* prefix)
     FILE* meta = fopen("tmp.pfmetadata", "w");
     fprintf(meta, "%s", json);
     fclose(meta);
+    free(json);
     // Now move the dummy file into place.
     // Doing things this way ensures no one can open a
     // partially written file (which would produce JSON
