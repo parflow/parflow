@@ -25,42 +25,88 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  *  USA
  **********************************************************************EHEADER*/
-/*
- * This test prints out information size and rank information on all
- * the nodes and then amps_Exits
- */
+/* This is a test string */
 
 #include <stdio.h>
 #include "amps.h"
+
+char *filename = "test17.input";
 
 int main(argc, argv)
 int argc;
 char *argv[];
 {
-  int num;
+  amps_File file;
+  amps_Invoice recv_invoice;
+
+  /* Number of times to execute SFBcast; default test is 1 */  
+  int loop = 1;
+
   int me;
-  int i;
+
+  unsigned char recvd_string[100];
+  int length = 100;
 
   int result = 0;
 
-  /* To make sure that malloc checking is on */
-
   if (amps_Init(&argc, &argv))
   {
-    amps_Printf("Error amps_Init\n");
+    amps_Printf("ERROR: Error amps_Init\n");
     amps_Exit(1);
   }
 
-  num = amps_Size(amps_CommWorld);
+  if (argc > 2)
+  {
+    amps_Printf("ERROR: Invalid number of arguments\n");
+    amps_Exit(1);
+  }
+  else if (argc == 2)
+  {
+    loop = atoi(argv[1]);
+  }
+
+  recv_invoice = amps_NewInvoice("%*b", length, recvd_string);
 
   me = amps_Rank(amps_CommWorld);
 
-  amps_Printf("Node %d: number procs = %d\n", me, num);
-
-  for (i = 1; i < argc; i++)
+  if(me == 0)
   {
-    amps_Printf("arg[%d] = %s\n", i, argv[i]);
+    FILE* test_file;
+
+    test_file = fopen(filename, "wb");
+
+    for(unsigned char i = 0; i < length; i++)
+    {
+      fwrite(&i, 1, 1, test_file);
+    }
+
+    fclose(test_file);
   }
+
+  for (; loop; loop--)
+  {
+    if (!(file = amps_SFopen(filename, "rb")))
+    {
+      amps_Printf("Error on open\n");
+      amps_Exit(1);
+    }
+
+    amps_SFBCast(amps_CommWorld, file, recv_invoice);
+
+    for(unsigned char i = 0; i < length; i++)
+    {
+      if (recvd_string[i] != i)
+      {
+	amps_Printf("ERROR - byte buffers do not match\n");
+	result = 1;
+	break;
+      }
+    }
+    
+    amps_SFclose(file);
+  }
+
+  amps_FreeInvoice(recv_invoice);
 
   amps_Finalize();
 
@@ -75,7 +121,7 @@ char *argv[];
       printf("PASSED\n");
     }
   }
-  
+
   return result;
 }
 

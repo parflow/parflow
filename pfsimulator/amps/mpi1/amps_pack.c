@@ -83,6 +83,13 @@ int amps_create_mpi_cont_send_type(
 
     switch (ptr->type)
     {
+      case AMPS_INVOICE_BYTE_CTYPE:
+        cur_pos += AMPS_CALL_BYTE_ALIGN(comm, NULL, cur_pos, len, 1);
+        MPI_Type_vector(len, 1, 1, MPI_BYTE, &mpi_types[element]);
+        MPI_Get_address(cur_pos, &mpi_displacements[element]);
+        cur_pos += AMPS_CALL_BYTE_SIZEOF(comm, cur_pos, NULL, len, 1);
+        break;
+	
       case AMPS_INVOICE_CHAR_CTYPE:
         cur_pos += AMPS_CALL_CHAR_ALIGN(comm, NULL, cur_pos, len, 1);
         MPI_Type_vector(len, 1, 1, MPI_BYTE, &mpi_types[element]);
@@ -142,10 +149,17 @@ int amps_create_mpi_cont_send_type(
 
         switch (ptr->type - AMPS_INVOICE_LAST_CTYPE)
         {
-          case AMPS_INVOICE_CHAR_CTYPE:
+	  case AMPS_INVOICE_BYTE_CTYPE:
             if (!ptr->ignore)
             {
               MPI_Type_vector(len, 1, 1, MPI_BYTE, base_type);
+            }
+            break;
+	    
+          case AMPS_INVOICE_CHAR_CTYPE:
+            if (!ptr->ignore)
+            {
+              MPI_Type_vector(len, 1, 1, MPI_CHAR, base_type);
             }
             break;
 
@@ -291,10 +305,18 @@ void amps_create_mpi_type(
 
     switch (ptr->type)
     {
-      case AMPS_INVOICE_CHAR_CTYPE:
+      case AMPS_INVOICE_BYTE_CTYPE:
         if (!ptr->ignore)
         {
           MPI_Type_vector(len, 1, stride, MPI_BYTE,
+                          &mpi_types[element]);
+        }
+        break;
+
+      case AMPS_INVOICE_CHAR_CTYPE:
+        if (!ptr->ignore)
+        {
+          MPI_Type_vector(len, 1, stride, MPI_CHAR,
                           &mpi_types[element]);
         }
         break;
@@ -356,8 +378,13 @@ void amps_create_mpi_type(
 
         switch (ptr->type - AMPS_INVOICE_LAST_CTYPE)
         {
+	  case AMPS_INVOICE_BYTE_CTYPE:
+	    MPI_Type_vector(len, 1, stride, MPI_BYTE, base_type);
+            element_size = sizeof(char);
+            break;
+
           case AMPS_INVOICE_CHAR_CTYPE:
-            MPI_Type_vector(len, 1, stride, MPI_BYTE, base_type);
+            MPI_Type_vector(len, 1, stride, MPI_CHAR, base_type);
             element_size = sizeof(char);
             break;
 

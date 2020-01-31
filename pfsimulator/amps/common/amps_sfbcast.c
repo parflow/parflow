@@ -94,6 +94,16 @@ int amps_SFBCast(amps_Comm comm, amps_File file, amps_Invoice invoice)
 
       switch (ptr->type)
       {
+	case AMPS_INVOICE_BYTE_CTYPE:
+          if (ptr->data_type == AMPS_INVOICE_POINTER)
+          {
+            *((void**)(ptr->data)) = (void*)malloc(sizeof(char) * (size_t)(len * stride));
+            amps_ScanByte(file, *( char**)(ptr->data), len, stride);
+          }
+          else
+            amps_ScanByte(file, (char*)ptr->data, len, stride);
+          break;
+
         case AMPS_INVOICE_CHAR_CTYPE:
           if (ptr->data_type == AMPS_INVOICE_POINTER)
           {

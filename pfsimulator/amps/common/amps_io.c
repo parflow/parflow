@@ -28,6 +28,23 @@
 
 #include "amps.h"
 
+void amps_ScanByte(
+                   amps_File file,
+                   char *    data,
+                   int       len,
+                   int       stride)
+{
+  char *ptr;
+  char *end_ptr;
+
+  for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
+       ptr += stride)
+  {
+    fread(ptr, 1, 1, file);
+  }
+}
+
+
 void amps_ScanChar(
                    amps_File file,
                    char *    data,

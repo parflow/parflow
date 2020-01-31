@@ -553,6 +553,10 @@ reswitch:
         len = n;
         goto reswitch;
 
+      case 'b':
+        type = AMPS_INVOICE_BYTE_CTYPE;
+        break;
+
       case 'c':
         type = AMPS_INVOICE_CHAR_CTYPE;
         break;

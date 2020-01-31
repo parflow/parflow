@@ -23,3 +23,5 @@ set(AMPS_SCRIPTS run)
 string(REGEX REPLACE "([^;]+)" "${PARFLOW_AMPS_LAYER}/\\1" AMPS_SCRIPTS "${AMPS_SCRIPTS}")
 install(FILES ${AMPS_SCRIPTS} DESTINATION bin)
 
+add_subdirectory (test/src)
+
