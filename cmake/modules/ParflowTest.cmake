@@ -73,4 +73,3 @@ function (pf_add_amps_sequential_test test loops)
   set(ranks -1)
   pf_add_amps_parallel_test(${test} ${ranks} ${loops})
 endfunction()
-

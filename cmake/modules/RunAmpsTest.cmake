@@ -7,9 +7,9 @@ macro(pf_amps_exec_check cmd ranks args)
 
   set( ENV{PF_TEST} "yes" )
 
-  message("ranks = ${ranks} cmd = {$cmd} args = ${args}")
+  message("Running : ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${ranks} ${MPIEXEC_PREFLAGS} ${cmd} ${args}")
   if (${ranks} GREATER 0)
-    execute_process (COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${ranks} ${MPIEXEC_PREFLAGS} ${cmd} {args} RESULT_VARIABLE cmdResult OUTPUT_VARIABLE stdout ERROR_VARIABLE stdout)
+    execute_process (COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${ranks} ${MPIEXEC_PREFLAGS} ${cmd} ${args} RESULT_VARIABLE cmdResult OUTPUT_VARIABLE stdout ERROR_VARIABLE stdout)
   else()
     execute_process (COMMAND ./${cmd} ${args} RESULT_VARIABLE cmdResult OUTPUT_VARIABLE stdout ERROR_VARIABLE stdout)
   endif()

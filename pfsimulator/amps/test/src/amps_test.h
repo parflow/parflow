@@ -47,5 +47,34 @@ int amps_check_result(int result)
   return result;
 }
 
+int amps_compare_files(char *filename1, char *filename2)
+{
+
+  FILE *file1 = fopen(filename1, "r");
+  FILE *file2 = fopen(filename2, "r");
+
+  char ch1;
+  char ch2;
+  
+  do
+  {
+    ch1 = fgetc(file1);
+    ch2 = fgetc(file2);
+        
+    if (ch1 != ch2)
+      return 1;
+
+  } while (ch1 != EOF && ch2 != EOF);
+
+  
+  if (ch1 == EOF && ch2 == EOF)
+    return 0;
+  else
+    return 1;
+
+  fclose(file1);
+  fclose(file2);
+}
+
 #endif /* amps_test */
 
