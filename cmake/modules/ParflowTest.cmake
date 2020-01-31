@@ -57,10 +57,10 @@ endfunction()
 function (pf_add_amps_parallel_test test ranks loops)
   set (testname amps-${test}-${ranks}-${loops})
   
-  add_test (NAME ${testname} COMMAND ${CMAKE_COMMAND} -DPARFLOW_TEST=${test} -DPARFLOW_RANKS=${ranks} -DPARFLOW_LOOPS=${loops} -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunAmpsTest.cmake)
+  add_test (NAME ${testname} COMMAND ${CMAKE_COMMAND} -DPARFLOW_TEST=${test} -DPARFLOW_RANKS=${ranks} -DPARFLOW_ARGS=${loops} -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunAmpsTest.cmake)
 
   if( ${PARFLOW_HAVE_MEMORYCHECK} )
-    add_test (NAME ${testname}_memcheck COMMAND ${CMAKE_COMMAND} -DPARFLOW_HAVE_MEMORYCHECK=${PARFLOW_HAVE_MEMORYCHECK} -DPARFLOW_MEMORYCHECK_COMMAND=${PARFLOW_MEMORYCHECK_COMMAND} -DPARFLOW_MEMORYCHECK_COMMAND_OPTIONS=${PARFLOW_MEMORYCHECK_COMMAND_OPTIONS} -DPARFLOW_TEST=${test} -DPARFLOW_RANKS=${ranks} -DPARFLOW_LOOPS=${loops} -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunParallelTest.cmake WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    add_test (NAME ${testname}_memcheck COMMAND ${CMAKE_COMMAND} -DPARFLOW_HAVE_MEMORYCHECK=${PARFLOW_HAVE_MEMORYCHECK} -DPARFLOW_MEMORYCHECK_COMMAND=${PARFLOW_MEMORYCHECK_COMMAND} -DPARFLOW_MEMORYCHECK_COMMAND_OPTIONS=${PARFLOW_MEMORYCHECK_COMMAND_OPTIONS} -DPARFLOW_TEST=${test} -DPARFLOW_RANKS=${ranks} -DPARFLOW_ARGS=${loops} -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunParallelTest.cmake)
   endif()
 endfunction()
 
@@ -70,12 +70,7 @@ endfunction()
 # inputfile is the TCL script that defines the test.
 #
 function (pf_add_amps_sequential_test test loops)
-  set (testname amps-${test}-${loops})
-  
-  add_test (NAME ${testname} COMMAND ${CMAKE_COMMAND} -DPARFLOW_TEST=${test} -DPARFLOW_RANKS=-1 -DPARFLOW_LOOPS=${loops} -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunAmpsTest.cmake)
-
-  if( ${PARFLOW_HAVE_MEMORYCHECK} )
-    add_test (NAME ${testname}_memcheck COMMAND ${CMAKE_COMMAND} -DPARFLOW_HAVE_MEMORYCHECK=${PARFLOW_HAVE_MEMORYCHECK} -DPARFLOW_MEMORYCHECK_COMMAND=${PARFLOW_MEMORYCHECK_COMMAND} -DPARFLOW_MEMORYCHECK_COMMAND_OPTIONS=${PARFLOW_MEMORYCHECK_COMMAND_OPTIONS} -DPARFLOW_TEST=${test} -DPARFLOW_RANKS=${ranks} -DPARFLOW_LOOPS=${loops} -P ${CMAKE_SOURCE_DIR}/cmake/modules/RunParallelTest.cmake WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-  endif()
+  set(ranks -1)
+  pf_add_amps_parallel_test(${test} ${ranks} ${loops})
 endfunction()
 
