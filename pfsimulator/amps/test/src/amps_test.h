@@ -25,47 +25,27 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  *  USA
  **********************************************************************EHEADER*/
-/*
- * This test prints out information size and rank information on all
- * the nodes and then amps_Exits
- */
+#ifndef AMPS_TEST_H
+#define AMPS_TEST_H
 
-#include "amps.h"
-#include "amps_test.h"
-
-#include <stdio.h>
-
-int main(argc, argv)
-int argc;
-char *argv[];
+int amps_check_result(int result)
 {
-  int num;
-  int me;
-  int i;
-
-  int result = 0;
-
-  /* To make sure that malloc checking is on */
-
-  if (amps_Init(&argc, &argv))
+  if(result)
   {
-    amps_Printf("Error amps_Init\n");
-    amps_Exit(1);
+    printf("FAILED\n");
+  }
+  else
+  {
+    int me = amps_Rank(amps_CommWorld);
+    
+    if(me == 0)
+    {
+      printf("PASSED\n");
+    }
   }
 
-  num = amps_Size(amps_CommWorld);
-
-  me = amps_Rank(amps_CommWorld);
-
-  amps_Printf("Node %d: number procs = %d\n", me, num);
-
-  for (i = 1; i < argc; i++)
-  {
-    amps_Printf("arg[%d] = %s\n", i, argv[i]);
-  }
-
-  amps_Finalize();
-
-  return amps_check_result(result);
+  return result;
 }
+
+#endif /* amps_test */
 

@@ -25,10 +25,11 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  *  USA
  **********************************************************************EHEADER*/
-/* This is a test string */
+
+#include "amps.h"
+#include "amps_test.h"
 
 #include <stdio.h>
-#include "amps.h"
 
 char *filename = "test17.input";
 
@@ -110,18 +111,6 @@ char *argv[];
 
   amps_Finalize();
 
-  if(result)
-  {
-    printf("FAILED\n");
-  }
-  else
-  {
-    if(me == 0)
-    {
-      printf("PASSED\n");
-    }
-  }
-
-  return result;
+  return amps_check_result(result);
 }
 
