@@ -69,6 +69,27 @@ char *buffer;
 
     switch (ptr->type)
     {
+      case AMPS_INVOICE_BYTE_CTYPE:
+        cur_pos += AMPS_CALL_BYTE_ALIGN(comm, NULL, cur_pos, len, stride);
+        if (!ptr->ignore)
+        {
+          if (ptr->data_type == AMPS_INVOICE_POINTER)
+          {
+            if (stride == 1 && AMPS_BYTE_OVERLAY(comm))
+              *((void**)(ptr->data)) = cur_pos;
+            else
+              *((void**)(ptr->data)) = malloc(sizeof(char)
+                                              * len * stride);
+            malloced = TRUE;
+            AMPS_CALL_BYTE_IN(comm, cur_pos, *((void**)(ptr->data)),
+                              len, stride);
+          }
+          else
+            AMPS_CALL_BYTE_IN(comm, cur_pos, ptr->data, len, stride);
+        }
+        cur_pos += AMPS_CALL_BYTE_SIZEOF(comm, cur_pos, NULL, len, stride);
+        break;
+
       case AMPS_INVOICE_CHAR_CTYPE:
         cur_pos += AMPS_CALL_CHAR_ALIGN(comm, NULL, cur_pos, len, stride);
         if (!ptr->ignore)

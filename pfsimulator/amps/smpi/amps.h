@@ -131,8 +131,17 @@
 extern MPI_Comm amps_CommNode;
 extern MPI_Comm amps_CommWrite;
 
+/* Global ranks and size of MPI_COMM_WORLD*/
 extern int amps_rank;
 extern int amps_size;
+
+/* Node level ranks and size of nodeComm */
+extern int amps_node_rank;
+extern int amps_node_size;
+
+/* Writing proc ranks and size of writeComm */
+extern int amps_write_rank;
+extern int amps_write_size;
 
 /*===========================================================================*/
 /**
@@ -206,13 +215,14 @@ extern int amps_size;
 #define AMPS_PID 0
 
 /* These are the built-in types that are supported */
-#define AMPS_INVOICE_CHAR_CTYPE                1
-#define AMPS_INVOICE_SHORT_CTYPE               2
-#define AMPS_INVOICE_INT_CTYPE                 3
-#define AMPS_INVOICE_LONG_CTYPE                4
-#define AMPS_INVOICE_DOUBLE_CTYPE              5
-#define AMPS_INVOICE_FLOAT_CTYPE               6
-#define AMPS_INVOICE_LAST_CTYPE                7
+#define AMPS_INVOICE_BYTE_CTYPE                1
+#define AMPS_INVOICE_CHAR_CTYPE                2
+#define AMPS_INVOICE_SHORT_CTYPE               3
+#define AMPS_INVOICE_INT_CTYPE                 4
+#define AMPS_INVOICE_LONG_CTYPE                5
+#define AMPS_INVOICE_DOUBLE_CTYPE              6
+#define AMPS_INVOICE_FLOAT_CTYPE               7
+#define AMPS_INVOICE_LAST_CTYPE                8
 
 /* Flags for use with user-defined flag                                      */
 #define AMPS_INVOICE_OVERLAY                   1
@@ -377,6 +387,9 @@ extern amps_Buffer *amps_BufferFreeList;
     ((unsigned long)(dest) % sizeof(type)))      \
    % sizeof(type));
 
+#define AMPS_CALL_BYTE_ALIGN(_comm, _src, _dest, _len, _stride) \
+  AMPS_ALIGN(char, (_src), (_dest), (_len), (_stride))
+
 #define AMPS_CALL_CHAR_ALIGN(_comm, _src, _dest, _len, _stride) \
   AMPS_ALIGN(char, (_src), (_dest), (_len), (_stride))
 
@@ -400,6 +413,9 @@ extern amps_Buffer *amps_BufferFreeList;
 /*---------------------------------------------------------------------------*/
 #define AMPS_SIZEOF(len, stride, size) \
   (len) * (size)
+
+#define AMPS_CALL_BYTE_SIZEOF(_comm, _src, _dest, _len, _stride)	\
+  AMPS_SIZEOF((_len), (_stride), sizeof(char))
 
 #define AMPS_CALL_CHAR_SIZEOF(_comm, _src, _dest, _len, _stride) \
   AMPS_SIZEOF((_len), (_stride), sizeof(char))
@@ -435,6 +451,9 @@ extern amps_Buffer *amps_BufferFreeList;
     }									                                  \
   }
 
+#define AMPS_CALL_BYTE_OUT(_comm, _src, _dest, _len, _stride) \
+  AMPS_CONVERT_OUT(char, ctohc, (_comm), (_src), (_dest), (_len), (_stride))
+
 #define AMPS_CALL_CHAR_OUT(_comm, _src, _dest, _len, _stride) \
   AMPS_CONVERT_OUT(char, ctohc, (_comm), (_src), (_dest), (_len), (_stride))
 
@@ -468,6 +487,9 @@ extern amps_Buffer *amps_BufferFreeList;
     }									       \
   }
 
+#define AMPS_CALL_BYTE_IN(_comm, _src, _dest, _len, _stride) \
+  AMPS_CONVERT_IN(char, htocc, (_comm), (_src), (_dest), (_len), (_stride))
+
 #define AMPS_CALL_CHAR_IN(_comm, _src, _dest, _len, _stride) \
   AMPS_CONVERT_IN(char, htocc, (_comm), (_src), (_dest), (_len), (_stride))
 
@@ -487,6 +509,9 @@ extern amps_Buffer *amps_BufferFreeList;
   AMPS_CONVERT_IN(double, htocd, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CHECK_OVERLAY(_type, _comm) 0
+
+#define AMPS_BYTE_OVERLAY(_comm) \
+  AMPS_CHECK_OVERLAY(char, _comm)
 
 #define AMPS_CHAR_OVERLAY(_comm) \
   AMPS_CHECK_OVERLAY(char, _comm)
@@ -748,6 +773,7 @@ extern amps_Buffer *amps_BufferFreeList;
  * Read and Write routines to write to files in XDR format.
  *****************************************************************************/
 
+#define amps_SizeofByte sizeof(char)
 #define amps_SizeofChar sizeof(char)
 #define amps_SizeofShort sizeof(short)
 #define amps_SizeofInt sizeof(int)
@@ -760,7 +786,7 @@ extern amps_Buffer *amps_BufferFreeList;
  * @name amps\_WriteType
  *
  * There are several routines to output to a distributed file using a
- * binary binary rather than ASCII.  {\bf type} can be replaced by Char,
+ * binary binary rather than ASCII.  {\bf type} can be replaced by Byte, Char,
  * Short, Int, Long, Float, or Double to indicate the type of data to
  * output.  The type is specified to allow data conversions.  Data is
  * written using XDR format (\cite{xdr.87}).  These functions are
@@ -794,7 +820,7 @@ extern amps_Buffer *amps_BufferFreeList;
  * @name amps\_ReadType
  *
  * This set of functions is used to read binary data from a distributed file.
- * {\bf type} can be replaced by Char, Short, Int, Long, Float, or Double
+ * {\bf type} can be replaced by Byte, Char, Short, Int, Long, Float, or Double
  * to indicate the type of data to output.  The type is specified in order
  * to do conversions.  Data is converted from {\em XDR} format (\cite{xdr.87}).
  * The arguments are similar to the standard C library function
@@ -833,6 +859,9 @@ extern amps_Buffer *amps_BufferFreeList;
 /* On the nodes store numbers with wrong endian so we need to swap           */
 /*---------------------------------------------------------------------------*/
 
+#define amps_WriteByte(file, ptr, len)			\
+  fwrite((ptr), sizeof(char), (len), (FILE*)(file))
+
 #define amps_WriteChar(file, ptr, len) \
   fwrite((ptr), sizeof(char), (len), (FILE*)(file))
 
@@ -845,6 +874,9 @@ void amps_WriteInt(amps_File file, int *ptr, int len);
   fwrite((ptr), sizeof(long), (len), (FILE*)(file))
 
 void amps_WriteDouble(amps_File file, double *ptr, int len);
+
+#define amps_ReadWrite(file, ptr, len) \
+  fread((ptr), sizeof(char), (len), (FILE*)(file))
 
 #define amps_ReadChar(file, ptr, len) \
   fread((ptr), sizeof(char), (len), (FILE*)(file))
@@ -863,6 +895,9 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 
 #ifdef AMPS_INTS_ARE_64
 
+#define amps_WriteByte(file, ptr, len) \
+  fwrite((ptr), sizeof(char), (len), (FILE*)(file))
+
 #define amps_WriteChar(file, ptr, len) \
   fwrite((ptr), sizeof(char), (len), (FILE*)(file))
 
@@ -878,6 +913,9 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #define amps_WriteDouble(file, ptr, len) \
   fwrite((ptr), sizeof(double), (len), (FILE*)(file))
 
+
+#define amps_ReadByte(file, ptr, len) \
+  fread((ptr), sizeof(char), (len), (FILE*)(file))
 
 #define amps_ReadChar(file, ptr, len) \
   fread((ptr), sizeof(char), (len), (FILE*)(file))
@@ -895,6 +933,9 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
   fread((ptr), sizeof(double), (len), (FILE*)(file))
 
 #else
+
+#define amps_WriteByte(file, ptr, len) \
+  fwrite((ptr), sizeof(char), (len), (FILE*)(file))
 
 #define amps_WriteChar(file, ptr, len) \
   fwrite((ptr), sizeof(char), (len), (FILE*)(file))
@@ -914,6 +955,9 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #define amps_WriteDouble(file, ptr, len) \
   fwrite((ptr), sizeof(double), (len), (FILE*)(file))
 
+
+#define amps_ReadByte(file, ptr, len) \
+  fread((ptr), sizeof(char), (len), (FILE*)(file))
 
 #define amps_ReadChar(file, ptr, len) \
   fread((ptr), sizeof(char), (len), (FILE*)(file))
@@ -955,7 +999,7 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
  * @param count Number of items of type to allocate
  * @return Pointer to the allocated dataspace
  */
-#define amps_TAlloc(type, count) ((count) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
+#define amps_TAlloc(type, count) ((count>0) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
 
 /*===========================================================================*/
 /**
