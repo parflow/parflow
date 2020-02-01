@@ -45,7 +45,7 @@ char *argv[];
 
   int me;
 
-  unsigned char recvd_string[100];
+  unsigned char buffer[100];
   int length = 100;
 
   int result = 0;
@@ -66,7 +66,7 @@ char *argv[];
     loop = atoi(argv[1]);
   }
 
-  recv_invoice = amps_NewInvoice("%*b", length, recvd_string);
+  recv_invoice = amps_NewInvoice("%*b", length, buffer);
 
   me = amps_Rank(amps_CommWorld);
 
@@ -96,7 +96,7 @@ char *argv[];
 
     for(unsigned char i = 0; i < length; i++)
     {
-      if (recvd_string[i] != i)
+      if (buffer[i] != i)
       {
 	amps_Printf("ERROR - byte buffers do not match\n");
 	result = 1;
