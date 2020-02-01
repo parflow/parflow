@@ -672,6 +672,3 @@ int amps_num_package_items(amps_Invoice inv)
 
   return num;
 }
-
-
-

@@ -143,15 +143,15 @@ extern MPI_Comm amps_CommWrite;
 extern MPI_Comm nodeComm;
 extern MPI_Comm writeComm;
 
-/*Global ranks and size of MPI_COMM_WORLD*/
+/* Global ranks and size of MPI_COMM_WORLD*/
 extern int amps_rank;
 extern int amps_size;
 
-/*Node level ranks and size of nodeComm */
+/* Node level ranks and size of nodeComm */
 extern int amps_node_rank;
 extern int amps_node_size;
 
-/*Writing proc ranks and size of writeComm */
+/* Writing proc ranks and size of writeComm */
 extern int amps_write_rank;
 extern int amps_write_size;
 
