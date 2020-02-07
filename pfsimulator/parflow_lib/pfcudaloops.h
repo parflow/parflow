@@ -140,6 +140,15 @@ __host__ __device__ __forceinline__ static void AtomicAdd(T *array_loc, T value)
 #endif
 }
 
+template <typename T>
+__host__ __device__ __forceinline__ static T RPowerR(T base, T exponent)
+{
+  if (base <= 0.0)
+    return(0.0);
+
+  return((T)pow((double)base, (double)exponent));
+}
+
 /*--------------------------------------------------------------------------
  * CUDA helper macro redefinitions
  *--------------------------------------------------------------------------*/
