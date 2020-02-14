@@ -80,7 +80,7 @@ and to executed it:
 With p4est enabled the user has the flexibility of using less
 processes (MPI ranks) than the total number of subgrids.
 
-Configurations  in which the number of processes is bigger
+Configurations in which the number of processes is bigger
 than the number of subgrids are not yet supported. 
 
 Certain combinations of total number of grid points and
@@ -96,3 +96,9 @@ The MGSemi preconditioner is not supported.
 Coupling with the common land model (--with-clm) is only
 supported when the number of subgrids match the number of
 processes.
+
+NetCDF output is only supported when the number of subgrids match
+the number of processes.
+
+The clustering algorithm implemented from tag v3.5.0 doest not
+work when p4est is enabled.
