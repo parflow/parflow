@@ -266,7 +266,7 @@ static Vector  *NewTempVector(
 
 #ifdef HAVE_P4EST
   int numLocalSubs = SubgridArraySize(GridSubgrids(grid));
-  int numInnerGhosts = SubgridArraySize(grid->innerGhostSubgrids);
+  int numInnerGhosts = !(USE_P4EST) ? 0 : SubgridArraySize(grid->innerGhostSubgrids);
 #endif
 
   new_vector = ctalloc(Vector, 1);  /*address of storage is assigned to the ptr "new_" of type Vector, which is also
@@ -336,7 +336,7 @@ static void     AllocateVectorData(
   Subvector *subvector;
 #ifdef HAVE_P4EST
   int numLocalSubs = SubgridArraySize(GridSubgrids(grid));
-  int numInnerGhosts = SubgridArraySize(grid->innerGhostSubgrids);
+  int numInnerGhosts = !(USE_P4EST) ? 0 : SubgridArraySize(grid->innerGhostSubgrids);
 #endif
 
   if (USE_P4EST)
@@ -701,7 +701,7 @@ void FreeTempVector(Vector *vector)
 #ifdef HAVE_P4EST
   Grid       *grid = VectorGrid(vector);
   int numLocalSubs = SubgridArraySize(GridSubgrids(grid));
-  int numInnerGhosts = SubgridArraySize(grid->innerGhostSubgrids);
+  int numInnerGhosts = !(USE_P4EST) ? 0 : SubgridArraySize(grid->innerGhostSubgrids);
 #endif
 
   ForSubgridI(i, GridSubgrids(VectorGrid(vector)))

@@ -1070,7 +1070,7 @@ Grid * CreateZprojectedGrid(Grid *input_grid, int new_nz)
   /** Is this two dimensional grid comming from a 3D one ? */
   int proj_flag = GlobalsNumProcsZ > 1 ? 1 : 0;
   int numLocalSubs = SubgridArraySize(GridSubgrids(input_grid));
-  int numInnerGhosts = SubgridArraySize(input_grid->innerGhostSubgrids);
+  int numInnerGhosts = !(USE_P4EST) ? 0 : SubgridArraySize(input_grid->innerGhostSubgrids);
   SubgridArray * new_ighosts = NewSubgridArray();
 #endif
 

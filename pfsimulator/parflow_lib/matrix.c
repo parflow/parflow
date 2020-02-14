@@ -280,7 +280,7 @@ Matrix          *NewMatrixType(
 
 #ifdef HAVE_P4EST
   int numLocalSubs = SubgridArraySize(GridSubgrids(grid));
-  int numInnerGhosts = SubgridArraySize(grid->innerGhostSubgrids);
+  int numInnerGhosts = !(USE_P4EST) ? 0 : SubgridArraySize(grid->innerGhostSubgrids);
 #endif
 
   new_matrix = ctalloc(Matrix, 1);
@@ -688,7 +688,7 @@ void FreeMatrix(
 #ifdef HAVE_P4EST
   Grid *grid = MatrixGrid(matrix);
   int numLocalSubs = GridNumSubgrids(grid);
-  int numInnerGhosts = SubgridArraySize(grid->innerGhostSubgrids);;
+  int numInnerGhosts = !(USE_P4EST) ? 0 : SubgridArraySize(grid->innerGhostSubgrids);
 #endif
 
   switch (matrix->type)
