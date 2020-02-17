@@ -5,7 +5,7 @@
  * Include CUDA headers
  *--------------------------------------------------------------------------*/
 
-#include "pfcudaerr.h"
+#include "pfcudamalloc.h"
 
 extern "C++"{
 
@@ -746,6 +746,54 @@ static int gpu_sync = 1;
     j = PV_iyu;                                                                     \
     k = PV_izu;                                                                     \
   })                                                                                \
+}
+
+#undef GrGeomOutLoop
+#define GrGeomOutLoop(i, j, k, grgeom, r, ix, iy, iz, nx, ny, nz, body)             \
+{                                                                                   \
+  if(nx > 0 && ny > 0 && nz > 0)                                                    \
+  {                                                                                 \
+    if(!GrGeomSolidOutflag(grgeom))                                                 \
+    {                                                                               \
+      GrGeomOctree  *PV_node;                                                       \
+      double PV_ref = pow(2.0, r);                                                  \
+      GrGeomSolidOutflag(grgeom) = ctalloc(int, nz * ny * nx);                      \
+                                                                                    \
+      i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref;                                \
+      j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;                                \
+      k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref;                                \
+      GrGeomOctreeExteriorNodeLoop(i, j, k, PV_node,                                \
+                                   GrGeomSolidData(grgeom),                         \
+                                   GrGeomSolidOctreeBGLevel(grgeom) + r,            \
+                                   ix, iy, iz, nx, ny, nz,                          \
+                                   TRUE,                                            \
+      {                                                                             \
+        body;                                                                       \
+        int *outflag = GrGeomSolidOutflag(grgeom);                                  \
+        outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] = 1;                 \
+      });                                                                           \
+    }                                                                               \
+    else                                                                            \
+    {                                                                               \
+      dim3 block, grid;                                                             \
+      FindDims(grid, block, nx, ny, nz, 1);                                         \
+                                                                                    \
+      auto lambda_body =                                                            \
+          GPU_LAMBDA(const int i, const int j, const int k)                         \
+          {                                                                         \
+            int *outflag = GrGeomSolidOutflag(grgeom);                              \
+            if(outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] == 1)         \
+            {                                                                       \
+              body;                                                                 \
+            }                                                                       \
+          };                                                                        \
+                                                                                    \
+      BoxKernelI0<<<grid, block>>>(                                                 \
+          lambda_body, ix, iy, iz, nx, ny, nz);                                     \
+      CUDA_ERR(cudaPeekAtLastError());                                              \
+      if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                              \
+    }                                                                               \
+  }                                                                                 \
 }
 
 }

@@ -60,6 +60,11 @@ typedef struct {
   GrGeomOctree **patches;
   int num_patches;
 
+#ifdef HAVE_CUDA
+  /** Flags for GrGeomOutLoop cells */
+  int *outflag; 
+#endif
+
   /* these fields are used to relate the background with the octree */
   int octree_bg_level;
   int octree_ix, octree_iy, octree_iz;
@@ -89,6 +94,7 @@ typedef struct {
 #define GrGeomSolidData(solid)          ((solid)->data)
 #define GrGeomSolidPatches(solid)       ((solid)->patches)
 #define GrGeomSolidNumPatches(solid)    ((solid)->num_patches)
+#define GrGeomSolidOutflag(solid)       ((solid)->outflag)
 #define GrGeomSolidOctreeBGLevel(solid) ((solid)->octree_bg_level)
 #define GrGeomSolidOctreeIX(solid)      ((solid)->octree_ix)
 #define GrGeomSolidOctreeIY(solid)      ((solid)->octree_iy)
