@@ -144,18 +144,18 @@ void          DiscretizePressure(
   Subvector     **tc_sub;
   Subvector      *tv_sub;
 
-  double dx, dy, dz, d;
+  double dx, dy, dz, d=0.0;
 
   double         *cp, *wp, *ep, *sp, *np, *lp, *up, *op = NULL;
   double         *fp;
   double         *ttx_p, *tty_p, *ttz_p;
   double         *tmx_p, *tmy_p, *tmz_p;
-  double         *tm_p, *tt_p;
+  double         *tm_p, *tt_p=NULL;
   double        **tmx_pvec, **tmy_pvec, **tmz_pvec;
   double         *tc_p, **tc_pvec;
   double         *tv_p;
 
-  double scale, ffx, ffy, ffz, ff, vf;
+  double scale, ffx, ffy, ffz, ff=0.0, vf;
 
   double e_temp, n_temp, u_temp, f_temp;
   double o_temp;
@@ -932,9 +932,6 @@ PFModule    *DiscretizePressureInitInstanceXtra(
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra;
 
-  int num_phases;
-
-
   if (PFModuleInstanceXtra(this_module) == NULL)
     instance_xtra = ctalloc(InstanceXtra, 1);
   else
@@ -948,8 +945,6 @@ PFModule    *DiscretizePressureInitInstanceXtra(
   {
     (instance_xtra->problem) = problem;
   }
-
-  num_phases = ProblemNumPhases(instance_xtra->problem);
 
   /*-----------------------------------------------------------------------
    * Initialize data associated with argument `grid'
@@ -1022,13 +1017,8 @@ void  DiscretizePressureFreeInstanceXtra()
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
 
-  int num_phases;
-
-
   if (instance_xtra)
   {
-    num_phases = ProblemNumPhases(instance_xtra->problem);
-
     PFModuleFreeInstance(instance_xtra->bc_pressure);
     PFModuleFreeInstance(instance_xtra->phase_mobility);
     PFModuleFreeInstance(instance_xtra->phase_density_module);

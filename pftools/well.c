@@ -28,7 +28,6 @@
 
 #include "well.h"
 
-
 /*****************************************************************************
 *
 * The functions in this file are for manipulating the WellData structure

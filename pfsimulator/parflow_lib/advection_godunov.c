@@ -175,7 +175,7 @@ void     Godunov(
   int cycle_number, interval_number;
   int lo[3], hi[3], dlo[3], dhi[3];
   double hx[3];
-  double dt, t;
+  double dt;
   int fstord;
   double cell_volume, field_sum, total_volume, cell_change,
     well_stat, contaminant_stat;
@@ -202,7 +202,6 @@ void     Godunov(
    *-----------------------------------------------------------------------*/
 
   dt = deltat;
-  t = time;
   if (order == 1)
   {
     fstord = TRUE;

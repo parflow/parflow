@@ -258,7 +258,7 @@ PFModule  *PFMGInitInstanceXtra(
   int i, j, k, itop, k1, ktop;
   int ix, iy, iz;
   int nx, ny, nz;
-  int nx_m, ny_m, nz_m, sy_m, sy_v;
+  int nx_m, ny_m, nz_m, sy_v;
   int im, io;
   int stencil_size;
   int symmetric;
@@ -521,8 +521,6 @@ PFModule  *PFMGInitInstanceXtra(
         nz_m = SubmatrixNZ(pfB_sub);
 
         sy_v = SubvectorNX(top_sub);
-
-        sy_m = nx_m;
 
         im = SubmatrixEltIndex(pfB_sub, ix, iy, iz);
 

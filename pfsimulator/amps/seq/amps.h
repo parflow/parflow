@@ -103,7 +103,7 @@ typedef FILE *amps_File;
 #define amps_Wait(handle) 0
 
 /*---------------------------------------------------------------------------*/
-/* Macros for all commands that have no function in sequentail code.         */
+/* Macros for all commands that have no function in sequential code.         */
 /*---------------------------------------------------------------------------*/
 
 #define VOID_FUNC(amps_name) printf("AMPS Error: The %s function is not implemented\n", amps_name);
@@ -378,12 +378,13 @@ typedef struct amps_HandleObject {
 /* These are the built-in types that are supported */
 
 #define AMPS_INVOICE_CHAR_CTYPE                1
-#define AMPS_INVOICE_SHORT_CTYPE               2
-#define AMPS_INVOICE_INT_CTYPE                 3
-#define AMPS_INVOICE_LONG_CTYPE                4
-#define AMPS_INVOICE_DOUBLE_CTYPE              5
-#define AMPS_INVOICE_FLOAT_CTYPE               6
-#define AMPS_INVOICE_LAST_CTYPE                7
+#define AMPS_INVOICE_CHAR_CTYPE                2
+#define AMPS_INVOICE_SHORT_CTYPE               3
+#define AMPS_INVOICE_INT_CTYPE                 5
+#define AMPS_INVOICE_LONG_CTYPE                5
+#define AMPS_INVOICE_DOUBLE_CTYPE              6
+#define AMPS_INVOICE_FLOAT_CTYPE               7
+#define AMPS_INVOICE_LAST_CTYPE                8
 
 /* Flags for use with user-defined flag                                      */
 /* ?????? following is very confusing rename them SGS */

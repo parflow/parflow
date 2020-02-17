@@ -1459,7 +1459,7 @@ int SavePFVTKCommand(
   int i, j, k;
   int flt = 0;
   char          *dzlist_in;
-  char*         Endp1;
+  char*         Endp1=0;
   int dz_els;
 
   FILE          *fp = NULL;
@@ -7230,7 +7230,7 @@ int            FlintsLawByBasinCommand(
   /* Check if one argument following command  */
   if (argc == 1)
   {
-    WrongNumArgsError(interp, PFFLINTSLAWFITUSAGE);
+    WrongNumArgsError(interp, PFFLINTSLAWBYBASINUSAGE);
     return TCL_ERROR;
   }
 

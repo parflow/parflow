@@ -37,7 +37,10 @@
 
 #define DeclareInc(jinc, kinc, nx, ny, nz, nxd, nyd, nzd, sx, sy, sz) \
   int jinc = (sy) * (nxd) - (nx) * (sx);                              \
-  int kinc = (sz) * (nxd) * (nyd) - (ny) * (sy) * (nxd)
+  int kinc = (sz) * (nxd) * (nyd) - (ny) * (sy) * (nxd);	      \
+  PF_UNUSED(nz);						      \
+  PF_UNUSED(nzd)
+    
 
 #define BoxLoopI0(i, j, k,                \
                   ix, iy, iz, nx, ny, nz, \
