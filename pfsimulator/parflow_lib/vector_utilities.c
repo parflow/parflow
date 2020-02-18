@@ -1362,12 +1362,6 @@ void PFVCopy(Vector *x,
 
   ForSubgridI(sg, GridSubgrids(grid))
   {
-    Subgrid    *subgrid = GridSubgrid(grid, sg);
-
-    int nx = SubgridNX(subgrid);
-    int ny = SubgridNY(subgrid);
-    int nz = SubgridNZ(subgrid);
-
     Subvector  *x_sub = VectorSubvector(x, sg);
     Subvector  *y_sub = VectorSubvector(y, sg);
 
@@ -1987,9 +1981,8 @@ void PFVLayerCopy(
   int ix, iy, iz;
   int nx, ny, nz;
   int nx_x, ny_x, nz_x;
-  int nx_y, ny_y, nz_y;
 
-  int sg, i, j, k, i_x, i_y, jinc, kinc;
+  int sg, i, j, k, i_x, i_y;
 
   ForSubgridI(sg, GridSubgrids(grid))
   {
@@ -2009,10 +2002,6 @@ void PFVLayerCopy(
     nx_x = SubvectorNX(x_sub);
     ny_x = SubvectorNY(x_sub);
     nz_x = SubvectorNZ(x_sub);
-
-    nx_y = SubvectorNX(y_sub);
-    ny_y = SubvectorNY(y_sub);
-    nz_y = SubvectorNZ(y_sub);
 
     xp = SubvectorElt(x_sub, ix, iy, iz);
     yp = SubvectorElt(y_sub, ix, iy, b);

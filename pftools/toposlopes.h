@@ -160,7 +160,7 @@ double ComputeLMCoeff(
 void ComputeGaussJordan(
                         double a[][2],
                         int    n,
-                        double b[][1],
+                        double b[][2],
                         int    m);
 
 void ComputeSatTransmissivity(

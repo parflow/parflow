@@ -26,7 +26,6 @@
  *  USA
  **********************************************************************EHEADER*/
 #include "amps.h"
-#include "amps_cuda.h"
 
 extern int amps_mpi_initialized;
 

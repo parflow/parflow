@@ -72,10 +72,10 @@
 #else
 
 #define talloc(type, count) \
-  ((count) ? (type*)malloc(sizeof(type) * (unsigned int)(count)) : NULL)
+  (((count) > 0) ? (type*)malloc(sizeof(type) * (unsigned int)(count)) : NULL)
 
 #define ctalloc(type, count) \
-  ((count) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
+  (((count) > 0) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
 
 /* note: the `else' is required to guarantee termination of the `if' */
 #define tfree(ptr) if (ptr) free(ptr); else {}
@@ -175,11 +175,17 @@
 #define GPU_SYNC
 
 //CUDA compiler specific keywords
-#ifndef __CUDACC__
+#ifndef __host__
 #define __host__
+#endif
+#ifndef __device__
 #define __device__
+#endif
+#ifndef __managed__
 #define __managed__
+#endif
+#ifndef __restrict__
 #define __restrict__
-#endif // __CUDACC__
+#endif
 
 #endif

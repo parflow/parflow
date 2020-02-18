@@ -1018,7 +1018,7 @@ c
 c
 c     linear interpolation--newtons method.
 c
-      do 30 k = 1, 5
+      do 31 k = 1, 5
       do 30 j = 1, jmax
 c     delta =
 c    $        alpha(j)*(amob1(wc(j),visc1(j))/dmob1(wc(j),visc1(j))
@@ -1049,7 +1049,8 @@ c    $                +amob0(wc(j),visc0(j))**2/dmob0(wc(j),visc0(j)))
       if (wc(j).le.0..or.wc(j).ge.1.) then
         wc(j) = 2.
       endif
-  30  continue
+  30  enddo
+  31  enddo
 c    
 c     solve riemann problem.
 c

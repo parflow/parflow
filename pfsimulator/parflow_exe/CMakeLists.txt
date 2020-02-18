@@ -31,6 +31,8 @@ endif (${PARFLOW_HAVE_SILO})
 
 if (${PARFLOW_HAVE_NETCDF})
   target_link_libraries (parflow ${NETCDF_LIBRARIES})
+
+  target_link_libraries (parflow ${CURL_LIBRARIES})
 endif (${PARFLOW_HAVE_NETCDF})
 
 if (${PARFLOW_HAVE_HDF5})
@@ -38,6 +40,7 @@ if (${PARFLOW_HAVE_HDF5})
 
   if (${PARFLOW_HAVE_NETCDF})
     target_link_libraries (parflow ${HDF5_HL_LIBRARIES})
+
   endif (${PARFLOW_HAVE_NETCDF})
 endif (${PARFLOW_HAVE_HDF5})
 

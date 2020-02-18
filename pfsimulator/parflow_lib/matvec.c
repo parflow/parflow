@@ -400,8 +400,6 @@ void            MatvecSubMat(
   int nx_m = 0, ny_m = 0, nz_m = 0;
   int nx_mc = 0, ny_mc = 0, nz_mc = 0;
 
-  int r;
-
   /*-----------------------------------------------------------------------
    * Begin timing
    *-----------------------------------------------------------------------*/
@@ -605,8 +603,6 @@ void            MatvecSubMat(
         sy = SubregionSY(subregion);
         sz = SubregionSZ(subregion);
 
-        r = SubregionRX(subregion);
-
         stencil = MatrixStencil(JB);
         stencil_size = StencilSize(stencil);
         s = StencilShape(stencil);
@@ -632,7 +628,7 @@ void            MatvecSubMat(
           });
         }
 
-/* Now compute matvec contributions from JC */
+	/* Now compute matvec contributions from JC */
         yp = SubvectorData(y_sub);
         xp = SubvectorData(x_sub);
         for (si = 0; si < 5; si++)     /* loop over only c,w,e,s,n */
@@ -729,7 +725,6 @@ void            MatvecJacF(
   Submatrix      *JF_sub = NULL;
 
   Stencil        *stencil;
-  int stencil_size;
   StencilElt     *s;
 
   int compute_i, sra, sr, si, sg, i, j, k;
@@ -749,12 +744,9 @@ void            MatvecJacF(
   int nx_v = 0, ny_v = 0, nz_v = 0;
   int nx_mf = 0, ny_mf = 0, nz_mf = 0;
 
-  int r;
-
   /*-----------------------------------------------------------------------
    * Begin timing
    *-----------------------------------------------------------------------*/
-
 
   BeginTiming(MatvecTimingIndex);
 
@@ -949,10 +941,7 @@ void            MatvecJacF(
         sy = SubregionSY(subregion);
         sz = SubregionSZ(subregion);
 
-        r = SubregionRX(subregion);
-
         stencil = MatrixStencil(JF);
-        stencil_size = StencilSize(stencil);
         s = StencilShape(stencil);
 
         yp = SubvectorData(y_sub);
@@ -1071,7 +1060,6 @@ void            MatvecJacE(
   Submatrix      *JE_sub = NULL;
 
   Stencil        *stencil;
-  int stencil_size;
   StencilElt     *s;
 
   int compute_i, sra, sr, si, sg, i, j, k;
@@ -1090,8 +1078,6 @@ void            MatvecJacE(
 
   int nx_v = 0, ny_v = 0, nz_v = 0;
   int nx_me = 0, ny_me = 0, nz_me = 0;
-
-  int r;
 
   /*-----------------------------------------------------------------------
    * Begin timing
@@ -1291,10 +1277,7 @@ void            MatvecJacE(
         sy = SubregionSY(subregion);
         sz = SubregionSZ(subregion);
 
-        r = SubregionRX(subregion);
-
         stencil = MatrixStencil(JE);
-        stencil_size = StencilSize(stencil);
         s = StencilShape(stencil);
 
         yp = SubvectorElt(y_sub, ix, iy, iz);

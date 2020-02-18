@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <rmm/rmm_api.h>
 
+#undef CUDA_ERR
 #define CUDA_ERR(expr)                                                                      \
 {                                                                                           \
 	cudaError_t err = expr;                                                                 \
@@ -15,6 +16,7 @@
 	}                                                                                       \
 }
 
+#undef RMM_ERR
 #define RMM_ERR(expr)                                                                       \
 {                                                                                           \
 	rmmError_t err = expr;                                                                  \

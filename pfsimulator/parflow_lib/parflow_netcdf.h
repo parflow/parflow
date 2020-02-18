@@ -43,7 +43,7 @@ void NCDefDimensions(Vector *v, int dimensionality, int *netCDFIDs);
 void CloseNC(int ncID);
 int LookUpInventory(char * varName, varNCData **myVarNCData, int *netCDFIDs);
 void PutDataInNC(int varID, Vector *v, double t, varNCData *myVarNCData, int dimensionality, int *netCDFIDs);
-void find_variable_length(int nid, int varid, long dim_lengths[MAX_NC_VARS]);
+void find_variable_length(int nid, int varid, unsigned long dim_lengths[MAX_NC_VARS]);
 void CreateNCFileNode(char *file_name, Vector *v, int *netCDFIDs);
 void PutDataInNCNode(int varID, double *data_nc_node, int *nodeXIndices, int *nodeYIndices, int *nodeZIndices,
                      int *nodeXCount, int *nodeYCount, int *nodeZCount, double t, varNCData *myVarNCData, int *netCDFIDs);

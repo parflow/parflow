@@ -39,7 +39,6 @@ void DiffuseLB(
   Vector *pwork = (lattice->pwork);
   Vector *perm = (lattice->perm);
   Vector *phi = (lattice->phi);
-  double beta_perm = (lattice->beta_perm);
   double beta_pore = (lattice->beta_pore);
   double beta_fluid = (lattice->beta_fluid);
   double viscosity = (lattice->viscosity);
@@ -55,7 +54,6 @@ void DiffuseLB(
   Subgrid   *subgrid;
   int ix, iy, iz;
   int nx, ny, nz;
-  int nx_v, ny_v, nz_v;
 
   /* Physical variables and coefficients */
   Vector    *tmpVector;
@@ -85,7 +83,6 @@ void DiffuseLB(
   /* miscellaneous */
   char file_postfix[80];
   double epsilon = 1.0e-10;
-  double gamma;
   double next_stop;
 
   /* Communications */
@@ -110,7 +107,6 @@ void DiffuseLB(
   write_pressure_iteration = (int)dump;
   iter_flag = 1;
 
-  gamma = beta_perm - beta_pore;
   compressibility = beta_pore + beta_fluid;
 
   /*------------------------------------------------------------*
@@ -147,10 +143,6 @@ void DiffuseLB(
       iy = SubgridIY(subgrid);
       iz = SubgridIZ(subgrid);
 
-      nx_v = SubvectorNX(sub_p);
-      ny_v = SubvectorNY(sub_p);
-      nz_v = SubvectorNZ(sub_p);
-
       /* Update the pressures */
       for (i = ix; i < ix + nx; i++)
         for (j = iy; j < iy + ny; j++)
@@ -171,14 +163,8 @@ void DiffuseLB(
                 index_update = SubvectorEltIndex(sub_p, ii, jj, kk);
 
                 /* Update the pore pressure */
-/*
- *                D = c[a]*tscale*GeomMean(permp[index],permp[index_update]);
- */
                 D = c[a] * tscale * permp[index_update];
                 D /= (viscosity * compressibility * phip[index]);
-/*
- *                D *= exp(gamma*pp[index_update]);
- */
                 if (D > maxD)
                   maxD = D;
 

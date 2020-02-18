@@ -33,8 +33,13 @@
  *
  */
 
-#include <stdio.h>
+
 #include "amps.h"
+#include "amps_test.h"
+
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
 char *string = "ATestString";
 
@@ -52,8 +57,6 @@ char *argv[];
   int me;
 
   int loop;
-
-  int cnt;
 
   char *recvd_string = NULL;
   int length;
@@ -141,7 +144,6 @@ char *argv[];
     if (me == num - 1)
     {
       handle = amps_ISend(amps_CommWorld, 0, invoice);
-      cnt = TEST_COUNT;
       while (!amps_Test(handle))
         sleep(1);
     }
@@ -165,21 +167,12 @@ char *argv[];
           sleep(1);
       }
     }
-
-
-
-
-    if (!me)
-      if (!result)
-        amps_Printf("Success\n");
-      else
-        amps_Printf("ERROR!!!!!!!\n");
   }
 
   amps_FreeInvoice(invoice);
 
   amps_Finalize();
 
-  return result;
+  return amps_check_result(result);
 }
 

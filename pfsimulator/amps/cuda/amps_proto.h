@@ -46,6 +46,7 @@ amps_Invoice amps_NewInvoice(const char *fmt0, ...);
 int amps_num_package_items(amps_Invoice inv);
 
 /* amps_io.c */
+void amps_ScanByte(amps_File file, char *data, int len, int stride);
 void amps_ScanChar(amps_File file, char *data, int len, int stride);
 void amps_ScanShort(amps_File file, short *data, int len, int stride);
 void amps_ScanInt(amps_File file, int *data, int len, int stride);

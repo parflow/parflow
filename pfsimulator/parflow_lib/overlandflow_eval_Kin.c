@@ -75,8 +75,6 @@ void    OverlandFlowEvalKin(
                                                 * fcn = CALCDER => calculate the function
                                                 *                  derivative */
 {
-  PFModule      *this_module = ThisPFModule;
-
   Vector      *slope_x = ProblemDataTSlopeX(problem_data);
   Vector      *slope_y = ProblemDataTSlopeY(problem_data);
   Vector      *mannings = ProblemDataMannings(problem_data);
@@ -84,27 +82,12 @@ void    OverlandFlowEvalKin(
 
   Subvector     *sx_sub, *sy_sub, *mann_sub, *top_sub, *p_sub;
 
-  Subgrid      *subgrid;
-
   double        *sx_dat, *sy_dat, *mann_dat, *top_dat, *pp;
 
-  double xdir, ydir;
-  double q_lo, q_mid, q_hi;
-  double q_v[4], slope_fx_lo, slope_fx_hi, slope_fx_mid;
-  double slope_fy_lo, slope_fy_hi, slope_fy_mid, dx, dy;
-  double coeff, Pmean, P2, P3, Pdel, Pcen;
-  double slope_mean, manning, s1, s2;
-  double Sf_xo, Sf_yo;
   double ov_epsilon;
 
-  int ival, sy_v, step;
-  int            *fdir;
-
-  int i, ii, j, k, ip2, ip3, ip4, ip0;
-  int i1, j1, iojm1, iojp1, ioip1, ioim1;
-  /* @RMM get grid from global (assuming this is comp grid) to pass to CLM */
-  int gnx = BackgroundNX(GlobalsBackground);
-  int gny = BackgroundNY(GlobalsBackground);
+  int i, j, k, ival, sy_v;
+  int *fdir;
 
   p_sub = VectorSubvector(pressure, sg);
 
@@ -119,10 +102,6 @@ void    OverlandFlowEvalKin(
   sy_dat = SubvectorData(sy_sub);
   mann_dat = SubvectorData(mann_sub);
   top_dat = SubvectorData(top_sub);
-
-  subgrid = GridSubgrid(grid, sg);
-  dx = SubgridDX(subgrid);
-  dy = SubgridDY(subgrid);
 
   sy_v = SubvectorNX(top_sub);
 

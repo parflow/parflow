@@ -278,7 +278,7 @@ void    RichardsJacobianEval(
   Vector      *x_ssl = ProblemDataSSlopeX(problem_data);               //@RMM
   Vector      *y_ssl = ProblemDataSSlopeY(problem_data);               //@RMM
   Subvector   *x_ssl_sub, *y_ssl_sub;    //@RMM
-  double      *x_ssl_dat, *y_ssl_dat;     //@RMM
+  double      *x_ssl_dat=NULL, *y_ssl_dat=NULL;     //@RMM
 
   /* @RMM variable dz multiplier */
   Vector      *z_mult = ProblemDataZmult(problem_data);              //@RMM
@@ -311,9 +311,8 @@ void    RichardsJacobianEval(
   int i, j, k, r, is;
   int ix, iy, iz;
   int nx, ny, nz;
-  int nx_v, ny_v, nz_v;
-  int nx_m, ny_m, nz_m;
-  int nx_po, ny_po, nz_po;
+  int nx_v, ny_v;
+  int nx_m, ny_m;
   int sy_v, sz_v;
   int sy_m, sz_m;
 
@@ -479,15 +478,6 @@ void    RichardsJacobianEval(
 
     nx_v = SubvectorNX(d_sub);
     ny_v = SubvectorNY(d_sub);
-    nz_v = SubvectorNZ(d_sub);
-
-    nx_po = SubvectorNX(po_sub);
-    ny_po = SubvectorNY(po_sub);
-    nz_po = SubvectorNZ(po_sub);
-
-    nx_m = SubmatrixNX(J_sub);
-    ny_m = SubmatrixNY(J_sub);
-    nz_m = SubmatrixNZ(J_sub);
 
     pp = SubvectorData(p_sub);     //pressure
     dp = SubvectorData(d_sub);     // density
@@ -523,7 +513,6 @@ void    RichardsJacobianEval(
 
     nx_v = SubvectorNX(p_sub);
     ny_v = SubvectorNY(p_sub);
-    nz_v = SubvectorNZ(p_sub);
 
     sy_v = nx_v;
     sz_v = ny_v * nx_v;
@@ -606,11 +595,9 @@ void    RichardsJacobianEval(
 
     nx_v = SubvectorNX(p_sub);
     ny_v = SubvectorNY(p_sub);
-    nz_v = SubvectorNZ(p_sub);
 
     nx_m = SubmatrixNX(J_sub);
     ny_m = SubmatrixNY(J_sub);
-    nz_m = SubmatrixNZ(J_sub);
 
     sy_v = nx_v;
     sz_v = ny_v * nx_v;
@@ -668,10 +655,10 @@ void    RichardsJacobianEval(
       // tfgupwind 1 should still use sine but upwind
       // tfgupwdin 2 just upwind
 
-      double x_dir_g;
-      double x_dir_g_c;
-      double y_dir_g;
-      double y_dir_g_c;
+      double x_dir_g = NAN;
+      double x_dir_g_c = NAN;
+      double y_dir_g = NAN;
+      double y_dir_g_c = NAN;
 
       switch (public_xtra->tfgupwind)
       {
@@ -865,7 +852,6 @@ void    RichardsJacobianEval(
 
       nx_v = SubvectorNX(p_sub);
       ny_v = SubvectorNY(p_sub);
-      nz_v = SubvectorNZ(p_sub);
 
       sy_v = nx_v;
       sz_v = ny_v * nx_v;
@@ -1077,7 +1063,6 @@ void    RichardsJacobianEval(
 
     nx_v = SubvectorNX(p_sub);
     ny_v = SubvectorNY(p_sub);
-    nz_v = SubvectorNZ(p_sub);
 
     sy_v = nx_v;
     sz_v = ny_v * nx_v;

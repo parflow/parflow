@@ -89,8 +89,6 @@ void    OverlandFlowEvalDiff(
                                                 * fcn = CALCDER => calculate the function
                                                 *                  derivative */
 {
-  PFModule      *this_module = ThisPFModule;
-
   Vector      *slope_x = ProblemDataTSlopeX(problem_data);
   Vector      *slope_y = ProblemDataTSlopeY(problem_data);
   Vector      *mannings = ProblemDataMannings(problem_data);
@@ -103,22 +101,10 @@ void    OverlandFlowEvalDiff(
 
   double        *sx_dat, *sy_dat, *mann_dat, *top_dat, *pp, *opp;
 
-  double xdir, ydir;
-  double q_lo, q_mid, q_hi;
-  double q_v[4], slope_fx_lo, slope_fx_hi, slope_fx_mid;
-  double slope_fy_lo, slope_fy_hi, slope_fy_mid, dx, dy;
-  double coeff, Pmean, P2, P3, Pdel, Pcen;
-  double slope_mean, manning, s1, s2;
-  double ov_epsilon;
+  double dx, dy, ov_epsilon;
 
-  int ival, sy_v, step;
-  int            *fdir;
-
-  int i, ii, j, k, ip2, ip3, ip4, ip0;
-  int i1, j1, iojm1, iojp1, ioip1, ioim1;
-  /* @RMM get grid from global (assuming this is comp grid) to pass to CLM */
-  int gnx = BackgroundNX(GlobalsBackground);
-  int gny = BackgroundNY(GlobalsBackground);
+  int i, j, k, ival, sy_v;
+  int *fdir;
 
   p_sub = VectorSubvector(pressure, sg);
   op_sub = VectorSubvector(old_pressure, sg);
@@ -149,7 +135,7 @@ void    OverlandFlowEvalDiff(
     {
       if (fdir[2] == 1)
       {
-        int ip = -1;
+        int ip = 0;
         int io = SubvectorEltIndex(sx_sub, i, j, 0);
         int itop = SubvectorEltIndex(top_sub, i, j, 0);
 
@@ -164,8 +150,8 @@ void    OverlandFlowEvalDiff(
 
         double Sf_x;
         double Sf_y;
-        double Sf_xo;
-        double Sf_yo;
+        double Sf_xo = NAN;
+        double Sf_yo = NAN;
 
         if (k1 >= 0)
         {
@@ -265,7 +251,7 @@ void    OverlandFlowEvalDiff(
     {
       if (fdir[2] == 1)
       {
-        int ip = -1;
+        int ip = 0;
         int io = SubvectorEltIndex(sx_sub, i, j, 0);
         int itop = SubvectorEltIndex(top_sub, i, j, 0);
 
@@ -278,8 +264,8 @@ void    OverlandFlowEvalDiff(
         double Pupx;
         double Sf_x;
         double Sf_y;
-        double Sf_xo;
-        double Sf_yo;
+        double Sf_xo = NAN;
+        double Sf_yo = NAN;
 
         if (k1 >= 0)
         {

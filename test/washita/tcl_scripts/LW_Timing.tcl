@@ -7,6 +7,13 @@ lappend   auto_path $env(PARFLOW_DIR)/bin
 package   require parflow
 namespace import Parflow::*
 
+#-----------------------------------------------------------------------------
+# Make a directory for the simulation run, files will be copied to this
+# directory for running.
+#-----------------------------------------------------------------------------
+file mkdir "Outputs"
+cd "./Outputs"
+
 pfset     FileVersion    4
 
 #-----------------------------------------------------------------------------
@@ -15,28 +22,6 @@ pfset     FileVersion    4
 pfset Process.Topology.P 1
 pfset Process.Topology.Q 1
 pfset Process.Topology.R 1
-
-#-----------------------------------------------------------------------------
-# Make a directory for the simulation and copy inputs into it
-#-----------------------------------------------------------------------------
-file mkdir "Outputs"
-cd "./Outputs"
-
-# ParFlow Inputs
-file copy -force "../../parflow_input/LW.slopex.pfb" .
-file copy -force "../../parflow_input/LW.slopey.pfb" .
-file copy -force "../../parflow_input/IndicatorFile_Gleeson.50z.pfb"   .
-file copy -force "../../parflow_input/press.init.pfb"  .
-
-#CLM Inputs
-file copy -force "../../clm_input/drv_clmin.dat" .
-file copy -force "../../clm_input/drv_vegp.dat"  .
-file copy -force "../../clm_input/drv_vegm.alluv.dat"  . 
-
-file delete correct_output
-file link -symbolic correct_output "../correct_output" 
-
-puts "Files Copied"
 
 #-----------------------------------------------------------------------------
 # Computational Grid
@@ -52,7 +37,6 @@ pfset ComputationalGrid.DZ                2.0
 pfset ComputationalGrid.NX                41 
 pfset ComputationalGrid.NY                41 
 pfset ComputationalGrid.NZ                50  
-
 
 #-----------------------------------------------------------------------------
 # Names of the GeomInputs
@@ -415,7 +399,7 @@ pfset Solver.CLM.CLMDumpInterval                      1000000
 
 pfset Solver.CLM.MetForcing                           3D
 pfset Solver.CLM.MetFileName                          "NLDAS"
-pfset Solver.CLM.MetFilePath                          "../../NLDAS/"
+pfset Solver.CLM.MetFilePath                          "."
 pfset Solver.CLM.MetFileNT                            24
 pfset Solver.CLM.IstepStart                           1
 
@@ -493,32 +477,80 @@ pfset Solver.Linear.Preconditioner.PCMatrixType          FullJacobian
 
 
 #-----------------------------------------------------------------------------
-# Distribute inputs
+# Copy files and distribute.
 #-----------------------------------------------------------------------------
 
+# ParFlow Inputs
+set path "../../parflow_input"
+foreach file "LW.slopex LW.slopey IndicatorFile_Gleeson.50z press.init" {
+    file copy -force [format "%s/%s.pfb" $path $file] .
+}
+
+#-----------------------------------------------------------------------------
+# Distribute inputs
+#-----------------------------------------------------------------------------
 pfdist -nz 1 LW.slopex.pfb
 pfdist -nz 1 LW.slopey.pfb
 
 pfdist IndicatorFile_Gleeson.50z.pfb
 pfdist press.init.pfb
 
+#CLM Inputs
+set path "../../clm_input"
+foreach file "drv_clmin drv_vegp drv_vegm.alluv" {
+    file copy -force [format "%s/%s.dat" $path $file] .
+}
+
+set path "../../NLDAS"
+
+set files [glob "$path/NLDAS.DSWR.*.pfb"]
+
+set time_periods []
+foreach file $files {
+    regexp {NLDAS\.DSWR\.(.*)\.pfb} $file full time 
+    lappend time_periods $time
+}
+
+set NldasVariables [list "DSWR" "DLWR" "APCP" "Temp" "UGRD" "VGRD" "Press" "SPFH"]
+
+foreach time_period $time_periods {
+    foreach variable $NldasVariables {
+	set file NLDAS.$variable.$time_period.pfb
+	file copy -force [format "%s/%s" $path $file] .
+	pfdist -nz 24 $file
+    }
+}
+
+file delete correct_output
+file link -symbolic correct_output "../correct_output"
+
 #-----------------------------------------------------------------------------
 # Run Simulation 
 #-----------------------------------------------------------------------------
 set runname "LW"
-puts $runname
 pfrun    $runname
+
+puts "ParFlow run Complete"
 
 #-----------------------------------------------------------------------------
 # Undistribute outputs
 #-----------------------------------------------------------------------------
 pfundist $runname
-pfundist press.init.pfb
-pfundist LW.slopex.pfb
-pfundist LW.slopey.pfb
-pfundist IndicatorFile_Gleeson.50z.pfb
 
-puts "ParFlow run Complete"
+set StartTime [expr int([pfget TimingInfo.StartTime])]
+set StopTime [expr int([pfget TimingInfo.StopTime])]
+
+set ClmVariables [list "eflx_lh_tot" "qflx_evap_soi" "swe_out" "eflx_lwrad_out" "qflx_evap_tot" "t_grnd" "eflx_sh_tot" "qflx_evap_veg" "t_soil" "eflx_soil_grnd" "qflx_infl" "qflx_evap_grnd" "qflx_tran_veg" ]
+for {set i $StartTime} { $i <= $StopTime } {incr i} { 
+    set step [format "%05d" $i]
+    foreach variable $ClmVariables {
+        pfundist $runname.out.$variable.$step.pfb
+    }
+}
+
+#-----------------------------------------------------------------------------
+# Verify output
+#-----------------------------------------------------------------------------
 
 source ../../../pftest.tcl
 
@@ -526,22 +558,18 @@ set sig_digits 4
 
 set passed 1
 
-if ![pftestFile $runname.out.press.00000.pfb "Max difference in Pressure" $sig_digits] {
-    set passed 0
+set ParflowVariables [list "satur" "press"]
+set step [format "%05d" 0]
+foreach variable $ParflowVariables {
+    set file $runname.out.$variable.$step.pfb 
+    if ![pftestFile $file "Max difference in $file" $sig_digits] {
+	set passed 0
+    }
 }
 
-if ![pftestFile $runname.out.satur.00000.pfb "Max difference in Pressure" $sig_digits] {
-    set passed 0
-}
-
-foreach file "LW.out.eflx_lh_tot.00012.pfb
-    LW.out.qflx_evap_soi.00012.pfb LW.out.swe_out.00012.pfb
-    LW.out.eflx_lwrad_out.00012.pfb LW.out.qflx_evap_tot.00012.pfb
-    LW.out.t_grnd.00012.pfb LW.out.eflx_sh_tot.00012.pfb
-    LW.out.qflx_evap_veg.00012.pfb LW.out.t_soil.00012.pfb
-    LW.out.eflx_soil_grnd.00012.pfb LW.out.qflx_infl.00012.pfb
-    LW.out.qflx_evap_grnd.00012.pfb LW.out.qflx_tran_veg.00012.pfb" {
-
+set step [format "%05d" 12]
+foreach variable $ClmVariables {
+    set file $runname.out.$variable.$step.pfb 
     if ![pftestFile $file "Max difference in $file" $sig_digits] { 
 	set passed 0 
     } 

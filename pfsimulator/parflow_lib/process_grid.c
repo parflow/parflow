@@ -41,8 +41,8 @@
 
 Subgrid    *ReadProcessSubgrid(int subgrid_num)
 {
-  char base_name[2048];
-  char key_name[2048];
+  char base_name[IDB_MAX_KEY_LEN-4];
+  char key_name[IDB_MAX_KEY_LEN];
 
   sprintf(base_name, "ProcessGrid.%i", subgrid_num);
 

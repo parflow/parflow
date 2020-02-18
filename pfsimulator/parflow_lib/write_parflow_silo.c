@@ -57,10 +57,10 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
 
   int nx_v = SubvectorNX(subvector);
   int ny_v = SubvectorNY(subvector);
+  int nz_v = SubvectorNZ(subvector);
 
   int i, j, k, ai;
   double         *data;
-  double mult, z_coord;            //@RMM dz scale info
 
   int err;
 
@@ -104,7 +104,7 @@ void       WriteSilo_Subvector(DBfile *db_file, Subvector *subvector, Subgrid   
   }
 
   coords[2] = ctalloc(float, dims[2]);
-  z_coord = SubgridZ(subgrid);
+  /* z_coord = SubgridZ(subgrid); */
 /*  @RMM-- bare bones testing
  * for implementing variable dz into silo output
  * need to brab the vardz vector out of problem data
@@ -205,8 +205,6 @@ void     WriteSiloInit(char *file_prefix)
   int i;
   int j;
 
-  int err;
-
   char key[IDB_MAX_KEY_LEN];
 
   /*
@@ -218,7 +216,7 @@ void     WriteSiloInit(char *file_prefix)
   if (strlen(compression_options))
   {
     DBSetCompression(compression_options);
-    if (err < 0)
+    if (db_errno < 0)
     {
       amps_Printf("Error: Compression options failed for SILO.CompressionOptions=%s\n", compression_options);
       amps_Printf("       This may mean SILO was not compiled with compression enabled\n");

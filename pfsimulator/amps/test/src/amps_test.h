@@ -25,85 +25,56 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  *  USA
  **********************************************************************EHEADER*/
+#ifndef AMPS_TEST_H
+#define AMPS_TEST_H
 
-
-#include "amps.h"
-#include "amps_test.h"
-
-#include <stdio.h>
-#include <string.h>
-
-static char *string = "ATestString";
-
-int main(argc, argv)
-int argc;
-char *argv[];
+int amps_check_result(int result)
 {
-  amps_Invoice invoice;
-
-  int me;
-
-  int loop;
-  int temp;
-
-  int source;
-
-  char *recvd_string = NULL;
-  int length;
-
-  int result = 0;
-
-  if (amps_Init(&argc, &argv))
+  if(result)
   {
-    amps_Printf("Error amps_Init\n");
-    amps_Exit(1);
-  }
-
-  loop = atoi(argv[1]);
-  source = 0;
-
-  me = amps_Rank(amps_CommWorld);
-
-  if (me == source)
-  {
-    length = strlen(string) + 1;
-    invoice = amps_NewInvoice("%i%i%*c", &loop, &length, length, string);
+    printf("FAILED\n");
   }
   else
   {
-    invoice = amps_NewInvoice("%i%i%&@c", &temp, &length, &length, &recvd_string);
-  }
-
-  for (; loop; loop--)
-  {
-    amps_BCast(amps_CommWorld, source, invoice);
-
-    if (me != source)
+    int me = amps_Rank(amps_CommWorld);
+    
+    if(me == 0)
     {
-      result = strcmp(recvd_string, string);
-      if (result)
-      {
-	result |= 1;
-        amps_Printf("############## ERROR - strings don't match\n");
-      }
-	
-
-      if (loop != temp)
-      {
-        result |= 1;
-        amps_Printf("############## ERROR - ints don't match\n");
-      }
+      printf("PASSED\n");
     }
-
-    amps_ClearInvoice(invoice);
-
-    amps_Sync(amps_CommWorld);
   }
 
-  amps_FreeInvoice(invoice);
-
-  amps_Finalize();
-
-  return amps_check_result(result);
+  return result;
 }
+
+int amps_compare_files(char *filename1, char *filename2)
+{
+
+  FILE *file1 = fopen(filename1, "r");
+  FILE *file2 = fopen(filename2, "r");
+
+  char ch1;
+  char ch2;
+  
+  do
+  {
+    ch1 = fgetc(file1);
+    ch2 = fgetc(file2);
+        
+    if (ch1 != ch2)
+      return 1;
+
+  } while (ch1 != EOF && ch2 != EOF);
+
+  
+  if (ch1 == EOF && ch2 == EOF)
+    return 0;
+  else
+    return 1;
+
+  fclose(file1);
+  fclose(file2);
+}
+
+#endif /* amps_test */
 

@@ -26,13 +26,13 @@
  *  USA
  **********************************************************************EHEADER*/
 /*
- * This is a simple "ring" test.  It send a message from the host
- * to all the nodes
- *
+ * Test for ghost exchange.
  */
 
-#include <stdio.h>
 #include "amps.h"
+#include "amps_test.h"
+
+#include <stdio.h>
 
 #define size 10
 
@@ -46,7 +46,7 @@ char *argv[];
   int num;
   int me;
 
-  int i, j, k;
+  int i;
 
   int loop;
   int t;
@@ -258,17 +258,9 @@ char *argv[];
     amps_FreeInvoice(recv_invoice[1]);
   }
 
-  if (result)
-    amps_Printf("%d: Failed\n", me);
-  else
-    amps_Printf("%d: Success\n", me);
-
-
   amps_Finalize();
 
-
-
-  return result;
+  return amps_check_result(result);
 }
 
 

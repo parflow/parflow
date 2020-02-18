@@ -8,7 +8,7 @@
  * Define unified memory allocation routines for CUDA
  *--------------------------------------------------------------------------*/
 
-static inline void *tallocCUDA(size_t size)
+static inline void *talloc_cuda(size_t size)
 {
    void *ptr = NULL;
 
@@ -19,7 +19,7 @@ static inline void *tallocCUDA(size_t size)
    return ptr;
 }
 
-static inline void *ctallocCUDA(size_t size)
+static inline void *ctalloc_cuda(size_t size)
 {
    void *ptr = NULL;
 
@@ -32,7 +32,7 @@ static inline void *ctallocCUDA(size_t size)
 
    return ptr;
 }
-static inline void tfreeCUDA(void *ptr)
+static inline void tfree_cuda(void *ptr)
 {
    RMM_ERR(rmmFree(ptr,0,__FILE__,__LINE__));
   //  CUDA_ERR(cudaFree(ptr));
@@ -46,26 +46,26 @@ static inline void tfreeCUDA(void *ptr)
 // Redefine amps.h definitions
 #undef amps_TAlloc
 #define amps_TAlloc(type, count) \
-  ((count) ? (type*)tallocCUDA(sizeof(type) * (unsigned int)(count)) : NULL)
+  ((count) ? (type*)talloc_cuda(sizeof(type) * (unsigned int)(count)) : NULL)
 
 #undef amps_CTAlloc
 #define amps_CTAlloc(type, count) \
-  ((count) ? (type*)ctallocCUDA(sizeof(type) * (unsigned int)(count)) : NULL)
+  ((count) ? (type*)ctalloc_cuda(sizeof(type) * (unsigned int)(count)) : NULL)
 
 #undef amps_TFree
-#define amps_TFree(ptr) if (ptr) tfreeCUDA(ptr); else {}
+#define amps_TFree(ptr) if (ptr) tfree_cuda(ptr); else {}
 
 // Redefine general.h definitions
 #undef talloc
 #define talloc(type, count) \
-  ((count) ? (type*)tallocCUDA(sizeof(type) * (unsigned int)(count)) : NULL)
+  ((count) ? (type*)talloc_cuda(sizeof(type) * (unsigned int)(count)) : NULL)
 
 #undef ctalloc
 #define ctalloc(type, count) \
-  ((count) ? (type*)ctallocCUDA(sizeof(type) * (unsigned int)(count)) : NULL)
+  ((count) ? (type*)ctalloc_cuda(sizeof(type) * (unsigned int)(count)) : NULL)
 
 #undef tfree
-#define tfree(ptr) if (ptr) tfreeCUDA(ptr); else {}
+#define tfree(ptr) if (ptr) tfree_cuda(ptr); else {}
 
 #undef MemPrefetchDeviceToHost
 #define MemPrefetchDeviceToHost(ptr, size, stream)                   \

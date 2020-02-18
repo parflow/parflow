@@ -49,6 +49,11 @@
 #include <stdio.h>
 #include <sys/times.h>
 
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <string.h>
+#include <stdbool.h>
+
 /*
  * Prevent inclusion of mpi C++ bindings in mpi.h includes.
  */
@@ -135,21 +140,23 @@
  * @memo Global communication context
  */
 #define amps_CommWorld MPI_COMM_WORLD
-#define amps_CommNode  nodeComm
-#define amps_CommWrite writeComm
 
+extern MPI_Comm amps_CommNode;
+extern MPI_Comm amps_CommWrite;
+
+/* Communicators for I/O */
 extern MPI_Comm nodeComm;
 extern MPI_Comm writeComm;
 
-/*Global ranks and size of MPI_COMM_WORLD*/
+/* Global ranks and size of MPI_COMM_WORLD*/
 extern int amps_rank;
 extern int amps_size;
 
-/*Node level ranks and size of nodeComm */
+/* Node level ranks and size of nodeComm */
 extern int amps_node_rank;
 extern int amps_node_size;
 
-/*Writing proc ranks and size of writeComm */
+/* Writing proc ranks and size of writeComm */
 extern int amps_write_rank;
 extern int amps_write_size;
 
@@ -226,13 +233,14 @@ extern int amps_write_size;
 #define AMPS_PID 0
 
 /* These are the built-in types that are supported */
-#define AMPS_INVOICE_CHAR_CTYPE                1
-#define AMPS_INVOICE_SHORT_CTYPE               2
-#define AMPS_INVOICE_INT_CTYPE                 3
-#define AMPS_INVOICE_LONG_CTYPE                4
-#define AMPS_INVOICE_DOUBLE_CTYPE              5
-#define AMPS_INVOICE_FLOAT_CTYPE               6
-#define AMPS_INVOICE_LAST_CTYPE                7
+#define AMPS_INVOICE_BYTE_CTYPE                1
+#define AMPS_INVOICE_CHAR_CTYPE                2
+#define AMPS_INVOICE_SHORT_CTYPE               3
+#define AMPS_INVOICE_INT_CTYPE                 4
+#define AMPS_INVOICE_LONG_CTYPE                5
+#define AMPS_INVOICE_DOUBLE_CTYPE              6
+#define AMPS_INVOICE_FLOAT_CTYPE               7
+#define AMPS_INVOICE_LAST_CTYPE                8
 
 /* Flags for use with user-defined flag                                      */
 #define AMPS_INVOICE_OVERLAY                   1
@@ -257,6 +265,25 @@ typedef FILE *amps_File;
 extern int amps_tid;
 extern int amps_rank;
 extern int amps_size;
+
+/*--------------------------------------------------------------------------
+ * Amps device struct for global amps variables
+ *--------------------------------------------------------------------------*/
+#define amps_device_max_streams 10
+typedef struct amps_devicestruct {
+
+  char *combuf_recv;
+  char *combuf_send;
+  long combuf_recv_size;
+  long combuf_send_size;
+
+  int streams_created;
+  cudaStream_t stream[amps_device_max_streams];
+
+} amps_Devicestruct;
+
+extern amps_Devicestruct amps_device_globals;
+
 
 /* This structure is used to keep track of the entries in an invoice         */
 typedef struct amps_invoicestruct {
@@ -375,6 +402,10 @@ extern amps_Buffer *amps_BufferFreeList;
     ((unsigned long)(dest) % sizeof(type)))      \
    % sizeof(type));
 
+
+#define AMPS_CALL_BYTE_ALIGN(_comm, _src, _dest, _len, _stride) \
+  AMPS_ALIGN(char, (_src), (_dest), (_len), (_stride))
+
 #define AMPS_CALL_CHAR_ALIGN(_comm, _src, _dest, _len, _stride) \
   AMPS_ALIGN(char, (_src), (_dest), (_len), (_stride))
 
@@ -398,6 +429,9 @@ extern amps_Buffer *amps_BufferFreeList;
 /*---------------------------------------------------------------------------*/
 #define AMPS_SIZEOF(len, stride, size) \
   (size_t)(len) * (size)
+
+#define AMPS_CALL_BYTE_SIZEOF(_comm, _src, _dest, _len, _stride)	\
+  AMPS_SIZEOF((_len), (_stride), sizeof(char))
 
 #define AMPS_CALL_CHAR_SIZEOF(_comm, _src, _dest, _len, _stride) \
   AMPS_SIZEOF((_len), (_stride), sizeof(char))
@@ -511,6 +545,9 @@ extern amps_Buffer *amps_BufferFreeList;
 }
 #endif
 
+#define AMPS_CALL_BYTE_OUT(_comm, _src, _dest, _len, _stride) \
+  AMPS_CONVERT_OUT(char, ctohc, (_comm), (_src), (_dest), (_len), (_stride))
+
 #define AMPS_CALL_CHAR_OUT(_comm, _src, _dest, _len, _stride) \
   AMPS_CONVERT_OUT(char, ctohc, (_comm), (_src), (_dest), (_len), (_stride))
 
@@ -529,6 +566,9 @@ extern amps_Buffer *amps_BufferFreeList;
 #define AMPS_CALL_DOUBLE_OUT(_comm, _src, _dest, _len, _stride) \
   AMPS_CONVERT_OUT(double, ctohd, (_comm), (_src), (_dest), (_len), (_stride))
 
+
+#define AMPS_CALL_BYTE_IN(_comm, _src, _dest, _len, _stride) \
+  AMPS_CONVERT_IN(char, htocc, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CALL_CHAR_IN(_comm, _src, _dest, _len, _stride) \
   AMPS_CONVERT_IN(char, htocc, (_comm), (_src), (_dest), (_len), (_stride))
@@ -549,6 +589,9 @@ extern amps_Buffer *amps_BufferFreeList;
   AMPS_CONVERT_IN(double, htocd, (_comm), (_src), (_dest), (_len), (_stride))
 
 #define AMPS_CHECK_OVERLAY(_type, _comm) 0
+
+#define AMPS_BYTE_OVERLAY(_comm) \
+  AMPS_CHECK_OVERLAY(char, _comm)
 
 #define AMPS_CHAR_OVERLAY(_comm) \
   AMPS_CHECK_OVERLAY(char, _comm)
@@ -997,6 +1040,121 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
 #endif
 #endif
 
+/*--------------------------------------------------------------------------
+ *  GPU error handling
+ *--------------------------------------------------------------------------*/
+#undef CUDA_ERR
+#define CUDA_ERR( err ) (gpuError( err, __FILE__, __LINE__ ))
+static inline void gpuError(cudaError_t err, const char *file, int line) {
+	if (err != cudaSuccess) {
+		printf("\n\n%s in %s at line %d\n", cudaGetErrorString(err), file, line);
+		exit(1);
+	}
+}
+
+/*--------------------------------------------------------------------------
+ * Define amps GPU kernels
+ *--------------------------------------------------------------------------*/
+#define BLOCKSIZE_MAX 1024
+
+#ifdef __CUDACC__
+
+extern "C++"{
+template <typename T>
+__global__ static void 
+__launch_bounds__(BLOCKSIZE_MAX)
+StridedCopyKernel(T * __restrict__ dest, const int stride_dest, 
+                                  T * __restrict__ src, const int stride_src, const int len) 
+{
+  const int tid = ((blockIdx.x*blockDim.x)+threadIdx.x);
+    
+  if(tid < len)
+  { 
+    const int idx_dest = tid * stride_dest;
+    const int idx_src = tid * stride_src;
+
+    dest[idx_dest] = src[idx_src];
+  }
+}
+template <typename T>
+__global__ static void 
+__launch_bounds__(BLOCKSIZE_MAX)
+PackingKernel(T * __restrict__ ptr_buf, const T * __restrict__ ptr_data, 
+    const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z) 
+{
+  const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);   
+  if(k < len_z)
+  {
+    const int j = ((blockIdx.y*blockDim.y)+threadIdx.y);   
+    if(j < len_y)
+    {
+      const int i = ((blockIdx.x*blockDim.x)+threadIdx.x);   
+      if(i < len_x)
+      {
+        *(ptr_buf + k * len_y * len_x + j * len_x + i) = 
+          *(ptr_data + k * (stride_z + (len_y - 1) * stride_y + len_y * (len_x - 1) * stride_x) + 
+            j * (stride_y + (len_x - 1) * stride_x) + i * stride_x);
+      }
+    }
+  }
+}
+template <typename T>
+__global__ static void 
+__launch_bounds__(BLOCKSIZE_MAX)
+UnpackingKernel(const T * __restrict__ ptr_buf, T * __restrict__  ptr_data, 
+    const int len_x, const int len_y, const int len_z, const int stride_x, const int stride_y, const int stride_z) 
+{
+  const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);   
+  if(k < len_z)
+  {
+    const int j = ((blockIdx.y*blockDim.y)+threadIdx.y);   
+    if(j < len_y)
+    {
+      const int i = ((blockIdx.x*blockDim.x)+threadIdx.x);   
+      if(i < len_x)
+      {
+        *(ptr_data + k * (stride_z + (len_y - 1) * stride_y + len_y * (len_x - 1) * stride_x) + 
+          j * (stride_y + (len_x - 1) * stride_x) + i * stride_x) = 
+            *(ptr_buf + k * len_y * len_x + j * len_x + i);
+      }
+    }
+  }
+}
+}
+#endif
+
+/*--------------------------------------------------------------------------
+ * Define unified memory allocation routines for GPU
+ *--------------------------------------------------------------------------*/
+
+static inline void *amps_talloc_cuda(size_t size)
+{
+   void *ptr = NULL;
+
+   CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
+  //  CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
+
+   return ptr;
+}
+
+static inline void *amps_ctalloc_cuda(size_t size)
+{
+   void *ptr = NULL;
+
+   CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
+  //  CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
+   
+  //  memset(ptr, 0, size);
+   CUDA_ERR(cudaMemset(ptr, 0, size));
+
+   return ptr;
+}
+static inline void amps_tfree_cuda(void *ptr)
+{
+   CUDA_ERR(cudaFree(ptr));
+  //  CUDA_ERR(cudaFreeHost(ptr));
+}
+
 /*===========================================================================*/
 /**
  *
@@ -1016,7 +1174,8 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
  * @param count Number of items of type to allocate
  * @return Pointer to the allocated dataspace
  */
-#define amps_TAlloc(type, count) ((count) ? (type*)malloc((unsigned int)(sizeof(type) * (count))) : NULL)
+
+#define amps_TAlloc(type, count) ((count>0) ? (type*)amps_talloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
 
 /*===========================================================================*/
 /**
@@ -1039,8 +1198,7 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
  * @return Pointer to the allocated dataspace
  */
 
-#define amps_CTAlloc(type, count) \
-  ((count) ? (type*)calloc((unsigned int)(count), (unsigned int)sizeof(type)) : NULL)
+#define amps_CTAlloc(type, count) ((count) ? (type*)amps_ctalloc_cuda((unsigned int)(sizeof(type) * (count))) : NULL)
 
 /**
  *
@@ -1058,7 +1216,7 @@ void amps_ReadDouble(amps_File file, double *ptr, int len);
  * @return Error code
  */
 
-#define amps_TFree(ptr) if (ptr) free(ptr); else {}
+#define amps_TFree(ptr) if (ptr) amps_tfree_cuda(ptr); else {}
 /* note: the `else' is required to guarantee termination of the `if' */
 
 // SGS FIXME this should do something more than this

@@ -29,7 +29,6 @@
 #include <stdarg.h>
 
 #include "amps.h"
-#include "amps_cuda.h"
 
 /*===========================================================================*/
 /**
@@ -85,9 +84,7 @@ void amps_ClearInvoice(amps_Invoice inv)
 
   /* if allocated then we deallocate                                       */
   if (inv->combuf_flags & AMPS_INVOICE_ALLOCATED)
-    // amps_free(comm, inv->combuf);
-    tfree((char*)inv->combuf);
-    // cudaFree((char*)inv->combuf);
+    amps_free(comm, inv->combuf);
 
   /* set flag to unpack so free will occur if strange things happen */
   inv->flags &= ~AMPS_PACKED;
@@ -108,7 +105,7 @@ void amps_ClearInvoice(amps_Invoice inv)
       /* check if we actually created any space */
       if (ptr->data_type == AMPS_INVOICE_POINTER)
       {
-        tfree(*((void**)(ptr->data)));
+        free(*((void**)(ptr->data)));
         *((void**)(ptr->data)) = NULL;
       }
 

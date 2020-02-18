@@ -116,6 +116,7 @@ typedef struct {
   {                                                                      \
     int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;                  \
     int *PV_visiting = NULL;                                             \
+    PF_UNUSED(PV_visiting);                                              \
     BoxArray* boxes = GrGeomSolidInteriorBoxes(grgeom);                  \
     for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)         \
     {                                                                    \
@@ -271,6 +272,7 @@ typedef struct {
     fdir = PV_fdir;                                                              \
     int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;                          \
     int *PV_visiting = NULL;                                                     \
+    PF_UNUSED(PV_visiting);                                                      \
     for (int PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)                      \
     {                                                                            \
       switch (PV_f)                                                              \
@@ -362,6 +364,7 @@ typedef struct {
     fdir = PV_fdir;                                                                          \
     int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;                                      \
     int *PV_visiting = NULL;                                                                 \
+    PF_UNUSED(PV_visiting);						                     \
     for (int PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)                                  \
     {                                                                                        \
       switch (PV_f)                                                                          \

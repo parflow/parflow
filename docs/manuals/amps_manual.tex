@@ -1519,6 +1519,7 @@ is in scope.
 The built-in types are: 
 
 \begin{tabular}{ll}
+b & byte \\
 c & character \\
 s & short \\
 i & int \\
@@ -1626,6 +1627,7 @@ the vector.  Next the type of the vector is specified by one of the
 following:
 
 \begin{tabular}{ll}
+B & character vector \\
 C & character vector \\
 S & short vector \\
 I & int vector \\
@@ -1903,7 +1905,7 @@ Currently there is only a single communicator, \code{amps_CommWorld}.
 \DESCRIPTION
 
 This set of functions is used to read binary data from a distributed file.
- \var{type} can be replaced by Char, Short, Int, Long, Float, or Double
+ \var{type} can be replaced by Byte, Char, Short, Int, Long, Float, or Double
 to indicate the type of data to output.  The type is specified in order
 to do conversions.  Data is converted from {\em XDR} format (\cite{xdr.87}).
 The arguments are similar to the standard C library function

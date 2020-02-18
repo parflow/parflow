@@ -31,7 +31,6 @@ extern "C"{
 #include <stdarg.h>
 
 #include "amps.h"
-#include "amps_cuda.h"
 
 #if MPI_VERSION < 2
 #define MPI_Get_address(location, address) MPI_Address((location), (address))
@@ -89,7 +88,7 @@ int amps_unpack_mpi1(
 
     switch (ptr->type)
     {
-      case AMPS_INVOICE_CHAR_CTYPE:
+      case AMPS_INVOICE_BYTE_CTYPE:
         if (!ptr->ignore)
         {
           if (ptr->data_type == AMPS_INVOICE_POINTER)
@@ -118,6 +117,37 @@ int amps_unpack_mpi1(
           }
         }
         break;
+
+        	
+      case AMPS_INVOICE_CHAR_CTYPE:
+      if (!ptr->ignore)
+      {
+        if (ptr->data_type == AMPS_INVOICE_POINTER)
+        {
+          *((void**)(ptr->data)) = malloc(sizeof(char) *
+                                          (size_t)(len * stride));
+          malloced = TRUE;
+
+          MPI_Type_vector(len, 1, stride, MPI_CHAR, &mpi_type);
+
+          MPI_Type_commit(&mpi_type);
+
+          MPI_Unpack(buffer, buf_size, &position,
+                     *((void**)(ptr->data)), 1, mpi_type, comm);
+
+          MPI_Type_free(&mpi_type);
+        }
+        else
+        {
+          MPI_Type_vector(len, 1, stride, MPI_CHAR, &mpi_type);
+
+          MPI_Type_commit(&mpi_type);
+          MPI_Unpack(buffer, buf_size, &position,
+                     ptr->data, 1, mpi_type, comm);
+          MPI_Type_free(&mpi_type);
+        }
+      }
+      break;
 
       case AMPS_INVOICE_SHORT_CTYPE:
         if (!ptr->ignore)
@@ -281,10 +311,18 @@ int amps_unpack_mpi1(
 
         switch (ptr->type - AMPS_INVOICE_LAST_CTYPE)
         {
-          case AMPS_INVOICE_CHAR_CTYPE:
+          case AMPS_INVOICE_BYTE_CTYPE:
             if (!ptr->ignore)
             {
               MPI_Type_vector(len, 1, stride, MPI_BYTE, base_type);
+              element_size = sizeof(char);
+            }
+            break;
+
+          case AMPS_INVOICE_CHAR_CTYPE:
+            if (!ptr->ignore)
+            {
+              MPI_Type_vector(len, 1, stride, MPI_CHAR, base_type);
               element_size = sizeof(char);
             }
             break;
@@ -451,8 +489,7 @@ int amps_unpack(amps_Comm comm, amps_Invoice inv, char *buffer, int *streams_hir
               *(ptr->ptr_dim) : ptr->dim;
 
         if (ptr->data_type == AMPS_INVOICE_POINTER)
-          // data = *(char**)(ptr->data) = (char*)malloc(size);
-             data = *(char**)(ptr->data) = (char*)talloc(char, size); 
+          data = *(char**)(ptr->data) = (char*)malloc(size);
         else
           data = (char *)ptr->data;
 
@@ -505,11 +542,21 @@ int amps_unpack(amps_Comm comm, amps_Invoice inv, char *buffer, int *streams_hir
         }
     }
     
-    dim3 grid = dim3(((len_x - 1) + blocksize_x) / blocksize_x, ((len_y - 1) + blocksize_y) / blocksize_y, ((len_z - 1) + blocksize_z) / blocksize_z);
-    dim3 block = dim3(blocksize_x, blocksize_y, blocksize_z);      
-    UnpackingKernel<<<grid, block, 0, amps_device_globals.stream[(*streams_hired - 1) % amps_device_max_streams]>>>((double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
-    // CUDA_ERR(cudaStreamSynchronize(amps_device_globals.stream[(*streams_hired - 1) % amps_device_max_streams])); 
+    /* Check that the destination memory location is accessible by the GPU */
+    struct cudaPointerAttributes attributes;
+    cudaPointerGetAttributes(&attributes, (void *)data);
 
+    if(cudaGetLastError() == cudaSuccess && attributes.type > 1){
+      dim3 grid = dim3(((len_x - 1) + blocksize_x) / blocksize_x, ((len_y - 1) + blocksize_y) / blocksize_y, ((len_z - 1) + blocksize_z) / blocksize_z);
+      dim3 block = dim3(blocksize_x, blocksize_y, blocksize_z);      
+      UnpackingKernel<<<grid, block, 0, amps_device_globals.stream[(*streams_hired - 1) % amps_device_max_streams]>>>((double*)buffer, (double*)data, len_x, len_y, len_z, stride_x, stride_y, stride_z);
+      // CUDA_ERR(cudaStreamSynchronize(amps_device_globals.stream[(*streams_hired - 1) % amps_device_max_streams])); 
+    }
+    else
+    {
+      printf("ERROR at %s:%d: The destination memory location is not accessible by the GPU(s).", __FILE__, __LINE__);
+      exit(1);
+    }
     buffer = (char*)((double*)buffer + len_x * len_y * len_z);
     ptr = ptr->next;
   }

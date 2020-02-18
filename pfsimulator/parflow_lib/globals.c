@@ -34,8 +34,6 @@
 
 #ifdef HAVE_CUDA
 extern "C"{
-#include <stddef.h>
-#include "pfcudaerr.h"
 #endif
 
 #define PARFLOW_GLOBALS
@@ -126,6 +124,10 @@ void  LogGlobals()
 }
 
 #ifdef HAVE_CUDA
+
+#include <stddef.h>
+#include "pfcudaerr.h"
+
 // Allocate __constant__ memory on GPU for the Globals struct
 __constant__ Globals dev_globals;
 __constant__ Background dev_background;

@@ -425,7 +425,6 @@ ProjectionMesh *ConvertTINToProjectionMesh(gms_TIN *tin)
 void AddTINToProjectionMesh(ProjectionMesh *PM, gms_TIN *tin)
 {
   MeshVertex *projection_point;
-  MeshTriangle *projection_triangle;
   int index;
   Triangle *triangle;
 
@@ -474,8 +473,8 @@ void AddTINToProjectionMesh(ProjectionMesh *PM, gms_TIN *tin)
       {
         for (i = 0; i < projection_point->num_triangles; i++)
         {
-          projection_triangle = &(PM->triangles[projection_point
-                                                ->triangles[i]]);
+	  //MeshTriangle *projection_triangle;
+          //projection_triangle = &(PM->triangles[projection_point->triangles[i]]);
           /* Add Intersection point to the intersection list */
           AddIntersectionPointToMeshVertex(projection_point,
                                            projection_point->triangles[i],

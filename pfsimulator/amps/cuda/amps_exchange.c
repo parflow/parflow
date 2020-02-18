@@ -27,7 +27,6 @@
  **********************************************************************EHEADER*/
 
 #include "amps.h"
-#include "amps_cuda.h"
 
 int _amps_send_sizes(amps_Package package, int **sizes)
 {
