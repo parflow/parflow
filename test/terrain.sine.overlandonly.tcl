@@ -314,7 +314,7 @@ pfset Solver.Nonlinear.EtaChoice                         EtaConstant
 pfset Solver.Nonlinear.EtaValue                          0.001
 pfset Solver.Nonlinear.UseJacobian                       False
 pfset Solver.Linear.Preconditioner                       MGSemi                       
-pfset Solver.Linear.Preconditioner.PCMatrixType          FullJacobian
+# pfset Solver.Linear.Preconditioner.PCMatrixType          FullJacobian
 
 pfset Solver.WriteSiloSubsurfData False
 pfset Solver.WriteSiloMask False
@@ -322,14 +322,14 @@ pfset Solver.WriteSiloPressure False
 pfset Solver.WriteSiloSaturation False
 pfset Solver.WriteSiloSlopes False
 
-pfset NetCDF.NumStepsPerFile 5
-pfset NetCDF.WritePressure True
-pfset NetCDF.WriteSaturation True
+# pfset NetCDF.NumStepsPerFile 5
+# pfset NetCDF.WritePressure True
+# pfset NetCDF.WriteSaturation True
 pfset Solver.PrintSubsurf False
 pfset Solver.PrintMask  False
 pfset Solver.PrintPressure False
 pfset Solver.PrintSaturation False
-#
+
 #pfset Solver.WriteNetCDFSubsurfData #NETCDF#
 #pfset Solver.WriteNetCDFMask  #NETCDF#
 #pfset Solver.WriteNetCDFPressure #NETCDF#
@@ -349,11 +349,10 @@ pfset Geom.domain.ICPressure.Value                      -0.25
 pfset Geom.domain.ICPressure.RefGeom                    domain
 pfset Geom.domain.ICPressure.RefPatch                   z-upper
 
-
-pfset NetCDF.Chunking True
-pfset NetCDF.ChunkX 20
-pfset NetCDF.ChunkY 20
-pfset NetCDF.ChunkZ 10
+# pfset NetCDF.Chunking True
+# pfset NetCDF.ChunkX 20
+# pfset NetCDF.ChunkY 20
+# pfset NetCDF.ChunkZ 10
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
