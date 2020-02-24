@@ -4,7 +4,7 @@ env:
 
 language: cpp
 sudo: required
-dist: trusty
+dist: bionic
 compiler:
   - gcc
 os:
