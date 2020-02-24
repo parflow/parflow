@@ -23,7 +23,7 @@ before_install:
   - test -n $CXX && unset CXX
   - sudo apt-get -qq update
   - sudo apt-get install -y gfortran
-  - sudo apt-get install -y libhypre libhypre-dev
+  - sudo apt-get install -y libhypre-2.13.0 libhypre-dev
   - sudo apt-get install -y libsilo-bin  libsilo-dev
   - sudo apt-get install -y libhdf5-openmpi-dev libhdf5-openmpi-7 hdf5-helpers
   - sudo apt-get install -y tcl-dev tk-dev
