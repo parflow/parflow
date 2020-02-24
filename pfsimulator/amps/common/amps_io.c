@@ -56,7 +56,9 @@ void amps_ScanChar(
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
        ptr += stride)
-    fscanf(file, "%c", ptr);
+  {
+    (void)fscanf(file, "%c", ptr);
+  }
 }
 
 void amps_ScanShort(
@@ -70,7 +72,9 @@ void amps_ScanShort(
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
        ptr += stride)
-    fscanf(file, "%hd ", ptr);
+  {
+    (void)fscanf(file, "%hd ", ptr);
+  }
 }
 
 void amps_ScanInt(
@@ -84,7 +88,9 @@ void amps_ScanInt(
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
        ptr += stride)
-    fscanf(file, "%d ", ptr);
+  {
+    (void)fscanf(file, "%d ", ptr);
+  }
 }
 
 void amps_ScanLong(
@@ -98,7 +104,9 @@ void amps_ScanLong(
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
        ptr += stride)
-    fscanf(file, "%ld ", ptr);
+  {
+    (void)fscanf(file, "%ld ", ptr);
+  }
 }
 
 void amps_ScanFloat(
@@ -112,7 +120,9 @@ void amps_ScanFloat(
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
        ptr += stride)
-    fscanf(file, "%f ", ptr);
+  {
+    (void)fscanf(file, "%f ", ptr);
+  }
 }
 
 void amps_ScanDouble(
@@ -126,7 +136,9 @@ void amps_ScanDouble(
 
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
        ptr += stride)
-    fscanf(file, "%lf ", ptr);
+  {
+    (void)fscanf(file, "%lf ", ptr);
+  }
 }
 
 #ifndef CASC_HAVE_BIGENDIAN

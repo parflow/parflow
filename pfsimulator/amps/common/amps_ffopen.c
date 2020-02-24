@@ -205,10 +205,10 @@ amps_File amps_FFopen(amps_Comm comm, char *filename, char *type, long size)
       exit(1);
     }
 
-    fscanf(file, "%ld", &start);
+    (void)fscanf(file, "%ld", &start);
     for (p = 1; p < amps_Size(comm); p++)
     {
-      fscanf(file, "%ld", &start);
+      (void)fscanf(file, "%ld", &start);
       amps_Send(comm, p, invoice);
     }
     fclose(file);
