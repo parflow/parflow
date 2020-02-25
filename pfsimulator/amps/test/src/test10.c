@@ -77,27 +77,67 @@ int ReadAndCheckFile(char* filename, int loop)
   {
     if (!(file = amps_Fopen(filename, "r")))
     {
-      amps_Printf("Error opening file\n");
-      amps_Exit(1);
+      amps_Printf("ERROR: opening file\n");
+      result |= 1;
     }
 
-    amps_Fscanf(file, "%d ", &string_length);
-    amps_Fscanf(file, "%s", recvd_string);
+    if(amps_Fscanf(file, "%d ", &string_length) != 1)
+    {
+      amps_Printf("ERROR: reading int\n");
+      result |= 1;
+    };
+    
+    if(amps_Fscanf(file, "%s", recvd_string) != 1)
+    {
+      amps_Printf("ERROR: reading string\n");
+      result |= 1;
+    };
 
     for (i = 0; i < shorts_length; i++)
-      amps_Fscanf(file, "%hd ", &recvd_shorts[i]);
+    {
+      if(amps_Fscanf(file, "%hd ", &recvd_shorts[i]) != 1)
+      {
+	amps_Printf("ERROR: reading short\n");
+	result |= 1;
+      }
+    }
 
     for (i = 0; i < ints_length; i++)
-      amps_Fscanf(file, "%d ", &recvd_ints[i]);
+    {
+      if(amps_Fscanf(file, "%d ", &recvd_ints[i]) != 1)
+      {
+	amps_Printf("ERROR: reading short\n");
+	result |= 1;
+      }
+    }
 
     for (i = 0; i < longs_length; i++)
-      amps_Fscanf(file, "%ld ", &recvd_longs[i]);
+    {
+      if(amps_Fscanf(file, "%ld ", &recvd_longs[i]) != 1)
+      {
+	amps_Printf("ERROR: reading short\n");
+	result |= 1;
+      }
+    }
 
     for (i = 0; i < doubles_length; i++)
-      amps_Fscanf(file, "%lf ", &recvd_doubles[i]);
+    {
+      if(amps_Fscanf(file, "%lf ", &recvd_doubles[i]) != 1)
+      {
+	amps_Printf("ERROR: reading short\n");
+	result |= 1;
+	amps_Exit(1);
+      }
+    }
 
     for (i = 0; i < floats_length; i++)
-      amps_Fscanf(file, "%f ", &recvd_floats[i]);
+    {
+      if(amps_Fscanf(file, "%f ", &recvd_floats[i]) != 1)
+      {
+	amps_Printf("ERROR: reading short\n");
+	result |= 1;
+      }
+    }
 
     if (strcmp(recvd_string, string))
     {
@@ -189,7 +229,7 @@ char *argv[];
 
   if (amps_Init(&argc, &argv))
   {
-    amps_Printf("Error amps_Init\n");
+    amps_Printf("ERROR amps_Init\n");
     amps_Exit(1);
   }
 
