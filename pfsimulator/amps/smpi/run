@@ -37,7 +37,7 @@
 #
 #-----------------------------------------------------------------------------
 usage () {
-   echo "usage: $0 run [-hvpg] pfidb_file num_procs [process_group]"
+   echo "usage: $0 run [-hvpg] pfidb_file num_procs"
    echo "    -h               help"
    echo "    -v               verbose"
    echo "    -p executable    executable to run"
@@ -71,7 +71,7 @@ fi
 VERBOSE=0
 PROGRAM=""
 DEBUG=""
-while getopts vhpg: c
+while getopts vmhpg: c
 do
    case $c in
       h)
@@ -94,14 +94,13 @@ do
    esac
 done
 
-if [ ! \( "$#" -eq 2 -o "$#" -eq 3 \) ]; then
+if [ ! \( "$#" -eq 2 \) ]; then
   usage
   exit 1
 fi
 
 PFSCRIPT=$1
 NUMPROCS=$2
-PROCESS_GROUP=$3
 
 if ! [ -e "${PFSCRIPT}.pfidb" ]; then
   echo "pfidb file \"${PFSCRIPT}.pfidb\" not found" >&2
@@ -141,78 +140,93 @@ else
    fi
 fi
 
+CMD=""
+
+# If CMake was used then use setting from file for MPI commands
+if [ -f $PARFLOW_DIR/config/pf-cmake-env.sh ]
+then
+   . $PARFLOW_DIR/config/pf-cmake-env.sh
+
+   if [ -z ${PARFLOW_MEMORYCHECK_COMMAND} ]
+   then
+      CMD="${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${NUMPROCS} ${MPIEXEC_POSTFLAGS} ${PARFLOW_MPIEXEC_EXTRA_FLAGS} ${MPIEXEC_PREFLAGS} ${PARFLOW_DIR}/bin/${PROGRAM} ${PFSCRIPT} $DEBUG_OPT $DEBUG 2>&1 > ${PFSCRIPT}.out.txt"
+   else
+      CMD="${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${NUMPROCS} ${MPIEXEC_POSTFLAGS} ${PARFLOW_MPIEXEC_EXTRA_FLAGS} ${MPIEXEC_PREFLAGS} ${PARFLOW_MEMORYCHECK_COMMAND} ${PARFLOW_MEMORYCHECK_COMMAND_OPTIONS} ${PARFLOW_DIR}/bin/${PROGRAM} ${PFSCRIPT} $DEBUG_OPT $DEBUG 2>&1 > ${PFSCRIPT}.out.txt"
+   fi
+fi
+
 #
 # Specify machine specific ways to launch MPI executables.
 #
-case `uname -a` in
-   *AIX*)
-      #
-      # IBM SP2
-      #
-      CMD="poe $PARFLOW_DIR/bin/$PROGRAM -procs `cat .amps.info.${NUMPROCS}` ${PFSCRIPT} $DEBUG_OPT $DEBUG > ${PFSCRIPT}.out.txt"
+if [ -z "$CMD" ]
+then
+   case `uname -a` in
+      *AIX*)
+	 #
+	 # IBM SP2
+	 #
+	 CMD="poe $PARFLOW_DIR/bin/$PROGRAM -procs `cat .amps.info.${NUMPROCS}` ${PFSCRIPT} $DEBUG_OPT $DEBUG > ${PFSCRIPT}.out.txt"
+	 ;;
+      *WildFire*)
+	 #
+	 # For Sun WildFire systems
+	 #
+	 pflog "Running with SUN tmrun"
+	 CMD="tmrun -np `cat .amps.info.${NUMPROCS}`  $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} $DEBUG_OPT $DEBUG > ${PFSCRIPT}.out.txt"
+	 ;;
+      *chaos*)
+	 #
+	 # For LC chaos systems
+	 #
+	 CMD="srun -n ${NUMPROCS} $PARFLOW_RUN_OPTS $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} > ${PFSCRIPT}.out.txt"
       ;;
-   *WildFire*)
-      #
-      # For Sun WildFire systems
-      #
-      pflog "Running with SUN tmrun"
-      CMD="tmrun -np `cat .amps.info.${NUMPROCS}`  $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} $DEBUG_OPT $DEBUG > ${PFSCRIPT}.out.txt"
-      ;;
-   *chaos*)
-      #
-      # For LC chaos systems
-      #
-      CMD="srun -n ${NUMPROCS} $PARFLOW_RUN_OPTS $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} > ${PFSCRIPT}.out.txt"
-      ;;
-esac
-
-#
-# If mpiexec exists use it first since this is a standard way of running
-# mpi executables for MPI-2
-#
-if which mpiexec >/dev/null 2>&1
-then
-   CMD="mpiexec -n ${NUMPROCS}  $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
-elif which mpirun >/dev/null 2>&1
-then
-   #
-   # Didn't have mpiexec so try some mpirun variations
-   #
-   if [ "`mpirun 2> /dev/null`" = "Missing: program name" ] 
-   then
-      #
-      # Older MPICH. Newer MPICH should be using mpiexec.
-      #
-      if [ "$PBS_NODEFILE" = "" ]
-      then
-	 CMD="mpirun -nodes $3 -np ${NUMPROCS} $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
-      else
-	 CMD="mpirun -machinefile $PBS_NODEFILE -nodes $3 -np ${NUMPROCS} $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
-      fi
-   else
-      #
-      # Other MPI
-      #
-      CMD="mpirun -np ${NUMPROCS}  $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
-   fi
-elif which aprun >/dev/null 2>&1
-then
-   #
-   # Cray using aprun
-   #
-   CMD="aprun -n ${NUMPROCS}  $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
-elif which srun >/dev/null 2>&1
-then
-   #
-   # Srun based systems
-   #
-   CMD="srun -n ${NUMPROCS} $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
-else
-   echo "Failed to determine how to run mpi executables" >&2
-   exit 1
+   esac
 fi
 
-pflog "Running : $CMD" 
+if [ -z "$CMD" ]
+then
+   #
+   # If mpiexec exists use it first since this is a standard way of running
+   # mpi executables for MPI-2
+   #
+   if which mpiexec >/dev/null 2>&1
+   then
+      CMD="mpiexec -n ${NUMPROCS}  $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
+   elif which mpirun >/dev/null 2>&1
+   then
+      #
+      # Didn't have mpiexec so try some mpirun variations
+      #
+      if [ "`mpirun 2> /dev/null`" = "Missing: program name" ] 
+      then
+	 #
+	 # Older MPICH. Newer MPICH should be using mpiexec.
+	 #
+	 if [ "$PBS_NODEFILE" = "" ]
+	 then
+	    CMD="mpirun -nodes $3 -np ${NUMPROCS} $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
+	 else
+	    CMD="mpirun -machinefile $PBS_NODEFILE -nodes $3 -np ${NUMPROCS} $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
+	 fi
+      else
+	 #
+	 # Other MPI
+	 #
+	 CMD="mpirun -np ${NUMPROCS}  $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
+      fi
+   elif which srun >/dev/null 2>&1
+   then
+      #
+      # Srun based systems
+      #
+      CMD="srun -n ${NUMPROCS} $PARFLOW_DIR/bin/$PROGRAM ${PFSCRIPT} 2>&1 > ${PFSCRIPT}.out.txt"
+   else
+      echo "Failed to determine how to run mpi executables" >&2
+      exit 1
+   fi
+fi
+
+pflog "executing command : $CMD" 
 eval $CMD
 exit $?
 

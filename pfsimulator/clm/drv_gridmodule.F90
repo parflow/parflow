@@ -19,7 +19,7 @@ module drv_gridmodule
 !=========================================================================
 
   use precision
-  use clm_varpar, only : nlevsoi
+  use clm_varpar, only : max_nlevsoi
   implicit none
   public griddec
 
@@ -49,8 +49,8 @@ module drv_gridmodule
      real(r8) :: latdeg    ! Latitude in Degrees 
      real(r8) :: londeg    ! Longitude in Degrees
 
-     real(r8) :: sand(nlevsoi) ! Percent sand in soil 
-     real(r8) :: clay(nlevsoi) ! Percent clay in soil 
+     real(r8) :: sand(max_nlevsoi) ! Percent sand in soil 
+     real(r8) :: clay(max_nlevsoi) ! Percent clay in soil 
 
      real(r8), pointer :: fgrd(:) !Fraction of vegetation class in grid     
      integer , pointer :: pveg(:) !Predominance of vegetation class in grid

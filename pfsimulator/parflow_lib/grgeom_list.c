@@ -1,58 +1,58 @@
-/*BHEADER**********************************************************************
-
-  Copyright (c) 1995-2009, Lawrence Livermore National Security,
-  LLC. Produced at the Lawrence Livermore National Laboratory. Written
-  by the Parflow Team (see the CONTRIBUTORS file)
-  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
-
-  This file is part of Parflow. For details, see
-  http://www.llnl.gov/casc/parflow
-
-  Please read the COPYRIGHT file or Our Notice and the LICENSE file
-  for the GNU Lesser General Public License.
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License (as published
-  by the Free Software Foundation) version 2.1 dated February 1999.
-
-  This program is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
-  and conditions of the GNU General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-  USA
-**********************************************************************EHEADER*/
+/*BHEADER*********************************************************************
+ *
+ *  Copyright (c) 1995-2009, Lawrence Livermore National Security,
+ *  LLC. Produced at the Lawrence Livermore National Laboratory. Written
+ *  by the Parflow Team (see the CONTRIBUTORS file)
+ *  <parflow@lists.llnl.gov> CODE-OCEC-08-103. All rights reserved.
+ *
+ *  This file is part of Parflow. For details, see
+ *  http://www.llnl.gov/casc/parflow
+ *
+ *  Please read the COPYRIGHT file or Our Notice and the LICENSE file
+ *  for the GNU Lesser General Public License.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License (as published
+ *  by the Free Software Foundation) version 2.1 dated February 1999.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms
+ *  and conditions of the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ *  USA
+ **********************************************************************EHEADER*/
 
 #include "parflow.h"
 
-/******************************************************************************
- *
- * The functions in this file are for manipulating the List data structure.
- *
- *****************************************************************************/
+/*****************************************************************************
+*
+* The functions in this file are for manipulating the List data structure.
+*
+*****************************************************************************/
 
 /*--------------------------------------------------------------------------
  * NewListMember
  *--------------------------------------------------------------------------*/
 
 ListMember *NewListMember(
-double value,
-int    normal_component,
-int    triangle_id)
+                          double value,
+                          int    normal_component,
+                          int    triangle_id)
 {
-   ListMember *new_member;
+  ListMember *new_member;
 
-   new_member = talloc(ListMember, 1);
+  new_member = talloc(ListMember, 1);
 
-   ListMemberValue(new_member) = value;
-   ListMemberNormalComponent(new_member) = normal_component;
-   ListMemberTriangleID(new_member) = triangle_id;
-   ListMemberNextListMember(new_member) = NULL;
+  ListMemberValue(new_member) = value;
+  ListMemberNormalComponent(new_member) = normal_component;
+  ListMemberTriangleID(new_member) = triangle_id;
+  ListMemberNextListMember(new_member) = NULL;
 
-   return new_member;
+  return new_member;
 }
 
 /*--------------------------------------------------------------------------
@@ -60,9 +60,9 @@ int    triangle_id)
  *--------------------------------------------------------------------------*/
 
 void FreeListMember(
-   ListMember *member)
+                    ListMember *member)
 {
-   tfree(member);
+  tfree(member);
 }
 
 /*--------------------------------------------------------------------------
@@ -70,61 +70,61 @@ void FreeListMember(
  *--------------------------------------------------------------------------*/
 
 void ListInsert(
-   ListMember **head,
-   ListMember  *member)
+                ListMember **head,
+                ListMember * member)
 {
-   ListMember *previous_member, *current_member, *next_member = NULL;
-   int         not_eol, searching;
+  ListMember *previous_member, *current_member, *next_member = NULL;
+  int not_eol, searching;
 
-   not_eol = TRUE;
-   searching = TRUE;
-   previous_member = NULL;
-   current_member = *head;
-   if (current_member != NULL)
-   {
-      next_member = ListMemberNextListMember(current_member);
-   }
+  not_eol = TRUE;
+  searching = TRUE;
+  previous_member = NULL;
+  current_member = *head;
+  if (current_member != NULL)
+  {
+    next_member = ListMemberNextListMember(current_member);
+  }
 
-   while(not_eol && searching)
-   {
-      if (current_member == NULL)
+  while (not_eol && searching)
+  {
+    if (current_member == NULL)
+    {
+      not_eol = FALSE;
+    }
+    else
+    {
+      if (ListMemberValue(current_member) > ListMemberValue(member))
       {
-         not_eol = FALSE;
+        searching = FALSE;
       }
-      else
+      else if (ListMemberValue(current_member) == ListMemberValue(member))
       {
-         if (ListMemberValue(current_member) > ListMemberValue(member))
-         {
-            searching = FALSE;
-         }
-         else if (ListMemberValue(current_member) == ListMemberValue(member))
-         {
-            if (ListMemberTriangleID(current_member) >= ListMemberTriangleID(member))
-            {
-               searching = FALSE;
-            }
-         }
-         if (searching)
-         {
-            previous_member = current_member;
-            current_member = next_member;
-            if (current_member != NULL)
-            {
-               next_member = ListMemberNextListMember(current_member);
-            }
-         }
+        if (ListMemberTriangleID(current_member) >= ListMemberTriangleID(member))
+        {
+          searching = FALSE;
+        }
       }
-   }
+      if (searching)
+      {
+        previous_member = current_member;
+        current_member = next_member;
+        if (current_member != NULL)
+        {
+          next_member = ListMemberNextListMember(current_member);
+        }
+      }
+    }
+  }
 
-   ListMemberNextListMember(member) = current_member;
-   if (previous_member != NULL)
-   {
-      ListMemberNextListMember(previous_member) = member;
-   }
-   else
-   {
-      *head = member;
-   }
+  ListMemberNextListMember(member) = current_member;
+  if (previous_member != NULL)
+  {
+    ListMemberNextListMember(previous_member) = member;
+  }
+  else
+  {
+    *head = member;
+  }
 }
 
 /*--------------------------------------------------------------------------
@@ -132,55 +132,55 @@ void ListInsert(
  *--------------------------------------------------------------------------*/
 
 int ListDelete(
-   ListMember **head,
-   ListMember  *member)
+               ListMember **head,
+               ListMember * member)
 {
-   ListMember *previous_member, *current_member;
-   int         deleted, not_eol, searching;
+  ListMember *previous_member, *current_member;
+  int deleted, not_eol, searching;
 
-   previous_member = NULL;
-   current_member = *head;
-   not_eol = TRUE;
-   searching = TRUE;
-   while(not_eol && searching)
-   {
-      if (current_member != NULL)
+  previous_member = NULL;
+  current_member = *head;
+  not_eol = TRUE;
+  searching = TRUE;
+  while (not_eol && searching)
+  {
+    if (current_member != NULL)
+    {
+      if (current_member == member)
       {
-         if (current_member == member)
-         {
-            searching = FALSE;
-         }
-         else
-         {
-            previous_member = current_member;
-            current_member = ListMemberNextListMember(current_member);
-         }
+        searching = FALSE;
       }
       else
       {
-         not_eol = FALSE;
+        previous_member = current_member;
+        current_member = ListMemberNextListMember(current_member);
       }
-   }
+    }
+    else
+    {
+      not_eol = FALSE;
+    }
+  }
 
-   if (not_eol)
-   {
-      if (previous_member != NULL)
-      {
-         ListMemberNextListMember(previous_member) = ListMemberNextListMember(member);
-      }
-      else
-      {
-         *head = NULL;
-      }
-      FreeListMember(member);
-      deleted = TRUE;
-   }
-   else
-   {
-      deleted = FALSE;
-   }
+  if (not_eol)
+  {
+    if (previous_member != NULL)
+    {
+      ListMemberNextListMember(previous_member) = ListMemberNextListMember(member);
+    }
+    else
+    {
+      *head = NULL;
+    }
+    FreeListMember(member);
+    deleted = TRUE;
+  }
+  else
+  {
+    deleted = FALSE;
+  }
 
-   return deleted;
+  return deleted;
 }
 
 /*--------------------------------------------------------------------------
@@ -188,46 +188,46 @@ int ListDelete(
  *--------------------------------------------------------------------------*/
 
 ListMember *ListSearch(
-   ListMember *head,
-   double      value,
-   int         normal_component,
-   int         triangle_id)
+                       ListMember *head,
+                       double      value,
+                       int         normal_component,
+                       int         triangle_id)
 {
-   ListMember *list_member, *current_member;
-   int         not_eol, searching;
+  ListMember *list_member, *current_member;
+  int not_eol, searching;
 
-   current_member = head;
-   not_eol = TRUE;
-   searching = TRUE;
-   while(not_eol && searching)
-   {
-      if (current_member != NULL)
+  current_member = head;
+  not_eol = TRUE;
+  searching = TRUE;
+  while (not_eol && searching)
+  {
+    if (current_member != NULL)
+    {
+      if ((ListMemberValue(current_member) == value)
+          && (ListMemberNormalComponent(current_member) == normal_component)
+          && (ListMemberTriangleID(current_member) == triangle_id))
       {
-         if ( (ListMemberValue(current_member) == value)
-           && (ListMemberNormalComponent(current_member) == normal_component)
-           && (ListMemberTriangleID(current_member) == triangle_id) )
-         {
-            searching = FALSE;
-         }
-         else
-         {
-            current_member = ListMemberNextListMember(current_member);
-         }
+        searching = FALSE;
       }
       else
       {
-         not_eol = FALSE;
+        current_member = ListMemberNextListMember(current_member);
       }
-   }
-   if (not_eol)
-   {
-      list_member = current_member;
-   }
-   else
-   {
-      list_member = NULL;
-   }
-   return list_member;
+    }
+    else
+    {
+      not_eol = FALSE;
+    }
+  }
+  if (not_eol)
+  {
+    list_member = current_member;
+  }
+  else
+  {
+    list_member = NULL;
+  }
+  return list_member;
 }
 
 /*--------------------------------------------------------------------------
@@ -235,42 +235,42 @@ ListMember *ListSearch(
  *--------------------------------------------------------------------------*/
 
 ListMember *ListValueSearch(
-   ListMember *head,
-   double      value)
+                            ListMember *head,
+                            double      value)
 {
-   ListMember *list_member, *current_member;
-   int         not_eol, searching;
+  ListMember *list_member, *current_member;
+  int not_eol, searching;
 
-   current_member = head;
-   not_eol = TRUE;
-   searching = TRUE;
-   while(not_eol && searching)
-   {
-      if (current_member != NULL)
+  current_member = head;
+  not_eol = TRUE;
+  searching = TRUE;
+  while (not_eol && searching)
+  {
+    if (current_member != NULL)
+    {
+      if (ListMemberValue(current_member) == value)
       {
-         if (ListMemberValue(current_member) == value)
-         {
-            searching = FALSE;
-         }
-         else
-         {
-            current_member = ListMemberNextListMember(current_member);
-         }
+        searching = FALSE;
       }
       else
       {
-         not_eol = FALSE;
+        current_member = ListMemberNextListMember(current_member);
       }
-   }
-   if (not_eol)
-   {
-      list_member = current_member;
-   }
-   else
-   {
-      list_member = NULL;
-   }
-   return list_member;
+    }
+    else
+    {
+      not_eol = FALSE;
+    }
+  }
+  if (not_eol)
+  {
+    list_member = current_member;
+  }
+  else
+  {
+    list_member = NULL;
+  }
+  return list_member;
 }
 
 /*--------------------------------------------------------------------------
@@ -278,44 +278,44 @@ ListMember *ListValueSearch(
  *--------------------------------------------------------------------------*/
 
 ListMember *ListValueNormalComponentSearch(
-   ListMember *head,
-   double      value,
-   int         normal_component)
+                                           ListMember *head,
+                                           double      value,
+                                           int         normal_component)
 {
-   ListMember *list_member, *current_member;
-   int         not_eol, searching;
+  ListMember *list_member, *current_member;
+  int not_eol, searching;
 
-   current_member = head;
-   not_eol = TRUE;
-   searching = TRUE;
-   while(not_eol && searching)
-   {
-      if (current_member != NULL)
+  current_member = head;
+  not_eol = TRUE;
+  searching = TRUE;
+  while (not_eol && searching)
+  {
+    if (current_member != NULL)
+    {
+      if ((ListMemberValue(current_member) == value)
+          && (ListMemberNormalComponent(current_member) == normal_component))
       {
-         if ( (ListMemberValue(current_member) == value)
-           && (ListMemberNormalComponent(current_member) == normal_component) )
-         {
-            searching = FALSE;
-         }
-         else
-         {
-            current_member = ListMemberNextListMember(current_member);
-         }
+        searching = FALSE;
       }
       else
       {
-         not_eol = FALSE;
+        current_member = ListMemberNextListMember(current_member);
       }
-   }
-   if (not_eol)
-   {
-      list_member = current_member;
-   }
-   else
-   {
-      list_member = NULL;
-   }
-   return list_member;
+    }
+    else
+    {
+      not_eol = FALSE;
+    }
+  }
+  if (not_eol)
+  {
+    list_member = current_member;
+  }
+  else
+  {
+    list_member = NULL;
+  }
+  return list_member;
 }
 
 /*--------------------------------------------------------------------------
@@ -323,42 +323,42 @@ ListMember *ListValueNormalComponentSearch(
  *--------------------------------------------------------------------------*/
 
 ListMember *ListTriangleIDSearch(
-   ListMember *head,
-   int         triangle_id)
+                                 ListMember *head,
+                                 int         triangle_id)
 {
-   ListMember *list_member, *current_member;
-   int         not_eol, searching;
+  ListMember *list_member, *current_member;
+  int not_eol, searching;
 
-   current_member = head;
-   not_eol = TRUE;
-   searching = TRUE;
-   while(not_eol && searching)
-   {
-      if (current_member != NULL)
+  current_member = head;
+  not_eol = TRUE;
+  searching = TRUE;
+  while (not_eol && searching)
+  {
+    if (current_member != NULL)
+    {
+      if (ListMemberTriangleID(current_member) == triangle_id)
       {
-         if (ListMemberTriangleID(current_member) == triangle_id)
-         {
-            searching = FALSE;
-         }
-         else
-         {
-            current_member = ListMemberNextListMember(current_member);
-         }
+        searching = FALSE;
       }
       else
       {
-         not_eol = FALSE;
+        current_member = ListMemberNextListMember(current_member);
       }
-   }
-   if (not_eol)
-   {
-      list_member = current_member;
-   }
-   else
-   {
-      list_member = NULL;
-   }
-   return list_member;
+    }
+    else
+    {
+      not_eol = FALSE;
+    }
+  }
+  if (not_eol)
+  {
+    list_member = current_member;
+  }
+  else
+  {
+    list_member = NULL;
+  }
+  return list_member;
 }
 
 
@@ -367,27 +367,27 @@ ListMember *ListTriangleIDSearch(
  *--------------------------------------------------------------------------*/
 
 void ListFree(
-   ListMember **head)
+              ListMember **head)
 {
-   ListMember *current_member, *next_member;
-   int         not_eol;
+  ListMember *current_member, *next_member;
+  int not_eol;
 
-   current_member = *head;
-   not_eol = TRUE;
-   while(not_eol)
-   {
-      if (current_member != NULL)
-      {
-            next_member = ListMemberNextListMember(current_member);
-            FreeListMember(current_member);
-            current_member = next_member;
-      }
-      else
-      {
-         not_eol = FALSE;
-      }
-   }
-   *head = NULL;
+  current_member = *head;
+  not_eol = TRUE;
+  while (not_eol)
+  {
+    if (current_member != NULL)
+    {
+      next_member = ListMemberNextListMember(current_member);
+      FreeListMember(current_member);
+      current_member = next_member;
+    }
+    else
+    {
+      not_eol = FALSE;
+    }
+  }
+  *head = NULL;
 }
 
 /*--------------------------------------------------------------------------
@@ -395,29 +395,29 @@ void ListFree(
  *--------------------------------------------------------------------------*/
 
 int ListLength(
-   ListMember *head)
+               ListMember *head)
 {
-   ListMember *current_member;
-   int         not_eol;
-   int         length;
+  ListMember *current_member;
+  int not_eol;
+  int length;
 
-   length = 0;
-   current_member = head;
-   not_eol = TRUE;
-   while(not_eol)
-   {
-      if (current_member != NULL)
-      {
-         length++;
-         current_member = ListMemberNextListMember(current_member);
-      }
-      else
-      {
-         not_eol = FALSE;
-      }
-   }
+  length = 0;
+  current_member = head;
+  not_eol = TRUE;
+  while (not_eol)
+  {
+    if (current_member != NULL)
+    {
+      length++;
+      current_member = ListMemberNextListMember(current_member);
+    }
+    else
+    {
+      not_eol = FALSE;
+    }
+  }
 
-   return(length);
+  return(length);
 }
 
 /*--------------------------------------------------------------------------
@@ -425,29 +425,29 @@ int ListLength(
  *--------------------------------------------------------------------------*/
 
 void ListPrint(
-   ListMember *head)
+               ListMember *head)
 {
-   ListMember *current_member;
-   int         not_eol;
-   double      value;
-   int         normal_component;
-   int         triangle_id;
+  ListMember *current_member;
+  int not_eol;
+  double value;
+  int normal_component;
+  int triangle_id;
 
-   current_member = head;
-   not_eol = TRUE;
-   while(not_eol)
-   {
-      if (current_member != NULL)
-      {
-            value = ListMemberValue(current_member);
-            normal_component = ListMemberNormalComponent(current_member);
-            triangle_id = ListMemberTriangleID(current_member);
-            amps_Printf(" List Member = [%f, %d, %d]\n", value, normal_component, triangle_id);
-            current_member = ListMemberNextListMember(current_member);
-      }
-      else
-      {
-         not_eol = FALSE;
-      }
-   }
+  current_member = head;
+  not_eol = TRUE;
+  while (not_eol)
+  {
+    if (current_member != NULL)
+    {
+      value = ListMemberValue(current_member);
+      normal_component = ListMemberNormalComponent(current_member);
+      triangle_id = ListMemberTriangleID(current_member);
+      amps_Printf(" List Member = [%f, %d, %d]\n", value, normal_component, triangle_id);
+      current_member = ListMemberNextListMember(current_member);
+    }
+    else
+    {
+      not_eol = FALSE;
+    }
+  }
 }

@@ -8,6 +8,11 @@ lappend auto_path $env(PARFLOW_DIR)/bin
 package require parflow
 namespace import Parflow::*
 
+if { [info exists ::env(PARFLOW_HAVE_SILO) ] } {
+    set HaveSilo 1
+} else {
+    set HaveSilo 0
+}
 
 #-----------------------------------------------------------------------------
 # File input version number
@@ -335,21 +340,65 @@ pfset Solver.Drop   1E-15
 
 # we set all output to write as SILO in addition to pfb
 # so we can visualize w/ VisIt
-pfset Solver.WriteSiloSubsurfData True
-pfset Solver.WriteSiloPressure True
-pfset Solver.WriteSiloSaturation True
-pfset Solver.WriteSiloConcentration True
+if $HaveSilo {
+    pfset Solver.WriteSiloSubsurfData True
+    pfset Solver.WriteSiloPressure True
+    pfset Solver.WriteSiloSaturation True
+    pfset Solver.WriteSiloConcentration True
+}
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
-
 pfrun impes.internalbc
 pfundist impes.internalbc
 
 # we use pf tools to convert from pressure to head
-set press [pfload impes.internalbc.out.press.silo]
-set head [pfhhead $press]
-pfsave $head -silo impes.internalbc.head.silo
+if $HaveSilo {
+    set press [pfload impes.internalbc.out.press.silo]
+    set head [pfhhead $press]
+    pfsave $head -silo impes.internalbc.head.silo
+}
+
+#-----------------------------------------------------------------------------
+# If running as test; check output.
+# You do not need this for normal PF input files; this is done so the examples
+# are run and checked as part of our testing process.
+#-----------------------------------------------------------------------------
+if { [info exists ::env(PF_TEST) ] } {
+    set TEST impes.internalbc
+    source pftest.tcl
+    set sig_digits 4
+
+    set passed 1
+
+    #
+    # Tests 
+    #
+    if ![pftestFile $TEST.out.press.pfb "Max difference in Pressure" $sig_digits] {
+	set passed 0
+    }
+
+    if ![pftestFile $TEST.out.porosity.pfb "Max difference in Porosity" $sig_digits] {
+	set passed 0
+    }
+
+    if ![pftestFile $TEST.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
+	set passed 0
+    }
+    if ![pftestFile $TEST.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
+	set passed 0
+    }
+    if ![pftestFile $TEST.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
+	set passed 0
+    }
+    
+
+    if $passed {
+	puts "$TEST : PASSED"
+    } {
+	puts "$TEST : FAILED"
+    }
+}
 

@@ -1,0 +1,100 @@
+#!/bin/bash
+# LLNS Copyright Start
+# Copyright (c) 2018, Lawrence Livermore National Security
+# This work was performed under the auspices of the U.S. Department 
+# of Energy by Lawrence Livermore National Laboratory in part under 
+# Contract W-7405-Eng-48 and in part under Contract DE-AC52-07NA27344.
+# Produced at the Lawrence Livermore National Laboratory.
+# All rights reserved.
+# For details, see the LICENSE file.
+# LLNS Copyright End
+
+#
+# Run the uncrustify code formatter on Parflow code
+#
+
+OPTIND=1         # Reset in case getopts has been used previously in the shell.
+
+UNCRUSTIFY_VERSION='0.67'
+
+# Exit script
+# $1 (required): Message to print on exit
+# $2 (optional): Exit code (defaults to 0)
+function script_exit() {
+    if [[ $# -eq 1 ]]; then
+        printf '%s\n' "$1"
+        exit 0
+    fi
+
+    if [[ ${2-} =~ ^[0-9]+$ ]]; then
+        printf '%b\n' "$1"
+        # If we've been provided a non-zero exit code run the error trap
+        if [[ $2 -ne 0 ]]; then
+	   exit $2
+        else
+           exit 0
+        fi
+    fi
+
+    echo 'Missing required argument to script_exit()!' 2
+}
+
+function script_usage() {
+    cat << EOF
+Run the uncrustify code formatter on Parflow code.
+
+Note must use Uncrustify version ${UNCRUSTIFY_VERSION}.
+
+Usage:
+     -h|--help                  Displays this help
+     -v|--verbose               Displays verbose output
+EOF
+}
+
+function parse_params() {
+    local param
+    while [[ $# -gt 0 ]]; do
+        param="$1"
+        shift
+        case $param in
+            -h|--help)
+                script_usage
+                exit 0
+                ;;
+            -v|--verbose)
+                verbose=true
+                ;;
+            *)
+                script_exit "Invalid parameter was provided: $param" 2
+                ;;
+        esac
+    done
+}
+
+function check_version() {
+   version=$(uncrustify --version)
+   case ${version} in
+      *${UNCRUSTIFY_VERSION}*)
+	 ;;
+      *)
+	 script_exit "Uncrustify must be version ${UNCRUSTIFY_VERSION}"
+	 ;;
+   esac
+}
+
+function main() {
+
+   parse_params "$@"
+
+   check_version
+
+   files=$(find . -name \*.[ch] | grep -v './build\|third-party')
+   for i in $files
+   do
+      uncrustify -l C --replace --no-backup -c bin/parflow.cfg $i 
+   done
+}
+
+main "$@"
+
+

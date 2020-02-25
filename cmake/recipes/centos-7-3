@@ -1,0 +1,63 @@
+# Install packages
+
+sudo yum update
+sudo yum install -y gcc gcc-c++ gcc-gfortran
+sudo yum install -y tcl tcl-devel
+sudo yum install -y openmpi openmpi-devel
+
+# Enable modules
+source /etc/profile.d/modules.sh
+
+# The module will be needed everytime one wants to run Openmpi.
+# Likely want to add to enviornment in shell startup script.  module
+# load mpi/openmpi-x86_64
+
+# CMake in repo is old so use one from cmake.org
+wget --no-check-certificate http://cmake.org/files/v3.4/cmake-3.4.3-Linux-x86_64.tar.gz && tar -xvf cmake-3.4.3-Linux-x86_64.tar.gz
+
+# Add EPEL repository
+wget http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-10.noarch.rpm
+sudo rpm -ivh epel-release-7-10.noarch.rpm
+
+sudo yum install -y hypre-openmpi hypre-openmpi-devel
+sudo yum install -y hfd5 hdf5-devel
+sudo yum install -y hdf5-openmpi hdf5-openmpi-devel
+sudo yum install -y zlib zlib-devel
+
+# Build SILO
+wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
+tar xf silo-4.10.2.tar.gz
+cd silo-4.10.2
+#CC=mpicc CXX=mpicxx ./configure --prefix=/usr/local --with-hdf5=/usr/include/openmpi-x86_64/,/usr/lib64/openmpi/lib
+
+./configure --prefix=/usr/local --with-hdf5=/usr/include/,/usr/lib64/ --disable-hzip --disable-fpzip
+
+
+make
+sudo make install
+cd ..
+
+# Clone repo
+git clone git://github.com/parflow/parflow.git
+
+# Setup the installation directory
+export PARFLOW_DIR=$(pwd)/install
+
+mkdir build
+cd build
+../cmake-3.4.3-Linux-x86_64/bin/cmake \
+      -DPARFLOW_AMPS_LAYER=mpi1 \
+      -DPARFLOW_AMPS_SEQUENTIAL_IO=true \
+      -DPARFLOW_ENABLE_TIMING=TRUE \
+      -DPARFLOW_HAVE_CLM=ON \
+      -DPARFLOW_ENABLE_HYPRE=true \
+      -DPARFLOW_ENABLE_HDF5=true \
+      -DPARFLOW_ENABLE_SILO=true \
+      -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR \
+      ../parflow
+
+make
+make install
+make test
+
+

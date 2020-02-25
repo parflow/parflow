@@ -1,0 +1,262 @@
+%=====================================================================
+%=====================================================================
+%
+% This file contains various definitions and environments that may
+% be used to write ParFlow documentation.  Many of the commands are
+% similar in name, form, and function to Texinfo commands.
+%
+% (C) 1995 Regents of the University of California.
+%
+% $Revision: 1.1.1.1 $
+%
+%=====================================================================
+%=====================================================================
+
+%=====================================================================
+%=====================================================================
+%
+% Texinfo commands:
+%
+%=====================================================================
+%=====================================================================
+
+%---------------------------------------------------------------------
+% Commands: beginspec, endspec
+%   These commands are used to define "verbatim" like environments.
+%   All special characters are turned off, except for
+%     { } \
+%---------------------------------------------------------------------
+
+\def\beginspec{\begingroup
+\catcode`\#=12
+\catcode`\$=12
+\catcode`\%=12
+\catcode`\&=12
+\catcode`\_=12
+\catcode`\~=12
+\catcode`\^=12
+}
+\def\endspec{\endgroup}
+
+%---------------------------------------------------------------------
+% Various verbatim-like text commands:
+%
+% Note: These work well as stand alone commands, but they cannot be
+% used as arguments to most commands.  Exceptions are `defmac',
+% `deftp', `deftypefn', `deftypvr', `index'.
+%
+% The following special characters are handled verbatim
+%     # & ~ _ ^
+%
+% The following special characters are NOT handled verbatim
+%     $ % \ { }
+%
+% These special characters may be printed by escaping with a `\'
+%     $ %
+%
+% These special characters may also be printed by escaping with a `\'
+%     # & _
+%
+%---------------------------------------------------------------------
+
+\def\textx#1{\mbox{#1}\endspec}
+
+\def\code{\beginspec \tt \textx}
+\def\file{\beginspec \tt \textx}
+\def\kbd{\beginspec \tt \textx}
+\def\key{\beginspec \tt \textx}
+\def\menu{\beginspec \tt \textx}
+\def\samp{\beginspec \tt \textx}
+
+%---------------------------------------------------------------------
+% Various non-verbatim text commands:
+%---------------------------------------------------------------------
+
+\def\dfn#1{\mbox{\sl #1}}
+\def\var#1{\mbox{\sl #1}}
+
+%---------------------------------------------------------------------
+% Environment: defmac
+%---------------------------------------------------------------------
+
+\def\defmac{\beginspec \defmacx}
+\def\defmacx#1(#2){%
+\endspec%
+\begin{list}{}{\setlength{\itemsep}{\bigskipamount}}
+\item \mbox{} \hfill Macro
+\item [{\bf #1}] ({\tt #2})
+}
+\def\enddefmac{\end{list}}
+
+%---------------------------------------------------------------------
+% Environment: deftp
+%---------------------------------------------------------------------
+
+\def\deftp{\beginspec \deftpx}
+\def\deftpx#1#2{%
+\endspec%
+\begin{list}{}{\setlength{\itemsep}{\bigskipamount}}
+\item \mbox{} \hfill #1
+\item [{\bf #2}] \mbox{}
+}
+\def\enddeftp{\end{list}}
+
+%---------------------------------------------------------------------
+% Environment: deftypefn
+%---------------------------------------------------------------------
+
+\def\deftypefn{\beginspec \deftypefnx}
+\def\deftypefnx#1#2#3(#4){%
+\endspec%
+\begin{list}{}{\setlength{\itemsep}{\bigskipamount}}
+\item \mbox{} \hfill #1
+\item [{\tt #2} {\bf #3}] ({\tt #4})
+}
+\def\enddeftypefn{\end{list}}
+
+%---------------------------------------------------------------------
+% Environment: deftypevr
+%---------------------------------------------------------------------
+
+\def\deftypevr{\beginspec \deftypevrx}
+\def\deftypevrx#1#2#3{%
+\endspec%
+\begin{list}{}{\setlength{\itemsep}{\bigskipamount}}
+\item \mbox{} \hfill #1
+\item [{\tt #2} {\bf #3}] \mbox{}
+}
+\def\enddeftypevr{\end{list}}
+
+%=====================================================================
+%=====================================================================
+%
+% Title Page and Copyright Page definitions:
+%
+%=====================================================================
+%=====================================================================
+
+%---------------------------------------------------------------------
+% Environment: TitlePage
+%---------------------------------------------------------------------
+
+\def\TitlePage{\begin{titlepage}%
+\setlength{\parindent}{0in}\vspace*{1.0in}
+}
+\def\endTitlePage{\vspace*{0.5in}\end{titlepage}}
+
+%---------------------------------------------------------------------
+% Command: Title
+%---------------------------------------------------------------------
+
+\def\Title#1{%
+\makebox[\textwidth][l]{\LARGE\bf #1}
+\rule{\textwidth}{2mm}
+}
+
+%---------------------------------------------------------------------
+% Command: SubTitle
+%---------------------------------------------------------------------
+
+\def\SubTitle#1{\makebox[\textwidth][r]{#1}}
+
+%---------------------------------------------------------------------
+% Command: Author
+%---------------------------------------------------------------------
+
+\def\Author#1{%
+\vfill
+\noindent
+% SGS - I got rid of the makebox because it was not splitting lines
+% so we could not get everyone on the author line
+%\makebox[\textwidth][l]{\large\bf #1}
+{\large\bf #1}
+\newline
+\rule{\textwidth}{1mm}
+}
+
+%---------------------------------------------------------------------
+% Environment: CopyrightPage
+%---------------------------------------------------------------------
+
+\def\CopyrightPage{\begin{titlepage}%
+\setlength{\parindent}{0in}\vspace*{3.0in}
+}
+\def\endCopyrightPage{\end{titlepage}}
+
+%=====================================================================
+%=====================================================================
+%
+% Miscellaneous commands and environments:
+%
+%=====================================================================
+%=====================================================================
+
+%---------------------------------------------------------------------
+% Environment: display
+%   This environment is an indented "display" mode, with no
+%   paragraph indentation.  A `verbatim' environment may be
+%   used within it to create "example" displays, as in the
+%   Texinfo `@example' environment.
+%---------------------------------------------------------------------
+
+\def\display{%
+\begin{list}{}{\setlength{\listparindent}{0in}}
+\item
+}
+\def\enddisplay{\end{list}}
+
+%---------------------------------------------------------------------
+% Subheadings for `def' environments:
+%   These are used in the reference manual entries.
+%---------------------------------------------------------------------
+
+\def\DESCRIPTION{\item [{\bf DESCRIPTION}] \mbox{} \\}
+\def\EXAMPLE{\item [{\bf EXAMPLE}] \mbox{} \\}
+\def\SEEALSO{\item [{\bf SEE ALSO}] \mbox{} \\}
+\def\NOTES{\item [{\bf NOTES}] \mbox{} \\}
+
+%---------------------------------------------------------------------
+% Command: vref
+%   For "verbose reference", the format of this command is:
+%
+%     \vref{<label>}{<title>}
+%
+%   Prints the reference number, the <title> argument in brackets,
+%   and the page number.
+%---------------------------------------------------------------------
+
+\def\vref#1#2{\ref{#1} [#2], page \pageref{#1}}
+
+%---------------------------------------------------------------------
+% Temporary index placeholder commands:
+%---------------------------------------------------------------------
+
+\def\cindex{}
+\def\findex{\code}
+\def\kindex{\code}
+\def\pindex{\code}
+\def\tindex{\code}
+\def\vindex{\code}
+
+%---------------------------------------------------------------------
+% Commands: parflow, xparflow
+%
+%   Note: your life will be much easier if you invoke these macros
+%   with a trailing open/close pair of squirly brackets.  i.e.
+%
+%     \parflow{}
+%     \xparflow{}
+%---------------------------------------------------------------------
+
+\def\parflow{{\sc ParFlow}}
+\def\xparflow{{\sc XParFlow}}
+\def\pftools{{\sc PFTools}}
+\def\cmake{{\sc CMake}}
+\def\ctest{{\sc CTest}}
+
+%---------------------------------------------------------------------
+% Command: pfaddanchor
+%---------------------------------------------------------------------
+
+\def\pfaddanchor#1{}
+

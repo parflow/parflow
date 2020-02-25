@@ -250,22 +250,6 @@ proc Parflow::pfrun { runname args } {
     
     pfwritedb $runname
 
-    #
-    # If user does not set the hostname then use this machine
-    # as the default
-    # 
-    if [pfexists Process.Hostnames] {
-	set machines [pfget Process.Hostnames]
-    } {
-	set machines [info hostname]
-    }
-
-    set file [open .hostfile "w" ]
-    foreach name "$machines" {
-	puts $file $name
-    }
-    close $file
-
     if [pfexists Process.Topology.P] {
 	set P [pfget Process.Topology.P]
     } {
@@ -285,21 +269,16 @@ proc Parflow::pfrun { runname args } {
     }
     
     set NumProcs [expr $P * $Q * $R]
-   set NumNodes [expr round(($NumProcs+.01) / 2) ]
 
+    # Run parflow
+    if [pfexists Process.Command] {
+	set command [pfget Process.Command]
+	puts [format "Using command : %s" [format $command $NumProcs $runname]]
+	puts [eval exec [format $command $NumProcs $runname]]
+    } {
+	puts [eval exec sh $Parflow::PARFLOW_DIR/bin/run  $runname $NumProcs]
+    }
 
-    puts [exec sh $Parflow::PARFLOW_DIR/bin/bootmc $NumProcs]
-    puts [exec sh $Parflow::PARFLOW_DIR/bin/getmc $NumProcs]
-    #
-    # SGS this change done at some point breaks the pattern for how Parflow was setup to execute the "run" script. 
-    # Not all of the run scripts currently understand the arg change and even the ones that do are broken.
-    #
-    ##puts [eval exec $Parflow::PARFLOW_DIR/bin/run $run_args $runname]
-    puts [eval exec sh $Parflow::PARFLOW_DIR/bin/run  $runname $NumProcs $NumNodes]
-    puts [exec sh $Parflow::PARFLOW_DIR/bin/freemc]
-    puts [exec sh $Parflow::PARFLOW_DIR/bin/killmc]
-    
-    # Need to add stuff to run parflow here
 }
 
 
@@ -353,6 +332,7 @@ proc Parflow::pfundist { runname } {
 	append filelist [glob -nocomplain $root.obf.?????.*$postfix] " "
 	append filelist [glob -nocomplain $root.mask.?????.*$postfix] " "
 	append filelist [glob -nocomplain $root.mask.*$postfix] " "
+	append filelist [glob -nocomplain $root.specific_storage.*$postfix] " "
     }
 
     foreach i $filelist {

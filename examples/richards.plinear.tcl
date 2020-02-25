@@ -8,6 +8,13 @@ lappend auto_path $env(PARFLOW_DIR)/bin
 package require parflow
 namespace import Parflow::*
 
+set runname richards.plinear 
+
+if { [info exists ::env(PARFLOW_HAVE_SILO) ] } {
+    set HaveSilo 1
+} else {
+    set HaveSilo 0
+}
 
 #-----------------------------------------------------------------------------
 # File input version number
@@ -138,12 +145,18 @@ pfset Gravity				1.0
 #-----------------------------------------------------------------------------
 
 pfset TimingInfo.BaseUnit		1.0
-pfset TimingInfo.StartCount	 0	
+pfset TimingInfo.StartCount             0	
 pfset TimingInfo.StartTime		0.0
-pfset TimingInfo.StopTime            10.0
+
+# If testing only solve 2 timesteps, example runs for 20 timesteps
+if { [info exists ::env(PF_TEST) ] } {
+    pfset TimingInfo.StopTime           1.0
+} {
+    pfset TimingInfo.StopTime          10.0
+}
 pfset TimingInfo.DumpInterval	       -1
-pfset TimeStep.Type              Constant
-pfset TimeStep.Value       0.5
+pfset TimeStep.Type                    Constant
+pfset TimeStep.Value                    0.5
 
 #-----------------------------------------------------------------------------
 # Porosity
@@ -284,17 +297,6 @@ pfset KnownSolution                                    NoKnownSolution
 #-----------------------------------------------------------------------------
 #  Solver Richards 
 #-----------------------------------------------------------------------------
-pfset Solver Richards 
-pfset Solver.MaxIter 50
-pfset Solver.AbsTol  1E-10
-pfset Solver.Drop   1E-15
-
-# we set all output to write as SILO in addition to pfb
-# so we can visualize w/ VisIt
-pfset Solver.WriteSiloSubsurfData True
-pfset Solver.WriteSiloPressure True
-pfset Solver.WriteSiloSaturation True
-pfset Solver.WriteSiloConcentration True
 
 #-----------------------------------------------------------------------------
 # Set solver parameters
@@ -322,24 +324,66 @@ pfset Solver.Linear.Preconditioner.MGSemi.MaxLevels      10
 pfset Solver.PrintSubsurf				False
 pfset  Solver.Drop                                      1E-20
 pfset Solver.AbsTol                                     1E-12
- 
-pfset Solver.WriteSiloSubsurfData True
-pfset Solver.WriteSiloPressure True
-pfset Solver.WriteSiloSaturation True
-pfset Solver.WriteSiloSaturation True
-pfset Solver.WriteSiloSlopes      True
 
+# we set all output to write as SILO in addition to pfb
+# so we can visualize w/ VisIt
+if $HaveSilo {
+    pfset Solver.WriteSiloSubsurfData                   True
+    pfset Solver.WriteSiloPressure                      True
+    pfset Solver.WriteSiloSaturation                    True
+    pfset Solver.WriteSiloConcentration                 True
+    pfset Solver.WriteSiloSlopes                        True
+}
 
 #-----------------------------------------------------------------------------
 # Run and Unload the ParFlow output files
 #-----------------------------------------------------------------------------
 
+pfrun $runname 
+pfundist $runname
 
-pfrun richards.plinear 
-pfundist richards.plinear
+#-----------------------------------------------------------------------------
+# If running as test; check output.
+# You do not need this for normal PF input files; this is done so the examples
+# are run and checked as part of our testing process.
+#-----------------------------------------------------------------------------
+if { [info exists ::env(PF_TEST) ] } {
+    set TEST richards.plinear
+    source pftest.tcl
+    set sig_digits 4
 
-# we use pf tools to convert from pressure to head
-set press [pfload richards.plinear.out.press.silo]
-set head [pfhhead $press]
-pfsave $head -silo richards.plinear.head.silo
+    set passed 1
 
+    #
+    # Tests 
+    #
+    if ![pftestFile $TEST.out.porosity.pfb "Max difference in Porosity" $sig_digits] {
+	set passed 0
+    }
+
+    if ![pftestFile $TEST.out.perm_x.pfb "Max difference in perm_x" $sig_digits] {
+	set passed 0
+    }
+    if ![pftestFile $TEST.out.perm_y.pfb "Max difference in perm_y" $sig_digits] {
+	set passed 0
+    }
+    if ![pftestFile $TEST.out.perm_z.pfb "Max difference in perm_z" $sig_digits] {
+	set passed 0
+    }
+    
+    for {set i 0} {$i < 2} {incr i} {
+    	set fi [format "%05d" $i]
+	if ![pftestFile $TEST.out.press.$fi.pfb "Max difference in pressure timestep $i" $sig_digits] {
+	    set passed 0
+	}
+	if ![pftestFile $TEST.out.satur.$fi.pfb "Max difference in saturation timestep $i" $sig_digits] {
+	    set passed 0
+	}
+    }
+
+    if $passed {
+	puts "$TEST : PASSED"
+    } {
+	puts "$TEST : FAILED"
+    }
+}

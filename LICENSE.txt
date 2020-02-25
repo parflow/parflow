@@ -1,3 +1,16 @@
+Parflow uses several third party open source libraries.  Full license
+and copyright details can be found in the pftools/third-party directory.
+
+Mesh Simplification 
+Sven Forstmann
+MIT License
+
+TCLAP
+Michael E. Smoot, Daniel Aarno, Google Inc.
+OpenSource license
+
+Parflow code is covered by the GNU Lesser General Public License.
+
   Copyright (c) 1995-2009, Lawrence Livermore National Security,
   LLC. Produced at the Lawrence Livermore National Laboratory. Written
   by the Parflow Team (see the CONTRIBUTORS file)

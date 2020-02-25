@@ -1,0 +1,33 @@
+# Install packages
+
+sudo apt-get update
+sudo apt-get install -y cmake cmake-curses-gui
+sudo apt-get install -y gfortran
+sudo apt-get install -y libhypre-dev
+sudo apt-get install -y libsilo-bin  libsilo-dev
+sudo apt-get install -y libhdf5-openmpi-dev libhdf5-openmpi-100 hdf5-helpers
+sudo apt-get install -y tcl-dev tk-dev
+sudo apt-get install -y openmpi-bin openmpi-doc libopenmpi-dev
+
+# Clone repo
+git clone git://github.com/parflow/parflow.git
+
+# Setup the installation directory
+export PARFLOW_DIR=$(pwd)/install
+
+mkdir build
+cd build
+cmake -DPARFLOW_AMPS_LAYER=mpi1 \
+      -DPARFLOW_AMPS_SEQUENTIAL_IO=true \
+      -DPARFLOW_ENABLE_TIMING=TRUE \
+      -DPARFLOW_HAVE_CLM=ON \
+      -DPARFLOW_ENABLE_HYPRE=true \
+      -DPARFLOW_ENABLE_HDF5=true \
+      -DPARFLOW_ENABLE_SILO=true \
+      -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR \
+      ../parflow
+
+make
+make install
+make test
+

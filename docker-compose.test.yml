@@ -1,0 +1,9 @@
+version: '3.3'
+
+services:
+
+  sut:
+    image: ${DOCKER_REPO}
+    entrypoint: /bin/bash /usr/local/bin/parflow-docker-test
+
+

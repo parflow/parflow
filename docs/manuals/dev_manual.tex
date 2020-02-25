@@ -1,0 +1,94 @@
+\documentstyle[11pt,makeidx,parflow]{book}
+
+%=============================================================================
+% Preamble:
+%=============================================================================
+
+% set margins
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\textwidth}{6.5in}
+\setlength{\topmargin}{0in}
+\setlength{\textheight}{8.0in}
+
+% define various commands and macros
+\input{defs}
+
+% define the version number
+\input{version}
+
+% write out the index entries in the `.idx' file
+\makeindex
+
+%=============================================================================
+% Body:
+%=============================================================================
+
+\begin{document}
+
+%=============== Title Page
+
+\begin{TitlePage}
+
+\Title{ParFlow Developer's Manual}
+\SubTitle{Software \PFVersion}
+\SubTitle{\today}
+\Author{Steven Ashby, Chuck Baldwin, Bill Bosl, Robert Falgout, Steven Smith}
+
+\end{TitlePage}
+
+%=============== Copyright Page
+
+\begin{CopyrightPage}
+
+\noindent
+Copyright \copyright{} 2019 The Regents of the University of California.
+
+\vspace{1em}\noindent
+Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+\end{CopyrightPage}
+
+%=============== Table of Contents
+
+\pagenumbering{roman}
+\tableofcontents
+\cleardoublepage
+\pagenumbering{arabic}
+
+%=============== Include Chapters
+
+\input{dev_manual_intro}
+\input{release_process}
+\input{codeorg}
+\input{documentation}
+\input{modules}
+\input{input}
+\input{equations}
+\input{grid}
+\input{discretize}
+\input{visualization}
+\input{administrative}
+
+%=============== Include Reference Manual
+
+\input{ref}
+\input{ref.grid}
+
+%=============== Include Other
+
+% \input{glossary}
+
+%=============== Print the References here
+
+\bibliographystyle{plain}
+\bibliography{parflow}
+
+%=============== Print the Index here
+
+\printindex
+
+\end{document}
+

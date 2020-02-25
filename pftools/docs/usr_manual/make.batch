@@ -1,4 +1,0 @@
-latex manual.tex
-dvipdf manual.dvi
-open manual.pdf
-
