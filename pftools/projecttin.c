@@ -840,6 +840,15 @@ void IntersectLineWithTriangle(
     p[2] = v2_x - coord_0;
     q[2] = v2_y - coord_1;
   }
+  else
+  {
+    p[0] = NAN;
+    q[0] = NAN;
+    p[1] = NAN;
+    q[1] = NAN;
+    p[2] = NAN;
+    q[2] = NAN;
+  }    
 
   /*---------------------------------------------
    * Check to see how many edges cross the
