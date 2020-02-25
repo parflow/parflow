@@ -40,7 +40,11 @@ void amps_ScanByte(
   for (end_ptr = data + len * stride, ptr = data; ptr < end_ptr;
        ptr += stride)
   {
-    fread(ptr, 1, 1, file);
+    if(fread(ptr, 1, 1, file) != 1)
+    {
+      printf("AMPS Error: Can't read byte\n");
+      AMPS_ABORT("AMPS Error");
+    }
   }
 }
 
@@ -237,8 +241,11 @@ void amps_ReadDouble(amps_File file, double *ptr, int len)
   /* read in each double with bytes swaped                               */
   for (i = len, data = ptr; i--;)
   {
-    fread(&a.number, sizeof(double), 1, (FILE*)file);
-
+    if(fread(&a.number, sizeof(double), 1, (FILE*)file) != 1)
+    {
+      printf("AMPS Error: Can't read double\n");
+      AMPS_ABORT("AMPS Error");
+    }
 
     b.buf[0] = a.buf[7];
     b.buf[1] = a.buf[6];
@@ -267,7 +274,11 @@ void amps_ReadInt(amps_File file, int *ptr, int len)
 
   for (i = len, data = ptr; i--;)
   {
-    fread(&a.number, sizeof(int), 1, (FILE*)file);
+    if(fread(&a.number, sizeof(int), 1, (FILE*)file) != 1)
+    {
+      printf("AMPS Error: Can't read int\n");
+      AMPS_ABORT("AMPS Error");
+    }
 
     b.buf[0] = a.buf[3];
     b.buf[1] = a.buf[2];
@@ -311,7 +322,12 @@ int len;
 
   for (i = len, data = ptr; i--;)
   {
-    fread(&number, sizeof(short), 1, (FILE*)file);
+    if(fread(&number, sizeof(short), 1, (FILE*)file) != 1)
+    {
+      printf("AMPS Error: Can't read byte\n");
+      AMPS_ABORT("AMPS Error");
+    }
+    
     *data++ = number;
   }
 }

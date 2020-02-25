@@ -99,9 +99,9 @@ void CloseSiloFile(void *file, void *userData)
  */
 void     WriteSiloPMPIOInit(char *file_prefix)
 {
-  char filename[2048];
-
 #if defined(HAVE_SILO) && defined(HAVE_MPI)
+  char filename[2048];
+  
   int p = amps_Rank(amps_CommWorld);
   int P = amps_Size(amps_CommWorld);
 
@@ -198,6 +198,8 @@ void     WriteSiloPMPIO(char *  file_prefix,
                         int     step,
                         char *  variable_name)
 {
+
+#if defined(HAVE_SILO) && defined(HAVE_MPI)
   Grid           *grid = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);
   Subgrid        *subgrid;
@@ -224,7 +226,7 @@ void     WriteSiloPMPIO(char *  file_prefix,
   int origin2[3];
 
 
-#if defined(HAVE_SILO) && defined(HAVE_MPI)
+
   int driver = DB_PDB;
   int numGroups;
   PMPIO_baton_t *bat;
