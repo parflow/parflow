@@ -1,20 +1,31 @@
 env:
-  matrix:
+  jobs:
     - PF_BUILD=cmake
 
-language: cpp
-sudo: required
 dist: trusty
+
+language: cpp
+
 compiler:
   - gcc
+  
 os:
   - linux
+  
 addons:
-  sources:
-    - ubuntu-toolchain-r-test
   apt:
     packages:
-    - cmake
+    - gfortran
+    - libhypre-2.8.0b
+    - libhypre-dev
+    - libhdf5-openmpi-dev
+    - libhdf5-openmpi-7
+    - hdf5-helpers
+    - tcl-dev
+    - tk-dev
+    - openmpi-bin
+    - openmpi-doc
+    - libopenmpi-dev
 
 before_install:
   - echo $LANG
@@ -22,11 +33,6 @@ before_install:
   - test -n $CC  && unset CC
   - test -n $CXX && unset CXX
   - sudo apt-get -qq update
-  - sudo apt-get install -y gfortran
-  - sudo apt-get install -y libhypre-2.8.0b libhypre-dev
-  - sudo apt-get install -y libhdf5-openmpi-dev libhdf5-openmpi-7 hdf5-helpers
-  - sudo apt-get install -y tcl-dev tk-dev
-  - sudo apt-get install -y openmpi-bin openmpi-doc libopenmpi-dev
   - if [[ ! -f cmake-3.9.0-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate http://cmake.org/files/v3.9/cmake-3.9.0-Linux-x86_64.tar.gz && tar -xvf cmake-3.9.0-Linux-x86_64.tar.gz; fi
 
 before_script:
