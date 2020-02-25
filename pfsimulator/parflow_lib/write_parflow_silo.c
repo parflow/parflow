@@ -197,9 +197,9 @@ void pf_mk_dir(char* filename)
  */
 void     WriteSiloInit(char *file_prefix)
 {
-  char filename[2048];
-
 #ifdef HAVE_SILO
+  char filename[2048];
+  
   int p = amps_Rank(amps_CommWorld);
   int P = amps_Size(amps_CommWorld);
   int i;
@@ -319,20 +319,19 @@ void     WriteSilo(char *  file_prefix,
                    int     step,
                    char *  variable_name)
 {
+
+#ifdef HAVE_SILO
   Grid           *grid = VectorGrid(v);
   SubgridArray   *subgrids = GridSubgrids(grid);
   Subgrid        *subgrid;
   Subvector      *subvector;
-
+  
   int g;
   int p, P;
 
   char file_extn[7] = "silo";
   char filename[512];
-
   int err;
-
-#ifdef HAVE_SILO
   DBfile *db_file;
 #endif
 

@@ -90,8 +90,8 @@ void    OverlandFlowEvalDiff(
 
   double dx, dy;
   double Sf_mag;
-  double Press_x, Press_y, Sf_x, Sf_y, Sf_xo=NAN, Sf_yo=NAN;
-  double Pupx, Pupy, Pupox, Pupoy, Pdown, Pdowno;
+  double Press_x=NAN, Press_y, Sf_x=NAN, Sf_y, Sf_xo=NAN, Sf_yo=NAN;
+  double Pupx=NAN, Pupy, Pupox, Pupoy, Pdown, Pdowno;
   double ov_epsilon;
 
   int ival, sy_v;
