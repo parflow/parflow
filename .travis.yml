@@ -2,7 +2,7 @@ env:
   jobs:
     - PF_BUILD=cmake
 
-dist: trusty
+dist: bionic
 
 language: cpp
 
@@ -16,16 +16,17 @@ addons:
   apt:
     packages:
     - gfortran
-    - libhypre-2.8.0b
+    - libhypre-2.13.0
     - libhypre-dev
     - libhdf5-openmpi-dev
-    - libhdf5-openmpi-7
+    - libhdf5-openmpi-10
     - hdf5-helpers
     - tcl-dev
     - tk-dev
     - openmpi-bin
     - openmpi-doc
     - libopenmpi-dev
+    - cmake
 
 before_install:
   - echo $LANG
