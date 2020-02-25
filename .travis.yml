@@ -19,7 +19,7 @@ addons:
     - libhypre-2.13.0
     - libhypre-dev
     - libhdf5-openmpi-dev
-    - libhdf5-openmpi-10
+    - libhdf5-openmpi-100
     - hdf5-helpers
     - tcl-dev
     - tk-dev
