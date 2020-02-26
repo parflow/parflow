@@ -1,3 +1,8 @@
+#
+# Run Parflow test
+#
+# Must have find_package(MPI) in project using this macro
+
 cmake_minimum_required(VERSION 3.4)
 
 # Execute command with error check
