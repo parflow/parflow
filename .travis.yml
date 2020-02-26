@@ -53,5 +53,4 @@ before_script:
 
 -script:
   - (cd build && make test)
-  - cat build/Testing/Temporary/LastTest.log
 
