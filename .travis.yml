@@ -22,7 +22,7 @@ jobs:
 
   - os: linux
     dist: trusty
-    name: 'Ubunutu 14.04LTS'
+    name: 'Ubuntu 14.04LTS'
     env: PF_TEST=trusty
     addons:
         apt:
