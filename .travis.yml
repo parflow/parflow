@@ -1,62 +1,44 @@
-jobs:
-  include:
-    - os: linux
-      PF_TEST=bionic
-      name: 'Ubuntu 18.04LTS'
-      dist: bionic
-      addons:
-        apt:
-          packages:
-            - gfortran
-            - libhypre-2.13.0
-            - libhypre-dev
-            - libhdf5-openmpi-dev
-            - libhdf5-openmpi-100
-            - hdf5-helpers
-            - tcl-dev
-            - tk-dev
-            - openmpi-bin
-            - openmpi-doc
-            - libopenmpi-dev
-            - cmake
-    - os: linux
-      PF_TEST=trusty
-      name: 'Ubunutu 14.04LTS'
-      dist: trusty
-      addons:
-        apt:
-          packages:
-            - gfortran
-            - ibhypre-2.8.0b
-            - libhypre-dev
-            - libhdf5-openmpi-dev
-            - libhdf5-openmpi-7
-            - hdf5-helpers
-            - tcl-dev
-            - tk-dev
-            - openmpi-bin
-            - openmpi-doc
-            - libopenmpi-dev
+env:
+  jobs:
+    - PF_BUILD=cmake
+
+dist: bionic
 
 language: cpp
 
 compiler:
   - gcc
   
+os:
+  - linux
+  
+addons:
+  apt:
+    packages:
+    - gfortran
+    - libhypre-2.13.0
+    - libhypre-dev
+    - libhdf5-openmpi-dev
+    - libhdf5-openmpi-100
+    - hdf5-helpers
+    - tcl-dev
+    - tk-dev
+    - openmpi-bin
+    - openmpi-doc
+    - libopenmpi-dev
+    - cmake
+
 before_install:
   - echo $LANG
   - echo $LC_ALL
   - test -n $CC  && unset CC
   - test -n $CXX && unset CXX
   - sudo apt-get -qq update
-  - "[[ $PF_BUILD != 'trusty' ]] || if [[ ! -f cmake-3.9.0-Linux-x86_64/bin/cmake ]]; then wget --no-check-certificate http://cmake.org/files/v3.9/cmake-3.9.0-Linux-x86_64.tar.gz && tar -xvf cmake-3.9.0-Linux-x86_64.tar.gz; fi"
-
 
 before_script:
   - cd $TRAVIS_BUILD_DIR
   - export PARFLOW_SRC_DIR=$TRAVIS_BUILD_DIR
   - export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install
-  - "[[ $PF_BUILD != 'trusty' ]] || export PATH=$TRAVIS_BUILD_DIR/cmake-3.9.0-Linux-x86_64/bin/:$PATH"
   - mkdir -p $PARFLOW_DIR
   - wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
   - tar -xf silo-4.10.2.tar.gz
