@@ -1,56 +1,11 @@
-env:
-  jobs:
-    - PF_BUILD=cmake
-
-dist: bionic
-
-language: cpp
-
-compiler:
-  - gcc
-  
-os:
-  - linux
-  
-addons:
-  apt:
-    packages:
-    - gfortran
-    - libhypre-2.13.0
-    - libhypre-dev
-    - libhdf5-openmpi-dev
-    - libhdf5-openmpi-100
-    - hdf5-helpers
-    - tcl-dev
-    - tk-dev
-    - openmpi-bin
-    - openmpi-doc
-    - libopenmpi-dev
-    - cmake
-
-before_install:
-  - echo $LANG
-  - echo $LC_ALL
-  - test -n $CC  && unset CC
-  - test -n $CXX && unset CXX
-  - sudo apt-get -qq update
-
-before_script:
-  - cd $TRAVIS_BUILD_DIR
-  - export PARFLOW_SRC_DIR=$TRAVIS_BUILD_DIR
-  - export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install
-  - mkdir -p $PARFLOW_DIR
-  - wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz
-  - tar -xf silo-4.10.2.tar.gz
-  - (cd silo-4.10.2 && ./configure  --prefix=$PARFLOW_DIR --disable-silex --disable-hzip --disable-fpzip && make install)
-  - export CC=mpicc
-  - export CXX=mpiCC
-  - export F77=mpif77
-  - export FC=mpif90
-  - echo "PF_BUILD = $PF_BUILD"
-  - (mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-Wall -Werror -Wno-unused-result -Wno-unused-function' -DPARFLOW_AMPS_LAYER=mpi1 -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DPARFLOW_ENABLE_HYPRE=true -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$PARFLOW_DIR -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR .. )
-  - (cd build && make && make install)
+jobs:
+  include:
+  - dist:: bionic
+    env: PF_TEST= bionic
+  - dist: trusty
+    env: PF_TEST= bionic	
 
 -script:
-  - (cd build && make test)
+  - echo $PF_TEST
+  - uname -a
 
