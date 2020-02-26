@@ -3,7 +3,7 @@ jobs:
   - os: linux
     dist: bionic
     name: 'Ubuntu 18.04LTS'	
-    env: PF_TEST= bionic
+    env: PF_TEST=bionic
     addons:
         apt:
           packages:
@@ -23,7 +23,7 @@ jobs:
   - os: linux
     dist: trusty
     name: 'Ubunutu 14.04LTS'
-    env: PF_TEST= trusty
+    env: PF_TEST=trusty
     addons:
         apt:
           packages:
@@ -46,6 +46,8 @@ compiler:
   - gcc
 
 -script:
+  - . /etc/os-release
+  - echo "$VERSION"
   - echo $PF_TEST
-  - uname -a
+  - which mpirun
 
