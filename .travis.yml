@@ -1,9 +1,18 @@
 jobs:
   include:
-  - dist:: bionic
+  - os: linux
+    dist:: bionic
+    name: 'Ubuntu 18.04LTS'	
     env: PF_TEST= bionic
-  - dist: trusty
-    env: PF_TEST= bionic	
+  - os: linux
+    dist: trusty
+    name: 'Ubunutu 14.04LTS'
+    env: PF_TEST= trusty
+
+language: cpp
+
+compiler:
+  - gcc
 
 -script:
   - echo $PF_TEST
