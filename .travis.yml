@@ -1,13 +1,44 @@
 jobs:
   include:
   - os: linux
-    dist:: bionic
+    dist: bionic
     name: 'Ubuntu 18.04LTS'	
     env: PF_TEST= bionic
+    addons:
+        apt:
+          packages:
+            - gfortran
+            - libhypre-2.13.0
+            - libhypre-dev
+            - libhdf5-openmpi-dev
+            - libhdf5-openmpi-100
+            - hdf5-helpers
+            - tcl-dev
+            - tk-dev
+            - openmpi-bin
+            - openmpi-doc
+            - libopenmpi-dev
+            - cmake
+
   - os: linux
     dist: trusty
     name: 'Ubunutu 14.04LTS'
     env: PF_TEST= trusty
+    addons:
+        apt:
+          packages:
+            - gfortran
+            - ibhypre-2.8.0b
+            - libhypre-dev
+            - libhdf5-openmpi-dev
+            - libhdf5-openmpi-7
+            - hdf5-helpers
+            - tcl-dev
+            - tk-dev
+            - openmpi-bin
+            - openmpi-doc
+            - libopenmpi-dev
+
 
 language: cpp
 
