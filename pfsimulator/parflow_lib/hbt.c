@@ -995,8 +995,17 @@ void HBT_scanf(
   void *obj;
   int size;
 
-  fscanf(file, "%d", &(height));
-  fscanf(file, "%d", &(num));
+  if(fscanf(file, "%d", &(height)) != 1)
+  {
+    printf("ERROR: HBT_scanf failed to read height\n");
+    abort();
+  }
+  
+  if(fscanf(file, "%d", &(num)) != 1)
+  {
+    printf("ERROR: HBT_scanf failed to read num\n");
+    abort();
+  }
 
   i = num;
   while (i--)
