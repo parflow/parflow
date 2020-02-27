@@ -94,10 +94,8 @@ int            MakePatchySolid(
   int NZ = DataboxNz(msk);
   double X = DataboxX(msk);
   double Y = DataboxY(msk);
-  double Z = DataboxZ(msk);
   double DX = DataboxDx(msk);
   double DY = DataboxDy(msk);
-  double DZ = DataboxDz(msk);
 
   /* ---------- Max number of patches ---------- */
   int np_tot=30;        // Max number of patches allowed (CAN BE INCREASED IF NEEDED)
@@ -157,7 +155,7 @@ int            MakePatchySolid(
     {
       mask_val = *DataboxCoeff(msk, i, j, 0);
 
-      if (any_zeros==0 & mask_val==0)
+      if ( (any_zeros==0) && (mask_val==0))
       {
         any_zeros=1;
       }
@@ -256,9 +254,6 @@ int            MakePatchySolid(
 
   int ix_off[4],iy_off[4],jx_off[4],jy_off[4];
   int off_ref[]={0,-1,1,0};
-
-  int p_cnt=0;
-  int p_idx=0;
 
   double x_test,y_test;
   double z_bot;
@@ -410,7 +405,7 @@ int            MakePatchySolid(
   // Which corners of the cell to add to the Xp_Act dBase, who belongs to this cell
   int add_pnt[8],our_pnts[8];
   int i_off=0, j_off=0;
-  int km,n_t,iijj;
+  int km,n_t;
   int np_act=-1;
 
   // if (debugger==1) start_time=clock(); // Enable <time.h> at top of function
@@ -803,7 +798,7 @@ int            MakePatchySolid(
       // printf("F%i, ",i);
       for (j=0; j<6; ++j) {
         // printf(" %i ",AllPatches[i].act_faces[j]);
-        if (AllPatches[i].value!=0 & AllPatches[i].act_faces[j]>0) {all_faces+=1;}
+        if ( (AllPatches[i].value!=0) && (AllPatches[i].act_faces[j]>0)) {all_faces+=1;}
       }
       // printf("    Val=%i, Cnt=%i \n",AllPatches[i].value,AllPatches[i].patch_cell_count);
     }
@@ -859,7 +854,6 @@ int            MakePatchySolid(
     //  * * A fix is coming so just use ASCII solid files for now * *
 
     int write_int=1;
-    double write_dbl=1.0;
 
     tools_WriteInt(fp,&write_int, 1); // VERSION #
     write_int=np_act+1;
@@ -889,7 +883,7 @@ int            MakePatchySolid(
         // Count up all the ACTUAL patches
         for (i=0; i<(6+np_usr+1); ++i) {
           for (j=0; j<6; ++j) {
-            if (AllPatches[i].value!=0 & AllPatches[i].act_faces[j]>0) {all_faces+=1;}
+            if ((AllPatches[i].value!=0) && (AllPatches[i].act_faces[j]>0)) {all_faces+=1;}
           }
         }
 

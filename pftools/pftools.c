@@ -1899,7 +1899,7 @@ int MakePatchySolidCommand(
   Data          *data = (Data*)clientData;
 
   char          *filename, *vtk_filename;
-  int           i,j;
+  int           i;
 
   FILE          *fp = NULL;
   FILE          *fp_vtk = NULL;
@@ -1921,7 +1921,7 @@ int MakePatchySolidCommand(
   tophash = NULL;
   bothash = NULL;
 
-  int msk=0, top=0, bot=0, vtk=0, outfl=0, sub_patch=0, bin_out=0;  //Initalize flags for the options
+  int msk=0, top=0, bot=0, vtk=0, sub_patch=0, bin_out=0;  //Initalize flags for the options
   // Note: bin_out is a place holder for a yet to be added BINARY solid file...
   //       vtk is a flag for writing a BINARY VTK of the solid file too
 
@@ -2105,15 +2105,12 @@ int pfsolFmtConvert(
                      int         argc,
                      char *      argv[])
 {
-  Data          *data = (Data*)clientData;
-
   char          *bin_filename, *ascii_filename;
   char          *file1_name, *file2_name,*file1_ext, *file2_ext;
-  int           i,bin2asc;
+  int           bin2asc;
 
   FILE          *fp_bin = NULL;
   FILE          *fp_ascii = NULL;
-  Tcl_HashEntry *entryPtr;
 
   // Perform some checks before calling the appropriate routine in solidtools.c
 
