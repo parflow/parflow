@@ -33,6 +33,8 @@ pfwell_cat.o: pfwell_cat.c pfwell_cat.h general.h well.h
 pfwell_data.o: pfwell_data.c pfwell_data.h general.h well.h
 printdatabox.o: printdatabox.c parflow_config.h printdatabox.h databox.h \
   tools_io.h
+solidtools.o: solidtools.c parflow_config.h solidtools.h databox.h \
+  tools_io.h
 projecttin.o: projecttin.c gms.h general.h geometry.h
 quicksort.o: quicksort.c
 readdatabox.o: readdatabox.c parflow_config.h readdatabox.h databox.h \
