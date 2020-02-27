@@ -103,6 +103,7 @@ void resetBoundary(Vector *vector, const double value, const int ghosts)
 
     const int nx_f = SubvectorNX(subvector);
     const int ny_f = SubvectorNY(subvector);
+    const int nz_f = SubvectorNZ(subvector);
 
     double *data = SubvectorElt(subvector, ix_all, iy_all, iz_all);
 

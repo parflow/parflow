@@ -191,14 +191,11 @@ void *HBT_replace(
                   int   sizeof_obj)
 {
   int test;
-  int father_dir;
   int found = FALSE;
   HBT_element *temp;
-  HBT_element *father_temp;
 
   (void)sizeof_obj;
 
-  father_temp = NULL;
   temp = tree->root;
 
   while (temp)
@@ -208,8 +205,6 @@ void *HBT_replace(
       /*---------------------------------------------------------------*/
       /* Go left.                                                      */
       /*---------------------------------------------------------------*/
-      father_dir = test;
-      father_temp = temp;
       temp = LEFT(temp);
     }
     else if (test > 0)
@@ -217,8 +212,6 @@ void *HBT_replace(
       /*---------------------------------------------------------------*/
       /* Go right.                                                     */
       /*---------------------------------------------------------------*/
-      father_dir = test;
-      father_temp = temp;
       temp = RIGHT(temp);
     }
     else
@@ -1002,8 +995,17 @@ void HBT_scanf(
   void *obj;
   int size;
 
-  fscanf(file, "%d", &(height));
-  fscanf(file, "%d", &(num));
+  if(fscanf(file, "%d", &(height)) != 1)
+  {
+    printf("ERROR: HBT_scanf failed to read height\n");
+    abort();
+  }
+  
+  if(fscanf(file, "%d", &(num)) != 1)
+  {
+    printf("ERROR: HBT_scanf failed to read num\n");
+    abort();
+  }
 
   i = num;
   while (i--)

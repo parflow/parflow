@@ -31,21 +31,22 @@
  *
  */
 
+
+#include "amps.h"
+#include "amps_test.h"
+
+#include <stdio.h>
+
 #define V1_len 5
 #define V2_len 11
 #define V1_stride 7
 #define V2_stride 3
-
-
-#include <stdio.h>
-#include "amps.h"
 
 int main(argc, argv)
 int argc;
 char *argv[];
 {
   amps_Invoice invoice;
-  amps_Invoice send_invoice;
 
   int v1_len = V1_len;
   int v2_len = V2_len;
@@ -66,9 +67,6 @@ char *argv[];
   int i, j;
   int c;
 
-  char *recvd_string = NULL;
-  int length;
-
   int loop;
 
   int result = 0;
@@ -85,7 +83,6 @@ char *argv[];
   /* Init Vector */
   if ((vector = (double*)calloc(total_length, sizeof(double))) == NULL)
     amps_Printf("Error mallocing vector\n");
-
 
   for (; loop; loop--)
   {
@@ -131,26 +128,13 @@ char *argv[];
       if (vector[c])
         result = 1;
 
-    if (result)
-    {
-      amps_Printf("ERROR!!!!! vectors do not match\n");
-      result = 1;
-    }
-    else
-    {
-      amps_Printf("Success\n");
-      result = 0;
-    }
-
     amps_FreeInvoice(invoice);
   }
 
   free(vector);
 
-
-
   amps_Finalize();
 
-  return result;
+  return amps_check_result(result);
 }
 

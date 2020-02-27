@@ -76,8 +76,6 @@ void    OverlandFlowEvalDiff(
                                                 * fcn = CALCDER => calculate the function
                                                 *                  derivative */
 {
-  PFModule      *this_module = ThisPFModule;
-
   Vector      *slope_x = ProblemDataTSlopeX(problem_data);
   Vector      *slope_y = ProblemDataTSlopeY(problem_data);
   Vector      *mannings = ProblemDataMannings(problem_data);
@@ -89,21 +87,14 @@ void    OverlandFlowEvalDiff(
 
   double        *qx_dat, *qy_dat, *sx_dat, *sy_dat, *mann_dat, *top_dat, *pp, *opp;
 
-  double xdir, ydir;
-  double q_lo, q_mid, q_hi;
-  double q_v[4], slope_fx_lo, slope_fx_hi, slope_fx_mid;
-  double slope_fy_lo, slope_fy_hi, slope_fy_mid, dx, dy;
-  double coeff, Pmean, P2, P3, Pdel, Pcen;
-  double slope_mean, manning, s1, s2, Sf_mag;
+  double dx, dy;
+  double Sf_mag;
   double ov_epsilon;
 
-  int ival, sy_v, step;
-  int            *fdir;
+  int ival, sy_v;
+  int *fdir;
 
   int i, j, k;
-  /* @RMM get grid from global (assuming this is comp grid) to pass to CLM */
-  int gnx = BackgroundNX(GlobalsBackground);
-  int gny = BackgroundNY(GlobalsBackground);
 
   p_sub = VectorSubvector(pressure, sg);
   op_sub = VectorSubvector(old_pressure, sg);
@@ -149,8 +140,6 @@ void    OverlandFlowEvalDiff(
         int itop = SubvectorEltIndex(top_sub, i, j, 0);
 
         int k1 = (int)top_dat[itop];
-        int k0x = (int)top_dat[itop - 1];
-        int k0y = (int)top_dat[itop - sy_v];
         int k1x = (int)top_dat[itop + 1];
         int k1y = (int)top_dat[itop + sy_v];
 

@@ -28,6 +28,8 @@
 
 #include "amps.h"
 
+#include <limits.h>
+
 void amps_vector_in(comm, type, data, buf_ptr, dim, len, stride)
 amps_Comm comm;
 int type;
@@ -43,6 +45,15 @@ int *stride;
   {
     switch (type)
     {
+      case AMPS_INVOICE_BYTE_CTYPE:
+        *buf_ptr += AMPS_CALL_BYTE_ALIGN(comm, NULL, *buf_ptr, len[dim],
+                                         stride[dim]);
+        AMPS_CALL_BYTE_IN(comm, *buf_ptr, *data, len[dim], stride[dim]);
+        *buf_ptr += AMPS_CALL_BYTE_SIZEOF(comm, *buf_ptr, NULL, len[dim],
+                                          stride[dim]);
+        *(char**)data += (len[dim] - 1) * stride[dim];
+        break;
+
       case AMPS_INVOICE_CHAR_CTYPE:
         *buf_ptr += AMPS_CALL_CHAR_ALIGN(comm, NULL, *buf_ptr, len[dim],
                                          stride[dim]);
@@ -96,6 +107,10 @@ int *stride;
 
       switch (type)
       {
+	case AMPS_INVOICE_BYTE_CTYPE:
+          *(char**)data += stride[dim];
+          break;
+
         case AMPS_INVOICE_CHAR_CTYPE:
           *(char**)data += stride[dim];
           break;
@@ -142,6 +157,14 @@ int *stride;
   {
     switch (type)
     {
+      case AMPS_INVOICE_BYTE_CTYPE:
+        *buf_ptr += AMPS_CALL_BYTE_ALIGN(comm, NULL, *buf_ptr, len[dim], stride[dim]);
+        AMPS_CALL_BYTE_OUT(comm, *data, *buf_ptr, len[dim], stride[dim]);
+        *buf_ptr += AMPS_CALL_BYTE_SIZEOF(comm, *buf_ptr, NULL, len[dim],
+                                          stride[dim]);
+        *(char**)data += (len[dim] - 1) * stride[dim];
+        break;
+
       case AMPS_INVOICE_CHAR_CTYPE:
         *buf_ptr += AMPS_CALL_CHAR_ALIGN(comm, NULL, *buf_ptr, len[dim], stride[dim]);
         AMPS_CALL_CHAR_OUT(comm, *data, *buf_ptr, len[dim], stride[dim]);
@@ -201,6 +224,10 @@ int *stride;
 
       switch (type)
       {
+	case AMPS_INVOICE_BYTE_CTYPE:
+          *(char**)data += stride[dim];
+          break;
+
         case AMPS_INVOICE_CHAR_CTYPE:
           *(char**)data += stride[dim];
           break;
@@ -244,6 +271,11 @@ int *stride;
   int align;
   switch (type)
   {
+    case AMPS_INVOICE_BYTE_CTYPE:
+      align = AMPS_CALL_BYTE_ALIGN(comm, NULL, *buf_ptr, len[0],
+                                   stride[0]);
+      break;
+
     case AMPS_INVOICE_CHAR_CTYPE:
       align = AMPS_CALL_CHAR_ALIGN(comm, NULL, *buf_ptr, len[0],
                                    stride[0]);
@@ -272,6 +304,10 @@ int *stride;
       align = AMPS_CALL_DOUBLE_ALIGN(comm, NULL, *buf_ptr, len[0],
                                      stride[0]);
       break;
+    default:
+      amps_Error("amps_pack", INVALID_INVOICE, "Invalid invoice type", HALT);
+      align = INT_MIN;
+      break;
   }
 
   return align;
@@ -291,6 +327,10 @@ int *stride;
 
   switch (type)
   {
+    case AMPS_INVOICE_BYTE_CTYPE:
+      size = AMPS_CALL_BYTE_SIZEOF(comm, *buf_ptr, NULL, len[0], 1);
+      break;
+
     case AMPS_INVOICE_CHAR_CTYPE:
       size = AMPS_CALL_CHAR_SIZEOF(comm, *buf_ptr, NULL, len[0], 1);
       break;
@@ -314,6 +354,9 @@ int *stride;
     case AMPS_INVOICE_DOUBLE_CTYPE:
       size = AMPS_CALL_DOUBLE_SIZEOF(comm, *buf_ptr, NULL, len[0], 1);
       break;
+    default:
+      amps_Error("amps_pack", INVALID_INVOICE, "Invalid invoice type", HALT);
+      size = INT_MIN;
   }
 
   for (i = 1; i < dim; i++)
@@ -339,6 +382,12 @@ int *stride;
 
   switch (type)
   {
+    case AMPS_INVOICE_BYTE_CTYPE:
+      size = AMPS_CALL_BYTE_SIZEOF(comm, *buf_ptr, NULL, len[0],
+                                   stride[0]);
+      el_size = sizeof(char);
+      break;
+
     case AMPS_INVOICE_CHAR_CTYPE:
       size = AMPS_CALL_CHAR_SIZEOF(comm, *buf_ptr, NULL, len[0],
                                    stride[0]);

@@ -117,17 +117,11 @@ void          PhaseVelocityFace(
 
   VectorUpdateCommHandle     *handle;
 
-  Vector         *pressure_vector, *vel_vec[3];
-  Subvector      *subvector_v0,
-    *subvector_v1,
-    *subvector_v2;
-  double         *vel0_l, *vel0_r,
-    *vel1_l, *vel1_r,
-    *vel2_l, *vel2_r,
-    *vel_tmp;
-  double ds[3];
-  double h0, h1, h2, dummy_density;
-  int dir0 = 0, dir1, dir2, alpha;
+  Vector *pressure_vector, *vel_vec[3];
+  Subvector *subvector_v0;
+  double *vel0_l, *vel0_r, *vel_tmp;
+  double dummy_density;
+  int dir0 = 0;
   int dir[3][3] = { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
 
 
@@ -445,10 +439,6 @@ void          PhaseVelocityFace(
     ny = SubgridNY(subgrid);
     nz = SubgridNZ(subgrid);
 
-    ds[0] = SubgridDX(subgrid);
-    ds[1] = SubgridDY(subgrid);
-    ds[2] = SubgridDZ(subgrid);
-
     for (ipatch = 0; ipatch < GrGeomSolidNumPatches(gr_domain); ipatch++)
     {
       GrGeomPatchLoop(i, j, k, fdir, gr_domain, ipatch,
@@ -458,44 +448,24 @@ void          PhaseVelocityFace(
         if (fdir[0])
         {
           dir0 = 0;
-          dir1 = 1;
-          dir2 = 2;
         }
         /* primary direction y */
         else if (fdir[1])
         {
           dir0 = 1;
-          dir1 = 0;
-          dir2 = 2;
         }
         /* primary direction z */
         else if (fdir[2])
         {
           dir0 = 2;
-          dir1 = 0;
-          dir2 = 1;
         }
-        alpha = -fdir[dir0];
-
         subvector_v0 = VectorSubvector(vel_vec[dir0], sg);
-        subvector_v1 = VectorSubvector(vel_vec[dir1], sg);
-        subvector_v2 = VectorSubvector(vel_vec[dir2], sg);
 
         vel0_l = SubvectorElt(subvector_v0, i, j, k);
         vel0_r = SubvectorElt(subvector_v0,
                               i + dir[dir0][0],
                               j + dir[dir0][1],
                               k + dir[dir0][2]);
-        vel1_l = SubvectorElt(subvector_v1, i, j, k);
-        vel1_r = SubvectorElt(subvector_v1,
-                              i + dir[dir1][0],
-                              j + dir[dir1][1],
-                              k + dir[dir1][2]);
-        vel2_l = SubvectorElt(subvector_v2, i, j, k);
-        vel2_r = SubvectorElt(subvector_v2,
-                              i + dir[dir2][0],
-                              j + dir[dir2][1],
-                              k + dir[dir2][2]);
 
         if (fdir[dir0] == -1)
         {
@@ -503,10 +473,6 @@ void          PhaseVelocityFace(
           vel0_r = vel0_l;
           vel0_l = vel_tmp;
         }
-
-        h0 = ds[dir0];
-        h1 = ds[dir1];
-        h2 = ds[dir2];
 
         /*      Apply a xero velocity condition on outer boundaries */
         vel0_r[0] = 0.0;

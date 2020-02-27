@@ -60,14 +60,11 @@ void FBx(ProblemData *problem_data, Vector *FBx)
 
   SubgridArray   *subgrids = GridSubgrids(grid);
   Subgrid        *subgrid;
-  Subvector      *ps_sub;
   Subvector      *FBx_sub;
   Subvector      *val_sub;
 
   VectorUpdateCommHandle       *handle;
 
-
-  double         *data;
   double         *FBx_dat;
   double         *val_dat;
 
@@ -75,8 +72,6 @@ void FBx(ProblemData *problem_data, Vector *FBx)
   int nx, ny, nz;
   int r;
   int is, i, j, k, ips, ipicv;
-  int ii;
-
 
   /*-----------------------------------------------------------------------
    * FBx Scale
@@ -179,10 +174,8 @@ PFModule   *FBxNewPublicXtra()
 
   Type0         *dummy0;
 
-  int num_regions, ir;
   char *switch_name;
   int switch_value;
-  char *region;
   char key[IDB_MAX_KEY_LEN];
   char *name;
   NameArray switch_na;
