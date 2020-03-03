@@ -30,18 +30,8 @@
 * Pointwise red/black Gauss-Seidel
 *
 *****************************************************************************/
-#include "parflow_config.h"
-
-#ifdef HAVE_CUDA
-extern "C"{
-#endif
 
 #include "parflow.h"
-
-#ifdef HAVE_CUDA
-#include "pfcudaloops.h"
-#include "pfcudamalloc.h"
-#endif
 
 /*--------------------------------------------------------------------------
  * Structures
@@ -515,7 +505,3 @@ int  RedBlackGSPointSizeOfTempData()
 {
   return 0;
 }
-
-#ifdef HAVE_CUDA
-}
-#endif

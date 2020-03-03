@@ -31,19 +31,9 @@
 *
 *
 *****************************************************************************/
-#include "parflow_config.h"
-
-#ifdef HAVE_CUDA
-extern "C"{
-#endif
 
 #include "parflow.h"
 #include "vector.h"
-
-#ifdef HAVE_CUDA
-#include "pfcudaloops.h"
-#include "pfcudamalloc.h"
-#endif
 
 #ifdef HAVE_SAMRAI
 #include "SAMRAI/hier/PatchDescriptor.h"
@@ -942,7 +932,3 @@ void    InitVectorRandom(
     });
   }
 }
-
-#ifdef HAVE_CUDA
-}
-#endif

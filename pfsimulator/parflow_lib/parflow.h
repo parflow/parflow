@@ -76,4 +76,22 @@
 // SGS FIXME this should not be here, in fact this whole parflow.h file is dumb.
 #include <math.h>
 
+/* Include CUDA headers if CUDA active and NVCC compiler */
+#if defined(HAVE_CUDA) && defined(__CUDACC__)
+
+/* PFCUDA_COMP_UNIT_TYPE determines the behavior of the NVCC compilation unit:
+  1:     NVCC compiler, Unified Memory allocation, Parallel loops on GPUs   
+  2:     NVCC compiler, Unified Memory allocation, Sequential loops on host
+  Other: NVCC compiler, Standard heap allocation, Sequential loops on host  */
+
+  #if PFCUDA_COMP_UNIT_TYPE == 1
+    #include "pfcudaloops.h"
+  #elif PFCUDA_COMP_UNIT_TYPE == 2
+    #include "pfcudamalloc.h"
+  #else
+    #include "pfcudaerr.h"
+  #endif
+
+#endif // HAVE_CUDA && __CUDACC__
+
 #endif

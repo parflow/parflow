@@ -33,18 +33,10 @@
 *  It also computes the derivatives of these terms for inclusion in the Jacobian.
 * @LEC, @RMM
 *****************************************************************************/
-#include "parflow_config.h"
-
-#ifdef HAVE_CUDA
-extern "C"{
-#endif
 
 #include "parflow.h"
 
-#ifdef HAVE_CUDA
-#include "pfcudaloops.h"
-#include "pfcudamalloc.h"
-#else
+#ifndef HAVE_CUDA
 #include "llnlmath.h"
 //#include "llnltyps.h"
 #endif
@@ -494,7 +486,3 @@ int  OverlandFlowEvalDiffSizeOfTempData()
 {
   return 0;
 }
-
-#ifdef HAVE_CUDA
-}
-#endif

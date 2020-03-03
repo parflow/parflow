@@ -30,11 +30,6 @@
 * Routines for manipulating global structures.
 *
 *****************************************************************************/
-#include "parflow_config.h"
-
-#ifdef HAVE_CUDA
-extern "C"{
-#endif
 
 #define PARFLOW_GLOBALS
 
@@ -42,6 +37,7 @@ extern "C"{
 #include "globals.h"
 
 #include <limits.h>
+#include <stddef.h>
 
 /*--------------------------------------------------------------------------
  * NewGlobals
@@ -125,9 +121,6 @@ void  LogGlobals()
 
 #ifdef HAVE_CUDA
 
-#include <stddef.h>
-#include "pfcudaerr.h"
-
 // Allocate __constant__ memory on GPU for the Globals struct
 __constant__ Globals dev_globals;
 __constant__ Background dev_background;
@@ -150,6 +143,5 @@ void CopyGlobalsToDevice()
 
   // Assign dev_globals address to dev_globals_ptr
   CUDA_ERR(cudaMemcpyToSymbol(dev_globals_ptr, &tmp_globals_ptr, sizeof(Globals*), 0, cudaMemcpyHostToDevice));
-}
 }
 #endif // HAVE_CUDA

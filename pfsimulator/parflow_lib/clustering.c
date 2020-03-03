@@ -25,21 +25,11 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  *  USA
  **********************************************************************EHEADER*/
-#include "parflow_config.h"
-
-#ifdef HAVE_CUDA
-extern "C"{
-#endif
 
 #include "parflow.h"
 #include "clustering.h"
 #include "index_space.h"
 #include "llnlmath.h"
-
-#ifdef HAVE_CUDA
-#include "pfcudaloops.h"
-#include "pfcudamalloc.h"
-#endif
 
 #include <string.h>
 
@@ -1092,7 +1082,3 @@ void ComputeBoxes(GrGeomSolid *geom_solid)
 
   EndTiming(ClusteringTimingIndex);
 }
-
-#ifdef HAVE_CUDA
-}
-#endif

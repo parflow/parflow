@@ -1,15 +1,12 @@
-set (SRC_FILES advect.F
+set (SRC_FILES_CONST advect.F
   advection_godunov.c
-  axpy.c
   background.c
   bc_lb.c
   bc_pressure.c
   bc_pressure_package.c
-  calc_elevations.c
   cghs.c
   char_vector.c
   chebyshev.c
-  clustering.c
   comm_pkg.c
   communication.c
   computation.c
@@ -18,7 +15,6 @@ set (SRC_FILES advect.F
   compute_total_concentration.c
   constantRF.c
   constant_porosity.c
-  copy.c
   create_grid.c
   diag_scale.c
   diffuse_lb.c
@@ -31,15 +27,12 @@ set (SRC_FILES advect.F
   general.c
   geom_t_solid.c
   geometry.c
-  globals.c
   grgeom_list.c
   grgeom_octree.c
-  grgeometry.c
   grid.c
   hbt.c
   index_space.c
   infinity_norm.c
-  innerprod.c
   inputRF.c
   input_checks.c
   input_database.c
@@ -50,25 +43,15 @@ set (SRC_FILES advect.F
   line_process.c
   logging.c
   matdiag_scale.c
-  matrix.c
-  matvec.c
   max_field_value.c
   metadata.c
-  mg_semi.c
-  mg_semi_prolong.c
-  mg_semi_restrict.c
   n_vector.c
   new_endpts.c
-  nl_function_eval.c
   nodiag_scale.c
-  overlandflow_eval.c
-  overlandflow_eval_diffusive.c
-  overlandflow_eval_Kin.c
   overlandsum.c
   pcg.c
   permeability_face.c
   perturb_lb.c
-  pf_module.c
   pf_pfmg.c
   pf_pfmg_octree.c
   pf_smg.c
@@ -80,10 +63,8 @@ set (SRC_FILES advect.F
   printmatrix.c
   printvector.c
   problem.c
-  problem_bc.c
   problem_bc_internal.c
   problem_bc_phase_saturation.c
-  problem_bc_pressure.c
   problem_capillary_pressure.c
   problem_domain.c
   problem_dz_scale.c
@@ -93,21 +74,16 @@ set (SRC_FILES advect.F
   problem_FBz.c
   problem_geometries.c
   problem_ic_phase_concen.c
-  problem_ic_phase_pressure.c
   problem_ic_phase_satur.c
   problem_mannings.c
-  problem_phase_density.c
   problem_phase_heat_capacity.c
   problem_phase_internal_energy.c
   problem_phase_mobility.c
-  problem_phase_rel_perm.c
-  problem_phase_source.c
   problem_phase_viscosity.c
   problem_porosity.c
   problem_real_space_z.c
   problem_retardation.c
   problem_richards_bc_internal.c
-  problem_saturation.c
   problem_saturation_constitutive.c
   problem_spec_storage.c
   problem_thermal_conductivity.c
@@ -116,12 +92,9 @@ set (SRC_FILES advect.F
   process_grid.c
   random.c
   ratqr.c
-  rb_GS_point.c
   read_parflow_binary.c
   read_parflow_netcdf.c
   reg_from_stenc.c
-  region.c
-  richards_jacobian_eval.c
   sadvect.F
   sadvection_godunov.c
   scale.c
@@ -138,8 +111,6 @@ set (SRC_FILES advect.F
   total_velocity_face.c
   turning_bandsRF.c
   usergrid_input.c
-  vector.c
-  vector_utilities.c
   w_jacobi.c
   well.c
   well_package.c
@@ -150,36 +121,42 @@ set (SRC_FILES advect.F
   write_parflow_netcdf.c
   write_parflow_silo.c
   write_parflow_silo_pmpio.c
+)
+
+if( ${PARFLOW_HAVE_CUDA} )
+  set (SRC_FILES_ARCH
+    axpy.cu
+    calc_elevations.cu
+    clustering.cu
+    copy.cu
+    globals.cu
+    grgeometry.cu
+    innerprod.cu
+    matrix.cu
+    matvec.cu
+    mg_semi.cu
+    mg_semi_restrict.cu
+    mg_semi_prolong.cu
+    nl_function_eval.cu
+    overlandflow_eval.cu
+    overlandflow_eval_diffusive.cu
+    overlandflow_eval_Kin.cu
+    pf_module.cu
+    problem_bc.cu
+    problem_bc_pressure.cu
+    problem_ic_phase_pressure.cu
+    problem_phase_density.cu
+    problem_phase_rel_perm.cu
+    problem_phase_source.cu
+    problem_saturation.cu
+    rb_GS_point.cu
+    region.cu
+    richards_jacobian_eval.cu
+    vector.cu
+    vector_utilities.cu
   )
+  add_library(pfsimulator ${SRC_FILES_CONST} ${SRC_FILES_ARCH})
 
-if( ${PARFLOW_HAVE_CUDA} )
-  set_source_files_properties(axpy.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(clustering.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(copy.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(globals.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(innerprod.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(matrix.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(matvec.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(mg_semi.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(mg_semi_restrict.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(mg_semi_prolong.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(nl_function_eval.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(overlandflow_eval.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(overlandflow_eval_diffusive.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(overlandflow_eval_Kin.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(problem_phase_density.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(problem_phase_rel_perm.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(problem_phase_source.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(problem_saturation.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(rb_GS_point.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(richards_jacobian_eval.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(vector.c PROPERTIES LANGUAGE CUDA)
-  set_source_files_properties(vector_utilities.c PROPERTIES LANGUAGE CUDA)
-endif( ${PARFLOW_HAVE_CUDA} )
-
-add_library(pfsimulator ${SRC_FILES})
-
-if( ${PARFLOW_HAVE_CUDA} )
   # Separable compilation must be active due to the following declaration:
   # globals.h: extern __constant__  Globals *dev_globals_ptr;
   set_target_properties(pfsimulator PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
@@ -187,6 +164,38 @@ if( ${PARFLOW_HAVE_CUDA} )
   target_include_directories(pfsimulator PUBLIC "../third_party/cub")
   target_include_directories(pfsimulator PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
 else( ${PARFLOW_HAVE_CUDA} )
+  set (SRC_FILES_ARCH
+    axpy.c
+    calc_elevations.c
+    clustering.c
+    copy.c
+    globals.c
+    grgeometry.c
+    innerprod.c
+    matrix.c
+    matvec.c
+    mg_semi.c
+    mg_semi_restrict.c
+    mg_semi_prolong.c
+    nl_function_eval.c
+    overlandflow_eval.c
+    overlandflow_eval_diffusive.c
+    overlandflow_eval_Kin.c
+    pf_module.c
+    problem_bc.c
+    problem_bc_pressure.c
+    problem_ic_phase_pressure.c
+    problem_phase_density.c
+    problem_phase_rel_perm.c
+    problem_phase_source.c
+    problem_saturation.c
+    rb_GS_point.c
+    region.c
+    richards_jacobian_eval.c
+    vector.c
+    vector_utilities.c
+  )
+  add_library(pfsimulator ${SRC_FILES_CONST} ${SRC_FILES_ARCH})
   target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})
 endif( ${PARFLOW_HAVE_CUDA} )
 

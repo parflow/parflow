@@ -39,21 +39,10 @@
  * cell is on the boundary.
  */
 
-#include "parflow_config.h"
-
-#ifdef HAVE_CUDA
-extern "C"{
-#endif
-
 #include "parflow.h"
 #include "llnlmath.h"
 #include "llnltyps.h"
 #include "assert.h"
-
-#ifdef HAVE_CUDA
-#include "pfcudaloops.h"
-#include "pfcudamalloc.h"
-#endif
 
 /*---------------------------------------------------------------------
  * Define module structures
@@ -2331,6 +2320,3 @@ int  RichardsJacobianEvalSizeOfTempData()
 
   return sz;
 }
-#ifdef HAVE_CUDA
-}
-#endif

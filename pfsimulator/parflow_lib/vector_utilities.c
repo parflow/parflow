@@ -64,18 +64,8 @@
  *
  * PFVLayerCopy (a, b, x, y)         NBE: Extracts layer b from vector y, inserts into layer a of vector x
  ****************************************************************************/
-#include "parflow_config.h"
-
-#ifdef HAVE_CUDA
-extern "C"{
-#endif
 
 #include "parflow.h"
-
-#ifdef HAVE_CUDA
-#include "pfcudaloops.h"
-#include "pfcudamalloc.h"
-#endif
 
 #include <string.h>
 
@@ -2046,7 +2036,3 @@ void PFVLayerCopy(
   }
   IncFLOPCount(2 * VectorSize(x));
 }
-
-#ifdef HAVE_CUDA
-}
-#endif

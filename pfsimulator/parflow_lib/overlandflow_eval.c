@@ -35,18 +35,10 @@
 * Could add a switch statement to handle the diffusion wave also.
 * -DOK
 *****************************************************************************/
-#include "parflow_config.h"
-
-#ifdef HAVE_CUDA
-extern "C"{
-#endif
 
 #include "parflow.h"
 
-#ifdef HAVE_CUDA
-#include "pfcudaloops.h"
-#include "pfcudamalloc.h"
-#else
+#ifndef HAVE_CUDA
 #include "llnlmath.h"
 //#include "llnltyps.h"
 #endif
@@ -419,7 +411,3 @@ int  OverlandFlowEvalSizeOfTempData()
 {
   return 0;
 }
-
-#ifdef HAVE_CUDA
-}
-#endif

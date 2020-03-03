@@ -31,12 +31,7 @@
 
 #include "parflow.h"
 
-#ifdef HAVE_CUDA
-#include "pfcudamalloc.h"
-#endif
-
 #include <assert.h>
-
 
 /*--------------------------------------------------------------------------
  * This routine returns the elevations on a patch of a

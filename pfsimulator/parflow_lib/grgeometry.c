@@ -35,10 +35,6 @@
 #include "grgeometry.h"
 #include "clustering.h"
 
-#ifdef HAVE_CUDA
-#include "pfcudamalloc.h"
-#endif
-
 /*--------------------------------------------------------------------------
  * GrGeomGetOctreeInfo:
  *   This routine returns the spatial information needed to relate

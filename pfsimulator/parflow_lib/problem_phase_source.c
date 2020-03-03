@@ -6,18 +6,8 @@
 *
 * $Revision: 1.23 $
 *********************************************************************EHEADER*/
-#include "parflow_config.h"
-
-#ifdef HAVE_CUDA
-extern "C"{
-#endif
 
 #include "parflow.h"
-
-#ifdef HAVE_CUDA
-#include "pfcudaloops.h"
-#include "pfcudamalloc.h"
-#endif
 
 #include <float.h>
 
@@ -613,6 +603,3 @@ int  PhaseSourceSizeOfTempData()
 {
   return 0;
 }
-#ifdef HAVE_CUDA
-}
-#endif

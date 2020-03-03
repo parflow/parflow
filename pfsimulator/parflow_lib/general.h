@@ -162,9 +162,6 @@
 /*--------------------------------------------------------------------------
  * Define CUDA macros to do nothing if no GPU acceleration
  *--------------------------------------------------------------------------*/
-//NVTC Ranges
-#define PUSH_RANGE(name,cid)
-#define POP_RANGE
 
 //Memory Prefetching
 #define MemPrefetchDeviceToHost(ptr, size, stream)
@@ -176,16 +173,41 @@
 
 //CUDA compiler specific keywords
 #ifndef __host__
-#define __host__
+  #define __host__
 #endif
 #ifndef __device__
-#define __device__
+  #define __device__
 #endif
 #ifndef __managed__
-#define __managed__
+  #define __managed__
 #endif
 #ifndef __restrict__
-#define __restrict__
+  #define __restrict__
+#endif
+
+//NVTX Ranges for NSYS profiling
+#ifdef HAVE_CUDA
+  #include "nvToolsExt.h"
+  #define PUSH_RANGE(name,cid)                                                              \
+  {                                                                                         \
+  	const uint32_t colors_nvtx[] =                                                          \
+  	  {0xff00ff00, 0xff0000ff, 0xffffff00, 0xffff00ff, 0xff00ffff, 0xffff0000, 0xffffffff}; \
+  	const int num_colors_nvtx = sizeof(colors_nvtx)/sizeof(uint32_t);                       \
+    int color_id_nvtx = cid;                                                                \
+    color_id_nvtx = color_id_nvtx%num_colors_nvtx;                                          \
+    nvtxEventAttributes_t eventAttrib = {0};                                                \
+    eventAttrib.version = NVTX_VERSION;                                                     \
+    eventAttrib.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;                                       \
+    eventAttrib.colorType = NVTX_COLOR_ARGB;                                                \
+    eventAttrib.color = colors_nvtx[color_id_nvtx];                                         \
+    eventAttrib.messageType = NVTX_MESSAGE_TYPE_ASCII;                                      \
+    eventAttrib.message.ascii = name;                                                       \
+    nvtxRangePushEx(&eventAttrib);                                                          \
+  }
+  #define POP_RANGE nvtxRangePop();
+#else
+  #define PUSH_RANGE(name,cid)
+  #define POP_RANGE
 #endif
 
 #endif

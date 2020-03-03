@@ -35,11 +35,6 @@
 #include "amps.h"
 #include "communication.h"
 
-#ifdef HAVE_CUDA
-#include "pfcudaerr.h"
-#endif
-
-
 /*--------------------------------------------------------------------------
  * NewCommPkgInfo:
  *   Sets up `offset', `len_array', and `stride_array' in `loop_array'.

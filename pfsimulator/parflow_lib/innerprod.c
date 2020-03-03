@@ -30,18 +30,7 @@
 *
 *****************************************************************************/
 
-#include "parflow_config.h"
-
-#ifdef HAVE_CUDA
-extern "C"{
-#endif
-
 #include "parflow.h"
-
-#ifdef HAVE_CUDA
-#include "pfcudaloops.h"
-#include "pfcudamalloc.h"
-#endif
 
 /* This must be in the global scope due to __managed__ keyword */
 __managed__ static double result;
@@ -108,7 +97,3 @@ double   InnerProd(
 
   return result;
 }
-
-#ifdef HAVE_CUDA
-}
-#endif

@@ -45,10 +45,6 @@
 #include <slurm/slurm.h>
 #endif
 
-#ifdef HAVE_CUDA
-#include "pfcudaerr.h"
-#endif
-
 #include <unistd.h>
 #include <string.h>
 #include <float.h>

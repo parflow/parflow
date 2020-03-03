@@ -30,18 +30,8 @@
 * Multigrid with semi-coarsening strategy.
 *
 *****************************************************************************/
-#include "parflow_config.h"
-
-#ifdef HAVE_CUDA
-extern "C"{
-#endif
 
 #include "parflow.h"
-
-#ifdef HAVE_CUDA
-#include "pfcudaloops.h"
-#include "pfcudamalloc.h"
-#endif
 
 /*--------------------------------------------------------------------------
  * Structures
@@ -1383,7 +1373,3 @@ int  MGSemiSizeOfTempData()
 
   return sz;
 }
-
-#ifdef HAVE_CUDA
-}
-#endif

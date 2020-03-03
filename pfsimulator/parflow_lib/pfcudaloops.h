@@ -5,6 +5,7 @@
  * Include CUDA headers
  *--------------------------------------------------------------------------*/
 
+#include "pfcudaerr.h"
 #include "pfcudamalloc.h"
 
 extern "C++"{
@@ -167,10 +168,10 @@ __host__ __device__ __forceinline__ static T RPowerR(T base, T exponent)
 /*--------------------------------------------------------------------------
  * CUDA loop kernels
  *--------------------------------------------------------------------------*/
-template <typename LAMBDA_BODY>
+template <typename LambdaBody>
 __global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
-BoxKernelI0(LAMBDA_BODY loop_body, 
+BoxKernelI0(LambdaBody loop_body, 
     const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -188,10 +189,10 @@ BoxKernelI0(LAMBDA_BODY loop_body,
     loop_body(i, j, k);
 }
 
-template <typename LAMBDA_INIT, typename LAMBDA_BODY>
+template <typename LambdaInit, typename LambdaBody>
 __global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
-BoxKernelI1(LAMBDA_INIT loop_init, LAMBDA_BODY loop_body, 
+BoxKernelI1(LambdaInit loop_init, LambdaBody loop_body, 
     const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -211,10 +212,10 @@ BoxKernelI1(LAMBDA_INIT loop_init, LAMBDA_BODY loop_body,
     loop_body(i, j, k, i1);       
 }
 
-template <typename LAMBDA_INIT1, typename LAMBDA_INIT2, typename LAMBDA_BODY>
+template <typename LambdaInit1, typename LambdaInit2, typename LambdaBody>
 __global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
-BoxKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_BODY loop_body, 
+BoxKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaBody loop_body, 
     const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -235,11 +236,11 @@ BoxKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_BODY loop_b
     loop_body(i, j, k, i1, i2);    
 }
 
-template <typename LAMBDA_INIT1, typename LAMBDA_INIT2, typename LAMBDA_INIT3, typename LAMBDA_BODY>
+template <typename LambdaInit1, typename LambdaInit2, typename LambdaInit3, typename LambdaBody>
 __global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
-BoxKernelI3(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_INIT3 loop_init3, 
-    LAMBDA_BODY loop_body, const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
+BoxKernelI3(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaInit3 loop_init3, 
+    LambdaBody loop_body, const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
     int i = ((blockIdx.x*blockDim.x)+threadIdx.x);
@@ -260,10 +261,10 @@ BoxKernelI3(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_INIT3 loop_
     loop_body(i, j, k, i1, i2, i3);    
 }
 
-template <typename LAMBDA_INIT1, typename LAMBDA_INIT2, typename LAMBDA_FUN, typename T>
+template <typename LambdaInit1, typename LambdaInit2, typename LambdaFun, typename T>
 __global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
-DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_FUN loop_fun, 
+DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun, 
     T * __restrict__ rslt, const int ix, const int iy, const int iz, 
     const int nx, const int ny, const int nz)
 {
@@ -281,7 +282,7 @@ DotKernelI2(LAMBDA_INIT1 loop_init1, LAMBDA_INIT2 loop_init2, LAMBDA_FUN loop_fu
     const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);
 
     T thread_data = {0};
-    if ( i < nx && j < ny && k < nz )
+    if (i < nx && j < ny && k < nz)
     {
 
         const int i1 = loop_init1(i, j, k);
