@@ -105,6 +105,16 @@
     }                                                                           \
   }
 
+#define BoxReduceI1(i, j, k,                                                    \
+                  ix, iy, iz, nx, ny, nz,                                       \
+                  i1, nx1, ny1, nz1, sx1, sy1, sz1,                             \
+                  loop_body, rslt)                                              \
+  {                                                                             \
+    BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,                                  \
+              i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
+              loop_body);                                                       \
+  }
+
 #define BoxReduceI2(i, j, k,                                                    \
                   ix, iy, iz, nx, ny, nz,                                       \
                   i1, nx1, ny1, nz1, sx1, sy1, sz1,                             \

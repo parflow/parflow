@@ -447,6 +447,47 @@ static int gpu_sync = 1;
   }                                                                                 \
 }
 
+#undef BoxReduceI1
+#define BoxReduceI1(i, j, k,                                                        \
+                  ix, iy, iz, nx, ny, nz,                                           \
+                  i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
+                  loop_body, rslt)                                                  \
+{                                                                                   \
+  if(nx > 0 && ny > 0 && nz > 0)                                                    \
+  {                                                                                 \
+    DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);     \
+                                                                                    \
+    dim3 block, grid;                                                               \
+    FindDims(grid, block, nx, ny, nz, 0);                                           \
+                                                                                    \
+    auto lambda_init1 =                                                             \
+        GPU_LAMBDA(const int i, const int j, const int k)                           \
+        {                                                                           \
+            return k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                         \
+            + (k * ny * nx + j * nx + i) * sx1 + i1;                                \
+        };                                                                          \
+    auto lambda_init2 =                                                             \
+        GPU_LAMBDA(const int i, const int j, const int k)                           \
+        {                                                                           \
+            return -1; /* dummy; this should not be not used */                     \
+        };                                                                          \
+    auto zero = rslt;                                                               \
+    auto lambda_body =                                                              \
+        GPU_LAMBDA(const int i, const int j, const int k,                           \
+                   const int i1, const int i2)                                      \
+        {                                                                           \
+            auto rslt = zero;                                                       \
+            loop_body;                                                              \
+            return rslt;                                                            \
+        };                                                                          \
+                                                                                    \
+    DotKernelI2<<<grid, block>>>(lambda_init1, lambda_init2, lambda_body,           \
+        &rslt, ix, iy, iz, nx, ny, nz);                                             \
+    CUDA_ERR(cudaPeekAtLastError());                                                \
+    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
+  }                                                                                 \
+}
+
 #undef BoxReduceI2
 #define BoxReduceI2(i, j, k,                                                        \
                   ix, iy, iz, nx, ny, nz,                                           \

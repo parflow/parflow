@@ -985,11 +985,11 @@ double PFVL1Norm(
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
     i_x = 0;
-    BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+    BoxReduceI1(i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
-      PlusEquals(result, fabs(xp[i_x]));
-    });
+      ReduceSum(result, fabs(xp[i_x]));
+    }, result);
   }
 
   result_invoice = amps_NewInvoice("%d", &result);
