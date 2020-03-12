@@ -154,6 +154,19 @@ if (${PARFLOW_ENABLE_HDF5} OR DEFINED HDF5_ROOT)
 endif (${PARFLOW_ENABLE_HDF5} OR DEFINED HDF5_ROOT)
 
 #-----------------------------------------------------------------------------
+# PDI
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_PDI False CACHE BOOL "Build with PDI")
+if (${PARFLOW_ENABLE_PDI} OR DEFINED PDI_ROOT)
+    
+  find_package(PDI)
+  if (${PDI_FOUND})
+    set(PARFLOW_HAVE_PDI "yes")
+    set(HAVE_PDI ${PARFLOW_HAVE_PDI})
+endif (${PDI_FOUND})
+endif (${PARFLOW_ENABLE_PDI} OR DEFINED PDI_ROOT)
+
+#-----------------------------------------------------------------------------
 # Hypre
 #-----------------------------------------------------------------------------
 set (PARFLOW_ENABLE_HYPRE False CACHE BOOL "Build with Hypre")
@@ -225,7 +238,7 @@ endif (${PARFLOW_ENABLE_SLURM} OR DEFINED SLURM_ROOT)
 #-----------------------------------------------------------------------------
 if (NOT DEFINED PARFLOW_LIBM)
   find_library(PARFLOW_LIBM m)
-endif (NOT DEFINED PARFLOW_LIBM)		    
+endif (NOT DEFINED PARFLOW_LIBM)
 
 #-----------------------------------------------------------------------------
 # Valgrind
@@ -449,7 +462,7 @@ install (DIRECTORY ${CMAKE_BINARY_DIR}/config/ DESTINATION config)
 install(PROGRAMS bin/parflow-docker-test DESTINATION bin)
 
 #-----------------------------------------------------------------------------
-# Doxygen 
+# Doxygen
 #-----------------------------------------------------------------------------
 set (PARFLOW_ENABLE_DOXYGEN False CACHE BOOL "Enable Doxygen and building of code documentation")
 

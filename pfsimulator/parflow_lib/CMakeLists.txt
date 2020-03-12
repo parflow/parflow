@@ -149,6 +149,7 @@ set (SRC_FILES advect.F
   write_clm_netcdf.c
   write_parflow_binary.c
   write_parflow_netcdf.c
+  write_parflow_pdi.c
   write_parflow_silo.c
   write_parflow_silo_pmpio.c
   )
