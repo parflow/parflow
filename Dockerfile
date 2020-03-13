@@ -111,7 +111,7 @@ RUN git clone -b master --single-branch https://github.com/parflow/parflow.git p
 
 RUN mkdir -p build && \
     cd build && \
-    CC=mpicc CXX=mpic++ LDFLAGS="-lcurl" cmake ../parflow \
+    LDFLAGS="-lcurl" cmake ../parflow \
        -DPARFLOW_AMPS_LAYER=mpi1 \
        -DPARFLOW_AMPS_SEQUENTIAL_IO=TRUE \
        -DHYPRE_ROOT=$PARFLOW_DIR \
