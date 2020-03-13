@@ -37,6 +37,12 @@ list(REMOVE_DUPLICATES ALL_TESTS)
 foreach(test ${ALL_TESTS})
   add_executable( ${test} ${test}.c)
   target_link_libraries(${test} amps)
+  
+  if (${PARFLOW_HAVE_MPI})
+    # In CMake 3.13 this could be target_link_options
+    target_link_libraries(${test} ${MPI_LINK_FLAGS})
+    target_link_libraries (${test} ${MPI_LIBRARIES})
+  endif (${PARFLOW_HAVE_MPI})
 endforeach()
 
 foreach(test ${SEQUENTIAL_TESTS})
