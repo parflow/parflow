@@ -26,16 +26,15 @@
  *  USA
  **********************************************************************EHEADER*/
 /*
- * This is a simple "ring" test.  It send a message from the host
- * to all the nodes
- *
+ * Tests for layer ghost exchange.
  */
 
-#include <stdio.h>
 #include "amps.h"
+#include "amps_test.h"
+
+#include <stdio.h>
 
 #define size 10
-
 
 int main(argc, argv)
 int argc;
@@ -162,11 +161,8 @@ char *argv[];
         *(a + k * (size + 2) * (size + 2) + j * (size + 2) + size) += 1;
       }
 
-#if 1
     /* Initialize exchange of boundary points */
     handle = amps_IExchangePackage(package);
-#endif
-
 
     /* Compute on the "interior points" */
     for (k = 0; k <= size + 1; k++)
@@ -176,9 +172,7 @@ char *argv[];
 
 
 
-#if 1
     amps_Wait(handle);
-#endif
   }
 
   if (me == 0)
@@ -191,7 +185,7 @@ char *argv[];
           if ((int)(*(a + k * (size + 2) * (size + 2) + j * (size + 2) + i))
               != 1000000 * k + 1000 * j + i + me * size + loop)
           {
-#if 1
+#if 0
             amps_Printf("%d: (%d, %d, %d) = %f != %d\n",
                         me, k, j, i,
                         *(a + k * (size + 2) * (size + 2) + j * (size + 2) + i),
@@ -213,13 +207,12 @@ char *argv[];
           if ((int)(*(a + k * (size + 2) * (size + 2) + j * (size + 2) + i))
               != 1000000 * k + 1000 * j + i + me * size + loop)
           {
-#if 1
+#if 0
             amps_Printf("%d: (%d, %d, %d) = %f != %d\n",
                         me, k, j, i,
                         *(a + k * (size + 2) * (size + 2) + j * (size + 2) + i),
                         1000000 * k + 1000 * j + i + me * size + loop);
 #endif
-
             result = 1;
           }
         }
@@ -233,13 +226,12 @@ char *argv[];
           if ((int)(*(a + k * (size + 2) * (size + 2) + j * (size + 2) + i))
               != 1000000 * k + 1000 * j + i + me * size + loop)
           {
-#if 1
+#if 0
             amps_Printf("%d: (%d, %d, %d) = %f != %d\n",
                         me, k, j, i,
                         *(a + k * (size + 2) * (size + 2) + j * (size + 2) + i),
                         1000000 * k + 1000 * j + i + me * size + loop);
 #endif
-
 
             result = 1;
           }
@@ -266,18 +258,11 @@ char *argv[];
     amps_FreeInvoice(recv_invoice[1]);
   }
 
-
   amps_TFree(a);
-
-  if (result)
-    amps_Printf("%d: Failed\n", me);
-  else
-    amps_Printf("%d: Success\n", me);
-
 
   amps_Finalize();
 
-  return result;
+  return amps_check_result(result);
 }
 
 

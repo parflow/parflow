@@ -30,8 +30,10 @@
  * the nodes and then exits
  */
 
-#include <stdio.h>
 #include "amps.h"
+#include "amps_test.h"
+
+#include <stdio.h>
 
 int main(argc, argv)
 int argc;
@@ -56,5 +58,5 @@ char *argv[];
 
   amps_Finalize();
 
-  return result;
+  return amps_check_result(result);
 }

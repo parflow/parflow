@@ -38,6 +38,8 @@ long amps_sizeof_invoice(
   int len, stride;
   char *data;
 
+  PF_UNUSED(stride);
+
   ptr = inv->list;
 
   while (ptr != NULL)
@@ -59,6 +61,12 @@ long amps_sizeof_invoice(
 
     switch (ptr->type)
     {
+      case AMPS_INVOICE_BYTE_CTYPE:
+        cur_pos += AMPS_CALL_BYTE_ALIGN(comm, data, cur_pos, len, stride);
+        cur_pos += AMPS_CALL_BYTE_SIZEOF(comm, data, cur_pos,
+                                         len, stride);
+        break;
+      
       case AMPS_INVOICE_CHAR_CTYPE:
         cur_pos += AMPS_CALL_CHAR_ALIGN(comm, data, cur_pos, len, stride);
         cur_pos += AMPS_CALL_CHAR_SIZEOF(comm, data, cur_pos,

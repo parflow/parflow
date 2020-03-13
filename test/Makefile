@@ -49,3 +49,4 @@ testclean:
 	@rm -f *.nc
 	@rm -f *.pfmetadata
 	@rm -f *.etrace
+	@rm -f Flow_Barrier_X.sa Flow_Barrier_Y.sa

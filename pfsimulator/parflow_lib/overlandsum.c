@@ -37,9 +37,9 @@ void OverlandSum(ProblemData *problem_data,
 {
   GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
 
-  double dx, dy, dz;
-  int i, j, r, is;
-  int ix, iy, iz;
+  double dx, dy;
+  int i, j, is;
+  int ix, iy;
   int nx, ny;
 
   Subgrid     *subgrid;
@@ -104,18 +104,14 @@ void OverlandSum(ProblemData *problem_data,
             pressure_subvector = VectorSubvector(pressure, is);
             top_subvector = VectorSubvector(top, is);
 
-            r = SubgridRX(subgrid);
-
             ix = SubgridIX(subgrid);
             iy = SubgridIY(subgrid);
-            iz = SubgridIZ(subgrid);
 
             nx = SubgridNX(subgrid);
             ny = SubgridNY(subgrid);
 
             dx = SubgridDX(subgrid);
             dy = SubgridDY(subgrid);
-            dz = SubgridDZ(subgrid);
 
             overland_sum_ptr = SubvectorData(overland_sum_subvector);
             slope_x_ptr = SubvectorData(slope_x_subvector);

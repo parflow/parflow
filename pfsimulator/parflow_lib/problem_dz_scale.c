@@ -84,8 +84,6 @@ void dzScale(ProblemData *problem_data, Vector *dz_mult)
   int nx, ny, nz;
   int r;
   int is, i, j, k, ips, ipicv;
-  int ii;
-
 
   /*-----------------------------------------------------------------------
    * dz Scale
@@ -197,10 +195,8 @@ void dzScale(ProblemData *problem_data, Vector *dz_mult)
         Type2    *dummy2;
         dummy2 = (Type2*)(public_xtra->data);
 
-        int num_dz;
         double  *values;
 
-        num_dz = (dummy2->num_dz);
         values = (dummy2->values);
 
         GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
@@ -292,7 +288,6 @@ PFModule   *dzScaleNewPublicXtra()
   char *switch_name;
   int switch_value;
   char *region;
-  char *nzListValues;
   char key[IDB_MAX_KEY_LEN];
   char *name;
   NameArray switch_na;

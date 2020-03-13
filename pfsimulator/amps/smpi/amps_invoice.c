@@ -466,7 +466,6 @@ amps_Invoice amps_NewInvoice(const char *fmt0, ...)
   int dim = 0;
   void *ptr_data;
   int ptr_data_type;
-  int ret;
   int type;
   int num = 0;
   amps_Invoice inv;
@@ -477,8 +476,6 @@ amps_Invoice amps_NewInvoice(const char *fmt0, ...)
   inv = NULL;
 
   fmt = (char*)fmt0;
-  ret = 0;
-
   for (;;)
   {
     for (cp = fmt; (ch = *fmt) != '\0' && ch != '%'; fmt++)
@@ -575,6 +572,10 @@ reswitch:
         len = n;
         goto reswitch;
 
+      case 'b':
+        type = AMPS_INVOICE_BYTE_CTYPE;
+        break;
+
       case 'c':
         type = AMPS_INVOICE_CHAR_CTYPE;
         break;
@@ -630,19 +631,23 @@ reswitch:
         break;
 
       default:
+      {
         printf("AMPS Error: invalid invoice specification\n");
         printf("character %c", ch);
         exit(1);
-        break;
+      }
+      break;
     }
 
 
     /* if user had an extra we already have grabbed the data pointer */
     if (!ptr_data && !ignore)
+    {
       if (ptr_data_type == AMPS_INVOICE_POINTER)
         ptr_data = va_arg(ap, void  **);
       else
         ptr_data = va_arg(ap, void *);
+    }
 
     amps_add_invoice(&inv, ignore, type,
                      len_type, len, ptr_len,

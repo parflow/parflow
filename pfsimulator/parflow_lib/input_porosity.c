@@ -52,7 +52,6 @@ void    InputPorosity(
   PFModule      *this_module = ThisPFModule;
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
-  double field_value = (public_xtra->field_value);
   Grid           *grid = (instance_xtra->grid);
   Subgrid        *subgrid;
   Subvector      *field_sub;
@@ -95,8 +94,6 @@ void    InputPorosity(
     GrGeomInLoop(i, j, k, gr_geounit, r, ix, iy, iz, nx, ny, nz,
     {
       index = SubvectorEltIndex(field_sub, i, j, k);
-      /* now assign the value from file to field */
-      //                     fieldp[index] = field_value;
       fieldp[index] = ic_values_dat[index];
     });
   }

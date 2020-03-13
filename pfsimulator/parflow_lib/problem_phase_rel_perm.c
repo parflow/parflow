@@ -359,6 +359,7 @@ static inline double VanGLookupLinear(
   int num_sample_points = lookup_table->num_sample_points;
   double min_pressure_head = lookup_table->min_pressure_head;
   int max = num_sample_points + 1;
+  PF_UNUSED(max);
 
   // This table goes from 0 to fabs(min_pressure_head)
   assert(pressure_head >= 0);
@@ -421,7 +422,6 @@ void         PhaseRelPerm(
   Type0         *dummy0;
   Type1         *dummy1;
   Type2         *dummy2;
-  Type3         *dummy3;
   Type4         *dummy4;
 
   Subvector     *pr_sub;
@@ -719,6 +719,7 @@ void         PhaseRelPerm(
                     double min_pressure_head = lookup_table->min_pressure_head;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
+		    PF_UNUSED(max);
 
                     GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                                    nx, ny, nz,
@@ -830,6 +831,7 @@ void         PhaseRelPerm(
                     double min_pressure_head = lookup_table->min_pressure_head;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
+		    PF_UNUSED(max);
 
                     GrGeomSurfLoop(i, j, k, fdir, gr_solid, r, ix, iy, iz,
                                    nx, ny, nz,
@@ -1086,6 +1088,7 @@ void         PhaseRelPerm(
                     double min_pressure_head = lookup_table->min_pressure_head;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
+		    PF_UNUSED(max);
 
                     GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                     {
@@ -1189,6 +1192,7 @@ void         PhaseRelPerm(
                     double min_pressure_head = lookup_table->min_pressure_head;
                     int num_sample_points = lookup_table->num_sample_points;
                     int max = num_sample_points + 1;
+		    PF_UNUSED(max);
 
                     GrGeomInLoop(i, j, k, gr_solid, r, ix, iy, iz, nx, ny, nz,
                     {
@@ -1514,7 +1518,7 @@ void         PhaseRelPerm(
 
     case 3:  /* Data relative permeability */
     {
-      dummy3 = (Type3*)(public_xtra->data);
+      // dummy3 = (Type3*)(public_xtra->data);
 
       if (!amps_Rank(amps_CommWorld))
         printf("Data curves for rel perms not supported currently.\n");

@@ -158,7 +158,7 @@ BCStruct    *BCPressure(
           int ref_patch;
           int max_its = 10;
           int iterations;
-          int ix, iy, iz, nx, ny, nz, r, iel;
+          int ix, iy, nx, iel;
 
           double         **elevations;
 
@@ -205,14 +205,8 @@ BCStruct    *BCPressure(
 
             ix = SubgridIX(subgrid);
             iy = SubgridIY(subgrid);
-            iz = SubgridIZ(subgrid);
 
             nx = SubgridNX(subgrid);
-            ny = SubgridNY(subgrid);
-            nz = SubgridNZ(subgrid);
-
-            /* RDF: assume resolution is the same in all 3 directions */
-            r = SubgridRX(subgrid);
 
             dz2 = SubgridDZ(subgrid) * 0.5;
 
@@ -665,10 +659,7 @@ BCStruct    *BCPressure(
           char            *filename;
           double          *tmpp;
           int itmp;
-          double z, dz2;
           double density, dtmp;
-
-          double gravity = ProblemGravity(problem);
 
           /* Calculate density using dtmp as dummy argument. */
           dtmp = 0.0;
@@ -678,7 +669,6 @@ BCStruct    *BCPressure(
           GetBCPressureTypeStruct(PressureFile, interval_data, bc_pressure_data,
                                   ipatch, interval_number);
 
-
           ForSubgridI(is, subgrids)
           {
             subgrid = SubgridArraySubgrid(subgrids, is);
@@ -687,8 +677,6 @@ BCStruct    *BCPressure(
             rsz_sub = VectorSubvector(rsz, is);
             z_mult_dat = SubvectorData(z_mult_sub);
             rsz_dat = SubvectorData(rsz_sub);
-
-            dz2 = SubgridDZ(subgrid) / 2.0;
 
             /* compute patch_values_size (this isn't really needed yet) */
             patch_values_size = 0;
@@ -711,7 +699,6 @@ BCStruct    *BCPressure(
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
             {
               ips = SubvectorEltIndex(z_mult_sub, i, j, k);
-              z = rsz_dat[ips] + fdir[2] * dz2 * z_mult_dat[ips];
               itmp = SubvectorEltIndex(subvector, i, j, k);
 
               patch_values[ival] = tmpp[itmp];     /*- density*gravity*z;*/
@@ -926,7 +913,6 @@ BCStruct    *BCPressure(
           char            *filename;
           double          *tmpp;
           int itmp;
-          double dtmp;
 
           GetBCPressureTypeStruct(OverlandFlowPFB, interval_data, bc_pressure_data,
                                   ipatch, interval_number);
