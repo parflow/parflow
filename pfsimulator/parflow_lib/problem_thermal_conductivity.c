@@ -96,7 +96,7 @@ void     ThermalConductivity(
   Subvector     *cwet_values_sub;
   Subvector     *cdry_values_sub;
 
-  double        *ptdat, *ppdat, *psdat;
+  double        *ptdat, *psdat;
   double        *cwet_values_dat, *cdry_values_dat;
 
   SubgridArray  *subgrids = GridSubgrids(grid);
@@ -214,7 +214,6 @@ void     ThermalConductivity(
             r = SubgridRX(subgrid);
 
             ptdat = SubvectorData(pt_sub);
-            ppdat = SubvectorData(pp_sub);
             psdat = SubvectorData(ps_sub);
 
             if (fcn == CALCFCN)
@@ -274,7 +273,6 @@ void     ThermalConductivity(
 
           ptdat = SubvectorData(pt_sub);
           psdat = SubvectorData(ps_sub);
-          ppdat = SubvectorData(pp_sub);
 
           cwet_values_dat = SubvectorData(cwet_values_sub);
           cdry_values_dat = SubvectorData(cdry_values_sub);

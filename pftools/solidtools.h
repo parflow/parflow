@@ -25,85 +25,39 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  *  USA
  **********************************************************************EHEADER*/
+/*****************************************************************************
+* Header file for `solidtools.c'
+* - Holds a variety of utilities for building and manipulating solid files
+*****************************************************************************/
 
+#ifndef SOLIDTOOLS_HEADER
+#define SOLIDTOOLS_HEADER
 
-#include "amps.h"
-#include "amps_test.h"
+#include "parflow_config.h"
+
+#include "databox.h"
+
+#ifdef HAVE_HDF4
+#include <hdf.h>
+#endif
 
 #include <stdio.h>
-#include <string.h>
 
-static char *string = "ATestString";
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-int main(argc, argv)
-int argc;
-char *argv[];
-{
-  amps_Invoice invoice;
+/*-----------------------------------------------------------------------
+ * function prototypes
+ *-----------------------------------------------------------------------*/
 
-  int me;
+/* solidtools.c */
+int MakePatchySolid(FILE *fp,FILE *fp_vtk, Databox *msk, Databox *top, Databox *bot, int sub_patches, int bin_out);
+int ConvertPfsolBin2Ascii(FILE *fp_bin,FILE *fp_asc);
+int ConvertPfsolAscii2Bin(FILE *fp_asc,FILE *fp_bin);
 
-  int loop;
-  int temp;
-
-  int source;
-
-  char *recvd_string = NULL;
-  int length;
-
-  int result = 0;
-
-  if (amps_Init(&argc, &argv))
-  {
-    amps_Printf("Error amps_Init\n");
-    amps_Exit(1);
-  }
-
-  loop = atoi(argv[1]);
-  source = 0;
-
-  me = amps_Rank(amps_CommWorld);
-
-  if (me == source)
-  {
-    length = strlen(string) + 1;
-    invoice = amps_NewInvoice("%i%i%*c", &loop, &length, length, string);
-  }
-  else
-  {
-    invoice = amps_NewInvoice("%i%i%&@c", &temp, &length, &length, &recvd_string);
-  }
-
-  for (; loop; loop--)
-  {
-    amps_BCast(amps_CommWorld, source, invoice);
-
-    if (me != source)
-    {
-      result = strcmp(recvd_string, string);
-      if (result)
-      {
-	result |= 1;
-        amps_Printf("############## ERROR - strings don't match\n");
-      }
-	
-
-      if (loop != temp)
-      {
-        result |= 1;
-        amps_Printf("############## ERROR - ints don't match\n");
-      }
-    }
-
-    amps_ClearInvoice(invoice);
-
-    amps_Sync(amps_CommWorld);
-  }
-
-  amps_FreeInvoice(invoice);
-
-  amps_Finalize();
-
-  return amps_check_result(result);
+#ifdef __cplusplus
 }
+#endif
 
+#endif

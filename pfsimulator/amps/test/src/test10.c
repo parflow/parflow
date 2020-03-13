@@ -36,19 +36,172 @@
  * 12.500000 0.078000 679.799988 0.500000
  */
 
-#include <stdio.h>
 #include "amps.h"
+#include "amps_test.h"
 
-char *filename = "test9.input";
+#include <stdio.h>
+#include <string.h>
+
+int ReadAndCheckFile(char* filename, int loop)
+{
+  amps_File file;
+
+  int i;
+  char *string = "ATestString";
+  char recvd_string[20];
+  int string_length;
+
+  short shorts[] = { 4, 10, 234, 5, 6 };
+  short recvd_shorts[5];
+  int shorts_length = 5;
+
+  int ints[] = { 65555, 200, 234, 678, 890, 6789, 2789 };
+  int recvd_ints[7];
+  int ints_length = 7;
+
+  long longs[] = { 100000, 2789, 78, 8, 1, 98, 987, 98765 };
+  long recvd_longs[8];
+  int longs_length = 8;
+
+  double doubles[] = { 12.5, 12.0005, 17.4, 679.8 };
+  double recvd_doubles[4];
+  int doubles_length = 4;
+
+  float floats[] = { 12.5, 0.078, 679.8, 0.5 };
+  float recvd_floats[4];
+  int floats_length = 4;
+
+  int result = 0;
+
+  for (; loop; loop--)
+  {
+    if (!(file = amps_Fopen(filename, "r")))
+    {
+      amps_Printf("ERROR: opening file\n");
+      result |= 1;
+    }
+
+    if(amps_Fscanf(file, "%d ", &string_length) != 1)
+    {
+      amps_Printf("ERROR: reading int\n");
+      result |= 1;
+    };
+    
+    if(amps_Fscanf(file, "%s", recvd_string) != 1)
+    {
+      amps_Printf("ERROR: reading string\n");
+      result |= 1;
+    };
+
+    for (i = 0; i < shorts_length; i++)
+    {
+      if(amps_Fscanf(file, "%hd ", &recvd_shorts[i]) != 1)
+      {
+	amps_Printf("ERROR: reading short\n");
+	result |= 1;
+      }
+    }
+
+    for (i = 0; i < ints_length; i++)
+    {
+      if(amps_Fscanf(file, "%d ", &recvd_ints[i]) != 1)
+      {
+	amps_Printf("ERROR: reading short\n");
+	result |= 1;
+      }
+    }
+
+    for (i = 0; i < longs_length; i++)
+    {
+      if(amps_Fscanf(file, "%ld ", &recvd_longs[i]) != 1)
+      {
+	amps_Printf("ERROR: reading short\n");
+	result |= 1;
+      }
+    }
+
+    for (i = 0; i < doubles_length; i++)
+    {
+      if(amps_Fscanf(file, "%lf ", &recvd_doubles[i]) != 1)
+      {
+	amps_Printf("ERROR: reading short\n");
+	result |= 1;
+	amps_Exit(1);
+      }
+    }
+
+    for (i = 0; i < floats_length; i++)
+    {
+      if(amps_Fscanf(file, "%f ", &recvd_floats[i]) != 1)
+      {
+	amps_Printf("ERROR: reading short\n");
+	result |= 1;
+      }
+    }
+
+    if (strcmp(recvd_string, string))
+    {
+      amps_Printf("ERROR: chars do not match expected (%s) recvd (%s)\n",
+                  string, recvd_string);
+      result |= 1;
+    }
+
+    for (i = 0; i < shorts_length; i++)
+      if (shorts[i] != recvd_shorts[i])
+      {
+        amps_Printf("ERROR: shorts do not match expected (%hd) recvd (%hd)\n",
+                    shorts[i], recvd_shorts[i]);
+        result |= 1;
+      }
+
+    for (i = 0; i < ints_length; i++)
+      if (ints[i] != recvd_ints[i])
+      {
+        amps_Printf("ERROR: ints do not match expected (%i) recvd (%i)\n",
+                    ints[i], recvd_ints[i]);
+        result |= 1;
+      }
+
+    for (i = 0; i < longs_length; i++)
+      if (longs[i] != recvd_longs[i])
+      {
+        amps_Printf("ERROR: longs do not match expected (%ld) recvd (%ld)\n",
+                    longs[i], recvd_longs[i]);
+        result |= 1;
+      }
+
+    for (i = 0; i < doubles_length; i++)
+      if (doubles[i] != recvd_doubles[i])
+      {
+        amps_Printf("ERROR: doubles do not match (%lf) recvd (%lf)\n",
+                    doubles[i], recvd_doubles[i]);
+        result |= 1;
+      }
+
+    for (i = 0; i < floats_length; i++)
+      if (floats[i] != recvd_floats[i])
+      {
+        amps_Printf("ERROR: floats do not match expected (%f) recvd (%f)\n",
+                    floats[i], recvd_floats[i]);
+        result |= 1;
+      }
+
+    amps_Fclose(file);
+  }
+
+  return result;
+}
 
 int main(argc, argv)
 int argc;
 char *argv[];
 {
+  char *in_filename = "test9.input";
+  char *out_filename = "test10.input";
+  
   amps_File file;
   amps_Invoice recv_invoice;
 
-  int num;
   int me;
   int i;
 
@@ -76,15 +229,31 @@ char *argv[];
 
   if (amps_Init(&argc, &argv))
   {
-    amps_Printf("Error amps_Init\n");
+    amps_Printf("ERROR amps_Init\n");
     amps_Exit(1);
   }
 
   loop = atoi(argv[1]);
 
-  num = amps_Size(amps_CommWorld);
-
   me = amps_Rank(amps_CommWorld);
+
+  if(me == 0)
+  {
+    FILE* test_file;
+
+    test_file = fopen(in_filename, "wb");
+
+    fprintf(test_file, "11\n");
+    fprintf(test_file, "ATestString\n");
+    fprintf(test_file, "4 10 234 5 6\n");
+    fprintf(test_file, "65555 200 234 678 890 6789 2789\n");
+    fprintf(test_file, "100000 2789 78 8 1 98 987 98765\n");
+    fprintf(test_file, "12.500000 12.000500 17.400000 679.800000\n"); 
+    fprintf(test_file, "12.500000 0.078000 679.799988 0.500000\n"); 
+
+    fclose(test_file);
+  }
+
 
   for (; loop; loop--)
   {
@@ -99,7 +268,7 @@ char *argv[];
 
 
 
-    if (!(file = amps_SFopen(filename, "r")))
+    if (!(file = amps_SFopen(in_filename, "r")))
     {
       amps_Printf("Error on open\n");
       amps_Exit(1);
@@ -109,7 +278,7 @@ char *argv[];
 
     amps_SFclose(file);
 
-    file = amps_Fopen(filename, "w");
+    file = amps_Fopen(out_filename, "w");
 
     amps_Fprintf(file, "%d\n", string_length);
     for (i = 0; i < string_length; i++)
@@ -141,9 +310,10 @@ char *argv[];
     amps_FreeInvoice(recv_invoice);
   }
 
+  result |= ReadAndCheckFile(out_filename, loop);
 
   amps_Finalize();
 
-  return result;
+  return amps_check_result(result);
 }
 

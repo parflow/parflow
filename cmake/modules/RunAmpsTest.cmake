@@ -1,23 +1,27 @@
 #
-# Run Parflow test
+# Run AMPS test
 #
-# Must have find_package(MPI) in project using this macro
+# Use find_package(MPI) in project to set the MPI variables
 
 cmake_minimum_required(VERSION 3.4)
 
 # Execute command with error check
-macro(pf_exec_check cmd)
+macro(pf_amps_exec_check cmd ranks args)
 
   set( ENV{PF_TEST} "yes" )
-  if (${PARFLOW_HAVE_SILO})
-    set( ENV{PARFLOW_HAVE_SILO} "yes")
+
+  message("Running : ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${ranks} ${MPIEXEC_PREFLAGS} ${cmd} ${args}")
+  if (${ranks} GREATER 0)
+    execute_process (COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${ranks} ${MPIEXEC_PREFLAGS} ${cmd} ${args} RESULT_VARIABLE cmdResult OUTPUT_VARIABLE stdout ERROR_VARIABLE stdout)
+  else()
+    execute_process (COMMAND ./${cmd} ${args} RESULT_VARIABLE cmdResult OUTPUT_VARIABLE stdout ERROR_VARIABLE stdout)
   endif()
 
-  execute_process (COMMAND ${${cmd}} RESULT_VARIABLE cmdResult OUTPUT_VARIABLE stdout ERROR_VARIABLE stdout)
-  message(${stdout})
   if (cmdResult)
-    message (FATAL_ERROR "Error running ${${cmd}}")
+    message (FATAL_ERROR "Error running ${${cmd}} stdout ${stdout}")
   endif()
+
+  message("${stdout}")
 
   # If FAIL is present test fails
   string(FIND "${stdout}" "FAIL" test)
@@ -43,21 +47,20 @@ macro(pf_exec_check cmd)
 endmacro()
 
 # Clean a parflow directory
-macro(pf_test_clean)
-  file(GLOB FILES *.pfb* *.silo* *.pfsb* *.log .hostfile .amps.* *.out.pftcl *.pfidb *.out.txt default_richards.out *.out.wells indicator_field.out)
+macro(pf_amps_test_clean)
+  file(GLOB FILES *.pfb*)
   if (NOT FILES STREQUAL "")
     file(REMOVE ${FILES})
   endif()
 
-  file(GLOB FILES default_single.out water_balance.out default_overland.out LW_var_dz_spinup.out test.log.* richards_hydrostatic_equalibrium.out core.* samrai_grid.tmp.tcl samrai_grid2D.tmp.tcl CMakeCache.txt)
+  file(GLOB FILES default_single.out)
   if (NOT FILES STREQUAL "")
     file(REMOVE ${FILES})
   endif()
 endmacro()
 
-pf_test_clean ()
+pf_amps_test_clean ()
 
-list(APPEND CMD tclsh)
 list(APPEND CMD ${PARFLOW_TEST})
 
 if (${PARFLOW_HAVE_MEMORYCHECK})
@@ -65,11 +68,9 @@ if (${PARFLOW_HAVE_MEMORYCHECK})
   SET(ENV{PARFLOW_MEMORYCHECK_COMMAND_OPTIONS} ${PARFLOW_MEMORYCHECK_COMMAND_OPTIONS})
 endif()
 
-pf_exec_check(CMD)
+pf_amps_exec_check(${CMD} ${PARFLOW_RANKS} ${PARFLOW_ARGS})
 
 if (${PARFLOW_HAVE_MEMORYCHECK})
   UNSET(ENV{PARFLOW_MEMORYCHECK_COMMAND})
   UNSET(ENV{PARFLOW_MEMORYCHECK_COMMAND_OPTIONS})
 endif()
-
-

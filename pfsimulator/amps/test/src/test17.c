@@ -26,81 +26,88 @@
  *  USA
  **********************************************************************EHEADER*/
 
-
 #include "amps.h"
 #include "amps_test.h"
 
 #include <stdio.h>
-#include <string.h>
 
-static char *string = "ATestString";
+char *filename = "test17.input";
 
 int main(argc, argv)
 int argc;
 char *argv[];
 {
-  amps_Invoice invoice;
+  amps_File file;
+  amps_Invoice recv_invoice;
+
+  /* Number of times to execute SFBcast; default test is 1 */  
+  int loop = 1;
 
   int me;
 
-  int loop;
-  int temp;
-
-  int source;
-
-  char *recvd_string = NULL;
-  int length;
+  unsigned char buffer[100];
+  int length = 100;
 
   int result = 0;
 
   if (amps_Init(&argc, &argv))
   {
-    amps_Printf("Error amps_Init\n");
+    amps_Printf("ERROR: Error amps_Init\n");
     amps_Exit(1);
   }
 
-  loop = atoi(argv[1]);
-  source = 0;
+  if (argc > 2)
+  {
+    amps_Printf("ERROR: Invalid number of arguments\n");
+    amps_Exit(1);
+  }
+  else if (argc == 2)
+  {
+    loop = atoi(argv[1]);
+  }
+
+  recv_invoice = amps_NewInvoice("%*b", length, buffer);
 
   me = amps_Rank(amps_CommWorld);
 
-  if (me == source)
+  if(me == 0)
   {
-    length = strlen(string) + 1;
-    invoice = amps_NewInvoice("%i%i%*c", &loop, &length, length, string);
-  }
-  else
-  {
-    invoice = amps_NewInvoice("%i%i%&@c", &temp, &length, &length, &recvd_string);
+    FILE* test_file;
+
+    test_file = fopen(filename, "wb");
+
+    for(unsigned char i = 0; i < length; i++)
+    {
+      fwrite(&i, 1, 1, test_file);
+    }
+
+    fclose(test_file);
   }
 
   for (; loop; loop--)
   {
-    amps_BCast(amps_CommWorld, source, invoice);
-
-    if (me != source)
+    if (!(file = amps_SFopen(filename, "rb")))
     {
-      result = strcmp(recvd_string, string);
-      if (result)
-      {
-	result |= 1;
-        amps_Printf("############## ERROR - strings don't match\n");
-      }
-	
-
-      if (loop != temp)
-      {
-        result |= 1;
-        amps_Printf("############## ERROR - ints don't match\n");
-      }
+      amps_Printf("Error on open\n");
+      amps_Exit(1);
     }
 
-    amps_ClearInvoice(invoice);
+    amps_SFBCast(amps_CommWorld, file, recv_invoice);
 
-    amps_Sync(amps_CommWorld);
+    for(unsigned char i = 0; i < length; i++)
+    {
+      if (buffer[i] != i)
+      {
+	amps_Printf("ERROR - byte buffers do not match\n");
+	result = 1;
+	break;
+      }
+    }
+    
+    amps_SFclose(file);
   }
 
-  amps_FreeInvoice(invoice);
+  amps_FreeInvoice(recv_invoice);
 
   amps_Finalize();
 

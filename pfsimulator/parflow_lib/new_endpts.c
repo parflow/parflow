@@ -84,11 +84,11 @@ void NewEndpts(
   double condo, condn;
   double epz;
   double test;
-  double cf, cfo, cfn;
+  double cfo, cfn;
 
   /* Variables used to pass information to ratqr */
   double ep1 = 0;
-  double      *diag, *e, *e2, s2;
+  double      *diag, *e, *e2;
   int n_ev = 1, idef = 1, ierr;
   int type;
   int         *ind;
@@ -105,7 +105,6 @@ void NewEndpts(
   ind = (int*)malloc(size * sizeof(int));
 
   /*  Fill diag, e, e2 for input to ratqr */
-  s2 = size * 2;
   diag[0] = (1.0 + beta[0]) / alpha[0];
   for (i = 1; i < size; i++)
   {
@@ -221,7 +220,6 @@ void NewEndpts(
       *a_ptr = a;
       *b_ptr = b;
       *cond_ptr = condo;
-      cf = cfo;
     }
 
     else
@@ -233,7 +231,6 @@ void NewEndpts(
       mu2 = (taun + 1.0) / taun;
       *size_ptr = 0;
       *cond_ptr = condn;
-      cf = cfn;
     }
   }    /* End of "if ((an == a) && (bn == b)) ... else ..." clause.  */
 

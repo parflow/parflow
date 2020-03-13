@@ -141,7 +141,7 @@ void SubsrfSim(
   double dx, dy, dz;
   int r;
   int i, j, k, pi, sg, well;
-  int ipx, ipy, ipz, itp;
+  int ipx, ipy, ipz;
   double           *perm_x_elt, *perm_y_elt, *perm_z_elt;
 
   double           *perm_x_dat, *perm_y_dat, *perm_z_dat;

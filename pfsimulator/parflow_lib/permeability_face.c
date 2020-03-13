@@ -69,7 +69,6 @@ void    PermeabilityFace(
 
   int ix, iy, iz;
   int nx, ny, nz;
-  double dx, dy, dz;
 
   int nx_pc, ny_pc, nz_pc;
   int nx_pf, ny_pf, nz_pf;
@@ -112,10 +111,6 @@ void    PermeabilityFace(
     nx = SubgridNX(subgrid);
     ny = SubgridNY(subgrid);
     nz = SubgridNZ(subgrid);
-
-    dx = SubgridDX(subgrid);
-    dy = SubgridDY(subgrid);
-    dz = SubgridDZ(subgrid);
 
     nx_pc = SubvectorNX(subvector_pc);
     ny_pc = SubvectorNY(subvector_pc);

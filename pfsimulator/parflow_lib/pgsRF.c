@@ -109,13 +109,10 @@ void         PGSRF(
   Subgrid   *subgrid;
   Subvector *sub_field;
   Subvector *sub_tmpRF;
-  int NX, NY, NZ;
 
   /* Subgrid parameters */
   int nx, ny, nz;
   double dx, dy, dz;
-  int nx_v, ny_v, nz_v;
-  int nx_v2, ny_v2, nz_v2;
   int nxG, nyG, nzG;
 
   /* Counters, indices, flags */
@@ -402,20 +399,8 @@ void         PGSRF(
     ny = SubgridNY(subgrid);
     nz = SubgridNZ(subgrid);
 
-    NX = ix + nx;
-    NY = iy + ny;
-    NZ = iz + nz;
-
     /* RDF: assume resolution is the same in all 3 directions */
     ref = SubgridRX(subgrid);
-
-    nx_v = SubvectorNX(sub_field);
-    ny_v = SubvectorNY(sub_field);
-    nz_v = SubvectorNZ(sub_field);
-
-    nx_v2 = SubvectorNX(sub_tmpRF);
-    ny_v2 = SubvectorNY(sub_tmpRF);
-    nz_v2 = SubvectorNZ(sub_tmpRF);
 
     /* Initialize tmpRF vector */
     GrGeomInLoop(i, j, k, gr_geounit, ref, ix, iy, iz, nx, ny, nz,

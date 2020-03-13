@@ -33,61 +33,40 @@ void PerturbSystem(
   /* Lattice variables */
   Grid  *grid = (lattice->grid);
   Vector *pressure = (lattice->pressure);
-  Vector *perm = (lattice->perm);
-  Vector *phi = (lattice->phi);
   CharVector *cellType = (lattice->cellType);
 
   /* Grid parameters */
   Subgrid   *subgrid;
   int ix, iy, iz;
   int nx, ny, nz;
-  int nx_v, ny_v, nz_v;
 
   /* Physical variables and coefficients */
   Subvector *sub_p;
   Subcharvector *sub_cellType;
-  Subvector *sub_perm, *sub_phi;
-  double    *pp, *phip;
+  double    *pp;
   char      *cellTypep;
-  double    *permp;
-  double rho, g, dz;
 
   /* Indices */
   int i, j, k;
   int index;
   int gridloop;
 
-  g = ProblemGravity(problem);
-  rho = RHO;
-
   for (gridloop = 0; gridloop < GridNumSubgrids(grid); gridloop++)
   {
     subgrid = GridSubgrid(grid, gridloop);
 
     sub_p = VectorSubvector(pressure, gridloop);
-    sub_perm = VectorSubvector(perm, gridloop);
-    sub_phi = VectorSubvector(phi, gridloop);
     sub_cellType = CharVectorSubcharvector(cellType, gridloop);
     pp = SubvectorData(sub_p);
-    permp = SubvectorData(sub_perm);
-    phip = SubvectorData(sub_phi);
     cellTypep = SubcharvectorData(sub_cellType);
 
     nx = SubgridNX(subgrid);
     ny = SubgridNY(subgrid);
     nz = SubgridNZ(subgrid);
 
-    dz = SubgridDZ(subgrid);
-
     ix = SubgridIX(subgrid);
     iy = SubgridIY(subgrid);
     iz = SubgridIZ(subgrid);
-
-    nx_v = SubvectorNX(sub_p);
-    ny_v = SubvectorNY(sub_p);
-    nz_v = SubvectorNZ(sub_p);
-
-    dz = SubgridDZ(subgrid);
 
 #if 0
     /* Reset the interior to a lower, constant value */
