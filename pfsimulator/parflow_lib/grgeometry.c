@@ -352,7 +352,7 @@ void          GrGeomFreeSolid(
   }
 
 #ifdef HAVE_CUDA
-  tfree(GrGeomSolidOutflag(solid));
+  if(GrGeomSolidOutflag(solid)) tfree_cuda(GrGeomSolidOutflag(solid));
 #endif
 
   GrGeomFreeOctree(GrGeomSolidData(solid));

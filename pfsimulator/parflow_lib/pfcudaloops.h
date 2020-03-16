@@ -799,7 +799,8 @@ static int gpu_sync = 1;
     {                                                                               \
       GrGeomOctree  *PV_node;                                                       \
       double PV_ref = pow(2.0, r);                                                  \
-      GrGeomSolidOutflag(grgeom) = ctalloc(int, nz * ny * nx);                      \
+      unsigned int outflag_size = sizeof(int) * nz * ny * nx;                       \
+      GrGeomSolidOutflag(grgeom) = (int*)ctalloc_cuda(outflag_size);                \
                                                                                     \
       i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref;                                \
       j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;                                \
@@ -820,10 +821,10 @@ static int gpu_sync = 1;
       dim3 block, grid;                                                             \
       FindDims(grid, block, nx, ny, nz, 1);                                         \
                                                                                     \
+      int *outflag = GrGeomSolidOutflag(grgeom);                                    \
       auto lambda_body =                                                            \
           GPU_LAMBDA(const int i, const int j, const int k)                         \
           {                                                                         \
-            int *outflag = GrGeomSolidOutflag(grgeom);                              \
             if(outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] == 1)         \
             {                                                                       \
               body;                                                                 \
