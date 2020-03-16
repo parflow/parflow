@@ -54,6 +54,8 @@ typedef struct {
   int print_concen;                          /* print concentrations? */
   int print_wells;                           /* print well data? */
 
+  int write_pdi_press;                       /* print pressure using PDI */
+
 /* New member variables added for diffusion solver */
 /* double             CFL; */
 /* int                max_iterations; */
