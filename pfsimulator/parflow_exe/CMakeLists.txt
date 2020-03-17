@@ -29,6 +29,10 @@ if (${PARFLOW_HAVE_PDI})
   target_link_libraries (parflow ${PDI_LIBRARIES})
 endif (${PARFLOW_HAVE_PDI})
 
+if (${PARFLOW_HAVE_PDI})
+  target_link_libraries (parflow ${PARACONF_LIBRARIES})
+endif (${PARFLOW_HAVE_PDI})
+
 if (${PARFLOW_HAVE_NETCDF})
   target_link_libraries (parflow ${NETCDF_LIBRARIES})
 

@@ -1324,7 +1324,7 @@ void WritePFSBinary_Subvector(amps_File file, Subvector *subvector, Subgrid *sub
 void WritePFSBinary(char *file_prefix, char *file_suffix, Vector *v, double drop_tolerance);
 
 /* write_parflow_pdi.c */
-void WritePDI(char *file_prefix, char *file_suffix, Vector *v);
+void WritePDI(char *file_prefix, char *file_suffix, int iteration, Vector *v);
 
 /* write_parflow_silo.c */
 void WriteSilo(char *  file_prefix,

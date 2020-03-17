@@ -792,8 +792,8 @@ void      SolverImpes()
         
         if (public_xtra->write_pdi_press)
         {
-          sprintf(file_postfix, "press.%05d", file_number - 1);
-          WritePDI(file_prefix, file_postfix, pressure);
+          sprintf(file_postfix, "press");
+          WritePDI(file_prefix, file_postfix, file_number - 1, pressure);
           IfLogging(1)
           {
             dumped_log[number_logged - 1] = file_number - 1;
@@ -2087,6 +2087,16 @@ PFModule   *SolverImpesNewPublicXtra(char *name)
   }
   public_xtra->print_wells = switch_value;
 
+  sprintf(key, "%s.WritePdiPressure", name);
+  switch_name = GetStringDefault(key, "False");
+  switch_value = NA_NameToIndex(switch_na, switch_name);
+  if (switch_value < 0)
+  {
+    InputError("Error: invalid print switch value <%s> for key <%s>\n",
+               switch_name, key);
+  }
+  public_xtra->write_pdi_press = switch_value;
+
   /* Silo file writing control */
   sprintf(key, "%s.WriteSiloSubsurfData", name);
   switch_name = GetStringDefault(key, "False");
@@ -2096,21 +2106,9 @@ PFModule   *SolverImpesNewPublicXtra(char *name)
     InputError("Error: invalid value <%s> for key <%s>\n",
                switch_name, key);
   }
-  
-  
-  sprintf(key, "%s.WritePdiPressure", name);
-  switch_name = GetStringDefault(key, "True");
-  switch_value = NA_NameToIndex(switch_na, switch_name);
-  if (switch_value < 0)
-  {
-    InputError("Error: invalid print switch value <%s> for key <%s>\n",
-               switch_name, key);
-  }
-  public_xtra->write_pdi_press = switch_value;
-  
-  
-  public_xtra->write_silo_subsurf_data = switch_value;
 
+  public_xtra->write_silo_subsurf_data = switch_value;
+  
   sprintf(key, "%s.WriteSiloPressure", name);
   switch_name = GetStringDefault(key, "False");
   switch_value = NA_NameToIndex(switch_na, switch_name);
