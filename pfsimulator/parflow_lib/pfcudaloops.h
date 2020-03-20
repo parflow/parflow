@@ -799,8 +799,8 @@ static int gpu_sync = 1;
     {                                                                               \
       GrGeomOctree  *PV_node;                                                       \
       double PV_ref = pow(2.0, r);                                                  \
-      unsigned int outflag_size = sizeof(int) * nz * ny * nx;                       \
-      GrGeomSolidOutflag(grgeom) = (int*)ctalloc_cuda(outflag_size);                \
+      unsigned outflag_size = sizeof(int) * (unsigned)(nz * ny * nx);               \
+      int *outflag = (int*)ctalloc_cuda(outflag_size);                              \
                                                                                     \
       i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref;                                \
       j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;                                \
@@ -812,9 +812,9 @@ static int gpu_sync = 1;
                                    TRUE,                                            \
       {                                                                             \
         body;                                                                       \
-        int *outflag = GrGeomSolidOutflag(grgeom);                                  \
         outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] = 1;                 \
       });                                                                           \
+      GrGeomSolidOutflag(grgeom) = outflag;                                         \
     }                                                                               \
     else                                                                            \
     {                                                                               \
@@ -823,13 +823,13 @@ static int gpu_sync = 1;
                                                                                     \
       int *outflag = GrGeomSolidOutflag(grgeom);                                    \
       auto lambda_body =                                                            \
-          GPU_LAMBDA(const int i, const int j, const int k)                         \
+        GPU_LAMBDA(const int i, const int j, const int k)                           \
+        {                                                                           \
+          if(outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] == 1)           \
           {                                                                         \
-            if(outflag[(k - iz) * ny * nx + (j - iy) * nx + (i - ix)] == 1)         \
-            {                                                                       \
-              body;                                                                 \
-            }                                                                       \
-          };                                                                        \
+            body;                                                                   \
+          }                                                                         \
+        };                                                                          \
                                                                                     \
       BoxKernelI0<<<grid, block>>>(                                                 \
           lambda_body, ix, iy, iz, nx, ny, nz);                                     \
