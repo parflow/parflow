@@ -12,7 +12,7 @@ multi-institutional development history and is now a collaborative
 effort between CSM, LLNL, UniBonn and UCB. ParFlow has been coupled to
 the mesoscale, meteorological code ARPS and the NCAR code WRF.
 
-For an overview of major features and capabilities see the following paper:
+For an overview of the major features and capabilities see the following paper:
 [Simulating coupled surface–subsurface flows with ParFlow v3.5.0:
 capabilities, applications, and ongoing development of an
 open-source, massively parallel, integrated hydrologic model](https://www.geosci-model-dev.net/13/1373/2020/gmd-13-1373-2020.pdf).
