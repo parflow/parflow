@@ -220,7 +220,7 @@ void    RichardsJacobianEval(
                                                       * symmetric part of the Jacobian (1), or the
                                                       * full Jacobian */
 {
-  PUSH_RANGE("RichardsJacobianEval",1)
+  PUSH_NVTX("RichardsJacobianEval",1)
 
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
@@ -1143,7 +1143,7 @@ void    RichardsJacobianEval(
             double coeff; 
             double diff;
 
-            double o_temp;
+            double o_temp = NAN;
             double prod_val;
 
             double lower_cond;
@@ -1346,7 +1346,6 @@ void    RichardsJacobianEval(
                 if (fdir[2] == 1)
                 {
                   int ip = SubvectorEltIndex(p_sub, i, j, k);
-                  int io = SubvectorEltIndex(p_sub, i, j, 0);
                   int im = SubmatrixEltIndex(J_sub, i, j, k);
 
                   if ((pp[ip]) > 0.0)
@@ -1374,7 +1373,6 @@ void    RichardsJacobianEval(
                   if (fdir[2] == 1)
                   {
                     int ip = SubvectorEltIndex(p_sub, i, j, k);
-                    int io = SubvectorEltIndex(p_sub, i, j, 0);
                     int im = SubmatrixEltIndex(J_sub, i, j, k);
                     double vol = dx * dy * dz;
 
@@ -1432,7 +1430,6 @@ void    RichardsJacobianEval(
             if (fdir[2] == 1)
             {
               int ip = SubvectorEltIndex(p_sub, i, j, k);
-              int io = SubvectorEltIndex(p_sub, i, j, 0);
               int im = SubmatrixEltIndex(J_sub, i, j, k);
               double vol = dx * dy * dz;
 
@@ -2065,7 +2062,7 @@ void    RichardsJacobianEval(
 
   tfree(ovlnd_flag);
 
-  POP_RANGE
+  POP_NVTX
 
   return;
 }

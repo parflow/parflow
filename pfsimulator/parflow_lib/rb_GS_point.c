@@ -59,7 +59,7 @@ void     RedBlackGSPoint(
                          double  tol,
                          int     zero)
 {
-  PUSH_RANGE("RedBlackGSPoint",5)
+  PUSH_NVTX("RedBlackGSPoint",5)
 
   PFModule       *this_module = ThisPFModule;
   PublicXtra     *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -365,7 +365,7 @@ void     RedBlackGSPoint(
 
     GPU_SYNC
 
-    POP_RANGE
+    POP_NVTX
 }
 
 

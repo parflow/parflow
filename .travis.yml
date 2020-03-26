@@ -96,7 +96,8 @@ before_install:
   - if [[ $PF_TEST == 'trusty' ]]; then
       wget https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz && tar -xvf openmpi-4.0.3.tar.gz;
       cd openmpi-4.0.3;
-      ./configure --with-cuda=$CUDA_HOME --with-ucx=$TRAVIS_BUILD_DIR/ucx-cuda-install && sudo make -j8 install && sudo ldconfig;
+      ./configure --with-cuda=$CUDA_HOME --with-ucx=$TRAVIS_BUILD_DIR/ucx-cuda-install && sudo make -j8 install;
+      sudo ldconfig;
       cd ..;
     fi
 
@@ -114,11 +115,15 @@ before_install:
 
 # Set up Hypre
   - wget https://computing.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods/download/hypre-2.11.2.tar.gz && tar -xvf hypre-2.11.2.tar.gz
-  - (cd hypre-2.11.2/src && ./configure  && make install && export export HYPRE_ROOT=`pwd`/hypre && cd ../..)
+  - cd hypre-2.11.2/src 
+  - ./configure && make install 
+  - export HYPRE_ROOT=`pwd`/hypre && cd ../..
 
 # Set up Silo
   - wget https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2.tar.gz && tar -xvf silo-4.10.2.tar.gz
-  - (cd silo-4.10.2 && ./configure --disable-silex --disable-hzip --disable-fpzip && make install && export SILO_ROOT=`pwd` && cd ..)
+  - cd silo-4.10.2 
+  - ./configure --disable-silex --disable-hzip --disable-fpzip && make install 
+  - export SILO_ROOT=`pwd` && cd ..
 
 before_script:
 # Set up Parflow

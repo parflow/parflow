@@ -188,7 +188,6 @@ void         PhaseSource(
             GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
             {
               int ips = SubvectorEltIndex(ps_sub, i, j, k);
-              double x = RealSpaceX(i, SubgridRX(subgrid));
               /* nonlinear case -div(p grad p) = f */
               data[ips] = -1.0;
             });
@@ -226,7 +225,6 @@ void         PhaseSource(
               int ips = SubvectorEltIndex(ps_sub, i, j, k);
               double x = RealSpaceX(i, SubgridRX(subgrid));
               double y = RealSpaceY(j, SubgridRY(subgrid));
-              double z = RealSpaceZ(k, SubgridRZ(subgrid));
 
               data[ips] = -pow(3 * x * x * pow(y, 4) + 2 * x + y * cos(x * y) * cos(y), 2) - pow(4 * x * x * x * y * y * y + x * cos(x * y) * cos(y) - sin(x * y) * sin(y), 2) - (x * x * x * pow(y, 4) + x * x + sin(x * y) * cos(y) + 1) * (6 * x * pow(y, 4) + 2 - (x * x + y * y + 1) * sin(x * y) * cos(y) + 12 * x * x * x * y * y - 2 * x * cos(x * y) * sin(y));
             });

@@ -296,7 +296,6 @@ void     Saturation(
                 double alpha = alphas[ir];
                 double n = ns[ir];
                 double m = 1.0e0 - (1.0e0 / n);
-                double s_res = s_ress[ir];
                 double s_dif = s_difs[ir];
 
                 if (ppdat[ipp] >= 0.0)
@@ -487,7 +486,6 @@ void     Saturation(
 
               double alpha = alphas[ir];
               double beta = betas[ir];
-              double s_res = s_ress[ir];
               double s_dif = s_difs[ir];
 
               if (ppdat[ipp] >= 0.0)
@@ -645,7 +643,6 @@ void     Saturation(
           GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
           {
             int ips = SubvectorEltIndex(ps_sub, i, j, k);
-            int ipRF = SubvectorEltIndex(satRF_sub, i, j, k);
 
             psdat[ips] = 0.0;
           });

@@ -3687,14 +3687,14 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
     if(first_tstep)
     {
       BeginTiming(RichardsExclude1stTimeStepIndex);
-      PUSH_RANGE("RichardsExclude1stTimeStepIndex",6)
+      PUSH_NVTX("RichardsExclude1stTimeStepIndex",6)
       first_tstep = 0;
     }
   }                             /* ends do for time loop */
   while (take_more_time_steps);
 
   EndTiming(RichardsExclude1stTimeStepIndex);
-  POP_RANGE
+  POP_NVTX
 
   /***************************************************************/
   /*                 Print the pressure and saturation           */

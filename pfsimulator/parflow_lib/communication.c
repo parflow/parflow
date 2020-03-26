@@ -398,9 +398,9 @@ void FreeCommPkg(
 CommHandle  *InitCommunication(
                                CommPkg *comm_pkg)
 {
-  PUSH_RANGE("amps_IExchangePackage",6)
+  PUSH_NVTX("amps_IExchangePackage",6)
   CommHandle* handle = (CommHandle*)amps_IExchangePackage(comm_pkg->package);
-  POP_RANGE
+  POP_NVTX
 
   return handle;
 }
@@ -413,9 +413,9 @@ CommHandle  *InitCommunication(
 void         FinalizeCommunication(
                                    CommHandle *handle)
 {
-  PUSH_RANGE("amps_Wait",1)
+  PUSH_NVTX("amps_Wait",1)
   (void)amps_Wait((amps_Handle)handle);
-  POP_RANGE
+  POP_NVTX
 }
 
 

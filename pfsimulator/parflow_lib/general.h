@@ -188,7 +188,7 @@
 //NVTX Ranges for NSYS profiling
 #ifdef HAVE_CUDA
   #include "nvToolsExt.h"
-  #define PUSH_RANGE(name,cid)                                                              \
+  #define PUSH_NVTX(name,cid)                                                              \
   {                                                                                         \
   	const uint32_t colors_nvtx[] =                                                          \
   	  {0xff00ff00, 0xff0000ff, 0xffffff00, 0xffff00ff, 0xff00ffff, 0xffff0000, 0xffffffff}; \
@@ -204,10 +204,10 @@
     eventAttrib.message.ascii = name;                                                       \
     nvtxRangePushEx(&eventAttrib);                                                          \
   }
-  #define POP_RANGE nvtxRangePop();
+  #define POP_NVTX nvtxRangePop();
 #else
-  #define PUSH_RANGE(name,cid)
-  #define POP_RANGE
+  #define PUSH_NVTX(name,cid)
+  #define POP_NVTX
 #endif
 
 #endif

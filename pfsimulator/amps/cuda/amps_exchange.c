@@ -192,5 +192,5 @@ amps_Handle amps_IExchangePackage(amps_Package package)
   if (package->num_send)
     MPI_Startall(package->num_send, package->send_requests);
 
-  return(amps_NewHandle(NULL, 0, NULL, package));
+  return(amps_NewHandle(amps_CommWorld, 0, NULL, package));
 }
