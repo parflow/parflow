@@ -2386,7 +2386,7 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       /******************************************/
       if (public_xtra->nc_evap_trans_file_transient)
       {
-        sprintf(filename, public_xtra->nc_evap_trans_filename);
+        strcpy(filename, public_xtra->nc_evap_trans_filename);
         /*KKu: evaptrans is the name of the variable expected in NetCDF file */
         /*Here looping similar to pfb is not implemented. All steps are assumed to be
          * present in the single NetCDF file*/

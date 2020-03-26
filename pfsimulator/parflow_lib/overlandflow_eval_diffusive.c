@@ -137,10 +137,10 @@ void    OverlandFlowEvalDiff(
         int k1x = (int)top_dat[itop + 1];
         int k1y = (int)top_dat[itop + sy_v];
 
-        double Press_x; 
+        double Press_x=NAN; 
         double Press_y;
 
-        double Sf_x;
+        double Sf_x=NAN;
         double Sf_y;
         double Sf_xo = NAN;
         double Sf_yo = NAN;
@@ -253,8 +253,8 @@ void    OverlandFlowEvalDiff(
         int k1x = (int)top_dat[itop + 1];
         int k1y = (int)top_dat[itop + sy_v];
 
-        double Pupx;
-        double Sf_x;
+        double Pupx=NAN;
+        double Sf_x=NAN;
         double Sf_y;
         double Sf_xo = NAN;
         double Sf_yo = NAN;

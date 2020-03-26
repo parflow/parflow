@@ -25,32 +25,39 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
  *  USA
  **********************************************************************EHEADER*/
-#ifndef amps_common_include
-#define amps_common_include
+/*****************************************************************************
+* Header file for `solidtools.c'
+* - Holds a variety of utilities for building and manipulating solid files
+*****************************************************************************/
+
+#ifndef SOLIDTOOLS_HEADER
+#define SOLIDTOOLS_HEADER
 
 #include "parflow_config.h"
 
-#include <sys/times.h>
+#include "databox.h"
 
-#ifdef CASC_HAVE_GETTIMEOFDAY
-
-typedef long amps_Clock_t;
-#define AMPS_TICKS_PER_SEC 10000
-typedef clock_t amps_CPUClock_t;
-extern long AMPS_CPU_TICKS_PER_SEC;
-
-#else
-
-/* Default case, if not using a more specialized clock */
-typedef long amps_Clock_t;
-typedef clock_t amps_CPUClock_t;
-extern long AMPS_CPU_TICKS_PER_SEC;
-#define AMPS_TICKS_PER_SEC AMPS_CPU_TICKS_PER_SEC
-
+#ifdef HAVE_HDF4
+#include <hdf.h>
 #endif
 
-#define PF_UNUSED(expr) do { (void)(expr); } while (0)
+#include <stdio.h>
 
-#define AMPS_ABORT(msg) _amps_Abort(msg, __FILE__, __LINE__)
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*-----------------------------------------------------------------------
+ * function prototypes
+ *-----------------------------------------------------------------------*/
+
+/* solidtools.c */
+int MakePatchySolid(FILE *fp,FILE *fp_vtk, Databox *msk, Databox *top, Databox *bot, int sub_patches, int bin_out);
+int ConvertPfsolBin2Ascii(FILE *fp_bin,FILE *fp_asc);
+int ConvertPfsolAscii2Bin(FILE *fp_asc,FILE *fp_bin);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -311,6 +311,8 @@ Databox         *ReadSilo(char *filename, double default_value)
 
   return v;
 #else
+  printf("Error: Silo was not used in build\n");
+  return NULL;
 #endif
 }
 

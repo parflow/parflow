@@ -6,7 +6,7 @@ set (TOOLS_SRC_FILES pftappinit.c printdatabox.c readdatabox.c databox.c
   error.c velocity.c head.c flux.c diff.c stats.c tools_io.c axpy.c
   getsubbox.c enlargebox.c load.c usergrid.c grid.c region.c file.c
   pftools.c top.c compute_domain.c water_balance.c water_table.c
-  toposlopes.c sum.c
+  toposlopes.c sum.c solidtools.c
   )
 
 add_library(pftools SHARED ${TOOLS_SRC_FILES})
