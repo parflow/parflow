@@ -152,7 +152,7 @@ https://cmake.org/runningcmake/
 #### Building with the cmake command line
 
 CMake may also be configured from the command line using the cmake
-command.  The default will configure a sequential version of ParFlow
+command.  Build instructions to activate GPU acceleration are found from a separate [document](README-CUDA.md). The default will configure a sequential version of ParFlow
 using MPI libraries.  CLM is being enabled.
 
 ```shell

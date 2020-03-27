@@ -156,13 +156,14 @@ if( ${PARFLOW_HAVE_CUDA} )
     vector_utilities.cu
   )
   add_library(pfsimulator ${SRC_FILES_CONST} ${SRC_FILES_ARCH})
-
-  # Separable compilation must be active due to the following declaration:
-  # globals.h: extern __constant__  Globals *dev_globals_ptr;
   set_target_properties(pfsimulator PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-  target_link_libraries(pfsimulator pfkinsol amps cjson nvToolsExt ${PARFLOW_ETRACE_LIBRARY})
+  target_link_libraries(pfsimulator nvToolsExt)
   target_include_directories(pfsimulator PUBLIC "../third_party/cub")
   target_include_directories(pfsimulator PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+  if( ${PARFLOW_HAVE_RMM} )
+    target_link_libraries(pfsimulator rmm)
+    target_include_directories(pfsimulator PUBLIC ${RMM_INCLUDE})
+  endif( ${PARFLOW_HAVE_RMM} )
 else( ${PARFLOW_HAVE_CUDA} )
   set (SRC_FILES_ARCH
     axpy.c
@@ -196,9 +197,9 @@ else( ${PARFLOW_HAVE_CUDA} )
     vector_utilities.c
   )
   add_library(pfsimulator ${SRC_FILES_CONST} ${SRC_FILES_ARCH})
-  target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})
 endif( ${PARFLOW_HAVE_CUDA} )
 
+target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})
 target_include_directories(pfsimulator PUBLIC "../third_party/cjson")
 
 if (${PARFLOW_HAVE_MPI})

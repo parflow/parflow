@@ -134,7 +134,7 @@ int main(int argc, char *argv [])
       }
       amps_Sync(amps_CommWorld);
     }
-#endif
+#endif // !NDEBUG
 
     /*-----------------------------------------------------------------------
     * Check CUDA compute capability, set device, and initialize RMM allocator
@@ -167,14 +167,16 @@ int main(int argc, char *argv [])
         exit(1);
       }
 
+#ifdef HAVE_RMM
       // RMM
       rmmOptions_t rmmOptions;
       rmmOptions.allocation_mode = (rmmAllocationMode_t) (PoolAllocation | CudaManagedMemory);
       rmmOptions.initial_pool_size = 1; // size = 0 initializes half the device memory
       rmmOptions.enable_logging = false;
-      RMM_ERR(rmmInitialize(&rmmOptions));     
+      RMM_ERR(rmmInitialize(&rmmOptions));
+#endif // HAVE_RMM
     }
-#endif
+#endif // HAVE_CUDA
 
     wall_clock_time = amps_Clock();
 
@@ -486,7 +488,7 @@ int main(int argc, char *argv [])
   /*-----------------------------------------------------------------------
   * Shutdown RMM pool allocator
   *-----------------------------------------------------------------------*/
-#ifdef HAVE_CUDA
+#if defined(HAVE_CUDA) && defined(HAVE_RMM)
     RMM_ERR(rmmFinalize());
 #endif
 

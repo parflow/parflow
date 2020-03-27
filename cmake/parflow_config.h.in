@@ -9,13 +9,16 @@
 /* TODO should get rid of non prefixed versions of these flags; CPP
    symbols should be in PARFLOW namespace.  Should make naming consistent as well */
 
-#cmakedefine PARFLOW_HAVE_CUDA
-#cmakedefine HAVE_CUDA
-
 #cmakedefine PARFLOW_AMPS_LAYER
 #cmakedefine AMPS
 
 #cmakedefine AMPS_SPLIT_FILE
+
+#cmakedefine PARFLOW_HAVE_CUDA
+#cmakedefine HAVE_CUDA
+
+#cmakedefine PARFLOW_HAVE_RMM
+#cmakedefine HAVE_RMM
 
 #cmakedefine PARFLOW_HAVE_TCL
 #cmakedefine HAVE_TCL

@@ -7,9 +7,9 @@ if( ${PARFLOW_HAVE_ETRACE} )
   target_link_libraries(parflow etrace)
 endif( ${PARFLOW_HAVE_ETRACE} )
 
-if( ${PARFLOW_HAVE_CUDA} )
+if( ${PARFLOW_HAVE_RMM} )
   target_link_libraries(parflow rmm)
-endif( ${PARFLOW_HAVE_CUDA} )
+endif( ${PARFLOW_HAVE_RMM} )
 
 if( ${PARFLOW_HAVE_CLM} )
   target_link_libraries(parflow pfclm)

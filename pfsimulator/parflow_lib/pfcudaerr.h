@@ -4,7 +4,6 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <stdbool.h>
-#include <rmm/rmm_api.h>
 
 /*--------------------------------------------------------------------------
  * CUDA error handling macros
@@ -20,6 +19,9 @@
   }                                                                                    \
 }
 
+#ifdef HAVE_RMM
+#include <rmm/rmm_api.h>
+
 #undef RMM_ERR
 #define RMM_ERR(expr)                                                                  \
 {                                                                                      \
@@ -29,6 +31,7 @@
     exit(1);                                                                           \
   }                                                                                    \
 }
+#endif
 
 /*--------------------------------------------------------------------------
  * Define static unified memory allocation routines for CUDA
@@ -38,9 +41,12 @@ static inline void *talloc_cuda(size_t size)
 {
   void *ptr = NULL;  
   
+#ifdef HAVE_RMM
   RMM_ERR(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
-  // CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
+#else
+  CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   // CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));  
+#endif
   
   return ptr;
 }
@@ -48,10 +54,13 @@ static inline void *talloc_cuda(size_t size)
 static inline void *ctalloc_cuda(size_t size)
 {
   void *ptr = NULL;  
+
+#ifdef HAVE_RMM
   RMM_ERR(rmmAlloc(&ptr,size,0,__FILE__,__LINE__));
-  // CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
+#else
+  CUDA_ERR(cudaMallocManaged((void**)&ptr, size, cudaMemAttachGlobal));
   // CUDA_ERR(cudaHostAlloc((void**)&ptr, size, cudaHostAllocMapped));
-  
+#endif  
   // memset(ptr, 0, size);
   CUDA_ERR(cudaMemset(ptr, 0, size));  
   
@@ -59,9 +68,12 @@ static inline void *ctalloc_cuda(size_t size)
 }
 static inline void tfree_cuda(void *ptr)
 {
+#ifdef HAVE_RMM
   RMM_ERR(rmmFree(ptr,0,__FILE__,__LINE__));
-  // CUDA_ERR(cudaFree(ptr));
+#else
+  CUDA_ERR(cudaFree(ptr));
   // CUDA_ERR(cudaFreeHost(ptr));
+#endif
 }
 
 #endif // PFCUDAERR_H

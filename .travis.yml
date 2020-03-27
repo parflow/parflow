@@ -4,6 +4,7 @@ jobs:
     dist: trusty
     name: 'Ubuntu 14.04LTS'
     env: PF_TEST=trusty
+    env: PF_TEST_VER=ubuntu1404
     addons:
         apt:
           packages:
@@ -15,9 +16,25 @@ jobs:
             - tk-dev
 
   - os: linux
+    dist: xenial
+    name: 'Ubuntu 16.04LTS'
+    env: PF_TEST=xenial
+    env: PF_TEST_VER=ubuntu1604
+    addons:
+        apt:
+          packages:
+            - gfortran
+            - libhdf5-openmpi-dev
+            - libhdf5-openmpi-10
+            - hdf5-helpers
+            - tcl-dev
+            - tk-dev
+
+  - os: linux
     dist: bionic
     name: 'Ubuntu 18.04LTS'	
     env: PF_TEST=bionic
+    env: PF_TEST_VER=ubuntu1804
     addons:
         apt:
           packages:
@@ -46,7 +63,7 @@ before_install:
   - sudo apt-get -qq update
 
 # Set up CMake
-  - if [[ $PF_TEST == 'trusty' ]]; then
+  - if [[ $PF_TEST != 'bionic' ]]; then
       if [[ ! -f cmake-3.17.0-Linux-x86_64/bin/cmake ]]; then 
         wget --no-check-certificate http://cmake.org/files/v3.17/cmake-3.17.0-Linux-x86_64.tar.gz && tar -xvf cmake-3.17.0-Linux-x86_64.tar.gz; 
       fi;
@@ -54,7 +71,7 @@ before_install:
     fi
 
 # Update GCC
-  - if [[ $PF_TEST == 'trusty' ]]; then
+  - if [[ $PF_TEST != 'bionic' ]]; then
       sudo apt-get install -y software-properties-common;
       sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test;
       sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 78BD65473CB3BD13;
@@ -66,22 +83,25 @@ before_install:
     fi
 
 # Set up CUDA
-  - if [[ $PF_TEST == 'trusty' ]]; then
+  - if [[ $PF_TEST != 'bionic' ]]; then
       CUDA_SHORT=10.1;
       CUDA_VER=10.1.105-1;
-      wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_${CUDA_VER}_amd64.deb;
-      sudo dpkg -i cuda-repo-ubuntu1404_${CUDA_VER}_amd64.deb;
-      sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/7fa2af80.pub;
+      wget http://developer.download.nvidia.com/compute/cuda/repos/${PF_TEST_VER}/x86_64/cuda-repo-${PF_TEST_VER}_${CUDA_VER}_amd64.deb;
+      sudo dpkg -i cuda-repo-${PF_TEST_VER}_${CUDA_VER}_amd64.deb;
+      sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/${PF_TEST_VER}/x86_64/7fa2af80.pub;
       sudo apt update -qq;
       sudo apt install -y cuda-core-${CUDA_SHORT/./-} cuda-cudart-dev-${CUDA_SHORT/./-} cuda-nvtx-${CUDA_SHORT/./-};
       export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT};
       export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH};
-      sudo ln -s $CUDA_HOME/lib64/stubs/libcuda.so $CUDA_HOME/lib64/libcuda.so.1;
       export PATH=${CUDA_HOME}/bin:${PATH};
+    fi
+    # The following is only required if no proper GPU device and driver are available!!!
+  - if [[ $PF_TEST != 'bionic' ]]; then
+      sudo ln -s $CUDA_HOME/lib64/stubs/libcuda.so $CUDA_HOME/lib64/libcuda.so.1;
     fi
 
 # Set up UCX for OpenMPI
-  - if [[ $PF_TEST == 'trusty' ]]; then
+  - if [[ $PF_TEST != 'bionic' ]]; then
       sudo apt install -y autoconf;
       sudo apt install -y automake;
       sudo apt install -y libtool;
@@ -93,7 +113,7 @@ before_install:
     fi
 
 # Set up OpenMPI
-  - if [[ $PF_TEST == 'trusty' ]]; then
+  - if [[ $PF_TEST != 'bionic' ]]; then
       wget https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz && tar -xvf openmpi-4.0.3.tar.gz;
       cd openmpi-4.0.3;
       ./configure --with-cuda=$CUDA_HOME --with-ucx=$TRAVIS_BUILD_DIR/ucx-cuda-install && sudo make -j8 install;
@@ -102,7 +122,7 @@ before_install:
     fi
 
 # Set up RMM
-  - if [[ $PF_TEST == 'trusty' ]]; then
+  - if [[ $PF_TEST != 'bionic' ]]; then
       git clone --recurse-submodules https://github.com/rapidsai/rmm.git;
       cd rmm;
       export RMM_ROOT=`pwd`;
@@ -138,9 +158,9 @@ before_script:
   - cd $TRAVIS_BUILD_DIR/build && make && make install
 
 # Build with CUDA
-  - if [[ $PF_TEST == 'trusty' ]]; then
+  - if [[ $PF_TEST != 'bionic' ]]; then
       export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install_cuda && mkdir -p $PARFLOW_DIR;
-      mkdir -p $TRAVIS_BUILD_DIR/build_cuda && cd $TRAVIS_BUILD_DIR/build_cuda && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-Wall -Werror -Wno-unused-result -Wno-unused-function' -DPARFLOW_AMPS_LAYER=cuda -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ENABLE_CUDA=TRUE;
+      mkdir -p $TRAVIS_BUILD_DIR/build_cuda && cd $TRAVIS_BUILD_DIR/build_cuda && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-Wall -Werror -Wno-unused-result -Wno-unused-function' -DPARFLOW_AMPS_LAYER=cuda -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ENABLE_CUDA=TRUE -DRMM_ROOT=$RMM_ROOT;
       cd $TRAVIS_BUILD_DIR/build_cuda && make && make install;
     fi
 
