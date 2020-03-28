@@ -44,10 +44,6 @@ jobs:
             - hdf5-helpers
             - tcl-dev
             - tk-dev
-            - openmpi-bin
-            - openmpi-doc
-            - libopenmpi-dev
-            - cmake
 
 language: cpp
 
@@ -63,7 +59,7 @@ before_install:
   - sudo apt-get -qq update
 
 # Set up CMake
-  - if [[ $PF_TEST != 'bionic' ]]; then
+  - if [[ $PF_TEST != 'focal' ]]; then
       if [[ ! -f cmake-3.17.0-Linux-x86_64/bin/cmake ]]; then 
         wget --no-check-certificate http://cmake.org/files/v3.17/cmake-3.17.0-Linux-x86_64.tar.gz && tar -xvf cmake-3.17.0-Linux-x86_64.tar.gz; 
       fi;
@@ -71,7 +67,7 @@ before_install:
     fi
 
 # Update GCC
-  - if [[ $PF_TEST != 'bionic' ]]; then
+  - if [[ $PF_TEST != 'focal' ]]; then
       sudo apt-get install -y software-properties-common;
       sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test;
       sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 78BD65473CB3BD13;
@@ -83,7 +79,7 @@ before_install:
     fi
 
 # Set up CUDA
-  - if [[ $PF_TEST != 'bionic' ]]; then
+  - if [[ $PF_TEST != 'focal' ]]; then
       CUDA_SHORT=10.1;
       CUDA_VER=10.1.105-1;
       wget http://developer.download.nvidia.com/compute/cuda/repos/${PF_TEST_VER}/x86_64/cuda-repo-${PF_TEST_VER}_${CUDA_VER}_amd64.deb;
@@ -95,25 +91,21 @@ before_install:
       export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH};
       export PATH=${CUDA_HOME}/bin:${PATH};
     fi
-    # The following is only required if no proper GPU device and driver are available!!!
-  - if [[ $PF_TEST != 'bionic' ]]; then
-      sudo ln -s $CUDA_HOME/lib64/stubs/libcuda.so $CUDA_HOME/lib64/libcuda.so.1;
-    fi
 
 # Set up UCX for OpenMPI
-  - if [[ $PF_TEST != 'bionic' ]]; then
+  - if [[ $PF_TEST != 'focal' ]]; then
       sudo apt install -y autoconf;
       sudo apt install -y automake;
       sudo apt install -y libtool;
       sudo apt install -y maven;
-      git clone https://github.com/openucx/ucx.git;
-      cd ucx;
-      ./autogen.sh && ./contrib/configure-release --prefix=$TRAVIS_BUILD_DIR/ucx-cuda-install --with-cuda=$CUDA_HOME --disable-numa && sudo make -j8 install;
+      wget https://github.com/openucx/ucx/releases/download/v1.8.0-rc1/ucx-1.8.0.tar.gz && tar -xvf ucx-1.8.0.tar.gz;
+      cd ucx-1.8.0;
+      ./contrib/configure-release --prefix=$TRAVIS_BUILD_DIR/ucx-cuda-install --with-cuda=$CUDA_HOME --disable-numa && sudo make -j8 install;
       cd ..;
     fi
 
 # Set up OpenMPI
-  - if [[ $PF_TEST != 'bionic' ]]; then
+  - if [[ $PF_TEST != 'focal' ]]; then
       wget https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz && tar -xvf openmpi-4.0.3.tar.gz;
       cd openmpi-4.0.3;
       ./configure --with-cuda=$CUDA_HOME --with-ucx=$TRAVIS_BUILD_DIR/ucx-cuda-install && sudo make -j8 install;
@@ -122,15 +114,12 @@ before_install:
     fi
 
 # Set up RMM
-  - if [[ $PF_TEST != 'bionic' ]]; then
-      git clone --recurse-submodules https://github.com/rapidsai/rmm.git;
+  - if [[ $PF_TEST != 'focal' ]]; then
+      git clone -b branch-0.10 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git;
       cd rmm;
       export RMM_ROOT=`pwd`;
-      git checkout branch-0.10;
-      mkdir $RMM_ROOT/build/;
-      cd $RMM_ROOT/build/;
-      ../../cmake-3.17.0-Linux-x86_64/bin/cmake .. -DCMAKE_INSTALL_PREFIX=$RMM_ROOT && make -j && make install;
-      cd ../..;
+      cmake . -DCMAKE_INSTALL_PREFIX=$RMM_ROOT && make -j && make install;
+      cd ..;
     fi
 
 # Set up Hypre
@@ -158,9 +147,9 @@ before_script:
   - cd $TRAVIS_BUILD_DIR/build && make && make install
 
 # Build with CUDA
-  - if [[ $PF_TEST != 'bionic' ]]; then
+  - if [[ $PF_TEST != 'focal' ]]; then
       export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install_cuda && mkdir -p $PARFLOW_DIR;
-      mkdir -p $TRAVIS_BUILD_DIR/build_cuda && cd $TRAVIS_BUILD_DIR/build_cuda && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-Wall -Werror -Wno-unused-result -Wno-unused-function' -DPARFLOW_AMPS_LAYER=cuda -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ENABLE_CUDA=TRUE -DRMM_ROOT=$RMM_ROOT;
+      mkdir -p $TRAVIS_BUILD_DIR/build_cuda && cd $TRAVIS_BUILD_DIR/build_cuda && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-lcuda -Wall -Werror -Wno-unused-result -Wno-unused-function' -DPARFLOW_AMPS_LAYER=cuda -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ENABLE_CUDA=TRUE -DRMM_ROOT=$RMM_ROOT;
       cd $TRAVIS_BUILD_DIR/build_cuda && make && make install;
     fi
 

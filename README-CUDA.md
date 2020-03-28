@@ -4,7 +4,7 @@
 
 The GPU acceleration is currently compatible only with NVIDIA GPUs due to CUDA being the only backend option so far. The minimum supported CUDA compute capability for the hardware is 6.0 (NVIDIA Pascal architecture).
 
-Building with CUDA may improve the performance significantly for large problems but is often slower for test cases and small problems due to initialization overhead associated with the GPU use. Installation on Ubuntu 1404 with all dependencies excluding the GPU driver is found [here](.travis.yml).
+Building with CUDA may improve the performance significantly for large problems but is often slower for test cases and small problems due to initialization overhead associated with the GPU use. Installation reference can be found in [Dockerfile](Dockerfile_CUDA) and [travis.yml](.travis.yml).
 
 
 ## CMake
