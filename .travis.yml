@@ -59,68 +59,57 @@ before_install:
   - sudo apt-get -qq update
 
 # Set up CMake
-  - if [[ $PF_TEST != 'focal' ]]; then
-      if [[ ! -f cmake-3.17.0-Linux-x86_64/bin/cmake ]]; then 
-        wget --no-check-certificate http://cmake.org/files/v3.17/cmake-3.17.0-Linux-x86_64.tar.gz && tar -xvf cmake-3.17.0-Linux-x86_64.tar.gz; 
-      fi;
-      export PATH=$TRAVIS_BUILD_DIR/cmake-3.17.0-Linux-x86_64/bin/:$PATH;
+  - if [[ ! -f cmake-3.17.0-Linux-x86_64/bin/cmake ]]; then 
+      wget --no-check-certificate http://cmake.org/files/v3.17/cmake-3.17.0-Linux-x86_64.tar.gz && tar -xvf cmake-3.17.0-Linux-x86_64.tar.gz; 
     fi
+  - export PATH=$TRAVIS_BUILD_DIR/cmake-3.17.0-Linux-x86_64/bin/:$PATH;
 
 # Update GCC
-  - if [[ $PF_TEST != 'focal' ]]; then
-      sudo apt-get install -y software-properties-common;
-      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test;
-      sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 78BD65473CB3BD13;
-      sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6B05F25D762E3157;
-      sudo apt update -qq;
-      sudo apt install -y gcc-8;
-      sudo apt install -y g++-8;
-      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 60 --slave /usr/bin/g++ g++ /usr/bin/g++-8;
-    fi
+  - sudo apt-get install -y software-properties-common;
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test;
+  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 78BD65473CB3BD13;
+  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6B05F25D762E3157;
+  - sudo apt update -qq;
+  - sudo apt install -y gcc-8;
+  - sudo apt install -y g++-8;
+  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 60 --slave /usr/bin/g++ g++ /usr/bin/g++-8;
 
 # Set up CUDA
-  - if [[ $PF_TEST != 'focal' ]]; then
-      CUDA_SHORT=10.1;
-      CUDA_VER=10.1.105-1;
-      wget http://developer.download.nvidia.com/compute/cuda/repos/${PF_TEST_VER}/x86_64/cuda-repo-${PF_TEST_VER}_${CUDA_VER}_amd64.deb;
-      sudo dpkg -i cuda-repo-${PF_TEST_VER}_${CUDA_VER}_amd64.deb;
-      sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/${PF_TEST_VER}/x86_64/7fa2af80.pub;
-      sudo apt update -qq;
-      sudo apt install -y cuda-core-${CUDA_SHORT/./-} cuda-cudart-dev-${CUDA_SHORT/./-} cuda-nvtx-${CUDA_SHORT/./-};
-      export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT};
-      export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH};
-      export PATH=${CUDA_HOME}/bin:${PATH};
-    fi
+  - CUDA_SHORT=10.1;
+  - CUDA_VER=10.1.105-1;
+  - wget http://developer.download.nvidia.com/compute/cuda/repos/${PF_TEST_VER}/x86_64/cuda-repo-${PF_TEST_VER}_${CUDA_VER}_amd64.deb;
+  - sudo dpkg -i cuda-repo-${PF_TEST_VER}_${CUDA_VER}_amd64.deb;
+  - sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/${PF_TEST_VER}/x86_64/7fa2af80.pub;
+  - sudo apt update -qq;
+  - sudo apt install -y cuda-core-${CUDA_SHORT/./-} cuda-cudart-dev-${CUDA_SHORT/./-} cuda-nvtx-${CUDA_SHORT/./-};
+  - export CUDA_HOME=/usr/local/cuda-${CUDA_SHORT};
+  - export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH};
+  - export LIBRARY_PATH=${CUDA_HOME}/lib64/stubs
+  - export PATH=${CUDA_HOME}/bin:${PATH};
 
 # Set up UCX for OpenMPI
-  - if [[ $PF_TEST != 'focal' ]]; then
-      sudo apt install -y autoconf;
-      sudo apt install -y automake;
-      sudo apt install -y libtool;
-      sudo apt install -y maven;
-      wget https://github.com/openucx/ucx/releases/download/v1.8.0-rc1/ucx-1.8.0.tar.gz && tar -xvf ucx-1.8.0.tar.gz;
-      cd ucx-1.8.0;
-      ./contrib/configure-release --prefix=$TRAVIS_BUILD_DIR/ucx-cuda-install --with-cuda=$CUDA_HOME --disable-numa && sudo make -j8 install;
-      cd ..;
-    fi
+  - sudo apt install -y autoconf;
+  - sudo apt install -y automake;
+  - sudo apt install -y libtool;
+  - sudo apt install -y maven;
+  - wget https://github.com/openucx/ucx/releases/download/v1.8.0-rc1/ucx-1.8.0.tar.gz && tar -xvf ucx-1.8.0.tar.gz;
+  - cd ucx-1.8.0;
+  - ./contrib/configure-release --prefix=$TRAVIS_BUILD_DIR/ucx-cuda-install --with-cuda=$CUDA_HOME --disable-numa && sudo make -j8 install;
+  - cd ..;
 
 # Set up OpenMPI
-  - if [[ $PF_TEST != 'focal' ]]; then
-      wget https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz && tar -xvf openmpi-4.0.3.tar.gz;
-      cd openmpi-4.0.3;
-      ./configure --with-cuda=$CUDA_HOME --with-ucx=$TRAVIS_BUILD_DIR/ucx-cuda-install && sudo make -j8 install;
-      sudo ldconfig;
-      cd ..;
-    fi
+  - wget https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.3.tar.gz && tar -xvf openmpi-4.0.3.tar.gz;
+  - cd openmpi-4.0.3;
+  - ./configure --with-cuda=$CUDA_HOME --with-ucx=$TRAVIS_BUILD_DIR/ucx-cuda-install && sudo make -j8 install;
+  - sudo ldconfig;
+  - cd ..;
 
 # Set up RMM
-  - if [[ $PF_TEST != 'focal' ]]; then
-      git clone -b branch-0.10 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git;
-      cd rmm;
-      export RMM_ROOT=`pwd`;
-      cmake . -DCMAKE_INSTALL_PREFIX=$RMM_ROOT && make -j && make install;
-      cd ..;
-    fi
+  - git clone -b branch-0.10 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git;
+  - cd rmm;
+  - export RMM_ROOT=`pwd`;
+  - cmake . -DCMAKE_INSTALL_PREFIX=$RMM_ROOT && make -j && make install;
+  - cd ..;
 
 # Set up Hypre
   - wget https://computing.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods/download/hypre-2.11.2.tar.gz && tar -xvf hypre-2.11.2.tar.gz
@@ -147,11 +136,9 @@ before_script:
   - cd $TRAVIS_BUILD_DIR/build && make && make install
 
 # Build with CUDA
-  - if [[ $PF_TEST != 'focal' ]]; then
-      export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install_cuda && mkdir -p $PARFLOW_DIR;
-      mkdir -p $TRAVIS_BUILD_DIR/build_cuda && cd $TRAVIS_BUILD_DIR/build_cuda && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-lcuda -Wall -Werror -Wno-unused-result -Wno-unused-function' -DPARFLOW_AMPS_LAYER=cuda -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ENABLE_CUDA=TRUE -DRMM_ROOT=$RMM_ROOT;
-      cd $TRAVIS_BUILD_DIR/build_cuda && make && make install;
-    fi
+  - export PARFLOW_DIR=$TRAVIS_BUILD_DIR/install_cuda && mkdir -p $PARFLOW_DIR;
+  - mkdir -p $TRAVIS_BUILD_DIR/build_cuda && cd $TRAVIS_BUILD_DIR/build_cuda && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS='-lcuda -Wall -Werror -Wno-unused-result -Wno-unused-function' -DPARFLOW_AMPS_LAYER=cuda -DPARFLOW_AMPS_SEQUENTIAL_IO=true -DPARFLOW_ENABLE_TIMING=TRUE -DPARFLOW_HAVE_CLM=ON -DHYPRE_ROOT=$HYPRE_ROOT -DPARFLOW_ENABLE_HDF5=true -DSILO_ROOT=$SILO_ROOT -DCMAKE_INSTALL_PREFIX=$PARFLOW_DIR -DPARFLOW_ENABLE_CUDA=TRUE -DRMM_ROOT=$RMM_ROOT;
+  - cd $TRAVIS_BUILD_DIR/build_cuda && make && make install;
 
 script:
 # Run tests without CUDA
