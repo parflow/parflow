@@ -91,10 +91,9 @@ before_install:
   - sudo apt install -y autoconf;
   - sudo apt install -y automake;
   - sudo apt install -y libtool;
-  - sudo apt install -y maven;
   - wget https://github.com/openucx/ucx/releases/download/v1.8.0-rc1/ucx-1.8.0.tar.gz && tar -xvf ucx-1.8.0.tar.gz;
   - cd ucx-1.8.0;
-  - ./contrib/configure-release --prefix=$TRAVIS_BUILD_DIR/ucx-cuda-install --with-cuda=$CUDA_HOME --disable-numa && sudo make -j8 install;
+  - ./contrib/configure-release --prefix=$TRAVIS_BUILD_DIR/ucx-cuda-install --with-cuda=$CUDA_HOME --with-java=no --disable-numa && sudo make -j8 install;
   - cd ..;
 
 # Set up OpenMPI
@@ -102,13 +101,6 @@ before_install:
   - cd openmpi-4.0.3;
   - ./configure --with-cuda=$CUDA_HOME --with-ucx=$TRAVIS_BUILD_DIR/ucx-cuda-install && sudo make -j8 install;
   - sudo ldconfig;
-  - cd ..;
-
-# Set up RMM
-  - git clone -b branch-0.10 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git;
-  - cd rmm;
-  - export RMM_ROOT=`pwd`;
-  - cmake . -DCMAKE_INSTALL_PREFIX=$RMM_ROOT && make -j && make install;
   - cd ..;
 
 # Set up Hypre
@@ -122,6 +114,13 @@ before_install:
   - cd silo-4.10.2 
   - ./configure --disable-silex --disable-hzip --disable-fpzip && make install 
   - export SILO_ROOT=`pwd` && cd ..
+
+# Set up RMM
+  - git clone -b branch-0.10 --single-branch --recurse-submodules https://github.com/rapidsai/rmm.git;
+  - cd rmm;
+  - export RMM_ROOT=`pwd`;
+  - cmake . -DCMAKE_INSTALL_PREFIX=$RMM_ROOT && make -j && make install;
+  - cd ..;
 
 before_script:
 # Set up Parflow

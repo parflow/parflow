@@ -39,7 +39,6 @@ RUN apt-get update && \
     libtool \
     m4 \
     make \
-    maven \
     tcl-dev \
     tk-dev \
     wget && mkdir -p /home/parflow
@@ -51,7 +50,7 @@ WORKDIR /home/parflow
 RUN wget https://github.com/openucx/ucx/releases/download/v1.8.0-rc1/ucx-1.8.0.tar.gz && \
     tar -xvf ucx-1.8.0.tar.gz && \
     cd ucx-1.8.0 && \
-    ./contrib/configure-release --prefix=$PARFLOW_DIR/ucx-cuda-install --with-cuda=$CUDA_HOME --disable-numa && \
+    ./contrib/configure-release --prefix=$PARFLOW_DIR/ucx-cuda-install --with-cuda=$CUDA_HOME --with-java=no --disable-numa && \
     make -j8 install && \
     cd .. && \
     rm -fr ucx-1.8.0 ucx-1.8.0.tar.gz
