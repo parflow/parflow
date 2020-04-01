@@ -1092,50 +1092,49 @@ void    RichardsJacobianEval(
       {
         case DirichletBC:
         {
+          /* @MCB:
+             Previously there was two module invokes on every iteratoin
+             of the BC Loop.  However, these calls were only retrieving
+             some constant value and (potentially) multiplying it against
+             the BC patch value.
+             Instead, the PhaseDensityConstants function was added to
+             retrieve those values once, and instead set den_d and dend_d
+             to the appropriate value based on the phase_type of the module.
+             This is much cheaper and also addresses the issue of module invokes
+             within a CUDA-enabled loop.
+          */
+
+          double fcn_phase_const = 0.0;
+          double der_phase_const = 0.0;
+          double phase_ref = 0.0;
+          double phase_comp = 0.0;
+          int phase_type = 0;
+
+          ThisPFModule = density_module;
+          PhaseDensityConstants(0, CALCFCN, &phase_type,
+                                &fcn_phase_const,
+                                &phase_ref,
+                                &phase_comp);
+          PhaseDensityConstants(0, CALCDER, &phase_type,
+                                &der_phase_const,
+                                &phase_ref,
+                                &phase_comp);
+
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
             int ip = SubvectorEltIndex(p_sub, i, j, k);
+            int im = SubmatrixEltIndex(J_sub, i, j, k);
 
             double *op = NULL;
             
             double den_d; 
             double value = bc_patch_values[ival];
 
-            /* The cross-compilation-unit function call in PFModuleInvokeType is problematic for GPU 
-                 -> the required parts of the function are pasted here (yes, this is annoying) */
-#ifdef HAVE_CUDA
-            PublicXtraPhaseDensity *public_xtra_density = (PublicXtraPhaseDensity*)PFModulePublicXtra(density_module);
-            switch (public_xtra_density->type[0])
-            {
-              case 0:
-              {            
-                Type0PhaseDensity *dummy = (Type0PhaseDensity*)public_xtra_density->data[0];
-                den_d = dummy->constant;
-
-                break;
-              }        /* End case 0 */
-              case 1:
-              {
-                Type1PhaseDensity *dummy = (Type1PhaseDensity*)public_xtra_density->data[0];
-                double ref = dummy->reference_density;
-                double comp = dummy->compressibility_constant;
-                den_d = ref * exp(value * comp);
-
-                break;
-              }        /* End case 1 */
-            }          /* End switch */
-#else
-            PFModuleInvokeType(PhaseDensityInvoke, density_module,
-                               (0, NULL, NULL, &value, &den_d, CALCFCN));
-
-            /* This appears to do nothing */      
-            // double dend_d;
-            // PFModuleInvokeType(PhaseDensityInvoke, density_module,
-            //                    (0, NULL, NULL, &value, &dend_d, CALCDER));
-#endif
-
-            ip = SubvectorEltIndex(p_sub, i, j, k);
-            int im = SubmatrixEltIndex(J_sub, i, j, k);
+            if (phase_type == 0) {
+              den_d = fcn_phase_const;
+            } else {
+              den_d = phase_ref * exp(value * phase_comp);
+            }
 
             double prod = rpp[ip] * dp[ip];
             double prod_der = rpdp[ip] * dp[ip] + rpp[ip] * ddp[ip];

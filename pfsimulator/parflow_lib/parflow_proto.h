@@ -906,6 +906,7 @@ int ICPhaseSaturSizeOfTempData(void);
 typedef void (*PhaseDensityInvoke) (int phase, Vector *phase_pressure, Vector *density_v, double *pressure_d, double *density_d, int fcn);
 typedef PFModule *(*PhaseDensityNewPublicXtraInvoke) (int num_phases);
 
+void PhaseDensityConstants(int phase, int fcn, int *phase_type, double *constant, double *ref_den, double *comp_const);
 void PhaseDensity(int phase, Vector *phase_pressure, Vector *density_v, double *pressure_d, double *density_d, int fcn);
 PFModule *PhaseDensityInitInstanceXtra(void);
 void PhaseDensityFreeInstanceXtra(void);
