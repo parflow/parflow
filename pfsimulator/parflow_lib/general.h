@@ -185,6 +185,23 @@
   #define __restrict__
 #endif
 
+// OpenMP stuff
+#ifndef InParallel
+  #define InParallel
+#endif
+#ifndef NewParallel
+  #define NewParallel
+#endif
+#ifndef NoWait
+  #define NoWait
+#endif
+#ifndef LOCALS
+  #define LOCALS
+#endif
+#ifndef NO_LOCALS
+  #define _NO_LOCALS
+#endif
+
 //NVTX Ranges for NSYS profiling
 #ifdef HAVE_CUDA
   #include "nvToolsExt.h"

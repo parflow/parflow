@@ -310,7 +310,16 @@ static int gpu_sync = 1;
 #define GPU_NOSYNC gpu_sync = 0;
 
 #undef GPU_SYNC
-#define GPU_SYNC CUDA_ERR(cudaStreamSynchronize(0)); 
+#define GPU_SYNC gpu_sync = 1; CUDA_ERR(cudaStreamSynchronize(0)); 
+
+#undef InParallel
+#define InParallel 1
+
+#undef NewParallel
+#define NewParallel 1
+
+#undef NoWait
+#define NoWait 0
 
 #define FindDims(grid, block, nx, ny, nz, dyn_blocksize)                            \
 {                                                                                   \
@@ -334,11 +343,19 @@ static int gpu_sync = 1;
   block = dim3(blocksize_x, blocksize_y, blocksize_z);                              \
 }  
 
+#define GetMacro(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,                                    \
+  _11,_12,_13,_14,_15,_16,_17,_18,_19,_20,                                          \
+  _21,_22,_23,_24,_25,_26,_27,_28,_29,_30,                                          \
+  _31,_32,_33,NAME,...) NAME
+
 #undef BoxLoopI1
-#define BoxLoopI1(i, j, k,                                                          \
-                  ix, iy, iz, nx, ny, nz,                                           \
-                  i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
-                  loop_body)                                                        \
+#define BoxLoopI1(...) GetMacro(__VA_ARGS__,                                        \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, BoxLI1, 0, _BoxLI1)(__VA_ARGS__)
+#define _BoxLI1(...) BoxLI1(gpu_sync, 0, __VA_ARGS__)
+#define BoxLI1(gpu_sync, dummy, i, j, k,                                            \
+  ix, iy, iz, nx, ny, nz,                                                           \
+  i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
+  loop_body)                                                                        \
 {                                                                                   \
   if(nx > 0 && ny > 0 && nz > 0)                                                    \
   {                                                                                 \
@@ -365,11 +382,14 @@ static int gpu_sync = 1;
 }
 
 #undef BoxLoopI2
-#define BoxLoopI2(i, j, k,                                                          \
-                  ix, iy, iz, nx, ny, nz,                                           \
-                  i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
-                  i2, nx2, ny2, nz2, sx2, sy2, sz2,                                 \
-                  loop_body)                                                        \
+#define BoxLoopI2(...) GetMacro(__VA_ARGS__,                                        \
+  0, 0, 0, 0, 0, 0, 0, BoxLI2, 0, _BoxLI2)(__VA_ARGS__)
+#define _BoxLI2(...) BoxLI2(gpu_sync, 0, __VA_ARGS__)
+#define BoxLI2(gpu_sync, dummy, i, j, k,                                            \
+  ix, iy, iz, nx, ny, nz,                                                           \
+  i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
+  i2, nx2, ny2, nz2, sx2, sy2, sz2,                                                 \
+  loop_body)                                                                        \
 {                                                                                   \
   if(nx > 0 && ny > 0 && nz > 0)                                                    \
   {                                                                                 \
@@ -403,12 +423,14 @@ static int gpu_sync = 1;
 }
 
 #undef BoxLoopI3
-#define BoxLoopI3(i, j, k,                                                          \
-                  ix, iy, iz, nx, ny, nz,                                           \
-                  i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
-                  i2, nx2, ny2, nz2, sx2, sy2, sz2,                                 \
-                  i3, nx3, ny3, nz3, sx3, sy3, sz3,                                 \
-                  loop_body)                                                        \
+#define BoxLoopI3(...) GetMacro(__VA_ARGS__, BoxLI3, 0, _BoxLI3)(__VA_ARGS__)
+#define _BoxLI3(...) BoxLI3(gpu_sync, 0, __VA_ARGS__)
+#define BoxLI3(gpu_sync, dummy, i, j, k,                                            \
+  ix, iy, iz, nx, ny, nz,                                                           \
+  i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
+  i2, nx2, ny2, nz2, sx2, sy2, sz2,                                                 \
+  i3, nx3, ny3, nz3, sx3, sy3, sz3,                                                 \
+  loop_body)                                                                        \
 {                                                                                   \
   if(nx > 0 && ny > 0 && nz > 0)                                                    \
   {                                                                                 \
@@ -449,10 +471,13 @@ static int gpu_sync = 1;
 }
 
 #undef BoxReduceI1
-#define BoxReduceI1(i, j, k,                                                        \
-                  ix, iy, iz, nx, ny, nz,                                           \
-                  i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
-                  loop_body, rslt)                                                  \
+#define BoxReduceI1(...) GetMacro(__VA_ARGS__,                                      \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, BoxRI1, 0, _BoxRI1)(__VA_ARGS__)
+#define _BoxRI1(...) BoxRI1(gpu_sync, 0, __VA_ARGS__)
+#define BoxRI1(gpu_sync, dummy, i, j, k,                                            \
+  ix, iy, iz, nx, ny, nz,                                                           \
+  i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
+  loop_body, rslt)                                                                  \
 {                                                                                   \
   if(nx > 0 && ny > 0 && nz > 0)                                                    \
   {                                                                                 \
@@ -490,11 +515,14 @@ static int gpu_sync = 1;
 }
 
 #undef BoxReduceI2
-#define BoxReduceI2(i, j, k,                                                        \
-                  ix, iy, iz, nx, ny, nz,                                           \
-                  i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
-                  i2, nx2, ny2, nz2, sx2, sy2, sz2,                                 \
-                  loop_body, rslt)                                                  \
+#define BoxReduceI2(...) GetMacro(__VA_ARGS__,                                      \
+  0, 0, 0, 0, 0, 0, BoxRI2, 0, _BoxRI2)(__VA_ARGS__)
+#define _BoxRI2(...) BoxRI2(gpu_sync, 0, __VA_ARGS__)
+#define BoxRI2(gpu_sync, dummy, i, j, k,                                            \
+  ix, iy, iz, nx, ny, nz,                                                           \
+  i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
+  i2, nx2, ny2, nz2, sx2, sy2, sz2,                                                 \
+  loop_body, rslt)                                                                  \
 {                                                                                   \
   if(nx > 0 && ny > 0 && nz > 0)                                                    \
   {                                                                                 \
@@ -534,8 +562,11 @@ static int gpu_sync = 1;
 }
 
 #undef GrGeomInLoopBoxes
-#define GrGeomInLoopBoxes(i, j, k,                                                  \
-                          grgeom, ix, iy, iz, nx, ny, nz, loop_body)                \
+#define GrGeomInLoopBoxes(...) GetMacro(__VA_ARGS__, 0, 0, 0, 0, 0, 0,              \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, GrGeomILB, 0, _GrGeomILB)(__VA_ARGS__)
+#define _GrGeomILB(...) GrGeomILB(gpu_sync, 0, __VA_ARGS__)
+#define GrGeomILB(gpu_sync, dummy, i, j, k,                                         \
+  grgeom, ix, iy, iz, nx, ny, nz, loop_body)                                        \
 {                                                                                   \
   BoxArray* boxes = GrGeomSolidInteriorBoxes(grgeom);                               \
   for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                      \
@@ -572,8 +603,11 @@ static int gpu_sync = 1;
 }
 
 #undef GrGeomSurfLoopBoxes
-#define GrGeomSurfLoopBoxes(i, j, k, fdir, grgeom,                                  \
-                            ix, iy, iz, nx, ny, nz, loop_body)                      \
+#define GrGeomSurfLoopBoxes(...) GetMacro(__VA_ARGS__, 0, 0, 0, 0, 0, 0,            \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, GrGeomSLB, 0, _GrGeomSLB)(__VA_ARGS__)
+#define _GrGeomSLB(...) GrGeomSLB(gpu_sync, 0, __VA_ARGS__)
+#define GrGeomSLB(gpu_sync, dummy, i, j, k, fdir, grgeom,                           \
+  ix, iy, iz, nx, ny, nz, loop_body)                                                \
 {                                                                                   \
   int PV_fdir[3];                                                                   \
   fdir = PV_fdir;                                                                   \
@@ -650,8 +684,11 @@ static int gpu_sync = 1;
 }
 
 #undef GrGeomPatchLoopBoxes
-#define GrGeomPatchLoopBoxes(i, j, k, fdir, grgeom, patch_num,                      \
-                             ix, iy, iz, nx, ny, nz, loop_body)                     \
+#define GrGeomPatchLoopBoxes(...) GetMacro(__VA_ARGS__, 0, 0, 0, 0, 0, 0,           \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, GrGeomPLB, 0, _GrGeomPLB)(__VA_ARGS__)
+#define _GrGeomPLB(...) GrGeomPLB(gpu_sync, 0, __VA_ARGS__)
+#define GrGeomPLB(gpu_sync, dummy, i, j, k, fdir, grgeom, patch_num,                \
+  ix, iy, iz, nx, ny, nz, loop_body)                                                \
 {                                                                                   \
   int PV_fdir[3];                                                                   \
   fdir = PV_fdir;                                                                   \
@@ -736,8 +773,11 @@ static int gpu_sync = 1;
 }
 
 #undef GrGeomOctreeExteriorNodeLoop
-#define GrGeomOctreeExteriorNodeLoop(i, j, k, node, octree, level,                  \
-                                     ix, iy, iz, nx, ny, nz, val_test, loop_body)   \
+#define GrGeomOctreeExteriorNodeLoop(...) GetMacro(__VA_ARGS__, 0, 0, 0, 0, 0, 0,   \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, GrGeomOEN, 0, _GrGeomOEN)(__VA_ARGS__)
+#define _GrGeomOEN(...) GrGeomOEN(gpu_sync, 0, __VA_ARGS__)
+#define GrGeomOEN(gpu_sync, dummy, i, j, k, node, octree, level,                    \
+  ix, iy, iz, nx, ny, nz, val_test, loop_body)                                      \
 {                                                                                   \
   int PV_i, PV_j, PV_k, PV_l;                                                       \
   int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;                               \
@@ -791,7 +831,10 @@ static int gpu_sync = 1;
 }
 
 #undef GrGeomOutLoop
-#define GrGeomOutLoop(i, j, k, grgeom, r, ix, iy, iz, nx, ny, nz, body)             \
+#define GrGeomOutLoop(...) GetMacro(__VA_ARGS__, 0, 0, 0, 0, 0, 0,            \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, GrGeomOL, 0, _GrGeomOL)(__VA_ARGS__)
+#define _GrGeomOL(...) GrGeomOL(gpu_sync, 0, __VA_ARGS__)
+#define GrGeomOL(gpu_sync, dummy, i, j, k, grgeom, r, ix, iy, iz, nx, ny, nz, body) \
 {                                                                                   \
   if(nx > 0 && ny > 0 && nz > 0)                                                    \
   {                                                                                 \

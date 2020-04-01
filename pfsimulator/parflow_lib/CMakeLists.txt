@@ -155,7 +155,7 @@ if( ${PARFLOW_HAVE_CUDA} )
     vector.cu
     vector_utilities.cu
   )
-  add_library(pfsimulator ${SRC_FILES_CONST} ${SRC_FILES_ARCH})
+  add_library(pfsimulator ${SRC_FILES_ARCH} ${SRC_FILES_CONST})
   set_target_properties(pfsimulator PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
   target_link_libraries(pfsimulator nvToolsExt)
   target_include_directories(pfsimulator PUBLIC "../third_party/cub")
