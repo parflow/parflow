@@ -717,12 +717,13 @@ double PFVDotProd(
     i_x = 0;
     i_y = 0;
 
-    BoxReduceI2(i, j, k, ix, iy, iz, nx, ny, nz,
+    BoxReduceI2(NULL, result, 
+              i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_y, nx_y, ny_y, nz_y, 1, 1, 1,
     {
       ReduceSum(result, xp[i_x] * yp[i_y]);
-    }, result);
+    });
   }
 
   result_invoice = amps_NewInvoice("%d", &result);
@@ -915,13 +916,14 @@ double PFVWL2Norm(
     i_x = 0;
     i_w = 0;
 
-    BoxReduceI2(i, j, k, ix, iy, iz, nx, ny, nz,
+    BoxReduceI2(NULL, result, 
+              i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_w, nx_w, ny_w, nz_w, 1, 1, 1,
     {
       const double prod = xp[i_x] * wp[i_w];
       ReduceSum(result, prod * prod);
-    }, result);
+    });
   }
 
   result_invoice = amps_NewInvoice("%d", &result);
@@ -975,11 +977,12 @@ double PFVL1Norm(
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
     i_x = 0;
-    BoxReduceI1(i, j, k, ix, iy, iz, nx, ny, nz,
+    BoxReduceI1(NULL, result, 
+              i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       ReduceSum(result, fabs(xp[i_x]));
-    }, result);
+    });
   }
 
   result_invoice = amps_NewInvoice("%d", &result);

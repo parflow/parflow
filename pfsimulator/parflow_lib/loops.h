@@ -40,7 +40,9 @@
   int kinc = (sz) * (nxd) * (nyd) - (ny) * (sy) * (nxd);	      \
   PF_UNUSED(nz);						      \
   PF_UNUSED(nzd)
-    
+
+#define BoxReduceI1(locals, sum, ...) BoxLoopI1(__VA_ARGS__)
+#define BoxReduceI2(locals, sum, ...) BoxLoopI2(__VA_ARGS__)    
 
 #define BoxLoopI0(i, j, k,                \
                   ix, iy, iz, nx, ny, nz, \
@@ -103,28 +105,6 @@
       i1 += PV_kinc_1;                                                          \
       i2 += PV_kinc_2;                                                          \
     }                                                                           \
-  }
-
-#define BoxReduceI1(i, j, k,                                                    \
-                  ix, iy, iz, nx, ny, nz,                                       \
-                  i1, nx1, ny1, nz1, sx1, sy1, sz1,                             \
-                  loop_body, rslt)                                              \
-  {                                                                             \
-    BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,                                  \
-              i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
-              loop_body);                                                       \
-  }
-
-#define BoxReduceI2(i, j, k,                                                    \
-                  ix, iy, iz, nx, ny, nz,                                       \
-                  i1, nx1, ny1, nz1, sx1, sy1, sz1,                             \
-                  i2, nx2, ny2, nz2, sx2, sy2, sz2,                             \
-                  loop_body, rslt)                                              \
-  {                                                                             \
-    BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,                                  \
-              i1, nx1, ny1, nz1, sx1, sy1, sz1,                                 \
-              i2, nx2, ny2, nz2, sx2, sy2, sz2,                                 \
-              loop_body);                                                       \
   }
 
 #define BoxLoopI3(i, j, k,                                                      \

@@ -9,14 +9,14 @@ pfset FileVersion 4
 
 
 pfset Process.Topology.P 1
-pfset Process.Topology.Q 1
+pfset Process.Topology.Q 4
 pfset Process.Topology.R 1
 
 #---------------------------------------------------------
 # Computational Grid
 #---------------------------------------------------------
-set nn 100
-set mm 100
+set nn 600
+set mm 150
 pfset ComputationalGrid.Lower.X           0.0
 pfset ComputationalGrid.Lower.Y           0.0
 pfset ComputationalGrid.Lower.Z           0.0

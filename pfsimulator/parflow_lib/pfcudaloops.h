@@ -471,13 +471,10 @@ static int gpu_sync = 1;
 }
 
 #undef BoxReduceI1
-#define BoxReduceI1(...) GetMacro(__VA_ARGS__,                                      \
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, BoxRI1, 0, _BoxRI1)(__VA_ARGS__)
-#define _BoxRI1(...) BoxRI1(gpu_sync, 0, __VA_ARGS__)
-#define BoxRI1(gpu_sync, dummy, i, j, k,                                            \
+#define BoxReduceI1(dummy, rslt, i, j, k,                                           \
   ix, iy, iz, nx, ny, nz,                                                           \
   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
-  loop_body, rslt)                                                                  \
+  loop_body)                                                                        \
 {                                                                                   \
   if(nx > 0 && ny > 0 && nz > 0)                                                    \
   {                                                                                 \
@@ -510,19 +507,16 @@ static int gpu_sync = 1;
     DotKernelI2<<<grid, block>>>(lambda_init1, lambda_init2, lambda_body,           \
         &rslt, ix, iy, iz, nx, ny, nz);                                             \
     CUDA_ERR(cudaPeekAtLastError());                                                \
-    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
+    if(1) CUDA_ERR(cudaStreamSynchronize(0));                                       \
   }                                                                                 \
 }
 
 #undef BoxReduceI2
-#define BoxReduceI2(...) GetMacro(__VA_ARGS__,                                      \
-  0, 0, 0, 0, 0, 0, BoxRI2, 0, _BoxRI2)(__VA_ARGS__)
-#define _BoxRI2(...) BoxRI2(gpu_sync, 0, __VA_ARGS__)
-#define BoxRI2(gpu_sync, dummy, i, j, k,                                            \
+#define BoxReduceI2(dummy, rslt, i, j, k,                                           \
   ix, iy, iz, nx, ny, nz,                                                           \
   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
   i2, nx2, ny2, nz2, sx2, sy2, sz2,                                                 \
-  loop_body, rslt)                                                                  \
+  loop_body)                                                                        \
 {                                                                                   \
   if(nx > 0 && ny > 0 && nz > 0)                                                    \
   {                                                                                 \
@@ -557,7 +551,7 @@ static int gpu_sync = 1;
     DotKernelI2<<<grid, block>>>(lambda_init1, lambda_init2, lambda_body,           \
         &rslt, ix, iy, iz, nx, ny, nz);                                             \
     CUDA_ERR(cudaPeekAtLastError());                                                \
-    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
+    if(1) CUDA_ERR(cudaStreamSynchronize(0));                                       \
   }                                                                                 \
 }
 
