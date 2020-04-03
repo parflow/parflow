@@ -94,9 +94,21 @@ void     WritePDI(
   
   if (p == 0)
   {
-      
+    Vector vv;
+    printf("Size of Vector: %ld\n", sizeof(Vector));
+    printf("Size of Grid: %ld\n", sizeof(Grid));
+    printf("Data size until **subvectors: %ld\n", ((char*)&v)-((char*)&v->subvectors[0][0]));
+    printf("Data size until data_size: %ld\n", ((char*)&vv)-((char*)&vv.data_size));
+    printf("Data size until size: %ld\n", ((char*)&vv)-((char*)&vv.size));
+    // printf("Data size until data_size: %ld\n", ((char*)&vv)-((char*)&vv.data_size));
+    // ((char*)&a_struct)-((char*)&a_struct.grid)
+    
+    
+    
     const char pdi_conf[] = "\
 .types:\n\
+  - &ComputePkg\n\
+    type: record\n\
   - &Subregion\n\
     type: record\n\
     buffersize: 56\n\
@@ -116,7 +128,7 @@ void     WritePDI(
       level:   {disp: 48, type: int}\n\
       process: {disp: 52, type: int}\n\
   - &Subvector\n\
-    type: \n\
+    type: record \n\
     buffersize: 32\n\
     members:\n\
       data:\n\
@@ -154,7 +166,7 @@ void     WritePDI(
         type: int\n\
   - &Grid\n\
     type: record\n\
-    buffersize: 32\n\
+    buffersize: 40\n\
     members:\n\
       subgrids:\n\
         disp: 0\n\
@@ -170,15 +182,8 @@ void     WritePDI(
           type: array\n\
           size: 1\n\
           subtype: *SubregionArray\n\
-      neighbors:\n\
-        disp: 16\n\
-        type: pointer\n\
-        subtype:\n\
-          type: array\n\
-          size: 1\n\
-          subtype: *SubregionArray\n\
       size:\n\
-        disp: 24\n\
+        disp: 16\n\
         type: int\n\
 logging: trace\n\
 metadata:\n\
@@ -196,7 +201,7 @@ metadata:\n\
 data:\n\
   vector_data:\n\
     type: record\n\
-    buffersize: 8\n\
+    buffersize: 128\n\
     members:\n\
       subvectors:\n\
         disp: 0\n\
@@ -207,39 +212,44 @@ data:\n\
           subtype:\n\
             type: pointer\n\
             subtype: *Subvector\n\
+      data_size:\n\
+        disp: 8\n\
+        type: int\n\
 ";
-  //     data_size:\n\
-  //       disp: 8\n\
-  //       type: int\n\
-  //     grid:\n\
-  //       disp: 16\n\
-  //       type: pointer\n\
-  //       subtype: *Grid\n\
-  //     data_space:\n\
-  //       disp: 24\n\
-  //       type: pointer\n\
-  //       subtype: *SubregionArray\n\
-  //     size:\n\
-  //       disp: 32\n\
-  //       type: int\n\
-//";
-    FILE *fp;
-    fp = fopen("conf.yml", "w");
-    fprintf(fp, pdi_conf);
-    // fprintf(fp, "    subvector:\n");
-    // fprintf(fp, "    type: record\n");
-    // fprintf(fp, "    buffersize: 4\n");
-    // fprintf(fp, "    members:\n");
-    // fprintf(fp, "      size:\n");
-    // fprintf(fp, "        disp: 0\n");
-    // fprintf(fp, "        type: int\n");
-    fprintf(fp, "plugins:   \n");
-    fprintf(fp, "  mpi:   \n");
-    fprintf(fp, "  decl_hdf5:   \n");
-    fprintf(fp, "  - file: test.${it}.h5   \n");
-    fprintf(fp, "    communicator: $MPI_COMM_WORLD   \n");
-    fprintf(fp, "    write: [ X, Y, Z, NX, NY, NZ, num_subgrids ]   \n");
-    fprintf(fp, "          \n");
+// compute_pkgs:\n\
+//   disp: 16\n\
+//   type: pointer\n\
+//   subtype:\n\
+//     type: array\n\
+//     size: 1\n\
+//     subtype: *ComputePkg\n\
+// background:\n
+FILE *fp;
+fp = fopen("conf.yml", "w");
+fprintf(fp, pdi_conf);
+#ifdef SHMEM_OBJECTS
+  fprintf(fp,"      int: shmem_offset\n");
+#endif
+const char pdi_conf_2[] = "\
+      grid:\n\
+        disp: 16\n\
+        type: pointer\n\
+        subtype: *Grid\n\
+      data_space:\n\
+        disp: 24\n\
+        type: pointer\n\
+        subtype: *SubregionArray\n\
+      size:\n\
+        disp: 32\n\
+        type: int\n\
+plugins:   \n\
+  decl_hdf5:   \n\
+  - file: test.${it}.h5   \n\
+    write: [ X, Y, Z, NX, NY, NZ, num_subgrids, temp_data_size, temp_num_grid, vector_data ]   \n\
+";
+    fprintf(fp, pdi_conf_2);
+    //fprintf(fp, "  mpi:   \n");
+    //fprintf(fp, "    communicator: $MPI_COMM_WORLD   \n");
     fclose(fp);
     
     // load the configuration tree
@@ -259,6 +269,15 @@ data:\n\
     PDI_expose("NZ", &SubgridNZ(GridBackground(grid)), PDI_OUT);
     
     PDI_expose("num_subgrids", &num_subgrids, PDI_OUT);
+    
+    subvector = VectorSubvector(v, 0);
+    int temp_data_size = SubvectorDataSize(subvector);
+    PDI_expose("temp_data_size", &temp_data_size, PDI_OUT);
+    
+    int temp_num_grid = 1;
+    PDI_expose("temp_num_grid", &temp_num_grid, PDI_OUT);
+    
+    PDI_expose("vector_data", &v, PDI_OUT);
     
     // PDI_share("NX", &SubgridNX(GridBackground(grid)), PDI_OUT);
     // PDI_reclaim("NX");
