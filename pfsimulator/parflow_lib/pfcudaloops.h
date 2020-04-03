@@ -10,6 +10,7 @@
 
 extern "C++"{
 
+#include <tuple>
 #include "cub.cuh"
 
 /*--------------------------------------------------------------------------
@@ -35,6 +36,30 @@ extern "C++"{
 #define RAND48_MULT_1   (0xdeec)
 #define RAND48_MULT_2   (0x0005)
 #define RAND48_ADD      (0x000b)
+
+template <typename T>
+struct function_traits
+    : public function_traits<decltype(&T::operator())>
+{};
+// For generic types, directly use the result of the signature of its 'operator()'
+
+template <typename ClassType, typename ReturnType, typename... Args>
+struct function_traits<ReturnType(ClassType::*)(Args...) const>
+// we specialize for pointers to member function
+{
+    enum { arity = sizeof...(Args) };
+    // arity is the number of arguments.
+
+    typedef ReturnType result_type;
+
+    template <size_t i>
+    struct arg
+    {
+        typedef typename std::tuple_element<i, std::tuple<Args...>>::type type;
+        // the i-th argument is equivalent to the i-th tuple element of a tuple
+        // composed of those arguments.
+    };
+};
 
 __host__ __device__ __forceinline__ static void dev_dorand48(unsigned short xseed[3])
 {
@@ -162,8 +187,20 @@ __host__ __device__ __forceinline__ static T RPowerR(T base, T exponent)
 #undef PlusEquals
 #define PlusEquals(a, b) AtomicAdd(&(a), b)
 
+template <typename T>
+struct ReduceMaxRes {T lambda_result;};
+#undef ReduceMax
+#define ReduceMax(a, b) struct ReduceMaxRes<decltype(a)> reduce_struct {.lambda_result = pfmax(a, b)}; return reduce_struct;
+
+template <typename T>
+struct ReduceMinRes {T lambda_result;};
+#undef ReduceMin
+#define ReduceMin(a, b) struct ReduceMinRes<decltype(a)> reduce_struct {.lambda_result = pfmin(a, b)}; return reduce_struct;
+
+template <typename T>
+struct ReduceSumRes {T lambda_result;};
 #undef ReduceSum
-#define ReduceSum(a, b) (a += b)
+#define ReduceSum(a, b) struct ReduceSumRes<decltype(a)> reduce_struct {.lambda_result = a + b}; return reduce_struct;
 
 /*--------------------------------------------------------------------------
  * CUDA loop kernels
@@ -261,41 +298,62 @@ BoxKernelI3(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaInit3 loop_ini
     loop_body(i, j, k, i1, i2, i3);    
 }
 
-template <typename LambdaInit1, typename LambdaInit2, typename LambdaFun, typename T>
+template <typename ReduceOp, typename LambdaInit1, typename LambdaInit2, typename LambdaFun, typename T>
 __global__ static void 
 __launch_bounds__(BLOCKSIZE_MAX)
 DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun, 
     T * __restrict__ rslt, const int ix, const int iy, const int iz, 
     const int nx, const int ny, const int nz)
 {
-    // Specialize BlockReduce for a 3D block of BLOCKSIZE_X * BLOCKSIZE_Y * BLOCKSIZE_Z threads on type T
+    // Specialize BlockReduce for a 1D block of BLOCKSIZE_X * 1 * 1 threads on type T
 #ifdef __CUDA_ARCH__
-    typedef cub::BlockReduce<T, BLOCKSIZE_X, cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY, BLOCKSIZE_Y, BLOCKSIZE_Z, __CUDA_ARCH__> BlockReduce;
+    typedef cub::BlockReduce<T, BLOCKSIZE_MAX, cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY, 1, 1, __CUDA_ARCH__> BlockReduce;
 #else
-    typedef cub::BlockReduce<T, BLOCKSIZE_X, cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY, BLOCKSIZE_Y, BLOCKSIZE_Z> BlockReduce;
+    typedef cub::BlockReduce<T, BLOCKSIZE_MAX, cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY, 1, 1> BlockReduce;
 #endif
 
     __shared__ typename BlockReduce::TempStorage temp_storage;
 
-    const int i = ((blockIdx.x*blockDim.x)+threadIdx.x);
-    const int j = ((blockIdx.y*blockDim.y)+threadIdx.y);
-    const int k = ((blockIdx.z*blockDim.z)+threadIdx.z);
+    const int idx = ((blockIdx.x*blockDim.x)+threadIdx.x);
 
-    T thread_data = {0};
-    if (i < nx && j < ny && k < nz)
+    const int i = idx % nx;
+    const int j = (idx / nx) % ny;
+    const int k = idx / (nx * ny);
+    const int ntot = nx * ny * nz;
+
+    T thread_data = 0;
+
+    // Evaluate the loop body
+    if (idx < ntot)
     {
+      const int i1 = loop_init1(i, j, k);
+      const int i2 = loop_init2(i, j, k);
 
-        const int i1 = loop_init1(i, j, k);
-        const int i2 = loop_init2(i, j, k);
-
-        thread_data = loop_fun(i, j, k, i1, i2);
+      auto reduce_struct = loop_fun(i, j, k, i1, i2);
+      thread_data = reduce_struct.lambda_result;
     }
 
     // Compute the block-wide sum for thread0
-    const T aggregate = BlockReduce(temp_storage).Sum(thread_data);
+    T aggregate;
+    if(std::is_same<ReduceOp, struct ReduceSumRes<T>>::value)
+    {
+      aggregate = BlockReduce(temp_storage).Sum(thread_data, ntot);
+    }
+    else if(std::is_same<ReduceOp, struct ReduceMaxRes<T>>::value)
+    {
+      aggregate = BlockReduce(temp_storage).Reduce(thread_data, cub::Max(), ntot);
+    }
+    else if(std::is_same<ReduceOp, struct ReduceMinRes<T>>::value)
+    {
+      aggregate = BlockReduce(temp_storage).Reduce(thread_data, cub::Min(), ntot);
+    }
+    else 
+    {
+      printf("ERROR at %s:%d: Invalid reduction identifier, likely a problem with a BoxLoopReduce body.", __FILE__, __LINE__);
+    }
 
     // Store aggregate
-    if(threadIdx.z == 0 && threadIdx.y == 0 && threadIdx.x == 0) 
+    if(threadIdx.x == 0) 
     {
       atomicAdd(rslt, aggregate);
     }
@@ -470,8 +528,8 @@ static int gpu_sync = 1;
   }                                                                                 \
 }
 
-#undef BoxReduceI1
-#define BoxReduceI1(dummy, rslt, i, j, k,                                           \
+#undef BoxLoopReduceI1
+#define BoxLoopReduceI1(dummy, rslt, i, j, k,                                       \
   ix, iy, iz, nx, ny, nz,                                                           \
   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
   loop_body)                                                                        \
@@ -480,8 +538,8 @@ static int gpu_sync = 1;
   {                                                                                 \
     DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);     \
                                                                                     \
-    dim3 block, grid;                                                               \
-    FindDims(grid, block, nx, ny, nz, 0);                                           \
+    int block = BLOCKSIZE_MAX;                                                      \
+    int grid = ((nx * ny * nz - 1) + block) / block;                                \
                                                                                     \
     auto lambda_init1 =                                                             \
         GPU_LAMBDA(const int i, const int j, const int k)                           \
@@ -501,18 +559,19 @@ static int gpu_sync = 1;
         {                                                                           \
             auto rslt = zero;                                                       \
             loop_body;                                                              \
-            return rslt;                                                            \
         };                                                                          \
+    typedef function_traits<decltype(lambda_body)> traits;                          \
                                                                                     \
-    DotKernelI2<<<grid, block>>>(lambda_init1, lambda_init2, lambda_body,           \
+    DotKernelI2<traits::result_type><<<grid, block>>>(lambda_init1,                 \
+        lambda_init2, lambda_body,                                                  \
         &rslt, ix, iy, iz, nx, ny, nz);                                             \
     CUDA_ERR(cudaPeekAtLastError());                                                \
     if(1) CUDA_ERR(cudaStreamSynchronize(0));                                       \
   }                                                                                 \
 }
 
-#undef BoxReduceI2
-#define BoxReduceI2(dummy, rslt, i, j, k,                                           \
+#undef BoxLoopReduceI2
+#define BoxLoopReduceI2(dummy, rslt, i, j, k,                                       \
   ix, iy, iz, nx, ny, nz,                                                           \
   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
   i2, nx2, ny2, nz2, sx2, sy2, sz2,                                                 \
@@ -523,8 +582,8 @@ static int gpu_sync = 1;
     DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1);     \
     DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2);     \
                                                                                     \
-    dim3 block, grid;                                                               \
-    FindDims(grid, block, nx, ny, nz, 0);                                           \
+    int block = BLOCKSIZE_MAX;                                                      \
+    int grid = ((nx * ny * nz - 1) + block) / block;                                \
                                                                                     \
     auto lambda_init1 =                                                             \
         GPU_LAMBDA(const int i, const int j, const int k)                           \
@@ -545,11 +604,11 @@ static int gpu_sync = 1;
         {                                                                           \
             auto rslt = zero;                                                       \
             loop_body;                                                              \
-            return rslt;                                                            \
         };                                                                          \
+    typedef function_traits<decltype(lambda_body)> traits;                          \
                                                                                     \
-    DotKernelI2<<<grid, block>>>(lambda_init1, lambda_init2, lambda_body,           \
-        &rslt, ix, iy, iz, nx, ny, nz);                                             \
+    DotKernelI2<traits::result_type><<<grid, block>>>(lambda_init1,                 \
+        lambda_init2, lambda_body, &rslt, ix, iy, iz, nx, ny, nz);                  \
     CUDA_ERR(cudaPeekAtLastError());                                                \
     if(1) CUDA_ERR(cudaStreamSynchronize(0));                                       \
   }                                                                                 \
