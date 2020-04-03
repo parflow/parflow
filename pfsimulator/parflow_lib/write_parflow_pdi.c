@@ -208,7 +208,7 @@ data:\n\
         type: pointer\n\
         subtype:\n\
           type: array\n\
-          size: 8\n\
+          size: 1\n\
           subtype:\n\
             type: pointer\n\
             subtype: *Subvector\n\
@@ -277,7 +277,7 @@ plugins:   \n\
     int temp_num_grid = 1;
     PDI_expose("temp_num_grid", &temp_num_grid, PDI_OUT);
     
-    PDI_expose("vector_data", &v, PDI_OUT);
+    PDI_expose("vector_data", v, PDI_OUT);
     
     // PDI_share("NX", &SubgridNX(GridBackground(grid)), PDI_OUT);
     // PDI_reclaim("NX");
