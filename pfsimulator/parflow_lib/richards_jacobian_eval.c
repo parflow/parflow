@@ -48,15 +48,6 @@
  * Define module structures
  *---------------------------------------------------------------------*/
 
-// Which Jacobian to use.
-//
-enum JacobianType {
-  no_nonlinear_jacobian,
-  not_set,
-  simple,
-  overland_flow
-};
-
 typedef struct {
   enum JacobianType type;
   double SpinupDampP1; // NBE

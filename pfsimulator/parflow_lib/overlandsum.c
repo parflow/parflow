@@ -464,3 +464,54 @@ void OverlandSum(ProblemData *problem_data,
   FreeBCStruct(bc_struct);
 }
 
+void ComputeOverlandFlowSumCell(Vector* overlandflow_sum, Vector *KE, Vector *KW, Vector *KN, Vector *KS, BCStruct *bc_struct)
+{
+
+  Grid        *grid = VectorGrid(KE);
+  int is;
+
+  ForSubgridI(is, GridSubgrids(grid))
+  {
+    Subgrid *subgrid = GridSubgrid(grid, is);
+
+    Subvector *overlandflow_sum_sub = VectorSubvector(overlandflow_sum, is);
+    Subvector *kw_sub = VectorSubvector(KW, is);
+    Subvector *ke_sub = VectorSubvector(KE, is);
+    Subvector *kn_sub = VectorSubvector(KN, is);
+    Subvector *ks_sub = VectorSubvector(KS, is);
+
+    double *kw_dat = SubvectorData(kw_sub);
+    double *ke_dat = SubvectorData(ke_sub);
+    double *kn_dat = SubvectorData(kn_sub);
+    double *ks_dat = SubvectorData(ks_sub);
+
+    double *overlandflow_sum_dat = SubvectorData(overlandflow_sum_sub);
+
+    for (int ipatch = 0; ipatch < BCStructNumPatches(bc_struct); ipatch++)
+    {
+      switch (BCStructBCType(bc_struct, ipatch))
+      {
+	case OverlandBC:
+	{
+	  int i, j, k, is;
+	  int *fdir;
+	  int ival;
+	  BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
+          {
+	    if (fdir[2] == 1)
+	    {
+	      int io = SubvectorEltIndex(kw_sub, i, j, 0);
+
+	      // Calculate total outflow of each cell
+	      overlandflow_sum_dat[io] = pfmax(kn_dat[io], 0) + pfmax(-ks_dat[io], 0) + pfmax(-ke_dat[io], 0) + pfmax(kw_dat[io], 0) ;
+	      // printf("i=%d j=%d k=%d ke_dat=%f kw_dat=%f kn_dat=%f ks_dat=%f\n",i,j,k,ke_dat[io],kw_dat[io],kn_dat[io],ks_dat[io]);
+	    }
+	  }
+	  )
+	}
+      }
+    }
+  }
+}
+
+

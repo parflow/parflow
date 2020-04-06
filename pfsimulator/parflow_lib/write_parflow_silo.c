@@ -285,6 +285,7 @@ void     WriteSiloInit(char *file_prefix)
                              "evaptrans",
                              "evaptranssum",
                              "overlandsum",
+			     "overlandsum_cell",
                              "overland_bc_flux", };
 
     // IMF -- added second '+2' to next line...

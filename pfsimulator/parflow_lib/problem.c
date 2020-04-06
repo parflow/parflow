@@ -451,6 +451,10 @@ ProblemData   *NewProblemData(
 
   ProblemDataWellData(problem_data) = NewWellData();
 
+  // Allocated in richards_jacobian eval since hard to determine if
+  // overland flow is being used at this point.
+  ProblemDataOverlandFlowSumCell(problem_data) = NULL;
+
   return problem_data;
 }
 
@@ -494,6 +498,11 @@ void          FreeProblemData(
 
     FreeVector(ProblemDataRealSpaceZ(problem_data));
     FreeVector(ProblemDataIndexOfDomainTop(problem_data));
+
+    if(ProblemDataOverlandFlowSumCell(problem_data))
+    {
+      FreeVector(ProblemDataOverlandFlowSumCell(problem_data));
+    }
 
     tfree(problem_data);
   }

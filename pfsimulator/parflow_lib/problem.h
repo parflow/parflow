@@ -158,6 +158,16 @@ typedef struct {
   /* @RMM variable dz  */
   Vector *dz_mult;
   Vector *rsz;
+
+  /** 
+   * Sum of overland outflow of each cell for the current timestep. 
+   *
+   * Since output interval is potentially greater than the timestep
+   * a running sum of the overland flow is needed over all the timesteps 
+   * in each output interval.
+   */
+  Vector *overlandflow_sum_cell;
+  
 } ProblemData;
 
 /* Values of solver argument to NewProblem function */
@@ -274,6 +284,7 @@ typedef struct {
 #define ProblemDataSSlopeY(problem_data)        ((problem_data)->y_sslope)   //RMM
 #define ProblemDataZmult(problem_data)          ((problem_data)->dz_mult)    //RMM
 #define ProblemDataRealSpaceZ(problem_data)     ((problem_data)->rsz)
+#define ProblemDataOverlandFlowSumCell(problem_data)((problem_data)->overlandflow_sum_cell)
 /*--------------------------------------------------------------------------
  * Misc macros
  *   RDF not quite right, maybe?

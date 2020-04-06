@@ -2128,6 +2128,15 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     }          /* End ipatch loop */
   }            /* End subgrid loop */
 
+
+  // Compute running sum of overland flow
+
+  if (ProblemDataOverlandFlowSumCell(problem_data))
+  {
+    ComputeOverlandFlowSumCell(ProblemDataOverlandFlowSumCell(problem_data),
+			       KE, KW, KN, KS, bc_struct);
+  }
+
   FreeBCStruct(bc_struct);
 
   PFModuleInvokeType(RichardsBCInternalInvoke, bc_internal, (problem, problem_data, fval, NULL,

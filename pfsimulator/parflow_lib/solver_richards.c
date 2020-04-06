@@ -234,7 +234,7 @@ typedef struct {
   Vector *mask;
 
   Vector *evap_trans_sum;       /* running sum of evaporation and transpiration */
-  Vector *overland_sum;
+  Vector *overland_sum;         /* overland sum at boundaries; flow leaving domain */
   Vector *ovrl_bc_flx;          /* vector containing outflow at the boundary */
   Vector *dz_mult;              /* vector containing dz multplier values for all cells */
   Vector *x_velocity, *y_velocity, *z_velocity; /* vectors to hold velocity face values for pfbs - jjb */
@@ -803,6 +803,10 @@ SetupRichards(PFModule * this_module)
       instance_xtra->overland_sum =
         NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
       InitVectorAll(instance_xtra->overland_sum, 0.0);
+
+      // Allocating here since hard to determine if using overland flow in in NewProblemData.
+      ProblemDataOverlandFlowSumCell(problem_data) = NewVectorType(grid2d, 1, 1, vector_cell_centered);
+      InitVectorAll(ProblemDataOverlandFlowSumCell(problem_data), 0.0);
     }
 
     instance_xtra->mask = NewVectorType(grid, 1, 1, vector_cell_centered);
@@ -3114,6 +3118,11 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           WritePFNC(file_prefix, nc_postfix, t, overland_sum,
                     public_xtra->numVarTimeVariant, "overland_sum",
                     2, false, public_xtra->numVarIni);
+	  
+          sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+          WritePFNC(file_prefix, nc_postfix, t, ProblemDataOverlandFlowSumCell(problem_data),
+                    public_xtra->numVarTimeVariant, "overland_sum_cell",
+                    2, false, public_xtra->numVarIni);
           any_file_dumped = 1;
         }
 
@@ -3122,6 +3131,12 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           sprintf(file_postfix, "overlandsum.%05d",
                   instance_xtra->file_number);
           WritePFBinary(file_prefix, file_postfix, overland_sum);
+
+	  // SGS discuss with Reed/Laura on names
+	  sprintf(file_postfix, "overlandsum_cell.%05d",
+                  instance_xtra->file_number);
+          WritePFBinary(file_prefix, file_postfix, ProblemDataOverlandFlowSumCell(problem_data));
+	  
           any_file_dumped = 1;
         }
 
@@ -3132,6 +3147,13 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           WriteSilo(file_prefix, file_type, file_postfix,
                     overland_sum, t, instance_xtra->file_number,
                     "OverlandSum");
+
+	  sprintf(file_postfix, "%05d", instance_xtra->file_number);
+          sprintf(file_type, "overlandsum_cell");
+          WriteSilo(file_prefix, file_type, file_postfix,
+                    ProblemDataOverlandFlowSumCell(problem_data), t, instance_xtra->file_number,
+                    "OverlandSumCell");
+
           any_file_dumped = 1;
         }
 
@@ -3142,11 +3164,19 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
           WriteSiloPMPIO(file_prefix, file_type, file_postfix,
                          overland_sum, t, instance_xtra->file_number,
                          "OverlandSum");
+
+	  sprintf(file_postfix, "%05d", instance_xtra->file_number);
+          sprintf(file_type, "overlandsum_cell");
+          WriteSiloPMPIO(file_prefix, file_type, file_postfix,
+                         ProblemDataOverlandFlowSumCell(problem_data), t, instance_xtra->file_number,
+                         "OverlandSumCell");
+
           any_file_dumped = 1;
         }
 
         /* reset sum after output */
         PFVConstInit(0.0, overland_sum);
+	PFVConstInit(0.0, ProblemDataOverlandFlowSumCell(problem_data));
       }
 
       if (public_xtra->print_overland_bc_flux)
@@ -3770,29 +3800,76 @@ AdvanceRichards(PFModule * this_module, double start_time,      /* Starting time
       PFVConstInit(0.0, evap_trans_sum);
     }
 
-    if (public_xtra->print_overland_sum
-        || public_xtra->write_silo_overland_sum)
-    {
-      if (public_xtra->print_overland_sum)
+      if (public_xtra->print_overland_sum
+          || public_xtra->write_silo_overland_sum
+          || public_xtra->write_netcdf_overland_sum)
       {
-        sprintf(file_postfix, "overlandsum.%05d",
-                instance_xtra->file_number);
-        WritePFBinary(file_prefix, file_postfix, overland_sum);
-        any_file_dumped = 1;
-      }
+        if (public_xtra->write_netcdf_overland_sum)
+        {
+          sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+          WritePFNC(file_prefix, nc_postfix, t, overland_sum,
+                    public_xtra->numVarTimeVariant, "overland_sum",
+                    2, false, public_xtra->numVarIni);
+	  
+          sprintf(nc_postfix, "%05d", instance_xtra->file_number);
+          WritePFNC(file_prefix, nc_postfix, t, ProblemDataOverlandFlowSumCell(problem_data),
+                    public_xtra->numVarTimeVariant, "overland_sum_cell",
+                    2, false, public_xtra->numVarIni);
+          any_file_dumped = 1;
+        }
 
-      if (public_xtra->write_silo_overland_sum)
-      {
-        sprintf(file_postfix, "%05d", instance_xtra->file_number);
-        sprintf(file_type, "overlandsum");
-        WriteSilo(file_prefix, file_type, file_postfix, overland_sum,
-                  t, instance_xtra->file_number, "OverlandSum");
-        any_file_dumped = 1;
-      }
+        if (public_xtra->print_overland_sum)
+        {
+          sprintf(file_postfix, "overlandsum.%05d",
+                  instance_xtra->file_number);
+          WritePFBinary(file_prefix, file_postfix, overland_sum);
 
-      /* reset sum after output */
-      PFVConstInit(0.0, overland_sum);
-    }
+	  // SGS discuss with Reed/Laura on names
+	  sprintf(file_postfix, "overlandsum_cell.%05d",
+                  instance_xtra->file_number);
+          WritePFBinary(file_prefix, file_postfix, ProblemDataOverlandFlowSumCell(problem_data));
+	  
+          any_file_dumped = 1;
+        }
+
+        if (public_xtra->write_silo_overland_sum)
+        {
+          sprintf(file_postfix, "%05d", instance_xtra->file_number);
+          sprintf(file_type, "overlandsum");
+          WriteSilo(file_prefix, file_type, file_postfix,
+                    overland_sum, t, instance_xtra->file_number,
+                    "OverlandSum");
+
+	  sprintf(file_postfix, "%05d", instance_xtra->file_number);
+          sprintf(file_type, "overlandsum_cell");
+          WriteSilo(file_prefix, file_type, file_postfix,
+                    ProblemDataOverlandFlowSumCell(problem_data), t, instance_xtra->file_number,
+                    "OverlandSumCell");
+
+          any_file_dumped = 1;
+        }
+
+        if (public_xtra->write_silopmpio_overland_sum)
+        {
+          sprintf(file_postfix, "%05d", instance_xtra->file_number);
+          sprintf(file_type, "overlandsum");
+          WriteSiloPMPIO(file_prefix, file_type, file_postfix,
+                         overland_sum, t, instance_xtra->file_number,
+                         "OverlandSum");
+
+	  sprintf(file_postfix, "%05d", instance_xtra->file_number);
+          sprintf(file_type, "overlandsum_cell");
+          WriteSiloPMPIO(file_prefix, file_type, file_postfix,
+                         ProblemDataOverlandFlowSumCell(problem_data), t, instance_xtra->file_number,
+                         "OverlandSumCell");
+
+          any_file_dumped = 1;
+        }
+
+        /* reset sum after output */
+        PFVConstInit(0.0, overland_sum);
+	PFVConstInit(0.0, ProblemDataOverlandFlowSumCell(problem_data));
+      }
 
     if (public_xtra->print_overland_bc_flux)
     {

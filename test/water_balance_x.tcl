@@ -587,6 +587,16 @@ for {set i 0} {$i <= 19} {incr i} {
     }
 
     set prev_total_water_balance [expr $total_water_in_domain]
+
+}
+
+for {set i 1} {$i <= 19} {incr i} {
+    foreach file "overlandsum_cell" { 
+	set filename [format "%s.out.%s.%05d.silo" $runname $file $i]
+	if ![pftestFile $filename "Max difference in $file for timestep $i" $sig_digits] {
+	    set passed 0
+	}
+    }
 }
 
 if $verbose {

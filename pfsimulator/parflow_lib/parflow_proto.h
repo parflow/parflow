@@ -1391,4 +1391,26 @@ void OverlandSum(ProblemData *problem_data,
                  double       dt,
                  Vector *     overland_sum);
 
+/**
+ * Compute running sum of overland flow outflow for each top cell.
+ *
+ * In order to report overland flow outflow for each output interval 
+ * need to keep a running sum over the timestep intervals in each 
+ * output interval.   Running sum should be set to zero after it is
+ * written to a file.
+ *
+ * @param [in/out] overlandflow_sum Running sum of overland flow outflow 
+ * @param [in] KE East overland flow flux
+ * @param [in] KW West overland flow flux
+ * @param [in] KN North overland flow flux
+ * @param [in] KS South overland flow flux
+ * @param [in] bc_struct Boundary condition type data
+ */
+void ComputeOverlandFlowSumCell(Vector* overlandflow_sum,
+				Vector *KE,
+				Vector *KW,
+				Vector *KN,
+				Vector *KS,
+				BCStruct *bc_struct);
+
 Grid      *ReadProcessGrid();

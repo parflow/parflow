@@ -26,6 +26,15 @@
  *  USA
  **********************************************************************EHEADER*/
 
+// Which Jacobian to use.
+//
+enum JacobianType {
+  no_nonlinear_jacobian,
+  not_set,
+  simple,
+  overland_flow
+};
+
 typedef struct {
   PFModule    *nl_function_eval;
   PFModule    *richards_jacobian_eval;
