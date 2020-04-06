@@ -615,10 +615,7 @@ static int gpu_sync = 1;
 }
 
 #undef GrGeomInLoopBoxes
-#define GrGeomInLoopBoxes(...) GetMacro(__VA_ARGS__, 0, 0, 0, 0, 0, 0,              \
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, GrGeomILB, 0, _GrGeomILB)(__VA_ARGS__)
-#define _GrGeomILB(...) GrGeomILB(gpu_sync, 0, __VA_ARGS__)
-#define GrGeomILB(gpu_sync, dummy, i, j, k,                                         \
+#define GrGeomInLoopBoxes(gpu_sync, dummy, i, j, k,                                 \
   grgeom, ix, iy, iz, nx, ny, nz, loop_body)                                        \
 {                                                                                   \
   BoxArray* boxes = GrGeomSolidInteriorBoxes(grgeom);                               \
@@ -656,10 +653,7 @@ static int gpu_sync = 1;
 }
 
 #undef GrGeomSurfLoopBoxes
-#define GrGeomSurfLoopBoxes(...) GetMacro(__VA_ARGS__, 0, 0, 0, 0, 0, 0,            \
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, GrGeomSLB, 0, _GrGeomSLB)(__VA_ARGS__)
-#define _GrGeomSLB(...) GrGeomSLB(gpu_sync, 0, __VA_ARGS__)
-#define GrGeomSLB(gpu_sync, dummy, i, j, k, fdir, grgeom,                           \
+#define GrGeomSurfLoopBoxes(gpu_sync, dummy, i, j, k, fdir, grgeom,                 \
   ix, iy, iz, nx, ny, nz, loop_body)                                                \
 {                                                                                   \
   int PV_fdir[3];                                                                   \
@@ -737,10 +731,7 @@ static int gpu_sync = 1;
 }
 
 #undef GrGeomPatchLoopBoxes
-#define GrGeomPatchLoopBoxes(...) GetMacro(__VA_ARGS__, 0, 0, 0, 0, 0, 0,           \
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, GrGeomPLB, 0, _GrGeomPLB)(__VA_ARGS__)
-#define _GrGeomPLB(...) GrGeomPLB(gpu_sync, 0, __VA_ARGS__)
-#define GrGeomPLB(gpu_sync, dummy, i, j, k, fdir, grgeom, patch_num,                \
+#define GrGeomPatchLoopBoxes(gpu_sync, dummy, i, j, k, fdir, grgeom, patch_num,     \
   ix, iy, iz, nx, ny, nz, loop_body)                                                \
 {                                                                                   \
   int PV_fdir[3];                                                                   \
@@ -827,78 +818,72 @@ static int gpu_sync = 1;
 
 #undef GrGeomPatchLoopBoxesNoFdir
 #define GrGeomPatchLoopBoxesNoFdir(i, j, k, grgeom, patch_num,                      \
-                                   ix, iy, iz, nx, ny, nz,                          \
-                                   setup,                                           \
-                                   f_left, f_right,                                 \
-                                   f_down, f_up,                                    \
-                                   f_back, f_front,                                 \
-                                   finalize)                                        \
+  ix, iy, iz, nx, ny, nz, locals, setup,                                            \
+  f_left, f_right, f_down, f_up, f_back, f_front, finalize)                         \
+{                                                                                   \
+  for (int PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)                           \
   {                                                                                 \
-    for (int PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)                         \
+    int n_prev = 0;                                                                 \
+    BoxArray* boxes = GrGeomSolidPatchBoxes(grgeom, patch_num, PV_f);               \
+    for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                    \
     {                                                                               \
-      int n_prev = 0;                                                               \
-      BoxArray* boxes = GrGeomSolidPatchBoxes(grgeom, patch_num, PV_f);             \
-      for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)                  \
+      Box box = BoxArrayGetBox(boxes, PV_box);                                      \
+      /* find octree and region intersection */                                     \
+      int PV_ixl = pfmax(ix, box.lo[0]);                                            \
+      int PV_iyl = pfmax(iy, box.lo[1]);                                            \
+      int PV_izl = pfmax(iz, box.lo[2]);                                            \
+      int PV_ixu = pfmin((ix + nx - 1), box.up[0]);                                 \
+      int PV_iyu = pfmin((iy + ny - 1), box.up[1]);                                 \
+      int PV_izu = pfmin((iz + nz - 1), box.up[2]);                                 \
+                                                                                    \
+      if(PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu)                  \
       {                                                                             \
-        Box box = BoxArrayGetBox(boxes, PV_box);                                    \
-        /* find octree and region intersection */                                   \
-        int PV_ixl = pfmax(ix, box.lo[0]);                                          \
-        int PV_iyl = pfmax(iy, box.lo[1]);                                          \
-        int PV_izl = pfmax(iz, box.lo[2]);                                          \
-        int PV_ixu = pfmin((ix + nx - 1), box.up[0]);                               \
-        int PV_iyu = pfmin((iy + ny - 1), box.up[1]);                               \
-        int PV_izu = pfmin((iz + nz - 1), box.up[2]);                               \
+        int PV_diff_x = PV_ixu - PV_ixl;                                            \
+        int PV_diff_y = PV_iyu - PV_iyl;                                            \
+        int PV_diff_z = PV_izu - PV_izl;                                            \
                                                                                     \
-        if(PV_ixl <= PV_ixu && PV_iyl <= PV_iyu && PV_izl <= PV_izu)                \
-        {                                                                           \
-          int PV_diff_x = PV_ixu - PV_ixl;                                          \
-          int PV_diff_y = PV_iyu - PV_iyl;                                          \
-          int PV_diff_z = PV_izu - PV_izl;                                          \
+        dim3 block, grid;                                                           \
+        FindDims(grid, block, PV_diff_x + 1, PV_diff_y + 1, PV_diff_z + 1, 1);      \
                                                                                     \
-          dim3 block, grid;                                                         \
-          FindDims(grid, block, PV_diff_x + 1, PV_diff_y + 1, PV_diff_z + 1, 1);    \
+        int nx = PV_diff_x + 1;                                                     \
+        int ny = PV_diff_y + 1;                                                     \
+        int nz = PV_diff_z + 1;                                                     \
                                                                                     \
-          int nx = PV_diff_x + 1;                                                   \
-          int ny = PV_diff_y + 1;                                                   \
-          int nz = PV_diff_z + 1;                                                   \
+        auto lambda_init =                                                          \
+            GPU_LAMBDA(const int i, const int j, const int k)                       \
+            {                                                                       \
+                return n_prev + k * ny * nx + j * nx + i;                           \
+            };                                                                      \
+        n_prev += nz * ny * nx;                                                     \
                                                                                     \
-          auto lambda_init =                                                        \
-              GPU_LAMBDA(const int i, const int j, const int k)                     \
-              {                                                                     \
-                  return n_prev + k * ny * nx + j * nx + i;                         \
-              };                                                                    \
-          n_prev += nz * ny * nx;                                                   \
+        auto lambda_body =                                                          \
+             GPU_LAMBDA(const int i, const int j, const int k, int ival)            \
+             {                                                                      \
+                locals;                                                             \
+                setup;                                                              \
+                switch(PV_f)                                                        \
+                {                                                                   \
+                  f_left;                                                           \
+                  f_right;                                                          \
+                  f_down;                                                           \
+                  f_up;                                                             \
+                  f_back;                                                           \
+                  f_front;                                                          \
+                }                                                                   \
+                finalize;                                                           \
+             };                                                                     \
                                                                                     \
-          auto lambda_body =                                                        \
-               GPU_LAMBDA(const int i, const int j, const int k, int ival)          \
-               {                                                                    \
-                  setup;                                                            \
-                  switch(PV_f)                                                      \
-                  {                                                                 \
-                    f_left;                                                         \
-                    f_right;                                                        \
-                    f_down;                                                         \
-                    f_up;                                                           \
-                    f_back;                                                         \
-                    f_front;                                                        \
-                  }                                                                 \
-                  finalize;                                                         \
-               };                                                                   \
-                                                                                    \
-          BoxKernelI1<<<grid, block>>>(                                             \
-              lambda_init, lambda_body, PV_ixl, PV_iyl, PV_izl, nx, ny, nz);        \
-          CUDA_ERR(cudaPeekAtLastError());                                          \
-          if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                          \
-        }                                                                           \
+        BoxKernelI1<<<grid, block>>>(                                               \
+            lambda_init, lambda_body, PV_ixl, PV_iyl, PV_izl, nx, ny, nz);          \
+        CUDA_ERR(cudaPeekAtLastError());                                            \
+        if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                            \
       }                                                                             \
     }                                                                               \
-  }
+  }                                                                                 \
+}
 
 #undef GrGeomOctreeExteriorNodeLoop
-#define GrGeomOctreeExteriorNodeLoop(...) GetMacro(__VA_ARGS__, 0, 0, 0, 0, 0, 0,   \
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, GrGeomOEN, 0, _GrGeomOEN)(__VA_ARGS__)
-#define _GrGeomOEN(...) GrGeomOEN(gpu_sync, 0, __VA_ARGS__)
-#define GrGeomOEN(gpu_sync, dummy, i, j, k, node, octree, level,                    \
+#define GrGeomOctreeExteriorNodeLoop(gpu_sync, dummy, i, j, k, node, octree, level, \
   ix, iy, iz, nx, ny, nz, val_test, loop_body)                                      \
 {                                                                                   \
   int PV_i, PV_j, PV_k, PV_l;                                                       \
@@ -953,10 +938,8 @@ static int gpu_sync = 1;
 }
 
 #undef GrGeomOutLoop
-#define GrGeomOutLoop(...) GetMacro(__VA_ARGS__, 0, 0, 0, 0, 0, 0,                  \
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, GrGeomOL, 0, _GrGeomOL)(__VA_ARGS__)
-#define _GrGeomOL(...) GrGeomOL(gpu_sync, 0, __VA_ARGS__)
-#define GrGeomOL(gpu_sync, dummy, i, j, k, grgeom, r, ix, iy, iz, nx, ny, nz, body) \
+#define GrGeomOutLoop(gpu_sync, dummy, i, j, k, grgeom, r,                          \
+  ix, iy, iz, nx, ny, nz, body)                                                     \
 {                                                                                   \
   if(nx > 0 && ny > 0 && nz > 0)                                                    \
   {                                                                                 \
@@ -1003,207 +986,6 @@ static int gpu_sync = 1;
     }                                                                               \
   }                                                                                 \
 }
-
-/* Used to allow any BC type in a loop.
-   Because all BC types are actually macro defines to integers,
-   the compiler will optimize the necessary checks away.
-*/
-#define ALL -1
-#define DoNothing
-
-#define Left GrGeomOctreeFaceL
-#define Right GrGeomOctreeFaceR
-#define Down GrGeomOctreeFaceD
-#define Up GrGeomOctreeFaceU
-#define Back GrGeomOctreeFaceB
-#define Front GrGeomOctreeFaceF
-
-#define CellSetup(body) { body; };
-#define CellFinalize(body) { body; };
-#define BeforeAllCells(body) { body; };
-#define AfterAllCells(body) { body; }
-#define LoopVars(...) __VA_ARGS__
-#define FACE(fdir, body)      \
-  case fdir:                  \
-  {                           \
-    body;                     \
-    break;                    \
-  }
-
-  #define GrGeomPatchLoopNoFdir(i, j, k, grgeom, patch_num,               \
-                              r, ix, iy, iz, nx, ny, nz,                \
-                              setup,                                    \
-                              f_left, f_right,                          \
-                              f_down, f_up,                             \
-                              f_back, f_front,                          \
-                              finalize)                                 \
-  {                                                                     \
-    if (r == 0 && GrGeomSolidPatchBoxes(grgeom, patch_num, GrGeomOctreeNumFaces - 1)) \
-    {                                                                   \
-      GrGeomPatchLoopBoxesNoFdir(i, j, k, grgeom, patch_num,            \
-                                 ix, iy, iz, nx, ny, nz,                \
-                                 setup,                                 \
-                                 f_left, f_right,                       \
-                                 f_down, f_up,                          \
-                                 f_back, f_front,                       \
-                                 finalize)                              \
-    }                                                                   \
-    else                                                                \
-    {                                                                   \
-      GrGeomOctree  *PV_node;                                           \
-      double PV_ref = pow(2.0, r);                                      \
-                                                                        \
-                                                                        \
-      i = GrGeomSolidOctreeIX(grgeom) * (int)PV_ref;                    \
-      j = GrGeomSolidOctreeIY(grgeom) * (int)PV_ref;                    \
-      k = GrGeomSolidOctreeIZ(grgeom) * (int)PV_ref;                    \
-      GrGeomOctreeFaceLoopNoFdir(i, j, k, PV_node,                      \
-                                 GrGeomSolidPatch(grgeom, patch_num),   \
-                                 GrGeomSolidOctreeBGLevel(grgeom) + r,  \
-                                 ix, iy, iz, nx, ny, nz,                \
-                                 setup,                                 \
-                                 f_left, f_right,                       \
-                                 f_down, f_up,                          \
-                                 f_back, f_front,                       \
-                                 finalize)                              \
-    }                                                                   \
-  }
-
-  #define GrGeomOctreeFaceLoopNoFdir(i, j, k,                             \
-                                   node, octree, level_of_interest,     \
-                                   ix, iy, iz, nx, ny, nz,              \
-                                   setup,                               \
-                                   f_left, f_right,                     \
-                                   f_down, f_up,                        \
-                                   f_back, f_front,                     \
-                                   finalize)                            \
-  {                                                                     \
-    int PV_f;                                                           \
-    GrGeomOctreeInsideNodeLoop(i, j, k, node, octree, level_of_interest, \
-                               ix, iy, iz, nx, ny, nz,                  \
-                               TRUE,                                    \
-    {                                                                   \
-      for (PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)               \
-        if (GrGeomOctreeHasFace(node, PV_f))                            \
-        {                                                               \
-          setup;                                                        \
-                                                                        \
-          switch (PV_f)                                                 \
-          {                                                             \
-            f_left;                                                     \
-            f_right;                                                    \
-            f_down;                                                     \
-            f_up;                                                       \
-            f_back;                                                     \
-            f_front;                                                    \
-          }                                                             \
-                                                                        \
-          finalize;                                                     \
-        }                                                               \
-    })                                                                  \
-  }
-
-#define _GetCurrentPatch(i, j, k, ival, bc_struct, ipatch, is) \
-  BCStructBCType(bc_struct, ipatch)
-
-#define BCStructPatchLoopNoFdir(i, j, k, ival, bc_struct, ipatch, is,   \
-                                setup,                                  \
-                                f_left, f_right,                        \
-                                f_down, f_up,                           \
-                                f_back, f_front,                        \
-                                finalize)                               \
-  {                                                                     \
-    GrGeomSolid  *PV_gr_domain = BCStructGrDomain(bc_struct);           \
-    int PV_patch_index = BCStructPatchIndex(bc_struct, ipatch);         \
-    Subgrid      *PV_subgrid = BCStructSubgrid(bc_struct, is);          \
-                                                                        \
-    int PV_r = SubgridRX(PV_subgrid);                                   \
-    int PV_ix = SubgridIX(PV_subgrid);                                  \
-    int PV_iy = SubgridIY(PV_subgrid);                                  \
-    int PV_iz = SubgridIZ(PV_subgrid);                                  \
-    int PV_nx = SubgridNX(PV_subgrid);                                  \
-    int PV_ny = SubgridNY(PV_subgrid);                                  \
-    int PV_nz = SubgridNZ(PV_subgrid);                                  \
-                                                                        \
-    ival = 0;                                                           \
-    GrGeomPatchLoopNoFdir(i, j, k, PV_gr_domain, PV_patch_index,        \
-                          PV_r, PV_ix, PV_iy, PV_iz, PV_nx, PV_ny, PV_nz, \
-                          setup,                                        \
-                          f_left, f_right,                              \
-                          f_down, f_up,                                 \
-                          f_back, f_front,                              \
-    {                                                                   \
-      finalize;                                                         \
-      ival++;                                                           \
-    });                                                                 \
-  }
-#if 0
-/* Template for copy+pasting for new BC loops */
-ForPatchCellsPerFace(ALL,
-                     BeforeAllCells(DoNothing),
-                     LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                     CellSetup({}),
-                     FACE(Left, {}),
-                     FACE(Right, {}),
-                     FACE(Down, {}),
-                     FACE(Up, {}),
-                     FACE(Back, {}),
-                     FACE(Front, {}),
-                     CellFinalize({}),
-                     AfterAllCells(DoNothing)
-                     );
-#endif
-
-#define ForPatchCellsPerFace(bctype, dummy1, dummy2,          \
-                             before_loop, loopvars,           \
-                             setup,                           \
-                             f_left, f_right,                 \
-                             f_down, f_up,                    \
-                             f_back, f_front,                 \
-                             finalize,                        \
-                             after_loop)                      \
-  {                                                           \
-    if ( ((bctype) == ALL) ||                                 \
-         ((bctype) == _GetCurrentPatch(loopvars)))            \
-    {                                                         \
-      before_loop;                                            \
-      BCStructPatchLoopNoFdir(loopvars,                       \
-                              setup,                          \
-                              f_left, f_right,                \
-                              f_down, f_up,                   \
-                              f_back, f_front,                \
-                              finalize);                      \
-      after_loop;                                             \
-    }                                                         \
-  }
-
-#define ForPatchCellsPerFaceWithGhost(bctype, \
-                                      before_loop, loopvars,          \
-                                      setup,                          \
-                                      f_left, f_right,                \
-                                      f_down, f_up,                   \
-                                      f_back, f_front,                \
-                                      finalize,                       \
-                                      after_loop)                     \
-  {                                                                   \
-    if ( ((bctype) == ALL) ||                                         \
-         ((bctype) == _GetCurrentPatch(loopvars)))                    \
-    {                                                                 \
-      before_loop;                                                    \
-      BCStructPatchLoopOvrlndNoFdir(loopvars,                         \
-                                    setup,                            \
-                                    f_left, f_right,                  \
-                                    f_down, f_up,                     \
-                                    f_back, f_front,                  \
-                                    finalize);                        \
-      after_loop;                                                     \
-    }                                                                 \
-  }
-
-/* Calls the loop directly
-   Puts "body" into what is normally CellSetup
-   Replaces faces and finalize with DoNothing
-*/
 
 }
 #endif // PFCUDALOOPS_H

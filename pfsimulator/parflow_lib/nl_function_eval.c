@@ -862,34 +862,35 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       bc_patch_values = BCStructPatchValues(bc_struct, ipatch, is);
 
       ForPatchCellsPerFace(DirichletBC,
-                           InParallel, NO_LOCALS,
+                           InParallel,
+                           LOCALS(int dir; int ip; double diff; double sep; double u_new; double u_old; double lower_cond; double upper_cond; double value; double x_dir_g; double y_dir_g; double z_dir_g; double del_x_slope; double del_y_slope;),
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                            CellSetup(
                            {
-                             int dir = 0;
-                             int ip = SubvectorEltIndex(p_sub, i, j, k);
+                              dir = 0;
+                              ip = SubvectorEltIndex(p_sub, i, j, k);
                  
-                             double diff = 0.0e0;
-                             double sep;
-                             double u_new = 0.0e0;
-                             double u_old = 0.0e0;
+                              diff = 0.0e0;
+                              // sep;
+                              u_new = 0.0e0;
+                              u_old = 0.0e0;
                              
-                             double lower_cond;
-                             double upper_cond;
+                              // lower_cond;
+                              // upper_cond;
                  
-                             double value = bc_patch_values[ival];
-                             double x_dir_g = 0.0;
-                             double y_dir_g = 0.0;
-                             double z_dir_g = 1.0;
+                              value = bc_patch_values[ival];
+                              x_dir_g = 0.0;
+                              y_dir_g = 0.0;
+                              z_dir_g = 1.0;
                  
                              // del_x_slope = (1.0 / cos(atan(x_ssl_dat[io])));
                              // del_y_slope = (1.0 / cos(atan(y_ssl_dat[io])));
                  
-                             double del_x_slope = 1.0;
-                             double del_y_slope = 1.0;
+                              del_x_slope = 1.0;
+                              del_y_slope = 1.0;
                            }),
-                           FACE(Left,
+                           FACE(LeftFace,
                            {
                              dir = -1;
                              diff = pp[ip - 1] - pp[ip];
@@ -915,7 +916,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                                      * (permxp[ip] / viscosity)
                                      * 2.0 * (diff / dx);
                            }),
-                           FACE(Right,
+                           FACE(RightFace,
                            {
                              dir = 1;
                              diff = pp[ip] - pp[ip + 1];
@@ -941,7 +942,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                                      * (permxp[ip] / viscosity)
                                      * 2.0 * (diff / dx);
                            }),
-                           FACE(Down,
+                           FACE(DownFace,
                            {
                              dir = -1;
                              diff = pp[ip - sy_p] - pp[ip];
@@ -968,7 +969,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                              u_new = u_new * z_mult_dat[ip] * ffy * del_x_slope * (permyp[ip] / viscosity)
                                      * 2.0 * (diff / dy);
                            }),
-                           FACE(Up,
+                           FACE(UpFace,
                            {
                              dir = 1;
                              diff = pp[ip] - pp[ip + sy_p];
@@ -995,7 +996,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                              u_new = u_new * z_mult_dat[ip] * ffy * del_x_slope * (permyp[ip] / viscosity)
                                      * 2.0 * (diff / dy);
                            }),
-                           FACE(Back,
+                           FACE(BackFace,
                            {
                              dir = -1;
                              sep = dz * Mean(z_mult_dat[ip], z_mult_dat[ip - sz_p]); //RMM
@@ -1028,7 +1029,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                                      (permzp[ip] / viscosity)
                                      * 2.0 * diff;
                            }),
-                           FACE(Front,
+                           FACE(FrontFace,
                            {
                              dir = 1;
 

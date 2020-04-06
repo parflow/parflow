@@ -185,22 +185,20 @@
   #define __restrict__
 #endif
 
-// OpenMP stuff
-#ifndef InParallel
-  #define InParallel
-#endif
-#ifndef NewParallel
-  #define NewParallel
-#endif
-#ifndef NoWait
-  #define NoWait
-#endif
-#ifndef LOCALS
-  #define LOCALS
-#endif
-#ifndef NO_LOCALS
-  #define _NO_LOCALS
-#endif
+// Helper macros for the new BC loop interface
+#define InParallel
+#define NewParallel
+#define NoWait
+
+#define EMPTY()
+#define DEFER(x) x EMPTY()
+#define DEFER2(x) x EMPTY EMPTY() ()
+#define DEFER3(x) x EMPTY EMPTY EMPTY() () ()
+
+#undef LOCALS
+#define LOCALS(...) DEFER3(_LOCALS)(__VA_ARGS__)
+#define _LOCALS(...) __VA_ARGS__
+#define NO_LOCALS
 
 //NVTX Ranges for NSYS profiling
 #ifdef HAVE_CUDA
