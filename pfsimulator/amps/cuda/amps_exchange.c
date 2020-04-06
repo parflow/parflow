@@ -51,7 +51,7 @@ int _amps_send_sizes(amps_Package package, int **sizes)
     amps_device_globals.combuf_send_size = size_acc;
   }
 
-  CUDA_ERR(cudaStreamSynchronize(0)); 
+  // CUDA_ERR(cudaStreamSynchronize(0)); 
 
   size_acc = 0;
   for (int i = 0; i < package->num_send; i++)

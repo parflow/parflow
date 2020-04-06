@@ -250,6 +250,7 @@ void     RedBlackGSPoint(
       switch (compute_i)
       {
         case 0:
+          GPU_SYNC
           handle = InitVectorUpdate(x, vector_update_mode);
           compute_reg = ComputePkgIndRegion(compute_pkg);
           break;

@@ -717,7 +717,7 @@ double PFVDotProd(
     i_x = 0;
     i_y = 0;
 
-    BoxReduceI2(NULL, result, 
+    BoxLoopReduceI2(NULL, result, 
               i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_y, nx_y, ny_y, nz_y, 1, 1, 1,
@@ -844,12 +844,13 @@ double PFVWrmsNorm(
 
     i_x = 0;
     i_w = 0;
-    BoxLoopI2(i, j, k, ix, iy, iz, nx, ny, nz,
+    BoxLoopReduceI2(NULL, result, 
+              i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_w, nx_w, ny_w, nz_w, 1, 1, 1,
     {
       double prod = xp[i_x] * wp[i_w];
-      PlusEquals(result, prod * prod);
+      ReduceSum(result, prod * prod);
     });
   }
 
@@ -916,7 +917,7 @@ double PFVWL2Norm(
     i_x = 0;
     i_w = 0;
 
-    BoxReduceI2(NULL, result, 
+    BoxLoopReduceI2(NULL, result, 
               i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_w, nx_w, ny_w, nz_w, 1, 1, 1,
@@ -977,7 +978,7 @@ double PFVL1Norm(
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
     i_x = 0;
-    BoxReduceI1(NULL, result, 
+    BoxLoopReduceI1(NULL, result, 
               i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
