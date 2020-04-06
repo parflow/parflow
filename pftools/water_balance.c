@@ -47,7 +47,7 @@ void ComputeSurfaceStorage(
 {
   int i, j;
   int nx, ny, nz;
-  double dx, dy, dz;
+  double dx, dy;
 
   nx = DataboxNx(pressure);
   ny = DataboxNy(pressure);
@@ -55,7 +55,6 @@ void ComputeSurfaceStorage(
 
   dx = DataboxDx(pressure);
   dy = DataboxDy(pressure);
-  dz = DataboxDz(pressure);
 
   for (j = 0; j < ny; j++)
   {
@@ -169,16 +168,14 @@ void ComputeSurfaceRunoff(Databox *top,
                           Databox *surface_runoff)
 {
   int i, j;
-  int nx, ny, nz;
-  double dx, dy, dz;
+  int nx, ny;
+  double dx, dy;
 
   nx = DataboxNx(pressure);
   ny = DataboxNy(pressure);
-  nz = DataboxNz(pressure);
 
   dx = DataboxDx(pressure);
   dy = DataboxDy(pressure);
-  dz = DataboxDz(pressure);
 
   for (i = 0; i < nx; i++)
   {

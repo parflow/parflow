@@ -101,6 +101,11 @@ int amps_AllReduce(amps_Comm comm, amps_Invoice invoice, MPI_Op operation)
 
     switch (ptr->type)
     {
+      case AMPS_INVOICE_BYTE_CTYPE:
+	mpi_type = MPI_BYTE;
+        element_size = sizeof(char);
+        break;
+
       case AMPS_INVOICE_CHAR_CTYPE:
         mpi_type = MPI_CHAR;
         element_size = sizeof(char);

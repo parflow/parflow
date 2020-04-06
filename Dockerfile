@@ -3,14 +3,13 @@
 #-----------------------------------------------------------------------------
 # start by building the basic container
 #-----------------------------------------------------------------------------
-FROM centos:latest
+FROM centos:centos7
 MAINTAINER Steven Smith <smith84@llnl.gov>
 
 #-----------------------------------------------------------------------------
 #  Package dependencies
 #-----------------------------------------------------------------------------
 RUN yum  install -y  \
-    build-essential \
     curl \
     libcurl-devel \
     gcc  \

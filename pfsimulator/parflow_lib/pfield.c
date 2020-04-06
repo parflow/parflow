@@ -76,7 +76,6 @@ void         PField(
   /* Subgrid parameters */
   int nx, ny, nz;
   double dx, dy, dz;
-  int nx_v, ny_v, nz_v;
 
   /* Counters, indices, flags */
   int gridloop;
@@ -101,7 +100,6 @@ void         PField(
   double    *A;
   double    *b;                 /* Covariance vector for conditioning points */
   double    *w;                 /* Solution vector to Aw=b */
-  int       *ixx, *iyy, *izz;
   double    *value;
   int di, dj, dk;
   double    ***cov;
@@ -159,9 +157,6 @@ void         PField(
   b = ctalloc(double, nLxyz);
   w = ctalloc(double, nLxyz);
   value = ctalloc(double, nLxyz);
-  ixx = ctalloc(int, nLxyz);
-  iyy = ctalloc(int, nLxyz);
-  izz = ctalloc(int, nLxyz);
 
   /*--------------------------------------------------------------------
    * Start kriging algorithm
@@ -207,10 +202,6 @@ void         PField(
 
     /* RDF: assume resolution is the same in all 3 directions */
     ref = SubgridRX(subgrid);
-
-    nx_v = SubvectorNX(sub_field);
-    ny_v = SubvectorNY(sub_field);
-    nz_v = SubvectorNZ(sub_field);
 
     /* Note that in the construction of the covariance matrix
      * the max_search_rad is not used. Covariance depends upon

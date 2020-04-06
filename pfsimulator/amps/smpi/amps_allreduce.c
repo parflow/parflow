@@ -27,6 +27,8 @@
  **********************************************************************EHEADER*/
 #include "amps.h"
 
+#include <string.h>
+
 #ifndef max
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #endif
@@ -64,6 +66,19 @@ int operation;
         case amps_Max:
           switch (ptr->type)
           {
+	    case AMPS_INVOICE_BYTE_CTYPE:
+              pos_dest += AMPS_CALL_BYTE_ALIGN(comm, NULL,
+                                               pos_dest, len, 1);
+              pos_src += AMPS_CALL_BYTE_ALIGN(comm, NULL,
+                                              pos_src, len, 1);
+
+              for (end_dest = pos_dest + len * sizeof(char);
+                   pos_dest < end_dest;
+                   pos_dest += sizeof(char), pos_src += sizeof(char))
+                *(char*)pos_dest =
+                  max(*(char*)pos_dest, *(char*)pos_src);
+              break;
+
             case AMPS_INVOICE_CHAR_CTYPE:
               pos_dest += AMPS_CALL_CHAR_ALIGN(comm, NULL,
                                                pos_dest, len, 1);
@@ -147,6 +162,19 @@ int operation;
         case amps_Min:
           switch (ptr->type)
           {
+	    case AMPS_INVOICE_BYTE_CTYPE:
+              pos_dest += AMPS_CALL_BYTE_ALIGN(comm, NULL,
+                                               pos_dest, len, 1);
+              pos_src += AMPS_CALL_BYTE_ALIGN(comm, NULL,
+                                              pos_src, len, 1);
+
+              for (end_dest = pos_dest + len * sizeof(char);
+                   pos_dest < end_dest;
+                   pos_dest += sizeof(char), pos_src += sizeof(char))
+                *(char*)pos_dest =
+                  min(*(char*)pos_dest, *(char*)pos_src);
+              break;
+
             case AMPS_INVOICE_CHAR_CTYPE:
               pos_dest += AMPS_CALL_CHAR_ALIGN(comm, NULL,
                                                pos_dest, len, 1);
@@ -230,6 +258,18 @@ int operation;
         case amps_Add:
           switch (ptr->type)
           {
+	    case AMPS_INVOICE_BYTE_CTYPE:
+              pos_dest += AMPS_CALL_BYTE_ALIGN(comm, NULL,
+                                               pos_dest, len, 1);
+              pos_src += AMPS_CALL_BYTE_ALIGN(comm, NULL,
+                                              pos_src, len, 1);
+
+              for (end_dest = pos_dest + len * sizeof(char);
+                   pos_dest < end_dest;
+                   pos_dest += sizeof(char), pos_src += sizeof(char))
+                *(char*)pos_dest += *(char*)pos_src;
+              break;
+
             case AMPS_INVOICE_CHAR_CTYPE:
               pos_dest += AMPS_CALL_CHAR_ALIGN(comm, NULL,
                                                pos_dest, len, 1);
@@ -302,11 +342,15 @@ int operation;
                    pos_dest += sizeof(double), pos_src += sizeof(double))
                 *(double*)pos_dest += *(double*)pos_src;
               break;
+	    default:
+	    {
+	      amps_Error("amps_pack", INVALID_INVOICE, "Invalid invoice type", HALT);
+	      pos_dest = 0;
+	      pos_src = 0;
+	    }
+	    break;
           }
           break;
-
-        default:
-          ;
       }
 
       ptr = ptr->next;

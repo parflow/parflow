@@ -725,7 +725,8 @@ void            PrintVTK(
     int j;
     double *DTd;
     float *DTf;
-    DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
+    // DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
+    DTf = (float*)calloc(nxyzp,tools_SizeofFloat);
     DTd = DataboxCoeffs(v);
     for (j = 0; j < (NX * NY * NZ); ++j)
     {
@@ -774,7 +775,8 @@ void            PrintTFG_VTK(
 /* To reduce size, write points as float */
   int i;
   float *pnt;
-  pnt = (float*)malloc(tools_SizeofFloat * nxyzp * 3);
+  // pnt = (float*)malloc(tools_SizeofFloat * nxyzp * 3);
+  pnt = (float*)calloc(nxyzp * 3,tools_SizeofFloat);
   for (i = 0; i < (nxyzp * 3); ++i)
   {
     pnt[i] = (float)pnts[i];
@@ -798,7 +800,8 @@ void            PrintTFG_VTK(
     int j;
     double *DTd;
     float *DTf;
-    DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
+    // DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
+    DTf = (float*)calloc(nxyzp,tools_SizeofFloat);
     DTd = DataboxCoeffs(v);
 
     for (j = 0; j < (NX * NY * NZ); ++j)
@@ -877,7 +880,8 @@ void            PrintCLMVTK(
     double *DTd;
     float  *DTf;
     float  *val;
-    DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
+    // DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
+    DTf = (float*)calloc(nxyzp,tools_SizeofFloat);
     DTd = DataboxCoeffs(v);
     for (j = 0; j < (NX * NY * NZ); ++j)
     {
@@ -996,7 +1000,8 @@ void            PrintTFG_CLMVTK(
   /* To reduce size, write points as float */
 //    int     i;
   float *pnt;
-  pnt = (float*)malloc(tools_SizeofFloat * nxyzp * 3);
+  // pnt = (float*)malloc(tools_SizeofFloat * nxyzp * 3);
+  pnt = (float*)calloc(nxyzp * 3,tools_SizeofFloat);
   for (i = 0; i < (nxyzp * 3); ++i)
   {
     pnt[i] = (float)pnts[i];
@@ -1023,7 +1028,8 @@ void            PrintTFG_CLMVTK(
     double *DTd;
     float  *DTf;
     float  *val;
-    DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
+    // DTf = (float*)malloc(tools_SizeofFloat * nxyzp);
+    DTf = (float*)calloc(nxyzp,tools_SizeofFloat);
     DTd = DataboxCoeffs(v);
     for (j = 0; j < (NX * NY * NZ); ++j)
     {

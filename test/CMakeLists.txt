@@ -56,8 +56,8 @@ endif()
 if(${PARFLOW_HAVE_NETCDF})
   if(${PARFLOW_HAVE_HYPRE})
     #This test is failing on several platforms
-    #list(APPEND TESTS
-    #	default_richards_with_netcdf.tcl)
+    list(APPEND TESTS
+    	default_richards_with_netcdf.tcl)
   endif()
 endif()
 
@@ -75,7 +75,7 @@ endif()
 list(APPEND PARALLEL_3DTOPO_TESTS "")
 list(APPEND PARALLEL_2DTOPO_TESTS "")
 
-if(${PARFLOW_AMPS_LAYER} STREQUAL "mpi1")
+if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )
   list(APPEND PARALLEL_3DTOPO_TESTS
     default_single.tcl)
 

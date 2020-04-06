@@ -228,8 +228,7 @@ typedef struct grgeom_octree {
  * @param flag_value flag to set clear node
  */
 #define GrGeomOctreeClearBranchFlag(octree, flag_value) \
-  GrGeomOctreeFlag(octree) =                            \
-    (GrGeomOctreeFlag(octree) &= ~(flag_value))
+  GrGeomOctreeFlag(octree) &= ~(flag_value)
 
 /**
  * @brief Set branch node flag value
@@ -241,8 +240,7 @@ typedef struct grgeom_octree {
  * @param flag_value flag to set on node
  */
 #define GrGeomOctreeSetBranchNode(octree, flag_value) \
-  GrGeomOctreeFlag(octree) =                          \
-    (GrGeomOctreeFlag(octree) | (flag_value)
+  GrGeomOctreeFlag(octree) |= (flag_value)
 
 /**
  * @brief Clear the branch flag value
@@ -251,8 +249,7 @@ typedef struct grgeom_octree {
  * @param flag_value flag to clear
  */
 #define GrGeomOctreeClearBranchNode(octree, flag_value) \
-  GrGeomOctreeFlag(octree) =                            \
-    (GrGeomOctreeFlag(octree) &= ~(flag_value)
+   GrGeomOctreeFlag(octree) &= ~(flag_value)
 
 /**
  * @brief Set leaf indicator

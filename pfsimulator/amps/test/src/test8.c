@@ -27,8 +27,11 @@
  **********************************************************************EHEADER*/
 /* This is a test string */
 
-#include <stdio.h>
 #include "amps.h"
+#include "amps_test.h"
+
+#include <stdio.h>
+#include <string.h>
 
 static char *string = "ThisIsATestString";
 char *filename = "test8.input";
@@ -41,9 +44,6 @@ char *argv[];
   amps_Invoice recv_invoice;
 
   int loop;
-
-  int num;
-  int me;
 
   char *recvd_string = NULL;
   int length;
@@ -58,11 +58,20 @@ char *argv[];
 
   loop = atoi(argv[1]);
 
+  int me = amps_Rank(amps_CommWorld);
+
+  if(me == 0)
+  {
+    FILE* test_file;
+
+    test_file = fopen(filename, "wb");
+
+    fprintf(test_file, "17\nThisIsATestString\n");
+
+    fclose(test_file);
+  }
+
   recv_invoice = amps_NewInvoice("%i%&@c", &length, &length, &recvd_string);
-
-  num = amps_Size(amps_CommWorld);
-
-  me = amps_Rank(amps_CommWorld);
 
   for (; loop; loop--)
   {
@@ -82,17 +91,12 @@ char *argv[];
       amps_Printf("correct=<%s> returned=<%s>", string, recvd_string);
       result = 1;
     }
-    else
-    {
-      amps_Printf("Success\n");
-      result = 0;
-    }
   }
 
   amps_FreeInvoice(recv_invoice);
 
   amps_Finalize();
 
-  return result;
+  return amps_check_result(result);
 }
 

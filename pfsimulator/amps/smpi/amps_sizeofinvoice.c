@@ -35,7 +35,7 @@ amps_Invoice inv;
   amps_InvoiceEntry *ptr;
   char *cur_pos = 0;
   char *temp_pos = 0;
-  int len, stride;
+  int len;
   char *data;
 
   ptr = inv->list;
@@ -47,11 +47,6 @@ amps_Invoice inv;
     else
       len = ptr->len;
 
-    if (ptr->stride_type == AMPS_INVOICE_POINTER)
-      stride = *(ptr->ptr_stride);
-    else
-      stride = ptr->stride;
-
     if (ptr->data_type == AMPS_INVOICE_POINTER)
       data = *((char**)(ptr->data));
     else
@@ -59,6 +54,12 @@ amps_Invoice inv;
 
     switch (ptr->type)
     {
+      case AMPS_INVOICE_BYTE_CTYPE:
+        cur_pos += AMPS_CALL_BYTE_ALIGN(comm, data, cur_pos, len, stride);
+        cur_pos += AMPS_CALL_BYTE_SIZEOF(comm, data, cur_pos,
+                                         len, stride);
+        break;
+
       case AMPS_INVOICE_CHAR_CTYPE:
         cur_pos += AMPS_CALL_CHAR_ALIGN(comm, data, cur_pos, len, stride);
         cur_pos += AMPS_CALL_CHAR_SIZEOF(comm, data, cur_pos,
