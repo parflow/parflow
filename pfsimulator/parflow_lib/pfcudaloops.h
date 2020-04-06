@@ -615,7 +615,7 @@ static int gpu_sync = 1;
 }
 
 #undef GrGeomInLoopBoxes
-#define GrGeomInLoopBoxes(gpu_sync, dummy, i, j, k,                                 \
+#define GrGeomInLoopBoxes(i, j, k,                                                  \
   grgeom, ix, iy, iz, nx, ny, nz, loop_body)                                        \
 {                                                                                   \
   BoxArray* boxes = GrGeomSolidInteriorBoxes(grgeom);                               \
@@ -653,7 +653,7 @@ static int gpu_sync = 1;
 }
 
 #undef GrGeomSurfLoopBoxes
-#define GrGeomSurfLoopBoxes(gpu_sync, dummy, i, j, k, fdir, grgeom,                 \
+#define GrGeomSurfLoopBoxes(i, j, k, fdir, grgeom,                                  \
   ix, iy, iz, nx, ny, nz, loop_body)                                                \
 {                                                                                   \
   int PV_fdir[3];                                                                   \
@@ -731,7 +731,7 @@ static int gpu_sync = 1;
 }
 
 #undef GrGeomPatchLoopBoxes
-#define GrGeomPatchLoopBoxes(gpu_sync, dummy, i, j, k, fdir, grgeom, patch_num,     \
+#define GrGeomPatchLoopBoxes(i, j, k, fdir, grgeom, patch_num,                      \
   ix, iy, iz, nx, ny, nz, loop_body)                                                \
 {                                                                                   \
   int PV_fdir[3];                                                                   \
@@ -883,7 +883,7 @@ static int gpu_sync = 1;
 }
 
 #undef GrGeomOctreeExteriorNodeLoop
-#define GrGeomOctreeExteriorNodeLoop(gpu_sync, dummy, i, j, k, node, octree, level, \
+#define GrGeomOctreeExteriorNodeLoop(i, j, k, node, octree, level,                  \
   ix, iy, iz, nx, ny, nz, val_test, loop_body)                                      \
 {                                                                                   \
   int PV_i, PV_j, PV_k, PV_l;                                                       \
@@ -938,7 +938,7 @@ static int gpu_sync = 1;
 }
 
 #undef GrGeomOutLoop
-#define GrGeomOutLoop(gpu_sync, dummy, i, j, k, grgeom, r,                          \
+#define GrGeomOutLoop(i, j, k, grgeom, r,                                           \
   ix, iy, iz, nx, ny, nz, body)                                                     \
 {                                                                                   \
   if(nx > 0 && ny > 0 && nz > 0)                                                    \

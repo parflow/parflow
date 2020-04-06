@@ -243,7 +243,12 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   qx = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   qy = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
 
-
+  Vector *u_right_vec, *u_front_vec, *u_upper_vec; // @IJB
+  u_right_vec = NewVectorType(grid, 1, 1, fval->type);
+  u_front_vec = NewVectorType(grid, 1, 1, fval->type);
+  u_upper_vec = NewVectorType(grid, 1, 1, fval->type);
+    Subvector   *u_right_sub, *u_front_sub, *u_upper_sub; // @IJB
+    double      *u_right_dat, *u_front_dat, *u_upper_dat; // @IJB
   /* Calculate pressure dependent properties: density and saturation */
 
   PFModuleInvokeType(PhaseDensityInvoke, density_module, (0, pressure, density, &dtmp, &dtmp,
@@ -564,6 +569,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     /* @RMM added to provide access to zmult */
     z_mult_sub = VectorSubvector(z_mult, is);
 
+    /* @IJB added to enable parallelism */
+    u_right_sub = VectorSubvector(u_right_vec, is);
+    u_front_sub = VectorSubvector(u_front_vec, is);
+    u_upper_sub = VectorSubvector(u_upper_vec, is);
     /* RDF: assumes resolutions are the same in all 3 directions */
     r = SubgridRX(subgrid);
 
@@ -609,6 +618,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     /* @RMM added to provide variable dz */
     z_mult_dat = SubvectorData(z_mult_sub);
 
+    /* @IJB added to enable parallelism */
+    u_right_dat = SubvectorData(u_right_sub);
+    u_front_dat = SubvectorData(u_front_sub);
+    u_upper_dat = SubvectorData(u_upper_sub);
     qx_sub = VectorSubvector(qx, is);
 
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
@@ -765,10 +778,67 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       vy[vyi] = u_front / ffy;
       vz[vzi] = u_upper / ffz;
 
-      PlusEquals(fp[ip], dt * (u_right + u_front + u_upper));
-      PlusEquals(fp[ip + 1], -dt * u_right);
-      PlusEquals(fp[ip + sy_p], -dt * u_front);
-      PlusEquals(fp[ip + sz_p], -dt * u_upper);
+      u_right_dat[ip] = u_right;
+      u_front_dat[ip] = u_front;
+      u_upper_dat[ip] = u_upper;
+
+      // PlusEquals(fp[ip], dt * (u_right + u_front + u_upper));
+      // PlusEquals(fp[ip + 1], -dt * u_right);
+      // PlusEquals(fp[ip + sy_p], -dt * u_front);
+      // PlusEquals(fp[ip + sz_p], -dt * u_upper);
+    });
+  }
+
+    // Gather portion
+  ForSubgridI(is, GridSubgrids(grid))
+  {
+    subgrid = GridSubgrid(grid, is);
+
+    p_sub = VectorSubvector(pressure, is);
+    f_sub = VectorSubvector(fval, is);
+
+    /* @IJB added to enable parallelism */
+    u_right_sub = VectorSubvector(u_right_vec, is);
+    u_front_sub = VectorSubvector(u_front_vec, is);
+    u_upper_sub = VectorSubvector(u_upper_vec, is);
+
+    ix = SubgridIX(subgrid) - 1;
+    iy = SubgridIY(subgrid) - 1;
+    iz = SubgridIZ(subgrid) - 1;
+
+    nx = SubgridNX(subgrid) + 1;
+    ny = SubgridNY(subgrid) + 1;
+    nz = SubgridNZ(subgrid) + 1;
+
+    nx_p = SubvectorNX(p_sub);
+    ny_p = SubvectorNY(p_sub);
+
+    int sx_p = 1;
+    sy_p = nx_p;
+    sz_p = ny_p * nx_p;
+
+    fp = SubvectorData(f_sub);
+
+    /* @IJB added to enable parallelism */
+    u_right_dat = SubvectorData(u_right_sub);
+    u_front_dat = SubvectorData(u_front_sub);
+    u_upper_dat = SubvectorData(u_upper_sub);
+
+    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+    {
+      int ip = SubvectorEltIndex(p_sub, i, j, k);
+
+      // ZYX-self order because for an internal cell in the original schedule,
+      // the k+1 cell writes to (i,j,k) first, then the j+1 cell,
+      // then the i+1 cell, then itself.
+      // Z Direction
+      fp[ip] -= dt * u_upper_dat[ip - sz_p];
+      // Y Direction
+      fp[ip] -= dt * u_front_dat[ip - sy_p];
+      // X Direction
+      fp[ip] -= dt * u_right_dat[ip - sx_p];
+      // Self-update
+      fp[ip] += dt * (u_right_dat[ip] + u_front_dat[ip] + u_upper_dat[ip]);
     });
   }
 
@@ -2368,6 +2438,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   FreeVector(KS);
   FreeVector(qx);
   FreeVector(qy);
+
+  FreeVector(u_right_vec);
+  FreeVector(u_front_vec);
+  FreeVector(u_upper_vec);
 
   POP_NVTX
 
