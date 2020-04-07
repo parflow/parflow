@@ -125,36 +125,37 @@ set (SRC_FILES_CONST advect.F
 
 if( ${PARFLOW_HAVE_CUDA} )
   set (SRC_FILES_ARCH
-    axpy.cu
-    calc_elevations.cu
-    clustering.cu
-    copy.cu
-    globals.cu
-    grgeometry.cu
-    innerprod.cu
-    matrix.cu
-    matvec.cu
-    mg_semi.cu
-    mg_semi_restrict.cu
-    mg_semi_prolong.cu
-    nl_function_eval.cu
-    overlandflow_eval.cu
-    overlandflow_eval_diffusive.cu
-    overlandflow_eval_Kin.cu
-    pf_module.cu
-    problem_bc.cu
-    problem_bc_pressure.cu
-    problem_ic_phase_pressure.cu
-    problem_phase_density.cu
-    problem_phase_rel_perm.cu
-    problem_phase_source.cu
-    problem_saturation.cu
-    rb_GS_point.cu
-    region.cu
-    richards_jacobian_eval.cu
-    vector.cu
-    vector_utilities.cu
+    axpy.cpp
+    calc_elevations.cpp
+    clustering.cpp
+    copy.cpp
+    globals.cpp
+    grgeometry.cpp
+    innerprod.cpp
+    matrix.cpp
+    matvec.cpp
+    mg_semi.cpp
+    mg_semi_restrict.cpp
+    mg_semi_prolong.cpp
+    nl_function_eval.cpp
+    overlandflow_eval.cpp
+    overlandflow_eval_diffusive.cpp
+    overlandflow_eval_Kin.cpp
+    pf_module.cpp
+    problem_bc.cpp
+    problem_bc_pressure.cpp
+    problem_ic_phase_pressure.cpp
+    problem_phase_density.cpp
+    problem_phase_rel_perm.cpp
+    problem_phase_source.cpp
+    problem_saturation.cpp
+    rb_GS_point.cpp
+    region.cpp
+    richards_jacobian_eval.cpp
+    vector.cpp
+    vector_utilities.cpp
   )
+  set_source_files_properties(${SRC_FILES_ARCH} PROPERTIES LANGUAGE CUDA)
   add_library(pfsimulator ${SRC_FILES_ARCH} ${SRC_FILES_CONST})
   set_target_properties(pfsimulator PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
   target_link_libraries(pfsimulator nvToolsExt)
