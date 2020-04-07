@@ -933,33 +933,33 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
       ForPatchCellsPerFace(DirichletBC,
                            InParallel,
-                           LOCALS(int dir; int ip; double diff; double sep; double u_new; double u_old; double lower_cond; double upper_cond; double value; double x_dir_g; double y_dir_g; double z_dir_g; double del_x_slope; double del_y_slope;),
+                           NO_LOCALS,
                            BeforeAllCells(DoNothing),
                            LoopVars(i, j, k, ival, bc_struct, ipatch, is),
-                           CellSetup(
-                           {
-                              dir = 0;
-                              ip = SubvectorEltIndex(p_sub, i, j, k);
+                           CellSetup
+                           (
+                             int dir = 0;
+                             int ip = SubvectorEltIndex(p_sub, i, j, k);
                  
-                              diff = 0.0e0;
-                              // sep;
-                              u_new = 0.0e0;
-                              u_old = 0.0e0;
+                             double diff = 0.0e0;
+                             double sep;
+                             double u_new = 0.0e0;
+                             double u_old = 0.0e0;
                              
-                              // lower_cond;
-                              // upper_cond;
+                             double lower_cond;
+                             double upper_cond;
                  
-                              value = bc_patch_values[ival];
-                              x_dir_g = 0.0;
-                              y_dir_g = 0.0;
-                              z_dir_g = 1.0;
-                 
+                             double value = bc_patch_values[ival];
+                             double x_dir_g = 0.0;
+                             double y_dir_g = 0.0;
+                             double z_dir_g = 1.0;
+                  
                              // del_x_slope = (1.0 / cos(atan(x_ssl_dat[io])));
                              // del_y_slope = (1.0 / cos(atan(y_ssl_dat[io])));
-                 
-                              del_x_slope = 1.0;
-                              del_y_slope = 1.0;
-                           }),
+                  
+                             double del_x_slope = 1.0;
+                             double del_y_slope = 1.0;
+                           ),
                            FACE(LeftFace,
                            {
                              dir = -1;

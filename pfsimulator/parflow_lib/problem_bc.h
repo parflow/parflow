@@ -208,7 +208,9 @@ typedef struct {
 #define BackFace GrGeomOctreeFaceB
 #define FrontFace GrGeomOctreeFaceF
 
-#define CellSetup(body) { body; };
+#define CellSetup(...) DEFER3(_CellSetup)(__VA_ARGS__)
+#define _CellSetup(...) __VA_ARGS__
+// #define CellSetup(body) { body; };
 #define CellFinalize(body) { body; };
 #define BeforeAllCells(body) { body; };
 #define AfterAllCells(body) { body; }
