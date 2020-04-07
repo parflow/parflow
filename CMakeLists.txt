@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.9)
+cmake_minimum_required (VERSION 3.12)
 
 project (PARFLOW LANGUAGES C Fortran CXX)
 
@@ -6,6 +6,48 @@ set (CMAKE_CXX_STANDARD 11)
 set (CMAKE_C_STANDARD 11)
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+
+#-----------------------------------------------------------------------------
+# GPU-Acceleration (CUDA)
+#-----------------------------------------------------------------------------
+set (PARFLOW_ENABLE_CUDA False)
+set (PARFLOW_ENABLE_CUDA CACHE BOOL "Enable CUDA")
+if( ${PARFLOW_ENABLE_CUDA} )
+
+# Initialize CUDA
+  include(CheckLanguage)
+  check_language(CUDA)
+  if(CMAKE_CUDA_COMPILER)
+    enable_language(CUDA)
+    set(CMAKE_CUDA_STANDARD 11)
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_70,code=sm_70 --expt-extended-lambda")
+    set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -G --ptxas-options=-v")
+    set(CMAKE_CUDA_FLAGS_RELEASE "-Xptxas ${CMAKE_CUDA_FLAGS_RELEASE}")
+    set(CMAKE_CUDA_HOST_COMPILER mpicxx)
+    message(STATUS "Found CUDA ${CMAKE_CUDA_COMPILER_VERSION} at ${CMAKE_CUDA_COMPILER}")
+    set(PARFLOW_HAVE_CUDA "yes")
+    set(HAVE_CUDA ${PARFLOW_HAVE_CUDA})
+  else(CMAKE_CUDA_COMPILER)
+    message(FATAL_ERROR "ERROR: CUDA installation not found")
+  endif(CMAKE_CUDA_COMPILER)
+
+# Include RapidsAI Memory Manager (RMM) for pool allocation
+  if(DEFINED RMM_ROOT)
+    find_path(RMM_INCLUDE "rmm" HINTS "${RMM_ROOT}/include")
+    find_library(RMM_LIBRARY "rmm" HINTS "${RMM_ROOT}/lib")
+    if(RMM_INCLUDE AND RMM_LIBRARY)
+      message(STATUS "RMM: RMM_LIBRARY set to ${RMM_LIBRARY}")
+      message(STATUS "RMM: RMM_INCLUDE set to ${RMM_INCLUDE}")
+      add_library(rmm SHARED IMPORTED ${RMM_LIBRARY})
+      set_target_properties(rmm PROPERTIES IMPORTED_LOCATION ${RMM_LIBRARY})
+      set(PARFLOW_HAVE_RMM "yes")
+      set(HAVE_RMM ${PARFLOW_HAVE_RMM})
+    else(RMM_INCLUDE AND RMM_LIBRARY)
+      message(FATAL_ERROR "ERROR: RMM installation not found")
+    endif(RMM_INCLUDE AND RMM_LIBRARY)
+  endif(DEFINED RMM_ROOT)
+
+endif( ${PARFLOW_ENABLE_CUDA} )
 
 #-----------------------------------------------------------------------------
 # Version number
@@ -63,8 +105,12 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 
 # Set AMPS communication layer
 set(PARFLOW_AMPS_LAYER "seq" CACHE STRING "Set the Communications layer to use")
-set_property(CACHE PARFLOW_AMPS_LAYER PROPERTY STRINGS seq mpi1 smpi oas3 win32)
+set_property(CACHE PARFLOW_AMPS_LAYER PROPERTY STRINGS seq mpi1 cuda smpi oas3 win32)
 set(AMPS ${PARFLOW_AMPS_LAYER})
+
+if((NOT PARFLOW_HAVE_CUDA) AND (${PARFLOW_AMPS_LAYER} STREQUAL "cuda"))
+  message(FATAL_ERROR "ERROR: Using PARFLOW_AMPS_LAYER=cuda requires building with GPU acceleration!")
+endif((NOT PARFLOW_HAVE_CUDA) AND (${PARFLOW_AMPS_LAYER} STREQUAL "cuda"))
 
 option(PARFLOW_AMPS_SEQUENTIAL_IO "Use AMPS single file I/O model for output of PFB files" "FALSE")
 
@@ -83,8 +129,8 @@ if (${PARFLOW_HAVE_OAS3})
   set (HAVE_OAS3 ${PARFLOW_HAVE_OAS3})
 endif (${PARFLOW_HAVE_OAS3})
 
-set (PARFLOW_AMPS_LAYER_REQUIRE_MPI mpi1 smpi oas3)
-set (PARFLOW_TEST_PARALLEL mpi1 smpi)
+set (PARFLOW_AMPS_LAYER_REQUIRE_MPI cuda mpi1 smpi oas3)
+set (PARFLOW_TEST_PARALLEL cuda mpi1 smpi)
 
 # Check for MPI only if AMPS requires it
 if ( ${PARFLOW_AMPS_LAYER} IN_LIST PARFLOW_AMPS_LAYER_REQUIRE_MPI )

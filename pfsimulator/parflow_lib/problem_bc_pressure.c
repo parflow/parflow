@@ -31,6 +31,7 @@
 
 #include "parflow.h"
 
+#include <string.h>
 
 /*--------------------------------------------------------------------------
  * Structures
@@ -126,12 +127,14 @@ BCStruct    *BCPressure(
      * Set up values component of bc_struct
      *---------------------------------------------------------------------*/
 
-    values = ctalloc(double **, num_patches);
+    values = talloc(double **, num_patches);
+    memset(values, 0, num_patches * sizeof(double **));
     BCStructValues(bc_struct) = values;
 
     for (ipatch = 0; ipatch < num_patches; ipatch++)
     {
-      values[ipatch] = ctalloc(double *, SubgridArraySize(subgrids));
+      values[ipatch] = talloc(double *, SubgridArraySize(subgrids));
+      memset(values[ipatch], 0, SubgridArraySize(subgrids) * sizeof(double *));
 
       cycle_number = BCPressureDataCycleNumber(bc_pressure_data, ipatch);
       interval_number = TimeCycleDataComputeIntervalNumber(
@@ -167,7 +170,8 @@ BCStruct    *BCPressure(
 
           if (instance_xtra->elevations == NULL)
           {
-            instance_xtra->elevations = ctalloc(double **, num_patches);
+            instance_xtra->elevations = talloc(double **, num_patches);
+            memset(instance_xtra->elevations, 0, num_patches * sizeof(double **));
             instance_xtra->problem_data = problem_data;
             instance_xtra->grid = grid;
           }
@@ -200,7 +204,8 @@ BCStruct    *BCPressure(
               patch_values_size++;
             });
 
-            patch_values = ctalloc(double, patch_values_size);
+            patch_values = talloc(double, patch_values_size);
+            memset(patch_values, 0, patch_values_size * sizeof(double));
             values[ipatch][is] = patch_values;
 
             ix = SubgridIX(subgrid);
@@ -387,7 +392,8 @@ BCStruct    *BCPressure(
               patch_values_size++;
             });
 
-            patch_values = ctalloc(double, patch_values_size);
+            patch_values = talloc(double, patch_values_size);
+            memset(patch_values, 0, patch_values_size * sizeof(double));
             values[ipatch][is] = patch_values;
 
             dx2 = SubgridDX(subgrid) / 2.0;
@@ -573,7 +579,8 @@ BCStruct    *BCPressure(
               patch_values_size++;
             });
 
-            patch_values = ctalloc(double, patch_values_size);
+            patch_values = talloc(double, patch_values_size);
+            memset(patch_values, 0, patch_values_size * sizeof(double));
             values[ipatch][is] = patch_values;
 
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
@@ -608,7 +615,8 @@ BCStruct    *BCPressure(
               patch_values_size++;
             });
 
-            patch_values = ctalloc(double, patch_values_size);
+            patch_values = talloc(double, patch_values_size);
+            memset(patch_values, 0, patch_values_size * sizeof(double));
             values[ipatch][is] = patch_values;
 
             dx = SubgridDX(subgrid);
@@ -685,7 +693,8 @@ BCStruct    *BCPressure(
               patch_values_size++;
             });
 
-            patch_values = ctalloc(double, patch_values_size);
+            patch_values = talloc(double, patch_values_size);
+            memset(patch_values, 0, patch_values_size * sizeof(double));
             values[ipatch][is] = patch_values;
 
             tmp_vector = NewVectorType(grid, 1, 0, vector_cell_centered);
@@ -732,7 +741,8 @@ BCStruct    *BCPressure(
               patch_values_size++;
             });
 
-            patch_values = ctalloc(double, patch_values_size);
+            patch_values = talloc(double, patch_values_size);
+            memset(patch_values, 0, patch_values_size * sizeof(double));
             values[ipatch][is] = patch_values;
 
             tmp_vector = NewVectorType(grid, 1, 0, vector_cell_centered);
@@ -784,7 +794,8 @@ BCStruct    *BCPressure(
             dy2 = SubgridDY(subgrid) / 2.0;
             dz2 = SubgridDZ(subgrid) / 2.0;
 
-            patch_values = ctalloc(double, patch_values_size);
+            patch_values = talloc(double, patch_values_size);
+            memset(patch_values, 0, patch_values_size * sizeof(double));
             values[ipatch][is] = patch_values;
 
             fcn_type = ExactSolutionFunctionType(interval_data);
@@ -893,7 +904,8 @@ BCStruct    *BCPressure(
               patch_values_size++;
             });
 
-            patch_values = ctalloc(double, patch_values_size);
+            patch_values = talloc(double, patch_values_size);
+            memset(patch_values, 0, patch_values_size * sizeof(double));
             values[ipatch][is] = patch_values;
 
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
@@ -926,7 +938,8 @@ BCStruct    *BCPressure(
               patch_values_size++;
             });
 
-            patch_values = ctalloc(double, patch_values_size);
+            patch_values = talloc(double, patch_values_size);
+            memset(patch_values, 0, patch_values_size * sizeof(double));
             values[ipatch][is] = patch_values;
 
             tmp_vector = NewVectorType(grid, 1, 0, vector_cell_centered);
@@ -970,7 +983,8 @@ BCStruct    *BCPressure(
               patch_values_size++;
             });
 
-            patch_values = ctalloc(double, patch_values_size);
+            patch_values = talloc(double, patch_values_size);
+            memset(patch_values, 0, patch_values_size * sizeof(double));
             values[ipatch][is] = patch_values;
 
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
@@ -999,7 +1013,8 @@ BCStruct    *BCPressure(
               patch_values_size++;
             });
 
-            patch_values = ctalloc(double, patch_values_size);
+            patch_values = talloc(double, patch_values_size);
+            memset(patch_values, 0, patch_values_size * sizeof(double));
             values[ipatch][is] = patch_values;
 
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
@@ -1028,7 +1043,8 @@ BCStruct    *BCPressure(
               patch_values_size++;
             });
 
-            patch_values = ctalloc(double, patch_values_size);
+            patch_values = talloc(double, patch_values_size);
+            memset(patch_values, 0, patch_values_size * sizeof(double));
             values[ipatch][is] = patch_values;
 
             BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
@@ -1058,9 +1074,14 @@ PFModule *BCPressureInitInstanceXtra(Problem *problem)
 
 
   if (PFModuleInstanceXtra(this_module) == NULL)
-    instance_xtra = ctalloc(InstanceXtra, 1);
+  {
+    instance_xtra = talloc(InstanceXtra, 1);
+    memset(instance_xtra, 0, sizeof(InstanceXtra));
+  }
   else
+  {
     instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
+  }
 
   /*-----------------------------------------------------------------------
    * Initialize data associated with argument `problem'
@@ -1141,7 +1162,8 @@ PFModule  *BCPressureNewPublicXtra(
   PublicXtra    *public_xtra;
 
   /* allocate space for the public_xtra structure */
-  public_xtra = ctalloc(PublicXtra, 1);
+  public_xtra = talloc(PublicXtra, 1);
+  memset(public_xtra, 0, sizeof(PublicXtra));
 
   (public_xtra->num_phases) = num_phases;
 

@@ -33,9 +33,14 @@
 *  It also computes the derivatives of these terms for inclusion in the Jacobian.
 * @LEC, @RMM
 *****************************************************************************/
+
 #include "parflow.h"
+
+#ifndef HAVE_CUDA
 #include "llnlmath.h"
 //#include "llnltyps.h"
+#endif
+
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -88,17 +93,10 @@ void    OverlandFlowEvalDiff(
 
   double        *sx_dat, *sy_dat, *mann_dat, *top_dat, *pp, *opp;
 
-  double dx, dy;
-  double Sf_mag;
-  double Press_x=NAN, Press_y, Sf_x=NAN, Sf_y, Sf_xo=NAN, Sf_yo=NAN;
-  double Pupx=NAN, Pupy, Pupox, Pupoy, Pdown, Pdowno;
-  double ov_epsilon;
+  double dx, dy, ov_epsilon;
 
-  int ival, sy_v;
+  int i, j, k, ival, sy_v;
   int *fdir;
-
-  int i, j, k, ip=0, io, itop,k1x, k1y, ipp1, ippsy;
-  int k1, k0x, k0y;
 
   p_sub = VectorSubvector(pressure, sg);
   op_sub = VectorSubvector(old_pressure, sg);
@@ -122,33 +120,42 @@ void    OverlandFlowEvalDiff(
   sy_v = SubvectorNX(top_sub);
 
   ov_epsilon = GetDoubleDefault("Solver.OverlandDiffusive.Epsilon", 1.0e-5);
-
+  
   if (fcn == CALCFCN)
   {
     BCStructPatchLoopOvrlnd(i, j, k, fdir, ival, bc_struct, ipatch, sg,
     {
       if (fdir[2] == 1)
       {
-        io = SubvectorEltIndex(sx_sub, i, j, 0);
-        itop = SubvectorEltIndex(top_sub, i, j, 0);
+        int ip = 0;
+        int io = SubvectorEltIndex(sx_sub, i, j, 0);
+        int itop = SubvectorEltIndex(top_sub, i, j, 0);
 
-        k1 = (int)top_dat[itop];
-        k0x = (int)top_dat[itop - 1];
-        k0y = (int)top_dat[itop - sy_v];
-        k1x = (int)top_dat[itop + 1];
-        k1y = (int)top_dat[itop + sy_v];
+        int k1 = (int)top_dat[itop];
+        int k0x = (int)top_dat[itop - 1];
+        int k0y = (int)top_dat[itop - sy_v];
+        int k1x = (int)top_dat[itop + 1];
+        int k1y = (int)top_dat[itop + sy_v];
+
+        double Press_x=NAN; 
+        double Press_y;
+
+        double Sf_x=NAN;
+        double Sf_y;
+        double Sf_xo = NAN;
+        double Sf_yo = NAN;
 
         if (k1 >= 0)
         {
           ip = SubvectorEltIndex(p_sub, i, j, k1);
-          ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
-          ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
-          Pupx = pfmax(pp[ipp1], 0.0);
-          Pupy = pfmax(pp[ippsy], 0.0);
-          Pupox = pfmax(opp[ipp1], 0.0);
-          Pupoy = pfmax(opp[ippsy], 0.0);
-          Pdown = pfmax(pp[ip], 0.0);
-          Pdowno = pfmax(opp[ip], 0.0);
+          int ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
+          int ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
+          double Pupx = pfmax(pp[ipp1], 0.0);
+          double Pupy = pfmax(pp[ippsy], 0.0);
+          double Pupox = pfmax(opp[ipp1], 0.0);
+          double Pupoy = pfmax(opp[ippsy], 0.0);
+          double Pdown = pfmax(pp[ip], 0.0);
+          double Pdowno = pfmax(opp[ip], 0.0);
 
           Sf_x = sx_dat[io] + (Pupx - Pdown) / dx;
           Sf_y = sy_dat[io] + (Pupy - Pdown) / dy;
@@ -156,7 +163,7 @@ void    OverlandFlowEvalDiff(
           Sf_xo = sx_dat[io] + (Pupox - Pdowno) / dx;
           Sf_yo = sy_dat[io] + (Pupoy - Pdowno) / dy;
 
-          Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5);
+          double Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5);
           if (Sf_mag < ov_epsilon)
             Sf_mag = ov_epsilon;
 
@@ -173,7 +180,7 @@ void    OverlandFlowEvalDiff(
           Press_x = pfmax((pp[ip]), 0.0);
           Sf_x = sx_dat[io] + (Press_x - 0.0) / dx;
 
-          Pupox = pfmax(opp[ip], 0.0);
+          double Pupox = pfmax(opp[ip], 0.0);
           Sf_xo = sx_dat[io] + (Pupox - 0.0) / dx;
 
           double Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5); //+ov_epsilon;
@@ -191,7 +198,7 @@ void    OverlandFlowEvalDiff(
           Press_y = pfmax((pp[ip]), 0.0);
           Sf_y = sy_dat[io] + (Press_y - 0.0) / dx;
 
-          Pupoy = pfmax(opp[ip], 0.0);
+          double Pupoy = pfmax(opp[ip], 0.0);
           Sf_yo = sy_dat[io] + (Pupoy - 0.0) / dx;
 
           double Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5); //Note that the sf_xo was already corrected above
@@ -221,7 +228,7 @@ void    OverlandFlowEvalDiff(
     {
       if (fdir[2] == 1)
       {
-        io = SubvectorEltIndex(sx_sub, i, j, 0);
+        int io = SubvectorEltIndex(sx_sub, i, j, 0);
         ke_v[io] = qx_v[io];
         kw_v[io] = qx_v[io - 1];
         kn_v[io] = qy_v[io];
@@ -236,26 +243,33 @@ void    OverlandFlowEvalDiff(
     {
       if (fdir[2] == 1)
       {
-        io = SubvectorEltIndex(sx_sub, i, j, 0);
-        itop = SubvectorEltIndex(top_sub, i, j, 0);
+        int ip = 0;
+        int io = SubvectorEltIndex(sx_sub, i, j, 0);
+        int itop = SubvectorEltIndex(top_sub, i, j, 0);
 
-        k1 = (int)top_dat[itop];
-        k0x = (int)top_dat[itop - 1];
-        k0y = (int)top_dat[itop - sy_v];
-        k1x = (int)top_dat[itop + 1];
-        k1y = (int)top_dat[itop + sy_v];
+        int k1 = (int)top_dat[itop];
+        int k0x = (int)top_dat[itop - 1];
+        int k0y = (int)top_dat[itop - sy_v];
+        int k1x = (int)top_dat[itop + 1];
+        int k1y = (int)top_dat[itop + sy_v];
+
+        double Pupx=NAN;
+        double Sf_x=NAN;
+        double Sf_y;
+        double Sf_xo = NAN;
+        double Sf_yo = NAN;
 
         if (k1 >= 0)
         {
           ip = SubvectorEltIndex(p_sub, i, j, k1);
-          ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
-          ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
+          int ipp1 = (int)SubvectorEltIndex(p_sub, i+1, j, k1x);
+          int ippsy = (int)SubvectorEltIndex(p_sub, i, j+1, k1y);
           Pupx = pfmax(pp[ipp1], 0.0);
-          Pupy = pfmax(pp[ippsy], 0.0);
-          Pupox = pfmax(opp[ipp1], 0.0);
-          Pupoy = pfmax(opp[ippsy], 0.0);
-          Pdown = pfmax(pp[ip], 0.0);
-          Pdowno = pfmax(opp[ip], 0.0);
+          double Pupy = pfmax(pp[ippsy], 0.0);
+          double Pupox = pfmax(opp[ipp1], 0.0);
+          double Pupoy = pfmax(opp[ippsy], 0.0);
+          double Pdown = pfmax(pp[ip], 0.0);
+          double Pdowno = pfmax(opp[ip], 0.0);
 
           Sf_x = sx_dat[io] + (Pupx - Pdown) / dx;
           Sf_y = sy_dat[io] + (Pupy - Pdown) / dy;
@@ -263,7 +277,7 @@ void    OverlandFlowEvalDiff(
           Sf_xo = sx_dat[io] + (Pupox - Pdowno) / dx;
           Sf_yo = sy_dat[io] + (Pupoy - Pdowno) / dy;
 
-          Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5); //+ov_epsilon;
+          double Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5); //+ov_epsilon;
           if (Sf_mag < ov_epsilon)
             Sf_mag = ov_epsilon;
 
@@ -318,7 +332,7 @@ void    OverlandFlowEvalDiff(
           Pupx = pfmax((pp[ip]), 0.0);
           Sf_x = sx_dat[io] + (Pupx - 0.0) / dx;
 
-          Pupox = pfmax(opp[ip], 0.0);
+          double Pupox = pfmax(opp[ip], 0.0);
           Sf_xo = sx_dat[io] + (Pupox - 0.0) / dx;
 
           double Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5);
@@ -346,10 +360,10 @@ void    OverlandFlowEvalDiff(
         //fix for lower y boundary
         if (k0y < 0.0)
         {
-          Pupy = pfmax((pp[ip]), 0.0);
+          double Pupy = pfmax((pp[ip]), 0.0);
           Sf_y = sy_dat[io] + (Pupy - 0.0) / dy;
 
-          Pupoy = pfmax(opp[ip], 0.0);
+          double Pupoy = pfmax(opp[ip], 0.0);
           Sf_yo = sy_dat[io] + (Pupoy - 0.0) / dy;
 
           double Sf_mag = RPowerR(Sf_xo * Sf_xo + Sf_yo * Sf_yo, 0.5); //Note that the sf_xo was already corrected above

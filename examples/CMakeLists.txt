@@ -7,7 +7,7 @@ if(${PARFLOW_HAVE_HYPRE})
   list(APPEND TESTS impes.plinear.tcl)
 endif()
 
-if(${PARFLOW_AMPS_LAYER} STREQUAL "mpi1")
+if((${PARFLOW_AMPS_LAYER} STREQUAL "mpi1") OR (${PARFLOW_AMPS_LAYER} STREQUAL "cuda"))
   set(PARALLEL_TESTS richards.plinear.tcl)
 endif()
 

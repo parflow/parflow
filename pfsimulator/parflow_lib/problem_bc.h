@@ -126,5 +126,177 @@ typedef struct {
     });                                                                           \
   }
 
+  #define BCStructPatchLoopNoFdir(i, j, k, ival, bc_struct, ipatch, is, \
+                                locals, setup,                          \
+                                f_left, f_right,                        \
+                                f_down, f_up,                           \
+                                f_back, f_front,                        \
+                                finalize)                               \
+  {                                                                     \
+    GrGeomSolid  *PV_gr_domain = BCStructGrDomain(bc_struct);           \
+    int PV_patch_index = BCStructPatchIndex(bc_struct, ipatch);         \
+    Subgrid      *PV_subgrid = BCStructSubgrid(bc_struct, is);          \
+                                                                        \
+    int PV_r = SubgridRX(PV_subgrid);                                   \
+    int PV_ix = SubgridIX(PV_subgrid);                                  \
+    int PV_iy = SubgridIY(PV_subgrid);                                  \
+    int PV_iz = SubgridIZ(PV_subgrid);                                  \
+    int PV_nx = SubgridNX(PV_subgrid);                                  \
+    int PV_ny = SubgridNY(PV_subgrid);                                  \
+    int PV_nz = SubgridNZ(PV_subgrid);                                  \
+                                                                        \
+    ival = 0;                                                           \
+    GrGeomPatchLoopNoFdir(i, j, k, PV_gr_domain, PV_patch_index,        \
+                          PV_r, PV_ix, PV_iy, PV_iz, PV_nx, PV_ny, PV_nz, \
+                          locals, setup,                                \
+                          f_left, f_right,                              \
+                          f_down, f_up,                                 \
+                          f_back, f_front,                              \
+    {                                                                   \
+      finalize;                                                         \
+      ival++;                                                           \
+    });                                                                 \
+  }
+
+#define BCStructPatchLoopOvrlndNoFdir(i, j, k, ival, bc_struct, ipatch, is, \
+                                      locals, setup,                    \
+                                      f_left, f_right,                  \
+                                      f_down, f_up,                     \
+                                      f_back, f_front,                  \
+                                      finalize)                         \
+  {                                                                     \
+    GrGeomSolid  *PV_gr_domain = BCStructGrDomain(bc_struct);           \
+    int PV_patch_index = BCStructPatchIndex(bc_struct, ipatch);         \
+    Subgrid      *PV_subgrid = BCStructSubgrid(bc_struct, is);          \
+                                                                        \
+    int PV_r = SubgridRX(PV_subgrid);                                   \
+    int PV_ix = SubgridIX(PV_subgrid) - 1;                              \
+    int PV_iy = SubgridIY(PV_subgrid) - 1;                              \
+    int PV_iz = SubgridIZ(PV_subgrid) - 1;                              \
+    int PV_nx = SubgridNX(PV_subgrid) + 2;                              \
+    int PV_ny = SubgridNY(PV_subgrid) + 2;                              \
+    int PV_nz = SubgridNZ(PV_subgrid) + 2;                              \
+                                                                        \
+    ival = 0;                                                           \
+    GrGeomPatchLoopNoFdir(i, j, k, PV_gr_domain, PV_patch_index,        \
+                          PV_r, PV_ix, PV_iy, PV_iz, PV_nx, PV_ny, PV_nz, \
+                          locals, setup,                                \
+                          f_left, f_right,                              \
+                          f_down, f_up,                                 \
+                          f_back, f_front,                              \
+    {                                                                   \
+      finalize;                                                         \
+      ival++;                                                           \
+    });                                                                 \
+  }
+
+/*--------------------------------------------------------------------------
+ * ForPatch loops and macros
+ *--------------------------------------------------------------------------*/
+
+/* Used to allow any BC type in a loop.
+   Because all BC types are actually macro defines to integers,
+   the compiler will optimize the necessary checks away.
+*/
+#define ALL -1
+#define DoNothing
+
+#define LeftFace GrGeomOctreeFaceL
+#define RightFace GrGeomOctreeFaceR
+#define DownFace GrGeomOctreeFaceD
+#define UpFace GrGeomOctreeFaceU
+#define BackFace GrGeomOctreeFaceB
+#define FrontFace GrGeomOctreeFaceF
+
+#define CellSetup(...) DEFER3(_CellSetup)(__VA_ARGS__)
+#define _CellSetup(...) __VA_ARGS__
+// #define CellSetup(body) { body; };
+#define CellFinalize(body) { body; };
+#define BeforeAllCells(body) { body; };
+#define AfterAllCells(body) { body; }
+#define LoopVars(...) __VA_ARGS__
+#define FACE(fdir, body)      \
+  case fdir:                  \
+  {                           \
+    body;                     \
+    break;                    \
+  }
+
+#define _GetCurrentPatch(i, j, k, ival, bc_struct, ipatch, is) \
+  BCStructBCType(bc_struct, ipatch)
+
+
+#if 0
+/* Template for copy+pasting for new BC loops */
+ForPatchCellsPerFace(ALL,
+                     BeforeAllCells(DoNothing),
+                     LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                     CellSetup({}),
+                     FACE(Left, {}),
+                     FACE(Right, {}),
+                     FACE(Down, {}),
+                     FACE(Up, {}),
+                     FACE(Back, {}),
+                     FACE(Front, {}),
+                     CellFinalize({}),
+                     AfterAllCells(DoNothing)
+                     );
+#endif
+
+#define ForPatchCellsPerFace(bctype, dummy1, locals,          \
+                             before_loop, loopvars,           \
+                             setup,                           \
+                             f_left, f_right,                 \
+                             f_down, f_up,                    \
+                             f_back, f_front,                 \
+                             finalize,                        \
+                             after_loop)                      \
+  {                                                           \
+    if ( ((bctype) == ALL) ||                                 \
+         ((bctype) == _GetCurrentPatch(loopvars)))            \
+    {                                                         \
+      before_loop;                                            \
+      BCStructPatchLoopNoFdir(loopvars,                       \
+                              locals, setup,                  \
+                              f_left, f_right,                \
+                              f_down, f_up,                   \
+                              f_back, f_front,                \
+                              finalize);                      \
+      after_loop;                                             \
+    }                                                         \
+  }
+
+#define ForPatchCellsPerFaceWithGhost(bctype, \
+                                      before_loop, loopvars,          \
+                                      setup,                          \
+                                      f_left, f_right,                \
+                                      f_down, f_up,                   \
+                                      f_back, f_front,                \
+                                      finalize,                       \
+                                      after_loop)                     \
+  {                                                                   \
+    if ( ((bctype) == ALL) ||                                         \
+         ((bctype) == _GetCurrentPatch(loopvars)))                    \
+    {                                                                 \
+      before_loop;                                                    \
+      BCStructPatchLoopOvrlndNoFdir(loopvars,                         \
+                                    setup,                            \
+                                    f_left, f_right,                  \
+                                    f_down, f_up,                     \
+                                    f_back, f_front,                  \
+                                    finalize);                        \
+      after_loop;                                                     \
+    }                                                                 \
+  }
+/* Calls the loop directly
+   Puts "body" into what is normally CellSetup
+   Replaces faces and finalize with DoNothing
+*/
+#define ForEachPatchCell(i, j, k, ival, bc_struct, ipatch, is, body)  \
+  BCStructPatchLoopNoFdir(i, j, k, ival, bc_struct, ipatch, is, body, \
+                          DoNothing, DoNothing,                       \
+                          DoNothing, DoNothing,                       \
+                          DoNothing, DoNothing,                       \
+                          DoNothing);
 
 #endif

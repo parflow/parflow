@@ -37,8 +37,12 @@
 *****************************************************************************/
 
 #include "parflow.h"
+
+#ifndef HAVE_CUDA
 #include "llnlmath.h"
 //#include "llnltyps.h"
+#endif
+
 /*--------------------------------------------------------------------------
  * Structures
  *--------------------------------------------------------------------------*/
@@ -79,15 +83,8 @@ void    OverlandFlowEval(
 
   double        *sx_dat, *sy_dat, *mann_dat, *top_dat, *pp;
 
-  double xdir, ydir;
-  double q_mid;
-  double q_v[3];
-
-  int ival, sy_v, step;
-  int            *fdir;
-
-  int i, ii, j, k, ip, io, itop;
-  int k1;
+  int i, j, k, ival, sy_v;
+  int *fdir;
 
   p_sub = VectorSubvector(pressure, sg);
 
@@ -113,21 +110,25 @@ void    OverlandFlowEval(
       {
         if (fdir[2] == 1)
         {
-          io = SubvectorEltIndex(sx_sub, i, j, 0);
-          itop = SubvectorEltIndex(top_sub, i, j, 0);
+          int io = SubvectorEltIndex(sx_sub, i, j, 0);
+          int itop = SubvectorEltIndex(top_sub, i, j, 0);
+
+          double q_v[3];
+          double xdir;
+          double ydir;
 
           /* compute east and west faces */
-          /* First initialize velocities, q_v, for inactive region */
+          /* First initialize velocities, q_v, for inactive region */         
           q_v[0] = 0.0;
           q_v[1] = 0.0;
           q_v[2] = 0.0;
 
-          for (ii = -1; ii < 2; ii++)
+          for (int ii = -1; ii < 2; ii++)
           {
-            k1 = (int)top_dat[itop + ii];
+            int k1 = (int)top_dat[itop + ii];
             if (k1 >= 0)
             {
-              ip = SubvectorEltIndex(p_sub, (i + ii), j, k1);
+              int ip = SubvectorEltIndex(p_sub, (i + ii), j, k1);
 
               if (sx_dat[io + ii] > 0.0)
                 xdir = -1.0;
@@ -145,18 +146,18 @@ void    OverlandFlowEval(
           ke_v[io] = pfmax(q_v[1], 0.0) - pfmax(-q_v[2], 0.0);
 
           /* compute north and south faces */
-          /* First initialize velocities, q_v, for inactive region */
+          /* First initialize velocities, q_v, for inactive region */          
           q_v[0] = 0.0;
           q_v[1] = 0.0;
           q_v[2] = 0.0;
 
-          for (ii = -1; ii < 2; ii++)
+          for (int ii = -1; ii < 2; ii++)
           {
-            step = ii * sy_v;
-            k1 = (int)top_dat[itop + step];
+            int step = ii * sy_v;
+            int k1 = (int)top_dat[itop + step];
             if (k1 >= 0)
             {
-              ip = SubvectorEltIndex(p_sub, i, (j + ii), k1);
+              int ip = SubvectorEltIndex(p_sub, i, (j + ii), k1);
 
               if (sy_dat[io + step] > 0.0)
                 ydir = -1.0;
@@ -181,8 +182,12 @@ void    OverlandFlowEval(
       {
         if (fdir[2] == 1)
         {
-          io = SubvectorEltIndex(sx_sub, i, j, 0);
-          itop = SubvectorEltIndex(top_sub, i, j, 0);
+          int io = SubvectorEltIndex(sx_sub, i, j, 0);
+          int itop = SubvectorEltIndex(top_sub, i, j, 0);
+
+          double q_v[3];
+          double xdir;
+          double ydir;
 
           /* compute east and west faces */
           /* First initialize velocities, q_v, for inactive region */
@@ -190,12 +195,12 @@ void    OverlandFlowEval(
           q_v[1] = 0.0;
           q_v[2] = 0.0;
 
-          for (ii = -1; ii < 2; ii++)
+          for (int ii = -1; ii < 2; ii++)
           {
-            k1 = (int)top_dat[itop + ii];
+            int k1 = (int)top_dat[itop + ii];
             if (k1 >= 0)
             {
-              ip = SubvectorEltIndex(p_sub, (i + ii), j, k1);
+              int ip = SubvectorEltIndex(p_sub, (i + ii), j, k1);
 
               if (sx_dat[io + ii] > 0.0)
                 xdir = -1.0;
@@ -218,13 +223,13 @@ void    OverlandFlowEval(
           q_v[1] = 0.0;
           q_v[2] = 0.0;
 
-          for (ii = -1; ii < 2; ii++)
+          for (int ii = -1; ii < 2; ii++)
           {
-            step = ii * sy_v;
-            k1 = (int)top_dat[itop + step];
+            int step = ii * sy_v;
+            int k1 = (int)top_dat[itop + step];
             if (k1 >= 0)
             {
-              ip = SubvectorEltIndex(p_sub, i, (j + ii), k1);
+              int ip = SubvectorEltIndex(p_sub, i, (j + ii), k1);
 
               if (sy_dat[io + step] > 0.0)
                 ydir = -1.0;
@@ -255,8 +260,11 @@ void    OverlandFlowEval(
           /* compute derivs for east and west faces */
 
           /* current cell */
-          io = SubvectorEltIndex(sx_sub, i, j, 0);
-          ip = SubvectorEltIndex(p_sub, i, j, k);
+          int io = SubvectorEltIndex(sx_sub, i, j, 0);
+          int ip = SubvectorEltIndex(p_sub, i, j, k);
+
+          double xdir;
+          double ydir;
 
           if (sx_dat[io] > 0.0)
             xdir = -1.0;
@@ -265,7 +273,7 @@ void    OverlandFlowEval(
           else
             xdir = 0.0;
 
-          q_mid = xdir * (5.0 / 3.0) * (RPowerR(fabs(sx_dat[io]), 0.5) / mann_dat[io]) * RPowerR(pfmax((pp[ip]), 0.0), (2.0 / 3.0));
+          double q_mid = xdir * (5.0 / 3.0) * (RPowerR(fabs(sx_dat[io]), 0.5) / mann_dat[io]) * RPowerR(pfmax((pp[ip]), 0.0), (2.0 / 3.0));
           /* compute derivs of kw and ke - NOTE: io is for current cell */
           kw_v[io] = -pfmax(-q_mid, 0.0);
           ke_v[io] = pfmax(q_mid, 0.0);
@@ -295,8 +303,11 @@ void    OverlandFlowEval(
           /* compute derivs for east and west faces */
 
           /* current cell */
-          io = SubvectorEltIndex(sx_sub, i, j, 0);
-          ip = SubvectorEltIndex(p_sub, i, j, k);
+          int io = SubvectorEltIndex(sx_sub, i, j, 0);
+          int ip = SubvectorEltIndex(p_sub, i, j, k);
+
+          double xdir;
+          double ydir;
 
           if (sx_dat[io] > 0.0)
             xdir = -1.0;
@@ -305,7 +316,7 @@ void    OverlandFlowEval(
           else
             xdir = 0.0;
 
-          q_mid = xdir * (5.0 / 3.0) * (RPowerR(fabs(sx_dat[io]), 0.5) / mann_dat[io]) * RPowerR(pfmax((pp[ip]), 0.0), (2.0 / 3.0));
+          double q_mid = xdir * (5.0 / 3.0) * (RPowerR(fabs(sx_dat[io]), 0.5) / mann_dat[io]) * RPowerR(pfmax((pp[ip]), 0.0), (2.0 / 3.0));
           qx_v[io] = q_mid;
           /* compute derivs of kw and ke - NOTE: io is for current cell */
           kw_v[io] = -pfmax(-q_mid, 0.0);

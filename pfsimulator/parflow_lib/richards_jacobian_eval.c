@@ -200,6 +200,8 @@ void    RichardsJacobianEval(
                                                       * symmetric part of the Jacobian (1), or the
                                                       * full Jacobian */
 {
+  PUSH_NVTX("RichardsJacobianEval",1)
+
   PFModule      *this_module = ThisPFModule;
   InstanceXtra  *instance_xtra = (InstanceXtra*)PFModuleInstanceXtra(this_module);
   PublicXtra    *public_xtra = (PublicXtra*)PFModulePublicXtra(this_module);
@@ -271,7 +273,7 @@ void    RichardsJacobianEval(
 
   double      *pp, *sp, *sdp, *pop, *dp, *ddp, *rpp, *rpdp;
   double      *permxp, *permyp, *permzp;
-  double      *cp, *wp, *ep, *sop, *np, *lp, *up, *op = NULL, *ss;
+  double      *cp, *wp, *ep, *sop, *np, *lp, *up, *ss;
 
   double      *cp_c, *wp_c, *ep_c, *sop_c, *np_c, *top_dat;  //DOK
 
@@ -279,11 +281,9 @@ void    RichardsJacobianEval(
   int ix, iy, iz;
   int nx, ny, nz;
   int nx_v, ny_v;
-  int nx_m, ny_m;
+  // int nx_m, ny_m;
   int sy_v, sz_v;
-  int sy_m, sz_m;
-  int ip, ipo, im, iv;
-
+  // int sy_m, sz_m;
 
   int diffusive;             //@LEC
 
@@ -292,26 +292,14 @@ void    RichardsJacobianEval(
   int overlandspinup;              //@RMM
   overlandspinup = GetIntDefault("OverlandFlowSpinUp", 0);
 
-  int itop, k1, io, io1, ovlnd_flag;           //DOK
-  int ioo;         //@RMM
+  int *ovlnd_flag;           //DOK
 
-  double dtmp, dx, dy, dz, vol, vol2, ffx, ffy, ffz;          //@RMM
-  double diff, coeff, x_coeff, y_coeff, z_coeff, updir, sep;         //@RMM
-  double prod, prod_rt, prod_no, prod_up, prod_val, prod_lo;
-  double prod_der, prod_rt_der, prod_no_der, prod_up_der;
-  double west_temp, east_temp, north_temp, south_temp;
-  double lower_temp, upper_temp, o_temp = 0.0;
-  double sym_west_temp, sym_east_temp, sym_south_temp, sym_north_temp;
-  double sym_lower_temp, sym_upper_temp;
-  double lower_cond, upper_cond;
-
-  //@RMM : terms for gravity/terrain
-  double x_dir_g=NAN, y_dir_g=NAN, x_dir_g_c=NAN, y_dir_g_c=NAN;
+  double dtmp, dx, dy, dz, ffx, ffy, ffz;          //@RMM
 
   BCStruct    *bc_struct;
   GrGeomSolid *gr_domain = ProblemDataGrDomain(problem_data);
   double      *bc_patch_values;
-  double value, den_d, dend_d;
+
   int         *fdir;
   int ipatch, ival;
 
@@ -394,12 +382,37 @@ void    RichardsJacobianEval(
 
   // SGS set this to 1 since the off/on behavior does not work in
   // parallel.
-  ovlnd_flag = 1;  // determines whether or not to set up data structs for overland flow contribution
-
+  ovlnd_flag = ctalloc(int, 1);
+  ovlnd_flag[0] = 1;  // determines whether or not to set up data structs for overland flow contribution
 
   /* Initialize matrix values to zero. */
   InitMatrix(J, 0.0);
   InitMatrix(JC, 0.0);
+
+    // Temporary vectors for split loop reduction (@IJB)
+  Vector* north_temp_vector;
+  Vector* south_temp_vector;
+  Vector* east_temp_vector;
+  Vector* west_temp_vector;
+  Vector* upper_temp_vector;
+  Vector* lower_temp_vector;
+
+  north_temp_vector = NewVectorType(grid, 1, 1, pressure->type);
+  south_temp_vector = NewVectorType(grid, 1, 1, pressure->type);
+  east_temp_vector = NewVectorType(grid, 1, 1, pressure->type);
+  west_temp_vector = NewVectorType(grid, 1, 1, pressure->type);
+  upper_temp_vector = NewVectorType(grid, 1, 1, pressure->type);
+  lower_temp_vector = NewVectorType(grid, 1, 1, pressure->type);
+
+  Subvector* north_temp_sub;
+  Subvector* south_temp_sub;
+  Subvector* east_temp_sub;
+  Subvector* west_temp_sub;
+  Subvector* upper_temp_sub;
+  Subvector* lower_temp_sub;
+
+  double *north_temp_array, *south_temp_array, *east_temp_array, *west_temp_array, *upper_temp_array, *lower_temp_array;
+
 
   /* Calculate time term contributions. */
 
@@ -455,7 +468,7 @@ void    RichardsJacobianEval(
     dy = SubgridDY(subgrid);
     dz = SubgridDZ(subgrid);
 
-    vol = dx * dy * dz;
+    double vol = dx * dy * dz;
 
     nx_v = SubvectorNX(d_sub);
     ny_v = SubvectorNY(d_sub);
@@ -470,10 +483,10 @@ void    RichardsJacobianEval(
 
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
-      im = SubmatrixEltIndex(J_sub, i, j, k);
-      ipo = SubvectorEltIndex(po_sub, i, j, k);
-      iv = SubvectorEltIndex(d_sub, i, j, k);
-      vol2 = vol * z_mult_dat[ipo];
+      int im = SubmatrixEltIndex(J_sub, i, j, k);
+      int ipo = SubvectorEltIndex(po_sub, i, j, k);
+      int iv = SubvectorEltIndex(d_sub, i, j, k);
+      double vol2 = vol * z_mult_dat[ipo];
       cp[im] += (sdp[iv] * dp[iv] + sp[iv] * ddp[iv])
                 * pop[ipo] * vol2 + ss[iv] * vol2 * (sdp[iv] * dp[iv] * pp[iv] + sp[iv] * ddp[iv] * pp[iv] + sp[iv] * dp[iv]); //sk start
     });
@@ -510,8 +523,8 @@ void    RichardsJacobianEval(
         {
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
-            ip = SubvectorEltIndex(p_sub, i, j, k);
-            value = bc_patch_values[ival];
+            int ip = SubvectorEltIndex(p_sub, i, j, k);
+            double value = bc_patch_values[ival];
             pp[ip + fdir[0] * 1 + fdir[1] * sy_v + fdir[2] * sz_v] = value;
           });
           break;
@@ -547,6 +560,19 @@ void    RichardsJacobianEval(
     permz_sub = VectorSubvector(permeability_z, is);
     J_sub = MatrixSubmatrix(J, is);
 
+    west_temp_sub = VectorSubvector( west_temp_vector, is );
+    east_temp_sub = VectorSubvector( east_temp_vector, is );
+    south_temp_sub = VectorSubvector( south_temp_vector, is );
+    north_temp_sub = VectorSubvector( north_temp_vector, is );
+    lower_temp_sub = VectorSubvector( lower_temp_vector, is );
+    upper_temp_sub = VectorSubvector( upper_temp_vector, is );
+
+    west_temp_array = SubvectorData(west_temp_sub);
+    east_temp_array = SubvectorData(east_temp_sub);
+    south_temp_array = SubvectorData(south_temp_sub);
+    north_temp_array = SubvectorData(north_temp_sub);
+    lower_temp_array = SubvectorData(lower_temp_sub);
+    upper_temp_array = SubvectorData(upper_temp_sub);
     /* @RMM added to provide access to x/y slopes */
     x_ssl_sub = VectorSubvector(x_ssl, is);
     y_ssl_sub = VectorSubvector(y_ssl, is);
@@ -577,13 +603,13 @@ void    RichardsJacobianEval(
     nx_v = SubvectorNX(p_sub);
     ny_v = SubvectorNY(p_sub);
 
-    nx_m = SubmatrixNX(J_sub);
-    ny_m = SubmatrixNY(J_sub);
+    // nx_m = SubmatrixNX(J_sub);
+    // ny_m = SubmatrixNY(J_sub);
 
     sy_v = nx_v;
     sz_v = ny_v * nx_v;
-    sy_m = nx_m;
-    sz_m = ny_m * nx_m;
+    // sy_m = nx_m;
+    // sz_m = ny_m * nx_m;
 
     cp = SubmatrixStencilData(J_sub, 0);
     wp = SubmatrixStencilData(J_sub, 1);
@@ -614,27 +640,33 @@ void    RichardsJacobianEval(
 
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
-      ip = SubvectorEltIndex(p_sub, i, j, k);
-      im = SubmatrixEltIndex(J_sub, i, j, k);
-      ioo = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
+      int ip = SubvectorEltIndex(p_sub, i, j, k);
+      int im = SubmatrixEltIndex(J_sub, i, j, k);
+      int ioo = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 
-      prod = rpp[ip] * dp[ip];
-      prod_der = rpdp[ip] * dp[ip] + rpp[ip] * ddp[ip];
+      double prod = rpp[ip] * dp[ip];
+      double prod_der = rpdp[ip] * dp[ip] + rpp[ip] * ddp[ip];
 
-      prod_rt = rpp[ip + 1] * dp[ip + 1];
-      prod_rt_der = rpdp[ip + 1] * dp[ip + 1] + rpp[ip + 1] * ddp[ip + 1];
+      double prod_rt = rpp[ip + 1] * dp[ip + 1];
+      double prod_rt_der = rpdp[ip + 1] * dp[ip + 1] + rpp[ip + 1] * ddp[ip + 1];
 
-      prod_no = rpp[ip + sy_v] * dp[ip + sy_v];
-      prod_no_der = rpdp[ip + sy_v] * dp[ip + sy_v]
+      double prod_no = rpp[ip + sy_v] * dp[ip + sy_v];
+      double prod_no_der = rpdp[ip + sy_v] * dp[ip + sy_v]
                     + rpp[ip + sy_v] * ddp[ip + sy_v];
 
-      prod_up = rpp[ip + sz_v] * dp[ip + sz_v];
-      prod_up_der = rpdp[ip + sz_v] * dp[ip + sz_v]
+      double prod_up = rpp[ip + sz_v] * dp[ip + sz_v];
+      double prod_up_der = rpdp[ip + sz_v] * dp[ip + sz_v]
                     + rpp[ip + sz_v] * ddp[ip + sz_v];
 
       //@RMM  tfgupwind == 0 (default) should give original behavior
       // tfgupwind 1 should still use sine but upwind
       // tfgupwdin 2 just upwind
+
+      double x_dir_g = NAN;
+      double x_dir_g_c = NAN;
+      double y_dir_g = NAN;
+      double y_dir_g_c = NAN;
+
       switch (public_xtra->tfgupwind)
       {
         case 0:
@@ -670,29 +702,29 @@ void    RichardsJacobianEval(
 
 
       /* diff >= 0 implies flow goes left to right */
-      diff = pp[ip] - pp[ip + 1];
-      updir = (diff / dx) * x_dir_g_c - x_dir_g;
+      double diff = pp[ip] - pp[ip + 1];
+      double updir = (diff / dx) * x_dir_g_c - x_dir_g;
 
       /* multiply X_coeff by FB in x */
-      x_coeff = FBx_dat[ip] * dt * ffx * (1.0 / dx) * z_mult_dat[ip]
+      double x_coeff = FBx_dat[ip] * dt * ffx * (1.0 / dx) * z_mult_dat[ip]
                 * PMean(pp[ip], pp[ip + 1], permxp[ip], permxp[ip + 1])
                 / viscosity;
 
 
-      sym_west_temp = (-x_coeff
+      double sym_west_temp = (-x_coeff
                        * RPMean(updir, 0.0, prod, prod_rt)) * x_dir_g_c; //@RMM TFG contributions, sym
 
 
-      west_temp = (-x_coeff * diff
+      double west_temp = (-x_coeff * diff
                    * RPMean(updir, 0.0, prod_der, 0.0)) * x_dir_g_c
                   + sym_west_temp;
 
       west_temp += (x_coeff * dx * RPMean(updir, 0.0, prod_der, 0.0)) * x_dir_g; //@RMM TFG contributions, non sym
 
-      sym_east_temp = (-x_coeff
+      double sym_east_temp = (-x_coeff
                        * RPMean(updir, 0.0, prod, prod_rt)) * x_dir_g_c; //@RMM added sym TFG contributions
 
-      east_temp = (x_coeff * diff
+      double east_temp = (x_coeff * diff
                    * RPMean(updir, 0.0, 0.0, prod_rt_der)) * x_dir_g_c
                   + sym_east_temp;
 
@@ -704,62 +736,62 @@ void    RichardsJacobianEval(
 
 
       /* multiply y_coeff by FB in y */
-      y_coeff = FBy_dat[ip] * dt * ffy * (1.0 / dy) * z_mult_dat[ip]
+      double y_coeff = FBy_dat[ip] * dt * ffy * (1.0 / dy) * z_mult_dat[ip]
                 * PMean(pp[ip], pp[ip + sy_v], permyp[ip], permyp[ip + sy_v])
                 / viscosity;
 
-      sym_south_temp = -y_coeff
+      double sym_south_temp = -y_coeff
                        * RPMean(updir, 0.0, prod, prod_no) * y_dir_g_c; //@RMM TFG contributions, SYMM
 
-      south_temp = -y_coeff * diff
+      double south_temp = -y_coeff * diff
                    * RPMean(updir, 0.0, prod_der, 0.0) * y_dir_g_c
                    + sym_south_temp;
 
       south_temp += (y_coeff * dy * RPMean(updir, 0.0, prod_der, 0.0)) * y_dir_g; //@RMM TFG contributions, non sym
 
 
-      sym_north_temp = y_coeff
+      double sym_north_temp = y_coeff
                        * -RPMean(updir, 0.0, prod, prod_no) * y_dir_g_c; //@RMM  TFG contributions non SYMM
 
-      north_temp = y_coeff * diff
+      double north_temp = y_coeff * diff
                    * RPMean(updir, 0.0, 0.0,
                             prod_no_der) * y_dir_g_c
                    + sym_north_temp;
 
       north_temp += -(y_coeff * dy * RPMean(updir, 0.0, 0.0, prod_no_der)) * y_dir_g; //@RMM  TFG contributions non sym
 
-      sep = (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v]));
+      double sep = (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v]));
       /* diff >= 0 implies flow goes lower to upper */
 
 
-      lower_cond = pp[ip] / sep - (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip + sz_v])) * dp[ip] * gravity;
+      double lower_cond = pp[ip] / sep - (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip + sz_v])) * dp[ip] * gravity;
 
-      upper_cond = pp[ip + sz_v] / sep + (z_mult_dat[ip + sz_v] / (z_mult_dat[ip] + z_mult_dat[ip + sz_v])) * dp[ip + sz_v] * gravity;
+      double upper_cond = pp[ip + sz_v] / sep + (z_mult_dat[ip + sz_v] / (z_mult_dat[ip] + z_mult_dat[ip + sz_v])) * dp[ip + sz_v] * gravity;
 
 
       diff = lower_cond - upper_cond;
 
       /* multiply z_coeff by FB in z */
-      z_coeff = FBz_dat[ip] * dt * ffz
+      double z_coeff = FBz_dat[ip] * dt * ffz
                 * PMeanDZ(permzp[ip], permzp[ip + sz_v], z_mult_dat[ip], z_mult_dat[ip + sz_v])
                 / viscosity;
 
-      sym_lower_temp = -z_coeff * (1.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])))
+      double sym_lower_temp = -z_coeff * (1.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])))
                        * RPMean(lower_cond, upper_cond, prod,
                                 prod_up);
 
-      lower_temp = -z_coeff
+      double lower_temp = -z_coeff
                    * (diff * RPMean(lower_cond, upper_cond, prod_der, 0.0)
                       + (-gravity * 0.5 * dz * (Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * ddp[ip]
                          * RPMean(lower_cond, upper_cond, prod,
                                   prod_up)))
                    + sym_lower_temp;
 
-      sym_upper_temp = z_coeff * (1.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])))
+      double sym_upper_temp = z_coeff * (1.0 / (dz * Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])))
                        * -RPMean(lower_cond, upper_cond, prod,
                                  prod_up);
 
-      upper_temp = z_coeff
+      double upper_temp = z_coeff
                    * (diff * RPMean(lower_cond, upper_cond, 0.0,
                                     prod_up_der)
                       + (-gravity * 0.5 * dz * (Mean(z_mult_dat[ip], z_mult_dat[ip + sz_v])) * ddp[ip + sz_v]
@@ -767,31 +799,112 @@ void    RichardsJacobianEval(
                                   prod_up)))
                    + sym_upper_temp;
 
+      // PlusEquals(cp[im], -(west_temp + south_temp + lower_temp));
+      // PlusEquals(cp[im + 1], -east_temp);
+      // PlusEquals(cp[im + sy_m], -north_temp);
+      // PlusEquals(cp[im + sz_m], -upper_temp);
 
-
-      cp[im] -= west_temp + south_temp + lower_temp;
-      cp[im + 1] -= east_temp;
-      cp[im + sy_m] -= north_temp;
-      cp[im + sz_m] -= upper_temp;
+      west_temp_array[ip] = west_temp;
+      east_temp_array[ip] = east_temp;
+      north_temp_array[ip] = north_temp;
+      south_temp_array[ip] = south_temp;
+      upper_temp_array[ip] = upper_temp;
+      lower_temp_array[ip] = lower_temp;
 
       if (!symm_part)
       {
-        ep[im] += east_temp;
-        np[im] += north_temp;
-        up[im] += upper_temp;
+        // PlusEquals(ep[im], east_temp);
+        // PlusEquals(np[im], north_temp);
+        // PlusEquals(up[im], upper_temp);
 
-        wp[im + 1] += west_temp;
-        sop[im + sy_m] += south_temp;
-        lp[im + sz_m] += lower_temp;
+        // PlusEquals(wp[im + 1], west_temp);
+        // PlusEquals(sop[im + sy_m], south_temp);
+        // PlusEquals(lp[im + sz_m], lower_temp);
       }
       else     /* Symmetric matrix: just update upper coeffs */
       {
-        ep[im] += sym_east_temp;
-        np[im] += sym_north_temp;
-        up[im] += sym_upper_temp;
+        PlusEquals(ep[im], sym_east_temp);
+        PlusEquals(np[im], sym_north_temp);
+        PlusEquals(up[im], sym_upper_temp);
       }
     });
   }  //
+
+    // Gather portion
+  ForSubgridI(is, GridSubgrids(grid))
+  {
+    subgrid = GridSubgrid(grid, is);
+
+    west_temp_sub = VectorSubvector( west_temp_vector, is );
+    east_temp_sub = VectorSubvector( east_temp_vector, is );
+    south_temp_sub = VectorSubvector( south_temp_vector, is );
+    north_temp_sub = VectorSubvector( north_temp_vector, is );
+    lower_temp_sub = VectorSubvector( lower_temp_vector, is );
+    upper_temp_sub = VectorSubvector( upper_temp_vector, is );
+
+    J_sub = MatrixSubmatrix(J, is);
+
+    r = SubgridRX(subgrid);
+
+    ix = SubgridIX(subgrid) - 1;
+    iy = SubgridIY(subgrid) - 1;
+    iz = SubgridIZ(subgrid) - 1;
+
+    nx = SubgridNX(subgrid) + 1;
+    ny = SubgridNY(subgrid) + 1;
+    nz = SubgridNZ(subgrid) + 1;
+
+    nx_v = SubvectorNX(p_sub);
+    ny_v = SubvectorNY(p_sub);
+
+    int sx_v = 1;
+    sy_v = nx_v;
+    sz_v = ny_v * nx_v;
+
+    west_temp_array = SubvectorData(west_temp_sub);
+    east_temp_array = SubvectorData(east_temp_sub);
+    south_temp_array = SubvectorData(south_temp_sub);
+    north_temp_array = SubvectorData(north_temp_sub);
+    lower_temp_array = SubvectorData(lower_temp_sub);
+    upper_temp_array = SubvectorData(upper_temp_sub);
+
+    cp = SubmatrixStencilData(J_sub, 0);
+    wp = SubmatrixStencilData(J_sub, 1);
+    ep = SubmatrixStencilData(J_sub, 2);
+    sop = SubmatrixStencilData(J_sub, 3);
+    np = SubmatrixStencilData(J_sub, 4);
+    lp = SubmatrixStencilData(J_sub, 5);
+    up = SubmatrixStencilData(J_sub, 6);
+
+    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
+    {
+      int im = SubmatrixEltIndex(J_sub, i, j, k);
+      int it = SubvectorEltIndex(west_temp_sub, i, j, k);
+
+      // ZYX-self order because for an internal cell in the original schedule,
+      // the k+1 cell writes to (i,j,k) first, then the j+1 cell,
+      // then the i+1 cell, then itself.
+      // Z Direction
+      cp[im] -= upper_temp_array[it - sz_v];
+      // Y Direction
+      cp[im] -= north_temp_array[it - sy_v];
+      // X Direction
+      cp[im] -= east_temp_array[it - sx_v];
+      // Self-update
+      cp[im] -= west_temp_array[it] + south_temp_array[it] + lower_temp_array[it];
+
+      if (!symm_part)
+      {
+        ep[im] += east_temp_array[it];
+        np[im] += north_temp_array[it];
+        up[im] += upper_temp_array[it];
+
+        wp[im] += west_temp_array[it - sx_v];
+        sop[im] += south_temp_array[it - sy_v];
+        lp[im] += lower_temp_array[it - sz_v];
+      }
+    });
+  }
 
   /*  Calculate correction for boundary conditions */
 
@@ -858,9 +971,19 @@ void    RichardsJacobianEval(
       {
         BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
         {
-          ip = SubvectorEltIndex(p_sub, i, j, k);
-          im = SubmatrixEltIndex(J_sub, i, j, k);
+          int ip = SubvectorEltIndex(p_sub, i, j, k);
+          int im = SubmatrixEltIndex(J_sub, i, j, k);
 
+          double coeff; 
+          double diff;
+          double prod;
+          double prod_der;
+
+          double lower_cond;
+          double upper_cond;
+          double prod_lo;
+          double prod_up;
+          
           // SGS added this as prod was not being set to anything. Check with carol.
           prod = rpp[ip] * dp[ip];
 
@@ -1019,7 +1142,7 @@ void    RichardsJacobianEval(
     /* @RMM added to provide variable dz */
     z_mult_dat = SubvectorData(z_mult_sub);
 
-    vol = dx * dy * dz;
+    double vol = dx * dy * dz;
 
     ix = SubgridIX(subgrid);
     iy = SubgridIY(subgrid);
@@ -1070,22 +1193,61 @@ void    RichardsJacobianEval(
       {
         case DirichletBC:
         {
+          /* @MCB:
+             Previously there was two module invokes on every iteratoin
+             of the BC Loop.  However, these calls were only retrieving
+             some constant value and (potentially) multiplying it against
+             the BC patch value.
+             Instead, the PhaseDensityConstants function was added to
+             retrieve those values once, and instead set den_d and dend_d
+             to the appropriate value based on the phase_type of the module.
+             This is much cheaper and also addresses the issue of module invokes
+             within a CUDA-enabled loop.
+          */
+
+          double fcn_phase_const = 0.0;
+          double der_phase_const = 0.0;
+          double phase_ref = 0.0;
+          double phase_comp = 0.0;
+          int phase_type = 0;
+
+          ThisPFModule = density_module;
+          PhaseDensityConstants(0, CALCFCN, &phase_type,
+                                &fcn_phase_const,
+                                &phase_ref,
+                                &phase_comp);
+          PhaseDensityConstants(0, CALCDER, &phase_type,
+                                &der_phase_const,
+                                &phase_ref,
+                                &phase_comp);
+
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
-            ip = SubvectorEltIndex(p_sub, i, j, k);
+            int ip = SubvectorEltIndex(p_sub, i, j, k);
+            int im = SubmatrixEltIndex(J_sub, i, j, k);
 
-            value = bc_patch_values[ival];
+            double *op = NULL;
+            
+            double den_d; 
+            double value = bc_patch_values[ival];
 
-            PFModuleInvokeType(PhaseDensityInvoke, density_module,
-                               (0, NULL, NULL, &value, &den_d, CALCFCN));
-            PFModuleInvokeType(PhaseDensityInvoke, density_module,
-                               (0, NULL, NULL, &value, &dend_d, CALCDER));
+            if (phase_type == 0) {
+              den_d = fcn_phase_const;
+            } else {
+              den_d = phase_ref * exp(value * phase_comp);
+            }
 
-            ip = SubvectorEltIndex(p_sub, i, j, k);
-            im = SubmatrixEltIndex(J_sub, i, j, k);
+            double prod = rpp[ip] * dp[ip];
+            double prod_der = rpdp[ip] * dp[ip] + rpp[ip] * ddp[ip];
 
-            prod = rpp[ip] * dp[ip];
-            prod_der = rpdp[ip] * dp[ip] + rpp[ip] * ddp[ip];
+            double coeff; 
+            double diff;
+
+            double o_temp = NAN;
+            double prod_val;
+
+            double lower_cond;
+            double upper_cond;
 
             if (fdir[0])
             {
@@ -1210,7 +1372,8 @@ void    RichardsJacobianEval(
         {
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
-            im = SubmatrixEltIndex(J_sub, i, j, k);
+            int im = SubmatrixEltIndex(J_sub, i, j, k);
+            double *op = NULL;
 
             if (fdir[0] == -1)
               op = wp;
@@ -1236,7 +1399,8 @@ void    RichardsJacobianEval(
         {
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
-            im = SubmatrixEltIndex(J_sub, i, j, k);
+            int im = SubmatrixEltIndex(J_sub, i, j, k);
+            double *op = NULL;
 
             //remove contributions to this row corresponding to boundary
             if (fdir[0] == -1)
@@ -1253,12 +1417,12 @@ void    RichardsJacobianEval(
             {
               op = up;
               /* check if overland flow kicks in */
-              if (!ovlnd_flag)
+              if (!ovlnd_flag[0])
               {
-                ip = SubvectorEltIndex(p_sub, i, j, k);
+                int ip = SubvectorEltIndex(p_sub, i, j, k);
                 if ((pp[ip]) > 0.0)
                 {
-                  ovlnd_flag = 1;
+                  ovlnd_flag[0] = 1;
                 }
               }
             }
@@ -1281,9 +1445,8 @@ void    RichardsJacobianEval(
               {
                 if (fdir[2] == 1)
                 {
-                  ip = SubvectorEltIndex(p_sub, i, j, k);
-                  io = SubvectorEltIndex(p_sub, i, j, 0);
-                  im = SubmatrixEltIndex(J_sub, i, j, k);
+                  int ip = SubvectorEltIndex(p_sub, i, j, k);
+                  int im = SubmatrixEltIndex(J_sub, i, j, k);
 
                   if ((pp[ip]) > 0.0)
                   {
@@ -1309,10 +1472,9 @@ void    RichardsJacobianEval(
                 {
                   if (fdir[2] == 1)
                   {
-                    ip = SubvectorEltIndex(p_sub, i, j, k);
-                    io = SubvectorEltIndex(p_sub, i, j, 0);
-                    im = SubmatrixEltIndex(J_sub, i, j, k);
-                    vol = dx * dy * dz;
+                    int ip = SubvectorEltIndex(p_sub, i, j, k);
+                    int im = SubmatrixEltIndex(J_sub, i, j, k);
+                    double vol = dx * dy * dz;
 
                     if ((pp[ip]) >= 0.0)
                     {
@@ -1367,10 +1529,9 @@ void    RichardsJacobianEval(
           {
             if (fdir[2] == 1)
             {
-              ip = SubvectorEltIndex(p_sub, i, j, k);
-              io = SubvectorEltIndex(p_sub, i, j, 0);
-              im = SubmatrixEltIndex(J_sub, i, j, k);
-              vol = dx * dy * dz;
+              int ip = SubvectorEltIndex(p_sub, i, j, k);
+              int im = SubmatrixEltIndex(J_sub, i, j, k);
+              double vol = dx * dy * dz;
 
               if ((pp[ip]) >= 0.0)
               {
@@ -1391,7 +1552,9 @@ void    RichardsJacobianEval(
         {
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
-            im = SubmatrixEltIndex(J_sub, i, j, k);
+            int im = SubmatrixEltIndex(J_sub, i, j, k);
+            double *op = NULL;
+
             //remove contributions to this row corresponding to boundary
             if (fdir[0] == -1)
               op = wp;
@@ -1407,12 +1570,12 @@ void    RichardsJacobianEval(
             {
               op = up;
               /* check if overland flow kicks in */
-              if (!ovlnd_flag)
+              if (!ovlnd_flag[0])
               {
-                ip = SubvectorEltIndex(p_sub, i, j, k);
+                int ip = SubvectorEltIndex(p_sub, i, j, k);
                 if ((pp[ip]) > 0.0)
                 {
-                  ovlnd_flag = 1;
+                  ovlnd_flag[0] = 1;
                 }
               }
             }
@@ -1433,7 +1596,8 @@ void    RichardsJacobianEval(
         {
           BCStructPatchLoop(i, j, k, fdir, ival, bc_struct, ipatch, is,
           {
-            im = SubmatrixEltIndex(J_sub, i, j, k);
+            int im = SubmatrixEltIndex(J_sub, i, j, k);
+            double *op = NULL;
 
             //remove contributions to this row corresponding to boundary
             if (fdir[0] == -1)
@@ -1450,12 +1614,12 @@ void    RichardsJacobianEval(
             {
               op = up;
               /* check if overland flow kicks in */
-              if (!ovlnd_flag)
+              if (!ovlnd_flag[0])
               {
-                ip = SubvectorEltIndex(p_sub, i, j, k);
+                int ip = SubvectorEltIndex(p_sub, i, j, k);
                 if ((pp[ip]) > 0.0)
                 {
-                  ovlnd_flag = 1;
+                  ovlnd_flag[0] = 1;
                 }
               }
             }
@@ -1518,7 +1682,7 @@ void    RichardsJacobianEval(
   }
 
   /* Build submatrix JC if overland flow case */
-  if (ovlnd_flag && public_xtra->type == overland_flow)
+  if (ovlnd_flag[0] && public_xtra->type == overland_flow)
   {
     /* begin loop to build JC */
     ForSubgridI(is, GridSubgrids(grid))
@@ -1529,7 +1693,7 @@ void    RichardsJacobianEval(
       dy = SubgridDY(subgrid);
       dz = SubgridDZ(subgrid);
 
-      vol = dx * dy * dz;
+      double vol = dx * dy * dz;
 
       ffx = dy * dz;
       ffy = dx * dz;
@@ -1553,10 +1717,10 @@ void    RichardsJacobianEval(
       sx_sub = VectorSubvector(slope_x, is);
 
       sy_v = SubvectorNX(sx_sub);
-      nx_m = SubmatrixNX(J_sub);
-      ny_m = SubmatrixNY(J_sub);
-      sy_m = nx_m;
-      sz_m = nx_m * ny_m;
+      // nx_m = SubmatrixNX(J_sub);
+      // ny_m = SubmatrixNY(J_sub);
+      // sy_m = nx_m;
+      // sz_m = nx_m * ny_m;
 
       ix = SubgridIX(subgrid);
       iy = SubgridIY(subgrid);
@@ -1606,20 +1770,20 @@ void    RichardsJacobianEval(
               {
                 /* Loop over boundary patches to build JC matrix.
                  */
-                io = SubmatrixEltIndex(J_sub, i, j, iz);
-                io1 = SubvectorEltIndex(sx_sub, i, j, 0);
-                itop = SubvectorEltIndex(top_sub, i, j, 0);
+                int io = SubmatrixEltIndex(J_sub, i, j, iz);
+                int io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+                int itop = SubvectorEltIndex(top_sub, i, j, 0);
 
                 /* Update JC */
-                ip = SubvectorEltIndex(p_sub, i, j, k);
-                im = SubmatrixEltIndex(J_sub, i, j, k);
+                int ip = SubvectorEltIndex(p_sub, i, j, k);
+                int im = SubmatrixEltIndex(J_sub, i, j, k);
 
                 /* First put contributions from subsurface diagonal onto diagonal of JC */
                 cp_c[io] = cp[im];
                 cp[im] = 0.0;         // update JB
                 /* Now check off-diagonal nodes to see if any surface-surface connections exist */
                 /* West */
-                k1 = (int)top_dat[itop - 1];
+                int k1 = (int)top_dat[itop - 1];
 
                 if (k1 >= 0)
                 {
@@ -1692,20 +1856,20 @@ void    RichardsJacobianEval(
               {
                 /* Loop over boundary patches to build JC matrix.
                  */
-                io = SubmatrixEltIndex(J_sub, i, j, iz);
-                io1 = SubvectorEltIndex(sx_sub, i, j, 0);
-                itop = SubvectorEltIndex(top_sub, i, j, 0);
+                int io = SubmatrixEltIndex(J_sub, i, j, iz);
+                int io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+                int itop = SubvectorEltIndex(top_sub, i, j, 0);
 
                 /* Update JC */
-                ip = SubvectorEltIndex(p_sub, i, j, k);
-                im = SubmatrixEltIndex(J_sub, i, j, k);
+                int ip = SubvectorEltIndex(p_sub, i, j, k);
+                int im = SubmatrixEltIndex(J_sub, i, j, k);
 
                 /* First put contributions from subsurface diagonal onto diagonal of JC */
                 cp_c[io] = cp[im];
                 cp[im] = 0.0;         // update JB
                 /* Now check off-diagonal nodes to see if any surface-surface connections exist */
                 /* West */
-                k1 = (int)top_dat[itop - 1];
+                int k1 = (int)top_dat[itop - 1];
 
                 if (k1 >= 0)
                 {
@@ -1777,20 +1941,20 @@ void    RichardsJacobianEval(
               {
                 /* Loop over boundary patches to build JC matrix.
                  */
-                io = SubmatrixEltIndex(J_sub, i, j, iz);
-                io1 = SubvectorEltIndex(sx_sub, i, j, 0);
-                itop = SubvectorEltIndex(top_sub, i, j, 0);
+                int io = SubmatrixEltIndex(J_sub, i, j, iz);
+                int io1 = SubvectorEltIndex(sx_sub, i, j, 0);
+                int itop = SubvectorEltIndex(top_sub, i, j, 0);
 
                 /* Update JC */
-                ip = SubvectorEltIndex(p_sub, i, j, k);
-                im = SubmatrixEltIndex(J_sub, i, j, k);
+                int ip = SubvectorEltIndex(p_sub, i, j, k);
+                int im = SubmatrixEltIndex(J_sub, i, j, k);
 
                 /* First put contributions from subsurface diagonal onto diagonal of JC */
                 cp_c[io] = cp[im];
                 cp[im] = 0.0;         // update JB
                 /* Now check off-diagonal nodes to see if any surface-surface connections exist */
                 /* West */
-                k1 = (int)top_dat[itop - 1];
+                int k1 = (int)top_dat[itop - 1];
 
                 if (k1 >= 0)
                 {
@@ -1925,7 +2089,7 @@ void    RichardsJacobianEval(
 
     GrGeomOutLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
-      im = SubmatrixEltIndex(J_sub, i, j, k);
+      int im = SubmatrixEltIndex(J_sub, i, j, k);
       cp[im] = 1.0;
       wp[im] = 0.0;
       ep[im] = 0.0;
@@ -1995,6 +2159,17 @@ void    RichardsJacobianEval(
   FreeVector(KEns);
   FreeVector(KNns);
   FreeVector(KSns);
+
+  FreeVector(north_temp_vector);
+  FreeVector(south_temp_vector);
+  FreeVector(east_temp_vector);
+  FreeVector(west_temp_vector);
+  FreeVector(upper_temp_vector);
+  FreeVector(lower_temp_vector);
+
+  tfree(ovlnd_flag);
+
+  POP_NVTX
 
   return;
 }

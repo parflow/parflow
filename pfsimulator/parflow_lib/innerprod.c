@@ -32,6 +32,8 @@
 
 #include "parflow.h"
 
+/* This must be in the global scope due to __managed__ keyword */
+__managed__ static double result;
 
 double   InnerProd(
                    Vector *x,
@@ -45,8 +47,6 @@ double   InnerProd(
 
   double       *yp, *xp;
 
-  double result = 0.0;
-
   int ix, iy, iz;
   int nx, ny, nz;
   int nx_v, ny_v, nz_v;
@@ -55,7 +55,7 @@ double   InnerProd(
 
   amps_Invoice result_invoice;
 
-
+  result = 0.0;
   result_invoice = amps_NewInvoice("%d", &result);
 
   ForSubgridI(i_s, GridSubgrids(grid))
@@ -81,10 +81,12 @@ double   InnerProd(
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
     iv = 0;
-    BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+
+    BoxLoopReduceI1(NULL, result, 
+              i, j, k, ix, iy, iz, nx, ny, nz,
               iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
-      result += yp[iv] * xp[iv];
+      ReduceSum(result, yp[iv] * xp[iv]);
     });
   }
 

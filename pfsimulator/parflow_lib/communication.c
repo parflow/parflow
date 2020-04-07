@@ -31,11 +31,9 @@
 
 #include <math.h>
 
-
 #include "parflow.h"
 #include "amps.h"
 #include "communication.h"
-
 
 /*--------------------------------------------------------------------------
  * NewCommPkgInfo:
@@ -400,7 +398,11 @@ void FreeCommPkg(
 CommHandle  *InitCommunication(
                                CommPkg *comm_pkg)
 {
-  return (CommHandle*)amps_IExchangePackage(comm_pkg->package);
+  PUSH_NVTX("amps_IExchangePackage",6)
+  CommHandle* handle = (CommHandle*)amps_IExchangePackage(comm_pkg->package);
+  POP_NVTX
+
+  return handle;
 }
 
 
@@ -411,7 +413,9 @@ CommHandle  *InitCommunication(
 void         FinalizeCommunication(
                                    CommHandle *handle)
 {
+  PUSH_NVTX("amps_Wait",1)
   (void)amps_Wait((amps_Handle)handle);
+  POP_NVTX
 }
 
 

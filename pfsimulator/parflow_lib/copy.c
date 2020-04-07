@@ -34,7 +34,6 @@
 
 #include "parflow.h"
 
-
 void     Copy(
               Vector *x,
               Vector *y)

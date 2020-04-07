@@ -103,13 +103,27 @@
 #define pfmin(a, b)  (((a) < (b)) ? (a) : (b))
 #endif
 
+#ifndef pfmax_atomic
+#define pfmax_atomic(a, b)  if(a < b) a = b
+#endif
+#ifndef pfmin_atomic
+#define pfmin_atomic(a, b)  if(a > b) a = b
+#endif
+
 #ifndef pfround
 #define pfround(x)  (((x) < 0.0) ? ((int)(x - 0.5)) : ((int)(x + 0.5)))
 #endif
 
+#ifndef PlusEquals
+#define PlusEquals(a, b) (a += b)
+#endif
+
+#ifndef ReduceSum
+#define ReduceSum(a, b) (a += b)
+#endif
+
 /* return 2^e, where e >= 0 is an integer */
 #define Pow2(e)   (((unsigned int)0x01) << (e))
-
 
 /*--------------------------------------------------------------------------
  * Define various flags
@@ -145,5 +159,70 @@
 
 #define TIME_EPSILON (FLT_EPSILON * 10)
 
+/*--------------------------------------------------------------------------
+ * Define CUDA macros to do nothing if no GPU acceleration
+ *--------------------------------------------------------------------------*/
+
+//Memory Prefetching
+#define MemPrefetchDeviceToHost(ptr, size, stream)
+#define MemPrefetchHostToDevice(ptr, size, gpuid, stream)
+
+//CUDA synchronizations
+#define GPU_NOSYNC
+#define GPU_SYNC
+
+//CUDA compiler specific keywords
+#ifndef __host__
+  #define __host__
+#endif
+#ifndef __device__
+  #define __device__
+#endif
+#ifndef __managed__
+  #define __managed__
+#endif
+#ifndef __restrict__
+  #define __restrict__
 #endif
 
+// Helper macros for the new BC loop interface
+#define InParallel
+#define NewParallel
+#define NoWait
+
+#define EMPTY()
+#define DEFER(x) x EMPTY()
+#define DEFER2(x) x EMPTY EMPTY() ()
+#define DEFER3(x) x EMPTY EMPTY EMPTY() () ()
+
+#undef LOCALS
+#define LOCALS(...) DEFER3(_LOCALS)(__VA_ARGS__)
+#define _LOCALS(...) __VA_ARGS__
+#define NO_LOCALS
+
+//NVTX Ranges for NSYS profiling
+#ifdef HAVE_CUDA
+  #include "nvToolsExt.h"
+  #define PUSH_NVTX(name,cid)                                                              \
+  {                                                                                         \
+  	const uint32_t colors_nvtx[] =                                                          \
+  	  {0xff00ff00, 0xff0000ff, 0xffffff00, 0xffff00ff, 0xff00ffff, 0xffff0000, 0xffffffff}; \
+  	const int num_colors_nvtx = sizeof(colors_nvtx)/sizeof(uint32_t);                       \
+    int color_id_nvtx = cid;                                                                \
+    color_id_nvtx = color_id_nvtx%num_colors_nvtx;                                          \
+    nvtxEventAttributes_t eventAttrib = {0};                                                \
+    eventAttrib.version = NVTX_VERSION;                                                     \
+    eventAttrib.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;                                       \
+    eventAttrib.colorType = NVTX_COLOR_ARGB;                                                \
+    eventAttrib.color = colors_nvtx[color_id_nvtx];                                         \
+    eventAttrib.messageType = NVTX_MESSAGE_TYPE_ASCII;                                      \
+    eventAttrib.message.ascii = name;                                                       \
+    nvtxRangePushEx(&eventAttrib);                                                          \
+  }
+  #define POP_NVTX nvtxRangePop();
+#else
+  #define PUSH_NVTX(name,cid)
+  #define POP_NVTX
+#endif
+
+#endif
