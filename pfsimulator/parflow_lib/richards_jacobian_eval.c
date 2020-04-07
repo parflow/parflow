@@ -281,9 +281,9 @@ void    RichardsJacobianEval(
   int ix, iy, iz;
   int nx, ny, nz;
   int nx_v, ny_v;
-  int nx_m, ny_m;
+  // int nx_m, ny_m;
   int sy_v, sz_v;
-  int sy_m, sz_m;
+  // int sy_m, sz_m;
 
   int diffusive;             //@LEC
 
@@ -603,13 +603,13 @@ void    RichardsJacobianEval(
     nx_v = SubvectorNX(p_sub);
     ny_v = SubvectorNY(p_sub);
 
-    nx_m = SubmatrixNX(J_sub);
-    ny_m = SubmatrixNY(J_sub);
+    // nx_m = SubmatrixNX(J_sub);
+    // ny_m = SubmatrixNY(J_sub);
 
     sy_v = nx_v;
     sz_v = ny_v * nx_v;
-    sy_m = nx_m;
-    sz_m = ny_m * nx_m;
+    // sy_m = nx_m;
+    // sz_m = ny_m * nx_m;
 
     cp = SubmatrixStencilData(J_sub, 0);
     wp = SubmatrixStencilData(J_sub, 1);
@@ -1717,10 +1717,10 @@ void    RichardsJacobianEval(
       sx_sub = VectorSubvector(slope_x, is);
 
       sy_v = SubvectorNX(sx_sub);
-      nx_m = SubmatrixNX(J_sub);
-      ny_m = SubmatrixNY(J_sub);
-      sy_m = nx_m;
-      sz_m = nx_m * ny_m;
+      // nx_m = SubmatrixNX(J_sub);
+      // ny_m = SubmatrixNY(J_sub);
+      // sy_m = nx_m;
+      // sz_m = nx_m * ny_m;
 
       ix = SubgridIX(subgrid);
       iy = SubgridIY(subgrid);
