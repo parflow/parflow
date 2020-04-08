@@ -370,15 +370,6 @@ static int gpu_sync = 1;
 #undef GPU_SYNC
 #define GPU_SYNC gpu_sync = 1; CUDA_ERR(cudaStreamSynchronize(0)); 
 
-#undef InParallel
-#define InParallel 1
-
-#undef NewParallel
-#define NewParallel 1
-
-#undef NoWait
-#define NoWait 0
-
 #define FindDims(grid, block, nx, ny, nz, dyn_blocksize)                            \
 {                                                                                   \
   int blocksize_x = BLOCKSIZE_X;                                                    \
@@ -401,16 +392,8 @@ static int gpu_sync = 1;
   block = dim3(blocksize_x, blocksize_y, blocksize_z);                              \
 }  
 
-#define GetMacro(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,                                    \
-  _11,_12,_13,_14,_15,_16,_17,_18,_19,_20,                                          \
-  _21,_22,_23,_24,_25,_26,_27,_28,_29,_30,                                          \
-  _31,_32,_33,NAME,...) NAME
-
 #undef BoxLoopI1
-#define BoxLoopI1(...) GetMacro(__VA_ARGS__,                                        \
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, BoxLI1, 0, _BoxLI1)(__VA_ARGS__)
-#define _BoxLI1(...) BoxLI1(gpu_sync, 0, __VA_ARGS__)
-#define BoxLI1(gpu_sync, dummy, i, j, k,                                            \
+#define BoxLoopI1(i, j, k,                                                          \
   ix, iy, iz, nx, ny, nz,                                                           \
   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
   loop_body)                                                                        \
@@ -440,10 +423,7 @@ static int gpu_sync = 1;
 }
 
 #undef BoxLoopI2
-#define BoxLoopI2(...) GetMacro(__VA_ARGS__,                                        \
-  0, 0, 0, 0, 0, 0, 0, BoxLI2, 0, _BoxLI2)(__VA_ARGS__)
-#define _BoxLI2(...) BoxLI2(gpu_sync, 0, __VA_ARGS__)
-#define BoxLI2(gpu_sync, dummy, i, j, k,                                            \
+#define BoxLoopI2(i, j, k,                                                          \
   ix, iy, iz, nx, ny, nz,                                                           \
   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
   i2, nx2, ny2, nz2, sx2, sy2, sz2,                                                 \
@@ -481,9 +461,7 @@ static int gpu_sync = 1;
 }
 
 #undef BoxLoopI3
-#define BoxLoopI3(...) GetMacro(__VA_ARGS__, BoxLI3, 0, _BoxLI3)(__VA_ARGS__)
-#define _BoxLI3(...) BoxLI3(gpu_sync, 0, __VA_ARGS__)
-#define BoxLI3(gpu_sync, dummy, i, j, k,                                            \
+#define BoxLoopI3(i, j, k,                                                          \
   ix, iy, iz, nx, ny, nz,                                                           \
   i1, nx1, ny1, nz1, sx1, sy1, sz1,                                                 \
   i2, nx2, ny2, nz2, sx2, sy2, sz2,                                                 \
@@ -547,11 +525,6 @@ static int gpu_sync = 1;
             return k * PV_kinc_1 + (k * ny + j) * PV_jinc_1                         \
             + (k * ny * nx + j * nx + i) * sx1 + i1;                                \
         };                                                                          \
-    auto lambda_init2 =                                                             \
-        GPU_LAMBDA(const int i, const int j, const int k)                           \
-        {                                                                           \
-            return -1; /* dummy; this should not be not used */                     \
-        };                                                                          \
     auto zero = *rslt;                                                              \
     auto lambda_body =                                                              \
         GPU_LAMBDA(const int i, const int j, const int k,                           \
@@ -563,10 +536,10 @@ static int gpu_sync = 1;
     typedef function_traits<decltype(lambda_body)> traits;                          \
                                                                                     \
     DotKernelI2<traits::result_type><<<grid, block>>>(lambda_init1,                 \
-        lambda_init2, lambda_body,                                                  \
+        lambda_init1, lambda_body,                                                  \
         rslt, ix, iy, iz, nx, ny, nz);                                              \
     CUDA_ERR(cudaPeekAtLastError());                                                \
-    if(1) CUDA_ERR(cudaStreamSynchronize(0));                                       \
+    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
   }                                                                                 \
 }
 
@@ -610,7 +583,7 @@ static int gpu_sync = 1;
     DotKernelI2<traits::result_type><<<grid, block>>>(lambda_init1,                 \
         lambda_init2, lambda_body, rslt, ix, iy, iz, nx, ny, nz);                   \
     CUDA_ERR(cudaPeekAtLastError());                                                \
-    if(1) CUDA_ERR(cudaStreamSynchronize(0));                                       \
+    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
   }                                                                                 \
 }
 
