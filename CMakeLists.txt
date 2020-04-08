@@ -58,7 +58,7 @@ if ( ${PARFLOW_ENABLE_OMP} )
    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
    set (PARFLOW_HAVE_OMP "yes")
-   set (HAVE_OMP ${PARFLOW_HAVE_CUDA})
+   set (HAVE_OMP ${PARFLOW_HAVE_OMP})
 
 endif( ${PARFLOW_ENABLE_OMP} )
 

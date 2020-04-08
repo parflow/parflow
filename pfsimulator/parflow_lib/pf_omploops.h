@@ -29,7 +29,15 @@
 /**
  * @brief Interior macro for creating OpenMP pragma statements inside macro.  Relies on C99 _Pragma operator.
  **/
-#define PRAGMA(args) _Pramga( #args )
+#define PRAGMA(args) _Pragma( #args )
+
+/**************************************************************************
+ * Reduction/Atomic Variants
+ **************************************************************************/
+
+/* Expected use inside of BoxLoopReduce macros.  In OpenMP, these loops have the reduction clause. */
+#undef ReduceSum
+#define ReduceSum(lhs, rhs) (lhs) += (rhs);
 
 /**************************************************************************
  * OpenMP BoxLoop Variants
@@ -163,7 +171,7 @@ INC_IDX(int idx, int i, int j, int k,
  **************************************************************************/
 
 #undef BoxLoopReduceI0
-#define BoxLoopReduceI1(sum,                                            \
+#define BoxLoopReduceI0(sum,                                            \
                         i, j, k,                                        \
                         ix, iy, iz, nx, ny, nz,                         \
                         body)                                           \
@@ -264,11 +272,15 @@ INC_IDX(int idx, int i, int j, int k,
 
 
 /**************************************************************************
- * OpenMP BCLoop Variants
+ * OpenMP Cluster LoopBox Variants
  **************************************************************************/
+
+/* Used to calculate correct ival */
+#define CALC_IVAL(diff, a, b) ((diff) * (a) + (a) + (b))
+
 #undef GrGeomPatchLoopBoxesNoFdir
 #define GrGeomPatchLoopBoxesNoFdir(i, j, k, grgeom, patch_num,\
-                                   r, ix, iy, iz, nx, ny, nz,\
+                                   ix, iy, iz, nx, ny, nz,		\
                                    locals, setup,            \
                                    f_left, f_right,          \
                                    f_down, f_up,             \
@@ -346,7 +358,7 @@ INC_IDX(int idx, int i, int j, int k,
     {                                                                   \
       int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;               \
       int *PV_visiting = NULL;                                          \
-      PF_UNUSED(PV_Visiting);                                           \
+      PF_UNUSED(PV_visiting);                                           \
       BoxArray* boxes = GrGeomSolidInteriorBoxes(grgeom);               \
       for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)      \
       {                                                                 \
@@ -369,8 +381,9 @@ INC_IDX(int idx, int i, int j, int k,
       }                                                                 \
     }
 
-/* Per SGS suggestion on 12/3/2008 */
-static const int FDIR_TABLE[6] = {
+/* Per SGS suggestion on 12/3/2008
+ @MCB: C won't allow *int to const *int conversion */
+static int FDIR_TABLE[][6] = {
   {-1, 0,  0},
   {1,  0,  0},
   {0, -1,  0},

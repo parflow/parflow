@@ -82,9 +82,9 @@ double   InnerProd(
 
     iv = 0;
 
-    BoxLoopReduceI1(NULL, result, 
-              i, j, k, ix, iy, iz, nx, ny, nz,
-              iv, nx_v, ny_v, nz_v, 1, 1, 1,
+    BoxLoopReduceI1(result,
+										i, j, k, ix, iy, iz, nx, ny, nz,
+										iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
       ReduceSum(result, yp[iv] * xp[iv]);
     });

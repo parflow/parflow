@@ -41,8 +41,9 @@
   PF_UNUSED(nz);						      \
   PF_UNUSED(nzd)
 
-#define BoxLoopReduceI1(locals, sum, ...) BoxLoopI1(__VA_ARGS__)
-#define BoxLoopReduceI2(locals, sum, ...) BoxLoopI2(__VA_ARGS__)    
+#define BoxLoopReduceI1(sum, ...) BoxLoopI1(__VA_ARGS__)
+#define BoxLoopReduceI2(sum, ...) BoxLoopI2(__VA_ARGS__)
+#define BoxLoopReduceI3(sum, ...) BoxLoopI3(__VA_ARGS__)
 
 #define BoxLoopI0(i, j, k,                \
                   ix, iy, iz, nx, ny, nz, \
