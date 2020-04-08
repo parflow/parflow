@@ -176,7 +176,7 @@ if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
     target_include_directories(pfsimulator PUBLIC ${RMM_INCLUDE})
   endif( ${PARFLOW_HAVE_RMM} )
 
-elseif( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
+else( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
 
   set (SRC_FILES_ARCH
     axpy.c
