@@ -60,7 +60,19 @@ extern "C++"{
 		}
 	}
 
+#undef PlusEquals
+#define PlusEquals(a, b) AtomicAdd(&(a), b)
+  template<typename T>
+  static inline void AtomicAdd(T *addr, T val)
+  {
+    #pragma omp atomic
+    *addr += val;
+  }
 }
+
+
+
+
 /* Expected use inside of BoxLoopReduce macros.  In OpenMP, these loops have the reduction clause. */
 #undef ReduceSum
 #define ReduceSum(lhs, rhs) (lhs) += (rhs);
