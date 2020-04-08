@@ -204,7 +204,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   int ix, iy, iz;
   int nx, ny, nz;
   int nx_p, ny_p;
-  
+
   int sy_p, sz_p;
   int diffusive;             //@RMM
 
@@ -925,41 +925,37 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     /* @RMM added to provide variable dz */
     z_mult_dat = SubvectorData(z_mult_sub);
 
-
-
-    for (ipatch = 0; ipatch < BCStructNumPatches(bc_struct); ipatch++)
+		ForBCStructNumPatches(ipatch, bc_struct)
     {
       bc_patch_values = BCStructPatchValues(bc_struct, ipatch, is);
 
       ForPatchCellsPerFace(DirichletBC,
-                           InParallel,
-                           NO_LOCALS,
-                           BeforeAllCells(DoNothing),
-                           LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+													 BeforeAllCells(DoNothing),
+													 LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+													 NO_LOCALS,
                            CellSetup
-                           (
+													 (
                              int dir = 0;
                              int ip = SubvectorEltIndex(p_sub, i, j, k);
-                 
+
                              double diff = 0.0e0;
-                             double sep;
                              double u_new = 0.0e0;
                              double u_old = 0.0e0;
-                             
-                             double lower_cond;
-                             double upper_cond;
-                 
-                             double value = bc_patch_values[ival];
+
+														 double value = bc_patch_values[ival];
                              double x_dir_g = 0.0;
                              double y_dir_g = 0.0;
                              double z_dir_g = 1.0;
-                  
+
+														 double sep = 0.0;
+														 double lower_cond = 0.0;
+														 double upper_cond = 0.0;
                              // del_x_slope = (1.0 / cos(atan(x_ssl_dat[io])));
                              // del_y_slope = (1.0 / cos(atan(y_ssl_dat[io])));
-                  
+
                              double del_x_slope = 1.0;
                              double del_y_slope = 1.0;
-                           ),
+													 ),
                            FACE(LeftFace,
                            {
                              dir = -1;
@@ -1163,7 +1159,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
         //     double sep;
         //     double u_new = 0.0e0;
         //     double u_old = 0.0e0;
-            
+
         //     double lower_cond;
         //     double upper_cond;
 
@@ -1392,7 +1388,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
             double sep;
             double u_new = 0.0e0;
             double u_old = 0.0e0;
-            
+
             double lower_cond;
             double upper_cond;
 
@@ -1574,7 +1570,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
             double sep;
             double u_new = 0.0e0;
             double u_old = 0.0e0;
-            
+
             double lower_cond;
             double upper_cond;
 
@@ -1959,7 +1955,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
             double sep;
             double u_new = 0.0e0;
             double u_old = 0.0e0;
-            
+
             double lower_cond;
             double upper_cond;
 
@@ -2175,7 +2171,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
             double sep;
             double u_new = 0.0e0;
             double u_old = 0.0e0;
-            
+
             double lower_cond;
             double upper_cond;
 
@@ -2342,7 +2338,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
           /*  @RMM this is a new module for diffusive wave
            */
 
-	        double *dummy1 = NULL, *dummy2 = NULL , *dummy3 = NULL, *dummy4 = NULL;		    
+	        double *dummy1 = NULL, *dummy2 = NULL , *dummy3 = NULL, *dummy4 = NULL;
           PFModuleInvokeType(OverlandFlowEvalDiffInvoke, overlandflow_module_diff, (grid, is, bc_struct, ipatch, problem_data, pressure, old_pressure,
                                                                                     ke_, kw_, kn_, ks_,
                                                                                     dummy1, dummy2, dummy3, dummy4,

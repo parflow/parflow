@@ -62,7 +62,7 @@ typedef struct {
 
 #ifdef HAVE_CUDA
   /** Flags for GrGeomOutLoop cells */
-  int *outflag; 
+  int *outflag;
 #endif
 
   /* these fields are used to relate the background with the octree */
@@ -414,7 +414,7 @@ typedef struct {
     }                                                                                        \
   }
 
-  #define GrGeomPatchLoopBoxesNoFdir(i, j, k, grgeom, patch_num,        \
+#define GrGeomPatchLoopBoxesNoFdir(i, j, k, grgeom, patch_num,					\
                                    ix, iy, iz, nx, ny, nz,              \
                                    locals, setup,                       \
                                    f_left, f_right,                     \
@@ -485,7 +485,7 @@ typedef struct {
     }                                                                                 \
   }
 
-  #define GrGeomPatchLoopNoFdir(i, j, k, grgeom, patch_num,               \
+#define GrGeomPatchLoopNoFdir(i, j, k, grgeom, patch_num,               \
                               r, ix, iy, iz, nx, ny, nz,                \
                               locals, setup,                            \
                               f_left, f_right,                          \

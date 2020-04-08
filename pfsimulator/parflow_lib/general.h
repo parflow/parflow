@@ -195,7 +195,7 @@
 #define DEFER2(x) x EMPTY EMPTY() ()
 #define DEFER3(x) x EMPTY EMPTY EMPTY() () ()
 
-#undef LOCALS
+#undef Locals
 #define LOCALS(...) DEFER3(_LOCALS)(__VA_ARGS__)
 #define _LOCALS(...) __VA_ARGS__
 #define NO_LOCALS

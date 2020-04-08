@@ -64,7 +64,7 @@ struct function_traits<ReturnType(ClassType::*)(Args...) const>
 __host__ __device__ __forceinline__ static void dev_dorand48(unsigned short xseed[3])
 {
   unsigned long accu;
-  
+
   unsigned short _rand48_mult[3] = {
     RAND48_MULT_0,
     RAND48_MULT_1,
@@ -206,9 +206,9 @@ struct ReduceSumRes {T lambda_result;};
  * CUDA loop kernels
  *--------------------------------------------------------------------------*/
 template <typename LambdaBody>
-__global__ static void 
+__global__ static void
 __launch_bounds__(BLOCKSIZE_MAX)
-BoxKernelI0(LambdaBody loop_body, 
+BoxKernelI0(LambdaBody loop_body,
     const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -222,14 +222,14 @@ BoxKernelI0(LambdaBody loop_body,
     i += ix;
     j += iy;
     k += iz;
-    
+
     loop_body(i, j, k);
 }
 
 template <typename LambdaInit, typename LambdaBody>
-__global__ static void 
+__global__ static void
 __launch_bounds__(BLOCKSIZE_MAX)
-BoxKernelI1(LambdaInit loop_init, LambdaBody loop_body, 
+BoxKernelI1(LambdaInit loop_init, LambdaBody loop_body,
     const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -245,14 +245,14 @@ BoxKernelI1(LambdaInit loop_init, LambdaBody loop_body,
     i += ix;
     j += iy;
     k += iz;
-    
-    loop_body(i, j, k, i1);       
+
+    loop_body(i, j, k, i1);
 }
 
 template <typename LambdaInit1, typename LambdaInit2, typename LambdaBody>
-__global__ static void 
+__global__ static void
 __launch_bounds__(BLOCKSIZE_MAX)
-BoxKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaBody loop_body, 
+BoxKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaBody loop_body,
     const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -269,14 +269,14 @@ BoxKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaBody loop_body
     i += ix;
     j += iy;
     k += iz;
-    
-    loop_body(i, j, k, i1, i2);    
+
+    loop_body(i, j, k, i1, i2);
 }
 
 template <typename LambdaInit1, typename LambdaInit2, typename LambdaInit3, typename LambdaBody>
-__global__ static void 
+__global__ static void
 __launch_bounds__(BLOCKSIZE_MAX)
-BoxKernelI3(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaInit3 loop_init3, 
+BoxKernelI3(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaInit3 loop_init3,
     LambdaBody loop_body, const int ix, const int iy, const int iz, const int nx, const int ny, const int nz)
 {
 
@@ -294,15 +294,15 @@ BoxKernelI3(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaInit3 loop_ini
     i += ix;
     j += iy;
     k += iz;
-    
-    loop_body(i, j, k, i1, i2, i3);    
+
+    loop_body(i, j, k, i1, i2, i3);
 }
 
 template <typename ReduceOp, typename LambdaInit1, typename LambdaInit2, typename LambdaFun, typename T>
-__global__ static void 
+__global__ static void
 __launch_bounds__(BLOCKSIZE_MAX)
-DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun, 
-    T * __restrict__ rslt, const int ix, const int iy, const int iz, 
+DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
+    T * __restrict__ rslt, const int ix, const int iy, const int iz,
     const int nx, const int ny, const int nz)
 {
     // Specialize BlockReduce for a 1D block of BLOCKSIZE_X * 1 * 1 threads on type T
@@ -347,13 +347,13 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
     {
       aggregate = BlockReduce(temp_storage).Reduce(thread_data, cub::Min(), ntot);
     }
-    else 
+    else
     {
       printf("ERROR at %s:%d: Invalid reduction identifier, likely a problem with a BoxLoopReduce body.", __FILE__, __LINE__);
     }
 
     // Store aggregate
-    if(threadIdx.x == 0) 
+    if(threadIdx.x == 0)
     {
       atomicAdd(rslt, aggregate);
     }
@@ -368,7 +368,7 @@ static int gpu_sync = 1;
 #define GPU_NOSYNC gpu_sync = 0;
 
 #undef GPU_SYNC
-#define GPU_SYNC gpu_sync = 1; CUDA_ERR(cudaStreamSynchronize(0)); 
+#define GPU_SYNC gpu_sync = 1; CUDA_ERR(cudaStreamSynchronize(0));
 
 #undef InParallel
 #define InParallel 1
@@ -399,7 +399,7 @@ static int gpu_sync = 1;
       ((nz - 1) + blocksize_z) / blocksize_z);                                      \
   }                                                                                 \
   block = dim3(blocksize_x, blocksize_y, blocksize_z);                              \
-}  
+}
 
 #define GetMacro(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,                                    \
   _11,_12,_13,_14,_15,_16,_17,_18,_19,_20,                                          \
@@ -817,9 +817,9 @@ static int gpu_sync = 1;
 }
 
 #undef GrGeomPatchLoopBoxesNoFdir
-#define GrGeomPatchLoopBoxesNoFdir(i, j, k, grgeom, patch_num,                      \
-  ix, iy, iz, nx, ny, nz, locals, setup,                                            \
-  f_left, f_right, f_down, f_up, f_back, f_front, finalize)                         \
+#define GrGeomPatchLoopBoxesNoFdir(i, j, k, grgeom, patch_num,					\
+																	 ix, iy, iz, nx, ny, nz, locals, setup,	\
+																	 f_left, f_right, f_down, f_up, f_back, f_front, finalize) \
 {                                                                                   \
   for (int PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)                           \
   {                                                                                 \

@@ -76,6 +76,9 @@ typedef struct {
 #define BCStructBCType(bc_struct, p)          ((bc_struct)->bc_types[p])
 #define BCStructPatchValues(bc_struct, p, s)  ((bc_struct)->values[p][s])
 
+#define ForBCStructNumPatches(ipatch, bc_struct)										\
+  for(ipatch = 0; ipatch < BCStructNumPatches(bc_struct); ipatch++)
+
 /*--------------------------------------------------------------------------
  * Looping macro:
  *--------------------------------------------------------------------------*/
@@ -126,7 +129,7 @@ typedef struct {
     });                                                                           \
   }
 
-  #define BCStructPatchLoopNoFdir(i, j, k, ival, bc_struct, ipatch, is, \
+#define BCStructPatchLoopNoFdir(i, j, k, ival, bc_struct, ipatch, is,		\
                                 locals, setup,                          \
                                 f_left, f_right,                        \
                                 f_down, f_up,                           \
@@ -210,7 +213,7 @@ typedef struct {
 
 #define CellSetup(...) DEFER3(_CellSetup)(__VA_ARGS__)
 #define _CellSetup(...) __VA_ARGS__
-// #define CellSetup(body) { body; };
+//#define CellSetup(body) { body; };
 #define CellFinalize(body) { body; };
 #define BeforeAllCells(body) { body; };
 #define AfterAllCells(body) { body; }
@@ -243,8 +246,9 @@ ForPatchCellsPerFace(ALL,
                      );
 #endif
 
-#define ForPatchCellsPerFace(bctype, dummy1, locals,          \
-                             before_loop, loopvars,           \
+#define ForPatchCellsPerFace(bctype,													\
+                             before_loop,											\
+														 loopvars, locals,								\
                              setup,                           \
                              f_left, f_right,                 \
                              f_down, f_up,                    \
@@ -268,6 +272,7 @@ ForPatchCellsPerFace(ALL,
 
 #define ForPatchCellsPerFaceWithGhost(bctype, \
                                       before_loop, loopvars,          \
+																			locals,													\
                                       setup,                          \
                                       f_left, f_right,                \
                                       f_down, f_up,                   \
@@ -280,6 +285,7 @@ ForPatchCellsPerFace(ALL,
     {                                                                 \
       before_loop;                                                    \
       BCStructPatchLoopOvrlndNoFdir(loopvars,                         \
+																		locals,														\
                                     setup,                            \
                                     f_left, f_right,                  \
                                     f_down, f_up,                     \
@@ -288,15 +294,18 @@ ForPatchCellsPerFace(ALL,
       after_loop;                                                     \
     }                                                                 \
   }
+
 /* Calls the loop directly
    Puts "body" into what is normally CellSetup
-   Replaces faces and finalize with DoNothing
+   Replaces locals, faces, and finalize with DoNothing
 */
-#define ForEachPatchCell(i, j, k, ival, bc_struct, ipatch, is, body)  \
-  BCStructPatchLoopNoFdir(i, j, k, ival, bc_struct, ipatch, is, body, \
-                          DoNothing, DoNothing,                       \
-                          DoNothing, DoNothing,                       \
-                          DoNothing, DoNothing,                       \
+#define ForEachPatchCell(i, j, k, ival, bc_struct, ipatch, is, body)		\
+  BCStructPatchLoopNoFdir(i, j, k, ival, bc_struct, ipatch, is,					\
+													NoLocals,																			\
+													body,																					\
+                          DoNothing, DoNothing,													\
+                          DoNothing, DoNothing,													\
+                          DoNothing, DoNothing,													\
                           DoNothing);
 
 #endif
