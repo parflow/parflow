@@ -32,9 +32,6 @@
 
 #include "parflow.h"
 
-/* This must be in the global scope due to __managed__ keyword */
-__managed__ static double result;
-
 double   InnerProd(
                    Vector *x,
                    Vector *y)
@@ -45,7 +42,8 @@ double   InnerProd(
   Subvector    *y_sub;
   Subvector    *x_sub;
 
-  double       *yp, *xp;
+  const double * __restrict__ yp;
+  const double * __restrict__ xp;
 
   int ix, iy, iz;
   int nx, ny, nz;
@@ -53,10 +51,11 @@ double   InnerProd(
 
   int i_s, i, j, k, iv;
 
-  amps_Invoice result_invoice;
+  double *result = ctalloc(double, 1);
+  double return_val;
 
-  result = 0.0;
-  result_invoice = amps_NewInvoice("%d", &result);
+  amps_Invoice result_invoice;
+  result_invoice = amps_NewInvoice("%d", result);
 
   ForSubgridI(i_s, GridSubgrids(grid))
   {
@@ -86,7 +85,7 @@ double   InnerProd(
 										i, j, k, ix, iy, iz, nx, ny, nz,
 										iv, nx_v, ny_v, nz_v, 1, 1, 1,
     {
-      ReduceSum(result, yp[iv] * xp[iv]);
+      ReduceSum(*result, yp[iv] * xp[iv]);
     });
   }
 
@@ -96,5 +95,8 @@ double   InnerProd(
 
   IncFLOPCount(2 * VectorSize(x) - 1);
 
-  return result;
+  return_val = *result;
+  tfree(result);
+
+  return return_val;
 }
