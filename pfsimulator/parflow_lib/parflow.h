@@ -109,11 +109,6 @@
 
   #if PF_COMP_UNIT_TYPE == 1
     #include "pf_omploops.h" // For OMP loops
-//    #include "pfcudamalloc.h"
-  #elif PF_COMP_UNIT_TYPE == 2
-//    #include "pfcudamalloc.h" // For RMM
-  #else
-//    #include "pfcudaerr.h"
   #endif
 
 #endif

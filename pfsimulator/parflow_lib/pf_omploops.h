@@ -34,7 +34,33 @@
 /**************************************************************************
  * Reduction/Atomic Variants
  **************************************************************************/
+extern "C++"{
+#undef pfmax_atomic
+#define pfmax_atomic(a, b) AtomicMax(&(a), b)
+/* TODO: This should be replaced by turning the calling loop into reduction with (max: sum) clause */
+	template <typename T>
+	static inline void AtomicMax(T *addr, T val)
+	{
+#pragma omp critical
+		{
+			if (*addr < val)
+				*addr = val;
+		}
+	}
 
+#undef pfmin_atomic
+#define pfmin_atomic(a, b) AtomicMin(&(a), b)
+	template <typename T>
+	static inline void AtomicMin(T *addr, T val)
+	{
+		#pragma omp critical
+		{
+			if (*addr > val)
+				*addr = val;
+		}
+	}
+
+}
 /* Expected use inside of BoxLoopReduce macros.  In OpenMP, these loops have the reduction clause. */
 #undef ReduceSum
 #define ReduceSum(lhs, rhs) (lhs) += (rhs);
