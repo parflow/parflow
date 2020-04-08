@@ -35,8 +35,8 @@
  * Reduction/Atomic Variants
  **************************************************************************/
 extern "C++"{
-#undef pfmax_atomic
-#define pfmax_atomic(a, b) AtomicMax(&(a), b)
+//#undef pfmax_atomic
+//#define pfmax_atomic(a, b) AtomicMax(&(a), b)
 /* TODO: This should be replaced by turning the calling loop into reduction with (max: sum) clause */
 	template <typename T>
 	static inline void AtomicMax(T *addr, T val)
@@ -48,8 +48,8 @@ extern "C++"{
 		}
 	}
 
-#undef pfmin_atomic
-#define pfmin_atomic(a, b) AtomicMin(&(a), b)
+//#undef pfmin_atomic
+//#define pfmin_atomic(a, b) AtomicMin(&(a), b)
 	template <typename T>
 	static inline void AtomicMin(T *addr, T val)
 	{
@@ -68,10 +68,14 @@ extern "C++"{
     #pragma omp atomic
     *addr += val;
   }
-}
 
+} // Extern C++
 
+#undef pfmin_atomic
+#define pfmin_atomic(a,b) (a) = (a) < (b) ? (a) : (b)
 
+#undef pfmax_atomic
+#define pfmax_atomic(a,b) (a) = (a) > (b) ? (a) : (b)
 
 /* Expected use inside of BoxLoopReduce macros.  In OpenMP, these loops have the reduction clause. */
 #undef ReduceSum
@@ -280,6 +284,57 @@ INC_IDX(int idx, int i, int j, int k,
       }                                                                 \
   }
 
+/**************************************************************************
+ * BoxLoop MaxMin Variants
+ **************************************************************************/
+
+#undef BoxLoopGetMaxI1
+#define BoxLoopGetMaxI1(result,                                         \
+                        i, j, k,                                        \
+                        ix, iy, iz, nx, ny, nz,                         \
+                        i1, nx1, ny1, nz1, sx1, sy1, sz1,               \
+                        body)                                           \
+  {                                                                     \
+    int i1_start = i1;                                                  \
+    DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1); \
+    PRAGMA(omp parallel for reduction(max:result) collapse(3) private(i, j, k, i1)) \
+      for (k = iz; k < iz + nz; k++)                                    \
+      {                                                                 \
+        for (j = iy; j < iy + ny; j++)                                  \
+        {                                                               \
+          for (i = ix; i < ix + nx; i++)                                \
+          {                                                             \
+            i1 = INC_IDX(i1_start, (i - ix), (j - iy), (k - iz),        \
+                         nx, ny, sx1, PV_jinc_1, PV_kinc_1);            \
+            body;                                                       \
+          }                                                             \
+        }                                                               \
+      }                                                                 \
+  }
+
+#undef BoxLoopGetMinI1
+#define BoxLoopGetMinI1(result,                                         \
+                        i, j, k,                                        \
+                        ix, iy, iz, nx, ny, nz,                         \
+                        i1, nx1, ny1, nz1, sx1, sy1, sz1,               \
+                        body)                                           \
+  {                                                                     \
+    int i1_start = i1;                                                  \
+    DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1); \
+    PRAGMA(omp parallel for reduction(min:result) collapse(3) private(i, j, k, i1)) \
+      for (k = iz; k < iz + nz; k++)                                    \
+      {                                                                 \
+        for (j = iy; j < iy + ny; j++)                                  \
+        {                                                               \
+          for (i = ix; i < ix + nx; i++)                                \
+          {                                                             \
+            i1 = INC_IDX(i1_start, (i - ix), (j - iy), (k - iz),        \
+                         nx, ny, sx1, PV_jinc_1, PV_kinc_1);            \
+            body;                                                       \
+          }                                                             \
+        }                                                               \
+      }                                                                 \
+  }
 
 /**************************************************************************
  * SIMD BoxLoop Variants
