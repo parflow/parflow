@@ -76,22 +76,46 @@
 // SGS FIXME this should not be here, in fact this whole parflow.h file is dumb.
 #include <math.h>
 
+/* PF_COMP_UNIT_TYPE determines the behavior of the NVCC compilation unit and/or OpenMP loops:
+------------------------------------------------------------
+   CUDA
+------------------------------------------------------------
+	 1:     NVCC compiler, Unified Memory allocation, Parallel loops on GPUs
+	 2:     NVCC compiler, Unified Memory allocation, Sequential loops on host
+	 Other: NVCC compiler, Standard heap allocation, Sequential loops on host
+
+
+------------------------------------------------------------
+   OpenMP
+------------------------------------------------------------
+   1:     CXX compiler, Unified Memory allocation, Parallel loops on CPU
+	 2:     CXX compiler, Unified Memory allocation, Sequential loops on CPU
+	 Other: CXX compiler, Standard heap allocation, Sequential loops on CPU
+*/
+
 /* Include CUDA headers if CUDA active and NVCC compiler */
 #if defined(HAVE_CUDA) && defined(__CUDACC__)
 
-/* PFCUDA_COMP_UNIT_TYPE determines the behavior of the NVCC compilation unit:
-  1:     NVCC compiler, Unified Memory allocation, Parallel loops on GPUs   
-  2:     NVCC compiler, Unified Memory allocation, Sequential loops on host
-  Other: NVCC compiler, Standard heap allocation, Sequential loops on host  */
-
-  #if PFCUDA_COMP_UNIT_TYPE == 1
+  #if PF_COMP_UNIT_TYPE == 1
     #include "pfcudaloops.h"
-  #elif PFCUDA_COMP_UNIT_TYPE == 2
+  #elif PF_COMP_UNIT_TYPE == 2
     #include "pfcudamalloc.h"
   #else
     #include "pfcudaerr.h"
   #endif
+#endif
 
-#endif // HAVE_CUDA && __CUDACC__
+#ifdef HAVE_OMP
+
+  #if PF_COMP_UNIT_TYPE == 1
+    #include "pf_omploops.h" // For OMP loops
+//    #include "pfcudamalloc.h"
+  #elif PF_COMP_UNIT_TYPE == 2
+//    #include "pfcudamalloc.h" // For RMM
+  #else
+//    #include "pfcudaerr.h"
+  #endif
+
+#endif
 
 #endif

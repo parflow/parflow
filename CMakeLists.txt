@@ -58,9 +58,7 @@ if ( ${PARFLOW_ENABLE_OMP} )
    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
    set (PARFLOW_HAVE_OMP "yes")
-   set (HAVE_OMP ${PARFLOW_HAVE_OMP})
-   set (PARFLOW_USING_PARALLEL "yes")
-   set (USING_PARALLEL ${PARFLOW_USING_PARALLEL})
+   set (HAVE_OMP ${PARFLOW_HAVE_CUDA})
 
 endif( ${PARFLOW_ENABLE_OMP} )
 
@@ -450,10 +448,6 @@ if( ${PARFLOW_ENABLE_PROFILING} )
 else( ${PARFLOW_ENABLE_PROFILING} )
   set (PARFLOW_PROFILE_OPTS "")
 endif( ${PARFLOW_ENABLE_PROFILING} )
-
-set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -save-temps" )
-set( CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -save-temps" )
-
 
 include_directories ("${CMAKE_SOURCE_DIR}/pfsimulator/parflow_lib")
 

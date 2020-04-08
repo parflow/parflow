@@ -26,6 +26,9 @@
 #cmakedefine PARFLOW_HAVE_MPI
 #cmakedefine HAVE_MPI
 
+#cmakedefine PARFLOW_HAVE_OMP
+#cmakedefine HAVE_OMP
+
 #cmakedefine PARFLOW_HAVE_GETTIMEOFDAY
 #cmakedefine CASC_HAVE_GETTIMEOFDAY
 

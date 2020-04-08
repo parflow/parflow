@@ -123,7 +123,8 @@ set (SRC_FILES_CONST advect.F
   write_parflow_silo_pmpio.c
 )
 
-if( ${PARFLOW_HAVE_CUDA} )
+if( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
+
   set (SRC_FILES_ARCH
     axpy.cpp
     calc_elevations.cpp
@@ -155,17 +156,28 @@ if( ${PARFLOW_HAVE_CUDA} )
     vector.cpp
     vector_utilities.cpp
   )
-  set_source_files_properties(${SRC_FILES_ARCH} PROPERTIES LANGUAGE CUDA)
+  if ( ${PARFLOW_HAVE_CUDA} )
+    set_source_files_properties(${SRC_FILES_ARCH} PROPERTIES LANGUAGE CUDA)
+  else ( ${PARFLOW_HAVE_CUDA} )
+    set_source_files_properties(${SRC_FILES_ARCH} PROPERTIES LANGUAGE CXX)
+  endif ( ${PARFLOW_HAVE_CUDA} )
+
   add_library(pfsimulator ${SRC_FILES_ARCH} ${SRC_FILES_CONST})
-  set_target_properties(pfsimulator PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-  target_link_libraries(pfsimulator nvToolsExt)
-  target_include_directories(pfsimulator PUBLIC "../third_party/cub")
-  target_include_directories(pfsimulator PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+
+  if ( ${PARFLOW_HAVE_CUDA} )
+    set_target_properties(pfsimulator PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    target_link_libraries(pfsimulator nvToolsExt)
+    target_include_directories(pfsimulator PUBLIC "../third_party/cub")
+    target_include_directories(pfsimulator PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+  endif ( ${PARFLOW_HAVE_CUDA} )
+
   if( ${PARFLOW_HAVE_RMM} )
     target_link_libraries(pfsimulator rmm)
     target_include_directories(pfsimulator PUBLIC ${RMM_INCLUDE})
   endif( ${PARFLOW_HAVE_RMM} )
-else( ${PARFLOW_HAVE_CUDA} )
+
+elseif( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
+
   set (SRC_FILES_ARCH
     axpy.c
     calc_elevations.c
@@ -198,7 +210,7 @@ else( ${PARFLOW_HAVE_CUDA} )
     vector_utilities.c
   )
   add_library(pfsimulator ${SRC_FILES_CONST} ${SRC_FILES_ARCH})
-endif( ${PARFLOW_HAVE_CUDA} )
+endif( (${PARFLOW_HAVE_CUDA}) OR (${PARFLOW_HAVE_OMP}) )
 
 target_link_libraries(pfsimulator pfkinsol amps cjson ${PARFLOW_ETRACE_LIBRARY})
 target_include_directories(pfsimulator PUBLIC "../third_party/cjson")
