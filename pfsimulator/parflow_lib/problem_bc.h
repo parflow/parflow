@@ -211,13 +211,25 @@ typedef struct {
 #define BackFace GrGeomOctreeFaceB
 #define FrontFace GrGeomOctreeFaceF
 
-#define CellSetup(...) DEFER3(_CellSetup)(__VA_ARGS__)
-#define _CellSetup(...) __VA_ARGS__
-//#define CellSetup(body) { body; };
+//#define CellSetup(...) DEFER3(_CellSetup)(__VA_ARGS__)
+//#define _CellSetup(...) __VA_ARGS__
+#define CellSetup(body) { body; };
 #define CellFinalize(body) { body; };
 #define BeforeAllCells(body) { body; };
 #define AfterAllCells(body) { body; }
 #define LoopVars(...) __VA_ARGS__
+
+/* @MCB:
+   Locals will pack everything into parens, which captures commas.
+   This will treat it as a single parameter in other macros.
+   It can then be exapnded at the correct place using UNPACK.
+ */
+#define Locals(...) (__VA_ARGS__)
+#define NoLocals ()
+#define UNPACK(locals) _UNPACK locals
+#define _UNPACK(...) __VA_ARGS__ ;
+
+
 #define FACE(fdir, body)      \
   case fdir:                  \
   {                           \
@@ -234,6 +246,7 @@ typedef struct {
 ForPatchCellsPerFace(ALL,
                      BeforeAllCells(DoNothing),
                      LoopVars(i, j, k, ival, bc_struct, ipatch, is),
+                     NoLocals,
                      CellSetup({}),
                      FACE(Left, {}),
                      FACE(Right, {}),

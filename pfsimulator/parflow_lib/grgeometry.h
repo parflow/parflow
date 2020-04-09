@@ -425,6 +425,7 @@ typedef struct {
     int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;                 \
     int *PV_visiting = NULL;                                            \
     PF_UNUSED(PV_visiting);                                             \
+    UNPACK(locals);                                                     \
     for (int PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)             \
     {                                                                   \
                                                                         \

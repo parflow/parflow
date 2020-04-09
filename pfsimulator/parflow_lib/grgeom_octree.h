@@ -1156,6 +1156,7 @@ typedef struct grgeom_octree {
                                    finalize)                            \
   {                                                                     \
     int PV_f;                                                           \
+    UNPACK(locals);                                                     \
     GrGeomOctreeInsideNodeLoop(i, j, k, node, octree, level_of_interest,\
                                ix, iy, iz, nx, ny, nz,                  \
                                TRUE,                                    \
@@ -1163,7 +1164,6 @@ typedef struct grgeom_octree {
       for (PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)               \
         if (GrGeomOctreeHasFace(node, PV_f))                            \
         {                                                               \
-          locals;                                                       \
           setup;                                                        \
                                                                         \
           switch (PV_f)                                                 \

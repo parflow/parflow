@@ -832,7 +832,7 @@ static int gpu_sync = 1;
         auto lambda_body =                                                          \
              GPU_LAMBDA(const int i, const int j, const int k, int ival)            \
              {                                                                      \
-                locals;                                                             \
+               UNPACK(locals);                                          \
                 setup;                                                              \
                 switch(PV_f)                                                        \
                 {                                                                   \

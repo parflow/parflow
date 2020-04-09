@@ -383,7 +383,7 @@ INC_IDX(int idx, int i, int j, int k,
   {                                                                     \
     /* @MCB: Redeclare locals instead of using OMP Private pragma for */ \
     /* architecture portability. */                                     \
-    locals;                                                             \
+    UNPACK(locals);                                                     \
     int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;                 \
     int *PV_visiting = NULL;                                            \
     PF_UNUSED(PV_visiting);                                             \
