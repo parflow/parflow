@@ -243,12 +243,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   qx = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
   qy = NewVectorType(grid2d, 1, 1, vector_cell_centered_2D);
 
-  Vector *u_right_vec, *u_front_vec, *u_upper_vec; // @IJB
-  u_right_vec = NewVectorType(grid, 1, 1, fval->type);
-  u_front_vec = NewVectorType(grid, 1, 1, fval->type);
-  u_upper_vec = NewVectorType(grid, 1, 1, fval->type);
-    Subvector   *u_right_sub, *u_front_sub, *u_upper_sub; // @IJB
-    double      *u_right_dat, *u_front_dat, *u_upper_dat; // @IJB
   /* Calculate pressure dependent properties: density and saturation */
 
   PFModuleInvokeType(PhaseDensityInvoke, density_module, (0, pressure, density, &dtmp, &dtmp,
@@ -569,10 +563,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     /* @RMM added to provide access to zmult */
     z_mult_sub = VectorSubvector(z_mult, is);
 
-    /* @IJB added to enable parallelism */
-    u_right_sub = VectorSubvector(u_right_vec, is);
-    u_front_sub = VectorSubvector(u_front_vec, is);
-    u_upper_sub = VectorSubvector(u_upper_vec, is);
     /* RDF: assumes resolutions are the same in all 3 directions */
     r = SubgridRX(subgrid);
 
@@ -619,12 +609,8 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
     z_mult_dat = SubvectorData(z_mult_sub);
 
     /* @IJB added to enable parallelism */
-    u_right_dat = SubvectorData(u_right_sub);
-    u_front_dat = SubvectorData(u_front_sub);
-    u_upper_dat = SubvectorData(u_upper_sub);
     qx_sub = VectorSubvector(qx, is);
 
-#if 1
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
       int ip = SubvectorEltIndex(p_sub, i, j, k);
@@ -655,11 +641,15 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       double y_dir_g = NAN;
       double y_dir_g_c = NAN;
 
-      double u_all = 0.0;
+      double x_g_prev = NAN;
+      double x_g_c_prev = NAN;
+      double y_g_prev = NAN;
+      double y_g_c_prev = NAN;
 
 //@RMM  tfgupwind == 0 (default) should give original behavior
 // tfgupwind 1 should still use sine but upwind
 // tfgupwdin 2 just upwind
+      /* TODO: Handle other TFG cases for lookbehind */
       switch (public_xtra->tfgupwind)
       {
         case 0:
@@ -669,6 +659,11 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
             x_dir_g_c = Mean(gravity * cos(atan(x_ssl_dat[io])), gravity * cos(atan(x_ssl_dat[io + 1])));
             y_dir_g = Mean(gravity * sin(atan(y_ssl_dat[io])), gravity * sin(atan(y_ssl_dat[io + sy_p])));
             y_dir_g_c = Mean(gravity * cos(atan(y_ssl_dat[io])), gravity * cos(atan(y_ssl_dat[io + sy_p])));
+            /* Get lookbehind values */
+            x_g_prev = Mean(gravity * sin(atan(x_ssl_dat[io-1])), gravity * sin(atan(x_ssl_dat[io])));
+            x_g_c_prev = Mean(gravity * cos(atan(x_ssl_dat[io-1])), gravity * cos(atan(x_ssl_dat[io])));
+            y_g_prev = Mean(gravity * sin(atan(y_ssl_dat[io-sy_p])), gravity * sin(atan(y_ssl_dat[io])));
+            y_g_c_prev = Mean(gravity * cos(atan(y_ssl_dat[io-sy_p])), gravity * cos(atan(y_ssl_dat[io])));
             break;
           }
 
@@ -699,16 +694,19 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       double f_prev;
       double u_prev;
 
+      double zmult_mean = NAN;
+      double rpmean_val = NAN;
+
       double diff_l = pp[ip] - pp[ip + 1];
       double updir = (diff_l / dx) * x_dir_g_c - x_dir_g;
 
       double u_right = z_mult_dat[ip] * ffx * del_y_slope * PMean(pp[ip], pp[ip + 1],
-                                                           permxp[ip], permxp[ip + 1])
-                * (diff_l / (dx * del_x_slope)) * x_dir_g_c
-                * RPMean(updir, 0.0,
-                         rpp[ip] * dp[ip],
-                         rpp[ip + 1] * dp[ip + 1])
-                / viscosity;
+                                                                  permxp[ip], permxp[ip + 1])
+                       * (diff_l / (dx * del_x_slope)) * x_dir_g_c
+                       * RPMean(updir, 0.0,
+                                rpp[ip] * dp[ip],
+                                rpp[ip + 1] * dp[ip + 1])
+                       / viscosity;
 
       /* Calculate right face velocity gravity terms
        * @RMM added sin* g term to test terrain-following grid
@@ -722,6 +720,25 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                           rpp[ip] * dp[ip],
                           rpp[ip + 1] * dp[ip + 1])
                  / viscosity;
+
+      /* Get Lookbehind values */
+      diff_l = pp[ip - 1] - pp[ip];
+      updir = (diff_l / dx) * x_g_c_prev - x_g_prev;
+      r_prev = z_mult_dat[ip - 1] * ffx * del_y_slope * PMean(pp[ip - 1], pp[ip],
+                                                              permxp[ip - 1], permxp[ip])
+               * (diff_l / (dx * del_x_slope)) * x_g_c_prev
+               * RPMean(updir, 0.0,
+                        rpp[ip - 1] * dp[ip - 1],
+                        rpp[ip] * dp[ip])
+               / viscosity;
+
+      r_prev += z_mult_dat[ip - 1] * ffx * del_y_slope * PMean(pp[ip - 1], pp[ip],
+                                                               permxp[ip - 1], permxp[ip])
+                * (-x_g_prev)
+                * RPMean(updir, 0.0,
+                         rpp[ip - 1] * dp[ip - 1],
+                         rpp[ip] * dp[ip])
+                / viscosity;
 
       /* Calculate front face velocity.
        * diff_l >= 0 implies flow goes back to front */
@@ -749,6 +766,26 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                           rpp[ip + sy_p] * dp[ip + sy_p])
                  / viscosity;
 
+      /* Get lookbehind values */
+      diff_l = pp[ip-sy_p] - pp[ip];
+      updir = (diff_l / dy) * y_g_c_prev - y_g_prev;
+
+      f_prev = z_mult_dat[ip-sy_p] * ffy * del_x_slope
+                       * PMean(pp[ip-sy_p], pp[ip], permyp[ip-sy_p], permyp[ip])
+                       * (diff_l / (dy * del_y_slope)) * y_g_c_prev
+                       * RPMean(updir, 0.0,
+                                rpp[ip-sy_p] * dp[ip-sy_p],
+                                rpp[ip] * dp[ip])
+                       / viscosity;
+
+      f_prev += z_mult_dat[ip-sy_p] * ffy * del_x_slope
+                 * PMean(pp[ip-sy_p], pp[ip], permyp[ip-sy_p], permyp[ip])
+                 * (-y_g_prev)
+                * RPMean(updir, 0.0, rpp[ip-sy_p] * dp[ip-sy_p],
+                          rpp[ip] * dp[ip])
+                 / viscosity;
+
+
       /* Calculate upper face velocity.
        * diff_l >= 0 implies flow goes lower to upper
        */
@@ -773,92 +810,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                          rpp[ip + sz_p] * dp[ip + sz_p])
                 / viscosity;
 
-/*  add in flow barrier values
- * assumes that ip is the cell face between ip and ip+1
- * ip and ip+sy_p and ip and ip+sz_p in x, y, z directions */
-      u_right = u_right * FBx_dat[ip];
-      u_front = u_front * FBy_dat[ip];
-      u_upper = u_upper * FBz_dat[ip];
-
-
-      switch (public_xtra->tfgupwind)
-      {
-        case 0:
-          {
-            // default formulation in Maxwell 2013
-            x_dir_g = Mean(gravity * sin(atan(x_ssl_dat[io-1])), gravity * sin(atan(x_ssl_dat[io])));
-            x_dir_g_c = Mean(gravity * cos(atan(x_ssl_dat[io-1])), gravity * cos(atan(x_ssl_dat[io])));
-            y_dir_g = Mean(gravity * sin(atan(y_ssl_dat[io-sy_p])), gravity * sin(atan(y_ssl_dat[io])));
-            y_dir_g_c = Mean(gravity * cos(atan(y_ssl_dat[io-sy_p])), gravity * cos(atan(y_ssl_dat[io])));
-            break;
-          }
-
-        case 1:
-          {
-            // direct upwinding, no averaging with sines
-            // TODO: The offset for these should be -sx_p and -sy_p?
-            x_dir_g = gravity * sin(atan(x_ssl_dat[io]));
-            x_dir_g_c = gravity * cos(atan(x_ssl_dat[io]));
-            y_dir_g = gravity * sin(atan(y_ssl_dat[io]));
-            y_dir_g_c = gravity * cos(atan(y_ssl_dat[io]));
-            break;
-          }
-
-        case 2:
-          {
-            // direct upwinding, no averaging no sines
-            x_dir_g = x_ssl_dat[io];
-            x_dir_g_c = 1.0;
-            y_dir_g = y_ssl_dat[io];
-            y_dir_g_c = 1.0;
-            break;
-          }
-      }
-
-      diff_l = pp[ip - 1] - pp[ip];
-      updir = (diff_l / dx) * x_dir_g_c - x_dir_g;
-
-      r_prev = z_mult_dat[ip - 1] * ffx * del_y_slope * PMean(pp[ip - 1], pp[ip],
-                                                              permxp[ip - 1], permxp[ip])
-               * (diff_l / (dx * del_x_slope)) * x_dir_g_c
-               * RPMean(updir, 0.0,
-                        rpp[ip - 1] * dp[ip - 1],
-                        rpp[ip] * dp[ip])
-               / viscosity;
-
-      r_prev += z_mult_dat[ip - 1] * ffx * del_y_slope * PMean(pp[ip - 1], pp[ip],
-                                                               permxp[ip - 1], permxp[ip])
-                * (-x_dir_g)
-                * RPMean(updir, 0.0,
-                         rpp[ip - 1] * dp[ip - 1],
-                         rpp[ip] * dp[ip])
-                / viscosity;
-
-      diff_l = pp[ip-sy_p] - pp[ip];
-      updir = (diff_l / dy) * y_dir_g_c - y_dir_g;
-
-      f_prev = z_mult_dat[ip-sy_p] * ffy * del_x_slope
-                       * PMean(pp[ip-sy_p], pp[ip], permyp[ip-sy_p], permyp[ip])
-                       * (diff_l / (dy * del_y_slope)) * y_dir_g_c
-                       * RPMean(updir, 0.0,
-                                rpp[ip-sy_p] * dp[ip-sy_p],
-                                rpp[ip] * dp[ip])
-                       / viscosity;
-
-      /* Calculate front face velocity gravity terms
-       * @RMM added sin* g term to test terrain-following grid
-       * note upwinding on gravity terms not pressure
-       * Sy < 0 implies flow goes from left to right
-       */
-
-      f_prev += z_mult_dat[ip-sy_p] * ffy * del_x_slope
-                 * PMean(pp[ip-sy_p], pp[ip], permyp[ip-sy_p], permyp[ip])
-                 * (-y_dir_g)
-                * RPMean(updir, 0.0, rpp[ip-sy_p] * dp[ip-sy_p],
-                          rpp[ip] * dp[ip])
-                 / viscosity;
-
-
+      /* Get lookbehind values */
       sep_l = dz * (Mean(z_mult_dat[ip - sz_p], z_mult_dat[ip]));
 
       lower_cond_l = pp[ip - sz_p] / sep_l
@@ -880,6 +832,13 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                         rpp[ip] * dp[ip])
                / viscosity;
 
+/*  add in flow barrier values
+ * assumes that ip is the cell face between ip and ip+1
+ * ip and ip+sy_p and ip and ip+sz_p in x, y, z directions */
+      u_right = u_right * FBx_dat[ip];
+      u_front = u_front * FBy_dat[ip];
+      u_upper = u_upper * FBz_dat[ip];
+
       r_prev = r_prev * FBx_dat[ip - 1];
       f_prev = f_prev * FBy_dat[ip - sy_p];
       u_prev = u_prev * FBz_dat[ip - sz_p];
@@ -889,235 +848,15 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       vy[vyi] = u_front / ffy;
       vz[vzi] = u_upper / ffz;
 
-      //u_right_dat[ip] = u_right;
-      //u_front_dat[ip] = u_front;
-      //u_upper_dat[ip] = u_upper;
-
+      /* Do floating-point operations in reverse order
+         Preserves roundoff error */
       fp[ip] += (-dt * u_prev);
       fp[ip] += (-dt * f_prev);
       fp[ip] += (-dt * r_prev);
       fp[ip] += dt * (u_right + u_front + u_upper);
-      //fp[ip + 1] += (-dt * u_right);
-      //fp[ip + sy_p] += (-dt * u_front);
-      //fp[ip + sz_p] += (-dt * u_upper);
-    });
-
-#else
-    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-    {
-      int ip = SubvectorEltIndex(p_sub, i, j, k);
-      int io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
-
-      /* @RMM: modified the terrain-following transform
-       * to be swtichable in the UZ
-       * terms:
-       * 1. x dir terrain tendency:  gravity*sin(atan(x_ssl_dat[io]))
-       * 2. y dir terrain tendency:  gravity*sin(atan(y_ssl_dat[io]))
-       * 3. change in delta-x due to slope: (1.0/cos(atan(x_ssl_dat[io])))
-       * 4. change in delta-y due to slope: (1.0/cos(atan(y_ssl_dat[io])))
-       * Depending on formulation chosen slopes are either assumed to be cell-centered or
-       * upwind
-       */
-
-      /* velocity subvector indices jjb */
-      int vxi = SubvectorEltIndex(vx_sub, i + 1, j, k);
-      int vyi = SubvectorEltIndex(vy_sub, i, j + 1, k);
-      int vzi = SubvectorEltIndex(vz_sub, i, j, k + 1);
-
-      double z_dir_g = 1.0;
-      double del_x_slope = 1.0;
-      double del_y_slope = 1.0;
-
-      double x_dir_g = NAN;
-      double x_dir_g_c= NAN;
-      double y_dir_g= NAN;
-      double y_dir_g_c= NAN;
-
-//@RMM  tfgupwind == 0 (default) should give original behavior
-// tfgupwind 1 should still use sine but upwind
-// tfgupwdin 2 just upwind
-      switch (public_xtra->tfgupwind)
-      {
-        case 0:
-          {
-            // default formulation in Maxwell 2013
-            x_dir_g = Mean(gravity * sin(atan(x_ssl_dat[io])), gravity * sin(atan(x_ssl_dat[io + 1])));
-            x_dir_g_c = Mean(gravity * cos(atan(x_ssl_dat[io])), gravity * cos(atan(x_ssl_dat[io + 1])));
-            y_dir_g = Mean(gravity * sin(atan(y_ssl_dat[io])), gravity * sin(atan(y_ssl_dat[io + sy_p])));
-            y_dir_g_c = Mean(gravity * cos(atan(y_ssl_dat[io])), gravity * cos(atan(y_ssl_dat[io + sy_p])));
-            break;
-          }
-
-        case 1:
-          {
-            // direct upwinding, no averaging with sines
-            x_dir_g = gravity * sin(atan(x_ssl_dat[io]));
-            x_dir_g_c = gravity * cos(atan(x_ssl_dat[io]));
-            y_dir_g = gravity * sin(atan(y_ssl_dat[io]));
-            y_dir_g_c = gravity * cos(atan(y_ssl_dat[io]));
-            break;
-          }
-
-        case 2:
-          {
-            // direct upwinding, no averaging no sines
-            x_dir_g = x_ssl_dat[io];
-            x_dir_g_c = 1.0;
-            y_dir_g = y_ssl_dat[io];
-            y_dir_g_c = 1.0;
-            break;
-          }
-      }
-      /* Calculate right face velocity.
-       * diff_l >= 0 implies flow goes left to right */
-
-      double diff_l = pp[ip] - pp[ip + 1];
-      double updir = (diff_l / dx) * x_dir_g_c - x_dir_g;
-
-      double u_right = z_mult_dat[ip] * ffx * del_y_slope * PMean(pp[ip], pp[ip + 1],
-                                                           permxp[ip], permxp[ip + 1])
-                * (diff_l / (dx * del_x_slope)) * x_dir_g_c
-                * RPMean(updir, 0.0,
-                         rpp[ip] * dp[ip],
-                         rpp[ip + 1] * dp[ip + 1])
-                / viscosity;
-
-      /* Calculate right face velocity gravity terms
-       * @RMM added sin* g term to test terrain-following grid
-       * upwind on pressure is currently implemented
-       * Sx < 0 implies flow goes left to right */
-
-      u_right += z_mult_dat[ip] * ffx * del_y_slope * PMean(pp[ip], pp[ip + 1],
-                                                            permxp[ip], permxp[ip + 1])
-                 * (-x_dir_g)
-                 * RPMean(updir, 0.0, rpp[ip] * dp[ip],
-                          rpp[ip + 1] * dp[ip + 1])
-                 / viscosity;
-
-
-      /* Calculate front face velocity.
-       * diff_l >= 0 implies flow goes back to front */
-      diff_l = pp[ip] - pp[ip + sy_p];
-      updir = (diff_l / dy) * y_dir_g_c - y_dir_g;
-
-      double u_front = z_mult_dat[ip] * ffy * del_x_slope
-                * PMean(pp[ip], pp[ip + sy_p], permyp[ip], permyp[ip + sy_p])
-                * (diff_l / (dy * del_y_slope)) * y_dir_g_c
-                * RPMean(updir, 0.0,
-                         rpp[ip] * dp[ip],
-                         rpp[ip + sy_p] * dp[ip + sy_p])
-                / viscosity;
-
-      /* Calculate front face velocity gravity terms
-       * @RMM added sin* g term to test terrain-following grid
-       * note upwinding on gravity terms not pressure
-       * Sy < 0 implies flow goes from left to right
-       */
-
-      u_front += z_mult_dat[ip] * ffy * del_x_slope
-                 * PMean(pp[ip], pp[ip + sy_p], permyp[ip], permyp[ip + sy_p])
-                 * (-y_dir_g)
-                 * RPMean(updir, 0.0, rpp[ip] * dp[ip],
-                          rpp[ip + sy_p] * dp[ip + sy_p])
-                 / viscosity;
-
-      /* Calculate upper face velocity.
-       * diff_l >= 0 implies flow goes lower to upper
-       */
-      double sep_l = dz * (Mean(z_mult_dat[ip], z_mult_dat[ip + sz_p]));
-
-
-      double lower_cond_l = pp[ip] / sep_l
-                   - (z_mult_dat[ip] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p]))
-                   * dp[ip] * gravity * z_dir_g;
-
-      double upper_cond_l = pp[ip + sz_p] / sep_l
-                   + (z_mult_dat[ip + sz_p] / (z_mult_dat[ip] + z_mult_dat[ip + sz_p]))
-                   * dp[ip + sz_p] * gravity * z_dir_g;
-
-
-      diff_l = (lower_cond_l - upper_cond_l);
-
-      double u_upper = ffz * del_x_slope * del_y_slope
-                * PMeanDZ(permzp[ip], permzp[ip + sz_p], z_mult_dat[ip], z_mult_dat[ip + sz_p])
-                * diff_l
-                * RPMean(lower_cond_l, upper_cond_l, rpp[ip] * dp[ip],
-                         rpp[ip + sz_p] * dp[ip + sz_p])
-                / viscosity;
-
-/*  add in flow barrier values
- * assumes that ip is the cell face between ip and ip+1
- * ip and ip+sy_p and ip and ip+sz_p in x, y, z directions */
-      u_right = u_right * FBx_dat[ip];
-      u_front = u_front * FBy_dat[ip];
-      u_upper = u_upper * FBz_dat[ip];
-
-      /* velocity data jjb */
-      vx[vxi] = u_right / ffx;
-      vy[vyi] = u_front / ffy;
-      vz[vzi] = u_upper / ffz;
-
-      u_right_dat[ip] = u_right;
-      u_front_dat[ip] = u_front;
-      u_upper_dat[ip] = u_upper;
-    });
-#endif
-  }
-
-    // Gather portion
-#if 0
-  ForSubgridI(is, GridSubgrids(grid))
-  {
-    subgrid = GridSubgrid(grid, is);
-
-    p_sub = VectorSubvector(pressure, is);
-    f_sub = VectorSubvector(fval, is);
-
-    /* @IJB added to enable parallelism */
-    u_right_sub = VectorSubvector(u_right_vec, is);
-    u_front_sub = VectorSubvector(u_front_vec, is);
-    u_upper_sub = VectorSubvector(u_upper_vec, is);
-
-    ix = SubgridIX(subgrid) - 1;
-    iy = SubgridIY(subgrid) - 1;
-    iz = SubgridIZ(subgrid) - 1;
-
-    nx = SubgridNX(subgrid) + 1;
-    ny = SubgridNY(subgrid) + 1;
-    nz = SubgridNZ(subgrid) + 1;
-
-    nx_p = SubvectorNX(p_sub);
-    ny_p = SubvectorNY(p_sub);
-
-    int sx_p = 1;
-    sy_p = nx_p;
-    sz_p = ny_p * nx_p;
-
-    fp = SubvectorData(f_sub);
-
-    /* @IJB added to enable parallelism */
-    u_right_dat = SubvectorData(u_right_sub);
-    u_front_dat = SubvectorData(u_front_sub);
-    u_upper_dat = SubvectorData(u_upper_sub);
-
-    GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
-    {
-      int ip = SubvectorEltIndex(p_sub, i, j, k);
-
-      // ZYX-self order because for an internal cell in the original schedule,
-      // the k+1 cell writes to (i,j,k) first, then the j+1 cell,
-      // then the i+1 cell, then itself.
-      // Z Direction
-      fp[ip] -= dt * u_upper_dat[ip - sz_p];
-      // Y Direction
-      fp[ip] -= dt * u_front_dat[ip - sy_p];
-      // X Direction
-      fp[ip] -= dt * u_right_dat[ip - sx_p];
-      // Self-update
-      fp[ip] += dt * (u_right_dat[ip] + u_front_dat[ip] + u_upper_dat[ip]);
     });
   }
-#endif
+
   /*  Calculate correction for boundary conditions */
 
   ForSubgridI(is, GridSubgrids(grid))
@@ -2710,10 +2449,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
   FreeVector(KS);
   FreeVector(qx);
   FreeVector(qy);
-
-  FreeVector(u_right_vec);
-  FreeVector(u_front_vec);
-  FreeVector(u_upper_vec);
 
   POP_NVTX
 
