@@ -613,7 +613,7 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
 
     GrGeomInLoop(i, j, k, gr_domain, r, ix, iy, iz, nx, ny, nz,
     {
-      int ip = SubvectorEltIndex(p_sub, i, j, k);
+            int ip = SubvectorEltIndex(p_sub, i, j, k);
       int io = SubvectorEltIndex(x_ssl_sub, i, j, grid2d_iz);
 
       /* @RMM: modified the terrain-following transform
@@ -637,19 +637,13 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       double del_y_slope = 1.0;
 
       double x_dir_g = NAN;
-      double x_dir_g_c = NAN;
-      double y_dir_g = NAN;
-      double y_dir_g_c = NAN;
-
-      double x_g_prev = NAN;
-      double x_g_c_prev = NAN;
-      double y_g_prev = NAN;
-      double y_g_c_prev = NAN;
+      double x_dir_g_c= NAN;
+      double y_dir_g= NAN;
+      double y_dir_g_c= NAN;
 
 //@RMM  tfgupwind == 0 (default) should give original behavior
 // tfgupwind 1 should still use sine but upwind
 // tfgupwdin 2 just upwind
-      /* TODO: Handle other TFG cases for lookbehind */
       switch (public_xtra->tfgupwind)
       {
         case 0:
@@ -659,11 +653,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
             x_dir_g_c = Mean(gravity * cos(atan(x_ssl_dat[io])), gravity * cos(atan(x_ssl_dat[io + 1])));
             y_dir_g = Mean(gravity * sin(atan(y_ssl_dat[io])), gravity * sin(atan(y_ssl_dat[io + sy_p])));
             y_dir_g_c = Mean(gravity * cos(atan(y_ssl_dat[io])), gravity * cos(atan(y_ssl_dat[io + sy_p])));
-            /* Get lookbehind values */
-            x_g_prev = Mean(gravity * sin(atan(x_ssl_dat[io-1])), gravity * sin(atan(x_ssl_dat[io])));
-            x_g_c_prev = Mean(gravity * cos(atan(x_ssl_dat[io-1])), gravity * cos(atan(x_ssl_dat[io])));
-            y_g_prev = Mean(gravity * sin(atan(y_ssl_dat[io-sy_p])), gravity * sin(atan(y_ssl_dat[io])));
-            y_g_c_prev = Mean(gravity * cos(atan(y_ssl_dat[io-sy_p])), gravity * cos(atan(y_ssl_dat[io])));
             break;
           }
 
@@ -690,23 +679,16 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       /* Calculate right face velocity.
        * diff_l >= 0 implies flow goes left to right */
 
-      double r_prev;
-      double f_prev;
-      double u_prev;
-
-      double zmult_mean = NAN;
-      double rpmean_val = NAN;
-
       double diff_l = pp[ip] - pp[ip + 1];
       double updir = (diff_l / dx) * x_dir_g_c - x_dir_g;
 
       double u_right = z_mult_dat[ip] * ffx * del_y_slope * PMean(pp[ip], pp[ip + 1],
-                                                                  permxp[ip], permxp[ip + 1])
-                       * (diff_l / (dx * del_x_slope)) * x_dir_g_c
-                       * RPMean(updir, 0.0,
-                                rpp[ip] * dp[ip],
-                                rpp[ip + 1] * dp[ip + 1])
-                       / viscosity;
+                                                           permxp[ip], permxp[ip + 1])
+                * (diff_l / (dx * del_x_slope)) * x_dir_g_c
+                * RPMean(updir, 0.0,
+                         rpp[ip] * dp[ip],
+                         rpp[ip + 1] * dp[ip + 1])
+                / viscosity;
 
       /* Calculate right face velocity gravity terms
        * @RMM added sin* g term to test terrain-following grid
@@ -716,29 +698,10 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       u_right += z_mult_dat[ip] * ffx * del_y_slope * PMean(pp[ip], pp[ip + 1],
                                                             permxp[ip], permxp[ip + 1])
                  * (-x_dir_g)
-                 * RPMean(updir, 0.0,
-                          rpp[ip] * dp[ip],
+                 * RPMean(updir, 0.0, rpp[ip] * dp[ip],
                           rpp[ip + 1] * dp[ip + 1])
                  / viscosity;
 
-      /* Get Lookbehind values */
-      diff_l = pp[ip - 1] - pp[ip];
-      updir = (diff_l / dx) * x_g_c_prev - x_g_prev;
-      r_prev = z_mult_dat[ip - 1] * ffx * del_y_slope * PMean(pp[ip - 1], pp[ip],
-                                                              permxp[ip - 1], permxp[ip])
-               * (diff_l / (dx * del_x_slope)) * x_g_c_prev
-               * RPMean(updir, 0.0,
-                        rpp[ip - 1] * dp[ip - 1],
-                        rpp[ip] * dp[ip])
-               / viscosity;
-
-      r_prev += z_mult_dat[ip - 1] * ffx * del_y_slope * PMean(pp[ip - 1], pp[ip],
-                                                               permxp[ip - 1], permxp[ip])
-                * (-x_g_prev)
-                * RPMean(updir, 0.0,
-                         rpp[ip - 1] * dp[ip - 1],
-                         rpp[ip] * dp[ip])
-                / viscosity;
 
       /* Calculate front face velocity.
        * diff_l >= 0 implies flow goes back to front */
@@ -766,26 +729,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                           rpp[ip + sy_p] * dp[ip + sy_p])
                  / viscosity;
 
-      /* Get lookbehind values */
-      diff_l = pp[ip-sy_p] - pp[ip];
-      updir = (diff_l / dy) * y_g_c_prev - y_g_prev;
-
-      f_prev = z_mult_dat[ip-sy_p] * ffy * del_x_slope
-                       * PMean(pp[ip-sy_p], pp[ip], permyp[ip-sy_p], permyp[ip])
-                       * (diff_l / (dy * del_y_slope)) * y_g_c_prev
-                       * RPMean(updir, 0.0,
-                                rpp[ip-sy_p] * dp[ip-sy_p],
-                                rpp[ip] * dp[ip])
-                       / viscosity;
-
-      f_prev += z_mult_dat[ip-sy_p] * ffy * del_x_slope
-                 * PMean(pp[ip-sy_p], pp[ip], permyp[ip-sy_p], permyp[ip])
-                 * (-y_g_prev)
-                * RPMean(updir, 0.0, rpp[ip-sy_p] * dp[ip-sy_p],
-                          rpp[ip] * dp[ip])
-                 / viscosity;
-
-
       /* Calculate upper face velocity.
        * diff_l >= 0 implies flow goes lower to upper
        */
@@ -810,28 +753,6 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
                          rpp[ip + sz_p] * dp[ip + sz_p])
                 / viscosity;
 
-      /* Get lookbehind values */
-      sep_l = dz * (Mean(z_mult_dat[ip - sz_p], z_mult_dat[ip]));
-
-      lower_cond_l = pp[ip - sz_p] / sep_l
-                     - (z_mult_dat[ip - sz_p] / (z_mult_dat[ip - sz_p] + z_mult_dat[ip]))
-                     * dp[ip - sz_p] * gravity * z_dir_g;
-
-      upper_cond_l = pp[ip] / sep_l
-                     + (z_mult_dat[ip] / (z_mult_dat[ip - sz_p] + z_mult_dat[ip]))
-                     * dp[ip] * gravity * z_dir_g;
-
-
-      diff_l = (lower_cond_l - upper_cond_l);
-
-      u_prev = ffz * del_x_slope * del_y_slope
-               * PMeanDZ(permzp[ip - sz_p], permzp[ip], z_mult_dat[ip - sz_p], z_mult_dat[ip])
-               * diff_l
-               * RPMean(lower_cond_l, upper_cond_l,
-                        rpp[ip - sz_p] * dp[ip - sz_p],
-                        rpp[ip] * dp[ip])
-               / viscosity;
-
 /*  add in flow barrier values
  * assumes that ip is the cell face between ip and ip+1
  * ip and ip+sy_p and ip and ip+sz_p in x, y, z directions */
@@ -839,21 +760,15 @@ void NlFunctionEval(Vector *     pressure, /* Current pressure values */
       u_front = u_front * FBy_dat[ip];
       u_upper = u_upper * FBz_dat[ip];
 
-      r_prev = r_prev * FBx_dat[ip - 1];
-      f_prev = f_prev * FBy_dat[ip - sy_p];
-      u_prev = u_prev * FBz_dat[ip - sz_p];
-
       /* velocity data jjb */
       vx[vxi] = u_right / ffx;
       vy[vyi] = u_front / ffy;
       vz[vzi] = u_upper / ffz;
 
-      /* Do floating-point operations in reverse order
-         Preserves roundoff error */
-      fp[ip] += (-dt * u_prev);
-      fp[ip] += (-dt * f_prev);
-      fp[ip] += (-dt * r_prev);
-      fp[ip] += dt * (u_right + u_front + u_upper);
+      PlusEquals(fp[ip], dt * (u_right + u_front + u_upper));
+      PlusEquals(fp[ip + 1], -dt * u_right);
+      PlusEquals(fp[ip + sy_p], -dt * u_front);
+      PlusEquals(fp[ip + sz_p], -dt * u_upper);
     });
   }
 
