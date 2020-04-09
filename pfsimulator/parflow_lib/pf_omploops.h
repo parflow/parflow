@@ -38,27 +38,27 @@ extern "C++"{
 //#undef pfmax_atomic
 //#define pfmax_atomic(a, b) AtomicMax(&(a), b)
 /* TODO: This should be replaced by turning the calling loop into reduction with (max: sum) clause */
-	template <typename T>
-	static inline void AtomicMax(T *addr, T val)
-	{
+  template <typename T>
+  static inline void AtomicMax(T *addr, T val)
+  {
 #pragma omp critical
-		{
-			if (*addr < val)
-				*addr = val;
-		}
-	}
+    {
+      if (*addr < val)
+        *addr = val;
+    }
+  }
 
 //#undef pfmin_atomic
 //#define pfmin_atomic(a, b) AtomicMin(&(a), b)
-	template <typename T>
-	static inline void AtomicMin(T *addr, T val)
-	{
-		#pragma omp critical
-		{
-			if (*addr > val)
-				*addr = val;
-		}
-	}
+  template <typename T>
+  static inline void AtomicMin(T *addr, T val)
+  {
+    #pragma omp critical
+    {
+      if (*addr > val)
+        *addr = val;
+    }
+  }
 
 #undef PlusEquals
 #define PlusEquals(a, b) AtomicAdd(&(a), b)
@@ -373,7 +373,7 @@ INC_IDX(int idx, int i, int j, int k,
 
 #undef GrGeomPatchLoopBoxesNoFdir
 #define GrGeomPatchLoopBoxesNoFdir(i, j, k, grgeom, patch_num,\
-                                   ix, iy, iz, nx, ny, nz,		\
+                                   ix, iy, iz, nx, ny, nz,    \
                                    locals, setup,            \
                                    f_left, f_right,          \
                                    f_down, f_up,             \
@@ -445,6 +445,73 @@ INC_IDX(int idx, int i, int j, int k,
     }                                                                   \
   }
 
+
+/* Per SGS suggestion on 12/3/2008
+   @MCB: C won't allow *int to const *int conversion */
+static int FDIR_TABLE[][6] = {
+  {-1, 0,  0}, // Left
+  {1,  0,  0}, // Right
+  {0, -1,  0}, // Down
+  {0,  1,  0}, // Up
+  {0,  0, -1}, // Back
+  {0,  0,  1}, // Front
+};
+
+
+#undef GrGeomPatchLoopBoxes
+#define GrGeomPatchLoopBoxes(i, j, k, fdir, grgeom, patch_num,          \
+                             ix, iy, iz, nx, ny, nz, body)              \
+  PRAGMA(omp parallel firstprivate(fdir))                               \
+  {                                                                     \
+    int PV_ixl, PV_iyl, PV_izl, PV_ixu, PV_iyu, PV_izu;                 \
+    int *PV_visiting = NULL;                                            \
+    PF_UNUSED(PV_visiting);                                             \
+    for (int PV_f = 0; PV_f < GrGeomOctreeNumFaces; PV_f++)             \
+    {                                                                   \
+      fdir = FDIR_TABLE[PV_f];                                          \
+                                                                        \
+      BoxArray* boxes = GrGeomSolidPatchBoxes(grgeom, patch_num, PV_f); \
+      for (int PV_box = 0; PV_box < BoxArraySize(boxes); PV_box++)      \
+      {                                                                 \
+        Box box = BoxArrayGetBox(boxes, PV_box);                        \
+        /* find octree and region intersection */                       \
+        PV_ixl = pfmax(ix, box.lo[0]);                                  \
+        PV_iyl = pfmax(iy, box.lo[1]);                                  \
+        PV_izl = pfmax(iz, box.lo[2]);                                  \
+        PV_ixu = pfmin((ix + nx - 1), box.up[0]);                       \
+        PV_iyu = pfmin((iy + ny - 1), box.up[1]);                       \
+        PV_izu = pfmin((iz + nz - 1), box.up[2]);                       \
+                                                                        \
+        int PV_diff_x = PV_ixu - PV_ixl;                                \
+        int PV_diff_y = PV_iyu - PV_iyl;                                \
+        int PV_diff_z = PV_izu - PV_izl;                                \
+        int x_scale = !!PV_diff_x;                                      \
+        int y_scale = !!PV_diff_y;                                      \
+        int z_scale = !!PV_diff_z;                                      \
+                                                                        \
+        PRAGMA(omp for collapse(3) private(i, j, k))                    \
+          for (k = PV_izl; k <= PV_izu; k++)                            \
+            for (j = PV_iyl; j <= PV_iyu; j++)                          \
+              for (i = PV_ixl; i <= PV_ixu; i++)                        \
+              {                                                         \
+                int ival = 0;                                           \
+                int PV_tmp_i = i - PV_ixl;                              \
+                int PV_tmp_j = j - PV_iyl;                              \
+                int PV_tmp_k = k - PV_izl;                              \
+                if (!z_scale) {                                         \
+                  ival = CALC_IVAL(PV_diff_x, PV_tmp_j, PV_tmp_i);      \
+                } else if (!y_scale) {                                  \
+                  ival = CALC_IVAL(PV_diff_x, PV_tmp_k, PV_tmp_i);      \
+                } else {                                                \
+                  ival = CALC_IVAL(PV_diff_y, PV_tmp_k, PV_tmp_j);      \
+                }                                                       \
+                                                                        \
+                body;                                                   \
+              }                                                         \
+      }                                                                 \
+    }                                                                   \
+  }
+
 #undef GrGeomInLoopBoxes
 #define GrGeomInLoopBoxes(i, j, k, grgeom, ix, iy, iz, nx, ny, nz, body) \
     PRAGMA(omp parallel)                                                \
@@ -474,16 +541,6 @@ INC_IDX(int idx, int i, int j, int k,
       }                                                                 \
     }
 
-/* Per SGS suggestion on 12/3/2008
- @MCB: C won't allow *int to const *int conversion */
-static int FDIR_TABLE[][6] = {
-  {-1, 0,  0},
-  {1,  0,  0},
-  {0, -1,  0},
-  {0,  1,  0},
-  {0,  0, -1},
-  {0,  0,  1},
-};
 
 #undef GrGeomSurfLoopBoxes
 #define GrGeomSurfLoopBoxes(i, j, k, fdir, grgeom, ix, iy, iz, nx, ny, nz, body) \

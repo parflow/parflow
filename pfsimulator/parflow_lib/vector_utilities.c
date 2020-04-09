@@ -725,12 +725,12 @@ double PFVDotProd(
     i_y = 0;
 
 
-    BoxLoopReduceI2(result,
+    BoxLoopReduceI2(result[0],
               i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_y, nx_y, ny_y, nz_y, 1, 1, 1,
     {
-      ReduceSum(*result, xp[i_x] * yp[i_y]);
+      ReduceSum(result[0], xp[i_x] * yp[i_y]);
     });
   }
 
@@ -789,12 +789,12 @@ double PFVMaxNorm(
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
     i_x = 0;
-    BoxLoopGetMaxI1(result,
+    BoxLoopGetMaxI1(result[0],
                     i, j, k, ix, iy, iz, nx, ny, nz,
                     i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       double xp_abs = fabs(xp[i_x]);
-      pfmax_atomic(*result, xp_abs);
+      pfmax_atomic(result[0], xp_abs);
     });
   }
 
@@ -863,13 +863,13 @@ double PFVWrmsNorm(
     i_x = 0;
     i_w = 0;
 
-    BoxLoopReduceI2(result,
+    BoxLoopReduceI2(result[0],
               i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_w, nx_w, ny_w, nz_w, 1, 1, 1,
     {
       double prod = xp[i_x] * wp[i_w];
-      ReduceSum(*result, prod * prod);
+      ReduceSum(result[0], prod * prod);
     });
   }
 
@@ -940,13 +940,13 @@ double PFVWL2Norm(
     i_x = 0;
     i_w = 0;
 
-    BoxLoopReduceI2(result,
+    BoxLoopReduceI2(result[0],
               i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
               i_w, nx_w, ny_w, nz_w, 1, 1, 1,
     {
       const double prod = xp[i_x] * wp[i_w];
-      ReduceSum(*result, prod * prod);
+      ReduceSum(result[0], prod * prod);
     });
   }
 
@@ -1005,11 +1005,11 @@ double PFVL1Norm(
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
     i_x = 0;
-    BoxLoopReduceI1(result,
+    BoxLoopReduceI1(result[0],
               i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
-      ReduceSum(*result, fabs(xp[i_x]));
+      ReduceSum(result[0], fabs(xp[i_x]));
     });
   }
 
@@ -1081,11 +1081,11 @@ double PFVMin(
     }
 
     i_x = 0;
-    BoxLoopGetMinI1(result,
+    BoxLoopGetMinI1(result[0],
                     i, j, k, ix, iy, iz, nx, ny, nz,
                     i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
-      pfmin_atomic(*result, xp[i_x]);
+      pfmin_atomic(result[0], xp[i_x]);
     });
   }
 
@@ -1152,11 +1152,11 @@ double PFVMax(
     }
 
     i_x = 0;
-    BoxLoopGetMaxI1(result,
+    BoxLoopGetMaxI1(result[0],
                     i, j, k, ix, iy, iz, nx, ny, nz,
                     i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
-      pfmax_atomic(*result, xp[i_x]);
+      pfmax_atomic(result[0], xp[i_x]);
     });
   }
 
