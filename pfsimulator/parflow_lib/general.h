@@ -163,14 +163,6 @@
  * Define CUDA macros to do nothing if no GPU acceleration
  *--------------------------------------------------------------------------*/
 
-//Memory Prefetching
-#define MemPrefetchDeviceToHost(ptr, size, stream)
-#define MemPrefetchHostToDevice(ptr, size, gpuid, stream)
-
-//CUDA synchronizations
-#define GPU_NOSYNC
-#define GPU_SYNC
-
 //CUDA compiler specific keywords
 #ifndef __host__
   #define __host__
@@ -199,6 +191,14 @@
 #define LOCALS(...) DEFER3(_LOCALS)(__VA_ARGS__)
 #define _LOCALS(...) __VA_ARGS__
 #define NO_LOCALS
+
+//Memory Prefetching
+#define MemPrefetchDeviceToHost(ptr, size, stream)
+#define MemPrefetchHostToDevice(ptr, size, gpuid, stream)
+
+//Parallel synchronizations
+#define PARALLEL_SYNC
+#define SKIP_PARALLEL_SYNC
 
 //NVTX Ranges for NSYS profiling
 #ifdef HAVE_CUDA

@@ -178,6 +178,13 @@ __host__ __device__ __forceinline__ static T RPowerR(T base, T exponent)
 /*--------------------------------------------------------------------------
  * CUDA helper macro redefinitions
  *--------------------------------------------------------------------------*/
+struct SkipParallelSync {const int dummy = 0;};
+#undef SKIP_PARALLEL_SYNC
+#define SKIP_PARALLEL_SYNC struct SkipParallelSync sync_struct; return sync_struct;
+
+#undef PARALLEL_SYNC
+#define PARALLEL_SYNC CUDA_ERR(cudaStreamSynchronize(0)); 
+
 #undef pfmax_atomic
 #define pfmax_atomic(a, b) AtomicMax(&(a), b)
 
@@ -362,13 +369,6 @@ DotKernelI2(LambdaInit1 loop_init1, LambdaInit2 loop_init2, LambdaFun loop_fun,
 /*--------------------------------------------------------------------------
  * CUDA loop macro redefinitions
  *--------------------------------------------------------------------------*/
-static int gpu_sync = 1;
-
-#undef GPU_NOSYNC
-#define GPU_NOSYNC gpu_sync = 0;
-
-#undef GPU_SYNC
-#define GPU_SYNC gpu_sync = 1; CUDA_ERR(cudaStreamSynchronize(0)); 
 
 #define FindDims(grid, block, nx, ny, nz, dyn_blocksize)                            \
 {                                                                                   \
@@ -418,7 +418,10 @@ static int gpu_sync = 1;
     BoxKernelI1<<<grid, block>>>(                                                   \
         lambda_init, lambda_body, ix, iy, iz, nx, ny, nz);                          \
     CUDA_ERR(cudaPeekAtLastError());                                                \
-    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
+                                                                                    \
+    typedef function_traits<decltype(lambda_body)> traits;                          \
+    if(!std::is_same<traits::result_type, struct SkipParallelSync>::value)          \
+      CUDA_ERR(cudaStreamSynchronize(0));                                           \
   }                                                                                 \
 }
 
@@ -456,7 +459,10 @@ static int gpu_sync = 1;
     BoxKernelI2<<<grid, block>>>(                                                   \
         lambda_init1, lambda_init2, lambda_body, ix, iy, iz, nx, ny, nz);           \
     CUDA_ERR(cudaPeekAtLastError());                                                \
-    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
+                                                                                    \
+    typedef function_traits<decltype(lambda_body)> traits;                          \
+    if(!std::is_same<traits::result_type, struct SkipParallelSync>::value)          \
+      CUDA_ERR(cudaStreamSynchronize(0));                                           \
   }                                                                                 \
 }
 
@@ -501,8 +507,10 @@ static int gpu_sync = 1;
                                                                                     \
     BoxKernelI3<<<grid, block>>>(lambda_init1, lambda_init2, lambda_init3,          \
         lambda_body, ix, iy, iz, nx, ny, nz);                                       \
-    CUDA_ERR(cudaPeekAtLastError());                                                \
-    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
+                                                                                    \
+    typedef function_traits<decltype(lambda_body)> traits;                          \
+    if(!std::is_same<traits::result_type, struct SkipParallelSync>::value)          \
+      CUDA_ERR(cudaStreamSynchronize(0));                                           \
   }                                                                                 \
 }
 
@@ -539,7 +547,7 @@ static int gpu_sync = 1;
         lambda_init1, lambda_body,                                                  \
         rslt, ix, iy, iz, nx, ny, nz);                                              \
     CUDA_ERR(cudaPeekAtLastError());                                                \
-    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
+    CUDA_ERR(cudaStreamSynchronize(0));                                             \
   }                                                                                 \
 }
 
@@ -583,7 +591,7 @@ static int gpu_sync = 1;
     DotKernelI2<traits::result_type><<<grid, block>>>(lambda_init1,                 \
         lambda_init2, lambda_body, rslt, ix, iy, iz, nx, ny, nz);                   \
     CUDA_ERR(cudaPeekAtLastError());                                                \
-    if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                                \
+    CUDA_ERR(cudaStreamSynchronize(0));                                             \
   }                                                                                 \
 }
 
@@ -620,7 +628,7 @@ static int gpu_sync = 1;
           GPU_LAMBDA(const int i, const int j, const int k)loop_body,               \
           PV_ixl, PV_iyl, PV_izl, nx, ny, nz);                                      \
       CUDA_ERR(cudaPeekAtLastError());                                              \
-      if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                              \
+      CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \
   }                                                                                 \
 }
@@ -697,7 +705,7 @@ static int gpu_sync = 1;
         BoxKernelI0<<<grid, block>>>(lambda_body,                                   \
             PV_ixl, PV_iyl, PV_izl, nx, ny, nz);                                    \
         CUDA_ERR(cudaPeekAtLastError());                                            \
-        if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                            \
+        CUDA_ERR(cudaStreamSynchronize(0));                                         \
       }                                                                             \
     }                                                                               \
   }                                                                                 \
@@ -783,7 +791,7 @@ static int gpu_sync = 1;
         BoxKernelI1<<<grid, block>>>(                                               \
             lambda_init, lambda_body, PV_ixl, PV_iyl, PV_izl, nx, ny, nz);          \
         CUDA_ERR(cudaPeekAtLastError());                                            \
-        if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                            \
+        CUDA_ERR(cudaStreamSynchronize(0));                                         \
       }                                                                             \
     }                                                                               \
   }                                                                                 \
@@ -849,7 +857,7 @@ static int gpu_sync = 1;
         BoxKernelI1<<<grid, block>>>(                                               \
             lambda_init, lambda_body, PV_ixl, PV_iyl, PV_izl, nx, ny, nz);          \
         CUDA_ERR(cudaPeekAtLastError());                                            \
-        if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                            \
+        CUDA_ERR(cudaStreamSynchronize(0));                                         \
       }                                                                             \
     }                                                                               \
   }                                                                                 \
@@ -902,7 +910,7 @@ static int gpu_sync = 1;
       (BoxKernelI0<<<grid, block>>>(lambda_body,                                    \
           PV_ixl, PV_iyl, PV_izl, PV_diff_x, PV_diff_y, PV_diff_z));                \
       CUDA_ERR(cudaPeekAtLastError());                                              \
-      if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                              \
+      CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \
     i = PV_ixu;                                                                     \
     j = PV_iyu;                                                                     \
@@ -955,7 +963,7 @@ static int gpu_sync = 1;
       BoxKernelI0<<<grid, block>>>(                                                 \
           lambda_body, ix, iy, iz, nx, ny, nz);                                     \
       CUDA_ERR(cudaPeekAtLastError());                                              \
-      if(gpu_sync) CUDA_ERR(cudaStreamSynchronize(0));                              \
+      CUDA_ERR(cudaStreamSynchronize(0));                                           \
     }                                                                               \
   }                                                                                 \
 }
