@@ -10,9 +10,7 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/"
 #-----------------------------------------------------------------------------
 # GPU-Acceleration (CUDA)
 #-----------------------------------------------------------------------------
-set (PARFLOW_ENABLE_CUDA False)
-set (PARFLOW_ENABLE_CUDA CACHE BOOL "Enable CUDA")
-if( ${PARFLOW_ENABLE_CUDA} )
+if(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "cuda") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "CUDA"))
 
 # Initialize CUDA
   include(CheckLanguage)
@@ -47,7 +45,7 @@ if( ${PARFLOW_ENABLE_CUDA} )
     endif(RMM_INCLUDE AND RMM_LIBRARY)
   endif(DEFINED RMM_ROOT)
 
-endif( ${PARFLOW_ENABLE_CUDA} )
+endif(("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "cuda") OR ("${PARFLOW_ACCELERATOR_BACKEND}" STREQUAL "CUDA"))
 
 #-----------------------------------------------------------------------------
 # Version number
