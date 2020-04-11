@@ -35,6 +35,34 @@
  * Reduction/Atomic Variants
  **************************************************************************/
 extern "C++"{
+
+#include <tuple>
+
+  template <typename T>
+  struct function_traits
+    : public function_traits<decltype(&T::operator())>
+  {};
+  // For generic types, directly use the result of the signature of its 'operator()'
+
+  template <typename ClassType, typename ReturnType, typename... Args>
+  struct function_traits<ReturnType(ClassType::*)(Args...) const>
+  // we specialize for pointers to member function
+  {
+    enum { arity = sizeof...(Args) };
+    // arity is the number of arguments.
+
+    typedef ReturnType result_type;
+
+    template <size_t i>
+    struct arg
+    {
+      typedef typename std::tuple_element<i, std::tuple<Args...>>::type type;
+      // the i-th argument is equivalent to the i-th tuple element of a tuple
+      // composed of those arguments.
+    };
+  };
+
+
 //#undef pfmax_atomic
 //#define pfmax_atomic(a, b) AtomicMax(&(a), b)
 /* TODO: This should be replaced by turning the calling loop into reduction with (max: sum) clause */
@@ -69,17 +97,222 @@ extern "C++"{
     *addr += val;
   }
 
+  template <typename T>
+  struct ReduceMaxRes {T lambda_result;};
+#undef ReduceMax
+#define ReduceMax(a, b) struct ReduceMaxRes<std::remove_pointer<decltype(a)>::type> reduce_struct {.lambda_result = b}; return reduce_struct;
+
+  template <typename T>
+  struct ReduceMinRes {T lambda_result;};
+#undef ReduceMin
+#define ReduceMin(a, b) struct ReduceMinRes<std::remove_pointer<decltype(a)>::type> reduce_struct {.lambda_result = b}; return reduce_struct;
+
+  template <typename T>
+  struct ReduceSumRes {T lambda_result;};
+#undef ReduceSum
+#define ReduceSum(a, b) struct ReduceSumRes<std::remove_pointer<decltype(a)>::type> reduce_struct {.lambda_result = b}; return reduce_struct;
+
+#undef BoxLoopReduceI1
+#define BoxLoopReduceI1(sum,                                            \
+                        i, j, k,                                        \
+                        ix, iy, iz, nx, ny, nz,                         \
+                        i1, nx1, ny1, nz1, sx1, sy1, sz1,               \
+                        body)                                           \
+  {                                                                     \
+    auto zero = sum;                                                    \
+    auto PV_result = *sum;                                              \
+    auto lambda_body = [=](const int i, const int j, const int k,       \
+                           const int i1)                                \
+                       {                                                \
+                         auto sum = zero;                               \
+                         body;                                          \
+                       };                                               \
+                                                                        \
+    int i1_start = i1;                                                  \
+    DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1); \
+                                                                        \
+    typedef function_traits<decltype(lambda_body)> traits;              \
+    static_assert(std::is_same<traits::result_type,                     \
+                  struct ReduceSumRes<std::remove_pointer<decltype(sum)>::type>>::value \
+                  ||                                                    \
+                  std::is_same<traits::result_type,                     \
+                  struct ReduceMaxRes<std::remove_pointer<decltype(sum)>::type>>::value \
+                  ||                                                    \
+                  std::is_same<traits::result_type,                     \
+                  struct ReduceMinRes<std::remove_pointer<decltype(sum)>::type>>::value, \
+                  "Not a valid reduction clause!  Check compiler error message for file and line number." \
+                  );                                                    \
+                                                                        \
+    if (std::is_same<traits::result_type,                               \
+        struct ReduceSumRes<std::remove_pointer<decltype(sum)>::type>>::value) \
+      {                                                                 \
+        PRAGMA(omp parallel for reduction(+:PV_result) collapse(3) private(i, j, k, i1)) \
+          for (k = iz; k < iz + nz; k++)                                \
+            {                                                           \
+              for (j = iy; j < iy + ny; j++)                            \
+                {                                                       \
+                  for (i = ix; i < ix + nx; i++)                        \
+                    {                                                   \
+                      i1 = INC_IDX(i1_start, (i - ix), (j - iy), (k - iz), \
+                                   nx, ny, sx1, PV_jinc_1, PV_kinc_1);  \
+                      auto rhs = lambda_body(i, j, k, i1);              \
+                      PV_result += rhs.lambda_result;                   \
+                    }                                                   \
+                }                                                       \
+            }                                                           \
+      }                                                                 \
+    else                                                                \
+      if (std::is_same<traits::result_type,                             \
+          struct ReduceMaxRes<std::remove_pointer<decltype(sum)>::type>>::value) \
+        {                                                               \
+          PRAGMA(omp parallel for reduction(max:PV_result) collapse(3) private(i, j, k, i1)) \
+          for (k = iz; k < iz + nz; k++)                                \
+            {                                                           \
+              for (j = iy; j < iy + ny; j++)                            \
+                {                                                       \
+                  for (i = ix; i < ix + nx; i++)                        \
+                    {                                                   \
+                      i1 = INC_IDX(i1_start, (i - ix), (j - iy), (k - iz), \
+                                   nx, ny, sx1, PV_jinc_1, PV_kinc_1);  \
+                      auto rhs = lambda_body(i, j, k, i1);              \
+                      pfmax_atomic(PV_result, rhs.lambda_result);       \
+                    }                                                   \
+                }                                                       \
+            }                                                           \
+        }                                                               \
+    else                                                                \
+      if (std::is_same<traits::result_type,                             \
+          struct ReduceMinRes<std::remove_pointer<decltype(sum)>::type>>::value) \
+        {                                                               \
+          PRAGMA(omp parallel for reduction(min:PV_result) collapse(3) private(i, j, k, i1)) \
+          for (k = iz; k < iz + nz; k++)                                \
+            {                                                           \
+              for (j = iy; j < iy + ny; j++)                            \
+                {                                                       \
+                  for (i = ix; i < ix + nx; i++)                        \
+                    {                                                   \
+                      i1 = INC_IDX(i1_start, (i - ix), (j - iy), (k - iz), \
+                                   nx, ny, sx1, PV_jinc_1, PV_kinc_1);  \
+                      auto rhs = lambda_body(i, j, k, i1);              \
+                      pfmax_atomic(PV_result, rhs.lambda_result);       \
+                    }                                                   \
+                }                                                       \
+            }                                                           \
+        }                                                               \
+    *sum = PV_result;                                                   \
+  }
+
+#undef BoxLoopReduceI2
+#define BoxLoopReduceI2(sum,                                            \
+                        i, j, k,                                        \
+                        ix, iy, iz, nx, ny, nz,                         \
+                        i1, nx1, ny1, nz1, sx1, sy1, sz1,               \
+                        i2, nx2, ny2, nz2, sx2, sy2, sz2,               \
+                        body)                                           \
+  {                                                                     \
+    auto zero = sum;                                                    \
+    auto PV_result = *sum;                                              \
+    auto lambda_body = [=](const int i, const int j, const int k,       \
+                           const int i1, const int i2)                  \
+                       {                                                \
+                         auto sum = zero;                               \
+                         body;                                          \
+                       };                                               \
+                                                                        \
+    int i1_start = i1;                                                  \
+    int i2_start = i2;                                                  \
+    DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1); \
+    DeclareInc(PV_jinc_2, PV_kinc_2, nx, ny, nz, nx2, ny2, nz2, sx2, sy2, sz2); \
+                                                                        \
+    typedef function_traits<decltype(lambda_body)> traits;              \
+    static_assert(std::is_same<traits::result_type,                     \
+                  struct ReduceSumRes<std::remove_pointer<decltype(sum)>::type>>::value \
+                  ||                                                    \
+                  std::is_same<traits::result_type,                     \
+                  struct ReduceMaxRes<std::remove_pointer<decltype(sum)>::type>>::value \
+                  ||                                                    \
+                  std::is_same<traits::result_type,                     \
+                  struct ReduceMinRes<std::remove_pointer<decltype(sum)>::type>>::value, \
+                  "Not a valid reduction clause!  Check compiler error message for file and line number." \
+                  );                                                    \
+                                                                        \
+    if (std::is_same<traits::result_type,                               \
+        struct ReduceSumRes<std::remove_pointer<decltype(sum)>::type>>::value) \
+      {                                                                 \
+        PRAGMA(omp parallel for reduction(+:PV_result) collapse(3) private(i, j, k, i1, i2)) \
+          for (k = iz; k < iz + nz; k++)                                \
+            {                                                           \
+              for (j = iy; j < iy + ny; j++)                            \
+                {                                                       \
+                  for (i = ix; i < ix + nx; i++)                        \
+                    {                                                   \
+                      i1 = INC_IDX(i1_start, (i - ix), (j - iy), (k - iz), \
+                                   nx, ny, sx1, PV_jinc_1, PV_kinc_1);  \
+                      i2 = INC_IDX(i2_start, (i - ix), (j - iy), (k - iz), \
+                                   nx, ny, sx2, PV_jinc_2, PV_kinc_2);  \
+                      auto rhs = lambda_body(i, j, k, i1, i2);             \
+                      PV_result += rhs.lambda_result;                   \
+                    }                                                   \
+                }                                                       \
+            }                                                           \
+      }                                                                 \
+    else                                                                \
+      if (std::is_same<traits::result_type,                             \
+          struct ReduceMaxRes<std::remove_pointer<decltype(sum)>::type>>::value) \
+        {                                                               \
+          PRAGMA(omp parallel for reduction(max:PV_result) collapse(3) private(i, j, k, i1, i2)) \
+            for (k = iz; k < iz + nz; k++)                              \
+              {                                                         \
+                for (j = iy; j < iy + ny; j++)                          \
+                  {                                                     \
+                    for (i = ix; i < ix + nx; i++)                      \
+                      {                                                 \
+                        i1 = INC_IDX(i1_start, (i - ix), (j - iy), (k - iz), \
+                                     nx, ny, sx1, PV_jinc_1, PV_kinc_1); \
+                        i2 = INC_IDX(i2_start, (i - ix), (j - iy), (k - iz), \
+                                     nx, ny, sx2, PV_jinc_2, PV_kinc_2); \
+                        auto rhs = lambda_body(i, j, k, i1, i2);           \
+                        pfmax_atomic(PV_result, rhs.lambda_result);     \
+                      }                                                 \
+                  }                                                     \
+              }                                                         \
+        }                                                               \
+      else                                                              \
+        if (std::is_same<traits::result_type,                           \
+            struct ReduceMinRes<std::remove_pointer<decltype(sum)>::type>>::value) \
+          {                                                             \
+            PRAGMA(omp parallel for reduction(min:PV_result) collapse(3) private(i, j, k, i1, i2)) \
+              for (k = iz; k < iz + nz; k++)                            \
+                {                                                       \
+                  for (j = iy; j < iy + ny; j++)                        \
+                    {                                                   \
+                      for (i = ix; i < ix + nx; i++)                    \
+                        {                                               \
+                          i1 = INC_IDX(i1_start, (i - ix), (j - iy), (k - iz), \
+                                       nx, ny, sx1, PV_jinc_1, PV_kinc_1); \
+                          i2 = INC_IDX(i2_start, (i - ix), (j - iy), (k - iz), \
+                                       nx, ny, sx2, PV_jinc_2, PV_kinc_2); \
+                          auto rhs = lambda_body(i, j, k, i1, i2);      \
+                          pfmax_atomic(PV_result, rhs.lambda_result);   \
+                        }                                               \
+                    }                                                   \
+                }                                                       \
+          }                                                             \
+    *sum = PV_result;                                                   \
+  }
+
 } // Extern C++
 
+
+/* @MCB:
+   NOTE | These are expected to be used inside of OMP reduction loops with the max or min clause
+   They are NOT atomic, the reduction clause it meant to handle that for better performance
+*/
 #undef pfmin_atomic
 #define pfmin_atomic(a,b) (a) = (a) < (b) ? (a) : (b)
 
 #undef pfmax_atomic
 #define pfmax_atomic(a,b) (a) = (a) > (b) ? (a) : (b)
-
-/* Expected use inside of BoxLoopReduce macros.  In OpenMP, these loops have the reduction clause. */
-#undef ReduceSum
-#define ReduceSum(lhs, rhs) (lhs) += (rhs);
 
 /**************************************************************************
  * OpenMP BoxLoop Variants
@@ -231,6 +464,7 @@ INC_IDX(int idx, int i, int j, int k,
       }                                                                 \
   }
 
+#if 0
 #undef BoxLoopReduceI1
 #define BoxLoopReduceI1(sum,                                            \
                         i, j, k,                                        \
@@ -254,6 +488,7 @@ INC_IDX(int idx, int i, int j, int k,
         }                                                               \
       }                                                                 \
   }
+
 
 #undef BoxLoopReduceI2
 #define BoxLoopReduceI2(sum,                                            \
@@ -283,58 +518,8 @@ INC_IDX(int idx, int i, int j, int k,
         }                                                               \
       }                                                                 \
   }
+#endif
 
-/**************************************************************************
- * BoxLoop MaxMin Variants
- **************************************************************************/
-
-#undef BoxLoopGetMaxI1
-#define BoxLoopGetMaxI1(result,                                         \
-                        i, j, k,                                        \
-                        ix, iy, iz, nx, ny, nz,                         \
-                        i1, nx1, ny1, nz1, sx1, sy1, sz1,               \
-                        body)                                           \
-  {                                                                     \
-    int i1_start = i1;                                                  \
-    DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1); \
-    PRAGMA(omp parallel for reduction(max:result) collapse(3) private(i, j, k, i1)) \
-      for (k = iz; k < iz + nz; k++)                                    \
-      {                                                                 \
-        for (j = iy; j < iy + ny; j++)                                  \
-        {                                                               \
-          for (i = ix; i < ix + nx; i++)                                \
-          {                                                             \
-            i1 = INC_IDX(i1_start, (i - ix), (j - iy), (k - iz),        \
-                         nx, ny, sx1, PV_jinc_1, PV_kinc_1);            \
-            body;                                                       \
-          }                                                             \
-        }                                                               \
-      }                                                                 \
-  }
-
-#undef BoxLoopGetMinI1
-#define BoxLoopGetMinI1(result,                                         \
-                        i, j, k,                                        \
-                        ix, iy, iz, nx, ny, nz,                         \
-                        i1, nx1, ny1, nz1, sx1, sy1, sz1,               \
-                        body)                                           \
-  {                                                                     \
-    int i1_start = i1;                                                  \
-    DeclareInc(PV_jinc_1, PV_kinc_1, nx, ny, nz, nx1, ny1, nz1, sx1, sy1, sz1); \
-    PRAGMA(omp parallel for reduction(min:result) collapse(3) private(i, j, k, i1)) \
-      for (k = iz; k < iz + nz; k++)                                    \
-      {                                                                 \
-        for (j = iy; j < iy + ny; j++)                                  \
-        {                                                               \
-          for (i = ix; i < ix + nx; i++)                                \
-          {                                                             \
-            i1 = INC_IDX(i1_start, (i - ix), (j - iy), (k - iz),        \
-                         nx, ny, sx1, PV_jinc_1, PV_kinc_1);            \
-            body;                                                       \
-          }                                                             \
-        }                                                               \
-      }                                                                 \
-  }
 
 /**************************************************************************
  * SIMD BoxLoop Variants
