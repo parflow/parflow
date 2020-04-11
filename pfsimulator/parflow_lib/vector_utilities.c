@@ -788,11 +788,12 @@ double PFVMaxNorm(
     xp = SubvectorElt(x_sub, ix, iy, iz);
 
     i_x = 0;
-    BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+    BoxLoopReduceI1(result,
+              i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
       double xp_abs = fabs(xp[i_x]);
-      pfmax_atomic(*result, xp_abs);
+      ReduceMax(*result, xp_abs);
     });
   }
 
@@ -1078,10 +1079,11 @@ double PFVMin(
     }
 
     i_x = 0;
-    BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+    BoxLoopReduceI1(result,
+              i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
-      pfmin_atomic(*result, xp[i_x]);
+      ReduceMin(*result, xp[i_x]);
     });
   }
 
@@ -1148,10 +1150,11 @@ double PFVMax(
     }
 
     i_x = 0;
-    BoxLoopI1(i, j, k, ix, iy, iz, nx, ny, nz,
+    BoxLoopReduceI1(result,
+              i, j, k, ix, iy, iz, nx, ny, nz,
               i_x, nx_x, ny_x, nz_x, 1, 1, 1,
     {
-      pfmax_atomic(*result, xp[i_x]);
+      ReduceMax(*result, xp[i_x]);
     });
   }
 
