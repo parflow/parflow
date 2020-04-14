@@ -1665,10 +1665,10 @@ ForBCStructNumPatches(ipatch, bc_struct)
                              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                              Locals(int io, io1, itop, ip, im, k1;),
                              CellSetup(DoNothing),
-                             FACE(Left,  DoNothing), FACE(Right, DoNothing),
-                             FACE(Down,  DoNothing), FACE(Up,    DoNothing),
-                             FACE(Back,  DoNothing),
-                             FACE(Front,
+                             FACE(LeftFace,  DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace,  DoNothing), FACE(UpFace,    DoNothing),
+                             FACE(BackFace,  DoNothing),
+                             FACE(FrontFace,
                              {
                                /* Loop over boundary patches to build JC matrix. */
                                io = SubmatrixEltIndex(J_sub, i, j, iz);
@@ -1754,10 +1754,10 @@ ForBCStructNumPatches(ipatch, bc_struct)
                              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                              Locals(int io, io1, itop, ip, im, k1;),
                              CellSetup(DoNothing),
-                             FACE(Left,  DoNothing), FACE(Right, DoNothing),
-                             FACE(Down,  DoNothing), FACE(Up,    DoNothing),
-                             FACE(Back,  DoNothing),
-                             FACE(Front,
+                             FACE(LeftFace,  DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace,  DoNothing), FACE(UpFace,    DoNothing),
+                             FACE(BackFace,  DoNothing),
+                             FACE(FrontFace,
                              {
 
                                /* Loop over boundary patches to build JC matrix.
@@ -1844,10 +1844,10 @@ ForBCStructNumPatches(ipatch, bc_struct)
                              LoopVars(i, j, k, ival, bc_struct, ipatch, is),
                              Locals(int io, io1, itop, ip, im, k1;),
                              CellSetup(DoNothing),
-                             FACE(Left,  DoNothing), FACE(Right, DoNothing),
-                             FACE(Down,  DoNothing), FACE(Up,    DoNothing),
-                             FACE(Back,  DoNothing),
-                             FACE(Front,
+                             FACE(LeftFace,  DoNothing), FACE(RightFace, DoNothing),
+                             FACE(DownFace,  DoNothing), FACE(UpFace,    DoNothing),
+                             FACE(BackFace,  DoNothing),
+                             FACE(FrontFace,
                              {
                                /* Loop over boundary patches to build JC matrix.
                                 */
