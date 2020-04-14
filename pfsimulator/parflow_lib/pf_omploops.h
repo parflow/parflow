@@ -93,7 +93,7 @@ extern "C++"{
   template<typename T>
   static inline void AtomicAdd(T *addr, T val)
   {
-    #pragma omp atomic
+    #pragma omp atomic update
     *addr += val;
   }
 
